@@ -32,6 +32,7 @@
 #include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/drawingarea.h"
 #include "dtgtk/expander.h"
 #include "dtgtk/sidepanel.h"
@@ -4392,28 +4393,6 @@ GdkModifierType dt_key_modifier_state()
 */
 }
 
-static void _reset_all_bauhaus(GtkNotebook *notebook,
-                               GtkWidget *box)
-{
-  // toggles go last rather than in widget order: a module may switch one of
-  // its own checkboxes on in reaction to one of its sliders changing, so a
-  // checkbox reset while sliders are still to come could be undone again by
-  // a slider that is reset after it
-  for(int toggles_pass = 0; toggles_pass < 2; toggles_pass++)
-  {
-    for(GList *c = gtk_container_get_children(GTK_CONTAINER(box));
-        c;
-        c = g_list_delete_link(c, c))
-    {
-      if(DT_IS_BAUHAUS_WIDGET(c->data)
-         && (dt_bauhaus_widget_get_type(c->data) == DT_BAUHAUS_TOGGLE)
-            == (toggles_pass == 1))
-        dt_bauhaus_widget_reset(GTK_WIDGET(c->data));
-    }
-  }
-
-  dt_gui_remove_class(gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook), box), "changed");
-}
 
 static void _notebook_size_callback(GtkNotebook *notebook,
                                     GdkRectangle *allocation,
@@ -4508,7 +4487,7 @@ static float _action_process_tabs(const gpointer target,
       gtk_notebook_prev_page(notebook);
       break;
     case DT_ACTION_EFFECT_RESET:;
-      _reset_all_bauhaus(notebook, reset_page);
+      dt_bauhaus_reset_page(notebook, reset_page);
       dt_action_widget_toast(NULL, GTK_WIDGET(notebook), "%s %s",
                              gtk_notebook_get_tab_label_text(notebook, reset_page),
                              _("reset"));
@@ -4615,7 +4594,9 @@ static void _notebook_button_press_callback(GtkGestureSingle *gesture,
   if(n_press != 2) return;
 
   GtkNotebook *notebook = GTK_NOTEBOOK(dt_gui_get_widget(gesture));
-  _reset_all_bauhaus(notebook, gtk_notebook_get_nth_page(notebook, gtk_notebook_get_current_page(notebook)));
+  dt_bauhaus_reset_page(notebook,
+                        gtk_notebook_get_nth_page
+                        (notebook, gtk_notebook_get_current_page(notebook)));
 }
 
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook,

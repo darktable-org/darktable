@@ -4449,6 +4449,14 @@ void gui_init(dt_iop_module_t *self)
   self->widget = dt_ui_notebook_page(g->notebook, N_("CAT"),
                                      _("chromatic adaptation transform"));
 
+  /* The hue and chroma sliders on this page show the illuminant chromaticity
+     in Lch and write it back as xy, so they carry no parameter of their own
+     and the walk over the page cannot read them. Name the xy parameters they
+     stand for; they are declared together. */
+  static const dt_iop_param_range_t illuminant_xy[] =
+    { { offsetof(dt_iop_channelmixer_rgb_params_t, x), 2 * sizeof(float) } };
+  dt_iop_page_bind_params(self->widget, self, illuminant_xy, 1);
+
   g->adaptation = dt_bauhaus_combobox_from_params(self, N_("adaptation"));
   gtk_widget_set_tooltip_text
     (GTK_WIDGET(g->adaptation),
@@ -4507,6 +4515,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_hard_max(g->illum_y, ILLUM_Y_MAX);
   g_signal_connect(G_OBJECT(g->illum_y), "value-changed",
                    G_CALLBACK(_illum_xy_callback), self);
+
 
   dt_gui_box_add(self->widget, g->illum_x, g->illum_y);
 

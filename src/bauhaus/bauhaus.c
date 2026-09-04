@@ -24,6 +24,7 @@
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
@@ -1400,46 +1401,236 @@ gpointer dt_bauhaus_widget_get_field(GtkWidget *widget)
   return w->field;
 }
 
-static void _highlight_changed_notebook_tab(GtkWidget *w, gpointer user_data)
+/* Find the notebook page a widget sits on, walking the whole ancestor chain so
+   that widgets nested in boxes or collapsible sections are located too.
+   Passing a page itself works, which is what the container_foreach callers
+   rely on. Returns NULL when there is no notebook above the widget. */
+static GtkWidget *_notebook_page_of(GtkWidget *w,
+                                    GtkNotebook **notebook)
 {
-  GtkWidget *notebook = gtk_widget_get_parent(w);
-  if(!GTK_IS_NOTEBOOK(notebook))
+  for(GtkWidget *parent = gtk_widget_get_parent(w);
+      parent;
+      w = parent, parent = gtk_widget_get_parent(parent))
   {
-    w = notebook;
-    if(!notebook || !(GTK_IS_NOTEBOOK(notebook = gtk_widget_get_parent(notebook))))
-      return;
+    if(GTK_IS_NOTEBOOK(parent))
+    {
+      *notebook = GTK_NOTEBOOK(parent);
+      return w;
+    }
+  }
+  return NULL;
+}
+
+// the iop module a widget belongs to, or NULL for anything else
+static dt_iop_module_t *_iop_of(dt_bauhaus_widget_t *b)
+{
+  return b->module && b->module->type == DT_ACTION_TYPE_IOP_INSTANCE
+    ? (dt_iop_module_t *)b->module
+    : NULL;
+}
+
+/* The default the widget's field holds in a fresh instance of its module.
+
+   A widget knows where its parameter lives; the same offset into
+   default_params, or into default_blendop_params for a blending widget, is
+   what that parameter would be without any edit. Reading the default from
+   there rather than from the copy the widget cached when it was built means
+   the answer follows a module that computes its defaults in reload_defaults(),
+   and cannot go stale. Returns NULL when the widget has no parameter behind
+   it, or when its field belongs to neither block. */
+static const void *_default_for_field(dt_bauhaus_widget_t *b)
+{
+  const dt_iop_module_t *module = b->field ? _iop_of(b) : NULL;
+  if(!module) return NULL;
+
+  if(module->params && module->default_params)
+  {
+    const ptrdiff_t offset = (uint8_t *)b->field - (uint8_t *)module->params;
+    if(offset >= 0 && (size_t)offset < module->params_size)
+      return (uint8_t *)module->default_params + offset;
   }
 
-  gboolean is_changed = GPOINTER_TO_INT(user_data);
-
-  for(GList *c = gtk_container_get_children(GTK_CONTAINER(w));
-      c;
-      c = g_list_delete_link(c, c))
+  if(module->blend_params && module->default_blendop_params)
   {
-    if(!is_changed && DT_IS_BAUHAUS_WIDGET(c->data) && gtk_widget_get_visible(c->data))
+    const ptrdiff_t offset = (uint8_t *)b->field - (uint8_t *)module->blend_params;
+    if(offset >= 0 && (size_t)offset < sizeof(dt_develop_blend_params_t))
+      return (uint8_t *)module->default_blendop_params + offset;
+  }
+
+  return NULL;
+}
+
+// TRUE when the widget carries a parameter that is away from its default
+static gboolean _bauhaus_differs_from_default(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *b = DT_BAUHAUS_WIDGET(widget);
+
+  /* No field behind it means it drives the gui only and has no parameter that
+     could be off default. A field the module does not own is left alone as
+     well, rather than guessed at. */
+  const void *def = _default_for_field(b);
+  if(!def) return FALSE;
+
+  switch(b->field_type)
+  {
+    case DT_INTROSPECTION_TYPE_FLOAT:
+      return fabsf(*(float *)b->field - *(const float *)def) > 1e-6f;
+    case DT_INTROSPECTION_TYPE_INT:
+      return *(int *)b->field != *(const int *)def;
+    case DT_INTROSPECTION_TYPE_UINT:
+      return *(unsigned int *)b->field != *(const unsigned int *)def;
+    case DT_INTROSPECTION_TYPE_USHORT:
+      return *(unsigned short *)b->field != *(const unsigned short *)def;
+    case DT_INTROSPECTION_TYPE_BOOL:
+      return *(gboolean *)b->field != *(const gboolean *)def;
+    case DT_INTROSPECTION_TYPE_ENUM:
+      return *(int *)b->field != *(const int *)def;
+    default:
+      return FALSE;
+  }
+}
+
+typedef gboolean (*_page_visit_t)(GtkWidget *widget, gpointer user_data);
+
+typedef struct _page_walk_t
+{
+  _page_visit_t visit;
+  gpointer user_data;
+  gboolean visible_only;
+  gboolean stopped;
+} _page_walk_t;
+
+static void _page_walk(GtkWidget *w,
+                       gpointer user_data)
+{
+  _page_walk_t *walk = user_data;
+  if(walk->stopped) return;
+
+  /* Sections and collapsible sections keep their content visible and collapse
+     by not revealing it, so a widget folded away is still walked; only what a
+     module has hidden because it does not apply is skipped. */
+  if(walk->visible_only && !gtk_widget_get_visible(w)) return;
+
+  if(DT_IS_BAUHAUS_WIDGET(w))
+  {
+    /* Only controls that carry a parameter are part of a page. The rest drive
+       the gui -- the spot mapping of color calibration keeps its whole
+       workflow in such widgets -- and are neither read nor reset with it. */
+    if(DT_BAUHAUS_WIDGET(w)->field)
+      walk->stopped = !walk->visit(w, walk->user_data);
+  }
+  else if(GTK_IS_CONTAINER(w))
+    gtk_container_foreach(GTK_CONTAINER(w), _page_walk, walk);
+}
+
+static void _page_foreach(GtkWidget *page,
+                          const gboolean visible_only,
+                          _page_visit_t visit,
+                          gpointer user_data)
+{
+  if(!page || !visit) return;
+
+  _page_walk_t walk = { .visit = visit,
+                        .user_data = user_data,
+                        .visible_only = visible_only };
+  _page_walk(page, &walk);
+}
+
+static gboolean _collect_widget(GtkWidget *widget,
+                                gpointer user_data)
+{
+  GList **widgets = user_data;
+  *widgets = g_list_prepend(*widgets, widget);
+  return TRUE;
+}
+
+/* Put a notebook page back to the module's defaults.
+
+   The parameters a page names are copied back in one go; the parameter
+   widgets on it, wherever they are nested, are reset one by one. A page can
+   have both. */
+void dt_bauhaus_reset_page(GtkNotebook *notebook,
+                           GtkWidget *page)
+{
+  if(!GTK_IS_NOTEBOOK(notebook) || !page) return;
+
+  // a page that names its parameters is reset through them
+  dt_iop_page_params_reset(page);
+
+  GList *widgets = NULL;
+  // hidden widgets are reset too: a reset should leave nothing behind, even
+  // in a mode that is not on screen right now
+  _page_foreach(page, FALSE, _collect_widget, &widgets);
+  widgets = g_list_reverse(widgets);
+
+  /* toggles go last rather than in widget order: a module may switch one of
+     its own checkboxes on in reaction to one of its sliders changing, so a
+     checkbox reset while sliders are still to come could be undone again by a
+     slider that is reset after it */
+  for(int toggles_pass = 0; toggles_pass < 2; toggles_pass++)
+  {
+    for(GList *c = widgets; c; c = g_list_next(c))
     {
-      dt_bauhaus_widget_t *b = DT_BAUHAUS_WIDGET(c->data);
-      if(!b->field) continue;
-      if(b->type == DT_BAUHAUS_SLIDER)
-      {
-        dt_bauhaus_slider_data_t *d = &b->slider;
-        is_changed = fabsf(d->pos - d->curve((d->defpos - d->min) / (d->max - d->min),
-                                             DT_BAUHAUS_SET)) > 0.001f;
-      }
-      else if(b->type == DT_BAUHAUS_TOGGLE)
-        is_changed = b->toggle.active != b->toggle.defpos;
-      else
-        is_changed = b->combobox.entries->len
-          && b->combobox.active != b->combobox.defpos;
+      if((dt_bauhaus_widget_get_type(c->data) == DT_BAUHAUS_TOGGLE)
+         == (toggles_pass == 1))
+        dt_bauhaus_widget_reset(GTK_WIDGET(c->data));
     }
   }
 
-  GtkWidget *label = gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook), w);
+  g_list_free(widgets);
+
+  dt_gui_remove_class(gtk_notebook_get_tab_label(notebook, page), "changed");
+}
+
+static gboolean _first_off_default(GtkWidget *widget,
+                                   gpointer user_data)
+{
+  gboolean *is_changed = user_data;
+  *is_changed = _bauhaus_differs_from_default(widget);
+  return !*is_changed; // stop at the first one found
+}
+
+static void _highlight_changed_notebook_tab(GtkWidget *w,
+                                            gpointer user_data)
+{
+  GtkNotebook *notebook = NULL;
+  GtkWidget *page = _notebook_page_of(w, &notebook);
+  if(!page) return;
+
+  gboolean is_changed = dt_iop_page_params_changed(page);
+  if(!is_changed)
+    _page_foreach(page, TRUE, _first_off_default, &is_changed);
+
+  GtkWidget *label = gtk_notebook_get_tab_label(notebook, page);
 
   if(is_changed)
     dt_gui_add_class(label, "changed");
   else
     dt_gui_remove_class(label, "changed");
+}
+
+static void _refresh_notebooks(GtkWidget *w,
+                               gpointer user_data)
+{
+  if(GTK_IS_NOTEBOOK(w))
+    gtk_container_foreach(GTK_CONTAINER(w),
+                          _highlight_changed_notebook_tab, NULL);
+
+  // carry on past a notebook: a page may hold one of its own
+  if(GTK_IS_CONTAINER(w))
+    gtk_container_foreach(GTK_CONTAINER(w), _refresh_notebooks, user_data);
+}
+
+/* Re-read the changed state of every tab a module holds.
+
+   Called for the module a history item was just committed for, which covers
+   everything that moves parameters without going through a parameter widget:
+   a graph, a curve, a colour picker. Every notebook of the module is read
+   rather than one reached from a widget, because a page may have no parameter
+   widget of its own to be found through. */
+void dt_bauhaus_refresh_module_tabs(dt_iop_module_t *module)
+{
+  if(module && module->widget) _refresh_notebooks(module->widget, NULL);
 }
 
 static void _toggle_set(dt_bauhaus_widget_t *w,
@@ -1469,10 +1660,84 @@ static void _toggle_set(dt_bauhaus_widget_t *w,
       dt_print(DT_DEBUG_ALWAYS, "[_toggle_set] unsupported toggle data type");
   }
 
-  _highlight_changed_notebook_tab(GTK_WIDGET(w),
-                                  GINT_TO_POINTER(d->active != d->defpos));
+  _highlight_changed_notebook_tab(GTK_WIDGET(w), NULL);
   g_signal_emit(G_OBJECT(w),
                 darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL], 0);
+}
+
+/* Point every parameter widget of a module at the module's current defaults.
+
+   A widget records its default once, when dt_bauhaus_*_from_params() reads it
+   out of default_params while the gui is being built. Modules that derive
+   defaults from the image or from the workflow do that in reload_defaults(),
+   which can run after the widgets already exist and does not touch them. The
+   widgets are then left resetting to, and reporting changes against, a default
+   the module no longer has: a fresh instance shows values that its own sliders
+   consider modified, and resetting one lands on a number the module would
+   never produce.
+
+   Only fields inside the module's own parameters are handled. Blending keeps
+   its defaults elsewhere and is synchronised by its own reload path. */
+void dt_bauhaus_update_defaults(dt_iop_module_t *module)
+{
+  if(!module || !module->params || !module->default_params) return;
+
+  for(GSList *w = module->widget_list_bh; w; w = w->next)
+  {
+    const dt_action_target_t *at = w->data;
+    if(!at || !at->target) continue;
+
+    GtkWidget *widget = at->target;
+    dt_bauhaus_widget_t *bhw = DT_BAUHAUS_WIDGET(widget);
+    if(!bhw || !bhw->field) continue;
+
+    const ptrdiff_t offset = (uint8_t *)bhw->field - (uint8_t *)module->params;
+    if(offset < 0 || (size_t)offset >= module->params_size) continue;
+    const void *def = (uint8_t *)module->default_params + offset;
+
+    switch(bhw->type)
+    {
+      case DT_BAUHAUS_SLIDER:
+        switch(bhw->field_type)
+        {
+          case DT_INTROSPECTION_TYPE_FLOAT:
+            dt_bauhaus_slider_set_default(widget, *(const float *)def);
+            break;
+          case DT_INTROSPECTION_TYPE_INT:
+            dt_bauhaus_slider_set_default(widget, *(const int *)def);
+            break;
+          case DT_INTROSPECTION_TYPE_USHORT:
+            dt_bauhaus_slider_set_default(widget, *(const unsigned short *)def);
+            break;
+          default:
+            break;
+        }
+        break;
+      case DT_BAUHAUS_TOGGLE:
+        if(bhw->field_type == DT_INTROSPECTION_TYPE_BOOL)
+          dt_bauhaus_toggle_set_default(widget, *(const gboolean *)def);
+        break;
+      case DT_BAUHAUS_COMBOBOX:
+        /* defpos holds the parameter value, not a list index: the reset path
+           feeds it back through dt_bauhaus_combobox_set_from_value(), and
+           dt_bauhaus_combobox_from_params() stores it the same way */
+        switch(bhw->field_type)
+        {
+          case DT_INTROSPECTION_TYPE_BOOL:
+            dt_bauhaus_combobox_set_default(widget, *(const gboolean *)def);
+            break;
+          case DT_INTROSPECTION_TYPE_ENUM:
+          case DT_INTROSPECTION_TYPE_INT:
+            dt_bauhaus_combobox_set_default(widget, *(const int *)def);
+            break;
+          default:
+            break;
+        }
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 void dt_bauhaus_update_from_field(dt_iop_module_t *module,
@@ -1480,7 +1745,6 @@ void dt_bauhaus_update_from_field(dt_iop_module_t *module,
                                   gpointer params,
                                   gpointer blend_params)
 {
-  GtkWidget *notebook = NULL;
   for(GSList *w = widget ? &(GSList){} : module->widget_list_bh; w; w = w->next)
   {
     dt_action_target_t *at = w->data;
@@ -1554,18 +1818,16 @@ void dt_bauhaus_update_from_field(dt_iop_module_t *module,
           (DT_DEBUG_ALWAYS,
            "[dt_bauhaus_update_from_field] invalid bauhaus widget type encountered");
     }
-
-    // if DT_IN_GUI_UPDATE() then notebook tab highlights were not yet changed
-    if(!notebook && DT_IN_GUI_UPDATE()
-       && (notebook = gtk_widget_get_parent(widget))
-       && (notebook = gtk_widget_get_parent(notebook))
-       && !GTK_IS_NOTEBOOK(notebook))
-      notebook = NULL;
   }
 
-  if(notebook)
-    gtk_container_foreach(GTK_CONTAINER(notebook),
-                          _highlight_changed_notebook_tab, NULL);
+  /* While the gui is being brought in line with the params -- a preset applied,
+     a history item selected, another image loaded -- the setters above stay
+     quiet, so the tabs are read here instead. Every notebook the module holds
+     is refreshed, not just one reached from a widget: a page may have no
+     parameter widget of its own to be found through, and a module may hold
+     more than one notebook. */
+  if(DT_IN_GUI_UPDATE() && module && module->widget)
+    _refresh_notebooks(module->widget, NULL);
 }
 
 // make this quad a toggle button:
@@ -2116,8 +2378,7 @@ static void _combobox_set(dt_bauhaus_widget_t *w,
           dt_print(DT_DEBUG_ALWAYS, "[_combobox_set] unsupported combo data type");
       }
     }
-    _highlight_changed_notebook_tab(GTK_WIDGET(w),
-                                    GINT_TO_POINTER(d->active != d->defpos));
+    _highlight_changed_notebook_tab(GTK_WIDGET(w), NULL);
     g_signal_emit(G_OBJECT(w), darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL], 0);
   }
 }
