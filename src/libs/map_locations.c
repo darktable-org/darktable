@@ -22,7 +22,12 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
+#include "gui/gtk.h"
 #include "libs/lib.h"
+#include <glib-2.0/gio/gio.h>
+#include <glib-2.0/gio/gmenu.h>
+#include <glib-2.0/gio/gmenumodel.h>
+#include <gtk/gtk.h>
 
 // map position module uses the tag dictionary with dt_geo_tag_root as a prefix.
 // Synonym field is used to store positions coordinates in ascii format.
@@ -643,8 +648,11 @@ static gint _sort_position_names_func(GtkTreeModel *model,
   return sort;
 }
 
-static void _pop_menu_edit_location(GtkWidget *menuitem, dt_lib_module_t *self)
+static void _pop_menu_edit_location(GSimpleAction *action,
+                                    GVariant *parameter,
+                                    gpointer user_data)
 {
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_map_locations_t *d = self->data;
   GtkTreeIter iter;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->view));
@@ -659,8 +667,11 @@ static void _pop_menu_edit_location(GtkWidget *menuitem, dt_lib_module_t *self)
   }
 }
 
-static void _pop_menu_delete_location(GtkWidget *menuitem, dt_lib_module_t *self)
+static void _pop_menu_delete_location(GSimpleAction *action,
+                                    GVariant *parameter,
+                                    gpointer user_data)
 {
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_map_locations_t *d = self->data;
   GtkTreeIter iter;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->view));
@@ -747,21 +758,52 @@ static gboolean _set_location_collection(dt_lib_module_t *self)
   return FALSE;
 }
 
-static void _pop_menu_update_filmstrip(GtkWidget *menuitem, dt_lib_module_t *self)
+static void _pop_menu_update_filmstrip(GSimpleAction *action,
+                                       GVariant *parameter,
+                                       gpointer user_data)
 {
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+
   _set_location_collection(self);
 }
 
-static void _pop_menu_goto_collection(GtkWidget *menuitem, dt_lib_module_t *self)
+static void _pop_menu_goto_collection(GSimpleAction *action,
+                                      GVariant *parameter,
+                                      gpointer user_data)
 {
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+
   if(_set_location_collection(self))
     dt_ctl_switch_mode_to("lighttable");
 }
 
-static void _pop_menu_view(GtkWidget *view, GdkEventButton *event, dt_lib_module_t *self)
+static void _pop_menu_view(GtkWidget *view,
+                           GdkEventButton *event,
+                           dt_lib_module_t *self)
 {
-  GtkWidget *menu, *menuitem;
-  menu = gtk_menu_new();
+  GActionGroup *action_group = gtk_widget_get_action_group(view, "map_locations");
+  if(action_group == NULL)
+  {
+    GActionEntry action_entries[] =
+    {
+      { "edit", _pop_menu_edit_location,      NULL, NULL },
+      { "delete", _pop_menu_delete_location,  NULL, NULL },
+      { "update", _pop_menu_update_filmstrip, NULL, NULL },
+      { "goto", _pop_menu_goto_collection,    NULL, NULL },
+    };
+
+    action_group = G_ACTION_GROUP(g_simple_action_group_new());
+    g_action_map_add_action_entries(G_ACTION_MAP(action_group),
+                                    action_entries,
+                                    G_N_ELEMENTS(action_entries),
+                                    self);
+    gtk_widget_insert_action_group(view, 
+                                   "map_locations",
+                                   G_ACTION_GROUP(action_group));
+  }
+
+  GMenu *menu = g_menu_new();
+  GMenu *section = menu;
 
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
@@ -774,38 +816,29 @@ static void _pop_menu_view(GtkWidget *view, GdkEventButton *event, dt_lib_module
     GtkTreeIter child, parent = iter;
     const gboolean children = gtk_tree_model_iter_children(model, &child, &parent);
 
-    menuitem = gtk_menu_item_new_with_label(_("edit location"));
-    g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_edit_location), self);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-    menuitem = gtk_menu_item_new_with_label(_("delete location"));
-    g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_delete_location), self);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-    if(children)
-    {
-      gtk_widget_set_sensitive(menuitem, FALSE);
-    }
+    g_menu_append(section, _("edit location"), "map_locations.edit");
+    g_menu_append(section, _("delete location"), "map_locations.delete");
+    GAction *item_action = g_action_map_lookup_action(G_ACTION_MAP(action_group), "delete");    
+    g_simple_action_set_enabled(G_SIMPLE_ACTION(item_action), !children);
 
-    menuitem = gtk_separator_menu_item_new();
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-    menuitem = gtk_menu_item_new_with_label(_("update filmstrip"));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-    if(!locid)
-    {
-      gtk_widget_set_sensitive(menuitem, FALSE);
-    }
-    g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_update_filmstrip), self);
-    menuitem = gtk_menu_item_new_with_label(_("go to collection (lighttable)"));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-    g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_goto_collection), self);
-    if(!locid)
-    {
-      gtk_widget_set_sensitive(menuitem, FALSE);
-    }
+    section = g_menu_new();
+    g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
+
+    g_menu_append(section, _("update filmstrip"), "map_locations.update");
+    g_menu_append(section, _("go to collection (lighttable)"), "map_locations.goto");
+    item_action = g_action_map_lookup_action(G_ACTION_MAP(action_group), "update");    
+    g_simple_action_set_enabled(G_SIMPLE_ACTION(item_action), locid);
+
+    GdkRectangle rect;
+    GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
+    GtkTreeViewColumn *column = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 0);
+    gtk_tree_view_get_background_area(GTK_TREE_VIEW(view), path, column, &rect);
+
+    // popup the menu
+    GtkWidget *popover_menu = dt_gui_popover_menu_from_model(view, menu);
+    gtk_popover_set_pointing_to(GTK_POPOVER(popover_menu), &rect);
+    gtk_popover_popup(GTK_POPOVER(popover_menu));
   }
-
-  gtk_widget_show_all(GTK_WIDGET(menu));
-
-  gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
 }
 
 static gboolean _force_selection_changed(dt_lib_module_t *self)
