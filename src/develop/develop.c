@@ -808,6 +808,19 @@ restart:
 
   if(port)
   {
+    // A displayed mask overlay enlarges the pannable canvas so handles lying
+    // outside the picture can be reached (see _clamp_zoom_to_mask), but the
+    // worker must not walk form_gui's mutable point arrays to learn by how
+    // much. Re-validating without them takes that allowance away: every mask
+    // edit dirties the pipe, so releasing a node dragged past the image edge
+    // sprang the view back to the picture. The GUI clamps with the overlay
+    // bounds on the next pan or zoom, and dt_masks_set_edit_mode() re-validates
+    // when the overlay goes away, so nothing stays stranded off-canvas.
+    // An image switch (port_loading) still validates: the overlay belongs to
+    // the image being left, and the pan must land inside the new one.
+    const gboolean mask_overlay_shown =
+      port == &dev->full && dev->form_visible && dev->form_gui;
+
     /* if just changed to an image with a different aspect ratio or
         altered image orientation, the prior zoom xy could now be beyond
         the image boundary.
@@ -838,7 +851,7 @@ restart:
       // Worker validation must not traverse GUI-owned mask overlay arrays.
       _dev_zoom_move(port, DT_ZOOM_POSITION, 0.0f, 0, rx, ry, TRUE, FALSE);
     }
-    else if(port_loading || require_zoom_test)
+    else if(port_loading || (require_zoom_test && !mask_overlay_shown))
     {
       dt_print_pipe(DT_DEBUG_PIPE, "dt_dev_zoom_move", pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%s%s",
         port_loading ? "port_loading " : "",
