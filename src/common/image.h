@@ -358,6 +358,10 @@ typedef struct dt_image_t
   /* DefaultUserCrop */
   dt_boundingbox_t usercrop;
 
+  /* aspect ratio dialed in on the camera while shooting, as d:n following
+     the crop module convention; 0:0 if the native sensor ratio was used */
+  int32_t camera_ratio_d, camera_ratio_n;
+
   /* GainMaps from DNG OpcodeList2 exif tag */
   GList *dng_gain_maps;
 

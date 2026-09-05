@@ -956,6 +956,99 @@ static bool _check_usercrop(Exiv2::ExifData &exifData,
   return FALSE;
 }
 
+// Support the aspect ratio dialed in on the camera while shooting. Every
+// vendor keeps it somewhere else in its own makernote, but what we need out
+// of it is the same everywhere: the ratio, and whether it differs from the
+// native one at all.
+//
+// The box a camera reports is always centered on the output area of that
+// camera, which is a little smaller than the sensor area we process. We
+// therefore keep the ratio alone and leave the centering to the crop module,
+// so we never have to match the vendor's idea of the full frame.
+//
+// To support another vendor, write a reader filling d:n and add it below.
+
+// Canon keeps it in AspectInfo as (ratio, width, height, left, top).
+// Magic-nr taken from the makernote spec, Exiv2 knows the tag by name
+// only from 0.27.4 on.
+static bool _camera_aspect_canon(Exiv2::ExifData &exifData,
+                                 int *d,
+                                 int *n)
+{
+  Exiv2::ExifData::const_iterator pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x009a"));
+
+  if(pos == exifData.end() || pos->count() != 5 || !pos->size())
+    return FALSE;
+
+  // a box sitting at the origin covers the full frame, nothing was cropped
+  if(pos->toFloat(3) <= 0.0f && pos->toFloat(4) <= 0.0f)
+    return FALSE;
+
+  switch((int)pos->toFloat(0))
+  {
+    case 1:  *d = 1;   *n = 1;   break; // 1:1
+    case 2:  *d = 4;   *n = 3;   break; // 4:3
+    case 7:  *d = 16;  *n = 9;   break; // 16:9
+    case 12: *d = 185; *n = 100; break; // 1.85:1
+    default: return FALSE;              // 0 is native, the rest is unknown
+  }
+
+  return TRUE;
+}
+
+// Olympus keeps it in the image processing block as two bytes: the ratio,
+// and whether the raw data was cropped along with it. Only the second form
+// concerns us, the other one has nothing left to reproduce.
+static bool _camera_aspect_olympus(Exiv2::ExifData &exifData,
+                                   int *d,
+                                   int *n)
+{
+  Exiv2::ExifData::const_iterator pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.OlympusIp.0x1112"));
+
+  if(pos == exifData.end() || pos->count() != 2 || !pos->size())
+    return FALSE;
+
+  // the second byte tells the raw data was left uncropped
+  if((int)pos->toFloat(1) != 1)
+    return FALSE;
+
+  switch((int)pos->toFloat(0))
+  {
+    case 2: *d = 3;  *n = 2; break; // 3:2
+    case 3: *d = 16; *n = 9; break; // 16:9
+    case 4: *d = 1;  *n = 1; break; // 1:1
+    default: return FALSE;          // 1 is the native 4:3, the rest is unknown
+  }
+
+  return TRUE;
+}
+
+static bool _check_camera_aspect(Exiv2::ExifData &exifData,
+                                 dt_image_t *img)
+{
+  static bool (*const readers[])(Exiv2::ExifData &, int *, int *) =
+  {
+    _camera_aspect_canon,
+    _camera_aspect_olympus,
+  };
+
+  for(size_t i = 0; i < sizeof(readers) / sizeof(readers[0]); i++)
+  {
+    int d = 0, n = 0;
+
+    if(readers[i](exifData, &d, &n) && d > 0 && n > 0)
+    {
+      img->camera_ratio_d = d;
+      img->camera_ratio_n = n;
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
 static void _check_linear_response_limit(Exiv2::ExifData &exifData,
                                          dt_image_t *img)
 {
@@ -1404,6 +1497,7 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
     if(!exifData.empty())
     {
       _check_usercrop(exifData, img);
+      _check_camera_aspect(exifData, img);
       _check_dng_opcodes(exifData, img);
       _check_lens_correction_data(exifData, img);
       _check_linear_response_limit(exifData, img);
@@ -1719,7 +1813,9 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       }
     }
 
-    if(_check_usercrop(exifData, img))
+    // both are read, so no short-circuiting here
+    const bool has_usercrop = _check_usercrop(exifData, img);
+    if(_check_camera_aspect(exifData, img) || has_usercrop)
     {
       img->flags |= DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS;
       guint tagid = 0;
