@@ -3099,7 +3099,8 @@ static gboolean _remove_modules_visibility(const gpointer key,
           || g_str_has_suffix(key, "_position"));
 }
 
-static void _restore_default_modules(GtkMenuItem *menuitem,
+static void _restore_default_modules(GSimpleAction *action,
+                                     GVariant *parameter,
                                      gpointer user_data)
 {
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
@@ -3109,23 +3110,40 @@ static void _restore_default_modules(GtkMenuItem *menuitem,
   dt_ctl_reload_view(cv);
 }
 
-static void _toggle_module_visibility(GtkMenuItem *menuitem,
-                                      dt_lib_module_t *module)
+static void _toggle_module_visibility(GSimpleAction *action,
+                                      GVariant *parameter,
+                                      gpointer user_data)
 {
+  dt_lib_module_t *module = (dt_lib_module_t *)user_data;
+
   dt_lib_set_visible(module, !dt_lib_is_visible(module));
   dt_ctl_reload_view(dt_view_manager_get_current_view(darktable.view_manager));
+
+  g_simple_action_set_state(action, g_variant_new_boolean(dt_lib_is_visible(module)));
 }
 
-static void _add_remove_modules(dt_action_t *action)
+static void _add_remove_modules_at_widget(dt_action_t *action,
+                                          GtkWidget *parent,
+                                          const gint x,
+                                          const gint y)
 {
-  const dt_view_type_flags_t cv = dt_view_get_current();
-  GtkWidget *menu = gtk_menu_new();
+  GActionEntry action_entries[] =
+  {
+    { "restore", _restore_default_modules, NULL, NULL }
+  };
 
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-  GtkWidget *mi = gtk_menu_item_new_with_label(_("restore defaults"));
-  gtk_widget_set_tooltip_text(mi, _("restore the default visibility and position of all modules in this view"));
-  g_signal_connect(mi, "activate", G_CALLBACK(_restore_default_modules), NULL);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+  GSimpleActionGroup *action_group = g_simple_action_group_new();
+  g_action_map_add_action_entries(G_ACTION_MAP(action_group),
+                                  action_entries,
+                                  G_N_ELEMENTS(action_entries),
+                                  NULL);
+  gtk_widget_insert_action_group(darktable.gui->ui->main_window,
+                                 "modules",
+                                 G_ACTION_GROUP(action_group));
+
+  const dt_view_type_flags_t cv = dt_view_get_current();
+  GMenu *menu = g_menu_new();
+  GMenu *section = menu;
 
   for(const GList *iter = darktable.lib->plugins; iter; iter = iter->next)
   {
@@ -3135,15 +3153,39 @@ static void _add_remove_modules(dt_action_t *action)
     if((mv & cv || mv & (mv - 1) || mv & DT_VIEW_MULTI) // either current view or supports more than one view
        && module->expandable(module))
     {
-      mi = gtk_check_menu_item_new_with_label(module->name(module));
-      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), dt_lib_is_visible(module));
-      g_signal_connect(mi, "toggled", G_CALLBACK(_toggle_module_visibility), module);
-      gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
+      gchar *action_name = g_strdup_printf("toggle_%s", module->plugin_name);
+      GSimpleAction *item_action = g_simple_action_new_stateful(action_name,
+                                                                NULL,
+                                                                g_variant_new_boolean(dt_lib_is_visible(module)));
+      g_signal_connect(item_action, "activate", G_CALLBACK(_toggle_module_visibility), module);
+      g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(item_action));
+
+      GMenuItem *item = g_menu_item_new(module->name(module), NULL);
+      gchar *detailed_action = g_strdup_printf("modules.%s", action_name);
+      g_menu_item_set_detailed_action(item, detailed_action);
+      g_menu_append_item(section, item);
+      g_object_unref(item);
+      g_free(detailed_action);
+      g_free(action_name);
     }
   }
 
-  gtk_widget_show_all(menu);
-  dt_gui_menu_popup(GTK_MENU(menu), NULL, 0, 0);
+  section = g_menu_new();
+  g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
+
+  g_menu_append(section, _("restore defaults"), "modules.restore");
+
+  // popup the menu
+  GtkWidget *popover_menu = dt_gui_popover_menu_from_model(parent, menu);
+  GdkRectangle rect = { x, y, 1, 1 };
+  gtk_popover_set_pointing_to(GTK_POPOVER(popover_menu), &rect);
+  gtk_popover_popup(GTK_POPOVER(popover_menu));
+}
+
+static void _add_remove_modules(dt_action_t *action)
+{
+  if(!action || !action->target) return;
+  _add_remove_modules_at_widget(action, GTK_WIDGET(action->target), 0, 0);
 }
 
 static void _side_panel_press(GtkGestureSingle *gesture,
@@ -3155,7 +3197,11 @@ static void _side_panel_press(GtkGestureSingle *gesture,
   // this gesture only serves right clicks; a primary press would be a
   // shortcut-activated toggle/activate effect (see dt_gui_current_button)
   if(dt_gui_current_button(gesture) != GDK_BUTTON_SECONDARY) return;
-  _add_remove_modules(NULL);
+
+  _add_remove_modules_at_widget(NULL,
+                                dt_gui_get_widget(gesture),
+                                (gint)x,
+                                (gint)y);
 }
 
 static gboolean _side_panel_draw(GtkWidget *widget,
@@ -6337,6 +6383,106 @@ PangoFontDescription *dt_gui_get_font(void)
 {
   return pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
 }
+
+#if !GTK_CHECK_VERSION(4, 0, 0)
+// the menu a GtkPopoverMenu builds from a model is a GtkStack of GtkBoxes of
+// GtkModelButtons, with no scrolling of its own, so a model with more items
+// than fit on the monitor is simply cut off. wrap each stack page in a
+// scrolled window bounded by the monitor's work area to keep it reachable.
+//
+// the stack has to stay the popover's direct child: gtk_popover_menu_open_submenu(),
+// which every submenu button triggers, casts that child to GTK_STACK and would
+// warn on anything else
+static void _popover_menu_make_scrollable(GtkWidget *popover_menu,
+                                          GtkWidget *parent)
+{
+  GtkWidget *stack = gtk_bin_get_child(GTK_BIN(popover_menu));
+  if(!GTK_IS_STACK(stack)) return;
+
+  // the stack sizes itself to the widest page, so a menu with one long submenu
+  // entry pads every short page out to that width. let each page keep its own
+  gtk_stack_set_hhomogeneous(GTK_STACK(stack), FALSE);
+  gtk_stack_set_vhomogeneous(GTK_STACK(stack), FALSE);
+
+  GdkWindow *window = gtk_widget_get_window(gtk_widget_get_toplevel(parent));
+  if(!window) return;
+
+  GdkRectangle workarea;
+  gdk_monitor_get_workarea(gdk_display_get_monitor_at_window(gdk_window_get_display(window),
+                                                             window),
+                           &workarea);
+
+  // GtkPopover defaults to GTK_POPOVER_CONSTRAINT_WINDOW, so a menu taller
+  // than the main window gets clipped flush against its edges. bound the menu
+  // by the window as well to keep that margin visible when not maximized
+  gint available = workarea.height;
+  const gint window_height = gdk_window_get_height(window);
+  if(window_height > 0)
+    available = MIN(available, window_height);
+
+  // leave room for the popover's own arrow, padding and shadow
+  const gint max_height = available * 0.8;
+
+  GList *pages = gtk_container_get_children(GTK_CONTAINER(stack));
+  for(GList *p = pages; p; p = g_list_next(p))
+  {
+    GtkWidget *page = GTK_WIDGET(p->data);
+
+    // a page already wrapped on an earlier popup must not be nested again
+    if(GTK_IS_SCROLLED_WINDOW(page)) continue;
+
+    // the stack addresses its pages by name, and the submenu buttons refer to
+    // them by that name, so it has to move to the scrolled window with the page
+    gchar *name = NULL;
+    gint position = 0;
+    gtk_container_child_get(GTK_CONTAINER(stack),
+                            page,
+                            "name", &name,
+                            "position", &position,
+                            NULL);
+
+    g_object_ref(page);
+    gtk_container_remove(GTK_CONTAINER(stack), page);
+
+    GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
+                                   GTK_POLICY_NEVER,
+                                   GTK_POLICY_AUTOMATIC);
+    // without this the scrolled window claims a minimal height instead of the
+    // page's own, and every menu would come up as a thin scrolling strip
+    gtk_scrolled_window_set_propagate_natural_height(GTK_SCROLLED_WINDOW(sw), TRUE);
+    gtk_scrolled_window_set_propagate_natural_width(GTK_SCROLLED_WINDOW(sw), TRUE);
+    gtk_scrolled_window_set_max_content_height(GTK_SCROLLED_WINDOW(sw), max_height);
+
+    gtk_container_add(GTK_CONTAINER(sw), page);
+    g_object_unref(page);
+
+    gtk_stack_add_named(GTK_STACK(stack), sw, name);
+    gtk_container_child_set(GTK_CONTAINER(stack), sw, "position", position, NULL);
+    gtk_widget_show_all(sw);
+
+    g_free(name);
+  }
+  g_list_free(pages);
+}
+#endif
+
+GtkWidget *dt_gui_popover_menu_from_model(GtkWidget *parent, GMenu *menu)
+{
+  GtkWidget *popover_menu;
+
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  popover_menu = gtk_popover_new_from_model(parent, G_MENU_MODEL(menu));
+  _popover_menu_make_scrollable(popover_menu, parent);
+#else
+  popover_menu = gtk_popover_menu_new_from_model_full(G_MENU_MODEL(menu),
+                                                      GTK_POPOVER_MENU_NESTED);
+  gtk_widget_set_parent(popover_menu, parent);
+#endif
+
+  return popover_menu;
+}
+
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

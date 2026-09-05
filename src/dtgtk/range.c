@@ -15,10 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/gdk_event_utils.h"
 #include "range.h"
 #include "bauhaus/bauhaus.h"
-#include "control/control.h"
 #include "gui/gtk.h"
 
 #include <string.h>
@@ -1066,12 +1064,21 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   gtk_container_add(GTK_CONTAINER(pop->popup), vbox);
 }
 
-static void _popup_item_activate(GtkWidget *w, gpointer user_data)
+static void _popup_item_activate(GSimpleAction *action,
+                                 GVariant *parameter,
+                                 gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
+
   // retrieve block and source values
-  GtkWidget *source = GTK_WIDGET(g_object_get_data(G_OBJECT(w), "source_widget"));
-  _range_block *blo = (_range_block *)g_object_get_data(G_OBJECT(w), "range_block");
+  GVariant *v_source = g_variant_get_child_value(parameter, 0);
+  GVariant *v_blo    = g_variant_get_child_value(parameter, 1);
+  
+  GtkWidget *source = GTK_WIDGET(g_variant_get_uint64(v_source));
+  _range_block *blo = (_range_block *)g_variant_get_uint64(v_blo);
+
+  g_variant_unref(v_source);
+  g_variant_unref(v_blo);
 
   // if source is the band, apply the value directly
   if(source == range->band)
@@ -1090,10 +1097,29 @@ static void _popup_item_activate(GtkWidget *w, gpointer user_data)
   }
 }
 
-static GtkWidget *_popup_get_numeric_menu(GtkDarktableRangeSelect *range, GtkWidget *w)
+static GMenu *_popup_get_numeric_menu(GtkDarktableRangeSelect *range,
+                                      GtkWidget *w)
 {
-  GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
-  gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
+  GActionGroup *action_group = gtk_widget_get_action_group(w, "range");
+  if(action_group == NULL)
+  {
+    GActionEntry action_entries[] =
+    {
+      { "activate", _popup_item_activate, "(tt)", NULL },
+    };
+
+    action_group = G_ACTION_GROUP(g_simple_action_group_new());
+    g_action_map_add_action_entries(G_ACTION_MAP(action_group),
+                                    action_entries,
+                                    G_N_ELEMENTS(action_entries),
+                                    range);
+    gtk_widget_insert_action_group(w, 
+                                   "range",
+                                   G_ACTION_GROUP(action_group));
+  }
+
+  GMenu *menu = g_menu_new();
+  GMenu *section = menu;
 
   // we first show all the predefined items
   int nb = 0;
@@ -1112,17 +1138,22 @@ static GtkWidget *_popup_get_numeric_menu(GtkDarktableRangeSelect *range, GtkWid
 
     gchar *txt = (blo->txt) ? g_strdup(blo->txt) : range->print(blo->value_r, TRUE);
     if(blo->nb > 0) dt_util_str_cat(&txt, " (%d)", blo->nb);
-    GtkWidget *smt = gtk_menu_item_new_with_label(txt);
-    g_free(txt);
-    g_object_set_data(G_OBJECT(smt), "range_block", blo);
-    g_object_set_data(G_OBJECT(smt), "source_widget", w);
-    g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_popup_item_activate), range);
 
-    gtk_menu_shell_append(pop, smt);
+    GMenuItem *mi = g_menu_item_new(txt, NULL);
+    g_free(txt);
+    g_menu_item_set_action_and_target_value(mi,
+                                            "range.activate",
+                                            g_variant_new("(tt)", (guintptr)w, (guintptr)blo));
+    g_menu_append_item(section, mi);
+    g_object_unref(mi);
     nb++;
   }
 
-  if(nb > 0 && g_list_length(range->blocks) - nb > 0) gtk_menu_shell_append(pop, gtk_separator_menu_item_new());
+  if(nb > 0 && g_list_length(range->blocks) - nb > 0)
+  {
+    section = g_menu_new();
+    g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
+  }
 
   // and the classic ones
   for(const GList *bl = range->blocks; bl; bl = g_list_next(bl))
@@ -1139,24 +1170,26 @@ static GtkWidget *_popup_get_numeric_menu(GtkDarktableRangeSelect *range, GtkWid
 
     gchar *txt = (blo->txt) ? g_strdup(blo->txt) : range->print(blo->value_r, TRUE);
     if(blo->nb > 0) dt_util_str_cat(&txt, " (%d)", blo->nb);
-    GtkWidget *smt = gtk_menu_item_new_with_label(txt);
+    GMenuItem *mi = g_menu_item_new(txt, NULL);
     g_free(txt);
-    g_object_set_data(G_OBJECT(smt), "range_block", blo);
-    g_object_set_data(G_OBJECT(smt), "source_widget", w);
-    g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_popup_item_activate), range);
-
-    gtk_menu_shell_append(pop, smt);
+    g_menu_item_set_action_and_target_value(mi,
+                                            "range.activate",
+                                            g_variant_new("(tt)", (guintptr)w, (guintptr)blo));
+    g_menu_append_item(section, mi);
+    g_object_unref(mi);
   }
-
-  return GTK_WIDGET(pop);
+  
+  return menu;
 }
 
 static void _popup_show(GtkDarktableRangeSelect *range, GtkWidget *w)
 {
   if(range->type == DT_RANGE_TYPE_NUMERIC)
   {
-    GtkWidget *pop = _popup_get_numeric_menu(range, w);
-    dt_gui_menu_popup(GTK_MENU(pop), NULL, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+    // popup the menu
+    GMenu *menu = _popup_get_numeric_menu(range, w);
+    GtkWidget *popover_menu = dt_gui_popover_menu_from_model(GTK_WIDGET(w), menu);
+    gtk_popover_popup(GTK_POPOVER(popover_menu));
   }
   else if(range->type == DT_RANGE_TYPE_DATETIME)
   {

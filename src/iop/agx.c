@@ -2090,10 +2090,14 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
   dt_gui_box_add(self->widget, g->range_exposure_picker_group);
 }
 
-static void _apply_primaries_from_menu_callback(GtkMenuItem *menuitem, dt_iop_module_t *self)
+static void _apply_primaries_from_menu_callback(GSimpleAction *action,
+                                                GVariant *parameter,
+                                                gpointer user_data)
 {
-  const char *preset_id = gtk_widget_get_name(GTK_WIDGET(menuitem));
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_agx_params_t *p = self->params;
+
+  const gchar *preset_id = g_variant_get_string(parameter, NULL);
 
   if(strcmp(preset_id, "blender") == 0) _set_blenderlike_primaries(p);
   else if(strcmp(preset_id, "smooth") == 0) _set_smooth_primaries(p);
@@ -2103,27 +2107,34 @@ static void _apply_primaries_from_menu_callback(GtkMenuItem *menuitem, dt_iop_mo
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _primaries_popupmenu_callback(GtkWidget *button, dt_iop_module_t *self)
+static void _primaries_popupmenu_callback(GtkWidget *button,
+                                          dt_iop_module_t *self)
 {
-  GtkWidget *menu = gtk_menu_new();
+  GActionGroup *action_group = gtk_widget_get_action_group(button, "agx-primaries");
+  if(action_group == NULL)
+  {
+    GActionEntry action_entries[] =
+    {
+      { "activate", _apply_primaries_from_menu_callback, "s", NULL }
+    };
 
-  GtkWidget *blender_item = gtk_menu_item_new_with_mnemonic(_("blender-like"));
-  gtk_widget_set_name(blender_item, "blender");
-  g_signal_connect(blender_item, "activate", G_CALLBACK(_apply_primaries_from_menu_callback), self);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), blender_item);
+    action_group = G_ACTION_GROUP(g_simple_action_group_new());
+    g_action_map_add_action_entries(G_ACTION_MAP(action_group),
+                                    action_entries,
+                                    G_N_ELEMENTS(action_entries),
+                                    self);
+    gtk_widget_insert_action_group(button,
+                                   "agx-primaries",
+                                   G_ACTION_GROUP(action_group));
+  }
 
-  GtkWidget *smooth_item = gtk_menu_item_new_with_mnemonic(_("smooth"));
-  gtk_widget_set_name(smooth_item, "smooth");
-  g_signal_connect(smooth_item, "activate", G_CALLBACK(_apply_primaries_from_menu_callback), self);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), smooth_item);
-
-  GtkWidget *unmodified_item = gtk_menu_item_new_with_mnemonic(_("unmodified"));
-  gtk_widget_set_name(unmodified_item, "unmodified");
-  g_signal_connect(unmodified_item, "activate", G_CALLBACK(_apply_primaries_from_menu_callback), self);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), unmodified_item);
-
-  gtk_widget_show_all(menu);
-  dt_gui_menu_popup(GTK_MENU(menu), button, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
+  GMenu *menu = g_menu_new();
+  g_menu_append(menu, _("blender-like"), "agx-primaries.activate::blender");
+  g_menu_append(menu, _("smooth"), "agx-primaries.activate::smooth");
+  g_menu_append(menu, _("unmodified"), "agx-primaries.activate::unmodified");
+  
+  GtkWidget *popover_menu = dt_gui_popover_menu_from_model(button, menu);
+  gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 
 static void _set_post_curve_primaries_from_pre_callback(GtkWidget *widget, dt_iop_module_t *self)

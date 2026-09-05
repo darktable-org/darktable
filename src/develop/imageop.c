@@ -50,6 +50,8 @@
 #include "gui/splash.h"
 #include "imageio/imageio_rawspeed.h"
 #include "libs/modulegroups.h"
+#include <glib-2.0/gio/gio.h>
+#include <gtk/gtk.h>
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -73,6 +75,23 @@ typedef struct dt_iop_gui_multi_show_t
 {
   gboolean close, up, down, new;
 } dt_iop_gui_multi_show_t;
+
+static void _gui_copy_callback(GSimpleAction *action, GVariant *parameter, gpointer user_data);
+static void _gui_duplicate_callback(GSimpleAction *action, GVariant *parameter, gpointer user_data);
+static void _gui_moveup_callback(GSimpleAction *action, GVariant *parameter, gpointer user_data);
+static void _gui_movedown_callback(GSimpleAction *action, GVariant *parameter, gpointer user_data);
+static void _gui_delete_callback(GSimpleAction *action, GVariant *parameter, gpointer user_data);
+static void _gui_rename_callback(GSimpleAction *action, GVariant *parameter, gpointer user_data);
+
+// action entries for the instance menu items
+static GActionEntry _instance_action_entries[] = {
+  { "new",          _gui_copy_callback,      NULL, NULL },
+  { "duplicate",    _gui_duplicate_callback, NULL, NULL },
+  { "moveup",       _gui_moveup_callback,    NULL, NULL },
+  { "movedown",     _gui_movedown_callback,  NULL, NULL },
+  { "delete",       _gui_delete_callback,    NULL, NULL },
+  { "rename",       _gui_rename_callback,    NULL, NULL },
+};
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
@@ -527,8 +546,11 @@ static void _header_motion_notify_hide_callback(GtkEventControllerMotion *contro
   dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
 }
 
-static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
+static void _gui_delete_callback(GSimpleAction *action,
+                                 GVariant *parameter,
+                                 gpointer user_data)
 {
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   dt_develop_t *dev = module->dev;
 
   // we search another module with the same base
@@ -539,7 +561,7 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
   while(modules)
   {
     dt_iop_module_t *mod = modules->data;
-    if(mod == module)
+if(mod == module)
     {
       find = TRUE;
       if(next) break;
@@ -632,9 +654,7 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
   dt_control_queue_redraw_center();
 
   DT_LEAVE_GUI_UPDATE();
-}
-
-dt_iop_module_t *dt_iop_gui_get_previous_visible_module(const dt_iop_module_t *module)
+}dt_iop_module_t *dt_iop_gui_get_previous_visible_module(const dt_iop_module_t *module)
 {
   dt_iop_module_t *prev = NULL;
 
@@ -686,8 +706,11 @@ dt_iop_module_t *dt_iop_gui_get_next_visible_module(const dt_iop_module_t *modul
   return next;
 }
 
-static void _gui_movedown_callback(GtkButton *button, dt_iop_module_t *module)
+static void _gui_movedown_callback(GSimpleAction *action,
+                                   GVariant *parameter,
+                                   gpointer user_data)
 {
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   dt_ioppr_check_iop_order(module->dev, 0, "dt_iop_gui_movedown_callback begin");
 
   // we need to place this module right before the previous
@@ -721,8 +744,11 @@ static void _gui_movedown_callback(GtkButton *button, dt_iop_module_t *module)
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MODULE_MOVED);
 }
 
-static void _gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
+static void _gui_moveup_callback(GSimpleAction *action,
+                                 GVariant *parameter,
+                                 gpointer user_data)
 {
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   dt_ioppr_check_iop_order(module->dev, 0, "dt_iop_gui_moveup_callback begin");
 
   // we need to place this module right after the next one
@@ -855,11 +881,14 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base,
 
 void dt_iop_gui_delete(dt_iop_module_t *module)
 {
-  _gui_delete_callback(NULL, module);
+  _gui_delete_callback(NULL, NULL, module);
 }
 
-static void _gui_copy_callback(GtkButton *button, dt_iop_module_t *base)
+static void _gui_copy_callback(GSimpleAction *action,
+                               GVariant *parameter,
+                               gpointer user_data)
 {
+  dt_iop_module_t *base = (dt_iop_module_t *) user_data;
   dt_iop_module_t *module = dt_iop_gui_duplicate(base, FALSE);
 
   /* setup key accelerators */
@@ -869,8 +898,11 @@ static void _gui_copy_callback(GtkButton *button, dt_iop_module_t *base)
     dt_iop_gui_rename_module(module);
 }
 
-static void _gui_duplicate_callback(GtkButton *button, dt_iop_module_t *base)
+static void _gui_duplicate_callback(GSimpleAction *action,
+                                    GVariant *parameter,
+                                    gpointer user_data)
 {
+  dt_iop_module_t *base = (dt_iop_module_t *)user_data;
   dt_iop_module_t *module = dt_iop_gui_duplicate(base, TRUE);
 
   /* setup key accelerators */
@@ -997,9 +1029,11 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module)
   gtk_widget_grab_focus(entry);
 }
 
-static void _gui_rename_callback(GtkButton *button,
-                                 dt_iop_module_t *module)
+static void _gui_rename_callback(GSimpleAction *action,
+                                 GVariant *parameter,
+                                 gpointer user_data)
 {
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   dt_iop_gui_rename_module(module);
 }
 
@@ -1047,52 +1081,39 @@ static void _gui_multiinstance_callback(GtkButton *button,
   dt_iop_gui_multi_show_t multi_show;
   _get_multi_show(module, &multi_show);
 
-  GtkMenuShell *menu = GTK_MENU_SHELL(gtk_menu_new());
-  GtkWidget *item;
+  GMenu *menu = g_menu_new();
 
-  item = gtk_menu_item_new_with_label(_("new instance"));
-  // gtk_widget_set_tooltip_text(item, _("add a new instance of this module to the pipe"));
-  g_signal_connect(G_OBJECT(item), "activate",
-                   G_CALLBACK(_gui_copy_callback), module);
-  gtk_widget_set_sensitive(item, multi_show.new);
-  gtk_menu_shell_append(menu, item);
+  g_menu_append(menu, _("new instance"), "instances.new");
+  g_menu_append(menu, _("duplicate instance"), "instances.duplicate");
+  g_menu_append(menu, _("move up"), "instances.moveup");
+  g_menu_append(menu, _("move down"), "instances.movedown");
+  g_menu_append(menu, _("delete this instance"), "instances.delete");
 
-  item = gtk_menu_item_new_with_label(_("duplicate instance"));
-  // gtk_widget_set_tooltip_text(item, _("add a copy of this instance to the pipe"));
-  g_signal_connect(G_OBJECT(item), "activate",
-                   G_CALLBACK(_gui_duplicate_callback), module);
-  gtk_widget_set_sensitive(item, multi_show.new);
-  gtk_menu_shell_append(menu, item);
+  GMenu *section = g_menu_new();
+  g_menu_append(section, _("rename"), "instances.rename");
+  g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
+  
+  GActionGroup *action_group = gtk_widget_get_action_group(GTK_WIDGET(button), "instances");
+  GAction *action;
 
-  item = gtk_menu_item_new_with_label(_("move up"));
-  // gtk_widget_set_tooltip_text(item, _("move this instance up"));
-  g_signal_connect(G_OBJECT(item), "activate",
-                   G_CALLBACK(_gui_moveup_callback), module);
-  gtk_widget_set_sensitive(item, multi_show.up);
-  gtk_menu_shell_append(menu, item);
+  action = g_action_map_lookup_action (G_ACTION_MAP(action_group), "new");
+  g_simple_action_set_enabled(G_SIMPLE_ACTION(action), multi_show.new);
 
-  item = gtk_menu_item_new_with_label(_("move down"));
-  // gtk_widget_set_tooltip_text(item, _("move this instance down"));
-  g_signal_connect(G_OBJECT(item), "activate",
-                   G_CALLBACK(_gui_movedown_callback), module);
-  gtk_widget_set_sensitive(item, multi_show.down);
-  gtk_menu_shell_append(menu, item);
+  action = g_action_map_lookup_action (G_ACTION_MAP(action_group), "duplicate");
+  g_simple_action_set_enabled(G_SIMPLE_ACTION(action), multi_show.new);
 
-  item = gtk_menu_item_new_with_label(_("delete"));
-  // gtk_widget_set_tooltip_text(item, _("delete this instance"));
-  g_signal_connect(G_OBJECT(item), "activate",
-                   G_CALLBACK(_gui_delete_callback), module);
-  gtk_widget_set_sensitive(item, multi_show.close);
-  gtk_menu_shell_append(menu, item);
+  action = g_action_map_lookup_action (G_ACTION_MAP(action_group), "moveup");
+  g_simple_action_set_enabled(G_SIMPLE_ACTION(action), multi_show.up);
 
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-  item = gtk_menu_item_new_with_label(_("rename"));
-  g_signal_connect(G_OBJECT(item), "activate",
-                   G_CALLBACK(_gui_rename_callback), module);
-  gtk_menu_shell_append(menu, item);
+  action = g_action_map_lookup_action (G_ACTION_MAP(action_group), "movedown");
+  g_simple_action_set_enabled(G_SIMPLE_ACTION(action), multi_show.down);
 
-  dt_gui_menu_popup(GTK_MENU(menu), GTK_WIDGET(button),
-                    GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
+  action = g_action_map_lookup_action (G_ACTION_MAP(action_group), "delete");
+  g_simple_action_set_enabled(G_SIMPLE_ACTION(action), multi_show.close);
+
+  // popup the menu
+  GtkWidget *popover_menu = dt_gui_popover_menu_from_model(GTK_WIDGET(button), menu);
+  gtk_popover_popup(GTK_POPOVER(popover_menu));
 
   // make sure the button is deactivated now that the menu is opened
   if(button)
@@ -1130,7 +1151,7 @@ static void _gui_multiinstance_clicked(GtkGestureSingle *gesture,
   if(button == GDK_BUTTON_SECONDARY)
   {
     if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
-      _gui_copy_callback(NULL, module);
+      _gui_copy_callback(NULL, NULL, module);
     return;
   }
   if(button == GDK_BUTTON_MIDDLE)
@@ -2572,10 +2593,10 @@ static gboolean _presets_popup_callback(GtkButton *button,
   const gboolean disabled = !module->default_enabled && module->hide_enable_button;
   if(disabled) return FALSE;
 
-  GtkMenu *menu = dt_gui_presets_popup_menu_show_for_module(module);
+  dt_gui_presets_popup_menu_show_for_module(GTK_WIDGET(button), module);
 
-  dt_gui_menu_popup(menu,
-                    GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
+  // dt_gui_menu_popup(menu,
+  //                   GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 
   return TRUE;
 }
@@ -2590,10 +2611,11 @@ static void _presets_popup_clicked(GtkGestureSingle *gesture,
   if(disabled) return;
 
   GtkWidget *button = dt_gui_get_widget(gesture);
-  GtkMenu *menu = dt_gui_presets_popup_menu_show_for_module(module);
+  // GtkMenu *menu = dt_gui_presets_popup_menu_show_for_module(module);
+  dt_gui_presets_popup_menu_show_for_module(button, module);
 
-  dt_gui_menu_popup(menu,
-                    button, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
+  // dt_gui_menu_popup(menu,
+  //                   button, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 }
 
 /* per-presets-button hysteresis state: a continuous trackpad gesture is a
@@ -3570,6 +3592,16 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
       (module->multimenu_button,
        _("multiple instance actions\nright-click creates new instance"));
 
+  // popover menu for the multimenu_button
+  GSimpleActionGroup *instance_action_group = g_simple_action_group_new();
+  g_action_map_add_action_entries(G_ACTION_MAP(instance_action_group),
+                                  _instance_action_entries,
+                                  G_N_ELEMENTS(_instance_action_entries),
+                                  module);
+  gtk_widget_insert_action_group(module->multimenu_button,
+                                 "instances",
+                                 G_ACTION_GROUP(instance_action_group));
+
   if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
     gtk_widget_set_tooltip_text(module->presets_button,
                                 _("presets\nright-click to apply on new instance"));
@@ -4377,17 +4409,17 @@ static float _action_process(gpointer target,
       _get_multi_show(module, &multi_show);
 
       if     (effect == DT_ACTION_EFFECT_NEW       && multi_show.new  )
-        _gui_copy_callback     (NULL, module);
+        _gui_copy_callback     (NULL, NULL, module);
       else if(effect == DT_ACTION_EFFECT_DUPLICATE && multi_show.new  )
-        _gui_duplicate_callback(NULL, module);
+        _gui_duplicate_callback(NULL, NULL, module);
       else if(effect == DT_ACTION_EFFECT_UP        && multi_show.up   )
-        _gui_moveup_callback   (NULL, module);
+        _gui_moveup_callback   (NULL, NULL, module);
       else if(effect == DT_ACTION_EFFECT_DOWN      && multi_show.down )
-        _gui_movedown_callback (NULL, module);
+        _gui_movedown_callback (NULL, NULL, module);
       else if(effect == DT_ACTION_EFFECT_DELETE    && multi_show.close)
-        _gui_delete_callback   (NULL, module);
+        _gui_delete_callback   (NULL, NULL, module);
       else if(effect == DT_ACTION_EFFECT_RENAME                               )
-        _gui_rename_callback   (NULL, module);
+        _gui_rename_callback   (NULL, NULL, module);
       else _gui_multiinstance_callback(NULL, module);
       break;
     case DT_ACTION_ELEMENT_RESET:
