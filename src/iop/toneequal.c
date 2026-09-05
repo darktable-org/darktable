@@ -2179,9 +2179,10 @@ int scrolled(dt_iop_module_t *self,
   if(fail) return 1;
 
   // re-read the exposure in case it has changed
+  // keep critical section as short as possible and avoid mutex locking
+  const float lum = log2f(_luminance_from_module_buffer(self));
   dt_iop_gui_enter_critical_section(self);
-  g->cursor_exposure = log2f(_luminance_from_module_buffer(self));
-
+  g->cursor_exposure = lum;
   dt_iop_gui_leave_critical_section(self);
 
   // Set the correction from mouse scroll input
