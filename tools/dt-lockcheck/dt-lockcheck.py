@@ -230,7 +230,7 @@ USAGE
 """
 import argparse
 import csv
-import datetime, hashlib
+import datetime, functools, hashlib
 import re, sys, os, glob, json, shutil, subprocess
 from collections import defaultdict
 
@@ -281,10 +281,16 @@ DEFER_RE = re.compile(r"g_idle_add|gdk_threads_add_idle|g_timeout_add|"
 # `instance->get_effective_exposure = _exposure_proxy_get_effective_exposure;`
 # is called from somewhere this analysis cannot see.
 ESCAPE_RE = re.compile(r"(?:->|\.)\s*[A-Za-z_]\w*\s*=\s*([A-Za-z_]\w*)\s*[;,]")
+# A name in a positional initialiser -- `{ "x", _handler, ... }` -- which is how
+# the dt_action_def_t tables register their shortcut handlers.
+STATIC_REF_RE = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*(?=[,}])")
 
-FUNC_HEAD = re.compile(r"^[A-Za-z_][A-Za-z0-9_ \*\t]*?([A-Za-z_][A-Za-z0-9_]*)\s*\(")
 FIELD_RE  = re.compile(r"\bg\s*->\s*([A-Za-z_][A-Za-z0-9_]*)")
 CALL_RE   = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\(")
+# `g` is only the module's GUI data by convention.  A handful of functions bind
+# it to something else (a gain map, a gaussian handle); their `g->x` accesses
+# are not gui_data accesses and must not be recorded.
+OTHER_G   = re.compile(r"\b(\w+_t)\s*\*\s*(?:const\s+)?g\b")
 
 # What may follow `g->field` and still be the same object being written: array
 # subscripts and member selections.  `g->box.x = 1` and `g->lines[l].p1[0] = v`
@@ -294,28 +300,42 @@ PATH = r"(?:\s*(?:\[[^\]]*\]|\.\s*[A-Za-z_]\w*|->\s*[A-Za-z_]\w*))*"
 # an explicit cast in front of an argument does not make it any less likely
 # that the callee writes through the pointer: gtk_x((GtkTreeView *)g->w)
 CAST = r"(?:\(\s*[A-Za-z_][A-Za-z0-9_\s*]*\)\s*)?"
-_write_cache = {}
+# A bare identifier sitting in an argument list, past any cast.  The separator
+# after the name is matched by lookahead, not consumed: re.findall does not
+# overlap, so consuming it made a bare identifier that directly follows another
+# one unmatchable -- which is exactly the shape of
+# DT_CONTROL_SIGNAL_HANDLE(SIGNAL, handler).
+CALLBACK_ARG_RE = re.compile(r"[(,]\s*" + CAST + r"([A-Za-z_][A-Za-z0-9_]*)\s*(?=[,)])")
+
+ENTER = "dt_iop_gui_enter_critical_section"
+LEAVE = "dt_iop_gui_leave_critical_section"
+MUTEX_LOCK   = re.compile(r"\b(?:g_mutex_lock|pthread_mutex_lock|dt_pthread_mutex_lock)\s*\(\s*&?\s*g\s*->\s*(\w+)")
+MUTEX_UNLOCK = re.compile(r"\b(?:g_mutex_unlock|pthread_mutex_unlock|dt_pthread_mutex_unlock)\s*\(\s*&?\s*g\s*->\s*(\w+)")
+# The lock handed to a callee that takes it around the access, as in
+# `dt_dev_sync_pixelpipe_hash(..., &self->gui_lock, &g->hash)`: the call site
+# reads as unlocked and is not.  Two scans ask about it -- is_write(), which
+# must not count such a call as an unsynchronised write, and analyse(), which
+# records the access under `callee_lock`.
+LOCK_ARG = re.compile(r"&\s*\w+\s*->\s*gui_lock")
 
 
+@functools.lru_cache(maxsize=None)
 def _write_res(f):
     """The write patterns for one field, built once and reused."""
-    r = _write_cache.get(f)
-    if r is None:
-        g = r"\bg\s*->\s*" + re.escape(f) + PATH
-        r = _write_cache[f] = (
-            # postfix and prefix increment/decrement
-            re.compile(g + r"\s*(?:\+\+|--)"),
-            re.compile(r"(?:\+\+|--)\s*" + g + r"\b"),
-            # address taken
-            re.compile(r"&\s*" + g[2:] + r"\b"),
-            # assignment and every compound assignment, including <<= >>= %=
-            re.compile(g + r"\s*(?:[-+*/|&^%]|<<|>>)?=(?!=)"),
-            # passed as an argument, with or without a cast: the callee may
-            # write through the pointer or array.  The trailing separator is
-            # matched by lookahead so two such arguments in a row both match.
-            re.compile(r"[(,]\s*" + CAST + g[2:] + r"\s*(?=[,)])"),
-        )
-    return r
+    g = r"\bg\s*->\s*" + re.escape(f) + PATH
+    return (
+        # postfix and prefix increment/decrement
+        re.compile(g + r"\s*(?:\+\+|--)"),
+        re.compile(r"(?:\+\+|--)\s*" + g + r"\b"),
+        # address taken
+        re.compile(r"&\s*" + g[2:] + r"\b"),
+        # assignment and every compound assignment, including <<= >>= %=
+        re.compile(g + r"\s*(?:[-+*/|&^%]|<<|>>)?=(?!=)"),
+        # passed as an argument, with or without a cast: the callee may write
+        # through the pointer or array.  The trailing separator is matched by
+        # lookahead so two such arguments in a row both match.
+        re.compile(r"[(,]\s*" + CAST + g[2:] + r"\s*(?=[,)])"),
+    )
 
 
 def is_write(src, f):
@@ -331,15 +351,10 @@ def is_write(src, f):
     if addr.search(src):
         # ... unless the same call also hands the callee the lock, in which
         # case the callee locks and this is not an unsynchronised write
-        if not re.search(r"&\s*\w+\s*->\s*gui_lock", src): return True
+        if not LOCK_ARG.search(src): return True
     if assign.search(src): return True
     if arg.search(src): return True
     return False
-
-ENTER = "dt_iop_gui_enter_critical_section"
-LEAVE = "dt_iop_gui_leave_critical_section"
-MUTEX_LOCK   = re.compile(r"\b(?:g_mutex_lock|pthread_mutex_lock|dt_pthread_mutex_lock)\s*\(\s*&?\s*g\s*->\s*(\w+)")
-MUTEX_UNLOCK = re.compile(r"\b(?:g_mutex_unlock|pthread_mutex_unlock|dt_pthread_mutex_unlock)\s*\(\s*&?\s*g\s*->\s*(\w+)")
 
 # Comments and literals, in the order they win at a given position: `//` before
 # `/*` so a `/*` inside a line comment is not read as an opening, and both
@@ -402,7 +417,7 @@ def strip_leading_macros(head):
         rest = head[j + 1:]
         # keep what we had if nothing declarator-shaped follows: the "macro" was
         # the definition itself (a function generated by e.g. HSL_CALLBACK(gain))
-        if not re.search(r"[A-Za-z_][A-Za-z0-9_]*\s*\(", rest):
+        if not CALL_RE.search(rest):
             return head
         head = rest
 
@@ -421,10 +436,7 @@ def split_functions(lines):
                 sig.insert(0, lines[j]); j -= 1
                 if len(sig) > 20: break
             head = strip_leading_macros(" ".join(s.strip() for s in sig))
-            m = None
-            for m2 in re.finditer(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(", head):
-                m = m2
-                break
+            m = CALL_RE.search(head)
             name = m.group(1) if m else None
             # brace-match to the end of the body.  Counting braces rather than
             # looking for a '}' in column zero: a closing brace indented by one
@@ -436,7 +448,7 @@ def split_functions(lines):
                 if depth <= 0: break
                 k += 1
             k = min(k, n - 1)
-            if name and not name in ("if", "for", "while", "switch", "typedef", "struct"):
+            if name and name not in {"if", "for", "while", "switch", "typedef", "struct"}:
                 out.append((name, i + 1, k))
             i = k + 1
         else:
@@ -513,6 +525,10 @@ def gui_fields(text, module):
             fields[names[-1]] = (ty + " " + stars) if stars else ty
     return fields
 
+def _module_of(path):
+    """The module name behind a source path.  Three IOPs are .cc, not .c."""
+    return re.sub(r"\.cc?$", "", os.path.basename(path))
+
 def classify(fnname):
     if fnname in PIPE:   return "pipe"
     if fnname in EITHER: return "either"
@@ -520,7 +536,7 @@ def classify(fnname):
     return None
 
 def analyse(path):
-    module = re.sub(r"\.cc?$", "", os.path.basename(path))
+    module = _module_of(path)
     # every scan below runs on the masked text: comments and literal bodies are
     # blanked out, so disabled code cannot enter the fact base
     text = mask_text(open(path, encoding="utf-8", errors="replace").read())
@@ -534,14 +550,9 @@ def analyse(path):
     callback_refs = defaultdict(set)   # callee -> {(kind, registrar)}
     escaped = set()                    # callees whose address leaves the file
     fnames = {f[0] for f in funcs}
-    # `g` is only the module's GUI data by convention.  A handful of functions
-    # bind it to something else (a gain map, a gaussian handle); their `g->x`
-    # accesses are not gui_data accesses and must not be recorded.
-    gui_ty = re.compile(r"\b\w*_gui_data_t\s*\*")
-    other_g = re.compile(r"\b(\w+_t)\s*\*\s*(?:const\s+)?g\b")
     for (fn, s, e) in funcs:
         body = "\n".join(lines[max(0, s - 6):e])
-        decls = other_g.findall(body)
+        decls = OTHER_G.findall(body)
         if decls and not any(d.endswith("_gui_data_t") for d in decls):
             continue
         held = []
@@ -550,17 +561,13 @@ def analyse(path):
             for c in CALL_RE.findall(src):
                 if c in fnames and c != fn:
                     callgraph[fn].add(c)
-            # the separator after the name is matched by lookahead, not
-            # consumed: re.findall does not overlap, so consuming it made a bare
-            # identifier that directly follows another one unmatchable -- which
-            # is exactly the shape of DT_CONTROL_SIGNAL_HANDLE(SIGNAL, handler)
             # A bare identifier that names a file-local function and sits in
             # an argument list is a callback: C decays a function designator to
             # a pointer, so there is nothing else it can be.  This used to be
             # gated on a list of registration spellings, which missed
             # darktable's own helpers -- dt_gui_connect_motion(), the bauhaus
             # quad setters -- and with them every handler they register.
-            for ref in re.findall(r"[(,]\s*" + CAST + r"([A-Za-z_][A-Za-z0-9_]*)\s*(?=[,)])", src):
+            for ref in CALLBACK_ARG_RE.findall(src):
                 if ref in fnames and ref != fn:
                     callback_refs[ref].add(("defer" if DEFER_RE.search(src) else "direct", fn))
             for ref in ESCAPE_RE.findall(src):
@@ -576,7 +583,7 @@ def analyse(path):
             for f in sorted(set(FIELD_RE.findall(src))):
                 if f in fields:
                     lock = held[-1] if held else "none"
-                    if lock == "none" and re.search(r"&\s*\w+\s*->\s*gui_lock", src):
+                    if lock == "none" and LOCK_ARG.search(src):
                         lock = "callee_lock"
                     mode = "w" if is_write(src, f) else "r"
                     accesses.append((fn, f, lock, ln + 1, mode))
@@ -611,7 +618,7 @@ def analyse(path):
     for ln, src in enumerate(lines):
         if ln in covered:
             continue
-        for ref in re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*(?=[,}])", src):
+        for ref in STATIC_REF_RE.findall(src):
             if ref in fnames:
                 escaped.add(ref)
 
@@ -638,6 +645,23 @@ def analyse(path):
     for fn in sorted(escaped):
         if thread.get(fn) is None:
             thread[fn] = "either"
+    def join(fn, t):
+        """Widen fn's thread label to admit a call from thread `t`.
+
+        The lattice, in one place rather than at each of the two call sites
+        below: unlabelled takes `t`, a second and different label raises pipe
+        or gtk to "either", and "either" is already the top.  Returns whether
+        the label moved, which is what ends the fixpoint loop.
+        """
+        cur = thread.get(fn)
+        if cur is None:
+            thread[fn] = t
+            return True
+        if cur != t and cur in ("pipe", "gtk"):
+            thread[fn] = "either"
+            return True
+        return False
+
     changed = True
     rounds = 0
     while changed and rounds < 20:
@@ -646,12 +670,8 @@ def analyse(path):
             callees = callgraph[caller]
             if thread.get(caller):
                 for c in sorted(callees):
-                    if c in pinned:
-                        continue
-                    if thread.get(c) is None:
-                        thread[c] = thread[caller]; changed = True
-                    elif thread[c] != thread.get(caller) and thread[c] in ("pipe", "gtk"):
-                        thread[c] = "either"; changed = True
+                    if c not in pinned and join(c, thread[caller]):
+                        changed = True
         # a synchronously-invoked callback runs on its registrar's thread
         for callee, refs in sorted(callback_refs.items()):
             if callee in pinned:
@@ -660,10 +680,8 @@ def analyse(path):
                 t = thread.get(registrar)
                 if kind != "direct" or not t:
                     continue
-                if thread.get(callee) is None:
-                    thread[callee] = t; changed = True
-                elif thread[callee] != t and thread[callee] in ("pipe", "gtk"):
-                    thread[callee] = "either"; changed = True
+                if join(callee, t):
+                    changed = True
     # the basename, not just the module: three IOPs are .cc, and the report
     # used to name them <module>.c, a path that does not exist
     return dict(module=module, src=os.path.basename(path), fields=fields,
@@ -689,8 +707,8 @@ DEFAULT_RULES = ("widget_from_pipe", "violation", "no_lock_share",
 ALL_RULES_TOKEN = "ALL"
 
 
-MAY_PIPE = ("pipe", "either")   # can run off the GTK main thread
-MAY_GTK = ("gtk", "either")     # can run on the GTK main thread
+MAY_PIPE = {"pipe", "either"}   # can run off the GTK main thread
+MAY_GTK = {"gtk", "either"}     # can run on the GTK main thread
 
 
 def findings(res, wanted):
@@ -784,10 +802,14 @@ def lemmalog_facts(res):
         for fn, t in sorted(r["thread"].items()):
             if t:
                 out.append(f'+ runs_on("{m}", "{fn}", "{t}")')
-        # dedupe (the same access can be seen twice on one line) but emit in a
-        # fixed order, for the same reason the field scan above is sorted
-        for (fn, f, lock, ln, mode) in sorted({(a[0], a[1], a[2], a[3], a[4])
-                                               for a in r["accesses"]}):
+        # Dedupe over what is emitted, not over the accesses: the fact carries
+        # no line number, so two accesses that differ only by their line are
+        # the same assertion, and asserting it twice tells the engine nothing.
+        # Deduping over the access tuple instead left 5041 of 9963 access facts
+        # duplicated on this tree.  Sorted for the same reason the field scan
+        # above is: a fixed order is what makes two runs diffable.
+        for (fn, f, lock, mode) in sorted({(a[0], a[1], a[2], a[4])
+                                           for a in r["accesses"]}):
             out.append(f'+ access("{m}", "{f}", "{fn}", "{lock}", "{mode}")')
     return out
 
@@ -875,6 +897,12 @@ FP_VERSION = 1
 FP_KEYS = ("module", "field", "rule", "key", "reason", "confirmed", "sites")
 
 
+def fp_ident(e):
+    """What names one judgement.  A finding and its entry agree on these three,
+    which is how the two are matched up."""
+    return (e["module"], e["field"], e["rule"])
+
+
 def _module_lines(srcdir, res, module, cache):
     """The module's source split into lines, read at most once per run."""
     if module not in cache:
@@ -931,7 +959,7 @@ def finding_sites(f, res):
     """
     r = res[f["module"]]
     th = r["thread"]
-    acc = sorted({tuple(a) for a in r["accesses"] if a[1] == f["field"]},
+    acc = sorted({a for a in r["accesses"] if a[1] == f["field"]},
                  key=lambda a: (a[3], a[0]))
     return [site_str(a, th) + "(%s)" % a[2] for a in acc]
 
@@ -1004,10 +1032,10 @@ def apply_fp(fs, entries, res, wanted):
     `orphans` are in-scope entries no finding matched at all: the code has moved
     past them and they should be deleted.
     """
-    index = {(e["module"], e["field"], e["rule"]): e for e in entries}
+    index = {fp_ident(e): e for e in entries}
     kept, suppressed, matched = [], [], set()
     for f in fs:
-        ident = (f["module"], f["field"], f["rule"])
+        ident = fp_ident(f)
         e = index.get(ident)
         if e is None:
             kept.append(f)
@@ -1019,7 +1047,7 @@ def apply_fp(fs, entries, res, wanted):
             f["fp"] = e
             kept.append(f)
     orphans = [e for e in fp_scope(entries, res, wanted)
-               if (e["module"], e["field"], e["rule"]) not in matched]
+               if fp_ident(e) not in matched]
     return kept, suppressed, orphans
 
 
@@ -1062,53 +1090,52 @@ def confirm_fps(specs, reason, fs, entries, res, wanted, path):
     entries: adding one is a judgement about a single field and has to name it,
     or a whole module could be silenced by one word.
     """
-    index = {(e["module"], e["field"], e["rule"]): e for e in entries}
-    found = {(f["module"], f["field"], f["rule"]): f for f in fs}
+    found = {fp_ident(f): f for f in fs}
     today = datetime.date.today().isoformat()
     touched = 0
     for spec in specs:
         module, field = parse_fp_spec(spec, res)
         if field is None:
-            stale = [e for e in fp_scope(entries, res, wanted)
-                     if e["module"] == module
-                     and (e["module"], e["field"], e["rule"]) in found
-                     and found[(e["module"], e["field"], e["rule"])]["key"] != e["key"]]
+            stale = []
+            for e in fp_scope(entries, res, wanted):
+                f = found.get(fp_ident(e))
+                if e["module"] == module and f and f["key"] != e["key"]:
+                    stale.append((e, f))
             if not stale:
                 print("%s: no stale entry to re-confirm" % module)
-            for e in stale:
-                f = found[(e["module"], e["field"], e["rule"])]
+            for e, f in stale:
                 _rekey(e, f, res, reason, today)
                 touched += 1
             continue
         # a field is reported under at most one rule, so module:field names at
         # most one entry and at most one finding
-        ent = [e for e in entries if e["module"] == module and e["field"] == field]
-        fnd = [f for f in fs if f["module"] == module and f["field"] == field]
-        if ent:
-            e = ent[0]
-            f = found.get((e["module"], e["field"], e["rule"]))
+        ent = next((e for e in entries
+                    if e["module"] == module and e["field"] == field), None)
+        fnd = next((f for f in fs
+                    if f["module"] == module and f["field"] == field), None)
+        if ent is not None:
+            f = found.get(fp_ident(ent))
             if f is None:
                 print("%s:%s: no finding under %s any more -- the entry is an "
                       "orphan, delete it rather than re-confirming it"
-                      % (module, field, e["rule"]))
-            elif f["key"] == e["key"] and not reason:
+                      % (module, field, ent["rule"]))
+            elif f["key"] == ent["key"] and not reason:
                 print("%s:%s: already current (key %s), nothing to do"
-                      % (module, field, e["key"]))
+                      % (module, field, ent["key"]))
             else:
-                _rekey(e, f, res, reason, today)
+                _rekey(ent, f, res, reason, today)
                 touched += 1
-        elif fnd:
+        elif fnd is not None:
             if not reason:
                 die("a new entry needs --false-positive-reason: say why %s:%s "
                     "is not a defect, "
                     "because that sentence is what gets printed back when the "
                     "entry goes stale" % (module, field))
-            f = fnd[0]
-            e = dict(module=module, field=field, rule=f["rule"], key=f["key"],
-                     reason=reason, confirmed=today, sites=finding_sites(f, res))
-            entries.append(e)
+            entries.append(dict(module=module, field=field, rule=fnd["rule"],
+                                key=fnd["key"], reason=reason, confirmed=today,
+                                sites=finding_sites(fnd, res)))
             print("%s:%s: added under %s, key %s"
-                  % (module, field, f["rule"], f["key"]))
+                  % (module, field, fnd["rule"], fnd["key"]))
             touched += 1
         else:
             die("--confirm-false-positive %s: no finding and no entry for that "
@@ -1318,8 +1345,8 @@ def find_src(explicit):
         if root is None:
             tried.append(("above %s (%s)" % (what, start), "no darktable root up to /"))
             continue
-        d = os.path.join(root, "src", "iop")
-        if len(iop_sources(d)) >= MIN_SOURCES:
+        d = _as_iop_dir(root)
+        if d:
             return d, "darktable root above " + what
         tried.append(("above %s (%s)" % (what, start),
                       "found root %s, but no IOP sources in it" % root))
@@ -1483,7 +1510,7 @@ def main():
         sys.exit(2)
 
     paths = iop_sources(src)
-    sources = {re.sub(r"\.cc?$", "", os.path.basename(p)): p for p in paths}
+    sources = {_module_of(p): p for p in paths}
 
     analysed = {}
     for p in paths:
