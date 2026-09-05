@@ -1086,23 +1086,43 @@ int process_cl(dt_iop_module_t *self,
        applied to the approximated output */
     const dt_dng_gain_map_t *gm_fast = _gain_map(self, piece);
 
+    /* The GainMap kernel reads and writes one pixel per work item, but an
+       image cannot be both read from and written to by the same kernel, so
+       let the zoom write a scratch image and take dev_out from there. */
+    cl_mem dev_zoomed = dev_out;
+    cl_mem dev_scratch = NULL;
+    if(gm_fast)
+    {
+      dev_scratch = dt_opencl_alloc_device(devid,
+                                           dt_opencl_get_image_width(dev_out),
+                                           dt_opencl_get_image_height(dev_out),
+                                           dt_opencl_get_image_element_size(dev_out));
+      if(dev_scratch == NULL)
+      {
+        dt_opencl_release_mem_object(dev_xtrans);
+        return DT_OPENCL_SYSMEM_ALLOCATION;
+      }
+      dev_zoomed = dev_scratch;
+    }
+
     if(is_xtrans)
       // sample third-size image
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_third_size, roi_out->width, roi_out->height,
-          CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
+          CLARG(dev_in), CLARG(dev_zoomed), CLARG(roi_out->width), CLARG(roi_out->height),
           CLARG(iwidth), CLARG(iheight), CLARG(roi_out->scale), CLARG(dev_xtrans));
     else if(method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_passthrough_monochrome, roi_out->width, roi_out->height,
-          CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
+          CLARG(dev_in), CLARG(dev_zoomed), CLARG(roi_out->width), CLARG(roi_out->height),
           CLARG(iwidth), CLARG(iheight), CLARG(roi_out->scale));
     else // bayer
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_half_size, roi_out->width, roi_out->height,
-          CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
+          CLARG(dev_in), CLARG(dev_zoomed), CLARG(roi_out->width), CLARG(roi_out->height),
           CLARG(iwidth), CLARG(iheight), CLARG(roi_out->scale), CLARG(filters));
 
     if(err == CL_SUCCESS && gm_fast)
-      err = _apply_gain_map_cl(self, piece, gm_fast, dev_out, dev_out, roi_out, devid);
+      err = _apply_gain_map_cl(self, piece, gm_fast, dev_scratch, dev_out, roi_out, devid);
 
+    dt_opencl_release_mem_object(dev_scratch);
     dt_opencl_release_mem_object(dev_xtrans);
     return err;
   }
@@ -1290,13 +1310,27 @@ int process_cl(dt_iop_module_t *self,
 
   /* The GainMap is defined on the sensor grid, so it is applied to the full
      scale demosaiced data before any resampling to canvas or export size, and
-     before the detail mask is derived from it. The image is passed as both read
-     and write argument: the kernel only ever modifies the pixel it read, which
-     every known driver handles, as elsewhere in dt. */
+     before the detail mask is derived from it. An image cannot be both read
+     from and written to by one kernel, so the result goes to a scratch image
+     and is copied back; out_image is dev_out when the pipe asked for the data
+     in place, so it cannot simply be swapped for the scratch one. */
   const dt_dng_gain_map_t *gm = _gain_map(self, piece);
   if(gm)
   {
-    err = _apply_gain_map_cl(self, piece, gm, out_image, out_image, roi_in, devid);
+    cl_mem dev_scratch = dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float) * 4);
+    if(dev_scratch == NULL)
+    {
+      err = DT_OPENCL_SYSMEM_ALLOCATION;
+      goto finish;
+    }
+    err = _apply_gain_map_cl(self, piece, gm, out_image, dev_scratch, roi_in, devid);
+    if(err == CL_SUCCESS)
+    {
+      const size_t region[] = { iwidth, iheight };
+      err = dt_opencl_enqueue_copy_image(devid, dev_scratch, out_image,
+                                         CLIMG_ORIGIN, CLIMG_ORIGIN, region);
+    }
+    dt_opencl_release_mem_object(dev_scratch);
     if(err != CL_SUCCESS) goto finish;
   }
 

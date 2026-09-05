@@ -481,6 +481,7 @@ int process_cl(dt_iop_module_t *self,
   cl_mem dev_sub = NULL;
   cl_mem dev_div = NULL;
   cl_mem dev_gainmap[4] = {NULL};
+  cl_mem dev_scratch = NULL;
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
 
@@ -534,8 +535,22 @@ int process_cl(dt_iop_module_t *self,
 
   const size_t sizes[2] = { ROUNDUPDWD(roi_in->width, devid), ROUNDUPDHT(roi_in->height, devid) };
 
+  /* The GainMap kernel below reads and writes one pixel per work item, but an
+     image cannot be both read from and written to by the same kernel, so let
+     this one write a scratch image and take dev_out from there. */
+  cl_mem dev_target = dev_out;
+  if(d->gainmap_opcode3)
+  {
+    dev_scratch = dt_opencl_alloc_device(devid,
+                                         dt_opencl_get_image_width(dev_out),
+                                         dt_opencl_get_image_height(dev_out),
+                                         dt_opencl_get_image_element_size(dev_out));
+    if(dev_scratch == NULL) goto finish;
+    dev_target = dev_scratch;
+  }
+
   dt_opencl_set_kernel_args(devid, kernel, 0,
-    CLARG(dev_in), CLARG(dev_out),
+    CLARG(dev_in), CLARG(dev_target),
     CLARG(width), CLARG(height),
     CLARG(csx), CLARG(csy),
     CLARG(dev_sub), CLARG(dev_div), CLARG(roi_out->x), CLARG(roi_out->y));
@@ -569,7 +584,7 @@ int process_cl(dt_iop_module_t *self,
                   d->gainmap_opcode3->map_points_h, d->gainmap_opcode3->map_points_v,
                   d->gainmap_opcode3->map_planes);
     err = dt_dng_gain_map_apply_cl(devid, d->gainmap_opcode3, &piece->pipe->image,
-                                   dev_out, dev_out,
+                                   dev_scratch, dev_out,
                                    roi_out->width, roi_out->height,
                                    (roi_out->x + csx) / roi_out->scale,
                                    (roi_out->y + csy) / roi_out->scale,
@@ -577,6 +592,7 @@ int process_cl(dt_iop_module_t *self,
   }
 
 finish:
+  dt_opencl_release_mem_object(dev_scratch);
   dt_opencl_release_mem_object(dev_sub);
   dt_opencl_release_mem_object(dev_div);
 
