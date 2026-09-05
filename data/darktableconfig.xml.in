@@ -2781,6 +2781,20 @@
     <longdescription>up to, and including, this ISO, X-Trans frequency domain chroma demosaicing uses the hybrid mode for determining chroma; for all higher ISO values the pure FDC is used.</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/spektrafilm/repository</name>
+    <type>string</type>
+    <default>darktable-org/darktable-spektrafilm</default>
+    <shortdescription>spektrafilm data repository</shortdescription>
+    <longdescription>repository holding the spektrafilm spectral data packs, as owner/repo. the files are read over https; git is not required.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spektrafilm/ref</name>
+    <type>string</type>
+    <default>main</default>
+    <shortdescription>spektrafilm data repository ref</shortdescription>
+    <longdescription>tag or branch to read the spektrafilm data packs from. a tag is preferable where one exists: an immutable ref is what lets an old edit fetch the exact spectral table it was developed against, where a branch hands over whatever is current.</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/denoiseprofile/show_compute_variance_mode</name>
     <type>bool</type>
     <default>false</default>
@@ -4064,13 +4078,14 @@
         <option>scene-referred (sigmoid)</option>
         <option>scene-referred (filmic)</option>
         <option>scene-referred (AgX)</option>
+        <option>scene-referred (spektrafilm)</option>
         <option>display-referred (legacy)</option>
         <option>none</option>
       </enum>
     </type>
     <default>scene-referred (sigmoid)</default>
     <shortdescription>auto-apply pixel workflow defaults</shortdescription>
-    <longdescription><![CDATA[selects which workflow will be used by default in the darkroom\n\n<b>scene-referred (sigmoid)</b> modern workflow, fewer tonemapper controls\n\n<b>scene-referred (filmic)</b> modern workflow, more tone mapping controls\n\n<b>scene-referred (AgX)</b> modern workflow, maximum tone mapping control\n\n<b>display-referred (legacy)</b> legacy workflow (not recommended)\n\n<b>none</b> do not use a predefined workflow]]></longdescription>
+    <longdescription><![CDATA[selects which workflow will be used by default in the darkroom\n\n<b>scene-referred (sigmoid)</b> modern workflow, fewer tonemapper controls\n\n<b>scene-referred (filmic)</b> modern workflow, more tone mapping controls\n\n<b>scene-referred (AgX)</b> modern workflow, maximum tone mapping control\n\n<b>scene-referred (spektrafilm)</b> modern workflow, the tone mapping done by a simulated film and print\n\n<b>display-referred (legacy)</b> legacy workflow (not recommended)\n\n<b>none</b> do not use a predefined workflow]]></longdescription>
     <welcomescreen pagenum="1" questionnum="1"/>
   </dtconfig>
   <dtconfig prefs="processing" section="general">

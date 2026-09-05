@@ -49,7 +49,7 @@ for more information on how to contribute._
 ## The Big Ones
 
 The following is a summary of the main features added to darktable
-5.6. Please see the user manual for more details of the individual
+5.8. Please see the user manual for more details of the individual
 changes (where available).
 
 - Automatic alignment of exposure brackets in "merge HDR" function,
@@ -67,6 +67,12 @@ changes (where available).
   by fixed offsets, so a stack stays valid across module versions, and
   renders run on a throwaway duplicate so the source image is never
   modified.
+  
+- A new analog film simulation module, based on the [spektrafilm](https://github.com/andreavolpato/spektrafilm) 
+  project by Andrea Volpato. It simulates the physical photographic 
+  process from film exposure and development through printing and 
+  scanning, including film grain, halation and diffusion. 
+
 
 ## UI/UX Improvements
 
