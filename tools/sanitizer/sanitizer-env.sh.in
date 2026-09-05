@@ -28,6 +28,14 @@ mkdir -p "$DT_SAN_LOGDIR"
 
 export DT_SANITIZERS DT_SAN_LOGDIR
 
+# Distributions set DEBUGINFOD_URLS globally (see /etc/debuginfod). The
+# symbolizer then blocks on network lookups for modules whose build-id it cannot
+# satisfy locally, and the runtimes give up and print unsymbolized "<null>"
+# frames for the dlopen'd iop plugins -- exactly the frames worth reading.
+# Everything we need is in the build tree.
+DEBUGINFOD_URLS=""
+export DEBUGINFOD_URLS
+
 # Readable stack traces. GCC's sanitizer runtimes use llvm-symbolizer too when
 # they can find it, and fall back to a much slower addr2line path otherwise.
 if [ -x "@DT_LLVM_SYMBOLIZER@" ]; then
