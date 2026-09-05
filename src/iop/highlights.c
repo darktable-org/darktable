@@ -47,7 +47,7 @@
 #define DS_FACTOR 4
 #define MAX_NUM_SCALES 12
 
-DT_MODULE_INTROSPECTION(4, dt_iop_highlights_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_highlights_params_t)
 
 /* As some of the internal algorithms use a smaller value for clipping than given by the UI
    the visualizing is wrong for those algos. It seems to be a a minor issue but sometimes significant.
@@ -104,22 +104,16 @@ typedef enum dt_highlights_mask_t
 
 typedef struct dt_iop_highlights_params_t
 {
-  // params of v1
-  dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_OPPOSED $DESCRIPTION: "method"
-  float blendL; // unused $DEFAULT: 1.0
-  float blendC; // unused $DEFAULT: 0.0
-  float strength; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "strength"
-  // params of v2
-  float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
-  // params of v3
-  float noise_level; // $MIN: 0. $MAX: 0.5 $DEFAULT: 0.00 $DESCRIPTION: "noise level"
-  int iterations; // $MIN: 1 $MAX: 256 $DEFAULT: 30 $DESCRIPTION: "iterations"
+  dt_iop_highlights_mode_t mode;      // $DEFAULT: DT_IOP_HIGHLIGHTS_OPPOSED $DESCRIPTION: "method"
+  float strength;                     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "strength"
+  float clip;                         // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
+  float noise_level;                  // $MIN: 0. $MAX: 0.5 $DEFAULT: 0.00 $DESCRIPTION: "noise level"
+  int iterations;                     // $MIN: 1 $MAX: 256 $DEFAULT: 30 $DESCRIPTION: "iterations"
   dt_atrous_wavelets_scales_t scales; // $DEFAULT: WAVELETS_7_SCALE $DESCRIPTION: "diameter of reconstruction"
-  float candidating; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.4 $DESCRIPTION: "candidating"
-  float combine;     // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 2.0 $DESCRIPTION: "combine"
-  dt_recovery_mode_t recovery; // $DEFAULT: DT_RECOVERY_MODE_OFF $DESCRIPTION: "rebuild"
-  // params of v4
-  float solid_color; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "inpaint a flat color"
+  float candidating;                  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.4 $DESCRIPTION: "candidating"
+  float combine;                      // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 2.0 $DESCRIPTION: "combine"
+  dt_recovery_mode_t recovery;        // $DEFAULT: DT_RECOVERY_MODE_OFF $DESCRIPTION: "rebuild"
+  float solid_color;                  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "inpaint a flat color"
 } dt_iop_highlights_params_t;
 
 typedef struct dt_iop_highlights_gui_data_t
@@ -225,6 +219,20 @@ int legacy_params(dt_iop_module_t *self,
     float solid_color;
   } dt_iop_highlights_params_v4_t;
 
+  typedef struct dt_iop_highlights_params_v5_t
+  {
+    dt_iop_highlights_mode_t mode;
+    float strength;
+    float clip;
+    float noise_level;
+    int iterations;
+    dt_atrous_wavelets_scales_t scales;
+    float candidating;
+    float combine;
+    dt_recovery_mode_t recovery;
+    float solid_color;
+  } dt_iop_highlights_params_v5_t;
+
   if(old_version == 1)
   {
     typedef struct dt_iop_highlights_params_v1_t
@@ -304,6 +312,27 @@ int legacy_params(dt_iop_module_t *self,
     *new_params = n;
     *new_params_size = sizeof(dt_iop_highlights_params_v4_t);
     *new_version = 4;
+    return 0;
+  }
+  if(old_version == 4)
+  {
+    const dt_iop_highlights_params_v4_t *o = (dt_iop_highlights_params_v4_t *)old_params;
+    dt_iop_highlights_params_v5_t *n = malloc(sizeof(dt_iop_highlights_params_v5_t));
+
+    n->mode = o->mode;
+    n->strength = o->strength;
+    n->clip = o->clip;
+    n->noise_level = o->noise_level;
+    n->iterations = o->iterations;
+    n->scales = o->scales;
+    n->candidating = o->candidating;
+    n->combine = o->combine;
+    n->recovery = o->recovery;
+    n->solid_color = o->solid_color;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_highlights_params_v5_t);
+    *new_version = 5;
     return 0;
   }
 
