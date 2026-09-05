@@ -116,6 +116,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {27.5f }, "channelmixerrgb", 0},
   { {27.5f }, "contrastntexture", 0}, 
   { {27.5f }, "diffuse", 0},
+  { {27.6f }, "halation", 0},
   { {27.5f }, "censorize", 0},
   { {27.5f }, "negadoctor", 0},
   { {27.5f }, "blurs", 0},
@@ -224,6 +225,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {28.5f }, "channelmixerrgb", 0},
   { {28.5f }, "contrastntexture", 0},
   { {28.5f }, "diffuse", 0},
+  { {28.6f }, "halation", 0},
   { {28.5f }, "censorize", 0},
   { {28.5f }, "negadoctor", 0},      // Cineon film encoding comes
                                      // after scanner input color
@@ -347,6 +349,7 @@ const dt_iop_order_entry_t v50_order[] = {
   { {28.5f }, "channelmixerrgb", 0},
   { {28.5f }, "contrastntexture", 0},
   { {28.5f }, "diffuse", 0},
+  { {28.6f }, "halation", 0},
   { {28.5f }, "censorize", 0},
   { {28.5f }, "negadoctor", 0},      // Cineon film encoding comes
                                      // after scanner input color
@@ -471,6 +474,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 28.5f }, "channelmixerrgb", 0 },
   { { 28.5f }, "contrastntexture", 0 },
   { { 28.5f }, "diffuse", 0 },
+  { { 28.6f }, "halation", 0 },
   { { 28.5f }, "censorize", 0 },
   { { 28.5f }, "negadoctor", 0 },   // Cineon film encoding comes after scanner input color profile
   { { 28.5f }, "blurs", 0 },        // physically-accurate blurs (motion and lens)
@@ -597,6 +601,7 @@ const dt_iop_order_entry_t v50_jpg_order[] = {
   { { 28.5f }, "channelmixerrgb", 0 },
   { { 28.5f }, "contrastntexture", 0 },
   { { 28.5f }, "diffuse", 0 },
+  { { 28.6f }, "halation", 0 },
   { { 28.5f }, "censorize", 0 },
   { { 28.5f }, "negadoctor", 0 },   // Cineon film encoding comes after scanner input color profile
   { { 28.5f }, "blurs", 0 },        // physically-accurate blurs (motion and lens)
