@@ -269,7 +269,7 @@ static float *_process_opposed(dt_iop_module_t *self,
     if(mask)
     {
       gboolean anyclipped = FALSE;
-      DT_OMP_FOR(reduction( | : anyclipped) collapse(2))
+      DT_OMP_FOR(reduction( | : anyclipped))
       for(int mrow = 0; mrow < mheight; mrow++)
       {
         const int irow = 3*mrow;
