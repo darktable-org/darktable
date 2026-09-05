@@ -1631,7 +1631,8 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
       { "edit",     ops->edit_cb,     NULL, NULL },
       { "delete",   ops->del_cb,      NULL, NULL },
       { "new",      ops->store_cb,    NULL, NULL },
-      { "update",   ops->update_cb,   "s",  NULL }
+      { "update",   ops->update_cb,   "s",  NULL },
+      { "manage",   ops->manage_cb,   NULL, NULL }
     };
 
     action_group = G_ACTION_GROUP(g_simple_action_group_new());
@@ -1733,15 +1734,15 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
   {
     mainmenu = g_menu_new();
     g_menu_append_section(menu, NULL, G_MENU_MODEL(mainmenu));
-    cnt = 0;
   }
 
-  // tail: edit+delete / store+update, then the optional prefs section
-  if(active_preset_name && !selected_writeprotect)
+  // tail: manage / edit+delete / store+update, then the optional prefs section
+  if(ops->manage_cb)
+    g_menu_append(mainmenu, _("manage presets..."), "presets.manage");
+  else if(active_preset_name && !selected_writeprotect)
   {
     g_menu_append(mainmenu, _("edit this preset..."), "presets.edit");
     g_menu_append(mainmenu, _("delete this preset"), "presets.delete");
-    cnt++;
   }
   else
   {
