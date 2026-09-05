@@ -107,6 +107,104 @@ static void _darkroom_display_second_window(dt_develop_t *dev);
 static void _darkroom_ui_second_window_write_config(GtkWidget *widget);
 static void _darkroom_ui_second_window_cleanup(dt_develop_t *dev);
 
+// "plugins/darkroom/active" names the module that had focus when the darkroom
+// was last left, and is what re-focuses it on the way back in.
+// Instances past the first are qualified with their multi_priority, which
+// is stable across a reload because it is what history is keyed on:
+// "exposure:2". A bare operation name still means "any instance", so values
+// written by earlier versions keep working and instance 0 still writes one.
+#define DT_DARKROOM_ACTIVE_SEP ':'
+
+static void _active_module_store(const dt_iop_module_t *module)
+{
+  if(!module)
+  {
+    dt_conf_set_string("plugins/darkroom/active", "");
+  }
+  else if(module->multi_priority == 0)
+  {
+    dt_conf_set_string("plugins/darkroom/active", module->op);
+  }
+  else
+  {
+    gchar *value = g_strdup_printf("%s%c%d", module->op, DT_DARKROOM_ACTIVE_SEP,
+                                   module->multi_priority);
+    dt_conf_set_string("plugins/darkroom/active", value);
+    g_free(value);
+  }
+}
+
+// splits a stored value into its operation name and instance. `priority` comes
+// back -1 when the value names no particular instance.
+static void _active_module_parse(const char *active,
+                                 char *op,
+                                 const size_t op_size,
+                                 int *priority)
+{
+  *priority = -1;
+  op[0] = '\0';
+  if(!active || !*active) return;
+
+  const char *sep = strrchr(active, DT_DARKROOM_ACTIVE_SEP);
+  if(sep && sep[1])
+  {
+    char *end = NULL;
+    const long value = strtol(sep + 1, &end, 10);
+    // only a fully numeric suffix qualifies an instance; anything else is part
+    // of the operation name, unlikely as that is
+    if(end && !*end && value >= 0)
+    {
+      g_strlcpy(op, active, MIN(op_size, (size_t)(sep - active) + 1));
+      *priority = (int)value;
+      return;
+    }
+  }
+  g_strlcpy(op, active, op_size);
+}
+
+// resolves the stored value to the single module it names, or NULL. Resolving
+// once and comparing pointers afterwards is what keeps focus and expansion on
+// the same instance: a predicate applied per module cannot, since an
+// unqualified value is true of every instance of its operation at once.
+static dt_iop_module_t *_active_module_find(const char *active, dt_develop_t *dev)
+{
+  char op[128];
+  int priority;
+  _active_module_parse(active, op, sizeof(op), &priority);
+  if(!op[0]) return NULL;
+
+  dt_iop_module_t *first = NULL, *base = NULL;
+  for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
+  {
+    dt_iop_module_t *module = modules->data;
+    if(!dt_iop_module_is(module, op)) continue;
+    // the value names an instance: that one or nothing
+    if(priority >= 0 && module->multi_priority == priority) return module;
+    if(!first) first = module;
+    if(module->multi_priority == 0) base = module;
+  }
+  if(priority >= 0) return NULL;
+
+  // unqualified: written either by instance 0 or by a version that could not
+  // record an instance at all. Resolve to the base instance, or to whichever
+  // one survives if it was deleted -- never to all of them, which is how the
+  // whole operation's instances came back expanded at once.
+  return base ? base : first;
+}
+
+// should this module adopt the expansion state stored for its operation?
+// "plugins/darkroom/<op>/expanded" is per-operation, so exactly one instance
+// may take it: the one that had focus, else instance 0 as before. Without the
+// first clause the expansion always landed on instance 0 while the focus went
+// elsewhere, which is the inconsistency this whole block exists to prevent.
+static gboolean _module_owns_expansion(const dt_iop_module_t *module,
+                                       const dt_iop_module_t *active_module)
+{
+  if(active_module && dt_iop_module_is(module, active_module->op))
+    return module == active_module;
+  return module->multi_priority == 0;
+}
+
 const char *name(const dt_view_t *self)
 {
   return _("darkroom");
@@ -1364,11 +1462,7 @@ static void _dev_change_image(dt_develop_t *dev,
 
   // get current plugin in focus before defocus
   const dt_iop_module_t *gui_module = dt_dev_gui_module();
-  if(gui_module)
-  {
-    dt_conf_set_string("plugins/darkroom/active",
-                       gui_module->op);
-  }
+  if(gui_module) _active_module_store(gui_module);
 
   // store last active group
   dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(dev));
@@ -1566,6 +1660,10 @@ static gboolean _dev_load_requested_image(gpointer user_data)
 
   // we have to init all module instances other than "base" instance
   char option[1024];
+  // resolved before the loop: which instance keeps its expanded state depends
+  // on which one is about to be focused, further down
+  dt_iop_module_t *active_module =
+    _active_module_find(dt_conf_get_string_const("plugins/darkroom/active"), dev);
   for(const GList *modules = g_list_last(dev->iop);
       modules;
       modules = g_list_previous(modules))
@@ -1580,6 +1678,15 @@ static gboolean _dev_load_requested_image(gpointer user_data)
         /* add module to right panel with safe header buttons */
         dt_iop_gui_set_expander(module);
         dt_iop_gui_update_blending(module);
+
+        // a duplicate had its expansion left at whatever gui_init produced,
+        // so a duplicate that was focused came back collapsed
+        if(_module_owns_expansion(module, active_module))
+        {
+          snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
+          module->expanded = dt_conf_get_bool(option);
+          dt_iop_gui_update_expanded(module);
+        }
       }
     }
     else
@@ -1589,8 +1696,13 @@ static gboolean _dev_load_requested_image(gpointer user_data)
       {
         // Make sure module header buttons are reset to a safe state
         dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
-        snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
-        module->expanded = dt_conf_get_bool(option);
+        if(_module_owns_expansion(module, active_module))
+        {
+          snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
+          module->expanded = dt_conf_get_bool(option);
+        }
+        else
+          module->expanded = FALSE;
         dt_iop_gui_update_expanded(module);
         if(module->change_image) module->change_image(module);
         dt_iop_gui_update_header(module);
@@ -1616,24 +1728,15 @@ static gboolean _dev_load_requested_image(gpointer user_data)
   dt_dev_masks_list_change(dev);
 
   /* Now we can request focus again and write a safe plugins/darkroom/active */
-  const char *active_plugin = dt_conf_get_string_const("plugins/darkroom/active");
-  if(active_plugin)
-  {
-    gboolean valid = FALSE;
-    for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
-    {
-      dt_iop_module_t *module = modules->data;
-      if(dt_iop_module_is(module, active_plugin))
-      {
-        valid = TRUE;
-        dt_iop_request_focus(module);
-      }
-    }
-    if(!valid)
-    {
-      dt_conf_set_string("plugins/darkroom/active", "");
-    }
-  }
+  // active_module, resolved before the module loop above: exactly one module.
+  // The loop this replaces focused every instance of the operation in turn, so
+  // whichever came last in dev->iop won -- not necessarily the one that was
+  // focused when we left, and not necessarily the one the expansion state above
+  // was restored onto
+  if(active_module)
+    dt_iop_request_focus(active_module);
+  else
+    dt_conf_set_string("plugins/darkroom/active", "");
 
   // Signal develop initialize
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
@@ -4046,6 +4149,10 @@ void enter(dt_view_t *self)
   if(sw) gtk_scrolled_window_set_propagate_natural_width(sw, FALSE);
 
   char option[1024];
+  // which instance is about to be focused decides which one keeps its expanded
+  // state, so resolve it once, before either is applied
+  dt_iop_module_t *active_module =
+    _active_module_find(dt_conf_get_string_const("plugins/darkroom/active"), dev);
 
   for(const GList *modules = g_list_last(dev->iop);
       modules;
@@ -4061,7 +4168,7 @@ void enter(dt_view_t *self)
       /* add module to right panel */
       dt_iop_gui_set_expander(module);
 
-      if(module->multi_priority == 0)
+      if(_module_owns_expansion(module, active_module))
       {
         snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
         module->expanded = dt_conf_get_bool(option);
@@ -4085,17 +4192,9 @@ void enter(dt_view_t *self)
   dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui),
                                  dev->image_storage.id, TRUE);
 
-  // get last active plugin:
-  const char *active_plugin = dt_conf_get_string_const("plugins/darkroom/active");
-  if(active_plugin)
-  {
-    for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
-    {
-      dt_iop_module_t *module = modules->data;
-      if(dt_iop_module_is(module, active_plugin))
-        dt_iop_request_focus(module);
-    }
-  }
+  // get last active plugin: the one instance resolved above, so focus lands on
+  // the same one the expansion state did
+  if(active_module) dt_iop_request_focus(active_module);
 
   // image should be there now.
   dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, -1.f, 1, 0.0f, 0.0f, TRUE);
@@ -4222,10 +4321,7 @@ void leave(dt_view_t *self)
   dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(darktable.develop));
 
   // store last active plugin:
-  if(darktable.develop->gui_module)
-    dt_conf_set_string("plugins/darkroom/active", darktable.develop->gui_module->op);
-  else
-    dt_conf_set_string("plugins/darkroom/active", "");
+  _active_module_store(darktable.develop->gui_module);
 
   dt_develop_t *dev = self->data;
 

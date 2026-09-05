@@ -150,6 +150,12 @@ changes (where available).
 
 ## Bug Fixes
 
+- Entering the darkroom now restores focus to the module instance that
+  had it, and expands that same instance. With several instances of one
+  module, focus used to land on the last of them while a different one
+  was expanded, which in "only one module expanded" mode is a state the
+  user cannot otherwise reach.
+
 - Clarified multi-image rating toasts for un-reject and for mixed
   upgrade/downgrade results across the selection.
 
