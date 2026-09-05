@@ -360,6 +360,8 @@ kernel void highlights_initmask(read_only image2d_t in,
                                 const int msize,
                                 const int mwidth,
                                 const int mheight,
+                                const int iwidth,
+                                const int iheight,
                                 const unsigned int filters,
                                 global const unsigned char (*const xtrans)[6],
                                 global const float *clips)
@@ -367,19 +369,22 @@ kernel void highlights_initmask(read_only image2d_t in,
   const int mcol = get_global_id(0);
   const int mrow = get_global_id(1);
 
-  if((mcol >= mwidth) || (mrow >= mheight))
+  if(mcol >= mwidth || mrow >= mheight)
     return;
 
   int mdx = mad24(mrow, mwidth, mcol);
   char mbuff[3] = { 0, 0, 0 };
-  if(mcol < mwidth-1 && mrow < mheight-1)
+  int irow = 3*mrow;
+  int icol = 3*mcol;
+
+  for(int y = irow; y < irow + 3; y++)
   {
-    for(int y = 0; y < 3; y++)
+    for(int x = icol; x < icol + 3; x++)
     {
-      for(int x = 0; x < 3; x++)
+      if(y < iheight && x < iwidth)
       {
-        int color = fcol(3*mrow+y, 3*mcol+x, filters, xtrans);
-        float val = readsingle(in, 3*mcol+x, 3*mrow+y);
+        int color = fcol(y, x, filters, xtrans);
+        float val = readsingle(in, x, y);
         mbuff[color] += (val >= clips[color]) ? 1 : 0;
       }
     }
@@ -417,11 +422,11 @@ kernel void highlights_dilatemask(global char *in,
   const int col = get_global_id(0);
   const int row = get_global_id(1);
 
-  if((col >= mwidth) || (row >= mheight))
+  if(col >= mwidth || row >= mheight)
     return;
 
   int mx = mad24(row, mwidth, col);
-  bool safe = col >= 3 && row >= 3 && col < mwidth - 4 && row < mheight - 4;
+  bool safe = col >= 3 && row >= 3 && col < mwidth - 3 && row < mheight - 3;
 
   out[mx] =         safe ? _mask_dilated(in + mx, mwidth)           : in[mx];
   out[mx+msize] =   safe ? _mask_dilated(in + mx + msize, mwidth)   : in[mx + msize];

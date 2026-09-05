@@ -100,9 +100,10 @@ static void _process_linear_opposed(dt_iop_module_t *self,
   const size_t height = roi_in->height;
   const size_t mwidth  = width / 3;
   const size_t mheight = height / 3;
-  const size_t msize = dt_round_size((size_t) mwidth, 8) * dt_round_size(mheight, 8);
+  const size_t msize = dt_round_size((size_t) mwidth+2, 8) * dt_round_size(mheight+2, 8);
 
   const dt_hash_t opphash = _opposed_hash(piece);
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
 
   if(opphash == img_opphash)
@@ -122,9 +123,9 @@ static void _process_linear_opposed(dt_iop_module_t *self,
     {
       gboolean anyclipped = FALSE;
       DT_OMP_FOR(reduction( | : anyclipped))
-      for(size_t row = 0; row < height -1; row++)
+      for(size_t row = 0; row < height; row++)
       {
-        for(size_t col = 0; col < width -1; col++)
+        for(size_t col = 0; col < width; col++)
         {
           const size_t idx = (row * width + col) * 4;
           const size_t mdx = _raw_to_cmap(mwidth, row, col);
@@ -180,7 +181,7 @@ static void _process_linear_opposed(dt_iop_module_t *self,
         for_three_channels(c)
           chrominance[c] = (cnts[c] > 30.0f) ? sums[c] / cnts[c] : 0.0f;
 
-        if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+        if(fullpipe)
         {
           for_three_channels(c)
             img_oppchroma[c] = chrominance[c];
@@ -191,7 +192,7 @@ static void _process_linear_opposed(dt_iop_module_t *self,
             "opposed chroma", piece->pipe, self, DT_DEVICE_CPU, roi_in, NULL,
             "RGB %3.4f %3.4f %3.4f%s%s",
             chrominance[0], chrominance[1], chrominance[2],
-            piece->pipe->type == DT_DEV_PIXELPIPE_FULL ? " saved" : "",
+            fullpipe ? " saved" : "",
             img_oppclipped ? "" : " unclipped");
       }
       dt_free_align(mask);
@@ -241,12 +242,15 @@ static float *_process_opposed(dt_iop_module_t *self,
                                           late ? (float)(chr->D65coeffs[2] / chr->as_shot[2]) : 1.0f,
                                           1.0f };
 
-  const size_t mwidth  = roi_in->width / 3;
-  const size_t mheight = roi_in->height / 3;
+  const size_t iwidth = roi_in->width;
+  const size_t iheight = roi_in->height;
+  const size_t mwidth  = iwidth / 3;
+  const size_t mheight = iheight / 3;
   // we have to over-allocate making sure all later tests fit for all width&height combinations
   const size_t msize = dt_round_size((size_t) mwidth, 8) * dt_round_size(mheight, 8);
 
   const dt_hash_t opphash = _opposed_hash(piece);
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
 
   if(opphash == img_opphash)
@@ -266,19 +270,24 @@ static float *_process_opposed(dt_iop_module_t *self,
     {
       gboolean anyclipped = FALSE;
       DT_OMP_FOR(reduction( | : anyclipped) collapse(2))
-      for(int mrow = 0; mrow < mheight-1; mrow++)
+      for(int mrow = 0; mrow < mheight; mrow++)
       {
-        for(int mcol = 0; mcol < mwidth-1; mcol++)
+        const int irow = 3*mrow;
+        for(int mcol = 0; mcol < mwidth; mcol++)
         {
+          const int icol = 3*mcol;
           char mbuff[3] = { 0, 0, 0 };
-          for(int y = 0; y < 3; y++)
+          for(int y = irow; y < irow + 3; y++)
           {
-            for(int x = 0; x < 3; x++)
+            for(int x = icol; x < icol + 3; x++)
             {
-              const size_t idx = (3*mrow + y) * roi_in->width + 3*mcol + x;
-              const int color = fcol(3*mrow+y, 3*mcol+x, filters, xtrans);
-              const gboolean clipped = input[idx] >= clips[color];
-              mbuff[color] += clipped ? 1 : 0;
+              if(y < iheight && x < iwidth)
+              {
+                const size_t idx = y * iwidth + x;
+                const int color = fcol(y, x, filters, xtrans);
+                const gboolean clipped = input[idx] >= clips[color];
+                mbuff[color] += clipped ? 1 : 0;
+              }
             }
           }
           for_three_channels(c)
@@ -305,7 +314,7 @@ static float *_process_opposed(dt_iop_module_t *self,
           for(size_t col = 0; col < mwidth; col++)
           {
             const size_t mx = row * mwidth + col;
-            const gboolean safe = col >= 3 && row >= 3 && col < mwidth - 4 && row < mheight - 4;
+            const gboolean safe = col >= 3 && row >= 3 && col < mwidth - 3 && row < mheight - 3;
             mask[3*msize + mx] = safe ? _mask_dilated(mask + mx, mwidth)          : mask[mx];
             mask[4*msize + mx] = safe ? _mask_dilated(mask + msize + mx, mwidth)  : mask[mx + msize];
             mask[5*msize + mx] = safe ? _mask_dilated(mask + 2*msize + mx, mwidth): mask[mx + 2*msize];
@@ -315,11 +324,11 @@ static float *_process_opposed(dt_iop_module_t *self,
         const dt_aligned_pixel_t lo_clips = { 0.2f * clips[0], 0.2f * clips[1], 0.2f * clips[2], 1.0f };
         /* After having the surrounding mask for each color channel we can calculate the chrominance corrections. */
         DT_OMP_FOR(reduction(+ : sums, cnts) collapse(2))
-        for(size_t row = 0; row < roi_in->height; row++)
+        for(size_t row = 0; row < iheight; row++)
         {
-          for(size_t col = 0; col < roi_in->width; col++)
+          for(size_t col = 0; col < iwidth; col++)
           {
-            const size_t idx = row * roi_in->width + col;
+            const size_t idx = row * iwidth + col;
             const int color = fcol(row, col, filters, xtrans);
             const float inval = input[idx];
 
@@ -336,7 +345,7 @@ static float *_process_opposed(dt_iop_module_t *self,
           chrominance[c] = (cnts[c] > 100.0f) ? sums[c] / cnts[c] : 0.0f;
       }
 
-      if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+      if(fullpipe)
       {
         for_three_channels(c)
           img_oppchroma[c] = chrominance[c];
@@ -350,21 +359,21 @@ static float *_process_opposed(dt_iop_module_t *self,
           chrominance[0], (int)cnts[0],
           chrominance[1], (int)cnts[1],
           chrominance[2], (int)cnts[2],
-          piece->pipe->type == DT_DEV_PIXELPIPE_FULL ? " saved" : "",
+          fullpipe ? " saved" : "",
           img_oppclipped ? "" : " unclipped");
     }
     dt_free_align(mask);
   }
 
-  float *tmpout = keep ? dt_alloc_align_float(roi_in->width * roi_in->height) : NULL;
+  float *tmpout = keep ? dt_alloc_align_float(iwidth * iheight) : NULL;
   if(tmpout)
   {
     DT_OMP_FOR(collapse(2))
-    for(size_t row = 0; row < roi_in->height; row++)
+    for(size_t row = 0; row < iheight; row++)
     {
-      for(size_t col = 0; col < roi_in->width; col++)
+      for(size_t col = 0; col < iwidth; col++)
       {
-        const size_t idx = row * roi_in->width + col;
+        const size_t idx = row * iwidth + col;
         const int color = fcol(row, col, filters, xtrans);
         const float inval = input[idx];
         if(inval >= clips[color])
@@ -388,7 +397,7 @@ static float *_process_opposed(dt_iop_module_t *self,
       const size_t icol = col + roi_out->x;
       const size_t ix = irow * roi_in->width + icol;
       float oval = 0.0f;
-      if((irow < roi_in->height) && (icol < roi_in->width))
+      if(irow < iheight && icol < iwidth)
       {
         if(tmpout)
           oval = tmpout[ix];
@@ -450,6 +459,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
   float *claccu = NULL;
 
   const dt_hash_t opphash = _opposed_hash(piece);
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
   const int fastcopymode = (opphash == img_opphash) && !img_oppclipped;
 
   if(!fastcopymode)
@@ -474,8 +484,10 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
   else
   {
     // We don't have valid chrominance correction so go the hard way
-    const int mwidth  = roi_in->width / 3;
-    const int mheight = roi_in->height / 3;
+    const int iwidth = roi_in->width;
+    const int iheight = roi_in->height;
+    const int mwidth  = iwidth / 3;
+    const int mheight = iheight / 3;
     const int msize = dt_round_size((size_t) mwidth, 4) * dt_round_size(mheight, 4);
     const size_t mbufsize = sizeof(float) * msize;
 
@@ -487,7 +499,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_initmask, mwidth, mheight,
             CLARG(dev_in), CLARG(dev_inmask),
-            CLARG(msize), CLARG(mwidth), CLARG(mheight),
+            CLARG(msize), CLARG(mwidth), CLARG(mheight), CLARG(iwidth), CLARG(iheight),
             CLARG(filters), CLARG(dev_xtrans),
             CLARG(dev_clips));
     if(err != CL_SUCCESS) goto error;
@@ -498,7 +510,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
 
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    const size_t accu_floats = 8 * roi_in->height;
+    const size_t accu_floats = 8 * iheight;
     const size_t accusize = sizeof(float) * accu_floats;
     dev_accu = dt_opencl_alloc_device_buffer(devid, accusize);
     if(dev_accu == NULL) goto error;
@@ -510,9 +522,9 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
       goto error;
     }
 
-    err = dt_opencl_enqueue_kernel_1d_args(devid, gd->kernel_highlights_chroma, roi_in->height,
+    err = dt_opencl_enqueue_kernel_1d_args(devid, gd->kernel_highlights_chroma, iheight,
             CLARG(dev_in), CLARG(dev_outmask), CLARG(dev_accu),
-            CLARG(roi_in->width), CLARG(roi_in->height),
+            CLARG(iwidth), CLARG(iheight),
             CLARG(msize), CLARG(mwidth),
             CLARG(filters), CLARG(dev_xtrans), CLARG(dev_clips), CLARG(dev_correction));
     if(err != CL_SUCCESS) goto error;
@@ -524,7 +536,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
     dt_aligned_pixel_t sums = { 0.0f, 0.0f, 0.0f};
     dt_aligned_pixel_t cnts = { 0.0f, 0.0f, 0.0f};
     float clipped = 0.0f;
-    for(int row = 0; row < roi_in->height; row++)
+    for(int row = 0; row < iheight; row++)
     {
       for_three_channels(c)
       {
@@ -536,7 +548,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
     for_three_channels(c)
       chrominance[c] = (cnts[c] > 100.0f) ? sums[c] / cnts[c] : 0.0f;
 
-    if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+    if(fullpipe)
     {
       for_three_channels(c)
         img_oppchroma[c] = chrominance[c];
@@ -550,8 +562,8 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
         chrominance[0], (int)cnts[0],
         chrominance[1], (int)cnts[1],
         chrominance[2], (int)cnts[2],
-          piece->pipe->type == DT_DEV_PIXELPIPE_FULL ? " saved" : "",
-          img_oppclipped ? "" : " unclipped");
+        fullpipe ? " saved" : "",
+        img_oppclipped ? "" : " unclipped");
   }
 
   err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
