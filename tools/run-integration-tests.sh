@@ -25,9 +25,17 @@
 #   --log-dir <dir>     where reports land        (default: <build>/sanitizer-logs/<stamp>)
 #   --timeout <secs>    per darktable-cli call    (default: 1800)
 #   --with-opencl       also run the GPU pass     (default: CPU pass only)
+#   --no-openmp         run the CLI with OMP_NUM_THREADS=1
 #   --no-aslr           force ASLR off for the CLI (setarch -R)
 #   --keep-aslr         never disable ASLR, even if the runtime needs it
 #   -h, --help          this message
+#
+# --no-openmp is mostly for ThreadSanitizer. GCC's libgomp carries no TSan
+# annotations, so TSan cannot see the happens-before edges OpenMP barriers
+# establish and reports a race on nearly every parallel loop -- in one full-suite
+# run, 97% of all reports. Serialising the OpenMP loops removes that at the
+# source instead of trying to suppress it afterwards, leaving darktable's own
+# threading (pixelpipe, caches, lua) visible.
 #
 # ASLR handling defaults to auto: the preflight only falls back to setarch -R
 # when the sanitizer runtime turns out to need it.
@@ -46,6 +54,7 @@ BUILD_DIR="$DT_SRC_DIR/build-sanitize"
 LOG_DIR=""
 CLI_TIMEOUT=1800
 WITH_OPENCL=0
+NO_OPENMP=0
 ASLR_MODE=auto
 RUN_ARGS=()
 
@@ -58,6 +67,7 @@ while [ "$#" -ge 1 ]; do
         --timeout)     CLI_TIMEOUT="$2"; shift ;;
         --timeout=*)   CLI_TIMEOUT="${1#--timeout=}" ;;
         --with-opencl) WITH_OPENCL=1 ;;
+        --no-openmp)   NO_OPENMP=1 ;;
         --no-aslr)     ASLR_MODE=off ;;
         --keep-aslr)   ASLR_MODE=keep ;;
         # Print the header block, however long it happens to be.
@@ -285,6 +295,11 @@ chmod +x "$SHIM"
 DARKTABLE_CLI="$SHIM"
 export DARKTABLE_CLI
 
+if [ "$NO_OPENMP" -eq 1 ]; then
+    OMP_NUM_THREADS=1
+    export OMP_NUM_THREADS
+fi
+
 OPENCL_ARG="--disable-opencl"
 [ "$WITH_OPENCL" -eq 1 ] && OPENCL_ARG=""
 
@@ -296,6 +311,7 @@ Sanitizers:   ${DT_SANITIZERS:-unknown}
 Log dir:      $LOG_DIR
 CLI timeout:  ${CLI_TIMEOUT}s per invocation
 ASLR:         $ASLR_NOTE
+OpenMP:       $([ "$NO_OPENMP" -eq 1 ] && echo "serialised (OMP_NUM_THREADS=1)" || echo "on")
 OpenCL pass:  $([ "$WITH_OPENCL" -eq 1 ] && echo yes || echo "no (--with-opencl to enable)")
 Tests:        ${RUN_ARGS[*]:-all}
 
@@ -336,7 +352,8 @@ find "$LOG_DIR" -mindepth 1 -type d -empty -delete 2>/dev/null
 
 SUMMARY="$LOG_DIR/summary.txt"
 
-"$DT_SRC_DIR/tools/sanitizer/aggregate-reports.py" "$LOG_DIR" --output "$SUMMARY"
+"$DT_SRC_DIR/tools/sanitizer/aggregate-reports.py" "$LOG_DIR" \
+    --build-dir "$BUILD_DIR" --output "$SUMMARY"
 FINDINGS_RC=$?
 
 # 2 means a runtime died during start-up: the suite ran, but part of it was
