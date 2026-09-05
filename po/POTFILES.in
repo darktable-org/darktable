@@ -85,6 +85,7 @@ build/lib/darktable/plugins/introspection_shadhi.c
 build/lib/darktable/plugins/introspection_sharpen.c
 build/lib/darktable/plugins/introspection_sigmoid.c
 build/lib/darktable/plugins/introspection_soften.c
+build/lib/darktable/plugins/introspection_spektrafilm.c
 build/lib/darktable/plugins/introspection_splittoning.c
 build/lib/darktable/plugins/introspection_spots.c
 build/lib/darktable/plugins/introspection_temperature.c
@@ -342,6 +343,7 @@ src/iop/shadhi.c
 src/iop/sharpen.c
 src/iop/sigmoid.c
 src/iop/soften.c
+src/iop/spektrafilm.c
 src/iop/splittoning.c
 src/iop/spots.c
 src/iop/temperature.c
