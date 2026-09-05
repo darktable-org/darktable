@@ -780,7 +780,7 @@ __kernel void spektrafilm_passthrough(__read_only image2d_t in, __write_only ima
 
 /* Direct (exact) separable Gaussian convolution, one pass along rows or
  * columns. `weights` holds 2*radius+1 normalized taps built host-side by
- * sf_gauss_kernel_1d() (spektra_core.c/.h) -- the same kernel the CPU path
+ * dt_gaussian_kernel_1d(), the same kernel the CPU path
  * convolves with, so GPU and CPU renders match. Clamp-to-edge boundary.
   * Separate _row/_col entry points keep the
  * inner loop's memory access pattern explicit at the call site. Separate

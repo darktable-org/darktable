@@ -86,6 +86,7 @@
 #include <string.h>
 
 #define SPEKTRA_INLINE static inline
+#include "common/gaussian.h"
 #include "common/spektra_core.h"
 #include "common/spektra_sim.h"
 
@@ -1968,7 +1969,7 @@ static cl_int _sf_yvv_blur_cl(const int devid,
    the CPU engine); the Gaussian blurs (diffusion bank, halation bounces,
    coupler correction diffusion, grain clumps) use this file's own direct
    separable convolution (spektrafilm_gauss_row/col_*c, weights built
-   host-side by sf_gauss_kernel_1d -- see spektra_core.c/.h), exactly as the
+   host-side by dt_gaussian_kernel_1d), exactly as the
    CPU path uses sf_blur_plane3. */
 int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
@@ -2081,7 +2082,7 @@ int process_cl(dt_iop_module_t *self,
   cl_mem gtmp4 = dt_opencl_alloc_device_buffer(devid, npix * f * 4);
   cl_mem gtmp1 = dt_opencl_alloc_device_buffer(devid, npix * f);
   /* kernel weights (2*SF_GAUSS_MAX_RADIUS+1 taps, built host-side by
-     sf_gauss_kernel_1d and rewritten before each blur dispatch below) */
+     dt_gaussian_kernel_1d and rewritten before each blur dispatch below) */
   cl_mem gauss_w = dt_opencl_alloc_device_buffer(devid, sizeof(float) * (2 * SF_GAUSS_MAX_RADIUS + 1));
   if(!mats_cl || !tc_cl || !cn_cl || !cb_cl || !sl_cl || !sx_cl || !sy_cl || !sz_cl || !sn_cl
      || !sm_cl || !cm_cl || !plane || !plane2 || !tmpa || !acc || !plane1 || !gtmp4 || !gtmp1
@@ -2092,7 +2093,7 @@ int process_cl(dt_iop_module_t *self,
     goto cleanup;
   }
 /* Direct (exact) separable Gaussian blur: builds the exact kernel
-   host-side (the same sf_gauss_kernel_1d() the CPU path convolves with),
+   host-side (the same dt_gaussian_kernel_1d() the CPU path convolves with),
    uploads it, then dispatches a row pass into a dedicated scratch buffer
    followed by a col pass into `dst` -- safe even when dst==buf (in-place),
    since the row pass fully consumes buf into scratch before the col pass
@@ -2103,7 +2104,7 @@ int process_cl(dt_iop_module_t *self,
     if(err == CL_SUCCESS) \
     { \
       float _kw[2 * SF_GAUSS_MAX_RADIUS + 1]; \
-      const int _kr = sf_gauss_kernel_1d((_sg), _kw, SF_GAUSS_MAX_RADIUS); \
+      const int _kr = dt_gaussian_kernel_1d((_sg), _kw, SF_GAUSS_MAX_RADIUS); \
       err = dt_opencl_write_buffer_to_device(devid, _kw, gauss_w, 0, \
                                              sizeof(float) * (2 * _kr + 1), TRUE); \
       if(err == CL_SUCCESS) \
@@ -2134,7 +2135,7 @@ int process_cl(dt_iop_module_t *self,
       else \
       { \
         float _kw[2 * SF_GAUSS_MAX_RADIUS + 1]; \
-        const int _kr = sf_gauss_kernel_1d((_sg), _kw, SF_GAUSS_MAX_RADIUS); \
+        const int _kr = dt_gaussian_kernel_1d((_sg), _kw, SF_GAUSS_MAX_RADIUS); \
         err = dt_opencl_write_buffer_to_device(devid, _kw, gauss_w, 0, \
                                                sizeof(float) * (2 * _kr + 1), TRUE); \
         if(err == CL_SUCCESS) \
@@ -2167,7 +2168,7 @@ int process_cl(dt_iop_module_t *self,
       else \
       { \
         float _kw[2 * SF_GAUSS_MAX_RADIUS + 1]; \
-        const int _kr = sf_gauss_kernel_1d((_sg), _kw, SF_GAUSS_MAX_RADIUS); \
+        const int _kr = dt_gaussian_kernel_1d((_sg), _kw, SF_GAUSS_MAX_RADIUS); \
         err = dt_opencl_write_buffer_to_device(devid, _kw, gauss_w, 0, \
                                                sizeof(float) * (2 * _kr + 1), TRUE); \
         if(err == CL_SUCCESS) \
@@ -2193,7 +2194,7 @@ int process_cl(dt_iop_module_t *self,
       else \
       { \
         float _kw[2 * SF_GAUSS_MAX_RADIUS + 1]; \
-        const int _kr = sf_gauss_kernel_1d((_sg), _kw, SF_GAUSS_MAX_RADIUS); \
+        const int _kr = dt_gaussian_kernel_1d((_sg), _kw, SF_GAUSS_MAX_RADIUS); \
         err = dt_opencl_write_buffer_to_device(devid, _kw, gauss_w, 0, \
                                                sizeof(float) * (2 * _kr + 1), TRUE); \
         if(err == CL_SUCCESS) \

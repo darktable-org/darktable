@@ -228,7 +228,8 @@ SPEKTRA_INLINE uint32_t sf_pixel_seed(uint32_t xi,
   return xi * 73856093u ^ yi * 19349663u ^ chan * 83492791u;
 }
 
-/* Maximum kernel half-width (taps = 2*radius+1) for sf_gauss_kernel_1d below.
+/* Maximum kernel half-width (taps = 2*radius+1) passed to
+   dt_gaussian_kernel_1d.
    Caps cost for pathologically large sigma (very high film_format_mm
    combined with very low resolution); every physically-plausible sigma this
    module uses stays far under this. Shared by spektra_core.c's CPU direct
@@ -274,9 +275,6 @@ void sf_gauss_yvv_coeffs(float sigma,
  * 2*max_radius+1 taps; returns the radius actually used. Exported so both
  * the CPU convolution (spektra_core.c) and the GPU host-side weight upload
  * (spektrafilm.c's process_cl) build the identical kernel for a given sigma. */
-int sf_gauss_kernel_1d(float sigma,
-                       float *kernel,
-                       int max_radius);
 
 /* sf_poisson: one Poisson(lam) draw from a stateless seed.
 

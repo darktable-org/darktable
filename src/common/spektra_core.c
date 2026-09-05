@@ -21,7 +21,7 @@
  * These two operations are the only parts of the film simulation that a static
  * LUT cannot carry, because they are neighbour-dependent. They live here (rather
  * than in the inline-only spektra_core.h) so they can allocate scratch buffers
- * for a proper direct Gaussian convolution (see _sf_gauss_kernel_1d below): a
+ * for a proper direct Gaussian convolution (see dt_gaussian_kernel_1d): a
  * truncated, normalized kernel applied separably (row pass, transpose, row
  * pass, transpose back), matching what the reference spektrafilm's own
  * Gaussian blur actually does, not a recursive IIR approximation whose
@@ -49,6 +49,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "common/gaussian.h"
 #include "spektra_core.h"
 
 /* ------------------------------------------------------------------------ */
@@ -67,25 +68,6 @@
 /* Direct kernel for the small-sigma path, matching the reference's own
    _gaussian_kernel_1d: truncate = 3, radius = int(3*sigma + 0.5). `kernel` must
    have room for 2*max_radius+1 taps; returns the radius actually used. */
-int sf_gauss_kernel_1d(const float sigma,
-                       float *const kernel,
-                       const int max_radius)
-{
-  int radius = (int)(3.0f * sigma + 0.5f);
-  if(radius < 1) radius = 1;
-  if(radius > max_radius) radius = max_radius;
-  double sum = 0.0;
-  const double inv2s2 = 1.0 / (2.0 * (double)sigma * (double)sigma);
-  for(int i = -radius; i <= radius; i++)
-  {
-    const double v = exp(-(double)(i * i) * inv2s2);
-    kernel[i + radius] = (float)v;
-    sum += v;
-  }
-  const float invsum = (float)(1.0 / sum);
-  for(int i = 0; i < 2 * radius + 1; i++) kernel[i] *= invsum;
-  return radius;
-}
 
 /* SF_GAUSS_EXACT_MAX_SIGMA is defined in spektra_core.h, shared with
    spektrafilm.c's GPU macros so both dispatch at the same sigma. */
@@ -104,22 +86,11 @@ int sf_gauss_kernel_1d(const float sigma,
 void sf_gauss_yvv_coeffs(const float sigma_req,
                          float out[4])
 {
-  /* clamped for both callers at once -- the CPU dispatch in _blur_flat_inplace
-     and _sf_yvv_blur_cl on the GPU both come through here, so they cannot drift
-     apart. See SF_GAUSS_MAX_IIR_SIGMA. */
-  const float sigma = fminf(sigma_req, SF_GAUSS_MAX_IIR_SIGMA);
-  const double s = (double)sigma;
-  const double q = (s >= 2.5) ? (0.98711 * s - 0.96330)
-                              : (3.97156 - 4.14554 * sqrt(1.0 - 0.26891 * s));
-  const double q2 = q * q, q3 = q2 * q;
-  const double b0 = 1.57825 + 2.44413 * q + 1.4281 * q2 + 0.422205 * q3;
-  const double b1 = 2.44413 * q + 2.85619 * q2 + 1.26661 * q3;
-  const double b2 = -(1.4281 * q2 + 1.26661 * q3);
-  const double b3 = 0.422205 * q3;
-  out[1] = (float)(b1 / b0);
-  out[2] = (float)(b2 / b0);
-  out[3] = (float)(b3 / b0);
-  out[0] = (float)(1.0 - (b1 + b2 + b3) / b0);
+  /* The clamp is this module's, not the recursion's: the CPU dispatch in
+     _blur_flat_inplace and _sf_yvv_blur_cl on the GPU both come through here,
+     so neither can end up filtering at a different sigma than the other. See
+     SF_GAUSS_MAX_IIR_SIGMA. */
+  dt_gaussian_yvv_coeffs(fminf(sigma_req, SF_GAUSS_MAX_IIR_SIGMA), out);
 }
 
 /* Forward then backward sweep over `len` stride-1 elements. Both sweeps seed
@@ -213,7 +184,7 @@ static void _blur_flat_inplace(float *const plane,
   int radius = 0;
   float yvv[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
   if(use_iir) sf_gauss_yvv_coeffs(sigma, yvv);
-  else radius = sf_gauss_kernel_1d(sigma, kernel, SF_GAUSS_MAX_RADIUS);
+  else radius = dt_gaussian_kernel_1d(sigma, kernel, SF_GAUSS_MAX_RADIUS);
 
   if(trans && w >= 16 && h >= 16)
   {
