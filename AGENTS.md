@@ -264,6 +264,24 @@ Keep both in sync, or explain why not.
   history asked for them
 - masks: raster masks are mutually exclusive with drawn and parametric ones in
   `blend.c`; they do not compose
+- `piece->data` is sized by `params_size` unless the module implements
+  `init_pipe()`. A `data_t` larger than the `params_t` then overflows the
+  allocation, silently: `contrastntexture` shipped that way. Size the
+  allocation by `sizeof(data_t)` rather than relying on the two structs
+  staying in a fixed size relation
+- pair the allocators: `free()` releases `malloc`/`calloc`, `dt_free_align()`
+  releases the aligned family (`dt_alloc_aligned`, `dt_calloc1_align_type`,
+  `dt_alloc_align_float`, ...). A mismatch does nothing on an ordinary Linux
+  release build, where `dt_free_align` is a macro for `free()`, and is
+  undefined on debug builds and Windows. Debug builds crash on purpose:
+  `dt_alloc_aligned` returns an offset pointer so that plain `free()` fails
+- the trap that follows: an `init_pipe()` using an aligned allocator must ship
+  its own `cleanup_pipe()`. The default one calls `free(piece->data)`, which
+  is the mismatch above
+- a `params_t` is stored as raw bytes -- database blob, XMP, embedded history
+  in exports -- and hashed whole for the pipe cache. Leave no byte
+  indeterminate, padding included: `legacy_params()` should `calloc()` its
+  result, not `malloc()` it
 - GTK4 preparation is in progress. Use event controllers (`dt_gui_connect_key`,
   `dt_gui_connect_click`) rather than `"key-press-event"` and friends
 - prefer existing darktable helpers (`dt_gui_*`, `dt_bauhaus_*`, `dt_ui_*`)

@@ -36,11 +36,15 @@ Key members:
 ## Processing Flow
 
 1.  **Change Detection**: `dt_dev_pixelpipe_change()` checks flags to see what changed (history, params, zoom).
-2.  **Synchronization**:
-    -   `dt_dev_pixelpipe_synch_all()`: Iterates over the history stack.
+2.  **Node construction** — only when the topology changed (`DT_DEV_PIPE_REMOVE`), not on every run: `dt_dev_pixelpipe_cleanup_nodes()` tears the node list down and `dt_dev_pixelpipe_create_nodes()` rebuilds it.
+    -   Creation walks *every* module in `dev->iop`, enabled or not, and gives each one a `dt_dev_pixelpipe_iop_t`. Enablement is recorded in `piece->enabled`, not by leaving the node out.
+    -   Each node's `piece->data` is allocated here, by `dt_iop_init_pipe()` calling the module's `init_pipe()` (or the default, which `calloc()`s `params_size` bytes). Teardown calls `piece->module->cleanup_pipe()` directly.
+    -   This is the `piece->data` *lifetime*: it spans however many processing runs happen before the next topology change, and `commit_params()` overwrites its contents in place.
+3.  **Synchronization**:
+    -   `dt_dev_pixelpipe_synch_all()`: first commits every module's `default_params` over all nodes, then replays the history stack on top.
     -   Calls `commit_params()` on modules to transform or copy parameters from the global module state into the pipe-specific `piece->data`.
     -   This ensures thread safety: the pipe runs on a copy of parameters.
-3.  **Processing**: `dt_dev_pixelpipe_process()` is the main driver.
+4.  **Processing**: `dt_dev_pixelpipe_process()` is the main driver.
     -   It determines the "Region of Interest" (ROI) starting from the requested output (screen area or export size).
     -   **Back-propagation**: It iterates *backwards* from the last module to the first. It calls `modify_roi_in()` on each module to ask: "If I need this output area, what input area do you need?".
         -   Calculates distorts, lens corrections, crops, etc.

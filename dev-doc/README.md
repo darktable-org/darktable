@@ -128,7 +128,7 @@ Before hand-rolling buffer, hash and lock plumbing to show a per-pixel value und
 | Struct | Stored in | Purpose |
 |--------|-----------|---------|
 | `params_t` | `self->params`, database | User-facing parameters — controlled by UI widgets, serialized to database |
-| `data_t` (optional) | `piece->data` | Processing-optimized version of params — precomputed LUTs, transformed values, runtime state. Built by `commit_params()`, consumed by `process()`. If not defined, `piece->data` is a plain copy of `params_t`. |
+| `data_t` (optional) | `piece->data` | Processing-optimized version of params — precomputed LUTs, transformed values, runtime state. Built by `commit_params()`, consumed by `process()`. If not defined, `piece->data` is a plain copy of `params_t`. The default allocation is sized by `params_t` either way, so a larger `data_t` needs its own `init_pipe()`. |
 | `gui_data_t` | `self->gui_data` | Widget references and GUI-only state — exists only where the module has a GUI: the darkroom, plus a throw-away instance built at startup |
 
 ### Data Flow
