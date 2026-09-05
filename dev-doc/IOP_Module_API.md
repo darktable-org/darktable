@@ -58,6 +58,7 @@ typedef struct dt_iop_mymodule_params_t
 - Use `gboolean` not `bool` (4-byte alignment)
 - Changes require version bump and `legacy_params()` migration
 - Values are serialized to database - no pointers
+- Every byte of the struct must be initialized, padding and unused string tails included. The block is serialized and hashed whole, so indeterminate bytes both travel into files and disturb the pipe cache; see [introspection.md — Serialization and Initialization](introspection.md#serialization-and-initialization)
 
 **Introspection tags** (parsed from comments at compile time, used by `dt_bauhaus_*_from_params()`):
 
@@ -106,7 +107,7 @@ A common source of confusion is the relationship between the parameter struct (`
 | **Source** | Database / UI widgets | Built by `commit_params()` |
 | **Purpose** | Record user intent in a stable, serializable format | Provide processing-ready values to `process()` |
 | **May contain** | Raw user values (e.g. EV, percentages, enum choices) | Precomputed LUTs, splines, normalized/transformed values, expensive one-time calculations |
-| **Constraints** | No pointers; must be serializable; changing it requires a version bump | No constraints — can contain pointers, LUTs, runtime-only data |
+| **Constraints** | No pointers; must be serializable; changing it requires a version bump; every byte, padding included, has to be initialized ([introspection.md](introspection.md#serialization-and-initialization)) | No constraints — can contain pointers, LUTs, runtime-only data; its size and lifetime are yours ([Pipe Lifecycle Functions](#pipe-lifecycle-functions)) |
 
 **When you don't need a `data_t`:** If `process()` can work directly from the raw user parameters without any transformation, you don't need a separate `data_t`. The default `init_pipe()` allocates `piece->data` as a `params_t`-sized buffer, and the default `commit_params()` does `memcpy(piece->data, params, self->params_size)`.
 
@@ -411,9 +412,17 @@ Each pixelpipe has its own copy of every module's data via `dt_dev_pixelpipe_iop
 
 #### `init_pipe()` / `cleanup_pipe()`
 
-**Default behavior** (if not implemented): `calloc()`s `self->params_size` bytes and `free()`s them (`src/develop/imageop.c`). That is enough for a `data_t` no larger than `params_t` that owns no sub-allocations — `rasterfile` defines its own `data_t` and relies on the defaults.
+**Default behavior** (if not implemented): `init_pipe()` `calloc()`s `self->params_size` bytes, and `cleanup_pipe()` `free()`s them (`src/develop/imageop.c`). Read the size literally: the default measures the buffer by the *params* struct, not by the `data_t` that `commit_params()` is about to write into it. Nothing checks the two against each other.
 
-**Custom implementation**, needed when the `data_t` is larger than the `params_t`, or owns memory that has to be released with it:
+**Implement your own when** the default cannot produce the allocation you need:
+
+- `sizeof(data_t) > sizeof(params_t)` — the default buffer is short, and `commit_params()` writes past its end
+- the `data_t` needs an alignment plain `calloc()` does not promise — this one obliges you to write `cleanup_pipe()` as well, see below
+- it owns sub-allocations that `free(piece->data)` alone would leak — which also calls for a matching `cleanup_pipe()`
+
+The defaults are a supported arrangement, not a trap in themselves: a `data_t` no larger than the `params_t` that owns nothing works on them. `enlargecanvas` defines a `data_t` field-for-field identical to its `params_t` and implements neither callback. `rasterfile` does the same, but its two structs are only *coincidentally* compatible: its `mode + char[PATH_MAX]` happens not to exceed the params' `mode + two char[2048]` (on Linux the two come out exactly equal), which is not a property either struct declares. Allocating by `sizeof(data_t)` costs one short function and ends the coupling; letting the two sizes stay in a fixed relation is the part that ages badly.
+
+**The failure mode is silent.** `contrastntexture` was introduced (`1067c653c0`) with a 20-byte `params_t`, a 24-byte `data_t` and no `init_pipe()`. Its `commit_params()` wrote the last float past the end of the allocation and `process()` read it back from there — undefined behavior on every parameter change, with no diagnostic on an ordinary build, until [PR #22154](https://github.com/darktable-org/darktable/pull/22154) gave the module the two callbacks.
 
 ```c
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
@@ -426,11 +435,22 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_mymodule_data_t *d = piece->data;
-  dt_free_align(d->gamut_LUT);  // free any sub-allocations
-  dt_free_align(piece->data);
+  dt_free_align(d->gamut_LUT);  // sub-allocation, from dt_alloc_align_float()
+  free(piece->data);            // the struct itself: calloc'd above
   piece->data = NULL;
 }
 ```
+
+**Pair the allocators.** The two families are not interchangeable in either direction: `malloc()`/`calloc()` are released by `free()`, and the aligned allocators (`dt_alloc_aligned()`, `dt_calloc1_align_type()`, `dt_alloc_align_float()` and the rest of that family in `src/common/darktable.h`) by `dt_free_align()`. The snippet above uses both, one per allocation, which is why the struct and the LUT are freed by different calls.
+
+Getting this wrong is easy to miss, because on an ordinary Linux release build `dt_free_align` is a macro for `free()` and the two families coincide, so the mismatch does nothing (`src/common/darktable.h`). It only bites on the other two configurations, and it bites in both directions:
+
+- **`free()` on an aligned pointer.** On a debug build `dt_alloc_aligned()` returns a pointer deliberately offset past the real block, precisely so that this crashes: *"for a debug build, ensure that we get a crash if we use plain `free()` to release the allocated memory, by returning a pointer which isn't a valid memory block address"* (`src/common/darktable.c`). On Windows the block came from `_aligned_malloc()`, which `free()` may not release.
+- **`dt_free_align()` on a `malloc()`/`calloc()` pointer.** On a debug build it reads an offset from `((short *)mem)[-1]` — whatever the allocator happens to keep in front of the payload — subtracts it and frees the resulting address. On Windows it calls `_aligned_free()`. Both are undefined.
+
+**The first direction is the one this section can walk you into**, because `cleanup_pipe()` has a default and `init_pipe()` does not have to declare what it did. If you allocate `piece->data` with an aligned allocator, you must also write a `cleanup_pipe()` that calls `dt_free_align()`. Leaving cleanup to the default means `free()` on an aligned block: nothing visible on a Linux release build, a crash on a debug build by design, undefined on Windows.
+
+Aligned allocation for the `data_t` is worth it when `process()` reads it with SIMD, and `contrastntexture` pairs it correctly: `dt_calloc1_align_type(dt_iop_contrast_data_t)` in `init_pipe()`, `dt_free_align(piece->data)` in `cleanup_pipe()`. It is a choice, not a requirement — `sigmoid` allocates its `data_t` with `calloc(1, sizeof(...))` in `init_pipe()` and correctly lets the default `cleanup_pipe()` `free()` it, with no `cleanup_pipe()` of its own.
 
 ### `commit_params()` - Transform Parameters into Processing Data
 
@@ -478,7 +498,9 @@ int legacy_params(dt_iop_module_t *self,
   {
     typedef struct { float exposure; } v1_params_t;
     const v1_params_t *o = old_params;
-    dt_iop_mymodule_params_t *n = malloc(sizeof(dt_iop_mymodule_params_t));
+    // calloc, not malloc: the caller memcpy's this block whole into the
+    // module's params, so its padding ends up serialized and hashed
+    dt_iop_mymodule_params_t *n = calloc(1, sizeof(dt_iop_mymodule_params_t));
 
     n->exposure = o->exposure;
     n->gamma = 1.0f;          // default for new field

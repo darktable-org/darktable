@@ -6,7 +6,7 @@ The **introspection system** in darktable is a powerful mechanism that allows th
 
 Introspection serves three main purposes:
 
-1.  **Database Storage**: It allows module parameters (which are just C structs) to be serialized to and deserialized from the database as binary blobs, while handling versioning and upgrades (`legacy_params`).
+1.  **Database Storage**: It allows module parameters (which are just C structs) to be serialized to and deserialized from the database as binary blobs, while handling versioning and upgrades (`legacy_params`). See [Serialization and Initialization](#serialization-and-initialization) for what that raw-bytes format demands of the struct.
 2.  **GUI Generation**: The GUI logic (`DT_BAUHAUS_WIDGET` macros and functions) uses introspection data to automatically create sliders, comboboxes, and toggle buttons with the correct ranges, defaults, and labels.
 3.  **Lua API**: It allows the Lua scripting interface to access and modify module parameters dynamically without writing explicit binding code for every field.
 
@@ -75,6 +75,32 @@ g->exposure = dt_bauhaus_slider_from_params(self, "exposure");
 3.  It configures the slider range and default value.
 4.  It binds the slider's value to the memory address `(char *)self->params + field->offset`.
 5.  When the slider moves, the value at that address is updated automatically.
+
+## Serialization and Initialization
+
+An IOP `params_t` is not converted to a neutral representation before it is stored. The struct's bytes *are* the record: `params_size` bytes are copied straight out of memory, and copied straight back on load. Everything below follows from that, including the parts that are easy to get wrong.
+
+**Where the bytes go:**
+
+- **Database.** `_dev_write_history_item()` binds the block as a blob into `main.history.op_params` in `library.db` (`src/develop/develop.c`). `data.db` holds the same kind of blob for presets and style items (`src/gui/presets.c`, `src/common/styles.c`).
+- **XMP.** Each history entry is written as `Xmp.darktable.history[n]/darktable:params` (`src/common/exif.cc`), encoded by `dt_exif_xmp_encode()`: plain hex, or zlib-compressed and base64-encoded behind a `gz` prefix when compression is on.
+- **Exported images.** When the export's metadata flags include `DT_META_DT_HISTORY`, that same XMP history is embedded in the exported file (`src/common/exif.cc`); AVIF and JXL have their own embedding paths (`src/imageio/format/avif.c`, `src/imageio/format/jxl.c`).
+
+**So every byte has to be initialized**, including the ones introspection never names:
+
+- padding the compiler inserts between fields, or after the last one, to satisfy alignment
+- the tail of a fixed-size `char[]` past the terminating NUL
+- any field a migration or a custom initializer forgets to write
+
+Two things go wrong when those bytes are indeterminate. Whatever the allocator last left in them is written to disk, and travels on into XMP sidecars and exported images that users share. And they reach `dt_iop_commit_params()`, which hashes `module->params` over its full `params_size` (`src/develop/imageop.c`): two blocks differing only in padding hash differently, so the pixelpipe cache misses on an edit that changed nothing.
+
+The framework starts you off correctly. `dt_iop_default_init()` `calloc()`s both `params` and `default_params` before writing the introspected `$DEFAULT` values (`src/develop/imageop.c`) — a change made in `b661b4675c`, after Valgrind reported branches depending on uninitialized values in `colorbalance` and `watermark`. What you must not do is defeat it afterwards:
+
+- a hand-written `init()` that allocates `params` itself has to zero it
+- `legacy_params()` must return a fully initialized block: allocate it with `calloc()`, since assigning every named field still leaves the padding indeterminate, and the caller copies the whole `params_size` into the module's params (`src/develop/imageop.c`)
+- anything that builds a params block for a preset or a style has the same obligation
+
+`calloc()` is the usual mechanism, not the only acceptable one; the requirement is that the bytes are defined, not that a particular function produced them.
 
 ## Versioning
 

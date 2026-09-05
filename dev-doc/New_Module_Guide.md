@@ -42,7 +42,11 @@ If darktable crashes on startup with `[dt_init] ERROR: iop order looks bad, abor
 1.  **Parameters**: `dt_iop_mymodule_params_t`
     -   Use `DT_MODULE_INTROSPECTION` macro. See [introspection.md](introspection.md) for metadata tags and versioning.
     -   Define fields with default values and ranges in comments.
-2.  **GUI Data**: `dt_iop_mymodule_gui_data_t` (if needing GUI).
+    -   The struct is stored as raw bytes, so every byte of it — padding included — must be initialized. `dt_iop_default_init()` does that for you; a hand-written `init()` or `legacy_params()` has to keep it true. See [introspection.md — Serialization and Initialization](introspection.md#serialization-and-initialization).
+2.  **Processing Data**: `dt_iop_mymodule_data_t` (only if `process()` needs values `commit_params()` derived from the params, rather than the params themselves).
+    -   Without `init_pipe()`, the framework sizes `piece->data` by the *params* struct. That is fine while the `data_t` is no larger than the `params_t` and owns nothing; once it is larger, `commit_params()` writes out of bounds, silently.
+    -   See [IOP_Module_API.md — params_t vs data_t](IOP_Module_API.md#params_t-vs-data_t--the-two-parameter-structs).
+3.  **GUI Data**: `dt_iop_mymodule_gui_data_t` (if needing GUI).
 
 ### Required Functions
 -   `name()`: unique internal name.
@@ -58,6 +62,7 @@ See [IOP_Module_API.md — Required Functions](IOP_Module_API.md#required-functi
 -   `gui_init()`: Create widgets.
 -   `gui_update()`: Sync widgets from params.
 -   `commit_params()`: If you need to precalculate data for processing.
+-   `init_pipe()` / `cleanup_pipe()`: Allocate and release `piece->data` yourself. Needed when the default `params_size`-sized, `calloc()`ed, `free()`d buffer will not do — a larger `data_t`, one wanting alignment, or one owning sub-allocations. See [IOP_Module_API.md — Pipe Lifecycle Functions](IOP_Module_API.md#pipe-lifecycle-functions).
 
 See [IOP_Module_API.md — Optional Functions](IOP_Module_API.md#optional-functions) for the full list.
 
