@@ -52,6 +52,18 @@ The following is a summary of the main features added to darktable
 5.8. Please see the user manual for more details of the individual
 changes (where available).
 
+- A new tone mapper for analog film simulation based on the
+  [spektrafilm](https://github.com/andreavolpato/spektrafilm) project by
+  Andrea Volpato. The module models the physical photographic process
+  from film exposure and development through optical printing and
+  scanning, rather than applying a conventional mathematical tone
+  curve. It reproduces the characteristic tonal and color response
+  resulting from these stages, including the compression of highlights
+  and shadows and the gradual color changes that occur as film reaches
+  its exposure limits. The simulation also includes film grain,
+  halation, and diffusion to reproduce characteristic properties of
+  analog film and optical printing.
+
 - Automatic alignment of exposure brackets in "merge HDR" function,
   removing ghosting and softness caused by handheld or shaky-tripod
   brackets. Enabled by default in builds with OpenCV, and tunable
@@ -68,10 +80,7 @@ changes (where available).
   renders run on a throwaway duplicate so the source image is never
   modified.
   
-- A new analog film simulation module, based on the [spektrafilm](https://github.com/andreavolpato/spektrafilm) 
-  project by Andrea Volpato. It simulates the physical photographic 
-  process from film exposure and development through printing and 
-  scanning, including film grain, halation and diffusion. 
+
 
 
 ## UI/UX Improvements
