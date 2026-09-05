@@ -513,8 +513,9 @@ run the two together.
 
 Two differences from `json`, both because the rules do not use them: a function
 whose thread could not be inferred gets no `runs_on` fact at all rather than a
-`null` one, and `access` carries no line number, which also lets the repeated
-accesses on one line collapse into a single fact.
+`null` one, and `access` carries no line number, so one function's accesses to
+one field, under one lock and in one mode, are a single fact however many lines
+they span.
 
 
 ## Recommended workflow
