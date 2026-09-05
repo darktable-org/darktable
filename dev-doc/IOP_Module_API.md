@@ -19,7 +19,7 @@ See also:
 **Conditional — present when the module's shape calls for them:**
 
 3. **Processing data struct** (`dt_iop_modulename_data_t`) - a processing-optimized version of the parameters, stored in `piece->data` and used by `process()`; when not provided, `piece->data` is a plain copy of `params_t` (see [params_t vs data_t](#params_t-vs-data_t--the-two-parameter-structs) below). A module that defines one usually implements [`init_pipe()` and `cleanup_pipe()`](#init_pipe--cleanup_pipe) too.
-4. **GUI data struct** (`dt_iop_modulename_gui_data_t`) - widget references, present only where the module has a GUI: the darkroom, plus a throw-away instance built at startup. A hidden module never gets one.
+4. **GUI data struct** (`dt_iop_modulename_gui_data_t`) - widget references, present only where the module has a GUI: the darkroom, plus a throw-away instance built at startup (see [the `p` / `g` / `d` convention](#the-three-structs-and-the-p--g--d-convention) below). A hidden module never gets one.
 
 **Optional:**
 
@@ -28,6 +28,115 @@ See also:
 ---
 
 ## Data Structures
+
+### The Three Structs and the `p` / `g` / `d` Convention
+
+A module carries up to three structs of its own. Each has a fixed home on the framework
+side, and module code conventionally binds it to a single-letter local:
+
+| Struct | Home | Local | Present |
+|--------|------|-------|---------|
+| `dt_iop_mymodule_params_t` | `self->params` | `p` | always |
+| `dt_iop_mymodule_data_t` | `piece->data` | `d` | wherever the pipe has a node for the module; when the module defines no `data_t` of its own, `piece->data` is a `params_t` and `d` is declared as one |
+| `dt_iop_mymodule_gui_data_t` | `self->gui_data` | `g` | only on an instance that was loaded with a GUI |
+
+The names are convention, not API: nothing enforces them, but nearly every module uses
+them and a reviewer will read `p`, `g` and `d` as these three. `self` is the module
+instance, `piece` its node in one particular pipe — one instance has a `piece` per pipe,
+so anything per-pipe belongs in `piece->data`, not in the module.
+
+**Which threads touch them.** Only `gui_data` is shared, and it is the only one with a
+lock:
+
+| Struct | Written by | Read by | What makes it safe |
+|--------|------------|---------|--------------------|
+| `params_t` | the GTK main thread alone: a `_from_params` widget writes its field directly (`src/bauhaus/bauhaus.c`), as do history replay, `init()`, `reload_defaults()` and presets | the GTK thread, in `gui_update()` and `gui_changed()` | no lock, and none is needed: it stays on the GTK thread, and the pipe works from a copy (below) |
+| `data_t` | `init_pipe()`, `commit_params()` | `process()`, `process_cl()`, the tiling and ROI callbacks | it belongs to one pipe node. A pipe serializes its own synchronization against its own run, and every pipe has its own `piece`, so there is no sharing to protect |
+| `gui_data_t` | the GTK thread, and the pipe worker threads | both | nothing implicit. Every field both sides touch needs the module's `gui_lock` (`dt_iop_gui_enter_critical_section()`), and GTK calls have to be marshalled onto the main loop |
+
+**The pipe never reads `self->params`.** Synchronizing a pipe passes `hist->params` — the
+history item's own copy — to `dt_iop_commit_params()` (`_dev_pixelpipe_synch()` in
+`src/develop/pixelpipe_hb.c`), with `dev->history_mutex` held across the whole walk. So
+`commit_params()` must work from its `params` argument and `process()` from `piece->data`.
+Reaching for `self->params` in either is a race, and wrong on its own terms: the pipe's
+defaults sync hands `commit_params()` `default_params` instead, so the two do not even
+hold the same values.
+
+`commit_params()` has no thread affinity of its own, not even on the darkroom instance,
+and the three darkroom pipes run concurrently over one module instance. See
+[GUI_Threading.md — Which Thread Am I On?](GUI_Threading.md#which-thread-am-i-on).
+
+**Where `gui_data` exists.** It is allocated by the module's own `gui_init()`, through
+`IOP_GUI_ALLOC` (`src/develop/imageop.h`); the framework itself never allocates it, and
+`dt_iop_gui_init()` (`src/develop/imageop.c`) only initializes `gui_lock` and calls the
+module's `gui_init` if it has one. Every call site of `dt_iop_gui_init()` is a GUI path,
+which leaves `g` non-NULL in exactly two places:
+
+- **The darkroom instance.** The full, preview and preview2 pipes share one set of module
+  instances, so `process()` and `commit_params()` see the same non-NULL `g` on all three.
+- **A throw-away instance built at startup** to register the module's shortcuts
+  (`_init_module_so()` in `src/develop/imageop.c`). Its `dev` is NULL, so `g != NULL` does
+  not by itself mean "darkroom"; see [GUI_Threading.md](GUI_Threading.md#guards-before-sending-gui-updates).
+
+Everywhere else `self->gui_data` is NULL: export, thumbnailing, style application,
+snapshots and the pinned second-window preview each build their own `dt_develop_t` with
+`dt_dev_init(dev, FALSE)` (`src/imageio/imageio.c`, `src/common/styles.c`,
+`src/develop/develop.c`), and the module instances in it never get a `gui_init()`. That
+holds even while the darkroom has the same image open, because those are different
+instances — availability follows the instance, not the pipe. `darktable-cli` has no GUI at all, and a hidden module
+(`IOP_FLAGS_HIDDEN`), or one that implements no `gui_init()`, never has a `gui_data`
+anywhere.
+
+Anything reachable from the pipe therefore has to test `g` before dereferencing it, and
+must not depend on it for its result: the same `commit_params()` and `process()` run
+during export, where there is nothing to read. See
+[GUI_Threading.md](GUI_Threading.md#using-gui_data-from-commit_params).
+
+**What belongs in `gui_data`.** Widget pointers, but only the ones later code touches:
+one that `gui_changed()` shows, hides or desensitizes, one a picker or button callback
+writes, a `GtkDrawingArea` you redraw, a label whose text or format changes at runtime.
+Keeping a pointer merely to sync a slider's value is unnecessary — `dt_iop_gui_update()`
+calls `dt_bauhaus_update_from_field()`, which walks `module->widget_list_bh` and sets
+every `_from_params` widget from `self->params` by itself (`src/bauhaus/bauhaus.c`).
+`src/iop/velvia.c` still does it by hand; `src/iop/flip.c` and `src/iop/scalepixels.c`
+have a GUI and no `gui_data` at all.
+
+Alongside them goes state that exists to run the interface, and computed values the GUI
+needs but the pixel path does not. From the simplest up:
+
+- **`src/iop/monochrome.c`** — `dragging` and the drawing area, plus `xform`, an lcms
+  transform built once for painting the color patch.
+- **`src/iop/graduatednd.c`** — `xa, ya, xb, yb, oldx, oldy, selected, dragging`: the
+  on-canvas line as it is dragged. The params hold `rotation` and `offset`; these are the
+  screen-space form derived from them.
+- **`src/iop/levels.c`** — `auto_levels[]` and `hash`: automatic levels computed by the
+  preview pipe and published under the lock, which the full pipe then waits for and reads
+  (`commit_params_late()`). The advanced case, and the deliberate exception to the
+  placement rule below; see
+  [GUI_Threading.md](GUI_Threading.md#passing-values-between-pipes-through-gui_data).
+
+**Deciding where a value goes.** Three questions, in order:
+
+1. **Does it change the exported image, and must it survive a restart?** → `params_t`. It
+   is the record of user intent: serialized to database and XMP, versioned, migrated by
+   `legacy_params()`, no pointers, every byte initialized.
+2. **Is it derived from the params and needed by `process()`?** → `data_t`, built in
+   `commit_params()`. No serialization constraints; it may hold pointers and LUTs.
+   Anything that differs per pipe — scale-dependent radii, ROI-dependent tables — has to
+   live here rather than on the module, because the pipes run concurrently.
+3. **Is it needed only to run the interface?** → `gui_data_t`.
+
+The line between 2 and 3 is the one that bites: **the pixel result must not depend on
+`gui_data`**, because the same `commit_params()` and `process()` run during export, where
+`g` is NULL. If the darkroom caches something the export path cannot have, the non-GUI
+branch has to compute it independently — which is exactly what `levels.c` does when the
+preview values are missing.
+
+Two corollaries. `gui_data` may hold a value copied out of `params` or `piece->data`, but
+never a pointer into `piece->data`: that buffer belongs to a pipe and dies with it.
+And whatever you allocate inside `gui_data` is yours to free in `gui_cleanup()` — the
+framework frees the struct itself and nothing under it (`dt_iop_gui_cleanup_module()` in
+`src/develop/imageop.c`).
 
 ### Parameter Struct (`params_t`)
 

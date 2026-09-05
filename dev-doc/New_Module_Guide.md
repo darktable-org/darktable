@@ -46,7 +46,10 @@ If darktable crashes on startup with `[dt_init] ERROR: iop order looks bad, abor
 2.  **Processing Data**: `dt_iop_mymodule_data_t` (only if `process()` needs values `commit_params()` derived from the params, rather than the params themselves).
     -   Without `init_pipe()`, the framework sizes `piece->data` by the *params* struct. That is fine while the `data_t` is no larger than the `params_t` and owns nothing; once it is larger, `commit_params()` writes out of bounds, silently.
     -   See [IOP_Module_API.md — params_t vs data_t](IOP_Module_API.md#params_t-vs-data_t--the-two-parameter-structs).
-3.  **GUI Data**: `dt_iop_mymodule_gui_data_t` (if needing GUI).
+3.  **GUI Data**: `dt_iop_mymodule_gui_data_t` (widget references and GUI-only state).
+    -   Allocated by your own `gui_init()` via `IOP_GUI_ALLOC`, so it exists only on an instance loaded with a GUI: the darkroom one, shared by the full, preview and preview2 pipes, plus a throw-away instance built at startup to register shortcuts.
+    -   `self->gui_data` is NULL everywhere else — export, thumbnailing, `darktable-cli` — because those run their own module instances with no GUI. Test it before dereferencing it, and never let the pixel result depend on it.
+    -   See [IOP_Module_API.md — the `p` / `g` / `d` convention](IOP_Module_API.md#the-three-structs-and-the-p--g--d-convention) and [GUI_Threading.md](GUI_Threading.md).
 
 ### Required Functions
 -   `name()`: unique internal name.
