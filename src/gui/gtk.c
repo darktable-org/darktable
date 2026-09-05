@@ -3099,7 +3099,8 @@ static gboolean _remove_modules_visibility(const gpointer key,
           || g_str_has_suffix(key, "_position"));
 }
 
-static void _restore_default_modules(GtkMenuItem *menuitem,
+static void _restore_default_modules(GSimpleAction *action,
+                                     GVariant *parameter,
                                      gpointer user_data)
 {
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
@@ -3109,23 +3110,40 @@ static void _restore_default_modules(GtkMenuItem *menuitem,
   dt_ctl_reload_view(cv);
 }
 
-static void _toggle_module_visibility(GtkMenuItem *menuitem,
-                                      dt_lib_module_t *module)
+static void _toggle_module_visibility(GSimpleAction *action,
+                                      GVariant *parameter,
+                                      gpointer user_data)
 {
+  dt_lib_module_t *module = (dt_lib_module_t *)user_data;
+
   dt_lib_set_visible(module, !dt_lib_is_visible(module));
   dt_ctl_reload_view(dt_view_manager_get_current_view(darktable.view_manager));
+
+  g_simple_action_set_state(action, g_variant_new_boolean(dt_lib_is_visible(module)));
 }
 
-static void _add_remove_modules(dt_action_t *action)
+static void _add_remove_modules_at_widget(dt_action_t *action,
+                                          GtkWidget *parent,
+                                          const gint x,
+                                          const gint y)
 {
-  const dt_view_type_flags_t cv = dt_view_get_current();
-  GtkWidget *menu = gtk_menu_new();
+  GActionEntry action_entries[] =
+  {
+    { "restore", _restore_default_modules, NULL, NULL }
+  };
 
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-  GtkWidget *mi = gtk_menu_item_new_with_label(_("restore defaults"));
-  gtk_widget_set_tooltip_text(mi, _("restore the default visibility and position of all modules in this view"));
-  g_signal_connect(mi, "activate", G_CALLBACK(_restore_default_modules), NULL);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+  GSimpleActionGroup *action_group = g_simple_action_group_new();
+  g_action_map_add_action_entries(G_ACTION_MAP(action_group),
+                                  action_entries,
+                                  G_N_ELEMENTS(action_entries),
+                                  NULL);
+  gtk_widget_insert_action_group(darktable.gui->ui->main_window,
+                                 "modules",
+                                 G_ACTION_GROUP(action_group));
+
+  const dt_view_type_flags_t cv = dt_view_get_current();
+  GMenu *menu = g_menu_new();
+  GMenu *section = menu;
 
   for(const GList *iter = darktable.lib->plugins; iter; iter = iter->next)
   {
@@ -3135,15 +3153,39 @@ static void _add_remove_modules(dt_action_t *action)
     if((mv & cv || mv & (mv - 1) || mv & DT_VIEW_MULTI) // either current view or supports more than one view
        && module->expandable(module))
     {
-      mi = gtk_check_menu_item_new_with_label(module->name(module));
-      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), dt_lib_is_visible(module));
-      g_signal_connect(mi, "toggled", G_CALLBACK(_toggle_module_visibility), module);
-      gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
+      gchar *action_name = g_strdup_printf("toggle_%s", module->plugin_name);
+      GSimpleAction *item_action = g_simple_action_new_stateful(action_name,
+                                                                NULL,
+                                                                g_variant_new_boolean(dt_lib_is_visible(module)));
+      g_signal_connect(item_action, "activate", G_CALLBACK(_toggle_module_visibility), module);
+      g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(item_action));
+
+      GMenuItem *item = g_menu_item_new(module->name(module), NULL);
+      gchar *detailed_action = g_strdup_printf("modules.%s", action_name);
+      g_menu_item_set_detailed_action(item, detailed_action);
+      g_menu_append_item(section, item);
+      g_object_unref(item);
+      g_free(detailed_action);
+      g_free(action_name);
     }
   }
 
-  gtk_widget_show_all(menu);
-  dt_gui_menu_popup(GTK_MENU(menu), NULL, 0, 0);
+  section = g_menu_new();
+  g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
+
+  g_menu_append(section, _("restore defaults"), "modules.restore");
+
+  // popup the menu
+  GtkWidget *popover_menu = dt_gui_popover_menu_from_model(parent, menu);
+  GdkRectangle rect = { x, y, 1, 1 };
+  gtk_popover_set_pointing_to(GTK_POPOVER(popover_menu), &rect);
+  gtk_popover_popup(GTK_POPOVER(popover_menu));
+}
+
+static void _add_remove_modules(dt_action_t *action)
+{
+  if(!action || !action->target) return;
+  _add_remove_modules_at_widget(action, GTK_WIDGET(action->target), 0, 0);
 }
 
 static void _side_panel_press(GtkGestureSingle *gesture,
@@ -3155,7 +3197,11 @@ static void _side_panel_press(GtkGestureSingle *gesture,
   // this gesture only serves right clicks; a primary press would be a
   // shortcut-activated toggle/activate effect (see dt_gui_current_button)
   if(dt_gui_current_button(gesture) != GDK_BUTTON_SECONDARY) return;
-  _add_remove_modules(NULL);
+
+  _add_remove_modules_at_widget(NULL,
+                                dt_gui_get_widget(gesture),
+                                (gint)x,
+                                (gint)y);
 }
 
 static gboolean _side_panel_draw(GtkWidget *widget,
