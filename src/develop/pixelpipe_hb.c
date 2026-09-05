@@ -293,6 +293,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->tiling = FALSE;
   pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
   pipe->bypass_blendif = FALSE;
+  pipe->started_ui_interval = 100000; // 100ms default for now
   pipe->input_timestamp = 0;
   pipe->levels = IMAGEIO_RGB | IMAGEIO_INT8;
   dt_pthread_mutex_init(&pipe->mutex, NULL);

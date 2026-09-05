@@ -279,23 +279,39 @@ void dt_dev_cleanup(dt_develop_t *dev)
   g_list_free(dev->module_filter_out);
 }
 
+/** How do we handle UI responsiveness for pipes getting a changed parameter?
+  1. We keep track of last time a changed parameter was provided
+  2. For fast UI visualizing of processed pipe data we don't shutdown a running
+     pipe if the timespan from last change is very small
+  3. Only do shutdown for slowly responding pipes
+  4. As we might want to adapt the started_ui_interval depending on pipe performance
+     it's initialized to 100ms but might be modified.
+*/
+static inline gboolean _inside_pipe_ui_frame(const dt_dev_pixelpipe_t *pipe, const gint64 now)
+{
+  const gint64 elapsed = now - pipe->started_time;
+  return elapsed > 0 && elapsed < pipe->started_ui_interval;
+}
+
 void dt_dev_process_image(dt_develop_t *dev)
 {
   if(!dev->gui_attached) return;
-  if(dt_pipe_processing(dev->full.pipe))
+
+  const gint64 now = g_get_monotonic_time();
+  dt_dev_pixelpipe_t *pipe = dev->full.pipe;
+
+  if(dt_pipe_processing(pipe))
   {
-    /*  A pipe DT_DEV_PIXELPIPE_STOP_DATA shutdown is the fastest way to get the final
-        processed result presented in the main canvas (or second window as below) but
-        the user won't "see" any results while dragging a mouse slider.
-        Instead of using a timeout we simply use the old behaviour - no forced shutdown -
-        while the left mouse button is pressed (as when dragging a slider) but stay with
-        the faster shutdown system when using clicks as via a mouse scroll wheel.
-    */
-    if(dt_key_modifier_state() & GDK_BUTTON1_MASK)
+    if(_inside_pipe_ui_frame(pipe, now))
+    {
+      // Let the running pipe finish to provide smooth intermediate visual feedback.
+      // The worker will automatically pick up the newest history state upon completion.
       return;
+    }
     else
-      dt_dev_pixelpipe_set_shutdown(dev->full.pipe, DT_DEV_PIXELPIPE_STOP_DATA);
+      dt_dev_pixelpipe_set_shutdown(pipe, DT_DEV_PIXELPIPE_STOP_DATA);
   }
+  pipe->started_time = now;
 
   const gboolean err = dt_control_add_job_res(dt_dev_process_image_job_create(dev), DT_CTL_WORKER_ZOOM_1);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_image] job queue exceeded!");
@@ -311,13 +327,23 @@ void dt_dev_process_preview(dt_develop_t *dev)
 void dt_dev_process_preview2(dt_develop_t *dev)
 {
   if(!dev->gui_attached && !dev->preview2.widget) return;
-  if(dt_pipe_processing(dev->preview2.pipe))
+
+  const gint64 now = g_get_monotonic_time();
+  dt_dev_pixelpipe_t *pipe = dev->preview2.pipe;
+
+  if(dt_pipe_processing(pipe))
   {
-    if(dt_key_modifier_state() & GDK_BUTTON1_MASK)
+    if(_inside_pipe_ui_frame(pipe, now))
+    {
+      // Let the running pipe finish to provide smooth intermediate visual feedback.
+      // The worker will automatically pick up the newest history state upon completion.
       return;
+    }
     else
-      dt_dev_pixelpipe_set_shutdown(dev->preview2.pipe, DT_DEV_PIXELPIPE_STOP_DATA);
+      dt_dev_pixelpipe_set_shutdown(pipe, DT_DEV_PIXELPIPE_STOP_DATA);
   }
+  pipe->started_time = now;
+
   const gboolean err = dt_control_add_job_res(dt_dev_process_preview2_job_create(dev), DT_CTL_WORKER_ZOOM_2);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_preview2] job queue exceeded!");
 }
