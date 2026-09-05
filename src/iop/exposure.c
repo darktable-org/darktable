@@ -40,6 +40,7 @@
 #include "gui/color_picker_proxy.h"
 #include "iop/iop_api.h"
 
+// 'white' is the value that is mapped to 1.0 after exposure correction
 #define exposure2white(x) exp2f(-(x))
 #define white2exposure(x) -dt_log2f(fmaxf(1e-20f, x))
 
@@ -513,7 +514,9 @@ static void _process_common_setup(dt_iop_module_t *self,
   }
 
   // no deflicker, or deflicker failed: use the user-set exposure
-  if(exposure == EXPOSURE_CORRECTION_UNDEFINED) exposure = d->params.exposure;
+  if(exposure == EXPOSURE_CORRECTION_UNDEFINED)
+    exposure = d->params.exposure;
+
   const float white = exposure2white(exposure);
   d->scale = 1.0 / (white - d->black);
 }
@@ -609,25 +612,44 @@ static float _get_highlight_bias(const dt_iop_module_t *self)
     return 0.0f;
 }
 
-// The exposure the pipe applies in manual mode: the user parameter plus the
-// compensations. commit_params() and the proxy accessor both go through this, so the
-// value other modules read cannot drift away from the one that is processed.
-static float _effective_manual_exposure(const dt_iop_module_t *const self,
-                                        const dt_iop_exposure_params_t *const p)
+// The correction, in EV, that the module adds on top of the user's exposure parameter to
+// account for the two biases recorded in EXIF.
+// Both directions of the conversion (see below) go through this, so they
+// cannot drift apart.
+static inline float _exposure_compensation_ev(const dt_iop_module_t *const self,
+                                              const dt_iop_exposure_params_t *const p)
 {
-  float exposure = p->exposure;
+  float compensation = 0.0f;
 
-  // If exposure bias compensation has been required, add it on top of
-  // user exposure correction
+  // compensate the correction the user dialled into the camera
   if(p->compensate_exposure_bias)
-    exposure -= _get_exposure_bias(self);
+    compensation -= _get_exposure_bias(self);
 
-  // If highlight preservation compensation has been required, add it on top of
-  // the previous compensation values
+  // undo the underexposure the camera applied automatically
   if(p->compensate_hilite_pres)
-    exposure += _get_highlight_bias(self);
+    compensation += _get_highlight_bias(self);
 
-  return exposure;
+  return compensation;
+}
+
+// The total exposure adjustment the pipe applies in manual mode: the slider plus the
+// exposure compensation. commit_params() and the proxy accessor both go through this,
+// so the value other modules read cannot drift away from the one that is processed.
+static inline float _total_adjustment_ev(const dt_iop_module_t *const self,
+                                         const dt_iop_exposure_params_t *const p)
+{
+  return p->exposure + _exposure_compensation_ev(self, p);
+}
+
+// The inverse: the value to store in p->exposure (i.e. where to move the exposure slider)
+// so that the pipe ends up applying `total_adjustment_ev`. The GUI needs it because it
+// reasons in terms of the total adjustment - that is what black has to stay below - but
+// writes the user parameter (slider value).
+static inline float _required_exposure_slider_ev(const dt_iop_module_t *const self,
+                                                 const dt_iop_exposure_params_t *const p,
+                                                 const float total_adjustment_ev)
+{
+  return total_adjustment_ev - _exposure_compensation_ev(self, p);
 }
 
 void commit_params(dt_iop_module_t *self,
@@ -639,7 +661,7 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_exposure_data_t *d = piece->data;
 
   d->params.black = p->black;
-  d->params.exposure = _effective_manual_exposure(self, p);
+  d->params.exposure = _total_adjustment_ev(self, p);
   d->params.deflicker_percentile = p->deflicker_percentile;
   d->params.deflicker_target_level = p->deflicker_target_level;
 
@@ -766,12 +788,16 @@ void cleanup_global(dt_iop_module_so_t *self)
   self->data = NULL;
 }
 
+// Set the exposure parameter (slider value) such that 'white' is mapped to 1.0 after
+// commit_params() re-applies the compensations. Callers work in that domain
+// because p->black does too - black is never compensated - so the black clamps can
+// compare the two directly.
 static void _exposure_set_white(dt_iop_module_t *self,
                                 const float white)
 {
   dt_iop_exposure_params_t *p = self->params;
 
-  const float exposure = white2exposure(white);
+  const float exposure = _required_exposure_slider_ev(self, p, white2exposure(white));
   if(p->exposure == exposure) return;
 
   p->exposure = exposure;
@@ -807,7 +833,7 @@ static void _exposure_set_black(dt_iop_module_t *self,
   if(p->black == black) return;
 
   p->black = black;
-  if(p->black >= exposure2white(p->exposure))
+  if(p->black >= exposure2white(_total_adjustment_ev(self, p)))
   {
     _exposure_set_white(self, p->black + 0.01);
   }
@@ -850,7 +876,7 @@ static float _exposure_proxy_get_effective_exposure(dt_iop_module_t *self)
     return computed == EXPOSURE_CORRECTION_UNDEFINED ? 0.f : computed;
   }
 
-  return _effective_manual_exposure(self, p);
+  return _total_adjustment_ev(self, p);
 }
 
 static void _exposure_proxy_handle_event(int n_press,
@@ -932,9 +958,10 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
   if(mode == DT_SPOT_MODE_MEASURE)
   {
     // the exposure the pipe applies, i.e. the user setting plus the compensations
-    const float expo = _effective_manual_exposure(self, p);
+    const float exposure_adjustment = _total_adjustment_ev(self, p);
 
-    const float white = exposure2white(-expo);
+    // the value that gets mapped to 1.0
+    const float white = exposure2white(-exposure_adjustment);
 
     // apply the exposure compensation
     dt_aligned_pixel_t XYZ_out = {0.0f };
@@ -968,20 +995,8 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
     dt_aligned_pixel_t XYZ_target = { 0.f };
     dt_Lab_to_XYZ(Lab_target, XYZ_target);
 
-    // Get the ratio
-    float white =  XYZ[1] / XYZ_target[1];
-    float expo = -white2exposure(white);
-
-    // If the exposure bias compensation is on, we need to subtract it from the user param
-    if(p->compensate_exposure_bias)
-      expo -= _get_exposure_bias(self);
-
-    // If the highlight preservation mode is on, we need to add it to the user param
-    if(p->compensate_hilite_pres)
-      expo += _get_highlight_bias(self);
-
-    white = exposure2white(-expo);
-    _exposure_set_white(self, white);
+    // set exposure slider from the ratio
+    _exposure_set_white(self, XYZ[1] / XYZ_target[1]);
   }
 }
 
@@ -1030,15 +1045,28 @@ void gui_changed(dt_iop_module_t *self,
         break;
     }
   }
-  else if(w == g->exposure)
+  // The two branches below keep black under the white point the pipe will use, so that
+  // white - black stays positive and d->scale does not blow up or turn negative.
+  // Both are restricted to manual mode: only there is the white point defined by the
+  // parameters. In deflicker mode the pipe derives it from the raw histogram, so there
+  // is nothing here to validate against, and repairing by writing p->exposure would
+  // only move a control that the pipe ignores.
+  else if(p->mode == EXPOSURE_MODE_MANUAL
+          && (w == g->exposure
+              || w == g->compensate_exposure_bias
+              || w == g->compensate_hilite_preserv))
   {
-    const float white = exposure2white(p->exposure);
+    // If any of that changed, the exposure compensation may have changed (does not,
+    // if a checkbox was toggled whose corresponding value is 0). The 'white' point that will be
+    // mapped to 1.0 may have moved below the black point, so make sure black stays below that.
+    const float white = exposure2white(_total_adjustment_ev(self, p));
     if(p->black >= white)
       _exposure_set_black(self, white - 0.01);
   }
-  else if(w == g->black)
+  // the inverse path: black moved -> move the exposure slider to keep 'white' above black
+  else if(p->mode == EXPOSURE_MODE_MANUAL && w == g->black)
   {
-    const float white = exposure2white(p->exposure);
+    const float white = exposure2white(_total_adjustment_ev(self, p));
     if(p->black >= white)
       _exposure_set_white(self, p->black + 0.01);
   }
