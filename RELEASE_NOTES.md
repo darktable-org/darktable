@@ -74,6 +74,13 @@ changes (where available).
   scanning, including film grain, halation and diffusion. 
 
 
+- Printing for Windows has been introduced. This activates the print
+  view with feature parity for what Linux and MacOS users have had.
+  Printing should work on all currently supported versions of Windows,
+  leveraging the XPS Print API. On the first print the print settings 
+  dialog will open so that the user can confirm settings not exposed 
+  in the darktable UI.
+
 ## UI/UX Improvements
 
 - Checkboxes are now Bauhaus widgets and are reset to default values
