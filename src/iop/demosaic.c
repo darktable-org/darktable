@@ -19,6 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "common/dng_opcode.h"
 #include "common/interpolation.h"
 #include "common/opencl.h"
 #include "common/image_cache.h"
@@ -47,7 +48,7 @@
 #include <string.h>
 #include <time.h>
 
-DT_MODULE_INTROSPECTION(6, dt_iop_demosaic_params_t)
+DT_MODULE_INTROSPECTION(7, dt_iop_demosaic_params_t)
 
 #define DT_DEMOSAIC_XTRANS 1024 // masks for non-Bayer demosaic ops
 #define DT_DEMOSAIC_DUAL 2048   // masks for dual demosaicing methods
@@ -154,6 +155,7 @@ typedef struct dt_iop_demosaic_params_t
   int cs_iter;                                  // $MIN: 1 $MAX: 25 $DEFAULT: 8 $DESCRIPTION: "iterations"
   float cs_center;                              // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "sharp center"
   gboolean cs_enabled;                          // $DEFAULT: FALSE $DESCRIPTION: "capture sharpen"
+  gboolean dng_gainmap;                         // $DEFAULT: TRUE $DESCRIPTION: "DNG GainMap"
 } dt_iop_demosaic_params_t;
 
 typedef struct dt_iop_demosaic_gui_data_t
@@ -255,6 +257,7 @@ typedef struct dt_iop_demosaic_data_t
   int cs_iter;
   float cs_center;
   gboolean cs_enabled;
+  gboolean dng_gainmap;
 } dt_iop_demosaic_data_t;
 
 static gboolean _get_thumb_quality(const int width, const int height)
@@ -358,6 +361,23 @@ int legacy_params(dt_iop_module_t *self,
     gboolean cs_enabled;
   } dt_iop_demosaic_params_v6_t;
 
+  typedef struct dt_iop_demosaic_params_v7_t
+  {
+    dt_iop_demosaic_greeneq_t green_eq;
+    float median_thrs;
+    dt_iop_demosaic_smooth_t color_smoothing;
+    dt_iop_demosaic_method_t demosaicing_method;
+    dt_iop_demosaic_lmmse_t lmmse_refine;
+    float dual_thrs;
+    float cs_radius;
+    float cs_thrs;
+    float cs_boost;
+    int cs_iter;
+    float cs_center;
+    gboolean cs_enabled;
+    gboolean dng_gainmap;
+  } dt_iop_demosaic_params_v7_t;
+
   typedef struct dt_iop_demosaic_params_v5_t
   {
     dt_iop_demosaic_greeneq_t green_eq;
@@ -458,6 +478,23 @@ int legacy_params(dt_iop_module_t *self,
     *new_params_size = sizeof(dt_iop_demosaic_params_v6_t);
     *new_version = 6;
    return 0;
+  }
+
+  if(old_version == 6)
+  {
+    const dt_iop_demosaic_params_v6_t *o = (dt_iop_demosaic_params_v6_t *)old_params;
+    dt_iop_demosaic_params_v7_t *n = malloc(sizeof(dt_iop_demosaic_params_v7_t));
+    memcpy(n, o, sizeof *o);
+
+    /* An existing edit was developed without the OpcodeList3 GainMap, so leave
+       it alone: switching it on here would silently change how every already
+       processed file carrying one looks. New edits default to TRUE. */
+    n->dng_gainmap = FALSE;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_demosaic_params_v7_t);
+    *new_version = 7;
+    return 0;
   }
 
   return 1;
@@ -636,6 +673,58 @@ static gboolean _tiling_requirements(dt_iop_module_t *self,
   return TRUE;
 }
 
+/* The DNG OpcodeList3 GainMap applies "just after the image has been
+   demosaiced" (DNG 1.7.1, tag 51022), which is here. Only CFA raws are handled
+   in this module; linear DNGs never reach a demosaicer and are corrected in
+   rawprepare instead, so the two paths cannot both fire on the same image. */
+static const dt_dng_gain_map_t *_gain_map(dt_iop_module_t *self,
+                                          dt_dev_pixelpipe_iop_t *const piece)
+{
+  const dt_iop_demosaic_data_t *d = piece->data;
+  if(!d->dng_gainmap || piece->filters == 0) return NULL;
+  return dt_dng_gain_map_opcode3(&self->dev->image_storage);
+}
+
+/* Apply the map to a 4-channel float buffer covering roi, in raw sensor
+   coordinates. step is how many raw pixels one buffer pixel spans. */
+static void _apply_gain_map(dt_iop_module_t *self,
+                            dt_dev_pixelpipe_iop_t *const piece,
+                            const dt_dng_gain_map_t *gm,
+                            float *const buf,
+                            const dt_iop_roi_t *const roi,
+                            const int devid)
+{
+  const dt_image_t *const image = &self->dev->image_storage;
+  const float x0 = (float)image->crop_x + roi->x / roi->scale;
+  const float y0 = (float)image->crop_y + roi->y / roi->scale;
+  const float step = 1.0f / roi->scale;
+  dt_print_pipe(DT_DEBUG_PIPE, "dng gainmap", piece->pipe, self, devid, roi, NULL,
+                "OpcodeList3 %ux%u map, %u planes; raw origin=%.1f,%.1f step=%.3f",
+                gm->map_points_h, gm->map_points_v, gm->map_planes, x0, y0, step);
+  dt_dng_gain_map_apply(gm, image, buf, buf, roi->width, roi->height, x0, y0, step);
+}
+
+#ifdef HAVE_OPENCL
+static int _apply_gain_map_cl(dt_iop_module_t *self,
+                              dt_dev_pixelpipe_iop_t *const piece,
+                              const dt_dng_gain_map_t *gm,
+                              cl_mem src,
+                              cl_mem dst,
+                              const dt_iop_roi_t *const roi,
+                              const int devid)
+{
+  const dt_image_t *const image = &self->dev->image_storage;
+  const float x0 = (float)image->crop_x + roi->x / roi->scale;
+  const float y0 = (float)image->crop_y + roi->y / roi->scale;
+  const float step = 1.0f / roi->scale;
+  dt_print_pipe(DT_DEBUG_PIPE, "dng gainmap", piece->pipe, self, devid, roi, NULL,
+                "OpcodeList3 %ux%u map, %u planes; raw origin=%.1f,%.1f step=%.3f",
+                gm->map_points_h, gm->map_points_v, gm->map_planes, x0, y0, step);
+  return dt_dng_gain_map_apply_cl(devid, gm, image, src, dst,
+                                  roi->width, roi->height, x0, y0, step);
+}
+#endif
+
 void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *const piece,
              const void *const i,
@@ -703,6 +792,12 @@ void process(dt_iop_module_t *self,
       dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, in, roi_out, roi_in, roi_out->width, width, xtrans);
     else
       dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, in, roi_out, roi_in, roi_out->width, width, filters);
+
+    /* this path never materialises a full scale buffer, so the GainMap is
+       applied to the approximated output instead */
+    const dt_dng_gain_map_t *gm_fast = _gain_map(self, piece);
+    if(gm_fast)
+      _apply_gain_map(self, piece, gm_fast, (float *)o, roi_out, DT_DEVICE_CPU);
 
     return;
   }
@@ -887,6 +982,13 @@ void process(dt_iop_module_t *self,
   if(tiling) dt_free_align(t_out);
   dt_free_align(green_in);
 
+  /* The GainMap is defined on the sensor grid, so it is applied to the full
+     scale demosaiced data before any resampling to canvas or export size, and
+     before the detail mask is derived from it. */
+  const dt_dng_gain_map_t *gm = _gain_map(self, piece);
+  if(gm)
+    _apply_gain_map(self, piece, gm, out, roi_in, DT_DEVICE_CPU);
+
   if(pipe->want_detail_mask)
     dt_dev_write_scharr_mask(piece, out, roi_in, TRUE);
 
@@ -979,23 +1081,50 @@ int process_cl(dt_iop_module_t *self,
   if(!fullscale)
   {
     dt_print_pipe(DT_DEBUG_PIPE, "demosaic approx zoom", pipe, self, devid, roi_in, roi_out);
-    if(is_xtrans)
+
+    /* this path never materialises a full scale buffer, so the GainMap is
+       applied to the approximated output */
+    const dt_dng_gain_map_t *gm_fast = _gain_map(self, piece);
+
+    /* The GainMap kernel reads and writes one pixel per work item, but an
+       image cannot be both read from and written to by the same kernel, so
+       let the zoom write a scratch image and take dev_out from there. */
+    cl_mem dev_zoomed = dev_out;
+    cl_mem dev_scratch = NULL;
+    if(gm_fast)
     {
+      dev_scratch = dt_opencl_alloc_device(devid,
+                                           dt_opencl_get_image_width(dev_out),
+                                           dt_opencl_get_image_height(dev_out),
+                                           dt_opencl_get_image_element_size(dev_out));
+      if(dev_scratch == NULL)
+      {
+        dt_opencl_release_mem_object(dev_xtrans);
+        return DT_OPENCL_SYSMEM_ALLOCATION;
+      }
+      dev_zoomed = dev_scratch;
+    }
+
+    if(is_xtrans)
       // sample third-size image
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_third_size, roi_out->width, roi_out->height,
-          CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
+          CLARG(dev_in), CLARG(dev_zoomed), CLARG(roi_out->width), CLARG(roi_out->height),
           CLARG(iwidth), CLARG(iheight), CLARG(roi_out->scale), CLARG(dev_xtrans));
-      dt_opencl_release_mem_object(dev_xtrans);
-      return err;
-    }
     else if(method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
-      return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_passthrough_monochrome, roi_out->width, roi_out->height,
-          CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_passthrough_monochrome, roi_out->width, roi_out->height,
+          CLARG(dev_in), CLARG(dev_zoomed), CLARG(roi_out->width), CLARG(roi_out->height),
           CLARG(iwidth), CLARG(iheight), CLARG(roi_out->scale));
     else // bayer
-      return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_half_size, roi_out->width, roi_out->height,
-          CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_half_size, roi_out->width, roi_out->height,
+          CLARG(dev_in), CLARG(dev_zoomed), CLARG(roi_out->width), CLARG(roi_out->height),
           CLARG(iwidth), CLARG(iheight), CLARG(roi_out->scale), CLARG(filters));
+
+    if(err == CL_SUCCESS && gm_fast)
+      err = _apply_gain_map_cl(self, piece, gm_fast, dev_scratch, dev_out, roi_out, devid);
+
+    dt_opencl_release_mem_object(dev_scratch);
+    dt_opencl_release_mem_object(dev_xtrans);
+    return err;
   }
 
   const gboolean direct = roi_out->width == iwidth && roi_out->height == iheight && feqf(roi_in->scale, roi_out->scale, 1e-8f);
@@ -1179,6 +1308,32 @@ int process_cl(dt_iop_module_t *self,
     t_low = NULL;
   }
 
+  /* The GainMap is defined on the sensor grid, so it is applied to the full
+     scale demosaiced data before any resampling to canvas or export size, and
+     before the detail mask is derived from it. An image cannot be both read
+     from and written to by one kernel, so the result goes to a scratch image
+     and is copied back; out_image is dev_out when the pipe asked for the data
+     in place, so it cannot simply be swapped for the scratch one. */
+  const dt_dng_gain_map_t *gm = _gain_map(self, piece);
+  if(gm)
+  {
+    cl_mem dev_scratch = dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float) * 4);
+    if(dev_scratch == NULL)
+    {
+      err = DT_OPENCL_SYSMEM_ALLOCATION;
+      goto finish;
+    }
+    err = _apply_gain_map_cl(self, piece, gm, out_image, dev_scratch, roi_in, devid);
+    if(err == CL_SUCCESS)
+    {
+      const size_t region[] = { iwidth, iheight };
+      err = dt_opencl_enqueue_copy_image(devid, dev_scratch, out_image,
+                                         CLIMG_ORIGIN, CLIMG_ORIGIN, region);
+    }
+    dt_opencl_release_mem_object(dev_scratch);
+    if(err != CL_SUCCESS) goto finish;
+  }
+
   if(pipe->want_detail_mask)
   {
     err = dt_dev_write_scharr_mask_cl(piece, out_image, roi_in, TRUE);
@@ -1211,6 +1366,7 @@ finish:
   }
   return err;
 }
+
 #endif
 #undef MIN_TILE_ROWS
 
@@ -1370,6 +1526,7 @@ void commit_params(dt_iop_module_t *self,
   d->cs_boost = p->cs_boost;
   d->cs_center = p->cs_center;
   d->cs_enabled = p->cs_enabled;
+  d->dng_gainmap = p->dng_gainmap;
   // magic function to have CS iterations with fine granularity for values <= 11 and then rising up to 50
   d->cs_iter = p->cs_iter + (int)(0.000065f * powf((float)p->cs_iter, 4.0f));
   const gboolean xmethod = use_method & DT_DEMOSAIC_XTRANS;
