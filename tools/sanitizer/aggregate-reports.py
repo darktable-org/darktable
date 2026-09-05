@@ -27,6 +27,8 @@ import argparse
 import collections
 import os
 import re
+import shutil
+import subprocess
 import sys
 import textwrap
 
@@ -88,6 +90,90 @@ NOISE = re.compile(
 FRAMES_PER_SIGNATURE = 3
 
 
+class Symbolizer:
+    """Resolve "libfoo.so+0x1234" frames the sanitizer left unsymbolized.
+
+    TSan symbolizes frames in the main binary and its linked libraries but
+    leaves the dlopen'd iop plugins as module+offset, even though they are built
+    with debug info and llvm-symbolizer resolves them fine. Those frames are
+    where the interesting stacks are, so resolve them here instead.
+
+    This runs after deduplication, on the frames actually about to be printed.
+    A full-suite ThreadSanitizer run is gigabytes of reports collapsing to a few
+    hundred findings, so resolving during parsing would symbolize the same
+    handful of addresses tens of thousands of times. Resolution is batched, one
+    symbolizer process per module. Without a build directory or an
+    llvm-symbolizer this is a no-op and frames stay as they were.
+    """
+
+    TOOL_NAMES = ["llvm-symbolizer"] + [
+        "llvm-symbolizer-%d" % v for v in range(21, 13, -1)]
+
+    # A frame rendered as bare module+offset, e.g. "libfoo.so+0x1234".
+    UNRESOLVED = re.compile(r"^([^()+\s]+\.so[^+\s]*)\+(0x[0-9a-f]+)$")
+
+    def __init__(self, build_dir):
+        self.tool = next((shutil.which(n) for n in self.TOOL_NAMES
+                          if shutil.which(n)), None)
+        # Distributions set DEBUGINFOD_URLS globally (/etc/debuginfod), and
+        # llvm-symbolizer then blocks on network lookups for every module whose
+        # build-id it cannot satisfy locally -- 45 seconds per module here,
+        # against 0.02 with it cleared. We only ever resolve locally built
+        # plugins, so there is nothing to fetch.
+        self.env = dict(os.environ, DEBUGINFOD_URLS="")
+        self.modules = {}
+        self.cache = {}
+        if build_dir and self.tool:
+            for root, dirs, names in os.walk(build_dir):
+                dirs[:] = [d for d in dirs if d != "CMakeFiles"]
+                for name in names:
+                    if name.endswith(".so"):
+                        self.modules.setdefault(name, os.path.join(root, name))
+
+    def enabled(self):
+        return bool(self.tool and self.modules)
+
+    def prime(self, frames):
+        """Resolve every module+offset frame in this set, batched per module."""
+        if not self.enabled():
+            return
+        wanted = collections.defaultdict(set)
+        for frame in frames:
+            match = self.UNRESOLVED.match(frame)
+            if match and match.group(1) in self.modules:
+                wanted[match.group(1)].add(match.group(2))
+
+        for module, offsets in wanted.items():
+            ordered = sorted(offsets)
+            try:
+                done = subprocess.run(
+                    [self.tool, "--obj=%s" % self.modules[module]],
+                    input="\n".join(ordered) + "\n",
+                    capture_output=True, text=True, timeout=300,
+                    env=self.env)
+            except (OSError, subprocess.SubprocessError):
+                continue
+            # Two lines per address -- symbol, then file:line -- blank separated.
+            blocks = done.stdout.split("\n\n")
+            for offset, block in zip(ordered, blocks):
+                lines = [l for l in block.splitlines() if l.strip()]
+                if not lines or lines[0].startswith("??"):
+                    continue
+                text = lines[0]
+                if len(lines) > 1:
+                    location = lines[1].split(" ")[0]
+                    if location and not location.startswith("??"):
+                        text += " " + location
+                self.cache[(module, offset)] = text
+
+    def display(self, frame):
+        """The resolved form of a frame, or the frame unchanged."""
+        match = self.UNRESOLVED.match(frame)
+        if match:
+            return self.cache.get((match.group(1), match.group(2)), frame)
+        return frame
+
+
 def report_files(log_dir):
     """Every per-process report below log_dir, including the per-test subdirs."""
     files = []
@@ -118,9 +204,10 @@ def headline(match):
 def frame_text(match):
     """Render one frame, falling back to the module when symbols are missing.
 
-    GCC prints "<null>" for both symbol and file when a library has no debug
-    info; the module and offset are then the only identifying part left, and
-    they are stable across runs because the offset is module-relative.
+    GCC prints "<null>" for both symbol and file when a frame was not
+    symbolized; the module and offset are then the only identifying part left,
+    and they are stable across runs because the offset is module-relative.
+    Symbolizer resolves those for display once the findings are deduplicated.
     """
     parts = [
         part
@@ -222,6 +309,9 @@ def main():
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("log_dir", help="directory holding the sanitizer log files")
     parser.add_argument("-o", "--output", help="also write the summary to this file")
+    parser.add_argument("--build-dir",
+                        help="build tree whose plugins should be used to "
+                             "symbolize module+offset frames")
     args = parser.parse_args()
 
     files = report_files(args.log_dir)
@@ -244,6 +334,11 @@ def main():
             tests.add(where)
 
     total = sum(counts.values())
+
+    # Now that the reports have collapsed to a handful of findings, resolve the
+    # plugin frames among the ones about to be printed.
+    symbolizer = Symbolizer(args.build_dir)
+    symbolizer.prime({frame for _, frames in counts for frame in frames})
 
     lines = [
         "Sanitizer report summary",
@@ -269,7 +364,7 @@ def main():
     for finding, count in counts.most_common():
         title, frames = finding
         lines.append("[%4dx] %s" % (count, title))
-        lines.extend("         %s" % frame for frame in frames)
+        lines.extend("         %s" % symbolizer.display(frame) for frame in frames)
         lines.extend(describe(seen_in[finding], "         in: "))
         lines.append("")
 
