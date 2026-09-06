@@ -437,7 +437,7 @@ static double _raw_to_ev(const uint32_t raw,
   return raw_ev;
 }
 
-static void _compute_correction(dt_iop_exposure_params_t *p,
+static void _compute_deflicker_correction(dt_iop_exposure_params_t *p,
                                 dt_dev_pixelpipe_t *pipe,
                                 const uint32_t *const histogram,
                                 const dt_dev_histogram_stats_t *const histogram_stats,
@@ -480,7 +480,7 @@ static void _process_common_setup(dt_iop_module_t *self,
   dt_iop_exposure_data_t *d = piece->data;
 
   d->black = d->params.black;
-  // the default is also the fallback for deflicker's _compute_correction below
+  // the default is also the fallback for _compute_deflicker_correction below
   float exposure = d->params.exposure;
 
   if(d->deflicker)
@@ -488,7 +488,7 @@ static void _process_common_setup(dt_iop_module_t *self,
     if(g)
     {
       // histogram is precomputed and cached
-      _compute_correction(&d->params, piece->pipe,
+      _compute_deflicker_correction(&d->params, piece->pipe,
                           g->deflicker_histogram, &g->deflicker_histogram_stats,
                           &exposure);
     }
@@ -497,7 +497,7 @@ static void _process_common_setup(dt_iop_module_t *self,
       uint32_t *histogram = NULL;
       dt_dev_histogram_stats_t histogram_stats;
       _deflicker_prepare_histogram(self, &histogram, &histogram_stats);
-      _compute_correction(&d->params, piece->pipe, histogram,
+      _compute_deflicker_correction(&d->params, piece->pipe, histogram,
                           &histogram_stats, &exposure);
       dt_free_align(histogram);
     }
@@ -934,7 +934,7 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
   dt_aligned_pixel_t Lab;
   dot_product(RGB, input_profile->matrix_in, XYZ);
   dt_XYZ_to_Lab(XYZ, Lab);
-  Lab[1] = Lab[2] = Lab[3] = 0.f; // make color grey to get only the equivalent lighness
+  Lab[1] = Lab[2] = Lab[3] = 0.f; // make color gray to get only the equivalent lightness
   dt_Lab_to_XYZ(Lab, XYZ);
   dt_XYZ_to_sRGB(XYZ, g->spot_RGB);
 
@@ -966,7 +966,7 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
     // Convert to Lab for GUI feedback
     dt_aligned_pixel_t Lab_out;
     dt_XYZ_to_Lab(XYZ_out, Lab_out);
-    Lab_out[1] = Lab_out[2] = 0.f; // make it grey
+    Lab_out[1] = Lab_out[2] = 0.f; // make it gray
 
     // Return the values in sliders
     DT_ENTER_GUI_UPDATE();
