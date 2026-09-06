@@ -250,6 +250,10 @@ changes (where available).
 - Fixed corrupted output or a crash when an AI model returns more data
   than darktable reserved for it, affecting object masks and Lua models.
 
+- Fixed automatic exposure rendering a black image when its raw histogram
+  was unavailable, and black-point limits ignoring camera exposure
+  compensation, which could invert the tonal range.
+
 ## Lua
 
 ### API Version

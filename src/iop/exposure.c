@@ -617,7 +617,7 @@ static inline float _exposure_compensation_ev(const dt_iop_module_t *const self,
 {
   float compensation = 0.0f;
 
-  // compensate the correction the user dialled into the camera
+  // compensate the correction the user dialed into the camera
   if(p->compensate_exposure_bias)
     compensation -= _get_exposure_bias(self);
 
