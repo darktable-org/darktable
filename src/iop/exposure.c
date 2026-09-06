@@ -990,8 +990,9 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
     dt_aligned_pixel_t XYZ_target = { 0.f };
     dt_Lab_to_XYZ(Lab_target, XYZ_target);
 
-    // set exposure slider from the ratio
-    _exposure_set_white(self, XYZ[1] / XYZ_target[1]);
+    // a near-black target cannot be matched, and a near-black sample explodes the ratio
+    if(XYZ[1] > 1e-5f && XYZ_target[1] > 1e-5f)
+      _exposure_set_white(self, XYZ[1] / XYZ_target[1]);
   }
 }
 
