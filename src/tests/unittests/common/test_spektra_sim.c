@@ -65,7 +65,11 @@
  */
 
 /* Comparison epsilon. The engine works in double, and every invariant tested
-   here is exact in exact arithmetic, so this only has to absorb rounding. */
+   here is exact in exact arithmetic, so this only has to absorb rounding.
+   The output gamut compressors are the exception -- they run in float to
+   match spektrafilm.cl -- but every value they are asserted against here
+   (0.0, 0.5, 1.5, 2.0) is exactly representable and comes back through an
+   untouched achromatic max, so E holds for those too. */
 #define E 1e-9
 
 /* Compare in double, whatever cmocka happens to be installed.
@@ -213,48 +217,48 @@ static void test_knee_is_continuous_at_threshold(void **state)
 static void test_aces_neutral_is_unchanged(void **state)
 {
   TR_STEP("achromatic pixels pass through the output compressor untouched");
-  double rgb[3] = { 0.5, 0.5, 0.5 };
-  compress_rgb_aces(rgb);
+  float rgb[3] = { 0.5f, 0.5f, 0.5f };
+  compress_rgb_aces_f(rgb);
   for(int c = 0; c < 3; c++) assert_double_close(rgb[c], 0.5, E);
 }
 
 static void test_aces_black_is_identity(void **state)
 {
   TR_STEP("pixels at or below black keep their values -- no chromaticity to compress");
-  double rgb[3] = { 0.0, 0.0, 0.0 };
-  compress_rgb_aces(rgb);
+  float rgb[3] = { 0.0f, 0.0f, 0.0f };
+  compress_rgb_aces_f(rgb);
   for(int c = 0; c < 3; c++) assert_double_close(rgb[c], 0.0, E);
 }
 
 static void test_aces_leaves_the_max_channel_alone(void **state)
 {
   TR_STEP("the achromatic max is the anchor and never moves");
-  double rgb[3] = { 2.0, -0.1, 0.3 };
-  compress_rgb_aces(rgb);
+  float rgb[3] = { 2.0f, -0.1f, 0.3f };
+  compress_rgb_aces_f(rgb);
   assert_double_close(rgb[0], 2.0, E);
 }
 
 static void test_aces_pulls_negatives_back_inside(void **state)
 {
   TR_STEP("out-of-gamut negatives come back non-negative, and by a real margin");
-  double rgb[3] = { 1.5, -0.1, -0.05 };
-  compress_rgb_aces(rgb);
+  float rgb[3] = { 1.5f, -0.1f, -0.05f };
+  compress_rgb_aces_f(rgb);
   assert_double_close(rgb[0], 1.5, E);
-  assert_true(rgb[1] >= 0.0);
-  assert_true(rgb[2] >= 0.0);
+  assert_true(rgb[1] >= 0.0f);
+  assert_true(rgb[2] >= 0.0f);
   /* not merely clipped to a hair above zero: the knee lands them well inside */
-  assert_true(rgb[1] < 0.2 * 1.5);
-  assert_true(rgb[2] < 0.2 * 1.5);
+  assert_true(rgb[1] < 0.2f * 1.5f);
+  assert_true(rgb[2] < 0.2f * 1.5f);
 }
 
 static void test_aces_compresses_stronger_excursions_harder(void **state)
 {
   TR_STEP("the further out of gamut, the closer to the boundary the result lands");
-  double mild[3] = { 1.0, -0.05, -0.05 };
-  double hard[3] = { 1.0, -1.0, -1.0 };
-  compress_rgb_aces(mild);
-  compress_rgb_aces(hard);
-  TR_DEBUG("mild=%e hard=%e", mild[1], hard[1]);
+  float mild[3] = { 1.0f, -0.05f, -0.05f };
+  float hard[3] = { 1.0f, -1.0f, -1.0f };
+  compress_rgb_aces_f(mild);
+  compress_rgb_aces_f(hard);
+  TR_DEBUG("mild=%e hard=%e", (double)mild[1], (double)hard[1]);
   assert_true(hard[1] < mild[1]);
   assert_true(hard[2] < mild[2]);
 }

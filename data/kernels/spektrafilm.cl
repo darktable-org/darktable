@@ -45,6 +45,24 @@
  *   - exact-spectral quality has NO GPU path; process_cl falls back to CPU.
  */
 
+/* OpenCL C defaults FP_CONTRACT to ON, so the device compiler is free to fuse
+   every a*b+c in this file into a single-rounding mad/fma. The host side is
+   not fused the same way (and on some builds not at all), so each fused
+   expression lands a fraction of an ULP away from its CPU twin. That is
+   normally invisible, but sf_poisson()'s accept/reject loop compares prod
+   against limit, so a fraction of an ULP anywhere upstream of the grain
+   sampler occasionally moves a draw by a whole integer -- which is what the
+   remaining CPU/GPU pixel differences look like: isolated single pixels,
+   evenly scattered, uncorrelated with image structure.
+
+   NOTE: the matching host-side guarantee is NOT the "#pragma STDC
+   FP_CONTRACT OFF" in spektra_core.h. GCC does not implement that pragma
+   (it still emits vfmadd with it in force); only the -ffp-contract=off
+   command-line flag works, which is why the CMake change accompanying this
+   sets it on the spektra sources. Both halves are needed. */
+#pragma OPENCL FP_CONTRACT OFF
+
+
 #include "common.h"
 
 #define SF_NLE 256
@@ -69,11 +87,18 @@ static inline float sf_clampf(float x, float lo, float hi)
   return fmin(fmax(x, lo), hi);
 }
 
+/* Explicit fma, same nesting as the host twins (mat3_mulv_f in spektra_sim.c,
+   expose_pixel_f's inline form). The device compiler ignores
+   #pragma OPENCL FP_CONTRACT OFF -- that is why pinning the YvV recursion
+   with fma() moved the needle where the pragma alone did not -- while the
+   host really does honour -ffp-contract=off. So a bare a*b + c*d + e*f is
+   fused on one side and not the other, and every matrix multiply in the
+   pipeline lands a fraction of an ULP away from its twin. */
 static inline float3 sf_mat3(__constant const float *m, float3 v)
 {
-  return (float3)(m[0] * v.x + m[1] * v.y + m[2] * v.z,
-                  m[3] * v.x + m[4] * v.y + m[5] * v.z,
-                  m[6] * v.x + m[7] * v.y + m[8] * v.z);
+  return (float3)(fma(m[0], v.x, fma(m[1], v.y, m[2] * v.z)),
+                  fma(m[3], v.x, fma(m[4], v.y, m[5] * v.z)),
+                  fma(m[6], v.x, fma(m[7], v.y, m[8] * v.z)));
 }
 
 /* ---- [su] Mitchell-Netravali cubic on the tc_n×tc_n×3 spectral LUT ------ */
@@ -82,14 +107,16 @@ static float sf_mitchell(float t)
 {
   const float B = 1.0f / 3.0f, C = 1.0f / 3.0f;
   const float x = fabs(t);
+  /* fma-pinned, matching mitchell_weight_f() in spektra_sim.c term for term */
   if(x < 1.0f)
     return (1.0f / 6.0f)
-           * ((12.0f - 9.0f * B - 6.0f * C) * x * x * x
-              + (-18.0f + 12.0f * B + 6.0f * C) * x * x + (6.0f - 2.0f * B));
+           * fma((12.0f - 9.0f * B - 6.0f * C) * x * x, x,
+                 fma((-18.0f + 12.0f * B + 6.0f * C) * x, x, (6.0f - 2.0f * B)));
   else if(x < 2.0f)
     return (1.0f / 6.0f)
-           * ((-B - 6.0f * C) * x * x * x + (6.0f * B + 30.0f * C) * x * x
-              + (-12.0f * B - 48.0f * C) * x + (8.0f * B + 24.0f * C));
+           * fma((-B - 6.0f * C) * x * x, x,
+                 fma((6.0f * B + 30.0f * C) * x, x,
+                     fma((-12.0f * B - 48.0f * C), x, (8.0f * B + 24.0f * C))));
   return 0.0f;
 }
 
@@ -136,18 +163,29 @@ static float3 sf_cubic2d(__global const float *lut, int L, float x, float y)
       const float w = wx[i] * wy[j];
       wsum += w;
       const size_t o = ((size_t)xi * L + yj) * 3;
-      acc += w * (float3)(lut[o], lut[o + 1], lut[o + 2]);
+      /* fma, matching cubic_interp_2d_f()'s acc[c] += w * px[c] under
+         -ffp-contract=off ... see sf_mat3 above */
+      acc = (float3)(fma(w, lut[o], acc.x), fma(w, lut[o + 1], acc.y),
+                     fma(w, lut[o + 2], acc.z));
     }
   }
   return (wsum != 0.0f) ? acc / wsum : acc;
 }
 
 /* ---- [dc] density curve interpolation over the uniform le grid ---------- */
-/* x-axis = le/gamma  ->  index t = (x*gamma - le0)/le_step, endpoint-clamped */
+/* x-axis = le/gamma  ->  index t = (x*gamma - le0)*inv_le_step, endpoint-clamped.
+
+   inv_le_step is the host's sim->inv_le_step (1/le_step, rounded once from a
+   double-precision reciprocal) -- NOT recomputed on-device, and not a divide.
+   The CPU twin (interp_curve_uniform_f in spektra_sim.c) multiplies by that
+   same stored reciprocal, and x/step vs x*(1/step) differ by up to an ULP,
+   which is enough to land t on the other side of an integer and pick the
+   neighbouring curve segment. Same reasoning as enl_inv_range/scan_inv_range
+   in spektrafilm_print_expose below. */
 static inline float sf_curve(__global const float *curves, float x,
-                             float le0, float le_step, int c)
+                             float le0, float inv_le_step, int c)
 {
-  const float t = (x - le0) / le_step;
+  const float t = (x - le0) * inv_le_step;
   if(t <= 0.0f) return curves[c];
   if(t >= (float)(SF_NLE - 1)) return curves[(SF_NLE - 1) * 3 + c];
   const int i = (int)t;
@@ -206,6 +244,31 @@ static float3 sf_pchip3d(__global const float *lut, __global const float *sx,
   }
 #undef AT
   return (float3)(out[0], out[1], out[2]);
+}
+
+/* ---- base-10 <-> base-2, matching the host's SF_LOG10F/SF_POW10F -------- */
+/* spektra_sim.c does NOT call log10f()/exp10f(). It defines
+     SF_LOG10F(x) = log2f(x) * 0.3010299956639812f
+     SF_POW10F(x) = exp2f(x * 3.321928094887362f)
+   so calling log10()/exp10() here was not a more-or-less accurate version of
+   the same computation, it was a different computation: the host's scaling
+   multiply carries its own rounding that exp10()/log10() never perform. Use
+   the identical formulation so only the library ULP gap remains.
+
+   That remaining gap is real but small: OpenCL specs log2/exp2 to <=3 ULP and
+   most GPUs implement both in hardware, while glibc's log2f/exp2f are
+   correctly rounded. If the integration test still shows a residue after
+   this, these two are the next candidates for the portable-polynomial
+   treatment sf_exp_neg already got -- log2 via exponent extraction plus a
+   mantissa polynomial, exp2 via sf_exp2i plus a fractional polynomial. */
+static inline float sf_log10f(float x)
+{
+  return log2(x) * 0.3010299956639812f;
+}
+
+static inline float sf_pow10f(float x)
+{
+  return exp2(x * 3.321928094887362f);
 }
 
 /* ---- [gc] Reinhard knee + OkLCh output gamut compression ---------------- */
@@ -288,12 +351,40 @@ static inline uint sf_pixel_seed(uint xi, uint yi, uint chan)
 /* Single Poisson draw; must stay in lockstep with sf_poisson in spektra_core.h
    (exact below 12, bounded normal above -- see the derivation there). */
 #define SF_POISSON_EXACT_MAX 12.0f
+
+/* sf_exp2i / sf_exp_neg: see spektra_core.h for the full rationale -- this
+   must be the same portable polynomial as the host side, not the platform
+   exp(), because exp() is only spec'd to <=3 ULP here versus the
+   correctly-rounded +,-,* this is built from, and that slack was flipping
+   the accept/reject loop below by a whole grain-count draw on a small,
+   scene-independent fraction of pixels. Do not replace this with exp()
+   or native_exp() again without re-checking that regression. */
+static inline float sf_exp2i(int k)
+{
+  return as_float((uint)(k + 127) << 23);
+}
+
+static inline float sf_exp_neg(float lam)
+{
+  const float t = -lam;
+  const int k = (int)floor(t * 1.4426950216293335f + 0.5f); /* log2(e) */
+  const float r = t - (float)k * 0.6931471824645996f;       /* ln(2) */
+  float p = 0.00138888892f;                                 /* 1/720 */
+  p = p * r + 0.00833333377f;                               /* 1/120 */
+  p = p * r + 0.0416666679f;                                /* 1/24 */
+  p = p * r + 0.166666672f;                                 /* 1/6 */
+  p = p * r + 0.5f;
+  p = p * r + 1.0f;
+  p = p * r + 1.0f;
+  return p * sf_exp2i(k);
+}
+
 static float sf_poisson(float lam, uint seed)
 {
   if(lam <= 0.f) return 0.f;
   if(lam < SF_POISSON_EXACT_MAX)
   {
-    const float limit = exp(-lam);
+    const float limit = sf_exp_neg(lam);
     float prod = 1.f;
     int k = 0;
     do
@@ -303,7 +394,13 @@ static float sf_poisson(float lam, uint seed)
     } while(prod > limit && k < 64);
     return (float)(k - 1);
   }
-  return lam + native_sqrt(lam) * sf_nrm(seed);
+  /* Plain sqrt(), not native_sqrt(): this branch must reproduce the CPU's
+     sqrtf(lam) bit-for-bit (see spektra_core.h's sf_poisson and the
+     sf_exp_neg comment above on why exactness here matters) -- native_sqrt
+     has no accuracy guarantee at all and commonly maps to a low-precision
+     hardware rsqrt, which was decorrelating the two renders' grain for
+     every pixel landing in this branch (lam >= SF_POISSON_EXACT_MAX). */
+  return lam + sqrt(lam) * sf_nrm(seed);
 }
 
 /* Binomial(Poisson(lam), p) == Poisson(lam*p) exactly (Poisson thinning), so the
@@ -355,9 +452,9 @@ __kernel void spektrafilm_lograw(__global float4 *plane, const int w, const int 
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
   float4 p = plane[k];
-  p.x = log10(fmax(p.x, 0.0f) + SF_LOG_EPS);
-  p.y = log10(fmax(p.y, 0.0f) + SF_LOG_EPS);
-  p.z = log10(fmax(p.z, 0.0f) + SF_LOG_EPS);
+  p.x = sf_log10f(fmax(p.x, 0.0f) + SF_LOG_EPS);
+  p.y = sf_log10f(fmax(p.y, 0.0f) + SF_LOG_EPS);
+  p.z = sf_log10f(fmax(p.z, 0.0f) + SF_LOG_EPS);
   plane[k] = p;
 }
 
@@ -367,9 +464,9 @@ __kernel void spektrafilm_develop_corr(__global const float4 *lograw, __global f
                                        const int w, const int h,
                                        __global const float *curves_norm,
                                        __constant float *mats, const float le0,
-                                       const float le_step, const float dmax0,
+                                       const float inv_le_step, const float dmax0,
                                        const float dmax1, const float dmax2,
-                                       const int positive)
+                                       const int positive, const int donor_lm)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
@@ -380,11 +477,23 @@ __kernel void spektrafilm_develop_corr(__global const float4 *lograw, __global f
   float silver[3];
   for(int c = 0; c < 3; c++)
   {
-    const float d = sf_curve(curves_norm, lgv[c], le0, le_step, c);
+    const float d = sf_curve(curves_norm, lgv[c], le0, inv_le_step, c);
     silver[c] = positive ? dmx[c] - d : d;
-    /* Langmuir donor saturation (dev packs); K=1e30 degenerates to linear */
-    const float K = mats[SF_M_LM_DONOR + c], Dref = mats[SF_M_LM_DONOR + 3 + c];
-    silver[c] = silver[c] * (K + Dref) / (K + silver[c]);
+    /* Langmuir donor saturation (dev packs). Gated on donor_lm, exactly as
+       sf_sim_develop_corr() gates it on sim->couplers_donor_lm.
+
+       This used to run unconditionally, relying on the host shipping K=1e30
+       to make the expression "degenerate to linear". It does not: the term
+       evaluates as (silver * 1e30f) / 1e30f, and x*y/y is not x in float --
+       13.6% of plausible silver values in [0,3] come back one ULP off. Every
+       pixel of the coupler correction was therefore slightly wrong whenever
+       the loaded pack has no donor Langmuir term, which the grain sampler
+       downstream then amplified into whole-integer draw differences. */
+    if(donor_lm)
+    {
+      const float K = mats[SF_M_LM_DONOR + c], Dref = mats[SF_M_LM_DONOR + 3 + c];
+      silver[c] = silver[c] * (K + Dref) / (K + silver[c]);
+    }
   }
   __constant const float *M = mats + SF_M_COUPLERS; /* row donor -> col receiver */
   float out[3];
@@ -399,24 +508,28 @@ __kernel void spektrafilm_develop(__global const float4 *lograw, __global const 
                                   const int use_corr, __global float4 *cmy, const int w,
                                   const int h, __global const float *curves,
                                   __constant float *mats, const float le0,
-                                  const float le_step)
+                                  const float inv_le_step, const int recv_lm)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
   const float4 lg = lograw[k];
   float4 cr = use_corr ? corr[k] : (float4)(0.0f);
-  /* receiver-side Langmuir on the ARRIVED (post-diffusion) inhibitor;
-     Kr=1e30 degenerates to linear */
+  /* receiver-side Langmuir on the ARRIVED (post-diffusion) inhibitor. Gated
+     on use_corr && recv_lm, matching sf_sim_develop()'s
+     `if(cr && sim->couplers_recv_lm)`. See the donor-side comment in
+     spektrafilm_develop_corr above for why the Kr=1e30 sentinel was not the
+     no-op it was assumed to be. */
   float crv[3] = { cr.x, cr.y, cr.z };
-  for(int c = 0; c < 3; c++)
-  {
-    const float Kr = mats[SF_M_LM_RECV + c], cref = mats[SF_M_LM_RECV + 3 + c];
-    crv[c] = crv[c] * (Kr + cref) / (Kr + crv[c]);
-  }
+  if(use_corr && recv_lm)
+    for(int c = 0; c < 3; c++)
+    {
+      const float Kr = mats[SF_M_LM_RECV + c], cref = mats[SF_M_LM_RECV + 3 + c];
+      crv[c] = crv[c] * (Kr + cref) / (Kr + crv[c]);
+    }
   const float lgv[3] = { lg.x - crv[0], lg.y - crv[1], lg.z - crv[2] };
   float out[3];
-  for(int c = 0; c < 3; c++) out[c] = sf_curve(curves, lgv[c], le0, le_step, c);
+  for(int c = 0; c < 3; c++) out[c] = sf_curve(curves, lgv[c], le0, inv_le_step, c);
   cmy[k] = (float4)(out[0], out[1], out[2], lg.w);
 }
 
@@ -584,10 +697,20 @@ __kernel void spektrafilm_grain_usm(__global float4 *cmy, __global const float4 
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
   const float4 dmin = (float4)(dmin0, dmin1, dmin2, 0.0f);
-  const float4 D = orig[k] + dmin;
+  /* fmax(..., 0) on D, matching sf_multiplicative_unsharp_mask3 in
+     spektra_core.c: the CPU clamps the absolute density at zero before using
+     it both as the ratio numerator and as the outer multiplier. Without the
+     clamp a negative D flips the sign of the whole term here instead of
+     collapsing it -- a behavioural difference, not a rounding one. */
+  const float4 D = fmax(orig[k] + dmin, 0.0f);
   const float4 blur = cmy[k] + dmin;
   const float eps = 1e-6f;
   const float ratmax = 4.0f, ratmin = 1.0f / ratmax;
+  /* NOTE: pow() below is only spec'd to 16 ULP in OpenCL, against a host
+     powf() that is typically correctly rounded. That gap survives this
+     patch; if a residue remains and is localised to grained pixels, this is
+     the next candidate for a shared portable implementation (cf. sf_exp_neg
+     in spektra_core.h). */
   float4 out;
   out.x = fmax(D.x * pow(fmax(fmin(D.x / fmax(blur.x, eps), ratmax), ratmin), amount) - dmin.x,
                0.0f);
@@ -606,23 +729,42 @@ __kernel void spektrafilm_print_expose(__global const float4 *cmy, __global floa
                                        __global const float *sy, __global const float *sz,
                                        __global const float *cmn, __global const float *cmx,
                                        const int steps, const float lo0, const float lo1,
-                                       const float lo2, const float hi0, const float hi1,
-                                       const float hi2, const float print_exposure)
+                                       const float lo2, const float inv0, const float inv1,
+                                       const float inv2, const float log10_print_exposure)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
   const float4 in = cmy[k];
   const float scale = (float)(steps - 1);
-  const float r = (in.x - lo0) / (hi0 - lo0) * scale;
-  const float g = (in.y - lo1) / (hi1 - lo1) * scale;
-  const float b = (in.z - lo2) / (hi2 - lo2) * scale;
+  /* inv0/inv1/inv2 are the host's sim->enl_inv_range[c] (1/(hi-lo), rounded
+     once from a double-precision subtraction) -- NOT computed here as
+     1/(hi-lo) in float32. hi and lo individually survive an extra float32
+     rounding each versus the host's double copies, and re-subtracting them
+     on-device is a catastrophic-cancellation hazard whenever a channel's
+     density range is narrow: the relative error in that difference blows
+     up right where the CPU fast path (sf_sim_print_expose/sf_sim_scan,
+     spektra_sim.c) stays exact, shifting r/g/b enough to flip floor() to
+     the neighbouring LUT cell for pixels near a cell boundary. Using the
+     same precomputed reciprocal as the CPU path makes this identical to
+     it by construction instead of hoping two different roundings agree. */
+  const float r = (in.x - lo0) * inv0 * scale;
+  const float g = (in.y - lo1) * inv1 * scale;
+  const float b = (in.z - lo2) * inv2 * scale;
   float3 l1 = sf_pchip3d(lut, sx, sy, sz, cmn, cmx, steps, r, g, b);
-  /* [st] raw = 10^l1 * print_exposure; back to log10 */
+  /* [st] raw = 10^l1 * print_exposure, back to log10 -- but done as the exact
+     identity log10(10^l1 * pe) == l1 + log10(pe), which is what
+     sf_sim_print_expose does on the CPU. The old round trip through
+     exp10()/log10() was not the same computation: OpenCL only specs those to
+     3 ULP each, and more importantly the + SF_LOG_EPS floored the result at
+     log10(1e-10) == -10 while the CPU floors at -30, so the two paths gave
+     visibly different values for any pixel dark enough to reach the floor.
+     One add, no library calls, no epsilon, and the same -30 guard the CPU
+     uses against -inf from degenerate inputs. */
   float3 out;
-  out.x = log10(fmax(exp10(l1.x) * print_exposure, 0.0f) + SF_LOG_EPS);
-  out.y = log10(fmax(exp10(l1.y) * print_exposure, 0.0f) + SF_LOG_EPS);
-  out.z = log10(fmax(exp10(l1.z) * print_exposure, 0.0f) + SF_LOG_EPS);
+  out.x = fmax(l1.x + log10_print_exposure, -30.0f);
+  out.y = fmax(l1.y + log10_print_exposure, -30.0f);
+  out.z = fmax(l1.z + log10_print_exposure, -30.0f);
   loge[k] = (float4)(out.x, out.y, out.z, in.w);
 }
 
@@ -630,7 +772,7 @@ __kernel void spektrafilm_print_expose(__global const float4 *cmy, __global floa
 __kernel void spektrafilm_print_develop(__global const float4 *loge, __global float4 *cmy,
                                         const int w, const int h,
                                         __global const float *print_curves, const float le0,
-                                        const float le_step)
+                                        const float inv_le_step)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
@@ -639,7 +781,7 @@ __kernel void spektrafilm_print_develop(__global const float4 *loge, __global fl
   const float lgv[3] = { in.x, in.y, in.z };
   float out[3];
   for(int c = 0; c < 3; c++)
-    out[c] = sf_curve(print_curves, lgv[c], le0, le_step, c);
+    out[c] = sf_curve(print_curves, lgv[c], le0, inv_le_step, c);
   cmy[k] = (float4)(out[0], out[1], out[2], in.w);
 }
 
@@ -656,8 +798,8 @@ __kernel void spektrafilm_scan(__global const float4 *cmy, __global float4 *rgb_
                                __global const float *sy, __global const float *sz,
                                __global const float *cmn, __global const float *cmx,
                                const int steps, const float lo0, const float lo1,
-                               const float lo2, const float hi0, const float hi1,
-                               const float hi2, __constant float *mats,
+                               const float lo2, const float inv0, const float inv1,
+                               const float inv2, __constant float *mats,
                                __global const float *cmax_table, const int cmax_nl,
                                const int cmax_nh, const int compress_mode,
                                const float out_luminance_boost,
@@ -669,11 +811,13 @@ __kernel void spektrafilm_scan(__global const float4 *cmy, __global float4 *rgb_
   const size_t k = (size_t)y * w + x;
   const float4 c4 = cmy[k];
   const float scale = (float)(steps - 1);
-  const float r = (c4.x - lo0) / (hi0 - lo0) * scale;
-  const float g = (c4.y - lo1) / (hi1 - lo1) * scale;
-  const float b = (c4.z - lo2) / (hi2 - lo2) * scale;
+  /* inv0/inv1/inv2 = host's sim->scan_inv_range[c]; see spektrafilm_print_expose
+     above for why this must not be recomputed as 1/(hi-lo) on-device. */
+  const float r = (c4.x - lo0) * inv0 * scale;
+  const float g = (c4.y - lo1) * inv1 * scale;
+  const float b = (c4.z - lo2) * inv2 * scale;
   float3 lx = sf_pchip3d(lut, sx, sy, sz, cmn, cmx, steps, r, g, b);
-  float3 xyz = (float3)(exp10(lx.x), exp10(lx.y), exp10(lx.z));
+  float3 xyz = (float3)(sf_pow10f(lx.x), sf_pow10f(lx.y), sf_pow10f(lx.z));
   if(out_luminance_boost != 1.0f) xyz *= out_luminance_boost;
   if(bw_on) /* scanner black/white point (positive film scans) */
   {
@@ -791,6 +935,13 @@ __kernel void spektrafilm_passthrough(__read_only image2d_t in, __write_only ima
    _sf_gauss_iir_1d on the CPU, so both paths deliver the identical blur above
    SF_GAUSS_EXACT_MAX_SIGMA. Launch with global size (h, 1) for rows and
    (w, 1) for columns. */
+/* Explicit fma(), in the same nesting as _sf_gauss_iir_1d() in
+   spektra_core.c -- see the long comment there. A bare
+   B*x + B1*w1 + B2*w2 + B3*w3 leaves the compiler free to fuse or reassociate,
+   the host and the device need not choose alike, and the recursion feeds the
+   result back in, so one differing rounding becomes a different filter rather
+   than a one-ULP difference. FP_CONTRACT pragmas do not settle this on either
+   side; an explicit fma does. */
 __kernel void spektrafilm_yvv_row_4c(__global const float4 *src, __global float4 *dst,
                                      const int w, const int h, const float B, const float B1,
                                      const float B2, const float B3)
@@ -807,13 +958,13 @@ __kernel void spektrafilm_yvv_row_4c(__global const float4 *src, __global float4
   float4 w1 = s[0], w2 = s[0], w3 = s[0];
   for(int j = 0; j < w; j++)
   {
-    const float4 v = B * s[j] + B1 * w1 + B2 * w2 + B3 * w3;
+    const float4 v = fma(B, s[j], fma(B1, w1, fma(B2, w2, B3 * w3)));
     d[j] = v; w3 = w2; w2 = w1; w1 = v;
   }
   float4 v1 = d[w - 1], v2 = v1, v3 = v1;
   for(int j = w - 1; j >= 0; j--)
   {
-    const float4 v = B * d[j] + B1 * v1 + B2 * v2 + B3 * v3;
+    const float4 v = fma(B, d[j], fma(B1, v1, fma(B2, v2, B3 * v3)));
     d[j] = v; v3 = v2; v2 = v1; v1 = v;
   }
 }
@@ -833,14 +984,14 @@ __kernel void spektrafilm_yvv_col_4c(__global const float4 *src, __global float4
   for(int i = 0; i < h; i++)
   {
     const size_t k = (size_t)i * w + col;
-    const float4 v = B * src[k] + B1 * w1 + B2 * w2 + B3 * w3;
+    const float4 v = fma(B, src[k], fma(B1, w1, fma(B2, w2, B3 * w3)));
     dst[k] = v; w3 = w2; w2 = w1; w1 = v;
   }
   float4 v1 = dst[(size_t)(h - 1) * w + col], v2 = v1, v3 = v1;
   for(int i = h - 1; i >= 0; i--)
   {
     const size_t k = (size_t)i * w + col;
-    const float4 v = B * dst[k] + B1 * v1 + B2 * v2 + B3 * v3;
+    const float4 v = fma(B, dst[k], fma(B1, v1, fma(B2, v2, B3 * v3)));
     dst[k] = v; v3 = v2; v2 = v1; v1 = v;
   }
 }
@@ -861,13 +1012,13 @@ __kernel void spektrafilm_yvv_row_1c(__global const float *src, __global float *
   float w1 = s[0], w2 = s[0], w3 = s[0];
   for(int j = 0; j < w; j++)
   {
-    const float v = B * s[j] + B1 * w1 + B2 * w2 + B3 * w3;
+    const float v = fma(B, s[j], fma(B1, w1, fma(B2, w2, B3 * w3)));
     d[j] = v; w3 = w2; w2 = w1; w1 = v;
   }
   float v1 = d[w - 1], v2 = v1, v3 = v1;
   for(int j = w - 1; j >= 0; j--)
   {
-    const float v = B * d[j] + B1 * v1 + B2 * v2 + B3 * v3;
+    const float v = fma(B, d[j], fma(B1, v1, fma(B2, v2, B3 * v3)));
     d[j] = v; v3 = v2; v2 = v1; v1 = v;
   }
 }
@@ -887,14 +1038,14 @@ __kernel void spektrafilm_yvv_col_1c(__global const float *src, __global float *
   for(int i = 0; i < h; i++)
   {
     const size_t k = (size_t)i * w + col;
-    const float v = B * src[k] + B1 * w1 + B2 * w2 + B3 * w3;
+    const float v = fma(B, src[k], fma(B1, w1, fma(B2, w2, B3 * w3)));
     dst[k] = v; w3 = w2; w2 = w1; w1 = v;
   }
   float v1 = dst[(size_t)(h - 1) * w + col], v2 = v1, v3 = v1;
   for(int i = h - 1; i >= 0; i--)
   {
     const size_t k = (size_t)i * w + col;
-    const float v = B * dst[k] + B1 * v1 + B2 * v2 + B3 * v3;
+    const float v = fma(B, dst[k], fma(B1, v1, fma(B2, v2, B3 * v3)));
     dst[k] = v; v3 = v2; v2 = v1; v1 = v;
   }
 }

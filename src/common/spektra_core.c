@@ -103,10 +103,27 @@ static void _sf_gauss_iir_1d(const float *const in,
                              const float B2,
                              const float B3)
 {
+  /* Explicit fmaf(), in this exact nesting, and the same in spektrafilm.cl's
+     four sf_yvv_* kernels. Not stylistic: this line is a sum of FOUR products,
+     so a compiler may fuse any of them into a mad or reassociate the sum, and
+     the two sides need not choose alike. Unlike the FIR path -- a single
+     accumulator chain, which both sides evaluate identically -- the result
+     here feeds straight back in as w1, so one differing rounding does not stay
+     one ULP: measured on a 2048-sample line, a single reassociation moves 74%
+     of the outputs and a single contraction 87%. That is a different filter,
+     not a rounding difference, and it was the bulk of the CPU/GPU divergence
+     in this module.
+
+     #pragma STDC FP_CONTRACT / #pragma OPENCL FP_CONTRACT are not enough:
+     GCC has never implemented the C one, and the OpenCL one is not honoured by
+     every driver. An explicit fma is IEEE-defined and correctly rounded, so
+     pinning the association here makes both sides agree by construction
+     instead of by flag. B3 * w3 stays a bare multiply -- also correctly
+     rounded -- so every operation in the line is fully specified. */
   float w1 = in[0], w2 = in[0], w3 = in[0];
   for(int i = 0; i < len; i++)
   {
-    const float v = B * in[i] + B1 * w1 + B2 * w2 + B3 * w3;
+    const float v = fmaf(B, in[i], fmaf(B1, w1, fmaf(B2, w2, B3 * w3)));
     out[i] = v;
     w3 = w2;
     w2 = w1;
@@ -115,7 +132,7 @@ static void _sf_gauss_iir_1d(const float *const in,
   float y1 = out[len - 1], y2 = y1, y3 = y1;
   for(int i = len - 1; i >= 0; i--)
   {
-    const float v = B * out[i] + B1 * y1 + B2 * y2 + B3 * y3;
+    const float v = fmaf(B, out[i], fmaf(B1, y1, fmaf(B2, y2, B3 * y3)));
     out[i] = v;
     y3 = y2;
     y2 = y1;
@@ -270,7 +287,7 @@ void sf_blur_plane3(float *const buf,
                     const float sigma,
                     float *const plane)
 {
-  if(sigma < 0.3f) return;
+  if(sigma < SF_GAUSS_MIN_SIGMA) return;
   float *const trans = dt_alloc_align_float((size_t)w * h);
   for(int c = 0; c < 3; c++) _blur_channel(buf, w, h, c, sigma, plane, trans, /*exact_only=*/1);
   dt_free_align(trans);
@@ -308,7 +325,7 @@ void sf_blur_plane3_fast(float *const buf,
                          const float sigma,
                          float *const plane)
 {
-  if(sigma < 0.3f) return;
+  if(sigma < SF_GAUSS_MIN_SIGMA) return;
   float *const trans = dt_alloc_align_float((size_t)w * h);
   for(int c = 0; c < 3; c++) _blur_channel(buf, w, h, c, sigma, plane, trans, /*exact_only=*/0);
   dt_free_align(trans);

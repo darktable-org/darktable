@@ -172,6 +172,35 @@ static void mat3_mulv(double out[3],
   out[2] = r2;
 }
 
+/* float sibling, matching spektrafilm.cl's sf_mat3 exactly (same operand
+   order) -- used by the scan-stage fast path so it accumulates in the same
+   precision as the GPU kernel. */
+/* ---- fma parity with spektrafilm.cl -------------------------------------
+   The dot products and polynomials below use explicit fmaf() in the same
+   nesting as their kernel twins (sf_mat3, sf_mitchell, sf_cubic2d).
+
+   Not cosmetic. The host honours -ffp-contract=off, so a bare a*b + c*d + e*f
+   compiles to separate multiplies and adds; the device compiler ignores
+   #pragma OPENCL FP_CONTRACT OFF and fuses anyway -- which is why pinning the
+   YvV recursion with fma() moved the CPU/GPU divergence where the pragma
+   alone did nothing. Left bare, every matrix multiply and every Mitchell
+   weight in the expose stage lands a fraction of an ULP from its twin, and
+   expose is stage one, so nothing downstream can agree afterwards. An
+   explicit fma is IEEE-defined and correctly rounded, so pinning both sides
+   makes them agree by construction rather than by compiler flag. */
+
+static inline void mat3_mulv_f(float out[3],
+                               const float m[9],
+                               const float v[3])
+{
+  const float r0 = fmaf(m[0], v[0], fmaf(m[1], v[1], m[2] * v[2]));
+  const float r1 = fmaf(m[3], v[0], fmaf(m[4], v[1], m[5] * v[2]));
+  const float r2 = fmaf(m[6], v[0], fmaf(m[7], v[1], m[8] * v[2]));
+  out[0] = r0;
+  out[1] = r1;
+  out[2] = r2;
+}
+
 static int mat3_inv(double out[9],
                     const double m[9])
 {
@@ -239,6 +268,21 @@ static const double SF_OKLAB_M1[9]
 static const double SF_OKLAB_M2[9]
     = { 0.2104542553, 0.7936177850, -0.0040720468, 1.9779984951, -2.4285922050,
         0.4505937099, 0.0259040371, 0.7827717662, -0.8086757660 };
+/* float mirrors of the two constants above, for sf_sim_scan's fast path --
+   see the *_f functions near xyz_to_oklab/oklab_to_xyz for why this needs to
+   be a float32 constant, not just SF_OKLAB_M1/M2 cast on the fly. */
+static const float SF_OKLAB_M1_F[9]
+    = { 0.8189330101f, 0.3618667424f, -0.1288597137f, 0.0329845436f, 0.9293118715f,
+        0.0361456387f, 0.0482003018f, 0.2643662691f, 0.6338517070f };
+static const float SF_OKLAB_M2_F[9]
+    = { 0.2104542553f, 0.7936177850f, -0.0040720468f, 1.9779984951f, -2.4285922050f,
+        0.4505937099f, 0.0259040371f, 0.7827717662f, -0.8086757660f };
+
+/* forward decl: defined near the other cpNf GPU-export helpers below, needed
+   here already to populate the *_f mirror matrices at build time (see
+   sf_sim_build) so sf_sim_scan's fast path can match spektrafilm.cl's
+   float32 arithmetic instead of running the scan/gamut stage in double. */
+static void cp9f(float dst[9], const double src[9]);
 
 /* ------------------------------------------------------------------------ */
 /* internal structures                                                      */
@@ -434,6 +478,9 @@ struct sf_sim_t
   double illum_view_xyz[3];
   double scan_lo[3], scan_hi[3];
   double m_out[9]; /* XYZ (viewing illum) -> linear output RGB (CAT02) */
+  float m_out_f[9]; /* float mirror, so the scan fast path (sf_sim_scan) runs
+                        this matrix multiply at the same precision as
+                        spektrafilm.cl's spektrafilm_scan kernel */
   /* scanner black/white point correction (positive film scans only):
      xyz *= clip(bw_m*Y + bw_q, 0, 1)/Y after xyz = 10^log_xyz.
      Mirrors color_reference.black_white_xyz_correction with
@@ -445,8 +492,13 @@ struct sf_sim_t
   int lut_steps;
   double *enl_lut, *enl_sx, *enl_sy, *enl_sz, *enl_cmin, *enl_cmax;
   double *scan_lut, *scan_sx, *scan_sy, *scan_sz, *scan_cmin, *scan_cmax;
-  float *enl_lut_f;   /* float copies for fast trilinear per-pixel path */
+  float *enl_lut_f;   /* float copies for the fast per-pixel path */
   float *scan_lut_f;
+  /* float copies of the slope/bound tables, so the fast path runs the same
+     monotone-PCHIP evaluator as sf_pchip3d() in spektrafilm.cl instead of
+     silently degrading to trilinear (see sf_sim_print_expose/sf_sim_scan). */
+  float *enl_sx_f, *enl_sy_f, *enl_sz_f, *enl_cmin_f, *enl_cmax_f;
+  float *scan_sx_f, *scan_sy_f, *scan_sz_f, *scan_cmin_f, *scan_cmax_f;
 
   /* output gamut compression */
   sf_output_compress_t out_compress;
@@ -454,6 +506,14 @@ struct sf_sim_t
   double out_scale;
   double out_rgb2xyz[9], out_xyz2rgb[9];
   double oklab_m1inv[9], oklab_m2inv[9];
+  /* float mirrors of the five matrices above (plus SF_OKLAB_M1/M2 themselves),
+     for the same reason as m_out_f: sf_sim_scan's OkLCh compression must run
+     in float, matching spektrafilm.cl's sf_xyz_to_oklab/sf_oklab_to_xyz, or
+     it silently diverges from the GPU path on every pixel that goes through
+     gamut compression -- not just on rounding at the edges of some branch,
+     the way most CPU/GPU drift in this module works. */
+  float out_rgb2xyz_f[9], out_xyz2rgb_f[9];
+  float oklab_m1inv_f[9], oklab_m2inv_f[9];
   float *cmax; /* SF_CMAX_NL × SF_CMAX_NH */
 };
 
@@ -1398,6 +1458,22 @@ static inline double reinhard_knee(double d,
   return threshold + scale * y;
 }
 
+/* float sibling -- matches spektrafilm.cl's sf_knee exactly. Used only by
+   the scan-stage fast path (compress_rgb_oklch_f/compress_rgb_aces_f); the
+   double version above stays for the tone curve knee, which runs once per
+   build_film_curves entry and has no GPU counterpart to match. */
+static inline float reinhard_knee_f(float d,
+                                    float threshold,
+                                    float limit,
+                                    float power)
+{
+  if(d <= threshold) return d;
+  const float scale = limit - threshold;
+  const float x = (d - threshold) / scale;
+  const float y = x / powf(1.0f + powf(x, power), 1.0f / power);
+  return threshold + scale * y;
+}
+
 /* distance from origin along unit direction to the first polygon crossing */
 static double ray_polygon_distance(const double origin[2],
                                    const double dir[2],
@@ -1460,6 +1536,27 @@ static inline double mitchell_weight(double t)
   return 0.0;
 }
 
+/* float twin of mitchell_weight(), matching spektrafilm.cl's sf_mitchell()
+   term for term (same B/C, same Horner-free expansion, all in float32). The
+   double version above stays for cubic_interp_2d(), which only runs at
+   sim-build time and has no GPU counterpart to agree with. */
+static inline float mitchell_weight_f(float t)
+{
+  const float B = 1.0f / 3.0f, C = 1.0f / 3.0f;
+  const float x = fabsf(t);
+  /* fma-pinned, matching sf_mitchell in spektrafilm.cl */
+  if(x < 1.0f)
+    return (1.0f / 6.0f)
+           * fmaf((12.0f - 9.0f * B - 6.0f * C) * x * x, x,
+                  fmaf((-18.0f + 12.0f * B + 6.0f * C) * x, x, (6.0f - 2.0f * B)));
+  else if(x < 2.0f)
+    return (1.0f / 6.0f)
+           * fmaf((-B - 6.0f * C) * x * x, x,
+                  fmaf((6.0f * B + 30.0f * C) * x, x,
+                       fmaf((-12.0f * B - 48.0f * C), x, (8.0f * B + 24.0f * C))));
+  return 0.0f;
+}
+
 static inline int safe_index(int idx,
                              int L)
 {
@@ -1497,6 +1594,31 @@ static inline void cubic_base_fraction(double coord,
     return;
   }
   *base = (int)floor(coord);
+  *frac = coord - *base;
+}
+
+/* float counterpart of cubic_base_fraction() (see above): same clamp-to-top
+   and NaN-hardening behaviour, just in single precision, so the fast path's
+   cell selection matches the double path and spektrafilm.cl's sf_base_frac()
+   bit-for-bit in intent. */
+static inline void cubic_base_fraction_f(float coord,
+                                         int L,
+                                         int *base,
+                                         float *frac)
+{
+  if(!(coord > 0.0f))
+  {
+    *base = 0;
+    *frac = 0.0f;
+    return;
+  }
+  if(coord >= (float)(L - 1))
+  {
+    *base = L - 2;
+    *frac = 1.0f;
+    return;
+  }
+  *base = (int)floorf(coord);
   *frac = coord - *base;
 }
 
@@ -1575,7 +1697,16 @@ static void bilinear_2d_clamped(double out[3],
    clamping flattens it -- which is exactly where the film response is steepest.
    The OpenCL kernel (sf_cubic2d) and the reference (apply_lut_cubic_2d in
    spectral_upsampling.py) both use this kernel, so anything else here renders
-   differently depending on which device ran. */
+   differently depending on which device ran.
+
+   Every step here is float32 -- base/fraction, the Mitchell weights, the
+   accumulator and the normalising divide -- because sf_cubic2d is. This
+   function used to carry the _f only in its name and its LUT type, and do all
+   of its arithmetic in double; that made the very first pipeline stage
+   disagree with the GPU on essentially every pixel, and since the grain
+   sampler downstream turns a sub-ULP input difference into a whole-integer
+   Poisson draw difference, nothing further down the pipe could ever agree
+   either. Keep this in float. */
 static void cubic_interp_2d_f(float out[3],
                               const float *lut,
                               int L,
@@ -1583,74 +1714,109 @@ static void cubic_interp_2d_f(float out[3],
                               float y)
 {
   int xb, yb;
-  double xf, yf;
-  cubic_base_fraction((double)x, L, &xb, &xf);
-  cubic_base_fraction((double)y, L, &yb, &yf);
-  double wx[4], wy[4];
+  float xf, yf;
+  cubic_base_fraction_f(x, L, &xb, &xf);
+  cubic_base_fraction_f(y, L, &yb, &yf);
+  float wx[4], wy[4];
   for(int i = 0; i < 4; i++)
   {
-    wx[i] = mitchell_weight(xf + 1.0 - i);
-    wy[i] = mitchell_weight(yf + 1.0 - i);
+    wx[i] = mitchell_weight_f(xf + 1.0f - i);
+    wy[i] = mitchell_weight_f(yf + 1.0f - i);
   }
-  double acc[3] = { 0, 0, 0 }, wsum = 0.0;
+  float acc[3] = { 0.0f, 0.0f, 0.0f }, wsum = 0.0f;
   for(int i = 0; i < 4; i++)
   {
     const int xi = safe_index(xb - 1 + i, L);
     for(int j = 0; j < 4; j++)
     {
       const int yj = safe_index(yb - 1 + j, L);
-      const double w = wx[i] * wy[j];
+      const float w = wx[i] * wy[j];
       wsum += w;
       const float *px = lut + ((size_t)xi * L + yj) * 3;
-      acc[0] += w * px[0];
-      acc[1] += w * px[1];
-      acc[2] += w * px[2];
+      /* fma, matching sf_cubic2d's accumulator */
+      acc[0] = fmaf(w, px[0], acc[0]);
+      acc[1] = fmaf(w, px[1], acc[1]);
+      acc[2] = fmaf(w, px[2], acc[2]);
     }
   }
-  if(wsum != 0.0)
+  if(wsum != 0.0f)
     for(int c = 0; c < 3; c++) acc[c] /= wsum;
-  out[0] = (float)acc[0];
-  out[1] = (float)acc[1];
-  out[2] = (float)acc[2];
+  out[0] = acc[0];
+  out[1] = acc[1];
+  out[2] = acc[2];
 }
 
-/* Trilinear 3D on a float LUT — replaces PCHIP 3D cubic for the hot scan/print
-   LUT path. The 17³ grid is smooth (density→log XYZ from spectral integrals),
-   so PCHIP's monotonicity guarantee adds negligible quality over linear. */
-static void trilinear_interp_3d_f(float out[3],
-                                  const float *lut,
-                                  int n,
-                                  float r,
-                                  float g,
-                                  float b)
+static inline float hermite_value_f(float y0,
+                                    float y1,
+                                    float m0,
+                                    float m1,
+                                    float t)
 {
-  r = CLAMP(r, 0.0f, (float)(n - 1));
-  g = CLAMP(g, 0.0f, (float)(n - 1));
-  b = CLAMP(b, 0.0f, (float)(n - 1));
-  const int i = (int)r, j = (int)g, k = (int)b;
-  const int i1 = i < n - 1 ? i + 1 : i;
-  const int j1 = j < n - 1 ? j + 1 : j;
-  const int k1 = k < n - 1 ? k + 1 : k;
-  const float tr = r - i, tg = g - j, tb = b - k;
-  const float omtr = 1.0f - tr, omtg = 1.0f - tg, omtb = 1.0f - tb;
-#define TL(idx) lut[((size_t)(idx) * n + (j)) * n + (k)]
-#define TL3(idx) lut[((((size_t)(idx) * n + (j)) * n + (k)) * 3]
+  const float t2 = t * t, t3 = t2 * t;
+  return (2.0f * t3 - 3.0f * t2 + 1.0f) * y0 + (t3 - 2.0f * t2 + t) * m0
+         + (-2.0f * t3 + 3.0f * t2) * y1 + (t3 - t2) * m1;
+}
+
+static inline float linear_mix_f(float v0,
+                                 float v1,
+                                 float t) { return v0 + t * (v1 - v0); }
+
+/* float, single-precision twin of pchip3d_interp() below -- same monotone
+   cubic Hermite blend over the same slope/bound tables, term for term the
+   same as sf_pchip3d() in spektrafilm.cl. This is what the fast per-pixel
+   path must call: falling back to plain trilinear here (as the old
+   trilinear_interp_3d_f() did) silently drops the PCHIP correction that the
+   OpenCL path always applies, which is a real CPU/GPU divergence, not a
+   rounding difference. r, g, b are in [0, n-1] index units. */
+static void pchip3d_interp_f(float out[3],
+                             const float *lut,
+                             const float *sx,
+                             const float *sy,
+                             const float *sz,
+                             const float *cmin,
+                             const float *cmax,
+                             int n,
+                             float r,
+                             float g,
+                             float b)
+{
+  const int m = n - 1;
+  int i, j, k;
+  float tr, tg, tb;
+  cubic_base_fraction_f(r, n, &i, &tr);
+  cubic_base_fraction_f(g, n, &j, &tg);
+  cubic_base_fraction_f(b, n, &k, &tb);
+#define AT(arr, ii, jj, kk, c) arr[((((size_t)(ii)) * n + (jj)) * n + (kk)) * 3 + (c)]
   for(int c = 0; c < 3; c++)
   {
-    const float v00 = lut[((((size_t)i) * n + j) * n + k) * 3 + c] * omtr
-                    + lut[((((size_t)i1) * n + j) * n + k) * 3 + c] * tr;
-    const float v01 = lut[((((size_t)i) * n + j1) * n + k) * 3 + c] * omtr
-                    + lut[((((size_t)i1) * n + j1) * n + k) * 3 + c] * tr;
-    const float v10 = lut[((((size_t)i) * n + j) * n + k1) * 3 + c] * omtr
-                    + lut[((((size_t)i1) * n + j) * n + k1) * 3 + c] * tr;
-    const float v11 = lut[((((size_t)i) * n + j1) * n + k1) * 3 + c] * omtr
-                    + lut[((((size_t)i1) * n + j1) * n + k1) * 3 + c] * tr;
-    const float v0 = v00 * omtg + v01 * tg;
-    const float v1 = v10 * omtg + v11 * tg;
-    out[c] = v0 * omtb + v1 * tb;
+    const float v000 = hermite_value_f(AT(lut, i, j, k, c), AT(lut, i + 1, j, k, c),
+                                       AT(sx, i, j, k, c), AT(sx, i + 1, j, k, c), tr);
+    const float v010 = hermite_value_f(AT(lut, i, j + 1, k, c), AT(lut, i + 1, j + 1, k, c),
+                                       AT(sx, i, j + 1, k, c), AT(sx, i + 1, j + 1, k, c), tr);
+    const float v001 = hermite_value_f(AT(lut, i, j, k + 1, c), AT(lut, i + 1, j, k + 1, c),
+                                       AT(sx, i, j, k + 1, c), AT(sx, i + 1, j, k + 1, c), tr);
+    const float v011
+        = hermite_value_f(AT(lut, i, j + 1, k + 1, c), AT(lut, i + 1, j + 1, k + 1, c),
+                          AT(sx, i, j + 1, k + 1, c), AT(sx, i + 1, j + 1, k + 1, c), tr);
+    const float sy00 = linear_mix_f(AT(sy, i, j, k, c), AT(sy, i + 1, j, k, c), tr);
+    const float sy10 = linear_mix_f(AT(sy, i, j + 1, k, c), AT(sy, i + 1, j + 1, k, c), tr);
+    const float sy01 = linear_mix_f(AT(sy, i, j, k + 1, c), AT(sy, i + 1, j, k + 1, c), tr);
+    const float sy11
+        = linear_mix_f(AT(sy, i, j + 1, k + 1, c), AT(sy, i + 1, j + 1, k + 1, c), tr);
+    const float vz0 = hermite_value_f(v000, v010, sy00, sy10, tg);
+    const float vz1 = hermite_value_f(v001, v011, sy01, sy11, tg);
+    const float sz0
+        = linear_mix_f(linear_mix_f(AT(sz, i, j, k, c), AT(sz, i + 1, j, k, c), tr),
+                       linear_mix_f(AT(sz, i, j + 1, k, c), AT(sz, i + 1, j + 1, k, c), tr), tg);
+    const float sz1 = linear_mix_f(
+        linear_mix_f(AT(sz, i, j, k + 1, c), AT(sz, i + 1, j, k + 1, c), tr),
+        linear_mix_f(AT(sz, i, j + 1, k + 1, c), AT(sz, i + 1, j + 1, k + 1, c), tr), tg);
+    float v = hermite_value_f(vz0, vz1, sz0, sz1, tb);
+    const size_t cidx = ((((size_t)i) * m + j) * m + k) * 3 + c;
+    v = CLAMP(v, cmin[cidx], cmax[cidx]);
+    out[c] = v;
   }
-#undef TL
-#undef TL3
+#undef AT
 }
 
 /* ------------------------------------------------------------------------ */
@@ -2538,6 +2704,31 @@ static inline void oklab_to_xyz(const sf_sim_t *s,
   mat3_mulv(xyz, s->oklab_m1inv, lms);
 }
 
+/* float siblings, matching spektrafilm.cl's sf_xyz_to_oklab/sf_oklab_to_xyz
+   (same cbrt-in-float and cube-by-multiplication, not pow()). Used only by
+   the scan-stage fast path (compress_rgb_oklch_f below); build_cmax_table
+   above keeps using the double versions since it runs once at sim-build
+   time, not per pixel, and both sides read the resulting table as the same
+   float array regardless. */
+static inline void xyz_to_oklab_f(const float xyz[3],
+                                  float lab[3])
+{
+  float lms[3];
+  mat3_mulv_f(lms, SF_OKLAB_M1_F, xyz);
+  for(int i = 0; i < 3; i++) lms[i] = cbrtf(lms[i]);
+  mat3_mulv_f(lab, SF_OKLAB_M2_F, lms);
+}
+
+static inline void oklab_to_xyz_f(const sf_sim_t *s,
+                                  const float lab[3],
+                                  float xyz[3])
+{
+  float lms[3];
+  mat3_mulv_f(lms, s->oklab_m2inv_f, lab);
+  for(int i = 0; i < 3; i++) lms[i] = lms[i] * lms[i] * lms[i];
+  mat3_mulv_f(xyz, s->oklab_m1inv_f, lms);
+}
+
 #define SF_CMAX_L_LO 0.02 /* [gc] _get_output_c_max_table oklch L_grid */
 #define SF_CMAX_L_HI 1.0
 
@@ -2582,67 +2773,88 @@ static bool build_cmax_table(sf_sim_t *s)
   return true;
 }
 
-/* [gc] _c_max_lookup — bilinear, L clamped, hue wrapped */
-static inline double cmax_lookup(const sf_sim_t *s,
-                                 double L,
-                                 double h)
+/* [gc] _c_max_lookup -- bilinear, L clamped, hue wrapped. Matches
+   spektrafilm.cl's sf_cmax_lookup (same clamp/wrap arithmetic, in float
+   throughout -- s->cmax is already a float table on both sides, so there is
+   no double step left in the lookup at all). Replaces the double
+   cmax_lookup this patch removes: compress_rgb_oklch_f was its only
+   caller. */
+static inline float cmax_lookup_f(const sf_sim_t *s,
+                                  float L,
+                                  float h)
 {
-  L = CLAMP(L, SF_CMAX_L_LO, SF_CMAX_L_HI);
-  const double h_step = 2.0 * M_PI / SF_CMAX_NH;
-  const double h_idx = (h + M_PI) / h_step;
-  const double h_floor = floor(h_idx);
+  L = CLAMP(L, (float)SF_CMAX_L_LO, (float)SF_CMAX_L_HI);
+  const float h_step = 2.0f * (float)M_PI / SF_CMAX_NH;
+  const float h_idx = (h + (float)M_PI) / h_step;
+  const float h_floor = floorf(h_idx);
   int h_lo = ((int)h_floor) % SF_CMAX_NH;
   if(h_lo < 0) h_lo += SF_CMAX_NH;
   const int h_hi = (h_lo + 1) % SF_CMAX_NH;
-  const double h_frac = h_idx - h_floor;
+  const float h_frac = h_idx - h_floor;
 
-  const double L_idx
-      = (L - SF_CMAX_L_LO) / (SF_CMAX_L_HI - SF_CMAX_L_LO) * (double)(SF_CMAX_NL - 1);
-  int L_lo = (int)floor(L_idx);
+  const float L_idx
+      = (L - (float)SF_CMAX_L_LO) / (float)(SF_CMAX_L_HI - SF_CMAX_L_LO) * (float)(SF_CMAX_NL - 1);
+  int L_lo = (int)floorf(L_idx);
   L_lo = CLAMP(L_lo, 0, SF_CMAX_NL - 2);
   const int L_hi = L_lo + 1;
-  const double L_frac = L_idx - L_lo;
+  const float L_frac = L_idx - L_lo;
 
   const float *T = s->cmax;
-  const double v00 = T[(size_t)L_lo * SF_CMAX_NH + h_lo];
-  const double v01 = T[(size_t)L_lo * SF_CMAX_NH + h_hi];
-  const double v10 = T[(size_t)L_hi * SF_CMAX_NH + h_lo];
-  const double v11 = T[(size_t)L_hi * SF_CMAX_NH + h_hi];
+  const float v00 = T[(size_t)L_lo * SF_CMAX_NH + h_lo];
+  const float v01 = T[(size_t)L_lo * SF_CMAX_NH + h_hi];
+  const float v10 = T[(size_t)L_hi * SF_CMAX_NH + h_lo];
+  const float v11 = T[(size_t)L_hi * SF_CMAX_NH + h_hi];
   return v00 * (1 - L_frac) * (1 - h_frac) + v01 * (1 - L_frac) * h_frac
          + v10 * L_frac * (1 - h_frac) + v11 * L_frac * h_frac;
 }
 
-/* [gc] compress_rgb_oklch_chroma with lightness_compression (0.7, 1, 2.2) */
-static void compress_rgb_oklch(const sf_sim_t *s,
-                               double rgb[3])
+/* [gc] compress_rgb_oklch_chroma with lightness_compression (0.7, 1, 2.2),
+   in float, matching spektrafilm.cl's compress_mode == 1 branch term for term
+   (same hypot/atan2 operand order, same knee constants). sf_sim_scan is the
+   only caller, so this replaces the double compress_rgb_oklch outright rather
+   than sitting next to it -- keeping both would leave the double one unused
+   and trip -Werror=unused-function.
+
+   The double xyz_to_oklab/oklab_to_xyz do survive, on their own merits:
+   oklab_to_xyz for build_cmax_table and xyz_to_oklab for the colour picker's
+   _probe_lightness_run. Neither has a GPU counterpart to agree with. */
+static void compress_rgb_oklch_f(const sf_sim_t *s,
+                                 float rgb[3])
 {
-  double xyz[3], lab[3];
-  mat3_mulv(xyz, s->out_rgb2xyz, rgb);
-  xyz_to_oklab(xyz, lab);
-  double L = lab[0];
-  const double a = lab[1], b = lab[2];
+  float xyz[3], lab[3];
+  mat3_mulv_f(xyz, s->out_rgb2xyz_f, rgb);
+  xyz_to_oklab_f(xyz, lab);
+  float L = lab[0];
+  const float a = lab[1], b = lab[2];
   /* lightness first, so C_max is looked up at the corrected L */
-  L = reinhard_knee(L, SF_OUT_LIGHT_T, SF_OUT_LIGHT_L, SF_OUT_LIGHT_P);
-  const double C = hypot(a, b);
-  const double h = atan2(b, a);
-  const double C_max = fmax(cmax_lookup(s, L, h), 1e-9);
-  const double d = reinhard_knee(C / C_max, SF_OUT_KNEE_T, SF_OUT_KNEE_L, SF_OUT_KNEE_P);
-  const double C_new = d * C_max;
-  const double lab_new[3] = { L, C_new * cos(h), C_new * sin(h) };
-  oklab_to_xyz(s, lab_new, xyz);
-  mat3_mulv(rgb, s->out_xyz2rgb, xyz);
+  L = reinhard_knee_f(L, (float)SF_OUT_LIGHT_T, (float)SF_OUT_LIGHT_L, (float)SF_OUT_LIGHT_P);
+  const float C = hypotf(a, b);
+  const float h = atan2f(b, a);
+  const float C_max = fmaxf(cmax_lookup_f(s, L, h), 1e-9f);
+  const float d = reinhard_knee_f(C / C_max, (float)SF_OUT_KNEE_T, (float)SF_OUT_KNEE_L,
+                                  (float)SF_OUT_KNEE_P);
+  const float C_new = d * C_max;
+  const float lab_new[3] = { L, C_new * cosf(h), C_new * sinf(h) };
+  oklab_to_xyz_f(s, lab_new, xyz);
+  mat3_mulv_f(rgb, s->out_xyz2rgb_f, xyz);
 }
 
-/* [gc] compress_rgb_aces_rgc — per-channel knee on achromatic distance */
-static void compress_rgb_aces(double rgb[3])
+/* [gc] compress_rgb_aces_rgc -- per-channel knee on achromatic distance, in
+   float, matching spektrafilm.cl's compress_mode == 2 branch (same 1e-12f
+   achromatic guard). Replaces the double compress_rgb_aces for the same
+   reason as compress_rgb_oklch_f above. test_spektra_sim.c called the double
+   version directly and is repointed here, so the tests now exercise the code
+   that actually ships. */
+static void compress_rgb_aces_f(float rgb[3])
 {
-  const double ach = fmax(rgb[0], fmax(rgb[1], rgb[2]));
-  if(ach <= 1e-12) return;
+  const float ach = fmaxf(rgb[0], fmaxf(rgb[1], rgb[2]));
+  if(ach <= 1e-12f) return;
   for(int c = 0; c < 3; c++)
   {
-    const double d = (ach - rgb[c]) / ach;
-    const double dc = reinhard_knee(d, SF_OUT_KNEE_T, SF_OUT_KNEE_L, SF_OUT_KNEE_P);
-    rgb[c] = ach * (1.0 - dc);
+    const float d = (ach - rgb[c]) / ach;
+    const float dc = reinhard_knee_f(d, (float)SF_OUT_KNEE_T, (float)SF_OUT_KNEE_L,
+                                     (float)SF_OUT_KNEE_P);
+    rgb[c] = ach * (1.0f - dc);
   }
 }
 
@@ -2696,7 +2908,7 @@ float sf_sim_probe_lightness_scale(const sf_sim_t *sim,
 }
 
 /* Runs one RGB triple through the full simulation up to (but not including)
- * the highlight/gamut compressor (compress_rgb_oklch/aces), using
+ * the highlight/gamut compressor (compress_rgb_oklch_f/aces_f), using
  * `boost_override` in place of sim->out_luminance_boost, and returns the
  * resulting OkLab lightness -- the precompression-boost picker's actual
  * measurement primitive. This needs the pre-compression value specifically:
@@ -2764,10 +2976,16 @@ static void expose_pixel_f(const float m_in[9],
                            float raw[3])
 {
   float xyz[3];
+  /* fma-pinned, matching sf_mat3 in spektrafilm.cl -- see mat3_mulv_f */
   for(int i = 0; i < 3; i++)
-    xyz[i] = m_in[i * 3] * rgb[0] + m_in[i * 3 + 1] * rgb[1] + m_in[i * 3 + 2] * rgb[2];
+    xyz[i] = fmaf(m_in[i * 3], rgb[0],
+                  fmaf(m_in[i * 3 + 1], rgb[1], m_in[i * 3 + 2] * rgb[2]));
   const float b = xyz[0] + xyz[1] + xyz[2];
-  const float xy[2] = { xyz[0] / fmaxf(b, 1e-10f), xyz[1] / fmaxf(b, 1e-10f) };
+  /* one reciprocal then two multiplies, not two divides -- spektrafilm_expose
+     does exactly this, and the two forms differ by up to an ULP each, which
+     is enough to move the tc index across a cell boundary. */
+  const float inv_b = 1.0f / fmaxf(b, 1e-10f);
+  const float xy[2] = { xyz[0] * inv_b, xyz[1] * inv_b };
   float tc[2];
   tri2quad_f(tc, xy);
   const float scale = (float)(tc_n - 1);
@@ -2883,6 +3101,10 @@ void sf_sim_free(sf_sim_t *s)
   free(s->scan_lut); free(s->scan_sx); free(s->scan_sy); free(s->scan_sz);
   free(s->scan_cmin); free(s->scan_cmax);
   free(s->enl_lut_f); free(s->scan_lut_f);
+  free(s->enl_sx_f); free(s->enl_sy_f); free(s->enl_sz_f);
+  free(s->enl_cmin_f); free(s->enl_cmax_f);
+  free(s->scan_sx_f); free(s->scan_sy_f); free(s->scan_sz_f);
+  free(s->scan_cmin_f); free(s->scan_cmax_f);
   free(s->cmax);
   g_free(s);
 }
@@ -3602,6 +3824,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     double cat[9];
     cat_matrix(cat, SF_M_CAT02, view_xy, p->output_white_xy);
     mat3_mul(s->m_out, p->output_xyz_to_rgb, cat);
+    cp9f(s->m_out_f, s->m_out);
   }
 
   /* ----- scanner black/white point for positive film scans ---------------- */
@@ -3701,9 +3924,42 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
         return NULL;
       }
       const size_t n3 = (size_t)s->lut_steps * s->lut_steps * s->lut_steps * 3;
+      const size_t m3 = (size_t)(s->lut_steps - 1) * (s->lut_steps - 1) * (s->lut_steps - 1) * 3;
       s->enl_lut_f = malloc(n3 * sizeof(float));
-      if(s->enl_lut_f)
-        for(size_t i = 0; i < n3; i++) s->enl_lut_f[i] = (float)s->enl_lut[i];
+      s->enl_sx_f = malloc(n3 * sizeof(float));
+      s->enl_sy_f = malloc(n3 * sizeof(float));
+      s->enl_sz_f = malloc(n3 * sizeof(float));
+      s->enl_cmin_f = malloc(m3 * sizeof(float));
+      s->enl_cmax_f = malloc(m3 * sizeof(float));
+      /* Only commit the float set if every buffer in it landed: the fast
+         path below treats enl_lut_f as the switch for "float tables are
+         available" and must not run PCHIP against a table that came out
+         only partially converted. */
+      if(s->enl_lut_f && s->enl_sx_f && s->enl_sy_f && s->enl_sz_f
+         && s->enl_cmin_f && s->enl_cmax_f)
+      {
+        for(size_t i = 0; i < n3; i++)
+        {
+          s->enl_lut_f[i] = (float)s->enl_lut[i];
+          s->enl_sx_f[i] = (float)s->enl_sx[i];
+          s->enl_sy_f[i] = (float)s->enl_sy[i];
+          s->enl_sz_f[i] = (float)s->enl_sz[i];
+        }
+        for(size_t i = 0; i < m3; i++)
+        {
+          s->enl_cmin_f[i] = (float)s->enl_cmin[i];
+          s->enl_cmax_f[i] = (float)s->enl_cmax[i];
+        }
+      }
+      else
+      {
+        free(s->enl_lut_f); s->enl_lut_f = NULL;
+        free(s->enl_sx_f); s->enl_sx_f = NULL;
+        free(s->enl_sy_f); s->enl_sy_f = NULL;
+        free(s->enl_sz_f); s->enl_sz_f = NULL;
+        free(s->enl_cmin_f); s->enl_cmin_f = NULL;
+        free(s->enl_cmax_f); s->enl_cmax_f = NULL;
+      }
     }
     if(!build_lut3d(s, cmy_to_log_xyz, s->scan_lo, s->scan_hi, s->lut_steps, &s->scan_lut,
                     &s->scan_sx, &s->scan_sy, &s->scan_sz, &s->scan_cmin, &s->scan_cmax))
@@ -3714,9 +3970,38 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     }
     {
       const size_t n3 = (size_t)s->lut_steps * s->lut_steps * s->lut_steps * 3;
+      const size_t m3 = (size_t)(s->lut_steps - 1) * (s->lut_steps - 1) * (s->lut_steps - 1) * 3;
       s->scan_lut_f = malloc(n3 * sizeof(float));
-      if(s->scan_lut_f)
-        for(size_t i = 0; i < n3; i++) s->scan_lut_f[i] = (float)s->scan_lut[i];
+      s->scan_sx_f = malloc(n3 * sizeof(float));
+      s->scan_sy_f = malloc(n3 * sizeof(float));
+      s->scan_sz_f = malloc(n3 * sizeof(float));
+      s->scan_cmin_f = malloc(m3 * sizeof(float));
+      s->scan_cmax_f = malloc(m3 * sizeof(float));
+      if(s->scan_lut_f && s->scan_sx_f && s->scan_sy_f && s->scan_sz_f
+         && s->scan_cmin_f && s->scan_cmax_f)
+      {
+        for(size_t i = 0; i < n3; i++)
+        {
+          s->scan_lut_f[i] = (float)s->scan_lut[i];
+          s->scan_sx_f[i] = (float)s->scan_sx[i];
+          s->scan_sy_f[i] = (float)s->scan_sy[i];
+          s->scan_sz_f[i] = (float)s->scan_sz[i];
+        }
+        for(size_t i = 0; i < m3; i++)
+        {
+          s->scan_cmin_f[i] = (float)s->scan_cmin[i];
+          s->scan_cmax_f[i] = (float)s->scan_cmax[i];
+        }
+      }
+      else
+      {
+        free(s->scan_lut_f); s->scan_lut_f = NULL;
+        free(s->scan_sx_f); s->scan_sx_f = NULL;
+        free(s->scan_sy_f); s->scan_sy_f = NULL;
+        free(s->scan_sz_f); s->scan_sz_f = NULL;
+        free(s->scan_cmin_f); s->scan_cmin_f = NULL;
+        free(s->scan_cmax_f); s->scan_cmax_f = NULL;
+      }
     }
   }
 
@@ -3725,6 +4010,10 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
   memcpy(s->out_xyz2rgb, p->output_xyz_to_rgb, sizeof(s->out_xyz2rgb));
   mat3_inv(s->oklab_m1inv, SF_OKLAB_M1);
   mat3_inv(s->oklab_m2inv, SF_OKLAB_M2);
+  cp9f(s->out_rgb2xyz_f, s->out_rgb2xyz);
+  cp9f(s->out_xyz2rgb_f, s->out_xyz2rgb);
+  cp9f(s->oklab_m1inv_f, s->oklab_m1inv);
+  cp9f(s->oklab_m2inv_f, s->oklab_m2inv);
   if(s->out_compress == SF_OUTPUT_COMPRESS_OKLCH && !build_cmax_table(s))
   {
     set_error(errmsg, "spektra_sim: out of memory for the gamut compression table");
@@ -3764,7 +4053,9 @@ void sf_sim_expose(const sf_sim_t *sim,
         const float *xyz_k = xyz + k * 3;
         float r[3];
         const float b = xyz_k[0] + xyz_k[1] + xyz_k[2];
-        const float xy[2] = { xyz_k[0] / fmaxf(b, 1e-10f), xyz_k[1] / fmaxf(b, 1e-10f) };
+        /* see expose_pixel_f: reciprocal-multiply, matching spektrafilm_expose */
+        const float inv_b = 1.0f / fmaxf(b, 1e-10f);
+        const float xy[2] = { xyz_k[0] * inv_b, xyz_k[1] * inv_b };
         float tc[2];
         tri2quad_f(tc, xy);
         const float scale = (float)(sim->tc_n - 1);
@@ -3905,7 +4196,8 @@ void sf_sim_print_expose(const sf_sim_t *sim,
       const float r = (in[0] - (float)sim->enl_lo[0]) * sim->enl_inv_range[0] * scale;
       const float g = (in[1] - (float)sim->enl_lo[1]) * sim->enl_inv_range[1] * scale;
       const float b = (in[2] - (float)sim->enl_lo[2]) * sim->enl_inv_range[2] * scale;
-      trilinear_interp_3d_f(l1, sim->enl_lut_f, steps, r, g, b);
+      pchip3d_interp_f(l1, sim->enl_lut_f, sim->enl_sx_f, sim->enl_sy_f, sim->enl_sz_f,
+                       sim->enl_cmin_f, sim->enl_cmax_f, steps, r, g, b);
     }
     else if(steps >= 2)
     {
@@ -3977,7 +4269,8 @@ void sf_sim_scan(const sf_sim_t *sim,
       const float r = (in[0] - (float)sim->scan_lo[0]) * sim->scan_inv_range[0] * scale;
       const float g = (in[1] - (float)sim->scan_lo[1]) * sim->scan_inv_range[1] * scale;
       const float b = (in[2] - (float)sim->scan_lo[2]) * sim->scan_inv_range[2] * scale;
-      trilinear_interp_3d_f(lx, sim->scan_lut_f, steps, r, g, b);
+      pchip3d_interp_f(lx, sim->scan_lut_f, sim->scan_sx_f, sim->scan_sy_f, sim->scan_sz_f,
+                       sim->scan_cmin_f, sim->scan_cmax_f, steps, r, g, b);
     }
     else if(steps >= 2)
     {
@@ -3998,28 +4291,34 @@ void sf_sim_scan(const sf_sim_t *sim,
       cmy_to_log_xyz(sim, c, lxd);
       lx[0] = (float)lxd[0]; lx[1] = (float)lxd[1]; lx[2] = (float)lxd[2];
     }
-    double xyz[3]; double rgb[3];
+    /* float from here on, matching spektrafilm_scan in spektrafilm.cl term
+       for term (POW10F is already float; lx above is float in every branch
+       above already too) -- this used to switch to double here for no
+       reason tied to accuracy, which meant every pixel's gamut compression
+       silently disagreed with the GPU path. See compress_rgb_oklch_f's
+       comment for what still legitimately stays in double (build_cmax_table). */
+    float xyz[3]; float rgb[3];
     for(int m = 0; m < 3; m++) xyz[m] = SF_POW10F(lx[m]);
     if(sim->out_luminance_boost != 1.0)
-      for(int m = 0; m < 3; m++) xyz[m] *= sim->out_luminance_boost;
+      for(int m = 0; m < 3; m++) xyz[m] *= (float)sim->out_luminance_boost;
     if(sim->scan_bw_on)
     {
-      const double y = xyz[1];
-      double yc = sim->scan_bw_m * y + sim->scan_bw_q;
-      yc = yc < 0.0 ? 0.0 : (yc > 1.0 ? 1.0 : yc);
-      const double sc = yc / (y + 1e-10);
+      const float y = xyz[1];
+      float yc = (float)sim->scan_bw_m * y + (float)sim->scan_bw_q;
+      yc = yc < 0.0f ? 0.0f : (yc > 1.0f ? 1.0f : yc);
+      const float sc = yc / (y + 1e-10f);
       for(int m = 0; m < 3; m++) xyz[m] *= sc;
     }
-    mat3_mulv(rgb, sim->m_out, xyz);
+    mat3_mulv_f(rgb, sim->m_out_f, xyz);
     if(sim->out_compress == SF_OUTPUT_COMPRESS_OKLCH)
-      compress_rgb_oklch(sim, rgb);
+      compress_rgb_oklch_f(sim, rgb);
     else if(sim->out_compress == SF_OUTPUT_COMPRESS_ACES_RGC)
-      compress_rgb_aces(rgb);
+      compress_rgb_aces_f(rgb);
     /* after the compressor, so it scales the finished colour instead of driving more of it into the
        compressor -- see out_scale in the header */
     if(sim->out_scale != 1.0)
-      for(int m = 0; m < 3; m++) rgb[m] *= sim->out_scale;
-    for(int c = 0; c < 3; c++) out[c] = (float)rgb[c];
+      for(int m = 0; m < 3; m++) rgb[m] *= (float)sim->out_scale;
+    for(int c = 0; c < 3; c++) out[c] = rgb[c];
   }
 }
 
@@ -4073,7 +4372,9 @@ sf_sim_gpu_t *sf_sim_gpu_export(const sf_sim_t *s)
   g->tc_lut = dup_f(s->tc_lut, (size_t)s->tc_n * s->tc_n * 3);
 
   g->le0 = (float)s->le0;
-  g->le_step = (float)s->le_step;
+  /* already the correctly-rounded reciprocal the CPU path itself uses; see
+     the inv_le_step comment in spektra_sim.h */
+  g->inv_le_step = s->inv_le_step;
   g->curves_norm = dup_f3(s->curves_norm, SF_NLE);
   g->curves_before = dup_f3(s->curves_before, SF_NLE);
   cp33f(g->couplers_M, (const double (*)[3])s->couplers_M);
@@ -4122,7 +4423,13 @@ sf_sim_gpu_t *sf_sim_gpu_export(const sf_sim_t *s)
     for(int c = 0; c < 3; c++)
     {
       g->enl_lo[c] = (float)s->enl_lo[c];
-      g->enl_hi[c] = (float)s->enl_hi[c];
+      /* Not (float)s->enl_hi[c] -- the kernel no longer receives hi at all.
+         See spektrafilm.cl's spektrafilm_print_expose for why re-deriving
+         hi-lo on-device is the wrong thing to upload; this is already the
+         single correctly-rounded reciprocal the CPU fast path itself uses
+         (sf_sim_print_expose above), so GPU and CPU now run byte-identical
+         range math instead of two different roundings of the same range. */
+      g->enl_inv_range[c] = s->enl_inv_range[c];
     }
     g->enl_lut = dup_f(s->enl_lut, n3);
     g->enl_sx = dup_f(s->enl_sx, n3);
@@ -4130,13 +4437,14 @@ sf_sim_gpu_t *sf_sim_gpu_export(const sf_sim_t *s)
     g->enl_sz = dup_f(s->enl_sz, n3);
     g->enl_cmin = dup_f(s->enl_cmin, m3);
     g->enl_cmax = dup_f(s->enl_cmax, m3);
-    g->print_exposure = (float)s->print_exposure;
+    g->log10_print_exposure = s->log10_print_exposure;
     g->print_curves = dup_f3(s->print_curves, SF_NLE);
   }
   for(int c = 0; c < 3; c++)
   {
     g->scan_lo[c] = (float)s->scan_lo[c];
-    g->scan_hi[c] = (float)s->scan_hi[c];
+    /* see the enl_inv_range comment above */
+    g->scan_inv_range[c] = s->scan_inv_range[c];
   }
   g->scan_lut = dup_f(s->scan_lut, n3);
   g->scan_sx = dup_f(s->scan_sx, n3);

@@ -242,6 +242,13 @@ SPEKTRA_INLINE uint32_t sf_pixel_seed(uint32_t xi,
    and above it both sides now run the same Young-van Vliet filter, so a given
    sigma produces the same blur here, on the GPU, and in the app. */
 #define SF_GAUSS_EXACT_MAX_SIGMA 3.0f
+/* Below this the blur is skipped outright rather than run with a degenerate
+   kernel: dt_gaussian_kernel_1d() floors its radius at 1, so a sigma of 0.1
+   still produces a real 3-tap kernel with non-negligible side weights, not
+   an identity. sf_blur_plane3/_fast have always done this; the constant is
+   shared so spektrafilm.c's OpenCL path can apply the same cut at the same
+   call sites instead of blurring where the CPU does nothing. */
+#define SF_GAUSS_MIN_SIGMA 0.3f
 
 /* Young-van Vliet order-3 recursive Gaussian coefficients (B, B1, B2, B3),
    identical to the reference's _yvv_coeffs. Exported so the GPU host side can
@@ -288,13 +295,67 @@ void sf_gauss_yvv_coeffs(float sigma,
    lam+1 hashes (<= 13), the fast branch 4 -- against 8 for the two sf_nrm draws
    this replaces. */
 #define SF_POISSON_EXACT_MAX 12.0f
+
+/* sf_exp2i: construct 2^k exactly for integer k, by writing the IEEE-754
+   binary32 exponent field directly instead of calling ldexpf/exp2f. This is
+   bit manipulation, not arithmetic -- no rounding happens, so it is exact
+   and identical everywhere by construction. Only valid for k that keeps the
+   result normal (roughly -125..127); sf_exp_neg below never asks for
+   anything close to those limits over its intended domain. */
+SPEKTRA_INLINE float sf_exp2i(int k)
+{
+  union { uint32_t u; float f; } v;
+  v.u = (uint32_t)(k + 127) << 23;
+  return v.f;
+}
+
+/* sf_exp_neg: exp(-lam) for lam in (0, SF_POISSON_EXACT_MAX), built only from
+   +, -, * and the exact floor()/exponent-injection above -- deliberately NOT
+   a call to expf()/exp(). The platform exp() is only spec'd to within a few
+   ULP (OpenCL C requires just <=3 ULP for exp(), versus basic +,-,* which
+   IEEE-754 and the OpenCL spec both require to be correctly rounded), and
+   this value feeds an accept/reject loop in sf_poisson: prod *= sf_u01(...)
+   until prod <= limit. A few-ULP disagreement between the CPU's expf() and
+   the GPU's exp() only rarely lands close enough to prod to matter, but
+   when it does, the loop exits one iteration earlier or later and the
+   sampled grain count is off by a whole integer -- a real, visible
+   per-pixel difference from an invisible input difference. Every op used
+   here (+, -, *, floor, and the bit-exact 2^k above) is required to be
+   exact/correctly-rounded on both sides, so this reproduces bit-for-bit
+   given the same lam, unlike the library call it replaces. (Build systems:
+   this relies on the compiler NOT fusing any of these multiply+adds into a
+   single-rounding FMA on one side and not the other -- keep
+   -ffast-math/-ffp-contract=fast and -cl-mad-enable/-cl-fast-relaxed-math
+   off for this code.)
+
+   Implementation: standard exp(x) = 2^k * exp(r) range reduction, k =
+   round(x/ln2), r in [-ln2/2, ln2/2], exp(r) via a degree-6 Taylor
+   polynomial (evaluated with Horner's method). Max relative error over the
+   full (0,12) domain is ~1.1e-6 -- far tighter than grain needs, chosen
+   for auditability over a tighter minimax fit. */
+#pragma STDC FP_CONTRACT OFF
+SPEKTRA_INLINE float sf_exp_neg(float lam)
+{
+  const float t = -lam;
+  const int k = (int)floorf(t * 1.4426950216293335f + 0.5f); /* log2(e) */
+  const float r = t - (float)k * 0.6931471824645996f;        /* ln(2) */
+  float p = 0.00138888892f;                                  /* 1/720 */
+  p = p * r + 0.00833333377f;                                /* 1/120 */
+  p = p * r + 0.0416666679f;                                 /* 1/24 */
+  p = p * r + 0.166666672f;                                  /* 1/6 */
+  p = p * r + 0.5f;
+  p = p * r + 1.0f;
+  p = p * r + 1.0f;
+  return p * sf_exp2i(k);
+}
+
 SPEKTRA_INLINE float sf_poisson(float lam,
                                 uint32_t seed)
 {
   if(lam <= 0.0f) return 0.0f;
   if(lam < SF_POISSON_EXACT_MAX)
   {
-    const float limit = expf(-lam);
+    const float limit = sf_exp_neg(lam);
     float prod = 1.0f;
     int k = 0;
     do

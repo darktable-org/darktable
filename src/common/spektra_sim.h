@@ -194,7 +194,12 @@ typedef struct sf_sim_gpu_t
   int tc_n;
   float *tc_lut; /* tc_n * tc_n * 3 */
   /* film develop */
-  float le0, le_step;
+  /* inv_le_step = 1/le_step, computed once in double by the host and rounded
+     a single time to float -- the same value the CPU path uses in
+     interp_curve_uniform_f(). Not le_step: the kernel must not re-derive the
+     reciprocal on-device from an independently-rounded le_step, for the same
+     reason as enl_inv_range below. */
+  float le0, inv_le_step;
   float *curves_norm;   /* SF_NLE*3 */
   float *curves_before; /* SF_NLE*3 (== curves_norm when couplers off) */
   float couplers_M[9];  /* row donor -> column receiver, amount-scaled */
@@ -202,13 +207,25 @@ typedef struct sf_sim_gpu_t
   int film_positive, couplers_active;
   /* printing (has_print == 0 in scan-film mode; buffers NULL then) */
   int has_print, steps;
-  float enl_lo[3], enl_hi[3];
+  /* enl_inv_range[c] = 1/(enl_hi[c]-enl_lo[c]), computed once in double
+     precision by the host (spektra_sim.c's sf_sim_build) and rounded a
+     single time to float -- the same value the CPU fast path uses in
+     sf_sim_print_expose. Not enl_hi: the kernel must not re-derive
+     hi-lo on-device from independently-rounded lo/hi, which is a
+     catastrophic-cancellation hazard on narrow-range channels and was
+     the source of a real CPU/GPU divergence (see spektrafilm.cl's
+     spektrafilm_print_expose). */
+  float enl_lo[3], enl_inv_range[3];
   float *enl_lut, *enl_sx, *enl_sy, *enl_sz; /* steps^3 * 3 */
   float *enl_cmin, *enl_cmax;                /* (steps-1)^3 * 3 */
-  float print_exposure;
+  /* log10_print_exposure, NOT print_exposure: the print exposure is applied
+     as an addition in the log domain (see spektrafilm_print_expose), matching
+     what sf_sim_print_expose does on the CPU. */
+  float log10_print_exposure;
   float *print_curves; /* SF_NLE*3 */
   /* scanning */
-  float scan_lo[3], scan_hi[3];
+  /* scan_inv_range[c] = 1/(scan_hi[c]-scan_lo[c]); see enl_inv_range above. */
+  float scan_lo[3], scan_inv_range[3];
   float *scan_lut, *scan_sx, *scan_sy, *scan_sz, *scan_cmin, *scan_cmax;
   float m_out[9]; /* XYZ(view illuminant) -> output RGB, CAT02 included */
   int scan_bw_on;   /* scanner black/white point (positive film scans) */

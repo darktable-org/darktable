@@ -2192,6 +2192,27 @@ int process_cl(dt_iop_module_t *self,
    fallback above SF_GAUSS_EXACT_MAX_SIGMA -- scatter's core/tail sigmas are
    normally small (sub-few-px), but the fallback is here for whatever a user's
    scatter_scale slider can push them to. */
+/* Exact-kernel-only single-channel blur, the GPU twin of sf_blur_plane1():
+   that function passes exact_only=1 unconditionally, so its call sites must
+   NOT fall back to the recursive approximation at large sigma the way
+   SF_GAUSS_BLUR1_L below does. Used by the grain dye-cloud blur. */
+#define SF_GAUSS_BLUR1_EXACT(buf, _sg) do { \
+    if(err == CL_SUCCESS) \
+    { \
+      float _kw[2 * SF_GAUSS_MAX_RADIUS + 1]; \
+      const int _kr = dt_gaussian_kernel_1d((_sg), _kw, SF_GAUSS_MAX_RADIUS); \
+      err = dt_opencl_write_buffer_to_device(devid, _kw, gauss_w, 0, \
+                                             sizeof(float) * (2 * _kr + 1), TRUE); \
+      if(err == CL_SUCCESS) \
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_row_1c, w, h, \
+                                               CLARG(buf), CLARG(gtmp1), CLARG(w), CLARG(h), \
+                                               CLARG(gauss_w), CLARG(_kr)); \
+      if(err == CL_SUCCESS) \
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_col_1c, w, h, \
+                                               CLARG(gtmp1), CLARG(buf), CLARG(w), CLARG(h), \
+                                               CLARG(gauss_w), CLARG(_kr)); \
+    } \
+  } while(0)
 #define SF_GAUSS_BLUR1_L(buf, _sg) do { \
     if(err == CL_SUCCESS) \
     { \
@@ -2241,10 +2262,17 @@ int process_cl(dt_iop_module_t *self,
                                d->p.diffusion_warmth, &plan)
        && plan.p_s > 0.0f)
     {
-      const float dsc = fmaxf(d->p.diffusion_scale, 1e-6f);
+      /* double, and no 1e-3f floor: sf_diffusion_filter() computes
+         (float)(sigma_um * sc / fmax(pixel_um, 1e-3)) with sc and the divide
+         both in double and no clamp on the result. Computing the same value
+         in float here gave a slightly different sigma, hence a different
+         kernel out of dt_gaussian_kernel_1d(), hence a different blur on
+         every pixel the filter touches. */
+      const double dsc = fmax((double)d->p.diffusion_scale, 1e-6);
       for(int j = 0; j < plan.n; j++)
       {
-        const float sigma = fmaxf(plan.sigma_um[j] * dsc / pixel_um, 1e-3f);
+        const float sigma
+            = (float)((double)plan.sigma_um[j] * dsc / fmax((double)pixel_um, 1e-3));
         SF_GAUSS_BLUR4_OP_L(plane, tmpa, sigma);
         if(err != CL_SUCCESS) break;
         const int reset = (j == 0);
@@ -2265,6 +2293,40 @@ int process_cl(dt_iop_module_t *self,
     }
   }
 
+  /* ---- sigma parity with the CPU ------------------------------------------
+     Every blur sigma below is derived from the SAME doubles, by the SAME
+     expression in the SAME association, at the SAME precision, with the SAME
+     floor as its twin in process()/spektra_core.c.
+
+     Both halves of that matter. Reading the float mirrors in sf_sim_gpu_t is
+     already wrong -- (double)(float)x != x -- so these call the sim accessors
+     directly, exactly as process() does, and only round at the end.
+
+     This is not pedantry. Above SF_GAUSS_EXACT_MAX_SIGMA both paths leave the
+     truncated kernel for the Young-van Vliet recursion. sf_gauss_yvv_coeffs()
+     maps sigma continuously onto B/B1/B2/B3, and an IIR response depends
+     globally on those: the forward pass carries any perturbation to the end of
+     every line, the backward pass carries it back, and the column pass spreads
+     it down every column it touched. So a last-place difference in sigma --
+     from float instead of double, from a*b*c/d instead of a*b/d*c, or from a
+     1e-3f floor instead of 1e-6f -- stops being a rounding difference and
+     becomes a different filter over the whole image. Below the threshold the
+     same mismatch is invisible, which is precisely the sigma-dependence the
+     CPU/GPU integration test showed.
+     -------------------------------------------------------------------- */
+  double cl_hal_strength[3], cl_hal_sigma_um = 0.0;
+  double cl_sc_core[3], cl_sc_tail[3], cl_sc_w[3];
+  if(d->p.halation_on)
+  {
+    sf_sim_halation_params(sim, cl_hal_strength, &cl_hal_sigma_um);
+    cl_hal_sigma_um = fmin(cl_hal_sigma_um, (double)SF_HALATION_FIRST_SIGMA_UM);
+    sf_sim_scatter_params(sim, cl_sc_core, cl_sc_tail, cl_sc_w);
+    for(int c = 0; c < 3; c++)
+    {
+      cl_sc_core[c] = fmin(cl_sc_core[c], (double)SF_SCATTER_CORE_CLAMP_UM);
+      cl_sc_tail[c] = fmin(cl_sc_tail[c], (double)SF_SCATTER_TAIL_CLAMP_UM);
+    }
+  }
   if(d->p.halation_on && (d->p.scatter_amount > 0.0f || d->p.halation_amount > 0.0f))
   {
     if(d->p.scatter_amount > 0.0f)
@@ -2276,13 +2338,9 @@ int process_cl(dt_iop_module_t *self,
          channel into the single-channel scratch buffer plane1, blur it
          alone (1x the work of a same-size float4 blur, not 4x), then
          kernel_channel_accum folds it into the target channel of tmpa/acc. */
-      /* per-film scatter PSF, same clamps as the CPU path */
-      float sc_core[3], sc_tail[3];
-      for(int c = 0; c < 3; c++)
-      {
-        sc_core[c] = fminf(g->scatter_core_um[c], SF_SCATTER_CORE_CLAMP_UM);
-        sc_tail[c] = fminf(g->scatter_tail_um[c], SF_SCATTER_TAIL_CLAMP_UM);
-      }
+      /* per-film scatter PSF: cl_sc_core/cl_sc_tail above, clamped in double
+         from the sim's own values -- not fminf() on sf_sim_gpu_t's float
+         mirrors, which rounds once more than the CPU does. */
       const float amp[3] = { 0.1633f, 0.6496f, 0.1870f }, rat[3] = { 0.5360f, 1.5236f, 2.7684f };
       for(int c = 0; c < 3; c++)
       {
@@ -2290,7 +2348,9 @@ int process_cl(dt_iop_module_t *self,
                                                CLARG(plane), CLARG(plane1), CLARG(w), CLARG(h),
                                                CLARG(c));
         if(err != CL_SUCCESS) break;
-        SF_GAUSS_BLUR1_L(plane1, fmaxf(sc_core[c] * sscl / pixel_um, 1e-6f));
+        /* CPU: fmaxf((float)(sc_core[c] * scl / pixel_um), 1e-6f) */
+        SF_GAUSS_BLUR1_L(plane1, fmaxf((float)(cl_sc_core[c] * (double)sscl
+                                               / (double)pixel_um), 1e-6f));
         if(err != CL_SUCCESS) break;
         const float core_weight = 1.0f;
         const int core_reset = (c == 0);
@@ -2306,7 +2366,10 @@ int process_cl(dt_iop_module_t *self,
                                                  CLARG(plane), CLARG(plane1), CLARG(w), CLARG(h),
                                                  CLARG(c));
           if(err != CL_SUCCESS) break;
-          const float sigma = fmaxf(rat[g3] * sc_tail[c] * sscl / pixel_um, 1e-6f);
+          /* CPU associates as rat * (tail * scl / pixel_um), in double */
+          const float sigma = fmaxf((float)((double)rat[g3]
+                                            * (cl_sc_tail[c] * (double)sscl
+                                               / (double)pixel_um)), 1e-6f);
           SF_GAUSS_BLUR1_L(plane1, sigma);
           if(err != CL_SUCCESS) break;
           const int reset = (g3 == 0 && c == 0);
@@ -2336,11 +2399,17 @@ int process_cl(dt_iop_module_t *self,
       /* per-film first-bounce radius (still ~65um / cine ~50um on real
          stocks); clamped to what modify_roi_in()/tiling_callback() padded
          for, see the matching comment in process(). */
-      const float first_sigma = fminf(g->halation_first_sigma_um, SF_HALATION_FIRST_SIGMA_UM);
+      /* clamped in double above, as process() clamps hal_sigma_um */
       const float dec[3] = { 1.0f/1.75f, 0.5f/1.75f, 0.25f/1.75f };
       for(int k = 1; k <= N; k++)
       {
-        SF_GAUSS_BLUR4_OP_L(plane, plane2, fmaxf(first_sigma * hscl * sqrtf((float)k) / pixel_um, 1e-3f));
+        /* CPU: fmaxf((float)((first_sigma_um * hscl / pixel_um) * sqrt((double)k)), 1e-6f).
+           Five mismatches lived on this line -- the float mirror instead of the
+           double, float arithmetic, sqrtf(float) for sqrt(double), the divide
+           moved to the end, and a 1e-3f floor against the CPU's 1e-6f. */
+        SF_GAUSS_BLUR4_OP_L(plane, plane2,
+                            fmaxf((float)((cl_hal_sigma_um * (double)hscl
+                                           / (double)pixel_um) * sqrt((double)k)), 1e-6f));
         if(err != CL_SUCCESS) break;
         const int reset = (k == 1);
         err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_accum, w, h, CLARG(plane2),
@@ -2373,8 +2442,8 @@ int process_cl(dt_iop_module_t *self,
     err = dt_opencl_enqueue_kernel_2d_args(
         devid, gd->kernel_develop_corr, w, h, CLARG(plane), CLARG(acc), CLARG(w), CLARG(h),
         CLARG(cn_cl), CLARG(mats_cl),
-        CLARG(g->le0), CLARG(g->le_step), CLARG(g->film_dmax[0]), CLARG(g->film_dmax[1]),
-        CLARG(g->film_dmax[2]), CLARG(g->film_positive));
+        CLARG(g->le0), CLARG(g->inv_le_step), CLARG(g->film_dmax[0]), CLARG(g->film_dmax[1]),
+        CLARG(g->film_dmax[2]), CLARG(g->film_positive), CLARG(g->couplers_donor_lm));
     SF_CL_STEP("develop_corr");
     /* DIR coupler inhibitor diffusion, gaussian sigma 20 um (reference value) */
     const float csigma = g->coupler_diff_um / fmaxf(pixel_um, 1e-3f);
@@ -2382,12 +2451,20 @@ int process_cl(dt_iop_module_t *self,
     {
       const float amp[4] = { 1.0f - g->coupler_tail_w, g->coupler_tail_w * SF_EXPTAIL_A0,
                              g->coupler_tail_w * SF_EXPTAIL_A1, g->coupler_tail_w * SF_EXPTAIL_A2 };
-      const float sig[4] = { csigma, SF_EXPTAIL_R0 * g->coupler_tail_um / fmaxf(pixel_um, 1e-3f),
-                             SF_EXPTAIL_R1 * g->coupler_tail_um / fmaxf(pixel_um, 1e-3f),
-                             SF_EXPTAIL_R2 * g->coupler_tail_um / fmaxf(pixel_um, 1e-3f) };
+      /* CPU computes tail_px = ctail_um / pixel_um once and then
+         rat[g3] * tail_px -- R * (tail / pixel), not (R * tail) / pixel. */
+      const float tail_px = g->coupler_tail_um / fmaxf(pixel_um, 1e-3f);
+      const float sig[4] = { csigma, SF_EXPTAIL_R0 * tail_px,
+                             SF_EXPTAIL_R1 * tail_px, SF_EXPTAIL_R2 * tail_px };
       for(int g3 = 0; g3 < 4; g3++)
       {
-        if(sig[g3] > 0.1f)
+        /* >= SF_GAUSS_MIN_SIGMA, not > 0.1f: the CPU twin guards with
+           `if(ts > 0.1f) sf_blur_plane3_fast(...)`, and sf_blur_plane3_fast
+           itself returns without touching the buffer below
+           SF_GAUSS_MIN_SIGMA -- so the CPU blurs iff the sigma clears 0.3.
+           Between 0.1 and 0.3 it copies the unblurred correction, which is
+           what the else branch below already does. */
+        if(sig[g3] >= SF_GAUSS_MIN_SIGMA)
         {
           SF_GAUSS_BLUR4_OP_L(acc, plane2, sig[g3]);
           if(err != CL_SUCCESS) break;
@@ -2406,13 +2483,16 @@ int process_cl(dt_iop_module_t *self,
       }
     }
     else if(csigma > 0.1f)
-      SF_GAUSS_BLUR4_FAST(acc, csigma, "coupler blur");
+      /* CPU twin is sf_blur_plane3_fast(), which returns without touching the
+         buffer below SF_GAUSS_MIN_SIGMA -- match that cut here. */
+      if(csigma >= SF_GAUSS_MIN_SIGMA)
+        SF_GAUSS_BLUR4_FAST(acc, csigma, "coupler blur");
   }
   cl_mem corr_buf = (g->coupler_tail_w > 0.0f) ? tmpa : acc;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_develop, w, h, CLARG(plane),
                                          CLARG(corr_buf), CLARG(use_corr), CLARG(plane2), CLARG(w),
                                          CLARG(h), CLARG(cb_cl), CLARG(mats_cl), CLARG(g->le0),
-                                         CLARG(g->le_step));
+                                         CLARG(g->inv_le_step), CLARG(g->couplers_recv_lm));
   SF_CL_STEP("develop");
 
   /* ---- 4) grain on the developed CMY density ----------------------------- */
@@ -2518,7 +2598,9 @@ int process_cl(dt_iop_module_t *self,
                 CLARG(npart_scale), CLARG(d->grain_cl_dmax), CLARG(d->grain_cl_npart),
                 CLARG(d->grain_cl_dmin), CLARG(d->grain_cl_total), CLARG(d->grain_cl_curve));
             if(err == CL_SUCCESS && dye_sigma[channel_idx][sl] > 1e-6f)
-              SF_GAUSS_BLUR1_L(raw_buf[sl], dye_sigma[channel_idx][sl]);
+              /* exact-only: the CPU twin is sf_blur_plane1(), which never takes
+                 the recursive path (see SF_GAUSS_BLUR1_EXACT) */
+              SF_GAUSS_BLUR1_EXACT(raw_buf[sl], dye_sigma[channel_idx][sl]);
           }
           for(int sl = 0; sl < nsub && err == CL_SUCCESS; sl++)
           {
@@ -2558,13 +2640,21 @@ int process_cl(dt_iop_module_t *self,
        there for the empirical validation. */
     const float gsigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_blur, SF_GRAIN_BLUR_MIN)
                           * preview_scale;
-    SF_GAUSS_BLUR4(plane2, gsigma, "grain blur");
+    /* CPU twin is sf_blur_plane3(), which skips below SF_GAUSS_MIN_SIGMA.
+       This one matters most: the clump blur runs on the grain field, which is
+       high-frequency by construction, so blurring here where the CPU does not
+       changes essentially every grained pixel. */
+    if(gsigma >= SF_GAUSS_MIN_SIGMA)
+      SF_GAUSS_BLUR4(plane2, gsigma, "grain blur");
     if(d->p.grain_usm_sigma > 0.0f && d->p.grain_usm_amount > 0.0f)
     {
       err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane2, acc, 0, 0, npix * f * 4);
       if(err != CL_SUCCESS) goto cleanup;
       const float usig = d->p.grain_usm_sigma * preview_scale;
-      SF_GAUSS_BLUR4_FAST(plane2, usig, "grain USM blur");
+      /* sf_multiplicative_unsharp_mask3() blurs via sf_blur_plane3(), so this
+         is exact-only and skipped below SF_GAUSS_MIN_SIGMA -- not _FAST. */
+      if(usig >= SF_GAUSS_MIN_SIGMA)
+        SF_GAUSS_BLUR4(plane2, usig, "grain USM blur");
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_usm, w, h, CLARG(plane2),
                                              CLARG(acc), CLARG(w), CLARG(h),
                                              CLARG(d->p.grain_usm_amount),
@@ -2581,7 +2671,8 @@ int process_cl(dt_iop_module_t *self,
         devid, gd->kernel_print_expose, w, h, CLARG(plane2), CLARG(plane), CLARG(w), CLARG(h),
         CLARG(el_cl), CLARG(ex_cl), CLARG(ey_cl), CLARG(ez_cl), CLARG(en_cl), CLARG(em_cl),
         CLARG(steps), CLARG(g->enl_lo[0]), CLARG(g->enl_lo[1]), CLARG(g->enl_lo[2]),
-        CLARG(g->enl_hi[0]), CLARG(g->enl_hi[1]), CLARG(g->enl_hi[2]), CLARG(g->print_exposure));
+        CLARG(g->enl_inv_range[0]), CLARG(g->enl_inv_range[1]), CLARG(g->enl_inv_range[2]),
+        CLARG(g->log10_print_exposure));
     SF_CL_STEP("print_expose");
     /* ---- print diffusion (optional, on the exposed print density) ---- */
     if(d->p.print_diffusion_on)
@@ -2592,10 +2683,12 @@ int process_cl(dt_iop_module_t *self,
                                  d->p.print_diffusion_warmth, &pplan)
          && pplan.p_s > 0.0f)
       {
-        const float pdsc = fmaxf(d->p.print_diffusion_scale, 1e-6f);
+        /* see the pre-film diffusion above for why this is in double */
+        const double pdsc = fmax((double)d->p.print_diffusion_scale, 1e-6);
         for(int j = 0; j < pplan.n; j++)
         {
-          const float sigma = fmaxf(pplan.sigma_um[j] * pdsc / pixel_um, 1e-3f);
+          const float sigma
+              = (float)((double)pplan.sigma_um[j] * pdsc / fmax((double)pixel_um, 1e-3));
           SF_GAUSS_BLUR4_OP_L(plane, tmpa, sigma);
           if(err != CL_SUCCESS) break;
           const int reset = (j == 0);
@@ -2617,7 +2710,7 @@ int process_cl(dt_iop_module_t *self,
     }
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_print_develop, w, h, CLARG(plane),
                                            CLARG(plane2), CLARG(w), CLARG(h), CLARG(pc_cl),
-                                           CLARG(g->le0), CLARG(g->le_step));
+                                           CLARG(g->le0), CLARG(g->inv_le_step));
     SF_CL_STEP("print_develop");
   }
 
@@ -2626,8 +2719,9 @@ int process_cl(dt_iop_module_t *self,
       devid, gd->kernel_scan, w, h, CLARG(plane2), CLARG(plane), CLARG(w), CLARG(h),
       CLARG(sl_cl), CLARG(sx_cl), CLARG(sy_cl),
       CLARG(sz_cl), CLARG(sn_cl), CLARG(sm_cl), CLARG(steps), CLARG(g->scan_lo[0]),
-      CLARG(g->scan_lo[1]), CLARG(g->scan_lo[2]), CLARG(g->scan_hi[0]), CLARG(g->scan_hi[1]),
-      CLARG(g->scan_hi[2]), CLARG(mats_cl), CLARG(cm_cl), CLARG(g->cmax_nl), CLARG(g->cmax_nh),
+      CLARG(g->scan_lo[1]), CLARG(g->scan_lo[2]), CLARG(g->scan_inv_range[0]),
+      CLARG(g->scan_inv_range[1]), CLARG(g->scan_inv_range[2]), CLARG(mats_cl), CLARG(cm_cl),
+      CLARG(g->cmax_nl), CLARG(g->cmax_nh),
       CLARG(g->out_compress), CLARG(g->out_luminance_boost), CLARG(g->out_scale),
       CLARG(g->scan_bw_on), CLARG(g->scan_bw_m),
       CLARG(g->scan_bw_q));
@@ -2636,13 +2730,18 @@ int process_cl(dt_iop_module_t *self,
   /* ---- 6b) scanner optics + viewing glare (mirrors process()) -------------- */
   if(d->p.scan_blur > 0.0f)
   {
-    SF_GAUSS_BLUR4(plane, d->p.scan_blur * preview_scale, "scanner blur");
+    /* CPU twin is sf_blur_plane3(); mirror its SF_GAUSS_MIN_SIGMA cut */
+    if(d->p.scan_blur * preview_scale >= SF_GAUSS_MIN_SIGMA)
+      SF_GAUSS_BLUR4(plane, d->p.scan_blur * preview_scale, "scanner blur");
   }
   if(d->p.scan_usm_sigma > 0.0f && d->p.scan_usm_amount > 0.0f)
   {
     err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane, acc, 0, 0, npix * f * 4);
     if(err != CL_SUCCESS) goto cleanup;
-    SF_GAUSS_BLUR4_FAST(plane, d->p.scan_usm_sigma * preview_scale, "scanner USM blur");
+    /* sf_unsharp_mask3() blurs via sf_blur_plane3(): exact-only, and skipped
+       below SF_GAUSS_MIN_SIGMA -- not _FAST. */
+    if(d->p.scan_usm_sigma * preview_scale >= SF_GAUSS_MIN_SIGMA)
+      SF_GAUSS_BLUR4(plane, d->p.scan_usm_sigma * preview_scale, "scanner USM blur");
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_scan_usm, w, h, CLARG(plane),
                                            CLARG(acc), CLARG(w), CLARG(h),
                                            CLARG(d->p.scan_usm_amount));

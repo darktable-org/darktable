@@ -1109,6 +1109,22 @@ add_library(lib_darktable SHARED ${DARKTABLE_BINDIR}/preferences_gen.h ${DARKTAB
 # since this isn't the same directory we do have to manually set it
 set_source_files_properties(${DARKTABLE_BINDIR}/version_gen.c PROPERTIES GENERATED TRUE)
 
+# spektrafilm's CPU path is required to reproduce its OpenCL twin bit-for-bit
+# (see sf_exp_neg in common/spektra_core.h and the FP_CONTRACT note at the top
+# of data/kernels/spektrafilm.cl). The "#pragma STDC FP_CONTRACT OFF" in that
+# header does not achieve this on GCC, which has never implemented the pragma
+# and happily emits vfmadd with it in force; -march=native then guarantees FMA
+# is available on any recent x86. Set the flag these files actually need.
+# Costs FMA in the per-pixel loops, buys a deterministic render across devices.
+check_c_compiler_flag("-ffp-contract=off" HAVE_FFP_CONTRACT_OFF)
+if(HAVE_FFP_CONTRACT_OFF)
+  set_source_files_properties(
+    "common/spektra_core.c"
+    "common/spektra_sim.c"
+    "iop/spektrafilm.c"
+    PROPERTIES COMPILE_OPTIONS "-ffp-contract=off")
+endif()
+
 add_dependencies(lib_darktable generate_styles_string)
 add_dependencies(lib_darktable generate_conf)
 add_dependencies(lib_darktable generate_version)
