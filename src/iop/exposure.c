@@ -1005,6 +1005,18 @@ void color_picker_apply(dt_iop_module_t *self,
 }
 
 
+// keep black under the white point the pipe will map to 1.0, so that white - black
+// stays positive and d->scale neither blows up nor turns negative; the comparison is in
+// the compensated domain because that is what the pipe uses, while p->black is never
+// compensated
+static void _clamp_black_below_white(dt_iop_module_t *self,
+                                     const dt_iop_exposure_params_t *const p)
+{
+  const float white = exposure2white(_total_adjustment_ev(self, p));
+  if(p->black >= white)
+    _exposure_set_black(self, white - 0.01);
+}
+
 void gui_changed(dt_iop_module_t *self,
                  GtkWidget *w,
                  void *previous)
@@ -1025,6 +1037,7 @@ void gui_changed(dt_iop_module_t *self,
            || self->dev->image_storage.buf_dsc.channels != 1
            || self->dev->image_storage.buf_dsc.datatype != TYPE_UINT16)
         {
+          // force manual for unsupported image type
           p->mode = EXPOSURE_MODE_MANUAL;
           dt_bauhaus_combobox_set(g->mode, p->mode);
           gtk_widget_set_sensitive(GTK_WIDGET(g->mode), FALSE);
@@ -1039,26 +1052,29 @@ void gui_changed(dt_iop_module_t *self,
         gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "manual");
         break;
     }
+
+    // when entering (normal or forced - for unsupported image) manual mode,
+    // ensure black stays below white -- automatic mode used a different white,
+    // so currently set black may have been below that, but above manual mode's
+    // white
+    if(p->mode == EXPOSURE_MODE_MANUAL)
+      _clamp_black_below_white(self, p);
   }
-  // The two branches below keep black under the white point the pipe will use, so that
-  // white - black stays positive and d->scale does not blow up or turn negative.
-  // Both are restricted to manual mode: only there is the white point defined by the
-  // parameters. In deflicker mode the pipe derives it from the raw histogram, so there
-  // is nothing here to validate against, and repairing by writing p->exposure would
-  // only move a control that the pipe ignores.
   else if(p->mode == EXPOSURE_MODE_MANUAL
           && (w == g->exposure
               || w == g->compensate_exposure_bias
               || w == g->compensate_hilite_preserv))
   {
-    // If any of that changed, the exposure compensation may have changed (does not,
-    // if a checkbox was toggled whose corresponding value is 0). The 'white' point that will be
-    // mapped to 1.0 may have moved below the black point, so make sure black stays below that.
-    const float white = exposure2white(_total_adjustment_ev(self, p));
-    if(p->black >= white)
-      _exposure_set_black(self, white - 0.01);
+    // changed one of the controls influencing total manual exposure adjustment,
+    // so the MANUAL white point may have moved below black. This can happen even in deflicker
+    // mode, via shortcuts, when manual exposure controls are invisible and ineffective.
+    // DO NOT force (always effective) black below the manual white, ignored in deflicker mode.
+    _clamp_black_below_white(self, p);
   }
-  // the inverse path: black moved -> move the exposure slider to keep 'white' above black
+  // the inverse path: black moved -> move the exposure slider to keep 'white' above black,
+  // but only do it in manual mode, so black adjustments made in deflicker mode don't adjust
+  // exposure of manual mode. If we're returning from deflicker to manual mode, we prefer to
+  // keep the manual exposure and adjust black -- see end of if(w == g->mode)
   else if(p->mode == EXPOSURE_MODE_MANUAL && w == g->black)
   {
     const float white = exposure2white(_total_adjustment_ev(self, p));
