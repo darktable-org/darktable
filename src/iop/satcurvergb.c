@@ -447,20 +447,6 @@ static inline float protection_weight(const float s_raw,
   return neutral_w * noise_w;
 }
 
-static inline void apply_neutral_protection(const float *const restrict raw,
-                                            float *const restrict filtered,
-                                            const float protect_from,
-                                            const float protect_to,
-                                            const size_t npixels)
-{
-  DT_OMP_FOR()
-  for (size_t k = 0; k < npixels; k++)
-  {
-    const float weight = smoothstep01(protect_from, protect_to, raw[k]);
-    filtered[k] = CLAMP(raw[k] + weight * (filtered[k] - raw[k]), 0.0f, 1.0f);
-  }
-}
-
 // Apply log1p compression to the histogram bins to compress the dynamic
 // range for better visual representation in the GUI. Shared tail for both
 // the CPU path (_update_sat_histogram) and the GPU path (process_cl).
@@ -605,11 +591,11 @@ static inline void apply_sat_and_brilliance_jzazbz(const dt_iop_satcurve_data_t 
 // Compute the normalized saturation for each pixel into a separate buffer,
 // analogous to compute_luminance_mask() in toneequal.c.
 static inline void prepare_scalar_mask(const dt_iop_satcurve_data_t *d,
-                                      const dt_colormatrix_t inputmatrix_trans,
-                                      const float L_white,
-                                      const float *const restrict in,
-                                      float *const restrict mask,
-                                      const size_t npixels)
+                                       const dt_colormatrix_t inputmatrix_trans,
+                                       const float L_white,
+                                       const float *const restrict in,
+                                       float *const restrict mask,
+                                       const size_t npixels)
 {
   DT_OMP_FOR()
   for (size_t k = 0; k < npixels; k++)
@@ -624,9 +610,9 @@ static inline void prepare_scalar_mask(const dt_iop_satcurve_data_t *d,
 // color {0.5, 0.0, 0.5} used in blend_gui.c. A sqrt-like gamma makes low
 // values easier to see, analogous to display_luminance_mask() in toneequal.c.
 static inline void visualize_mask_preview(const float *const restrict in,
-                                        const float *const restrict mask,
-                                        float *const restrict out,
-                                        const size_t npixels)
+                                          const float *const restrict mask,
+                                          float *const restrict out,
+                                          const size_t npixels)
 {
   DT_OMP_FOR()
   for (size_t k = 0; k < npixels; k++)
@@ -650,15 +636,15 @@ static inline float smoothstep01(const float edge0, const float edge1, const flo
 // confidence used by the guided-filter branch. This matches the stage split in
 // the OpenCL implementation: scalar mask -> guide -> confidence -> control.
 static inline void prepare_guided_filter_control(const dt_iop_satcurve_data_t *d,
-                                                const dt_colormatrix_t inputmatrix_trans,
-                                                const float L_white,
-                                                const float *const restrict in,
-                                                float *const restrict raw,
-                                                float *const restrict filtered,
-                                                float *const restrict noise_confidence,
-                                                const int width,
-                                                const int height,
-                                                const int radius)
+                                                 const dt_colormatrix_t inputmatrix_trans,
+                                                 const float L_white,
+                                                 const float *const restrict in,
+                                                 float *const restrict raw,
+                                                 float *const restrict filtered,
+                                                 float *const restrict noise_confidence,
+                                                 const int width,
+                                                 const int height,
+                                                 const int radius)
 {
   const size_t npixels = (size_t)width * height;
   float *const restrict guide = dt_alloc_align_float(npixels * 3);
@@ -738,13 +724,13 @@ static inline void prepare_guided_filter_control(const dt_iop_satcurve_data_t *d
 }
 
 static inline void apply_guided_filter_control(const float *const restrict raw,
-                                              const float *const restrict filtered,
-                                              const float *const restrict confidence,
-                                              float *const restrict control,
-                                              const float protect_from,
-                                              const float protect_to,
-                                              const float noise_protection,
-                                              const size_t npixels)
+                                               const float *const restrict filtered,
+                                               const float *const restrict confidence,
+                                               float *const restrict control,
+                                               const float protect_from,
+                                               const float protect_to,
+                                               const float noise_protection,
+                                               const size_t npixels)
 {
   DT_OMP_FOR()
   for (size_t k = 0; k < npixels; k++)
@@ -823,11 +809,11 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
         if (alloc_scratch_floats(npixels, &filtered, &confidence, &control))
         {
           prepare_guided_filter_control(d, inputmatrix_trans, L_white, in, mask, filtered, confidence,
-                                       roi_out->width, roi_out->height,
-                                       (int)d->gf_radius);
+                                        roi_out->width, roi_out->height,
+                                        (int)d->gf_radius);
           apply_guided_filter_control(mask, filtered, confidence, control,
-                                     d->gf_protect_from, d->gf_protect_to,
-                                     d->noise_protection, npixels);
+                                      d->gf_protect_from, d->gf_protect_to,
+                                      d->noise_protection, npixels);
           memcpy(mask, control, npixels * sizeof(float));
         }
         dt_free_align(filtered);
@@ -863,10 +849,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     {
       prepare_scalar_mask(d, inputmatrix_trans, L_white, in, raw_mask, npixels);
       prepare_guided_filter_control(d, inputmatrix_trans, L_white, in, raw_mask, filtered_mask,
-                                   noise_confidence, roi_out->width, roi_out->height,
-                                   (int)d->gf_radius);
-      // apply_neutral_protection() removed: the protection weight is now
-      // computed inline in the main pixel loop via protection_weight().
+                                    noise_confidence, roi_out->width, roi_out->height,
+                                    (int)d->gf_radius);
     }
     else
     {
@@ -990,18 +974,18 @@ static gboolean alloc_gf_scratch_cl(const int devid, const int width, const int 
 // scratch buffers. Shared by the mask-preview branch and the main processing
 // branch of process_cl(); previously duplicated verbatim in both places.
 static cl_int run_gf_pipeline_cl(const int devid,
-                                  const dt_iop_satcurve_global_data_t *gd,
-                                  const dt_iop_satcurve_data_t *d,
-                                  cl_mem dev_in,
-                                  cl_mem input_matrix_cl,
-                                  cl_mem gamut_lut_cl,
-                                  const float L_white,
-                                  const int width, const int height,
-                                  cl_mem mask_scalar_cl,
-                                  cl_mem guide_cl,
-                                  cl_mem mask_filtered_cl,
-                                  cl_mem mask_control_cl,
-                                  cl_mem noise_confidence_cl)
+                                 const dt_iop_satcurve_global_data_t *gd,
+                                 const dt_iop_satcurve_data_t *d,
+                                 cl_mem dev_in,
+                                 cl_mem input_matrix_cl,
+                                 cl_mem gamut_lut_cl,
+                                 const float L_white,
+                                 const int width, const int height,
+                                 cl_mem mask_scalar_cl,
+                                 cl_mem guide_cl,
+                                 cl_mem mask_filtered_cl,
+                                 cl_mem mask_control_cl,
+                                 cl_mem noise_confidence_cl)
 {
   cl_int err = dt_opencl_enqueue_kernel_2d_args(
       devid, gd->kernel_satcurve_scalar_mask, width, height,
@@ -1020,9 +1004,9 @@ static cl_int run_gf_pipeline_cl(const int devid,
     return err;
 
   err = guided_filter_cl(devid, guide_cl, mask_scalar_cl, mask_filtered_cl,
-                          width, height, 3,
-                          MAX(1, (int)d->gf_radius),
-                          MAX(0.01f, d->gf_feathering * 0.01f), 1.0f, 0.0f, 1.0f);
+                         width, height, 3,
+                         MAX(1, (int)d->gf_radius),
+                         MAX(0.01f, d->gf_feathering * 0.01f), 1.0f, 0.0f, 1.0f);
   if (err != CL_SUCCESS)
     return err;
 
@@ -1040,25 +1024,25 @@ static cl_int run_gf_pipeline_cl(const int devid,
 // fails, TRUE is returned and *err carries the OpenCL error for the caller's
 // existing goto-error handling.
 static gboolean prepare_gf_mask_cl(const int devid,
-                                    const dt_iop_satcurve_global_data_t *gd,
-                                    const dt_iop_satcurve_data_t *d,
-                                    cl_mem dev_in,
-                                    cl_mem input_matrix_cl,
-                                    cl_mem gamut_lut_cl,
-                                    const float L_white,
-                                    const int width, const int height,
-                                    cl_mem *mask_scalar_cl, cl_mem *mask_filtered_cl,
-                                    cl_mem *guide_cl, cl_mem *noise_confidence_cl,
-                                    cl_mem *mask_control_cl,
-                                    cl_int *err)
+                                   const dt_iop_satcurve_global_data_t *gd,
+                                   const dt_iop_satcurve_data_t *d,
+                                   cl_mem dev_in,
+                                   cl_mem input_matrix_cl,
+                                   cl_mem gamut_lut_cl,
+                                   const float L_white,
+                                   const int width, const int height,
+                                   cl_mem *mask_scalar_cl, cl_mem *mask_filtered_cl,
+                                   cl_mem *guide_cl, cl_mem *noise_confidence_cl,
+                                   cl_mem *mask_control_cl,
+                                   cl_int *err)
 {
   if (!alloc_gf_scratch_cl(devid, width, height, mask_scalar_cl, mask_filtered_cl,
-                            guide_cl, noise_confidence_cl, mask_control_cl))
+                           guide_cl, noise_confidence_cl, mask_control_cl))
     return FALSE;
 
   *err = run_gf_pipeline_cl(devid, gd, d, dev_in, input_matrix_cl, gamut_lut_cl, L_white,
-                             width, height, *mask_scalar_cl, *guide_cl, *mask_filtered_cl,
-                             *mask_control_cl, *noise_confidence_cl);
+                            width, height, *mask_scalar_cl, *guide_cl, *mask_filtered_cl,
+                            *mask_control_cl, *noise_confidence_cl);
   return TRUE;
 }
 
@@ -1156,8 +1140,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     {
       cl_int gf_err = CL_SUCCESS;
       if (!prepare_gf_mask_cl(devid, gd, d, dev_in, input_matrix_cl, gamut_lut_cl, L_white,
-                               width, height, &mask_scalar_cl, &mask_filtered_cl, &guide_cl,
-                               &noise_confidence_cl, &mask_control_cl, &gf_err))
+                              width, height, &mask_scalar_cl, &mask_filtered_cl, &guide_cl,
+                              &noise_confidence_cl, &mask_control_cl, &gf_err))
         gf_active = FALSE;
       else if (gf_err != CL_SUCCESS)
       {
@@ -1180,9 +1164,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       // mask_control_cl holds final coordinate.
       err = dt_opencl_enqueue_kernel_2d_args(
           devid, gd->kernel_satcurve_mask_from_control, width, height,
-          CLARG(mask_scalar_cl), CLARG(mask_control_cl), CLARG(noise_confidence_cl),
+          CLARG(mask_scalar_cl), CLARG(mask_filtered_cl), CLARG(noise_confidence_cl),
           CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
-          CLARG(d->noise_protection));
+          CLARG(d->gf_protect_from), CLARG(d->gf_protect_to), CLARG(d->noise_protection));
     }
 
     if (err == CL_SUCCESS)
@@ -1220,8 +1204,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   {
     cl_int gf_err = CL_SUCCESS;
     if (!prepare_gf_mask_cl(devid, gd, d, dev_in, input_matrix_cl, gamut_lut_cl, L_white,
-                             width, height, &mask_scalar_cl, &mask_filtered_cl, &guide_cl,
-                             &noise_confidence_cl, &mask_control_cl, &gf_err))
+                            width, height, &mask_scalar_cl, &mask_filtered_cl, &guide_cl,
+                            &noise_confidence_cl, &mask_control_cl, &gf_err))
       gf_active = FALSE;
     else if (gf_err != CL_SUCCESS)
     {
@@ -1392,11 +1376,11 @@ static void build_gamut_lut(dt_iop_satcurve_data_t *d,
 // Shared by the pipe-data LUT sync (sync_channel_curve) and the GUI preview
 // sync (_sync_gui_curve), which previously duplicated this verbatim.
 static void _sync_curve_and_calc_values(dt_draw_curve_t **curve,
-                                         int *curve_type,
-                                         int *curve_num_nodes,
-                                         const dt_iop_satcurve_channel_params_t *src,
-                                         float *const restrict out_values,
-                                         const int res)
+                                        int *curve_type,
+                                        int *curve_num_nodes,
+                                        const dt_iop_satcurve_channel_params_t *src,
+                                        float *const restrict out_values,
+                                        const int res)
 {
   if (*curve_type != src->curve_type || *curve_num_nodes != src->curve_num_nodes)
   {
@@ -1422,7 +1406,7 @@ static void sync_channel_curve(dt_iop_satcurve_channel_data_t *dst,
                                const dt_iop_satcurve_channel_params_t *src)
 {
   _sync_curve_and_calc_values(&dst->curve, &dst->curve_type, &dst->curve_num_nodes,
-                               src, dst->lut, DT_IOP_SATCURVE_RES);
+                              src, dst->lut, DT_IOP_SATCURVE_RES);
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -1611,7 +1595,7 @@ static void _sync_gui_curve(dt_iop_satcurve_gui_channel_t *gc,
                             const dt_iop_satcurve_channel_params_t *cp)
 {
   _sync_curve_and_calc_values(&gc->curve, &gc->curve_type, &gc->curve_num_nodes,
-                               cp, gc->draw_ys, DT_IOP_SATCURVE_RES);
+                              cp, gc->draw_ys, DT_IOP_SATCURVE_RES);
 }
 
 static gboolean area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
@@ -1967,7 +1951,6 @@ static void show_saturation_mask_callback(GtkToggleButton *button, dt_iop_module
   }
 
   dt_iop_refresh_center(self);
-  // dt_iop_color_picker_reset(self, TRUE);
 }
 
 void gui_focus(dt_iop_module_t *self, gboolean in)

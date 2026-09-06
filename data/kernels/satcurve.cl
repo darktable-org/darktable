@@ -344,11 +344,18 @@ satcurve_prepare_perceptual_guide(read_only image2d_t in, write_only image2d_t o
   write_imagef(out, (int2)(x, y), guide);
 }
 
+static inline float smoothstep01_cl(const float edge0, const float edge1, const float x)
+{
+  const float t = clamp((x - edge0) / fmax(edge1 - edge0, 1e-6f), 0.0f, 1.0f);
+  return t * t * (3.0f - 2.0f * t);
+}
+
 kernel void
 satcurve_prepare_filter_confidence(read_only image2d_t raw, read_only image2d_t filtered,
-                                  read_only image2d_t guide, write_only image2d_t control,
-                                  write_only image2d_t confidence,
-                                  const int width, const int height)
+                                    read_only image2d_t guide, write_only image2d_t control,
+                                    write_only image2d_t confidence,
+                                    const int width, const int height,
+                                    const float protect_from, const float protect_to)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -357,17 +364,15 @@ satcurve_prepare_filter_confidence(read_only image2d_t raw, read_only image2d_t 
   const float raw_center = Areadsingle(raw, x, y);
   const float filtered_center = Areadsingle(filtered, x, y);
   const float4 guide_center = Areadpixel(guide, x, y);
-  float residual_energy = 0.f;
-  float edge_energy = 0.f;
+  float residual_energy = 0.f, edge_energy = 0.f;
   for (int dy = -1; dy <= 1; dy++)
     for (int dx = -1; dx <= 1; dx++)
     {
       const int nx = clamp(x + dx, 0, width - 1);
       const int ny = clamp(y + dy, 0, height - 1);
       const float residual = Areadsingle(raw, nx, ny) - Areadsingle(filtered, nx, ny);
-      const float4 guide_pixel = Areadpixel(guide, nx, ny);
+      const float4 delta = Areadpixel(guide, nx, ny) - guide_center;
       residual_energy += residual * residual;
-      const float4 delta = guide_pixel - guide_center;
       edge_energy += dot(delta, delta);
     }
   residual_energy /= 9.f;
@@ -376,26 +381,35 @@ satcurve_prepare_filter_confidence(read_only image2d_t raw, read_only image2d_t 
   const float edge_safe = 1.f - smoothstep(0.0005f, 0.01f, edge_energy);
   const float conf = noisy * edge_safe;
   write_imagef(confidence, (int2)(x, y), conf);
-  write_imagef(control, (int2)(x, y), clamp(raw_center + conf * (filtered_center - raw_center), 0.f, 1.f));
+
+  // Mirrors the CPU main loop: protection_weight() called with
+  // noise_protection = 0.0f -> only the neutral-region weight applies here.
+  const float neutral_w = smoothstep01_cl(protect_from, protect_to, raw_center);
+  write_imagef(control, (int2)(x, y), clamp(raw_center + neutral_w * (filtered_center - raw_center), 0.f, 1.f));
 }
 
 kernel void
 satcurve_mask_from_control(read_only image2d_t raw, read_only image2d_t filtered,
-                           read_only image2d_t confidence, read_only image2d_t in,
-                           write_only image2d_t out,
-                           const int width, const int height,
-                           const float noise_protection)
+                            read_only image2d_t confidence, read_only image2d_t in,
+                            write_only image2d_t out,
+                            const int width, const int height,
+                            const float protect_from, const float protect_to,
+                            const float noise_protection)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
   if (x >= width || y >= height) return;
+
   const float raw_value = Areadsingle(raw, x, y);
   const float filtered_value = Areadsingle(filtered, x, y);
   const float conf = clamp(Areadsingle(confidence, x, y), 0.f, 1.f);
-  const float effect = 1.f - clamp(noise_protection * conf, 0.f, 1.f);
-  const float value = clamp(raw_value + effect * (filtered_value - raw_value), 0.f, 1.f);
+
+  const float neutral_w = smoothstep01_cl(protect_from, protect_to, raw_value);
+  const float noise_w = 1.f - clamp(noise_protection * conf, 0.f, 1.f);
+  const float weight = neutral_w * noise_w;
+
+  const float value = clamp(raw_value + weight * (filtered_value - raw_value), 0.f, 1.f);
   const float t = sqrt(value);
   const float4 pixel = Areadpixel(in, x, y);
   write_imagef(out, (int2)(x, y), (float4)(1.f - .5f * t, 1.f - t, 1.f - .5f * t, pixel.w));
 }
-
