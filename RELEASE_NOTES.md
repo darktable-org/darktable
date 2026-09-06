@@ -117,6 +117,9 @@ changes (where available).
 - Fixed a crash or hang on Windows when checking a faulty custom ONNX
   Runtime library.
 
+- Fixed corrupted output or a crash when an AI model returns more data
+  than darktable reserved for it, affecting object masks and Lua models.
+
 ## Lua
 
 ### API Version
