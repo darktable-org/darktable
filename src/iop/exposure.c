@@ -639,8 +639,8 @@ static inline float _total_adjustment_ev(const dt_iop_module_t *const self,
 
 // The inverse: the value to store in p->exposure (i.e. where to move the exposure slider)
 // so that the pipe ends up applying `total_adjustment_ev`. The GUI needs it because it
-// reasons in terms of the total adjustment - that is what black has to stay below - but
-// writes the user parameter (slider value).
+// reasons in terms of the total adjustment - black has to stay below the white point
+// derived from it - but writes the user parameter (slider value).
 static inline float _required_exposure_slider_ev(const dt_iop_module_t *const self,
                                                  const dt_iop_exposure_params_t *const p,
                                                  const float total_adjustment_ev)
@@ -1005,13 +1005,14 @@ void color_picker_apply(dt_iop_module_t *self,
 }
 
 
-// keep black under the white point the pipe will map to 1.0, so that white - black
-// stays positive and d->scale neither blows up nor turns negative; the comparison is in
-// the compensated domain because that is what the pipe uses, while p->black is never
-// compensated
-static void _clamp_black_below_white(dt_iop_module_t *self,
-                                     const dt_iop_exposure_params_t *const p)
+// keep black under the white point the pipe will map to 1.0, so that
+// white - black cannot reach zero or turn negative; the comparison is in the
+// compensated domain because that is what the pipe uses, while p->black is
+// never compensated
+static void _clamp_black_below_white(dt_iop_module_t *self)
 {
+  const dt_iop_exposure_params_t *const p = self->params;
+
   const float white = exposure2white(_total_adjustment_ev(self, p));
   if(p->black >= white)
     _exposure_set_black(self, white - 0.01);
@@ -1052,34 +1053,31 @@ void gui_changed(dt_iop_module_t *self,
         gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "manual");
         break;
     }
+  }
 
-    // when entering (normal or forced - for unsupported image) manual mode,
-    // ensure black stays below white -- automatic mode used a different white,
-    // so currently set black may have been below that, but above manual mode's
-    // white
-    if(p->mode == EXPOSURE_MODE_MANUAL)
-      _clamp_black_below_white(self, p);
-  }
-  else if(p->mode == EXPOSURE_MODE_MANUAL
-          && (w == g->exposure
-              || w == g->compensate_exposure_bias
-              || w == g->compensate_hilite_preserv))
+  // black and the white point must not cross. to ensure that, adjust black if the user
+  // changed exposure controls, and adjust exposure if they moved black. only in manual
+  // mode: the manual white point is not applied in deflicker mode, but its hidden
+  // controls stay reachable via shortcuts, so manual white must not constrain the visible
+  // and active black
+  if(p->mode == EXPOSURE_MODE_MANUAL)
   {
-    // changed one of the controls influencing total manual exposure adjustment,
-    // so the MANUAL white point may have moved below black. This can happen even in deflicker
-    // mode, via shortcuts, when manual exposure controls are invisible and ineffective.
-    // DO NOT force (always effective) black below the manual white, ignored in deflicker mode.
-    _clamp_black_below_white(self, p);
-  }
-  // the inverse path: black moved -> move the exposure slider to keep 'white' above black,
-  // but only do it in manual mode, so black adjustments made in deflicker mode don't adjust
-  // exposure of manual mode. If we're returning from deflicker to manual mode, we prefer to
-  // keep the manual exposure and adjust black -- see end of if(w == g->mode)
-  else if(p->mode == EXPOSURE_MODE_MANUAL && w == g->black)
-  {
-    const float white = exposure2white(_total_adjustment_ev(self, p));
-    if(p->black >= white)
-      _exposure_set_white(self, p->black + 0.01);
+    if(w == g->black)
+    {
+      const float white = exposure2white(_total_adjustment_ev(self, p));
+      if(p->black >= white)
+        _exposure_set_white(self, p->black + 0.01);
+    }
+    else if(w == g->mode
+            || w == g->exposure
+            || w == g->compensate_exposure_bias
+            || w == g->compensate_hilite_preserv)
+    {
+      // the white point moved, or manual mode was just entered (normally, or
+      // forced for an unsupported image) with a black left over from deflicker
+      // mode's white point
+      _clamp_black_below_white(self);
+    }
   }
 }
 
