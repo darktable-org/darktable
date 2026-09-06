@@ -25,7 +25,7 @@
 #   --log-dir <dir>     where reports land        (default: <build>/sanitizer-logs/<stamp>)
 #   --timeout <secs>    per darktable-cli call    (default: 1800)
 #   --with-opencl       also run the GPU pass     (default: CPU pass only)
-#   --no-openmp         run the CLI with OMP_NUM_THREADS=1
+#   --no-openmp         serialise OpenMP (rewrites the suite's -t to 1)
 #   --no-aslr           force ASLR off for the CLI (setarch -R)
 #   --keep-aslr         never disable ASLR, even if the runtime needs it
 #   -h, --help          this message
@@ -251,6 +251,7 @@ DT_SAN_RUN_LOGDIR="$LOG_DIR"
 DT_SAN_REAL_CLI="$REAL_CLI"
 DT_SAN_TIMEOUT="$CLI_TIMEOUT"
 DT_SAN_SETARCH="$SETARCH_PREFIX"
+DT_SAN_NO_OPENMP="$NO_OPENMP"
 EOF
 cat <<'EOF'
 
@@ -265,6 +266,29 @@ esac
 
 log_dir="$DT_SAN_RUN_LOGDIR/$test_name"
 mkdir -p "$log_dir"
+
+# Serialising OpenMP has to be done on the command line, not through the
+# environment: dt_init() derives its thread count from -t/--threads and then
+# calls omp_set_num_threads() (src/common/darktable.c:1618), which overrides
+# whatever OMP_NUM_THREADS said. The suite always passes -t, so rewrite it.
+if [ "$DT_SAN_NO_OPENMP" = 1 ]; then
+    remaining=$#
+    replace_next=0
+    while [ "$remaining" -gt 0 ]; do
+        arg=$1
+        shift
+        if [ "$replace_next" = 1 ]; then
+            set -- "$@" 1
+            replace_next=0
+        else
+            case "$arg" in
+                -t|--threads) replace_next=1 ;;
+            esac
+            set -- "$@" "$arg"
+        fi
+        remaining=$((remaining - 1))
+    done
+fi
 
 # With --with-opencl the suite renders each test twice from the same directory.
 # The output file it asks for is what tells the two invocations apart.
@@ -295,6 +319,8 @@ chmod +x "$SHIM"
 DARKTABLE_CLI="$SHIM"
 export DARKTABLE_CLI
 
+# Belt and braces: darktable itself ignores this (see the shim), but other
+# OpenMP users in the process, rawspeed included, do honour it.
 if [ "$NO_OPENMP" -eq 1 ]; then
     OMP_NUM_THREADS=1
     export OMP_NUM_THREADS
@@ -311,7 +337,7 @@ Sanitizers:   ${DT_SANITIZERS:-unknown}
 Log dir:      $LOG_DIR
 CLI timeout:  ${CLI_TIMEOUT}s per invocation
 ASLR:         $ASLR_NOTE
-OpenMP:       $([ "$NO_OPENMP" -eq 1 ] && echo "serialised (OMP_NUM_THREADS=1)" || echo "on")
+OpenMP:       $([ "$NO_OPENMP" -eq 1 ] && echo "serialised (-t 1)" || echo "on")
 OpenCL pass:  $([ "$WITH_OPENCL" -eq 1 ] && echo yes || echo "no (--with-opencl to enable)")
 Tests:        ${RUN_ARGS[*]:-all}
 
