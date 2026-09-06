@@ -19,19 +19,6 @@
 
 #define DT_IOP_SATCURVE_RES 256
 
-// noise-aware blend: sigmoid weight LUT lookup, mirrors _get_sb_weight() on
-// the CPU and _get_satweight() in colorequal.cl. weights has 2*DT_SATCURVE_SB_SIZE+1
-// entries, uploaded once per process_cl() call from the host-side LUT.
-#define DT_SATCURVE_SB_SIZE 2048.0f
-
-static inline float _get_sb_weight_cl(const float sat, global const float *const weights)
-{
-  const float isat = DT_SATCURVE_SB_SIZE * (1.0f + clamp(sat, -1.0f, 1.0f - (1.0f / DT_SATCURVE_SB_SIZE)));
-  const float base = floor(isat);
-  const int i = (int)base;
-  return weights[i] + (isat - base) * (weights[i + 1] - weights[i]);
-}
-
 // periodic lookup in the hue-indexed gamut LUT; mirrors satcurve_lookup_gamut() on CPU
 static inline float satcurve_lookup_gamut_cl(global const float *const gamut_lut, const float h)
 {
@@ -320,11 +307,11 @@ satcurve_mask(read_only image2d_t in, write_only image2d_t out,
 // CPU side: MAX(s_in_norm, 0.f), written into a single-channel buffer instead
 // of the 3-channel visualisation that satcurve_mask above produces.
 kernel void
-satcurve_scalar_mask(read_only image2d_t in, write_only image2d_t out,
-                     const int width, const int height,
-                     constant const float *const matrix_in,
-                     global const float *const gamut_lut,
-                     const int formula, const float L_white)
+satcurve_prepare_scalar_mask(read_only image2d_t in, write_only image2d_t out,
+                            const int width, const int height,
+                            constant const float *const matrix_in,
+                            global const float *const gamut_lut,
+                            const int formula, const float L_white)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -338,11 +325,10 @@ satcurve_scalar_mask(read_only image2d_t in, write_only image2d_t out,
 }
 
 kernel void
-satcurve_perceptual_guide(read_only image2d_t in, write_only image2d_t out,
-                          const int width, const int height,
-                          constant const float *const matrix_in,
-                          global const float *const gamut_lut,
-                          const int formula, const float L_white)
+satcurve_prepare_perceptual_guide(read_only image2d_t in, write_only image2d_t out,
+                                 const int width, const int height,
+                                 constant const float *const matrix_in,
+                                 const float L_white)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -350,28 +336,19 @@ satcurve_perceptual_guide(read_only image2d_t in, write_only image2d_t out,
 
   const float4 rgb = fmax(Areadpixel(in, x, y), 0.f);
   const float4 xyz = matrix_product_float4(rgb, matrix_in);
-  float4 guide;
-  if (formula == DT_IOP_SATCURVE_JZAZBZ)
-  {
-    const float4 jab = XYZ_to_JzAzBz(xyz);
-    guide = (float4)(100.f * jab.x, 100.f * jab.y, 100.f * jab.z, 0.f);
-  }
-  else
-  {
-    const float4 xyY = dt_D65_XYZ_to_xyY(xyz);
-    const float4 JCH = xyY_to_dt_UCS_JCH(xyY, L_white);
-    guide = (float4)(JCH.x / fmax(L_white, 1e-6f),
-                    JCH.y * dtcl_cos(JCH.z) / fmax(L_white, 1e-6f),
-                    JCH.y * dtcl_sin(JCH.z) / fmax(L_white, 1e-6f), 0.f);
-  }
+  const float4 xyY = dt_D65_XYZ_to_xyY(xyz);
+  const float4 JCH = xyY_to_dt_UCS_JCH(xyY, L_white);
+  const float4 guide = (float4)(JCH.x / fmax(L_white, 1e-6f),
+                                JCH.y * dtcl_cos(JCH.z) / fmax(L_white, 1e-6f),
+                                JCH.y * dtcl_sin(JCH.z) / fmax(L_white, 1e-6f), 0.f);
   write_imagef(out, (int2)(x, y), guide);
 }
 
 kernel void
-satcurve_filter_confidence(read_only image2d_t raw, read_only image2d_t filtered,
-                           read_only image2d_t guide, write_only image2d_t control,
-                           write_only image2d_t confidence,
-                           const int width, const int height)
+satcurve_prepare_filter_confidence(read_only image2d_t raw, read_only image2d_t filtered,
+                                  read_only image2d_t guide, write_only image2d_t control,
+                                  write_only image2d_t confidence,
+                                  const int width, const int height)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -402,102 +379,6 @@ satcurve_filter_confidence(read_only image2d_t raw, read_only image2d_t filtered
   write_imagef(control, (int2)(x, y), clamp(raw_center + conf * (filtered_center - raw_center), 0.f, 1.f));
 }
 
-// same as satcurve_scalar_mask above, but writes into a plain linear buffer
-// instead of a single-channel image. Needed as the input format for
-// dt_gaussian_mean_blur_cl() (common/gaussian.h), which operates on cl_mem
-// buffers, not images -- feeds the noise-aware blend path below.
-kernel void
-satcurve_scalar_mask_buffer(read_only image2d_t in, global float *const out,
-                            const int width, const int height,
-                            constant const float *const matrix_in,
-                            global const float *const gamut_lut,
-                            const int formula, const float L_white)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if (x >= width || y >= height)
-    return;
-
-  const float4 pix_in = Areadpixel(in, x, y);
-  const float s_in_norm = satcurve_s_in_norm_cl(pix_in, matrix_in, gamut_lut, formula, L_white);
-
-  out[mad24(y, width, x)] = fmax(s_in_norm, 0.f);
-}
-
-// Noise-aware alternative to the guided filter (see apply_scharr_blend_to_mask()
-// on the CPU side). sat_raw and sat_blur are linear single-channel buffers:
-// sat_raw is the unfiltered per-pixel saturation, sat_blur is the same signal
-// after a plain (non edge-aware) gaussian blur, already applied in-place by
-// dt_gaussian_mean_blur_cl() before this kernel runs. For each pixel, blends
-// raw and blurred saturation using a sigmoid weight (dampens the blur's
-// influence on low-saturation / noisy areas); the brilliance output gets an
-// additional Scharr-gradient term that further distrusts the blur right at
-// sharp saturation transitions, to avoid halos.
-kernel void
-satcurve_scharr_blend(global const float *const sat_raw,
-                      global const float *const sat_blur,
-                      global const float *const sb_weights,
-                      const float threshold,
-                      const int width, const int height,
-                      write_only image2d_t sat_mask_out,
-                      write_only image2d_t bri_mask_out)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if (x >= width || y >= height)
-    return;
-
-  const int k = mad24(y, width, x);
-  const float raw = sat_raw[k];
-  const float blur = sat_blur[k];
-
-  const float weight = _get_sb_weight_cl(blur - threshold, sb_weights);
-  const float s_sat = clamp(raw + (blur - raw) * weight, 0.f, 1.f);
-
-  // clamp the sampling position so the 3x3 Scharr stencil never reads
-  // outside the buffer, same trick as on the CPU / in colorequal.cl
-  const int vrow = min(height - 2, max(1, y));
-  const int vcol = min(width - 2, max(1, x));
-  const int kk = mad24(vrow, width, vcol);
-
-  float edge = fmax(0.0f, scharr_gradient(sat_blur, kk, width) - 0.02f);
-  edge = edge * edge;
-  const float bri_weight = weight * (1.0f - clamp(4.0f * edge, 0.f, 1.f));
-  const float s_bri = clamp(raw + (blur - raw) * bri_weight, 0.f, 1.f);
-
-  write_imagef(sat_mask_out, (int2)(x, y), s_sat);
-  write_imagef(bri_mask_out, (int2)(x, y), s_bri);
-}
-
-// broadcasts a single-channel (guided-filtered) mask into an RGB visualisation,
-// alpha taken from the original input. Used for the mask_display branch when
-// the guided filter is enabled, so the preview shows the mask that is
-// actually used to modulate the correction. Mirrors display_saturation_mask()
-// on the CPU side, but reading a pre-computed scalar buffer instead of
-// recomputing s_in_norm. Zero saturation is shown as white, full saturation as
-// purple/magenta {0.5, 0.0, 0.5}, matching the chroma gradient end color in
-// blend_gui.c.
-
-kernel void
-satcurve_mask_from_scalar(read_only image2d_t scalar_mask, read_only image2d_t in,
-                          write_only image2d_t out,
-                          const int width, const int height)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if (x >= width || y >= height)
-    return;
-
-  const float mask_value = Areadsingle(scalar_mask, x, y);
-  const float4 pix_in = Areadpixel(in, x, y);
-
-  // white at t = 0, magenta {0.5, 0.0, 0.5} at t = 1
-  const float t = sqrt(clamp(mask_value, 0.f, 1.f));
-  float4 pixout = {1.0f - 0.5f * t, 1.0f - t, 1.0f - 0.5f * t, pix_in.w};
-
-  write_imagef(out, (int2)(x, y), pixout);
-}
-
 kernel void
 satcurve_mask_from_control(read_only image2d_t raw, read_only image2d_t filtered,
                            read_only image2d_t confidence, read_only image2d_t in,
@@ -518,26 +399,3 @@ satcurve_mask_from_control(read_only image2d_t raw, read_only image2d_t filtered
   write_imagef(out, (int2)(x, y), (float4)(1.f - .5f * t, 1.f - t, 1.f - .5f * t, pixel.w));
 }
 
-
-// final step specific to satcurvergb: blend the already-corrected RGB pixel
-// back towards the untouched input RGB, using the filtered scalar mask as
-// per-pixel strength. Mirrors the `if(gf_mask)` branch inside the CPU
-// process() loop: pixout[c] = rgb[c] + w * (pixout[c] - rgb[c]).
-kernel void
-satcurve_apply_guided_mask(read_only image2d_t rgb_in, read_only image2d_t corrected,
-                           read_only image2d_t mask, write_only image2d_t out,
-                           const int width, const int height)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if(x >= width || y >= height) return;
-
-  const float4 rgb = Areadpixel(rgb_in, x, y);
-  const float4 pixout = Areadpixel(corrected, x, y);
-  const float w = clamp(Areadsingle(mask, x, y), 0.f, 1.f);
-
-  float4 result = rgb + w * (pixout - rgb);
-  result.w = pixout.w;
-
-  write_imagef(out, (int2)(x, y), result);
-}

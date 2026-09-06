@@ -22,12 +22,8 @@
 #include "common/color_picker.h"
 #include "common/darktable_ucs_22_helpers.h"
 #include "common/dtpthread.h"
-#include "common/eigf.h"
-#include "common/fast_guided_filter.h"
 #include "common/gdk_event_utils.h"
-#include "common/gaussian.h"
 #include "common/guided_filter.h"
-#include "common/gamut_mapping.h"
 #include "common/imagebuf.h"
 #include "common/math.h"
 #include "develop/imageop.h"
@@ -92,9 +88,8 @@ typedef struct dt_iop_satcurve_params_t
   gboolean use_guided_filter; // $DEFAULT: FALSE $DESCRIPTION: "use guided filter"
   float gf_radius;            // $MIN: 0.5 $MAX: 200.0 $DEFAULT: 10.0 $DESCRIPTION: "filter radius"
   float gf_feathering;        // $MIN: 0.1 $MAX: 50.0 $DEFAULT: 1.0 $DESCRIPTION: "edge feathering"
-  int gf_iterations;          // $MIN: 1 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "iterations"
   float gf_protect_from;      // $MIN: 0.0 $MAX: 0.5 $DEFAULT: 0.00 $DESCRIPTION: "protect near-neutrals from"
-  float gf_protect_to;        // $MIN: 0.0 $MAX: 0.5 $DEFAULT: 0.08 $DESCRIPTION: "protect near-neutrals to"
+  float gf_protect_to;        // $MIN: 0.0 $MAX: 0.5 $DEFAULT: 0.00 $DESCRIPTION: "protect near-neutrals to"
   float noise_protection;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "noise protection"
 } dt_iop_satcurve_params_t;
 
@@ -117,7 +112,6 @@ typedef struct dt_iop_satcurve_data_t
   gboolean use_guided_filter;
   float gf_radius;
   float gf_feathering;
-  int gf_iterations;
   float gf_protect_from;
   float gf_protect_to;
   float noise_protection;
@@ -142,7 +136,6 @@ typedef struct dt_iop_satcurve_gui_data_t
   GtkWidget *use_guided_filter;
   GtkWidget *gf_radius;
   GtkWidget *gf_feathering;
-  GtkWidget *gf_iterations;
   GtkWidget *gf_protect_center;
   GtkWidget *gf_protect_width;
   GtkWidget *noise_protection;
@@ -171,15 +164,9 @@ typedef struct dt_iop_satcurve_global_data_t
   int kernel_satcurve_histogram;
   int kernel_satcurve_mask;
   int kernel_satcurve_scalar_mask;
-  int kernel_satcurve_mask_from_scalar;
   int kernel_satcurve_perceptual_guide;
   int kernel_satcurve_filter_confidence;
   int kernel_satcurve_mask_from_control;
-  int kernel_fgf_resample;
-  int kernel_fgf_quantize;
-  int kernel_fgf_covar_products;
-  int kernel_fgf_solve_ab;
-  int kernel_fgf_apply_blend;
 } dt_iop_satcurve_global_data_t;
 
 typedef struct dt_iop_satcurve_factors_t
@@ -266,10 +253,9 @@ static inline void reset_params(dt_iop_satcurve_params_t *p)
   p->use_guided_filter = FALSE;
   p->gf_radius = 10.0f;
   p->gf_feathering = 1.0f;
-  p->gf_iterations = 1;
-  p->gf_protect_from = 0.03f;
-  p->gf_protect_to = 0.08f;
-  p->noise_protection = 1.0f;
+  p->gf_protect_from = 0.00f;
+  p->gf_protect_to = 0.00f;
+  p->noise_protection = 0.0f;
 }
 
 static inline float lookup_lut(const float *lut, const float x)
@@ -425,6 +411,11 @@ static inline dt_iop_satcurve_gui_channel_t *get_active_gui_channel(dt_iop_modul
 static inline gboolean channel_is_neutral(const dt_iop_satcurve_channel_data_t *c)
 {
   return c->curve_num_nodes == 2 && fabsf(c->lut[0] - .5f) < 1e-6f && fabsf(c->lut[DT_IOP_SATCURVE_RES - 1] - .5f) < 1e-6f;
+}
+
+static inline gboolean guided_filter_active(const dt_iop_satcurve_data_t *d)
+{
+  return d->formula == DT_IOP_SATCURVE_DTUCS && d->use_guided_filter && d->gf_radius >= 0.5f;
 }
 
 static inline dt_iop_satcurve_factors_t eval_curve_factors(const dt_iop_satcurve_data_t *d,
@@ -613,12 +604,12 @@ static inline void apply_sat_and_brilliance_jzazbz(const dt_iop_satcurve_data_t 
 
 // Compute the normalized saturation for each pixel into a separate buffer,
 // analogous to compute_luminance_mask() in toneequal.c.
-static inline void compute_saturation_mask(const dt_iop_satcurve_data_t *d,
-                                           const dt_colormatrix_t inputmatrix_trans,
-                                           const float L_white,
-                                           const float *const restrict in,
-                                           float *const restrict mask,
-                                           const size_t npixels)
+static inline void prepare_scalar_mask(const dt_iop_satcurve_data_t *d,
+                                      const dt_colormatrix_t inputmatrix_trans,
+                                      const float L_white,
+                                      const float *const restrict in,
+                                      float *const restrict mask,
+                                      const size_t npixels)
 {
   DT_OMP_FOR()
   for (size_t k = 0; k < npixels; k++)
@@ -632,10 +623,10 @@ static inline void compute_saturation_mask(const dt_iop_satcurve_data_t *d,
 // white, full saturation as purple/magenta, matching the chroma gradient end
 // color {0.5, 0.0, 0.5} used in blend_gui.c. A sqrt-like gamma makes low
 // values easier to see, analogous to display_luminance_mask() in toneequal.c.
-static inline void display_saturation_mask(const float *const restrict in,
-                                           const float *const restrict mask,
-                                           float *const restrict out,
-                                           const size_t npixels)
+static inline void visualize_mask_preview(const float *const restrict in,
+                                        const float *const restrict mask,
+                                        float *const restrict out,
+                                        const size_t npixels)
 {
   DT_OMP_FOR()
   for (size_t k = 0; k < npixels; k++)
@@ -655,19 +646,19 @@ static inline float smoothstep01(const float edge0, const float edge1, const flo
   return t * t * (3.0f - 2.0f * t);
 }
 
-// Build a perceptual guide, filter the curve coordinate, and return a confidence
-// which is high only for noisy, spatially homogeneous pixels.
-static inline void filter_curve_coordinate(const dt_iop_satcurve_data_t *d,
-                                           const dt_colormatrix_t inputmatrix_trans,
-                                           const float L_white,
-                                           const float *const restrict in,
-                                           float *const restrict raw,
-                                           float *const restrict filtered,
-                                           float *const restrict noise_confidence,
-                                           const int width,
-                                           const int height,
-                                           const int radius,
-                                           const int iterations)
+// Prepare the scalar curve coordinate, perceptual guide, and per-pixel
+// confidence used by the guided-filter branch. This matches the stage split in
+// the OpenCL implementation: scalar mask -> guide -> confidence -> control.
+static inline void prepare_guided_filter_control(const dt_iop_satcurve_data_t *d,
+                                                const dt_colormatrix_t inputmatrix_trans,
+                                                const float L_white,
+                                                const float *const restrict in,
+                                                float *const restrict raw,
+                                                float *const restrict filtered,
+                                                float *const restrict noise_confidence,
+                                                const int width,
+                                                const int height,
+                                                const int radius)
 {
   const size_t npixels = (size_t)width * height;
   float *const restrict guide = dt_alloc_align_float(npixels * 3);
@@ -746,6 +737,45 @@ static inline void filter_curve_coordinate(const dt_iop_satcurve_data_t *d,
   dt_free_align(guide);
 }
 
+static inline void apply_guided_filter_control(const float *const restrict raw,
+                                              const float *const restrict filtered,
+                                              const float *const restrict confidence,
+                                              float *const restrict control,
+                                              const float protect_from,
+                                              const float protect_to,
+                                              const float noise_protection,
+                                              const size_t npixels)
+{
+  DT_OMP_FOR()
+  for (size_t k = 0; k < npixels; k++)
+  {
+    const float weight = protection_weight(raw[k], protect_from, protect_to,
+                                           confidence[k], noise_protection);
+    control[k] = raw[k] + weight * (filtered[k] - raw[k]);
+  }
+}
+
+// Allocate three aligned float scratch buffers of npixels elements each. If
+// any allocation fails, frees whatever succeeded and resets all three
+// pointers to NULL. Used by both the mask-preview branch and the main
+// processing branch of process() to allocate their guided-filter scratch
+// buffers.
+static gboolean alloc_scratch_floats(const size_t npixels, float **a, float **b, float **c)
+{
+  *a = dt_alloc_align_float(npixels);
+  *b = dt_alloc_align_float(npixels);
+  *c = dt_alloc_align_float(npixels);
+
+  if (*a && *b && *c)
+    return TRUE;
+
+  dt_free_align(*a);
+  dt_free_align(*b);
+  dt_free_align(*c);
+  *a = *b = *c = NULL;
+  return FALSE;
+}
+
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -784,35 +814,28 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     float *const restrict mask = dt_alloc_align_float(npixels);
     if (mask)
     {
-      compute_saturation_mask(d, inputmatrix_trans, L_white, in, mask, npixels);
+      prepare_scalar_mask(d, inputmatrix_trans, L_white, in, mask, npixels);
 
       // Show final coordinate fed into curve.
-      if (d->use_guided_filter && d->gf_radius >= 0.5f && d->gf_iterations > 0)
+      if (guided_filter_active(d))
       {
-        float *const restrict filtered = dt_alloc_align_float(npixels);
-        float *const restrict confidence = dt_alloc_align_float(npixels);
-        if (filtered && confidence)
+        float *filtered, *confidence, *control;
+        if (alloc_scratch_floats(npixels, &filtered, &confidence, &control))
         {
-          filter_curve_coordinate(d, inputmatrix_trans, L_white, in, mask, filtered, confidence,
-                                  roi_out->width, roi_out->height,
-                                  (int)d->gf_radius, d->gf_iterations);
-          apply_neutral_protection(mask, filtered, d->gf_protect_from, d->gf_protect_to, npixels);
-          //  Fold noise-protection damping into the displayed mask so the slider
-          // becomes visible in the preview: blend back toward the raw value in
-          // proportion to how much noise_protection would suppress the curve there.
-          DT_OMP_FOR()
-          for (size_t k = 0; k < npixels; k++)
-          {
-            const float effect = 1.0f - CLAMP(d->noise_protection * confidence[k], 0.0f, 1.0f);
-            mask[k] = mask[k] + effect * (filtered[k] - mask[k]);
-            // mask[k] here is final coordinate after neutral and noise protection.
-          }
+          prepare_guided_filter_control(d, inputmatrix_trans, L_white, in, mask, filtered, confidence,
+                                       roi_out->width, roi_out->height,
+                                       (int)d->gf_radius);
+          apply_guided_filter_control(mask, filtered, confidence, control,
+                                     d->gf_protect_from, d->gf_protect_to,
+                                     d->noise_protection, npixels);
+          memcpy(mask, control, npixels * sizeof(float));
         }
         dt_free_align(filtered);
         dt_free_align(confidence);
+        dt_free_align(control);
       }
 
-      display_saturation_mask(in, mask, out, npixels);
+      visualize_mask_preview(in, mask, out, npixels);
       dt_free_align(mask);
       piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
 
@@ -830,31 +853,24 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   }
 
   // Compute curve inputs from guided-filtered saturation or raw saturation.
-  float *restrict filtered_mask = NULL;
-  float *restrict noise_confidence = NULL;
-  float *restrict raw_mask = NULL;
+  float *filtered_mask = NULL;
+  float *noise_confidence = NULL;
+  float *raw_mask = NULL;
 
-  if (d->use_guided_filter && d->gf_radius >= 0.5f && d->gf_iterations > 0)
+  if (guided_filter_active(d))
   {
-    raw_mask = dt_alloc_align_float(npixels);
-    filtered_mask = dt_alloc_align_float(npixels);
-    noise_confidence = dt_alloc_align_float(npixels);
-    if (raw_mask && filtered_mask && noise_confidence)
+    if (alloc_scratch_floats(npixels, &raw_mask, &filtered_mask, &noise_confidence))
     {
-      compute_saturation_mask(d, inputmatrix_trans, L_white, in, raw_mask, npixels);
-      filter_curve_coordinate(d, inputmatrix_trans, L_white, in, raw_mask, filtered_mask,
-                              noise_confidence, roi_out->width, roi_out->height,
-                              (int)d->gf_radius, d->gf_iterations);
+      prepare_scalar_mask(d, inputmatrix_trans, L_white, in, raw_mask, npixels);
+      prepare_guided_filter_control(d, inputmatrix_trans, L_white, in, raw_mask, filtered_mask,
+                                   noise_confidence, roi_out->width, roi_out->height,
+                                   (int)d->gf_radius);
       // apply_neutral_protection() removed: the protection weight is now
       // computed inline in the main pixel loop via protection_weight().
     }
     else
     {
       dt_control_log(_("saturation curve: guided filter failed to allocate memory, disabling it for this run"));
-      dt_free_align(raw_mask);
-      dt_free_align(filtered_mask);
-      dt_free_align(noise_confidence);
-      raw_mask = filtered_mask = noise_confidence = NULL;
     }
   }
 
@@ -913,8 +929,7 @@ void tiling_callback(dt_iop_module_t *self,
   dt_iop_satcurve_data_t *d = piece->data;
 
   const float ioratio = (float)roi_out->width * roi_out->height / ((float)roi_in->width * roi_in->height);
-  const gboolean gf_active =
-      d->use_guided_filter && d->gf_radius >= 0.5f && d->gf_iterations > 0;
+  const gboolean gf_active = guided_filter_active(d);
 
   tiling->factor = 1.0f + ioratio;
   tiling->factor_cl = tiling->factor;
@@ -933,13 +948,120 @@ void tiling_callback(dt_iop_module_t *self,
 
   const float filter_radius = d->gf_radius;
   const int base_overlap = (int)ceilf(filter_radius);
-  const int scaled_overlap = base_overlap * d->gf_iterations;
   const int resample_margin = 2;
 
-  tiling->overlap = MAX(tiling->overlap, scaled_overlap + resample_margin);
+  tiling->overlap = MAX(tiling->overlap, base_overlap + resample_margin);
 }
 
 #if HAVE_OPENCL
+// Allocate the five guided-filter scratch buffers (scalar mask, filtered
+// mask, perceptual guide, noise confidence, control). On partial allocation
+// failure, releases whatever succeeded, resets all five pointers to NULL,
+// logs once, and returns FALSE so the caller can fall back to the
+// unfiltered mask instead of aborting. Used by both the mask-preview branch
+// and the main processing branch of process_cl().
+static gboolean alloc_gf_scratch_cl(const int devid, const int width, const int height,
+                                    cl_mem *mask_scalar_cl, cl_mem *mask_filtered_cl,
+                                    cl_mem *guide_cl, cl_mem *noise_confidence_cl,
+                                    cl_mem *mask_control_cl)
+{
+  *mask_scalar_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  *mask_filtered_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  *guide_cl = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  *noise_confidence_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  *mask_control_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+
+  if (*mask_scalar_cl && *mask_filtered_cl && *guide_cl && *noise_confidence_cl && *mask_control_cl)
+    return TRUE;
+
+  dt_control_log(_("saturation curve: guided filter failed to allocate memory, "
+                   "disabling it for this run"));
+  dt_opencl_release_mem_object(*mask_scalar_cl);
+  dt_opencl_release_mem_object(*mask_filtered_cl);
+  dt_opencl_release_mem_object(*guide_cl);
+  dt_opencl_release_mem_object(*noise_confidence_cl);
+  dt_opencl_release_mem_object(*mask_control_cl);
+  *mask_scalar_cl = *mask_filtered_cl = *guide_cl = *noise_confidence_cl = *mask_control_cl = NULL;
+  return FALSE;
+}
+
+// Runs the four-stage guided-filter mask pipeline (scalar mask -> perceptual
+// guide -> guided filter -> filter confidence) into the already-allocated
+// scratch buffers. Shared by the mask-preview branch and the main processing
+// branch of process_cl(); previously duplicated verbatim in both places.
+static cl_int run_gf_pipeline_cl(const int devid,
+                                  const dt_iop_satcurve_global_data_t *gd,
+                                  const dt_iop_satcurve_data_t *d,
+                                  cl_mem dev_in,
+                                  cl_mem input_matrix_cl,
+                                  cl_mem gamut_lut_cl,
+                                  const float L_white,
+                                  const int width, const int height,
+                                  cl_mem mask_scalar_cl,
+                                  cl_mem guide_cl,
+                                  cl_mem mask_filtered_cl,
+                                  cl_mem mask_control_cl,
+                                  cl_mem noise_confidence_cl)
+{
+  cl_int err = dt_opencl_enqueue_kernel_2d_args(
+      devid, gd->kernel_satcurve_scalar_mask, width, height,
+      CLARG(dev_in), CLARG(mask_scalar_cl),
+      CLARG(width), CLARG(height),
+      CLARG(input_matrix_cl), CLARG(gamut_lut_cl),
+      CLARG(d->formula), CLARG(L_white));
+  if (err != CL_SUCCESS)
+    return err;
+
+  err = dt_opencl_enqueue_kernel_2d_args(
+      devid, gd->kernel_satcurve_perceptual_guide, width, height,
+      CLARG(dev_in), CLARG(guide_cl), CLARG(width), CLARG(height),
+      CLARG(input_matrix_cl), CLARG(L_white));
+  if (err != CL_SUCCESS)
+    return err;
+
+  err = guided_filter_cl(devid, guide_cl, mask_scalar_cl, mask_filtered_cl,
+                          width, height, 3,
+                          MAX(1, (int)d->gf_radius),
+                          MAX(0.01f, d->gf_feathering * 0.01f), 1.0f, 0.0f, 1.0f);
+  if (err != CL_SUCCESS)
+    return err;
+
+  return dt_opencl_enqueue_kernel_2d_args(
+      devid, gd->kernel_satcurve_filter_confidence, width, height,
+      CLARG(mask_scalar_cl), CLARG(mask_filtered_cl), CLARG(guide_cl),
+      CLARG(mask_control_cl), CLARG(noise_confidence_cl), CLARG(width), CLARG(height),
+      CLARG(d->gf_protect_from), CLARG(d->gf_protect_to));
+}
+
+// Combines allocation + pipeline execution. Returns FALSE if the scratch
+// buffers could not be allocated (caller should fall back to gf_active =
+// FALSE, matching the previous inline behaviour in both branches of
+// process_cl()). If allocation succeeds but a kernel/guided-filter stage
+// fails, TRUE is returned and *err carries the OpenCL error for the caller's
+// existing goto-error handling.
+static gboolean prepare_gf_mask_cl(const int devid,
+                                    const dt_iop_satcurve_global_data_t *gd,
+                                    const dt_iop_satcurve_data_t *d,
+                                    cl_mem dev_in,
+                                    cl_mem input_matrix_cl,
+                                    cl_mem gamut_lut_cl,
+                                    const float L_white,
+                                    const int width, const int height,
+                                    cl_mem *mask_scalar_cl, cl_mem *mask_filtered_cl,
+                                    cl_mem *guide_cl, cl_mem *noise_confidence_cl,
+                                    cl_mem *mask_control_cl,
+                                    cl_int *err)
+{
+  if (!alloc_gf_scratch_cl(devid, width, height, mask_scalar_cl, mask_filtered_cl,
+                            guide_cl, noise_confidence_cl, mask_control_cl))
+    return FALSE;
+
+  *err = run_gf_pipeline_cl(devid, gd, d, dev_in, input_matrix_cl, gamut_lut_cl, L_white,
+                             width, height, *mask_scalar_cl, *guide_cl, *mask_filtered_cl,
+                             *mask_control_cl, *noise_confidence_cl);
+  return TRUE;
+}
+
 int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -963,8 +1085,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
   // not const anymore: may be downgraded to FALSE below if the guided-filter
   // scratch buffers fail to allocate, mirroring the CPU fallback in process()
-  gboolean gf_active =
-      d->use_guided_filter && d->gf_radius >= 0.5f && d->gf_iterations > 0;
+  gboolean gf_active = guided_filter_active(d);
 
   const gboolean want_mask =
       self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && g && g->mask_display;
@@ -1033,32 +1154,18 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   {
     if (gf_active)
     {
-      mask_scalar_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-      mask_filtered_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-      guide_cl = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
-      noise_confidence_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-      mask_control_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-      if (mask_scalar_cl == NULL || mask_filtered_cl == NULL || guide_cl == NULL || noise_confidence_cl == NULL || mask_control_cl == NULL)
-      {
-        // fallback: show the unfiltered mask instead of aborting the preview
-        dt_control_log(_("saturation curve: guided filter failed to allocate memory, "
-                         "disabling it for this preview"));
-        dt_opencl_release_mem_object(mask_scalar_cl);
-        dt_opencl_release_mem_object(mask_filtered_cl);
-        dt_opencl_release_mem_object(guide_cl);
-        dt_opencl_release_mem_object(noise_confidence_cl);
-        dt_opencl_release_mem_object(mask_control_cl);
-        dt_opencl_release_mem_object(guide_cl);
-        dt_opencl_release_mem_object(noise_confidence_cl);
-        dt_opencl_release_mem_object(mask_control_cl);
-        mask_scalar_cl = NULL;
-        mask_filtered_cl = NULL;
-        guide_cl = NULL;
-        noise_confidence_cl = NULL;
-        mask_control_cl = NULL;
+      cl_int gf_err = CL_SUCCESS;
+      if (!prepare_gf_mask_cl(devid, gd, d, dev_in, input_matrix_cl, gamut_lut_cl, L_white,
+                               width, height, &mask_scalar_cl, &mask_filtered_cl, &guide_cl,
+                               &noise_confidence_cl, &mask_control_cl, &gf_err))
         gf_active = FALSE;
+      else if (gf_err != CL_SUCCESS)
+      {
+        err = gf_err;
+        goto error;
       }
     }
+
     if (!gf_active)
     {
       err = dt_opencl_enqueue_kernel_2d_args(
@@ -1067,48 +1174,16 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
           CLARG(width), CLARG(height),
           CLARG(input_matrix_cl), CLARG(gamut_lut_cl),
           CLARG(d->formula), CLARG(L_white));
-
-      if (err == CL_SUCCESS)
-        piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-      goto error;
     }
-
-    if (gf_active)
+    else
     {
+      // mask_control_cl holds final coordinate.
       err = dt_opencl_enqueue_kernel_2d_args(
-          devid, gd->kernel_satcurve_scalar_mask, width, height,
-          CLARG(dev_in), CLARG(mask_scalar_cl),
-          CLARG(width), CLARG(height),
-          CLARG(input_matrix_cl), CLARG(gamut_lut_cl),
-          CLARG(d->formula), CLARG(L_white));
-      if (err != CL_SUCCESS)
-        goto error;
-
-      err = dt_opencl_enqueue_kernel_2d_args(
-          devid, gd->kernel_satcurve_perceptual_guide, width, height,
-          CLARG(dev_in), CLARG(guide_cl), CLARG(width), CLARG(height),
-          CLARG(input_matrix_cl), CLARG(gamut_lut_cl), CLARG(d->formula), CLARG(L_white));
-      if (err == CL_SUCCESS)
-        err = guided_filter_cl(devid, guide_cl, mask_scalar_cl, mask_filtered_cl,
-                               width, height, 3,
-                               MAX(1, (int)d->gf_radius),
-                               MAX(0.01f, d->gf_feathering * 0.01f), 1.0f, 0.0f, 1.0f);
-      if (err == CL_SUCCESS)
-        err = dt_opencl_enqueue_kernel_2d_args(
-            devid, gd->kernel_satcurve_filter_confidence, width, height,
-            CLARG(mask_scalar_cl), CLARG(mask_filtered_cl), CLARG(guide_cl),
-            CLARG(mask_control_cl), CLARG(noise_confidence_cl), CLARG(width), CLARG(height),
-            CLARG(d->gf_protect_from), CLARG(d->gf_protect_to));
-      if (err != CL_SUCCESS)
-        goto error;
+          devid, gd->kernel_satcurve_mask_from_control, width, height,
+          CLARG(mask_scalar_cl), CLARG(mask_control_cl), CLARG(noise_confidence_cl),
+          CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+          CLARG(d->noise_protection));
     }
-
-    // mask_control_cl holds final coordinate.
-    err = dt_opencl_enqueue_kernel_2d_args(
-        devid, gd->kernel_satcurve_mask_from_control, width, height,
-        CLARG(mask_scalar_cl), CLARG(mask_control_cl), CLARG(noise_confidence_cl),
-        CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
-        CLARG(d->noise_protection));
 
     if (err == CL_SUCCESS)
       piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
@@ -1143,60 +1218,16 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   // 1. Prepare filtered saturation mask if guided filter is enabled
   if (gf_active)
   {
-    mask_scalar_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-    mask_filtered_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-    guide_cl = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
-    noise_confidence_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-    mask_control_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-    if (mask_scalar_cl == NULL || mask_filtered_cl == NULL || guide_cl == NULL || noise_confidence_cl == NULL || mask_control_cl == NULL)
-    {
-      // fallback: show the unfiltered mask instead of aborting the
-      // preview. This mirrors the fallback logic in the main process()
-      // path but specifically for the GUI display.
-      dt_control_log(_("saturation curve: guided filter failed to allocate memory, "
-                       "disabling it for this run"));
-      dt_opencl_release_mem_object(mask_scalar_cl);
-      dt_opencl_release_mem_object(mask_filtered_cl);
-      dt_opencl_release_mem_object(guide_cl);
-      dt_opencl_release_mem_object(noise_confidence_cl);
-      dt_opencl_release_mem_object(mask_control_cl);
-      mask_scalar_cl = NULL;
-      mask_filtered_cl = NULL;
-      guide_cl = NULL;
-      noise_confidence_cl = NULL;
-      mask_control_cl = NULL;
+    cl_int gf_err = CL_SUCCESS;
+    if (!prepare_gf_mask_cl(devid, gd, d, dev_in, input_matrix_cl, gamut_lut_cl, L_white,
+                             width, height, &mask_scalar_cl, &mask_filtered_cl, &guide_cl,
+                             &noise_confidence_cl, &mask_control_cl, &gf_err))
       gf_active = FALSE;
+    else if (gf_err != CL_SUCCESS)
+    {
+      err = gf_err;
+      goto error;
     }
-  }
-
-  if (gf_active)
-  {
-    err = dt_opencl_enqueue_kernel_2d_args(
-        devid, gd->kernel_satcurve_scalar_mask, width, height,
-        CLARG(dev_in), CLARG(mask_scalar_cl),
-        CLARG(width), CLARG(height),
-        CLARG(input_matrix_cl), CLARG(gamut_lut_cl),
-        CLARG(d->formula), CLARG(L_white));
-    if (err != CL_SUCCESS)
-      goto error;
-
-    err = dt_opencl_enqueue_kernel_2d_args(
-        devid, gd->kernel_satcurve_perceptual_guide, width, height,
-        CLARG(dev_in), CLARG(guide_cl), CLARG(width), CLARG(height),
-        CLARG(input_matrix_cl), CLARG(gamut_lut_cl), CLARG(d->formula), CLARG(L_white));
-    if (err == CL_SUCCESS)
-      err = guided_filter_cl(devid, guide_cl, mask_scalar_cl, mask_filtered_cl,
-                             width, height, 3,
-                             MAX(1, (int)d->gf_radius),
-                             MAX(0.01f, d->gf_feathering * 0.01f), 1.0f, 0.0f, 1.0f);
-    if (err == CL_SUCCESS)
-      err = dt_opencl_enqueue_kernel_2d_args(
-          devid, gd->kernel_satcurve_filter_confidence, width, height,
-          CLARG(mask_scalar_cl), CLARG(mask_filtered_cl), CLARG(guide_cl),
-          CLARG(mask_control_cl), CLARG(noise_confidence_cl), CLARG(width), CLARG(height),
-          CLARG(d->gf_protect_from), CLARG(d->gf_protect_to));
-    if (err != CL_SUCCESS)
-      goto error;
   }
 
   const int use_mask = gf_active ? 1 : 0;
@@ -1214,9 +1245,6 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       CLARG(sat_lut_cl), CLARG(bri_lut_cl), CLARG(gamut_lut_cl),
       CLARG(d->formula), CLARG(L_white), CLARG(d->noise_protection));
 
-  if (err != CL_SUCCESS)
-    goto error;
-
 error:
   dt_opencl_release_mem_object(input_matrix_cl);
   dt_opencl_release_mem_object(output_matrix_cl);
@@ -1226,29 +1254,25 @@ error:
   dt_opencl_release_mem_object(hist_bins_cl);
   dt_opencl_release_mem_object(mask_scalar_cl);
   dt_opencl_release_mem_object(mask_filtered_cl);
+  dt_opencl_release_mem_object(guide_cl);
+  dt_opencl_release_mem_object(noise_confidence_cl);
+  dt_opencl_release_mem_object(mask_control_cl);
   return err;
 }
 
 void init_global(dt_iop_module_so_t *self)
 {
-  const int program = 43;     // satcurve.cl in programs.conf
-  const int program_fgf = 44; // fast_guided_filter.cl in programs.conf
+  const int program = 44; // satcurve.cl in programs.conf
 
   dt_iop_satcurve_global_data_t *gd = malloc(sizeof(dt_iop_satcurve_global_data_t));
   self->data = gd;
   gd->kernel_satcurvergb = dt_opencl_create_kernel(program, "satcurvergb");
   gd->kernel_satcurve_histogram = dt_opencl_create_kernel(program, "satcurve_histogram");
   gd->kernel_satcurve_mask = dt_opencl_create_kernel(program, "satcurve_mask");
-  gd->kernel_satcurve_scalar_mask = dt_opencl_create_kernel(program, "satcurve_scalar_mask");
-  gd->kernel_satcurve_mask_from_scalar = dt_opencl_create_kernel(program, "satcurve_mask_from_scalar");
-  gd->kernel_satcurve_perceptual_guide = dt_opencl_create_kernel(program, "satcurve_perceptual_guide");
-  gd->kernel_satcurve_filter_confidence = dt_opencl_create_kernel(program, "satcurve_filter_confidence");
+  gd->kernel_satcurve_scalar_mask = dt_opencl_create_kernel(program, "satcurve_prepare_scalar_mask");
+  gd->kernel_satcurve_perceptual_guide = dt_opencl_create_kernel(program, "satcurve_prepare_perceptual_guide");
+  gd->kernel_satcurve_filter_confidence = dt_opencl_create_kernel(program, "satcurve_prepare_filter_confidence");
   gd->kernel_satcurve_mask_from_control = dt_opencl_create_kernel(program, "satcurve_mask_from_control");
-  gd->kernel_fgf_resample = dt_opencl_create_kernel(program_fgf, "fastguided_resample");
-  gd->kernel_fgf_quantize = dt_opencl_create_kernel(program_fgf, "fastguided_quantize");
-  gd->kernel_fgf_covar_products = dt_opencl_create_kernel(program_fgf, "fastguided_covar_products");
-  gd->kernel_fgf_solve_ab = dt_opencl_create_kernel(program_fgf, "fastguided_solve_ab");
-  gd->kernel_fgf_apply_blend = dt_opencl_create_kernel(program_fgf, "fastguided_apply_blend");
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
@@ -1258,15 +1282,9 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_satcurve_histogram);
   dt_opencl_free_kernel(gd->kernel_satcurve_mask);
   dt_opencl_free_kernel(gd->kernel_satcurve_scalar_mask);
-  dt_opencl_free_kernel(gd->kernel_satcurve_mask_from_scalar);
   dt_opencl_free_kernel(gd->kernel_satcurve_perceptual_guide);
   dt_opencl_free_kernel(gd->kernel_satcurve_filter_confidence);
   dt_opencl_free_kernel(gd->kernel_satcurve_mask_from_control);
-  dt_opencl_free_kernel(gd->kernel_fgf_resample);
-  dt_opencl_free_kernel(gd->kernel_fgf_quantize);
-  dt_opencl_free_kernel(gd->kernel_fgf_covar_products);
-  dt_opencl_free_kernel(gd->kernel_fgf_solve_ab);
-  dt_opencl_free_kernel(gd->kernel_fgf_apply_blend);
   free(self->data);
   self->data = NULL;
 }
@@ -1365,27 +1383,46 @@ static void build_gamut_lut(dt_iop_satcurve_data_t *d,
   }
 }
 
-static void sync_channel_curve(dt_iop_satcurve_channel_data_t *dst,
-                               const dt_iop_satcurve_channel_params_t *src)
+// Synchronizes a dt_draw_curve_t (identified by its curve/curve_type/
+// curve_num_nodes triple) with the given channel params, then recomputes
+// its sampled values into out_values (length res). If the curve topology
+// (type or node count) changed, the curve is destroyed and rebuilt from
+// scratch; otherwise the existing curve's points are just updated in place
+// (cheaper, and needed so the GUI curve keeps its identity while dragging).
+// Shared by the pipe-data LUT sync (sync_channel_curve) and the GUI preview
+// sync (_sync_gui_curve), which previously duplicated this verbatim.
+static void _sync_curve_and_calc_values(dt_draw_curve_t **curve,
+                                         int *curve_type,
+                                         int *curve_num_nodes,
+                                         const dt_iop_satcurve_channel_params_t *src,
+                                         float *const restrict out_values,
+                                         const int res)
 {
-  if (dst->curve_type != src->curve_type || dst->curve_num_nodes != src->curve_num_nodes)
+  if (*curve_type != src->curve_type || *curve_num_nodes != src->curve_num_nodes)
   {
-    if (dst->curve)
-      dt_draw_curve_destroy(dst->curve);
-    dst->curve = dt_draw_curve_new(0.f, 1.f, src->curve_type);
-    dst->curve_type = src->curve_type;
-    dst->curve_num_nodes = src->curve_num_nodes;
+    if (*curve)
+      dt_draw_curve_destroy(*curve);
+    *curve = dt_draw_curve_new(0.f, 1.f, src->curve_type);
+    *curve_type = src->curve_type;
+    *curve_num_nodes = src->curve_num_nodes;
 
     for (int i = 0; i < src->curve_num_nodes; i++)
-      dt_draw_curve_add_point(dst->curve, src->curve[i].x, src->curve[i].y);
+      dt_draw_curve_add_point(*curve, src->curve[i].x, src->curve[i].y);
   }
   else
   {
     for (int i = 0; i < src->curve_num_nodes; i++)
-      dt_draw_curve_set_point(dst->curve, i, src->curve[i].x, src->curve[i].y);
+      dt_draw_curve_set_point(*curve, i, src->curve[i].x, src->curve[i].y);
   }
 
-  dt_draw_curve_calc_values(dst->curve, 0.f, 1.f, DT_IOP_SATCURVE_RES, NULL, dst->lut);
+  dt_draw_curve_calc_values(*curve, 0.f, 1.f, res, NULL, out_values);
+}
+
+static void sync_channel_curve(dt_iop_satcurve_channel_data_t *dst,
+                               const dt_iop_satcurve_channel_params_t *src)
+{
+  _sync_curve_and_calc_values(&dst->curve, &dst->curve_type, &dst->curve_num_nodes,
+                               src, dst->lut, DT_IOP_SATCURVE_RES);
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -1406,7 +1443,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->use_guided_filter = p->use_guided_filter;
   d->gf_radius = p->gf_radius;
   d->gf_feathering = p->gf_feathering;
-  d->gf_iterations = p->gf_iterations;
   d->gf_protect_from = p->gf_protect_from;
   d->gf_protect_to = p->gf_protect_to;
   d->noise_protection = p->noise_protection;
@@ -1574,24 +1610,8 @@ static void _draw_channel_curve(cairo_t *cr,
 static void _sync_gui_curve(dt_iop_satcurve_gui_channel_t *gc,
                             const dt_iop_satcurve_channel_params_t *cp)
 {
-  if (gc->curve_type != cp->curve_type || gc->curve_num_nodes != cp->curve_num_nodes)
-  {
-    if (gc->curve)
-      dt_draw_curve_destroy(gc->curve);
-    gc->curve = dt_draw_curve_new(0.f, 1.f, cp->curve_type);
-    gc->curve_type = cp->curve_type;
-    gc->curve_num_nodes = cp->curve_num_nodes;
-
-    for (int i = 0; i < cp->curve_num_nodes; i++)
-      dt_draw_curve_add_point(gc->curve, cp->curve[i].x, cp->curve[i].y);
-  }
-  else
-  {
-    for (int i = 0; i < cp->curve_num_nodes; i++)
-      dt_draw_curve_set_point(gc->curve, i, cp->curve[i].x, cp->curve[i].y);
-  }
-
-  dt_draw_curve_calc_values(gc->curve, 0.f, 1.f, DT_IOP_SATCURVE_RES, NULL, gc->draw_ys);
+  _sync_curve_and_calc_values(&gc->curve, &gc->curve_type, &gc->curve_num_nodes,
+                               cp, gc->draw_ys, DT_IOP_SATCURVE_RES);
 }
 
 static gboolean area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
@@ -1690,41 +1710,65 @@ static inline int _node_hit_at(const dt_iop_satcurve_channel_params_t *cp,
   return nearest;
 }
 
-static gboolean area_button(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
+static void area_button_press(GtkGestureSingle *gesture,
+                              gint n_press,
+                              gdouble x,
+                              gdouble y,
+                              dt_iop_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE(FALSE);
+  DT_GUARD_GUI_UPDATE();
+
+  const int button = gtk_gesture_single_get_current_button(gesture);
+  if (button != GDK_BUTTON_PRIMARY && button != GDK_BUTTON_SECONDARY)
+    return;
 
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
   dt_iop_satcurve_channel_params_t *cp = get_active_channel_params(self);
   dt_iop_satcurve_gui_channel_t *gc = get_active_gui_channel(self);
 
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   GtkAllocation a;
   gtk_widget_get_allocation(widget, &a);
 
-  if (dt_gdk_event_get_y(event) >= a.height - DT_RESIZE_HANDLE_SIZE)
-    return FALSE;
+  // keep the existing resize-handle guard: pointer-position based, so it
+  // still applies regardless of whether the handle strip's own gesture
+  // claims the event first.
+  if (y >= a.height - DT_RESIZE_HANDLE_SIZE)
+    return;
 
   float gx0, gy0, w, h;
   _get_graph_geometry(&a, &gx0, &gy0, &w, &h);
 
-  const float x = CLAMP((dt_gdk_event_get_x(event) - gx0) / w, 0.f, 1.f);
-  const float y = CLAMP(1.f - (dt_gdk_event_get_y(event) - gy0) / h, 0.f, 1.f);
+  const float nx = CLAMP((x - gx0) / w, 0.f, 1.f);
+  const float ny = CLAMP(1.f - (y - gy0) / h, 0.f, 1.f);
 
-  int hit = _node_hit_at(cp, x, y);
+  int hit = _node_hit_at(cp, nx, ny);
 
-  if (dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS
-      && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  if (button == GDK_BUTTON_PRIMARY)
   {
-    reset_channel_curve(cp);
-    g->selected = -1;
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-    gtk_widget_queue_draw(widget);
-    return TRUE;
+    // a double-click resets the curve of the active channel
+    if (n_press >= 2)
+    {
+      reset_channel_curve(cp);
+      g->selected = -1;
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      gtk_widget_queue_draw(widget);
+    }
+    else
+    {
+      if (hit < 0 && cp->curve_num_nodes < DT_IOP_SATCURVE_MAXNODES)
+        hit = add_node_to_channel(cp, nx, CLAMP(dt_draw_curve_calc_value(gc->curve, nx), 0.f, 1.f));
+
+      g->selected = hit;
+      g->dragging = hit >= 0;
+    }
+    return;
   }
 
-  if (dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY && hit >= 0)
+  // right-click: reset the node to neutral, or delete it (Ctrl keeps it)
+  if (hit >= 0)
   {
-    if ((dt_gdk_event_get_state(event) & GDK_CONTROL_MASK) || cp->curve_num_nodes <= 2)
+    if (dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK) || cp->curve_num_nodes <= 2)
     {
       cp->curve[hit].y = .5f;
     }
@@ -1737,54 +1781,53 @@ static gboolean area_button(GtkWidget *widget, GdkEventButton *event, dt_iop_mod
     g->selected = -1;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(widget);
-    return TRUE;
   }
-
-  if (dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
-  {
-    if (hit < 0 && cp->curve_num_nodes < DT_IOP_SATCURVE_MAXNODES)
-      hit = add_node_to_channel(cp, x, CLAMP(dt_draw_curve_calc_value(gc->curve, x), 0.f, 1.f));
-
-    g->selected = hit;
-    g->dragging = hit >= 0;
-    return TRUE;
-  }
-
-  return FALSE;
 }
 
-static gboolean area_scroll(GtkWidget *widget, GdkEventScroll *event,
-                            dt_iop_module_t *self)
+static void area_button_release(GtkGestureSingle *gesture,
+                                gint n_press,
+                                gdouble x,
+                                gdouble y,
+                                dt_iop_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE(FALSE);
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
-  dt_iop_satcurve_channel_params_t *cp = get_active_channel_params(self);
-
-  if (g->selected < 0)
-    return FALSE;
-
-  int delta_y = 0;
-  if (dt_gui_get_scroll_unit_delta((const GdkEvent *)event, &delta_y))
+  if (g->dragging)
   {
-    const float step = 0.02f * (dt_gdk_event_get_state(event) & GDK_CONTROL_MASK ? 5.0f : 1.0f);
-    const int n = g->selected;
-    cp->curve[n].y = CLAMP(cp->curve[n].y - delta_y * step, 0.f, 1.f);
-
+    g->dragging = FALSE;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-    gtk_widget_queue_draw(widget);
   }
-
-  return TRUE;
 }
 
-static gboolean area_motion(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
+static void area_scroll_notify(GtkEventControllerScroll *controller, gdouble dx, gdouble dy,
+                               dt_iop_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE(FALSE);
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
   dt_iop_satcurve_channel_params_t *cp = get_active_channel_params(self);
 
+  if (g->selected < 0 || dy == 0.0)
+    return;
+
+  const float step = 0.02f * (dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK) ? 5.0f : 1.0f);
+  const int n = g->selected;
+  cp->curve[n].y = CLAMP(cp->curve[n].y - dy * step, 0.f, 1.f);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  gtk_widget_queue_draw(dt_gui_get_widget(controller));
+}
+
+static void area_motion_notify(GtkEventControllerMotion *controller, gdouble x, gdouble y,
+                               dt_iop_module_t *self)
+{
+  DT_GUARD_GUI_UPDATE();
+
+  dt_iop_satcurve_gui_data_t *g = self->gui_data;
+  dt_iop_satcurve_channel_params_t *cp = get_active_channel_params(self);
+
+  GtkWidget *widget = dt_gui_get_widget(controller);
   GtkAllocation a;
   gtk_widget_get_allocation(widget, &a);
 
@@ -1794,7 +1837,7 @@ static gboolean area_motion(GtkWidget *widget, GdkEventMotion *event, dt_iop_mod
   // Dragging a node that was grabbed by a button press.
   if (g->dragging && g->selected >= 0)
   {
-    const float x = CLAMP((dt_gdk_event_get_x(event) - gx0) / w, 0.f, 1.f);
+    const float nx = CLAMP((x - gx0) / w, 0.f, 1.f);
     const int n = g->selected;
 
     if (n == 0)
@@ -1802,31 +1845,28 @@ static gboolean area_motion(GtkWidget *widget, GdkEventMotion *event, dt_iop_mod
     else if (n == cp->curve_num_nodes - 1)
       cp->curve[n].x = 1.f;
     else
-      cp->curve[n].x = CLAMP(x,
+      cp->curve[n].x = CLAMP(nx,
                              cp->curve[n - 1].x + DT_IOP_SATCURVE_MIN_X_DISTANCE,
                              cp->curve[n + 1].x - DT_IOP_SATCURVE_MIN_X_DISTANCE);
 
-    cp->curve[n].y = CLAMP(1.f - (dt_gdk_event_get_y(event) - gy0) / h, 0.f, 1.f);
+    cp->curve[n].y = CLAMP(1.f - (y - gy0) / h, 0.f, 1.f);
     dt_dev_add_history_item(darktable.develop, self, FALSE);
     gtk_widget_queue_draw(widget);
-    return TRUE;
+    return;
   }
 
   // Otherwise, pick up the node under the pointer so it becomes moveable: a
   // subsequent press drags it, the scroll wheel nudges it, and it is drawn
   // highlighted. Hit-test only inside the graph rectangle -- clamping would
   // otherwise grab an endpoint node from the inset/gradient margin.
-  const gboolean inside = dt_gdk_event_get_x(event) >= gx0
-                          && dt_gdk_event_get_x(event) <= gx0 + w
-                          && dt_gdk_event_get_y(event) >= gy0
-                          && dt_gdk_event_get_y(event) <= gy0 + h;
+  const gboolean inside = x >= gx0 && x <= gx0 + w && y >= gy0 && y <= gy0 + h;
 
   int hit = -1;
   if (inside)
   {
-    const float x = (dt_gdk_event_get_x(event) - gx0) / w;
-    const float y = 1.f - (dt_gdk_event_get_y(event) - gy0) / h;
-    hit = _node_hit_at(cp, x, y);
+    const float nx = (x - gx0) / w;
+    const float ny = 1.f - (y - gy0) / h;
+    hit = _node_hit_at(cp, nx, ny);
   }
 
   if (hit != g->selected)
@@ -1836,21 +1876,6 @@ static gboolean area_motion(GtkWidget *widget, GdkEventMotion *event, dt_iop_mod
     if (g->selected >= 0)
       gtk_widget_grab_focus(widget);
   }
-
-  return FALSE;
-}
-
-static gboolean area_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
-{
-  DT_GUARD_GUI_UPDATE(FALSE);
-
-  dt_iop_satcurve_gui_data_t *g = self->gui_data;
-  if (g->dragging)
-  {
-    g->dragging = FALSE;
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
-  return TRUE;
 }
 
 static const float *_get_gamut_lut_for_picker(dt_iop_module_t *self)
@@ -2009,16 +2034,16 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *widget, void *previous)
   if (!widget || widget == g->formula)
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
 
-  if (!widget || widget == g->use_guided_filter)
+  if (!widget || widget == g->use_guided_filter || widget == g->formula)
   {
-    gtk_widget_set_sensitive(g->gf_radius, p->use_guided_filter);
-    gtk_widget_set_sensitive(g->gf_feathering, p->use_guided_filter);
-    gtk_widget_set_sensitive(g->gf_iterations, p->use_guided_filter);
-    gtk_widget_set_sensitive(g->gf_protect_center, p->use_guided_filter);
-    gtk_widget_set_sensitive(g->gf_protect_width, p->use_guided_filter);
+    const gboolean guided_filter_available = p->formula == DT_IOP_SATCURVE_DTUCS;
+    gtk_widget_set_sensitive(g->use_guided_filter, guided_filter_available);
+    gtk_widget_set_sensitive(g->gf_radius, guided_filter_available && p->use_guided_filter);
+    gtk_widget_set_sensitive(g->gf_feathering, guided_filter_available && p->use_guided_filter);
+    gtk_widget_set_sensitive(g->gf_protect_center, guided_filter_available && p->use_guided_filter);
+    gtk_widget_set_sensitive(g->gf_protect_width, guided_filter_available && p->use_guided_filter);
+    gtk_widget_set_sensitive(g->noise_protection, guided_filter_available && p->use_guided_filter);
   }
-  if (!widget || widget == g->use_guided_filter)
-    gtk_widget_set_sensitive(g->noise_protection, p->use_guided_filter);
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -2115,13 +2140,11 @@ void gui_init(dt_iop_module_t *self)
 
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/satcurve/graph_height"));
   gtk_widget_set_size_request(GTK_WIDGET(g->area), -1, DT_PIXEL_APPLY_DPI(180));
-  gtk_widget_add_events(GTK_WIDGET(g->area),
-                        GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK | GDK_SCROLL_MASK);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(area_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(area_button), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(area_release), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(area_motion), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(area_scroll), self);
+  dt_gui_connect_click(GTK_WIDGET(g->area), area_button_press, area_button_release, self);
+  dt_gui_connect_motion(GTK_WIDGET(g->area), area_motion_notify, NULL, NULL, self);
+  dt_gui_connect_scroll(GTK_WIDGET(g->area), GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        area_scroll_notify, self);
   dt_gui_box_add(self->widget, GTK_WIDGET(g->area));
 
   GtkWidget *main_vbox = self->widget;
@@ -2183,14 +2206,8 @@ void gui_init(dt_iop_module_t *self)
                               _("precision of the feathering: higher values produce softer, "
                                 "less edge-sensitive transitions"));
 
-  g->gf_iterations = dt_bauhaus_slider_from_params(gf_section, "gf_iterations");
-  dt_bauhaus_slider_set_digits(g->gf_iterations, 0);
-  gtk_widget_set_tooltip_text(g->gf_iterations,
-                              _("number of times the guided filter is applied recursively; "
-                                "increases smoothing but costs more time"));
-
   g->gf_protect_center = dt_bauhaus_slider_new_with_range(
-      self, 0.0f, 0.5f, 0.f, 0.055f, 3);
+      self, 0.0f, 0.5f, 0.f, 0.0f, 3);
   dt_bauhaus_widget_set_label(g->gf_protect_center, NULL, _("protect near-neutrals"));
   dt_bauhaus_slider_set_factor(g->gf_protect_center, 100.0f);
   dt_bauhaus_slider_set_format(g->gf_protect_center, "%");
@@ -2202,7 +2219,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(gf_section->widget), g->gf_protect_center, TRUE, TRUE, 0);
 
   g->gf_protect_width = dt_bauhaus_slider_new_with_range(
-      self, 0.0f, 0.3f, 0.f, 0.05f, 3);
+      self, 0.0f, 0.3f, 0.f, 0.00f, 3);
   dt_bauhaus_widget_set_label(g->gf_protect_width, NULL, _("protection transition width"));
   dt_bauhaus_slider_set_format(g->gf_protect_width, "%");
   dt_bauhaus_slider_set_digits(g->gf_protect_width, 0);
