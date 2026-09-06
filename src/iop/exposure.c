@@ -480,8 +480,8 @@ static void _process_common_setup(dt_iop_module_t *self,
   dt_iop_exposure_data_t *d = piece->data;
 
   d->black = d->params.black;
-  // stays undefined unless deflicker computes a correction below
-  float exposure = EXPOSURE_CORRECTION_UNDEFINED;
+  // the default is also the fallback for deflicker's _compute_correction below
+  float exposure = d->params.exposure;
 
   if(d->deflicker)
   {
@@ -512,10 +512,6 @@ static void _process_common_setup(dt_iop_module_t *self,
       g_idle_add(_show_computed, self);
     }
   }
-
-  // no deflicker, or deflicker failed: use the user-set exposure
-  if(exposure == EXPOSURE_CORRECTION_UNDEFINED)
-    exposure = d->params.exposure;
 
   const float white = exposure2white(exposure);
   d->scale = 1.0 / (white - d->black);
@@ -960,13 +956,12 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
     // the exposure the pipe applies, i.e. the user setting plus the compensations
     const float exposure_adjustment = _total_adjustment_ev(self, p);
 
-    // the value that gets mapped to 1.0
-    const float white = exposure2white(-exposure_adjustment);
+    const float gain = exp2f(exposure_adjustment);
 
     // apply the exposure compensation
     dt_aligned_pixel_t XYZ_out = {0.0f };
     for(int c = 0; c < 3; c++)
-      XYZ_out[c] = XYZ[c] * white;
+      XYZ_out[c] = XYZ[c] * gain;
 
     // Convert to Lab for GUI feedback
     dt_aligned_pixel_t Lab_out;
