@@ -54,6 +54,29 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 void dt_gaussian_blur_4c(dt_gaussian_t *g, const float *const in, float *const out);
 
 void dt_gaussian_free(dt_gaussian_t *g);
+
+/** Young-van Vliet order-3 recursive Gaussian coefficients for `sigma`.
+ *
+ * out[0] is the input weight and out[1..3] the feedback taps, so one pass is
+ *   y[n] = out[0]*x[n] + out[1]*y[n-1] + out[2]*y[n-2] + out[3]*y[n-3]
+ * run forwards then backwards, along each axis in turn. Cost per pixel does
+ * not depend on sigma, which is what makes it worth having next to the
+ * box-blur approximations above once the radius grows.
+ *
+ * The caller owns any limit on sigma: the recursion is stable across the range
+ * but its accuracy falls away at very small sigma, where a direct convolution
+ * with dt_gaussian_kernel_1d() is both faster and exact. */
+void dt_gaussian_yvv_coeffs(const float sigma,
+                            float out[4]);
+
+/** Normalised 1D Gaussian kernel for `sigma`, written to `kernel`.
+ *
+ * Returns the radius, so the kernel occupies 2*radius+1 entries and its centre
+ * is at kernel[radius]. The radius is 3 sigma rounded, clamped to at least 1
+ * and at most `max_radius`, so `kernel` must hold 2*max_radius+1 floats. */
+int dt_gaussian_kernel_1d(const float sigma,
+                          float *const kernel,
+                          const int max_radius);
 void dt_gaussian_fast_blur(float *in, float *out, const int width, const int height, const float sigma, const float min, const float max, const int channels);
 
 // Convenience in-place Gaussian blur for IOP processing buffers.

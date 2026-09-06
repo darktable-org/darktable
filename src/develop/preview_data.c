@@ -179,13 +179,27 @@ gboolean dt_preview_data_is_fresh(dt_preview_data_t *pd)
 
   if(fresh)
   {
-    const dt_develop_t *const dev = module->dev;
-    if(!dev || !dev->preview_pipe)
+    dt_dev_pixelpipe_t *const pipe = module->dev ? module->dev->preview_pipe : NULL;
+    if(!pipe)
+      fresh = FALSE;
+    // pipe->nodes (and the pieces it points to) are only safe to walk while
+    // holding busy_mutex: a concurrent history change can rebuild the whole
+    // list -- dt_dev_pixelpipe_cleanup_nodes() frees every piece -- while this
+    // runs on the GUI thread, outside that protection, causing a
+    // dangling-pointer segfault in the hash walk below. Must be a trylock,
+    // not a blocking lock: a module's process() runs under busy_mutex for
+    // the whole pipe run (dt_dev_pixelpipe_process) and can itself call
+    // dt_preview_data_store(), which takes this same module's gui_lock
+    // (already held above) -- the opposite order -- so a blocking lock here
+    // would AB-BA deadlock against it. A pipe that's currently busy can't
+    // have fresh data for us anyway, so treating "busy" as "not fresh"
+    // costs nothing.
+    else if(dt_pthread_mutex_trylock(&pipe->busy_mutex))
       fresh = FALSE;
     else
     {
       dt_dev_pixelpipe_iop_t *piece = NULL;
-      for(GList *iter = dev->preview_pipe->nodes; iter; iter = g_list_next(iter))
+      for(GList *iter = pipe->nodes; iter; iter = g_list_next(iter))
       {
         dt_dev_pixelpipe_iop_t *const p = (dt_dev_pixelpipe_iop_t *)iter->data;
         if(p->module == module)
@@ -201,6 +215,7 @@ gboolean dt_preview_data_is_fresh(dt_preview_data_t *pd)
         const dt_hash_t cur_hash = dt_dev_pixelpipe_piece_hash(piece, &piece->processed_roi_out, TRUE);
         fresh = (cur_hash == stored_hash);
       }
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
     }
   }
 

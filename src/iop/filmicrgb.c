@@ -983,7 +983,7 @@ static inline float filmic_spline(const float x, const dt_aligned_pixel_t M1, co
     }
     else
     {
-      // rational toe
+      // rational shoulder
       const float xi = x - latitude_max;
       const float rat = xi * (xi * M2[1] + 1.f);
       result = M4[1] + M1[1] * rat / (rat + M3[1]);
@@ -1137,7 +1137,7 @@ inline static void wavelets_reconstruct_RGB(const float *const restrict HF, cons
     // channels
     const float grey_texture = fmaxabsf(fmaxabsf(TT_c[0], TT_c[1]), TT_c[2]);
 
-    // synthesize the max of all interpolated/inpainted RGB channels as a flat details term for the whole pixel
+    // synthesize the mean of all interpolated/inpainted RGB channels as a flat details term for the whole pixel
     // this is smoother than grey_texture and will fill holes smoothly in details layers if grey_texture ~= 0.f
     const float grey_details = (HF_c[0] + HF_c[1] + HF_c[2]) / 3.f;
 
@@ -1210,7 +1210,7 @@ static inline void wavelets_reconstruct_ratios(const float *const restrict HF,
     // channels
     const float grey_texture = fmaxabsf(fmaxabsf(TT_c[0], TT_c[1]), TT_c[2]);
 
-    // synthesize the max of all interpolated/inpainted RGB channels as a flat details term for the whole pixel
+    // synthesize the mean of all interpolated/inpainted RGB channels as a flat details term for the whole pixel
     // this is smoother than grey_texture and will fill holes smoothly in details layers if grey_texture ~= 0.f
     const float grey_details = (HF_c[0] + HF_c[1] + HF_c[2]) / 3.f;
 

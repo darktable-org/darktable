@@ -519,9 +519,10 @@ static gboolean _create_deleted_modules(GList **_iop_list, GList *history_list)
 
       if(!dt_iop_is_hidden(module))
       {
-        DT_ENTER_GUI_UPDATE();
-        module->gui_init(module);
-        DT_LEAVE_GUI_UPDATE();
+        /** this works inside correct DT_ENTER/LEAVE_GUI_UPDATE()
+            and ensures the module->gui_lock nutex is correctly intialized.
+        */
+        dt_iop_gui_init(module);
       }
 
       // adjust the multi_name of the new module

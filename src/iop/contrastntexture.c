@@ -358,6 +358,25 @@ void commit_params(dt_iop_module_t *self,
   d->feathering = default_feathering * powf(2.0f, -p->edge_protection) / (p->filter_iterations * p->filter_iterations);
 }
 
+// The default implementation sizes piece->data by params_size, which is only correct while the data struct
+// is no larger than the params struct. Ours is not: dt_iop_contrast_data_t carries contrast_scale, feathering and
+// radius_local in place of the params' detail_level and edge_protection, and one field more besides, so noise_bias
+// would land past the end of the allocation, written by commit_params and then read back by process().
+void init_pipe(dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
+{
+  piece->data = dt_calloc1_align_type(dt_iop_contrast_data_t);
+}
+
+void cleanup_pipe(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_free_align(piece->data);
+  piece->data = NULL;
+}
+
 static void show_details_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
 {
   // early return if blend module is already displaying a mask

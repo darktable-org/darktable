@@ -73,9 +73,17 @@ static void test_env_init(void **state)
 static void test_model_discovery(void **state)
 {
   const int count = dt_ai_get_model_count(env);
-  assert_int_equal(count, 1);
+  assert_int_equal(count, 2);
 
-  const dt_ai_model_info_t *info = dt_ai_get_model_info_by_index(env, 0);
+  // discovery order is not defined, so look the fixture up rather than
+  // indexing blindly
+  const dt_ai_model_info_t *info = NULL;
+  for(int i = 0; i < count; i++)
+  {
+    const dt_ai_model_info_t *m = dt_ai_get_model_info_by_index(env, i);
+    assert_non_null(m);
+    if(!strcmp(m->id, "test-multiply")) info = m;
+  }
   assert_non_null(info);
   assert_string_equal(info->id, "test-multiply");
   assert_string_equal(info->name, "Test Multiply");
@@ -369,6 +377,61 @@ static void test_env_init_empty(void **state)
   dt_ai_env_destroy(e2);
 }
 
+// test: an undersized caller buffer on the ORT-allocated path
+//
+// the model leaves its spatial dims symbolic, so dt_ai_run() lets ORT
+// allocate and copies back. the caller here declares a 2x2 output while
+// the model produces 4x4, which used to copy all 48 floats into a buffer
+// holding 12
+
+static void test_dynamic_output_undersized(void **state)
+{
+  dt_ai_context_t *ctx = dt_ai_load_model(env, "test-multiply-dynamic",
+                                          NULL, DT_AI_PROVIDER_CPU);
+  assert_non_null(ctx);
+
+  // the fixture is only useful if ORT really reports it as unresolved
+  int64_t model_shape[8];
+  const int model_ndim = dt_ai_get_output_shape(ctx, 0, model_shape, 8);
+  assert_int_equal(model_ndim, 4);
+  assert_true(model_shape[2] <= 0 || model_shape[3] <= 0);
+
+  float input_data[48];
+  for(int i = 0; i < 48; i++) input_data[i] = 1.0f;
+
+  int64_t in_shape[] = { 1, 3, 4, 4 };
+  dt_ai_tensor_t input = {
+    .data = input_data,
+    .type = DT_AI_FLOAT,
+    .shape = in_shape,
+    .ndim = 4
+  };
+
+  // 12 declared elements, then a canary the copy must never reach
+  const float canary = -12345.0f;
+  float output_data[64];
+  for(int i = 0; i < 64; i++) output_data[i] = canary;
+
+  int64_t out_shape[] = { 1, 3, 2, 2 };
+  dt_ai_tensor_t output = {
+    .data = output_data,
+    .type = DT_AI_FLOAT,
+    .shape = out_shape,
+    .ndim = 4
+  };
+
+  const int ret = dt_ai_run(ctx, &input, 1, &output, 1);
+
+  // nothing may have been written past what the caller declared
+  for(int i = 12; i < 64; i++)
+    assert_float_equal(output_data[i], canary, 0.0f);
+
+  // and a partial tensor is not a usable result, so the run must fail
+  assert_int_not_equal(ret, 0);
+
+  dt_ai_unload_model(ctx);
+}
+
 int main(int argc, char *argv[])
 {
   const struct CMUnitTest tests[] = {
@@ -389,6 +452,7 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_env_refresh),
     cmocka_unit_test(test_load_opt_levels),
     cmocka_unit_test(test_env_init_empty),
+    cmocka_unit_test(test_dynamic_output_undersized),
   };
 
   return cmocka_run_group_tests(tests, group_setup, group_teardown);

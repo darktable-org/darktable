@@ -288,6 +288,84 @@ void dt_write_pfm(const char *filename,
   fclose(f);
 }
 
+static inline uint16_t _swap_float(const float fval)
+{
+  const uint16_t val = MIN(MAX(fval, 0.0f), 1.0f) * 65535.0f;
+  return (0xff00 & (val << 8)) | (val >> 8);
+}
+
+void dt_write_ppm(const char *filename,
+                  const size_t width,
+                  const size_t height,
+                  const void *data,
+                  const size_t bpp)
+{
+  if(!filename || filename[0] == 0)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_write_ppm] no filename provided");
+    return;
+  }
+  const size_t ch = bpp == sizeof(float) || bpp == sizeof(uint16_t) ? 1 : 3;
+  const size_t locs = width * height * ch;
+
+  uint16_t *out = g_try_malloc(locs * sizeof(uint16_t));
+  if(!out)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_write_ppm] can't allocate buffer");
+    return;
+  }
+
+  FILE *f = g_fopen(filename, "wb");
+  if(!f)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_write_ppm] failed to open file '%s'", filename);
+    g_free(out);
+    return;
+  }
+
+  fprintf(f, "P%s\n%d %d\n65535\n", ch == 1 ? "5" : "6", (int)width, (int)height);
+
+  const uint16_t *ini = (uint16_t *)data;
+  const float *inf = (float *)data;
+  DT_OMP_FOR(collapse(2))
+  for(size_t y = 0; y < height; y++)
+  {
+    for(size_t x = 0; x < width; x++)
+    {
+      const size_t idx = width * y + x;
+      const size_t o = idx * ch;
+      if(bpp == 4*sizeof(float))
+      {
+        const size_t i = idx*4;
+        out[o+0] = _swap_float(inf[i+0]);
+        out[o+1] = _swap_float(inf[i+1]);
+        out[o+2] = _swap_float(inf[i+2]);
+      }
+      else if(bpp == 3*sizeof(float))
+      {
+        const size_t i = idx*3;
+        out[o+0] = _swap_float(inf[i+0]);
+        out[o+1] = _swap_float(inf[i+1]);
+        out[o+2] = _swap_float(inf[i+2]);
+      }
+      else if(bpp == sizeof(float))
+      {
+        out[o] = _swap_float(inf[idx]);
+      }
+      else if(bpp == sizeof(uint16_t))
+      {
+        out[o] = _swap_float((float)ini[idx] / 65535.0f);
+      }
+    }
+  }
+
+  if(fwrite(out, sizeof(uint16_t), locs, f) != locs)
+    dt_print(DT_DEBUG_ALWAYS, "[dt_write_ppm] failed to write file '%s'", filename);
+
+  g_free(out);
+  fclose(f);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

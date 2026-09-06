@@ -1502,6 +1502,13 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, const dt_
   // draw y gradient as axis legend
   const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, line_height);
   unsigned char *data = malloc(stride * graph_height);
+  if(!data)
+  {
+     cairo_destroy(cr);
+     cairo_surface_destroy(cst);
+     return TRUE;
+  }
+
   cairo_surface_t *surface = cairo_image_surface_create_for_data(data, CAIRO_FORMAT_ARGB32, (size_t)line_height, (size_t)graph_height, stride);
 
   const size_t checker_1 = DT_PIXEL_APPLY_DPI(6);

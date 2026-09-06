@@ -539,8 +539,42 @@ separator
 #lib-rating-stars
 {
   min-height: 1.1em;
-  min-width: 9em;
   margin-right: 1em;
+}
+
+#lib-rating-stars .dt_rating_star
+{
+  /* keep the visual gap inside adjacent buttons so it remains clickable */
+  margin: 0.07em 0;
+  padding-left: 0.15em;
+  padding-right: 0.15em;
+  min-height: 1.18em;
+  min-width: 1.18em;
+}
+
+#lib-label-colors .dt_module_btn
+{
+  /* keep the visual gap inside adjacent buttons so it remains clickable */
+  margin: 0.07em 0;
+  padding-left: 0.07em;
+  padding-right: 0.07em;
+}
+
+#lib-rating-stars .dt_rating_star #button-canvas
+{
+  margin: 3px;
+}
+
+#lib-rating-stars .dt_rating_star:hover,
+#lib-rating-stars .dt_rating_star:checked
+{
+  background-color: transparent;
+  border-color: transparent;
+}
+
+#lib-rating-stars #rating-star-0
+{
+  color: shade(@fg_color, 0.9);
 }
 
 /* Set default button spacing  for specific buttons */
@@ -1536,6 +1570,11 @@ filechooser row:hover .sidebar-icon
 #dt-range-band-icons:hover
 {
   color: @bauhaus_fg_hover;
+}
+
+#dt-range-rating #dt-range-band-icons
+{
+  min-height: 1.1em;
 }
 
 /*------------

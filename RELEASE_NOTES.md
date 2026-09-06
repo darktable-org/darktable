@@ -49,8 +49,20 @@ for more information on how to contribute._
 ## The Big Ones
 
 The following is a summary of the main features added to darktable
-5.6. Please see the user manual for more details of the individual
+5.8. Please see the user manual for more details of the individual
 changes (where available).
+
+- A new tone mapper for analog film simulation based on the
+  [spektrafilm](https://github.com/andreavolpato/spektrafilm) project by
+  Andrea Volpato. The module models the physical photographic process
+  from film exposure and development through optical printing and
+  scanning, rather than applying a conventional mathematical tone
+  curve. It reproduces the characteristic tonal and color response
+  resulting from these stages, including the compression of highlights
+  and shadows and the gradual color changes that occur as film reaches
+  its exposure limits. The simulation also includes film grain,
+  halation, and diffusion to reproduce characteristic properties of
+  analog film and optical printing.
 
 - Automatic alignment of exposure brackets in "merge HDR" function,
   removing ghosting and softness caused by handheld or shaky-tripod
@@ -67,15 +79,45 @@ changes (where available).
   by fixed offsets, so a stack stays valid across module versions, and
   renders run on a throwaway duplicate so the source image is never
   modified.
+  
+
+
 
 ## UI/UX Improvements
 
 - Checkboxes are now Bauhaus widgets and are reset to default values
   when e.g. a tab or a module is reset.
 
+- Mask nodes close or outside the image boundaries are now editable.
+  When "edit shapes on canvas" is enabled, the node editing area is
+  extended beyond the image borders to allow editing of these nodes.
+
+- In color assessment mode, when the image is zoomed in show a
+  dashed line on the sides of the white border where the image
+  extends beyond the current view (horizontally or vertically).
+
+- Added support for XMP drag&drop directly in the darkroom. Single
+  XMPs can be used to create duplicates or replace the current
+  edit. Multiple XMPs create one duplicate per file.
+
+- Lighttable footer star ratings are now individual CSS-targetable
+  buttons (instead of a single drawing area), so spacing and sizing
+  can be themed. The rating filter reuses the same star paoint helper.
+
+- In the borders (framing) module, disable frame line controls
+  when the border settings would prevent the frame line from
+  being visible.
+
+- Added an interactive editing mode allowing users to correct a color
+  by selecting it directly on the photo with the mouse wheel, just as
+  was already possible with the "tone equalizer" module.
+
 ## Performance Improvements
 
-- N/A
+- Replaced quadratic XMP history writes with a linear algorithm.
+
+- Don't invalidate the pixelpipe cache on every commit
+  when a raster mask is used.
 
 ## Other Changes
 
@@ -102,8 +144,8 @@ changes (where available).
   profile for.
 
 - Printer (paper) profiled print jobs will remain 16 bit through
-  the full print pipeline
-  
+  the full print pipeline.
+
 - When installing development versions of darktable (snapshots, self
   compiled etc.)  the Windows installer now allows to setup a custom
   configuration-directory and custom shortcut-name, useful for
@@ -111,6 +153,9 @@ changes (where available).
 
 - Added a control in the bottom panel of the lighttable to reset
   the star rating of images.
+
+- pixelpipe dump files requested via cli switches are now written
+  in ppm or pgm format.
 
 ## Bug Fixes
 
@@ -133,6 +178,9 @@ changes (where available).
   printers whose drivers use the `CNIJMediaType` option instead of the
   standard `MediaType` option.
 
+- Fixed lighttable bottom-panel star rating and color label toggles
+  not responding on repeated clicks.
+
 - Fixed the feather on dense drawn path masks rendering stripes,
   phantom arcs and crossing lines.
 
@@ -148,10 +196,59 @@ changes (where available).
 - Fixed auto-applied denoise presets running a second time on images
   produced by AI raw denoise.
 
-- Fixed highlights modes for 4BAYER (CYGM/RGBE) raws, only clipping mode
-  is available for those.
+- Fixed highlights modes for 4BAYER (CYGM/RGBE) raws, only clipping
+  mode is available for those.
 
 - Fixed OpenCL input gamma corrected scaling for some devices.
+
+- Fixed paths and nodes occasionally snapping to the top left
+  corner during move operations.
+
+- Fixed crash when navigating images in the darkroom with an
+  image pinned in the 2nd window.
+
+- Fixed darkroom watermark issues related to tag & metadata changes.
+
+- Fixed refinements to forwarded raster masks being ignored along
+  the OpenCL path.
+
+- Compute JzAzBz's Az and Bz without cancellation so that results
+  computed by the CPU and OpenCL paths do not diverge.
+
+- Fixed mask-only edits not causing thumbnail refreshes and XMP
+  updates (when enabled).
+
+- Fixed zoom position moving around when switching between images.
+
+- A path that grows past the border of the image is no longer clipped.
+
+- Fixed broken dragging in sliders' precise-entry mode
+  in GTK3.
+
+- Fixed the feather of a drawn path being lost when the shape was resized
+  with the scroll wheel.
+
+- Fixed numeric error in the framing module (borders) causing the frame
+  line to be off-center for certain border sizes.
+
+- Fixed a crash or hang on Windows when checking a faulty custom ONNX
+  Runtime library.
+
+- The "condensed panels' controls" preference now also condenses the
+  sliders and comboboxes themselves, instead of only shrinking their
+  font.
+
+- Fixed a small memory leak each time a history stack was pasted onto the
+  image open in darkroom.
+
+- Fixed Windows paths losing their backslashes in export and import
+  patterns, which sent files to the wrong location.
+
+- Fixed wrong output or a crash from an export pattern containing an
+  unclosed variable substitution, such as "$(FILE_NAME/foo".
+
+- Fixed corrupted output or a crash when an AI model returns more data
+  than darktable reserved for it, affecting object masks and Lua models.
 
 ## Lua
 
@@ -191,16 +288,13 @@ changes (where available).
 
 ### Mandatory
 
-- potrace 1.16 is a new requirement
+- N/A
 
 ### Optional
 
-- ONNX Runtime 1.18+ for AI features
-
-- libarchive for AI model extraction
-
-- OpenCV 4 or 5 for HDR exposure-bracket auto-alignment (only the core,
-  imgproc and flann modules plus features2d/calib3d on OpenCV 4, or features/geometry on OpenCV 5)
+- OpenCV 4 or 5 for HDR exposure-bracket auto-alignment (only the
+  core, imgproc and flann modules plus features2d/calib3d on OpenCV 4,
+  or features/geometry on OpenCV 5)
 
 ## Camera support, compared to 5.6
 

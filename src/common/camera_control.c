@@ -1874,8 +1874,8 @@ void dt_camctl_camera_set_property_float(const dt_camctl_t *c,
   dt_camera_t *camera = (dt_camera_t *)cam;
 
   _camctl_camera_set_property_float_job_t *job =
-    g_malloc(sizeof(_camctl_camera_set_property_int_job_t));
-  job->type = _JOB_TYPE_SET_PROPERTY_INT;
+    g_malloc(sizeof(_camctl_camera_set_property_float_job_t));
+  job->type = _JOB_TYPE_SET_PROPERTY_FLOAT;
   job->name = g_strdup(property_name);
   job->value = value;
 

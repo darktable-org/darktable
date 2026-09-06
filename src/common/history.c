@@ -1883,6 +1883,22 @@ void dt_history_hash_set_mipmap(const dt_imgid_t imgid)
   sqlite3_finalize(stmt);
 }
 
+void dt_history_hash_unset_mipmap(const dt_imgid_t imgid)
+{
+  if(!dt_is_valid_imgid(imgid)) return;
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.history_hash"
+                              " SET mipmap_hash = 0"
+                              " WHERE imgid = ?1",
+                              -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
 dt_history_hash_t dt_history_hash_get_status(const dt_imgid_t imgid)
 {
   dt_history_hash_t status = DT_HISTORY_HASH_NONE;

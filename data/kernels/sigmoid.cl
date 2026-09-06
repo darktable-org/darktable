@@ -99,8 +99,8 @@ static inline float _generalized_loglogistic_sigmoid_scalar(const float value,
   // The following equation can be derived as a model for film + paper but it has a pole at 0
   // magnitude * powf(1.0 + paper_exp * powf(film_fog + value, -film_power), -paper_power);
   // Rewritten on a stable around zero form:
-  const float film_response = pow(film_fog + clamped_value, film_power);
-  const float paper_response = magnitude * pow(film_response / (paper_exp + film_response), paper_power);
+  const float film_response = dtcl_pow(film_fog + clamped_value, film_power);
+  const float paper_response = magnitude * dtcl_pow(film_response / (paper_exp + film_response), paper_power);
 
   // Safety check for very large floats that cause numerical errors
   return isnan(paper_response) ? magnitude : paper_response;
@@ -121,9 +121,9 @@ static inline float4 _generalized_loglogistic_sigmoid_vector(const float4 i,
   // Rewritten on a stable around zero form:
 
   //film_response
-  io = pow(film_fog + io, film_power);
+  io = dtcl_pow(film_fog + io, film_power);
   //paper_response
-  io = magnitude * pow(io / (paper_exp + io), paper_power);
+  io = magnitude * dtcl_pow(io / (paper_exp + io), paper_power);
 
   // Safety check for very large floats that cause numerical errors
   return isnan(io) ? magnitude : io;
@@ -285,7 +285,7 @@ sigmoid_loglogistic_rgb_ratio(read_only image2d_t in,
     2.0f * chroma_vs_mapping_border /
     (1.0f - chroma_vs_mapping_border * chroma_vs_mapping_border + epsilon) * pixel_chroma_adjustment;
 
-  const float hyperbolic_z = sqrt(hyperbolic_chroma * hyperbolic_chroma + 1.0f);
+  const float hyperbolic_z = dtcl_sqrt(hyperbolic_chroma * hyperbolic_chroma + 1.0f);
   const float chroma_factor = hyperbolic_chroma / (1.0f + hyperbolic_z) * display_border_vs_chroma;
 
   i = mapped_luma + chroma_factor * (i - mapped_luma);

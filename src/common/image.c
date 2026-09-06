@@ -2425,6 +2425,7 @@ gboolean dt_image_rename(const dt_imgid_t imgid,
         }
         // write through to db, but not to xmp
         dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
+        DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
         dup_list = g_list_delete_link(dup_list, dup_list);
         // now also write xmp file
         dt_image_synch_xmp(id);

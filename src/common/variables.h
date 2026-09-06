@@ -77,6 +77,14 @@ void dt_variables_set_tags_flags(dt_variables_params_t *params,
 char *dt_variables_expand(dt_variables_params_t *params,
                           gchar *source,
                           const gboolean iterate);
+/** expands variables in a string naming a filesystem path. on Windows '\\' is
+    taken as a separator rather than an escape, so "D:\\photos\\$(YEAR)" keeps
+    both; "\\/" still escapes a '/' inside $(VAR/pattern/replacement). use
+    dt_variables_expand() for patterns that are not paths. the result should
+    be freed with g_free(). */
+char *dt_variables_expand_path(dt_variables_params_t *params,
+                               gchar *source,
+                               const gboolean iterate);
 /** reset sequence number */
 void dt_variables_reset_sequence(dt_variables_params_t *params);
 

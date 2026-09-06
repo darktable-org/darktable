@@ -1,0 +1,8 @@
+{
+  "id": "test-multiply-dynamic",
+  "name": "Test Multiply Dynamic",
+  "description": "Test model: y = x * 2",
+  "task": "test",
+  "backend": "onnx",
+  "num_inputs": 1
+}

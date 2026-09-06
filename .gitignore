@@ -28,3 +28,6 @@ workspace/
 cmake-build-debug/
 .idea/
 AppDir/
+
+# personal, per-project agent instructions (see AGENTS.md)
+AGENTS.local.md

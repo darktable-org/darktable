@@ -1569,9 +1569,7 @@ static int32_t _process_job_run(dt_job_t *job)
     dt_variables_params_init(&vp);
     vp->filename = srcpath;
     vp->imgid = imgid;
-    char *out_dir = dt_variables_expand(vp,
-                                        (gchar *)dir_pattern,
-                                        FALSE);
+    char *out_dir = dt_variables_expand_path(vp, (gchar *)dir_pattern, FALSE);
     dt_variables_params_destroy(vp);
 
     // if basename already ends with the suffix, don't

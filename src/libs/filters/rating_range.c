@@ -175,29 +175,6 @@ static gchar *_rating_get_bounds_pretty(GtkDarktableRangeSelect *range)
   return dtgtk_range_select_get_bounds_pretty(range);
 }
 
-static void _rating_paint_icon(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
-{
-  // first, we set the color depending on the flags
-  void *my_data = NULL;
-  GdkRGBA shade_color;
-
-  if((flags & CPF_PRELIGHT) || (flags & CPF_ACTIVE))
-  {
-    // we want a filled icon
-    cairo_get_source(cr);
-    cairo_pattern_get_rgba(cairo_get_source(cr),
-                           &shade_color.red,
-                           &shade_color.green,
-                           &shade_color.blue,
-                           &shade_color.alpha);
-    shade_color.alpha *= 0.6;
-    my_data = &shade_color;
-  }
-
-  // then we draw the regular icon
-  dtgtk_cairo_paint_star(cr, x, y, w, h, flags, my_data);
-}
-
 enum
 {
   // DT_ACTION_EFFECT_TOGGLE = DT_ACTION_EFFECT_DEFAULT_KEY,
@@ -338,11 +315,11 @@ static void _rating_range_widget_init(dt_lib_filtering_rule_t *rule,
   dtgtk_range_select_add_icon(range, 7, -1, dtgtk_cairo_paint_reject, 0, NULL);
   dtgtk_range_select_add_icon(range, 22, 0, dtgtk_cairo_paint_unratestar, 0, NULL);
 
-  dtgtk_range_select_add_icon(range, 36, 1, _rating_paint_icon, 0, NULL);
-  dtgtk_range_select_add_icon(range, 50, 2, _rating_paint_icon, 0, NULL);
-  dtgtk_range_select_add_icon(range, 64, 3, _rating_paint_icon, 0, NULL);
-  dtgtk_range_select_add_icon(range, 78, 4, _rating_paint_icon, 0, NULL);
-  dtgtk_range_select_add_icon(range, 93, 5, _rating_paint_icon, 0, NULL);
+  dtgtk_range_select_add_icon(range, 36, 1, dtgtk_cairo_paint_rating_star, 0, NULL);
+  dtgtk_range_select_add_icon(range, 50, 2, dtgtk_cairo_paint_rating_star, 0, NULL);
+  dtgtk_range_select_add_icon(range, 64, 3, dtgtk_cairo_paint_rating_star, 0, NULL);
+  dtgtk_range_select_add_icon(range, 78, 4, dtgtk_cairo_paint_rating_star, 0, NULL);
+  dtgtk_range_select_add_icon(range, 93, 5, dtgtk_cairo_paint_rating_star, 0, NULL);
   range->print = _rating_print_func;
   range->current_bounds = _rating_get_bounds_pretty;
 

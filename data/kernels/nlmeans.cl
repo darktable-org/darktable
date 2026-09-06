@@ -242,7 +242,7 @@ kernel void nlmeans_finish(read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 i  = readpixel(in, x, y);
+  float4 i  = Areadpixel(in, x, y);
   float4 u2 = U2[mad24(y, width, x)];
   float  u3 = u2.w;
 

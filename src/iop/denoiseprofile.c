@@ -324,8 +324,6 @@ int legacy_params_to11(dt_iop_module_t *self,
     gboolean use_new_vst;
   } dt_iop_denoiseprofile_params_v8_t;
 
-#if 0
-  // v9 & v10 never used as legacy, keep there for reference
 
   typedef struct dt_iop_denoiseprofile_params_v9_t
   {
@@ -377,8 +375,6 @@ int legacy_params_to11(dt_iop_module_t *self,
     dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode; /* switch between RGB and Y0U0V0 modes.
                                                                 $DEFAULT: MODE_Y0U0V0 $DESCRIPTION: "color mode"*/
   } dt_iop_denoiseprofile_params_v10_t;
-
-#endif
 
   if((old_version == 1 || old_version == 2 || old_version == 3) && new_version == 4)
   {
@@ -577,7 +573,10 @@ int legacy_params_to11(dt_iop_module_t *self,
     }
     else
       memcpy(&v8, old_params, sizeof(v8)); // was v8 already
-    dt_iop_denoiseprofile_params_t *v9 = new_params;
+    // Must be the v9 layout, not the current one: v9's x[]/y[] have
+    // DT_DENOISE_PROFILE_NONE_V9 rows rather than DT_DENOISE_PROFILE_NONE, so
+    // writing through the current type would place y[] 56 bytes too far.
+    dt_iop_denoiseprofile_params_v9_t *v9 = new_params;
     v9->radius = v8.radius;
     v9->strength = v8.strength;
     v9->mode = v8.mode;
@@ -615,7 +614,7 @@ int legacy_params_to11(dt_iop_module_t *self,
   }
   else if(new_version == 10)
   {
-    dt_iop_denoiseprofile_params_t v9;
+    dt_iop_denoiseprofile_params_v9_t v9;
     if(old_version < 9)
     {
       // first update to v9
@@ -623,11 +622,13 @@ int legacy_params_to11(dt_iop_module_t *self,
     }
     else
       memcpy(&v9, old_params, sizeof(v9)); // was v9 already
-    dt_iop_denoiseprofile_params_t *v10 = new_params;
+    dt_iop_denoiseprofile_params_v10_t *v10 = new_params;
 
-    // start with a clean default
-    const dt_iop_denoiseprofile_params_t *const d = self->default_params;
-    *v10 = *d;
+    // Start with a clean default. default_params is the current (v12) layout,
+    // of which v10 is a prefix, so take only what this version has room for:
+    // new_params is a v11-sized allocation (see legacy_params below), and
+    // assigning a whole v12 through it would run off the end.
+    memcpy(v10, self->default_params, sizeof(*v10));
 
     v10->radius = v9.radius;
     v10->strength = v9.strength;
@@ -665,7 +666,9 @@ int legacy_params_to11(dt_iop_module_t *self,
   else if(new_version == 11)
   {
     // v11 and v10 are the same, just need to update strength when needed.
-    dt_iop_denoiseprofile_params_t *v11 = new_params;
+    // Deliberately the v10 type: the current struct is v12, four bytes longer
+    // (compensate_hilite_pres), and new_params is only v11-sized.
+    dt_iop_denoiseprofile_params_v10_t *v11 = new_params;
     if(old_version < 10)
     {
       if(legacy_params_to11(self, old_params, old_version, v11, 10)) return 1;

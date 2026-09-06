@@ -18,7 +18,11 @@ typedef struct test_t
   test_case_t test_cases[];
 } test_t;
 
-int run_test(const test_t *test, int *n_tests, int *n_failed)
+// the two entry points differ only in separator handling, so the cases run
+// through whichever one the caller passes
+typedef char *(*expand_fn_t)(dt_variables_params_t *, gchar *, const gboolean);
+
+int run_test(const test_t *test, int *n_tests, int *n_failed, expand_fn_t expand)
 {
   dt_variables_params_t *params;
   dt_variables_params_init(&params);
@@ -31,7 +35,7 @@ int run_test(const test_t *test, int *n_tests, int *n_failed)
   for(const test_case_t *test_case = test->test_cases; test_case->input; test_case++)
   {
     (*n_tests)++;
-    char *result = dt_variables_expand(params, test_case->input, FALSE);
+    char *result = expand(params, test_case->input, FALSE);
     if(g_strcmp0(result, test_case->expected_result))
     {
       (*n_failed)++;
@@ -45,6 +49,7 @@ int run_test(const test_t *test, int *n_tests, int *n_failed)
 
   return *n_failed > 0 ? 1 : 0;
 }
+
 
 static const test_t test_variables = {
   "abcdef12345abcdef", "ABCDEF12345ABCDEF", 23,
@@ -191,11 +196,45 @@ static const test_t test_real_paths = {
     int n_failed = 0, n_tests = 0;\
     n_test_functions++;\
     printf("running test '" #t "'\n");\
-    n_test_functions_failed += run_test(&t, &n_tests, &n_failed);\
+    n_test_functions_failed += run_test(&t, &n_tests, &n_failed, dt_variables_expand);\
     n_tests_overall += n_tests;\
     n_failed_overall += n_failed;\
     printf("%d / %d tests failed\n\n", n_failed, n_tests);\
 }
+
+#define TEST_PATH(test)\
+{\
+    printf("[%s]\n", #test);\
+    int n_tests, n_failed;\
+    n_test_functions++;\
+    if(run_test(&test, &n_tests, &n_failed, dt_variables_expand_path)) n_test_functions_failed++;\
+    n_tests_overall += n_tests;\
+    n_failed_overall += n_failed;\
+    printf("%d / %d tests failed\n\n", n_failed, n_tests);\
+}
+
+static const test_t test_paths = {
+  "/home/test/Images/IMG_0123.CR2", "/home/test/", 23,
+  {
+    // a path pattern must survive expansion, separators and all
+    {"$(FILE_FOLDER)/exported/$(FILE_NAME)",
+     "/home/test/Images/exported/IMG_0123"},
+    {"/home/test/$(JOBCODE)/img_$(SEQUENCE)",
+     "/home/test//home/test//img_0023"},
+    // "\/" escapes the delimiter inside a substitution and must mean the
+    // same on every platform, so normalization has to leave it alone
+    {"$(FILE_FOLDER/\\/home/X)", "X/test/Images"},
+#ifdef _WIN32
+    // the case this entry point exists for: separators survive, and so
+    // does the variable that a trailing separator would otherwise escape
+    {"D:\\photos\\$(FILE_NAME)", "D:/photos/IMG_0123"},
+    // every other backslash is a separator here, so it cannot also escape
+    {"foo\\$(bar", "foo/$(bar"},
+#endif
+
+    {NULL, NULL}
+  }
+};
 
 int main(int argc, char* argv[])
 {
@@ -218,6 +257,8 @@ int main(int argc, char* argv[])
   TEST(test_escapes)
 
   TEST(test_real_paths)
+
+  TEST_PATH(test_paths)
 
   printf("%d / %d tests failed (%d / %d)\n",
          n_failed_overall,
