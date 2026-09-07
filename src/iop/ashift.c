@@ -751,6 +751,48 @@ static inline void _swap_shadow_crop_box(dt_iop_ashift_params_t *p,
   tmp = p->cb; p->cb = g->cb; g->cb = tmp;
 }
 
+// process() and process_cl() publish g->buf and the geometry describing it in
+// one critical section; a reader taking the fields one by one can pair a new
+// width with an old height and fit a crop to a size that never existed, so
+// snapshot them together
+typedef struct dt_iop_ashift_bufgeom_t
+{
+  gboolean valid;   // g->buf was allocated when the snapshot was taken
+  int width;
+  int height;
+  int x_off;
+  int y_off;
+} dt_iop_ashift_bufgeom_t;
+
+static dt_iop_ashift_bufgeom_t _get_buf_geometry(dt_iop_module_t *self)
+{
+  const dt_iop_ashift_gui_data_t *g = self->gui_data;
+  dt_iop_ashift_bufgeom_t b;
+
+  dt_iop_gui_enter_critical_section(self);
+  b.valid = g->buf != NULL;
+  b.width = g->buf_width;
+  b.height = g->buf_height;
+  b.x_off = g->buf_x_off;
+  b.y_off = g->buf_y_off;
+  dt_iop_gui_leave_critical_section(self);
+
+  return b;
+}
+
+// isflipped is published by the same two writers, and stays -1 until the
+// preview pipe has run once
+static int _get_isflipped(dt_iop_module_t *self)
+{
+  const dt_iop_ashift_gui_data_t *g = self->gui_data;
+
+  dt_iop_gui_enter_critical_section(self);
+  const int isflipped = g->isflipped;
+  dt_iop_gui_leave_critical_section(self);
+
+  return isflipped;
+}
+
 #define MAT3SWAP(a, b) { float (*tmp)[3] = (a); (a) = (b); (b) = tmp; }
 
 static void _homography(float *homograph,
@@ -2296,7 +2338,7 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *self,
      (mdir & ASHIFT_FIT_LENS_BOTH) != 0)
   {
     // flip all directions
-    mdir ^= g->isflipped ? ASHIFT_FIT_FLIP : 0;
+    mdir ^= _get_isflipped(self) ? ASHIFT_FIT_FLIP : 0;
     // special case that needs to be corrected
     mdir |= (mdir & ASHIFT_FIT_LINES_BOTH) == 0 ? ASHIFT_FIT_LINES_BOTH : 0;
   }
@@ -2501,7 +2543,7 @@ static void model_probe(dt_iop_module_t *self,
      (mdir & ASHIFT_FIT_LENS_BOTH) != 0)
   {
     // flip all directions
-    mdir ^= g->isflipped ? ASHIFT_FIT_FLIP : 0;
+    mdir ^= _get_isflipped(self) ? ASHIFT_FIT_FLIP : 0;
     // special case that needs to be corrected
     mdir |= (mdir & ASHIFT_FIT_LINES_BOTH) == 0 ? ASHIFT_FIT_LINES_BOTH : 0;
   }
@@ -2642,12 +2684,14 @@ static double crop_fitness(double *params, void *data)
 // center coordinates (and optionally the aspect angle) that delivers
 // the largest overall crop area.
 
-static void do_crop(const dt_iop_module_t *self, dt_iop_ashift_params_t *p)
+static void do_crop(dt_iop_module_t *self, dt_iop_ashift_params_t *p)
 {
   dt_iop_ashift_gui_data_t *g = self->gui_data;
 
+  const dt_iop_ashift_bufgeom_t b = _get_buf_geometry(self);
+
   // if sizes are not ready (module disabled), just ignore this
-  if(g->buf_width == 0 || g->buf_height == 0) return;
+  if(b.width == 0 || b.height == 0) return;
 
   // skip if fitting is still running
   if(g->fitting) return;
@@ -2679,8 +2723,8 @@ static void do_crop(const dt_iop_module_t *self, dt_iop_ashift_params_t *p)
 
   // prepare structure of constant parameters
   dt_iop_ashift_cropfit_params_t DT_ALIGNED_ARRAY cropfit;
-  cropfit.width = g->buf_width;
-  cropfit.height = g->buf_height;
+  cropfit.width = b.width;
+  cropfit.height = b.height;
   _homography((float *)cropfit.homograph, rotation, lensshift_v, lensshift_h,
               shear, f_length_kb,
               orthocorr, aspect, cropfit.width, cropfit.height, ASHIFT_HOMOGRAPH_FORWARD);
@@ -2807,7 +2851,7 @@ failed:
 }
 
 // manually adjust crop area by shifting its center
-static void crop_adjust(const dt_iop_module_t *self,
+static void crop_adjust(dt_iop_module_t *self,
                         const dt_iop_ashift_params_t *const p,
                         const float newx,
                         const float newy)
@@ -2828,8 +2872,9 @@ static void crop_adjust(const dt_iop_module_t *self,
   const float lensshift_v = p->lensshift_v;
   const float lensshift_h = p->lensshift_h;
   const float shear = p->shear;
-  const float wd = g->buf_width;
-  const float ht = g->buf_height;
+  const dt_iop_ashift_bufgeom_t b = _get_buf_geometry(self);
+  const float wd = b.width;
+  const float ht = b.height;
 
   const float alpha = atan2f(ht, wd);
 
@@ -3844,14 +3889,12 @@ static dt_hash_t _get_lines_hash(const dt_iop_ashift_line_t *lines,
 // update color information in points_idx if lines have changed in
 // terms of type (but not in terms of number or position)
 
-static gboolean _update_colors(const dt_iop_module_t *self,
+static gboolean _update_colors(dt_iop_module_t *self,
                                dt_iop_ashift_points_idx_t *points_idx,
                                const int points_lines_count)
 {
-  const dt_iop_ashift_gui_data_t *g = self->gui_data;
-
   // is the display flipped relative to the original image?
-  const gboolean isflipped = g->isflipped;
+  const gboolean isflipped = _get_isflipped(self);
 
   // go through all lines
   for(int n = 0; n < points_lines_count; n++)
@@ -3877,7 +3920,7 @@ static gboolean _update_colors(const dt_iop_module_t *self,
 }
 
 // get all the points to display lines in the gui
-static gboolean _get_points(const dt_iop_module_t *self,
+static gboolean _get_points(dt_iop_module_t *self,
                             const dt_iop_ashift_line_t *lines,
                             const int lines_count,
                             const int lines_version,
@@ -3897,7 +3940,7 @@ static gboolean _get_points(const dt_iop_module_t *self,
   float *my_extremas = NULL;
 
   // is the display flipped relative to the original image?
-  const int isflipped = g->isflipped;
+  const int isflipped = _get_isflipped(self);
 
   // allocate new index array
   my_points_idx = malloc(sizeof(dt_iop_ashift_points_idx_t) * lines_count);
@@ -4124,15 +4167,20 @@ void gui_post_expose(dt_iop_module_t *self,
   const double fillc = dimmed ? 0.9 : 0.2;
 
   // we draw the cropping area; we need x_off/y_off/width/height which is only available
-  // after g->buf has been processed
-  if(g->buf && self->enabled && dt_iop_has_focus(self))
+  // after g->buf has been processed. take the lock only once the cheap tests
+  // say the outline will actually be drawn
+  dt_iop_ashift_bufgeom_t b = { .valid = FALSE };
+  if(self->enabled && dt_iop_has_focus(self))
+    b = _get_buf_geometry(self);
+
+  if(b.valid)
   {
     // roi data of the preview pipe input buffer
 
-    const float iwd = g->buf_width;
-    const float iht = g->buf_height;
-    const float ixo = g->buf_x_off;
-    const float iyo = g->buf_y_off;
+    const float iwd = b.width;
+    const float iht = b.height;
+    const float ixo = b.x_off;
+    const float iyo = b.y_off;
 
     // the four corners of the input buffer of this module
     const float V[4][2] = { { ixo,        iyo       },
@@ -5277,7 +5325,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 #endif
 
   if(w != g->cropmode) dt_dev_invalidate_all(self->dev);
-  if(g->buf_height > 0 && g->buf_width > 0)
+  const dt_iop_ashift_bufgeom_t b = _get_buf_geometry(self);
+  if(b.height > 0 && b.width > 0)
   {
     do_crop(self, p);
     _commit_crop_box(p, g);
@@ -5802,9 +5851,7 @@ static gboolean _event_draw(GtkWidget *widget,
   const dt_iop_ashift_gui_data_t *g = self->gui_data;
   DT_GUARD_GUI_UPDATE(FALSE);
 
-  dt_iop_gui_enter_critical_section(self);
-  const int isflipped = g->isflipped;
-  dt_iop_gui_leave_critical_section(self);
+  const int isflipped = _get_isflipped(self);
 
   if(isflipped == -1) return FALSE;
 
