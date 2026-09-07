@@ -327,6 +327,10 @@ changes (where available).
   center view was clicked, after a snapshot had been taken while the
   snapshots module was collapsed.
 
+- Fixed perspective correction occasionally computing its automatic crop
+  from a mismatched preview size, which could leave the crop box slightly
+  wrong until the module was adjusted again.
+
 ## Lua
 
 ### API Version
