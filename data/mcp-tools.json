@@ -55,9 +55,10 @@
             "imgid": { "type": "integer" }
           }
         },
-        "width": { "type": "integer" },
-        "height": { "type": "integer" },
+        "width": { "description": "bounding box in pixels, not a target size: the image is fitted inside width x height keeping aspect ratio, so the smaller constraint wins. omit or pass 0 to leave a dimension unconstrained, which then limits by the other alone but never enlarges past the image's own size; give both to upscale. with neither given, defaults to 1024x1024", "type": "integer" },
+        "height": { "description": "bounding box in pixels, not a target size: the image is fitted inside width x height keeping aspect ratio, so the smaller constraint wins. omit or pass 0 to leave a dimension unconstrained, which then limits by the other alone but never enlarges past the image's own size; give both to upscale. with neither given, defaults to 1024x1024", "type": "integer" },
         "stack": {
+          "description": "edits layered on top of the base state, applied to a throwaway duplicate so the image's own history is never modified",
           "type": "array",
           "items": {
             "type": "object",
@@ -72,7 +73,7 @@
           }
         },
         "disable_tone_mappers": { "type": "boolean" },
-        "history_end": { "type": "integer" }
+        "history_end": { "description": "how many entries of the image's existing history to apply, counted from the start; -1 or omitted uses all of it. applied before `stack`, so the two compose: history_end picks the base state and stack adds edits on top of it", "type": "integer" }
       },
       "required": ["input"],
       "additionalProperties": false
@@ -91,11 +92,11 @@
             "imgid": { "type": "integer" }
           }
         },
-        "width": { "type": "integer" },
-        "height": { "type": "integer" },
-        "stack": { "type": "array", "items": { "type": "object" } },
+        "width": { "description": "bounding box in pixels, not a target size: the image is fitted inside width x height keeping aspect ratio, so the smaller constraint wins. omit or pass 0 to leave a dimension unconstrained, which then limits by the other alone but never enlarges past the image's own size; give both to upscale. with neither given, defaults to 512x512", "type": "integer" },
+        "height": { "description": "bounding box in pixels, not a target size: the image is fitted inside width x height keeping aspect ratio, so the smaller constraint wins. omit or pass 0 to leave a dimension unconstrained, which then limits by the other alone but never enlarges past the image's own size; give both to upscale. with neither given, defaults to 512x512", "type": "integer" },
+        "stack": { "description": "edits layered on top of the base state, applied to a throwaway duplicate so the image's own history is never modified", "type": "array", "items": { "type": "object" } },
         "disable_tone_mappers": { "type": "boolean" },
-        "history_end": { "type": "integer" }
+        "history_end": { "description": "how many entries of the image's existing history to apply, counted from the start; -1 or omitted uses all of it. applied before `stack`, so the two compose: history_end picks the base state and stack adds edits on top of it", "type": "integer" }
       },
       "required": ["input"],
       "additionalProperties": false
@@ -177,11 +178,11 @@
           }
         },
         "out_path": { "type": "string" },
-        "width": { "type": "integer" },
-        "height": { "type": "integer" },
-        "stack": { "type": "array", "items": { "type": "object" } },
+        "width": { "description": "bounding box in pixels, not a target size: the image is fitted inside width x height keeping aspect ratio, so the smaller constraint wins. omit or pass 0 to leave a dimension unconstrained, which then limits by the other alone but never enlarges past the image's own size; give both to upscale. with neither given, defaults to 1024x1024", "type": "integer" },
+        "height": { "description": "bounding box in pixels, not a target size: the image is fitted inside width x height keeping aspect ratio, so the smaller constraint wins. omit or pass 0 to leave a dimension unconstrained, which then limits by the other alone but never enlarges past the image's own size; give both to upscale. with neither given, defaults to 1024x1024", "type": "integer" },
+        "stack": { "description": "edits layered on top of the base state, applied to a throwaway duplicate so the image's own history is never modified", "type": "array", "items": { "type": "object" } },
         "disable_tone_mappers": { "type": "boolean" },
-        "history_end": { "type": "integer" }
+        "history_end": { "description": "how many entries of the image's existing history to apply, counted from the start; -1 or omitted uses all of it. applied before `stack`, so the two compose: history_end picks the base state and stack adds edits on top of it", "type": "integer" }
       },
       "required": ["input", "out_path"],
       "additionalProperties": false

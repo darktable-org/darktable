@@ -629,7 +629,15 @@ static int _mcp_write(dt_imageio_module_data_t *data, const char *filename,
 {
   _mcp_fmt_t *d = (_mcp_fmt_t *)data;
   if(!in) return 1;
-  memcpy(d->buf, in, sizeof(uint32_t) * (size_t)data->width * data->height);
+
+  // the export writes the real size into data before calling us; sizing this
+  // from the requested box breaks once a dimension is left unconstrained
+  const size_t bytes = sizeof(uint32_t) * (size_t)data->width * data->height;
+  g_free(d->buf);
+  d->buf = g_malloc(bytes);
+  if(!d->buf) return 1;
+
+  memcpy(d->buf, in, bytes);
   d->width = data->width;
   d->height = data->height;
   return 0;
@@ -653,8 +661,15 @@ static void _free_cb(void *p) { g_free(p); }
 static cairo_surface_t *_render_to_surface(dt_imgid_t imgid, int w, int h,
                                            int history_end, char **err)
 {
-  if(w <= 0) w = 1024;
-  if(h <= 0) h = 1024;
+  // max_width/max_height is a bounding box and 0 means "no limit", so
+  // defaulting an unset dimension would cap the one actually asked for
+  if(w < 0) w = 0;
+  if(h < 0) h = 0;
+  if(w == 0 && h == 0)
+  {
+    w = 1024;
+    h = 1024;
+  }
 
   dt_imageio_module_format_t fmt;
   memset(&fmt, 0, sizeof(fmt));
@@ -671,7 +686,7 @@ static cairo_surface_t *_render_to_surface(dt_imgid_t imgid, int w, int h,
   dat.head.height = h;
   dat.head.style_append = TRUE;
   dat.bpp = 8;
-  dat.buf = g_malloc0(sizeof(uint32_t) * (size_t)w * h);
+  dat.buf = NULL; // allocated by _mcp_write once the real size is known
 
   // NB: dt_imageio_export_with_flags returns FALSE on success
   const gboolean failed = dt_imageio_export_with_flags(
@@ -734,6 +749,14 @@ static cairo_surface_t *_render_surface(const char *path, int imgid_in, int widt
     dt_develop_t dev;
     dt_dev_init(&dev, FALSE);
     dt_dev_load_image(&dev, work);
+
+    // truncate before the stack is written, not after: the export's own pop
+    // would otherwise discard the edits the caller just asked for
+    if(history_end != -1)
+    {
+      dt_dev_pop_history_items_ext(&dev, history_end);
+      history_end = -1;
+    }
 
     if(disable_tone_mappers)
     {
@@ -808,8 +831,12 @@ char *dt_bridge_image_stats_json(const char *path, int imgid_in, int width, int 
                                  int history_end, char **err)
 {
   dt_imgid_t dup = NO_IMGID;
-  cairo_surface_t *surf = _render_surface(path, imgid_in, width > 0 ? width : 512,
-                                          height > 0 ? height : 512,
+  // stats only need a small render, but substituting the default per dimension
+  // would cap whichever one the caller did ask for
+  const gboolean unsized = width <= 0 && height <= 0;
+  cairo_surface_t *surf = _render_surface(path, imgid_in,
+                                          unsized ? 512 : width,
+                                          unsized ? 512 : height,
                                           (JsonArray *)stack_jsonarray,
                                           disable_tone_mappers, history_end, &dup, err);
   if(!surf) return NULL;
