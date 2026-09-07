@@ -50,12 +50,15 @@
 #include <gio/gio.h>
 #include <glib.h>
 #include <glib/gstdio.h>
+
 #ifndef _WIN32
 #include <glob.h>
 #endif
+
 #ifdef __APPLE__
 #include "osx/osx.h"
 #endif
+
 #ifdef _WIN32
 #include "win/dtwin.h"
 #include <utime.h>
@@ -1051,6 +1054,15 @@ static int32_t _control_monochrome_images_job_run(dt_job_t *job)
 
 static char *_get_image_list(GList *l)
 {
+  // checking for an empty GList
+  if(l == NULL)
+  {
+    // is logged because such a call is a sign of a logical error elsewhere in the code
+    dt_print(DT_DEBUG_ALWAYS,
+             "[control_jobs] _get_image_list was called with empty GList, this should not happen");
+    return strdup("");
+  }
+
   const guint size = g_list_length(l);
   char num[8];
   char *buffer = calloc(size, sizeof(num));
