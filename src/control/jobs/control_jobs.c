@@ -1065,7 +1065,20 @@ static char *_get_image_list(GList *l)
 
   const guint size = g_list_length(l);
   char num[8];
+
   char *buffer = calloc(size, sizeof(num));
+  // allocation size here is guaranteed to be non-zero
+  // so returning NULL from calloc is a result of memory allocation failure
+  if(buffer == NULL)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[control_jobs] failed to allocate memory in _get_image_list");
+    // allocation in strdup could also fail, although extremely unlikely,
+    // given the tiny request size :)
+    // but at least we tried to return as correctly as possible
+    return strdup("");
+  }
+
   gboolean first = TRUE;
 
   buffer[0] = '\0';
