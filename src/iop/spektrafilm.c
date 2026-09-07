@@ -3088,6 +3088,11 @@ static void _update_print_sensitivity(dt_iop_module_t *self)
   gtk_widget_set_sensitive(g->preflash_exposure, printing);
   gtk_widget_set_sensitive(g->preflash_m_shift, printing);
   gtk_widget_set_sensitive(g->preflash_y_shift, printing);
+  /* viewing glare simulates light reflecting off the print surface, so it has
+     no effect once scan_film skips the print stage entirely. process() and
+     process_cl() already skip it (see the `!d->p.scan_film` guards), this
+     just keeps the slider from looking live when it does nothing. */
+  gtk_widget_set_sensitive(g->glare_percent, printing);
   /* toggle_from_params checkboxes keep showing their tick even when made
      insensitive -- GTK just dims the whole widget, so a checked-but-grayed
      box can read as "this is still on" when it has no effect at all (no
