@@ -2711,6 +2711,9 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
       g_strlcpy(hist->multi_name, multi_name, sizeof(hist->multi_name));
     hist->params = malloc(hist->module->params_size);
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
+    memcpy(hist->params, hist->module->default_params, hist->module->params_size);
+    memcpy(hist->blend_params, hist->module->default_blendop_params,
+           sizeof(dt_develop_blend_params_t));
 
     // update module iop_order only on active history entries
     if(history_end_current > dev->history_end)
