@@ -44,6 +44,7 @@
 #include <strings.h>
 #include <unistd.h>
 
+// initial values for pipe->average_delay, these are in ms
 #define DT_DEV_AVERAGE_DELAY_START 250
 #define DT_DEV_PREVIEW_AVERAGE_DELAY_START 50
 
@@ -204,6 +205,11 @@ void dt_print_pipe_ext(const char *title,
                vtit, dev, pname, vmod, order, roi, roo, masking, vbuf);
 }
 
+static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
+                                           const size_t size,
+                                           const int32_t entries,
+                                           const int32_t fraction,
+                                           const uint32_t delay);
 gboolean dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe,
                                       const int32_t width,
                                       const int32_t height,
@@ -211,7 +217,7 @@ gboolean dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe,
                                       const gboolean store_masks)
 {
   const gboolean res =
-    dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, DT_PIPECACHE_MIN, 0);
+    _dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, DT_PIPECACHE_MIN, 0, 1);
   pipe->type = DT_DEV_PIXELPIPE_EXPORT;
   pipe->levels = levels;
   pipe->store_all_raster_masks = store_masks;
@@ -223,7 +229,7 @@ gboolean dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe,
                                          const int32_t height)
 {
   const gboolean res =
-    dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, DT_PIPECACHE_MIN, 0);
+    _dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, DT_PIPECACHE_MIN, 0, 1);
   pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
   return res;
 }
@@ -233,42 +239,40 @@ gboolean dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe,
                                      const int32_t height)
 {
   const gboolean res =
-    dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 0, 0);
+    _dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 0, 0, DT_DEV_AVERAGE_DELAY_START);
   pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
-  pipe->average_delay = DT_DEV_AVERAGE_DELAY_START;
   return res;
 }
 
 gboolean dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
 {
   const gboolean res =
-    dt_dev_pixelpipe_init_cached(pipe, 0, darktable.pipe_cache ? 12 : DT_PIPECACHE_MIN, 32);
+    _dev_pixelpipe_init_cached(pipe, 0, darktable.pipe_cache ? 12 : DT_PIPECACHE_MIN, 32, DT_DEV_PREVIEW_AVERAGE_DELAY_START);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
-  pipe->average_delay = DT_DEV_PREVIEW_AVERAGE_DELAY_START;
   return res;
 }
 
 gboolean dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
 {
   const gboolean res =
-    dt_dev_pixelpipe_init_cached(pipe, 0, darktable.pipe_cache ? 5 : DT_PIPECACHE_MIN, 32);
+    _dev_pixelpipe_init_cached(pipe, 0, darktable.pipe_cache ? 5 : DT_PIPECACHE_MIN, 32, DT_DEV_AVERAGE_DELAY_START);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW2;
-  pipe->average_delay = DT_DEV_PREVIEW_AVERAGE_DELAY_START;
   return res;
 }
 
 gboolean dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
   const gboolean res =
-    dt_dev_pixelpipe_init_cached(pipe, 0, darktable.pipe_cache ? 64 : DT_PIPECACHE_MIN, 8);
+    _dev_pixelpipe_init_cached(pipe, 0, darktable.pipe_cache ? 64 : DT_PIPECACHE_MIN, 8, DT_DEV_AVERAGE_DELAY_START);
   pipe->type = DT_DEV_PIXELPIPE_FULL;
   return res;
 }
 
-gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
-                                      const size_t size,
-                                      const int32_t entries,
-                                      const int32_t fraction)
+static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
+                                           const size_t size,
+                                           const int32_t entries,
+                                           const int32_t fraction,
+                                           const uint32_t delay)
 {
   pipe->devid = DT_DEVICE_CPU;
   pipe->loading = FALSE;
@@ -293,6 +297,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->tiling = FALSE;
   pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
   pipe->bypass_blendif = FALSE;
+  pipe->average_delay = 1000 * delay;
   pipe->input_timestamp = 0;
   pipe->levels = IMAGEIO_RGB | IMAGEIO_INT8;
   dt_pthread_mutex_init(&pipe->mutex, NULL);

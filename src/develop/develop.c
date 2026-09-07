@@ -50,7 +50,12 @@
 #include "lua/call.h"
 #endif
 
-#define DT_DEV_AVERAGE_DELAY_COUNT 5
+/** The averaged time for a pipe run is calculated over DT_DEV_AVERAGE_DELAY_COUNT
+    runs and is kept in pipe->average_delay (microseconds)
+    With improved pipe caching this got bumped from 5 to 8 reducing effect of very
+    fast runs while editing.
+*/
+#define DT_DEV_AVERAGE_DELAY_COUNT 8
 
 // Margins (as a fraction of the image size) by which the editable "canvas" may
 // extend beyond the image while working on a mask, so off-image content can be
@@ -614,14 +619,11 @@ void dt_dev_invalidate_preview(dt_develop_t *dev)
     dev->preview2.pipe->input_timestamp = dev->timestamp;
 }
 
-static void _dev_average_delay_update(const dt_times_t *start,
-                                      uint32_t *average_delay)
+static void _dev_average_delay_update(gint64 elapsed,
+                                      gint64 *average_delay)
 {
-  dt_times_t end;
-  dt_get_times(&end);
-
-  *average_delay += ((end.clock - start->clock) * 1000 / DT_DEV_AVERAGE_DELAY_COUNT
-                     - *average_delay / DT_DEV_AVERAGE_DELAY_COUNT);
+  *average_delay += elapsed / DT_DEV_AVERAGE_DELAY_COUNT
+                     - *average_delay / DT_DEV_AVERAGE_DELAY_COUNT;
 }
 
 void dt_dev_pixelpipe_stop_and_lock_all(dt_develop_t *dev)
@@ -877,8 +879,8 @@ restart:
   const int x = port ? CLAMP(pipe_width  * (.5 + zoom_x) - wd / 2, 0, pipe_width  - wd) : 0;
   const int y = port ? CLAMP(pipe_height * (.5 + zoom_y) - ht / 2, 0, pipe_height - ht) : 0;
 
-  dt_get_times(&start);
-
+  dt_get_perf_times(&start);
+  pipe->started_time = g_get_monotonic_time();
   const gboolean early = dt_dev_pixelpipe_process(pipe, dev, x, y, wd, ht, scale, devid);
   const dt_dev_pixelpipe_stopper_t shutdown = dt_atomic_exch_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
   const gboolean stopped = early || shutdown > DT_DEV_PIXELPIPE_PROCESSING;
@@ -951,11 +953,16 @@ restart:
     }
   }
 
-  dt_print_pipe(DT_DEBUG_PIPE, "process_image_job done", pipe, NULL, DT_DEVICE_NONE, &proi, NULL, "\n");
   dt_show_times_f(&start,
                   "[dev_process_image] pixel pipeline", "processing `%s'",
                   dev->image_storage.filename);
-  _dev_average_delay_update(&start, &pipe->average_delay);
+
+  const gint64 elapsed = MAX(0, g_get_monotonic_time() - pipe->started_time);
+  _dev_average_delay_update(elapsed, &pipe->average_delay);
+
+  dt_print_pipe(DT_DEBUG_PIPE, "process_image_job done",
+    pipe, NULL, DT_DEVICE_NONE, &proi, NULL, "took %dms, average=%dms\n",
+    (int)elapsed / 1000, (int)pipe->average_delay / 1000);
 
   pipe->status = DT_DEV_PIXELPIPE_VALID;
   pipe->loading = FALSE;

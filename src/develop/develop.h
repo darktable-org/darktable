@@ -188,7 +188,6 @@ typedef struct dt_develop_t
   double autosave_time;
   int32_t image_invalid_cnt;
   uint32_t timestamp;
-  uint32_t preview_average_delay;
   struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.
   struct dt_iop_module_t *header_buttons_module; // module whose header buttons are currently shown (if any)
 

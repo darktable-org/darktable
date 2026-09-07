@@ -97,7 +97,7 @@ static gboolean _gradient_slider_postponed_value_change(gpointer data)
   if(!DTGTK_GRADIENT_SLIDER(data)->is_dragging) DTGTK_GRADIENT_SLIDER(data)->timeout_handle = 0;
   else
   {
-    const int delay = CLAMP(darktable.develop->full.pipe->average_delay * 3 / 2,
+    const int delay = CLAMP(darktable.develop->full.pipe->average_delay * 3 / 2000,
                             DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MIN,
                             DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MAX);
     DTGTK_GRADIENT_SLIDER(data)->timeout_handle = g_timeout_add(delay, _gradient_slider_postponed_value_change, data);
@@ -355,10 +355,14 @@ static void _gradient_slider_button_pressed(GtkGestureSingle *gesture,
 
       gslider->is_changed = TRUE;
       gslider->is_dragging = TRUE;
-      // timeout_handle should always be zero here, but check just in case
-      const int delay = CLAMP(darktable.develop->full.pipe->average_delay * 3 / 2,
+
+      /** We modify the slider's timeout_handle setting it to 150% of average_delay of the full pipe.
+          Note that g_timeout_add() delay is in ms and average_delay in microseconds!
+      */
+      const int delay = CLAMP(darktable.develop->full.pipe->average_delay * 3 / 2000,
                               DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MIN,
                               DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MAX);
+      // timeout_handle should always be zero here, but check just in case
       if(!gslider->timeout_handle)
         gslider->timeout_handle = g_timeout_add(delay, _gradient_slider_postponed_value_change, widget);
     }
