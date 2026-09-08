@@ -2071,7 +2071,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
 
     dt_iop_set_module_trouble_message
       (self,
-        _("white balance module error (<u>details</u>)"),
+        _("bad input white balance (<u>details</u>)"),
         _("the white balance module is not using the camera\n"
           "reference illuminant, which will cause issues here\n"
           "with chromatic adaptation. either set it to reference\n"
