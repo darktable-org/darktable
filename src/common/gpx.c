@@ -383,7 +383,7 @@ void _gpx_parser_end_element(GMarkupParseContext *context, const gchar *element_
   dt_gpx_t *gpx = (dt_gpx_t *)user_data;
 
   /* closing trackpoint lets take care of data parsed */
-  if(gpx->parsing_trk == TRUE)
+  if(gpx->parsing_trk)
   {
     if(strcmp(element_name, "trk") == 0)
     {

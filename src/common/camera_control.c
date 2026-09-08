@@ -580,7 +580,7 @@ static void *_camctl_camera_get_live_view(void *data)
   double capture_time = dt_get_wtime();
   const int fps = dt_conf_get_int("plugins/capture/camera/live_view_fps");
 
-  while(cam->is_live_viewing == TRUE)
+  while(cam->is_live_viewing)
   {
     dt_pthread_mutex_BAD_lock(&cam->live_view_synch);
 
@@ -1105,7 +1105,7 @@ static void *_camera_event_thread(void *data)
   dt_print(DT_DEBUG_CAMCTL,
            "[camera_control] starting camera event thread of context %p", data);
 
-  while(camera->is_tethering == TRUE)
+  while(camera->is_tethering)
   {
     // Poll event from camera
     _camera_poll_events(camctl, camera);
@@ -1627,7 +1627,7 @@ void dt_camctl_tether_mode(const dt_camctl_t *c,
     dt_camctl_t *camctl = (dt_camctl_t *)c;
     dt_camera_t *camera = (dt_camera_t *)cam;
 
-    if(enable == TRUE && camera->is_tethering != TRUE)
+    if(enable && !camera->is_tethering)
     {
       _camctl_lock(c, cam);
       // Start up camera event polling thread

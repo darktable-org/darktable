@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2025 darktable developers.
+    Copyright (C) 2014-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -243,7 +243,7 @@ static void _expose_tethered_mode(dt_view_t *self,
 
   lib->image_over = lib->image_id;
 
-  if(cam->is_live_viewing == TRUE) // display the preview
+  if(cam->is_live_viewing) // display the preview
   {
     dt_pthread_mutex_lock(&cam->live_view_buffer_mutex);
     if(cam->live_view_buffer)
@@ -282,7 +282,7 @@ static void _expose_tethered_mode(dt_view_t *self,
 
           // FIXME: use cairo_pattern_set_filter()?
           cairo_translate(cr, width * 0.5, (height + BAR_HEIGHT) * 0.5); // origin to middle of canvas
-          if(cam->live_view_flip == TRUE)
+          if(cam->live_view_flip)
             cairo_scale(cr, -1.0, 1.0);    // mirror image
           if(cam->live_view_rotation)
             cairo_rotate(cr, -M_PI_2 * cam->live_view_rotation); // rotate around middle
@@ -682,7 +682,7 @@ int button_pressed(dt_view_t *self,
           && cam->is_live_viewing) // zoom the live view
   {
     cam->live_view_zoom = !cam->live_view_zoom;
-    if(cam->live_view_zoom == TRUE)
+    if(cam->live_view_zoom)
       dt_camctl_camera_set_property_string(darktable.camctl, NULL, "eoszoom", "5");
     else
       dt_camctl_camera_set_property_string(darktable.camctl, NULL, "eoszoom", "1");
@@ -706,6 +706,7 @@ int button_released(dt_view_t *self,
   }
   return 0;
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

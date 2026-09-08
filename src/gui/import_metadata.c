@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/debug.h"
 #include "common/metadata.h"
 #include "control/conf.h"
@@ -235,7 +236,7 @@ static void _import_metadata_presets_changed(GtkWidget *widget,
 {
   GtkTreeIter iter;
 
-  if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget), &iter) == TRUE)
+  if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget), &iter))
   {
     GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(widget));
     GHashTable *metadata_kv = NULL;
@@ -291,7 +292,7 @@ static void _import_tags_presets_changed(GtkWidget *widget,
 {
   GtkTreeIter iter;
 
-  if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget), &iter) == TRUE)
+  if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget), &iter))
   {
     GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(widget));
     char *tags;
