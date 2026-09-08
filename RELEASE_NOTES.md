@@ -260,6 +260,9 @@ changes (where available).
 - Fixed snapshots being applied onto the original image instead of the
   current image.
 
+- Fixed a crash when importing a style whose module order is empty. The
+  malformed order is now ignored and the style keeps the default one.
+
 ## Lua
 
 ### API Version
