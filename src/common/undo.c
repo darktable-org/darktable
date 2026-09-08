@@ -281,8 +281,16 @@ static void _undo_do_undo_redo(dt_undo_t *self,
     // remove duplicates
     for(const GList *img = imgs; img; img = g_list_next(img))
     {
-      // udpate xmp is done via set_change_timestamp
-      dt_image_cache_set_change_timestamp(GPOINTER_TO_INT(img->data));
+      const dt_imgid_t imgid = GPOINTER_TO_INT(img->data);
+      const int history_end = dt_image_get_history_end(imgid);
+
+      // if history is empty, revert modification timestamp to unset (-1)
+      // so that the image is no longer treated as edited/modified.
+      // update xmp is done via set/unset change timestamp.
+      if(history_end == 0)
+        dt_image_cache_unset_change_timestamp(imgid);
+      else
+        dt_image_cache_set_change_timestamp(imgid);
       while(img->next && img->data == img->next->data)
         imgs = g_list_delete_link(imgs, img->next);
     }
