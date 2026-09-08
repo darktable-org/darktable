@@ -271,6 +271,11 @@ changes (where available).
   lightness was set to zero. Such a target cannot be reached, so the
   correction is now left alone instead.
 
+- Fixed a possible crash when loading an image edited with a newer
+  version of Darktable. This scenario is not supported but we should
+  not crash. The offending modules are now reset to use the default
+  parameters and a message is displayed to the user.
+
 ## Lua
 
 ### API Version
