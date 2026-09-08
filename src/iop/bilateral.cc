@@ -149,7 +149,7 @@ void process(dt_iop_module_t *self,
   }
   else
   {
-    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
+    dt_iop_clear_module_trouble_message(self);
   }
 
   dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;

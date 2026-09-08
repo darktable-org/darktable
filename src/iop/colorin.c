@@ -2045,8 +2045,7 @@ static void _preview_pipe_finished_callback(gpointer instance, dt_iop_module_t *
   if(!self->gui_data) return;
   dt_iop_colorin_params_t *p = self->params;
   const gboolean on = p->blue_mapping;
-  dt_iop_set_module_trouble_message
-      (self,
+  dt_iop_set_module_trouble_message(self,
         on ? _("blue mapping") : NULL,
         on ? _("the blue mapping mode has been deprecated since very long and has been removed.\n"
               "reset to defaults or switch to any colorin profile and check results. minimal\n"

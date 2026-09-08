@@ -555,6 +555,8 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *module,
                                        const char *const trouble_msg,
                                        const char *const trouble_tooltip,
                                        const char *stderr_message);
+// clear the trouble message
+void dt_iop_clear_module_trouble_message(dt_iop_module_t *const module);
 
 // format modules description going in tooltips
 const char **dt_iop_set_description(dt_iop_module_t *module,

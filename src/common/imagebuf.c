@@ -110,7 +110,7 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module,
   if(success)
   {
     if(module)
-      dt_iop_set_module_trouble_message(module, NULL, NULL, NULL);
+      dt_iop_clear_module_trouble_message(module);
   }
   else
   {

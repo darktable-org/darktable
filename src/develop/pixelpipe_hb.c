@@ -608,16 +608,14 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
       if(piece->enabled != hist->enabled)
       {
         if(piece->enabled)
-          dt_iop_set_module_trouble_message
-            (piece->module,
+          dt_iop_set_module_trouble_message(piece->module,
              _("enabled as required"),
              _("history had module disabled but it is required for"
                " this type of image.\nlikely introduced by applying a preset,"
                " style or history copy&paste"),
              NULL);
         else
-          dt_iop_set_module_trouble_message
-            (piece->module,
+          dt_iop_set_module_trouble_message(piece->module,
              _("disabled as not appropriate"),
              _("history had module enabled but it is not allowed for this type"
                " of image.\nlikely introduced by applying a preset, style or"

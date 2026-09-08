@@ -4307,8 +4307,8 @@ static void _display_errors(dt_iop_module_t *self)
      && self->enabled
      && p->method == DT_IOP_LENS_METHOD_LENSFUN)
   {
-    dt_iop_set_module_trouble_message
-      (self, _("camera/lens not found"),
+    dt_iop_set_module_trouble_message(self,
+       _("camera/lens not found"),
        _("pick a camera or lens from the buttons below --\n"
          "the lens button lists the whole database when the body is unknown\n"
          "scale, target geometry and the TCA override work without a profile\n"
@@ -4318,7 +4318,7 @@ static void _display_errors(dt_iop_module_t *self)
   }
   else
   {
-    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
+    dt_iop_clear_module_trouble_message(self);
   }
 
   gtk_widget_queue_draw(self->widget);

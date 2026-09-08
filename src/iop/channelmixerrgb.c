@@ -1993,14 +1993,14 @@ static void _set_trouble_messages(dt_iop_module_t *self)
   if(!chr->temperature)
   {
     if(chr->adaptation)
-      dt_iop_set_module_trouble_message(chr->adaptation, NULL, NULL, NULL);
+      dt_iop_clear_module_trouble_message(chr->adaptation);
     return;
   }
 
   if(!chr->adaptation)
   {
-    dt_iop_set_module_trouble_message(chr->temperature, NULL, NULL, NULL);
-    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
+    dt_iop_clear_module_trouble_message(chr->temperature);
+    dt_iop_clear_module_trouble_message(self);
     return;
   }
 
@@ -2034,21 +2034,9 @@ static void _set_trouble_messages(dt_iop_module_t *self)
                             && !temperature_enabled
                             && chr->temperature->default_enabled;
 
-  if(problem1 || problem2 || problem3)
-    dt_print_pipe(DT_DEBUG_PIPE, "chroma trouble", NULL, self, DT_DEVICE_NONE, NULL, NULL,
-      "%s%s%sD65=%s.  D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f ID=%i",
-      problem1 ? "white balance applied twice, " : "",
-      problem2 ? "double CAT applied, " : "",
-      problem3 ? "white balance missing, " : "",
-      STR_YESNO(_dev_is_D65_chroma(dev)),
-      chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2],
-      chr->as_shot[0], chr->as_shot[1], chr->as_shot[2],
-      dev->image_storage.id);
-
   if(problem2)
   {
-    dt_iop_set_module_trouble_message
-      (self,
+    dt_iop_set_module_trouble_message(self,
         _("double CAT applied"),
         _("you have 2 instances or more of color calibration,\n"
           "all providing chromatic adaptation.\n"
@@ -2060,8 +2048,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
 
   if(problem1)
   {
-    dt_iop_set_module_trouble_message
-      (chr->temperature,
+    dt_iop_set_module_trouble_message(chr->temperature,
         _("white balance applied twice (<u>details</u>)"),
         _("the color calibration module is enabled and already provides\n"
           "chromatic adaptation.\n"
@@ -2069,8 +2056,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
           "or disable chromatic adaptation in color calibration."),
         NULL);
 
-    dt_iop_set_module_trouble_message
-      (self,
+    dt_iop_set_module_trouble_message(self,
         _("white balance module error (<u>details</u>)"),
         _("the white balance module is not using the camera\n"
           "reference illuminant, which will cause issues here\n"
@@ -2082,8 +2068,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
 
   if(problem3)
   {
-    dt_iop_set_module_trouble_message
-      (chr->temperature,
+    dt_iop_set_module_trouble_message(chr->temperature,
         _("white balance missing (<u>details</u>)"),
         _("this module is not providing a valid reference illuminant\n"
           "causing chromatic adaptation issues in color calibration.\n"
@@ -2091,8 +2076,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
           "or disable chromatic adaptation in color calibration."),
         NULL);
 
-    dt_iop_set_module_trouble_message
-      (self,
+    dt_iop_set_module_trouble_message(self,
         _("white balance missing (<u>details</u>)"),
         _("the white balance module is not providing a valid reference\n"
           "illuminant causing issues with chromatic adaptation here.\n"
@@ -2104,8 +2088,8 @@ static void _set_trouble_messages(dt_iop_module_t *self)
 
   if(chr->adaptation && chr->adaptation == self)
   {
-    dt_iop_set_module_trouble_message(chr->temperature, NULL, NULL, NULL);
-    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
+    dt_iop_clear_module_trouble_message(chr->temperature);
+    dt_iop_clear_module_trouble_message(self);
   }
 }
 

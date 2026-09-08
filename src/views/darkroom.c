@@ -273,20 +273,12 @@ static dt_darkroom_layout_t _lib_darkroom_get_layout(dt_view_t *self)
   return DT_DARKROOM_LAYOUT_EDITING;
 }
 
-static gboolean _darkroom_module_is_active(const dt_view_t *view,
-                                           const dt_iop_module_t *module)
+static gboolean _darkroom_module_is_active(const dt_iop_module_t *module)
 {
-  if(!view || !module || view != dt_view_manager_get_current_view(darktable.view_manager)
-     || view->data != darktable.develop)
-    return FALSE;
-
-  // Trouble messages are delivered asynchronously and carry a borrowed module
-  // pointer.  Compare pointers while walking the live IOP list before reading
-  // anything from the payload; the old darkroom may have freed the module
-  // while its queued signal was waiting for the GUI thread.
-  const dt_develop_t *dev = view->data;
-  for(const GList *iter = dev->iop; iter; iter = g_list_next(iter))
-    if(iter->data == module)
+  // Compare module and it's gui stuff while walking the IOP list as darkroom may have
+  // freed the module while its queued signal was waiting for the GUI thread.
+  for(const GList *iter = darktable.develop->iop; iter; iter = g_list_next(iter))
+    if(iter->data == module && module->gui_data && module->widget)
       return TRUE;
 
   return FALSE;
@@ -297,9 +289,13 @@ void _display_module_trouble_message_callback(gpointer instance,
                                               const char *const trouble_msg,
                                               const char *const trouble_tooltip)
 {
-  if(!_darkroom_module_is_active(instance, module)
-     || !module->gui_data
-     || !module->widget)
+  if(!module || !instance || dt_view_get_current() != DT_VIEW_DARKROOM)
+    return;
+
+  const gboolean active = _darkroom_module_is_active(module);
+  dt_print(DT_DEBUG_DEV, "%s trouble for `%s` active=%s",
+    trouble_msg ? trouble_msg : "cleared", module->name(), STR_YESNO(active));
+  if(!active)
     return;
 
   GtkWidget *label_widget = NULL;
