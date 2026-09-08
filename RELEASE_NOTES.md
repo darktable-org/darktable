@@ -263,6 +263,14 @@ changes (where available).
 - Fixed a crash when importing a style whose module order is empty. The
   malformed order is now ignored and the style keeps the default one.
 
+- Fixed automatic exposure rendering a black image when its raw histogram
+  was unavailable, and black-point limits ignoring camera exposure
+  compensation, which could invert the tonal range.
+
+- Fixed exposure's area mapping blowing out the image when its target
+  lightness was set to zero. Such a target cannot be reached, so the
+  correction is now left alone instead.
+
 ## Lua
 
 ### API Version
