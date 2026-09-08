@@ -2663,6 +2663,10 @@ char *dt_ioppr_serialize_text_iop_order_list(GList *iop_order_list)
 
 static gboolean _ioppr_sanity_check_iop_order(GList *list)
 {
+  // a style written by hand with an empty "<iop_list></iop_list>" arrives as an
+  // empty list, and the checks below would dereference it
+  if(!list) return FALSE;
+
   gboolean ok = TRUE;
 
   // First check that first module is rawprepare (even for a jpeg, we
