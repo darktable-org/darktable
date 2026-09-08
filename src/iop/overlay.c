@@ -20,6 +20,7 @@
 #include "common/interpolation.h"
 #include "common/math.h"
 #include "common/overlay.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -1179,7 +1180,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_overlay_params_v1_t;
 
     const dt_iop_overlay_params_v1_t *o = old_params;
-    dt_iop_overlay_params_t *n = malloc(sizeof(dt_iop_overlay_params_t));
+    dt_iop_overlay_params_t *n = calloc(1, sizeof(dt_iop_overlay_params_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -1191,7 +1192,7 @@ int legacy_params(dt_iop_module_t *self,
     n->scale_img = o->scale_img;
     n->scale_svg = o->scale_svg;
     n->imgid = o->imgid;
-    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    dt_strlcpy_to_fixed(n->filename, o->filename, sizeof(n->filename));
     n->compositing = DT_OVERLAY_COMPOSITE_LEGACY;
     n->dummy1 = 0;
     n->dummy2 = 0;
