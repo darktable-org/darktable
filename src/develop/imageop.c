@@ -1415,14 +1415,14 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
                                        const char *const stderr_message)
 {
   //  first stderr message if any
-  if(stderr_message)
+  if(stderr_message || trouble_msg)
   {
     const dt_image_t *img = module ? &module->dev->image_storage : NULL;
     const char *name = module ? module->name() : "?";
 
-    dt_print(DT_DEBUG_ALWAYS, "Trouble: [%s] %s (%s %d)",
+    dt_print(DT_DEBUG_ALWAYS, "Trouble: [%s] '%s' (%s %d)",
              name,
-             stderr_message,
+             stderr_message ? stderr_message : trouble_msg,
              img ? img->filename : "?",
              img ? img->id : -1);
   }
@@ -1432,6 +1432,11 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
      && dt_conf_get_bool("plugins/darkroom/show_warnings"))
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TROUBLE_MESSAGE,
                             module, trouble_msg, trouble_tooltip);
+}
+
+void dt_iop_clear_module_trouble_message(dt_iop_module_t *const module)
+{
+  dt_iop_set_module_trouble_message(module, NULL, NULL, NULL);
 }
 
 void dt_iop_gui_init(dt_iop_module_t *module)
@@ -4289,14 +4294,13 @@ gboolean dt_iop_have_required_input_format(const int req_ch,
     // and set the module's trouble message
     if(module)
     {
-      dt_iop_set_module_trouble_message
-        (module, _("unsupported input"),
-         _("you have placed this module at\n"
+      dt_iop_set_module_trouble_message(module,
+        _("unsupported input"),
+        _("you have placed this module at\n"
            "a position in the pipeline where\n"
            "the data format does not match\n"
-           "its requirements."), NULL);
-      dt_print_pipe(DT_DEBUG_ALWAYS,
-        "unsupported data format", NULL, module, DT_DEVICE_NONE, roi_in, roi_out);
+           "its requirements."),
+        "unsupported data format");
     }
     else
     {

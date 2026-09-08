@@ -4320,9 +4320,9 @@ void dt_dev_clear_chroma_troubles(dt_develop_t *dev)
 
   dt_dev_chroma_t *chr = &dev->chroma;
   if(chr->temperature)
-    dt_iop_set_module_trouble_message(chr->temperature, NULL, NULL, NULL);
+    dt_iop_clear_module_trouble_message(chr->temperature);
   if(chr->adaptation)
-    dt_iop_set_module_trouble_message(chr->adaptation, NULL, NULL, NULL);
+    dt_iop_clear_module_trouble_message(chr->adaptation);
 }
 
 void dt_dev_reset_chroma(dt_develop_t *dev)

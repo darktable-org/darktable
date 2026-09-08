@@ -609,7 +609,7 @@ static gboolean _image_set_rawcrops(dt_iop_module_t *self,
        "invalid crop parameters");
   }
   else
-    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
+    dt_iop_clear_module_trouble_message(self);
 
   // we update p_width & height both in the image_storage for fast access within the pipeline
   // and the database so we can access that also via dt_image_cache_get()
