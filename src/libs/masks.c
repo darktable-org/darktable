@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "develop/masks.h"
@@ -2172,7 +2173,7 @@ static gboolean _lib_masks_selection_change_r(GtkTreeModel *model,
         break;
       }
     }
-  } while(gtk_tree_model_iter_next(model, &i) == TRUE);
+  } while(gtk_tree_model_iter_next(model, &i));
 
   return found;
 }

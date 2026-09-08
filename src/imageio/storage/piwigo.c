@@ -1512,7 +1512,7 @@ void *get_params(dt_imageio_module_storage_t *self)
   p->vp = NULL;
   dt_variables_params_init(&p->vp);
 
-  if(ui->api && ui->api->authenticated == TRUE)
+  if(ui->api && ui->api->authenticated)
   {
     // create a new context for the import. set username/password to
     // be able to connect.

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2023 darktable developers.
+    Copyright (C) 2014-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -270,7 +270,7 @@ const char *dt_import_session_filename(dt_import_session_t *self, const gboolean
 
   char *fname = g_build_path(G_DIR_SEPARATOR_S, path, result_fname, (char *)NULL);
   char *previous_fname = fname;
-  if(g_file_test(fname, G_FILE_TEST_EXISTS) == TRUE)
+  if(g_file_test(fname, G_FILE_TEST_EXISTS))
   {
     dt_print(DT_DEBUG_ALWAYS, "[import_session] File %s exists", fname);
     do
@@ -294,7 +294,7 @@ const char *dt_import_session_filename(dt_import_session_t *self, const gboolean
       g_free(previous_fname);
       previous_fname = fname;
 
-    } while(g_file_test(fname, G_FILE_TEST_EXISTS) == TRUE);
+    } while(g_file_test(fname, G_FILE_TEST_EXISTS));
   }
 
   g_free(previous_fname);
