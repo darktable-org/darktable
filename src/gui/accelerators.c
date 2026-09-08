@@ -1011,7 +1011,13 @@ static gchar *_shortcut_lua_command(GtkWidget *widget,
           break;
         }
       }
-      s->effect = DT_ACTION_EFFECT_COMBO_SEPARATOR + 1 + value;
+      // entries added by hand can carry arbitrary data, including negative
+      // values (spektrafilm's paper combo uses -1 and -2 for its "auto" and
+      // "none" entries). only data that is a usable list position can be turned
+      // into an item effect; anything else would index the effects table below
+      // out of bounds.
+      if(value >= 0)
+        s->effect = DT_ACTION_EFFECT_COMBO_SEPARATOR + 1 + value;
     }
     else
     {
@@ -1022,7 +1028,9 @@ static gchar *_shortcut_lua_command(GtkWidget *widget,
 
   const gchar *cef = elements ? _action_find_effect_combo(s->action, &elements[elem], s->effect) : NULL;
   const gchar *el = elements ? elements[elem].name : NULL;
-  const gchar **ef = elements && s->effect >= 0 ? elements[elem].effects : NULL;
+  const gchar **ef = elements && s->effect >= 0 ? elements[elem].effects : NULL;    
+  for(int i = 0; ef && i <= s->effect; i++)
+    if(!ef[i]) { ef = NULL; break; } // effect not covered by this element's table
   const gchar *quo = elements ? "\", \"" : "";
 
   return g_strdup_printf("dt.gui.action(\"%s%s%s%s%s%s\", %.3f%s)\n",
