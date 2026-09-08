@@ -103,7 +103,7 @@ typedef struct dt_iop_exposure_gui_data_t
 typedef struct dt_iop_exposure_data_t
 {
   dt_iop_exposure_params_t params;
-  int deflicker;
+  gboolean deflicker;
   float black;
   float scale;
 } dt_iop_exposure_data_t;
@@ -661,14 +661,14 @@ void commit_params(dt_iop_module_t *self,
   d->params.deflicker_percentile = p->deflicker_percentile;
   d->params.deflicker_target_level = p->deflicker_target_level;
 
-  d->deflicker = 0;
+  d->deflicker = FALSE;
 
   if(p->mode == EXPOSURE_MODE_DEFLICKER
      && dt_image_is_raw(&self->dev->image_storage)
      && self->dev->image_storage.buf_dsc.channels == 1
      && self->dev->image_storage.buf_dsc.datatype == TYPE_UINT16)
   {
-    d->deflicker = 1;
+    d->deflicker = TRUE;
   }
 }
 
