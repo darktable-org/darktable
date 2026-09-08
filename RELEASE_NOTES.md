@@ -101,6 +101,9 @@ changes (where available).
 
 - Fixed transparent dialog title bars on macOS 27.
 
+- Fixed a crash when importing a style whose module order is empty. The
+  malformed order is now ignored and the style keeps the default one.
+
 ## Lua
 
 ### API Version
