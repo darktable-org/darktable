@@ -43,6 +43,18 @@ typedef struct dt_dev_distorted_mask_cache_t
   dt_hash_t src_hash; // hash of source data (e.g. threshold) for invalidation
 } dt_dev_distorted_mask_cache_t;
 
+/** make sure a mask cacheline can hold num_floats, reallocating as required,
+ *  and account the memory in pipe->mask_cache_size. Returns FALSE if we can't
+ *  or don't want to cache (low memory), having released any data it held.
+ *  Every mask cacheline must be filled through this and released through
+ *  dt_dev_pixelpipe_clear_mask_cache(), or its memory escapes the pipe's cache
+ *  budget and the low-memory opt-out. */
+gboolean dt_dev_pixelpipe_prepare_mask_cache(struct dt_dev_pixelpipe_iop_t *piece,
+                                             dt_dev_distorted_mask_cache_t *c,
+                                             const size_t num_floats);
+void dt_dev_pixelpipe_clear_mask_cache(struct dt_dev_pixelpipe_t *pipe,
+                                       dt_dev_distorted_mask_cache_t *c);
+
 typedef struct dt_dev_pixelpipe_iop_t
 {
   struct dt_iop_module_t *module;  // the module in the dev operation stack
@@ -79,6 +91,7 @@ typedef struct dt_dev_pixelpipe_iop_t
   // cached distorted masks at geometric module boundaries
   dt_dev_distorted_mask_cache_t detail_mask_cache;
   dt_dev_distorted_mask_cache_t raster_mask_cache;
+  dt_dev_distorted_mask_cache_t drawn_mask_cache;
 } dt_dev_pixelpipe_iop_t;
 
 typedef enum dt_dev_pixelpipe_change_t

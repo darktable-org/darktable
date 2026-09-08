@@ -683,6 +683,13 @@ void dt_masks_iop_combo_populate(GtkWidget *w,
 void dt_masks_iop_use_same_as(struct dt_iop_module_t *module,
                               struct dt_iop_module_t *src);
 dt_hash_t dt_masks_group_hash(dt_hash_t hash, dt_masks_form_t *form);
+// the same, resolving group members against an explicit form list instead of
+// darktable.develop's. Use this wherever the caller knows which list is
+// actually being rendered -- a pipe's own copy, say -- since a member that
+// cannot be resolved contributes nothing to the hash at all.
+dt_hash_t dt_masks_group_hash_ext(dt_hash_t hash,
+                                  dt_masks_form_t *form,
+                                  GList *forms);
 
 void dt_masks_form_remove(struct dt_iop_module_t *module,
                           dt_masks_form_t *grp,

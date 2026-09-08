@@ -2147,6 +2147,14 @@ void dt_masks_group_ungroup(dt_masks_form_t *dest_grp,
 
 dt_hash_t dt_masks_group_hash(dt_hash_t hash, dt_masks_form_t *form)
 {
+  return dt_masks_group_hash_ext(hash, form,
+                                 darktable.develop ? darktable.develop->forms : NULL);
+}
+
+dt_hash_t dt_masks_group_hash_ext(dt_hash_t hash,
+                                  dt_masks_form_t *form,
+                                  GList *forms_list)
+{
   if(!form) return hash;
   // basic infos
   hash = dt_hash(hash, &form->type, sizeof(dt_masks_type_t));
@@ -2159,13 +2167,13 @@ dt_hash_t dt_masks_group_hash(dt_hash_t hash, dt_masks_form_t *form)
     if(form->type & DT_MASKS_GROUP)
     {
       const dt_masks_point_group_t *grpt = forms->data;
-      dt_masks_form_t *f = dt_masks_get_from_id(darktable.develop, grpt->formid);
+      dt_masks_form_t *f = dt_masks_get_from_id_ext(forms_list, grpt->formid);
       if(f)
       {
         // state & opacity
         hash = dt_hash(hash, &grpt->state, sizeof(int));
         hash = dt_hash(hash, &grpt->opacity, sizeof(float));
-        hash = dt_masks_group_hash(hash, f);
+        hash = dt_masks_group_hash_ext(hash, f, forms_list);
       }
     }
     else if(form->functions)

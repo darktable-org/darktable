@@ -69,6 +69,7 @@ static inline gboolean _is_debug_pipe(dt_dev_pixelpipe_t *pipe)
 
 // forward declarations for mask cache helpers
 static void _clear_piece_mask_caches(dt_dev_pixelpipe_iop_t *piece);
+static void _clear_piece_distortion_caches(dt_dev_pixelpipe_iop_t *piece);
 static void _free_distort_bufs(dt_dev_pixelpipe_t *pipe);
 
 typedef enum dt_pixelpipe_flow_t
@@ -798,10 +799,19 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
      We suppress that per-module flush during replay and settle the buffer once,
      after the whole history has been committed (see below).
 
-     The per-piece mask caches are dropped every synch_all as before; only the
-     scharr buffer is carried across, and only while it is still wanted */
-  for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
-    _clear_piece_mask_caches(nodes->data);
+     The per-piece distortion caches are still dropped every synch_all as before
+     (hash-guarded and cheap); only the scharr buffer is preserved.
+
+     The drawn-mask cache is NOT dropped here, unlike the two above. It exists
+     precisely because refilling it is expensive, and a synch_all runs before
+     essentially every interactive render -- every history change, every mask
+     edit, every overlay toggle -- so clearing it here meant it could never hit
+     in the darkroom and the memoization bought nothing. It does not need the
+     blanket clear either: its key (group hash, roi_out, mask_mode; blend.c)
+     already covers everything a replay can change about the rendered mask.
+     It is still freed with the piece and whenever the scharr is dropped. */
+  for(GList *n = pipe->nodes; n; n = g_list_next(n))
+    _clear_piece_distortion_caches(n->data);
 
   pipe->want_detail_mask = FALSE;
 
@@ -3654,8 +3664,8 @@ static inline gboolean _use_mask_cache(void)
 }
 
 // release a cached mask and account for the freed memory
-static void _clear_mask_cache(dt_dev_pixelpipe_t *pipe,
-                              dt_dev_distorted_mask_cache_t *c)
+void dt_dev_pixelpipe_clear_mask_cache(dt_dev_pixelpipe_t *pipe,
+                                       dt_dev_distorted_mask_cache_t *c)
 {
   dt_free_align(c->data);
   if(pipe)
@@ -3667,9 +3677,9 @@ static void _clear_mask_cache(dt_dev_pixelpipe_t *pipe,
    returns FALSE if we can't or don't want to cache, in that case any
    possibly available data have been released.
 */
-static gboolean _prepare_mask_cache(dt_dev_pixelpipe_iop_t *piece,
-                                    dt_dev_distorted_mask_cache_t *c,
-                                    const size_t num_floats)
+gboolean dt_dev_pixelpipe_prepare_mask_cache(dt_dev_pixelpipe_iop_t *piece,
+                                            dt_dev_distorted_mask_cache_t *c,
+                                            const size_t num_floats)
 {
   dt_dev_pixelpipe_t *pipe = piece->pipe;
   const size_t needed = num_floats * sizeof(float);
@@ -3677,13 +3687,13 @@ static gboolean _prepare_mask_cache(dt_dev_pixelpipe_iop_t *piece,
   // also releases data kept from before the user lowered the resource level
   if(!_use_mask_cache() || num_floats == 0)
   {
-    _clear_mask_cache(pipe, c);
+    dt_dev_pixelpipe_clear_mask_cache(pipe, c);
     return FALSE;
   }
 
   // realloc only if size changed
   if(c->data && c->size != needed)
-    _clear_mask_cache(pipe, c);
+    dt_dev_pixelpipe_clear_mask_cache(pipe, c);
 
   if(!c->data)
   {
@@ -3703,7 +3713,7 @@ _update_detail_mask_cache(dt_dev_pixelpipe_iop_t *piece, const float *data,
   dt_dev_distorted_mask_cache_t *c = &piece->detail_mask_cache;
   const size_t num_floats = (size_t)roi->width * roi->height;
 
-  if(_prepare_mask_cache(piece, c, num_floats))
+  if(dt_dev_pixelpipe_prepare_mask_cache(piece, c, num_floats))
   {
     dt_iop_image_copy(c->data, data, num_floats);
     c->roi = *roi;
@@ -3722,7 +3732,7 @@ static void _update_raster_mask_cache(dt_dev_pixelpipe_iop_t *piece,
   dt_dev_distorted_mask_cache_t *c = &piece->raster_mask_cache;
   const size_t num_floats = (size_t)roi->width * roi->height;
 
-  if(_prepare_mask_cache(piece, c, num_floats))
+  if(dt_dev_pixelpipe_prepare_mask_cache(piece, c, num_floats))
   {
     dt_iop_image_copy(c->data, data, num_floats);
     c->roi = *roi;
@@ -3730,10 +3740,20 @@ static void _update_raster_mask_cache(dt_dev_pixelpipe_iop_t *piece,
   }
 }
 
+// the distortion caches only: what a history replay may safely drop, because
+// refilling them is cheap. Kept apart from the drawn-mask cache, which is
+// expensive to refill and carries a key that already covers everything a
+// replay can change -- see dt_dev_pixelpipe_synch_all().
+static void _clear_piece_distortion_caches(dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_dev_pixelpipe_clear_mask_cache(piece->pipe, &piece->detail_mask_cache);
+  dt_dev_pixelpipe_clear_mask_cache(piece->pipe, &piece->raster_mask_cache);
+}
+
 static void _clear_piece_mask_caches(dt_dev_pixelpipe_iop_t *piece)
 {
-  _clear_mask_cache(piece->pipe, &piece->detail_mask_cache);
-  _clear_mask_cache(piece->pipe, &piece->raster_mask_cache);
+  _clear_piece_distortion_caches(piece);
+  dt_dev_pixelpipe_clear_mask_cache(piece->pipe, &piece->drawn_mask_cache);
 }
 
 static inline gboolean _distort_piece_roi(const dt_dev_pixelpipe_iop_t *piece)
