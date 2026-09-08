@@ -2711,6 +2711,9 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
       g_strlcpy(hist->multi_name, multi_name, sizeof(hist->multi_name));
     hist->params = malloc(hist->module->params_size);
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
+    memcpy(hist->params, hist->module->default_params, hist->module->params_size);
+    memcpy(hist->blend_params, hist->module->default_blendop_params,
+           sizeof(dt_develop_blend_params_t));
 
     // update module iop_order only on active history entries
     if(history_end_current > dev->history_end)
@@ -2745,6 +2748,22 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     else if(is_valid_module_version && is_valid_params_size && is_valid_module_name)
     {
       memcpy(hist->params, module_params, hist->module->params_size);
+    }
+    else if(modversion > hist->module->version())
+    {
+      //  We are loading a module created by another version of
+      //  Darktable and having a module's version greater and unknown
+      //  by this instance. There is no migration possible here to
+      //  recover properly. We just avoid a crash by using the default
+      //  parameters for the given module.
+      const char *fname =
+        dev->image_storage.filename + strlen(dev->image_storage.filename);
+      while(fname > dev->image_storage.filename && *fname != '/') fname--;
+      if(fname > dev->image_storage.filename) fname++;
+
+      dt_control_log(_("%s: module `%s' has unknown version %d, using default parameters"),
+                     fname, hist->module->op,
+                     modversion);
     }
     else
     {
