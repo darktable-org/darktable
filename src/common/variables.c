@@ -250,13 +250,16 @@ static void _cleanup_expansion(dt_variables_params_t *params)
       g_date_time_unref(params->data->datetime);
       params->data->datetime = NULL;
     }
-    g_free(params->data->camera_maker);
-    params->data->camera_maker = NULL;
-    g_free(params->data->camera_alias);
-    params->data->camera_alias = NULL;
     g_free(params->data->exif_lens);
     params->data->exif_lens = NULL;
   }
+  // both branches of _init_expansion duplicate these, so free them either way.
+  // the datetime above cannot move out with them: without an image it aliases
+  // exif_time, which dt_variables_params_destroy owns
+  g_free(params->data->camera_maker);
+  params->data->camera_maker = NULL;
+  g_free(params->data->camera_alias);
+  params->data->camera_alias = NULL;
   g_free(params->data->homedir);
   params->data->homedir = NULL;
   g_free(params->data->pictures_folder);
