@@ -46,6 +46,10 @@ typedef struct dt_dng_gain_map_t
 void dt_dng_opcode_process_opcode_list_2(uint8_t *buf, uint32_t size, dt_image_t *img);
 void dt_dng_opcode_process_opcode_list_3(uint8_t *buf, uint32_t size, dt_image_t *img);
 
+// Serialize DNG opcode lists for writing
+uint8_t *dt_dng_opcode_serialize_opcode_list_2(const dt_image_t *img, uint32_t *size);
+uint8_t *dt_dng_opcode_serialize_opcode_list_3(const dt_image_t *img, uint32_t *size);
+
 G_END_DECLS
 
 // clang-format off
