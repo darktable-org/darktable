@@ -615,7 +615,7 @@ void dt_seg_warmup_decoder(dt_seg_context_t *ctx)
   if(!ctx || !ctx->decoder) return;
 
   dt_print(DT_DEBUG_AI, "[segmentation] warming up decoder...");
-  const double t0 = dt_get_wtime();
+  const double t0 = dt_get_debug_wtime();
   const gboolean is_sam = ctx->model_type == DT_SEG_MODEL_SAM;
   const int pm_dim = ctx->prev_mask_dim;
   const int nm = ctx->num_masks;

@@ -492,7 +492,7 @@ typedef struct darktable_t
   char *bench_module;
   dt_lua_state_t lua_state;
   GList *guides;
-  double start_wtime;
+  gint64 start_mtime;
   GList *themes;
   int32_t unmuted_signal_dbg_acts;
   gboolean unmuted_signal_dbg[DT_SIGNAL_COUNT];
@@ -735,9 +735,7 @@ void dt_capabilities_cleanup();
 
 static inline double dt_get_wtime(void)
 {
-  struct timeval time;
-  gettimeofday(&time, NULL);
-  return time.tv_sec - 1290608000 + (1.0 / 1000000.0) * time.tv_usec;
+  return(double)(g_get_monotonic_time() - darktable.start_mtime) * 1e-6;
 }
 
 static inline double dt_get_debug_wtime(void)

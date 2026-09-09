@@ -982,8 +982,6 @@ int dt_init(int argc,
             const gboolean load_data,
             lua_State *L)
 {
-  const double start_wtime = dt_get_wtime();
-
 #ifndef _WIN32
   if(getuid() == 0 || geteuid() == 0)
     dt_print(DT_DEBUG_ALWAYS,
@@ -1007,7 +1005,7 @@ int dt_init(int argc,
   // init all pointers to 0:
   memset(&darktable, 0, sizeof(darktable_t));
 
-  darktable.start_wtime = start_wtime;
+  darktable.start_mtime = g_get_monotonic_time();
 
   darktable.progname = argv[0];
 
@@ -2223,7 +2221,7 @@ int dt_init(int argc,
 #endif
 
   dt_print(DT_DEBUG_CONTROL,
-           "[dt_init] startup took %f seconds", dt_get_wtime() - start_wtime);
+           "[dt_init] startup took %f seconds", dt_get_wtime());
 
   dt_print_mem_usage("after successful startup");
 
@@ -2475,7 +2473,7 @@ void dt_print_ext(const char *msg, ...)
   vsnprintf(vbuf, sizeof(vbuf), msg, ap);
   va_end(ap);
 
-  printf("%11.4f %s\n", dt_get_wtime() - darktable.start_wtime, vbuf);
+  printf("%11.4f %s\n", dt_get_wtime(), vbuf);
   fflush(stdout);
 }
 
