@@ -198,7 +198,7 @@ typedef struct dt_iop_spektrafilm_params_t
      it on it shifts the automatic result rather than replacing it. */
   float print_exposure_ev;  // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 0.0 $DESCRIPTION: "print exposure compensation"
   gboolean print_auto_exposure; // $DEFAULT: FALSE $DESCRIPTION: "auto print exposure"
-  float print_contrast;     // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print contrast"
+  float print_contrast;     // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.1 $DESCRIPTION: "print contrast"
   float filter_m;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration M"
   float filter_y;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration Y"
   float couplers_amount;    // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "DIR couplers"
@@ -1217,7 +1217,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   /* resolve stocks */
   GList *entries = _scan_profiles(pack_dir);
   char film_stock[SF_NAME_LEN] = { 0 }, paper_stock[SF_NAME_LEN] = { 0 };
-  if(!_resolve_stock(entries, p->film_hash, FALSE, "kodak_portra_400", film_stock,
+  if(!_resolve_stock(entries, p->film_hash, FALSE, "kodak_gold_200", film_stock,
                      sizeof film_stock))
   {
     g_strlcpy(d->sim_error,
@@ -3023,7 +3023,7 @@ static const sf_prof_entry_t *_current_film_entry(const dt_iop_spektrafilm_gui_d
   {
     const sf_prof_entry_t *e = l->data;
     if(e->printing) continue;
-    if(!fallback || !strcmp(e->stock, "kodak_portra_400")) fallback = e;
+    if(!fallback || !strcmp(e->stock, "kodak_gold_200")) fallback = e;
   }
   return fallback;
 }
@@ -3582,13 +3582,22 @@ static void _update_trouble_message(dt_iop_module_t *self)
    each non-zero introspection default written back, so a preset below only has
    to name the parameters its own look moves.
 
-   Must list every field whose $DEFAULT is not zero, and must be kept in step
-   with those annotations: a field added to dt_iop_spektrafilm_params_t and
-   forgotten here ships in all 17 presets at zero, which for a boolean
-   defaulting to TRUE means the preset silently turns the feature off. */
+   Must list every field whose $DEFAULT is not zero: a field added to
+   dt_iop_spektrafilm_params_t and forgotten here ships in all 17 presets at
+   zero, which for a boolean defaulting to TRUE means the preset silently turns
+   the feature off.
+
+   The values are the presets' baseline, not a mirror of the annotations. They
+   track $DEFAULT wherever a preset has no opinion, but a preset was tuned
+   against the values in force when it was authored, so a later change to a
+   $DEFAULT does not propagate here -- see print_contrast below. Never
+   "resynchronise" this function against the struct without rendering the
+   presets that leave the field unset. */
 static void _preset_defaults(dt_iop_spektrafilm_params_t *p)
 {
   memset(p, 0, sizeof(*p));
+  /* deliberately 1.0, not the 1.1 $DEFAULT: the ten printing presets that
+     never name print_contrast were authored at 1.0 and keep it */
   p->print_contrast = 1.0f;
   p->couplers_amount = 1.0f;
   p->couplers_diffusion_um = 20.0f;
@@ -3661,6 +3670,13 @@ void init_presets(dt_iop_module_so_t *self)
   if(!g_strcmp0(workflow, "scene-referred (spektrafilm)"))
   {
     _preset_defaults(&p);
+    /* The one preset that is a startup value rather than a look: it is
+       auto-applied to every new raw under this workflow, so it -- not the
+       introspection default -- is what a fresh image opens with. Fields whose
+       $DEFAULT is meant to reach new images are therefore named here as well,
+       since _preset_defaults() holds the baseline the shipped looks were
+       authored against and does not track later changes to the annotations. */
+    p.print_contrast = 1.1f;
     dt_gui_presets_add_generic(_("scene-referred default"), self->op,
                                self->version(), &p, sizeof(p), TRUE,
                                DEVELOP_BLEND_CS_RGB_SCENE);
@@ -4221,7 +4237,7 @@ void gui_update(dt_iop_module_t *self)
   {
     const sf_prof_entry_t *e = l->data;
     if(e->printing) continue;
-    if(fallback < 0 || !strcmp(e->stock, "kodak_portra_400")) fallback = pos;
+    if(fallback < 0 || !strcmp(e->stock, "kodak_gold_200")) fallback = pos;
     if(p->film_hash && e->hash == p->film_hash) { fpos = pos; fe = e; }
   }
   if(fpos < 0) fpos = fallback;
