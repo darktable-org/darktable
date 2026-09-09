@@ -177,7 +177,8 @@
 // CONF_BIT_DEPTH           — output TIFF bit depth (0=8, 1=16, 2=32)
 // CONF_COMPRESSION         — output TIFF compression (0=none, 1=deflate, 2=deflate+predictor)
 // CONF_ADD_CATALOG         — auto-import output into library
-// CONF_OUTPUT_DIR          — output directory pattern (supports variables)
+// CONF_OUTPUT_DIR          - the old output directory, kept only to migrate it
+// CONF_PATTERN_*           - per-task output path, without an extension
 // CONF_ICC_TYPE            — output ICC profile type (image settings by default)
 // CONF_ICC_FILE            — filename for file-type ICC profiles
 // CONF_PRESERVE_WIDE_GAMUT — pass-through out-of-sRGB-gamut pixels during denoise
@@ -235,6 +236,10 @@ DT_MODULE(1)
 #define CONF_ADD_CATALOG "plugins/lighttable/neural_restore/add_to_catalog"
 #define CONF_MARK_OUTPUT "plugins/lighttable/neural_restore/mark_output"
 #define CONF_OUTPUT_DIR "plugins/lighttable/neural_restore/output_directory"
+#define CONF_PATTERN_RAW_DENOISE \
+  "plugins/lighttable/neural_restore/output_pattern/raw_denoise"
+#define CONF_PATTERN_DENOISE "plugins/lighttable/neural_restore/output_pattern/denoise"
+#define CONF_PATTERN_UPSCALE "plugins/lighttable/neural_restore/output_pattern/upscale"
 #define CONF_ICC_TYPE "plugins/lighttable/neural_restore/icc_type"
 #define CONF_ICC_FILE "plugins/lighttable/neural_restore/icc_filename"
 #define CONF_PRESERVE_WIDE_GAMUT "plugins/lighttable/neural_restore/preserve_wide_gamut"
@@ -386,8 +391,8 @@ typedef struct dt_lib_neural_restore_t
   GtkWidget *profile_combo;
   GtkWidget *preserve_wide_gamut_toggle;
   GtkWidget *catalog_toggle;
-  GtkWidget *output_dir_entry;
-  GtkWidget *output_dir_button;
+  GtkWidget *output_pattern_entry;
+  GtkWidget *output_pattern_button;
 } dt_lib_neural_restore_t;
 
 typedef struct dt_neural_job_t
@@ -408,7 +413,7 @@ typedef struct dt_neural_job_t
   dt_neural_bpp_t bpp;
   dt_neural_compress_t compression;
   gboolean add_to_catalog;
-  char *output_dir;  // NULL = same as source
+  char *output_pattern;  // whole output path, variables unexpanded, no extension
   // output color profile. DT_COLORSPACE_NONE means "use image's working profile"
   dt_colorspaces_color_profile_type_t icc_type;
   char *icc_filename;  // only used when icc_type == DT_COLORSPACE_FILE
@@ -1133,16 +1138,71 @@ static void _import_image(const char *filename,
   }
 }
 
-static const char *_task_suffix(const dt_neural_task_t task)
+// one per task, because each wants its own suffix. all upscale factors share
+// one: the page offers them through a single combo
+static const char *_task_pattern_key(const dt_neural_task_t task)
 {
   switch(task)
   {
-    case NEURAL_TASK_DENOISE:     return "_denoise";
-    case NEURAL_TASK_RAW_DENOISE: return "_raw-denoise";
-    case NEURAL_TASK_UPSCALE_2X:  return "_upscale-2x";
-    case NEURAL_TASK_UPSCALE_4X:  return "_upscale-4x";
-    default:                      return "_restore";
+    case NEURAL_TASK_RAW_DENOISE: return CONF_PATTERN_RAW_DENOISE;
+    case NEURAL_TASK_DENOISE:     return CONF_PATTERN_DENOISE;
+    default:                      return CONF_PATTERN_UPSCALE;
   }
+}
+
+// an emptied entry means "give the default back", not a path of nothing
+static char *_task_output_pattern(const dt_neural_task_t task)
+{
+  const char *key = _task_pattern_key(task);
+  char *pattern = dt_conf_get_string(key);
+  if(pattern && pattern[0]) return pattern;
+
+  g_free(pattern);
+  // dt_confgen_get answers "" for a key the installed darktableconfig.xml does
+  // not declare (src/control/conf.c:681), and an empty path writes ./.tif
+  // the literal also keeps this from ever returning "", which _output_pattern_browse
+  // relies on to avoid naming the file "."
+  const char *def = dt_confgen_get(key, DT_DEFAULT);
+  return g_strdup(def && def[0] ? def : "$(FILE_FOLDER)/$(FILE.NAME)_restore");
+}
+
+// a one-shot config upgrade, not a second way to name a file: 5.6.x stored a
+// directory, so fold an existing one in and clear it. naming reads the patterns
+static void _migrate_output_dir(void)
+{
+  char *legacy = dt_conf_get_string(CONF_OUTPUT_DIR);
+  if(legacy && legacy[0])
+  {
+    const dt_neural_task_t tasks[]
+      = { NEURAL_TASK_RAW_DENOISE, NEURAL_TASK_DENOISE, NEURAL_TASK_UPSCALE_2X };
+    for(size_t i = 0; i < sizeof(tasks) / sizeof(*tasks); i++)
+    {
+      char *current = _task_output_pattern(tasks[i]);
+      char *name = g_path_get_basename(current);
+      char *pattern = g_build_filename(legacy, name, NULL);
+      dt_conf_set_string(_task_pattern_key(tasks[i]), pattern);
+      g_free(pattern);
+      g_free(name);
+      g_free(current);
+    }
+    dt_conf_set_string(CONF_OUTPUT_DIR, "");
+  }
+  g_free(legacy);
+}
+
+// the entry shows one task at a time, so it follows the active one
+static void _output_pattern_refresh(dt_lib_neural_restore_t *d)
+{
+  if(!d->output_pattern_entry) return;
+  char *pattern = _task_output_pattern(d->task);
+  GtkEntry *entry = GTK_ENTRY(d->output_pattern_entry);
+  // setting the text re-enters the changed handler, so only touch what differs
+  if(g_strcmp0(pattern, gtk_entry_get_text(entry)))
+  {
+    gtk_entry_set_text(entry, pattern);
+    gtk_editable_set_position(GTK_EDITABLE(entry), -1);
+  }
+  g_free(pattern);
 }
 
 static int _task_scale(const dt_neural_task_t task)
@@ -1195,7 +1255,7 @@ static void _job_cleanup(void *param)
   }
   dt_pthread_mutex_unlock(&d->ctx_lock);
   dt_restore_unref(job->ctx);
-  g_free(job->output_dir);
+  g_free(job->output_pattern);
   g_free(job->icc_filename);
   g_list_free(job->images);
   g_free(job);
@@ -1544,7 +1604,11 @@ static int32_t _process_job_run(dt_job_t *job)
   const int total = g_list_length(j->images);
   int count = 0;
   int successes = 0;  // images that made it through export (for the completion toast)
-  const char *suffix = _task_suffix(j->task);
+
+  // one set of variables for the whole batch: $(SEQUENCE) only advances if the
+  // same params survive from image to image
+  dt_variables_params_t *vp = NULL;
+  dt_variables_params_init(&vp);
 
   for(GList *iter = j->images;
       iter;
@@ -1557,34 +1621,28 @@ static int32_t _process_job_run(dt_job_t *job)
     char srcpath[PATH_MAX];
     dt_image_full_path(imgid, srcpath, sizeof(srcpath), NULL);
 
-    // build base name (strip extension)
-    char *basename = g_path_get_basename(srcpath);
-    char *dot = strrchr(basename, '.');
-    if(dot) *dot = '\0';
-
-    // expand output directory variables (e.g. $(FILE_FOLDER))
-    char *dir_pattern = (j->output_dir && j->output_dir[0])
-      ? j->output_dir : "$(FILE_FOLDER)";
-    dt_variables_params_t *vp = NULL;
-    dt_variables_params_init(&vp);
+    // the pattern is the whole path bar the extension: nothing is appended to
+    // what it expands to, and nothing stripped
     vp->filename = srcpath;
     vp->imgid = imgid;
-    char *out_dir = dt_variables_expand_path(vp, (gchar *)dir_pattern, FALSE);
-    dt_variables_params_destroy(vp);
+    char *expanded
+      = dt_variables_expand_path(vp, (gchar *)j->output_pattern, TRUE);
 
-    // if basename already ends with the suffix, don't
-    // append it again (e.g. re-processing a denoised file)
-    const gboolean has_suffix = g_str_has_suffix(basename, suffix);
-
-    // build base path without .tif for collision loop
     char base[PATH_MAX];
-    if(has_suffix)
-      snprintf(base, sizeof(base), "%s/%s", out_dir, basename);
-    else
-      snprintf(base, sizeof(base), "%s/%s%s", out_dir, basename, suffix);
+    g_strlcpy(base, expanded ? expanded : "", sizeof(base));
+    g_free(expanded);
 
-    g_free(out_dir);
-    g_free(basename);
+    // a pattern of variables alone can expand to nothing, which would write a
+    // bare extension into the working directory
+    if(!base[0])
+    {
+      dt_print(DT_DEBUG_AI,
+               "[neural_restore] output pattern expands to nothing for imgid %d",
+               imgid);
+      dt_control_log(_("neural restore: the output pattern expands to nothing"));
+      dt_control_job_set_progress(job, (double)++count / total);
+      continue;
+    }
 
     // ensure output directory exists
     char *out_dir_resolved = g_path_get_dirname(base);
@@ -1608,6 +1666,8 @@ static int32_t _process_job_run(dt_job_t *job)
     char filename[PATH_MAX];
     snprintf(filename, sizeof(filename), "%s.%s", base, ext);
 
+    // a pattern with no suffix resolves onto the source, and the source is on
+    // disk, so this steps past it like any other collision
     if(g_file_test(filename, G_FILE_TEST_EXISTS))
     {
       gboolean found = FALSE;
@@ -1690,6 +1750,9 @@ static int32_t _process_job_run(dt_job_t *job)
     successes++;
     dt_control_job_set_progress(job, (double)++count / total);
   }
+
+  // srcpath went out of scope with the loop, but destroy never reads vp->filename
+  dt_variables_params_destroy(vp);
 
   dt_restore_unref(j->ctx);
   j->ctx = NULL;
@@ -1855,6 +1918,7 @@ static void _schedule_preview_failed(dt_lib_module_t *self,
 
 static void _task_changed(dt_lib_neural_restore_t *d)
 {
+  _output_pattern_refresh(d);
   d->model_available = _check_model_available(d, d->task);
   if(!d->model_available)
   {
@@ -3560,10 +3624,7 @@ static void _process_clicked(GtkWidget *widget, gpointer user_data)
     = dt_conf_key_exists(CONF_ADD_CATALOG)
       ? dt_conf_get_bool(CONF_ADD_CATALOG)
       : TRUE;
-  char *out_dir = dt_conf_get_string(CONF_OUTPUT_DIR);
-  job_data->output_dir
-    = (out_dir && out_dir[0]) ? out_dir : NULL;
-  if(!job_data->output_dir) g_free(out_dir);
+  job_data->output_pattern = _task_output_pattern(job_data->task);
   job_data->icc_type = dt_conf_key_exists(CONF_ICC_TYPE)
     ? dt_conf_get_int(CONF_ICC_TYPE)
     : DT_COLORSPACE_NONE;
@@ -4373,41 +4434,63 @@ static void _preserve_wide_gamut_toggled(GtkWidget *w,
   _update_info_label((dt_lib_neural_restore_t *)self->data);
 }
 
-static void _output_dir_changed(GtkEditable *editable,
-                                dt_lib_module_t *self)
+static void _output_pattern_changed(GtkEditable *editable,
+                                    dt_lib_module_t *self)
 {
-  dt_conf_set_string(CONF_OUTPUT_DIR,
+  dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
+  dt_conf_set_string(_task_pattern_key(d->task),
                      gtk_entry_get_text(GTK_ENTRY(editable)));
 }
 
-static void _output_dir_browse(GtkWidget *button,
-                               dt_lib_module_t *self)
+static void _output_pattern_browse(GtkWidget *button,
+                                   dt_lib_module_t *self)
 {
   dt_lib_neural_restore_t *d
     = (dt_lib_neural_restore_t *)self->data;
   GtkWidget *dialog
-    = gtk_file_chooser_dialog_new(_("select output folder"),
+    = gtk_file_chooser_dialog_new(_("select directory"),
                                   GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                                   GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
                                   _("_cancel"), GTK_RESPONSE_CANCEL,
                                   _("_select"), GTK_RESPONSE_ACCEPT,
                                   NULL);
 
+  // the entry holds a whole path now, so split it. an emptied one has no halves
+  // to keep, and g_path_get_basename("") would name the file "."
   const char *current
-    = gtk_entry_get_text(GTK_ENTRY(d->output_dir_entry));
-  if(current && current[0])
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), current);
+    = gtk_entry_get_text(GTK_ENTRY(d->output_pattern_entry));
+  char *edited = (current && current[0])
+    ? g_strdup(current)
+    : _task_output_pattern(d->task);
+  char *cur_dir = g_path_get_dirname(edited);
+  if(g_file_test(cur_dir, G_FILE_TEST_IS_DIR))
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), cur_dir);
 
   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
   {
     char *folder = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
     if(folder)
     {
-      gtk_entry_set_text(GTK_ENTRY(d->output_dir_entry), folder);
-      dt_conf_set_string(CONF_OUTPUT_DIR, folder);
+      // the dialog only picks a folder, so keep whatever names the file. "." and
+      // "/" come back from a path with no name in it, and name nothing
+      char *name = g_path_get_basename(edited);
+      if(!g_strcmp0(name, ".") || !g_strcmp0(name, G_DIR_SEPARATOR_S))
+      {
+        char *def = _task_output_pattern(d->task);
+        g_free(name);
+        name = g_path_get_basename(def);
+        g_free(def);
+      }
+      char *pattern = g_build_filename(folder, name, NULL);
+      gtk_entry_set_text(GTK_ENTRY(d->output_pattern_entry), pattern);
+      gtk_editable_set_position(GTK_EDITABLE(d->output_pattern_entry), -1);
+      g_free(pattern);
+      g_free(name);
       g_free(folder);
     }
   }
+  g_free(cur_dir);
+  g_free(edited);
   gtk_widget_destroy(dialog);
 }
 
@@ -4638,30 +4721,34 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_box_add(catalog_box, d->catalog_toggle);
   dt_gui_box_add(cs_box, catalog_box);
 
-  // output directory
+  // output path
   GtkWidget *dir_box = dt_gui_hbox();
-  d->output_dir_entry = gtk_entry_new();
-  char *saved_dir = dt_conf_get_string(CONF_OUTPUT_DIR);
-  gtk_entry_set_text(GTK_ENTRY(d->output_dir_entry),
-                     (saved_dir && saved_dir[0])
-                       ? saved_dir : "$(FILE_FOLDER)");
-  g_free(saved_dir);
-  gtk_widget_set_tooltip_text(d->output_dir_entry,
-                              _("output folder — supports darktable variables\n"
-                                "$(FILE_FOLDER) = source image folder"));
-  gtk_widget_set_hexpand(d->output_dir_entry, TRUE);
-  g_signal_connect(d->output_dir_entry, "changed",
-                   G_CALLBACK(_output_dir_changed), self);
+  d->output_pattern_entry = gtk_entry_new();
+  _migrate_output_dir();
+  char *saved_pattern = _task_output_pattern(d->task);
+  gtk_entry_set_text(GTK_ENTRY(d->output_pattern_entry), saved_pattern);
+  // the file name is the part being edited, and it is off the right-hand end
+  gtk_editable_set_position(GTK_EDITABLE(d->output_pattern_entry), -1);
+  g_free(saved_pattern);
+  gtk_widget_set_tooltip_text(d->output_pattern_entry,
+                              _("where this task writes, without the extension."
+                                " whatever follows the source name is the"
+                                " suffix\n"
+                                "$(FILE_FOLDER) = source image folder\n"
+                                "$(FILE.NAME) = source name without extension"));
+  gtk_widget_set_hexpand(d->output_pattern_entry, TRUE);
+  g_signal_connect(d->output_pattern_entry, "changed",
+                   G_CALLBACK(_output_pattern_changed), self);
 
-  d->output_dir_button = dtgtk_button_new_full(dtgtk_cairo_paint_directory, 0, NULL,
+  d->output_pattern_button = dtgtk_button_new_full(dtgtk_cairo_paint_directory, 0, NULL,
       &(dtgtk_button_config_t){
-        .tooltip = _("select output folder"),
-        .clicked_cb = G_CALLBACK(_output_dir_browse),
+        .tooltip = _("select directory"),
+        .clicked_cb = G_CALLBACK(_output_pattern_browse),
         .clicked_data = self,
       });
 
-  dt_gui_box_add(dir_box, d->output_dir_entry);
-  dt_gui_box_add(dir_box, d->output_dir_button);
+  dt_gui_box_add(dir_box, d->output_pattern_entry);
+  dt_gui_box_add(dir_box, d->output_pattern_button);
   dt_gui_box_add(cs_box, dir_box);
 
   g_signal_connect(d->notebook, "switch-page",
@@ -4754,7 +4841,10 @@ void gui_reset(dt_lib_module_t *self)
   gtk_notebook_set_current_page(d->notebook, 0);
   dt_conf_set_int(CONF_ACTIVE_PAGE, 0);
   dt_bauhaus_combobox_set(d->scale_combo, 0);
-  d->task = NEURAL_TASK_DENOISE;
+  // page 0 is raw denoise: take the task from the page rather than naming one,
+  // or the entry shows one task's pattern while editing writes another's
+  _update_task_from_ui(d);
+  _output_pattern_refresh(d);
   d->model_available = _check_model_available(d, d->task);
   d->preview_requested = FALSE;
   _cancel_preview(self);
