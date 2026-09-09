@@ -104,7 +104,7 @@ typedef struct dt_iop_colorharmonizer_gui_data_t
   dt_gui_collapsible_section_t sat_section;              // collapsible "Saturation" section
   float      hue_histogram[COLORHARMONIZER_HUE_BINS];
   gboolean   histogram_valid;
-  GMutex     histogram_lock;
+  gboolean   auto_detect_pending;
 } dt_iop_colorharmonizer_gui_data_t;
 
 typedef struct dt_iop_colorharmonizer_global_data_t
@@ -118,6 +118,7 @@ static float _ucs_to_ryb_fast(const float ucs);
 static float _ryb_to_ucs_fast(const float yrb);
 static void _sync_custom_sliders(const dt_iop_colorharmonizer_params_t *p,
                                  dt_iop_colorharmonizer_gui_data_t *g);
+static void _set_auto_detect_button_state(dt_iop_module_t *self, const gboolean sensitive);
 static gboolean _auto_detect_button_enable_idle(gpointer user_data);
 
 const char *name()
@@ -294,16 +295,16 @@ static void _update_histogram(dt_iop_module_t *self,
     }
   }
 
+  dt_iop_gui_enter_critical_section(self);
   const gboolean was_invalid = !g->histogram_valid;
-  g_mutex_lock(&g->histogram_lock);
   memcpy(g->hue_histogram, local_histo, sizeof(local_histo));
   g->histogram_valid = TRUE;
-  g_mutex_unlock(&g->histogram_lock);
+  const gboolean pending = g->auto_detect_pending;
+  dt_iop_gui_leave_critical_section(self);
 
-  if(was_invalid)
+  if(was_invalid || pending)
   {
-    g_object_ref(g->auto_detect);
-    gdk_threads_add_idle(_auto_detect_button_enable_idle, g->auto_detect);
+    g_idle_add(_auto_detect_button_enable_idle, self);
   }
 }
 
@@ -1164,6 +1165,12 @@ void gui_update(dt_iop_module_t *self)
   dt_gui_update_collapsible_section(&g->sat_section);
   gui_changed(self, NULL, NULL);
   dt_iop_color_picker_reset(self, TRUE);
+
+  dt_iop_gui_enter_critical_section(self);
+  const gboolean pending = g->auto_detect_pending;
+  dt_iop_gui_leave_critical_section(self);
+
+  _set_auto_detect_button_state(self, !pending);
 }
 
 // Convert a picked pixel color (pipeline RGB) to a normalized darktable UCS hue [0, 1).
@@ -1329,33 +1336,10 @@ static void _auto_detect_harmony(const float *histo,
   }
 }
 
-static gboolean _auto_detect_button_enable_idle(gpointer user_data)
-{
-  GtkWidget *btn = GTK_WIDGET(user_data);
-  gtk_widget_set_sensitive(btn, TRUE);
-  gtk_widget_set_tooltip_text(btn,
-    _("analyze the image's hue distribution and automatically suggest the harmony rule\n"
-      "and anchor hue that best match its existing color palette.\n"
-      "\n"
-      "the detection scores every rule and anchor combination against a chroma-weighted\n"
-      "histogram of the preview image, then selects the combination that already covers\n"
-      "the most chromatic energy — i.e. requires the least correction.\n"
-      "\n"
-      "the result replaces the current rule and anchor hue. use pull strength to control\n"
-      "how strongly the remaining off-palette colors are pulled toward the detected palette."));
-  g_object_unref(btn);
-  return G_SOURCE_REMOVE;
-}
-
-static void _auto_detect_callback(GtkButton *button, dt_iop_module_t *self)
+static void _apply_auto_detect_harmony(dt_iop_module_t *self, const float *histo)
 {
   dt_iop_colorharmonizer_gui_data_t *g = self->gui_data;
   dt_iop_colorharmonizer_params_t   *p = self->params;
-
-  float histo[COLORHARMONIZER_HUE_BINS];
-  g_mutex_lock(&g->histogram_lock);
-  memcpy(histo, g->hue_histogram, sizeof(histo));
-  g_mutex_unlock(&g->histogram_lock);
 
   dt_iop_colorharmonizer_rule_t best_rule;
   float best_anchor;
@@ -1375,6 +1359,91 @@ static void _auto_detect_callback(GtkButton *button, dt_iop_module_t *self)
   if(g->sync_to_vectorscope
      && dt_bauhaus_toggle_get(g->sync_to_vectorscope))
     _push_to_vectorscope(self);
+}
+
+static void _set_auto_detect_button_state(dt_iop_module_t *self, const gboolean sensitive)
+{
+  dt_iop_colorharmonizer_gui_data_t *g = self->gui_data;
+  if(!g || !g->auto_detect) return;
+  gtk_widget_set_sensitive(g->auto_detect, sensitive);
+  if(sensitive)
+  {
+    gtk_widget_set_tooltip_text(g->auto_detect,
+      _("analyze the image's hue distribution and automatically suggest the harmony rule\n"
+        "and anchor hue that best match its existing color palette.\n"
+        "\n"
+        "the detection scores every rule and anchor combination against a chroma-weighted\n"
+        "histogram of the preview image, then selects the combination that already covers\n"
+        "the most chromatic energy — i.e. requires the least correction.\n"
+        "\n"
+        "the result replaces the current rule and anchor hue. use pull strength to control\n"
+        "how strongly the remaining off-palette colors are pulled toward the detected palette."));
+  }
+  else
+  {
+    gtk_widget_set_tooltip_text(g->auto_detect,
+      _("analyzing the image's hue distribution..."));
+  }
+}
+
+static gboolean _auto_detect_button_enable_idle(gpointer user_data)
+{
+  dt_iop_module_t *self = user_data;
+  dt_iop_colorharmonizer_gui_data_t *g = self->gui_data;
+  if(!g) return G_SOURCE_REMOVE;
+
+  float histo[COLORHARMONIZER_HUE_BINS];
+  gboolean run_detection = FALSE;
+
+  dt_iop_gui_enter_critical_section(self);
+  if(g->auto_detect_pending && g->histogram_valid)
+  {
+    g->auto_detect_pending = FALSE;
+    memcpy(histo, g->hue_histogram, sizeof(histo));
+    run_detection = TRUE;
+  }
+  dt_iop_gui_leave_critical_section(self);
+
+  if(run_detection)
+  {
+    _apply_auto_detect_harmony(self, histo);
+  }
+
+  _set_auto_detect_button_state(self, TRUE);
+
+  return G_SOURCE_REMOVE;
+}
+
+static void _auto_detect_callback(GtkButton *button, dt_iop_module_t *self)
+{
+  dt_iop_colorharmonizer_gui_data_t *g = self->gui_data;
+  if(!g) return;
+
+  float histo[COLORHARMONIZER_HUE_BINS];
+  gboolean valid = FALSE;
+
+  dt_iop_gui_enter_critical_section(self);
+  if(g->auto_detect_pending)
+  {
+    dt_iop_gui_leave_critical_section(self);
+    return;
+  }
+  valid = g->histogram_valid;
+  if(valid)
+    memcpy(histo, g->hue_histogram, sizeof(histo));
+  else
+    g->auto_detect_pending = TRUE;
+  dt_iop_gui_leave_critical_section(self);
+
+  if(valid)
+  {
+    _apply_auto_detect_harmony(self, histo);
+  }
+  else
+  {
+    _set_auto_detect_button_state(self, FALSE);
+    dt_dev_add_history_item(self->dev, self, TRUE);
+  }
 }
 
 static void _set_from_vectorscope_callback(GtkButton *button, dt_iop_module_t *self)
@@ -1414,11 +1483,10 @@ void gui_init(dt_iop_module_t *self)
 
   g->auto_detect = dtgtk_button_new_full(dtgtk_cairo_paint_camera, CPF_NONE, NULL,
       &(dtgtk_button_config_t){
-        .tooltip = _("not yet available — wait for the preview to finish processing."),
         .clicked_cb = G_CALLBACK(_auto_detect_callback),
         .clicked_data = self,
       });
-  gtk_widget_set_sensitive(g->auto_detect, FALSE);
+  _set_auto_detect_button_state(self, TRUE);
   dt_gui_box_add(rule_row, g->auto_detect);
 
   gtk_widget_set_tooltip_text(g->rule,
@@ -1550,7 +1618,7 @@ void gui_init(dt_iop_module_t *self)
       !dt_bauhaus_toggle_get(g->sync_to_vectorscope));
 
   g->histogram_valid = FALSE;
-  g_mutex_init(&g->histogram_lock);
+  g->auto_detect_pending = FALSE;
 
   g->pull_strength = dt_bauhaus_slider_from_params(self, "pull_strength");
   gtk_widget_set_tooltip_text(g->pull_strength,
@@ -1660,13 +1728,32 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
   }
 }
 
-void gui_cleanup(dt_iop_module_t *self)
+void change_image(dt_iop_module_t *self)
 {
   dt_iop_colorharmonizer_gui_data_t *g = self->gui_data;
   if(g)
   {
+    while(g_idle_remove_by_data(self)) ;
+
+    dt_iop_gui_enter_critical_section(self);
+    g->histogram_valid = FALSE;
+    g->auto_detect_pending = FALSE;
+    dt_iop_gui_leave_critical_section(self);
+
+    _set_auto_detect_button_state(self, TRUE);
+  }
+}
+
+void gui_cleanup(dt_iop_module_t *self)
+{
+  while(g_idle_remove_by_data(self)) ;
+  dt_iop_colorharmonizer_gui_data_t *g = self->gui_data;
+  if(g)
+  {
+    dt_iop_gui_enter_critical_section(self);
+    g->auto_detect_pending = FALSE;
+    dt_iop_gui_leave_critical_section(self);
     dt_lib_histogram_set_harmony_callback(darktable.lib, NULL, NULL);
-    g_mutex_clear(&g->histogram_lock);
   }
   dt_iop_default_cleanup(self);
 }
