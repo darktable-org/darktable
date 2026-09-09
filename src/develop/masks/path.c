@@ -3600,10 +3600,6 @@ static int _path_events_button_released(dt_iop_module_t *module,
   dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
   if(!gpt) return 0;
 
-  float wd, ht; // Backbuffer width and height
-  float iwidth, iheight; // Image width and height
-  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
-
   if(gui->form_dragging)
   {
     // the move was already applied incrementally, tick by tick, in
@@ -3707,12 +3703,6 @@ static int _path_events_button_released(dt_iop_module_t *module,
     dt_masks_point_path_t *point
         = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->feather_dragging);
     gui->feather_dragging = -1;
-    float pts[2] = { pzx * wd, pzy * ht };
-    dt_dev_distort_backtransform(darktable.develop, pts, 1);
-
-    _update_bezier_ctrl_points(point, pts[0] / iwidth, pts[1] / iheight,
-                               gui->bezier_ctrl, gui->bezier_mode,
-                               gui->bezier_ctrl_angle, gui->bezier_ctrl_scale, iwidth/iheight);
     gui->bezier_mode = DT_MASKS_BEZIER_NONE;
     point->state = DT_MASKS_POINT_STATE_USER;
 

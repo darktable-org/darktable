@@ -395,9 +395,6 @@ static int _circle_events_button_released(dt_iop_module_t *module,
                                           dt_masks_form_gui_t *gui,
                                           const int index)
 {
-  float wd, ht, iwidth, iheight;
-  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
-
   if(which == GDK_BUTTON_SECONDARY
      && dt_is_valid_maskid(parentid)
      && gui->edit_mode == DT_MASKS_EDIT_FULL)
@@ -432,18 +429,9 @@ static int _circle_events_button_released(dt_iop_module_t *module,
   }
   if(gui->form_dragging)
   {
-    // we get the circle
-    dt_masks_point_circle_t *circle = form->points->data;
-
     // we end the form dragging
     gui->form_dragging = FALSE;
 
-    // we change the center value
-    float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
-    dt_masks_clamp_move_pts(pts, wd, ht);
-    dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    circle->center[0] = pts[0] / iwidth;
-    circle->center[1] = pts[1] / iheight;
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
@@ -462,22 +450,6 @@ static int _circle_events_button_released(dt_iop_module_t *module,
     // we end the form dragging
     gui->source_dragging = FALSE;
 
-    if(gui->scrollx != 0.0 || gui->scrolly != 0.0)
-    {
-      // if there's no dragging the source is calculated in
-      // _circle_events_button_pressed()
-    }
-    else
-    {
-      // we change the center value
-      float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
-      dt_masks_clamp_move_pts(pts, wd, ht);
-
-      dt_dev_distort_backtransform(darktable.develop, pts, 1);
-
-      form->source[0] = pts[0] / iwidth;
-      form->source[1] = pts[1] / iheight;
-    }
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points

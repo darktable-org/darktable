@@ -2208,18 +2208,6 @@ static int _brush_events_button_released(dt_iop_module_t *module,
     dt_masks_point_brush_t *point
         = (dt_masks_point_brush_t *)g_list_nth_data(form->points, gui->feather_dragging);
     gui->feather_dragging = -1;
-    float pts[2] = { pzx * wd, pzy * ht };
-    dt_dev_distort_backtransform(darktable.develop, pts, 1);
-
-    float p1x, p1y, p2x, p2y;
-    _brush_feather_to_ctrl(point->corner[0] * iwidth,
-                           point->corner[1] * iheight,
-                           pts[0], pts[1],
-                           &p1x, &p1y, &p2x, &p2y, TRUE);
-    point->ctrl1[0] = p1x / iwidth;
-    point->ctrl1[1] = p1y / iheight;
-    point->ctrl2[0] = p2x / iwidth;
-    point->ctrl2[1] = p2y / iheight;
 
     point->state = DT_MASKS_POINT_STATE_USER;
 
