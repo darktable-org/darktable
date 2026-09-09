@@ -268,8 +268,8 @@ changes (where available).
   malformed order is now ignored and the style keeps the default one.
 
 - Fixed automatic exposure rendering a black image when its raw histogram
-  was unavailable, and black-point limits ignoring camera exposure
-  compensation, which could invert the tonal range.
+  was unavailable, and black or inverted images when the black level was
+  set too high for the exposure applied.
 
 - Fixed exposure's area mapping blowing out the image when its target
   lightness was set to zero. Such a target cannot be reached, so the
