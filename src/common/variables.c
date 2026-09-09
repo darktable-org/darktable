@@ -254,6 +254,8 @@ static void _cleanup_expansion(dt_variables_params_t *params)
     params->data->camera_maker = NULL;
     g_free(params->data->camera_alias);
     params->data->camera_alias = NULL;
+    g_free(params->data->exif_lens);
+    params->data->exif_lens = NULL;
   }
   g_free(params->data->homedir);
   params->data->homedir = NULL;
