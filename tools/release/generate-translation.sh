@@ -25,6 +25,7 @@ MAX_UNTRANSLATED=20
 MAX_FUZZY_TRANSLATIONS=50
 
 declare -A LANG_NAME=( [af]=Afrikaans
+                       [az]=Azerbaijani
                        [fr]=French
                        [al]=Albanian
                        [ca]=Catalan
