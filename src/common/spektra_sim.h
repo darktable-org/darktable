@@ -286,8 +286,8 @@ void sf_sim_film_grain3(const sf_sim_t *sim,
  * to take back off to recover a zero-mean delta. Equals grain_density_min for a
  * single-layer stock, but NOT in general: the multi-sub-layer table's floors are
  * density_max_fractions[l] * density_min and their sum is not constrained to
- * density_min. Subtracting grain_density_min instead left the delta with a
- * constant positive mean of (sum - density_min) per unit grain strength. */
+ * density_min. Only this sum leaves the delta zero-mean; grain_density_min in
+ * its place biases it by (sum - density_min) per unit grain strength. */
 void sf_sim_grain_dmin_total(const sf_sim_t *sim,
                              float dmin_total[3]);
 

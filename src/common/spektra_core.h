@@ -239,15 +239,15 @@ SPEKTRA_INLINE uint32_t sf_pixel_seed(uint32_t xi,
 
 /* Sigma at which the direct kernel hands over to the recursive one. This is
    the reference's own crossover (SMALL_SIGMA_MAX in fast_gaussian_filter.py),
-   and above it both sides now run the same Young-van Vliet filter, so a given
+   and above it both sides run the same Young-van Vliet filter, so a given
    sigma produces the same blur here, on the GPU, and in the app. */
 #define SF_GAUSS_EXACT_MAX_SIGMA 3.0f
 /* Below this the blur is skipped outright rather than run with a degenerate
    kernel: dt_gaussian_kernel_1d() floors its radius at 1, so a sigma of 0.1
    still produces a real 3-tap kernel with non-negligible side weights, not
-   an identity. sf_blur_plane3/_fast have always done this; the constant is
-   shared so spektrafilm.c's OpenCL path can apply the same cut at the same
-   call sites instead of blurring where the CPU does nothing. */
+   an identity. sf_blur_plane3/_fast apply this cut themselves; the constant is
+   shared so spektrafilm.c's OpenCL path can apply it at the same call sites
+   instead of blurring where the CPU does nothing. */
 #define SF_GAUSS_MIN_SIGMA 0.3f
 
 /* Young-van Vliet order-3 recursive Gaussian coefficients (B, B1, B2, B3),
@@ -289,11 +289,11 @@ void sf_gauss_yvv_coeffs(float sigma,
    That threshold is not a quality/speed compromise, it is where the normal
    approximation stops being safe: sf_nrm is bounded at +-sqrt(12) (Irwin-Hall
    over four uniforms), so lam + sqrt(lam)*sf_nrm() can only go negative when
-   lam < 12. Above the threshold no clamp is ever needed and the approximation is
-   mean- and variance-exact; below it, clamping a normal at zero is exactly what
-   biased the old sampler upward in the shadows. Cost: the exact branch averages
-   lam+1 hashes (<= 13), the fast branch 4 -- against 8 for the two sf_nrm draws
-   this replaces. */
+   lam < 12. Above the threshold no clamp is ever needed and the approximation
+   is mean- and variance-exact; below it, a normal clamped at zero would bias
+   the draw upward in the shadows, which is the whole reason for the exact
+   branch. Cost: the exact branch averages lam+1 hashes (<= 13), the fast
+   branch 4, against 8 for a pair of sf_nrm draws. */
 #define SF_POISSON_EXACT_MAX 12.0f
 
 /* sf_exp2i: construct 2^k exactly for integer k, by writing the IEEE-754

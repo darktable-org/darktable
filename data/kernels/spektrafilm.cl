@@ -482,13 +482,13 @@ __kernel void spektrafilm_develop_corr(__global const float4 *lograw, __global f
     /* Langmuir donor saturation (dev packs). Gated on donor_lm, exactly as
        sf_sim_develop_corr() gates it on sim->couplers_donor_lm.
 
-       This used to run unconditionally, relying on the host shipping K=1e30
-       to make the expression "degenerate to linear". It does not: the term
-       evaluates as (silver * 1e30f) / 1e30f, and x*y/y is not x in float --
-       13.6% of plausible silver values in [0,3] come back one ULP off. Every
-       pixel of the coupler correction was therefore slightly wrong whenever
-       the loaded pack has no donor Langmuir term, which the grain sampler
-       downstream then amplified into whole-integer draw differences. */
+       The gate is load-bearing: running this unconditionally and relying on a
+       sentinel K=1e30 to "degenerate to linear" does not work, because the
+       term then evaluates as (silver * 1e30f) / 1e30f, and x*y/y is not x in
+       float -- 13.6% of plausible silver values in [0,3] come back one ULP
+       off. That would put every pixel of the coupler correction slightly wrong
+       for any pack without a donor Langmuir term, which the grain sampler
+       downstream amplifies into whole-integer draw differences. */
     if(donor_lm)
     {
       const float K = mats[SF_M_LM_DONOR + c], Dref = mats[SF_M_LM_DONOR + 3 + c];
