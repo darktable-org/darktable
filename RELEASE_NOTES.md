@@ -109,6 +109,10 @@ changes (where available).
   by selecting it directly on the photo with the mouse wheel, just as
   was already possible with the "tone equalizer" module.
 
+- Neural restore now takes a full output path per task instead of an
+  output folder, so the output file name and its suffix can be chosen.
+  The extension still comes from the task.
+
 ## Performance Improvements
 
 - Replaced quadratic XMP history writes with a linear algorithm.

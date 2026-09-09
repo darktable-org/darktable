@@ -4029,7 +4029,28 @@
     <shortdescription>raster mask files root folder</shortdescription>
     <longdescription>this folder (and sub-folders) contains PFM/PNG files used by the raster mask import module. (restart required)</longdescription>
   </dtconfig>
-<dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/neural_restore/output_pattern/raw_denoise</name>
+    <type>string</type>
+    <default>$(FILE_FOLDER)/$(FILE.NAME)_raw-denoise</default>
+    <shortdescription>output path for neural restore raw denoise</shortdescription>
+    <longdescription>where raw denoise writes its result, as a path pattern with no extension: raw denoise always writes DNG. darktable variables are expanded, and whatever follows the source name becomes the suffix. each task keeps its own pattern</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/neural_restore/output_pattern/denoise</name>
+    <type>string</type>
+    <default>$(FILE_FOLDER)/$(FILE.NAME)_denoise</default>
+    <shortdescription>output path for neural restore denoise</shortdescription>
+    <longdescription>where denoise writes its result, as a path pattern with no extension: denoise always writes TIFF. darktable variables are expanded, and whatever follows the source name becomes the suffix. each task keeps its own pattern</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/neural_restore/output_pattern/upscale</name>
+    <type>string</type>
+    <default>$(FILE_FOLDER)/$(FILE.NAME)_upscale</default>
+    <shortdescription>output path for neural restore upscale</shortdescription>
+    <longdescription>where upscale writes its result, as a path pattern with no extension: upscale always writes TIFF, and every scale shares this one. darktable variables are expanded, and whatever follows the source name becomes the suffix. each task keeps its own pattern</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/neural_restore/mark_output</name>
     <type>bool</type>
     <default>true</default>
