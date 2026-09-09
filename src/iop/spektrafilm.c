@@ -550,6 +550,7 @@ void init_global(dt_iop_module_so_t *self)
   const int program = 43; /* spektrafilm.cl in data/kernels/programs.conf */
   dt_iop_spektrafilm_global_data_t *gd = malloc(sizeof(dt_iop_spektrafilm_global_data_t));
   self->data = gd;
+  if(!gd) return; /* cleanup_global() tolerates a NULL self->data */
   gd->kernel_expose = dt_opencl_create_kernel(program, "spektrafilm_expose");
   gd->kernel_lograw = dt_opencl_create_kernel(program, "spektrafilm_lograw");
   gd->kernel_develop_corr = dt_opencl_create_kernel(program, "spektrafilm_develop_corr");
@@ -2870,6 +2871,37 @@ static void _update_paper_auto_entry(dt_iop_module_t *self);
 static const sf_prof_entry_t *_current_film_entry(const dt_iop_spektrafilm_gui_data_t *g,
                                                   const dt_iop_spektrafilm_params_t *p);
 
+/* Stamp the spectral table this edit is being made against, at the point where
+   a user change has written its param and the history item has not been created
+   yet, so the value lands in the same edit.
+
+   Every path that records a user change has to call this, not just the
+   params-linked widgets that reach gui_changed(): the film and paper
+   comboboxes carry their own callbacks and commit history directly, and they
+   are the changes most likely to be an edit's first and only one. An edit that
+   never stamps keeps lut_hash 0, which reads as "no table recorded" -- the
+   mismatch warning in _ensure_sim() and the header row both skip on it, so the
+   edit silently renders against whatever pack is installed when it is reopened.
+
+   Only stamp when there is nothing to lose: no table recorded yet, or the
+   loaded pack is already the one recorded. Overwriting a DIFFERENT recorded
+   hash would throw away the only record of which pack renders this edit as it
+   was made, and it would happen on any incidental slider touch while the
+   mismatch warning was on screen saying the data was wrong. That record is what
+   the download button uses to fetch the right pack, so losing it turns a
+   fixable mismatch into a permanent one. */
+static void _stamp_lut_hash(dt_iop_module_t *self)
+{
+  dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
+  dt_pthread_mutex_lock(&_pack_lock);
+  if(_pack)
+  {
+    const uint32_t cur = sf_pack_lut_hash(_pack);
+    if(!p->lut_hash || p->lut_hash == cur) p->lut_hash = cur;
+  }
+  dt_pthread_mutex_unlock(&_pack_lock);
+}
+
 static void _film_changed(GtkWidget *w,
                           dt_iop_module_t *self)
 {
@@ -2922,6 +2954,7 @@ static void _film_changed(GtkWidget *w,
      development sliders are gated on their own stock, and the print one also on
      there being a print stage at all */
   _update_development_sensitivity(g, p);
+  _stamp_lut_hash(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2945,6 +2978,7 @@ static void _paper_changed(GtkWidget *w,
     p->paper_hash = 0;
     p->print_development_min = 0.0f;
     _update_development_sensitivity(g, p);
+    _stamp_lut_hash(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return;
   }
@@ -2957,6 +2991,7 @@ static void _paper_changed(GtkWidget *w,
   dt_bauhaus_slider_set(g->print_development_min, p->print_development_min);
   DT_LEAVE_GUI_UPDATE();
   _update_development_sensitivity(g, p);
+  _stamp_lut_hash(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -3322,50 +3357,25 @@ void gui_changed(dt_iop_module_t *self,
                  GtkWidget *w,
                  void *previous)
 {
-  /* Stamp the spectral table this edit is being made against. Done here because
-     gui_changed() runs after the widget has written the param and before the
-     history item is created, so the value lands in the same edit.
-
-     Gated on `w`, which is what confines it to a real user change: darktable
-     also calls gui_changed(self, NULL, NULL) to let a module refresh its
-     dependent widgets on load and on reload_defaults -- the !w branches below
-     are that path -- and a write to self->params there lands outside any
-     history item, dirtying an edit nobody touched.
-
-     Only stamp when there is nothing to lose: no table recorded yet, or the
-     loaded pack is already the one recorded. Overwriting a DIFFERENT recorded
-     hash would throw away the only record of which pack renders this edit as
-     it was made, and it would happen on any incidental slider touch while the
-     mismatch warning was on screen saying the data was wrong. That record is
-     what the download button uses to fetch the right pack, so losing it turns
-     a fixable mismatch into a permanent one. */
-  if(w)
-  {
-    dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
-    dt_pthread_mutex_lock(&_pack_lock);
-    if(_pack)
-    {
-      const uint32_t cur = sf_pack_lut_hash(_pack);
-      if(!p->lut_hash || p->lut_hash == cur) p->lut_hash = cur;
-    }
-    dt_pthread_mutex_unlock(&_pack_lock);
-  }
+  _stamp_lut_hash(self);
 
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
-  if(!w) _update_print_sensitivity(self);
-  /* boost_ev belongs in this list for the same reason the master toggles do:
-     it gates the two sliders under it. */
-  if(!w || w == g->halation_on || w == g->grain_on || w == g->diffusion_on
+  /* `w` is always a real widget. dt_iop_gui_changed() is reached only from
+     bauhaus's value-changed handlers, each passing the widget and a pointer to
+     the field's previous value, and nothing in the core calls it to refresh a
+     module's dependent widgets -- gui_update() calls the sensitivity helpers
+     directly for that.
+
+     boost_ev is in this list for the same reason the master toggles are: it
+     gates the two sliders under it. */
+  if(w == g->halation_on || w == g->grain_on || w == g->diffusion_on
      || w == g->print_diffusion_on || w == g->boost_ev)
   {
     _toggle_sensitivity(g, p);
     if(w == g->print_diffusion_on) _update_print_sensitivity(self);
   }
-  /* `previous` holds the field's value from before the change and is NULL on
-     the w == NULL calls, so the transition test needs both terms. */
-  if(w == g->print_auto_exposure && previous && !*(gboolean *)previous
-     && p->print_auto_exposure)
+  if(w == g->print_auto_exposure && !*(gboolean *)previous && p->print_auto_exposure)
   {
     /* print_exposure_ev (manual) and print_auto_exposure (automatic) are
        independent, always-additive factors -- matching the reference app's
@@ -5259,8 +5269,13 @@ void gui_cleanup(dt_iop_module_t *self)
     dt_iop_gui_enter_critical_section(self);
     const guint trouble = g->trouble_idle;
     g->trouble_idle = 0;
-    dt_iop_gui_leave_critical_section(self);
+    /* Removed inside the section, not after it: _publish_status() arms this
+       under the same section and only when the id is 0, so releasing first
+       leaves a window where it posts a fresh source that nothing then removes.
+       g_source_remove() does not wait for a running callback, so holding the
+       section across it cannot deadlock against _trouble_idle_cb(). */
     if(trouble) g_source_remove(trouble);
+    dt_iop_gui_leave_critical_section(self);
     /* the section records: dt_gui_new_collapsible_section strdups confname */
     for(GList *l = g->sections; l; l = l->next)
     {
