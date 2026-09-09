@@ -55,7 +55,7 @@ static void _dt_dng_tiff_warning(const char *module,
   if(darktable.unmuted & DT_DEBUG_IMAGEIO)
   {
     fprintf(stderr, "%11.4f [imageio_dng] warning: %s: ",
-            dt_get_wtime() - darktable.start_wtime,
+            dt_get_wtime(),
             module ? module : "(none)");
     vfprintf(stderr, fmt, ap);
     fprintf(stderr, "\n");
@@ -66,7 +66,7 @@ static void _dt_dng_tiff_error(const char *module,
                                const char *fmt, va_list ap)
 {
   fprintf(stderr, "%11.4f [imageio_dng] error: %s: ",
-          dt_get_wtime() - darktable.start_wtime,
+          dt_get_wtime(),
           module ? module : "(none)");
   vfprintf(stderr, fmt, ap);
   fprintf(stderr, "\n");

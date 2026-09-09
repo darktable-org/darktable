@@ -346,7 +346,7 @@ static void _warning_error_handler(const char *type,
   // to be consistent with dt_print
   fprintf(stderr,
           "%11.4f [tiff_open] %s: %s: ",
-          dt_get_wtime() - darktable.start_wtime,
+          dt_get_wtime(),
           type,
           module);
   vfprintf(stderr, fmt, ap);
