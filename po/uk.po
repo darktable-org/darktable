@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-05 09:26+0200\n"
-"PO-Revision-Date: 2026-09-05 23:41+0300\n"
+"PO-Revision-Date: 2026-09-10 11:17+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -6160,45 +6160,33 @@ msgstr "Співвідношення RGB"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:432
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:853
-#, fuzzy
-#| msgid "exposure"
 msgid "film exposure"
-msgstr "Експозиція"
+msgstr "Експозиція плівки"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:438
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:857
-#, fuzzy
-#| msgid "mask exposure compensation"
 msgid "print exposure compensation"
-msgstr "Компенсація експозиції маски"
+msgstr "Компенсація експозиції друку"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:444
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:861
-#, fuzzy
-#| msgid "two exposures"
 msgid "auto print exposure"
-msgstr "Дві експозиції"
+msgstr "Автоматична експозиція друку"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:450
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:865
-#, fuzzy
-#| msgid "contrast"
 msgid "print contrast"
-msgstr "Контраст"
+msgstr "Контраст друку"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:456
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:869
-#, fuzzy
-#| msgid "iterations"
 msgid "filtration M"
-msgstr "Ітерації"
+msgstr "Фільтрація M"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:462
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:873
-#, fuzzy
-#| msgid "iterations"
 msgid "filtration Y"
-msgstr "Ітерації"
+msgstr "Фільтрація Y"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:468
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:877
@@ -6208,26 +6196,22 @@ msgstr "DIR-компоненти"
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:474
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:881
 msgid "inhibitor spread"
-msgstr ""
+msgstr "Дифузія інгібітора"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:480
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:885
-#, fuzzy
-#| msgid "capture details"
 msgid "spread tail"
-msgstr "Деталі зйомки"
+msgstr "Хвіст розсіювання"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:486
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:889
-#, fuzzy
-#| msgid "twilight"
 msgid "tail weight"
-msgstr "Сутінки"
+msgstr "Вага хвоста"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:492
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:893
 msgid "same-layer inhibition"
-msgstr ""
+msgstr "Внутрішньошарове інгібування"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:498
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:897
@@ -6236,20 +6220,18 @@ msgstr "Міжшарове гальмування"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:504
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:901
-#, fuzzy
-#| msgid "read exposure"
 msgid "preflash exposure"
-msgstr "Зчитування експозиції"
+msgstr "Експозиція попередньої засвітки"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:510
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:905
 msgid "preflash M filter shift"
-msgstr ""
+msgstr "Зсув M фільтра попередньої засвітки"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:516
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:909
 msgid "preflash Y filter shift"
-msgstr ""
+msgstr "Зсув Y фільтра попередньої засвітки"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:522
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:913
@@ -6272,38 +6254,28 @@ msgstr "Якість"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:534
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:921
-#, fuzzy
-#| msgid "new location"
 msgid "enable halation"
-msgstr "Нове місце"
+msgstr "Увімкнути ореоли"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:540
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:925
-#, fuzzy
-#| msgid "scattering"
 msgid "scatter amount"
-msgstr "Діапазон"
+msgstr "Рівень розсіювання"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:546
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:929
-#, fuzzy
-#| msgid "scattering"
 msgid "scatter size"
-msgstr "Діапазон"
+msgstr "Розмір розсіювання"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:552
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:933
-#, fuzzy
-#| msgid "pull strength"
 msgid "halation strength"
-msgstr "Сила притягування"
+msgstr "Сила ореолу"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:558
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:937
-#, fuzzy
-#| msgid "frame line size"
 msgid "halation size"
-msgstr "Розмір лінії рамки"
+msgstr "Розмір ореолу"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:564
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:941
@@ -6335,24 +6307,18 @@ msgstr "Дифузія фільтра"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:588
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:957
-#, fuzzy
-#| msgid "diffusion properties"
 msgid "diffusion filter type"
-msgstr "властивості дифузії"
+msgstr "Тип фільтра дифузії"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:594
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:961
-#, fuzzy
-#| msgid "diffusion speed"
 msgid "diffusion strength"
-msgstr "швидкість дифузії"
+msgstr "Сила дифузії"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:600
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:965
-#, fuzzy
-#| msgid "diffusion speed"
 msgid "diffusion size"
-msgstr "швидкість дифузії"
+msgstr "Розмір дифузії"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:606
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:969
@@ -6413,10 +6379,8 @@ msgstr "Розмитість руху"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:660
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1005
-#, fuzzy
-#| msgid "green purity"
 msgid "granularity"
-msgstr "Чистота зеленого"
+msgstr "Зернистість"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:666
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1009
@@ -6432,17 +6396,13 @@ msgstr "Відображати масштаби"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:678
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1017
-#, fuzzy
-#| msgid "density"
 msgid "density floor"
-msgstr "Щільність"
+msgstr "Мінімальна щільність"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:684
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1021
-#, fuzzy
-#| msgid "download size"
 msgid "dye cloud size"
-msgstr "Розмір завантаження"
+msgstr "Розмір хмарки барвника"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:690
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1025
@@ -6467,60 +6427,48 @@ msgstr "Рівень стиснення"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:708
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1037
-#, fuzzy
-#| msgid "central radius"
 msgid "recovery radius"
-msgstr "Центральний радіус"
+msgstr "Радіус відновлення"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:714
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1041
-#, fuzzy
-#| msgid "recover purity"
 msgid "recovery strength"
-msgstr "Відновити чистоту"
+msgstr "Сила відновлення"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:720
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1045
 msgid "development gamma"
-msgstr ""
+msgstr "Гамма проявлення"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:726
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1049
-#, fuzzy
-#| msgid "target gamma"
 msgid "fast layer gamma"
-msgstr "Цільова гамма"
+msgstr "Гамма високочутливого субшару"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:732
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1053
 msgid "slow layer gamma"
-msgstr ""
+msgstr "Гамма низькочутливого субшару"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:738
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1057
-#, fuzzy
-#| msgid "develop history"
 msgid "developer exhaustion"
-msgstr "Історія обробки"
+msgstr "Виснаження проявника"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:744
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1061
 msgid "push/pull"
-msgstr ""
+msgstr "Пуш/пулл"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:750
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1065
-#, fuzzy
-#| msgid "surface blur"
 msgid "scanner blur"
-msgstr "Поверхневе розмиття"
+msgstr "Розмиття сканера"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:756
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1069
-#, fuzzy
-#| msgid "fast sharpness"
 msgid "scanner sharpness"
-msgstr "швидка різкість"
+msgstr "Різкість сканера"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:762
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1073
@@ -6532,20 +6480,15 @@ msgstr "Налаштування експозиції сканера"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:768
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1077
-#, fuzzy
-#| msgctxt "section"
-#| msgid "preview single scale"
 msgid "viewing glare"
-msgstr "Попередній перегляд окремого масштабу"
+msgstr "Відблиск при перегляді"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:774
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:780
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1081
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1085
-#, fuzzy
-#| msgid "print time"
 msgid "development time"
-msgstr "Час останнього друку"
+msgstr "Час проявлення"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:786
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1089
@@ -6563,15 +6506,15 @@ msgstr "Адаптація"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1111
 msgid "draft (17³ table)"
-msgstr ""
+msgstr "Чернетка (таблиця 17³)"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1112
 msgid "standard (33³ table)"
-msgstr ""
+msgstr "Стандарт (таблиця 33³)"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1113
 msgid "high (49³ table)"
-msgstr ""
+msgstr "Висока якість (таблиця 49³)"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1114
 #, fuzzy
@@ -6580,10 +6523,8 @@ msgid "exact spectral (very slow)"
 msgstr "512 px (дуже повільно)"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1118
-#, fuzzy
-#| msgid "black percentile"
 msgid "black pro-mist"
-msgstr "Процентиль чорного"
+msgstr "Black Pro-Mist"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1119
 msgid "glimmerglass"
@@ -6594,10 +6535,8 @@ msgid "pro-mist"
 msgstr "Pro-Mist"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1121
-#, fuzzy
-#| msgid "bloom"
 msgid "cinebloom"
-msgstr "Світіння"
+msgstr "CineBloom"
 
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:135
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:232
@@ -17766,7 +17705,7 @@ msgstr "Закруглені заголовки модулів"
 
 #: ../src/gui/preferences.c:495
 msgid "use rounded module headers variant"
-msgstr ""
+msgstr "Використовувати заокруглені заголовки модулів"
 
 #. focused module border
 #: ../src/gui/preferences.c:502
@@ -17986,26 +17925,24 @@ msgid "<i>not available, will fall back to CPU</i>"
 msgstr "<i>недоступно, буде використано CPU</i>"
 
 #: ../src/gui/preferences_ai.c:729
-#, fuzzy, c-format
-#| msgid "could not create directory `%s'!"
+#, c-format
 msgid "could not reach %d model repository"
 msgid_plural "could not reach %d model repositories"
-msgstr[0] "Не вдається створити каталог `%s'!"
-msgstr[1] "Не вдається створити каталог `%s'!"
-msgstr[2] "Не вдається створити каталог `%s'!"
+msgstr[0] "Не вдалося отримати доступ до %d репозиторію моделей"
+msgstr[1] "Не вдалося отримати доступ до %d репозиторіїв моделей"
+msgstr[2] "Не вдалося отримати доступ до %d репозиторіїв моделей"
 
 #: ../src/gui/preferences_ai.c:732
 msgid "all installed models are up to date"
 msgstr "Всі встановлені моделі оновлені"
 
 #: ../src/gui/preferences_ai.c:748
-#, fuzzy, c-format
-#| msgid "model not available"
+#, c-format
 msgid "%u model has an update available"
 msgid_plural "%u models have updates available"
-msgstr[0] "Модель недоступна"
-msgstr[1] "Модель недоступна"
-msgstr[2] "Модель недоступна"
+msgstr[0] "Для %u моделі доступне оновлення"
+msgstr[1] "Для %u моделей доступне оновлення"
+msgstr[2] "Для %u моделей доступне оновлення"
 
 #: ../src/gui/preferences_ai.c:754
 #, c-format
@@ -18013,8 +17950,11 @@ msgid "%u model is too old for this version of darktable and must be updated"
 msgid_plural ""
 "%u models are too old for this version of darktable and must be updated"
 msgstr[0] ""
+"%u модель занадто стара для цієї версії Darktable і потребує оновлення"
 msgstr[1] ""
+"%u моделі занадто старі для цієї версії Darktable і потребують оновлення"
 msgstr[2] ""
+"%u моделей занадто старі для цієї версії Darktable і потребують оновлення"
 
 #: ../src/gui/preferences_ai.c:769
 #, c-format
@@ -18305,6 +18245,9 @@ msgid ""
 "models.\n"
 "when off, updates are only looked for when you press the button below"
 msgstr ""
+"Зв’язується з репозиторіями моделей, щоб шукати новіші версії встановлених "
+"моделей.\n"
+"Коли вимкнено, оновлення шукаються лише після натискання кнопки нижче."
 
 #. provider dropdown
 #: ../src/gui/preferences_ai.c:2515
@@ -21206,31 +21149,23 @@ msgstr "15:10, листівка чорна"
 
 #: ../src/iop/borders.c:857
 msgid "increase border size to enable the frame line"
-msgstr ""
+msgstr "Збільште розмір облямівки, щоб увімкнути лінію рамки"
 
 #: ../src/iop/borders.c:859
-#, fuzzy
-#| msgid "horizontal offset of center of the effect"
 msgid "increase horizontal offset to enable the frame line"
-msgstr "Горизонтальне зміщення центра ефекту"
+msgstr "Збільште горизонтальне зміщення, щоб увімкнути лінію рамки"
 
 #: ../src/iop/borders.c:861
-#, fuzzy
-#| msgid "horizontal offset of center of the effect"
 msgid "decrease horizontal offset to enable the frame line"
-msgstr "Горизонтальне зміщення центра ефекту"
+msgstr "Зменште горизонтальне зміщення, щоб увімкнути лінію рамки"
 
 #: ../src/iop/borders.c:863
-#, fuzzy
-#| msgid "vertical offset of center of the effect"
 msgid "increase vertical offset to enable the frame line"
-msgstr "Вертикальне зміщення центра ефекту"
+msgstr "Збільште вертикальне зміщення, щоб увімкнути лінію рамки"
 
 #: ../src/iop/borders.c:865
-#, fuzzy
-#| msgid "vertical offset of center of the effect"
 msgid "decrease vertical offset to enable the frame line"
-msgstr "Вертикальне зміщення центра ефекту"
+msgstr "Зменште вертикальне зміщення, щоб увімкнути лінію рамки"
 
 #: ../src/iop/borders.c:876 ../src/iop/borders.c:1030
 msgid "size of the frame line in percent of min border width"
@@ -28654,12 +28589,16 @@ msgid ""
 "the installed data pack contains no film stocks\n"
 "it may have downloaded incompletely -- try fetching it again"
 msgstr ""
+"Встановлений пакет даних не містить типів плівок\n"
+"Можливо, він завантажився неповністю - спробуйте завантажити ще раз"
 
 #: ../src/iop/spektrafilm.c:1213
 msgid ""
 "the installed data pack contains no print papers\n"
 "it may have downloaded incompletely -- try fetching it again"
 msgstr ""
+"Встановлений пакет даних не містить типів фотопаперів\n"
+"Можливо, він завантажився неповністю - спробуйте завантажити ще раз"
 
 #: ../src/iop/spektrafilm.c:1254
 msgid "this film or paper could not be loaded"
@@ -28720,6 +28659,8 @@ msgstr ""
 #: ../src/iop/spektrafilm.c:3322
 msgid "no data pack installed -- the module's controls appear once one is"
 msgstr ""
+"Пакет даних не встановлено - елементи керування модулем з'являться після його "
+"встановлення"
 
 #: ../src/iop/spektrafilm.c:3323 ../src/iop/spektrafilm.c:4391
 msgid "download data pack"
@@ -28727,7 +28668,7 @@ msgstr "Завантажити пакет даних"
 
 #: ../src/iop/spektrafilm.c:3325
 msgid "fetch the matching spectral data pack over the network"
-msgstr ""
+msgstr "Отримати відповідний пакет спектральних даних через мережу"
 
 #: ../src/iop/spektrafilm.c:3390
 #, fuzzy
@@ -28740,96 +28681,72 @@ msgid "data mismatch"
 msgstr "Невідповідність даних"
 
 #: ../src/iop/spektrafilm.c:3525
-#, fuzzy
-#| msgid "black and white film"
 msgid "look|crisp black and white"
-msgstr "Чорно-біла плівка"
+msgstr "Look|Crisp black and white"
 
 #: ../src/iop/spektrafilm.c:3551
-#, fuzzy
-#| msgid "black and white film"
 msgid "film|black and white"
-msgstr "Чорно-біла плівка"
+msgstr "Film|Black and white"
 
 #: ../src/iop/spektrafilm.c:3584
-#, fuzzy
-#| msgid "split-toning"
 msgid "look|split-toned"
-msgstr "Спліт-тонування"
+msgstr "Look|Split-toned"
 
 #: ../src/iop/spektrafilm.c:3615
-#, fuzzy
-#| msgid "bleach bypass"
 msgid "look|bleach bypass"
-msgstr "Утримання срібла (пропуск відбілювання)"
+msgstr "Look|Bleach bypass"
 
 #: ../src/iop/spektrafilm.c:3634
 msgid "film|cinema"
-msgstr ""
+msgstr "Film|Cinema"
 
 #: ../src/iop/spektrafilm.c:3673
 msgid "look|kino 250D"
-msgstr ""
+msgstr "Look|Kino 250D"
 
 #: ../src/iop/spektrafilm.c:3688
-#, fuzzy
-#| msgid "filmic"
 msgid "film|classic"
-msgstr "Filmic"
+msgstr "Film|Classic"
 
 #: ../src/iop/spektrafilm.c:3708
-#, fuzzy
-#| msgid "contrast"
 msgid "film|contrast"
-msgstr "Контраст"
+msgstr "Film|Contrast"
 
 #: ../src/iop/spektrafilm.c:3725
-#, fuzzy
-#| msgid "neutral"
 msgid "film|neutral"
-msgstr "Нейтральна"
+msgstr "Film|Neutral"
 
 #: ../src/iop/spektrafilm.c:3763
-#, fuzzy
-#| msgid "film material"
 msgid "film|soft pastel"
-msgstr "Матеріал фотоплівки"
+msgstr "Film|Soft pastel"
 
 #: ../src/iop/spektrafilm.c:3785
 msgid "film|warm"
-msgstr ""
+msgstr "Film|Warm"
 
 #: ../src/iop/spektrafilm.c:3806
-#, fuzzy
-#| msgid "portrait"
 msgid "film|portrait"
-msgstr "Портрет"
+msgstr "Film|Portrait"
 
 #: ../src/iop/spektrafilm.c:3823
-#, fuzzy
-#| msgid "local contrast"
 msgid "film|portrait contrast"
-msgstr "Локальний контраст"
+msgstr "Film|Portrait contrast"
 
 #: ../src/iop/spektrafilm.c:3850
 msgid "look|vivid"
-msgstr ""
+msgstr "Look|Vivid"
 
 #: ../src/iop/spektrafilm.c:3877
-#, fuzzy
-#| msgid "Monochrome"
 msgid "look|skodachrome"
-msgstr "Монохром"
+msgstr "Look|Skodachrome"
 
 #: ../src/iop/spektrafilm.c:3908
 msgid "look|foliage"
-msgstr ""
+msgstr "Look|Foliage"
 
 #: ../src/iop/spektrafilm.c:3944
-#, fuzzy
-#| msgid "look"
 msgid "look|glow"
-msgstr "Крива"
+msgstr "Look|Glow"
 
 #: ../src/iop/spektrafilm.c:3961
 #, fuzzy
@@ -28856,10 +28773,8 @@ msgid "positive monochrome"
 msgstr "Монохром"
 
 #: ../src/iop/spektrafilm.c:3987
-#, fuzzy
-#| msgid "no printers found!"
 msgid "(no profiles found)"
-msgstr "Принтерів не знайдено!"
+msgstr "(профілів не знайдено)"
 
 #. paper_hash 0 means "follow the film's target print" -- the state a fresh
 #. edit starts in, and the one _film_changed() keeps updating. Picking a paper
@@ -28881,10 +28796,8 @@ msgid "auto (follow film stock)"
 msgstr ""
 
 #: ../src/iop/spektrafilm.c:4022
-#, fuzzy
-#| msgid "none"
 msgid "(none)"
-msgstr "Немає"
+msgstr "(Немає)"
 
 #: ../src/iop/spektrafilm.c:4317 ../src/iop/spektrafilm.c:4348
 msgid "reset only this section"
@@ -28892,7 +28805,7 @@ msgstr "Скинути лише цей розділ"
 
 #: ../src/iop/spektrafilm.c:4420
 msgid "film emulsion (spektrafilm filming profile)"
-msgstr ""
+msgstr "Емульсія плівки (профіль spektrafilm)"
 
 #: ../src/iop/spektrafilm.c:4426
 msgid ""
@@ -28914,10 +28827,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/spektrafilm.c:4452
-#, fuzzy
-#| msgid "mm"
 msgid " mm"
-msgstr "мм"
+msgstr " мм"
 
 #: ../src/iop/spektrafilm.c:4454
 msgid ""
@@ -28926,6 +28837,10 @@ msgid ""
 "shows every one of them proportionally larger for the same\n"
 "print size."
 msgstr ""
+"Фізичний розмір кадру, довгий край. Встановлює масштаб, за яким\n"
+"обчислюються зернистість, розсіювання, ореоли та дифузія, тому\n"
+"менший формат показує кожен з них пропорційно більшим\n"
+"для того самого розміру друку."
 
 #. ---- tab 1: film (exposure + development) ----
 #: ../src/iop/spektrafilm.c:4473
@@ -28962,7 +28877,7 @@ msgstr ""
 #: ../src/iop/spektrafilm.c:4502 ../src/iop/spektrafilm.c:4717
 msgctxt "section"
 msgid "chemistry"
-msgstr ""
+msgstr "Фотохімія"
 
 #: ../src/iop/spektrafilm.c:4505 ../src/iop/spektrafilm.c:4720
 #, fuzzy
@@ -28989,10 +28904,13 @@ msgid ""
 "only, independent of the slow layer, since push/pull processing\n"
 "doesn't always affect every sub-layer equally."
 msgstr ""
+"Контраст лише найбільш світлочутливого емульсійного субшару,\n"
+"незалежно від низькочутливого шару, оскільки обробка методом\n"
+"пуш/пулл не завжди однаково впливає на кожен субшар."
 
 #: ../src/iop/spektrafilm.c:4532
 msgid "contrast of the mid and slow emulsion sub-layers"
-msgstr ""
+msgstr "Контраст середньо- та низькочутливого емульсійних субшарів"
 
 #: ../src/iop/spektrafilm.c:4537
 msgid ""
@@ -29030,7 +28948,7 @@ msgstr ""
 
 #: ../src/iop/spektrafilm.c:4567 ../src/iop/spektrafilm.c:4580
 msgid " µm"
-msgstr ""
+msgstr " мкм"
 
 #: ../src/iop/spektrafilm.c:4570
 msgid ""
@@ -29062,11 +28980,9 @@ msgstr ""
 #. the rest of the film stage rather than on a tab of its own.
 #. the enlarger-side diffusion filter, alongside the rest of the print stage
 #: ../src/iop/spektrafilm.c:4596 ../src/iop/spektrafilm.c:4773
-#, fuzzy
-#| msgid "fusion"
 msgctxt "section"
 msgid "diffusion"
-msgstr "Злиття"
+msgstr "Дифузія"
 
 #: ../src/iop/spektrafilm.c:4608
 msgid ""
@@ -29153,10 +29069,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/spektrafilm.c:4703
-#, fuzzy
-#| msgid "pivot relative exposure"
 msgid "print brightness (enlarger exposure)"
-msgstr "Відносна експозиція опорної точки"
+msgstr "Яскравість друку (експозиція фотозбільшувача)"
 
 #: ../src/iop/spektrafilm.c:4708
 msgid ""
@@ -29177,11 +29091,9 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/spektrafilm.c:4728
-#, fuzzy
-#| msgid "iterations"
 msgctxt "section"
 msgid "filtration"
-msgstr "Ітерації"
+msgstr "Фільтрація"
 
 #: ../src/iop/spektrafilm.c:4731 ../src/iop/spektrafilm.c:4736
 #: ../src/iop/spektrafilm.c:4757 ../src/iop/spektrafilm.c:4765
@@ -29197,11 +29109,9 @@ msgid "yellow enlarger filtration, Kodak CC units from neutral"
 msgstr ""
 
 #: ../src/iop/spektrafilm.c:4742
-#, fuzzy
-#| msgid "flash"
 msgctxt "section"
 msgid "preflash"
-msgstr "Спалах"
+msgstr "Попередня засвітка"
 
 #: ../src/iop/spektrafilm.c:4752
 msgid ""
@@ -29342,20 +29252,16 @@ msgstr ""
 
 #. ---- tab 4: halation ----
 #: ../src/iop/spektrafilm.c:4910
-#, fuzzy
-#| msgid "action"
 msgid "halation"
-msgstr "Дія"
+msgstr "Ореол"
 
 #. Two distinct effects share this tab: scatter is the spread inside the
 #. emulsion, halation the bounce off the film base behind it. They were run
 #. together under no heading at all, which read as one four-slider group.
 #: ../src/iop/spektrafilm.c:4917
-#, fuzzy
-#| msgid "scattering"
 msgctxt "section"
 msgid "scatter"
-msgstr "Діапазон"
+msgstr "Розсіювання"
 
 #: ../src/iop/spektrafilm.c:4921
 msgid ""
@@ -29380,11 +29286,9 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/spektrafilm.c:4955
-#, fuzzy
-#| msgid "action"
 msgctxt "section"
 msgid "halation"
-msgstr "Дія"
+msgstr "Ореол"
 
 #: ../src/iop/spektrafilm.c:4960
 msgid "halation strength. 1.0 is film-accurate."
@@ -29414,21 +29318,17 @@ msgstr ""
 #. ---- tab 5: diffusion ----
 #. ---- scanner tab ----
 #: ../src/iop/spektrafilm.c:4991
-#, fuzzy
-#| msgid "channel"
 msgid "scanner"
-msgstr "Канал"
+msgstr "Сканер"
 
 #. Pre-compression boost lives here, not in the header. It acts in the scan
 #. stage, immediately before the OkLCh gamut compressor -- the last thing the
 #. module does. A position at the top would imply an input control, and its
 #. picker reads the processed image.
 #: ../src/iop/spektrafilm.c:4997
-#, fuzzy
-#| msgid "output"
 msgctxt "section"
 msgid "output"
-msgstr "На виході"
+msgstr "Вихід"
 
 #: ../src/iop/spektrafilm.c:5001
 msgid ""
@@ -29464,6 +29364,8 @@ msgstr ""
 msgid ""
 "pick brightest tone in the selected area and scale it to just below white."
 msgstr ""
+"Вибрати найяскравіший тон у вибраній області та масштабувати його трохи нижче "
+"білого."
 
 #: ../src/iop/spektrafilm.c:5033
 msgctxt "section"
@@ -29472,7 +29374,7 @@ msgstr "Різкість"
 
 #: ../src/iop/spektrafilm.c:5037
 msgid "scanner lens softness, in pixels (0 = off)"
-msgstr ""
+msgstr "М’якість об’єктива сканера, у пікселях (0 = вимкнено)"
 
 #: ../src/iop/spektrafilm.c:5041
 msgid "scanner sharpening radius, in pixels"
@@ -29483,11 +29385,15 @@ msgid ""
 "scanner sharpening strength (0 = off). 0.7 is what a scan of the\n"
 "film normally gets; leave at 0 if you prefer to sharpen downstream."
 msgstr ""
+"Сила збільшення різкості сканера (0 = вимкнено). 0,7 – це те, що зазвичай "
+"дає\n"
+"сканування плівки; залиште 0, якщо ви бажаєте збільшити різкість після "
+"сканування."
 
 #: ../src/iop/spektrafilm.c:5050
 msgctxt "section"
 msgid "glare"
-msgstr ""
+msgstr "Відблиск"
 
 #: ../src/iop/spektrafilm.c:5054
 msgid ""
@@ -29495,6 +29401,9 @@ msgid ""
 "print surface, in percent. lifts the deepest blacks slightly. not\n"
 "applied when scanning the film directly."
 msgstr ""
+"Відблиск під час перегляду: слабка вуаль світла, відбитого від\n"
+"поверхні друку, у відсотках. Трохи піднімає найглибші чорні кольори.\n"
+"Не застосовується під час безпосереднього сканування плівки."
 
 #: ../src/iop/splittoning.c:79
 msgid "split-toning"
