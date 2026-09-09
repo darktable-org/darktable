@@ -339,8 +339,8 @@ static int _gradient_events_button_released(dt_iop_module_t *module,
                                             dt_masks_form_gui_t *gui,
                                             const int index)
 {
-  float wd, ht, iwidth, iheight;
-  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+  float wd, ht;
+  dt_masks_get_image_size(&wd, &ht, NULL, NULL);
 
   if(which == GDK_BUTTON_SECONDARY
      && dt_is_valid_maskid(parentid)
@@ -379,19 +379,9 @@ static int _gradient_events_button_released(dt_iop_module_t *module,
      && form->points
      && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
-    // we get the gradient
-    dt_masks_point_gradient_t *gradient = form->points->data;
-
-    // we end the form dragging
+    // the move was already applied incrementally in mouse_moved; just finalise
     gui->form_dragging = FALSE;
 
-    // we change the center value
-    float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
-    dt_masks_clamp_move_pts(pts, wd, ht);
-    dt_dev_distort_backtransform(darktable.develop, pts, 1);
-
-    gradient->anchor[0] = pts[0] / iwidth;
-    gradient->anchor[1] = pts[1] / iheight;
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
@@ -403,40 +393,8 @@ static int _gradient_events_button_released(dt_iop_module_t *module,
           && form->points
           && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
-    // we get the gradient
-    dt_masks_point_gradient_t *gradient = form->points->data;
-
-    // we end the form rotating
+    // rotation was applied incrementally in mouse_moved; just finalise
     gui->form_rotating = FALSE;
-
-    const float x = pzx * wd;
-    const float y = pzy * ht;
-
-    // we need the reference point
-    dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
-    if(!gpt) return 0;
-    const float xref = gpt->points[0];
-    const float yref = gpt->points[1];
-
-    const float pts[8] = { xref, yref, x , y, 0, 0, gui->dx, gui->dy };
-
-    const float dv = atan2f(pts[3] - pts[1],
-                            pts[2] - pts[0]) - atan2f(-(pts[7] - pts[5]),
-                                                      -(pts[6] - pts[4]));
-
-    float pts2[8] = { xref, yref, x , y, xref+10.0f, yref, xref, yref+10.0f };
-
-    dt_dev_distort_backtransform(darktable.develop, pts2, 4);
-
-    float check_angle = atan2f(pts2[7] - pts2[1],
-                               pts2[6] - pts2[0]) - atan2f(pts2[5] - pts2[1],
-                                                           pts2[4] - pts2[0]);
-    // Normalize to the range -180 to 180 degrees
-    check_angle = atan2f(sinf(check_angle), cosf(check_angle));
-    if(check_angle < 0)
-      gradient->rotation += rad2degf(dv);
-    else
-      gradient->rotation -= rad2degf(dv);
 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
