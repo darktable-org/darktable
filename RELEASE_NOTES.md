@@ -166,6 +166,10 @@ changes (where available).
 
 ## Bug Fixes
 
+- Fixed color harmonizer's auto-detect harmony applying the hue
+  histogram of the previously viewed image after switching images in the
+  darkroom.
+
 - Entering the darkroom no longer expands one instance of a module while
   a different instance of it holds the focus. The instance that gets the
   focus is now the one that is expanded.
