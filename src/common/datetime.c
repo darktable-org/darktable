@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2023 darktable developers.
+    Copyright (C) 2022-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -106,12 +106,32 @@ gboolean dt_datetime_exif_to_numbers_raw(dt_datetime_t *dt, const char *exif)
     int match_count = g_match_info_get_match_count(match_info);
     if(match_count == 7)
     {
-      dt->year = atoi(g_match_info_fetch(match_info, 1));
-      dt->month = atoi(g_match_info_fetch(match_info, 2));
-      dt->day = atoi(g_match_info_fetch(match_info, 3));
-      dt->hour = atoi(g_match_info_fetch(match_info, 4));
-      dt->minute = atoi(g_match_info_fetch(match_info, 5));
-      dt->second = atoi(g_match_info_fetch(match_info, 6));
+      gchar *str;
+
+      str = g_match_info_fetch(match_info, 1);
+      dt->year = atoi(str);
+      g_free(str);
+
+      str = g_match_info_fetch(match_info, 2);
+      dt->month = atoi(str);
+      g_free(str);
+
+      str = g_match_info_fetch(match_info, 3);
+      dt->day = atoi(str);
+      g_free(str);
+
+      str = g_match_info_fetch(match_info, 4);
+      dt->hour = atoi(str);
+      g_free(str);
+
+      str = g_match_info_fetch(match_info, 5);
+      dt->minute = atoi(str);
+      g_free(str);
+
+      str = g_match_info_fetch(match_info, 6);
+      dt->second = atoi(str);
+      g_free(str);
+
       g_match_info_free(match_info);
       g_regex_unref(regex);
       return TRUE;
