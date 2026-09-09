@@ -514,7 +514,9 @@ static void _process_common_setup(dt_iop_module_t *self,
   }
 
   const float white = exposure2white(exposure);
-  d->scale = 1.0 / (white - d->black);
+  if(d->black >= white)
+    d->black = white - 0.01f;
+  d->scale = 1.0f / (white - d->black);
 }
 
 #ifdef HAVE_OPENCL
