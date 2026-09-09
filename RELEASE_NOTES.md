@@ -108,6 +108,9 @@ changes (where available).
   sensor sizes, where blending the tile seams wrote past the edge of
   the image.
 
+- Fixed small memory leaks when expanding variables, which grew with
+  the number of images exported or imported in one run.
+
 ## Lua
 
 ### API Version
