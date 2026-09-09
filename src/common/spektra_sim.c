@@ -1700,13 +1700,12 @@ static void bilinear_2d_clamped(double out[3],
    differently depending on which device ran.
 
    Every step here is float32 -- base/fraction, the Mitchell weights, the
-   accumulator and the normalising divide -- because sf_cubic2d is. This
-   function used to carry the _f only in its name and its LUT type, and do all
-   of its arithmetic in double; that made the very first pipeline stage
-   disagree with the GPU on essentially every pixel, and since the grain
-   sampler downstream turns a sub-ULP input difference into a whole-integer
-   Poisson draw difference, nothing further down the pipe could ever agree
-   either. Keep this in float. */
+   accumulator and the normalising divide -- because sf_cubic2d is. The _f is
+   not just the name and the LUT type: doing the arithmetic in double instead
+   makes the very first pipeline stage disagree with the GPU on essentially
+   every pixel, and the grain sampler downstream turns a sub-ULP input
+   difference into a whole-integer Poisson draw difference, so nothing further
+   down the pipe can agree either. Keep this in float. */
 static void cubic_interp_2d_f(float out[3],
                               const float *lut,
                               int L,
@@ -2811,9 +2810,8 @@ static inline float cmax_lookup_f(const sf_sim_t *s,
 /* [gc] compress_rgb_oklch_chroma with lightness_compression (0.7, 1, 2.2),
    in float, matching spektrafilm.cl's compress_mode == 1 branch term for term
    (same hypot/atan2 operand order, same knee constants). sf_sim_scan is the
-   only caller, so this replaces the double compress_rgb_oklch outright rather
-   than sitting next to it -- keeping both would leave the double one unused
-   and trip -Werror=unused-function.
+   only caller, so this is the only compress_rgb_oklch there is -- a double
+   twin alongside it would be unused and trip -Werror=unused-function.
 
    The double xyz_to_oklab/oklab_to_xyz do survive, on their own merits:
    oklab_to_xyz for build_cmax_table and xyz_to_oklab for the colour picker's
@@ -4292,11 +4290,11 @@ void sf_sim_scan(const sf_sim_t *sim,
       lx[0] = (float)lxd[0]; lx[1] = (float)lxd[1]; lx[2] = (float)lxd[2];
     }
     /* float from here on, matching spektrafilm_scan in spektrafilm.cl term
-       for term (POW10F is already float; lx above is float in every branch
-       above already too) -- this used to switch to double here for no
-       reason tied to accuracy, which meant every pixel's gamut compression
-       silently disagreed with the GPU path. See compress_rgb_oklch_f's
-       comment for what still legitimately stays in double (build_cmax_table). */
+       for term (POW10F is already float, and lx above is float in every branch
+       too). Switching to double here would buy no accuracy and would make
+       every pixel's gamut compression disagree with the GPU path. See
+       compress_rgb_oklch_f's comment for what legitimately stays in double
+       (build_cmax_table). */
     float xyz[3]; float rgb[3];
     for(int m = 0; m < 3; m++) xyz[m] = SF_POW10F(lx[m]);
     if(sim->out_luminance_boost != 1.0)
@@ -4423,12 +4421,12 @@ sf_sim_gpu_t *sf_sim_gpu_export(const sf_sim_t *s)
     for(int c = 0; c < 3; c++)
     {
       g->enl_lo[c] = (float)s->enl_lo[c];
-      /* Not (float)s->enl_hi[c] -- the kernel no longer receives hi at all.
-         See spektrafilm.cl's spektrafilm_print_expose for why re-deriving
-         hi-lo on-device is the wrong thing to upload; this is already the
-         single correctly-rounded reciprocal the CPU fast path itself uses
-         (sf_sim_print_expose above), so GPU and CPU now run byte-identical
-         range math instead of two different roundings of the same range. */
+      /* The reciprocal, not (float)s->enl_hi[c]: the kernel takes no hi at
+         all. See spektrafilm.cl's spektrafilm_print_expose for why re-deriving
+         hi-lo on-device is the wrong thing to upload. This is the same
+         correctly-rounded reciprocal the CPU fast path uses
+         (sf_sim_print_expose above), so both paths run byte-identical range
+         math rather than two roundings of the same range. */
       g->enl_inv_range[c] = s->enl_inv_range[c];
     }
     g->enl_lut = dup_f(s->enl_lut, n3);
