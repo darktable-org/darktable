@@ -98,6 +98,7 @@ static struct
   double progress;
   char message[256];
   guint generation; /* bumped whenever an install changes what is on disk */
+  guint finished_idle; /* pending _finished_idle source, 0 when none */
   gboolean inited;
 } _sf = { .state = SF_FETCH_IDLE };
 
@@ -114,6 +115,7 @@ static void _set_status(const sf_fetch_state_t state,
                         const double progress,
                         const char *msg)
 {
+  if(!_sf.inited) return;
   g_mutex_lock(&_sf.lock);
   _sf.state = state;
   if(progress >= 0.0) _sf.progress = CLAMP(progress, 0.0, 1.0);
@@ -123,6 +125,11 @@ static void _set_status(const sf_fetch_state_t state,
 
 static gboolean _cancelled(void)
 {
+  /* Not started, or already torn down: nothing is in flight to cancel, and the
+     mutex below may have been cleared. Every entry point that takes _sf.lock
+     tests this first -- the lock only exists between sf_fetch_init() and
+     sf_fetch_cleanup(), and callers on the GUI side outlive neither reliably. */
+  if(!_sf.inited) return FALSE;
   g_mutex_lock(&_sf.lock);
   const gboolean c = _sf.cancel;
   g_mutex_unlock(&_sf.lock);
@@ -150,6 +157,17 @@ void sf_fetch_cleanup(void)
   _sf.thread = NULL;
   g_mutex_unlock(&_sf.lock);
   if(t) g_thread_join(t);
+
+  /* The worker's last act is to post _finished_idle, so joining guarantees it
+     has been posted, not that it has run. It calls sf_fetch_status(), so a
+     dispatch after the clear below would take a cleared mutex; drop it while
+     the lock is still valid. Zero means it already ran. */
+  g_mutex_lock(&_sf.lock);
+  const guint idle = _sf.finished_idle;
+  _sf.finished_idle = 0;
+  g_mutex_unlock(&_sf.lock);
+  if(idle) g_source_remove(idle);
+
   g_mutex_clear(&_sf.lock);
   _sf.inited = FALSE;
 }
@@ -158,6 +176,12 @@ sf_fetch_state_t sf_fetch_status(char *msg,
                                  size_t msgsz,
                                  double *progress)
 {
+  if(!_sf.inited)
+  {
+    if(msg && msgsz) msg[0] = '\0';
+    if(progress) *progress = 0.0;
+    return SF_FETCH_IDLE;
+  }
   g_mutex_lock(&_sf.lock);
   const sf_fetch_state_t s = _sf.state;
   if(msg && msgsz) g_strlcpy(msg, _sf.message, msgsz);
@@ -168,6 +192,7 @@ sf_fetch_state_t sf_fetch_status(char *msg,
 
 void sf_fetch_cancel(void)
 {
+  if(!_sf.inited) return;
   g_mutex_lock(&_sf.lock);
   _sf.cancel = TRUE;
   g_mutex_unlock(&_sf.lock);
@@ -878,6 +903,15 @@ typedef struct sf_worker_args_t
 static gboolean _finished_idle(gpointer user_data)
 {
   const gboolean ok = GPOINTER_TO_INT(user_data);
+
+  /* Taken before anything else, and posted under the same lock: if the main
+     loop reaches this before the worker has recorded the source id, that store
+     is still in progress and this blocks until it lands, so the id can never be
+     left behind pointing at a source that has already run. */
+  g_mutex_lock(&_sf.lock);
+  _sf.finished_idle = 0;
+  g_mutex_unlock(&_sf.lock);
+
   char msg[256] = { 0 };
   sf_fetch_status(msg, sizeof(msg), NULL);
 
@@ -901,6 +935,7 @@ static gpointer _fetch_worker(gpointer data)
   gboolean success = FALSE;
   char *repo = NULL, *ref = NULL, *manifest_url = NULL, *manifest = NULL;
   char *base = NULL, *tmpdir = NULL, *destdir = NULL, *profdir = NULL;
+  char *olddir = NULL;
   GPtrArray *files = NULL;
   CURL *curl = NULL;
 
@@ -1034,11 +1069,45 @@ static gpointer _fetch_worker(gpointer data)
     goto out;
   }
 
-  _rmdir_recursive(destdir); /* replacing an older copy of the same hash */
+  /* Replacing an older copy of the same hash: move it aside rather than delete
+     it, so there is never a moment with no pack at this path. Deleting first
+     and then failing the rename -- out of space, a permission change, a handle
+     held open on the file the user is mid-render against -- leaves the user
+     with nothing, because the out: block below then removes the download too.
+     The name is dotted like .incoming, and lookups address packs by their exact
+     %08x name rather than scanning, so neither is ever mistaken for a pack. */
+  if(g_file_test(destdir, G_FILE_TEST_IS_DIR))
+  {
+    olddir = g_strdup_printf("%s%s.replaced-%08x", packs, G_DIR_SEPARATOR_S, got_hash);
+    _rmdir_recursive(olddir);
+    if(g_rename(destdir, olddir) != 0)
+    {
+      /* Cannot move it aside, so it could not be restored either. Stop here
+         and keep it: a pack that already renders is worth more than the one
+         being installed, and deleting it to make room would risk ending up
+         with neither. */
+      dt_print(DT_DEBUG_ALWAYS,
+               "[spektrafilm] cannot move the installed pack aside at %s: %s",
+               destdir, strerror(errno));
+      g_free(olddir);
+      olddir = NULL;
+      _set_status(SF_FETCH_FAILED, -1.0,
+                  _("could not replace the installed pack -- the existing one "
+                    "has been kept"));
+      goto out;
+    }
+  }
+
   if(g_rename(tmpdir, destdir) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS, "[spektrafilm] cannot install pack into %s: %s",
              destdir, strerror(errno));
+    /* Put the working pack back before reporting the failure. */
+    if(olddir && g_rename(olddir, destdir) == 0)
+    {
+      g_free(olddir);
+      olddir = NULL;
+    }
     _set_status(SF_FETCH_FAILED, -1.0, _("could not install the downloaded pack"));
     goto out;
   }
@@ -1055,6 +1124,9 @@ static gpointer _fetch_worker(gpointer data)
 
 out:
   if(!success && tmpdir) _rmdir_recursive(tmpdir);
+  /* Reached with olddir set only once the new pack is in place, or after a
+     restore that itself failed; either way the copy it names is superseded. */
+  if(olddir) _rmdir_recursive(olddir);
   if(curl) curl_easy_cleanup(curl);
   _files_free(files);
   g_free(manifest);
@@ -1065,13 +1137,13 @@ out:
   g_free(tmpdir);
   g_free(destdir);
   g_free(profdir);
+  g_free(olddir);
 
   g_mutex_lock(&_sf.lock);
   _sf.cancel = FALSE;
-  g_mutex_unlock(&_sf.lock);
-
   if(darktable.gui)
-    g_idle_add(_finished_idle, GINT_TO_POINTER(success ? 1 : 0));
+    _sf.finished_idle = g_idle_add(_finished_idle, GINT_TO_POINTER(success ? 1 : 0));
+  g_mutex_unlock(&_sf.lock);
 
   return NULL;
 }
