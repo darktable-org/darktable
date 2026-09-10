@@ -177,6 +177,9 @@ changes (where available).
 
 ## Bug Fixes
 
+- Fixed a trashing error dialog when deleting a virgin duplicate of an
+  image while sidecar creation is set to "after edit".
+
 - Fixed color harmonizer's auto-detect harmony applying the hue
   histogram of the previously viewed image after switching images in the
   darkroom.

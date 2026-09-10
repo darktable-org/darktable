@@ -1369,6 +1369,10 @@ static _dt_delete_status_t delete_file_from_disk
 {
   _dt_delete_status_t delete_status = _DT_DELETE_STATUS_UNKNOWN;
 
+  // if the file does not exist on disk, it is already deleted
+  if(!g_file_test(filename, G_FILE_TEST_EXISTS))
+    return _DT_DELETE_STATUS_DELETED;
+
   GFile *gfile = g_file_new_for_path(filename);
   int send_to_trash = dt_conf_get_bool("send_to_trash");
 
