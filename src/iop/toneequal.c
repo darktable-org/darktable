@@ -642,17 +642,15 @@ static void hash_set_get(const dt_hash_t *hash_in,
 static dt_hash_t _luminance_mask_hash(dt_dev_pixelpipe_iop_t *piece,
                                       const dt_iop_roi_t *const roi_out)
 {
-  // Freshness key of the cached luminance mask.
-  //
-  // include = TRUE hashes nodes[0 .. position-1], i.e. our own params too, so
-  // a band slider drag recomputed the whole mask (~60 ms/Mpix) and re-copied
-  // it from the device.  The mask ignores the band factors and `smoothing`:
-  // hash the upstream pipe (include = FALSE, roi folded in) plus the params
-  // compute_luminance_mask() reads, the invalidate list of gui_changed().
+  // freshness key of the cached luminance mask: the upstream pipe and roi
+  // (include = FALSE leaves our own params out, the mask ignores the band
+  // factors and `smoothing`) plus the params the mask builders read.
+  // keep in sync with compute_luminance_mask(), _compute_luminance_mask_cl()
+  // and the invalidate list of gui_changed()
   const dt_iop_toneequalizer_data_t *const d = piece->data;
 
   const float mask_floats[] = { d->blending, d->feathering, d->contrast_boost,
-                                d->exposure_boost, d->quantization, d->scale };
+                                d->exposure_boost, d->quantization };
   const int mask_ints[] = { d->radius, d->iterations,
                             (int)d->method, (int)d->details };
 
