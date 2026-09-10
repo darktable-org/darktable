@@ -2638,16 +2638,19 @@ Details :
     font-family: Inter, sans-serif;
     background-color: transparent;
     margin-left: 30pt;
+    margin-right: 30pt;
     margin-top: 10pt;
     margin-bottom: 2em;
 }
 
-/* time remaining */
+/* time remaining, on the same row as the progress label */
 #splashscreen-remaining
 {
     color: @grey_60;
     font-size: 10pt;
-    padding-bottom: 1em;
+    margin-right: 30pt;
+    margin-top: 10pt;
+    margin-bottom: 2em;
 }
 
 /* style the message on the exit screen */
