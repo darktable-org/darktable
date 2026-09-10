@@ -43,8 +43,10 @@ typedef HRESULT(WINAPI *dt_alloc_console_with_options_t)(
   dt_alloc_console_options_t *options,
   int *result);
 
-static gboolean _allocate_console(void)
+static gboolean _allocate_console(gboolean *visible)
 {
+  *visible = FALSE;
+
   const HMODULE kernel = GetModuleHandleW(L"kernel32.dll");
   const FARPROC allocation_proc = GetProcAddress(kernel, "AllocConsoleWithOptions");
   dt_alloc_console_with_options_t alloc_with_options = NULL;
@@ -58,7 +60,8 @@ static gboolean _allocate_console(void)
       return TRUE;
   }
 
-  return AllocConsole();
+  *visible = AllocConsole();
+  return *visible;
 }
 #endif
 
@@ -72,6 +75,8 @@ int main(int argc, char *argv[])
   dt_osx_prepare_environment();
 #endif
 #ifdef _WIN32
+  gboolean show_console_notice = FALSE;
+
   // On Windows we have a hard time showing stuff printed to stdout/stderr to the user.
   // Because of that we write it to a log file.
   char datetime[DT_DATETIME_EXIF_LENGTH];
@@ -98,7 +103,7 @@ int main(int argc, char *argv[])
     const gboolean error_redirected =
       initial_err_type == FILE_TYPE_DISK || initial_err_type == FILE_TYPE_PIPE;
 
-    if(_allocate_console())
+    if(_allocate_console(&show_console_notice))
     {
       if(input_redirected)
         SetStdHandle(STD_INPUT_HANDLE, initial_input_handle);
@@ -172,6 +177,9 @@ int main(int argc, char *argv[])
     printf("start: %s\n", datetime);
     printf("\n");
   }
+
+  if(show_console_notice)
+    dt_request_console_notice();
 
   // Make sure GTK client side decoration is disabled,
   // otherwise windows resizing issues can be observed.
