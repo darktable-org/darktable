@@ -997,24 +997,45 @@ if(USE_COLORD)
 endif(USE_COLORD)
 
 if(BUILD_PRINT)
-  find_package(Cups)
-  if(CUPS_FOUND)
-    include_directories(SYSTEM ${CUPS_INCLUDE_DIR})
-    FILE(GLOB SOURCE_FILES_PRINT
-      "common/cups_print.h"
-      "common/cups_print.c"
-      "common/printprof.c"
-      "common/printing.h"
-      "common/printing.c"
+  FILE(GLOB SOURCE_FILES_PRINT
+    "common/printprof.c"
+    "common/printing.h"
+    "common/printing.c"
+    "common/cups_print.h"
+    )
+  if(WIN32)
+    list(APPEND SOURCE_FILES_PRINT
+      "win/win32_print.c"
+      "win/win32_print.h"
       )
     set(SOURCES ${SOURCES} ${SOURCE_FILES_PRINT})
-    list(APPEND LIBS ${CUPS_LIBRARIES})
+    # Append Windows‑specific libraries to the common LIBS list
+    list(APPEND LIBS 
+      winspool
+      ole32
+      uuid
+      windowscodecs
+      oleaut32
+      prntvpt
+      )
     add_definitions("-DHAVE_PRINT")
-    message(STATUS "Print mode: enabled")
-  else(CUPS_FOUND)
-    set(BUILD_PRINT OFF)
-    message(STATUS "Print mode: disabled, please install CUPS dev package")
-  endif(CUPS_FOUND)
+    message(STATUS "Print mode: enabled (Windows)")
+  else(WIN32)
+    find_package(Cups)
+    if(CUPS_FOUND)
+      include_directories(SYSTEM ${CUPS_INCLUDE_DIR})
+      list(APPEND SOURCE_FILES_PRINT
+        "common/cups_print.c"
+        )
+      set(SOURCES ${SOURCES} ${SOURCE_FILES_PRINT})
+      list(APPEND LIBS ${CUPS_LIBRARIES})
+      add_definitions("-DHAVE_PRINT")
+        message(STATUS "Print mode: enabled (CUPS)")
+    else(CUPS_FOUND)
+      set(BUILD_PRINT OFF)
+      message(STATUS "Print mode: disabled, please install CUPS dev package")
+    endif(CUPS_FOUND)
+  endif(WIN32)
 else(BUILD_PRINT)
   message(STATUS "Print mode: disabled")
 endif(BUILD_PRINT)
