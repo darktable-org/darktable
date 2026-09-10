@@ -3447,8 +3447,16 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     if(p->grain_uniformity_scale >= 0.0)
       for(int c = 0; c < 3; c++)
         s->grain_uniformity[c] = fmin(s->grain_uniformity[c] * p->grain_uniformity_scale, 0.999);
+    /* Sub-layer 0 is the coarsest and stays the reference at 1.0: this control
+       moves the FINER sub-layers relative to it, so it starts at i == 1.
+       Scaling the whole array instead is an exact no-op -- _sf_build_grain_layers
+       derives a_coarsest as sig^2*A48/peak[c], peak[c] is linear in
+       particle_scale[], and particle_area = a_coarsest * particle_scale[l], so a
+       common factor k cancels and every layer_npart comes out unchanged. The
+       only value that did anything was exactly 0, where the 1e-9 floors on peak
+       and particle_area take over and npart explodes, i.e. grain disappears. */
     if(p->grain_particle_scale >= 0.0)
-      for(int i = 0; i < n_scale; i++) particle_scale[i] *= p->grain_particle_scale;
+      for(int i = 1; i < n_scale; i++) particle_scale[i] *= p->grain_particle_scale;
     _sf_build_grain_layers(s, film, p->grain_density_min, s->grain_uniformity,
                            s->grain_rms, particle_scale, n_scale);
   }

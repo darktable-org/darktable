@@ -466,7 +466,8 @@ typedef struct sf_sim_params_t
    * and one slider can move all three channels together. */
   double grain_rms_scale;       /* -1 = from pack */
   double grain_uniformity_scale;/* -1 = from pack */
-  double grain_particle_scale;  /* -1 = from pack; scales the sub-layer areas */
+  double grain_particle_scale;  /* -1 = from pack; scales the FINER sub-layers'
+                                   areas, sub-layer 0 (coarsest) stays 1.0 */
 
   /* enlarger */
   const char *enlarger_illuminant; /* "TH-KG3" */
