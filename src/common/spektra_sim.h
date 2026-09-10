@@ -453,7 +453,12 @@ typedef struct sf_sim_params_t
   double coupler_tail_weight;   /* -1 = from pack */
 
   /* grain reference floor — used for table ranges even when grain itself
-   * runs in the caller (reference: GrainParams.density_min) */
+   * runs in the caller (reference: GrainParams.density_min).
+   * Resolved by sf_sim_build(), not supplied: the pack's per-film value is read
+   * over whatever is here and grain_density_min_scale below is then applied, so
+   * a caller sets the scale and reads this back rather than writing it. What is
+   * here on entry survives only for a stock the pack does not characterise,
+   * which is what the (0.03, 0.03, 0.03) default is for. */
   double grain_density_min[3];  /* (0.03, 0.03, 0.03) */
   /* [dt] Overrides for the per-stock grain statistics the pack supplies, which
    * are what actually decide how coarse the grain is: rms_granularity sets the
@@ -468,6 +473,7 @@ typedef struct sf_sim_params_t
   double grain_uniformity_scale;/* -1 = from pack */
   double grain_particle_scale;  /* -1 = from pack; scales the FINER sub-layers'
                                    areas, sub-layer 0 (coarsest) stays 1.0 */
+  double grain_density_min_scale;/* -1 = from pack */
 
   /* enlarger */
   const char *enlarger_illuminant; /* "TH-KG3" */

@@ -1320,6 +1320,7 @@ void sf_sim_params_defaults(sf_sim_params_t *p)
   p->grain_rms_scale = -1.0;
   p->grain_uniformity_scale = -1.0;
   p->grain_particle_scale = -1.0;
+  p->grain_density_min_scale = -1.0;
   p->coupler_diffusion_um = -1.0;
   p->coupler_tail_um = -1.0;
   p->coupler_tail_weight = -1.0;
@@ -3447,6 +3448,16 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     if(p->grain_uniformity_scale >= 0.0)
       for(int c = 0; c < 3; c++)
         s->grain_uniformity[c] = fmin(s->grain_uniformity[c] * p->grain_uniformity_scale, 0.999);
+    /* A scale and not an absolute value, for the same reason rms and uniformity
+       are: the pack's floors are per channel -- kodak_vision3_500t is
+       0.12/0.10/0.35 -- and one number replacing all three would flatten a
+       shape that carries real colour information. Scaling keeps the stock's own
+       ratios and still reaches any overall floor. Applied after the pack read,
+       so it lands on the film's own value; sf_pack_film_grain() leaves
+       p->grain_density_min alone for a stock it does not characterise, and the
+       scale then multiplies the caller's fallback instead. */
+    if(p->grain_density_min_scale >= 0.0)
+      for(int c = 0; c < 3; c++) p->grain_density_min[c] *= p->grain_density_min_scale;
     /* Sub-layer 0 is the coarsest and stays the reference at 1.0: this control
        moves the FINER sub-layers relative to it, so it starts at i == 1.
        Scaling the whole array instead is an exact no-op -- _sf_build_grain_layers
