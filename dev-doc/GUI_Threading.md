@@ -50,6 +50,7 @@ The sections, in order:
 - [Publishing `gui_data` Through a Proxy](#publishing-gui_data-through-a-proxy)
 - [Passing Values Between Pipes Through `gui_data`](#passing-values-between-pipes-through-gui_data)
 - [The Lock Is Not Recursive](#the-lock-is-not-recursive)
+  - [`gui_lock` Is the Innermost Lock](#gui_lock-is-the-innermost-lock)
 - [Hold the Lock as Long as the Value Must Stay Valid](#hold-the-lock-as-long-as-the-value-must-stay-valid)
 
 **What the framework already does**
@@ -149,8 +150,11 @@ the picture is narrower:
 Hence the two-sided rule: `commit_params()` must never touch GTK, and must never wait
 for the GTK main loop to run anything. Contending for `gui_lock` is not that — it is a
 short mutex both sides release quickly, and taking it is the whole point of the next
-section. A *synchronous round-trip* through the main loop is the thing that deadlocks,
-because the GTK thread may itself be waiting on a pipe.
+section. It stays short only while whoever holds it blocks on none of the locks the pipe
+already holds when it takes `gui_lock`; that is
+[`gui_lock` Is the Innermost Lock](#gui_lock-is-the-innermost-lock). A *synchronous
+round-trip* through the main loop deadlocks even when the locking is right, because the
+GTK thread may itself be waiting on a pipe.
 
 ### Exceptions: Pipeline Callbacks That GTK-Thread Code Also Calls
 
@@ -498,10 +502,10 @@ the wait off, and the primitive then reports success without checking anything. 
 real timeout it still reports success if the history stack has changed underneath, since
 a reprocess is already on its way; it fails only when neither holds, and that failure is
 the `inconsistent output` in the snippet above. This is not the wait ruled out in
-[Which Thread Am I On?](#which-thread-am-i-on). What deadlocks is a synchronous
-round-trip through the GTK main loop, because the GTK thread may itself be waiting on a
-pipe. Waiting on another pipe is a different thing, and the framework supplies the
-primitive for it.
+[Which Thread Am I On?](#which-thread-am-i-on). What that section rules out is a
+synchronous round-trip through the GTK main loop, because the GTK thread may itself be
+waiting on a pipe. Waiting on another pipe is a different thing, and the framework
+supplies the primitive for it.
 
 **Do not hold `gui_lock` across the call.** The primitive takes the lock you hand it on
 every polling iteration, so calling it from inside a critical section self-deadlocks on
@@ -509,7 +513,8 @@ the [non-recursive mutex](#the-lock-is-not-recursive). Snapshot what you need, r
 then call — as the consuming snippet above does. Underneath, the probe also takes
 `dev->history_mutex`, because hashing the upstream state walks the pipe. The primitive
 releases your `gui_lock` before it does that, so the two are never nested; keep it that
-way on your side.
+way on your side, for the reason in
+[`gui_lock` Is the Innermost Lock](#gui_lock-is-the-innermost-lock).
 
 **A scalar hands over cleanly; an allocation does not.** When the payload is a plain
 number, the span in which it must stay valid ends at the load and the short critical
@@ -552,6 +557,88 @@ locks. Framework helpers count — `dt_dev_sync_pixelpipe_hash()` in particular,
 takes the lock you hand it on every polling iteration. Keep critical sections short and
 free of function calls where you can — that avoids the problem instead of reasoning about
 it.
+
+### `gui_lock` Is the Innermost Lock
+
+Taking `gui_lock` twice is one way a helper inside a critical section hangs you. The
+other has nothing to do with recursion: holding `gui_lock` while you block on a lock
+that the pipe already holds when *it* takes `gui_lock`.
+
+Every pipe path that takes `gui_lock` takes it last. `dt_dev_pixelpipe_change()` takes
+`dev->history_mutex` and keeps it across the whole node sync. The sync takes the pipe's
+`busy_mutex` and, inside both, calls `commit_params()`: only for the top history item's
+module when that item is all that changed (`dt_dev_pixelpipe_synch_top()`), for every
+module on a full sync (`dt_dev_pixelpipe_synch_all()`). `process()` runs with
+`busy_mutex` held for the whole pipe run (`src/develop/pixelpipe_hb.c`). A module that
+uses `gui_data` from either callback therefore takes `gui_lock` inside those:
+
+```
+dev->history_mutex  ->  pipe->busy_mutex  ->  gui_lock     commit_params(), node sync
+                        pipe->busy_mutex  ->  gui_lock     process(), pipe run
+```
+
+The two lines are two paths, not one order between `history_mutex` and `busy_mutex`.
+`process()` may take `history_mutex` under `busy_mutex` too: in the publishing snippet
+in [Passing Values Between Pipes Through `gui_data`](#passing-values-between-pipes-through-gui_data),
+`dt_dev_hash_plus()` takes and releases it before the snippet enters the section, and
+`src/iop/levels.c` does the same. What every path agrees on is where `gui_lock` goes.
+
+So nothing may block on them the other way round. Holding `gui_lock` across a call that
+blocks on `history_mutex` or on a pipe's `busy_mutex` is an AB-BA inversion: your thread
+holds `gui_lock` and waits for the mutex, a pipe worker holds the mutex and waits for
+`gui_lock`, and neither ever gets what it is waiting for. When your thread is the GTK
+one, the darkroom is frozen for good. No round trip through the main loop is involved,
+and nothing in the module's own file looks wrong. It is not only a GTK-side rule,
+either: `gui_lock` belongs to the module instance, which all three screen pipes share,
+so `process()` on one pipe holding it across such a call deadlocks against a node sync
+on another, and the next GTK callback that enters the section hangs behind them.
+
+That `dev->history_mutex` is recursive does not help: recursion lets one thread take the
+same mutex again, and does nothing about two threads taking two mutexes in opposite
+orders.
+
+As with recursion, the second lock is usually hidden inside a call. The common ones that
+take `history_mutex` (all in `src/develop/develop.c`):
+
+- `dt_dev_distort_transform_plus()` and `dt_dev_distort_backtransform_plus()`, the usual
+  way to map a cursor position onto a buffer pixel;
+- `dt_dev_hash_plus()`, and through it `dt_dev_sync_pixelpipe_hash()`, whose own note is
+  in [Passing Values Between Pipes Through `gui_data`](#passing-values-between-pipes-through-gui_data);
+- `dt_dev_add_history_item()` and `dt_dev_add_masks_history_item()`.
+
+```c
+// WRONG — gui_lock held across a call that takes history_mutex
+dt_iop_gui_enter_critical_section(self);
+g->cursor_exposure = log2f(_luminance_at_cursor(self));   // backtransforms inside
+dt_iop_gui_leave_critical_section(self);
+
+// RIGHT — map the cursor first, then lock for the buffer read and the write
+float pt[2] = { x, y };
+dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
+                                  DT_DEV_TRANSFORM_DIR_FORW_EXCL, pt, 1);
+
+dt_iop_gui_enter_critical_section(self);
+g->cursor_exposure = log2f(_luminance_at(g, pt[0], pt[1]));   // reads g's buffer only
+dt_iop_gui_leave_critical_section(self);
+```
+
+The RIGHT form moves only the transform out of the section. Moving the whole helper out
+would fix the inversion and open the other trap: the buffer read then happens with no
+lock held, which
+[Hold the Lock as Long as the Value Must Stay Valid](#hold-the-lock-as-long-as-the-value-must-stay-valid)
+rules out.
+
+`toneequal`'s `scrolled()` had the WRONG form until `890c7f5fdc`
+(darktable-org/darktable#22133, found by reading the code rather than from a reported
+freeze). That commit moved the whole helper out of the section, so it is not an example
+of the RIGHT form: the buffer read in `scrolled()` still happens with no lock held, and
+darktable-org/darktable#22068, still open, tracks it.
+
+The framework keeps to the same order where it cannot avoid nesting:
+`dt_preview_data_is_fresh()` already holds `gui_lock` when it needs the preview pipe's
+`busy_mutex`, so it only *tries* to take it and treats a busy pipe as "not fresh"
+(`src/develop/preview_data.c`). That reverse nesting is safe only
+because a trylock cannot block: turning it into a plain lock brings the inversion back.
 
 ## Hold the Lock as Long as the Value Must Stay Valid
 
@@ -975,6 +1062,7 @@ Each row is one WRONG line and the section that explains it.
 | No critical section in a widget callback either, when the pipe reads the field | `g->cache_valid = FALSE;` in a slider callback | [Writing `gui_data` from a Widget Callback](#writing-gui_data-from-a-widget-callback) |
 | Treating a reprocess request as a barrier | `dt_dev_reprocess_center(self->dev, self->iop_order);` after writing a shared field | [Writing `gui_data` from a Widget Callback](#writing-gui_data-from-a-widget-callback) |
 | Calling a locking helper from inside a critical section | `_update_cache(self);` between enter and leave | [The Lock Is Not Recursive](#the-lock-is-not-recursive) |
+| Holding `gui_lock` across a call that takes `history_mutex` or a pipe's `busy_mutex` | `g->exposure = _value_at_cursor(self);` between enter and leave, where the helper backtransforms the cursor | [`gui_lock` Is the Innermost Lock](#gui_lock-is-the-innermost-lock) |
 | Locking the pointer load and not the pointee | `my_cache_t *c = g->cache;` under the lock, `use_cache(c);` after it | [Hold the Lock as Long as the Value Must Stay Valid](#hold-the-lock-as-long-as-the-value-must-stay-valid) |
 | No pipe test at all, so every pipe queues its own update | `if(g != NULL) g_idle_add(...);` | [Guards Before Sending GUI Updates](#guards-before-sending-gui-updates) |
 | Forgetting to free the Pattern B message — or freeing it twice | `return G_SOURCE_REMOVE;` with no `g_free(data)`, or one alongside a `g_free` `GDestroyNotify` | [The Callback Must Not Outlive the Module or the Image](#the-callback-must-not-outlive-the-module-or-the-image) |
