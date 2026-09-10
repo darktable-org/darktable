@@ -248,27 +248,64 @@ static float3 sf_pchip3d(__global const float *lut, __global const float *sx,
 
 /* ---- base-10 <-> base-2, matching the host's SF_LOG10F/SF_POW10F -------- */
 /* spektra_sim.c does NOT call log10f()/exp10f(). It defines
-     SF_LOG10F(x) = log2f(x) * 0.3010299956639812f
-     SF_POW10F(x) = exp2f(x * 3.321928094887362f)
-   so calling log10()/exp10() here was not a more-or-less accurate version of
-   the same computation, it was a different computation: the host's scaling
-   multiply carries its own rounding that exp10()/log10() never perform. Use
-   the identical formulation so only the library ULP gap remains.
+     SF_LOG10F(x) = sf_log2f(x) * 0.3010299956639812f
+     SF_POW10F(x) = sf_exp2f(x * 3.321928094887362f)
+   so calling log10()/exp10() here would not be a more-or-less accurate
+   version of the same computation, it would be a different one: the host's
+   scaling multiply carries its own rounding that exp10()/log10() never
+   perform.
 
-   That remaining gap is real but small: OpenCL specs log2/exp2 to <=3 ULP and
-   most GPUs implement both in hardware, while glibc's log2f/exp2f are
-   correctly rounded. If the integration test still shows a residue after
-   this, these two are the next candidates for the portable-polynomial
-   treatment sf_exp_neg already got -- log2 via exponent extraction plus a
-   mantissa polynomial, exp2 via sf_exp2i plus a fractional polynomial. */
+   log2()/exp2() are not usable either, for the reason that governs
+   sf_exp_neg: OpenCL specs both to <=3 ULP and most GPUs implement them in
+   hardware, while glibc rounds correctly. That gap lands in the film density
+   feeding sf_layer_particle, and sf_poisson's accept/reject loop below turns
+   it into whole-integer grain draws on isolated pixels. sf_exp2f/sf_log2f
+   below are the same portable polynomials as spektra_core.h's, built only
+   from correctly-rounded operations, so both sides agree bit-for-bit. Keep
+   them in lockstep with the host copies -- same constants, same order of
+   operations -- and do not substitute the library or native_ variants. */
+/* defined below, next to sf_exp_neg, which is the other user */
+static inline float sf_exp2i(int k);
+
+static inline float sf_exp2f(float x)
+{
+  const int k = (int)floor(x + 0.5f);
+  const float t = (x - (float)k) * 0.6931471824645996f; /* ln(2) */
+  float p = 0.000198412700f;                            /* 1/5040 */
+  p = p * t + 0.00138888892f;                           /* 1/720 */
+  p = p * t + 0.00833333377f;                           /* 1/120 */
+  p = p * t + 0.0416666679f;                            /* 1/24 */
+  p = p * t + 0.166666672f;                             /* 1/6 */
+  p = p * t + 0.5f;
+  p = p * t + 1.0f;
+  p = p * t + 1.0f;
+  return p * sf_exp2i(k);
+}
+
+static inline float sf_log2f(float x)
+{
+  const uint xu = as_uint(x);
+  int e = (int)((xu >> 23) & 0xffu) - 127;
+  float m = as_float((xu & 0x007fffffu) | 0x3f800000u);
+  if(m > 1.41421356f) { m *= 0.5f; e += 1; }
+  const float s = (m - 1.0f) / (m + 1.0f);
+  const float s2 = s * s;
+  float p = 0.222222224f;    /* 2/9 */
+  p = p * s2 + 0.285714298f; /* 2/7 */
+  p = p * s2 + 0.400000006f; /* 2/5 */
+  p = p * s2 + 0.666666687f; /* 2/3 */
+  p = p * s2 + 2.0f;
+  return (float)e + p * s * 1.4426950216293335f; /* log2(e) */
+}
+
 static inline float sf_log10f(float x)
 {
-  return log2(x) * 0.3010299956639812f;
+  return sf_log2f(x) * 0.3010299956639812f;
 }
 
 static inline float sf_pow10f(float x)
 {
-  return exp2(x * 3.321928094887362f);
+  return sf_exp2f(x * 3.321928094887362f);
 }
 
 /* ---- [gc] Reinhard knee + OkLCh output gamut compression ---------------- */

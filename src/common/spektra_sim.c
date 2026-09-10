@@ -58,10 +58,6 @@
 #include "spektra_core.h"
 
 #include <math.h>
-/* ensure C99 math functions for SF_POW10F/SF_LOG10F (exp2f, log2f) */
-#if !defined(exp2f) && !defined(_GNU_SOURCE)
-/* exp2f and log2f are C99; every compiler since GCC 4.x / Clang 3.x has them */
-#endif
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -93,11 +89,15 @@ static inline void neon_mat3_mulv_batch(const float m[9],
 }
 #endif /* __ARM_NEON */
 
-/* Fast pow10 / log10 via exp2f/log2f. Using compiler builtins gives the
-   optimizer a better chance to inline/reduce them vs libm powf(10, x)
-   which internally computes exp2(x * log2(10)) with extra overhead. */
-#define SF_POW10F(x) __builtin_exp2f((x) * 3.321928094887362f)  /* x * log2f(10) */
-#define SF_LOG10F(x) (__builtin_log2f(x) * 0.3010299956639812f)  /* log2f(x) * log10(2) */
+/* pow10 / log10 through spektra_core.h's own exp2/log2, NOT the platform
+   exp2f/log2f. The kernel has to compute the same thing, and OpenCL specifies
+   exp2/log2 only to <=3 ULP where glibc rounds correctly, so a library call
+   here is a library call the GPU cannot match. sf_exp2f/sf_log2f are built
+   from correctly-rounded operations alone and agree bit-for-bit on both
+   sides; see their comment for why a ULP here is not a ULP by the time it
+   reaches the grain sampler. */
+#define SF_POW10F(x) sf_exp2f((x) * 3.321928094887362f)  /* x * log2f(10) */
+#define SF_LOG10F(x) (sf_log2f(x) * 0.3010299956639812f)  /* log2f(x) * log10(2) */
 #define SF_TC_KNEE_T 0.0 /* [gc] InputGamutCompressSpec.knee */
 #define SF_TC_KNEE_L 1.0
 #define SF_TC_KNEE_P 6.0
