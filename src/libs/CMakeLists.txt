@@ -113,7 +113,7 @@ set(MODULES ${MODULES} geotagging)
 if(CUPS_FOUND OR WIN32)
   add_library(print_settings MODULE "print_settings.c")
   set(MODULES ${MODULES} print_settings)
-endif(CUPS_FOUND)
+endif()
 
 # AI neural restore module
 if(USE_AI)

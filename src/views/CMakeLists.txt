@@ -25,7 +25,7 @@ endif(Gphoto2_FOUND)
 if(CUPS_FOUND OR WIN32)
     add_library(print MODULE "print.c")
     set(MODULES ${MODULES} print)
-endif(CUPS_FOUND)
+endif()
 
 foreach(module ${MODULES})
     target_link_libraries(${module} lib_darktable)
