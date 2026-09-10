@@ -1322,20 +1322,30 @@ static cl_int _fast_surface_blur_cl(const int devid,
   const size_t bsize = (size_t)width * height * sizeof(float);
   const size_t ds_bsize = (size_t)ds_width * ds_height * sizeof(float);
 
+  // without quantization the guide is the image itself: skip the copy
+  // quantize() would make and pack the image twice instead
+  const gboolean use_mask = (quantization != 0.0f);
+
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   cl_mem dev_ab = dt_opencl_alloc_device_buffer(devid, 2 * bsize);
   cl_mem dev_ds_image = dt_opencl_alloc_device_buffer(devid, ds_bsize);
-  cl_mem dev_ds_mask = dt_opencl_alloc_device_buffer(devid, ds_bsize);
+  cl_mem dev_ds_mask = use_mask
+    ? dt_opencl_alloc_device_buffer(devid, ds_bsize)
+    : NULL;
   cl_mem dev_ds_ab = dt_opencl_alloc_device_buffer(devid, 2 * ds_bsize);
   // array of struct : { { guide, mask, guide * guide, guide * mask } }
   cl_mem dev_packed = dt_opencl_alloc_device_buffer(devid, 4 * ds_bsize);
   // scratch space of the box average, large enough for both channel counts
   cl_mem dev_tmp = dt_opencl_alloc_device_buffer(devid, 4 * ds_bsize);
 
-  if(!dev_ab || !dev_ds_image || !dev_ds_mask || !dev_ds_ab || !dev_packed || !dev_tmp)
+  if(!dev_ab || !dev_ds_image || !dev_ds_ab || !dev_packed || !dev_tmp
+     || (use_mask && !dev_ds_mask))
     goto error;
   err = CL_SUCCESS;
+
+  // the quantized guide of the variance analysis, see variance_analyse()
+  cl_mem dev_guide = use_mask ? dev_ds_mask : dev_ds_image;
 
   // Downsample the image for speed-up
   err = dt_interpolate_bilinear_cl(devid, dev_image, width, height,
@@ -1345,16 +1355,19 @@ static cl_int _fast_surface_blur_cl(const int devid,
   // Iterations of filter models the diffusion, sort of
   for(int i = 0; i < iterations; ++i)
   {
-    // (Re)build the mask from the quantized image to help guiding
-    err = _quantize_cl(devid, gd, dev_ds_image, dev_ds_mask, ds_width, ds_height,
-                       quantization, quantize_min, quantize_max);
-    if(err != CL_SUCCESS) goto error;
+    if(use_mask)
+    {
+      // (Re)build the mask from the quantized image to help guiding
+      err = _quantize_cl(devid, gd, dev_ds_image, dev_ds_mask, ds_width, ds_height,
+                         quantization, quantize_min, quantize_max);
+      if(err != CL_SUCCESS) goto error;
+    }
 
     // Perform the patch-wise variance analyse to get the a and b parameters
     // for the linear blending s.t. mask = a * I + b
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_gf_pack,
             ds_width, ds_height,
-            CLARG(dev_ds_mask), CLARG(dev_ds_image), CLARG(dev_packed),
+            CLARG(dev_guide), CLARG(dev_ds_image), CLARG(dev_packed),
             CLARG(ds_width), CLARG(ds_height));
     if(err != CL_SUCCESS) goto error;
 
