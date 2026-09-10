@@ -1335,6 +1335,7 @@ static cl_int _fast_surface_blur_cl(const int devid,
 
   if(!dev_ab || !dev_ds_image || !dev_ds_mask || !dev_ds_ab || !dev_packed || !dev_tmp)
     goto error;
+  err = CL_SUCCESS;
 
   // Downsample the image for speed-up
   err = dt_interpolate_bilinear_cl(devid, dev_image, width, height,
@@ -1455,6 +1456,7 @@ static cl_int _fast_eigf_surface_blur_cl(const int devid,
   if(!dev_ds_image || !dev_ds_av || !dev_av
      || (use_mask && (!dev_mask || !dev_ds_mask)))
     goto error;
+  err = CL_SUCCESS;
 
   // Iterations of filter models the diffusion, sort of
   for(int i = 0; i < iterations; i++)
