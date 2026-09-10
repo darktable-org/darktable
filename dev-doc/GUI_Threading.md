@@ -762,6 +762,46 @@ with the resize — the refill-in-place discipline from
 with the framework opening the critical section for you. In `src/iop/toneequal.c` that
 callback is four lines long and clears one flag.
 
+The internal locking that spares you taking `gui_lock` also means you must not be holding
+it when you call the seven. The lock is [not recursive](#the-lock-is-not-recursive), so
+calling one of them from inside your own critical section deadlocks the thread on a lock
+it already holds. Your fill and resize callbacks are already inside one: the service calls
+them from its own section, so they may neither call the seven nor enter the section
+themselves. `dt_preview_data_get()` is the likeliest to end up in the wrong place. It
+returns one value and reads like an array access, so it is easy to drop into a section
+that has just tested your validity flag.
+
+That section is exactly where the read belongs, though: the end of
+[Hold the Lock as Long as the Value Must Stay Valid](#hold-the-lock-as-long-as-the-value-must-stay-valid)
+has the reader test the flag and use the buffer inside one critical section, so a reader
+that honors a flag cannot go through the accessor. Inside that section, read `pd.buf`,
+`pd.width` and `pd.height` directly, as `toneequal`'s `update_histogram()` does. That is
+safe because `dt_preview_data_store()` and `dt_preview_data_resize()` replace those fields
+only while holding the same lock (`src/develop/preview_data.c`).
+
+With `dt_preview_data_store()` there is no flag to consult, since the fill happens inside
+the lock, but the accessor on its own is still enough only for one component at a buffer
+pixel you already have. Mapping the cursor to that pixel needs `pd.width` and
+`pd.height`, and reading several components of one pixel needs them all from the same
+fill. Both need a single hold of the lock, so do them by hand inside one section as well.
+`colorequal`'s `mouse_moved()` maps the cursor that way, for a single component. For
+several, index each one as `pd.buf[(y * pd.width + x) * pd.components + c]` inside the
+same section, which is the index the accessor computes. `dt_preview_data_get()`
+re-checks its coordinates against the current size under its own lock, so dimensions
+read earlier cannot make it read out of range, but after a resize they make it read the
+wrong pixel.
+
+Nor does the accessor tell you whether the value is current. It does not look at the
+hash, and when `dt_preview_data_store()` fails to allocate a new size it keeps the old
+buffer and only invalidates the hash. `dt_preview_data_is_fresh()` answers that question,
+called outside any section of yours like the rest of the seven, but only for the stored
+data at the moment it runs, in a section of its own. A `dt_preview_data_store()` can
+replace buffer and hash between your read and the check, so a TRUE does not vouch for a
+value read before or after it. `colorequal` uses it as a gate, deciding whether to show
+its cursor and whether to request a reprocess, and reads the buffer again on the next
+mouse move. If a value must be tied to its hash, read `pd.hash` in the same section as
+the value: `dt_preview_data_store()` commits the two together.
+
 `toneequal` and `colorequal` use the service. What stays yours is what the header says
 is module-specific: computing the value, drawing it, and mapping the cursor position to
 a buffer pixel — that last one depends on which geometry modules sit after yours in the
@@ -1064,6 +1104,7 @@ Each row is one WRONG line and the section that explains it.
 | Calling a locking helper from inside a critical section | `_update_cache(self);` between enter and leave | [The Lock Is Not Recursive](#the-lock-is-not-recursive) |
 | Holding `gui_lock` across a call that takes `history_mutex` or a pipe's `busy_mutex` | `g->exposure = _value_at_cursor(self);` between enter and leave, where the helper backtransforms the cursor | [`gui_lock` Is the Innermost Lock](#gui_lock-is-the-innermost-lock) |
 | Locking the pointer load and not the pointee | `my_cache_t *c = g->cache;` under the lock, `use_cache(c);` after it | [Hold the Lock as Long as the Value Must Stay Valid](#hold-the-lock-as-long-as-the-value-must-stay-valid) |
+| Calling a `dt_preview_data_*` accessor from inside a critical section, or from the fill or resize callback | `dt_preview_data_get(&g->pd, x, y, 0, &v);` between enter and leave, after testing a validity flag | [The Framework Service for Per-Pixel Readouts](#the-framework-service-for-per-pixel-readouts) |
 | No pipe test at all, so every pipe queues its own update | `if(g != NULL) g_idle_add(...);` | [Guards Before Sending GUI Updates](#guards-before-sending-gui-updates) |
 | Forgetting to free the Pattern B message — or freeing it twice | `return G_SOURCE_REMOVE;` with no `g_free(data)`, or one alongside a `g_free` `GDestroyNotify` | [The Callback Must Not Outlive the Module or the Image](#the-callback-must-not-outlive-the-module-or-the-image) |
 | Queued callback with no cancellation | `g_idle_add(_update_gui, self);` with no drain in `gui_cleanup()` or `change_image()` | [The Callback Must Not Outlive the Module or the Image](#the-callback-must-not-outlive-the-module-or-the-image) |
