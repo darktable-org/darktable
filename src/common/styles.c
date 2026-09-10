@@ -830,11 +830,11 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
   }
 }
 
-void _styles_apply_to_image_ext(const char *name,
-                                const gboolean duplicate,
-                                const gboolean overwrite,
-                                const dt_imgid_t imgid,
-                                const gboolean undo)
+static void _styles_apply_to_image_ext(const char *name,
+                                       const gboolean duplicate,
+                                       const gboolean overwrite,
+                                       const dt_imgid_t imgid,
+                                       const gboolean undo)
 {
   sqlite3_stmt *stmt;
 

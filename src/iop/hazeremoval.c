@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2025 darktable developers.
+    Copyright (C) 2017-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -406,10 +406,10 @@ static float *_partition(float *first,
 // be in that position if the entire range [first, last) had been
 // sorted, additionally, none of the elements in the range [nth, last)
 // is less than any of the elements in the range [first, nth)
-void _quick_select(float *first,
-                   float *nth,
-                   float *last,
-                   const gboolean compatibility_mode)
+static void _quick_select(float *first,
+                          float *nth,
+                          float *last,
+                          const gboolean compatibility_mode)
 {
   if(first == last) return;
   for(;last > first+1;)

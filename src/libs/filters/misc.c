@@ -21,6 +21,7 @@
 */
 
 #include "common/collection.h"
+
 typedef struct _widgets_misc_t
 {
   dt_lib_filtering_rule_t *rule;
@@ -70,7 +71,7 @@ static gboolean _misc_focus_out(GtkWidget *entry,
   return FALSE;
 }
 
-void _misc_tree_update(_widgets_misc_t *misc)
+static void _misc_tree_update(_widgets_misc_t *misc)
 {
   dt_lib_filtering_t *d = misc->rule->lib;
 
@@ -229,8 +230,8 @@ void _misc_tree_update(_widgets_misc_t *misc)
   misc->tree_ok = TRUE;
 }
 
-void _misc_tree_update_visibility(GtkWidget *w,
-                                  _widgets_misc_t *misc)
+static void _misc_tree_update_visibility(GtkWidget *w,
+                                         _widgets_misc_t *misc)
 {
   if(!misc->tree_ok) _misc_tree_update(misc);
 }
@@ -375,11 +376,11 @@ static void _misc_ok_clicked(GtkWidget *w,
   gtk_widget_hide(misc->pop);
 }
 
-void _misc_tree_count_func(GtkTreeViewColumn *col,
-                           GtkCellRenderer *renderer,
-                           GtkTreeModel *model,
-                           GtkTreeIter *iter,
-                           gpointer data)
+static void _misc_tree_count_func(GtkTreeViewColumn *col,
+                                  GtkCellRenderer *renderer,
+                                  GtkTreeModel *model,
+                                  GtkTreeIter *iter,
+                                  gpointer data)
 {
   gchar *name;
   guint count;

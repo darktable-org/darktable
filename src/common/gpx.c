@@ -129,13 +129,13 @@ error:
   return NULL;
 }
 
-void _track_seg_free(dt_gpx_track_segment_t *trkseg)
+static void _track_seg_free(dt_gpx_track_segment_t *trkseg)
 {
   g_free(trkseg->name);
   g_free(trkseg);
 }
 
-void _track_pts_free(dt_gpx_track_point_t *trkpt)
+static void _track_pts_free(dt_gpx_track_point_t *trkpt)
 {
   g_date_time_unref(trkpt->time);
   g_free(trkpt);
@@ -263,9 +263,9 @@ static void _gpx_parse_error(GError **error)
 /*
  * GPX XML parser code
  */
-void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_name,
-                               const gchar **attribute_names, const gchar **attribute_values,
-                               const gpointer user_data, GError **error)
+static void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_name,
+                                      const gchar **attribute_names, const gchar **attribute_values,
+                                      const gpointer user_data, GError **error)
 {
   g_return_if_fail(*error == NULL);
 
@@ -375,8 +375,8 @@ element_error:
   _gpx_parse_error(error);
 }
 
-void _gpx_parser_end_element(GMarkupParseContext *context, const gchar *element_name, const gpointer user_data,
-                             GError **error)
+static void _gpx_parser_end_element(GMarkupParseContext *context, const gchar *element_name, const gpointer user_data,
+                                    GError **error)
 {
   g_return_if_fail(*error == NULL);
 
@@ -408,8 +408,8 @@ void _gpx_parser_end_element(GMarkupParseContext *context, const gchar *element_
   }
 }
 
-void _gpx_parser_text(GMarkupParseContext *context, const gchar *text, gsize text_len, const gpointer user_data,
-                      GError **error)
+static void _gpx_parser_text(GMarkupParseContext *context, const gchar *text, gsize text_len, const gpointer user_data,
+                             GError **error)
 {
   g_return_if_fail(*error == NULL);
 

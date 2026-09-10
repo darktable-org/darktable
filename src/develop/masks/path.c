@@ -474,6 +474,7 @@ void _set_ctrl_symmetric(const float x_ref,
  * @param[in] ctrl_scale the distance ratio to preserve, if required by the edit mode
  * @param[in] aspect_ratio the aspect ratio of the image
  */
+static
 void _update_bezier_ctrl_points(dt_masks_point_path_t* point,
                                 const float new_x,
                                 const float new_y,

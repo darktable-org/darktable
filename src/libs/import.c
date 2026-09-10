@@ -885,9 +885,9 @@ static void _import_add_file_callback(GObject *direnum,
   g_list_free(file_list);
 }
 
-void _import_enum_callback(GObject* source_object,
-                           GAsyncResult* res,
-                           gpointer user_data)
+static void _import_enum_callback(GObject* source_object,
+                                  GAsyncResult* res,
+                                  gpointer user_data)
 {
   dt_lib_module_t* self = (dt_lib_module_t *)user_data;
   dt_lib_import_t *d = self->data;

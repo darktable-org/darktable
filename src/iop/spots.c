@@ -27,6 +27,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
@@ -567,13 +568,13 @@ static int masks_get_delta(dt_iop_module_t *self,
   return res;
 }
 
-void _process(dt_iop_module_t *self,
-              dt_dev_pixelpipe_iop_t *piece,
-              const float *const in,
-              float *const out,
-              const dt_iop_roi_t *const roi_in,
-              const dt_iop_roi_t *const roi_out,
-              const int ch)
+static void _process(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
+                     const float *const in,
+                     float *const out,
+                     const dt_iop_roi_t *const roi_in,
+                     const dt_iop_roi_t *const roi_out,
+                     const int ch)
 {
   dt_iop_spots_params_t *d = piece->data;
   dt_develop_blend_params_t *bp = piece->blendop_data;

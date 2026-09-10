@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2015-2021 darktable developers.
+   Copyright (C) 2015-2026 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"
 #include "lua/types.h"
@@ -75,7 +76,7 @@ static void box_init(lua_State* L)
 }
 
 
-void _get_packing_info(lua_box box, gboolean *expand, gboolean *fill, guint *padding)
+static void _get_packing_info(lua_box box, gboolean *expand, gboolean *fill, guint *padding)
 {
   GList *children = gtk_container_get_children(GTK_CONTAINER(box->widget));
   for(const GList *l = children; l; l = g_list_next(l))
@@ -86,7 +87,7 @@ void _get_packing_info(lua_box box, gboolean *expand, gboolean *fill, guint *pad
   g_list_free(children);
 }
 
-void _set_packing_info(lua_box box, gboolean expand, gboolean fill, guint padding)
+static void _set_packing_info(lua_box box, gboolean expand, gboolean fill, guint padding)
 {
   GList *children = gtk_container_get_children(GTK_CONTAINER(box->widget));
   for(const GList *l = children; l; l = g_list_next(l))
@@ -227,9 +228,9 @@ int dt_lua_init_widget_box(lua_State* L)
   dt_lua_type_register(L, lua_box, "padding");
   return 0;
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

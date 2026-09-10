@@ -2547,7 +2547,7 @@ static void _set_neutral_params(dt_iop_agx_params_t *p)
   _set_unmodified_primaries(p);
 }
 
-void _set_smooth_params(dt_iop_agx_params_t *p)
+static void _set_smooth_params(dt_iop_agx_params_t *p)
 {
   _set_default_curve_and_look_params(p);
   _set_smooth_primaries(p);

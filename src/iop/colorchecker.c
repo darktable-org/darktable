@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
@@ -981,7 +982,7 @@ void gui_reset(dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-void _colorchecker_rebuild_patch_list(dt_iop_module_t *self)
+static void _colorchecker_rebuild_patch_list(dt_iop_module_t *self)
 {
   dt_iop_colorchecker_params_t *p = self->params;
   dt_iop_colorchecker_gui_data_t *g = self->gui_data;
@@ -1008,7 +1009,7 @@ void _colorchecker_rebuild_patch_list(dt_iop_module_t *self)
   }
 }
 
-void _colorchecker_update_sliders(dt_iop_module_t *self)
+static void _colorchecker_update_sliders(dt_iop_module_t *self)
 {
   dt_iop_colorchecker_params_t *p = self->params;
   dt_iop_colorchecker_gui_data_t *g = self->gui_data;

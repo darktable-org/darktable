@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "libs/lib.h"
@@ -31,6 +32,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "gui/splash.h"
+
 #include <gtk/gtk.h>
 #include <string.h>
 #include <stdbool.h>
@@ -868,7 +870,7 @@ static void dt_lib_init_module(void *m)
   }
 }
 
-void _lib_unload_module(dt_lib_module_t *module)
+static void _lib_unload_module(dt_lib_module_t *module)
 {
   if(module->module)
     g_module_close(module->module);

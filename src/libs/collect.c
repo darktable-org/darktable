@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "libs/collect.h"
@@ -37,12 +38,15 @@
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #include "views/view.h"
+
 #include <glib-2.0/gio/gmenu.h>
 #include <glib-2.0/glib-object.h>
 #include <glib-2.0/glib.h>
+
 #ifndef _WIN32
 #include <gio/gunixmounts.h>
 #endif
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -3950,12 +3954,12 @@ static gint _sort_model_func(GtkTreeModel *model,
 }
 
 #ifdef _WIN32
-void _mount_changed(GVolumeMonitor *volume_monitor,
-                    GMount *mount,
-                    dt_lib_module_t *self)
+static void _mount_changed(GVolumeMonitor *volume_monitor,
+                           GMount *mount,
+                           dt_lib_module_t *self)
 #else
-void _mount_changed(GUnixMountMonitor *monitor,
-                    dt_lib_module_t *self)
+static void _mount_changed(GUnixMountMonitor *monitor,
+                           dt_lib_module_t *self)
 #endif
 {
   dt_lib_collect_t *d = self->data;
