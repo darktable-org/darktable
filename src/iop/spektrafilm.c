@@ -2418,8 +2418,15 @@ int process_cl(dt_iop_module_t *self,
                                                  CLARG(amp[g3]), CLARG(c), CLARG(reset));
           SF_CL_STEP("scatter tail accum");
         }
-      const float ws_r = g->scatter_tail_weight[0], ws_g = g->scatter_tail_weight[1],
-                  ws_b = g->scatter_tail_weight[2];
+      /* CPU: sf_halation() takes w_s[] as the sim's double and blends with
+         (1.0 - w_s[c]) * core + w_s[c] * tail. Round the same double once here
+         rather than reading sf_sim_gpu_t's float mirror, so the constant the
+         kernel gets is the CPU's to the last bit. The blend itself still runs
+         in float on-device and in double on the CPU, so this narrows the
+         divergence to the per-pixel arithmetic instead of adding a second
+         rounding on top of it. */
+      const float ws_r = (float)cl_sc_w[0], ws_g = (float)cl_sc_w[1],
+                  ws_b = (float)cl_sc_w[2];
       /* (1-s)*raw + s*scattered, matching sf_halation()'s CPU blend; `plane`
          doubles as both the pre-scatter `raw` input and the `out` write
          target -- safe since this is a purely per-pixel elementwise op. */
@@ -2462,9 +2469,18 @@ int process_cl(dt_iop_module_t *self,
          upstream's a_tot = halation_strength * halation_amount (no curve). */
       const float h_eff = d->p.halation_amount;
       /* per-film halation strength (e.g. a strong-AH stock stays near-zero on
-         blue and much lower on red/green than a no-AH/redscale stock). */
-      const float a_r = g->halation_strength[0] * h_eff, a_g = g->halation_strength[1] * h_eff,
-                  a_b = g->halation_strength[2] * h_eff;
+         blue and much lower on red/green than a no-AH/redscale stock).
+
+         CPU: a_tot[c] = halation_strength[c] * halation_amount, both doubles
+         (sf_halation()). Formed the same way here from cl_hal_strength -- the
+         sim's own double, as the sigma above is -- and rounded once, instead of
+         multiplying two independently-rounded floats. sf_halation() then keeps
+         a_tot in double through (raw + a_tot*blur) / (1 + a_tot) per pixel and
+         the kernel cannot, so the two still part company on that arithmetic;
+         this only stops them parting company on the constant as well. */
+      const float a_r = (float)(cl_hal_strength[0] * (double)h_eff),
+                  a_g = (float)(cl_hal_strength[1] * (double)h_eff),
+                  a_b = (float)(cl_hal_strength[2] * (double)h_eff);
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_halation_apply, w, h, CLARG(plane),
                                              CLARG(acc), CLARG(w), CLARG(h), CLARG(a_r),
                                              CLARG(a_g), CLARG(a_b));
