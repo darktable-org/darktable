@@ -114,9 +114,9 @@ static gboolean _gui_styles_is_update_module_order_set(dt_gui_styles_dialog_t *d
   return active && (num == -1);
 }
 
-void _gui_styles_get_active_items(dt_gui_styles_dialog_t *sd,
-                                  GList **enabled,
-                                  GList **update)
+static void _gui_styles_get_active_items(dt_gui_styles_dialog_t *sd,
+                                         GList **enabled,
+                                         GList **update)
 {
   /* run through all items and add active ones to result */
   GtkTreeIter iter;

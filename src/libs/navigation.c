@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
@@ -455,11 +456,11 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
   return FALSE;
 }
 
-void _lib_navigation_set_position(dt_lib_module_t *self,
-                                  const double x,
-                                  const double y,
-                                  const int wd,
-                                  const int ht)
+static void _lib_navigation_set_position(dt_lib_module_t *self,
+                                         const double x,
+                                         const double y,
+                                         const int wd,
+                                         const int ht)
 {
   dt_lib_navigation_t *d = self->data;
 

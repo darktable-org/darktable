@@ -15,12 +15,15 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "common/darktable.h"
+
 #ifdef HAVE_GPHOTO2
 #include "common/camera_control.h"
 #endif
+
 #include "common/collection.h"
 #include "common/colorspaces.h"
 #include "common/file_location.h"
@@ -50,27 +53,34 @@
 #include "gui/preferences.h"
 
 #include <gdk/gdkkeysyms.h>
+
 #ifdef GDK_WINDOWING_WAYLAND
 #include <gdk/gdkwayland.h>
 #endif
+
 #ifdef GDK_WINDOWING_X11
 #include <gdk/gdkx.h>
 #endif
+
 #include <gtk/gtk.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
 #ifdef MAC_INTEGRATION
 #include <gtkosxapplication.h>
 #endif
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
+
 #ifdef _WIN32
 #include <dwmapi.h>
 #include <gdk/gdkwin32.h>
 #endif
+
 #include <pthread.h>
 
 /*
@@ -4139,10 +4149,10 @@ void dt_gui_show_help(GtkWidget *widget)
   }
 }
 
-void _add_theme_import(char **themecss,
-                       const char *configdir,
-                       const char *dirname,
-                       const char *css_name)
+static void _add_theme_import(char **themecss,
+                              const char *configdir,
+                              const char *dirname,
+                              const char *css_name)
 {
   GError *error = NULL;
 

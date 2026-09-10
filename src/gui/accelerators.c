@@ -1040,7 +1040,7 @@ static gchar *_shortcut_lua_command(GtkWidget *widget,
                          s->speed, instance_string);
 }
 
-void _shortcut_copy_lua(GtkWidget *widget, dt_shortcut_t *shortcut, gchar *preset_name)
+static void _shortcut_copy_lua(GtkWidget *widget, dt_shortcut_t *shortcut, gchar *preset_name)
 {
   gchar *lua_command = _shortcut_lua_command(widget, shortcut);
   if(!lua_command) return;

@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
@@ -2198,11 +2199,11 @@ static void casteljau(const float complex *p0,
     hit->elem = data;                   \
   }
 
-void _hit_paths(dt_iop_module_t *self,
-                dt_iop_liquify_params_t *p,
-                const GList *layers,
-                const float complex *pt,
-                dt_liquify_hit_t *hit)
+static void _hit_paths(dt_iop_module_t *self,
+                       dt_iop_liquify_params_t *p,
+                       const GList *layers,
+                       const float complex *pt,
+                       dt_liquify_hit_t *hit)
 {
   float distance = FLT_MAX;
 
@@ -2351,10 +2352,10 @@ static void draw_paths(const dt_iop_module_t *self,
   g_list_free(layers);
 }
 
-void _hit_test_paths(dt_iop_module_t *self,
-                     dt_iop_liquify_params_t *params,
-                     const float complex pt,
-                     dt_liquify_hit_t *hit)
+static void _hit_test_paths(dt_iop_module_t *self,
+                            dt_iop_liquify_params_t *params,
+                            const float complex pt,
+                            dt_liquify_hit_t *hit)
 {
   GList *layers = NULL;
 

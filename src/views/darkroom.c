@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 /** this is the view for the darkroom module.  */
 
@@ -325,10 +326,10 @@ static gboolean _darkroom_module_is_active(const dt_iop_module_t *module)
   return FALSE;
 }
 
-void _display_module_trouble_message_callback(gpointer instance,
-                                              dt_iop_module_t *module,
-                                              const char *const trouble_msg,
-                                              const char *const trouble_tooltip)
+static void _display_module_trouble_message_callback(gpointer instance,
+                                                     dt_iop_module_t *module,
+                                                     const char *const trouble_msg,
+                                                     const char *const trouble_tooltip)
 {
   if(!module || !instance || dt_view_get_current() != DT_VIEW_DARKROOM)
     return;

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2021 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ int position(const dt_lib_module_t *self)
   return 1500;
 }
 
-void _lib_imageinfo_update_message(gpointer instance, dt_lib_module_t *self)
+static void _lib_imageinfo_update_message(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_imageinfo_t *d = self->data;
 
@@ -130,8 +130,8 @@ static void _lib_imageinfo_update_message2(gpointer instance, gpointer imgs, dt_
   _lib_imageinfo_update_message(instance, self);
 }
 
-void _lib_imageinfo_update_message3(gpointer instance, int query_change, int changed_property, gpointer imgs,
-                                    const int next, dt_lib_module_t *self)
+static void _lib_imageinfo_update_message3(gpointer instance, int query_change, int changed_property, gpointer imgs,
+                                           const int next, dt_lib_module_t *self)
 {
   _lib_imageinfo_update_message(instance, self);
 }
@@ -169,8 +169,6 @@ void gui_cleanup(dt_lib_module_t *self)
   g_free(self->data);
   self->data = NULL;
 }
-
-
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

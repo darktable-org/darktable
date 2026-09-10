@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -86,7 +86,7 @@ void gui_cleanup(dt_lib_module_t *self)
 }
 
 
-void _lib_hinter_set_message(dt_lib_module_t *self, const char *message)
+static void _lib_hinter_set_message(dt_lib_module_t *self, const char *message)
 {
   dt_lib_hinter_t *d = self->data;
 
@@ -104,6 +104,7 @@ void _lib_hinter_set_message(dt_lib_module_t *self, const char *message)
   else
     gtk_label_set_markup(GTK_LABEL(d->label), message);
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -99,12 +99,12 @@ static void _selection_select(dt_selection_t *selection,
   dt_collection_hint_message(darktable.collection);
 }
 
-void _selection_update_collection(gpointer instance,
-                                  const dt_collection_change_t query_change,
-                                  const dt_collection_properties_t changed_property,
-                                  gpointer imgs,
-                                  const int next,
-                                  gpointer user_data)
+static void _selection_update_collection(gpointer instance,
+                                         const dt_collection_change_t query_change,
+                                         const dt_collection_properties_t changed_property,
+                                         gpointer imgs,
+                                         const int next,
+                                         gpointer user_data)
 {
   dt_selection_t *selection = (dt_selection_t *)user_data;
 

@@ -332,7 +332,7 @@ static gboolean _supported_image(const gchar *filename)
 
 // Issue a warning, but only if we haven't done so
 // for that particular model in this darktable session
-void _check_libraw_missing_support(const struct dt_image_t *img)
+static void _check_libraw_missing_support(const struct dt_image_t *img)
 {
   char lr_mk[64], lr_md[64], lr_al[64];
   if(!is_in_glist(warning_missing_support_seen, img->exif_model) &&

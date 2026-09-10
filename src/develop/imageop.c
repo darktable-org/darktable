@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "develop/imageop.h"
@@ -50,8 +51,10 @@
 #include "gui/splash.h"
 #include "imageio/imageio_rawspeed.h"
 #include "libs/modulegroups.h"
+
 #include <glib-2.0/gio/gio.h>
 #include <gtk/gtk.h>
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -1039,8 +1042,8 @@ static void _gui_rename_callback(GSimpleAction *action,
   dt_iop_gui_rename_module(module);
 }
 
-void _get_multi_show(dt_iop_module_t *module,
-                     dt_iop_gui_multi_show_t *multi_show)
+static void _get_multi_show(dt_iop_module_t *module,
+                            dt_iop_gui_multi_show_t *multi_show)
 {
   dt_develop_t *dev = darktable.develop;
 
@@ -1906,7 +1909,7 @@ static void _init_module_so(void *m)
 }
 
 // to be called before issuing any query based on memory.darktable_iop_names
-void _iop_set_darktable_iop_table()
+static void _iop_set_darktable_iop_table()
 {
   // the iop list must have been set, so after dt_iop_load_modules_so()
   assert(darktable.iop && g_list_length(darktable.iop) > 0);
