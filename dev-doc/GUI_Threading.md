@@ -732,10 +732,17 @@ The service owns the buffer, the hash and the locking:
 - `dt_preview_data_get()` reads one component of one pixel, from the GTK thread, while
   the pipe may be writing.
 - `dt_preview_data_is_fresh()` compares the stored hash against the module's piece in
-  the current preview pipe and answers yes or no. `dt_preview_data_get_hash()` does not
-  compare anything — it hands back the stored hash so you can do the comparison
-  yourself. `dt_preview_data_invalidate()` marks the data stale without dropping the
-  buffer.
+  the current preview pipe and answers yes or no. It also answers no, without comparing,
+  whenever it cannot take the preview pipe's `busy_mutex`, which the pipe holds for a
+  whole run and while its nodes are synchronized or rebuilt. A no therefore does not
+  tell stale data from a busy pipe, and the data may well be current: of the pipe's
+  pieces, only yours and those before it enter the hash (its other inputs are listed in
+  [Hash-based Caching](pixelpipe_architecture.md#hash-based-caching)), so editing a later
+  module usually re-runs the preview pipe without changing the hash. If you request a reprocess
+  on a no, as `colorequal` does, request it once and not again until a yes, which is what
+  its `reprocess_pending` flag is for. `dt_preview_data_get_hash()` does not compare
+  anything — it hands back the stored hash so you can do the comparison yourself.
+  `dt_preview_data_invalidate()` marks the data stale without dropping the buffer.
 
 The other seven take your module's `gui_lock` internally for the fields they own, so for
 the service's own buffer and hash you do not have to take it yourself. What is awkward to
@@ -784,7 +791,8 @@ Nor does the accessor tell you whether the value is current. It does not look at
 hash, and when `dt_preview_data_store()` fails to allocate a new size it keeps the old
 buffer and only invalidates the hash. `dt_preview_data_is_fresh()` answers that question,
 called outside any section of yours like the rest of the seven, but only for the stored
-data at the moment it runs, in a section of its own. A `dt_preview_data_store()` can
+data at the moment it runs, in a section of its own, and only when it answers yes: a no
+may just mean the preview pipe was busy. A `dt_preview_data_store()` can
 replace buffer and hash between your read and the check, so a TRUE does not vouch for a
 value read before or after it. `colorequal` uses it as a gate, deciding whether to show
 its cursor and whether to request a reprocess, and reads the buffer again on the next
