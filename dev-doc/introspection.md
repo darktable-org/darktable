@@ -36,8 +36,8 @@ DT_MODULE_INTROSPECTION(1, dt_iop_exposure_params_t)
 
 The comments above each field are **parsed** during the build process to generate metadata. The supported tags are:
 
--   `$MIN`: The minimum allowed value.
--   `$MAX`: The maximum allowed value.
+-   `$MIN`: The minimum value. `dt_bauhaus_slider_from_params()` makes it the slider's hard minimum, but nothing enforces it on the field itself; see [sliders.md](sliders.md#31-range-and-limits).
+-   `$MAX`: The maximum value, used and not enforced in the same way.
 -   `$DEFAULT`: The default value.
 -   `$DESCRIPTION`: A human-readable description (often used as a widget tooltip or label).
 -   `$VALUES`: For enums, a list of valid values.
@@ -74,7 +74,7 @@ g->exposure = dt_bauhaus_slider_from_params(self, "exposure");
 2.  It reads the `$MIN`, `$MAX`, and `$DEFAULT` values.
 3.  It configures the slider range and default value.
 4.  It binds the slider's value to the memory address `(char *)self->params + field->offset`.
-5.  When the slider moves, the value at that address is updated automatically.
+5.  When the user moves the slider, the slider writes its new value to that address. A call to `dt_bauhaus_slider_set()` does the same only outside `DT_ENTER_GUI_UPDATE()`; under the guard, which is where `gui_update()` and the framework's own widget sync run, only the widget changes (see [sliders.md](sliders.md#31-range-and-limits)).
 
 ## Serialization and Initialization
 

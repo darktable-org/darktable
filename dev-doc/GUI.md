@@ -218,6 +218,8 @@ dt_bauhaus_slider_set(g->slider2, compute_from(p->value1));
 DT_LEAVE_GUI_UPDATE()
 ```
 
+The guard also stops a `_from_params` slider from writing its value back into the bound field (`_slider_set_normalized()` in `src/bauhaus/bauhaus.c`). A sync performed under it therefore cannot repair an out-of-range parameter: the slider brings the value into its hard range for display, while the field keeps the value you assigned. Any code that assigns to `self->params` itself, a manual widget callback or a color picker callback included, must keep the value in range; only the slider's own write back is bounded by its hard range. See [sliders.md](sliders.md#31-range-and-limits).
+
 ### `dt_dev_add_history_item()`
 
 Records the current state of `self->params` to the history stack, triggering a pixelpipe reprocess.
@@ -263,8 +265,11 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   dt_iop_mymodule_params_t *p = self->params;
   dt_iop_mymodule_gui_data_t *g = self->gui_data;
 
+  // the slider's hard range does not bound this assignment, so apply the
+  // field's declared $MIN / $MAX here
   if(picker == g->white_point_picker)
-    p->white_point = log2f(self->picked_color[3]) + some_offset;
+    p->white_point = CLAMP(log2f(self->picked_color[3]) + some_offset,
+                           WHITE_POINT_MIN, WHITE_POINT_MAX);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
