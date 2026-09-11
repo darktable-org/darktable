@@ -1126,6 +1126,12 @@ static gboolean _camera_initialize(const dt_camctl_t *c,
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   CameraAbilities a;
   GPPortInfo pi;
+
+  dt_pthread_mutex_init(&cam->jobqueue_lock, NULL);
+  dt_pthread_mutex_init(&cam->config_lock, NULL);
+  dt_pthread_mutex_init(&cam->live_view_buffer_mutex, NULL);
+  dt_pthread_mutex_init(&cam->live_view_synch, NULL);
+
   if(cam->gpcam == NULL)
   {
     gp_camera_new(&cam->gpcam);
@@ -1236,10 +1242,6 @@ static gboolean _camera_initialize(const dt_camctl_t *c,
     // initialize the list of open gphoto files
     cam->open_gpfiles = NULL;
     cam->is_importing = FALSE;
-    dt_pthread_mutex_init(&cam->jobqueue_lock, NULL);
-    dt_pthread_mutex_init(&cam->config_lock, NULL);
-    dt_pthread_mutex_init(&cam->live_view_buffer_mutex, NULL);
-    dt_pthread_mutex_init(&cam->live_view_synch, NULL);
 
     dt_print(DT_DEBUG_CAMCTL,
              "[camera_control] %s on port %s initialized", cam->model, cam->port);
