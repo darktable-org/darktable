@@ -349,6 +349,68 @@ SPEKTRA_INLINE float sf_exp_neg(float lam)
   return p * sf_exp2i(k);
 }
 
+/* sf_exp2f / sf_log2f: 2^x and log2(x) built from +, -, *, / and the exact
+   floor/exponent manipulation above, for the reason sf_exp_neg is -- and
+   this pair is what actually reaches the grain sampler. SF_POW10F and
+   SF_LOG10F are defined in terms of these rather than the platform
+   exp2f/log2f, which OpenCL specifies only to <=3 ULP while glibc rounds
+   correctly: that slack lands in the film density arriving at
+   sf_layer_particle, and sf_poisson's accept/reject loop turns a one-ULP
+   density difference into a whole-integer grain count difference wherever a
+   partial product happens to sit near limit. The result is isolated pixels,
+   scattered evenly and uncorrelated with image structure, each off by a full
+   grain quantum rather than by a rounding.
+
+   Every operation here is correctly rounded on both sides by IEEE-754 and by
+   the OpenCL spec, so the same x yields the same bits. The same caveat as
+   sf_exp_neg applies: none of these multiply-adds may be contracted into an
+   FMA on one side and not the other, which is what -ffp-contract=off on the
+   host and #pragma OPENCL FP_CONTRACT OFF in the kernel are for.
+
+   Both are ~1 ULP against glibc over the domains this module uses, and are
+   not general-purpose replacements outside them: sf_exp2f assumes the result
+   stays normal, sf_log2f assumes x is positive and normal. SF_LOG10F floors
+   its argument at SF_LOG_EPS, which keeps it there. */
+SPEKTRA_INLINE float sf_exp2f(float x)
+{
+  /* x = k + r, k integer and |r| <= 0.5, so 2^x = 2^k * e^(r ln2) with the
+     exponential taken over |t| <= 0.347 by a degree-7 Taylor polynomial in
+     Horner form and 2^k injected exactly. */
+  const int k = (int)floorf(x + 0.5f);
+  const float t = (x - (float)k) * 0.6931471824645996f; /* ln(2) */
+  float p = 0.000198412700f;                            /* 1/5040 */
+  p = p * t + 0.00138888892f;                           /* 1/720 */
+  p = p * t + 0.00833333377f;                           /* 1/120 */
+  p = p * t + 0.0416666679f;                            /* 1/24 */
+  p = p * t + 0.166666672f;                             /* 1/6 */
+  p = p * t + 0.5f;
+  p = p * t + 1.0f;
+  p = p * t + 1.0f;
+  return p * sf_exp2i(k);
+}
+
+SPEKTRA_INLINE float sf_log2f(float x)
+{
+  /* Take the binary exponent off by hand, then fold the mantissa into
+     [1/sqrt2, sqrt2] so that s = (m-1)/(m+1) stays inside +-0.1716, where
+     log(m) = 2(s + s^3/3 + s^5/5 + s^7/7 + s^9/9) is good to well under an
+     ULP. Both steps of the fold are exact. */
+  union { float f; uint32_t u; } v;
+  v.f = x;
+  int e = (int)((v.u >> 23) & 0xffu) - 127;
+  v.u = (v.u & 0x007fffffu) | 0x3f800000u;
+  float m = v.f;
+  if(m > 1.41421356f) { m *= 0.5f; e += 1; }
+  const float s = (m - 1.0f) / (m + 1.0f);
+  const float s2 = s * s;
+  float p = 0.222222224f;    /* 2/9 */
+  p = p * s2 + 0.285714298f; /* 2/7 */
+  p = p * s2 + 0.400000006f; /* 2/5 */
+  p = p * s2 + 0.666666687f; /* 2/3 */
+  p = p * s2 + 2.0f;
+  return (float)e + p * s * 1.4426950216293335f; /* log2(e) */
+}
+
 SPEKTRA_INLINE float sf_poisson(float lam,
                                 uint32_t seed)
 {

@@ -95,7 +95,7 @@
 #include "common/spektra_core.h"
 #include "common/spektra_sim.h"
 
-DT_MODULE_INTROSPECTION(1, dt_iop_spektrafilm_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_spektrafilm_params_t)
 
 /* Spatial-scale constants, micrometres on film unless noted (see the LUT
    module for the full rationale; these are shared with modify_roi_in() and
@@ -259,11 +259,17 @@ typedef struct dt_iop_spektrafilm_params_t
      emulsions layer coarse crystals over fine ones; this moves the finer
      sub-layers relative to the coarsest, which stays the reference at 1. */
   float grain_sublayer_scale; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "sublayer particle scale"
-  /* GrainParams.density_min, absolute as the reference has it. The floor each
-     grain particle sits at, and the reason grain does not vanish entirely in
-     clear film. Shared with the enlarger and scan table ranges, so it is a
-     property of the emulsion, not of the drawing. */
-  float grain_density_min;  // $MIN: 0.0 $MAX: 0.2 $DEFAULT: 0.03 $DESCRIPTION: "density floor"
+  /* GrainParams.density_min, as a scale on the stock's own measured floor. The
+     floor each grain particle sits at, and the reason grain does not vanish
+     entirely in clear film. Shared with the enlarger and scan table ranges, so
+     it is a property of the emulsion, not of the drawing.
+
+     A scale rather than the reference's absolute value, matching
+     grain_granularity and grain_uniformity above: the pack's floors are per
+     channel and three of them cannot be spelled with one slider, so an absolute
+     control would flatten kodak_vision3_500t's 0.12/0.10/0.35 the moment it was
+     touched. Scaling keeps the ratios and still reaches any overall floor. */
+  float grain_density_min;  // $MIN: 0.0 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "density floor"
   /* GrainParams.blur_dye_clouds_um, as a scale on the reference's own 2 um.
      Each developed crystal produces a small cloud of dye, not a hard
      dot; this is how far that cloud spreads, in real emulsion units, so it only
@@ -677,6 +683,36 @@ int flags(void)
 {
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_ALLOW_TILING;
 }
+
+/* v1 -> v2: grain_density_min changes meaning from an absolute density to a
+   scale on the stock's own measured floor. Same type and offset, so the struct
+   is unchanged and the copy is a straight one -- only the value has to move,
+   from v1's 0.03 default to a neutral 1.0.
+
+   Every v1 edit rendered on the film's own floor whatever that field said:
+   sf_pack_film_grain() wrote the pack's value over it before anything read it.
+   So 1.0 does not approximate a v1 edit, it reproduces it exactly, and a v1
+   slider position carries no information worth carrying forward. */
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
+{
+  if(old_version != 1) return 1;
+
+  dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
+  if(!n) return 1;
+  memcpy(n, old_params, sizeof(dt_iop_spektrafilm_params_t));
+  n->grain_density_min = 1.0f;
+
+  *new_params = n;
+  *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
+  *new_version = 2;
+  return 0;
+}
+
 
 dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
                                             dt_dev_pixelpipe_t *p,
@@ -1306,7 +1342,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     sp.grain_rms_scale = p->grain_granularity;
     sp.grain_uniformity_scale = p->grain_uniformity;
     sp.grain_particle_scale = p->grain_sublayer_scale;
-    for(int c = 0; c < 3; c++) sp.grain_density_min[c] = p->grain_density_min;
+    sp.grain_density_min_scale = p->grain_density_min;
     sp.coupler_diffusion_um = p->couplers_diffusion_um;
     sp.coupler_tail_um = p->couplers_tail_um;
     sp.coupler_tail_weight = p->couplers_tail_weight;
@@ -2418,8 +2454,15 @@ int process_cl(dt_iop_module_t *self,
                                                  CLARG(amp[g3]), CLARG(c), CLARG(reset));
           SF_CL_STEP("scatter tail accum");
         }
-      const float ws_r = g->scatter_tail_weight[0], ws_g = g->scatter_tail_weight[1],
-                  ws_b = g->scatter_tail_weight[2];
+      /* CPU: sf_halation() takes w_s[] as the sim's double and blends with
+         (1.0 - w_s[c]) * core + w_s[c] * tail. Round the same double once here
+         rather than reading sf_sim_gpu_t's float mirror, so the constant the
+         kernel gets is the CPU's to the last bit. The blend itself still runs
+         in float on-device and in double on the CPU, so this narrows the
+         divergence to the per-pixel arithmetic instead of adding a second
+         rounding on top of it. */
+      const float ws_r = (float)cl_sc_w[0], ws_g = (float)cl_sc_w[1],
+                  ws_b = (float)cl_sc_w[2];
       /* (1-s)*raw + s*scattered, matching sf_halation()'s CPU blend; `plane`
          doubles as both the pre-scatter `raw` input and the `out` write
          target -- safe since this is a purely per-pixel elementwise op. */
@@ -2462,9 +2505,18 @@ int process_cl(dt_iop_module_t *self,
          upstream's a_tot = halation_strength * halation_amount (no curve). */
       const float h_eff = d->p.halation_amount;
       /* per-film halation strength (e.g. a strong-AH stock stays near-zero on
-         blue and much lower on red/green than a no-AH/redscale stock). */
-      const float a_r = g->halation_strength[0] * h_eff, a_g = g->halation_strength[1] * h_eff,
-                  a_b = g->halation_strength[2] * h_eff;
+         blue and much lower on red/green than a no-AH/redscale stock).
+
+         CPU: a_tot[c] = halation_strength[c] * halation_amount, both doubles
+         (sf_halation()). Formed the same way here from cl_hal_strength -- the
+         sim's own double, as the sigma above is -- and rounded once, instead of
+         multiplying two independently-rounded floats. sf_halation() then keeps
+         a_tot in double through (raw + a_tot*blur) / (1 + a_tot) per pixel and
+         the kernel cannot, so the two still part company on that arithmetic;
+         this only stops them parting company on the constant as well. */
+      const float a_r = (float)(cl_hal_strength[0] * (double)h_eff),
+                  a_g = (float)(cl_hal_strength[1] * (double)h_eff),
+                  a_b = (float)(cl_hal_strength[2] * (double)h_eff);
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_halation_apply, w, h, CLARG(plane),
                                              CLARG(acc), CLARG(w), CLARG(h), CLARG(a_r),
                                              CLARG(a_g), CLARG(a_b));
@@ -3336,7 +3388,16 @@ static void _toggle_sensitivity(dt_iop_spektrafilm_gui_data_t *g,
   gtk_widget_set_sensitive(g->diffusion_scale, dif);
   gtk_widget_set_sensitive(g->diffusion_warmth, dif);
 
-  const gboolean pdif = p->print_diffusion_on;
+  /* scan_film as well as the toggle, because _update_print_sensitivity() gates
+     these same four on `printing && print_diffusion_on` and this function is
+     reached without it: gui_changed() pairs the two only for the
+     print_diffusion_on widget, so a halation, grain, diffusion or boost_ev
+     change ran this alone and re-enabled all four with the print gate dropped.
+     print_diffusion_on stays TRUE while scanning -- _update_print_sensitivity()
+     blanks its tick but deliberately leaves the param -- so the sliders came
+     back live on a workflow that has no print stage at all. Same hazard the
+     development sliders are protected from at the end of this function. */
+  const gboolean pdif = p->print_diffusion_on && !p->scan_film;
   gtk_widget_set_sensitive(g->print_diffusion_filter_family, pdif);
   gtk_widget_set_sensitive(g->print_diffusion_strength, pdif);
   gtk_widget_set_sensitive(g->print_diffusion_scale, pdif);
@@ -3623,7 +3684,7 @@ static void _preset_defaults(dt_iop_spektrafilm_params_t *p)
   p->grain_granularity = 1.0f;
   p->grain_uniformity = 1.0f;
   p->grain_sublayer_scale = 1.0f;
-  p->grain_density_min = 0.03f;
+  p->grain_density_min = 1.0f;
   p->grain_dye_cloud = 1.0f;
   p->film_format_mm = 36.0f;
   p->output_luminance_boost = 1.0f;
@@ -5067,12 +5128,16 @@ void gui_init(dt_iop_module_t *self)
         "0 only the coarsest layer is left. no effect on single-layer stocks."));
 
   g->grain_density_min = dt_bauhaus_slider_from_params(self, "grain_density_min");
-  dt_bauhaus_slider_set_digits(g->grain_density_min, 3);
+  /* same shape as granularity above: full range is 0-4, but everything useful
+     sits close to the stock's own value */
+  dt_bauhaus_slider_set_soft_range(g->grain_density_min, 0.25f, 2.5f);
   gtk_widget_set_tooltip_text(
       g->grain_density_min,
       _("the density each crystal sits at even where the film received no\n"
         "light, which is why grain does not disappear entirely in clear\n"
-        "areas. typical stocks measure between 0.03 and 0.06."));
+        "areas. scales the loaded stock's own measured floor, which is per\n"
+        "channel, so the balance between channels is kept. typical stocks\n"
+        "measure between 0.03 and 0.06, cine stocks considerably higher."));
 
   _section_add(self, C_("section", "texture"),
                "plugins/darkroom/spektrafilm/expand_grain_texture");
