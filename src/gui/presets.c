@@ -1785,6 +1785,44 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
   g_free(active_preset_name);
   active_preset_name = NULL;
 
+
+
+  // example: walk the menu model, descending into each section, and print
+  // the label and action target of every item
+  for(gint i = 0; i < g_menu_model_get_n_items(G_MENU_MODEL(menu)); i++)
+  {
+    gchar *label = NULL;
+    g_menu_model_get_item_attribute(G_MENU_MODEL(menu), i,
+                                    G_MENU_ATTRIBUTE_LABEL, "s", &label);
+    printf("section %d: %s\n", i, label ? label : "(none)");
+    g_free(label);
+
+    GMenuModel *sub = g_menu_model_get_item_link(G_MENU_MODEL(menu), i,
+                                                 G_MENU_LINK_SUBMENU);
+    if(!sub) continue;
+
+    for(gint j = 0; j < g_menu_model_get_n_items(sub); j++)
+    {
+      gchar *item_label = NULL;
+      g_menu_model_get_item_attribute(sub, j, G_MENU_ATTRIBUTE_LABEL,
+                                      "s", &item_label);
+      GVariant *target = g_menu_model_get_item_attribute_value(sub, j,
+                                                               G_MENU_ATTRIBUTE_TARGET, NULL);
+      gchar *target_str = target ? g_variant_print(target, TRUE) : NULL;
+      printf("  item %d: %s  target=%s\n", j,
+             item_label ? item_label : "(none)",
+             target_str ? target_str : "(none)");
+      g_free(item_label);
+      g_free(target_str);
+      if(target) g_variant_unref(target);
+    }
+    g_object_unref(sub);
+  }
+
+
+
+
+
   // popup the menu
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(button, menu);
   g_object_unref(menu);
