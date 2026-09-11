@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024-25 darktable developers.
+    Copyright (C) 2024-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -328,6 +328,13 @@ void distort_mask(dt_iop_module_t *self,
     const float *inb = in + (size_t)j * roi_in->width;
     memcpy(outb, inb, sizeof(float) * roi_in->width);
   }
+}
+
+void init_pipe(dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
+{
+  piece->data = calloc(1, sizeof(dt_iop_enlargecanvas_data_t));
 }
 
 void process(dt_iop_module_t *self,
