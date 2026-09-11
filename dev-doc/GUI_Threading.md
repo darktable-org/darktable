@@ -323,14 +323,21 @@ different:
 - **Manual mode** — the effective exposure is the exposure parameter plus the two
   optional compensations, and both compensations come from the image's EXIF data. All of
   that is available to the accessor, so the accessor derives the value and does not read
-  `gui_data` at all. Nothing is shared, so nothing needs locking.
+  `gui_data` at all. Nothing is shared, so nothing needs locking, provided the accessor
+  runs on the GTK thread, which owns `params`. The thread contract on
+  `dt_dev_proxy_exposure_t` requires that of every caller (`src/develop/develop.h`).
 - **Deflicker mode** — the correction is computed from a histogram of the raw file,
   which is nowhere in `params`, so there is nothing to derive from and the value has to
-  be published. The scalar that carries it is
-  [Pattern A](#pattern-a-critical-section--g_idle_add) done correctly:
+  be published. The scalar that carries it follows the locking half of
+  [Pattern A](#pattern-a-critical-section--g_idle_add):
   `_process_common_setup()` writes `g->deflicker_computed_exposure` inside a critical
-  section on the pipe worker thread, and the `_show_computed()` idle callback reads it
-  inside one on the GTK thread (`src/iop/exposure.c`).
+  section on the pipe worker thread, and both of its GTK-thread readers, the
+  `_show_computed()` idle callback and the proxy accessor, read it inside one
+  (`src/iop/exposure.c`). The idle callback is not a model for the other half: it
+  locks and reads `gui_data` without testing it at all, `gui_cleanup()` removes only one
+  queued source, and the module has no `change_image()`, all short of
+  [The Callback Must Not Outlive the Module or the Image](#the-callback-must-not-outlive-the-module-or-the-image)
+  (#22007).
 
 The histogram *behind* that scalar is a second piece of shared state, and it is not
 covered. Publishing a value safely does not make the state it was computed from safe;
@@ -344,18 +351,6 @@ each shared field needs its own answer.
 > [Hold the Lock as Long as the Value Must Stay Valid](#hold-the-lock-as-long-as-the-value-must-stay-valid),
 > live in the tree: a heap buffer in `gui_data` that one thread can free while the other
 > is walking it.
-
-> **In tree today, until #21974 lands:** the manual-mode bullet above describes
-> `exposure` *after* pull request #21974, not master as it stands. #21974 removes the
-> cached `effective_exposure` field and makes the accessor derive its result. Until it
-> lands, `src/iop/exposure.c` still caches:
-> `commit_params()` writes `effective_exposure` from a pipe worker thread and
-> `_exposure_proxy_get_effective_exposure()` reads it from the GTK thread, neither under
-> `gui_lock` and the reader without a NULL check — the exact race this section tells you
-> to design away. The deflicker bullet and the histogram paragraph describe the tree
-> as it stands.
-
-<!-- TODO @kofa : check again after 21974 has been merged -->
 
 So which shape a proxy accessor needs depends on which of the two cases it is. A
 derived value makes the accessor a plain function of `params`. A value that genuinely

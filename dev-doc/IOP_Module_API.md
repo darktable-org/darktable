@@ -232,7 +232,7 @@ A common source of confusion is the relationship between the parameter struct (`
 typedef struct dt_iop_exposure_data_t
 {
   dt_iop_exposure_params_t params;  // raw user params
-  int deflicker;                    // computed: is deflicker mode active?
+  gboolean deflicker;               // computed: is deflicker mode active?
   float black;                      // computed: adjusted black point
   float scale;                      // computed: exposure multiplier
 } dt_iop_exposure_data_t;
