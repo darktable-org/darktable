@@ -212,13 +212,21 @@ static void my_callback(GtkWidget *w, dt_iop_module_t *self)
 
 **Pattern 2: Suppress callbacks when programmatically updating widgets:**
 ```c
-// Setting slider2 in response to slider1 changing
-DT_ENTER_GUI_UPDATE()
-dt_bauhaus_slider_set(g->slider2, compute_from(p->value1));
-DT_LEAVE_GUI_UPDATE()
+// in gui_changed(): param2 follows param1, so update the field, then the widget
+if(w == g->slider1)
+{
+  // the slider's hard range does not bound this assignment, so apply the
+  // field's declared $MIN / $MAX here
+  p->param2 = CLAMP(compute_from(p->param1), PARAM2_MIN, PARAM2_MAX);
+  DT_ENTER_GUI_UPDATE();
+  dt_bauhaus_slider_set(g->slider2, p->param2);
+  DT_LEAVE_GUI_UPDATE();
+}
 ```
 
-The guard also stops a `_from_params` slider from writing its value back into the bound field (`_slider_set_normalized()` in `src/bauhaus/bauhaus.c`). A sync performed under it therefore cannot repair an out-of-range parameter: the slider brings the value into its hard range for display, while the field keeps the value you assigned. Any code that assigns to `self->params` itself, a manual widget callback or a color picker callback included, must keep the value in range; only the slider's own write back is bounded by its hard range. See [sliders.md](sliders.md#31-range-and-limits).
+The guard also stops a `_from_params` slider from writing its value back into the bound field (`_slider_set_normalized()` in `src/bauhaus/bauhaus.c`). Setting the widget alone therefore leaves the parameter unchanged: the pixelpipe and history keep the old value while the slider shows the new one, until the framework next syncs the widgets from params and the slider jumps back. Assign the field yourself, as above. In `gui_changed()` called for a `_from_params` change, the framework records the history item after your `gui_changed()` returns (`dt_iop_gui_changed()` in `src/develop/imageop.c`); from a manual callback, call `dt_dev_add_history_item()` yourself, as in Pattern 1. The test is `w == g->slider1` and not `!w || ...`, because `gui_update()` also calls `gui_changed(self, NULL, NULL)`, and a parameter assigned there changes `self->params` without adding a history item (`dt_iop_gui_update()` adds none).
+
+For the same reason, a sync performed under the guard cannot repair an out-of-range parameter: the slider brings the value into its hard range for display, while the field keeps the value you assigned. Any code that assigns to `self->params` itself, Pattern 2, a manual widget callback and a color picker callback included, must keep the value in range; only the slider's own write back is bounded by its hard range. See [sliders.md](sliders.md#31-range-and-limits).
 
 ### `dt_dev_add_history_item()`
 
