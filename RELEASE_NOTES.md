@@ -321,7 +321,9 @@ changes (where available).
 
 ### Other Lua changes
 
-- N/A
+- Button images are now decoded at the display's resolution and sized to
+  the interface font, so script icons are sharp on HiDPI screens and no
+  longer stuck at the image's own pixel size.
 
 ## Notes
 
