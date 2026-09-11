@@ -74,7 +74,7 @@ The sections, in order:
 | widget callbacks (sliders, buttons, combos) | `process_tiling()`, `process_tiling_cl()` |
 | draw / expose callbacks, `gui_post_expose()` | `modify_roi_in()`, `modify_roi_out()`, `tiling_callback()` |
 | mouse and scroll handlers | `init_pipe()`, `cleanup_pipe()` |
-| | `output_format()`, the four colorspace callbacks |
+| `color_picker_apply()` | `output_format()`, the four colorspace callbacks |
 | | `distort_transform()`, `distort_backtransform()`, `distort_mask()` |
 
 The right column is the per-instance `src/iop/iop_api.h` callbacks the pipe drives that
@@ -82,6 +82,21 @@ can reach `gui_data`. It is not the whole API surface — the pipe also calls me
 callbacks such as `flags()` and `operation_tags()`, but their signatures give them no
 module instance, so they cannot touch `gui_data`. (`input_format()` is declared but has
 no caller in the tree, so it is not listed.)
+
+`color_picker_apply()` is on the left even though the pipe measured the values it reads,
+because the pipe does not call it. Once the preview pipe has sampled the picker area, it
+raises `DT_SIGNAL_CONTROL_PICKERDATA_READY`. That signal is asynchronous, so its handler
+runs later on the GTK main loop, and that handler is the callback's only caller
+(`src/gui/color_picker_proxy.c`, `src/control/signal.c`). A picker callback may call GTK,
+and needs the lock only for the `gui_data` fields a pipe callback also touches, as in
+[a widget callback](#writing-gui_data-from-a-widget-callback).
+
+> **In tree today:** the picked values themselves are not handed over under any lock. The
+> preview pipe writes `self->picked_color`, `picked_color_min` and `picked_color_max`, and
+> the `picked_output_*` arrays beside them, with no lock held, just before it raises the
+> signal (`src/develop/pixelpipe_hb.c`). Nothing orders the callback's later read against
+> the preview pipe's next run, which rewrites the same arrays. A module cannot close that
+> window: the pipe takes no lock that the callback could take too.
 
 Each column covers the static helpers called from it too. A `process()` that hands
 `gui_data` to a helper does not make the access GTK-thread-safe, and that is where
