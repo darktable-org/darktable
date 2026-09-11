@@ -3177,6 +3177,7 @@ static void _add_remove_modules_at_widget(dt_action_t *action,
 
   // popup the menu
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(parent, menu);
+  g_object_unref(menu);
   GdkRectangle rect = { x, y, 1, 1 };
   gtk_popover_set_pointing_to(GTK_POPOVER(popover_menu), &rect);
   gtk_popover_popup(GTK_POPOVER(popover_menu));

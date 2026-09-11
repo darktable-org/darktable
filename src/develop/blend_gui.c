@@ -2149,6 +2149,7 @@ static void _blendif_options_callback(GtkButton *button,
 
   // popup the menu
   darktable.gui->active_popover_menu = dt_gui_popover_menu_from_model(GTK_WIDGET(button), menu);
+  g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(darktable.gui->active_popover_menu));
 
   dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);

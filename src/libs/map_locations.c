@@ -27,6 +27,7 @@
 #include <glib-2.0/gio/gio.h>
 #include <glib-2.0/gio/gmenu.h>
 #include <glib-2.0/gio/gmenumodel.h>
+#include <glib-2.0/glib-object.h>
 #include <gtk/gtk.h>
 
 // map position module uses the tag dictionary with dt_geo_tag_root as a prefix.
@@ -836,6 +837,7 @@ static void _pop_menu_view(GtkWidget *view,
 
     // popup the menu
     GtkWidget *popover_menu = dt_gui_popover_menu_from_model(view, menu);
+    g_object_unref(menu);
     gtk_popover_set_pointing_to(GTK_POPOVER(popover_menu), &rect);
     gtk_popover_popup(GTK_POPOVER(popover_menu));
   }

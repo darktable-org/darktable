@@ -19,6 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"
 
+#include <glib-2.0/glib-object.h>
 #include <string.h>
 #include <locale.h>
 
@@ -1189,6 +1190,7 @@ static void _popup_show(GtkDarktableRangeSelect *range, GtkWidget *w)
     // popup the menu
     GMenu *menu = _popup_get_numeric_menu(range, w);
     GtkWidget *popover_menu = dt_gui_popover_menu_from_model(GTK_WIDGET(w), menu);
+    g_object_unref(menu);
     gtk_popover_popup(GTK_POPOVER(popover_menu));
   }
   else if(range->type == DT_RANGE_TYPE_DATETIME)
