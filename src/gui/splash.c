@@ -18,7 +18,7 @@
 
 #include "control/conf.h"
 #include "gui/gtk.h"
-#include "dtgtk/button.h"
+#include "dtgtk/icon.h"
 #include "splash.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -117,8 +117,28 @@ void dt_splash_screen_create(const gboolean force)
   gtk_widget_set_name(darktable.splash.start_screen, "splashscreen");
   darktable.splash.progress_text = gtk_label_new(_("initializing"));
   gtk_widget_set_name(darktable.splash.progress_text, "splashscreen-progress");
+  // anchor the text so a stale allocation cannot shift it (visible on macOS)
+  gtk_label_set_xalign(GTK_LABEL(darktable.splash.progress_text), 0.0);
+  // middle, so a truncated crawler message keeps its percentage
+  gtk_label_set_ellipsize(GTK_LABEL(darktable.splash.progress_text), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_label_set_max_width_chars(GTK_LABEL(darktable.splash.progress_text), 20);
+  gtk_widget_set_hexpand(darktable.splash.progress_text, TRUE);
   darktable.splash.remaining_text = gtk_label_new("");
-  gtk_widget_set_name(darktable.splash.remaining_text, "splashscreen-remaining");
+  // the time shares the message row, so showing it never changes the geometry
+  GtkWidget *clock = dtgtk_icon_new(dtgtk_cairo_paint_clock, 0, NULL);
+  darktable.splash.remaining_box = dt_gui_hbox(clock, darktable.splash.remaining_text);
+  gtk_widget_set_name(GTK_WIDGET(darktable.splash.remaining_box), "splashscreen-remaining");
+  // the icon has no size of its own: match the time label's line height
+  PangoLayout *layout = gtk_widget_create_pango_layout(darktable.splash.remaining_text, "X");
+  int line_w = 0, line_h = 0;
+  pango_layout_get_pixel_size(layout, &line_w, &line_h);
+  g_object_unref(layout);
+  gtk_widget_set_size_request(clock, line_h, line_h);
+  gtk_widget_set_halign(GTK_WIDGET(darktable.splash.remaining_box), GTK_ALIGN_END);
+  // opacity, not hide: a resize re-centers the window on macOS
+  gtk_widget_set_opacity(GTK_WIDGET(darktable.splash.remaining_box), 0.0);
+  GtkWidget *status = GTK_WIDGET(dt_gui_hbox(darktable.splash.progress_text,
+                                             darktable.splash.remaining_box));
   int version_len = strlen(darktable_package_version);
   char *delim = strchr(darktable_package_version, '~');
   if(delim)
@@ -153,7 +173,8 @@ void dt_splash_screen_create(const gboolean force)
 
   dt_gui_box_add(content,
                  dt_gui_hbox(dt_gui_vbox(logo, version, program_name, program_desc),
-                             image));
+                             image),
+                 status);
 #else
   gtk_image_set_pixel_size(GTK_IMAGE(logo), ICON_SIZE);
   gtk_label_set_justify(GTK_LABEL(version), GTK_JUSTIFY_LEFT);
@@ -185,22 +206,14 @@ void dt_splash_screen_create(const gboolean force)
 
   dt_gui_box_add(content,
                  dt_gui_vbox(dt_gui_hbox(logo_col, title_col),
-                             program_desc, sep, darktable.splash.progress_text));
+                             program_desc, sep, status));
 #endif
 
-  gtk_widget_set_halign(darktable.splash.progress_text, GTK_ALIGN_START);
-
-  darktable.splash.remaining_box =
-    dt_gui_hbox(dtgtk_button_new(dtgtk_cairo_paint_clock, 0, 0),
-                darktable.splash.remaining_text);
-  gtk_widget_set_halign(GTK_WIDGET(darktable.splash.remaining_box), GTK_ALIGN_START);
-
-  dt_gui_box_add(content, darktable.splash.remaining_box);
   gtk_container_add(GTK_CONTAINER(darktable.splash.start_screen), GTK_WIDGET(content));
 
-  gtk_window_set_default_size(GTK_WINDOW(darktable.splash.start_screen), 700, -1);
+  // the theme's min-width on the window has no effect (measured on macOS)
+  gtk_widget_set_size_request(darktable.splash.start_screen, 720, -1);
   gtk_widget_show_all(darktable.splash.start_screen);
-  gtk_widget_hide(darktable.splash.remaining_box);
   dt_gui_process_events();
 }
 
@@ -212,8 +225,7 @@ void dt_splash_screen_set_progress(const char *msg)
   if(darktable.splash.start_screen)
   {
     gtk_label_set_text(GTK_LABEL(darktable.splash.progress_text), msg);
-    gtk_widget_show(darktable.splash.progress_text);
-    gtk_widget_hide(darktable.splash.remaining_box);
+    gtk_widget_set_opacity(GTK_WIDGET(darktable.splash.remaining_box), 0.0);
     dt_gui_process_events();
     gdk_display_sync(gdk_display_get_default());
   }
@@ -248,7 +260,7 @@ void dt_splash_screen_set_progress_percent(const char *msg,
     {
       gtk_label_set_text(GTK_LABEL(darktable.splash.remaining_text), "   --:--");
     }
-    gtk_widget_show_all(darktable.splash.start_screen);
+    gtk_widget_set_opacity(GTK_WIDGET(darktable.splash.remaining_box), 1.0);
     dt_gui_process_events();
   }
 }

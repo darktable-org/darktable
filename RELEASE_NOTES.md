@@ -300,6 +300,8 @@ changes (where available).
 
 - Fixed small memory leaks when expanding variables, which grew with
   the number of images exported or imported in one run.
+- Fixed the splash screen text jumping sideways while startup messages
+  change, most visibly on macOS.
 
 ## Lua
 
