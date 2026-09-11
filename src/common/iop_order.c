@@ -88,6 +88,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { { 6.0f }, "hotpixels", 0},
   { { 7.0f }, "rawdenoise", 0},
   { { 8.0f }, "demosaic", 0},
+  { { 8.5f }, "demosaicscale", 0},
   { { 9.0f }, "mask_manager", 0},
   { {10.0f }, "denoiseprofile", 0},
   { {11.0f }, "tonemap", 0},
@@ -188,6 +189,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { { 6.0f }, "hotpixels", 0},
   { { 7.0f }, "rawdenoise", 0},
   { { 8.0f }, "demosaic", 0},
+  { { 8.5f }, "demosaicscale", 0},
   { { 9.0f }, "denoiseprofile", 0},
   { {10.0f }, "bilateral", 0},
   { {11.0f }, "rotatepixels", 0},
@@ -309,6 +311,7 @@ const dt_iop_order_entry_t v50_order[] = {
   { { 6.0f }, "hotpixels", 0},
   { { 7.0f }, "rawdenoise", 0},
   { { 8.0f }, "demosaic", 0},
+  { { 8.5f }, "demosaicscale", 0},
   { { 9.0f }, "denoiseprofile", 0},
   { {10.0f }, "bilateral", 0},
   { {11.0f }, "rotatepixels", 0},
@@ -432,7 +435,8 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 6.0f }, "hotpixels", 0 },
   { { 7.0f }, "rawdenoise", 0 },
   { { 8.0f }, "demosaic", 0 },
-  // all the modules between [8; 28] expect linear RGB, so they need to be moved after colorin
+  { { 8.5f }, "demosaicscale", 0 },
+  // all the modules between [8.5; 28] expect linear RGB, so they need to be moved after colorin
   { { 28.0f }, "colorin", 0 },
   // moved modules : (copy-pasted in the same order)
   { { 28.0f }, "denoiseprofile", 0},
@@ -556,7 +560,8 @@ const dt_iop_order_entry_t v50_jpg_order[] = {
   { { 6.0f }, "hotpixels", 0 },
   { { 7.0f }, "rawdenoise", 0 },
   { { 8.0f }, "demosaic", 0 },
-  // all the modules between [8; 28] expect linear RGB, so they need to be moved after colorin
+  { { 8.5f }, "demosaicscale", 0 },
+  // all the modules between [8.5; 28] expect linear RGB, so they need to be moved after colorin
   { { 28.0f }, "colorin", 0 },
   // moved modules : (copy-pasted in the same order)
   { { 28.0f }, "denoiseprofile", 0},
@@ -683,9 +688,10 @@ static void *_dup_iop_order_entry(const void *src, gpointer data);
 static int _count_entries_operation(GList *e_list, const char *operation);
 
 
-static GList *_insert_before(GList *iop_order_list,
-                             const char *module,
-                             const char *new_module)
+static GList *_insert_before_after(GList *iop_order_list,
+                                   const char *module,
+                                   const char *new_module,
+                                   const gboolean before)
 {
   gboolean exists = FALSE;
 
@@ -705,6 +711,7 @@ static GList *_insert_before(GList *iop_order_list,
 
   if(!exists)
   {
+    int pos = 1;
     for(GList *l = iop_order_list; l; l = g_list_next(l))
     {
       const dt_iop_order_entry_t *const restrict entry = l->data;
@@ -717,9 +724,12 @@ static GList *_insert_before(GList *iop_order_list,
         new_entry->instance = 0;
         new_entry->o.iop_order = 0;
 
-        iop_order_list = g_list_insert_before(iop_order_list, l, new_entry);
+        iop_order_list = before
+                          ? g_list_insert_before(iop_order_list, l, new_entry)
+                          : g_list_insert(iop_order_list, new_entry, pos);
         break;
       }
+      pos++;
     }
   }
 
@@ -732,24 +742,25 @@ void dt_ioppr_migrate_legacy_iop_order_list(GList *iop_order_list)
   //                the new module name in the iop-order list here.
   //                The insertion can be done depending on the current
   //                iop-order list kind.
-  _insert_before(iop_order_list, "nlmeans", "negadoctor");
-  _insert_before(iop_order_list, "negadoctor", "channelmixerrgb");
-  _insert_before(iop_order_list, "negadoctor", "contrastntexture");  
-  _insert_before(iop_order_list, "negadoctor", "censorize");
-  _insert_before(iop_order_list, "negadoctor", "primaries");
-  _insert_before(iop_order_list, "rgbcurve", "colorbalancergb");
-  _insert_before(iop_order_list, "ashift", "cacorrectrgb");
-  _insert_before(iop_order_list, "graduatednd", "crop");
-  _insert_before(iop_order_list, "flip", "enlargecanvas");
-  _insert_before(iop_order_list, "enlargecanvas", "overlay");
-  _insert_before(iop_order_list, "colorbalance", "diffuse");
-  _insert_before(iop_order_list, "nlmeans", "blurs");
-  _insert_before(iop_order_list, "filmicrgb", "sigmoid");
-  _insert_before(iop_order_list, "filmicrgb", "agx");
-  _insert_before(iop_order_list, "colisa", "spektrafilm");
-  _insert_before(iop_order_list, "colorbalancergb", "colorequal");
-  _insert_before(iop_order_list, "highlights", "rasterfile");
-  _insert_before(iop_order_list, "colorbalance", "colorharmonizer");
+  _insert_before_after(iop_order_list, "nlmeans", "negadoctor", TRUE);
+  _insert_before_after(iop_order_list, "negadoctor", "channelmixerrgb", TRUE);
+  _insert_before_after(iop_order_list, "negadoctor", "contrastntexture", TRUE);
+  _insert_before_after(iop_order_list, "negadoctor", "censorize", TRUE);
+  _insert_before_after(iop_order_list, "negadoctor", "primaries", TRUE);
+  _insert_before_after(iop_order_list, "rgbcurve", "colorbalancergb", TRUE);
+  _insert_before_after(iop_order_list, "ashift", "cacorrectrgb", TRUE);
+  _insert_before_after(iop_order_list, "graduatednd", "crop", TRUE);
+  _insert_before_after(iop_order_list, "flip", "enlargecanvas", TRUE);
+  _insert_before_after(iop_order_list, "enlargecanvas", "overlay", TRUE);
+  _insert_before_after(iop_order_list, "colorbalance", "diffuse", TRUE);
+  _insert_before_after(iop_order_list, "nlmeans", "blurs", TRUE);
+  _insert_before_after(iop_order_list, "filmicrgb", "sigmoid", TRUE);
+  _insert_before_after(iop_order_list, "filmicrgb", "agx", TRUE);
+  _insert_before_after(iop_order_list, "colisa", "spektrafilm", TRUE);
+  _insert_before_after(iop_order_list, "colorbalancergb", "colorequal", TRUE);
+  _insert_before_after(iop_order_list, "highlights", "rasterfile", TRUE);
+  _insert_before_after(iop_order_list, "demosaic", "demosaicscale", FALSE);
+  _insert_before_after(iop_order_list, "colorbalance", "colorharmonizer", TRUE);
 }
 
 static dt_iop_order_t _ioppr_get_default_iop_order_version(const dt_imgid_t imgid)
@@ -816,7 +827,8 @@ GList *dt_ioppr_get_iop_order_rules(void)
     { .op_prev = "cacorrect",   .op_next = "hotpixels"   },
     { .op_prev = "hotpixels",   .op_next = "rawdenoise"  },
     { .op_prev = "rawdenoise",  .op_next = "demosaic"    },
-    { .op_prev = "demosaic",    .op_next = "colorin"     },
+    { .op_prev = "demosaic",    .op_next = "demosaicscale" },
+    { .op_prev = "demosaicscale", .op_next = "colorin"     },
     { .op_prev = "colorin",     .op_next = "colorout"    },
     { .op_prev = "colorout",    .op_next = "gamma"       },
     { .op_prev = "flip",        .op_next = "crop"        }, // crop GUI broken if flip is done on top
