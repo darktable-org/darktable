@@ -3071,7 +3071,6 @@ static const sf_prof_entry_t *_current_film_entry(const dt_iop_spektrafilm_gui_d
   const sf_prof_entry_t *hit = _entry_by_hash(g, p->film_hash, FALSE);
   if(p->film_hash && hit) return hit;
   const sf_prof_entry_t *fallback = NULL;
-  const sf_prof_entry_t *same_channel = NULL;
   for(const GList *l = g->entries; l; l = l->next)
   {
     const sf_prof_entry_t *e = l->data;
@@ -3091,6 +3090,7 @@ static const sf_prof_entry_t *_auto_paper_entry(const dt_iop_spektrafilm_gui_dat
                                                 const sf_prof_entry_t *film)
 {
   const sf_prof_entry_t *first = NULL;
+  const sf_prof_entry_t *same_channel = NULL;
   for(const GList *l = g->entries; l; l = l->next)
   {
     const sf_prof_entry_t *pe = l->data;
