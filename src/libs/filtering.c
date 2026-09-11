@@ -34,6 +34,7 @@
 #include "views/view.h"
 #include <glib-2.0/gio/gio.h>
 #include <glib-2.0/gio/gmenu.h>
+#include <glib-2.0/gio/gmenumodel.h>
 #include <glib-2.0/glib-object.h>
 #ifndef _WIN32
 #include <gio/gunixmounts.h>
