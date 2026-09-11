@@ -8,7 +8,7 @@ Introspection serves three main purposes:
 
 1.  **Database Storage**: It allows module parameters (which are just C structs) to be serialized to and deserialized from the database as binary blobs, while handling versioning and upgrades (`legacy_params`). See [Serialization and Initialization](#serialization-and-initialization) for what that raw-bytes format demands of the struct.
 2.  **GUI Generation**: The GUI logic (`DT_BAUHAUS_WIDGET` macros and functions) uses introspection data to automatically create sliders, comboboxes, and toggle buttons with the correct ranges, defaults, and labels.
-3.  **Lua API**: It allows the Lua scripting interface to access and modify module parameters dynamically without writing explicit binding code for every field.
+3.  **Scripting access**: The `darktable-mcp` server (`src/mcp/dt_bridge.c`, built unless `USE_MCP` is off) uses introspection to describe a module's scalar fields to its clients and to set them by name, refusing a number outside the field's `$MIN`/`$MAX`. Other fields, such as `char` arrays, are neither listed nor settable by name: a client passes the whole params block instead, its bytes written as a hex string (`blob_hex`). Lua does not use introspection, and no params field is exposed to Lua scripts. A script changes one setting through the action that drives the module's widget (`darktable.gui.action`, `src/lua/gui.c`), and whole edits through styles, sidecar files, or a duplicate made with its history.
 
 ## Defining Introspection
 
