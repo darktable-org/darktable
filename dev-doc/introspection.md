@@ -14,33 +14,39 @@ Introspection serves three main purposes:
 
 Introspection is defined directly in the C code using the `DT_MODULE_INTROSPECTION` macro. This macro associates a struct type with a version number.
 
-Example from `src/iop/exposure.c` (simplified):
+Example from `src/iop/exposure.c`:
 
 ```c
+DT_MODULE_INTROSPECTION(7, dt_iop_exposure_params_t)
+
+typedef enum dt_iop_exposure_mode_t
+{
+  EXPOSURE_MODE_MANUAL,   // $DESCRIPTION: "manual"
+  EXPOSURE_MODE_DEFLICKER // $DESCRIPTION: "automatic"
+} dt_iop_exposure_mode_t;
+
 typedef struct dt_iop_exposure_params_t
 {
-  // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 0.0 $DESCRIPTION: "EV shift"
-  float exposure;
-
-  // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.0
-  float black;
-
-  // $DEFAULT: 0
-  int mode;
+  dt_iop_exposure_mode_t mode;      // $DEFAULT: EXPOSURE_MODE_MANUAL
+  float black;                      // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "black level correction"
+  float exposure;                   // $MIN: -18.0 $MAX: 18.0 $DEFAULT: 0.0
+  float deflicker_percentile;       // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "percentile"
+  float deflicker_target_level;     // $MIN: -18.0 $MAX: 18.0 $DEFAULT: -4.0 $DESCRIPTION: "target level"
+  gboolean compensate_exposure_bias;// $DEFAULT: FALSE $DESCRIPTION: "compensate exposure bias"
+  gboolean compensate_hilite_pres;  // $DEFAULT: TRUE $DESCRIPTION: "compensate highlight preservation"
 } dt_iop_exposure_params_t;
-
-DT_MODULE_INTROSPECTION(1, dt_iop_exposure_params_t)
 ```
 
 ### Metadata Tags
 
-The comments above each field are **parsed** during the build process to generate metadata. The supported tags are:
+The comment on the same line as a field or enum constant is **parsed** during the build process to generate metadata. Put the tags there: the parser looks them up by the line the declaration is on (`tools/introspection/ast.pm`), so tags in a comment on the line above are silently ignored. The supported tags are:
 
 -   `$MIN`: The minimum value. `dt_bauhaus_slider_from_params()` makes it the slider's hard minimum, but nothing enforces it on the field itself; see [sliders.md](sliders.md#31-range-and-limits).
 -   `$MAX`: The maximum value, used and not enforced in the same way.
 -   `$DEFAULT`: The default value.
--   `$DESCRIPTION`: A human-readable description (often used as a widget tooltip or label).
--   `$VALUES`: For enums, a list of valid values.
+-   `$DESCRIPTION`: A human-readable name. On a field, the `dt_bauhaus_*_from_params()` functions use it as the widget label, and fall back to the field name with underscores turned into spaces (`src/develop/imageop_gui.c`). On an enum constant, it is the text of that entry in the combobox. A constant without one is left out of the combobox, not shown by its name: the generated entry carries an empty description (`tools/introspection/ast.pm`), and the combobox skips entries with empty text (`src/bauhaus/bauhaus.c`).
+
+An enum needs no tag listing its values: introspection collects the constants from the `typedef enum` itself.
 
 ## Internal Structure
 
@@ -107,7 +113,7 @@ The framework starts you off correctly. `dt_iop_default_init()` `calloc()`s both
 When you change the layout of a `params` struct, you **must** increment the introspection version number.
 
 ```c
-DT_MODULE_INTROSPECTION(2, dt_iop_exposure_params_t)
+DT_MODULE_INTROSPECTION(8, dt_iop_exposure_params_t)
 ```
 
-You must then implement the `legacy_params` function in your module to migrate data from the old version (1) to the new version (2). This ensures that edits made with older versions of darktable are preserved.
+You must then implement the `legacy_params` function in your module to migrate data from the old version (7) to the new version (8). This ensures that edits made with older versions of darktable are preserved.
