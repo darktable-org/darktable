@@ -2049,7 +2049,13 @@ void dt_colorspaces_set_display_profile
   GtkWidget *widget = (profile_type == DT_COLORSPACE_DISPLAY2)
       ? darktable.develop->second_wnd
       : dt_ui_center(darktable.gui->ui);
-  GdkWindow *window = gtk_widget_get_window(widget);
+  // use the toplevel's window, which is already native. Calling
+  // gdk_win32_window_get_handle() on the center widget's client-side window
+  // makes GDK turn it into a native child window, which GDK then raises with
+  // SetForegroundWindow() whenever the center overlay is re-allocated
+  // (thumbnail hover, toasts, log messages), stealing the focus from other
+  // applications (#20442).
+  GdkWindow *window = gtk_widget_get_window(gtk_widget_get_toplevel(widget));
   HWND hwnd = (HWND)gdk_win32_window_get_handle(window);  // get window handle
   HMONITOR hMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST); // get monitor handle
   if(!hMonitor)
