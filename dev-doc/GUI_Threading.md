@@ -743,17 +743,6 @@ build by hand is the guarantee the header attaches to `dt_preview_data_store()`:
 fill and hash commit happen inside a *single* critical section, so the GUI can never
 observe a resized but not-yet-filled buffer.
 
-Note the limit of that. `gui_lock` serializes the service's fields against your module's
-other users of the same lock. It does not stabilize anything outside them.
-
-> **In tree today:** `dt_preview_data_is_fresh()` does reach outside them, walking the
-> live preview pipe's node list to find your piece. Pipe topology is rebuilt under the
-> pipe and history mutexes, not under `gui_lock`, so that walk needs the caller to be
-> somewhere the topology is stable, and the service's own locking does not supply that.
-> The same function also tests the buffer pointer in an early return, before it takes the
-> lock at all — against a field the two write entry points free and replace while holding
-> it.
-
 The two-step form gives up that single-section guarantee, and hands you the piece you
 need to replace it: if `dt_preview_data_resize()` has to resize, it calls a callback of
 yours while still holding the lock, so you can drop your own validity flag atomically
@@ -801,6 +790,12 @@ value read before or after it. `colorequal` uses it as a gate, deciding whether 
 its cursor and whether to request a reprocess, and reads the buffer again on the next
 mouse move. If a value must be tied to its hash, read `pd.hash` in the same section as
 the value: `dt_preview_data_store()` commits the two together.
+
+> **In tree today:** not all of `dt_preview_data_is_fresh()` runs in its section. It tests
+> the buffer pointer in an early return, before it takes the lock at all, against a field
+> that `dt_preview_data_store()` and `dt_preview_data_resize()` free and replace while
+> holding it. The pointer is only compared with NULL and never dereferenced, so racing the
+> first allocation can make the function answer FALSE, but not a wrong TRUE.
 
 `toneequal` and `colorequal` use the service. What stays yours is what the header says
 is module-specific: computing the value, drawing it, and mapping the cursor position to
