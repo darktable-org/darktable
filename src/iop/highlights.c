@@ -388,29 +388,17 @@ void modify_roi_in(dt_iop_module_t *self,
   *roi_in = *roi_out;
 
   dt_iop_highlights_data_t *d = piece->data;
-  const gboolean use_opposing = (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
+  const gboolean use_opposing = d->mode == DT_IOP_HIGHLIGHTS_OPPOSED;
 
   // Whenever we use opposed we have to setup the desired roi_in area
-  if(!use_opposing)
-    return;
-
-  roi_in->scale = 1.0f;
-  if(piece->pipe->dsc.filters == 0)
+  if(use_opposing && piece->pipe->dsc.filters == 0)
   {
+    roi_in->scale = 1.0f;
     // For linear raws we will use an internal downscaler as we normally do in demosaic
     roi_in->x /= roi_out->scale;
     roi_in->y /= roi_out->scale;
     roi_in->width /= roi_out->scale;
     roi_in->height /= roi_out->scale;
-  }
-  else
-  {
-    // We require the correct (full-image-data) expansion with a defined scale for all pixelpipes for proper
-    // aligning and scaling in the demosiacer
-    roi_in->x = 0;
-    roi_in->y = 0;
-    roi_in->width = piece->buf_in.width;
-    roi_in->height = piece->buf_in.height;
   }
 }
 
@@ -992,7 +980,7 @@ void process(dt_iop_module_t *self,
     {
       const dt_highlights_mask_t vmode = ((g != NULL) && fullpipe && (g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_CLIPPED)) ? g->hlr_mask_mode : DT_HIGHLIGHTS_MASK_OFF;
 
-      float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, TRUE, TRUE, clipper);
+      float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, TRUE, TRUE, clipper);
       if(tmp)
         _process_segmentation(piece, ivoid, ovoid, roi_in, roi_out, d, vmode, tmp);
       dt_free_align(tmp);
@@ -1016,7 +1004,7 @@ void process(dt_iop_module_t *self,
 
     default:
     {
-      _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, FALSE, high_quality, clipper);
+      _process_opposed(self, piece, ivoid, ovoid, roi_in, FALSE, high_quality, clipper);
       break;
     }
   }

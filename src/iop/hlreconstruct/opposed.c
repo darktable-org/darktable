@@ -219,8 +219,7 @@ static float *_process_opposed(dt_iop_module_t *self,
                                dt_dev_pixelpipe_iop_t *piece,
                                const float *const input,
                                float *const output,
-                               const dt_iop_roi_t *const roi_in,
-                               const dt_iop_roi_t *const roi_out,
+                               const dt_iop_roi_t *const roi,
                                const gboolean keep,
                                const gboolean quality,
                                const float clipval)
@@ -242,8 +241,8 @@ static float *_process_opposed(dt_iop_module_t *self,
                                           late ? (float)(chr->D65coeffs[2] / chr->as_shot[2]) : 1.0f,
                                           1.0f };
 
-  const size_t iwidth = roi_in->width;
-  const size_t iheight = roi_in->height;
+  const size_t iwidth = roi->width;
+  const size_t iheight = roi->height;
   const size_t mwidth  = iwidth / 3;
   const size_t mheight = iheight / 3;
   // we have to over-allocate making sure all later tests fit for all width&height combinations
@@ -259,7 +258,7 @@ static float *_process_opposed(dt_iop_module_t *self,
       chrominance[c] = img_oppchroma[c];
     if(!img_oppclipped && !keep)
     {
-      dt_iop_copy_image_roi(output, input, 1, roi_in, roi_out);
+      dt_iop_image_copy_by_size(output, input, iwidth, iheight, 1);
       return NULL;
     }
   }
@@ -336,7 +335,7 @@ static float *_process_opposed(dt_iop_module_t *self,
             if((inval < clips[color]) && (inval > lo_clips[color])
                && (mask[(color+3) * msize + _raw_to_cmap(mwidth, row, col)]))
             {
-              sums[color] += inval - _calc_refavg(input, xtrans, filters, row, col, roi_in, correction, TRUE);
+              sums[color] += inval - _calc_refavg(input, xtrans, filters, row, col, iwidth, iheight, correction, TRUE);
               cnts[color] += 1.0f;
             }
           }
@@ -366,53 +365,23 @@ static float *_process_opposed(dt_iop_module_t *self,
   }
 
   float *tmpout = keep ? dt_alloc_align_float(iwidth * iheight) : NULL;
-  if(tmpout)
-  {
-    DT_OMP_FOR(collapse(2))
-    for(size_t row = 0; row < iheight; row++)
-    {
-      for(size_t col = 0; col < iwidth; col++)
-      {
-        const size_t idx = row * iwidth + col;
-        const int color = fcol(row, col, filters, xtrans);
-        const float inval = input[idx];
-        if(inval >= clips[color])
-        {
-          const float ref = _calc_refavg(input, xtrans, filters, row, col, roi_in, correction, TRUE);
-          tmpout[idx] = MAX(inval, ref + chrominance[color]);
-        }
-        else
-          tmpout[idx] = inval;
-      }
-    }
-  }
 
   DT_OMP_FOR(collapse(2))
-  for(size_t row = 0; row < roi_out->height; row++)
+  for(size_t row = 0; row < iheight; row++)
   {
-    for(size_t col = 0; col < roi_out->width; col++)
+    for(size_t col = 0; col < iwidth; col++)
     {
-      const size_t odx = row * roi_out->width + col;
-      const size_t irow = row + roi_out->y;
-      const size_t icol = col + roi_out->x;
-      const size_t ix = irow * roi_in->width + icol;
-      float oval = 0.0f;
-      if(irow < iheight && icol < iwidth)
+      const size_t idx = row * iwidth + col;
+      float oval = input[idx];
+      const int color = fcol(row, col, filters, xtrans);
+      if(oval >= clips[color])
       {
-        if(tmpout)
-          oval = tmpout[ix];
-        else
-        {
-          const int color = fcol(irow, icol, filters, xtrans);
-          oval = input[ix];
-          if(oval >= clips[color])
-          {
-            const float ref = _calc_refavg(input, xtrans, filters, irow, icol, roi_in, correction, TRUE);
-            oval = MAX(oval, ref + chrominance[color]);
-          }
-        }
+        const float ref = _calc_refavg(input, xtrans, filters, row, col, iwidth, iheight, correction, TRUE);
+        oval = MAX(oval, ref + chrominance[color]);
       }
-      output[odx] = oval;
+      output[idx] = oval;
+      if(tmpout)
+        tmpout[idx] = oval;
     }
   }
   return tmpout;
@@ -572,9 +541,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_opposed, roi_out->width, roi_out->height,
           CLARG(dev_in), CLARG(dev_out),
-          CLARG(roi_out->width), CLARG(roi_out->height),
           CLARG(roi_in->width), CLARG(roi_in->height),
-          CLARG(roi_out->x), CLARG(roi_out->y),
           CLARG(filters), CLARG(dev_xtrans),
           CLARG(dev_clips),
           CLARG(dev_chrominance),
