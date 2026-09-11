@@ -1638,6 +1638,7 @@ void init_presets(dt_lib_module_t *self)
   AM("demosaic");
   AM("exposure");
   AM("finalscale");
+  AM("demosaicscale");
   AM("flip");
   AM("highlights");
   AM("negadoctor");
