@@ -41,7 +41,7 @@ g->Dmin_G = dt_bauhaus_slider_from_params(self, "Dmin[1]");  // Green
 g->Dmin_B = dt_bauhaus_slider_from_params(self, "Dmin[2]");  // Blue
 ```
 
-**Example (from exposure.c):**
+**Example (from exposure.c, without the color picker it attaches to this slider):**
 ```c
 g->exposure = dt_bauhaus_slider_from_params(self, N_("exposure"));
 dt_bauhaus_slider_set_digits(g->exposure, 3);
