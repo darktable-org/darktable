@@ -1701,6 +1701,7 @@ void init_presets(dt_lib_module_t *self)
   AM("bloom");
   AM("borders");
   AM("colorize");
+  AM("halation");
   AM("colormapping");
   AM("enlargecanvas");
   AM("graduatednd");
@@ -1865,6 +1866,7 @@ void init_presets(dt_lib_module_t *self)
   AM("censorize");
   AM("blurs");
   AM("diffuse");
+  AM("halation");
 
   dt_lib_presets_add(_("workflow: scene-referred"),
                      self->plugin_name, self->version(), tx, strlen(tx), TRUE, 0);
