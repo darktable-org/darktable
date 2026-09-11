@@ -309,7 +309,7 @@ vng_interpolate(read_only image2d_t in,
 
 kernel void
 clip_and_zoom_demosaic_third_size_xtrans(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                                         const int rin_wd, const int rin_ht, const float r_scale,
+                                         const float r_scale,
                                          global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
@@ -333,11 +333,11 @@ clip_and_zoom_demosaic_third_size_xtrans(read_only image2d_t in, write_only imag
   const float px_footprint = 1.0f/r_scale;
   const int samples = max(1, (int)floor(px_footprint / 3.0f));
 
-  const int px = clamp((int)round((x - 0.5f) * px_footprint), 0, rin_wd - 3);
-  const int py = clamp((int)round((y - 0.5f) * px_footprint), 0, rin_ht - 3);
+  const int px = clamp((int)round((x - 0.5f) * px_footprint), 0, width - 3);
+  const int py = clamp((int)round((y - 0.5f) * px_footprint), 0, height - 3);
 
-  const int xmax = min(rin_wd - 3, px + 3 * samples);
-  const int ymax = min(rin_ht - 3, py + 3 * samples);
+  const int xmax = min(width - 3, px + 3 * samples);
+  const int ymax = min(height - 3, py + 3 * samples);
 
   for(int yy = py; yy <= ymax; yy += 3)
     for(int xx = px; xx <= xmax; xx += 3)

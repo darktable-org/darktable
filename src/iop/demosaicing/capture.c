@@ -407,12 +407,7 @@ static float _calc_auto_radius(float *const in,
                                const dt_iop_roi_t *const roi,
                                const uint32_t filters,
                                const uint8_t(*const xtrans)[6],
-                               const dt_iop_buffer_dsc_t *dsc,
-                               gboolean *reliable,
-                               int *xpos,
-                               int *ypos,
-                               int *mwidth,
-                               int *mheight)
+                               const dt_iop_buffer_dsc_t *dsc)
 {
   // calculating the radius should be done on sensor data so we need this extra step
   const gboolean wbon = dsc->temperature.enabled;
@@ -422,29 +417,27 @@ static float _calc_auto_radius(float *const in,
 
   const int iwidth = roi->width;
   const int iheight = roi->height;
-  const int pwidth = img->p_width;
-  const int pheight = img->p_height;
 
   /* We only use the centre 60% of CFA data assuming this to be the sharp part of the lens.
      Set left-top displacements and possibly reduce dimension
   */
-  const int dx = (roi->x < pwidth / 5)  ? 0.2f * (pwidth - roi->x) : 0;
-  const int dy = (roi->y < pheight / 5) ? 0.2f * (pheight - roi->y) : 0;
-  const int owidth = MIN(iwidth - dx,   0.8f * pwidth - roi->x - dx);
-  const int oheight = MIN(iheight - dy, 0.8f * pheight - roi->y - dy);
+  const int dx = iwidth / 5;
+  const int dy = iheight / 5;
+  const int owidth = iwidth - 2*dx;
+  const int oheight = iheight - 2*dy;
 
-  *xpos = dx + roi->x;
-  *ypos = dy + roi->y;
-  *mwidth = owidth;
-  *mheight = oheight;
-  *reliable = FALSE;
-
-  if((((float)owidth / (float)pwidth) < 0.2f ) || (((float)oheight / (float)pheight) < 0.2f))
+  if(iwidth < 500 || iheight < 500)
+  {
+    dt_print(DT_DEBUG_PIPE, "calc auto radius requires a larger image so falls back to 0.5");
     return 0.5f;
+  }
 
   float *input = dt_iop_image_alloc(owidth, oheight, 1);
   if(!input)
+  {
+    dt_print(DT_DEBUG_PIPE, "calc auto radius can't allocate intermediate buffer so falls back to 0.5");
     return 0.5f;
+  }
 
   if(wbon)
   {
@@ -497,7 +490,6 @@ static float _calc_auto_radius(float *const in,
 
   dt_free_align(input);
 
-  *reliable = TRUE;
   return CLAMP(radius, 0.0f, 1.5f);
 }
 
@@ -771,17 +763,11 @@ static void _capture_radius(dt_iop_module_t *self,
   const gboolean fullpipe = dt_pipe_is_full(pipe);
   const dt_iop_buffer_dsc_t *dsc = &pipe->dsc;
 
-  gboolean reliable;
-  int px, py, dx, dy;
-  const float radius = _calc_auto_radius(in, img, roi, filters, xtrans, dsc, &reliable, &px, &py, &dx, &dy);
+  const float radius = _calc_auto_radius(in, img, roi, filters, xtrans, dsc);
   const gboolean same_radius = feqf(p->cs_radius, radius, CAPTURE_SAME_RADIUS);
 
   dt_print_pipe(DT_DEBUG_PIPE, filters == 9u ? "xtrans autoradius" : filters ? "bayer autoradius" : "mono autoradius",
-      pipe, self, DT_DEVICE_NONE, roi, NULL,
-      "%s radius=%.2f is %sreliable at (%d/%d) %dx%d",
-      same_radius ? "same" : "new", radius,
-      reliable ? "" : "NOT ",
-      px, py, dx, dy);
+      pipe, self, DT_DEVICE_NONE, roi, NULL, "%s radius=%.2f", same_radius ? "same" : "new", radius);
 
   if(fullpipe && g)
   {
@@ -791,8 +777,6 @@ static void _capture_radius(dt_iop_module_t *self,
       p->cs_radius = radius;
       g->new_radius = radius;
     }
-    if(!reliable)
-      dt_control_log(_("imprecise radius calculation due to cropping or because you are zoomed in too much"));
   }
   d->cs_radius = radius;
 }
