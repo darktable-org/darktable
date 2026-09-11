@@ -53,19 +53,32 @@ An enum needs no tag listing its values: introspection collects the constants fr
 The introspection data is compiled into a tree of `dt_introspection_field_t` structures.
 
 ### `dt_introspection_t`
-The top-level descriptor for a type.
--   `version`: The version number passed to `DT_MODULE_INTROSPECTION`.
+The top-level descriptor for a params type.
+-   `params_version`: The version number passed to `DT_MODULE_INTROSPECTION`.
 -   `size`: The size of the struct in bytes.
--   `fields`: A list of `dt_introspection_field_t`.
+-   `field`: The root of the tree, a `DT_INTROSPECTION_TYPE_STRUCT` field describing the whole struct, with an empty name and offset 0. Its members are `field->Struct.fields`, a NULL-terminated array of `field->Struct.entries` pointers.
 
 ### `dt_introspection_field_t`
 Describes a single field in the struct. It is a union of various types (`Float`, `Int`, `Bool`, `Enum`, `Struct`, etc.), all sharing a common header.
 
 #### `dt_introspection_type_header_t`
 -   `type`: The type enum (`DT_INTROSPECTION_TYPE_FLOAT`, etc.).
--   `name`: The name of the field.
--   `offset`: The byte offset of the field within the parent struct.
+-   `name`: The field's path from the params struct, with parent struct names separated by `.`, as in `curve_nodes[0][0].x`; `field_name` is the last part alone.
+-   `offset`: The byte offset of the field from the start of the params struct, not from its parent. Add it to the params pointer as it is: adding the parent's offset as well counts the parent twice.
 -   `size`: The size of the field.
+
+A field inside an array is described once, as its first element. `rgbcurve`'s node array has a single descriptor for `x`, named `curve_nodes[0][0].x`, and its `offset` points into `curve_nodes[0][0]`, so it cannot locate any other node. To reach another element, start from the array's own descriptor and step by the element size, once per dimension. The helpers in `src/common/introspection.h` do the stepping. Each returns a pointer to the data it selects, or NULL, and stores that data's descriptor in its last argument. `dt_introspection_access_array()` selects an array element. `dt_introspection_get_child()` selects a struct member by name, from the difference between the member's offset and the struct's. Pass each call's pointer and descriptor to the next:
+
+```c
+dt_introspection_field_t *f = self->get_f("curve_nodes");
+dt_introspection_field_t *row = NULL, *node = NULL, *x = NULL;
+void *p = (uint8_t *)self->params + f->header.offset;
+p = dt_introspection_access_array(f, p, c, &row);    // curve_nodes[c], itself an array
+p = dt_introspection_access_array(row, p, n, &node); // curve_nodes[c][n], the node struct
+p = dt_introspection_get_child(node, p, "x", &x);    // curve_nodes[c][n].x
+```
+
+`dt_introspection_get_child()` accepts only a struct or union, so it returns NULL if you call it on `row` after a single step.
 
 ## Usage in GUI
 
@@ -79,7 +92,7 @@ g->exposure = dt_bauhaus_slider_from_params(self, "exposure");
 1.  Darktable looks up the "exposure" field in the module's introspection data.
 2.  It reads the `$MIN`, `$MAX`, and `$DEFAULT` values.
 3.  It configures the slider range and default value.
-4.  It binds the slider's value to the memory address `(char *)self->params + field->offset`.
+4.  It binds the slider's value to the memory address `(uint8_t *)self->params + field->header.offset`.
 5.  When the user moves the slider, the slider writes its new value to that address. A call to `dt_bauhaus_slider_set()` does the same only outside `DT_ENTER_GUI_UPDATE()`; under the guard, which is where `gui_update()` and the framework's own widget sync run, only the widget changes (see [sliders.md](sliders.md#31-range-and-limits)).
 
 ## Serialization and Initialization
