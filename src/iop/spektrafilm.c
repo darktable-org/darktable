@@ -3388,7 +3388,16 @@ static void _toggle_sensitivity(dt_iop_spektrafilm_gui_data_t *g,
   gtk_widget_set_sensitive(g->diffusion_scale, dif);
   gtk_widget_set_sensitive(g->diffusion_warmth, dif);
 
-  const gboolean pdif = p->print_diffusion_on;
+  /* scan_film as well as the toggle, because _update_print_sensitivity() gates
+     these same four on `printing && print_diffusion_on` and this function is
+     reached without it: gui_changed() pairs the two only for the
+     print_diffusion_on widget, so a halation, grain, diffusion or boost_ev
+     change ran this alone and re-enabled all four with the print gate dropped.
+     print_diffusion_on stays TRUE while scanning -- _update_print_sensitivity()
+     blanks its tick but deliberately leaves the param -- so the sliders came
+     back live on a workflow that has no print stage at all. Same hazard the
+     development sliders are protected from at the end of this function. */
+  const gboolean pdif = p->print_diffusion_on && !p->scan_film;
   gtk_widget_set_sensitive(g->print_diffusion_filter_family, pdif);
   gtk_widget_set_sensitive(g->print_diffusion_strength, pdif);
   gtk_widget_set_sensitive(g->print_diffusion_scale, pdif);
