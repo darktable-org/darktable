@@ -70,22 +70,19 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out, const flo
                                                      const int32_t in_stride, const uint8_t (*const xtrans)[6]);
 
 void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out, const float *const in,
-                                                            const struct dt_iop_roi_t *const roi_out,
-                                                            const struct dt_iop_roi_t *const roi_in,
-                                                            const int32_t out_stride,
-                                                            const int32_t in_stride);
+                                                            const struct dt_iop_roi_t *const roi,
+                                                            const int32_t stride);
 
 void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
-                                               const struct dt_iop_roi_t *const roi_out,
-                                               const struct dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                               const int32_t in_stride, const uint32_t filters);
+                                               const struct dt_iop_roi_t *const roi,
+                                               const int32_t stride,
+                                               const uint32_t filters);
 
 /** x-trans sensor downscaling */
 
 void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out, const float *const in,
-                                                       const struct dt_iop_roi_t *const roi_out,
-                                                       const struct dt_iop_roi_t *const roi_in,
-                                                       const int32_t out_stride, const int32_t in_stride,
+                                                       const struct dt_iop_roi_t *const roi,
+                                                       const int32_t stride,
                                                        const uint8_t (*const xtrans)[6]);
 
 /** as dt_iop_clip_and_zoom, but for rgba 8-bit channels. */

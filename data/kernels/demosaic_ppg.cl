@@ -472,8 +472,6 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in,
                                  __write_only image2d_t out,
                                  const int width,
                                  const int height,
-                                 const int rin_wd,
-                                 const int rin_ht,
                                  const float r_scale,
                                  const unsigned int filters)
 {
@@ -515,12 +513,11 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in,
     const int xx = p.x + 2*i;
     const int yy = p.y + 2*j;
 
-    if(xx + 1 >= rin_wd || yy + 1 >= rin_ht) continue;
+    if(xx + 1 >= width || yy + 1 >= height) continue;
 
     const float xfilter = (i == 0) ? 1.0f - d.x : ((i == samples+1) ? d.x : 1.0f);
     const float yfilter = (j == 0) ? 1.0f - d.y : ((j == samples+1) ? d.y : 1.0f);
 
-    // get four mosaic pattern uint16:
     const float p1 = fmax(0.0f, readsingle(in, xx,   yy  ));
     const float p2 = fmax(0.0f, readsingle(in, xx+1, yy  ));
     const float p3 = fmax(0.0f, readsingle(in, xx,   yy+1));
