@@ -483,7 +483,7 @@ void distort_mask(dt_iop_module_t *self,
   if(roi_out->scale != roi_in->scale)
   {
     const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
-    dt_interpolation_resample_roi_mask(itor, out, roi_out, in, roi_in);
+    dt_interpolation_resample_mask(itor, out, roi_out, in, roi_in);
   }
   else
     dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
@@ -505,11 +505,11 @@ void modify_roi_in(dt_iop_module_t *self,
                    dt_iop_roi_t *roi_in)
 {
   *roi_in = *roi_out;
-  roi_in->x = MAX(0, roi_out->x / roi_out->scale);
-  roi_in->y = MAX(0, roi_out->y / roi_out->scale);
+  roi_in->x = 0;
+  roi_in->y = 0;
 
-  roi_in->width = MAX(8, roi_out->width / roi_out->scale);
-  roi_in->height = MAX(8, roi_out->height / roi_out->scale);
+  roi_in->width = piece->buf_in.width;
+  roi_in->height = piece->buf_in.height;
   roi_in->scale = 1.0f;
 }
 
@@ -694,11 +694,11 @@ void process(dt_iop_module_t *self,
   {
     dt_print_pipe(DT_DEBUG_PIPE, "demosaic approx zoom", pipe, self, DT_DEVICE_CPU, roi_in, roi_out);
     if(method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME || method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR)
-      dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f((float *)o, in, roi_out, roi_in, roi_out->width, width);
+      dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f((float *)o, in, roi_in, roi_in, width, width);
     else if(is_xtrans)
-      dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, in, roi_out, roi_in, roi_out->width, width, xtrans);
+      dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, in, roi_in, roi_in, width, width, xtrans);
     else
-      dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, in, roi_out, roi_in, roi_out->width, width, filters);
+      dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, in, roi_in, roi_in, width, width, filters);
 
     return;
   }
@@ -891,7 +891,7 @@ void process(dt_iop_module_t *self,
 
   if(!direct)
   {
-    dt_iop_clip_and_zoom_roi((float *)o, out, roi_out, roi_in);
+    dt_iop_clip_and_zoom((float *)o, out, roi_out, roi_in, FALSE);
     dt_free_align(out);
   }
 }
@@ -978,19 +978,19 @@ int process_cl(dt_iop_module_t *self,
     if(is_xtrans)
     {
       // sample third-size image
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_third_size, roi_out->width, roi_out->height,
-          CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_third_size, iwidth, iheight,
+          CLARG(dev_in), CLARG(dev_out), CLARG(iwidth), CLARG(iheight),
           CLARG(iwidth), CLARG(iheight), CLARG(roi_out->scale), CLARG(dev_xtrans));
       dt_opencl_release_mem_object(dev_xtrans);
       return err;
     }
     else if(method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
-      return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_passthrough_monochrome, roi_out->width, roi_out->height,
-          CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
+      return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_passthrough_monochrome, iwidth, iheight,
+          CLARG(dev_in), CLARG(dev_out), CLARG(iwidth), CLARG(iheight),
           CLARG(iwidth), CLARG(iheight), CLARG(roi_out->scale));
     else // bayer
-      return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_half_size, roi_out->width, roi_out->height,
-          CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
+      return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_half_size, iwidth, iheight,
+          CLARG(dev_in), CLARG(dev_out), CLARG(iwidth), CLARG(iheight),
           CLARG(iwidth), CLARG(iheight), CLARG(roi_out->scale), CLARG(filters));
   }
 
@@ -1188,7 +1188,7 @@ int process_cl(dt_iop_module_t *self,
   }
 
   if(!direct)
-     err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, out_image, roi_out, roi_in);
+     err = dt_iop_clip_and_zoom_cl(devid, dev_out, out_image, roi_out, roi_in);
 
 finish:
   dt_opencl_release_mem_object(dev_xtrans);
