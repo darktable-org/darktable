@@ -276,12 +276,20 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   // the slider's hard range does not bound this assignment, so apply the
   // field's declared $MIN / $MAX here
   if(picker == g->white_point_picker)
+  {
     p->white_point = CLAMP(log2f(self->picked_color[3]) + some_offset,
                            WHITE_POINT_MIN, WHITE_POINT_MAX);
+    // the slider does not follow its field, so sync it as in Pattern 2
+    DT_ENTER_GUI_UPDATE();
+    dt_bauhaus_slider_set(g->white_point_picker, p->white_point);
+    DT_LEAVE_GUI_UPDATE();
+  }
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 ```
+
+Assigning the field does not move the slider bound to it. Neither the picker proxy (`src/gui/color_picker_proxy.c`) nor `dt_dev_add_history_item()` syncs widgets from params, so without the `dt_bauhaus_slider_set()` the slider keeps its old value while the pixelpipe and history use the picked one, and the user's next adjustment of the slider starts from the old position and overwrites the pick. Set it under the guard, for the reasons given under Pattern 2: outside it, the slider would write its rounded value back into the field and fire `gui_changed()`. `g->white_point_picker` can be passed to `dt_bauhaus_slider_set()` because, given a slider, `dt_color_picker_new()` returns that slider (`_color_picker_new()` in `src/gui/color_picker_proxy.c`).
 
 For how a picker attaches to a slider — it wraps the slider, and the wrapper is the widget you store and pack — see [sliders.md](sliders.md#33-integration-with-color-pickers). The picker flags (`DT_COLOR_PICKER_POINT`, `DT_COLOR_PICKER_AREA`, `DT_COLOR_PICKER_DENOISE`, `DT_COLOR_PICKER_IO`) and `dt_color_picker_new_with_cst()`, which picks in a color space of your choosing, are declared in `src/gui/color_picker_proxy.h`.
 
