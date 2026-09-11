@@ -260,6 +260,9 @@ typedef struct dt_opencl_t
   // global kernels for interpolation resampling.
   struct dt_interpolation_cl_global_t *interpolation;
 
+  // global kernel for the DNG OpcodeList3 GainMap, shared by demosaic and rawprepare.
+  struct dt_dng_gain_map_cl_global_t *dng_gain_map;
+
   // global kernels for local laplacian filter.
   struct dt_local_laplacian_cl_global_t *local_laplacian;
 
