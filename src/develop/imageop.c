@@ -1113,6 +1113,7 @@ static void _gui_multiinstance_callback(GtkButton *button,
 
   // popup the menu
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(GTK_WIDGET(button), menu);
+  g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 
   // make sure the button is deactivated now that the menu is opened

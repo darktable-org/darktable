@@ -38,6 +38,7 @@
 #include "libs/lib_api.h"
 #include "views/view.h"
 #include <glib-2.0/gio/gmenu.h>
+#include <glib-2.0/glib-object.h>
 #include <glib-2.0/glib.h>
 #ifndef _WIN32
 #include <gio/gunixmounts.h>
@@ -646,6 +647,7 @@ static void _view_popup_menu(GtkWidget *treeview,
 
   // popup the menu
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(GTK_WIDGET(treeview), menu);
+  g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 
@@ -3824,6 +3826,7 @@ static void popup_button_callback_cb(GtkGestureSingle *gesture,
   }
 
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(d->button, menu);
+  g_object_unref(menu);
 
   // the click gesture still holds the implicit grab while this handler runs,
   // which would keep the popover from taking its own grab; defer the popup
@@ -4145,6 +4148,7 @@ static void _history_show(GtkWidget *widget,
 
   // popup the menu
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(GTK_WIDGET(widget), menu);
+  g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 

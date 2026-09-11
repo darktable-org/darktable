@@ -35,6 +35,7 @@
 #include <glib-2.0/gio/gio.h>
 #include <glib-2.0/gio/gmenu.h>
 #include <glib-2.0/gio/gmenumodel.h>
+#include <glib-2.0/glib-object.h>
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -1494,6 +1495,7 @@ static void _pop_menu_attached(GtkWidget *treeview,
 
   // popup the menu
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(treeview, menu);
+  g_object_unref(menu);
   gtk_popover_set_pointing_to(GTK_POPOVER(popover_menu), &rect);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
@@ -2688,6 +2690,7 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
 
     // popup the menu
     GtkWidget *popover_menu = dt_gui_popover_menu_from_model(treeview, menu);
+    g_object_unref(menu);
     gtk_popover_set_pointing_to(GTK_POPOVER(popover_menu), &rect);
     gtk_popover_popup(GTK_POPOVER(popover_menu));
   }

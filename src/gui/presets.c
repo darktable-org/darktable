@@ -1610,6 +1610,8 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *favorite_presets_button)
 
   // popup the menu
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(GTK_WIDGET(favorite_presets_button), menu);
+  g_object_unref(submenu);
+  g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 
@@ -1785,6 +1787,7 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
 
   // popup the menu
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(button, menu);
+  g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 
   return popover_menu;

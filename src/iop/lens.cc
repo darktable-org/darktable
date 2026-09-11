@@ -22,6 +22,7 @@
 // Otherwise, it may optimize away conditionals based on isnan() or
 // isfinite().
 
+#include <glib-2.0/glib-object.h>
 #ifdef __GNUC__
 #pragma GCC optimize ("no-finite-math-only")
 #endif
@@ -3946,6 +3947,7 @@ static void _camera_menusearch_clicked(GtkWidget *button,
   GMenu *menu = camera_menu_fill(self, camlist);
 
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(button, menu);
+  g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 
@@ -3982,6 +3984,7 @@ static void _camera_autosearch_clicked(GtkWidget *button,
   }
 
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(button, menu);
+  g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 
@@ -4315,6 +4318,7 @@ static void _lens_menusearch_clicked(GtkWidget *button,
   lf_free(lenslist);
 
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(button, menu);
+  g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 
@@ -4340,6 +4344,7 @@ static void _lens_autosearch_clicked(GtkWidget *button, dt_iop_module_t *self)
   lf_free(lenslist);
 
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(button, menu);
+  g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 

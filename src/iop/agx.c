@@ -2134,6 +2134,7 @@ static void _primaries_popupmenu_callback(GtkWidget *button,
   g_menu_append(menu, _("unmodified"), "agx-primaries.activate::unmodified");
   
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(button, menu);
+  g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 

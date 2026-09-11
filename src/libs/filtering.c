@@ -929,6 +929,7 @@ static gboolean _rule_show_popup(GtkWidget *widget,
   ADD_COLLECT_ENTRY(section, DT_COLLECTION_PROP_FILMROLL);
   ADD_COLLECT_ENTRY(section, DT_COLLECTION_PROP_FOLDERS);
   ADD_COLLECT_ENTRY(section, DT_COLLECTION_PROP_FILENAME);
+  g_object_unref(section);
 
   section = g_menu_new();
   g_menu_append_section(menu, _("metadata"), G_MENU_MODEL(section));
@@ -938,6 +939,7 @@ static gboolean _rule_show_popup(GtkWidget *widget,
   ADD_COLLECT_ENTRY(section, DT_COLLECTION_PROP_COLORLABEL);
   ADD_COLLECT_ENTRY(section, DT_COLLECTION_PROP_TEXTSEARCH);
   ADD_COLLECT_ENTRY(section, DT_COLLECTION_PROP_GEOTAGGING);
+  g_object_unref(section);
 
   section = g_menu_new();
   g_menu_append_section(menu, _("times"), G_MENU_MODEL(section));
@@ -948,6 +950,7 @@ static gboolean _rule_show_popup(GtkWidget *widget,
   ADD_COLLECT_ENTRY(section, DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
   ADD_COLLECT_ENTRY(section, DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
   ADD_COLLECT_ENTRY(section, DT_COLLECTION_PROP_PRINT_TIMESTAMP);
+  g_object_unref(section);
 
   section = g_menu_new();
   g_menu_append_section(menu, _("capture details"), G_MENU_MODEL(section));
@@ -964,6 +967,7 @@ static gboolean _rule_show_popup(GtkWidget *widget,
   ADD_COLLECT_ENTRY(section, DT_COLLECTION_PROP_EXPOSURE_PROGRAM);
   ADD_COLLECT_ENTRY(section, DT_COLLECTION_PROP_METERING_MODE);
   ADD_COLLECT_ENTRY(section, DT_COLLECTION_PROP_DIMENSIONS);
+  g_object_unref(section);
 
   section = g_menu_new();
   g_menu_append_section(menu, _("darktable"), G_MENU_MODEL(section));
@@ -973,8 +977,10 @@ static gboolean _rule_show_popup(GtkWidget *widget,
   ADD_COLLECT_ENTRY(section, DT_COLLECTION_PROP_HISTORY);
   ADD_COLLECT_ENTRY(section, DT_COLLECTION_PROP_MODULE);
   ADD_COLLECT_ENTRY(section, DT_COLLECTION_PROP_ORDER);
+  g_object_unref(section);
 
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(widget, menu);
+  g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 
   return TRUE;
@@ -1656,6 +1662,7 @@ static void _event_history_show(GtkWidget *widget, dt_lib_module_t *self)
   }
 
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(widget, menu);
+  g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 
@@ -2175,6 +2182,7 @@ static void _sort_show_add_popup(GtkWidget *widget, dt_lib_module_t *self)
     _popup_add_sort_item(menu, Q_(list->name), list->value);
 
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(widget, menu);
+  g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 
@@ -2290,6 +2298,7 @@ static void _sort_history_show(GtkWidget *widget, dt_lib_module_t *self)
   }
 
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(widget, menu);
+  g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 
