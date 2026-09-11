@@ -301,6 +301,8 @@ changes (where available).
 - Fixed small memory leaks when expanding variables, which grew with
   the number of images exported or imported in one run.
 
+- Fixed camera mutex locks before the mutexes are initialized.
+
 ## Lua
 
 ### API Version
