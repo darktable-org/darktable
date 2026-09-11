@@ -937,7 +937,11 @@ find_package(Pugixml 1.5 REQUIRED)
 include_directories(SYSTEM ${Pugixml_INCLUDE_DIRS})
 list(APPEND LIBS ${Pugixml_LIBRARIES})
 
-if(NOT SOURCE_PACKAGE)
+# Sanitizer instrumentation perturbs the optimizer and reliably produces fresh
+# -Wmaybe-uninitialized / -Wstringop-* diagnostics. With -Werror -Wfatal-errors
+# those abort the build before a single sanitizer has had a chance to run, so
+# keep the warnings but drop the promotion to error for sanitizer builds.
+if(NOT SOURCE_PACKAGE AND NOT DT_SANITIZE)
   add_definitions(-Werror -Wfatal-errors )
 endif()
 
