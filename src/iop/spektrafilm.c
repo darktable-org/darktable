@@ -323,6 +323,14 @@ typedef struct dt_iop_spektrafilm_params_t
      reference has the same switch (io.output_gamut_compress.algorithm, which
      takes "off"), so this is the model's own setting and not an addition.
 
+     Note that the compressor is two knees, not one, and this switch gates
+     both: a chroma knee towards the output profile's boundary, and a
+     lightness knee on OkLab L from 0.7 upwards (SF_OUT_LIGHT_T/_L/_P in
+     spektra_sim.c). Switching it off therefore lets the highlights run
+     brighter as well as letting saturated colours leave the profile, which
+     is worth spelling out wherever this control is described -- the
+     brightness half is the one users do not expect from the name.
+
      Appended at the end of the struct: legacy_params() copies an older prefix
      and leaves the tail at its default, so anything added later goes here. */
   gboolean gamut_compress;     // $DEFAULT: TRUE $DESCRIPTION: "gamut compression"
@@ -4946,13 +4954,19 @@ void gui_init(dt_iop_module_t *self)
   g->gamut_compress = dt_bauhaus_toggle_from_params(self, "gamut_compress");
   gtk_widget_set_tooltip_text(
       g->gamut_compress,
-      _("pull colours the output profile cannot hold back inside it, along a\n"
-        "curve that leaves everything already inside untouched.\n"
+      _("pull what the output profile cannot hold back inside it, along\n"
+        "curves that leave everything already inside untouched. this is two\n"
+        "knees: chroma towards the profile's boundary, and lightness from\n"
+        "the upper midtones up, which rolls the highlights off to white.\n"
         "\n"
         "switching it off shows where the film is producing colours the\n"
         "profile has no room for: they leave the range, so darktable's\n"
         "clipping indicator marks them and the raw extent of the overshoot\n"
-        "is visible.\n"
+        "is visible. the highlights stop rolling off and reach further at\n"
+        "the same time, since the lightness knee goes away with the rest.\n"
+        "to place the highlights without losing the rolloff, use the\n"
+        "pre-compression boost and post-compression scale on the scanner\n"
+        "tab instead.\n"
         "\n"
         "leave it on for an image you intend to keep. off, saturated colours\n"
         "are clipped by whatever comes next in the pipeline, which loses the\n"
