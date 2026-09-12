@@ -129,6 +129,45 @@
 
 darktable_t darktable;
 
+#ifdef _WIN32
+static gboolean _console_notice_requested = FALSE;
+
+void dt_request_console_notice(void)
+{
+  _console_notice_requested = TRUE;
+}
+
+static void _show_console_notice(void)
+{
+  const char *notice = _("This console window is required by darktable on this "
+                         "version of Windows.\n"
+                         "On Windows 11 24H2 and later, darktable normally runs "
+                         "without this window.\n"
+                         "Do not close it or press Ctrl+C while darktable is running.\n"
+                         "It will close automatically when darktable exits.\n");
+  gchar **notice_lines = g_strsplit(notice, "\n", -1);
+  gchar *console_notice = g_strjoinv("\r\n", notice_lines);
+  g_strfreev(notice_lines);
+
+  glong length = 0;
+  gunichar2 *wide_notice = g_utf8_to_utf16(console_notice, -1, NULL, &length, NULL);
+  g_free(console_notice);
+  if(!wide_notice) return;
+
+  const HANDLE output = CreateFileW(L"CONOUT$", GENERIC_WRITE,
+                                    FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+                                    OPEN_EXISTING, 0, NULL);
+  if(output != INVALID_HANDLE_VALUE)
+  {
+    DWORD written;
+    WriteConsoleW(output, wide_notice, (DWORD)length, &written, NULL);
+    CloseHandle(output);
+  }
+
+  g_free(wide_notice);
+}
+#endif
+
 static int usage(const char *argv0)
 {
 #ifdef _WIN32
@@ -1693,6 +1732,14 @@ int dt_init(int argc,
 
   // set the interface language and prepare selection for prefs & confgen
   darktable.l10n = dt_l10n_init(init_gui);
+
+#ifdef _WIN32
+  if(_console_notice_requested)
+  {
+    _console_notice_requested = FALSE;
+    _show_console_notice();
+  }
+#endif
 
   gboolean has_workspace = FALSE;
 
