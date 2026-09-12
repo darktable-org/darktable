@@ -188,7 +188,8 @@ static inline float _calc_refavg(const float *in,
                                  const uint32_t filters,
                                  const int row,
                                  const int col,
-                                 const dt_iop_roi_t *const roi,
+                                 const int width,
+                                 const int height,
                                  const dt_aligned_pixel_t correction,
                                  const gboolean linear)
 {
@@ -198,14 +199,14 @@ static inline float _calc_refavg(const float *in,
 
   const int dymin = MAX(0, row - 1);
   const int dxmin = MAX(0, col - 1);
-  const int dymax = MIN(roi->height - 1, row +2);
-  const int dxmax = MIN(roi->width - 1, col + 2);
+  const int dymax = MIN(height - 1, row +2);
+  const int dxmax = MIN(width - 1, col + 2);
 
   for(int dy = dymin; dy < dymax; dy++)
   {
     for(int dx = dxmin; dx < dxmax; dx++)
     {
-      const float val = fmaxf(0.0f, in[(size_t)dy * roi->width + dx]);
+      const float val = fmaxf(0.0f, in[(size_t)dy * width + dx]);
       const int c = fcol(dy, dx, filters, xtrans);
       mean[c] += val;
       cnt[c] += 1.0f;
@@ -609,7 +610,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
           if(candidate != 0.0f)
           {
             const float cand_reference = isegments[color].val2[pid];
-            const float refavg_here = _calc_refavg(input, xtrans, filters, row, col, roi_in, correction, FALSE);
+            const float refavg_here = _calc_refavg(input, xtrans, filters, row, col, roi_in->width, roi_in->height, correction, FALSE);
             const float oval = fcube(refavg_here + candidate - cand_reference);
             tmpout[idx] = plane[color][o] = fmaxf(inval, oval);
           }

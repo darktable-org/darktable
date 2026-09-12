@@ -38,6 +38,7 @@ build/lib/darktable/plugins/introspection_contrastntexture.c
 build/lib/darktable/plugins/introspection_crop.c
 build/lib/darktable/plugins/introspection_defringe.c
 build/lib/darktable/plugins/introspection_demosaic.c
+build/lib/darktable/plugins/introspection_demosaicscale.c
 build/lib/darktable/plugins/introspection_denoiseprofile.c
 build/lib/darktable/plugins/introspection_diffuse.c
 build/lib/darktable/plugins/introspection_dither.c
@@ -289,6 +290,7 @@ src/iop/contrastntexture.c
 src/iop/crop.c
 src/iop/defringe.c
 src/iop/demosaic.c
+src/iop/demosaicscale.c
 src/iop/demosaicing/amaze.cc
 src/iop/demosaicing/basics.c
 src/iop/demosaicing/capture.c
