@@ -622,6 +622,8 @@ void dt_gui_update_collapsible_section(const dt_gui_collapsible_section_t *cs);
 // routine to hide the collapsible section
 void dt_gui_hide_collapsible_section(const dt_gui_collapsible_section_t *cs);
 
+
+
 // is delay between first and second click/press longer than double-click time?
 gboolean dt_gui_long_click(const guint second,
                            const guint first);
