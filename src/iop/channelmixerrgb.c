@@ -1206,8 +1206,12 @@ static void _declare_cat_on_pipe(dt_iop_module_t *self, const gboolean preset)
   }
 
   if(origcat != chr->adaptation)
-    dt_print(DT_DEBUG_PIPE, "changed CAT for %s%s from %p to %p",
-      self->op, dt_iop_get_instance_id(self), origcat, chr->adaptation);
+    dt_print(DT_DEBUG_PIPE, "changed CAT for %s%s from %s%s to %s%s",
+      self->op, dt_iop_get_instance_id(self),
+      origcat ? origcat->name() : "none",
+      origcat ? dt_iop_get_instance_id(origcat) : "",
+      chr->adaptation ? chr->adaptation->op : "none",
+      chr->adaptation ? dt_iop_get_instance_id(chr->adaptation) : "");
 }
 
 static void _update_illuminants(const dt_iop_module_t *self);
