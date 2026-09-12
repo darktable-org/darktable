@@ -260,6 +260,14 @@ void _camera_import_image_downloaded(const dt_camera_t *camera,
     dt_datetime_unix_to_exif(dt_txt, sizeof(dt_txt), &timestamp);
     gchar *id = g_strconcat(in_filename, "-", dt_txt, NULL);
     dt_metadata_set(imgid, "Xmp.darktable.image_id", id, FALSE);
+    gchar *output_basename = g_path_get_basename(filename);
+    if(g_strcmp0(output_basename, in_filename))
+    {
+      // file renamed during import, preserve the original filename
+      dt_metadata_set(imgid, "Xmp.xmpMM.PreservedFileName", in_filename, FALSE);
+    }
+    g_free(output_basename);
+    
     g_free(id);
   }
 
