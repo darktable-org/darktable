@@ -303,6 +303,8 @@ changes (where available).
 - Fixed the splash screen text jumping sideways while startup messages
   change, most visibly on macOS.
 
+- Fixed metadata tag Xmp.xmpMM.PreservedFileName not written on camera import.
+
 ## Lua
 
 ### API Version
