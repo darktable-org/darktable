@@ -1184,37 +1184,46 @@ static void _update_style(const dt_stylemenu_data_t *menu_data)
   _update_style_label(menu_data->user_data,menu_data->name);
 }
 
-static void _apply_style_activate_callback(GtkMenuItem *menuitem,
-                                           const dt_stylemenu_data_t *menu_data)
+static void _apply_style_activate_callback(GSimpleAction *action,
+                                           GVariant *parameter,
+                                           gpointer user_data)
 {
-  if(dt_gui_menuitem_activated_by_keyboard(GTK_WIDGET(menuitem)))
-    _update_style(menu_data);
+  const dt_stylemenu_data_t *menu_data = (dt_stylemenu_data_t *)g_variant_get_uint64(parameter);
+
+  _update_style(menu_data);
+  dtgtk_stylemenu_free_menu_data();
 }
 
-static void _apply_style_button_callback(GtkGestureSingle *gesture,
-                                         gint n_press,
-                                         gdouble x,
-                                         gdouble y,
-                                         const dt_stylemenu_data_t *menu_data)
+static void _style_popupmenu_callback(GtkWidget *w,
+                                      gpointer user_data)
 {
-  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
-    _update_style(menu_data);
-  else
+  GActionGroup *action_group = gtk_widget_get_action_group(w, "styles");
+  if(action_group == NULL)
   {
-    //??? dt_shortcut_copy_lua(NULL, name);
-  }
-}
+    GActionEntry action_entries[] =
+    {
+      { "activate", _apply_style_activate_callback, "t", NULL },
+    };
 
-static void _style_popupmenu_callback(GtkWidget *w, gpointer user_data)
-{
+    action_group = G_ACTION_GROUP(g_simple_action_group_new());
+    g_action_map_add_action_entries(G_ACTION_MAP(action_group),
+                                    action_entries,
+                                    G_N_ELEMENTS(action_entries),
+                                    NULL);
+    gtk_widget_insert_action_group(w, 
+                                   "styles",
+                                   G_ACTION_GROUP(action_group));
+  }
+
   /* if we got any styles, lets popup menu for selection */
-  GtkMenuShell *menu = dtgtk_build_style_menu_hierarchy(TRUE,
-                                                        _apply_style_activate_callback,
-                                                        _apply_style_button_callback,
-                                                        user_data);
+  GMenu *menu = dtgtk_build_style_menu_hierarchy(TRUE,
+                                                  user_data);
   if(menu)
   {
-    dt_gui_menu_popup(GTK_MENU(menu), w, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
+    // popup the menu
+    GtkWidget *popover_menu = dt_gui_popover_menu_from_model(w, menu);
+    g_object_unref(menu);
+    gtk_popover_popup(GTK_POPOVER(popover_menu));
   }
   else
     dt_control_log(_("no styles have been created yet"));
@@ -1270,8 +1279,11 @@ static void _on_storage_list_changed(gpointer instance,
   dt_bauhaus_combobox_set(d->storage, dt_imageio_get_index_of_storage(storage));
 }
 
-static void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
+static void _menuitem_preferences(GSimpleAction *action,
+                                  GVariant *parameter,
+                                  gpointer user_data)
 {
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_export_t *d = self->data;
   const gchar *name = dt_bauhaus_combobox_get_text(d->storage);
   const gboolean ondisk = name
@@ -1418,12 +1430,12 @@ static void _export_presets_changed_callback(gpointer instance, gpointer module,
     _fill_batch_export_list(self);
 }
 
-void set_preferences(void *menu, dt_lib_module_t *self)
+void set_preferences(GMenu *menu, GActionGroup *action_group, dt_lib_module_t *self)
 {
-  GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
-  g_signal_connect(G_OBJECT(mi), "activate",
-                   G_CALLBACK(_menuitem_preferences), self);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+  GSimpleAction *action = g_simple_action_new("preferences", NULL);
+  g_signal_connect(action, "activate", G_CALLBACK(_menuitem_preferences), self);
+  g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(action));
+  g_menu_append(menu, _("preferences..."), "presets.preferences");
 }
 
 void gui_init(dt_lib_module_t *self)

@@ -1196,6 +1196,15 @@ gchar *dt_str_replace(const char *string,
   return res;
 }
 
+gchar *dt_str_unmnemonic(const char *string)
+{
+  gchar **parts = g_strsplit(string, "_", -1);
+  gchar *res = g_strjoinv("__", parts);
+  g_strfreev(parts);
+  return res;
+}
+
+
 gboolean dt_str_commasubstring(const char *list,
                                const char *search)
 {

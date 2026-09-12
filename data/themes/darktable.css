@@ -1028,6 +1028,25 @@ combobox separator
   min-height: 0.07em;
 }
 
+/*------------------------------------------------
+  - Popup menu                                   -
+  ----------------------------------------------*/
+popover.menu {
+  padding: 0;
+}
+
+popover.menu modelbutton {
+  margin: 0 -0.8em;
+  padding: 0.1em 1.5em;
+  border-radius: 0;
+}
+
+popover.menu modelbutton:hover,
+popover.menu modelbutton:hover * {
+  background-color: @selected_bg_color;
+}
+
+
 /*----------------------
   - GTK Notebooks tabs -
   ----------------------*/

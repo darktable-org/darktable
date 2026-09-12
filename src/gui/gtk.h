@@ -136,6 +136,7 @@ typedef struct dt_gui_gtk_t
   gboolean touchpad_gestures_enabled;
   double overlay_red, overlay_blue, overlay_green, overlay_contrast;
   GtkWidget *focus_peaking_button;
+  GtkWidget *active_popover_menu;
 
   double dpi, dpi_factor, ppd, ppd_thb;
   gboolean have_pen_pressure;
@@ -946,6 +947,9 @@ PangoFontDescription *dt_gui_get_font(void);
 
 // returns the session type at runtime
 dt_gui_session_type_t dt_gui_get_session_type(void);
+// Popover menu
+GtkWidget *dt_gui_popover_menu_from_model(GtkWidget *parent, GMenu *menu);
+
 
 #if !defined(__cplusplus)
 #undef G_CALLBACK
