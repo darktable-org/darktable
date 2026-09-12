@@ -364,9 +364,11 @@ static inline int _get_required_w(const float radius, const float scale)
    and signal but also on the chose weight and eps.
 */
 
+// feather_version comes from the piece: the module's blend params are rewritten
+// with the defaults while another pipe replays history
 static float _get_guide_weight(const dt_dev_pixelpipe_iop_t *piece)
 {
-  const uint32_t fmode = piece->module->blend_params->feather_version;
+  const uint32_t fmode = ((const dt_develop_blend_params_t *)piece->blendop_data)->feather_version;
   const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, IOP_CS_NONE);
   if(cst == IOP_CS_RGB)
     return (fmode == 0) ? 100.0f : 10.0f;
@@ -376,10 +378,25 @@ static float _get_guide_weight(const dt_dev_pixelpipe_iop_t *piece)
 
 static float _get_feathering_eps(const dt_dev_pixelpipe_iop_t *piece)
 {
-  const uint32_t fmode = piece->module->blend_params->feather_version;
+  const uint32_t fmode = ((const dt_develop_blend_params_t *)piece->blendop_data)->feather_version;
   const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, IOP_CS_NONE);
 
   return (cst == IOP_CS_RGB && fmode) ? 0.5f : 1.0f;
+}
+
+// resolved from the piece, like feather_version: the module's raster_mask.sink
+// is cleared while another pipe replays history
+static const dt_iop_module_t *_raster_source(const dt_dev_pixelpipe_iop_t *piece)
+{
+  const dt_develop_blend_params_t *const d = piece->blendop_data;
+  for(const GList *n = piece->pipe->nodes; n; n = g_list_next(n))
+  {
+    const dt_iop_module_t *candidate = ((dt_dev_pixelpipe_iop_t *)n->data)->module;
+    if(dt_iop_module_is(candidate, d->raster_mask_source)
+       && candidate->multi_priority == d->raster_mask_instance)
+      return candidate;
+  }
+  return NULL;
 }
 
 static void _develop_blend_process_feather(const float *const guide,
@@ -622,8 +639,8 @@ void dt_develop_blend_process(dt_iop_module_t *self,
     */
     gboolean free_mask;
     float *raster_mask = dt_dev_get_raster_mask(piece,
-                                                self->raster_mask.sink.source,
-                                                self->raster_mask.sink.id,
+                                                _raster_source(piece),
+                                                d->raster_mask_id,
                                                 self, &free_mask);
     if(raster_mask)
     {
@@ -1122,8 +1139,8 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     */
     gboolean free_mask;
     float *raster_mask = dt_dev_get_raster_mask(piece,
-                                                self->raster_mask.sink.source,
-                                                self->raster_mask.sink.id,
+                                                _raster_source(piece),
+                                                d->raster_mask_id,
                                                 self,
                                                 &free_mask);
     if(raster_mask)

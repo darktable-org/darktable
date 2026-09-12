@@ -383,6 +383,12 @@ gboolean dt_iop_load_module_by_so(dt_iop_module_t *module,
   module->enabled = module->default_enabled = FALSE; // all modules disabled by default.
   g_strlcpy(module->op, so->op, sizeof(module->op));
   module->raster_mask.source.users = g_hash_table_new(NULL, NULL);
+  // recursive: the GUI asks whether a source's mask is used while holding its lock
+  pthread_mutexattr_t recursive_locking;
+  pthread_mutexattr_init(&recursive_locking);
+  pthread_mutexattr_settype(&recursive_locking, PTHREAD_MUTEX_RECURSIVE);
+  dt_pthread_mutex_init(&module->raster_mask.source.users_lock, &recursive_locking);
+  pthread_mutexattr_destroy(&recursive_locking);
   module->raster_mask.source.masks =
     g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
   module->raster_mask.sink.source = NULL;
@@ -1998,6 +2004,7 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
   free(module->histogram);
   module->histogram = NULL;
   g_hash_table_destroy(module->raster_mask.source.users);
+  dt_pthread_mutex_destroy(&module->raster_mask.source.users_lock);
   g_hash_table_destroy(module->raster_mask.source.masks);
   module->raster_mask.source.users = NULL;
   module->raster_mask.source.masks = NULL;
@@ -2086,9 +2093,11 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
     {
       if(candidate->multi_priority == blendop_params->raster_mask_instance)
       {
+        dt_iop_raster_users_lock(candidate);
         const gboolean new = g_hash_table_insert(candidate->raster_mask.source.users,
                             module,
                             GINT_TO_POINTER(blendop_params->raster_mask_id));
+        dt_iop_raster_users_unlock(candidate);
         module->raster_mask.sink.source = candidate;
         module->raster_mask.sink.id = blendop_params->raster_mask_id;
 
@@ -2149,11 +2158,13 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
   dt_iop_module_t *sink_source = module->raster_mask.sink.source;
   if(sink_source)
   {
-    if(g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module))
+    dt_iop_raster_users_lock(sink_source);
+    if(g_hash_table_remove(sink_source->raster_mask.source.users, module))
       dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
                   "clear as raster user",
                   NULL, module, DT_DEVICE_NONE, NULL, NULL, "from '%s%s'",
                   sink_source->op, dt_iop_get_instance_id(sink_source));
+    dt_iop_raster_users_unlock(sink_source);
   }
   module->raster_mask.sink.source = NULL;
   module->raster_mask.sink.id = INVALID_MASKID;
@@ -3869,6 +3880,7 @@ void dt_iop_update_multi_priority(dt_iop_module_t *module, const int new_priorit
   GHashTableIter iter;
   gpointer key, value;
 
+  dt_iop_raster_users_lock(module);
   g_hash_table_iter_init(&iter, module->raster_mask.source.users);
   while(g_hash_table_iter_next(&iter, &key, &value))
   {
@@ -3884,6 +3896,7 @@ void dt_iop_update_multi_priority(dt_iop_module_t *module, const int new_priorit
         hist->blend_params->raster_mask_instance = new_priority;
     }
   }
+  dt_iop_raster_users_unlock(module);
 
   module->multi_priority = new_priority;
 }
@@ -3916,13 +3929,13 @@ gboolean dt_iop_is_raster_mask_used(const dt_iop_module_t *module, const dt_mask
   GHashTableIter iter;
   gpointer key, value;
 
+  gboolean used = FALSE;
+  dt_iop_raster_users_lock(module);
   g_hash_table_iter_init(&iter, module->raster_mask.source.users);
-  while(g_hash_table_iter_next(&iter, &key, &value))
-  {
-    if(GPOINTER_TO_INT(value) == id)
-      return TRUE;
-  }
-  return FALSE;
+  while(!used && g_hash_table_iter_next(&iter, &key, &value))
+    used = GPOINTER_TO_INT(value) == id;
+  dt_iop_raster_users_unlock(module);
+  return used;
 }
 
 gboolean dt_iop_piece_is_raster_mask_used(const dt_dev_pixelpipe_iop_t *piece, const dt_mask_id_t id)
@@ -3930,16 +3943,7 @@ gboolean dt_iop_piece_is_raster_mask_used(const dt_dev_pixelpipe_iop_t *piece, c
   if(piece->pipe->store_all_raster_masks)
     return TRUE;
 
-  GHashTableIter iter;
-  gpointer key, value;
-
-  g_hash_table_iter_init(&iter, piece->module->raster_mask.source.users);
-  while(g_hash_table_iter_next(&iter, &key, &value))
-  {
-    if(GPOINTER_TO_INT(value) == id)
-      return TRUE;
-  }
-  return FALSE;
+  return dt_iop_is_raster_mask_used(piece->module, id);
 }
 
 void dt_iop_piece_set_raster(dt_dev_pixelpipe_iop_t *piece,

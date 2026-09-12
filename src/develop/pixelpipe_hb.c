@@ -697,8 +697,14 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
 static void _iop_prune_stale_raster_users(dt_dev_pixelpipe_t *pipe, dt_iop_module_t *module)
 {
   GHashTable *users = module->raster_mask.source.users;
-  if(!module->dev || !users || g_hash_table_size(users) == 0)
+  if(!module->dev || !users)
     return;
+  dt_iop_raster_users_lock(module);
+  if(g_hash_table_size(users) == 0)
+  {
+    dt_iop_raster_users_unlock(module);
+    return;
+  }
 
   /* Phantom users (deleted or de-synced consumers) keep the source republishing
      -- and invalidating downstream -- every run. Judge each consumer from its
@@ -743,9 +749,13 @@ static void _iop_prune_stale_raster_users(dt_dev_pixelpipe_t *pipe, dt_iop_modul
     // that named us as raster source but is then disabled (or switched its mask
     // to drawn/parametric) leaves a phantom entry that would otherwise keep us
     // publishing -- and invalidating every downstream cacheline -- on every run.
+    // "points back" is read from the piece too: sink->raster_mask.sink is
+    // cleared while another pipe replays history
     const dt_develop_blend_params_t *bp = sink_piece->blendop_data;
-    const gboolean consumes = sink->raster_mask.sink.source == module && sink_piece->enabled &&
-                              bp && (bp->mask_mode & DEVELOP_MASK_RASTER);
+    const gboolean points_back = bp && dt_iop_module_is(module, bp->raster_mask_source)
+                                 && module->multi_priority == bp->raster_mask_instance;
+    const gboolean consumes = points_back && sink_piece->enabled &&
+                              (bp->mask_mode & DEVELOP_MASK_RASTER);
     if(!consumes)
     {
       g_hash_table_iter_remove(&iter);
@@ -759,11 +769,12 @@ static void _iop_prune_stale_raster_users(dt_dev_pixelpipe_t *pipe, dt_iop_modul
                     "dropped '%s%s' (%s)",
                     sink->op,
                     dt_iop_get_instance_id(sink),
-                    sink->raster_mask.sink.source != module ? "de-synced"
+                    !points_back                            ? "de-synced"
                     : !sink_piece->enabled                  ? "disabled"
                                                             : "not in raster mode");
     }
   }
+  dt_iop_raster_users_unlock(module);
 }
 
 void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
@@ -3851,7 +3862,12 @@ float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
   float *raster_mask = NULL;
   dt_iop_roi_t *final_roi = &piece->processed_roi_out;
 
-  const dt_develop_mask_mode_t maskmode = source_piece->enabled ? source_piece->module->blend_params->mask_mode : DEVELOP_MASK_DISABLED;
+  // judge the source by its piece: the module's blend params are rewritten
+  // with the defaults while another pipe replays history, and a source read
+  // as not writing loses its stored mask here
+  const dt_develop_blend_params_t *const sbp = source_piece->blendop_data;
+  const dt_develop_mask_mode_t maskmode =
+    source_piece->enabled && sbp ? sbp->mask_mode : DEVELOP_MASK_DISABLED;
   const gboolean source_writing = (maskmode > DEVELOP_MASK_ENABLED)
                                 || (source_piece->module->flags() & IOP_FLAGS_WRITE_RASTER);
   /* there might be stale masks from disabled modules or modules that don't write masks.

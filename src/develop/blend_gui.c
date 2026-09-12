@@ -2929,10 +2929,13 @@ static void _raster_value_changed_callback(GtkWidget *widget,
      && entry->id == module->raster_mask.sink.id)
     return;
 
-  if(module->raster_mask.sink.source)
+  dt_iop_module_t *old_source = module->raster_mask.sink.source;
+  if(old_source)
   {
     // we no longer use this one
-    g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module);
+    dt_iop_raster_users_lock(old_source);
+    g_hash_table_remove(old_source->raster_mask.source.users, module);
+    dt_iop_raster_users_unlock(old_source);
   }
 
   module->raster_mask.sink.source = entry->module;
@@ -2942,8 +2945,10 @@ static void _raster_value_changed_callback(GtkWidget *widget,
 
   if(entry->module)
   {
+    dt_iop_raster_users_lock(entry->module);
     reprocess = dt_iop_is_raster_mask_used(entry->module, BLEND_RASTER_ID) == FALSE;
     g_hash_table_add(entry->module->raster_mask.source.users, module);
+    dt_iop_raster_users_unlock(entry->module);
 
     // update blend_params!
     memcpy(module->blend_params->raster_mask_source, entry->module->op,
