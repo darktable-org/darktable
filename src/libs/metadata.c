@@ -1462,7 +1462,7 @@ void *legacy_params(dt_lib_module_t *self,
     if(strlen(buf) > 0)
     {
       buf += _build_tag(buf,
-                        "Xmp.xmpMM.PerservedFileName",
+                        "Xmp.xmpMM.PreservedFileName",
                         &metadata_tagnames[i],
                         &metadata_tagname_len[i],
                         &metadata_texts[i],

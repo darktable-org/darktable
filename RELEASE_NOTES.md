@@ -83,8 +83,8 @@ changes (where available).
 - Printing for Windows has been introduced. This activates the print
   view with feature parity for what Linux and MacOS users have had.
   Printing should work on all currently supported versions of Windows,
-  leveraging the XPS Print API. On the first print the print settings 
-  dialog will open so that the user can confirm settings not exposed 
+  leveraging the XPS Print API. On the first print the print settings
+  dialog will open so that the user can confirm settings not exposed
   in the darktable UI.
 
 ## UI/UX Improvements
@@ -304,6 +304,8 @@ changes (where available).
   change, most visibly on macOS.
 
 - Fixed camera mutex locks before the mutexes are initialized.
+
+- Fixed metadata tag Xmp.xmpMM.PreservedFileName not written on camera import.
 
 ## Lua
 
