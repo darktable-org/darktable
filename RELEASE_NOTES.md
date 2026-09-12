@@ -303,6 +303,8 @@ changes (where available).
 - Fixed the splash screen text jumping sideways while startup messages
   change, most visibly on macOS.
 
+- Fixed camera mutex locks before the mutexes are initialized.
+
 ## Lua
 
 ### API Version
