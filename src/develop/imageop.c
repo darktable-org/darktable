@@ -1443,7 +1443,12 @@ void dt_iop_gui_init(dt_iop_module_t *module)
 {
   DT_ENTER_GUI_UPDATE();
   --darktable.bauhaus->skip_accel;
-  dt_pthread_mutex_init(&module->gui_lock, NULL);
+
+  pthread_mutexattr_t recursive_gui_lock;
+  pthread_mutexattr_init(&recursive_gui_lock);
+  pthread_mutexattr_settype(&recursive_gui_lock, PTHREAD_MUTEX_RECURSIVE);
+  dt_pthread_mutex_init(&module->gui_lock, &recursive_gui_lock);
+
   if(module->gui_init) module->gui_init(module);
   ++darktable.bauhaus->skip_accel;
   DT_LEAVE_GUI_UPDATE();
