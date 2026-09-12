@@ -241,6 +241,8 @@ typedef struct dt_iop_module_t
           dt_iop_module_t* -> id
       */
       GHashTable *users;
+      /** guards users, see dt_iop_raster_users_lock() */
+      dt_pthread_mutex_t users_lock;
       /** the masks this module has to offer. maps id -> name */
       GHashTable *masks;
     } source;
@@ -504,6 +506,18 @@ void dt_iop_update_multi_name(dt_iop_module_t *module,
                               const gboolean enable,
                               const gboolean force);
 
+/** guard module->raster_mask.source.users: pipes read it while another pipe's
+    history replay rewrites it. Recursive */
+static inline void dt_iop_raster_users_lock(const dt_iop_module_t *const module)
+  ACQUIRE(&module->raster_mask.source.users_lock)
+{
+  dt_pthread_mutex_lock((dt_pthread_mutex_t *)&module->raster_mask.source.users_lock);
+}
+static inline void dt_iop_raster_users_unlock(const dt_iop_module_t *const module)
+  RELEASE(&module->raster_mask.source.users_lock)
+{
+  dt_pthread_mutex_unlock((dt_pthread_mutex_t *)&module->raster_mask.source.users_lock);
+}
 /** iterates over the users hash table and checks if a specific mask is being used */
 gboolean dt_iop_is_raster_mask_used(const dt_iop_module_t *module, const dt_mask_id_t id);
 /** checks dt_iop_is_raster_mask_used() or writing for exports */
