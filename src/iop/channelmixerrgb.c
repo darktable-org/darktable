@@ -4127,6 +4127,7 @@ void gui_changed(dt_iop_module_t *self,
 
   // If "as shot in camera" illuminant is used, CAT space is forced automatically
   // therefore, make the control insensitive
+  dt_bauhaus_combobox_set_from_value(g->adaptation, p->adaptation);
   gtk_widget_set_sensitive(g->adaptation, p->illuminant != DT_ILLUMINANT_CAMERA);
 
   _declare_cat_on_pipe(self, FALSE);
