@@ -305,7 +305,8 @@ changes (where available).
 
 - Fixed camera mutex locks before the mutexes are initialized.
 
-- Fixed metadata tag Xmp.xmpMM.PreservedFileName not written on camera import.
+- Fixed metadata tag Xmp.xmpMM.PreservedFileName not written on camera
+  import.
 
 ## Lua
 
