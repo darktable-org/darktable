@@ -268,20 +268,16 @@ static gboolean _get_thumb_quality(const int width, const int height)
 }
 
 // can we avoid full demosaicing and use a fast interpolator instead?
-static gboolean _demosaic_full(const dt_dev_pixelpipe_iop_t *const piece,
-                               const dt_image_t *const img,
-                               const dt_iop_roi_t *const roi_out)
+static gboolean _demosaic_full(const dt_dev_pixelpipe_t *const pipe,
+                               const dt_image_t *const img)
 {
   if((img->flags & DT_IMAGE_4BAYER)   // half_size_f doesn't support 4bayer images
       || dt_image_is_mono_sraw(img)
-      || piece->pipe->want_detail_mask)
+      || pipe->want_detail_mask)
     return TRUE;
 
-  if(dt_pipe_is_thumb(piece->pipe))
-    return _get_thumb_quality(roi_out->width, roi_out->height);
-
-  if(dt_pipe_is_preview(piece->pipe))
-    return roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.667f : 0.5f);
+  if(dt_pipe_is_thumb(pipe))
+    return _get_thumb_quality(pipe->final_width, pipe->final_height);
 
   return TRUE;
 }
@@ -656,7 +652,7 @@ void process(dt_iop_module_t *self,
   const dt_iop_demosaic_gui_data_t *g = self->gui_data;
   const uint32_t filters = piece->filters;
 
-  const gboolean fullscale = _demosaic_full(piece, img, roi_out);
+  const gboolean fullscale = _demosaic_full(pipe, img);
   const gboolean is_xtrans = filters == 9u;
   const gboolean is_4bayer = img->flags & DT_IMAGE_4BAYER;
   const gboolean is_bayer = !is_4bayer && !is_xtrans && filters != 0;
@@ -918,7 +914,7 @@ int process_cl(dt_iop_module_t *self,
   cl_mem dev_xtrans = NULL;
 
   const uint32_t filters = piece->filters;
-  const gboolean fullscale = _demosaic_full(piece, img, roi_out);
+  const gboolean fullscale = _demosaic_full(pipe, img);
   const gboolean is_xtrans = filters == 9u;
   const gboolean is_bayer = !is_xtrans && filters != 0 && !true_monochrome;
 

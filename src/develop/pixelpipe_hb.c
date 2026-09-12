@@ -168,18 +168,21 @@ void dt_print_pipe_ext(const char *title,
   else if(device != DT_DEVICE_NONE)
     snprintf(dev, sizeof(dev), "??? %i", device);
 
-  const gboolean show_roo = roi_out && (!roi_in || memcmp(roi_in, roi_out, sizeof(dt_iop_roi_t)));
+  const gboolean identical = roi_in && roi_out && (memcmp(roi_in, roi_out, sizeof(dt_iop_roi_t)) == 0);
+  const gboolean show_roo = roi_out && !identical;
+
   if(roi_in)
   {
     snprintf(shift, sizeof(shift), "(%i/%i)", roi_in->x, roi_in->y);
     snprintf(area, sizeof(area), "%ix%i", roi_in->width, roi_in->height);
-    snprintf(roi, sizeof(roi), "%11s %10s sc=%.3f%s", shift, area, roi_in->scale, show_roo ? "" : ";");
+    snprintf(roi, sizeof(roi), "%11s %10s sc=%.4f%s", shift, area, roi_in->scale, show_roo ? "" : identical ? " same;" : " none;");
   }
+
   if(show_roo)
   {
     snprintf(shift, sizeof(shift), "(%i/%i)", roi_out->x, roi_out->y);
     snprintf(area, sizeof(area), "%ix%i", roi_out->width, roi_out->height);
-    snprintf(roo, sizeof(roo), " --> %11s %10s sc=%.3f;", shift, area, roi_out->scale);
+    snprintf(roo, sizeof(roo), "%s --> %11s %10s sc=%.4f;", roi_in ? "" : "none", shift, area, roi_out->scale);
   }
 
   if(pipe)
@@ -3426,7 +3429,7 @@ restart:
     dt_get_available_mem();
   #endif
   dt_print_pipe(DT_DEBUG_PIPE, "pipe starting",
-                  pipe, NULL, pipe->devid, &roi, &roi, "'%s' ID=%i using %luMB",
+                  pipe, NULL, pipe->devid, NULL, &roi, "'%s' ID=%i using %luMB",
                   pipe->image.filename, pipe->image.id, avail_mem / DT_MEGA);
   dt_print_mem_usage("before pixelpipe process");
 
@@ -3482,7 +3485,7 @@ restart:
     dt_dev_pixelpipe_change(pipe, dev);
 
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
-      "pipe restarting on CPU", pipe, NULL, old_devid, &roi, &roi, "ID=%i",
+      "pipe restarting on CPU", pipe, NULL, old_devid, NULL, &roi, "ID=%i",
       pipe->image.id);
 
     goto restart; // try again (this time without opencl)
@@ -3544,7 +3547,7 @@ restart:
     dt_dev_pixelpipe_cache_report(pipe);
 
   dt_print_pipe(DT_DEBUG_PIPE, "pipe finished",
-                pipe, NULL, old_devid, &roi, &roi, "'%s' ID=%i",
+                pipe, NULL, old_devid, &roi, NULL, "'%s' ID=%i",
                 pipe->image.filename, pipe->image.id);
   dt_print_mem_usage("after pixelpipe process");
 
@@ -4071,14 +4074,13 @@ gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
   p->scharr.hash = dt_hash(DT_INITHASH, &p->scharr.roi, sizeof(dt_iop_roi_t));
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "write scharr mask CPU",
-                p, NULL, DT_DEVICE_CPU, NULL, NULL, "(%ix%i)",
-                roi->width, roi->height);
+                p, NULL, DT_DEVICE_CPU, roi, NULL);
   return FALSE;
 
  error:
   dt_print_pipe(DT_DEBUG_ALWAYS,
                 "couldn't write scharr mask CPU",
-                p, NULL, DT_DEVICE_CPU, NULL, NULL);
+                p, NULL, DT_DEVICE_CPU, roi, NULL);
   return TRUE;
 }
 
@@ -4135,14 +4137,13 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   p->scharr.hash = dt_hash(DT_INITHASH, &p->scharr.roi, sizeof(dt_iop_roi_t));
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "write scharr mask CL",
-                p, NULL, devid, NULL, NULL, "(%ix%i)",
-                width, height);
+                p, NULL, devid, roi, NULL);
 
   error:
   if(err != CL_SUCCESS)
   {
     dt_print_pipe(DT_DEBUG_ALWAYS,
-                  "couldn't write scharr mask CL", p, NULL, devid, NULL, NULL,
+                  "couldn't write scharr mask CL", p, NULL, devid, roi, NULL,
                   "%s", cl_errstr(err));
     dt_dev_clear_scharr_mask(p);
   }
