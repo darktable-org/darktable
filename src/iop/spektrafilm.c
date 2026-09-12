@@ -3090,14 +3090,25 @@ static const sf_prof_entry_t *_auto_paper_entry(const dt_iop_spektrafilm_gui_dat
                                                 const sf_prof_entry_t *film)
 {
   const sf_prof_entry_t *first = NULL;
+  const sf_prof_entry_t *same_channel = NULL;
   for(const GList *l = g->entries; l; l = l->next)
   {
     const sf_prof_entry_t *pe = l->data;
     if(!pe->printing) continue;
     if(!first) first = pe;
+    if(film && !same_channel && pe->bw == film->bw) same_channel = pe;
     if(film && film->target_print[0] && !strcmp(pe->stock, film->target_print)) return pe;
   }
-  return first;
+  /* Three tiers, in order: the film's own named target print, then any print
+     stock with the same channel model, then the first printing entry there is.
+     The channel-model tier matters because target_print is optional in the pack
+     and the entry list is sorted by display name, so the first printing entry
+     bears no relation to the film -- for a black-and-white negative it is a
+     colour paper. Stocks that name no target and print nonetheless are rare
+     (kodak_doublex is the one in the current pack; the other untargeted stocks
+     are positives, which force scan_film and skip the print stage), so the last
+     tier is only reached when nothing in the pack matches at all. */
+  return same_channel ? same_channel : first;
 }
 
 /* Name the resolved paper in the "auto" entry itself, not only in the
