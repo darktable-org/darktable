@@ -2072,6 +2072,14 @@ Details :
   border: 1px solid @lighttable_bg_color;
 }
 
+/* darkroom filmstrip only: Use the same color for the
+filmstrip-thumbnail-boxes as for the canvas background */
+#thumbtable-filmstrip #thumb-back
+{
+  background-color: @darkroom_bg_color;
+  border-color: @bg_color;
+}
+
 /* set hover effect */
 .dt_act_on_selection #thumb-main:active #thumb-back,
 .dt_act_on_selection #thumb-main:selected #thumb-back
@@ -2127,25 +2135,29 @@ Details :
 
 /* Set border color around grouped thumbnails */
 .dt_group_left #thumb-back,
-#thumb-main.dt_group_left:selected #thumb-back
+#thumb-main.dt_group_left:selected #thumb-back,
+#thumbtable-filmstrip .dt_group_left #thumb-back
 {
   border-left: 0.07em solid rgb(255, 187, 0);
 }
 
 .dt_group_top #thumb-back,
-#thumb-main.dt_group_top:selected #thumb-back
+#thumb-main.dt_group_top:selected #thumb-back,
+#thumbtable-filmstrip .dt_group_top #thumb-back
 {
   border-top: 0.07em solid rgb(255, 187, 0);
 }
 
 .dt_group_right #thumb-back,
-#thumb-main.dt_group_right:selected #thumb-back
+#thumb-main.dt_group_right:selected #thumb-back,
+#thumbtable-filmstrip .dt_group_right #thumb-back
 {
   border-right: 0.07em solid rgb(255, 187, 0);
 }
 
 .dt_group_bottom #thumb-back,
-#thumb-main.dt_group_bottom:selected #thumb-back
+#thumb-main.dt_group_bottom:selected #thumb-back,
+#thumbtable-filmstrip .dt_group_bottom #thumb-back
 {
   border-bottom: 0.07em solid rgb(255, 187, 0);
 }
