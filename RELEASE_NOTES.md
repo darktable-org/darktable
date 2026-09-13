@@ -115,6 +115,9 @@ changes (where available).
 - Added an interactive editing mode allowing users to correct a color
   by selecting it directly on the photo with the mouse wheel, just as
   was already possible with the "tone equalizer" module.
+  
+- Grey theme: The filmstrip is now slightly darker to improve visual 
+  distinction between unselected/selected images.
 
 - Neural restore now takes a full output path per task instead of an
   output folder, so the output file name and its suffix can be chosen.
