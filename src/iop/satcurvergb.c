@@ -813,7 +813,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                         (int)d->gf_radius);
           apply_guided_filter_control(mask, filtered, confidence, control,
                                       d->gf_protect_from, d->gf_protect_to,
-                                      d->noise_protection, npixels);
+                                      0.0f, npixels);
           memcpy(mask, control, npixels * sizeof(float));
         }
         dt_free_align(filtered);
@@ -1162,11 +1162,12 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     else
     {
       // mask_control_cl holds final coordinate.
+      const float mask_noise_protection = 0.0f;
       err = dt_opencl_enqueue_kernel_2d_args(
           devid, gd->kernel_satcurve_mask_from_control, width, height,
           CLARG(mask_scalar_cl), CLARG(mask_filtered_cl), CLARG(noise_confidence_cl),
           CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
-          CLARG(d->gf_protect_from), CLARG(d->gf_protect_to), CLARG(d->noise_protection));
+          CLARG(d->gf_protect_from), CLARG(d->gf_protect_to), CLARG(mask_noise_protection));
     }
 
     if (err == CL_SUCCESS)

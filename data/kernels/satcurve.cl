@@ -308,10 +308,10 @@ satcurve_mask(read_only image2d_t in, write_only image2d_t out,
 // of the 3-channel visualisation that satcurve_mask above produces.
 kernel void
 satcurve_prepare_scalar_mask(read_only image2d_t in, write_only image2d_t out,
-                            const int width, const int height,
-                            constant const float *const matrix_in,
-                            global const float *const gamut_lut,
-                            const int formula, const float L_white)
+                             const int width, const int height,
+                             constant const float *const matrix_in,
+                             global const float *const gamut_lut,
+                             const int formula, const float L_white)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -326,13 +326,14 @@ satcurve_prepare_scalar_mask(read_only image2d_t in, write_only image2d_t out,
 
 kernel void
 satcurve_prepare_perceptual_guide(read_only image2d_t in, write_only image2d_t out,
-                                 const int width, const int height,
-                                 constant const float *const matrix_in,
-                                 const float L_white)
+                                  const int width, const int height,
+                                  constant const float *const matrix_in,
+                                  const float L_white)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  if (x >= width || y >= height) return;
+  if (x >= width || y >= height)
+    return;
 
   const float4 rgb = fmax(Areadpixel(in, x, y), 0.f);
   const float4 xyz = matrix_product_float4(rgb, matrix_in);
@@ -352,14 +353,15 @@ static inline float smoothstep01_cl(const float edge0, const float edge1, const 
 
 kernel void
 satcurve_prepare_filter_confidence(read_only image2d_t raw, read_only image2d_t filtered,
-                                    read_only image2d_t guide, write_only image2d_t control,
-                                    write_only image2d_t confidence,
-                                    const int width, const int height,
-                                    const float protect_from, const float protect_to)
+                                   read_only image2d_t guide, write_only image2d_t control,
+                                   write_only image2d_t confidence,
+                                   const int width, const int height,
+                                   const float protect_from, const float protect_to)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  if (x >= width || y >= height) return;
+  if (x >= width || y >= height)
+    return;
 
   const float raw_center = Areadsingle(raw, x, y);
   const float filtered_center = Areadsingle(filtered, x, y);
@@ -390,15 +392,16 @@ satcurve_prepare_filter_confidence(read_only image2d_t raw, read_only image2d_t 
 
 kernel void
 satcurve_mask_from_control(read_only image2d_t raw, read_only image2d_t filtered,
-                            read_only image2d_t confidence, read_only image2d_t in,
-                            write_only image2d_t out,
-                            const int width, const int height,
-                            const float protect_from, const float protect_to,
-                            const float noise_protection)
+                           read_only image2d_t confidence, read_only image2d_t in,
+                           write_only image2d_t out,
+                           const int width, const int height,
+                           const float protect_from, const float protect_to,
+                           const float noise_protection)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  if (x >= width || y >= height) return;
+  if (x >= width || y >= height)
+    return;
 
   const float raw_value = Areadsingle(raw, x, y);
   const float filtered_value = Areadsingle(filtered, x, y);
