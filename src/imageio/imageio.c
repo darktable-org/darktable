@@ -1040,8 +1040,6 @@ static double _get_pipescale(dt_dev_pixelpipe_t *pipe,
   return fmin(scalex, scaley);
 }
 
-// internal function: to avoid exif blob reading + 8-bit byteorder
-// flag + high-quality override
 gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
                                       const char *filename,
                                       dt_imageio_module_format_t *format,
@@ -1101,13 +1099,16 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   const int wd = img->width;
   const int ht = img->height;
 
+  // Check if masks/layers are supported for this format
+  const gboolean layers = export_masks
+            && (format->flags(NULL) & FORMAT_FLAGS_SUPPORT_LAYERS) == FORMAT_FLAGS_SUPPORT_LAYERS;
+
   dt_times_t start;
   dt_get_perf_times(&start);
   dt_dev_pixelpipe_t pipe;
   gboolean res = thumbnail_export
     ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht)
-    : dt_dev_pixelpipe_init_export(&pipe, wd, ht,
-                                   format->levels(format_params), export_masks);
+    : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params), layers);
   if(!res)
   {
     dt_control_log(
