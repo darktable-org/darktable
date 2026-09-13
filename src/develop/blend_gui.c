@@ -324,6 +324,8 @@ enum _channel_indexes
   CHANNEL_INDEX_hz = 6,
 };
 
+static GtkWidget *_active_popover_menu = NULL;
+
 static void _blendop_blendif_update_tab(dt_iop_module_t *module, const int tab);
 
 static inline dt_iop_colorspace_type_t _blendif_colorpicker_cst(dt_iop_gui_blend_data_t *data)
@@ -2006,7 +2008,7 @@ static void _blendif_select_colorspace(GSimpleAction *action,
   }
 
   // close the menu
-  gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
+  gtk_popover_popdown(GTK_POPOVER(_active_popover_menu));
 }
 
 static void _blendif_show_output_channels(GSimpleAction *action,
@@ -2024,7 +2026,7 @@ static void _blendif_show_output_channels(GSimpleAction *action,
   }
 
   // close the menu
-  gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
+  gtk_popover_popdown(GTK_POPOVER(_active_popover_menu));
 }
 
 static void _blendif_hide_output_channels(GSimpleAction *action,
@@ -2049,7 +2051,7 @@ static void _blendif_hide_output_channels(GSimpleAction *action,
   }
 
   // close the menu
-  gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
+  gtk_popover_popdown(GTK_POPOVER(_active_popover_menu));
 }
 
 static void _blendif_options_callback(GtkButton *button,
@@ -2148,9 +2150,9 @@ static void _blendif_options_callback(GtkButton *button,
   }
 
   // popup the menu
-  darktable.gui->active_popover_menu = dt_gui_popover_menu_from_model(GTK_WIDGET(button), menu);
+  _active_popover_menu = dt_gui_popover_menu_from_model(GTK_WIDGET(button), menu);
   g_object_unref(menu);
-  gtk_popover_popup(GTK_POPOVER(darktable.gui->active_popover_menu));
+  gtk_popover_popup(GTK_POPOVER(_active_popover_menu));
 
   dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
 }

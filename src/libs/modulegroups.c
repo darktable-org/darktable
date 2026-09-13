@@ -162,6 +162,8 @@ typedef enum dt_lib_modulegroup_iop_visibility_type_t
   DT_MODULEGROUP_SEARCH_IOP_TEXT_GROUPS_VISIBLE
 } dt_lib_modulegroup_iop_visibility_type_t;
 
+static GtkWidget *_active_popover_menu = NULL;
+
 /* toggle button callback */
 static void _lib_modulegroups_toggle(GtkWidget *button, dt_lib_module_t *self);
 /* helper function to update iop module view depending on group */
@@ -2914,7 +2916,7 @@ static void _manage_direct_active_mode_toggled(GSimpleAction *action,
   }
 
   // close the menu
-  gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
+  gtk_popover_popdown(GTK_POPOVER(_active_popover_menu));
 }
 
 static void _manage_direct_active_popup(GtkGestureSingle *gesture,
@@ -2994,9 +2996,9 @@ static void _manage_direct_active_popup(GtkGestureSingle *gesture,
   g_simple_action_set_state(G_SIMPLE_ACTION(item_action), g_variant_new("i", current));
 
   // popup the menu
-  darktable.gui->active_popover_menu = dt_gui_popover_menu_from_model(widget, menu);
+  _active_popover_menu = dt_gui_popover_menu_from_model(widget, menu);
   g_object_unref(menu);
-  gtk_popover_popup(GTK_POPOVER(darktable.gui->active_popover_menu));
+  gtk_popover_popup(GTK_POPOVER(_active_popover_menu));
 }
 
 static void _dt_dev_image_changed_callback(gpointer instance,
