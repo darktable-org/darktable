@@ -1554,6 +1554,18 @@ void dt_bauhaus_reset_page(GtkNotebook *notebook,
 {
   if(!GTK_IS_NOTEBOOK(notebook) || !page) return;
 
+  // every widget reset below produces its own history entry, tagged with that
+  // widget as its undo target. _dev_undo_start_record_target() drops a change
+  // without recording undo when its target matches the previous one and the two
+  // fall inside darkroom/undo/merge_same_secs, which keeps a slider drag from
+  // filling the undo stack but cannot tell that drag apart from a reset writing
+  // to the same slider. without the record opened here, resetting a widget the
+  // user has just moved by hand reads as a continuation of the move and the
+  // value it held is lost for good. opening one clears the stored target, and
+  // the records raised inside the loop nest into it, so the page reverts on a
+  // single undo rather than one per widget
+  dt_dev_undo_start_record(darktable.develop);
+
   // a page that names its parameters is reset through them
   dt_iop_page_params_reset(page);
 
@@ -1578,6 +1590,8 @@ void dt_bauhaus_reset_page(GtkNotebook *notebook,
   }
 
   g_list_free(widgets);
+
+  dt_dev_undo_end_record(darktable.develop);
 
   dt_gui_remove_class(gtk_notebook_get_tab_label(notebook, page), "changed");
 }

@@ -4505,7 +4505,6 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->illum_y), "value-changed",
                    G_CALLBACK(_illum_xy_callback), self);
 
-
   dt_gui_box_add(self->widget, g->illum_x, g->illum_y);
 
   g->gamut = dt_bauhaus_slider_from_params(self, "gamut");
