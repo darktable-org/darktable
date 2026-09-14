@@ -764,10 +764,13 @@ void gui_reset(dt_imageio_module_format_t *self)
     dt_confgen_get_int("plugins/imageio/format/heif/quality", DT_DEFAULT);
   const int compression_type =
     dt_confgen_get_int("plugins/imageio/format/heif/compression_type", DT_DEFAULT);
+  const int subsample =
+    dt_confgen_get_int("plugins/imageio/format/heif/subsample", DT_DEFAULT);
 
   dt_bauhaus_slider_set(gui->quality, quality);
   dt_bauhaus_combobox_set(gui->compression_type, compression_type);
   dt_bauhaus_combobox_set(gui->bit_depth, _bit_depth_to_pos(bit_depth));
+  dt_bauhaus_combobox_set(gui->subsample, subsample);
 }
 
 // clang-format off
