@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
@@ -1462,8 +1463,8 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_widget_set_label(d->format, NULL, N_("file format"));
   gtk_widget_set_tooltip_markup(GTK_WIDGET(d->format),
     _("images will be exported according to the format specified here\n\n"
-      "when exporting to AVIF, EXR, JPEG XL, or XCF, selecting specific\n"
-      "metadata is not currently possible\n\n"
+      "when exporting to AVIF, EXR, HEIF, JPEG XL, or XCF, selecting\n"
+      "specific metadata is not currently possible\n\n"
       "for these formats, no metadata fields will be included\n"
       "unless the user selects <b>all</b> of the metadata checkboxes in\n"
       "the export module preferences"));
