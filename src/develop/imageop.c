@@ -3938,7 +3938,13 @@ gboolean dt_iop_is_raster_mask_used(const dt_iop_module_t *module, const dt_mask
   return used;
 }
 
-gboolean dt_iop_piece_is_raster_mask_used(const dt_dev_pixelpipe_iop_t *piece, const dt_mask_id_t id)
+/** checks if we should store the mask for export or use in subsequent modules.
+    The pipe->store_all_raster_masks is true if export has mask exporting so we
+    want the mask data.
+    This might be modifed if we don't want to include raster masks that are not
+    consumed by other modules.
+*/
+gboolean dt_iop_is_raster_mask_stored(const dt_dev_pixelpipe_iop_t *piece, const dt_mask_id_t id)
 {
   if(piece->pipe->store_all_raster_masks)
     return TRUE;
