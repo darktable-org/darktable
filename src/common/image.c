@@ -2256,6 +2256,7 @@ void dt_image_init(dt_image_t *img)
   img->usercrop[2] = img->usercrop[3] = 1;
   img->camera_ratio_d = img->camera_ratio_n = 0;
   img->dng_gain_maps = NULL;
+  img->dng_gain_maps_opcode3 = NULL;
   img->exif_correction_type = CORRECTION_TYPE_NONE;
   memset(&img->exif_correction_data, 0, sizeof(img->exif_correction_data));
   img->cache_entry = 0;
