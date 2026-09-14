@@ -55,11 +55,6 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_rasterfile_params_t)
 
-static const char *_bounded_str(const char *const src, const size_t size)
-{
-  return memchr(src, '\0', size) ? src : "";
-}
-
 typedef enum dt_iop_rasterfile_mode_t
 {
   DT_RASTERFILE_MODE_ALL = 7,     // $DESCRIPTION: "all RGB channels"
@@ -328,9 +323,7 @@ static void _update_filepath(dt_iop_module_t *self)
 {
   dt_iop_rasterfile_gui_data_t *g = self->gui_data;
   dt_iop_rasterfile_params_t *p = self->params;
-  const char *const path = _bounded_str(p->path, sizeof(p->path));
-  const char *const file = _bounded_str(p->file, sizeof(p->file));
-  if(!path[0] || !file[0])
+  if(!p->path[0] || !p->file[0])
   {
     dt_bauhaus_combobox_clear(g->file);
     // Making the empty widget insensitive is very important, because
@@ -341,16 +334,16 @@ static void _update_filepath(dt_iop_module_t *self)
   }
   gtk_widget_set_sensitive(g->file, TRUE);
 
-  if(!dt_bauhaus_combobox_set_from_text(g->file, file))
+  if(!dt_bauhaus_combobox_set_from_text(g->file, p->file))
   {
     struct dirent **entries;
-    const int numentries = scandir(path, &entries, _check_extension, alphasort);
+    const int numentries = scandir(p->path, &entries, _check_extension, alphasort);
     dt_bauhaus_combobox_clear(g->file);
 
     for(int i = 0; i < numentries; i++)
     {
-      const char *file_name = entries[i]->d_name;
-      char *normalized_filename = g_locale_to_utf8(file_name, -1, NULL, NULL, NULL);
+      const char *file = entries[i]->d_name;
+      char *normalized_filename = g_locale_to_utf8(file, -1, NULL, NULL, NULL);
       dt_bauhaus_combobox_add_aligned(g->file, normalized_filename,
                                       DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
       free(entries[i]);
@@ -359,9 +352,9 @@ static void _update_filepath(dt_iop_module_t *self)
     if(numentries != -1)
       free(entries);
 
-    if(!dt_bauhaus_combobox_set_from_text(g->file, file))
+    if(!dt_bauhaus_combobox_set_from_text(g->file, p->file))
     { // file may have disappeared - show it
-      char *invalidfilepath = g_strconcat(" ??? ", file, NULL);
+      char *invalidfilepath = g_strconcat(" ??? ", p->file, NULL);
       dt_bauhaus_combobox_add_aligned(g->file, invalidfilepath,
                                       DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
       dt_bauhaus_combobox_set_from_text(g->file, invalidfilepath);
@@ -423,12 +416,8 @@ static void _fbutton_clicked(GtkWidget *widget, dt_iop_module_t *self)
       dt_control_log(_("selected file not within raster masks root folder"));
     }
     g_free(filepath);
-    gtk_widget_set_sensitive(g->file,
-                             _bounded_str(p->path, sizeof(p->path))[0]
-                             && _bounded_str(p->file, sizeof(p->file))[0]);
-    gtk_widget_set_sensitive(g->vectorize,
-                             _bounded_str(p->path, sizeof(p->path))[0]
-                             && _bounded_str(p->file, sizeof(p->file))[0]);
+    gtk_widget_set_sensitive(g->file, p->path[0] && p->file[0]);
+    gtk_widget_set_sensitive(g->vectorize, p->path[0] && p->file[0]);
   }
   g_free(mfolder);
   g_object_unref(filechooser);
@@ -623,11 +612,9 @@ void commit_params(dt_iop_module_t *self,
 {
   const dt_iop_rasterfile_params_t *p = (dt_iop_rasterfile_params_t *)p1;
   dt_iop_rasterfile_data_t *d = piece->data;
-  const char *const path = _bounded_str(p->path, sizeof(p->path));
-  const char *const file = _bounded_str(p->file, sizeof(p->file));
 
   d->mode = p->mode;
-  gchar *fullpath = g_build_filename(path, file, NULL);
+  gchar *fullpath = g_build_filename(p->path, p->file, NULL);
   dt_strlcpy_to_fixed(d->filepath, fullpath, sizeof(d->filepath));
   g_free(fullpath);
 }
@@ -679,8 +666,6 @@ void gui_changed(dt_iop_module_t *self,
 {
   dt_iop_rasterfile_gui_data_t *g = self->gui_data;
   dt_iop_rasterfile_params_t *p = self->params;
-  const char *const path = _bounded_str(p->path, sizeof(p->path));
-  const char *const file = _bounded_str(p->file, sizeof(p->file));
 
   if(!w || w == g->mode)
     _update_filepath(self);
@@ -698,7 +683,7 @@ void gui_changed(dt_iop_module_t *self,
       dt_dev_reprocess_center(self->dev, self->iop_order);
   }
 
-  gtk_widget_set_sensitive(g->vectorize, path[0] && file[0]);
+  gtk_widget_set_sensitive(g->vectorize, p->path[0] && p->file[0]);
 }
 
 void gui_update(dt_iop_module_t *self)

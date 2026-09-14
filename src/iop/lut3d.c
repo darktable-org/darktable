@@ -38,7 +38,6 @@
 #include <png.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 #include <dirent.h>
 #if defined (_WIN32)
@@ -52,26 +51,6 @@ DT_MODULE_INTROSPECTION(3, dt_iop_lut3d_params_t)
 #define DT_IOP_LUT3D_MAX_LUTNAME 128
 #define DT_IOP_LUT3D_CLUT_LEVEL 48
 #define DT_IOP_LUT3D_MAX_KEYPOINTS 2048
-
-static const char *_bounded_str(const char *const src, const size_t size)
-{
-  return memchr(src, '\0', size) ? src : "";
-}
-
-static gboolean _filepath_is_safe(const char *const filepath)
-{
-  return !strpbrk(filepath, "\\\"") && !strstr(filepath, "..");
-}
-
-#ifdef HAVE_GMIC
-// G'MIC substitutes {expression} and $variable inside a command argument, and
-// treats \ and " as syntax, so a path built from stored params must contain
-// none of them before it is interpolated into a pipeline string
-static gboolean _gmic_arg_is_safe(const char *const arg)
-{
-  return !strpbrk(arg, "\"\\{}$");
-}
-#endif
 
 typedef enum dt_iop_lut3d_colorspace_t
 {
@@ -483,21 +462,15 @@ static void _correct_pixel_pyramid(const float *const in,
 }
 
 #ifdef HAVE_GMIC
-// the cache file name is a digest of the LUT name, never the name itself: it
-// is interpolated into a G'MIC pipeline in src/iop/lut3dgmic.cpp:75 and :110,
-// and the name arrives from a stored params blob, so it is untrusted. a
-// fixed-length hex digest cannot carry G'MIC syntax
 static void _get_cache_filename(const char *const lutname,
                                 char *const cache_filename)
 {
-  gchar *digest = g_compute_checksum_for_string(G_CHECKSUM_SHA1, lutname, -1);
-  gchar *basename = g_strconcat(digest, ".cimgz", NULL);
-  gchar *cache_file = g_build_filename(g_get_user_cache_dir(), "gmic",
-                                       basename, NULL);
+  char *cache_dir = g_build_filename(g_get_user_cache_dir(), "gmic", NULL);
+  char *cache_file = g_build_filename(cache_dir, lutname, NULL);
   g_strlcpy(cache_filename, cache_file, DT_IOP_LUT3D_MAX_PATHNAME);
+  g_strlcpy(&cache_filename[strlen(cache_filename)], ".cimgz", DT_IOP_LUT3D_MAX_PATHNAME-strlen(cache_file));
+  g_free(cache_dir);
   g_free(cache_file);
-  g_free(basename);
-  g_free(digest);
 }
 
 static uint8_t _calculate_clut_compressed(dt_iop_lut3d_params_t *const p,
@@ -510,8 +483,7 @@ static uint8_t _calculate_clut_compressed(dt_iop_lut3d_params_t *const p,
   char cache_filename[DT_IOP_LUT3D_MAX_PATHNAME];
   size_t buf_size_lut;
 
-  const char *const lutname = _bounded_str(p->lutname, sizeof(p->lutname));
-  _get_cache_filename(lutname, cache_filename);
+  _get_cache_filename(p->lutname, cache_filename);
   buf_size_lut = (size_t)(level * level * level * 3);
   // for_each_channel() reads 4 floats per entry but we store 3; over-allocate by 1
   lclut = dt_alloc_align_float(buf_size_lut + 1);
@@ -1243,10 +1215,9 @@ void cleanup_global(dt_iop_module_so_t *self)
 static int _calculate_clut(dt_iop_lut3d_params_t *const p, float **clut)
 {
   uint16_t level = 0;
-  const char *const filepath = _bounded_str(p->filepath, sizeof(p->filepath));
+  const char *filepath = p->filepath;
 #ifdef HAVE_GMIC
-  if(p->nb_keypoints > 0 && p->nb_keypoints <= DT_IOP_LUT3D_MAX_KEYPOINTS && filepath[0]
-     && _filepath_is_safe(filepath))
+  if(p->nb_keypoints && filepath[0])
   {
     // compressed in params. no need to read the file
     level = _calculate_clut_compressed(p, filepath, clut);
@@ -1255,7 +1226,7 @@ static int _calculate_clut(dt_iop_lut3d_params_t *const p, float **clut)
   { // read the file
 #endif  // HAVE_GMIC
     gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
-    if(filepath[0] && lutfolder[0] && _filepath_is_safe(filepath))
+    if(filepath[0] && lutfolder[0])
     {
       char *fullpath = g_build_filename(lutfolder, filepath, NULL);
       if(g_str_has_suffix (filepath, ".png") || g_str_has_suffix (filepath, ".PNG"))
@@ -1389,40 +1360,31 @@ static void _get_compressed_clut(dt_iop_module_t *self, gboolean newlutname)
   dt_iop_lut3d_gui_data_t *g = self->gui_data;
   dt_iop_lut3d_params_t *p = self->params;
   int nb_lut = 0;
-  const char *const filepath = _bounded_str(p->filepath, sizeof(p->filepath));
-  const char *const lutname = _bounded_str(p->lutname, sizeof(p->lutname));
   char *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
-  if(filepath[0] && lutfolder[0] && _filepath_is_safe(filepath))
+  if(p->filepath[0] && lutfolder[0])
   {
-    if(g_str_has_suffix(filepath, ".gmz") || g_str_has_suffix(filepath, ".GMZ"))
+    if(g_str_has_suffix (p->filepath, ".gmz") || g_str_has_suffix (p->filepath, ".GMZ"))
     {
-      char *fullpath = g_build_filename(lutfolder, filepath, NULL);
-      if(!_gmic_arg_is_safe(fullpath))
-      {
-        dt_print(DT_DEBUG_ALWAYS, "[lut3d] refusing G'MIC LUT path containing command syntax");
-        g_free(fullpath);
-        g_free(lutfolder);
-        return;
-      }
+      char *fullpath = g_build_filename(lutfolder, p->filepath, NULL);
       gboolean lut_found = lut3d_read_gmz(&p->nb_keypoints, (unsigned char *const)p->c_clut, fullpath,
-              &nb_lut, (void *)g, lutname, newlutname);
+              &nb_lut, (void *)g, p->lutname, newlutname);
       // to be able to fix evolution issue, keep the gmic version with the compressed lut
       if(lut_found)
       {
         if(!newlutname)
-          _select_lutname_in_list(g, lutname);
+          _select_lutname_in_list(g, p->lutname);
       }
       else if(nb_lut)
       {
         _select_lutname_in_list(g, NULL);
         _get_selected_lutname(g, p->lutname);
       }
-      else if(lutname[0])
+      else if(p->lutname[0])
       { // read has failed - make sure lutname appear in the list (for user info)
-        if(!_select_lutname_in_list(g, lutname))
+        if(!_select_lutname_in_list(g, p->lutname))
         {
-          _lut3d_add_lutname_to_list(g, lutname);
-          _select_lutname_in_list(g, lutname);
+          _lut3d_add_lutname_to_list(g, p->lutname);
+          _select_lutname_in_list(g, p->lutname);
         }
       }
       g_free(fullpath);
@@ -1460,12 +1422,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 {
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)p1;
   dt_iop_lut3d_data_t *d = piece->data;
-  const char *const filepath = _bounded_str(p->filepath, sizeof(p->filepath));
-  const char *const lutname = _bounded_str(p->lutname, sizeof(p->lutname));
-  const char *const old_filepath = _bounded_str(d->params.filepath, sizeof(d->params.filepath));
-  const char *const old_lutname = _bounded_str(d->params.lutname, sizeof(d->params.lutname));
 
-  if(strcmp(filepath, old_filepath) != 0 || strcmp(lutname, old_lutname) != 0 )
+  if(strcmp(p->filepath, d->params.filepath) != 0 || strcmp(p->lutname, d->params.lutname) != 0 )
   { // new clut file
     if(d->clut)
     { // reset current clut if any
@@ -1510,8 +1468,7 @@ static void _filepath_callback(GtkWidget *widget, dt_iop_module_t *self)
     filepath_set_unix_separator(filepath);
 #ifdef HAVE_GMIC
     dt_iop_lut3d_gui_data_t *g = self->gui_data;
-    const char *const old_filepath = _bounded_str(p->filepath, sizeof(p->filepath));
-    if(strcmp(filepath, old_filepath) != 0 && !(g_str_has_suffix(filepath, ".gmz") || g_str_has_suffix(filepath, ".GMZ")))
+    if(strcmp(filepath, p->filepath) != 0 && !(g_str_has_suffix(filepath, ".gmz") || g_str_has_suffix(filepath, ".GMZ")))
     {
       // if new file is gmz we try to keep the same lut
       p->nb_keypoints = 0;
@@ -1543,12 +1500,11 @@ static void _lutname_callback(GtkTreeSelection *selection, dt_iop_module_t *self
   GtkTreeIter iter;
   GtkTreeModel *model;
   gchar *lutname;
-  const char *const old_lutname = _bounded_str(p->lutname, sizeof(p->lutname));
 
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
     gtk_tree_model_get(model, &iter, DT_LUT3D_COL_NAME, &lutname, -1);
-    if(lutname[0] && strcmp(lutname, old_lutname) != 0)
+    if(lutname[0] && strcmp(lutname, p->lutname) != 0)
     {
       dt_strlcpy_to_fixed(p->lutname, lutname, sizeof(p->lutname));
       _get_compressed_clut(self, TRUE);
@@ -1614,7 +1570,7 @@ static int _check_extension(const struct dirent *namestruct)
 }
 
 // update filepath combobox with all files in the current folder
-static void _update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, const char *filepath, char *lutfolder)
+static void _update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath, char *lutfolder)
 {
   if(!filepath[0])
     dt_bauhaus_combobox_clear(g->filepath);
@@ -1671,11 +1627,8 @@ static void _button_clicked(GtkWidget *widget, dt_iop_module_t *self)
         _("_select"), _("_cancel"));
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
-  const char *const current_filepath = _bounded_str(p->filepath, sizeof(p->filepath));
-  char *composed = _filepath_is_safe(current_filepath)
-                 ? g_build_filename(lutfolder, current_filepath, NULL)
-                 : NULL;
-  if(!current_filepath[0] || !composed || g_access(composed, F_OK) == -1)
+  char *composed = g_build_filename(lutfolder, p->filepath, NULL);
+  if(strlen(p->filepath) == 0 || g_access(composed, F_OK) == -1)
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), lutfolder);
   else
     gtk_file_chooser_select_filename(GTK_FILE_CHOOSER(filechooser), composed);
@@ -1720,8 +1673,7 @@ static void _button_clicked(GtkWidget *widget, dt_iop_module_t *self)
       dt_control_log(_("select file outside LUT root folder is not allowed"));
     }
     g_free(filepath);
-    gtk_widget_set_sensitive(g->filepath,
-                             _bounded_str(p->filepath, sizeof(p->filepath))[0]);
+    gtk_widget_set_sensitive(g->filepath, p->filepath[0]);
   }
   g_free(lutfolder);
   g_object_unref(filechooser);
@@ -1748,7 +1700,6 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_lut3d_gui_data_t *g = self->gui_data;
   dt_iop_lut3d_params_t *p = self->params;
-  const char *const filepath = _bounded_str(p->filepath, sizeof(p->filepath));
   gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
   if(!lutfolder[0])
   {
@@ -1759,19 +1710,15 @@ void gui_update(dt_iop_module_t *self)
   else
   {
     gtk_widget_set_sensitive(g->button, TRUE);
-    gtk_widget_set_sensitive(g->filepath, filepath[0] && _filepath_is_safe(filepath));
-    if(filepath[0] && _filepath_is_safe(filepath))
-      _update_filepath_combobox(g, filepath, lutfolder);
-    else
-      dt_bauhaus_combobox_clear(g->filepath);
+    gtk_widget_set_sensitive(g->filepath, p->filepath[0]);
+    _update_filepath_combobox(g, p->filepath, lutfolder);
   }
   g_free(lutfolder);
 
   _show_hide_colorspace(self);
 
 #ifdef HAVE_GMIC
-  const char *const lutname = _bounded_str(p->lutname, sizeof(p->lutname));
-  if(lutname[0])
+  if(p->lutname[0])
   {
     _get_compressed_clut(self, FALSE);
   }

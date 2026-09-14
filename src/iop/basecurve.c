@@ -73,11 +73,6 @@ typedef struct dt_iop_basecurve_params_t
   dt_iop_rgb_norms_t preserve_colors; /* $DEFAULT: DT_RGB_NORM_LUMINANCE $DESCRIPTION: "preserve colors" */
 } dt_iop_basecurve_params_t;
 
-static inline int _basecurve_nodes(const int nodes)
-{
-  return CLAMP(nodes, 0, MAXNODES);
-}
-
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
@@ -1414,16 +1409,15 @@ void commit_params(dt_iop_module_t *self,
   d->preserve_colors = p->preserve_colors;
 
   const int ch = 0;
-  const int nodes = _basecurve_nodes(p->basecurve_nodes[ch]);
   // take care of possible change of curve type or number of nodes (not yet implemented in UI)
-  if(d->basecurve_type != p->basecurve_type[ch] || d->basecurve_nodes != nodes)
+  if(d->basecurve_type != p->basecurve_type[ch] || d->basecurve_nodes != p->basecurve_nodes[ch])
   {
     if(d->curve) // catch initial init_pipe case
       dt_draw_curve_destroy(d->curve);
     d->curve = dt_draw_curve_new(0.0, 1.0, p->basecurve_type[ch]);
-    d->basecurve_nodes = nodes;
+    d->basecurve_nodes = p->basecurve_nodes[ch];
     d->basecurve_type = p->basecurve_type[ch];
-    for(int k = 0; k < nodes; k++)
+    for(int k = 0; k < p->basecurve_nodes[ch]; k++)
     {
       // printf("p->basecurve[%i][%i].x = %f;\n", ch, k, p->basecurve[ch][k].x);
       // printf("p->basecurve[%i][%i].y = %f;\n", ch, k, p->basecurve[ch][k].y);
@@ -1432,13 +1426,13 @@ void commit_params(dt_iop_module_t *self,
   }
   else
   {
-    for(int k = 0; k < nodes; k++)
+    for(int k = 0; k < p->basecurve_nodes[ch]; k++)
       dt_draw_curve_set_point(d->curve, k, p->basecurve[ch][k].x, p->basecurve[ch][k].y);
   }
   dt_draw_curve_calc_values(d->curve, 0.0f, 1.0f, 0x10000, NULL, d->table);
 
   // now the extrapolation stuff:
-  const float xm = p->basecurve[0][MAX(1, nodes) - 1].x;
+  const float xm = p->basecurve[0][p->basecurve_nodes[0] - 1].x;
   const float x[4] = { 0.7f * xm, 0.8f * xm, 0.9f * xm, 1.0f * xm };
   const float y[4] = { d->table[CLAMP((int)(x[0] * 0x10000ul), 0, 0xffff)],
                        d->table[CLAMP((int)(x[1] * 0x10000ul), 0, 0xffff)],
@@ -1566,27 +1560,27 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
   dt_iop_basecurve_gui_data_t *g = self->gui_data;
   dt_iop_basecurve_params_t *p = self->params;
 
-  const int nodes = _basecurve_nodes(p->basecurve_nodes[0]);
+  int nodes = p->basecurve_nodes[0];
   dt_iop_basecurve_node_t *basecurve = p->basecurve[0];
-  if(g->minmax_curve_type != p->basecurve_type[0] || g->minmax_curve_nodes != nodes)
+  if(g->minmax_curve_type != p->basecurve_type[0] || g->minmax_curve_nodes != p->basecurve_nodes[0])
   {
     dt_draw_curve_destroy(g->minmax_curve);
     g->minmax_curve = dt_draw_curve_new(0.0, 1.0, p->basecurve_type[0]);
-    g->minmax_curve_nodes = nodes;
+    g->minmax_curve_nodes = p->basecurve_nodes[0];
     g->minmax_curve_type = p->basecurve_type[0];
-    for(int k = 0; k < nodes; k++)
+    for(int k = 0; k < p->basecurve_nodes[0]; k++)
       (void)dt_draw_curve_add_point(g->minmax_curve, p->basecurve[0][k].x, p->basecurve[0][k].y);
   }
   else
   {
-    for(int k = 0; k < nodes; k++)
+    for(int k = 0; k < p->basecurve_nodes[0]; k++)
       dt_draw_curve_set_point(g->minmax_curve, k, p->basecurve[0][k].x, p->basecurve[0][k].y);
   }
   dt_draw_curve_t *minmax_curve = g->minmax_curve;
   dt_draw_curve_calc_values(minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, g->draw_xs, g->draw_ys);
 
   float unbounded_coeffs[3];
-  const float xm = basecurve[MAX(1, nodes) - 1].x;
+  const float xm = basecurve[nodes - 1].x;
   {
     const float x[4] = { 0.7f * xm, 0.8f * xm, 0.9f * xm, 1.0f * xm };
     const float y[4] = { g->draw_ys[CLAMP((int)(x[0] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
@@ -1620,7 +1614,7 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
   cairo_fill(cr);
 
   cairo_translate(cr, 0, height);
-  if(g->selected >= 0 && g->selected < nodes)
+  if(g->selected >= 0)
   {
     char text[30];
     // draw information about current selected node
@@ -1676,7 +1670,7 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
   // draw selected cursor
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
 
-  if(g->selected >= 0 && g->selected < nodes)
+  if(g->selected >= 0)
   {
     cairo_set_source_rgb(cr, .9, .9, .9);
     const float x = to_log(basecurve[g->selected].x, g->loglogscale),
@@ -1750,10 +1744,10 @@ static void dt_iop_basecurve_sanity_check(dt_iop_module_t *self, GtkWidget *widg
   dt_iop_basecurve_params_t *p = self->params;
 
   int ch = 0;
-  const int nodes = _basecurve_nodes(p->basecurve_nodes[ch]);
+  int nodes = p->basecurve_nodes[ch];
   dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
 
-  if(g->selected < 0 || g->selected >= nodes || nodes <= 2) return;
+  if(nodes <= 2) return;
 
   const float mx = basecurve[g->selected].x;
 
@@ -1769,7 +1763,7 @@ static void dt_iop_basecurve_sanity_check(dt_iop_module_t *self, GtkWidget *widg
       basecurve[k].y = basecurve[k + 1].y;
     }
     g->selected = -2; // avoid re-insertion of that point immediately after this
-    p->basecurve_nodes[ch] = nodes - 1;
+    p->basecurve_nodes[ch]--;
   }
 }
 
@@ -1788,7 +1782,7 @@ static void dt_iop_basecurve_motion_notify(GtkEventControllerMotion *controller,
   dt_iop_basecurve_gui_data_t *g = self->gui_data;
   dt_iop_basecurve_params_t *p = self->params;
   int ch = 0;
-  int nodes = _basecurve_nodes(p->basecurve_nodes[ch]);
+  int nodes = p->basecurve_nodes[ch];
   dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
 
   GtkAllocation allocation;
@@ -1803,8 +1797,6 @@ static void dt_iop_basecurve_motion_notify(GtkEventControllerMotion *controller,
   const float mx = CLAMP(g->mouse_x, 0, width) / (float)width;
   const float my = 1.0f - CLAMP(g->mouse_y, 0, height) / (float)height;
   const float linx = to_lin(mx, g->loglogscale), liny = to_lin(my, g->loglogscale);
-
-  if(g->selected >= nodes) g->selected = -1;
 
   if(dt_key_modifier_state() & GDK_BUTTON1_MASK)
   {
@@ -1825,7 +1817,6 @@ static void dt_iop_basecurve_motion_notify(GtkEventControllerMotion *controller,
     else if(nodes < MAXNODES && g->selected >= -1)
     {
       // no vertex was close, create a new one!
-      p->basecurve_nodes[ch] = nodes;
       g->selected = _add_node(basecurve, &p->basecurve_nodes[ch], linx, liny);
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
     }
@@ -1865,7 +1856,7 @@ static void dt_iop_basecurve_button_press(GtkGestureSingle *gesture,
   dt_iop_basecurve_gui_data_t *g = self->gui_data;
 
   int ch = 0;
-  int nodes = _basecurve_nodes(p->basecurve_nodes[ch]);
+  int nodes = p->basecurve_nodes[ch];
   dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
 
   if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
@@ -1911,7 +1902,6 @@ static void dt_iop_basecurve_button_press(GtkGestureSingle *gesture,
         if(curve_y >= 0.0 && curve_y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
         {
           // create a new node
-          p->basecurve_nodes[ch] = nodes;
           selected = _add_node(basecurve, &p->basecurve_nodes[ch], linx, curve_y);
 
           // maybe set the new one as being selected
@@ -1944,13 +1934,11 @@ static void dt_iop_basecurve_button_press(GtkGestureSingle *gesture,
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
     }
   }
-  else if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY
-          && g->selected >= 0 && g->selected < nodes)
+  else if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
     // consume the event so it does not bubble to the module body's
     // right-click handler (which opens the presets menu)
     dt_gui_claim(gesture);
-    p->basecurve_nodes[ch] = nodes;
 
     if(g->selected == 0 || g->selected == nodes - 1)
     {
@@ -1968,7 +1956,7 @@ static void dt_iop_basecurve_button_press(GtkGestureSingle *gesture,
     }
     basecurve[nodes - 1].x = basecurve[nodes - 1].y = 0;
     g->selected = -2; // avoid re-insertion of that point immediately after this
-    p->basecurve_nodes[ch] = nodes - 1;
+    p->basecurve_nodes[ch]--;
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
   }
@@ -1984,8 +1972,6 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
   dt_iop_basecurve_gui_data_t *g = self->gui_data;
 
   const int ch = 0;
-  const int nodes = _basecurve_nodes(p->basecurve_nodes[ch]);
-  if(g->selected < 0 || g->selected >= nodes) return FALSE;
   dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
 
   const float multiplier = dt_accel_get_speed_multiplier(widget, state);
