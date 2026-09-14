@@ -4530,9 +4530,28 @@ static void _section_reset_clicked(GtkButton *button,
   /* Deliberately NOT wrapped in darktable.gui->reset: each widget's own
      value-changed handler is what writes the param, so suppressing it would
      move the sliders without changing the render. The cost is one history entry
-     per widget, not one per click -- correct, undoable, just chattier
-     than ideal. */
+     per widget rather than one per click, which is chattier than ideal but
+     correct. */
   GList *kids = gtk_container_get_children(GTK_CONTAINER(box));
+
+  /* Undo, however, needs the whole click to be one step, and left to itself it
+     is not even a complete one. Every history entry the loop below produces
+     carries the widget that caused it as its undo target, and
+     _dev_undo_start_record_target() in develop/develop.c drops a change
+     entirely -- no undo record at all -- when its target matches the previous
+     one and the two fall inside darkroom/undo/merge_same_secs. That rule exists
+     to keep a slider drag from filling the undo stack, and it cannot tell a
+     drag from this button writing to the same slider: resetting a widget the
+     user has just moved by hand reads as a continuation of that move, so the
+     value it held is gone and no amount of undo brings it back.
+
+     dt_dev_undo_start_record() clears the stored target, which closes that hole
+     for the first widget in the loop, and the level counter behind the history
+     signals (record_history_level in libs/history.c) folds the records raised
+     inside the loop into this outer one, so the section reverts on a single
+     undo. */
+  dt_dev_undo_start_record(darktable.develop);
+
   /* Toggles go last, as dt_ui_notebook_page()'s own double-click page reset
      does (_reset_all_bauhaus() in gui/gtk.c): a module may switch one of its
      checkboxes in reaction to one of its sliders, so a checkbox reset while
@@ -4550,6 +4569,8 @@ static void _section_reset_clicked(GtkButton *button,
       dt_bauhaus_widget_reset(w);
     }
   }
+
+  dt_dev_undo_end_record(darktable.develop);
   g_list_free(kids);
 }
 
