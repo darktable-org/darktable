@@ -325,6 +325,13 @@ int write_image(dt_imageio_module_data_t *data,
   }
 
   struct heif_context* context = heif_context_alloc();
+  if(!context)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[heif export] failed to allocate context");
+    heif_image_release(image);
+    heif_nclx_color_profile_free(nclx_profile);
+    return 1; // failure
+  }
 
   struct heif_encoder* encoder;
   // we will use HEVC compression as the most commonly supported
