@@ -124,6 +124,15 @@ void dt_preview_data_set_hash(dt_preview_data_t *pd,
                               const dt_dev_pixelpipe_iop_t *piece);
 
 /**
+ * Record a freshness hash computed by the caller, for data that does not
+ * depend on the whole piece hash (e.g. the tone equalizer luminance mask,
+ * which ignores the module's own band factors).  Such data must be checked
+ * with dt_preview_data_get_hash(), not with is_fresh().  Thread-safe.
+ */
+void dt_preview_data_set_hash_value(dt_preview_data_t *pd,
+                                    const dt_hash_t hash);
+
+/**
  * Read a component of the per-pixel value at buffer pixel (x, y).
  *
  * Thread-safe: takes the module GUI lock around the read.
