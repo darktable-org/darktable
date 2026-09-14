@@ -4395,6 +4395,18 @@ GdkModifierType dt_key_modifier_state()
 static void _reset_all_bauhaus(GtkNotebook *notebook,
                                GtkWidget *box)
 {
+  // every widget reset below produces its own history entry, tagged with that
+  // widget as its undo target. _dev_undo_start_record_target() drops a change
+  // without recording undo when its target matches the previous one and the two
+  // fall inside darkroom/undo/merge_same_secs, which keeps a slider drag from
+  // filling the undo stack but cannot tell that drag apart from a reset writing
+  // to the same slider. without the record opened here, resetting a widget the
+  // user has just moved by hand reads as a continuation of the move and the
+  // value it held is lost for good. opening one clears the stored target, and
+  // the records raised inside the loop nest into it, so the page reverts on a
+  // single undo rather than one per widget
+  dt_dev_undo_start_record(darktable.develop);
+
   // toggles go last rather than in widget order: a module may switch one of
   // its own checkboxes on in reaction to one of its sliders changing, so a
   // checkbox reset while sliders are still to come could be undone again by
@@ -4411,6 +4423,8 @@ static void _reset_all_bauhaus(GtkNotebook *notebook,
         dt_bauhaus_widget_reset(GTK_WIDGET(c->data));
     }
   }
+
+  dt_dev_undo_end_record(darktable.develop);
 
   dt_gui_remove_class(gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook), box), "changed");
 }
