@@ -1044,6 +1044,8 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_highlights_data_t *d = piece->data;
 
   memcpy(d, p, sizeof(*p));
+  if(d->mode < DT_IOP_HIGHLIGHTS_CLIP || d->mode > DT_IOP_HIGHLIGHTS_OPPOSED)
+    d->mode = DT_IOP_HIGHLIGHTS_CLIP;
 
   const dt_image_t *img = &piece->pipe->image;
   const uint32_t filters = img->buf_dsc.filters;

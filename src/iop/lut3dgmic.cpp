@@ -201,16 +201,18 @@ gboolean lut3d_read_gmz(int *const nb_keypoints, unsigned char *const keypoints,
     }
   }
 
-  int nb_kp = *nb_keypoints = (int)image_list[l]._height;
-  if(image_list[l]._width == 1 && image_list[l]._height <= 2048 && image_list[l]._depth == 1
+  const unsigned int height = image_list[l]._height;
+  if(image_list[l]._width == 1 && height > 0 && height <= 2048 && image_list[l]._depth == 1
      && image_list[l]._spectrum == 6)
   { // color lut
+    const int nb_kp = *nb_keypoints = (int)height;
     gmic_image<float> &img = image_list[l];
     for(int i = 0; i < nb_kp * 6; ++i) keypoints[i] = (unsigned char)img[i];
   }
-  else if(image_list[l]._width == 1 && image_list[l]._height <= 2048 && image_list[l]._depth == 1
+  else if(image_list[l]._width == 1 && height > 0 && height <= 2048 && image_list[l]._depth == 1
           && image_list[l]._spectrum == 4)
   { // black & white lut
+    const int nb_kp = *nb_keypoints = (int)height;
     gmic_image<float> &img = image_list[l];
     for(int i = 0; i < nb_kp * 3; ++i) keypoints[i] = (unsigned char)img[i];
     for(int i = 0; i < nb_kp; ++i)

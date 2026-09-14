@@ -732,7 +732,7 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)p1;
   dt_iop_colorchecker_data_t *d = piece->data;
 
-  d->num_patches = MIN(MAX_PATCHES, p->num_patches);
+  d->num_patches = CLAMP(p->num_patches, 0, MAX_PATCHES);
   const unsigned N = MAX(0, d->num_patches);
   const unsigned N4 = N + 4;
 
@@ -984,21 +984,22 @@ void _colorchecker_rebuild_patch_list(dt_iop_module_t *self)
 {
   dt_iop_colorchecker_params_t *p = self->params;
   dt_iop_colorchecker_gui_data_t *g = self->gui_data;
+  const int num_patches = CLAMP(p->num_patches, 0, MAX_PATCHES);
 
-  if(g->patch >= p->num_patches
+  if(g->patch >= num_patches
      || g->patch < 0)
     return;
 
-  if(dt_bauhaus_combobox_length(g->combobox_patch) != p->num_patches)
+  if(dt_bauhaus_combobox_length(g->combobox_patch) != num_patches)
   {
     dt_bauhaus_combobox_clear(g->combobox_patch);
     char cboxentry[1024];
-    for(int k=0;k<p->num_patches;k++)
+    for(int k=0;k<num_patches;k++)
     {
       snprintf(cboxentry, sizeof(cboxentry), _("patch #%d"), k);
       dt_bauhaus_combobox_add(g->combobox_patch, cboxentry);
     }
-    if(p->num_patches <= 24)
+    if(num_patches <= 24)
       dtgtk_drawing_area_set_aspect_ratio(g->area, 2.0/3.0);
     else
       dtgtk_drawing_area_set_aspect_ratio(g->area, 1.0);
@@ -1011,8 +1012,9 @@ void _colorchecker_update_sliders(dt_iop_module_t *self)
 {
   dt_iop_colorchecker_params_t *p = self->params;
   dt_iop_colorchecker_gui_data_t *g = self->gui_data;
+  const int num_patches = CLAMP(p->num_patches, 0, MAX_PATCHES);
 
-  if(g->patch >= p->num_patches
+  if(g->patch >= num_patches
      || g->patch < 0)
     return;
 
@@ -1095,14 +1097,15 @@ void color_picker_apply(dt_iop_module_t *self,
 {
   dt_iop_colorchecker_params_t *p = self->params;
   dt_iop_colorchecker_gui_data_t *g = self->gui_data;
-  if(p->num_patches <= 0) return;
+  const int num_patches = CLAMP(p->num_patches, 0, MAX_PATCHES);
+  if(num_patches <= 0) return;
 
   // determine patch based on color picker result
   const dt_aligned_pixel_t picked_mean = { self->picked_color[0],
                                            self->picked_color[1],
                                            self->picked_color[2] };
   int best_patch = 0;
-  for(int patch = 1; patch < p->num_patches; patch++)
+  for(int patch = 1; patch < num_patches; patch++)
   {
     const dt_aligned_pixel_t Lab = { p->source_L[patch],
                                      p->source_a[patch],
@@ -1430,6 +1433,7 @@ static void checker_button_press(
   dt_iop_colorchecker_params_t *p = self->params;
   dt_iop_colorchecker_gui_data_t *g = self->gui_data;
   GtkWidget *widget = dt_gui_get_widget(gesture);
+  const int num_patches = CLAMP(p->num_patches, 0, MAX_PATCHES);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1437,7 +1441,7 @@ static void checker_button_press(
   const float mouse_x = CLAMP(x, 0, width);
   const float mouse_y = CLAMP(y, 0, height);
   int cells_x = 6, cells_y = 4;
-  if(p->num_patches > 24)
+  if(num_patches > 24)
   {
     cells_x = 7;
     cells_y = 7;
@@ -1450,7 +1454,7 @@ static void checker_button_press(
 
   if(button == GDK_BUTTON_PRIMARY && n_press >= 2)
   { // reset on double click
-    if(patch < 0 || patch >= p->num_patches) return;
+    if(patch < 0 || patch >= num_patches) return;
     p->target_L[patch] = p->source_L[patch];
     p->target_a[patch] = p->source_a[patch];
     p->target_b[patch] = p->source_b[patch];
@@ -1461,23 +1465,23 @@ static void checker_button_press(
     gtk_widget_queue_draw(g->area);
     return;
   }
-  else if(button == GDK_BUTTON_SECONDARY && (patch < p->num_patches))
+  else if(button == GDK_BUTTON_SECONDARY && (patch < num_patches))
   {
     // right click: delete patch, move others up
-    if(patch < 0 || patch >= p->num_patches) return;
+    if(patch < 0 || patch >= num_patches) return;
     memmove(p->target_L+patch, p->target_L+patch+1,
-            sizeof(float)*(p->num_patches-1-patch));
+            sizeof(float)*(num_patches-1-patch));
     memmove(p->target_a+patch, p->target_a+patch+1,
-            sizeof(float)*(p->num_patches-1-patch));
+            sizeof(float)*(num_patches-1-patch));
     memmove(p->target_b+patch, p->target_b+patch+1,
-            sizeof(float)*(p->num_patches-1-patch));
+            sizeof(float)*(num_patches-1-patch));
     memmove(p->source_L+patch, p->source_L+patch+1,
-            sizeof(float)*(p->num_patches-1-patch));
+            sizeof(float)*(num_patches-1-patch));
     memmove(p->source_a+patch, p->source_a+patch+1,
-            sizeof(float)*(p->num_patches-1-patch));
+            sizeof(float)*(num_patches-1-patch));
     memmove(p->source_b+patch, p->source_b+patch+1,
-            sizeof(float)*(p->num_patches-1-patch));
-    p->num_patches--;
+            sizeof(float)*(num_patches-1-patch));
+    p->num_patches = num_patches - 1;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     DT_ENTER_GUI_UPDATE();
     _colorchecker_rebuild_patch_list(self);
@@ -1499,7 +1503,7 @@ static void checker_button_press(
                           fabsf(self->picked_color[2]) > 1.e-3f;
     // check if the new color is very close to some color already in
     // the colorchecker
-    for(int i=0;i<p->num_patches;++i)
+    for(int i=0;i<num_patches;++i)
     {
       float color[] = { p->source_L[i], p->source_a[i], p->source_b[i] };
       if(fabsf(self->picked_color[0] - color[0])
@@ -1509,11 +1513,12 @@ static void checker_button_press(
     }
     if(new_color_valid)
     {
-      if(p->num_patches < MAX_PATCHES
-         && (patch < 0 || patch >= p->num_patches))
+      p->num_patches = num_patches;
+      if(patch < 0 || patch >= num_patches)
       {
-        p->num_patches = MIN(MAX_PATCHES, p->num_patches + 1);
-        patch = p->num_patches - 1;
+        if(num_patches >= MAX_PATCHES) return;
+        p->num_patches++;
+        patch = num_patches;
       }
       p->target_L[patch] = p->source_L[patch] = self->picked_color[0];
       p->target_a[patch] = p->source_a[patch] = self->picked_color[1];
@@ -1530,7 +1535,8 @@ static void checker_button_press(
     }
     return;
   }
-  if(patch >= p->num_patches) patch = p->num_patches-1;
+  if(num_patches <= 0 || patch < 0) return;
+  if(patch >= num_patches) patch = num_patches - 1;
   dt_bauhaus_combobox_set(g->combobox_patch, patch);
 }
 

@@ -50,9 +50,14 @@ DT_MODULE_INTROSPECTION(1, dt_iop_zonesystem_params_t)
 /** gui params. */
 typedef struct dt_iop_zonesystem_params_t
 {
-  int size; // $DEFAULT: 10
+  int size; // $MIN: 4 $MAX: MAX_ZONE_SYSTEM_SIZE $DEFAULT: 10
   float zone[MAX_ZONE_SYSTEM_SIZE + 1]; // $DEFAULT: -1.0
 } dt_iop_zonesystem_params_t;
+
+static inline int _zonesystem_size(const int size)
+{
+  return CLAMP(size, 4, MAX_ZONE_SYSTEM_SIZE);
+}
 
 /** and pixelpipe data is just the same */
 typedef struct dt_iop_zonesystem_data_t
@@ -295,12 +300,14 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const int height = roi_in->height;
 
   /* calculate zonemap */
-  const int size = data->params.size;
+  dt_iop_zonesystem_params_t params = data->params;
+  const int size = _zonesystem_size(params.size);
+  params.size = size;
   float zonemap[MAX_ZONE_SYSTEM_SIZE] = { -1 };
   float zonemap_offset[ROUNDUP(MAX_ZONE_SYSTEM_SIZE, 16)] = { -1 };
   float zonemap_scale[ROUNDUP(MAX_ZONE_SYSTEM_SIZE, 16)] = { -1 };
 
-  _iop_zonesystem_calculate_zonemap(&(data->params), zonemap);
+  _iop_zonesystem_calculate_zonemap(&params, zonemap);
 
   /* precompute scale and offset */
   for(int k = 0; k < size - 1; k++) zonemap_scale[k] = (zonemap[k + 1] - zonemap[k]) * (size - 1);
@@ -350,6 +357,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_zonesystem_data_t *d = piece->data;
 
   d->params = *p;
+  d->params.size = _zonesystem_size(d->params.size);
   d->rzscale = (d->params.size - 1) / 100.0f;
 
   /* calculate zonemap */
@@ -481,7 +489,9 @@ void gui_cleanup(dt_iop_module_t *self)
 static gboolean dt_iop_zonesystem_bar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
   dt_iop_zonesystem_gui_data_t *g = self->gui_data;
-  dt_iop_zonesystem_params_t *p = self->params;
+  dt_iop_zonesystem_params_t params = *(dt_iop_zonesystem_params_t *)self->params;
+  params.size = _zonesystem_size(params.size);
+  dt_iop_zonesystem_params_t *p = &params;
 
   const int inset = DT_ZONESYSTEM_INSET;
   GtkAllocation allocation;
@@ -574,6 +584,8 @@ static void dt_iop_zonesystem_bar_button_press(GtkGestureSingle *gesture, gint n
                                                 dt_iop_module_t *self)
 {
   dt_iop_zonesystem_params_t *p = self->params;
+  dt_iop_zonesystem_params_t params = *p;
+  params.size = _zonesystem_size(params.size);
   dt_iop_zonesystem_gui_data_t *g = self->gui_data;
   GtkWidget *widget = dt_gui_get_widget(gesture);
   const int inset = DT_ZONESYSTEM_INSET;
@@ -583,10 +595,11 @@ static void dt_iop_zonesystem_bar_button_press(GtkGestureSingle *gesture, gint n
 
   /* calculate zonemap */
   float zonemap[MAX_ZONE_SYSTEM_SIZE] = { -1 };
-  _iop_zonesystem_calculate_zonemap(p, zonemap);
+  _iop_zonesystem_calculate_zonemap(&params, zonemap);
 
   /* translate mouse into zone index */
-  int k = _iop_zonesystem_zone_index_from_lightness(g->mouse_x / width, zonemap, p->size);
+  const int size = params.size;
+  int k = _iop_zonesystem_zone_index_from_lightness(g->mouse_x / width, zonemap, size);
   float zw = zonemap[k + 1] - zonemap[k];
   if((g->mouse_x / width) > zonemap[k] + (zw / 2)) k++;
 
@@ -622,11 +635,11 @@ static void dt_iop_zonesystem_bar_scrolled(GtkEventControllerScroll *controller,
                                            dt_iop_module_t *self)
 {
   dt_iop_zonesystem_params_t *p = self->params;
-  int cs = CLAMP(p->size, 4, MAX_ZONE_SYSTEM_SIZE);
+  const int cs = _zonesystem_size(p->size);
 
   if(dy != 0.0)
   {
-    p->size = CLAMP(p->size - dy, 4, MAX_ZONE_SYSTEM_SIZE);
+    p->size = _zonesystem_size(p->size - dy);
     p->zone[cs] = -1;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(dt_gui_get_widget(controller));
@@ -645,6 +658,8 @@ static void dt_iop_zonesystem_bar_motion_notify(GtkEventControllerMotion *contro
                                                 dt_iop_module_t *self)
 {
   dt_iop_zonesystem_params_t *p = self->params;
+  dt_iop_zonesystem_params_t params = *p;
+  params.size = _zonesystem_size(params.size);
   dt_iop_zonesystem_gui_data_t *g = self->gui_data;
   GtkWidget *widget = dt_gui_get_widget(controller);
   const int inset = DT_ZONESYSTEM_INSET;
@@ -654,13 +669,14 @@ static void dt_iop_zonesystem_bar_motion_notify(GtkEventControllerMotion *contro
 
   /* calculate zonemap */
   float zonemap[MAX_ZONE_SYSTEM_SIZE] = { -1 };
-  _iop_zonesystem_calculate_zonemap(p, zonemap);
+  _iop_zonesystem_calculate_zonemap(&params, zonemap);
+  const int size = params.size;
 
   /* record mouse position within control */
   g->mouse_x = CLAMP(x - inset, 0, width);
   g->mouse_y = CLAMP(height - 1 - y + inset, 0, height);
 
-  if(g->is_dragging)
+  if(g->is_dragging && g->current_zone > 0 && g->current_zone < size - 1)
   {
     if((g->mouse_x / width) > zonemap[g->current_zone - 1]
        && (g->mouse_x / width) < zonemap[g->current_zone + 1])
@@ -671,16 +687,18 @@ static void dt_iop_zonesystem_bar_motion_notify(GtkEventControllerMotion *contro
   }
   else
   {
+    if(g->is_dragging) g->is_dragging = FALSE;
+
     /* decide which zone the mouse is over */
     if(g->mouse_y >= height * (1.0 - DT_ZONESYSTEM_REFERENCE_SPLIT))
     {
-      g->zone_under_mouse = (g->mouse_x / width) / (1.0 / (p->size - 1));
+      g->zone_under_mouse = (g->mouse_x / width) / (1.0 / (size - 1));
       g->mouse_over_output_zones = TRUE;
     }
     else
     {
       float xpos = g->mouse_x / width;
-      for(int z = 0; z < p->size - 1; z++)
+      for(int z = 0; z < size - 1; z++)
       {
         if(xpos >= zonemap[z] && xpos < zonemap[z + 1])
         {
@@ -706,7 +724,9 @@ static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, 
   int width = allocation.width, height = allocation.height;
 
   dt_iop_zonesystem_gui_data_t *g = self->gui_data;
-  dt_iop_zonesystem_params_t *p = self->params;
+  dt_iop_zonesystem_params_t params = *(dt_iop_zonesystem_params_t *)self->params;
+  params.size = _zonesystem_size(params.size);
+  dt_iop_zonesystem_params_t *p = &params;
 
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);

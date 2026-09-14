@@ -3123,23 +3123,24 @@ static gboolean _draw_retrieve_lines_from_params(dt_iop_module_t *self,
     }
   }
 
-  if(method == ASHIFT_METHOD_LINES && p->last_drawn_lines_count > 0)
+  const int count = CLAMP(p->last_drawn_lines_count, 0, MAX_SAVED_LINES);
+  if(method == ASHIFT_METHOD_LINES && count > 0)
   {
     float pts[MAX_SAVED_LINES * 4] = { 0.0f };
 
-    for(int i = 0; i < p->last_drawn_lines_count * 4; i++)
+    for(int i = 0; i < count * 4; i++)
       pts[i] = p->last_drawn_lines[i];
 
     if(dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                      DT_DEV_TRANSFORM_DIR_BACK_EXCL, pts,
-                                     p->last_drawn_lines_count * 2))
+                                     count * 2))
     {
       if(g->lines) free(g->lines);
-      g->lines = calloc(p->last_drawn_lines_count, sizeof(dt_iop_ashift_line_t));
+      g->lines = calloc(count, sizeof(dt_iop_ashift_line_t));
 
       int vnb = 0; // number of vertical lines
       int hnb = 0; // number of horizontal lines
-      for(int i = 0; i < p->last_drawn_lines_count; i++)
+      for(int i = 0; i < count; i++)
       {
         // determine if the line is vertical or horizontal
         dt_iop_ashift_linetype_t linetype = ASHIFT_LINE_VERTICAL_SELECTED;
@@ -3156,7 +3157,7 @@ static gboolean _draw_retrieve_lines_from_params(dt_iop_module_t *self,
           hnb++;
       }
 
-      g->lines_count = p->last_drawn_lines_count;
+      g->lines_count = count;
       g->vertical_count = vnb;
       g->horizontal_count = hnb;
       g->vertical_weight = (float)vnb;

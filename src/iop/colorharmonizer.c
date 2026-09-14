@@ -817,14 +817,15 @@ static void _push_to_vectorscope(dt_iop_module_t *self)
   dt_iop_colorharmonizer_params_t *p = self->params;
   dt_color_harmony_guide_t guide;
   dt_lib_histogram_get_harmony(darktable.lib, &guide);
+  const int num_custom_nodes = CLAMP(p->num_custom_nodes, 0, COLORHARMONIZER_MAX_NODES);
 
   if(p->rule == DT_COLORHARMONIZER_CUSTOM)
   {
     // Custom: provide absolute-angle nodes; type is left as NONE so the
     // vectorscope's own UI shows no standard rule selected.
     guide.type     = DT_COLOR_HARMONY_NONE;
-    guide.custom_n = p->num_custom_nodes;
-    for(int i = 0; i < p->num_custom_nodes; i++)
+    guide.custom_n = num_custom_nodes;
+    for(int i = 0; i < num_custom_nodes; i++)
       guide.custom_angles[i] = _ucs_to_ryb_fast(p->custom_hue[i]);
   }
   else

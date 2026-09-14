@@ -41,6 +41,11 @@
 
 DT_MODULE_INTROSPECTION(2, dt_iop_overlay_params_t)
 
+static const char *_bounded_str(const char *const src, const size_t size)
+{
+  return memchr(src, '\0', size) ? src : "";
+}
+
 // Compositing precision. Not exposed in the UI: every new edit uses the
 // high-precision float path, while edits created before it existed are pinned
 // to LEGACY by legacy_params() so their rendering never changes.
@@ -86,7 +91,7 @@ typedef struct dt_iop_overlay_params_t
   /** Pixel independent yoffset, 0 to 1 */
   float yoffset; // $MIN: -1.0 $MAX: 1.0, 0.001 $DEFAULT: 0.0 $DESCRIPTION: "y offset"
   /** Alignment value 0-8 3x3 */
-  int alignment; // $DEFAULT: 4
+  int alignment; // $MIN: 0 $MAX: 8 $DEFAULT: 4
   /** Rotation **/
   float rotate;  // $MIN: -180.0 $MAX: 180.0 $DEFAULT: 0.0 $DESCRIPTION: "rotation"
   dt_iop_overlay_base_scale_t scale_base; // $DEFAULT: DT_SCALE_MAINMENU_IMAGE $DESCRIPTION: "scale on"
@@ -325,7 +330,7 @@ static void _setup_overlay(dt_iop_module_t *self,
     {
       const gchar *tooltip = g_strdup_printf
         (_("overlay image missing from database\n\n"
-           "'%s'" ), p->filename);
+           "'%s'" ), _bounded_str(p->filename, sizeof(p->filename)));
       gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), tooltip);
     }
   }
@@ -1224,7 +1229,7 @@ void commit_params(dt_iop_module_t *self,
   d->scale_svg  = p->scale_svg;
   d->imgid      = p->imgid;
   d->compositing = p->compositing;
-  g_strlcpy(d->filename, p->filename, sizeof(p->filename));
+  g_strlcpy(d->filename, _bounded_str(p->filename, sizeof(p->filename)), sizeof(d->filename));
 }
 
 void init_pipe(dt_iop_module_t *self,
@@ -1246,12 +1251,13 @@ void gui_update(dt_iop_module_t *self)
 {
   const dt_iop_overlay_gui_data_t *g = self->gui_data;
   const dt_iop_overlay_params_t *p = self->params;
+  const int alignment = CLAMP(p->alignment, 0, 8);
 
   for(int i = 0; i < 9; i++)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), FALSE);
   }
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[p->alignment]), TRUE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[alignment]), TRUE);
 
   if(p->scale_base == DT_SCALE_MAINMENU_ADVANCED)
   {

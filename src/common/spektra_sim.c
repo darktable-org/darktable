@@ -2451,6 +2451,8 @@ static void _sf_morph_channel(const double centers_in[],
                               double sigmas_out[],
                               double gumbel_mix_out[])
 {
+  if(nl <= 0) return;
+
   int order[SF_GRAIN_MAX_SUBLAYERS];
   for(int i = 0; i < nl; i++) order[i] = i;
   for(int i = 0; i < nl; i++)

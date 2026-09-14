@@ -733,6 +733,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_colormapping_data_t *d = piece->data;
 
   memcpy(d, p, sizeof(dt_iop_colormapping_params_t));
+  d->n = CLAMP(d->n, 1, MAXN);
 #ifdef HAVE_OPENCL
   if(d->equalization > 0.1f)
     piece->process_cl_ready = (piece->process_cl_ready && !dt_opencl_avoid_atomics(pipe->devid));
@@ -832,6 +833,7 @@ static gboolean cluster_preview_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mod
 {
   dt_iop_colormapping_params_t *p = self->params;
   dt_iop_colormapping_gui_data_t *g = self->gui_data;
+  const int n = CLAMP(p->n, 1, MAXN);
 
   float2 *mean;
   float2 *var;
@@ -863,8 +865,8 @@ static gboolean cluster_preview_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mod
 
 
   const float sep = DT_PIXEL_APPLY_DPI(2.0);
-  const float qwd = (width - (p->n - 1) * sep) / (float)p->n;
-  for(int cl = 0; cl < p->n; cl++)
+  const float qwd = (width - (n - 1) * sep) / (float)n;
+  for(int cl = 0; cl < n; cl++)
   {
     // draw cluster
     for(int j = -1; j <= 1; j++)
@@ -898,6 +900,7 @@ static void process_clusters(gpointer instance, dt_iop_module_t *self)
   dt_iop_colormapping_params_t *p = self->params;
   dt_iop_colormapping_gui_data_t *g = self->gui_data;
   int new_source_clusters = 0;
+  const int n = CLAMP(p->n, 1, MAXN);
 
   if(!g || !g->buffer) return;
   if(!(p->flag & ACQUIRE)) return;
@@ -929,7 +932,7 @@ static void process_clusters(gpointer instance, dt_iop_module_t *self)
     invert_histogram(hist, p->source_ihist);
 
     // get n color clusters
-    kmeans(buffer, width, height, p->n, p->source_mean, p->source_var, p->source_weight);
+    kmeans(buffer, width, height, n, p->source_mean, p->source_var, p->source_weight);
 
     p->flag |= HAS_SOURCE;
     new_source_clusters = 1;
@@ -942,7 +945,7 @@ static void process_clusters(gpointer instance, dt_iop_module_t *self)
     capture_histogram(buffer, width, height, p->target_hist);
 
     // get n color clusters
-    kmeans(buffer, width, height, p->n, p->target_mean, p->target_var, p->target_weight);
+    kmeans(buffer, width, height, n, p->target_mean, p->target_var, p->target_weight);
 
     p->flag |= HAS_TARGET;
 
@@ -957,7 +960,7 @@ static void process_clusters(gpointer instance, dt_iop_module_t *self)
     memcpy(g->flowback.mean, p->source_mean, sizeof(float) * MAXN * 2);
     memcpy(g->flowback.var, p->source_var, sizeof(float) * MAXN * 2);
     memcpy(g->flowback.weight, p->source_weight, sizeof(float) * MAXN);
-    g->flowback.n = p->n;
+    g->flowback.n = n;
     g->flowback_set = 1;
     FILE *f = g_fopen("/tmp/dt_colormapping_loaded", "wb");
     if(f)
@@ -1048,4 +1051,3 @@ void gui_cleanup(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

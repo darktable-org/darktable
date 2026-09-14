@@ -103,13 +103,18 @@ typedef struct dt_iop_tonecurve_params_t
 {
   dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES]; // three curves (L, a, b) with max number
                                                                    // of nodes
-  int tonecurve_nodes[3];
+  int tonecurve_nodes[3]; // $MIN: 0 $MAX: DT_IOP_TONECURVE_MAXNODES
   int tonecurve_type[3]; // $DEFAULT: MONOTONE_HERMITE
   dt_iop_tonecurve_autoscale_t tonecurve_autoscale_ab; //$DEFAULT: DT_S_SCALE_AUTOMATIC_RGB $DESCRIPTION: "color space"
   int tonecurve_preset; // $DEFAULT: 0
   int tonecurve_unbound_ab; // $DEFAULT: 1
   dt_iop_rgb_norms_t preserve_colors; // $DEFAULT: DT_RGB_NORM_AVERAGE $DESCRIPTION: "preserve colors"
 } dt_iop_tonecurve_params_t;
+
+static inline int _tonecurve_nodes(const int nodes)
+{
+  return CLAMP(nodes, 0, DT_IOP_TONECURVE_MAXNODES);
+}
 
 typedef struct dt_iop_tonecurve_gui_data_t
 {
@@ -737,24 +742,28 @@ void commit_params(dt_iop_module_t *self,
   else
     piece->request_histogram &= ~DT_REQUEST_ON;
 
+  int nodes[ch_max];
+  for(int ch = 0; ch < ch_max; ch++)
+    nodes[ch] = _tonecurve_nodes(p->tonecurve_nodes[ch]);
+
   for(int ch = 0; ch < ch_max; ch++)
   {
     // take care of possible change of curve type or number of nodes
     // (not yet implemented in UI)
     if(d->curve_type[ch] != p->tonecurve_type[ch]
-       || d->curve_nodes[ch] != p->tonecurve_nodes[ch])
+       || d->curve_nodes[ch] != nodes[ch])
     {
       dt_draw_curve_destroy(d->curve[ch]);
       d->curve[ch] = dt_draw_curve_new(0.0, 1.0, p->tonecurve_type[ch]);
-      d->curve_nodes[ch] = p->tonecurve_nodes[ch];
+      d->curve_nodes[ch] = nodes[ch];
       d->curve_type[ch] = p->tonecurve_type[ch];
-      for(int k = 0; k < p->tonecurve_nodes[ch]; k++)
+      for(int k = 0; k < nodes[ch]; k++)
         (void)dt_draw_curve_add_point(d->curve[ch],
                                       p->tonecurve[ch][k].x, p->tonecurve[ch][k].y);
     }
     else
     {
-      for(int k = 0; k < p->tonecurve_nodes[ch]; k++)
+      for(int k = 0; k < nodes[ch]; k++)
         dt_draw_curve_set_point(d->curve[ch], k,
                                 p->tonecurve[ch][k].x, p->tonecurve[ch][k].y);
     }
@@ -800,7 +809,8 @@ void commit_params(dt_iop_module_t *self,
   d->preserve_colors = p->preserve_colors;
 
   // extrapolation for L-curve (right hand side only):
-  const float xm_L = p->tonecurve[ch_L][p->tonecurve_nodes[ch_L] - 1].x;
+  const int nodes_L = MAX(1, nodes[ch_L]);
+  const float xm_L = p->tonecurve[ch_L][nodes_L - 1].x;
   const float x_L[4] = { 0.7f * xm_L, 0.8f * xm_L, 0.9f * xm_L, 1.0f * xm_L };
   const float y_L[4] = { d->table[ch_L][CLAMP((int)(x_L[0] * 0x10000ul), 0, 0xffff)],
                          d->table[ch_L][CLAMP((int)(x_L[1] * 0x10000ul), 0, 0xffff)],
@@ -809,7 +819,8 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_estimate_exp(x_L, y_L, 4, d->unbounded_coeffs_L);
 
   // extrapolation for a-curve right side:
-  const float xm_ar = p->tonecurve[ch_a][p->tonecurve_nodes[ch_a] - 1].x;
+  const int nodes_a = MAX(1, nodes[ch_a]);
+  const float xm_ar = p->tonecurve[ch_a][nodes_a - 1].x;
   const float x_ar[4] = { 0.7f * xm_ar, 0.8f * xm_ar, 0.9f * xm_ar, 1.0f * xm_ar };
   const float y_ar[4] = { d->table[ch_a][CLAMP((int)(x_ar[0] * 0x10000ul), 0, 0xffff)],
                           d->table[ch_a][CLAMP((int)(x_ar[1] * 0x10000ul), 0, 0xffff)],
@@ -827,7 +838,8 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_estimate_exp(x_al, y_al, 4, d->unbounded_coeffs_ab + 3);
 
   // extrapolation for b-curve right side:
-  const float xm_br = p->tonecurve[ch_b][p->tonecurve_nodes[ch_b] - 1].x;
+  const int nodes_b = MAX(1, nodes[ch_b]);
+  const float xm_br = p->tonecurve[ch_b][nodes_b - 1].x;
   const float x_br[4] = { 0.7f * xm_br, 0.8f * xm_br, 0.9f * xm_br, 1.0f * xm_br };
   const float y_br[4] = { d->table[ch_b][CLAMP((int)(x_br[0] * 0x10000ul), 0, 0xffff)],
                           d->table[ch_b][CLAMP((int)(x_br[1] * 0x10000ul), 0, 0xffff)],
@@ -1105,7 +1117,7 @@ static void dt_iop_tonecurve_sanity_check(dt_iop_module_t *self,
   dt_iop_tonecurve_params_t *p = self->params;
 
   int ch = g->channel;
-  int nodes = p->tonecurve_nodes[ch];
+  const int nodes = _tonecurve_nodes(p->tonecurve_nodes[ch]);
   dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
   int autoscale_ab = p->tonecurve_autoscale_ab;
 
@@ -1113,7 +1125,7 @@ static void dt_iop_tonecurve_sanity_check(dt_iop_module_t *self,
   if((autoscale_ab != DT_S_SCALE_MANUAL) && ch != ch_L)
     return;
 
-  if(nodes <= 2)
+  if(g->selected < 0 || g->selected >= nodes || nodes <= 2)
     return;
 
   const float mx = tonecurve[g->selected].x;
@@ -1130,7 +1142,7 @@ static void dt_iop_tonecurve_sanity_check(dt_iop_module_t *self,
       tonecurve[k].y = tonecurve[k + 1].y;
     }
     g->selected = -2; // avoid re-insertion of that point immediately after this
-    p->tonecurve_nodes[ch]--;
+    p->tonecurve_nodes[ch] = nodes - 1;
   }
 }
 
@@ -1145,6 +1157,9 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
 
   const int ch = g->channel;
   dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
+  const int nodes = _tonecurve_nodes(p->tonecurve_nodes[ch]);
+
+  if(g->selected < 0 || g->selected >= nodes) return FALSE;
 
   const float multiplier = dt_accel_get_speed_multiplier(widget, state);
   dx *= multiplier;
@@ -1368,23 +1383,23 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget,
   dt_iop_tonecurve_global_data_t *gd = self->global_data;
 
   const int ch = g->channel;
-  const int nodes = p->tonecurve_nodes[ch];
+  const int nodes = _tonecurve_nodes(p->tonecurve_nodes[ch]);
   dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
 
   if(g->minmax_curve_type[ch] != p->tonecurve_type[ch]
-     || g->minmax_curve_nodes[ch] != p->tonecurve_nodes[ch])
+     || g->minmax_curve_nodes[ch] != nodes)
   {
     dt_draw_curve_destroy(g->minmax_curve[ch]);
     g->minmax_curve[ch] = dt_draw_curve_new(0.0, 1.0, p->tonecurve_type[ch]);
-    g->minmax_curve_nodes[ch] = p->tonecurve_nodes[ch];
+    g->minmax_curve_nodes[ch] = nodes;
     g->minmax_curve_type[ch] = p->tonecurve_type[ch];
-    for(int k = 0; k < p->tonecurve_nodes[ch]; k++)
+    for(int k = 0; k < nodes; k++)
       (void)dt_draw_curve_add_point(g->minmax_curve[ch],
                                     p->tonecurve[ch][k].x, p->tonecurve[ch][k].y);
   }
   else
   {
-    for(int k = 0; k < p->tonecurve_nodes[ch]; k++)
+    for(int k = 0; k < nodes; k++)
       dt_draw_curve_set_point(g->minmax_curve[ch], k,
                               p->tonecurve[ch][k].x, p->tonecurve[ch][k].y);
   }
@@ -1393,7 +1408,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget,
                             DT_IOP_TONECURVE_RES, g->draw_xs, g->draw_ys);
 
   float unbounded_coeffs[3];
-  const float xm = tonecurve[nodes - 1].x;
+  const float xm = tonecurve[MAX(1, nodes) - 1].x;
   {
     const float x[4] = { 0.7f * xm, 0.8f * xm, 0.9f * xm, 1.0f * xm };
     const float y[4] = { g->draw_ys[CLAMP((int)(x[0] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
@@ -1657,7 +1672,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget,
   }
 
   // draw selected cursor
-  if(g->selected >= 0)
+  if(g->selected >= 0 && g->selected < nodes)
   {
     // draw information about current selected node
     PangoLayout *layout;
@@ -1757,7 +1772,7 @@ static void dt_iop_tonecurve_motion_notify(GtkEventControllerMotion *controller,
   dt_iop_tonecurve_params_t *p = self->params;
 
   int ch = g->channel;
-  int nodes = p->tonecurve_nodes[ch];
+  int nodes = _tonecurve_nodes(p->tonecurve_nodes[ch]);
   dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
   int autoscale_ab = p->tonecurve_autoscale_ab;
 
@@ -1783,6 +1798,8 @@ static void dt_iop_tonecurve_motion_notify(GtkEventControllerMotion *controller,
   const float linx = to_lin(mx, g->loglogscale, ch, g->semilog, 0),
               liny = to_lin(my, g->loglogscale, ch, g->semilog, 1);
 
+  if(g->selected >= nodes) g->selected = -1;
+
   if(dt_key_modifier_state() & GDK_BUTTON1_MASK)
   {
     // got a vertex selected:
@@ -1802,6 +1819,7 @@ static void dt_iop_tonecurve_motion_notify(GtkEventControllerMotion *controller,
     else if(nodes < DT_IOP_TONECURVE_MAXNODES && g->selected >= -1)
     {
       // no vertex was close, create a new one!
+      p->tonecurve_nodes[ch] = nodes;
       g->selected = _add_node(tonecurve, &p->tonecurve_nodes[ch], linx, liny);
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
     }
@@ -1842,7 +1860,7 @@ static void dt_iop_tonecurve_button_press(GtkGestureSingle *gesture,
 
   int ch = g->channel;
   int autoscale_ab = p->tonecurve_autoscale_ab;
-  int nodes = p->tonecurve_nodes[ch];
+  int nodes = _tonecurve_nodes(p->tonecurve_nodes[ch]);
   dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
 
   if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
@@ -1891,6 +1909,7 @@ static void dt_iop_tonecurve_button_press(GtkGestureSingle *gesture,
         if(curve_y >= 0.0 && curve_y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
         {
           // create a new node
+          p->tonecurve_nodes[ch] = nodes;
           selected = _add_node(tonecurve, &p->tonecurve_nodes[ch], linx, curve_y);
 
           // maybe set the new one as being selected
@@ -1941,12 +1960,14 @@ static void dt_iop_tonecurve_button_press(GtkGestureSingle *gesture,
 
     }
   }
-  else if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY && g->selected >= 0)
+  else if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY
+          && g->selected >= 0 && g->selected < nodes)
   {
     // consume the event so it does not bubble to the module body's
     // right-click handler (which opens the presets menu); the pre-migration
     // button-press handler returned TRUE here
     dt_gui_claim(gesture);
+    p->tonecurve_nodes[ch] = nodes;
 
     if(g->selected == 0 || g->selected == nodes - 1)
     {
@@ -1964,7 +1985,7 @@ static void dt_iop_tonecurve_button_press(GtkGestureSingle *gesture,
     }
     tonecurve[nodes - 1].x = tonecurve[nodes - 1].y = 0;
     g->selected = -2; // avoid re-insertion of that point immediately after this
-    p->tonecurve_nodes[ch]--;
+    p->tonecurve_nodes[ch] = nodes - 1;
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
   }

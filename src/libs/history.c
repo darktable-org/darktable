@@ -34,6 +34,7 @@
 #include "bauhaus/bauhaus.h"
 #include <complex.h>
 #include <locale.h>
+#include <string.h>
 
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -782,12 +783,18 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field,
   case DT_INTROSPECTION_TYPE_ARRAY:
     if(field->Array.type == DT_INTROSPECTION_TYPE_CHAR)
     {
-      const gboolean is_valid =
-        g_utf8_validate((char *)o, -1, NULL)
-        && g_utf8_validate((char *)p, -1, NULL);
+      const size_t count = field->Array.count;
+      const char *const old_text = o;
+      const char *const new_text = p;
+      const char *const old_end = memchr(old_text, '\0', count);
+      const char *const new_end = memchr(new_text, '\0', count);
+      const size_t old_len = old_end ? (size_t)(old_end - old_text) : count;
+      const size_t new_len = new_end ? (size_t)(new_end - new_text) : count;
 
-      if(is_valid && strncmp((char*)o, (char*)p, field->Array.count))
-        return CHG_STR("%s", d, (char*)o, (char*)p);
+      if(g_utf8_validate(old_text, old_len, NULL)
+         && g_utf8_validate(new_text, new_len, NULL)
+         && (old_len != new_len || memcmp(old_text, new_text, old_len)))
+        return CHG_STR("%.*s", d, (int)old_len, old_text, (int)new_len, new_text);
     }
     else
     {

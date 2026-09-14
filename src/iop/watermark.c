@@ -54,6 +54,11 @@
 
 DT_MODULE_INTROSPECTION(7, dt_iop_watermark_params_t)
 
+static const char *_bounded_str(const char *const src, const size_t size)
+{
+  return memchr(src, '\0', size) ? src : "";
+}
+
 // gchar *checksum = g_compute_checksum_for_data(G_CHECKSUM_MD5,data,length);
 
 typedef enum dt_iop_watermark_base_scale_t
@@ -96,7 +101,7 @@ typedef struct dt_iop_watermark_params_t
   /** Pixel independent yoffset, 0 to 1 */
   float yoffset; // $MIN: -1.0 $MAX: 1.0, 0.001 $DEFAULT: 0.0 $DESCRIPTION: "y offset"
   /** Alignment value 0-8 3x3 */
-  int alignment; // $DEFAULT: 4
+  int alignment; // $MIN: 0 $MAX: 8 $DEFAULT: 4
   /** Rotation **/
   float rotate;  // $MIN: -180.0 $MAX: 180.0 $DEFAULT: 0.0 $DESCRIPTION: "rotation"
   dt_iop_watermark_base_scale_t scale_base; // $DEFAULT: DT_SCALE_MAINMENU_IMAGE $DESCRIPTION: "scale on"
@@ -1108,7 +1113,7 @@ static void _watermark_callback(GtkWidget *tb,
   dt_strlcpy_to_fixed(p->filename,
                       (char *)g_list_nth_data(g->watermarks_filenames, n),
                       sizeof(p->filename));
-  _text_color_font_set_sensitive(g, p->filename);
+  _text_color_font_set_sensitive(g, _bounded_str(p->filename, sizeof(p->filename)));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1203,7 +1208,7 @@ static void _refresh_watermarks(dt_iop_module_t *self)
   _load_watermarks(datadir, g);
   _load_watermarks(configdir, g);
 
-  _combo_box_set_active_text(g, p->filename);
+  _combo_box_set_active_text(g, _bounded_str(p->filename, sizeof(p->filename)));
 
   g_signal_handlers_unblock_by_func(g->watermarks, _watermark_callback, self);
 }
@@ -1292,6 +1297,9 @@ void commit_params(dt_iop_module_t *self,
 {
   const dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)p1;
   dt_iop_watermark_data_t *d = piece->data;
+  const char *const filename = _bounded_str(p->filename, sizeof(p->filename));
+  const char *const text = _bounded_str(p->text, sizeof(p->text));
+  const char *const font = _bounded_str(p->font, sizeof(p->font));
 
   d->opacity = p->opacity;
   d->scale = p->scale;
@@ -1302,11 +1310,11 @@ void commit_params(dt_iop_module_t *self,
   d->scale_base = p->scale_base;
   d->scale_img = p->scale_img;
   d->scale_svg = p->scale_svg;
-  dt_strlcpy_to_fixed(d->filename, p->filename, sizeof(d->filename));
-  dt_strlcpy_to_fixed(d->text, p->text, sizeof(d->text));
+  dt_strlcpy_to_fixed(d->filename, filename, sizeof(d->filename));
+  dt_strlcpy_to_fixed(d->text, text, sizeof(d->text));
   for(int k=0; k<3; k++)
     d->color[k] = p->color[k];
-  dt_strlcpy_to_fixed(d->font, p->font, sizeof(d->font));
+  dt_strlcpy_to_fixed(d->font, font, sizeof(d->font));
 
 // dt_print(DT_DEBUG_ALWAYS, "Commit params: %s...",d->filename);
 }
@@ -1331,19 +1339,23 @@ void gui_update(dt_iop_module_t *self)
 {
   const dt_iop_watermark_gui_data_t *g = self->gui_data;
   const dt_iop_watermark_params_t *p = self->params;
+  const int alignment = CLAMP(p->alignment, 0, 8);
+  const char *const filename = _bounded_str(p->filename, sizeof(p->filename));
+  const char *const text = _bounded_str(p->text, sizeof(p->text));
+  const char *const font = _bounded_str(p->font, sizeof(p->font));
   for(int i = 0; i < 9; i++)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), FALSE);
   }
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[p->alignment]), TRUE);
-  _combo_box_set_active_text(g, p->filename);
-  gtk_entry_set_text(GTK_ENTRY(g->text), p->text);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[alignment]), TRUE);
+  _combo_box_set_active_text(g, filename);
+  gtk_entry_set_text(GTK_ENTRY(g->text), text);
   const GdkRGBA color = (GdkRGBA){.red   = p->color[0],
                                   .green = p->color[1],
                                   .blue  = p->color[2],
                                   .alpha = 1.0 };
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpick), &color);
-  gtk_font_chooser_set_font(GTK_FONT_CHOOSER(g->fontsel), p->font);
+  gtk_font_chooser_set_font(GTK_FONT_CHOOSER(g->fontsel), font);
 
   if(p->scale_base == DT_SCALE_MAINMENU_ADVANCED)
   {

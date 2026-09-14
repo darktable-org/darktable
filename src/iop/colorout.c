@@ -45,6 +45,11 @@
 
 DT_MODULE_INTROSPECTION(5, dt_iop_colorout_params_t)
 
+static const char *_bounded_str(const char *const src, const size_t size)
+{
+  return memchr(src, '\0', size) ? src : "";
+}
+
 typedef struct dt_iop_colorout_data_t
 {
   dt_colorspaces_color_profile_type_t type;
@@ -271,7 +276,7 @@ static void _output_profile_changed(GtkWidget *widget, dt_iop_module_t *self)
 
   dt_print(DT_DEBUG_ALWAYS,
            "[colorout] color profile %s seems to have disappeared!",
-           dt_colorspaces_get_name(p->type, p->filename));
+           dt_colorspaces_get_name(p->type, _bounded_str(p->filename, sizeof(p->filename))));
 }
 
 static void _signal_profile_changed(gpointer instance, dt_iop_module_t *self)
@@ -549,16 +554,17 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 {
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)p1;
   dt_iop_colorout_data_t *d = piece->data;
+  const char *const filename = _bounded_str(p->filename, sizeof(p->filename));
 
   d->type = p->type;
 
   // to be used in pixel-pipe cache
-  dt_ioppr_set_pipe_export_profile_info(self->dev, piece->pipe, p->type, p->filename, p->intent);
+  dt_ioppr_set_pipe_export_profile_info(self->dev, piece->pipe, p->type, filename, p->intent);
 
   const gboolean force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
   dt_colorspaces_color_profile_type_t out_type = DT_COLORSPACE_SRGB;
-  gchar *out_filename = NULL;
+  const gchar *out_filename = NULL;
   dt_iop_color_intent_t out_intent = DT_INTENT_PERCEPTUAL;
 
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
@@ -591,7 +597,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     if((unsigned int)pipe->icc_intent < DT_INTENT_LAST) p->intent = pipe->icc_intent;
 
     out_type = p->type;
-    out_filename = p->filename;
+    out_filename = _bounded_str(p->filename, sizeof(p->filename));
     out_intent = p->intent;
   }
   else if(dt_pipe_is_thumb(pipe))
@@ -786,6 +792,7 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_colorout_gui_data_t *g = self->gui_data;
   dt_iop_colorout_params_t *p = self->params;
+  const char *const filename = _bounded_str(p->filename, sizeof(p->filename));
 
   dt_bauhaus_combobox_set(g->output_intent, (int)p->intent);
 
@@ -793,7 +800,7 @@ void gui_update(dt_iop_module_t *self)
   {
     dt_colorspaces_color_profile_t *pp = iter->data;
     if(pp->out_pos > -1 &&
-       p->type == pp->type && (p->type != DT_COLORSPACE_FILE || !strcmp(p->filename, pp->filename)))
+       p->type == pp->type && (p->type != DT_COLORSPACE_FILE || !strcmp(filename, pp->filename)))
     {
       dt_bauhaus_combobox_set(g->output_profile, pp->out_pos);
       return;
@@ -803,7 +810,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->output_profile, 0);
   dt_print(DT_DEBUG_ALWAYS,
            "[colorout] could not find requested profile `%s'!",
-           dt_colorspaces_get_name(p->type, p->filename));
+           dt_colorspaces_get_name(p->type, filename));
 }
 
 void init(dt_iop_module_t *self)
