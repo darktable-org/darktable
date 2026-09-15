@@ -477,12 +477,8 @@ kernel void highlights_chroma(read_only image2d_t in,
 
 kernel void highlights_opposed(read_only image2d_t in,
                                write_only image2d_t out,
-                               const int owidth,
-                               const int oheight,
-                               const int iwidth,
-                               const int iheight,
-                               const int dx,
-                               const int dy,
+                               const int width,
+                               const int height,
                                const unsigned int filters,
                                global const unsigned char (*const xtrans)[6],
                                global const float *clips,
@@ -492,24 +488,17 @@ kernel void highlights_opposed(read_only image2d_t in,
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  if(x >= owidth || y >= oheight) return;
+  if(x >= width || y >= height) return;
 
-  int irow = y + dy;
-  int icol = x + dx;
-  float val = 0.0f;
+  float val = Areadsingle(in, x, y);
 
-  if((icol >= 0) && (icol < iwidth) && (irow >= 0) && (irow < iheight))
+  if(!fastcopymode)
   {
-    val = Areadsingle(in, icol, irow);
-
-    if(!fastcopymode)
+    const int color = fcol(y, x, filters, xtrans);
+    if(val >= clips[color])
     {
-      const int color = fcol(irow, icol, filters, xtrans);
-      if(val >= clips[color])
-      {
-        const float ref = _calc_refavg(in, xtrans, filters, irow, icol, iheight, iwidth, correction);
-        val = fmax(val, ref + chroma[color]);
-      }
+      const float ref = _calc_refavg(in, xtrans, filters, y, x, height, width, correction);
+      val = fmax(val, ref + chroma[color]);
     }
   }
   write_imagef (out, (int2)(x, y), val);

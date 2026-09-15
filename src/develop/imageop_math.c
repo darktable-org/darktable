@@ -596,58 +596,56 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out,
 
 void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out,
                                                             const float *const in,
-                                                            const dt_iop_roi_t *const roi_out,
-                                                            const dt_iop_roi_t *const roi_in,
-                                                            const int32_t out_stride,
-                                                            const int32_t in_stride)
+                                                            const dt_iop_roi_t *const roi,
+                                                            const int32_t stride)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
-  const float px_footprint = 1.f / roi_out->scale;
+  const float px_footprint = 1.f / roi->scale;
   // how many pixels can be sampled inside that area
   const int samples = round(px_footprint);
 
   DT_OMP_FOR()
-  for(int y = 0; y < roi_out->height; y++)
+  for(int y = 0; y < roi->height; y++)
   {
-    float *outc = out + 4 * (out_stride * y);
+    float *outc = out + 4 * (stride * y);
 
     const float fy = y * px_footprint;
     int py = (int)fy;
     const float dy = fy - py;
-    py = MIN(((roi_in->height - 3)), py);
+    py = MIN(((roi->height - 3)), py);
 
-    const int maxj = MIN(((roi_in->height - 2)), py + samples);
+    const int maxj = MIN(((roi->height - 2)), py + samples);
 
-    for(int x = 0; x < roi_out->width; x++)
+    for(int x = 0; x < roi->width; x++)
     {
       float col = 0.0f;
 
       const float fx = x * px_footprint;
       int px = (int)fx;
       const float dx = fx - px;
-      px = MIN(((roi_in->width - 3)), px);
+      px = MIN(((roi->width - 3)), px);
 
-      const int maxi = MIN(((roi_in->width - 2)), px + samples);
+      const int maxi = MIN(((roi->width - 2)), px + samples);
 
       float p;
       float num = 0;
 
       // upper left pixel of sampling region
-      p = in[px + in_stride * py];
+      p = in[px + stride * py];
       col += ((1 - dx) * (1 - dy)) * p;
 
       // left pixel border of sampling region
       for(int j = py + 1; j <= maxj; j++)
       {
-        p = in[px + in_stride * j];
+        p = in[px + stride * j];
         col += (1 - dx) * p;
       }
 
       // upper pixel border of sampling region
       for(int i = px + 1; i <= maxi; i++)
       {
-        p = in[i + in_stride * py];
+        p = in[i + stride * py];
         col += (1 - dy) * p;
       }
 
@@ -655,7 +653,7 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out,
       for(int j = py + 1; j <= maxj; j++)
         for(int i = px + 1; i <= maxi; i++)
         {
-          p = in[i + in_stride * j];
+          p = in[i + stride * j];
           col += p;
         }
 
@@ -664,27 +662,27 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out,
         // right border
         for(int j = py + 1; j <= maxj; j++)
         {
-          p = in[maxi + 1 + in_stride * j];
+          p = in[maxi + 1 + stride * j];
           col += dx * p;
         }
 
         // upper right
-        p = in[maxi + 1 + in_stride * py];
+        p = in[maxi + 1 + stride * py];
         col += (dx * (1 - dy)) * p;
 
         // lower border
         for(int i = px + 1; i <= maxi; i++)
         {
-          p = in[i + in_stride * (maxj + 1)];
+          p = in[i + stride * (maxj + 1)];
           col += dy * p;
         }
 
         // lower left pixel
-        p = in[px + in_stride * (maxj + 1)];
+        p = in[px + stride * (maxj + 1)];
         col += ((1 - dx) * dy) * p;
 
         // lower right pixel
-        p = in[maxi + 1 + in_stride * (maxj + 1)];
+        p = in[maxi + 1 + stride * (maxj + 1)];
         col += (dx * dy) * p;
 
         num = (samples + 1) * (samples + 1);
@@ -694,12 +692,12 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out,
         // right border
         for(int j = py + 1; j <= maxj; j++)
         {
-          p = in[maxi + 1 + in_stride * j];
+          p = in[maxi + 1 + stride * j];
           col += dx * p;
         }
 
         // upper right
-        p = in[maxi + 1 + in_stride * py];
+        p = in[maxi + 1 + stride * py];
         col += (dx * (1 - dy)) * p;
 
         num = ((maxj - py) / 2 + 1 - dy) * (samples + 1);
@@ -709,12 +707,12 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out,
         // lower border
         for(int i = px + 1; i <= maxi; i++)
         {
-          p = in[i + in_stride * (maxj + 1)];
+          p = in[i + stride * (maxj + 1)];
           col += dy * p;
         }
 
         // lower left pixel
-        p = in[px + in_stride * (maxj + 1)];
+        p = in[px + stride * (maxj + 1)];
         col += ((1 - dx) * dy) * p;
 
         num = ((maxi - px) / 2 + 1 - dx) * (samples + 1);
@@ -736,15 +734,13 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out,
 
 void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out,
                                                const float *const in,
-                                               const dt_iop_roi_t *const roi_out,
-                                               const dt_iop_roi_t *const roi_in,
-                                               const int32_t out_stride,
-                                               const int32_t in_stride,
+                                               const dt_iop_roi_t *const roi,
+                                               const int32_t stride,
                                                const uint32_t filters)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
-  const float px_footprint = 1.f / roi_out->scale;
+  const float px_footprint = 1.f / roi->scale;
   // how many 2x2 blocks can be sampled inside that area
   const int samples = round(px_footprint / 2);
 
@@ -759,52 +755,52 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out,
   const int rggbx = trggbx, rggby = trggby;
 
   DT_OMP_FOR()
-  for(int y = 0; y < roi_out->height; y++)
+  for(int y = 0; y < roi->height; y++)
   {
-    float *outc = out + 4 * (out_stride * y);
+    float *outc = out + 4 * (stride * y);
 
     const float fy = y * px_footprint;
     int py = (int)fy & ~1;
     const float dy = (fy - py) / 2;
-    py = MIN(((roi_in->height - 6) & ~1u), py) + rggby;
+    py = MIN(((roi->height - 6) & ~1u), py) + rggby;
 
-    const int maxj = MIN(((roi_in->height - 5) & ~1u) + rggby, py + 2 * samples);
+    const int maxj = MIN(((roi->height - 5) & ~1u) + rggby, py + 2 * samples);
 
-    for(int x = 0; x < roi_out->width; x++)
+    for(int x = 0; x < roi->width; x++)
     {
       dt_aligned_pixel_t col = { 0, 0, 0, 0 };
 
       const float fx = x * px_footprint;
       int px = (int)fx & ~1;
       const float dx = (fx - px) / 2;
-      px = MIN(((roi_in->width - 6) & ~1u), px) + rggbx;
+      px = MIN(((roi->width - 6) & ~1u), px) + rggbx;
 
-      const int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
+      const int maxi = MIN(((roi->width - 5) & ~1u) + rggbx, px + 2 * samples);
 
       dt_aligned_pixel_t p;
       float num = 0;
 
       // upper left 2x2 block of sampling region
-      p[0] = in[px + in_stride * py];
-      p[1] = in[px + 1 + in_stride * py] + in[px + in_stride * (py + 1)];
-      p[2] = in[px + 1 + in_stride * (py + 1)];
+      p[0] = in[px + stride * py];
+      p[1] = in[px + 1 + stride * py] + in[px + stride * (py + 1)];
+      p[2] = in[px + 1 + stride * (py + 1)];
       for(int c = 0; c < 3; c++) col[c] += ((1 - dx) * (1 - dy)) * p[c];
 
       // left 2x2 block border of sampling region
       for(int j = py + 2; j <= maxj; j += 2)
       {
-        p[0] = in[px + in_stride * j];
-        p[1] = in[px + 1 + in_stride * j] + in[px + in_stride * (j + 1)];
-        p[2] = in[px + 1 + in_stride * (j + 1)];
+        p[0] = in[px + stride * j];
+        p[1] = in[px + 1 + stride * j] + in[px + stride * (j + 1)];
+        p[2] = in[px + 1 + stride * (j + 1)];
         for(int c = 0; c < 3; c++) col[c] += (1 - dx) * p[c];
       }
 
       // upper 2x2 block border of sampling region
       for(int i = px + 2; i <= maxi; i += 2)
       {
-        p[0] = in[i + in_stride * py];
-        p[1] = in[i + 1 + in_stride * py] + in[i + in_stride * (py + 1)];
-        p[2] = in[i + 1 + in_stride * (py + 1)];
+        p[0] = in[i + stride * py];
+        p[1] = in[i + 1 + stride * py] + in[i + stride * (py + 1)];
+        p[2] = in[i + 1 + stride * (py + 1)];
         for(int c = 0; c < 3; c++) col[c] += (1 - dy) * p[c];
       }
 
@@ -812,9 +808,9 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out,
       for(int j = py + 2; j <= maxj; j += 2)
         for(int i = px + 2; i <= maxi; i += 2)
         {
-          p[0] = in[i + in_stride * j];
-          p[1] = in[i + 1 + in_stride * j] + in[i + in_stride * (j + 1)];
-          p[2] = in[i + 1 + in_stride * (j + 1)];
+          p[0] = in[i + stride * j];
+          p[1] = in[i + 1 + stride * j] + in[i + stride * (j + 1)];
+          p[2] = in[i + 1 + stride * (j + 1)];
           for(int c = 0; c < 3; c++) col[c] += p[c];
         }
 
@@ -823,38 +819,38 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out,
         // right border
         for(int j = py + 2; j <= maxj; j += 2)
         {
-          p[0] = in[maxi + 2 + in_stride * j];
-          p[1] = in[maxi + 3 + in_stride * j] + in[maxi + 2 + in_stride * (j + 1)];
-          p[2] = in[maxi + 3 + in_stride * (j + 1)];
+          p[0] = in[maxi + 2 + stride * j];
+          p[1] = in[maxi + 3 + stride * j] + in[maxi + 2 + stride * (j + 1)];
+          p[2] = in[maxi + 3 + stride * (j + 1)];
           for(int c = 0; c < 3; c++) col[c] += dx * p[c];
         }
 
         // upper right
-        p[0] = in[maxi + 2 + in_stride * py];
-        p[1] = in[maxi + 3 + in_stride * py] + in[maxi + 2 + in_stride * (py + 1)];
-        p[2] = in[maxi + 3 + in_stride * (py + 1)];
+        p[0] = in[maxi + 2 + stride * py];
+        p[1] = in[maxi + 3 + stride * py] + in[maxi + 2 + stride * (py + 1)];
+        p[2] = in[maxi + 3 + stride * (py + 1)];
         for(int c = 0; c < 3; c++) col[c] += (dx * (1 - dy)) * p[c];
 
         // lower border
         for(int i = px + 2; i <= maxi; i += 2)
         {
-          p[0] = in[i + in_stride * (maxj + 2)];
-          p[1] = in[i + 1 + in_stride * (maxj + 2)] + in[i + in_stride * (maxj + 3)];
-          p[2] = in[i + 1 + in_stride * (maxj + 3)];
+          p[0] = in[i + stride * (maxj + 2)];
+          p[1] = in[i + 1 + stride * (maxj + 2)] + in[i + stride * (maxj + 3)];
+          p[2] = in[i + 1 + stride * (maxj + 3)];
           for(int c = 0; c < 3; c++) col[c] += dy * p[c];
         }
 
         // lower left 2x2 block
-        p[0] = in[px + in_stride * (maxj + 2)];
-        p[1] = in[px + 1 + in_stride * (maxj + 2)] + in[px + in_stride * (maxj + 3)];
-        p[2] = in[px + 1 + in_stride * (maxj + 3)];
+        p[0] = in[px + stride * (maxj + 2)];
+        p[1] = in[px + 1 + stride * (maxj + 2)] + in[px + stride * (maxj + 3)];
+        p[2] = in[px + 1 + stride * (maxj + 3)];
         for(int c = 0; c < 3; c++) col[c] += ((1 - dx) * dy) * p[c];
 
         // lower right 2x2 block
-        p[0] = in[maxi + 2 + in_stride * (maxj + 2)];
-        p[1] = in[maxi + 3 + in_stride * (maxj + 2)]
-               + in[maxi + 2 + in_stride * (maxj + 3)];
-        p[2] = in[maxi + 3 + in_stride * (maxj + 3)];
+        p[0] = in[maxi + 2 + stride * (maxj + 2)];
+        p[1] = in[maxi + 3 + stride * (maxj + 2)]
+               + in[maxi + 2 + stride * (maxj + 3)];
+        p[2] = in[maxi + 3 + stride * (maxj + 3)];
         for(int c = 0; c < 3; c++) col[c] += (dx * dy) * p[c];
 
         num = (samples + 1) * (samples + 1);
@@ -864,16 +860,16 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out,
         // right border
         for(int j = py + 2; j <= maxj; j += 2)
         {
-          p[0] = in[maxi + 2 + in_stride * j];
-          p[1] = in[maxi + 3 + in_stride * j] + in[maxi + 2 + in_stride * (j + 1)];
-          p[2] = in[maxi + 3 + in_stride * (j + 1)];
+          p[0] = in[maxi + 2 + stride * j];
+          p[1] = in[maxi + 3 + stride * j] + in[maxi + 2 + stride * (j + 1)];
+          p[2] = in[maxi + 3 + stride * (j + 1)];
           for(int c = 0; c < 3; c++) col[c] += dx * p[c];
         }
 
         // upper right
-        p[0] = in[maxi + 2 + in_stride * py];
-        p[1] = in[maxi + 3 + in_stride * py] + in[maxi + 2 + in_stride * (py + 1)];
-        p[2] = in[maxi + 3 + in_stride * (py + 1)];
+        p[0] = in[maxi + 2 + stride * py];
+        p[1] = in[maxi + 3 + stride * py] + in[maxi + 2 + stride * (py + 1)];
+        p[2] = in[maxi + 3 + stride * (py + 1)];
         for(int c = 0; c < 3; c++) col[c] += (dx * (1 - dy)) * p[c];
 
         num = ((maxj - py) / 2 + 1 - dy) * (samples + 1);
@@ -883,16 +879,16 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out,
         // lower border
         for(int i = px + 2; i <= maxi; i += 2)
         {
-          p[0] = in[i + in_stride * (maxj + 2)];
-          p[1] = in[i + 1 + in_stride * (maxj + 2)] + in[i + in_stride * (maxj + 3)];
-          p[2] = in[i + 1 + in_stride * (maxj + 3)];
+          p[0] = in[i + stride * (maxj + 2)];
+          p[1] = in[i + 1 + stride * (maxj + 2)] + in[i + stride * (maxj + 3)];
+          p[2] = in[i + 1 + stride * (maxj + 3)];
           for(int c = 0; c < 3; c++) col[c] += dy * p[c];
         }
 
         // lower left 2x2 block
-        p[0] = in[px + in_stride * (maxj + 2)];
-        p[1] = in[px + 1 + in_stride * (maxj + 2)] + in[px + in_stride * (maxj + 3)];
-        p[2] = in[px + 1 + in_stride * (maxj + 3)];
+        p[0] = in[px + stride * (maxj + 2)];
+        p[1] = in[px + 1 + stride * (maxj + 2)] + in[px + stride * (maxj + 3)];
+        p[2] = in[px + 1 + stride * (maxj + 3)];
         for(int c = 0; c < 3; c++) col[c] += ((1 - dx) * dy) * p[c];
 
         num = ((maxi - px) / 2 + 1 - dx) * (samples + 1);
@@ -914,13 +910,11 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out,
 
 void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out,
                                                        const float *const in,
-                                                       const dt_iop_roi_t *const roi_out,
-                                                       const dt_iop_roi_t *const roi_in,
-                                                       const int32_t out_stride,
-                                                       const int32_t in_stride,
+                                                       const dt_iop_roi_t *const roi,
+                                                       const int32_t stride,
                                                        const uint8_t (*const xtrans)[6])
 {
-  const float px_footprint = 1.f / roi_out->scale;
+  const float px_footprint = 1.f / roi->scale;
   const int samples = MAX(1, (int)floorf(px_footprint / 3));
 
   // A slightly different algorithm than
@@ -932,27 +926,27 @@ void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out,
   // by non-integer number of samples.
 
   DT_OMP_FOR()
-  for(int y = 0; y < roi_out->height; y++)
+  for(int y = 0; y < roi->height; y++)
   {
-    float *outc = out + 4 * (out_stride * y);
+    float *outc = out + 4 * (stride * y);
     const int py = CLAMPS((int)round((y - 0.5f) * px_footprint),
-                          0, roi_in->height - 3);
-    const int ymax = MIN(roi_in->height - 3, py + 3 * samples);
+                          0, roi->height - 3);
+    const int ymax = MIN(roi->height - 3, py + 3 * samples);
 
-    for(int x = 0; x < roi_out->width; x++, outc += 4)
+    for(int x = 0; x < roi->width; x++, outc += 4)
     {
       dt_aligned_pixel_t col = { 0.0f };
       int num = 0;
       const int px = CLAMPS((int)round((x - 0.5f) * px_footprint),
-                            0, roi_in->width - 3);
-      const int xmax = MIN(roi_in->width - 3, px + 3 * samples);
+                            0, roi->width - 3);
+      const int xmax = MIN(roi->width - 3, px + 3 * samples);
       for(int yy = py; yy <= ymax; yy += 3)
         for(int xx = px; xx <= xmax; xx += 3)
         {
           for(int j = 0; j < 3; ++j)
             for(int i = 0; i < 3; ++i)
               col[FCxtrans(yy + j, xx + i, NULL, xtrans)]
-                += in[xx + i + in_stride * (yy + j)];
+                += in[xx + i + stride * (yy + j)];
           num++;
         }
 

@@ -66,8 +66,6 @@ clip_and_zoom_demosaic_passthrough_monochrome(__read_only image2d_t in,
                                               __write_only image2d_t out,
                                               const int width,
                                               const int height,
-                                              const int rin_wd,
-                                              const int rin_ht,
                                               const float r_scale)
 {
   // global id is pixel in output image (float4)
