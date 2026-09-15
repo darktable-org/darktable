@@ -67,6 +67,13 @@ size_t dt_utf8_strlcpy(char *dest,
 /** g_strlcpy variant that zero-fills the destination first, useful e.g.
     to keep hash stable for IOP params filename fields */
 size_t dt_strlcpy_to_fixed(char *dest, const char *src, const size_t dest_size);
+/** dt_strlcpy_to_fixed variant for a source that is itself a fixed-size array,
+    such as a field of stored IOP params: reads at most src_size bytes, since
+    params from sidecars or the database need not NUL-terminate the field */
+void dt_strlcpy_fixed_to_fixed(char *dest,
+                               const size_t dest_size,
+                               const char *src,
+                               const size_t src_size);
 /** returns true if a file is regular, has read access and a filesize > 0 */
 gboolean dt_util_test_image_file(const char *filename);
 /** returns true if the path represents a directory with write access */

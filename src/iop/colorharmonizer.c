@@ -823,8 +823,9 @@ static void _push_to_vectorscope(dt_iop_module_t *self)
     // Custom: provide absolute-angle nodes; type is left as NONE so the
     // vectorscope's own UI shows no standard rule selected.
     guide.type     = DT_COLOR_HARMONY_NONE;
-    guide.custom_n = p->num_custom_nodes;
-    for(int i = 0; i < p->num_custom_nodes; i++)
+    // the stored count indexes custom_hue[] and the guide's custom_angles[]
+    guide.custom_n = CLAMP(p->num_custom_nodes, 0, COLORHARMONIZER_MAX_NODES);
+    for(int i = 0; i < guide.custom_n; i++)
       guide.custom_angles[i] = _ucs_to_ryb_fast(p->custom_hue[i]);
   }
   else

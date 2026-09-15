@@ -724,6 +724,12 @@ void init_presets(dt_iop_module_so_t *self)
   }
 }
 
+static inline int _tonecurve_nodes(const int nodes)
+{
+  // stored counts index the fixed node arrays, and the last node at nodes - 1
+  return CLAMP(nodes, 1, DT_IOP_TONECURVE_MAXNODES);
+}
+
 void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
@@ -748,13 +754,13 @@ void commit_params(dt_iop_module_t *self,
       d->curve[ch] = dt_draw_curve_new(0.0, 1.0, p->tonecurve_type[ch]);
       d->curve_nodes[ch] = p->tonecurve_nodes[ch];
       d->curve_type[ch] = p->tonecurve_type[ch];
-      for(int k = 0; k < p->tonecurve_nodes[ch]; k++)
+      for(int k = 0; k < _tonecurve_nodes(p->tonecurve_nodes[ch]); k++)
         (void)dt_draw_curve_add_point(d->curve[ch],
                                       p->tonecurve[ch][k].x, p->tonecurve[ch][k].y);
     }
     else
     {
-      for(int k = 0; k < p->tonecurve_nodes[ch]; k++)
+      for(int k = 0; k < _tonecurve_nodes(p->tonecurve_nodes[ch]); k++)
         dt_draw_curve_set_point(d->curve[ch], k,
                                 p->tonecurve[ch][k].x, p->tonecurve[ch][k].y);
     }
@@ -800,7 +806,7 @@ void commit_params(dt_iop_module_t *self,
   d->preserve_colors = p->preserve_colors;
 
   // extrapolation for L-curve (right hand side only):
-  const float xm_L = p->tonecurve[ch_L][p->tonecurve_nodes[ch_L] - 1].x;
+  const float xm_L = p->tonecurve[ch_L][_tonecurve_nodes(p->tonecurve_nodes[ch_L]) - 1].x;
   const float x_L[4] = { 0.7f * xm_L, 0.8f * xm_L, 0.9f * xm_L, 1.0f * xm_L };
   const float y_L[4] = { d->table[ch_L][CLAMP((int)(x_L[0] * 0x10000ul), 0, 0xffff)],
                          d->table[ch_L][CLAMP((int)(x_L[1] * 0x10000ul), 0, 0xffff)],
@@ -809,7 +815,7 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_estimate_exp(x_L, y_L, 4, d->unbounded_coeffs_L);
 
   // extrapolation for a-curve right side:
-  const float xm_ar = p->tonecurve[ch_a][p->tonecurve_nodes[ch_a] - 1].x;
+  const float xm_ar = p->tonecurve[ch_a][_tonecurve_nodes(p->tonecurve_nodes[ch_a]) - 1].x;
   const float x_ar[4] = { 0.7f * xm_ar, 0.8f * xm_ar, 0.9f * xm_ar, 1.0f * xm_ar };
   const float y_ar[4] = { d->table[ch_a][CLAMP((int)(x_ar[0] * 0x10000ul), 0, 0xffff)],
                           d->table[ch_a][CLAMP((int)(x_ar[1] * 0x10000ul), 0, 0xffff)],
@@ -827,7 +833,7 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_estimate_exp(x_al, y_al, 4, d->unbounded_coeffs_ab + 3);
 
   // extrapolation for b-curve right side:
-  const float xm_br = p->tonecurve[ch_b][p->tonecurve_nodes[ch_b] - 1].x;
+  const float xm_br = p->tonecurve[ch_b][_tonecurve_nodes(p->tonecurve_nodes[ch_b]) - 1].x;
   const float x_br[4] = { 0.7f * xm_br, 0.8f * xm_br, 0.9f * xm_br, 1.0f * xm_br };
   const float y_br[4] = { d->table[ch_b][CLAMP((int)(x_br[0] * 0x10000ul), 0, 0xffff)],
                           d->table[ch_b][CLAMP((int)(x_br[1] * 0x10000ul), 0, 0xffff)],
@@ -910,6 +916,10 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *g = self->gui_data;
   dt_iop_tonecurve_params_t *p = self->params;
+
+  // every GUI handler uses the stored count, and adding a node writes through it
+  for(int ch = 0; ch < ch_max; ch++)
+    p->tonecurve_nodes[ch] = _tonecurve_nodes(p->tonecurve_nodes[ch]);
 
   gui_changed(self, g->autoscale_ab, 0);
 

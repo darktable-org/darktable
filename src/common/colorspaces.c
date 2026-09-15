@@ -892,10 +892,16 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile
     {
       // use introspection to get the profile name from the binary params blob
       const void *params = sqlite3_column_blob(stmt, 0);
+      const size_t params_size = sqlite3_column_bytes(stmt, 0);
       dt_colorspaces_color_profile_type_t *type = colorout->get_p(params, "type");
       char *filename = colorout->get_p(params, "filename");
+      const dt_introspection_field_t *f = colorout->get_f("filename");
 
-      if(type && filename)
+      // the blob comes from sidecars or the database unchecked: it may end
+      // before the file name, or not terminate it
+      if(type && filename && f
+         && params_size >= f->header.offset + f->header.size
+         && memchr(filename, '\0', f->header.size))
         p = dt_colorspaces_get_profile
           (*type, filename,
            DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);

@@ -3123,7 +3123,9 @@ static gboolean _draw_retrieve_lines_from_params(dt_iop_module_t *self,
     }
   }
 
-  if(method == ASHIFT_METHOD_LINES && p->last_drawn_lines_count > 0)
+  // the stored count indexes the fixed saved-lines array
+  if(method == ASHIFT_METHOD_LINES && p->last_drawn_lines_count > 0
+     && p->last_drawn_lines_count <= MAX_SAVED_LINES)
   {
     float pts[MAX_SAVED_LINES * 4] = { 0.0f };
 

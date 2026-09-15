@@ -451,8 +451,8 @@ int legacy_params(dt_iop_module_t *self,
     n->distance = o->distance;
     n->target_geom = _lenstype_from_lensfun_lenstype(o->target_geom);
     n->tca_override = o->tca_override;
-    g_strlcpy(n->camera, o->camera, sizeof(n->camera));
-    g_strlcpy(n->lens, o->lens, sizeof(n->lens));
+    dt_strlcpy_fixed_to_fixed(n->camera, sizeof(n->camera), o->camera, sizeof(o->camera));
+    dt_strlcpy_fixed_to_fixed(n->lens, sizeof(n->lens), o->lens, sizeof(o->lens));
 
     // old versions had R and B swapped
     n->tca_r = o->tca_b;
@@ -519,8 +519,8 @@ int legacy_params(dt_iop_module_t *self,
     n->distance = o->distance;
     n->target_geom = _lenstype_from_lensfun_lenstype(o->target_geom);
     n->tca_override = o->tca_override;
-    g_strlcpy(n->camera, o->camera, sizeof(n->camera));
-    g_strlcpy(n->lens, o->lens, sizeof(n->lens));
+    dt_strlcpy_fixed_to_fixed(n->camera, sizeof(n->camera), o->camera, sizeof(o->camera));
+    dt_strlcpy_fixed_to_fixed(n->lens, sizeof(n->lens), o->lens, sizeof(o->lens));
     n->tca_r = o->tca_r;
     n->tca_b = o->tca_b;
 
@@ -586,8 +586,8 @@ int legacy_params(dt_iop_module_t *self,
     n->distance = o->distance;
     n->target_geom = _lenstype_from_lensfun_lenstype(o->target_geom);
     n->tca_override = o->tca_override;
-    g_strlcpy(n->camera, o->camera, sizeof(n->camera));
-    g_strlcpy(n->lens, o->lens, sizeof(n->lens));
+    dt_strlcpy_fixed_to_fixed(n->camera, sizeof(n->camera), o->camera, sizeof(o->camera));
+    dt_strlcpy_fixed_to_fixed(n->lens, sizeof(n->lens), o->lens, sizeof(o->lens));
     n->tca_r = o->tca_r;
     n->tca_b = o->tca_b;
 
@@ -654,8 +654,8 @@ int legacy_params(dt_iop_module_t *self,
     n->distance = o->distance;
     n->target_geom = _lenstype_from_lensfun_lenstype(o->target_geom);
     n->tca_override = o->tca_override;
-    g_strlcpy(n->camera, o->camera, sizeof(n->camera));
-    g_strlcpy(n->lens, o->lens, sizeof(n->lens));
+    dt_strlcpy_fixed_to_fixed(n->camera, sizeof(n->camera), o->camera, sizeof(o->camera));
+    dt_strlcpy_fixed_to_fixed(n->lens, sizeof(n->lens), o->lens, sizeof(o->lens));
     n->tca_r = o->tca_r;
     n->tca_b = o->tca_b;
 
@@ -726,8 +726,8 @@ int legacy_params(dt_iop_module_t *self,
     n->aperture = o->aperture;
     n->distance = o->distance;
     n->target_geom = (dt_iop_lens_lenstype_t)o->target_geom;
-    g_strlcpy(n->camera, o->camera, sizeof(n->camera));
-    g_strlcpy(n->lens, o->lens, sizeof(n->lens));
+    dt_strlcpy_fixed_to_fixed(n->camera, sizeof(n->camera), o->camera, sizeof(o->camera));
+    dt_strlcpy_fixed_to_fixed(n->lens, sizeof(n->lens), o->lens, sizeof(o->lens));
     n->tca_override = o->tca_override;
     n->tca_r = o->tca_r;
     n->tca_b = o->tca_b;
@@ -800,8 +800,8 @@ int legacy_params(dt_iop_module_t *self,
     n->aperture = o->aperture;
     n->distance = o->distance;
     n->target_geom = (dt_iop_lens_lenstype_t)o->target_geom;
-    g_strlcpy(n->camera, o->camera, sizeof(n->camera));
-    g_strlcpy(n->lens, o->lens, sizeof(n->lens));
+    dt_strlcpy_fixed_to_fixed(n->camera, sizeof(n->camera), o->camera, sizeof(o->camera));
+    dt_strlcpy_fixed_to_fixed(n->lens, sizeof(n->lens), o->lens, sizeof(o->lens));
     n->tca_override = o->tca_override;
     n->tca_r = o->tca_r;
     n->tca_b = o->tca_b;
@@ -875,8 +875,8 @@ int legacy_params(dt_iop_module_t *self,
     n->aperture = o->aperture;
     n->distance = o->distance;
     n->target_geom = (dt_iop_lens_lenstype_t)o->target_geom;
-    g_strlcpy(n->camera, o->camera, sizeof(n->camera));
-    g_strlcpy(n->lens, o->lens, sizeof(n->lens));
+    dt_strlcpy_fixed_to_fixed(n->camera, sizeof(n->camera), o->camera, sizeof(o->camera));
+    dt_strlcpy_fixed_to_fixed(n->lens, sizeof(n->lens), o->lens, sizeof(o->lens));
     n->tca_override = o->tca_override;
     n->tca_r = o->tca_r;
     n->tca_b = o->tca_b;
@@ -3316,6 +3316,10 @@ void commit_params(dt_iop_module_t *self,
     p->method = _get_method(self, method);
   }
 
+  // stored params need not terminate the camera and lens names
+  p->camera[sizeof(p->camera) - 1] = '\0';
+  p->lens[sizeof(p->lens) - 1] = '\0';
+
   d->method = p->method;
   d->modify_flags = p->modify_flags;
 
@@ -4722,6 +4726,10 @@ void gui_update(dt_iop_module_t *self)
     memcpy(self->params, self->default_params, sizeof(dt_iop_lens_params_t));
     p->method = _get_method(self, method);
   }
+
+  // the GUI handlers read the stored camera and lens names as C strings
+  p->camera[sizeof(p->camera) - 1] = '\0';
+  p->lens[sizeof(p->lens) - 1] = '\0';
 
   dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;

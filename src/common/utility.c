@@ -362,6 +362,18 @@ size_t dt_strlcpy_to_fixed(char *dest, const char *src, const size_t dest_size)
   return g_strlcpy(dest, src, dest_size);
 }
 
+void dt_strlcpy_fixed_to_fixed(char *dest,
+                               const size_t dest_size,
+                               const char *src,
+                               const size_t src_size)
+{
+  memset(dest, 0, dest_size);
+  if(dest_size == 0) return;
+  const char *const end = memchr(src, '\0', src_size);
+  const size_t len = end ? (size_t)(end - src) : src_size;
+  memcpy(dest, src, MIN(len, dest_size - 1));
+}
+
 
 gboolean dt_util_test_image_file(const char *filename)
 {

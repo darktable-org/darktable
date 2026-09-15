@@ -355,6 +355,12 @@ static void _rgbcurve_show_hide_controls(dt_iop_rgbcurve_params_t *p,
                          p->curve_autoscale == DT_S_SCALE_AUTOMATIC_RGB);
 }
 
+static inline int _rgbcurve_nodes(const int nodes)
+{
+  // stored counts index the fixed node arrays, and the last node at nodes - 1
+  return CLAMP(nodes, 1, DT_IOP_RGBCURVE_MAXNODES);
+}
+
 static gboolean _is_identity(dt_iop_rgbcurve_params_t *p,
                              rgbcurve_channel_t channel)
 {
@@ -1564,6 +1570,10 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_rgbcurve_gui_data_t *g = self->gui_data;
   dt_iop_rgbcurve_params_t *p = self->params;
 
+  // every GUI handler uses the stored count, and adding a node writes through it
+  for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++)
+    p->curve_num_nodes[ch] = _rgbcurve_nodes(p->curve_num_nodes[ch]);
+
   dt_bauhaus_combobox_set(g->autoscale, p->curve_autoscale);
   dt_bauhaus_combobox_set(g->interpolator, p->curve_type[DT_IOP_RGBCURVE_R]);
   dt_bauhaus_toggle_set(g->chk_compensate_middle_grey,
@@ -1752,6 +1762,8 @@ void commit_params(dt_iop_module_t *self,
     d->curve_changed[ch] = d->params.curve_type[ch] != p->curve_type[ch];
 
   memcpy(&d->params, p, sizeof(dt_iop_rgbcurve_params_t));
+  for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++)
+    d->params.curve_num_nodes[ch] = _rgbcurve_nodes(d->params.curve_num_nodes[ch]);
 
   // working color profile
   d->type_work = DT_COLORSPACE_NONE;

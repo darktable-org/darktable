@@ -1395,6 +1395,12 @@ void process(dt_iop_module_t *self,
     process_lut(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
 
+static inline int _basecurve_nodes(const int nodes)
+{
+  // stored counts index the fixed node arrays, and the last node at nodes - 1
+  return CLAMP(nodes, 1, MAXNODES);
+}
+
 void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
@@ -1417,7 +1423,7 @@ void commit_params(dt_iop_module_t *self,
     d->curve = dt_draw_curve_new(0.0, 1.0, p->basecurve_type[ch]);
     d->basecurve_nodes = p->basecurve_nodes[ch];
     d->basecurve_type = p->basecurve_type[ch];
-    for(int k = 0; k < p->basecurve_nodes[ch]; k++)
+    for(int k = 0; k < _basecurve_nodes(p->basecurve_nodes[ch]); k++)
     {
       // printf("p->basecurve[%i][%i].x = %f;\n", ch, k, p->basecurve[ch][k].x);
       // printf("p->basecurve[%i][%i].y = %f;\n", ch, k, p->basecurve[ch][k].y);
@@ -1426,13 +1432,13 @@ void commit_params(dt_iop_module_t *self,
   }
   else
   {
-    for(int k = 0; k < p->basecurve_nodes[ch]; k++)
+    for(int k = 0; k < _basecurve_nodes(p->basecurve_nodes[ch]); k++)
       dt_draw_curve_set_point(d->curve, k, p->basecurve[ch][k].x, p->basecurve[ch][k].y);
   }
   dt_draw_curve_calc_values(d->curve, 0.0f, 1.0f, 0x10000, NULL, d->table);
 
   // now the extrapolation stuff:
-  const float xm = p->basecurve[0][p->basecurve_nodes[0] - 1].x;
+  const float xm = p->basecurve[0][_basecurve_nodes(p->basecurve_nodes[0]) - 1].x;
   const float x[4] = { 0.7f * xm, 0.8f * xm, 0.9f * xm, 1.0f * xm };
   const float y[4] = { d->table[CLAMP((int)(x[0] * 0x10000ul), 0, 0xffff)],
                        d->table[CLAMP((int)(x[1] * 0x10000ul), 0, 0xffff)],
@@ -1465,6 +1471,9 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_basecurve_params_t *p = self->params;
   dt_iop_basecurve_gui_data_t *g = self->gui_data;
+
+  // every GUI handler uses the stored count of curve 0, and adding a node writes through it
+  p->basecurve_nodes[0] = _basecurve_nodes(p->basecurve_nodes[0]);
 
   gtk_widget_set_visible(g->exposure_step, p->exposure_fusion != 0);
   gtk_widget_set_visible(g->exposure_bias, p->exposure_fusion != 0);
