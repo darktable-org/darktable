@@ -241,6 +241,11 @@ static void _lighttable_check_layout(dt_view_t *self)
 
     // ensure that thumbtable is not visible in the main view
     gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
+    /* no usable leave event reaches the thumbtable when a shortcut hides
+     * it: the shortcut's pointer grab delivers the leave as a GRAB crossing,
+     * which the leave handler ignores.  A stale mouse_inside makes act_on
+     * apply ratings etc. to the whole selection, not the hovered image */
+    dt_ui_thumbtable(darktable.gui->ui)->mouse_inside = FALSE;
     gtk_widget_hide(lib->preview->widget);
     gtk_widget_show(lib->culling->widget);
 
@@ -595,6 +600,8 @@ static void _preview_enter(dt_view_t *self,
   lib->thumbtable_offset = dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui));
   // ensure that thumbtable or culling is not visible in the main view
   gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
+  // no leave event reaches the hidden thumbtable (see _lighttable_check_layout)
+  dt_ui_thumbtable(darktable.gui->ui)->mouse_inside = FALSE;
   gtk_widget_hide(lib->culling->widget);
 
   lib->preview_sticky = sticky;
