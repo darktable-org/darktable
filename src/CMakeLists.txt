@@ -1129,6 +1129,13 @@ endif(USE_XMLLINT)
 #
 # build libdarktable
 #
+# common/spektra_core.h includes data/kernels/grain.h, the single copy
+# of the scalar math spektrafilm's CPU and OpenCL paths must agree on
+# bit-for-bit. The header has to live in data/kernels/ because that is the
+# only directory the OpenCL compiler searches, so the C side reaches across
+# rather than the other way round.
+include_directories("${CMAKE_SOURCE_DIR}/data/kernels")
+
 add_library(lib_darktable SHARED ${DARKTABLE_BINDIR}/preferences_gen.h ${DARKTABLE_BINDIR}/version_gen.c ${SOURCES})
 
 # cmake implicitly sets GENERATED on the source file in the directory of the custom command
@@ -1136,7 +1143,7 @@ add_library(lib_darktable SHARED ${DARKTABLE_BINDIR}/preferences_gen.h ${DARKTAB
 set_source_files_properties(${DARKTABLE_BINDIR}/version_gen.c PROPERTIES GENERATED TRUE)
 
 # spektrafilm's CPU path is required to reproduce its OpenCL twin bit-for-bit
-# (see sf_exp_neg in common/spektra_core.h and the FP_CONTRACT note at the top
+# (see grain_exp_neg in common/spektra_core.h and the FP_CONTRACT note at the top
 # of data/kernels/spektrafilm.cl). The "#pragma STDC FP_CONTRACT OFF" in that
 # header does not achieve this on GCC, which has never implemented the pragma
 # and happily emits vfmadd with it in force; -march=native then guarantees FMA

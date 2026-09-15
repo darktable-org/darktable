@@ -90,7 +90,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SPEKTRA_INLINE static inline
+#define GRAIN_INLINE static inline
 #include "common/gaussian.h"
 #include "common/spektra_core.h"
 #include "common/spektra_sim.h"
