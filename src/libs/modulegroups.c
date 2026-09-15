@@ -890,7 +890,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       // we don't want the user to mess with those
       if(module->iop_order == INT_MAX)
       {
-        if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
+        if(dt_dev_gui_module() == module) dt_iop_request_focus(NULL);
         if(w) gtk_widget_hide(w);
         continue;
       }
@@ -912,7 +912,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         /* don't show deprecated ones unless they are enabled */
         if(module->flags() & IOP_FLAGS_DEPRECATED && !(module->enabled))
         {
-          if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
+          if(dt_dev_gui_module() == module) dt_iop_request_focus(NULL);
           if(w) gtk_widget_hide(w);
         }
         else
@@ -981,12 +981,12 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
       if(show_module)
       {
-        if(darktable.develop->gui_module == module && !module->expanded) dt_iop_request_focus(NULL);
+        if(dt_dev_gui_module() == module && !module->expanded) dt_iop_request_focus(NULL);
         if(w) gtk_widget_show(w);
       }
       else
       {
-        if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
+        if(dt_dev_gui_module() == module) dt_iop_request_focus(NULL);
         if(w) gtk_widget_hide(w);
       }
 
@@ -1004,6 +1004,56 @@ static void _lib_modulegroups_switch_to(dt_lib_module_t *self, const int group)
 {
   dt_lib_modulegroups_t *d = self->data;
   const int ngroups = g_list_length(d->groups);
+  const dt_iop_module_t *gui_module = dt_dev_gui_module();
+  const gboolean enabled = gui_module ? gui_module->enabled : FALSE;
+
+  /** In some cases the switch to the quick access panel is not safe for
+      various reasons if a module holds gui focus.
+      1)  modules enforcing a crop via IOP_TAG_CROPPING or if they have
+          special drawing code.
+          If enabled it's good to assume that the user has some work
+          left to do so we don't switch and don't fiddle with specials.
+          If not enabled a simple defucus and redraw is good and we can switch.
+      2)  If we are in mask edit mode it's dangerous to switch
+          as there are no visible controls that masks are editied so we don't
+          switch
+      3)  In mask visualizing mode or if we have blend pickers we also don't
+          switch.
+  */
+  if(d->current != DT_MODULEGROUP_BASICS
+      && group == DT_MODULEGROUP_BASICS
+      && gui_module)
+  {
+    if((gui_module->operation_tags() & IOP_TAG_CROPPING)
+      || (gui_module->flags() & IOP_FLAGS_GUIDES_SPECIAL_DRAW))
+    {
+      if(enabled)
+      {
+        dt_control_log(_("close `%s` before switching to quick access panel"), gui_module->name());
+        d->current = DT_MODULEGROUP_NONE;
+        goto update_group;
+      }
+      else
+      {
+        dt_iop_request_focus(NULL);
+        dt_control_queue_redraw_center();
+      }
+    }
+
+    if(gui_module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+    {
+      const dt_iop_gui_blend_data_t *bd = gui_module->blend_data;
+      const gboolean mask_edit = bd && enabled && bd->masks_shown != DT_MASKS_EDIT_OFF;
+      const gboolean mask_visual = bd && gui_module->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE;
+      const gboolean picking = bd && gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF;
+      if(mask_edit || mask_visual || picking)
+      {
+        dt_control_log(_("finish mask work in `%s` before switching to quick access panel"), gui_module->name());
+        d->current = DT_MODULEGROUP_NONE;
+        goto update_group;
+      }
+    }
+  }
 
   /* deactivate all buttons */
   for(int k = 0; k <= ngroups; k++)
@@ -1029,7 +1079,8 @@ static void _lib_modulegroups_switch_to(dt_lib_module_t *self, const int group)
   if(gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box)))
     gtk_entry_set_text(GTK_ENTRY(d->text_entry), "");
 
-  /* update visibility */
+update_group:
+  /* update visibility, this must be reached even if we don't switch */
   d->force_show_module = NULL;
   _lib_modulegroups_update_iop_visibility(self);
 }
