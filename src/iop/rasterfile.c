@@ -33,6 +33,7 @@
 #include "develop/imageop_math.h"
 #include "common/interpolation.h"
 #include "common/fast_guided_filter.h"
+#include "common/dtdata.h"
 #include "common/pfm.h"
 #include "common/ras2vect.h"
 #include "common/utility.h"
@@ -40,20 +41,13 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 
-#include <dirent.h>
-
-#if defined (_WIN32)
-#include "win/getdelim.h"
-#include "win/scandir.h"
-#endif
-
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
 #define SET_THRESHOLD 0.6f
 
-DT_MODULE_INTROSPECTION(1, dt_iop_rasterfile_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_rasterfile_params_t)
 
 typedef enum dt_iop_rasterfile_mode_t
 {
@@ -71,14 +65,26 @@ typedef enum dt_iop_rasterfile_mode_t
 typedef struct dt_iop_rasterfile_params_t
 {
   dt_iop_rasterfile_mode_t mode;  // $DEFAULT: DT_RASTERFILE_MODE_ALL $DESCRIPTION: "mode"
+  // v1: a file in the raster mask root folder. still honored when set and
+  // no sidecar entry is referenced
   char path[RASTERFILE_MAXFILE];
   char file[RASTERFILE_MAXFILE];
+  // v2: an entry in the image's .dtdata sidecar, the fields of
+  // dt_dtdata_ref_t laid out inline so introspection can see them
+  char entry[DT_DTDATA_ENTRY_LEN];
+  int entry_kind;
+  int entry_origin;
+  int entry_width;
+  int entry_height;
+  int entry_bpc;
+  char entry_producer[DT_DTDATA_PRODUCER_LEN];
 } dt_iop_rasterfile_params_t;
 
 typedef struct dt_iop_rasterfile_data_t
 {
   dt_iop_rasterfile_mode_t mode;
   char filepath[PATH_MAX];
+  dt_dtdata_ref_t ref;
 } dt_iop_rasterfile_data_t;
 
 typedef struct dt_rasterfile_cache_t
@@ -129,8 +135,8 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 typedef struct dt_iop_rasterfile_gui_data_t
 {
   GtkWidget *mode;
-  GtkWidget *fbutton;
-  GtkWidget *file;
+  GtkWidget *import;
+  GtkWidget *info;
   GtkWidget *vectorize;
 } dt_iop_rasterfile_gui_data_t;
 
@@ -141,7 +147,69 @@ int legacy_params(dt_iop_module_t *self,
                   int32_t *new_params_size,
                   int *new_version)
 {
+  typedef struct dt_iop_rasterfile_params_v2_t
+  {
+    dt_iop_rasterfile_mode_t mode;
+    char path[RASTERFILE_MAXFILE];
+    char file[RASTERFILE_MAXFILE];
+    char entry[DT_DTDATA_ENTRY_LEN];
+    int entry_kind;
+    int entry_origin;
+    int entry_width;
+    int entry_height;
+    int entry_bpc;
+    char entry_producer[DT_DTDATA_PRODUCER_LEN];
+  } dt_iop_rasterfile_params_v2_t;
+
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_rasterfile_params_v1_t
+    {
+      dt_iop_rasterfile_mode_t mode;
+      char path[RASTERFILE_MAXFILE];
+      char file[RASTERFILE_MAXFILE];
+    } dt_iop_rasterfile_params_v1_t;
+
+    const dt_iop_rasterfile_params_v1_t *o = old_params;
+    dt_iop_rasterfile_params_v2_t *n = calloc(1, sizeof(dt_iop_rasterfile_params_v2_t));
+    memcpy(n, o, sizeof(dt_iop_rasterfile_params_v1_t));
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_rasterfile_params_v2_t);
+    *new_version = 2;
+    return 0;
+  }
   return 1;
+}
+
+static gboolean _has_source(const dt_iop_rasterfile_params_t *p)
+{
+  return p->entry[0] || (p->path[0] && p->file[0]);
+}
+
+static void _params_from_ref(dt_iop_rasterfile_params_t *p, const dt_dtdata_ref_t *ref)
+{
+  g_strlcpy(p->entry, ref->entry, sizeof(p->entry));
+  p->entry_kind = ref->kind;
+  p->entry_origin = ref->origin;
+  p->entry_width = ref->width;
+  p->entry_height = ref->height;
+  p->entry_bpc = ref->bpc;
+  g_strlcpy(p->entry_producer, ref->producer, sizeof(p->entry_producer));
+  // a sidecar entry replaces a folder file
+  memset(p->path, 0, sizeof(p->path));
+  memset(p->file, 0, sizeof(p->file));
+}
+
+static void _ref_from_params(const dt_iop_rasterfile_params_t *p, dt_dtdata_ref_t *ref)
+{
+  memset(ref, 0, sizeof(*ref));
+  g_strlcpy(ref->entry, p->entry, sizeof(ref->entry));
+  ref->kind = p->entry_kind;
+  ref->origin = p->entry_origin;
+  ref->width = p->entry_width;
+  ref->height = p->entry_height;
+  ref->bpc = p->entry_bpc;
+  g_strlcpy(ref->producer, p->entry_producer, sizeof(ref->producer));
 }
 
 void modify_roi_in(dt_iop_module_t *self,
@@ -309,89 +377,77 @@ static float *_read_rasterfile(char *filename,
   return mask;
 }
 
-static int _check_extension(const struct dirent *namestruct)
-{
-  const char *filename = namestruct->d_name;
-  if(!filename || !filename[0]) return 0;
-  const char *p = g_strrstr(filename, ".");
-  return p
-         && (!g_ascii_strcasecmp(p, ".pfm")
-             || !g_ascii_strcasecmp(p, ".png"));
-}
-
-static void _update_filepath(dt_iop_module_t *self)
+// what this instance references: its sidecar entry, the folder file of a
+// v1 edit, or nothing
+static void _update_info(dt_iop_module_t *self)
 {
   dt_iop_rasterfile_gui_data_t *g = self->gui_data;
   dt_iop_rasterfile_params_t *p = self->params;
-  if(!p->path[0] || !p->file[0])
-  {
-    dt_bauhaus_combobox_clear(g->file);
-    // Making the empty widget insensitive is very important, because
-    // attempts to interact with it trigger a bug in GTK (as of 3.24.49)
-    // that disables the display of tooltips
-    gtk_widget_set_sensitive(g->file, FALSE);
-    return;
-  }
-  gtk_widget_set_sensitive(g->file, TRUE);
+  gchar *text = NULL;
 
-  if(!dt_bauhaus_combobox_set_from_text(g->file, p->file))
+  if(p->entry[0])
   {
-    struct dirent **entries;
-    const int numentries = scandir(p->path, &entries, _check_extension, alphasort);
-    dt_bauhaus_combobox_clear(g->file);
-
-    for(int i = 0; i < numentries; i++)
+    const char *dash = strchr(p->entry, '-');
+    GList *entries = self->dev ? dt_dtdata_list_entries(self->dev->image_storage.id) : NULL;
+    const gboolean present = g_list_find_custom(entries, p->entry, (GCompareFunc)g_strcmp0) != NULL;
+    g_list_free_full(entries, g_free);
+    if(p->entry_width > 0 && p->entry_height > 0)
+      text = g_strdup_printf(_("mask %.8s, %d x %d"), dash ? dash + 1 : p->entry,
+                             p->entry_width, p->entry_height);
+    else
+      text = g_strdup_printf(_("mask %.8s"), dash ? dash + 1 : p->entry);
+    if(!present)
     {
-      const char *file = entries[i]->d_name;
-      char *normalized_filename = g_locale_to_utf8(file, -1, NULL, NULL, NULL);
-      dt_bauhaus_combobox_add_aligned(g->file, normalized_filename,
-                                      DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-      free(entries[i]);
-      g_free(normalized_filename);
-    }
-    if(numentries != -1)
-      free(entries);
-
-    if(!dt_bauhaus_combobox_set_from_text(g->file, p->file))
-    { // file may have disappeared - show it
-      char *invalidfilepath = g_strconcat(" ??? ", p->file, NULL);
-      dt_bauhaus_combobox_add_aligned(g->file, invalidfilepath,
-                                      DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-      dt_bauhaus_combobox_set_from_text(g->file, invalidfilepath);
-      g_free(invalidfilepath);
+      gchar *full = g_strdup_printf("%s (%s)", text, _("missing from sidecar"));
+      g_free(text);
+      text = full;
     }
   }
+  else if(p->path[0] && p->file[0])
+    text = g_strdup_printf(_("folder: %s"), p->file);
+  else
+    text = g_strdup(_("no mask imported"));
+
+  gtk_label_set_text(GTK_LABEL(g->info), text);
+  g_free(text);
+  gtk_widget_set_sensitive(g->vectorize, _has_source(p));
 }
 
-static void _fbutton_clicked(GtkWidget *widget, dt_iop_module_t *self)
+static GtkFileChooserNative *_mask_file_chooser(const char *folder)
 {
-  dt_iop_rasterfile_gui_data_t *g = self->gui_data;
-  dt_iop_rasterfile_params_t *p = self->params;
-
-  gchar *mfolder = dt_conf_get_string("plugins/darkroom/segments/def_path");
-  if(strlen(mfolder) == 0)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "raster mask files root folder not defined");
-    dt_control_log(_("raster mask files root folder not defined"));
-    g_free(mfolder);
-    return;
-  }
-
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
         _("select raster mask file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
         _("_select"), _("_cancel"));
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
-  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), mfolder);
+  if(folder && *folder && g_file_test(folder, G_FILE_TEST_IS_DIR))
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), folder);
+
   GtkFileFilter *filter = GTK_FILE_FILTER(gtk_file_filter_new());
-  // only pfm/png files yet supported
   gtk_file_filter_add_pattern(filter, "*.pfm");
   gtk_file_filter_add_pattern(filter, "*.PFM");
   gtk_file_filter_add_pattern(filter, "*.png");
   gtk_file_filter_add_pattern(filter, "*.PNG");
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
   gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(filechooser), filter);
+  return filechooser;
+}
 
+// sidecars off: the previous behavior, a file inside the raster mask root
+// folder referenced by its path
+static void _select_folder_file(dt_iop_module_t *self)
+{
+  dt_iop_rasterfile_params_t *p = self->params;
+
+  gchar *mfolder = dt_conf_get_string("plugins/darkroom/segments/def_path");
+  if(!mfolder || !*mfolder)
+  {
+    dt_control_log(_("raster mask files root folder not defined"));
+    g_free(mfolder);
+    return;
+  }
+
+  GtkFileChooserNative *filechooser = _mask_file_chooser(mfolder);
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *filepath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
@@ -402,33 +458,80 @@ static void _fbutton_clicked(GtkWidget *widget, dt_iop_module_t *self)
       char *relativepath = g_path_get_dirname(filepath);
       dt_strlcpy_to_fixed(p->path, relativepath, sizeof(p->path));
       g_free(relativepath);
-
       char *bname = g_path_get_basename(filepath);
       dt_strlcpy_to_fixed(p->file, bname, sizeof(p->file));
       g_free(bname);
-
-      _update_filepath(self);
+      memset(p->entry, 0, sizeof(p->entry));
+      _update_info(self);
       dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
     else
-    {
-      dt_print(DT_DEBUG_ALWAYS, "selected file not within raster masks root folder");
       dt_control_log(_("selected file not within raster masks root folder"));
-    }
     g_free(filepath);
-    gtk_widget_set_sensitive(g->file, p->path[0] && p->file[0]);
-    gtk_widget_set_sensitive(g->vectorize, p->path[0] && p->file[0]);
   }
   g_free(mfolder);
   g_object_unref(filechooser);
 }
 
-static void _file_callback(GtkWidget *widget, dt_iop_module_t *self)
+// sidecars on: read any PNG or PFM, reduce it to gray with the channel
+// mode, and store it as an entry of the image's sidecar
+static void _import_file(dt_iop_module_t *self)
 {
   dt_iop_rasterfile_params_t *p = self->params;
-  const gchar *select = dt_bauhaus_combobox_get_text(widget);
-  dt_strlcpy_to_fixed(p->file, select, sizeof(p->file));
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  const dt_imgid_t imgid = self->dev->image_storage.id;
+  if(!dt_is_valid_imgid(imgid)) return;
+
+  gchar *mfolder = dt_conf_get_string("plugins/darkroom/segments/def_path");
+  GtkFileChooserNative *filechooser = _mask_file_chooser(mfolder);
+  g_free(mfolder);
+
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    gchar *filepath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    int width = 0, height = 0;
+    float *mask = _read_rasterfile(filepath, p->mode, &width, &height);
+    if(mask)
+    {
+      // PFM carries float data worth keeping at 16 bit; PNG input is 8 bit already
+      const char *ext = g_strrstr(filepath, ".");
+      const int bpc = (ext && !g_ascii_strcasecmp(ext, ".pfm")) ? 16 : 8;
+      dt_dtdata_ref_t ref;
+      if(dt_dtdata_write_gray(imgid, DT_DTDATA_KIND_MASK, DT_DTDATA_ORIGIN_AUTHORITATIVE,
+                              "rasterfile import", mask, width, height, bpc, &ref))
+      {
+        _params_from_ref(p, &ref);
+        _update_info(self);
+        dt_dev_add_history_item(darktable.develop, self, TRUE);
+      }
+      else
+        dt_control_log(_("cannot write the raster mask sidecar for this image"));
+      dt_free_align(mask);
+    }
+    g_free(filepath);
+  }
+  g_object_unref(filechooser);
+}
+
+static void _import_clicked(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(dt_dtdata_enabled())
+    _import_file(self);
+  else
+    _select_folder_file(self);
+}
+
+// the button does two different things depending on the sidecar setting,
+// so say which before it is clicked
+static void _update_import_tooltip(dt_iop_module_t *self)
+{
+  dt_iop_rasterfile_gui_data_t *g = self->gui_data;
+  gtk_widget_set_tooltip_text
+    (g->import,
+     dt_dtdata_enabled()
+       ? _("import a PNG or PFM file as a raster mask\n"
+           "it is stored in the image's .dtdata sidecar and travels with the image")
+       : _("select a PNG or PFM file from the raster mask root folder\n"
+           "sidecar files are disabled in preferences, so the mask is referenced by its path"));
 }
 
 static void _clear_cache(dt_rasterfile_cache_t *cache)
@@ -464,9 +567,18 @@ static float *_get_rasterfile_mask(dt_dev_pixelpipe_iop_t *piece,
   if(hash != cd->hash)
   {
     _clear_cache(cd);
-    dt_print(DT_DEBUG_PIPE,
-             "read image raster file `%s'", d->filepath);
-    cd->mask = _read_rasterfile(d->filepath, d->mode, &cd->width, &cd->height);
+    if(d->ref.entry[0])
+    {
+      dt_print(DT_DEBUG_PIPE, "read sidecar raster entry `%s'", d->ref.entry);
+      cd->mask = dt_dtdata_read_gray(self->dev->image_storage.id, &d->ref,
+                                     &cd->width, &cd->height);
+    }
+    else
+    {
+      dt_print(DT_DEBUG_PIPE,
+               "read image raster file `%s'", d->filepath);
+      cd->mask = _read_rasterfile(d->filepath, d->mode, &cd->width, &cd->height);
+    }
     cd->hash = cd->mask ? hash : DT_INVALID_HASH;
     dt_print(DT_DEBUG_PIPE,
              "got raster mask data %p %dx%d", cd->mask, cd->width, cd->height);
@@ -605,6 +717,26 @@ void process(dt_iop_module_t *self,
   }
 }
 
+// lets the sidecar sweep see which entry a stored params blob references
+static int _scan_params(const void *params,
+                        const size_t size,
+                        const int version,
+                        char *entry,
+                        const size_t len)
+{
+  if(version == 1) return 0; // a folder file, nothing in the sidecar
+  if(version != 2 || size != sizeof(dt_iop_rasterfile_params_t)) return -1;
+  const dt_iop_rasterfile_params_t *p = params;
+  if(!p->entry[0]) return 0;
+  g_strlcpy(entry, p->entry, len);
+  return 1;
+}
+
+void init_global(dt_iop_module_so_t *self)
+{
+  dt_dtdata_register_scanner(self->op, 1u << DT_DTDATA_KIND_MASK, _scan_params);
+}
+
 void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
@@ -617,6 +749,7 @@ void commit_params(dt_iop_module_t *self,
   gchar *fullpath = g_build_filename(p->path, p->file, NULL);
   dt_strlcpy_to_fixed(d->filepath, fullpath, sizeof(d->filepath));
   g_free(fullpath);
+  _ref_from_params(p, &d->ref);
 }
 
 void tiling_callback(dt_iop_module_t *self,
@@ -667,8 +800,11 @@ void gui_changed(dt_iop_module_t *self,
   dt_iop_rasterfile_gui_data_t *g = self->gui_data;
   dt_iop_rasterfile_params_t *p = self->params;
 
-  if(!w || w == g->mode)
-    _update_filepath(self);
+  if(!w)
+  {
+    _update_info(self);
+    _update_import_tooltip(self);
+  }
 
   if(!w)
   {
@@ -683,7 +819,7 @@ void gui_changed(dt_iop_module_t *self,
       dt_dev_reprocess_center(self->dev, self->iop_order);
   }
 
-  gtk_widget_set_sensitive(g->vectorize, p->path[0] && p->file[0]);
+  gtk_widget_set_sensitive(g->vectorize, _has_source(p));
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -747,24 +883,22 @@ void gui_init(dt_iop_module_t *self)
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
   gtk_widget_set_tooltip_text
     (g->mode,
-     _("select the RGB channels taken into account to generate the raster mask"));
+     _("select the RGB channels taken into account when a color file is imported"));
 
-  g->fbutton = dtgtk_button_new_full(dtgtk_cairo_paint_directory, CPF_NONE, NULL,
+  g->import = dtgtk_button_new_full(dtgtk_cairo_paint_directory, CPF_NONE, NULL,
       &(dtgtk_button_config_t){
-        .tooltip = _("select the PFM/PNG file recorded as a raster mask,\n"
-          "CAUTION: path must be set in preferences/processing before choosing"),
-        .clicked_cb = G_CALLBACK(_fbutton_clicked),
+        .clicked_cb = G_CALLBACK(_import_clicked),
         .clicked_data = self,
       });
-  gtk_widget_set_name(g->fbutton, "non-flat");
+  gtk_widget_set_name(g->import, "non-flat");
 
-  g->file = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_combobox_set_entries_ellipsis(g->file, PANGO_ELLIPSIZE_MIDDLE);
+  g->info = dt_ui_label_new("");
+  gtk_label_set_ellipsize(GTK_LABEL(g->info), PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_tooltip_text
-    (g->file,
-     _("the mask file path is saved with the image history"));
-  g_signal_connect(G_OBJECT(g->file), "value-changed",
-                   G_CALLBACK(_file_callback), self);
+    (g->info,
+     _("the raster mask this instance uses\n"
+       "importing another file replaces it; masks no longer used by any\n"
+       "history item are removed from the sidecar when leaving the darkroom"));
 
   // Vectorize button
 
@@ -777,7 +911,7 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(_vectorize_button_clicked), self);
 
   dt_gui_box_add(self->widget,
-                 dt_gui_hbox(g->fbutton, dt_gui_expand(g->file)),
+                 dt_gui_hbox(g->import, dt_gui_expand(g->info)),
                  g->vectorize);
 }
 
