@@ -19,6 +19,7 @@
 #include "lua/image.h"
 #include "common/colorlabels.h"
 #include "common/debug.h"
+#include "common/dtdata.h"
 #include "common/grouping.h"
 #include "common/mipmap_cache.h" // for dt_mipmap_size_t, etc
 #include "common/file_location.h"
@@ -89,6 +90,10 @@ static int history_delete(lua_State *L)
   dt_lua_image_t imgid = NO_IMGID;
   luaA_to(L, dt_lua_image_t, &imgid, -1);
   dt_history_delete_on_image(imgid);
+  // scripts use reset as the discard, so drop the sidecar like the lighttable
+  // action does; not in dt_history_delete_on_image() since the darkroom
+  // reaches that from an undoable path
+  dt_dtdata_delete(imgid);
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
   return 0;
 }
