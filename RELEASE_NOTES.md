@@ -123,6 +123,8 @@ changes (where available).
   output folder, so the output file name and its suffix can be chosen.
   The extension still comes from the task.
 
+- Some safety checks when switching to the quick access panel were added.
+
 ## Performance Improvements
 
 - Replaced quadratic XMP history writes with a linear algorithm.
