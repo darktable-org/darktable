@@ -115,8 +115,8 @@ changes (where available).
 - Added an interactive editing mode allowing users to correct a color
   by selecting it directly on the photo with the mouse wheel, just as
   was already possible with the "tone equalizer" module.
-  
-- Grey theme: The filmstrip is now slightly darker to improve visual 
+
+- Grey theme: The filmstrip is now slightly darker to improve visual
   distinction between unselected/selected images.
 
 - Neural restore now takes a full output path per task instead of an
@@ -132,7 +132,7 @@ changes (where available).
 - Don't invalidate the pixelpipe cache on every commit
   when a raster mask is used.
 
-- don't calculate unused rastermasks while exporting.
+- Don't calculate unused rastermasks while exporting.
 
 - Speed up editing an image that uses a detail mask. Every history change
   used to discard the cached output of every module from demosaic onwards,
