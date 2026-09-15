@@ -2668,8 +2668,11 @@ void dt_opencl_free_kernel(const int kernel)
   dt_pthread_mutex_lock(&cl->lock);
   for(int dev = 0; dev < cl->num_devs; dev++)
   {
-    cl->dev[dev].kernel_used[kernel] = FALSE;
-    (cl->dlocl->symbols->dt_clReleaseKernel)(cl->dev[dev].kernel[kernel]);
+    if(cl->dev[dev].kernel_used[kernel])
+    {
+      (cl->dlocl->symbols->dt_clReleaseKernel)(cl->dev[dev].kernel[kernel]);
+      cl->dev[dev].kernel_used[kernel] = FALSE;
+    }
   }
   dt_pthread_mutex_unlock(&cl->lock);
 }
