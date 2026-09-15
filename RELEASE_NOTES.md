@@ -89,6 +89,11 @@ changes (where available).
 
 ## UI/UX Improvements
 
+- The code has received a large set of changes in preparation of the
+  Gtk4 migration.
+
+  - The code for handling popover menus has been changed.
+
 - Checkboxes are now Bauhaus widgets and are reset to default values
   when e.g. a tab or a module is reset.
 
