@@ -824,6 +824,25 @@ static char *_get_version_string(void)
   #endif
 #endif
 
+#if (defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64))
+  #if !defined(__SSE2__) || !defined(__SSE__)
+    const char *platform_name = "x64";
+  #else
+    const char *platform_name = "x64 sse2";
+  #endif
+#else
+  #if defined(__aarch64__) && (defined(__ARM_64BIT_STATE) && defined(__ARM_ARCH) && (defined(__ARM_ARCH_8A) || __ARM_ARCH_PROFILE == 'A') || defined(__APPLE__) || defined(__MINGW64__))
+    #if defined(__ARM_NEON)
+      const char *platform_name = "arm neon";
+    #else
+      const char *platform_name = "arm";
+    #endif
+  #else
+    const char *platform_name = "other";
+  #endif
+#endif
+
+
 #ifdef USE_LUA
   const char *lua_api_version = strcmp(LUA_API_VERSION_SUFFIX, "") ?
                                        STR(LUA_API_VERSION_MAJOR) "."
@@ -836,17 +855,16 @@ static char *_get_version_string(void)
 #endif
 
 char *version = g_strdup_printf(
-               "darktable %s [%s]\n"
+               "darktable %s [%s %s]\n"
                "Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
                "Compile options:\n"
-               "  Bit depth              -> %zu bit\n"
                "%s%s%s%s%s%s%s%s%s\n"
                "See %s for detailed documentation.\n"
                "See %s to report bugs.\n",
                darktable_package_version,
                system_name,
+               platform_name,
                darktable_last_commit_year,
-               CHAR_BIT * sizeof(void *),
 
                "  Exiv2                  -> ", exiv2_version,
                "  Lensfun                -> ", liblensfun_version,
@@ -854,12 +872,6 @@ char *version = g_strdup_printf(
                "  Debug                  -> ENABLED\n"
 #else
                "  Debug                  -> DISABLED\n"
-#endif
-
-#if defined(__SSE2__) && defined(__SSE__)
-               "  SSE2 optimizations     -> ENABLED\n"
-#else
-               "  SSE2 optimizations     -> DISABLED\n"
 #endif
 
 #ifdef _OPENMP
