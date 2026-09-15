@@ -1561,10 +1561,10 @@ static gboolean _do_select_single(gpointer user_data)
 {
   dt_thumbtable_t *table = user_data;
 
-  // always keep the edited picture selected
-  dt_selection_clear(darktable.selection);
-  dt_selection_select(darktable.selection, darktable.develop->image_storage.id);
-  dt_selection_select(darktable.selection, table->to_selid);
+  // a single left click on an image in the filmstrip thumbnail selects it
+  // exclusively (not keeping the active image selected). This is in line
+  // with the way selecting images works in the lighttable.
+  dt_selection_select_single(darktable.selection, table->to_selid);
   table->sel_single_cb = 0;
 
   return FALSE;
