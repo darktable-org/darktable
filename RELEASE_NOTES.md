@@ -320,6 +320,10 @@ changes (where available).
 - Fixed metadata tag Xmp.xmpMM.PreservedFileName not written on camera
   import.
 
+- Fixed perspective correction occasionally computing its automatic crop
+  from a mismatched preview size, which could leave the crop box slightly
+  wrong until the module was adjusted again.
+
 ## Lua
 
 ### API Version
