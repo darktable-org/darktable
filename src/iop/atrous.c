@@ -1773,14 +1773,36 @@ void gui_init(dt_iop_module_t *self)
   g->channel_tabs = dt_ui_notebook_new(&notebook_def);
   dt_action_define_iop(self, NULL, N_("channel"),
                        GTK_WIDGET(g->channel_tabs), &notebook_def);
-  dt_ui_notebook_page(g->channel_tabs, N_("luma"),
-                      _("change lightness at each feature size"));
-  dt_ui_notebook_page(g->channel_tabs, N_("chroma"),
-                      _("change color saturation at each feature size"));
-  dt_ui_notebook_page
-    (g->channel_tabs, N_("edges"),
-     _("change edge halos at each feature size\nonly changes results of luma"
-       " and chroma tabs"));
+  /* The tabs hold no widgets: one graph below them is pointed at whichever
+     channel the current tab selects. Name the bands each tab governs instead.
+     Luma and chroma move their threshold channel along with the visible one,
+     so both count towards the same tab. */
+#define ATROUS_BANDS_OF(ch) \
+  { offsetof(dt_iop_atrous_params_t, x[ch]), sizeof(float) * BANDS }, \
+  { offsetof(dt_iop_atrous_params_t, y[ch]), sizeof(float) * BANDS }
+
+  static const dt_iop_param_range_t luma_bands[] =
+    { ATROUS_BANDS_OF(atrous_L), ATROUS_BANDS_OF(atrous_Lt) };
+  static const dt_iop_param_range_t chroma_bands[] =
+    { ATROUS_BANDS_OF(atrous_c), ATROUS_BANDS_OF(atrous_ct) };
+  static const dt_iop_param_range_t edge_bands[] =
+    { ATROUS_BANDS_OF(atrous_s) };
+#undef ATROUS_BANDS_OF
+
+  dt_iop_page_bind_params
+    (dt_ui_notebook_page(g->channel_tabs, N_("luma"),
+                         _("change lightness at each feature size")),
+     self, luma_bands, sizeof(luma_bands) / sizeof(luma_bands[0]));
+  dt_iop_page_bind_params
+    (dt_ui_notebook_page(g->channel_tabs, N_("chroma"),
+                         _("change color saturation at each feature size")),
+     self, chroma_bands, sizeof(chroma_bands) / sizeof(chroma_bands[0]));
+  dt_iop_page_bind_params
+    (dt_ui_notebook_page
+     (g->channel_tabs, N_("edges"),
+      _("change edge halos at each feature size\nonly changes results of luma"
+        " and chroma tabs")),
+     self, edge_bands, sizeof(edge_bands) / sizeof(edge_bands[0]));
   gtk_widget_show(gtk_notebook_get_nth_page(g->channel_tabs, g->channel));
   gtk_notebook_set_current_page(g->channel_tabs, g->channel);
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
