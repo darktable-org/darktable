@@ -311,6 +311,17 @@ changes (where available).
 - Fixed metadata tag Xmp.xmpMM.PreservedFileName not written on camera
   import.
 
+- Corrected the reference colors for the Datacolor SpyderCheckr Photo
+  target, which carried the SpyderCheckr 48 patch values rather than
+  its own. Profiling that chart with color calibration now measures
+  against the colors it actually has, lowering the reported delta E.
+
+- Fixed color calibration swapping the white and middle gray reference
+  patches on the Datacolor SpyderCheckr Photo.
+
+- Fixed color calibration not using the gray patch closest to middle gray
+  on the 48-patch Datacolor SpyderCheckr targets.
+
 ## Lua
 
 ### API Version
