@@ -16,6 +16,7 @@
   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/dtdata.h"
 #include "common/image.h"
 #include "common/collection.h"
 #include "common/colorspaces.h"
@@ -1836,7 +1837,8 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
     ;
   if(!strcasecmp(cc, ".dt")
      || !strcasecmp(cc, ".dttags")
-     || !strcasecmp(cc, ".xmp"))
+     || !strcasecmp(cc, ".xmp")
+     || !strcasecmp(cc, DT_DTDATA_EXT))
   {
     g_free(normalized_filename);
     return NO_IMGID;
@@ -2396,6 +2398,10 @@ gboolean dt_image_rename(const dt_imgid_t imgid,
         g_strlcpy(newxmp, newimg, sizeof(newxmp));
         dt_image_path_append_version(id, oldxmp, sizeof(oldxmp));
         dt_image_path_append_version(id, newxmp, sizeof(newxmp));
+        // the .dtdata sidecar follows the xmp wherever it goes
+        gchar olddata[PATH_MAX] = { 0 }, newdata[PATH_MAX] = { 0 };
+        dt_dtdata_path_for_image(oldxmp, olddata, sizeof(olddata));
+        dt_dtdata_path_for_image(newxmp, newdata, sizeof(newdata));
         g_strlcat(oldxmp, ".xmp", sizeof(oldxmp));
         g_strlcat(newxmp, ".xmp", sizeof(newxmp));
 
@@ -2406,6 +2412,22 @@ gboolean dt_image_rename(const dt_imgid_t imgid,
 
         g_object_unref(goldxmp);
         g_object_unref(gnewxmp);
+
+        if(g_file_test(olddata, G_FILE_TEST_EXISTS))
+        {
+          GFile *golddata = g_file_new_for_path(olddata);
+          GFile *gnewdata = g_file_new_for_path(newdata);
+          GError *error = NULL;
+          // a stale sidecar at the destination must not keep the live one behind
+          if(!g_file_move(golddata, gnewdata, G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, &error))
+          {
+            dt_print(DT_DEBUG_ALWAYS, "[dt_image_rename] cannot move '%s' to '%s': %s",
+                     olddata, newdata, error ? error->message : "unknown error");
+            g_clear_error(&error);
+          }
+          g_object_unref(golddata);
+          g_object_unref(gnewdata);
+        }
       }
       sqlite3_finalize(duplicates_stmt);
 
@@ -2861,6 +2883,30 @@ gboolean dt_image_local_copy_set(const dt_imgid_t imgid)
     g_object_unref(src);
   }
 
+  // the sidecar travels with the copy so masks stay readable while the
+  // original is offline; dt_image_local_copy_reset() merges it back. each
+  // duplicate has its own, hence outside the raw copy above
+  gchar srcdata[PATH_MAX] = { 0 };
+  gchar destdata[PATH_MAX] = { 0 };
+  dt_image_path_append_version(imgid, srcpath, sizeof(srcpath));
+  dt_image_path_append_version(imgid, destpath, sizeof(destpath));
+  dt_dtdata_path_for_image(srcpath, srcdata, sizeof(srcdata));
+  dt_dtdata_path_for_image(destpath, destdata, sizeof(destdata));
+  if(g_file_test(srcdata, G_FILE_TEST_EXISTS))
+  {
+    GFile *src = g_file_new_for_path(srcdata);
+    GFile *dest = g_file_new_for_path(destdata);
+    GError *gerror = NULL;
+    if(!g_file_copy(src, dest, G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, &gerror))
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[dt_image_local_copy_set] cannot copy '%s' to '%s': %s",
+               srcdata, destdata, gerror ? gerror->message : "");
+      g_clear_error(&gerror);
+    }
+    g_object_unref(dest);
+    g_object_unref(src);
+  }
+
   // update cache local copy flags, do this even if the local copy
   // already exists as we need to set the flags for duplicate
   dt_image_t *img = dt_image_cache_get(imgid, 'w');
@@ -2958,13 +3004,31 @@ gboolean dt_image_local_copy_reset(const dt_imgid_t imgid)
 
     g_object_unref(dest);
 
-    // delete xmp if any
+    // delete xmp and .dtdata if any
     dt_image_path_append_version(imgid, locppath, sizeof(locppath));
+    gchar locdata[PATH_MAX] = { 0 };
+    dt_dtdata_path_for_image(locppath, locdata, sizeof(locdata));
     g_strlcat(locppath, ".xmp", sizeof(locppath));
     dest = g_file_new_for_path(locppath);
 
     if(g_file_test(locppath, G_FILE_TEST_EXISTS)) g_file_delete(dest, NULL, NULL);
     g_object_unref(dest);
+
+    // masks imported while the original was offline live only in the
+    // cache sidecar: fold them into the original's before dropping it
+    gchar origpath[PATH_MAX] = { 0 }, origdata[PATH_MAX] = { 0 };
+    g_strlcpy(origpath, destpath, sizeof(origpath));
+    dt_image_path_append_version(imgid, origpath, sizeof(origpath));
+    dt_dtdata_path_for_image(origpath, origdata, sizeof(origdata));
+    if(dt_dtdata_file_merge(locdata, origdata))
+    {
+      dest = g_file_new_for_path(locdata);
+      if(g_file_test(locdata, G_FILE_TEST_EXISTS)) g_file_delete(dest, NULL, NULL);
+      g_object_unref(dest);
+    }
+    else
+      dt_print(DT_DEBUG_ALWAYS, "[dt_image_local_copy_reset] cannot merge '%s' into '%s', kept",
+               locdata, origdata);
   }
 
   // update cache, remove local copy flags, this is done in all cases here as when we

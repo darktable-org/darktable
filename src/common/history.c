@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/dtdata.h"
 #include "common/history.h"
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -964,6 +965,9 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
     ? _history_copy_and_paste_on_image_merge(imgid, dest_imgid, ops, copy_iop_order, copy_full)
     : _history_copy_and_paste_on_image_overwrite(imgid, dest_imgid, ops, copy_iop_order, copy_full);
 
+  // params travel verbatim, so raster entries they reference must too
+  dt_dtdata_merge(imgid, dest_imgid);
+
   if(iop_list)
   {
     dt_ioppr_write_iop_order_list(iop_list, dest_imgid);
@@ -1469,6 +1473,8 @@ gboolean dt_history_compress(const dt_imgid_t imgid)
     dt_image_set_history_end(imgid, done);
 
     dt_image_write_sidecar_file(imgid);
+    // no undo on this path, so entries the compressed history dropped are final
+    dt_dtdata_sweep(imgid);
   }
   dt_unlock_image(imgid);
   dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
@@ -2011,6 +2017,10 @@ gboolean dt_history_delete(const dt_imgid_t imgid,
   {
     dt_history_delete_on_image_ext(imgid, FALSE, TRUE);
   }
+
+  // only the lighttable discard is final: the darkroom paths through
+  // dt_history_delete_on_image_ext() can still be undone
+  dt_dtdata_delete(imgid);
 
   /* update the aspect ratio if the current sorting is based on
      aspect ratio, otherwise the aspect ratio will be recalculated
