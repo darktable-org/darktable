@@ -1,33 +1,59 @@
+# Generic build output
 build*/
 obj*/
+
+# Temporary and generated files
 *~
 *.pot
 *.mo
+*.swp
+.*.swp
+
+# Documentation and API output
 doc/usermanual/darktable-usermanual*.pdf
 doc/api/
 tools/iop_deps.pdf
+
+# IDE and editor files
 *.kdev4
-.DS_Store
-cscope.out
-.*.swp
 .vscode/
 .clangd/
-.cache
-tags
-cscope.*
-compile_commands.json
+*.code-workspace
+CMakeLists.txt.user
+.idea/
 .cproject
 .project
 .settings/
-diff*png
-output*png
-*.code-workspace
-Brewfile.lock.json
-CMakeLists.txt.user
 workspace/
 cmake-build-debug/
-.idea/
+
+# Development caches and indexes
+.cache/
+tags
+cscope.out
+cscope.*
+compile_commands.json
+
+# Generated image files
+diff*png
+output*png
+
+# macOS files
+.DS_Store
+
+# macOS build and packaging output
+/packaging/macosx/bin/
+/packaging/macosx/lib/
+/packaging/macosx/libexec/
+/packaging/macosx/share/
+/packaging/macosx/*.app
+/packaging/macosx/*_ORIGINAL
+
+# Other packaging output
 AppDir/
+
+# Homebrew
+Brewfile.lock.json
 
 # personal, per-project agent instructions (see AGENTS.md)
 AGENTS.local.md
