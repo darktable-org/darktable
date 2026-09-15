@@ -146,6 +146,19 @@ changes (where available).
 
 ## Other Changes
 
+- A new `.dtdata` sidecar next to the XMP holds per-pixel edit data
+  that does not fit an XMP. It is a plain zip of PNG entries, follows
+  the image when it is moved, renamed, duplicated or deleted, is
+  written only when sidecar writing is enabled, and is removed when
+  the history is discarded. Entries no history item references are
+  dropped when leaving the darkroom.
+
+- The external raster masks module imports its mask into the image's
+  `.dtdata` sidecar instead of referencing a file in a root folder.
+  Each instance holds one imported mask. Existing edits that point at
+  a folder keep working, and the folder chooser remains available when
+  sidecar writing is set to "never".
+
 - Added a new collection filter for the original image dimensions.
 
 - Support for Canon's Highlight Tone Priority.
@@ -360,7 +373,8 @@ changes (where available).
 
 ### Mandatory
 
-- N/A
+- libarchive, previously only needed for AI model downloads, is now
+  required for the `.dtdata` sidecar
 
 ### Optional
 

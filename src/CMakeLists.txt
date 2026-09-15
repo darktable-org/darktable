@@ -60,6 +60,7 @@ FILE(GLOB SOURCE_FILES
   "common/histogram.c"
   "common/history.c"
   "common/history_snapshot.c"
+  "common/dtdata.c"
   "common/image.c"
   "common/image_cache.c"
   "common/imagebuf.c"
@@ -522,29 +523,27 @@ endif()
 find_package(CURL 7.56 REQUIRED)
 list(APPEND LIBS CURL::libcurl)
 
-if(USE_AI)
-  # libarchive for AI model ZIP extraction
-  # On macOS with Homebrew, libarchive is keg-only
-  if(APPLE)
-    execute_process(
-      COMMAND brew --prefix libarchive
-      OUTPUT_VARIABLE HOMEBREW_LIBARCHIVE_PREFIX
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-      ERROR_QUIET
-      RESULT_VARIABLE HOMEBREW_LIBARCHIVE_RESULT
-    )
-    if(HOMEBREW_LIBARCHIVE_RESULT EQUAL 0 AND EXISTS "${HOMEBREW_LIBARCHIVE_PREFIX}")
-      list(APPEND CMAKE_PREFIX_PATH "${HOMEBREW_LIBARCHIVE_PREFIX}")
-    endif()
+# libarchive for the .dtdata sidecar (common/dtdata.c) and AI model ZIP extraction
+# On macOS with Homebrew, libarchive is keg-only
+if(APPLE)
+  execute_process(
+    COMMAND brew --prefix libarchive
+    OUTPUT_VARIABLE HOMEBREW_LIBARCHIVE_PREFIX
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+    RESULT_VARIABLE HOMEBREW_LIBARCHIVE_RESULT
+  )
+  if(HOMEBREW_LIBARCHIVE_RESULT EQUAL 0 AND EXISTS "${HOMEBREW_LIBARCHIVE_PREFIX}")
+    list(APPEND CMAKE_PREFIX_PATH "${HOMEBREW_LIBARCHIVE_PREFIX}")
   endif()
-  find_package(LibArchive)
-  if(NOT LibArchive_FOUND)
-    message(FATAL_ERROR "libarchive not found")
-  else()
-    include_directories(SYSTEM ${LibArchive_INCLUDE_DIRS})
-    list(APPEND LIBS ${LibArchive_LIBRARIES})
-  endif()
-endif(USE_AI)
+endif()
+find_package(LibArchive)
+if(NOT LibArchive_FOUND)
+  message(FATAL_ERROR "libarchive not found")
+else()
+  include_directories(SYSTEM ${LibArchive_INCLUDE_DIRS})
+  list(APPEND LIBS ${LibArchive_LIBRARIES})
+endif()
 
 # Require exiv2 >= 0.27.2 to make sure everything we need is available
 find_package(Exiv2 0.27.2 REQUIRED)

@@ -25,6 +25,7 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/dtdata.h"
 #include "common/file_location.h"
 #include "common/focus_peaking.h"
 #include "common/history.h"
@@ -1416,6 +1417,7 @@ static void _dev_change_image(dt_develop_t *dev,
 
   // commit image ops to db
   dt_dev_write_history(dev);
+  dt_dtdata_sweep(dev->image_storage.id);
 
   dev->requested_id = imgid;
   dt_dev_clear_chroma_troubles(dev);
@@ -4296,6 +4298,7 @@ void leave(dt_view_t *self)
   dt_dev_write_history(dev);
 
   const dt_imgid_t imgid = dev->image_storage.id;
+  dt_dtdata_sweep(imgid);
 
   dt_overlay_add_from_history(imgid);
 

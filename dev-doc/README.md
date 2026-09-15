@@ -30,6 +30,11 @@ This guide covers building Image Operation (IOP) modules for darktable's darkroo
 | **[AI.md](AI.md)** | AI subsystem architecture, backend API, and how to add new AI features |
 | **[AI_Tasks.md](AI_Tasks.md)** | Reference for each AI task: mask, denoise, upscale |
 
+### Sidecar Files
+| File | Description |
+|------|-------------|
+| **[dtdata_sidecar.md](dtdata_sidecar.md)** | The `.dtdata` sidecar for raster masks and other per-pixel edit data |
+
 ### Guides
 | File | Description |
 |------|-------------|
