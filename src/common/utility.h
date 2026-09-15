@@ -176,6 +176,9 @@ gchar *dt_str_replace(const char *string,
                       const char *search,
                       const char *replace);
 
+// underscores '_' in strings needs to be doubled to not use mnemonics
+gchar *dt_str_unmnemonic(const char *string);
+
 // returns true if current settings is scene-referred
 gboolean dt_is_scene_referred(void);
 
