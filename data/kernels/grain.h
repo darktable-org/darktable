@@ -16,7 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Scalar float math shared verbatim by spektrafilm's CPU and GPU paths.
+/* Film grain sampling, and the scalar float math it rests on, compiled by
+ * both a module's CPU path and its OpenCL kernels. spektrafilm is the first
+ * caller; nothing here is specific to it.
  *
  * This header is compiled TWICE, by two different compilers, and the two
  * results must agree BIT-FOR-BIT: the grain sampler below runs an
@@ -64,8 +66,8 @@
    versions for float arguments. The macros are #undef'd at the end of this
    header so they cannot leak into the including translation unit. */
 /* Which dialect this is being compiled as is DECLARED by the includer, not
-   sniffed from predefined macros: spektrafilm.cl does "#define SPEKTRA_CL 1"
-   before including this, and the host includes it with SPEKTRA_CL unset.
+   sniffed from predefined macros: a .cl does "#define GRAIN_CL 1"
+   before including this, and the host includes it with GRAIN_CL unset.
    Sniffing is not reliable enough to decide something this load-bearing --
    "clang -cc1 -cl-std=CL1.2", which the testcompile_opencl_kernels CMake
    target uses, defines only __OPENCL_C_VERSION__, while real device
@@ -77,14 +79,14 @@
    either is set we know we are in an OpenCL translation unit, so a .cl that
    forgets the #define gets a clear diagnostic here rather than a confusing
    "math.h not found" fifteen lines down. */
-#if (defined(__OPENCL_VERSION__) || defined(__OPENCL_C_VERSION__)) && !defined(SPEKTRA_CL)
-#error "spektra_shared.h: OpenCL translation unit must '#define SPEKTRA_CL 1' before including this header"
+#if (defined(__OPENCL_VERSION__) || defined(__OPENCL_C_VERSION__)) && !defined(GRAIN_CL)
+#error "grain.h: OpenCL translation unit must '#define GRAIN_CL 1' before including this header"
 #endif
-#if defined(SPEKTRA_CL) && !defined(__OPENCL_VERSION__) && !defined(__OPENCL_C_VERSION__)
-#error "spektra_shared.h: SPEKTRA_CL is set but this is not an OpenCL translation unit"
+#if defined(GRAIN_CL) && !defined(__OPENCL_VERSION__) && !defined(__OPENCL_C_VERSION__)
+#error "grain.h: GRAIN_CL is set but this is not an OpenCL translation unit"
 #endif
 
-#ifdef SPEKTRA_CL
+#ifdef GRAIN_CL
 typedef uint uint32_t;
 #define floorf floor
 #define sqrtf sqrt
@@ -96,17 +98,17 @@ typedef uint uint32_t;
 #pragma STDC FP_CONTRACT OFF
 #endif
 
-#ifndef SPEKTRA_INLINE
-#define SPEKTRA_INLINE static inline
+#ifndef GRAIN_INLINE
+#define GRAIN_INLINE static inline
 #endif
 
 /* fmin(fmax(...)), NOT a ternary chain: IEEE fmax/fmin return the non-NaN
    operand, so a NaN x collapses to lo rather than propagating. That is the
-   behaviour sf_layer_particle's 0/0 comment below relies on. The host copy
+   behaviour grain_layer_particle's 0/0 comment below relies on. The host copy
    this replaces used "x < lo ? lo : (x > hi ? hi : x)", which propagates
    NaN instead -- the two agreed on every finite input and disagreed on
    exactly the case the guard was written for. */
-SPEKTRA_INLINE float sf_clampf(float x,
+GRAIN_INLINE float grain_clampf(float x,
                                float lo,
                                float hi)
 {
@@ -123,9 +125,9 @@ SPEKTRA_INLINE float sf_clampf(float x,
  * any good integer hash would do, and changing them only reshuffles the noise.
  */
 
-/* sf_h: Chris Wellons' "lowbias32" integer hash finalizer. The multipliers and
+/* grain_hash: Chris Wellons' "lowbias32" integer hash finalizer. The multipliers and
    shift sequence are the published, bias-minimised constants of that algorithm. */
-SPEKTRA_INLINE uint32_t sf_h(uint32_t x)
+GRAIN_INLINE uint32_t grain_hash(uint32_t x)
 {
   x ^= x >> 16;
   x *= 0x7feb352dU;
@@ -135,17 +137,17 @@ SPEKTRA_INLINE uint32_t sf_h(uint32_t x)
   return x;
 }
 
-/* sf_u01: hash -> uniform float in [0,1) using the top 24 bits (float mantissa). */
-SPEKTRA_INLINE float sf_u01(uint32_t s)
+/* grain_uniform: hash -> uniform float in [0,1) using the top 24 bits (float mantissa). */
+GRAIN_INLINE float grain_uniform(uint32_t s)
 {
-  return (sf_h(s) & 0xffffff) / (float)0x1000000;
+  return (grain_hash(s) & 0xffffff) / (float)0x1000000;
 }
 
-/* sf_nrm: one hash seed -> one approximate standard-normal sample via a
+/* grain_normal: one hash seed -> one approximate standard-normal sample via a
    sum-of-4-uniforms (Irwin-Hall) approximation instead of Box-Muller's
    sqrt+log+cos transcendental chain. Var[uniform(0,1)] = 1/12, so a sum of 4
    has variance 4/12 = 1/3 and mean 2; rescaling by sqrt(3) and centering
-   gives unit variance, zero mean -- the two moments sf_layer_particle's
+   gives unit variance, zero mean -- the two moments grain_layer_particle's
    normal approximations actually rely on. The finite (not truly Gaussian)
    tails this leaves behind aren't visually meaningful for film grain: real
    emulsions don't have famously heavy statistical tails either, and the
@@ -156,47 +158,47 @@ SPEKTRA_INLINE float sf_u01(uint32_t s)
    distinct, well-known odd hash constants (murmur3's c1/c2, Knuth's golden-
    ratio multiplier, and one more), used only to decorrelate the four
    uniform draws from each other. */
-SPEKTRA_INLINE float sf_nrm(uint32_t s)
+GRAIN_INLINE float grain_normal(uint32_t s)
 {
-  const float u = sf_u01(s) + sf_u01(s * 2654435761u + 1u) + sf_u01(s * 2246822519u + 2u)
-                  + sf_u01(s * 3266489917u + 3u);
+  const float u = grain_uniform(s) + grain_uniform(s * 2654435761u + 1u) + grain_uniform(s * 2246822519u + 2u)
+                  + grain_uniform(s * 3266489917u + 3u);
   return (u - 2.0f) * 1.7320508f; /* sqrt(3) */
 }
 
-/* sf_pixel_seed: combine pixel coordinates and a channel/sub-layer index into one
+/* grain_pixel_seed: combine pixel coordinates and a channel/sub-layer index into one
    seed for the grain hash. The three large primes are Teschner et al.'s published
    spatial-hash constants; XOR-mixing distinct primes per axis keeps neighbouring
    pixels and channels from sharing a seed (which would correlate their grain).
    Uses ABSOLUTE image coordinates so grain is stable while panning. */
-SPEKTRA_INLINE uint32_t sf_pixel_seed(uint32_t xi,
+GRAIN_INLINE uint32_t grain_pixel_seed(uint32_t xi,
                                       uint32_t yi,
                                       uint32_t chan)
 {
   return xi * 73856093u ^ yi * 19349663u ^ chan * 83492791u;
 }
 
-/* sf_poisson: one Poisson(lam) draw from a stateless seed.
+/* grain_poisson: one Poisson(lam) draw from a stateless seed.
 
-   Below SF_POISSON_EXACT_MAX the draw is EXACT (Knuth's product-of-uniforms).
+   Below GRAIN_POISSON_EXACT_MAX the draw is EXACT (Knuth's product-of-uniforms).
    That threshold is not a quality/speed compromise, it is where the normal
-   approximation stops being safe: sf_nrm is bounded at +-sqrt(12) (Irwin-Hall
-   over four uniforms), so lam + sqrt(lam)*sf_nrm() can only go negative when
+   approximation stops being safe: grain_normal is bounded at +-sqrt(12) (Irwin-Hall
+   over four uniforms), so lam + sqrt(lam)*grain_normal() can only go negative when
    lam < 12. Above the threshold no clamp is ever needed and the approximation
    is mean- and variance-exact; below it, a normal clamped at zero would bias
    the draw upward in the shadows, which is the whole reason for the exact
    branch. Cost: the exact branch averages lam+1 hashes (<= 13), the fast
-   branch 4, against 8 for a pair of sf_nrm draws. */
-#define SF_POISSON_EXACT_MAX 12.0f
+   branch 4, against 8 for a pair of grain_normal draws. */
+#define GRAIN_POISSON_EXACT_MAX 12.0f
 
-/* sf_exp2i: 2^k for integer k, produced by writing k into the binary32
+/* grain_exp2i: 2^k for integer k, produced by writing k into the binary32
    exponent field directly instead of calling ldexpf/exp2f. This is
    bit manipulation, not arithmetic -- no rounding happens, so it is exact
    and identical everywhere by construction. Only valid for k that keeps the
-   result normal (roughly -125..127); sf_exp_neg below never asks for
+   result normal (roughly -125..127); grain_exp_neg below never asks for
    anything close to those limits over its intended domain. */
-SPEKTRA_INLINE float sf_exp2i(int k)
+GRAIN_INLINE float grain_exp2i(int k)
 {
-#ifdef SPEKTRA_CL
+#ifdef GRAIN_CL
   return as_float((uint)(k + 127) << 23);
 #else
   union { uint32_t u; float f; } v;
@@ -205,12 +207,12 @@ SPEKTRA_INLINE float sf_exp2i(int k)
 #endif
 }
 
-/* sf_exp_neg: exp(-lam) for lam in (0, SF_POISSON_EXACT_MAX), built only from
+/* grain_exp_neg: exp(-lam) for lam in (0, GRAIN_POISSON_EXACT_MAX), built only from
    +, -, * and the exact floor()/exponent-injection above -- deliberately NOT
    a call to expf()/exp(). The platform exp() is only spec'd to within a few
    ULP (OpenCL C requires just <=3 ULP for exp(), versus basic +,-,* which
    IEEE-754 and the OpenCL spec both require to be correctly rounded), and
-   this value feeds an accept/reject loop in sf_poisson: prod *= sf_u01(...)
+   this value feeds an accept/reject loop in grain_poisson: prod *= grain_uniform(...)
    until prod <= limit. A few-ULP disagreement between the CPU's expf() and
    the GPU's exp() only rarely lands close enough to prod to matter, but
    when it does, the loop exits one iteration earlier or later and the
@@ -225,7 +227,7 @@ SPEKTRA_INLINE float sf_exp2i(int k)
    polynomial (evaluated with Horner's method). Max relative error over the
    full (0,12) domain is ~1.1e-6 -- far tighter than grain needs, chosen
    for auditability over a tighter minimax fit. */
-SPEKTRA_INLINE float sf_exp_neg(float lam)
+GRAIN_INLINE float grain_exp_neg(float lam)
 {
   const float t = -lam;
   const int k = (int)floorf(t * 1.4426950216293335f + 0.5f); /* log2(e) */
@@ -237,16 +239,16 @@ SPEKTRA_INLINE float sf_exp_neg(float lam)
   p = p * r + 0.5f;
   p = p * r + 1.0f;
   p = p * r + 1.0f;
-  return p * sf_exp2i(k);
+  return p * grain_exp2i(k);
 }
 
-/* sf_exp2f / sf_log2f: 2^x and log2(x) built from +, -, *, / and the exact
-   floor/exponent manipulation above, for the reason sf_exp_neg is -- and
+/* grain_exp2f / grain_log2f: 2^x and log2(x) built from +, -, *, / and the exact
+   floor/exponent manipulation above, for the reason grain_exp_neg is -- and
    this pair is what actually reaches the grain sampler. SF_POW10F and
    SF_LOG10F (spektra_sim.c) and sf_pow10f / sf_log10f (spektrafilm.cl) are
    defined in terms of these rather than the platform exp2f/log2f, which
    OpenCL specifies only to <=3 ULP while glibc rounds correctly: that slack
-   lands in the film density arriving at sf_layer_particle, and sf_poisson's
+   lands in the film density arriving at grain_layer_particle, and grain_poisson's
    accept/reject loop turns a one-ULP density difference into a
    whole-integer grain count difference wherever a partial product happens
    to sit near limit. The result is isolated pixels, scattered evenly and
@@ -254,10 +256,10 @@ SPEKTRA_INLINE float sf_exp_neg(float lam)
    rather than by a rounding.
 
    Both are ~1 ULP against glibc over the domains this module uses, and are
-   not general-purpose replacements outside them: sf_exp2f assumes the result
-   stays normal, sf_log2f assumes x is positive and normal. SF_LOG10F floors
+   not general-purpose replacements outside them: grain_exp2f assumes the result
+   stays normal, grain_log2f assumes x is positive and normal. SF_LOG10F floors
    its argument at SF_LOG_EPS, which keeps it there. */
-SPEKTRA_INLINE float sf_exp2f(float x)
+GRAIN_INLINE float grain_exp2f(float x)
 {
   /* x = k + r, k integer and |r| <= 0.5, so 2^x = 2^k * e^(r ln2) with the
      exponential taken over |t| <= 0.347 by a degree-7 Taylor polynomial in
@@ -272,16 +274,16 @@ SPEKTRA_INLINE float sf_exp2f(float x)
   p = p * t + 0.5f;
   p = p * t + 1.0f;
   p = p * t + 1.0f;
-  return p * sf_exp2i(k);
+  return p * grain_exp2i(k);
 }
 
-SPEKTRA_INLINE float sf_log2f(float x)
+GRAIN_INLINE float grain_log2f(float x)
 {
   /* Take the binary exponent off by hand, then fold the mantissa into
      [1/sqrt2, sqrt2] so that s = (m-1)/(m+1) stays inside +-0.1716, where
      log(m) = 2(s + s^3/3 + s^5/5 + s^7/7 + s^9/9) is good to well under an
      ULP. Both steps of the fold are exact. */
-#ifdef SPEKTRA_CL
+#ifdef GRAIN_CL
   const uint32_t xu = as_uint(x);
   int e = (int)((xu >> 23) & 0xffu) - 127;
   float m = as_float((xu & 0x007fffffu) | 0x3f800000u);
@@ -303,32 +305,32 @@ SPEKTRA_INLINE float sf_log2f(float x)
   return (float)e + p * s * 1.4426950216293335f; /* log2(e) */
 }
 
-SPEKTRA_INLINE float sf_poisson(float lam,
+GRAIN_INLINE float grain_poisson(float lam,
                                 uint32_t seed)
 {
   if(lam <= 0.0f) return 0.0f;
-  if(lam < SF_POISSON_EXACT_MAX)
+  if(lam < GRAIN_POISSON_EXACT_MAX)
   {
-    const float limit = sf_exp_neg(lam);
+    const float limit = grain_exp_neg(lam);
     float prod = 1.0f;
     int k = 0;
     do
     {
-      prod *= sf_u01(seed + (uint32_t)k * 0x9e3779b9u);
+      prod *= grain_uniform(seed + (uint32_t)k * 0x9e3779b9u);
       k++;
     } while(prod > limit && k < 64);
     return (float)(k - 1);
   }
   /* Plain sqrt(), never native_sqrt(): this branch must reproduce the host's
-     sqrtf(lam) bit-for-bit (see the sf_exp_neg comment above on why
+     sqrtf(lam) bit-for-bit (see the grain_exp_neg comment above on why
      exactness here matters) -- native_sqrt has no accuracy guarantee at all
      and commonly maps to a low-precision hardware rsqrt, which was
      decorrelating the two renders' grain for every pixel landing in this
-     branch (lam >= SF_POISSON_EXACT_MAX). */
-  return lam + sqrtf(lam) * sf_nrm(seed);
+     branch (lam >= GRAIN_POISSON_EXACT_MAX). */
+  return lam + sqrtf(lam) * grain_normal(seed);
 }
 
-/* sf_layer_particle: draw the developed density of one emulsion layer.
+/* grain_layer_particle: draw the developed density of one emulsion layer.
 
    The reference model (layer_particle_model, grain.py) draws N_s ~ Poisson(lam)
    sensitised grains and develops each with probability p, i.e.
@@ -341,23 +343,23 @@ SPEKTRA_INLINE float sf_poisson(float lam,
    p * dmax^2 * sat / npart = D (Dmax - u D) / N, the target grain.py derives.
    The 0x9e3779b9 offset is a standard hash-mixing constant (golden ratio)
    that simply decorrelates this draw's seed from the caller's. */
-SPEKTRA_INLINE float sf_layer_particle(float density,
+GRAIN_INLINE float grain_layer_particle(float density,
                                        float dmax,
                                        float npart,
                                        float unif,
                                        uint32_t seed)
 {
-  const float p = sf_clampf(density / dmax, 1e-6f, 1.0f - 1e-6f);
+  const float p = grain_clampf(density / dmax, 1e-6f, 1.0f - 1e-6f);
   /* A sub-layer that carries no density has dmax and npart both zero, making
      this 0/0. The clamp above already absorbs a non-finite ratio (fmaxf
      returns the non-NaN operand), but this divide has no such guard and its
      NaN would reach the returned sample and from there the density buffer. */
   const float od = dmax / fmaxf(npart, 1e-9f);
   const float sat = 1.0f - p * unif * (1.0f - 1e-6f);
-  return sf_poisson(npart * p / sat, seed * 0x9e3779b9u + 1u) * od * sat;
+  return grain_poisson(npart * p / sat, seed * 0x9e3779b9u + 1u) * od * sat;
 }
 
-#ifdef SPEKTRA_CL
+#ifdef GRAIN_CL
 #undef floorf
 #undef sqrtf
 #undef fmaxf

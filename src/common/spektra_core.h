@@ -25,10 +25,10 @@
    (data/kernels/CMakeLists.txt) and at runtime (src/common/opencl.c).
    Any .c that includes this header needs the -ffp-contract=off treatment
    src/CMakeLists.txt applies to the spektra sources. */
-#include "spektra_shared.h"
+#include "grain.h"
 
-#ifndef SPEKTRA_INLINE
-#define SPEKTRA_INLINE static inline
+#ifndef GRAIN_INLINE
+#define GRAIN_INLINE static inline
 #endif
 
 /* Spatial effects implemented in spektra_core.c (they need dt_alloc_align_float
@@ -218,10 +218,10 @@ void sf_gauss_yvv_coeffs(float sigma,
  * the CPU convolution (spektra_core.c) and the GPU host-side weight upload
  * (spektrafilm.c's process_cl) build the identical kernel for a given sigma. */
 
-/* sf_clampf, the grain hash (sf_h / sf_u01 / sf_nrm / sf_pixel_seed), the
-   portable exp/log polynomials (sf_exp2i / sf_exp_neg / sf_exp2f /
-   sf_log2f) and the grain sampler (sf_poisson / sf_layer_particle, plus
-   SF_POISSON_EXACT_MAX) now live in data/kernels/spektra_shared.h, included
+/* grain_clampf, the grain hash (grain_hash / grain_uniform / grain_normal / grain_pixel_seed), the
+   portable exp/log polynomials (grain_exp2i / grain_exp_neg / grain_exp2f /
+   grain_log2f) and the grain sampler (grain_poisson / grain_layer_particle, plus
+   GRAIN_POISSON_EXACT_MAX) now live in data/kernels/grain.h, included
    at the top of this header: the OpenCL kernel compiles that same file, so
    the two paths cannot drift. Read the rationale for every constant there. */
 

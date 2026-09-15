@@ -49,7 +49,7 @@
    every a*b+c in this file into a single-rounding mad/fma. The host side is
    not fused the same way (and on some builds not at all), so each fused
    expression lands a fraction of an ULP away from its CPU twin. That is
-   normally invisible, but sf_poisson()'s accept/reject loop compares prod
+   normally invisible, but grain_poisson()'s accept/reject loop compares prod
    against limit, so a fraction of an ULP anywhere upstream of the grain
    sampler occasionally moves a draw by a whole integer -- which is what the
    remaining CPU/GPU pixel differences look like: isolated single pixels,
@@ -64,13 +64,13 @@
 
 
 #include "common.h"
-/* sf_clampf / sf_h / sf_u01 / sf_nrm / sf_pixel_seed / sf_exp2i /
-   sf_exp_neg / sf_exp2f / sf_log2f / sf_poisson / sf_layer_particle and
-   SF_POISSON_EXACT_MAX: one copy, compiled here and on the host. The
+/* grain_clampf / grain_hash / grain_uniform / grain_normal / grain_pixel_seed / grain_exp2i /
+   grain_exp_neg / grain_exp2f / grain_log2f / grain_poisson / grain_layer_particle and
+   GRAIN_POISSON_EXACT_MAX: one copy, compiled here and on the host. The
    #define selects the OpenCL dialect and is required -- the header refuses
    to compile as OpenCL without it. */
-#define SPEKTRA_CL 1
-#include "spektra_shared.h"
+#define GRAIN_CL 1
+#include "grain.h"
 
 #define SF_NLE 256
 #define SF_LOG_EPS 1e-10f
@@ -131,7 +131,7 @@ static inline int sf_reflect(int idx, int L)
 
 static inline void sf_base_frac(float coord, int L, int *base, float *frac)
 {
-  coord = sf_clampf(coord, 0.0f, (float)(L - 1));
+  coord = grain_clampf(coord, 0.0f, (float)(L - 1));
   if(coord >= (float)(L - 1))
   {
     *base = L - 2;
@@ -241,7 +241,7 @@ static float3 sf_pchip3d(__global const float *lut, __global const float *sx,
               mix(AT(sz, i, j + 1, k + 1, c), AT(sz, i + 1, j + 1, k + 1, c), tr), tg);
     float v = sf_hermite(vz0, vz1, sz0, sz1, tb);
     const size_t ci = ((((size_t)i) * m + j) * m + k) * 3 + c;
-    v = sf_clampf(v, cmin[ci], cmax[ci]);
+    v = grain_clampf(v, cmin[ci], cmax[ci]);
     out[c] = v;
   }
 #undef AT
@@ -250,29 +250,29 @@ static float3 sf_pchip3d(__global const float *lut, __global const float *sx,
 
 /* ---- base-10 <-> base-2, matching the host's SF_LOG10F/SF_POW10F -------- */
 /* spektra_sim.c does NOT call log10f()/exp10f(). It defines
-     SF_LOG10F(x) = sf_log2f(x) * 0.3010299956639812f
-     SF_POW10F(x) = sf_exp2f(x * 3.321928094887362f)
+     SF_LOG10F(x) = grain_log2f(x) * 0.3010299956639812f
+     SF_POW10F(x) = grain_exp2f(x * 3.321928094887362f)
    so calling log10()/exp10() here would not be a more-or-less accurate
    version of the same computation, it would be a different one: the host's
    scaling multiply carries its own rounding that exp10()/log10() never
    perform.
 
    log2()/exp2() are not usable either, for the reason that governs
-   sf_exp_neg: OpenCL specs both to <=3 ULP and most GPUs implement them in
+   grain_exp_neg: OpenCL specs both to <=3 ULP and most GPUs implement them in
    hardware, while glibc rounds correctly. That gap lands in the film density
-   feeding sf_layer_particle, and sf_poisson's accept/reject loop turns it
-   into whole-integer grain draws on isolated pixels. The sf_exp2f/sf_log2f
-   these call come from spektra_shared.h, the single copy the host compiles
+   feeding grain_layer_particle, and grain_poisson's accept/reject loop turns it
+   into whole-integer grain draws on isolated pixels. The grain_exp2f/grain_log2f
+   these call come from grain.h, the single copy the host compiles
    too, so both sides agree bit-for-bit by construction. */
 
 static inline float sf_log10f(float x)
 {
-  return sf_log2f(x) * 0.3010299956639812f;
+  return grain_log2f(x) * 0.3010299956639812f;
 }
 
 static inline float sf_pow10f(float x)
 {
-  return sf_exp2f(x * 3.321928094887362f);
+  return grain_exp2f(x * 3.321928094887362f);
 }
 
 /* ---- [gc] Reinhard knee + OkLCh output gamut compression ---------------- */
@@ -304,7 +304,7 @@ static float sf_cmax_lookup(__global const float *table, const int nl, const int
                             float L, float h)
 {
   const float L_lo_v = 0.02f, L_hi_v = 1.0f;
-  L = sf_clampf(L, L_lo_v, L_hi_v);
+  L = grain_clampf(L, L_lo_v, L_hi_v);
   const float h_step = 2.0f * M_PI_F / nh;
   const float h_idx = (h + M_PI_F) / h_step;
   const float h_floor = floor(h_idx);
@@ -343,9 +343,9 @@ __kernel void spektrafilm_expose(__read_only image2d_t in, __global float4 *plan
   const float inv = 1.0f / fmax(b, 1e-10f);
   const float xx = xyz.x * inv, yy = xyz.y * inv;
   /* [su] tri2quad */
-  const float tcx = sf_clampf((1.0f - xx) * (1.0f - xx), 0.0f, 1.0f);
+  const float tcx = grain_clampf((1.0f - xx) * (1.0f - xx), 0.0f, 1.0f);
   /* careful: tri2quad computes from CIE xy, matching spektra_sim tri2quad() */
-  const float tcy = sf_clampf(yy / fmax(1.0f - xx, 1e-10f), 0.0f, 1.0f);
+  const float tcy = grain_clampf(yy / fmax(1.0f - xx, 1e-10f), 0.0f, 1.0f);
   const float scale = (float)(tc_n - 1);
   float3 raw = sf_cubic2d(tc_lut, tc_n, tcx * scale, tcy * scale);
   const float bb = isfinite(b) ? b : 0.0f;
@@ -516,9 +516,9 @@ __kernel void spektrafilm_grain_gen_raw_sl(__global const float4 *dens, __global
   const float pos = sf_cl_grain_curve_inverse(layer_curve_total + channel_idx, nle, 3, density);
   const float raw = sf_cl_grain_curve_sample(layer_curve + idx, nle, lstride, pos);
   const float d_abs = raw + layer_dmin[idx];
-  const uint seed = sf_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y),
+  const uint seed = grain_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y),
                                   (uint)(seed_ch + sl_idx * 10));
-  raw_out[k] = sf_layer_particle(d_abs, layer_dmax[idx], layer_npart[idx] * npart_scale,
+  raw_out[k] = grain_layer_particle(d_abs, layer_dmax[idx], layer_npart[idx] * npart_scale,
                                  unif_ch, seed);
 }
 
@@ -570,7 +570,7 @@ __kernel void spektrafilm_grain_finalize_channel(__global float4 *grain_buf,
    grain alike -- that is what the reference blurs (_finalize_grain in grain.py
    smooths the grained density itself, not an isolated grain layer), and it is
    what the multiplicative unsharp mask further down is tuned to recover.
-   No centring pass: the Poisson sampler in sf_layer_particle is unbiased, so
+   No centring pass: the Poisson sampler in grain_layer_particle is unbiased, so
    the delta already has zero mean. No variance-restoration renorm either --
    the reference's grain finalization has none; it just blurs and lets the
    natural contrast reduction stand, matching real optical clumping. Restoring
@@ -617,7 +617,7 @@ __kernel void spektrafilm_grain_usm(__global float4 *cmy, __global const float4 
   /* NOTE: pow() below is only spec'd to 16 ULP in OpenCL, against a host
      powf() that is typically correctly rounded. That gap survives this
      patch; if a residue remains and is localised to grained pixels, this is
-     the next candidate for a shared portable implementation (cf. sf_exp_neg
+     the next candidate for a shared portable implementation (cf. grain_exp_neg
      in spektra_core.h). */
   float4 out;
   out.x = fmax(D.x * pow(fmax(fmin(D.x / fmax(blur.x, eps), ratmax), ratmin), amount) - dmin.x,
@@ -729,7 +729,7 @@ __kernel void spektrafilm_scan(__global const float4 *cmy, __global float4 *rgb_
   if(out_luminance_boost != 1.0f) xyz *= out_luminance_boost;
   if(bw_on) /* scanner black/white point (positive film scans) */
   {
-    const float yc = sf_clampf(bw_m * xyz.y + bw_q, 0.0f, 1.0f);
+    const float yc = grain_clampf(bw_m * xyz.y + bw_q, 0.0f, 1.0f);
     xyz *= yc / (xyz.y + 1e-10f);
   }
   float3 rgb = sf_mat3(mats + SF_M_OUT, xyz);
@@ -802,8 +802,8 @@ __kernel void spektrafilm_glare_gen(__global float4 *field, const int w, const i
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
-  const uint seed = sf_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y), 0x5eedu);
-  const float g = mean * exp(bias + s * sf_nrm(seed));
+  const uint seed = grain_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y), 0x5eedu);
+  const float g = mean * exp(bias + s * grain_normal(seed));
   field[(size_t)y * w + x] = (float4)(g, g, g, 0.0f);
 }
 
