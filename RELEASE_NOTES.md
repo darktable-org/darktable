@@ -320,6 +320,10 @@ changes (where available).
 - Fixed metadata tag Xmp.xmpMM.PreservedFileName not written on camera
   import.
 
+- Fixed ratings, rejects and other actions applying to all selected
+  images in culling and full preview, instead of only the hovered image,
+  when "prioritize the hovered image over the selected images" is on.
+
 ## Lua
 
 ### API Version
