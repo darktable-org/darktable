@@ -327,6 +327,10 @@ changes (where available).
   center view was clicked, after a snapshot had been taken while the
   snapshots module was collapsed.
 
+- Fixed ratings, rejects and other actions applying to all selected
+  images in culling and full preview, instead of only the hovered image,
+  when "prioritize the hovered image over the selected images" is on.
+
 ## Lua
 
 ### API Version
