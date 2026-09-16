@@ -20,8 +20,9 @@ design document.
   `Exif.PanasonicRaw.0x011b` (64 bytes, 32 x int16 LE, single record with
   four checksums). darktable has never parsed it. Structural layout is
   substantially known from prior RE (Rigo 2011, Homeister 2018 on ExifTool
-  forum 9366) and verified against our sample; per-zone coefficient
-  semantics are the remaining decode gap.
+  forum 9366), verified against our G9 sample and confirmed
+  body-invariant against a mirror corpus on a Panasonic GX80. The
+  coefficient semantics within the layout are the remaining decode gap.
 - Follow-on work is (a) shoot a small RW2 corpus with focal-length and lens
   variation, (b) finish the coefficient decode against SILKYPIX renders,
   (c) extend the Panasonic embedded-metadata path in `_init_coeffs_md_v2`
@@ -489,6 +490,59 @@ Sigma 30 samples and monotonically climbs then falls on the PL 12-60 @
 12mm sample), so word[8] is at best one contribution to a more
 elaborate model, not the whole R zone-height vector.
 
+### Cross-body verification (GX80)
+
+The G9 corpus was mirrored on a Panasonic DMC-GX80 body (16 MP, 2016)
+across the same nine lens/focal combinations at f/5.6, files
+`/c/temp/tca/P126063{3..9}.RW2` and `P1260640.RW2`, `P1260641.RW2`.
+See `/tmp/rw2_tca/step5_g9_vs_gx80.py` and `step5_cross_body_word8.py`
+for reproducibility.
+
+All nine GX80 files pass all four checksums. Structural layout is
+identical to the G9: `0x011a = 2`, `word[14] = 256` flag, 4-zone model
+with the same 0.333 / 0.667 / 0.833 / 1.0 knot ratios, same
+`word[2]` / `word[7]` / `word[13]` opaque positions, same smooth vs
+discrete word partition (spot-checked on `step2_classify.py` outputs).
+Same lens-generation pattern too: the L 45-150 shots on the GX80 also
+carry an empty 0x0119 payload with `flag = 0`, the PL 12-60 shots carry
+the same high-order bit progression in the 0x0119 flag byte, and the
+primes carry `flag = 1`.
+
+The 4-zone radii scale with body sensor size. GX80's `N1 = 2888`
+against G9's `N1 = 3276`, ratio 0.882, matching the ratio of the two
+bodies' half-diagonals (2871.2 / 3240.2 = 0.886, within 0.5%). The
+radii are in some sensor-pixel unit that shrinks proportionally to the
+body's sensor; the *ratios* are body-invariant.
+
+Word-by-word cross-body comparison for the same lens at the same focal
+length:
+
+- **Identical:** only `word[14]` (the flag, always 256).
+- **Body-scaled by 0.882:** the four radii `word[4, 11, 16, 17]`.
+- **Body-varying, not linearly scaled:** everything else. Some
+  coefficient words (`word[8]`, `word[27]`, some of the smooth-monotone
+  set) scale with a body factor in the 0.72 to 1.17 range, close to but
+  not equal to 0.882. Others (`word[13]`, `word[18]`, `word[22]`,
+  `word[28]`) shift by tens of thousands of units and sign-flip between
+  bodies. These are the words we already had reason to distrust: they
+  are in the discrete/bimodal partition where step 2 already classified
+  them as non-coefficient.
+
+Word[8]'s anti-correlation with the sign of the measured R-G radial
+offset holds cleanly on the GX80: 9 of 9 files, no exceptions. The two
+files that were ambiguous on the G9 (small measured signal on L 45-150
+@ 97mm and Lumix 42.5) resolve unambiguously on the GX80, presumably
+because the GX80's coarser pixel pitch turns a sub-pixel signal into
+a slightly-larger sub-pixel signal that's easier to measure. Combined:
+16 of 18 file/body pairs show clean anti-correlation, 2 are too small
+to call, zero mismatches.
+
+The GX80 data therefore confirms that Homeister's structural model is
+body-invariant, that the radii are sensor-scaled and everything else
+is per-body-per-lens-per-focal, and that word[8]'s sign relation to
+the R correction is genuinely a property of the encoding, not an
+artifact of the G9 body.
+
 ### Interpretation
 
 The measured signal is real: the per-file half-vs-half RMS is 0.008 to
@@ -588,9 +642,15 @@ Roughly in order of expected value:
    kit zoom would extend the lens-family distribution of word[2] and
    word[7]; a decode that survived four Panasonic zooms and three
    Sigma primes would be far more credible.
-5. **A different body.** The Homeister decode was on a GX-8; the G9
-   might have layout differences in the "opaque" words. A GH5 or S5
-   corpus would tell us whether the roles are body-invariant.
+5. **A larger corpus with in-camera CA-toggle or distortion-toggle
+   pairs.** Both the G9 and the GX80 in this session's corpus turned
+   out to have neither toggle exposed in the menu (verified against
+   the DVQP1406ZA operating instructions and by hand on both bodies);
+   Panasonic applies these corrections automatically per-lens with no
+   user override. A body that *does* expose the toggle (G9 II uses
+   DVQP3010 and has [Distortion Comp.] in the [Rec] menu; GH-series
+   from a specific firmware onwards may also) would let the 2x2
+   factorial we originally intended.
 
 Absent any of the above, an honest verdict is: 0x011b's coefficient
 semantics remain undecoded on the current 9-file G9 corpus. The
@@ -722,8 +782,20 @@ this investigation):
 - radii N1..N4 = 3276, 2730, 2184, 1092 -> ratios 1.0, 0.833, 0.667, 0.333
   (MFT-sensor pattern).
 
-Do not check the file into the repo. Use it locally for the RE work and cite
-it in reports without committing binary blobs.
+Full G9 corpus (nine files at f/5.6, tripod-free but static scene):
+`/c/temp/tca/P136647{7,8,9}.RW2` (PL 12-60 at 12/25/60mm),
+`P136648{1,2,3}.RW2` (L 45-150 at 45/97/150mm), `P1366484.RW2` (Lumix
+42.5), `P1366485.RW2` (Sigma 30), `P1366486.RW2` (Sigma 16), plus
+paired JPEG and 8-bit SILKYPIX SE TIFF for each.
+
+Cross-body corpus on Panasonic DMC-GX80, 4592x3448, mirroring the G9
+lens set at the same nominal focal lengths and f/5.6:
+`/c/temp/tca/P126063{3..8}.RW2` (PL 12-60, L 45-150 zoom sweeps),
+`P1260639.RW2` Sigma 16, `P1260640.RW2` Sigma 30, `P1260641.RW2` Lumix
+42.5. GX80 N1..N4 = 2888, 2407, 1926, 963.
+
+Do not check any of these files into the repo. Use them locally for the
+RE work and cite them in reports without committing binary blobs.
 
 ## Open questions
 
