@@ -374,6 +374,17 @@ void dt_strlcpy_fixed_to_fixed(char *dest,
   memcpy(dest, src, MIN(len, dest_size - 1));
 }
 
+gboolean dt_util_blob_has_fixed_string(const void *blob,
+                                       const size_t blob_size,
+                                       const size_t field_offset,
+                                       const size_t field_size)
+{
+  // compare by subtraction: field_offset + field_size can wrap around
+  if(!blob || field_size > blob_size || field_offset > blob_size - field_size)
+    return FALSE;
+  return memchr((const char *)blob + field_offset, '\0', field_size) != NULL;
+}
+
 
 gboolean dt_util_test_image_file(const char *filename)
 {

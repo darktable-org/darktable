@@ -825,11 +825,19 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile
     {
       // use introspection to get the profile name from the binary params blob
       const void *params = sqlite3_column_blob(stmt, 0);
+      const size_t params_size = sqlite3_column_bytes(stmt, 0);
       dt_colorspaces_color_profile_type_t *type = colorin->get_p(params, "type_work");
       char *filename = colorin->get_p(params, "filename_work");
+      const dt_introspection_field_t *f = colorin->get_f("filename_work");
 
-      if(type && filename) p = dt_colorspaces_get_profile(*type, filename,
-                                                          DT_PROFILE_DIRECTION_WORK);
+      // the blob comes from sidecars or the database unchecked: it may end
+      // before the file name, or not terminate it. type_work precedes the
+      // file name, so the same check keeps *type inside the blob
+      if(type && filename && f
+         && dt_util_blob_has_fixed_string(params, params_size,
+                                          f->header.offset, f->header.size))
+        p = dt_colorspaces_get_profile(*type, filename,
+                                       DT_PROFILE_DIRECTION_WORK);
     }
     sqlite3_finalize(stmt);
   }
@@ -898,10 +906,11 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile
       const dt_introspection_field_t *f = colorout->get_f("filename");
 
       // the blob comes from sidecars or the database unchecked: it may end
-      // before the file name, or not terminate it
+      // before the file name, or not terminate it. type precedes the file
+      // name, so the same check keeps *type inside the blob
       if(type && filename && f
-         && params_size >= f->header.offset + f->header.size
-         && memchr(filename, '\0', f->header.size))
+         && dt_util_blob_has_fixed_string(params, params_size,
+                                          f->header.offset, f->header.size))
         p = dt_colorspaces_get_profile
           (*type, filename,
            DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);

@@ -74,6 +74,13 @@ void dt_strlcpy_fixed_to_fixed(char *dest,
                                const size_t dest_size,
                                const char *src,
                                const size_t src_size);
+/** returns TRUE if a fixed-size char field of a stored params blob can be
+    read as a string: the blob is non-NULL, the field at field_offset lies
+    entirely within blob_size, and a NUL occurs within field_size bytes */
+gboolean dt_util_blob_has_fixed_string(const void *blob,
+                                       const size_t blob_size,
+                                       const size_t field_offset,
+                                       const size_t field_size);
 /** returns true if a file is regular, has read access and a filesize > 0 */
 gboolean dt_util_test_image_file(const char *filename);
 /** returns true if the path represents a directory with write access */

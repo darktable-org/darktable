@@ -17,12 +17,15 @@
 */
 /*
  * cmocka unit tests for dt_strlcpy_fixed_to_fixed(), which copies a
- * fixed-size char array from stored params that need not be NUL-terminated.
+ * fixed-size char array from stored params that need not be NUL-terminated,
+ * and dt_util_blob_has_fixed_string(), which checks such a field in a raw
+ * params blob before it is read as a string.
  */
 
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <cmocka.h>
@@ -72,11 +75,33 @@ static void test_destination_limit_and_clearing(void **state)
   assert_int_equal(dest[0], 'Q');
 }
 
+static void test_blob_has_fixed_string(void **state)
+{
+  const size_t offset = offsetof(stored_t, following);
+  const size_t size = sizeof(((stored_t *)0)->following);
+  stored_t stored = { "abc", "tail" };
+
+  assert_false(dt_util_blob_has_fixed_string(NULL, sizeof(stored), offset, size));
+
+  // a blob that ends inside the field, or before it
+  assert_false(dt_util_blob_has_fixed_string(&stored, offset + size - 1, offset, size));
+  assert_false(dt_util_blob_has_fixed_string(&stored, offset, offset, size));
+
+  // an offset that would wrap around when added to the size
+  assert_false(dt_util_blob_has_fixed_string(&stored, sizeof(stored), SIZE_MAX, size));
+
+  assert_true(dt_util_blob_has_fixed_string(&stored, sizeof(stored), offset, size));
+
+  memset(stored.following, 'x', size);
+  assert_false(dt_util_blob_has_fixed_string(&stored, sizeof(stored), offset, size));
+}
+
 int main(int argc, char *argv[])
 {
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_unterminated_source),
     cmocka_unit_test(test_destination_limit_and_clearing),
+    cmocka_unit_test(test_blob_has_fixed_string),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

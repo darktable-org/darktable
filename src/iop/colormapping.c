@@ -735,6 +735,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   memcpy(d, p, sizeof(dt_iop_colormapping_params_t));
   // the stored cluster count indexes the fixed MAXN arrays and sizes stack arrays
   d->n = CLAMP(d->n, 0, MAXN);
+  // the stored histogram values index source_ihist in process() and the kernel
+  for(int k = 0; k < HISTN; k++)
+    d->target_hist[k] = CLAMP(d->target_hist[k], 0, HISTN - 1);
 #ifdef HAVE_OPENCL
   if(d->equalization > 0.1f)
     piece->process_cl_ready = (piece->process_cl_ready && !dt_opencl_avoid_atomics(pipe->devid));
