@@ -15,6 +15,11 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+/*
+ * cmocka unit tests for the history tooltip's check on char array fields:
+ * stored params need not terminate them, so a field without a NUL within
+ * its introspected size must be skipped rather than read as a string.
+ */
 
 #include <setjmp.h>
 #include <stdarg.h>
@@ -23,6 +28,10 @@
 #include <cmocka.h>
 
 #include "libs/history.c"
+
+#ifdef _WIN32
+#include "win/main_wrapper.h"
+#endif
 
 static dt_introspection_field_t _char_array_field(const size_t count)
 {
@@ -45,7 +54,7 @@ static void test_history_terminated_string(void **state)
   g_free(change);
 }
 
-static void test_history_fixed_char_array(void **state)
+static void test_history_unterminated_char_array(void **state)
 {
   const char old_text[8] = { 'o', 'l', 'd', ' ', ' ', ' ', ' ', ' ' };
   const char new_text[8] = { 'n', 'e', 'w', ' ', ' ', ' ', ' ', ' ' };
@@ -53,8 +62,7 @@ static void test_history_fixed_char_array(void **state)
   gchar *change = _lib_history_change_text(&field, "borders.aspect_text", NULL,
                                            (gpointer)new_text, (gpointer)old_text);
 
-  assert_non_null(change);
-  g_free(change);
+  assert_null(change);
 }
 
 static void test_history_binary_char_array(void **state)
@@ -65,14 +73,14 @@ static void test_history_binary_char_array(void **state)
   gchar *change = _lib_history_change_text(&field, "lut3d.c_clut", NULL,
                                            (gpointer)new_clut, (gpointer)old_clut);
 
-  g_free(change);
+  assert_null(change);
 }
 
 int main(int argc, char *argv[])
 {
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_history_terminated_string),
-    cmocka_unit_test(test_history_fixed_char_array),
+    cmocka_unit_test(test_history_unterminated_char_array),
     cmocka_unit_test(test_history_binary_char_array)
   };
 
