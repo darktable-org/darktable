@@ -144,7 +144,10 @@ static void _show_console_notice(void)
                          "On Windows 11 24H2 and later, darktable normally runs "
                          "without this window.\n"
                          "Do not close it or press Ctrl+C while darktable is running.\n"
-                         "It will close automatically when darktable exits.\n");
+                         "It will close automatically when darktable exits.\n"
+                         "\n"
+                         "To hide this window anyway, follow the instructions at:\n"
+                         "https://www.darktable.org/about/faq/#faq-windows-terminal\n");
   gchar **notice_lines = g_strsplit(notice, "\n", -1);
   gchar *console_notice = g_strjoinv("\r\n", notice_lines);
   g_strfreev(notice_lines);
