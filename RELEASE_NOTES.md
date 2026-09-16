@@ -130,6 +130,18 @@ changes (where available).
 
 - Some safety checks when switching to the quick access panel were added.
 
+- The cache folder (thumbnails, compiled OpenCL kernels, AI caches)
+  can now be chosen in preferences > storage > cache. Leave it empty
+  for the default location. The folder must already exist, the
+  `--cachedir` command line option still takes priority, and local
+  copies stay in the default cache folder, or in the `--cachedir`
+  folder when that option is given. When the chosen folder is not
+  the one in use, for example because it cannot be used or because
+  `--cachedir` was given, preferences say so under the entry. If the
+  folder is not available at startup, for example on a disconnected
+  external drive, darktable asks whether to retry, choose another
+  folder, use the default folder or quit.
+
 ## Performance Improvements
 
 - Replaced quadratic XMP history writes with a linear algorithm.

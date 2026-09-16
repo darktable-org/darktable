@@ -531,7 +531,7 @@ static void _image_local_copy_full_path(const dt_imgid_t imgid,
     g_strlcpy(filename, (char *)sqlite3_column_text(stmt, 0), pathname_len);
     char *md5_filename =
       g_compute_checksum_for_string(G_CHECKSUM_MD5, filename, strlen(filename));
-    dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+    dt_loc_get_user_local_copy_dir(cachedir, sizeof(cachedir));
 
     // and finally, add extension, needed as some part of the code is
     // looking for the extension
@@ -2941,7 +2941,7 @@ gboolean dt_image_local_copy_reset(const dt_imgid_t imgid)
   // remove cached file, but double check that this is really into the
   // cache. We really want to avoid deleting a user's original file.
 
-  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+  dt_loc_get_user_local_copy_dir(cachedir, sizeof(cachedir));
 
   if(g_file_test(locppath, G_FILE_TEST_EXISTS) && strstr(locppath, cachedir))
   {

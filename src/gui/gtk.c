@@ -71,6 +71,7 @@
 #ifdef _WIN32
 #include <dwmapi.h>
 #include <gdk/gdkwin32.h>
+#include <shellapi.h>
 #endif
 #include <pthread.h>
 
@@ -1778,6 +1779,43 @@ void dt_open_url(const char* url)
       g_error_free(error);
     }
   }
+}
+
+gboolean dt_show_in_file_manager(const char *path)
+{
+  // a relative path would depend on the current directory, or drive on windows
+  if(!dt_loc_path_is_absolute(path) || !g_file_test(path, G_FILE_TEST_IS_DIR))
+    return FALSE;
+
+#ifdef _WIN32
+  // gio has no default handler for folders on windows ("operation not
+  // supported"), so let the shell open it in the explorer
+  wchar_t *wpath = g_utf8_to_utf16(path, -1, NULL, NULL, NULL);
+  const gboolean ok =
+    wpath && (INT_PTR)ShellExecuteW(NULL, L"open", wpath, NULL, NULL, SW_SHOWNORMAL) > 32;
+  g_free(wpath);
+  return ok;
+#else
+  gchar *uri = g_filename_to_uri(path, NULL, NULL);
+  if(!uri) return FALSE;
+#ifdef __APPLE__
+  const gboolean ok = dt_osx_open_url(uri);
+#else
+  GError *error = NULL;
+  // with a launch context the file manager is not left behind darktable
+  GdkAppLaunchContext *context = gdk_display_get_app_launch_context(gdk_display_get_default());
+  const gboolean ok =
+    g_app_info_launch_default_for_uri(uri, G_APP_LAUNCH_CONTEXT(context), &error);
+  if(context) g_object_unref(context);
+  if(error)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_show_in_file_manager] %s", error->message);
+    g_error_free(error);
+  }
+#endif
+  g_free(uri);
+  return ok;
+#endif
 }
 
 #ifdef MAC_INTEGRATION

@@ -67,10 +67,12 @@ uint8_t dt_loc_init(const char *datadir,
   free(application_directory);
 
   if(!dt_loc_init_user_config_dir(configdir)) return CONFIGDIR_CREATION_FAILED;
-  if(!dt_loc_init_user_cache_dir(cachedir)) return CACHEDIR_CREATION_FAILED;
+  // a failing cache dir must not skip the tmp dir: the cachedir preference,
+  // applied later by dt_init(), can still replace it
+  const gboolean cachedir_ok = dt_loc_init_user_cache_dir(cachedir);
   if(!dt_loc_init_tmp_dir(tmpdir)) return TMPDIR_CREATION_FAILED;
 
-  return 0;
+  return cachedir_ok ? 0 : CACHEDIR_CREATION_FAILED;
 }
 
 void dt_loc_print_paths(FILE *out, const char *library_path, gboolean as_flags)
@@ -226,12 +228,147 @@ gboolean dt_loc_init_tmp_dir(const char *tmpdir)
   return dt_check_opendir("darktable.tmpdir", darktable.tmpdir);
 }
 
+static dt_loc_cache_dir_source_t _user_cache_dir_source = DT_LOC_CACHE_DIR_DEFAULT;
+static gchar *_user_local_copy_dir = NULL;
+// the preference value applied by dt_loc_set_user_cache_dir(), expanded
+static gchar *_user_cache_dir_pref = NULL;
+
+dt_loc_cache_dir_source_t dt_loc_get_user_cache_dir_source(void)
+{
+  return _user_cache_dir_source;
+}
+
+gboolean dt_loc_user_cache_dir_is_from(const char *value)
+{
+  gchar *path = dt_loc_expand_user_path(value);
+  const gboolean res = path
+    ? _user_cache_dir_source == DT_LOC_CACHE_DIR_PREF && !g_strcmp0(path, _user_cache_dir_pref)
+    : _user_cache_dir_source == DT_LOC_CACHE_DIR_DEFAULT;
+  g_free(path);
+  return res;
+}
+
+gchar *dt_loc_get_default_user_cache_dir(void)
+{
+  return g_build_filename(g_get_user_cache_dir(), "darktable", NULL);
+}
+
 gboolean dt_loc_init_user_cache_dir(const char *cachedir)
 {
-  char *default_cache_dir = g_build_filename(g_get_user_cache_dir(), "darktable", NULL);
+  char *default_cache_dir = dt_loc_get_default_user_cache_dir();
   darktable.cachedir = dt_loc_init_generic(cachedir, NULL, default_cache_dir);
   g_free(default_cache_dir);
+  _user_cache_dir_source = cachedir ? DT_LOC_CACHE_DIR_COMMAND_LINE : DT_LOC_CACHE_DIR_DEFAULT;
+  g_free(_user_local_copy_dir);
+  _user_local_copy_dir = g_strdup(darktable.cachedir);
   return dt_check_opendir("darktable.cachedir", darktable.cachedir);
+}
+
+gchar *dt_loc_expand_user_path(const char *value)
+{
+  // pasted values often carry surrounding spaces, or the quotes of a path
+  // copied from File Explorer
+  gchar *text = g_strstrip(g_strdup(value ? value : ""));
+  const size_t len = strlen(text);
+  if(len >= 2 && text[0] == '"' && text[len - 1] == '"')
+  {
+    memmove(text, text + 1, len - 2);
+    text[len - 2] = '\0';
+    g_strstrip(text);
+  }
+#ifdef _WIN32
+  // dt_util_fix_path() only expands "~/"
+  if(text[0] == '~' && text[1] == '\\')
+    text[1] = '/';
+#endif
+  gchar *path = dt_util_fix_path(text);
+  g_free(text);
+  return path;
+}
+
+gboolean dt_loc_path_is_absolute(const char *path)
+{
+  if(!path || !g_path_is_absolute(path))
+    return FALSE;
+#ifdef _WIN32
+  // "\folder" is absolute for glib, but it depends on the current drive
+  return (g_ascii_isalpha(path[0]) && path[1] == ':')
+         || (G_IS_DIR_SEPARATOR(path[0]) && G_IS_DIR_SEPARATOR(path[1]));
+#else
+  return TRUE;
+#endif
+}
+
+dt_loc_cache_dir_check_t dt_loc_check_user_cache_dir(const char *cachedir)
+{
+  gchar *path = dt_loc_expand_user_path(cachedir);
+  dt_loc_cache_dir_check_t check = DT_LOC_CACHE_DIR_USABLE;
+  if(!dt_loc_path_is_absolute(path))
+    check = DT_LOC_CACHE_DIR_NOT_ABSOLUTE;
+  // the folder must already exist: creating it while an external drive is
+  // missing would silently put the cache on another drive that took the same
+  // letter, or inside an empty mount point
+  else if(!g_file_test(path, G_FILE_TEST_IS_DIR))
+    check = DT_LOC_CACHE_DIR_MISSING;
+  else
+  {
+    // a folder that cannot be listed or written to would only fail later,
+    // when it is opened or thumbnails and kernels are written. on windows
+    // neither check rejects an existing folder, like dt_check_opendir() there
+    GDir *dir = g_dir_open(path, 0, NULL);
+    if(!dir || !dt_util_test_writable_dir(path))
+      check = DT_LOC_CACHE_DIR_NO_ACCESS;
+    if(dir) g_dir_close(dir);
+  }
+  g_free(path);
+  return check;
+}
+
+gboolean dt_loc_set_user_cache_dir(const char *cachedir)
+{
+  const dt_loc_cache_dir_check_t check = dt_loc_check_user_cache_dir(cachedir);
+  if(check != DT_LOC_CACHE_DIR_USABLE)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_loc_set_user_cache_dir] cache folder '%s' %s",
+             cachedir ? cachedir : "",
+             check == DT_LOC_CACHE_DIR_NOT_ABSOLUTE ? "is not an absolute path"
+             : check == DT_LOC_CACHE_DIR_MISSING    ? "does not exist"
+                                                    : "cannot be listed or written to");
+    return FALSE;
+  }
+
+  // resolved here rather than by dt_loc_init_user_cache_dir(): its
+  // dt_loc_init_generic() would create a folder that went missing since the
+  // check above, and exit on non-windows when the path cannot be resolved
+  // (grealpath.h). local copies keep the folder resolved at startup, even
+  // when it cannot be used: the database flags them as copied without their
+  // location, so any other folder would leave them flagged but not found at a
+  // later start
+  gchar *expanded = dt_loc_expand_user_path(cachedir);
+#ifdef _WIN32
+  gchar *path = g_realpath(expanded);
+#else
+  char resolved[PATH_MAX] = { 0 };
+  gchar *path = realpath(expanded, resolved) ? g_strdup(resolved) : NULL;
+#endif
+  g_free(expanded);
+  if(!path)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_loc_set_user_cache_dir] cache folder '%s' cannot be resolved", cachedir);
+    return FALSE;
+  }
+  if(!dt_check_opendir("darktable.cachedir", path))
+  {
+    g_free(path);
+    return FALSE;
+  }
+  g_free(darktable.cachedir);
+  darktable.cachedir = path;
+  _user_cache_dir_source = DT_LOC_CACHE_DIR_PREF;
+  g_free(_user_cache_dir_pref);
+  _user_cache_dir_pref = dt_loc_expand_user_path(cachedir);
+  return TRUE;
 }
 
 void dt_loc_init_plugindir(const char* application_directory, const char *plugindir)
@@ -320,6 +457,10 @@ void dt_loc_get_user_config_dir(char *configdir, size_t bufsize)
 void dt_loc_get_user_cache_dir(char *cachedir, size_t bufsize)
 {
   g_strlcpy(cachedir, darktable.cachedir, bufsize);
+}
+void dt_loc_get_user_local_copy_dir(char *dir, size_t bufsize)
+{
+  g_strlcpy(dir, _user_local_copy_dir ? _user_local_copy_dir : darktable.cachedir, bufsize);
 }
 void dt_loc_get_tmp_dir(char *tmpdir, size_t bufsize)
 {
