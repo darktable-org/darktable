@@ -178,6 +178,22 @@ int main(int argc, char *argv[])
     printf("\n");
   }
 
+  // <consoleAllocationPolicy>detached</consoleAllocationPolicy> in the manifest
+  // is Windows 11 24H2+. On older Windows the loader gives this console
+  // subsystem binary a console before main() runs, so _allocate_console() above
+  // is never reached and the user is left with a bare console window. Claim any
+  // visible console that is ours alone; one inherited from a shell has more
+  // than one process attached and must be left alone.
+  if(!show_console_notice)
+  {
+    const HWND console_window = GetConsoleWindow();
+    DWORD console_pids[2];
+    if(console_window
+       && IsWindowVisible(console_window)
+       && GetConsoleProcessList(console_pids, 2) == 1)
+      show_console_notice = TRUE;
+  }
+
   if(show_console_notice)
     dt_request_console_notice();
 
