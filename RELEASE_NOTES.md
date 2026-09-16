@@ -144,6 +144,9 @@ changes (where available).
   so adjusting a mask or toggling the mask overlay recomputed most of the
   pipeline each time.
 
+- Separated the demosaicer's crop-and-scale step into a new hidden
+  module to improve cache efficiency and UI responsiveness.
+
 ## Other Changes
 
 - Added a new collection filter for the original image dimensions.

@@ -406,7 +406,7 @@ void modify_roi_in(dt_iop_module_t *self,
   else
   {
     // We require the correct (full-image-data) expansion with a defined scale for all pixelpipes for proper
-    // aligning and scaling in the demosiacer
+    // aligning and scaling in the demosaicer
     roi_in->x = 0;
     roi_in->y = 0;
     roi_in->width = piece->buf_in.width;
