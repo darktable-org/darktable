@@ -4386,6 +4386,16 @@ gboolean dt_iop_module_is_skipped(const dt_develop_t *dev,
       && (dev->gui_module->iop_order < module->iop_order);
 }
 
+gboolean dt_iop_module_modifies_roi_out(const dt_iop_module_t *module)
+{
+  return _iop_modify_roi_out != module->modify_roi_out;
+}
+
+gboolean dt_iop_module_modifies_roi_in(const dt_iop_module_t *module)
+{
+  return _iop_modify_roi_in != module->modify_roi_in;
+}
+
 enum
 {
   // Multi-instance
