@@ -55,19 +55,11 @@ changes (where available).
 
 ## Performance Improvements
 
-- Reverted increased preview pipe dimension for UI performance.
+- N/A
 
 ## Other Changes
 
-- AI model downloads now resume after an interruption and retry on
-  transient network errors instead of starting over.
-
-- AI raw denoise now refuses legacy Fujifilm Super CCD sensors, whose
-  sensor layout the models were not trained for.
-
-- Color labels, ratings and manually applied geotags are now copied to
-  images created by AI denoise and upscale, in addition to EXIF data
-  and tags.
+- N/A
 
 ## Documentation updates
 
@@ -83,132 +75,18 @@ changes (where available).
 
 ## Bug Fixes
 
-- Fixed a bug that left OpenCL AMD devices disabled on Windows
-  systems.
-
-- Fixed a bug in demosaic module resulting from bad green
-  equilibration data.
-
-- Fixed a bug preventing the tether mode to connect when using a non
-  English UI.
-
-- Fixed an out-of-bounds read in wavelet decomposition that could
-  occasionally crash darktable when generating previews.
-
-- Fixed an out-of-bounds write in path masks that could lead to
-  crashes when two nodes overlapped exactly.
-
-- Fixed a bug in the retouch module that would prevent cache
-  invalidation after shape changes when blending is active.
-
-- Fixed an out-of-bounds read in the code responsible for raster
-  mask caching.
-
-- Fixed a possible crash when applying `.cube`, `.3dl`, or compressed
-  GMIC 3D LUTs.
-
-- Enforce darktable loading screen on windows systems to avoid
-  darkroom refreshing issues.
-
-- Fixed a bug in CPU opposed highlights code that could lead to out of
-  memory crashes.
-
-- Fixed a crash on Windows when auto-detecting an incompatible ONNX
-  Runtime library, or when reopening preferences after configuring
-  one.
-
-- Fixed the preferences dialog blocking when opened on a slow or
-  unreachable network. The AI model update check now runs in the
-  background.
-
-- Fixed a crash in neural restore raw denoise on raws where the
-  visible area extends to the sensor edge, e.g. some phone
-  tele-lens DNGs.
-
-- Fixed the "add to the current collection" checkbox in neural
-  restore being ignored when the global "ignore non-raw images"
-  import filter is enabled.
-
-- Fixed neural restore writing past the CFA buffer on 4-Bayer
-  sensors (CYGM, RGBE). Output is now a Linear DNG.
-
-- Fixed Sony embedded lens-correction tags being stripped from
-  exported TIFF and DNG files. Re-imported files now offer the
-  "embedded metadata" lens-correction mode again.
-
-- Fixed a crash and white cast in neural restore preview on
-  LINEAR-class images (Apple ProRAW, computational raws).
-
-- Fixed sRaw images being rejected as unsupported by neural
-  restore. They now route through the LINEAR pipeline.
-
-- Fixed wrong blue colors for 16bit png exports.
-
-- Fixed some subtle segment issues in highlights segmentation mode.
-
-- Fixed two-finger scrolling falling through to zoom when drawing masks,
-  scrolling now pans unless the active mask consumes the gesture.
-
-- Fix feather rendering on path masks whose control points coincide
-  with their corners; previously produced wildly displaced border
-  lines instead of a proper offset outline.
-
-- Fixed the on-screen rating message showing the wrong value when
-  rating multiple images at once (for example, clearing 1-star still
-  reported rating 1).
-
-- Fixed a bug leading to subtle color errors after history changes.
-
-- Fixed lighttable full preview jumping to the first image when
-  rejecting with filmstrip auto-scroll disabled and the collection
-  filtered to hide rejected images.
-
-- Fixed the image index and filmstrip selection in culling mode not
-  updating when navigating with the arrow keys.
-
-- Fixed lighttable filemanager scrolling to the top when assigning
-  a star rating or color label while the first row was only partly
-  visible.
-
-- Fixed calculation of pixelpipe cache payloads while preparing the
-  cache and while checking for requested tiling thus reducing oom kills
-  on small systems.
-
-- Fixed possible over-allocations of OpenCL memory that could lead to
-  instabilities or dt crashing on small devices
-
-- Fixed corrupted pixels on some AMD GPUs using the Mesa rusticl OpenCL
-  driver. Colorspace conversions, the lookup table module and the contrast
-  equalizer no longer read from and write to the same image buffer on the
-  GPU, which the OpenCL specification leaves undefined.
-
-- Fixed the AppImage defaulting to x11/Xwayland in native Wayland
-  sessions.
-
-- Fixed masks being altered by modules blending.
-
-- Ignore possible OpenCL null events (uninitialized) due to hard
-  memory pressure.
-
-- Fixed performance drop due to larger mipmaps being used. This has
-  been reviewed to ensure the performance is back to usable on small
-  systems.
-
-- Fixed distortion of one out of every four pixels in JPEG 2000 images
-  with YCbCr 4:2:0 subsampling.
-
-- Fixed a bug where drawn path masks with many nodes rendered a
-  chaotic feather line instead of following the mask outline.
-
-- Fixed a crash when switching the lens correction method from
-  embedded metadata to Lensfun and back.
-
-- Fixed the AI raw denoise preview showing a different area than the
-  one selected on cropped images, and the area picker remaining
-  unavailable until darktable was restarted.
-
 - Fixed highlights modes for 4BAYER (CYGM/RGBE) raws, only clipping mode
   is available for those.
+
+- Fixed darktable stealing the focus from other applications on
+  Windows, pushing itself in front of whatever you were using and
+  taking the keyboard. This could happen when hovering over lighttable
+  thumbnails, during import and export, and when log messages appeared
+  or expired.  While darktable was minimized it took the keyboard
+  without becoming visible.
+
+- Fixed Alt+Tab failing to switch away from darktable on Windows when
+  the mouse pointer was over a lighttable thumbnail.
 
 ## Lua
 
