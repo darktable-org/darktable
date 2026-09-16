@@ -320,6 +320,11 @@ changes (where available).
 - Fixed metadata tag Xmp.xmpMM.PreservedFileName not written on camera
   import.
 
+- Fixed the lighttable showing thumbnails from before an edit when a
+  different cache folder was in use during the edit, for example another
+  `--cachedir` or a cache folder restored from a backup. Thumbnails older
+  than the last edit are now removed and generated again.
+
 ## Lua
 
 ### API Version

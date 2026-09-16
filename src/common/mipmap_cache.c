@@ -18,6 +18,7 @@
 
 #include "common/mipmap_cache.h"
 #include "common/darktable.h"
+#include "common/datetime.h"
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/file_location.h"
@@ -41,6 +42,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #if !defined(_WIN32)
@@ -461,6 +463,35 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf,
   return dsc + 1;
 }
 
+// a thumbnail file older than the image's last history change was
+// written before that edit. leaving darkroom removes the thumbnails only
+// in the cache folder in use (dt_mipmap_cache_remove), so another cache
+// folder used with the same library (another --cachedir, a cache folder
+// restored from a backup) can still hold the pre-edit look
+static gboolean _disk_thumbnail_is_outdated(FILE *f,
+                                            const dt_imgid_t imgid)
+{
+  const dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  if(!img) return FALSE;
+  const GTimeSpan change_timestamp = img->change_timestamp;
+  dt_image_cache_read_release(img);
+
+  // 0 and -1 mean the image has no recorded change, so the file time
+  // is not needed
+  if(change_timestamp <= 0) return FALSE;
+
+  struct stat statbuf;
+  if(fstat(fileno(f), &statbuf)) return FALSE;
+
+  GDateTime *gdt = g_date_time_new_from_unix_utc(statbuf.st_mtime);
+  const GTimeSpan file_timestamp = dt_datetime_gdatetime_to_gtimespan(gdt);
+  if(gdt) g_date_time_unref(gdt);
+
+  // file times are whole seconds, on FAT file systems even two seconds
+  return file_timestamp > 0
+    && file_timestamp + 2 * G_TIME_SPAN_SECOND < change_timestamp;
+}
+
 // callback for the cache backend to initialize payload pointers
 static void _mipmap_cache_allocate_dynamic(void *data,
                                            dt_cache_entry_t *entry)
@@ -536,6 +567,17 @@ static void _mipmap_cache_allocate_dynamic(void *data,
                "%s.d/%d/%" PRIu32 ".jpg", cache->cachedir, (int)mip,
                _get_imgid(entry->key));
       FILE *f = g_fopen(filename, "rb");
+      // remove it rather than skip it: an existing file is never
+      // overwritten when the new thumbnail is written back to disk
+      if(f && _disk_thumbnail_is_outdated(f, _get_imgid(entry->key)))
+      {
+        dt_print(DT_DEBUG_CACHE,
+                 "[mipmap_cache] remove outdated mip %d for ID=%d from disk cache", mip,
+                 _get_imgid(entry->key));
+        fclose(f);
+        f = NULL;
+        g_unlink(filename);
+      }
       if(f)
       {
         uint8_t *blob = 0;
