@@ -56,6 +56,10 @@
 #include <json-glib/json-glib.h>
 
 #include "spektra_core.h"
+/* grain_curve_inverse / grain_curve_sample: the density curve lookup feeding
+   grain_layer_particle, compiled here and by the OpenCL kernels from one
+   source. */
+#include "grain_curve.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -4639,41 +4643,11 @@ void sf_sim_grain_layers(const sf_sim_t *sim,
  * spektrafilm's own interp_density_cmy_layers_channel performs (there, via
  * a table built ad hoc each call; here, against grain_layer_curve_total,
  * built once at sim-build time). */
-static float _sf_grain_curve_inverse(const float *arr,
-                                     int n,
-                                     int stride,
-                                     float target)
-{
-  const int increasing = arr[(n - 1) * stride] >= arr[0];
-  int lo = 0, hi = n - 1;
-  while(hi - lo > 1)
-  {
-    const int mid = (lo + hi) / 2;
-    const float v = arr[mid * stride];
-    if((increasing && v <= target) || (!increasing && v >= target)) lo = mid;
-    else hi = mid;
-  }
-  const float v0 = arr[lo * stride], v1 = arr[hi * stride];
-  const float denom = v1 - v0;
-  float frac = (fabsf(denom) > 1e-9f) ? (target - v0) / denom : 0.0f;
-  if(frac < 0.0f) frac = 0.0f;
-  if(frac > 1.0f) frac = 1.0f;
-  return (float)lo + frac;
-}
+
 
 /* Linearly interpolate a (possibly strided) per-index array at the
- * continuous index `pos` produced by _sf_grain_curve_inverse above. */
-static float _sf_grain_curve_sample(const float *arr,
-                                    int n,
-                                    int stride,
-                                    float pos)
-{
-  int i0 = (int)pos;
-  if(i0 < 0) i0 = 0;
-  if(i0 > n - 2) i0 = (n - 2 < 0) ? 0 : n - 2;
-  const float frac = pos - (float)i0;
-  return arr[i0 * stride] * (1.0f - frac) + arr[(i0 + 1) * stride] * frac;
-}
+ * continuous index `pos` produced by grain_curve_inverse above. */
+
 
 /* Multi-sublayer grain delta, for a film whose fitted density-curve model has
  * more than one emulsion sub-layer (sf_sim_grain_layers().n > 1; n == 1 is the
@@ -4707,11 +4681,11 @@ void sf_grain_delta_ml(const sf_grain_layers_t *layers,
   if(mono)
   {
     const float dm = (dens[0] + dens[1] + dens[2]) / 3.0f;
-    const float pos = _sf_grain_curve_inverse(&layers->layer_curve_total[0][1], nle, 3, dm);
+    const float pos = grain_curve_inverse(&layers->layer_curve_total[0][1], nle, 3, dm);
     float total_abs = 0.0f;
     for(int sl = 0; sl < nsub; sl++)
     {
-      const float raw = _sf_grain_curve_sample(&layers->layer_curve[0][sl][1], nle, lstride, pos);
+      const float raw = grain_curve_sample(&layers->layer_curve[0][sl][1], nle, lstride, pos);
       const float d_abs = raw + (float)layers->layer_dmin[sl][1];
       total_abs += grain_layer_particle(d_abs, (float)layers->layer_dmax[sl][1],
                                      (float)layers->layer_npart[sl][1] * npart_scale,
@@ -4725,11 +4699,11 @@ void sf_grain_delta_ml(const sf_grain_layers_t *layers,
 
   for(int c = 0; c < 3; c++)
   {
-    const float pos = _sf_grain_curve_inverse(&layers->layer_curve_total[0][c], nle, 3, dens[c]);
+    const float pos = grain_curve_inverse(&layers->layer_curve_total[0][c], nle, 3, dens[c]);
     float total_abs = 0.0f;
     for(int sl = 0; sl < nsub; sl++)
     {
-      const float raw = _sf_grain_curve_sample(&layers->layer_curve[0][sl][c], nle, lstride, pos);
+      const float raw = grain_curve_sample(&layers->layer_curve[0][sl][c], nle, lstride, pos);
       const float d_abs = raw + (float)layers->layer_dmin[sl][c];
       total_abs += grain_layer_particle(d_abs, (float)layers->layer_dmax[sl][c],
                                      (float)layers->layer_npart[sl][c] * npart_scale,
@@ -4768,11 +4742,11 @@ void sf_grain_raw_samples_ml(const sf_grain_layers_t *layers,
   const int nsub = layers->n;
   const int nle = SF_NLE;
   const int lstride = SF_GRAIN_MAX_SUBLAYERS * 3;
-  const float pos = _sf_grain_curve_inverse(&layers->layer_curve_total[0][channel_idx], nle, 3,
+  const float pos = grain_curve_inverse(&layers->layer_curve_total[0][channel_idx], nle, 3,
                                             density);
   for(int sl = 0; sl < nsub; sl++)
   {
-    const float raw = _sf_grain_curve_sample(&layers->layer_curve[0][sl][channel_idx], nle,
+    const float raw = grain_curve_sample(&layers->layer_curve[0][sl][channel_idx], nle,
                                              lstride, pos);
     const float d_abs = raw + (float)layers->layer_dmin[sl][channel_idx];
     raw_out[sl] = grain_layer_particle(d_abs, (float)layers->layer_dmax[sl][channel_idx],

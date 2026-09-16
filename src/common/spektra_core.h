@@ -81,6 +81,19 @@ void sf_glare(float *rgb,
               int roi_y,
               float *field);
 
+/* Same additive unsharp mask on a single flat w*h buffer. Stands to
+   sf_unsharp_mask3 as sf_blur_plane1 does to sf_blur_plane3: a caller
+   holding one plane would otherwise have to replicate it across three
+   channels to reach the interleaved version. `orig` and `work` are w*h
+   scratch buffers supplied by the caller. */
+void sf_unsharp_mask1(float *buf,
+                      int w,
+                      int h,
+                      float sigma,
+                      float amount,
+                      float *orig,
+                      float *work);
+
 void sf_multiplicative_unsharp_mask3(float *buf,
                                      int w,
                                      int h,

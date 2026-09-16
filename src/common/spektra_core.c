@@ -343,6 +343,21 @@ void sf_blur_plane3_fast(float *const buf,
    fields with grain from sigma_D = 0.01 to 0.08, the factor stays inside
    [0.9945, 1.0], i.e. under 0.03 dB. Dropping it also makes this path agree with
    spektrafilm_grain_usm in the .cl, which never had the renormalisation. */
+void sf_unsharp_mask1(float *const buf,
+                      const int w,
+                      const int h,
+                      const float sigma,
+                      const float amount,
+                      float *const orig,
+                      float *const work)
+{
+  if(sigma <= 0.0f || amount <= 0.0f) return;
+  const size_t nn = (size_t)w * h;
+  dt_iop_image_copy(orig, buf, nn);
+  sf_blur_plane1(buf, w, h, sigma, NULL, work);
+  for(size_t i = 0; i < nn; i++) buf[i] = orig[i] + amount * (orig[i] - buf[i]);
+}
+
 void sf_multiplicative_unsharp_mask3(float *const buf,
                                      const int w,
                                      const int h,

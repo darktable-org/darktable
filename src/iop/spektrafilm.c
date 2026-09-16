@@ -253,7 +253,7 @@ typedef struct dt_iop_spektrafilm_params_t
   float grain_granularity;  // $MIN: 0.0 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "granularity"
   /* GrainParams.uniformity, again as a scale. HIGHER bends the noise toward
      the Selwyn bell -- grain that grows and then falls away again with
-     density. sf_layer_particle draws against a saturation term 1 - p*unif
+     density. grain_layer_particle draws against a saturation term 1 - p*unif
      and the variance scales with it, so raising uniformity suppresses the
      fluctuation at high density. The scale reaches the sampler as a plain
      multiplier on the stock's own figure (grain_uniformity_scale in
@@ -597,8 +597,8 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_yvv_col_1c = dt_opencl_create_kernel(program, "spektrafilm_yvv_col_1c");
   gd->kernel_gauss_row_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_4c");
   gd->kernel_gauss_col_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_col_4c");
-  gd->kernel_gauss_row_1c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_1c");
-  gd->kernel_gauss_col_1c = dt_opencl_create_kernel(program, "spektrafilm_gauss_col_1c");
+  gd->kernel_gauss_row_1c = dt_opencl_create_kernel(program, "gauss_row_1c");
+  gd->kernel_gauss_col_1c = dt_opencl_create_kernel(program, "gauss_col_1c");
   gd->kernel_channel_accum = dt_opencl_create_kernel(program, "spektrafilm_channel_accum");
   gd->kernel_halation_apply = dt_opencl_create_kernel(program, "spektrafilm_halation_apply");
   gd->kernel_boost = dt_opencl_create_kernel(program, "spektrafilm_boost");

@@ -64,13 +64,20 @@
 
 
 #include "common.h"
-/* grain_clampf / grain_hash / grain_uniform / grain_normal / grain_pixel_seed / grain_exp2i /
-   grain_exp_neg / grain_exp2f / grain_log2f / grain_poisson / grain_layer_particle and
+/* grain_clampf / grain_hash / grain_uniform / grain_normal /
+   grain_pixel_seed / grain_exp2i / grain_exp_neg / grain_exp2f /
+   grain_log2f / grain_poisson / grain_layer_particle and
    GRAIN_POISSON_EXACT_MAX: one copy, compiled here and on the host. The
    #define selects the OpenCL dialect and is required -- the header refuses
    to compile as OpenCL without it. */
 #define GRAIN_CL 1
 #include "grain.h"
+/* grain_curve_inverse / grain_curve_sample: one copy, compiled here and on
+   the host. */
+#include "grain_curve.h"
+/* gauss_row_1c / gauss_col_1c: the separable gaussian this file and
+   grain.cl both dispatch, from one source. */
+#include "blur_plane.h"
 
 #define SF_NLE 256
 #define SF_LOG_EPS 1e-10f
@@ -448,34 +455,11 @@ __kernel void spektrafilm_develop(__global const float4 *lograw, __global const 
  * a strided (non-contiguous) column of a [n][...] table without copying it
  * out first -- the same "find where the total curve reads D" step
  * spektrafilm's own interp_density_cmy_layers_channel performs. */
-static float sf_cl_grain_curve_inverse(__global const float *arr, int n, int stride, float target)
-{
-  const int increasing = arr[(n - 1) * stride] >= arr[0];
-  int lo = 0, hi = n - 1;
-  while(hi - lo > 1)
-  {
-    const int mid = (lo + hi) / 2;
-    const float v = arr[mid * stride];
-    if((increasing && v <= target) || (!increasing && v >= target)) lo = mid;
-    else hi = mid;
-  }
-  const float v0 = arr[lo * stride], v1 = arr[hi * stride];
-  const float denom = v1 - v0;
-  float frac = (fabs(denom) > 1e-9f) ? (target - v0) / denom : 0.0f;
-  frac = clamp(frac, 0.0f, 1.0f);
-  return (float)lo + frac;
-}
+
 
 /* Linearly interpolate a strided per-index array at the continuous index
- * `pos` produced by sf_cl_grain_curve_inverse above. */
-static float sf_cl_grain_curve_sample(__global const float *arr, int n, int stride, float pos)
-{
-  int i0 = (int)pos;
-  if(i0 < 0) i0 = 0;
-  if(i0 > n - 2) i0 = (n - 2 < 0) ? 0 : n - 2;
-  const float frac = pos - (float)i0;
-  return arr[i0 * stride] * (1.0f - frac) + arr[(i0 + 1) * stride] * frac;
-}
+ * `pos` produced by grain_curve_inverse above. */
+
 
 /* stage 4: grain. Restructured into three kernels (raw sub-layer sample,
    accumulate, finalize) instead of one that directly produced the final
@@ -513,8 +497,8 @@ __kernel void spektrafilm_grain_gen_raw_sl(__global const float4 *dens, __global
                              : (channel_idx == 0 ? d4.x : (channel_idx == 1 ? d4.y : d4.z));
   const int lstride = max_sub * 3;
   const int idx = sl_idx * 3 + channel_idx;
-  const float pos = sf_cl_grain_curve_inverse(layer_curve_total + channel_idx, nle, 3, density);
-  const float raw = sf_cl_grain_curve_sample(layer_curve + idx, nle, lstride, pos);
+  const float pos = grain_curve_inverse(layer_curve_total + channel_idx, nle, 3, density);
+  const float raw = grain_curve_sample(layer_curve + idx, nle, lstride, pos);
   const float d_abs = raw + layer_dmin[idx];
   const uint seed = grain_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y),
                                   (uint)(seed_ch + sl_idx * 10));
@@ -990,37 +974,7 @@ __kernel void spektrafilm_gauss_col_4c(__global const float4 *src, __global floa
   dst[(size_t)y * w + x] = acc;
 }
 
-__kernel void spektrafilm_gauss_row_1c(__global const float *src, __global float *dst,
-                                       const int w, const int h,
-                                       __global const float *weights, const int radius)
-{
-  const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= w || y >= h) return;
-  float acc = 0.0f;
-  for(int k = -radius; k <= radius; k++)
-  {
-    int xx = x + k;
-    xx = xx < 0 ? 0 : (xx >= w ? w - 1 : xx);
-    acc += weights[k + radius] * src[(size_t)y * w + xx];
-  }
-  dst[(size_t)y * w + x] = acc;
-}
 
-__kernel void spektrafilm_gauss_col_1c(__global const float *src, __global float *dst,
-                                       const int w, const int h,
-                                       __global const float *weights, const int radius)
-{
-  const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= w || y >= h) return;
-  float acc = 0.0f;
-  for(int k = -radius; k <= radius; k++)
-  {
-    int yy = y + k;
-    yy = yy < 0 ? 0 : (yy >= h ? h - 1 : yy);
-    acc += weights[k + radius] * src[(size_t)yy * w + x];
-  }
-  dst[(size_t)y * w + x] = acc;
-}
 
 __kernel void spektrafilm_scatter_combine(__global const float4 *raw, __global const float4 *core,
                                           __global const float4 *tail, __global float4 *out,

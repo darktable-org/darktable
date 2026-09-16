@@ -1165,6 +1165,10 @@ if(HAVE_FFP_CONTRACT_OFF)
     "common/spektra_core.c"
     "common/spektra_sim.c"
     "iop/spektrafilm.c"
+    # grain.c's particle method calls sf_layer_particle from the same shared
+    # header and needs the same treatment; without it that grain diverges
+    # from spektrafilm's under FMA contraction
+    "iop/grain.c"
     PROPERTIES COMPILE_OPTIONS "${SPEKTRA_FP_CONTRACT_FLAGS}")
 endif()
 
