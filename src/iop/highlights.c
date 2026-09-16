@@ -436,7 +436,7 @@ void tiling_callback(dt_iop_module_t *self,
   tiling->overlap = 0;
 
   dt_develop_blend_params_t *const bldata = piece->blendop_data;
-  if(bldata && dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID))
+  if(bldata && dt_iop_is_raster_mask_used(self, BLEND_RASTER_ID))
   {
     tiling->factor += 0.5f;
     tiling->factor_cl += 0.5f;
@@ -581,7 +581,7 @@ int process_cl(dt_iop_module_t *self,
   const dt_iop_highlights_mode_t dmode =  d->mode;
   const float clipper = d->clip * highlights_clip_magics[dmode];
 
-  gboolean announce = dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID);
+  gboolean announce = dt_iop_is_raster_mask_used(self, BLEND_RASTER_ID);
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem dev_xtrans = NULL;
@@ -867,7 +867,7 @@ void process(dt_iop_module_t *self,
   const gboolean scaled = filters == 0 && dmode != DT_IOP_HIGHLIGHTS_CLIP;
 
   float *out = scaled ? dt_alloc_align_float((size_t)roi_in->width * roi_in->height * 4) : NULL;
-  const gboolean announce = dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID);
+  const gboolean announce = dt_iop_is_raster_mask_used(self, BLEND_RASTER_ID);
 
   if(!out && scaled)
   {

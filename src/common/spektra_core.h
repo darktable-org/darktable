@@ -19,9 +19,16 @@
 #pragma once
 #include <math.h>
 #include <stdint.h>
+/* Scalar math compiled BOTH here and by data/kernels/spektrafilm.cl, which
+   must agree bit-for-bit. Lives in data/kernels/ because that is the only
+   directory on the OpenCL compiler's include path, at test-compile time
+   (data/kernels/CMakeLists.txt) and at runtime (src/common/opencl.c).
+   Any .c that includes this header needs the -ffp-contract=off treatment
+   src/CMakeLists.txt applies to the spektra sources. */
+#include "grain.h"
 
-#ifndef SPEKTRA_INLINE
-#define SPEKTRA_INLINE static inline
+#ifndef GRAIN_INLINE
+#define GRAIN_INLINE static inline
 #endif
 
 /* Spatial effects implemented in spektra_core.c (they need dt_alloc_align_float
@@ -156,78 +163,6 @@ int sf_diffusion_build_plan(int family,
                             sf_diffusion_plan_t *plan);
 
 
-SPEKTRA_INLINE float sf_clampf(float x,
-                               float lo,
-                               float hi)
-{
-  return x < lo ? lo : (x > hi ? hi : x);
-}
-
-/* ---------------- grain (validated) ----------------
- *
- * Grain must be random per pixel yet perfectly reproducible (stable under
- * re-render, pan and zoom, and identical on CPU and GPU). So instead of a
- * stateful PRNG we use a stateless integer HASH keyed on the pixel coordinates:
- * hash(x, y, channel) -> a random-looking value for that exact pixel. The hash
- * constants below are published, well-tested values, NOT tunable parameters;
- * any good integer hash would do, and changing them only reshuffles the noise.
- */
-
-/* sf_h: Chris Wellons' "lowbias32" integer hash finalizer. The multipliers and
-   shift sequence are the published, bias-minimised constants of that algorithm. */
-SPEKTRA_INLINE uint32_t sf_h(uint32_t x)
-{
-  x ^= x >> 16;
-  x *= 0x7feb352dU;
-  x ^= x >> 15;
-  x *= 0x846ca68bU;
-  x ^= x >> 16;
-  return x;
-}
-/* sf_u01: hash -> uniform float in [0,1) using the top 24 bits (float mantissa). */
-SPEKTRA_INLINE float sf_u01(uint32_t s)
-{
-  return (sf_h(s) & 0xffffff) / (float)0x1000000;
-}
-/* sf_nrm: one hash seed -> one approximate standard-normal sample via a
-   sum-of-4-uniforms (Irwin-Hall) approximation instead of Box-Muller's
-   sqrt+log+cos transcendental chain. Var[uniform(0,1)] = 1/12, so a sum of 4
-   has variance 4/12 = 1/3 and mean 2; rescaling by sqrt(3) and centering
-   gives unit variance, zero mean -- the two moments sf_layer_particle's
-   normal approximations actually rely on. The finite (not truly Gaussian)
-   tails this leaves behind aren't visually meaningful for film grain: real
-   emulsions don't have famously heavy statistical tails either, and the
-   difference from a true Gaussian only shows up several standard
-   deviations out, well past where grain is visible at all. Called twice per
-   particle draw, per sub-layer (up to SF_GRAIN_MAX_SUBLAYERS times for a
-   multi-sublayer film) -- worth being cheap. The four multipliers are
-   distinct, well-known odd hash constants (murmur3's c1/c2, Knuth's golden-
-   ratio multiplier, and one more), used only to decorrelate the four
-   uniform draws from each other. */
-SPEKTRA_INLINE float sf_nrm(uint32_t s)
-{
-  const float u = sf_u01(s) + sf_u01(s * 2654435761u + 1u) + sf_u01(s * 2246822519u + 2u)
-                  + sf_u01(s * 3266489917u + 3u);
-  return (u - 2.0f) * 1.7320508f; /* sqrt(3) */
-}
-/* sf_layer_particle: draw the developed density of one emulsion layer as a
-   doubly-stochastic process. First the number of developed grains in this pixel
-   (mean lam, Poisson -> normal approximation), then the fraction that record
-   signal (binomial -> normal approximation). The 0x9e3779b9 / 0x85ebca6b offsets
-   are standard hash-mixing constants (golden ratio; murmurhash) that simply give
-   the two normal draws independent seeds. */
-/* sf_pixel_seed: combine pixel coordinates and a channel/sub-layer index into one
-   seed for the grain hash. The three large primes are Teschner et al.'s published
-   spatial-hash constants; XOR-mixing distinct primes per axis keeps neighbouring
-   pixels and channels from sharing a seed (which would correlate their grain).
-   Uses ABSOLUTE image coordinates so grain is stable while panning. */
-SPEKTRA_INLINE uint32_t sf_pixel_seed(uint32_t xi,
-                                      uint32_t yi,
-                                      uint32_t chan)
-{
-  return xi * 73856093u ^ yi * 19349663u ^ chan * 83492791u;
-}
-
 /* Maximum kernel half-width (taps = 2*radius+1) passed to
    dt_gaussian_kernel_1d.
    Caps cost for pathologically large sigma (very high film_format_mm
@@ -283,179 +218,13 @@ void sf_gauss_yvv_coeffs(float sigma,
  * the CPU convolution (spektra_core.c) and the GPU host-side weight upload
  * (spektrafilm.c's process_cl) build the identical kernel for a given sigma. */
 
-/* sf_poisson: one Poisson(lam) draw from a stateless seed.
+/* grain_clampf, the grain hash (grain_hash / grain_uniform / grain_normal / grain_pixel_seed), the
+   portable exp/log polynomials (grain_exp2i / grain_exp_neg / grain_exp2f /
+   grain_log2f) and the grain sampler (grain_poisson / grain_layer_particle, plus
+   GRAIN_POISSON_EXACT_MAX) now live in data/kernels/grain.h, included
+   at the top of this header: the OpenCL kernel compiles that same file, so
+   the two paths cannot drift. Read the rationale for every constant there. */
 
-   Below SF_POISSON_EXACT_MAX the draw is EXACT (Knuth's product-of-uniforms).
-   That threshold is not a quality/speed compromise, it is where the normal
-   approximation stops being safe: sf_nrm is bounded at +-sqrt(12) (Irwin-Hall
-   over four uniforms), so lam + sqrt(lam)*sf_nrm() can only go negative when
-   lam < 12. Above the threshold no clamp is ever needed and the approximation
-   is mean- and variance-exact; below it, a normal clamped at zero would bias
-   the draw upward in the shadows, which is the whole reason for the exact
-   branch. Cost: the exact branch averages lam+1 hashes (<= 13), the fast
-   branch 4, against 8 for a pair of sf_nrm draws. */
-#define SF_POISSON_EXACT_MAX 12.0f
-
-/* sf_exp2i: construct 2^k exactly for integer k, by writing the IEEE-754
-   binary32 exponent field directly instead of calling ldexpf/exp2f. This is
-   bit manipulation, not arithmetic -- no rounding happens, so it is exact
-   and identical everywhere by construction. Only valid for k that keeps the
-   result normal (roughly -125..127); sf_exp_neg below never asks for
-   anything close to those limits over its intended domain. */
-SPEKTRA_INLINE float sf_exp2i(int k)
-{
-  union { uint32_t u; float f; } v;
-  v.u = (uint32_t)(k + 127) << 23;
-  return v.f;
-}
-
-/* sf_exp_neg: exp(-lam) for lam in (0, SF_POISSON_EXACT_MAX), built only from
-   +, -, * and the exact floor()/exponent-injection above -- deliberately NOT
-   a call to expf()/exp(). The platform exp() is only spec'd to within a few
-   ULP (OpenCL C requires just <=3 ULP for exp(), versus basic +,-,* which
-   IEEE-754 and the OpenCL spec both require to be correctly rounded), and
-   this value feeds an accept/reject loop in sf_poisson: prod *= sf_u01(...)
-   until prod <= limit. A few-ULP disagreement between the CPU's expf() and
-   the GPU's exp() only rarely lands close enough to prod to matter, but
-   when it does, the loop exits one iteration earlier or later and the
-   sampled grain count is off by a whole integer -- a real, visible
-   per-pixel difference from an invisible input difference. Every op used
-   here (+, -, *, floor, and the bit-exact 2^k above) is required to be
-   exact/correctly-rounded on both sides, so this reproduces bit-for-bit
-   given the same lam, unlike the library call it replaces. (Build systems:
-   this relies on the compiler NOT fusing any of these multiply+adds into a
-   single-rounding FMA on one side and not the other -- keep
-   -ffast-math/-ffp-contract=fast and -cl-mad-enable/-cl-fast-relaxed-math
-   off for this code.)
-
-   Implementation: standard exp(x) = 2^k * exp(r) range reduction, k =
-   round(x/ln2), r in [-ln2/2, ln2/2], exp(r) via a degree-6 Taylor
-   polynomial (evaluated with Horner's method). Max relative error over the
-   full (0,12) domain is ~1.1e-6 -- far tighter than grain needs, chosen
-   for auditability over a tighter minimax fit. */
-#pragma STDC FP_CONTRACT OFF
-SPEKTRA_INLINE float sf_exp_neg(float lam)
-{
-  const float t = -lam;
-  const int k = (int)floorf(t * 1.4426950216293335f + 0.5f); /* log2(e) */
-  const float r = t - (float)k * 0.6931471824645996f;        /* ln(2) */
-  float p = 0.00138888892f;                                  /* 1/720 */
-  p = p * r + 0.00833333377f;                                /* 1/120 */
-  p = p * r + 0.0416666679f;                                 /* 1/24 */
-  p = p * r + 0.166666672f;                                  /* 1/6 */
-  p = p * r + 0.5f;
-  p = p * r + 1.0f;
-  p = p * r + 1.0f;
-  return p * sf_exp2i(k);
-}
-
-/* sf_exp2f / sf_log2f: 2^x and log2(x) built from +, -, *, / and the exact
-   floor/exponent manipulation above, for the reason sf_exp_neg is -- and
-   this pair is what actually reaches the grain sampler. SF_POW10F and
-   SF_LOG10F are defined in terms of these rather than the platform
-   exp2f/log2f, which OpenCL specifies only to <=3 ULP while glibc rounds
-   correctly: that slack lands in the film density arriving at
-   sf_layer_particle, and sf_poisson's accept/reject loop turns a one-ULP
-   density difference into a whole-integer grain count difference wherever a
-   partial product happens to sit near limit. The result is isolated pixels,
-   scattered evenly and uncorrelated with image structure, each off by a full
-   grain quantum rather than by a rounding.
-
-   Every operation here is correctly rounded on both sides by IEEE-754 and by
-   the OpenCL spec, so the same x yields the same bits. The same caveat as
-   sf_exp_neg applies: none of these multiply-adds may be contracted into an
-   FMA on one side and not the other, which is what -ffp-contract=off on the
-   host and #pragma OPENCL FP_CONTRACT OFF in the kernel are for.
-
-   Both are ~1 ULP against glibc over the domains this module uses, and are
-   not general-purpose replacements outside them: sf_exp2f assumes the result
-   stays normal, sf_log2f assumes x is positive and normal. SF_LOG10F floors
-   its argument at SF_LOG_EPS, which keeps it there. */
-SPEKTRA_INLINE float sf_exp2f(float x)
-{
-  /* x = k + r, k integer and |r| <= 0.5, so 2^x = 2^k * e^(r ln2) with the
-     exponential taken over |t| <= 0.347 by a degree-7 Taylor polynomial in
-     Horner form and 2^k injected exactly. */
-  const int k = (int)floorf(x + 0.5f);
-  const float t = (x - (float)k) * 0.6931471824645996f; /* ln(2) */
-  float p = 0.000198412700f;                            /* 1/5040 */
-  p = p * t + 0.00138888892f;                           /* 1/720 */
-  p = p * t + 0.00833333377f;                           /* 1/120 */
-  p = p * t + 0.0416666679f;                            /* 1/24 */
-  p = p * t + 0.166666672f;                             /* 1/6 */
-  p = p * t + 0.5f;
-  p = p * t + 1.0f;
-  p = p * t + 1.0f;
-  return p * sf_exp2i(k);
-}
-
-SPEKTRA_INLINE float sf_log2f(float x)
-{
-  /* Take the binary exponent off by hand, then fold the mantissa into
-     [1/sqrt2, sqrt2] so that s = (m-1)/(m+1) stays inside +-0.1716, where
-     log(m) = 2(s + s^3/3 + s^5/5 + s^7/7 + s^9/9) is good to well under an
-     ULP. Both steps of the fold are exact. */
-  union { float f; uint32_t u; } v;
-  v.f = x;
-  int e = (int)((v.u >> 23) & 0xffu) - 127;
-  v.u = (v.u & 0x007fffffu) | 0x3f800000u;
-  float m = v.f;
-  if(m > 1.41421356f) { m *= 0.5f; e += 1; }
-  const float s = (m - 1.0f) / (m + 1.0f);
-  const float s2 = s * s;
-  float p = 0.222222224f;    /* 2/9 */
-  p = p * s2 + 0.285714298f; /* 2/7 */
-  p = p * s2 + 0.400000006f; /* 2/5 */
-  p = p * s2 + 0.666666687f; /* 2/3 */
-  p = p * s2 + 2.0f;
-  return (float)e + p * s * 1.4426950216293335f; /* log2(e) */
-}
-
-SPEKTRA_INLINE float sf_poisson(float lam,
-                                uint32_t seed)
-{
-  if(lam <= 0.0f) return 0.0f;
-  if(lam < SF_POISSON_EXACT_MAX)
-  {
-    const float limit = sf_exp_neg(lam);
-    float prod = 1.0f;
-    int k = 0;
-    do
-    {
-      prod *= sf_u01(seed + (uint32_t)k * 0x9e3779b9u);
-      k++;
-    } while(prod > limit && k < 64);
-    return (float)(k - 1);
-  }
-  return lam + sqrtf(lam) * sf_nrm(seed);
-}
-
-/* sf_layer_particle: draw the developed density of one emulsion layer.
-
-   The reference model (layer_particle_model, grain.py) draws N_s ~ Poisson(lam)
-   sensitised grains and develops each with probability p, i.e.
-   Binomial(Poisson(lam), p). Poisson thinning makes that composition EXACTLY
-   Poisson(lam * p), so the two-stage draw collapses to a single Poisson and the
-   intermediate grain count -- along with the two clamps that went with it --
-   disappears.
-
-   The mean is then exactly lam*p * od * sat = density, and the variance exactly
-   p * dmax^2 * sat / npart = D (Dmax - u D) / N, the target grain.py derives. */
-SPEKTRA_INLINE float sf_layer_particle(float density,
-                                       float dmax,
-                                       float npart,
-                                       float unif,
-                                       uint32_t seed)
-{
-  const float p = sf_clampf(density / dmax, 1e-6f, 1 - 1e-6f);
-  /* A sub-layer that carries no density has dmax and npart both zero, making
-     this 0/0. The clamp above already absorbs a non-finite ratio (fmaxf
-     returns the non-NaN operand), but this divide has no such guard and its
-     NaN would reach the returned sample and from there the density buffer. */
-  const float od = dmax / fmaxf(npart, 1e-9f);
-  const float sat = 1.f - p * unif * (1 - 1e-6f);
-  return sf_poisson(npart * p / sat, seed * 0x9e3779b9u + 1u) * od * sat;
-}
 /* SF_GRAIN_REF_UM: the fixed reference scale (spektrafilm's own
    pixel_size_um=10) the particle model is generated at, independent of the
    live pipe's pixel_um — this keeps grain CHARACTER constant across zoom.

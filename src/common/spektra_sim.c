@@ -92,12 +92,12 @@ static inline void neon_mat3_mulv_batch(const float m[9],
 /* pow10 / log10 through spektra_core.h's own exp2/log2, NOT the platform
    exp2f/log2f. The kernel has to compute the same thing, and OpenCL specifies
    exp2/log2 only to <=3 ULP where glibc rounds correctly, so a library call
-   here is a library call the GPU cannot match. sf_exp2f/sf_log2f are built
+   here is a library call the GPU cannot match. grain_exp2f/grain_log2f are built
    from correctly-rounded operations alone and agree bit-for-bit on both
    sides; see their comment for why a ULP here is not a ULP by the time it
    reaches the grain sampler. */
-#define SF_POW10F(x) sf_exp2f((x) * 3.321928094887362f)  /* x * log2f(10) */
-#define SF_LOG10F(x) (sf_log2f(x) * 0.3010299956639812f)  /* log2f(x) * log10(2) */
+#define SF_POW10F(x) grain_exp2f((x) * 3.321928094887362f)  /* x * log2f(10) */
+#define SF_LOG10F(x) (grain_log2f(x) * 0.3010299956639812f)  /* log2f(x) * log10(2) */
 #define SF_TC_KNEE_T 0.0 /* [gc] InputGamutCompressSpec.knee */
 #define SF_TC_KNEE_L 1.0
 #define SF_TC_KNEE_P 6.0
@@ -431,7 +431,7 @@ struct sf_sim_t
   double grain_layer_npart[SF_GRAIN_MAX_SUBLAYERS][3];
   /* per-sublayer density floor (density_max_fractions[sl] * grain_density_min),
      needed to convert the interpolated net sub-layer density back to the
-     absolute value sf_layer_particle() expects. */
+     absolute value grain_layer_particle() expects. */
   double grain_layer_dmin[SF_GRAIN_MAX_SUBLAYERS][3];
   /* raw (un-summed) per-sub-layer curve terms across the exposure grid, and
      their sum (self-consistent by construction, used as the lookup axis to
@@ -4713,9 +4713,9 @@ void sf_grain_delta_ml(const sf_grain_layers_t *layers,
     {
       const float raw = _sf_grain_curve_sample(&layers->layer_curve[0][sl][1], nle, lstride, pos);
       const float d_abs = raw + (float)layers->layer_dmin[sl][1];
-      total_abs += sf_layer_particle(d_abs, (float)layers->layer_dmax[sl][1],
+      total_abs += grain_layer_particle(d_abs, (float)layers->layer_dmax[sl][1],
                                      (float)layers->layer_npart[sl][1] * npart_scale,
-                                     unif_c[1], sf_pixel_seed(xi, yi, (uint32_t)(sl * 10)));
+                                     unif_c[1], grain_pixel_seed(xi, yi, (uint32_t)(sl * 10)));
     }
     const float g = total_abs - dmin_c[1];
     const float d = (g - dm) * amount;
@@ -4731,9 +4731,9 @@ void sf_grain_delta_ml(const sf_grain_layers_t *layers,
     {
       const float raw = _sf_grain_curve_sample(&layers->layer_curve[0][sl][c], nle, lstride, pos);
       const float d_abs = raw + (float)layers->layer_dmin[sl][c];
-      total_abs += sf_layer_particle(d_abs, (float)layers->layer_dmax[sl][c],
+      total_abs += grain_layer_particle(d_abs, (float)layers->layer_dmax[sl][c],
                                      (float)layers->layer_npart[sl][c] * npart_scale,
-                                     unif_c[c], sf_pixel_seed(xi, yi, (uint32_t)(c + sl * 10)));
+                                     unif_c[c], grain_pixel_seed(xi, yi, (uint32_t)(c + sl * 10)));
     }
     const float g = total_abs - dmin_c[c];
     out_delta[c] = (g - dens[c]) * amount;
@@ -4775,8 +4775,8 @@ void sf_grain_raw_samples_ml(const sf_grain_layers_t *layers,
     const float raw = _sf_grain_curve_sample(&layers->layer_curve[0][sl][channel_idx], nle,
                                              lstride, pos);
     const float d_abs = raw + (float)layers->layer_dmin[sl][channel_idx];
-    raw_out[sl] = sf_layer_particle(d_abs, (float)layers->layer_dmax[sl][channel_idx],
+    raw_out[sl] = grain_layer_particle(d_abs, (float)layers->layer_dmax[sl][channel_idx],
                                     (float)layers->layer_npart[sl][channel_idx] * npart_scale,
-                                    unif_c, sf_pixel_seed(xi, yi, (uint32_t)(seed_ch + sl * 10)));
+                                    unif_c, grain_pixel_seed(xi, yi, (uint32_t)(seed_ch + sl * 10)));
   }
 }

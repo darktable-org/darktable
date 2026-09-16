@@ -90,7 +90,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SPEKTRA_INLINE static inline
+#define GRAIN_INLINE static inline
 #include "common/gaussian.h"
 #include "common/spektra_core.h"
 #include "common/spektra_sim.h"
@@ -251,9 +251,14 @@ typedef struct dt_iop_spektrafilm_params_t
      square of it, so this is the control that actually makes grain coarser --
      bigger particles, fewer of them, more fluctuation at every density. */
   float grain_granularity;  // $MIN: 0.0 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "granularity"
-  /* GrainParams.uniformity, again as a scale. Lower bends the noise toward the
-     Selwyn bell -- grain that grows and then falls away again with density.
-     */
+  /* GrainParams.uniformity, again as a scale. HIGHER bends the noise toward
+     the Selwyn bell -- grain that grows and then falls away again with
+     density. sf_layer_particle draws against a saturation term 1 - p*unif
+     and the variance scales with it, so raising uniformity suppresses the
+     fluctuation at high density. The scale reaches the sampler as a plain
+     multiplier on the stock's own figure (grain_uniformity_scale in
+     spektra_sim.c), so nothing inverts it on the way. At 0.5 the variance
+     climbs monotonically to Dmax: no bell. */
   float grain_uniformity;   // $MIN: 0.5 $MAX: 1.03 $DEFAULT: 1.0 $DESCRIPTION: "uniformity"
   /* GrainParams.particle_scale_sublayers, as a scale on the whole array. Real
      emulsions layer coarse crystals over fine ones; this moves the finer
@@ -5162,8 +5167,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(
       g->grain_uniformity,
       _("how evenly the crystals are distributed, relative to the stock's own\n"
-        "figure. lowering it bends the noise toward a bell: grain that peaks\n"
-        "in the midtones and eases off again in the densest areas."));
+        "figure. raising it bends the noise toward a bell: grain that peaks\n"
+        "in the midtones and eases off again in the densest areas. lowering\n"
+        "it lets grain keep growing all the way into the densest areas."));
 
   g->grain_sublayer_scale = dt_bauhaus_slider_from_params(self, "grain_sublayer_scale");
   gtk_widget_set_tooltip_text(

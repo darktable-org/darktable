@@ -89,6 +89,11 @@ changes (where available).
 
 ## UI/UX Improvements
 
+- The code has received a large set of changes in preparation of the
+  Gtk4 migration.
+
+  - The code for handling popover menus has been changed.
+
 - Checkboxes are now Bauhaus widgets and are reset to default values
   when e.g. a tab or a module is reset.
 
@@ -115,13 +120,15 @@ changes (where available).
 - Added an interactive editing mode allowing users to correct a color
   by selecting it directly on the photo with the mouse wheel, just as
   was already possible with the "tone equalizer" module.
-  
-- Grey theme: The filmstrip is now slightly darker to improve visual 
+
+- Grey theme: The filmstrip is now slightly darker to improve visual
   distinction between unselected/selected images.
 
 - Neural restore now takes a full output path per task instead of an
   output folder, so the output file name and its suffix can be chosen.
   The extension still comes from the task.
+
+- Some safety checks when switching to the quick access panel were added.
 
 ## Performance Improvements
 
@@ -130,7 +137,9 @@ changes (where available).
 - Don't invalidate the pixelpipe cache on every commit
   when a raster mask is used.
 
-- Sped up editing an image that uses a detail mask. Every history change
+- Don't calculate unused rastermasks while exporting.
+
+- Speed up editing an image that uses a detail mask. Every history change
   used to discard the cached output of every module from demosaic onwards,
   so adjusting a mask or toggling the mask overlay recomputed most of the
   pipeline each time.

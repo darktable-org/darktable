@@ -527,6 +527,10 @@ int dt_init(int argc, char *argv[],
             const gboolean load_data,
             lua_State *L);
 
+#ifdef _WIN32
+void dt_request_console_notice(void);
+#endif
+
 void dt_get_sysresource_level();
 void dt_cleanup();
 

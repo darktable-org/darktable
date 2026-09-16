@@ -16,6 +16,7 @@
  *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <glib-2.0/gio/gio.h>
 #include <glib.h>
 
 #include "bauhaus/bauhaus.h"
@@ -965,29 +966,36 @@ void dt_guides_draw(cairo_t *cr,
   cairo_restore(cr);
 }
 
-static void _settings_autoshow_change(GtkWidget *mi,
-                                      dt_iop_module_t *module)
+static void _settings_autoshow_change(GSimpleAction *action,
+                                      GVariant *parameter,
+                                      gpointer user_data)
 {
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+
   // we inverse the autoshow value for the module
   gchar *key = _conf_get_path(module->op, "autoshow", NULL);
   dt_conf_set_bool(key, !dt_conf_get_bool(key));
   DT_ENTER_GUI_UPDATE();
   dt_bauhaus_toggle_set(module->guides_combo, dt_conf_get_bool(key));
+  gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
   DT_LEAVE_GUI_UPDATE();
   g_free(key);
   dt_control_queue_redraw_center();
 }
 
-void dt_guides_add_module_menuitem(void *menu,
+void dt_guides_add_module_menuitem(GMenu *menu,
+                                   GActionGroup *action_group,
                                    dt_iop_module_t *module)
 {
-  GtkWidget *mi = gtk_check_menu_item_new_with_label(_("show guides"));
   gchar *key = _conf_get_path(module->op, "autoshow", NULL);
-  gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), dt_conf_get_bool(key));
+  GVariant *initial_state = g_variant_new_boolean(dt_conf_get_bool(key));
   g_free(key);
-  g_signal_connect(G_OBJECT(mi), "activate",
-                   G_CALLBACK(_settings_autoshow_change), module);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+
+  GSimpleAction *action = g_simple_action_new_stateful("guides", NULL, initial_state);
+  g_signal_connect(action, "activate", G_CALLBACK(_settings_autoshow_change), module);
+
+  g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(action)); 
+  g_menu_append(menu, _("show guides"), "presets.guides");
 }
 
 static void free_guide(void *data)

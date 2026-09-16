@@ -21,6 +21,7 @@
 #include "common/image.h"
 #include "control/control.h"
 #include "imageio/imageio_jpeg.h"
+#include <glib-2.0/gio/gmenu.h>
 #include <gphoto2/gphoto2-file.h>
 
 #include <fcntl.h>
@@ -1667,7 +1668,7 @@ const char *dt_camctl_camera_get_model(const dt_camctl_t *c,
 
 
 static void _camera_build_property_menu(CameraWidget *widget,
-                                        GtkMenu *menu,
+                                        GMenu *menu,
                                         GCallback item_activate,
                                         gpointer user_data)
 {
@@ -1688,23 +1689,16 @@ static void _camera_build_property_menu(CameraWidget *widget,
       if(gp_widget_count_children(child) > 0)
       {
         /* create submenu item */
-        GtkMenuItem *item = GTK_MENU_ITEM(gtk_menu_item_new_with_label(sk));
-        gtk_menu_item_set_submenu(item, gtk_menu_new());
+        GMenu *submenu = g_menu_new();
 
         /* recurse into submenu */
         _camera_build_property_menu(child,
-                                    GTK_MENU(gtk_menu_item_get_submenu(item)),
+                                    submenu,
                                     item_activate,
                                     user_data);
 
-        /* add submenu item to menu if not empty*/
-        GList *children =
-          gtk_container_get_children(GTK_CONTAINER(gtk_menu_item_get_submenu(item)));
-        if(children)
-        {
-          gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(item));
-          g_list_free(children);
-        }
+        g_menu_append_submenu(menu, sk, G_MENU_MODEL(submenu));
+        g_object_unref(submenu);
       }
       else
       {
@@ -1716,10 +1710,12 @@ static void _camera_build_property_menu(CameraWidget *widget,
         {
           /* construct menu item for property */
           gp_widget_get_name(child, &sk);
-          GtkMenuItem *item = GTK_MENU_ITEM(gtk_menu_item_new_with_label(sk));
-          g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(item_activate), user_data);
-          /* add submenu item to menu */
-          gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(item));
+
+          gchar *action = g_strdup_printf("camera.activate::%s", sk);
+          GMenuItem *item = g_menu_item_new(sk, action);
+          g_free(action);
+          g_menu_append_item(menu, item);
+          g_object_unref(item);
         }
       }
     }
@@ -1728,7 +1724,7 @@ static void _camera_build_property_menu(CameraWidget *widget,
 
 void dt_camctl_camera_build_property_menu(const dt_camctl_t *c,
                                           const dt_camera_t *cam,
-                                          GtkMenu **menu,
+                                          GMenu **menu,
                                           GCallback item_activate,
                                           gpointer user_data)
 {
@@ -1749,7 +1745,7 @@ void dt_camctl_camera_build_property_menu(const dt_camctl_t *c,
   /* lock camera config mutex while recursive building property menu */
   dt_camera_t *camera = (dt_camera_t *)cam;
   dt_pthread_mutex_lock(&camera->config_lock);
-  *menu = GTK_MENU(gtk_menu_new());
+  *menu = g_menu_new();
   _camera_build_property_menu(camera->configuration, *menu, item_activate, user_data);
   gtk_widget_show_all(GTK_WIDGET(*menu));
   dt_pthread_mutex_unlock(&camera->config_lock);
