@@ -42,6 +42,8 @@
 #include "control/conf.h"
 #include "common/calculator.h"
 #include "gui/preferences.h"
+#include "dtgtk/button.h"
+#include "dtgtk/paint.h"
 
 #define NON_DEF_CHAR "●"
 
@@ -179,6 +181,37 @@ static void setup_not_available(GtkWidget **widget,
   gtk_widget_set_sensitive(*widget, FALSE);
 }
 
+static void _browse_dir_clicked(GtkWidget *button, gpointer user_data)
+{
+  GtkEntry *entry = GTK_ENTRY(user_data);
+  GtkWidget *win = gtk_widget_get_toplevel(button);
+  GtkFileChooserNative *chooser = gtk_file_chooser_native_new(
+        _("select directory"), GTK_IS_WINDOW(win) ? GTK_WINDOW(win) : NULL,
+        GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_select"), _("_cancel"));
+
+  gchar *current = dt_loc_expand_user_path(gtk_entry_get_text(entry));
+  if(current && g_file_test(current, G_FILE_TEST_IS_DIR))
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser), current);
+  g_free(current);
+
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    // the entry stays the pref's widget, so "changed" updates the
+    // non-default marker and the dialog response stores the value;
+    // there is no filename for a location that is not a local folder
+    gchar *folder = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
+    if(folder)
+    {
+      gtk_entry_set_text(entry, folder);
+      // as if the folder was typed and confirmed with enter, so a row that
+      // checks its folder on "activate" does it now
+      gtk_widget_activate(GTK_WIDGET(entry));
+    }
+    g_free(folder);
+  }
+  g_object_unref(chooser);
+}
+
 static void wrapup_pref(const gchar *name,
                         GtkWidget *grid,
                         GtkWidget *labelev,
@@ -192,6 +225,168 @@ static void wrapup_pref(const gchar *name,
   gtk_grid_attach(GTK_GRID(grid), labelev, 0, *line, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), labdef, 1, *line, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), widget, 2, (*line)++, 1, 1);
+  gtk_label_set_mnemonic_widget(GTK_LABEL(label), widget);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(callback), (gpointer)widget);
+}
+
+static void _open_dir_clicked(GtkWidget *button, gpointer user_data)
+{
+  GtkEntry *entry = GTK_ENTRY(user_data);
+  gchar *dir = dt_loc_expand_user_path(gtk_entry_get_text(entry));
+  if(!dir)
+    dir = g_strdup(gtk_entry_get_placeholder_text(entry));
+
+  if(!dt_show_in_file_manager(dir))
+  {
+    // a toast would be drawn behind the modal preferences dialog
+    GtkWidget *win = gtk_widget_get_toplevel(button);
+    GtkWindow *parent = GTK_IS_WINDOW(win) ? GTK_WINDOW(win) : NULL;
+    const GtkDialogFlags flags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+    GtkWidget *msg = dir && dir[0]
+      ? gtk_message_dialog_new(parent, flags, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+                               _("the folder %s does not exist or cannot be opened"
+                                 " in the file manager"), dir)
+      : gtk_message_dialog_new(parent, flags, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+                               "%s", _("no folder is set"));
+    gtk_window_set_title(GTK_WINDOW(msg), _("cannot open folder"));
+    gtk_dialog_run(GTK_DIALOG(msg));
+    gtk_widget_destroy(msg);
+  }
+  g_free(dir);
+}
+
+// warn when the entry does not name the folder in use because --cachedir or
+// --conf was given or the entered folder is unusable, and tell when it is only
+// used after a restart. the folder is checked when preferences open and when an
+// edit is confirmed rather than at startup, so an unusable one is flagged
+// before the next start. not on every keystroke: the check touches the disk
+// and can block for seconds on an unreachable network path
+static void _update_cachedir_hint(GtkWidget *entry)
+{
+  const dt_loc_cache_dir_source_t source = dt_loc_get_user_cache_dir_source();
+  const gchar *text = gtk_entry_get_text(GTK_ENTRY(entry));
+  gchar *value = g_strstrip(g_strdup(text));
+  // compared with the value applied at startup rather than the folder on
+  // disk, so a preferred folder in use that went missing gets no warning
+  const gboolean in_use = dt_loc_user_cache_dir_is_from(value);
+  // an empty or only quoted value means the default, as at startup
+  gchar *path = dt_loc_expand_user_path(value);
+  const gboolean blank = !path;
+  g_free(path);
+  const char *icon = "dialog-warning-symbolic";
+  gchar *tip = NULL;
+  if(source == DT_LOC_CACHE_DIR_COMMAND_LINE)
+    tip = g_strdup_printf(_("darktable was started with --cachedir and uses '%s'"),
+                          darktable.cachedir);
+  // the entry shows the --conf value, which a change here does not replace
+  // before the next start
+  else if(dt_conf_is_overridden("cachedir"))
+    tip = g_strdup_printf(_("set with --conf for this session, darktable uses '%s'"),
+                          darktable.cachedir);
+  else if(!in_use && !blank
+          && dt_loc_check_user_cache_dir(value) != DT_LOC_CACHE_DIR_USABLE)
+    tip = g_strdup_printf(_("this folder is not usable, darktable uses '%s'"),
+                          darktable.cachedir);
+  // chosen in this session, or taken over from the settings of an older
+  // darktable after startup, so it applies from the next start
+  else if(!in_use)
+  {
+    icon = "dialog-information-symbolic";
+    tip = g_strdup_printf(_("this folder is used after a restart, darktable uses '%s' until then"),
+                          darktable.cachedir);
+  }
+
+  gtk_entry_set_icon_from_icon_name(GTK_ENTRY(entry), GTK_ENTRY_ICON_SECONDARY,
+                                    tip ? icon : NULL);
+  GtkWidget *hint_label = g_object_get_data(G_OBJECT(entry), "dt-cachedir-hint");
+  gtk_label_set_text(GTK_LABEL(hint_label), tip ? tip : "");
+  gtk_widget_set_visible(hint_label, tip != NULL);
+  g_object_set_data_full(G_OBJECT(entry), "dt-cachedir-checked", g_strdup(text), g_free);
+  g_free(tip);
+  g_free(value);
+}
+
+static gboolean _cachedir_focus_out(GtkWidget *entry, GdkEventFocus *event, gpointer user_data)
+{
+  // focus also leaves when the dialog closes or loses the window focus, so
+  // do not check the same folder again
+  if(g_strcmp0(gtk_entry_get_text(GTK_ENTRY(entry)),
+               g_object_get_data(G_OBJECT(entry), "dt-cachedir-checked")))
+    _update_cachedir_hint(entry);
+  return FALSE;
+}
+
+static void _dir_entry_edited(GtkEditable *editable, gpointer user_data)
+{
+  g_object_set_data(G_OBJECT(editable), "dt-dir-edited", GINT_TO_POINTER(TRUE));
+}
+
+static void _wrapup_pref_dir(const gchar *name,
+                             GtkWidget *grid,
+                             GtkWidget *labelev,
+                             GtkWidget *labdef,
+                             GtkWidget *label,
+                             GtkWidget *widget,
+                             int *line,
+                             gboolean (*callback)(GtkWidget *, GdkEventButton *, GtkWidget*))
+{
+  // setup_not_available() may have replaced the entry with a label
+  if(!GTK_IS_ENTRY(widget))
+  {
+    wrapup_pref(name, grid, labelev, labdef, label, widget, line, callback);
+    return;
+  }
+
+  // the entry text is set by now, so only later changes mark it edited
+  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(_dir_entry_edited), NULL);
+
+  // the entry stays the widget the reset and response callbacks work on;
+  // the browse button only fills it in
+  GtkWidget *browse = dtgtk_button_new_full(dtgtk_cairo_paint_directory, CPF_NONE, NULL,
+    &(dtgtk_button_config_t){
+      .tooltip = _("select directory"),
+      .clicked_cb = G_CALLBACK(_browse_dir_clicked),
+      .clicked_data = widget,
+    });
+  gtk_widget_set_name(browse, "non-flat");
+
+  GtkWidget *open_btn = gtk_button_new_with_label(_("open"));
+  gtk_widget_set_tooltip_text(open_btn, _("open the folder in the file manager"));
+  g_signal_connect(G_OBJECT(open_btn), "clicked", G_CALLBACK(_open_dir_clicked), widget);
+
+  gtk_widget_set_name(widget, name);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, *line, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), labdef, 1, *line, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), dt_gui_hbox(widget, browse, open_btn), 2, (*line)++, 1, 1);
+  if(!g_strcmp0(name, "cachedir"))
+  {
+    // an empty entry means the default folder, so show that as placeholder
+    gchar *default_dir = dt_loc_get_default_user_cache_dir();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(widget), default_dir);
+    g_free(default_dir);
+
+    // a line under the box, as an entry icon tooltip is never shown:
+    // dt_shortcut_tooltip_callback() (accelerators.c:1099) uses only the
+    // widget tooltip
+    GtkWidget *hint_label = gtk_label_new(NULL);
+    gtk_widget_set_halign(hint_label, GTK_ALIGN_START);
+    gtk_label_set_xalign(GTK_LABEL(hint_label), 0.0f);
+    // a long path may have no space to wrap at
+    gtk_label_set_line_wrap(GTK_LABEL(hint_label), TRUE);
+    gtk_label_set_line_wrap_mode(GTK_LABEL(hint_label), PANGO_WRAP_WORD_CHAR);
+    // hidden without a message, also after the dialog's show all; a grid row
+    // with only hidden children takes no height and no row spacing
+    gtk_widget_set_no_show_all(hint_label, TRUE);
+    gtk_grid_attach(GTK_GRID(grid), hint_label, 2, (*line)++, 1, 1);
+    g_object_set_data(G_OBJECT(widget), "dt-cachedir-hint", hint_label);
+    _update_cachedir_hint(widget);
+    // tied to the label, which the handlers change, so focus leaving the
+    // entry while the dialog is destroyed cannot reach a destroyed label
+    g_signal_connect_object(G_OBJECT(widget), "focus-out-event",
+                            G_CALLBACK(_cachedir_focus_out), hint_label, 0);
+    g_signal_connect_object(G_OBJECT(widget), "activate",
+                            G_CALLBACK(_update_cachedir_hint), hint_label, 0);
+  }
   gtk_label_set_mnemonic_widget(GTK_LABEL(label), widget);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(callback), (gpointer)widget);
 }
@@ -458,10 +653,11 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
       setup_not_available(&amp;widget, labelev, dialog);
     }</xsl:text>
     </xsl:if>
+    <xsl:variable name="dirchooser" select="@dirchooser = 'yes' and type = 'string'"/>
     <xsl:text>
-    wrapup_pref("</xsl:text><xsl:value-of select="name"/><xsl:text>",
-                grid, labelev, labdef, label, widget, &amp;line,
-                </xsl:text>
+    </xsl:text><xsl:if test="$dirchooser"><xsl:text>_</xsl:text></xsl:if><xsl:text>wrapup_pref</xsl:text><xsl:if test="$dirchooser"><xsl:text>_dir</xsl:text></xsl:if><xsl:text>("</xsl:text><xsl:value-of select="name"/><xsl:text>",
+                </xsl:text><xsl:if test="$dirchooser"><xsl:text>     </xsl:text></xsl:if><xsl:text>grid, labelev, labdef, label, widget, &amp;line,
+                </xsl:text><xsl:if test="$dirchooser"><xsl:text>     </xsl:text></xsl:if>
    <xsl:choose>
     <xsl:when test="type = 'bool'">
       <xsl:text>click_widget_toggle_</xsl:text><xsl:value-of select="default"/>
@@ -483,6 +679,11 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
   <xsl:template match="dtconfig[type='string']" mode="reset">
     <xsl:text>
     gtk_entry_set_text(GTK_ENTRY(widget), "</xsl:text><xsl:value-of select="default"/><xsl:text>");</xsl:text>
+    <xsl:if test="@dirchooser = 'yes'">
+    <xsl:text>
+    // as if the default was typed and confirmed with enter, like the folder button
+    gtk_widget_activate(widget);</xsl:text>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template match="dtconfig[type='longstring']" mode="reset">
@@ -535,8 +736,29 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
 
 <!-- CHANGE -->
   <xsl:template match="dtconfig[type='string']" mode="change">
+  <xsl:choose>
+    <xsl:when test="@dirchooser = 'yes'">
+  <xsl:text>
+    // only an edited entry is saved, and then also when it matches a --conf
+    // value: the entry shows that value, which must not replace the saved
+    // folder just because preferences were opened
+    if(g_object_get_data(G_OBJECT(widget), "dt-dir-edited"))
+    {
+      // blanks or quotes alone mean the default folder, store them as empty so
+      // the placeholder shows the default again
+      const gchar *text = gtk_entry_get_text(GTK_ENTRY(widget));
+      gchar *path = dt_loc_expand_user_path(text);
+      gchar *folder = path ? g_strstrip(g_strdup(text)) : g_strdup("");
+      g_free(path);
+      dt_conf_set_stored_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", folder);
+      g_free(folder);
+    }</xsl:text>
+    </xsl:when>
+    <xsl:otherwise>
   <xsl:text>
     dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_entry_get_text(GTK_ENTRY(widget)));</xsl:text>
+    </xsl:otherwise>
+  </xsl:choose>
   </xsl:template>
 
   <xsl:template match="dtconfig[type='longstring']" mode="change">
@@ -608,8 +830,23 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
     widget = gtk_entry_new();
     gtk_widget_set_halign(widget, GTK_ALIGN_FILL);
     gtk_widget_set_hexpand(widget, TRUE);
-    gchar *setting = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
-    gtk_entry_set_text(GTK_ENTRY(widget), setting);
+    gchar *setting = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");</xsl:text>
+    <xsl:choose>
+      <xsl:when test="@dirchooser = 'yes'">
+    <xsl:text>
+    // a value that expands to nothing, such as blanks or quotes alone, means the
+    // default folder: show it empty, with the placeholder and no modified marker
+    gchar *setting_path = dt_loc_expand_user_path(setting);
+    gtk_entry_set_text(GTK_ENTRY(widget), setting_path ? setting : "");
+    g_free(setting_path);
+    set_widget_label_default(widget, "</xsl:text><xsl:value-of select="name"/><xsl:text>", labdef, 1.0f);</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+    <xsl:text>
+    gtk_entry_set_text(GTK_ENTRY(widget), setting);</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:text>
     g_free(setting);
     gtk_label_set_mnemonic_widget(GTK_LABEL(label), widget);
     g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);

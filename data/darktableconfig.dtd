@@ -20,6 +20,7 @@
         restart (true|false) #IMPLIED
         common (yes|no) #IMPLIED
         capability CDATA #IMPLIED
+        dirchooser (yes|no) #IMPLIED
 >
 <!ELEMENT name (#PCDATA)>
 <!ELEMENT type (#PCDATA|enum)*>

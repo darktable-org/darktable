@@ -70,6 +70,51 @@ gboolean dt_loc_init_user_config_dir(const char *configdir);
 // Init user cache dir
 gboolean dt_loc_init_user_cache_dir(const char *cachedir);
 
+// expand a folder path typed or pasted by the user: trim surrounding blanks,
+// remove one pair of surrounding double quotes and expand a leading ~;
+// returns NULL when nothing is left, free with g_free()
+gchar *dt_loc_expand_user_path(const char *value);
+
+// whether path is absolute and depends neither on the current directory nor,
+// on windows, on the current drive
+gboolean dt_loc_path_is_absolute(const char *path);
+
+typedef enum dt_loc_cache_dir_check_t
+{
+  DT_LOC_CACHE_DIR_USABLE = 0,
+  DT_LOC_CACHE_DIR_NOT_ABSOLUTE,
+  DT_LOC_CACHE_DIR_MISSING,
+  DT_LOC_CACHE_DIR_NO_ACCESS
+} dt_loc_cache_dir_check_t;
+
+// check a cache dir value (see dt_loc_expand_user_path()) without using it:
+// it must be an absolute path to an existing folder darktable can list and
+// write to
+dt_loc_cache_dir_check_t dt_loc_check_user_cache_dir(const char *cachedir);
+
+// switch the user cache dir to an existing, writable absolute folder, which is
+// never created. on failure the current cache dir is kept and FALSE is returned
+gboolean dt_loc_set_user_cache_dir(const char *cachedir);
+
+typedef enum dt_loc_cache_dir_source_t
+{
+  DT_LOC_CACHE_DIR_DEFAULT = 0,
+  DT_LOC_CACHE_DIR_COMMAND_LINE,
+  DT_LOC_CACHE_DIR_PREF
+} dt_loc_cache_dir_source_t;
+
+// where the cache dir in use comes from: the default, --cachedir, or the
+// cachedir preference set by dt_loc_set_user_cache_dir()
+dt_loc_cache_dir_source_t dt_loc_get_user_cache_dir_source(void);
+
+// whether the cache dir in use comes from this preference value: the folder it
+// names was applied at startup, or the default is used for a blank value
+gboolean dt_loc_user_cache_dir_is_from(const char *value);
+
+// the default user cache dir, used when neither --cachedir nor the
+// preference is set. free with g_free()
+gchar *dt_loc_get_default_user_cache_dir(void);
+
 // Init specific dir. Default value is appended to application_directory
 // if application_directory is not NULL.
 gchar *dt_loc_init_generic(const char *absolute_value,
@@ -88,6 +133,9 @@ void dt_loc_get_localedir(char *localedir, size_t bufsize);
 void dt_loc_get_tmp_dir(char *tmpdir, size_t bufsize);
 void dt_loc_get_user_config_dir(char *configdir, size_t bufsize);
 void dt_loc_get_user_cache_dir(char *cachedir, size_t bufsize);
+// folder for local copies: the cache dir resolved at startup from --cachedir
+// or the default, never the cachedir preference
+void dt_loc_get_user_local_copy_dir(char *dir, size_t bufsize);
 
 G_END_DECLS
 
