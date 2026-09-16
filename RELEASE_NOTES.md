@@ -88,6 +88,11 @@ changes (where available).
 - Fixed Alt+Tab failing to switch away from darktable on Windows when
   the mouse pointer was over a lighttable thumbnail.
 
+- Fixed the console windows that repeatedly appeared on Windows when
+  darktable or a Lua script ran an external command. darktable now
+  keeps a single console session for its lifetime instead of creating
+  a new console for each command.
+
 ## Lua
 
 ### API Version
@@ -125,6 +130,11 @@ changes (where available).
 - Starting with release 5.4, macOS versions older than 14.0 are no
   longer supported on Apple Silicon Macs, nor older than macOS 15 on
   Intel Macs.
+
+- On Windows 11 24H2 and later, darktable no longer creates any
+  console window. On earlier Windows versions one console window is
+  retained for as long as darktable runs and closes automatically when
+  darktable exits.
 
 ## Changed Dependencies
 
