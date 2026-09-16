@@ -359,6 +359,247 @@ Still open:
   block persist with zeroed coefficients? We know word [14] is non-zero
   ("on") on our sample; we do not know the off state.
 
+## Coefficient decode results
+
+Corpus: nine RW2s from the same Panasonic G9 body, one per test scene,
+covering three focal lengths on the Leica DG 12-60mm f/2.8-4 (12, 25,
+60mm), three on the Lumix G 45-150mm f/4-5.6 (45, 97, 150mm), and one
+each on the Lumix G 42.5mm f/1.7, Sigma 30mm f/1.4 DC DN and Sigma 16mm
+f/1.4 DC DN. All nine files pass Rigo's four checksums and share the
+verified structural layout above. Files live under `/c/temp/tca/` and
+are deliberately not committed.
+
+Measurement pipeline (scripts under `/tmp/rw2_tca/`):
+
+- `step1_verify.py` extracts 0x011b and validates the four checksums;
+- `step2_classify.py` labels each of the 32 words as
+  checksum / body-constant / homeister-opaque / focal-varying / other;
+- `step3_measure.py` renders the RW2 with rawpy AAHD, then measures per
+  edge chromatic offset by centroid of |gradient|, projecting the R-G
+  and B-G shifts along the local radial direction;
+- `step4_measure_v2.py` replaces the centroid with a parabolic peak fit
+  on the |gradient| profile, bilinear-samples the profile along the
+  local gradient direction, requires the three channels' integer peak
+  samples to agree within +/- 1 (they must be tracking the same edge),
+  and rejects any per-edge offset above 2 px as a fit artifact. It also
+  dumps a per-edge point cloud to `/tmp/rw2_tca/measurements.npz` with
+  fields `file_idx, x, y, r, dr, db, gx, gy, radial_align`, sign
+  convention: positive dr = R displaced outward from the optical
+  center relative to G;
+- `step4_fit.py`, `step4_fit_v2.py`, `step4_fit_alt.py`,
+  `step4_shape_correlate.py` and `step4_final_summary.py` run the
+  candidate-decoding search;
+- `step4_diagnose.py` and `step4_plot_fits.py` write PNGs to
+  `/tmp/rw2_tca/plots/`.
+
+### Precision self-check
+
+Half-vs-half bin-median RMS, averaged over five random splits at 15
+radial bins per file, for the centroid and parabolic estimators on
+three files:
+
+| file                     | centroid R-G / B-G | parabolic R-G / B-G |
+|:-------------------------|:-------------------|:--------------------|
+| P1366486 Sigma 16 @ 16mm | 0.052 / 0.036 px   | 0.077 / 0.014 px    |
+| P1366477 PL 12-60 @ 12mm | 0.029 / 0.025 px   | 0.022 / 0.016 px    |
+| P1366483 L 45-150 @ 150 | 0.090 / 0.057 px   | 0.029 / 0.031 px    |
+
+Parabolic reduces the per-bin sampling scatter on five of six
+file/channel pairs and cuts the small-offset (B-G) RMS by about 2-3x,
+at the cost of 40-60% fewer surviving edges after the peak-quality
+filters. Bumping the initial edge count from 6000 to 15000 recovers a
+comparable per-bin sample size. The Sigma 16 R-G case is the exception:
+that file has by far the largest CA magnitudes (peak-to-peak 0.16 px)
+and the parabolic estimator scatters more where consecutive R and G
+integer peaks disagree at the outermost radii. On the aggregated
+corpus, per-file half-vs-half RMS lands in the 0.008-0.031 px range for
+seven of nine files, with two outliers (Sigma 16 R-G 0.18 px, and L
+45-150 @ 60mm which has few strong edges).
+
+### Aggregated point cloud
+
+`/tmp/rw2_tca/measurements.npz` holds 37,381 edges across the nine
+files, filtered to `|cos(gradient, radial)| > 0.3`. Per-file counts
+range from 2,877 (L 45-150 @ 45mm) to 5,006 (Sigma 16). The signal is
+plainly present: bin medians reach 0.13 px R-G at the outer knots on
+PL 12-60 @ 12mm, 0.11 px on Sigma 30, -0.05 px on L 45-150 @ 150mm.
+Diagnostic plots at `/tmp/rw2_tca/plots/ca_signal.png` and
+`/tmp/rw2_tca/plots/smooth_words.png`.
+
+### The 8 smooth words are not four R and four B zone heights
+
+The task was to test whether the eight smooth words `[2, 8, 10, 12, 20,
+23, 27, 29]` split into two ordered groups of four, each group holding
+the four zone heights `(h_N4, h_N3, h_N2, h_N1)` for one of the R and B
+polynomials in a piecewise-linear interpolant through knots at pixel
+radii 1092 / 2184 / 2730 / 3276, with a single global scaling factor k
+shared across all files and both channels. This is a natural fit to the
+verified 4-zone radial layout.
+
+The hypothesis fails.
+
+- **Global k, fixed word-index-ascending knot order (70 splits).**
+  Aggregate weighted RMS 0.0357 px against a null-model RMS of 0.0373
+  px. The top ten splits differ by less than 0.4% in RMS, all lie
+  within 4% of the null, and every top split assigns word[2] to the R
+  side. The fitted k lands at 1.48e-6..1.49e-6 pixels per int16 unit,
+  which is what the algorithm returns when word[2]'s 27000-level
+  values are the only lever available.
+- **Global k, all 4! knot permutations per group (40,320
+  configurations).** Aggregate RMS drops to 0.0323 px; still within
+  14% of null. Word[2] remains in every top-20 split.
+- **Per-file gain, fixed knot order.** Each file gets its own k. RMS
+  falls to 0.030 px, again driven by word[2] absorbing whatever
+  amplitude the file happens to need. Independent evidence this is not
+  a real fit: the per-file `k_R` values in the top split flip sign
+  three times across the nine files (`+3.3e-6, +1.8e-6, -1.4e-6, -6.5e-6,
+  -7.7e-6, -1.1e-5, -1.3e-6, +4.6e-5, +6.2e-5`), and their absolute
+  values span roughly 50x. `k_B` sign-flips six times.
+- **Per-file gain, all knot permutations.** RMS 0.024 px. Same sign
+  pathology.
+- **`word[2]` or `word[7]` used as a multiplicative per-file gain,
+  words in ascending order.** RMS 0.0357 px, indistinguishable from
+  the previous fixed-knot fit. Word[2] as a scaler and word[2] as a
+  knot height do the same thing for the least-squares fit given how it
+  dominates every file's numeric range.
+- **Polynomial-in-r or Catmull-Rom spline through the same four
+  knots.** R^2 stays negative for every 4-subset and every knot
+  permutation, i.e. every polynomial variant does worse than
+  predicting a per-file constant.
+
+For orientation, the top-3 fits at fixed knot order and the top-3 fits
+at permuted knot order are plotted at
+`/tmp/rw2_tca/plots/fit_fixed_top{1,2,3}.png` and
+`/tmp/rw2_tca/plots/fit_perm_top{1,2,3}.png`. Each figure has one
+panel per file including the three the task calls out (Sigma 16, PL
+12-60 @ 12mm, L 45-150 @ 150mm), with the measured R-G and B-G bin
+medians overlaid on the fitted piecewise-linear curve. The plots make
+the failure visually obvious: the fitted curve mismatches the
+measurement in shape on most files and only "lands" when the per-file
+gain compensates.
+
+### What is actually confirmed at single-word level
+
+The one strong prior signal survives: word[8] anti-correlates with the
+sign of the measured R-G radial offset in 9 of 9 files. Multiplied by a
+single negative scalar, word[8] alone predicts the sign of R-G
+correctly on every file in the corpus. It does not predict the shape
+of R-G with radius (which peaks between N3 and N2 on the Sigma 16 and
+Sigma 30 samples and monotonically climbs then falls on the PL 12-60 @
+12mm sample), so word[8] is at best one contribution to a more
+elaborate model, not the whole R zone-height vector.
+
+### Interpretation
+
+The measured signal is real: the per-file half-vs-half RMS is 0.008 to
+0.03 px on eight of nine files, well below the observed CA magnitudes,
+and the shapes reproduce cleanly. The corpus is not the bottleneck.
+
+The **piecewise-linear 4-zone model with the 8 smooth words as knot
+heights and a single global k** is inconsistent with the data. Neither
+does a single-polynomial variant. Something in the model is wrong.
+Candidates, in order of what I would test next:
+
+1. **The tag encodes distortion per channel, not CA.** 0x0119
+   distortion is small for the PL 12-60 zoom (barrel at 12mm reaching
+   ~9% at the corner) and zero-scale for the primes, so the raw
+   sensor-space radii and the corrected radii are close on eight of
+   nine corpus files. But if 0x011b instead stores three separate
+   distortion polynomials, one per RGB channel, then CA is the
+   *differential* between them, and any 4-subset of these words viewed
+   as a "CA zone-height vector" is going to look inconsistent. This
+   would also fit the observation that six of the seven focal-monotone
+   smooth words (`[8, 10, 12, 20, 23, 29]`) march together with focal
+   length while word[27] moves oppositely: three-poly-of-degree-N per
+   channel plus one shared sign-inverted term is a natural read.
+2. **Word[2] is a lens-family key.** Word[2] varies by 25000
+   between the L 45-150 (~4000) and the PL 12-60 (~28000), and by
+   about 1000 within a zoom sweep, so the range within a zoom is 2%
+   of the between-lens range. Word[2] looks more like a lens ID or a
+   lens-family baseline than a per-file coefficient. The fits above
+   keep placing word[2] in the R group precisely because it dominates
+   the numeric range and lets the least-squares fit lever the sign
+   correctly on each lens family; that is a symptom of an ID being
+   mis-used as a knot height.
+3. **The words are not signed int16 in whole.** Sub-fields, packed
+   fixed-point with implicit exponents, or byte-swapped pairs could
+   change the interpretation. All of the fits above assume signed
+   int16 LE, which matches Rigo's `parseca.c` for structural words
+   and looks right for the checksums, but nothing forces it for the
+   coefficient words.
+4. **Missing per-lens or per-body normalization we did not identify.**
+   Word[7] is a lens-family scaler (0x7FFF on the PL 12-60, 0x3FFF on
+   the others). Dividing by it changes nothing in the fit above, but
+   it might enter as a denominator in a more elaborate model.
+
+Word[27] deserves a follow-up on its own. It is the only smooth word
+whose sign flips systematically with focal *opposite* to the six
+grouped words, and it is small in magnitude (< 400 across the whole
+corpus). Its role is not decoded by any of the models tested here.
+
+### Confidence and honest bounds
+
+- The **measurement** is trustworthy on the files with strong CA
+  (Sigma 30, Sigma 16, PL 12-60 at 12mm): per-file half-vs-half
+  bin-median RMS 0.008-0.02 px against peak-to-peak signal 0.1-0.2 px,
+  and the shape is stable across seeds. On the low-CA files (L 45-150
+  @ 60mm, L 45-150 @ 97mm, PL 12-60 @ 60mm) the per-file RMS is a
+  significant fraction of the amplitude, so shape claims on those
+  files are correspondingly weaker.
+- The **structural layout** is trustworthy: checksums, N1..N4 radii,
+  on/off flag, lens-family scaler word[7], the identification of the 8
+  smooth words vs 13 discrete words, and the observation that word[8]
+  anti-correlates with R-G sign are all reproducible from the scripts
+  above.
+- The **decode** is not. No candidate assignment tested here fits the
+  measured CA within measurement noise. The user should not treat any
+  of the top splits as a decode. There is enough per-file gain
+  freedom in the search that a superficially-good aggregate fit does
+  not survive contact with per-file inspection.
+- **Confidence in the negative result:** high, because the failure is
+  robust across model variants, gain choices and knot orderings, and
+  the per-file gains are unphysical (sign-flipping across files with a
+  50x spread in magnitude).
+
+### What would resolve it
+
+Roughly in order of expected value:
+
+1. **A file pair from the same lens and same focal length, with
+   in-camera CA correction toggled on/off in the menu.** The
+   difference isolates which words track the CA setting. Homeister
+   never had this control; a G9 exposes it under its shading and
+   color-fringe correction settings. If the CA setting only changes
+   a small subset of words, the coefficient decode collapses to those.
+2. **A file pair with in-camera *distortion* correction on/off,
+   holding lens and focal fixed.** Discriminates whether 0x011b holds
+   distortion coefficients (which change) or pure CA coefficients
+   (which do not).
+3. **The paired SILKYPIX SE output as a null-corrected reference.**
+   SILKYPIX SE bundled with the LUMIX bodies applies Panasonic's own
+   correction, so the difference between its "profile off" and
+   "profile on" render is the exact function 0x011b encodes. The
+   9-file corpus does include SILKYPIX TIFFs, but the SE build in use
+   silently profile-corrects even in "no correction" mode, so we do
+   not have the null in the current material. A build of SILKYPIX
+   Developer Studio Pro on a Windows VM would produce the null.
+4. **More lens diversity, especially another wide fast prime and
+   another kit zoom.** A Panasonic 8mm fisheye and a Panasonic 14-42
+   kit zoom would extend the lens-family distribution of word[2] and
+   word[7]; a decode that survived four Panasonic zooms and three
+   Sigma primes would be far more credible.
+5. **A different body.** The Homeister decode was on a GX-8; the G9
+   might have layout differences in the "opaque" words. A GH5 or S5
+   corpus would tell us whether the roles are body-invariant.
+
+Absent any of the above, an honest verdict is: 0x011b's coefficient
+semantics remain undecoded on the current 9-file G9 corpus. The
+structural findings above (checksums, radii, flag, opaque, smooth vs
+discrete) are what should feed the darktable code changes described
+under "Where the code needs to change"; the coefficient path should
+remain a stub until the CA-toggle control shots or SILKYPIX-Pro
+reference exists.
+
 ## Reverse-engineering next steps
 
 Everything below is a plan for the follow-on agent. Nothing here has been
