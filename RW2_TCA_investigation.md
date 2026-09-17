@@ -543,6 +543,90 @@ is per-body-per-lens-per-focal, and that word[8]'s sign relation to
 the R correction is genuinely a property of the encoding, not an
 artifact of the G9 body.
 
+### Distortion measurement attempt (session 3)
+
+To break out of the sub-pixel CA fit that failed in session 2, we
+tried measuring geometric distortion directly and fitting 0x011b to
+that. Distortion is a 30-150 px signal vs sub-pixel CA, and the L
+45-150 subset has empty 0x0119, so on that lens anything applied to
+the in-camera JPEG must come from 0x011b (Homeister's hypothesis).
+
+Scripts under `/tmp/rw2_tca/step6_*.py`. Method: rawpy uncorrected
+render, SIFT feature-matching against the paired camera JPEG,
+affine-only registration, then per-feature residual radial
+displacement binned by `r / N1`.
+
+Two hard findings emerged and one soft one.
+
+- **The L 45-150 JPEG has no distortion applied.** After affine
+  registration the residual dr is 0.15 px RMS at all radii, no
+  systematic shape (verified on all 6 L 45-150 files across G9 and
+  GX80 in `step6_02_prove_jpeg_distortion.py`). Homeister's hypothesis
+  that 0x011b replaces 0x0119 as an active correction on this lens is
+  wrong: **the camera simply does not apply either tag's payload to
+  the JPEG when the lens has an empty 0x0119**. The L 45-150 has
+  visible barrel and CA in the raw AND in the JPEG. So on that lens,
+  Panasonic's in-camera pipeline just does not correct.
+- **0x0119 predicts observed distortion cleanly where it is
+  populated.** On the 12-60 sweep and the primes,
+  `step6_06_0119_predicts.py` computes the classical Rigo polynomial
+  `Ru = Rd + s * (a*Rd^3 + b*Rd^5 + c*Rd^7)` and finds R^2 = 0.75 to
+  0.96 against the measured raw-to-JPEG shift. The shape matches. The
+  scale is off by a per-file factor: **best-fit k = 0.90 on 12-60 @
+  12mm, k = 5.24 at 25mm, k = -0.95 at 60mm on the same lens's zoom**.
+  On the primes k is closer to 1 (0.79 on Sigma 30, ~1 on Sigma 16
+  and Lumix 42.5). Sign-flipping within the same lens's zoom is not
+  compatible with the formula as we have it. Something is missing.
+- **The suspected missing term is the high byte of `word[7]`.** On
+  0x0119, the flag word is `word[7]`. Rigo defines the low nibble as
+  the on/off bit and calls the rest padding. On the 12-60 files, the
+  high byte progresses `0xF0` (12mm), `0xB7` (25mm), `0x8D` (60mm).
+  Low nibble stays at `1` (on) but the top bits change with focal
+  length. On all primes the flag word is exactly `0x0001` and the
+  best-fit k lands close to +1. Correlation is tight enough on this
+  small sample to hypothesize that the top byte of word[7] carries a
+  per-focal-length strength scaler that both Rigo and darktable's
+  `47c223703e` currently discard. This wants verification on more
+  zoom lenses (only the PL 12-60 in the corpus exposes the varying
+  flag byte), but if confirmed it changes the darktable code path.
+
+The soft finding: fitting 0x011b against the residual after 0x0119's
+best-scaled prediction on the 12-60 and prime files goes nowhere until
+the strength-scaler above is resolved. Any 0x011b fit against those
+residuals is only measuring our ignorance of 0x0119. On the L 45-150
+subset the "residual" is 0.15 px of registration noise, so all three
+model families in `step6_08_fit.py` (piecewise-linear zone heights,
+Rigo cubic-quintic-septic, zone heights x word[7] gain) land at R^2
+around 0.53, which is fitting noise. The top splits reproduce the
+prior finding that words 8 and 27 carry the strongest sign signal but
+do not constitute a decode.
+
+**Practical implications for the darktable regression fix.**
+
+1. The regression `47c223703e` introduces two problems, not one:
+   (a) auto-selecting embedded-metadata mode drops Lensfun TCA on
+   Panasonic files where 0x0119 is populated (established earlier in
+   this document); (b) the distortion correction it applies to those
+   files may itself be scaled wrong on lenses that use the high-byte
+   flag encoding on 0x0119 (this session). Item (b) is severe on the
+   Leica DG 12-60 (k values of 5.24 and -0.95 imply visible
+   over/under/mis-corrected distortion). Item (a) is the
+   user-reported symptom; item (b) may still be latent because Leica
+   DG owners often do not report distortion issues, and the fact that
+   the current darktable code path only applies 0x0119 without the
+   scaler means the actual output is more likely to be under-
+   corrected rather than clearly-wrong.
+2. `dt_image_correction_data_t::panasonic` should be extended to
+   store the raw `word[7]` value from 0x0119 so a follow-up patch can
+   apply the missing scaler once its exact functional form is nailed
+   down.
+3. Reading and decoding 0x011b is on hold pending 0x0119. The tag is
+   present, its structure is verified body-invariant, but no in-camera
+   pipeline in our corpus applies it, so we cannot observe its
+   correction output to reverse-engineer.
+
+### What would resolve 0x0119's missing scaler
+
 ### Interpretation
 
 The measured signal is real: the per-file half-vs-half RMS is 0.008 to
@@ -614,6 +698,25 @@ corpus). Its role is not decoded by any of the models tested here.
   robust across model variants, gain choices and knot orderings, and
   the per-file gains are unphysical (sign-flipping across files with a
   50x spread in magnitude).
+
+### What would resolve 0x0119's missing scaler
+
+Small experiment, no more shots required from the user:
+
+1. Fit the observed k (best-scale factor from `step6_06`) against
+   the high byte of `word[7]` and the focal length across the 12-60
+   sweep. Three data points across a factor-of-5 range in k are
+   enough to see if the relationship is linear, log, or step-shaped.
+2. Check other Panasonic zooms (Lumix 14-42, 12-32, 100-300 if any
+   are available) - do they also use the varying high-byte flag
+   encoding, or is it specific to the Leica DG line?
+3. Look at the Panasonic RW2 ImageMagick or LibRaw source for any
+   comment on the flag byte's extra bits. Panasonic-specific raw
+   decoders sometimes carry undocumented decode notes.
+
+If the scaler is confirmed, add it to `_init_coeffs_md_v2`'s
+Panasonic branch as a multiplicative factor before the polynomial
+evaluation, gate on `word[7]` bits, and re-check the 12-60 output.
 
 ### What would resolve it
 
