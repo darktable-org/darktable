@@ -1184,9 +1184,9 @@ if(HAVE_FFP_CONTRACT_OFF)
     "common/spektra_core.c"
     "common/spektra_sim.c"
     PROPERTIES COMPILE_OPTIONS "${SPEKTRA_FP_CONTRACT_FLAGS}")
-  # iop/spektrafilm.c is built in src/iop from its generated introspection
-  # copy, where a source property set here does not reach; the flags are
-  # applied to that target in src/iop/CMakeLists.txt.
+  # iop/spektrafilm.c and iop/filmgrain.c are built in src/iop from their
+  # generated introspection copies, where a source property set here does not
+  # reach; the flags are applied to those targets in src/iop/CMakeLists.txt.
 endif()
 
 add_dependencies(lib_darktable generate_styles_string)
