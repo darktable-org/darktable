@@ -628,6 +628,7 @@ static inline void dt_draw_curve_set_point(dt_draw_curve_t *c,
                                            const float x,
                                            const float y)
 {
+  if(num < 0 || num >= MAX_ANCHORS) return;
   c->c.m_anchors[num].x = x;
   c->c.m_anchors[num].y = y;
 }
@@ -708,9 +709,12 @@ static inline void dt_draw_curve_calc_values_V2(dt_draw_curve_t *c,
 
 static inline float dt_draw_curve_calc_value(dt_draw_curve_t *c, const float x)
 {
-  float xa[20], ya[20];
+  float xa[MAX_ANCHORS], ya[MAX_ANCHORS];
   float val = 0.f;
   float *ypp = NULL;
+
+  // callers may set m_numAnchors directly from stored params
+  if(c->c.m_numAnchors > MAX_ANCHORS) return MIN(MAX(val, c->c.m_min_y), c->c.m_max_y);
 
   for(int i = 0; i < c->c.m_numAnchors; i++)
   {
@@ -730,6 +734,7 @@ static inline void dt_draw_curve_add_point(dt_draw_curve_t *c,
                                           const float x,
                                           const float y)
 {
+  if(c->c.m_numAnchors >= MAX_ANCHORS) return;
   c->c.m_anchors[c->c.m_numAnchors].x = x;
   c->c.m_anchors[c->c.m_numAnchors].y = y;
   c->c.m_numAnchors++;

@@ -187,7 +187,8 @@ int legacy_params(dt_iop_module_t *self,
     else
     {
       n->type = DT_COLORSPACE_FILE;
-      dt_strlcpy_to_fixed(n->filename, o->iccprofile, sizeof(n->filename));
+      dt_strlcpy_fixed_to_fixed(n->filename, sizeof(n->filename),
+                                o->iccprofile, sizeof(o->iccprofile));
     }
 
     n->intent = o->intent;
@@ -212,7 +213,8 @@ int legacy_params(dt_iop_module_t *self,
     memset(n, 0, sizeof(dt_iop_colorout_params_v5_t));
 
     n->type = o->type;
-    dt_strlcpy_to_fixed(n->filename, o->filename, sizeof(n->filename));
+    dt_strlcpy_fixed_to_fixed(n->filename, sizeof(n->filename),
+                              o->filename, sizeof(o->filename));
     n->intent = o->intent;
 
     *new_params = n;
@@ -550,6 +552,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)p1;
   dt_iop_colorout_data_t *d = piece->data;
 
+  // stored params need not terminate the file name
+  p->filename[sizeof(p->filename) - 1] = '\0';
+
   d->type = p->type;
 
   // to be used in pixel-pipe cache
@@ -786,6 +791,9 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_colorout_gui_data_t *g = self->gui_data;
   dt_iop_colorout_params_t *p = self->params;
+
+  // the GUI handlers read the stored file name as a C string
+  p->filename[sizeof(p->filename) - 1] = '\0';
 
   dt_bauhaus_combobox_set(g->output_intent, (int)p->intent);
 

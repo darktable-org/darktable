@@ -500,11 +500,14 @@ float *catmull_rom_set(int n, float x[], float y[])
 
 float *interpolate_set(int n, float x[], float y[], unsigned int type)
 {
+  // the type comes from stored params
+  if(type >= sizeof(spline_set) / sizeof(spline_set[0])) return NULL;
   return (*spline_set[type])(n, x, y);
 }
 
 float interpolate_val(int n, float x[], float xval, float y[], float tangents[], unsigned int type)
 {
+  if(type >= sizeof(spline_val) / sizeof(spline_val[0])) return 0.0f;
   return (*spline_val[type])(n, x, xval, y, tangents);
 }
 
@@ -665,8 +668,11 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
 {
   int n = 0;
 
-  float x[20] = { 0 };
-  float y[20] = { 0 };
+  // callers may set m_numAnchors directly from stored params
+  if(curve->m_numAnchors > MAX_ANCHORS) return CT_ERROR;
+
+  float x[MAX_ANCHORS] = { 0 };
+  float y[MAX_ANCHORS] = { 0 };
 
   // The box points are what the anchor points are relative
   // to so...
