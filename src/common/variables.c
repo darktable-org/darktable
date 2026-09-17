@@ -102,7 +102,20 @@ typedef struct dt_variables_data_t
 
   int flags;
 
+  // when set, list-valued variables yield one entry per value instead of a
+  // single scalar. only dt_variables_expand_path_multi() sets it
+  gboolean expand_lists;
+
+  // set when an expansion had to be abandoned, e.g. the cartesian product of
+  // list values exceeded DT_VARIABLES_MAX_LIST_OUTPUTS
+  gboolean list_error;
+
 } dt_variables_data_t;
+
+// upper bound on the number of paths a pattern with list variables may expand
+// to. a pattern whose cartesian product exceeds it fails rather than flooding
+// the filesystem
+#define DT_VARIABLES_MAX_LIST_OUTPUTS 1024
 
 static GList *_expand_source(dt_variables_params_t *params,
                              char **source,
@@ -997,10 +1010,66 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   return result;
 }
 
+// $(CATEGORY_EACH[n,category]): one entry per matching subtag at level n.
+// returns NULL when there is no match or the parameters are malformed
+static GList *_get_category_each_values(dt_variables_params_t *params, char **variable)
+{
+  GList *values = NULL;
+
+  if(*variable[0] == '[')
+  {
+    gchar *level_s, *category;
+    _get_parameters_n_m(variable, &level_s, &category);
+
+    if(level_s && category && g_ascii_isdigit(*level_s))
+    {
+      const uint8_t level = (uint8_t)*level_s & 0b1111;
+      gchar *cat = g_strdup_printf("%s|", category);
+      values = dt_tag_get_subtags_list(params->imgid, cat, (int)level);
+      g_free(cat);
+    }
+    g_free(level_s);
+    g_free(category);
+  }
+
+  return values;
+}
+
+// apply the markup escaping that _get_base_value() does for scalar variables
+// to every value; consumes the list
+static GList *_escape_values(dt_variables_params_t *params, GList *values)
+{
+  if(!params->escape_markup) return values;
+
+  GList *escaped = NULL;
+  for(GList *l = values; l; l = g_list_next(l))
+    escaped = g_list_prepend(escaped, g_markup_escape_text((char *)l->data, -1));
+
+  g_list_free_full(values, g_free);
+  return g_list_reverse(escaped);
+}
+
 // a variable's values. scalar variables yield a one-element list; list-valued
 // ones yield one entry per value. a resolved variable never yields NULL
 static GList *_get_base_values(dt_variables_params_t *params, char **variable)
 {
+  if(_has_prefix(variable, "CATEGORY_EACH"))
+  {
+    GList *values = _get_category_each_values(params, variable);
+
+    if(params->data->expand_lists)
+    {
+      if(!values) values = g_list_prepend(NULL, g_strdup(""));
+      return _escape_values(params, values);
+    }
+
+    // outside the multi expander it collapses to the comma-joined scalar,
+    // matching what CATEGORY would return
+    char *joined = dt_util_glist_to_str(",", values);
+    g_list_free_full(values, g_free);
+    return _escape_values(params, g_list_prepend(NULL, joined ? joined : g_strdup("")));
+  }
+
   char *base_value = _get_base_value(params, variable); // this is never going to be NULL!
   return g_list_prepend(NULL, base_value);
 }
@@ -1011,7 +1080,11 @@ static char *_expand_source_scalar(dt_variables_params_t *params,
                                    char **source,
                                    const char extra_stop)
 {
+  const gboolean expand_lists = params->data->expand_lists;
+  params->data->expand_lists = FALSE;
   GList *values = _expand_source(params, source, extra_stop);
+  params->data->expand_lists = expand_lists;
+
   if(!values) return NULL;
 
   char *result = g_strdup((char *)values->data);
@@ -1020,9 +1093,24 @@ static char *_expand_source_scalar(dt_variables_params_t *params,
 }
 
 // cartesian product of two value lists. consumes both, so the caller must not
-// free them afterwards
-static GList *_cross_join(GList *a, GList *b)
+// free them afterwards. returns NULL and sets list_error when the product
+// would exceed DT_VARIABLES_MAX_LIST_OUTPUTS
+static GList *_cross_join(dt_variables_params_t *params, GList *a, GList *b)
 {
+  const guint a_length = g_list_length(a);
+  const guint b_length = g_list_length(b);
+
+  if((guint64)a_length * b_length > DT_VARIABLES_MAX_LIST_OUTPUTS)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[variables] expansion would produce more than %d paths, aborting",
+             DT_VARIABLES_MAX_LIST_OUTPUTS);
+    params->data->list_error = TRUE;
+    g_list_free_full(a, g_free);
+    g_list_free_full(b, g_free);
+    return NULL;
+  }
+
   GList *result = NULL;
   for(GList *la = a; la; la = g_list_next(la))
     for(GList *lb = b; lb; lb = g_list_next(lb))
@@ -1378,7 +1466,7 @@ static GList *_variable_get_values(dt_variables_params_t *params, char **variabl
 }
 
 // expand a source string to all its values. returns a list with at least one
-// entry
+// entry, or NULL when the expansion failed (see list_error)
 static GList *_expand_source(dt_variables_params_t *params,
                              char **source,
                              const char extra_stop)
@@ -1423,7 +1511,8 @@ static GList *_expand_source(dt_variables_params_t *params,
       if(values)
       {
         // cross join consumes both lists
-        results = _cross_join(results, values);
+        results = _cross_join(params, results, values);
+        if(!results) return NULL; // list_error is set
       }
       else
       {
@@ -1469,9 +1558,10 @@ static gchar *_legacy_aliases(const gchar *source)
   return result;
 }
 
-char *dt_variables_expand(dt_variables_params_t *params,
-                          gchar *source,
-                          const gboolean iterate)
+// expand a source to all its values. caller frees the list and its strings
+static GList *_expand_list(dt_variables_params_t *params,
+                           const gchar *source,
+                           const gboolean iterate)
 {
   _init_expansion(params, iterate);
 
@@ -1481,6 +1571,14 @@ char *dt_variables_expand(dt_variables_params_t *params,
   g_free(aliased_source);
 
   _cleanup_expansion(params);
+  return results;
+}
+
+char *dt_variables_expand(dt_variables_params_t *params,
+                          gchar *source,
+                          const gboolean iterate)
+{
+  GList *results = _expand_list(params, source, iterate);
 
   // the single-value API only ever sees one value: list variables collapse to
   // their scalar form unless the multi expander sets expand_lists
@@ -1526,6 +1624,35 @@ char *dt_variables_expand_path(dt_variables_params_t *params,
                                      iterate);
   g_free(normalized);
   return result;
+}
+
+GList *dt_variables_expand_path_multi(dt_variables_params_t *params,
+                                      gchar *source,
+                                      const gboolean iterate)
+{
+  // G_DIR_SEPARATOR is a compile-time constant, so this costs nothing off
+  // Windows and both branches still get compiled everywhere
+  gchar *normalized = (G_DIR_SEPARATOR == '\\')
+    ? _normalize_separators(source)
+    : NULL;
+
+  const gboolean expand_lists = params->data->expand_lists;
+  const gboolean list_error = params->data->list_error;
+  params->data->expand_lists = TRUE;
+  params->data->list_error = FALSE;
+
+  GList *results = _expand_list(params, normalized ? normalized : source, iterate);
+
+  params->data->expand_lists = expand_lists;
+  if(params->data->list_error)
+  {
+    g_list_free_full(results, g_free);
+    results = NULL;
+  }
+  params->data->list_error = list_error;
+
+  g_free(normalized);
+  return results;
 }
 
 void dt_variables_params_init(dt_variables_params_t **params)
