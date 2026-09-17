@@ -1415,6 +1415,213 @@ under "Where the code needs to change"; the coefficient path should
 remain a stub until the CA-toggle control shots or SILKYPIX-Pro
 reference exists.
 
+### Magnitude calibration against camera JPEG (session 7)
+
+Session 6 left a factor-of-ten gap between what C_R predicts (in
+pixels of R-vs-G displacement) and what a rawpy AAHD render of the
+same file shows. Session 6 was clear that this gap sits on the
+training corpus itself, so it is a property of Adobe's opcode vs
+rawpy's demosaic, not of the C_R decode. This session addresses the
+follow-on question: **the camera JPEG is what the darktable patch is
+supposed to reproduce, not Adobe's DNG rendering.** So measure the
+CA that the camera JPEG carries, difference it against the raw, and
+calibrate C_R's magnitude against that.
+
+**Method.** For the six-file subset (Sigma 16, PL 12-60 @ 12mm,
+PL 12-60 @ 60mm on both G9 and GX80):
+
+1. Render the RW2 uncorrected with rawpy AAHD (same pipeline as
+   `step3_measure.py` and `step4_measure_v2.py`).
+2. Load the paired camera JPEG.
+3. Coarse-register raw -> JPEG with SIFT + RANSAC partial affine
+   (scale + rotation + translation, `cv2.estimateAffinePartial2D`),
+   same registration as `step6_02_prove_jpeg_distortion.py`.
+4. Pick 15000 edges on the raw's green channel, filter to radial
+   gradients (`|cos(gradient, radial)| > 0.3`, r_pix >= 20).
+5. Measure R-G and B-G radial displacements in the raw at each edge
+   using the parabolic sub-pixel fit from `step4_measure_v2`.
+6. Warp each edge position from raw coordinates to JPEG coordinates
+   via the estimated affine, rotate the local gradient direction by
+   the same affine (the scale part cancels in the unit vector), and
+   measure R-G and B-G at that warped position in the JPEG with the
+   same parabolic fit.
+7. Divide the JPEG measurement by the affine scale to bring it into
+   raw-pixel units, then take
+   `applied_correction = raw_RG - jpeg_RG` per edge.
+8. Bin by `r_norm = r / half_diagonal_raw` and take medians.
+
+Scripts: `/tmp/rw2_tca/step18_01_measure_jpeg_ca.py` and
+`/tmp/rw2_tca/step18_02_aggregate.py`. Per-edge data at
+`/tmp/rw2_tca/step18_ca.npz`; aggregate at
+`/tmp/rw2_tca/step18_02_summary.json`.
+
+**Camera JPEG carries essentially no CA.** Across all six files and
+all populated radial bins, the JPEG's median R-G radial displacement
+sits in `[-0.02, +0.01]` px and B-G in `[-0.02, +0.02]` px, i.e. at
+or below the parabolic fit's per-bin scatter. Whatever CA the camera
+sees, it corrects to under the measurement noise floor before writing
+the JPEG. So `applied_correction ~= raw_RG` on every signal bin, and
+the raw's own CA magnitude is what the camera applies.
+
+**Predicted / applied ratio per bin (R-G, signal bins only).**
+"Signal bin" means `|predicted| > 0.05 px` AND `|applied| > 0.02 px`
+(smaller bins drop out; there are 26 signal bins across the six
+files).
+
+| file (body / lens / focal)         | n_bins | median | q1     | q3     | w_mean |
+|:-----------------------------------|-------:|-------:|-------:|-------:|-------:|
+| P1366477 G9   PL 12-60 @ 12mm      |      5 |   9.91 |   9.51 |  10.72 |   9.72 |
+| P1366479 G9   PL 12-60 @ 60mm      |      5 |  13.29 |  13.01 |  13.56 |  12.44 |
+| P1366486 G9   Sigma 16 @ 16mm      |      4 |  14.07 |  12.50 |  22.03 |  17.34 |
+| P1260633 GX80 PL 12-60 @ 12mm      |      5 |   6.18 |   4.62 |   7.35 |   5.60 |
+| P1260635 GX80 PL 12-60 @ 60mm      |      3 |  13.05 |  11.05 |  13.67 |  11.62 |
+| P1260639 GX80 Sigma 16 @ 16mm      |      5 |   8.05 |   7.22 |   8.32 |   7.63 |
+
+- median of per-file medians: 11.48
+- mean of per-file medians:   10.76
+- std (population sample):     3.22
+- spread (max/min):            2.28x  (14.07 / 6.18)
+- constant (cv < 25%):         false; cv = 30%
+- per-body median: G9 = 13.29, GX80 = 8.05
+
+Sign matches on 26 of 26 signal bins on all six files. The B-G
+channel's applied correction is smaller than the R-G on every file
+(matches session 5's observation that B has a shorter dynamic range
+than R), and the predicted B-G from the low-order C_B_lo decode is
+of the same order as the applied B-G in the interior; corner B-G
+predictions run larger than the measurement noise floor allows to
+resolve.
+
+**Interpretation against the session brief's decision tree.** This
+is outcome 2, "systematic mismatch (3-10x)". Not outcome 1 (match
+within 30%): the median ratio is 11.5, not 1. Not outcome 3 (sign
+disagreement): sign is preserved on every signal bin.
+
+Not fully constant, though. The ratio spans 6.18 to 14.07 across the
+six files. That is a 2.28x spread, cv = 30%. Baking a single global
+scale factor into the darktable patch will therefore be right on the
+scale, wrong on the shape:
+
+- a scale of 1/11.48 (median-of-medians) leaves the G9 side lightly
+  under-corrected on the low-CA GX80 files;
+- a scale of 1/6.18 (worst-case, the strongest GX80 file) will
+  over-correct on the G9's 60mm and Sigma 16 files by ~2x;
+- picking per-body scales (G9 1/13.3, GX80 1/8) narrows the spread
+  but has no obvious signal in 0x011b to gate on, since the body-
+  scaled words are the four radii and the flag, not any coefficient
+  we could read at correction time.
+
+**Root of the gap: it is Adobe's opcode, not the C_R fit.** To
+verify, `step18_03_check_dng_normalization.py` reads the DNG
+`WarpRectilinear` opcode for each of the six files directly and
+computes `r_pix * (poly_R(R^2) - poly_G(R^2))` at the same r bins.
+The DNG opcode itself predicts +0.34 to +1.14 px of R-G shift on
+these files, against measured raw R-G of +0.02 to +0.14 px. Ratios:
+
+```
+P1366477 (PL 12-60 @ 12mm):  9.05, 10.73,  6.74,  9.95  (four bins)
+P1366479 (PL 12-60 @ 60mm):  6.76, 12.78, 13.23, 10.52
+P1366486 (Sigma 16 @ 16mm): 13.47, 10.73, 30.86,  8.82
+P1260633 (PL 12-60 @ 12mm):  6.33,  7.11,  4.65,  4.24
+P1260635 (PL 12-60 @ 60mm): 19.47, 11.50, 10.95, 10.85
+P1260639 (Sigma 16 @ 16mm):  8.62,  8.94,  7.23
+```
+
+Adobe's opcode is asking for a much larger correction than the raw
+actually needs. The C_R decode reproduces Adobe's opcode within a
+few percent (session 5), so it inherits the same gap. This is the
+same 10x factor session 6 flagged, seen here through the DNG opcode
+itself with no C_R involvement.
+
+**Theory 4 checks (~20 min).**
+
+*4a. Bayer-plane application.* DNG's `OpcodeList3` (where this
+opcode lives, session 5) applies to the demosaiced, color-converted
+image, not to Bayer-plane data (`OpcodeList1` / `OpcodeList2`). A
+Bayer-plane application would attenuate the effective post-demosaic
+displacement by the 2x sparse-sampling factor at most, not by 10x.
+Not a match.
+
+*4b. Missing multiplicative constant.* The DNG G-plane polynomial
+value at R=1 is 0.923 on PL 12-60 @ 12mm (i.e. about 8% pincushion
+mapping to invert 8% raw barrel), which matches Panasonic's 0x0119
+`a` coefficient converted through the Rigo formula. So the G-plane
+normalization is right. The R and B plane polynomials sit within
+`0.999 +/- 0.001` of the G plane at every R, which is how a per-file
+CA correction of only 0.1 px should look at a half-diagonal of 3240
+px (0.1/3240 = 3e-5). But when we multiply the differential by
+r_pix, that same small per-file coefficient dresses up to a ~0.8 px
+shift. Nothing about the DNG geometry tags
+(`ActiveArea`, `DefaultCropOrigin`, `DefaultCropSize`) suggests an
+alternative normalization: the crop origin is `(12, 8)` and crop
+size is `5184 x 3888`, matching the JPEG's dimensions, and the
+opcode's center is `(0.5, 0.5)` of that active area.
+
+Both theories are marked unresolved. The clean way to close the
+question is to render one of these DNGs through Adobe Camera Raw or
+LibRaw's WarpRectilinear implementation and diff the R plane
+against the same file rendered with the opcode disabled; that
+directly measures whether Adobe's own pipeline applies the opcode
+at its printed magnitude. Neither tool was available in this
+session.
+
+**Confidence.**
+
+- The measurement of `applied_correction = raw_RG - jpeg_RG` is
+  trustworthy: per-file half-vs-half RMS on the raw side sits in
+  0.01-0.03 px on the strong-CA files (`step18_01.log`), and the
+  JPEG side is essentially at zero everywhere, so the difference
+  inherits the raw's own precision. The signs match on 26 of 26
+  signal bins. That is a real signal, not a wash.
+- The predicted / applied ratio of 11.5 +/- 3.2 across the six
+  files is real, and is not a C_R decode artifact: the same ratio
+  falls out of a direct read of the DNG opcode in
+  `step18_03_check_dng_normalization.py`.
+- The spread of 2.3x across the corpus is enough to say the ratio
+  is not a global constant. A single-scale patch of C_R will be
+  wrong per-file by a factor of ~2 either way. That does not mean
+  the shape is wrong: sign and per-radius shape reproduce cleanly.
+  It means the darktable patch's `k_r[i]` will need to be gated on
+  something we have not identified, or shipped with an
+  intentionally-averaged scale that is known to over-correct some
+  files and under-correct others by ~2x.
+
+**Where this points a follow-on darktable patch.**
+
+1. Do not ship C_R as-decoded. It will over-correct by roughly an
+   order of magnitude on every Panasonic RW2, which is visibly
+   worse than the current TCA-free state.
+2. If a single-scale patch ships, use median-of-medians = 11.48 as
+   the divisor. Expected error: 2x over-correction on the strongest
+   GX80 12mm files, 20% under-correction on the strong-CA G9 files.
+   That is at least of the right sign everywhere, but the per-file
+   error will be visible on some samples.
+3. A per-body scale (G9: divide by 13.3; GX80: divide by 8.0)
+   halves the spread but has no in-file signal to key on; a
+   `Model`-string branch in the darktable code would work but is
+   fragile.
+4. The 10x-gap root cause between Adobe's opcode and the physical
+   raw CA is genuinely unresolved. Resolving it (e.g. by
+   rendering a DNG through Adobe Camera Raw with the opcode on and
+   off, and diffing the R plane) may reveal that the correct patch
+   is not "scale C_R by 1/11" but "apply C_R via a different
+   evaluation path" that intrinsically produces the right
+   magnitude. Recommend doing this before committing to a
+   scale-and-ship approach.
+
+Scripts and data this session:
+
+- `/tmp/rw2_tca/step18_01_measure_jpeg_ca.py`: pair-wise raw and
+  JPEG CA measurement, per-file per-bin summary, npz output.
+- `/tmp/rw2_tca/step18_02_aggregate.py`: per-file and across-corpus
+  predicted / applied ratios, JSON summary.
+- `/tmp/rw2_tca/step18_03_check_dng_normalization.py`: DNG opcode
+  direct read, comparing DNG R-G shift against raw measurement
+  without C_R in the loop.
+- `/tmp/rw2_tca/step18_ca.npz`, `/tmp/rw2_tca/step18_02_summary.json`.
+- Log files: `/tmp/rw2_tca/step18_01.log`, `.../step18_02.log`,
+  `.../step18_03.log`.
+
 ## Reverse-engineering next steps
 
 Everything below is a plan for the follow-on agent. Nothing here has been
