@@ -207,8 +207,8 @@ static float *_decode_gray_png(const uint8_t *data,
   }
 
   _png_mem_t mem = { data, len, 0 };
-  // assigned after setjmp and freed in the error branch: volatile keeps
-  // the values across the longjmp
+  // libpng reports errors with a longjmp to png_jmpbuf; these are assigned
+  // after setjmp and freed in that branch, so volatile keeps their values
   uint8_t *volatile rows = NULL;
   float *volatile mask = NULL;
 

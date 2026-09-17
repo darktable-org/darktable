@@ -2386,7 +2386,7 @@ gboolean dt_image_rename(const dt_imgid_t imgid,
          -1, &duplicates_stmt, NULL);
       // clang-format on
 
-      // first move xmp files of image and duplicates
+      // first move xmp and .dtdata files of image and duplicates
       GList *dup_list = NULL;
       DT_DEBUG_SQLITE3_BIND_INT(duplicates_stmt, 1, imgid);
       while(sqlite3_step(duplicates_stmt) == SQLITE_ROW)
@@ -2407,17 +2407,26 @@ gboolean dt_image_rename(const dt_imgid_t imgid,
 
         GFile *goldxmp = g_file_new_for_path(oldxmp);
         GFile *gnewxmp = g_file_new_for_path(newxmp);
+        GError *error = NULL;
 
-        g_file_move(goldxmp, gnewxmp, 0, NULL, NULL, NULL, NULL);
+        // no xmp yet (lazy or disabled sidecars) is not a failure
+        if(g_file_test(oldxmp, G_FILE_TEST_EXISTS)
+           && !g_file_move(goldxmp, gnewxmp, 0, NULL, NULL, NULL, &error))
+        {
+          dt_print(DT_DEBUG_ALWAYS, "[dt_image_rename] cannot move '%s' to '%s': %s",
+                   oldxmp, newxmp, error ? error->message : "unknown error");
+          g_clear_error(&error);
+        }
 
         g_object_unref(goldxmp);
         g_object_unref(gnewxmp);
 
+        // moved even if the xmp was not: the xmp is rewritten from the
+        // database, the masks in the sidecar exist nowhere else
         if(g_file_test(olddata, G_FILE_TEST_EXISTS))
         {
           GFile *golddata = g_file_new_for_path(olddata);
           GFile *gnewdata = g_file_new_for_path(newdata);
-          GError *error = NULL;
           // a stale sidecar at the destination must not keep the live one behind
           if(!g_file_move(golddata, gnewdata, G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, &error))
           {
