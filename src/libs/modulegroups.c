@@ -1763,6 +1763,7 @@ void init_presets(dt_lib_module_t *self)
   AM("colorize");
   AM("colormapping");
   AM("enlargecanvas");
+  AM("filmgrain");
   AM("graduatednd");
   AM("grain");
   AM("highpass");
@@ -1809,6 +1810,7 @@ void init_presets(dt_lib_module_t *self)
 
   SMG(C_("modulegroup", "effects"), "effect");
   AM("borders");
+  AM("filmgrain");
   AM("monochrome");
   AM("retouch");
   AM("sharpen");
@@ -1918,6 +1920,7 @@ void init_presets(dt_lib_module_t *self)
   AM("atrous");
   AM("borders");
   AM("enlargecanvas");
+  AM("filmgrain");
   AM("graduatednd");
   AM("grain");
   AM("overlay");
