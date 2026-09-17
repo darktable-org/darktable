@@ -2427,12 +2427,17 @@ gboolean dt_image_rename(const dt_imgid_t imgid,
         {
           GFile *golddata = g_file_new_for_path(olddata);
           GFile *gnewdata = g_file_new_for_path(newdata);
-          // a stale sidecar at the destination must not keep the live one behind
+          // a stale sidecar at the destination must not keep the live one behind.
+          // the masks exist nowhere else, so a locked source is copied instead
           if(!g_file_move(golddata, gnewdata, G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, &error))
           {
-            dt_print(DT_DEBUG_ALWAYS, "[dt_image_rename] cannot move '%s' to '%s': %s",
-                     olddata, newdata, error ? error->message : "unknown error");
             g_clear_error(&error);
+            if(!g_file_copy(golddata, gnewdata, G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, &error))
+            {
+              dt_print(DT_DEBUG_ALWAYS, "[dt_image_rename] cannot move or copy '%s' to '%s': %s",
+                       olddata, newdata, error ? error->message : "unknown error");
+              g_clear_error(&error);
+            }
           }
           g_object_unref(golddata);
           g_object_unref(gnewdata);
@@ -3000,6 +3005,25 @@ gboolean dt_image_local_copy_reset(const dt_imgid_t imgid)
 
   if(g_file_test(locppath, G_FILE_TEST_EXISTS) && strstr(locppath, cachedir))
   {
+    // masks imported while the original was offline live only in the cache
+    // sidecar: fold them into the original's before anything is deleted,
+    // and keep the local copy whole if that fails so it can be retried
+    gchar locbase[PATH_MAX] = { 0 }, locdata[PATH_MAX] = { 0 };
+    gchar origbase[PATH_MAX] = { 0 }, origdata[PATH_MAX] = { 0 };
+    g_strlcpy(locbase, locppath, sizeof(locbase));
+    g_strlcpy(origbase, destpath, sizeof(origbase));
+    dt_image_path_append_version(imgid, locbase, sizeof(locbase));
+    dt_image_path_append_version(imgid, origbase, sizeof(origbase));
+    dt_dtdata_path_for_image(locbase, locdata, sizeof(locdata));
+    dt_dtdata_path_for_image(origbase, origdata, sizeof(origdata));
+    if(!dt_dtdata_file_merge(locdata, origdata))
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[dt_image_local_copy_reset] cannot merge '%s' into '%s'",
+               locdata, origdata);
+      dt_control_log(_("cannot remove local copy: its raster masks could not be merged back"));
+      return TRUE;
+    }
+
     GFile *dest = g_file_new_for_path(locppath);
 
     // first sync the xmp with the original picture
@@ -3015,29 +3039,15 @@ gboolean dt_image_local_copy_reset(const dt_imgid_t imgid)
 
     // delete xmp and .dtdata if any
     dt_image_path_append_version(imgid, locppath, sizeof(locppath));
-    gchar locdata[PATH_MAX] = { 0 };
-    dt_dtdata_path_for_image(locppath, locdata, sizeof(locdata));
     g_strlcat(locppath, ".xmp", sizeof(locppath));
     dest = g_file_new_for_path(locppath);
 
     if(g_file_test(locppath, G_FILE_TEST_EXISTS)) g_file_delete(dest, NULL, NULL);
     g_object_unref(dest);
 
-    // masks imported while the original was offline live only in the
-    // cache sidecar: fold them into the original's before dropping it
-    gchar origpath[PATH_MAX] = { 0 }, origdata[PATH_MAX] = { 0 };
-    g_strlcpy(origpath, destpath, sizeof(origpath));
-    dt_image_path_append_version(imgid, origpath, sizeof(origpath));
-    dt_dtdata_path_for_image(origpath, origdata, sizeof(origdata));
-    if(dt_dtdata_file_merge(locdata, origdata))
-    {
-      dest = g_file_new_for_path(locdata);
-      if(g_file_test(locdata, G_FILE_TEST_EXISTS)) g_file_delete(dest, NULL, NULL);
-      g_object_unref(dest);
-    }
-    else
-      dt_print(DT_DEBUG_ALWAYS, "[dt_image_local_copy_reset] cannot merge '%s' into '%s', kept",
-               locdata, origdata);
+    dest = g_file_new_for_path(locdata);
+    if(g_file_test(locdata, G_FILE_TEST_EXISTS)) g_file_delete(dest, NULL, NULL);
+    g_object_unref(dest);
   }
 
   // update cache, remove local copy flags, this is done in all cases here as when we
