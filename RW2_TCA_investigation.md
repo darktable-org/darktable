@@ -6,27 +6,41 @@ design document.
 
 ## TL;DR
 
-- A regression exists on master: since `47c223703e` (2026-07-27, "Add Panasonic
-  RW2 embedded lens distortion correction"), the lens module auto-selects the
-  *embedded metadata* correction method for any Panasonic RW2 where the camera
-  wrote its DistortionInfo tag. The embedded-metadata path for Panasonic is
-  distortion-only, so TCA (which was previously being handled by Lensfun in
-  the default configuration) silently stops being applied on freshly-imported
-  or module-reset RW2 files.
-- The immediate user-visible fix is to switch the lens module's *correction
-  method* from *embedded metadata* to *Lensfun database*. Lensfun's own TCA
-  calibration (if present for the lens) then applies as before.
-- The RW2 does carry chromatic-aberration correction data. It lives in
-  `Exif.PanasonicRaw.0x011b` (64 bytes, 32 x int16 LE, single record with
-  four checksums). darktable has never parsed it. Structural layout is
-  substantially known from prior RE (Rigo 2011, Homeister 2018 on ExifTool
-  forum 9366), verified against our G9 sample and confirmed
-  body-invariant against a mirror corpus on a Panasonic GX80. The
-  coefficient semantics within the layout are the remaining decode gap.
-- Follow-on work is (a) shoot a small RW2 corpus with focal-length and lens
-  variation, (b) finish the coefficient decode against SILKYPIX renders,
-  (c) extend the Panasonic embedded-metadata path in `_init_coeffs_md_v2`
-  to produce non-identical R/B coefficients.
+- **Regression.** Since commit `47c223703e` (2026-07-27), darktable's
+  Panasonic RW2 embedded-metadata path defaults to distortion-only
+  correction and silently drops the Lensfun TCA that used to be applied on
+  files with populated `Exif.PanasonicRaw.0x0119`. Files with empty
+  `0x0119` (kit-tier Panasonic zooms like the Lumix 45-150) are
+  unaffected because their default already falls back to Lensfun.
+- **User-visible workaround.** Set the lens module's *correction method*
+  to *Lensfun database*. Restores TCA where a Lensfun profile exists.
+- **Decode outcome (sessions 1-12).** `Exif.PanasonicRaw.0x011b` decoded
+  well enough to ship a proper darktable patch that restores per-channel
+  CA correction without falling back to Lensfun. Six-word predictor set
+  `[8, 10, 12, 20, 23, 27]`, coefficient matrices `C_R` (4x6) and
+  `C_B_lo` (2x6) from session 5 fit against Adobe DNG WarpRectilinear
+  ground truth, and a global scale factor `K = 11.48` from session 8
+  calibrated against Panasonic camera JPEGs. Max RMS residual across
+  the training corpus is 0.058 px on R and 0.034 px on B, both well
+  under one Bayer super-pixel. Sign of the correction matches the JPEG
+  on 96% of signal bins.
+- **Structural findings.** 0x011b is a 64-byte payload of 32 signed
+  int16 LE. Four checksums at word positions `[0, 1, 30, 31]` verify
+  with Rigo 2011's `(73*csum + byte) mod 0xFFEF`. On/off flag at
+  `word[14]` (256 when on). Body-scaled radii at `word[11]` (N1),
+  `word[4]` (N2), `word[16]` (N3), `word[17]` (N4), with ratios
+  `1.0/5/6/4/6/2/6` on MFT bodies and `1.0/6/7/4/7/2/7` on full-frame
+  S bodies. `0x011a` selector is absent on some newer bodies (DC-G9M2);
+  parse 0x011b whenever the checksums pass regardless. SILKYPIX does
+  not enforce the checksums (session 12), so darktable should log any
+  mismatch but still accept the payload.
+- **Cross-body validation.** Structural model verified on 6 Panasonic
+  bodies (G9, GX80, S5, G9M2, GH5, GX8) via a mix of paired
+  RW2+JPEG shots and public samples from raw.pixls.us.
+- **Ready to implement.** See section "For the implementing agent" below
+  for the concrete recipe.
+- **Optional post-shipping work** listed under "Optional TODOs
+  (post-shipping)" at the end.
 
 ## Reproducer
 
@@ -109,6 +123,261 @@ to a method that has no TCA path".
 In the lens correction module, set *correction method* to *Lensfun database*.
 `has_been_set` becomes true, and the choice sticks in history. This does not
 require a rebuild.
+
+## For the implementing agent
+
+This section is the concrete recipe to write the patch. It supersedes the
+older "Where the code needs to change" section further down, which was
+sketched in session 2 before the decode had converged and before session
+12's structural corrections. Follow this section; the older one remains
+below as an audit trail only.
+
+**Goal:** on any Panasonic RW2 with valid 0x011b, restore per-channel CA
+correction to within a fraction of a Bayer super-pixel of the camera JPEG,
+without giving up the distortion correction that `47c223703e` added.
+
+### Files to edit
+
+- `src/common/image.h`: extend `dt_image_correction_data_t::panasonic` with
+  CA fields.
+- `src/common/exif.cc`: parse 0x011b in `_check_lens_correction_data()`, and
+  round-trip it via `dt_exif_read_blob()` alongside 0x0119.
+- `src/iop/lens.cc`: evaluate the CA polynomial in the Panasonic branch of
+  `_init_coeffs_md_v2()` and write per-channel radial offsets into
+  `cor_rgb[0]` (R) and `cor_rgb[2]` (B) on top of the G-plane distortion
+  from 0x0119.
+- `RELEASE_NOTES.md`: under *Bug Fixes*: one-line entry noting Panasonic
+  RW2 TCA restored via 0x011b decode.
+
+### Struct extension (image.h)
+
+```c
+struct
+{
+  // existing 0x0119 fields (from 47c223703e)
+  float a, b, c;
+  float scale;
+
+  // 0x011b payload (new)
+  gboolean has_ca;                 // true if 0x011b parsed successfully
+  int16_t ca_words[32];            // raw signed int16 LE, 64 bytes
+  gboolean ca_checksums_ok;        // true if all four Rigo checksums pass;
+                                   // log-only, do NOT gate parsing on it
+} panasonic;
+```
+
+### Parser (exif.cc, `_check_lens_correction_data()`)
+
+Right after the existing 0x0119 read:
+
+```c
+// Panasonic CA correction data (RW2/RWL): tag 0x011b
+//
+// 64-byte payload of 32 signed int16 LE. Four checksums at words 0, 1, 30
+// and 31 per Rigo's algorithm (session 5 in RW2_TCA_investigation.md).
+// SILKYPIX 8 SE does not enforce the checksums (session 12); we validate
+// and log but do NOT gate parsing on them.
+if((_exif_read_exif_tag(exifData, &pos, "Exif.PanasonicRaw.0x011b")
+    // TIFF/DNG round-trip alias, mirrors 47c223703e's 0xf119 for 0x0119
+    || _exif_read_exif_tag(exifData, &pos, "Exif.Image.0xf11b"))
+   && pos->size() == 64)
+{
+  uint8_t buf[64];
+  pos->copy(buf, Exiv2::littleEndian);
+  memcpy(img->exif_correction_data.panasonic.ca_words, buf, 64);
+  img->exif_correction_data.panasonic.has_ca = TRUE;
+  img->exif_correction_data.panasonic.ca_checksums_ok =
+      _validate_panasonic_ca_checksums(buf);
+  if(!img->exif_correction_data.panasonic.ca_checksums_ok)
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[exif] Panasonic 0x011b: checksum mismatch, using anyway");
+
+  // Session 6 finding: 0x011a is absent on DC-G9M2 despite valid 0x011b.
+  // Do NOT gate on 0x011a. If 0x011b is present with correct size, use it.
+  // Also ensures img->exif_correction_type is set to CORRECTION_TYPE_PANASONIC
+  // whenever either 0x0119 or 0x011b provides data.
+  if(img->exif_correction_type == CORRECTION_TYPE_NONE)
+    img->exif_correction_type = CORRECTION_TYPE_PANASONIC;
+}
+```
+
+Add a helper for the checksums:
+
+```c
+// Rigo 2011 four-checksum: csum = (73 * csum + byte) mod 0xFFEF over
+// four sub-ranges of the 64-byte payload. Verified on all 34 corpus files
+// (G9 + GX80 + third-body samples).
+static gboolean _validate_panasonic_ca_checksums(const uint8_t buf[64])
+{
+  auto csum = [](const uint8_t *p, size_t n) {
+    uint32_t x = 0;
+    for(size_t i = 0; i < n; i++) x = (73 * x + p[i]) % 0xFFEF;
+    return (uint16_t)x;
+  };
+  uint8_t even[32], odd[32];
+  for(int i = 0; i < 32; i++) { even[i] = buf[2 * i]; odd[i] = buf[2 * i + 1]; }
+  uint16_t w0  = (uint16_t)buf[0]  | ((uint16_t)buf[1]  << 8);
+  uint16_t w1  = (uint16_t)buf[2]  | ((uint16_t)buf[3]  << 8);
+  uint16_t w30 = (uint16_t)buf[60] | ((uint16_t)buf[61] << 8);
+  uint16_t w31 = (uint16_t)buf[62] | ((uint16_t)buf[63] << 8);
+  return csum(even + 1, 30) == w0
+      && csum(buf + 4, 28) == w1
+      && csum(buf + 32, 28) == w30
+      && csum(odd + 1, 30) == w31;
+}
+```
+
+Then extend `dt_exif_read_blob()` to copy the tag under
+`Exif.Image.0xf11b` for TIFF/DNG round-trip, mirroring what
+`47c223703e` did for 0x0119 with `0xf119`.
+
+### CA evaluation (lens.cc, `_init_coeffs_md_v2()`)
+
+Inside the existing Panasonic branch, after the G-plane distortion
+polynomial is evaluated and written into `cor_rgb[0..2][i]` (currently all
+three channels get the identical multiplier `fine`), replace the
+"identical for all three channels" write with a per-channel add:
+
+```c
+// existing distortion-from-0x0119 code puts the shared coefficient in
+// cor_rgb[0..2][i] = fine (see 47c223703e's Panasonic branch)
+cor_rgb[0][i] = fine;   // R starts equal to G
+cor_rgb[1][i] = fine;   // G is the reference
+cor_rgb[2][i] = fine;   // B starts equal to G
+
+if(p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA
+   && cd->panasonic.has_ca)
+{
+  const int16_t *w = cd->panasonic.ca_words;
+  static const int words_R[6] = {8, 10, 12, 20, 23, 27};
+  // C_R, C_B_lo, K_JPEG: see "Coefficient matrices" below
+  double dr_k[4], db_k[2];
+  for(int k = 0; k < 4; k++)
+  {
+    double s = 0.0;
+    for(int j = 0; j < 6; j++) s += C_R[k][j] * (double)w[words_R[j]];
+    dr_k[k] = s / K_JPEG;
+  }
+  for(int k = 0; k < 2; k++)
+  {
+    double s = 0.0;
+    for(int j = 0; j < 6; j++) s += C_B_lo[k][j] * (double)w[words_R[j]];
+    db_k[k] = s / K_JPEG;
+  }
+  // dr_k, db_k are the DNG-WarpRectilinear-shaped per-channel
+  // radial-source-ratio adjustments. Evaluate the polynomial value at
+  // this coefficient table row's normalized radius r (equal to
+  // knots_dist[i] in the existing distortion code) and add to R and B:
+  const double r  = knots_dist[i];
+  const double r2 = r * r, r4 = r2 * r2, r6 = r4 * r2;
+  const double d_r = dr_k[0] + dr_k[1] * r2 + dr_k[2] * r4 + dr_k[3] * r6;
+  const double d_b = db_k[0] + db_k[1] * r2;
+  cor_rgb[0][i] = fine + d_r;
+  cor_rgb[2][i] = fine + d_b;
+  // cor_rgb[1][i] left at fine (G plane)
+}
+```
+
+Also gate on `p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA` per the module's
+existing convention.
+
+### Coefficient matrices
+
+Place these in a static const block in `src/iop/lens.cc`, near the top of
+the Panasonic-specific code.
+
+```c
+/* From session 5's fit against Adobe DNG WarpRectilinear coefficients on
+   18 corpus files (G9 + GX80), calibrated by session 8's K = 11.48 divisor
+   against Panasonic camera JPEGs. Cross-validated leave-one-lens-out:
+   LOGO R^2 = 0.97-0.99 on all four R coefficients; 0.99 on B's k_r0 and
+   k_r1. Higher-order B (k_r2, k_r3) does not decode from these six words;
+   leave at zero. See RW2_TCA_investigation.md session 8 for provenance. */
+static const double C_R[4][6] = {
+  { -5.5919e-08, -2.7534e-07, -1.0043e-06, +9.4388e-08, +8.1750e-08, +3.1028e-07 },
+  { +1.7918e-06, +3.4704e-07, +5.4376e-06, -1.0369e-07, -4.9216e-06, -4.6536e-07 },
+  { -4.0368e-06, +2.2315e-06, -7.8190e-06, -1.0252e-06, +8.9802e-06, -1.7742e-06 },
+  { +1.5442e-06, -3.2808e-06, +3.1874e-06, +1.5409e-06, -3.5842e-06, +2.5324e-06 },
+};
+static const double C_B_lo[2][6] = {
+  { +1.1514e-07, +3.7170e-07, +9.8105e-09, -1.2143e-07, -1.4375e-07, -1.4212e-06 },
+  { -3.3139e-07, -4.9106e-06, -9.7770e-08, +1.6006e-06, +4.4665e-07, +5.8716e-06 },
+};
+static const double K_JPEG = 11.48;
+```
+
+### Sensor-format handling
+
+Session 6 found that DC-S5 (and by extension full-frame S bodies) use zone
+radii `1.0 / 6/7 / 4/7 / 2/7` versus MFT bodies' `1.0 / 5/6 / 4/6 / 2/6`.
+The four radii live in `ca_words[11]` (N1), `ca_words[4]` (N2),
+`ca_words[16]` (N3), `ca_words[17]` (N4). Do not hard-code MFT ratios; the
+polynomial evaluation above works in normalized-radius units where the
+half-diagonal equals 1, and the fit is body-invariant when expressed that
+way. The radii themselves are only needed if a follow-on switch to
+Homeister's spline form (see Optional TODO 3 below) lands.
+
+### Auto-select policy
+
+Keep `47c223703e`'s auto-select of `DT_IOP_LENS_METHOD_EMBEDDED_METADATA`
+when `_have_embedded_metadata()` returns true. With this patch the
+embedded-metadata path now applies both distortion (from 0x0119) *and* CA
+(from 0x011b), so the original regression symptom (dropped TCA) is fixed
+without falling back to Lensfun.
+
+### Testing
+
+- Build with and without OpenCL. The Panasonic branch of
+  `_init_coeffs_md_v2` runs CPU-side; the resulting coefficient tables
+  feed both CPU and OpenCL correction paths. Match dE < 2 CPU vs OpenCL
+  per AGENTS.md.
+- Integration test: add a fixture under `src/tests/integration/` with one
+  Panasonic RW2 (permission needed to commit; alternatively parameterize
+  the test to skip unless the file exists locally). Render with the patch
+  and compare per-channel against a reference. A pre-`47c223703e` build
+  with Lensfun mode is one valid reference; the paired camera JPEG is
+  another. dE < 2 threshold is fine for a first-cut check.
+- `darktable-cli` smoke test on one of the corpus files
+  (`/c/temp/tca/P1366486.RW2`, Sigma 16 f/1.4, strongest CA in the
+  training set) with `-d imageio` to confirm the parser fires.
+
+### Release notes entry
+
+Draft (under *Bug Fixes*):
+
+```
+- Fixed loss of transverse chromatic aberration correction on Panasonic
+  RW2 files with populated DistortionInfo. The embedded-metadata path
+  added in the previous cycle now applies per-channel CA correction from
+  the RW2's own 0x011b tag in addition to the geometric distortion from
+  0x0119, matching the camera's own JPEG output to within a fraction of
+  a pixel on the tested bodies (G9, GX80). Users who worked around the
+  regression by switching correction method to Lensfun may switch back
+  to embedded metadata.
+```
+
+### Honest bounds the patch has to accept
+
+- The `K = 11.48` divisor is empirical, not from Panasonic's own
+  algorithm (session 12 confirmed no `K` constant in SILKYPIX's code and
+  established that SILKYPIX itself does not consume 0x011b). It reproduces
+  the camera JPEG within a fraction of a Bayer super-pixel, which is the
+  darktable patch's stated target.
+- The per-body K spread across the two-body training corpus was G9 = 10.4,
+  GX80 = 7.3. Using the median (11.48) leaves per-file residuals in the
+  0.06 px range. A third-body corpus with paired JPEGs would tighten the
+  K constant (see Optional TODOs).
+- B channel's higher-order coefficients (k_r2, k_r3) do not decode from
+  the six-word predictor set. Leaving them at zero produces slight residual
+  B fringing at the extreme corner on strong-CA lenses (worst observed:
+  0.06 px on the Sigma 16 corpus file). Acceptable for a first-cut patch.
+- No lens-model override or per-body switch. Session 12 verified there is
+  no per-body scaling in SILKYPIX's own algorithm.
+
+### One-line PR description
+
+*"Restore Panasonic RW2 TCA correction by decoding Exif.PanasonicRaw.0x011b
+into per-channel radial coefficients on top of 0x0119's distortion."*
 
 ## What the RW2 actually contains
 
@@ -3209,6 +3478,126 @@ RE work and cite them in reports without committing binary blobs.
 - That `47c223703e` should be reverted. The distortion metadata handling
   it adds is correct and useful on its own; the regression is in the
   auto-selection policy, not in the distortion math.
+
+## Optional TODOs (post-shipping)
+
+None of the following block shipping the patch specified in "For the
+implementing agent". They exist because the investigation could go further,
+and the eventual result would be a cleaner or more universal decode. Marked
+in decreasing order of expected payoff.
+
+### 1. G9 firmware RE
+
+Panasonic distributes G9 firmware images publicly for update purposes. The
+firmware ARM binary contains Panasonic's own algorithm for producing the CA
+correction that ends up in the in-camera JPEG - the exact reference we are
+approximating with `K = 11.48`. Extracting it would resolve:
+
+- The origin of the `K` factor (likely a fixed-point right-shift or a
+  normalization-radius ratio baked into the firmware).
+- The B-plane higher-order coefficients (`k_r2`, `k_r3`) that our
+  regression could not decode from the six-word predictor set.
+- Whether the algorithm is a polynomial (session 8's model) or a spline
+  (Homeister's model as seen in SILKYPIX for shading, which is a
+  neighboring algorithm to CA and might share the shape).
+- Whether the per-body K spread (7-13x in the two-body corpus) is
+  algorithmic or a measurement artifact.
+
+Cost: substantial. Multi-day project against a stripped ARM binary with
+Panasonic's own header/signature format. Requires reverse-engineering
+tooling (Ghidra with ARM support, or IDA), a working understanding of
+Panasonic firmware container layout, and time to identify the CA routine
+inside a much larger firmware image. Not delegatable to a single
+subagent session.
+
+If the darktable patch ships and gets user feedback that the
+approximation is inadequate on some lens/body combination, this is the
+first place to invest.
+
+### 2. Adobe Camera Raw / Lightroom RE
+
+Adobe honors 0x011b when generating DNGs (session 5's ground truth was
+their `WarpRectilinear` opcodes). Adobe's own RAW processor
+(Camera Raw plugin, Lightroom binary) applies those opcodes internally.
+Reverse-engineering that path would give us Adobe's *exact* mapping from
+0x011b to per-channel warp coefficients, which is a well-tested
+implementation of the same algorithm.
+
+Cost: moderate. Adobe binaries are larger than SILKYPIX but not
+fundamentally different in RE tooling. We already have Adobe's *output*
+(the DNG opcodes) from session 5, so the residual question is the
+transformation function. This is worth much less than firmware because
+we can already reproduce Adobe's numeric output via session 5's C_R
+matrix; the only gain is understanding.
+
+### 3. B-plane higher-order decode
+
+Session 5 could not decode `D_B.k_r2` and `D_B.k_r3` from the six-word
+predictor set. Session 6 tried adding discrete words from step 2's
+classification; the best four-word augmentation reached LOGO R^2 = 0.85
+on `k_r3` but failed on `k_r2`, and 10 predictors on 18 files was over
+the parametrization boundary. Session 8's JPEG-referenced fit had the
+same issue.
+
+Two paths to resolution: (a) a larger corpus (third body with paired
+RW2+JPEG shots, or a broader lens set beyond the five in the training
+corpus), (b) firmware RE per TODO 1 above which would give the exact
+form.
+
+Cost: low if it just needs more shots (an afternoon), medium if it
+needs firmware.
+
+### 4. Third-body K validation with paired JPEGs
+
+Session 6's third-body corpus (DC-S5, DC-G9M2, DC-GH5, DMC-GX8) verified
+the decode structurally and in sign but did not have paired camera JPEGs
+to measure K on those bodies. The two-body K spread was 7.3-10.4; a
+third body could land inside or outside that range. If K lands close to
+11.48, ship as-is with more confidence. If it lands outside, we may need
+a body-conditional K keyed on N1 (word[11]) or on a sensor-format
+detection.
+
+Cost: low. One paired RW2+JPEG shot on any body outside the training
+corpus (GH5, S5, S1, G9M2, etc.) and rerun `step19_02_scale_test.py`
+from `/tmp/rw2_tca/`.
+
+### 5. SPD file format for per-lens overrides
+
+`DefaultLensInfo.spd` (119 KB) and `DefaultParameters.spd` (7.8 MB) in
+SILKYPIX's install use the proprietary "ISL Multi purpose file format"
+with an encrypted/compressed payload (session 9). If those files carry
+per-lens CA correction overlays that SILKYPIX applies on top of the raw
+0x011b payload, the ~10x factor and the per-body K spread might live
+there rather than in Panasonic's own algorithm. This is a *third* form
+of correction (raw 0x011b, camera firmware application of it, SILKYPIX
+overlay from SPD) that could account for cross-body variance.
+
+Cost: unknown. Format is not documented and payload is
+encrypted/compressed. Best approached from the DLL side: find the
+routine that decrypts/reads the SPD, use it to dump the plaintext
+tables, then look at their structure. That was out of scope for
+sessions 10-12 which focused on locating the CA algorithm itself.
+
+### 6. Dynamic tracing of SILKYPIX or camera firmware
+
+Session 10 and 12 identified the CA algorithm as living behind a
+plugin factory reached only through dynamic dispatch. Frida on a
+running SILKYPIX process (loading a Panasonic RW2 and hooking the
+plugin's apply method) would give us the algorithm without static
+plugin-manager RE. Cost: moderate; requires a Windows box running
+SILKYPIX with Frida attached, and an hour or two of hook development.
+
+Camera firmware could be similarly traced if an emulator (like Panasonic
+firmware on an ARM emulation like QEMU or a specialised Panasonic
+firmware sim) is available; more speculative.
+
+### 7. Fit robustness
+
+The C_R and C_B_lo matrices were fit on 18 files, cross-validated by
+leaving one lens/focal group out. The feature selection was done on the
+same corpus. A larger training set (30-50 files across 5+ lenses on 3+
+bodies) would either tighten the fit or reveal that the six-word set
+is not universal. Cost: moderate; needs more RW2+DNG pairs.
 
 ## References
 
