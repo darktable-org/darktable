@@ -27,7 +27,7 @@ Fixes and Closes line must be at the very end of the description.
       pixelpipe is touched, or `darktable-cli` as a headless smoke test.
 - [ ] New user-visible strings use `_()`, new preferences are registered in
       `data/darktableconfig.xml.in`.
-- [ ] A `RELEASE_NOTES.md` entry was added.
+- [ ] A `RELEASE_NOTES.md` entry was added (only needed if fixing an issue in a release). Do not reference GitHub issues.
 
 ## Test instructions
 
