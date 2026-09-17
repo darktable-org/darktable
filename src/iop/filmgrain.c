@@ -1710,7 +1710,7 @@ void gui_init(dt_iop_module_t *self)
   g->scale = dt_bauhaus_slider_from_params(self, "scale");
   dt_bauhaus_slider_set_factor(g->scale, FILMGRAIN_SCALE_FACTOR);
   dt_bauhaus_slider_set_digits(g->scale, 0);
-  dt_bauhaus_slider_set_format(g->scale, " ISO");
+  dt_bauhaus_slider_set_format(g->scale, _(" ISO"));
   gtk_widget_set_tooltip_text(g->scale, _("the grain size (~ISO of the film)"));
 
   g->grain_size = dt_bauhaus_slider_from_params(self, "grain_size");
