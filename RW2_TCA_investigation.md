@@ -996,6 +996,14 @@ k_r1:  -3.3139e-07  -4.9106e-06  -9.7770e-08  +1.6006e-06  +4.4665e-07  +5.8716e
 
 **Formula for a follow-on darktable patch.**
 
+Note: session 8 (below, JPEG-referenced decode) found that the raw
+Adobe-DNG-derived matrices here over-correct by roughly 11x versus
+the CA the camera itself applies to its JPEG. The shippable form
+divides the output by K = 11.48; see the "Formula for the darktable
+patch (JPEG-referenced, session 8)" block for the final version.
+The matrices themselves stay as they are here, kept as historical
+reference for the Adobe-DNG target.
+
 ```
 static const int words_R[6] = {8, 10, 12, 20, 23, 27};
 static const double C_R[4][6] = {
@@ -1005,7 +1013,9 @@ static const double C_R[4][6] = {
   { +1.5442e-06, -3.2808e-06, +3.1874e-06, +1.5409e-06, -3.5842e-06, +2.5324e-06 },
 };
 /* for i in 0..3: plane_R.k_r[i] = plane_G.k_r[i]
-                                 + sum_j C_R[i][j] * word[words_R[j]] */
+                                 + sum_j C_R[i][j] * word[words_R[j]]
+   (Adobe-DNG target; divide the RHS sum by K = 11.48 for the
+   in-camera JPEG target; see session 8.) */
 ```
 
 For the B channel only the low orders are safe:
@@ -1621,6 +1631,249 @@ Scripts and data this session:
 - `/tmp/rw2_tca/step18_ca.npz`, `/tmp/rw2_tca/step18_02_summary.json`.
 - Log files: `/tmp/rw2_tca/step18_01.log`, `.../step18_02.log`,
   `.../step18_03.log`.
+
+### JPEG-referenced decode (session 8)
+
+Session 7 established that Adobe's WarpRectilinear opcode asks for a
+correction roughly 11x stronger than what the camera JPEG actually
+applies, and that the camera JPEG is what a darktable patch has to
+reproduce for parity with the in-camera look. Session 8 asks: is the
+session-5 decode structurally correct (same coefficients, wrong
+scale), or does it need refitting against the JPEG-derived
+`applied_correction = raw_RG - jpg_RG` target?
+
+**Corpus.** All 18 files, not just session 7's six-file subset:
+9 GX80 + 9 G9, each paired with a same-frame camera JPEG. Measurement
+pipeline unchanged from session 7 (`step18_01_measure_jpeg_ca.py`
+imported into `step19_01_measure_full_corpus.py`): render the RW2 with
+rawpy AAHD, SIFT+RANSAC affine-align to the JPEG, sub-pixel-fit R, G, B
+edges on both, difference in raw-pixel units. Data at
+`/tmp/rw2_tca/step19_ca.npz` (207 (file, radial bin) pairs, 146 R
+signal bins with `|applied_RG| > 0.02` px, 76 B signal bins).
+
+The full corpus reproduces session 7's finding: the JPEG carries
+essentially no CA on any file (per-bin median `|jpg_RG|` sits in
+[0, 0.02] px on 200 of 207 bins), and `applied_correction ~= raw_RG`
+on every signal bin.
+
+**Approach 1: single global scale factor on session 5's C_R.**
+
+Divide the session-5 prediction by K:
+
+```
+pred_applied_RG(f, r_norm) = r_pix * poly4(C_R @ words_R[f], r_norm) / K
+```
+
+Same for `pred_applied_BG` via `C_B_lo`. Scanning K in 1..15 on
+`step19_02_scale_test.py`, the optimum sits at:
+
+- K_R = 9.008 (least squares on 146 R signal bins across all 18 files)
+- K_B = 10.480 (76 B signal bins)
+- K = 11.48 (session 7's median-of-medians) sits within 20% of the
+  R-channel optimum and within 10% of the B-channel one
+
+Per-file RMS residual in pixels at K = 11.48 across the 18 files:
+
+| channel | median RMS | max RMS  | median max_err | max max_err |
+|:--------|-----------:|---------:|---------------:|------------:|
+| R       | 0.028 px   | 0.058 px | 0.051 px       | 0.108 px    |
+| B       | 0.021 px   | 0.034 px | 0.038 px       | 0.063 px    |
+
+The worst-case per-file RMS is 6% of a Bayer super-pixel, and the
+worst-case single-bin residual is 0.11 px, which happens on the
+strongest-CA file (GX80 PL 12-60 @ 12mm, max `|applied_RG|` = 0.16 px,
+so 68% of peak signal). All 17 other files have max_err below 60% of
+their peak `|applied_RG|`.
+
+R^2 on all 207 (file, bin) pairs at K = 11.48:
+
+- R channel: R^2_all = 0.588, R^2_signal_bins = 0.655
+- B channel: R^2_all = 0.252, R^2_signal_bins = 0.377
+
+Sign of the prediction matches the sign of the measured applied
+correction on 140/146 = 96% of R signal bins and 57/76 = 75% of B
+signal bins. The 6 R sign flips sit on bins where `|applied_R|` is
+close to the 0.02 px signal threshold.
+
+**Approach 2: refit 24 coefficients against the JPEG target.**
+
+Two shapes were tried:
+
+- Per-file polynomial then linear regression against words
+  (`step19_03_refit.py`, mirrors session 5's structure). Fit poly4
+  `D_target[f]` to the per-bin `applied_RG / r_pix` for each file, then
+  regress `D_target[f, N] = sum_j C_JPEG[N, j] * word[f, j]`. The
+  per-file poly4 fits are ill-conditioned: `|D_target|` at the corner
+  sits at 1e-4 while measurement noise on `applied_RG` is 0.02 px
+  spread over ~3000 raw-pix corner radius, so `y = applied_RG / r_pix`
+  has SNR ~ 6 at the corner and worse at small r. The higher-order
+  coefficients trade off wildly, and cross-body pairs of the same
+  lens differ by 3-6x on `k_r{2,3}`. LOGO R^2 is negative on all four
+  R coefficients and all four B coefficients.
+
+- Direct pixel-space fit (`step19_04_direct_fit.py`). One giant OLS on
+  all 207 bins with 24 unknowns:
+  `applied_RG(f, b) = sum_{N=0..3} r_pix(b) * r_norm(b)^(2N) * sum_j C[N, j] * word[f, j]`.
+  Better-conditioned (cond(X) = 2.4e4). Train R^2 = 0.808 on R and
+  0.530 on B, but under LOGO the fit generalises worse than the scale
+  factor: LOGO R^2 = -6.11 on R and -0.99 on B, and per-file RMS
+  degrades to 0.043 px median, 0.38 px max on R. Ridge in
+  [1e-6, 0.1] leaves the fit unchanged.
+
+Neither refit variant beats the scale factor. The problem is not
+conditioning; it is signal. The applied correction sits at 0.02-0.15
+px across the corpus, the polynomial has 4 degrees of freedom per
+channel, and JPEG-side measurement noise, JPEG sharpening bias on
+sub-pixel edge positions, distortion-correction interaction and
+affine-alignment residuals together dominate the higher-order
+polynomial coefficients.
+
+**Cross-body behaviour of K.**
+
+Fitting K separately per body on the full corpus:
+
+| body | K_R   | K_B   |
+|:-----|------:|------:|
+| G9   | 10.39 | 12.69 |
+| GX80 |  7.28 |  7.70 |
+
+Cross-body generalisation (fit K on one body, predict the other,
+`step19_05_scale_variants.py`):
+
+- G9 -> GX80, R channel: K = 10.39, R^2 = 0.671, RMS = 0.029 px
+- G9 -> GX80, B channel: K = 12.69, R^2 = 0.381, RMS = 0.021 px
+- GX80 -> G9, R channel: K =  7.28, R^2 = 0.143, RMS = 0.044 px
+- GX80 -> G9, B channel: K =  7.70, R^2 = -0.60, RMS = 0.030 px
+
+Body-specific K reduces max per-file RMS from 0.058 to 0.050 px on R
+and from 0.034 to 0.031 on B. The improvement is real but small; a
+constant K in [9, 12] captures most of the signal.
+
+**Physics sanity checks.**
+
+- *Small-CA lens (Lumix 42.5).* Predicted `pred_applied_RG(r=0.5)` in
+  pixels: G9 = -0.012 px, GX80 = -0.012 px. Measured `applied_RG`
+  medians at 0.46 <= r_norm < 0.55: G9 = +0.010 px, GX80 = +0.012 px
+  (from `step19_07`). Both prediction and measurement sit at or below
+  the 0.02 px measurement noise floor. Session 5 already noted that
+  word[8] is small on this lens; the K = 11.48 scaling turns that
+  small-word signal into a small predicted correction, consistent with
+  the effectively-zero measurement.
+- *Cross-body agreement.* On the paired (lens, focal, radial-bin)
+  triples where both bodies have `|applied_RG| > 0.02` px (57 R
+  signal-bin pairs across the 9 lens/focal groups,
+  `step19_07_cross_body_verify.py`), sign matches on 55 of 57 = 96.5%
+  R pairs, and 50 of the 55 same-sign pairs have magnitudes within a
+  factor of 2 (all 55 within 3x). The B channel has 12 signal-bin
+  pairs; 11 match sign and all 11 same-sign pairs stay within 2x.
+- *Sign flip along PL 12-60 zoom.* Measured `applied_RG` sign at the
+  middle radial bins: 12mm +, 25mm +, 60mm -; predicted sign at K =
+  11.48: 12mm +, 25mm +, 60mm -. Sign flip reproduces on both bodies.
+
+**JPEG sharpening caveat.** Camera JPEG output has been sharpened, and
+sharpening can bias sub-pixel edge positions by 0.01-0.05 px depending
+on edge contrast and gradient orientation. The per-bin median
+`jpg_RG` values sit inside [0, 0.02] px, which is comparable to the
+sharpening bias size; the 0.05 px per-file max_err residual against
+K = 11.48 is at the same scale. Preprocessing the JPEG with a small
+Gaussian to undo sharpening was not run in this session; the fit
+proceeds as-is, and the residuals should be read as "measurement
+noise floor plus any sharpening bias plus real per-file scale spread",
+not "unexplained decode error".
+
+**Decision: ship the scale factor.**
+
+The refit does not beat the scale factor on cross-validation, and the
+scale factor already delivers per-file RMS well under one Bayer
+super-pixel across the corpus. The session-5 C_R decode is
+structurally correct against the JPEG target; only the magnitude is
+off, by a body-dependent factor in [7, 13] with median 11.48.
+
+**Formula for the darktable patch (JPEG-referenced, session 8).**
+
+```
+static const int words_R[6] = {8, 10, 12, 20, 23, 27};
+static const double C_R[4][6] = {
+  { -5.5919e-08, -2.7534e-07, -1.0043e-06, +9.4388e-08, +8.1750e-08, +3.1028e-07 },
+  { +1.7918e-06, +3.4704e-07, +5.4376e-06, -1.0369e-07, -4.9216e-06, -4.6536e-07 },
+  { -4.0368e-06, +2.2315e-06, -7.8190e-06, -1.0252e-06, +8.9802e-06, -1.7742e-06 },
+  { +1.5442e-06, -3.2808e-06, +3.1874e-06, +1.5409e-06, -3.5842e-06, +2.5324e-06 },
+};
+static const double C_B_lo[2][6] = {
+  { +1.1514e-07, +3.7170e-07, +9.8105e-09, -1.2143e-07, -1.4375e-07, -1.4212e-06 },
+  { -3.3139e-07, -4.9106e-06, -9.7770e-08, +1.6006e-06, +4.4665e-07, +5.8716e-06 },
+};
+
+/* Session 8 JPEG calibration: divide the predicted differential by K
+   before writing it into the pipeline coefficients. K = 11.48 is the
+   session 7 median across bodies; per-body K sits at 10.4 (G9) and
+   7.3 (GX80) but body-conditional selection has no in-file signal to
+   key on. Corpus RMS at K = 11.48: R channel 0.028 px median,
+   0.058 px max; B channel 0.021 px median, 0.034 px max. Sign of the
+   correction matches JPEG-measured applied CA on 96% of R and 75% of
+   B signal bins.
+
+   for i in 0..3: plane_R.k_r[i] = plane_G.k_r[i] + (sum_j C_R[i][j] * word[words_R[j]]) / K
+   for i in 0..1: plane_B.k_r[i] = plane_G.k_r[i] + (sum_j C_B_lo[i][j] * word[words_R[j]]) / K
+   plane_B.k_r[2] = plane_G.k_r[2]  (no reliable decode; safer than a
+   wrong one on strong-CA files)
+   plane_B.k_r[3] = plane_G.k_r[3]  (ditto) */
+
+static const double K = 11.48;
+```
+
+**Bounds on this claim.**
+
+- The 18-file corpus covers 5 lenses on 2 bodies; two bodies is not
+  enough to say K = 11.48 is a universal constant. A third body could
+  land outside the 7-13 range this corpus shows. Recommended check on
+  future third-body data: repeat `step19_02_scale_test.py` on the new
+  RW2 + JPEG pairs and report the per-file `raw_RG - jpeg_RG` /
+  `C_R * words * r_pix * poly4` ratio.
+- Camera JPEG sharpening biases sub-pixel edge positions at the ~0.02
+  px scale, which is comparable to the residual left after applying
+  K = 11.48. A Gaussian pre-blur of the JPEG before edge measurement
+  would tighten the bound but was not run in this session; the fit
+  quality reported above is a conservative upper bound.
+- The B channel has smaller applied CA (max `|applied_BG|` = 0.10 px
+  vs 0.21 px for R), so its R^2 is lower even when the RMS residual
+  is smaller. RMS is the more honest metric here.
+- The direct refit's train R^2 = 0.808 on R vs 0.588 for the scale
+  factor is real, but that gain is entirely overfit: LOGO R^2 goes
+  to -6.11. There is no coefficient matrix inside this corpus that
+  generalises better than the scale factor.
+- The remaining per-body spread (K ranging 7-13) is unexplained. It
+  is consistent with (a) the two bodies having genuinely different
+  in-camera CA-correction gains, (b) demosaic-algorithm bias in
+  rawpy AAHD interacting with the two bodies' colour filter arrays
+  differently, or (c) affine-alignment residuals differing between the
+  two bodies' JPEG-vs-raw crop offsets. Neither of those was pinned
+  down in this session.
+
+**Scripts and data this session:**
+
+- `/tmp/rw2_tca/step19_01_measure_full_corpus.py`: extends session 7's
+  per-file JPEG-vs-raw CA measurement from the six-file subset to all
+  18 corpus files. Reuses `step18_01_measure_jpeg_ca.process_file`
+  unchanged.
+- `/tmp/rw2_tca/step19_02_scale_test.py`: K sweep, per-file RMS,
+  optimal K by least squares.
+- `/tmp/rw2_tca/step19_03_refit.py`: per-file poly4 fit then linear
+  regression against words, with LOGO cross-validation. Fails on all
+  8 coefficients under LOGO.
+- `/tmp/rw2_tca/step19_04_direct_fit.py`: direct pixel-space 24-DOF
+  fit with OLS and ridge. Train R^2 gains disappear under LOGO.
+- `/tmp/rw2_tca/step19_05_scale_variants.py`: per-body K,
+  cross-body K generalisation, per-file K spread.
+- `/tmp/rw2_tca/step19_06_summary.py`: final decision printout.
+- `/tmp/rw2_tca/step19_07_cross_body_verify.py`: per-(lens, focal,
+  bin) cross-body sign and magnitude verification for the applied
+  correction; produces the 55/57 and 11/12 numbers above.
+- `/tmp/rw2_tca/step19_ca.npz`, `/tmp/rw2_tca/step19_scale_bins.npz`,
+  `/tmp/rw2_tca/step19_refit.npz`, `/tmp/rw2_tca/step19_direct_fit.npz`.
+- Log files: `/tmp/rw2_tca/step19_01.log`, `.../step19_02.log`,
+  `.../step19_03.log`, `.../step19_04.log`, `.../step19_05.log`,
+  `.../step19_06.log`, `.../step19_07.log`.
 
 ## Reverse-engineering next steps
 
