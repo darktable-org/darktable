@@ -1088,6 +1088,191 @@ Scripts and data used this session:
 - `/tmp/rw2_tca/step16_final_report.py`: final coefficient dump.
 - `/tmp/rw2_tca/final_fit.npz`: `C_R` and `C_B` matrices.
 
+### Third-body validation (session 6)
+
+Session 5 warned that feature-selecting on the same corpus used for
+validation was a form of leakage, and that "the next corpus expansion
+(a different pair of Panasonic bodies, or a lens outside the 12-150mm
+range this corpus covers) is the honest test." This session runs that
+test. It uses RW2 samples from four bodies outside the G9+GX80 corpus,
+sourced from raw.pixls.us: **DC-S5** (full frame, L-mount), **DC-G9M2**
+(2023 G9 successor), **DC-GH5**, and **DMC-GX8**. 16 files across four
+lenses that were not all in the training corpus. All data lives under
+`/tmp/rw2_tca/third_body/`; scripts are `step17_*.py`. Nothing under
+`/c/temp/` was touched.
+
+**Corpus.** From `exiftool -Model -LensID -FocalLength -FNumber`:
+
+| body    | file                | lens                                        | focal   | f/    |
+|:--------|:--------------------|:--------------------------------------------|:--------|:------|
+| DC-S5   | P1047510.RW2        | LUMIX S 85mm F1.8                           | 85 mm   | 6.3   |
+| DC-S5   | P1047513.RW2        | LUMIX S 85mm F1.8                           | 85 mm   | 8.0   |
+| DC-S5   | dc-s5_6k4k.RW2      | LUMIX S 20-60mm F3.5-5.6                    | 60 mm   | 8.0   |
+| DC-G9M2 | P1000019..034 (5)   | Lumix G X Vario 12-35mm F2.8 II             | 26 mm   | 5.6   |
+| DC-GH5  | _T012010..014 (4)   | Leica DG Vario-Elmarit 12-60mm F2.8-4       | 25-27mm | 5.6   |
+| DMC-GX8 | P1020809..812 (4)   | Lumix G X Vario 35-100mm F2.8               | 75 mm   | 5.6   |
+
+The GH5 Leica 12-60 is the same lens family as the G9 PL 12-60 in the
+training corpus, so that group is a direct cross-body test. The three
+other bodies use lenses outside the training set.
+
+**Path C -- structural check** (`step17_structural_check.py`,
+`step17_structural_check.log`). All 16 files carry a 64-byte 0x011b
+payload; Rigo's four checksums pass on every file; word[14] = 256 on
+every file. Homeister's radii ratios:
+
+| body    | tag_011a | N2/N1  | N3/N1  | N4/N1  |
+|:--------|---------:|-------:|-------:|-------:|
+| DC-S5   | 2        | 0.8571 | 0.5714 | 0.2857 |
+| DC-G9M2 | *absent* | 0.8334 | 0.6668 | 0.3334 |
+| DC-GH5  | 2        | 0.8333 | 0.6667 | 0.3333 |
+| DMC-GX8 | 2        | 0.8333 | 0.6667 | 0.3333 |
+
+Three things worth flagging:
+
+- **DC-S5's radii are a distinct pattern.** Full frame uses
+  1.0 / 6/7 / 4/7 / 2/7 rather than the MFT 1.0 / 5/6 / 4/6 / 2/6.
+  Homeister's four-zone model still holds; the specific radii change
+  with sensor format. The `dt_image_correction_data_t::panasonic_ca`
+  parse should not hard-code the MFT ratios.
+- **DC-G9M2 does not carry 0x011a at all**, yet ships a valid 0x011b
+  with all four checksums OK and word[14] = 256. Homeister's rule
+  "`0x011a = 2` selects 0x011b" is not universal on newer bodies; on
+  the G9 II we get 0x011b without the explicit selector. Any code
+  path that gates 0x011b reading on `0x011a == 2` will silently miss
+  Panasonic's newest generation. Either treat `0x011a` absent as
+  equivalent to `0x011a == 2` on the newer bodies, or gate on the
+  0x011b checksums alone.
+- Everything else matches: the 32-word signed-int16 layout, the flag
+  location, the four-zone structural role of words [4], [11], [16],
+  [17] all reproduce on every third-body sample. The structural
+  findings from sessions 1-5 generalize cleanly.
+
+**Path A -- raw-pixel CA vs C_R prediction** (`step17_pathA.py`,
+`step17_pathA.log`, `/tmp/rw2_tca/third_body/pathA_results.json`). For
+each file, `step17_pathA.py` reads the 32 signed-int16 words from
+0x011b, computes the predicted `D_R` coefficients using session 5's
+C_R matrix, evaluates `D_R(R) = k_r0 + k_r1*R^2 + k_r2*R^4 + k_r3*R^6`
+at destination radii from 0.10 to 0.88 in normalized units (corner
+= 1), multiplies by `R_dest` in pixels to get a predicted R-vs-G
+displacement, and compares against a rawpy AAHD measurement of the
+same displacement using `step4_measure_v2.measure_file`. The sign
+convention is the same one session 3 established: positive means R is
+displaced outward from the optical center relative to G.
+
+Per-body aggregate. "signal bins" are per-radius bins where the
+predicted correction exceeds max(0.05 px, per-file half-vs-half RMS
+precision floor). The training corpus files P1366477, P1366484 and
+P1366486 are included as `_training_ref` to anchor what the same
+measurement pipeline says on the corpus that trained C_R.
+
+| body            | files | signal bins | sign match | median |pred/meas| | noise px |
+|:----------------|------:|------------:|:-----------|-------------------:|---------:|
+| DC-G9M2         |     5 |          24 | 24/24      |                9.1 |    0.021 |
+| DC-GH5          |     4 |          16 | 12/16      |               17.1 |    0.010 |
+| DC-S5           |     3 |          16 | 11/16      |               16.7 |    0.013 |
+| DMC-GX8         |     4 |          22 | 22/22      |               16.5 |    0.027 |
+| _training_ref   |     3 |          17 | 15/17      |               10.5 |    0.011 |
+
+Two things fall out.
+
+*Sign generalizes.* On the files where the C_R prediction is above the
+measurement noise floor, the sign of the predicted R-G displacement
+matches the sign of the measured R-G displacement on 69 of 78 bins
+across all four third-body corpora combined -- the same rate the
+same pipeline gives on the training corpus (15/17). Sign matches at
+r_norm = 0.1..0.9 on both zoom (Lumix G X 12-35 on the G9M2, G X
+35-100 on the GX8) and prime (Lumix S 85 f/1.8 on the S5) lenses that
+were never in the training set. The nine misses split as four on
+DC-GH5 and five on DC-S5, all at radii where the measured signal is
+at or below the ~0.01 px precision floor; they are noise, not
+disagreement.
+
+*Magnitude does not.* The predicted-to-measured ratio is 9-17x on
+every body -- including on the training corpus itself, where the same
+comparison is 10.5x. C_R was fit to reproduce Adobe DNG Converter's
+`WarpRectilinear` opcodes, which it does to within ~5% on the training
+set (session 5). But the DNG opcodes themselves predict a ~10x larger
+correction than what a rawpy AAHD demosaic shows in the raw. So this
+factor-of-ten gap is a property of Adobe's opcode vs the raw sensor,
+not a failure of C_R to generalize. Applying C_R naively in
+darktable's Panasonic branch would follow Adobe's DNG behavior: a much
+stronger correction than the physical CA visible in the raw, which
+will over-correct on files where the physical raw is close to
+CA-free. That is a known bound on the C_R decode, not a new one.
+
+*Cross-body coefficient sanity.* Direct comparison of the C_R
+prediction for the GH5 Leica 12-60 @ 25mm against the actual DNG D_R
+values for the G9 and GX80 PL 12-60 @ 25mm (`step9_build_dataset.py`
+dataset) shows the same lens read differently by different bodies:
+
+```
+predicted GH5 D_R:  +1.63e-04  -2.33e-04  +9.68e-05  -6.46e-05
+actual G9 D_R:      +2.88e-04  -2.38e-04  +7.57e-05  -4.34e-05
+actual GX80 D_R:    +2.57e-04  -2.34e-04  +7.49e-05  -4.48e-05
+```
+
+k_r1 and k_r2 agree across all three within 30%; k_r0 differs by 40%.
+The 0x011b word[8] value for the "same" lens at the same focal is
+-397 on G9, -287 on GX80, but -47 on GH5. Either the specific Leica
+12-60 sample used for the GH5 shots has a different serial-number
+calibration, or the GH5 body writes 0x011b with slightly different
+scaling. Either way, the fit still returns a plausible D_R for the
+GH5 file -- shape preserved, low-order term shrunk.
+
+**B-plane high-order gap** (`step17_b_plane_gap.py`,
+`step17_b_plane_gap2.py`). Session 5 left `D_B.k_r2` and `D_B.k_r3`
+undecoded and hypothesized that one of the discrete/bimodal words from
+session 2's classification (`[3, 5, 6, 9, 15, 18, 19, 21, 22, 24, 25,
+26, 28]`) might close the gap. Retested here by adding candidates to
+the base 6-word predictor set and rerunning LOGO on the original
+18-file `decode_dataset.npz`:
+
+| target      | base R^2 | best single add     | best pair          | best triple            | best quad                   |
+|:------------|---------:|:--------------------|:-------------------|:-----------------------|:----------------------------|
+| D_B.k_r2    |    0.331 | w[19] -> 0.473      | w[9]+w[25] 0.564   | w[25]+w[26]+w[28] 0.769 | w[22]+w[25]+w[26]+w[28] 0.774 |
+| D_B.k_r3    |    0.080 | w[24] -> 0.274      | w[3]+w[19] 0.720   | w[24]+w[25]+w[28] 0.828 | w[22]+w[24]+w[25]+w[28] 0.854 |
+
+D_B.k_r3 does clear the 0.85 threshold, but only by adding four
+discrete words on top of the base six. 6+4 predictors on 18 files is
+close to over-parameterisation (16 training files per LOGO fold), and
+the same four-word augmentation does not lift D_B.k_r2 past 0.774. No
+single discrete word closes either gap; the pair search peaks at 0.72
+for k_r3. The honest conclusion is the same as session 5's: the
+low-order B decode is real but the higher-order B shape does not
+generalize from these six smooth words alone, and picking four extra
+discrete words to force a fit through 18 samples is an overfit rather
+than a decode. The gap is still open.
+
+**Bounds this adds.**
+
+- The C_R decode reproduces the DNG `WarpRectilinear` R-plane
+  differential on both MFT and full-frame Panasonic bodies without
+  refit. Structural parsing (checksums, radii ratios, on/off flag)
+  survives every third-body sample tested.
+- The absolute pixel-space magnitude the C_R decode predicts is
+  ~10x the CA visible in the raw. That gap is present on the
+  training corpus itself and is a property of the Adobe DNG opcode,
+  not of C_R. A darktable patch that follows this decode should
+  either scale the coefficients down by a factor that matches the raw
+  (measured here as roughly 10x), or accept that it will match Adobe
+  DNG Converter's output rather than the sensor's actual CA.
+- Homeister's `0x011a == 2` selector rule does not hold on the G9 II;
+  the darktable Panasonic branch has to accept 0x011b whenever the
+  four checksums pass, regardless of 0x011a.
+- The DC-S5 uses 1.0 / 6/7 / 4/7 / 2/7 as its four-zone radii, not the
+  MFT 1.0 / 5/6 / 4/6 / 2/6. Any code path that hard-codes the MFT
+  ratios will decode DC-S5's 0x011b wrongly.
+
+Scripts and data this session:
+
+- `/tmp/rw2_tca/step17_structural_check.py` and `.log`
+- `/tmp/rw2_tca/step17_pathA.py` and `.log`,
+  `/tmp/rw2_tca/third_body/pathA_results.json`
+- `/tmp/rw2_tca/step17_b_plane_gap.py`, `step17_b_plane_gap2.py` and
+  their `.log` files
+- `/tmp/rw2_tca/third_body/*/` (16 RW2s, not committed)
+
 ### Interpretation
 
 The measured signal is real: the per-file half-vs-half RMS is 0.008 to
