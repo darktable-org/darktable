@@ -26,9 +26,15 @@
    those two are only ever touched through read_imagef / write_imagef.
    Everything in between lives in plain buffers the module allocates. */
 
-#pragma OPENCL FP_CONTRACT OFF
 
 #include "common.h"
+
+/* After common.h, not before: under -cl-fast-relaxed-math (what the "fast"
+   OpenCL preference compiles with) common.h issues "#pragma OPENCL
+   FP_CONTRACT ON", and the last pragma at file scope is the one that counts.
+   Ahead of the include this setting is silently undone and every a*b+c below
+   fuses into a single rounding the host does not perform. */
+#pragma OPENCL FP_CONTRACT OFF
 #define GRAIN_CL 1
 #include "grain.h"
 #include "filmgrain.h"
