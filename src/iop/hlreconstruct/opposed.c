@@ -197,6 +197,10 @@ static void _process_linear_opposed(dt_iop_module_t *self,
       }
       dt_free_align(mask);
     }
+    else if(quality)
+      dt_print_pipe(DT_DEBUG_ALWAYS,
+          "invalid opposed chroma", piece->pipe, self, DT_DEVICE_CPU, NULL, NULL,
+          "allocation for mask generation failed");
   }
 
   DT_OMP_FOR(collapse(2))
@@ -361,8 +365,12 @@ static float *_process_opposed(dt_iop_module_t *self,
           chrominance[2], (int)cnts[2],
           fullpipe ? " saved" : "",
           img_oppclipped ? "" : " unclipped");
+      dt_free_align(mask);
     }
-    dt_free_align(mask);
+    else if(quality)
+      dt_print_pipe(DT_DEBUG_ALWAYS,
+          "invalid opposed chroma", piece->pipe, self, DT_DEVICE_CPU, NULL, NULL,
+          "allocation for mask generation failed");
   }
 
   float *tmpout = keep ? dt_alloc_align_float(iwidth * iheight) : NULL;
@@ -582,6 +590,11 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
           CLARG(fastcopymode));
 
   error:
+  if(err != CL_SUCCESS)
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
+          "opposed processing failed", piece->pipe, self, devid, NULL, NULL,
+          "error=%s", cl_errstr(err));
+
   dt_opencl_release_mem_object(dev_clips);
   dt_opencl_release_mem_object(dev_xtrans);
   dt_opencl_release_mem_object(dev_chrominance);

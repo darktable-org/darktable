@@ -614,9 +614,14 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_rasterfile_data_t *d = piece->data;
 
   d->mode = p->mode;
-  gchar *fullpath = g_build_filename(p->path, p->file, NULL);
+  // stored params need not terminate the path or file name
+  gchar *path = g_strndup(p->path, sizeof(p->path));
+  gchar *file = g_strndup(p->file, sizeof(p->file));
+  gchar *fullpath = g_build_filename(path, file, NULL);
   dt_strlcpy_to_fixed(d->filepath, fullpath, sizeof(d->filepath));
   g_free(fullpath);
+  g_free(file);
+  g_free(path);
 }
 
 void tiling_callback(dt_iop_module_t *self,
@@ -688,6 +693,10 @@ void gui_changed(dt_iop_module_t *self,
 
 void gui_update(dt_iop_module_t *self)
 {
+  dt_iop_rasterfile_params_t *p = self->params;
+  // the GUI handlers read the stored path and file name as C strings
+  p->path[sizeof(p->path) - 1] = '\0';
+  p->file[sizeof(p->file) - 1] = '\0';
   gui_changed(self, NULL, NULL);
 }
 

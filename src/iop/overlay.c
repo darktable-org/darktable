@@ -325,7 +325,7 @@ static void _setup_overlay(dt_iop_module_t *self,
     {
       const gchar *tooltip = g_strdup_printf
         (_("overlay image missing from database\n\n"
-           "'%s'" ), p->filename);
+           "'%s'" ), data->filename);
       gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), tooltip);
     }
   }
@@ -1192,7 +1192,8 @@ int legacy_params(dt_iop_module_t *self,
     n->scale_img = o->scale_img;
     n->scale_svg = o->scale_svg;
     n->imgid = o->imgid;
-    dt_strlcpy_to_fixed(n->filename, o->filename, sizeof(n->filename));
+    dt_strlcpy_fixed_to_fixed(n->filename, sizeof(n->filename),
+                              o->filename, sizeof(o->filename));
     n->compositing = DT_OVERLAY_COMPOSITE_LEGACY;
     n->dummy1 = 0;
     n->dummy2 = 0;
@@ -1224,7 +1225,9 @@ void commit_params(dt_iop_module_t *self,
   d->scale_svg  = p->scale_svg;
   d->imgid      = p->imgid;
   d->compositing = p->compositing;
-  g_strlcpy(d->filename, p->filename, sizeof(p->filename));
+  // stored params need not terminate the file name
+  dt_strlcpy_fixed_to_fixed(d->filename, sizeof(d->filename),
+                            p->filename, sizeof(p->filename));
 }
 
 void init_pipe(dt_iop_module_t *self,
@@ -1245,13 +1248,17 @@ void cleanup_pipe(dt_iop_module_t *self,
 void gui_update(dt_iop_module_t *self)
 {
   const dt_iop_overlay_gui_data_t *g = self->gui_data;
-  const dt_iop_overlay_params_t *p = self->params;
+  dt_iop_overlay_params_t *p = self->params;
+
+  // the GUI handlers read the stored file name as a C string
+  p->filename[sizeof(p->filename) - 1] = '\0';
 
   for(int i = 0; i < 9; i++)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), FALSE);
   }
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[p->alignment]), TRUE);
+  if(p->alignment >= 0 && p->alignment < 9)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[p->alignment]), TRUE);
 
   if(p->scale_base == DT_SCALE_MAINMENU_ADVANCED)
   {

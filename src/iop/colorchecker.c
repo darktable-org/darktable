@@ -732,7 +732,8 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)p1;
   dt_iop_colorchecker_data_t *d = piece->data;
 
-  d->num_patches = MIN(MAX_PATCHES, p->num_patches);
+  // the stored count indexes the fixed patch arrays and sizes the processing buffers
+  d->num_patches = CLAMP(p->num_patches, 0, MAX_PATCHES);
   const unsigned N = MAX(0, d->num_patches);
   const unsigned N4 = N + 4;
 
@@ -1047,6 +1048,10 @@ void _colorchecker_update_sliders(dt_iop_module_t *self)
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_colorchecker_gui_data_t *g = self->gui_data;
+  dt_iop_colorchecker_params_t *p = self->params;
+
+  // the GUI handlers use the stored count directly
+  p->num_patches = CLAMP(p->num_patches, 0, MAX_PATCHES);
 
   _colorchecker_rebuild_patch_list(self);
   _colorchecker_update_sliders(self);

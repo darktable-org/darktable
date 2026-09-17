@@ -748,6 +748,8 @@ float interpolate_val_V2_periodic(int n, CurveAnchorPoint Points[], float x, uns
 
 int CurveDataSampleV2(CurveData *curve, CurveSample *sample)
 {
+  // callers may set m_numAnchors directly from stored params
+  if(curve->m_numAnchors > MAX_ANCHORS) return CT_ERROR;
   try
   {
     const float box_width = curve->m_max_x - curve->m_min_x;
@@ -844,6 +846,8 @@ int CurveDataSampleV2(CurveData *curve, CurveSample *sample)
 
 int CurveDataSampleV2Periodic(CurveData *curve, CurveSample *sample)
 {
+  // callers may set m_numAnchors directly from stored params
+  if(curve->m_numAnchors > MAX_ANCHORS) return CT_ERROR;
   try
   {
     const float box_width = curve->m_max_x - curve->m_min_x;

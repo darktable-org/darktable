@@ -232,7 +232,7 @@ int legacy_params(dt_iop_module_t *self,
     n->scale_base = DT_SCALE_MAINMENU_IMAGE;
     n->scale_img = DT_SCALE_IMG_LARGER;
     n->scale_svg = DT_SCALE_SVG_WIDTH;
-    dt_strlcpy_to_fixed(n->filename, o->filename, sizeof(n->filename));
+    dt_strlcpy_fixed_to_fixed(n->filename, sizeof(n->filename), o->filename, sizeof(o->filename));
     dt_strlcpy_to_fixed(n->text, "", sizeof(n->text));
     dt_strlcpy_to_fixed(n->font, "DejaVu Sans 10", sizeof(n->font));
     n->color[0] = n->color[1] = n->color[2] = 0;
@@ -272,7 +272,7 @@ int legacy_params(dt_iop_module_t *self,
     n->scale_base = (dt_iop_watermark_base_scale_t)o->sizeto;
     n->scale_img = DT_SCALE_IMG_LARGER;
     n->scale_svg = DT_SCALE_SVG_WIDTH;
-    dt_strlcpy_to_fixed(n->filename, o->filename, sizeof(n->filename));
+    dt_strlcpy_fixed_to_fixed(n->filename, sizeof(n->filename), o->filename, sizeof(o->filename));
     dt_strlcpy_to_fixed(n->text, "", sizeof(n->text));
     dt_strlcpy_to_fixed(n->font, "DejaVu Sans 10", sizeof(n->font));
     n->color[0] = n->color[1] = n->color[2] = 0;
@@ -314,7 +314,7 @@ int legacy_params(dt_iop_module_t *self,
     n->scale_base = (dt_iop_watermark_base_scale_t)o->sizeto;
     n->scale_img = DT_SCALE_IMG_LARGER;
     n->scale_svg = DT_SCALE_SVG_WIDTH;
-    dt_strlcpy_to_fixed(n->filename, o->filename, sizeof(n->filename));
+    dt_strlcpy_fixed_to_fixed(n->filename, sizeof(n->filename), o->filename, sizeof(o->filename));
     dt_strlcpy_to_fixed(n->text, "", sizeof(n->text));
     dt_strlcpy_to_fixed(n->font, "DejaVu Sans 10", sizeof(n->font));
     n->color[0] = n->color[1] = n->color[2] = 0;
@@ -362,9 +362,9 @@ int legacy_params(dt_iop_module_t *self,
     n->scale_base = (dt_iop_watermark_base_scale_t)o->sizeto;
     n->scale_img = DT_SCALE_IMG_LARGER;
     n->scale_svg = DT_SCALE_SVG_WIDTH;
-    dt_strlcpy_to_fixed(n->filename, o->filename, sizeof(n->filename));
-    dt_strlcpy_to_fixed(n->text, o->text, sizeof(n->text));
-    dt_strlcpy_to_fixed(n->font, o->font, sizeof(n->font));
+    dt_strlcpy_fixed_to_fixed(n->filename, sizeof(n->filename), o->filename, sizeof(o->filename));
+    dt_strlcpy_fixed_to_fixed(n->text, sizeof(n->text), o->text, sizeof(o->text));
+    dt_strlcpy_fixed_to_fixed(n->font, sizeof(n->font), o->font, sizeof(o->font));
     n->color[0] = o->color[0];
     n->color[1] = o->color[1];
     n->color[2] = o->color[2];
@@ -412,9 +412,9 @@ int legacy_params(dt_iop_module_t *self,
     n->scale_base = (dt_iop_watermark_base_scale_t)o->sizeto;
     n->scale_img = DT_SCALE_IMG_LARGER;
     n->scale_svg = DT_SCALE_SVG_WIDTH;
-    dt_strlcpy_to_fixed(n->filename, o->filename, sizeof(n->filename));
-    dt_strlcpy_to_fixed(n->text, o->text, sizeof(n->text));
-    dt_strlcpy_to_fixed(n->font, o->font, sizeof(n->font));
+    dt_strlcpy_fixed_to_fixed(n->filename, sizeof(n->filename), o->filename, sizeof(o->filename));
+    dt_strlcpy_fixed_to_fixed(n->text, sizeof(n->text), o->text, sizeof(o->text));
+    dt_strlcpy_fixed_to_fixed(n->font, sizeof(n->font), o->font, sizeof(o->font));
     n->color[0] = o->color[0];
     n->color[1] = o->color[1];
     n->color[2] = o->color[2];
@@ -438,9 +438,9 @@ int legacy_params(dt_iop_module_t *self,
     n->scale_base = o->scale_base;
     n->scale_img = o->scale_img;
     n->scale_svg = o->scale_svg;
-    dt_strlcpy_to_fixed(n->filename, o->filename, sizeof(n->filename));
-    dt_strlcpy_to_fixed(n->text, o->text, sizeof(n->text));
-    dt_strlcpy_to_fixed(n->font, o->font, sizeof(n->font));
+    dt_strlcpy_fixed_to_fixed(n->filename, sizeof(n->filename), o->filename, sizeof(o->filename));
+    dt_strlcpy_fixed_to_fixed(n->text, sizeof(n->text), o->text, sizeof(o->text));
+    dt_strlcpy_fixed_to_fixed(n->font, sizeof(n->font), o->font, sizeof(o->font));
     n->color[0] = o->color[0];
     n->color[1] = o->color[1];
     n->color[2] = o->color[2];
@@ -1302,11 +1302,12 @@ void commit_params(dt_iop_module_t *self,
   d->scale_base = p->scale_base;
   d->scale_img = p->scale_img;
   d->scale_svg = p->scale_svg;
-  dt_strlcpy_to_fixed(d->filename, p->filename, sizeof(d->filename));
-  dt_strlcpy_to_fixed(d->text, p->text, sizeof(d->text));
+  // stored params need not terminate the strings
+  dt_strlcpy_fixed_to_fixed(d->filename, sizeof(d->filename), p->filename, sizeof(p->filename));
+  dt_strlcpy_fixed_to_fixed(d->text, sizeof(d->text), p->text, sizeof(p->text));
   for(int k=0; k<3; k++)
     d->color[k] = p->color[k];
-  dt_strlcpy_to_fixed(d->font, p->font, sizeof(d->font));
+  dt_strlcpy_fixed_to_fixed(d->font, sizeof(d->font), p->font, sizeof(p->font));
 
 // dt_print(DT_DEBUG_ALWAYS, "Commit params: %s...",d->filename);
 }
@@ -1330,12 +1331,17 @@ void cleanup_pipe(dt_iop_module_t *self,
 void gui_update(dt_iop_module_t *self)
 {
   const dt_iop_watermark_gui_data_t *g = self->gui_data;
-  const dt_iop_watermark_params_t *p = self->params;
+  dt_iop_watermark_params_t *p = self->params;
+  // the GUI handlers read the stored strings as C strings
+  p->filename[sizeof(p->filename) - 1] = '\0';
+  p->text[sizeof(p->text) - 1] = '\0';
+  p->font[sizeof(p->font) - 1] = '\0';
   for(int i = 0; i < 9; i++)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), FALSE);
   }
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[p->alignment]), TRUE);
+  if(p->alignment >= 0 && p->alignment < 9)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[p->alignment]), TRUE);
   _combo_box_set_active_text(g, p->filename);
   gtk_entry_set_text(GTK_ENTRY(g->text), p->text);
   const GdkRGBA color = (GdkRGBA){.red   = p->color[0],

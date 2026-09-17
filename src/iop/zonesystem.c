@@ -126,6 +126,12 @@ static inline int _iop_zonesystem_zone_index_from_lightness(float lightness, flo
   return size - 1;
 }
 
+static inline int _zonesystem_size(const int size)
+{
+  // the size bounds the fixed zonemap arrays, and zone indices are clamped to size - 2
+  return CLAMP(size, 2, MAX_ZONE_SYSTEM_SIZE);
+}
+
 /* calculate a zonemap with scale values for each zone based on controlpoints from param */
 static inline void _iop_zonesystem_calculate_zonemap(dt_iop_zonesystem_params_t *p, float *zonemap)
 {
@@ -350,6 +356,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_zonesystem_data_t *d = piece->data;
 
   d->params = *p;
+  d->params.size = _zonesystem_size(p->size);
   d->rzscale = (d->params.size - 1) / 100.0f;
 
   /* calculate zonemap */
@@ -378,6 +385,9 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_zonesystem_gui_data_t *g = self->gui_data;
+  dt_iop_zonesystem_params_t *p = self->params;
+  // the GUI handlers use the stored size directly
+  p->size = _zonesystem_size(p->size);
   gtk_widget_queue_draw(GTK_WIDGET(g->zones));
 }
 

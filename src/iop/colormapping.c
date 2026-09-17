@@ -733,6 +733,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_colormapping_data_t *d = piece->data;
 
   memcpy(d, p, sizeof(dt_iop_colormapping_params_t));
+  // the stored cluster count indexes the fixed MAXN arrays and sizes stack arrays
+  d->n = CLAMP(d->n, 0, MAXN);
+  // the stored histogram values index source_ihist in process() and the kernel
+  for(int k = 0; k < HISTN; k++)
+    d->target_hist[k] = CLAMP(d->target_hist[k], 0, HISTN - 1);
 #ifdef HAVE_OPENCL
   if(d->equalization > 0.1f)
     piece->process_cl_ready = (piece->process_cl_ready && !dt_opencl_avoid_atomics(pipe->devid));
@@ -863,8 +868,9 @@ static gboolean cluster_preview_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mod
 
 
   const float sep = DT_PIXEL_APPLY_DPI(2.0);
-  const float qwd = (width - (p->n - 1) * sep) / (float)p->n;
-  for(int cl = 0; cl < p->n; cl++)
+  const int n = CLAMP(p->n, 0, MAXN);
+  const float qwd = (width - (n - 1) * sep) / (float)n;
+  for(int cl = 0; cl < n; cl++)
   {
     // draw cluster
     for(int j = -1; j <= 1; j++)
@@ -901,6 +907,8 @@ static void process_clusters(gpointer instance, dt_iop_module_t *self)
 
   if(!g || !g->buffer) return;
   if(!(p->flag & ACQUIRE)) return;
+  // kmeans() writes n clusters into the fixed MAXN arrays
+  if(p->n < 1 || p->n > MAXN) return;
 
   DT_ENTER_GUI_UPDATE();
 

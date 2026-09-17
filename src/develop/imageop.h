@@ -473,6 +473,10 @@ static inline gboolean dt_iop_module_is_finalscale(const dt_iop_module_t *module
   return dt_iop_module_is(module, "finalscale");
 }
 
+/** helpers providing info about specified module roi modify functions */
+gboolean dt_iop_module_modifies_roi_out(const dt_iop_module_t *module);
+gboolean dt_iop_module_modifies_roi_in(const dt_iop_module_t *module);
+
 /** count instances of a module **/
 int dt_iop_count_instances(dt_iop_module_so_t *module);
 /** return preferred module instance for shortcuts **/
