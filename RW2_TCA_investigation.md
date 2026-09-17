@@ -601,31 +601,193 @@ around 0.53, which is fitting noise. The top splits reproduce the
 prior finding that words 8 and 27 carry the strongest sign signal but
 do not constitute a decode.
 
-**Practical implications for the darktable regression fix.**
+**Practical implications for the darktable regression fix.** (Item
+(b) below was refuted by session 4; see "word[7] high byte decode"
+for the details. The other items still stand.)
 
 1. The regression `47c223703e` introduces two problems, not one:
    (a) auto-selecting embedded-metadata mode drops Lensfun TCA on
    Panasonic files where 0x0119 is populated (established earlier in
-   this document); (b) the distortion correction it applies to those
-   files may itself be scaled wrong on lenses that use the high-byte
-   flag encoding on 0x0119 (this session). Item (b) is severe on the
-   Leica DG 12-60 (k values of 5.24 and -0.95 imply visible
-   over/under/mis-corrected distortion). Item (a) is the
-   user-reported symptom; item (b) may still be latent because Leica
-   DG owners often do not report distortion issues, and the fact that
-   the current darktable code path only applies 0x0119 without the
-   scaler means the actual output is more likely to be under-
-   corrected rather than clearly-wrong.
-2. `dt_image_correction_data_t::panasonic` should be extended to
+   this document); (b) ~~the distortion correction it applies to
+   those files may itself be scaled wrong on lenses that use the
+   high-byte flag encoding on 0x0119 (this session). Item (b) is
+   severe on the Leica DG 12-60 (k values of 5.24 and -0.95 imply
+   visible over/under/mis-corrected distortion).~~ Item (b) was
+   session 3's reading of the wild `k` values; session 4 showed those
+   values are a measurement artifact, not a real per-file scaling
+   error in `47c223703e`. Item (a) is the user-reported symptom and
+   is unchanged. Item (b) is retracted.
+2. ~~`dt_image_correction_data_t::panasonic` should be extended to
    store the raw `word[7]` value from 0x0119 so a follow-up patch can
    apply the missing scaler once its exact functional form is nailed
-   down.
+   down.~~ No missing scaler was found; word[7]'s low nibble
+   (on/off) suffices, as `47c223703e` already implements.
 3. Reading and decoding 0x011b is on hold pending 0x0119. The tag is
    present, its structure is verified body-invariant, but no in-camera
    pipeline in our corpus applies it, so we cannot observe its
    correction output to reverse-engineer.
 
-### What would resolve 0x0119's missing scaler
+### word[7] high byte decode (session 4)
+
+The prior session identified word[7]'s high byte as a suspect
+per-focal-length scaler. On PL 12-60 the high byte progresses `0xF0`
+(12mm) -> `0xB7` (25mm) -> `0x8D` (60mm) while the primes hold
+`0x00`. The per-file best-fit scalars from `step6_06_0119_predicts.py`
+(single-parameter `k` such that `k * Rigo_poly(r) ~ measured_dr`) came
+out `+0.90 / +5.24 / -0.95` on the zoom and `+0.7-0.9` on the primes.
+The size of the swing and the sign flip made a hidden scaler
+plausible.
+
+**H1-H5 all fail.** No decoding of word[7]'s high byte, or of any
+other 0x0119 word not already used by Rigo's formula, predicts the
+observed `k` across the corpus. The wildly varying `k` at 25mm and
+60mm on the PL 12-60 is instead a measurement artifact: on those two
+files the Rigo polynomial predicts a small-amplitude nonlinear signal
+(peak 2 px and 15 px respectively) that is dominated by a small
+monotonic-in-`r` residual which the r^3/r^5/r^7 polynomial cannot
+match. The scripts and logs are under `/tmp/rw2_tca/step7_*.py` and
+`/tmp/rw2_tca/step7_*.log`.
+
+**Freshly measured `k_only` values** (rerun of `step6_06`, translation-
+only registration, bin-median least-squares):
+
+| file                     | k_only  | R^2   | word[7]     | poly peak | peak sign |
+|:-------------------------|--------:|------:|:------------|----------:|:----------|
+| G9 PL12-60 @12mm         |  +0.901 | 0.931 | 0xF001 (-4095)  |  107 px | +         |
+| G9 PL12-60 @25mm         |  +5.240 | -0.107| 0xB701 (-18687) |    2 px | +         |
+| G9 PL12-60 @60mm         |  -0.948 | 0.070 | 0x8D01 (-29439) |   15 px | -         |
+| G9 Sigma 30              |  +0.795 | 0.853 | 0x0001 (+1)     |   20 px | +         |
+| G9 Sigma 16              |  +0.733 | 0.850 | 0x0001 (+1)     |   79 px | +         |
+| G9 Lumix 42.5            |  +0.882 | 0.964 | 0x0001 (+1)     |   37 px | +         |
+| GX80 PL12-60 @12mm       |  +0.849 | 0.982 | 0xF001 (-4095)  |  163 px | +         |
+| GX80 PL12-60 @25mm       |  +5.171 | 0.741 | 0xB701 (-18687) |    2 px | +         |
+| GX80 PL12-60 @60mm       |  -1.041 | 0.911 | 0x8C01 (-29695) |   13 px | -         |
+| GX80 Sigma 16            |  +0.709 | 0.772 | 0x0001 (+1)     |   50 px | +         |
+| GX80 Sigma 30            |  +0.966 | 0.998 | 0x0001 (+1)     |   33 px | +         |
+| GX80 Lumix 42.5          |  +0.966 | 0.990 | 0x0001 (+1)     |   31 px | +         |
+
+Sign convention: positive `k_only` means the polynomial's own sign
+(driven by `word[8] = a`) matches the measured shift direction.
+Negative `k_only` means measured direction is opposite. The 12-60 @
+60mm case has `a = -244` (polynomial predicts inward) but the JPEG
+shows outward shift, giving `k = -1`. On the other five 0x0119-
+populated files the polynomial's `a` sign matches the measured sign.
+
+**H1 - linear/inverse-linear/exponential in the high byte.** Best
+single-feature linear R^2 against `k` is 0.15 (`word[14]` signed,
+which is a checksum). `w[7]_hi` in every encoding tested (signed
+int8, unsigned int8, top nibble signed or unsigned, bits 11..8,
+whole int16, `|w[7]|`, `w[7]/32768`) delivers R^2 in the range
+[-0.05, +0.15]. No functional form better than "essentially random"
+survives. `step7_hypotheses.py` and `step7_multi_word_search.py`.
+
+**H2 - subfields of the top byte.** Top nibble, bits 11..8 and lo
+nibble each score R^2 < 0.10. `w[7]_hi` sorted by value gives
+non-monotonic `k`: `(0x00,+0.87), (0x8D,-0.95), (0xB7,+5.24),
+(0xF0,+0.90)`. No monotonic function fits.
+
+**H3 - `k = 1 + w[7]/M`.** For any `M`, the required per-file `M`
+disagrees by more than 10x across the four PL 12-60 files. The best
+whole-corpus R^2 over `M` in {8192, 16384, 32768, 65536} is +0.075.
+
+**H4 - LUT index.** With only three distinct nonzero `w[7]_hi`
+values (from one lens's zoom sweep) and one zero value (from three
+primes), the corpus does not constrain a LUT. Any 4-entry table
+fits perfectly; nothing generalizes.
+
+**H5 - a different 0x0119 word carries the scaler.** All six words
+Rigo does not use (word[2, 3, 6, 9, 10, 13]) plus every two-way
+combination of them and `w[7]` were scanned as linear predictors of
+`k`. Best individual R^2 is 0.28 (`word[9]` and `word[13]` tie, both
+signed). Best two-word linear fit is R^2 = 0.51. Nothing that ought
+to be a real decode. `step7_multi_word_search.py` output logged to
+`/tmp/rw2_tca/step7_multi.log`.
+
+**What is really going on.** Look at the shape of the measured `dr`
+on the two anomalous files. On PL 12-60 @ 25mm (both bodies) and PL
+12-60 @ 60mm (both bodies), the measurement is roughly linear in
+`r_norm` from 0 to about 10-13 px at the corner. That is exactly
+what an unmodelled residual radial scale in the raw-to-JPEG
+registration would look like. The r^3/r^5/r^7 polynomial cannot
+match a linear shape, so the least-squares fit dresses up whatever
+`k * poly` best approximates the linear signal in the observed
+r-range. At 25mm the polynomial peaks at r=0.65 and drops, so the
+fitter uses a large positive `k` to match the peak; at 60mm the
+polynomial has the opposite sign, so the fitter negates.
+
+Joint fit `dr = k * poly(r) + alpha * r_pixel` (`step7_joint_crossbody.py`,
+log at `/tmp/rw2_tca/step7_joint.log`) confirms this:
+
+- On the six files where the polynomial predicts a large-amplitude
+  nonlinear signal (12mm PL, all three primes, per body: 8 files),
+  `k_joint` collapses toward 1 (range 0.74-1.28, median 1.02) and
+  `alpha` is small.
+- On the four anomalous files, `k_joint` scatters across
+  [-1.4, +2.1] while `alpha` explains most of the signal.
+
+`alpha` sits at 0.001-0.005 (0.1-0.5% radial dilation) on the four
+anomalous files. That is small enough to be invisible on files with
+a strong polynomial signal, and dominant on files where the tag's
+correction is close to zero. The GX80 12-60 @ 60mm's Rigo-poly R^2
+of 0.911 is the strongest counter-argument, but the same file's
+"pure `alpha * r`" fit lands at R^2 = 0.725 (see
+`step7_residual.log`), i.e. any monotone-increasing model would fit
+its data reasonably. `k = -1.04` is just what the least-squares
+extracts when you force a wrong-shape polynomial onto a mostly-linear
+signal.
+
+Where the ~0.5% radial dilation comes from is a separate question. It
+is not a per-body constant: `alpha` varies from -0.012 to +0.005
+across the corpus, with the negative values on the strongest-signal
+files where the joint fit is co-linear with the polynomial's own
+low-order Taylor expansion anyway. It could be a small crop-factor
+difference between rawpy's output and Panasonic's JPEG geometry, a
+residual translation not absorbed by the median centroid, or an
+actual small linear-in-r correction the tag encodes elsewhere that
+we did not decode. Either way it is not word[7]'s high byte.
+
+The `k_only` values on the four *reliable* zoom-and-prime files
+cluster in [0.71, 0.97] with median 0.87 (`step7_joint.log`, files
+with `R^2_only > 0.7`, N=8 across bodies). That 13% offset from unity
+is at the noise floor: rawpy's AAHD demosaic, the SIFT peak-fit
+precision, and small crop-factor mismatches between the raw and JPEG
+image spaces can each account for a few percent. Rigo's formula
+therefore predicts the observed distortion within measurement noise
+on every file where the tag's own polynomial dominates the signal.
+
+**What this means for the darktable code.** Session 3's
+"Practical implications" bullet (b) - that the distortion correction
+`47c223703e` applies may be silently mis-scaled on the Leica DG 12-60
+- **does not survive contact with the corrected measurement**. There
+is no missing per-file scaler in `47c223703e`'s Panasonic branch. The
+`k = 5.24` and `k = -0.95` observations that motivated the search
+were an artifact of fitting an r^3/r^5/r^7 polynomial against a
+mostly-linear-in-r measurement residual on files where the tag's own
+correction is small. `_init_coeffs_md_v2`'s Panasonic branch as it
+stands is scaling the polynomial the same way the tag intends. The
+regression covered elsewhere in this document (default-method switch
+dropping Lensfun TCA) is still real; the distortion math is not.
+
+**What could still change this conclusion.** A raw-vs-JPEG comparison
+that reliably strips residual affine scale from the measurement on
+low-signal files would either confirm the current finding
+(polynomial fits, no per-file scaler) or reveal a genuinely missing
+correction term. Candidates the current session did not run:
+
+- render the RW2 with dcraw or Panasonic-SDK-based decoders to check
+  the raw geometry is identical to rawpy's output;
+- SIFT with a homography model (not just affine) to see whether the
+  linear-in-r residual is coming from perspective, keystone or a
+  crop-then-resize step in the JPEG pipeline;
+- shoot a chart with fixed grid intersections at every focal length,
+  so the geometry is anchored by known-collinear points instead of
+  scene-dependent SIFT features.
+
+None of these is essential for the darktable code path. The
+`47c223703e` distortion math is defensible as-is; where it silently
+fails is only on files where the tag's own polynomial predicts near-
+zero correction, and there the failure mode is "we apply nothing
+useful" rather than "we apply a mis-scaled correction".
 
 ### Interpretation
 
@@ -701,22 +863,28 @@ corpus). Its role is not decoded by any of the models tested here.
 
 ### What would resolve 0x0119's missing scaler
 
-Small experiment, no more shots required from the user:
+Superseded by "word[7] high byte decode (session 4)" above: items 1
+was executed with negative results (no simple function of word[7]'s
+high byte predicts the observed `k`; the observed `k` variation was
+itself a measurement artifact). Items 2 and 3 stayed on the shelf and
+are still worth doing if the finding above is ever revisited:
 
-1. Fit the observed k (best-scale factor from `step6_06`) against
-   the high byte of `word[7]` and the focal length across the 12-60
-   sweep. Three data points across a factor-of-5 range in k are
-   enough to see if the relationship is linear, log, or step-shaped.
+1. ~~Fit the observed k against the high byte of word[7] across the
+   12-60 sweep.~~ Done in session 4. All simple encodings score R^2 <
+   0.15. See "word[7] high byte decode".
 2. Check other Panasonic zooms (Lumix 14-42, 12-32, 100-300 if any
    are available) - do they also use the varying high-byte flag
-   encoding, or is it specific to the Leica DG line?
+   encoding, or is it specific to the Leica DG line? Would establish
+   whether the varying `w[7]_hi` is a lens-family attribute (Leica DG
+   only) or a general Panasonic zoom pattern.
 3. Look at the Panasonic RW2 ImageMagick or LibRaw source for any
    comment on the flag byte's extra bits. Panasonic-specific raw
    decoders sometimes carry undocumented decode notes.
 
-If the scaler is confirmed, add it to `_init_coeffs_md_v2`'s
-Panasonic branch as a multiplicative factor before the polynomial
-evaluation, gate on `word[7]` bits, and re-check the 12-60 output.
+If any subsequent evidence resurrects the missing-scaler hypothesis,
+add the scaler to `_init_coeffs_md_v2`'s Panasonic branch as a
+multiplicative factor before the polynomial evaluation, gate on the
+identified `word[7]` bits, and re-check the 12-60 output.
 
 ### What would resolve it
 
