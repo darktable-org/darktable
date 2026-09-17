@@ -2073,6 +2073,316 @@ Nothing in this section depends on a SILKYPIX file being in the tree;
 the script reads the DLL from `/tmp/rw2_tca/silky/` and produces the
 log used above.
 
+### SILKYPIX decompile (session 10)
+
+Session 9 stopped at the 88 KB private-IFD parser boundary because
+linear disassembly was not enough to lift its body. This session got a
+decompiler working against the DLL and used it to answer, for each of
+the five session-9 questions, whether the SILKYPIX binary contains
+enough evidence to decide it. Two questions were settled outright, two
+were partially answered with strong negative evidence, and one remains
+open. Session 8's decode still stands as the shipping recommendation;
+what tightened is our confidence that the polynomial evaluator is not
+merely hidden behind a decompiler barrier -- it is structurally not
+accessible from static class-hierarchy analysis without also lifting
+the SILKYPIX plugin factory chain and the encrypted `.spd` container
+format.
+
+**Decompiler that worked.** Ghidra 12.1.3 headless (`analyzeHeadless`),
+downloaded fresh from the NSA release. Path 1a (r2ghidra tag 5.5.0 to
+match radare2 5.5.0) recompiled cleanly through preconfigure/configure
+but failed at `R2Scope.cpp:19` on a `next_id` member the current
+`R2Scope` header no longer declares. Not chased; skipped per session
+brief. Path 1b landed on the first attempt: 570 MB zip in 60 s, unpack
+in 5 s, import + auto-analysis of `SILKYPIX64.dll` in 17.5 min (32 min
+of user-CPU across the analyser passes -- Stack analysis 331 s, x86
+constant reference analyser 246 s, Decompiler switch analysis 143 s).
+Once the project was saved, subsequent script runs open the analysed
+program without re-running any pass, and are seconds to minutes.
+
+Two Ghidra behaviours worth writing down for the follow-on agent:
+
+- The 58 KB pcode function body at RVA `0x4f3ca0` exceeds the
+  decompiler's default per-function budget. `decompileFunction(fn,
+  300, monitor)` returned `process: timeout`; raising the timeout to
+  900 s still did not complete. This is not a bug we should chase --
+  the parser is large by design (one flat MSVC-optimised tag
+  dispatcher) and the useful information lives in the functions it
+  *calls*, which are all well under 8 KB and decompile in seconds.
+- Ghidra's decompiler expresses struct-field access as
+  `param_1 + 0x129a8` in most places but replaces the literal with a
+  named local when the parameter gets typed. For a fresh project the
+  literal form dominates. `grep 0x129a` was reliable enough to enumerate
+  every touch point.
+
+Reproducer scripts (Java, dropped into a Ghidra script path so
+`-postScript` picks them up), all under
+`/tmp/rw2_tca/ghidra_scripts/`:
+`DecompileByRVA.java`, `FindFieldXrefs.java`, `FindConstXrefs.java`,
+`ListSites.java`, `FindRefsToAddr.java`, `FindClassVtable.java`,
+`GrepStrings.java`, `DumpTable.java`. The outputs are the `step21_*`
+files in `/tmp/rw2_tca/`. Nothing was written back into the analysed
+program.
+
+**The 88 KB private-IFD parser is not the CA evaluator.** The nine
+sites in `FUN_1804f3ca0` that touch `obj + 0x129a8` are all the *same*
+pattern of three helper calls, decompilable to (paraphrased, not
+verbatim):
+
+```
+memset(&this->field_12a20, 0, 0x19c0);   // helper FUN_1804d1c30
+memset(&this->field_129a8, 0, 0x1588);   // helper FUN_1804d1b90
+release_local_shared_ptr(&local[+0x70], rsi);  // helper FUN_1804c2d70
+```
+
+`0x4d1b90` is a two-line `memset(dst, 0, 0x1588)` wrapper; `0x4d1c30`
+the same for `0x19c0`; `0x4c2d70` a "if owner pointers differ, dispose
+old" refcount helper. Every one of the nine hits is a *reset/failure*
+path: the CA container is zeroed and any per-call scratch is released
+before the enclosing tag branch returns an error code. The successful
+tag-body-write path must therefore go through a helper that does not
+take `0x129a8` as an immediate -- either through a virtual call, or
+through a temporary buffer that some later routine copies into the
+container. Either way, the polynomial evaluator is *not* here.
+
+**The CA container is 0x1588 bytes, not 64.** Session 9's "tag 0x11b's
+field lives at obj + 0x129a8" is right about the anchor but understates
+the size. The class's non-CA constructor at `0x4f07a0` clears the
+region with a `memset(param_1 + 0x129a8, 0, 0x1588)` (RVA
+`0x4f07a0:0x1599` in the decompiler output, cross-referenced by the
+constants in `step21_consumers.c`). Immediately adjacent members are
+`memset`ed too, with sub-block sizes `0x19c0`, `0x1750`, `0x1758`,
+`0xc40`, `0x2fa0` and double/int fields; the nested layout at least
+holds a secondary object pointer at `+0x70` (i.e. `obj + 0x12a18`), a
+double at `+0xF0` (`obj + 0x12a98`), further sub-blocks at
+`+0xF8`/`+0x178`/`+0x200`/`+0x278`, and a series of `0x89abcdef`
+sentinel values written into the destructor at `+0x1a1cc` and adjacent
+offsets. The raw 32-word tag payload is one input among many; the
+container also caches decoded coefficients and derived tables that a
+subsequent render step consumes.
+
+**SILKYPIX does not run Rigo's checksum.** This is the single hardest
+new finding of the session. `FindConstXrefs.java` on `0xFFEF` (the
+`csum mod 0xFFEF` modulus of Rigo's `parseca.c`) returned three
+functions, all far from the Panasonic RTTI cluster:
+`is_wide_character_specifier<wchar_t>` (locale code),
+`FUN_18101e468`, `FUN_18102a52c`. None sits in or near the private-IFD
+parser, the copy-assign, the destructor, or any consumer of
+`obj + 0x129a8`. Scanning the DLL for the multiplier `73` (`0x49`) is
+too noisy to isolate, but the modulus is a specific prime that would
+have to appear as an immediate operand in the reduce step; it does
+not. Either SILKYPIX skips the four-checksum validator entirely, or
+it computes a different checksum against a different modulus. Rigo's
+paper is careful to say his algorithm was derived by observation, not
+by disassembly; this session establishes empirically that Panasonic's
+own reference implementation does not use it.
+
+**The Panasonic CA correction is a plugin, not a C++ class.** A class-
+name string `IslEISDevelopDemosaicPanaCA` exists at RVA `0x13eeb18`,
+with two siblings `IslEISDevelopDemosaicPanaLC` (`0x13edced`) and
+`IslEISDevelopDemosaicPanaDH` (`0x13edd0d`) for lens correction and a
+third Panasonic-specific pass whose meaning is not yet clear. The
+string appears exactly once as an operand, in a name-lookup switch at
+`FUN_180546c30` case `0x1216` (i.e. `0x1216` is the module id for
+PanaCA, `0x1202` for PanaLC, `0x120c` for PanaDH). Crucially:
+
+- No RTTI type descriptor `.?AVIslEISDevelopDemosaicPanaCA@@` exists
+  in the DLL (`FindClassVtable.java` on that name returned "no TD").
+  The three PanaXX demosaic classes therefore have no vtable; they
+  are not part of the same C++ hierarchy as `IslZTiffExifPanasonic`,
+  `IslEISPanaRemoveBlack`, `IslEImageServerInputPanaRAW` or the other
+  seven `.?AV*Pana*@@` RTTI descriptors this session enumerated.
+- The class id `0x1216` appears four times in the whole DLL, none in
+  a data-section table paired with a function pointer, and the only
+  scalar-operand hit is a false-positive `__LINE__` arg
+  (`FUN_1805b95d0("...isleisfilternr3.cpp", 0x1216)` at
+  `0x62f857`, line 4630 of the source file). There is no static
+  factory table that maps `0x1216` to a constructor.
+
+So `PanaCA` is a plugin registered by *name* at runtime through a
+factory system this session did not lift. The tag-0x11b decoder and
+polynomial evaluator live inside a factory-instantiated module whose
+entry point is not statically reachable from class-hierarchy walks or
+scalar-constant scans. Lifting them needs either a runtime hook (attach
+a debugger, log the factory's argument on plugin registration), or a
+full RE of the SILKYPIX plugin-manager, which is a separate project.
+
+**Property-key evidence.** The pipeline manager holds a property
+dictionary keyed by 16-bit ids (`0xa050 = "RawData"`,
+`0xa051 = "Distortion"`, `0xa052 = "ColorAberration"`,
+`0xa053 = "Shading"`, ...; the table at RVA `0x1a119c8..0x1a11a80`).
+`0xa052` is referenced by exactly one function, `FUN_18074e0f0` at
+`0x74f148`, which calls `FUN_1810ceb30(handle, key_obj, radius,
+0xa052)` and then, on success, sets pipeline state to enable a CA
+correction stage. This is the *dispatch* site -- the pipeline manager
+looks up whether a `ColorAberration` property is available on the
+current image and, if so, arranges for the CA pass. It is not the
+evaluator, but it confirms two things: (a) SILKYPIX's CA correction is
+a first-class pipeline stage with its own property key, gated by the
+same handle-lookup mechanism as distortion, shading and RawData; and
+(b) the actual polynomial code sits behind another indirection past
+`FUN_1810ceb30`, which is where the trail runs into the plugin factory
+described above.
+
+**A debug format string that is not called.** `.rdata:0x1617dc0` holds
+`"%d, ColorAbeHeight:%d, ColorAbeR:%d, ColorAbeB:%d, (H:%d, R:%d, B:%d),
+R:%f, B:%f\n"`. The shape of this format is informative -- integer
+`ColorAbeR`/`ColorAbeB` values distinct from float `R`/`B` values would
+mean the algorithm keeps raw sensor-side integer coefficients separate
+from computed floating-point displacements -- but the string has *no
+code references* anywhere in the DLL. It was compiled in and never
+called; probably a dead diagnostic path left over from an internal
+SILKYPIX development build. Cannot be used as a landmark.
+
+**Companion `.spd` / `.spx` containers stay opaque.** Confirms session 9.
+`DefaultLensInfo.spd` (116 KB), `DefaultParameters.spd` (7.5 MB) and
+their sibling `.spx` files all open with a 256-byte identifier area
+(`"SILKYPIX"`, version tag `"2009042001"` in the `.spd`s), followed at
+offset `0x100` by the magic `"ISL Multi purpose file format." 0x1a`
+and a header table at `0x140`. The payload beginning near `0x150` has
+the byte-frequency profile of encrypted or compressed data; the same
+initial 16-byte payload run (`ad 88 22 81 d1 74 ea 89 52 6a c3 5d 50
+a5 43 95`) appears in both `DefaultLensInfo.spd` and
+`DefaultLensInfo.spx`, suggesting a shared framing key rather than
+per-file randomness. Whether this contains a per-lens attenuation that
+would explain session 7's K = 7-13 body spread is a real open
+question, but a full ISL-container RE is out of scope here.
+
+**Reconciliation with session 8.** Five questions from Task 2, and
+what this session was able to say about each:
+
+1. *Word indices*: not answered from SILKYPIX. The parser does not
+   read individual word offsets as scalar operands (it copies the whole
+   tag payload into the container via memcpy-shaped helpers whose
+   source pointer is in a register), and the polynomial evaluator that
+   would touch the 6 words was not lifted. Session 8's
+   `[8, 10, 12, 20, 23, 27]` is neither confirmed nor refuted.
+2. *Polynomial form*: not answered from SILKYPIX. Same reason.
+3. *Normalisation constants*: consistent with session 9. Values
+   `11.48`, `11.484`, `1/11.48` remain absent as literals; `0x8000` and
+   `0xCCC` are too common to be diagnostic; the specific radius
+   sequence `{0.333, 0.667, 0.833, 1.0}` is not stored as consecutive
+   doubles. K is not one number in the DLL.
+4. *B plane derivation*: not answered. The dead debug string treating
+   R and B symmetrically ("ColorAbeR:%d, ColorAbeB:%d ... R:%f, B:%f")
+   is suggestive of two independent per-channel polynomials rather
+   than a differential encoding of B against R, but a dead string is
+   not evidence.
+5. *Sensor-format switch*: not answered from SILKYPIX. Session 9's
+   negative finding on model-string branches holds. The
+   `FUN_18074e0f0` dispatcher does not carry a sensor-format switch;
+   any format-dependent behaviour would sit inside the
+   factory-instantiated `PanaCA` module.
+
+**What changed vs session 9:**
+
+- Session 9 said "the exact `words[8], words[10], ..., words[27] x
+  coefficients` sequence needs a decompiler." That was necessary but
+  not sufficient. With Ghidra available, we now know the polynomial is
+  not in the parser at all, and is dispatched through a plugin factory
+  chain, not through a `.text` control flow that can be walked from
+  the parser.
+- Session 9 pointed at slot 3 (`0x48f750`) and slot 17 (`0x48fae0`) of
+  `IslZTiffExifPanasonic`'s vtable as "plausibly the CA-apply entry
+  points" based on size. This session downgrades that guess:
+  `IslZTiffExifPanasonic` is the *TIFF/EXIF reader*, not the pixel
+  processor. The CA-apply entry lives in a different, non-RTTI class,
+  reached through `FUN_18074e0f0 -> FUN_1810ceb30(key=0xa052)`. Slot 3
+  and slot 17 remain unverified, but are no longer the priority path.
+- Session 9 assumed Rigo's checksum was the file's admissibility
+  gate. This session refutes that at the SILKYPIX end: the modulus
+  `0xFFEF` is not in the parser or any Panasonic-adjacent code.
+
+**What tightened vs session 9:**
+
+- The CA container is a 0x1588-byte structure with rich internal
+  layout, not just the 64 tag payload bytes. Any future decoder must
+  respect that raw 0x011b words are only one input.
+- The Panasonic pipeline uses three distinct demosaic-time modules
+  (`PanaLC`, `PanaDH`, `PanaCA`), gated by property ids `0xa051`
+  (distortion) and `0xa052` (colour aberration) rather than by the raw
+  tag ids `0x0119`/`0x011b`. That is the layer at which the darktable
+  path would ideally hook, and it is consistent with our existing
+  design of a distortion+CA branch behind a single "Panasonic embedded
+  metadata" method.
+
+**Recommendation for the darktable patch.** Ship session 8. The reasons
+have not changed since session 9's writeup, and this session did not
+recover a cleaner alternative from SILKYPIX. Additionally:
+
+- Do not require Rigo's four-checksum pass to succeed before applying
+  the CA correction. SILKYPIX plainly does not run that check, and
+  files that fail Rigo's checksum in the wild (from firmware versions
+  Rigo did not sample) will still be corrected by the camera vendor's
+  own software. Downgrade the checksum to a *diagnostic log line* -- if
+  it fails, log it, but still parse the payload.
+- Do not try to encode the per-body K spread. Nothing in this session
+  or session 9 says K lives in code as opposed to per-lens data in
+  `DefaultLensInfo.spd`, and we still cannot read that file.
+- Keep the door open to a session 11 that runs SILKYPIX under Frida or
+  a similar dynamic tracer to log (a) the factory's plugin
+  registration for the `PanaCA` module, (b) the exact bytes passed to
+  its `Process` entry point on a known RW2 file, and (c) the argument
+  and return of `FUN_1810ceb30(..., 0xa052)`. That is the shortest
+  route from here to the polynomial. It requires a Windows or Wine
+  host and was out of budget for this session.
+
+**Honest bounds.**
+
+- The polynomial evaluator was *not* extracted. Static class-hierarchy
+  and scalar-scan techniques exhausted here; the next step is dynamic
+  tracing or a plugin-factory RE, neither cheap.
+- Rigo's checksum being absent from SILKYPIX is a strong empirical
+  finding, but "absent from SILKYPIX" does not equal "not the right
+  checksum for tag 0x011b". Rigo verified his checksum by reproducing
+  it against dozens of files across bodies; the possibility that
+  Panasonic's own converter simply *trusts* the tag while third-party
+  code has to validate it against corruption is not excluded by this
+  session's finding. The recommendation above (log-only diagnostic) is
+  conservative on both readings.
+- No sensor-format branch was located. Session 9's negative finding
+  stands. If the DC-S5 result reported by the developer really does
+  need different knot ratios than MFT bodies, the switch sits inside
+  the plugin factory or the `.spd` payload.
+- The 5512-byte CA container structure was partially mapped from the
+  constructor at `0x4f07a0`; that map is enough to say the container
+  is more than the raw payload, but not enough to identify which
+  offsets store decoded coefficients versus derived tables. That
+  requires the evaluator function, which was not lifted.
+
+**Files this session:**
+
+- `/tmp/rw2_tca/ghidra_scripts/`: eight `.java` scripts that drive
+  `analyzeHeadless` for targeted decompile, xref search, and data
+  dumps. Independent of the corpus; can be run against any DLL.
+- `/tmp/rw2_tca/step21_consumers.c`: Ghidra pseudocode for the four
+  small functions that reference `obj + 0x129a8`
+  (`FUN_1804c9d00`, `FUN_1804cf610`, `FUN_1804f07a0`, `FUN_1805661f0`).
+  Constructor and destructor pattern; useful for reconstructing the
+  CA-container layout. Not the evaluator.
+- `/tmp/rw2_tca/step21_helpers.c`: three-line pseudocode for the
+  memset/refcount helpers the parser calls
+  (`FUN_1804d1b90`, `FUN_1804d1c30`, `FUN_1804c2d70`).
+- `/tmp/rw2_tca/step21_sites.txt` and
+  `/tmp/rw2_tca/step21_wide.txt`: raw disassembly windows around the
+  nine `obj + 0x129a8` touches inside the 88 KB parser. These are the
+  reset paths.
+- `/tmp/rw2_tca/step21_camain.c`: pseudocode for `FUN_180546c30`,
+  the class-name lookup switch (this is where the string
+  `IslEISDevelopDemosaicPanaCA` comes back at case `0x1216`).
+- `/tmp/rw2_tca/step21_ca_dispatcher.c`: pseudocode for
+  `FUN_18074e0f0`, the property-key dispatcher that calls into
+  `FUN_1810ceb30(..., 0xa052)`. This is the trailhead for the
+  plugin-factory RE mentioned above.
+- `/tmp/rw2_tca/step21_islecls.txt`: `IslEIS*` string enumeration.
+- `/tmp/rw2_tca/step21_strefs.txt`: reference sites for the CA-related
+  strings. All the human-readable "Chromatic Aberration ..." strings
+  are dead (zero code references); only `ColorAberration` and
+  `IslEISDevelopDemosaicPanaCA` are alive, and only through the
+  registries described above.
+- Ghidra project: `/tmp/ghidra_proj/SilkyRE/`. Reusable by future
+  sessions without re-running the 17-min analysis.
+
 ## Reverse-engineering next steps
 
 Everything below is a plan for the follow-on agent. Nothing here has been
