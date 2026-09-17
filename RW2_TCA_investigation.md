@@ -1875,6 +1875,204 @@ static const double K = 11.48;
   `.../step19_03.log`, `.../step19_04.log`, `.../step19_05.log`,
   `.../step19_06.log`, `.../step19_07.log`.
 
+### SILKYPIX static analysis (session 9)
+
+Panasonic ships SILKYPIX Developer Studio 8 SE with its cameras. The
+plausible read of that shipping decision is that SILKYPIX applies whatever
+Panasonic's own reference algorithm for 0x011b is. This session performed
+static analysis on the SE 8 install to lift that algorithm, so it could
+either confirm sessions 5-8's decode or replace it.
+
+The short version is that the decode was *not* refuted, but neither was the
+algorithm fully extracted. Session 8's coefficient matrix and `K ~ 11.48`
+stay the recommendation. What the analysis did produce is a much better
+understanding of what shape the extraction task has, so a future session
+with more time can go further.
+
+**Tool used.** radare2 install failed (sudo unavailable, no cached apt),
+and Ghidra headless would have blown the 20-minute install budget
+mentioned in the session brief. The DLL was inspected instead with the
+combination `pefile` + `lief` + `capstone` that was already available in
+the corpus venv. This is enough for section and RTTI walking, function-
+boundary discovery via `.pdata` runtime-function entries, and targeted
+disassembly, which is what the session needed. See
+`/tmp/rw2_tca/step20_silky_re.py` and `.../step20_silky_re.log` for the
+reproducible dump.
+
+**What was disassembled.** `SILKYPIX64.dll` only. The `avx` variant, the
+`x64/*.dll` support libraries, and `SILKYPIX_DS8SE.exe` were not needed
+once the primary DLL was mapped and shown to contain the Panasonic
+handling. The RTTI descriptor set in `.data` names 31 `IslZTiffExif*`
+subclasses, including `IslZTiffExifPanasonic` (TD RVA `0x1a3a450`) and
+`IslBRawReadPanasonic0` (TD RVA `0x1a62080`). Vtables were located via the
+standard MSVC RTTI chain: type descriptor RVA -> 4-byte reference in
+`.rdata` (that is the `+0x0c` field of a `CompleteObjectLocator`) -> COL
+start at hit - 0x0c -> the 8-byte VA of that COL is found again in `.rdata`
+-> the vtable begins 8 bytes further in. This is worth writing down
+because casual "find references to the class-name string" searches turn
+up almost nothing: MSVC uses the RTTI descriptor VA, not the string VA,
+and does so as a 32-bit RVA embedded in 20-byte COL records, not as an
+absolute pointer.
+
+**Data-file inspection.** `DefaultLensInfo.spd` and `DefaultParameters.spd`
+are both in an internal "ISL Multi purpose file format" (magic string at
+file offset `0x100`, header table at `0x140`, encrypted or compressed
+payload starting near `0x148`). Their sibling `.spx` files share a common
+initial 24-byte header, then diverge. Nothing in these files can be
+grepped for lens or model names. Decoding the container is beyond a
+two-hour static-analysis budget and was not attempted; it would be a
+separate project.
+
+**Panasonic-unique virtual functions.** `IslZTiffExifPanasonic` has a
+200-entry vtable. Comparing it against three sibling classes
+(`IslZTiffExifCanon`, `IslZTiffExifSonyARW`,
+`IslZTiffExifWithMakerNote`), Panasonic overrides seven slots:
+
+```
+slot 1   rva 0x004807d0
+slot 3   rva 0x0048f750
+slot 6   rva 0x0048ffd0
+slot 8   rva 0x00480860
+slot 12  rva 0x0048bfa0     (returns constant 0x6e; probably a format id)
+slot 17  rva 0x0048fae0
+slot 155 rva 0x0048bd80
+```
+
+Slots 3, 6, 17 and 155 are the substantive ones (multi-hundred-instruction
+prologues with lots of local storage); the others are constructor / copy
+helpers. Which of these implements the CA-tag readout was not established
+by direct inspection.
+
+**Panasonic private-IFD field layout.** Much more useful than the vtable
+was a copy table found at file offset `0x17abdc4` (RVA `0x17accc4`). It is
+an array of 8-byte entries of the form `{ u32 tag_id, u32 stub_rva }`,
+running from tag `0x010f` through `0x0132`. Each `stub_rva` is a short
+piece of code inside one large function (0x4c64b0..0x4c9cf2, ~14 KB) whose
+job is `dst[+offset] = src[+offset]` per tag: the class's copy-
+assignment operator. Reading each stub gives the class-field offset that
+holds each Panasonic private-IFD tag:
+
+```
+tag 0x117  -> obj + 0x10550
+tag 0x118  -> obj + 0x107c8..+0x107e0 (five words)
+tag 0x119  -> obj + 0x12698..+0x126a8 (distortion, session-1 territory)
+tag 0x11a  -> obj + 0x12920..+0x12930 (selector, on/off word)
+tag 0x11b  -> obj + 0x129a8           (chromatic aberration payload)
+tag 0x11c  -> obj + 0x12a20
+```
+
+Tag `0x11b`'s field lives at `obj + 0x129a8`. That is the anchor point for
+every downstream question: where the field is *set* is the tag reader,
+where it is *consumed* is the CA correction.
+
+**Where 0x11b is written from the raw file.** Five functions in `.text`
+address `obj + 0x129a8`:
+
+```
+0x004c64b0..0x004c9cf2   size 0x3842   hits 2   (the copy-assign above)
+0x004c9d00..0x004cbae6   size 0x1de6   hits 1
+0x004cf610..0x004d11c2   size 0x1bb2   hits 2
+0x004f07a0..0x004f2052   size 0x18b2   hits 1
+0x004f3ca0..0x0050994d   size 0x15cad  hits 9   (private-IFD parser)
+```
+
+The 88-KB function at `0x4f3ca0` is where the private-IFD walk lives.
+It reads the 0x11b payload into its container field, but at that size and
+with MSVC's optimizer having flattened everything into an indirect-jump
+dispatch (no `cmp reg, 0x11b` compares survive in the emitted code , 
+`0x11b` appears only as `mov reg, imm` loads elsewhere, not as a switch
+key), lifting the exact `words[8], words[10], ..., words[27] x coefficients`
+sequence out of it needs a decompiler, not linear disassembly. That
+lift was not completed.
+
+**Consumer side.** Search for constants that would give away the CA math
+turned up nothing decisive:
+
+- `11.48` (both f32 and f64) does not appear as a stored constant anywhere
+  in the DLL. Nor does `11.484`, nor `1/11.48`. The `K ~ 11.48` scale from
+  session 8 is therefore *not* a single code literal. It is either
+  synthesised from a shift-and-scale (right-shift by three or four bits
+  plus a fixed rescale) or, more likely, composed from several separately-
+  applied constants that the empirical fit collapsed into one factor.
+- `11.5` appears 12 times as f32 and once as f64, but those hits are
+  scattered across unrelated code (JPEG quantisation, tone-curve knots)
+  and none of them sit next to Panasonic-adjacent code.
+- The four-radius Homeister zone table `{0.333, 0.667, 0.833, 1.0}` is
+  not present as consecutive f32 or f64 doubles, in either MFT or
+  full-frame-S form (`{2/7, 4/7, 6/7, 1}`). The values `0.333` and `0.667`
+  each occur twice as f64, but never adjacent, never at 8-byte stride
+  with matching neighbours. If SILKYPIX uses zone radii at all, it
+  computes them on the fly rather than reading them from a table.
+
+**Body-conditional logic.** Model strings (`DC-G9`, `DC-S5`, `DC-GH5`,
+`DMC-*`, etc.) are all present and each is referenced by exactly one
+site in `.text`. That is consistent with a per-model early-return in
+some routing function, not with per-model CA tuning: the 7-13 K spread
+seen in session 7 is far more likely to come from lens-database rows
+inside `DefaultLensInfo.spd`, which we cannot read, than from any code
+branch we can see.
+
+**What this tells us.**
+
+1. Nothing extracted from SILKYPIX *contradicts* sessions 5-8's decode.
+   No stored constant showed up that says "the Homeister zone model is
+   wrong" or "the six-word predictor set is a five-word set". The
+   session-8 model can be shipped.
+
+2. The `K ~ 11.48` factor is not one number in the DLL. Chasing it as a
+   single decode constant is a dead end; it is an artefact of the sum of
+   several fixed-point operations in the algorithm and possibly of a
+   per-lens attenuation from the `.spd` database.
+
+3. The B-plane high-order gap that session 5 could not close is *not*
+   solved here. Without following the 88-KB private-IFD parser into its
+   consumer, we don't know whether the `k_r2_B` / `k_r3_B` coefficients
+   come from a different subset of the 32 words, from a mirror formula
+   against R, or from `DefaultLensInfo.spd` entries. Session 8 fits it
+   empirically from the JPEG; that empirical fit remains the best model
+   until someone completes the decompiler-assisted read of the parser
+   function.
+
+4. No body-conditional logic worth adding to the darktable patch was
+   found. Body strings are referenced once each, which fits a routing
+   step and not a CA-tuning step.
+
+**Honest bounds.**
+
+- The full end-to-end algorithm (tag reader + checksum validator +
+  coefficient extractor + polynomial evaluator + per-pixel application)
+  was *not* extracted from the DLL. Without a decompiler, unwinding an
+  88-KB indirect-jump-heavy function from linear disassembly is not
+  realistic within a two-hour budget.
+- `DefaultLensInfo.spd` and `DefaultParameters.spd` remain opaque. If
+  SILKYPIX applies a per-lens attenuation on top of the RW2 correction , 
+  which would neatly explain the `K` factor and the per-body spread , 
+  the data for that attenuation is in these files, and lifting it
+  requires either running the app under a debugger or reverse-engineering
+  the ISL container format. Neither was done.
+- The seven Panasonic-unique virtual functions are located but not
+  labelled. Slot 3 (0x48f750) and slot 17 (0x48fae0) are large enough
+  to plausibly be the tag-parse and CA-apply entry points respectively,
+  but this is inference from size, not verified from behaviour.
+
+**Recommendation for the darktable patch.**
+
+Ship session 8's decode as it stands. That means the six-word predictor
+set `[8, 10, 12, 20, 23, 27]`, the `C_R` and `C_B_lo` matrices, and the
+`K = 11.48` fit against the camera JPEG. Nothing in the SILKYPIX binary
+contradicts them, and no cleaner alternative was recoverable in the time
+available. Do *not* add body-conditional scaling to the patch. The
+per-body K spread that session 7 saw is a genuine phenomenon but there
+is no evidence it lives in code as opposed to per-lens data, and
+guessing at it would hurt more than it helps.
+
+**Reproducer.** `/tmp/rw2_tca/step20_silky_re.py` (and
+`.../step20_silky_re.log`) contains the enumeration, the vtable diff,
+the tag->field-offset table, and the constant/table presence checks.
+Nothing in this section depends on a SILKYPIX file being in the tree;
+the script reads the DLL from `/tmp/rw2_tca/silky/` and produces the
+log used above.
+
 ## Reverse-engineering next steps
 
 Everything below is a plan for the follow-on agent. Nothing here has been
