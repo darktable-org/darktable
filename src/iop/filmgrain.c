@@ -56,7 +56,10 @@
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "develop/tiling.h"
+#include "dtgtk/button.h"
 #include "dtgtk/drawingarea.h"
+#include "dtgtk/expander.h"
+#include "dtgtk/paint.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
@@ -1039,6 +1042,14 @@ int process_cl(dt_iop_module_t *self,
   const dt_iop_filmgrain_global_data_t *const gd = self->global_data;
   const int devid = piece->pipe->devid;
 
+  /* Fast OpenCL mode compiles kernels with -cl-fast-relaxed-math, which
+     marks the whole translation unit approximate: built-ins may be answered
+     to a few ULP and multiply-adds may fuse. grain_poisson's accept/reject
+     loop turns a one-ULP difference into a whole grain quantum, so the
+     device would draw different grain from the CPU and a preview would not
+     match its export. The CPU path renders the same picture, slower. */
+  if(dt_opencl_running_fast()) return DT_OPENCL_PROCESS_CL;
+
   /* The simplex method has no device path, and the kernel only knows the
      luminance of a linear working profile; both are handed to the CPU. */
   float coeffs[3];
@@ -1637,6 +1648,38 @@ static void _area_scroll(GtkEventControllerScroll *controller,
    than its contents. Packing it at the start instead keeps it directly
    under the widgets above it. Returns the section's container for its
    contents. */
+/* Reset the widgets a section holds, leaving the rest of the module alone.
+   darktable resets whole modules or single widgets and nothing in between.
+
+   Not wrapped in darktable.gui->reset: each widget's own value-changed
+   handler is what writes the param, so suppressing it would move the
+   sliders without changing the render. The undo record around the loop is
+   what makes the click one step; opening it also clears the stored undo
+   target, so resetting a slider just dragged is not taken for a
+   continuation of that drag. Toggles go last, as _reset_all_bauhaus() in
+   gui/gtk.c does. */
+static void _section_reset_clicked(GtkButton *button,
+                                   dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  GtkWidget *box = g_object_get_data(G_OBJECT(button), "filmgrain_section");
+  if(!box) return;
+
+  dt_dev_undo_start_record(darktable.develop);
+
+  for(int toggles_pass = 0; toggles_pass < 2; toggles_pass++)
+    for(GList *c = gtk_container_get_children(GTK_CONTAINER(box));
+        c;
+        c = g_list_delete_link(c, c))
+    {
+      if(DT_IS_BAUHAUS_WIDGET(c->data)
+         && (dt_bauhaus_widget_get_type(c->data) == DT_BAUHAUS_TOGGLE) == (toggles_pass == 1))
+        dt_bauhaus_widget_reset(GTK_WIDGET(c->data));
+    }
+
+  dt_dev_undo_end_record(darktable.develop);
+}
+
 static GtkWidget *_new_top_section(dt_iop_module_t *self,
                                    dt_gui_collapsible_section_t *const cs,
                                    const char *const confname,
@@ -1646,6 +1689,14 @@ static GtkWidget *_new_top_section(dt_iop_module_t *self,
   dt_gui_new_collapsible_section(cs, confname, label, GTK_BOX(parent), DT_ACTION(self));
   gtk_container_child_set(GTK_CONTAINER(parent), cs->expander,
                           "pack-type", GTK_PACK_START, NULL);
+
+  GtkWidget *hdr = dtgtk_expander_get_header(DTGTK_EXPANDER(cs->expander));
+  GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
+  gtk_widget_set_tooltip_text(btn, _("reset only this section"));
+  g_object_set_data(G_OBJECT(btn), "filmgrain_section", cs->container);
+  g_signal_connect(G_OBJECT(btn), "clicked", G_CALLBACK(_section_reset_clicked), self);
+  dt_gui_box_add(hdr, btn);
+
   return GTK_WIDGET(cs->container);
 }
 
