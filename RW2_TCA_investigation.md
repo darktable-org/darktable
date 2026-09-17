@@ -2682,6 +2682,349 @@ session 9 and session 10 already recommended:
   0x1354ff0, decoded as 1000.0. This is the value-axis divisor
   used at RVA 0x10ced33.
 
+### SILKYPIX finale (session 12)
+
+Session 12 set out to close the three open links from session 11 -- (A)
+raw-tag-to-property mapping, (B) R/B split in the PanaCA plugin, (C)
+origin of the 0xa020 offset table. It also, unintentionally, refuted a
+central claim shared by sessions 10 and 11.
+
+**The single most important finding: sessions 10 and 11 read the
+property-id table upside down.** The mapping around the CA range is
+not what session 10's writeup claims. The table at RVA
+0x1a11800..0x1a11a70 in `SILKYPIX64.dll` is 16-byte entries of
+`(uint64 property_id, uint64 name_pointer)`, and the names it points
+to are:
+
+- 0xa048 -> "RawData"
+- 0xa050 -> "Distortion"
+- 0xa051 -> "ColorAberration"
+- 0xa052 -> "Shading"
+- 0xa053 -> "Shading Camera Correction"
+- 0xa054 -> "Shading Camera Setting"
+- 0xa055 -> "Distortion Camera 1st"
+- 0xa056 -> "Distortion Camera 2nd"
+- 0xa057 -> "Distortion Camera Setting"
+- 0xa020 -> "Encryption Key"
+
+This was verified by reading each table entry's byte-8 pointer and
+dereferencing it to the null-terminated string in `.rdata`. The
+verification script and its output are at
+`/tmp/rw2_tca/step23_proptable_verify.py` (regenerable). Session 10's
+writeup claimed `0xa050 -> RawData, 0xa051 -> Distortion,
+0xa052 -> ColorAberration`, off by one entry. Session 11 built the
+rest of its story on top of that shift.
+
+**Consequences of the corrected mapping.**
+
+- The dispatcher `FUN_18074e0f0` calls `FUN_1810ceb30` at three
+  adjacent sites -- RVA 0x74f148 with `r9d = 0xa052`, 0x74f204 with
+  0xa053, 0x74f244 with 0xa054. In session 11's mapping those were CA
+  plus two shading passes. Under the correct mapping they are
+  Shading plus its two camera-correction variants. **The 9-knot
+  polyline that session 11 called "the CA descriptor" is a shading
+  descriptor.**
+- The real ColorAberration property id 0xa051 never appears as an
+  immediate anywhere in the DLL's `.text`. Searched all six
+  register-load encodings (`mov edx/ecx/r8d/r9d, 0xa051`, 32-bit and
+  16-bit forms, and `push 0xa051`): zero hits. The "ColorAberration"
+  string at RVA 0x1617a78 has zero LEA references from `.text`, so
+  the property is not even reached by name lookup.
+- `FUN_1810ce250`, which session 11 called the "0xa020 fetcher", is
+  in fact a hardcoded getter for that specific id: it passes 0xa020
+  directly to the handle's vtable slot 0x990 at RVA 0x10ce2b7
+  (verified in a re-decompile). So 0xa020 is a real property key
+  used at that call site. But its property-table name is not "CA
+  offsets" or anything correction-shaped; it is literally
+  "Encryption Key".
+
+**(A) Raw 0x011b payload -> property mapping: not resolved, and the
+question is now malformed.** The premise was that some slice of the
+0x011b tag flows into property 0xa052 (assumed to be CA) and another
+slice into 0xa020. Under the corrected mapping, 0xa052 is Shading
+and 0xa020 is Encryption Key -- neither is Panasonic's CA correction.
+What was attempted in this session:
+
+- `FUN_1804f3ca0` was re-decompiled with `DecompileOptions.setMaxPayloadMBytes`
+  raised to 1024 (default is 50; that is what silently truncated
+  session 10 as "buffer size exceeded"). The new script is
+  `/tmp/rw2_tca/ghidra_scripts/DecompileBig.java`. Full pseudocode
+  is at `/tmp/rw2_tca/step23_4f3ca0.c` (489 KB, 11243 lines).
+- The function body contains no immediate 0x11b, no immediate 0xa020,
+  0xa050, 0xa051, 0xa052, 0xa053 or 0xa054. Session 12's constant
+  scan (`/tmp/rw2_tca/scan_tags.py`) confirmed this over the full RVA
+  range 0x4f3ca0..0x501fd5. The parser is table-driven, or it is not
+  the tag-0x011b parser at all.
+- Structural evidence for the second option: the caller pattern at
+  RVA 0x4d6020 is `mov r8d, 4; lea rdx, [rdi+0x1a8]; mov rcx, rdi;
+  call 0x4f3ca0`. The third argument is a small integer flag, not an
+  IFD pointer. Inside the function, accesses are of the form
+  `*(ushort *)(param_1 + 0x86f0)` -- reads of fields at fixed
+  offsets on a large struct, not `entry->tag_id` dispatches. Session
+  10 identified this as the private-IFD parser on the strength of
+  size and callee count; the decompile does not support that
+  identification.
+- The real 0x011b tag reader was not located in this session. `0x11b`
+  appears as an immediate in 14 functions across the DLL (session 11
+  had that list); one is `FUN_1804b3860`, decompiled here as a
+  quick check, but that is a "which tags to persist" list-builder
+  (it calls `FUN_1802a73d0(list, 0x11b)` to add 0x11b to a set), not
+  a reader.
+
+**(B) PanaCA plugin R/B split: partially resolved.**
+
+- Plugin id 0x1216 = "IslEISDevelopDemosaicPanaCA" is confirmed
+  independent of session 10's earlier hand-wave. It is the target of
+  a switch-dispatch on plugin id at RVA 0x547756 (function without a
+  `.pdata` entry, so hidden from function-list tools). The switch is
+  `add ecx, -0x11a8; cmp ecx, 0xef; ja default; movsxd rax, ecx; lea
+  r8, [image_base]; movzx eax, byte ptr [r8 + rax + 0x54862c]; mov
+  ecx, dword ptr [r8 + rax*4 + 0x548528]; add rcx, r8; jmp rcx`. For
+  input `ecx = 0x1216` the tables resolve to target RVA 0x5477c6,
+  which is `lea rdx, [rip + 0xea734b]; mov rax, rdx; ret` -- a
+  6-byte thunk that returns the pointer to the string
+  "IslEISDevelopDemosaicPanaCA" (RVA 0x13eeb18). Verified by decoding
+  both dispatch tables against the RVA at RVA 0x5477c6.
+- This is a `GetPluginNameById` function, not the plugin factory. The
+  factory is registered dynamically via the plugin manager and has
+  no static edge from 0x1216 to any factory pointer. The only place
+  the 0x1216 immediate itself appears in `.text` (outside 16-bit
+  false positives) is RVA 0x62f857, and that is a `mov edx, 0x1216`
+  followed by a call to a logger with the source-file string
+  `isleisfilternr3.cpp` -- an error log macro emitting a module id,
+  from a completely unrelated NR3 filter. There is no static call
+  edge to the CA plugin factory.
+- R vs B split therefore stays unresolved by static means. What we
+  know from the plugin's *name* alone is that PanaCA runs during
+  demosaic -- so any per-channel handling would apply at the Bayer
+  stage, not at RGB-triplet stage. What the dead debug format at RVA
+  0x1617dc0 hints (`ColorAbeR:%d, ColorAbeB:%d, ... R:%f, B:%f`) is
+  that the plugin keeps both an integer and a float per channel.
+  This suggests the fourth hypothesis from the task -- "0xa020
+  offsets shift the knots differently per channel" -- is unlikely,
+  and the two-integer + two-float pattern points at either "same
+  curve, per-channel scale" or "two curves, one per channel". Which
+  of those, and where the scalars come from, still needs a runtime
+  trace.
+
+**(C) 0xa020 offset table origin: resolved differently than expected.**
+
+- The property is named "Encryption Key" in the property-id table.
+  The getter at `FUN_1810ce250` (RVA 0x10ce250) passes the hardcoded
+  0xa020 to the handle's vtable slot 0x990 at RVA 0x10ce2b7. It
+  demands the returned buffer have more than 10 int32s, i.e. at
+  least 44 bytes. So it is a real key/blob property, not synthesised
+  from the shading builder's caller.
+- The property's name is a dead string in the codebase (the string
+  "Encryption Key" at RVA 0x1617898 has no LEA references from
+  `.text`; it is only reachable through the property-id table
+  itself). The neighbouring `DataDecryptKey` at RVA 0x13d2c80 is
+  likewise dead. So the label is provenance-only; we cannot see it
+  being used, only stored.
+- No path from the SPD reader to a setter of 0xa020 was located.
+  `DefaultLensInfo.spd` (119 KB) and `DefaultParameters.spd` (7.8
+  MB) are both a 256-byte outer wrapper (`"SILKYPIX\0..." + version
+  "2009042001"`) around an inner `.spx` container (`"ISL Multi
+  purpose file format.\x1a"` magic, followed by a header table and
+  high-entropy body). The bodies decompress or decrypt to something
+  we cannot see statically, and their loader path was not walked.
+- The strongest empirical read is that 0xa020 is a per-image key or
+  small blob rather than per-lens SPD data: the name literally says
+  "Encryption Key", and session 11 saw the shading builder read the
+  same buffer as int32 offsets, which is consistent with the buffer
+  being small and image-derived rather than a wide per-lens table.
+  But this is inference, not observation.
+
+**What the polyline builder at 0x10ceb30 actually is, restated.**
+
+The mechanism session 11 lifted is correct; only its label was
+wrong. The builder:
+
+1. Fetches property 0xa020 ("Encryption Key") via `FUN_1810ce250` as
+   an int32 array. Requires at least 11 int32s. First 7 are used.
+2. Fetches a caller-provided property (Shading in the observed
+   dispatcher path) via vtable slot 0x990. Requires at least 15
+   shorts with the first equal to 7 (a discriminator/version).
+3. Builds a 9-knot IslZCnvPolyLine:
+   - knot[0] = (0.0, 1.0)
+   - for i in 0..6: knot[i+1] = ((payload[i+1] + offsets[i]) / R_half_diag,
+                                 (payload[i+8] - offsets[i]) / 1000.0)
+   - knot[8] = (2.0, knot[6].y)
+4. Hands the polyline to the caller's output slot.
+
+Same mechanism, same knot layout, same 1000.0 divisor, same
+half-diagonal x-normalisation as session 11 documented. What changes
+is the semantics: this is Panasonic's per-image *shading* correction
+curve, plus two variants for camera-corrected shading. Not CA.
+
+**Reconciliation with session 8.**
+
+- *Does the shading builder overlap CA in useful ways?* No. CA and
+  vignetting have different physics and different failure modes.
+  The 9-knot monotone falloff is exactly the shape one wants for a
+  vignetting-style radial gain curve; it is the wrong object for
+  transverse CA, which is a per-channel radial *displacement*, not a
+  scalar gain.
+- *Does SILKYPIX 8 SE decode Panasonic's 0x011b as CA?* Not in any
+  code path this session or the previous ones could reach. There is
+  no immediate reference to `0xa051` (ColorAberration) in `.text`.
+  There is no `LEA` to the `ColorAberration` name string. And the
+  `IslEISScanChromaticAberration` plugin at id 0x13ba, present in
+  the same plugin-name switch, is a *scan* plugin -- it processes
+  demosaiced pixels, not raw-tag metadata. The most likely reading
+  is that SILKYPIX 8 SE ignores Panasonic's per-image CA correction
+  and computes its own from image content.
+- *Should darktable follow SILKYPIX's shape?* Not for CA. Session
+  8's polynomial (or something better) remains the shipping
+  recommendation. The polyline shape session 11 documented is
+  correct for the property it actually reads, but the property is
+  shading, and porting it to darktable's CA path would replace a
+  known-imperfect CA correction with a *wrong-object-class* shading
+  correction. Do not port.
+- *Does anything from session 8 need retracting?* No. Session 8 fit
+  a polynomial against JPEG-measured CA. That measurement is
+  end-to-end (camera fires whatever CA correction it does; the JPEG
+  reflects the outcome; the fit reproduces enough of it to reduce
+  visible CA). It stands or falls on its own JPEG comparison, not
+  on SILKYPIX. Session 8's shipping recommendation is unaffected by
+  session 12's findings.
+
+**Implementation guidance for the darktable patch.**
+
+The concrete guidance is: **ship session 8, do not port session 11's
+spline.** Specifically:
+
+- `src/iop/lens.cc`, `_init_coeffs_md_v2()` (the target file identified
+  in the top-level document). Continue populating the four CA
+  coefficients per channel from the six-word set session 8 identified:
+  `payload[8], payload[10], payload[12], payload[20], payload[23],
+  payload[27]` -- these were fit as regressors against camera-JPEG
+  CA. The fitted coefficient matrix `C_R` / `C_B` and the divisor
+  `K = 11.48` remain the numbers to ship.
+- Do NOT introduce a spline evaluator on the strength of session 11.
+  The 9-knot monotone spline that session 11 lifted is a shading
+  descriptor, and coding it into the CA path would produce
+  systematically wrong shifts.
+- Keep session 10's finding that Panasonic's four-word `0xFFEF`
+  modulus check is not gated by SILKYPIX. That behavioural finding
+  is independent of the property-mapping mistake and is still
+  correct.
+- If a follow-on agent wants to lift the actual CA property (0xa051)
+  path: skip the property-immediate approach entirely (there are no
+  hits) and look for either (a) a property-blob table iterator that
+  walks a list of (id, buffer) pairs and dispatches by id, or (b) a
+  raw-side reader that never enters the property system and feeds
+  the PanaCA plugin directly. Option (b) matches the plugin
+  architecture better -- PanaCA is a demosaic plugin, and if it
+  needs Panasonic's per-image CA correction it would ingest the
+  0x011b bytes at raw-load time, not through the property system.
+
+**Struct fields and loop shape for the shipping session-8 port**
+(unchanged from the top-level document; restated here so a follow-on
+agent has all of it in one place):
+
+- Read the RW2 0x011b tag as a `uint16[32]` array from the Panasonic
+  private IFD (offset already resolved by darktable's existing
+  Exiv2 walk).
+- Extract `w[8]`, `w[10]`, `w[12]`, `w[20]`, `w[23]`, `w[27]` as
+  `int32` (session 3's word[7]-high-byte decode does not apply to
+  these six).
+- Evaluate `C_R[i] = sum_{j=0..5} c_r[i][j] * w[j]` for i in 0..3
+  (four CA coefficients for R), and similarly for B with
+  `c_b[i][j]`. The fitted matrices from session 8 are in
+  `/tmp/rw2_tca/final_fit.npz` under keys `C_R`, `C_B`.
+- For each pixel: compute `r_norm = sqrt(x^2 + y^2) / half_diag`.
+- Apply `dr_R = (C_R[0] + C_R[1]*r_norm + C_R[2]*r_norm^2 +
+  C_R[3]*r_norm^3) * r_norm / K` and analogously for B.
+- Displace the R and B channels by `dr_R * (x/r, y/r)` and
+  `dr_B * (x/r, y/r)` respectively; leave G untouched.
+- `K = 11.48` is the scalar that brings the polynomial output into
+  the same order of magnitude as observed pixel-space shifts. It
+  does not appear as a code constant in SILKYPIX and it is not
+  1000.0; do not conflate the two.
+
+**Honest bounds on what remains undecoded.**
+
+- The Panasonic 0x011b -> in-memory property mapping is not lifted.
+  Session 12 refuted session 11's *identification* of where the
+  mapping ends up (session 11 pointed at 0xa052, which is Shading),
+  but did not find the correct endpoint (0xa051 or a non-property
+  raw-side buffer). It is possible SILKYPIX 8 SE performs no
+  Panasonic-specific CA correction at all.
+- The R/B split at the plugin side is not lifted, and static
+  analysis alone will not lift it: PanaCA has no RTTI, no factory
+  edge from its plugin id, and its methods are reached only through
+  a dynamically-populated vtable. A Frida hook on plugin
+  construction inside `SILKYPIX_DS8SE.exe` at runtime is the only
+  remaining route.
+- The origin of the 0xa020 blob is not lifted. Its property name is
+  "Encryption Key" and its shape (>= 11 int32s) is consistent with
+  a small per-image key rather than a per-lens SPD entry, but
+  neither the setter nor a decrypt path was walked.
+- The property setter for 0xa051, 0xa052, 0xa053, 0xa054 and 0xa020
+  is not located. It is table-driven (none of these ids appear as
+  immediates), so the setter probably iterates a `(tag_id ->
+  property_id, size_hint)` table somewhere in `.rdata`. That table
+  was not scanned for in this session.
+- `FUN_1804f3ca0` is a 58 KB function that turns out probably not to
+  be the RW2 IFD parser at all: its argument shape is `(handle,
+  struct*, small_int_flag)`, its body accesses fixed struct fields
+  rather than iterating IFD entries, and it contains no immediate
+  0x11b. Session 10's identification of it as "the 88 KB private-IFD
+  parser" and session 11's "58 KB body which timed out on decompile"
+  characterisation of the same function are still accurate as sizes
+  and boundaries, but the *role* attribution is not supported by
+  the code. Neither session actually verified the role; both
+  inferred it from size.
+
+**What session 12 delivered vs. what it did not.**
+
+- (A) partially: refuted session 11's mapping claim, showed the
+  polyline is shading not CA, showed the CA property is not reached
+  by immediate or name. Did not find the actual 0x011b->property
+  writer.
+- (B) partially: confirmed 0x1216 = PanaCA via the plugin-name
+  switch, decoded both jump-table indexes, and ruled out a static
+  factory edge. Did not lift the plugin's per-channel behaviour.
+- (C) resolved differently: the property is named "Encryption Key"
+  in the code, not a per-lens offset table. No SPD-side path to a
+  0xa020 setter was found. Whether this refutes "0xa020 comes from
+  SPD" or just moves the question depends on what "Encryption Key"
+  actually points at in a running SILKYPIX; static analysis cannot
+  say.
+
+**Files this session:**
+
+- `/tmp/rw2_tca/ghidra_scripts/DecompileBig.java`: new Ghidra script
+  that raises `DecompileOptions.setMaxPayloadMBytes` to 1024. This
+  is what let `FUN_1804f3ca0` decompile at all; the default 50 MB
+  is what session 10 hit as "buffer size exceeded".
+- `/tmp/rw2_tca/dis_rva.py`, `/tmp/rw2_tca/rip_scan.py`,
+  `/tmp/rw2_tca/callees.py`, `/tmp/rw2_tca/scan_tags.py`: pefile +
+  capstone helpers for out-of-Ghidra checks (RIP-relative reference
+  scans, callee enumeration, tag-immediate scans). They work
+  concurrently with a Ghidra decompile that holds the project lock,
+  which was the constraint that broke a second Ghidra run mid-session.
+- `/tmp/rw2_tca/step23_4f3ca0.c`: full decompile of `FUN_1804f3ca0`.
+- `/tmp/rw2_tca/step23_10ce250.c`, `/tmp/rw2_tca/step23_10ceb30.c`:
+  re-decompiles of the property getter and the polyline builder, run
+  to verify session 11's reading of the code against the corrected
+  property mapping. Confirmed: session 11's *code* trace is right;
+  the label attached to the code was wrong.
+- `/tmp/rw2_tca/step23_ripscan.txt`: RIP-relative reference dump for
+  the PanaCA name-getter thunks and the plugin factory macros.
+- `/tmp/rw2_tca/step23_parser_scan.txt`: constant-immediate scan
+  over the `FUN_1804f3ca0` body, showing zero hits for any 0xa0XX
+  property id.
+- `/tmp/rw2_tca/step23_callees.txt`: 296 unique callees of the
+  putative parser, most of them thin field accessors.
+- `/tmp/rw2_tca/step23_508e30.txt`, `/tmp/rw2_tca/step23_508f50.txt`
+  (available on rerun): disassembly around the sites session 11's
+  const-xref scan flagged as `0xa020` immediates inside the parser.
+  These turned out to be stack-frame offsets (`lea rcx, [rbp +
+  0xa020]`), not property ids, further weakening the "session-11
+  parser writes 0xa020" story.
+
 ## Reverse-engineering next steps
 
 Everything below is a plan for the follow-on agent. Nothing here has been
