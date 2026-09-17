@@ -36,12 +36,15 @@
 // the format version written into every new file
 #define DTDATA_VERSION "1\n"
 #define DTDATA_VERSION_ENTRY "version"
+// well above any sensor; a mask larger than the image has no use
+#define DTDATA_MAX_PIXELS ((size_t)256 << 20)
 
 // larger than any mask we would store; a bigger entry is damage, not data
 #define DTDATA_MAX_ENTRY_SIZE ((int64_t)256 << 20)
 
 // writers rename over the zip, which Windows refuses while a reader has it
-// open. not recursive: nothing under the write lock may call _zip_read/_zip_list
+// open. not recursive: under the write lock use _zip_list_unlocked, never
+// _zip_read or _zip_list
 static GRWLock _lock;
 
 typedef struct _scanner_t
@@ -236,29 +239,29 @@ static float *_decode_gray_png(const uint8_t *data,
   if(bit_depth == 16) png_set_swap(png);
   png_read_update_info(png, info);
 
+  // the zip size cap sees compressed bytes: a tiny entry can still declare
+  // a huge image, so bound the pixels before allocating for them
+  if((size_t)w * h > DTDATA_MAX_PIXELS) png_error(png, "image too large");
+
   const size_t rowbytes = png_get_rowbytes(png, info);
   const int out_depth = png_get_bit_depth(png, info);
-  rows = dt_alloc_aligned(rowbytes * h);
+  rows = dt_alloc_aligned(rowbytes);
   mask = dt_alloc_align_float((size_t)w * h);
   if(!rows || !mask) png_error(png, "out of memory");
 
+  // one row at a time straight into the mask, no second full-size buffer
+  const float norm = out_depth == 16 ? 1.0f / 65535.0f : 1.0f / 255.0f;
   for(png_uint_32 y = 0; y < h; y++)
-    png_read_row(png, rows + (size_t)y * rowbytes, NULL);
+  {
+    png_read_row(png, rows, NULL);
+    float *out = mask + (size_t)y * w;
+    if(out_depth == 16)
+      for(png_uint_32 x = 0; x < w; x++) out[x] = ((const uint16_t *)rows)[x] * norm;
+    else
+      for(png_uint_32 x = 0; x < w; x++) out[x] = rows[x] * norm;
+  }
   png_read_end(png, NULL);
   png_destroy_read_struct(&png, &info, NULL);
-
-  if(out_depth == 16)
-  {
-    const float norm = 1.0f / 65535.0f;
-    for(size_t k = 0; k < (size_t)w * h; k++)
-      mask[k] = ((const uint16_t *)rows)[k] * norm;
-  }
-  else
-  {
-    const float norm = 1.0f / 255.0f;
-    for(size_t k = 0; k < (size_t)w * h; k++)
-      mask[k] = rows[k] * norm;
-  }
   dt_free_align(rows);
   *width = (int)w;
   *height = (int)h;
@@ -473,11 +476,11 @@ static GBytes *_zip_read(const char *path, const char *name)
 
 // entry names without "version", sorted. NULL with *ok FALSE when the zip
 // could not be read to its end, so a damaged file does not look merely short
-static GList *_zip_list(const char *path, gboolean *ok)
+// caller holds the lock, either side
+static GList *_zip_list_unlocked(const char *path, gboolean *ok)
 {
   GList *list = NULL;
   *ok = FALSE;
-  g_rw_lock_reader_lock(&_lock);
   struct archive *r = archive_read_new();
   FILE *f = _zip_open_read(r, path);
   if(f)
@@ -496,7 +499,6 @@ static GList *_zip_list(const char *path, gboolean *ok)
   }
   archive_read_free(r);
   if(f) fclose(f);
-  g_rw_lock_reader_unlock(&_lock);
   if(!*ok)
   {
     g_list_free_full(list, g_free);
@@ -505,11 +507,59 @@ static GList *_zip_list(const char *path, gboolean *ok)
   return g_list_sort(list, (GCompareFunc)g_strcmp0);
 }
 
+static GList *_zip_list(const char *path, gboolean *ok)
+{
+  g_rw_lock_reader_lock(&_lock);
+  GList *list = _zip_list_unlocked(path, ok);
+  g_rw_lock_reader_unlock(&_lock);
+  return list;
+}
+
 GList *dt_dtdata_file_list_entries(const char *path)
 {
   if(!path || !g_file_test(path, G_FILE_TEST_EXISTS)) return NULL;
   gboolean ok = FALSE;
   return _zip_list(path, &ok);
+}
+
+GList *dt_dtdata_find_all(const char *image_path)
+{
+  GList *list = NULL;
+  if(!image_path || !*image_path) return NULL;
+  gchar *dir = g_path_get_dirname(image_path);
+  gchar *base = g_path_get_basename(image_path);
+  const char *dot = strrchr(base, '.');
+  const size_t stem_len = dot ? (size_t)(dot - base) : strlen(base);
+  const char *ext = dot ? dot : "";
+  gchar *tail = g_strconcat(ext, DT_DTDATA_EXT, NULL);
+  const size_t tail_len = strlen(tail);
+
+  GDir *d = g_dir_open(dir, 0, NULL);
+  const char *name;
+  while(d && (name = g_dir_read_name(d)))
+  {
+    const size_t len = strlen(name);
+    if(len < stem_len + tail_len || strncmp(name, base, stem_len)
+       || strcmp(name + len - tail_len, tail))
+      continue;
+    // between the stem and the tail: nothing, or "_" and digits only
+    const char *v = name + stem_len;
+    const char *vend = name + len - tail_len;
+    if(v != vend)
+    {
+      if(*v != '_' || v + 1 == vend) continue;
+      gboolean digits = TRUE;
+      for(const char *c = v + 1; c < vend; c++)
+        if(!g_ascii_isdigit(*c)) digits = FALSE;
+      if(!digits) continue;
+    }
+    list = g_list_prepend(list, g_build_filename(dir, name, NULL));
+  }
+  if(d) g_dir_close(d);
+  g_free(tail);
+  g_free(base);
+  g_free(dir);
+  return g_list_sort(list, (GCompareFunc)g_strcmp0);
 }
 
 // --- entries ---
@@ -636,7 +686,13 @@ gboolean dt_dtdata_file_merge(const char *src_path, const char *dst_path)
     const char *name = l->data;
     if(g_list_find_custom(have, name, (GCompareFunc)g_strcmp0)) continue;
     GBytes *data = _zip_read(src_path, name);
-    if(!data) continue;
+    // skipping it would report a merge that left the entry behind, and a
+    // caller may then drop the source
+    if(!data)
+    {
+      ok = FALSE;
+      break;
+    }
     gsize len = 0;
     const void *bytes = g_bytes_get_data(data, &len);
     g_rw_lock_writer_lock(&_lock);
@@ -654,11 +710,17 @@ gboolean dt_dtdata_file_sweep(const char *path,
                               const uint32_t kinds)
 {
   if(!path || !g_file_test(path, G_FILE_TEST_EXISTS)) return TRUE;
+  // listed and rewritten under one lock, so a concurrent write is either
+  // in the listing or after the rewrite, never lost in between
+  g_rw_lock_writer_lock(&_lock);
   // a zip that cannot be read through would look emptier than it is
   gboolean listed = FALSE;
-  GList *entries = _zip_list(path, &listed);
-  if(!listed) return FALSE;
-  if(!entries) return TRUE;
+  GList *entries = _zip_list_unlocked(path, &listed);
+  if(!listed || !entries)
+  {
+    g_rw_lock_writer_unlock(&_lock);
+    return listed;
+  }
 
   GList *drop = NULL;
   int remaining = 0;
@@ -677,15 +739,14 @@ gboolean dt_dtdata_file_sweep(const char *path,
   gboolean ok = TRUE;
   if(drop)
   {
-    g_rw_lock_writer_lock(&_lock);
     if(remaining == 0)
       ok = g_unlink(path) == 0;
     else
       ok = _zip_rewrite(path, drop, NULL, NULL, 0);
-    g_rw_lock_writer_unlock(&_lock);
     dt_print(DT_DEBUG_MASKS, "[dtdata] swept %d unreferenced entries from '%s'%s",
              g_list_length(drop), path, remaining ? "" : ", file removed");
   }
+  g_rw_lock_writer_unlock(&_lock);
   g_list_free_full(drop, g_free);
   return ok;
 }
@@ -758,18 +819,6 @@ void dt_dtdata_sweep(const dt_imgid_t imgid)
     dt_print(DT_DEBUG_MASKS, "[dtdata] history of image %d has unreadable params, '%s' not swept",
              imgid, path);
   g_list_free_full(keep, g_free);
-}
-
-void dt_dtdata_delete(const dt_imgid_t imgid)
-{
-  if(!dt_is_valid_imgid(imgid)) return;
-  char path[PATH_MAX] = { 0 };
-  dt_dtdata_path(imgid, path, sizeof(path));
-  if(!path[0]) return;
-  g_rw_lock_writer_lock(&_lock);
-  if(g_file_test(path, G_FILE_TEST_EXISTS) && g_unlink(path) == 0)
-    dt_print(DT_DEBUG_MASKS, "[dtdata] removed '%s'", path);
-  g_rw_lock_writer_unlock(&_lock);
 }
 
 gboolean dt_dtdata_write_gray(const dt_imgid_t imgid,

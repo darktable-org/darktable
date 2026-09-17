@@ -257,13 +257,17 @@ static void _vectorize_button_clicked(GtkWidget *widget,
   }
 }
 
+// sbpc, when given, is the depth worth storing: 16 for a 16-bit PNG or a
+// float PFM, 8 otherwise
 static float *_read_rasterfile(char *filename,
                                const dt_iop_rasterfile_mode_t mode,
                                int *swidth,
-                               int *sheight)
+                               int *sheight,
+                               int *sbpc)
 {
   *swidth = 0;
   *sheight = 0;
+  if(sbpc) *sbpc = 8;
   if(!filename || filename[0] == 0) return NULL;
 
   const char *extension = g_strrstr(filename, ".");
@@ -344,6 +348,7 @@ static float *_read_rasterfile(char *filename,
     dt_free_align(buf);
     *swidth = width;
     *sheight = height;
+    if(sbpc) *sbpc = png.bit_depth == 16 ? 16 : 8;
     return mask;
   }
 
@@ -373,6 +378,7 @@ static float *_read_rasterfile(char *filename,
 
   *swidth = width;
   *sheight = height;
+  if(sbpc) *sbpc = 16;
   dt_free_align(image);
   return mask;
 }
@@ -488,13 +494,10 @@ static void _import_file(dt_iop_module_t *self)
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *filepath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    int width = 0, height = 0;
-    float *mask = _read_rasterfile(filepath, p->mode, &width, &height);
+    int width = 0, height = 0, bpc = 8;
+    float *mask = _read_rasterfile(filepath, p->mode, &width, &height, &bpc);
     if(mask)
     {
-      // PFM carries float data worth keeping at 16 bit; PNG input is 8 bit already
-      const char *ext = g_strrstr(filepath, ".");
-      const int bpc = (ext && !g_ascii_strcasecmp(ext, ".pfm")) ? 16 : 8;
       dt_dtdata_ref_t ref;
       if(dt_dtdata_write_gray(imgid, DT_DTDATA_KIND_MASK, DT_DTDATA_ORIGIN_AUTHORITATIVE,
                               "rasterfile import", mask, width, height, bpc, &ref))
@@ -577,7 +580,7 @@ static float *_get_rasterfile_mask(dt_dev_pixelpipe_iop_t *piece,
     {
       dt_print(DT_DEBUG_PIPE,
                "read image raster file `%s'", d->filepath);
-      cd->mask = _read_rasterfile(d->filepath, d->mode, &cd->width, &cd->height);
+      cd->mask = _read_rasterfile(d->filepath, d->mode, &cd->width, &cd->height, NULL);
     }
     cd->hash = cd->mask ? hash : DT_INVALID_HASH;
     dt_print(DT_DEBUG_PIPE,

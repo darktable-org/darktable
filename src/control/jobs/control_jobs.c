@@ -1095,17 +1095,6 @@ static char *_get_image_list(GList *l)
   return buffer;
 }
 
-// the .dtdata sidecar that belongs to an xmp path, or NULL if the path
-// does not end in .xmp
-static gchar *_dtdata_for_xmp(const char *xmp)
-{
-  if(!g_str_has_suffix(xmp, ".xmp")) return NULL;
-  gchar *base = g_strndup(xmp, strlen(xmp) - strlen(".xmp"));
-  gchar *data = g_strconcat(base, DT_DTDATA_EXT, NULL);
-  g_free(base);
-  return data;
-}
-
 static void _set_remove_flag(char *imgs)
 {
   sqlite3_stmt *stmt = NULL;
@@ -1572,15 +1561,22 @@ static int32_t _control_delete_images_job_run(dt_job_t *job)
             delete_status = delete_file_from_disk(file_iter->data, &delete_on_error);
             if(delete_status != _DT_DELETE_STATUS_DELETED)
               break;
-            // the .dtdata beside each xmp goes with it
-            gchar *data = _dtdata_for_xmp(file_iter->data);
-            if(data && g_file_test(data, G_FILE_TEST_EXISTS))
-              delete_status = delete_file_from_disk(data, &delete_on_error);
-            g_free(data);
-            if(delete_status != _DT_DELETE_STATUS_DELETED)
-              break;
           }
           g_list_free_full(files, g_free);
+
+          // .dtdata sidecars are found on their own: with lazy sidecar
+          // writing an xmp may not exist yet while the .dtdata does
+          if(delete_status == _DT_DELETE_STATUS_DELETED)
+          {
+            GList *data = dt_dtdata_find_all(filename);
+            for(GList *l = data; l; l = g_list_next(l))
+            {
+              delete_status = delete_file_from_disk(l->data, &delete_on_error);
+              if(delete_status != _DT_DELETE_STATUS_DELETED)
+                break;
+            }
+            g_list_free_full(data, g_free);
+          }
         }
       }
       else

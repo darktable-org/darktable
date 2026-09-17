@@ -128,8 +128,10 @@ void dt_dtdata_register_scanner(const char *op,
     params blob leaves the file alone */
 void dt_dtdata_sweep(const dt_imgid_t imgid);
 
-/** remove the sidecar, for discarding the history */
-void dt_dtdata_delete(const dt_imgid_t imgid);
+/** every sidecar of an image file and its duplicates, "<name>.<ext>.dtdata"
+    and "<name>_<digits>.<ext>.dtdata" beside it, whether or not an xmp
+    exists. a GList of paths, free with g_list_free_full(list, g_free) */
+GList *dt_dtdata_find_all(const char *image_path);
 
 /* file-level primitives, on explicit sidecar paths. the imgid functions
    above resolve the path and call these; tests call them directly */

@@ -36,7 +36,8 @@ cache with it, so masks imported while the original is offline land in
 the cache sidecar and earlier ones stay readable; a read that finds no
 entry beside the original falls back to the cache sidecar while the
 image has a local copy. Resetting the local copy merges the cache
-sidecar back into the original's and deletes it. On read the SHA-1 is
+sidecar back into the original's and deletes it; if the merge fails the
+local copy is kept whole for a retry. On read the SHA-1 is
 checked against the name; a missing or damaged entry is an empty mask
 and a log line.
 
@@ -60,8 +61,10 @@ the entries:
 - `dt_dtdata_merge()`: copy one image's entries into another's; called
   from `dt_history_copy_and_paste_on_image()` because a pasted reference
   needs its entry on the destination
-- `dt_dtdata_register_scanner()`, `dt_dtdata_sweep()`, `dt_dtdata_delete()`:
+- `dt_dtdata_register_scanner()`, `dt_dtdata_sweep()`:
   cleanup, see below
+- `dt_dtdata_find_all()`: the sidecars of an image and its duplicates by
+  name pattern, for the delete job, since an xmp may not exist yet
 - `dt_dtdata_file_*`: the same on explicit paths, used by the cmocka test
   `src/tests/unittests/common/test_dtdata.c`
 
@@ -81,9 +84,10 @@ darkroom session and older history items can be clicked at any time, so
 reset, instance delete and re-import never touch the file. The sweep runs
 when the darkroom leaves or switches image, right after the history is
 written, and from the lighttable "compress history" job, which has no
-undo. "discard history" deletes the file, from the lighttable action and from
-the Lua `image:reset()`; the lighttable undo of it brings the history
-back without its masks.
+undo. "discard history" leaves the file alone, since the lighttable undo
+can bring the history back; the sweep removes the orphaned entries, and
+the file once it is empty, the next time the image is left in the darkroom
+or compressed.
 
 Modules are plugins, so core code cannot read their params. A producer
 registers a scanner from `init_global()`, "given a params blob and its
@@ -101,8 +105,9 @@ only newer-version rows referenced.
 
 ## Lifecycle
 
-The sidecar follows the XMP in `dt_image_rename()` (move and rename),
-both branches of the delete job, and local-copy reset. It is refused as
+The sidecar follows the XMP in `dt_image_rename()` (move and rename; a
+sidecar that cannot be moved is copied, since its masks exist nowhere
+else), both branches of the delete job, and local-copy reset. It is refused as
 an importable file. Copies and duplicates get their entries through the
 history paste. Not handled yet: the "write sidecar files" action (the
 file is written at import time, not synced from the database), the

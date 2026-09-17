@@ -394,6 +394,140 @@ static void test_sweep_keep_absent(void **state)
   dt_free_align(a);
 }
 
+// a source with an entry that cannot be read must fail the merge and leave
+// the destination alone: a caller may drop the source once the merge succeeds
+static void test_merge_unreadable_entry(void **state)
+{
+  _fixture_t *f = *state;
+  gchar *other = g_build_filename(f->dir, "IMG_0001_01.RAF.dtdata", NULL);
+  const int w = 64, h = 64;
+  float *a = _make_mask(w, h);
+  float *b = _make_noise(w, h, 7);
+  dt_dtdata_ref_t ra, rb;
+
+  assert_true(dt_dtdata_file_write_gray(other, DT_DTDATA_KIND_MASK, 0, NULL, a, w, h, 8, &ra));
+  assert_true(dt_dtdata_file_write_gray(f->path, DT_DTDATA_KIND_MASK, 0, NULL, a, w, h, 8, &ra));
+  assert_true(dt_dtdata_file_write_gray(f->path, DT_DTDATA_KIND_MASK, 0, NULL, b, w, h, 8, &rb));
+
+  // zero the start of b's compressed data so the entry cannot inflate
+  gchar *bytes = NULL;
+  gsize len = 0;
+  assert_true(g_file_get_contents(f->path, &bytes, &len, NULL));
+  // the zip holds NUL bytes, so search it by hand
+  const gsize nlen = strlen(rb.entry);
+  gsize data_off = 0;
+  for(gsize i = 0; i + nlen < len && !data_off; i++)
+    if(!memcmp(bytes + i, rb.entry, nlen)) data_off = i + nlen;
+  assert_true(data_off > 0);
+  memset(bytes + data_off, 0, 32);
+  assert_true(g_file_set_contents(f->path, bytes, len, NULL));
+  g_free(bytes);
+
+  int rw, rh;
+  assert_null(dt_dtdata_file_read_gray(f->path, &rb, &rw, &rh));
+
+  gchar *before = NULL;
+  gsize before_len = 0;
+  assert_true(g_file_get_contents(other, &before, &before_len, NULL));
+  assert_false(dt_dtdata_file_merge(f->path, other));
+  gchar *after = NULL;
+  gsize after_len = 0;
+  assert_true(g_file_get_contents(other, &after, &after_len, NULL));
+  assert_int_equal(before_len, after_len);
+  assert_memory_equal(before, after, before_len);
+  g_free(before);
+  g_free(after);
+
+  g_free(other);
+  dt_free_align(a);
+  dt_free_align(b);
+}
+
+// merging a damaged source into a missing destination copies it verbatim:
+// whatever was readable in the source is readable in the copy, so dropping
+// the source afterwards loses nothing
+static void test_merge_truncated_source_into_missing(void **state)
+{
+  _fixture_t *f = *state;
+  gchar *other = g_build_filename(f->dir, "IMG_0001_01.RAF.dtdata", NULL);
+  const int w = 64, h = 64;
+  float *a = _make_noise(w, h, 3);
+  float *b = _make_noise(w, h, 4);
+  float *c = _make_noise(w, h, 5);
+  dt_dtdata_ref_t ra, rb, rc;
+  int rw, rh;
+
+  assert_true(dt_dtdata_file_write_gray(f->path, DT_DTDATA_KIND_MASK, 0, NULL, a, w, h, 8, &ra));
+  assert_true(dt_dtdata_file_write_gray(f->path, DT_DTDATA_KIND_MASK, 0, NULL, b, w, h, 8, &rb));
+  assert_true(dt_dtdata_file_write_gray(f->path, DT_DTDATA_KIND_MASK, 0, NULL, c, w, h, 8, &rc));
+
+  gchar *bytes = NULL;
+  gsize len = 0;
+  assert_true(g_file_get_contents(f->path, &bytes, &len, NULL));
+  assert_true(g_file_set_contents(f->path, bytes, len * 6 / 10, NULL));
+
+  // what the truncated source can still deliver
+  float *src_a = dt_dtdata_file_read_gray(f->path, &ra, &rw, &rh);
+  float *src_c = dt_dtdata_file_read_gray(f->path, &rc, &rw, &rh);
+  assert_non_null(src_a);
+  assert_null(src_c);
+
+  assert_false(g_file_test(other, G_FILE_TEST_EXISTS));
+  assert_true(dt_dtdata_file_merge(f->path, other));
+
+  gchar *copy = NULL;
+  gsize copy_len = 0;
+  assert_true(g_file_get_contents(other, &copy, &copy_len, NULL));
+  assert_int_equal(copy_len, len * 6 / 10);
+  assert_memory_equal(copy, bytes, copy_len);
+
+  // the source is gone, as after a local-copy reset; the copy serves the same
+  g_unlink(f->path);
+  float *dst_a = dt_dtdata_file_read_gray(other, &ra, &rw, &rh);
+  assert_non_null(dst_a);
+  assert_true(_max_abs_diff(src_a, dst_a, (size_t)w * h) == 0.0f);
+  assert_null(dt_dtdata_file_read_gray(other, &rc, &rw, &rh));
+
+  dt_free_align(src_a);
+  dt_free_align(dst_a);
+  g_free(copy);
+  g_free(bytes);
+  g_free(other);
+  dt_free_align(a);
+  dt_free_align(b);
+  dt_free_align(c);
+}
+
+// the finder matches the image's own sidecar and its numbered duplicates,
+// nothing else in the folder
+static void test_find_all(void **state)
+{
+  _fixture_t *f = *state;
+  const char *names[] = { "IMG_0001.RAF.dtdata", "IMG_0001_01.RAF.dtdata", "IMG_0001_1234.RAF.dtdata",
+                          "IMG_0001.RAF.xmp", "IMG_00012.RAF.dtdata", "IMG_0001_ab.RAF.dtdata",
+                          "IMG_0001_.RAF.dtdata", "IMG_0001_01.JPG.dtdata", "IMG_0002.RAF.dtdata", NULL };
+  for(int i = 0; names[i]; i++)
+  {
+    gchar *p = g_build_filename(f->dir, names[i], NULL);
+    assert_true(g_file_set_contents(p, "x", 1, NULL));
+    g_free(p);
+  }
+  gchar *image = g_build_filename(f->dir, "IMG_0001.RAF", NULL);
+  GList *found = dt_dtdata_find_all(image);
+  assert_int_equal(g_list_length(found), 3);
+  const char *expect[] = { "IMG_0001.RAF.dtdata", "IMG_0001_01.RAF.dtdata", "IMG_0001_1234.RAF.dtdata" };
+  int i = 0;
+  for(GList *l = found; l; l = g_list_next(l), i++)
+  {
+    gchar *b = g_path_get_basename(l->data);
+    assert_string_equal(b, expect[i]);
+    g_free(b);
+  }
+  g_list_free_full(found, g_free);
+  assert_null(dt_dtdata_find_all(""));
+  g_free(image);
+}
+
 static void test_path_for_image(void **state)
 {
   char path[64];
@@ -415,6 +549,9 @@ int main(void)
     cmocka_unit_test_setup_teardown(test_sweep, _setup, _teardown),
     cmocka_unit_test_setup_teardown(test_truncated, _setup, _teardown),
     cmocka_unit_test_setup_teardown(test_sweep_keep_absent, _setup, _teardown),
+    cmocka_unit_test_setup_teardown(test_merge_unreadable_entry, _setup, _teardown),
+    cmocka_unit_test_setup_teardown(test_merge_truncated_source_into_missing, _setup, _teardown),
+    cmocka_unit_test_setup_teardown(test_find_all, _setup, _teardown),
     cmocka_unit_test(test_path_for_image),
   };
   return cmocka_run_group_tests(tests, NULL, NULL);
