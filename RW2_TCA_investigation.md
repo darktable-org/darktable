@@ -789,6 +789,305 @@ fails is only on files where the tag's own polynomial predicts near-
 zero correction, and there the failure mode is "we apply nothing
 useful" rather than "we apply a mis-scaled correction".
 
+### DNG WarpRectilinear ground truth (session 5)
+
+The prior sessions were fitting 0x011b against pixel measurements. This
+session drops that. Adobe DNG Converter renders every RW2 in the corpus
+into a DNG that carries a `WarpRectilinear` opcode -- Adobe's own
+per-plane radial correction, meant to reproduce whatever Panasonic's
+in-camera algorithm applies. The opcode floats are the CA target the
+smooth words in 0x011b have to encode.
+
+**What the opcode holds.** `OpcodeList3` on every DNG in
+`/c/temp/tca/dng/*.dng` is a single `WarpRectilinear` (opcode id 1)
+with three planes (R, G, B) and per plane six doubles
+`(k_r0, k_r1, k_r2, k_r3, k_t0, k_t1)` plus an image-shared center
+`(cx, cy)`. The DNG spec applies each plane as
+
+```
+R_source = R_dest * (k_r0 + k_r1 * R^2 + k_r2 * R^4 + k_r3 * R^6)
+```
+
+with `R` the destination distance from `(cx, cy)`, normalized so that
+the corner is `R = 1`. `k_t0` and `k_t1` are the tangential terms
+and are exactly zero on all 18 files. Centers sit at `(0.5000, 0.5000)`
+on G9 files and `(0.4987, 0.5000)` on GX80 files -- Adobe crops one raw
+column on the GX80. All numbers below come from
+`/tmp/rw2_tca/step8_dng_opcodes.py` and the dataset dump at
+`/tmp/rw2_tca/decode_dataset.npz`
+(reader: `/tmp/rw2_tca/step9_build_dataset.py`).
+
+Define per file
+
+```
+D_R[i] = plane_R.k_r[i] - plane_G.k_r[i]     i in 0..3
+D_B[i] = plane_B.k_r[i] - plane_G.k_r[i]
+```
+
+so that the G plane carries whatever distortion Panasonic wants applied
+in common to all three channels, and `D_R`, `D_B` carry the
+pure-per-channel offset. `|D_R|` and `|D_B|` sit in the 1e-5 to 1e-3
+range across the corpus.
+
+**Sanity check: G plane vs Rigo 0x0119.** DNG's polynomial takes the
+undistorted radius as input and returns the distorted radius, which is
+the multiplicative inverse of Panasonic's `Ru = Rd * (1 + s*(a*Rd^2 +
+b*Rd^4 + c*Rd^6))`. `/tmp/rw2_tca/step10_fit.py` inverts the Rigo
+polynomial numerically on `[0, 1.05]`, fits a four-term polynomial in
+`R^2`, and compares against the DNG G plane per file. On the 12
+files where 0x0119 is enabled, the per-coefficient agreement is close
+(k_r1, k_r2 and k_r3 typically within a few percent) but the DNG G
+plane adds a small per-file scaling: `k_r0` sits at 0.9987 on PL 12-60
+@ 12mm, 0.9956 at 25mm, 0.9929 at 60mm, and 1.0000 on the primes and
+Lumix 42.5. Adobe renormalizes the whole polynomial by that factor,
+presumably to keep the destination inside the frame. On the six L
+45-150 files with `flag = 0` on 0x0119 the DNG G plane is identity
+`(1, 0, 0, 0)`, matching session 3's finding that the camera applies
+no distortion correction to those.
+
+So the DNG-G-to-Panasonic-0x0119 mapping is what we expected up to a
+per-file Adobe framing constant. The check does not decode anything new;
+it confirms the RGB planes carry Panasonic's own coefficients rather
+than Adobe's rederivation.
+
+**Decode result.** Two regressions, one per differential:
+
+```
+D_R[i] = sum_j C_R[i, j] * word[smooth_j]        i in 0..3
+D_B[i] = sum_j C_B[i, j] * word[smooth_j]
+```
+
+with `smooth_j in {2, 8, 10, 12, 20, 23, 26, 27, 29}` from prior
+sessions. 18 files provide the observations, so with 9 predictors the
+in-sample fit is nearly perfect and unhelpful; the honest metric is
+cross-validation. Two schemes:
+
+- **LOO** (`step10_fit.py`): drop one file, fit on 17, predict the
+  dropped one. LOO leaks the same-lens/same-focal sibling from the
+  other body into training, so it reports 0.99 R^2 on almost every k
+  and is not the metric we care about.
+- **LOGO** (`step11_cv.py`, `step14_final.py`): drop the pair
+  `(G9_file, GX80_file)` that share `(lens, focal)`, fit on the other
+  16, predict both. This is the fair test for whether the fit
+  generalizes across bodies at unseen lens configurations.
+
+Under LOGO with all nine smooth words, the fit works cleanly on `k_r0`
+and `k_r1` (R^2_LOGO 0.90-0.99) but collapses on `k_r2` and `k_r3`
+(0.73 down to -4.5). Dropping the three words with the largest
+between-file dynamic range -- `w[2]` (a per-lens family baseline
+running 0-30000), `w[26]` and `w[29]` -- and refitting with the
+remaining six recovers the higher orders on the R channel:
+
+*Reduced predictor set:* `w[8]`, `w[10]`, `w[12]`, `w[20]`, `w[23]`,
+`w[27]`. Six words, four coefficients, so `C_R` and `C_B` are 4 x 6
+matrices.
+
+*D_R LOGO R^2* (`step14_final.py`, `step16_final_report.py`):
+
+| coefficient | R^2_train | R^2_LOGO | RMS_train | max abs value |
+|:------------|----------:|---------:|----------:|--------------:|
+| k_r0        |     0.996 |    0.994 |  2.17e-05 |      6.10e-04 |
+| k_r1        |     0.998 |    0.990 |  1.51e-05 |      6.21e-04 |
+| k_r2        |     0.988 |    0.973 |  2.05e-05 |      4.95e-04 |
+| k_r3        |     0.989 |    0.975 |  1.41e-05 |      3.69e-04 |
+
+All four coefficients generalize. Worst per-file LOGO residual is
+1.3e-04 on G9 PL 12-60 @ 12mm (the strongest-CA file in the corpus,
+`|D_R|` = 1.0e-3, 12% relative). Median per-file LOGO residual is
+5.4e-05, about 15% of the mean `|D_R|`.
+
+*D_B LOGO R^2:*
+
+| coefficient | R^2_train | R^2_LOGO | RMS_train | max abs value |
+|:------------|----------:|---------:|----------:|--------------:|
+| k_r0        |     0.995 |    0.993 |  1.14e-05 |      3.94e-04 |
+| k_r1        |     0.996 |    0.988 |  1.77e-05 |      4.10e-04 |
+| k_r2        |     0.858 |    0.331 |  5.71e-05 |      2.95e-04 |
+| k_r3        |     0.810 |    0.080 |  3.66e-05 |      1.89e-04 |
+
+R and B agree on the low orders but B's `k_r2` and `k_r3` do not
+generalize. Cause: the actual `D_B` values differ substantially between
+bodies at the same lens and focal. For example on Lumix 42.5, G9
+`D_B.k_r2 = -2.3e-05`, GX80 `D_B.k_r2 = -8.6e-05`; on L 45-150 @ 97mm,
+G9 = +1.3e-04, GX80 = +3.8e-05. That is a 3-4x cross-body swing, and it
+persists no matter which words or which scaling we use. The dominant
+low-order B correction is decoded; the higher-order shape is not, and a
+larger scan across bodies and word subsets (`step13_sweep.py`,
+`step14_final.py::d_b_subset_search`) does not close the gap. Best
+single-target LOGO R^2 for `D_B.k_r2` across all subsets tested is
+0.79; for `D_B.k_r3` it is 0.80, but no subset delivers both above 0.7
+simultaneously.
+
+*Evaluated at the pipeline output.* `step12_curve_eval.py` computes
+`D_R_curve(R) = k_r0 + k_r1*R^2 + k_r2*R^4 + k_r3*R^6` and its
+equivalent for B, at R = 0.25, 0.50, 0.75, 1.00. Under LOGO on the
+reduced set:
+
+| R    | D_R R^2_LOGO | D_B R^2_LOGO |
+|:-----|-------------:|-------------:|
+| 0.25 |        0.896 |        0.962 |
+| 0.50 |        0.893 |        0.967 |
+| 0.75 |        0.879 |        0.976 |
+| 1.00 |        0.484 |        0.881 |
+
+So the polynomial *value* -- the quantity the pipeline actually uses to
+resample -- is predicted well in the interior for both channels, with
+`D_R` degrading at R = 1.0 because the PL 12-60 @ 12mm outlier has
+strong opposing k_r2 and k_r3 that partially cancel in the interior and
+compound at the corner. The corner error in pixels is 0.03-0.75 px on
+15 of 18 files and 1.4 px on the PL 12-60 @ 12mm pair.
+
+**Physical sanity.**
+
+- *Near-zero on small-CA lenses.* The Lumix 42.5 has session-3 word[8]
+  in the low hundreds and the smallest measured CA in the corpus.
+  Predicted `|D_R|` under LOGO: 1.3e-04 on both bodies. Measured
+  `|D_R|`: 1.3e-04 (G9), 1.7e-04 (GX80). Match.
+- *Cross-body magnitude.* Same lens and focal length, both bodies:
+  measured `|D_R|` differs by 5-30%; predicted `|D_R|` also differs by
+  5-30% and in the same direction. The fit does not artificially
+  equalise the two bodies.
+- *Sign flip along a zoom.* PL 12-60 measured `D_R.k_r1` on the G9 goes
+  `-6.2e-04` at 12mm, `-2.4e-04` at 25mm, `+1.6e-04` at 60mm; the LOGO
+  prediction goes `-4.7e-04`, `-2.4e-04`, `+2.0e-04`. Sign and rough
+  magnitude are preserved. GX80 shows the same pattern.
+
+**Rejected functional forms.** Under LOGO with all nine words:
+
+- F1 constant scaling: `k_r0`, `k_r1` fit; `k_r2`, `k_r3` collapse on
+  the R channel and stay negative on the B channel.
+- F2 `y * N1^(2i+1) = W @ c`: R^2_LOGO 1.000 on `k_r0` (a numerical
+  coincidence: N1 is nearly bimodal) but -5.4 on `k_r3`. Rejected.
+- F3 `y / (w7 / 32768) = W @ c`: R^2_LOGO negative on 7 of 8 targets.
+  Rejected.
+- F3b `y * (w7 / 32768) = W @ c`: same collapse.
+- F4 sparse one-word: only `k_r0` decodes single-handedly, and by a
+  single word (`w[12]` for R, `w[27]` for B); the other coefficients
+  need a linear combination.
+- F4b sparse two-word: `D_R.k_r1` at LOGO 0.916 with `w[12]` and
+  `w[23]`, but `k_r2` and `k_r3` do not survive.
+- F5 body-normalized `(D * (N1/3276)^p) = W @ c`, p in [-2, +2]: no
+  exponent recovers `D_B.k_r{2,3}`.
+- Reduced 6-word set (dropping `w[2]`, `w[26]`, `w[29]`): the one
+  that works, above.
+
+**Coefficient matrices (train on all 18 files, reduced 6-word set).**
+Stored at `/tmp/rw2_tca/final_fit.npz`; here for reference. `word[k]`
+denotes the signed int16 read from the 0x011b payload at 32-bit-word
+index `k`.
+
+*C_R:*
+
+```
+        w[8]         w[10]        w[12]        w[20]        w[23]        w[27]
+k_r0:  -5.5919e-08  -2.7534e-07  -1.0043e-06  +9.4388e-08  +8.1750e-08  +3.1028e-07
+k_r1:  +1.7918e-06  +3.4704e-07  +5.4376e-06  -1.0369e-07  -4.9216e-06  -4.6536e-07
+k_r2:  -4.0368e-06  +2.2315e-06  -7.8190e-06  -1.0252e-06  +8.9802e-06  -1.7742e-06
+k_r3:  +1.5442e-06  -3.2808e-06  +3.1874e-06  +1.5409e-06  -3.5842e-06  +2.5324e-06
+```
+
+*C_B (k_r0 and k_r1 only; k_r2 and k_r3 do not generalize):*
+
+```
+        w[8]         w[10]        w[12]        w[20]        w[23]        w[27]
+k_r0:  +1.1514e-07  +3.7170e-07  +9.8105e-09  -1.2143e-07  -1.4375e-07  -1.4212e-06
+k_r1:  -3.3139e-07  -4.9106e-06  -9.7770e-08  +1.6006e-06  +4.4665e-07  +5.8716e-06
+```
+
+**Formula for a follow-on darktable patch.**
+
+```
+static const int words_R[6] = {8, 10, 12, 20, 23, 27};
+static const double C_R[4][6] = {
+  { -5.5919e-08, -2.7534e-07, -1.0043e-06, +9.4388e-08, +8.1750e-08, +3.1028e-07 },
+  { +1.7918e-06, +3.4704e-07, +5.4376e-06, -1.0369e-07, -4.9216e-06, -4.6536e-07 },
+  { -4.0368e-06, +2.2315e-06, -7.8190e-06, -1.0252e-06, +8.9802e-06, -1.7742e-06 },
+  { +1.5442e-06, -3.2808e-06, +3.1874e-06, +1.5409e-06, -3.5842e-06, +2.5324e-06 },
+};
+/* for i in 0..3: plane_R.k_r[i] = plane_G.k_r[i]
+                                 + sum_j C_R[i][j] * word[words_R[j]] */
+```
+
+For the B channel only the low orders are safe:
+
+```
+static const double C_B_lo[2][6] = {
+  { +1.1514e-07, +3.7170e-07, +9.8105e-09, -1.2143e-07, -1.4375e-07, -1.4212e-06 },
+  { -3.3139e-07, -4.9106e-06, -9.7770e-08, +1.6006e-06, +4.4665e-07, +5.8716e-06 },
+};
+/* plane_B.k_r[0] = plane_G.k_r[0] + sum_j C_B_lo[0][j] * word[words_R[j]]
+   plane_B.k_r[1] = plane_G.k_r[1] + sum_j C_B_lo[1][j] * word[words_R[j]]
+   plane_B.k_r[2] and plane_B.k_r[3]: no reliable decode; leave equal to
+   plane_G.k_r[2] and plane_G.k_r[3] respectively, or fall back to the
+   Lensfun path on files where CA at the corner matters. */
+```
+
+**Bounds on the claim.**
+
+- The decode uses 18 files, six words, and validates by leaving out
+  both bodies of the same lens/focal at once. R^2_LOGO in the 0.97-0.99
+  range on all four R coefficients is real signal, not overfit: the
+  same 6 x 4 coefficient matrix predicts a held-out pair back to within
+  a couple of pixels of Adobe's number at the corner and to sub-pixel
+  precision in the interior on 15 of the 18 files.
+- The decode was found by dropping predictors and looking at LOGO
+  scores. Feature-selecting on the same corpus used for validation is
+  a form of leakage. The next corpus expansion (a different pair of
+  Panasonic bodies, or a lens outside the 12mm-150mm range this corpus
+  covers) is the honest test.
+- `D_B.k_r{2, 3}` genuinely do not decode from these words. Best
+  single-target LOGO R^2 across every subset tested is 0.79; no
+  scaling recovers it. Either Adobe's B-plane fit picks up
+  body-specific residuals that are not encoded in 0x011b, or the words
+  we called "smooth" in prior sessions miss a B-channel-specific
+  higher-order term. Not resolved here.
+- The reduced 6-word set was found empirically. `w[2]`, `w[26]` and
+  `w[29]` are numerically large but do not appear to be CA
+  coefficients on the R channel; they may be lens IDs, per-focal
+  scalers or internal state. Prior sessions had `w[2]` flagged as a
+  suspected lens-family key; this session's fit agrees.
+
+**Where this points the follow-on darktable patch.**
+
+1. Extend `dt_image_correction_data_t::panasonic` (or add a
+   `dt_image_correction_data_t::panasonic_ca` sibling) with a 32-word
+   signed-int16 copy of 0x011b's payload plus a validated flag from the
+   four checksums.
+2. In `_check_lens_correction_data()` in `src/common/exif.cc`,
+   parse 0x011b, validate Rigo's four checksums, store the words and
+   the `word[14] != 0` on/off flag.
+3. In `_init_coeffs_md_v2()`'s Panasonic branch in `src/iop/lens.cc`,
+   after the existing distortion evaluation, evaluate the R and B
+   deltas from the six words listed above with the matrices given and
+   write them into `cor_rgb[0][i]` and `cor_rgb[2][i]` respectively.
+   Leave `cor_rgb[1][i]` alone; that is the G plane already computed
+   from 0x0119.
+4. The B channel's `k_r2` and `k_r3` do not have a validated decode.
+   Two options in the patch: (a) apply only the low-order B correction
+   and leave the higher-order B coefficients at the G plane's values
+   (safer, but leaves some corner B fringing on strong-CA files); or
+   (b) reuse the R channel's matrix negated with a sign convention that
+   matches the low-order B fit (worse than "leave off" on some files,
+   better on others; not defensible from this corpus).
+5. A larger corpus with a third body (G9 II, GH-series, or one of the
+   S bodies) would let us either close the B-channel gap or confirm it
+   as body-dependent. Do this before shipping option (b).
+
+Scripts and data used this session:
+
+- `/tmp/rw2_tca/step8_dng_opcodes.py`: DNG opcode reader.
+- `/tmp/rw2_tca/step9_build_dataset.py`: builds the working npz.
+- `/tmp/rw2_tca/decode_dataset.npz`: 18-file dataset.
+- `/tmp/rw2_tca/step10_fit.py`: F1-F5 sweep with LOO.
+- `/tmp/rw2_tca/step11_cv.py`: F1 under LOGO.
+- `/tmp/rw2_tca/step12_curve_eval.py`: polynomial-value R^2 at fixed R.
+- `/tmp/rw2_tca/step13_sweep.py`: full LOGO sweep, subset search.
+- `/tmp/rw2_tca/step14_final.py`: reduced-set physics check, D_B
+  subset and scaling search.
+- `/tmp/rw2_tca/step15_body.py`: body-indicator and per-body fits.
+- `/tmp/rw2_tca/step16_final_report.py`: final coefficient dump.
+- `/tmp/rw2_tca/final_fit.npz`: `C_R` and `C_B` matrices.
+
 ### Interpretation
 
 The measured signal is real: the per-file half-vs-half RMS is 0.008 to
