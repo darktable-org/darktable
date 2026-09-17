@@ -2383,6 +2383,305 @@ recover a cleaner alternative from SILKYPIX. Additionally:
 - Ghidra project: `/tmp/ghidra_proj/SilkyRE/`. Reusable by future
   sessions without re-running the 17-min analysis.
 
+### SILKYPIX plugin walk (session 11)
+
+Session 10 identified the property-key dispatcher (FUN_18074e0f0) and
+the immediate resolver it calls (FUN_1810ceb30 at RVA 0x10ceb30), but
+did not lift what happens past the resolver. This session did: the
+resolver is not just a lookup, it is the CA descriptor builder. The
+polynomial evaluator turns out not to be a polynomial. SILKYPIX
+represents the correction as a 9-knot piecewise curve
+(IslZCnvPolyLine) fetched from a per-image property blob and combined
+with a per-lens integer offset table, then stored in the pipeline for
+a later render pass to sample.
+
+**Scripts used.** Reused four of session 10's eight scripts:
+`FindConstXrefs.java`, `FindRefsToAddr.java`, `DecompileByRVA.java`,
+`GrepStrings.java`. Added two small scripts under the same directory
+`/tmp/rw2_tca/ghidra_scripts/`:
+
+- `ReadBytes.java`: dumps a byte range at a given RVA as hex + ASCII,
+  used to walk the property-id table and read the FP constants pool
+- `Disasm.java`: dumps N x86 instructions starting at a given RVA, so
+  the loop count and the `pdVar3[0x11] = pdVar3[0xd]` tail assignment
+  could be cross-checked against the decompiler output
+
+Outputs written under `/tmp/rw2_tca/step22_*.{c,txt,log}`; nothing was
+written back into the analysed program.
+
+**The CA builder, RVA 0x10ceb30 (FUN_1810ceb30).** Called once from
+the dispatcher at RVA 0x74f15b with `param_4 = 0xa052`. Signature:
+
+```
+FUN_1810ceb30(handle, out_polyline, R_half_diag, prop_id)
+```
+
+At entry the caller has already computed
+`R_half_diag = 0.5 * sqrt((x2-x1)^2 + (y2-y1)^2)` (RVA 0x74f012..0x74f036,
+`FUN_18100fa34` is sqrt), so `param_3` is exactly half of the raw-image
+diagonal in sensor pixels. On MFT bodies that lands near 3276; on
+full-frame Panasonic near 2854; session 6's N1 numbers were the same
+quantity by another route.
+
+The builder does three things:
+
+1. Pull property `0xa020` off the handle via `FUN_1810ce250`, storing
+   its contents as an int32 array of at least 11 entries into
+   `local_2a0`. `0xa020` is a per-lens/per-image adjustment slot; its
+   first seven int32s are consumed here.
+2. Pull the requested property (`0xa052` when the dispatcher is
+   asking for CA) off the handle as a raw int16 array. This uses a
+   virtual call at vtable slot 0x990 on the handle, followed by
+   `FUN_180395150` which does a plain length-prefixed memcpy into a
+   local buffer. The check that gates the whole builder is
+   `len_shorts > 14 && payload[0] == 7`: at least 15 shorts, and the
+   first one is a fixed discriminator value 7. If either fails, the
+   builder returns 0xffff without touching the output polyline.
+3. Allocate a 9-entry `IslZBuffer<IslZVector2>` off `param_2` (each
+   Vector2 is two doubles, so 18 doubles total) and populate it:
+
+```
+knot[0]     = (0.0, 1.0)
+for i in 0..6:
+    knot[i+1].x = (payload[i+1] + offsets[i]) / R_half_diag
+    knot[i+1].y = (payload[i+8] - offsets[i]) / 1000.0
+knot[8].x   = 2.0
+knot[8].y   = knot[6].y       # tail-clamp uses knot 6, not knot 7
+```
+
+The knot-8 tail assignment is verified from disassembly (RVA
+0x10ced5d..0x10ced68): the loaded quadword is `[R10 + 0x68]`, which
+is offset 104 = 13\*8 bytes from the buffer base, i.e. knot 6's y
+component, not knot 7's at offset 120. Whether this is intentional
+(reserve the last data knot as extrapolation guard) or a compiler
+artifact from the original source is not resolvable without the
+source. Either way, it is what SILKYPIX runs, so any port to
+darktable would want to match it.
+
+The completed 9-knot vector is handed to `param_2` via a virtual call
+at slot 0x18 (`(*out_polyline->vtbl[3])(out_polyline, knots, 9)`),
+which is the `IslZCnvPolyLine::SetKnots` entry.
+
+**Word indices, cited.** Payload shorts consumed by the builder,
+indexed from 0:
+
+```
+payload[0]     signature/discriminator, must be 7
+payload[1..7]  seven radius shorts,  contribute to knot[1..7].x
+payload[8..14] seven value  shorts,  contribute to knot[1..7].y
+```
+
+Byte offsets of the value shorts are 0x10..0x1c on the payload
+pointer, verified from the address form
+`word ptr [RAX + RCX*0x2 + 0x10]` at RVA 0x10ced1b. Radius shorts sit
+at byte offsets 0x02..0x0e. Nothing past `payload[14]` is read here.
+The seven int32 offsets from property `0xa020` are consumed one per
+knot at byte offsets 0..0x18 of that separate buffer, verified from
+`R11` starting at 0 with a `LEA R11, [R11 + 0x4]` per iteration
+(0x10ced48).
+
+**Radius units.** The knot x-coordinates come out as
+`sensor_pixel / half_diagonal_pixel`, so a knot at raw radius equal to
+the half-diagonal lands at x = 1.0. The polyline is defined on
+approximately [0, 2] with hard endpoints at x = 0 (y = 1) and x = 2
+(y = knot[6].y). The image corner sits at x = 1 (radius = half
+diagonal). Everything from the corner to x = 2 is extrapolation
+padding, not addressable by a real pixel.
+
+**Value units.** The knot y-coordinates are `(payload_short - offset) /
+1000.0`. The offsets from `0xa020` shift the raw shorts before the
+divide. The `1000.0` divisor is the double at RVA 0x1354ff0 (verified
+by reading the eight bytes: `00 00 00 00 00 40 8f 40`, which decodes
+to 1000.0 as IEEE-754). Once the polyline is applied per pixel, its
+sampled value ends up on the order of 0.01--0.1 for real CA magnitudes,
+which is the same order as session 5's `C_R @ words_R * poly4(r_norm)`
+after the session-8 K = 11.48 divide.
+
+**R vs B is not split at the builder.** The dispatcher calls the
+builder three times with adjacent property ids -- `0xa052` for CA,
+`0xa053` and `0xa054` for the two shading passes -- and stores each
+resulting polyline in a slot inside `local_2d28` at offsets 0x08,
+0x778, 0xee8. There is no second CA call, no second CA property, and
+no CA-specific fan-out in the dispatcher. The single 9-knot polyline
+built from `payload[1..14]` is the *entire* CA descriptor delivered
+to the render side. The R and B split therefore has to happen later,
+when the render step samples the polyline; the split is not visible
+in the property-side code walked here. The (dead) debug format at
+RVA 0x1617dc0 -- `"...ColorAbeR:%d, ColorAbeB:%d, ... R:%f, B:%f"` --
+suggests the render side does keep two per-channel scalars (integer
+and float), but the code that produces them was not located: it lives
+inside one of the `IslEISDevelopDemosaicPanaCA` plugin methods, which
+are still not statically reachable from name-lookup alone (the plugin
+has no RTTI, and no scalar table pairs `0x1216` with a factory pointer,
+as session 10 established).
+
+**Property-id table.** The pipeline handle stores properties keyed by
+16-bit ids. The tag payload for `0x011b` reaches the CA builder as
+`0xa052`. The mapping between raw RW2 tag bytes and this property blob
+happens inside the 88 KB private-IFD parser (`FUN_1804f3ca0`, session
+10), on a copy path the decompiler declined to lift within its
+timeout. What is clear from the layout the builder sees is: the raw
+tag ends up materialised as a `short[]` where element 0 is the fixed
+value 7 and elements 1..14 are the useful data; on a 32-word Panasonic
+`0x011b` payload, this could be:
+
+- `payload = raw_tag_shorts[0..14]` (leading window), or
+- `payload = raw_tag_shorts[k..k+14]` for some k > 0, or
+- a permuted/decoded subset of the 32-word tag
+
+The builder itself cannot distinguish these; the mapping is in the
+parser. What the builder *does* imply is that only 15 shorts of the
+32-word tag drive the CA polyline, plus 7 int32s from `0xa020`. The
+remaining 17 shorts either feed distortion (`0xa051`) and shading
+(`0xa053`/`0xa054`) via the same builder pattern, or are unused, or
+carry the checksum -- session 10's negative finding on Rigo's
+`0xFFEF` modulus rules the last option out for this specific
+checksum, but not for a different one.
+
+**Reconciliation with session 8.**
+
+- *Does the six-word set from session 8 match SILKYPIX's word usage?*
+  Not directly. Session 8 uses `payload[8, 10, 12, 20, 23, 27]` on
+  the assumption that CA needed six regressors. SILKYPIX's builder
+  reads `payload[1..14]` -- fourteen shorts, all of them, no skipping
+  and no words past index 14. Words 8, 10 and 12 overlap (SILKYPIX
+  reads them as knot values 1, 3 and 5), so session 8 was partly
+  right about *which* words carry CA information for the value axis.
+  Words 20, 23 and 27 are *not* read by the builder. Either the
+  parser rewrites the raw tag into a compact 15-short property in
+  which words 20/23/27 of the raw tag become words 4/5/6 of the
+  property blob, or session 8's fit against JPEG target simply
+  latched onto whichever words happened to correlate with the
+  measurable pixel shift. The current investigation cannot decide
+  between these without lifting the parser.
+- *Does the polynomial form match?* No. SILKYPIX's CA descriptor is a
+  piecewise curve with seven interior knots plus two boundary knots,
+  not a quartic polynomial. A quartic can approximate the polyline
+  reasonably well over the [0, 1] domain (that is what session 8's
+  R^2 = 0.588 on R at K = 11.48 is measuring), but the two are not
+  the same object. In particular, SILKYPIX's representation has
+  seven independent per-knot offsets from `0xa020` per lens, which a
+  four-coefficient polynomial simply cannot express without absorbing
+  them into higher-order terms, which is where session 8's LOGO R^2
+  went negative.
+- *Is K a real code constant or a numerical coincidence?* Neither
+  purely. The literal 1000.0 is the value-axis divisor in the code
+  (RVA 0x1354ff0). Session 7's median K = 11.48 does not appear in
+  the code as a constant. But there is a plausible mechanistic
+  reading: SILKYPIX's polyline y-values are on the order of
+  `(short - offset) / 1000`, so around 0.03--0.1 for realistic CA;
+  session 8's regression against pixel-space JPEG-measured shifts
+  landed on scale coefficients whose median ratio to the raw session
+  5 poly output happened to be 11.48. In other words, K = 11.48 is
+  the specific numeric factor that converts session 5's polynomial
+  in un-normalised units to the polyline-value-times-pixel-radius
+  order of magnitude. It is not a code constant, but it is not
+  unrelated to a code constant either.
+- *Ship session 8 as is, tweaked, or replaced?* Ship session 8 as
+  the shipping recommendation. This session found SILKYPIX's exact
+  representation but did not lift the property blob's provenance,
+  did not lift the R/B split at the render side, and did not lift
+  the plugin's polyline-application code, so we cannot yet emit
+  darktable coefficients that would parity-match SILKYPIX. Session
+  8's model, with its 96% R sign-match and 0.028 px median RMS
+  against JPEG-measured CA, remains the best defensible port until
+  those three pieces are lifted. The right follow-up is not to
+  refit; it is to (a) decode the parser's short-to-property mapping,
+  (b) decode the polyline-application code inside PanaCA, and (c)
+  re-express the darktable path as a 9-knot curve evaluator rather
+  than a quartic polynomial.
+
+**Recommendation for the darktable patch.** Two changes to what
+session 9 and session 10 already recommended:
+
+1. Keep session 8's polynomial as the shipping decoder for now, for
+   the reasons above. It is the closest darktable-idiomatic form we
+   can build without the two missing pieces (parser mapping and
+   R/B application).
+2. When the parser mapping and the R/B application are lifted, plan
+   to switch the darktable path from `poly4(C_R @ words_R, r_norm) / K`
+   to a monotone spline evaluator on the seven knots, with radius
+   normalised to half the raw-image diagonal, and value quantum of
+   0.001. That is the change that will match SILKYPIX bit-for-bit
+   modulo camera JPEG's own sharpening bias. Until then, ship
+   session 8 and log the checksum failure but do not gate on it.
+
+**Honest bounds on what remained undecoded.**
+
+- The mapping from raw `0x011b` bytes to the property `0xa052` blob is
+  still inside `FUN_1804f3ca0`'s 58 KB body. If word[8]/word[10]/word[12]
+  of the raw tag equal payload[8]/payload[10]/payload[12] of the
+  property blob -- which is the simplest possible mapping -- then
+  session 8's overlap words align exactly and SILKYPIX effectively
+  confirms session 8's decode on those three words. If the parser
+  permutes, we do not yet know which raw words end up where.
+- The polyline-application code inside the PanaCA plugin is not
+  lifted. R vs B differentiation therefore stays unresolved. The
+  simplest hypothesis consistent with the (dead) debug format
+  string is that the render step samples the same polyline twice
+  with opposite signs; the second-simplest is that it samples
+  once, negates for B, and adds a per-channel scale from a lens
+  table; the third is that there is only R correction and B stays
+  put. This session cannot distinguish these.
+- The `0xa020` int32 offset table's origin is likewise not lifted.
+  Its 7 int32 values shift both the radius axis (added to the short
+  before divide by R_half_diag) and the value axis (subtracted
+  before divide by 1000). Whether it is a per-lens correction or a
+  per-body correction is not resolvable from the builder alone;
+  finding its setter is a follow-up.
+- Sensor-format switch: still not found. Nothing in the builder
+  branches on body id or format. If MFT vs full-frame requires a
+  different curve, the difference is expressed through the property
+  payload itself (different words) or through the `0xa020` offsets,
+  not through a code branch.
+- The plugin factory that maps `0x1216 -> PanaCA` is still not
+  lifted. Session 10 established there is no static factory table
+  pairing the two; this session did not attempt a plugin-manager
+  walk, and the property-key dispatcher is not the factory. Getting
+  from `0x1216` to the polyline-application code still needs either
+  a dynamic tracer or a full plugin-registration RE. Both remain
+  out of scope for a static session.
+
+**Files this session:**
+
+- `/tmp/rw2_tca/ghidra_scripts/ReadBytes.java`,
+  `/tmp/rw2_tca/ghidra_scripts/Disasm.java`: two new scripts, joined
+  to session 10's eight.
+- `/tmp/rw2_tca/step22_1810ceb30.c`: Ghidra pseudocode for the CA
+  builder at RVA 0x10ceb30. This is the algorithm above.
+- `/tmp/rw2_tca/step22_helpers.c`: pseudocode for `FUN_1810ce250`
+  (fetches the `0xa020` int32 offset table) and `FUN_180395150`
+  (copies the property short-array payload into a local buffer).
+- `/tmp/rw2_tca/step22_10cdd70.c`: pseudocode for `FUN_1810cdd70`, the
+  neighbouring int32-mantissa-plus-exponent property fetcher used
+  by the dispatcher for `0xa050`, `0xa055`, `0xa056`, `0xa057`. Not
+  the CA builder, but confirms the property-lookup pattern.
+- `/tmp/rw2_tca/step22_polymath.c`: pseudocode for `FUN_180333090`
+  (`IslZCnvPolyLine`'s three-argument combiner) and `FUN_180333880`
+  (its single-point sampler). Consumer side, not producer side.
+- `/tmp/rw2_tca/step22_332f90.c`: pseudocode for `FUN_180332f90`,
+  the polyline copy/assign that hands the completed CA curve into
+  the pipeline slot at `local_2da0`.
+- `/tmp/rw2_tca/step22_proptable.txt`: raw dump of the property-id
+  table at RVA 0x1a11800..0x1a11c00. Session 10's mapping of
+  `0xa050 -> RawData`, `0xa051 -> Distortion`, `0xa052 ->
+  ColorAberration` is what the code uses; the raw pointer-triples
+  in this dump can be re-read for a strict property-id-to-name
+  audit if a future session cares. The code passes numeric ids, not
+  strings, so the mapping is a diagnostic aid rather than a
+  correctness lever.
+- `/tmp/rw2_tca/step22_propnames.txt`: raw dump of the property-name
+  string pool at RVA 0x1617700..0x1617b00, cross-referenced by the
+  table above.
+- `/tmp/rw2_tca/step22_ceb30_disasm.txt`: x86 disassembly of the CA
+  builder's loop body (RVA 0x10cec96..0x10ced82), used to verify
+  the loop iteration count (7), the word-index bases (0x02 for
+  radii, 0x10 for values), and the tail assignment
+  `[R10 + 0x88] <- [R10 + 0x68]` = knot[8].y <- knot[6].y.
+- `/tmp/rw2_tca/step22_const.txt`: the 8-byte double at RVA
+  0x1354ff0, decoded as 1000.0. This is the value-axis divisor
+  used at RVA 0x10ced33.
+
 ## Reverse-engineering next steps
 
 Everything below is a plan for the follow-on agent. Nothing here has been
