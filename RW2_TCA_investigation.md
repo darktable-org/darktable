@@ -14,16 +14,17 @@ design document.
   unaffected because their default already falls back to Lensfun.
 - **User-visible workaround.** Set the lens module's *correction method*
   to *Lensfun database*. Restores TCA where a Lensfun profile exists.
-- **Decode outcome (sessions 1-12).** `Exif.PanasonicRaw.0x011b` decoded
-  well enough to ship a proper darktable patch that restores per-channel
-  CA correction without falling back to Lensfun. Six-word predictor set
+- **Decode outcome (sessions 1-13).** `Exif.PanasonicRaw.0x011b` decoded
+  well enough to ship a darktable patch that restores per-channel CA
+  correction without falling back to Lensfun. Six-word predictor set
   `[8, 10, 12, 20, 23, 27]`, coefficient matrices `C_R` (4x6) and
   `C_B_lo` (2x6) from session 5 fit against Adobe DNG WarpRectilinear
-  ground truth, and a global scale factor `K = 11.48` from session 8
-  calibrated against Panasonic camera JPEGs. Max RMS residual across
-  the training corpus is 0.058 px on R and 0.034 px on B, both well
-  under one Bayer super-pixel. Sign of the correction matches the JPEG
-  on 96% of signal bins.
+  ground truth. Global amplitude scale `K = 1.0`: apply the DNG-derived
+  magnitude directly. Session 8 originally shipped `K = 11.48` off a
+  JPEG-referenced fit; session 13 field-tested that on a real user file
+  and refuted it (the JPEG-referenced measurement had an edge-selection
+  bias that under-scaled the result by ~10x). See session 13 for the
+  correction and the audit.
 - **Structural findings.** 0x011b is a 64-byte payload of 32 signed
   int16 LE. Four checksums at word positions `[0, 1, 30, 31]` verify
   with Rigo 2011's `(73*csum + byte) mod 0xFFEF`. On/off flag at
@@ -303,7 +304,7 @@ static const double C_B_lo[2][6] = {
   { +1.1514e-07, +3.7170e-07, +9.8105e-09, -1.2143e-07, -1.4375e-07, -1.4212e-06 },
   { -3.3139e-07, -4.9106e-06, -9.7770e-08, +1.6006e-06, +4.4665e-07, +5.8716e-06 },
 };
-static const double K_JPEG = 11.48;
+static const double K_JPEG = 1.0;   // session 13; was 11.48 in session 8, refuted
 ```
 
 ### Sensor-format handling
@@ -3293,6 +3294,119 @@ agent has all of it in one place):
   These turned out to be stack-frame offsets (`lea rcx, [rbp +
   0xa020]`), not property ids, further weakening the "session-11
   parser writes 0xa020" story.
+
+### K = 11.48 refuted, K = 1 is correct (session 13)
+
+Field-test on `/c/temp/tca/P1366392/P1366392.RW2` (G9 + Leica DG
+Vario-Elmarit 12-60 f/2.8-4 @ 14mm, f/5.6, DistortionCorrection = On,
+firmware Ver.2.7 - outside the training corpus) showed the shipped
+`_pana_K_JPEG = 11.48` from session 8 leaves visible multi-pixel R/B
+fringing at the corner unaddressed. The camera JPEG has clean edges;
+the darktable render with the initial patch had heavy magenta halos on
+every pine needle silhouette. Setting `K = 1` clears the fringing to
+approximate parity with the JPEG.
+
+**What was refuted.** Session 7's "predicted/applied ratio: median
+11.48" and session 8's derived K divisor. Session 7's "applied"
+measurement was `raw_RG - jpeg_RG` computed via a parabolic peak fit
+on edge gradients, filtered to edges where all three integer R/G/B
+peaks agreed within ±1 pixel. That filter by construction excludes
+every multi-pixel-shift edge on the raw side; the raw edges that
+survive are the sub-pixel-CA ones. Both raw and JPEG surviving edges
+therefore have sub-pixel R-G shifts (0.02-0.14 px on the corpus),
+and the "applied" value measures the CA correction on those weak-CA
+edges only, giving 0.05 px at most. Session 8 then divided the C_R
+matrix by 11.48 to match that filtered subset, at the cost of
+under-correcting the strong-CA edges the tag is meant to fix by the
+same factor of ~11x.
+
+**The camera does not filter edges.** Its correction is a radial
+polynomial applied to all edges regardless of shift magnitude.
+Strong-CA edges (multi-pixel raw shifts) receive the same radial
+correction as weak-CA edges, scaled by their radius. Adobe DNG
+Converter's WarpRectilinear opcode matches this: on `P1366477`
+(PL 12-60 @ 12mm, training corpus) the opcode says the R plane
+should be shifted +0.77 px at r=0.5 and the B plane +1.81 px at
+r=1.0. Session 5's `C_R` reproduces those values within a few
+percent. Session 7 measured "applied" R-shift of only 0.05-0.08 px
+on the same file - 10-15x smaller than the opcode's prediction,
+because the strong-CA edges that would show the full 0.77 px were
+filtered out on the raw side too.
+
+**Verification (2026-09-18, scripts and outputs under `/tmp/dt_render/`
+and `/tmp/p1366392/`):**
+
+- extracted 0x011b from `P1366392.RW2` directly (bytes at IFD0 tag
+  offset 0x436, 64 bytes). Rigo's four checksums all pass. Six-word
+  predictor set values: `w[8, 10, 12, 20, 23, 27] = [-814, -19, -672,
+  -511, -928, 170]`. Body-scale radii `w[11] = 3276 = N1`,
+  `w[4]/w[11] = 0.833` (MFT pattern verified)
+- rendered `P1366392.RW2` with `darktable-cli` at `K = 11.48` and
+  `K = 1.0`, using an XMP sidecar taken from the user's
+  `P1366392.tif`. Both renders exercised the `lens` module in
+  embedded-metadata mode
+- corner crops at (4600, 150) in the rotated landscape view show
+  heavy magenta/purple fringing at K = 11.48 and essentially neutral
+  edges at K = 1.0
+- `|R-G|` and `|B-G|` channel differences show bright edge halos at
+  K = 11.48 and much dimmer halos at K = 1.0; residual at K = 1.0 is
+  mostly the B channel higher-order (`k_r2`, `k_r3` left at G-plane
+  per session 5) plus small B-plane fit error
+- computed the polynomial value in pixels for the training corpus's
+  `P1366477.dng` opcode: at r = 0.5, R plane says +0.77 px, at
+  r = 1.0 B plane says +1.81 px. Our patch at K = 1 predicts +0.86
+  px R and +0.13 px B at the same geometry for the neighbouring
+  file `P1366392` (14mm) - same magnitude order as the DNG says
+  should be applied on the training file
+
+**Consequences for the shipped decode.**
+
+- `_pana_K` (renamed from `_pana_K_JPEG` to reflect the change in
+  role) is set to `1.0` in `src/iop/lens.cc`. The divide is retained
+  as a tuning knob but is now effectively a no-op
+- `C_R` and `C_B_lo` are unchanged. They already match Adobe DNG
+  WarpRectilinear directly per session 5's fit
+- session 8's numerical claim of "worst per-file RMS residual 0.058
+  px on R and 0.034 px on B" is superseded. That residual was
+  measured against a JPEG-side edge-position measurement subject to
+  the same ±1 integer-peak filter as the raw side and therefore
+  restricted to sub-pixel edges. A field-representative residual
+  measurement would want a homography-plus-distortion registration
+  of raw vs JPEG in image space, or a synthetic checker chart of
+  known geometry, so strong-CA edges are represented in the target
+- the "For the implementing agent" section's coefficient block
+  should now read `static const double K_JPEG = 1.0` (or drop the
+  divide). The C_R/C_B_lo matrices are still correct
+
+**What still isn't fully closed.** K = 1.0 leaves a small but
+non-zero residual on P1366392 (visible in the `|B-G|` channel
+difference as thin edge halos, subjectively closer to the SOOC JPEG
+than to the raw). Two possible sources:
+
+1. The undecoded B-plane higher-order terms (`k_r2`, `k_r3` fixed at
+   the G-plane value). Session 5 could not decode them from the
+   six-word predictor set; session 6's discrete-word extensions did
+   not generalize under LOGO
+2. Per-file magnitude tuning below the 5% error bar of session 5's
+   `C_R` fit against Adobe
+
+Neither is blocking. If a follow-up needs to tighten it, the two
+paths are: enlarge the fit corpus with a third body + paired JPEGs
+and refit `C_R` and `C_B_lo` directly against sensor-space
+JPEG-vs-raw registration (not the ±1-integer-peak subset), or lift
+the actual polynomial evaluator from Panasonic firmware / SILKYPIX
+plugin runtime (both listed in the "Optional TODOs" section).
+
+**Files this session:**
+
+- `/tmp/dt_render/baseline/P1366392.jpg` - dt-cli render at K = 11.48
+- `/tmp/dt_render/k1/P1366392.jpg` - dt-cli render at K = 1.0
+- `/tmp/dt_render/base_tr.jpg`, `k1_tr.jpg`, `triple.jpg` - corner
+  crops and the SOOC-JPEG/K=11.48/K=1 triple
+- `/tmp/dt_render/base_tr_diff.jpg`, `k1_tr_diff.jpg` - `|R-G|` and
+  `|B-G|` channel-difference maps for each render
+- `/c/temp/tca/P1366392/P1366392.RW2.xmp` - the XMP sidecar
+  extracted from the user's `.tif`
 
 ## Reverse-engineering next steps
 

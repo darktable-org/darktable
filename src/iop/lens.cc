@@ -2178,12 +2178,21 @@ static float _get_autoscale_md_v1(dt_iop_module_t *self,
 
 // tables driving the Panasonic 0x011b CA branch of _init_coeffs_md_v2
 // below. six-word predictor set and coefficient matrices from session 5
-// of RW2_TCA_investigation.md (fit against Adobe DNG WarpRectilinear on
-// 18 corpus files), calibrated by session 8's K = 11.48 divisor against
-// Panasonic camera JPEGs. cross-validation LOGO R^2 is 0.97-0.99 on the
-// four R coefficients and 0.99 on B's k_r0 and k_r1; higher-order B
-// (k_r2, k_r3) does not decode from these six words, so B keeps only two
-// coefficients and its k_r2, k_r3 stay at the G-plane value
+// of RW2_TCA_investigation.md fit against Adobe DNG WarpRectilinear on
+// 18 corpus files; cross-validation LOGO R^2 is 0.97-0.99 on the four R
+// coefficients and 0.99 on B's k_r0 and k_r1. higher-order B (k_r2,
+// k_r3) does not decode from these six words, so B keeps only two
+// coefficients and its k_r2, k_r3 stay at the G-plane value.
+//
+// K is a global amplitude scale. K = 1 applies Adobe DNG Converter's
+// magnitude directly, which reproduces the camera in-camera CA
+// correction on visible strong-CA edges (session 13, verified on
+// P1366392, PL 12-60 @ 14mm). Session 8's K = 11.48 divisor was fit
+// against an edge-centroid measurement whose ±1-integer-peak filter
+// excluded multi-pixel-shift edges by construction; that fit was
+// therefore calibrated on a filtered sub-pixel subset and produced a
+// correction ~10x too small for the strong-CA edges the tag is meant
+// to fix. Keep the constant as a tuning knob but leave it at 1.0
 static const int _pana_ca_words[6] = {8, 10, 12, 20, 23, 27};
 static const double _pana_C_R[4][6] = {
   { -5.5919e-08, -2.7534e-07, -1.0043e-06, +9.4388e-08, +8.1750e-08, +3.1028e-07 },
@@ -2195,7 +2204,7 @@ static const double _pana_C_B_lo[2][6] = {
   { +1.1514e-07, +3.7170e-07, +9.8105e-09, -1.2143e-07, -1.4375e-07, -1.4212e-06 },
   { -3.3139e-07, -4.9106e-06, -9.7770e-08, +1.6006e-06, +4.4665e-07, +5.8716e-06 },
 };
-static const double _pana_K_JPEG = 11.48;
+static const double _pana_K = 1.0;
 
 static int _init_coeffs_md_v2(const dt_image_t *img,
                               const dt_iop_lens_params_t *p,
@@ -2467,14 +2476,14 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
         double s = 0.0;
         for(int j = 0; j < 6; j++)
           s += _pana_C_R[k][j] * (double)w[_pana_ca_words[j]];
-        dr_k[k] = s / _pana_K_JPEG;
+        dr_k[k] = s / _pana_K;
       }
       for(int k = 0; k < 2; k++)
       {
         double s = 0.0;
         for(int j = 0; j < 6; j++)
           s += _pana_C_B_lo[k][j] * (double)w[_pana_ca_words[j]];
-        db_k[k] = s / _pana_K_JPEG;
+        db_k[k] = s / _pana_K;
       }
     }
 
