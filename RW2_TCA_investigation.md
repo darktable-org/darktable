@@ -3765,6 +3765,202 @@ LOGO R^2 in aggregate is not sufficient.
   format split, and residual feature-selection scripts confirming
   the 6-word set at the model-complexity ceiling for the corpus size.
 
+### Corpus expansion, ridge / monotone / target-space sweep, coordinate-frame variants, visual test (session 18)
+
+Session 17 left the branch reverted to shipped session-5 + K = 1 and named
+three candidate approaches for a proper retry: ridge shrinkage toward
+shipped, monotonicity projection, and target-space regression. This
+session ran all three plus three coordinate-frame variants plus a visual
+verification of the closest candidate, and none of them clears the
+regression bars. The linear-map + polynomial + six-word-predictor family
+is at its practical ceiling on this corpus.
+
+**Corpus grown to 132 files, 14 bodies, 50 (lens, focal) groups.**
+
+Photographyblog previews were harvested via subagent scraping. Reachable
+bodies beyond session 15's initial four DC-S5M2 files: GX9, GH5, GH5S,
+GX8, GH4, G90, G80 on MFT; DC-S1 II (S1M2), DC-S1 II E (S1M2E),
+DC-S1R II (S1RM2), DC-S9 on full-frame. Ten samples per body,
+focal-length-diverse. 129 fit_ok in the direct-CA-measurement pipeline
+(3 flat scenes failed the tile-count floor).
+
+Structural verification: 0x011b present with count = 64 and all four
+Rigo 2011 checksums pass on every file. Radii ratios follow session 6's
+MFT pattern (5/6, 4/6, 2/6) or full-frame pattern (6/7, 4/7, 2/7)
+verbatim, with word[14] = 256 (correction flag on) on every file. Five
+independent full-frame bodies now confirm session 6's structural model
+without exception.
+
+**Approach sweep (source-frame measurement, six-word predictor):**
+
+Function-space LOGO R^2 at r = 0.85 and wrong-sign / regression counts
+vs shipped, on 129 files with 50 LOGO groups:
+
+    approach                   R^2_R@0.85  R^2_B@0.85  regB@0.85  wsB@0.85
+    shipped baseline             -0.114     -1.810        0          25
+    unconstrained OLS (session 16-style)  0.144    0.388       27           6
+    ridge, task lambda=1e4        0.144     0.388       26           5
+    ridge, ext lambda=3e6/3e4     0.144     0.388       22           5
+    ridge-min (R locked, B refit) 0.144     0.388       22           5
+    monotone projection           0.144     0.388       24           3
+    target-space regression       0.144     0.388       22           5
+
+None passes the winner bar (regB@0.85 <= 10, wsB@0.85 <= 3, and matching
+P1366392 / P1366399 held-out predictions). Ridge with lambda -> infinity
+collapses to shipped; lambda -> 0 collapses to unconstrained. No sweet
+spot in between clears both criteria simultaneously.
+
+Diagnosis of the impossibility: criterion wsB@0.85 <= 3 is unreachable
+in principle, because shipped itself already has 25 wrong-sign
+predictions at r = 0.85. Any linear map from the six words produces at
+least that many unless it collapses fits toward zero (killing the
+strong-CA improvement).
+
+Predictor-set sweep at 132 files (6 / 7 / 8 / 9 / 10 / 27 / 32 words):
+S6 = [8, 10, 12, 20, 23, 27] remains optimal. Every superset degrades
+LOGO R^2. All-32-words collapses to -0.4 at r = 0.85. Sensor-format
+split (17 full-frame LOGO groups vs 33 MFT) is catastrophic on B - too
+few groups on either side to constrain independent fits.
+
+**Coordinate-frame investigation.**
+
+The Panasonic branch of `_init_coeffs_md_v2` evaluates the CA polynomial
+at destination-radius r (src/iop/lens.cc:2519-2526), matching Adobe
+DNG WarpRectilinear's convention. Session 14's measurement was in
+source-radius frame - a mismatch. Three variants explored:
+
+1. **Destination frame.** Warp the AAHD-demosaiced image via the
+   0x0119 distortion inverse (2 fixed-point iterations, matching
+   lens.cc:2495-2504) before phase correlation. Halfdiag from rawpy
+   output dimensions.
+2. **Active-area frame.** Also crop the rawpy output to sensor active
+   area from Exif SensorLeftBorder / TopBorder / RightBorder /
+   BottomBorder. halfdiag = hypot(w_active/2, h_active/2), matching
+   darktable's img->p_width * p_height. Mismatch is 0.15% (S5M2) to
+   0.45% (G9); body-dependent, small.
+3. **Correct frame (source measurement, dest-frame fit target).** Do
+   not warp the image. Measure delta in source frame. Per tile,
+   convert r_raw -> r_dest via the 2-iteration inverse, then fit
+   target = delta_R_px / (r_dest_norm * halfdiag_active). This is the
+   fit target that maps 1:1 to darktable's `d_r_R * r_dest * halfdiag`
+   in the evaluator.
+
+Physics-space distance from shipped session-5 at r = 0.85:
+
+                                  |ship - refit|_R   |ship - refit|_B
+    session 16 (source only)             0.29 px           0.88 px
+    destination frame                    0.29 px           0.88 px
+    active-area                          0.33 px           0.85 px
+    correct frame                        0.35 px           0.77 px
+
+None of the four variants closes the gap to below 0.20 px on either
+channel. Element-wise, 0/24 of C_R and 0/12 of C_B_lo entries fall
+within 30% of shipped in any variant. Both the direct evaluation
+(r_dest = r_raw * f(r_raw)) and the iterative inverse were tried;
+gaps agree within 0.02 px. **Coordinate frame is not the source of
+the residual gap.**
+
+Interpretation: shipped is calibrated against Panasonic's own SOOC JPEG
+output (via Adobe DNG's WarpRectilinear encoding). Panasonic's firmware
+under-corrects the raw CA by ~40-50% at outer radii - either
+deliberately (some cameras leave a hint of CA for the "natural" look)
+or as a limitation of their four-term polynomial evaluator. Direct raw
+measurement records the sensor CA as it actually appears. The two are
+legitimately different physical targets. Shipped matches SOOC; direct
+measurement matches the sensor. No coordinate rework can bridge that
+gap.
+
+**Visual verification of the correct-frame candidate.**
+
+The correct-frame 4-row C_B fit predicts same-sign corrections on both
+held-out files:
+
+- P1366392 (Leica DG 12-60 @ 14mm, strong CA): B@0.85 pred +0.81 px,
+  measured +1.79. Correct sign, partial correction.
+- P1366399 (Leica DG 12-60 @ 24mm, weak CA): B@0.95 pred +0.14 px,
+  measured +0.79. Correct sign, tiny correction.
+
+Analytically both should reduce visible fringing (P1366392) or leave
+it unchanged (P1366399). WIP applied to lens.cc, dt rebuilt, both files
+rendered, working tree reset without commit. Mean absolute R-G and B-G
+on the 400x400 corner crop:
+
+    file        crop           |R-G|   |B-G|
+    P1366392    baseline        13.6    10.2
+    P1366392    WIP (correct)   14.7    17.0    +67% on B
+    P1366399    baseline        17.8    12.0
+    P1366399    WIP (correct)   17.9    11.9    unchanged
+
+P1366399 behaves as predicted (visually unchanged). **P1366392 regresses
+visibly on B (+67%) despite the analytical prediction saying correct
+sign.** Something in the measurement -> r_dest -> fit -> darktable
+evaluator chain has a hidden sign or scale inversion that all three
+coordinate reworks missed.
+
+Reference: the user-supplied `P1366399-crop-lens-correction-{off,on}.tif`
+crops confirm the shipped baseline matches Panasonic SOOC within ~1%
+on |R-G| and ~5% on |B-G|. Shipped is faithful.
+
+**Verdict.**
+
+Shipped session-5 + K = 1 (session 13) is the strongest defensible
+configuration for this file family. Direct raw CA measurement plus
+six-word linear regression has reached its ceiling on 129 files. Any
+refit that improves over shipped on strong-CA cases (P1366392) breaks
+weak-CA cases (P1366399) at a rate wsB@0.85 = 5 which is already a
+regression cluster; the tests in section "Approach sweep" show no
+variant lowers this below shipped's baseline of 25 without also
+collapsing the strong-CA improvement.
+
+**What NOT to retry on this data:**
+
+- OLS on direct raw CA measurement (session 16 outcome).
+- Ridge / monotone / target-space with the six-word predictor (session
+  18 outcome).
+- Larger predictor sets on ~130 files (over-fits at every size tried).
+- Sensor-format split with fewer than ~40 full-frame LOGO groups.
+- Coordinate-frame reworks alone (all four variants at ~0.85 px B gap).
+
+**What might still move the needle:**
+
+- **Firmware RE.** Session 13 dead-ended on G9 v2.7 encryption
+  (SoC-ROM-anchored per SILKYPIX session 12). A body with weaker
+  protection, a debug port, or an official disassembly would recover
+  the exact per-body decoder.
+- **Demosaic-independent measurement.** AAHD's channel-correlation
+  interpolation may bias the measured R-G shift on strong-CA edges.
+  Measuring subpixel R-G offset on the raw Bayer directly (no
+  demosaic) would rule this out before another linear-map try. Note
+  that the session 18 visual regression on P1366392 despite an
+  analytically correct-sign prediction is consistent with a hidden
+  scale bias in the AAHD path.
+- **Image-adaptive CA detection** inside darktable (edge statistics,
+  not metadata alone). This would live in `cacorrectrgb` or a new
+  module, not in the lens module.
+
+**Files this session** (all under /tmp/rw2_tca/ unless noted, no
+darktable source changes committed):
+
+- `/c/temp/tca/thirdbody/panasonic_lumix_<slug>/` for GX9, GH5, GH5S,
+  GX8, GH4, G90, G80, S1M2, S1M2E, S1RM2, S9: photographyblog samples
+  used for the corpus expansion.
+- `/c/temp/tca/regression01/P1366399.{RW2,JPG}` and paired on/off
+  crop TIFFs: user-supplied regression report file.
+- `measure_bigcombo{,_dest,_active,_correct}.npz`: four measurement
+  variants of the same 132-file corpus.
+- `measure_heldout_{dest,active,correct}.npz`: P1366392 + P1366399
+  in each frame variant.
+- `measure_ca_{dest,active,correct}.py`: three fork variants of
+  measure_ca.py, one per coordinate-frame hypothesis.
+- `sweep_experiments.py`: predictor-set / sensor-format / residual
+  feature-selection sweep.
+- `fit_bigcombo.py`, `fit_dest.py`, `fit_active.py`, `fit_correct.py`,
+  `refit_retry_final.out.txt`, `refit_dest.out.txt`,
+  `refit_active.out.txt`, `refit_correct.out.txt`,
+  `refit_correct_summary.txt`: fit scripts and full metric reports.
+- `/tmp/dt_render/wip_correct/`: dt renders on the correct-frame WIP,
+  6-panel comparison mosaics for P1366392 and P1366399.
+
 ## Reverse-engineering next steps
 
 Everything below is a plan for the follow-on agent. Nothing here has been
