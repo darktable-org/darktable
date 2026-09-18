@@ -1263,6 +1263,20 @@ static int name_member(lua_State *L)
   return 1;
 }
 
+static int remove_member(lua_State *L)
+{
+  dt_lua_snapshot_t index;
+  luaA_to(L, dt_lua_snapshot_t, &index, 1);
+  dt_lib_module_t *module = lua_touserdata(L, lua_upvalueindex(1));
+  dt_lib_snapshots_t *d = module->data;
+  if(index >= d->num_snapshots || index < 0)
+  {
+    return luaL_error(L, "Accessing a non-existent snapshot");
+  }
+  _remove_snapshot_entry(module, index);
+  return 0;
+}
+
 static int lua_select(lua_State *L)
 {
   dt_lua_snapshot_t index;
@@ -1312,6 +1326,11 @@ void init(struct dt_lib_module_t *self)
   lua_pushcclosure(L, name_member, 1);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register_const(L, dt_lua_snapshot_t, "name");
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, remove_member, 1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_lua_snapshot_t, "remove");
   lua_pushlightuserdata(L, self);
   lua_pushcclosure(L, lua_select, 1);
   dt_lua_gtk_wrap(L);
