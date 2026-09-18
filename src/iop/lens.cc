@@ -2191,7 +2191,7 @@ static float _get_autoscale_md_v1(dt_iop_module_t *self,
 // fitted magnitude directly, which reproduces the camera in-camera CA
 // correction on visible strong-CA edges (session 13, verified
 // on P1366392, PL 12-60 @ 14mm; corpus-wide RMS residual at r = 0.85
-// drops from 0.79/1.20 px shipped to 0.66/0.52 px new for R/B).
+// drops from 0.79/1.20 px shipped to 0.66/0.52 px new for R/B)
 // session 8's K = 11.48 divisor
 // was fit against an edge-centroid measurement whose one-integer-peak
 // filter excluded multi-pixel-shift edges by construction, and
