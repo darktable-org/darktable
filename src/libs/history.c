@@ -782,8 +782,11 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field,
   case DT_INTROSPECTION_TYPE_ARRAY:
     if(field->Array.type == DT_INTROSPECTION_TYPE_CHAR)
     {
+      // stored params need not terminate the array; the checks below stop only at NUL
       const gboolean is_valid =
-        g_utf8_validate((char *)o, -1, NULL)
+        memchr(o, '\0', field->Array.count)
+        && memchr(p, '\0', field->Array.count)
+        && g_utf8_validate((char *)o, -1, NULL)
         && g_utf8_validate((char *)p, -1, NULL);
 
       if(is_valid && strncmp((char*)o, (char*)p, field->Array.count))

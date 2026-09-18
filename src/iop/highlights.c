@@ -406,7 +406,7 @@ void modify_roi_in(dt_iop_module_t *self,
   else
   {
     // We require the correct (full-image-data) expansion with a defined scale for all pixelpipes for proper
-    // aligning and scaling in the demosiacer
+    // aligning and scaling in the demosaicer
     roi_in->x = 0;
     roi_in->y = 0;
     roi_in->width = piece->buf_in.width;
@@ -1051,8 +1051,9 @@ void commit_params(dt_iop_module_t *self,
   const gboolean linear = (filters == 0);
   const gboolean is_4bayer = img->flags & DT_IMAGE_4BAYER;
 
-  // for non-raws always use clip
-  if(!rawprep || is_4bayer)
+  // for non-raws always use clip; an unknown stored mode would index
+  // highlights_clip_magics[] out of bounds, and processing treats it as clip anyway
+  if(!rawprep || is_4bayer || (unsigned)d->mode > DT_IOP_HIGHLIGHTS_OPPOSED)
     d->mode = DT_IOP_HIGHLIGHTS_CLIP;
 
   /* no OpenCLfor

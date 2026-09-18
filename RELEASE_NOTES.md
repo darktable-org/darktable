@@ -143,6 +143,9 @@ changes (where available).
   so adjusting a mask or toggling the mask overlay recomputed most of the
   pipeline each time.
 
+- Separated the demosaicer's crop-and-scale step into a new hidden
+  module to improve cache efficiency and UI responsiveness.
+
 ## Other Changes
 
 - Added a new collection filter for the original image dimensions.
@@ -321,19 +324,25 @@ changes (where available).
 
 - Fixed a crash on using tag floating window after editing metadata
 
+- Fixed keyboard shortcuts in the darkroom doing nothing until the
+  center view was clicked, after a snapshot had been taken while the
+  snapshots module was collapsed.
+
 ## Lua
 
 ### API Version
 
-- API version is now 9.7.0
+- API version is now 9.8.0
 
 ### New Features
 
-- N/A
+- Extended dt_lua_snapshot_t and added a function to remove the snapshot.
 
 ### Bug Fixes
 
-- N/A
+- Fixed a crash when a script took more snapshots than the snapshots
+  module has slots. Once all slots are in use, `take_snapshot()` now
+  takes none and says so, as the take snapshot button already refused.
 
 ### New Scripts
 

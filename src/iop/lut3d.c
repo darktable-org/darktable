@@ -189,7 +189,8 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_lut3d_params_v1_t *o = (dt_iop_lut3d_params_v1_t *)old_params;
     dt_iop_lut3d_params_v3_t *n = calloc(1, sizeof(dt_iop_lut3d_params_v3_t));
-    g_strlcpy(n->filepath, o->filepath, sizeof(n->filepath));
+    dt_strlcpy_fixed_to_fixed(n->filepath, sizeof(n->filepath),
+                              o->filepath, sizeof(o->filepath));
     n->colorspace = o->colorspace;
     n->interpolation = o->interpolation;
     n->nb_keypoints = 0;
@@ -465,12 +466,16 @@ static void _correct_pixel_pyramid(const float *const in,
 static void _get_cache_filename(const char *const lutname,
                                 char *const cache_filename)
 {
+  // the name comes from stored params and the file name is inserted into a
+  // G'MIC command: a digest cannot carry quotes or path separators
+  gchar *digest = g_compute_checksum_for_string(G_CHECKSUM_SHA1, lutname, -1);
   char *cache_dir = g_build_filename(g_get_user_cache_dir(), "gmic", NULL);
-  char *cache_file = g_build_filename(cache_dir, lutname, NULL);
+  char *cache_file = g_build_filename(cache_dir, digest, NULL);
   g_strlcpy(cache_filename, cache_file, DT_IOP_LUT3D_MAX_PATHNAME);
   g_strlcpy(&cache_filename[strlen(cache_filename)], ".cimgz", DT_IOP_LUT3D_MAX_PATHNAME-strlen(cache_file));
   g_free(cache_dir);
   g_free(cache_file);
+  g_free(digest);
 }
 
 static uint8_t _calculate_clut_compressed(dt_iop_lut3d_params_t *const p,
@@ -1212,11 +1217,37 @@ void cleanup_global(dt_iop_module_so_t *self)
   self->data = NULL;
 }
 
+// a stored relative path must not leave the LUT folder it is joined to
+static gboolean _filepath_is_safe(const char *const filepath)
+{
+  for(const char *part = filepath; *part;)
+  {
+    const char *end = part;
+    while(*end && *end != '/' && *end != '\\') end++;
+    if(end - part == 2 && part[0] == '.' && part[1] == '.')
+      return FALSE;
+    part = *end ? end + 1 : end;
+  }
+  return TRUE;
+}
+
+#ifdef HAVE_GMIC
+// a path inserted into a G'MIC command must carry none of its syntax: a quote
+// breaks out of the quoted argument, and {}, $ and \ are substitution and escape
+static gboolean _gmic_arg_is_safe(const char *const arg)
+{
+  return !strpbrk(arg, "\"\\{}$");
+}
+#endif
+
 static int _calculate_clut(dt_iop_lut3d_params_t *const p, float **clut)
 {
   uint16_t level = 0;
   const char *filepath = p->filepath;
+  if(!_filepath_is_safe(filepath)) return level;
 #ifdef HAVE_GMIC
+  // the stored count bounds the read of c_clut
+  if(p->nb_keypoints < 0 || p->nb_keypoints > DT_IOP_LUT3D_MAX_KEYPOINTS) return level;
   if(p->nb_keypoints && filepath[0])
   {
     // compressed in params. no need to read the file
@@ -1361,11 +1392,22 @@ static void _get_compressed_clut(dt_iop_module_t *self, gboolean newlutname)
   dt_iop_lut3d_params_t *p = self->params;
   int nb_lut = 0;
   char *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
-  if(p->filepath[0] && lutfolder[0])
+  if(p->filepath[0] && lutfolder[0] && _filepath_is_safe(p->filepath))
   {
     if(g_str_has_suffix (p->filepath, ".gmz") || g_str_has_suffix (p->filepath, ".GMZ"))
     {
       char *fullpath = g_build_filename(lutfolder, p->filepath, NULL);
+      // the path goes into a quoted G'MIC command; convert Windows separators
+      // first so a native backslash is not read as an escape, then reject
+      // anything that could still be G'MIC syntax
+      filepath_set_unix_separator(fullpath);
+      if(!_gmic_arg_is_safe(fullpath))
+      {
+        dt_print(DT_DEBUG_ALWAYS, "[lut3d] refusing G'MIC LUT path containing command syntax");
+        g_free(fullpath);
+        g_free(lutfolder);
+        return;
+      }
       gboolean lut_found = lut3d_read_gmz(&p->nb_keypoints, (unsigned char *const)p->c_clut, fullpath,
               &nb_lut, (void *)g, p->lutname, newlutname);
       // to be able to fix evolution issue, keep the gmic version with the compressed lut
@@ -1422,6 +1464,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 {
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)p1;
   dt_iop_lut3d_data_t *d = piece->data;
+
+  // stored params need not terminate the path and LUT name
+  p->filepath[sizeof(p->filepath) - 1] = '\0';
+  p->lutname[sizeof(p->lutname) - 1] = '\0';
 
   if(strcmp(p->filepath, d->params.filepath) != 0 || strcmp(p->lutname, d->params.lutname) != 0 )
   { // new clut file
@@ -1700,6 +1746,9 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_lut3d_gui_data_t *g = self->gui_data;
   dt_iop_lut3d_params_t *p = self->params;
+  // the GUI handlers read the stored path and LUT name as C strings
+  p->filepath[sizeof(p->filepath) - 1] = '\0';
+  p->lutname[sizeof(p->lutname) - 1] = '\0';
   gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
   if(!lutfolder[0])
   {
@@ -1711,7 +1760,8 @@ void gui_update(dt_iop_module_t *self)
   {
     gtk_widget_set_sensitive(g->button, TRUE);
     gtk_widget_set_sensitive(g->filepath, p->filepath[0]);
-    _update_filepath_combobox(g, p->filepath, lutfolder);
+    if(_filepath_is_safe(p->filepath))
+      _update_filepath_combobox(g, p->filepath, lutfolder);
   }
   g_free(lutfolder);
 

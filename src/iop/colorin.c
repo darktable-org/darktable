@@ -254,7 +254,8 @@ int legacy_params(dt_iop_module_t *self,
     else
     {
       new->type = DT_COLORSPACE_FILE;
-      dt_strlcpy_to_fixed(new->filename, old->iccprofile, sizeof(new->filename));
+      dt_strlcpy_fixed_to_fixed(new->filename, sizeof(new->filename),
+                                old->iccprofile, sizeof(old->iccprofile));
     }
 
     new->intent = old->intent;
@@ -311,7 +312,8 @@ int legacy_params(dt_iop_module_t *self,
     else
     {
       new->type = DT_COLORSPACE_FILE;
-      dt_strlcpy_to_fixed(new->filename, old->iccprofile, sizeof(new->filename));
+      dt_strlcpy_fixed_to_fixed(new->filename, sizeof(new->filename),
+                                old->iccprofile, sizeof(old->iccprofile));
     }
 
     new->intent = old->intent;
@@ -369,7 +371,8 @@ int legacy_params(dt_iop_module_t *self,
     else
     {
       new->type = DT_COLORSPACE_FILE;
-      dt_strlcpy_to_fixed(new->filename, old->iccprofile, sizeof(new->filename));
+      dt_strlcpy_fixed_to_fixed(new->filename, sizeof(new->filename),
+                                old->iccprofile, sizeof(old->iccprofile));
     }
 
     new->intent = old->intent;
@@ -399,7 +402,8 @@ int legacy_params(dt_iop_module_t *self,
     memset(new, 0, sizeof(*new));
 
     new->type = old->type;
-    dt_strlcpy_to_fixed(new->filename, old->filename, sizeof(new->filename));
+    dt_strlcpy_fixed_to_fixed(new->filename, sizeof(new->filename),
+                              old->filename, sizeof(old->filename));
     new->intent = old->intent;
     new->normalize = old->normalize;
     new->blue_mapping = old->blue_mapping;
@@ -431,12 +435,14 @@ int legacy_params(dt_iop_module_t *self,
     memset(new, 0, sizeof(*new));
 
     new->type = old->type;
-    dt_strlcpy_to_fixed(new->filename, old->filename, sizeof(new->filename));
+    dt_strlcpy_fixed_to_fixed(new->filename, sizeof(new->filename),
+                              old->filename, sizeof(old->filename));
     new->intent = old->intent;
     new->normalize = old->normalize;
     new->blue_mapping = old->blue_mapping;
     new->type_work = old->type_work;
-    dt_strlcpy_to_fixed(new->filename_work, old->filename_work, sizeof(new->filename_work));
+    dt_strlcpy_fixed_to_fixed(new->filename_work, sizeof(new->filename_work),
+                              old->filename_work, sizeof(old->filename_work));
     _resolve_work_profile(&new->type_work, new->filename_work);
 
     *new_params = new;
@@ -464,6 +470,9 @@ int legacy_params(dt_iop_module_t *self,
     const dt_iop_colorin_params_v6_t *old = (dt_iop_colorin_params_v6_t *)old_params;
     dt_iop_colorin_params_v7_t *new = malloc(sizeof(dt_iop_colorin_params_v7_t));
     memcpy(new, old, sizeof(*new));
+    // stored params need not terminate the file names
+    new->filename[sizeof(new->filename) - 1] = '\0';
+    new->filename_work[sizeof(new->filename_work) - 1] = '\0';
     _resolve_work_profile(&new->type_work, new->filename_work);
 
     *new_params = new;
@@ -1255,8 +1264,11 @@ void commit_params(dt_iop_module_t *self,
 
   d->type = p->type;
   d->type_work = p->type_work;
-  dt_strlcpy_to_fixed(d->filename, p->filename, sizeof(d->filename));
-  dt_strlcpy_to_fixed(d->filename_work, p->filename_work, sizeof(d->filename_work));
+  // stored params need not terminate the file names
+  dt_strlcpy_fixed_to_fixed(d->filename, sizeof(d->filename),
+                            p->filename, sizeof(p->filename));
+  dt_strlcpy_fixed_to_fixed(d->filename_work, sizeof(d->filename_work),
+                            p->filename_work, sizeof(p->filename_work));
 
   const cmsHPROFILE Lab =
     dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
@@ -1410,7 +1422,7 @@ void commit_params(dt_iop_module_t *self,
   if(!d->input)
   {
     const dt_colorspaces_color_profile_t *profile =
-      dt_colorspaces_get_profile(type, p->filename, DT_PROFILE_DIRECTION_IN);
+      dt_colorspaces_get_profile(type, d->filename, DT_PROFILE_DIRECTION_IN);
     if(profile) d->input = profile->profile;
   }
 
@@ -1527,7 +1539,7 @@ void commit_params(dt_iop_module_t *self,
   {
     if(p->type == DT_COLORSPACE_FILE)
       dt_print(DT_DEBUG_ALWAYS, "[colorin] unsupported input profile `%s' has"
-               " been replaced by linear Rec709 RGB!\n", p->filename);
+               " been replaced by linear Rec709 RGB!\n", d->filename);
     else
       dt_print(DT_DEBUG_ALWAYS, "[colorin] unsupported input profile has been"
                " replaced by linear Rec709 RGB!\n");
@@ -1622,6 +1634,10 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_colorin_gui_data_t *g = self->gui_data;
   dt_iop_colorin_params_t *p = self->params;
+
+  // the GUI handlers read the stored file names as C strings
+  p->filename[sizeof(p->filename) - 1] = '\0';
+  p->filename_work[sizeof(p->filename_work) - 1] = '\0';
 
   dt_bauhaus_combobox_set(g->clipping_combobox, p->normalize);
 

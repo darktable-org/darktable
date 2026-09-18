@@ -82,6 +82,14 @@ typedef struct dt_iop_colorzones_params_t
   int splines_version;
 } dt_iop_colorzones_params_t;
 
+static inline int _colorzones_nodes(const dt_iop_colorzones_params_t *const p,
+                                    const int ch)
+{
+  // stored counts index the fixed node arrays; legacy splines also read nodes - 2
+  const int min_nodes = p->splines_version == DT_IOP_COLORZONES_SPLINES_V1 ? 2 : 1;
+  return CLAMP(p->curve_num_nodes[ch], min_nodes, DT_IOP_COLORZONES_MAXNODES);
+}
+
 typedef struct dt_iop_colorzones_gui_data_t
 {
   dt_draw_curve_t *minmax_curve[DT_IOP_COLORZONES_MAX_CHANNELS]; // curve for gui to draw
@@ -2738,6 +2746,10 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
   dt_iop_colorzones_params_t *p = self->params;
 
+  // every GUI handler uses the stored count, and adding a node writes through it
+  for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++)
+    p->curve_num_nodes[ch] = _colorzones_nodes(p, ch);
+
   dt_bauhaus_combobox_set(g->interpolator, p->curve_type[g->channel]);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
@@ -2805,6 +2817,7 @@ void commit_params(dt_iop_module_t *self,
   {
     for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++)
     {
+      const int nodes = _colorzones_nodes(p, ch);
       // take care of possible change of curve type or number of nodes
       // (not yet implemented in UI)
       if(d->curve_type[ch] != p->curve_type[ch]
@@ -2817,14 +2830,14 @@ void commit_params(dt_iop_module_t *self,
 
         if(d->channel == DT_IOP_COLORZONES_h)
           dt_draw_curve_add_point(d->curve[ch],
-                                  p->curve[ch][p->curve_num_nodes[ch] - 2].x - 1.f,
-                                  strength(p->curve[ch][p->curve_num_nodes[ch] - 2].y,
+                                  p->curve[ch][nodes - 2].x - 1.f,
+                                  strength(p->curve[ch][nodes - 2].y,
                                            p->strength));
         else
           dt_draw_curve_add_point(d->curve[ch],
-                                  p->curve[ch][p->curve_num_nodes[ch] - 2].x - 1.f,
+                                  p->curve[ch][nodes - 2].x - 1.f,
                                   strength(p->curve[ch][0].y, p->strength));
-        for(int k = 0; k < p->curve_num_nodes[ch]; k++)
+        for(int k = 0; k < nodes; k++)
           dt_draw_curve_add_point(d->curve[ch], p->curve[ch][k].x,
                                   strength(p->curve[ch][k].y, p->strength));
         if(d->channel == DT_IOP_COLORZONES_h)
@@ -2832,31 +2845,31 @@ void commit_params(dt_iop_module_t *self,
                                   strength(p->curve[ch][1].y, p->strength));
         else
           dt_draw_curve_add_point(d->curve[ch], p->curve[ch][1].x + 1.f,
-                                  strength(p->curve[ch][p->curve_num_nodes[ch] - 1].y,
+                                  strength(p->curve[ch][nodes - 1].y,
                                            p->strength));
       }
       else
       {
         if(d->channel == DT_IOP_COLORZONES_h)
           dt_draw_curve_set_point(d->curve[ch], 0,
-                                  p->curve[ch][p->curve_num_nodes[ch] - 2].x - 1.f,
-                                  strength(p->curve[ch][p->curve_num_nodes[ch] - 2].y,
+                                  p->curve[ch][nodes - 2].x - 1.f,
+                                  strength(p->curve[ch][nodes - 2].y,
                                            p->strength));
         else
           dt_draw_curve_set_point(d->curve[ch], 0,
-                                  p->curve[ch][p->curve_num_nodes[ch] - 2].x - 1.f,
+                                  p->curve[ch][nodes - 2].x - 1.f,
                                   strength(p->curve[ch][0].y, p->strength));
-        for(int k = 0; k < p->curve_num_nodes[ch]; k++)
+        for(int k = 0; k < nodes; k++)
           dt_draw_curve_set_point(d->curve[ch], k + 1, p->curve[ch][k].x,
                                   strength(p->curve[ch][k].y, p->strength));
         if(d->channel == DT_IOP_COLORZONES_h)
-          dt_draw_curve_set_point(d->curve[ch], p->curve_num_nodes[ch] + 1,
+          dt_draw_curve_set_point(d->curve[ch], nodes + 1,
                                   p->curve[ch][1].x + 1.f,
                                   strength(p->curve[ch][1].y, p->strength));
         else
-          dt_draw_curve_set_point(d->curve[ch], p->curve_num_nodes[ch] + 1,
+          dt_draw_curve_set_point(d->curve[ch], nodes + 1,
                                   p->curve[ch][1].x + 1.f,
-                                  strength(p->curve[ch][p->curve_num_nodes[ch] - 1].y,
+                                  strength(p->curve[ch][nodes - 1].y,
                                            p->strength));
       }
       dt_draw_curve_calc_values(d->curve[ch], 0.f, 1.f,
@@ -2867,6 +2880,7 @@ void commit_params(dt_iop_module_t *self,
   {
     for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++)
     {
+      const int nodes = _colorzones_nodes(p, ch);
       if(d->curve_type[ch] != p->curve_type[ch]
          || d->curve_nodes[ch] != p->curve_num_nodes[ch]
          || d->curve[ch]->c.m_numAnchors != p->curve_num_nodes[ch])
@@ -2876,13 +2890,13 @@ void commit_params(dt_iop_module_t *self,
         d->curve_nodes[ch] = p->curve_num_nodes[ch];
         d->curve_type[ch] = p->curve_type[ch];
 
-        for(int k = 0; k < p->curve_num_nodes[ch]; k++)
+        for(int k = 0; k < nodes; k++)
           dt_draw_curve_add_point(d->curve[ch], p->curve[ch][k].x,
                                   strength(p->curve[ch][k].y, p->strength));
       }
       else
       {
-        for(int k = 0; k < p->curve_num_nodes[ch]; k++)
+        for(int k = 0; k < nodes; k++)
           dt_draw_curve_set_point(d->curve[ch], k, p->curve[ch][k].x,
                                   strength(p->curve[ch][k].y, p->strength));
       }

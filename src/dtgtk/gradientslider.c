@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -88,7 +89,7 @@ static gboolean _gradient_slider_postponed_value_change(gpointer data)
 {
   if(!GTK_IS_WIDGET(data)) return 0;
 
-  if(DTGTK_GRADIENT_SLIDER(data)->is_changed == TRUE)
+  if(DTGTK_GRADIENT_SLIDER(data)->is_changed)
   {
     g_signal_emit_by_name(G_OBJECT(data), "value-changed");
     DTGTK_GRADIENT_SLIDER(data)->is_changed = FALSE;
@@ -389,7 +390,7 @@ static void _gradient_slider_motion(GtkEventControllerMotion *controller,
   GtkWidget *widget = dt_gui_get_widget(controller);
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
 
-  if(gslider->is_dragging == TRUE && gslider->selected != -1 && gslider->do_reset == FALSE)
+  if(gslider->is_dragging && gslider->selected != -1 && !gslider->do_reset)
   {
     assert(gslider->timeout_handle > 0);
 
@@ -1162,7 +1163,6 @@ void dtgtk_gradient_slider_set_increment(GtkDarktableGradientSlider *gslider,
   g_return_if_fail(gslider != NULL);
   gslider->increment = value;
 }
-
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

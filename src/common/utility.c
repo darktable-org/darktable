@@ -362,6 +362,29 @@ size_t dt_strlcpy_to_fixed(char *dest, const char *src, const size_t dest_size)
   return g_strlcpy(dest, src, dest_size);
 }
 
+void dt_strlcpy_fixed_to_fixed(char *dest,
+                               const size_t dest_size,
+                               const char *src,
+                               const size_t src_size)
+{
+  memset(dest, 0, dest_size);
+  if(dest_size == 0) return;
+  const char *const end = memchr(src, '\0', src_size);
+  const size_t len = end ? (size_t)(end - src) : src_size;
+  memcpy(dest, src, MIN(len, dest_size - 1));
+}
+
+gboolean dt_util_blob_has_fixed_string(const void *blob,
+                                       const size_t blob_size,
+                                       const size_t field_offset,
+                                       const size_t field_size)
+{
+  // compare by subtraction: field_offset + field_size can wrap around
+  if(!blob || field_size > blob_size || field_offset > blob_size - field_size)
+    return FALSE;
+  return memchr((const char *)blob + field_offset, '\0', field_size) != NULL;
+}
+
 
 gboolean dt_util_test_image_file(const char *filename)
 {
