@@ -1965,6 +1965,44 @@ char *dt_tag_get_subtags(const dt_imgid_t imgid,
   return result;
 }
 
+GList *dt_tag_get_subtags_paths(const dt_imgid_t imgid,
+                                const char *category)
+{
+  if(!category)
+    return NULL;
+
+  // number of components the category itself is made of
+  const guint prefix_components = dt_util_string_count_char(category, '|') + 1;
+  gchar *prefix = g_strdup_printf("%s|", category);
+
+  GList *taglist = NULL;
+  const uint32_t count = dt_tag_get_attached(imgid, &taglist, TRUE);
+  if(count < 1)
+  {
+    g_free(prefix);
+    return NULL;
+  }
+
+  GList *paths = NULL;
+  for(GList *tag_iter = taglist; tag_iter; tag_iter = g_list_next(tag_iter))
+  {
+    const dt_tag_t *t = (const dt_tag_t *)tag_iter->data;
+    if(!g_str_has_prefix(t->tag, prefix))
+      continue;
+
+    gchar **components = g_strsplit(t->tag, "|", -1);
+    // the entity is the part of the tag below the category. a tag that is
+    // exactly the category has no entity
+    if(g_strv_length(components) > prefix_components)
+      paths = g_list_append(paths, g_strdupv(components + prefix_components));
+    g_strfreev(components);
+  }
+
+  g_free(prefix);
+  dt_tag_free_result(&taglist);
+  return paths;
+}
+
 uint32_t dt_tag_get_tag_id_by_name(const char *const name)
 {
   if(!name) return 0;

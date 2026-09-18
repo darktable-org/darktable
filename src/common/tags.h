@@ -263,6 +263,12 @@ GList *dt_tag_get_subtags_list(const dt_imgid_t imgid,
                                const char *category,
                                const int level);
 
+/** retrieves the components below the category for every attached tag, one
+    NULL-terminated array per tag, ordered by tag name. caller frees with
+    g_list_free_full(list, (GDestroyNotify)g_strfreev) */
+GList *dt_tag_get_subtags_paths(const dt_imgid_t imgid,
+                                const char *category);
+
 /** return the tagid of that tag - follow tag sensitivity - return 0 if not found*/
 uint32_t dt_tag_get_tag_id_by_name(const char *const name);
 
