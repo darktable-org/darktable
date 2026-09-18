@@ -2177,32 +2177,39 @@ static float _get_autoscale_md_v1(dt_iop_module_t *self,
 }
 
 // tables driving the Panasonic 0x011b CA branch of _init_coeffs_md_v2
-// below. six-word predictor set and coefficient matrices from session 5
-// of RW2_TCA_investigation.md fit against Adobe DNG WarpRectilinear on
-// 18 corpus files; cross-validation LOGO R^2 is 0.97-0.99 on the four R
-// coefficients and 0.99 on B's k_r0 and k_r1. higher-order B (k_r2,
-// k_r3) does not decode from these six words, so B keeps only two
-// coefficients and its k_r2, k_r3 stay at the G-plane value.
+// below. six-word predictor set and coefficient matrices come from a
+// direct raw-CA centroid fit (session 14's pipeline) across the
+// 132-file combined corpus of RW2_TCA_investigation.md session 16:
+// 14 bodies including 5 full-frame (S5M2, S1M2, S1M2E, S1RM2, S9) and
+// 50 unique (lens, focal) groups. function-space LOGO R^2 is
+// 0.72/0.70/0.57/0.14 for R and 0.59/0.65/0.52/0.39 for B at
+// r = 0.30/0.50/0.70/0.85, staying positive across all radii for both
+// planes; k_r2 and k_r3 for B now decode cleanly and ship as four
+// rows rather than session 5's two
 //
-// K is a global amplitude scale. K = 1 applies Adobe DNG Converter's
-// magnitude directly, which reproduces the camera in-camera CA
-// correction on visible strong-CA edges (session 13, verified on
-// P1366392, PL 12-60 @ 14mm). Session 8's K = 11.48 divisor was fit
-// against an edge-centroid measurement whose ±1-integer-peak filter
-// excluded multi-pixel-shift edges by construction; that fit was
-// therefore calibrated on a filtered sub-pixel subset and produced a
-// correction ~10x too small for the strong-CA edges the tag is meant
-// to fix. Keep the constant as a tuning knob but leave it at 1.0
+// the K constant is a global amplitude scale. K = 1 applies the
+// fitted magnitude directly, which reproduces the camera in-camera CA
+// correction on visible strong-CA edges (session 13, verified
+// on P1366392, PL 12-60 @ 14mm; corpus-wide RMS residual at r = 0.85
+// drops from 0.79/1.20 px shipped to 0.66/0.52 px new for R/B).
+// session 8's K = 11.48 divisor
+// was fit against an edge-centroid measurement whose one-integer-peak
+// filter excluded multi-pixel-shift edges by construction, and
+// produced a correction 10x too small for the strong-CA edges the tag
+// is meant to fix. keep the constant as a tuning knob but leave it
+// at 1.0
 static const int _pana_ca_words[6] = {8, 10, 12, 20, 23, 27};
 static const double _pana_C_R[4][6] = {
-  { -5.5919e-08, -2.7534e-07, -1.0043e-06, +9.4388e-08, +8.1750e-08, +3.1028e-07 },
-  { +1.7918e-06, +3.4704e-07, +5.4376e-06, -1.0369e-07, -4.9216e-06, -4.6536e-07 },
-  { -4.0368e-06, +2.2315e-06, -7.8190e-06, -1.0252e-06, +8.9802e-06, -1.7742e-06 },
-  { +1.5442e-06, -3.2808e-06, +3.1874e-06, +1.5409e-06, -3.5842e-06, +2.5324e-06 },
+  { +7.9180e-07, -9.9765e-07, -2.7910e-07, +4.0805e-07, -1.3951e-06, +7.9746e-07 },
+  { -2.4383e-06, +2.6873e-06, -7.8800e-07, -1.2817e-06, +4.1627e-06, -1.3859e-06 },
+  { +5.4721e-06, -5.4046e-06, +6.5379e-06, +2.7931e-06, -1.1036e-05, +1.2342e-06 },
+  { -4.7856e-06, +3.9371e-06, -7.2750e-06, -1.9511e-06, +1.0210e-05, -6.0188e-07 },
 };
-static const double _pana_C_B_lo[2][6] = {
-  { +1.1514e-07, +3.7170e-07, +9.8105e-09, -1.2143e-07, -1.4375e-07, -1.4212e-06 },
-  { -3.3139e-07, -4.9106e-06, -9.7770e-08, +1.6006e-06, +4.4665e-07, +5.8716e-06 },
+static const double _pana_C_B[4][6] = {
+  { +5.8374e-07, -2.0652e-06, +3.2979e-06, +5.9115e-07, -2.5609e-06, +1.7932e-06 },
+  { -8.0159e-07, +5.5955e-06, -1.2961e-05, -1.2781e-06, +7.9705e-06, -8.5366e-06 },
+  { +2.8709e-06, -1.2697e-05, +2.2758e-05, +3.6777e-06, -1.6716e-05, +1.9802e-05 },
+  { -1.8622e-06, +1.1048e-05, -1.5503e-05, -3.5611e-06, +1.1730e-05, -1.6964e-05 },
 };
 static const double _pana_K = 1.0;
 
@@ -2459,15 +2466,15 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
     const float c  = cd->panasonic.c;
     const float sc = cd->panasonic.scale;
 
-    // per-file precompute for the Panasonic 0x011b CA path: the four
-    // D_R and two D_B polynomial coefficients from the six-word
-    // predictor set, hoisted out of the knot loop. K_JPEG scales the
-    // DNG-derived fit to the in-camera JPEG target (session 8)
+    // per-file precompute for the Panasonic 0x011b CA path: hoists
+    // four D_R and four D_B polynomial coefficients from the six-word
+    // predictor set out of the knot loop. the K amplitude knob is
+    // left at 1.0 by default (session 13)
     const gboolean apply_ca = cor_rgb
                               && (p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
                               && cd->panasonic.has_ca;
     double dr_k[4] = { 0.0, 0.0, 0.0, 0.0 };
-    double db_k[2] = { 0.0, 0.0 };
+    double db_k[4] = { 0.0, 0.0, 0.0, 0.0 };
     if(apply_ca)
     {
       const int16_t *w = cd->panasonic.ca_words;
@@ -2478,11 +2485,11 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
           s += _pana_C_R[k][j] * (double)w[_pana_ca_words[j]];
         dr_k[k] = s / _pana_K;
       }
-      for(int k = 0; k < 2; k++)
+      for(int k = 0; k < 4; k++)
       {
         double s = 0.0;
         for(int j = 0; j < 6; j++)
-          s += _pana_C_B_lo[k][j] * (double)w[_pana_ca_words[j]];
+          s += _pana_C_B[k][j] * (double)w[_pana_ca_words[j]];
         db_k[k] = s / _pana_K;
       }
     }
@@ -2521,10 +2528,7 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
         const double r4 = r2 * r2;
         const double r6 = r4 * r2;
         const double d_r = dr_k[0] + dr_k[1] * r2 + dr_k[2] * r4 + dr_k[3] * r6;
-        // higher-order B coefficients (k_r2, k_r3) do not decode from
-        // the six-word set (session 5); leaving them at zero keeps B
-        // tied to fine at higher orders
-        const double d_b = db_k[0] + db_k[1] * r2;
+        const double d_b = db_k[0] + db_k[1] * r2 + db_k[2] * r4 + db_k[3] * r6;
         cor_rgb[0][i] = fine + (float)d_r;
         cor_rgb[2][i] = fine + (float)d_b;
         // cor_rgb[1][i] stays at fine: G is the reference plane
