@@ -33,7 +33,7 @@ When updating from the stable 5.4 series, please bear in mind that your edits wi
 
 You are strongly advised to take a backup first.
 
-#### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
+#### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, _please_ read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the _full_ raw sample set for your camera under CC0 license!
 
 Since darktable 5.6:
 
@@ -91,7 +91,6 @@ changes (where available).
 
 - The code has received a large set of changes in preparation of the
   Gtk4 migration.
-
   - The code for handling popover menus has been changed.
 
 - Checkboxes are now Bauhaus widgets and are reset to default values
@@ -172,7 +171,7 @@ changes (where available).
   the full print pipeline.
 
 - When installing development versions of darktable (snapshots, self
-  compiled etc.)  the Windows installer now allows to setup a custom
+  compiled etc.) the Windows installer now allows to setup a custom
   configuration-directory and custom shortcut-name, useful for
   multiple parallel darktable installations.
 
@@ -319,6 +318,8 @@ changes (where available).
 
 - Fixed metadata tag Xmp.xmpMM.PreservedFileName not written on camera
   import.
+
+- Fixed a crash on using tag floating window after editing metadata
 
 ## Lua
 
