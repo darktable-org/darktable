@@ -2182,7 +2182,7 @@ void gui_init(dt_iop_module_t *self)
   g->gf_radius = dt_bauhaus_slider_from_params(gf_section, "gf_radius");
   dt_bauhaus_slider_set_format(g->gf_radius, _("px"));
   dt_bauhaus_slider_set_digits(g->gf_radius, 1);
-  gtk_widget_set_tooltip_text(g->gf_radius, _("size of the neighbourhood used to guide the filter"));
+  gtk_widget_set_tooltip_text(g->gf_radius, _("size of the neighborhood used to guide the filter"));
 
   g->gf_feathering = dt_bauhaus_slider_from_params(gf_section, "gf_feathering");
   dt_bauhaus_slider_set_digits(g->gf_feathering, 1);
