@@ -191,9 +191,11 @@ changes (where available).
   reframe within. Read from Canon and Olympus raws.
 
 - Export filename patterns gained `$(CATEGORY_EACH[n,category])`, which
-  yields one path per matching subtag instead of a single comma-joined
-  value. An image tagged for several people can now be exported once
-  into each person's folder rather than into one "John,Jane" folder.
+  yields one path per matching tag instead of a single comma-joined
+  value. Referencing several levels of the same category walks each
+  tag's path, so an image tagged for several people can be exported
+  once into each person's folder rather than into one "John,Jane"
+  folder.
 
 ## Bug Fixes
 
