@@ -33,7 +33,7 @@ When updating from the stable 5.4 series, please bear in mind that your edits wi
 
 You are strongly advised to take a backup first.
 
-#### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
+#### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, _please_ read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the _full_ raw sample set for your camera under CC0 license!
 
 Since darktable 5.6:
 
@@ -87,18 +87,17 @@ changes (where available).
   dialog will open so that the user can confirm settings not exposed
   in the darktable UI.
 
-- New module saturation curve: remaps saturation and brilliance via two 
-  independent curves plotted against each pixel's own perceptually 
+- New module saturation curve: remaps saturation and brilliance via two
+  independent curves plotted against each pixel's own perceptually
   normalized saturation (darktable UCS or JzAzBz):
-  a scene-referred alternative to colorzones' chroma-vs-chroma curve, 
+  a scene-referred alternative to colorzones' chroma-vs-chroma curve,
   with input normalized to the local gamut boundary.
-  
+
 
 ## UI/UX Improvements
 
 - The code has received a large set of changes in preparation of the
   Gtk4 migration.
-
   - The code for handling popover menus has been changed.
 
 - Checkboxes are now Bauhaus widgets and are reset to default values
@@ -182,7 +181,7 @@ changes (where available).
   the full print pipeline.
 
 - When installing development versions of darktable (snapshots, self
-  compiled etc.)  the Windows installer now allows to setup a custom
+  compiled etc.) the Windows installer now allows to setup a custom
   configuration-directory and custom shortcut-name, useful for
   multiple parallel darktable installations.
 
@@ -335,6 +334,8 @@ changes (where available).
 - Fixed keyboard shortcuts in the darkroom doing nothing until the
   center view was clicked, after a snapshot had been taken while the
   snapshots module was collapsed.
+
+- Fixed a crash on using tag floating window after editing metadata.
 
 ## Lua
 
