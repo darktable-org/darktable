@@ -311,6 +311,10 @@ changes (where available).
 - Fixed metadata tag Xmp.xmpMM.PreservedFileName not written on camera
   import.
 
+- Fixed keyboard shortcuts in the darkroom doing nothing until the
+  center view was clicked, after a snapshot had been taken while the
+  snapshots module was collapsed.
+
 ## Lua
 
 ### API Version
@@ -323,7 +327,9 @@ changes (where available).
 
 ### Bug Fixes
 
-- N/A
+- Fixed a crash when a script took more snapshots than the snapshots
+  module has slots. Once all slots are in use, `take_snapshot()` now
+  takes none and says so, as the take snapshot button already refused.
 
 ### New Scripts
 
