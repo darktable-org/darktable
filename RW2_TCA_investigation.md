@@ -3649,6 +3649,122 @@ practical user-side workaround for the corner B residual.
 - `/tmp/rw2_tca/fit_combined.py`, `.../fit_combined.npz`: 22-file
   regression with S5M2 labels
 
+### 132-file combined-corpus refit, shipped and reverted (session 17)
+
+Between session 15 and the revert commit `beb86655d1`, the corpus was
+grown to 132 files across 14 bodies (5 full-frame: S5M2, S1M2, S1M2E,
+S1RM2, S9) and the six-word linear fit was re-run against direct raw
+CA measurements. The refit landed as commit `3158effc0e` (with a
+follow-up comment-style fix `2e04bf74d7`) and was pushed to
+`origin/rw2-tca-compensation`. It was reverted after field-test
+regressions showed the decode injects fringing on files with weak CA.
+
+**What the numbers looked like on the corpus:**
+
+Function-space LOGO R^2 at fixed r on the 132-file corpus (grouped by
+lens/focal, 50 unique groups):
+
+    r     R_in    R_LO    B_in    B_LO
+    0.30  0.823   0.720   0.739   0.591
+    0.50  0.820   0.704   0.766   0.651
+    0.70  0.709   0.573   0.714   0.516
+    0.85  0.284   0.144   0.602   0.388
+
+Corpus-wide RMS residual at r = 0.85 dropped from 0.79/1.20 px
+(shipped) to 0.66/0.52 px (refit) for R/B. On P1366392 (the strong-CA
+test file that motivated the refit) the B residual at r = 0.85
+dropped from +1.31 to +0.70 px. All of that stayed true after the
+revert probe; the mean-and-strong-CA metric was fine.
+
+**Why it was reverted anyway:**
+
+LOGO R^2 = +0.39 on B at r = 0.85 means 39 percent of the corner B
+variance is captured by the linear predictor. That leaves 61 percent
+unconstrained per file, and with a four-coefficient polynomial free
+to swing at r past the LOGO-validated range, "unconstrained" expresses
+as wild extrapolation. On files where the actual CA at the corner is
+weak, the four-row B fit's residual coefficients push the polynomial
+across zero into the wrong sign. Applied as a correction, that
+introduces fringing where none existed.
+
+Case study: `P1366399.RW2` (Leica DG 12-60 @ 24 mm f/5.6, G9). B shift
+at r = 0.95 measured at +0.83 px. Shipped 2-row fit predicted +0.03
+(essentially "do nothing" - the correct choice for a weak-CA file at
+that radius). The 4-row refit predicted -0.18 - wrong sign, and
+applied as a correction it pushes B further from the measured
+position by 1.01 px. Mean absolute R-G on a diagnostic crop from
+that file rose from 3558 to 4419 (+24 percent) with the refit
+correction applied.
+
+Corpus-wide, 84 B and 88 R fit_ok files have at least one radius in
+{0.70, 0.85, 0.95} where the refit is >= 0.15 px further from truth
+than shipped, or predicts the wrong sign with magnitude > 0.3 px.
+Full-frame bodies (17 LOGO groups over 44 files) are the worst
+represented and were disproportionately affected.
+
+**Why the old shipped fit did not have this failure mode:**
+
+Session 5 deliberately kept the B channel at 2 rows (k_r0, k_r1
+only, k_r2 = k_r3 = 0 identically). That model has no r^4 or r^6
+term at all, so at large r the shipped predictions are bounded in
+magnitude and cannot cross zero from noise in the fit. It undershoots
+in strong-CA cases (P1366392 at the corner was the visible symptom)
+but the failure mode is silent: no correction where correction was
+wanted, rather than wrong correction where none was wanted. The
+former is subjectively invisible; the latter is a visible artefact.
+
+**What a proper retry has to guarantee:**
+
+Two constraints together, not just LOGO R^2 > 0 in aggregate:
+
+1. On files where |shift| at r is small (say < 0.3 px), the fit must
+   not predict a correction with |value| > |shift| + noise_floor.
+   That is, the fit has to know how to say "do nothing" when the
+   words do not clearly demand action.
+
+2. On files where |shift| at r is large, the fit is free to take
+   larger coefficient values - but only in the sign consistent with
+   the measurement.
+
+Candidate approaches:
+
+- **Ridge / L2 shrinkage toward the shipped 2-row fit**. Penalise
+  ||C - C_shipped|| where C_shipped is the current [C_R (session 5),
+  C_B_lo (session 5), 0, 0] extended to 4 rows. Sweep lambda by
+  cross-validation. Should produce a "conservative" 4-row fit that
+  approaches shipped when the data is weak and takes the higher-
+  order improvement only where the corpus strongly demands it.
+
+- **Monotonicity constraint on B(r)**. Physical transverse CA is
+  monotone in r for a well-behaved lens (no sign change on the way
+  out). Fit under `d/dr shift_B >= 0` (or `<= 0`, per-file), which
+  post-hoc removes the wrong-sign cases at the cost of some corpus
+  RMS.
+
+- **Target-space regression**. Instead of fitting the 4-coefficient
+  polynomial and letting it evaluate at whatever r, fit shift values
+  at r = {0.5, 0.7, 0.85, 0.95} directly, then reconstruct the
+  polynomial by interpolation. Guarantees the fit is calibrated
+  where evaluated.
+
+Any of the three needs field validation against a "weak-CA test
+set" separate from the strong-CA regression set, before shipping.
+LOGO R^2 in aggregate is not sufficient.
+
+**Files this session:**
+
+- `/c/temp/tca/regression01/P1366399.{RW2,JPG}`: user-supplied
+  regression report file. Two cropped TIFFs on-off with the reverted
+  refit.
+- `/tmp/rw2_tca/measure_bigcombo.npz`: 132-file measurement combined
+  from photographyblog and user samples (survives revert - useful
+  for the retry).
+- `/tmp/rw2_tca/fit_bigcombo.py`, `.../fit_bigcombo_out.npz`: the
+  reverted refit's coefficients and label mapping.
+- `/tmp/rw2_tca/sweep_experiments.py`: predictor-set sweep, sensor-
+  format split, and residual feature-selection scripts confirming
+  the 6-word set at the model-complexity ceiling for the corpus size.
+
 ## Reverse-engineering next steps
 
 Everything below is a plan for the follow-on agent. Nothing here has been
