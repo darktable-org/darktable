@@ -32,8 +32,18 @@ design document.
   (LOGO R^2 at r = 0.85: R 0.144, B 0.388) and regress on held-out
   weak-CA files. The three inner checksums at words [2, 7, 13] resist a
   Rigo-family search, and no other manufacturer or project has a decode
-  to borrow. See sessions 19 and 20 for the audited dead ends, and the
-  identifiability check named there for the one cheap test still open.
+  to borrow. See sessions 19 and 20 for the audited dead ends.
+- **Session 21 explains why: the measurement, not the model, is the
+  limit.** The AAHD-demosaiced radial-shift metric that every fit since
+  session 14 was scored against disagrees with a demosaic-independent
+  Bayer measurement by about 1 px with 29% sign flips at r = 0.85,
+  including a sign flip on both regression targets, and on four corpus
+  files the r >= 0.85 values are polynomial extrapolation from data that
+  stops at r = 0.7. Files with bit-identical predictor words disagree by
+  0.24 px RMS on measured B shift. **Do not run another refit scored on
+  that metric.** The shipped configuration stands on session 18's
+  rendered-pixel comparison against SOOC crops, which is independent of
+  it.
 - **Structural findings.** 0x011b is a 64-byte payload of 32 signed
   int16 LE. Four checksums at word positions `[0, 1, 30, 31]` verify
   with Rigo 2011's `(73*csum + byte) mod 0xFFEF`. On/off flag at
@@ -4199,7 +4209,11 @@ testable and cheap:
   CA, and the ceiling is a property of the data rather than of the model
   family. If measured CA tracks the words, the mapping exists and is
   non-linear. Either answer is worth more than another refit, and this
-  decides which of the two situations we are in. Not yet run.
+  decides which of the two situations we are in. **Run in session 21,
+  which found a third answer: the measurement itself is not accurate
+  enough to decide. See session 21, and note that the test as framed here
+  is backwards; the fatal case is near-identical words with different
+  measured CA, not the reverse.**
 - Recovering focus distance from the S-series maker notes, which exiftool
   does not surface, would name the hidden input if there is one.
 
@@ -4209,6 +4223,188 @@ changes): `session19_analyze.py`, `session19_checks.py`,
 `session20_innercrc.py`, `session20_out.txt`, `session20_step1.py`,
 `session20_step2.py`, `session20_step3.py`, their `.out.txt` logs, and
 `session20_report.txt`.
+
+### The measurement is the limit (session 21)
+
+Session 20 concluded that the ceiling was most likely caused by an input
+the fit cannot observe. This session tested that directly, from two
+sides, and the answer is different and more awkward: the quantity every
+fit since session 14 has been scored against is not accurate enough to
+support the precision being demanded of it, and on the two flagship
+regression files it does not even agree in sign with a
+demosaic-independent measurement of the same thing.
+
+**Part 1: the irreducible floor for any function of the six words.**
+Scripts `session21_step1.py`, `session21_step2.py`, `session21_step2c.py`,
+`session21_step3.py` in `/tmp/rw2_tca/`, data in `session21_step1.npz`
+and the matching `.out.txt` logs.
+
+A note on the logic, because this document previously framed the test
+backwards. Words varying while measured CA stays flat proves nothing: a
+function is free to map varying inputs to a constant output. The fatal
+case is the reverse, near-identical word vectors with materially
+different measured CA, since that makes the target not a function of the
+predictors at all. The RMS of those differences over near-duplicate pairs,
+divided by sqrt(2), is a hard floor on the residual any model of these
+six words can reach.
+
+Per-file measurement uncertainty first, by bootstrapping the tile set
+(50 files spanning 14 bodies, 200 resamples, refitting the 4-term
+polynomial each draw):
+
+    r       sigma_R   sigma_B     range over 50 files
+    0.70     0.020     0.022      0.002 .. 0.267
+    0.85     0.043     0.047      0.004 .. 2.759
+    0.95     0.269     0.254      0.024 .. 8.472
+
+So a typical file carries about 0.04 px of sampling noise at r = 0.85,
+and the outliers are all tile-starved files (gh5_13 at n = 353,
+s5ii_01 at 464, s1_ii_e_40 at 421).
+
+The floor, over pairs with at least 700 tiles each:
+
+    pair set                                      floor_R@.85  floor_B@.85
+    within body, six words IDENTICAL   (31 pr)       0.128        0.241
+    within body, |dW|inf <= 20         (41 pr)       0.153        0.215
+    within body, nearest neighbour     (97 pr)       0.243        0.271
+    cross body, |dW/w11|inf <= 0.01    (75 pr)       0.157        0.217
+    cross body, nearest neighbour      (97 pr)       0.224        0.187
+
+Subtracting the bootstrap noise term changes these by less than 0.02 px
+at r <= 0.85, so they are not sampling noise. **Files whose six-word
+predictor vector is bit-identical disagree by 0.24 px RMS on measured B
+shift at r = 0.85, six times the per-file sampling uncertainty.** The
+frame-group analysis says the same thing from the other direction: of 22
+groups sharing body, lens, focal length and aperture, 15 have identical
+predictor words and 13 of those move in R and 15 of 15 in B by more than
+2 sigma_meas (DMC-GH4 at 14mm f/3.5, five frames, spread 0.36 px on R and
+0.21 on B; GH5 at 60mm f/4, 1.74 px on R). Zero of the seven groups where
+the words *do* move show flat CA.
+
+Taken at face value, that caps any function of the six words at about
+0.24 px on B at r = 0.85 against refits that reach 0.52 to 0.66, leaving
+real headroom for a non-linear or cross-term model. That reading is what
+part 2 undermines.
+
+**Part 2: is the measured shift the real shift?** Session 18 named AAHD
+demosaic bias as a suspect and nothing in the toolchain had ever read the
+raw Bayer. Scripts `session21_bayer_measure.py`, `_sanity.py`,
+`_nooffset.py`, `_compare_tm.py`, `_report.py`, report
+`session21_bayer_report.out.txt`.
+
+A demosaic-free estimator was built: colour sub-lattices by strided
+slicing with no interpolation, CFA layout read from `raw_pattern` rather
+than assumed (the corpus contains RGGB, BGGR and GBRG among these bodies),
+black level subtracted, G taken separately from the R row and the B row,
+and the fixed half-Bayer-period sampling offset subtracted before the
+radial projection. Same phase-correlation estimator, same gates, same
+tile geometry in sensor coordinates, so the only variable is the absence
+of interpolation. It recovers a synthetic injected subpixel translation to
+about 0.1 px. It is not an oracle: on a genuinely weak-CA file
+(`s9_31`, AAHD |dr| < 0.05 at r = 0.85) it returns -1.42 px on R and
++1.68 on B rather than zero, so it has its own aliasing-driven bias.
+
+Both pipelines on the same 15 files, comparing tile medians in
+full-resolution pixels:
+
+    r        N bins   median(Bayer-AAHD)   MAD    scale(OLS)  sign disagree
+    0.70       26          -0.19           0.96      0.55       56%
+    0.85       22          +0.08           1.05      0.80       29%
+
+No systematic scale factor and no systematic offset, just scatter of about
+1 px with Pearson correlation of +0.32 to +0.37 between the two
+measurements of the same quantity. **The disagreement includes a sign flip
+on both regression targets**: P1366392 R at r = 0.85 is +0.57 under AAHD
+and -0.51 under Bayer; P1366399 R is +0.40 against -0.83; gx8_45 is +1.80
+against -0.26. Subtracting the CFA sampling offset is worth 0.5 to 0.8 px,
+which is smaller than the residual disagreement, so the disagreement is
+not an artefact of how that offset was handled. It cannot be split between
+demosaic bias and Bayer aliasing on this evidence, and is not claimed to
+be one or the other.
+
+One finding here is independent of the demosaic question and matters on
+its own. **Four of the corpus files ranked as strong-CA have no AAHD tiles
+at all beyond r = 0.7**: gh5s_01 (n = 221, r_max 0.67), s9_01 (0.78),
+s9_05 (0.78), gh5_13 (0.74). Their AAHD predictions at r = 0.85 and 0.95
+are pure extrapolation of inner-radius data, reaching +14.6 px on
+gh5s_01. Corpus-wide metrics at r = 0.85 and 0.95, which is where every
+comparison in sessions 17, 18 and 20 was scored, include those numbers as
+if they were measurements.
+
+**Verdict.** The two parts together read differently from either alone.
+The 0.24 px floor of part 1 is derived from the same AAHD measurements
+that part 2 shows disagree with an independent estimator by about 1 px
+with 29% sign flips at the same radius. The most economical explanation
+for pairs with identical word vectors disagreeing by 0.24 px is therefore
+scene-dependent bias in the estimator, not a missing physical degree of
+freedom: if the words are identical the camera believes the lens state is
+identical, and the tile bootstrap of part 1 measures only sampling
+scatter within one scene, so it cannot see a bias that varies between
+scenes. A real per-frame degree of freedom invisible to the metadata,
+focus distance being the obvious candidate since Panasonic's correction
+may simply ignore it, remains possible and is not excluded. The two
+cannot be separated with the tooling here.
+
+What this does settle is the status of the fitting programme. Sessions 14
+through 20 optimised and cross-validated against a target whose per-file
+bias is comparable to the signal being fitted, partly in a radius regime
+where some files contribute extrapolation rather than measurement. That
+is sufficient to explain every feature of the ceiling: why aggregate
+LOGO R^2 improves while held-out weak-CA files regress, why six
+independent regularizers and coordinate frames all land on the same
+number, and why session 18's closest candidate regressed visibly on
+P1366392 despite an analytically correct-sign prediction.
+
+**Consequence for what gets trusted.** The one piece of validation in this
+entire document that does not depend on the AAHD pipeline is session 18's
+rendered-pixel comparison against the user-supplied
+`P1366399-crop-lens-correction-{off,on}.tif` SOOC crops, which put shipped
+session-5 + K = 1 within about 1% on |R-G| and 5% on |B-G|. That evidence
+stands untouched by this session and is the reason the shipped
+configuration stays. It is also the currency any future attempt should be
+scored in.
+
+**What NOT to retry, updated again.** Everything in sessions 18 and 20,
+plus:
+
+- Any refit scored on the AAHD radial-shift metric, at any radius, with
+  any regularizer. The metric is not accurate enough to rank candidates
+  that differ by a few tenths of a pixel (session 21 part 2).
+- Any metric evaluated at r >= 0.85 on gh5s_01, s9_01, s9_05 or gh5_13
+  without first checking tile support; those values are extrapolation.
+- Interpreting the 0.24 px near-duplicate floor as proof of a missing
+  metadata input. It is an upper bound on real CA variation and a lower
+  bound on estimator bias, and this session cannot separate them.
+
+**What might still move the needle, revised again.** In descending order
+of expected value:
+
+- **Change the validation currency to rendered pixels against SOOC.**
+  Score candidates by |R-G| and |B-G| on darktable renders versus the
+  camera JPEG or SOOC TIFF crops, the way session 18's only trustworthy
+  check was done, on a handful of files with strong edges near the corner.
+  Slow per candidate, but it measures the thing users see and it is the
+  only metric in this investigation that has never given a wrong answer.
+- **Fix the measurement before fitting again.** A trustworthy estimator
+  needs an aliasing model for the Bayer path, or edge-based subpixel
+  localisation on high-contrast features rather than whole-tile phase
+  correlation, plus a tile-support floor at the radius being scored. Until
+  one exists, no refit can be ranked.
+- Recovering focus distance from the S-series maker notes, to test the
+  surviving missing-degree-of-freedom hypothesis rather than assume it.
+- Firmware RE, unchanged from session 18, still blocked on G9 v2.7
+  encryption.
+- Image-adaptive CA detection in `cacorrectrgb`, unchanged from session
+  18, and now somewhat more attractive: if per-frame CA really does vary
+  at a fixed lens state, no metadata decode can reach it.
+
+**Files this session** (all in `/tmp/rw2_tca/`, no darktable source
+changes): `session21_step1.py`, `session21_step2.py`,
+`session21_step2c.py`, `session21_step3.py`, `session21_step1.npz`,
+`session21_step{1,2,2c,3}.out.txt`, `session21_bayer_measure.py`,
+`session21_bayer_sanity.py`, `session21_bayer_nooffset.py`,
+`session21_bayer_compare_tm.py`, `session21_bayer_report.py`,
+`session21_bayer_report.out.txt`.
 
 ## Reverse-engineering next steps
 
