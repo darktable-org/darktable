@@ -3537,6 +3537,118 @@ residual B fringing at the corner.
 - `/tmp/rw2_tca/measure_ca.npz`, `.../fit_direct.npz`,
   `.../cache/*_aahd.npy`: measurements and cached AAHD renders
 
+### Third-body sample: DC-S5M2 pre-production, 4 files (session 15)
+
+Session 14 pointed at "third-body samples" as the only remaining path
+to unlock B's `k_r2` / `k_r3` on the shipped decode. Photographyblog
+published 99 paired RW2+JPEG samples from a pre-production DC-S5M2
+(Panasonic Lumix S5 II) at
+`https://www.photographyblog.com/previews/panasonic_lumix_s5ii_photos`.
+A first batch of four files was pulled to `/c/temp/tca/s5ii/` to check
+structural conformance and the first-cut decode:
+
+- `01`: LUMIX S 85mm F1.8 @ f/1.8 (prime)
+- `06`: LUMIX S 20-60mm F3.5-5.6 @ 20mm f/8
+- `17`: LUMIX S 14-28mm F4-5.6 @ 14mm f/8 (ultra-wide, strong CA)
+- `19`: LUMIX S 14-28mm F4-5.6 @ 14mm f/4 (same lens/focal, wider stop)
+
+**Structural check** (positive, all 4 files):
+
+- 0x011b tag present with count = 64.
+- All four Rigo 2011 checksums pass on each file, unchanged from the
+  MFT corpus. Same checksum algorithm carries over to a new
+  full-frame body.
+- word[14] = 256 on every file (correction on).
+- Radii ratios `N2/N1 = 6/7 = 0.857`, `N3/N1 = 4/7 = 0.571`,
+  `N4/N1 = 2/7 = 0.286` on every file. Matches session 6's DC-S5
+  full-frame radii pattern verbatim. The 4-zone structural model
+  session 6 established for the older DC-S5 applies to the newer
+  DC-S5M2 without change.
+- Sensor: 6000x4000 (24 MP full-frame), halfdiag 3611 px vs G9's
+  3254 px MFT halfdiag. `_init_coeffs_md_v2` uses normalised radius
+  and computes halfdiag per file, so no code change would be needed
+  to add DC-S5M2 support.
+
+**Direct raw CA measurement** (`/tmp/rw2_tca/measure_ca.py` on the
+four files, halfdiag = 3611 px):
+
+    file                            n_tiles  R@0.5   R@0.85   B@0.5   B@0.85 (px)
+    s5ii_01 (85mm f/1.8)             464    -0.14   -0.58   -0.22   +0.95
+    s5ii_06 (20-60 @ 20mm f/8)      2224    +0.84   +0.15   -0.35   +0.77
+    s5ii_17 (14-28 @ 14mm f/8)      2065    +0.26   +0.48   +0.31   +1.06
+    s5ii_19 (14-28 @ 14mm f/4)      2233    +0.33   +0.41   +0.51   +1.10
+
+Physical magnitudes are on the same order as G9 / GX80 at comparable
+focal lengths, and B channel shift at r = 0.85 sits at ~1 px, matching
+the P1366392 residual the user reported. Fit RMS 0.08-0.33 px is
+actually cleaner than the MFT corpus, likely because the S5M2 sensor
+has finer pixels and the scenes are more contrasty for phase
+correlation.
+
+**Combined-corpus regression** (22 files: 9 G9 + 9 GX80 + 4 S5M2 =
+7 unique lens-focal groups on MFT + 3 unique lens-focal groups on
+full-frame; treat the 14mm f/4 and f/8 pair as one lens-focal group
+for LOGO). Function-space regression LOGO R^2 at fixed r on the six-
+word predictor set:
+
+              R@0.30  R@0.50  R@0.70  R@0.85    B@0.30  B@0.50  B@0.70  B@0.85
+    18 MFT   +0.733  +0.908  +0.751  +0.446    -0.086  -0.838  +0.173  +0.517
+    22 combo +0.884  +0.850  +0.623  +0.634    +0.409  +0.134  -0.174  -2.699
+
+R generalises at similar quality (0.6-0.9). **B degrades at r = 0.85
+from +0.517 (MFT-only) to -2.699 (with S5M2 added).** The four S5M2
+files' B behaviour is not linearly predicted by the six words that fit
+the MFT bodies. This is not a surprise given the sample size (4 files,
+3 groups) - it is not enough data to constrain a full-frame branch of
+the fit even in a mixed regression.
+
+**Predictor-set sweep** on the same 22-file corpus, LOGO R^2 at r =
+0.85 on B (the corner where the visible residual lives):
+
+    session-5 six words           -2.7
+    smooth-8  (add words 2, 29)   -6.5
+    smooth-9  (add word 15 too)   -4.3
+    all 27 non-checksum words     -9.6
+    all 32 words                  -4.6
+
+More predictors makes things worse. Session 5's `[8, 10, 12, 20, 23,
+27]` remains the best among tested; the ceiling is data size, not
+feature set.
+
+**No code change**. `C_R`, `C_B_lo` and `K = 1` stay shipped from
+session 13. The 4-file S5M2 batch confirms the structural findings
+generalise cleanly to a new body family but does not decode the
+missing B higher-order coefficients.
+
+**What next**. Two productive extensions if the user wants to push
+this further:
+
+1. Enlarge the S5M2 batch to 20+ files covering more lens/focal
+   groups. 3 groups is under the parametrisation boundary for a
+   4-coefficient B polynomial in the mixed regression; 10+ groups
+   across S5M2 would let a body-conditional or lens-family-
+   conditional fit converge.
+2. Try a completely different modelling approach: instead of
+   regressing per-file `k_r0..k_r3` on words, regress the raw
+   `word[X]` -> `pixel-space shift at fixed r` mapping directly, or
+   fit a monotone spline evaluator (as SILKYPIX does for shading,
+   session 11) instead of a 4-term polynomial. Neither is guaranteed
+   to help but both change the ill-conditioning that keeps k_r2 /
+   k_r3 from decoding.
+
+Meanwhile the shipped patch keeps working at K = 1 for the CA it can
+represent (R plane and low-order B). `cacorrectrgb` remains the
+practical user-side workaround for the corner B residual.
+
+**Files this session:**
+
+- `/c/temp/tca/s5ii/panasonic_lumix_s5ii_{01,06,17,19}.{rw2,jpg}`:
+  4 paired samples downloaded from photographyblog
+- `/tmp/rw2_tca/measure_mft.npz`, `.../measure_s5ii.npz`,
+  `.../measure_combined.npz`: measurement outputs, three-way split
+- `/tmp/rw2_tca/fit_combined.py`, `.../fit_combined.npz`: 22-file
+  regression with S5M2 labels
+
 ## Reverse-engineering next steps
 
 Everything below is a plan for the follow-on agent. Nothing here has been
