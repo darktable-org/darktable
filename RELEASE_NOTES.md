@@ -324,11 +324,11 @@ changes (where available).
 
 ### API Version
 
-- API version is now 9.7.0
+- API version is now 9.8.0
 
 ### New Features
 
-- N/A
+- Extended dt_lua_snapshot_t and added a function to remove the snapshot.
 
 ### Bug Fixes
 
