@@ -4960,7 +4960,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->quality = dt_bauhaus_combobox_from_params(self, "quality");
   gtk_widget_set_tooltip_text(g->quality,
-                              _("spectral accuracy vs speed: the colour model is evaluated "
+                              _("spectral accuracy vs speed: the color model is evaluated "
                                 "on a table\n"
                                 "of this size and PCHIP-interpolated between the points, "
                                 "so a finer\n"
@@ -4982,10 +4982,10 @@ void gui_init(dt_iop_module_t *self)
   g->adaptation_surface = dt_bauhaus_toggle_from_params(self, "adaptation_surface");
   gtk_widget_set_tooltip_text(
       g->adaptation_surface,
-      _("second half of the film's sensitivity adaptation: a per-colour\n"
+      _("second half of the film's sensitivity adaptation: a per-color\n"
         "exposure correction of up to two stops, zero at the film's own white\n"
         "point and growing with distance from it. off by default: it shifts\n"
-        "saturated colours substantially. no effect on stocks whose profile\n"
+        "saturated colors substantially. no effect on stocks whose profile\n"
         "carries no surface (the monochrome films and every print paper)."));
 
   g->gamut_compress = dt_bauhaus_toggle_from_params(self, "gamut_compress");
@@ -4996,7 +4996,7 @@ void gui_init(dt_iop_module_t *self)
         "knees: chroma towards the profile's boundary, and lightness from\n"
         "the upper midtones up, which rolls the highlights off to white.\n"
         "\n"
-        "switching it off shows where the film is producing colours the\n"
+        "switching it off shows where the film is producing colors the\n"
         "profile has no room for: they leave the range, so darktable's\n"
         "clipping indicator marks them and the raw extent of the overshoot\n"
         "is visible. the highlights stop rolling off and reach further at\n"
@@ -5005,7 +5005,7 @@ void gui_init(dt_iop_module_t *self)
         "pre-compression boost and post-compression scale on the scanner\n"
         "tab instead.\n"
         "\n"
-        "leave it on for an image you intend to keep. off, saturated colours\n"
+        "leave it on for an image you intend to keep. off, saturated colors\n"
         "are clipped by whatever comes next in the pipeline, which loses the\n"
         "separation between them and can shift their hue."));
   /* ---- tab 2: print ---- */
@@ -5340,7 +5340,7 @@ void gui_init(dt_iop_module_t *self)
       _("scales the finished picture, after the gamut compressor.\n"
         "\n"
         "the boost above pushes more light into the compressor, which lifts\n"
-        "the image and desaturates colours that were already near the edge of\n"
+        "the image and desaturates colors that were already near the edge of\n"
         "the gamut. this only changes the level, leaving the relationship\n"
         "between the channels alone, the same thing a tone curve does by\n"
         "moving its white point.\n"

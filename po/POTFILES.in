@@ -81,6 +81,7 @@ build/lib/darktable/plugins/introspection_retouch.c
 build/lib/darktable/plugins/introspection_rgbcurve.c
 build/lib/darktable/plugins/introspection_rgblevels.c
 build/lib/darktable/plugins/introspection_rotatepixels.c
+build/lib/darktable/plugins/introspection_satcurvergb.c
 build/lib/darktable/plugins/introspection_scalepixels.c
 build/lib/darktable/plugins/introspection_shadhi.c
 build/lib/darktable/plugins/introspection_sharpen.c
@@ -290,7 +291,6 @@ src/iop/contrastntexture.c
 src/iop/crop.c
 src/iop/defringe.c
 src/iop/demosaic.c
-src/iop/demosaicscale.c
 src/iop/demosaicing/amaze.cc
 src/iop/demosaicing/basics.c
 src/iop/demosaicing/capture.c
@@ -298,6 +298,7 @@ src/iop/demosaicing/passthrough.c
 src/iop/demosaicing/ppg.c
 src/iop/demosaicing/vng.c
 src/iop/demosaicing/xtrans.c
+src/iop/demosaicscale.c
 src/iop/denoiseprofile.c
 src/iop/diffuse.c
 src/iop/dither.c
@@ -340,6 +341,7 @@ src/iop/retouch.c
 src/iop/rgbcurve.c
 src/iop/rgblevels.c
 src/iop/rotatepixels.c
+src/iop/satcurvergb.c
 src/iop/scalepixels.c
 src/iop/shadhi.c
 src/iop/sharpen.c
