@@ -87,6 +87,13 @@ changes (where available).
   dialog will open so that the user can confirm settings not exposed
   in the darktable UI.
 
+- New module saturation curve: remaps saturation and brilliance via two 
+  independent curves plotted against each pixel's own perceptually 
+  normalized saturation (darktable UCS or JzAzBz):
+  a scene-referred alternative to colorzones' chroma-vs-chroma curve, 
+  with input normalized to the local gamut boundary.
+  
+
 ## UI/UX Improvements
 
 - The code has received a large set of changes in preparation of the
