@@ -54,6 +54,18 @@ static int _setup(void **state)
     if(e) g_error_free(e);
     return -1;
   }
+#ifndef _WIN32
+  // _canonical_path() resolves symlinks, so the expected paths must be built on
+  // the resolved directory: on macOS the temp dir lives under /var, which is a
+  // symlink to /private/var
+  char *real = realpath(_tmpdir, NULL);
+  if(real)
+  {
+    g_free(_tmpdir);
+    _tmpdir = g_strdup(real);
+    free(real);
+  }
+#endif
   return 0;
 }
 
