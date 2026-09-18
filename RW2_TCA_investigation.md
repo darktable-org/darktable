@@ -25,6 +25,15 @@ design document.
   and refuted it (the JPEG-referenced measurement had an edge-selection
   bias that under-scaled the result by ~10x). See session 13 for the
   correction and the audit.
+- **Refit attempts (sessions 14-20) all failed; shipped config stands.**
+  Corpus growth to 132 files, ridge / monotone / target-space
+  regularization, three coordinate-frame reworks, and body-unit
+  normalization of the predictors every land on the same ceiling
+  (LOGO R^2 at r = 0.85: R 0.144, B 0.388) and regress on held-out
+  weak-CA files. The three inner checksums at words [2, 7, 13] resist a
+  Rigo-family search, and no other manufacturer or project has a decode
+  to borrow. See sessions 19 and 20 for the audited dead ends, and the
+  identifiability check named there for the one cheap test still open.
 - **Structural findings.** 0x011b is a 64-byte payload of 32 signed
   int16 LE. Four checksums at word positions `[0, 1, 30, 31]` verify
   with Rigo 2011's `(73*csum + byte) mod 0xFFEF`. On/off flag at
@@ -3961,6 +3970,246 @@ darktable source changes committed):
 - `/tmp/dt_render/wip_correct/`: dt renders on the correct-frame WIP,
   6-panel comparison mosaics for P1366392 and P1366399.
 
+### Word roles and the public-RE audit (session 19)
+
+Two developer hypotheses drove this session, both aimed at the question
+session 18 left open: why does a six-word linear map keep hitting the same
+ceiling?
+
+1. The correction data might be calibrated per individual lens *copy*
+   rather than per lens model, since real lenses vary unit to unit. If so,
+   some predictor words could be identifiers or quantized profile
+   selectors rather than continuous coefficients, and regressing linearly
+   on them would be meaningless.
+2. Panasonic's scheme might not be unique. If it reuses a Four Thirds /
+   Micro Four Thirds convention, or anything another manufacturer uses,
+   a published formula could replace the regression outright.
+
+**Corpus for the word-role work:** 134 RW2 under `/c/temp/tca/**`, 14
+bodies, 14 lens models. Scripts `session19_analyze.py`,
+`session19_checks.py`, `session19_focus.py`, logs `session19_out.txt`
+and `session19_checks_out.txt`, all in `/tmp/rw2_tca/`. The 0x011b reader
+is `read_011b_words` from `fit_direct.py`, unchanged.
+
+**Positional taxonomy over 32 words, 134 files:**
+
+    behaviour                             positions
+    global constant (= 256)               14
+    constant per body model               4, 11, 16, 17
+    ~10 discrete values, no lens order    5, 9, 21, 22, 28
+    unique per file (134/134 distinct)    0, 1, 30, 31
+    continuous, varying shot to shot      the remaining 18
+
+The body-constant group is the four zone radii already known from
+session 6, and the numbers are sensor-derived: word[4] is 2407 on
+DMC-GX80 and DMC-G80, 2730 on DC-G9 and DC-GX9, 1905 on DC-GH5S, 3072 on
+DC-S1M2, 4272 on DC-S1RM2, with words 11, 16, 17 following at the fixed
+ratios. One value per body model, no lens signal.
+
+**Hypothesis 1 outcome: refuted in its pure form, but it found something.**
+
+The six predictor words `[8, 10, 12, 20, 23, 27]` are continuous, not
+identifiers. On zooms with a focal sweep in the corpus (45-150, 70-300,
+12-32, 14-140, 24-60), five to seven of the six move monotonically with
+focal length, which is the signature of an interpolated coefficient.
+Cardinalities per lens model for word[8]: Leica 12-60 = 21, LUMIX S 24-60
+= 10, LUMIX S 70-300 = 9. The primes take only two or three values, which
+is indistinguishable from an ID at that sample size but consistent with
+continuous coefficients under aperture and focus dependence.
+
+Two findings that are new, and that bear directly on the ceiling:
+
+- **Cross-body: about 30 of 32 words change when the body changes, with
+  lens, focal length and aperture held fixed.** GX80 vs G9 with the Leica
+  12-60 at 12mm f/5.6 agree on word[6] (= 0) and word[14] (= 256) and on
+  nothing else. Same picture for that lens at 25 and 60mm, for the Lumix
+  45-150 at 45/97/150mm, for the Sigma 16 and 30, the Lumix 42.5, G80 vs
+  G90 with the Lumix 12-60, and GH5 vs GH5S.
+- **Shot to shot at fixed lens, focal length and aperture, the predictor
+  words still move by 100 to 500 counts.** LUMIX S 50/1.8 on DC-S1M2 at
+  f/5.6, three frames: word[8] in {-681, -471, -486}, word[20] in {-347,
+  -687, -662}. LUMIX S 70-300 on S1RM2 at 300mm f/5.6, three frames:
+  word[8] in {1277, 1642, 1316}, word[20] in {1637, 1136, 1583}. So the
+  payload responds to an input the fit cannot see. Focus distance is the
+  obvious candidate; exiftool does not surface it for the S-series files,
+  so this is inference, not measurement.
+
+Per-copy versus per-body cannot be separated on this corpus, because it
+contains no matched lens copy shot on two bodies. Per-copy is not needed
+to explain anything observed: per-body-model constants suffice.
+
+**Hypothesis 2 outcome: refuted, with the public record audited.**
+
+- darktable's own Olympus path reads `Exif.OlympusIp.0x150a` (4 floats)
+  and `0x150c` (6 floats) at `src/common/exif.cc:1269-1308`, into
+  `float dist[4]` / `float ca[6]` (`src/common/image.h:185-190`). Exiv2
+  returns them already scaled; darktable applies no further unit scaling,
+  and `[0,0,0,1]` is the no-correction sentinel (`exif.cc:1284`). The
+  application at `src/iop/lens.cc:2379-2454` is a single whole-image
+  polynomial per channel, `Rin_R = Rin * ((1 + car0) + car2*Rin^2 +
+  car4*Rin^4)`, with no zoning.
+- That rules the correspondence out at the layout level. Olympus is six
+  coefficients over the whole frame; Panasonic 0x011b is four radial
+  zones delimited by the body-scaled radii at `[11, 4, 16, 17]`, with the
+  payload further partitioned by the three suspected inner checksums.
+  There is no plausible field-by-field mapping between the two.
+- No other project decodes 0x011b. LibRaw handles only Panasonic 0x0118
+  (`src/metadata/tiff.cpp:518`); rawspeed only `PANASONIC_STRIPOFFSET`;
+  exiv2 reports it as an unknown PanasonicRaw tag; RawTherapee has open
+  requests (#3155, #3254) and no merged decoder; no dcraw derivative
+  touches it. exiftool 12.76 documents 0x0119 fully, including
+  `ValueConv => '$val / 32768'` on each coefficient
+  (`PanasonicRaw.pm:272-273`, table at `:435-489`), but carries only a
+  bare comment for our tag at `PanasonicRaw.pm:275`:
+  `# 0x11b - chromatic aberration correction (ref 3) (also see forum9366)`.
+  Notably, Olympus 0x150a/0x150c are not documented in exiftool's
+  `Olympus.pm` either; darktable gets them through Exiv2's own OlympusIp
+  grouping.
+- Homeister's forum 9366 post remains the only public RE of 0x011b, and
+  it stops where this document already says it stops. Rigo's
+  `panasonic-rw2` repo covers 0x0119 only and its README now declares
+  itself obsolete in favour of exiftool. Andrew Johnston's MFT lens
+  correction project targets 0x0119 distortion models exclusively; the
+  CA page it gestures at does not exist. The Four Thirds System white
+  paper specifies mount and sensor, not any correction data format.
+
+Conclusion: there is no published formula to borrow, from Olympus or from
+anyone else. Any further progress on the coefficients needs new reverse
+engineering.
+
+### Inner checksums and body-unit normalization (session 20)
+
+Two follow-ups fell out of session 19. Both are cheap and fully offline,
+and both were run to a conclusion. No darktable source was changed.
+
+**Inner checksums at words [2], [7], [13]: negative result.** These are
+listed as "interior CRC (unknown), opaque" earlier in this document and
+had never been attacked. Cracking them would fix the block boundaries and
+so constrain which words are coefficients of a common polynomial.
+
+`/tmp/rw2_tca/session20_innercrc.py`, log `session20_out.txt`, 134 files.
+The sweep first reproduced all four known outer checksums at 134/134,
+proving the byte convention against
+`_validate_panasonic_ca_checksums` (`src/common/exif.cc:1117-1147`):
+word[0] over even bytes 4..58, word[1] over bytes 4..31, word[30] over
+bytes 32..59, word[31] over odd bytes 4..58, all with multiplier 73,
+modulus 0xFFEF, init 0, little-endian. Pointed at word[1] and word[30] as
+unknown targets, the same engine recovers their ranges at 134/134, so the
+search itself works.
+
+Swept per target word: every byte range `lo` in 0..63 by `hi` in
+lo+1..64 (2079 ranges), stride in {all, even, odd}, 26 small odd
+multipliers including 73, modulus in {0xFFEF, 0xFFFF, 0x10001}, stored
+word read as LE or BE, and *all* init values. Init comes for free from
+the identity `rigo(bytes, init) = mul^k * init + rigo(bytes, 0) mod m`,
+so a bucket hits iff `stored - rigo_0` is constant across files: 963,456
+buckets per word, about 6.3e10 effective tuples per word and 1.9e11 over
+the three.
+
+    target    candidates >= 90% pass    best pass rate
+    word[2]            0                     3/134
+    word[7]            0                    16/134
+    word[13]           0                     5/134
+
+All at chance level for 9.6e5 buckets at modulus 65519. Stored values are
+high-entropy (122, 126 and 108 distinct out of 134 respectively), which
+is consistent with them being checksums of some kind. So: if words 2, 7
+and 13 are checksums, they are not in the same recurrence family as the
+outer four, and Homeister's part boundaries remain unconfirmed. Families
+this sweep did *not* cover, for whoever picks it up: table-driven CRC-16
+(CCITT, XMODEM, MODBUS, ARC, DNP, T10-DIF), reflected or bit-reversed
+variants and non-zero XorOut, a word-level rather than byte-level
+recurrence, input transformed before hashing (byte swap within word, XOR
+with a fixed salt, a prepended body or lens ID), and input drawn from
+outside the 64-byte payload.
+
+**Body-unit normalization of the predictors: hypothesis confirmed
+structurally, useless for the fit.** Session 19 showed the zone radii are
+per-body constants. If the coefficient words carry the same body-pixel
+scaling, then sessions 17 and 18 pooled raw word values across 14 bodies
+of different resolution, which would be an apples-to-oranges regression
+and a candidate explanation for the ceiling. This was never tested; the
+session 18 coordinate-frame variants all operated on the measurement
+side, not on the predictors.
+
+Step 1, 25 matched cross-body pairs at fixed lens, focal length and
+aperture (`session20_step1.py`). The clean pairs collapse to a *single
+per-body factor shared by all six predictor words*: G90 vs G80 with the
+Lumix 12-60 at 12mm f/8 gives 1.151 on every one of the six, against a
+radius ratio of 1.134; GH5 vs GH5S at 12mm f/8 gives 1.396 to 1.404
+against 1.433; G9 vs GX80 with the Sigma 30 gives 1.150 to 1.154. Median
+implied exponent over the radius ratio is 1.115 to 1.124 per word. The
+words are body-scaled, so the hypothesis is correct as a statement about
+the format. The exponent sitting near 1.12 rather than 1.0 is not
+explained; a plain radius ratio would give 1.0.
+
+Step 2, refit with normalized predictors through the existing harness,
+129 files, 45 LOGO groups (`session20_step2.py`):
+
+    scheme                        R^2_R@0.85  R^2_B@0.85  regR  regB  wsB@0.85
+    shipped baseline                -0.057      -1.423       0     0      26
+    W raw (session 17)              +0.066      +0.282      72    84       6
+    W / word[11]                    +0.143      +0.394      75    81       5
+    W / word[4]                     +0.145      +0.399      75    80       5
+    W / word[11]^2                  +0.143      +0.465      93    76       5
+    target * halfdiag               +0.144      +0.388      72    69       5
+    W / word[11], target * halfdiag +0.163      +0.456      72    71       5
+
+Session 18's ceiling was R 0.144, B 0.388 at r = 0.85. Every scheme lands
+on it. Step 3 on the held-out weak-CA files (`session20_step3.py`) shows
+the same failure mode that got `3158effc0e` reverted: on P1366392 B at
+r = 0.85 the measurement is +1.273 px and every normalized scheme
+predicts +0.45 to +0.57, while shipped predicts -0.036; two of the
+schemes also newly regress R on held-out files, `W / word[11]^2` on three
+of six. Nothing here is shippable, and none of it is close.
+
+**Verdict.** The ceiling is not caused by cross-body unit mixing. The
+predictor words really are body-scaled, and normalizing them away changes
+the fit by nothing that matters. Combined with session 19's finding that
+the words also move 100 to 500 counts between frames with lens, focal
+length and aperture unchanged, the most likely remaining explanation for
+the ceiling is that the payload encodes an input the fit cannot observe,
+rather than that the mapping needs a better regularizer or a better
+coordinate frame.
+
+**What NOT to retry, updated from session 18's list.** Everything on that
+list, plus:
+
+- Rigo-family byte-CRC searches for words 2, 7, 13 (session 20; the
+  search space covered is written out above).
+- Olympus `ca[6]` or any other manufacturer's record as a source of the
+  formula (session 19; no public decode of 0x011b exists beyond what this
+  document already uses).
+- Predictor normalization by the zone radii, in any power, with or
+  without a body-normalized target (session 20).
+- Treating the six predictor words as categorical or per-copy identifiers
+  (session 19; they are continuous and monotone with focal length on
+  zooms).
+
+**What might still move the needle, revised.** Session 18's list stands,
+with one addition promoted above the rest because session 19 makes it
+testable and cheap:
+
+- **Identifiability check against the hidden input.** Take the frame
+  triples that share lens, focal length and aperture but differ by 100 to
+  500 counts in the predictor words (LUMIX S 50/1.8 on DC-S1M2 at f/5.6;
+  LUMIX S 70-300 on S1RM2 at 300mm f/5.6) and measure their CA. If
+  measured CA is essentially identical across a triple while the words
+  differ that much, then no function of those words alone can reproduce
+  CA, and the ceiling is a property of the data rather than of the model
+  family. If measured CA tracks the words, the mapping exists and is
+  non-linear. Either answer is worth more than another refit, and this
+  decides which of the two situations we are in. Not yet run.
+- Recovering focus distance from the S-series maker notes, which exiftool
+  does not surface, would name the hidden input if there is one.
+
+**Files this session** (all in `/tmp/rw2_tca/`, no darktable source
+changes): `session19_analyze.py`, `session19_checks.py`,
+`session19_focus.py`, `session19_out.txt`, `session19_checks_out.txt`,
+`session20_innercrc.py`, `session20_out.txt`, `session20_step1.py`,
+`session20_step2.py`, `session20_step3.py`, their `.out.txt` logs, and
+`session20_report.txt`.
+
 ## Reverse-engineering next steps
 
 Everything below is a plan for the follow-on agent. Nothing here has been
@@ -4108,10 +4357,18 @@ RE work and cite them in reports without committing binary blobs.
 - Do 0x011b coefficients vary continuously with focal length on a zoom
   lens, or does the camera snap between a small number of discrete
   profiles? Answer determines whether a native decoder needs to
-  interpolate.
+  interpolate. **Answered, session 19: continuous.** Five to seven of the
+  six predictor words move monotonically with focal length on every zoom
+  with a focal sweep in the corpus, and word[8] takes 21 distinct values
+  on the Leica 12-60 alone. They also move between frames at fixed lens,
+  focal length and aperture, which the discrete-profile reading cannot
+  explain.
 - Do the Olympus branch's `ca[6]` fields on OM-D bodies map onto
   Homeister's zone model? Both are Micro Four Thirds; worth a passing
-  side-by-side check but not on the critical path.
+  side-by-side check but not on the critical path. **Answered, session 19:
+  no.** Olympus `ca[6]` is one whole-image polynomial per channel
+  (`src/iop/lens.cc:2379-2454`); 0x011b is a four-zone record. The layouts
+  are not related, and no other project decodes 0x011b either.
 - Should the fine-tune sliders (`tca_r`, `tca_b`, `tca_override`) work on
   the metadata path the same way they work on the Lensfun path?
 - Homeister's claim that 0x011b covers distortion *and* CA (with 0x0119
