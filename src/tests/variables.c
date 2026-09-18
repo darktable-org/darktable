@@ -294,6 +294,16 @@ static int test_category_each(void)
                       "(4242, 1, 0), (4242, 2, 0), (4242, 3, 0), (4242, 4, 0), "
                       "(4242, 5, 0), (4242, 6, 0)");
 
+  // a second image with a real tag hierarchy, where the levels are not
+  // independent axes
+  failed += _sql_exec("INSERT INTO main.images (id) VALUES (4243)");
+  failed += _sql_exec("INSERT INTO data.tags (id, name) VALUES "
+                      "(10, 'Person|Allen|Jane'), "
+                      "(11, 'Person|Allen|John|Jr'), "
+                      "(12, 'Person|Allen|John|Sr')");
+  failed += _sql_exec("INSERT INTO main.tagged_images (imgid, tagid, position) VALUES "
+                      "(4243, 10, 0), (4243, 11, 0), (4243, 12, 0)");
+
   dt_variables_params_t *params;
   dt_variables_params_init(&params);
   params->imgid = imgid;
@@ -317,6 +327,39 @@ static int test_category_each(void)
     const char *expected[] = {"/out/A/1/img", "/out/A/2/img",
                               "/out/B/1/img", "/out/B/2/img"};
     failed += _check_paths("category_each cartesian product", paths, 4, expected);
+    g_list_free_full(paths, g_free);
+  }
+
+  // same source correlates: the three levels walk each tag's path rather than
+  // multiplying. a tag shallower than the deepest level leaves an empty
+  // component and so a redundant separator, which the filesystem collapses
+  {
+    dt_variables_params_t *hp;
+    dt_variables_params_init(&hp);
+    hp->imgid = 4243;
+    hp->sequence = 0;
+    const char *pattern =
+      "/out/$(CATEGORY_EACH[0,Person])/$(CATEGORY_EACH[1,Person])"
+      "/$(CATEGORY_EACH[2,Person])/img";
+    GList *paths =
+      dt_variables_expand_path_multi(hp, g_strdup(pattern), FALSE);
+    const char *expected[] = {"/out/Allen/Jane//img",
+                              "/out/Allen/John/Jr/img",
+                              "/out/Allen/John/Sr/img"};
+    failed += _check_paths("category_each hierarchy", paths, 3, expected);
+    g_list_free_full(paths, g_free);
+    dt_variables_params_destroy(hp);
+  }
+
+  // different sources are independent axes and still multiply
+  {
+    const char *pattern =
+      "/out/$(CATEGORY_EACH[0,Person])/$(CATEGORY_EACH[0,Team])/img";
+    GList *paths =
+      dt_variables_expand_path_multi(params, g_strdup(pattern), FALSE);
+    const char *expected[] = {"/out/Jane/A/img", "/out/Jane/B/img",
+                              "/out/John/A/img", "/out/John/B/img"};
+    failed += _check_paths("category_each independent axes", paths, 4, expected);
     g_list_free_full(paths, g_free);
   }
 
@@ -406,7 +449,7 @@ int main(int argc, char* argv[])
     printf("running test 'test_category_each'\n");
     n_test_functions++;
     const int category_each_failed = test_category_each();
-    n_tests_overall += 6;
+    n_tests_overall += 8;
     n_failed_overall += category_each_failed;
     if(category_each_failed) n_test_functions_failed++;
     printf("%d failures\n\n", category_each_failed);

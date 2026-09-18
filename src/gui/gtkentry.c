@@ -115,7 +115,7 @@ static dt_gtkentry_completion_spec _default_path_compl_list[]
       { "FOLDER.DESKTOP", N_("$(FOLDER.DESKTOP) - desktop folder") },
       { "OPENCL.ACTIVATED", N_("$(OPENCL.ACTIVATED) - whether OpenCL is activated") },
       { "CATEGORY[,]", N_("$(CATEGORY[n,category]) - subtag of level n in hierarchical tags") },
-      { "CATEGORY_EACH[,]", N_("$(CATEGORY_EACH[n,category]) - one file per subtag of level n in hierarchical tags") },
+      { "CATEGORY_EACH[,]", N_("$(CATEGORY_EACH[n,category]) - level-n subtag of each matching tag, one path per tag") },
       { "TAGS", N_("$(TAGS) - tags as set in metadata settings") },
       { "DARKTABLE.NAME", N_("$(DARKTABLE.NAME) - darktable name") },
       { "DARKTABLE.VERSION", N_("$(DARKTABLE.VERSION) - current darktable version") },

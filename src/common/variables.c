@@ -36,6 +36,14 @@
 #include <string.h>
 #include <time.h>
 
+// how list-valued variables resolve during an expansion
+typedef enum
+{
+  DT_VARIABLES_LISTS_OFF,      // single-value API: collapse to the scalar form
+  DT_VARIABLES_LISTS_DISCOVER, // record the sources, use the first entity
+  DT_VARIABLES_LISTS_SELECT    // use the entity selected in list_context
+} dt_variables_lists_mode_t;
+
 typedef struct dt_variables_data_t
 {
   /** cached values that shouldn't change between variables in the same expansion process */
@@ -102,9 +110,14 @@ typedef struct dt_variables_data_t
 
   int flags;
 
-  // when set, list-valued variables yield one entry per value instead of a
-  // single scalar. only dt_variables_expand_path_multi() sets it
-  gboolean expand_lists;
+  // how list-valued variables resolve. only dt_variables_expand_path_multi()
+  // moves this off DT_VARIABLES_LISTS_OFF
+  dt_variables_lists_mode_t lists_mode;
+
+  // multi-expander state: source -> GList of entity component arrays, and the
+  // entity currently selected per source
+  GHashTable *list_sources;
+  GHashTable *list_context;
 
   // set when an expansion had to be abandoned, e.g. the cartesian product of
   // list values exceeded DT_VARIABLES_MAX_LIST_OUTPUTS
@@ -116,6 +129,12 @@ typedef struct dt_variables_data_t
 // to. a pattern whose cartesian product exceeds it fails rather than flooding
 // the filesystem
 #define DT_VARIABLES_MAX_LIST_OUTPUTS 1024
+
+// free a source's entity list: a GList of NULL-terminated component arrays
+static void _entity_list_free(gpointer data)
+{
+  g_list_free_full((GList *)data, (GDestroyNotify)g_strfreev);
+}
 
 static GList *_expand_source(dt_variables_params_t *params,
                              char **source,
@@ -1010,8 +1029,10 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   return result;
 }
 
-// $(CATEGORY_EACH[n,category]): one entry per matching subtag at level n.
-// returns NULL when there is no match or the parameters are malformed
+// $(CATEGORY_EACH[n,category]): the level-n component of the tag currently
+// being expanded. in DISCOVER mode it records the source's entities and uses
+// the first one; in SELECT mode it reads list_context; OFF falls back to the
+// comma-joined distinct subtags, matching CATEGORY
 static GList *_get_category_each_values(dt_variables_params_t *params, char **variable)
 {
   GList *values = NULL;
@@ -1024,9 +1045,38 @@ static GList *_get_category_each_values(dt_variables_params_t *params, char **va
     if(level_s && category && g_ascii_isdigit(*level_s))
     {
       const uint8_t level = (uint8_t)*level_s & 0b1111;
-      gchar *cat = g_strdup_printf("%s|", category);
-      values = dt_tag_get_subtags_list(params->imgid, cat, (int)level);
-      g_free(cat);
+
+      switch(params->data->lists_mode)
+      {
+        case DT_VARIABLES_LISTS_DISCOVER:
+        {
+          GList *entities = g_hash_table_lookup(params->data->list_sources, category);
+          if(!entities)
+          {
+            entities = dt_tag_get_subtags_paths(params->imgid, category);
+            g_hash_table_insert(params->data->list_sources, g_strdup(category), entities);
+          }
+          const gchar **entity = entities ? (const gchar **)entities->data : NULL;
+          const gchar *field = entity && entity[level] ? entity[level] : "";
+          values = g_list_prepend(NULL, g_strdup(field));
+          break;
+        }
+        case DT_VARIABLES_LISTS_SELECT:
+        {
+          const gchar **entity =
+            g_hash_table_lookup(params->data->list_context, category);
+          const gchar *field = entity && entity[level] ? entity[level] : "";
+          values = g_list_prepend(NULL, g_strdup(field));
+          break;
+        }
+        default: // DT_VARIABLES_LISTS_OFF
+        {
+          gchar *cat = g_strdup_printf("%s|", category);
+          values = dt_tag_get_subtags_list(params->imgid, cat, (int)level);
+          g_free(cat);
+          break;
+        }
+      }
     }
     g_free(level_s);
     g_free(category);
@@ -1057,7 +1107,7 @@ static GList *_get_base_values(dt_variables_params_t *params, char **variable)
   {
     GList *values = _get_category_each_values(params, variable);
 
-    if(params->data->expand_lists)
+    if(params->data->lists_mode != DT_VARIABLES_LISTS_OFF)
     {
       if(!values) values = g_list_prepend(NULL, g_strdup(""));
       return _escape_values(params, values);
@@ -1074,17 +1124,12 @@ static GList *_get_base_values(dt_variables_params_t *params, char **variable)
   return g_list_prepend(NULL, base_value);
 }
 
-// expand a sub-source that must be a single value, i.e. an operator argument.
-// list variables are not expanded here; they collapse to their scalar form
+// expand a sub-source that must be a single value, i.e. an operator argument
 static char *_expand_source_scalar(dt_variables_params_t *params,
                                    char **source,
                                    const char extra_stop)
 {
-  const gboolean expand_lists = params->data->expand_lists;
-  params->data->expand_lists = FALSE;
   GList *values = _expand_source(params, source, extra_stop);
-  params->data->expand_lists = expand_lists;
-
   if(!values) return NULL;
 
   char *result = g_strdup((char *)values->data);
@@ -1581,7 +1626,7 @@ char *dt_variables_expand(dt_variables_params_t *params,
   GList *results = _expand_list(params, source, iterate);
 
   // the single-value API only ever sees one value: list variables collapse to
-  // their scalar form unless the multi expander sets expand_lists
+  // their scalar form unless the multi expander moves lists_mode off OFF
   char *result = results ? g_strdup((char *)results->data) : g_strdup("");
   g_list_free_full(results, g_free);
   return result;
@@ -1626,6 +1671,105 @@ char *dt_variables_expand_path(dt_variables_params_t *params,
   return result;
 }
 
+// expand the pattern once per combination of the discovered source entities.
+// same-source variables see the same entity and so correlate; distinct sources
+// multiply. returns NULL and sets list_error when the product exceeds the cap
+static GList *_expand_over_sources(dt_variables_params_t *params,
+                                   const gchar *pattern,
+                                   const gboolean iterate)
+{
+  const guint n_sources = g_hash_table_size(params->data->list_sources);
+  GList **entities = g_new0(GList *, n_sources);
+  gchar **names = g_new0(gchar *, n_sources);
+
+  // sort the sources so the output order is deterministic
+  GList *keys = g_list_sort(g_hash_table_get_keys(params->data->list_sources),
+                            (GCompareFunc)g_strcmp0);
+  guint i = 0;
+  guint64 total = 1;
+  for(GList *k = keys; k; k = g_list_next(k))
+  {
+    names[i] = (gchar *)k->data;
+    entities[i] = g_hash_table_lookup(params->data->list_sources, names[i]);
+    total *= g_list_length(entities[i]);
+    i++;
+  }
+  g_list_free(keys);
+
+  if(total > DT_VARIABLES_MAX_LIST_OUTPUTS)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[variables] expansion would produce more than %d paths, aborting",
+             DT_VARIABLES_MAX_LIST_OUTPUTS);
+    params->data->list_error = TRUE;
+    g_free(entities);
+    g_free(names);
+    return NULL;
+  }
+
+  params->data->lists_mode = DT_VARIABLES_LISTS_SELECT;
+
+  GList *results = NULL;
+  GHashTable *seen = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+  guint *indices = g_new0(guint, n_sources);
+
+  // total == 0 means a source has no entity: one pass with an empty context
+  const guint passes = (total == 0) ? 1 : (guint)total;
+  for(guint pass = 0; pass < passes; pass++)
+  {
+    g_hash_table_remove_all(params->data->list_context);
+    if(total > 0)
+    {
+      for(i = 0; i < n_sources; i++)
+      {
+        const gchar **entity = g_list_nth_data(entities[i], indices[i]);
+        g_hash_table_insert(params->data->list_context, g_strdup(names[i]),
+                            (gpointer)entity);
+      }
+    }
+
+    GList *r = _expand_list(params, pattern, iterate);
+    if(params->data->list_error)
+    {
+      g_list_free_full(r, g_free);
+      g_list_free_full(results, g_free);
+      results = NULL;
+      break;
+    }
+
+    for(GList *l = r; l; l = g_list_next(l))
+    {
+      const gchar *text = (const gchar *)l->data;
+      if(!g_hash_table_contains(seen, text))
+      {
+        g_hash_table_add(seen, g_strdup(text));
+        results = g_list_append(results, g_strdup(text));
+      }
+    }
+    g_list_free_full(r, g_free);
+
+    // advance the odometer over the source entities
+    if(total > 0)
+    {
+      gint pos = (gint)n_sources - 1;
+      while(pos >= 0)
+      {
+        indices[pos]++;
+        if(indices[pos] < g_list_length(entities[pos])) break;
+        indices[pos] = 0;
+        pos--;
+      }
+      if(pos < 0) break;
+    }
+  }
+
+  g_free(indices);
+  g_hash_table_destroy(seen);
+  g_free(entities);
+  g_free(names);
+  return results;
+}
+
 GList *dt_variables_expand_path_multi(dt_variables_params_t *params,
                                       gchar *source,
                                       const gboolean iterate)
@@ -1635,22 +1779,37 @@ GList *dt_variables_expand_path_multi(dt_variables_params_t *params,
   gchar *normalized = (G_DIR_SEPARATOR == '\\')
     ? _normalize_separators(source)
     : NULL;
+  const gchar *pattern = normalized ? normalized : source;
 
-  const gboolean expand_lists = params->data->expand_lists;
-  const gboolean list_error = params->data->list_error;
-  params->data->expand_lists = TRUE;
+  // the params object is reused across images, so start from a clean context
+  g_hash_table_remove_all(params->data->list_sources);
+  g_hash_table_remove_all(params->data->list_context);
+
+  const dt_variables_lists_mode_t saved_mode = params->data->lists_mode;
+  const gboolean saved_error = params->data->list_error;
   params->data->list_error = FALSE;
 
-  GList *results = _expand_list(params, normalized ? normalized : source, iterate);
+  // discover which sources the pattern references, using the first entity of
+  // each. if there are none the discovery result is the whole answer
+  params->data->lists_mode = DT_VARIABLES_LISTS_DISCOVER;
+  GList *results = _expand_list(params, pattern, iterate);
 
-  params->data->expand_lists = expand_lists;
+  if(!params->data->list_error && g_hash_table_size(params->data->list_sources) > 0)
+  {
+    g_list_free_full(results, g_free);
+    results = _expand_over_sources(params, pattern, iterate);
+  }
+
+  params->data->lists_mode = saved_mode;
   if(params->data->list_error)
   {
     g_list_free_full(results, g_free);
     results = NULL;
   }
-  params->data->list_error = list_error;
+  params->data->list_error = saved_error;
 
+  g_hash_table_remove_all(params->data->list_context);
+  g_hash_table_remove_all(params->data->list_sources);
   g_free(normalized);
   return results;
 }
@@ -1661,6 +1820,11 @@ void dt_variables_params_init(dt_variables_params_t **params)
   (*params)->data = g_malloc0(sizeof(dt_variables_data_t));
   (*params)->data->time = g_date_time_new_now_local();
   (*params)->data->exif_time = NULL;
+  (*params)->data->lists_mode = DT_VARIABLES_LISTS_OFF;
+  (*params)->data->list_sources =
+    g_hash_table_new_full(g_str_hash, g_str_equal, g_free, _entity_list_free);
+  (*params)->data->list_context =
+    g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
   (*params)->sequence = -1;
   (*params)->img = NULL;
 }
@@ -1676,6 +1840,8 @@ void dt_variables_params_destroy(dt_variables_params_t *params)
   g_free(params->data->exif_lens);
   g_free(params->data->camera_maker);
   g_free(params->data->camera_alias);
+  g_hash_table_destroy(params->data->list_context);
+  g_hash_table_destroy(params->data->list_sources);
   g_free(params->data);
   g_free(params);
 }
