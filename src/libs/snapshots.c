@@ -908,6 +908,17 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
 {
   dt_lib_snapshots_t *d = self->data;
 
+  // once every slot is used the take button is made insensitive (see the end
+  // of this function), but lua_take_snapshot() calls this directly, where
+  // sensitivity means nothing: the snapshot below would be written one slot
+  // past the end of d->snapshot, and the garbage found there dereferenced as
+  // a widget
+  if(d->num_snapshots >= MAX_SNAPSHOT)
+  {
+    dt_control_log(_("all %d snapshot slots are in use"), MAX_SNAPSHOT);
+    return;
+  }
+
   // first make sure the current history is properly written
   dt_dev_write_history(darktable.develop);
 
@@ -967,8 +978,6 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
 
   gtk_entry_set_text(lentry, s->label ? s->label : "");
 
-  gtk_widget_grab_focus(s->button);
-
   g_free(txt);
 
   /* update slots used */
@@ -980,6 +989,13 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
     gtk_widget_show(d->snapshot[k].button);
     gtk_widget_show(d->snapshot[k].restore_button);
   }
+
+  // a snapshot taken while the module is collapsed (from a shortcut or a Lua
+  // script) must not move the keyboard focus into it: the window would keep a
+  // focus widget that is not realized, and every key press would be swallowed
+  // by it instead of reaching the shortcuts
+  if(gtk_widget_get_mapped(s->button))
+    gtk_widget_grab_focus(s->button);
 
   if(d->num_snapshots == MAX_SNAPSHOT)
     gtk_widget_set_sensitive(d->take_button, FALSE);
