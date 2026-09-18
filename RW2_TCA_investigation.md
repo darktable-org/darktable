@@ -3605,17 +3605,21 @@ in decreasing order of expected payoff.
 Panasonic distributes G9 firmware images publicly for update purposes. The
 firmware ARM binary contains Panasonic's own algorithm for producing the CA
 correction that ends up in the in-camera JPEG - the exact reference we are
-approximating with `K = 11.48`. Extracting it would resolve:
+approximating by applying session 5's `C_R` at Adobe DNG magnitude
+(session 13's `K = 1`). Extracting it would resolve:
 
-- The origin of the `K` factor (likely a fixed-point right-shift or a
-  normalization-radius ratio baked into the firmware).
 - The B-plane higher-order coefficients (`k_r2`, `k_r3`) that our
-  regression could not decode from the six-word predictor set.
+  regression could not decode from the six-word predictor set. This is
+  the biggest remaining residual after session 13 - the darktable
+  render at `K = 1` still leaves thin B fringing at the extreme corner
+  on strong-CA lenses, and the undecoded higher orders are the leading
+  suspect.
 - Whether the algorithm is a polynomial (session 8's model) or a spline
   (Homeister's model as seen in SILKYPIX for shading, which is a
   neighboring algorithm to CA and might share the shape).
-- Whether the per-body K spread (7-13x in the two-body corpus) is
-  algorithmic or a measurement artifact.
+- Whether small residual C_R/C_B_lo fit error (session 5's LOGO R^2
+  = 0.97-0.99) can be replaced by the exact per-body coefficients the
+  firmware itself uses.
 
 Cost: substantial. Multi-day project against a stripped ARM binary with
 Panasonic's own header/signature format. Requires reverse-engineering
@@ -3624,9 +3628,10 @@ Panasonic firmware container layout, and time to identify the CA routine
 inside a much larger firmware image. Not delegatable to a single
 subagent session.
 
-If the darktable patch ships and gets user feedback that the
-approximation is inadequate on some lens/body combination, this is the
-first place to invest.
+If the darktable patch ships and gets user feedback that the residual
+CA at `K = 1` is inadequate on some lens/body combination, this is the
+first place to invest - especially for closing the B-plane higher-order
+gap, which the corpus fit could not solve on its own.
 
 ### 2. Adobe Camera Raw / Lightroom RE
 
@@ -3661,19 +3666,22 @@ form.
 Cost: low if it just needs more shots (an afternoon), medium if it
 needs firmware.
 
-### 4. Third-body K validation with paired JPEGs
+### 4. Third-body validation of K = 1 with paired JPEGs
 
 Session 6's third-body corpus (DC-S5, DC-G9M2, DC-GH5, DMC-GX8) verified
 the decode structurally and in sign but did not have paired camera JPEGs
-to measure K on those bodies. The two-body K spread was 7.3-10.4; a
-third body could land inside or outside that range. If K lands close to
-11.48, ship as-is with more confidence. If it lands outside, we may need
-a body-conditional K keyed on N1 (word[11]) or on a sensor-format
-detection.
+to test the magnitude of the correction on those bodies. Session 13
+established `K = 1` on a G9 body outside the training corpus (P1366392,
+Leica DG 12-60 @ 14mm); a paired RW2+JPEG on a body outside the G9 +
+GX80 family would either confirm C_R generalises at unit magnitude or
+reveal a body-conditional adjustment - keyed on N1 (word[11]) or on a
+sensor-format detection - that closes any residual.
 
 Cost: low. One paired RW2+JPEG shot on any body outside the training
-corpus (GH5, S5, S1, G9M2, etc.) and rerun `step19_02_scale_test.py`
-from `/tmp/rw2_tca/`.
+corpus (GH5, S5, S1, G9M2, etc.), run through darktable-cli with the
+current `_pana_K = 1` build, and eyeball the corner against the JPEG.
+Any consistent over- or under-correction of the same sign across
+multiple lenses is the signature of a needed body-conditional factor.
 
 ### 5. SPD file format for per-lens overrides
 
@@ -3681,10 +3689,12 @@ from `/tmp/rw2_tca/`.
 SILKYPIX's install use the proprietary "ISL Multi purpose file format"
 with an encrypted/compressed payload (session 9). If those files carry
 per-lens CA correction overlays that SILKYPIX applies on top of the raw
-0x011b payload, the ~10x factor and the per-body K spread might live
-there rather than in Panasonic's own algorithm. This is a *third* form
-of correction (raw 0x011b, camera firmware application of it, SILKYPIX
-overlay from SPD) that could account for cross-body variance.
+0x011b payload, they would be a *third* form of correction (raw
+0x011b, camera firmware application of it, SILKYPIX overlay from SPD)
+which could explain any residual per-lens variance left after session
+13's `K = 1` decode. Lower priority than it was under the session 8
+K-spread framing, since Adobe DNG (which our C_R matches) does not
+appear to consult such an overlay.
 
 Cost: unknown. Format is not documented and payload is
 encrypted/compressed. Best approached from the DLL side: find the
