@@ -2040,7 +2040,7 @@ void gui_update(dt_iop_module_t *self)
   if (g->formula)
     dt_bauhaus_combobox_set(g->formula, p->formula);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_guided_filter), p->use_guided_filter);
+  dt_bauhaus_toggle_set(g->use_guided_filter, p->use_guided_filter);
 
   if (g->notebook)
     gtk_notebook_set_current_page(GTK_NOTEBOOK(g->notebook),
