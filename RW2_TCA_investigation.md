@@ -3408,6 +3408,135 @@ plugin runtime (both listed in the "Optional TODOs" section).
 - `/c/temp/tca/P1366392/P1366392.RW2.xmp` - the XMP sidecar
   extracted from the user's `.tif`
 
+### Direct raw-CA measurement, no ±1 filter (session 14)
+
+After session 13 shipped `K = 1`, the user reported that some residual
+CA was still visible on `P1366392` at strong-CA radii, especially the
+B channel at the corner. Session 14 goes after the residual by removing
+session 7's edge-selection bias (the ±1-integer-peak filter that session
+13 identified) and re-fitting `C_R` / `C_B` against direct raw
+measurements instead of against Adobe DNG WarpRectilinear opcodes.
+
+**Method** (`/tmp/rw2_tca/measure_ca.py`, `fit_direct.py`,
+`diagnose.py`, `compare_dng.py`):
+
+1. Render each of the 18 corpus RW2s with rawpy AAHD, gamma=1, no
+   auto-bright, 16-bit output. This gives an uncorrected demosaiced
+   raw with no camera CA correction applied.
+2. Sweep 128x128 tiles across the frame at stride 96. For each tile
+   with G-channel std > 100, run OpenCV `phaseCorrelate(R, G)` and
+   `phaseCorrelate(B, G)` with a Hanning window. Filter out tiles
+   with correlation response < 0.10 or r_pix < 20.
+3. Project each tile's sub-pixel shift vector onto the radial
+   direction from image center. Positive `dr` = R (or B) displaced
+   outward from center relative to G, matching session 3's convention.
+4. Weighted least squares fit
+   `shift_R_px(r_norm) = r_norm * halfdiag_px * (k_r0 + k_r1 r^2 +
+   k_r2 r^4 + k_r3 r^6)` with weight = min(respR, respB) * G_std.
+   Ridge regularisation with lambda = 1e-8 * trace(X^T X) / 4 and
+   `r_norm <= 0.95` cap to prevent corner extrapolation blow-up.
+5. Regress each of the four fitted `k_r*` coefficients on the six
+   words `[8, 10, 12, 20, 23, 27]` across all 18 files (in-sample),
+   then leave-one-lens-focal-group-out (LOGO), same protocol as
+   session 5.
+
+**Corpus per-file measurements**. Tile counts 446-1795 depending on
+scene content; fit RMS residuals 0.14-1.36 px (P1260633 is the only
+> 0.35 px outlier, likely a scene-content issue). On the strongest-CA
+file `P1366477` (PL 12-60 @ 12mm, G9), measured shifts at r_norm =
+{0.25, 0.5, 0.75, 0.9}: R = +0.55, +0.92, +0.72, +0.70 px, B = -0.00,
++0.18, +0.78, +1.67 px. Compare to Adobe DNG's WarpRectilinear at the
+same radii: R = +0.47, +0.77, +0.77, +0.46 px, B = -0.05, +0.02,
++0.44, +1.08 px. R roughly matches Adobe within 20%; **B on this file
+is 55-90% larger than Adobe DNG reports at r_norm >= 0.7**.
+
+**Held-out test on P1366392** (not in training corpus, PL 12-60 @
+14mm on G9, same lens family as `P1366477`). Measured B shift on the
+raw:
+
+    r_norm   raw meas   shipped C_B_lo   residual (shipped)
+     0.30     -0.14         -0.13          -0.01 px
+     0.50     +0.02         -0.17          +0.19 px
+     0.70     +0.46         -0.13          +0.59 px
+     0.85     +1.27         -0.04          +1.31 px
+     0.95     +2.47         +0.07          +2.40 px
+
+The shipped correction is essentially zero on this file above r = 0.5.
+The user's visible B fringing at the extreme corner matches the +1.3
+to +2.4 px residual measured here.
+
+**Refit attempts** (all with the same 6-word predictor set on the 18-
+file corpus):
+
+1. `C_R` and `C_B` as full 4x6 matrices against direct measurements.
+   Per-coefficient LOGO R^2: R k_r0..k_r3 = +0.62, -0.91, -0.97,
+   -0.95 (only k_r0 has any predictive power). B k_r0..k_r3 = -0.14,
+   -0.68, -0.41, -0.26 (all negative). Session 5 got R = 0.97-0.99,
+   B k_r0/k_r1 = 0.99. **The direct-measurement targets are noisier
+   than Adobe DNG opcodes, so the regression generalises worse.**
+
+2. Function-space regression: predict `shift_R_px(r_fixed)` directly
+   from the six words at fixed r. LOGO R^2 at r = 0.50: R = 0.91,
+   B = -0.84. R matches session 5's function-space R^2 (0.893);
+   B does noticeably worse in the interior because the physical B
+   shift there is < 0.1 px and drops below the tile-measurement
+   noise floor. B at r >= 0.8 does clear R^2 = 0.5-0.7 but that is
+   not a defensible improvement over session 5.
+
+3. Hybrid: keep session 5's `C_B_lo` for the low orders, add
+   corpus-median Adobe DNG values as constants for `k_r2` / `k_r3`.
+   The Adobe median values are essentially zero (`k_r2` = +7e-06,
+   `k_r3` = +2e-06; the D_B.k_r2 values span negative to positive by
+   near-equal amounts across the corpus), so this changes P1366392's
+   corner B correction by less than 0.03 px. Dead end.
+
+4. Blindly ship the direct-measurement C_R + C_B on P1366392: the
+   4-row C_B does halve the residual at r = 0.85 (from +1.31 px
+   shipped to +0.58 px), but the paired direct-measurement C_R
+   *over*-corrects R at r = 0.95 by -0.73 px. Net: R gets worse, B
+   gets better, and neither has LOGO validation. Not shippable.
+
+**Verdict**. Option 2 confirms two things:
+
+- Session 13's magnitude fix (`K = 1`) is not the source of the
+  remaining residual. The residual is a shape problem in B: with
+  only `k_r0` and `k_r1` decoded, session 5's B polynomial cannot
+  produce the strong corner correction that strong-CA raws need. On
+  `P1366392` the shipped `C_B_lo` produces about 0.07 px at r = 0.95
+  where the raw actually needs +2.4 px.
+- The remaining data (18 files, 9 lens/focal pairs, 2 bodies) does
+  not support a defensible refit of the missing B higher-order
+  coefficients. Adobe DNG's own `k_r2` / `k_r3` values swing 3-4x
+  between paired-body same-lens/same-focal files, and a direct raw
+  measurement of the same coefficients is at best comparable in
+  cross-body variance. This is the same data-ceiling session 5 hit.
+
+**What the residual really is.** For strong-CA raws where Adobe DNG's
+opcode encodes non-zero `k_r2` / `k_r3`, no amount of clever
+re-fitting on the existing corpus recovers those higher orders from
+six words. Two paths break through: (a) enlarge the training set with
+a third body and paired JPEGs so the 4-row fit is no longer
+under-determined by cross-body variance in the ground truth (option 3
+in the Optional TODOs list, in progress by the user as of this
+session), or (b) firmware RE, which session 13 concluded is not
+tractable without hardware access.
+
+**No code change**. `_pana_K = 1.0`, `C_R` (4 rows, session 5), and
+`C_B_lo` (2 rows, session 5) remain shipped. The `cacorrectrgb`
+darktable module remains the practical user-side workaround for the
+residual B fringing at the corner.
+
+**Files this session:**
+
+- `/tmp/rw2_tca/venv/`: fresh rawpy 0.27.1 / opencv 5.0.0 / numpy /
+  scipy environment
+- `/tmp/rw2_tca/measure_ca.py`: tile-based phase-correlation measurement
+- `/tmp/rw2_tca/fit_direct.py`: six-word regression + LOGO
+- `/tmp/rw2_tca/diagnose.py`: per-r function-space regression
+- `/tmp/rw2_tca/compare_dng.py`: Adobe-DNG-vs-measurement ratios
+- `/tmp/rw2_tca/measure_ca.npz`, `.../fit_direct.npz`,
+  `.../cache/*_aahd.npy`: measurements and cached AAHD renders
+
 ## Reverse-engineering next steps
 
 Everything below is a plan for the follow-on agent. Nothing here has been
