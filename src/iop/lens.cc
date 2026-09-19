@@ -2176,6 +2176,36 @@ static float _get_autoscale_md_v1(dt_iop_module_t *self,
   return scale;
 }
 
+// tables driving the Panasonic 0x011b CA branch of _init_coeffs_md_v2
+// below. six-word predictor set and coefficient matrices from session 5
+// of RW2_TCA_investigation.md fit against Adobe DNG WarpRectilinear on
+// 18 corpus files; cross-validation LOGO R^2 is 0.97-0.99 on the four R
+// coefficients and 0.99 on B's k_r0 and k_r1. higher-order B (k_r2,
+// k_r3) does not decode from these six words, so B keeps only two
+// coefficients and its k_r2, k_r3 stay at the G-plane value.
+//
+// K is a global amplitude scale. K = 1 applies Adobe DNG Converter's
+// magnitude directly, which reproduces the camera in-camera CA
+// correction on visible strong-CA edges (session 13, verified on
+// P1366392, PL 12-60 @ 14mm). Session 8's K = 11.48 divisor was fit
+// against an edge-centroid measurement whose ±1-integer-peak filter
+// excluded multi-pixel-shift edges by construction; that fit was
+// therefore calibrated on a filtered sub-pixel subset and produced a
+// correction ~10x too small for the strong-CA edges the tag is meant
+// to fix. Keep the constant as a tuning knob but leave it at 1.0
+static const int _pana_ca_words[6] = {8, 10, 12, 20, 23, 27};
+static const double _pana_C_R[4][6] = {
+  { -5.5919e-08, -2.7534e-07, -1.0043e-06, +9.4388e-08, +8.1750e-08, +3.1028e-07 },
+  { +1.7918e-06, +3.4704e-07, +5.4376e-06, -1.0369e-07, -4.9216e-06, -4.6536e-07 },
+  { -4.0368e-06, +2.2315e-06, -7.8190e-06, -1.0252e-06, +8.9802e-06, -1.7742e-06 },
+  { +1.5442e-06, -3.2808e-06, +3.1874e-06, +1.5409e-06, -3.5842e-06, +2.5324e-06 },
+};
+static const double _pana_C_B_lo[2][6] = {
+  { +1.1514e-07, +3.7170e-07, +9.8105e-09, -1.2143e-07, -1.4375e-07, -1.4212e-06 },
+  { -3.3139e-07, -4.9106e-06, -9.7770e-08, +1.6006e-06, +4.4665e-07, +5.8716e-06 },
+};
+static const double _pana_K = 1.0;
+
 static int _init_coeffs_md_v2(const dt_image_t *img,
                               const dt_iop_lens_params_t *p,
                               float knots_dist[MAXKNOTS],
@@ -2429,6 +2459,34 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
     const float c  = cd->panasonic.c;
     const float sc = cd->panasonic.scale;
 
+    // per-file precompute for the Panasonic 0x011b CA path: the four
+    // D_R and two D_B polynomial coefficients from the six-word
+    // predictor set, hoisted out of the knot loop. K_JPEG scales the
+    // DNG-derived fit to the in-camera JPEG target (session 8)
+    const gboolean apply_ca = cor_rgb
+                              && (p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
+                              && cd->panasonic.has_ca;
+    double dr_k[4] = { 0.0, 0.0, 0.0, 0.0 };
+    double db_k[2] = { 0.0, 0.0 };
+    if(apply_ca)
+    {
+      const int16_t *w = cd->panasonic.ca_words;
+      for(int k = 0; k < 4; k++)
+      {
+        double s = 0.0;
+        for(int j = 0; j < 6; j++)
+          s += _pana_C_R[k][j] * (double)w[_pana_ca_words[j]];
+        dr_k[k] = s / _pana_K;
+      }
+      for(int k = 0; k < 2; k++)
+      {
+        double s = 0.0;
+        for(int j = 0; j < 6; j++)
+          s += _pana_C_B_lo[k][j] * (double)w[_pana_ca_words[j]];
+        db_k[k] = s / _pana_K;
+      }
+    }
+
     nc = MAXKNOTS;
 
     for(int i = 0; i < nc; i++)
@@ -2436,6 +2494,7 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
       const float r = (float)i / (float)(nc - 1);
       knots_dist[i] = knots_vig[i] = r;
 
+      float fine = 1.0f;
       if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
       {
         // invert Ru -> Rd via two fixed-point iterations
@@ -2449,11 +2508,27 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
           rd = (f > 1e-6f) ? r / f : r;
         }
         const float dr = (r > 0.0f) ? rd / r : 1.0f;
-        const float fine = p->cor_dist_ft * (dr - 1.0f) + 1.0f;
-        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = fine;
+        fine = p->cor_dist_ft * (dr - 1.0f) + 1.0f;
       }
-      else if(cor_rgb)
-        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1.0f;
+
+      if(cor_rgb)
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = fine;
+
+      if(apply_ca)
+      {
+        // r == knots_dist[i], the destination-radius spline abscissa
+        const double r2 = (double)r * (double)r;
+        const double r4 = r2 * r2;
+        const double r6 = r4 * r2;
+        const double d_r = dr_k[0] + dr_k[1] * r2 + dr_k[2] * r4 + dr_k[3] * r6;
+        // higher-order B coefficients (k_r2, k_r3) do not decode from
+        // the six-word set (session 5); leaving them at zero keeps B
+        // tied to fine at higher orders
+        const double d_b = db_k[0] + db_k[1] * r2;
+        cor_rgb[0][i] = fine + (float)d_r;
+        cor_rgb[2][i] = fine + (float)d_b;
+        // cor_rgb[1][i] stays at fine: G is the reference plane
+      }
 
       if(vig)
         vig[i] = 1.0f;

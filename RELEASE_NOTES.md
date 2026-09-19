@@ -198,6 +198,11 @@ changes (where available).
 
 ## Bug Fixes
 
+- restored transverse chromatic aberration correction on Panasonic
+  RW2 files, by decoding Exif.PanasonicRaw.0x011b and applying
+  per-channel radial coefficients on top of the 0x0119 distortion
+  added in the previous cycle
+
 - Fixed a trashing error dialog when deleting a virgin duplicate of an
   image while sidecar creation is set to "after edit".
 
