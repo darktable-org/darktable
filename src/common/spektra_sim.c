@@ -325,6 +325,11 @@ struct sf_pack_t
      the two formats need no separate paths past the loader. */
   sf_table_t tables[SF_MAX_TABLES];
   int n_tables;
+  /* Identity of the pack itself, from pack.json. A table hash names the table
+     and nothing else, and a release can carry a table forward byte-identical
+     while its profiles move -- so two packs present one lut_hash and render
+     differently. 0 when the pack predates the field. */
+  uint32_t pack_hash;
 };
 
 typedef struct sf_curves_model_t
@@ -979,6 +984,8 @@ const char *sf_pack_lut_id(const sf_pack_t *pack)
   return (pack && pack->n_tables) ? pack->tables[0].lut_id : "";
 }
 
+uint32_t sf_pack_hash(const sf_pack_t *pack) { return pack ? pack->pack_hash : 0u; }
+
 int sf_pack_n_tables(const sf_pack_t *pack) { return pack ? pack->n_tables : 0; }
 
 static const sf_table_t *_table_at(const sf_pack_t *pack, const int i)
@@ -1167,6 +1174,14 @@ sf_pack_t *sf_pack_load(const char *dir,
   {
     const int fmt_declared = (int)json_object_get_int_member(root, "pack_format");
     if(!_read_tables(pack, dir, root, fmt_declared, errmsg)) goto fail;
+    /* Hex, like every other hash the pack and the manifest carry. Absent on a
+       pack exported before the field existed, which reads as 0 and simply
+       cannot be matched on. */
+    if(json_object_has_member(root, "pack_hash"))
+    {
+      const char *ph = json_object_get_string_member(root, "pack_hash");
+      if(ph) pack->pack_hash = (uint32_t)g_ascii_strtoull(ph, NULL, 16);
+    }
   }
 
   g_free(json_path);
