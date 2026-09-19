@@ -20,7 +20,7 @@ Fixes and Closes line must be at the very end of the description.
 
 - [ ] I have read [CONTRIBUTING.md](../CONTRIBUTING.md) and the
       [coding style](https://github.com/darktable-org/darktable/wiki/Developer's-guide#coding-style).
-- [ ] I don't have merged master into the topic branch.
+- [ ] I have not merged master into the topic branch.
 - [ ] The pull request is one logical change, and every commit compiles on its
       own.
 - [ ] I ran the relevant tests: unit tests, `src/tests/integration/` where the
