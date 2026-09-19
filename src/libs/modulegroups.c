@@ -500,7 +500,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
                                                 DT_ACTION_ELEMENT_ENABLE,
                                                 item->box);
 
-      g_signal_connect_object(G_OBJECT(item->module->off), "notify::active",                            
+      g_signal_connect_object(G_OBJECT(item->module->off), "notify::active",
                               G_CALLBACK(_basics_off_sync), btn, 0);
 
       GtkWidget *evb = gtk_event_box_new();
@@ -684,7 +684,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
                                                 DT_ACTION_ELEMENT_ENABLE,
                                                 header_box);
 
-      g_signal_connect_object(G_OBJECT(item->module->off), "notify::active",                            
+      g_signal_connect_object(G_OBJECT(item->module->off), "notify::active",
                               G_CALLBACK(_basics_off_sync), btn, 0);
 
       gtk_widget_set_valign(btn, GTK_ALIGN_CENTER);
@@ -2364,7 +2364,7 @@ static void _manage_direct_module_toggle(GSimpleAction *action,
 
   g_variant_unref(v_module);
   g_variant_unref(v_group);
-  
+
   if(g_strcmp0(module, "") == 0) return;
 
   GList *found_item = g_list_find_custom(gr->modules, module, _iop_compare);
@@ -2539,7 +2539,7 @@ static void _manage_module_add_popup(GtkWidget *widget,
                                     action_entries,
                                     G_N_ELEMENTS(action_entries),
                                     data);
-    gtk_widget_insert_action_group(widget, 
+    gtk_widget_insert_action_group(widget,
                                     "modulegroups",
                                     G_ACTION_GROUP(action_group));
   }
@@ -2738,7 +2738,7 @@ static GMenu *_build_menu_from_actions(dt_action_t *actions,
                                                 g_variant_new_uint64((guintptr)action));
 
       g_menu_append_item(new_base, item);
-      
+
       if(new_sub)
         g_object_unref(new_sub);
       else
@@ -2808,7 +2808,7 @@ static void _set_action_group(GtkWidget *widget,
                                     action_entries,
                                     G_N_ELEMENTS(action_entries),
                                     self);
-    gtk_widget_insert_action_group(widget, 
+    gtk_widget_insert_action_group(widget,
                                     "qap",
                                     G_ACTION_GROUP(action_group));
   }
@@ -3021,7 +3021,7 @@ static void _manage_direct_active_popup(GtkGestureSingle *gesture,
                                     action_entries,
                                     G_N_ELEMENTS(action_entries),
                                     self);
-    gtk_widget_insert_action_group(widget, 
+    gtk_widget_insert_action_group(widget,
                                    "activemodules",
                                    G_ACTION_GROUP(action_group));
   }
@@ -3062,7 +3062,7 @@ static void _manage_direct_active_popup(GtkGestureSingle *gesture,
     current = DT_MODULEGROUP_POPUP_ACTIVE;
   else
     current = DT_MODULEGROUP_POPUP_ALL;
-  
+
   GAction *item_action = g_action_map_lookup_action(G_ACTION_MAP(action_group), "toggle");
   g_simple_action_set_state(G_SIMPLE_ACTION(item_action), g_variant_new("i", current));
 
