@@ -251,10 +251,19 @@ static void _packs_dir(char *dst,
  * where sf_pack_load() would pull roughly 12 MB of floats through the page
  * cache to answer the same question. That matters because the answer is needed
  * once per candidate directory, on the pixelpipe thread. */
-static gboolean _peek_lut_hash(const char *packdir,
-                               uint32_t *out_hash)
+/* out_id, when non-NULL, also receives the table's id string (the "lut_id"
+   the manifest lists, e.g. "irradiance_xy_tc@0.3.3"), which the header stores
+   as an int32 length followed by that many bytes. Truncated to idsz and always
+   NUL-terminated. A header that ends before the id still yields the hash: the
+   id is descriptive and the hash is the identity, so an unreadable id must not
+   make an otherwise good pack look broken. */
+static gboolean _peek_lut(const char *packdir,
+                          uint32_t *out_hash,
+                          char *out_id,
+                          size_t idsz)
 {
   gboolean ok = FALSE;
+  if(out_id && idsz) out_id[0] = '\0';
   char *lut = g_build_filename(packdir, "spectra_lut.f32", NULL);
   char *meta = g_build_filename(packdir, "pack.json", NULL);
   char *profiles = g_build_filename(packdir, "profiles", NULL);
@@ -281,6 +290,17 @@ static gboolean _peek_lut_hash(const char *packdir,
   {
     *out_hash = lut_hash;
     ok = TRUE;
+
+    int32_t id_len = 0;
+    /* 256 is well clear of any id upstream mints and keeps a corrupt length
+       from being handed to fread as a buffer size. */
+    if(out_id && idsz && fread(&id_len, 4, 1, fh) == 1 && id_len > 0 && id_len <= 256)
+    {
+      char buf[257];
+      const size_t n = fread(buf, 1, (size_t)id_len, fh);
+      buf[n] = '\0';
+      g_strlcpy(out_id, buf, idsz);
+    }
   }
   fclose(fh);
 
@@ -289,6 +309,12 @@ out:
   g_free(meta);
   g_free(profiles);
   return ok;
+}
+
+static gboolean _peek_lut_hash(const char *packdir,
+                               uint32_t *out_hash)
+{
+  return _peek_lut(packdir, out_hash, NULL, 0);
 }
 
 static gboolean _downloaded_dir_for_hash(const uint32_t lut_hash,
@@ -303,6 +329,91 @@ static gboolean _downloaded_dir_for_hash(const uint32_t lut_hash,
      the wrong name and a truncated download can leave a plausible-looking
      tree behind; both would otherwise be served as a match. */
   return _peek_lut_hash(dst, &got) && got == lut_hash;
+}
+
+static void _pack_entry_free(gpointer data)
+{
+  sf_fetch_pack_t *e = data;
+  if(!e) return;
+  g_free(e->dir);
+  g_free(e->lut_id);
+  g_free(e);
+}
+
+/* Sorts downloaded packs newest first, which is the order
+   sf_fetch_resolve_pack_dir() falls back through. */
+static gint _pack_entry_by_mtime(gconstpointer a,
+                                 gconstpointer b,
+                                 gpointer user_data)
+{
+  const sf_fetch_pack_t *x = *(sf_fetch_pack_t *const *)a;
+  const sf_fetch_pack_t *y = *(sf_fetch_pack_t *const *)b;
+  if(x->mtime == y->mtime) return 0;
+  return (x->mtime > y->mtime) ? -1 : 1;
+}
+
+GPtrArray *sf_fetch_list_packs(void)
+{
+  GPtrArray *out = g_ptr_array_new_with_free_func(_pack_entry_free);
+
+  char id[257];
+  uint32_t h = 0;
+
+  char handdir[PATH_MAX] = { 0 };
+  _data_pack_dir(handdir, sizeof(handdir));
+  if(_peek_lut(handdir, &h, id, sizeof(id)))
+  {
+    sf_fetch_pack_t *e = g_malloc0(sizeof(*e));
+    e->dir = g_strdup(handdir);
+    e->lut_id = g_strdup(id);
+    e->lut_hash = h;
+    e->hand_installed = TRUE;
+    GStatBuf st;
+    e->mtime = (g_stat(handdir, &st) == 0) ? (gint64)st.st_mtime : 0;
+    g_ptr_array_add(out, e);
+  }
+
+  char packs[PATH_MAX] = { 0 };
+  _packs_dir(packs, sizeof(packs));
+  GDir *d = g_dir_open(packs, 0, NULL);
+  if(!d) return out;
+
+  const guint first_download = out->len;
+  const char *ent = NULL;
+  while((ent = g_dir_read_name(d)))
+  {
+    /* Same bare-8-hex-digit filter as the resolver's fallback scan, for the
+       same reason: it is what keeps the ".incoming-<hash>" temp directory of a
+       download in progress out of the answer. */
+    if(strlen(ent) != 8 || strspn(ent, "0123456789abcdefABCDEF") != 8) continue;
+
+    char *cand = g_build_filename(packs, ent, NULL);
+    const uint32_t named = (uint32_t)g_ascii_strtoull(ent, NULL, 16);
+    if(_peek_lut(cand, &h, id, sizeof(id)) && h == named)
+    {
+      sf_fetch_pack_t *e = g_malloc0(sizeof(*e));
+      e->dir = g_strdup(cand);
+      e->lut_id = g_strdup(id);
+      e->lut_hash = h;
+      e->hand_installed = FALSE;
+      GStatBuf st;
+      e->mtime = (g_stat(cand, &st) == 0) ? (gint64)st.st_mtime : 0;
+      g_ptr_array_add(out, e);
+    }
+    g_free(cand);
+  }
+  g_dir_close(d);
+
+  /* g_dir_read_name() returns directory order, which is arbitrary. Sort only
+     the downloaded tail: the hand-installed pack keeps the head because that
+     is the precedence the resolver applies, not because it is newest. */
+  if(out->len > first_download + 1)
+    g_qsort_with_data(&g_ptr_array_index(out, first_download),
+                      (gint)(out->len - first_download),
+                      sizeof(gpointer),
+                      _pack_entry_by_mtime, NULL);
+
+  return out;
 }
 
 gboolean sf_fetch_have_lut_hash(const uint32_t lut_hash)
