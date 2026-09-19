@@ -1595,9 +1595,6 @@ void reload_defaults(dt_iop_module_t *self)
   double daylights[4] = {1.0, 1.0, 1.0, 1.0 };
   double as_shot[4] = {1.0, 1.0, 1.0, 1.0 };
 
-  // to have at least something and definitely not crash
-  _temp_array_from_params(daylights, d);
-
   if(!_calculate_bogus_daylight_wb(self, daylights))
   {
     // found camera matrix and used it to calculate bogus daylight wb
@@ -1650,7 +1647,7 @@ void reload_defaults(dt_iop_module_t *self)
   d->preset = DT_IOP_TEMP_AS_SHOT;
 
   // White balance module doesn't need to be enabled for true_monochrome raws (like
-  // for leica monochrom cameras). prepare_matrices is a noop as well, as there
+  // for Leica 'Monochrom' cameras). prepare_matrices is a no-op as well, as there
   // isn't a color matrix, so we can skip that as well.
 
   if(!true_monochrome)
@@ -1658,7 +1655,7 @@ void reload_defaults(dt_iop_module_t *self)
     if(self->gui_data)
       _prepare_matrices(self);
 
-    /* check if file is raw / hdr */
+    /* check if file is color raw / sRaw */
     if(is_raw)
     {
       // raw images need wb:
