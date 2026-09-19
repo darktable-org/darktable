@@ -238,6 +238,7 @@ Required dependencies (minimum version):
 * Exiv2 0.27.2 *(but at least 0.27.4 built with ISO BMFF support needed for Canon CR3 raw import)*
 * potrace 1.16
 * pugixml 1.8
+* libarchive 3.8.5 *(for the `.dtdata` sidecar; also used for AI models download)*
 
 Required dependencies (no version requirement):
 * Lensfun *(for automatic lens correction)* (Note: alpha 0.3.95 and git master branch are not supported)
@@ -255,7 +256,6 @@ Optional dependencies (minimum version):
 * Imath 3.1.0 *(for 16-bit "half" float TIFF export and faster import)*
 * libavif 0.9.3 *(for AVIF import & export)*
 * ONNX Runtime 1.18 *(for AI inference)*
-* libarchive 3.8.5 *(for AI models download)*
 * libheif 1.13.0 *(for HEIF import & export; also for AVIF import if no libavif)*
 * libjxl 0.7.0 *(for JPEG XL import & export)*
 * WebP 0.3.0 *(for WebP import & export)*
