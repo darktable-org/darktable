@@ -87,12 +87,11 @@ changes (where available).
   dialog will open so that the user can confirm settings not exposed
   in the darktable UI.
 
-- New module saturation curve: remaps saturation and brilliance via two
-  independent curves plotted against each pixel's own perceptually
-  normalized saturation (darktable UCS or JzAzBz):
-  a scene-referred alternative to colorzones' chroma-vs-chroma curve,
-  with input normalized to the local gamut boundary.
-
+- New module saturation curve: remaps saturation and brilliance via
+  two independent curves plotted against each pixel's own perceptually
+  normalized saturation (darktable UCS or JzAzBz): a scene-referred
+  alternative to colorzones' chroma-vs-chroma curve, with input
+  normalized to the local gamut boundary.
 
 ## UI/UX Improvements
 
@@ -134,7 +133,8 @@ changes (where available).
   output folder, so the output file name and its suffix can be chosen.
   The extension still comes from the task.
 
-- Some safety checks when switching to the quick access panel were added.
+- Some safety checks when switching to the quick access panel were
+  added.
 
 ## Performance Improvements
 
@@ -145,10 +145,10 @@ changes (where available).
 
 - Don't calculate unused rastermasks while exporting.
 
-- Speed up editing an image that uses a detail mask. Every history change
-  used to discard the cached output of every module from demosaic onwards,
-  so adjusting a mask or toggling the mask overlay recomputed most of the
-  pipeline each time.
+- Speed up editing an image that uses a detail mask. Every history
+  change used to discard the cached output of every module from
+  demosaic onwards, so adjusting a mask or toggling the mask overlay
+  recomputed most of the pipeline each time.
 
 - Separated the demosaicer's crop-and-scale step into a new hidden
   module to improve cache efficiency and UI responsiveness.
@@ -205,9 +205,9 @@ changes (where available).
   histogram of the previously viewed image after switching images in the
   darkroom.
 
-- Entering the darkroom no longer expands one instance of a module while
-  a different instance of it holds the focus. The instance that gets the
-  focus is now the one that is expanded.
+- Entering the darkroom no longer expands one instance of a module
+  while a different instance of it holds the focus. The instance that
+  gets the focus is now the one that is expanded.
 
 - Clarified multi-image rating toasts for un-reject and for mixed
   upgrade/downgrade results across the selection.
@@ -275,11 +275,11 @@ changes (where available).
 - Fixed broken dragging in sliders' precise-entry mode
   in GTK3.
 
-- Fixed the feather of a drawn path being lost when the shape was resized
-  with the scroll wheel.
+- Fixed the feather of a drawn path being lost when the shape was
+  resized with the scroll wheel.
 
-- Fixed numeric error in the framing module (borders) causing the frame
-  line to be off-center for certain border sizes.
+- Fixed numeric error in the framing module (borders) causing the
+  frame line to be off-center for certain border sizes.
 
 - Fixed a crash or hang on Windows when checking a faulty custom ONNX
   Runtime library.
@@ -288,8 +288,8 @@ changes (where available).
   sliders and comboboxes themselves, instead of only shrinking their
   font.
 
-- Fixed a small memory leak each time a history stack was pasted onto the
-  image open in darkroom.
+- Fixed a small memory leak each time a history stack was pasted onto
+  the image open in darkroom.
 
 - Fixed Windows paths losing their backslashes in export and import
   patterns, which sent files to the wrong location.
@@ -298,19 +298,21 @@ changes (where available).
   unclosed variable substitution, such as "$(FILE_NAME/foo".
 
 - Fixed corrupted output or a crash when an AI model returns more data
-  than darktable reserved for it, affecting object masks and Lua models.
+  than darktable reserved for it, affecting object masks and Lua
+  models.
 
 - Fixed highlights laplacian OpenCL code
 
 - Fixed snapshots being applied onto the original image instead of the
   current image.
 
-- Fixed a crash when importing a style whose module order is empty. The
-  malformed order is now ignored and the style keeps the default one.
+- Fixed a crash when importing a style whose module order is
+  empty. The malformed order is now ignored and the style keeps the
+  default one.
 
-- Fixed automatic exposure rendering a black image when its raw histogram
-  was unavailable, and black or inverted images when the black level was
-  set too high for the exposure applied.
+- Fixed automatic exposure rendering a black image when its raw
+  histogram was unavailable, and black or inverted images when the
+  black level was set too high for the exposure applied.
 
 - Fixed exposure's area mapping blowing out the image when its target
   lightness was set to zero. Such a target cannot be reached, so the
@@ -323,6 +325,7 @@ changes (where available).
 
 - Fixed small memory leaks when expanding variables, which grew with
   the number of images exported or imported in one run.
+
 - Fixed the splash screen text jumping sideways while startup messages
   change, most visibly on macOS.
 
@@ -359,9 +362,9 @@ changes (where available).
 
 ### Other Lua changes
 
-- Button images are now decoded at the display's resolution and sized to
-  the interface font, so script icons are sharp on HiDPI screens and no
-  longer stuck at the image's own pixel size.
+- Button images are now decoded at the display's resolution and sized
+  to the interface font, so script icons are sharp on HiDPI screens
+  and no longer stuck at the image's own pixel size.
 
 ## Notes
 
