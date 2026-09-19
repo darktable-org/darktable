@@ -3128,6 +3128,7 @@ static void _update_print_sensitivity(dt_iop_module_t *self);
 static void _update_development_sensitivity(const dt_iop_spektrafilm_gui_data_t *g,
                                             const dt_iop_spektrafilm_params_t *p);
 static float _development_default(const sf_prof_entry_t *e);
+static void _rebaseline_print_development(dt_iop_module_t *self);
 static void _sync_coupler_diffusion(dt_iop_spektrafilm_gui_data_t *g,
                                     const sf_prof_entry_t *e);
 
@@ -3229,6 +3230,11 @@ static void _film_changed(GtkWidget *w,
      the paper is set back to auto later. The pipeline resolves it identically
      either way (_resolve_stock). */
   _update_paper_auto_entry(self);
+  /* A film switch can move the automatic paper (Double-X resolves to print
+     film 2302, a colour negative to a colour paper), and the print time does
+     not transfer between them any more than the film time does. Only on auto:
+     an explicitly chosen paper has not changed, so neither should its time. */
+  if(!p->paper_hash) _rebaseline_print_development(self);
   /* moves the coupler spread sliders' reset targets onto this stock, without
      touching the values the user set */
   _sync_coupler_diffusion(g, e);
@@ -3258,7 +3264,10 @@ static void _paper_changed(GtkWidget *w,
     /* auto, or no paper at all: drop the explicit choice so the film resolves
        it again if the print stage comes back */
     p->paper_hash = 0;
-    p->print_development_min = 0.0f;
+    /* Then take the time from whatever that resolves to. Zeroing here instead
+       would render the same -- 0 means the stock's own default -- but leave the
+       slider reading 0 on a paper that has a whole family of times. */
+    _rebaseline_print_development(self);
     _update_development_sensitivity(g, p);
     _stamp_lut_hash(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -3507,23 +3516,42 @@ static void _development_widget_update(GtkWidget *w,
    because every film / paper / scan_film change routes through here; driving
    the sliders from gui_update() alone would leave them stale from the moment a
    stock is switched until the module is next rebuilt. */
+/* The paper actually being printed on, or NULL when there is no print stage.
+   "auto" prints on a real paper while leaving paper_hash at 0 -- the link is
+   the selection, the destination is resolved from the film's target print. A
+   hash lookup alone finds no paper on that selection, which would leave the
+   print slider dead at 0 min even when the paper it resolves to carries a whole
+   development family. Resolved the same way the combobox label and the pipeline
+   resolve it, so all three name one paper. */
+static const sf_prof_entry_t *_effective_paper_entry(const dt_iop_spektrafilm_gui_data_t *g,
+                                                     const dt_iop_spektrafilm_params_t *p)
+{
+  if(p->scan_film) return NULL;
+  return p->paper_hash ? _entry_by_hash(g, p->paper_hash, TRUE)
+                       : _auto_paper_entry(g, _current_film_entry(g, p));
+}
+
+/* Put the print development slider on the paper in force, as _film_changed()
+   does for the film: a time from the previous paper means nothing on this one,
+   and 0 -- "this stock's own default" -- renders correctly but reads as though
+   nothing is set, on the one discontinuity in the range. */
+static void _rebaseline_print_development(dt_iop_module_t *self)
+{
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
+  const sf_prof_entry_t *paper = _effective_paper_entry(g, p);
+  p->print_development_min = paper ? _development_default(paper) : 0.0f;
+  DT_ENTER_GUI_UPDATE();
+  dt_bauhaus_slider_set(g->print_development_min, p->print_development_min);
+  DT_LEAVE_GUI_UPDATE();
+}
+
 static void _update_development_sensitivity(const dt_iop_spektrafilm_gui_data_t *g,
                                             const dt_iop_spektrafilm_params_t *p)
 {
   _development_widget_update(g->development_min, _entry_by_hash(g, p->film_hash, FALSE));
 
-  /* "auto" prints on a real paper while leaving paper_hash at 0 -- the link is
-     the selection, the destination is resolved from the film's target print. A
-     hash lookup alone finds no paper on that selection, which would leave the
-     print slider dead at 0 min even when the paper it resolves to carries a
-     whole development family. Resolve it the same way the combobox label does,
-     so the slider follows the paper actually being printed on. */
-  const sf_prof_entry_t *paper = NULL;
-  if(!p->scan_film)
-    paper = p->paper_hash ? _entry_by_hash(g, p->paper_hash, TRUE)
-                          : _auto_paper_entry(g, _current_film_entry(g, p));
-
-  _development_widget_update(g->print_development_min, paper);
+  _development_widget_update(g->print_development_min, _effective_paper_entry(g, p));
 }
 
 static void _update_print_sensitivity(dt_iop_module_t *self)
