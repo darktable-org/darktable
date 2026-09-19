@@ -5561,6 +5561,14 @@ static void _event_process_after_preview_callback(gpointer instance, dt_iop_modu
   switch(jobcode)
   {
     case ASHIFT_JOBCODE_DO_CROP:
+      // the signal can come from a preview run that started before the
+      // module was enabled and so never filled g->buf; do_crop() would
+      // return without cropping, so keep the request for the next run
+      if(g->buf_width == 0 || g->buf_height == 0)
+      {
+        g->jobcode = ASHIFT_JOBCODE_DO_CROP;
+        break;
+      }
       do_crop(self, p);
       _commit_crop_box(p, g);
       // save all that
