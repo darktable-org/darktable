@@ -448,6 +448,16 @@ static void _sync_visibility(GtkWidget *widget,
   gtk_widget_set_visible(item->box, !dt_action_widget_invisible(item->temp_widget));
 }
 
+static void _basics_off_sync(GtkToggleButton *toggle,
+                             GParamSpec *pspec,
+                             GtkWidget *btn)
+{
+  DT_ENTER_GUI_UPDATE();
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn),
+                              gtk_toggle_button_get_active(toggle));
+  DT_LEAVE_GUI_UPDATE();
+}
+
 static void _manage_direct_module_popup(GtkGestureSingle *gesture,
                                         gint n_press,
                                         gdouble x,
@@ -489,6 +499,10 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
                                                 dtgtk_cairo_paint_switch,
                                                 DT_ACTION_ELEMENT_ENABLE,
                                                 item->box);
+
+      g_signal_connect_object(G_OBJECT(item->module->off), "notify::active",                            
+                              G_CALLBACK(_basics_off_sync), btn, 0);
+
       GtkWidget *evb = gtk_event_box_new();
       GtkWidget *lb = gtk_label_new(item->module->name());
       gtk_label_set_xalign(GTK_LABEL(lb), 0.0);
@@ -669,6 +683,9 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
                                                 dtgtk_cairo_paint_switch,
                                                 DT_ACTION_ELEMENT_ENABLE,
                                                 header_box);
+
+      g_signal_connect_object(G_OBJECT(item->module->off), "notify::active",                            
+                              G_CALLBACK(_basics_off_sync), btn, 0);
 
       gtk_widget_set_valign(btn, GTK_ALIGN_CENTER);
       dt_gui_add_class(btn, "dt_transparent_background");
