@@ -973,28 +973,37 @@ typedef struct sf_table_entry_t
   gboolean reflectance;
 } sf_table_entry_t;
 
-/* Copy the loaded pack's tables into a list the GUI owns. Empty when no pack is
-   loaded, which the caller shows as "no choice" rather than as an error -- the
-   missing-pack case already has its own banner. */
+/* List the pack directory's tables for the GUI.
+   Read from the directory and not from the loaded pack, for the same reason
+   _scan_profiles() scans the directory: _pack is assigned only by
+   _ensure_sim(), which runs in the pixelpipe, so it is still NULL while the
+   GUI is being built and the list would come back empty. Peeking costs a
+   pack.json parse and a 32-byte header per table. */
 static GList *_scan_tables(void)
 {
-  GList *list = NULL;
+  char dir[SF_PATH_LEN];
   dt_pthread_mutex_lock(&_pack_lock);
-  if(_pack)
-    for(int i = 0; i < sf_pack_n_tables(_pack); i++)
-    {
-      sf_table_entry_t *e = g_malloc0(sizeof(*e));
-      const char *ident = sf_pack_table_identifier(_pack, i);
-      /* A format 2 pack's single table declared no identifier; its header id
-         is the only name it has, and it is the one the mismatch banner and
-         the data repository both use. */
-      g_strlcpy(e->label, (ident && *ident) ? ident : sf_pack_table_lut_id(_pack, i),
-                sizeof e->label);
-      e->hash = sf_pack_table_hash(_pack, i);
-      e->reflectance = sf_pack_table_kind(_pack, i) == SF_LUT_REFLECTANCE;
-      list = g_list_append(list, e);
-    }
+  const gboolean have = _pack && _pack_path[0] != 0;
+  if(have) g_strlcpy(dir, _pack_path, sizeof dir);
   dt_pthread_mutex_unlock(&_pack_lock);
+  if(!have) _resolve_pack_dir(0, dir, sizeof dir);
+
+  sf_table_info_t info[SF_MAX_TABLES];
+  const int n = sf_pack_peek_tables(dir, info, SF_MAX_TABLES);
+
+  GList *list = NULL;
+  for(int i = 0; i < n; i++)
+  {
+    sf_table_entry_t *e = g_malloc0(sizeof(*e));
+    /* A format 2 pack's single table declared no identifier; its header id is
+       the only name it has, and it is the one the mismatch banner and the data
+       repository both use. */
+    g_strlcpy(e->label, info[i].identifier[0] ? info[i].identifier : info[i].lut_id,
+              sizeof e->label);
+    e->hash = info[i].lut_hash;
+    e->reflectance = info[i].kind == SF_LUT_REFLECTANCE;
+    list = g_list_append(list, e);
+  }
   return list;
 }
 

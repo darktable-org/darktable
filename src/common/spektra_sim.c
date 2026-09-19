@@ -726,6 +726,122 @@ static gboolean _read_table_file(sf_table_t *t,
   return TRUE;
 }
 
+/* Identity out of a table file's header, without its payload. Deliberately
+   tolerant: a caller peeking a directory wants what is there, and the loader
+   is what refuses a malformed pack. */
+static gboolean _peek_table_header(const char *path,
+                                   char *lut_id,
+                                   const size_t idsz,
+                                   uint32_t *lut_hash)
+{
+  FILE *fh = g_fopen(path, "rb");
+  if(!fh) return FALSE;
+  char magic[4];
+  int32_t hdr_version = 0, dims[3], dtype = 0, id_len = 0;
+  uint32_t h = 0;
+  gboolean ok = fread(magic, 1, 4, fh) == 4 && memcmp(magic, "SFS2", 4) == 0
+                && fread(&hdr_version, 4, 1, fh) == 1 && hdr_version == 2
+                && fread(dims, 4, 3, fh) == 3 && fread(&dtype, 4, 1, fh) == 1
+                && fread(&h, 4, 1, fh) == 1 && fread(&id_len, 4, 1, fh) == 1
+                && id_len >= 0 && id_len < (int32_t)idsz;
+  if(ok)
+  {
+    if(id_len && fread(lut_id, 1, id_len, fh) != (size_t)id_len)
+      ok = FALSE;
+    else
+    {
+      lut_id[id_len] = 0;
+      *lut_hash = h;
+    }
+  }
+  fclose(fh);
+  return ok;
+}
+
+int sf_pack_peek_tables(const char *dir,
+                        sf_table_info_t *out,
+                        const int max)
+{
+  if(!dir || !*dir || !out || max <= 0) return 0;
+
+  char *json_path = g_build_filename(dir, "pack.json", NULL);
+  JsonParser *parser = json_parser_new();
+  const gboolean parsed = json_parser_load_from_file(parser, json_path, NULL);
+  g_free(json_path);
+  if(!parsed)
+  {
+    g_object_unref(parser);
+    return 0;
+  }
+  JsonNode *rootn = json_parser_get_root(parser);
+  JsonObject *root = rootn ? json_node_get_object(rootn) : NULL;
+  if(!root)
+  {
+    g_object_unref(parser);
+    return 0;
+  }
+  const int fmt = json_object_has_member(root, "pack_format")
+                      ? (int)json_object_get_int_member(root, "pack_format") : 0;
+
+  int written = 0, default_at = -1;
+  if(fmt < 3)
+  {
+    /* One table, declared nowhere, and always the irradiance one. */
+    char *path = g_build_filename(dir, "spectra_lut.f32", NULL);
+    if(_peek_table_header(path, out[0].lut_id, sizeof out[0].lut_id,
+                          &out[0].lut_hash))
+    {
+      out[0].identifier[0] = 0;
+      out[0].kind = SF_LUT_IRRADIANCE;
+      written = 1;
+      default_at = 0;
+    }
+    g_free(path);
+  }
+  else if(json_object_has_member(root, "spectral_upsampling"))
+  {
+    JsonArray *decl = json_object_get_array_member(root, "spectral_upsampling");
+    const guint n = decl ? json_array_get_length(decl) : 0;
+    for(guint i = 0; i < n && written < max; i++)
+    {
+      JsonObject *e = json_array_get_object_element(decl, i);
+      if(!e) continue;
+      const char *ident = json_object_has_member(e, "identifier")
+                              ? json_object_get_string_member(e, "identifier") : NULL;
+      const char *kind = json_object_has_member(e, "kind")
+                             ? json_object_get_string_member(e, "kind") : NULL;
+      const char *file = json_object_has_member(e, "file")
+                             ? json_object_get_string_member(e, "file") : NULL;
+      if(!ident || !file || !kind || strchr(file, '/') || strchr(file, '\\'))
+        continue;
+      char *path = g_build_filename(dir, file, NULL);
+      sf_table_info_t *t = &out[written];
+      const gboolean ok = _peek_table_header(path, t->lut_id, sizeof t->lut_id,
+                                             &t->lut_hash);
+      g_free(path);
+      if(!ok) continue;
+      g_strlcpy(t->identifier, ident, sizeof t->identifier);
+      t->kind = strcmp(kind, "reflectance") == 0 ? SF_LUT_REFLECTANCE
+                                                 : SF_LUT_IRRADIANCE;
+      if(json_object_has_member(e, "default")
+         && json_object_get_boolean_member(e, "default"))
+        default_at = written;
+      written++;
+    }
+  }
+  g_object_unref(parser);
+
+  /* Default first, matching the order sf_pack_load() puts them in, so a
+     position here means the same thing it means there. */
+  if(default_at > 0)
+  {
+    const sf_table_info_t tmp = out[0];
+    out[0] = out[default_at];
+    out[default_at] = tmp;
+  }
+  return written;
+}
+
 /* Populate pack->tables from the pack's declared format.
  *
  * Below format 3 there is nothing to declare: one file, one table, and its kind

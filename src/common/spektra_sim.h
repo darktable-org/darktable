@@ -170,6 +170,26 @@ sf_lut_kind_t sf_pack_table_kind(const sf_pack_t *pack, int i);
  * is what a caller reports rather than rendering with a different table. 0 asks
  * for the pack's default and always resolves. */
 int sf_pack_table_by_hash(const sf_pack_t *pack, uint32_t lut_hash);
+
+/* What a pack directory declares, without loading it.
+ *
+ * A pack is tens of megabytes and is only loaded by the pixelpipe, so anything
+ * that runs before a render -- the GUI being built, most obviously -- cannot
+ * ask a loaded pack what tables it has. This reads pack.json and each table's
+ * 32-byte header and nothing else, which is cheap enough to call from the GUI.
+ *
+ * Fills up to `max` entries, default first, and returns how many were written.
+ * 0 means the directory is not a readable pack, which a caller shows as "no
+ * choice" rather than as an error: the missing-pack case has its own banner. */
+typedef struct sf_table_info_t
+{
+  char identifier[64];
+  char lut_id[256];
+  uint32_t lut_hash;
+  sf_lut_kind_t kind;
+} sf_table_info_t;
+
+int sf_pack_peek_tables(const char *dir, sf_table_info_t *out, int max);
 /* Drop one reference; frees once the last one goes. */
 void sf_pack_free(sf_pack_t *pack);
 const char *sf_pack_version(const sf_pack_t *pack);
