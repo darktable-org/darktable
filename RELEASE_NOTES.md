@@ -337,6 +337,10 @@ changes (where available).
 
 - Fixed a crash on using tag floating window after editing metadata.
 
+- Fixed rotate and perspective sometimes not applying its automatic
+  crop when the rotation was changed (e.g. with a shortcut) before the
+  module had been enabled, leaving empty corners in the image.
+
 ## Lua
 
 ### API Version
