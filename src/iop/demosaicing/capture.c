@@ -65,8 +65,11 @@ static float _get_variance_threshold(const dt_iop_module_t *self)
   const dt_image_t *img = self->dev ? &self->dev->image_storage : NULL;
   if(!img) return threshold;
 
-  // >12bit sensors always provide more room
+  // > 12bit sensors always provide more room
   if(img->raw_white_point > 4096) threshold -= 0.07f;
+
+  // 14bit sensors always provide even more room
+  if(img->raw_white_point > 14000) threshold -= 0.01f;
 
   const float iso_factor = (float)(600 - CLAMP(img->exif_iso, 100, 1000)) / 100.0f;
   threshold -= 0.012f * iso_factor;
@@ -407,12 +410,7 @@ static float _calc_auto_radius(float *const in,
                                const dt_iop_roi_t *const roi,
                                const uint32_t filters,
                                const uint8_t(*const xtrans)[6],
-                               const dt_iop_buffer_dsc_t *dsc,
-                               gboolean *reliable,
-                               int *xpos,
-                               int *ypos,
-                               int *mwidth,
-                               int *mheight)
+                               const dt_iop_buffer_dsc_t *dsc)
 {
   // calculating the radius should be done on sensor data so we need this extra step
   const gboolean wbon = dsc->temperature.enabled;
@@ -428,23 +426,37 @@ static float _calc_auto_radius(float *const in,
   /* We only use the centre 60% of CFA data assuming this to be the sharp part of the lens.
      Set left-top displacements and possibly reduce dimension
   */
-  const int dx = (roi->x < pwidth / 5)  ? 0.2f * (pwidth - roi->x) : 0;
-  const int dy = (roi->y < pheight / 5) ? 0.2f * (pheight - roi->y) : 0;
+  int dx = (roi->x < pwidth / 5)  ? 0.2f * (pwidth - roi->x) : 0;
+  int dy = (roi->y < pheight / 5) ? 0.2f * (pheight - roi->y) : 0;
+  // make sure we snap at a safe location for all used sensors
+  dx = (dx / 6) * 6;
+  dy = (dy / 6) * 6;
   const int owidth = MIN(iwidth - dx,   0.8f * pwidth - roi->x - dx);
   const int oheight = MIN(iheight - dy, 0.8f * pheight - roi->y - dy);
 
-  *xpos = dx + roi->x;
-  *ypos = dy + roi->y;
-  *mwidth = owidth;
-  *mheight = oheight;
-  *reliable = FALSE;
-
-  if((((float)owidth / (float)pwidth) < 0.2f ) || (((float)oheight / (float)pheight) < 0.2f))
+  if((((float)owidth / (float)pwidth) < 0.2f )
+      || (((float)oheight / (float)pheight) < 0.2f)
+      || pwidth < 1000
+      || pheight < 1000)
+  {
+    /** with a very small available roi this doesn't make sense so let's use the default.
+        As this can only happen
+          - with very small images
+          - when using an auto-calculating preset plus cropping in unedited images
+          - when working in HQ processing mode with heavy crops requesting an auto-calculations
+        there is not need to tell the user and fallback to the default.
+    */
     return 0.5f;
+  }
 
   float *input = dt_iop_image_alloc(owidth, oheight, 1);
   if(!input)
+  {
+    // If this allocation failed - very unlikely - let's use the safe default but report
+    dt_print(DT_DEBUG_PIPE, "couldn't allocate buffer to calculate the capture radius so use the default");
+    dt_control_log(_("can't allocate buffer to calculate capture radius so use the default"));
     return 0.5f;
+  }
 
   if(wbon)
   {
@@ -497,7 +509,6 @@ static float _calc_auto_radius(float *const in,
 
   dt_free_align(input);
 
-  *reliable = TRUE;
   return CLAMP(radius, 0.0f, 1.5f);
 }
 
@@ -755,113 +766,23 @@ static void _modify_blend(float *blend,
   }
 }
 
-static void _capture_radius(dt_iop_module_t *self,
+static float _capture_radius(dt_iop_module_t *self,
                             dt_dev_pixelpipe_iop_t *const piece,
                             float *const in,
                             const dt_iop_roi_t *const roi,
                             const uint8_t (*const xtrans)[6],
                             const uint32_t filters)
 {
-  dt_iop_demosaic_params_t *p = self->params;
-  const dt_image_t *img = &self->dev->image_storage;
-
-  dt_iop_demosaic_data_t *d = piece->data;
-  dt_iop_demosaic_gui_data_t *g = self->gui_data;
   const dt_dev_pixelpipe_t *pipe = piece->pipe;
-  const gboolean fullpipe = dt_pipe_is_full(pipe);
   const dt_iop_buffer_dsc_t *dsc = &pipe->dsc;
-
-  gboolean reliable;
-  int px, py, dx, dy;
-  const float radius = _calc_auto_radius(in, img, roi, filters, xtrans, dsc, &reliable, &px, &py, &dx, &dy);
-  const gboolean same_radius = feqf(p->cs_radius, radius, CAPTURE_SAME_RADIUS);
-
-  dt_print_pipe(DT_DEBUG_PIPE, filters == 9u ? "xtrans autoradius" : filters ? "bayer autoradius" : "mono autoradius",
-      pipe, self, DT_DEVICE_NONE, roi, NULL,
-      "%s radius=%.2f is %sreliable at (%d/%d) %dx%d",
-      same_radius ? "same" : "new", radius,
-      reliable ? "" : "NOT ",
-      px, py, dx, dy);
-
-  if(fullpipe && g)
-  {
-    g->autoradius = TRUE;
-    if(!same_radius || g->new_radius < 0.0f)
-    {
-      p->cs_radius = radius;
-      g->new_radius = radius;
-    }
-    if(!reliable)
-      dt_control_log(_("imprecise radius calculation due to cropping or because you are zoomed in too much"));
-  }
-  d->cs_radius = radius;
+  const dt_image_t *img = &self->dev->image_storage;
+  return _calc_auto_radius(in, img, roi, filters, xtrans, dsc);
 }
 
-static void _capture_noise(dt_iop_module_t *self,
+static inline float _capture_noise(dt_iop_module_t *self,
                            dt_dev_pixelpipe_iop_t *const piece)
 {
-  dt_iop_demosaic_data_t *d = piece->data;
-  dt_iop_demosaic_gui_data_t *g = self->gui_data;
-  dt_iop_demosaic_params_t *p = self->params;
-  const dt_dev_pixelpipe_t *pipe = piece->pipe;
-  const gboolean fullpipe = dt_pipe_is_full(pipe);
-  const float thrs = 0.01f * (int)(100.0f * _get_variance_threshold(self));
-  const gboolean same_thrs = feqf(p->cs_thrs, thrs, 0.01f);
-
-  dt_print_pipe(DT_DEBUG_PIPE, "capture threshold",
-      pipe, self, DT_DEVICE_NONE, NULL, NULL, "threshold=%.2f", thrs);
-
-  if(fullpipe && g)
-  {
-    g->autothrs = TRUE;
-    if(!same_thrs)
-    {
-      p->cs_thrs = thrs;
-      g->new_thrs = thrs;
-    }
-  }
-  d->cs_thrs = thrs;
-}
-
-static inline gboolean _noise_requested(dt_iop_module_t *self,
-                                        dt_dev_pixelpipe_iop_t *const piece)
-{
-  const dt_iop_demosaic_gui_data_t *g = self->gui_data;
-  const dt_iop_demosaic_data_t *d = piece->data;
-  const gboolean invalid_thrs = d->cs_thrs <= 0.0f;
-  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
-
-  // do we require a calculation of the noise threshold?
-
-  // if running in gui the first fullpipe for this image and there is an invalid threshold
-  if(g && fullpipe && !g->autothrs && invalid_thrs) return TRUE;
-
-  // if with no gui and we have an invalid thrshold
-  if(!g && invalid_thrs) return TRUE;
-
-  return FALSE;
-}
-
-static inline gboolean _radius_requested(dt_iop_module_t *self,
-                                         dt_dev_pixelpipe_iop_t *const piece)
-{
-  const dt_iop_demosaic_gui_data_t *g = self->gui_data;
-  const dt_iop_demosaic_data_t *d = piece->data;
-  const gboolean invalid_radius = d->cs_radius <= 0.0f;
-  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
-
-  // do we require a calculation of the capture radius?
-
-  // if the calc-radius button in UI has been clicked
-  if(g && fullpipe && (g->new_radius < 0.0f)) return TRUE;
-
-  // if running in gui the first fullpipe for this image and there is an invalid radius
-  if(g && fullpipe && !g->autoradius && invalid_radius) return TRUE;
-
-  // if with no gui and we have an invalid radius
-  if(!g && invalid_radius) return TRUE;
-
-  return FALSE;
+  return 0.01f * (int)(100.0f * _get_variance_threshold(self));
 }
 
 static void _capture_sharpen(dt_iop_module_t *self,
@@ -969,8 +890,11 @@ static void _capture_sharpen(dt_iop_module_t *self,
 
   finalize:
   if(error)
-    dt_print_pipe(DT_DEBUG_ALWAYS, "capture sharpen failed", pipe, self, DT_DEVICE_CPU, NULL, NULL,
+  {
+    dt_print_pipe(DT_DEBUG_PIPE, "capture sharpen failed", pipe, self, DT_DEVICE_CPU, NULL, NULL,
       "unable to allocate memory");
+    dt_control_log(_("capture sharpen failed: can't allocate buffer"));
+  }
 
   dt_free_align(gauss_idx);
   dt_free_align(tmp2);
@@ -986,7 +910,7 @@ static void _capture_sharpen(dt_iop_module_t *self,
 
 #if HAVE_OPENCL
 
-static void _capture_radius_cl(dt_iop_module_t *self,
+static float _capture_radius_cl(dt_iop_module_t *self,
                               dt_dev_pixelpipe_iop_t *const piece,
                               const cl_mem dev_in,
                               const dt_iop_roi_t *const roi,
@@ -998,18 +922,23 @@ static void _capture_radius_cl(dt_iop_module_t *self,
   cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
   const int ch = mono ? 4 : 1;
   float *in = dt_iop_image_alloc(roi->width, roi->height, ch);
+  float radius = 0.5f;
   if(!in) goto finish;
 
   err = dt_opencl_copy_image_to_host(pipe->devid, in, dev_in, roi->width, roi->height, sizeof(float) * ch);
   if(err == CL_SUCCESS)
-    _capture_radius(self, piece, in, roi, xtrans, filters);
+    radius = _capture_radius(self, piece, in, roi, xtrans, filters);
 
   finish:
 
   if(err != CL_SUCCESS)
+  {
     dt_print_pipe(DT_DEBUG_PIPE, filters == 9u ? "xtrans autoradius" : filters ? "bayer autoradius" : "mono autoradius",
-            pipe, self, pipe->devid, roi, NULL, "calculation failed");
+            pipe, self, pipe->devid, roi, NULL, "OpenCL calculation failed");
+  }
+
   dt_free_align(in);
+  return radius;
 }
 
 static int _capture_sharpen_cl(dt_iop_module_t *self,
@@ -1127,9 +1056,12 @@ static int _capture_sharpen_cl(dt_iop_module_t *self,
 
   finish:
   if(err != CL_SUCCESS)
-    dt_print_pipe(DT_DEBUG_ALWAYS, "capture sharpen failed",
+  {
+    dt_print_pipe(DT_DEBUG_PIPE, "capture sharpen failed",
       pipe, self, devid, NULL, NULL,
       "Error: %s", cl_errstr(err));
+    dt_control_log(_("OpenCL capture sharpen failed"));
+  }
 
   dt_opencl_release_mem_object(gauss_idx);
   dt_opencl_release_mem_object(gcoeffs);
