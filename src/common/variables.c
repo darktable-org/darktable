@@ -36,6 +36,14 @@
 #include <string.h>
 #include <time.h>
 
+// how list-valued variables resolve during an expansion
+typedef enum
+{
+  DT_VARIABLES_LISTS_OFF,      // single-value API: collapse to the scalar form
+  DT_VARIABLES_LISTS_DISCOVER, // record the sources, use the first entity
+  DT_VARIABLES_LISTS_SELECT    // use the entity selected in list_context
+} dt_variables_lists_mode_t;
+
 typedef struct dt_variables_data_t
 {
   /** cached values that shouldn't change between variables in the same expansion process */
@@ -102,9 +110,35 @@ typedef struct dt_variables_data_t
 
   int flags;
 
+  // how list-valued variables resolve. only dt_variables_expand_path_multi()
+  // moves this off DT_VARIABLES_LISTS_OFF
+  dt_variables_lists_mode_t lists_mode;
+
+  // multi-expander state: source -> GList of entity component arrays, and the
+  // entity currently selected per source
+  GHashTable *list_sources;
+  GHashTable *list_context;
+
+  // set when an expansion had to be abandoned, e.g. the cartesian product of
+  // list values exceeded DT_VARIABLES_MAX_LIST_OUTPUTS
+  gboolean list_error;
+
 } dt_variables_data_t;
 
-static char *_expand_source(dt_variables_params_t *params, char **source, char extra_stop);
+// upper bound on the number of paths a pattern with list variables may expand
+// to. a pattern whose cartesian product exceeds it fails rather than flooding
+// the filesystem
+#define DT_VARIABLES_MAX_LIST_OUTPUTS 1024
+
+// free a source's entity list: a GList of NULL-terminated component arrays
+static void _entity_list_free(gpointer data)
+{
+  g_list_free_full((GList *)data, (GDestroyNotify)g_strfreev);
+}
+
+static GList *_expand_source(dt_variables_params_t *params,
+                             char **source,
+                             char extra_stop);
 
 
 // gather some data that might be used for variable expansion
@@ -995,22 +1029,159 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   return result;
 }
 
+// $(CATEGORY_EACH[n,category]): the level-n component of the tag currently
+// being expanded. in DISCOVER mode it records the source's entities and uses
+// the first one; in SELECT mode it reads list_context; OFF falls back to the
+// comma-joined distinct subtags, matching CATEGORY
+static GList *_get_category_each_values(dt_variables_params_t *params, char **variable)
+{
+  GList *values = NULL;
+
+  if(*variable[0] == '[')
+  {
+    gchar *level_s, *category;
+    _get_parameters_n_m(variable, &level_s, &category);
+
+    if(level_s && category && g_ascii_isdigit(*level_s))
+    {
+      const uint8_t level = (uint8_t)*level_s & 0b1111;
+
+      switch(params->data->lists_mode)
+      {
+        case DT_VARIABLES_LISTS_DISCOVER:
+        {
+          GList *entities = g_hash_table_lookup(params->data->list_sources, category);
+          if(!entities)
+          {
+            entities = dt_tag_get_subtags_paths(params->imgid, category);
+            g_hash_table_insert(params->data->list_sources, g_strdup(category), entities);
+          }
+          const gchar **entity = entities ? (const gchar **)entities->data : NULL;
+          const gchar *field = entity && entity[level] ? entity[level] : "";
+          values = g_list_prepend(NULL, g_strdup(field));
+          break;
+        }
+        case DT_VARIABLES_LISTS_SELECT:
+        {
+          const gchar **entity =
+            g_hash_table_lookup(params->data->list_context, category);
+          const gchar *field = entity && entity[level] ? entity[level] : "";
+          values = g_list_prepend(NULL, g_strdup(field));
+          break;
+        }
+        default: // DT_VARIABLES_LISTS_OFF
+        {
+          gchar *cat = g_strdup_printf("%s|", category);
+          values = dt_tag_get_subtags_list(params->imgid, cat, (int)level);
+          g_free(cat);
+          break;
+        }
+      }
+    }
+    g_free(level_s);
+    g_free(category);
+  }
+
+  return values;
+}
+
+// apply the markup escaping that _get_base_value() does for scalar variables
+// to every value; consumes the list
+static GList *_escape_values(dt_variables_params_t *params, GList *values)
+{
+  if(!params->escape_markup) return values;
+
+  GList *escaped = NULL;
+  for(GList *l = values; l; l = g_list_next(l))
+    escaped = g_list_prepend(escaped, g_markup_escape_text((char *)l->data, -1));
+
+  g_list_free_full(values, g_free);
+  return g_list_reverse(escaped);
+}
+
+// a variable's values. scalar variables yield a one-element list; list-valued
+// ones yield one entry per value. a resolved variable never yields NULL
+static GList *_get_base_values(dt_variables_params_t *params, char **variable)
+{
+  if(_has_prefix(variable, "CATEGORY_EACH"))
+  {
+    GList *values = _get_category_each_values(params, variable);
+
+    if(params->data->lists_mode != DT_VARIABLES_LISTS_OFF)
+    {
+      if(!values) values = g_list_prepend(NULL, g_strdup(""));
+      return _escape_values(params, values);
+    }
+
+    // outside the multi expander it collapses to the comma-joined scalar,
+    // matching what CATEGORY would return
+    char *joined = dt_util_glist_to_str(",", values);
+    g_list_free_full(values, g_free);
+    return _escape_values(params, g_list_prepend(NULL, joined ? joined : g_strdup("")));
+  }
+
+  char *base_value = _get_base_value(params, variable); // this is never going to be NULL!
+  return g_list_prepend(NULL, base_value);
+}
+
+// expand a sub-source that must be a single value, i.e. an operator argument
+static char *_expand_source_scalar(dt_variables_params_t *params,
+                                   char **source,
+                                   const char extra_stop)
+{
+  GList *values = _expand_source(params, source, extra_stop);
+  if(!values) return NULL;
+
+  char *result = g_strdup((char *)values->data);
+  g_list_free_full(values, g_free);
+  return result;
+}
+
+// cartesian product of two value lists. consumes both, so the caller must not
+// free them afterwards. returns NULL and sets list_error when the product
+// would exceed DT_VARIABLES_MAX_LIST_OUTPUTS
+static GList *_cross_join(dt_variables_params_t *params, GList *a, GList *b)
+{
+  const guint a_length = g_list_length(a);
+  const guint b_length = g_list_length(b);
+
+  if((guint64)a_length * b_length > DT_VARIABLES_MAX_LIST_OUTPUTS)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[variables] expansion would produce more than %d paths, aborting",
+             DT_VARIABLES_MAX_LIST_OUTPUTS);
+    params->data->list_error = TRUE;
+    g_list_free_full(a, g_free);
+    g_list_free_full(b, g_free);
+    return NULL;
+  }
+
+  GList *result = NULL;
+  for(GList *la = a; la; la = g_list_next(la))
+    for(GList *lb = b; lb; lb = g_list_next(lb))
+      result = g_list_prepend(result,
+                              g_strconcat((char *)la->data, (char *)lb->data, NULL));
+
+  g_list_free_full(a, g_free);
+  g_list_free_full(b, g_free);
+  return g_list_reverse(result);
+}
+
 // bash style variable manipulation. all patterns are just simple string comparisons!
 // See here for bash examples and documentation:
 // http://www.tldp.org/LDP/abs/html/parameter-substitution.html
 // https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
 // the descriptions in the comments are referring to the bash
 // behaviour, dt doesn't do it 100% like that!
-static char *_variable_get_value(dt_variables_params_t *params, char **variable)
+static GList *_variable_get_values(dt_variables_params_t *params, char **variable)
 {
   // invariant: the variable starts with "$(" which we can skip
   (*variable) += 2;
 
-  // first get the value of the variable
-  char *base_value = _get_base_value(params, variable); // this is never going to be NULL!
-  const size_t base_value_length = strlen(base_value);
+  // first get the values of the variable
+  GList *base_values = _get_base_values(params, variable);
 
-  // ... and now see if we have to change it
+  // ... and now see if we have to change them
   const char operation = **variable;
   if(operation != '\0' && operation != ')') (*variable)++;
   switch(operation)
@@ -1021,14 +1192,17 @@ static char *_variable_get_value(dt_variables_params_t *params, char **variable)
           If parameter not set, use default.
       */
       {
-        char *replacement = _expand_source(params, variable, ')');
-        if(*base_value == '\0')
+        char *replacement = _expand_source_scalar(params, variable, ')');
+        GList *values = NULL;
+        for(GList *l = base_values; l; l = g_list_next(l))
         {
-          g_free(base_value);
-          base_value = replacement;
+          const char *base_value = (const char *)l->data;
+          const char *value = *base_value == '\0' ? replacement : base_value;
+          values = g_list_prepend(values, g_strdup(value));
         }
-        else
-          g_free(replacement);
+        g_free(replacement);
+        g_list_free_full(base_values, g_free);
+        base_values = g_list_reverse(values);
       }
       break;
     case '+':
@@ -1037,14 +1211,17 @@ static char *_variable_get_value(dt_variables_params_t *params, char **variable)
           If parameter set, use alt_value, else use null string.
       */
       {
-        char *replacement = _expand_source(params, variable, ')');
-        if(*base_value != '\0')
+        char *replacement = _expand_source_scalar(params, variable, ')');
+        GList *values = NULL;
+        for(GList *l = base_values; l; l = g_list_next(l))
         {
-          g_free(base_value);
-          base_value = replacement;
+          const char *base_value = (const char *)l->data;
+          const char *value = *base_value != '\0' ? replacement : "";
+          values = g_list_prepend(values, g_strdup(value));
         }
-        else
-          g_free(replacement);
+        g_free(replacement);
+        g_list_free_full(base_values, g_free);
+        base_values = g_list_reverse(values);
       }
       break;
     case ':':
@@ -1063,35 +1240,48 @@ static char *_variable_get_value(dt_variables_params_t *params, char **variable)
         expansion is the characters between offset and that result.
       */
       {
-        const glong base_value_utf8_length = g_utf8_strlen(base_value, -1);
         const glong offset = strtol(*variable, variable, 10);
-
-        // find where to start
-        char *start; // from where to copy ...
-        if(offset >= 0)
-          start = g_utf8_offset_to_pointer
-            (base_value, MIN(offset, base_value_utf8_length));
-        else
-          start = g_utf8_offset_to_pointer
-            (base_value + base_value_length, MAX(offset, -base_value_utf8_length));
-
-        // now find the end if there is a length provided
-        char *end = base_value + base_value_length; // ... and until where
-        if(start && **variable == ':')
+        gboolean has_length = FALSE;
+        glong length = 0;
+        if(**variable == ':')
         {
           (*variable)++;
-          const size_t start_utf8_length = g_utf8_strlen(start, -1);
-          const int length = strtol(*variable, variable, 10);
-          if(length >= 0)
-            end = g_utf8_offset_to_pointer(start, MIN(length, start_utf8_length));
-          else
-            end = g_utf8_offset_to_pointer
-              (base_value + base_value_length, MAX(length, -start_utf8_length));
+          length = strtol(*variable, variable, 10);
+          has_length = TRUE;
         }
 
-        char *_base_value = g_strndup(start, end - start);
-        g_free(base_value);
-        base_value = _base_value;
+        GList *values = NULL;
+        for(GList *l = base_values; l; l = g_list_next(l))
+        {
+          const char *base_value = (const char *)l->data;
+          const size_t base_value_length = strlen(base_value);
+          const glong base_value_utf8_length = g_utf8_strlen(base_value, -1);
+
+          // find where to start
+          char *start; // from where to copy ...
+          if(offset >= 0)
+            start = g_utf8_offset_to_pointer
+              (base_value, MIN(offset, base_value_utf8_length));
+          else
+            start = g_utf8_offset_to_pointer(base_value + base_value_length,
+                                             MAX(offset, -base_value_utf8_length));
+
+          // now find the end if there is a length provided
+          char *end = (char *)base_value + base_value_length; // ... and until where
+          if(has_length)
+          {
+            const size_t start_utf8_length = g_utf8_strlen(start, -1);
+            if(length >= 0)
+              end = g_utf8_offset_to_pointer(start, MIN(length, start_utf8_length));
+            else
+              end = g_utf8_offset_to_pointer(base_value + base_value_length,
+                                             MAX(length, -start_utf8_length));
+          }
+
+          values = g_list_prepend(values, g_strndup(start, end - start));
+        }
+        g_list_free_full(base_values, g_free);
+        base_values = g_list_reverse(values);
       }
       break;
     case '#':
@@ -1100,15 +1290,21 @@ static char *_variable_get_value(dt_variables_params_t *params, char **variable)
           Remove from $var the shortest part of $Pattern that matches the front end of $var.
       */
       {
-        char *pattern = _expand_source(params, variable, ')');
+        char *pattern = _expand_source_scalar(params, variable, ')');
         const size_t pattern_length = strlen(pattern);
-        if(!strncmp(base_value, pattern, pattern_length))
+
+        GList *values = NULL;
+        for(GList *l = base_values; l; l = g_list_next(l))
         {
-          char *_base_value = g_strdup(base_value + pattern_length);
-          g_free(base_value);
-          base_value = _base_value;
+          const char *base_value = (const char *)l->data;
+          if(!strncmp(base_value, pattern, pattern_length))
+            values = g_list_prepend(values, g_strdup(base_value + pattern_length));
+          else
+            values = g_list_prepend(values, g_strdup(base_value));
         }
         g_free(pattern);
+        g_list_free_full(base_values, g_free);
+        base_values = g_list_reverse(values);
       }
       break;
     case '%':
@@ -1117,13 +1313,25 @@ static char *_variable_get_value(dt_variables_params_t *params, char **variable)
           Remove from $var the shortest part of $Pattern that matches the back end of $var.
       */
       {
-        char *pattern = _expand_source(params, variable, ')');
+        char *pattern = _expand_source_scalar(params, variable, ')');
         const size_t pattern_length = strlen(pattern);
-        if(!strncmp(base_value + base_value_length - pattern_length,
-                    pattern,
-                    pattern_length))
-          base_value[base_value_length - pattern_length] = '\0';
+
+        GList *values = NULL;
+        for(GList *l = base_values; l; l = g_list_next(l))
+        {
+          const char *base_value = (const char *)l->data;
+          const size_t base_value_length = strlen(base_value);
+          if(base_value_length >= pattern_length
+             && !strncmp(base_value + base_value_length - pattern_length,
+                         pattern, pattern_length))
+            values = g_list_prepend(
+              values, g_strndup(base_value, base_value_length - pattern_length));
+          else
+            values = g_list_prepend(values, g_strdup(base_value));
+        }
         g_free(pattern);
+        g_list_free_full(base_values, g_free);
+        base_values = g_list_reverse(values);
       }
       break;
     case '/':
@@ -1151,76 +1359,85 @@ static char *_variable_get_value(dt_variables_params_t *params, char **variable)
         const char mode = **variable;
 
         if(mode == '/' || mode == '#' || mode == '%') (*variable)++;
-        char *pattern = _expand_source(params, variable, '/');
+        char *pattern = _expand_source_scalar(params, variable, '/');
         const size_t pattern_length = strlen(pattern);
         // a truncated "$(var/pattern" stops at the NUL, not at a delimiter
         if(**variable == '/') (*variable)++;
-        char *replacement = _expand_source(params, variable, ')');
+        char *replacement = _expand_source_scalar(params, variable, ')');
         const size_t replacement_length = strlen(replacement);
 
-        switch(mode)
+        GList *values = NULL;
+        for(GList *l = base_values; l; l = g_list_next(l))
         {
-          case '/':
+          const char *base_value = (const char *)l->data;
+          const size_t base_value_length = strlen(base_value);
+          char *_base_value = NULL;
+
+          switch(mode)
           {
-            // TODO: write a dt_util_str_replace that can deal with pattern_length ^^
-            char *p = g_strndup(pattern, pattern_length);
-            char *_base_value = dt_util_str_replace(base_value, p, replacement);
-            g_free(p);
-            g_free(base_value);
-            base_value = _base_value;
-            break;
-          }
-          case '#':
-          {
-            if(!strncmp(base_value, pattern, pattern_length))
+            case '/':
             {
-              char *_base_value =
-                g_malloc(base_value_length - pattern_length + replacement_length + 1);
-              char *end = g_stpcpy(_base_value, replacement);
-              g_stpcpy(end, base_value + pattern_length);
-              g_free(base_value);
-              base_value = _base_value;
+              // TODO: write a dt_util_str_replace that can deal with pattern_length ^^
+              char *p = g_strndup(pattern, pattern_length);
+              _base_value = dt_util_str_replace(base_value, p, replacement);
+              g_free(p);
+              break;
             }
-            break;
-          }
-          case '%':
-          {
-            if(!strncmp(base_value + base_value_length - pattern_length,
-                        pattern,
-                        pattern_length))
+            case '#':
             {
-              char *_base_value =
-                g_malloc(base_value_length - pattern_length + replacement_length + 1);
-              base_value[base_value_length - pattern_length] = '\0';
-              char *end = g_stpcpy(_base_value, base_value);
-              g_stpcpy(end, replacement);
-              g_free(base_value);
-              base_value = _base_value;
+              if(!strncmp(base_value, pattern, pattern_length))
+              {
+                _base_value =
+                  g_malloc(base_value_length - pattern_length + replacement_length + 1);
+                char *end = g_stpcpy(_base_value, replacement);
+                g_stpcpy(end, base_value + pattern_length);
+              }
+              else
+                _base_value = g_strdup(base_value);
+              break;
             }
-            break;
-          }
-          default:
-          {
-            // TODO: is there a strstr_len that limits the length of pattern?
-            char *p = g_strndup(pattern, pattern_length);
-            gchar *found = g_strstr_len(base_value, -1, p);
-            g_free(p);
-            if(found)
+            case '%':
             {
-              *found = '\0';
-              char *_base_value =
-                g_malloc(base_value_length - pattern_length + replacement_length + 1);
-              char *end = g_stpcpy(_base_value, base_value);
-              end = g_stpcpy(end, replacement);
-              g_stpcpy(end, found + pattern_length);
-              g_free(base_value);
-              base_value = _base_value;
+              if(base_value_length >= pattern_length
+                 && !strncmp(base_value + base_value_length - pattern_length,
+                             pattern, pattern_length))
+              {
+                _base_value =
+                  g_malloc(base_value_length - pattern_length + replacement_length + 1);
+                memcpy(_base_value, base_value, base_value_length - pattern_length);
+                g_stpcpy(_base_value + base_value_length - pattern_length, replacement);
+              }
+              else
+                _base_value = g_strdup(base_value);
+              break;
             }
-            break;
+            default:
+            {
+              // TODO: is there a strstr_len that limits the length of pattern?
+              char *p = g_strndup(pattern, pattern_length);
+              gchar *found = g_strstr_len(base_value, -1, p);
+              g_free(p);
+              if(found)
+              {
+                const size_t prefix_length = found - base_value;
+                _base_value =
+                  g_malloc(base_value_length - pattern_length + replacement_length + 1);
+                memcpy(_base_value, base_value, prefix_length);
+                char *end = _base_value + prefix_length;
+                end = g_stpcpy(end, replacement);
+                g_stpcpy(end, found + pattern_length);
+              }
+              else
+                _base_value = g_strdup(base_value);
+              break;
+            }
           }
+          values = g_list_prepend(values, _base_value);
         }
         g_free(pattern);
         g_free(replacement);
+        g_list_free_full(base_values, g_free);
+        base_values = g_list_reverse(values);
       }
       break;
     case '^':
@@ -1240,33 +1457,43 @@ static char *_variable_get_value(dt_variables_params_t *params, char **variable)
       */
       {
         const char mode = **variable;
-        char *_base_value = NULL;
-        if(operation == '^' && mode == '^')
+        gboolean double_op = FALSE;
+        if((operation == '^' && mode == '^') || (operation == ',' && mode == ','))
         {
-          _base_value = g_utf8_strup (base_value, -1);
+          double_op = TRUE;
           (*variable)++;
         }
-        else if(operation == ',' && mode == ',')
-        {
-          _base_value = g_utf8_strdown(base_value, -1);
-          (*variable)++;
-        }
-        else
-        {
-          gunichar changed = g_utf8_get_char(base_value);
-          changed = operation == '^'
-            ? g_unichar_toupper(changed)
-            : g_unichar_tolower(changed);
 
-          const int utf8_length = g_unichar_to_utf8(changed, NULL);
-          char *next = g_utf8_next_char(base_value);
-          _base_value =
-            g_malloc0(base_value_length - (next - base_value) + utf8_length + 1);
-          g_unichar_to_utf8(changed, _base_value);
-          g_stpcpy(_base_value + utf8_length, next);
+        GList *values = NULL;
+        for(GList *l = base_values; l; l = g_list_next(l))
+        {
+          const char *base_value = (const char *)l->data;
+          const size_t base_value_length = strlen(base_value);
+          char *_base_value = NULL;
+          if(double_op)
+          {
+            _base_value = operation == '^'
+              ? g_utf8_strup(base_value, -1)
+              : g_utf8_strdown(base_value, -1);
+          }
+          else
+          {
+            gunichar changed = g_utf8_get_char(base_value);
+            changed = operation == '^'
+              ? g_unichar_toupper(changed)
+              : g_unichar_tolower(changed);
+
+            const int utf8_length = g_unichar_to_utf8(changed, NULL);
+            const char *next = g_utf8_next_char(base_value);
+            _base_value =
+              g_malloc0(base_value_length - (next - base_value) + utf8_length + 1);
+            g_unichar_to_utf8(changed, _base_value);
+            g_stpcpy(_base_value + utf8_length, next);
+          }
+          values = g_list_prepend(values, _base_value);
         }
-        g_free(base_value);
-        base_value = _base_value;
+        g_list_free_full(base_values, g_free);
+        base_values = g_list_reverse(values);
       }
       break;
   }
@@ -1276,41 +1503,29 @@ static char *_variable_get_value(dt_variables_params_t *params, char **variable)
   else
   {
     // error case
-    g_free(base_value);
-    base_value = NULL;
+    g_list_free_full(base_values, g_free);
+    base_values = NULL;
   }
 
-  return base_value;
+  return base_values;
 }
 
-static void _grow_buffer(char **result,
-                         char **result_iter,
-                         size_t *result_length,
-                         const size_t extra_space)
+// expand a source string to all its values. returns a list with at least one
+// entry, or NULL when the expansion failed (see list_error)
+static GList *_expand_source(dt_variables_params_t *params,
+                             char **source,
+                             const char extra_stop)
 {
-  const size_t used_length = *result_iter - *result;
-  if(used_length + extra_space > *result_length)
-  {
-    *result_length = used_length + extra_space;
-    *result = g_realloc(*result, *result_length + 1);
-    *result_iter = *result + used_length;
-  }
-}
+  GList *results = g_list_prepend(NULL, g_strdup(""));
+  if(!*source) return results;
 
-static char *_expand_source(dt_variables_params_t *params,
-                            char **source,
-                            const char extra_stop)
-{
-  char *result = g_strdup("");
-  if(!*source) return result;
-  char *result_iter = result;
-  size_t result_length = 0;
   char *source_iter = *source;
-  const size_t source_length = strlen(*source);
 
   while(*source_iter && *source_iter != extra_stop)
   {
-    // find start of variable, copying over everything till then
+    // copy over everything up to the next variable or stop, appending the
+    // literal run to every result we have so far
+    GString *literal = g_string_new(NULL);
     while(*source_iter && *source_iter != extra_stop)
     {
       char c = *source_iter;
@@ -1319,47 +1534,48 @@ static char *_expand_source(dt_variables_params_t *params,
       else if(c == '$' && source_iter[1] == '(')
         break;
 
-      if(result_iter - result >= result_length)
-        _grow_buffer(&result,
-                     &result_iter,
-                     &result_length,
-                     source_length - (source_iter - *source));
-      *result_iter = c;
-      result_iter++;
+      g_string_append_c(literal, c);
       source_iter++;
-
     }
+
+    if(literal->len > 0)
+    {
+      GList *next = NULL;
+      for(GList *l = results; l; l = g_list_next(l))
+        next = g_list_prepend(next, g_strconcat((char *)l->data, literal->str, NULL));
+      g_list_free_full(results, g_free);
+      results = g_list_reverse(next);
+    }
+    g_string_free(literal, TRUE);
 
     // it seems we have a variable here
     if(*source_iter == '$')
     {
       char *old_source_iter = source_iter;
-      char *replacement = _variable_get_value(params, &source_iter);
-      if(replacement)
+      GList *values = _variable_get_values(params, &source_iter);
+      if(values)
       {
-        const size_t replacement_length = strlen(replacement);
-        _grow_buffer(&result, &result_iter, &result_length, replacement_length);
-        memcpy(result_iter, replacement, replacement_length);
-        result_iter += replacement_length;
-        g_free(replacement);
+        // cross join consumes both lists
+        results = _cross_join(params, results, values);
+        if(!results) return NULL; // list_error is set
       }
       else
       {
         // the error case of missing closing ')' -- try to recover
         source_iter = old_source_iter;
-        _grow_buffer(&result,
-                     &result_iter,
-                     &result_length,
-                     source_length - (source_iter - *source));
-        *result_iter++ = *source_iter++;
+        GList *next = NULL;
+        for(GList *l = results; l; l = g_list_next(l))
+          next = g_list_prepend(next, g_strconcat((char *)l->data, "$", NULL));
+        g_list_free_full(results, g_free);
+        results = g_list_reverse(next);
+        source_iter++;
       }
     }
   }
 
-  *result_iter = '\0';
   *source = source_iter;
 
-  return result;
+  return results;
 }
 
 static gchar *_legacy_aliases(const gchar *source)
@@ -1387,18 +1603,32 @@ static gchar *_legacy_aliases(const gchar *source)
   return result;
 }
 
-char *dt_variables_expand(dt_variables_params_t *params,
-                          gchar *source,
-                          const gboolean iterate)
+// expand a source to all its values. caller frees the list and its strings
+static GList *_expand_list(dt_variables_params_t *params,
+                           const gchar *source,
+                           const gboolean iterate)
 {
   _init_expansion(params, iterate);
 
   gchar *aliased_source = _legacy_aliases(source);
   gchar *nsource = aliased_source;
-  char *result = _expand_source(params, &nsource, '\0');
+  GList *results = _expand_source(params, &nsource, '\0');
   g_free(aliased_source);
 
   _cleanup_expansion(params);
+  return results;
+}
+
+char *dt_variables_expand(dt_variables_params_t *params,
+                          gchar *source,
+                          const gboolean iterate)
+{
+  GList *results = _expand_list(params, source, iterate);
+
+  // the single-value API only ever sees one value: list variables collapse to
+  // their scalar form unless the multi expander moves lists_mode off OFF
+  char *result = results ? g_strdup((char *)results->data) : g_strdup("");
+  g_list_free_full(results, g_free);
   return result;
 }
 
@@ -1441,12 +1671,160 @@ char *dt_variables_expand_path(dt_variables_params_t *params,
   return result;
 }
 
+// expand the pattern once per combination of the discovered source entities.
+// same-source variables see the same entity and so correlate; distinct sources
+// multiply. returns NULL and sets list_error when the product exceeds the cap
+static GList *_expand_over_sources(dt_variables_params_t *params,
+                                   const gchar *pattern,
+                                   const gboolean iterate)
+{
+  const guint n_sources = g_hash_table_size(params->data->list_sources);
+  GList **entities = g_new0(GList *, n_sources);
+  gchar **names = g_new0(gchar *, n_sources);
+
+  // sort the sources so the output order is deterministic
+  GList *keys = g_list_sort(g_hash_table_get_keys(params->data->list_sources),
+                            (GCompareFunc)g_strcmp0);
+  guint i = 0;
+  guint64 total = 1;
+  for(GList *k = keys; k; k = g_list_next(k))
+  {
+    names[i] = (gchar *)k->data;
+    entities[i] = g_hash_table_lookup(params->data->list_sources, names[i]);
+    total *= g_list_length(entities[i]);
+    i++;
+  }
+  g_list_free(keys);
+
+  if(total > DT_VARIABLES_MAX_LIST_OUTPUTS)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[variables] expansion would produce more than %d paths, aborting",
+             DT_VARIABLES_MAX_LIST_OUTPUTS);
+    params->data->list_error = TRUE;
+    g_free(entities);
+    g_free(names);
+    return NULL;
+  }
+
+  params->data->lists_mode = DT_VARIABLES_LISTS_SELECT;
+
+  GList *results = NULL;
+  GHashTable *seen = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+  guint *indices = g_new0(guint, n_sources);
+
+  // total == 0 means a source has no entity: one pass with an empty context
+  const guint passes = (total == 0) ? 1 : (guint)total;
+  for(guint pass = 0; pass < passes; pass++)
+  {
+    g_hash_table_remove_all(params->data->list_context);
+    if(total > 0)
+    {
+      for(i = 0; i < n_sources; i++)
+      {
+        const gchar **entity = g_list_nth_data(entities[i], indices[i]);
+        g_hash_table_insert(params->data->list_context, g_strdup(names[i]),
+                            (gpointer)entity);
+      }
+    }
+
+    GList *r = _expand_list(params, pattern, iterate);
+    if(params->data->list_error)
+    {
+      g_list_free_full(r, g_free);
+      g_list_free_full(results, g_free);
+      results = NULL;
+      break;
+    }
+
+    for(GList *l = r; l; l = g_list_next(l))
+    {
+      const gchar *text = (const gchar *)l->data;
+      if(!g_hash_table_contains(seen, text))
+      {
+        g_hash_table_add(seen, g_strdup(text));
+        results = g_list_append(results, g_strdup(text));
+      }
+    }
+    g_list_free_full(r, g_free);
+
+    // advance the odometer over the source entities
+    if(total > 0)
+    {
+      gint pos = (gint)n_sources - 1;
+      while(pos >= 0)
+      {
+        indices[pos]++;
+        if(indices[pos] < g_list_length(entities[pos])) break;
+        indices[pos] = 0;
+        pos--;
+      }
+      if(pos < 0) break;
+    }
+  }
+
+  g_free(indices);
+  g_hash_table_destroy(seen);
+  g_free(entities);
+  g_free(names);
+  return results;
+}
+
+GList *dt_variables_expand_path_multi(dt_variables_params_t *params,
+                                      gchar *source,
+                                      const gboolean iterate)
+{
+  // G_DIR_SEPARATOR is a compile-time constant, so this costs nothing off
+  // Windows and both branches still get compiled everywhere
+  gchar *normalized = (G_DIR_SEPARATOR == '\\')
+    ? _normalize_separators(source)
+    : NULL;
+  const gchar *pattern = normalized ? normalized : source;
+
+  // the params object is reused across images, so start from a clean context
+  g_hash_table_remove_all(params->data->list_sources);
+  g_hash_table_remove_all(params->data->list_context);
+
+  const dt_variables_lists_mode_t saved_mode = params->data->lists_mode;
+  const gboolean saved_error = params->data->list_error;
+  params->data->list_error = FALSE;
+
+  // discover which sources the pattern references, using the first entity of
+  // each. if there are none the discovery result is the whole answer
+  params->data->lists_mode = DT_VARIABLES_LISTS_DISCOVER;
+  GList *results = _expand_list(params, pattern, iterate);
+
+  if(!params->data->list_error && g_hash_table_size(params->data->list_sources) > 0)
+  {
+    g_list_free_full(results, g_free);
+    results = _expand_over_sources(params, pattern, iterate);
+  }
+
+  params->data->lists_mode = saved_mode;
+  if(params->data->list_error)
+  {
+    g_list_free_full(results, g_free);
+    results = NULL;
+  }
+  params->data->list_error = saved_error;
+
+  g_hash_table_remove_all(params->data->list_context);
+  g_hash_table_remove_all(params->data->list_sources);
+  g_free(normalized);
+  return results;
+}
+
 void dt_variables_params_init(dt_variables_params_t **params)
 {
   *params = g_malloc0(sizeof(dt_variables_params_t));
   (*params)->data = g_malloc0(sizeof(dt_variables_data_t));
   (*params)->data->time = g_date_time_new_now_local();
   (*params)->data->exif_time = NULL;
+  (*params)->data->lists_mode = DT_VARIABLES_LISTS_OFF;
+  (*params)->data->list_sources =
+    g_hash_table_new_full(g_str_hash, g_str_equal, g_free, _entity_list_free);
+  (*params)->data->list_context =
+    g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
   (*params)->sequence = -1;
   (*params)->img = NULL;
 }
@@ -1462,6 +1840,8 @@ void dt_variables_params_destroy(dt_variables_params_t *params)
   g_free(params->data->exif_lens);
   g_free(params->data->camera_maker);
   g_free(params->data->camera_alias);
+  g_hash_table_destroy(params->data->list_context);
+  g_hash_table_destroy(params->data->list_sources);
   g_free(params->data);
   g_free(params);
 }

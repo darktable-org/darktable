@@ -1913,50 +1913,95 @@ ssize_t dt_tag_export(const char *filename)
   return count;
 }
 
-char *dt_tag_get_subtags(const dt_imgid_t imgid,
-                         const char *category,
-                         const int level)
+GList *dt_tag_get_subtags_list(const dt_imgid_t imgid,
+                               const char *category,
+                               const int level)
 {
   if(!category)
     return NULL;
 
   const guint rootnb = dt_util_string_count_char(category, '|');
-  char *tags = NULL;
+  GList *tags = NULL;
+  GHashTable *seen = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
           "SELECT DISTINCT T.name FROM main.tagged_images AS I "
           "INNER JOIN data.tags AS T "
           "ON T.id = I.tagid AND SUBSTR(T.name, 1, LENGTH(?2)) = ?2 "
-          "WHERE I.imgid = ?1",
+          "WHERE I.imgid = ?1 "
+          "ORDER BY T.name",
           -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, category, -1, SQLITE_TRANSIENT);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    char *tag = (char *)sqlite3_column_text(stmt, 0);
+    const char *tag = (const char *)sqlite3_column_text(stmt, 0);
     const guint tagnb = dt_util_string_count_char(tag, '|');
     if(tagnb >= rootnb + level)
     {
       gchar **pch = g_strsplit(tag, "|", -1);
-      char *subtag = pch[rootnb + level];
-      gboolean valid = TRUE;
-      // check we have not yet this subtag in the list
-      if(tags && strlen(tags) >= strlen(subtag) + 1)
+      const char *subtag = pch[rootnb + level];
+      if(subtag && *subtag && !g_hash_table_contains(seen, subtag))
       {
-        gchar *found = g_strstr_len(tags, strlen(tags), subtag);
-        if(found && found[strlen(subtag)] == ',')
-          valid = FALSE;
+        g_hash_table_add(seen, g_strdup(subtag));
+        tags = g_list_append(tags, g_strdup(subtag));
       }
-      if(valid)
-        dt_util_str_cat(&tags, "%s,", subtag);
       g_strfreev(pch);
     }
   }
-  if(tags) tags[strlen(tags) - 1] = '\0'; // remove the last comma
+  g_hash_table_destroy(seen);
   sqlite3_finalize(stmt);
   return tags;
+}
+
+char *dt_tag_get_subtags(const dt_imgid_t imgid,
+                         const char *category,
+                         const int level)
+{
+  GList *tags = dt_tag_get_subtags_list(imgid, category, level);
+  char *result = dt_util_glist_to_str(",", tags);
+  g_list_free_full(tags, g_free);
+  return result;
+}
+
+GList *dt_tag_get_subtags_paths(const dt_imgid_t imgid,
+                                const char *category)
+{
+  if(!category)
+    return NULL;
+
+  // number of components the category itself is made of
+  const guint prefix_components = dt_util_string_count_char(category, '|') + 1;
+  gchar *prefix = g_strdup_printf("%s|", category);
+
+  GList *taglist = NULL;
+  const uint32_t count = dt_tag_get_attached(imgid, &taglist, TRUE);
+  if(count < 1)
+  {
+    g_free(prefix);
+    return NULL;
+  }
+
+  GList *paths = NULL;
+  for(GList *tag_iter = taglist; tag_iter; tag_iter = g_list_next(tag_iter))
+  {
+    const dt_tag_t *t = (const dt_tag_t *)tag_iter->data;
+    if(!g_str_has_prefix(t->tag, prefix))
+      continue;
+
+    gchar **components = g_strsplit(t->tag, "|", -1);
+    // the entity is the part of the tag below the category. a tag that is
+    // exactly the category has no entity
+    if(g_strv_length(components) > prefix_components)
+      paths = g_list_append(paths, g_strdupv(components + prefix_components));
+    g_strfreev(components);
+  }
+
+  g_free(prefix);
+  dt_tag_free_result(&taglist);
+  return paths;
 }
 
 uint32_t dt_tag_get_tag_id_by_name(const char *const name)

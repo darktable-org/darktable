@@ -1,6 +1,8 @@
 #include "common/darktable.h"
+#include "common/database.h"
 #include "common/variables.h"
 
+#include <sqlite3.h>
 #include <stdio.h>
 
 #ifdef _WIN32
@@ -236,6 +238,189 @@ static const test_t test_paths = {
   }
 };
 
+// --- list-valued variables ------------------------------------------------
+
+static int _sql_exec(const char *query)
+{
+  char *err = NULL;
+  if(sqlite3_exec(dt_database_get(darktable.db), query, NULL, NULL, &err) != SQLITE_OK)
+  {
+    printf("  [FAIL] sql: %s\n", err ? err : "unknown error");
+    sqlite3_free(err);
+    return 1;
+  }
+  return 0;
+}
+
+static int _check_paths(const char *label,
+                        GList *paths,
+                        const int expected_count,
+                        const char **expected)
+{
+  int failed = 0;
+  const int count = g_list_length(paths);
+  if(count != expected_count)
+  {
+    printf("  [FAIL] %s: got %d paths, expected %d\n", label, count, expected_count);
+    return 1;
+  }
+
+  int i = 0;
+  for(GList *l = paths; l; l = g_list_next(l), i++)
+  {
+    if(g_strcmp0((char *)l->data, expected[i]))
+    {
+      printf("  [FAIL] %s: path %d is '%s', expected '%s'\n",
+             label, i, (char *)l->data, expected[i]);
+      failed = 1;
+    }
+  }
+  if(!failed) printf("  [OK] %s: %d paths\n", label, count);
+  return failed;
+}
+
+static int test_category_each(void)
+{
+  int failed = 0;
+  const dt_imgid_t imgid = 4242;
+
+  // a plain image with two people and, separately, two crossed categories
+  failed += _sql_exec("INSERT INTO main.images (id) VALUES (4242)");
+  failed += _sql_exec("INSERT INTO data.tags (id, name) VALUES "
+                      "(1, 'Person|John'), (2, 'Person|Jane'), "
+                      "(3, 'Team|A|1'), (4, 'Team|A|2'), "
+                      "(5, 'Team|B|1'), (6, 'Team|B|2')");
+  failed += _sql_exec("INSERT INTO main.tagged_images (imgid, tagid, position) VALUES "
+                      "(4242, 1, 0), (4242, 2, 0), (4242, 3, 0), (4242, 4, 0), "
+                      "(4242, 5, 0), (4242, 6, 0)");
+
+  // a second image with a real tag hierarchy, where the levels are not
+  // independent axes
+  failed += _sql_exec("INSERT INTO main.images (id) VALUES (4243)");
+  failed += _sql_exec("INSERT INTO data.tags (id, name) VALUES "
+                      "(10, 'Person|Allen|Jane'), "
+                      "(11, 'Person|Allen|John|Jr'), "
+                      "(12, 'Person|Allen|John|Sr')");
+  failed += _sql_exec("INSERT INTO main.tagged_images (imgid, tagid, position) VALUES "
+                      "(4243, 10, 0), (4243, 11, 0), (4243, 12, 0)");
+
+  dt_variables_params_t *params;
+  dt_variables_params_init(&params);
+  params->imgid = imgid;
+  params->sequence = 0;
+
+  // one path per subtag, ordered by tag name
+  {
+    GList *paths = dt_variables_expand_path_multi(
+      params, g_strdup("/out/$(CATEGORY_EACH[0,Person])/img"), FALSE);
+    const char *expected[] = {"/out/Jane/img", "/out/John/img"};
+    failed += _check_paths("category_each one per tag", paths, 2, expected);
+    g_list_free_full(paths, g_free);
+  }
+
+  // two list variables multiply
+  {
+    const char *pattern =
+      "/out/$(CATEGORY_EACH[0,Team])/$(CATEGORY_EACH[1,Team])/img";
+    GList *paths =
+      dt_variables_expand_path_multi(params, g_strdup(pattern), FALSE);
+    const char *expected[] = {"/out/A/1/img", "/out/A/2/img",
+                              "/out/B/1/img", "/out/B/2/img"};
+    failed += _check_paths("category_each cartesian product", paths, 4, expected);
+    g_list_free_full(paths, g_free);
+  }
+
+  // same source correlates: the three levels walk each tag's path rather than
+  // multiplying. a tag shallower than the deepest level leaves an empty
+  // component and so a redundant separator, which the filesystem collapses
+  {
+    dt_variables_params_t *hp;
+    dt_variables_params_init(&hp);
+    hp->imgid = 4243;
+    hp->sequence = 0;
+    const char *pattern =
+      "/out/$(CATEGORY_EACH[0,Person])/$(CATEGORY_EACH[1,Person])"
+      "/$(CATEGORY_EACH[2,Person])/img";
+    GList *paths =
+      dt_variables_expand_path_multi(hp, g_strdup(pattern), FALSE);
+    const char *expected[] = {"/out/Allen/Jane//img",
+                              "/out/Allen/John/Jr/img",
+                              "/out/Allen/John/Sr/img"};
+    failed += _check_paths("category_each hierarchy", paths, 3, expected);
+    g_list_free_full(paths, g_free);
+    dt_variables_params_destroy(hp);
+  }
+
+  // different sources are independent axes and still multiply
+  {
+    const char *pattern =
+      "/out/$(CATEGORY_EACH[0,Person])/$(CATEGORY_EACH[0,Team])/img";
+    GList *paths =
+      dt_variables_expand_path_multi(params, g_strdup(pattern), FALSE);
+    const char *expected[] = {"/out/Jane/A/img", "/out/Jane/B/img",
+                              "/out/John/A/img", "/out/John/B/img"};
+    failed += _check_paths("category_each independent axes", paths, 4, expected);
+    g_list_free_full(paths, g_free);
+  }
+
+  // the single-value API collapses to the comma-joined scalar
+  {
+    char *path = dt_variables_expand_path(
+      params, g_strdup("/out/$(CATEGORY_EACH[0,Person])/img"), FALSE);
+    if(g_strcmp0(path, "/out/Jane,John/img"))
+    {
+      printf("  [FAIL] category_each scalar fallback: got '%s'\n", path);
+      failed++;
+    }
+    else printf("  [OK] category_each scalar fallback\n");
+    g_free(path);
+  }
+
+  // no matching tags still yields one (empty) value
+  {
+    GList *paths = dt_variables_expand_path_multi(
+      params, g_strdup("/out/$(CATEGORY_EACH[0,Nothing])/img"), FALSE);
+    const char *expected[] = {"/out//img"};
+    failed += _check_paths("category_each no match", paths, 1, expected);
+    g_list_free_full(paths, g_free);
+  }
+
+  // a pattern without list variables yields exactly one path
+  {
+    GList *paths = dt_variables_expand_path_multi(
+      params, g_strdup("/out/img"), FALSE);
+    const char *expected[] = {"/out/img"};
+    failed += _check_paths("no list variable", paths, 1, expected);
+    g_list_free_full(paths, g_free);
+  }
+
+  // too many combinations must fail rather than flood the filesystem
+  {
+    failed += _sql_exec(
+      "WITH RECURSIVE seq(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM seq WHERE n < 1025) "
+      "INSERT INTO data.tags (id, name) "
+      "SELECT 10000 + n, 'Many|T' || printf('%04d', n) FROM seq");
+    failed += _sql_exec(
+      "WITH RECURSIVE seq(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM seq WHERE n < 1025) "
+      "INSERT INTO main.tagged_images (imgid, tagid, position) "
+      "SELECT 4242, 10000 + n, 0 FROM seq");
+
+    GList *paths = dt_variables_expand_path_multi(
+      params, g_strdup("/out/$(CATEGORY_EACH[0,Many])/img"), FALSE);
+    if(paths)
+    {
+      printf("  [FAIL] category_each overflow: got %d paths, expected failure\n",
+             g_list_length(paths));
+      failed++;
+      g_list_free_full(paths, g_free);
+    }
+    else printf("  [OK] category_each overflow fails\n");
+  }
+
+  dt_variables_params_destroy(params);
+  return failed;
+}
+
 int main(int argc, char* argv[])
 {
   char *argv_override[] = {"darktable-test-variables", "--library", ":memory:", "--conf", "write_sidecar_files=never", NULL};
@@ -259,6 +444,16 @@ int main(int argc, char* argv[])
   TEST(test_real_paths)
 
   TEST_PATH(test_paths)
+
+  {
+    printf("running test 'test_category_each'\n");
+    n_test_functions++;
+    const int category_each_failed = test_category_each();
+    n_tests_overall += 8;
+    n_failed_overall += category_each_failed;
+    if(category_each_failed) n_test_functions_failed++;
+    printf("%d failures\n\n", category_each_failed);
+  }
 
   printf("%d / %d tests failed (%d / %d)\n",
          n_failed_overall,
