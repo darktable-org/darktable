@@ -858,7 +858,29 @@ static GPtrArray *_parse_manifest(const char *json,
 
     if(wanted)
     {
+      /* lut_hash names the pack's DEFAULT table. A pack_format 3 pack carries
+         others and lists them under "tables", and an edit records whichever it
+         was developed against -- so matching the top-level hash alone would
+         leave an edit made with a non-default table unable to fetch the very
+         pack that holds it. The directory is still named for the default
+         table's hash, which is what chosen_hash keeps carrying. */
       if(h == wanted) { chosen = p; chosen_hash = h; }
+      else if(json_object_has_member(p, "tables"))
+      {
+        JsonArray *tabs = json_object_get_array_member(p, "tables");
+        const guint nt = tabs ? json_array_get_length(tabs) : 0;
+        for(guint t = 0; t < nt && !chosen; t++)
+        {
+          JsonObject *to = json_array_get_object_element(tabs, t);
+          const char *ths = (to && json_object_has_member(to, "lut_hash"))
+                                ? json_object_get_string_member(to, "lut_hash") : NULL;
+          if(ths && (uint32_t)g_ascii_strtoull(ths, NULL, 16) == wanted)
+          {
+            chosen = p;
+            chosen_hash = h;
+          }
+        }
+      }
     }
     else if(json_object_has_member(p, "default")
             && json_object_get_boolean_member(p, "default"))
