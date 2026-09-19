@@ -1076,10 +1076,17 @@ static GList *_scan_profiles(const char *packdir)
 /* resolve a profile hash to its stock name. hash 0 -> default:
    for films the first filming stock, for papers prefer the film's
    target_print. Returns false when nothing matches. */
+/* prefer_bw: 0 or 1 to prefer a stock with that channel model when the named
+   one is absent, -1 for no preference. It is the tier _auto_paper_entry()
+   applies in the GUI, and it has to be applied here too or the two disagree:
+   target_print is optional in the pack, the entry list is sorted by display
+   name, and so the last-resort first printing entry bears no relation to the
+   film -- for a black-and-white negative it is a colour paper. */
 static gboolean _resolve_stock(GList *entries,
                                uint32_t hash,
                                gboolean want_printing,
                                const char *prefer_stock,
+                               int prefer_bw,
                                char *dst,
                                size_t dstsz)
 {
@@ -1098,6 +1105,16 @@ static gboolean _resolve_stock(GList *entries,
     {
       const sf_prof_entry_t *e = l->data;
       if(e->printing == want_printing && !strcmp(e->stock, prefer_stock))
+      {
+        g_strlcpy(dst, e->stock, dstsz);
+        return TRUE;
+      }
+    }
+  if(prefer_bw >= 0)
+    for(GList *l = entries; l; l = l->next)
+    {
+      const sf_prof_entry_t *e = l->data;
+      if(e->printing == want_printing && e->bw == (prefer_bw != 0))
       {
         g_strlcpy(dst, e->stock, dstsz);
         return TRUE;
@@ -1436,7 +1453,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   /* resolve stocks */
   GList *entries = _scan_profiles(pack_dir);
   char film_stock[SF_NAME_LEN] = { 0 }, paper_stock[SF_NAME_LEN] = { 0 };
-  if(!_resolve_stock(entries, p->film_hash, FALSE, "kodak_gold_200", film_stock,
+  if(!_resolve_stock(entries, p->film_hash, FALSE, "kodak_gold_200", -1, film_stock,
                      sizeof film_stock))
   {
     g_strlcpy(d->sim_error,
@@ -1452,14 +1469,19 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     return NULL;
   }
   const char *target_print = NULL;
+  int film_bw = -1;
   for(GList *l = entries; l; l = l->next)
   {
     const sf_prof_entry_t *e = l->data;
-    if(!e->printing && !strcmp(e->stock, film_stock)) target_print = e->target_print;
+    if(!e->printing && !strcmp(e->stock, film_stock))
+    {
+      target_print = e->target_print;
+      film_bw = e->bw ? 1 : 0;
+    }
   }
   if(!p->scan_film
-     && !_resolve_stock(entries, p->paper_hash, TRUE, target_print, paper_stock,
-                        sizeof paper_stock))
+     && !_resolve_stock(entries, p->paper_hash, TRUE, target_print, film_bw,
+                        paper_stock, sizeof paper_stock))
   {
     g_strlcpy(d->sim_error,
               _("the installed data pack contains no print papers\n"
