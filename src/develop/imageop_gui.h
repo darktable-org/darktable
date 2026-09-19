@@ -22,6 +22,39 @@
 
 G_BEGIN_DECLS
 
+/* Say which parameters a notebook page governs.
+
+   A tab is read and reset through the parameter widgets on its page, which
+   leaves a page holding none with nothing to say and nothing to do: the
+   equalizer modules keep their tabs empty and point one shared graph at the
+   channel the current tab selects, and the colour equalizer parks its sliders
+   in a stack beside the notebook. Naming the parameters instead settles both,
+   and needs no code in the module beyond the declaration: the page reads as
+   changed when they differ from the module's defaults, and resetting the tab
+   puts them back.
+
+   Ranges are offsets into the module's parameter struct, so use offsetof().
+   Several are allowed because a tab often owns rows of more than one array;
+   they are copied, so a caller may build them on the stack. */
+typedef struct dt_iop_param_range_t
+{
+  size_t offset;
+  size_t size;
+} dt_iop_param_range_t;
+
+void dt_iop_page_bind_params(GtkWidget *page,
+                             dt_iop_module_t *self,
+                             const dt_iop_param_range_t *ranges,
+                             const int n_ranges);
+
+// TRUE when a bound page's parameters are away from the module's defaults
+gboolean dt_iop_page_params_changed(GtkWidget *page);
+
+/* Put a bound page's parameters back to the module's defaults, refresh the gui
+   and commit history. FALSE when the page is not bound, so a caller can fall
+   through to whatever else it does. */
+gboolean dt_iop_page_params_reset(GtkWidget *page);
+
 GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *param);
 
 GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *param);

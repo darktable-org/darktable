@@ -3665,7 +3665,21 @@ void gui_update(dt_iop_module_t *self)
   if((nbpage == 4) ^ show_sliders)
   {
     if(show_sliders)
-      gtk_widget_show(dt_ui_notebook_page(g->notebook, N_("options"), _("options")));
+    {
+      /* the options tab comes and goes with the sliders preference; its
+         controls sit in the stack as well, from threshold to the guided
+         filter toggle */
+      static const dt_iop_param_range_t options_range[] =
+      {
+        { offsetof(dt_iop_colorequal_params_t, threshold),
+          offsetof(dt_iop_colorequal_params_t, sat_red)
+          - offsetof(dt_iop_colorequal_params_t, threshold) },
+      };
+      GtkWidget *options_tab =
+        dt_ui_notebook_page(g->notebook, N_("options"), _("options"));
+      dt_iop_page_bind_params(options_tab, self, options_range, 1);
+      gtk_widget_show(options_tab);
+    }
     else
       gtk_notebook_remove_page(g->notebook, 3);
 
@@ -3808,10 +3822,23 @@ void gui_init(dt_iop_module_t *self)
   // not a requirement here
 
   dt_iop_module_t *sect = NULL;
+  GtkWidget *tab = NULL;
+  /* The tabs stay empty and the sliders go into the stack beside them, so name
+     the parameters each tab governs. The eight nodes of a channel are declared
+     together in the parameter struct, so one range covers a tab. */
+  static const dt_iop_param_range_t node_bands[] =
+  {
+    { offsetof(dt_iop_colorequal_params_t, hue_red), sizeof(float) * NODES },
+    { offsetof(dt_iop_colorequal_params_t, sat_red), sizeof(float) * NODES },
+    { offsetof(dt_iop_colorequal_params_t, bright_red), sizeof(float) * NODES },
+  };
+  int group = 0;
+
 #define GROUP_SLIDERS(num, page, tooltip)                      \
-  dt_ui_notebook_page(g->notebook, page, tooltip);             \
+  tab = dt_ui_notebook_page(g->notebook, page, tooltip);       \
   sect = DT_IOP_SECTION_FOR_PARAMS(self, page, dt_gui_vbox()); \
-  gtk_stack_add_named(g->stack, sect->widget, num);
+  gtk_stack_add_named(g->stack, sect->widget, num);            \
+  dt_iop_page_bind_params(tab, self, &node_bands[group++], 1);
 
   GROUP_SLIDERS("0", N_("hue"), _("change hue hue-wise"))
   g->hue_sliders[0] = g->hue_red =
