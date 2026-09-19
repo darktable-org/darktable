@@ -47,7 +47,7 @@
  * (tools/spektrafilm_export_data.py) that turns a spektrafilm release into a
  * pack. The module reads a pack from one of two places, the first winning:
  *   <user data>/darktable/spektrafilm/            (installed by hand)
- *   <cache>/darktable/spektrafilm/packs/<hash>/   (downloaded, one per table)
+ *   <user data>/darktable/spektrafilm/packs/<hash>/ (downloaded, one per table)
  * Either directory holds pack.json + spectra_lut.f32 and a profiles/
  * subdirectory of film and paper *.json profiles.
  *
