@@ -71,6 +71,9 @@
    to compile as OpenCL without it. */
 #define GRAIN_CL 1
 #include "grain.h"
+/* gauss_row_1c / gauss_col_1c: the separable single-channel gaussian this
+   file and filmgrain.cl both dispatch, from one source. */
+#include "blur_plane.h"
 
 #define SF_NLE 256
 #define SF_LOG_EPS 1e-10f
@@ -981,38 +984,6 @@ __kernel void spektrafilm_gauss_col_4c(__global const float4 *src, __global floa
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   float4 acc = (float4)(0.0f);
-  for(int k = -radius; k <= radius; k++)
-  {
-    int yy = y + k;
-    yy = yy < 0 ? 0 : (yy >= h ? h - 1 : yy);
-    acc += weights[k + radius] * src[(size_t)yy * w + x];
-  }
-  dst[(size_t)y * w + x] = acc;
-}
-
-__kernel void spektrafilm_gauss_row_1c(__global const float *src, __global float *dst,
-                                       const int w, const int h,
-                                       __global const float *weights, const int radius)
-{
-  const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= w || y >= h) return;
-  float acc = 0.0f;
-  for(int k = -radius; k <= radius; k++)
-  {
-    int xx = x + k;
-    xx = xx < 0 ? 0 : (xx >= w ? w - 1 : xx);
-    acc += weights[k + radius] * src[(size_t)y * w + xx];
-  }
-  dst[(size_t)y * w + x] = acc;
-}
-
-__kernel void spektrafilm_gauss_col_1c(__global const float *src, __global float *dst,
-                                       const int w, const int h,
-                                       __global const float *weights, const int radius)
-{
-  const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= w || y >= h) return;
-  float acc = 0.0f;
   for(int k = -radius; k <= radius; k++)
   {
     int yy = y + k;

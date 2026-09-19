@@ -1045,6 +1045,8 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                                                      "common.h",
                                                      "guided_filter.cl",
                                                      "grain.h",
+                                                     "filmgrain.h",
+                                                     "blur_plane.h",
                                                      NULL };
 
   char *includemd5[DT_OPENCL_MAX_INCLUDES] = { NULL };

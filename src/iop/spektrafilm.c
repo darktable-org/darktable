@@ -597,8 +597,8 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_yvv_col_1c = dt_opencl_create_kernel(program, "spektrafilm_yvv_col_1c");
   gd->kernel_gauss_row_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_4c");
   gd->kernel_gauss_col_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_col_4c");
-  gd->kernel_gauss_row_1c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_1c");
-  gd->kernel_gauss_col_1c = dt_opencl_create_kernel(program, "spektrafilm_gauss_col_1c");
+  gd->kernel_gauss_row_1c = dt_opencl_create_kernel(program, "gauss_row_1c");
+  gd->kernel_gauss_col_1c = dt_opencl_create_kernel(program, "gauss_col_1c");
   gd->kernel_channel_accum = dt_opencl_create_kernel(program, "spektrafilm_channel_accum");
   gd->kernel_halation_apply = dt_opencl_create_kernel(program, "spektrafilm_halation_apply");
   gd->kernel_boost = dt_opencl_create_kernel(program, "spektrafilm_boost");
