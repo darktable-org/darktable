@@ -323,6 +323,9 @@ changes (where available).
   not crash. The offending modules are now reset to use the default
   parameters and a message is displayed to the user.
 
+- Fixed auto calculation of capture radius and jumping of capture radius
+  sliders in UI.
+
 - Fixed small memory leaks when expanding variables, which grew with
   the number of images exported or imported in one run.
 
