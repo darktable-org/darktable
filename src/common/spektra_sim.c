@@ -288,6 +288,17 @@ static void cp9f(float dst[9], const double src[9]);
 /* internal structures                                                      */
 /* ------------------------------------------------------------------------ */
 
+typedef struct sf_table_t
+{
+  char identifier[64];         /* "hanatos2025"; "" for a format 2 pack */
+  char scene_illuminant[64];   /* reflectance only; "" otherwise */
+  char lut_id[256];            /* from the table's own header */
+  uint32_t lut_hash;
+  sf_lut_kind_t kind;
+  int tc_n;                    /* 192 */
+  float *spectra;              /* tc_n * tc_n * SF_NWL */
+} sf_table_t;
+
 struct sf_pack_t
 {
   /* Callers may keep a pack alive across the release of whatever lock guarded
@@ -315,17 +326,6 @@ struct sf_pack_t
   sf_table_t tables[SF_MAX_TABLES];
   int n_tables;
 };
-
-typedef struct sf_table_t
-{
-  char identifier[64];         /* "hanatos2025"; "" for a format 2 pack */
-  char scene_illuminant[64];   /* reflectance only; "" otherwise */
-  char lut_id[256];            /* from the table's own header */
-  uint32_t lut_hash;
-  sf_lut_kind_t kind;
-  int tc_n;                    /* 192 */
-  float *spectra;              /* tc_n * tc_n * SF_NWL */
-} sf_table_t;
 
 typedef struct sf_curves_model_t
 {
