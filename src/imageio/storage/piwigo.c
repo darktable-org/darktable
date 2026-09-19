@@ -1311,6 +1311,7 @@ int store(dt_imageio_module_storage_t *self,
     p->vp->jobcode = "export";
     p->vp->imgid = imgid;
     p->vp->sequence = num;
+    p->vp->export_extension = format->extension(fdata);
 
     gchar *result_filename = dt_variables_expand(p->vp, p->preset_data.filename_pattern, TRUE);
     g_free(filename);
