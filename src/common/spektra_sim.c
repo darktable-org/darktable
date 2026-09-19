@@ -307,13 +307,25 @@ struct sf_pack_t
   JsonNode *neutral_filters;    /* nested object database */
   JsonNode *film_defaults;      /* per-film render defaults */
   JsonParser *parser;           /* keeps the JSON tree alive */
-  /* identity of the spectral upsampling table, from its header */
-  char lut_id[256];
-  uint32_t lut_hash;
-  /* hanatos2025 irradiance spectra LUT */
-  int tc_n;                     /* 192 */
-  float *spectra;               /* tc_n * tc_n * SF_NWL */
+  /* Spectral upsampling tables, default first. A pack_format 2 pack carries
+     exactly one and declares nothing about it, so it is entered here as the
+     irradiance table its file always was; format 3 names them in pack.json.
+     Everything downstream reads this array and not a distinguished member, so
+     the two formats need no separate paths past the loader. */
+  sf_table_t tables[SF_MAX_TABLES];
+  int n_tables;
 };
+
+typedef struct sf_table_t
+{
+  char identifier[64];         /* "hanatos2025"; "" for a format 2 pack */
+  char scene_illuminant[64];   /* reflectance only; "" otherwise */
+  char lut_id[256];            /* from the table's own header */
+  uint32_t lut_hash;
+  sf_lut_kind_t kind;
+  int tc_n;                    /* 192 */
+  float *spectra;              /* tc_n * tc_n * SF_NWL */
+} sf_table_t;
 
 typedef struct sf_curves_model_t
 {
@@ -637,10 +649,258 @@ static void set_error(char **errmsg,
 
 /* ------------------------------------------------------------------------ */
 /* pack loading                                                             */
+/* Read one table's SFS2 container into `t`. The header is the table's identity
+   and its shape; both are validated here rather than trusted, because a wrong
+   side length turns every later cubic gather into an out-of-bounds read.
+
+   dims[0] bounds matter as much as the fields beside them. It becomes t->tc_n
+   and thence the side length every cubic gather indexes with: a negative value
+   still produces a positive element count (it is squared) and so allocates and
+   reads back a plausible buffer, while the stored side length reflects the sign
+   and turns each gather into an offset far outside that buffer. A value below 2
+   leaves the cubic base index at -1. SF_TC_N_MAX is far above the 192 the
+   shipped tables use and also keeps the element count clear of overflow. */
+static gboolean _read_table_file(sf_table_t *t,
+                                 const char *path,
+                                 char **errmsg)
+{
+  FILE *fh = g_fopen(path, "rb");
+  if(!fh)
+  {
+    set_error(errmsg, "spektra_sim: cannot open %s", path);
+    return FALSE;
+  }
+  char magic[4];
+  int32_t hdr_version = 0, dims[3], dtype = 0, id_len = 0;
+  uint32_t lut_hash = 0;
+  if(fread(magic, 1, 4, fh) != 4 || memcmp(magic, "SFS2", 4) != 0
+     || fread(&hdr_version, 4, 1, fh) != 1 || hdr_version != 2
+     || fread(dims, 4, 3, fh) != 3 || dims[0] != dims[1] || dims[2] != SF_NWL
+     || dims[0] < 2 || dims[0] > SF_TC_N_MAX
+     || fread(&dtype, 4, 1, fh) != 1 || (dtype != 0 && dtype != 1)
+     || fread(&lut_hash, 4, 1, fh) != 1 || fread(&id_len, 4, 1, fh) != 1
+     || id_len < 0 || id_len > 255)
+  {
+    set_error(errmsg,
+              "spektra_sim: %s is not a v2 spectral LUT -- regenerate the data "
+              "pack with spektrafilm_export_data.py",
+              path);
+    fclose(fh);
+    return FALSE;
+  }
+  if(id_len && fread(t->lut_id, 1, id_len, fh) != (size_t)id_len)
+  {
+    set_error(errmsg, "spektra_sim: truncated spectra lut header in %s", path);
+    fclose(fh);
+    return FALSE;
+  }
+  t->lut_id[id_len] = 0;
+  t->lut_hash = lut_hash;
+  t->tc_n = dims[0];
+
+  const size_t count = (size_t)dims[0] * dims[1] * dims[2];
+  t->spectra = malloc(count * sizeof(float));
+  if(!t->spectra)
+  {
+    set_error(errmsg, "spektra_sim: out of memory for spectra lut");
+    fclose(fh);
+    return FALSE;
+  }
+  gboolean ok;
+  if(dtype == 1) /* float16 -> float32 */
+  {
+    uint16_t *h16 = malloc(count * sizeof(uint16_t));
+    ok = h16 && fread(h16, sizeof(uint16_t), count, fh) == count;
+    if(ok)
+      for(size_t i = 0; i < count; i++) t->spectra[i] = _sf_half_to_float(h16[i]);
+    free(h16);
+  }
+  else
+    ok = fread(t->spectra, sizeof(float), count, fh) == count;
+  fclose(fh);
+  if(!ok)
+  {
+    set_error(errmsg, "spektra_sim: truncated spectra lut %s", path);
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/* Populate pack->tables from the pack's declared format.
+ *
+ * Below format 3 there is nothing to declare: one file, one table, and its kind
+ * is irradiance because that is the only thing the format ever held. Entering
+ * it in the same array as a declared one is what keeps sf_sim_build() free of a
+ * per-format branch.
+ *
+ * At format 3 the declaration is authoritative for which files to read and how
+ * to consume them, but never for identity -- each table's hash and id still
+ * come from its own header, since a declaration can name the wrong file and the
+ * hash is what every edit records. The default table is placed first. */
+static gboolean _read_tables(sf_pack_t *pack,
+                             const char *dir,
+                             JsonObject *root,
+                             int pack_format,
+                             char **errmsg)
+{
+  if(pack_format < 3)
+  {
+    char *path = g_build_filename(dir, "spectra_lut.f32", NULL);
+    sf_table_t *t = &pack->tables[0];
+    t->kind = SF_LUT_IRRADIANCE;
+    const gboolean ok = _read_table_file(t, path, errmsg);
+    g_free(path);
+    if(!ok) return FALSE;
+    pack->n_tables = 1;
+    return TRUE;
+  }
+
+  JsonArray *decl = json_object_has_member(root, "spectral_upsampling")
+                        ? json_object_get_array_member(root, "spectral_upsampling")
+                        : NULL;
+  if(!decl || json_array_get_length(decl) == 0)
+  {
+    set_error(errmsg, "spektra_sim: pack_format %d declares no "
+                      "spectral_upsampling tables", pack_format);
+    return FALSE;
+  }
+
+  const guint n = json_array_get_length(decl);
+  int written = 0, default_at = -1;
+  for(guint i = 0; i < n && written < SF_MAX_TABLES; i++)
+  {
+    JsonObject *e = json_array_get_object_element(decl, i);
+    if(!e) continue;
+    const char *ident = json_object_has_member(e, "identifier")
+                            ? json_object_get_string_member(e, "identifier") : NULL;
+    const char *kind = json_object_has_member(e, "kind")
+                           ? json_object_get_string_member(e, "kind") : NULL;
+    const char *file = json_object_has_member(e, "file")
+                           ? json_object_get_string_member(e, "file") : NULL;
+    if(!ident || !*ident || !file || !*file || !kind)
+    {
+      set_error(errmsg, "spektra_sim: spectral_upsampling entry %u is incomplete", i);
+      return FALSE;
+    }
+    /* A plain file name, resolved inside the pack. Anything with a separator in
+       it would let a hand-edited pack.json name a path outside the directory
+       the fetcher verified. */
+    if(strchr(file, '/') || strchr(file, '\\') || strcmp(file, "..") == 0)
+    {
+      set_error(errmsg, "spektra_sim: table '%s' names file '%s', which is not a "
+                        "plain file name", ident, file);
+      return FALSE;
+    }
+    sf_table_t *t = &pack->tables[written];
+    if(strcmp(kind, "irradiance") == 0)
+      t->kind = SF_LUT_IRRADIANCE;
+    else if(strcmp(kind, "reflectance") == 0)
+    {
+      t->kind = SF_LUT_REFLECTANCE;
+      /* A reflectance table is recovered under this white and the input
+         adaptation has to target it. Without it the table would be consumed
+         under the film's reference illuminant, which renders plausibly. */
+      const char *scene = json_object_has_member(e, "scene_illuminant")
+                              ? json_object_get_string_member(e, "scene_illuminant")
+                              : NULL;
+      if(!scene || !*scene)
+      {
+        set_error(errmsg, "spektra_sim: reflectance table '%s' names no "
+                          "scene_illuminant", ident);
+        return FALSE;
+      }
+      g_strlcpy(t->scene_illuminant, scene, sizeof(t->scene_illuminant));
+    }
+    else
+    {
+      set_error(errmsg, "spektra_sim: table '%s' has unknown kind '%s'", ident, kind);
+      return FALSE;
+    }
+    g_strlcpy(t->identifier, ident, sizeof(t->identifier));
+
+    char *path = g_build_filename(dir, file, NULL);
+    const gboolean ok = _read_table_file(t, path, errmsg);
+    g_free(path);
+    if(!ok) return FALSE;
+
+    if(json_object_has_member(e, "default")
+       && json_object_get_boolean_member(e, "default"))
+      default_at = written;
+    written++;
+  }
+
+  if(!written)
+  {
+    set_error(errmsg, "spektra_sim: pack declares no usable spectral_upsampling table");
+    return FALSE;
+  }
+  if(default_at < 0)
+  {
+    set_error(errmsg, "spektra_sim: no spectral_upsampling table is flagged default");
+    return FALSE;
+  }
+  if(default_at > 0) /* default first, so index 0 is always what a new edit gets */
+  {
+    const sf_table_t tmp = pack->tables[0];
+    pack->tables[0] = pack->tables[default_at];
+    pack->tables[default_at] = tmp;
+  }
+  pack->n_tables = written;
+  return TRUE;
+}
+
 /* ------------------------------------------------------------------------ */
 
-uint32_t sf_pack_lut_hash(const sf_pack_t *pack) { return pack ? pack->lut_hash : 0u; }
-const char *sf_pack_lut_id(const sf_pack_t *pack) { return pack ? pack->lut_id : ""; }
+/* The DEFAULT table's identity, which is what an edit that names no method was
+   rendered with and what the mismatch warning compares. Tables beyond it are
+   reached through the accessors below. */
+uint32_t sf_pack_lut_hash(const sf_pack_t *pack)
+{
+  return (pack && pack->n_tables) ? pack->tables[0].lut_hash : 0u;
+}
+const char *sf_pack_lut_id(const sf_pack_t *pack)
+{
+  return (pack && pack->n_tables) ? pack->tables[0].lut_id : "";
+}
+
+int sf_pack_n_tables(const sf_pack_t *pack) { return pack ? pack->n_tables : 0; }
+
+static const sf_table_t *_table_at(const sf_pack_t *pack, const int i)
+{
+  return (pack && i >= 0 && i < pack->n_tables) ? &pack->tables[i] : NULL;
+}
+
+const char *sf_pack_table_identifier(const sf_pack_t *pack, const int i)
+{
+  const sf_table_t *t = _table_at(pack, i);
+  return t ? t->identifier : "";
+}
+const char *sf_pack_table_lut_id(const sf_pack_t *pack, const int i)
+{
+  const sf_table_t *t = _table_at(pack, i);
+  return t ? t->lut_id : "";
+}
+uint32_t sf_pack_table_hash(const sf_pack_t *pack, const int i)
+{
+  const sf_table_t *t = _table_at(pack, i);
+  return t ? t->lut_hash : 0u;
+}
+sf_lut_kind_t sf_pack_table_kind(const sf_pack_t *pack, const int i)
+{
+  const sf_table_t *t = _table_at(pack, i);
+  return t ? t->kind : SF_LUT_IRRADIANCE;
+}
+
+/* Index of the table carrying this hash, or -1. 0 asks for the default, which
+   is index 0 by construction. */
+int sf_pack_table_by_hash(const sf_pack_t *pack, const uint32_t lut_hash)
+{
+  if(!pack || !pack->n_tables) return -1;
+  if(!lut_hash) return 0;
+  for(int i = 0; i < pack->n_tables; i++)
+    if(pack->tables[i].lut_hash == lut_hash) return i;
+  return -1;
+}
 
 sf_pack_t *sf_pack_ref(sf_pack_t *pack)
 {
@@ -657,7 +917,7 @@ void sf_pack_free(sf_pack_t *pack)
   if(pack->illuminants) g_hash_table_destroy(pack->illuminants);
   if(pack->dichroics) g_hash_table_destroy(pack->dichroics);
   if(pack->parser) g_object_unref(pack->parser);
-  free(pack->spectra);
+  for(int i = 0; i < pack->n_tables; i++) free(pack->tables[i].spectra);
   g_free(pack);
 }
 
@@ -669,7 +929,6 @@ sf_pack_t *sf_pack_load(const char *dir,
   sf_pack_t *pack = g_new0(sf_pack_t, 1);
   pack->refcount = 1;
   char *json_path = g_build_filename(dir, "pack.json", NULL);
-  char *lut_path = g_build_filename(dir, "spectra_lut.f32", NULL);
 
   pack->parser = json_parser_new();
   GError *gerr = NULL;
@@ -790,84 +1049,16 @@ sf_pack_t *sf_pack_load(const char *dir,
      on load. Reading it as float32 doubled the file for precision that was
      never in the source data. */
   {
-    FILE *fh = g_fopen(lut_path, "rb");
-    if(!fh)
-    {
-      set_error(errmsg, "spektra_sim: cannot open %s", lut_path);
-      goto fail;
-    }
-    char magic[4];
-    int32_t hdr_version = 0, dims[3], dtype = 0, id_len = 0;
-    uint32_t lut_hash = 0;
-    /* dims[0] bounds matter as much as the fields beside them. It becomes
-       pack->tc_n and thence the side length every cubic gather indexes with:
-       a negative value still produces a positive element count (it is squared)
-       and so allocates and reads back a plausible buffer, while the stored
-       side length reflects the sign and turns each gather into an offset far
-       outside that buffer. A value below 2 leaves the cubic base index at -1.
-       SF_TC_N_MAX is far above the 192 the shipped table uses and also keeps
-       the element count clear of overflow. */
-    if(fread(magic, 1, 4, fh) != 4 || memcmp(magic, "SFS2", 4) != 0
-       || fread(&hdr_version, 4, 1, fh) != 1 || hdr_version != 2
-       || fread(dims, 4, 3, fh) != 3 || dims[0] != dims[1] || dims[2] != SF_NWL
-       || dims[0] < 2 || dims[0] > SF_TC_N_MAX
-       || fread(&dtype, 4, 1, fh) != 1 || (dtype != 0 && dtype != 1)
-       || fread(&lut_hash, 4, 1, fh) != 1 || fread(&id_len, 4, 1, fh) != 1
-       || id_len < 0 || id_len > 255)
-    {
-      set_error(errmsg,
-                "spektra_sim: %s is not a v2 spectral LUT -- regenerate the data "
-                "pack with spektrafilm_export_data.py",
-                lut_path);
-      fclose(fh);
-      goto fail;
-    }
-    if(id_len && fread(pack->lut_id, 1, id_len, fh) != (size_t)id_len)
-    {
-      set_error(errmsg, "spektra_sim: truncated spectra lut header in %s", lut_path);
-      fclose(fh);
-      goto fail;
-    }
-    pack->lut_id[id_len] = 0;
-    pack->lut_hash = lut_hash;
-    pack->tc_n = dims[0];
-
-    const size_t count = (size_t)dims[0] * dims[1] * dims[2];
-    pack->spectra = malloc(count * sizeof(float));
-    if(!pack->spectra)
-    {
-      set_error(errmsg, "spektra_sim: out of memory for spectra lut");
-      fclose(fh);
-      goto fail;
-    }
-    gboolean ok;
-    if(dtype == 1) /* float16 -> float32 */
-    {
-      uint16_t *h16 = malloc(count * sizeof(uint16_t));
-      ok = h16 && fread(h16, sizeof(uint16_t), count, fh) == count;
-      if(ok)
-        for(size_t i = 0; i < count; i++) pack->spectra[i] = _sf_half_to_float(h16[i]);
-      free(h16);
-    }
-    else
-      ok = fread(pack->spectra, sizeof(float), count, fh) == count;
-    if(!ok)
-    {
-      set_error(errmsg, "spektra_sim: truncated spectra lut %s", lut_path);
-      fclose(fh);
-      goto fail;
-    }
-    fclose(fh);
+    const int fmt_declared = (int)json_object_get_int_member(root, "pack_format");
+    if(!_read_tables(pack, dir, root, fmt_declared, errmsg)) goto fail;
   }
 
   g_free(json_path);
-  g_free(lut_path);
   if(status) *status = SF_PACK_OK;
   return pack;
 
 fail:
   g_free(json_path);
-  g_free(lut_path);
   sf_pack_free(pack);
   return NULL;
 }
@@ -1660,6 +1851,51 @@ static void cubic_interp_2d(double out[3],
   out[0] = acc[0];
   out[1] = acc[1];
   out[2] = acc[2];
+}
+
+/* Same Mitchell gather as cubic_interp_2d(), over a float source with an
+   arbitrary channel count. Build-time only, and used for exactly one sample:
+   the spectrum a reflectance table emits at its own scene white.
+
+   That sample has to come through the same interpolator the runtime addresses
+   the table with, not a nearest lookup -- [su] compute_reflectance_tc_lut says
+   so outright, because a table with sharp near-white structure (arctic) lands
+   somewhere other than its stored cell, and normalising on the stored cell
+   would leave the reconstructed neutral off grey by whatever the difference
+   is. */
+static void cubic_interp_2d_nf(double *out,
+                               const float *lut,
+                               int L,
+                               int nch,
+                               double x,
+                               double y)
+{
+  int xb, yb;
+  double xf, yf;
+  cubic_base_fraction(x, L, &xb, &xf);
+  cubic_base_fraction(y, L, &yb, &yf);
+  double wx[4], wy[4];
+  for(int i = 0; i < 4; i++)
+  {
+    wx[i] = mitchell_weight(xf + 1.0 - i);
+    wy[i] = mitchell_weight(yf + 1.0 - i);
+  }
+  for(int c = 0; c < nch; c++) out[c] = 0.0;
+  double wsum = 0.0;
+  for(int i = 0; i < 4; i++)
+  {
+    const int xi = safe_index(xb - 1 + i, L);
+    for(int j = 0; j < 4; j++)
+    {
+      const int yj = safe_index(yb - 1 + j, L);
+      const double w = wx[i] * wy[j];
+      wsum += w;
+      const float *px = lut + ((size_t)xi * L + yj) * nch;
+      for(int c = 0; c < nch; c++) out[c] += w * px[c];
+    }
+  }
+  if(wsum != 0.0)
+    for(int c = 0; c < nch; c++) out[c] /= wsum;
 }
 
 /* Float variants of cubic_interp_2d / expose_pixel — halves LUT cache footprint
@@ -3208,15 +3444,51 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
   }
   double film_ref_xy[2];
   illuminant_xy_from_spd(film_ref_xy, illu_ref, pack->cmfs);
+
+  /* ----- which spectral upsampling table, and what it is consumed as ----- */
+  const int table_idx = sf_pack_table_by_hash(pack, p->spectral_lut_hash);
+  if(table_idx < 0)
+  {
+    set_error(errmsg, "spektra_sim: this pack carries no spectral upsampling "
+                      "table %08x", p->spectral_lut_hash);
+    sf_sim_free(s);
+    return NULL;
+  }
+  const sf_table_t *table = &pack->tables[table_idx];
+  const gboolean reflectance = table->kind == SF_LUT_REFLECTANCE;
+
+  /* The white an input's chromaticity is projected under ([su] _rgb_to_tc_b).
+     For an irradiance table that is the film's own reference illuminant. A
+     reflectance table was recovered under its scene illuminant and addresses
+     the LUT under that same white, independently of which film is loaded --
+     the relight below is what carries the film's illuminant instead. Projecting
+     one under the other's white renders plausibly and says nothing. */
+  double proj_xy[2] = { film_ref_xy[0], film_ref_xy[1] };
+  if(reflectance)
+  {
+    const double *illu_scene =
+        g_hash_table_lookup(pack->illuminants, table->scene_illuminant);
+    if(!illu_scene)
+    {
+      set_error(errmsg, "spektra_sim: table '%s' needs scene illuminant '%s', "
+                        "which this pack does not carry",
+                table->identifier, table->scene_illuminant);
+      sf_sim_free(s);
+      return NULL;
+    }
+    illuminant_xy_from_spd(proj_xy, illu_scene, pack->cmfs);
+  }
   {
     double cat[9];
-    cat_matrix(cat, SF_M_CAT16, p->input_white_xy, film_ref_xy);
+    cat_matrix(cat, SF_M_CAT16, p->input_white_xy, proj_xy);
     mat3_mul(s->m_in, cat, p->input_rgb_to_xyz);
   }
   s->ev_scale = pow(2.0, p->exposure_comp_ev);
 
-  /* [su] compute_hanatos2025_tc_lut: spectra × (sensitivity × window / norm) */
-  const int n = pack->tc_n;
+  /* [su] compute_tc_lut: spectra × (sensitivity × window / norm) for an
+     irradiance table; relight × sensitivity, neutral-normalised, for a
+     reflectance one. */
+  const int n = table->tc_n;
   s->tc_n = n;
   s->tc_lut = malloc((size_t)n * n * 3 * sizeof(double));
   if(!s->tc_lut)
@@ -3238,7 +3510,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
        On by default, as the reference resolves it; switchable for the same
        reason the surface below is, and so the two halves of the adaptation can
        be told apart when a render is compared against the reference. */
-    if(p->adaptation_bandwidth && film->window_n == 4)
+    if(!reflectance && p->adaptation_bandwidth && film->window_n == 4)
     {
       const double c_uv = film->window_params[0], s_uv = film->window_params[1];
       const double c_ir = film->window_params[2], s_ir = film->window_params[3];
@@ -3268,11 +3540,15 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     for(int i = 0; i < n; i++)
       for(int j = 0; j < n; j++)
       {
-        const float *spec = pack->spectra + ((size_t)i * n + j) * SF_NWL;
+        const float *spec = table->spectra + ((size_t)i * n + j) * SF_NWL;
         double acc[3] = { 0.0, 0.0, 0.0 };
         for(int l = 0; l < SF_NWL; l++)
         {
-          const double sp = spec[l];
+          /* [su] compute_reflectance_tc_lut: relit = spectra × E_ref. A stored
+             reflectance is a surface, not light; the film's own reference
+             illuminant is what turns it into an exposure. An irradiance table
+             already is light and is integrated as it stands. */
+          const double sp = reflectance ? spec[l] * illu_ref[l] : spec[l];
           for(int m = 0; m < 3; m++) acc[m] += sp * sens_w[l][m];
         }
         double *dst = s->tc_lut + ((size_t)i * n + j) * 3;
@@ -3280,6 +3556,47 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
         dst[1] = acc[1];
         dst[2] = acc[2];
       }
+    /* [su] compute_reflectance_tc_lut, white balance: send the table's OWN
+       emitted neutral to (1,1,1), per channel.
+
+       Not a division by a fixed midgray. The neutral is where a neutral input
+       actually lands -- the table's reflectance sampled at the scene white,
+       relit by E_ref and put through the sensitivity -- so a method whose
+       recovered neutral is not perfectly flat still resolves to grey. This is
+       what the irradiance path gets for free, its sensitivities having been
+       balanced so a neutral is already 1; there is no equivalent step there
+       and none is run. */
+    if(reflectance)
+    {
+      double tc_white[2], neutral[SF_NWL];
+      tri2quad(tc_white, proj_xy);
+      const double scale = (double)(n - 1);
+      cubic_interp_2d_nf(neutral, table->spectra, n, SF_NWL,
+                         tc_white[0] * scale, tc_white[1] * scale);
+      double raw_neutral[3] = { 0.0, 0.0, 0.0 };
+      for(int l = 0; l < SF_NWL; l++)
+        for(int m = 0; m < 3; m++)
+          raw_neutral[m] += neutral[l] * illu_ref[l] * sens_w[l][m];
+      for(int m = 0; m < 3; m++)
+        if(!(raw_neutral[m] > 0.0) || !isfinite(raw_neutral[m]))
+        {
+          set_error(errmsg, "spektra_sim: table '%s' has no response at its own "
+                            "scene white in channel %d -- the pack's table and "
+                            "this film's sensitivities do not overlap",
+                    table->identifier, m);
+          sf_sim_free(s);
+          return NULL;
+        }
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static)
+#endif
+      for(int i = 0; i < n; i++)
+        for(int j = 0; j < n; j++)
+        {
+          double *dst = s->tc_lut + ((size_t)i * n + j) * 3;
+          for(int m = 0; m < 3; m++) dst[m] /= raw_neutral[m];
+        }
+    }
     /* [su] compute_hanatos2025_tc_lut, apply_surface: raw_lut *= 2**surface.
        A per-chromaticity, per-channel log2 exposure correction, evaluated on the
        same tc grid as the LUT and centred on the film's reference illuminant, so
@@ -3305,7 +3622,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
        sigmoid's +-2 stop bound wherever the chromaticity is far from the film's
        reference white. Runtime-selectable: the correction is
        the model's own and applies whenever the reference enables it. */
-    if(p->adaptation_surface && film->surface_n == SF_SURFACE_NCOEF)
+    if(!reflectance && p->adaptation_surface && film->surface_n == SF_SURFACE_NCOEF)
     {
       double center_tc[2];
       tri2quad(center_tc, film_ref_xy);
@@ -3344,7 +3661,12 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
           const double tc[2] = { i / scale, j / scale };
           double xy[2], cxy[2], ctc[2];
           quad2tri(xy, tc);
-          compress_xy_radial(cxy, xy, film_ref_xy, pack->locus, pack->locus_n);
+          /* Centred on the white the runtime PROJECTS under, which for a
+             reflectance table is its scene illuminant and not the film's: the
+             remap moves the tc access geometry, and the relight only scales
+             what is stored at each cell. Centring it elsewhere would walk the
+             neutral off the cell the normalisation above just fixed. */
+          compress_xy_radial(cxy, xy, proj_xy, pack->locus, pack->locus_n);
           tri2quad(ctc, cxy);
           bilinear_2d_clamped(s->tc_lut + ((size_t)i * n + j) * 3, old, n,
                               ctc[0] * scale, ctc[1] * scale);
