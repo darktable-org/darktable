@@ -990,6 +990,15 @@ static GList *_scan_tables(void)
 
   sf_table_info_t info[SF_MAX_TABLES];
   const int n = sf_pack_peek_tables(dir, info, SF_MAX_TABLES);
+  /* The combobox hides itself below two tables, so a pack that declares fewer
+     than expected looks identical to a module that has no such control -- say
+     which directory was read and what it offered, since the usual cause is a
+     pack installed somewhere the module does not look. */
+  dt_print(DT_DEBUG_DEV, "[spektrafilm] %d spectral upsampling table(s) in %s\n",
+           n, dir);
+  for(int i = 0; i < n; i++)
+    dt_print(DT_DEBUG_DEV, "[spektrafilm]   %08x %s %s\n", info[i].lut_hash,
+             info[i].identifier[0] ? info[i].identifier : "(unnamed)", info[i].lut_id);
 
   GList *list = NULL;
   for(int i = 0; i < n; i++)
