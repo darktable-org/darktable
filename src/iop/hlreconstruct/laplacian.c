@@ -753,7 +753,7 @@ static inline cl_int wavelets_process_cl(const int devid,
     {
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_guide_laplacians, width, height,
         CLARG(HF), CLARG(buffer_out), CLARG(clipping_mask),
-        CLARG(reconstructed), // read-only
+        CLARG(buffer_out), // read-only
         CLARG(reconstructed), // write-only
         CLARG(width), CLARG(height), CLARG(mult), CLARG(noise_level), CLARG(salt), CLARG(current_scale_type), CLARG(radius));
       if(err != CL_SUCCESS) return err;
@@ -762,7 +762,7 @@ static inline cl_int wavelets_process_cl(const int devid,
     {
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_diffuse_color, width, height,
         CLARG(HF), CLARG(buffer_out), CLARG(clipping_mask),
-        CLARG(reconstructed), // read-only
+        CLARG(buffer_out), // read-only
         CLARG(reconstructed), // write-only
         CLARG(width), CLARG(height), CLARG(mult), CLARG(current_scale_type), CLARG(solid_color));
       if(err != CL_SUCCESS) return err;
@@ -814,9 +814,10 @@ static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
   cl_mem clipping_mask = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4); // [R, G, B, norm] for each pixel
 
   // temp buffer for blurs. We will need to cycle between them for memory efficiency
+  // all are downscaled
   cl_mem LF_odd = dt_opencl_alloc_device(devid, ds_sizes[0], ds_sizes[1], sizeof(float) * 4);
   cl_mem LF_even = dt_opencl_alloc_device(devid, ds_sizes[0], ds_sizes[1], sizeof(float) * 4);
-  cl_mem temp = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4); // need full size here for blurring
+  cl_mem temp = dt_opencl_alloc_device(devid, ds_sizes[0], ds_sizes[1], sizeof(float) * 4);
 
   // wavelets scales buffers
   cl_mem HF = dt_opencl_alloc_device(devid, ds_sizes[0], ds_sizes[1], sizeof(float) * 4);

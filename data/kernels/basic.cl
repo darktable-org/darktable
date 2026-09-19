@@ -1140,9 +1140,6 @@ diffuse_color(read_only image2d_t HF,
 
   float4 high_frequency = read_imagef(HF, samplerA, (int2)(x, y));
 
-  // We use 4 floats SIMD instructions but we don't want to diffuse the norm, make sure to store and restore it later.
-  // This is not much of an issue when processing image at full-res, but more harmful since
-  // we reconstruct highlights on a downscaled variant
   const float norm_backup = high_frequency.w;
 
   float4 out;
