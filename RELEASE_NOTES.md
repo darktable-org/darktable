@@ -93,6 +93,8 @@ changes (where available).
   keeps a single console session for its lifetime instead of creating
   a new console for each command.
 
+- Fixed highlights laplacian OpenCL code.
+
 ## Lua
 
 ### API Version
