@@ -1612,6 +1612,26 @@ static void _cpu_benchmark(dt_dev_pixelpipe_t *pipe,
   darktable.unmuted = old_muted;
 }
 
+// the colorspace transform for blending runs in place on `tmp`, which is the
+// module's input itself when no input transform was needed. For the first
+// module that input can be pipe->input (see "pipe data: full"), the source
+// image every later run of the pipe starts from again, and invalidating a
+// cacheline does not restore it: each run would convert it once more. So a
+// screen pipe transforms a copy, as it does for the input transform; only if
+// none can be allocated is the input converted
+static float *_blend_transform_buffer(const dt_dev_pixelpipe_t *pipe,
+                                      float *tmp,
+                                      const float *input,
+                                      const dt_iop_roi_t *roi,
+                                      const int ch)
+{
+  if(tmp != input || !dt_pipe_is_screen(pipe)) return tmp;
+  float *copy = dt_iop_image_alloc(roi->width, roi->height, ch);
+  if(!copy) return tmp;
+  dt_iop_image_copy_by_size(copy, input, roi->width, roi->height, ch);
+  return copy;
+}
+
 static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                                           dt_develop_t *dev,
                                           float *input,
@@ -1836,6 +1856,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   {
     if(cst_tmp != blend_cst)
     {
+      tmp = _blend_transform_buffer(pipe, tmp, input, roi_in, piece->colors);
       dt_ioppr_transform_image_colorspace(module, tmp, tmp,
                                         roi_in->width, roi_in->height,
                                         cst_tmp, blend_cst, &cst_tmp,
@@ -2926,6 +2947,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         {
           if(cst_tmp != blend_cst)
           {
+            tmp = _blend_transform_buffer(pipe, tmp, input, &roi_in, piece->colors);
             dt_ioppr_transform_image_colorspace(module, tmp, tmp,
                                               roi_in.width, roi_in.height,
                                               cst_tmp, blend_cst, &cst_tmp,
