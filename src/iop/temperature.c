@@ -1572,7 +1572,7 @@ void reload_defaults(dt_iop_module_t *self)
   if(!self->dev || !dt_is_valid_imgid(self->dev->image_storage.id))
     return;
 
-  const gboolean is_raw =
+  const gboolean is_color_raw =
     dt_image_is_matrix_correction_supported(&self->dev->image_storage);
   const gboolean true_monochrome =
     dt_image_monochrome_flags(&self->dev->image_storage) & DT_IMAGE_MONOCHROME;
@@ -1593,7 +1593,6 @@ void reload_defaults(dt_iop_module_t *self)
 
   // we want these data in all cases to keep them in dev->chroma
   double daylights[4] = {1.0, 1.0, 1.0, 1.0 };
-  double as_shot[4] = {1.0, 1.0, 1.0, 1.0 };
 
   if(!_calculate_bogus_daylight_wb(self, daylights))
   {
@@ -1620,8 +1619,10 @@ void reload_defaults(dt_iop_module_t *self)
     }
   }
 
+  double as_shot[4] = {1.0, 1.0, 1.0, 1.0 };
+
   // Store EXIF WB coeffs
-  if(is_raw)
+  if(is_color_raw)
   {
     _find_coeffs(self, as_shot);
     as_shot[0] /= as_shot[1];
@@ -1644,8 +1645,6 @@ void reload_defaults(dt_iop_module_t *self)
     STR_YESNO(another_cat_defined),
     daylights[0], daylights[1], daylights[2], as_shot[0], as_shot[1], as_shot[2]);
 
-  d->preset = DT_IOP_TEMP_AS_SHOT;
-
   // White balance module doesn't need to be enabled for true_monochrome raws (like
   // for Leica 'Monochrom' cameras). prepare_matrices is a no-op as well, as there
   // isn't a color matrix, so we can skip that as well.
@@ -1656,7 +1655,7 @@ void reload_defaults(dt_iop_module_t *self)
       _prepare_matrices(self);
 
     /* check if file is color raw / sRaw */
-    if(is_raw)
+    if(is_color_raw)
     {
       // raw images need wb:
       self->default_enabled = TRUE;
