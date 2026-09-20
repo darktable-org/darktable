@@ -607,6 +607,15 @@ the existing checkbox is functional.
 
 ### 6. Fallback
 
+**Ruled out by the developer (post-session-21). Do not implement, and do
+not propose it again.** The goal of this work is to reproduce Panasonic's
+own CA correction from the same data Panasonic uses; substituting
+Lensfun's measurement of a lens model, or any image-adaptive estimate,
+answers a different question. The section is kept as an audit trail only.
+Note also that the `lens.cc:3275` citation below is stale: `_get_method()`
+is at `:3350`, `reload_defaults()` from `:3557` with the Panasonic
+auto-select at `:3667-3675`, and `commit_params()` at `:3405-3412`.
+
 Reconsider `_get_method()` (`lens.cc:3275`). Regardless of whether 0x011b
 gets decoded, it would be defensible to fall back to Lensfun for TCA when
 the metadata path lacks CA data and the user has TCA in `modify_flags`. That
@@ -4449,7 +4458,9 @@ of expected value:
   encryption.
 - Image-adaptive CA detection in `cacorrectrgb`, unchanged from session
   18, and now somewhat more attractive: if per-frame CA really does vary
-  at a fixed lens state, no metadata decode can reach it.
+  at a fixed lens state, no metadata decode can reach it. **Ruled out by
+  the developer post-session-21: it does not reproduce Panasonic's
+  correction, which is the goal. See "Scope and goal".**
 
 **Files this session** (all in `/tmp/rw2_tca/`, no darktable source
 changes): `session21_step1.py`, `session21_step2.py`,
@@ -4458,6 +4469,42 @@ changes): `session21_step1.py`, `session21_step2.py`,
 `session21_bayer_sanity.py`, `session21_bayer_nooffset.py`,
 `session21_bayer_compare_tm.py`, `session21_bayer_report.py`,
 `session21_bayer_report.out.txt`.
+
+## Scope and goal
+
+Set by the developer, post-session-21, and it settles two things this
+document had left open.
+
+**The goal is to reproduce Panasonic's own CA correction in darktable,
+computed from the same data Panasonic uses.** Not to correct the lens as
+well as possible, and not to correct it by whatever means works.
+
+Two consequences follow, and both close off work this document had
+previously entertained.
+
+- **The hybrid path is out**, and so is image-adaptive CA detection in
+  `cacorrectrgb`. Embedded distortion plus Lensfun TCA would give users a
+  working correction, but from a different lens model measured by someone
+  else; edge statistics would give one computed from the image. Neither is
+  Panasonic's correction, so neither is an answer to this question. The
+  proposals are annotated in place as ruled out rather than deleted.
+- **The direct raw CA measurement of sessions 14 to 21 was aimed at the
+  wrong quantity.** It records the sensor's actual aberration, and the
+  goal is Panasonic's correction of that aberration, which by session 18's
+  own estimate leaves 40 to 50 percent of it in place at outer radii. The
+  two are different targets, as that session said in as many words. So a
+  refit that matched the sensor better would be a step away from the goal,
+  and the AAHD measurement work is demoted from critical path to
+  background: useful for quantifying how far Panasonic sits from physical
+  truth, not for fitting against.
+
+The targets that do answer the question, in descending order of
+directness: the camera's own rendered output, whether the at-capture JPEG
+or an in-camera RAW development of a file we hold the RW2 for; a
+third-party decode of the payload, which is what the Adobe DNG
+WarpRectilinear coefficients are, if it can be shown that Adobe reads the
+payload at all; and the payload's own structure recovered by differential
+probing.
 
 ## When to stop
 
@@ -4498,17 +4545,23 @@ one of these holds.**
    the cost is no longer proportionate to a correction of a fraction of a
    pixel.
 
-**What falling back means concretely.** Keep the shipped session 5 + K = 1
-coefficients, since no evidence contradicts them and removing a working
-correction on suspicion would be worse than leaving it. Land the hybrid
-path so that users get embedded distortion together with Lensfun TCA
-rather than an all-or-nothing choice. Lock the shipped configuration in
-place with a rendered-pixel regression check, so no later agent repeats
-sessions 14 to 20. Publish the structural findings and the negative
-results, which are worth more to the next person than another private
-refit. Then close the investigation and leave image-adaptive CA
-correction, which needs no metadata at all, as the route for anyone who
-wants to go further.
+**What falling back means concretely.** Revised after the developer ruled
+out the hybrid path: there is no substitute correction to fall back *to*,
+so stopping means stopping, with the best available decode left in place.
+Keep the shipped session 5 + K = 1 coefficients, since no evidence
+contradicts them and removing a working correction on suspicion would be
+worse than leaving it. Lock them behind a registered rendered-pixel
+comparison against paired camera JPEGs, so no later agent repeats sessions
+14 to 20. Publish the structural findings and the negative results, which
+are worth more to the next person than another private refit. Record in
+the document that the remaining distance to Panasonic's output is
+unrecovered, and what it would take to close it. Then close the
+investigation.
+
+One thing not to do on stopping: revert `47c223703e`. Its distortion
+handling is correct and useful on its own, and the CA branch shipped since
+session 13 is the closest approximation to Panasonic's correction that
+anyone has published.
 
 ## Reverse-engineering next steps
 
