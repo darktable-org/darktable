@@ -145,11 +145,24 @@ typedef struct dt_iop_demosaic_params_t
   dt_iop_demosaic_greeneq_t green_eq;           // $DEFAULT: DT_IOP_GREEN_EQ_NO $DESCRIPTION: "match greens"
   float median_thrs;                            // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "edge threshold"
   dt_iop_demosaic_smooth_t color_smoothing;     // $DEFAULT: DT_DEMOSAIC_SMOOTH_OFF $DESCRIPTION: "color smoothing"
+
+  /** Note that the default DT_IOP_DEMOSAIC_RCD is safe for all sensors as it falls back to
+      DT_IOP_DEMOSAIC_MARKESTEIJN on xtrans and DT_IOP_DEMOSAIC_MONO on true monochromes
+  */
   dt_iop_demosaic_method_t demosaicing_method;  // $DEFAULT: DT_IOP_DEMOSAIC_RCD $DESCRIPTION: "method"
   dt_iop_demosaic_lmmse_t lmmse_refine;         // $DEFAULT: DT_LMMSE_REFINE_1 $DESCRIPTION: "LMMSE refine"
   float dual_thrs;                              // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.2 $DESCRIPTION: "dual threshold"
-  float cs_radius;                              // $MIN: 0.0 $MAX: 1.5 $DEFAULT: 0.0 $DESCRIPTION: "radius"
-  float cs_thrs;                                // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.40 $DESCRIPTION: "contrast sensitivity"
+
+  // allmost all tested sensor/lens combination have a radius of at least 0.5 so let's use that as default.
+  float cs_radius;                              // $MIN: 0.0 $MAX: 1.5 $DEFAULT: 0.5 $DESCRIPTION: "radius"
+
+  /** 0.4 as default is pretty much on the high side, it's corrected to a more realistic value
+      based on ISO and sensor resolution.
+      Those values are safe for almost all sensors so no artifacts because of high chroma noise are introduced.
+  */
+  float cs_thrs;                                // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.4 $DESCRIPTION: "contrast sensitivity"
+
+  // Currently we can't auto-calculate such border data
   float cs_boost;                               // $MIN: 0.0 $MAX: 1.5 $DEFAULT: 0.0 $DESCRIPTION: "corner boost"
   int cs_iter;                                  // $MIN: 1 $MAX: 25 $DEFAULT: 8 $DESCRIPTION: "iterations"
   float cs_center;                              // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "sharp center"
@@ -177,8 +190,8 @@ typedef struct dt_iop_demosaic_gui_data_t
   gboolean cs_mask;
   gboolean dual_mask;
   gboolean cs_boost_mask;
-  gboolean autoradius;
-  gboolean autothrs;
+  gboolean autotune_request;
+  gboolean autotune_result;
   float new_radius;
   float new_thrs;
 } dt_iop_demosaic_gui_data_t;
@@ -648,8 +661,8 @@ void process(dt_iop_module_t *self,
   const gboolean fullpipe = dt_pipe_is_full(pipe);
 
   const uint8_t(*const xtrans)[6] = piece->xtrans;
-  const dt_iop_demosaic_data_t *d = piece->data;
-  const dt_iop_demosaic_gui_data_t *g = self->gui_data;
+  dt_iop_demosaic_data_t *d = piece->data;
+  dt_iop_demosaic_gui_data_t *g = self->gui_data;
   const uint32_t filters = piece->filters;
 
   const gboolean fullscale = _demosaic_full(pipe, img);
@@ -670,7 +683,8 @@ void process(dt_iop_module_t *self,
   gboolean show_dual = FALSE;
   gboolean show_capture = FALSE;
   gboolean show_sigma = FALSE;
-  if(self->dev->gui_attached && fullpipe)
+  const gboolean full_gui = self->dev->gui_attached && fullpipe;
+  if(full_gui)
   {
     if(g->dual_mask)
     {
@@ -718,10 +732,54 @@ void process(dt_iop_module_t *self,
 
   if(do_capture)
   {
-    if(_noise_requested(self, piece))
-      _capture_noise(self, piece);
-    if(_radius_requested(self, piece))
-      _capture_radius(self, piece, in, roi_in, xtrans, filters);
+    /** This is a design compromise. Why is this required here and in OpenCL code?
+        We want to support user presets that enforce tuning the capture sharpen parameters
+        for radius and noise threshold while being auto-applied while importing the
+        image or if we apply that preset being in darkroom.
+
+        A preset enforces auto-calculation of capture parameters if the found capture radius
+        is zero (a capture radius of zero while capture is enabled isn't a valid use case).
+
+        The test for an un-altered image is based on database information and if the user
+        changes any module parameter in the first seconds on a fresh history, those changes
+        might not yet be written to the database.
+
+        So there is one minor UI problem coming with this approach.
+        If we manually set the capture radius to zero in that timespan it will be re-autotuned.
+
+        After that timespan we can freely choose any radius without re-calculation either
+        if we intend to do so for some reason or if we are preparing for a user preset that
+        wants auto-calculation
+    */
+    gboolean autotune = d->cs_enabled && d->cs_radius == 0.0f && !dt_image_altered(img->id);
+    if(g)
+    {
+      dt_iop_gui_enter_critical_section(self);
+      if(autotune && fullpipe)
+        g->autotune_request = TRUE;
+      autotune = fullpipe && g->autotune_request;
+      dt_iop_gui_leave_critical_section(self);
+    }
+
+    if(autotune)
+    {
+      const float cs_thrs = _capture_noise(self, piece);
+      const float cs_radius = _capture_radius(self, piece, in, roi_in, xtrans, filters);
+      d->cs_radius = cs_radius;
+      d->cs_thrs = cs_thrs;
+
+      if(g)
+      {
+        dt_iop_gui_enter_critical_section(self);
+        g->autotune_result = TRUE;
+        g->new_radius = cs_radius;
+        g->new_thrs = cs_thrs;
+        dt_iop_gui_leave_critical_section(self);
+      }
+
+      dt_print_pipe(DT_DEBUG_PIPE, "autotuned capture",
+        pipe, self, pipe->devid, NULL, NULL, "threshold=%.2f radius=%.2f", cs_thrs, cs_radius);
+    }
   }
 
   int overlap = 0;
@@ -803,7 +861,7 @@ void process(dt_iop_module_t *self,
   {
     dt_free_align(green_in);
     if(!direct) dt_free_align(out);
-    dt_print(DT_DEBUG_ALWAYS, "can't create output buffer for demosaic");
+    dt_print(DT_DEBUG_PIPE, "can't create output buffer for demosaic");
     dt_control_log(_("can't allocate demosaic buffer"));
     return;
   }
@@ -920,8 +978,8 @@ int process_cl(dt_iop_module_t *self,
 
   dt_dev_clear_scharr_mask(pipe);
 
-  const dt_iop_demosaic_data_t *d = piece->data;
-  const dt_iop_demosaic_gui_data_t *g = self->gui_data;
+  dt_iop_demosaic_data_t *d = piece->data;
+  dt_iop_demosaic_gui_data_t *g = self->gui_data;
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
   const int demosaicing_method = d->demosaicing_method;
@@ -939,7 +997,8 @@ int process_cl(dt_iop_module_t *self,
   gboolean show_dual = FALSE;
   gboolean show_capture = FALSE;
   gboolean show_sigma = FALSE;
-  if(self->dev->gui_attached && fullpipe)
+  const gboolean full_gui = self->dev->gui_attached && fullpipe;
+  if(full_gui)
   {
     if(g->dual_mask)
     {
@@ -1005,10 +1064,35 @@ int process_cl(dt_iop_module_t *self,
 
   if(do_capture)
   {
-    if(_noise_requested(self, piece))
-      _capture_noise(self, piece);
-    if(_radius_requested(self, piece))
-      _capture_radius_cl(self, piece, dev_in, roi_in, xtrans, filters, true_monochrome);
+    gboolean autotune = d->cs_enabled && d->cs_radius == 0.0f && !dt_image_altered(img->id);
+    if(g)
+    {
+      dt_iop_gui_enter_critical_section(self);
+      if(autotune && fullpipe)
+        g->autotune_request = TRUE;
+      autotune = fullpipe && g->autotune_request;
+      dt_iop_gui_leave_critical_section(self);
+    }
+
+    if(autotune)
+    {
+      const float cs_thrs = _capture_noise(self, piece);
+      const float cs_radius = _capture_radius_cl(self, piece, dev_in, roi_in, xtrans, filters, true_monochrome);
+      d->cs_radius = cs_radius;
+      d->cs_thrs = cs_thrs;
+
+      if(g)
+      {
+        dt_iop_gui_enter_critical_section(self);
+        g->autotune_result = TRUE;
+        g->new_radius = cs_radius;
+        g->new_thrs = cs_thrs;
+        dt_iop_gui_leave_critical_section(self);
+      }
+
+      dt_print_pipe(DT_DEBUG_PIPE, "autotuned capture",
+        pipe, self, devid, roi_in, NULL, "threshold=%.2f radius=%.2f", cs_thrs, cs_radius);
+    }
   }
 
   gboolean tiling = FALSE;
@@ -1461,7 +1545,6 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_demosaic_params_t *d = self->default_params;
-  dt_iop_demosaic_gui_data_t *g = self->gui_data;
   const dt_image_t *img = &self->dev->image_storage;
 
   if(dt_image_is_monochrome(img))
@@ -1481,10 +1564,14 @@ void reload_defaults(dt_iop_module_t *self)
   if(self->widget)
     gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 
+  dt_iop_demosaic_gui_data_t *g = self->gui_data;
   if(g)
   {
-    g->autoradius = FALSE;
-    g->autothrs = FALSE;
+    dt_iop_gui_enter_critical_section(self);
+    g->autotune_result = FALSE;
+    g->new_radius = 0.0f;
+    g->new_thrs = 0.0f;
+    dt_iop_gui_leave_critical_section(self);
   }
 }
 
@@ -1610,8 +1697,6 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   g->new_radius = 0.0f;
   g->new_thrs = 0.0f;
-  g->autoradius = FALSE;
-  g->autothrs = FALSE;
 }
 
 static void _dual_thrs_callback(GtkWidget *quad, dt_iop_module_t *self)
@@ -1659,9 +1744,10 @@ static void _cs_boost_callback(GtkWidget *quad, dt_iop_module_t *self)
 
 static void _cs_radius_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE();
+  dt_iop_gui_enter_critical_section(self);
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
-  g->new_radius = -1.0f;
+  g->autotune_request = TRUE;
+  dt_iop_gui_leave_critical_section(self);
   dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
@@ -1670,35 +1756,55 @@ static void _ui_pipe_done(gpointer instance, dt_iop_module_t *self)
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   if(!g) return;
 
+  dt_iop_gui_enter_critical_section(self);
+  if(!g->autotune_result)
+  {
+    dt_iop_gui_leave_critical_section(self);
+    return;
+  }
+  const gboolean result = g->autotune_request;
+  const float new_radius = g->new_radius;
+  const float new_thrs = g->new_thrs;
+  g->autotune_result = FALSE;
+  g->autotune_request = FALSE;
+  g->new_radius = g->new_thrs = 0.0f;
+  dt_iop_gui_leave_critical_section(self);
+
+  if(!result) return;
+
+  dt_iop_demosaic_params_t *p = self->params;
+
+  dt_develop_t *dev = self->dev;
   DT_TRY_GUI_UPDATE();
 
-  const gboolean new_radius = g->new_radius > 0.0f;
-  const gboolean new_thrs = g->new_thrs > 0.0f;
-  if(new_radius)
-     dt_bauhaus_slider_set_val(g->cs_radius, g->new_radius);
+  dt_bauhaus_slider_set_val(g->cs_radius, new_radius);
+  dt_bauhaus_slider_set_val(g->cs_thrs, new_thrs);
 
-  if(new_thrs)
-    dt_bauhaus_slider_set_val(g->cs_thrs, g->new_thrs);
+  dt_dev_pixelpipe_stop_and_lock_all(dev);
+  p->cs_radius = new_radius;
+  p->cs_thrs = new_thrs;
+  dt_dev_pixelpipe_unlock_all(dev);
 
   DT_LEAVE_GUI_UPDATE();
 
-  if(new_radius || new_thrs)
-  {
-    dt_print(DT_DEBUG_PIPE, "demosaic UI pipe sets radius=%.3f thrs=%.3f",
-      g->new_radius, g->new_thrs);
-    g->new_radius = g->new_thrs = 0.0f;
-
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void _preset_applied_callback(gpointer instance, dt_iop_module_t *self)
 {
+  if(!(dt_view_get_current() == DT_VIEW_DARKROOM))
+    return;
+
+  dt_iop_demosaic_gui_data_t *g = self->gui_data;
+  if(!g) return;
+
   const dt_iop_demosaic_params_t *p = self->params;
-  if(p->cs_enabled && (p->cs_radius <= 0.0f || p->cs_thrs <= 0.0f))
+  const gboolean tune = self->enabled && p->cs_enabled && p->cs_radius == 0.0f;
+  if(tune)
   {
-    dt_print(DT_DEBUG_PIPE, "demosaic auto preset applied, radius=%.3f thrs=%.3f",
-      p->cs_radius, p->cs_thrs);
+    dt_iop_gui_enter_critical_section(self);
+    g->autotune_request = TRUE;
+    dt_iop_gui_leave_critical_section(self);
     dt_dev_reprocess_center(self->dev, self->iop_order);
   }
 }
@@ -1787,17 +1893,15 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->cs_radius, _("capture sharpen radius should reflect the overall gaussian type blur\n"
                                               "of the camera sensor, possibly the anti-aliasing filter and the lens.\n"
                                               "increasing this too far will soon lead to artifacts like halos and\n"
-                                              "ringing especially when used with a large 'iterations' setting.\n\n"
-                                              "Note: a radius set to zero will be recalculated automatically the next run. use for presets"));
+                                              "ringing especially when used with a large 'iterations' setting.\n"
+                                              "set it to zero for presets that should enforce auto calculation"));
   dt_bauhaus_widget_set_quad(g->cs_radius, self, dtgtk_cairo_paint_reset, FALSE, _cs_radius_callback,
-                                            _("calculate the capture sharpen radius from available raw sensor data.\n"
-                                              "for best results avoid cropping or darkroom zooming in"));
+                                            _("calculate the capture sharpen radius from raw sensor data"));
 
   g->cs_thrs = dt_bauhaus_slider_from_params(self, "cs_thrs");
   gtk_widget_set_tooltip_text(g->cs_thrs, _("restrict capture sharpening to areas with high local contrast,\n"
                                             "increase to exclude flat areas in very dark or noisy images,\n"
-                                            "decrease for well exposed and low noise images.\n\n"
-                                            "Note: a threshold set to zero will be reset to defaults the next run. use for presets"));
+                                            "decrease for well exposed and low noise images"));
   dt_bauhaus_widget_set_quad(g->cs_thrs, self, dtgtk_cairo_paint_showmask, TRUE, _cs_thrs_callback, _("visualize sharpened areas"));
 
   g->cs_boost = dt_bauhaus_slider_from_params(self, "cs_boost");
