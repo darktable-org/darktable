@@ -1199,8 +1199,14 @@ static void _update_preset(dt_iop_module_t *self, int mode)
 
   if(is_current_reference && is_new_mode_manual)
   {
-    // set iff color calibration active in adaptation mode
-    p->late_correction = (chr->adaptation != NULL);
+    // snapshot is NEEDED: dt_dev_reset_chroma() may NULL chr->adaptation from
+    // the pipe worker thread; modules are only freed on this (GTK) thread,
+    // so dereference is safe if not NULL
+    const dt_iop_module_t *const cat = chr->adaptation;
+    // set if and only if color calibration is registered as CAT handler and enabled
+    // (whether it is in adaptation mode is not testable here: channelmixerrgb's
+    // params are private)
+    p->late_correction = (cat != NULL) && cat->enabled;
   }
 
   p->preset = mode;
@@ -1581,6 +1587,8 @@ void reload_defaults(dt_iop_module_t *self)
 
   if(!dt_is_scene_referred())
   {
+    // can't use dev->chroma.adaptation: this runs before history replay, and
+    // it is never set without a GUI
     another_cat_defined =
       dt_history_check_module_exists(self->dev->image_storage.id,
                                      "channelmixerrgb", TRUE);
