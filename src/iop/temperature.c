@@ -555,9 +555,9 @@ static inline void _publish_chroma(dt_dev_pixelpipe_iop_t *piece)
     piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
     piece->pipe->dsc.processed_maximum[k] =
       d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
-    chr->wb_coeffs[k] = d->coeffs[k];
+    chr->wb.coeffs[k] = d->coeffs[k];
   }
-  chr->late_correction = d->late_correction;
+  chr->wb.late_correction = d->late_correction;
 }
 
 void process(dt_iop_module_t *self,
@@ -732,7 +732,7 @@ void commit_params(dt_iop_module_t *self,
   if(self->hide_enable_button)
   {
     for_four_channels(k)
-      chr->wb_coeffs[k] = 1.0f;
+      chr->wb.coeffs[k] = 1.0f;
     // keep the module handle available for GUI reports (see below)
     chr->temperature = self;
     return;
@@ -741,7 +741,7 @@ void commit_params(dt_iop_module_t *self,
   for_four_channels(k)
   {
     d->coeffs[k] = tcoeffs[k];
-    chr->wb_coeffs[k] = piece->enabled ? d->coeffs[k] : 1.0f;
+    chr->wb.coeffs[k] = piece->enabled ? d->coeffs[k] : 1.0f;
   }
 
   // 4Bayer images not implemented in OpenCL yet
@@ -759,7 +759,7 @@ void commit_params(dt_iop_module_t *self,
   // balanced. Do not ask colorin (or any other consumer) to "finish" a
   // correction that never started, otherwise disabling WB would still pull the
   // image to D65 via D65coeffs/1.0.
-  chr->late_correction = piece->enabled ? effective_late_correction : FALSE;
+  chr->wb.late_correction = piece->enabled ? effective_late_correction : FALSE;
 
   /* Always publish the module handle for GUI reports, regardless of the
      enabled state. The enabled state is tracked separately via
@@ -987,9 +987,9 @@ static void _color_rgb_sliders(dt_iop_module_t *self)
     //real (ish)
     //we consider daylight wb to be "reference white"
     const double white[3] = {
-      1.0 / chr->D65coeffs[0],
-      1.0 / chr->D65coeffs[1],
-      1.0 / chr->D65coeffs[2],
+      1.0 / chr->wb.D65coeffs[0],
+      1.0 / chr->wb.D65coeffs[1],
+      1.0 / chr->wb.D65coeffs[2],
     };
 
     const float rchanmul = dt_bauhaus_slider_get(g->scale_r);
@@ -1002,8 +1002,8 @@ static void _color_rgb_sliders(dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop
       (g->scale_r, 0.0, white[0]*0.0, white[1]*gchanmul, white[2]*bchanmul);
     dt_bauhaus_slider_set_stop
-      (g->scale_r, chr->D65coeffs[0]/rchanmulmax,
-       white[0]*chr->D65coeffs[0], white[1]*gchanmul, white[2]*bchanmul);
+      (g->scale_r, chr->wb.D65coeffs[0]/rchanmulmax,
+       white[0]*chr->wb.D65coeffs[0], white[1]*gchanmul, white[2]*bchanmul);
     dt_bauhaus_slider_set_stop
       (g->scale_r, 1.0, white[0]*1.0,
        white[1]*(gchanmul/gchanmulmax), white[2]*(bchanmul/bchanmulmax));
@@ -1011,8 +1011,8 @@ static void _color_rgb_sliders(dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop
       (g->scale_g, 0.0, white[0]*rchanmul, white[1]*0.0, white[2]*bchanmul);
     dt_bauhaus_slider_set_stop
-      (g->scale_g, chr->D65coeffs[1]/bchanmulmax,
-       white[0]*rchanmul, white[1]*chr->D65coeffs[1], white[2]*bchanmul);
+      (g->scale_g, chr->wb.D65coeffs[1]/bchanmulmax,
+       white[0]*rchanmul, white[1]*chr->wb.D65coeffs[1], white[2]*bchanmul);
     dt_bauhaus_slider_set_stop
       (g->scale_g, 1.0, white[0]*(rchanmul/rchanmulmax),
        white[1]*1.0, white[2]*(bchanmul/bchanmulmax));
@@ -1020,8 +1020,8 @@ static void _color_rgb_sliders(dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop
       (g->scale_b, 0.0, white[0]*rchanmul, white[1]*gchanmul, white[2]*0.0);
     dt_bauhaus_slider_set_stop
-      (g->scale_b, chr->D65coeffs[2]/bchanmulmax,
-       white[0]*rchanmul, white[1]*gchanmul, white[2]*chr->D65coeffs[2]);
+      (g->scale_b, chr->wb.D65coeffs[2]/bchanmulmax,
+       white[0]*rchanmul, white[1]*gchanmul, white[2]*chr->wb.D65coeffs[2]);
     dt_bauhaus_slider_set_stop
       (g->scale_b, 1.0, white[0]*(rchanmul/rchanmulmax),
        white[1]*(gchanmul/gchanmulmax), white[2]*1.0);
@@ -1057,9 +1057,9 @@ static void _color_temptint_sliders(dt_iop_module_t *self)
   const dt_dev_chroma_t *chr = &self->dev->chroma;
   //we consider daylight wb to be "reference white"
   const double dayligh_white[3] = {
-    1.0 / chr->D65coeffs[0],
-    1.0 / chr->D65coeffs[1],
-    1.0 / chr->D65coeffs[2],
+    1.0 / chr->wb.D65coeffs[0],
+    1.0 / chr->wb.D65coeffs[1],
+    1.0 / chr->wb.D65coeffs[2],
   };
 
   double cur_coeffs[4] = {0.0};
@@ -1206,12 +1206,12 @@ static void _update_preset(dt_iop_module_t *self, int mode)
 
   if(mode == DT_IOP_TEMP_D65)
   {
-    chr->late_correction = FALSE;
+    chr->wb.late_correction = FALSE;
   }
   else
   {
     // For non-D65 modes, use the parameter
-    chr->late_correction = p->late_correction;
+    chr->wb.late_correction = p->late_correction;
   }
 
   if(g && g->check_late_correction)
@@ -1268,7 +1268,7 @@ void gui_update(dt_iop_module_t *self)
   }
 
   // is this a "D65 white balance"?
-  else if(dt_dev_equal_chroma((float *)p, chr->D65coeffs))
+  else if(dt_dev_equal_chroma((float *)p, chr->wb.D65coeffs))
   {
     dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65);
     p->preset = DT_IOP_TEMP_D65;
@@ -1417,7 +1417,7 @@ void gui_update(dt_iop_module_t *self)
     "used preset", NULL, self, DT_DEVICE_NONE, NULL, NULL,
     "preset='%s': D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f",
     _preset_to_str(p->preset),
-    chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2], chr->as_shot[0], chr->as_shot[1], chr->as_shot[2]);
+    chr->wb.D65coeffs[0], chr->wb.D65coeffs[1], chr->wb.D65coeffs[2], chr->as_shot[0], chr->as_shot[1], chr->as_shot[2]);
 
   dt_gui_update_collapsible_section(&g->cs);
 
@@ -1636,7 +1636,7 @@ void reload_defaults(dt_iop_module_t *self)
   for_four_channels(k)
   {
     chr->as_shot[k] = as_shot[k];
-    chr->D65coeffs[k] = daylights[k];
+    chr->wb.D65coeffs[k] = daylights[k];
   }
 
   dt_print(DT_DEBUG_PARAMS,
@@ -1824,7 +1824,7 @@ static void _btn_toggled(GtkGestureSingle *gesture,
     "toggled preset", NULL, self, DT_DEVICE_NONE, NULL, NULL,
     "preset='%s': D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f",
     _preset_to_str(preset),
-    chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2], chr->as_shot[0], chr->as_shot[1], chr->as_shot[2]);
+    chr->wb.D65coeffs[0], chr->wb.D65coeffs[1], chr->wb.D65coeffs[2], chr->as_shot[0], chr->as_shot[1], chr->as_shot[2]);
 }
 
 static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
@@ -1869,7 +1869,7 @@ static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
       _temp_params_from_array(p, g->mod_coeff);
       break;
     case DT_IOP_TEMP_D65: // camera reference d65
-      _temp_params_from_array(p, chr->D65coeffs);
+      _temp_params_from_array(p, chr->wb.D65coeffs);
       break;
     default: // camera WB presets
     {

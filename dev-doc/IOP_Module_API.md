@@ -513,7 +513,7 @@ Widgets created with the `_from_params` helpers take their default value (the on
 
 Some modules use `reload_defaults()` to write shared state, such as `dev->chroma`, that other modules depend on. This happens whether or not the module is enabled or has a history entry.
 
-Example: `temperature.c` always computes the camera's as-shot white balance coefficients and its D65 reference coefficients, and writes them into `dev->chroma.as_shot[]` and `dev->chroma.D65coeffs[]`. `channelmixerrgb.c` reads `D65coeffs` in its own `reload_defaults()`, `commit_params()` and `process()` for chromatic adaptation. White balance allows only one instance, which is always present when defaults are loaded, so its `reload_defaults()` runs on every image load. Color calibration therefore has this reference even when the white balance module is disabled or absent from the history.
+Example: `temperature.c` always computes the camera's as-shot white balance coefficients and its D65 reference coefficients, and writes them into `dev->chroma.as_shot[]` and `dev->chroma.wb.D65coeffs[]`. `channelmixerrgb.c` reads `D65coeffs` in its own `reload_defaults()`, `commit_params()` and `process()` for chromatic adaptation. White balance allows only one instance, which is always present when defaults are loaded, so its `reload_defaults()` runs on every image load. Color calibration therefore has this reference even when the white balance module is disabled or absent from the history.
 
 For the complete producer/consumer map, the reverse-order default-loading reasoning, and which `dev->chroma` fields each module actually reads, see [iop/wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md).
 
