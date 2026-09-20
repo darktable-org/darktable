@@ -1685,7 +1685,7 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
     else if(last_wp != writeprotect)
     {
       last_wp = writeprotect;
-      submenu = g_menu_new();
+      submenu = mainmenu = g_menu_new();
       g_menu_append_section(menu, NULL, G_MENU_MODEL(submenu));
 
       *prev_split[0] = '\0'; // make first level mismatch so we start over
