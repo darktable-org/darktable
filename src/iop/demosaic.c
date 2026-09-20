@@ -47,7 +47,7 @@
 #include <string.h>
 #include <time.h>
 
-DT_MODULE_INTROSPECTION(6, dt_iop_demosaic_params_t)
+DT_MODULE_INTROSPECTION(7, dt_iop_demosaic_params_t)
 
 #define DT_DEMOSAIC_XTRANS 1024 // masks for non-Bayer demosaic ops
 #define DT_DEMOSAIC_DUAL 2048   // masks for dual demosaicing methods
@@ -167,6 +167,8 @@ typedef struct dt_iop_demosaic_params_t
   int cs_iter;                                  // $MIN: 1 $MAX: 25 $DEFAULT: 8 $DESCRIPTION: "iterations"
   float cs_center;                              // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "sharp center"
   gboolean cs_enabled;                          // $DEFAULT: FALSE $DESCRIPTION: "capture sharpen"
+  float moire_thrs;                             // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "moire threshold"
+  float moire_mix;                              // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "moire mix"
 } dt_iop_demosaic_params_t;
 
 typedef struct dt_iop_demosaic_gui_data_t
@@ -351,6 +353,24 @@ int legacy_params(dt_iop_module_t *self,
                   int32_t *new_params_size,
                   int *new_version)
 {
+  typedef struct dt_iop_demosaic_params_v7_t
+  {
+    dt_iop_demosaic_greeneq_t green_eq;
+    float median_thrs;
+    dt_iop_demosaic_smooth_t color_smoothing;
+    dt_iop_demosaic_method_t demosaicing_method;
+    dt_iop_demosaic_lmmse_t lmmse_refine;
+    float dual_thrs;
+    float cs_radius;
+    float cs_thrs;
+    float cs_boost;
+    int cs_iter;
+    float cs_center;
+    gboolean cs_enabled;
+    float moire_thrs;
+    float moire_mix;
+  } dt_iop_demosaic_params_v7_t;
+
   typedef struct dt_iop_demosaic_params_v6_t
   {
     dt_iop_demosaic_greeneq_t green_eq;
@@ -466,6 +486,21 @@ int legacy_params(dt_iop_module_t *self,
     *new_params = n;
     *new_params_size = sizeof(dt_iop_demosaic_params_v6_t);
     *new_version = 6;
+   return 0;
+  }
+
+  if(old_version == 6)
+  {
+    const dt_iop_demosaic_params_v6_t *o = (dt_iop_demosaic_params_v6_t *)old_params;
+    dt_iop_demosaic_params_v7_t *n = malloc(sizeof(dt_iop_demosaic_params_v7_t));
+    memcpy(n, o, sizeof *o);
+
+    n->moire_thrs = 0.0f;
+    n->moire_mix = 0.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_demosaic_params_v7_t);
+    *new_version = 7;
    return 0;
   }
 
