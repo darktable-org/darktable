@@ -67,6 +67,16 @@ design document.
   beyond the words and the body, most likely the distortion state: a model
   exact to 1e-15 within one file is 60% wrong on a sibling frame of the
   same body with identical radii. Identify that variable first.
+- **Session 24 identified it: the 0x0119 distortion state.** Neutralising
+  distortion collapses the per-word derivative vectors across six files to
+  a standard deviation of 3.4e-18, so with distortion out of the way the
+  map is a single function. The right representation is the pre-distortion
+  frame, `eps = R(r_out)/G(r_out) - 1` at `r_raw = r_out * G(r_out)`, which
+  recovers a payload-invariant CA polynomial to 1e-16. This also means
+  session 5 fitted the shipped tables against the wrong target: Adobe's
+  D_R and D_B with distortion enabled are the distortion-conditioned
+  composition, not the CA. A decoder can now be specified; deriving the
+  map with distortion neutralised is the remaining work.
 - **Structural findings.** 0x011b is a 64-byte payload of 32 signed
   int16 LE. Four checksums at word positions `[0, 1, 30, 31]` verify
   with Rigo 2011's `(73*csum + byte) mod 0xFFEF`. On/off flag at
@@ -4738,6 +4748,90 @@ of the *measurement* while the frame mismatch was in the *model*.
 `/tmp/probe23b_*.py`; staging under `/c/temp/tca/probe23/` and
 `/c/temp/tca/probe23b/`, left in place so individual mutants can be
 inspected without re-running. No darktable source changes.
+
+### The conditioning variable is the distortion state (session 24)
+
+Session 23 left the decode blocked on a variable nobody had named: a
+nine-probe linear model exact to 1e-15 within one file was 60.6% wrong on
+a sibling frame of the same body with identical zone radii. It is the
+0x0119 distortion state, and the evidence is about as clean as this
+investigation has produced. Scripts `session24_{t1,t1_analyze,t2t3,
+t2t3_analyze,t4,t4b}.py`, report `session24_report.txt`, 423 staged
+mutants under `/c/temp/tca/probe24/`.
+
+**T1, cross-distortion transplant, which settles where the conditioning
+lives.** Transplanting the whole 64-byte payload between P1366481 (G
+identity) and P1366477 (G_rms 0.124), in both directions, keeps every
+checksum self-consistent, so the only question is whose output the
+recipient produces. The recipient's own G plane survives exactly, to
+0.000e+00, and D_R misses the donor by 5.15e-4 against a donor |D_R| of
+about 6e-4, which is roughly 60% of the signal. **The conditioning is
+external to the payload**, so the map is not globally non-linear in the
+words; something else in the file is involved. Session 22's transplants
+had not discriminated because the files in them shared a distortion state.
+
+**T2, the variation tracks distortion strength.** Eight coefficient-word
+derivatives measured on six G9 files spanning G_rms of 0.000, 0.000,
+0.010, 0.015, 0.063 and 0.124. With distortion enabled the derivatives
+scatter with a coefficient of variation of 0.181 median and 1.348 maximum
+across files, and Pearson correlation against G_rms exceeds 0.93 for all
+32 signal components.
+
+**T3, and this is the decisive number.** Clearing the 0x0119 enable
+nibble, so Adobe drops distortion and emits an identity G plane, collapses
+that scatter to a coefficient of variation of 0.000 median with standard
+deviation at most 3.4e-18. The eight per-word slope vectors become
+identical across all six files at machine precision. Same statistic before
+and after, so there is nothing to interpret: **with distortion out of the
+way, the word-to-coefficient map is one function.**
+
+**T4, the representation a decoder must use.** Since the conditioning is
+distortion, D_R = R - G was the wrong quantity all along: subtraction
+removes a *composed* distortion only to first order. The representation
+that works is the pre-distortion frame, `eps_R = R(r_out)/G(r_out) - 1`
+evaluated at `r_raw = r_out * G(r_out)`. It recovers the payload-invariant
+CA polynomial to 1e-16 on identity-G files, and degrades gracefully as
+distortion grows: 3e-6 at G_rms 0.010, 3e-4 at 0.124. That residual is
+Adobe's own, because its degree-6 WarpRectilinear polynomial is a
+truncated fit to a higher-degree composition. For comparison, R - G, the
+ratio taken in the output frame, and the log difference all fail to
+collapse; the output-frame ratio merely halves R - G's scatter.
+
+**What this means for darktable, and it is good news.** The pure CA
+correction is a per-channel radial rescale in the raw frame, applied
+*before* distortion. darktable already has the 0x0119 distortion path from
+`47c223703e`, so it does not need the composed form that Adobe emits: pure
+CA plus the existing distortion, in that order, reproduces the composition
+by construction. It may even be more faithful to the camera than Adobe is,
+since darktable would not be forced to squeeze the composition through a
+degree-6 polynomial, though that is a conjecture about Panasonic's own
+algorithm, which remains unknown.
+
+**It also adds a fifth error to session 23's list.** The shipped
+`_pana_C_R` and `_pana_C_B_lo` were fitted in session 5 against Adobe's
+D_R and D_B with distortion enabled, which is the distortion-conditioned
+composition rather than the CA. That is a wrong target, not merely a
+mis-parameterised fit, and it is a better explanation of the k0
+discrepancies of 2.107 and 4.012 than anything proposed so far. Any
+re-derivation must fix distortion to identity in the probe corpus.
+
+**The decoder can now be specified**, for the first time in this
+investigation:
+
+1. parse the twelve active words of 0x011b;
+2. map those words to `eps_R` k0..k3 and `eps_B` k0..k3, using session
+   23's form, linear in the coefficient words with a radius-parameterised
+   basis, derived from a corpus in which distortion is neutralised;
+3. apply `eps_c` as a per-channel radial rescale in the raw frame, ahead
+   of the distortion correction.
+
+Step 2 is the remaining derivation work. Step 3 needs a check of where
+darktable's Panasonic branch currently applies `cor_rgb` relative to the
+distortion multiplier, since the order is now load-bearing.
+
+**Files this session**: `/tmp/rw2_tca/session24_*.py`,
+`session24_report.txt`, staging `/c/temp/tca/probe24/`. No darktable
+source changes.
 
 ## Scope and goal
 
