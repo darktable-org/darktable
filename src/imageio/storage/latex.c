@@ -266,6 +266,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     d->vp->jobcode = "export";
     d->vp->imgid = imgid;
     d->vp->sequence = num;
+    d->vp->export_extension = format->extension(fdata);
 
     gchar *result_filename = dt_variables_expand_path(d->vp, d->filename, TRUE);
     g_strlcpy(filename, result_filename, sizeof(filename));
@@ -273,7 +274,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
     g_strlcpy(dirname, filename, sizeof(dirname));
 
-    const char *ext = format->extension(fdata);
+    const char *ext = d->vp->export_extension;
     char *c = dirname + strlen(dirname);
     for(; c > dirname && *c != '/'; c--)
       ;
@@ -289,11 +290,14 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     // store away dir.
     g_strlcpy(d->cached_dirname, dirname, sizeof(d->cached_dirname));
 
-    c = filename + strlen(filename);
-    //     for(; c>filename && *c != '.' && *c != '/' ; c--);
-    //     if(c <= filename || *c=='/') c = filename + strlen(filename);
+    if(!dt_util_str_ends_with_extension(filename, ext))
+    {
+      c = filename + strlen(filename);
+      //     for(; c>filename && *c != '.' && *c != '/' ; c--);
+      //     if(c <= filename || *c=='/') c = filename + strlen(filename);
 
-    sprintf(c, ".%s", ext);
+      sprintf(c, ".%s", ext);
+    }
 
     // save image to list, in order:
     pair_t *pair = malloc(sizeof(pair_t));
