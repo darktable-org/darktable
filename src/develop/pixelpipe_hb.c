@@ -325,6 +325,7 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   memset(pipe->mask_distort_buf, 0, sizeof(pipe->mask_distort_buf));
   memset(pipe->mask_distort_buf_size, 0, sizeof(pipe->mask_distort_buf_size));
   pipe->mask_cache_size = 0;
+  dt_dev_wb_set_neutral(&pipe->wb);
   return dt_dev_pixelpipe_cache_init(pipe, entries, size, fraction);
 }
 
