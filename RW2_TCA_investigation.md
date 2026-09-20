@@ -4833,6 +4833,102 @@ distortion multiplier, since the order is now load-bearing.
 `session24_report.txt`, staging `/c/temp/tca/probe24/`. No darktable
 source changes.
 
+### The map, recovered exactly (session 25)
+
+With distortion neutralised the map is recoverable by construction rather
+than by fitting: set a channel's four coefficient words to zero to get the
+intercept, then set each alone to get its column. Nine conversions per
+context. An independent audit re-ran the whole thing with 45 fresh
+conversions plus 247 further probe files and reproduced the matrices with
+`fresh_vs_npz_max_abs = 0`.
+
+**The form.** `eps_R = M_R . [w8, w12, w23, w26]` and
+`eps_B = M_B . [w10, w20, w27, w29]`, one 4x4 matrix per channel per
+context, intercepts at most 5.3e-15, opposite-channel columns exactly
+zero. Deliverables in `/tmp/rw2_tca/session25_map.npz`, a readable dump in
+`session25_map.txt`, and a reference implementation
+`session25_decode.py` which the audit confirmed returns exactly the npz
+values and lands within 2.0e-15 to 1.1e-14 of fresh Adobe output on the
+models it was probed against.
+
+**Accuracy within a context**, all from the audit's own conversions:
+
+    held-out edit, all eight words at once   R 2.2e-15 .. 4.3e-15
+                                             B 4.1e-15 .. 8.3e-15
+    real untouched payloads, probed model    1.9e-15 .. 1.1e-14
+
+**End to end on real untouched files with distortion enabled**, predicting
+Adobe's actual R and B planes from the payload alone by composing the
+recovered eps with the file's own G polynomial:
+
+    identity G                7.8e-16 .. 1.1e-14
+    G_rms 0.0043              1.1e-7  .. 1.7e-7
+    G_rms 0.023               1.6e-7  .. 4.5e-7
+    G_rms 0.05                6.5e-6  .. 1.7e-5
+
+Error correlates with distortion strength at 0.894 for R and 0.913 for B,
+as the truncation explanation predicts, and the floor is about 1.7e-5,
+an order of magnitude better than session 24 expected. **The payload plus
+this map reproduces Adobe to within a rounding error of its own
+polynomial fit.**
+
+**Generalisation fails, so a decoder needs tables.** The corpus holds five
+distinct radius tuples across 14 distinct camera model strings, not 13;
+DC-S1M2 and DC-S1M2ES are separate strings. No tested radius-parameterised
+form fits across contexts: scaling by 1/N1 leaves 0.963 max and 0.170
+median residual, 1/N1^2 leaves 0.997 and 0.313, an MFT-only fit 96.5 and
+0.356, a full-frame-only fit 0.527 and 0.286. Those forms are rejected;
+that is not the same as proving no radius formula exists. A decoder must
+carry per-context matrices and needs a stated policy for tuples it has
+never seen.
+
+**Correction to earlier grouping.** The GX8 carries the radius tuple
+2730/3276/2184/1092, the same as the G9, not the GX80 tuple it was
+previously listed under.
+
+**The residual body term, and whose it is.** Two bodies sharing a radius
+tuple do not share a matrix exactly: fresh re-probes give 0.2238% between
+S1II and S5II, 1.1167% between S9 and S5II, and 1.4509% between G80 and
+GX80. The cause is now identified, by intervention rather than inference.
+Changing *only* the TIFF Model string in a staged copy, DC-S5M2 to
+DC-S1M2 and DMC-GX80 to DMC-G80, makes Adobe emit the target model's exact
+ActiveArea and its exact native matrix column, `max abs difference 0`,
+while payload, firmware and sensor tags are untouched. **Adobe's
+camera-model profile is the selector.** The obvious normalisation
+hypothesis is wrong: ActiveArea diagonal ratios do not predict the
+perturbation and mostly make it worse, taking S9 from 1.117% to 1.344% and
+G80 from 1.451% to 1.809%; DefaultScale is 1 1 everywhere; sensor
+dimensions are identical within two of the three pairs; 0x011a is absent
+on the S bodies and identical on the MFT pair.
+
+That matters for scope, not just for accuracy. This term comes out of
+Adobe's per-model data, not out of Panasonic's payload, so reproducing it
+would mean imitating Adobe rather than decoding the camera, which is the
+opposite of what "Scope and goal" asks for. Its size settles the question
+anyway: on real S1II, S9 and G80 files the model term is 0.00021 to
+0.00372 px against full corrections of 0.31 to 2.57 px. **Deliberately not
+reproduced**, and recorded here so nobody mistakes it for an error later.
+
+**The shipped tables, measured against truth one last time.** False
+cross-channel entries reach 3.28e-6 in `_pana_C_R` and 4.47e-7 in
+`_pana_C_B_lo` where the true derivative is zero. Recovered over shipped
+ratios are 2.107 for word 8 k0, 2.489 for word 8 k3, and 4.012 for word 23
+k0. The omitted `_pana_C_B_lo` k2 and k3 entries span 6.25e-7 to 9.58e-6,
+so they are not negligible either.
+
+**What is safe to ship**, in the audit's words as well as mine: the
+predictor sets [8, 12, 23, 26] and [10, 20, 27, 29], the zero intercepts,
+the zero opposite-channel columns, and the five measured matrices tied to
+the contexts they were measured in. What is not yet decided is the fallback
+for an unknown radius tuple, since the rejected scalings would leave a
+median error of 17% of the correction, which at 2.5 px of correction is
+not a rounding error.
+
+**Files this session**: `/tmp/rw2_tca/session25_*.py`, `session25_map.npz`,
+`session25_map.txt`, `session25_decode.py`; staging
+`/c/temp/tca/probe25/` and the audit's `/c/temp/tca/probe25b/`. No
+darktable source changes.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
