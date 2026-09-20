@@ -594,7 +594,7 @@ void init_presets(dt_iop_module_so_t *self)
 static gboolean _dev_is_D65_chroma(const dt_develop_t *dev)
 {
   const dt_dev_chroma_t *chr = &dev->chroma;
-  return chr->late_correction || dt_dev_equal_chroma(chr->wb_coeffs, chr->D65coeffs);
+  return chr->wb.late_correction || dt_dev_equal_chroma(chr->wb.coeffs, chr->wb.D65coeffs);
 }
 
 static gboolean _area_mapping_active(const dt_iop_channelmixer_rgb_gui_data_t *g)
@@ -627,10 +627,10 @@ static gboolean _get_d65_correction_ratios(const dt_iop_module_t *self,
     return FALSE;
 
   const gboolean valid_chroma =
-    chr->D65coeffs[0] > 0.0 && chr->D65coeffs[1] > 0.0 && chr->D65coeffs[2] > 0.0;
+    chr->wb.D65coeffs[0] > 0.0 && chr->wb.D65coeffs[1] > 0.0 && chr->wb.D65coeffs[2] > 0.0;
 
   const gboolean changed_chroma =
-    chr->wb_coeffs[0] > 1.0f || chr->wb_coeffs[1] > 1.0f || chr->wb_coeffs[2] > 1.0f;
+    chr->wb.coeffs[0] > 1.0f || chr->wb.coeffs[1] > 1.0f || chr->wb.coeffs[2] > 1.0f;
 
   // Otherwise - for example because the user made a correct preset, find the
   // WB adaptation ratio
@@ -638,8 +638,8 @@ static gboolean _get_d65_correction_ratios(const dt_iop_module_t *self,
   {
     for_four_channels(k)
     {
-      if(chr->wb_coeffs[k] > 1e-6f)
-        out_correction_ratios[k] = chr->D65coeffs[k] / chr->wb_coeffs[k];
+      if(chr->wb.coeffs[k] > 1e-6f)
+        out_correction_ratios[k] = chr->wb.D65coeffs[k] / chr->wb.coeffs[k];
       else
         out_correction_ratios[k] = 1.0f;
     }
@@ -657,7 +657,7 @@ static void _get_corrected_illuminant_xy(const dt_iop_module_t *self,
   if(p->illuminant == DT_ILLUMINANT_FROM_WB)
   {
     for(int k = 0; k < 4; k++)
-      wb_coeffs[k] = self->dev->chroma.wb_coeffs[k];
+      wb_coeffs[k] = self->dev->chroma.wb.coeffs[k];
   }
   illuminant_to_xy(p->illuminant, &(self->dev->image_storage), correction_ratios,
                    wb_coeffs, x, y, p->temperature, p->illum_fluo,
@@ -2248,7 +2248,7 @@ void process(dt_iop_module_t *self,
     // which don't come from the EXIF this time).
     float x, y;
 
-    if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), self->dev->chroma.wb_coeffs, &x, &y))
+    if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), self->dev->chroma.wb.coeffs, &x, &y))
     {
       // Convert illuminant from xyY to XYZ
       dt_aligned_pixel_t XYZ;
@@ -2376,7 +2376,7 @@ int process_cl(dt_iop_module_t *self,
     // which don't come from the EXIF this time).
     float x, y;
 
-    if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), self->dev->chroma.wb_coeffs, &x, &y))
+    if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), self->dev->chroma.wb.coeffs, &x, &y))
     {
       // Convert illuminant from xyY to XYZ
       dt_aligned_pixel_t XYZ;
@@ -3097,7 +3097,7 @@ static void _preview_pipe_finished_callback(gpointer instance, dt_iop_module_t *
     // WB coefficients might have changed temperature.c; recalculate xy and update the GUI
     float x, y;
 
-    if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), self->dev->chroma.wb_coeffs, &x, &y))
+    if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), self->dev->chroma.wb.coeffs, &x, &y))
     {
       DT_ENTER_GUI_UPDATE();
       _update_approx_cct(self);
@@ -4087,7 +4087,7 @@ void gui_changed(dt_iop_module_t *self,
         // (x, y) were computed at runtime from the WB module's coefficients
         // and p->x, p->y may hold stale values. Recompute them now so
         // the new illuminant mode starts from the correct chromaticity.
-        find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), self->dev->chroma.wb_coeffs,
+        find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), self->dev->chroma.wb.coeffs,
                                          &(p->x), &(p->y));
         _check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
       }
@@ -4114,7 +4114,7 @@ void gui_changed(dt_iop_module_t *self,
     else if(p->illuminant == DT_ILLUMINANT_FROM_WB)
     {
       const gboolean found = find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage),
-                                                         self->dev->chroma.wb_coeffs, &(p->x), &(p->y));
+                                                         self->dev->chroma.wb.coeffs, &(p->x), &(p->y));
       _check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
 
       if(found)

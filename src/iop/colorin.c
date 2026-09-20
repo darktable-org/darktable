@@ -661,12 +661,12 @@ int process_cl(dt_iop_module_t *self,
   }
 
   const dt_dev_chroma_t *chr = &self->dev->chroma;
-  const gboolean corrected = chr->late_correction;
+  const gboolean corrected = chr->wb.late_correction;
   dt_aligned_pixel_t coeffs;
   for_four_channels(k)
   {
-    if(corrected && chr->wb_coeffs[k] > 1e-6f)
-      coeffs[k] = chr->D65coeffs[k] / chr->wb_coeffs[k];
+    if(corrected && chr->wb.coeffs[k] > 1e-6f)
+      coeffs[k] = chr->wb.D65coeffs[k] / chr->wb.coeffs[k];
     else
       coeffs[k] = 1.0f;
   }
@@ -675,7 +675,7 @@ int process_cl(dt_iop_module_t *self,
   {
     for_four_channels(k)
     {
-      pipe->dsc.temperature.coeffs[k] = chr->D65coeffs[k];
+      pipe->dsc.temperature.coeffs[k] = chr->wb.D65coeffs[k];
       // note: tiling takes care about processed_maximum
       pipe->dsc.processed_maximum[k] *= coeffs[k];
     }
@@ -1212,12 +1212,12 @@ void process(dt_iop_module_t *self,
 
   const dt_dev_chroma_t *chr = &self->dev->chroma;
   const dt_iop_colorin_data_t *const d = piece->data;
-  const gboolean corrected = chr->late_correction && d->type != DT_COLORSPACE_LAB;
+  const gboolean corrected = chr->wb.late_correction && d->type != DT_COLORSPACE_LAB;
   dt_aligned_pixel_t coeffs;
   for_four_channels(k)
   {
-    if(corrected && chr->wb_coeffs[k] > 1e-6f)
-      coeffs[k] = chr->D65coeffs[k] / chr->wb_coeffs[k];
+    if(corrected && chr->wb.coeffs[k] > 1e-6f)
+      coeffs[k] = chr->wb.D65coeffs[k] / chr->wb.coeffs[k];
     else
       coeffs[k] = 1.0f;
   }
@@ -1227,7 +1227,7 @@ void process(dt_iop_module_t *self,
   {
     for_four_channels(k)
     {
-      pipe->dsc.temperature.coeffs[k] = chr->D65coeffs[k];
+      pipe->dsc.temperature.coeffs[k] = chr->wb.D65coeffs[k];
       // note: tiling takes care about processed_maximum
       pipe->dsc.processed_maximum[k] *= coeffs[k];
     }

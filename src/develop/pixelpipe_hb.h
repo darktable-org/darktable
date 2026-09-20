@@ -198,6 +198,11 @@ typedef struct dt_dev_pixelpipe_t
   // and should be modified by process*(), if necessary.
   dt_iop_buffer_dsc_t dsc;
 
+  // white balance of the generation this pipe is rendering, written by
+  // temperature's commit_params. dev->chroma is shared by all pipes and can
+  // change while this one runs, so modules must read it from here, not from dev
+  dt_dev_wb_t wb;
+
   /** work profile info of the image */
   struct dt_iop_order_iccprofile_info_t *work_profile_info;
   /** input profile info **/

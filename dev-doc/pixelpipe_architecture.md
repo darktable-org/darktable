@@ -136,9 +136,9 @@ Two key pipeline operations iterate modules in **different** orders:
 - **`commit_params()`** runs in **forward** pipe order (e.g., temperature before channelmixerrgb). This is the normal processing direction.
 - **`_dt_dev_load_pipeline_defaults()`** runs in **reverse** pipe order (e.g., channelmixerrgb before temperature). This happens during history reset and default loading.
 
-This asymmetry matters for modules that communicate via shared state. For example, `temperature.c` writes white balance coefficients into `dev->chroma.wb_coeffs`, and `channelmixerrgb.c` reads them during `commit_params()`. During forward processing, temperature commits first and the data is available. During reverse-order default loading, channelmixerrgb runs first — before temperature has refreshed its values — so any shared state a `reload_defaults()` depends on must be reset to a neutral value beforehand.
+This asymmetry matters for modules that communicate via shared state. For example, `temperature.c` writes white balance coefficients into `dev->chroma.wb.coeffs`, and `channelmixerrgb.c` reads them during `commit_params()`. During forward processing, temperature commits first and the data is available. During reverse-order default loading, channelmixerrgb runs first — before temperature has refreshed its values — so any shared state a `reload_defaults()` depends on must be reset to a neutral value beforehand.
 
-**Consequence:** Shared state (like `dev->chroma`) must be reset before reverse-order iteration. The framework does this via `dt_dev_reset_chroma()` immediately before `_dt_dev_load_pipeline_defaults()`; the neutral `wb_coeffs` it writes is what keeps the dependent defaults image-local. For the full white-balance ↔ color-calibration interaction, see [iop/wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md).
+**Consequence:** Shared state (like `dev->chroma`) must be reset before reverse-order iteration. The framework does this via `dt_dev_reset_chroma()` immediately before `_dt_dev_load_pipeline_defaults()`; the neutral `wb.coeffs` it writes is what keeps the dependent defaults image-local. For the full white-balance ↔ color-calibration interaction, see [iop/wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md).
 
 ## Introspection Connection
 

@@ -4379,19 +4379,26 @@ void dt_dev_reset_chroma(dt_develop_t *dev)
   chr->adaptation = NULL;
   chr->temperature = NULL;
   for_four_channels(c)
-    chr->wb_coeffs[c] = 1.0f;
+    chr->wb.coeffs[c] = 1.0f;
+}
+
+void dt_dev_wb_set_neutral(dt_dev_wb_t *wb)
+{
+  wb->late_correction = FALSE;
+  for_four_channels(c)
+  {
+    wb->coeffs[c] = 1.0f;
+    wb->D65coeffs[c] = 1.0;
+  }
 }
 
 void dt_dev_init_chroma(dt_develop_t *dev)
 {
   dt_dev_reset_chroma(dev);
   dt_dev_chroma_t *chr = &dev->chroma;
-  chr->late_correction = FALSE;
+  dt_dev_wb_set_neutral(&chr->wb);
   for_four_channels(c)
-  {
-    chr->D65coeffs[c] = 1.0;
     chr->as_shot[c] = 1.0;
-  }
 }
 
 // clang-format off

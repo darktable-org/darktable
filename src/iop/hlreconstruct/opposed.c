@@ -239,12 +239,12 @@ static float *_process_opposed(dt_iop_module_t *self,
   const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]};
 
   const dt_dev_chroma_t *chr = &self->dev->chroma;
-  const gboolean late = chr->late_correction;
+  const gboolean late = chr->wb.late_correction;
   dt_aligned_pixel_t correction;
   for_four_channels(k)
   {
-    if(late && chr->wb_coeffs[k] > 1e-6f)
-      correction[k] = chr->D65coeffs[k] / chr->wb_coeffs[k];
+    if(late && chr->wb.coeffs[k] > 1e-6f)
+      correction[k] = chr->wb.D65coeffs[k] / chr->wb.coeffs[k];
     else
       correction[k] = 1.0f;
   }
@@ -453,12 +453,12 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
   dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2], 1.0f};
 
   const dt_dev_chroma_t *chr = &self->dev->chroma;
-  const gboolean late = chr->late_correction;
+  const gboolean late = chr->wb.late_correction;
   dt_aligned_pixel_t correction;
   for_four_channels(k)
   {
-    if(late && chr->wb_coeffs[k] > 1e-6f)
-      correction[k] = chr->D65coeffs[k] / chr->wb_coeffs[k];
+    if(late && chr->wb.coeffs[k] > 1e-6f)
+      correction[k] = chr->wb.D65coeffs[k] / chr->wb.coeffs[k];
     else
       correction[k] = 1.0f;
   }

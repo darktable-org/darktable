@@ -511,7 +511,7 @@ Common checks: `dt_image_is_raw()`, `dt_image_is_hdr()`, `dt_image_is_ldr()`, `d
 
 Some modules use `reload_defaults()` to populate shared state in `dev->chroma` (or similar structures) that other modules depend on. This happens regardless of whether the module is enabled or has a history entry.
 
-Example: `temperature.c` always computes the camera's as-shot WB coefficients and D65 reference coefficients from the image's EXIF data and writes them into `dev->chroma.as_shot[]` and `dev->chroma.D65coeffs[]`. `channelmixerrgb.c` reads these values during its own `commit_params()` to perform chromatic adaptation. If `reload_defaults()` did not run unconditionally, `channelmixerrgb` would have no access to the camera's native WB — even when the white balance module itself is disabled or absent from the history.
+Example: `temperature.c` always computes the camera's as-shot WB coefficients and D65 reference coefficients from the image's EXIF data and writes them into `dev->chroma.wb.as_shot[]` and `dev->chroma.wb.D65coeffs[]`. `channelmixerrgb.c` reads these values during its own `commit_params()` to perform chromatic adaptation. If `reload_defaults()` did not run unconditionally, `channelmixerrgb` would have no access to the camera's native WB — even when the white balance module itself is disabled or absent from the history.
 
 For the complete producer/consumer map, the reverse-order default-loading reasoning, and which `dev->chroma` fields each module actually reads, see [iop/wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md).
 

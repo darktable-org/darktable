@@ -151,13 +151,13 @@ has saved history:
 - Clear the scratch `memory.history` table.
 - **`dt_dev_reset_chroma()`** clears part of the shared WB state
   ([section 5](#5-pipeline-ordering-asymmetry) lists exactly which fields): `temperature` and
-  `adaptation` become `NULL`, and `wb_coeffs[]` is reset to 1.0.
+  `adaptation` become `NULL`, and `wb.coeffs[]` is reset to 1.0.
 - **`_dt_dev_load_pipeline_defaults()`** calls `dt_iop_reload_defaults()` on every module in
   **reverse** pipe order ([section 5](#5-pipeline-ordering-asymmetry) explains the direction).
   This sets each module's image-specific
   `default_params`. Because it goes through the wrapper, it also copies them into `params`
   (via `dt_iop_load_default_params()`). Temperature additionally populates
-  `dev->chroma.as_shot[]` and `D65coeffs[]` as a side effect.
+  `dev->chroma.wb.as_shot[]` and `D65coeffs[]` as a side effect.
 - **`_dev_add_default_modules()`** prepends the workflow-mandated modules into the in-memory
   history.
 - **`_dev_auto_apply_presets()`** applies auto-presets. It is gated on the
@@ -311,7 +311,7 @@ re-commits after the replay.
 
 There is no signal; synchronization is implicit and ordered by iop_order. Because temperature is
 upstream of channelmixerrgb, a full `synch_all` runs `commit_params()` in pipe order:
-`temperature.commit_params()` writes `dev->chroma.wb_coeffs[]` first and
+`temperature.commit_params()` writes `dev->chroma.wb.coeffs[]` first and
 `channelmixerrgb.commit_params()` reads it afterward to build its chromatic-adaptation matrix.
 (`synch_top` re-commits only the topmost history item, so it is not evidence that an upstream
 producer has just run.) The full producer/consumer field map, the once-per-load `reload_defaults`

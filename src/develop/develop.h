@@ -176,10 +176,8 @@ typedef struct dt_dev_chroma_t
   struct dt_iop_module_t *temperature;  // always available for GUI reports
   struct dt_iop_module_t *adaptation;   // set if one module is processing this without blending
 
-  dt_aligned_pixel_t wb_coeffs;         // coeffs actually set by temperature
-  double D65coeffs[4];                  // both read from exif data or "best guess"
   double as_shot[4];
-  gboolean late_correction;
+  dt_dev_wb_t wb;
 } dt_dev_chroma_t;
 
 typedef struct dt_develop_t
@@ -694,6 +692,8 @@ static inline struct dt_iop_module_t *dt_dev_gui_module(void)
 {
   return darktable.develop ? darktable.develop->gui_module : NULL;
 }
+
+void dt_dev_wb_set_neutral(dt_dev_wb_t *wb);
 
 G_END_DECLS
 
