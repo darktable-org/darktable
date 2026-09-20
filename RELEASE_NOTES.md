@@ -246,11 +246,6 @@ changes (where available).
 - Fixed auto-applied denoise presets running a second time on images
   produced by AI raw denoise.
 
-- Fixed highlights modes for 4BAYER (CYGM/RGBE) raws, only clipping
-  mode is available for those.
-
-- Fixed OpenCL input gamma corrected scaling for some devices.
-
 - Fixed paths and nodes occasionally snapping to the top left
   corner during move operations.
 
@@ -300,8 +295,6 @@ changes (where available).
 - Fixed corrupted output or a crash when an AI model returns more data
   than darktable reserved for it, affecting object masks and Lua
   models.
-
-- Fixed highlights laplacian OpenCL code
 
 - Fixed snapshots being applied onto the original image instead of the
   current image.
