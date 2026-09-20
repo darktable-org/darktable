@@ -9,6 +9,10 @@ if(USE_MCP)
   add_subdirectory(mcp)
 endif(USE_MCP)
 
+if(USE_LUA)
+  add_subdirectory(lua)
+endif(USE_LUA)
+
 add_cmocka_test(test_sample
                 SOURCES test_sample.c
                 LINK_LIBRARIES cmocka)

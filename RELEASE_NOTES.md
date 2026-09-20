@@ -349,6 +349,11 @@ changes (where available).
 ### New Features
 
 - Extended dt_lua_snapshot_t and added a function to remove the snapshot.
+- Added per-image storage for Lua scripts. `darktable.metadata.register(script, key)`
+  defines a metadata field named after the script, and `image:get_metadata(script, key)`
+  and `image:set_metadata(script, key, value)` read and write it. Values are kept in the
+  library database, removed together with the image, and left out of exported files
+  unless the script asks otherwise.
 
 ### Bug Fixes
 
