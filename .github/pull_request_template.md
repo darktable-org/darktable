@@ -18,15 +18,11 @@ Fixes and Closes line must be at the very end of the description.
 
 ## Checklist
 
-- [ ] I have read [CONTRIBUTING.md](../CONTRIBUTING.md) and the
-      [coding style](https://github.com/darktable-org/darktable/wiki/Developer's-guide#coding-style).
-- [ ] I don't have merged master into the topic branch.
-- [ ] The pull request is one logical change, and every commit compiles on its
-      own.
-- [ ] I ran the relevant tests: unit tests, `src/tests/integration/` where the
-      pixelpipe is touched, or `darktable-cli` as a headless smoke test.
-- [ ] New user-visible strings use `_()`, new preferences are registered in
-      `data/darktableconfig.xml.in`.
+- [ ] I have read [CONTRIBUTING.md](../CONTRIBUTING.md) and the [coding style](https://github.com/darktable-org/darktable/wiki/Developer's-guide#coding-style).
+- [ ] I have not merged master into the topic branch.
+- [ ] The pull request is one logical change, and every commit compiles on its own.
+- [ ] I ran the relevant tests: unit tests, `src/tests/integration/` where the pixelpipe is touched, or `darktable-cli` as a headless smoke test.
+- [ ] New user-visible strings use `_()`, new preferences are registered in `data/darktableconfig.xml.in`.
 - [ ] A `RELEASE_NOTES.md` entry was added (only needed if fixing an issue in a release). Do not reference GitHub issues.
 
 ## Test instructions

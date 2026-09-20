@@ -33,7 +33,7 @@ When updating from the stable 5.4 series, please bear in mind that your edits wi
 
 You are strongly advised to take a backup first.
 
-#### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
+#### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, _please_ read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the _full_ raw sample set for your camera under CC0 license!
 
 Since darktable 5.6:
 
@@ -87,11 +87,16 @@ changes (where available).
   dialog will open so that the user can confirm settings not exposed
   in the darktable UI.
 
+- New module saturation curve: remaps saturation and brilliance via
+  two independent curves plotted against each pixel's own perceptually
+  normalized saturation (darktable UCS or JzAzBz): a scene-referred
+  alternative to colorzones' chroma-vs-chroma curve, with input
+  normalized to the local gamut boundary.
+
 ## UI/UX Improvements
 
 - The code has received a large set of changes in preparation of the
   Gtk4 migration.
-
   - The code for handling popover menus has been changed.
 
 - Checkboxes are now Bauhaus widgets and are reset to default values
@@ -128,7 +133,8 @@ changes (where available).
   output folder, so the output file name and its suffix can be chosen.
   The extension still comes from the task.
 
-- Some safety checks when switching to the quick access panel were added.
+- Some safety checks when switching to the quick access panel were
+  added.
 
 ## Performance Improvements
 
@@ -139,10 +145,10 @@ changes (where available).
 
 - Don't calculate unused rastermasks while exporting.
 
-- Speed up editing an image that uses a detail mask. Every history change
-  used to discard the cached output of every module from demosaic onwards,
-  so adjusting a mask or toggling the mask overlay recomputed most of the
-  pipeline each time.
+- Speed up editing an image that uses a detail mask. Every history
+  change used to discard the cached output of every module from
+  demosaic onwards, so adjusting a mask or toggling the mask overlay
+  recomputed most of the pipeline each time.
 
 - Separated the demosaicer's crop-and-scale step into a new hidden
   module to improve cache efficiency and UI responsiveness.
@@ -175,7 +181,7 @@ changes (where available).
   the full print pipeline.
 
 - When installing development versions of darktable (snapshots, self
-  compiled etc.)  the Windows installer now allows to setup a custom
+  compiled etc.) the Windows installer now allows to setup a custom
   configuration-directory and custom shortcut-name, useful for
   multiple parallel darktable installations.
 
@@ -199,9 +205,9 @@ changes (where available).
   histogram of the previously viewed image after switching images in the
   darkroom.
 
-- Entering the darkroom no longer expands one instance of a module while
-  a different instance of it holds the focus. The instance that gets the
-  focus is now the one that is expanded.
+- Entering the darkroom no longer expands one instance of a module
+  while a different instance of it holds the focus. The instance that
+  gets the focus is now the one that is expanded.
 
 - Clarified multi-image rating toasts for un-reject and for mixed
   upgrade/downgrade results across the selection.
@@ -240,11 +246,6 @@ changes (where available).
 - Fixed auto-applied denoise presets running a second time on images
   produced by AI raw denoise.
 
-- Fixed highlights modes for 4BAYER (CYGM/RGBE) raws, only clipping
-  mode is available for those.
-
-- Fixed OpenCL input gamma corrected scaling for some devices.
-
 - Fixed paths and nodes occasionally snapping to the top left
   corner during move operations.
 
@@ -269,11 +270,11 @@ changes (where available).
 - Fixed broken dragging in sliders' precise-entry mode
   in GTK3.
 
-- Fixed the feather of a drawn path being lost when the shape was resized
-  with the scroll wheel.
+- Fixed the feather of a drawn path being lost when the shape was
+  resized with the scroll wheel.
 
-- Fixed numeric error in the framing module (borders) causing the frame
-  line to be off-center for certain border sizes.
+- Fixed numeric error in the framing module (borders) causing the
+  frame line to be off-center for certain border sizes.
 
 - Fixed a crash or hang on Windows when checking a faulty custom ONNX
   Runtime library.
@@ -282,8 +283,8 @@ changes (where available).
   sliders and comboboxes themselves, instead of only shrinking their
   font.
 
-- Fixed a small memory leak each time a history stack was pasted onto the
-  image open in darkroom.
+- Fixed a small memory leak each time a history stack was pasted onto
+  the image open in darkroom.
 
 - Fixed Windows paths losing their backslashes in export and import
   patterns, which sent files to the wrong location.
@@ -292,17 +293,19 @@ changes (where available).
   unclosed variable substitution, such as "$(FILE_NAME/foo".
 
 - Fixed corrupted output or a crash when an AI model returns more data
-  than darktable reserved for it, affecting object masks and Lua models.
+  than darktable reserved for it, affecting object masks and Lua
+  models.
 
 - Fixed snapshots being applied onto the original image instead of the
   current image.
 
-- Fixed a crash when importing a style whose module order is empty. The
-  malformed order is now ignored and the style keeps the default one.
+- Fixed a crash when importing a style whose module order is
+  empty. The malformed order is now ignored and the style keeps the
+  default one.
 
-- Fixed automatic exposure rendering a black image when its raw histogram
-  was unavailable, and black or inverted images when the black level was
-  set too high for the exposure applied.
+- Fixed automatic exposure rendering a black image when its raw
+  histogram was unavailable, and black or inverted images when the
+  black level was set too high for the exposure applied.
 
 - Fixed exposure's area mapping blowing out the image when its target
   lightness was set to zero. Such a target cannot be reached, so the
@@ -313,8 +316,12 @@ changes (where available).
   not crash. The offending modules are now reset to use the default
   parameters and a message is displayed to the user.
 
+- Fixed auto calculation of capture radius and jumping of capture radius
+  sliders in UI.
+
 - Fixed small memory leaks when expanding variables, which grew with
   the number of images exported or imported in one run.
+
 - Fixed the splash screen text jumping sideways while startup messages
   change, most visibly on macOS.
 
@@ -323,19 +330,31 @@ changes (where available).
 - Fixed metadata tag Xmp.xmpMM.PreservedFileName not written on camera
   import.
 
+- Fixed keyboard shortcuts in the darkroom doing nothing until the
+  center view was clicked, after a snapshot had been taken while the
+  snapshots module was collapsed.
+
+- Fixed a crash on using tag floating window after editing metadata.
+
+- Fixed rotate and perspective sometimes not applying its automatic
+  crop when the rotation was changed (e.g. with a shortcut) before the
+  module had been enabled, leaving empty corners in the image.
+
 ## Lua
 
 ### API Version
 
-- API version is now 9.7.0
+- API version is now 9.8.0
 
 ### New Features
 
-- N/A
+- Extended dt_lua_snapshot_t and added a function to remove the snapshot.
 
 ### Bug Fixes
 
-- N/A
+- Fixed a crash when a script took more snapshots than the snapshots
+  module has slots. Once all slots are in use, `take_snapshot()` now
+  takes none and says so, as the take snapshot button already refused.
 
 ### New Scripts
 
@@ -343,9 +362,9 @@ changes (where available).
 
 ### Other Lua changes
 
-- Button images are now decoded at the display's resolution and sized to
-  the interface font, so script icons are sharp on HiDPI screens and no
-  longer stuck at the image's own pixel size.
+- Button images are now decoded at the display's resolution and sized
+  to the interface font, so script icons are sharp on HiDPI screens
+  and no longer stuck at the image's own pixel size.
 
 ## Notes
 

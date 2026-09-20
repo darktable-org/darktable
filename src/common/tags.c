@@ -24,6 +24,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include <glib.h>
+
 #if defined (_WIN32)
 #include "win/getdelim.h"
 #endif // defined (_WIN32)
@@ -237,7 +238,7 @@ guint dt_tag_remove(const guint tagid,
   if(rv == SQLITE_ROW) count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
-  if(final == TRUE)
+  if(final)
   {
     // let's actually remove the tag
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
