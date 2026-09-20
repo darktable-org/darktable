@@ -44,9 +44,17 @@ design document.
   that metric.** No rendered-pixel validation of the shipped
   configuration exists either: the crop TIFFs session 18 cited as SOOC
   are darktable renders with the lens module off and on, corrected in
-  sessions 18 and 21. The shipped coefficients therefore rest on their
-  session 5 derivation from Adobe DNG output, and on the untested premise
-  that Adobe reads 0x011b at all.
+  sessions 18 and 21. The shipped coefficients rest on their session 5
+  derivation from Adobe DNG output.
+- **Session 22 verified the premise that derivation depends on: Adobe
+  really does read 0x011b.** Transplanting the 64-byte payload between
+  sibling frames reproduces the donor's R and B differentials exactly,
+  changing the reported lens with the payload intact changes nothing at
+  all, individual words move the R and B planes separately in the pattern
+  the shipped decode assumes, and stale Rigo checksums make Adobe drop the
+  correction entirely. So the shipped matrices describe Panasonic's own
+  data, not Adobe's lens profiles, and the word-to-coefficient mapping is
+  now recoverable deterministically without any pixel measurement.
 - **Structural findings.** 0x011b is a 64-byte payload of 32 signed
   int16 LE. Four checksums at word positions `[0, 1, 30, 31]` verify
   with Rigo 2011's `(73*csum + byte) mod 0xFFEF`. On/off flag at
@@ -4415,7 +4423,9 @@ in this document independently validates the shipped configuration.** It
 survives on its session 5 derivation from Adobe DNG WarpRectilinear
 coefficients, which is in turn premised on Adobe reading 0x011b at all, an
 assumption the document flags but never tests (L1558, and L4644 states it
-outright as a premise).
+outright as a premise). **Session 22 tested it: Adobe does read the
+payload, so that premise holds and this paragraph's concern is limited to
+the missing rendered-pixel check.**
 
 What can support a real harness is the genuine paired camera output. The
 18 at-capture JPEGs in the corpus carry Panasonic model and firmware
@@ -4469,6 +4479,123 @@ changes): `session21_step1.py`, `session21_step2.py`,
 `session21_bayer_sanity.py`, `session21_bayer_nooffset.py`,
 `session21_bayer_compare_tm.py`, `session21_bayer_report.py`,
 `session21_bayer_report.out.txt`.
+
+### The Adobe premise, tested at last (session 22)
+
+Every coefficient darktable ships for Panasonic CA was fitted in session 5
+against Adobe DNG Converter's per-plane WarpRectilinear output. Whether
+Adobe derives those per-channel coefficients from 0x011b, or from its own
+lens-profile database keyed on the lens model, was never tested; L1558 and
+L4644 both flag the assumption without checking it. Under the goal in
+"Scope and goal" this is the question that decides whether the shipped
+feature is a decode of Panasonic's data or an imitation of Adobe's
+profiles. **It is a decode. The premise holds.**
+
+**Method.** `/tmp/rw2_tca/session22_payload.py` (built for this session,
+see below) rewrites the 64-byte payload in place; `read_warp_opcode` in
+`/tmp/rw2_tca/compare_dng.py` parses OpcodeList3 out of the resulting DNG.
+Converter invocation `Adobe DNG Converter.exe -c -p0 -d <outdir> <in>`,
+reached through WSL interop, with a unique input name and output directory
+per run. Fifteen conversions, all exit status 0, all outputs freshly
+written. On every mutated RW2, `rawpy` `raw_image_visible` hashes identical
+to the base file, so no coefficient change can be an artefact of a damaged
+raw stream. Three bodies: G9 P1366481 (45mm) with donor P1366483 (150mm),
+GX80 P1260633 (12mm) with donor P1260635 (60mm), S5II s5ii_17 with donor
+s5ii_19. Mutants and DNGs under `/c/temp/tca/probe22/`; nothing in the
+corpus was modified in place.
+
+**Controls first.** Converting an untouched file twice to separate
+directories gives max |delta| = 0 across all three planes on all three
+bodies, so the converter is deterministic. A no-op payload rewrite, which
+produces a byte-identical file, likewise gives max |delta| = 0, so neither
+caching nor the editor perturbs anything.
+
+**The decisive condition: whole-payload transplant.** Replacing file X's
+64-byte payload with file Y's, same body and lens but a different focal
+length, leaves all four outer and all three unknown inner checksums
+internally self-consistent, so it cannot be rejected on integrity
+grounds. The result is unambiguous. On the G9, base R k0..k3 reads
++1.0000578 +0.0002284 -0.0000901 +0.0000717 and the transplant reads
++0.9994650 +0.0005815 -0.0004946 +0.0002709, which is the donor's own
+converted output to seven decimal places. In the differentials that are
+the CA signal proper, D_R = R - G and D_B = B - G, the transplant
+reproduces the donor exactly on the G9 and the S5II, and to about 1e-5 on
+the GX80, whose G plane is strongly non-identity so its CA is computed on
+top of a real distortion correction. **Adobe reads the payload.**
+
+**The complementary condition: lens identity.** Leaving 0x011b untouched
+and changing the lens the file reports instead, CameraIFD 0x1202 plus the
+maker-note lens strings, to a different real Panasonic lens (42.5mm F1.7),
+gives max |delta| = 0. Byte-for-byte identical coefficients. **Adobe is
+not keying CA on a lens-profile database.** The two conditions together
+also exclude the mixed case, where Adobe might combine the payload with a
+profile: that would have moved the coefficients here.
+
+**Distortion and CA are independent inputs.** Mutating 0x0119 instead, on
+the GX80, makes the G plane snap to identity, which is Adobe rejecting the
+distortion tag on a failed internal check, while R and B stay non-identity
+and still track 0x011b. So Adobe treats 0x0119 as the distortion source
+and 0x011b as the CA source, and they isolate cleanly. That answers two
+open questions below: Homeister's claim that 0x011b carries distortion as
+well as CA is not how Adobe reads it, and the worry that darktable's
+0x0119 distortion path might double-correct on top of 0x011b is
+unfounded, at least by Adobe's interpretation.
+
+**Adobe enforces the four outer checksums.** A payload mutated with
+`--no-recompute`, leaving the Rigo checksums stale, produces a DNG with no
+OpcodeList3 entry at all: Adobe validates them and drops the correction
+entirely rather than applying it anyway. Note the contrast with session
+12's reading of SILKYPIX, and with darktable's own choice at
+`src/common/exif.cc:192-194` to log a mismatch and accept the payload
+regardless. Whether darktable should follow Adobe here is a new question,
+not settled by this session.
+
+**Words 2, 7 and 13 are not enforced by Adobe.** Every per-word mutation
+below breaks any inner checksum those words might hold, and Adobe still
+emitted a correction. Either they are not checksums, or nobody validates
+them.
+
+**Per-word response, and it matches what darktable ships.** On P1366481,
+with outer checksums recomputed:
+
+    word[8]  = -5000, +5000, +25000   R plane only; magnitude grows with |value|
+    word[23] = +3000                  R plane only
+    word[20] = -3000, +3000           B plane only
+    word[4]  = +2000 (zone radius)    R and B both; G untouched
+
+Words 8 and 23 drive R, word 20 drives B, and a zone radius drives both.
+That is the shipped predictor set [8, 10, 12, 20, 23, 27] and the radii
+[4, 11, 16, 17] behaving exactly as the decode assumes.
+
+**The payload editor** (`session22_payload.py`, modes dump, verify, set,
+transplant, plus `--no-recompute`) found one structural detail worth
+recording: **the four outer checksums are inter-dependent.** word[0]
+covers byte 2, which is word[1]'s low byte, and byte 60, which is
+word[30]'s low byte; word[31] covers bytes 3 and 61 the same way.
+Recomputing all four simultaneously yields a file that fails its own
+verifier. The correct order is word[1] and word[30] first, then word[0]
+and word[31] over the updated buffer. The payload sits in IFD0 at file
+offset 0x436 on every RW2 sampled. Six proofs pass: byte-identical no-op
+rewrite on six files across six bodies; edits confined to bytes
+1078-1141 with zero bytes changed outside; mutants validating under both
+this tool and the independent `verify_011b.py`; transplants carrying the
+donor's words 2, 7 and 13; `rawpy` and `exiftool` both reading mutants
+cleanly; and the discredited "bytes 4..59 evens/odds" spec failing as a
+negative control.
+
+**What this changes.** The first trigger in "When to stop" does not fire.
+More importantly, the mapping from payload words to correction
+coefficients is now recoverable as a deterministic function, by sweeping
+words and reading Adobe's coefficients back, with no demosaic, no pixel
+measurement and no scene dependence anywhere in the loop. That sidesteps
+every problem session 21 identified. It is a decode of Adobe's reading of
+Panasonic's data, which the caveat at L1558 rightly distinguishes from
+Panasonic's own rendering, so the camera-JPEG comparison remains the check
+that the two agree.
+
+**Files this session**: `/tmp/rw2_tca/session22_payload.py`, mutants under
+`/tmp/rw2_tca/mutants/`, probe inputs and DNGs under
+`/c/temp/tca/probe22/`. No darktable source changes.
 
 ## Scope and goal
 
