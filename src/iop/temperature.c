@@ -1562,7 +1562,7 @@ void reload_defaults(dt_iop_module_t *self)
   dt_iop_temperature_params_t *p = self->params;
 
   d->preset = DT_IOP_TEMP_AS_SHOT;
-  d->late_correction = p->late_correction = dt_is_scene_referred();
+  d->late_correction = p->late_correction = FALSE;
 
   float *dcoeffs = (float *)d;
   for_four_channels(k)
@@ -1651,6 +1651,8 @@ void reload_defaults(dt_iop_module_t *self)
 
   if(!true_monochrome)
   {
+    // set up the matrices gui_data->XYZ_to_CAM, gui_data->CAM_to_XYZ,
+    // used for temp/tint adjustments
     if(self->gui_data)
       _prepare_matrices(self);
 
@@ -1678,7 +1680,6 @@ void reload_defaults(dt_iop_module_t *self)
         dcoeffs[2] = coeffs[2]/coeffs[1];
         dcoeffs[3] = coeffs[3]/coeffs[1];
         dcoeffs[1] = 1.0f;
-        d->late_correction = p->late_correction = FALSE;
       }
     }
   }
