@@ -55,6 +55,18 @@ design document.
   correction entirely. So the shipped matrices describe Panasonic's own
   data, not Adobe's lens profiles, and the word-to-coefficient mapping is
   now recoverable deterministically without any pixel measurement.
+- **Session 23 read the map off that oracle, and the shipped decode is
+  wrong in four ways.** Twelve words carry CA: radii [4, 11, 16, 17],
+  R-only [8, 12, 23, 26], B-only [10, 20, 27, 29], with opposite-channel
+  derivatives exactly zero and the coefficient words linear to 1e-12.
+  Shipped omits words 26 and 29, carries six cross-channel columns whose
+  true derivatives are zero, is off by factors of 2.1 and 4.0 on two k0
+  terms, and discards D_B k2 and k3 entirely. That is why sessions 14-21
+  never converged: the model form was wrong before any fitting started.
+  **But do not patch the tables yet.** The map is conditioned on something
+  beyond the words and the body, most likely the distortion state: a model
+  exact to 1e-15 within one file is 60% wrong on a sibling frame of the
+  same body with identical radii. Identify that variable first.
 - **Structural findings.** 0x011b is a 64-byte payload of 32 signed
   int16 LE. Four checksums at word positions `[0, 1, 30, 31]` verify
   with Rigo 2011's `(73*csum + byte) mod 0xFFEF`. On/off flag at
@@ -4596,6 +4608,136 @@ that the two agree.
 **Files this session**: `/tmp/rw2_tca/session22_payload.py`, mutants under
 `/tmp/rw2_tca/mutants/`, probe inputs and DNGs under
 `/c/temp/tca/probe22/`. No darktable source changes.
+
+### The word map, recovered and audited (session 23)
+
+With Adobe established as a deterministic oracle, the map from payload
+words to correction coefficients can be read off directly: change a word,
+convert, parse OpcodeList3. 165 conversions at 0.91 s each for the sweep
+(`session23_{probe,sweep,analyze}.py`, results in
+`session23_results.npz`), then 106 fresh conversions by an independent
+audit that re-derived every claim rather than re-reading the data
+(`/tmp/session23_audit.py` and the `probe23b_*` scripts; staging under
+`/c/temp/tca/probe23/` and `probe23b/`). The audit confirmed the core
+findings, refuted three of the framings, and found a blocker the sweep had
+missed. Measured quantities throughout are D_R = R - G and D_B = B - G,
+four polynomial coefficients each.
+
+**What is solid enough to build on.**
+
+- **Twelve words carry the CA signal, and channel assignment is exact.**
+  Four zone radii at words 4, 11, 16, 17; four R-only coefficient words at
+  8, 12, 23, 26; four B-only coefficient words at 10, 20, 27, 29.
+  Opposite-channel derivatives are not small, they are exactly zero.
+- **Of the 27 numeric words swept, fifteen do nothing at all**: 2, 3, 5, 6,
+  7, 9, 13, 15, 18, 19, 21, 22, 24, 25, 28. Setting all fifteen at once to
+  the values from a different G9 file changes the output not at all
+  (`max_plane_delta 0.0`). Words 2, 7 and 13 are therefore not CA
+  coefficient inputs, which is consistent with the checksum reading but
+  does not prove it; inertness is not evidence of semantics.
+- **Word 14 is a gate, not a coefficient.** Setting it to 0 produces a DNG
+  with no warp opcode at all, alongside words 0, 1, 30 and 31 whose
+  checksums Adobe enforces.
+- **The eight coefficient words are linear to floating-point precision.**
+  Slopes from +-137 and +-431 agree to between 3.8e-13 and 9.5e-12, and an
+  affine model reproduces endpoints to 3.8e-15. This is far tighter than
+  the sweep's own claim of 1e-3.
+- **Coefficient words are exactly additive with each other**: residual 0
+  for the pairs tested.
+- **R and B slots mirror each other** in the pairs (8,20), (12,27),
+  (10,23) and (26,29), with slope residuals of 1.8e-18 to 3.6e-18. The
+  audit checked this was not an indexing or caching artefact: the mutant
+  RW2s and their DNGs have distinct sha256 hashes, and word 8 moves only R
+  while word 20 moves only B. Call it symmetry within double-precision
+  rounding, not byte identity.
+- **No 0x011b word moves the G plane**, exactly zero over 102 fresh
+  mutants across all six stored G values, confirming session 22's
+  separation of distortion from CA.
+
+**The shipped decode is wrong in four verified ways.** All four were
+re-checked against `src/iop/lens.cc` by the audit, which read the shipped
+tables at `:2193-2207` and the evaluator at `:2462-2486` and `:2517-2527`.
+
+1. **Two real predictors are missing.** The shipped set is
+   [8, 10, 12, 20, 23, 27]; words 26 (R) and 29 (B) are active and absent.
+   The four zone radii are absent too.
+2. **Spurious cross-channel terms.** `_pana_C_R` carries non-zero columns
+   for words 10, 20 and 27, and `_pana_C_B_lo` for words 8, 12 and 23.
+   Every one of those true derivatives is exactly zero. The shipped
+   matrices attribute R response to B words and vice versa.
+3. **Magnitudes are off by factors, not percentages.** k1 ratios of
+   measured to shipped sit at 0.92 to 1.09, but k0 comes out at 2.107 for
+   word 8 and 4.012 for word 23.
+4. **Half of the B polynomial is missing.** The evaluator computes
+   `d_b = db_k[0] + db_k[1]*r2` with `db_k[2]`, so D_B k2 and k3 are
+   dropped. They are real: word 10 alone gives k0..k3 of 3.28e-7,
+   -4.76e-6, 9.58e-6, -5.16e-6, and words 20, 27 and 29 behave the same.
+
+That is enough to explain why sessions 14 to 21 never converged. The model
+form was wrong before any fitting began: two predictors missing, six
+coefficient columns that should be identically zero left free to absorb
+noise, and two of the eight output coefficients discarded.
+
+**The blocker, and it is a real one.** The map is *not* a function of the
+payload words alone, nor of the words plus the body.
+
+- A nine-conversion linear model, baseline plus one probe per coefficient
+  word, predicts a held-out edit of all eight words simultaneously to
+  within 8.7e-15 absolute, 1.3e-12 relative. Exact, within one file.
+- The same model applied to `P1366477`, a different frame from the same
+  G9 with an identical radius tuple, is wrong by 5.2e-4 absolute, which is
+  **60.6% of the measured change**.
+- Two real G9 files with identical radii give word 8 derivative ratios of
+  0.480 to 0.564, while repeat conversions of one file agree to 2.5e-6.
+
+So what the sweep reported as body dependence is file or context
+dependence, and the earlier single-per-body-scalar reading from session 19
+does not survive either. The prime suspect is named by the failing case
+itself: `P1366477` has a non-identity G polynomial where `P1366481`'s G is
+identity. In other words the files differ in their distortion state, and
+if Adobe composes the per-plane warp as distortion applied together with
+CA, then D_R = R - G removes distortion only to first order and the
+residual scales with how much distortion there is. That would also explain
+the one loose end in session 22, where the GX80 transplant matched its
+donor to 1e-5 rather than exactly, the GX80 being the one body in that
+test with a strongly non-identity G.
+
+**A caveat on the radii that matters for any implementation.** The
+corpus's 13 body groups each carry exactly one radius tuple: G9
+(2730, 3276, 2184, 1092), GX80 (2407, 2888, 1926, 963), GH5S
+(1905, 2286, 1524, 762), full-frame 24 MP (3072, 3584, 2048, 1024), S1R II
+(4272, 4984, 2848, 1424). Perturbing one radius alone breaks the coupled
+geometry every real file has, so the sweep's findings that the radii
+respond non-linearly and non-monotonically, and interact with the
+coefficient words by 8 to 34 percent, are measurements of inputs no camera
+produces. They establish that Adobe conditions on those words. They are
+not facts about the format, and the "knot position" reading of them is an
+inference, not a result. With native radii held fixed, channel
+selectivity, linearity and coefficient additivity all survive.
+
+**Consequently, do not patch the shipped tables yet.** The four
+contradictions above are real and the corrected structure is clear, but a
+decoder built on today's numbers would be exact on P1366481 and 60% wrong
+on its sibling. The missing conditioning variable has to be identified
+first.
+
+**The next experiment follows directly.** Session 22 showed that mutating
+0x0119 makes Adobe drop distortion and emit an identity G plane. So
+neutralise 0x0119 across a set of files from one body, then re-run the
+coefficient-word sweep on each. If the derivatives collapse onto a single
+set once distortion is out of the way, the conditioning variable is the
+distortion state, the correct model form is CA expressed in the
+pre-distortion frame, and both the P1366477 failure and the GX80 residual
+are accounted for. That would also cast sessions 17 and 18's fruitless
+coordinate-frame reworks in a different light: they were varying the frame
+of the *measurement* while the frame mismatch was in the *model*.
+
+**Files this session**: `/tmp/rw2_tca/session23_{probe,sweep,analyze}.py`,
+`session23_results.npz` and `.json`, `session23_report.txt`,
+`session23_analysis.log`; audit scripts `/tmp/session23_audit.py` and
+`/tmp/probe23b_*.py`; staging under `/c/temp/tca/probe23/` and
+`/c/temp/tca/probe23b/`, left in place so individual mutants can be
+inspected without re-running. No darktable source changes.
 
 ## Scope and goal
 
