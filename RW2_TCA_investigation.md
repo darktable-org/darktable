@@ -41,9 +41,12 @@ design document.
   files the r >= 0.85 values are polynomial extrapolation from data that
   stops at r = 0.7. Files with bit-identical predictor words disagree by
   0.24 px RMS on measured B shift. **Do not run another refit scored on
-  that metric.** The shipped configuration stands on session 18's
-  rendered-pixel comparison against SOOC crops, which is independent of
-  it.
+  that metric.** No rendered-pixel validation of the shipped
+  configuration exists either: the crop TIFFs session 18 cited as SOOC
+  are darktable renders with the lens module off and on, corrected in
+  sessions 18 and 21. The shipped coefficients therefore rest on their
+  session 5 derivation from Adobe DNG output, and on the untested premise
+  that Adobe reads 0x011b at all.
 - **Structural findings.** 0x011b is a 64-byte payload of 32 signed
   int16 LE. Four checksums at word positions `[0, 1, 30, 31]` verify
   with Rigo 2011's `(73*csum + byte) mod 0xFFEF`. On/off flag at
@@ -431,15 +434,28 @@ layout, and it verifies cleanly against our sample:
 
 | word | role                            | our sample     |
 |-----:|:--------------------------------|:---------------|
-| 0    | CRC over data bytes 4..59, evens| `0x2dfa` (OK)  |
+| 0    | CRC over even byte offsets 2..60| `0x2dfa` (OK)  |
 | 1    | CRC over data bytes 4..31       | `0xc351` (OK)  |
 | 30   | CRC over data bytes 32..59      | `0xa947` (OK)  |
-| 31   | CRC over data bytes 4..59, odds | `0xe5ab` (OK)  |
+| 31   | CRC over odd byte offsets 3..61 | `0xe5ab` (OK)  |
 
 CRC polynomial is `csum = (73 * csum + byte) mod 0xFFEF`, identical to
 0x0119. The two "half" checksums cover the two 28-byte halves; the two
-"striped" checksums cover even- and odd-indexed data bytes across the whole
-payload. Rigo's `parseca.c` implements this exactly (see References).
+"striped" checksums cover even- and odd-indexed payload bytes, 30 bytes
+each. Rigo's `parseca.c` implements this exactly (see References).
+
+**Correction (post-session-21 review).** The two striped ranges were
+given here and in session 20 as "bytes 4..59, evens" and "odds", which is
+wrong and would have produced a payload editor that corrupts every file
+it touched. The implementation
+(`_validate_panasonic_ca_checksums`, `src/common/exif.cc:1122`, checksum
+lambda at `:1124`) builds `even[i] = buf[2*i]` and `odd[i] = buf[2*i+1]`
+and then sums `even + 1` and `odd + 1` for 30 bytes each, so word[0]
+covers byte offsets 2, 4, ..., 60 and word[31] covers 3, 5, ..., 61. The
+two half checksums at words 1 and 30 are correct as written.
+Recomputation on `/c/temp/tca/P1366477.RW2` reproduces the stored
+`[0xa0e4, 0xccce, 0xebe4, 0x75b1]` with the corrected ranges and fails
+with the old ones.
 
 Homeister's forum post (retrieved via web.archive.org since the ExifTool
 forum was intermittently down during this investigation) documents the
@@ -3889,6 +3905,17 @@ legitimately different physical targets. Shipped matches SOOC; direct
 measurement matches the sensor. No coordinate rework can bridge that
 gap.
 
+**Correction (post-session-21 review).** "Shipped matches SOOC" is an
+inference, not a measurement, and it chains two untested assumptions:
+that Adobe's WarpRectilinear coefficients are derived from 0x011b rather
+than from Adobe's own lens-profile database, and that Adobe's encoding
+reproduces what Panasonic's firmware does. The first is the premise test
+now at the head of the task list; the second has never been examined. The
+rest of the paragraph, that direct raw measurement and the shipped
+coefficients are aimed at different physical targets, stands on its own,
+but the size of the difference between them cannot be attributed to
+Panasonic's under-correction until those two assumptions are checked.
+
 **Visual verification of the correct-frame candidate.**
 
 The correct-frame 4-row C_B fit predicts same-sign corrections on both
@@ -3919,6 +3946,18 @@ coordinate reworks missed.
 Reference: the user-supplied `P1366399-crop-lens-correction-{off,on}.tif`
 crops confirm the shipped baseline matches Panasonic SOOC within ~1%
 on |R-G| and ~5% on |B-G|. Shipped is faithful.
+
+**Correction (post-session-21 review).** That reference does not support
+what it claims. `exiftool` reports
+`Software: darktable 5.7.0+963~g2e04bf74d7` on both crop TIFFs, so they
+are darktable renders of P1366399 with the lens module off and on, not
+camera output. Comparing them measures what darktable's own correction
+does; it says nothing about how closely that tracks Panasonic. The
+genuine camera render of this frame is `P1366399.JPG`
+(`Software: Ver.2.7`, the G9 firmware, 5184x3888), and it was not part of
+the comparison. Session 21 later leaned on this paragraph as the one
+validation independent of the AAHD pixel metric, which compounded the
+error; see the correction there.
 
 **Verdict.**
 
@@ -4101,8 +4140,9 @@ so constrain which words are coefficients of a common polynomial.
 The sweep first reproduced all four known outer checksums at 134/134,
 proving the byte convention against
 `_validate_panasonic_ca_checksums` (`src/common/exif.cc:1117-1147`):
-word[0] over even bytes 4..58, word[1] over bytes 4..31, word[30] over
-bytes 32..59, word[31] over odd bytes 4..58, all with multiplier 73,
+word[0] over even byte offsets 2..60, word[1] over bytes 4..31, word[30]
+over bytes 32..59, word[31] over odd byte offsets 3..61, all with
+multiplier 73,
 modulus 0xFFEF, init 0, little-endian. Pointed at word[1] and word[30] as
 unknown targets, the same engine recovers their ranges at 134/134, so the
 search itself works.
@@ -4323,9 +4363,10 @@ demosaic bias and Bayer aliasing on this evidence, and is not claimed to
 be one or the other.
 
 One finding here is independent of the demosaic question and matters on
-its own. **Four of the corpus files ranked as strong-CA have no AAHD tiles
-at all beyond r = 0.7**: gh5s_01 (n = 221, r_max 0.67), s9_01 (0.78),
-s9_05 (0.78), gh5_13 (0.74). Their AAHD predictions at r = 0.85 and 0.95
+its own. **Four of the corpus files ranked as strong-CA have no AAHD tile
+support anywhere near the radius they are scored at**: gh5s_01 (n = 221,
+r_max 0.67), s9_01 (0.78), s9_05 (0.78), gh5_13 (0.74). None reaches
+r = 0.85. Their AAHD predictions at r = 0.85 and 0.95
 are pure extrapolation of inner-radius data, reaching +14.6 px on
 gh5s_01. Corpus-wide metrics at r = 0.85 and 0.95, which is where every
 comparison in sessions 17, 18 and 20 was scored, include those numbers as
@@ -4355,14 +4396,26 @@ independent regularizers and coordinate frames all land on the same
 number, and why session 18's closest candidate regressed visibly on
 P1366392 despite an analytically correct-sign prediction.
 
-**Consequence for what gets trusted.** The one piece of validation in this
-entire document that does not depend on the AAHD pipeline is session 18's
-rendered-pixel comparison against the user-supplied
-`P1366399-crop-lens-correction-{off,on}.tif` SOOC crops, which put shipped
-session-5 + K = 1 within about 1% on |R-G| and 5% on |B-G|. That evidence
-stands untouched by this session and is the reason the shipped
-configuration stays. It is also the currency any future attempt should be
-scored in.
+**Consequence for what gets trusted.** This section originally named
+session 18's rendered-pixel check as the one piece of validation not
+dependent on the AAHD pipeline, and treated it as the reason the shipped
+configuration stays. A later review refuted that as well: the two crop
+TIFFs it rests on are darktable renders with the lens module off and on,
+not camera output (correction recorded in session 18 above). So **nothing
+in this document independently validates the shipped configuration.** It
+survives on its session 5 derivation from Adobe DNG WarpRectilinear
+coefficients, which is in turn premised on Adobe reading 0x011b at all, an
+assumption the document flags but never tests (L1558, and L4644 states it
+outright as a premise).
+
+What can support a real harness is the genuine paired camera output. The
+18 at-capture JPEGs in the corpus carry Panasonic model and firmware
+software tags with capture timestamps matching their RW2s, so a registered
+comparison of |R-G| and |B-G| between a darktable render and the camera
+JPEG is buildable. Registration is the work: the existing `make_crops.py`
+compares unregistered crops, and scale and distortion differ between the
+two renders. That metric is what future attempts should be scored in, and
+it does not exist yet.
 
 **What NOT to retry, updated again.** Everything in sessions 18 and 20,
 plus:
@@ -4379,12 +4432,12 @@ plus:
 **What might still move the needle, revised again.** In descending order
 of expected value:
 
-- **Change the validation currency to rendered pixels against SOOC.**
-  Score candidates by |R-G| and |B-G| on darktable renders versus the
-  camera JPEG or SOOC TIFF crops, the way session 18's only trustworthy
-  check was done, on a handful of files with strong edges near the corner.
-  Slow per candidate, but it measures the thing users see and it is the
-  only metric in this investigation that has never given a wrong answer.
+- **Build the rendered-pixel metric that does not exist yet.** Score
+  candidates by |R-G| and |B-G| on darktable renders registered against
+  the paired at-capture camera JPEG, on a handful of files with strong
+  edges near the corner. Slow per candidate, but it measures the thing
+  users see. Note that session 18's version of this check was not valid
+  (see the correction there), so this has never actually been done.
 - **Fix the measurement before fitting again.** A trustworthy estimator
   needs an aliasing model for the Bayer path, or edge-based subpixel
   localisation on high-contrast features rather than whole-tile phase
@@ -4405,6 +4458,57 @@ changes): `session21_step1.py`, `session21_step2.py`,
 `session21_bayer_sanity.py`, `session21_bayer_nooffset.py`,
 `session21_bayer_compare_tm.py`, `session21_bayer_report.py`,
 `session21_bayer_report.out.txt`.
+
+## When to stop
+
+Sessions 14 to 21 are eight consecutive negative results. That is not by
+itself a reason to stop, but the absence of any written criterion for
+stopping is a problem in its own right: it is what let sessions 17, 18 and
+20 re-run variants of the same experiment against a metric that session 21
+then showed could not rank them. The criterion below is deliberately
+written before the next round of work rather than after it.
+
+**Abandon the metadata decode, and fall back to the hybrid path, if any
+one of these holds.**
+
+1. **The Adobe premise fails.** If DNG Converter's per-channel warp
+   coefficients do not respond to the 0x011b payload, under the controls
+   listed with that task (a no-op rewrite, a whole-payload transplant from
+   another frame of the same body and lens, and a 0x0119 mutation as a
+   positive control), then the shipped `C_R` and `C_B_lo` describe Adobe's
+   lens-profile database rather than the camera's own data. There is then
+   nothing in the tag that session 5 ever decoded, and no reason to keep
+   fitting it.
+2. **No trustworthy measurement can be built.** If no estimator can be
+   demonstrated with per-file bias below roughly 0.1 px at r = 0.85,
+   candidates that differ by a few tenths of a pixel cannot be ranked, so
+   no refit can be justified. 0.1 px is the bar because the differences
+   that mattered in sessions 17, 18 and 20 were 0.2 to 0.4 px.
+3. **The information is not in the tag.** If, once a trustworthy
+   measurement exists, real CA still varies materially between frames
+   whose predictor words are bit-identical, then no function of the
+   payload can reproduce per-frame CA. Session 21 measured 0.24 px of such
+   variation but could not separate it from estimator bias; with a
+   trustworthy estimator that ambiguity disappears and the answer is
+   decisive either way.
+4. **Session 25 with nothing to show.** If three further sessions produce
+   no candidate that beats the shipped configuration on a rendered-pixel
+   comparison against paired camera JPEGs, stop. Not because the problem
+   is unsolvable, but because the remaining leads will have been tried and
+   the cost is no longer proportionate to a correction of a fraction of a
+   pixel.
+
+**What falling back means concretely.** Keep the shipped session 5 + K = 1
+coefficients, since no evidence contradicts them and removing a working
+correction on suspicion would be worse than leaving it. Land the hybrid
+path so that users get embedded distortion together with Lensfun TCA
+rather than an all-or-nothing choice. Lock the shipped configuration in
+place with a rendered-pixel regression check, so no later agent repeats
+sessions 14 to 20. Publish the structural findings and the negative
+results, which are worth more to the next person than another private
+refit. Then close the investigation and leave image-adaptive CA
+correction, which needs no metadata at all, as the route for anyone who
+wants to go further.
 
 ## Reverse-engineering next steps
 
