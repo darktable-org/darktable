@@ -419,9 +419,9 @@ begin
   ExePath := ExpandConstant('{#MyAppExePath}');
   StringChangeEx(ExePath, '''', '''''', True);
 
-  ; Extra spaces break it
+  // Extra spaces break it
   ConfigParam := GetConfigDirParam('');
-  FullArgs := ''
+  FullArgs := '';
   if ConfigParam <> '' then
     FullArgs := FullArgs + ' ' + ConfigParam;
   if Args <> '' then
