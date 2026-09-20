@@ -259,10 +259,13 @@ typedef struct dt_develop_t
   /* proxy for communication between plugins and develop/darkroom */
   struct
   {
-    // list of exposure iop instances, with plugin hooks, used by
-    // histogram dragging functions each element is
-    // dt_dev_proxy_exposure_t
+    // exposure iop hooks, used by histogram dragging functions
     dt_dev_proxy_exposure_t exposure;
+
+    // channelmixerrgb reports whether it is actually applying CAT;
+    // temperature asks through dt_dev_cat_is_active()
+    // thread contract: must only be called from the GTK main thread
+    gboolean (*cat_is_active)(struct dt_iop_module_t *cat);
 
     // this module receives right-drag events if not already claimed
     struct dt_iop_module_t *rotate;
@@ -533,6 +536,10 @@ float dt_dev_exposure_get_black(dt_develop_t *dev);
 void dt_dev_exposure_handle_event(int n_press, gdouble delta,
                                   GdkModifierType state,
                                   const gboolean is_blackpoint);
+
+/** TRUE if a live color calibration instance is actually applying CAT.
+    GTK main thread only: the accessor reads params. */
+gboolean dt_dev_cat_is_active(dt_develop_t *dev);
 
 /*
  * modulegroups plugin hooks

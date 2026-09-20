@@ -2003,9 +2003,19 @@ static void _validate_color_checker(const float *const restrict in,
   dt_free_align(patches);
 }
 
+static gboolean _applies_cat(const dt_iop_module_t *self)
+{
+  if(!self->enabled)
+    return FALSE;
+
+  const dt_iop_channelmixer_rgb_params_t *p = self->params;
+
+  return !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB)
+         && !dt_image_is_monochrome(&self->dev->image_storage);
+}
+
 static void _set_trouble_messages(dt_iop_module_t *self)
 {
-  const dt_iop_channelmixer_rgb_params_t *p = self->params;
   const dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
   const dt_develop_t *dev = self->dev;
   const dt_dev_chroma_t *chr = &dev->chroma;
@@ -2035,10 +2045,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
     return;
   }
 
-  const gboolean valid =
-    self->enabled
-    && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB)
-    && !dt_image_is_monochrome(&dev->image_storage);
+  const gboolean valid = _applies_cat(self);
 
   const gboolean temperature_enabled = temperature->enabled;
   const gboolean adaptation_enabled = adaptation->enabled;
@@ -4508,6 +4515,15 @@ void color_picker_apply(dt_iop_module_t *self,
   _auto_set_illuminant(self, pipe);
 }
 
+// TRUE if this instance is applying chromatic adaptation. reads params, so
+// GTK main thread only
+static gboolean _cat_proxy_is_active(dt_iop_module_t *self)
+{
+  if(!self || !self->dev)
+    return FALSE;
+
+  return _applies_cat(self);
+}
 
 void gui_init(dt_iop_module_t *self)
 {
@@ -4842,6 +4858,8 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_box_add(g->cs.container, g->checkers_list, g->optimize, g->safety,
                  g->label_delta_E, dt_gui_hbox(dt_gui_align_right(g->button_validate),
                  g->button_profile, g->button_commit));
+
+  darktable.develop->proxy.cat_is_active = _cat_proxy_is_active;
 }
 
 void gui_cleanup(dt_iop_module_t *self)

@@ -1199,14 +1199,7 @@ static void _update_preset(dt_iop_module_t *self, int mode)
 
   if(is_current_reference && is_new_mode_manual)
   {
-    // snapshot is NEEDED: dt_dev_reset_chroma() may NULL chr->adaptation from
-    // the pipe worker thread; modules are only freed on this (GTK) thread,
-    // so dereference is safe if not NULL
-    const dt_iop_module_t *const cat = chr->adaptation;
-    // set if and only if color calibration is registered as CAT handler and enabled
-    // (whether it is in adaptation mode is not testable here: channelmixerrgb's
-    // params are private)
-    p->late_correction = (cat != NULL) && cat->enabled;
+    p->late_correction = dt_dev_cat_is_active(self->dev);
   }
 
   p->preset = mode;
