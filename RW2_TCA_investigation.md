@@ -4929,6 +4929,70 @@ not a rounding error.
 `/c/temp/tca/probe25/` and the audit's `/c/temp/tca/probe25b/`. No
 darktable source changes.
 
+### The evaluator applies CA in the wrong frame (session 26)
+
+Session 24 established that CA is a raw-frame rescale applied ahead of
+distortion. Reading the shipped evaluator shows it does the opposite, so
+this is a sixth error, independent of the five in the tables, and it means
+the patch is not just a table swap.
+
+`src/iop/lens.cc:2519-2523` evaluates the CA polynomial at the
+*destination* radius and adds it to the distortion multiplier:
+
+    const double r2 = (double)r * (double)r;
+    const double d_r = dr_k[0] + dr_k[1]*r2 + dr_k[2]*r4 + dr_k[3]*r6;
+    cor_rgb[0][i] = fine + (float)d_r;
+    cor_rgb[2][i] = fine + (float)d_b;
+
+with the code's own comment confirming `r == knots_dist[i]`, the
+destination-radius abscissa. The Olympus branch at `:2424-2431` is the
+correct model: it forms the source radius `rd = cor_rgb[1][i] * r` first
+and applies its CA there.
+
+**Conventions, for the record.** `cor_rgb` is `float[3][MAXKNOTS]` with
+MAXKNOTS 16 (`:51`, `:236`), knot i at `r = i/(nc-1)` normalised to the
+half-diagonal, and each entry is a destination-to-source radial
+multiplier `dr = r_src/r_dest`, consumed as `xs = dr*cx + w2`.
+
+**The fix, in the variables that already exist.** Inside the same knot
+loop, after the two fixed-point iterations that invert the distortion
+polynomial, the converged source radius is `rd = fine * r`. That is
+exactly session 24's `r_raw = r_out * G(r_out)`, so eps is evaluated
+there and applied as a rescale of the green multiplier:
+
+    cor_rgb[0][i] = fine * (1.0 + cor_ca_r_ft * eps_R(rd));
+    cor_rgb[2][i] = fine * (1.0 + cor_ca_b_ft * eps_B(rd));
+
+eps belongs outside the fixed-point loop, which inverts G and not C, and
+no inversion of C is needed because eps is a raw-frame rescale by
+construction.
+
+**Scope of a correct patch**, from the same reading. The OpenCL path needs
+no kernel change, since `basic.cl` consumes the same spline layout
+(`:2993`, `basic.cl:2846`, `:2878-2880`). `_process_md` (`:2921`), the
+`_modify_roi_in_md` bounding box (`:3053`, `:3075`), the auto-scale loop
+(`:2561`) and `_check_corrections_md` (`:2615-2620`) all pick up changed
+per-channel values automatically. `_distort_transform_md`,
+`_distort_backtransform_md` and `_distort_mask_md` deliberately use only
+the green channel, which stays correct: CA must be invisible to them. The
+`panasonic` struct in `src/common/image.h:165-207` already carries
+`ca_words[32]`, so no schema change; only the coefficient tables and the
+B-term count change shape, from two stored B terms to four.
+
+**Transparency is part of this patch, by developer decision.** Today the
+GUI decides CA availability at `:4516-4519` from the format and the
+algorithm version alone, so for any Panasonic raw on v2 the CA fine-tune
+sliders appear and the TCA flag reads as active even when the pixel path
+applies nothing, which it gates separately on `cd->panasonic.has_ca` at
+`:2467-2469`. A user cannot currently distinguish "corrected" from
+"silently skipped". The patch must make availability real, hiding the CA
+fine-tune sliders when there is no usable payload or no table for the
+body, and raise a trouble message when TCA is requested but unavailable,
+following the precedent at `:4453-4464`. The exact wording, and whether it
+should point at the Lensfun method as an alternative, is deferred to
+implementation so it can be judged against a rendered result rather than
+in the abstract.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
