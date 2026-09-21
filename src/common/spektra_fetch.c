@@ -1240,15 +1240,26 @@ static gpointer _fetch_worker(gpointer data)
   g_mutex_unlock(&_sf.lock);
   if(!files)
   {
-    _set_status(SF_FETCH_FAILED, -1.0,
-                unsupported_fmt > SF_PACK_FORMAT_MAX
-                    ? _("that data pack needs a newer darktable")
-                    : unsupported_fmt
-                        ? _("that data pack is too old for this darktable -- "
-                            "the data repository needs re-exporting")
-                        : (wanted_pack ? _("the pack this edit was made with is not published")
-                           : wanted ? _("no pack with that spectral table is published")
-                                  : _("could not read the pack manifest")));
+    /* name what was asked for and where: a version lives only in a manifest
+       entry, and there is none for this pack, so its hash and the configured
+       repository are all that identify it. The usual cause is an edit made
+       against another repository or ref */
+    char why[256];
+    if(unsupported_fmt > SF_PACK_FORMAT_MAX)
+      g_strlcpy(why, _("that data pack needs a newer darktable"), sizeof(why));
+    else if(unsupported_fmt)
+      g_strlcpy(why, _("that data pack is too old for this darktable -- "
+                       "the data repository needs re-exporting"), sizeof(why));
+    else if(wanted_pack)
+      g_snprintf(why, sizeof(why), _("data pack %08x is not published in %s at %s"),
+                 wanted_pack, repo, ref);
+    else if(wanted)
+      g_snprintf(why, sizeof(why),
+                 _("no data pack with spectral table %08x is published in %s at %s"),
+                 wanted, repo, ref);
+    else
+      g_strlcpy(why, _("could not read the pack manifest"), sizeof(why));
+    _set_status(SF_FETCH_FAILED, -1.0, why);
     goto out;
   }
 

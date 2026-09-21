@@ -4175,6 +4175,18 @@ static void _update_data_row(dt_iop_module_t *self)
       have_any
           ? _("the table this edit was developed with is not installed")
           : _("no data pack installed -- the module's controls appear once one is"));
+  /* a failed download says why in a toast that is gone in seconds; keep the
+     reason here, beside the button that retries it, until the next attempt */
+  {
+    char why[256] = { 0 };
+    if(sf_fetch_status(why, sizeof why, NULL) == SF_FETCH_FAILED && why[0])
+    {
+      gchar *both = g_strdup_printf("%s\n%s",
+                                    gtk_label_get_text(GTK_LABEL(g->data_status)), why);
+      gtk_label_set_text(GTK_LABEL(g->data_status), both);
+      g_free(both);
+    }
+  }
   gtk_button_set_label(GTK_BUTTON(g->data_button), _("download data pack"));
   gtk_widget_set_tooltip_text(g->data_button,
                               _("fetch the matching spectral data pack over the network"));
