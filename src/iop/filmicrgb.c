@@ -2431,9 +2431,9 @@ int process_cl(dt_iop_module_t *self,
   // used to adjust noise level depending on size. Don't amplify noise if magnified > 100%
   const float scale = MAX(piece->iscale / roi_in->scale, 1.f);
 
-  uint32_t is_clipped = 0;
-  clipped = dt_opencl_alloc_device_buffer(devid, sizeof(uint32_t));
-  err = dt_opencl_write_buffer_to_device(devid, &is_clipped, clipped, 0, sizeof(uint16_t), TRUE);
+  int is_clipped = 0;
+  clipped = dt_opencl_alloc_device_buffer(devid, sizeof(is_clipped));
+  err = dt_opencl_write_buffer_to_device(devid, &is_clipped, clipped, 0, sizeof(is_clipped), TRUE);
   if(err != CL_SUCCESS) goto error;
 
   // build a mask of clipped pixels
@@ -2444,7 +2444,7 @@ int process_cl(dt_iop_module_t *self,
   if(err != CL_SUCCESS) goto error;
 
   // check for clipped pixels
-  err = dt_opencl_read_buffer_from_device(devid, &is_clipped, clipped, 0, sizeof(uint32_t), TRUE);
+  err = dt_opencl_read_buffer_from_device(devid, &is_clipped, clipped, 0, sizeof(is_clipped), TRUE);
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(clipped);
   clipped = NULL;
