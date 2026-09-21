@@ -93,6 +93,12 @@ changes (where available).
   alternative to colorzones' chroma-vs-chroma curve, with input
   normalized to the local gamut boundary.
 
+- New module contrast and texture. Scene-referred control over local
+  contrast and the general contrast of the image. Useful for adjusting
+  clarity, finer textures, and managing high dynamic range images with
+  control over highlights and shadows. Uses edge aware and exposure
+  invariant guided filters for its processing.
+
 ## UI/UX Improvements
 
 - The code has received a large set of changes in preparation of the

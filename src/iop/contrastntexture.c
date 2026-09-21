@@ -98,7 +98,6 @@ typedef enum dt_iop_contrastntexture_details_display_t
 
 typedef struct dt_iop_contrastntexture_data_t
 {
-  // coarse, broad, medium, fine, micro
   float gain_details[DT_LC_MASK_LAST];
   float radius_details[MAX_ITERATIONS];
   float scale_details[MAX_ITERATIONS];
@@ -300,7 +299,7 @@ static inline float apply_shadows_highlights(const float luminance_lowpass,
     const float shifted_ev = normalized_ev + midtones_width; // Shift to [0, 2*midtones_width] for polynomial evaluation
     correction_ev += (a0 + a1 * shifted_ev + a2 * shifted_ev * shifted_ev);
   }
-  return correction_ev - normalized_ev; // Its only the difference from the identity line that matters for correction
+  return correction_ev - normalized_ev; // It is the difference from the identity line that matters for correction
 }
 
 /*
@@ -404,23 +403,34 @@ void process(dt_iop_module_t *self,
     return;
   }
 
-  // The actual gain per level is computed in process instead of commit params
-  // as its affected by the dispaly mask option.
+  // The actual gain per level is computed here in process() instead of
+  // in commit params as it is affected by the display mask option.
   float gain_per_level[MAX_ITERATIONS] = { 0.0f };
 
   // Display output
-  bool display_mask = false;
-  if(g && g->details_display != DT_LC_MASK_OFF && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  dt_iop_contrastntexture_details_display_t details_display = DT_LC_MASK_OFF;
+  gboolean display_mask = FALSE;
+  dt_iop_gui_enter_critical_section(self);
+  if(g)
   {
-    display_mask = true;
-    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+    details_display = g->details_display;
+    display_mask = g->details_display != DT_LC_MASK_OFF
+                   && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL);
+    if(display_mask)
+      piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+  }
+  dt_iop_gui_leave_critical_section(self);
+
+  dt_print(DT_DEBUG_PIPE, "display_mask: %d, max_used_level: %d\n", display_mask, d->max_used_level);
+  if(display_mask)
+  {
     // Preview the displayed band alone, at full strength, across all pyramid levels
     // (the lowpass preview does not use band weights, the final luminance_lowpass suffices)
-    if(g->details_display != DT_LC_MASK_LAST)
+    if(details_display != DT_LC_MASK_LAST)
     {
       for(int level = 0; level <= d->max_used_level; level++)
       {
-        gain_per_level[level] = band_weight(g->details_display, level, d->max_detail_level);
+        gain_per_level[level] = band_weight(details_display, level, d->max_detail_level);
       }
     }
   }
@@ -459,7 +469,7 @@ void process(dt_iop_module_t *self,
 
   if(display_mask)
   {
-    if(g->details_display == DT_LC_MASK_LAST)
+    if(details_display == DT_LC_MASK_LAST)
       display_lowpass_mask(luminance_lowpass, out, roi_in, d);
     else
       display_local_mask(corrections, out, roi_in);
@@ -575,6 +585,7 @@ void cleanup_pipe(dt_iop_module_t *self,
 
 static void show_details_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
 {
+  DT_GUARD_GUI_UPDATE();
   // early return if blend module is already displaying a mask
   if(self->request_mask_display)
   {
@@ -583,7 +594,6 @@ static void show_details_callback(GtkWidget *togglebutton, dt_iop_module_t *self
     return;
   }
 
-  DT_GUARD_GUI_UPDATE();
   dt_iop_request_focus(self);
   // Activate the module if it wasn't
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
@@ -621,6 +631,7 @@ static void show_details_callback(GtkWidget *togglebutton, dt_iop_module_t *self
 
 void gui_focus(dt_iop_module_t *self, const gboolean in)
 {
+  DT_GUARD_GUI_UPDATE();
   if(!in)
   {
     dt_iop_contrastntexture_gui_data_t *g = self->gui_data;
