@@ -156,11 +156,10 @@ changes (where available).
 ## Other Changes
 
 - A new `.dtdata` sidecar next to the XMP holds per-pixel edit data
-  that does not fit an XMP. It is a plain zip of PNG entries, follows
-  the image when it is moved, renamed, duplicated or deleted, and is
-  written only when sidecar writing is enabled. Entries no history
-  item references are dropped when leaving the darkroom, and the file
-  with them once it is empty.
+  such as raster masks. It is only created for images that use such
+  data, and only when sidecar writing is enabled; most images never get
+  one. It follows the image when it is moved, renamed, duplicated or
+  deleted.
 
 - The external raster masks module imports its mask into the image's
   `.dtdata` sidecar instead of referencing a file in a root folder.
