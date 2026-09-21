@@ -161,6 +161,12 @@ const char *sf_pack_lut_id(const sf_pack_t *pack);
 /* the pack's spectral upsampling tables, default first. A pack_format 2 pack
  * reports exactly one, with an empty identifier: it declared none, and the
  * file was always the irradiance table */
+/* identity of the pack itself, over its constants, profiles and tables: 0 on
+ * a pack that predates the field. A table hash identifies only the table, and a
+ * release can carry one forward unchanged while its profiles move, so this is
+ * what says an edit is looking at the pack it was developed against */
+uint32_t sf_pack_hash(const sf_pack_t *pack);
+
 int sf_pack_n_tables(const sf_pack_t *pack);
 const char *sf_pack_table_identifier(const sf_pack_t *pack, int i);
 const char *sf_pack_table_lut_id(const sf_pack_t *pack, int i);

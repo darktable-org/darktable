@@ -317,6 +317,69 @@ static gboolean _peek_lut_hash(const char *packdir,
   return _peek_lut(packdir, out_hash, NULL, 0);
 }
 
+/* the pack's own identity from its pack.json, without loading the pack. 0 when
+   the directory is not a pack or predates the field, which simply cannot be
+   matched on and falls back to the table hash. pack.json is tens of KB, so
+   this is cheap enough to run over each candidate directory */
+static uint32_t _peek_pack_hash(const char *packdir)
+{
+  char *path = g_build_filename(packdir, "pack.json", NULL);
+  JsonParser *parser = json_parser_new();
+  uint32_t out = 0;
+  if(json_parser_load_from_file(parser, path, NULL))
+  {
+    JsonNode *rootn = json_parser_get_root(parser);
+    JsonObject *root = rootn ? json_node_get_object(rootn) : NULL;
+    if(root && json_object_has_member(root, "pack_hash"))
+    {
+      const char *ph = json_object_get_string_member(root, "pack_hash");
+      if(ph) out = (uint32_t)g_ascii_strtoull(ph, NULL, 16);
+    }
+  }
+  g_object_unref(parser);
+  g_free(path);
+  return out;
+}
+
+/* the directory holding exactly this pack, or FALSE. Checked before the table
+   hash is consulted at all: when an edit names the pack it was developed
+   against, nothing else will do, and two installed packs can carry the same
+   table while rendering differently */
+gboolean sf_fetch_pack_dir_for_pack_hash(const uint32_t wanted_pack_hash,
+                                         char *dst,
+                                         const size_t dstsz)
+{
+  if(!wanted_pack_hash) return FALSE;
+
+  char handdir[PATH_MAX] = { 0 };
+  _data_pack_dir(handdir, sizeof(handdir));
+  if(_peek_pack_hash(handdir) == wanted_pack_hash)
+  {
+    g_strlcpy(dst, handdir, dstsz);
+    return TRUE;
+  }
+
+  char packs[PATH_MAX] = { 0 };
+  _packs_dir(packs, sizeof(packs));
+  GDir *d = g_dir_open(packs, 0, NULL);
+  if(!d) return FALSE;
+  gboolean found = FALSE;
+  const char *ent = NULL;
+  while(!found && (ent = g_dir_read_name(d)))
+  {
+    if(strlen(ent) != 8 || strspn(ent, "0123456789abcdefABCDEF") != 8) continue;
+    char *cand = g_build_filename(packs, ent, NULL);
+    if(_peek_pack_hash(cand) == wanted_pack_hash)
+    {
+      g_strlcpy(dst, cand, dstsz);
+      found = TRUE;
+    }
+    g_free(cand);
+  }
+  g_dir_close(d);
+  return found;
+}
+
 static gboolean _downloaded_dir_for_hash(const uint32_t lut_hash,
                                          char *dst,
                                          size_t dstsz)
@@ -784,6 +847,7 @@ static void _files_free(GPtrArray *files)
  *
  * wanted 0 picks the entry flagged default, else the first one. */
 static GPtrArray *_parse_manifest(const char *json,
+                                  const uint32_t wanted_pack,
                                   const uint32_t wanted,
                                   char **out_base,
                                   uint32_t *out_hash,
@@ -856,9 +920,45 @@ static GPtrArray *_parse_manifest(const char *json,
       continue;
     }
 
+    if(wanted_pack)
+    {
+      /* an edit that names its pack gets that pack or nothing. Falling back to
+         a table match here would hand it the other pack carrying the same
+         table, which is the case this hash exists to tell apart */
+      const char *phs = json_object_has_member(p, "pack_hash")
+                            ? json_object_get_string_member(p, "pack_hash") : NULL;
+      if(phs && (uint32_t)g_ascii_strtoull(phs, NULL, 16) == wanted_pack)
+      {
+        chosen = p;
+        chosen_hash = h;
+      }
+      continue;
+    }
     if(wanted)
     {
+      /* lut_hash names the pack's DEFAULT table. A pack_format 3 pack carries
+         others and lists them under "tables", and an edit records whichever it
+         was developed against, so matching the top-level hash alone would
+         leave an edit made with a non-default table unable to fetch the very
+         pack that holds it. The directory is still named for the default
+         table's hash, which is what chosen_hash keeps carrying */
       if(h == wanted) { chosen = p; chosen_hash = h; }
+      else if(json_object_has_member(p, "tables"))
+      {
+        JsonArray *tabs = json_object_get_array_member(p, "tables");
+        const guint nt = tabs ? json_array_get_length(tabs) : 0;
+        for(guint t = 0; t < nt && !chosen; t++)
+        {
+          JsonObject *to = json_array_get_object_element(tabs, t);
+          const char *ths = (to && json_object_has_member(to, "lut_hash"))
+                                ? json_object_get_string_member(to, "lut_hash") : NULL;
+          if(ths && (uint32_t)g_ascii_strtoull(ths, NULL, 16) == wanted)
+          {
+            chosen = p;
+            chosen_hash = h;
+          }
+        }
+      }
     }
     else if(json_object_has_member(p, "default")
             && json_object_get_boolean_member(p, "default"))
@@ -1006,6 +1106,7 @@ static gboolean _rmdir_recursive(const char *path)
 typedef struct sf_worker_args_t
 {
   uint32_t wanted;
+  uint32_t wanted_pack;
 } sf_worker_args_t;
 
 /* Reprocess so the freshly installed pack takes effect without the user having
@@ -1041,6 +1142,7 @@ static gpointer _fetch_worker(gpointer data)
 {
   sf_worker_args_t *args = (sf_worker_args_t *)data;
   const uint32_t wanted = args->wanted;
+  const uint32_t wanted_pack = args->wanted_pack;
   g_free(args);
 
   gboolean success = FALSE;
@@ -1093,7 +1195,8 @@ static gpointer _fetch_worker(gpointer data)
   uint32_t got_hash = 0;
   guint64 total = 0;
   int unsupported_fmt = 0;
-  files = _parse_manifest(manifest, wanted, &base, &got_hash, &total, &unsupported_fmt);
+  files = _parse_manifest(manifest, wanted_pack, wanted, &base, &got_hash, &total,
+                          &unsupported_fmt);
   if(!files)
   {
     _set_status(SF_FETCH_FAILED, -1.0,
@@ -1102,7 +1205,8 @@ static gpointer _fetch_worker(gpointer data)
                     : unsupported_fmt
                         ? _("that data pack is too old for this darktable -- "
                             "the data repository needs re-exporting")
-                        : (wanted ? _("no pack with that spectral table is published")
+                        : (wanted_pack ? _("the pack this edit was made with is not published")
+                           : wanted ? _("no pack with that spectral table is published")
                                   : _("could not read the pack manifest")));
     goto out;
   }
@@ -1259,7 +1363,8 @@ out:
   return NULL;
 }
 
-gboolean sf_fetch_start(const uint32_t wanted_lut_hash)
+gboolean sf_fetch_start(const uint32_t wanted_lut_hash,
+                        const uint32_t wanted_pack_hash)
 {
   if(!_sf.inited) return FALSE;
 
@@ -1286,6 +1391,7 @@ gboolean sf_fetch_start(const uint32_t wanted_lut_hash)
 
   sf_worker_args_t *args = g_malloc0(sizeof(sf_worker_args_t));
   args->wanted = wanted_lut_hash;
+  args->wanted_pack = wanted_pack_hash;
   _sf.thread = g_thread_new("sf-fetch", _fetch_worker, args);
   const gboolean started = _sf.thread != NULL;
   if(!started) _sf.state = SF_FETCH_FAILED;
