@@ -28,7 +28,10 @@
  * places can hold one:
  *
  *   <user data>/darktable/spektrafilm/                  hand-installed, user-managed
- *   <user data>/darktable/spektrafilm/packs/<lut_hash>/ downloaded, one per spectral table
+ *   <user data>/darktable/spektrafilm/packs/<hash>/     downloaded, named for the pack's
+ *                                                       pack_hash, or for its default
+ *                                                       table's lut_hash when it declares
+ *                                                       none
  *
  * The top level always wins when it can satisfy the request, so a user who
  * exports a pack themselves with tools/spektrafilm_export_data.py never has a
@@ -97,9 +100,9 @@ typedef struct sf_fetch_pack_t
  * Answers "which tables do I have" without loading any of them: it reads the
  * same 32-byte LUT header sf_fetch_resolve_pack_dir() does, so it is as cheap
  * as resolving and carries the same guarantees: a directory only appears once
- * pack.json, spectra_lut.f32 and profiles/ are all present and the header's
- * hash matches the directory name, which is what keeps a download in progress
- * out of the list.
+ * pack.json, spectra_lut.f32 and profiles/ are all present and the directory
+ * name matches the header's hash or the pack's pack_hash, which is what keeps a
+ * download in progress out of the list.
  *
  * Returns a GPtrArray of sf_fetch_pack_t* that owns its entries; release it
  * with g_ptr_array_unref(). Never NULL: an empty array means nothing is
@@ -134,13 +137,27 @@ typedef enum sf_fetch_state_t
  * the configured repository is malformed.
  *
  * The work happens on its own thread. On success the pack lands under
- * <cache>/spektrafilm/packs/<lut_hash>/ and the developed pixelpipe is
+ * <user data>/darktable/spektrafilm/packs/<hash>/ and the developed pixelpipe is
  * reprocessed so the new data takes effect without the user reopening the
  * image. Call from the GUI thread. */
 /* wanted_pack_hash, when non-zero, is the pack the edit was developed against
  * and nothing else will do: two packs can carry one spectral table and
  * render differently. 0 falls back to matching wanted_lut_hash */
 gboolean sf_fetch_start(uint32_t wanted_lut_hash, uint32_t wanted_pack_hash);
+
+/* ask the repository what it publishes and stop there, fetching no pack.
+ * Reports through the same sf_fetch_status() the download uses */
+gboolean sf_fetch_check_start(void);
+
+/* the pack the last check found published and not installed, or 0, which is
+ * also what a repository whose packs declare no identity reports, there being
+ * nothing to compare. Feed it to sf_fetch_start() as the wanted pack */
+uint32_t sf_fetch_available_pack(void);
+
+/* the version of sf_fetch_available_pack() as the manifest names it, or ""
+ * before a check has found one. A label for naming the pack to the user, never
+ * an identity: two packs can report one version */
+void sf_fetch_available_version(char *dst, size_t dstsz);
 
 /* A pack directory's declared identity, or 0 when it declares none, which
  * for an installed pack means it predates pack_hash, and so is one of the
