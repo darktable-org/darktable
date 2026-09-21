@@ -5116,6 +5116,94 @@ hurry to conclude.
 Crops for inspection: `/c/temp/tca/compare27/`, both files, old and new side
 by side at 3x with an 8x amplified difference map.
 
+### The camera disagrees, and the likely reason (session 28)
+
+The registered comparison against the camera's own JPEG says the new decode
+overshoots blue, and by enough that the patch cannot stand as it is.
+
+**Design, after a false start.** A first attempt measured channel-versus-
+channel residuals within each image and compared across images. Its output
+was internally inconsistent: it put the uncorrected render at +0.204 px of
+blue aberration at r = 0.85 while also reporting that the old code, which
+applies 0.398 px there, matched the camera to 0.003 px, and it reported a
+constant dr_R of about -1.5 px at r = 0.30, which no radial correction can
+produce. Discarded.
+
+The design that works measures the SAME channel BETWEEN images and takes a
+difference of differences: per tile, correlate the render's blue against the
+JPEG's blue, and the render's green against the JPEG's green, then take
+`disp_B - disp_G` projected radially. Cross-correlating identical content is
+far better conditioned than cross-correlating different channels, and the
+green subtraction cancels the global scale, crop and distortion mismatch
+between a camera JPEG and a darktable export. Zero means our blue sits where
+Panasonic put theirs. Script `/tmp/rw2_tca/session29_measure.py`, report
+`session29_report.txt`.
+
+**Sanity checks, which the discarded attempt lacked.** Injecting a known
++0.50 px outward radial shift into the blue plane recovers it with correct
+sign at every radius and within about 0.08 px, with a mild 15% underestimate
+above r = 0.75 from window weighting. Comparing a render against a globally
+shifted copy of itself gives medians within 0.006 to 0.012 px, so the noise
+floor on a binned median is 0.01 to 0.02 px. The subtracted green field is
+small and smooth on P1366399 and large but structured on P1366392, where the
+camera applies a 3:2 crop and a 2 to 3% scale difference; it is applied
+identically to both channels, so it cannot manufacture a B-minus-G signal.
+
+**Result**, median radial chromatic disagreement in pixels, zero being
+agreement with the camera:
+
+    frame       r      new      old     tiles
+    P1366392  0.50   +0.216   +0.303    312
+              0.70   -0.454   +0.162    146
+              0.85   -0.875   +0.071    101
+    P1366399  0.50   +0.419   +0.432    295
+              0.70   +0.104   +0.125    206
+              0.85   +0.015   +0.033     96
+
+On the strong-CA frame the old code sits 0.07 px from the camera at r = 0.85
+and the new code sits 0.88 px away with the opposite sign, a 0.95 px gap at
+50 times the noise floor. On the weak-CA frame the two are indistinguishable
+at 0.03 px, which is the floor, so that frame cannot separate them.
+
+**The leading explanation is a radius-normalisation mismatch, not bad
+coefficients.** Note what the earlier validation did and did not establish.
+Session 25 compared our recovered coefficients against Adobe's coefficients,
+in coefficient space. That comparison is blind to the convention in which
+the radius is normalised, because both sides used the same convention. What
+was never checked is whether darktable evaluates those coefficients at the
+radius Adobe means. darktable normalises r to the half-diagonal of
+`p_width` by `p_height` (`lens.cc:2493`). If Adobe's WarpRectilinear
+normalises to something else, a half-width or a half-height, then every
+coefficient is being evaluated too far out, the error grows with radius, and
+it grows fastest in the highest-order terms. The observed signature matches:
+the two decodes agree at r = 0.50 and diverge rapidly beyond r = 0.60.
+
+This also explains the awkward fact that the old code, whose coefficients are
+demonstrably wrong in six ways, lands closer to the camera. It was *fitted*
+against Adobe's output rather than derived from it, and a least-squares fit
+of a polynomial can absorb a radius rescale into its coefficients. The old
+tables silently carried the convention correction; exact coefficients do not.
+
+For a 4:3 sensor the half-diagonal exceeds the half-width by 1.25, and a
+1.25 error in the argument of a cubic in r^2 is more than enough to turn
+0.40 px into 1.16 px at r = 0.85.
+
+**Status of the patch: provisional, and suspect.** It reproduces Adobe's
+coefficients exactly, which is verified twice, and it corrects six structural
+errors, which is also verified. But on the one frame where the difference is
+measurable it renders further from the camera than what it replaced, so it
+must not be presented as an improvement until the normalisation question is
+settled. It sits on a branch, not on master.
+
+**Next.** Establish Adobe's radius normalisation for WarpRectilinear, from
+the DNG specification and then empirically, since the specification's wording
+has to be confirmed against what the converter actually does. The empirical
+test is cheap: the ratio between conventions is a fixed function of aspect
+ratio, so probing one payload word on bodies of differing aspect ratio, or
+comparing a correction's magnitude at a known pixel position against Adobe's
+own rendering, distinguishes them. Then re-evaluate this same comparison,
+which is now a trustworthy instrument with a stated noise floor.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
