@@ -215,8 +215,6 @@ changes (where available).
 - Fix blank module instance names when going back in darkroom action
   history.
 
-- Fixed an OpenCL error in filmicrgb leading to wrong masks.
-
 - Do not override library edit history from XMP sidecar file when
   using darktable-cli with a library file.
 
