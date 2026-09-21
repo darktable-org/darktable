@@ -401,6 +401,22 @@ typedef struct dt_iop_spektrafilm_params_t
      "old", and a sentinel inside the hash space would collide with a real
      pack one day */
   int origin_version;          // $DEFAULT: 3
+  /* scanner black/white point, the reference's scanner.black_correction /
+     white_correction and their levels. A slide carries base density and never
+     reaches D-max, so a scan of one is washed out until its endpoints are
+     placed; both default on, which is what the module did before they were
+     adjustable. Reached only by a scan of positive film: a print has its own
+     paper white and black */
+  gboolean scan_black_correction; // $DEFAULT: TRUE $DESCRIPTION: "black point correction"
+  gboolean scan_white_correction; // $DEFAULT: TRUE $DESCRIPTION: "white point correction"
+  /* below 0 the fit sends the densest tone under black, where the scan stage
+     clips it: shadow detail traded away deliberately, which is what crushing
+     a print means and what the reference's own 0 floor cannot express. Above
+     about a tenth the densest tone is already a mid gray and the render is
+     flat, so the useful span is a fraction of the range; the hard limits stay
+     wide and the soft range carries the part worth dragging through */
+  float scan_black_level;      // $MIN: -0.1 $MAX: 1.0 $DEFAULT: 0.01 $DESCRIPTION: "black level"
+  float scan_white_level;      // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.98 $DESCRIPTION: "white level"
 } dt_iop_spektrafilm_params_t;
 
 /* one discovered profile: stock (= file base name), display name, stage */
@@ -445,6 +461,8 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *grain_granularity, *grain_uniformity, *grain_sublayer_scale;
   GtkWidget *grain_density_min, *grain_dye_cloud;
   GtkWidget *scan_blur, *scan_usm_sigma, *scan_usm_amount, *glare_percent;
+  GtkWidget *scan_black_correction, *scan_white_correction;
+  GtkWidget *scan_black_level, *scan_white_level;
   GtkWidget *development_min, *print_development_min;
   GtkWidget *grain_usm_sigma, *grain_usm_amount;
   GtkWidget *halation_on, *scatter_amount, *scatter_scale, *halation_amount, *halation_scale;
@@ -868,6 +886,10 @@ int legacy_params(dt_iop_module_t *self,
   /* named no pack, and could not have: none declared an identity yet */
   n->pack_hash = 0u;
   n->origin_version = old_version;
+  /* the endpoints the module placed for these edits before they were exposed */
+  n->scan_black_correction = n->scan_white_correction = TRUE;
+  n->scan_black_level = 0.01f;
+  n->scan_white_level = 0.98f;
   /* an edit of this vintage that recorded no table was made when exactly one
      pack existed, so that is the table it used: there was nothing else to
      render with. Left at 0 it would instead resolve to whatever happens to be
@@ -1533,6 +1555,11 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   key = _mix64(key, &p->adaptation_bandwidth, sizeof p->adaptation_bandwidth);
   key = _mix64(key, &p->adaptation_surface, sizeof p->adaptation_surface);
   key = _mix64(key, &p->output_luminance_boost, sizeof p->output_luminance_boost);
+  /* the endpoint fit is solved at build time, not per pixel */
+  key = _mix64(key, &p->scan_black_correction, sizeof p->scan_black_correction);
+  key = _mix64(key, &p->scan_white_correction, sizeof p->scan_white_correction);
+  key = _mix64(key, &p->scan_black_level, sizeof p->scan_black_level);
+  key = _mix64(key, &p->scan_white_level, sizeof p->scan_white_level);
   key = _mix64(key, &p->gamut_compress, sizeof p->gamut_compress);
   key = _mix64(key, &p->output_scale, sizeof p->output_scale);
   key = _mix64(key, &p->film_gamma_factor, sizeof p->film_gamma_factor);
@@ -1801,6 +1828,10 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     sp.preflash_y_shift = p->preflash_y_shift;
     sp.scan_film = p->scan_film;
     sp.spectral_lut_hash = p->upsampling_hash;
+    sp.scan_black_correction = p->scan_black_correction;
+    sp.scan_white_correction = p->scan_white_correction;
+    sp.scan_black_level = p->scan_black_level;
+    sp.scan_white_level = p->scan_white_level;
     sp.adaptation_bandwidth = p->adaptation_bandwidth;
     sp.adaptation_surface = p->adaptation_surface;
     sp.lut_steps = _quality_steps(p->quality);
@@ -3852,6 +3883,19 @@ static void _update_print_sensitivity(dt_iop_module_t *self)
   gtk_widget_set_sensitive(g->print_gamma_r, printing);
   gtk_widget_set_sensitive(g->print_gamma_g, printing);
   gtk_widget_set_sensitive(g->print_gamma_b, printing);
+  /* the endpoint fit runs where the endpoints come from something other than
+     the medium being rendered: a scan of positive film, whose slide has base
+     density and never reaches D-max, and a print on negative-type paper, whose
+     range is set by the film behind it. A scan of a negative is not placed this
+     way, and positive paper carries its own black and white */
+  const sf_prof_entry_t *film_now = _current_film_entry(g, p);
+  const sf_prof_entry_t *paper_now = _effective_paper_entry(g, p);
+  const gboolean bw_point = printing ? (paper_now && !paper_now->positive)
+                                     : (film_now && film_now->positive);
+  gtk_widget_set_sensitive(g->scan_black_correction, bw_point);
+  gtk_widget_set_sensitive(g->scan_white_correction, bw_point);
+  gtk_widget_set_sensitive(g->scan_black_level, bw_point);
+  gtk_widget_set_sensitive(g->scan_white_level, bw_point);
   gtk_widget_set_sensitive(g->filter_m, printing);
   gtk_widget_set_sensitive(g->filter_y, printing);
   gtk_widget_set_sensitive(g->print_diffusion_on, printing);
@@ -4346,6 +4390,9 @@ static void _preset_defaults(dt_iop_spektrafilm_params_t *p)
   p->upsampling_hash = 0u; /* the pack's default table */
   p->pack_hash = 0u;       /* resolve by table, as a preset must */
   p->origin_version = 3;   /* a preset is written now, whatever it is applied to */
+  p->scan_black_correction = p->scan_white_correction = TRUE;
+  p->scan_black_level = 0.01f;
+  p->scan_white_level = 0.98f;
   p->couplers_amount = 1.0f;
   p->couplers_diffusion_um = 20.0f;
   p->couplers_tail_um = 200.0f;
@@ -6146,6 +6193,40 @@ void gui_init(dt_iop_module_t *self)
                                 "print surface, in percent. lifts the deepest blacks "
                                 "slightly. not\n"
                                 "applied when scanning the film directly."));
+
+  _section_add(self, C_("section", "black and white point"),
+               "plugins/darkroom/spektrafilm/expand_scan_bw");
+
+  g->scan_black_correction =
+      dt_bauhaus_toggle_from_params(self, "scan_black_correction");
+  gtk_widget_set_tooltip_text(
+      g->scan_black_correction,
+      _("place the scan's black point. a slide carries base density and so\n"
+        "never scans to black on its own; off, the shadows stay lifted."));
+  g->scan_black_level = dt_bauhaus_slider_from_params(self, "scan_black_level");
+  dt_bauhaus_slider_set_soft_range(g->scan_black_level, -0.02f, 0.10f);
+  dt_bauhaus_slider_set_digits(g->scan_black_level, 3);
+  gtk_widget_set_tooltip_text(
+      g->scan_black_level,
+      _("where the film's densest tone is sent, as a display value.\n"
+        "0 sends it to true black; raising it lifts the shadows and flattens\n"
+        "the render, and below 0 it is pushed past black and clipped, which\n"
+        "crushes the deepest tones together."));
+
+  g->scan_white_correction =
+      dt_bauhaus_toggle_from_params(self, "scan_white_correction");
+  gtk_widget_set_tooltip_text(
+      g->scan_white_correction,
+      _("place the scan's white point, from the film's clear base."));
+  g->scan_white_level = dt_bauhaus_slider_from_params(self, "scan_white_level");
+  dt_bauhaus_slider_set_soft_range(g->scan_white_level, 0.80f, 1.0f);
+  dt_bauhaus_slider_set_digits(g->scan_white_level, 3);
+  gtk_widget_set_tooltip_text(
+      g->scan_white_level,
+      _("where the film's clear base is sent, as a display value.\n"
+        "\n"
+        "with one correction off the other still lands exactly here: the\n"
+        "uncorrected end is left where the film puts it."));
 
   /* restore root widget */
   self->widget = sf_main_box;
