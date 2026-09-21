@@ -5059,6 +5059,44 @@ with Adobe; an OpenCL run on hardware that has a GPU; and the five contexts
 cover the corpus but not every Panasonic body, so an uncharacterised body
 gets distortion only until someone probes it.
 
+**A flag from the first visual check, and it needs resolving before this is
+called good.** Rendering P1366392, the strong-CA file, through the old and
+new code with the same XMP, the new correction moves 61% of pixels with a
+mean absolute difference of 1.31 in 8-bit terms, and the crude fringing
+metric in the worst outer window at r = 0.91 gets *worse*: mean |R-G| rises
+from 15.84 to 17.60 and mean |B-G| from 16.64 to 22.73. That is consistent
+with the coefficient change itself, since the new map moves B by 1.159 px at
+r = 0.85 where the old code moved it 0.398 px, so if the camera wanted about
+0.4 px the new code overcorrects.
+
+Three readings, and this session cannot distinguish them:
+
+1. The metric is bad. Mean |R-G| over a crop measures colour content, not
+   misregistration, and it is exactly the metric that led session 18 to
+   conclusions that later had to be withdrawn. It has no registration and no
+   reference.
+2. We match Adobe and Adobe does not match Panasonic. The end-to-end checks
+   in session 25 compared against Adobe's own planes and agreed to 1e-14 on
+   the probed models, with fresh conversions in the audit. If both hold, then
+   Adobe's reading of the payload differs from what the camera renders, which
+   is exactly the caveat recorded at L1558 and never tested.
+3. Something in eps_B is too large by a factor. Less likely, since the audit
+   reproduced the matrices from fresh conversions and validated B against
+   Adobe's own B plane independently of the R/B symmetry, but not excluded by
+   anything measured here.
+
+Reading 2 is the one the project's goal cares about, and the test that
+separates all three is the registered comparison against the paired camera
+JPEG, which is the next task. **Until that runs, the claim for this patch is
+narrow and should stay narrow: it reproduces Adobe's decode of the payload
+exactly, and it corrects six structural errors in the previous
+implementation. Whether it renders closer to the camera than its predecessor
+is unproven.** The work sits on a branch, not on master, so there is no
+hurry to conclude.
+
+Crops for inspection: `/c/temp/tca/compare27/`, both files, old and new side
+by side at 3x with an 8x amplified difference map.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
