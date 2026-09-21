@@ -80,6 +80,32 @@ gboolean sf_fetch_resolve_pack_dir(uint32_t wanted_lut_hash,
 /* TRUE when a pack carrying this exact table is already on disk. */
 gboolean sf_fetch_have_lut_hash(uint32_t lut_hash);
 
+/* one installed pack, as sf_fetch_list_packs() reports it */
+typedef struct sf_fetch_pack_t
+{
+  gchar *dir;              /* absolute path, ready for sf_pack_load() */
+  gchar *lut_id;           /* table id from the LUT header; "" if unreadable */
+  uint32_t lut_hash;
+  gboolean hand_installed; /* the top-level folder, not a download */
+  gint64 mtime;
+} sf_fetch_pack_t;
+
+/* every usable pack on disk, in the order sf_fetch_resolve_pack_dir() would
+ * consider them: the hand-installed one first when there is one, then the
+ * downloads newest first.
+ *
+ * Answers "which tables do I have" without loading any of them: it reads the
+ * same 32-byte LUT header sf_fetch_resolve_pack_dir() does, so it is as cheap
+ * as resolving and carries the same guarantees: a directory only appears once
+ * pack.json, spectra_lut.f32 and profiles/ are all present and the header's
+ * hash matches the directory name, which is what keeps a download in progress
+ * out of the list.
+ *
+ * Returns a GPtrArray of sf_fetch_pack_t* that owns its entries; release it
+ * with g_ptr_array_unref(). Never NULL: an empty array means nothing is
+ * installed */
+GPtrArray *sf_fetch_list_packs(void);
+
 /* Bumped every time a download changes what is on disk.
  *
  * A caller that caches a loaded pack cannot detect a new one by watching the
