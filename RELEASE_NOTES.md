@@ -193,9 +193,12 @@ changes (where available).
 ## Bug Fixes
 
 - restored transverse chromatic aberration correction on Panasonic
-  RW2 files, by decoding Exif.PanasonicRaw.0x011b and applying
-  per-channel radial coefficients on top of the 0x0119 distortion
-  added in the previous cycle
+  RW2 files, by decoding Exif.PanasonicRaw.0x011b and applying a
+  per-channel radial correction ahead of the 0x0119 distortion
+  correction added in the previous cycle. Bodies whose coefficients
+  have not been characterised are corrected for distortion only, and
+  the lens correction module now says so rather than silently leaving
+  the chromatic aberration uncorrected
 
 - Fixed a trashing error dialog when deleting a virgin duplicate of an
   image while sidecar creation is set to "after edit".
