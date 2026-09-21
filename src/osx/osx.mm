@@ -80,6 +80,12 @@ static void dt_osx_disable_fullscreen(GtkWidget *widget)
       [native setCollectionBehavior: ([native collectionBehavior] & ~NSWindowCollectionBehaviorFullScreenPrimary)
                                      | NSWindowCollectionBehaviorFullScreenAuxiliary
                                      | NSWindowCollectionBehaviorFullScreenDisallowsTiling];
+      // recent macOS versions (observed on 27.0) draw the titlebar transparent
+      // by default, letting the window content show through; force an opaque
+      // titlebar so dialogs stay readable
+      [native setTitlebarAppearsTransparent: NO];
+      [native setOpaque: YES];
+      [native setBackgroundColor: [NSColor windowBackgroundColor]];
     }
   }
 #endif
