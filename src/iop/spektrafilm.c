@@ -372,6 +372,12 @@ typedef struct dt_iop_spektrafilm_params_t
      A hash the installed pack does not carry is reported rather than silently
      rendered with another table, exactly as a lut_hash mismatch is */
   uint32_t upsampling_hash;    // $DEFAULT: 0
+  /* the pack this edit was developed against. lut_hash above names only the
+     spectral table, and a release can carry a table forward byte-identical
+     while its profiles move, so two packs answer to one lut_hash and render
+     differently. 0 on an edit made before packs carried an identity, and on a
+     pack that declares none; both fall back to matching the table */
+  uint32_t pack_hash;          // $DEFAULT: 0
 } dt_iop_spektrafilm_params_t;
 
 /* one discovered profile: stock (= file base name), display name, stage */
@@ -451,7 +457,8 @@ typedef struct dt_iop_spektrafilm_gui_data_t
      the pixelpipe thread that posts it and by the GTK thread that runs or
      cancels it, so it lives under the module's GUI critical section. */
   guint trouble_idle;
-  uint32_t data_wanted; /* spectral table the button will ask for */
+  uint32_t data_wanted;
+  uint32_t data_wanted_pack; /* spectral table the button will ask for */
   sf_fetch_state_t data_last_state; /* to spot the moment a fetch finishes */
 } dt_iop_spektrafilm_gui_data_t;
 
@@ -832,6 +839,8 @@ int legacy_params(dt_iop_module_t *self,
   n->grain_blur_base = 0.8f;
   /* the pack's default table, which is the only one these edits ever had */
   n->upsampling_hash = 0u;
+  /* these edits named no pack; they resolve by table as they always did */
+  n->pack_hash = 0u;
 
   *new_params = n;
   *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
@@ -990,6 +999,15 @@ static GList *_scan_tables(void)
 
   sf_table_info_t info[SF_MAX_TABLES];
   const int n = sf_pack_peek_tables(dir, info, SF_MAX_TABLES);
+  /* the combobox hides itself below two tables, so a pack that declares fewer
+     than expected looks identical to a module that has no such control: say
+     which directory was read and what it offered, since the usual cause is a
+     pack installed somewhere the module does not look */
+  dt_print(DT_DEBUG_DEV, "[spektrafilm] %d spectral upsampling table(s) in %s\n",
+           n, dir);
+  for(int i = 0; i < n; i++)
+    dt_print(DT_DEBUG_DEV, "[spektrafilm]   %08x %s %s\n", info[i].lut_hash,
+             info[i].identifier[0] ? info[i].identifier : "(unnamed)", info[i].lut_id);
 
   GList *list = NULL;
   for(int i = 0; i < n; i++)
@@ -1272,6 +1290,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   uint64_t key = 0xcbf29ce484222325ULL;
   key = _mix64(key, &p->film_hash, sizeof p->film_hash);
   key = _mix64(key, &p->lut_hash, sizeof p->lut_hash);
+  key = _mix64(key, &p->pack_hash, sizeof p->pack_hash);
   /* picks the spectral table the tc LUT is built from, so the sim is a
      different one entirely */
   key = _mix64(key, &p->upsampling_hash, sizeof p->upsampling_hash);
@@ -1370,7 +1389,12 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
      open in the same session is rare enough that the reload costs less than
      permanently carrying every pack the user has on disk. */
   char want_dir[SF_PATH_LEN];
-  _resolve_pack_dir(p->lut_hash, want_dir, sizeof want_dir);
+  /* the pack the edit names, if it is installed; only then the table. Two
+     installed packs can carry one table and render differently, so resolving
+     by table first would pick between them arbitrarily */
+  if(!p->pack_hash
+     || !sf_fetch_pack_dir_for_pack_hash(p->pack_hash, want_dir, sizeof want_dir))
+    _resolve_pack_dir(p->lut_hash, want_dir, sizeof want_dir);
 
   const guint gen = fetch_gen;
 
@@ -3165,6 +3189,11 @@ static void _stamp_lut_hash(dt_iop_module_t *self)
   {
     const uint32_t cur = sf_pack_lut_hash(_pack);
     if(!p->lut_hash || p->lut_hash == cur) p->lut_hash = cur;
+    /* same rule for the pack: record it while the edit is still on the pack it
+       was made with, and leave it alone once it disagrees: overwriting there
+       would erase the very mismatch the field exists to report */
+    const uint32_t curp = sf_pack_hash(_pack);
+    if(curp && (!p->pack_hash || p->pack_hash == curp)) p->pack_hash = curp;
   }
   dt_pthread_mutex_unlock(&_pack_lock);
 }
@@ -3829,6 +3858,7 @@ static void _update_data_row(dt_iop_module_t *self)
   }
 
   g->data_wanted = have_any ? p->lut_hash : 0;
+  g->data_wanted_pack = p->pack_hash;
   gtk_label_set_text(
       GTK_LABEL(g->data_status),
       have_any
@@ -3860,7 +3890,7 @@ static void _data_button_clicked(GtkButton *button,
   if(sf_fetch_status(NULL, 0, NULL) == SF_FETCH_RUNNING)
     sf_fetch_cancel();
   else
-    sf_fetch_start(g->data_wanted);
+    sf_fetch_start(g->data_wanted, g->data_wanted_pack);
 
   _update_data_row(self);
 }
@@ -3937,6 +3967,7 @@ static void _preset_defaults(dt_iop_spektrafilm_params_t *p)
      it, and none of them names grain_blur_base to say otherwise */
   p->grain_blur_base = 0.8f;
   p->upsampling_hash = 0u; /* the pack's default table */
+  p->pack_hash = 0u;       /* resolve by table, as a preset must */
   p->couplers_amount = 1.0f;
   p->couplers_diffusion_um = 20.0f;
   p->couplers_tail_um = 200.0f;

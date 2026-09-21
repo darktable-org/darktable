@@ -137,7 +137,15 @@ typedef enum sf_fetch_state_t
  * <cache>/spektrafilm/packs/<lut_hash>/ and the developed pixelpipe is
  * reprocessed so the new data takes effect without the user reopening the
  * image. Call from the GUI thread. */
-gboolean sf_fetch_start(uint32_t wanted_lut_hash);
+/* wanted_pack_hash, when non-zero, is the pack the edit was developed against
+ * and nothing else will do: two packs can carry one spectral table and
+ * render differently. 0 falls back to matching wanted_lut_hash */
+gboolean sf_fetch_start(uint32_t wanted_lut_hash, uint32_t wanted_pack_hash);
+
+/* the installed directory holding exactly this pack, or FALSE */
+gboolean sf_fetch_pack_dir_for_pack_hash(uint32_t wanted_pack_hash,
+                                         char *dst,
+                                         size_t dstsz);
 
 /* Ask a running fetch to stop. Returns once the flag is set, not once the
  * thread has finished; the partially downloaded files are discarded. */
