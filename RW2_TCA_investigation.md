@@ -4993,6 +4993,72 @@ should point at the Lensfun method as an alternative, is deferred to
 implementation so it can be judged against a rendered result rather than
 in the abstract.
 
+### The decode, shipped (session 27)
+
+`eb73e8222f` replaces the Panasonic branch. What went in, and what was
+verified rather than assumed.
+
+**The change.** The six-word tables `_pana_C_R`, `_pana_C_B_lo` and the
+amplitude constant `_pana_K` are gone. In their place are
+`_pana_ca_radii[5][4]`, keyed on payload words 4, 11, 16 and 17, and
+`_pana_ca_M_R[5][4][4]` and `_pana_ca_M_B[5][4][4]`, with predictor index
+arrays `{8, 12, 23, 26}` for R and `{10, 20, 27, 29}` for B.
+`_pana_ca_context()` resolves a payload to a table index or returns -1 for
+an uncharacterised body, and -1 means no CA rather than an extrapolation.
+The evaluator now computes `rd = fine * r`, `u = rd * rd`, eps as a cubic
+in u by Horner, and applies it multiplicatively as
+`cor_rgb[0][i] = fine * (1 + cor_ca_r_ft * eps_r)`, so CA acts in the raw
+frame ahead of distortion. All four B coefficients are used.
+
+**Verification.**
+
+- Transcription: every element parsed back out of `lens.cc` and compared
+  against `session25_map.npz`, maximum absolute difference exactly 0,
+  radius tuples and word index arrays included. `_pana_ca_M_B` is
+  `_pana_ca_M_R` with columns permuted by [2, 0, 1, 3], which is the slot
+  symmetry (8,20), (12,27), (10,23), (26,29) expressed as a permutation.
+- Convention: the patched C expression reimplemented in Python, reading the
+  tables out of `lens.cc` rather than the npz, agrees with
+  `session25_decode.py` to 5.3e-15 over 21 knots on two files in two
+  contexts. The test has power: forcing a cubic in r instead of u
+  disagrees by 1.7e-4, and evaluating eps at r instead of `fine * r`
+  disagrees by 7.2e-5, both orders of magnitude above the noise.
+- Renders: four `darktable-cli` runs on P1366477 and a S5 II file, all exit
+  0. Integration tests 0145 and 0146, which exercise the shared
+  embedded-metadata path, pass.
+- Coverage: all 32 real files checked across three corpus directories
+  resolve to one of the five contexts, so none loses CA to the new
+  fallback.
+
+**Size of the behavioural change**, on P1366477 at r = 0.85 with a
+half-diagonal of 3276.8 px: the red channel moves 0.423 px where the old
+code moved it 0.624 px, and blue moves 1.159 px where the old code moved it
+0.398 px. So 0.20 px on R and 0.76 px on B, which is visible.
+
+**Not verified, and worth being explicit about.** This host reports zero
+OpenCL devices, so the `process_cl` path was never executed; CPU and
+"OpenCL" outputs are identical only because both ran on the CPU. The
+reading in session 26 says `basic.cl` consumes the same spline layout and
+needs no kernel change, but that is an argument, not a test. Integration
+test 0096-lensfun fails here both with and without the patch, with an
+identical 126726 changed pixels, so it is a pre-existing environment
+difference in the Lensfun database rather than a regression.
+
+**Transparency.** The GUI's `has_ca` now requires
+`_pana_has_decodable_ca()`, so the CA fine-tune sliders disappear when
+there is no usable payload or no table for the body, and `_display_errors()`
+raises "no CA data for this camera" when the embedded-metadata method is
+active with TCA requested on a file we cannot decode. The message names the
+Lensfun method as an alternative, which informs the user of an option they
+already have rather than implementing the hybrid that "Scope and goal"
+rules out. Wording is provisional until it has been seen in the GUI.
+
+**Still open.** A rendered comparison against the paired camera JPEGs, which
+is the only evidence that would confirm agreement with Panasonic rather than
+with Adobe; an OpenCL run on hardware that has a GPU; and the five contexts
+cover the corpus but not every Panasonic body, so an uncharacterised body
+gets distortion only until someone probes it.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
