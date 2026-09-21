@@ -942,13 +942,12 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     cl->dev[dev].clroundup_ht = 16;
   }
 
-  const gboolean fastopencl = dt_conf_get_bool("opencl_fast");
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
                "   ROUNDUP WIDTH & HEIGHT    %ix%i\n", cl->dev[dev].clroundup_wd, cl->dev[dev].clroundup_ht);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   EVENTS HANDLED:           %s\n", STR_YESNO(cl->dev[dev].use_events));
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   OPENCL FAST MODE:         %s\n", STR_YESNO(fastopencl));
+               "   OPENCL FAST MODE:         %s\n", STR_YESNO(cl->fastcl));
   dt_print_nts(DT_DEBUG_OPENCL,
                "   DEFAULT DEVICE:           %s\n", STR_YESNO(type & CL_DEVICE_TYPE_DEFAULT));
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -1001,8 +1000,10 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     if(isalnum(driverversion[i])) drvversion[j++] = driverversion[i];
   drvversion[j] = 0;
   snprintf(cachedir, PATH_MAX * sizeof(char),
-           "%s" G_DIR_SEPARATOR_S "cached_v%d_kernels_for_%s_%s",
-    dtcache, DT_OPENCL_KERNELS, alnum_fullname, drvversion);
+           "%s" G_DIR_SEPARATOR_S "cached_v%d_%skernels_for_%s_%s",
+    dtcache, DT_OPENCL_KERNELS,
+    cl->fastcl ? "fast" : "std",
+    alnum_fullname, drvversion);
   if(g_mkdir_with_parents(cachedir, 0700) == -1)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
@@ -1025,7 +1026,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   escapedkerneldir = dt_util_str_replace(kerneldir, " ", "\\ ");
 #endif
 
-  const char* compile_opt = fastopencl ? DT_OPENCL_DEFAULT_COMPILE_OPTI : DT_OPENCL_DEFAULT_COMPILE_DEFAULT;
+  const char* compile_opt = cl->fastcl ? DT_OPENCL_DEFAULT_COMPILE_OPTI : DT_OPENCL_DEFAULT_COMPILE_DEFAULT;
   cl->dev[dev].cflags = g_strdup_printf("-w %s%s -D%s=1",
                                 compile_opt,
                                 cl->dev[dev].cuda && cl->dev[dev].atomic_support ? " -DNVIDIA_SM_20=1" : "",
@@ -1223,7 +1224,11 @@ void dt_opencl_init(dt_opencl_t *cl,
   cl->enabled = FALSE;
   cl->stopped = FALSE;
   cl->error_count = 0;
-  cl->fastcl = dt_conf_get_bool("opencl_fast");
+  dt_sys_resources_t *res = &darktable.dtresources;
+  /** Avoid using the OpenCL fast mode if darktable has been started with "reference" level
+      helping with debugging and reliable integration test results.
+  */
+  cl->fastcl = res->level != -1 && dt_conf_get_bool("opencl_fast");
   cl->fast_tiling = options & DT_OPENCL_OPTION_FAST_TILE;
   cl->no_fast_tiling = (options & DT_OPENCL_OPTION_NOFAST_TILE) || dt_conf_get_bool("no_opencl_fast_tiling");
   cl->spurious = options & DT_OPENCL_OPTION_SPURIOS;
@@ -2274,7 +2279,7 @@ static gboolean _opencl_load_program(const int dev,
   len = g_strlcpy(start, cl->dev[dev].cflags, end - start);
   start += len;
 
-  start[0] = dt_conf_get_bool("opencl_fast");
+  start[0] = cl->fastcl;
   start += 1;
 
   /* make sure that the md5sums of all the includes are applied as well */

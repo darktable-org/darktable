@@ -191,6 +191,8 @@ changes (where available).
 - pixelpipe dump files requested via cli switches are now written
   in ppm or pgm format.
 
+- OpenCL fast/non-fast kernels are cached at different locations.
+
 - The aspect ratio chosen on the camera is now applied as a crop when
   the raw was left uncropped, so a frame shot at 1:1 or 16:9 opens
   framed as intended while the full sensor area stays available to
