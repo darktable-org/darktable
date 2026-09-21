@@ -5035,14 +5035,33 @@ half-diagonal of 3276.8 px: the red channel moves 0.423 px where the old
 code moved it 0.624 px, and blue moves 1.159 px where the old code moved it
 0.398 px. So 0.20 px on R and 0.76 px on B, which is visible.
 
-**Not verified, and worth being explicit about.** This host reports zero
-OpenCL devices, so the `process_cl` path was never executed; CPU and
-"OpenCL" outputs are identical only because both ran on the CPU. The
-reading in session 26 says `basic.cl` consumes the same spline layout and
-needs no kernel change, but that is an argument, not a test. Integration
-test 0096-lensfun fails here both with and without the patch, with an
-identical 126726 changed pixels, so it is a pre-existing environment
-difference in the Lensfun database rather than a regression.
+**OpenCL: verified on hardware, by the developer.** This host reports zero
+OpenCL devices, so nothing here could exercise `process_cl`; the CPU and
+"OpenCL" outputs matched only because both ran on the CPU. The developer
+reproduced the test on Windows against an AMD gfx1103, on a build of
+`0297ce0d70`:
+
+- `[opencl_init] FINALLY: opencl PREFERENCE=YES is AVAILABLE and ENABLED`,
+  one platform, one device, driver 3661.0 (PAL,LC).
+- `opencl_device_priority '*/!0,*/*/*/!0,*'` resolves the export pipe to
+  device 0, so the export path is GPU-eligible; preview and preview2 are -1
+  by design.
+- ``[export] processed `lens' on GPU``, with 0.1081 s in the
+  `md_lens_correction` kernel, and 19 of 19 events successful with none
+  lost.
+- GraphicsMagick `compare -metric MAE` between the CPU and GPU exports:
+  0.0000000000 normalised on red, green, blue and total.
+
+So the patched coefficients and the raw-frame evaluator give identical
+output on both paths, at the 8-bit precision of the exported TIFF, which is
+the same precision the integration suite judges. Session 26's argument that
+`basic.cl` needs no kernel change is now a measurement rather than an
+argument. Note that `demosaic` ran on the CPU in both runs, which is
+unrelated to this module.
+
+One caveat retained: `0096-lensfun` fails on the Linux host both with and
+without the patch, with an identical 126726 changed pixels, so it is a
+pre-existing Lensfun database difference rather than a regression.
 
 **Transparency.** The GUI's `has_ca` now requires
 `_pana_has_decodable_ca()`, so the CA fine-tune sliders disappear when
@@ -5055,9 +5074,9 @@ rules out. Wording is provisional until it has been seen in the GUI.
 
 **Still open.** A rendered comparison against the paired camera JPEGs, which
 is the only evidence that would confirm agreement with Panasonic rather than
-with Adobe; an OpenCL run on hardware that has a GPU; and the five contexts
-cover the corpus but not every Panasonic body, so an uncharacterised body
-gets distortion only until someone probes it.
+with Adobe; and the five contexts cover the corpus but not every Panasonic
+body, so an uncharacterised body gets distortion only until someone probes
+it.
 
 **A flag from the first visual check, and it needs resolving before this is
 called good.** Rendering P1366392, the strong-CA file, through the old and
