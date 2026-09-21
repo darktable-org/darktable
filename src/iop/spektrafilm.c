@@ -465,6 +465,8 @@ typedef struct dt_iop_spektrafilm_gui_data_t
      be collapsed to just that row while no usable pack exists. */
   GtkWidget *main_box;
   GtkWidget *data_box, *data_button, *data_status;
+  GtkWidget *update_box, *update_button, *update_status, *update_progress;
+  gboolean update_fetching; /* the running fetch was started from this row */
   /* Sections repoint self->widget at their own container while a page is being
      built, so the page box has to be remembered separately. section_container
      is the last one handed out, which is how a fresh page is recognised. */
@@ -481,7 +483,8 @@ typedef struct dt_iop_spektrafilm_gui_data_t
      cancels it, so it lives under the module's GUI critical section. */
   guint trouble_idle;
   uint32_t data_wanted;
-  uint32_t data_wanted_pack; /* spectral table the button will ask for */
+  uint32_t data_wanted_pack;
+  gboolean data_checked;  /* a check has run, so "up to date" means something */ /* spectral table the button will ask for */
   sf_fetch_state_t data_last_state; /* to spot the moment a fetch finishes */
 } dt_iop_spektrafilm_gui_data_t;
 
@@ -4035,6 +4038,18 @@ static void _update_data_row(dt_iop_module_t *self)
 
   if(state == SF_FETCH_RUNNING)
   {
+    /* started from the update row, which reports its own progress. Recorded
+       before returning all the same: the running-to-done transition below is
+       what rebuilds the GUI once a pack lands, and a fetch that never looked
+       like it was running never looks like it finished either: the module
+       would keep the table list it read before the download */
+    if(g->update_fetching)
+    {
+      g->data_last_state = state;
+      gtk_widget_set_visible(g->data_box, FALSE);
+      if(!g->data_poll) g->data_poll = g_timeout_add(500, _data_poll_cb, self);
+      return;
+    }
     g->data_last_state = state;
     /* Percentage first. The message that follows it is a filename and a file
        count, which grows and shrinks as the download moves between files, so a
@@ -4122,12 +4137,122 @@ static void _update_data_row(dt_iop_module_t *self)
   gtk_widget_set_visible(g->data_box, TRUE);
 }
 
+/* the update row, which asks a question the module cannot answer on its own:
+   whether the repository has moved on. Separate from the data row above, which
+   reports a pack missing right now: that belongs at the top of the module
+   because nothing renders without it, while this is housekeeping.
+
+   Offered rather than run on its own: it is network traffic nobody asked for,
+   and a pack fetched here is never adopted behind an existing edit. It
+   installs beside the one in use, and only a fresh edit or a deliberate table
+   choice renders on it */
+static void _update_update_row(dt_iop_module_t *self)
+{
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  if(!g || !g->update_box) return;
+
+  char msg[256] = { 0 };
+  double progress = -1.0;
+  const sf_fetch_state_t state = sf_fetch_status(msg, sizeof msg, &progress);
+  if(g->update_fetching && state == SF_FETCH_RUNNING)
+  {
+    /* reported here rather than in the row at the top of the module: that one
+       is about a pack missing right now, and a check or an update fetch is
+       neither missing nor urgent */
+    gtk_label_set_text(GTK_LABEL(g->update_status), msg);
+    gtk_button_set_label(GTK_BUTTON(g->update_button), _("cancel"));
+    if(progress >= 0.0)
+      gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g->update_progress), progress);
+    else
+      gtk_progress_bar_pulse(GTK_PROGRESS_BAR(g->update_progress));
+    gtk_widget_set_visible(g->update_progress, TRUE);
+    return;
+  }
+  gtk_widget_set_visible(g->update_progress, FALSE);
+  if(state != SF_FETCH_RUNNING) g->update_fetching = FALSE;
+
+  const uint32_t avail = sf_fetch_available_pack();
+  char ver[32];
+  sf_fetch_available_version(ver, sizeof ver);
+  /* the pack the check found may since have been fetched, and nothing clears
+     avail_pack on install: ask the disk rather than keep offering it */
+  char installed_at[SF_PATH_LEN] = { 0 };
+  const gboolean now_installed =
+      avail && sf_fetch_pack_dir_for_pack_hash(avail, installed_at,
+                                               sizeof installed_at);
+
+  char label[96], status[96];
+  if(avail && ver[0])
+  {
+    g_snprintf(label, sizeof label, _("download data pack %s"), ver);
+    g_snprintf(status, sizeof status, _("data pack %s is available"), ver);
+  }
+  else
+  {
+    g_strlcpy(label, _("download data pack"), sizeof label);
+    g_strlcpy(status, _("a newer data pack is available"), sizeof status);
+  }
+
+  char done_msg[96];
+  if(now_installed && ver[0])
+    g_snprintf(done_msg, sizeof done_msg, _("data pack %s installed"), ver);
+  else
+    g_strlcpy(done_msg, _("data pack installed"), sizeof done_msg);
+
+  gtk_label_set_text(GTK_LABEL(g->update_status),
+                     now_installed ? done_msg
+                     : avail       ? status
+                     : g->data_checked
+                         ? _("the installed data packs are up to date")
+                         : "");
+  gtk_button_set_label(GTK_BUTTON(g->update_button),
+                       (avail && !now_installed) ? label
+                                                 : _("check for data pack updates"));
+  gtk_widget_set_tooltip_text(
+      g->update_button,
+      (avail && !now_installed)
+          ? _("fetch the newer pack. it installs beside the one you have;\n"
+              "existing edits keep rendering on the pack they were made with.")
+          : _("ask the data repository whether a newer pack is published"));
+}
+
+static void _update_button_clicked(GtkButton *button,
+                                   dt_iop_module_t *self)
+{
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  if(!g) return;
+  if(sf_fetch_status(NULL, 0, NULL) == SF_FETCH_RUNNING)
+    sf_fetch_cancel();
+  else if(sf_fetch_available_pack())
+  {
+    g->update_fetching = TRUE;
+    sf_fetch_start(0u, sf_fetch_available_pack());
+  }
+  else
+  {
+    /* set whether or not the check finds anything: it is what lets the row say
+       "up to date" rather than stay blank, which before a check has run would
+       claim knowledge it does not have */
+    g->data_checked = TRUE;
+    g->update_fetching = TRUE;
+    sf_fetch_check_start();
+  }
+  /* the worker answers on its own thread, so the row this call paints is the
+     one from before it started. Poll until it finishes, exactly as a download
+     does: _update_data_row() clears the timer once the fetch stops running,
+     and _data_poll_cb repaints both rows on every tick. Without this the row
+     keeps the answer it had when the button was pressed */
+  if(!g->data_poll) g->data_poll = g_timeout_add(500, _data_poll_cb, self);
+  _update_update_row(self);
+}
+
 static gboolean _data_poll_cb(gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   if(!g || !g->data_box) return G_SOURCE_REMOVE;
   _update_data_row(self);
+  _update_update_row(self);
   /* _update_data_row clears data_poll once the fetch stops running, which is
      also the signal to stop this timeout. */
   return g->data_poll ? G_SOURCE_CONTINUE : G_SOURCE_REMOVE;
@@ -4771,6 +4896,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
 
   _rescan(self);
+  _update_update_row(self);
 
   /* Films and papers share one list; e->printing separates them, and each
      combobox entry carries its position in that list as its data. */
@@ -5566,6 +5692,7 @@ void gui_init(dt_iop_module_t *self)
         "effect on stocks whose profile carries no bandpass."));
 
   g->adaptation_surface = dt_bauhaus_toggle_from_params(self, "adaptation_surface");
+
   gtk_widget_set_tooltip_text(
       g->adaptation_surface,
       _("second half of the film's sensitivity adaptation: a per-color\n"
@@ -5594,6 +5721,38 @@ void gui_init(dt_iop_module_t *self)
         "leave it on for an image you intend to keep. off, saturated colors\n"
         "are clipped by whatever comes next in the pipeline, which loses the\n"
         "separation between them and can shift their hue."));
+  /* last in the section: housekeeping, and the only control here that talks to
+     the network rather than changing the render */
+  g->update_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(2));
+  g->update_status = gtk_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(g->update_status), TRUE);
+  gtk_label_set_xalign(GTK_LABEL(g->update_status), 0.0);
+  dt_gui_box_add(g->update_box, g->update_status);
+  g->update_button = gtk_button_new_with_label(_("check for data pack updates"));
+  g_signal_connect(G_OBJECT(g->update_button), "clicked",
+                   G_CALLBACK(_update_button_clicked), self);
+  /* the bar is laid over the button rather than placed under it: the row is
+     three lines in a narrow panel, and a fourth that exists only while a fetch
+     runs makes the section jump. A thin strip along the button's bottom edge
+     reads as the button filling up, and the theme's own progressbar colors
+     apply: a css gradient on the button could not reach them, @-colors
+     being private to the provider that defines them */
+  GtkWidget *overlay = gtk_overlay_new();
+  gtk_container_add(GTK_CONTAINER(overlay), g->update_button);
+  g->update_progress = gtk_progress_bar_new();
+  gtk_widget_set_halign(g->update_progress, GTK_ALIGN_FILL);
+  gtk_widget_set_valign(g->update_progress, GTK_ALIGN_END);
+  gtk_widget_set_size_request(g->update_progress, -1, DT_PIXEL_APPLY_DPI(4));
+  gtk_widget_set_no_show_all(g->update_progress, TRUE);
+  /* the strip is an indicator, not a target: clicks belong to the button */
+  gtk_widget_set_can_focus(g->update_progress, FALSE);
+  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), g->update_progress);
+  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), g->update_progress,
+                                       TRUE);
+  dt_gui_box_add(g->update_box, overlay);
+
+  dt_gui_box_add(self->widget, g->update_box);
+
   /* ---- tab 2: print ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("print"), NULL);
 

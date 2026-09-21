@@ -142,6 +142,20 @@ typedef enum sf_fetch_state_t
  * render differently. 0 falls back to matching wanted_lut_hash */
 gboolean sf_fetch_start(uint32_t wanted_lut_hash, uint32_t wanted_pack_hash);
 
+/* ask the repository what it publishes and stop there, fetching no pack.
+ * Reports through the same sf_fetch_status() the download uses */
+gboolean sf_fetch_check_start(void);
+
+/* the pack the last check found published and not installed, or 0, which is
+ * also what a repository whose packs declare no identity reports, there being
+ * nothing to compare. Feed it to sf_fetch_start() as the wanted pack */
+uint32_t sf_fetch_available_pack(void);
+
+/* what the manifest calls the pack last looked at, or "" before anything has
+ * been fetched. A label for naming the pack to the user, never an identity:
+ * two packs can report one version */
+void sf_fetch_available_version(char *dst, size_t dstsz);
+
 /* A pack directory's declared identity, or 0 when it declares none, which
  * for an installed pack means it predates pack_hash, and so is one of the
  * packs an edit that also predates pack_hash could have been made with */
