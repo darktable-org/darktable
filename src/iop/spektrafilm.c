@@ -95,7 +95,7 @@
 #include "common/spektra_core.h"
 #include "common/spektra_sim.h"
 
-DT_MODULE_INTROSPECTION(2, dt_iop_spektrafilm_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_spektrafilm_params_t)
 
 /* Spatial-scale constants, micrometres on film unless noted (see the LUT
    module for the full rationale; these are shared with modify_roi_in() and
@@ -339,6 +339,19 @@ typedef struct dt_iop_spektrafilm_params_t
      Appended at the end of the struct: legacy_params() copies an older prefix
      and leaves the tail at its default, so anything added later goes here. */
   gboolean gamut_compress;     // $DEFAULT: TRUE $DESCRIPTION: "gamut compression"
+  /* per-channel multipliers on print_contrast, the reference's own
+     gamma_rgb beside its scalar gamma (utils/morph_curves.py). The paper's
+     three density curves are morphed independently, so raising one channel
+     steepens that dye's response alone: contrast and color cross here, and a
+     channel split is how a print is graded for a crossed-over negative, where
+     one layer's contrast is wrong rather than all three.
+
+     Multiplicative on print_contrast rather than replacing it, matching how
+     the engine combines them (morph_gamma * gamma_ch), so the scalar stays the
+     overall control and these three are a trim on top of it */
+  float print_gamma_r;         // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print contrast R"
+  float print_gamma_g;         // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print contrast G"
+  float print_gamma_b;         // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print contrast B"
 } dt_iop_spektrafilm_params_t;
 
 /* one discovered profile: stock (= file base name), display name, stage */
@@ -372,6 +385,7 @@ typedef struct dt_iop_spektrafilm_gui_data_t
      piece, and the pipes are torn down and rebuilt underneath it. */
   char status_error[256], status_warning[256];
   GtkWidget *print_exposure_ev, *print_auto_exposure, *print_contrast;
+  GtkWidget *print_gamma_r, *print_gamma_g, *print_gamma_b;
   GtkWidget *filter_m, *filter_y, *couplers_amount;
   GtkWidget *couplers_diffusion_um, *couplers_tail_um, *couplers_tail_weight;
   GtkWidget *couplers_inhibition_same, *couplers_inhibition_inter;
@@ -706,6 +720,78 @@ int flags(void)
    sf_pack_film_grain() wrote the pack's value over it before anything read it.
    So 1.0 does not approximate a v1 edit, it reproduces it exactly, and a v1
    slider position carries no information worth carrying forward. */
+/* v2 -> v3: print_gamma_r/_g/_b appended. v1 and v2 share this layout, so one
+   struct reads both; the incoming blob is this size and not the current one,
+   which is what the copy below is sized against */
+typedef struct dt_iop_spektrafilm_params_v2_t
+{
+  uint32_t film_hash;
+  uint32_t lut_hash;
+  uint32_t paper_hash;
+  float exposure_ev;
+  float print_exposure_ev;
+  gboolean print_auto_exposure;
+  float print_contrast;
+  float filter_m;
+  float filter_y;
+  float couplers_amount;
+  float couplers_diffusion_um;
+  float couplers_tail_um;
+  float couplers_tail_weight;
+  float couplers_inhibition_same;
+  float couplers_inhibition_inter;
+  float preflash_exposure;
+  float preflash_m_shift;
+  float preflash_y_shift;
+  gboolean scan_film;
+  dt_iop_spektrafilm_quality_t quality;
+  gboolean halation_on;
+  float scatter_amount;
+  float scatter_scale;
+  float halation_amount;
+  float halation_scale;
+  float boost_ev;
+  float boost_range;
+  float protect_ev;
+  gboolean diffusion_on;
+  dt_iop_spektrafilm_diffusion_family_t diffusion_filter_family;
+  float diffusion_strength;
+  float diffusion_scale;
+  float diffusion_warmth;
+  gboolean print_diffusion_on;
+  dt_iop_spektrafilm_diffusion_family_t print_diffusion_filter_family;
+  float print_diffusion_strength;
+  float print_diffusion_scale;
+  float print_diffusion_warmth;
+  gboolean grain_on;
+  float grain_amount;
+  float grain_blur;
+  float grain_granularity;
+  float grain_uniformity;
+  float grain_sublayer_scale;
+  float grain_density_min;
+  float grain_dye_cloud;
+  float film_format_mm;
+  float output_luminance_boost;
+  float output_scale;
+  float grain_usm_sigma;
+  float grain_usm_amount;
+  float film_gamma_factor;
+  float film_gamma_factor_fast;
+  float film_gamma_factor_slow;
+  float film_developer_exhaustion;
+  float push_pull_stops;
+  float scan_blur;
+  float scan_usm_sigma;
+  float scan_usm_amount;
+  float glare_percent;
+  float development_min;
+  float print_development_min;
+  gboolean adaptation_bandwidth;
+  gboolean adaptation_surface;
+  gboolean gamut_compress;
+} dt_iop_spektrafilm_params_v2_t;
+
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
@@ -713,16 +799,17 @@ int legacy_params(dt_iop_module_t *self,
                   int32_t *new_params_size,
                   int *new_version)
 {
-  if(old_version != 1) return 1;
+  if(old_version != 1 && old_version != 2) return 1;
 
-  dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
+  dt_iop_spektrafilm_params_t *n = calloc(1, sizeof(dt_iop_spektrafilm_params_t));
   if(!n) return 1;
-  memcpy(n, old_params, sizeof(dt_iop_spektrafilm_params_t));
-  n->grain_density_min = 1.0f;
+  memcpy(n, old_params, sizeof(dt_iop_spektrafilm_params_v2_t));
+  if(old_version == 1) n->grain_density_min = 1.0f;
+  n->print_gamma_r = n->print_gamma_g = n->print_gamma_b = 1.0f;
 
   *new_params = n;
   *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-  *new_version = 2;
+  *new_version = 3;
   return 0;
 }
 
@@ -1097,6 +1184,10 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   key = _mix64(key, &p->print_exposure_ev, sizeof p->print_exposure_ev);
   key = _mix64(key, &p->print_auto_exposure, sizeof p->print_auto_exposure);
   key = _mix64(key, &p->print_contrast, sizeof p->print_contrast);
+  /* morph the paper curves at build time, exactly as print_contrast does */
+  key = _mix64(key, &p->print_gamma_r, sizeof p->print_gamma_r);
+  key = _mix64(key, &p->print_gamma_g, sizeof p->print_gamma_g);
+  key = _mix64(key, &p->print_gamma_b, sizeof p->print_gamma_b);
   key = _mix64(key, &p->filter_m, sizeof p->filter_m);
   key = _mix64(key, &p->filter_y, sizeof p->filter_y);
   key = _mix64(key, &p->couplers_amount, sizeof p->couplers_amount);
@@ -1371,10 +1462,14 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     sp.out_luminance_boost = p->output_luminance_boost;
     if(!p->gamut_compress) sp.output_compress = SF_OUTPUT_COMPRESS_OFF;
     sp.out_scale = p->output_scale;
-    if(p->print_contrast != 1.0f)
+    if(p->print_contrast != 1.0f || p->print_gamma_r != 1.0f
+       || p->print_gamma_g != 1.0f || p->print_gamma_b != 1.0f)
     {
       sp.morph_active = true;
       sp.morph_gamma = p->print_contrast;
+      sp.morph_gamma_r = p->print_gamma_r;
+      sp.morph_gamma_g = p->print_gamma_g;
+      sp.morph_gamma_b = p->print_gamma_b;
     }
     if(p->film_gamma_factor != 1.0f || p->film_gamma_factor_fast != 1.0f
        || p->film_gamma_factor_slow != 1.0f || p->film_developer_exhaustion != 0.0f
@@ -3327,6 +3422,9 @@ static void _update_print_sensitivity(dt_iop_module_t *self)
   gtk_widget_set_sensitive(g->print_exposure_ev, printing);
   gtk_widget_set_sensitive(g->print_auto_exposure, printing);
   gtk_widget_set_sensitive(g->print_contrast, printing);
+  gtk_widget_set_sensitive(g->print_gamma_r, printing);
+  gtk_widget_set_sensitive(g->print_gamma_g, printing);
+  gtk_widget_set_sensitive(g->print_gamma_b, printing);
   gtk_widget_set_sensitive(g->filter_m, printing);
   gtk_widget_set_sensitive(g->filter_y, printing);
   gtk_widget_set_sensitive(g->print_diffusion_on, printing);
@@ -3684,6 +3782,7 @@ static void _preset_defaults(dt_iop_spektrafilm_params_t *p)
   /* deliberately 1.0, not the 1.1 $DEFAULT: the ten printing presets that
      never name print_contrast were authored at 1.0 and keep it */
   p->print_contrast = 1.0f;
+  p->print_gamma_r = p->print_gamma_g = p->print_gamma_b = 1.0f;
   p->couplers_amount = 1.0f;
   p->couplers_diffusion_um = 20.0f;
   p->couplers_tail_um = 200.0f;
@@ -5041,6 +5140,29 @@ void gui_init(dt_iop_module_t *self)
                               _("print development time. snaps to the nearest time the "
                                 "paper was\n"
                                 "characterised at; 0 uses its own default."));
+
+  g->print_gamma_r = dt_bauhaus_slider_from_params(self, "print_gamma_r");
+  gtk_widget_set_tooltip_text(
+      g->print_gamma_r,
+      _("contrast of the paper's red-forming layer alone, on top of the\n"
+        "overall print contrast.\n"
+        "\n"
+        "splitting contrast per channel grades out crossover -- a negative\n"
+        "whose layers developed to different contrasts, which filtration\n"
+        "cannot fix because it shifts every tone equally while crossover\n"
+        "shifts shadows one way and highlights the other."));
+
+  g->print_gamma_g = dt_bauhaus_slider_from_params(self, "print_gamma_g");
+  gtk_widget_set_tooltip_text(
+      g->print_gamma_g,
+      _("contrast of the paper's green-forming layer alone, on top of the\n"
+        "overall print contrast."));
+
+  g->print_gamma_b = dt_bauhaus_slider_from_params(self, "print_gamma_b");
+  gtk_widget_set_tooltip_text(
+      g->print_gamma_b,
+      _("contrast of the paper's blue-forming layer alone, on top of the\n"
+        "overall print contrast."));
 
   _section_add(self, C_("section", "filtration"), "plugins/darkroom/spektrafilm/expand_print_filtration");
 
