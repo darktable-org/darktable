@@ -1441,6 +1441,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     d->work_profile = work_profile;
     d->lut_inited = TRUE;
   }
+
+  // As the OpenCL code uses atomic_inc() we must not use OpenCL in that case
+  piece->process_cl_ready = piece->process_cl_ready && !dt_opencl_avoid_atomics(pipe->devid);
 }
 
 void init_presets(dt_iop_module_so_t *self)
