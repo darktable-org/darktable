@@ -243,7 +243,56 @@ static void _packs_dir(char *dst,
   g_free(dir);
 }
 
-/* Read the identity out of a pack's spectra_lut.f32 without loading it.
+/* the file holding a pack's default spectral table. Below pack_format 3 that
+   is always spectra_lut.f32; from 3 on pack.json names it, as the entry of
+   spectral_upsampling flagged default, which is what sf_pack_load() reads
+   too. FALSE when pack.json names none it could be */
+static gboolean _default_table_file(const char *packdir,
+                                    char *dst,
+                                    const size_t dstsz)
+{
+  gboolean ok = FALSE;
+  char *meta = g_build_filename(packdir, "pack.json", NULL);
+  JsonParser *parser = json_parser_new();
+  if(json_parser_load_from_file(parser, meta, NULL))
+  {
+    JsonNode *rootn = json_parser_get_root(parser);
+    JsonObject *root = (rootn && JSON_NODE_HOLDS_OBJECT(rootn)) ? json_node_get_object(rootn)
+                                                                 : NULL;
+    const int fmt = (root && json_object_has_member(root, "pack_format"))
+                        ? (int)json_object_get_int_member(root, "pack_format") : 0;
+    if(root && fmt < 3)
+    {
+      g_strlcpy(dst, "spectra_lut.f32", dstsz);
+      ok = TRUE;
+    }
+    else if(root && json_object_has_member(root, "spectral_upsampling"))
+    {
+      JsonArray *decl = json_object_get_array_member(root, "spectral_upsampling");
+      const guint n = decl ? json_array_get_length(decl) : 0;
+      for(guint i = 0; i < n && !ok; i++)
+      {
+        JsonObject *e = json_array_get_object_element(decl, i);
+        if(!e || !json_object_has_member(e, "default")
+           || !json_object_get_boolean_member(e, "default")
+           || !json_object_has_member(e, "file"))
+          continue;
+        const char *file = json_object_get_string_member(e, "file");
+        /* the same plain-name rule the loader applies */
+        if(!file || !*file || strchr(file, '/') || strchr(file, '\\')
+           || strcmp(file, "..") == 0)
+          continue;
+        g_strlcpy(dst, file, dstsz);
+        ok = TRUE;
+      }
+    }
+  }
+  g_object_unref(parser);
+  g_free(meta);
+  return ok;
+}
+
+/* Read the identity out of a pack's default spectral table without loading it.
  *
  * The header is fixed-width up to the id string: "SFS2", int32 header version,
  * int32 dims[3], int32 dtype, uint32 lut_hash, int32 id_len. Reading those 32
@@ -264,7 +313,7 @@ static gboolean _peek_lut(const char *packdir,
 {
   gboolean ok = FALSE;
   if(out_id && idsz) out_id[0] = '\0';
-  char *lut = g_build_filename(packdir, "spectra_lut.f32", NULL);
+  char *lut = NULL;
   char *meta = g_build_filename(packdir, "pack.json", NULL);
   char *profiles = g_build_filename(packdir, "profiles", NULL);
 
@@ -277,6 +326,9 @@ static gboolean _peek_lut(const char *packdir,
   if(!g_file_test(meta, G_FILE_TEST_IS_REGULAR)) goto out;
   if(!g_file_test(profiles, G_FILE_TEST_IS_DIR)) goto out;
 
+  char lutname[256];
+  if(!_default_table_file(packdir, lutname, sizeof(lutname))) goto out;
+  lut = g_build_filename(packdir, lutname, NULL);
   FILE *fh = g_fopen(lut, "rb");
   if(!fh) goto out;
 
@@ -957,7 +1009,13 @@ static GPtrArray *_parse_manifest(const char *json,
   }
 
   /* A pack without these two is not loadable, and finding that out after
-     writing 200 files is a worse error message than finding it out now. */
+     writing 200 files is a worse error message than finding it out now. From
+     pack_format 3 on, pack.json names its table files, so only pack.json is
+     required here; the installed table is checked against the manifest's
+     hash once downloaded */
+  const int chosen_fmt = json_object_has_member(chosen, "pack_format")
+                             ? (int)json_object_get_int_member(chosen, "pack_format") : 0;
+  if(chosen_fmt >= 3) have_lut = TRUE;
   if(!have_meta || !have_lut)
   {
     dt_print(DT_DEBUG_ALWAYS,

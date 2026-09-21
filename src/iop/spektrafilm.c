@@ -47,7 +47,7 @@
  * (tools/spektrafilm_export_data.py) that turns a spektrafilm release into a
  * pack. The module reads a pack from one of two places, the first winning:
  *   <user data>/darktable/spektrafilm/            (installed by hand)
- *   <cache>/darktable/spektrafilm/packs/<hash>/   (downloaded, one per table)
+ *   <user data>/darktable/spektrafilm/packs/<hash>/ (downloaded, one per table)
  * Either directory holds pack.json + spectra_lut.f32 and a profiles/
  * subdirectory of film and paper *.json profiles.
  *
@@ -363,6 +363,15 @@ typedef struct dt_iop_spektrafilm_params_t
      with grain renders. legacy_params() holds migrated edits at the 0.8 they
      were developed at, which a constant could not do */
   float grain_blur_base;       // $MIN: 0.5 $MAX: 1.5 $DEFAULT: 0.89
+  /* which of the pack's spectral upsampling tables this edit renders with, by
+     content hash: the same identity lut_hash above records, and the same
+     reason: a pack can revise a method's table without renaming it. 0 is the
+     pack's default, which is what every edit made before packs carried more
+     than one table gets, and the only thing a pack_format 2 pack offers.
+
+     A hash the installed pack does not carry is reported rather than silently
+     rendered with another table, exactly as a lut_hash mismatch is */
+  uint32_t upsampling_hash;    // $DEFAULT: 0
 } dt_iop_spektrafilm_params_t;
 
 /* one discovered profile: stock (= file base name), display name, stage */
@@ -390,6 +399,8 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *push_pull_stops, *film_gamma_factor;
   GtkWidget *film_gamma_factor_fast, *film_gamma_factor_slow, *film_developer_exhaustion;
   GtkWidget *quality, *adaptation_bandwidth, *adaptation_surface;
+  GtkWidget *upsampling;
+  GList *tables; /* sf_table_entry_t*, owned; the loaded pack's tables */
   GtkWidget *gamut_compress;
   /* Last status the preview pipe reported, copied out of piece->data at the
      end of commit_params(). The GUI cannot read piece->data itself: it has no
@@ -819,6 +830,8 @@ int legacy_params(dt_iop_module_t *self,
   n->print_gamma_r = n->print_gamma_g = n->print_gamma_b = 1.0f;
   /* not the 0.89 default: these edits were developed against 0.8 */
   n->grain_blur_base = 0.8f;
+  /* the pack's default table, which is the only one these edits ever had */
+  n->upsampling_hash = 0u;
 
   *new_params = n;
   *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
@@ -950,6 +963,56 @@ static gint _entry_name_cmp(gconstpointer a,
    the spectral table: a profile names a stock, and the pack holds that stock's
    digested render defaults, so mixing the two silently drops per-film halation,
    grain and coupler data for any stock the other side has never heard of. */
+/* one spectral upsampling table, as the combobox needs it. Snapshotted out of
+   the pack rather than read live: the GUI has no pack reference of its own and
+   the pack can be reloaded underneath it when the resolved directory changes */
+typedef struct sf_table_entry_t
+{
+  char label[64];       /* the identifier, or the header id for a format 2 pack */
+  uint32_t hash;
+  gboolean reflectance;
+} sf_table_entry_t;
+
+/* list the pack directory's tables for the GUI.
+   Read from the directory and not from the loaded pack, for the same reason
+   _scan_profiles() scans the directory: _pack is assigned only by
+   _ensure_sim(), which runs in the pixelpipe, so it is still NULL while the
+   GUI is being built and the list would come back empty. Peeking costs a
+   pack.json parse and a 32-byte header per table */
+static GList *_scan_tables(void)
+{
+  char dir[SF_PATH_LEN];
+  dt_pthread_mutex_lock(&_pack_lock);
+  const gboolean have = _pack && _pack_path[0] != 0;
+  if(have) g_strlcpy(dir, _pack_path, sizeof dir);
+  dt_pthread_mutex_unlock(&_pack_lock);
+  if(!have) _resolve_pack_dir(0, dir, sizeof dir);
+
+  sf_table_info_t info[SF_MAX_TABLES];
+  const int n = sf_pack_peek_tables(dir, info, SF_MAX_TABLES);
+
+  GList *list = NULL;
+  for(int i = 0; i < n; i++)
+  {
+    sf_table_entry_t *e = g_malloc0(sizeof(*e));
+    /* A format 2 pack's single table declared no identifier; its header id is
+       the only name it has, and it is the one the mismatch banner and the data
+       repository both use */
+    g_strlcpy(e->label, info[i].identifier[0] ? info[i].identifier : info[i].lut_id,
+              sizeof e->label);
+    e->hash = info[i].lut_hash;
+    e->reflectance = info[i].kind == SF_LUT_REFLECTANCE;
+    list = g_list_append(list, e);
+  }
+  return list;
+}
+
+static const sf_table_entry_t *_table_at(const dt_iop_spektrafilm_gui_data_t *g,
+                                         const int pos)
+{
+  return g ? g_list_nth_data(g->tables, pos) : NULL;
+}
+
 static GList *_scan_profiles(const char *packdir)
 {
   char dir[SF_PATH_LEN];
@@ -1192,6 +1255,9 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   uint64_t key = 0xcbf29ce484222325ULL;
   key = _mix64(key, &p->film_hash, sizeof p->film_hash);
   key = _mix64(key, &p->lut_hash, sizeof p->lut_hash);
+  /* picks the spectral table the tc LUT is built from, so the sim is a
+     different one entirely */
+  key = _mix64(key, &p->upsampling_hash, sizeof p->upsampling_hash);
   key = _mix64(key, &p->paper_hash, sizeof p->paper_hash);
   key = _mix64(key, &p->exposure_ev, sizeof p->exposure_ev);
   key = _mix64(key, &p->print_exposure_ev, sizeof p->print_exposure_ev);
@@ -1469,6 +1535,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     sp.preflash_m_shift = p->preflash_m_shift;
     sp.preflash_y_shift = p->preflash_y_shift;
     sp.scan_film = p->scan_film;
+    sp.spectral_lut_hash = p->upsampling_hash;
     sp.adaptation_bandwidth = p->adaptation_bandwidth;
     sp.adaptation_surface = p->adaptation_surface;
     sp.lut_steps = _quality_steps(p->quality);
@@ -3021,6 +3088,10 @@ static void _rescan(dt_iop_module_t *self)
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   g_list_free_full(g->entries, g_free);
   g->entries = _scan_profiles(NULL);
+  /* the tables come from the same pack as the profiles, so they are rescanned
+     together: a reload that changes one changes the other */
+  g_list_free_full(g->tables, g_free);
+  g->tables = _scan_tables();
 }
 
 /* Entry at a list position, or NULL. The comboboxes carry the position as their
@@ -3073,6 +3144,22 @@ static void _stamp_lut_hash(dt_iop_module_t *self)
     if(!p->lut_hash || p->lut_hash == cur) p->lut_hash = cur;
   }
   dt_pthread_mutex_unlock(&_pack_lock);
+}
+
+static void _upsampling_changed(GtkWidget *w,
+                                dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
+  const sf_table_entry_t *e
+      = _table_at(g, GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(g->upsampling)));
+  if(!e) return;
+  /* the hash and not the list position: a pack revision can reorder its tables
+     or drop one, and the edit has to keep naming the table it was developed
+     against so the mismatch is reported rather than absorbed */
+  p->upsampling_hash = e->hash;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void _film_changed(GtkWidget *w,
@@ -3799,6 +3886,7 @@ static void _preset_defaults(dt_iop_spektrafilm_params_t *p)
   /* deliberately 0.8, not the 0.89 $DEFAULT: the presets were authored against
      it, and none of them names grain_blur_base to say otherwise */
   p->grain_blur_base = 0.8f;
+  p->upsampling_hash = 0u; /* the pack's default table */
   p->couplers_amount = 1.0f;
   p->couplers_diffusion_um = 20.0f;
   p->couplers_tail_um = 200.0f;
@@ -4426,6 +4514,38 @@ void gui_update(dt_iop_module_t *self)
     dt_bauhaus_combobox_add_full(g->paper, _("(none)"),
                                  DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                  GINT_TO_POINTER(SF_COMBO_NO_PROFILES), NULL, FALSE);
+
+  /* rebuild the spectral upsampling list from whatever pack is loaded. Hidden
+     outright below two entries: a format 2 pack offers no choice, and a
+     one-entry combobox is a control that cannot be used */
+  dt_bauhaus_combobox_clear(g->upsampling);
+  {
+    const int ntab = g_list_length(g->tables);
+    gtk_widget_set_visible(g->upsampling, ntab > 1);
+    int tpos = -1, ti = 0;
+    gboolean reflectance = FALSE;
+    for(const GList *l = g->tables; l; l = l->next, ti++)
+    {
+      const sf_table_entry_t *e = l->data;
+      dt_bauhaus_combobox_add_full(g->upsampling, e->label, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                   GINT_TO_POINTER(ti), NULL, TRUE);
+      if(p->upsampling_hash && e->hash == p->upsampling_hash) tpos = ti;
+    }
+    /* no match means either upsampling_hash 0 (an edit made before the pack
+       carried a choice) or a table this pack does not have. Both render on
+       the pack's default, which is index 0, so the combobox shows that rather
+       than a stale name the pipeline is not using. The wrong-table case is
+       already reported by the pack mismatch banner */
+    if(tpos < 0) tpos = 0;
+    if(ntab) dt_bauhaus_combobox_set_from_value(g->upsampling, tpos);
+    const sf_table_entry_t *sel = _table_at(g, tpos);
+    reflectance = sel && sel->reflectance;
+    /* both halves of the hanatos sensitivity adaptation belong to the
+       irradiance path and are not run for a reflectance table, so they are
+       shown inert rather than appearing to do nothing */
+    gtk_widget_set_sensitive(g->adaptation_bandwidth, !reflectance);
+    gtk_widget_set_sensitive(g->adaptation_surface, !reflectance);
+  }
 
   /* Select the saved film. On no hash match -- a fresh param with film_hash 0,
      or a stock that vanished from the pack -- mirror _resolve_stock's fallback
@@ -5085,6 +5205,24 @@ void gui_init(dt_iop_module_t *self)
                                 "pixel. CPU\n"
                                 "only, and slow."));
 
+  /* not dt_bauhaus_combobox_from_params: the entries are whatever the installed
+     pack carries, which is not knowable at build time. Populated in
+     gui_update() and hidden entirely while there is nothing to choose */
+  g->upsampling = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->upsampling, NULL, N_("spectral upsampling"));
+  gtk_widget_set_tooltip_text(
+      g->upsampling,
+      _("how a pixel's color is turned into the spectrum the film is exposed\n"
+        "to. the stock's measured sensitivities are the same either way; this\n"
+        "is the reconstruction in front of them, and the methods disagree most\n"
+        "on saturated color and near-neutrals.\n"
+        "\n"
+        "only shown when the installed data pack carries more than one table.\n"
+        "changing it is a different render, not a refinement of the same one."));
+  g_signal_connect(G_OBJECT(g->upsampling), "value-changed",
+                   G_CALLBACK(_upsampling_changed), self);
+  dt_gui_box_add(self->widget, g->upsampling);
+
   g->adaptation_bandwidth = dt_bauhaus_toggle_from_params(self, "adaptation_bandwidth");
   gtk_widget_set_tooltip_text(
       g->adaptation_bandwidth,
@@ -5558,6 +5696,8 @@ void gui_cleanup(dt_iop_module_t *self)
     g->sections = NULL;
     g_list_free_full(g->entries, g_free);
     g->entries = NULL;
+    g_list_free_full(g->tables, g_free);
+    g->tables = NULL;
   }
 }
 
