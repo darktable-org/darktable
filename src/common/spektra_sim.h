@@ -96,7 +96,31 @@ extern "C" {
  * The declaration is mandatory in pack.json; there is no format that predates
  * the field, so nothing needs to be assumed for one that omits it. */
 #define SF_PACK_FORMAT_MIN 2
-#define SF_PACK_FORMAT_MAX 2
+#define SF_PACK_FORMAT_MAX 3
+
+/* spectral upsampling tables a single pack may carry. A pack_format 2 pack has
+   exactly one; format 3 declares them in pack.json. The ceiling is well clear
+   of the handful upstream ships and keeps the array a fixed member */
+#define SF_MAX_TABLES 8
+
+/* how a table's stored spectra become film exposure.
+ *
+ * An irradiance table stores the light reaching the emulsion directly: integrate
+ * it against the sensitivity and that is the exposure. Chromaticity is projected
+ * under the FILM's reference illuminant, and the sensitivities are pre-balanced
+ * so a neutral already lands at 1.
+ *
+ * A reflectance table stores a surface reflectance recovered under a SCENE
+ * illuminant. It has to be relit by the film's reference illuminant before it
+ * means anything, the result normalized so a neutral lands at 1 again, and --
+ * the part that is easy to miss: chromaticity projected under the SCENE white
+ * it was recovered under, not the film's. Getting that last one wrong renders
+ * plausibly rather than failing */
+typedef enum sf_lut_kind_t
+{
+  SF_LUT_IRRADIANCE = 0,
+  SF_LUT_REFLECTANCE = 1,
+} sf_lut_kind_t;
 
 
 
@@ -130,8 +154,42 @@ sf_pack_t *sf_pack_load(const char *dir,
 sf_pack_t *sf_pack_ref(sf_pack_t *pack);
 /* Identity of the spectral upsampling table this pack carries. The hash is what
  * params record; the string is for the message shown when they disagree. */
+/* the DEFAULT table's identity: what an edit naming no table rendered with */
 uint32_t sf_pack_lut_hash(const sf_pack_t *pack);
 const char *sf_pack_lut_id(const sf_pack_t *pack);
+
+/* the pack's spectral upsampling tables, default first. A pack_format 2 pack
+ * reports exactly one, with an empty identifier: it declared none, and the
+ * file was always the irradiance table */
+int sf_pack_n_tables(const sf_pack_t *pack);
+const char *sf_pack_table_identifier(const sf_pack_t *pack, int i);
+const char *sf_pack_table_lut_id(const sf_pack_t *pack, int i);
+uint32_t sf_pack_table_hash(const sf_pack_t *pack, int i);
+sf_lut_kind_t sf_pack_table_kind(const sf_pack_t *pack, int i);
+/* index of the table carrying this hash, or -1 when the pack has none, which
+ * is what a caller reports rather than rendering with a different table. 0 asks
+ * for the pack's default and always resolves */
+int sf_pack_table_by_hash(const sf_pack_t *pack, uint32_t lut_hash);
+
+/* what a pack directory declares, without loading it.
+ *
+ * A pack is tens of megabytes and is only loaded by the pixelpipe, so anything
+ * that runs before a render (the GUI being built, most obviously) cannot
+ * ask a loaded pack what tables it has. This reads pack.json and each table's
+ * 32-byte header and nothing else, which is cheap enough to call from the GUI.
+ *
+ * Fills up to `max` entries, default first, and returns how many were written.
+ * 0 means the directory is not a readable pack, which a caller shows as "no
+ * choice" rather than as an error: the missing-pack case has its own banner */
+typedef struct sf_table_info_t
+{
+  char identifier[64];
+  char lut_id[256];
+  uint32_t lut_hash;
+  sf_lut_kind_t kind;
+} sf_table_info_t;
+
+int sf_pack_peek_tables(const char *dir, sf_table_info_t *out, int max);
 /* Drop one reference; frees once the last one goes. */
 void sf_pack_free(sf_pack_t *pack);
 const char *sf_pack_version(const sf_pack_t *pack);
@@ -506,9 +564,22 @@ typedef struct sf_sim_params_t
                                       >=2 = runtime 3D tables (ref default 17;
                                       33 recommended for production) */
 
+  /* which spectral upsampling table to render with, by content hash: the
+   * same identity every edit already records, and the reason it is a hash and
+   * not the identifier: a pack can revise a method's table without renaming
+   * it, and an edit has to pin the one it was developed against. 0 takes the
+   * pack's default, which is what an edit predating the choice gets and what a
+   * pack_format 2 pack only has. A hash the pack does not carry is an error
+   * from sf_sim_build(), not a silent fallback: the tables render differently,
+   * so substituting one is the failure the mismatch warning exists to make
+   * visible */
+  uint32_t spectral_lut_hash;
+
   /* input colour handling: linear RGB -> XYZ (source-white relative) and the
-   * source whitepoint xy. The engine appends a CAT16 adaptation to the film
-   * reference illuminant, matching spektrafilm's _rgb_to_tc_b(). */
+   * source whitepoint xy. The engine appends a CAT16 adaptation to the
+   * projection illuminant, matching spektrafilm's _rgb_to_tc_b(): the film's
+   * reference illuminant for an irradiance table, the table's own scene
+   * illuminant for a reflectance one. */
   double input_rgb_to_xyz[9];
   double input_white_xy[2];
   bool input_gamut_compress;       /* true — radial xy Reinhard (0,1,6) */
