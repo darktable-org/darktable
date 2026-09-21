@@ -5204,6 +5204,72 @@ comparing a correction's magnitude at a known pixel position against Adobe's
 own rendering, distinguishes them. Then re-evaluate this same comparison,
 which is now a trustworthy instrument with a stated noise floor.
 
+### Where the overshoot actually lives (sessions 30 and 31)
+
+Two hypotheses tested, one killed, and the defect localised to a part of the
+code the rewrite did not touch.
+
+**Radius normalisation: refuted, on both fit and specification.** No single
+scale factor k on the evaluation radius reconciles the new decode with the
+camera: fitted k varies by 17x between derivations and leaves residuals at
+r = 0.50 that are 15 times the noise floor. And Adobe's own source settles
+the convention. In `dng_lens_correction.cpp`, `dng_filter_warp` sets
+`fNormRadius = MaxDistancePointToRect(squareCenter, squareBounds)` with
+`GetSrcPixelPosition` using `diffNorm = (dst - fCenter) * fInvNormRadius`,
+so the radius is normalised to the maximum distance from the optical centre
+to the active-area bounds, which for a centred optic is the half-diagonal.
+That is exactly what `lens.cc` uses. Reference:
+`https://raw.githubusercontent.com/aizvorski/dng_sdk/master/source/dng_lens_correction.cpp`.
+Scripts `/tmp/rw2_tca/session30_*.py`, report `session30_report.txt`.
+
+**The direct measurement, which is the best-conditioned one available.**
+Comparing the new render against the old render needs no camera JPEG and no
+geometry warp, because the two share everything but the lens code. Using the
+session 29 instrument, and cross-checked by an independent in-image estimate
+that agrees to 0.08 px, at r = 0.85:
+
+    frame      fine    A measured   A predicted   ratio
+    P1366399   1.001    +0.014       +0.016       0.87
+    P1366392   0.943    +1.363       +0.472       2.89
+
+with new-versus-uncorrected giving +1.198 against a predicted +0.436, a
+ratio of 2.75. The ratio stays near constant, 2.6 to 3.0, across r = 0.50 to
+0.85. Scripts `/tmp/rw2_tca/session31_measure.py` and
+`session31b_inimage.py`, report `session31_final.txt`.
+
+**What that rules out, and what it leaves.** On the weak-distortion frame the
+render matches the analytic prediction to 0.005 px, which pins both the new
+eps_B from session 25 and the old `_pana_C_B_lo` as exactly what the code
+evaluates. So the decode is not the problem, and neither is the polynomial
+arithmetic. A near-constant ratio across radius also excludes a wrong Horner
+power and any single-k rescale of the evaluation radius, since both would
+drift monotonically with r. The one variable that separates the two frames is
+the distortion multiplier `fine`: 0.943 where the discrepancy is a factor of
+three, 1.001 where there is none.
+
+**So the defect is in the composition of the CA term with the distortion
+pathway, not in the CA term.** The candidates are the autoscale in
+`_init_coeffs_md_v2`, which multiplies the knot abscissae by the computed
+scale and divides the coefficients by it, and the spline lookup in
+`_process_md` that consumes the result. Note the interaction that makes this
+bite: eps_B is a cubic in u with large cancelling terms, so a few percent
+change in the radius at which it is effectively sampled can move its value
+by a factor of two or three. That is why the error is invisible at
+`fine` = 1 and severe at `fine` = 0.943, and why the old code, which added
+its polynomial at the destination radius instead of composing it, escaped.
+
+**Correction to session 28.** The camera-JPEG comparison put the new-versus-
+old gap at 0.946 px where the direct render comparison gives 1.363 px, so
+that measurement was systematically low. Its verdict stands, its magnitude
+does not.
+
+**Status.** The coefficients are vindicated; the rewrite's decode is right
+and its application is wrong on frames with appreciable distortion. The patch
+stays on the branch, still provisional, and the next step is a code-level
+account of the autoscale composition followed by a corrected evaluation
+radius, then a re-measurement with this same instrument before going near the
+camera JPEG again.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
