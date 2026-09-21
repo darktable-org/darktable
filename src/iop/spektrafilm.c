@@ -116,7 +116,6 @@ DT_MODULE_INTROSPECTION(3, dt_iop_spektrafilm_params_t)
    them at these values for every profile, so only the amount gets a slider. */
 #define SF_GLARE_ROUGHNESS 0.7f
 #define SF_GLARE_BLUR_PX 0.5f
-#define SF_GRAIN_BLUR_FACTOR 0.8f
 #define SF_GRAIN_BLUR_MIN 0.05f
 /* Upstream's GrainParams.blur_dye_clouds_um (params_schema.py): a SECOND,
  * per-sub-layer blur applied to the raw particle draw INSIDE the particle
@@ -352,6 +351,18 @@ typedef struct dt_iop_spektrafilm_params_t
   float print_gamma_r;         // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print contrast R"
   float print_gamma_g;         // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print contrast G"
   float print_gamma_b;         // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print contrast B"
+  /* upstream's GrainParams.blur: the clump-blur radius in pixels that
+     grain_blur scales, rather than a second control beside it: hence no
+     widget. 0.89 is the value study b80 fitted jointly with the multiplicative
+     density unsharp mask, whose own halves are already here as
+     grain_usm_sigma (0.7) and grain_usm_amount (1.5); the blur softens grain
+     and the mask takes the resolution back, so the three only reproduce
+     upstream together.
+
+     A parameter and not a constant because it decides how every existing edit
+     with grain renders. legacy_params() holds migrated edits at the 0.8 they
+     were developed at, which a constant could not do */
+  float grain_blur_base;       // $MIN: 0.5 $MAX: 1.5 $DEFAULT: 0.89
 } dt_iop_spektrafilm_params_t;
 
 /* one discovered profile: stock (= file base name), display name, stage */
@@ -806,6 +817,8 @@ int legacy_params(dt_iop_module_t *self,
   memcpy(n, old_params, sizeof(dt_iop_spektrafilm_params_v2_t));
   if(old_version == 1) n->grain_density_min = 1.0f;
   n->print_gamma_r = n->print_gamma_g = n->print_gamma_b = 1.0f;
+  /* not the 0.89 default: these edits were developed against 0.8 */
+  n->grain_blur_base = 0.8f;
 
   *new_params = n;
   *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
@@ -1624,7 +1637,7 @@ static float _max_halo_sigma(const dt_iop_spektrafilm_params_t *p,
      it would need the sigma plumbed out of the simulation and made available
      before the simulation is built. */
   const float grain = (p->grain_on && p->grain_amount > 0.0f)
-                          ? fmaxf(SF_GRAIN_BLUR_FACTOR
+                          ? fmaxf(p->grain_blur_base
                                       * fmaxf(p->grain_blur, SF_GRAIN_BLUR_MIN),
                                   (p->grain_usm_amount > 0.0f) ? p->grain_usm_sigma : 0.0f)
                           : 0.0f;
@@ -1903,7 +1916,7 @@ void process(dt_iop_module_t *self,
        curve/coupler state baked in at build time, not just resolution);
        rescale it live to the real pixel_um here. */
     const float npart_scale = (pixel_um * pixel_um) / (SF_GRAIN_REF_UM * SF_GRAIN_REF_UM);
-    /* SF_GRAIN_BLUR_FACTOR/SF_GRAIN_DYE_BLUR_UM/grain_usm_sigma are fixed
+    /* grain_blur_base/SF_GRAIN_DYE_BLUR_UM/grain_usm_sigma are fixed
        pixel radii, validated against upstream at whatever single
        resolution each of its own renders happens to use -- upstream has
        no notion of "the same image, but at a temporarily reduced preview
@@ -2053,7 +2066,7 @@ void process(dt_iop_module_t *self,
        image at a temporarily reduced resolution for interactive speed,
        so this fixed radius needs shrinking there or it over-affects real
        scene detail relative to what 1:1/export shows. */
-    const float sigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_blur, SF_GRAIN_BLUR_MIN)
+    const float sigma = d->p.grain_blur_base * fmaxf(d->p.grain_blur, SF_GRAIN_BLUR_MIN)
                          * preview_scale;
     /* No variance-restoration renorm here -- upstream's own grain
        finalization (_finalize_grain in grain.py) has none either; it just
@@ -2837,7 +2850,7 @@ int process_cl(dt_iop_module_t *self,
     SF_CL_STEP("grain add");
     /* fixed pixel sigma, matching process()'s CPU-side fix -- see comment
        there for the empirical validation. */
-    const float gsigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_blur, SF_GRAIN_BLUR_MIN)
+    const float gsigma = d->p.grain_blur_base * fmaxf(d->p.grain_blur, SF_GRAIN_BLUR_MIN)
                           * preview_scale;
     /* CPU twin is sf_blur_plane3(), which skips below SF_GAUSS_MIN_SIGMA.
        This one matters most: the clump blur runs on the grain field, which is
@@ -3783,6 +3796,9 @@ static void _preset_defaults(dt_iop_spektrafilm_params_t *p)
      never name print_contrast were authored at 1.0 and keep it */
   p->print_contrast = 1.0f;
   p->print_gamma_r = p->print_gamma_g = p->print_gamma_b = 1.0f;
+  /* deliberately 0.8, not the 0.89 $DEFAULT: the presets were authored against
+     it, and none of them names grain_blur_base to say otherwise */
+  p->grain_blur_base = 0.8f;
   p->couplers_amount = 1.0f;
   p->couplers_diffusion_um = 20.0f;
   p->couplers_tail_um = 200.0f;
