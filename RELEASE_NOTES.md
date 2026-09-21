@@ -342,8 +342,6 @@ changes (where available).
   crop when the rotation was changed (e.g. with a shortcut) before the
   module had been enabled, leaving empty corners in the image.
 
-- Fixed transparent dialog title bars on macOS 27.
-
 ## Lua
 
 ### API Version
