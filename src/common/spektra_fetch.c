@@ -321,7 +321,7 @@ static gboolean _peek_lut_hash(const char *packdir,
    the directory is not a pack or predates the field, which simply cannot be
    matched on and falls back to the table hash. pack.json is tens of KB, so
    this is cheap enough to run over each candidate directory */
-static uint32_t _peek_pack_hash(const char *packdir)
+uint32_t sf_fetch_peek_pack_hash(const char *packdir)
 {
   char *path = g_build_filename(packdir, "pack.json", NULL);
   JsonParser *parser = json_parser_new();
@@ -353,7 +353,7 @@ gboolean sf_fetch_pack_dir_for_pack_hash(const uint32_t wanted_pack_hash,
 
   char handdir[PATH_MAX] = { 0 };
   _data_pack_dir(handdir, sizeof(handdir));
-  if(_peek_pack_hash(handdir) == wanted_pack_hash)
+  if(sf_fetch_peek_pack_hash(handdir) == wanted_pack_hash)
   {
     g_strlcpy(dst, handdir, dstsz);
     return TRUE;
@@ -369,7 +369,7 @@ gboolean sf_fetch_pack_dir_for_pack_hash(const uint32_t wanted_pack_hash,
   {
     if(strlen(ent) != 8 || strspn(ent, "0123456789abcdefABCDEF") != 8) continue;
     char *cand = g_build_filename(packs, ent, NULL);
-    if(_peek_pack_hash(cand) == wanted_pack_hash)
+    if(sf_fetch_peek_pack_hash(cand) == wanted_pack_hash)
     {
       g_strlcpy(dst, cand, dstsz);
       found = TRUE;

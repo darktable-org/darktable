@@ -142,6 +142,11 @@ typedef enum sf_fetch_state_t
  * render differently. 0 falls back to matching wanted_lut_hash */
 gboolean sf_fetch_start(uint32_t wanted_lut_hash, uint32_t wanted_pack_hash);
 
+/* A pack directory's declared identity, or 0 when it declares none, which
+ * for an installed pack means it predates pack_hash, and so is one of the
+ * packs an edit that also predates pack_hash could have been made with */
+uint32_t sf_fetch_peek_pack_hash(const char *packdir);
+
 /* the installed directory holding exactly this pack, or FALSE */
 gboolean sf_fetch_pack_dir_for_pack_hash(uint32_t wanted_pack_hash,
                                          char *dst,

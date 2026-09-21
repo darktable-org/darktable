@@ -116,6 +116,16 @@ DT_MODULE_INTROSPECTION(3, dt_iop_spektrafilm_params_t)
    them at these values for every profile, so only the amount gets a slider. */
 #define SF_GLARE_ROUGHNESS 0.7f
 #define SF_GLARE_BLUR_PX 0.5f
+/* the spectral table of the first data pack ever published (0.3.3's
+   hanatos2025, irradiance_xy_tc). An edit predating the table field can only
+   have been rendered with it, that pack having been the only one in
+   existence */
+#define SF_FIRST_PUBLISHED_LUT_HASH 0x565f4ec4u
+/* and the method it is, which that pack does not declare: pack_format 2 named
+   no tables, so its header says only the kind ("irradiance_xy_tc@0.3.3"). */
+#define SF_FIRST_PUBLISHED_LUT_NAME "hanatos2025"
+
+
 #define SF_GRAIN_BLUR_MIN 0.05f
 /* Upstream's GrainParams.blur_dye_clouds_um (params_schema.py): a SECOND,
  * per-sub-layer blur applied to the raw particle draw INSIDE the particle
@@ -197,7 +207,9 @@ typedef struct dt_iop_spektrafilm_params_t
      it on it shifts the automatic result rather than replacing it. */
   float print_exposure_ev;  // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 0.0 $DESCRIPTION: "print exposure compensation"
   gboolean print_auto_exposure; // $DEFAULT: FALSE $DESCRIPTION: "auto print exposure"
-  float print_contrast;     // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.1 $DESCRIPTION: "print contrast"
+  /* the reference's gamma_factor for the print curves; the field name predates
+     the label and is kept, being what presets and styles refer to */
+  float print_contrast;     // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.1 $DESCRIPTION: "print gamma"
   float filter_m;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration M"
   float filter_y;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration Y"
   float couplers_amount;    // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "DIR couplers"
@@ -348,9 +360,9 @@ typedef struct dt_iop_spektrafilm_params_t
      Multiplicative on print_contrast rather than replacing it, matching how
      the engine combines them (morph_gamma * gamma_ch), so the scalar stays the
      overall control and these three are a trim on top of it */
-  float print_gamma_r;         // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print contrast R"
-  float print_gamma_g;         // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print contrast G"
-  float print_gamma_b;         // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print contrast B"
+  float print_gamma_r;         // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print gamma red"
+  float print_gamma_g;         // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print gamma green"
+  float print_gamma_b;         // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print gamma blue"
   /* upstream's GrainParams.blur: the clump-blur radius in pixels that
      grain_blur scales, rather than a second control beside it: hence no
      widget. 0.89 is the value study b80 fitted jointly with the multiplicative
@@ -378,6 +390,17 @@ typedef struct dt_iop_spektrafilm_params_t
      differently. 0 on an edit made before packs carried an identity, and on a
      pack that declares none; both fall back to matching the table */
   uint32_t pack_hash;          // $DEFAULT: 0
+  /* the params version this edit was first written at, which is what says how
+     much of the pack machinery it could possibly have known about. 3 and above
+     is an edit born with pack identity; 1 and 2 predate it, and predate the
+     packs that carry one, so such an edit belongs on a pack that declares
+     none.
+
+     A field and not a reserved pack_hash value: pack_hash 0 is where every
+     fresh edit sits until its first render stamps it, so it cannot also mean
+     "old", and a sentinel inside the hash space would collide with a real
+     pack one day */
+  int origin_version;          // $DEFAULT: 3
 } dt_iop_spektrafilm_params_t;
 
 /* one discovered profile: stock (= file base name), display name, stage */
@@ -839,8 +862,19 @@ int legacy_params(dt_iop_module_t *self,
   n->grain_blur_base = 0.8f;
   /* the pack's default table, which is the only one these edits ever had */
   n->upsampling_hash = 0u;
-  /* these edits named no pack; they resolve by table as they always did */
+  /* named no pack, and could not have: none declared an identity yet */
   n->pack_hash = 0u;
+  n->origin_version = old_version;
+  /* an edit of this vintage that recorded no table was made when exactly one
+     pack existed, so that is the table it used: there was nothing else to
+     render with. Left at 0 it would instead resolve to whatever happens to be
+     installed, which on a machine that has since moved to a later pack is a
+     different set of profiles and a different render.
+
+     Only here, where the record's own version proves it predates the choice. A
+     fresh edit also starts at 0 and must keep resolving to the default pack,
+     which is why this cannot be done in the resolver */
+  if(!n->lut_hash) n->lut_hash = SF_FIRST_PUBLISHED_LUT_HASH;
 
   *new_params = n;
   *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
@@ -886,6 +920,135 @@ static void _pack_dir(char *dst,
 /* Pick the pack directory for an edit that recorded wanted_lut_hash (0 = no
    preference). Local lookup only -- no network, safe on the pixelpipe. Falls
    back to the hand-install directory so error text still names somewhere real. */
+/* the installed pack carrying this spectral table, or FALSE. Peeks the same
+   declaration the GUI lists from, so a table the user can pick is a table the
+   pipeline can find. 0 asks for nothing and always answers FALSE */
+static gboolean _pack_dir_with_table(const uint32_t table_hash,
+                                     char *dst,
+                                     const size_t dstsz)
+{
+  if(!table_hash) return FALSE;
+  gboolean found = FALSE;
+  GPtrArray *packs = sf_fetch_list_packs();
+  for(guint pi = 0; packs && pi < packs->len && !found; pi++)
+  {
+    const sf_fetch_pack_t *fp = g_ptr_array_index(packs, pi);
+    sf_table_info_t info[SF_MAX_TABLES];
+    const int n = sf_pack_peek_tables(fp->dir, info, SF_MAX_TABLES);
+    for(int i = 0; i < n && !found; i++)
+      if(info[i].lut_hash == table_hash)
+      {
+        g_strlcpy(dst, fp->dir, dstsz);
+        found = TRUE;
+      }
+  }
+  if(packs) g_ptr_array_unref(packs);
+  return found;
+}
+
+/* the installed pack an edit that names no pack was made with: one carrying its
+   table AND declaring no identity of its own.
+
+   An edit predating pack_hash was necessarily made against a pack predating
+   pack_hash, that being the only kind that existed. Without this, such an edit
+   resolves on its table alone, and a later pack that carries the same table
+   forward byte-identical answers to it just as well, while its profiles render
+   differently. That is the whole failure pack_hash exists to prevent, and the
+   one case pack_hash cannot express, because the pack it wants has none.
+
+   FALSE when no such pack is installed, which leaves the edit to resolve on
+   its table as before; there is nothing better available then */
+static gboolean _legacy_pack_dir_with_table(const uint32_t table_hash,
+                                            char *dst,
+                                            const size_t dstsz)
+{
+  if(!table_hash) return FALSE;
+  gboolean found = FALSE;
+  GPtrArray *packs = sf_fetch_list_packs();
+  for(guint pi = 0; packs && pi < packs->len && !found; pi++)
+  {
+    const sf_fetch_pack_t *fp = g_ptr_array_index(packs, pi);
+    if(sf_fetch_peek_pack_hash(fp->dir)) continue; /* identified: not this one */
+    sf_table_info_t info[SF_MAX_TABLES];
+    const int n = sf_pack_peek_tables(fp->dir, info, SF_MAX_TABLES);
+    for(int i = 0; i < n && !found; i++)
+      if(info[i].lut_hash == table_hash)
+      {
+        g_strlcpy(dst, fp->dir, dstsz);
+        found = TRUE;
+      }
+  }
+  if(packs) g_ptr_array_unref(packs);
+  return found;
+}
+
+/* how an edit resolves to a pack on this machine */
+typedef enum sf_edit_pack_t
+{
+  SF_EDIT_PACK_OK = 0,     /* dir holds the pack this edit asks for */
+  SF_EDIT_PACK_SUBSTITUTE, /* dir holds a pack, but not the one asked for */
+  SF_EDIT_PACK_LEGACY_GONE,/* pre-identity edit, no pre-identity pack installed */
+  SF_EDIT_PACK_NONE,       /* nothing usable at all */
+} sf_edit_pack_t;
+
+/* the pack this edit needs, and whether it is here.
+ *
+ * Three hashes answer three different questions and they are consulted in
+ * priority order, so anything reading fewer than all of them disagrees with
+ * the renderer:
+ *
+ *   upsampling_hash  a table the edit was explicitly moved to. It may exist
+ *                    only in a pack other than the recorded one (that is
+ *                    what choosing it means) and choosing it clears the two
+ *                    below, so such an edit carries a lut_hash of 0.
+ *   pack_hash        the pack the edit was developed against. Two installed
+ *                    packs can carry one table and render differently, so this
+ *                    outranks the table.
+ *   lut_hash         the spectral table it was stamped with, the weakest claim
+ *                    and the only one a pre-identity edit has.
+ *
+ * out_table receives the table the edit needs, which is what a download should
+ * ask for. dir receives the directory when the result is OK or SUBSTITUTE */
+static sf_edit_pack_t _edit_pack_dir(const dt_iop_spektrafilm_params_t *p,
+                                     char *dir,
+                                     const size_t dstsz,
+                                     uint32_t *out_table)
+{
+  const uint32_t want_table = p->upsampling_hash ? p->upsampling_hash : p->lut_hash;
+  if(out_table) *out_table = want_table;
+
+  if(p->upsampling_hash)
+    return _pack_dir_with_table(p->upsampling_hash, dir, dstsz)
+               ? SF_EDIT_PACK_OK : SF_EDIT_PACK_NONE;
+
+  /* an edit carrying a table but no pack was last rendered on a pack that
+     declares no identity. Two ways to arrive there and they want the same
+     thing: the edit predates pack_hash, or the pack it used does, which is
+     still true of anything rendered on 0.3.3 today, origin_version 3 and all.
+     Keying on the params version alone would protect the first and leave the
+     second to be substituted silently */
+  const gboolean unidentified = !p->pack_hash && p->lut_hash;
+  if(!unidentified && p->pack_hash)
+  {
+    if(sf_fetch_pack_dir_for_pack_hash(p->pack_hash, dir, dstsz))
+      return SF_EDIT_PACK_OK;
+    return SF_EDIT_PACK_NONE;
+  }
+  if(unidentified && _legacy_pack_dir_with_table(p->lut_hash, dir, dstsz))
+    return SF_EDIT_PACK_OK;
+
+  gboolean exact = FALSE;
+  if(!sf_fetch_resolve_pack_dir(p->lut_hash, dir, dstsz, &exact))
+    return SF_EDIT_PACK_NONE;
+  /* reaching an identified pack is a substitution: the table matches, so
+     nothing objects, but a release can carry a table forward unchanged while
+     its profiles move */
+  if(unidentified && sf_fetch_peek_pack_hash(dir)) return SF_EDIT_PACK_LEGACY_GONE;
+  /* an edit that records no table has no preference a pack could violate, so
+     whatever the resolver found, a downloaded pack included, is the right one */
+  return (exact || !p->lut_hash) ? SF_EDIT_PACK_OK : SF_EDIT_PACK_SUBSTITUTE;
+}
+
 static void _resolve_pack_dir(uint32_t wanted_lut_hash,
                               char *dst,
                               size_t dstsz)
@@ -977,50 +1140,86 @@ static gint _entry_name_cmp(gconstpointer a,
    the pack can be reloaded underneath it when the resolved directory changes */
 typedef struct sf_table_entry_t
 {
-  char label[64];       /* the identifier, or the header id for a format 2 pack */
+  char label[64];       /* the method name shown in the combobox */
+  char dir[SF_PATH_LEN];/* the pack that carries it */
   uint32_t hash;
   gboolean reflectance;
+  gboolean named;       /* label came from a declaration, not a header id */
 } sf_table_entry_t;
 
-/* list the pack directory's tables for the GUI.
-   Read from the directory and not from the loaded pack, for the same reason
-   _scan_profiles() scans the directory: _pack is assigned only by
-   _ensure_sim(), which runs in the pixelpipe, so it is still NULL while the
-   GUI is being built and the list would come back empty. Peeking costs a
-   pack.json parse and a 32-byte header per table */
+/* every spectral upsampling table on this machine, across all installed packs.
+   Not only the pack this edit resolves to: an edit made against 0.3.3 resolves
+   to a pack carrying one table, and listing just that one would leave it no way
+   to reach a method a later pack added: the control would be permanently
+   inert on exactly the edits most likely to want it. Choosing a table from
+   another pack moves the edit to that pack, which _upsampling_changed() does.
+
+   Read from the directories and not from the loaded pack, for the same reason
+   _scan_profiles() scans directories: _pack is assigned only by _ensure_sim(),
+   which runs in the pixelpipe, so it is still NULL while the GUI is built.
+   Peeking costs a pack.json parse and a 32-byte header per table */
 static GList *_scan_tables(void)
 {
-  char dir[SF_PATH_LEN];
-  dt_pthread_mutex_lock(&_pack_lock);
-  const gboolean have = _pack && _pack_path[0] != 0;
-  if(have) g_strlcpy(dir, _pack_path, sizeof dir);
-  dt_pthread_mutex_unlock(&_pack_lock);
-  if(!have) _resolve_pack_dir(0, dir, sizeof dir);
-
-  sf_table_info_t info[SF_MAX_TABLES];
-  const int n = sf_pack_peek_tables(dir, info, SF_MAX_TABLES);
-  /* the combobox hides itself below two tables, so a pack that declares fewer
-     than expected looks identical to a module that has no such control: say
-     which directory was read and what it offered, since the usual cause is a
-     pack installed somewhere the module does not look */
-  dt_print(DT_DEBUG_DEV, "[spektrafilm] %d spectral upsampling table(s) in %s\n",
-           n, dir);
-  for(int i = 0; i < n; i++)
-    dt_print(DT_DEBUG_DEV, "[spektrafilm]   %08x %s %s\n", info[i].lut_hash,
-             info[i].identifier[0] ? info[i].identifier : "(unnamed)", info[i].lut_id);
-
   GList *list = NULL;
-  for(int i = 0; i < n; i++)
+  GPtrArray *packs = sf_fetch_list_packs();
+  for(guint pi = 0; packs && pi < packs->len; pi++)
   {
-    sf_table_entry_t *e = g_malloc0(sizeof(*e));
-    /* A format 2 pack's single table declared no identifier; its header id is
-       the only name it has, and it is the one the mismatch banner and the data
-       repository both use */
-    g_strlcpy(e->label, info[i].identifier[0] ? info[i].identifier : info[i].lut_id,
-              sizeof e->label);
-    e->hash = info[i].lut_hash;
-    e->reflectance = info[i].kind == SF_LUT_REFLECTANCE;
-    list = g_list_append(list, e);
+    const sf_fetch_pack_t *fp = g_ptr_array_index(packs, pi);
+    sf_table_info_t info[SF_MAX_TABLES];
+    const int n = sf_pack_peek_tables(fp->dir, info, SF_MAX_TABLES);
+    dt_print(DT_DEBUG_DEV, "[spektrafilm] %d spectral upsampling table(s) in %s\n",
+             n, fp->dir);
+    for(int i = 0; i < n; i++)
+    {
+      /* one entry per table, not per pack: packs overlap, and 0.3.3's table is
+         byte-identical to the one 0.3.4 carries. Two entries for it would read
+         as two methods and pick between the packs arbitrarily. First pack
+         wins, which is the precedence sf_fetch_list_packs() already reports */
+      sf_table_entry_t *dup = NULL;
+      for(GList *l = list; l && !dup; l = l->next)
+        if(((sf_table_entry_t *)l->data)->hash == info[i].lut_hash)
+          dup = l->data;
+      if(dup)
+      {
+        /* A pack that names the table teaches the entry its method even when
+           an earlier pack supplies the bytes: same table, and "hanatos2025"
+           is what the method is called everywhere else. The directory stays
+           the earlier pack's, precedence being about which files to read */
+        if(!dup->named && info[i].identifier[0])
+        {
+          g_strlcpy(dup->label, info[i].identifier, sizeof dup->label);
+          dup->named = TRUE;
+        }
+        continue;
+      }
+
+      sf_table_entry_t *e = g_malloc0(sizeof(*e));
+      /* A format 2 pack's single table declared no identifier; its header id is
+         the only name it has, and it is the one the mismatch banner and the
+         data repository both use */
+      e->named = info[i].identifier[0] != 0;
+      g_strlcpy(e->label, e->named ? info[i].identifier : info[i].lut_id,
+                sizeof e->label);
+      g_strlcpy(e->dir, fp->dir, sizeof e->dir);
+      e->hash = info[i].lut_hash;
+      e->reflectance = info[i].kind == SF_LUT_REFLECTANCE;
+      list = g_list_append(list, e);
+      dt_print(DT_DEBUG_DEV, "[spektrafilm]   %08x %s %s\n", e->hash, e->label,
+               info[i].lut_id);
+    }
+  }
+  if(packs) g_ptr_array_unref(packs);
+
+  /* nothing installed names the first published table, so fall back to what it
+     is: only one pack ever declared no tables, and this is the one it held */
+  for(GList *l = list; l; l = l->next)
+  {
+    sf_table_entry_t *e = l->data;
+    if(!e->named && e->hash == SF_FIRST_PUBLISHED_LUT_HASH)
+    {
+      g_strlcpy(e->label, SF_FIRST_PUBLISHED_LUT_NAME, sizeof e->label);
+      e->named = TRUE;
+    }
   }
   return list;
 }
@@ -1291,6 +1490,8 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   key = _mix64(key, &p->film_hash, sizeof p->film_hash);
   key = _mix64(key, &p->lut_hash, sizeof p->lut_hash);
   key = _mix64(key, &p->pack_hash, sizeof p->pack_hash);
+  /* decides which pack the edit resolves to, so it decides the sim */
+  key = _mix64(key, &p->origin_version, sizeof p->origin_version);
   /* picks the spectral table the tc LUT is built from, so the sim is a
      different one entirely */
   key = _mix64(key, &p->upsampling_hash, sizeof p->upsampling_hash);
@@ -1389,12 +1590,27 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
      open in the same session is rare enough that the reload costs less than
      permanently carrying every pack the user has on disk. */
   char want_dir[SF_PATH_LEN];
-  /* the pack the edit names, if it is installed; only then the table. Two
-     installed packs can carry one table and render differently, so resolving
-     by table first would pick between them arbitrarily */
-  if(!p->pack_hash
-     || !sf_fetch_pack_dir_for_pack_hash(p->pack_hash, want_dir, sizeof want_dir))
-    _resolve_pack_dir(p->lut_hash, want_dir, sizeof want_dir);
+  /* one lookup, shared with the module's data row: the two disagreeing about
+     which pack an edit needs is what left an edit unrenderable while the row
+     reported nothing missing */
+  if(_edit_pack_dir(p, want_dir, sizeof want_dir, NULL) == SF_EDIT_PACK_LEGACY_GONE)
+  {
+    dt_print(DT_DEBUG_DEV,
+             "[spektrafilm] edit predates pack identity and its own pack is not "
+             "installed; %s would render it on different profiles\n", want_dir);
+    g_strlcpy(d->sim_error,
+              _("this edit was made before data packs carried an identity,\n"
+                "and the pack it needs is not installed\n"
+                "the module can fetch it"),
+              sizeof d->sim_error);
+    d->sim_warning[0] = 0;
+    /* d->lock is held from the cache check above, and every exit publishes:
+       returning without either deadlocks the next pipe run and leaves the
+       banner showing whatever the previous run said */
+    _publish_status(d);
+    dt_pthread_mutex_unlock(&d->lock);
+    return NULL;
+  }
 
   const guint gen = fetch_gen;
 
@@ -3193,9 +3409,27 @@ static void _stamp_lut_hash(dt_iop_module_t *self)
        was made with, and leave it alone once it disagrees: overwriting there
        would erase the very mismatch the field exists to report */
     const uint32_t curp = sf_pack_hash(_pack);
-    if(curp && (!p->pack_hash || p->pack_hash == curp)) p->pack_hash = curp;
+    /* never onto an edit that predates pack identity. Such an edit reaching an
+       identified pack means the pack it belongs on is not installed; stamping
+       there would make the substitution permanent, surviving the moment its
+       own pack comes back */
+    if(curp && !(!p->pack_hash && p->lut_hash && p->lut_hash != cur)
+       && (!p->pack_hash || p->pack_hash == curp))
+      p->pack_hash = curp;
   }
   dt_pthread_mutex_unlock(&_pack_lock);
+}
+
+/* both halves of the hanatos sensitivity adaptation belong to the irradiance
+   formula; sf_sim_build() does not run them for a reflectance table. Shown
+   inert there rather than left live, which would offer two switches that
+   change nothing */
+static void _update_adaptation_sensitivity(const dt_iop_spektrafilm_gui_data_t *g,
+                                           const sf_table_entry_t *sel)
+{
+  const gboolean reflectance = sel && sel->reflectance;
+  gtk_widget_set_sensitive(g->adaptation_bandwidth, !reflectance);
+  gtk_widget_set_sensitive(g->adaptation_surface, !reflectance);
 }
 
 static void _upsampling_changed(GtkWidget *w,
@@ -3211,6 +3445,17 @@ static void _upsampling_changed(GtkWidget *w,
      or drop one, and the edit has to keep naming the table it was developed
      against so the mismatch is reported rather than absorbed */
   p->upsampling_hash = e->hash;
+  /* the chosen table may live in another pack than the one this edit currently
+     resolves to: picking a method a later pack added is the whole point of
+     listing them all. Release the recorded pack and table so resolution
+     follows the choice; both are stamped again on the next render, naming
+     whichever pack actually supplied it */
+  p->pack_hash = 0u;
+  p->lut_hash = 0u;
+  /* here as well as in gui_update(): picking a table is exactly when the pair
+     becomes inert or live again, and gui_update() does not re-run on a
+     combobox change */
+  _update_adaptation_sensitivity(g, e);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -3774,9 +4019,13 @@ static void _update_data_row(dt_iop_module_t *self)
   /* Is any pack usable at all, and is it the one this edit was made with?
      Local-only, so this is cheap enough to answer on every refresh. */
   char dir[SF_PATH_LEN];
-  gboolean exact = FALSE;
-  const gboolean have_any =
-      sf_fetch_resolve_pack_dir(p->lut_hash, dir, sizeof dir, &exact);
+  uint32_t want_table = 0;
+  const sf_edit_pack_t st = _edit_pack_dir(p, dir, sizeof dir, &want_table);
+  /* only the pack the edit asks for counts as having one. A substitute, or a
+     later pack answering to the same table, is what the row exists to offer a
+     way out of */
+  const gboolean have_any = st == SF_EDIT_PACK_OK;
+  const gboolean exact = have_any;
 
   /* With no pack there is nothing any of the controls could act on: a film
      list with no films, sliders driving a simulation that cannot be built.
@@ -3857,7 +4106,10 @@ static void _update_data_row(dt_iop_module_t *self)
     return;
   }
 
-  g->data_wanted = have_any ? p->lut_hash : 0;
+  /* p->lut_hash rather than 0 when the edit names a table: the manifest is
+     ordered oldest first, so asking for the table lands on the pack the edit
+     was made with, where asking for nothing lands on whatever is default */
+  g->data_wanted = (have_any || want_table) ? want_table : 0;
   g->data_wanted_pack = p->pack_hash;
   gtk_label_set_text(
       GTK_LABEL(g->data_status),
@@ -3968,6 +4220,7 @@ static void _preset_defaults(dt_iop_spektrafilm_params_t *p)
   p->grain_blur_base = 0.8f;
   p->upsampling_hash = 0u; /* the pack's default table */
   p->pack_hash = 0u;       /* resolve by table, as a preset must */
+  p->origin_version = 3;   /* a preset is written now, whatever it is applied to */
   p->couplers_amount = 1.0f;
   p->couplers_diffusion_um = 20.0f;
   p->couplers_tail_um = 200.0f;
@@ -4602,9 +4855,13 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_combobox_clear(g->upsampling);
   {
     const int ntab = g_list_length(g->tables);
-    gtk_widget_set_visible(g->upsampling, ntab > 1);
+    /* shown even when the pack offers one table, so the control is where the
+       user expects it and names what is in use: hiding it makes a pack that
+       carries fewer tables than expected look like a build without the
+       feature. Insensitive rather than absent when there is nothing to pick */
+    gtk_widget_set_visible(g->upsampling, TRUE);
+    gtk_widget_set_sensitive(g->upsampling, ntab > 1);
     int tpos = -1, ti = 0;
-    gboolean reflectance = FALSE;
     for(const GList *l = g->tables; l; l = l->next, ti++)
     {
       const sf_table_entry_t *e = l->data;
@@ -4620,12 +4877,7 @@ void gui_update(dt_iop_module_t *self)
     if(tpos < 0) tpos = 0;
     if(ntab) dt_bauhaus_combobox_set_from_value(g->upsampling, tpos);
     const sf_table_entry_t *sel = _table_at(g, tpos);
-    reflectance = sel && sel->reflectance;
-    /* both halves of the hanatos sensitivity adaptation belong to the
-       irradiance path and are not run for a reflectance table, so they are
-       shown inert rather than appearing to do nothing */
-    gtk_widget_set_sensitive(g->adaptation_bandwidth, !reflectance);
-    gtk_widget_set_sensitive(g->adaptation_surface, !reflectance);
+    _update_adaptation_sensitivity(g, sel);
   }
 
   /* Select the saved film. On no hash match -- a fresh param with film_hash 0,
@@ -5379,25 +5631,25 @@ void gui_init(dt_iop_module_t *self)
   g->print_gamma_r = dt_bauhaus_slider_from_params(self, "print_gamma_r");
   gtk_widget_set_tooltip_text(
       g->print_gamma_r,
-      _("contrast of the paper's red-forming layer alone, on top of the\n"
-        "overall print contrast.\n"
+      _("gamma of the paper's red-forming layer alone, on top of the\n"
+        "overall print gamma.\n"
         "\n"
-        "splitting contrast per channel grades out crossover -- a negative\n"
-        "whose layers developed to different contrasts, which filtration\n"
+        "splitting gamma per channel grades out crossover -- a negative\n"
+        "whose layers developed to different gammas, which filtration\n"
         "cannot fix because it shifts every tone equally while crossover\n"
         "shifts shadows one way and highlights the other."));
 
   g->print_gamma_g = dt_bauhaus_slider_from_params(self, "print_gamma_g");
   gtk_widget_set_tooltip_text(
       g->print_gamma_g,
-      _("contrast of the paper's green-forming layer alone, on top of the\n"
-        "overall print contrast."));
+      _("gamma of the paper's green-forming layer alone, on top of the\n"
+        "overall print gamma."));
 
   g->print_gamma_b = dt_bauhaus_slider_from_params(self, "print_gamma_b");
   gtk_widget_set_tooltip_text(
       g->print_gamma_b,
-      _("contrast of the paper's blue-forming layer alone, on top of the\n"
-        "overall print contrast."));
+      _("gamma of the paper's blue-forming layer alone, on top of the\n"
+        "overall print gamma."));
 
   _section_add(self, C_("section", "filtration"), "plugins/darkroom/spektrafilm/expand_print_filtration");
 
