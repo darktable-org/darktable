@@ -570,6 +570,16 @@ typedef struct sf_sim_params_t
                                       >=2 = runtime 3D tables (ref default 17;
                                       33 recommended for production) */
 
+  /* scanner black/white point, the reference's scanner.black_correction /
+     white_correction and their levels. The levels are sRGB-encoded 0..1 as
+     upstream states them and are linearized on use. With one correction off
+     its endpoint is held where the film puts it, so the other still lands
+     exactly where asked ([cr] _correction_fucntion). */
+  bool scan_black_correction;
+  bool scan_white_correction;
+  double scan_black_level;
+  double scan_white_level;
+
   /* which spectral upsampling table to render with, by content hash: the
    * same identity every edit already records, and the reason it is a hash and
    * not the identifier: a pack can revise a method's table without renaming

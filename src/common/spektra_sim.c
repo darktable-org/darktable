@@ -1631,6 +1631,9 @@ void sf_sim_params_defaults(sf_sim_params_t *p)
   memset(p, 0, sizeof(*p));
   p->exposure_comp_ev = 0.0;
   p->couplers_active = true;
+  p->scan_black_correction = p->scan_white_correction = true;
+  p->scan_black_level = 0.01;
+  p->scan_white_level = 0.98;
   p->couplers_amount = 1.0;
   /* generic negative-film gammas ([st] params_builder); overwritten from the
    * pack's per-film digested defaults in sf_sim_build() */
@@ -3033,6 +3036,37 @@ static double interp_ascending(double x,
   return le[n - 1];
 }
 
+/* np.interp(x, xp, fp) over the points where both are finite, xp ascending,
+   endpoint-clamped like numpy. NAN when no point is finite */
+static double interp_finite(const double x,
+                            const double *xp,
+                            const double *fp,
+                            const int n)
+{
+  int first = -1, last = -1;
+  for(int i = 0; i < n; i++)
+    if(isfinite(xp[i]) && isfinite(fp[i]))
+    {
+      if(first < 0) first = i;
+      last = i;
+    }
+  if(first < 0) return NAN;
+  if(x <= xp[first]) return fp[first];
+  if(x >= xp[last]) return fp[last];
+  int prev = first;
+  for(int i = first + 1; i <= last; i++)
+  {
+    if(!isfinite(xp[i]) || !isfinite(fp[i])) continue;
+    if(x <= xp[i])
+    {
+      const double t = (xp[i] > xp[prev]) ? (x - xp[prev]) / (xp[i] - xp[prev]) : 0.0;
+      return fp[prev] + t * (fp[i] - fp[prev]);
+    }
+    prev = i;
+  }
+  return fp[last];
+}
+
 /* [st] scanning cmy_to_log_xyz */
 static void cmy_to_log_xyz(const sf_sim_t *s,
                            const double cmy[3],
@@ -3304,6 +3338,14 @@ float sf_sim_probe_lightness(const sf_sim_t *sim,
 /* ------------------------------------------------------------------------ */
 /* build                                                                    */
 /* ------------------------------------------------------------------------ */
+
+/* sRGB EOTF, for the scanner levels: upstream states them as display values
+   and decodes them before fitting ([cr] _remove_sRGB_cctf). */
+static double _srgb_to_linear(const double v)
+{
+  if(v <= 0.04045) return v / 12.92;
+  return pow((v + 0.055) / 1.055, 2.4);
+}
 
 static void illuminant_xy_from_spd(double out[2],
                                    const double *spd,
@@ -4300,21 +4342,127 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     cp9f(s->m_out_f, s->m_out);
   }
 
-  /* ----- scanner black/white point for positive film scans ---------------- */
+  /* ----- black/white point for positive scans and negative-paper prints -- */
   /* A slide has base density and never reaches the paper's D-max; a real
      scanner sets black/white points. Reference: color_reference.py with
      scanner.black_correction = white_correction = true, which upstream's UI
-     uses for slides -- off (upstream default) the scan is washed out. Only
-     affects scan-film mode with positive film; negatives are untouched. */
+     uses for slides -- off (upstream default) the scan is washed out. A scan
+     of a negative and a print on positive paper are never fitted. */
   s->scan_bw_on = 0;
   s->scan_bw_m = 1.0;
   s->scan_bw_q = 0.0;
-  if(!s->has_print && s->film_positive)
+
+  /* the print counterpart ([cr] the `not scan_film and print is negative`
+     branch). A print on negative-type paper has the same problem for the same
+     reason: its endpoints come from the film, not from the paper, so the paper
+     never reaches its own black or white and the result is flat until they are
+     placed.
+
+     The endpoints are the film at its extremes: its fog floor and its D-max
+     ([st] printing.expose), carried through the enlarger. Both ends are film
+     densities, and they cross over on the way: the film's THINNEST point
+     passes the most light and prints darkest, so it is the print's black.
+
+     As upstream does ([cr] _update_cmy_black_white_references), they are
+     developed at the enlarger's nominal exposure on the paper's measured
+     curves, not on the morphed ones a pixel meets. That places the paper's
+     own range once: print exposure and print gamma then act on the image
+     rather than being stretched back out to the levels by the fit */
+  if(s->has_print && !s->print_positive
+     && (p->scan_black_correction || p->scan_white_correction))
   {
-    /* upstream treats the 0.98 / 0.01 scanner levels as sRGB-encoded and
-       linearizes them (color_reference._remove_sRGB_cctf) */
-    const double white_level = pow((0.98 + 0.055) / 1.055, 2.4);
-    const double black_level = 0.01 / 12.92;
+    double white_level = _srgb_to_linear(p->scan_white_level);
+    double black_level = _srgb_to_linear(p->scan_black_level);
+
+    double cmy_film_black[3], cmy_film_white[3];
+    for(int c = 0; c < 3; c++)
+    {
+      cmy_film_black[c] = -p->grain_density_min[c];
+      double mx = -INFINITY;
+      for(int i = 0; i < SF_NLE; i++)
+      {
+        const double v = film->density_curves[i][c];
+        if(isfinite(v) && v > mx) mx = v;
+      }
+      cmy_film_white[c] = mx;
+    }
+
+    double paper_curve[3][SF_NLE];
+    for(int i = 0; i < SF_NLE; i++)
+      for(int c = 0; c < 3; c++) paper_curve[c][i] = print->density_curves[i][c];
+
+    double y_black = 0.0, y_white = 0.0;
+    for(int end = 0; end < 2; end++)
+    {
+      const double *cmy_film = end ? cmy_film_white : cmy_film_black;
+      double lograw[3], cmy_print[3], lx[3];
+      cmy_to_print_lograw(s, cmy_film, lograw);
+      for(int c = 0; c < 3; c++)
+        cmy_print[c] = interp_finite(lograw[c], print->log_exposure, paper_curve[c], SF_NLE);
+      cmy_to_log_xyz(s, cmy_print, lx);
+      if(end) y_white = pow(10.0, lx[1]);
+      else    y_black = pow(10.0, lx[1]);
+    }
+
+    /* degenerate paper or exposure: the two ends land together and the fit
+       would be a division by nothing. Leaving the correction off renders the
+       print as it always did rather than by an arbitrary slope */
+    if(fabs(y_white - y_black) > 1e-9)
+    {
+      if(!p->scan_white_correction) white_level = y_white;
+      if(!p->scan_black_correction) black_level = y_black;
+      s->scan_bw_m = (white_level - black_level) / (y_white - y_black);
+      s->scan_bw_q = black_level - s->scan_bw_m * y_black;
+      s->scan_bw_on = 1;
+
+      /* print exposure correction so midgray still lands on midgray after the
+         fit ([cr] black_white_printing_exposure_correction). The paper mirror
+         of the scan case below: its density rises with exposure, so the curve
+         is read ascending and the factor multiplies the exposure. Folded into
+         the print exposure the per-pixel path and the GPU export both read;
+         the endpoints above are taken without it, as upstream's are */
+      const double midgray_corrected = (0.184 - s->scan_bw_q) / s->scan_bw_m;
+      if(midgray_corrected > 0.0)
+      {
+        double dmin_av = 0.0;
+        int nvalid = 0;
+        for(int i = 0; i < SF_NWL; i++)
+          if(isfinite(print->base_density[i]))
+          {
+            dmin_av += print->base_density[i];
+            nvalid++;
+          }
+        dmin_av = nvalid ? dmin_av / nvalid : 0.0;
+        double curve_av[SF_NLE];
+        for(int i = 0; i < SF_NLE; i++)
+        {
+          double sum = 0.0;
+          int nc = 0;
+          for(int c = 0; c < 3; c++)
+            if(isfinite(print->density_curves[i][c]))
+            {
+              sum += print->density_curves[i][c];
+              nc++;
+            }
+          curve_av[i] = nc ? sum / nc : NAN;
+        }
+        const double le_mid_c = interp_finite(-log10(midgray_corrected) - dmin_av,
+                                              curve_av, print->log_exposure, SF_NLE);
+        const double le_mid = interp_finite(-log10(0.184) - dmin_av,
+                                            curve_av, print->log_exposure, SF_NLE);
+        if(isfinite(le_mid_c) && isfinite(le_mid))
+          s->log10_print_exposure = (float)(s->log10_print_exposure + (le_mid_c - le_mid));
+      }
+    }
+  }
+
+  if(!s->has_print && s->film_positive
+     && (p->scan_black_correction || p->scan_white_correction))
+  {
+    /* upstream treats the scanner levels as sRGB-encoded and linearizes them
+       (color_reference._remove_sRGB_cctf) */
+    double white_level = _srgb_to_linear(p->scan_white_level);
+    double black_level = _srgb_to_linear(p->scan_black_level);
     double cmy_black[3], cmy_white[3] = { 0.0, 0.0, 0.0 };
     for(int c = 0; c < 3; c++)
     {
@@ -4330,6 +4478,11 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     cmy_to_log_xyz(s, cmy_black, lxb);
     cmy_to_log_xyz(s, cmy_white, lxw);
     const double y_black = pow(10.0, lxb[1]), y_white = pow(10.0, lxw[1]);
+    /* one correction on its own moves only its own endpoint: the other is held
+       where the film puts it, so the fit still sends the corrected end exactly
+       where asked ([cr] _correction_fucntion). */
+    if(!p->scan_white_correction) white_level = y_white;
+    if(!p->scan_black_correction) black_level = y_black;
     const double m = (white_level - black_level) / (y_white - y_black + 1e-10);
     const double q = black_level - m * y_black;
     s->scan_bw_on = 1;
