@@ -99,9 +99,6 @@ changes (where available).
 
 - Fixed an OpenCL error in filmicrgb leading to wrong masks.
 
-- Fixed highlights modes for 4BAYER (CYGM/RGBE) raws, only clipping mode
-  is available for those.
-
 ## Lua
 
 ### API Version
