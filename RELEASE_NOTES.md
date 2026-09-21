@@ -198,6 +198,13 @@ changes (where available).
   framed as intended while the full sensor area stays available to
   reframe within. Read from Canon and Olympus raws.
 
+- Export filename patterns gained `$(CATEGORY_EACH[n,category])`, which
+  yields one path per matching tag instead of a single comma-joined
+  value. Referencing several levels of the same category walks each
+  tag's path, so an image tagged for several people can be exported
+  once into each person's folder rather than into one "John,Jane"
+  folder.
+
 ## Bug Fixes
 
 - Fixed a trashing error dialog when deleting a virgin duplicate of an
