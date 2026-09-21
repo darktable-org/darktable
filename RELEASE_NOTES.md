@@ -99,6 +99,8 @@ changes (where available).
 
 - Fixed an OpenCL error in filmicrgb leading to wrong masks.
 
+- Fixed transparent dialog title bars on macOS 27.
+
 ## Lua
 
 ### API Version
