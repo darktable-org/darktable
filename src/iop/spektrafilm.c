@@ -1076,10 +1076,17 @@ static GList *_scan_profiles(const char *packdir)
 /* resolve a profile hash to its stock name. hash 0 -> default:
    for films the first filming stock, for papers prefer the film's
    target_print. Returns false when nothing matches. */
+/* prefer_bw: 0 or 1 to prefer a stock with that channel model when the named
+   one is absent, -1 for no preference. It is the tier _auto_paper_entry()
+   applies in the GUI, and it has to be applied here too or the two disagree:
+   target_print is optional in the pack, the entry list is sorted by display
+   name, and so the last-resort first printing entry bears no relation to the
+   film: for a black-and-white negative it is a color paper */
 static gboolean _resolve_stock(GList *entries,
                                uint32_t hash,
                                gboolean want_printing,
                                const char *prefer_stock,
+                               int prefer_bw,
                                char *dst,
                                size_t dstsz)
 {
@@ -1098,6 +1105,16 @@ static gboolean _resolve_stock(GList *entries,
     {
       const sf_prof_entry_t *e = l->data;
       if(e->printing == want_printing && !strcmp(e->stock, prefer_stock))
+      {
+        g_strlcpy(dst, e->stock, dstsz);
+        return TRUE;
+      }
+    }
+  if(prefer_bw >= 0)
+    for(GList *l = entries; l; l = l->next)
+    {
+      const sf_prof_entry_t *e = l->data;
+      if(e->printing == want_printing && e->bw == (prefer_bw != 0))
       {
         g_strlcpy(dst, e->stock, dstsz);
         return TRUE;
@@ -1436,7 +1453,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   /* resolve stocks */
   GList *entries = _scan_profiles(pack_dir);
   char film_stock[SF_NAME_LEN] = { 0 }, paper_stock[SF_NAME_LEN] = { 0 };
-  if(!_resolve_stock(entries, p->film_hash, FALSE, "kodak_gold_200", film_stock,
+  if(!_resolve_stock(entries, p->film_hash, FALSE, "kodak_gold_200", -1, film_stock,
                      sizeof film_stock))
   {
     g_strlcpy(d->sim_error,
@@ -1452,14 +1469,19 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     return NULL;
   }
   const char *target_print = NULL;
+  int film_bw = -1;
   for(GList *l = entries; l; l = l->next)
   {
     const sf_prof_entry_t *e = l->data;
-    if(!e->printing && !strcmp(e->stock, film_stock)) target_print = e->target_print;
+    if(!e->printing && !strcmp(e->stock, film_stock))
+    {
+      target_print = e->target_print;
+      film_bw = e->bw ? 1 : 0;
+    }
   }
   if(!p->scan_film
-     && !_resolve_stock(entries, p->paper_hash, TRUE, target_print, paper_stock,
-                        sizeof paper_stock))
+     && !_resolve_stock(entries, p->paper_hash, TRUE, target_print, film_bw,
+                        paper_stock, sizeof paper_stock))
   {
     g_strlcpy(d->sim_error,
               _("the installed data pack contains no print papers\n"
@@ -3106,6 +3128,7 @@ static void _update_print_sensitivity(dt_iop_module_t *self);
 static void _update_development_sensitivity(const dt_iop_spektrafilm_gui_data_t *g,
                                             const dt_iop_spektrafilm_params_t *p);
 static float _development_default(const sf_prof_entry_t *e);
+static void _rebaseline_print_development(dt_iop_module_t *self);
 static void _sync_coupler_diffusion(dt_iop_spektrafilm_gui_data_t *g,
                                     const sf_prof_entry_t *e);
 
@@ -3207,6 +3230,11 @@ static void _film_changed(GtkWidget *w,
      the paper is set back to auto later. The pipeline resolves it identically
      either way (_resolve_stock). */
   _update_paper_auto_entry(self);
+  /* A film switch can move the automatic paper (Double-X resolves to print
+     film 2302, a color negative to a color paper), and the print time does
+     not transfer between them any more than the film time does. Only on auto:
+     an explicitly chosen paper has not changed, so neither should its time */
+  if(!p->paper_hash) _rebaseline_print_development(self);
   /* moves the coupler spread sliders' reset targets onto this stock, without
      touching the values the user set */
   _sync_coupler_diffusion(g, e);
@@ -3236,7 +3264,10 @@ static void _paper_changed(GtkWidget *w,
     /* auto, or no paper at all: drop the explicit choice so the film resolves
        it again if the print stage comes back */
     p->paper_hash = 0;
-    p->print_development_min = 0.0f;
+    /* then take the time from whatever that resolves to. Zeroing here instead
+       would render the same (0 means the stock's own default) but leave the
+       slider reading 0 on a paper that has a whole family of times */
+    _rebaseline_print_development(self);
     _update_development_sensitivity(g, p);
     _stamp_lut_hash(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -3485,23 +3516,42 @@ static void _development_widget_update(GtkWidget *w,
    because every film / paper / scan_film change routes through here; driving
    the sliders from gui_update() alone would leave them stale from the moment a
    stock is switched until the module is next rebuilt. */
+/* the paper actually being printed on, or NULL when there is no print stage.
+   "auto" prints on a real paper while leaving paper_hash at 0: the link is
+   the selection, the destination is resolved from the film's target print. A
+   hash lookup alone finds no paper on that selection, which would leave the
+   print slider dead at 0 min even when the paper it resolves to carries a whole
+   development family. Resolved the same way the combobox label and the pipeline
+   resolve it, so all three name one paper */
+static const sf_prof_entry_t *_effective_paper_entry(const dt_iop_spektrafilm_gui_data_t *g,
+                                                     const dt_iop_spektrafilm_params_t *p)
+{
+  if(p->scan_film) return NULL;
+  return p->paper_hash ? _entry_by_hash(g, p->paper_hash, TRUE)
+                       : _auto_paper_entry(g, _current_film_entry(g, p));
+}
+
+/* put the print development slider on the paper in force, as _film_changed()
+   does for the film: a time from the previous paper means nothing on this one,
+   and 0 ("this stock's own default") renders correctly but reads as though
+   nothing is set, on the one discontinuity in the range */
+static void _rebaseline_print_development(dt_iop_module_t *self)
+{
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
+  const sf_prof_entry_t *paper = _effective_paper_entry(g, p);
+  p->print_development_min = paper ? _development_default(paper) : 0.0f;
+  DT_ENTER_GUI_UPDATE();
+  dt_bauhaus_slider_set(g->print_development_min, p->print_development_min);
+  DT_LEAVE_GUI_UPDATE();
+}
+
 static void _update_development_sensitivity(const dt_iop_spektrafilm_gui_data_t *g,
                                             const dt_iop_spektrafilm_params_t *p)
 {
   _development_widget_update(g->development_min, _entry_by_hash(g, p->film_hash, FALSE));
 
-  /* "auto" prints on a real paper while leaving paper_hash at 0 -- the link is
-     the selection, the destination is resolved from the film's target print. A
-     hash lookup alone finds no paper on that selection, which would leave the
-     print slider dead at 0 min even when the paper it resolves to carries a
-     whole development family. Resolve it the same way the combobox label does,
-     so the slider follows the paper actually being printed on. */
-  const sf_prof_entry_t *paper = NULL;
-  if(!p->scan_film)
-    paper = p->paper_hash ? _entry_by_hash(g, p->paper_hash, TRUE)
-                          : _auto_paper_entry(g, _current_film_entry(g, p));
-
-  _development_widget_update(g->print_development_min, paper);
+  _development_widget_update(g->print_development_min, _effective_paper_entry(g, p));
 }
 
 static void _update_print_sensitivity(dt_iop_module_t *self)
