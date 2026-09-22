@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
@@ -23,9 +24,11 @@
 #include "common/datetime.h"
 #include "control/conf.h"
 #include "control/control.h"
+
 #ifdef HAVE_GPHOTO2
 #include "control/jobs/camera_jobs.h"
 #endif
+
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -35,15 +38,19 @@
 #include "imageio/imageio_common.h"  // for dt_imageio_is_raw_by_extension()
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
+
 #ifdef _WIN32
 //MSVCRT does not have strptime implemented
 #include "win/strptime.h"
 #endif
+
 #include <strings.h>
 #include <librsvg/rsvg.h>
+
 // ugh, ugly hack. why do people break stuff all the time?
 #ifndef RSVG_CAIRO_H
 #include <librsvg/rsvg-cairo.h>
@@ -52,6 +59,7 @@
 #ifdef USE_LUA
 #include "lua/widget/widget.h"
 #endif
+
 DT_MODULE(1)
 
 static void _import_from_dialog_new(dt_lib_module_t* self);
@@ -291,7 +299,7 @@ void gui_update(dt_lib_module_t *self)
 
       /* add camera actions buttons */
       GtkWidget *vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-      if(camera->can_import == TRUE)
+      if(camera->can_import)
       {
         button = dt_action_button_new(self, _import_text[DT_IMPORT_CAMERA],
                                       _lib_import_from_camera_callback, self, NULL, 0, 0);
@@ -300,7 +308,7 @@ void gui_update(dt_lib_module_t *self)
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(button)), GTK_ALIGN_CENTER);
         dt_gui_add_help_link(button, "import_camera");
       }
-      if(camera->can_tether == TRUE)
+      if(camera->can_tether)
       {
         button = dt_action_button_new(self, _import_text[DT_IMPORT_TETHER],
                                       _lib_import_tethered_callback, camera, NULL, 0, 0);

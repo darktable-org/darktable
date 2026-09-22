@@ -451,7 +451,7 @@ void tiling_callback(dt_iop_module_t *self,
     const int max_filter_radius = (1 << scales);
 
     tiling->factor += 2.f * 4 + 6.f * 4 / (DS_FACTOR * DS_FACTOR);
-    tiling->factor_cl += 3.f * 4 + 5.f * 4 / (DS_FACTOR * DS_FACTOR);
+    tiling->factor_cl += 3.f * 4 + 7.f * 4 / (DS_FACTOR * DS_FACTOR);
 
     // The wavelets decomposition uses a temp buffer of size 4 × ds_width
     tiling->maxbuf = 1.f / roi_in->height * dt_get_num_threads() * 4.f / DS_FACTOR;

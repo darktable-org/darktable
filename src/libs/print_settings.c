@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include <glib.h>
@@ -827,7 +828,7 @@ static const dt_paper_info_t *_find_paper_by_dm(GList *paper_list, const dt_pape
 
 static void _sync_print_widgets_from_pinfo(dt_lib_print_settings_t *ps)
 {
-  dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape == TRUE ? 1 : 0);
+  dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape ? 1 : 0);
 
   const dt_paper_info_t *matched = _find_paper_by_dm(ps->paper_list, &ps->prt.paper);
   if(matched)
@@ -1362,7 +1363,7 @@ _top_border_callback(GtkWidget *spin, dt_lib_module_t *self)
 
   ps->prt.page.margin_top = _to_mm(ps, value);
 
-  if(ps->lock_activated == TRUE)
+  if(ps->lock_activated)
   {
     ps->prt.page.margin_bottom = _to_mm(ps, value);
     ps->prt.page.margin_left = _to_mm(ps, value);
@@ -1864,14 +1865,14 @@ static void _set_orientation(dt_lib_print_settings_t *ps, dt_imgid_t imgid)
   {
     ps->prt.page.landscape = (buf.width > buf.height);
     dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
-    dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape == TRUE ? 1 : 0);
+    dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape ? 1 : 0);
 
     // Make sure the Windows DEVMODE is updated to match the new orientation
   #ifdef _WIN32
     if(ps->settings_ctx && ps->settings_ctx->cached_dm)
       dt_sync_print_settings_to_dm(ps->settings_ctx->cached_dm, ps->settings_ctx->base);
   #endif
-  }  
+  }
 
   dt_mipmap_cache_release(&buf);
   dt_control_queue_redraw_center();

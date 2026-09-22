@@ -1405,13 +1405,13 @@ static void _metadata_changed(gpointer instance,
                               const int type,
                               dt_iop_module_t *self)
 {
-  if(self) _invalidate_tag_meta(self);
+  if(self && self->enabled) _invalidate_tag_meta(self);
 }
 
 static void _tag_changed(gpointer instance,
                          dt_iop_module_t *self)
 {
-  if(self) _invalidate_tag_meta(self);
+  if(self && self->enabled) _invalidate_tag_meta(self);
 }
 
 void gui_init(dt_iop_module_t *self)

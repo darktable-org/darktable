@@ -26,6 +26,7 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/styles.h"
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -374,7 +375,7 @@ static void _gui_styles_item_toggled(GtkCellRendererToggle *cell,
                      DT_STYLE_ITEMS_COL_UPDATE_NUM, &update_num,
                      -1);
 
-  toggle_item = (toggle_item == TRUE) ? FALSE : TRUE;
+  toggle_item = (toggle_item) ? FALSE : TRUE;
 
   if(update_num != -1 && toggle_item) // include so not updated
     gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_STYLE_ITEMS_COL_UPDATE, FALSE, -1);
@@ -400,7 +401,7 @@ static void _gui_styles_item_autoinit_toggled(GtkCellRendererToggle *cell,
                      DT_STYLE_ITEMS_COL_AUTOINIT,  &toggle_item,
                      -1);
 
-  toggle_item = (toggle_item == TRUE) ? FALSE : TRUE;
+  toggle_item = (toggle_item) ? FALSE : TRUE;
 
   gtk_list_store_set(GTK_LIST_STORE(model), &iter,
                      DT_STYLE_ITEMS_COL_AUTOINIT, toggle_item, -1);
@@ -430,7 +431,7 @@ static void _gui_styles_item_new_autoinit_toggled(GtkCellRendererToggle *cell,
                      DT_STYLE_ITEMS_COL_AUTOINIT,  &toggle_item,
                      -1);
 
-  toggle_item = (toggle_item == TRUE) ? FALSE : TRUE;
+  toggle_item = (toggle_item) ? FALSE : TRUE;
 
   gtk_list_store_set(GTK_LIST_STORE(model), &iter,
                      DT_STYLE_ITEMS_COL_AUTOINIT, toggle_item, -1);
@@ -457,7 +458,7 @@ static void _gui_styles_item_new_toggled(GtkCellRendererToggle *cell,
   gtk_tree_model_get_iter(model, &iter, path);
   gtk_tree_model_get(model, &iter, DT_STYLE_ITEMS_COL_ENABLED, &toggle_item, -1);
 
-  toggle_item = (toggle_item == TRUE) ? FALSE : TRUE;
+  toggle_item = (toggle_item) ? FALSE : TRUE;
 
   gtk_list_store_set(GTK_LIST_STORE(model), &iter,
                      DT_STYLE_ITEMS_COL_ENABLED, toggle_item, -1);
@@ -484,7 +485,7 @@ static void _gui_styles_update_toggled(GtkCellRendererToggle *cell,
   gtk_tree_model_get_iter(model, &iter, path);
   gtk_tree_model_get(model, &iter, DT_STYLE_ITEMS_COL_UPDATE, &toggle_item, -1);
 
-  toggle_item = (toggle_item == TRUE) ? FALSE : TRUE;
+  toggle_item = (toggle_item) ? FALSE : TRUE;
 
   gtk_list_store_set(GTK_LIST_STORE(model), &iter,
                      DT_STYLE_ITEMS_COL_ENABLED, !toggle_item, -1);

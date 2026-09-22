@@ -340,7 +340,6 @@ int store(dt_imageio_module_storage_t *self,
 {
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
 
-  char filename[PATH_MAX] = { 0 };
   char input_dir[PATH_MAX] = { 0 };
   char pattern[DT_MAX_PATH_FOR_PARAMS];
   g_strlcpy(pattern, d->filename, sizeof(pattern));
@@ -363,191 +362,234 @@ int store(dt_imageio_module_storage_t *self,
   dt_variables_set_upscale(d->vp, upscale);
 
   gboolean fail = FALSE;
+  // filenames decided under the lock, exported after it is released
+  GList *to_export = NULL;
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
-try_again:
-    // avoid braindead export which is bound to overwrite at random:
-    if(variable_expand && total > 1 && !g_strrstr(pattern, "$"))
-    {
-      snprintf(pattern + strlen(pattern),
-               sizeof(pattern) - strlen(pattern), "_$(SEQUENCE)");
-    }
-
-    if(variable_expand)
-    {
-      gchar *fixed_path = dt_util_fix_path(pattern);
-      g_strlcpy(pattern, fixed_path, sizeof(pattern));
-      g_free(fixed_path);
-    }
-
     d->vp->filename = input_dir;
     d->vp->jobcode = "export";
     d->vp->imgid = imgid;
     d->vp->sequence = num;
 
+    GList *filenames = NULL;
     if(variable_expand)
     {
-      gchar *result_filename = dt_variables_expand_path(d->vp, pattern, TRUE);
-      g_strlcpy(filename, result_filename, sizeof(filename));
-      g_free(result_filename);
-
-      // if filenamepattern is a directory just add ${FILE_NAME} as
-      // default..  this can happen if the filename component of the
-      // pattern is an empty variable
-      const char last_char = *(filename + strlen(filename) - 1);
-      if(last_char == '/' || last_char == '\\')
+      // a pattern that expands to a directory gets $(FILE_NAME) appended. the
+      // retry is limited to one round, or a pattern whose FILE_NAME is empty
+      // would loop forever
+      gboolean appended = FALSE;
+      for(;;)
       {
+        // avoid braindead export which is bound to overwrite at random:
+        if(total > 1 && !g_strrstr(pattern, "$"))
+        {
+          snprintf(pattern + strlen(pattern),
+                   sizeof(pattern) - strlen(pattern), "_$(SEQUENCE)");
+        }
+
+        gchar *fixed_path = dt_util_fix_path(pattern);
+        g_strlcpy(pattern, fixed_path, sizeof(pattern));
+        g_free(fixed_path);
+
+        filenames = dt_variables_expand_path_multi(d->vp, pattern, TRUE);
+
+        // if the filenamepattern is a directory just add $(FILE_NAME) as
+        // default. this can happen if the filename component of the pattern
+        // is an empty variable
+        gboolean is_dir = FALSE;
+        for(GList *l = filenames; l; l = g_list_next(l))
+        {
+          const char *f = (const char *)l->data;
+          const char last_char = f[0] ? f[strlen(f) - 1] : '\0';
+          if(last_char == '/' || last_char == '\\')
+          {
+            is_dir = TRUE;
+            break;
+          }
+        }
+        if(!is_dir || appended) break;
+
+        g_list_free_full(filenames, g_free);
+        filenames = NULL;
         // add to the end of the original pattern without caring about a
         // potentially added "_$(SEQUENCE)"
+        appended = TRUE;
         if(snprintf(pattern, sizeof(pattern), "%s"
-                G_DIR_SEPARATOR_S "$(FILE_NAME)", d->filename) < sizeof(pattern))
-          goto try_again;
+                G_DIR_SEPARATOR_S "$(FILE_NAME)", d->filename) >= sizeof(pattern))
+          break;
       }
     }
     else
     {
       // we don't expand via variables but take what we got as pattern
-      g_strlcpy(filename, pattern, sizeof(filename));
+      filenames = g_list_prepend(NULL, g_strdup(pattern));
     }
 
-
-    // get the directory path of the output file
-    char *output_dir = g_path_get_dirname(filename);
-
-    // try to create the output directory (including parent
-    // directories, if necessary)
-    if(g_mkdir_with_parents(output_dir, 0755))
+    if(!filenames)
     {
-      // output directory could not be created
+      // a list variable multiplied out to more files than we will produce
       dt_print(DT_DEBUG_ALWAYS,
-               "[imageio_storage_disk] could not create directory: `%s'!",
-               output_dir);
-      dt_control_log(_("could not create directory `%s'!"), output_dir);
+               "[imageio_storage_disk] pattern `%s' expands to too many files",
+               d->filename);
+      dt_control_log(_("filename pattern `%s' expands to too many files"),
+                     d->filename);
       fail = TRUE;
-      goto failed;
-    }
-    // make sure the outpur directory is writeable
-    if(g_access(output_dir, W_OK | X_OK) != 0)
-    {
-      // output directory is not writeable
-      dt_print(DT_DEBUG_ALWAYS,
-               "[imageio_storage_disk] could not write to directory: `%s'!",
-               output_dir);
-      dt_control_log(_("could not write to directory `%s'!"), output_dir);
-      fail = TRUE;
-      goto failed;
     }
 
-    const char *ext = format->extension(fdata);
-    char *c = filename + strlen(filename);
-    size_t filename_free_space = sizeof(filename) - (c - filename);
-    snprintf(c, filename_free_space, ".%s", ext);
-
-  /* prevent overwrite of files */
-  failed:
-    g_free(output_dir);
-
-    // conflict handling option: unique filename is generated if the
-    // file already exists
-    if(!fail && d->onsave_action == DT_EXPORT_ONCONFLICT_UNIQUEFILENAME)
+    for(GList *l = filenames; l && !fail; l = g_list_next(l))
     {
-      int seq = 1;
+      char filename[PATH_MAX] = { 0 };
+      g_strlcpy(filename, (const char *)l->data, sizeof(filename));
 
-      // increase filename suffix until a filename is generated that is unique
-      while(g_file_test(filename, G_FILE_TEST_EXISTS))
+      // get the directory path of the output file
+      char *output_dir = g_path_get_dirname(filename);
+
+      // try to create the output directory (including parent
+      // directories, if necessary)
+      if(g_mkdir_with_parents(output_dir, 0755))
       {
-        snprintf(c, filename_free_space, "_%.2d.%s", seq, ext);
-        seq++;
+        // output directory could not be created
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[imageio_storage_disk] could not create directory: `%s'!",
+                 output_dir);
+        dt_control_log(_("could not create directory `%s'!"), output_dir);
+        g_free(output_dir);
+        fail = TRUE;
+        break;
       }
-    }
-
-    // conflict handling option: skip
-    if(!fail && d->onsave_action == DT_EXPORT_ONCONFLICT_SKIP)
-    {
-      // check if the file exists
-      if(g_file_test(filename, G_FILE_TEST_EXISTS))
+      // make sure the output directory is writeable
+      if(g_access(output_dir, W_OK | X_OK) != 0)
       {
-        // file exists, skip
-        dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-        dt_print(DT_DEBUG_ALWAYS, "[export_job] skipping `%s'", filename);
-        dt_control_log(ngettext("%d/%d skipping `%s'", "%d/%d skipping `%s'", num),
-                       num, total, filename);
-        return 0;
+        // output directory is not writeable
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[imageio_storage_disk] could not write to directory: `%s'!",
+                 output_dir);
+        dt_control_log(_("could not write to directory `%s'!"), output_dir);
+        g_free(output_dir);
+        fail = TRUE;
+        break;
       }
-    }
+      g_free(output_dir);
 
-    // conflict handling option: overwrite if newer
-    if(!fail && d->onsave_action == DT_EXPORT_ONCONFLICT_OVERWRITE_IF_CHANGED)
-    {
-      // check if the file exists. If not, it will be exported again, regardless
-      // of the changes.
-      if(g_file_test(filename, G_FILE_TEST_EXISTS))
+      const char *ext = format->extension(fdata);
+      char *c = filename + strlen(filename);
+      size_t filename_free_space = sizeof(filename) - (c - filename);
+      snprintf(c, filename_free_space, ".%s", ext);
+
+      // conflict handling option: unique filename is generated if the
+      // file already exists
+      if(d->onsave_action == DT_EXPORT_ONCONFLICT_UNIQUEFILENAME)
       {
-        GFile *gfile = g_file_new_for_path(filename);
+        int seq = 1;
 
-        GFileInfo *info = g_file_query_info
-          (gfile,
-           G_FILE_ATTRIBUTE_TIME_MODIFIED,
-           G_FILE_QUERY_INFO_NONE,
-           NULL,
-           NULL);
-
-        GTimeSpan export_file_timestamp = 0;
-
-        if(info)
+        // increase filename suffix until a filename is generated that is unique
+        while(g_file_test(filename, G_FILE_TEST_EXISTS))
         {
-          if (g_file_info_has_attribute(info, G_FILE_ATTRIBUTE_TIME_MODIFIED))
-          {
-            time_t mtime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
-            GDateTime *gdt = g_date_time_new_from_unix_local(mtime);
-            export_file_timestamp = dt_datetime_gdatetime_to_gtimespan(gdt);
-            g_date_time_unref(gdt);
-          }
-          g_object_unref(info);
+          snprintf(c, filename_free_space, "_%.2d.%s", seq, ext);
+          seq++;
         }
-        g_object_unref(gfile);
-
-        // get the image data
-        const dt_image_t *img = dt_image_cache_get(imgid, 'r');
-        const GTimeSpan change_timestamp = img ? img->change_timestamp : 0;
-        dt_image_cache_read_release(img);
-
-        // check if the exported file is more recent than the change date.
-        // if yes skip the image
-        if(export_file_timestamp > change_timestamp)
+      }
+      // conflict handling option: skip
+      else if(d->onsave_action == DT_EXPORT_ONCONFLICT_SKIP)
+      {
+        // check if the file exists
+        if(g_file_test(filename, G_FILE_TEST_EXISTS))
         {
-          dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-          dt_print(DT_DEBUG_ALWAYS, "[export_job] skipping (not modified since export) `%s'", filename);
-          dt_control_log(ngettext("%d/%d skipping (not modified since export) `%s'",
-                                  "%d/%d skipping (not modified since export) `%s'", num),
+          // file exists, skip this output
+          dt_print(DT_DEBUG_ALWAYS, "[export_job] skipping `%s'", filename);
+          dt_control_log(ngettext("%d/%d skipping `%s'", "%d/%d skipping `%s'", num),
                          num, total, filename);
-          return 0;
+          continue;
         }
       }
+      // conflict handling option: overwrite if newer
+      else if(d->onsave_action == DT_EXPORT_ONCONFLICT_OVERWRITE_IF_CHANGED)
+      {
+        // check if the file exists. If not, it will be exported again, regardless
+        // of the changes.
+        if(g_file_test(filename, G_FILE_TEST_EXISTS))
+        {
+          GFile *gfile = g_file_new_for_path(filename);
+
+          GFileInfo *info = g_file_query_info
+            (gfile,
+             G_FILE_ATTRIBUTE_TIME_MODIFIED,
+             G_FILE_QUERY_INFO_NONE,
+             NULL,
+             NULL);
+
+          GTimeSpan export_file_timestamp = 0;
+
+          if(info)
+          {
+            if(g_file_info_has_attribute(info, G_FILE_ATTRIBUTE_TIME_MODIFIED))
+            {
+              time_t mtime = g_file_info_get_attribute_uint64(
+                info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+              GDateTime *gdt = g_date_time_new_from_unix_local(mtime);
+              export_file_timestamp = dt_datetime_gdatetime_to_gtimespan(gdt);
+              g_date_time_unref(gdt);
+            }
+            g_object_unref(info);
+          }
+          g_object_unref(gfile);
+
+          // get the image data
+          const dt_image_t *img = dt_image_cache_get(imgid, 'r');
+          const GTimeSpan change_timestamp = img ? img->change_timestamp : 0;
+          dt_image_cache_read_release(img);
+
+          // check if the exported file is more recent than the change date.
+          // if yes skip this output
+          if(export_file_timestamp > change_timestamp)
+          {
+            dt_print(DT_DEBUG_ALWAYS,
+                     "[export_job] skipping (not modified since export) `%s'",
+                     filename);
+            dt_control_log(
+              ngettext("%d/%d skipping (not modified since export) `%s'",
+                       "%d/%d skipping (not modified since export) `%s'", num),
+              num, total, filename);
+            continue;
+          }
+        }
+      }
+
+      /* export image to file */
+      to_export = g_list_append(to_export, g_strdup(filename));
     }
+
+    g_list_free_full(filenames, g_free);
   } // end of critical block
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-  if(fail) return 1;
 
-  /* export image to file */
-  if(dt_imageio_export(imgid, filename, format, fdata, high_quality,
-                       upscale, is_scaling, scale_factor,
-                       TRUE, export_masks, icc_type,
-                       icc_filename, icc_intent, self, sdata,
-                       num, total, metadata) != 0)
+  // dt_imageio_export() must run outside the critical block: it takes the
+  // plugin lock itself and would otherwise deadlock
+  for(GList *l = to_export; l && !fail; l = g_list_next(l))
   {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_storage_disk] could not export to file: `%s'!",
-             filename);
-    dt_control_log(_("could not export to file `%s'!"), filename);
-    return 1;
-  }
+    const char *filename = (const char *)l->data;
+    if(dt_imageio_export(imgid, filename, format, fdata, high_quality,
+                         upscale, is_scaling, scale_factor,
+                         TRUE, export_masks, icc_type,
+                         icc_filename, icc_intent, self, sdata,
+                         num, total, metadata) != 0)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[imageio_storage_disk] could not export to file: `%s'!",
+               filename);
+      dt_control_log(_("could not export to file `%s'!"), filename);
+      fail = TRUE;
+      break;
+    }
 
-  dt_print(DT_DEBUG_IMAGEIO, "[export_job] exported to '%s'", filename);
-  dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
-                 num, total, filename);
-  return 0;
+    dt_print(DT_DEBUG_IMAGEIO, "[export_job] exported to '%s'", filename);
+    dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
+                   num, total, filename);
+  }
+  g_list_free_full(to_export, g_free);
+
+  return fail ? 1 : 0;
 }
 
 size_t params_size(dt_imageio_module_storage_t *self)

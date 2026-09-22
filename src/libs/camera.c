@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+
 #include <gdk/gdkkeysyms.h>
 #include <glib-2.0/glib.h>
 
@@ -218,16 +219,16 @@ static void _capture_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const char *jobcode = NULL;
   const dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
-  const uint32_t delay = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_timer)) == TRUE
+  const uint32_t delay = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_timer))
                              ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.timer))
                              : 0;
-  const uint32_t count = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_sequence)) == TRUE
+  const uint32_t count = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_sequence))
                              ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.count))
                              : 1;
-  const uint32_t brackets = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_bracket)) == TRUE
+  const uint32_t brackets = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_bracket))
                                 ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.brackets))
                                 : 0;
-  const uint32_t steps = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_bracket)) == TRUE
+  const uint32_t steps = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_bracket))
                              ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.steps))
                              : 0;
 
@@ -390,7 +391,7 @@ static void _expose_info_bar(dt_lib_module_t *self,
   for(GList *l = lib->gui.properties; l; l = g_list_next(l))
   {
     dt_lib_camera_property_t *prop = l->data;
-    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prop->osd)) == TRUE)
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prop->osd)))
     {
       g_strlcat(center, "      ", sizeof(center));
       g_strlcat(center, prop->name, sizeof(center));

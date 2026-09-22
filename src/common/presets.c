@@ -20,9 +20,11 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
+#include "common/utility.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
 #include "libs/lib.h"
+#include <glib-2.0/gio/gmenu.h>
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
 #include <libxml/parser.h>
@@ -480,32 +482,6 @@ char *dt_presets_get_multi_name(const char *name,
     return g_strdup(strlen(multi_name) > 0 ? multi_name : "");
 }
 
-static void _menu_shell_insert_sorted(GMenu *menu,
-                                      GMenuItem *item,
-                                      const gchar *name)
-{
-  GMenuModel *model = G_MENU_MODEL(menu);
-
-  int num = g_menu_model_get_n_items(model);
-  gboolean found = FALSE;
-  int i;
-  for(i = 0; i < num; i++)
-  {
-    gchar *item_label = NULL;
-    GVariant *attr = g_menu_model_get_item_attribute_value(model, i, "label", G_VARIANT_TYPE_STRING);
-    if(attr)
-    {
-      item_label = g_variant_dup_string(attr, NULL);
-      g_variant_unref(attr);
-      if(g_utf8_collate(item_label, name) > 0) found = TRUE;
-      g_free(item_label);
-      if(found) break;
-    }
-  }
-
-  g_menu_insert_item(menu, i, item);
-}
-
 void dt_insert_preset_in_menu_hierarchy(const char *name,
                                         const char *action,
                                         GSList **menu_path,
@@ -539,8 +515,10 @@ void dt_insert_preset_in_menu_hierarchy(const char *name,
   for(; *(s+1); s++)
   {
     GMenu *sm = g_menu_new();
-    GMenuItem *smi = g_menu_item_new_submenu(*s, G_MENU_MODEL(sm));
-    _menu_shell_insert_sorted(*submenu, smi, *s);
+    gchar *label_unm = dt_str_unmnemonic(*s);
+    GMenuItem *smi = g_menu_item_new_submenu(label_unm, G_MENU_MODEL(sm));
+    g_free(label_unm);
+    g_menu_append_item(*submenu, smi);
     g_object_unref(smi);
     *submenu = sm;
     mpath = g_slist_prepend(mpath, sm); // push
@@ -553,16 +531,20 @@ void dt_insert_preset_in_menu_hierarchy(const char *name,
   if(isdefault)
   {
     gchar *label = g_strdup_printf("%s %s", *s, _("(default)"));
-    mi = g_menu_item_new(label, action);
-    _menu_shell_insert_sorted(*submenu, mi, label);
+    gchar *label_unm = dt_str_unmnemonic(label);
+    mi = g_menu_item_new(label_unm, action);
+    g_menu_append_item(*submenu, mi);
     g_object_unref(mi);
     g_free(label);
+    g_free(label_unm);
   }
   else
   {
-    mi = g_menu_item_new(*s, action);
-    _menu_shell_insert_sorted(*submenu, mi, *s);
+    gchar *label_unm = dt_str_unmnemonic(*s);
+    mi = g_menu_item_new(label_unm, action);
+    g_menu_append_item(*submenu, mi);
     g_object_unref(mi);
+    g_free(label_unm);
   }
 }
 

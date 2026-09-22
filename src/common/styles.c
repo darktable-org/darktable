@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1293,7 +1293,7 @@ void dt_styles_save_to_file(const char *style_name,
   g_free(filename);
 
   // check if file exists
-  if(g_file_test(stylename, G_FILE_TEST_EXISTS) == TRUE)
+  if(g_file_test(stylename, G_FILE_TEST_EXISTS))
   {
     if(overwrite)
     {

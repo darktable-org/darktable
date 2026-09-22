@@ -3840,6 +3840,14 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+static gboolean _lib_tagging_tag_destroy(GtkWidget *widget,
+                                         GdkEvent *event,
+                                         gpointer user_data)
+{
+  gtk_widget_destroy(GTK_WIDGET(user_data));
+  return FALSE;
+}
+
 // http://stackoverflow.com/questions/4631388/transparent-floating-gtkentry
 static gboolean _lib_tagging_tag_key_press(GtkEventControllerKey *controller,
                                             guint keyval,
@@ -3848,9 +3856,13 @@ static gboolean _lib_tagging_tag_key_press(GtkEventControllerKey *controller,
                                             dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = self->data;
+  GtkWidget *entry = NULL;
   switch(keyval)
   {
     case GDK_KEY_Escape:
+      entry = dt_gui_get_widget(controller);
+      g_signal_handlers_disconnect_by_func(entry, G_CALLBACK(_lib_tagging_tag_destroy), 
+                                           d->floating_tag_window);
       g_list_free(d->floating_tag_imgs);
       gtk_widget_destroy(d->floating_tag_window);
       gtk_window_present(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
@@ -3860,7 +3872,9 @@ static gboolean _lib_tagging_tag_key_press(GtkEventControllerKey *controller,
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
     {
-      GtkWidget *entry = dt_gui_get_widget(controller);
+      entry = dt_gui_get_widget(controller);
+      g_signal_handlers_disconnect_by_func(entry, G_CALLBACK(_lib_tagging_tag_destroy), 
+                                           d->floating_tag_window);
       dt_gui_cursor_set_busy();
       const gchar *tag = gtk_entry_get_text(GTK_ENTRY(entry));
       const gboolean res = dt_tag_attach_string_list(tag, d->floating_tag_imgs, TRUE);
@@ -3881,14 +3895,6 @@ static gboolean _lib_tagging_tag_key_press(GtkEventControllerKey *controller,
     }
   }
   return FALSE; /* event not handled */
-}
-
-static gboolean _lib_tagging_tag_destroy(GtkWidget *widget,
-                                         GdkEvent *event,
-                                         gpointer user_data)
-{
-  gtk_widget_destroy(GTK_WIDGET(user_data));
-  return FALSE;
 }
 
 static void _lib_tagging_tag_redo(dt_action_t *action)

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,9 +28,11 @@
 #include "gui/styles.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
+
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -159,7 +161,7 @@ gboolean _styles_tooltip_callback(GtkWidget* widget,
       imgid = GPOINTER_TO_INT(selected_image->data);
       g_list_free(selected_image);
     }
-    
+
     GtkWidget *ht = dt_gui_style_content_dialog(name, imgid);
     dt_action_define(&darktable.control->actions_global, "styles", name, widget, NULL);
 
@@ -470,7 +472,7 @@ static void _export_clicked(GtkWidget *w, dt_lib_styles_t *d)
       /* check if file exists before overwriting */
       snprintf(stylename, sizeof(stylename), "%s/%s.dtstyle", filedir, (char*)style->data);
 
-      if(g_file_test(stylename, G_FILE_TEST_EXISTS) == TRUE)
+      if(g_file_test(stylename, G_FILE_TEST_EXISTS))
       {
         /* do not run overwrite dialog */
         if(overwrite_check_button == 1)
@@ -536,7 +538,7 @@ static void _export_clicked(GtkWidget *w, dt_lib_styles_t *d)
             overwrite = 1;
 
             /* do not run dialog on the next conflict when set to 1 */
-            if(overwrite_dialog_check_button_res == TRUE)
+            if(overwrite_dialog_check_button_res)
             {
               overwrite_check_button = 1;
             }
@@ -550,7 +552,7 @@ static void _export_clicked(GtkWidget *w, dt_lib_styles_t *d)
             overwrite = 2;
 
             /* do not run dialog on the next conflict when set to 1 */
-            if(overwrite_dialog_check_button_res == TRUE)
+            if(overwrite_dialog_check_button_res)
             {
               overwrite_check_button = 1;
             }
@@ -686,7 +688,7 @@ static void _import_clicked(GtkWidget *w, dt_lib_styles_t *d)
             overwrite = 1;
 
             /* do not run dialog on next conflict when set to 1 */
-            if(overwrite_dialog_check_button_res == TRUE)
+            if(overwrite_dialog_check_button_res)
             {
               overwrite_check_button = 1;
             }
@@ -701,7 +703,7 @@ static void _import_clicked(GtkWidget *w, dt_lib_styles_t *d)
 
 
             /* do not run dialog on next conflict when set to 1 */
-            if(overwrite_dialog_check_button_res == TRUE)
+            if(overwrite_dialog_check_button_res)
             {
               overwrite_check_button = 1;
             }
@@ -905,7 +907,7 @@ void gui_init(dt_lib_module_t *self)
                                dt_conf_get_bool("ui_last/styles_create_duplicate"));
   gtk_widget_set_tooltip_text(d->duplicate,
                               _("creates a duplicate of the image before applying style"));
-  gtk_widget_set_no_show_all(d->duplicate, TRUE);                              
+  gtk_widget_set_no_show_all(d->duplicate, TRUE);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->applymode, self, NULL, N_("mode"),
                                _("how to handle existing history"),
@@ -1021,23 +1023,23 @@ static void _menuitem_preferences(GSimpleAction *action,
                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
                                                  _("_cancel"), GTK_RESPONSE_NONE,
                                                  _("_save"), GTK_RESPONSE_ACCEPT, NULL);
-  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);                                                 
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
   dt_gui_connect_key(dialog, dt_handle_dialog_enter, NULL);
-  
+
   GtkWidget *preview_size;
   DT_BAUHAUS_COMBOBOX_NEW_FULL(preview_size, self, NULL, N_("preview size"),
                             _("change size of preview on tooltip of style"),
                             dt_conf_get_int("plugins/lighttable/style/preview_size"),
                             NULL, self,
-                            N_("default"), N_("large"));  
+                            N_("default"), N_("large"));
 
-  dt_gui_dialog_add(GTK_DIALOG(dialog), preview_size);         
+  dt_gui_dialog_add(GTK_DIALOG(dialog), preview_size);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
   gtk_widget_show_all(dialog);
-  int res = gtk_dialog_run(GTK_DIALOG(dialog));      
+  int res = gtk_dialog_run(GTK_DIALOG(dialog));
   if(res == GTK_RESPONSE_ACCEPT)
   {
     const int size = dt_bauhaus_combobox_get(preview_size);

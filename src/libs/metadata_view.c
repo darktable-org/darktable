@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "common/collection.h"
@@ -34,9 +35,11 @@
 
 #include <gdk/gdkkeysyms.h>
 #include <sys/param.h>
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
+
 #ifdef USE_LUA
 #include "lua/call.h"
 #include "lua/image.h"
@@ -689,7 +692,7 @@ void gui_update(dt_lib_module_t *self)
   // Update the metadata values
   for(int32_t md = 0; md < md_xmp_metadata + d->metadata_count; md++)
   {
-    if(skip[md] == TRUE)
+    if(skip[md])
     {
       if(md == md_internal_flags)
       {
@@ -1891,6 +1894,7 @@ void init(struct dt_lib_module_t *self)
   lua_pop(L, 2);
 }
 #endif
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

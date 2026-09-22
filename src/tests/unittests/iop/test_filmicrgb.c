@@ -33,7 +33,13 @@
 #include "../util/tracing.h"
 #include "../util/testimg.h"
 
+// mocked by renaming the calls, not with the linker's --wrap, which macOS's
+// linker lacks. filmicrgb.c is compiled into this file, so this reaches it
+#define dt_iop_color_picker_reset __wrap_dt_iop_color_picker_reset
+
 #include "iop/filmicrgb.c"
+
+#undef dt_iop_color_picker_reset
 
 #ifdef _WIN32
 #include "win/main_wrapper.h"

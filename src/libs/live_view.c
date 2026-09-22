@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2025 darktable developers.
+    Copyright (C) 2012-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
 #include "gui/guides.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+
 #include <gdk/gdkkeysyms.h>
 
 typedef enum dt_lib_live_view_focus_control_t
@@ -160,7 +161,7 @@ static void _rotate_cw(GtkWidget *widget, gpointer user_data)
 // view in a screen shot ^^
 static void _toggle_live_view_clicked(GtkWidget *widget, gpointer user_data)
 {
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE)
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
   {
     if(dt_camctl_camera_start_live_view(darktable.camctl) == FALSE)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
@@ -181,7 +182,7 @@ static void _zoom_live_view_clicked(GtkWidget *widget, gpointer user_data)
   if(cam->is_live_viewing)
   {
     cam->live_view_zoom = !cam->live_view_zoom;
-    if(cam->live_view_zoom == TRUE)
+    if(cam->live_view_zoom)
       dt_camctl_camera_set_property_string(darktable.camctl, NULL, "eoszoom", "5");
     else
       dt_camctl_camera_set_property_string(darktable.camctl, NULL, "eoszoom", "1");
@@ -481,7 +482,7 @@ void view_leave(dt_lib_module_t *self,
   // the view, and besides the user may not want to jump right back
   // into live view if they've been out of tethering view doing other
   // things
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->live_view)) == TRUE)
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->live_view)))
   {
     dt_camctl_camera_stop_live_view(darktable.camctl);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lib->live_view), FALSE);
@@ -503,7 +504,7 @@ void gui_post_expose(dt_lib_module_t *self,
   dt_lib_live_view_t *lib = self->data;
   if (!lib) return;
 
-  if(cam->is_live_viewing == FALSE || cam->live_view_zoom == TRUE) return;
+  if(!cam->is_live_viewing || cam->live_view_zoom) return;
 
   dt_pthread_mutex_lock(&cam->live_view_buffer_mutex);
   if(!cam->live_view_buffer)
@@ -704,7 +705,7 @@ int button_released(dt_lib_module_t *self,
                     const uint32_t state)
 {
   dt_lib_live_view_t *d = self->data;
-  if(d->splitline_dragging == TRUE)
+  if(d->splitline_dragging)
   {
     d->splitline_dragging = FALSE;
     return 1;
@@ -791,6 +792,7 @@ int mouse_moved(dt_lib_module_t *self,
 
   return result;
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
