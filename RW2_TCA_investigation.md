@@ -5349,6 +5349,71 @@ render with it. The matrices survived only because they had been
 transcribed into `lens.cc` and verified there. Stage future artefacts under
 `/c/temp/tca/`, which persists.
 
+### Adobe confirms the implementation on the disputed frame (session 33)
+
+P1366392 was missing from the 18-file DNG corpus, which is why the dispute
+had never been checked against Adobe on the one frame where it is
+measurable. Converted it with `Adobe DNG Converter.exe -c -p0`, read
+`OpcodeList3` with `exiftool -b`, and parsed the WarpRectilinear opcode
+directly: id 1, version 0x1030000, N = 3 planes, centre (0.5, 0.5), six
+doubles per plane.
+
+Adobe's blue coefficients for this file are
+`kr = 0.998526818130, -0.111484756403, 0.049982868436, -0.005654027675`
+against green `0.998679194585, -0.111753183743, 0.049855557724,
+-0.005782033788`. At the physical destination radius 2808 px, which is the
+knot-13 abscissa 0.866667 on darktable's 3240 px half-diagonal:
+
+    quantity                 darktable        Adobe          ratio
+    blue minus green         +1.773830e-4     +1.708426e-4   1.0383
+    blue displacement        +0.498 px        +0.480 px
+    same abscissa 0.866667   +1.773830e-4     +1.753099e-4   1.0118
+
+**The patch reproduces Adobe to within 4% on the frame that started the
+dispute**, verified end-to-end from a freshly converted DNG against numbers
+printed from the running code, with no reliance on our own tables at any
+step. So 0.50 px is Adobe's intent here, not an artefact of the rewrite.
+
+**A real but small normalisation error, of a kind session 30 did not
+test.** The 3.8% splits into the 1.2% same-abscissa gap, which is Adobe's
+per-model profile term from session 25 that we deliberately do not
+reproduce, and about 2.6% from the abscissa itself. Adobe normalises to the
+**active area**, 5208 by 3904 giving 3254.400 px, while darktable
+normalises to `p_width` by `p_height`, the default crop of 5184 by 3888
+giving 3240.000 px. Session 30 asked whether the radius is normalised to
+the half-diagonal and Adobe's source said yes; it never asked
+*half-diagonal of which rectangle*. The same 1.2e-3 offset appears in the
+green multiplier, 0.941939 against Adobe's 0.940728, so this is the
+pre-existing 0x0119 distortion path as much as the CA path. Quantified and
+left alone for now: it is a 2.6% effect where the open question is a factor
+of three, and correcting it for CA alone would desynchronise it from the
+distortion decode.
+
+**The finding that actually unblocks the camera test.** Adobe's blue
+correction changes sign with radius:
+
+    r      B-G          px
+    0.30   -1.271e-4   -0.124   outward
+    0.40   -1.056e-4   -0.138   most negative
+    0.50   -7.531e-5   -0.123
+    0.65   -6.586e-6   -0.014   zero crossing
+    0.70   +2.478e-5   +0.056   inward
+    0.90   +2.166e-4   +0.634
+    1.00   +3.714e-4   +1.209
+
+That is the signature of the cancelling cubic, and it is a far better test
+than magnitude at one radius, because **a gain error cannot move a zero
+crossing**. The instrument's calibration is untrustworthy by a factor of
+2.6 to 3, but the radius at which the camera's own blue correction reverses
+sign, and whether it reverses at all, is immune to that. If the camera
+crosses near r = 0.65 and is outward below it, Panasonic is applying this
+same correction and the rewrite is right. If the camera shows no reversal,
+Adobe's reading of the payload is not what the camera does, and that is the
+fork in the road to put to the developer rather than decide here.
+
+Artefacts under `/c/temp/tca/dng392/`: the DNG, `op3.bin`, and the source
+RW2 alongside it.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
