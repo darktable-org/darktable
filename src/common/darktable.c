@@ -139,14 +139,14 @@ void dt_request_console_notice(void)
 
 static void _show_console_notice(void)
 {
-  const char *notice = _("This console window is required by darktable on this "
+  const char *notice = _("this console window is required by darktable on this "
                          "version of Windows.\n"
-                         "On Windows 11 24H2 and later, darktable normally runs "
+                         "on Windows 11 24H2 and later, darktable normally runs "
                          "without this window.\n"
-                         "Do not close it or press Ctrl+C while darktable is running.\n"
-                         "It will close automatically when darktable exits.\n"
+                         "do not close it or press ctrl+c while darktable is running.\n"
+                         "it will close automatically when darktable exits.\n"
                          "\n"
-                         "To hide this window anyway, follow the instructions at:\n"
+                         "to hide this window anyway, follow the instructions at:\n"
                          "https://www.darktable.org/about/faq/#faq-windows-terminal\n");
   gchar **notice_lines = g_strsplit(notice, "\n", -1);
   gchar *console_notice = g_strjoinv("\r\n", notice_lines);
@@ -2131,7 +2131,7 @@ int dt_init(int argc,
   }
 
   dt_splash_screen_set_progress(_("loading image formats"));
- 
+
   darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);
 
