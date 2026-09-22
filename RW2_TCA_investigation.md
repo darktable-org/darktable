@@ -5515,6 +5515,65 @@ the camera reverses sign near r = 0.65 remains unresolved: the two
 sub-estimators split there, -0.112 against +0.008. The outer-radius
 overshoot is several times that bias and is not affected.
 
+### Demosaic explains part of it, not most of it (session 35)
+
+Rendered the same frame with three demosaicers, LMMSE as the XMP specifies,
+VNG4 and PPG, both with the correction off and on, and measured all six with
+the session 34 instrument unchanged. Driver and report:
+`/c/temp/tca/measure/session35_{demosaic.py,report.txt}`.
+
+**Incidental correction.** The pipeline here uses **LMMSE**, not "AAHD" as
+this document has said since session 9. darktable has no AAHD demosaicer at
+all; the Bayer methods are PPG, AMaZE, VNG4, RCD, LMMSE and the two
+passthroughs (`src/iop/demosaic.c:58-66`). Items 9 to 11 of the task list
+were premised on a method that does not exist.
+
+**Native blue-minus-green at outer radii, r = 0.70 to 0.95:**
+
+    demosaic   native    residual after correction
+    LMMSE      +0.206    -0.320
+    VNG4       +0.224    -0.187
+    PPG        +0.340    -0.325
+
+The native offset **is** demosaic dependent, spreading 0.134 px, and in the
+expected direction: the most sophisticated method leaves the least
+aberration, the simplest leaves the most. So the mechanism is real.
+
+**But it does not carry the overshoot.** Every one of the three reverses
+sign after correction, so no demosaicer avoids overshooting. If suppression
+were the whole story, PPG, which leaves the most aberration, should land
+near -0.16 px; it lands at -0.325. About 0.165 px of overshoot is
+common-mode and independent of demosaic choice. Only the r = 0.72 and 0.78
+bins carry 25 or more tiles, so treat the spread as indicative; the
+mid-radius bins with 800-plus tiles agree across methods within 0.03 px,
+which is what says the gates are coping with PPG and VNG4 zippering.
+
+**What this makes of the magnitude.** The correction applied is +0.50 px at
+r = 0.867, verified from the running code and matching Adobe's own DNG at
++0.48. The aberration actually present, measured after the *least*
+suppressive demosaic available, is +0.34 px at outer radii. So the
+payload-derived correction is roughly one and a half to two and a half times
+the aberration it is correcting, and the camera's own JPEG, which shows no
+residual at any radius, is consistent with the camera applying about the
+native amount.
+
+**Conclusion, and it is a fork in the road.** Adobe is an exact oracle for
+the *structure* of the payload, which is how sessions 22 to 25 recovered the
+word map to 1e-15, and it is confirmed to read the payload rather than a
+lens database. It is **not** a reliable oracle for *magnitude*: Adobe
+appears to overcorrect Panasonic lateral CA by roughly a factor of two, and
+we now reproduce that overcorrection faithfully. The stated goal was to
+reproduce Panasonic's own correction from Panasonic's own data, and on this
+frame Adobe's reading is demonstrably not what Panasonic's camera does.
+
+**The patch must not be proposed as it stands.** On this frame it would
+introduce about 0.3 px of reversed fringing at the corners where the shipped
+code introduces none, which is a visible regression, not an improvement.
+Trigger three of "When to stop" is arguably met for the Adobe-as-oracle
+route. The decision on what to do instead belongs to the developer, so it is
+put to them rather than taken here; the options are recorded in the task
+list.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
