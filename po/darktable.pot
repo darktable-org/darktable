@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-22 18:57+0200\n"
+"POT-Creation-Date: 2026-09-22 19:03+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -6861,10 +6861,10 @@ msgstr ""
 
 #: ../src/common/darktable.c:142
 msgid ""
-"This console window is required by darktable on this version of Windows.\n"
-"On Windows 11 24H2 and later, darktable normally runs without this window.\n"
-"Do not close it or press Ctrl+C while darktable is running.\n"
-"It will close automatically when darktable exits.\n"
+"this console window is required by darktable on this version of Windows.\n"
+"on Windows 11 24H2 and later, darktable normally runs without this window.\n"
+"do not close it or press ctrl+c while darktable is running.\n"
+"it will close automatically when darktable exits.\n"
 msgstr ""
 
 #: ../src/common/darktable.c:471
