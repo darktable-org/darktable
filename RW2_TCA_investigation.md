@@ -5629,6 +5629,56 @@ exposes the knob: `cor_ca_r_ft` and `cor_ca_b_ft` multiply eps directly, with
 range 0 to 2 and default 1, so the hypothesis can be tested end-to-end
 without touching code, and a user could already compensate by hand.
 
+### Half strength, tested without touching code (session 37)
+
+darktable's `cor_ca_r_ft` and `cor_ca_b_ft` multiply eps directly, so the
+halving hypothesis is testable by rendering. Built lens history entries
+programmatically with method embedded-metadata, version 2, `modify_flags` set
+to TCA only so the chromatic term acts alone, and strength 1.0 and 0.5, on six
+frames across two bodies and four lenses including one where the correction
+reverses sign. Params offsets verified by decoding the donor blob first: the
+four fine-tune floats sit at 304, and `md_version` at 324. Scripts
+`/c/temp/tca/measure/{make_ft_xmp.py,run_ft.sh,session37_half.py}`, report
+`session37_report.txt`, renders under `measure/ft/`.
+
+Self-tests first. The applied correction scales linearly with strength, with
+`(off-ca10)/(off-ca05)` at 2.14 in the mid band, and blue pixel differences
+halving as expected. Green moves slightly too, because autoscale takes its
+maximum across all three channels, so changing the chromatic term changes the
+global scale a little; the in-image estimator is insensitive to that.
+
+**Overshoot at full strength is confirmed where the signal is strong.** On the
+three frames with native offsets above 0.15 px the residual flips sign:
+P1366477 +0.389 native to -0.078, P1366484 +0.208 to -0.264, P1260641 +0.165
+to -0.068. On the three weak frames the overshoot is below the noise floor and
+cannot be seen either way.
+
+**Half strength helps but does not reach the camera.** The camera's residual is
+at or below 0.13 px everywhere. At strength 0.5 two frames match that, at or
+below 0.04 px, while four sit at 0.1 to 0.3 px. Fitting the strength that
+would zero each frame's residual, which is well posed because the correction
+is linear in strength, gives an outer-band **median of 0.51** with range 0.3 to
+0.8 once a sign-reversed frame and a noise-floor frame are set aside, and a mid
+band median of 0.32.
+
+**The awkward frame.** P1260635, where Adobe instructs a negative correction,
+disagrees by band: at outer radii full strength lands closer to zero than half
+does, while at mid radii half is better. One frame, but it is a reminder that
+the shape may not be exactly right either, not only the scale.
+
+**So a factor of two is first-order right and not the whole story.** The
+correction as Adobe reads it, and as we reproduce it, is about twice what the
+image needs; applying half of it improves chromatic registration on most
+frames but leaves two to three times the camera's residual, and the
+frame-to-frame spread in the best-fit strength is 0.3 to 0.4 in strength units.
+No mechanism for the factor has been identified, and a magic 0.5 in the decode
+would be hard to justify to a reviewer without one.
+
+**One avenue is already closed.** SILKYPIX, Panasonic's own bundled converter,
+was shown in session 12 not to consume 0x011b at all, so it cannot serve as a
+second witness to Panasonic's intent. The camera itself remains the only
+witness, and it has now been measured on eighteen frames.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
