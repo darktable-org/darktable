@@ -5270,6 +5270,85 @@ account of the autoscale composition followed by a corrected evaluation
 radius, then a re-measurement with this same instrument before going near the
 camera JPEG again.
 
+### The code does what the coefficients say (session 32)
+
+Sessions 28 to 31 built their case on one instrument. Instrumenting the
+pipeline itself shows that instrument over-reports by a factor of about
+three, which changes what those sessions can be said to have established.
+
+**Method.** Temporary `fprintf` diagnostics in `_init_coeffs_md_v2`, at the
+knot loop and after the autoscale, and in `_process_md` at the consumer,
+built and run on P1366392 with its own XMP, then reverted. The same
+post-autoscale print was applied to the pre-patch `lens.cc` from
+`eb73e8222f^` so both implementations report from the same place.
+
+**What the pipeline actually carries.** `p_width` by `p_height` is 5184 by
+3888 and `buf_in` is the same, so the consumer's half-diagonal is 3240 px
+and matches the frame the coefficients were built on; `scale_md` is 1.0. At
+knot 13, `r = 0.866667`, `fine = 0.941939`, `rd = 0.816347`,
+`u = 0.666423`, `eps_b = 0.000188288`. Autoscale is 0.966282, moving that
+knot to abscissa 0.837445. Blue minus green after autoscale:
+
+    build   diffB          diffR          blue in px at 2713 px radius
+    new     +1.83582e-4    +2.92e-4       +0.50
+    old     -7.629e-6      +2.92420e-4    -0.02
+
+So the new code applies 0.50 px of blue correction and the old applied
+essentially none, a difference of 0.52 px. Red is unchanged between the two
+builds on this frame, to five figures. **The implementation applies exactly
+what the recovered coefficients predict**, which is what session 31's
+analytic prediction of 0.47 px said and what the measurement disputed.
+
+**Consequences for what has been claimed.**
+
+- The autoscale is exonerated by direct observation, as session 31's
+  numerics already suggested: `scale` differs between the two builds by
+  2.7e-5, and green moves by 0.07 px.
+- The XMP is exonerated: `method = 0` is embedded metadata, `md_version = 1`
+  is VERSION_2 in that enum, `modify_flags = 5` has TCA on, and all four
+  fine-tune factors are exactly 1.0. Decoding the params blob also returns
+  the correct camera and lens strings, which validates the decode.
+- **The instrument over-reports.** It put the new-versus-old blue gap at
+  1.363 px where the code carries 0.52 px, a factor of 2.6, and
+  new-versus-uncorrected at 1.198 px against 0.50 px. Its own synthetic
+  check recovered an injected 0.50 px as 0.35 px, a gain of 0.83, so its
+  calibration is not merely imprecise but inconsistent between a shift
+  injected into a finished image and a differential produced by resampling
+  each channel separately. That distinction is exactly what it was built to
+  measure.
+- Session 28's ordinal verdict, that the old code sits closer to the camera
+  than the new one, may still hold, since a common gain error cancels in a
+  comparison of two disagreements against the same reference. Its
+  magnitudes are void. **It is not a basis for reverting anything until an
+  independent estimator agrees.**
+
+**What is now eliminated as the cause of the disagreement with the camera**:
+radius normalisation, by Adobe's own source; autoscale, by direct
+observation; the fine-tune factors and the correction method, by decoding
+the XMP; and any error in the coefficients or their evaluation, by the
+weak-distortion frame matching prediction to 0.005 px and by these prints.
+
+**So the live question is the one session 28 called explanation 2**: we
+reproduce Adobe's decode faithfully, and Adobe's decode may not be what the
+camera itself applies. Note what that would mean for "Scope and goal": the
+premise that Adobe's reading of the payload is a proxy for Panasonic's
+intent, carried since session 5 and tested only for whether Adobe *reads*
+the payload, would be false as to magnitude.
+
+**Next, in order.** Convert P1366392 to DNG, since the corpus has 18 DNGs
+but not this frame, and read Adobe's own blue warp for it; that confirms or
+refutes 0.50 px as Adobe's intent on this specific file, independently of
+our tables. Then measure the camera JPEG with an estimator from a different
+family, edge-localisation rather than tile phase correlation, because two
+families agreeing is the only way to trust a number here after this
+session. Only then decide whether the patch stands.
+
+**A note on artefacts.** A reboot cleared `/tmp`, taking the venv, the
+recovered-map npz, the reference decoder, the payload editor and every
+render with it. The matrices survived only because they had been
+transcribed into `lens.cc` and verified there. Stage future artefacts under
+`/c/temp/tca/`, which persists.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
