@@ -5574,6 +5574,61 @@ route. The decision on what to do instead belongs to the developer, so it is
 put to them rather than taken here; the options are recorded in the task
 list.
 
+### The overcorrection is universal, and the factor is two (session 36)
+
+Eighteen frames, two bodies, six lenses including two Sigmas, both signs of
+correction. Uncorrected 16-bit renders with demosaic forced to PPG, which
+suppresses the least aberration and so gives the fairest native estimate,
+measured with the session 34 instrument unchanged, against Adobe's instructed
+correction read from the eighteen DNGs. Driver and report
+`/c/temp/tca/measure/session36_{corpus.py,report.txt}`, Adobe extraction
+`adobe_table.py`, renders under `measure/corpus/`.
+
+Useful incidental discovery: **lens correction is not auto-applied**, so a
+render with no XMP is already an uncorrected reference. A default sidecar
+carries eleven history entries and no `lens` among them.
+
+**1. The camera is accurate on every frame.** Median camera-JPEG residual in
+the outer band is 0.026 px, at the instrument's noise floor, with only two of
+eighteen above 0.15 px (P1260640 at -0.22, P1260636 at +0.17). Panasonic's
+own development leaves essentially no lateral chromatic offset anywhere in
+the corpus.
+
+**2. Adobe's instructed correction is twice the aberration present.** Over
+the eleven frame-bands where the native offset exceeds 0.15 px and a ratio
+therefore means something, Adobe-over-native has **median 2.00**, 16th to
+84th percentile 1.38 to 2.98, and nine of eleven above 1.5. It clusters
+rather than scattering.
+
+**3. Adobe's sign is right, tested where it is hardest.** Six frames have
+Adobe instructing a *negative* blue correction at r = 0.85, that is pushing
+blue outward. On five the measured native offset is also negative, so the
+unusual sign is correct: P1260635 -0.240, P1260639 -0.187, P1366483 -0.081,
+P1366479 -0.075, P1260638 -0.057. The sixth, P1366486, mismatches at +0.081
+against Adobe's -0.107, both below the meaningful threshold.
+
+So the decode's **structure is validated far beyond the one frame**: which
+lens gets a correction, its sign, and its radial shape are all right across
+six lenses and two bodies, including the awkward long-focal frames where the
+correction reverses. Only the magnitude is wrong, and it is wrong by the
+same factor everywhere.
+
+**Sparse frames, flagged rather than used**: P1366482 has 47 tiles in the
+outer band, P1366483 452, P1366479 592. Their signs agree with Adobe but
+their magnitudes carry no weight. The GX80 JPEG-to-render half-diagonal ratio
+is 0.9949 and the G9's is 1.0000, so no radius rescale was applied and none
+is needed at this band width.
+
+**What a factor of two means for the options.** Option B, scaling the map,
+now has an empirical basis across eighteen frames rather than one, and the
+factor is suspiciously round. A definitional halving somewhere in the
+payload's meaning would explain it, and would make the scaling principled
+rather than a fudge; the mechanism is not yet identified, and a mechanism
+would be worth having before shipping. Note also that darktable already
+exposes the knob: `cor_ca_r_ft` and `cor_ca_b_ft` multiply eps directly, with
+range 0 to 2 and default 1, so the hypothesis can be tested end-to-end
+without touching code, and a user could already compensate by hand.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
