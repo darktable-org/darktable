@@ -5414,6 +5414,107 @@ fork in the road to put to the developer rather than decide here.
 Artefacts under `/c/temp/tca/dng392/`: the DNG, `op3.bin`, and the source
 RW2 alongside it.
 
+### The rewrite overcorrects, and the residual sign proves it (session 34)
+
+A second instrument, from a different family: per-image, in-image radial
+blue-minus-green edge offsets, so each image is measured alone and no
+registration between differently-warped frames is ever needed. That was the
+rock every earlier attempt broke on. Two sub-estimators, a gradient-centroid
+difference and a parabolic fit to the cross-correlation of profile
+derivatives, run over 48 px tiles gated on edge coherence and on the
+gradient lying within 30 degrees of radial. Sign convention: positive means
+blue lies OUTWARD of green. Script and report under
+`/c/temp/tca/measure/session34_{sign.py,report.txt}`, renders alongside.
+
+**The instrument calibrates against ground truth, and the verdict is that
+the centroid estimator is the accurate one.** We know what darktable
+applied, so `off` minus `new` must equal Adobe's column:
+
+    r      off-new centroid   off-new xcorr   Adobe   gain cent   gain xcorr
+    0.82   +0.353              +1.167         +0.364   0.97        3.21
+    0.88   +0.525              +1.704         +0.544   0.97        3.13
+    0.93   +0.969              +2.029         +0.778   1.25        2.61
+
+The centroid estimator recovers the applied correction essentially exactly
+at outer radii; the correlation estimator inflates it by about three. That
+is the same factor by which the session 29 tile phase-correlation
+instrument over-reported, so **both correlation-based instruments share one
+bias and the session 32 discrepancy is now explained**: correlation methods
+respond to the differential radial *stretch* across the profile window, not
+only to the local displacement. Session 34's own summary preferred the
+correlation estimator on scatter grounds; calibration says the opposite,
+and calibration wins.
+
+**Per-image residual blue-minus-green, which is the quantity that matters.**
+
+    r      off      old      new       jpeg     tiles o/l/n/j
+    0.62   +0.121   +0.199   -0.024   -0.062    216/218/217/76
+    0.68   -0.003   +0.191   -0.096   +0.006     39/41/38/73
+    0.72   +0.111   +0.154   -0.353   -0.018     52/27/25/18
+    0.78   +0.184   +0.156   -0.586   -0.017     52/46/62/12
+    0.82   +0.208   +0.006   -0.959   -0.001     50/11/23/12
+    0.88   +0.258   -0.012   -1.446   -0.032     31/10/16/10
+    0.93   +0.338   +0.187   -1.691   +0.010     44/12/20/5
+
+Correlation estimator shown; the centroid columns give the same signs at
+r >= 0.72, `new` running -0.256, -0.156, -0.443, -0.320, -0.956.
+
+**Three findings, in order of how firmly they stand.**
+
+1. **The camera's own JPEG has no measurable chromatic residual at any
+   radius**, |values| at or below 0.06 px across sixteen bins in both
+   estimators. Panasonic's own development leaves blue and green
+   co-registered. This is the tightest number in the whole investigation.
+2. **The patched code overcorrects.** From r = 0.72 outward the new
+   render's residual is *negative*, meaning blue has been pushed past green
+   to the inside, while the uncorrected render is positive there. A sign
+   reversal of the residual relative to the uncorrected image is the
+   definition of overshoot, and **it is immune to the gain problem**,
+   because no positive gain can flip a sign. Five consecutive bins, both
+   estimators.
+3. The old code undercorrects mildly, leaving roughly the native offset.
+   Neither implementation matches the camera, but they miss in opposite
+   directions.
+
+So session 28's ordinal verdict survives on much better evidence than it
+had, and with the mechanism reversed: the old code is closer not because it
+is right but because doing almost nothing beats overshooting by a factor of
+two or three.
+
+**Two candidate explanations, and they call for different responses.**
+
+- **The payload scaling is too large.** We reproduce Adobe to 4% and Adobe
+  instructs +0.78 px at r = 0.93, but the uncorrected render's native
+  offset there measures only +0.34 px by the inflating estimator and +0.01
+  to +0.21 by the accurate one. If the native aberration is genuinely a
+  couple of tenths of a pixel, then Adobe's reading, and therefore ours, is
+  several times too large, and the premise that Adobe's decode is a proxy
+  for Panasonic's intent fails on magnitude.
+- **The demosaicer has already removed part of it.** `lens` runs *after*
+  demosaic, and AAHD is channel-coupled, so it can suppress lateral
+  chromatic offset before the correction is applied. Applying a correction
+  sized for the raw aberration on top of an already partly corrected image
+  necessarily overshoots. This explanation needs no error in the decode at
+  all, is a property of darktable's pipeline order rather than of
+  Panasonic's data, and would explain why the camera, which corrects during
+  its own demosaic, ends at zero.
+
+The second is testable and cheap, and it is item 11 on the task list,
+demoted long ago for want of a purpose: re-render with a demosaicer that
+does not couple channels and re-measure the residual. If the overshoot
+shrinks, the decode is exonerated and the fault is in where the correction
+sits in the pipe. If it does not, the magnitude question is real and goes to
+the developer as a fork in the road.
+
+**Caveat on inner radii.** `off` minus `old` should be near zero, since the
+old code applies -0.02 px of blue here, but it measures -0.1 to -0.3 px at
+inner radii, so the estimator carries a bias of that order between the
+uncorrected and lens-corrected render paths. Inner-radius absolute
+residuals therefore cannot be trusted, and the earlier question of whether
+the camera reverses sign near r = 0.65 remains unresolved: the two
+sub-estimators split there, -0.112 against +0.008. The outer-radius
+overshoot is several times that bias and is not affected.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
