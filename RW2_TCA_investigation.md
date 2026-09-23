@@ -5745,6 +5745,63 @@ now 9.1791e-5, exactly half of 1.83582e-4. Commits `3d16d0d9c2` and
 `b267d72431`. The constant is named and documented rather than folded into
 the tables, so that if a mechanism is found it can be removed in one place.
 
+### Olympus does it too (session 39)
+
+The developer's suggestion, that Olympus samples are available from camera
+review sites, turned this from a Panasonic question into a darktable
+question. Six OM System OM-5 Mark II frames with their in-camera JPEGs from
+photographyblog, M.Zuiko 12-45mm F4 at 12mm, the widest setting and so where
+lateral CA is largest. Every file carries `Exif.OlympusIp.0x150a` with four
+values and `0x150c` with six, which is exactly what `exif.cc:1272` and
+`:1295` read, so these exercise darktable's Olympus path.
+
+**This path shares nothing with the Panasonic work.** Its coefficients come
+straight from Olympus's own tag, with no Adobe involvement at any point, and
+its branch in `_init_coeffs_md_v2` is separate code.
+
+Rendered uncorrected and TCA-only pairs with demosaic PPG, measured with the
+session 34 instrument unchanged. Script and report
+`/c/temp/tca/measure/session39_{olympus.py,report.txt}`.
+
+- The camera's JPEGs are again **residual-free**: median absolute
+  blue-minus-green of 0.021 px in the outer band, per frame +0.054, +0.008,
+  +0.000, +0.002, +0.034, +0.056.
+- **darktable's correction reverses the residual's sign** in four of six
+  frames by the accurate estimator and five of six by the corroborating one.
+  The two that do not reverse have native offsets below 0.1 px, at the noise
+  floor, and still grow in absolute value under correction, from -0.087 to
+  -0.309 and from -0.019 to -0.092, which is overshoot by another route.
+- Where a ratio is meaningful, native offset above 0.15 px, the applied
+  correction over the aberration present is **1.87 and 2.34, median 2.11**.
+
+**So the factor of two is not ours and not Panasonic's.** Two manufacturers,
+two independent code paths, two independent sources of coefficients, the same
+doubling. That relocates the problem: it is not an error in the 0x011b decode,
+which is now confirmed exact three ways, but something shared in how
+darktable turns a per-channel radial coefficient into a pixel displacement, or
+in a convention that both manufacturers use and darktable does not follow.
+
+**Weight of evidence, stated honestly.** Only two of the six Olympus frames
+carry a native signal strong enough for a ratio, one of them with just 36
+JPEG tiles in the outer band, and all six share one lens at one focal length,
+so they are six scenes against one correction rather than six independent
+profiles. The sign reversals are the sturdier part, since no positive gain
+error can produce one. Call it strongly suggestive, not established.
+
+**What it means for the shipped constant.** `_PANA_CA_STRENGTH 0.5` looks less
+like a fudge now: if the same factor appears in a path that never touched
+Adobe, the correction is a shared convention error rather than a Panasonic
+mis-decode. That also means the honest fix may belong in the common code
+rather than in the Panasonic branch, and that Olympus, Sony and Fuji users
+are getting the same doubling today. Sony and Fuji are untested.
+
+**Method note worth keeping.** Maker notes sit near the start of an ORF, so
+`curl -r 0-5000000` is enough to inspect a body's correction tags without
+downloading 20 MB. A 1.5 MB range is not: it truncates the ImageProcessing
+IFD and produces false absences, which is what first made it look as though
+modern OM bodies had dropped these tags. They have not; all seven bodies
+checked from the E-M1 to the OM-3 carry both.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
