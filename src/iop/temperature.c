@@ -560,6 +560,25 @@ static inline void _publish_chroma(dt_dev_pixelpipe_iop_t *piece)
   chr->wb.late_correction = d->late_correction;
 }
 
+// the white balance this pipe renders with, for modules later in the pipe that
+// complete the correction (colorin, highlights, color calibration). built from
+// this piece: dev->chroma is rewritten by the other pipes' commits and
+// processing. D65coeffs is the exception, only reload_defaults() writes it
+static inline void _publish_pipe_wb(dt_dev_pixelpipe_iop_t *piece)
+{
+  const dt_iop_temperature_data_t *const d = piece->data;
+  const dt_dev_chroma_t *chr = &piece->module->dev->chroma;
+  dt_dev_wb_t *wb = &piece->pipe->wb;
+
+  for_four_channels(k)
+  {
+    wb->coeffs[k] = piece->enabled ? d->coeffs[k] : 1.0f;
+    wb->D65coeffs[k] = chr->wb.D65coeffs[k];
+  }
+  // if disabled, nothing for a later module to finish
+  wb->late_correction = piece->enabled && d->late_correction;
+}
+
 void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
@@ -724,16 +743,25 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_temperature_data_t *d = piece->data;
   float *tcoeffs = (float *)p;
 
-  if(self->hide_enable_button)
-    piece->enabled = FALSE;
-
   dt_dev_chroma_t *chr = &self->dev->chroma;
 
   if(self->hide_enable_button)
   {
+    // true monochrome: nothing to white balance
+    piece->enabled = FALSE;
+
+    // commit and publish neutral data, so nothing reads undefined or stale values
     for_four_channels(k)
+    {
+      d->coeffs[k] = 1.0f;
       chr->wb.coeffs[k] = 1.0f;
-    // keep the module handle available for GUI reports (see below)
+    }
+    chr->wb.late_correction = d->late_correction = FALSE;
+    d->preset = p->preset;
+
+    _publish_pipe_wb(piece);
+    // publish for channelmixerrgb's warning logic - details at the end
+    // of this function
     chr->temperature = self;
     return;
   }
@@ -750,25 +778,21 @@ void commit_params(dt_iop_module_t *self,
 
   d->preset = p->preset;
 
+  // no late correction in 'camera reference' mode
   const gboolean effective_late_correction =
     p->preset == DT_IOP_TEMP_D65 ? FALSE : p->late_correction;
 
   d->late_correction = effective_late_correction;
-  // When the WB module is disabled it applies no coefficients (wb_coeffs are
-  // published as 1.0 above), so it makes no promise that the data is white
-  // balanced. Do not ask colorin (or any other consumer) to "finish" a
-  // correction that never started, otherwise disabling WB would still pull the
-  // image to D65 via D65coeffs/1.0.
+  // When 'temperature' is disabled it applies no coefficients (wb.coeffs are
+  // published as 1.0 above). Do not ask colorin (or any other consumer) to
+  // "finish" a correction that never started, otherwise disabling WB would
+  // still pull the image to D65 via D65coeffs/1.0.
   chr->wb.late_correction = piece->enabled ? effective_late_correction : FALSE;
+  _publish_pipe_wb(piece);
 
-  /* Always publish the module handle for GUI reports, regardless of the
-     enabled state. The enabled state is tracked separately via
-     chr->temperature->enabled (module flag) and pipe->dsc.temperature.enabled
-     (pipe flag). This lets color calibration warn about a disabled white
-     balance module while it is still doing chromatic adaptation. Trouble
-     message state is owned entirely by _set_trouble_messages() in
-     channelmixerrgb, so we no longer clear it here.
-  */
+  // Always publish the module handle for channelmixerrgb _set_trouble_messages,
+  // regardless of the enabled state. This lets color calibration warn about a disabled
+  // white balance module while it is still doing chromatic adaptation.
   chr->temperature = self;
 }
 
