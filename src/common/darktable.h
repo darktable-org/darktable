@@ -74,7 +74,8 @@ typedef unsigned int u_int;
 #include <sys/types.h>
 #endif
 #if defined(__NetBSD__) || defined(__OpenBSD__)
-#include <sys/param.h>
+typedef unsigned long u_long;
+#include <sys/types.h>
 #include <sys/sysctl.h>
 #endif
 
