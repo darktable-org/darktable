@@ -5802,6 +5802,61 @@ IFD and produces false absences, which is what first made it look as though
 modern OM bodies had dropped these tags. They have not; all seven bodies
 checked from the E-M1 to the OM-3 carry both.
 
+### Sony and Fujifilm: not universal (session 40)
+
+Four Sony ILCE-6700 frames with the E PZ 10-20mm F4 G, an ultra-wide zoom at
+10, 12.5 and 20mm, and four Fujifilm X-T5 frames with the XF30mm and XF80mm
+macro primes, all with their in-camera JPEGs, all carrying the tags
+`exif.cc:1157` and `:1185` require. Rendered uncorrected against TCA-only,
+PPG for the Bayer Sony and Markesteijn for X-Trans, measured with the same
+instrument. Script and report
+`/c/temp/tca/measure/session40_{sonyfuji.py,report.txt}`.
+
+**The one robust cross-manufacturer fact.** Every camera's own JPEG is
+residual-free: median absolute offsets of 0.020 px (Panasonic), 0.021
+(Olympus), 0.017 (Sony) and 0.019 in red, 0.095 in blue (Fujifilm). Four
+manufacturers, four independent pipelines, all leaving the channels
+registered. Whatever each camera does internally, it works.
+
+**Like for like, which needed care.** Sony's and Fuji's blue offsets are at
+the noise floor on these lenses, so their informative channel is red, while
+Panasonic's and Olympus's was blue. Comparing blue against red would have
+been meaningless, so the Panasonic red ratios were recomputed from the
+session 36 tables:
+
+    manufacturer  channel  ratio applied/present   n
+    Panasonic     blue     2.00                    11
+    Panasonic     red      1.71                    28
+    Olympus       blue     2.11                     2
+    Fujifilm      red      1.41                     3
+    Sony          red      1.15                     3
+
+**So the doubling is not universal.** Sony looks close to correct and
+Fujifilm sits between, while Panasonic over-applies in both channels and
+Olympus in blue. But this is a gradient rather than a clean split, and the
+evidence is thin everywhere except Panasonic: n = 3 for Sony and Fuji, n = 2
+for Olympus, against n = 11 and 28 for Panasonic, with per-frame scatter
+running from 1.0 to 3.9. The distinction between 1.15, 1.41 and 1.71 is not
+established at these sample sizes.
+
+**One nuance that argues against a single convention error.** Panasonic's red
+ratio, 1.71, is lower than its blue, 2.00, on the largest sample we have. A
+clean factor-of-two in how a coefficient becomes a displacement would apply
+equally to both channels. The two may still be within each other's
+uncertainty, but it weakens the tidy story from session 39 that a shared
+convention is at fault.
+
+**What this settles for the patch.** The half-strength constant stays in the
+Panasonic branch and does **not** move into common code, since Sony at 1.15
+would be made worse by it. Olympus over-applying is worth reporting upstream
+as an observation with its evidence, not as a patch: two usable frames on one
+lens is not enough to change anyone's images.
+
+**To strengthen this** the missing ingredient is obvious: Sony and Fuji
+frames whose *blue* aberration is large, which means different lenses rather
+than more frames of these. Macro primes and this particular ultra-wide both
+happen to put their lateral CA in red.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
