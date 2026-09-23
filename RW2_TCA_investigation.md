@@ -5857,6 +5857,68 @@ frames whose *blue* aberration is large, which means different lenses rather
 than more frames of these. Macro primes and this particular ultra-wide both
 happen to put their lateral CA in red.
 
+### Eighty-one frames, nine bodies (session 41)
+
+Since the firmware is unlikely ever to give up the mechanism, the next best
+thing is to pin the number down. The third-body corpus had raws but almost no
+JPEGs; those are downloadable from the same review pages, so the paired corpus
+grew from 18 frames on two bodies to **81 frames on nine**: GX9, G80, G90,
+GH5, GH5S, S1II, S1IIE, S1RII and S9.
+
+**Pairing was verified, not assumed.** The JPEG and raw galleries on a review
+page are not always the same length, so index N in one need not be the same
+exposure as index N in the other. Every pair was checked by
+`DateTimeOriginal`, and the JPEG deleted when it did not match. That rejected
+the GH4 and GX8 sets outright, whose galleries are indexed differently, and
+kept 78. Script `/c/temp/tca/measure/fetch_jpgs.sh`.
+
+**New tooling, replacing what `/tmp` ate.** `pana_decode.py` parses
+`_pana_ca_radii`, `_pana_ca_M_R` and `_pana_ca_M_B` out of `lens.cc` rather
+than keeping a second copy that could drift, locates the payload by checksum,
+and reproduces the running code exactly: eps_b identical and eps_r agreeing to
+the last printed digit against the instrumented build. That makes one render
+per frame sufficient, since the decoded correction is computed analytically
+instead of by rendering a corrected copy.
+
+**The structural result is now overwhelming.** On every frame with a
+measurable native offset the decode gets the **sign right: 53 of 53 in the
+outer band and 44 of 44 in the mid band**. Across nine bodies, many lenses and
+both signs of correction, it never once points the wrong way. No scale or gain
+error can affect that, and it is the strongest evidence yet that the word map
+is genuinely Panasonic's.
+
+**The cameras remain perfect.** Median absolute JPEG residual 0.017 px in blue
+and 0.014 in red over 156 frame-bands, mean -0.009, standard deviation 0.066.
+That standard deviation is also the cleanest estimate of the instrument's own
+precision that we have, since the quantity being measured is truly zero.
+
+**The magnitude, estimated four ways.** Regression through the origin of the
+decoded correction on the aberration present:
+
+    band   channel   forward   reverse   orthogonal   noise-corrected
+    outer  blue      1.67      3.39      3.11         1.79
+    outer  red       1.31      2.94      2.57         1.36
+    mid    blue      1.48      2.86      2.57         1.51
+    mid    red       1.62      2.31      2.15         1.63
+
+Forward regression is attenuated by noise in the denominator and reverse is
+inflated by it, so the truth is bracketed between them. **Every estimator
+exceeds 1.0**, the lowest being 1.31, so the correction is definitely too
+strong. A factor of 2 sits comfortably inside the bracket; so does 1.5. The
+bootstrap 95% interval on the forward blue slope is 1.32 to 2.15.
+
+**Per-body differences are noise, not signal.** The outer-band blue slope
+ranges from 0.69 to 3.18 across the nine bodies, but the S1II gives 0.69 while
+the S1IIE, very nearly the same camera, gives 2.80. Different sample scenes
+and lenses per body, not different conventions.
+
+**Where that leaves the shipped constant.** 0.5 remains the best single choice:
+it is inside every bracket, it is the round number a definitional error would
+produce, and erring toward under-correction is the safer direction when the
+alternative reverses the fringing. What has changed is the confidence behind
+it, which now rests on 81 frames and nine bodies rather than one frame. What
+has not changed is that the factor is unexplained.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
