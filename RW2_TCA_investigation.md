@@ -5679,6 +5679,72 @@ was shown in session 12 not to consume 0x011b at all, so it cannot serve as a
 second witness to Panasonic's intent. The camera itself remains the only
 witness, and it has now been measured on eighteen frames.
 
+### Word 14 is a gate, not a scale (session 38)
+
+The obvious mechanism for a clean factor of two would be a scale word that
+Adobe reads as a boolean. Word 14 is the candidate: session 23 showed that
+zeroing it makes Adobe emit no correction at all, and it is **256 in all 132
+files on disk**, across thirteen body types from the GH4 to the S1RII.
+
+Rebuilt the payload editor, which `/tmp` took, and this time located the
+payload by Rigo's checksum rather than by a fixed offset, since the offset
+varies by body from 0x39c to 0x4b8. Self-checks: setting word 14 to its
+existing value changes no bytes, and any edit changes only the target word
+and the four checksums. `/c/temp/tca/measure/payload.py`.
+
+Ten mutants of P1366477 through Adobe:
+
+    w14    hex      planes   result
+    0      0x000    1        distortion only, no per-channel CA
+    1      0x001    1        distortion only
+    64     0x040    1        distortion only
+    65     0x041    1        distortion only
+    128    0x080    1        distortion only
+    192    0x0c0    1        distortion only
+    256    0x100    3        CA emitted, baseline
+    257    0x101    3        CA emitted, coefficients identical
+    320    0x140    3        CA emitted, coefficients identical
+    512    0x200    3        CA emitted, coefficients identical
+
+**Word 14 is a boolean gate on the high byte.** Any value with a non-zero
+high byte enables the per-channel planes, and the value has no effect on the
+coefficients whatever: the R-minus-G and B-minus-G ratios against baseline
+are 1.000000 for 257, 320 and 512, with green untouched. So it is not a
+scale, and this route to explaining the factor of two is closed.
+
+**A near miss worth recording.** Word 7, which session 23 found inert for
+Adobe, clusters at values that look exactly like Q15 fixed point: on the G9
+it is 32570, 32767, 32575 for one lens and 16383, 16380, 16252, 16383,
+16383, 16189 for the others, that is 1.0 and 0.5; on the GX80 the same
+lenses give 16359, 16343, 16222 and 8135, 8007, 8055, 8175, 8168, 8014,
+almost exactly half the G9 values. A per-lens strength that Adobe ignores
+would look precisely like this. **But the measurements do not support it**:
+P1366477 carries the high value and needs the most reduction, ratio 2.09,
+while P1366481 carries the half value and needs almost none, ratio 1.03. Nor
+can our instrument settle it, since per-frame ratios scatter from 0.36 to
+3.83 and only the aggregate median is meaningful. Word 7 remains the leading
+structural candidate but needs a method that does not depend on measuring
+tenths of a pixel per frame.
+
+**The one avenue that could settle it outright** is the camera's own code.
+`/c/temp/tca/firmware/G9___V27.bin` is on disk, and the routine that reads
+this payload is in there. That is a large undertaking and is not started.
+
+**Also found**: there is no integration test covering the Panasonic
+embedded-metadata path at all. Tests 0145 and 0146, used to validate this
+work since session 27, are `lens-metadata-xtransIV-modversion-6` and `-7`,
+which exercise Fuji. They pass, but they were never evidence about
+Panasonic. Adding a Panasonic case needs a sample RW2 in the integration
+test repository.
+
+### Shipped: half strength, with the reasoning in the source
+
+`_PANA_CA_STRENGTH 0.5` multiplies eps for both channels, verified by
+instrumenting the running code: blue-minus-green at knot 13 on P1366392 is
+now 9.1791e-5, exactly half of 1.83582e-4. Commits `3d16d0d9c2` and
+`b267d72431`. The constant is named and documented rather than folded into
+the tables, so that if a mechanism is found it can be removed in one place.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
