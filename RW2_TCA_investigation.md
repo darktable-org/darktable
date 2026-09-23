@@ -5919,6 +5919,81 @@ alternative reverses the fringing. What has changed is the confidence behind
 it, which now rests on 81 frames and nine bodies rather than one frame. What
 has not changed is that the factor is unexplained.
 
+### The factor tracks provenance, not manufacturer (session 42)
+
+Reading how darktable's other embedded-CA branches were derived explains the
+pattern session 40 measured. Quotes below are verbatim from
+`https://github.com/darktable-org/darktable/pull/12760`, verified directly.
+
+**Sony came from Sony's own decoder.** Freddie Witherden recovered the
+`2^-21` chromatic scale and `2^-14` distortion scale by decompiling Sony
+Imaging Edge Desktop and setting hardware breakpoints on its coefficient
+buffers, published at
+`https://discuss.pixls.us/t/sony-raw-chromatic-aberration-correction-model/21153`;
+the distortion scale was independently published by Yakov Galka at
+`https://stannum.io/blog/0PwljB`. The decompiled form is
+`green = 1 + 2^-14 d`, `red = (1 + 2^-21 c_r) green`, `blue = (1 + 2^-21 c_b)
+green`, which is exactly the per-channel multiplicative structure relative to
+green that our branch uses. **Sony measures 1.15, essentially correct.**
+
+**Olympus came from Adobe.** paolodepetrillo, opening the PR: *"these tags
+were identified by comparing the tag values to their conversion to
+WarpRectilinear opcodes by Adobe DNG Converter"*, with the caveat *"nothing
+here should be considered authoritative - just my attempt to figure them
+out"*, and later *"I can guess at how it should work but have no way to know
+if I'm interpreting it as the lens manufacturer intended"*. **Olympus
+measures 2.11.**
+
+**Fujifilm's provenance is undocumented.** paolodepetrillo asked directly how
+the Sony and Fuji splines were derived and got an answer about vignetting
+only. **Fuji measures 1.41.**
+
+**And ours came from Adobe too.** Sessions 22 to 25 used Adobe DNG Converter
+as the oracle precisely because it reads the payload. **Panasonic measures
+2.00 in blue and 1.71 in red.**
+
+    provenance of the scale              manufacturer   measured ratio
+    decompiled from the maker's decoder  Sony           1.15
+    matched against Adobe DNG Converter  Olympus        2.11
+    matched against Adobe DNG Converter  Panasonic      2.00
+    undocumented                         Fujifilm       1.41
+
+**The factor follows how the scale was obtained, not who made the camera.**
+Every branch traced to Adobe over-applies by about two; the one branch traced
+to the manufacturer's own software is right. That reframes our constant
+completely: 0.5 is not a Panasonic fudge but a correction for an error
+inherited from using Adobe as the oracle, and the same error is already
+shipping for Olympus.
+
+**A user reported exactly our signature, two years ago.** AxelG-DE, 18
+November 2023, on the 15mm Summilux: *"For the 15mm Summilux, not all CA's
+disappear, they just flip :-)"*, with a video. That is a reversed residual at
+the frame edges, observed by eye, on a lens whose correction came through the
+Adobe-derived path. Also open: issue #16648, "Difference for embedded
+lens-correction for OM-System Mark II between DNG and ORF".
+
+**Our method is the project's own stated standard.** sgotti, 12 November
+2022: *"I think that, like done for the Fuji and Sony corrections, we should
+use the ooc image as the reference leaving lensfun out from the comparison."*
+Validating against the out-of-camera JPEG is what the maintainers asked for,
+and commit `f51dee797b` is an in-tree precedent for empirically refitting
+these constants, though for Fuji distortion and vignetting rather than CA.
+
+**Independent corroboration of the session 26 frame fix.** paolodepetrillo's
+description of the Olympus model is `r_in = dist(r_out) + ca_red(dist(r_out))`,
+that is, the chromatic term evaluated at the *distorted* radius. That is the
+raw-frame convention we arrived at separately, and it confirms the sixth error
+we found was real.
+
+**The experiment this hands us.** Panasonic ships no desktop decoder that
+reads 0x011b, which session 12 established for SILKYPIX, so the camera is our
+only reference. **Olympus does**: OM Workspace is free, runs on Windows, and
+paolodepetrillo himself suggested probing it. Comparing OM Workspace's
+rendering of an ORF against Adobe DNG Converter's opcodes for the same file
+would test the inherited-Adobe hypothesis directly on a manufacturer decoder.
+If OM Workspace applies about half of what Adobe instructs, the hypothesis is
+confirmed, and our 0.5 stops being empirical.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
