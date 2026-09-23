@@ -215,11 +215,11 @@ static inline void compute_luminance(const float *const restrict in,
 
   // First compute pixel-wise luminance (no boost) and add noise bias
   luminance_mask(in, luminance, width, height, DT_TONEEQ_NORM_2, 1.0f, 0.0f, 1.0f);
-
+  const float normalize_luminance = 1.0f / sqrtf(3.0f);
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
-    luminance[k] += noise_bias;
+    luminance[k] = normalize_luminance * luminance[k] + noise_bias;
   }
 }
 
