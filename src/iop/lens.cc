@@ -2196,6 +2196,20 @@ static float _get_autoscale_md_v1(dt_iop_module_t *self,
 // (8,20), (12,27), (10,23), (26,29), and was validated against Adobe's own
 // B plane independently of that symmetry.
 //
+// _PANA_CA_STRENGTH is not part of the decode. The map reproduces Adobe's
+// reading of the payload to 4% end to end, but that reading applies about
+// twice the correction the camera itself does: over 18 frames, 6 lenses and
+// 2 bodies the ratio of Adobe's correction to the aberration actually
+// present has median 2.00, while the camera's own JPEGs leave a residual of
+// 0.026 px, and at full strength darktable's residual reverses sign from
+// r = 0.72 outward. At half strength the residual no longer reverses. The
+// factor itself is unexplained: word 14 is a boolean gate, not a scale, its
+// value being ignored by Adobe once the high byte is set, so the leading
+// remaining candidate is one of the words Adobe ignores. Sessions 34 to 38
+// of RW2_TCA_investigation.md have the measurements; revisit this constant
+// if a mechanism is found.
+#define _PANA_CA_STRENGTH 0.5
+//
 // The matrices depend on the four zone radii, which are constant per body
 // and carry exactly one tuple per body group. No radius scaling was found
 // that generalises between tuples, so an unknown tuple gets no CA rather
@@ -2629,8 +2643,10 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
                              + u * (eps_r_k[2] + u * eps_r_k[3]));
         const double eps_b = eps_b_k[0] + u * (eps_b_k[1]
                              + u * (eps_b_k[2] + u * eps_b_k[3]));
-        cor_rgb[0][i] = (float)((double)fine * (1.0 + p->cor_ca_r_ft * eps_r));
-        cor_rgb[2][i] = (float)((double)fine * (1.0 + p->cor_ca_b_ft * eps_b));
+        cor_rgb[0][i] = (float)((double)fine
+                                * (1.0 + _PANA_CA_STRENGTH * p->cor_ca_r_ft * eps_r));
+        cor_rgb[2][i] = (float)((double)fine
+                                * (1.0 + _PANA_CA_STRENGTH * p->cor_ca_b_ft * eps_b));
         // cor_rgb[1][i] stays at fine: G is the reference plane
       }
 
