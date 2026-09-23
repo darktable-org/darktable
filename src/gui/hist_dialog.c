@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2025 darktable developers.
+    Copyright (C) 2012-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "gui/hist_dialog.h"
 #include "gui/styles.h"
 #include "gui/draw.h"
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -158,7 +159,7 @@ static void _gui_hist_item_toggled(GtkCellRendererToggle *cell,
   gtk_tree_model_get_iter(model, &iter, path);
   gtk_tree_model_get(model, &iter, col, &toggle_item, -1);
 
-  toggle_item = (toggle_item == TRUE) ? FALSE : TRUE;
+  toggle_item = (toggle_item) ? FALSE : TRUE;
 
   gtk_list_store_set(GTK_LIST_STORE(model), &iter, col, toggle_item, -1);
   gtk_tree_path_free(path);

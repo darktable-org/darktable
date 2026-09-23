@@ -500,11 +500,14 @@ float *catmull_rom_set(int n, float x[], float y[])
 
 float *interpolate_set(int n, float x[], float y[], unsigned int type)
 {
+  // the type comes from stored params
+  if(type >= sizeof(spline_set) / sizeof(spline_set[0])) return NULL;
   return (*spline_set[type])(n, x, y);
 }
 
 float interpolate_val(int n, float x[], float xval, float y[], float tangents[], unsigned int type)
 {
+  if(type >= sizeof(spline_val) / sizeof(spline_val[0])) return 0.0f;
   return (*spline_val[type])(n, x, xval, y, tangents);
 }
 
@@ -664,10 +667,12 @@ CurveDataSample:
 int CurveDataSample(CurveData *curve, CurveSample *sample)
 {
   int n = 0;
-  const int num_anchors = curve->m_numAnchors > MAX_ANCHORS ? MAX_ANCHORS : curve->m_numAnchors;
 
-  float x[20] = { 0 };
-  float y[20] = { 0 };
+  // callers may set m_numAnchors directly from stored params
+  if(curve->m_numAnchors > MAX_ANCHORS) return CT_ERROR;
+
+  float x[MAX_ANCHORS] = { 0 };
+  float y[MAX_ANCHORS] = { 0 };
 
   // The box points are what the anchor points are relative
   // to so...
@@ -687,12 +692,12 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
   }
   else
   {
-    for(int i = 0; i < num_anchors; i++)
+    for(int i = 0; i < curve->m_numAnchors; i++)
     {
       x[i] = curve->m_anchors[i].x * box_width + curve->m_min_x;
       y[i] = curve->m_anchors[i].y * box_height + curve->m_min_y;
     }
-    n = num_anchors;
+    n = curve->m_numAnchors;
   }
   const float res = 1.0 / (float)(sample->m_samplingRes - 1);
   const int firstPointX = x[0] * (sample->m_samplingRes - 1);
@@ -742,3 +747,4 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
+

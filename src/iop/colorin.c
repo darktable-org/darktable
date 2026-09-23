@@ -61,11 +61,6 @@
 
 DT_MODULE_INTROSPECTION(7, dt_iop_colorin_params_t)
 
-static const char *_bounded_str(const char *const src, const size_t size)
-{
-  return memchr(src, '\0', size) ? src : "";
-}
-
 static void update_profile_list(dt_iop_module_t *self);
 
 typedef enum dt_iop_color_normalize_t
@@ -259,7 +254,8 @@ int legacy_params(dt_iop_module_t *self,
     else
     {
       new->type = DT_COLORSPACE_FILE;
-      dt_strlcpy_to_fixed(new->filename, old->iccprofile, sizeof(new->filename));
+      dt_strlcpy_fixed_to_fixed(new->filename, sizeof(new->filename),
+                                old->iccprofile, sizeof(old->iccprofile));
     }
 
     new->intent = old->intent;
@@ -316,7 +312,8 @@ int legacy_params(dt_iop_module_t *self,
     else
     {
       new->type = DT_COLORSPACE_FILE;
-      dt_strlcpy_to_fixed(new->filename, old->iccprofile, sizeof(new->filename));
+      dt_strlcpy_fixed_to_fixed(new->filename, sizeof(new->filename),
+                                old->iccprofile, sizeof(old->iccprofile));
     }
 
     new->intent = old->intent;
@@ -374,7 +371,8 @@ int legacy_params(dt_iop_module_t *self,
     else
     {
       new->type = DT_COLORSPACE_FILE;
-      dt_strlcpy_to_fixed(new->filename, old->iccprofile, sizeof(new->filename));
+      dt_strlcpy_fixed_to_fixed(new->filename, sizeof(new->filename),
+                                old->iccprofile, sizeof(old->iccprofile));
     }
 
     new->intent = old->intent;
@@ -404,7 +402,8 @@ int legacy_params(dt_iop_module_t *self,
     memset(new, 0, sizeof(*new));
 
     new->type = old->type;
-    dt_strlcpy_to_fixed(new->filename, old->filename, sizeof(new->filename));
+    dt_strlcpy_fixed_to_fixed(new->filename, sizeof(new->filename),
+                              old->filename, sizeof(old->filename));
     new->intent = old->intent;
     new->normalize = old->normalize;
     new->blue_mapping = old->blue_mapping;
@@ -436,12 +435,14 @@ int legacy_params(dt_iop_module_t *self,
     memset(new, 0, sizeof(*new));
 
     new->type = old->type;
-    dt_strlcpy_to_fixed(new->filename, old->filename, sizeof(new->filename));
+    dt_strlcpy_fixed_to_fixed(new->filename, sizeof(new->filename),
+                              old->filename, sizeof(old->filename));
     new->intent = old->intent;
     new->normalize = old->normalize;
     new->blue_mapping = old->blue_mapping;
     new->type_work = old->type_work;
-    dt_strlcpy_to_fixed(new->filename_work, old->filename_work, sizeof(new->filename_work));
+    dt_strlcpy_fixed_to_fixed(new->filename_work, sizeof(new->filename_work),
+                              old->filename_work, sizeof(old->filename_work));
     _resolve_work_profile(&new->type_work, new->filename_work);
 
     *new_params = new;
@@ -469,6 +470,9 @@ int legacy_params(dt_iop_module_t *self,
     const dt_iop_colorin_params_v6_t *old = (dt_iop_colorin_params_v6_t *)old_params;
     dt_iop_colorin_params_v7_t *new = malloc(sizeof(dt_iop_colorin_params_v7_t));
     memcpy(new, old, sizeof(*new));
+    // stored params need not terminate the file names
+    new->filename[sizeof(new->filename) - 1] = '\0';
+    new->filename_work[sizeof(new->filename_work) - 1] = '\0';
     _resolve_work_profile(&new->type_work, new->filename_work);
 
     *new_params = new;
@@ -530,7 +534,7 @@ static void _profile_changed(GtkWidget *widget, dt_iop_module_t *self)
   // should really never happen.
   dt_print(DT_DEBUG_ALWAYS,
            "[colorin] color profile %s seems to have disappeared!",
-           dt_colorspaces_get_name(p->type, _bounded_str(p->filename, sizeof(p->filename))));
+           dt_colorspaces_get_name(p->type, p->filename));
 }
 
 static void _workicc_changed(GtkWidget *widget, dt_iop_module_t *self)
@@ -561,20 +565,19 @@ static void _workicc_changed(GtkWidget *widget, dt_iop_module_t *self)
   {
     p->type_work = type_work;
     dt_strlcpy_to_fixed(p->filename_work, filename_work, sizeof(p->filename_work));
-    const char *const bounded_filename_work = _bounded_str(p->filename_work, sizeof(p->filename_work));
 
     const dt_iop_order_iccprofile_info_t *const work_profile =
       dt_ioppr_add_profile_info_to_list(self->dev, p->type_work,
-                                        bounded_filename_work, DT_INTENT_PERCEPTUAL);
+                                        p->filename_work, DT_INTENT_PERCEPTUAL);
     if(work_profile == NULL
        || !dt_is_valid_colormatrix(work_profile->matrix_in[0][0])
        || !dt_is_valid_colormatrix(work_profile->matrix_out[0][0]))
     {
       dt_print(DT_DEBUG_ALWAYS,
                "[colorin] can't extract matrix from colorspace `%s',"
-               " it will be replaced by Rec2020 RGB!", bounded_filename_work);
+               " it will be replaced by Rec2020 RGB!", p->filename_work);
       dt_control_log(_("can't extract matrix from colorspace `%s'"
-                       ", it will be replaced by Rec2020 RGB!"), bounded_filename_work);
+                       ", it will be replaced by Rec2020 RGB!"), p->filename_work);
 
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -587,10 +590,9 @@ static void _workicc_changed(GtkWidget *widget, dt_iop_module_t *self)
   else
   {
     // should really never happen.
-    const char *const bounded_filename_work = _bounded_str(p->filename_work, sizeof(p->filename_work));
     dt_print(DT_DEBUG_ALWAYS,
              "[colorin] color profile %s seems to have disappeared!",
-             dt_colorspaces_get_name(p->type_work, bounded_filename_work));
+             dt_colorspaces_get_name(p->type_work, p->filename_work));
   }
 }
 
@@ -1259,13 +1261,14 @@ void commit_params(dt_iop_module_t *self,
 {
   const dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)p1;
   dt_iop_colorin_data_t *d = piece->data;
-  const char *const filename = _bounded_str(p->filename, sizeof(p->filename));
-  const char *const filename_work = _bounded_str(p->filename_work, sizeof(p->filename_work));
 
   d->type = p->type;
   d->type_work = p->type_work;
-  dt_strlcpy_to_fixed(d->filename, filename, sizeof(d->filename));
-  dt_strlcpy_to_fixed(d->filename_work, filename_work, sizeof(d->filename_work));
+  // stored params need not terminate the file names
+  dt_strlcpy_fixed_to_fixed(d->filename, sizeof(d->filename),
+                            p->filename, sizeof(p->filename));
+  dt_strlcpy_fixed_to_fixed(d->filename_work, sizeof(d->filename_work),
+                            p->filename_work, sizeof(p->filename_work));
 
   const cmsHPROFILE Lab =
     dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
@@ -1419,7 +1422,7 @@ void commit_params(dt_iop_module_t *self,
   if(!d->input)
   {
     const dt_colorspaces_color_profile_t *profile =
-      dt_colorspaces_get_profile(type, filename, DT_PROFILE_DIRECTION_IN);
+      dt_colorspaces_get_profile(type, d->filename, DT_PROFILE_DIRECTION_IN);
     if(profile) d->input = profile->profile;
   }
 
@@ -1536,7 +1539,7 @@ void commit_params(dt_iop_module_t *self,
   {
     if(p->type == DT_COLORSPACE_FILE)
       dt_print(DT_DEBUG_ALWAYS, "[colorin] unsupported input profile `%s' has"
-               " been replaced by linear Rec709 RGB!\n", filename);
+               " been replaced by linear Rec709 RGB!\n", d->filename);
     else
       dt_print(DT_DEBUG_ALWAYS, "[colorin] unsupported input profile has been"
                " replaced by linear Rec709 RGB!\n");
@@ -1631,8 +1634,10 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_colorin_gui_data_t *g = self->gui_data;
   dt_iop_colorin_params_t *p = self->params;
-  const char *const filename = _bounded_str(p->filename, sizeof(p->filename));
-  const char *const filename_work = _bounded_str(p->filename_work, sizeof(p->filename_work));
+
+  // the GUI handlers read the stored file names as C strings
+  p->filename[sizeof(p->filename) - 1] = '\0';
+  p->filename_work[sizeof(p->filename_work) - 1] = '\0';
 
   dt_bauhaus_combobox_set(g->clipping_combobox, p->normalize);
 
@@ -1646,7 +1651,7 @@ void gui_update(dt_iop_module_t *self)
     if(pp->work_pos > -1
        && pp->type == p->type_work
        && (pp->type != DT_COLORSPACE_FILE
-           || dt_colorspaces_is_profile_equal(pp->filename, filename_work)))
+           || dt_colorspaces_is_profile_equal(pp->filename, p->filename_work)))
     {
       idx = pp->work_pos;
       break;
@@ -1658,7 +1663,7 @@ void gui_update(dt_iop_module_t *self)
     idx = 0;
     dt_print(DT_DEBUG_ALWAYS,
              "[gui colorin] could not find requested working profile `%s'!",
-             dt_colorspaces_get_name(p->type_work, filename_work));
+             dt_colorspaces_get_name(p->type_work, p->filename_work));
   }
   dt_bauhaus_combobox_set(g->work_combobox, idx);
 
@@ -1669,7 +1674,7 @@ void gui_update(dt_iop_module_t *self)
     dt_colorspaces_color_profile_t *pp = prof->data;
     if(pp->type == p->type
        && (pp->type != DT_COLORSPACE_FILE
-           || dt_colorspaces_is_profile_equal(pp->filename, filename)))
+           || dt_colorspaces_is_profile_equal(pp->filename, p->filename)))
     {
       dt_bauhaus_combobox_set(g->profile_combobox, pp->in_pos);
       return;
@@ -1684,7 +1689,7 @@ void gui_update(dt_iop_module_t *self)
     if(pp->in_pos > -1
        && pp->type == p->type
        && (pp->type != DT_COLORSPACE_FILE
-           || dt_colorspaces_is_profile_equal(pp->filename, filename)))
+           || dt_colorspaces_is_profile_equal(pp->filename, p->filename)))
     {
       dt_bauhaus_combobox_set(g->profile_combobox, pp->in_pos + g->n_image_profiles);
       return;
@@ -1693,7 +1698,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->profile_combobox, 0);
 
   dt_print(DT_DEBUG_PIPE, "[gui colorin] using default instead of `%s'",
-             dt_colorspaces_get_name(p->type, filename));
+             dt_colorspaces_get_name(p->type, p->filename));
 }
 
 // FIXME: update the gui when we add/remove the eprofile or ematrix

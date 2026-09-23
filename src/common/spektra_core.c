@@ -422,8 +422,8 @@ void sf_glare(float *const rgb,
   for(int y = 0; y < h; y++)
     for(int x = 0; x < w; x++)
     {
-      const uint32_t seed = sf_pixel_seed((uint32_t)(x + roi_x), (uint32_t)(y + roi_y), 0x5eedu);
-      field[(size_t)y * w + x] = mean * expf(bias + s * sf_nrm(seed));
+      const uint32_t seed = grain_pixel_seed((uint32_t)(x + roi_x), (uint32_t)(y + roi_y), 0x5eedu);
+      field[(size_t)y * w + x] = mean * expf(bias + s * grain_normal(seed));
     }
   float *const trans = dt_alloc_align_float((size_t)w * h);
   sf_blur_plane1(field, w, h, blur, NULL, trans);

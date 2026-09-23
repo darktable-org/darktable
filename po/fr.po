@@ -15483,11 +15483,11 @@ msgstr "Définir la couleur de bordure du module déplié"
 #. accent color
 #: ../src/gui/preferences.c:552
 msgid "accent color"
-msgstr "Couleur d'accent"
+msgstr "Couleur d'accentuation"
 
 #: ../src/gui/preferences.c:573
 msgid "set the theme accent color for the interface"
-msgstr "Définir la couleur d'accent du thème pour l'interface"
+msgstr "Définir la couleur d'accentuation du thème pour l'interface"
 
 #: ../src/gui/preferences.c:588 ../src/gui/preferences.c:595
 msgid "use system font size"
@@ -17673,7 +17673,7 @@ msgstr "Réinitialise les primaires"
 #: ../src/iop/agx.c:2302
 msgctxt "section"
 msgid "before tone mapping"
-msgstr "Mappage avant tonalité"
+msgstr "Avant mappage de tonalité"
 
 #: ../src/iop/agx.c:2312
 msgid "increase to desaturate reds in highlights faster"
@@ -17702,7 +17702,7 @@ msgstr "décale le bleu vers le magenta (+) ou le cyan (-)"
 #: ../src/iop/agx.c:2351
 msgctxt "section"
 msgid "after tone mapping"
-msgstr "Mappage après tonalité"
+msgstr "Après mappage de tonalité"
 
 #: ../src/iop/agx.c:2356
 msgid ""

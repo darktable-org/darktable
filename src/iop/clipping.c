@@ -2747,7 +2747,7 @@ int mouse_moved(dt_iop_module_t *self,
   else if(darktable.control->button_down && darktable.control->button_down_which == 1)
   {
     // case when we drag a point for keystone
-    if(g->k_drag == TRUE && g->k_selected >= 0)
+    if(g->k_drag && g->k_selected >= 0)
     {
       float pts[2] = { pzx * wd, pzy * ht };
       dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, pts, 1);
@@ -2802,7 +2802,7 @@ int mouse_moved(dt_iop_module_t *self,
     }
 
     // case when we drag a segment for keystone
-    if(g->k_drag == TRUE && g->k_selected_segment >= 0)
+    if(g->k_drag && g->k_selected_segment >= 0)
     {
       float decalx = pzx - g->button_down_zoom_x;
       float decaly = pzy - g->button_down_zoom_y;

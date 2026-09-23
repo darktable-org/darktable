@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "common/collection.h"
@@ -34,9 +35,11 @@
 
 #include <gdk/gdkkeysyms.h>
 #include <sys/param.h>
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
+
 #ifdef USE_LUA
 #include "lua/call.h"
 #include "lua/image.h"
@@ -689,7 +692,7 @@ void gui_update(dt_lib_module_t *self)
   // Update the metadata values
   for(int32_t md = 0; md < md_xmp_metadata + d->metadata_count; md++)
   {
-    if(skip[md] == TRUE)
+    if(skip[md])
     {
       if(md == md_internal_flags)
       {
@@ -1451,9 +1454,11 @@ static void _drag_data_inserted(GtkTreeModel *tree_model,
   _dndactive = TRUE;
 }
 
-void _menuitem_preferences(GtkMenuItem *menuitem,
-                           dt_lib_module_t *self)
+static void _menuitem_preferences(GSimpleAction *action,
+                                  GVariant *parameter,
+                                  gpointer user_data)
 {
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_metadata_view_t *d = self->data;
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
@@ -1569,12 +1574,12 @@ void _menuitem_preferences(GtkMenuItem *menuitem,
   gtk_widget_destroy(dialog);
 }
 
-void set_preferences(void *menu,
-                     dt_lib_module_t *self)
+void set_preferences(GMenu *menu, GActionGroup *action_group, dt_lib_module_t *self)
 {
-  GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
-  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+  GSimpleAction *action = g_simple_action_new("preferences", NULL);
+  g_signal_connect(action, "activate", G_CALLBACK(_menuitem_preferences), self);
+  g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(action));
+  g_menu_append(menu, _("preferences..."), "presets.preferences");
 }
 
 void *get_params(dt_lib_module_t *self,
@@ -1889,6 +1894,7 @@ void init(struct dt_lib_module_t *self)
   lua_pop(L, 2);
 }
 #endif
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

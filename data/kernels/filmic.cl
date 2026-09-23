@@ -1033,22 +1033,29 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
 
 
 kernel void
-filmic_mask_clipped_pixels(read_only image2d_t in, write_only image2d_t out,
-                           int width, int height,
-                           const float normalize, const float feathering, global uint *is_clipped)
+filmic_mask_clipped_pixels(read_only image2d_t in,
+                           write_only image2d_t out,
+                           const int width,
+                           const int height,
+                           const float normalize,
+                           const float feathering,
+                           global int *const is_clipped)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 i = readpixel(in, x, y);
+  float4 i = Areadpixel(in, x, y);
   const float4 i2 = i * i;
 
   const float pix_max = fmax(dtcl_sqrt(i2.x + i2.y + i2.z), 0.f);
   const float argument = -pix_max * normalize + feathering;
   const float weight = clipf(1.0f / ( 1.0f + dtcl_exp2(argument)));
 
+  /** according to CL specs such writing to buffer is not safe (workgroups)
+      and we should better do atomic_inc(is_clipped)
+  */
   if(4.f > argument) *is_clipped = 1;
 
   write_imagef(out, (int2)(x, y), weight);

@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.6.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-07-24 14:42-0600\n"
-"PO-Revision-Date: 2026-08-13 12:37-0600\n"
+"PO-Revision-Date: 2026-09-19 00:20-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -9747,8 +9747,7 @@ msgstr "diferencia horaria"
 
 #: ../src/control/jobs/control_jobs.c:2797 ../src/libs/copy_history.c:339
 msgid "write sidecar files"
-msgstr ""
-"escribir archivos se han encontrado archivos de sidecar del xmp actualizados"
+msgstr "escribir archivos xmp"
 
 #: ../src/control/jobs/control_jobs.c:3010 ../src/control/jobs/film_jobs.c:297
 #, c-format
@@ -30007,7 +30006,7 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:334
 msgid "load sidecar file..."
-msgstr "cargar archivo xmp..."
+msgstr "cargar archivo xmp"
 
 #: ../src/libs/copy_history.c:335
 msgid ""

@@ -406,7 +406,7 @@ void modify_roi_in(dt_iop_module_t *self,
   else
   {
     // We require the correct (full-image-data) expansion with a defined scale for all pixelpipes for proper
-    // aligning and scaling in the demosiacer
+    // aligning and scaling in the demosaicer
     roi_in->x = 0;
     roi_in->y = 0;
     roi_in->width = piece->buf_in.width;
@@ -436,7 +436,7 @@ void tiling_callback(dt_iop_module_t *self,
   tiling->overlap = 0;
 
   dt_develop_blend_params_t *const bldata = piece->blendop_data;
-  if(bldata && dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID))
+  if(bldata && dt_iop_is_raster_mask_used(self, BLEND_RASTER_ID))
   {
     tiling->factor += 0.5f;
     tiling->factor_cl += 0.5f;
@@ -451,7 +451,7 @@ void tiling_callback(dt_iop_module_t *self,
     const int max_filter_radius = (1 << scales);
 
     tiling->factor += 2.f * 4 + 6.f * 4 / (DS_FACTOR * DS_FACTOR);
-    tiling->factor_cl += 3.f * 4 + 5.f * 4 / (DS_FACTOR * DS_FACTOR);
+    tiling->factor_cl += 3.f * 4 + 7.f * 4 / (DS_FACTOR * DS_FACTOR);
 
     // The wavelets decomposition uses a temp buffer of size 4 × ds_width
     tiling->maxbuf = 1.f / roi_in->height * dt_get_num_threads() * 4.f / DS_FACTOR;
@@ -581,7 +581,7 @@ int process_cl(dt_iop_module_t *self,
   const dt_iop_highlights_mode_t dmode =  d->mode;
   const float clipper = d->clip * highlights_clip_magics[dmode];
 
-  gboolean announce = dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID);
+  gboolean announce = dt_iop_is_raster_mask_used(self, BLEND_RASTER_ID);
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem dev_xtrans = NULL;
@@ -867,7 +867,7 @@ void process(dt_iop_module_t *self,
   const gboolean scaled = filters == 0 && dmode != DT_IOP_HIGHLIGHTS_CLIP;
 
   float *out = scaled ? dt_alloc_align_float((size_t)roi_in->width * roi_in->height * 4) : NULL;
-  const gboolean announce = dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID);
+  const gboolean announce = dt_iop_is_raster_mask_used(self, BLEND_RASTER_ID);
 
   if(!out && scaled)
   {
@@ -1044,8 +1044,6 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_highlights_data_t *d = piece->data;
 
   memcpy(d, p, sizeof(*p));
-  if(d->mode < DT_IOP_HIGHLIGHTS_CLIP || d->mode > DT_IOP_HIGHLIGHTS_OPPOSED)
-    d->mode = DT_IOP_HIGHLIGHTS_CLIP;
 
   const dt_image_t *img = &piece->pipe->image;
   const uint32_t filters = img->buf_dsc.filters;
@@ -1053,8 +1051,9 @@ void commit_params(dt_iop_module_t *self,
   const gboolean linear = (filters == 0);
   const gboolean is_4bayer = img->flags & DT_IMAGE_4BAYER;
 
-  // for non-raws always use clip
-  if(!rawprep || is_4bayer)
+  // for non-raws always use clip; an unknown stored mode would index
+  // highlights_clip_magics[] out of bounds, and processing treats it as clip anyway
+  if(!rawprep || is_4bayer || (unsigned)d->mode > DT_IOP_HIGHLIGHTS_OPPOSED)
     d->mode = DT_IOP_HIGHLIGHTS_CLIP;
 
   /* no OpenCLfor

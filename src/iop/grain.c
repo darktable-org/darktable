@@ -172,7 +172,9 @@ static double dot(const double g[], const double x, const double y, const double
 
 #define FASTFLOOR(x) (x > 0 ? (int)(x) : (int)(x)-1)
 
-static double _simplex_noise(double xin, double yin, double zin)
+static double _simplex_noise(const double xin,
+                             const double yin,
+                             const double zin)
 {
   double n0, n1, n2, n3; // Noise contributions from the four corners
                          // Skew the input space to determine which simplex cell we're in
@@ -312,7 +314,9 @@ static double _simplex_noise(double xin, double yin, double zin)
   return 32.0 * (n0 + n1 + n2 + n3);
 }
 
-static double _simplex_2d_noise(double x, double y, double z)
+static double _simplex_2d_noise(const double x,
+                                const double y,
+                                const double z)
 {
   double total = 0;
 
@@ -327,21 +331,26 @@ static double _simplex_2d_noise(double x, double y, double z)
   return total;
 }
 
-static float paper_resp(float exposure, float mb, float gp)
+static float paper_resp(const float exposure,
+                        const float mb,
+                        const float gp)
 {
   const float delta = GRAIN_LUT_DELTA_MAX * expf((mb / 100.0f) * logf(GRAIN_LUT_DELTA_MIN));
   const float density = (1.0f + 2.0f * delta) / (1.0f + expf( (4.0f * gp * (0.5f - exposure)) / (1.0f + 2.0f * delta) )) - delta;
   return density;
 }
 
-static float paper_resp_inverse(float density, float mb, float gp)
+static float paper_resp_inverse(const float density,
+                                const float mb,
+                                const float gp)
 {
   const float delta = GRAIN_LUT_DELTA_MAX * expf((mb / 100.0f) * logf(GRAIN_LUT_DELTA_MIN));
   const float exposure = -logf((1.0f + 2.0f * delta) / (density + delta) - 1.0f) * (1.0f + 2.0f * delta) / (4.0f * gp) + 0.5f;
   return exposure;
 }
 
-static void evaluate_grain_lut(float *grain_lut, const float mb)
+static void evaluate_grain_lut(float *grain_lut,
+                               const float mb)
 {
   for(int i = 0; i < GRAIN_LUT_SIZE; i++)
   {
@@ -354,7 +363,9 @@ static void evaluate_grain_lut(float *grain_lut, const float mb)
   }
 }
 
-static float dt_lut_lookup_2d_1c(const float *grain_lut, const float x, const float y)
+static float dt_lut_lookup_2d_1c(const float *grain_lut,
+                                 const float x,
+                                 const float y)
 {
   const float _x = CLAMPS((x + 0.5f) * (GRAIN_LUT_SIZE - 1), 0, GRAIN_LUT_SIZE - 1);
   const float _y = CLAMPS(y * (GRAIN_LUT_SIZE - 1), 0, GRAIN_LUT_SIZE - 1);
@@ -433,13 +444,15 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/,
+                                        self, piece->colors,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
   dt_iop_grain_data_t *data = piece->data;
 
-  unsigned int hash = _hash_string(piece->pipe->image.filename) % (int)fmax(roi_out->width * 0.3, 1.0);
+  const unsigned int hash =
+    _hash_string(piece->pipe->image.filename) % (int)fmax(roi_out->width * 0.3, 1.0);
 
   const gboolean fastmode = dt_pipe_is_fast(piece->pipe);
   // Apply grain to image
@@ -449,8 +462,8 @@ void process(dt_iop_module_t *self,
   const double zoom = (1.0 + 8 * data->scale / 100) / 800.0;
   // in fastpipe mode, skip the downsampling for zoomed-out views
   const int filter = !fastmode && fabsf(roi_out->scale - 1.0f) > 0.01f;
-  // filter width depends on world space (i.e. reverse wd norm and roi->scale, as well as buffer input to
-  // pixelpipe iscale)
+  // filter width depends on world space (i.e. reverse wd norm and
+  // roi->scale, as well as buffer input to pixelpipe iscale)
   const double filtermul = piece->iscale / (roi_out->scale * wd);
   const float fib1 = 34.0f, fib2 = 21.0f;
   const float fib1div2 = fib1 / fib2;
@@ -490,7 +503,9 @@ void process(dt_iop_module_t *self,
         noise = _simplex_2d_noise(x + hash, y, zoom);
       }
 
-      out[0] = in[0] + dt_lut_lookup_2d_1c(data->grain_lut, (noise * strength) * GRAIN_LIGHTNESS_STRENGTH_SCALE, in[0] / 100.0f);
+      out[0] = in[0] + dt_lut_lookup_2d_1c(data->grain_lut,
+                                           (noise * strength) * GRAIN_LIGHTNESS_STRENGTH_SCALE,
+                                           in[0] / 100.0f);
       out[1] = in[1];
       out[2] = in[2];
 
@@ -500,7 +515,9 @@ void process(dt_iop_module_t *self,
   }
 }
 
-void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *p1,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)p1;
@@ -514,12 +531,16 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   evaluate_grain_lut(d->grain_lut, d->midtones_bias);
 }
 
-void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_grain_data_t));
 }
 
-void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
@@ -547,7 +568,9 @@ void gui_init(dt_iop_module_t *self)
 
   g->midtones_bias = dt_bauhaus_slider_from_params(self, "midtones_bias");
   dt_bauhaus_slider_set_format(g->midtones_bias, "%");
-  gtk_widget_set_tooltip_text(g->midtones_bias, _("amount of mid-tones bias from the photographic paper response modeling. the greater the bias, the more pronounced the fall off of the grain in shadows and highlights"));
+  gtk_widget_set_tooltip_text
+    (g->midtones_bias,
+     _("amount of mid-tones bias from the photographic paper response modeling. the greater the bias, the more pronounced the fall off of the grain in shadows and highlights"));
 }
 
 // clang-format off

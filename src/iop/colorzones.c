@@ -75,21 +75,19 @@ typedef struct dt_iop_colorzones_params_t
   dt_iop_colorzones_channel_t channel; // $DEFAULT: DT_IOP_COLORZONES_h $DESCRIPTION: "select by"
   // three curves (L, C, h) with max number of nodes
   dt_iop_colorzones_node_t curve[DT_IOP_COLORZONES_MAX_CHANNELS][DT_IOP_COLORZONES_MAXNODES];
-  int curve_num_nodes[DT_IOP_COLORZONES_MAX_CHANNELS]; // $MIN: 0 $MAX: DT_IOP_COLORZONES_MAXNODES number of nodes per curve
+  int curve_num_nodes[DT_IOP_COLORZONES_MAX_CHANNELS]; // number of nodes per curve
   int curve_type[DT_IOP_COLORZONES_MAX_CHANNELS];      // CUBIC_SPLINE, CATMULL_ROM, MONOTONE_HERMITE
   float strength;  // $MIN: -200.0 $MAX: 200.0 $DEFAULT: 0.0 $DESCRIPTION: "mix"
   dt_iop_colorzones_modes_t mode; // $MIN: 0 $MAX: 1 $DEFAULT: DT_IOP_COLORZONES_MODE_SMOOTH $DESCRIPTION: "process mode"
   int splines_version;
 } dt_iop_colorzones_params_t;
 
-static inline int _colorzones_nodes(const dt_iop_colorzones_params_t *p,
+static inline int _colorzones_nodes(const dt_iop_colorzones_params_t *const p,
                                     const int ch)
 {
-  return p->splines_version == DT_IOP_COLORZONES_SPLINES_V1
-         ? CLAMP(p->curve_num_nodes[ch], 2,
-                 DT_IOP_COLORZONES_MAXNODES - 2)
-         : CLAMP(p->curve_num_nodes[ch], 0,
-                 DT_IOP_COLORZONES_MAXNODES);
+  // stored counts index the fixed node arrays; legacy splines also read nodes - 2
+  const int min_nodes = p->splines_version == DT_IOP_COLORZONES_SPLINES_V1 ? 2 : 1;
+  return CLAMP(p->curve_num_nodes[ch], min_nodes, DT_IOP_COLORZONES_MAXNODES);
 }
 
 typedef struct dt_iop_colorzones_gui_data_t
@@ -383,8 +381,7 @@ static void dt_iop_colorzones_get_params(dt_iop_colorzones_params_t *p,
                                          const double mouse_y,
                                          const float radius)
 {
-  const int bands = _colorzones_nodes(p, ch);
-  p->curve_num_nodes[ch] = bands;
+  const int bands = p->curve_num_nodes[ch];
 
   const float lin_mouse_x = _mouse_to_curve(mouse_x, g->zoom_factor, g->offset_x);
   const float lin_mouse_y = _mouse_to_curve(mouse_y, g->zoom_factor, g->offset_y);
@@ -1155,9 +1152,6 @@ static gboolean _area_draw_callback(GtkWidget *widget,
 {
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
   dt_iop_colorzones_params_t p = *(dt_iop_colorzones_params_t *)self->params;
-  for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++)
-    p.curve_num_nodes[ch] = _colorzones_nodes(&p, ch);
-  const dt_iop_colorzones_params_t base_params = p;
 
   if(p.splines_version == DT_IOP_COLORZONES_SPLINES_V1)
   {
@@ -1427,7 +1421,7 @@ static gboolean _area_draw_callback(GtkWidget *widget,
   {
     const int bands = p.curve_num_nodes[ch];
 
-    p = base_params;
+    p = *(dt_iop_colorzones_params_t *)self->params;
     dt_iop_colorzones_get_params(&p, g, g->channel, g->mouse_x, 1., g->mouse_radius);
     if(p.splines_version == DT_IOP_COLORZONES_SPLINES_V1)
     {
@@ -1459,7 +1453,7 @@ static gboolean _area_draw_callback(GtkWidget *widget,
                                    p.channel == DT_IOP_COLORZONES_h);
     }
 
-    p = base_params;
+    p = *(dt_iop_colorzones_params_t *)self->params;
     dt_iop_colorzones_get_params(&p, g, g->channel, g->mouse_x, .0, g->mouse_radius);
     if(p.splines_version == DT_IOP_COLORZONES_SPLINES_V1)
     {
@@ -1492,7 +1486,7 @@ static gboolean _area_draw_callback(GtkWidget *widget,
     }
 
     // restore params values
-    p = base_params;
+    p = *(dt_iop_colorzones_params_t *)self->params;
 
     // draw min/max curves:
     cairo_set_source_rgba(cr, .7, .7, .7, .6);
@@ -1540,7 +1534,7 @@ static gboolean _area_draw_callback(GtkWidget *widget,
     // draw selected cursor
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
 
-    if(g->selected >= 0 && g->selected < p.curve_num_nodes[g->channel])
+    if(g->selected >= 0)
     {
       cairo_set_source_rgb(cr, .9, .9, .9);
       const float x = _curve_to_mouse(p.curve[g->channel][g->selected].x,
@@ -1724,9 +1718,7 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
   dt_iop_colorzones_params_t *p = self->params;
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
 
-  const int ch = g->channel;
-  const int nodes = _colorzones_nodes(p, ch);
-  if(node < 0 || node >= nodes) return FALSE;
+  int ch = g->channel;
   dt_iop_colorzones_node_t *curve = p->curve[ch];
 
   float multiplier = dt_accel_get_speed_multiplier(widget, state);
@@ -1734,12 +1726,12 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
   dy *= multiplier;
   if(p->splines_version == DT_IOP_COLORZONES_SPLINES_V1)
     // do not move the first or last nodes on the x-axis
-    if(node == 0 || node == nodes - 1) dx = 0.f;
+    if(node == 0 || node == p->curve_num_nodes[ch] - 1) dx = 0.f;
 
   float new_x = CLAMP(curve[node].x + dx, 0.0f, 1.0f);
   const float new_y = CLAMP(curve[node].y + dy, 0.0f, 1.0f);
 
-  if(_sanity_check(new_x, node, nodes, p->curve[ch]))
+  if(_sanity_check(new_x, node, p->curve_num_nodes[ch], p->curve[ch]))
   {
     if(p->splines_version == DT_IOP_COLORZONES_SPLINES_V1)
     {
@@ -1747,12 +1739,12 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
       curve[node].y = new_y;
 
       if(p->channel == DT_IOP_COLORZONES_h
-         && (node == 0 || node == nodes - 1))
+         && (node == 0 || node == p->curve_num_nodes[ch] - 1))
       {
         if(node == 0)
         {
-          curve[nodes - 1].x = 1.f - curve[node].x;
-          curve[nodes - 1].y = curve[node].y;
+          curve[p->curve_num_nodes[ch] - 1].x = 1.f - curve[node].x;
+          curve[p->curve_num_nodes[ch] - 1].y = curve[node].y;
         }
         else
         {
@@ -1764,13 +1756,13 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
     else
     {
       if(p->channel == DT_IOP_COLORZONES_h
-         && (node == 0 || node == nodes - 1))
+         && (node == 0 || node == p->curve_num_nodes[ch] - 1))
       {
         if(node == 0)
         {
-          if(new_x + 1.f - curve[nodes - 1].x
+          if(new_x + 1.f - curve[p->curve_num_nodes[ch] - 1].x
              < DT_IOP_COLORZONES_MIN_X_DISTANCE)
-            new_x = curve[nodes - 1].x
+            new_x = curve[p->curve_num_nodes[ch] - 1].x
               + DT_IOP_COLORZONES_MIN_X_DISTANCE - 1.f;
         }
         else
@@ -1917,9 +1909,8 @@ static void _area_scrolled_callback(GtkEventControllerScroll *controller,
 
   if(g->edit_by_area)
   {
-    const int nodes = _colorzones_nodes(p, g->channel);
-    g->mouse_radius = CLAMP(g->mouse_radius * (1.0 - 0.1 * dy),
-                            0.2 / MAX(1, nodes), 1.0);
+    const int bands = p->curve_num_nodes[g->channel];
+    g->mouse_radius = CLAMP(g->mouse_radius * (1.0 - 0.1 * dy), 0.2 / bands, 1.0);
     gtk_widget_queue_draw(widget);
   }
   else
@@ -1969,11 +1960,8 @@ static void _area_motion_notify_callback(GtkEventControllerMotion *controller,
   }
 
   const int ch = g->channel;
-  const int nodes = _colorzones_nodes(p, ch);
+  const int nodes = p->curve_num_nodes[ch];
   dt_iop_colorzones_node_t *curve = p->curve[ch];
-
-  if(g->selected >= nodes) g->selected = -1;
-  if(g->x_move >= nodes) g->x_move = -1;
 
   const double old_m_x = g->mouse_x;
   const double old_m_y = fabs(g->mouse_y);
@@ -2036,23 +2024,19 @@ static void _area_motion_notify_callback(GtkEventControllerMotion *controller,
     }
     else if(y > height)
     {
-      if(nodes > 0)
+      g->x_move = 0;
+      const int bands = p->curve_num_nodes[g->channel];
+      const float mouse_x = _mouse_to_curve(g->mouse_x, g->zoom_factor, g->offset_x);
+      float dist = fabsf(p->curve[g->channel][0].x - mouse_x);
+      for(int k = 1; k < bands; k++)
       {
-        g->x_move = 0;
-        const float mouse_x = _mouse_to_curve(g->mouse_x, g->zoom_factor, g->offset_x);
-        float dist = fabsf(p->curve[g->channel][0].x - mouse_x);
-        for(int k = 1; k < nodes; k++)
+        const float d2 = fabsf(p->curve[g->channel][k].x - mouse_x);
+        if(d2 < dist)
         {
-          const float d2 = fabsf(p->curve[g->channel][k].x - mouse_x);
-          if(d2 < dist)
-          {
-            g->x_move = k;
-            dist = d2;
-          }
+          g->x_move = k;
+          dist = d2;
         }
       }
-      else
-        g->x_move = -1;
     }
     else
     {
@@ -2069,7 +2053,6 @@ static void _area_motion_notify_callback(GtkEventControllerMotion *controller,
                     liny = _mouse_to_curve(g->mouse_y, g->zoom_factor, g->offset_y);
 
         // no vertex was close, create a new one!
-        p->curve_num_nodes[ch] = nodes;
         g->selected = _add_node(curve, &p->curve_num_nodes[ch], linx, liny);
 
         dt_iop_color_picker_reset(self, TRUE);
@@ -2121,10 +2104,8 @@ static void _area_button_press_callback(GtkGestureSingle *gesture,
   if(darktable.develop->darkroom_skip_mouse_events) return;
 
   int ch = g->channel;
-  int nodes = _colorzones_nodes(p, ch);
+  int nodes = p->curve_num_nodes[ch];
   dt_iop_colorzones_node_t *curve = p->curve[ch];
-
-  if(g->selected >= nodes) g->selected = -1;
 
   if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
@@ -2176,7 +2157,6 @@ static void _area_button_press_callback(GtkGestureSingle *gesture,
                                  // afterwards
       {
         // create a new node
-        p->curve_num_nodes[ch] = nodes;
         selected = _add_node(curve, &p->curve_num_nodes[ch], mx, curve_y);
 
         // maybe set the new one as being selected
@@ -2211,8 +2191,7 @@ static void _area_button_press_callback(GtkGestureSingle *gesture,
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
     }
   }
-  else if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY
-          && g->selected >= 0 && g->selected < nodes)
+  else if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
     // consume the event so it does not bubble to the module body's
     // right-click handler (which opens the presets menu)
@@ -2242,7 +2221,6 @@ static void _area_button_press_callback(GtkGestureSingle *gesture,
     }
 
     // right click deletes the node, ctrl+right click reset the node to y-zero
-    p->curve_num_nodes[ch] = nodes;
     _delete_node(self, curve, &p->curve_num_nodes[ch],
                  g->selected, dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK));
     g->selected = -2; // avoid re-insertion of that point immediately after this
@@ -2527,7 +2505,7 @@ static float _action_process_zones(gpointer target,
   dt_iop_colorzones_params_t *p = self->params;
 
   const int ch = g->channel;
-  const int nodes = _colorzones_nodes(p, ch);
+  const int nodes = p->curve_num_nodes[ch];
   dt_iop_colorzones_node_t *curve = p->curve[ch];
   const float x = (float)element / DT_IOP_COLORZONES_BANDS;
 
@@ -2548,10 +2526,7 @@ static float _action_process_zones(gpointer target,
     {
     case DT_ACTION_EFFECT_RESET:
       if(close_enough)
-      {
-        p->curve_num_nodes[ch] = nodes;
         _delete_node(self, curve, &p->curve_num_nodes[ch], node, FALSE);
-      }
       break;
     case DT_ACTION_EFFECT_BOTTOM:
       bottop *= -1;
@@ -2561,14 +2536,7 @@ static float _action_process_zones(gpointer target,
       move_size *= -1;
     case DT_ACTION_EFFECT_UP:
       if(!close_enough)
-      {
-        if(nodes >= DT_IOP_COLORZONES_MAXNODES) break;
-        p->curve_num_nodes[ch] = nodes;
         node = _add_node(curve, &p->curve_num_nodes[ch], x, return_value);
-        if(node < 0) break;
-      }
-
-      if(node < 0 || node >= _colorzones_nodes(p, ch)) break;
 
       _move_point_internal(self, target, node, 0.f, move_size / 100, GDK_MODIFIER_MASK);
       return_value = curve[node].y;
@@ -2778,6 +2746,10 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
   dt_iop_colorzones_params_t *p = self->params;
 
+  // every GUI handler uses the stored count, and adding a node writes through it
+  for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++)
+    p->curve_num_nodes[ch] = _colorzones_nodes(p, ch);
+
   dt_bauhaus_combobox_set(g->interpolator, p->curve_type[g->channel]);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
@@ -2849,11 +2821,11 @@ void commit_params(dt_iop_module_t *self,
       // take care of possible change of curve type or number of nodes
       // (not yet implemented in UI)
       if(d->curve_type[ch] != p->curve_type[ch]
-         || d->curve_nodes[ch] != nodes)
+         || d->curve_nodes[ch] != p->curve_num_nodes[ch])
       {
         dt_draw_curve_destroy(d->curve[ch]);
         d->curve[ch] = dt_draw_curve_new(0.f, 1.f, p->curve_type[ch]);
-        d->curve_nodes[ch] = nodes;
+        d->curve_nodes[ch] = p->curve_num_nodes[ch];
         d->curve_type[ch] = p->curve_type[ch];
 
         if(d->channel == DT_IOP_COLORZONES_h)
@@ -2910,12 +2882,12 @@ void commit_params(dt_iop_module_t *self,
     {
       const int nodes = _colorzones_nodes(p, ch);
       if(d->curve_type[ch] != p->curve_type[ch]
-         || d->curve_nodes[ch] != nodes
-         || d->curve[ch]->c.m_numAnchors != nodes)
+         || d->curve_nodes[ch] != p->curve_num_nodes[ch]
+         || d->curve[ch]->c.m_numAnchors != p->curve_num_nodes[ch])
       {
         dt_draw_curve_destroy(d->curve[ch]);
         d->curve[ch] = dt_draw_curve_new(0.f, 1.f, p->curve_type[ch]);
-        d->curve_nodes[ch] = nodes;
+        d->curve_nodes[ch] = p->curve_num_nodes[ch];
         d->curve_type[ch] = p->curve_type[ch];
 
         for(int k = 0; k < nodes; k++)
@@ -2989,6 +2961,7 @@ void init(dt_iop_module_t *self)
 #undef DT_IOP_COLORZONES_RES
 #undef DT_IOP_COLORZONES_LUT_RES
 #undef DT_IOP_COLORZONES_BANDS
+#undef DT_IOP_COLORZONES_MAXNODES
 #undef DT_IOP_COLORZONES_DEFAULT_STEP
 #undef DT_IOP_COLORZONES_MIN_X_DISTANCE
 

@@ -527,6 +527,10 @@ int dt_init(int argc, char *argv[],
             const gboolean load_data,
             lua_State *L);
 
+#ifdef _WIN32
+void dt_request_console_notice(void);
+#endif
+
 void dt_get_sysresource_level();
 void dt_cleanup();
 
@@ -882,20 +886,6 @@ static inline float *dt_calloc_perthread_float(const size_t n,
 // return a pointer to the indicated thread's private buffer.
 #define dt_get_bythread(buf, padsize, tnum) \
   DT_IS_ALIGNED((buf) + ((padsize) * (tnum)))
-
-// Most code in dt assumes that the compiler is capable of
-// auto-vectorization.  In some cases, this will yield suboptimal code
-// if the compiler in fact does NOT auto-vectorize.  Uncomment the
-// following line for such a compiler.
-
-//#define DT_NO_VECTORIZATION
-
-// For some combinations of compiler and architecture, the compiler
-// may actually emit inferior code if given a hint to vectorize a
-// loop.  Uncomment the following line if such a combination is the
-// compilation target.
-
-//#define DT_NO_SIMD_HINTS
 
 // copy the RGB channels of a pixel; includes the 'alpha' channel as
 // well if faster due to vectorization, but subsequent code should

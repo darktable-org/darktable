@@ -90,7 +90,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SPEKTRA_INLINE static inline
+#define GRAIN_INLINE static inline
 #include "common/gaussian.h"
 #include "common/spektra_core.h"
 #include "common/spektra_sim.h"
@@ -251,9 +251,14 @@ typedef struct dt_iop_spektrafilm_params_t
      square of it, so this is the control that actually makes grain coarser --
      bigger particles, fewer of them, more fluctuation at every density. */
   float grain_granularity;  // $MIN: 0.0 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "granularity"
-  /* GrainParams.uniformity, again as a scale. Lower bends the noise toward the
-     Selwyn bell -- grain that grows and then falls away again with density.
-     */
+  /* GrainParams.uniformity, again as a scale. HIGHER bends the noise toward
+     the Selwyn bell -- grain that grows and then falls away again with
+     density. sf_layer_particle draws against a saturation term 1 - p*unif
+     and the variance scales with it, so raising uniformity suppresses the
+     fluctuation at high density. The scale reaches the sampler as a plain
+     multiplier on the stock's own figure (grain_uniformity_scale in
+     spektra_sim.c), so nothing inverts it on the way. At 0.5 the variance
+     climbs monotonically to Dmax: no bell. */
   float grain_uniformity;   // $MIN: 0.5 $MAX: 1.03 $DEFAULT: 1.0 $DESCRIPTION: "uniformity"
   /* GrainParams.particle_scale_sublayers, as a scale on the whole array. Real
      emulsions layer coarse crystals over fine ones; this moves the finer
@@ -4530,9 +4535,28 @@ static void _section_reset_clicked(GtkButton *button,
   /* Deliberately NOT wrapped in darktable.gui->reset: each widget's own
      value-changed handler is what writes the param, so suppressing it would
      move the sliders without changing the render. The cost is one history entry
-     per widget, not one per click -- correct, undoable, just chattier
-     than ideal. */
+     per widget rather than one per click, which is chattier than ideal but
+     correct. */
   GList *kids = gtk_container_get_children(GTK_CONTAINER(box));
+
+  /* Undo, however, needs the whole click to be one step, and left to itself it
+     is not even a complete one. Every history entry the loop below produces
+     carries the widget that caused it as its undo target, and
+     _dev_undo_start_record_target() in develop/develop.c drops a change
+     entirely -- no undo record at all -- when its target matches the previous
+     one and the two fall inside darkroom/undo/merge_same_secs. That rule exists
+     to keep a slider drag from filling the undo stack, and it cannot tell a
+     drag from this button writing to the same slider: resetting a widget the
+     user has just moved by hand reads as a continuation of that move, so the
+     value it held is gone and no amount of undo brings it back.
+
+     dt_dev_undo_start_record() clears the stored target, which closes that hole
+     for the first widget in the loop, and the level counter behind the history
+     signals (record_history_level in libs/history.c) folds the records raised
+     inside the loop into this outer one, so the section reverts on a single
+     undo. */
+  dt_dev_undo_start_record(darktable.develop);
+
   /* Toggles go last, as dt_ui_notebook_page()'s own double-click page reset
      does (_reset_all_bauhaus() in gui/gtk.c): a module may switch one of its
      checkboxes in reaction to one of its sliders, so a checkbox reset while
@@ -4550,6 +4574,8 @@ static void _section_reset_clicked(GtkButton *button,
       dt_bauhaus_widget_reset(w);
     }
   }
+
+  dt_dev_undo_end_record(darktable.develop);
   g_list_free(kids);
 }
 
@@ -4934,7 +4960,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->quality = dt_bauhaus_combobox_from_params(self, "quality");
   gtk_widget_set_tooltip_text(g->quality,
-                              _("spectral accuracy vs speed: the colour model is evaluated "
+                              _("spectral accuracy vs speed: the color model is evaluated "
                                 "on a table\n"
                                 "of this size and PCHIP-interpolated between the points, "
                                 "so a finer\n"
@@ -4956,10 +4982,10 @@ void gui_init(dt_iop_module_t *self)
   g->adaptation_surface = dt_bauhaus_toggle_from_params(self, "adaptation_surface");
   gtk_widget_set_tooltip_text(
       g->adaptation_surface,
-      _("second half of the film's sensitivity adaptation: a per-colour\n"
+      _("second half of the film's sensitivity adaptation: a per-color\n"
         "exposure correction of up to two stops, zero at the film's own white\n"
         "point and growing with distance from it. off by default: it shifts\n"
-        "saturated colours substantially. no effect on stocks whose profile\n"
+        "saturated colors substantially. no effect on stocks whose profile\n"
         "carries no surface (the monochrome films and every print paper)."));
 
   g->gamut_compress = dt_bauhaus_toggle_from_params(self, "gamut_compress");
@@ -4970,7 +4996,7 @@ void gui_init(dt_iop_module_t *self)
         "knees: chroma towards the profile's boundary, and lightness from\n"
         "the upper midtones up, which rolls the highlights off to white.\n"
         "\n"
-        "switching it off shows where the film is producing colours the\n"
+        "switching it off shows where the film is producing colors the\n"
         "profile has no room for: they leave the range, so darktable's\n"
         "clipping indicator marks them and the raw extent of the overshoot\n"
         "is visible. the highlights stop rolling off and reach further at\n"
@@ -4979,7 +5005,7 @@ void gui_init(dt_iop_module_t *self)
         "pre-compression boost and post-compression scale on the scanner\n"
         "tab instead.\n"
         "\n"
-        "leave it on for an image you intend to keep. off, saturated colours\n"
+        "leave it on for an image you intend to keep. off, saturated colors\n"
         "are clipped by whatever comes next in the pipeline, which loses the\n"
         "separation between them and can shift their hue."));
   /* ---- tab 2: print ---- */
@@ -5141,8 +5167,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(
       g->grain_uniformity,
       _("how evenly the crystals are distributed, relative to the stock's own\n"
-        "figure. lowering it bends the noise toward a bell: grain that peaks\n"
-        "in the midtones and eases off again in the densest areas."));
+        "figure. raising it bends the noise toward a bell: grain that peaks\n"
+        "in the midtones and eases off again in the densest areas. lowering\n"
+        "it lets grain keep growing all the way into the densest areas."));
 
   g->grain_sublayer_scale = dt_bauhaus_slider_from_params(self, "grain_sublayer_scale");
   gtk_widget_set_tooltip_text(
@@ -5313,7 +5340,7 @@ void gui_init(dt_iop_module_t *self)
       _("scales the finished picture, after the gamut compressor.\n"
         "\n"
         "the boost above pushes more light into the compressor, which lifts\n"
-        "the image and desaturates colours that were already near the edge of\n"
+        "the image and desaturates colors that were already near the edge of\n"
         "the gamut. this only changes the level, leaving the relationship\n"
         "between the channels alone, the same thing a tone curve does by\n"
         "moving its white point.\n"

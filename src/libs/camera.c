@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,9 @@
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+
 #include <gdk/gdkkeysyms.h>
+#include <glib-2.0/glib.h>
 
 DT_MODULE(1)
 
@@ -60,7 +62,7 @@ typedef struct dt_lib_camera_t
     GtkWidget *plabel, *pname; // propertylabel, widget
     GList *properties;         // a list of dt_lib_camera_property_t
 
-    GtkMenu *properties_menu;  // available properties
+    GMenu *properties_menu;  // available properties
 
   } gui;
 
@@ -217,16 +219,16 @@ static void _capture_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const char *jobcode = NULL;
   const dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
-  const uint32_t delay = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_timer)) == TRUE
+  const uint32_t delay = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_timer))
                              ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.timer))
                              : 0;
-  const uint32_t count = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_sequence)) == TRUE
+  const uint32_t count = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_sequence))
                              ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.count))
                              : 1;
-  const uint32_t brackets = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_bracket)) == TRUE
+  const uint32_t brackets = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_bracket))
                                 ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.brackets))
                                 : 0;
-  const uint32_t steps = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_bracket)) == TRUE
+  const uint32_t steps = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_bracket))
                              ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.steps))
                              : 0;
 
@@ -242,18 +244,42 @@ static void _osd_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_queue_redraw_center();
 }
 
-static void _property_choice_callback(GtkMenuItem *item, gpointer user_data)
+static void _property_choice_callback(GSimpleAction *action,
+                                      GVariant *parameter,
+                                      gpointer user_data)
 {
   dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
-  gtk_entry_set_text(GTK_ENTRY(lib->gui.pname), gtk_menu_item_get_label(item));
+
+  const gchar *p_name = g_variant_get_string(parameter, NULL);
+  gtk_entry_set_text(GTK_ENTRY(lib->gui.pname), p_name);
 }
 
 
 static void _show_property_popupmenu_clicked(GtkWidget *widget, gpointer user_data)
 {
+  GActionGroup *action_group = gtk_widget_get_action_group(widget, "camera");
+  if(action_group == NULL)
+  {
+    GActionEntry action_entries[] =
+    {
+      { "activate", _property_choice_callback, "s", NULL }
+    };
+
+    action_group = G_ACTION_GROUP(g_simple_action_group_new());
+    g_action_map_add_action_entries(G_ACTION_MAP(action_group),
+                                    action_entries,
+                                    G_N_ELEMENTS(action_entries),
+                                    user_data);
+    gtk_widget_insert_action_group(widget, 
+                                   "camera",
+                                   G_ACTION_GROUP(action_group));
+  }
   dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
 
-  dt_gui_menu_popup(lib->gui.properties_menu, widget, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
+  // popup the menu
+  GtkWidget *popover_menu = dt_gui_popover_menu_from_model(widget, lib->gui.properties_menu);
+  g_object_unref(lib->gui.properties_menu);
+  gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 
 static void _lib_property_add_to_gui(dt_lib_camera_property_t *prop, dt_lib_camera_t *lib)
@@ -365,7 +391,7 @@ static void _expose_info_bar(dt_lib_module_t *self,
   for(GList *l = lib->gui.properties; l; l = g_list_next(l))
   {
     dt_lib_camera_property_t *prop = l->data;
-    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prop->osd)) == TRUE)
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prop->osd)))
     {
       g_strlcat(center, "      ", sizeof(center));
       g_strlcat(center, prop->name, sizeof(center));

@@ -2261,10 +2261,11 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
   // get region of interest which is needed in input
   module->modify_roi_in(module, piece, roi_out, &roi_in);
-  if((darktable.unmuted & DT_DEBUG_PIPE) && memcmp(roi_out, &roi_in, sizeof(dt_iop_roi_t)))
+  if((darktable.unmuted & DT_DEBUG_PIPE) && dt_iop_module_modifies_roi_in(module))
   {
+    const gboolean modified = memcmp(roi_out, &roi_in, sizeof(dt_iop_roi_t));
     dt_print_pipe(DT_DEBUG_PIPE,
-                  "modified roi IN",
+                  modified ? "modified roi IN" : "identical roi IN",
                   pipe, module, DT_DEVICE_NONE, roi_out, &roi_in, "ID=%i",
                   pipe->image.id);
   }
@@ -3592,10 +3593,11 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
     {
       module->modify_roi_out(module, piece, &roi_out, &roi_in);
       if((darktable.unmuted & DT_DEBUG_PIPE)
-         && memcmp(&roi_out, &roi_in, sizeof(dt_iop_roi_t)))
+          && dt_iop_module_modifies_roi_out(module))
       {
+        const gboolean modified = memcmp(&roi_out, &roi_in, sizeof(dt_iop_roi_t));
         dt_print_pipe(DT_DEBUG_PIPE,
-                      "modified roi OUT",
+                      modified ? "modified roi OUT" : "identical roi OUT",
                       pipe, module, DT_DEVICE_NONE, &roi_in, &roi_out);
       }
     }

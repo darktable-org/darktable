@@ -473,6 +473,10 @@ static inline gboolean dt_iop_module_is_finalscale(const dt_iop_module_t *module
   return dt_iop_module_is(module, "finalscale");
 }
 
+/** helpers providing info about specified module roi modify functions */
+gboolean dt_iop_module_modifies_roi_out(const dt_iop_module_t *module);
+gboolean dt_iop_module_modifies_roi_in(const dt_iop_module_t *module);
+
 /** count instances of a module **/
 int dt_iop_count_instances(dt_iop_module_so_t *module);
 /** return preferred module instance for shortcuts **/
@@ -521,7 +525,7 @@ static inline void dt_iop_raster_users_unlock(const dt_iop_module_t *const modul
 /** iterates over the users hash table and checks if a specific mask is being used */
 gboolean dt_iop_is_raster_mask_used(const dt_iop_module_t *module, const dt_mask_id_t id);
 /** checks dt_iop_is_raster_mask_used() or writing for exports */
-gboolean dt_iop_piece_is_raster_mask_used(const struct dt_dev_pixelpipe_iop_t *piece,
+gboolean dt_iop_is_raster_mask_stored(const struct dt_dev_pixelpipe_iop_t *piece,
                                           const dt_mask_id_t id);
 
 /** set and clear the rastermasks, check the pixelpipe cache and report */

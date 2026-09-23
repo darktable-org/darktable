@@ -15,6 +15,7 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "gui/gtk.h"
 #include "lua/types.h"
 #include "lua/widget/common.h"
 
@@ -238,6 +239,71 @@ static int label_member(lua_State *L)
   return 1;
 }
 
+// gtk_image_new_from_file() ignores the display scale; decode at device
+// resolution and size the result against the line height instead
+static GtkWidget *_image_new_from_file(GtkWidget *widget, const char *filename)
+{
+  int native_w = 0, native_h = 0;
+  GdkPixbufFormat *format = gdk_pixbuf_get_file_info(filename, &native_w, &native_h);
+  if(!format || native_w <= 0 || native_h <= 0)
+    return gtk_image_new_from_file(filename);
+
+  // a single pixbuf would freeze an animation on its first frame, so let gtk
+  // keep those. only gtk can tell us it built one, hence the throwaway decode
+  gchar *format_name = gdk_pixbuf_format_get_name(format);
+  const gboolean may_animate = !g_strcmp0(format_name, "gif")
+                               || !g_strcmp0(format_name, "webp");
+  g_free(format_name);
+  if(may_animate)
+  {
+    GtkWidget *animation = gtk_image_new_from_file(filename);
+    if(gtk_image_get_storage_type(GTK_IMAGE(animation)) == GTK_IMAGE_ANIMATION)
+      return animation;
+    g_object_ref_sink(animation);
+    g_object_unref(animation);
+  }
+
+  PangoLayout *layout = gtk_widget_create_pango_layout(widget, "X");
+  int line_w = 0, line_h = 0;
+  pango_layout_get_pixel_size(layout, &line_w, &line_h);
+  g_object_unref(layout);
+
+  // ppd, not the widget's scale factor: gtk reports that unreliably on osx
+  // (gtk.c:2282) and an unparented button answers for monitor 0
+  const double ppd = darktable.gui ? darktable.gui->ppd : 1.0;
+
+  // an svg renders at any size; a raster has no detail beyond its own
+  const gboolean scalable = gdk_pixbuf_format_is_scalable(format);
+  const int wanted_h = line_h > 0 ? line_h : native_h;
+  const int logical_h = scalable ? wanted_h : MIN(native_h, wanted_h);
+  const int device_h = scalable ? (int)round(logical_h * ppd)
+                                : MIN(native_h, (int)round(logical_h * ppd));
+
+  GError *error = NULL;
+  GdkPixbuf *pixbuf =
+    gdk_pixbuf_new_from_file_at_scale(filename, -1, device_h, TRUE, &error);
+  if(!pixbuf)
+  {
+    g_clear_error(&error);
+    return gtk_image_new_from_file(filename);
+  }
+
+  // gtk lays a surface out as its pixels over its device scale, so derive that
+  // scale from what was decoded: a raster may hold fewer pixels than ppd asked
+  cairo_surface_t *surface =
+    gdk_cairo_surface_create_from_pixbuf(pixbuf, 1, gtk_widget_get_window(widget));
+  // one ulp up: cairo inverts the scale rather than dividing, so ceil() would
+  // otherwise gain a pixel
+  const double device_scale =
+    nextafter((double)gdk_pixbuf_get_height(pixbuf) / logical_h, INFINITY);
+  cairo_surface_set_device_scale(surface, device_scale, device_scale);
+
+  GtkWidget *image = gtk_image_new_from_surface(surface);
+  cairo_surface_destroy(surface);
+  g_object_unref(pixbuf);
+  return image;
+}
+
 static int image_member(lua_State *L)
 {
   lua_button button;
@@ -247,7 +313,7 @@ static int image_member(lua_State *L)
   if(lua_gettop(L) > 2)
   {
     const char * imagefile = luaL_checkstring(L, 3);
-    image = gtk_image_new_from_file(imagefile);
+    image = _image_new_from_file(button->widget, imagefile);
 
     GtkWidget *child = gtk_bin_get_child(GTK_BIN(button->widget));
 

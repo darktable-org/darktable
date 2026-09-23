@@ -848,8 +848,7 @@ void dt_develop_blend_process(dt_iop_module_t *self,
   }
 
   // check if we should store the mask for export or use in subsequent modules
-  // TODO: should we skip raster masks?
-  if(dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID))
+  if(dt_iop_is_raster_mask_stored(piece, BLEND_RASTER_ID))
     dt_iop_piece_set_raster(piece, _mask, roi_in, roi_out);
   else
     dt_iop_piece_clear_raster(piece, _mask);
@@ -1415,8 +1414,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
   }
 
   // check if we should store the mask for export or use in subsequent modules
-  // TODO: should we skip raster masks?
-  if(dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID))
+  if(dt_iop_is_raster_mask_stored(piece, BLEND_RASTER_ID))
   {
     // Get back the final mask from the device as the raster mask.
     //

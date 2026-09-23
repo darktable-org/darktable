@@ -8,7 +8,7 @@ This guide provides a technical overview of the `dt_bauhaus_slider` widget in da
 
 The `dt_bauhaus_slider` separates its internal data value from its displayed value. This is fundamental to its flexibility.
 
-*   **Internal Value:** This is the raw `float` or `int` value as stored in the module's parameter struct (e.g., `dt_iop_exposure_params_t`). All range limits (`min`, `max`) and get/set operations (`dt_bauhaus_slider_get`, `dt_bauhaus_slider_set`) work with this internal value.
+*   **Internal Value:** This is the slider's own `float` value, in the units of the parameter it represents (e.g., a field of `dt_iop_exposure_params_t`), before `factor` and `offset` are applied for display. It is held by the widget, not by the parameter struct. All range limits (`min`, `max`) and get/set operations (`dt_bauhaus_slider_get`, `dt_bauhaus_slider_set`) work with this internal value. A slider created with `dt_bauhaus_slider_from_params()` copies it into its bound field, but not on every change; see section 3.1.
 *   **Displayed Value:** This is the human-readable text shown in the GUI. It is derived from the internal value using the formula:
     `displayed_value = (internal_value * factor) + offset`
     This value is then formatted into a string using the `digits` and `format` properties.
@@ -28,9 +28,13 @@ The `dt_bauhaus_slider` separates its internal data value from its displayed val
 The slider has two tiers of limits: "hard" and "soft".
 
 *   **Hard Limits:** `dt_bauhaus_slider_set_hard_min()`, `dt_bauhaus_slider_set_hard_max()`
-    These define the absolute, unbreakable boundaries of the slider's internal value. Values cannot be set beyond this range by any means.
+    These define the absolute boundaries of the slider's own value: neither the user nor `dt_bauhaus_slider_set()` can move the slider beyond them. `dt_bauhaus_slider_from_params()` sets them from the field's `$MIN` and `$MAX`.
 *   **Soft Limits:** `dt_bauhaus_slider_set_soft_min()`, `dt_bauhaus_slider_set_soft_max()`, `dt_bauhaus_slider_set_soft_range()`
     These define the default visible range for the user. They provide a sensible working area, preventing users from accidentally selecting extreme values. The user can temporarily exceed these soft limits (up to the hard limits) by holding `Ctrl+Shift` while dragging the slider.
+
+**The hard range limits the widget, not the parameter it is bound to.** `dt_bauhaus_slider_set()` brings an out-of-range argument into the hard range before storing it as the slider position: it clamps it, or wraps it around for a slider whose format is `°`. `_slider_set_normalized()` then rounds it to the slider's digits (see section 4.1). A `_from_params` slider copies that position back into its field only when it is set outside the GUI-update guard; under `DT_ENTER_GUI_UPDATE()`, which is how widgets are synced from params, nothing is written back (`src/bauhaus/bauhaus.c`).
+
+So when a module assigns an out-of-range value to `self->params` itself and then syncs the slider, the slider shows a value the field does not hold, and the field keeps the original. `dt_dev_add_history_item()` copies that original into the history item (`src/develop/develop.c`), and the pixelpipe hands that copy to the module's `commit_params()` (`src/develop/pixelpipe_hb.c`, `src/develop/imageop.c`), which builds the data `process()` works from. Nothing clamps it on the way. The closest thing to a check is the `-d params` debug option: `dt_iop_commit_params()` then compares the fields of an enabled module with their declared ranges, and for a value outside them logs the field and shows an "introspection error" message (`src/develop/imageop.c`). It is a diagnostic only: it changes nothing, lets NaN and infinity through, and allows a float a small tolerance. Validate a computed value before assigning it.
 
 #### 3.2. Value Formatting and Display
 

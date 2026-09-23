@@ -1086,6 +1086,12 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
     char *_filename = colorin_so->get_p(colorin->params, "filename_work");
     if(_type && _filename)
     {
+      // stored params need not terminate the file name, and callers read it as
+      // a C string. Terminate it rather than returning NULL: the histogram
+      // profile path hands the name to strcmp() in
+      // dt_ioppr_get_profile_info_from_list() without a NULL check
+      const size_t size = colorin_so->get_f("filename_work")->header.size;
+      if(!memchr(_filename, '\0', size)) _filename[size - 1] = '\0';
       *profile_type = *_type;
       *profile_filename = _filename;
     }
@@ -1138,6 +1144,10 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
     char *_filename = colorout_so->get_p(colorout->params, "filename");
     if(_type && _filename)
     {
+      // stored params need not terminate the file name; see
+      // dt_ioppr_get_work_profile_type()
+      const size_t size = colorout_so->get_f("filename")->header.size;
+      if(!memchr(_filename, '\0', size)) _filename[size - 1] = '\0';
       *profile_type = *_type;
       *profile_filename = _filename;
     }
