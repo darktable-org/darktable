@@ -1030,17 +1030,22 @@ void toneeq_process(dt_iop_module_t *self,
   // Init the luminance masks buffers
   gboolean cached = FALSE;
 
+  gboolean mask_display = FALSE;
   if(self->dev->gui_attached)
   {
+    /** Let's do all of this inside a gui critical section block,
+        As that is guarded with a recursive mutex we don't have to fiddle around
+        if called functions don't use other locks.
+    */
+    dt_iop_gui_enter_critical_section(self);
+    mask_display = g->mask_display;
     // If the module instance has changed order in the pipe, invalidate the caches
     if(g->pipe_order != piece->module->iop_order)
     {
-      dt_iop_gui_enter_critical_section(self);
       g->ui_preview_hash = DT_INVALID_HASH;
       g->pipe_order = piece->module->iop_order;
       g->luminance_valid = FALSE;
       g->histogram_valid = FALSE;
-      dt_iop_gui_leave_critical_section(self);
       dt_preview_data_invalidate(&g->pd);
     }
 
@@ -1076,7 +1081,7 @@ void toneeq_process(dt_iop_module_t *self,
     {
       luminance = dt_alloc_align_float(num_elem);
     }
-
+    dt_iop_gui_leave_critical_section(self);
   }
   else
   {
@@ -1117,27 +1122,21 @@ void toneeq_process(dt_iop_module_t *self,
       const dt_hash_t saved_hash = dt_preview_data_get_hash(&g->pd);
 
       dt_iop_gui_enter_critical_section(self);
-      const gboolean luminance_valid = g->luminance_valid;
-      dt_iop_gui_leave_critical_section(self);
-
-      if(saved_hash != hash || !luminance_valid)
+      if(saved_hash != hash || !g->luminance_valid)
       {
         /* compute only if upstream pipe state has changed */
         // Flag the cache as being recomputed so the GUI threads never
         // read a partially filled buffer, then commit hash + validity
         // once the data is ready.
-        dt_iop_gui_enter_critical_section(self);
         g->histogram_valid = FALSE;
         g->luminance_valid = FALSE;
-        dt_iop_gui_leave_critical_section(self);
 
         compute_luminance_mask(in, luminance, width, height, d);
         dt_preview_data_set_hash(&g->pd, piece);
 
-        dt_iop_gui_enter_critical_section(self);
         g->luminance_valid = TRUE;
-        dt_iop_gui_leave_critical_section(self);
       }
+      dt_iop_gui_leave_critical_section(self);
     }
     else // make it dummy-proof
     {
@@ -1153,7 +1152,7 @@ void toneeq_process(dt_iop_module_t *self,
   // Display output
   if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe))
   {
-    if(g->mask_display)
+    if(mask_display)
     {
       display_luminance_mask(in, luminance, out, roi_in, roi_out);
       piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
@@ -1616,11 +1615,8 @@ void commit_params(dt_iop_module_t *self,
       g->interpolation_valid = FALSE;
     g->sigma = p->smoothing;
     g->user_param_valid = FALSE; // force updating channels factors
-    dt_iop_gui_leave_critical_section(self);
-
     update_curve_lut(self);
 
-    dt_iop_gui_enter_critical_section(self);
     dt_simd_memcpy(g->factors, d->factors, PIXEL_CHAN);
     dt_iop_gui_leave_critical_section(self);
   }
@@ -1803,8 +1799,10 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, dt_iop_module_t *self)
     return;
   }
 
+  dt_iop_gui_enter_critical_section(self);
   if(!g->luminance_valid || dt_pipe_processing(self->dev->full.pipe) || !g->histogram_valid)
   {
+    dt_iop_gui_leave_critical_section(self);
     dt_control_log(_("wait for the preview to finish recomputing"));
     return;
   }
@@ -1814,11 +1812,10 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, dt_iop_module_t *self)
   // Controls nodes are between -8 and 0 EV,
   // so we aim at centering the exposure distribution on -4 EV
 
-  dt_iop_gui_enter_critical_section(self);
   g->histogram_valid = FALSE;
-  dt_iop_gui_leave_critical_section(self);
 
   update_histogram(self);
+  dt_iop_gui_leave_critical_section(self);
 
   // calculate exposure correction
   const float fd_new = exp2f(g->histogram_first_decile);
@@ -1878,9 +1875,9 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, dt_iop_module_t *self)
   // The goal is to spread 90 % of the exposure histogram in the [-7, -1] EV
   dt_iop_gui_enter_critical_section(self);
   g->histogram_valid = FALSE;
-  dt_iop_gui_leave_critical_section(self);
 
   update_histogram(self);
+  dt_iop_gui_leave_critical_section(self);
 
   // calculate contrast correction
   const float fd_new = exp2f(g->histogram_first_decile);
@@ -1940,18 +1937,22 @@ static void show_luminance_mask_callback(GtkGestureSingle *gesture,
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
   // if blend module is displaying mask do not display it here
+  dt_iop_gui_enter_critical_section(self);
+  if(self->request_mask_display)
+    g->mask_display = FALSE;
+  else
+    g->mask_display = !g->mask_display;
+  const gboolean mask_display = g->mask_display;
+  dt_iop_gui_leave_critical_section(self);
+
   if(self->request_mask_display)
   {
     dt_control_log(_("cannot display masks when the blending mask is displayed"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), FALSE);
-    g->mask_display = FALSE;
     return;
   }
-  else
-    g->mask_display = !g->mask_display;
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), g->mask_display);
-//  dt_dev_reprocess_center(self->dev, self->iop_order);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), mask_display);
   dt_iop_refresh_center(self);
 
   // Unlock the colour picker so we can display our own custom cursor
@@ -2053,11 +2054,11 @@ int mouse_moved(dt_iop_module_t *self,
     g->cursor_pos_x = 0;
     g->cursor_pos_y = 0;
   }
-  dt_iop_gui_leave_critical_section(self);
 
   // store the actual exposure too, to spare I/O op
   if(g->cursor_valid && !dt_pipe_processing(dev->full.pipe) && g->luminance_valid)
     g->cursor_exposure = log2f(_luminance_from_module_buffer(self));
+  dt_iop_gui_leave_critical_section(self);
 
   switch_cursors(self);
 
@@ -2391,13 +2392,15 @@ void gui_focus(dt_iop_module_t *self, const gboolean in)
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   dt_iop_gui_enter_critical_section(self);
   g->has_focus = in;
+  const gboolean was_mask = g->mask_display;
+  //lost focus - stop showing mask
+  if(!in)
+    g->mask_display = FALSE;
   dt_iop_gui_leave_critical_section(self);
+
   switch_cursors(self);
   if(!in)
   {
-    //lost focus - stop showing mask
-    const gboolean was_mask = g->mask_display;
-    g->mask_display = FALSE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), FALSE);
     if(was_mask)
       dt_dev_reprocess_center(self->dev, self->iop_order);
