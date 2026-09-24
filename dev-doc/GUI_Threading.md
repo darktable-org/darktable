@@ -221,7 +221,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, ...)
     g->smoothing = p->smoothing;
     dt_iop_gui_leave_critical_section(self);
 
-    _rebuild_lut(self, p);   // takes the lock itself, so call it outside the section
+    _rebuild_lut(self, p);
     ...
   }
   else
@@ -241,9 +241,9 @@ argument this commit was handed, and not `self->params`. Those are the same obje
 the normal case and different on the pipe's defaults sync, which passes `default_params`
 (see
 [IOP_Module_API.md](IOP_Module_API.md#commit_params---transform-parameters-into-processing-data)).
-And keep it outside the critical section
-if it takes the lock itself — see
-[The Lock Is Recursive](#the-lock-is-recursive).
+The helper takes the lock itself. Calling it inside the section would also work, because
+the lock is [recursive](#the-lock-is-recursive); calling it after the section keeps the
+hold short.
 
 `src/iop/toneequal.c`'s `commit_params()` is the in-tree instance of this split.
 
@@ -517,14 +517,14 @@ synchronous round-trip through the GTK main loop, because the GTK thread may its
 waiting on a pipe. Waiting on another pipe is a different thing, and the framework
 supplies the primitive for it.
 
-**Do not hold `gui_lock` across the call.** The primitive takes the lock you hand it on
-every polling iteration, so calling it from inside a critical section self-deadlocks on
-the [recursive mutex](#the-lock-is-recursive). Snapshot what you need, release,
-then call — as the consuming snippet above does. Underneath, the probe also takes
-`dev->history_mutex`, because hashing the upstream state walks the pipe. The primitive
-releases your `gui_lock` before it does that, so the two are never nested; keep it that
-way on your side, for the reason in
-[`gui_lock` Is the Innermost Lock](#gui_lock-is-the-innermost-lock).
+**Do not hold `gui_lock` across the call.** The primitive takes and releases the lock you
+hand it on every polling iteration. Because the lock is
+[recursive](#the-lock-is-recursive), that release does not free the lock if you already
+hold it. While you hold it, the other pipe cannot publish a new matching hash, so the call
+may time out. It may also deadlock: every check hashes the upstream state, which takes
+`dev->history_mutex` while `gui_lock` is still held. That is the inversion described in
+[`gui_lock` Is the Innermost Lock](#gui_lock-is-the-innermost-lock), and it can freeze
+the darkroom. Snapshot what you need, release, then call, as the consuming snippet above does.
 
 **A scalar hands over cleanly; an allocation does not.** When the payload is a plain
 number, the span in which it must stay valid ends at the load and the short critical
@@ -541,38 +541,38 @@ wearing an inter-pipe costume: hold the lock through the last use, copy the data
 than the pointer, or transfer ownership so the publisher cannot free it. Pick one of the
 three before you publish an allocation.
 
-## The Lock Is Not Recursive
+## The Lock Is Recursive
 
-`dt_iop_gui_enter_critical_section()` takes a plain, non-recursive mutex. Taking it
-twice on the same thread deadlocks — and the second acquisition is usually invisible,
-hidden inside a helper you call.
+`dt_iop_gui_init()` initializes `gui_lock` with `PTHREAD_MUTEX_RECURSIVE`. The same thread
+may take it again through `dt_iop_gui_enter_critical_section()` or a helper; another
+thread must wait until every acquisition has been released. For example, invalidating a
+preview buffer's hash can be part of the same section as a module's validity flag:
 
 ```c
-// WRONG — self-deadlock if _rebuild_cache() takes the lock itself
 dt_iop_gui_enter_critical_section(self);
-g->cached_xyz = p->xyz;
-_rebuild_cache(self);
+g->luminance_valid = FALSE;
+dt_preview_data_invalidate(&g->pd);
 dt_iop_gui_leave_critical_section(self);
-
-// RIGHT — keep the section around the writes only
-dt_iop_gui_enter_critical_section(self);
-g->cached_xyz = p->xyz;
-dt_iop_gui_leave_critical_section(self);
-
-_rebuild_cache(self);   // takes the lock itself
 ```
 
-So before calling anything from inside a critical section, check whether the callee
-locks. Framework helpers count — `dt_dev_sync_pixelpipe_hash()` in particular, which
-takes the lock you hand it on every polling iteration. Keep critical sections short and
-free of function calls where you can — that avoids the problem instead of reasoning about
-it.
+The recursive mutex prevents self-deadlock on this second acquisition. A leave releases
+the lock for other threads only after the last matching enter. A helper that leaves the
+section before it waits or takes another mutex therefore does not release the lock when
+you call it inside your own section: it still runs with `gui_lock` held.
+
+So recursion does not make it safe to wait for another thread while holding the lock, or
+to take another mutex in the wrong order. In particular, call
+`dt_dev_sync_pixelpipe_hash()` only after leaving your section, as described in
+[Passing Values Between Pipes Through `gui_data`](#passing-values-between-pipes-through-gui_data).
+Keep sections short: while you hold the lock, other threads can neither publish nor read
+shared state.
 
 ### `gui_lock` Is the Innermost Lock
 
-Taking `gui_lock` twice is one way a helper inside a critical section hangs you. The
-other has nothing to do with recursion: holding `gui_lock` while you block on a lock
-that the pipe already holds when *it* takes `gui_lock`.
+Recursion does not prevent a deadlock between threads: a helper inside a critical
+section can still block on a lock that the pipe already holds when *it* takes `gui_lock`.
+This includes a helper that releases `gui_lock` itself before blocking, if you call it
+inside your section.
 
 Every pipe path that takes `gui_lock` takes it last. `dt_dev_pixelpipe_change()` takes
 `dev->history_mutex` and keeps it across the whole node sync. The sync takes the pipe's
@@ -603,11 +603,9 @@ either: `gui_lock` belongs to the module instance, which all three screen pipes 
 so `process()` on one pipe holding it across such a call deadlocks against a node sync
 on another, and the next GTK callback that enters the section hangs behind them.
 
-That `dev->history_mutex` is recursive does not help: recursion lets one thread take the
-same mutex again, and does nothing about two threads taking two mutexes in opposite
-orders.
+That `dev->history_mutex` is recursive too does not help, for the same reason.
 
-As with recursion, the second lock is usually hidden inside a call. The common ones that
+The other mutex is usually hidden inside a call. The common ones that
 take `history_mutex` (all in `src/develop/develop.c`):
 
 - `dt_dev_distort_transform_plus()` and `dt_dev_distort_backtransform_plus()`, the usual
@@ -768,43 +766,47 @@ with the resize — the refill-in-place discipline from
 with the framework opening the critical section for you. In `src/iop/toneequal.c` that
 callback is four lines long and clears one flag.
 
-The internal locking that spares you taking `gui_lock` also means you must not be holding
-it when you call the seven. The lock is [recursive](#the-lock-is-recursive), so
-calling one of them from inside your own critical section deadlocks the thread on a lock
-it already holds. Your fill and resize callbacks are already inside one: the service calls
-them from its own section, so they may neither call the seven nor enter the section
-themselves. `dt_preview_data_get()` is the likeliest to end up in the wrong place. It
-returns one value and reads like an array access, so it is easy to drop into a section
-that has just tested your validity flag.
+The internal locking spares you taking `gui_lock` for an isolated service call. The
+[recursive lock](#the-lock-is-recursive) also lets you call these functions from inside
+your own section, or enter a section from a fill or resize callback. The lock does not
+protect the data from your own thread, though. A fill or resize callback must not call
+`dt_preview_data_store()` or `dt_preview_data_resize()` for the same buffer: if the nested
+call changes the size, it replaces the buffer while the outer call is still using it. A
+fill then writes into freed memory, and `dt_preview_data_resize()` returns a buffer of a
+size other than the one its caller requested. A
+`dt_preview_data_get()` from a fill callback reads a partially filled buffer. Calling
+`dt_preview_data_is_fresh()` inside your section cannot deadlock: it only tries to take
+the preview pipe's `busy_mutex` (see the [trylock rule](#gui_lock-is-the-innermost-lock)).
 
-That section is exactly where the read belongs, though: the end of
+An outer section is useful when a read depends on your own validity flag: the end of
 [Hold the Lock as Long as the Value Must Stay Valid](#hold-the-lock-as-long-as-the-value-must-stay-valid)
-has the reader test the flag and use the buffer inside one critical section, so a reader
-that honors a flag cannot go through the accessor. Inside that section, read `pd.buf`,
-`pd.width` and `pd.height` directly, as `toneequal`'s `update_histogram()` does. That is
-safe because `dt_preview_data_store()` and `dt_preview_data_resize()` replace those fields
-only while holding the same lock (`src/develop/preview_data.c`).
+has the reader test the flag and use the buffer inside one critical section. You may call
+`dt_preview_data_get()` there, or read `pd.buf`, `pd.width` and `pd.height` directly, as
+`toneequal`'s `update_histogram()` does. Direct reads are safe because
+`dt_preview_data_store()` and `dt_preview_data_resize()` replace those fields only while
+holding the same lock (`src/develop/preview_data.c`). The outer section keeps the flag
+and buffer coherent; the accessor's own short section would not do that on its own.
 
 With `dt_preview_data_store()` there is no flag to consult, since the fill happens inside
 the lock, but the accessor on its own is still enough only for one component at a buffer
 pixel you already have. Mapping the cursor to that pixel needs `pd.width` and
 `pd.height`, and reading several components of one pixel needs them all from the same
-fill. Both need a single hold of the lock, so do them by hand inside one section as well.
-`colorequal`'s `mouse_moved()` maps the cursor that way, for a single component. For
-several, index each one as `pd.buf[(y * pd.width + x) * pd.components + c]` inside the
-same section, which is the index the accessor computes. `dt_preview_data_get()`
-re-checks its coordinates against the current size under its own lock, so dimensions
-read earlier cannot make it read out of range, but after a resize they make it read the
-wrong pixel.
+fill. Hold one outer section across the dimension reads and all component reads; nested
+accessor calls are safe there. Direct indexing as
+`pd.buf[(y * pd.width + x) * pd.components + c]` is also possible inside that section,
+as `colorequal`'s `mouse_moved()` does for a single component. Without the outer section,
+`dt_preview_data_get()` re-checks its coordinates against the current size, avoiding an
+out-of-range read, but dimensions read earlier can refer to a different fill.
 
 Nor does the accessor tell you whether the value is current. It does not look at the
 hash, and when `dt_preview_data_store()` fails to allocate a new size it keeps the old
-buffer and only invalidates the hash. `dt_preview_data_is_fresh()` answers that question,
-called outside any section of yours like the rest of the seven, but only for the stored
-data at the moment it runs, in a section of its own, and only when it answers yes: a no
-may just mean the preview pipe was busy. A `dt_preview_data_store()` can
+buffer and only invalidates the hash. `dt_preview_data_is_fresh()` answers that question
+for the stored data at the moment it runs, and only when it answers yes: a no may just
+mean the preview pipe was busy. Without an outer section, `dt_preview_data_store()` can
 replace buffer and hash between your read and the check, so a TRUE does not vouch for a
-value read before or after it. `colorequal` uses it as a gate, deciding whether to show
+value read before or after it. Inside one outer section, a `dt_preview_data_get()`
+followed by a TRUE from `dt_preview_data_is_fresh()` does vouch for that value, because
+`dt_preview_data_store()` cannot run in between. `colorequal` uses it as a gate, deciding whether to show
 its cursor and whether to request a reprocess, and reads the buffer again on the next
 mouse move. If a value must be tied to its hash, read `pd.hash` in the same section as
 the value: `dt_preview_data_store()` commits the two together.
@@ -813,7 +815,8 @@ the value: `dt_preview_data_store()` commits the two together.
 > the buffer pointer in an early return, before it takes the lock at all, against a field
 > that `dt_preview_data_store()` and `dt_preview_data_resize()` free and replace while
 > holding it. The pointer is only compared with NULL and never dereferenced, so racing the
-> first allocation can make the function answer FALSE, but not a wrong TRUE.
+> first allocation can make the function answer FALSE, but not a wrong TRUE. A caller that
+> already holds the section is not exposed to this race.
 
 `toneequal` and `colorequal` use the service. What stays yours is what the header says
 is module-specific: computing the value, drawing it, and mapping the cursor position to
@@ -1114,10 +1117,10 @@ Each row is one WRONG line and the section that explains it.
 | Entering the critical section without checking that the GUI exists | `dt_iop_gui_enter_critical_section(self);` in `commit_params()`, unguarded | [Using `gui_data` from `commit_params()`](#using-gui_data-from-commit_params) |
 | No critical section in a widget callback either, when the pipe reads the field | `g->cache_valid = FALSE;` in a slider callback | [Writing `gui_data` from a Widget Callback](#writing-gui_data-from-a-widget-callback) |
 | Treating a reprocess request as a barrier | `dt_dev_reprocess_center(self->dev, self->iop_order);` after writing a shared field | [Writing `gui_data` from a Widget Callback](#writing-gui_data-from-a-widget-callback) |
-| Calling a locking helper from inside a critical section | `_update_cache(self);` between enter and leave | [The Lock Is Recursive](#the-lock-is-recursive) |
+| Waiting for a pipe hash while holding `gui_lock` | `dt_dev_sync_pixelpipe_hash(..., &self->gui_lock, &g->hash);` between enter and leave | [Passing Values Between Pipes Through `gui_data`](#passing-values-between-pipes-through-gui_data) |
 | Holding `gui_lock` across a call that takes `history_mutex` or a pipe's `busy_mutex` | `g->exposure = _value_at_cursor(self);` between enter and leave, where the helper backtransforms the cursor | [`gui_lock` Is the Innermost Lock](#gui_lock-is-the-innermost-lock) |
 | Locking the pointer load and not the pointee | `my_cache_t *c = g->cache;` under the lock, `use_cache(c);` after it | [Hold the Lock as Long as the Value Must Stay Valid](#hold-the-lock-as-long-as-the-value-must-stay-valid) |
-| Calling a `dt_preview_data_*` accessor from inside a critical section, or from the fill or resize callback | `dt_preview_data_get(&g->pd, x, y, 0, &v);` between enter and leave, after testing a validity flag | [The Framework Service for Per-Pixel Readouts](#the-framework-service-for-per-pixel-readouts) |
+| Storing into or resizing the same preview buffer from its fill or resize callback | `dt_preview_data_resize(&g->pd, ...);` inside the callback handed to `dt_preview_data_store()` | [The Framework Service for Per-Pixel Readouts](#the-framework-service-for-per-pixel-readouts) |
 | No pipe test at all, so every pipe queues its own update | `if(g != NULL) g_idle_add(...);` | [Guards Before Sending GUI Updates](#guards-before-sending-gui-updates) |
 | Forgetting to free the Pattern B message — or freeing it twice | `return G_SOURCE_REMOVE;` with no `g_free(data)`, or one alongside a `g_free` `GDestroyNotify` | [The Callback Must Not Outlive the Module or the Image](#the-callback-must-not-outlive-the-module-or-the-image) |
 | Queued callback with no cancellation | `g_idle_add(_update_gui, self);` with no drain in `gui_cleanup()` or `change_image()` | [The Callback Must Not Outlive the Module or the Image](#the-callback-must-not-outlive-the-module-or-the-image) |
