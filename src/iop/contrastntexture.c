@@ -480,7 +480,7 @@ void process(dt_iop_module_t *self,
     for(size_t k = 0; k < npixels; k++)
     {
       // Low pass correction for shadows and highlights
-      float lowpass_correction = apply_shadows_highlights(luminance_lowpass[k], d);
+      const float lowpass_correction = apply_shadows_highlights(luminance_lowpass[k], d);
 
       // Apply correction in linear space
       const float multiplier = exp2f(corrections[k] + lowpass_correction);;
