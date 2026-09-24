@@ -6051,6 +6051,64 @@ That removes the one systematic we cannot otherwise bound. Until then the
 honest range remains 1.3 to 3.4 with a central estimate near 1.7, and 0.5 is
 a defensible but not exact choice of strength.
 
+### Demosaic suppression is real but small, not a factor of two (session 44)
+
+Session 43 left one systematic unbounded: the instrument measures offsets on
+demosaiced renders, and demosaic interpolation couples the channels, so an
+absolute in-image offset could be read low, inflating the ratio of decoded
+correction to aberration present. The test is to measure with no demosaic at
+all. `session44_mosaic.py` does that, reading the Bayer mosaic with rawpy,
+building the red, blue and two green lattices with their own origins inside the
+2x2 cell, and sampling every profile in full-resolution coordinates so the
+lattices' one-pixel diagonal offsets cancel rather than masquerading as
+aberration. Tile geometry, acceptance rules and sign convention match
+`session34_sign.py`.
+
+**The coordinate handling is exactly right**, which matters because that is
+where this measurement could most easily fool us. Red measured against itself
+returns 0.0 px exactly over 19,409 tiles, and the two green lattices, whose
+true relative aberration is zero, agree to 0.006 px or better in every band.
+
+**The mosaic estimator has a gain of 0.60**, stable across shift sign and
+magnitude: dilating the blue plane by a known eps of +2e-4, -2e-4 and +5e-4
+recovers 0.52 to 0.64 of the applied offset in every radius band. That is not
+a unit error, which would not be magnitude-independent in the way a linear
+dilution is; it is the fixed +-8 px window truncating a profile sampled at
+2 px pitch, since each mosaic plane has half the linear sampling density of a
+demosaiced render. The demosaiced instrument, at 1 px pitch, calibrated to
+0.97 in session 34. Each instrument therefore needs dividing by its own gain.
+
+**After that correction the mosaic sees only 7 to 19% more blue aberration
+than the demosaiced render**: median ratio 1.07 in the mid band and 1.19 at
+the outer band over twelve frames, with a per-frame spread of roughly 1.1 to
+1.7. So demosaic suppression of absolute chromatic offsets is real, and it is
+nothing like the factor of two that would have overturned the result.
+
+Red is not usable from this dataset and should not be quoted: several frames
+have a native red offset near zero, one giving a ratio of +22.9 from a
+denominator of -0.002 px, and the calibration dilated only blue.
+
+**Consequence for the factor.** Correcting the ratio-based estimate by 1.19
+moves the outer blue figure from 2.00 to about 1.68, which implies a strength
+near 0.6 rather than 0.5.
+
+**But the evidence that set 0.5 is immune to this systematic**, which is the
+reassuring part. Session 37 did not derive the strength from a ratio; it found
+the strength at which the *residual crosses zero*, and a multiplicative
+suppression cannot move a zero crossing, only rescale the curve through it.
+That measurement gave a median of 0.51 outer. So the two independent routes
+now bracket the answer between 0.51 from the zero crossing and 0.60 from the
+suppression-corrected ratio, where before session 44 they sat at 0.51 and 0.50
+by luck of an uncalibrated cancellation.
+
+**0.5 stands as shipped**, at the conservative end of a 0.51 to 0.60 bracket,
+and undercorrecting slightly is the right way to be wrong for a correction
+whose failure mode is reversed fringing.
+
+Not verified: the demosaiced instrument's *absolute* gain was never calibrated
+independently, only its gain on differences between renders; the mosaic gain
+rests on one frame; and no alternative sub-estimator was tried on the mosaic.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
