@@ -6162,6 +6162,66 @@ the same wide per-frame spread of the ratio seen in session 41.
 **Net effect: the single constant stays at 0.5**, now with direct unbiased
 support in blue on both sensor formats rather than inference from ratios.
 
+### High resolution frames were refused, and the payload is in pixels (session 46)
+
+Reported from a controlled pair: `/c/temp/tca/hires/P1366428` shot in the G9's
+sensor-shift high resolution mode, 10368x7776, and `P1366429` at the native
+5184x3888, same body, same Leica 12-60mm at 12 mm, same second. The high
+resolution frame reported no decodable CA data.
+
+**The cause, and the general fact behind it.** Its radius tuple is
+[5460, 6552, 4368, 2184], which is not in the table, so `_pana_ca_context()`
+returned -1. Comparing the two payloads word for word shows why: **every one
+of the twelve active words is exactly 2x**, all four radii and all eight
+coefficients, ratio 2.0000 with no exceptions. The payload's radii and
+coefficients are expressed in **pixels**, so the body rescales the whole thing
+with output geometry. The 0x0119 distortion payload does the same, its word 12
+reading 6480 against 3240, the half-diagonal in pixels, though darktable reads
+only words 4, 5, 8 and 11 from it, all identical between the pair, so
+distortion was never affected.
+
+Since eps is a dimensionless relative radial scale, it must be *unchanged*
+between the two frames, which makes the handling a division rather than a new
+context. Adobe agrees: it emits three planes for both files, and its
+per-channel warps match between them to 1-3% at r = 0.30 to 0.85.
+
+**The fix**, in `_pana_ca_context()`: after the exact-tuple loop, try each
+context for a uniform multiple keyed on the largest radius, with a pixel of
+slack and the scale bounded to 0.5 to 4.0, then divide eps by that scale. The
+two tuple shapes in the table, {5/6, 1, 2/3, 1/3} for MFT and {6/7, 1, 4/7,
+2/7} for full frame, differ by hundreds of pixels in their third and fourth
+entries, so a scaled tuple cannot be matched to the wrong sensor format.
+
+**Verification.** The decisive check is algebraic, not photometric: with the
+patch, the high resolution frame's eps coefficients come out **bit-identical**
+to the normal frame's, max absolute difference exactly 0.000e+00 on all four
+orders of both channels. Across the whole corpus, 129 of 130 payloads keep
+their existing exact match at scale 1.0, exactly one newly resolves, at
+ctx 0 scale 2.0000, and none is left unmatched or matched spuriously.
+Integration tests 0145 and 0146 pass. End to end the correction now reaches
+the file: at the outer band the blue residual moves from +0.377 px to
+-0.048 px.
+
+**What the pixel measurements could not settle.** Comparing applied against
+predicted on the 80 Mpx render gives blue 0.90 but red 0.57, while the same
+comparison on the 20 Mpx frame gives blue 0.80 and red 0.96. The instrument is
+the suspect, not the code: a strength ladder on the high resolution frame gives
+ratios that *fall* as the shift shrinks, 0.90 to 0.59 in blue and 0.57 to 0.37
+in red, which is the small-signal dilution session 44 characterised, and
+scaling the instrument's tile geometry with the image made it worse rather than
+better. The code cannot be treating red differently in any case, since the eps
+it applies is bit-identical to that of a frame whose red measured 0.96 of
+prediction, through the same evaluator, with only a linear change of pixel
+scale between them.
+
+**A lead this does not settle.** Two shapes cover all five contexts, and within
+a shape the tuples differ only by scale, which suggests two matrix sets plus a
+scale should replace five tables. It does not work across bodies: scaling ctx0
+to ctx2 leaves 3% median error, to ctx3 30%, and ctx1 to ctx4 20%, with no
+consistent power of the scale per coefficient row. So the same-geometry
+invariance that holds exactly within a body does not extend between bodies, and
+the per-context tables stay.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
