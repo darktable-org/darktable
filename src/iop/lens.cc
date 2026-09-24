@@ -2215,6 +2215,14 @@ static float _get_autoscale_md_v1(dt_iop_module_t *self,
 // that generalises between tuples, so an unknown tuple gets no CA rather
 // than an extrapolation; _pana_ca_context() returning -1 is what the GUI
 // reports to the user.
+//
+// One tuple that is not a new body does generalise: the payload's radii and
+// coefficients are both in pixels, so a sensor-shift high resolution frame
+// carries every active word scaled by its linear resolution factor. A G9
+// pair shot in the same second, 10368x7776 against 5184x3888, gives exactly
+// 2x on all four radii and all eight coefficients, and Adobe's per-channel
+// warps for the two files agree to 1-3%, so eps itself is unchanged. Such a
+// tuple is matched against its base and eps divided by the scale.
 static const int _pana_ca_R_words[4] = { 8, 12, 23, 26 };
 static const int _pana_ca_B_words[4] = { 10, 20, 27, 29 };
 
@@ -2298,8 +2306,10 @@ static const double _pana_ca_M_B[_PANA_CA_NCTX][4][4] = {
 // index into the tables above for this payload's zone radii, or -1 when the
 // body has never been characterised. All four radii are compared: two
 // distinct ratio patterns exist across bodies, so no single word keys them
-static int _pana_ca_context(const int16_t *w)
+static int _pana_ca_context(const int16_t *w, double *scale)
 {
+  if(scale) *scale = 1.0;
+
   for(int ctx = 0; ctx < _PANA_CA_NCTX; ctx++)
   {
     if(w[4] == _pana_ca_radii[ctx][0]
@@ -2308,6 +2318,29 @@ static int _pana_ca_context(const int16_t *w)
        && w[17] == _pana_ca_radii[ctx][3])
       return ctx;
   }
+
+  // no exact tuple, so try a uniform multiple of one, keyed on the largest
+  // radius. a pixel of slack absorbs rounding in the body's own scaling,
+  // and the two tuple shapes present differ by hundreds of pixels in their
+  // third and fourth entries, so this cannot match the wrong sensor format
+  for(int ctx = 0; ctx < _PANA_CA_NCTX; ctx++)
+  {
+    const double s = (double)w[11] / (double)_pana_ca_radii[ctx][1];
+    if(s < 0.5 || s > 4.0) continue;
+
+    const int16_t rad[4] = { w[4], w[11], w[16], w[17] };
+    gboolean uniform = TRUE;
+    for(int j = 0; j < 4; j++)
+      if(fabs((double)rad[j] - s * (double)_pana_ca_radii[ctx][j]) > 1.0)
+        uniform = FALSE;
+
+    if(uniform)
+    {
+      if(scale) *scale = s;
+      return ctx;
+    }
+  }
+
   return -1;
 }
 
@@ -2319,7 +2352,7 @@ static gboolean _pana_has_decodable_ca(const dt_image_t *img)
   const dt_image_correction_data_t *cd = &img->exif_correction_data;
   return img->exif_correction_type == CORRECTION_TYPE_PANASONIC
          && cd->panasonic.has_ca
-         && _pana_ca_context(cd->panasonic.ca_words) >= 0;
+         && _pana_ca_context(cd->panasonic.ca_words, NULL) >= 0;
 }
 
 static int _init_coeffs_md_v2(const dt_image_t *img,
@@ -2577,8 +2610,9 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
 
     // per-file precompute for the Panasonic 0x011b CA path: eps_R and eps_B,
     // each a cubic in the squared source radius, hoisted out of the knot loop
+    double ca_scale = 1.0;
     const int ca_ctx = cd->panasonic.has_ca
-                       ? _pana_ca_context(cd->panasonic.ca_words)
+                       ? _pana_ca_context(cd->panasonic.ca_words, &ca_scale)
                        : -1;
     const gboolean apply_ca = cor_rgb
                               && (p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
@@ -2597,8 +2631,10 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
           sr += _pana_ca_M_R[ca_ctx][k][j] * (double)w[_pana_ca_R_words[j]];
           sb += _pana_ca_M_B[ca_ctx][k][j] * (double)w[_pana_ca_B_words[j]];
         }
-        eps_r_k[k] = sr;
-        eps_b_k[k] = sb;
+        // the words are in pixels, so a high resolution frame's are scaled
+        // by its linear factor while eps is not: divide it back out
+        eps_r_k[k] = sr / ca_scale;
+        eps_b_k[k] = sb / ca_scale;
       }
     }
 
