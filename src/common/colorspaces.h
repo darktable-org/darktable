@@ -104,7 +104,8 @@ typedef enum dt_colorspaces_color_profile_type_t
   DT_COLORSPACE_PQ_P3 = 24,
   DT_COLORSPACE_HLG_P3 = 25,
   DT_COLORSPACE_DISPLAY_P3 = 26,
-  DT_COLORSPACE_LAST = 27
+  DT_COLORSPACE_FORWARD_MATRIX = 27,
+  DT_COLORSPACE_LAST = 28
 } dt_colorspaces_color_profile_type_t;
 
 typedef enum dt_colorspaces_color_mode_t
@@ -222,6 +223,7 @@ void dt_colorspaces_cleanup(dt_colorspaces_t *self);
 
 /** create a profile from a xyz->camera matrix. */
 cmsHPROFILE dt_colorspaces_create_xyzimatrix_profile(float cam_xyz[3][3]);
+cmsHPROFILE dt_colorspaces_create_xyzmatrix_profile(const float mat[3][3]);
 
 /** create a ICC virtual profile from the shipped presets in
  * darktable. */
