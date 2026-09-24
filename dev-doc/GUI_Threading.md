@@ -49,7 +49,7 @@ The sections, in order:
 - [Writing `gui_data` from a Widget Callback](#writing-gui_data-from-a-widget-callback)
 - [Publishing `gui_data` Through a Proxy](#publishing-gui_data-through-a-proxy)
 - [Passing Values Between Pipes Through `gui_data`](#passing-values-between-pipes-through-gui_data)
-- [The Lock Is Not Recursive](#the-lock-is-not-recursive)
+- [The Lock Is Recursive](#the-lock-is-recursive)
   - [`gui_lock` Is the Innermost Lock](#gui_lock-is-the-innermost-lock)
 - [Hold the Lock as Long as the Value Must Stay Valid](#hold-the-lock-as-long-as-the-value-must-stay-valid)
 
@@ -243,7 +243,7 @@ the normal case and different on the pipe's defaults sync, which passes `default
 [IOP_Module_API.md](IOP_Module_API.md#commit_params---transform-parameters-into-processing-data)).
 And keep it outside the critical section
 if it takes the lock itself — see
-[The Lock Is Not Recursive](#the-lock-is-not-recursive).
+[The Lock Is Recursive](#the-lock-is-recursive).
 
 `src/iop/toneequal.c`'s `commit_params()` is the in-tree instance of this split.
 
@@ -519,7 +519,7 @@ supplies the primitive for it.
 
 **Do not hold `gui_lock` across the call.** The primitive takes the lock you hand it on
 every polling iteration, so calling it from inside a critical section self-deadlocks on
-the [non-recursive mutex](#the-lock-is-not-recursive). Snapshot what you need, release,
+the [recursive mutex](#the-lock-is-recursive). Snapshot what you need, release,
 then call — as the consuming snippet above does. Underneath, the probe also takes
 `dev->history_mutex`, because hashing the upstream state walks the pipe. The primitive
 releases your `gui_lock` before it does that, so the two are never nested; keep it that
@@ -769,7 +769,7 @@ with the framework opening the critical section for you. In `src/iop/toneequal.c
 callback is four lines long and clears one flag.
 
 The internal locking that spares you taking `gui_lock` also means you must not be holding
-it when you call the seven. The lock is [not recursive](#the-lock-is-not-recursive), so
+it when you call the seven. The lock is [recursive](#the-lock-is-recursive), so
 calling one of them from inside your own critical section deadlocks the thread on a lock
 it already holds. Your fill and resize callbacks are already inside one: the service calls
 them from its own section, so they may neither call the seven nor enter the section
@@ -1114,7 +1114,7 @@ Each row is one WRONG line and the section that explains it.
 | Entering the critical section without checking that the GUI exists | `dt_iop_gui_enter_critical_section(self);` in `commit_params()`, unguarded | [Using `gui_data` from `commit_params()`](#using-gui_data-from-commit_params) |
 | No critical section in a widget callback either, when the pipe reads the field | `g->cache_valid = FALSE;` in a slider callback | [Writing `gui_data` from a Widget Callback](#writing-gui_data-from-a-widget-callback) |
 | Treating a reprocess request as a barrier | `dt_dev_reprocess_center(self->dev, self->iop_order);` after writing a shared field | [Writing `gui_data` from a Widget Callback](#writing-gui_data-from-a-widget-callback) |
-| Calling a locking helper from inside a critical section | `_update_cache(self);` between enter and leave | [The Lock Is Not Recursive](#the-lock-is-not-recursive) |
+| Calling a locking helper from inside a critical section | `_update_cache(self);` between enter and leave | [The Lock Is Recursive](#the-lock-is-recursive) |
 | Holding `gui_lock` across a call that takes `history_mutex` or a pipe's `busy_mutex` | `g->exposure = _value_at_cursor(self);` between enter and leave, where the helper backtransforms the cursor | [`gui_lock` Is the Innermost Lock](#gui_lock-is-the-innermost-lock) |
 | Locking the pointer load and not the pointee | `my_cache_t *c = g->cache;` under the lock, `use_cache(c);` after it | [Hold the Lock as Long as the Value Must Stay Valid](#hold-the-lock-as-long-as-the-value-must-stay-valid) |
 | Calling a `dt_preview_data_*` accessor from inside a critical section, or from the fill or resize callback | `dt_preview_data_get(&g->pd, x, y, 0, &v);` between enter and leave, after testing a validity flag | [The Framework Service for Per-Pixel Readouts](#the-framework-service-for-per-pixel-readouts) |
