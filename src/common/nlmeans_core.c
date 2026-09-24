@@ -689,9 +689,6 @@ int nlmeans_denoise_cl(
     if(err != CL_SUCCESS) break;
 
     dt_opencl_finish_sync_pipe(devid, params->pipetype);
-
-    // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_opencl_micro_nap(devid);
   }
 
 error:
@@ -774,9 +771,6 @@ int nlmeans_denoiseprofile_cl(
     if(err != CL_SUCCESS) break;
 
     dt_opencl_finish_sync_pipe(devid, params->pipetype);
-
-    // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_opencl_micro_nap(devid);
   }
 
 error:
