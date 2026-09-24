@@ -6109,6 +6109,59 @@ Not verified: the demosaiced instrument's *absolute* gain was never calibrated
 independently, only its gain on differences between renders; the mosaic gain
 rests on one frame; and no alternative sub-estimator was tried on the mosaic.
 
+### The crop factor is not it, and 0.5 is confirmed for blue (session 45)
+
+Two is also the crop factor of Micro Four Thirds, which would be a tidy
+explanation if it pointed the right way. **It points backwards.** Fitting the
+81-frame corpus by sensor format gives, at the outer band, full frame 2.01 in
+blue where a crop-factor error predicts 1.0, and MFT 1.49 where it predicts
+2.0. Both groups contradict it, and the corpus is well suited to the test: four
+full-frame bodies against five MFT ones, with median native offsets matched to
+within 0.02 px, so neither group has more signal to divide by.
+
+A format split does exist in red. Bootstrapping the forward slope over frames,
+MFT red sits at [0.79, 1.06] and full-frame red at [1.69, 2.12], disjoint in
+both bands, while blue overlaps. But forward slopes are lower bounds under
+measurement noise, and the full forward-to-reverse bracket per group is wide
+enough to contain almost any conclusion: implied strengths run 0.40 to 0.67 for
+MFT blue and 0.22 to 0.50 for full-frame blue.
+
+**So the question was settled by the one method that carries no such bias.**
+The strength at which the residual crosses zero cannot be moved by any
+multiplicative error in the instrument, only rescaled through. Sixteen frames,
+eight per format, chosen for the largest native blue offset, each rendered at
+effective strengths 0.00, 0.25, 0.50, 0.75 and 1.00 through the fine-tune
+factors with no code change:
+
+    group            median  16th-84th   crossings
+    MFT   outer blue  0.531  0.48-0.72     4 of 8
+    MFT   mid   blue  0.472  0.41-0.67     6 of 8
+    FF    outer blue  0.436  0.44-0.50     3 of 8
+    FF    mid   blue  0.526  0.48-0.55     4 of 8
+    pooled MFT blue   0.489                  10
+    pooled FF  blue   0.524                   7
+
+**Blue lands on 0.5 on both formats, 0.489 and 0.524, with overlapping
+spreads.** The shipped constant is right for blue and does not need splitting
+by format.
+
+Red is unresolved and the reason is a defect in the experiment, not in the
+data: frames were selected for large *blue* aberration, so red is underpowered
+by construction. It gives MFT 0.83 against full frame 0.44, echoing the
+regression hint, but on six and thirteen crossings with spreads that are not
+disjoint. Settling it needs the same sweep on a corpus selected by native *red*
+offset. The structure it hints at is per-channel within MFT rather than per
+format.
+
+Twenty-eight of sixty-four cases produced no crossing at all, mostly outer
+blue, where the residual keeps its native sign even at full strength. That is
+worth remembering against any tidy account of a uniform factor of two: on those
+frames the payload correction is insufficient rather than excessive, which is
+the same wide per-frame spread of the ratio seen in session 41.
+
+**Net effect: the single constant stays at 0.5**, now with direct unbiased
+support in blue on both sensor formats rather than inference from ratios.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
