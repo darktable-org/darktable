@@ -195,6 +195,15 @@ typedef union dt_image_correction_data_t
     // (Rd, Ru normalised to half-diagonal)
     float a, b, c;
     float scale;
+
+    // raw 32 signed int16 LE payload from Exif.PanasonicRaw.0x011b, source
+    // for per-channel TCA correction in _init_coeffs_md_v2 (session 8 of
+    // RW2_TCA_investigation.md). has_ca gates the CA path; ca_checksums_ok
+    // is log-only: SILKYPIX does not enforce Rigo's four-checksum, so we
+    // accept the payload regardless (session 12)
+    gboolean has_ca;
+    int16_t ca_words[32];
+    gboolean ca_checksums_ok;
   } panasonic;
 } dt_image_correction_data_t;
 

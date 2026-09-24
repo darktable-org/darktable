@@ -2176,6 +2176,152 @@ static float _get_autoscale_md_v1(dt_iop_module_t *self,
   return scale;
 }
 
+// tables driving the Panasonic 0x011b CA branch of _init_coeffs_md_v2
+// below, recovered in session 25 of RW2_TCA_investigation.md by probing
+// Adobe DNG Converter, which reads this payload, one word at a time with
+// the distortion tag neutralised. The
+// values are exact rather than fitted: each column is one word's measured
+// response, so a held-out edit of all eight words reproduces to 1e-15.
+//
+// eps_c is the per-channel radial rescale in the RAW frame, a cubic in
+// u = r^2, equivalently k0 + k1*r^2 + k2*r^4 + k3*r^6, with r normalised to
+// the half-diagonal. It must be evaluated at the source radius and applied
+// ahead of the distortion correction; session 24 showed the composition is
+// conditioned on distortion, which is why the earlier destination-frame
+// form could not be made to fit.
+//
+// Two channels never mix: R responds only to words 8, 12, 23, 26 and B only
+// to 10, 20, 27, 29, with opposite-channel derivatives measured as exactly
+// zero. M_B is M_R with columns permuted, following the slot symmetry
+// (8,20), (12,27), (10,23), (26,29), and was validated against Adobe's own
+// B plane independently of that symmetry.
+//
+// _PANA_CA_STRENGTH is not part of the decode. The map reproduces Adobe's
+// reading of the payload to 4% end to end, but that reading applies about
+// twice the correction the camera itself does: over 18 frames, 6 lenses and
+// 2 bodies the ratio of Adobe's correction to the aberration actually
+// present has median 2.00, while the camera's own JPEGs leave a residual of
+// 0.026 px, and at full strength darktable's residual reverses sign from
+// r = 0.72 outward. At half strength the residual no longer reverses. The
+// factor itself is unexplained: word 14 is a boolean gate, not a scale, its
+// value being ignored by Adobe once the high byte is set, so the leading
+// remaining candidate is one of the words Adobe ignores. Sessions 34 to 38
+// of RW2_TCA_investigation.md have the measurements; revisit this constant
+// if a mechanism is found.
+#define _PANA_CA_STRENGTH 0.5
+//
+// The matrices depend on the four zone radii, which are constant per body
+// and carry exactly one tuple per body group. No radius scaling was found
+// that generalises between tuples, so an unknown tuple gets no CA rather
+// than an extrapolation; _pana_ca_context() returning -1 is what the GUI
+// reports to the user.
+static const int _pana_ca_R_words[4] = { 8, 12, 23, 26 };
+static const int _pana_ca_B_words[4] = { 10, 20, 27, 29 };
+
+#define _PANA_CA_NCTX 5
+
+// words 4, 11, 16, 17 of the payload, in that order
+static const int16_t _pana_ca_radii[_PANA_CA_NCTX][4] = {
+  {  2730,  3276,  2184,  1092 },  // G9, GX8, GX9, G90, GH5
+  {  3072,  3584,  2048,  1024 },  // S1 II, S1 II E, S9, S5 II
+  {  2407,  2888,  1926,   963 },  // GX80, G80, GH4
+  {  1905,  2286,  1524,   762 },  // GH5S
+  {  4272,  4984,  2848,  1424 },  // S1R II
+};
+
+static const double _pana_ca_M_R[_PANA_CA_NCTX][4][4] = {
+  { // 2730 3276 2184 1092
+    { -1.17812510950665582e-07, -1.26862683438844206e-06, +3.27946494444564246e-07, -2.82859762468223857e-09 },
+    { +1.74386746700605500e-06, +5.40787414737309330e-06, -4.75808522602605453e-06, -8.37907876096721807e-08 },
+    { -5.46442603982200127e-06, -7.37647608470837247e-06, +9.58063328824287893e-06, +6.25424869259205719e-07 },
+    { +3.84376919375739558e-06, +3.24056293601771036e-06, -5.16056494672234619e-06, -8.42952008991204618e-07 },
+  },
+  { // 3072 3584 2048 1024
+    { -9.68141115498255584e-09, -1.16931388200613986e-06, +1.00406862169499786e-07, +5.15205956719277900e-09 },
+    { +6.40260882712517776e-07, +5.87989461683857720e-06, -3.58653587230239880e-06, -1.69788330971698533e-07 },
+    { -3.35075030569953466e-06, -9.08813896193549839e-06, +8.08247440122578162e-06, +8.24670988494702310e-07 },
+    { +2.74063565237447900e-06, +4.39630868147311554e-06, -4.62070714409357189e-06, -9.46120077568224342e-07 },
+  },
+  { // 2407 2888 1926 963
+    { -1.15986229410447444e-07, -1.43751350011855905e-06, +3.63211923764206170e-07, -1.26727522429259663e-08 },
+    { +1.81708874630626126e-06, +6.20074155676331153e-06, -5.37522116951638669e-06, +4.82246289656984537e-09 },
+    { -5.89500745321025489e-06, -8.53948843605678522e-06, +1.09134476207426437e-05, +4.76690969142268273e-07 },
+    { +4.21711379356359814e-06, +3.78096889916612628e-06, -5.91556905760271015e-06, -8.26153604203128103e-07 },
+  },
+  { // 1905 2286 1524 762
+    { -3.22346029568709746e-08, -1.77917503412272630e-06, +3.78555262080082506e-07, -7.44369672046607554e-08 },
+    { +1.18452511024802467e-06, +7.89187816907599378e-06, -6.30820765337869459e-06, +6.39088924316411065e-07 },
+    { -5.16566585747391119e-06, -1.11229151002127941e-05, +1.32478029797216131e-05, -9.56695532741136440e-07 },
+    { +4.06030640466603625e-06, +5.01970630780412786e-06, -7.34667988454340529e-06, -5.83622764160907066e-08 },
+  },
+  { // 4272 4984 2848 1424
+    { -4.34926785919387258e-08, -8.62681524313679821e-07, +1.05533658668832687e-07, +2.28128719252929111e-08 },
+    { +8.27160646928781755e-07, +4.26410181202818733e-06, -2.81053466668534939e-06, -3.21289834127824756e-07 },
+    { -3.15057031464860410e-06, -6.51279060036458196e-06, +6.13851843630719443e-06, +1.05356133476952614e-06 },
+    { +2.35229856522423132e-06, +3.12369047716387623e-06, -3.44848863967861535e-06, -9.38173969565525558e-07 },
+  },
+};
+
+static const double _pana_ca_M_B[_PANA_CA_NCTX][4][4] = {
+  { // 2730 3276 2184 1092
+    { +3.27946494444564246e-07, -1.17812510950665582e-07, -1.26862683438844206e-06, -2.82859762468223857e-09 },
+    { -4.75808522602605453e-06, +1.74386746700605500e-06, +5.40787414737309330e-06, -8.37907876096721807e-08 },
+    { +9.58063328824287893e-06, -5.46442603982200127e-06, -7.37647608470837247e-06, +6.25424869259205719e-07 },
+    { -5.16056494672234619e-06, +3.84376919375739558e-06, +3.24056293601771036e-06, -8.42952008991204618e-07 },
+  },
+  { // 3072 3584 2048 1024
+    { +1.00406862169499786e-07, -9.68141115498255584e-09, -1.16931388200613986e-06, +5.15205956719277900e-09 },
+    { -3.58653587230239880e-06, +6.40260882712517776e-07, +5.87989461683857720e-06, -1.69788330971698533e-07 },
+    { +8.08247440122578162e-06, -3.35075030569953466e-06, -9.08813896193549839e-06, +8.24670988494702310e-07 },
+    { -4.62070714409357189e-06, +2.74063565237447900e-06, +4.39630868147311554e-06, -9.46120077568224342e-07 },
+  },
+  { // 2407 2888 1926 963
+    { +3.63211923764206170e-07, -1.15986229410447444e-07, -1.43751350011855905e-06, -1.26727522429259663e-08 },
+    { -5.37522116951638669e-06, +1.81708874630626126e-06, +6.20074155676331153e-06, +4.82246289656984537e-09 },
+    { +1.09134476207426437e-05, -5.89500745321025489e-06, -8.53948843605678522e-06, +4.76690969142268273e-07 },
+    { -5.91556905760271015e-06, +4.21711379356359814e-06, +3.78096889916612628e-06, -8.26153604203128103e-07 },
+  },
+  { // 1905 2286 1524 762
+    { +3.78555262080082506e-07, -3.22346029568709746e-08, -1.77917503412272630e-06, -7.44369672046607554e-08 },
+    { -6.30820765337869459e-06, +1.18452511024802467e-06, +7.89187816907599378e-06, +6.39088924316411065e-07 },
+    { +1.32478029797216131e-05, -5.16566585747391119e-06, -1.11229151002127941e-05, -9.56695532741136440e-07 },
+    { -7.34667988454340529e-06, +4.06030640466603625e-06, +5.01970630780412786e-06, -5.83622764160907066e-08 },
+  },
+  { // 4272 4984 2848 1424
+    { +1.05533658668832687e-07, -4.34926785919387258e-08, -8.62681524313679821e-07, +2.28128719252929111e-08 },
+    { -2.81053466668534939e-06, +8.27160646928781755e-07, +4.26410181202818733e-06, -3.21289834127824756e-07 },
+    { +6.13851843630719443e-06, -3.15057031464860410e-06, -6.51279060036458196e-06, +1.05356133476952614e-06 },
+    { -3.44848863967861535e-06, +2.35229856522423132e-06, +3.12369047716387623e-06, -9.38173969565525558e-07 },
+  },
+};
+
+// index into the tables above for this payload's zone radii, or -1 when the
+// body has never been characterised. All four radii are compared: two
+// distinct ratio patterns exist across bodies, so no single word keys them
+static int _pana_ca_context(const int16_t *w)
+{
+  for(int ctx = 0; ctx < _PANA_CA_NCTX; ctx++)
+  {
+    if(w[4] == _pana_ca_radii[ctx][0]
+       && w[11] == _pana_ca_radii[ctx][1]
+       && w[16] == _pana_ca_radii[ctx][2]
+       && w[17] == _pana_ca_radii[ctx][3])
+      return ctx;
+  }
+  return -1;
+}
+
+// true when 0x011b holds CA this build can decode, i.e. a parsed payload
+// whose body we have measured. The GUI uses this to tell the user whether
+// TCA is actually being applied
+static gboolean _pana_has_decodable_ca(const dt_image_t *img)
+{
+  const dt_image_correction_data_t *cd = &img->exif_correction_data;
+  return img->exif_correction_type == CORRECTION_TYPE_PANASONIC
+         && cd->panasonic.has_ca
+         && _pana_ca_context(cd->panasonic.ca_words) >= 0;
+}
+
 static int _init_coeffs_md_v2(const dt_image_t *img,
                               const dt_iop_lens_params_t *p,
                               float knots_dist[MAXKNOTS],
@@ -2429,6 +2575,33 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
     const float c  = cd->panasonic.c;
     const float sc = cd->panasonic.scale;
 
+    // per-file precompute for the Panasonic 0x011b CA path: eps_R and eps_B,
+    // each a cubic in the squared source radius, hoisted out of the knot loop
+    const int ca_ctx = cd->panasonic.has_ca
+                       ? _pana_ca_context(cd->panasonic.ca_words)
+                       : -1;
+    const gboolean apply_ca = cor_rgb
+                              && (p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
+                              && ca_ctx >= 0;
+    double eps_r_k[4] = { 0.0, 0.0, 0.0, 0.0 };
+    double eps_b_k[4] = { 0.0, 0.0, 0.0, 0.0 };
+    if(apply_ca)
+    {
+      const int16_t *w = cd->panasonic.ca_words;
+      for(int k = 0; k < 4; k++)
+      {
+        double sr = 0.0;
+        double sb = 0.0;
+        for(int j = 0; j < 4; j++)
+        {
+          sr += _pana_ca_M_R[ca_ctx][k][j] * (double)w[_pana_ca_R_words[j]];
+          sb += _pana_ca_M_B[ca_ctx][k][j] * (double)w[_pana_ca_B_words[j]];
+        }
+        eps_r_k[k] = sr;
+        eps_b_k[k] = sb;
+      }
+    }
+
     nc = MAXKNOTS;
 
     for(int i = 0; i < nc; i++)
@@ -2436,6 +2609,7 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
       const float r = (float)i / (float)(nc - 1);
       knots_dist[i] = knots_vig[i] = r;
 
+      float fine = 1.0f;
       if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
       {
         // invert Ru -> Rd via two fixed-point iterations
@@ -2449,11 +2623,32 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
           rd = (f > 1e-6f) ? r / f : r;
         }
         const float dr = (r > 0.0f) ? rd / r : 1.0f;
-        const float fine = p->cor_dist_ft * (dr - 1.0f) + 1.0f;
-        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = fine;
+        fine = p->cor_dist_ft * (dr - 1.0f) + 1.0f;
       }
-      else if(cor_rgb)
-        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1.0f;
+
+      if(cor_rgb)
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = fine;
+
+      if(apply_ca)
+      {
+        // eps is defined in the raw frame, so evaluate it at the source
+        // radius rd = fine * r, not at the destination abscissa r, and apply
+        // it as a rescale of the green multiplier rather than an offset. This
+        // is what puts CA ahead of distortion in the composition; see session
+        // 24 of RW2_TCA_investigation.md, and the Olympus branch above for
+        // the same ordering
+        const double rd = (double)fine * (double)r;
+        const double u = rd * rd;
+        const double eps_r = eps_r_k[0] + u * (eps_r_k[1]
+                             + u * (eps_r_k[2] + u * eps_r_k[3]));
+        const double eps_b = eps_b_k[0] + u * (eps_b_k[1]
+                             + u * (eps_b_k[2] + u * eps_b_k[3]));
+        cor_rgb[0][i] = (float)((double)fine
+                                * (1.0 + _PANA_CA_STRENGTH * p->cor_ca_r_ft * eps_r));
+        cor_rgb[2][i] = (float)((double)fine
+                                * (1.0 + _PANA_CA_STRENGTH * p->cor_ca_b_ft * eps_b));
+        // cor_rgb[1][i] stays at fine: G is the reference plane
+      }
 
       if(vig)
         vig[i] = 1.0f;
@@ -4384,6 +4579,24 @@ static void _display_errors(dt_iop_module_t *self)
          "by running lensfun-update-data"),
        "camera/lens not found");
   }
+  else if(self->enabled
+          && p->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA
+          && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA
+          && self->dev->image_storage.exif_correction_type
+               == CORRECTION_TYPE_PANASONIC
+          && !_pana_has_decodable_ca(&self->dev->image_storage))
+  {
+    // the corrections list still offers TCA, so say why nothing happens:
+    // either the file carries no usable 0x011b, or this body's coefficients
+    // have not been measured. Distortion is unaffected either way
+    dt_iop_set_module_trouble_message(self,
+       _("no CA data for this camera"),
+       _("this raw file provides no chromatic aberration data that darktable\n"
+         "can decode, so only distortion is corrected here --\n"
+         "the Lensfun database method can still correct TCA if it has a\n"
+         "profile for your lens"),
+       "no CA data for this camera");
+  }
   else
   {
     dt_iop_clear_module_trouble_message(self);
@@ -4438,10 +4651,14 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       : TRUE;
 
     // DNG cannot provide CA fine tuning since the CA correction is embedded in
-    // the warp correction.
+    // the warp correction. Panasonic can only provide it for bodies whose
+    // 0x011b coefficients have been characterised, so ask rather than assume:
+    // otherwise the sliders offer to tune a correction that is not applied
     const gboolean has_ca =
       img->exif_correction_type != CORRECTION_TYPE_DNG
-      && p->md_version >= DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
+      && p->md_version >= DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2
+      && (img->exif_correction_type != CORRECTION_TYPE_PANASONIC
+          || _pana_has_decodable_ca(img));
 
     // guard: the callback re-enters gui_changed -> infinite recursion
     DT_ENTER_GUI_UPDATE();
