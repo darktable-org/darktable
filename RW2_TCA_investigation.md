@@ -5994,6 +5994,63 @@ would test the inherited-Adobe hypothesis directly on a manufacturer decoder.
 If OM Workspace applies about half of what Adobe instructs, the hypothesis is
 confirmed, and our 0.5 stops being empirical.
 
+### Adobe is faithful to Sony, and word 7 is not the scale (session 43)
+
+The OM Workspace plan was to compare a manufacturer-derived reading of a CA
+tag against Adobe's reading of the same file. That comparison is available
+already, without the gated download: darktable's Sony branch *is* a
+manufacturer-derived reading, since its `2^-21` scale came from decompiling
+Sony Imaging Edge. Converting the four Sony ARW files with Adobe DNG
+Converter and evaluating both models at matched physical radii:
+
+    file      r     sony B-G    adobe B-G  ratio   sony R-G    adobe R-G  ratio
+    a6700_01  0.50  0.000e+00  -3.765e-05   n/a   +1.223e-04  +1.435e-04  1.17
+    a6700_02  0.50 -2.357e-04  -2.465e-04  1.05   +4.124e-04  +4.145e-04  1.01
+    a6700_03  0.50 -1.223e-04  -1.414e-04  1.16   +2.445e-04  +2.373e-04  0.97
+    a6700_04  0.50 -1.490e-04  -1.893e-04  1.27   +3.579e-04  +3.845e-04  1.07
+
+On the well-conditioned points, red at r = 0.50 where the magnitudes are
+largest, Adobe agrees with Sony's own convention to within 17%. **Adobe does
+not double everything.** The generic "Adobe inflates" reading of session 42 is
+refuted; whatever happens with Panasonic and Olympus is specific to those
+formats, not a property of Adobe's opcode conversion. The n/a entries are
+where Sony's spline interpolates to exactly zero while Adobe's polynomial does
+not, a knot-placement artefact rather than a scale difference.
+
+**Word 7 is not a strength word.** With 110 frames carrying it, grouping by
+its Q15 value and fitting the slope per group gives, outer band:
+
+    w7 as Q15   n   blue   red
+    ~1.0        5   1.48   1.56
+    ~0.5        9   0.83   0.44
+    ~0.25      10   2.67   1.29
+    ~0.125     30   1.72   1.16
+
+If the camera scaled by w7 and Adobe ignored it, the ~1.0 group would sit near
+1 and the ~0.5 group near 2. They do the opposite, and there is no monotone
+trend. Independently fatal: across the full corpus word 7 ranges from -30255
+to +32735, and a negative strength is meaningless. The Q15-looking clustering
+in the nine G9 and GX80 files was a coincidence of one body pair.
+
+**What this exposes about our own number.** With Adobe exonerated generically
+and word 7 gone, one candidate that remains is a bias in the measurement
+rather than in the data. The instrument was calibrated against a *difference*
+between two renders and is good to 3% there, but the native aberration is an
+*absolute* offset within a single image, and session 34 already found that
+`off` minus `old` reads -0.1 to -0.3 px where it should read zero. Demosaic
+coupling pulls red and blue toward green, so an absolute in-image offset is
+systematically under-read, which inflates the ratio of decoded correction to
+aberration present. Session 35 measured that suppression at 0.134 px between
+LMMSE and PPG and PPG is not free of it either.
+
+**So the factor may be smaller than 2**, and the way to settle it is a
+measurement with no demosaic at all: render with `photosite color`, method 4,
+which leaves every pixel with only its own channel, then measure radial
+offsets between the red, green and blue sub-planes of the mosaic directly.
+That removes the one systematic we cannot otherwise bound. Until then the
+honest range remains 1.3 to 3.4 with a central estimate near 1.7, and 0.5 is
+a defensible but not exact choice of strength.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
