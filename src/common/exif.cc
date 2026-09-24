@@ -64,6 +64,7 @@ using namespace std;
 #include "common/dng_opcode.h"
 #include "common/image_cache.h"
 #include "common/exif.h"
+#include "common/matrices.h"
 #include "common/metadata.h"
 #include "common/ratings.h"
 #include "common/tags.h"
@@ -273,14 +274,13 @@ static inline int _illu_to_temp(const dt_dng_illuminant_t illu)
   return illuminant_data[illu].temp;
 }
 
-// we append i immediately after the title only if it's in the range 1-3
 static inline void _print_matrix_data(const char *title, const int i, float *M)
 {
-  dt_print(DT_DEBUG_IMAGEIO, "%s%s%s%s = %.4f %.4f %.4f | %.4f %.4f %.4f | %.4f %.4f %.4f",
+  dt_print(DT_DEBUG_IMAGEIO, "%25s%s%s%s = %7.4f %7.4f %7.4f | %7.4f %7.4f %7.4f | %7.4f %7.4f %7.4f",
     title,
-    i == 1 ? "1" : "",
-    i == 2 ? "2" : "",
-    i == 3 ? "3" : "",
+    i == 1 ? "1" : " ",
+    i == 2 ? "2" : " ",
+    i == 3 ? "3" : " ",
     M[0], M[1], M[2], M[3], M[4], M[5], M[6], M[7], M[8]);
 }
 
@@ -1065,8 +1065,162 @@ static void _check_linear_response_limit(Exiv2::ExifData &exifData,
   }
 
   if(found_one)
-    dt_print(DT_DEBUG_IMAGEIO, "[exif] `%s` has LinearResponseLimit %.4f",
+    dt_print(DT_DEBUG_IMAGEIO | DT_DEBUG_VERBOSE, "[exif] `%s` has LinearResponseLimit %.4f",
       img->filename, img->linear_response_limit);
+}
+
+static bool _valid_dng_matrix(const float *M)
+{
+  const float det = M[0] * (M[4] * M[8] - M[5] * M[7])
+                 -  M[1] * (M[3] * M[8] - M[5] * M[6])
+                 +  M[2] * (M[3] * M[7] - M[4] * M[6]);
+  return fabsf(det) > 1e-6f;
+}
+
+static void _check_forward_matrix(Exiv2::ExifData &exifData,
+                                         dt_image_t *img)
+{
+  Exiv2::ExifData::const_iterator pos;
+  dt_mark_colormatrix_invalid(&img->dng_forward_matrix[0]);
+
+  float FM[3][9];
+  float CC[3][9];
+  float AB[9];
+
+  for(int k = 0; k < 3; k++)    // for each illuminant
+  {
+    for(int y = 0; y < 3; y++)
+      for(int x = 0; x < 3; x++)
+      {
+        const int i = 3 * y + x;
+        FM[k][i] = CC[k][i] = AB[i] = (x == y) ? 1.0f : 0.0f;
+      }
+  }
+
+  gboolean has_FM[3] = { FALSE, FALSE, FALSE };
+  gboolean has_CC[3] = { FALSE, FALSE, FALSE };
+
+  dt_dng_illuminant_t illu[3] = { DT_LS_Unknown, DT_LS_Unknown, DT_LS_Unknown };
+
+  if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant1"))
+    illu[0] = MIN(DT_LS_Other, (dt_dng_illuminant_t) pos->toLong());
+  if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant2"))
+    illu[1] = MIN(DT_LS_Other, (dt_dng_illuminant_t) pos->toLong());
+
+#if EXIV2_TEST_VERSION(0,27,4)
+  Exiv2::ExifData::const_iterator ab_pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.AnalogBalance"));
+  if(ab_pos != exifData.end() && ab_pos->count() == 3)
+  {
+    AB[0] = ab_pos->toFloat(0);
+    AB[4] = ab_pos->toFloat(1);
+    AB[8] = ab_pos->toFloat(2);
+  }
+  if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant3"))
+    illu[2] = MIN(DT_LS_Other, (dt_dng_illuminant_t) pos->toLong());
+#endif
+
+  Exiv2::ExifData::const_iterator fm1_pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.ForwardMatrix1"));
+  if(fm1_pos != exifData.end() && fm1_pos->count() == 9)
+  {
+    for(int i = 0; i < 9; i++) FM[0][i] = fm1_pos->toFloat(i);
+    has_FM[0] = _valid_dng_matrix(FM[0]);
+    if(!has_FM[0])
+      dt_print(DT_DEBUG_IMAGEIO | DT_DEBUG_VERBOSE, "Found ForwardMatrix1 is not valid");
+  }
+
+  Exiv2::ExifData::const_iterator cc1_pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.CameraCalibration1"));
+  if(cc1_pos != exifData.end() && cc1_pos->count() == 9)
+  {
+    for(int i = 0; i < 9; i++) CC[0][i] = cc1_pos->toFloat(i);
+    has_CC[0] = TRUE;
+  }
+
+  Exiv2::ExifData::const_iterator fm2_pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.ForwardMatrix2"));
+  if(fm2_pos != exifData.end() && fm2_pos->count() == 9)
+  {
+    for(int i = 0; i < 9; i++) FM[1][i] = fm2_pos->toFloat(i);
+    has_FM[1] = _valid_dng_matrix(FM[1]);
+    if(!has_FM[1])
+      dt_print(DT_DEBUG_IMAGEIO | DT_DEBUG_VERBOSE, "Found ForwardMatrix2 is not valid");
+  }
+
+  Exiv2::ExifData::const_iterator cc2_pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.CameraCalibration2"));
+  if(cc2_pos != exifData.end() && cc2_pos->count() == 9)
+  {
+    for(int i = 0; i < 9; i++) CC[1][i] = cc2_pos->toFloat(i);
+    has_CC[1] = TRUE;
+  }
+
+#if EXIV2_TEST_VERSION(0,27,4)
+  Exiv2::ExifData::const_iterator fm3_pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.ForwardMatrix3"));
+  if(fm3_pos != exifData.end() && fm3_pos->count() == 9)
+  {
+    for(int i = 0; i < 9; i++) FM[2][i] = fm3_pos->toFloat(i);
+    has_FM[2] = _valid_dng_matrix(FM[2]);
+    if(!has_FM[2])
+      dt_print(DT_DEBUG_IMAGEIO | DT_DEBUG_VERBOSE, "Found ForwardMatrix3 is not valid");
+  }
+
+  Exiv2::ExifData::const_iterator cc3_pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.CameraCalibration3"));
+  if(cc3_pos != exifData.end() && cc3_pos->count() == 9)
+  {
+    for(int i = 0; i < 9; i++) CC[2][i] = cc3_pos->toFloat(i);
+    has_CC[2] = TRUE;
+  }
+#endif
+
+  // Find the best illuminant
+  int sel_illu = -1;
+
+  int min_temp = 100000;
+  const int D65temp = _illu_to_temp(DT_LS_D65);
+  int delta_min = D65temp;
+
+  // Which illuminant will be used?
+  // Note this must be identical with what we do for the chosen d65_color_matrix
+  for(int i = 0; i < 3; ++i)
+  {
+    if(illu[i] != DT_LS_Unknown)
+    {
+      const int temp_cur = _illu_to_temp(illu[i]);
+      min_temp = MIN(min_temp, temp_cur);
+      const int delta_cur = abs(temp_cur - D65temp);
+      if(delta_cur <= delta_min)
+      {
+        sel_illu = i;
+        delta_min = delta_cur;
+      }
+    }
+  }
+
+  // We only want a valid forward matrix if we got an illu and matrix are good
+  const gboolean has_forward_illuminant = sel_illu >= 0 && sel_illu < 3 && has_FM[sel_illu] && has_CC[sel_illu];
+  if(!has_forward_illuminant)
+    return;
+
+  // CameraToXYZ = ForwardMatrix * Inverse(AnalogBalance * CameraCalibration)
+  // (white balance D is applied later, upstream, via temperature.iop's wb_coeffs)
+  float DT_ALIGNED_ARRAY ABxCC[9];
+  float DT_ALIGNED_ARRAY ABxCC_inv[9];
+  mat3mul(ABxCC, AB, CC[sel_illu]);
+  if(mat3inv(ABxCC_inv, ABxCC) == 0)
+  {
+    mat3mul(img->dng_forward_matrix, FM[sel_illu], ABxCC_inv);
+    dt_print(DT_DEBUG_IMAGEIO,
+        "forward illuminant is %s: from [1] %s, [2] %s%s%s",
+                _illu_to_str(illu[sel_illu]),
+                _illu_to_str(illu[0]), _illu_to_str(illu[1]),
+                illu[2] ? ", [3] " : "", illu[2] ? _illu_to_str(illu[2]) : "" );
+    _print_matrix_data("img forward matrix", 0, img->dng_forward_matrix);
+    _print_matrix_data("calibration matrix", 0, CC[sel_illu]);
+  }
 }
 
 static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData,
@@ -1501,6 +1655,7 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
       _check_dng_opcodes(exifData, img);
       _check_lens_correction_data(exifData, img);
       _check_linear_response_limit(exifData, img);
+      _check_forward_matrix(exifData, img);
       _check_highlight_preservation(exifData, img);
     }
     return;
@@ -2240,21 +2395,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     // Read embedded color matrix and DNG related tags.
     if(FIND_EXIF_TAG("Exif.Image.DNGVersion"))
     {
-      gboolean missing_sample = FALSE;
-      gboolean modified_dng = FALSE;
-
-      // All known camera vendors writing native dng files support this tag according to specs.
-      if(FIND_EXIF_TAG("Exif.Image.OriginalRawFileName"))
-      {
-        std::string str = pos->print(&exifData);
-        gchar *name = g_ascii_strup(str.c_str(), str.length());
-        modified_dng = !g_str_has_suffix(name, ".DNG");
-        g_free(name);
-      }
-
       // initialize matrixes and data with noop / defaults
       float CM[3][9];
-      float FM[3][9];
       float CC[3][9];
       float AB[9];
 
@@ -2263,12 +2405,11 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
           for(int x = 0; x < 3; x++)
           {
             const int i = 3 * y + x;
-            CM[k][i] = FM[k][i] = CC[k][i] = AB[i] = x == y ? 1.0f : 0.0f;
+            CM[k][i] = CC[k][i] = AB[i] = x == y ? 1.0f : 0.0f;
           }
 
       // flags about what we got as exif tags
       gboolean has_CM[3] = { FALSE, FALSE, FALSE };
-      gboolean has_FM[3] = { FALSE, FALSE, FALSE };
       gboolean has_CC[3] = { FALSE, FALSE, FALSE };
       gboolean has_AB = FALSE;
 
@@ -2315,14 +2456,6 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
           for(int i = 0; i < 9; i++) CC[0][i] = cc1_pos->toFloat(i);
           has_CC[0] = TRUE;
         }
-
-        Exiv2::ExifData::const_iterator fm1_pos =
-          exifData.findKey(Exiv2::ExifKey("Exif.Image.ForwardMatrix1"));
-        if(fm1_pos != exifData.end() && fm1_pos->count() == 9)
-        {
-          for(int i = 0; i < 9; i++) FM[0][i] = fm1_pos->toFloat(i);
-          has_FM[0] = TRUE;
-        }
       }
 
       Exiv2::ExifData::const_iterator cm2_pos =
@@ -2338,14 +2471,6 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         {
           for(int i = 0; i < 9; i++) CC[1][i] = cc2_pos->toFloat(i);
           has_CC[1] = TRUE;
-        }
-
-        Exiv2::ExifData::const_iterator fm2_pos =
-          exifData.findKey(Exiv2::ExifKey("Exif.Image.ForwardMatrix2"));
-        if(fm2_pos != exifData.end() && fm2_pos->count() == 9)
-        {
-          for(int i = 0; i < 9; i++) FM[1][i] = fm2_pos->toFloat(i);
-          has_FM[1] = TRUE;
         }
       }
 
@@ -2364,14 +2489,6 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
           for(int i = 0; i < 9; i++) CC[2][i] = cc3_pos->toFloat(i);
           has_CC[2] = TRUE;
         }
-
-        Exiv2::ExifData::const_iterator fm3_pos =
-          exifData.findKey(Exiv2::ExifKey("Exif.Image.ForwardMatrix3"));
-        if(fm3_pos != exifData.end() && fm3_pos->count() == 9)
-        {
-          for(int i = 0; i < 9; i++) FM[2][i] = fm3_pos->toFloat(i);
-          has_FM[2] = TRUE;
-        }
       }
 #endif
 
@@ -2381,17 +2498,13 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
       for(int k = 0; k < 3; k++)
       {
-        const gboolean anymat = has_CM[k] || has_CC[k] || has_FM[k];
+        const gboolean anymat = has_CM[k] || has_CC[k];
 
-        // Currently dt does not support DT_LS_Other so we do a fallback but backreport and request samples
+        // Currently dt does not support DT_LS_Other so we log this
         if(illu[k] == DT_LS_Other)
         {
-          if(!modified_dng)
-          {
-            dt_print(DT_DEBUG_IMAGEIO, "detected not-implemented OtherIlluminant in `%s`", img->filename);
-            missing_sample = TRUE;
-          }
           illu[k] = DT_LS_D65;
+          dt_print(DT_DEBUG_IMAGEIO, "undefined CalibrationIlluminant%i falling back to D65", k+1);
         }
 
         if(illu[k] != DT_LS_Unknown)
@@ -2401,7 +2514,6 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
         if(has_CM[k]) _print_matrix_data("has ColorMatrix", k+1, CM[k]);
         if(has_CC[k]) _print_matrix_data("has CameraCalibration", k+1, CC[k]);
-        if(has_FM[k]) _print_matrix_data("has ForwardMatrix", k+1, FM[k]);
       }
 
       // Find the best illuminant
@@ -2410,8 +2522,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       int sel_illu = -1;
 
       int sel_temp = 0;
-      int found_illus = 0;
-      int min_temp = 100000;
+       int min_temp = 100000;
       const int D65temp = _illu_to_temp(DT_LS_D65);
       int delta_min = D65temp;
 
@@ -2430,17 +2541,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
             sel_temp = temp_cur;
             delta_min = delta_cur;
           }
-          found_illus++;
         }
       }
-
-      const gboolean interpolate = found_illus > 1 && sel_temp > D65temp && min_temp < D65temp && min_temp > 0;
-      if(interpolate && !modified_dng)
-      {
-        dt_print(DT_DEBUG_IMAGEIO, "special exif illuminants in `%s`", img->filename);
-        missing_sample = TRUE;
-      }
-
 
       // If there is none defined we'll use the first valid color matrix assuming it's D65 (keep dt < 3.8 behavior).
       if(sel_illu == -1)
@@ -2461,17 +2563,12 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       if(sel_illu > -1 && sel_illu < 3)
       {
         const dt_dng_illuminant_t illuminant = illu[sel_illu];
-        const gboolean forward_suggested = has_FM[sel_illu];
-        if(forward_suggested && !modified_dng)
-          missing_sample = TRUE;
+
         dt_print(DT_DEBUG_IMAGEIO,
-          "[exif] %s%s%s: selected from  [1] %s (%iK), [2] %s (%iK), [3] %s (%iK)",
-                 _illu_to_str(illuminant),
-                interpolate ? " (should be interpolated)" : "",
-                forward_suggested ? " (forward)" : "",
-                 _illu_to_str(illu[0]), _illu_to_temp(illu[0]),
-                 _illu_to_str(illu[1]), _illu_to_temp(illu[1]),
-                 _illu_to_str(illu[2]), _illu_to_temp(illu[2]));
+          "closest illuminant is %s: from [1] %s, [2] %s%s%s",
+                  _illu_to_str(illuminant),
+                  _illu_to_str(illu[0]), _illu_to_str(illu[1]),
+                  illu[2] ? ", [3] " : "", illu[2] ? _illu_to_str(illu[2]) : "" );
 
         float DT_ALIGNED_ARRAY cameratoXYZ[9];
         float DT_ALIGNED_ARRAY ABxCC[9];
@@ -2480,15 +2577,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         mat3mul(cameratoXYZ, ABxCC, CM[sel_illu]);
 
         mat3mul(img->d65_color_matrix, illuminant_data[illuminant].CA, cameratoXYZ);
-        _print_matrix_data("dt_image_t d65_color_matrix", 0, img->d65_color_matrix);
-      }
-      if(missing_sample)
-      {
-        guint tagid = 0;
-        char tagname[32];
-        snprintf(tagname, sizeof(tagname), "darktable|issue|no-samples");
-        dt_tag_new(tagname, &tagid);
-        dt_tag_attach(tagid, img->id, FALSE, FALSE);
+        _print_matrix_data("img d65_color_matrix", 0, img->d65_color_matrix);
       }
     }
 

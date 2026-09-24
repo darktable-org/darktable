@@ -320,8 +320,9 @@ typedef struct dt_image_t
 
   dt_iop_buffer_dsc_t buf_dsc;
 
-  float d65_color_matrix[9]; // the 3x3 matrix embedded in some DNGs
-  uint8_t *profile;          // embedded profile, for example from JPEGs
+  float d65_color_matrix[9];                // the 3x3 matrix embedded in some DNGs
+  float dng_forward_matrix[9];              // the 3x3 forward matrix supplied in some DNG files
+  uint8_t *profile;             // embedded profile, for example from JPEGs
   uint32_t profile_size;
   dt_image_colorspace_t colorspace; // the colorspace that is
                                     // specified in exif. mostly used
