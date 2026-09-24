@@ -321,13 +321,6 @@ gboolean dt_opencl_avoid_atomics(const int devid)
     : (cl->dev[devid].atomic_support & DT_OPENCL_ATOMIC_INT32) == DT_OPENCL_ATOMIC_NONE;
 }
 
-void dt_opencl_micro_nap(const int devid)
-{
-  const dt_opencl_t *cl = darktable.opencl;
-  if(_cldev_running(devid))
-    dt_iop_nap(cl->dev[devid].micro_nap);
-}
-
 gboolean dt_opencl_unified_memory(const int devid)
 {
   const dt_opencl_t *cl = darktable.opencl;
@@ -363,32 +356,25 @@ static void _opencl_write_device_config(const int devid)
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
   g_snprintf(key, sizeof(key), "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
-  g_snprintf(dat, sizeof(dat), "%i %i %i %i %i %.3f %.3f",
-    cl->dev[devid].micro_nap,
-    0,
-
-    // this used to define the number of slots, now a bool and using DT_OPENCL_EVENTS if true
-    cl->dev[devid].use_events ? 1 : 0,
-    cl->dev[devid].asyncmode,
-    cl->dev[devid].disabled,
-    0.0f,
+  g_snprintf(dat, sizeof(dat), "events:%s asyncmode:%s device:%s unifraction: %.3f",
+    cl->dev[devid].use_events ? "on" : "off",
+    cl->dev[devid].asyncmode ? "on" : "off",
+    cl->dev[devid].disabled ? "off" : "on",
     cl->dev[devid].unified_fraction);
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
 
-  // write per device list of modules that should not use OpenCL
+  // Write per device list of modules that should not use OpenCL
   g_snprintf(key, sizeof(key), "%s%s_nocl", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
   g_snprintf(dat, sizeof(dat), "%s", cl->dev[devid].avoid ? cl->dev[devid].avoid : "");
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
 
-  // Also take care of extended device data, these are not only device
-  // specific but also depend on the devid to support systems with two
-  // similar cards.
+  // Take care of headroom, this is defined per device and devid to support systems with two similar cards.
   g_snprintf(key, sizeof(key), "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
-  g_snprintf(dat, sizeof(dat), "%i", cl->dev[devid].headroom);
+  g_snprintf(dat, sizeof(dat), "headroom: %i", cl->dev[devid].headroom);
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
@@ -430,45 +416,39 @@ static gboolean _opencl_read_device_config(const int devid)
   if(existing_device)
   {
     const gchar *dat = dt_conf_get_string_const(key);
-    int micro_nap;
-    int pinned_memory;
-    int events;
-    int asyncmode;
-    int disabled;
-    float advantage;
+    char dummy[100];
+    char events[100];
+    char asyncmode[100];
+    char disabled[100];
     float unified_fraction;
-    sscanf(dat, "%i %i %i %i %i %f %f",
-           &micro_nap, &pinned_memory, &events, &asyncmode, &disabled, &advantage, &unified_fraction);
+    sscanf(dat, "%s %s %s %s %f",
+           events, asyncmode, disabled, dummy, &unified_fraction);
 
-    cldid->use_events = events ? TRUE : FALSE;
-    cldid->micro_nap = micro_nap;
-    cldid->asyncmode = asyncmode ? TRUE : FALSE;
-    cldid->disabled = disabled && dt_conf_get_int("performance_configuration_version_completed") != 19 ? TRUE : FALSE;
+    cldid->use_events = g_strcmp0(events, "events:on") == 0;
+    cldid->asyncmode = g_strcmp0(asyncmode, "asyncmode:on") == 0;
+    cldid->disabled = g_strcmp0(disabled, "device:off") == 0;
     cldid->unified_fraction = unified_fraction;
   }
 
   // do some safety housekeeping
-  if((cldid->unified_fraction < 0.05f) || (cldid->unified_fraction > 0.5f))
+  if((cldid->unified_fraction < 0.02f) || (cldid->unified_fraction > 0.5f))
     cldid->unified_fraction = 0.25f;
-  if((cldid->micro_nap < 0) || (cldid->micro_nap > 1000000))
-    cldid->micro_nap = 250;
 
-  // Also read the per-device list of modules to be avoided for OpenCL
+  // Read the per-device list of modules to be avoided for OpenCL
   g_snprintf(key, sizeof(key), "%s%s_nocl", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
   cldid->avoid = dt_conf_key_not_empty(key) ? dt_conf_get_string(key) : NULL;
 
-  // Also take care of extended device data, these are not only device
-  // specific but also depend on the devid
+  // Take care of headroom
   g_snprintf(key, sizeof(key), "%s%s_id%i", DT_CLDEVICE_HEAD, cldid->cname, devid);
   if(dt_conf_key_not_empty(key))
   {
     const gchar *dat = dt_conf_get_string_const(key);
+    char dummy[100];
     int headroom;
-    sscanf(dat, "%i", &headroom);
+    sscanf(dat, "%s %i", dummy, &headroom);
     if(headroom > 0) cldid->headroom = headroom;
   }
-  else // this is used if updating to 4.0 or fresh installs; see
-       // commenting _opencl_get_unused_device_mem()
+  else
     cldid->headroom = DT_OPENCL_DEFAULT_HEADROOM;
 
 #if defined(WIN32)
@@ -531,7 +511,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].used_available = 0;
   // setting sane/conservative defaults at first
   cl->dev[dev].unified_fraction = 0.25f;
-  cl->dev[dev].micro_nap = 250;
   cl->dev[dev].unified_memory = FALSE;
   cl->dev[dev].clroundup_wd = 16;
   cl->dev[dev].clroundup_ht = 16;
@@ -769,12 +748,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     cl->dev[dev].cuda = TRUE;
 #endif
 
-  const gboolean is_cpu_device = (type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU;
   const gboolean is_custom_device = type & CL_DEVICE_TYPE_CUSTOM;
-
-  // micro_nap can be made less conservative on current systems at least if not on-CPU
-  if(newdevice)
-    cl->dev[dev].micro_nap = (is_cpu_device) ? 1000 : 250;
 
   dt_print_nts(DT_DEBUG_OPENCL, "   DRIVER VERSION:           %s\n", driverversion);
   dt_print_nts(DT_DEBUG_OPENCL, "   DEVICE VERSION:           %s API=%s\n",
@@ -986,7 +960,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
   dt_loc_get_user_cache_dir(dtcache, PATH_MAX * sizeof(char));
 
-  int len = MIN(strlen(fullname),1024 * sizeof(char));;
+  int len = MIN(strlen(fullname),1024 * sizeof(char));
   int j = 0;
   // remove non-alphanumeric chars from device name
   for(int i = 0; i < len; i++)
@@ -1319,12 +1293,16 @@ void dt_opencl_init(dt_opencl_t *cl,
     (DT_OPENCL_MAX_PLATFORMS, all_platforms, &num_platforms);
   if(err != CL_SUCCESS)
   {
+    dt_control_log(_("couldn't get platform ID.\n"
+                     "check your OpenCL ICD loader (ocl-icd)"));
     dt_print_nts(DT_DEBUG_OPENCL,
-             "[opencl_init] could not get platforms IDs: %s\n", cl_errstr(err));
+             "[opencl_init] could not get platforms IDs: %s. Check your ICD loader\n", cl_errstr(err));
     goto finally;
   }
   if(num_platforms == 0)
   {
+    dt_control_log(_("no valid OpenCL platform found.\n"
+                     "check your OpenCL ICD loader (ocl-icd)"));
     dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] no opencl platform available\n");
     goto finally;
   }
@@ -1589,9 +1567,7 @@ finally:
     const char *oldchecksum = dt_conf_get_string_const("opencl_checksum");
 
     const gboolean manually = strcasecmp(oldchecksum, "OFF") == 0;
-    const gboolean newcheck = ((strcmp(oldchecksum, checksum) != 0)
-                               || (strlen(oldchecksum) < 1));
-
+    const gboolean newcheck = g_strcmp0(oldchecksum, checksum) != 0;
     // check if the list of existing OpenCL devices (indicated by
     // checksum != oldchecksum) has changed
     if(newcheck && !manually)

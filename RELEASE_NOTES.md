@@ -191,7 +191,17 @@ changes (where available).
 - pixelpipe dump files requested via cli switches are now written
   in ppm or pgm format.
 
-- OpenCL fast/non-fast kernels are cached at different locations.
+- The OpenCL configs had a bump to v7 and were simplified for user edits.
+  For a device "XXXX" we now have 3 configs:
+    cldevice_v7_XXXX=events:on asyncmode:off device:on unifraction: 0.250
+      For events, asyncmode and device it can be on/off.
+      (enable a disabled device (marked as device:off) by editing to device:on)
+      The unifraction is a float and can be chosen by the user in the 0.02-0.5 range
+    cldevice_v7_XXXX_id0=headroom: 600
+      You can modify the headroom if "tunehead" is available
+    cldevice_v7_XXXX_nocl=
+      List of modules that will not process it's OpenCL code.
+  OpenCL fast/default kernels are cached at different locations.
 
 - The aspect ratio chosen on the camera is now applied as a crop when
   the raw was left uncropped, so a frame shot at 1:1 or 16:9 opens

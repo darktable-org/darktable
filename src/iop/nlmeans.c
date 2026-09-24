@@ -304,9 +304,6 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       if(err != CL_SUCCESS) goto error;
 
       dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
-
-      // indirectly give gpu some air to breathe (and to do display related stuff)
-      dt_opencl_micro_nap(devid);
     }
 
   // normalize and blend
