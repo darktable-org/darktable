@@ -197,11 +197,13 @@ changes (where available).
   per-channel radial correction ahead of the 0x0119 distortion
   correction added in the previous cycle. The correction is applied at
   half the decoded strength, which is what matches the camera's own
-  rendering; measured against in-camera JPEGs across 18 frames and 6
-  lenses, the full decoded value overcorrects by about a factor of two.
-  Bodies whose coefficients have not been characterised are corrected
-  for distortion only, and the lens correction module now says so
-  rather than silently leaving the chromatic aberration uncorrected
+  rendering; measured against in-camera JPEGs across 81 frames from 9
+  bodies, the full decoded value overcorrects by about a factor of two.
+  High resolution (sensor-shift) frames are covered, as are the normal
+  frames from the same bodies. Bodies whose coefficients have not been
+  characterised are corrected for distortion only, and the lens
+  correction module now says so rather than silently leaving the
+  chromatic aberration uncorrected
 
 - Fixed a trashing error dialog when deleting a virgin duplicate of an
   image while sidecar creation is set to "after edit".
