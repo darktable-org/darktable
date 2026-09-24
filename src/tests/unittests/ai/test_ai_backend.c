@@ -38,6 +38,10 @@
 
 #include "ai/backend.h"
 
+#ifdef _WIN32
+#include "win/main_wrapper.h"
+#endif
+
 #ifndef TEST_MODEL_DIR
 #error "TEST_MODEL_DIR must be defined by CMake"
 #endif
