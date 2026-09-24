@@ -207,6 +207,9 @@ changes (where available).
 
 ## Bug Fixes
 
+- Fixed an OpenCL bug causing Lab colorspace overlays showing as solid
+  colors.
+
 - Fixed a trashing error dialog when deleting a virgin duplicate of an
   image while sidecar creation is set to "after edit".
 
