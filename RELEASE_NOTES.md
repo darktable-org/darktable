@@ -213,6 +213,9 @@ changes (where available).
 
 ## Bug Fixes
 
+- Do not convert the pipe input in place for blending, which may result
+  in a corrputed buffer.
+
 - Fixed a trashing error dialog when deleting a virgin duplicate of an
   image while sidecar creation is set to "after edit".
 
