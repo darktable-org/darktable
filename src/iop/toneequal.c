@@ -1625,17 +1625,20 @@ int process_cl(dt_iop_module_t *self,
   gboolean cached = FALSE;
   float *luminance = NULL;
 
+  gboolean mask_display = FALSE;
   if(self->dev->gui_attached && g)
   {
+    // gui_lock is recursive, so the dt_preview_data_*() calls below may
+    // take it again from inside this section
+    dt_iop_gui_enter_critical_section(self);
+    mask_display = g->mask_display;
     // If the module instance has changed order in the pipe, invalidate the caches
     if(g->pipe_order != piece->module->iop_order)
     {
-      dt_iop_gui_enter_critical_section(self);
       g->ui_preview_hash = DT_INVALID_HASH;
       g->pipe_order = piece->module->iop_order;
       g->luminance_valid = FALSE;
       g->histogram_valid = FALSE;
-      dt_iop_gui_leave_critical_section(self);
       dt_preview_data_invalidate(&g->pd);
     }
 
@@ -1652,8 +1655,7 @@ int process_cl(dt_iop_module_t *self,
       // g->ui_preview_hash still matches, so invalidate it here: should the
       // pipe fall back to the CPU, it has to recompute the mask rather than
       // reuse a host buffer this path never filled.
-      const dt_hash_t invalid = DT_INVALID_HASH;
-      hash_set_get(&invalid, &g->ui_preview_hash, &self->gui_lock);
+      g->ui_preview_hash = DT_INVALID_HASH;
     }
     else if(dt_pipe_is_preview(piece->pipe))
     {
@@ -1664,6 +1666,7 @@ int process_cl(dt_iop_module_t *self,
                                          _toneeq_preview_resized, self);
       cached = TRUE;
     }
+    dt_iop_gui_leave_critical_section(self);
 
     if(cached && !luminance)
     {
@@ -1689,26 +1692,27 @@ int process_cl(dt_iop_module_t *self,
     const dt_hash_t saved_hash = dt_preview_data_get_hash(&g->pd);
 
     dt_iop_gui_enter_critical_section(self);
-    const gboolean luminance_valid = g->luminance_valid;
-    dt_iop_gui_leave_critical_section(self);
-
-    if(saved_hash != hash || !luminance_valid)
+    const gboolean stale = (saved_hash != hash) || !g->luminance_valid;
+    if(stale)
     {
-      /* copy back only if upstream pipe state has changed */
-      // Flag the cache as being recomputed so the GUI threads never
-      // read a partially filled buffer, then commit hash + validity
-      // once the data is ready.
-      dt_iop_gui_enter_critical_section(self);
+      // Flag the cache as being recomputed so the GUI threads never read a partially filled buffer,
+      // then commit hash + validity once the data is ready.
       g->histogram_valid = FALSE;
       g->luminance_valid = FALSE;
-      dt_iop_gui_leave_critical_section(self);
+    }
+    dt_iop_gui_leave_critical_section(self);
 
+    if(stale)
+    {
+      // Copy back only if upstream pipe state has changed, unlike the CPU fill, keep this
+      // outside the critical section: the read waits for every kernel queued before it, and a
+      // GUI thread blocked on gui_lock would wait for all of that GPU work too
       err = dt_opencl_read_buffer_from_device(devid, luminance, dev_luminance,
                                               0, num_elem * sizeof(float), TRUE);
       if(err != CL_SUCCESS) goto error;
-      dt_preview_data_set_hash_value(&g->pd, hash);
 
       dt_iop_gui_enter_critical_section(self);
+      dt_preview_data_set_hash_value(&g->pd, hash);
       g->luminance_valid = TRUE;
       dt_iop_gui_leave_critical_section(self);
       dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order, "toneequal: ");
@@ -1722,7 +1726,7 @@ int process_cl(dt_iop_module_t *self,
   const int offset_y = (roi_in->y < roi_out->y) ? roi_out->y - roi_in->y : 0;
 
   // Display output
-  if(self->dev->gui_attached && g && dt_pipe_is_full(piece->pipe) && g->mask_display)
+  if(self->dev->gui_attached && g && dt_pipe_is_full(piece->pipe) && mask_display)
   {
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_display_mask,
             out_width, out_height,
