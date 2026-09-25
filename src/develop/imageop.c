@@ -407,7 +407,6 @@ gboolean dt_iop_load_module_by_so(dt_iop_module_t *module,
   pthread_mutexattr_init(&recursive_locking);
   pthread_mutexattr_settype(&recursive_locking, PTHREAD_MUTEX_RECURSIVE);
   dt_pthread_mutex_init(&module->raster_mask.source.users_lock, &recursive_locking);
-  pthread_mutexattr_destroy(&recursive_locking);
   module->raster_mask.source.masks =
     g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
   module->raster_mask.sink.source = NULL;
