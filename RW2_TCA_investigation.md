@@ -6485,8 +6485,8 @@ the ones the corpus is richest in.
 
 **The two references disagree on level for context 0**, 0.72 from SILKYPIX
 against 0.38 from the camera JPEGs. The SILKYPIX files are all one lens, the
-45-150, while the corpus frames are many lenses, so a **lens dependence** on top
-of the context dependence is the obvious candidate and is not excluded by
+45-150, while the corpus frames are many lenses, so a **lens dependence** on
+top of the context dependence is the obvious candidate and is not excluded by
 anything measured so far.
 
 No structural law explains the spread. Strength does not track the tuple scale,
