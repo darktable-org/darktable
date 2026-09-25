@@ -6410,7 +6410,8 @@ payload words just as context 0 does, which is qualitative corroboration of
 those tables from outside our own decode.
 
 **But SILKYPIX is not itself residual-free**, and that is the finding that
-keeps the shipped constant where it is. Measuring its own output at the outer band:
+keeps the shipped constant where it is. Measuring its own output at the outer
+band:
 
     file          blue residual   red residual
     G9 45mm          +0.112          -0.212
