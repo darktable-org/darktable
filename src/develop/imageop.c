@@ -2608,14 +2608,14 @@ static void _gui_reset_clicked(GtkGestureSingle *gesture,
 }
 
 // kept for direct callers from accelerators
-static gboolean _presets_popup_callback(GtkButton *button,
+static gboolean _presets_popup_callback(GtkWidget *button,
                                         GdkEventButton *event,
                                         dt_iop_module_t *module)
 {
   const gboolean disabled = !module->default_enabled && module->hide_enable_button;
   if(disabled) return FALSE;
 
-  dt_gui_presets_popup_menu_show_for_module(GTK_WIDGET(button), module);
+  dt_gui_presets_popup_menu_show_for_module(button, module);
 
   // dt_gui_menu_popup(menu,
   //                   GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
@@ -2978,7 +2978,8 @@ static void _iop_plugin_header_released(GtkGestureSingle *gesture,
   }
   else if(button == GDK_BUTTON_SECONDARY)
   {
-    _presets_popup_callback(NULL, NULL, module);
+    GtkWidget *widget = dt_gui_get_widget(gesture); 
+    _presets_popup_callback(widget, NULL, module);
     return;
   }
 }
@@ -4465,7 +4466,7 @@ static float _action_process(gpointer target,
       {
       case DT_ACTION_EFFECT_ACTIVATE:
         if(module->presets_button)
-          _presets_popup_callback(NULL, NULL, module);
+          _presets_popup_callback(module->presets_button, NULL, module);
         break;
       case DT_ACTION_EFFECT_NEXT:
         move_size *= -1;
