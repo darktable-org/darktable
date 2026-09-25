@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-19 17:59+0200\n"
-"PO-Revision-Date: 2026-09-26 02:17+0900\n"
+"PO-Revision-Date: 2026-09-26 02:18+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -34018,7 +34018,7 @@ msgstr "AI %s モデルの読み込みに失敗しました"
 
 #: ../src/libs/neural_restore.c:1642
 msgid "neural restore: the output pattern expands to nothing"
-msgstr "ニューラル復元：出力パターンを展開した結果が空になります"
+msgstr "ニューラル復元：出力パターンを展開した結果、空になります"
 
 #: ../src/libs/neural_restore.c:1654
 msgid "neural restore: cannot create output directory"
