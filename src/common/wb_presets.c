@@ -96,7 +96,7 @@ int wb_presets_size = 10000;
 int wb_presets_count = 0;
 
 #define _ERROR(...)     {\
-                          dt_print(DT_DEBUG_CONTROL, "[wb_presets] error: " __VA_ARGS__);\
+                          dt_print(DT_DEBUG_ALWAYS, "[wb_presets] error: " __VA_ARGS__);\
                           valid = FALSE; \
                           goto end;\
                         }
