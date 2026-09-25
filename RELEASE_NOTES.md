@@ -156,6 +156,8 @@ changes (where available).
   demosaic onwards, so adjusting a mask or toggling the mask overlay
   recomputed most of the pipeline each time.
 
+- Reduced memory requirements of the mask feathering guided filter
+
 - Separated the demosaicer's crop-and-scale step into a new hidden
   module to improve cache efficiency and UI responsiveness.
 
