@@ -18,9 +18,11 @@
 
 #include "backend.h"
 #include "common/darktable.h"
+#include "common/file_location.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <onnxruntime_c_api.h>
 #include <inttypes.h>
 #include <limits.h>
@@ -1702,12 +1704,116 @@ static gchar *_backend_cache_fingerprint(dt_ai_provider_t provider,
   }
 
   // suffix ORT version so an upgrade invalidates stale artifacts
-  gchar *ort = g_ort.version ? g_strdup(g_ort.version) : g_strdup("ortunknown");
+  gchar *ort = g_ort.version ? g_strdup(g_ort.version) : g_strdup("unknown");
   _alnum_inplace(ort);
   gchar *full = g_strdup_printf("%s_ort%s", base, ort);
   g_free(base);
   g_free(ort);
   return full;
+}
+
+// GPU crash guard
+//
+// the vendor runtime abort()s inside CreateSession while compiling a
+// model: nothing to catch, and darktablerc is only saved at exit
+// (conf.c:912). leave a file behind for the next start to find
+
+// arm depth per provider. model loads are not serialized against each
+// other (backend_common.c:574 loads unlocked, and masks/object.c:1571
+// and libs/neural_restore.c:3647 load from their own threads), so the
+// marker must outlive every load that is still armed
+static gint _gpu_crash_depth[DT_AI_PROVIDER_COUNT];
+G_LOCK_DEFINE_STATIC(_gpu_crash);
+
+static gchar *_gpu_crash_marker(const dt_ai_provider_t provider)
+{
+  // the sentinel is a define rather than an enumerator, so it cannot be a
+  // case below. compare in the enum's own type: it may be unsigned
+  if(provider == (dt_ai_provider_t)DT_AI_PROVIDER_CONFIGURED) return NULL;
+
+  // every enumerator is listed and there is no default, so -Wswitch flags
+  // this function when a provider is added to the enum
+  switch(provider)
+  {
+    case DT_AI_PROVIDER_COREML:
+    case DT_AI_PROVIDER_CUDA:
+    case DT_AI_PROVIDER_MIGRAPHX:
+    case DT_AI_PROVIDER_OPENVINO:
+    case DT_AI_PROVIDER_DIRECTML:
+      break;
+    case DT_AI_PROVIDER_AUTO:
+    case DT_AI_PROVIDER_CPU:
+    case DT_AI_PROVIDER_COUNT:
+      return NULL;
+  }
+  char configdir[PATH_MAX] = { 0 };
+  dt_loc_get_user_config_dir(configdir, sizeof(configdir));
+  // config_string, not the display name: the latter carries spaces
+  gchar *name = g_ascii_strdown(dt_ai_providers[provider].config_string, -1);
+  // the ORT version makes the marker stale on an upgrade, so a runtime
+  // that fixed the crash is tried again without the user clearing anything
+  gchar *ort = g_strdup(g_ort.version ? g_ort.version : "unknown");
+  _alnum_inplace(ort);
+  gchar *file = g_strdup_printf("ai_crash_%s_ort%s", name, ort);
+  gchar *path = g_build_filename(configdir, file, NULL);
+  g_free(name);
+  g_free(ort);
+  g_free(file);
+  return path;
+}
+
+static void _gpu_crash_arm(const dt_ai_provider_t provider)
+{
+  gchar *path = _gpu_crash_marker(provider);
+  if(!path) return;
+  G_LOCK(_gpu_crash);
+  if(_gpu_crash_depth[provider]++ == 0)
+  {
+    GError *err = NULL;
+    if(!g_file_set_contents(path, "", 0, &err))
+      dt_print(DT_DEBUG_ALWAYS,
+               "[darktable_ai] cannot write GPU crash marker '%s': %s",
+               path, err ? err->message : "unknown error");
+    g_clear_error(&err);
+  }
+  G_UNLOCK(_gpu_crash);
+  g_free(path);
+}
+
+static void _gpu_crash_disarm(const dt_ai_provider_t provider)
+{
+  gchar *path = _gpu_crash_marker(provider);
+  if(!path) return;
+  G_LOCK(_gpu_crash);
+  if(--_gpu_crash_depth[provider] == 0)
+    g_unlink(path);
+  G_UNLOCK(_gpu_crash);
+  g_free(path);
+}
+
+// TRUE when the provider may be used: a marker left behind means the last
+// compile on it never returned
+static gboolean _gpu_crash_check(const dt_ai_provider_t provider)
+{
+  gchar *path = _gpu_crash_marker(provider);
+  if(!path) return TRUE;
+
+  G_LOCK(_gpu_crash);
+  // a marker another thread is holding armed says nothing about a crash
+  const gboolean crashed = _gpu_crash_depth[provider] == 0
+                           && g_file_test(path, G_FILE_TEST_IS_REGULAR);
+  G_UNLOCK(_gpu_crash);
+
+  const char *pname = dt_ai_providers[provider].display_name;
+  if(crashed)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[darktable_ai] %s crashed last time, skipping it."
+             " delete '%s' to retry", pname, path);
+    dt_control_log(_("%s crashed darktable, AI is not using it"), pname);
+  }
+  g_free(path);
+  return !crashed;
 }
 
 // try to find and call an ORT execution provider function at runtime via
@@ -2169,17 +2275,22 @@ static gboolean _try_dml(OrtSessionOptions *session_opts, int device_id)
 }
 #endif  // _WIN32
 
-static void
+// TRUE only when a GPU EP was really appended: the caller arms the crash
+// guard on that, so a refused or missing EP is never blamed for a crash
+static gboolean
 _enable_acceleration(OrtSessionOptions *session_opts,
                      dt_ai_provider_t provider,
                      uint32_t coreml_flags)
 {
+  if(!_gpu_crash_check(provider))
+    return FALSE;
+
   switch(provider)
   {
   case DT_AI_PROVIDER_CPU:
     // CPU only - don't enable any accelerator
     dt_print(DT_DEBUG_AI, "[darktable_ai] using CPU only (no hardware acceleration)");
-    break;
+    return FALSE;
 
   case DT_AI_PROVIDER_COREML:
 #if defined(__APPLE__)
@@ -2193,26 +2304,25 @@ _enable_acceleration(OrtSessionOptions *session_opts,
     const gboolean have_cache = dt_ai_backend_cache_dir(
       DT_AI_PROVIDER_COREML, fp, "_shared", coreml_cache, sizeof(coreml_cache));
     g_free(fp);
-    if(!_try_coreml_v2(session_opts, coreml_flags,
-                       have_cache ? coreml_cache : NULL))
-      _try_provider(
+    return _try_coreml_v2(session_opts, coreml_flags,
+                          have_cache ? coreml_cache : NULL)
+      || _try_provider(
         session_opts,
         "OrtSessionOptionsAppendExecutionProvider_CoreML",
         "Apple CoreML", NULL, coreml_flags, DT_AI_PROVIDER_COREML);
   }
 #else
     dt_print(DT_DEBUG_AI, "[darktable_ai] apple CoreML not available on this platform");
+    return FALSE;
 #endif
-    break;
 
   case DT_AI_PROVIDER_CUDA:
   {
     const int dev = _device_id_from_conf("plugins/ai/cuda_device_id",
                                          "DT_CUDA_DEVICE_ID");
-    if(!_try_cuda_v2(session_opts, dev))
-      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_CUDA",
-                    "NVIDIA CUDA", NULL, (uint32_t)dev, DT_AI_PROVIDER_CUDA);
-    break;
+    return _try_cuda_v2(session_opts, dev)
+      || _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_CUDA",
+                       "NVIDIA CUDA", NULL, (uint32_t)dev, DT_AI_PROVIDER_CUDA);
   }
 
   case DT_AI_PROVIDER_MIGRAPHX:
@@ -2223,33 +2333,32 @@ _enable_acceleration(OrtSessionOptions *session_opts,
     // per-session, so its cache path is passed inline here
     const int dev = _device_id_from_conf("plugins/ai/migraphx_device_id",
                                          "DT_MIGRAPHX_DEVICE_ID");
-    if(!_try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX",
-                      "AMD MIGraphX", NULL, (uint32_t)dev, DT_AI_PROVIDER_MIGRAPHX))
-      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_ROCM",
-                    "AMD ROCm (legacy)", NULL, (uint32_t)dev, DT_AI_PROVIDER_MIGRAPHX);
-    break;
+    return _try_provider(session_opts,
+                         "OrtSessionOptionsAppendExecutionProvider_MIGraphX",
+                         "AMD MIGraphX", NULL, (uint32_t)dev, DT_AI_PROVIDER_MIGRAPHX)
+      || _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_ROCM",
+                       "AMD ROCm (legacy)", NULL, (uint32_t)dev, DT_AI_PROVIDER_MIGRAPHX);
   }
 
   case DT_AI_PROVIDER_OPENVINO:
-    if(!_try_openvino_with_cache(session_opts))
-      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO",
-                    "Intel OpenVINO", "AUTO", 0, DT_AI_PROVIDER_OPENVINO);
-    break;
+    return _try_openvino_with_cache(session_opts)
+      || _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO",
+                       "Intel OpenVINO", "AUTO", 0, DT_AI_PROVIDER_OPENVINO);
 
   case DT_AI_PROVIDER_DIRECTML:
 #if defined(_WIN32)
   {
     const int dev = _device_id_from_conf("plugins/ai/dml_device_id",
                                          "DT_DML_DEVICE_ID");
-    if(!_try_dml(session_opts, dev))
-      _try_provider(session_opts,
-                    "OrtSessionOptionsAppendExecutionProvider_DML",
-                    "Windows DirectML", NULL, (uint32_t)dev, DT_AI_PROVIDER_DIRECTML);
+    return _try_dml(session_opts, dev)
+      || _try_provider(session_opts,
+                       "OrtSessionOptionsAppendExecutionProvider_DML",
+                       "Windows DirectML", NULL, (uint32_t)dev, DT_AI_PROVIDER_DIRECTML);
   }
 #else
     dt_print(DT_DEBUG_AI, "[darktable_ai] windows DirectML not available on this platform");
+    return FALSE;
 #endif
-    break;
 
   case DT_AI_PROVIDER_AUTO:
   default:
@@ -2258,7 +2367,7 @@ _enable_acceleration(OrtSessionOptions *session_opts,
     dt_print(DT_DEBUG_AI,
              "[darktable_ai] unexpected provider %d at _enable_acceleration "
              "— falling back to CPU", provider);
-    break;
+    return FALSE;
   }
 }
 
@@ -2284,6 +2393,13 @@ int dt_ai_probe_provider(dt_ai_provider_t provider)
   {
     const gint cached = g_atomic_int_get(&s_cache[provider]);
     if(cached >= 0) return cached;
+  }
+
+  // a provider that crashed the last compile must not be offered either
+  if(!_gpu_crash_check(provider))
+  {
+    if(provider < DT_AI_PROVIDER_COUNT) g_atomic_int_set(&s_cache[provider], 0);
+    return 0;
   }
 
   // ensure ORT API is initialized
@@ -2444,8 +2560,10 @@ dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
   }
 
   // optimize: enable hardware acceleration (AMD caches set at env init)
-  _enable_acceleration(session_opts, provider, ep_flags);
+  const gboolean on_gpu = _enable_acceleration(session_opts, provider, ep_flags);
 
+  // the vendor runtime can abort() in here rather than return an error
+  if(on_gpu) _gpu_crash_arm(provider);
 #ifdef _WIN32
   // on windows, CreateSession expects a wide character string
   wchar_t *onnx_path_wide = (wchar_t *)g_utf8_to_utf16(onnx_path, -1, NULL, NULL, NULL);
@@ -2453,6 +2571,7 @@ dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
 #else
   status = g_ort.api->CreateSession(g_ort.env, onnx_path, session_opts, &ctx->session);
 #endif
+  if(on_gpu) _gpu_crash_disarm(provider);
 
   // smart fallback: try progressively simpler configurations
   // 1. provider + BASIC optimization
@@ -2508,13 +2627,17 @@ dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
                                                   dim_overrides[i].value);
         if(s) g_ort.api->ReleaseStatus(s);
       }
-      if(fallbacks[fb].prov != DT_AI_PROVIDER_CPU)
-        _enable_acceleration(session_opts, fallbacks[fb].prov, ep_flags);
+      const gboolean fb_gpu =
+        fallbacks[fb].prov != DT_AI_PROVIDER_CPU
+        && _enable_acceleration(session_opts, fallbacks[fb].prov, ep_flags);
+      // the first fallback still runs on the GPU, so it can abort() too
+      if(fb_gpu) _gpu_crash_arm(fallbacks[fb].prov);
 #ifdef _WIN32
       status = g_ort.api->CreateSession(g_ort.env, onnx_path_wide, session_opts, &ctx->session);
 #else
       status = g_ort.api->CreateSession(g_ort.env, onnx_path, session_opts, &ctx->session);
 #endif
+      if(fb_gpu) _gpu_crash_disarm(fallbacks[fb].prov);
     }
   }
 
