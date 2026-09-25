@@ -1084,7 +1084,7 @@ dt_masks_intbuf_t *dt_masks_intbuf_init(const size_t size, const char *tag)
 
 
 static inline
-void dt_masks_intbuf_add2(dt_masks_intbuf_t *a, const int value1, const int value2)
+void dt_masks_intbuf_add_2(dt_masks_intbuf_t *a, const int value1, const int value2)
 {
   assert(a != NULL);
   assert(a->pos <= a->size);
