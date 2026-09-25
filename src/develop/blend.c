@@ -355,9 +355,14 @@ static size_t _get_post_operations(const dt_develop_blend_params_t *const bp,
   return index;
 }
 
-static inline int _get_required_w(const float radius, const float scale)
+/** Restrict the maximum window width to size of provided data.
+    Anything larger is just more maths without output difference.
+    Using sqrtf(scale) is a better approach to decrease perceived
+    differences (both in darkroom and when exporting in non HQ mode.
+*/
+static inline int _required_w(const float radius, const float scale, const int maxdim)
 {
-  return MAX(1, (int)(2.0f * radius * scale + 0.5f));
+  return MIN(maxdim, MAX(1, (int)ceilf(2.0f * radius * sqrtf(scale))));
 }
 
 /* Reminder: stability of the feathering guide filter depends on input data range
@@ -409,7 +414,7 @@ static void _develop_blend_process_feather(const float *const guide,
                                            const float scale,
                                            const float sqrt_eps)
 {
-  const int w = _get_required_w(feathering_radius, scale);
+  const int w = _required_w(feathering_radius, scale, (int)MAX(width, height));
 
   float *const restrict mask_bak = dt_alloc_align_float(width * height);
   if(mask_bak)
@@ -453,7 +458,7 @@ static void _develop_blend_process_mask_tone_curve(float *const restrict mask,
     /*  we don't want *very* small masking values possibly resulting from above maths
         so we make sure they above a threshold
     */
-    const float mval = cval > 1e-6 ? cval : 0.0f;
+    const float mval = cval > 1e-6f ? cval : 0.0f;
     mask[k] = CLIP(mval) * opacity;
   }
 }
@@ -1255,7 +1260,9 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
   if(!uniform && post_operations_size)
   {
     // post processing the mask (it will always be stored in dev_mask)
-    const int featherw = _get_required_w(d->feathering_radius, roi_out->scale / piece->iscale);
+    const int featherw = _required_w(d->feathering_radius,
+                                     roi_out->scale / piece->iscale,
+                                     MAX(owidth, oheight));
     const float sqrt_eps = _get_feathering_eps(piece);
     const float guide_weight = _get_guide_weight(piece);
 

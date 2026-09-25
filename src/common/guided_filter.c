@@ -93,7 +93,9 @@ static void _guided_filter_tiling(color_image imgg,
                                   const float min,
                                   const float max)
 {
-  const int overlap = dt_round_size(3 * w, 16);
+  // As the box filters can have subtle differences at the top/bottom
+  // overlaps we add some safety margin.
+  const int overlap = dt_round_size(2*w + 16, 16);
   const tile source = { MAX(target.left - overlap, 0),  MIN(target.right + overlap, imgg.width),
                         MAX(target.lower - overlap, 0), MIN(target.upper + overlap, imgg.height) };
   const int width = source.right - source.left;
@@ -477,7 +479,7 @@ static int _guided_filter_cl_impl(int devid,
   const int64_t img4_size = sizeof(float) * 4 * width * iheight;
   const int64_t available = allmem - 2 * img4_size;
   const int64_t per_line = (int64_t)width * 21 * sizeof(float);
-  const int overlap = 3 * w;
+  const int overlap = dt_round_size(2*w + 16, 16);
   const int tile_height = (int)(available / per_line);
   const int valid_rows = tile_height - 2 * overlap;
   const int num_tiles = (iheight + valid_rows -1) / valid_rows;
