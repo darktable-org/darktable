@@ -383,6 +383,8 @@ changes (where available).
 - Fixed the color calibration module not using the gray patch closest to
   middle gray on the Datacolor SpyderCheckr 48 and Photo.
 
+- Fixed OpenCL support for recent Intel drivers.
+
 ## Lua
 
 ### API Version
