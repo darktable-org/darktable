@@ -142,6 +142,11 @@ changes (where available).
 - Some safety checks when switching to the quick access panel were
   added.
 
+- The list of color checker charts in the color calibration module now
+  has one entry for the Datacolor SpyderCheckr 24 and one for the
+  SpyderCheckr 48. As far as we know, there never was a separate 2018
+  version of these charts.
+
 ## Performance Improvements
 
 - Replaced quadratic XMP history writes with a linear algorithm.
@@ -367,6 +372,16 @@ changes (where available).
 - Fixed rotate and perspective sometimes not applying its automatic
   crop when the rotation was changed (e.g. with a shortcut) before the
   module had been enabled, leaving empty corners in the image.
+
+- Corrected the reference colors of the Datacolor SpyderCheckr Photo in
+  the color calibration module. Existing calibrations are not updated.
+  Profile the chart again for a more accurate calibration.
+
+- Fixed the color calibration module swapping the white and middle gray
+  reference patches on the Datacolor SpyderCheckr Photo.
+
+- Fixed the color calibration module not using the gray patch closest to
+  middle gray on the Datacolor SpyderCheckr 48 and Photo.
 
 ## Lua
 
