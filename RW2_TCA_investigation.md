@@ -6393,8 +6393,8 @@ ones would also exercise a second radius context.
 
 Three more triplets, all on files whose distortion is disabled so the raw and
 output frames coincide, extending session 49 to four files, two bodies and two
-radius contexts. Bootstrapping over *files*, which respects that bins within one
-file share a scene, the fraction of the instructed correction that SILKYPIX
+radius contexts. Bootstrapping over *files*, which respects that bins within
+one file share a scene, the fraction of the instructed correction that SILKYPIX
 applies is **0.65, with a 16th-to-84th range of 0.56 to 0.71**:
 
     file                     ctx   fraction
@@ -6409,8 +6409,8 @@ independent test of a **second matrix set**: context 2 responds linearly to the
 payload words just as context 0 does, which is qualitative corroboration of
 those tables from outside our own decode.
 
-**But SILKYPIX is not itself residual-free**, and that is the finding that keeps
-the shipped constant where it is. Measuring its own output at the outer band:
+**But SILKYPIX is not itself residual-free**, and that is the finding that
+keeps the shipped constant where it is. Measuring its own output at the outer band:
 
     file          blue residual   red residual
     G9 45mm          +0.112          -0.212
