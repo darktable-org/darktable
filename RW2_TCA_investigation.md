@@ -6389,6 +6389,68 @@ constant stays at 0.5 pending more files: six in the corpus have distortion
 disabled, all the 45-150 at 45, 97 and 150 mm on a G9 and a GX80, and the GX80
 ones would also exercise a second radius context.
 
+### What SILKYPIX chooses is not the ideal (session 50)
+
+Three more triplets, all on files whose distortion is disabled so the raw and
+output frames coincide, extending session 49 to four files, two bodies and two
+radius contexts. Bootstrapping over *files*, which respects that bins within one
+file share a scene, the fraction of the instructed correction that SILKYPIX
+applies is **0.65, with a 16th-to-84th range of 0.56 to 0.71**:
+
+    file                     ctx   fraction
+    G9   45-150 at 45mm       0      0.65
+    G9   45-150 at 97mm       0      0.56
+    G9   45-150 at 150mm      0      0.84
+    GX80 45-150 at 45mm       2      0.43
+    pooled by channel                blue 0.64, red 0.65
+
+Blue and red agree closely in the pool, and the GX80 file is the first
+independent test of a **second matrix set**: context 2 responds linearly to the
+payload words just as context 0 does, which is qualitative corroboration of
+those tables from outside our own decode.
+
+**But SILKYPIX is not itself residual-free**, and that is the finding that keeps
+the shipped constant where it is. Measuring its own output at the outer band:
+
+    file          blue residual   red residual
+    G9 45mm          +0.112          -0.212
+    G9 150mm         +0.333          -0.118
+    GX80 45mm        +0.010          -0.139
+
+It **undercorrects blue and overcorrects red**, by up to a third and a fifth of
+a pixel. So 0.65 is what SILKYPIX chooses, not what the image needs, and it
+cannot displace an estimate of the ideal.
+
+**Synthesis, and the decision.** Three references now exist, and they measure
+different things:
+
+- the **camera's own JPEG**, via the strength at which darktable's residual
+  crosses zero: 0.489 on MFT and 0.524 on full frame, sixteen frames across
+  many lenses and bodies. This is the only one that measures the *ideal*
+  directly, and a zero crossing cannot be moved by any multiplicative bias in
+  the instrument.
+- the **suppression-corrected ratio** of decoded correction to aberration
+  present: about 0.60.
+- **SILKYPIX**, a licensed third-party decoder of the same bytes: 0.65, while
+  overshooting red and undershooting blue.
+
+The shipped **0.5 stays**. It is the value the camera's own rendering implies,
+it sits at the conservative end of a 0.5 to 0.65 bracket, and the failure mode
+is asymmetric: overcorrection produces the reversed fringing users notice and
+report, undercorrection merely leaves some aberration. What SILKYPIX adds is
+not a better constant but something we lacked entirely, **independent
+confirmation from outside darktable that the payload must not be applied at
+face value**. Two unrelated decoders, Adobe and SILKYPIX, read the same bytes
+and disagree by a third to a half, and the one licensed by the camera's
+manufacturer is the one that applies less.
+
+**Not resolved.** The per-channel structure flips between experiments: session
+45's zero crossings wanted *more* red on MFT, 0.83, while SILKYPIX overcorrects
+red here. Two experiments on different lens sets disagreeing in sign means the
+per-channel question is still open, and neither should drive a constant. The
+GX80 fraction of 0.43, the lowest of the four, might hint that the context 2
+matrices run slightly strong, but that rests on one file.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
