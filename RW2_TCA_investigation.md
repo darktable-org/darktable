@@ -6452,6 +6452,59 @@ per-channel question is still open, and neither should drive a constant. The
 GX80 fraction of 0.43, the lowest of the four, might hint that the context 2
 matrices run slightly strong, but that rests on one file.
 
+### The required strength is not one number: it varies by context (session 51)
+
+Three GX80 triplets, added to the three G9 ones, split the SILKYPIX result by
+radius context, and the split is large:
+
+    context 0, G9 at 45, 97, 150mm     fraction applied 0.72  (0.64 to 0.77)
+    context 2, GX80 at 45, 97, 150mm   fraction applied 0.23  (0.16 to 0.36)
+
+and the GX80 renders are essentially **aberration-free**: outer-band residuals
+of +0.010, -0.014 and +0.034 px in blue, -0.139, +0.003 and +0.011 in red. So
+SILKYPIX lands on the right answer for that body while applying **less than a
+quarter** of what our decode instructs, whereas on the G9 it applies nearly
+three quarters and leaves residuals of +0.1 to +0.3 px.
+
+**The camera-JPEG corpus says the same thing independently**, with no SILKYPIX
+involved. Implied strength per context, outer band, as the
+reverse/orthogonal/forward bracket:
+
+    ctx  bodies              frames   blue                red
+     0   g90, gh5, gx9          27    0.36  0.38  0.54    0.59  0.76  1.13
+     1   s1_ii, s1_ii_e, s9     29    0.19  0.21  0.57    0.26  0.28  0.62
+     2   g80                     4    0.37  0.38  0.50    0.97  1.45  1.80
+     3   gh5s                    7    0.82  1.07  1.34    0.51  0.55  0.70
+     4   s1r_ii                  9    0.28  0.28  0.38    0.27  0.28  0.41
+
+**A single constant cannot fit this.** At the shipped 0.5 we overcorrect the
+S-series bodies by roughly a factor of two, since they want 0.2 to 0.3, and
+undercorrect the GH5S by about the same, since it wants near 1.0. The value is
+close to right only for the context 0 and context 2 bodies, which happen to be
+the ones the corpus is richest in.
+
+**The two references disagree on level for context 0**, 0.72 from SILKYPIX
+against 0.38 from the camera JPEGs. The SILKYPIX files are all one lens, the
+45-150, while the corpus frames are many lenses, so a **lens dependence** on top
+of the context dependence is the obvious candidate and is not excluded by
+anything measured so far.
+
+No structural law explains the spread. Strength does not track the tuple scale,
+its square, or pixel density: the MFT bodies run 1.07 at 3680 px wide, 0.38 at
+4592 and 0.38 at 5184, while the two full-frame contexts move the opposite way,
+0.21 at 5952 and 0.28 at 8368.
+
+**What this means for the patch.** The decode's structure remains exact and its
+sign is right on 97 of 97 predictions, but the magnitude cannot be fixed with
+one multiplier without knowingly overcorrecting some bodies by two. The options
+are to fit per-context strengths, which on four frames for context 2 and seven
+for context 3 is overfitting; to keep one constant and document the spread; to
+apply CA only for the contexts with good evidence and decline for the rest; or
+to spend the rendering time to get per-context strengths from the residual
+zero crossing, the one estimator no instrument bias can move. That last is the
+only principled route and it is a developer decision, since it changes what
+ships.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
