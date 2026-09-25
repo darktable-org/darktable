@@ -6466,8 +6466,8 @@ SILKYPIX lands on the right answer for that body while applying **less than a
 quarter** of what our decode instructs, whereas on the G9 it applies nearly
 three quarters and leaves residuals of +0.1 to +0.3 px.
 
-**The camera-JPEG corpus says the same thing independently**, with no SILKYPIX
-involved. Implied strength per context, outer band, as the
+**The camera-JPEG corpus says the same thing independently**, with no
+SILKYPIX involved. Implied strength per context, outer band, as the
 reverse/orthogonal/forward bracket:
 
     ctx  bodies              frames   blue                red
