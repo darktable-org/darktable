@@ -6373,15 +6373,15 @@ match radii across an active distortion correction.
 **Why this matters more than another pixel measurement.** Every previous
 estimate of the overcorrection came from our own instrument comparing renders
 against camera JPEGs. This one comes from a *second independent decoder of the
-same bytes*, shipped by Panasonic with the cameras. It says the payload must not
-be applied at face value, which is what darktable's half strength already
+same bytes*, shipped by Panasonic with the cameras. It says the payload must
+not be applied at face value, which is what darktable's half strength already
 assumes, and it puts the figure at about two thirds rather than one half. The
 three independent estimates now read 0.51 from the residual zero crossing,
 0.60 from the suppression-corrected ratio, and 0.64 from SILKYPIX.
 
 **Caveats.** One file, one lens, one focal length, and the 48 points are radius
-bins from a single scene, so they are not 48 independent samples. SILKYPIX applies
-its correction inside demosaicing, the plugin being
+bins from a single scene, so they are not 48 independent samples. SILKYPIX
+applies its correction inside demosaicing, the plugin being
 `IslEISDevelopDemosaicPanaCA`, so the shift measured after demosaic may be
 slightly diluted, which would push the true fraction above 0.64 rather than
 below. Its default settings cannot be fully audited from outside. The shipped
