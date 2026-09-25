@@ -6333,6 +6333,62 @@ and has no known command line, so the three renders need driving by hand in
 the GUI with identical settings, exported as 16-bit TIFF. The measurement and
 the arithmetic afterwards are ours.
 
+### SILKYPIX reads the payload, and applies about two thirds of it (session 49)
+
+Nine renders from SILKYPIX Developer Studio 8 SE, three files each in three
+variants whose only difference is the eight coefficient words, giving eps
+exactly 0, 1x and 2x.
+
+**It consumes 0x011b.** The three renders of one file differ in 78% of samples;
+the differences concentrate on edges, with mean absolute difference ratios of
+7.4 in blue, 14.6 in red and 5.7 in green between high-gradient and flat
+regions, while the signed means stay within +2 to +6 ADU of zero. That is a
+geometric signature, not a tone difference. And the response is **linear in the
+words**: doubling them doubled the applied correction in every band and channel
+(-0.077 to -0.149, -0.135 to -0.309, -0.169 to -0.337, -0.168 to -0.307 px).
+Session 12's claim is now refuted behaviourally, not merely doubted.
+
+**How much it applies.** Regressing applied displacement on the displacement
+our decode instructs, through the origin, bootstrapped over radius bins:
+
+    file                                 channel    n   16th  50th  84th
+    P1366481  45-150 at 45mm, no distn   blue      24   0.55  0.65  0.75
+    P1366481  45-150 at 45mm, no distn   red       24   0.53  0.63  0.74
+    P1366485  Sigma 30mm, 1.8% distn     blue      12   0.27  0.36  0.42
+    P1366485  Sigma 30mm, 1.8% distn     red       22   0.15  0.17  0.18
+    P1366477  Leica 12-60, 9.1% distn    blue      14   0.27  0.30  0.36
+    P1366477  Leica 12-60, 9.1% distn    red       22   0.18  0.21  0.24
+    P1366481 alone, both channels        both      48   0.57  0.64  0.73
+
+**The pattern validates the method.** The fraction is highest, and consistent
+between channels at 0.65 and 0.63, precisely on the file whose distortion is
+disabled in the payload, and it collapses on the two files that carry
+distortion. That is what a frame mismatch does: the prediction evaluates eps at
+the *output* radius while the correction lives in the raw frame, and distortion
+breaks the correspondence. On an undistorted file the two frames coincide and
+the ambiguity is gone. So the usable number is **0.64, with a 16th-to-84th
+range of 0.57 to 0.73**, and the lesson for any future comparison is never to
+match radii across an active distortion correction.
+
+**Why this matters more than another pixel measurement.** Every previous
+estimate of the overcorrection came from our own instrument comparing renders
+against camera JPEGs. This one comes from a *second independent decoder of the
+same bytes*, one shipped by Panasonic with the cameras. It says the payload must
+not be applied at face value, which is what darktable's half strength already
+assumes, and it puts the figure at about two thirds rather than one half. The
+three independent estimates now read 0.51 from the residual zero crossing,
+0.60 from the suppression-corrected ratio, and 0.64 from SILKYPIX.
+
+**Caveats.** One file, one lens, one focal length; the 48 points are radius bins
+from a single scene, so they are not 48 independent samples. SILKYPIX applies
+its correction inside demosaicing, the plugin being
+`IslEISDevelopDemosaicPanaCA`, so the shift measured after demosaic may be
+slightly diluted, which would push the true fraction above 0.64 rather than
+below. Its default settings cannot be fully audited from outside. The shipped
+constant stays at 0.5 pending more files: six in the corpus have distortion
+disabled, all the 45-150 at 45, 97 and 150 mm on a G9 and a GX80, and the GX80
+ones would also exercise a second radius context.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
