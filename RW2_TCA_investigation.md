@@ -412,8 +412,11 @@ Draft (under *Bug Fixes*):
 ### Honest bounds the patch has to accept
 
 - The `K = 11.48` divisor is empirical, not from Panasonic's own
-  algorithm (session 12 confirmed no `K` constant in SILKYPIX's code and
-  established that SILKYPIX itself does not consume 0x011b). It reproduces
+  algorithm (session 12 confirmed no `K` constant in SILKYPIX's code).
+  **Correction, session 48: the claim once made here, that session 12
+  established SILKYPIX does not consume 0x011b, is not supported by that
+  session's own evidence and should not be relied on. See session 48.**
+  It reproduces
   the camera JPEG within a fraction of a Bayer super-pixel, which is the
   darktable patch's stated target.
 - The per-body K spread across the two-body training corpus was G9 = 10.4,
@@ -6277,6 +6280,58 @@ negative control on the whole decode.
 So 0x011b is not purely a chromatic payload: it carries shading-related fields
 too. Session 22 had already shown it does not carry distortion, which 0x0119
 owns.
+
+### SILKYPIX was written off on unsupported grounds (session 48)
+
+A claim that has steered this investigation since session 12, and that I
+repeated as recently as session 37, is that SILKYPIX does not consume 0x011b,
+which is why the camera's own JPEGs have been the only oracle. **That claim is
+not supported by the evidence it cites.** Session 12's own text records the
+opposite lean:
+
+- "The real 0x011b tag reader was not located in this session." A failure to
+  find a reader by static analysis is not proof that none exists.
+- `0x11b` appears as an immediate in fourteen functions in `SILKYPIX64.dll`,
+  one of them a list-builder that adds the tag to a persist set, so the
+  software at least tracks it.
+- There is a dedicated plugin, id 0x1216, named
+  **`IslEISDevelopDemosaicPanaCA`**, confirmed by decoding two dispatch
+  tables. A Panasonic-CA demosaic plugin is not what a converter that ignores
+  the tag would carry.
+
+What genuinely blocked the route was different and narrower: the bundled SE
+build profile-corrects even in its "no correction" mode, so **no null render
+could be obtained by toggling a setting**. That was true in session 3 and is
+still true. But it stopped mattering in session 22, when the payload editor
+arrived: the toggle is unnecessary if the *data* is neutered instead. Ten
+sessions passed and nobody went back.
+
+**The experiment, now staged** under `/c/temp/tca/silky/`, three files from
+P1366477 identical but for the eight coefficient words and the four checksums
+they force:
+
+    A_original.RW2   eps_R(0.85) +1.519e-04   eps_B(0.85) +4.162e-04
+    B_null.RW2       eps_R(0.85)  0.000e+00   eps_B(0.85)  0.000e+00
+    C_double.RW2     eps_R(0.85) +3.038e-04   eps_B(0.85) +8.324e-04
+
+Because eps is linear in those words with intercepts at 5e-15, zeroing them
+gives an exact null and doubling them an exact 2x, with radii, gate word and
+everything else untouched.
+
+**What the outcomes mean.** If all three renders come out pixel-identical,
+SILKYPIX really does ignore the payload and the old claim becomes true for the
+right reason. If they differ, then `A` minus `B` is **Panasonic's own applied
+chromatic correction**, measurable with the session 34 instrument and directly
+comparable to the eps we decode exactly. That is the manufacturer-side
+magnitude oracle the factor-of-two question has lacked from the start: if
+SILKYPIX applies about half of what the payload literally says, the shipped
+0.5 stops being empirical and becomes a decoded fact. `C` then tests linearity
+and supplies a second point.
+
+SILKYPIX 8 SE lives on a Veracrypt-mounted Z: drive, is not visible to WSL,
+and has no known command line, so the three renders need driving by hand in
+the GUI with identical settings, exported as 16-bit TIFF. The measurement and
+the arithmetic afterwards are ours.
 
 ## Scope and goal
 
