@@ -6222,6 +6222,62 @@ consistent power of the scale per coefficient row. So the same-geometry
 invariance that holds exactly within a body does not extend between bodies, and
 the per-context tables stay.
 
+### Shading Compensation does modify the raw data, partially (session 47)
+
+The shoot series deferred since session 1, finally taken: ten frames from a G9
+with the Leica 12-60mm at 12 mm, ISO 200, f/2.8 through f/11 with the exposure
+doubled at each stop, in two sets of five that differ only in the body's
+Shading Compensation setting, which `exiftool` reads out of Panasonic maker
+note tag **0x008a**. Handheld, so the wall angle is not identical between
+sets. Measured on the Bayer mosaic's green channel with no demosaic and no
+pipeline, azimuthally averaged to suppress a linear illumination gradient, in
+stops relative to the centre:
+
+    Shading Comp   f/2.8   f/4.0   f/5.6   f/8.0   f/11
+    off at r=0.90  -1.17   -0.63   -0.34   -0.27   -0.32
+    on  at r=0.90  -0.80   -0.48   -0.29   -0.24   -0.28
+    on minus off   +0.38   +0.15   +0.04   +0.03   +0.05
+
+**Two facts, both answering questions that were open.**
+
+First, with the setting off the falloff is **strongly aperture-dependent**,
+1.17 stops wide open against about 0.3 stops from f/5.6, so the raw data is
+plainly *not* shading-corrected in general.
+
+Second, with the setting on the camera **does modify the raw data**, restoring
+about a third of the wide-open falloff and almost nothing by f/5.6. The
+handheld caveat does not threaten this: the difference is monotone in aperture,
+tracks the magnitude of the vignetting itself, and is 0.00 stops inside
+r = 0.4, whereas a change of wall angle would give an azimuthal gradient
+roughly independent of aperture. With only one frame per combination there is
+no repeat to estimate scatter from, so the +0.03 to +0.05 at small apertures
+should be read as "at the noise floor", not as a measured gain.
+
+**Consequences for darktable.** A Panasonic file shot with Shading
+Compensation on already carries part of its vignetting correction in the raw
+data, and the part already applied is aperture-dependent. So any future support
+for Panasonic embedded vignetting must read tag 0x008a and account for what the
+body already did, or it will double-correct wide open. The flag is also exactly
+what the lens module needs in order to explain itself rather than stay silent.
+
+**And it resolves word 7.** Session 38 found word 7 of 0x011b clustering at
+Q15-looking values near 1.0 and 0.5 and being inert for Adobe; session 43
+refuted it as a CA strength, since its groups ran backwards and it takes
+negative values. Here it separates the two sets cleanly: **8125 to 8190 with
+shading off, 16318 to 16319 with it on**, which in Q15 is 0.25 against 0.50.
+Word 7 belongs to the shading domain, not the chromatic one, which is why it
+looked like a scale factor and yet could not predict CA overcorrection. Words
+2, 15 and 19 behave likewise, jumping by roughly +10000 when the flag is on
+while also varying with aperture.
+
+None of the twelve active CA words differ between the two sets, or across
+apertures within a set, which is the expected independence and a useful
+negative control on the whole decode.
+
+So 0x011b is not purely a chromatic payload: it carries shading-related fields
+too. Session 22 had already shown it does not carry distortion, which 0x0119
+owns.
+
 ## Scope and goal
 
 Set by the developer, post-session-21, and it settles two things this
