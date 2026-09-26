@@ -26,6 +26,16 @@ struct dt_dev_pixelpipe_iop_t;
 struct dt_dev_pixelpipe_t;
 struct dt_iop_module_t;
 
+// white balance state: what temperature applied, plus the fixed per-image
+// references it is measured against
+typedef struct dt_dev_wb_t
+{
+  dt_aligned_pixel_t coeffs;  // coeffs actually set by temperature
+  // we want processing code never to read dev->chroma, so keep it here
+  double D65coeffs[4];        // both read from exif data or "best guess"
+  gboolean late_correction;
+} dt_dev_wb_t;
+
 typedef enum dt_iop_buffer_type_t {
   TYPE_UNKNOWN,
   TYPE_FLOAT,

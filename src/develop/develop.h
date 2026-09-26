@@ -167,19 +167,17 @@ typedef struct dt_dev_viewport_t
       - the currently used wb_coeffs in temperature module
       - D65coeffs and as_shot are read from exif data
   f)  - late_correction set by temperature if we want to process data as following
-      If we use the new DT_IOP_TEMP_D65_LATE mode in temperature.c and don#t have
-      any temp parameters changes later we can calc correction coeffs to modify
-      as_shot rgb data to D65
+      If we enable this for non-D65 modes of temperature.c and don't have any
+      temp parameters changes later we can calc correction ratios
+      to take white-balanced (neutralized) data to D65
 */
 typedef struct dt_dev_chroma_t
 {
   struct dt_iop_module_t *temperature;  // always available for GUI reports
   struct dt_iop_module_t *adaptation;   // set if one module is processing this without blending
 
-  dt_aligned_pixel_t wb_coeffs;         // coeffs actually set by temperature
-  double D65coeffs[4];                  // both read from exif data or "best guess"
   double as_shot[4];
-  gboolean late_correction;
+  dt_dev_wb_t wb;
 } dt_dev_chroma_t;
 
 typedef struct dt_develop_t
@@ -259,10 +257,13 @@ typedef struct dt_develop_t
   /* proxy for communication between plugins and develop/darkroom */
   struct
   {
-    // list of exposure iop instances, with plugin hooks, used by
-    // histogram dragging functions each element is
-    // dt_dev_proxy_exposure_t
+    // exposure iop hooks, used by histogram dragging functions
     dt_dev_proxy_exposure_t exposure;
+
+    // channelmixerrgb reports whether it is actually applying CAT;
+    // temperature asks through dt_dev_cat_is_active()
+    // thread contract: must only be called from the GTK main thread
+    gboolean (*cat_is_active)(struct dt_iop_module_t *cat);
 
     // this module receives right-drag events if not already claimed
     struct dt_iop_module_t *rotate;
@@ -534,6 +535,10 @@ void dt_dev_exposure_handle_event(int n_press, gdouble delta,
                                   GdkModifierType state,
                                   const gboolean is_blackpoint);
 
+/** TRUE if a live color calibration instance is actually applying CAT.
+    GTK main thread only: the accessor reads params. */
+gboolean dt_dev_cat_is_active(dt_develop_t *dev);
+
 /*
  * modulegroups plugin hooks
  */
@@ -687,6 +692,8 @@ static inline struct dt_iop_module_t *dt_dev_gui_module(void)
 {
   return darktable.develop ? darktable.develop->gui_module : NULL;
 }
+
+void dt_dev_wb_set_neutral(dt_dev_wb_t *wb);
 
 G_END_DECLS
 
