@@ -515,9 +515,32 @@ void dt_insert_preset_in_menu_hierarchy(const char *name,
   for(; *(s+1); s++)
   {
     GMenu *sm = g_menu_new();
-    gchar *label_unm = dt_str_unmnemonic(*s);
-    GMenuItem *smi = g_menu_item_new_submenu(label_unm, G_MENU_MODEL(sm));
+
+    // TODO: Gtk4:
+    // prefix the parent's label: gtk3 flattens GtkPopoverMenu into a single
+    // GtkStack and names each page after its item label, so equally named
+    // submenus under different presets collide and navigation follows the
+    // first one. under gtk4 dt_gui_popover_menu_from_model() nests the menu
+    // for real (GTK_POPOVER_MENU_NESTED) and the prefix can go
+    gchar *sm_name = NULL;
+    gchar *label_unm = NULL;
+    gchar **s2 = split;
+    for(; s2 != s; s2++)
+    {
+      label_unm = dt_str_unmnemonic(*s2);
+      dt_util_str_cat(&sm_name, "%s - ", label_unm);
+      g_free(label_unm);
+    }
+    label_unm = dt_str_unmnemonic(*s);
+    dt_util_str_cat(&sm_name, "%s", label_unm);
     g_free(label_unm);
+    GMenuItem *smi = g_menu_item_new_submenu(sm_name, G_MENU_MODEL(sm));
+    g_free(sm_name);
+    // Gtk4:
+    // label_unm = dt_str_unmnemonic(*s);
+    // GMenuItem *smi = g_menu_item_new_submenu(label_unm, G_MENU_MODEL(sm));
+    // g_free(label_unm);
+
     g_menu_append_item(*submenu, smi);
     g_object_unref(smi);
     *submenu = sm;
