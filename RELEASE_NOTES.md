@@ -142,8 +142,8 @@ changes (where available).
 - Some safety checks when switching to the quick access panel were
   added.
 
-- Added a visible toggle to show the color sliders in the
-  color equalizer module.
+- On the color equalizer module a new collapside section with the
+  color sliders has been added.
 
 - The list of color checker charts in the color calibration module now
   has one entry for the Datacolor SpyderCheckr 24 and one for the
