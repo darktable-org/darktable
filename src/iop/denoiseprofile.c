@@ -3579,6 +3579,24 @@ static void denoiseprofile_tab_switch(GtkNotebook *notebook,
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
+/* the channel tabs hold no widgets: one graph below them is pointed at
+   whichever channel the current tab selects, across two notebooks of which
+   only one is shown at a time. each tab names the bands of its channel */
+static void _channel_page(GtkNotebook *notebook,
+                          const char *name,
+                          dt_iop_module_t *self,
+                          const dt_iop_denoiseprofile_channel_t ch)
+{
+  const size_t size = sizeof(float) * DT_IOP_DENOISE_PROFILE_BANDS;
+  const dt_iop_param_range_t bands[] =
+  {
+    { offsetof(dt_iop_denoiseprofile_params_t, x) + ch * size, size },
+    { offsetof(dt_iop_denoiseprofile_params_t, y) + ch * size, size },
+  };
+  dt_iop_page_bind_params(dt_ui_notebook_page(notebook, name, NULL),
+                          self, bands, G_N_ELEMENTS(bands));
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_gui_data_t *g = IOP_GUI_ALLOC(denoiseprofile);
@@ -3608,16 +3626,16 @@ void gui_init(dt_iop_module_t *self)
   g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
   dt_action_define_iop(self, NULL, N_("channel"), GTK_WIDGET(g->channel_tabs),
                        &dt_action_def_tabs_rgb);
-  dt_ui_notebook_page(g->channel_tabs, N_("all"), NULL);
-  dt_ui_notebook_page(g->channel_tabs, N_("R"), NULL);
-  dt_ui_notebook_page(g->channel_tabs, N_("G"), NULL);
-  dt_ui_notebook_page(g->channel_tabs, N_("B"), NULL);
+  _channel_page(g->channel_tabs, N_("all"), self, DT_DENOISE_PROFILE_ALL);
+  _channel_page(g->channel_tabs, N_("R"), self, DT_DENOISE_PROFILE_R);
+  _channel_page(g->channel_tabs, N_("G"), self, DT_DENOISE_PROFILE_G);
+  _channel_page(g->channel_tabs, N_("B"), self, DT_DENOISE_PROFILE_B);
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page",
                    G_CALLBACK(denoiseprofile_tab_switch), self);
 
   g->channel_tabs_Y0U0V0 = GTK_NOTEBOOK(gtk_notebook_new());
-  dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("Y0"), NULL);
-  dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("U0V0"), NULL);
+  _channel_page(g->channel_tabs_Y0U0V0, N_("Y0"), self, DT_DENOISE_PROFILE_Y0);
+  _channel_page(g->channel_tabs_Y0U0V0, N_("U0V0"), self, DT_DENOISE_PROFILE_U0V0);
   g_signal_connect(G_OBJECT(g->channel_tabs_Y0U0V0), "switch_page",
                    G_CALLBACK(denoiseprofile_tab_switch), self);
 
