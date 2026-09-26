@@ -5540,12 +5540,12 @@ static void _section_reset_clicked(GtkButton *button,
      undo. */
   dt_dev_undo_start_record(darktable.develop);
 
-  /* Toggles go last, as dt_ui_notebook_page()'s own double-click page reset
-     does (_reset_all_bauhaus() in gui/gtk.c): a module may switch one of its
-     checkboxes in reaction to one of its sliders, so a checkbox reset while
-     sliders are still to come could be undone by a slider reset after it. This
-     button is the page reset narrowed to a range of widgets, so it should not
-     behave differently within that range. */
+  /* Toggles go last, as the notebook page reset does (dt_bauhaus_reset_page()
+     in bauhaus/bauhaus.c): a module may switch one of its checkboxes in
+     reaction to one of its sliders, so a checkbox reset while sliders are still
+     to come could be undone by a slider reset after it. This button is the page
+     reset narrowed to a range of widgets, so it should not behave differently
+     within that range. */
   for(int toggles_pass = 0; toggles_pass < 2; toggles_pass++)
   {
     for(const GList *l = kids; l; l = l->next)
