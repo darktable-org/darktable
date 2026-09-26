@@ -20,6 +20,7 @@
 #include "imageio/imageio_dng.h"
 #include "imageio/imageio_jpeg.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/dng_opcode.h"
 #include "common/exif.h"
 #include "common/image.h"
 #include "develop/imageop_math.h"
@@ -42,9 +43,42 @@
 #define TIFFTAG_PREVIEWCOLORSPACE 50970
 #endif
 
+// fallback for older libtiff without DNG opcode tags
+#ifndef TIFFTAG_OPCODELIST1
+#define TIFFTAG_OPCODELIST1 51008
+#endif
+#ifndef TIFFTAG_OPCODELIST2
+#define TIFFTAG_OPCODELIST2 51009
+#endif
+#ifndef TIFFTAG_OPCODELIST3
+#define TIFFTAG_OPCODELIST3 51022
+#endif
+
 // DNG uses SRATIONAL / RATIONAL for matrix and WB tags. libtiff accepts
 // these as float/double arrays and handles the conversion; we just pass
 // the values as double
+
+// Write DNG opcode lists to the current TIFF directory
+static void _write_dng_opcode_lists(TIFF *tif, const dt_image_t *img)
+{
+  // Serialize and write OpcodeList2 (gain maps) if present
+  uint32_t opcode_list_2_size = 0;
+  uint8_t *opcode_list_2 = dt_dng_opcode_serialize_opcode_list_2(img, &opcode_list_2_size);
+  if(opcode_list_2 && opcode_list_2_size > 0)
+  {
+    TIFFSetField(tif, TIFFTAG_OPCODELIST2, opcode_list_2_size, opcode_list_2);
+    g_free(opcode_list_2);
+  }
+
+  // Serialize and write OpcodeList3 (lens corrections) if present
+  uint32_t opcode_list_3_size = 0;
+  uint8_t *opcode_list_3 = dt_dng_opcode_serialize_opcode_list_3(img, &opcode_list_3_size);
+  if(opcode_list_3 && opcode_list_3_size > 0)
+  {
+    TIFFSetField(tif, TIFFTAG_OPCODELIST3, opcode_list_3_size, opcode_list_3);
+    g_free(opcode_list_3);
+  }
+}
 
 // libtiff error/warning handlers — replacing whatever else in the
 // process may have installed (e.g. ImageMagick's, which crashes on
@@ -474,6 +508,9 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
   TIFFSetField(tif, TIFFTAG_DEFAULTCROPORIGIN, default_crop_origin);
   TIFFSetField(tif, TIFFTAG_DEFAULTCROPSIZE, default_crop_size);
 
+  // Write DNG opcode lists (lens corrections, gain maps) if present
+  _write_dng_opcode_lists(tif, img);
+
   // scanline write
   int res = 0;
   for(int y = 0; y < height && res == 0; y++)
@@ -612,6 +649,9 @@ int dt_imageio_dng_write_linear(const char *filename,
   TIFFSetField(tif, TIFFTAG_DEFAULTSCALE, default_scale);
   TIFFSetField(tif, TIFFTAG_DEFAULTCROPORIGIN, default_crop_origin);
   TIFFSetField(tif, TIFFTAG_DEFAULTCROPSIZE, default_crop_size);
+
+  // Write DNG opcode lists (lens corrections, gain maps) if present
+  _write_dng_opcode_lists(tif, img);
 
   // scanline write: float [0, 1] normalized camRGB -> uint16
   //     [0, 65535]. BlackLevel=0 and WhiteLevel=65535 let the

@@ -18,6 +18,7 @@
 
 #include <glib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "debug.h"
 #include "dng_opcode.h"
@@ -55,6 +56,31 @@ static uint32_t _get_long(uint8_t *ptr)
   uint32_t in;
   memcpy(&in, ptr, sizeof(in));
   return GUINT32_FROM_BE(in);
+}
+
+
+static void _put_long(uint8_t *ptr, uint32_t val)
+{
+  uint32_t out = GUINT32_TO_BE(val);
+  memcpy(ptr, &out, sizeof(out));
+}
+
+static void _put_double(uint8_t *ptr, double val)
+{
+  guint64 out;
+  union { guint64 in; double v; } u;
+  u.v = val;
+  out = GUINT64_TO_BE(u.in);
+  memcpy(ptr, &out, sizeof(out));
+}
+
+static void _put_float(uint8_t *ptr, float val)
+{
+  guint32 out;
+  union { guint32 in; float v; } u;
+  u.v = val;
+  out = GUINT32_TO_BE(u.in);
+  memcpy(ptr, &out, sizeof(out));
 }
 
 void dt_dng_opcode_process_opcode_list_2(uint8_t *buf, uint32_t buf_size, dt_image_t *img)
@@ -176,4 +202,198 @@ void dt_dng_opcode_process_opcode_list_3(uint8_t *buf, uint32_t buf_size, dt_ima
     offset += 16 + param_size;
     count--;
   }
+}
+
+
+// Serialize OpcodeList2 (gain maps) from dt_image_t to a buffer
+// Returns a newly allocated buffer with the opcode list, or NULL on error.
+// The caller is responsible for freeing the returned buffer.
+uint8_t *dt_dng_opcode_serialize_opcode_list_2(const dt_image_t *img, uint32_t *size)
+{
+  // Only serialize if we have gain maps
+  if(!img->dng_gain_maps || g_list_length(img->dng_gain_maps) == 0)
+  {
+    *size = 0;
+    return NULL;
+  }
+  
+  // Count total parameter size for all gain maps
+  uint32_t total_param_size = 0;
+  GList *list = img->dng_gain_maps;
+  while(list)
+  {
+    dt_dng_gain_map_t *gm = (dt_dng_gain_map_t *)list->data;
+    // Each gain map has 76 bytes fixed + gain_count * 4 bytes
+    const uint32_t gain_count = gm->map_points_v * gm->map_points_h * gm->map_planes;
+    total_param_size += 76 + gain_count * sizeof(float);
+    list = g_list_next(list);
+  }
+  
+  const int opcode_count = g_list_length(img->dng_gain_maps);
+  uint32_t total_size = 4 + opcode_count * 16 + total_param_size;
+  
+  uint8_t *buf = g_malloc(total_size);
+  if(!buf)
+  {
+    *size = 0;
+    return NULL;
+  }
+  
+  uint8_t *ptr = buf;
+  
+  // Write opcode count
+  _put_long(ptr, opcode_count);
+  ptr += 4;
+  
+  // Write each gain map opcode
+  list = img->dng_gain_maps;
+  while(list)
+  {
+    dt_dng_gain_map_t *gm = (dt_dng_gain_map_t *)list->data;
+    
+    // Opcode header
+    _put_long(ptr, OPCODE_ID_GAINMAP); // opcode_id
+    _put_long(ptr + 4, 0); // flags (0 = mandatory)
+    _put_long(ptr + 8, 1); // version
+    
+    const uint32_t gain_count = gm->map_points_v * gm->map_points_h * gm->map_planes;
+    const uint32_t param_size = 76 + gain_count * sizeof(float);
+    _put_long(ptr + 12, param_size); // param_size
+    
+    ptr += 16;
+    
+    // Write parameters
+    _put_long(ptr, gm->top);
+    _put_long(ptr + 4, gm->left);
+    _put_long(ptr + 8, gm->bottom);
+    _put_long(ptr + 12, gm->right);
+    _put_long(ptr + 16, gm->plane);
+    _put_long(ptr + 20, gm->planes);
+    _put_long(ptr + 24, gm->row_pitch);
+    _put_long(ptr + 28, gm->col_pitch);
+    _put_long(ptr + 32, gm->map_points_v);
+    _put_long(ptr + 36, gm->map_points_h);
+    _put_double(ptr + 40, gm->map_spacing_v);
+    _put_double(ptr + 48, gm->map_spacing_h);
+    _put_double(ptr + 56, gm->map_origin_v);
+    _put_double(ptr + 64, gm->map_origin_h);
+    _put_long(ptr + 72, gm->map_planes);
+    ptr += 76;
+    
+    // Write gain values
+    for(uint32_t i = 0; i < gain_count; i++)
+    {
+      _put_float(ptr, gm->map_gain[i]);
+      ptr += 4;
+    }
+    
+    list = g_list_next(list);
+  }
+  
+  *size = total_size;
+  return buf;
+}
+
+
+// Serialize OpcodeList3 (lens corrections) from dt_image_t to a buffer
+// Returns a newly allocated buffer with the opcode list, or NULL on error.
+// The caller is responsible for freeing the returned buffer.
+uint8_t *dt_dng_opcode_serialize_opcode_list_3(const dt_image_t *img, uint32_t *size)
+{
+  const dt_image_correction_data_t *cd = &img->exif_correction_data;
+  
+  // Only serialize if we have DNG corrections and at least one type is present
+  if(img->exif_correction_type != CORRECTION_TYPE_DNG) return NULL;
+  if(!cd->dng.has_warp && !cd->dng.has_vignette) return NULL;
+  
+  // Count how many opcodes we need to serialize
+  int opcode_count = 0;
+  if(cd->dng.has_warp) opcode_count++;
+  if(cd->dng.has_vignette) opcode_count++;
+  
+  // Calculate total buffer size:
+  // - 4 bytes for opcode count
+  // - For each opcode: 16 bytes header + parameter size
+  //   - Warp rectilinear: 4 (planes) + 8*6 (coefficients per plane) + 8*2 (center) bytes
+  //   - Vignette radial: 8*5 (coefficients) + 8*2 (center) = 56 bytes param
+  uint32_t total_size = 4; // count at start
+  if(cd->dng.has_warp)
+    total_size += 16 + 4 + 8 * 6 * cd->dng.planes + 8 * 2; // header + param
+  if(cd->dng.has_vignette)
+    total_size += 16 + 8 * 5 + 8 * 2; // header + param
+  
+  uint8_t *buf = g_malloc(total_size);
+  if(!buf) return NULL;
+  
+  uint8_t *ptr = buf;
+  
+  // Write opcode count
+  _put_long(ptr, opcode_count);
+  ptr += 4;
+  
+  // Write warp opcode if present
+  if(cd->dng.has_warp)
+  {
+    // Opcode header: opcode_id (4), flags (4), version (4), param_size (4)
+    _put_long(ptr, OPCODE_ID_WARP_RECTILINEAR); // opcode_id
+    _put_long(ptr + 4, 0); // flags (0 = mandatory)
+    _put_long(ptr + 8, 1); // version
+    
+    const uint32_t param_size = 4 + 8 * 6 * cd->dng.planes + 8 * 2;
+    _put_long(ptr + 12, param_size); // param_size
+    
+    ptr += 16;
+    
+    // Write parameters: planes (4), then coefficients
+    _put_long(ptr, cd->dng.planes);
+    ptr += 4;
+    
+    // Write warp coefficients for each plane
+    for(int p = 0; p < cd->dng.planes; p++)
+    {
+      for(int i = 0; i < 6; i++)
+      {
+        _put_double(ptr, cd->dng.cwarp[p][i]);
+        ptr += 8;
+      }
+    }
+    
+    // Write center coordinates
+    for(int i = 0; i < 2; i++)
+    {
+      _put_double(ptr, cd->dng.centre_warp[i]);
+      ptr += 8;
+    }
+  }
+  
+  // Write vignette opcode if present
+  if(cd->dng.has_vignette)
+  {
+    // Opcode header
+    _put_long(ptr, OPCODE_ID_VIGNETTE_RADIAL); // opcode_id
+    _put_long(ptr + 4, 0); // flags (0 = mandatory)
+    _put_long(ptr + 8, 1); // version
+    
+    const uint32_t param_size = 8 * (5 + 2); // 5 coefficients + 2 center coordinates
+    _put_long(ptr + 12, param_size); // param_size
+    
+    ptr += 16;
+    
+    // Write vignette coefficients
+    for(int i = 0; i < 5; i++)
+    {
+      _put_double(ptr, cd->dng.cvig[i]);
+      ptr += 8;
+    }
+    
+    // Write center coordinates
+    for(int i = 0; i < 2; i++)
+    {
+      _put_double(ptr, cd->dng.centre_vig[i]);
+      ptr += 8;
+    }
+  }
+  
+  *size = total_size;
+  return buf;
 }
