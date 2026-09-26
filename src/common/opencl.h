@@ -76,10 +76,10 @@ G_BEGIN_DECLS
 
 #define DT_OPENCL_DEFAULT_COMPILE_DEFAULT ("")
 #define DT_OPENCL_DEFAULT_COMPILE_OPTI ("-cl-fast-relaxed-math")
-#define DT_CLDEVICE_HEAD ("cldevice_v6_")
+#define DT_CLDEVICE_HEAD ("cldevice_v7_")
 
 // version for current darktable cl kernels reflected in the kernel directory
-#define DT_OPENCL_KERNELS 6
+#define DT_OPENCL_KERNELS 7
 
 typedef enum dt_opencl_memory_t
 {
@@ -168,9 +168,6 @@ typedef struct dt_opencl_device_t
   gboolean tunehead;
   // we checked for atomic support; tested by avoid_atomics functions
   dt_opencl_atomics_t atomic_support;
-  // pause OpenCL processing for this number of microseconds from time
-  // to time
-  int micro_nap;
 
   // keep track of devices using unified memory so we can adopt
   // runtime code
@@ -595,7 +592,6 @@ cl_int dt_opencl_local_buffer_opt(const int devid,
 
 /** utility functions handling device specific properties */
 gboolean dt_opencl_avoid_atomics(const int devid);
-void dt_opencl_micro_nap(const int devid);
 gboolean dt_opencl_unified_memory(const int devid);
 unsigned int dt_opencl_tiling_align(const int devid);
 

@@ -69,6 +69,7 @@ static const char *dt_supported_extensions[] __attribute__((unused)) = {"@DT_SUP
 
 #cmakedefine HAVE_CPUID_H 1
 #cmakedefine HAVE___GET_CPUID 1
+#cmakedefine HAVE_PTHREAD_NP_H 1
 
 #cmakedefine HAVE_OMP_FIRSTPRIVATE_WITH_CONST 1
 

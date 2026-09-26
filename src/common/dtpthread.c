@@ -23,6 +23,9 @@
 #endif
 
 #include <pthread.h>
+#ifdef HAVE_PTHREAD_NP_H
+#include <pthread_np.h>
+#endif
 #include <stdint.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -93,14 +96,10 @@ void dt_pthread_setname(const char *name)
 {
 #if defined __linux__
   pthread_setname_np(pthread_self(), name);
-#elif defined __FreeBSD__ || defined __DragonFly__
-  // TODO: is this the right syntax?
-  // pthread_setname_np(pthread_self(), name, 0);
+#elif defined __FreeBSD__ || defined __DragonFly__ || defined __OpenBSD__
+  pthread_set_name_np(pthread_self(), name);
 #elif defined __NetBSD__
-  // TODO: is this the right syntax?
-  // pthread_setname_np(pthread_self(), name, NULL);
-#elif defined __OpenBSD__
-  // TODO: find out if there is pthread_setname_np() on OpenBSD and how to call it
+  pthread_setname_np(pthread_self(), "%s", (void *)name);
 #elif defined __APPLE__
   pthread_setname_np(name);
 #elif defined _WIN32
