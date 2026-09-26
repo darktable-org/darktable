@@ -11,11 +11,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-19 17:59+0200\n"
-<<<<<<< HEAD
-"PO-Revision-Date: 2026-09-25 23:59+0200\n"
-=======
-"PO-Revision-Date: 2026-09-25 22:21+0200\n"
->>>>>>> 3cf3dc58278e5ef5aee68b46137189fe1690a899
+"PO-Revision-Date: \n"
 "Last-Translator: Hans Petter Birkeland <hpbirkeland@gmail.com>\n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -24,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.4.2\n"
-"X-Poedit-Bookmarks: 4832,-1,-1,-1,-1,-1,-1,2362,1305,-1\n"
+"X-Poedit-Bookmarks: 1098,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: ../build/bin/conf_gen.h:156
 msgctxt "preferences"
@@ -791,12 +787,9 @@ msgid "scene-referred (AgX)"
 msgstr "scenereferert (AgX)"
 
 #: ../build/bin/conf_gen.h:5064
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "scene-referred (filmic)"
 msgctxt "preferences"
 msgid "scene-referred (spektrafilm)"
-msgstr "scenereferert (filmic)"
+msgstr "scenereferert (spektrafilm)"
 
 #: ../build/bin/conf_gen.h:5065
 msgctxt "preferences"
@@ -907,7 +900,7 @@ msgid ""
 "\n"
 "<b>darker:</b> good for dimly-lit rooms"
 msgstr ""
-"Lyshetsnivået rundt bildet ditt påvirker hvordan du ser fargene og tonene "
+"lyshetsnivået rundt bildet ditt påvirker hvordan du ser fargene og tonene "
 "mens du redigerer. grå er anbefalt fordi det er det mest nøytrale – det "
 "forskyver ikke øyet i noen retning\n"
 "\n"
@@ -1687,21 +1680,6 @@ msgstr "bruk automatisk pikselarbeidsflyt"
 
 # prøv å finne et norsk uttrykk for tone mapper
 #: ../build/bin/preferences_gen.h:3864
-#, fuzzy
-#| msgid ""
-#| "selects which workflow will be used by default in the darkroom\n"
-#| "\n"
-#| "<b>scene-referred (sigmoid)</b> modern workflow, fewer tonemapper "
-#| "controls\n"
-#| "\n"
-#| "<b>scene-referred (filmic)</b> modern workflow, more tone mapping "
-#| "controls\n"
-#| "\n"
-#| "<b>scene-referred (AgX)</b> modern workflow, maximum tone mapping control\n"
-#| "\n"
-#| "<b>display-referred (legacy)</b> legacy workflow (not recommended)\n"
-#| "\n"
-#| "<b>none</b> do not use a predefined workflow"
 msgid ""
 "selects which workflow will be used by default in the darkroom\n"
 "\n"
@@ -1726,8 +1704,11 @@ msgstr ""
 "<b>scenereferert (filmic)</b> moderne arbeidsflyt, flere innstillinger for "
 "tonetilpasning\n"
 "\n"
-"<b>scenereferert (AgX</b> moderne arbeidsflyt, flest innstillinger for "
+"<b>scenereferert (AgX)</b> moderne arbeidsflyt, flest innstillinger for "
 "tonetilpasning\n"
+"\n"
+"<b>scenereferert (Spektrafilm)</b> moderne arbeidsflyt, tonetilpasningen "
+"gjøres med en simulert film og print\n"
 "\n"
 "<b>visningsreferert (gammel)</> gammel arbeidsflyt (ikke anbefalt)\n"
 "\n"
@@ -1782,10 +1763,8 @@ msgstr ""
 "du gjør. deaktivering av denne innstillingen vil alltid skjule dem."
 
 #: ../build/bin/preferences_gen.h:3921
-#, fuzzy
-#| msgid "alignment"
 msgid "HDR alignment"
-msgstr "justering"
+msgstr "HDR innretting"
 
 #: ../build/bin/preferences_gen.h:3931
 msgid "auto-align frames when merging HDR brackets"
@@ -1825,10 +1804,9 @@ msgstr "detaljnivå for innretting (proxy-skala)"
 
 #: ../build/bin/preferences_gen.h:3986 ../build/bin/preferences_gen.h:4014
 #: ../build/bin/preferences_gen.h:4042
-#, fuzzy, c-format
-#| msgid "double click to reset to `%s'"
+#, c-format
 msgid "double click to reset to `%.03f'"
-msgstr "dobbeltklikk for å gå tilbake til `%s'"
+msgstr "dobbeltklikk for å gå tilbake til `%.03f'"
 
 #: ../build/bin/preferences_gen.h:3988
 msgid ""
@@ -1896,13 +1874,11 @@ msgstr ""
 "maksimalt antall SIFT nøkkelpunkter som beholdes etter romlig balansering, "
 "før matching.\n"
 "balansering av begge bilder til et felles budsjett hindrer et trekkrikt bilde "
-"fra å oversvømme matcheren med tvetydige kandidater"
+"fra å oversvømme matcheren med tvetydige kandidater."
 
 #: ../build/bin/preferences_gen.h:4089
-#, fuzzy
-#| msgid "set date/time of %d images"
 msgid "save alignment debug images"
-msgstr "stilte dato/tid på %d bilder"
+msgstr "lagre bilder for å feilsøke innretting"
 
 #: ../build/bin/preferences_gen.h:4097
 msgid ""
@@ -6089,17 +6065,13 @@ msgstr "RGB, uavhengige kanaler"
 
 #: ../build/lib/darktable/plugins/introspection_satcurvergb.c:155
 #: ../build/lib/darktable/plugins/introspection_satcurvergb.c:262
-#, fuzzy
-#| msgid "filter diffusion"
 msgid "filter radius"
-msgstr "filterspredning"
+msgstr "filterradius"
 
 #: ../build/lib/darktable/plugins/introspection_satcurvergb.c:161
 #: ../build/lib/darktable/plugins/introspection_satcurvergb.c:266
-#, fuzzy
-#| msgid "edges refinement/feathering"
 msgid "edge feathering"
-msgstr "kantforbedring/uttoning"
+msgstr "kantuttoning"
 
 #: ../build/lib/darktable/plugins/introspection_satcurvergb.c:167
 #: ../build/lib/darktable/plugins/introspection_satcurvergb.c:270
@@ -6113,10 +6085,8 @@ msgstr "beskytt nær nøytrale farger til"
 
 #: ../build/lib/darktable/plugins/introspection_satcurvergb.c:179
 #: ../build/lib/darktable/plugins/introspection_satcurvergb.c:278
-#, fuzzy
-#| msgid "no rotation"
 msgid "noise protection"
-msgstr "ingen rotering"
+msgstr "støybeskyttelse"
 
 #: ../build/lib/darktable/plugins/introspection_scalepixels.c:33
 #: ../build/lib/darktable/plugins/introspection_scalepixels.c:76
@@ -6164,46 +6134,33 @@ msgstr "RGB forhold"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:432
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:853
-#, fuzzy
-#| msgid "exposure"
 msgid "film exposure"
-msgstr "eksponering"
+msgstr "filmeksponering"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:438
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:857
-#, fuzzy
-#| msgid "mask exposure compensation"
 msgid "print exposure compensation"
-msgstr "eksponeringskompensasjon for maske"
+msgstr "eksponeringskompensasjon for print"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:444
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:861
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "auto-exposure"
 msgid "auto print exposure"
-msgstr "automatisk eksponering"
+msgstr "automatisk printeksponering"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:450
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:865
-#, fuzzy
-#| msgid "high contrast"
 msgid "print contrast"
-msgstr "høykontrast"
+msgstr "printkontrast"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:456
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:869
-#, fuzzy
-#| msgid "iterations"
 msgid "filtration M"
-msgstr "gjentakelser"
+msgstr "M-filtrering"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:462
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:873
-#, fuzzy
-#| msgid "iterations"
 msgid "filtration Y"
-msgstr "gjentakelser"
+msgstr "Y-filtrering"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:468
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:877
@@ -6217,17 +6174,13 @@ msgstr "spredning av inhibitor"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:480
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:885
-#, fuzzy
-#| msgid "capture details"
 msgid "spread tail"
-msgstr "opptaksdetaljer"
+msgstr "spredningens hale"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:486
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:889
-#, fuzzy
-#| msgid "twilight"
 msgid "tail weight"
-msgstr "skumring"
+msgstr "halevekt"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:492
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:893
@@ -6236,17 +6189,13 @@ msgstr "hemming innen samme lag"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:498
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:897
-#, fuzzy
-#| msgid "interpolation"
 msgid "interlayer inhibition"
-msgstr "interpolasjon"
+msgstr "hemming mellom lag"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:504
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:901
-#, fuzzy
-#| msgid "read exposure"
 msgid "preflash exposure"
-msgstr "les eksponering"
+msgstr "forhåndsblink eksponering"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:510
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:905
@@ -6279,106 +6228,73 @@ msgstr "kvalitet"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:534
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:921
-#, fuzzy
-#| msgid "enable timeline"
 msgid "enable halation"
-msgstr "slå på tidslinje"
+msgstr "aktiver halasjon"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:540
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:925
-#, fuzzy
-#| msgid "scattering"
 msgid "scatter amount"
-msgstr "spredning"
+msgstr "mengde spredning"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:546
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:929
-#, fuzzy
-#| msgid "scattering"
 msgid "scatter size"
-msgstr "spredning"
+msgstr "størrelse på spredning"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:552
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:933
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "fall-off strength"
 msgid "halation strength"
-msgstr "fall-off styrke"
+msgstr "styrke på halasjon"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:558
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:937
-#, fuzzy
-#| msgid "frame line size"
 msgid "halation size"
-msgstr "rammelinjebredde"
+msgstr "størrelse på halasjon"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:564
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:941
-#, fuzzy
-#| msgid "highlights"
 msgid "highlight boost"
-msgstr "høylys"
+msgstr "økning av høylys"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:570
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:945
-#, fuzzy
-#| msgid "set range"
 msgid "boost range"
-msgstr "velg område"
+msgstr "økningsområde"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:576
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:949
-#, fuzzy
-#| msgid "boost factor"
 msgid "boost protect"
-msgstr "forsterkningsfaktor"
+msgstr "økningsbeskyttelse"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:582
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:953
-#, fuzzy
-#| msgid "filter diffusion"
 msgid "enable diffusion filter"
-msgstr "filterspredning"
+msgstr "aktiver diffusjonsfilter"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:588
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:957
-#, fuzzy
-#| msgctxt "section"
-#| msgid "diffusion spatiality"
 msgid "diffusion filter type"
-msgstr "utstrekning av diffusjon"
+msgstr "type diffusjonsfilter"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:594
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:961
-#, fuzzy
-#| msgctxt "section"
-#| msgid "diffusion spatiality"
 msgid "diffusion strength"
-msgstr "utstrekning av diffusjon"
+msgstr "styrke på diffusjon"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:600
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:965
-#, fuzzy
-#| msgctxt "section"
-#| msgid "diffusion spatiality"
 msgid "diffusion size"
-msgstr "utstrekning av diffusjon"
+msgstr "størrelse på diffusjon"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:606
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:969
-#, fuzzy
-#| msgctxt "section"
-#| msgid "diffusion spatiality"
 msgid "diffusion halo warmth"
-msgstr "utstrekning av diffusjon"
+msgstr "diffusjonsgloriens varme"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:612
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:973
-#, fuzzy
-#| msgid "filter diffusion"
 msgid "enable print diffusion"
-msgstr "filterspredning"
+msgstr "aktiver diffusjon for print"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:618
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:977
@@ -6387,17 +6303,13 @@ msgstr "type diffusjonsfilter ved print"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:624
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:981
-#, fuzzy
-#| msgid "finetune denoising strength"
 msgid "print diffusion strength"
-msgstr "finjuster styrken av støyreduksjonen"
+msgstr "styrke på diffusjon for print"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:630
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:985
-#, fuzzy
-#| msgid "filter diffusion"
 msgid "print diffusion size"
-msgstr "filterspredning"
+msgstr "diffusjonsstørrelse for print"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:636
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:989
@@ -6406,52 +6318,38 @@ msgstr "diffusjonsgloriens varme ved print"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:642
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:993
-#, fuzzy
-#| msgid "enable timeline"
 msgid "enable grain"
-msgstr "slå på tidslinje"
+msgstr "aktiver korn"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:648
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:997
-#, fuzzy
-#| msgid "strength"
 msgid "grain strength"
-msgstr "styrke"
+msgstr "styrke på korn"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:654
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1001
-#, fuzzy
-#| msgid "motion blur"
 msgid "grain blur"
-msgstr "bevegelsesuskarphet"
+msgstr "kornenes uskarphet"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:660
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1005
-#, fuzzy
-#| msgid "green purity"
 msgid "granularity"
-msgstr "grønn renhet"
+msgstr "granularitet"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:666
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1009
-#, fuzzy
-#| msgid "uniformly"
 msgid "uniformity"
-msgstr "jevnt"
+msgstr "uniformitet"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:672
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1013
-#, fuzzy
-#| msgid "display wavelet scale"
 msgid "sublayer particle scale"
-msgstr "vis småbølgeskala"
+msgstr "partikkelskala på underlag"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:678
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1017
-#, fuzzy
-#| msgid "density"
 msgid "density floor"
-msgstr "densitet"
+msgstr "tetthetsgulv"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:684
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1021
@@ -6460,38 +6358,28 @@ msgstr "størrelse på fargesky"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:690
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1025
-#, fuzzy
-#| msgid "frame line size"
 msgid "frame long edge"
-msgstr "rammelinjebredde"
+msgstr "rammens lengste side"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:696
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1029
-#, fuzzy
-#| msgid "compression mode"
 msgid "pre-compression boost"
-msgstr "komprimeringsmodus"
+msgstr "økning før kompresjon"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:702
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1033
-#, fuzzy
-#| msgid "compression level"
 msgid "post-compression scale"
-msgstr "komprimeringsnivå"
+msgstr "skalering etter kompresjon"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:708
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1037
-#, fuzzy
-#| msgid "central radius"
 msgid "recovery radius"
-msgstr "sentral radius"
+msgstr "gjenopprettingsradius"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:714
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1041
-#, fuzzy
-#| msgid "recover purity"
 msgid "recovery strength"
-msgstr "gjenopprett renhet"
+msgstr "gjenopprettingsstyrke"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:720
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1045
@@ -6500,10 +6388,8 @@ msgstr "fremkallingsgamma"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:726
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1049
-#, fuzzy
-#| msgid "target gamma"
 msgid "fast layer gamma"
-msgstr "ønsket gamma"
+msgstr "det raske lagets gamma"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:732
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1053
@@ -6512,10 +6398,8 @@ msgstr "gamma for tregt lag"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:738
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1057
-#, fuzzy
-#| msgid "develop history"
 msgid "developer exhaustion"
-msgstr "redigeringshistorikk"
+msgstr "fremkallerutmattelse"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:744
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1061
@@ -6524,56 +6408,40 @@ msgstr "press/dra"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:750
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1065
-#, fuzzy
-#| msgid "surface blur"
 msgid "scanner blur"
-msgstr "overflateutjevning"
+msgstr "tilsløring for skanner"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:756
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1069
-#, fuzzy
-#| msgid "sharpness"
 msgid "scanner sharpness"
-msgstr "skarphet"
+msgstr "skannerskarphet"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:762
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1073
-#, fuzzy
-#| msgctxt "section"
-#| msgid "scanner exposure settings"
 msgid "scanner sharpen strength"
-msgstr "skannerens eksponeringsinnstilling"
+msgstr "skannerens skarphetsstyrke"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:768
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1077
-#, fuzzy
-#| msgctxt "section"
-#| msgid "preview single scale"
 msgid "viewing glare"
-msgstr "vis enkeltskala"
+msgstr "betraktningsgjenskinn"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:774
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:780
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1081
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1085
-#, fuzzy
-#| msgid "print time"
 msgid "development time"
-msgstr "utskriftstidspunkt"
+msgstr "fremkallingstid"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:786
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1089
-#, fuzzy
-#| msgid "adaptation"
 msgid "bandwidth adaptation"
-msgstr "tilpasning"
+msgstr "båndbreddetilpasning"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:792
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1093
-#, fuzzy
-#| msgid "adaptation"
 msgid "surface adaptation"
-msgstr "tilpasning"
+msgstr "overflatetilpasning"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1111
 msgid "draft (17³ table)"
@@ -6588,17 +6456,14 @@ msgid "high (49³ table)"
 msgstr "høy (49³ tabell)"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1114
-#, fuzzy
-#| msgid "512 px (very slow)"
 msgid "exact spectral (very slow)"
-msgstr "512 px (veldig treg)"
+msgstr "nøyaktig spektral (veldig treg)"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1118
-#, fuzzy
 #| msgctxt "accel"
 #| msgid "black exposure"
 msgid "black pro-mist"
-msgstr "svart eksponering"
+msgstr "black pro-mist"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1119
 msgid "glimmerglass"
@@ -6609,10 +6474,8 @@ msgid "pro-mist"
 msgstr "pro-mist"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1121
-#, fuzzy
-#| msgid "bloom"
 msgid "cinebloom"
-msgstr "glød"
+msgstr "filmglød"
 
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:135
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:232
@@ -7340,10 +7203,8 @@ msgid "failed to extract archive"
 msgstr "greide ikke pakke ut arkiv"
 
 #: ../src/common/ai_models.c:2430
-#, fuzzy
-#| msgid "image `%s' is not available!"
 msgid "ai subsystem is not available"
-msgstr "bilde `%s' er ikke tilgjengelig!"
+msgstr "ki undersystem er ikke tilgjengelig"
 
 #: ../src/common/ai_models.c:2484
 #, c-format
@@ -9522,18 +9383,15 @@ msgid "checking for updated sidecar files (%d%%)"
 msgstr "sjekker for oppdaterte sidefiler (%d%%)"
 
 #: ../src/control/crawler.c:771 ../src/control/crawler.c:1002
-#, fuzzy, c-format
-#| msgid "updated XMP sidecar files found"
+#, c-format
 msgid "%u updated XMP sidecar file found"
 msgid_plural "%u updated XMP sidecar files found"
-msgstr[0] "oppdatert XMP sidefil funnet"
-msgstr[1] "oppdatert XMP sidefil funnet"
+msgstr[0] "%u oppdatert XMP sidefil funnet"
+msgstr[1] "%u oppdaterte XMP sidefiler funnet"
 
 #: ../src/control/crawler.c:813
-#, fuzzy
-#| msgid "checking for updated sidecar files (%d%%)"
 msgid "checking for updated sidecar files"
-msgstr "sjekker for oppdaterte sidefiler (%d%%)"
+msgstr "sjekker for oppdaterte sidefiler"
 
 #: ../src/control/crawler.c:1244
 #, c-format
@@ -10283,10 +10141,9 @@ msgstr[0] "importerer %d bilde"
 msgstr[1] "importerer %d bilder"
 
 #: ../src/control/jobs/control_jobs.c:3307
-#, fuzzy, c-format
-#| msgid "importing image %s"
+#, c-format
 msgid "importing image %d/%d"
-msgstr "importerer bilde %s"
+msgstr "importerer bilde %d/%d"
 
 #: ../src/control/jobs/control_jobs.c:3315
 #, c-format
@@ -11245,10 +11102,8 @@ msgid "move down"
 msgstr "flytt ned"
 
 #: ../src/develop/imageop.c:1096
-#, fuzzy
-#| msgid "delete instance"
 msgid "delete this instance"
-msgstr "slett forekomst"
+msgstr "slett denne forekomsten"
 
 #: ../src/develop/imageop.c:1099 ../src/develop/imageop.c:4503
 #: ../src/libs/modulegroups.c:4410
@@ -13995,12 +13850,12 @@ msgstr "ingen leser for EXIF-merkelapper tilgjengelig"
 
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:467
 msgid " no exif tag reader available, exiting..."
-msgstr "ingen leser for EXIF-merkelapper tilgjengelig, avslutter..."
+msgstr " ingen leser for EXIF-merkelapper tilgjengelig, avslutter..."
 
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:475
 #, lua-format
 msgid " selected tag reader %s not available"
-msgstr "den valgte leseren for merkelapper, %s er ikke tilgjengelig"
+msgstr " den valgte leseren for merkelapper, %s er ikke tilgjengelig"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. U S E R  I N T E R F A C E
@@ -14541,7 +14396,7 @@ msgstr "kunne ikke åpne bokmerkefil"
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/recent_bookmarks.lua:275
 msgid " only  runs on Linux"
-msgstr "kjører bare på Linux"
+msgstr " kjører bare på Linux"
 
 #: ../src/external/lua-scripts/official/recent_bookmarks.lua:281
 msgid "recent bookmarks file not found"
@@ -14970,7 +14825,7 @@ msgstr "velg duplikater fra en samling"
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/select_duplicates.lua:131
 msgid " create collection from selection"
-msgstr "opprett en samling fra utvalg"
+msgstr " opprett en samling fra utvalg"
 
 #: ../src/external/lua-scripts/official/select_duplicates.lua:132
 msgid "create collection of selected duplicates"
@@ -15308,7 +15163,7 @@ msgstr "opprett en midlertidig samling fra et utvalg"
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/selection2collection.lua:144
 msgid " keep collections created from selection"
-msgstr "behold samlinger opprettet fra utvalg"
+msgstr " behold samlinger opprettet fra utvalg"
 
 #: ../src/external/lua-scripts/official/selection2collection.lua:145
 msgid "keep collections created from selections"
@@ -15563,11 +15418,11 @@ msgstr "ikke slett JPG-er etter at de er kopiert til mipmap-mappen"
 #. RAW+JPEG pairs
 #: ../src/external/lua-scripts/official/use_paired_jpg_as_mipmap.lua:240
 msgid "No RAW+JPEG pairs to process"
-msgstr "ingen RAW+JPG-par å behandle"
+msgstr "Ingen RAW+JPG-par å behandle"
 
 #: ../src/external/lua-scripts/official/use_paired_jpg_as_mipmap.lua:244
 msgid "Generating cache from jpgs"
-msgstr "oppretter mellomlager fra JPG-er"
+msgstr "Oppretter mellomlager fra JPG-er"
 
 #. v["raw"]:generate_cache(true, 6, 6)
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -17687,22 +17542,16 @@ msgid "set the theme for the user interface"
 msgstr "angi utseende for brukergrensesnittet"
 
 #: ../src/gui/preferences.c:470
-#, fuzzy
-#| msgid "condensed panels' controls"
 msgid "condensed module controls"
 msgstr "fortettede panelkontroller"
 
 #: ../src/gui/preferences.c:478
-#, fuzzy
-#| msgid "condensed panels' controls"
 msgid "use condensed module controls"
-msgstr "fortettede panelkontroller"
+msgstr "bruk fortettede panelkontroller"
 
 #: ../src/gui/preferences.c:487
-#, fuzzy
-#| msgid "focused module '%s'"
 msgid "rounded module headers"
-msgstr "fokusert modul '%s'"
+msgstr "avrundede modulhoder"
 
 #: ../src/gui/preferences.c:495
 msgid "use rounded module headers variant"
@@ -17710,16 +17559,12 @@ msgstr "bruk variant med avrundede modultopper"
 
 #. focused module border
 #: ../src/gui/preferences.c:502
-#, fuzzy
-#| msgid "focused module '%s'"
 msgid "focused module border"
-msgstr "fokusert modul '%s'"
+msgstr "innramming på fokusert modul"
 
 #: ../src/gui/preferences.c:514 ../src/gui/preferences.c:539
-#, fuzzy
-#| msgid "lighten"
 msgid "light"
-msgstr "lysne"
+msgstr "lys"
 
 #: ../src/gui/preferences.c:515 ../src/gui/preferences.c:540
 #: ../src/iop/lowlight.c:631
@@ -17727,36 +17572,26 @@ msgid "dark"
 msgstr "mørkt"
 
 #: ../src/gui/preferences.c:524
-#, fuzzy
-#| msgid "select border color"
 msgid "set the focused module border color"
-msgstr "velg kantfarge"
+msgstr "velg farge på den fokuserte modulens kantlinje"
 
 #. expanded module border
 #: ../src/gui/preferences.c:527
-#, fuzzy
-#| msgid "module order"
 msgid "expanded module border"
-msgstr "modulrekkefølge"
+msgstr "innramming for utvidete moduler"
 
 #: ../src/gui/preferences.c:549
-#, fuzzy
-#| msgid "select border color"
 msgid "set the expanded module border color"
-msgstr "velg kantfarge"
+msgstr "velg farge på den utvidete modulens kantlinje"
 
 #. accent color
 #: ../src/gui/preferences.c:552
-#, fuzzy
-#| msgid "target color"
 msgid "accent color"
-msgstr "ønsket farge"
+msgstr "uthevingsfarge"
 
 #: ../src/gui/preferences.c:573
-#, fuzzy
-#| msgid "set the theme for the user interface"
 msgid "set the theme accent color for the interface"
-msgstr "angi utseende for brukergrensesnittet"
+msgstr "angi temaets uthevingsfarge for brukergrensesnittet"
 
 #: ../src/gui/preferences.c:588 ../src/gui/preferences.c:595
 msgid "use system font size"
@@ -17917,16 +17752,12 @@ msgid "not downloaded"
 msgstr "ikke lastet ned"
 
 #: ../src/gui/preferences_ai.c:255
-#, fuzzy
-#| msgid "import from file…"
 msgid "imported from file"
-msgstr "importer fra fil..."
+msgstr "importert fra fil"
 
 #: ../src/gui/preferences_ai.c:257
-#, fuzzy
-#| msgid "local copy"
 msgid "local"
-msgstr "lokal kopi"
+msgstr "lokal"
 
 #: ../src/gui/preferences_ai.c:434
 msgid "select hardware acceleration for AI inference:"
@@ -17941,24 +17772,22 @@ msgid "<i>not available, will fall back to CPU</i>"
 msgstr "<i>ikke tilgjengelig, faller tilbake til CPU</i>"
 
 #: ../src/gui/preferences_ai.c:729
-#, fuzzy, c-format
-#| msgid "could not create directory `%s'!"
+#, c-format
 msgid "could not reach %d model repository"
 msgid_plural "could not reach %d model repositories"
-msgstr[0] "kunne ikke opprette mappe `%s'!"
-msgstr[1] "kunne ikke opprette mappe `%s'!"
+msgstr[0] "kunne ikke nå %d modelldepot"
+msgstr[1] "kunne ikke nå %d modelldepoter"
 
 #: ../src/gui/preferences_ai.c:732
 msgid "all installed models are up to date"
 msgstr "alle installerte modeller er oppdatert"
 
 #: ../src/gui/preferences_ai.c:748
-#, fuzzy, c-format
-#| msgid "model not available"
+#, c-format
 msgid "%u model has an update available"
 msgid_plural "%u models have updates available"
-msgstr[0] "modellen er ikke tilgjengelig"
-msgstr[1] "modellen er ikke tilgjengelig"
+msgstr[0] "%u modell har en tilgjengelig oppdatering"
+msgstr[1] "%u modeller har tilgjengelige oppdateringer"
 
 #: ../src/gui/preferences_ai.c:754
 #, c-format
@@ -17990,16 +17819,12 @@ msgstr[1] ""
 "%d depoter kunne ikke nås, så det kan være flere"
 
 #: ../src/gui/preferences_ai.c:784
-#, fuzzy
-#| msgid "bilateral"
 msgid "_later"
-msgstr "bilateral"
+msgstr "_senere"
 
 #: ../src/gui/preferences_ai.c:785
-#, fuzzy
-#| msgid "update"
 msgid "_update now"
-msgstr "oppdater"
+msgstr "_oppdater nå"
 
 #: ../src/gui/preferences_ai.c:1051
 msgid "downloading AI model"
@@ -18019,38 +17844,28 @@ msgid "retrieving the list of models…"
 msgstr "henter listen over modeller…"
 
 #: ../src/gui/preferences_ai.c:1343
-#, fuzzy
-#| msgid "nothing to save"
 msgid "nothing to install from here"
-msgstr "ingenting å lagre"
+msgstr "ingenting å installere herfra"
 
 #: ../src/gui/preferences_ai.c:1365
-#, fuzzy
-#| msgid "downloaded"
 msgid "download size"
-msgstr "nedlastet"
+msgstr "nedlastingsstørrelse"
 
 #: ../src/gui/preferences_ai.c:1369 ../src/gui/preferences_ai.c:2077
 msgid "license"
 msgstr "lisens"
 
 #: ../src/gui/preferences_ai.c:1437
-#, fuzzy
-#| msgid "vertical position"
 msgid "the official repository"
-msgstr "loddrett plassering"
+msgstr "det offisielle depotet"
 
 #: ../src/gui/preferences_ai.c:1439
-#, fuzzy
-#| msgid "local contrast"
 msgid "a local install"
-msgstr "lokal kontrast"
+msgstr "en lokal installasjon"
 
 #: ../src/gui/preferences_ai.c:1443
-#, fuzzy
-#| msgid "install model"
 msgid "replace installed model?"
-msgstr "installer modell"
+msgstr "erstatt installert modell?"
 
 #: ../src/gui/preferences_ai.c:1445
 #, c-format
@@ -18072,10 +17887,8 @@ msgid "repository not usable"
 msgstr "depotet er ikke brukbart"
 
 #: ../src/gui/preferences_ai.c:1489
-#, fuzzy
-#| msgid "add this widget"
 msgid "add this repository?"
-msgstr "legg til denne widgeten"
+msgstr "legg til dette depotet?"
 
 #: ../src/gui/preferences_ai.c:1490
 #, c-format
@@ -18091,19 +17904,14 @@ msgstr ""
 "som installeres derfra erstatter hvilken som helst modell med det samme navnet"
 
 #: ../src/gui/preferences_ai.c:1567
-#, fuzzy
-#| msgid "a preset with this name already exists!"
 msgid "that repository is already listed"
-msgstr "en forhåndsinnstilling med dette navnet finnes fra før!"
+msgstr "dette depotet er allerede oppført"
 
 #: ../src/gui/preferences_ai.c:1618
 msgid "repositories"
 msgstr "depoter"
 
 #: ../src/gui/preferences_ai.c:1653
-#, fuzzy
-#| msgctxt "blendmode"
-#| msgid "add"
 msgid "add"
 msgstr "legg til"
 
@@ -18113,34 +17921,24 @@ msgid "remove"
 msgstr "fjern"
 
 #: ../src/gui/preferences_ai.c:1729
-#, fuzzy
-#| msgid "invalid repository format"
 msgid "no repository configured"
-msgstr "ugyldig format på depot"
+msgstr "intet depot er konfigurert"
 
 #: ../src/gui/preferences_ai.c:1730
-#, fuzzy
-#| msgid "invalid repository format"
 msgid "set plugins/ai/repository first"
-msgstr "ugyldig format på depot"
+msgstr "angi plugins/ki/depot først"
 
 #: ../src/gui/preferences_ai.c:1735
-#, fuzzy
-#| msgid "install a model from a local .dtmodel file"
 msgid "install models from repository"
-msgstr "installer en modell fra en lokal .dtmodel-fil"
+msgstr "installer modeller fra depot"
 
 #: ../src/gui/preferences_ai.c:1739
-#, fuzzy
-#| msgid "install model"
 msgid "_install"
-msgstr "installer modell"
+msgstr "_installer"
 
 #: ../src/gui/preferences_ai.c:1767
-#, fuzzy
-#| msgid "replace history"
 msgid "repository"
-msgstr "erstatt redigeringshistorikk"
+msgstr "depot"
 
 #: ../src/gui/preferences_ai.c:1796 ../src/gui/preferences_ai.c:2745
 #: ../src/libs/metadata_view.c:141
@@ -18156,10 +17954,8 @@ msgid "status"
 msgstr "status"
 
 #: ../src/gui/preferences_ai.c:1828
-#, fuzzy
-#| msgid "manage presets..."
 msgid "manage repositories…"
-msgstr "behandle forhåndsinnstillinger..."
+msgstr "behandle depoter…"
 
 #: ../src/gui/preferences_ai.c:1830
 msgid "add or remove the repositories models can be installed from"
@@ -18284,10 +18080,8 @@ msgid "enable AI features"
 msgstr "aktiver KI-funksjoner"
 
 #: ../src/gui/preferences_ai.c:2485
-#, fuzzy
-#| msgid "automatically update module name"
 msgid "automatically check for model updates"
-msgstr "oppdater modulnavnet automatisk"
+msgstr "sjekk automatisk for modelloppdateringer"
 
 #: ../src/gui/preferences_ai.c:2491
 msgid ""
@@ -18375,7 +18169,7 @@ msgstr "last ned eller oppdater de valgte modellene"
 #. import from file button
 #: ../src/gui/preferences_ai.c:2847
 msgid "import from file…"
-msgstr "importer fra fil..."
+msgstr "importer fra fil…"
 
 #: ../src/gui/preferences_ai.c:2849
 msgid "install a model from a local .dtmodel file"
@@ -18403,10 +18197,8 @@ msgid "remove the selected models from disk"
 msgstr "fjern valgte modeller fra disk"
 
 #: ../src/gui/preferences_ai.c:2887
-#, fuzzy
-#| msgid "go to the full version of the %s module"
 msgid "look for newer versions of the installed models"
-msgstr "gå til den hele versjonen av %s-modulen"
+msgstr "se etter nyere versjoner av de installerte modellene"
 
 #: ../src/gui/preferences_ai.c:2894
 msgid "open help page for AI settings"
@@ -18663,10 +18455,8 @@ msgid "manage presets..."
 msgstr "behandle forhåndsinnstillinger..."
 
 #: ../src/gui/presets.c:1746
-#, fuzzy
-#| msgid "edit this preset.."
 msgid "edit this preset..."
-msgstr "rediger denne forhåndsinnstillingen.."
+msgstr "rediger denne forhåndsinnstillingen…"
 
 #: ../src/gui/presets.c:1747
 msgid "delete this preset"
@@ -18676,10 +18466,8 @@ msgstr "slett denne forhåndsinnstillingen"
 #. * default): edit/delete are not allowed, so fall through to store/
 #. * update instead of leaving a bare separator behind the preset list.
 #: ../src/gui/presets.c:1754
-#, fuzzy
-#| msgid "store new preset.."
 msgid "store new preset..."
-msgstr "lagre ny forhåndsinnstilling.."
+msgstr "lagre ny forhåndsinnstilling…"
 
 #: ../src/gui/presets.c:1761
 msgid "update preset"
@@ -19607,10 +19395,9 @@ msgid "enter the title of the book"
 msgstr "legg inn bokens tittel"
 
 #: ../src/imageio/storage/latex.c:378
-#, fuzzy, c-format
-#| msgid "could not export to file `%s'!"
+#, c-format
 msgid "could not export to latex book '%s'!"
-msgstr "kunne ikke eksportere til fil `%s'!"
+msgstr "kunne ikke eksportere til latex-bok `%s'!"
 
 #: ../src/imageio/storage/piwigo.c:607
 msgid "authenticated"
@@ -21173,28 +20960,20 @@ msgid "increase border size to enable the frame line"
 msgstr "øk kantstørrelse for å aktivere rammelinjen"
 
 #: ../src/iop/borders.c:859
-#, fuzzy
-#| msgid "horizontal offset of center of the effect"
 msgid "increase horizontal offset to enable the frame line"
-msgstr "vannrett forskyvning for sentrum av effekten"
+msgstr "øk vannrett forskyvning for å aktivere rammelinjen"
 
 #: ../src/iop/borders.c:861
-#, fuzzy
-#| msgid "horizontal offset of center of the effect"
 msgid "decrease horizontal offset to enable the frame line"
-msgstr "vannrett forskyvning for sentrum av effekten"
+msgstr "reduser vannrett forskyvning for å aktivere rammelinjen"
 
 #: ../src/iop/borders.c:863
-#, fuzzy
-#| msgid "vertical offset of center of the effect"
 msgid "increase vertical offset to enable the frame line"
-msgstr "loddrett forskyvning for senter av effekten"
+msgstr "øk loddrett forskyvning for å aktivere rammelinjen"
 
 #: ../src/iop/borders.c:865
-#, fuzzy
-#| msgid "vertical offset of center of the effect"
 msgid "decrease vertical offset to enable the frame line"
-msgstr "loddrett forskyvning for senter av effekten"
+msgstr "reduser loddrett forskyvning for å aktivere rammelinjen"
 
 #: ../src/iop/borders.c:876 ../src/iop/borders.c:1030
 msgid "size of the frame line in percent of min border width"
@@ -24240,7 +24019,7 @@ msgid ""
 "only affects dark parts of the image."
 msgstr ""
 "legg til kompensasjon for å redusere forsterkning av støy i skyggene.\n"
-"påvirker bare mørke deler av bildet"
+"påvirker bare mørke deler av bildet."
 
 #: ../src/iop/crop.c:121
 msgid "crop"
@@ -24382,7 +24161,7 @@ msgstr ""
 
 #: ../src/iop/demosaic.c:1745
 msgid "Bayer4 sensor demosaicing methods."
-msgstr "Mosaikkfjerningsmetoder for Bayer4-sensor"
+msgstr "Mosaikkfjerningsmetoder for Bayer4-sensor."
 
 #: ../src/iop/demosaic.c:1750
 msgid "monochrome sensor demosaicing methods."
@@ -24522,11 +24301,9 @@ msgstr ""
 "upresis radiusberegning pga beskjæring eller fordi du er zoomet inn for mye"
 
 #: ../src/iop/demosaicscale.c:38
-#, fuzzy
-#| msgid "crop and rotate"
 msgctxt "modulename"
 msgid "crop and scale input"
-msgstr "beskjær og roter"
+msgstr "beskjær og skaler inndata"
 
 #: ../src/iop/denoiseprofile.c:811
 msgid "wavelets: chroma only"
@@ -26042,11 +25819,9 @@ msgid "this module is deprecated. please use the filmic rgb module instead."
 msgstr "denne modulen er utdatert. vennligst bruk filmaktig rgb i stedet."
 
 #: ../src/iop/globaltonemap.c:304 ../src/iop/monochrome.c:231
-#, fuzzy
-#| msgid "fast guided filter failed to allocate memory, check your RAM settings"
 msgid "error: bilateral filter failed to allocate memory, check your RAM usage!"
 msgstr ""
-"raskt guidet filter kunne ikke allokere minne, sjekk innstillingene for RAM"
+"feil: bilateralt filter kunne ikke allokere minne, sjekk din bruk av RAM!"
 
 #: ../src/iop/globaltonemap.c:640 ../src/libs/filters/colors.c:313
 msgid "operator"
@@ -28215,10 +27990,8 @@ msgstr ""
 "du skal ikke røre noe her!"
 
 #: ../src/iop/satcurvergb.c:180
-#, fuzzy
-#| msgid "saturation"
 msgid "saturation curve"
-msgstr "fargemetning"
+msgstr "fargemetningskurve"
 
 #: ../src/iop/satcurvergb.c:185
 msgid "sat vs sat|saturation versus saturation|brilliance curve|satcurve"
@@ -28229,66 +28002,48 @@ msgid "remap saturation and brilliance with curves"
 msgstr "omfordel fargemetning og briljans med kurver"
 
 #: ../src/iop/satcurvergb.c:857 ../src/iop/satcurvergb.c:961
-#, fuzzy
-#| msgid "fast guided filter failed to allocate memory, check your RAM settings"
 msgid ""
 "saturation curve: guided filter failed to allocate memory, disabling it for "
 "this run"
 msgstr ""
-"raskt guidet filter kunne ikke allokere minne, sjekk innstillingene for RAM"
+"fargemetningskurve: guidet filter kunne ikke allokere minne, det deaktiveres "
+"for denne kjøringen"
 
 #: ../src/iop/satcurvergb.c:1457
-#, fuzzy
-#| msgid "node saturation"
 msgid "gentle saturation"
-msgstr "fargemetning i node"
+msgstr "forsiktig fargemetning"
 
 #: ../src/iop/satcurvergb.c:1464
-#, fuzzy
-#| msgid "saturated colors"
 msgid "protect saturated colors"
-msgstr "mettede farger"
+msgstr "beskytt mettede farger"
 
 #: ../src/iop/satcurvergb.c:1470
-#, fuzzy
-#| msgid "global brilliance"
 msgid "gentle brilliance"
-msgstr "global lyshet"
+msgstr "forsiktig briljans"
 
 #: ../src/iop/satcurvergb.c:1477
 msgid "bright mids, protect extremes"
 msgstr "lyse midttoner, beskytt ytterpunkter"
 
 #: ../src/iop/satcurvergb.c:1941
-#, fuzzy
-#| msgid "cannot display masks when the blending mask is displayed"
 msgid "cannot display saturation masks while the blending mask is displayed"
-msgstr "kan ikke vise masker når blandingsmasken vises"
+msgstr "kan ikke vise metningsmasker når blandingsmasken vises"
 
 #: ../src/iop/satcurvergb.c:2140
-#, fuzzy
-#| msgid "pick color from image"
 msgid "pick saturation from image"
-msgstr "velg farge fra bilde"
+msgstr "velg metning fra bilde"
 
 #: ../src/iop/satcurvergb.c:2144
-#, fuzzy
-#| msgid "display exposure mask"
 msgid "display saturation mask"
-msgstr "vis eksponeringsmaske"
+msgstr "vis fargemetningsmaske"
 
 #: ../src/iop/satcurvergb.c:2155
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "AzBz"
 msgid "JzAzBz"
-msgstr "AzBz"
+msgstr "JzAzBz"
 
 #: ../src/iop/satcurvergb.c:2156
-#, fuzzy
-#| msgid "darktable"
 msgid "darktable UCS"
-msgstr "darktable"
+msgstr "darktable UCS"
 
 #: ../src/iop/satcurvergb.c:2158
 msgid "choose the perceptual saturation definition used by both curves"
@@ -28309,10 +28064,8 @@ msgid "px"
 msgstr "px"
 
 #: ../src/iop/satcurvergb.c:2185
-#, fuzzy
-#| msgid "slope of the linear section around the pivot"
 msgid "size of the neighborhood used to guide the filter"
-msgstr "stigning på den lineære delen rundt vippepunktet"
+msgstr "størrelse på omgivelsene brukt til å guide filteret"
 
 #: ../src/iop/satcurvergb.c:2190
 msgid ""
@@ -28320,24 +28073,15 @@ msgid ""
 "sensitive transitions"
 msgstr ""
 "uttoningens presisjon: høyere verdier gir mykere, mindre kantfølsomme "
-<<<<<<< HEAD
 "overganger"
-=======
-"overganger."
->>>>>>> 3cf3dc58278e5ef5aee68b46137189fe1690a899
 
 #: ../src/iop/satcurvergb.c:2195
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "preset/camera neutral"
 msgid "protect near-neutrals"
-msgstr "forhåndsinnstilling/kamera nøytral"
+msgstr "beskytt nær nøytrale farger"
 
 #: ../src/iop/satcurvergb.c:2200
-#, fuzzy
-#| msgid "set radius of applied parameters for the guided filter"
 msgid "center of the saturation range protected from the guided filter"
-msgstr "angi radius for det guidede filterets brukte parametre"
+msgstr "sentrum av metningsområdet som er beskyttet fra det guidete filteret"
 
 #: ../src/iop/satcurvergb.c:2207
 msgid "protection transition width"
@@ -28607,8 +28351,6 @@ msgid "cine"
 msgstr "film"
 
 #: ../src/iop/spektrafilm.c:484
-#, fuzzy
-#| msgid "custom"
 msgctxt "section"
 msgid "custom"
 msgstr "egendefinert"
@@ -28680,14 +28422,8 @@ msgstr ""
 "den kan være ufullstendig nedlastet – prøv å hente den igjen"
 
 #: ../src/iop/spektrafilm.c:1336
-#, fuzzy
-#| msgid ""
-#| "image `%s' could not be loaded\n"
-#| "%s"
 msgid "this film or paper could not be loaded"
-msgstr ""
-"bilde `%s' kunne ikke lastes\n"
-"%s"
+msgstr "denne filmen eller papiret kunne ikke lastes"
 
 #: ../src/iop/spektrafilm.c:1413
 #, c-format
@@ -28705,10 +28441,9 @@ msgid "print paper. not used: the film is being scanned directly."
 msgstr "printpapir. ikke i bruk: filmen skannes direkte."
 
 #: ../src/iop/spektrafilm.c:3155
-#, fuzzy, c-format
-#| msgid "auto scale"
+#, c-format
 msgid "auto (%s)"
-msgstr "autoskalering"
+msgstr "auto (%s)"
 
 #: ../src/iop/spektrafilm.c:3157
 #, c-format
@@ -28756,48 +28491,37 @@ msgid "no data pack installed -- the module's controls appear once one is"
 msgstr "ingen datapakke installert – modulens kontroller kommer fram når en er"
 
 #: ../src/iop/spektrafilm.c:3589 ../src/iop/spektrafilm.c:4702
-#, fuzzy
-#| msgid "download all"
 msgid "download data pack"
-msgstr "last ned alle"
+msgstr "last ned datapakke"
 
 #: ../src/iop/spektrafilm.c:3591
 msgid "fetch the matching spectral data pack over the network"
 msgstr "hent den matchende spektraldatapakken over nettverket"
 
 #: ../src/iop/spektrafilm.c:3657
-#, fuzzy
-#| msgid "not rated"
 msgid "cannot render"
-msgstr "ikke vurdert"
+msgstr "kan ikke rendre"
 
 #: ../src/iop/spektrafilm.c:3659
 msgid "data mismatch"
 msgstr "uoverensstemmende data"
 
 #: ../src/iop/spektrafilm.c:3805
-#, fuzzy
-#| msgid "black and white film"
 msgid "look|crisp black and white"
-msgstr "svart/hvitt film"
+msgstr "look|krisp svart/hvitt"
 
 #: ../src/iop/spektrafilm.c:3831
-#, fuzzy
-#| msgid "black and white film"
 msgid "film|black and white"
-msgstr "svart/hvitt film"
+msgstr "film|svart/hvitt"
 
 #: ../src/iop/spektrafilm.c:3864
-#, fuzzy
-#| msgid "split-toning"
 msgid "look|split-toned"
-msgstr "splittoning"
+msgstr "look|splittoning"
 
 #: ../src/iop/spektrafilm.c:3895
-#, fuzzy
 #| msgid "bleach bypass"
 msgid "look|bleach bypass"
-msgstr "hopp over bleking"
+msgstr "look|bleach bypass"
 
 #: ../src/iop/spektrafilm.c:3914
 msgid "film|cinema"
@@ -28808,94 +28532,68 @@ msgid "look|kino 250D"
 msgstr "look|kino 250D"
 
 #: ../src/iop/spektrafilm.c:3968
-#, fuzzy
-#| msgid "filmic"
 msgid "film|classic"
-msgstr "filmaktig"
+msgstr "film|klassisk"
 
 #: ../src/iop/spektrafilm.c:3988
-#, fuzzy
-#| msgid "contrast"
 msgid "film|contrast"
-msgstr "kontrast"
+msgstr "film|kontrast"
 
 #: ../src/iop/spektrafilm.c:4005
-#, fuzzy
-#| msgid "neutral"
 msgid "film|neutral"
-msgstr "nøytral"
+msgstr "film|nøytral"
 
 #: ../src/iop/spektrafilm.c:4043
-#, fuzzy
-#| msgid "film material"
 msgid "film|soft pastel"
-msgstr "filmbase"
+msgstr "film|myk pastell"
 
 #: ../src/iop/spektrafilm.c:4065
 msgid "film|warm"
 msgstr "film|varm"
 
 #: ../src/iop/spektrafilm.c:4086
-#, fuzzy
-#| msgid "portrait"
 msgid "film|portrait"
-msgstr "stående"
+msgstr "film|portrett"
 
 #: ../src/iop/spektrafilm.c:4103
-#, fuzzy
-#| msgid "local contrast"
 msgid "film|portrait contrast"
-msgstr "lokal kontrast"
+msgstr "film|portrettkontrast"
 
 #: ../src/iop/spektrafilm.c:4130
 msgid "look|vivid"
 msgstr "look|livlig"
 
 #: ../src/iop/spektrafilm.c:4157
-#, fuzzy
-#| msgid "Monochrome"
 msgid "look|skodachrome"
-msgstr "Svart/hvitt"
+msgstr "look|kodachrome"
 
 #: ../src/iop/spektrafilm.c:4188
 msgid "look|foliage"
 msgstr "look|bladverk"
 
 #: ../src/iop/spektrafilm.c:4224
-#, fuzzy
-#| msgid "look"
 msgid "look|glow"
-msgstr "utseende"
+msgstr "look|glød"
 
 #: ../src/iop/spektrafilm.c:4241
-#, fuzzy
-#| msgid "neutralize colors"
 msgid "negative color"
-msgstr "nøytraliser farger"
+msgstr "negativ farge"
 
 #: ../src/iop/spektrafilm.c:4242
-#, fuzzy
-#| msgid "monochrome"
 msgid "negative monochrome"
-msgstr "svart/hvitt"
+msgstr "negativ monokrom"
 
 #: ../src/iop/spektrafilm.c:4243
-#, fuzzy
-#| msgid "spot color"
 msgid "positive color"
-msgstr "punktfarge"
+msgstr "positiv farge"
 
 #: ../src/iop/spektrafilm.c:4244
-#, fuzzy
-#| msgid "monochrome"
 msgid "positive monochrome"
-msgstr "svart/hvitt"
+msgstr "positiv monokrom"
 
 #: ../src/iop/spektrafilm.c:4270
-#, fuzzy
-#| msgid "no printers found!"
 msgid "(no profiles found)"
-msgstr "ingen printere funnet!"
+msgstr "(ingen profiler funnet)"
 
 #. Two entries ahead of the stocks, both expressing a state rather than a
 #. paper, so the combobox alone can reach every configuration and no separate
@@ -28918,16 +28616,12 @@ msgid "auto (follow film stock)"
 msgstr "auto (følg filmtypen)"
 
 #: ../src/iop/spektrafilm.c:4311
-#, fuzzy
-#| msgid "none"
 msgid "(none)"
-msgstr "ingen"
+msgstr "(ingen)"
 
 #: ../src/iop/spektrafilm.c:4628 ../src/iop/spektrafilm.c:4659
-#, fuzzy
-#| msgid "on the selection:"
 msgid "reset only this section"
-msgstr "på valget:"
+msgstr "nullstill bare denne seksjonen"
 
 #: ../src/iop/spektrafilm.c:4731
 msgid "film emulsion (spektrafilm filming profile)"
@@ -28944,10 +28638,8 @@ msgstr ""
 "\"auto\" bruker papiret som er nevnt i filmtypens profil."
 
 #: ../src/iop/spektrafilm.c:4740
-#, fuzzy
-#| msgid "printer"
 msgid "print paper"
-msgstr "skriver"
+msgstr "printpapir"
 
 #: ../src/iop/spektrafilm.c:4750
 msgid ""
@@ -28965,10 +28657,8 @@ msgstr ""
 "lengste side (36 mm). begge beskriver det samme formatet."
 
 #: ../src/iop/spektrafilm.c:4763
-#, fuzzy
-#| msgid "mm"
 msgid " mm"
-msgstr "mm"
+msgstr " mm"
 
 #: ../src/iop/spektrafilm.c:4765
 msgid ""
@@ -28983,14 +28673,10 @@ msgstr ""
 
 #. ---- tab 1: film (exposure + development) ----
 #: ../src/iop/spektrafilm.c:4784
-#, fuzzy
-#| msgid "filmic"
 msgid "film"
-msgstr "filmaktig"
+msgstr "film"
 
 #: ../src/iop/spektrafilm.c:4786 ../src/iop/spektrafilm.c:5016
-#, fuzzy
-#| msgid "exposure"
 msgctxt "section"
 msgid "exposure"
 msgstr "eksponering"
@@ -29008,7 +28694,7 @@ msgstr ""
 
 #: ../src/iop/spektrafilm.c:4802
 msgid " stops"
-msgstr "blendertrinn"
+msgstr " blendertrinn"
 
 #: ../src/iop/spektrafilm.c:4805
 msgid ""
@@ -29033,10 +28719,8 @@ msgid "chemistry"
 msgstr "kjemi"
 
 #: ../src/iop/spektrafilm.c:4816 ../src/iop/spektrafilm.c:5037
-#, fuzzy
-#| msgid "D min"
 msgid " min"
-msgstr "D min"
+msgstr " min"
 
 #: ../src/iop/spektrafilm.c:4820
 msgid ""
@@ -29161,11 +28845,9 @@ msgstr "andelen av hemmeren som spres i den lange halen. 0 fjerner halen."
 #. the rest of the film stage rather than on a tab of its own.
 #. the enlarger-side diffusion filter, alongside the rest of the print stage
 #: ../src/iop/spektrafilm.c:4907 ../src/iop/spektrafilm.c:5091
-#, fuzzy
-#| msgid "fusion"
 msgctxt "section"
 msgid "diffusion"
-msgstr "kobling"
+msgstr "diffusjon"
 
 #: ../src/iop/spektrafilm.c:4919
 msgid ""
@@ -29219,20 +28901,11 @@ msgstr ""
 #. the model is, not what the look is, and quality trades accuracy for
 #. speed.
 #: ../src/iop/spektrafilm.c:4959
-#, fuzzy
-#| msgid "advanced"
 msgctxt "section"
 msgid "advanced"
 msgstr "avansert"
 
 #: ../src/iop/spektrafilm.c:4963
-#, fuzzy
-#| msgid ""
-#| "spectral accuracy vs speed: the colour model is evaluated on a table\n"
-#| "of this size and PCHIP-interpolated between the points, so a finer\n"
-#| "table lands closer to the exact answer and costs more to build.\n"
-#| "\"exact spectral\" skips the table and runs the model per pixel. CPU\n"
-#| "only, and slow."
 msgid ""
 "spectral accuracy vs speed: the color model is evaluated on a table\n"
 "of this size and PCHIP-interpolated between the points, so a finer\n"
@@ -29261,13 +28934,6 @@ msgstr ""
 "ingen effekt på filmer hvis profil ikke har båndpassfilter."
 
 #: ../src/iop/spektrafilm.c:4985
-#, fuzzy
-#| msgid ""
-#| "second half of the film's sensitivity adaptation: a per-colour\n"
-#| "exposure correction of up to two stops, zero at the film's own white\n"
-#| "point and growing with distance from it. off by default: it shifts\n"
-#| "saturated colours substantially. no effect on stocks whose profile\n"
-#| "carries no surface (the monochrome films and every print paper)."
 msgid ""
 "second half of the film's sensitivity adaptation: a per-color\n"
 "exposure correction of up to two stops, zero at the film's own white\n"
@@ -29279,22 +28945,9 @@ msgstr ""
 "eksponeringskorreksjon på opp til to blendertrinn, null ved filmens\n"
 "eget hvittpunkt og økende med avstanden derfra. av som standard:\n"
 "den vrir mettede farger kraftig. ingen effekt på filmer hvis profil \n"
-"ikke har en overflate (monokrome filmer og alle papir)."
+"ikke har en overflate (monokrome filmer og alle utskriftspapir)."
 
 #: ../src/iop/spektrafilm.c:4994
-#, fuzzy
-#| msgid ""
-#| "pull colours the output profile cannot hold back inside it, along a\n"
-#| "curve that leaves everything already inside untouched.\n"
-#| "\n"
-#| "switching it off shows where the film is producing colours the\n"
-#| "profile has no room for: they leave the range, so darktable's\n"
-#| "clipping indicator marks them and the raw extent of the overshoot\n"
-#| "is visible.\n"
-#| "\n"
-#| "leave it on for an image you intend to keep. off, saturated colours\n"
-#| "are clipped by whatever comes next in the pipeline, which loses the\n"
-#| "separation between them and can shift their hue."
 msgid ""
 "pull what the output profile cannot hold back inside it, along\n"
 "curves that leave everything already inside untouched. this is two\n"
@@ -29315,22 +28968,26 @@ msgid ""
 "separation between them and can shift their hue."
 msgstr ""
 "dra farger som utgangsprofilen ikke kan holde på innsiden\n"
-"langs en kurve som beholder alt allerede på innsiden urørt.\n"
+"langs en kurve som beholder alt allerede på innsiden urørt. dette\n"
+"er to knær: kroma mot profilens grense og lyshet fra\n"
+"de øvre mellomtonene opp, som runder høylysene av mot hvitt.\n"
 "\n"
 "å skru den av viser hvor filmen produserer farger profilen\n"
 "ikke har plass til: de forlater området, så darktables\n"
 "klippeindikator markerer dem og mengden av overskyting\n"
-"er synlig.\n"
+"er synlig. høylysene slutter å rundes av og rekker lengre på samme\n"
+"tid, siden lyshetskneet forsvinner med resten. for å plassere\n"
+"høylysene uten å miste avrundingen, bruk 'økning før kompresjon'\n"
+"og 'skalering etter kompresjon' på skannerfanen i stedet.\n"
 "\n"
 "la den være på for et bilde du vil beholde. av vil mettede farger\n"
 "klippes av det som kommer etter i prosesseringskjeden, som\n"
-"mister separasjonen mellom dem og kan vri fargetonene deres."
+"gjør at separasjonen mellom dem går tapt og kan vri\n"
+"fargetonene deres."
 
 #: ../src/iop/spektrafilm.c:5020
-#, fuzzy
-#| msgid "pivot relative exposure"
 msgid "print brightness (enlarger exposure)"
-msgstr "balansepunkt relativ eksponering"
+msgstr "lyshet for print (forstørrerens eksponering)"
 
 #: ../src/iop/spektrafilm.c:5025
 msgid ""
@@ -29359,11 +29016,9 @@ msgstr ""
 "ble beregnet til; 0 bruker papirets egen standardverdi."
 
 #: ../src/iop/spektrafilm.c:5045
-#, fuzzy
-#| msgid "iterations"
 msgctxt "section"
 msgid "filtration"
-msgstr "gjentakelser"
+msgstr "filtrering"
 
 #: ../src/iop/spektrafilm.c:5048 ../src/iop/spektrafilm.c:5053
 #: ../src/iop/spektrafilm.c:5075 ../src/iop/spektrafilm.c:5083
@@ -29379,11 +29034,9 @@ msgid "yellow enlarger filtration, Kodak CC units from neutral"
 msgstr "gul forstørrerfiltrering, Kodak CC-enheter fra nøytral"
 
 #: ../src/iop/spektrafilm.c:5059
-#, fuzzy
-#| msgid "flash"
 msgctxt "section"
 msgid "preflash"
-msgstr "blits"
+msgstr "forhåndsblink"
 
 #: ../src/iop/spektrafilm.c:5070
 msgid ""
@@ -29457,11 +29110,9 @@ msgstr ""
 #. first describes the emulsion and rebuilds the crystals, the second only
 #. changes how those crystals are drawn at the output size.
 #: ../src/iop/spektrafilm.c:5138
-#, fuzzy
-#| msgid "fusion"
 msgctxt "section"
 msgid "emulsion"
-msgstr "kobling"
+msgstr "emulsjon"
 
 #: ../src/iop/spektrafilm.c:5144
 msgid ""
@@ -29502,11 +29153,6 @@ msgstr ""
 "er kontrollen for grovere korn."
 
 #: ../src/iop/spektrafilm.c:5169
-#, fuzzy
-#| msgid ""
-#| "how evenly the crystals are distributed, relative to the stock's own\n"
-#| "figure. lowering it bends the noise toward a bell: grain that peaks\n"
-#| "in the midtones and eases off again in the densest areas."
 msgid ""
 "how evenly the crystals are distributed, relative to the stock's own\n"
 "figure. raising it bends the noise toward a bell: grain that peaks\n"
@@ -29515,7 +29161,8 @@ msgid ""
 msgstr ""
 "hvor jevnt krystallene er distribuert, i forhold til filmens eget\n"
 "tall. senkes verdien bøyes støyen mot en bjelle: korn som er sterkest\n"
-"i mellomtonene og blir svakere i de tetteste områdene."
+"i mellomtonene og blir svakere i de tetteste områdene. senking av\n"
+"denne lar korn fortsette å vokse helt inn i de tetteste områdene."
 
 #: ../src/iop/spektrafilm.c:5177
 msgid ""
@@ -29545,11 +29192,9 @@ msgstr ""
 "måles til mellom 0.03 og 0.06, filmer for levende bilder betydelig høyere."
 
 #: ../src/iop/spektrafilm.c:5194
-#, fuzzy
-#| msgid "text"
 msgctxt "section"
 msgid "texture"
-msgstr "tekst"
+msgstr "tekstur"
 
 #: ../src/iop/spektrafilm.c:5200
 msgid ""
@@ -29596,7 +29241,7 @@ msgid ""
 "denoiser and cannot invent detail. 0 switches it off; overdo it and\n"
 "grain starts to look crunchy."
 msgstr ""
-"Styrken i gjenopprettingen av skarphet – den gjenoppretter det "
+"styrken i gjenopprettingen av skarphet – den gjenoppretter det "
 "korntilsløringen\n"
 "myknet opp. Den flytter rundt på tetthet uten å tilføre noe, så det er ikke "
 "et\n"
@@ -29606,17 +29251,13 @@ msgstr ""
 
 #. ---- tab 4: halation ----
 #: ../src/iop/spektrafilm.c:5233
-#, fuzzy
-#| msgid "action"
 msgid "halation"
-msgstr "handling"
+msgstr "halasjon"
 
 #. Two distinct effects share this tab: scatter is the spread inside the
 #. emulsion, halation the bounce off the film base behind it. A heading each,
 #. so the four sliders do not read as one group.
 #: ../src/iop/spektrafilm.c:5240
-#, fuzzy
-#| msgid "scattering"
 msgctxt "section"
 msgid "scatter"
 msgstr "spredning"
@@ -29649,27 +29290,33 @@ msgid ""
 "frame softens quickly: the radius scales with the value, so 4.0 is a\n"
 "four times wider blur everywhere."
 msgstr ""
+"skalerer spredningsradien i emulsjonen. 1.0 er film-nøyaktig:\n"
+"radien filmmodellen selv bruker, og noe man normalt ikke endrer.\n"
+"\n"
+"over 1.0 er du forbi hva filmmodellen sier, og hele bildet myknes\n"
+"raskt: radien skalerer med verdien, så 4.0 er en \n"
+"fire ganger bredere tilsløring overalt."
 
 #: ../src/iop/spektrafilm.c:5278
-#, fuzzy
-#| msgid "action"
 msgctxt "section"
 msgid "halation"
-msgstr "handling"
+msgstr "handlinghalasjon"
 
 #: ../src/iop/spektrafilm.c:5283
 msgid "halation strength. 1.0 is film-accurate."
-msgstr ""
+msgstr "halasjonsstyrke. 1.0 er filmnøyaktig."
 
 #: ../src/iop/spektrafilm.c:5287
 msgid "halation size: scales the glow radius (1.0 = film-accurate)"
-msgstr ""
+msgstr "halasjonsstørrelse: skalerer glødens radius (1.0 = filmnøyaktig)"
 
 #: ../src/iop/spektrafilm.c:5295
 msgid ""
 "highlight boost: reconstructs clipped highlights so they bloom into\n"
 "halation/diffusion (0 = off)."
 msgstr ""
+"fremheving av høylys: rekonstruerer klipte høylys så de gløder inn\n"
+"i halasjon/diffusjon (0 = av)."
 
 #: ../src/iop/spektrafilm.c:5302
 msgid ""
@@ -29677,28 +29324,30 @@ msgid ""
 "lower confines it to the brightest clipped highlights, higher pulls\n"
 "more of the upper midtones into the bloom."
 msgstr ""
+"utvider eller innsnevrer toneområdet som fremhevingen av lysere partier "
+"virker på.\n"
+"lavere begrenser den til de lyseste klipte høylysene, høyere drar\n"
+"mer av de øvre mellomtonene inn i gløden."
 
 #: ../src/iop/spektrafilm.c:5309
 msgid "protect tones below this many stops over mid-grey from the boost"
 msgstr ""
+"beskytt toner lavere enn så mange blendertrinn over middels grå fra "
+"fremhevingen"
 
 #. ---- tab 5: scanner ----
 #: ../src/iop/spektrafilm.c:5313
-#, fuzzy
-#| msgid "channel"
 msgid "scanner"
-msgstr "kanal"
+msgstr "skanner"
 
 #. Pre-compression boost lives here, not in the header. It acts in the scan
 #. stage, immediately before the OkLCh gamut compressor -- the last thing the
 #. module does. A position at the top would imply an input control, and its
 #. picker reads the processed image.
 #: ../src/iop/spektrafilm.c:5319
-#, fuzzy
-#| msgid "output"
 msgctxt "section"
 msgid "output"
-msgstr "utgang"
+msgstr "utdata"
 
 #: ../src/iop/spektrafilm.c:5323
 msgid ""
@@ -29709,12 +29358,19 @@ msgid ""
 "this acts at the END of the module, so the picker measures the processed "
 "image."
 msgstr ""
+"multipliserer XYZ luminans like før OkLch gamutkompressoren\n"
+"og skyver histogrammet mot høyre mens filmens naturlige\n"
+"skulderavrunding bevares.\n"
+"\n"
+"dette skjer på SLUTTEN av modulen, så pipetten måler det behandlede bildet."
 
 #: ../src/iop/spektrafilm.c:5333
 msgid ""
 "pick brightest tone in the selected area and set the boost so it\n"
 "lands just past the compressor's knee."
 msgstr ""
+"velg lyseste tone i det valgte området og sett økningen så\n"
+"den lander like over kompressorens kne."
 
 #: ../src/iop/spektrafilm.c:5340
 msgid ""
@@ -29729,37 +29385,49 @@ msgid ""
 "nothing rolls off behind the compressor, so this can push values\n"
 "past white for the rest of the pipeline to handle."
 msgstr ""
+"skalerer det ferdige bildet etter gamutkompressoren.\n"
+"\n"
+"økningen over skyver mer lys inn i kompressoren, som løfter\n"
+"bildet og desaturerer farger som allerede var nær kanten av\n"
+"gamut. dette endrer bare nivået, forholdet mellom kanalene\n"
+"bevares, på samme måte som en tonekurve gjør ved å flytte\n"
+"hvittpunktet.\n"
+"\n"
+"ingenting rundes av etter kompressoren, så dette kan skyve\n"
+"verdier forbi hvitt, som resten av prosesseringskjeden må håndtere."
 
 #: ../src/iop/spektrafilm.c:5352
 msgid ""
 "pick brightest tone in the selected area and scale it to just below white."
 msgstr ""
+"velg den lyseste tonen i det valgte området og skaler den til like under "
+"hvitt."
 
 #: ../src/iop/spektrafilm.c:5355
-#, fuzzy
-#| msgid "sharpness"
 msgctxt "section"
 msgid "sharpness"
 msgstr "skarphet"
 
 #: ../src/iop/spektrafilm.c:5359
 msgid "scanner lens softness, in pixels (0 = off)"
-msgstr ""
+msgstr "skannerlinsens mykhet, i piksler (0 = av)"
 
 #: ../src/iop/spektrafilm.c:5363
 msgid "scanner sharpening radius, in pixels"
-msgstr ""
+msgstr "skannerens skarphetsradius, i piksler"
 
 #: ../src/iop/spektrafilm.c:5367
 msgid ""
 "scanner sharpening strength (0 = off). 0.7 is what a scan of the\n"
 "film normally gets; leave at 0 if you prefer to sharpen downstream."
 msgstr ""
+"skannerens skarphetsstyrke (0 = av). 0.7 er det en skanning av\n"
+"filmen vanligvis får; la være på 0 hvis du foretrekke å skjerpe senere."
 
 #: ../src/iop/spektrafilm.c:5372
 msgctxt "section"
 msgid "glare"
-msgstr ""
+msgstr "gjenskinn"
 
 #: ../src/iop/spektrafilm.c:5376
 msgid ""
@@ -29767,6 +29435,9 @@ msgid ""
 "print surface, in percent. lifts the deepest blacks slightly. not\n"
 "applied when scanning the film directly."
 msgstr ""
+"betraktningsgjenskinn: et svakt slør av betrakningslyset som reflekteres\n"
+"fra printoverflaten, i prosent. løfter det dypeste svarte så vidt.\n"
+"blir ikke lagt til når filmen skannes direkte."
 
 #: ../src/iop/splittoning.c:79
 msgid "split-toning"
@@ -31374,16 +31045,6 @@ msgid "file format"
 msgstr "filformat"
 
 #: ../src/libs/export.c:1468
-#, fuzzy
-#| msgid ""
-#| "images will be exported according to the format specified here\n"
-#| "\n"
-#| "when exporting to AVIF, EXR, JPEG XL, or XCF, selecting specific\n"
-#| "metadata is not currently possible\n"
-#| "\n"
-#| "for these formats, no metadata fields will be included\n"
-#| "unless the user selects <b>all</b> of the metadata checkboxes in\n"
-#| "the export module preferences"
 msgid ""
 "images will be exported according to the format specified here\n"
 "\n"
@@ -31396,12 +31057,12 @@ msgid ""
 msgstr ""
 "bilder blir eksportert i henhold til formatet som spesifiseres her\n"
 "\n"
-"ved eksport til AVIF, EXR, JPEG XL eller XCF er det ikke\n"
+"ved eksport til AVIF, EXR, HEIF, JPEG XL eller XCF er det ikke\n"
 "mulig å velge spesifikke metadata\n"
 "\n"
 "for disse formatene vil ingen metadatafelt bli inkludert\n"
 "med mindre brukeren velger <b>alle</b> avkrysningsboksene\n"
-"i eksportmodulens preferanser"
+"i eksportmodulens innstillinger"
 
 #: ../src/libs/export.c:1489
 msgid "set size"
@@ -33718,15 +33379,15 @@ msgid "go to the full version of the %s module"
 msgstr "gå til den hele versjonen av %s-modulen"
 
 #: ../src/libs/modulegroups.c:1056
-#, fuzzy, c-format
-#| msgid "add widget to the quick access panel"
+#, c-format
 msgid "close `%s` before switching to quick access panel"
-msgstr "legg widget til på hurtigtilgangspanel"
+msgstr "lukk `%s' før du bytter til hurtigtilgangspanelet"
 
 #: ../src/libs/modulegroups.c:1075
 #, c-format
 msgid "finish mask work in `%s` before switching to quick access panel"
 msgstr ""
+"gjør ferdig maskeringsarbeidet i `%s' før du bytter til hurtigtilgangspanelet"
 
 #: ../src/libs/modulegroups.c:1707 ../src/libs/modulegroups.c:1804
 #: ../src/libs/modulegroups.c:1841 ../src/libs/modulegroups.c:1895
@@ -33848,20 +33509,14 @@ msgid "add widget"
 msgstr "legg til widget"
 
 #: ../src/libs/modulegroups.c:3034
-#, fuzzy
-#| msgid "show module"
 msgid "show all modules"
-msgstr "vis modul"
+msgstr "vis alle moduler"
 
 #: ../src/libs/modulegroups.c:3041
-#, fuzzy
-#| msgid "show all history modules"
 msgid "show active and history modules"
-msgstr "vis alle historikkmoduler"
+msgstr "vis aktive moduler og historikkmoduler"
 
 #: ../src/libs/modulegroups.c:3048
-#, fuzzy
-#| msgid "show only active modules"
 msgid "show active modules only"
 msgstr "vis bare aktive moduler"
 
@@ -34193,10 +33848,8 @@ msgid "failed to load AI %s model"
 msgstr "kunne ikke laste KI-modellen %s"
 
 #: ../src/libs/neural_restore.c:1642
-#, fuzzy
-#| msgid "neural restore: cannot create output directory"
 msgid "neural restore: the output pattern expands to nothing"
-msgstr "nevral restaurering: kan ikke opprette målmappe"
+msgstr "nevral restaurering: utdatamønsteret utvider seg til ingenting"
 
 #: ../src/libs/neural_restore.c:1654
 msgid "neural restore: cannot create output directory"
@@ -34393,6 +34046,10 @@ msgid ""
 "$(FILE_FOLDER) = source image folder\n"
 "$(FILE.NAME) = source name without extension"
 msgstr ""
+"hvor denne oppgaven skrives, uten utvidelsen. det som kommer etter "
+"kildenavnet er suffikset\n"
+"$(FILE_FOLDER) = bildemappe for kilde\n"
+"$(FILE.NAME) = kildenavn uten utvidelse"
 
 #: ../src/libs/print_settings.c:61 ../src/libs/print_settings.c:3503
 msgid "print settings"
@@ -34421,7 +34078,7 @@ msgstr "kan ikke bruke skriverprofil `%s'"
 
 #: ../src/libs/print_settings.c:665
 msgid "Windows printing failed"
-msgstr ""
+msgstr "utskrift på Windows feilet"
 
 #: ../src/libs/print_settings.c:679
 msgid "failed to create temporary PDF for printing"
@@ -34432,20 +34089,16 @@ msgid "maximum image per page reached"
 msgstr "største antall bilder pr side er nådd"
 
 #: ../src/libs/print_settings.c:865
-#, fuzzy
-#| msgid "print settings"
 msgid "no settings context"
-msgstr "innstillinger for utskrift"
+msgstr "ingen kontekst for innstilinger"
 
 #: ../src/libs/print_settings.c:897
-#, fuzzy
-#| msgid "cannot open printer profile `%s'"
 msgid "could not open print ticket provider"
-msgstr "kan ikke åpne skriverprofil `%s'"
+msgstr "kunne ikke åpne leverandør av utskriftsbillett"
 
 #: ../src/libs/print_settings.c:946
 msgid "could not convert printer settings to print ticket"
-msgstr ""
+msgstr "kunne ikke konvertere skriverinnstillinger til utskriftsbillett"
 
 #: ../src/libs/print_settings.c:975
 msgid "cannot print until a picture is selected"
@@ -34462,10 +34115,8 @@ msgstr "papirtype må velges for å kunne skrive ut"
 #. not fatal — dt_win_print_file can fall back to driver
 #. defaults if print_ticket_data is NULL
 #: ../src/libs/print_settings.c:1032
-#, fuzzy
-#| msgid "print with current settings"
 msgid "printing with default printer settings"
-msgstr "skriv ut med nåværende innstillinger"
+msgstr "skriver ut med standard printerinnstillinger"
 
 #. in this case no need to release from cache what we couldn't get
 #: ../src/libs/print_settings.c:1052
@@ -34477,7 +34128,7 @@ msgstr "fikk ikke hentet bildet %d for utskrift"
 #: ../src/libs/print_settings.c:1221
 #, c-format
 msgid "loading printer details for %s…"
-msgstr ""
+msgstr "laster inn printerdetaljer for %s…"
 
 #: ../src/libs/print_settings.c:1347
 #, c-format
@@ -34678,10 +34329,8 @@ msgid "temporary style to use while printing"
 msgstr "midlertidig stil å bruke til utskrift"
 
 #: ../src/libs/print_settings.c:3505
-#, fuzzy
-#| msgid "print settings"
 msgid "open printer settings"
-msgstr "innstillinger for utskrift"
+msgstr "åpne innstillinger for utskrift"
 
 #: ../src/libs/print_settings.c:3516
 msgid "print with current settings"
@@ -34917,7 +34566,7 @@ msgstr "siste øyeblikksbilde av/på"
 #: ../src/libs/snapshots.c:918
 #, c-format
 msgid "all %d snapshot slots are in use"
-msgstr ""
+msgstr "alle %d plasser for øyeblikksbilder er i bruk"
 
 #: ../src/libs/styles.c:60
 msgid ""
@@ -35221,8 +34870,6 @@ msgid "change path..."
 msgstr "endre bane..."
 
 #: ../src/libs/tagging.c:2652
-#, fuzzy
-#| msgid "set as a tag"
 msgid "set as tag"
 msgstr "sett som et nøkkelord"
 
