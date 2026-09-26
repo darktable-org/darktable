@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-19 17:59+0200\n"
-"PO-Revision-Date: 2026-09-26 01:01+0900\n"
+"PO-Revision-Date: 2026-09-26 02:18+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1701,14 +1701,14 @@ msgstr ""
 "<b>シーン参照（シグモイド）：</b>モダンなワークフロー。トーンマッパーのコント"
 "ロール項目が少なめ\n"
 "\n"
-"<b>シーン参照 （フィルミック）：</b>：モダンなワークフロー。トーンマッピングの"
-"コントロール項目が多め\n"
+"<b>シーン参照（フィルミック）</b>：モダンなワークフロー。トーンマッピングのコ"
+"ントロール項目が多め\n"
 "\n"
-"<b>シーン参照 （AgX）</b>：モダンなワークフロー。トーンマッピングを最大限にコ"
-"ントロール可能\n"
+"<b>シーン参照（AgX）</b>：モダンなワークフロー。トーンマッピングを最大限にコン"
+"トロール可能\n"
 "\n"
-"<b>シーン参照（spektrafilm）</b> モダンなワークフロー。シミュレートしたフィル"
-"ムと印画紙によってトーンマッピングを行います\n"
+"<b>シーン参照（spektrafilm）</b> ：モダンなワークフロー。シミュレートしたフィ"
+"ルムと印画紙によってトーンマッピングを行います\n"
 "\n"
 "<b>ディスプレイ参照（レガシー）</b>：旧式のワークフロー（非推奨）\n"
 "\n"
@@ -5759,7 +5759,7 @@ msgstr "印画紙の光沢（スペキュラハイライト）"
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:156
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:247
 msgid "print exposure adjustment"
-msgstr "印刷露出調整"
+msgstr "プリント露出調整"
 
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:261
 #: ../src/iop/negadoctor.c:421
@@ -6151,17 +6151,17 @@ msgstr "フィルム露出"
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:438
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:857
 msgid "print exposure compensation"
-msgstr "印刷露出補正"
+msgstr "プリント露出補正"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:444
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:861
 msgid "auto print exposure"
-msgstr "自動印刷露出"
+msgstr "自動プリント露出"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:450
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:865
 msgid "print contrast"
-msgstr "印刷コントラスト"
+msgstr "プリントコントラスト"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:456
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:869
@@ -6305,27 +6305,27 @@ msgstr "拡散ハロの色味"
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:612
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:973
 msgid "enable print diffusion"
-msgstr "印刷拡散を有効にする"
+msgstr "プリント拡散を有効にする"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:618
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:977
 msgid "print diffusion filter type"
-msgstr "印刷拡散フィルタの種類"
+msgstr "プリント拡散フィルタの種類"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:624
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:981
 msgid "print diffusion strength"
-msgstr "印刷拡散の強さ"
+msgstr "プリント拡散の強さ"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:630
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:985
 msgid "print diffusion size"
-msgstr "印刷拡散のサイズ"
+msgstr "プリント拡散のサイズ"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:636
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:989
 msgid "print diffusion halo warmth"
-msgstr "印刷拡散ハローの色味"
+msgstr "プリント拡散ハロの色味"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:642
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:993
@@ -18252,7 +18252,7 @@ msgid ""
 "darktable, including any not listed above"
 msgstr ""
 "設定済みのリポジトリがこのバージョンのdarktable向けに提供する、上記に記載のな"
-"いものも含めた全てののモデルを閲覧する"
+"いものも含めた全てのモデルを閲覧する"
 
 #. delete selected button
 #: ../src/gui/preferences_ai.c:2870
@@ -21408,7 +21408,7 @@ msgid ""
 "this module is deprecated. please use the color calibration module instead."
 msgstr ""
 "このモジュールは非推奨です\n"
-"代わりにカラーカリブレーションモジュールを使用してください"
+"代わりにカラーキャリブレーションモジュールを使用してください"
 
 #: ../src/iop/channelmixer.c:132 ../src/iop/channelmixerrgb.c:236
 msgid ""
@@ -21697,8 +21697,8 @@ msgid ""
 msgstr ""
 "ホワイトバランスモジュールがカメラ参照のイルミナント設定を使用していないため、"
 "このモジュールの色順応で問題が起こります\n"
-"ホワイトバランスモジュールの設定を変えるか、カラーカリブレーションモジュールの"
-"色順応を無効にしてください"
+"ホワイトバランスモジュールの設定を変えるか、カラーキャリブレーションモジュール"
+"の色順応を無効にしてください"
 
 #: ../src/iop/channelmixerrgb.c:2076 ../src/iop/channelmixerrgb.c:2084
 msgid "white balance missing (<u>details</u>)"
@@ -26049,7 +26049,7 @@ msgstr ""
 #: ../src/iop/graduatednd.c:1043
 msgid "rotation of filter -180 to 180 degrees"
 msgstr ""
-"フイルターの回転\n"
+"フィルタの回転\n"
 "-180°から180°まで"
 
 #: ../src/iop/graduatednd.c:1056
@@ -27141,7 +27141,7 @@ msgstr "フィルム|反転|ネガ|スキャン"
 
 #: ../src/iop/negadoctor.c:141
 msgid "invert film negative scans and simulate printing on paper"
-msgstr "フィルムのネガスキャンを反転し、紙への印刷をシミュ​​レートします"
+msgstr "フィルムのネガスキャンを反転し、印画紙へのプリントをシミュレートします"
 
 #: ../src/iop/negadoctor.c:472
 msgid "D min"
@@ -27298,7 +27298,7 @@ msgstr "イルミナント 青 ゲイン"
 #. Page PRINT PROPERTIES
 #: ../src/iop/negadoctor.c:973
 msgid "print properties"
-msgstr "印刷プロパティ"
+msgstr "プリントプロパティ"
 
 #. print corrections
 #: ../src/iop/negadoctor.c:976
@@ -27337,14 +27337,14 @@ msgstr ""
 #: ../src/iop/negadoctor.c:998
 msgctxt "section"
 msgid "virtual print emulation"
-msgstr "仮想の印刷のエミュレーション"
+msgstr "仮想のプリントのエミュレーション"
 
 #: ../src/iop/negadoctor.c:1005
 msgid ""
 "correct the printing exposure after inversion to adjust\n"
 "the global contrast and avoid clipping highlights."
 msgstr ""
-"反転後の印刷の露出を補正します\n"
+"反転後のプリント露出を補正します\n"
 "全体のコントラストを調整して、ハイライトのクリッピングを防ぎます"
 
 #: ../src/iop/negadoctor.c:1013
@@ -28517,7 +28517,8 @@ msgstr "spektrafilm"
 #: ../src/iop/spektrafilm.c:673
 msgid "film simulation|analog|spectral|grain|halation|print"
 msgstr ""
-"フィルムシミュレーション|アナログ|スペクトラル|フィルム粒子|ハレーション|印刷"
+"フィルムシミュレーション|アナログ|スペクトラル|フィルム粒子|ハレーション|プリ"
+"ント"
 
 #: ../src/iop/spektrafilm.c:680
 msgid ""
@@ -28655,7 +28656,7 @@ msgstr ""
 
 #: ../src/iop/spektrafilm.c:3589 ../src/iop/spektrafilm.c:4702
 msgid "download data pack"
-msgstr "描画することが出来ません"
+msgstr "データパックをダウンロード"
 
 #: ../src/iop/spektrafilm.c:3591
 msgid "fetch the matching spectral data pack over the network"
@@ -28796,8 +28797,8 @@ msgid ""
 "stocks; \"auto\" uses the paper named in the film stock's profile."
 msgstr ""
 "印画紙\n"
-"\"なし\"は印刷工程を挟まず現像済みフィルムを直接表示します。ポジやリバーサルス"
-"トックではこれが自然なモードです\n"
+"\"なし\"はプリント工程を挟まず現像済みフィルムを直接表示します。ポジやリバーサ"
+"ルストックではこれが自然なモードです\n"
 "\"自動\"はフィルムストックのプロファイルで指定された印画紙を使用します"
 
 #: ../src/iop/spektrafilm.c:4740
@@ -28830,7 +28831,8 @@ msgid ""
 msgstr ""
 "物理的なフレームサイズ（長辺）\n"
 "粒子・散乱・ハレーション・拡散がすべてこのスケールで計算されるため、\n"
-"フォーマットが小さいほど同じ印刷サイズでもそれぞれが相対的に大きく表示されます"
+"フォーマットが小さいほど同じプリントサイズでもそれぞれが相対的に大きく表示され"
+"ます"
 
 #. ---- tab 1: film (exposure + development) ----
 #: ../src/iop/spektrafilm.c:4784
@@ -28849,9 +28851,9 @@ msgid ""
 "(except on positive/reversal film, which has no print stage)."
 msgstr ""
 "フィルム露出補正\n"
-"「自動印刷露出」が有効である場合、印刷露出が自動的に追従するため、明るさへの正"
-"味の影響はありません\n"
-"（印刷工程を持たないポジ／リバーサルフィルムを除く）"
+"「自動プリント露出」が有効である場合、プリント露出が自動的に追従するため、明る"
+"さへの正味の影響はありません\n"
+"（プリント工程を持たないポジ／リバーサルフィルムを除く）"
 
 #: ../src/iop/spektrafilm.c:4802
 msgid " stops"
@@ -29039,7 +29041,7 @@ msgstr ""
 "の後1、2と続きます\n"
 "スクロールと矢印キーは1/8刻みで動きます\n"
 "\n"
-"ハロはファイルター無しの画像の上に加算されるため、\n"
+"ハロはフィルタ無しの画像の上に加算されるため、\n"
 "この値を上げるとシャドウが持ち上がり、コントラストが下がるとともにハイライトが"
 "輝きます"
 
@@ -29110,7 +29112,7 @@ msgstr ""
 "フィルムの感度順応の後半部分：\n"
 "色ごとに最大2段までの露出補正であり、フィルム自体のホワイトポイントではゼロと"
 "なり、そこから離れるほど大きくなります\n"
-"デフォルトでは無効です：有効にすると彩度の高い色が大きくずれます\n"
+"デフォルトでは無効です：有効にすると彩度の高い色が著しく変化します\n"
 "プロファイルに表面データを持たないストック（モノクロームフィルムおよびすべての"
 "印画紙）には影響しません"
 
@@ -29153,7 +29155,7 @@ msgstr ""
 
 #: ../src/iop/spektrafilm.c:5020
 msgid "print brightness (enlarger exposure)"
-msgstr "印刷の明るさ（引き伸ばし露光）"
+msgstr "プリントの明るさ（引き伸ばし露光）"
 
 #: ../src/iop/spektrafilm.c:5025
 msgid ""
@@ -29162,22 +29164,22 @@ msgid ""
 "exposure to affect brightness directly, same as a fixed enlarger\n"
 "exposure time."
 msgstr ""
-"実際のプリンターが一定の濃度で印刷するのと同じように、フィルム露出の変化に応じ"
-"て印刷露出を自動的に補正します\n"
+"実際のプリント作業で一定の濃度でプリントするのと同じように、フィルム露出の変化"
+"に応じてプリント露出を自動的に補正します\n"
 "無効にすると、引き伸ばし露光時間を固定した場合と同様に、フィルム露出が明るさへ"
 "直接影響します"
 
 #: ../src/iop/spektrafilm.c:5032
 msgid "print contrast (morphs the paper's density curves)"
-msgstr "印刷コントラスト（印画紙の濃度カーブを変形します）"
+msgstr "プリントコントラスト（印画紙の濃度カーブを変形します）"
 
 #: ../src/iop/spektrafilm.c:5041
 msgid ""
 "print development time. snaps to the nearest time the paper was\n"
 "characterised at; 0 uses its own default."
 msgstr ""
-"印刷現像時間。印画紙が特性評価されている時間のうち最も近いものにスナップしま"
-"す\n"
+"プリント現像時間。印画紙が特性評価されている時間のうち最も近いものにスナップし"
+"ます\n"
 "0にするとデフォルト値を使用します"
 
 #: ../src/iop/spektrafilm.c:5045
@@ -29236,7 +29238,7 @@ msgstr ""
 
 #: ../src/iop/spektrafilm.c:5102
 msgid "print diffusion filter type (same presets as the film-stage filter)"
-msgstr "印刷拡散フィルタの種類（フィルム段階のフィルタと同じプリセット）"
+msgstr "プリント拡散フィルタの種類（フィルム段階のフィルタと同じプリセット）"
 
 #: ../src/iop/spektrafilm.c:5109
 msgid ""
@@ -29247,13 +29249,13 @@ msgid ""
 "\n"
 "acts at the enlarger, so it blooms the printed image."
 msgstr ""
-"印刷拡散ハロにどれだけの光が振り分けられるか（0＝オフ）\n"
+"プリント拡散ハロにどれだけの光が振り分けられるか（0＝オフ）\n"
 "\n"
 "これらのフィルタは段数で販売されています：1/8＝0.125、1/4＝0.25、1/2＝0.5、そ"
 "の後1、2と続きます\n"
 "スクロールと矢印キーは1/8刻みで動きます\n"
 "\n"
-"引き伸ばし機側で作用するため、印刷された画像がブルームします"
+"引き伸ばし機側で作用するため、プリント画像がブルームします"
 
 #: ../src/iop/spektrafilm.c:5119
 msgid ""
@@ -29261,16 +29263,16 @@ msgid ""
 "is unchanged; it is spread further from each highlight. use print\n"
 "diffusion strength to change the amount."
 msgstr ""
-"印刷拡散ハロの半径を調整します\n"
+"プリント拡散ハロの半径を調整します\n"
 "光量は変わらず、各ハイライトからより遠くまで広がるだけです\n"
-"光量を変えるには印刷拡散の強さを使用してください"
+"光量を変えるにはプリント拡散の強さを使用してください"
 
 #: ../src/iop/spektrafilm.c:5125
 msgid ""
 "print diffusion halo warmth: >0 warm outer halo, <0 cool (added on\n"
 "top of the selected filter's own warmth bias)."
 msgstr ""
-"印刷拡散ハロの色味：\n"
+"プリント拡散ハロの色味：\n"
 "0より大きいと外側のハロが暖色に、0より小さいと寒色になります\n"
 "（選択したフィルタ自体の色味の傾向に上乗せされます）"
 
@@ -29316,8 +29318,8 @@ msgstr ""
 "描画結果をスケールするだけで、乳剤は変わりません\n"
 "1.0はフィルムに忠実、0はオフです\n"
 "\n"
-"ネガの粒子は印刷工程で再び増幅されますが、スライドは直接スキャンされ増幅されな"
-"いため、\n"
+"ネガの粒子はプリント工程で再び増幅されますが、スライドは直接スキャンされ増幅さ"
+"れないため、\n"
 "同じ値でもスライドフィルムでははるかに弱く感じられます\n"
 "粒子を粗くするには、上にある粒状度を使用してください"
 
@@ -29354,7 +29356,7 @@ msgid ""
 "measure between 0.03 and 0.06, cine stocks considerably higher."
 msgstr ""
 "フィルムに光が全く当たらなかった部分でも各結晶が存在する濃度で、\n"
-"これが明部でも粒子が完全には消えない理由です\n"
+"これが透明部でも粒子が完全には消えない理由です\n"
 "読み込まれたストック自体で計測された下限値（チャンネルごと）をスケールするた"
 "め、チャンネル間のバランスは保たれます\n"
 "一般的なストックは0.03～0.06程度、シネストックはそれよりかなり高くなります"
@@ -29437,10 +29439,9 @@ msgid ""
 "few um on film) but it applies everywhere. lower this if you want a\n"
 "sharper result than the film itself would give."
 msgstr ""
-"ハレーションの反射が起こる前に、乳剤内で散乱する光の割合\n"
+"ハレーションの反射が起こる前段階で、乳剤内で散乱する光の割合\n"
 "1.0がフィルムに忠実であり、同時に最大値です\n"
-"つまり光の全てが散乱することを意味するため、散乱していない画像は何も残りませ"
-"ん\n"
+"つまり光が全て散乱することを意味し、画像内に散乱していない部分は残りません\n"
 "\n"
 "これが画面全体が柔らかくなる理由です：\n"
 "散乱半径自体は小さい（フィルム上で数μm）ものの、画面全体に適用されるためです\n"
@@ -29848,7 +29849,7 @@ msgstr "撮影時にカメラで設定したホワイトバランスを微調整
 #: ../src/iop/temperature.c:2127
 msgctxt "section"
 msgid "scene illuminant temp"
-msgstr "シーンのイルミナントの温度"
+msgstr "シーンのイルミナントの色温度"
 
 #: ../src/iop/temperature.c:2128
 msgid "click to cycle color mode on sliders"
@@ -34017,7 +34018,7 @@ msgstr "AI %s モデルの読み込みに失敗しました"
 
 #: ../src/libs/neural_restore.c:1642
 msgid "neural restore: the output pattern expands to nothing"
-msgstr "ニューラル復元：出力パターンが展開すると空になります"
+msgstr "ニューラル復元：出力パターンを展開した結果、空になります"
 
 #: ../src/libs/neural_restore.c:1654
 msgid "neural restore: cannot create output directory"
