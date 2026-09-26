@@ -3131,6 +3131,16 @@ void gui_init(dt_iop_module_t *self)
 
   self->widget = dt_ui_notebook_page(g->notebook, N_("advanced"), NULL);
 
+  // the graph and the curve smoothing slider carry no field, so the page
+  // names the nine band values and the smoothing they edit
+  static const dt_iop_param_range_t curve_params[] =
+  {
+    { offsetof(dt_iop_toneequalizer_params_t, noise), sizeof(float) * 9 },
+    { offsetof(dt_iop_toneequalizer_params_t, smoothing), sizeof(float) },
+  };
+  dt_iop_page_bind_params(self->widget, self, curve_params,
+                          G_N_ELEMENTS(curve_params));
+
   g->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   GtkWidget *wrapper = dt_gui_vbox(g->area);
   g_object_set_data(G_OBJECT(wrapper), "iop-instance", self);
