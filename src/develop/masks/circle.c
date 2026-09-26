@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2025 darktable developers.
+    Copyright (C) 2013-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,9 +25,6 @@
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "develop/openmp_maths.h"
-
-#define MIN_CIRCLE_RADIUS 0.0005f
-#define MIN_CIRCLE_BORDER 0.0005f
 
 static inline int _nb_ctrl_point(void)
 {
