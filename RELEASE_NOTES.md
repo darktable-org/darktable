@@ -184,6 +184,8 @@ changes (where available).
   optimization level, so models that misbehave under aggressive
   optimization no longer need workarounds in feature code.
 
+- Support DNG files forward matrix
+
 - Panasonic RW2 files now offer embedded lens distortion correction,
   covering built-in and Lumix-branded lenses that lensfun has no
   profile for.

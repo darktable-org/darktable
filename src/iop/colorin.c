@@ -1371,18 +1371,31 @@ void commit_params(dt_iop_module_t *self,
     }
     dt_image_cache_read_release(cimg);
   }
+  if(type == DT_COLORSPACE_FORWARD_MATRIX)
+  {
+    const dt_image_t *cimg = dt_image_cache_get(pipe->image.id, 'r');
+    if(cimg && dt_is_valid_colormatrix(cimg->dng_forward_matrix[0]))
+    {
+      // ForwardMatrix (DNG spec) is already camera -> XYZ, unlike
+      // d65_color_matrix (XYZ -> camera). Do NOT invert it again.
+      d->input = dt_colorspaces_create_xyzmatrix_profile((float(*)[3])cimg->dng_forward_matrix);
+      d->clear_input = TRUE;
+    }
+    else
+      type = DT_COLORSPACE_EMBEDDED_MATRIX;
+    dt_image_cache_read_release(cimg);
+  }
   if(type == DT_COLORSPACE_EMBEDDED_MATRIX)
   {
     // embedded matrix, hopefully D65
     const dt_image_t *cimg = dt_image_cache_get(pipe->image.id, 'r');
-    if(!cimg || !dt_is_valid_colormatrix(cimg->d65_color_matrix[0]))
-      type = DT_COLORSPACE_STANDARD_MATRIX;
-    else
+    if(cimg && dt_is_valid_colormatrix(cimg->d65_color_matrix[0]))
     {
-      d->input = dt_colorspaces_create_xyzimatrix_profile
-        ((float(*)[3])cimg->d65_color_matrix);
+      d->input = dt_colorspaces_create_xyzimatrix_profile((float(*)[3])cimg->d65_color_matrix);
       d->clear_input = TRUE;
     }
+    else
+      type = DT_COLORSPACE_STANDARD_MATRIX;
     dt_image_cache_read_release(cimg);
   }
   if(type == DT_COLORSPACE_STANDARD_MATRIX)
@@ -1920,6 +1933,8 @@ corrupted_profile:
     d->type = DT_COLORSPACE_ADOBERGB;
   else if(dt_image_is_ldr(img))
     d->type = DT_COLORSPACE_SRGB;
+  else if(dt_is_valid_colormatrix(img->dng_forward_matrix[0])) // DNG with forward matrix
+    d->type = DT_COLORSPACE_FORWARD_MATRIX;
   else if(dt_is_valid_colormatrix(img->d65_color_matrix[0])) // image is DNG, EXR, or RGBE
     d->type = DT_COLORSPACE_EMBEDDED_MATRIX;
   else if(dt_image_is_matrix_correction_supported(img)) // image is raw
@@ -1967,6 +1982,18 @@ static void update_profile_list(dt_iop_module_t *self)
     g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_EMBEDDED_MATRIX, ""),
               sizeof(prof->name));
     prof->type = DT_COLORSPACE_EMBEDDED_MATRIX;
+    g->image_profiles = g_list_append(g->image_profiles, prof);
+    prof->in_pos = ++pos;
+  }
+
+  // use the DNG forward matrix if present -- gives the "as intended by
+  // the DNG converter" look rather than the purely colorimetric one
+  if(dt_is_valid_colormatrix(self->dev->image_storage.dng_forward_matrix[0]))
+  {
+    dt_colorspaces_color_profile_t *prof = calloc(1, sizeof(dt_colorspaces_color_profile_t));
+    g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_FORWARD_MATRIX, ""),
+              sizeof(prof->name));
+    prof->type = DT_COLORSPACE_FORWARD_MATRIX;
     g->image_profiles = g_list_append(g->image_profiles, prof);
     prof->in_pos = ++pos;
   }
