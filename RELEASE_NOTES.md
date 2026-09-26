@@ -392,6 +392,12 @@ changes (where available).
   that the module's effect was applied to in reverse, most visible on
   gradients with a sharp transition.
 
+- Fixed XMP sidecar files not being written for images whose creator,
+  description or copyright Exif fields (e.g. Artist, Canon OwnerName)
+  contain non-ASCII characters such as umlauts stored by the camera in
+  a legacy encoding. These fields are now converted to UTF-8 on import.
+  Use "refresh EXIF" on already imported images to fix them.
+
 ## Lua
 
 ### API Version
