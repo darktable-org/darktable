@@ -383,6 +383,9 @@ changes (where available).
 - Fixed the color calibration module not using the gray patch closest to
   middle gray on the Datacolor SpyderCheckr 48 and Photo.
 
+- Fixed darktable being killed when a GPU crashes preparing an AI
+  model. That GPU is then skipped and AI runs on the CPU.
+
 ## Lua
 
 ### API Version
