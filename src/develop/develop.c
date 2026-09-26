@@ -40,6 +40,7 @@
 #include "develop/develop.h"
 #include "develop/frame.h"
 #include "develop/imageop.h"
+#include "bauhaus/bauhaus.h"
 #include "develop/lightroom.h"
 #include "develop/masks.h"
 #include "libs/modulegroups.h"
@@ -1581,6 +1582,10 @@ static void _dev_add_history_item(dt_develop_t *dev,
   {
     if(new_enabled && dt_dev_modulegroups_get_activated(module->dev) == DT_MODULEGROUP_ACTIVE_PIPE)
       dt_dev_modulegroups_update_visibility(dev);
+
+    // the parameters just moved, so the tabs of the module may read
+    // differently now
+    dt_bauhaus_refresh_module_tabs(module);
 
     /* signal that history has changed */
     if(tag_change)
