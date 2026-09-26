@@ -136,6 +136,9 @@ changes (where available).
 - Some safety checks when switching to the quick access panel were
   added.
 
+- Added a visible toggle to show the color sliders in the
+  color equalizer module.
+
 ## Performance Improvements
 
 - Replaced quadratic XMP history writes with a linear algorithm.
