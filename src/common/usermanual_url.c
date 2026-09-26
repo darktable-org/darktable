@@ -154,6 +154,7 @@ dt_help_url urls_db[] =
   {"globaltonemap",              "module-reference/processing-modules/global-tonemap/"},
   {"graduatednd",                "module-reference/processing-modules/graduated-density/"},
   {"grain",                      "module-reference/processing-modules/grain/"},
+  {"halation",                   "module-reference/processing-modules/halation/"},
   {"hazeremoval",                "module-reference/processing-modules/haze-removal/"},
   {"highlights",                 "module-reference/processing-modules/highlight-reconstruction/"},
   {"highpass",                   "module-reference/processing-modules/highpass/"},
