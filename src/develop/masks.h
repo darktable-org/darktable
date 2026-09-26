@@ -31,6 +31,13 @@
 
 G_BEGIN_DECLS
 
+#define MIN_CIRCLE_RADIUS 0.0005f
+#define MIN_CIRCLE_BORDER 0.0005f
+#define MIN_ELLIPSE_RADIUS 0.001f
+#define MIN_ELLIPSE_BORDER 0.001f
+#define MIN_PATH_BORDER 0.0005f
+#define MIN_BRUSH_BORDER 0.00005f
+
 /**forms types */
 typedef enum dt_masks_type_t
 {

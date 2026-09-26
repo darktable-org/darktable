@@ -965,6 +965,11 @@ dt_masks_form_t *dt_masks_get_from_id(const dt_develop_t *dev, const dt_mask_id_
   return dt_masks_get_from_id_ext(dev->forms, id);
 }
 
+static inline gboolean _sane_val(const float val, const float minval, const float maxval)
+{
+  return !dt_isnan(val) && val >= minval && val <= maxval;
+}
+
 void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
 {
   dt_dev_history_item_t *hist_item = NULL;
@@ -1048,6 +1053,79 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
         char *point = malloc(point_size);
         memcpy(point, ptbuf + i*point_size, point_size);
         form->points = g_list_append(form->points, point);
+      }
+    }
+
+    /** For some reason we might find crazy radius or borders here so we check
+        and report via log and a control message.
+        We must never have a border/radius
+          - above a limit
+          - below some specific minimum
+          - being a NaN.
+        In case of such errors we set bad values to something that can be handled
+        in the module's mask interface
+    */
+    const float limit = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
+    if(form->type & DT_MASKS_CIRCLE)
+    {
+      dt_masks_point_circle_t *ref = form->points->data;
+      const gboolean safe_radius = _sane_val(ref->radius, MIN_CIRCLE_RADIUS, limit);
+      const gboolean safe_border = _sane_val(ref->border, MIN_CIRCLE_BORDER, limit);
+      if(!safe_radius || !safe_border)
+      {
+        dt_print(DT_DEBUG_ALWAYS,
+             "Image ID=%d has insane circle mask: radius=%.3f border=%.3f",
+             imgid, ref->radius, ref->border);
+        dt_control_log(_("Image ID=%d has insane circle mask"), imgid);
+        if(!safe_radius)  ref->radius = 0.1f;
+        if(!safe_border)  ref->border = 0.1f * ref->radius;
+      }
+    }
+    else if(form->type & DT_MASKS_ELLIPSE)
+    {
+      dt_masks_point_ellipse_t *ref = form->points->data;
+      const gboolean safe_radius0 = _sane_val(ref->radius[0], MIN_ELLIPSE_RADIUS, limit);
+      const gboolean safe_radius1 = _sane_val(ref->radius[1], MIN_ELLIPSE_RADIUS, limit);
+      const gboolean safe_border = _sane_val(ref->border, MIN_ELLIPSE_BORDER, limit);
+      if(!safe_radius0 || !safe_radius1 || !safe_border)
+      {
+        dt_print(DT_DEBUG_ALWAYS,
+             "Image ID=%d has insane ellipse mask: radii=%.3f/%.3f, border=%.3f",
+             imgid, ref->radius[0], ref->radius[1], ref->border);
+        dt_control_log(_("Image ID=%d has insane ellipse mask"), imgid);
+        if(!safe_radius0) ref->radius[0] = 0.1f;
+        if(!safe_radius1) ref->radius[1] = 0.1f;
+        if(!safe_border)  ref->border = 0.1f * ref->radius[0];
+      }
+    }
+    else if(form->type & DT_MASKS_PATH)
+    {
+      dt_masks_point_path_t *ref = form->points->data;
+      const gboolean safe_border0 = _sane_val(ref->border[0], MIN_PATH_BORDER, limit);
+      const gboolean safe_border1 = _sane_val(ref->border[1], MIN_PATH_BORDER, limit);
+      if(!safe_border0 || !safe_border1)
+      {
+        dt_print(DT_DEBUG_ALWAYS,
+          "Image ID=%d has insane path mask: borders=%.3f/%.3f",
+          imgid, ref->border[0], ref->border[1]);
+        dt_control_log(_("Image ID=%d has insane path mask"), imgid);
+        if(!safe_border0)  ref->border[0] = 0.1f;
+        if(!safe_border1)  ref->border[1] = 0.1f;
+      }
+    }
+    else if(form->type & DT_MASKS_BRUSH)
+    {
+      dt_masks_point_brush_t *ref = form->points->data;
+      const gboolean safe_border0 = _sane_val(ref->border[0], MIN_BRUSH_BORDER, limit);
+      const gboolean safe_border1 = _sane_val(ref->border[1], MIN_BRUSH_BORDER, limit);
+      if(!safe_border0 || !safe_border1)
+      {
+        dt_print(DT_DEBUG_ALWAYS,
+          "Image ID=%d has insane brush mask: borders=%.3f/%.3f",
+          formid, ref->border[0], ref->border[1]);
+        dt_control_log(_("Image ID=%d has insane brush mask"), imgid);
+        if(!safe_border0)  ref->border[0] = 0.1f;
+        if(!safe_border1)  ref->border[1] = 0.1f;
       }
     }
 
