@@ -1612,6 +1612,36 @@ static void _cpu_benchmark(dt_dev_pixelpipe_t *pipe,
   darktable.unmuted = old_muted;
 }
 
+// the colorspace transform for blending runs in place on `tmp`, which is the
+// module's input itself when no input transform was needed. For non-raw images
+// (where rawprepare does not run), the first module's input can be pipe->input
+// itself (see "pipe data: full"), the source image every later run of the pipe
+// starts from again, and invalidating a cacheline does not restore it: each run
+// would convert it once more. Raw images always start with rawprepare, which
+// cannot blend, so their blending modules never read pipe->input directly.
+// A screen pipe therefore transforms a copy only for non-raw images; if
+// allocation fails, it reports to the log and falls back to in-place conversion
+static float *_blend_transform_buffer(const dt_dev_pixelpipe_t *pipe,
+                                      const dt_iop_module_t *module,
+                                      float *tmp,
+                                      const float *input,
+                                      const dt_iop_roi_t *roi,
+                                      const int ch)
+{
+  if(tmp != input || !dt_pipe_is_screen(pipe) || dt_image_is_rawprepare_supported(&pipe->image))
+    return tmp;
+  float *copy = dt_iop_image_alloc(roi->width, roi->height, ch);
+  if(!copy)
+  {
+    dt_print_pipe(DT_DEBUG_PIPE, "transform colorspace for blend",
+                  pipe, module, DT_DEVICE_CPU, roi, NULL,
+                  "cannot allocate temporary buffer, in-place transform may corrupt pipe input");
+    return tmp;
+  }
+  dt_iop_image_copy_by_size(copy, input, roi->width, roi->height, ch);
+  return copy;
+}
+
 static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                                           dt_develop_t *dev,
                                           float *input,
@@ -1836,6 +1866,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   {
     if(cst_tmp != blend_cst)
     {
+      tmp = _blend_transform_buffer(pipe, module, tmp, input, roi_in, piece->colors);
       dt_ioppr_transform_image_colorspace(module, tmp, tmp,
                                         roi_in->width, roi_in->height,
                                         cst_tmp, blend_cst, &cst_tmp,
@@ -2926,6 +2957,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         {
           if(cst_tmp != blend_cst)
           {
+            tmp = _blend_transform_buffer(pipe, module, tmp, input, &roi_in, piece->colors);
             dt_ioppr_transform_image_colorspace(module, tmp, tmp,
                                               roi_in.width, roi_in.height,
                                               cst_tmp, blend_cst, &cst_tmp,

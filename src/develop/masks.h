@@ -1019,7 +1019,7 @@ void dt_masks_dynbuf_debug_print(dt_masks_dynbuf_t *a, gboolean to_stdout)
   {
     FILE *f;
     char filename[255] = { 0 };
-    sprintf(filename, "debug-%ld-%s", time(NULL), a->tag);
+    sprintf(filename, "debug-%" PRIdMAX "-%s", (intmax_t)time(NULL), a->tag);
     f = g_fopen(filename, "w");
     for (size_t i = 0; i < a->pos; i += 2)
     {

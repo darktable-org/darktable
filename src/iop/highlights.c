@@ -451,7 +451,7 @@ void tiling_callback(dt_iop_module_t *self,
     const int max_filter_radius = (1 << scales);
 
     tiling->factor += 2.f * 4 + 6.f * 4 / (DS_FACTOR * DS_FACTOR);
-    tiling->factor_cl += 3.f * 4 + 5.f * 4 / (DS_FACTOR * DS_FACTOR);
+    tiling->factor_cl += 3.f * 4 + 7.f * 4 / (DS_FACTOR * DS_FACTOR);
 
     // The wavelets decomposition uses a temp buffer of size 4 × ds_width
     tiling->maxbuf = 1.f / roi_in->height * dt_get_num_threads() * 4.f / DS_FACTOR;
@@ -588,10 +588,14 @@ int process_cl(dt_iop_module_t *self,
 
   if(g && fullpipe)
   {
-    if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
+    dt_iop_gui_enter_critical_section(self);
+    const dt_highlights_mask_t g_hlr_mask_mode = g->hlr_mask_mode;
+    dt_iop_gui_leave_critical_section(self);
+
+    if(g_hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
     {
       pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-      if(g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED)
+      if(g_hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED)
       {
         const float *c = pipe->dsc.temperature.coeffs;
         float clips[4] = { clipper * (c[RED]   <= 0.0f ? 1.0f : c[RED]),
@@ -879,12 +883,17 @@ void process(dt_iop_module_t *self,
     return;
   }
 
+  dt_highlights_mask_t g_hlr_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
   if(g && fullpipe)
   {
-    if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
+    dt_iop_gui_enter_critical_section(self);
+    g_hlr_mask_mode = g->hlr_mask_mode;
+    dt_iop_gui_leave_critical_section(self);
+
+    if(g_hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
     {
       pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-      if(g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED)
+      if(g_hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED)
       {
         if(scaled)
         {
@@ -990,7 +999,7 @@ void process(dt_iop_module_t *self,
 
     case DT_IOP_HIGHLIGHTS_SEGMENTS:
     {
-      const dt_highlights_mask_t vmode = ((g != NULL) && fullpipe && (g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_CLIPPED)) ? g->hlr_mask_mode : DT_HIGHLIGHTS_MASK_OFF;
+      const dt_highlights_mask_t vmode = g_hlr_mask_mode != DT_HIGHLIGHTS_MASK_CLIPPED ? g_hlr_mask_mode : DT_HIGHLIGHTS_MASK_OFF;
 
       float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, TRUE, TRUE, clipper);
       if(tmp)
@@ -1071,8 +1080,14 @@ void commit_params(dt_iop_module_t *self,
   const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
 
   dt_iop_highlights_gui_data_t *g = self->gui_data;
-  if(g && (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && linear && fullpipe)
-    piece->process_cl_ready = FALSE;
+
+  if(g && linear && fullpipe)
+  {
+    dt_iop_gui_enter_critical_section(self);
+    if(g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED)
+      piece->process_cl_ready = FALSE;
+    dt_iop_gui_leave_critical_section(self);
+  }
 }
 
 void init_global(dt_iop_module_so_t *self)
@@ -1276,7 +1291,10 @@ void reload_defaults(dt_iop_module_t *self)
                                                                    ? DT_IOP_HIGHLIGHTS_SEGMENTS
                                                                    : DT_IOP_HIGHLIGHTS_LAPLACIAN);
     }
+
+    dt_iop_gui_enter_critical_section(self);
     _set_quads(g, NULL);
+    dt_iop_gui_leave_critical_section(self);
   }
   d->clip = MIN(d->clip, img->linear_response_limit);
   d->mode = rawprep && !is_4bayer ? DT_IOP_HIGHLIGHTS_OPPOSED : DT_IOP_HIGHLIGHTS_CLIP;
@@ -1286,7 +1304,11 @@ static void _quad_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   DT_GUARD_GUI_UPDATE();
   dt_iop_highlights_gui_data_t *g = self->gui_data;
+
+  dt_iop_gui_enter_critical_section(self);
   _set_quads(g, quad);
+  dt_iop_gui_leave_critical_section(self);
+
   dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
@@ -1295,8 +1317,11 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
   dt_iop_highlights_gui_data_t *g = self->gui_data;
   if(!in)
   {
+    dt_iop_gui_enter_critical_section(self);
     const gboolean was_visualize = (g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF);
     _set_quads(g, NULL);
+    dt_iop_gui_leave_critical_section(self);
+
     if(was_visualize) dt_dev_reprocess_center(self->dev, self->iop_order);
   }
 }

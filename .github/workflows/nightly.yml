@@ -128,7 +128,7 @@ jobs:
             libxfixes-dev
       - name: Build and install fresh libheif with built-in decoders
         run: |
-          git clone --branch v1.23.4 --depth 1 https://github.com/strukturag/libheif src-libheif
+          git clone --branch v1.23.5 --depth 1 https://github.com/strukturag/libheif src-libheif
           cd src-libheif
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
@@ -467,7 +467,7 @@ jobs:
         with:
           allowUpdates: true     # required to allow nightly release updates
           removeArtifacts: true  # we don't want to pile up old artifacts in the nightly release
-          tag: ${{ github.ref_name == 'master' && 'nightly' || github.ref_name }}
+          tag: ${{ github.ref_name == 'master' && 'nightly' || (startsWith(github.ref, 'refs/tags/') && github.ref_name || format('nightly_{0}', github.ref_name)) }}
           prerelease: true
           # We don't want a stable release that is in the process of being prepared
           # and not yet ready for publication to be visible

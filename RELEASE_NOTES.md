@@ -93,6 +93,12 @@ changes (where available).
   alternative to colorzones' chroma-vs-chroma curve, with input
   normalized to the local gamut boundary.
 
+- New module contrast and texture. Scene-referred control over local
+  contrast and the general contrast of the image. Useful for adjusting
+  clarity, finer textures, and managing high dynamic range images with
+  control over highlights and shadows. Uses edge aware and exposure
+  invariant guided filters for its processing.
+
 ## UI/UX Improvements
 
 - The code has received a large set of changes in preparation of the
@@ -138,6 +144,11 @@ changes (where available).
 
 - Added a visible toggle to show the color sliders in the
   color equalizer module.
+
+- The list of color checker charts in the color calibration module now
+  has one entry for the Datacolor SpyderCheckr 24 and one for the
+  SpyderCheckr 48. As far as we know, there never was a separate 2018
+  version of these charts.
 
 ## Performance Improvements
 
@@ -194,12 +205,34 @@ changes (where available).
 - pixelpipe dump files requested via cli switches are now written
   in ppm or pgm format.
 
+- The OpenCL configs had a bump to v7 and were simplified for user edits.
+  For a device "XXXX" we now have 3 configs:
+    cldevice_v7_XXXX=events:on asyncmode:off device:on unifraction: 0.250
+      For events, asyncmode and device it can be on/off.
+      (enable a disabled device (marked as device:off) by editing to device:on)
+      The unifraction is a float and can be chosen by the user in the 0.02-0.5 range
+    cldevice_v7_XXXX_id0=headroom: 600
+      You can modify the headroom if "tunehead" is available
+    cldevice_v7_XXXX_nocl=
+      List of modules that will not process it's OpenCL code.
+  OpenCL fast/default kernels are cached at different locations.
+
 - The aspect ratio chosen on the camera is now applied as a crop when
   the raw was left uncropped, so a frame shot at 1:1 or 16:9 opens
   framed as intended while the full sensor area stays available to
   reframe within. Read from Canon and Olympus raws.
 
+- Export filename patterns gained `$(CATEGORY_EACH[n,category])`, which
+  yields one path per matching tag instead of a single comma-joined
+  value. Referencing several levels of the same category walks each
+  tag's path, so an image tagged for several people can be exported
+  once into each person's folder rather than into one "John,Jane"
+  folder.
+
 ## Bug Fixes
+
+- Do not convert the pipe input in place for blending, which may result
+  in a corrputed buffer.
 
 - Fixed a trashing error dialog when deleting a virgin duplicate of an
   image while sidecar creation is set to "after edit".
@@ -342,6 +375,16 @@ changes (where available).
 - Fixed rotate and perspective sometimes not applying its automatic
   crop when the rotation was changed (e.g. with a shortcut) before the
   module had been enabled, leaving empty corners in the image.
+
+- Corrected the reference colors of the Datacolor SpyderCheckr Photo in
+  the color calibration module. Existing calibrations are not updated.
+  Profile the chart again for a more accurate calibration.
+
+- Fixed the color calibration module swapping the white and middle gray
+  reference patches on the Datacolor SpyderCheckr Photo.
+
+- Fixed the color calibration module not using the gray patch closest to
+  middle gray on the Datacolor SpyderCheckr 48 and Photo.
 
 ## Lua
 
