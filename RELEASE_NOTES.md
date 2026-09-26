@@ -169,6 +169,10 @@ changes (where available).
 - Separated the demosaicer's crop-and-scale step into a new hidden
   module to improve cache efficiency and UI responsiveness.
 
+- Add a OpenCL code path to tone equalizer which gives around
+  6-20x faster processing times in comparison to CPU code path,
+  dependening on CPU & GPU.
+
 ## Other Changes
 
 - Added a new collection filter for the original image dimensions.
