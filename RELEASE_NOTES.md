@@ -383,6 +383,10 @@ changes (where available).
 - Fixed the color calibration module not using the gray patch closest to
   middle gray on the Datacolor SpyderCheckr 48 and Photo.
 
+- Fixed a thin line of pixels along the outer edge of a gradient mask
+  that the module's effect was applied to in reverse, most visible on
+  gradients with a sharp transition.
+
 ## Lua
 
 ### API Version
