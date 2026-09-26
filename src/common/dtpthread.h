@@ -29,6 +29,7 @@
 #include <string.h>
 
 // #define MUTEX_REPORTING // if defined there will be runtime report of mutex problems also for release builds
+// #define MUTEX_TIMING  // if defined __DEBUG builds will report mutex times
 
 static inline const char *_pthread_ret_mess(int error)
 {
@@ -66,19 +67,26 @@ static inline void _retrw_error(const int ret, const char* mess)
   fflush(stdout);
 }
 
+/** Note:
+    pthread_mutexattr_t *attr must be either NULL or a valid pointer.
+    Being NULL means we want a PTHREAD_MUTEX_NORMAL mutex, some OS require
+    special handling.
+    If an attribute is provided it is destroyed right here.
+    Works both for normal and debug builds
+*/
 #ifdef _DEBUG
 
 #ifndef MUTEX_REPORTING
 #define MUTEX_REPORTING // make sure we report the BAD variants
 #endif
 
-// copied from darktable.h so we don't need to include the header
-#include <sys/time.h>
-static inline double dt_pthread_get_wtime()
+static inline gint64 _pthread_get_wtime()
 {
-  struct timeval time;
-  gettimeofday(&time, NULL);
-  return time.tv_sec - 1290608000 + (1.0 / 1000000.0) * time.tv_usec;
+#ifdef MUTEX_TIMING
+  return g_get_monotonic_time();
+#else
+  return 0;
+#endif
 }
 
 #define TOPN 3
@@ -86,13 +94,13 @@ typedef struct CAPABILITY("mutex") dt_pthread_mutex_t
 {
   pthread_mutex_t mutex;
   char name[256];
-  double time_locked;
-  double time_sum_wait;
-  double time_sum_locked;
+  gint64 time_locked;
+  gint64 time_sum_wait;
+  gint64 time_sum_locked;
   char top_locked_name[TOPN][256];
-  double top_locked_sum[TOPN];
+  gint64 top_locked_sum[TOPN];
   char top_wait_name[TOPN][256];
-  double top_wait_sum[TOPN];
+  gint64 top_wait_sum[TOPN];
 } CAPABILITY("mutex") dt_pthread_mutex_t;
 
 typedef struct dt_pthread_rwlock_t
@@ -123,60 +131,72 @@ static inline int dt_pthread_mutex_destroy(dt_pthread_mutex_t *mutex)
   if(ret) _report_ret_error(ret, mutex->name, "destroy");
   assert(ret == 0);
 
-#if 0
-  printf("\n[mutex] stats for mutex `%s':\n", mutex->name);
-  printf("[mutex] total time locked: %.3f secs\n", mutex->time_sum_locked);
-  printf("[mutex] total wait time  : %.3f secs\n", mutex->time_sum_wait);
-  printf("[mutex] top %d lockers   :\n", TOPN);
-  for(int k=0; k<TOPN; k++) printf("[mutex]  %.3f secs : `%s'\n", mutex->top_locked_sum[k],
-  mutex->top_locked_name[k]);
-  printf("[mutex] top %d waiters   :\n", TOPN);
-  for(int k=0; k<TOPN; k++) printf("[mutex]  %.3f secs : `%s'\n", mutex->top_wait_sum[k],
-  mutex->top_wait_name[k]);
+#ifdef MUTEX_TIMING
+  printf("\n[mutex destroy] stats for mutex `%s':\n", mutex->name);
+  printf("\ttotal time locked: %10.2fms\n", 1e-3 * (double)mutex->time_sum_locked);
+  printf("\ttotal wait time  : %10.2fms\n", 1e-3 * (double)mutex->time_sum_wait);
+
+  printf("\ttop %d lockers\n", TOPN);
+  for(int k=0; k<TOPN; k++)
+    printf("\t\t%10.2fms : `%s'\n", 1e-3 * (double)mutex->top_locked_sum[k], mutex->top_locked_name[k]);
+
+  printf("\ttop %d waiters\n", TOPN);
+  for(int k=0; k<TOPN; k++)
+    printf("\t\t%10.2fms : `%s'\n", 1e-3 * (double)mutex->top_wait_sum[k], mutex->top_wait_name[k]);
 #endif
+
   return ret;
 }
 
 #define dt_pthread_mutex_init(A, B) dt_pthread_mutex_init_with_caller(A, B, __FILE__, __LINE__, __FUNCTION__)
 static inline int dt_pthread_mutex_init_with_caller(dt_pthread_mutex_t *mutex,
-                                                    const pthread_mutexattr_t *attr,
+                                                    pthread_mutexattr_t *attr,
                                                     const char *file,
                                                     const int line,
                                                     const char *function)
 {
   memset(mutex, 0x0, sizeof(dt_pthread_mutex_t));
   snprintf(mutex->name, sizeof(mutex->name), "%s:%d (%s)", file, line, function);
-#if defined(__OpenBSD__)
+
   if(attr == NULL)
   {
+#if defined(__OpenBSD__) || defined(__FreeBSD__)
     pthread_mutexattr_t a;
     pthread_mutexattr_init(&a);
     pthread_mutexattr_settype(&a, PTHREAD_MUTEX_NORMAL);
     const int ret = pthread_mutex_init(&mutex->mutex, &a);
     pthread_mutexattr_destroy(&a);
     return ret;
-  }
+#else
+    return pthread_mutex_init(&mutex->mutex, attr);
 #endif
-  return pthread_mutex_init(&(mutex->mutex), attr);
+  }
+  else
+  {
+    const int ret = pthread_mutex_init(&mutex->mutex, attr);
+    pthread_mutexattr_destroy(attr);
+    return ret;
+  }
 }
 
 #define dt_pthread_mutex_lock(A) dt_pthread_mutex_lock_with_caller(A, __FILE__, __LINE__, __FUNCTION__)
 static inline int dt_pthread_mutex_lock_with_caller(dt_pthread_mutex_t *mutex, const char *file, const int line, const char *function)
   ACQUIRE(mutex) NO_THREAD_SAFETY_ANALYSIS
 {
-  const double t0 = dt_pthread_get_wtime();
+  const gint64 t0 = _pthread_get_wtime();
   const int ret = pthread_mutex_lock(&mutex->mutex);
   if(ret) _report_ret_error(ret, mutex->name, "lock");
   assert(ret == 0);
-  mutex->time_locked = dt_pthread_get_wtime();
-  double wait = mutex->time_locked - t0;
+  mutex->time_locked = _pthread_get_wtime();
+  const gint64 wait = mutex->time_locked - t0;
   mutex->time_sum_wait += wait;
   char *name = mutex->name;
   snprintf(mutex->name, sizeof(mutex->name), "%s:%d (%s)", file, line, function);
   int min_wait_slot = 0;
   for(int k = 0; k < TOPN; k++)
   {
-    if(mutex->top_wait_sum[k] < mutex->top_wait_sum[min_wait_slot]) min_wait_slot = k;
+    if(mutex->top_wait_sum[k] < mutex->top_wait_sum[min_wait_slot])
+      min_wait_slot = k;
     if(!strncmp(name, mutex->top_wait_name[k], 256))
     {
       mutex->top_wait_sum[k] += wait;
@@ -192,20 +212,21 @@ static inline int dt_pthread_mutex_lock_with_caller(dt_pthread_mutex_t *mutex, c
 static inline int dt_pthread_mutex_trylock_with_caller(dt_pthread_mutex_t *mutex, const char *file, const int line, const char *function)
   TRY_ACQUIRE(0, mutex)
 {
-  const double t0 = dt_pthread_get_wtime();
+  const gint64 t0 = _pthread_get_wtime();
   const int ret = pthread_mutex_trylock(&mutex->mutex);
   if(ret && (ret != EBUSY)) _report_ret_error(ret, mutex->name, "trylock");
   assert((ret == 0) || (ret == EBUSY));
 
-  mutex->time_locked = dt_pthread_get_wtime();
-  double wait = mutex->time_locked - t0;
+  mutex->time_locked = _pthread_get_wtime();
+  const gint64 wait = mutex->time_locked - t0;
   mutex->time_sum_wait += wait;
   char *name = mutex->name;
   snprintf(mutex->name, sizeof(mutex->name), "%s:%d (%s)", file, line, function);
   int min_wait_slot = 0;
   for(int k = 0; k < TOPN; k++)
   {
-    if(mutex->top_wait_sum[k] < mutex->top_wait_sum[min_wait_slot]) min_wait_slot = k;
+    if(mutex->top_wait_sum[k] < mutex->top_wait_sum[min_wait_slot])
+      min_wait_slot = k;
     if(!strncmp(name, mutex->top_wait_name[k], 256))
     {
       mutex->top_wait_sum[k] += wait;
@@ -221,8 +242,8 @@ static inline int dt_pthread_mutex_trylock_with_caller(dt_pthread_mutex_t *mutex
 static inline int dt_pthread_mutex_unlock_with_caller(dt_pthread_mutex_t *mutex, const char *file, const int line, const char *function)
   RELEASE(mutex) NO_THREAD_SAFETY_ANALYSIS
 {
-  const double t0 = dt_pthread_get_wtime();
-  const double locked = t0 - mutex->time_locked;
+  const gint64 t0 = _pthread_get_wtime();
+  const gint64 locked = t0 - mutex->time_locked;
   mutex->time_sum_locked += locked;
 
   char *name = mutex->name;
@@ -367,9 +388,27 @@ typedef struct CAPABILITY("mutex") dt_pthread_mutex_t
 } CAPABILITY("mutex") dt_pthread_mutex_t;
 
 // *please* do use these;
-static inline int dt_pthread_mutex_init(dt_pthread_mutex_t *mutex, const pthread_mutexattr_t *mutexattr)
+static inline int dt_pthread_mutex_init(dt_pthread_mutex_t *mutex, pthread_mutexattr_t *attr)
 {
-  return pthread_mutex_init(&mutex->mutex, mutexattr);
+  if(attr == NULL)
+  {
+#if defined(__OpenBSD__) || defined(__FreeBSD__)
+    pthread_mutexattr_t a;
+    pthread_mutexattr_init(&a);
+    pthread_mutexattr_settype(&a, PTHREAD_MUTEX_NORMAL);
+    const int ret = pthread_mutex_init(&mutex->mutex, &a);
+    pthread_mutexattr_destroy(&a);
+    return ret;
+#else
+    return pthread_mutex_init(&mutex->mutex, attr);
+#endif
+  }
+  else
+  {
+    const int ret = pthread_mutex_init(&mutex->mutex, attr);
+    pthread_mutexattr_destroy(attr);
+    return ret;
+  }
 }
 
 static inline int dt_pthread_mutex_lock(dt_pthread_mutex_t *mutex) ACQUIRE(mutex) NO_THREAD_SAFETY_ANALYSIS
@@ -407,7 +446,7 @@ static inline int dt_pthread_mutex_unlock(dt_pthread_mutex_t *mutex) RELEASE(mut
 
 static inline int dt_pthread_mutex_destroy(dt_pthread_mutex_t *mutex)
 {
-  int ret = pthread_mutex_destroy(&(mutex->mutex));
+  int ret = pthread_mutex_destroy(&mutex->mutex);
 #ifdef MUTEX_REPORTING
   if(ret) _ret_error(ret, "destroy");
 #endif

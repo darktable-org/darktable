@@ -403,7 +403,7 @@ void init(dt_view_t *self)
 {
   self->data = calloc(1, sizeof(dt_slideshow_t));
   dt_slideshow_t *lib = self->data;
-  dt_pthread_mutex_init(&lib->lock, 0);
+  dt_pthread_mutex_init(&lib->lock, NULL);
 }
 
 

@@ -35,7 +35,7 @@ void dt_cache_init(dt_cache_t *cache,
   cache->lru = 0;
   cache->entry_size = entry_size;
   cache->cost_quota = cost_quota;
-  dt_pthread_mutex_init(&cache->lock, 0);
+  dt_pthread_mutex_init(&cache->lock, NULL);
   cache->allocate = 0;
   cache->allocate_data = 0;
   cache->cleanup = 0;
