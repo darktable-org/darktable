@@ -1602,69 +1602,76 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
 }
 
 // start no quick access
-#define SNQA()                                                                                                    \
-  {                                                                                                               \
-    g_free(tx);                                                                                                   \
-    tx = g_strdup("1|0ꬹ0||");                                                                                   \
+#define SNQA()                     \
+  {                                \
+    g_free(tx);                    \
+    tx = g_strdup("1|0ꬹ0||");      \
   }
 
 // start quick access
-#define SQA(is_scene_referred)                                                                                    \
-  {                                                                                                               \
-    g_free(tx);                                                                                                   \
-    tx = g_strdup_printf("1|0ꬹ1||");                                                                              \
-    if(is_scene_referred)                                                                                         \
-    {                                                                                                             \
-      if(wf_filmic)												  \
-      {												  		  \
-        AM("filmicrgb/white relative exposure");                                                                  \
-        AM("filmicrgb/black relative exposure");                                                                  \
-        AM("filmicrgb/contrast");                                                                                 \
-      }														  \
-      else if(wf_sigmoid)											  \
-      {                                                                 					  \
-        AM("sigmoid/contrast");											  \
-        AM("sigmoid/skew");											  \
-      } 													  \
-      else if(wf_agx)												  \
-      {														  \
-        /*AM("agx/white relative exposure");*/						                          \
-        /*AM("agx/black relative exposure");*/						                          \
-        AM("agx/auto tune levels");                                                                               \
-        AM("agx/curve/contrast");                                                                                 \
-        AM("agx/curve/shoulder power");                                                                           \
-        AM("agx/curve/toe power");	                                                                          \
-        AM("agx/look/saturation");	                                                                          \
-        AM("agx/look/preserve hue");	                                                                          \
-      }														  \
-      AM("channelmixerrgb/temperature");                                                                          \
-      AM("channelmixerrgb/chroma");                                                                               \
-      AM("channelmixerrgb/hue");                                                                                  \
-      AM("channelmixerrgb/illuminant");                                                                           \
-      AM("channelmixerrgb/F source");                                                                             \
-      AM("channelmixerrgb/LED source");                                                                           \
-    }                                                                                                             \
-    else                                                                                                          \
-    {                                                                                                             \
-      AM("temperature/temperature");                                                                              \
-      AM("temperature/tint");                                                                                     \
-    }                                                                                                             \
-    AM("colorequal/page");	                                             					  \
-    AM("colorequal/graph");                                                 					  \
-    AM("colorequal/node placement");                                           					  \
-    AM("exposure/exposure");                                                                                      \
-    if(!is_scene_referred) AM("colorbalancergb/contrast"); /* contrast is already in filmic/sigmoid */            \
-    AM("colorbalancergb/global chroma");                                                                          \
-    AM("colorbalancergb/global vibrance");                                                                        \
-    AM("colorbalancergb/global saturation");                                                                      \
-    AM("colorbalancergb/global brilliance");                                                                      \
-    AM("ashift/rotation");                                                                                        \
-    AM("denoiseprofile/strength");                                                                                \
-    AM("toneequal/graph");                                    						  	  \
-    AM("toneequal/mask exposure compensation");                       						  \
-    AM("toneequal/mask contrast compensation");                       						  \
-    AM("lens");                                                                                                   \
-    AM("bilat/detail");                                                                                           \
+#define SQA(is_scene_referred)                     \
+  {                                                \
+    g_free(tx);                                    \
+    tx = g_strdup_printf("1|0ꬹ1||");               \
+    if(is_scene_referred)                          \
+    {                                              \
+      if(wf_filmic)                                \
+      {                                            \
+        AM("filmicrgb/white relative exposure");   \
+        AM("filmicrgb/black relative exposure");   \
+        AM("filmicrgb/contrast");                  \
+      }                                            \
+      else if(wf_sigmoid)                          \
+      {                                            \
+        AM("sigmoid/contrast");                    \
+        AM("sigmoid/skew");                        \
+      }                                            \
+      else if(wf_agx)                              \
+      {                                            \
+        /*AM("agx/white relative exposure");*/     \
+        /*AM("agx/black relative exposure");*/     \
+        AM("agx/auto tune levels");                \
+        AM("agx/curve/contrast");                  \
+        AM("agx/curve/shoulder power");            \
+        AM("agx/curve/toe power");                 \
+        AM("agx/look/saturation");                 \
+        AM("agx/look/preserve hue");               \
+      }                                            \
+      AM("channelmixerrgb/temperature");           \
+      AM("channelmixerrgb/chroma");                \
+      AM("channelmixerrgb/hue");                   \
+      AM("channelmixerrgb/illuminant");            \
+      AM("channelmixerrgb/F source");              \
+      AM("channelmixerrgb/LED source");            \
+    }                                              \
+    else                                           \
+    {                                              \
+      AM("temperature/temperature");               \
+      AM("temperature/tint");                      \
+    }                                              \
+    AM("colorequal/page");                         \
+    AM("colorequal/graph");                        \
+    AM("colorequal/node placement");               \
+    AM("exposure/exposure");                       \
+    if(!is_scene_referred)                         \
+    {                                              \
+      /* contrast is already in filmic/sigmoid */  \
+      AM("colorbalancergb/contrast");              \
+    }                                              \
+    AM("colorbalancergb/global chroma");           \
+    AM("colorbalancergb/global vibrance");         \
+    AM("colorbalancergb/global saturation");       \
+    AM("colorbalancergb/global brilliance");       \
+    AM("ashift/rotation");                         \
+    AM("denoiseprofile/strength");                 \
+    AM("toneequal/graph");                         \
+    AM("toneequal/mask exposure compensation");    \
+    AM("toneequal/mask contrast compensation");    \
+    AM("lens");                                    \
+    if(is_scene_referred)                          \
+      AM("contrastntexture/local contrast");       \
+    else                                           \
+      AM("bilat/detail");                          \
   }
 
 // start module group
