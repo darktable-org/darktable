@@ -95,6 +95,8 @@ static struct
   GThread *thread;  /* non-NULL while a fetch is in flight */
   sf_fetch_state_t state;
   gboolean cancel;
+  char avail_version[32]; /* what the manifest calls the pack last looked at */
+  uint32_t avail_pack;  /* pack the last check found and we do not have */
   double progress;
   char message[256];
   guint generation; /* bumped whenever an install changes what is on disk */
@@ -251,10 +253,19 @@ static void _packs_dir(char *dst,
  * where sf_pack_load() would pull roughly 12 MB of floats through the page
  * cache to answer the same question. That matters because the answer is needed
  * once per candidate directory, on the pixelpipe thread. */
-static gboolean _peek_lut_hash(const char *packdir,
-                               uint32_t *out_hash)
+/* out_id, when non-NULL, also receives the table's id string (the "lut_id"
+   the manifest lists, e.g. "irradiance_xy_tc@0.3.3"), which the header stores
+   as an int32 length followed by that many bytes. Truncated to idsz and always
+   NUL-terminated. A header that ends before the id still yields the hash: the
+   id is descriptive and the hash is the identity, so an unreadable id must not
+   make an otherwise good pack look broken */
+static gboolean _peek_lut(const char *packdir,
+                          uint32_t *out_hash,
+                          char *out_id,
+                          size_t idsz)
 {
   gboolean ok = FALSE;
+  if(out_id && idsz) out_id[0] = '\0';
   char *lut = g_build_filename(packdir, "spectra_lut.f32", NULL);
   char *meta = g_build_filename(packdir, "pack.json", NULL);
   char *profiles = g_build_filename(packdir, "profiles", NULL);
@@ -281,6 +292,17 @@ static gboolean _peek_lut_hash(const char *packdir,
   {
     *out_hash = lut_hash;
     ok = TRUE;
+
+    int32_t id_len = 0;
+    /* 256 is well clear of any id upstream mints and keeps a corrupt length
+       from being handed to fread as a buffer size */
+    if(out_id && idsz && fread(&id_len, 4, 1, fh) == 1 && id_len > 0 && id_len <= 256)
+    {
+      char buf[257];
+      const size_t n = fread(buf, 1, (size_t)id_len, fh);
+      buf[n] = '\0';
+      g_strlcpy(out_id, buf, idsz);
+    }
   }
   fclose(fh);
 
@@ -289,6 +311,75 @@ out:
   g_free(meta);
   g_free(profiles);
   return ok;
+}
+
+static gboolean _peek_lut_hash(const char *packdir,
+                               uint32_t *out_hash)
+{
+  return _peek_lut(packdir, out_hash, NULL, 0);
+}
+
+/* the pack's own identity from its pack.json, without loading the pack. 0 when
+   the directory is not a pack or predates the field, which simply cannot be
+   matched on and falls back to the table hash. pack.json is tens of KB, so
+   this is cheap enough to run over each candidate directory */
+uint32_t sf_fetch_peek_pack_hash(const char *packdir)
+{
+  char *path = g_build_filename(packdir, "pack.json", NULL);
+  JsonParser *parser = json_parser_new();
+  uint32_t out = 0;
+  if(json_parser_load_from_file(parser, path, NULL))
+  {
+    JsonNode *rootn = json_parser_get_root(parser);
+    JsonObject *root = rootn ? json_node_get_object(rootn) : NULL;
+    if(root && json_object_has_member(root, "pack_hash"))
+    {
+      const char *ph = json_object_get_string_member(root, "pack_hash");
+      if(ph) out = (uint32_t)g_ascii_strtoull(ph, NULL, 16);
+    }
+  }
+  g_object_unref(parser);
+  g_free(path);
+  return out;
+}
+
+/* the directory holding exactly this pack, or FALSE. Checked before the table
+   hash is consulted at all: when an edit names the pack it was developed
+   against, nothing else will do, and two installed packs can carry the same
+   table while rendering differently */
+gboolean sf_fetch_pack_dir_for_pack_hash(const uint32_t wanted_pack_hash,
+                                         char *dst,
+                                         const size_t dstsz)
+{
+  if(!wanted_pack_hash) return FALSE;
+
+  char handdir[PATH_MAX] = { 0 };
+  _data_pack_dir(handdir, sizeof(handdir));
+  if(sf_fetch_peek_pack_hash(handdir) == wanted_pack_hash)
+  {
+    g_strlcpy(dst, handdir, dstsz);
+    return TRUE;
+  }
+
+  char packs[PATH_MAX] = { 0 };
+  _packs_dir(packs, sizeof(packs));
+  GDir *d = g_dir_open(packs, 0, NULL);
+  if(!d) return FALSE;
+  gboolean found = FALSE;
+  const char *ent = NULL;
+  while(!found && (ent = g_dir_read_name(d)))
+  {
+    if(strlen(ent) != 8 || strspn(ent, "0123456789abcdefABCDEF") != 8) continue;
+    char *cand = g_build_filename(packs, ent, NULL);
+    if(sf_fetch_peek_pack_hash(cand) == wanted_pack_hash)
+    {
+      g_strlcpy(dst, cand, dstsz);
+      found = TRUE;
+    }
+    g_free(cand);
+  }
+  g_dir_close(d);
+  return found;
 }
 
 static gboolean _downloaded_dir_for_hash(const uint32_t lut_hash,
@@ -303,6 +394,91 @@ static gboolean _downloaded_dir_for_hash(const uint32_t lut_hash,
      the wrong name and a truncated download can leave a plausible-looking
      tree behind; both would otherwise be served as a match. */
   return _peek_lut_hash(dst, &got) && got == lut_hash;
+}
+
+static void _pack_entry_free(gpointer data)
+{
+  sf_fetch_pack_t *e = data;
+  if(!e) return;
+  g_free(e->dir);
+  g_free(e->lut_id);
+  g_free(e);
+}
+
+/* sorts downloaded packs newest first, which is the order
+   sf_fetch_resolve_pack_dir() falls back through */
+static gint _pack_entry_by_mtime(gconstpointer a,
+                                 gconstpointer b,
+                                 gpointer user_data)
+{
+  const sf_fetch_pack_t *x = *(sf_fetch_pack_t *const *)a;
+  const sf_fetch_pack_t *y = *(sf_fetch_pack_t *const *)b;
+  if(x->mtime == y->mtime) return 0;
+  return (x->mtime > y->mtime) ? -1 : 1;
+}
+
+GPtrArray *sf_fetch_list_packs(void)
+{
+  GPtrArray *out = g_ptr_array_new_with_free_func(_pack_entry_free);
+
+  char id[257];
+  uint32_t h = 0;
+
+  char handdir[PATH_MAX] = { 0 };
+  _data_pack_dir(handdir, sizeof(handdir));
+  if(_peek_lut(handdir, &h, id, sizeof(id)))
+  {
+    sf_fetch_pack_t *e = g_malloc0(sizeof(*e));
+    e->dir = g_strdup(handdir);
+    e->lut_id = g_strdup(id);
+    e->lut_hash = h;
+    e->hand_installed = TRUE;
+    GStatBuf st;
+    e->mtime = (g_stat(handdir, &st) == 0) ? (gint64)st.st_mtime : 0;
+    g_ptr_array_add(out, e);
+  }
+
+  char packs[PATH_MAX] = { 0 };
+  _packs_dir(packs, sizeof(packs));
+  GDir *d = g_dir_open(packs, 0, NULL);
+  if(!d) return out;
+
+  const guint first_download = out->len;
+  const char *ent = NULL;
+  while((ent = g_dir_read_name(d)))
+  {
+    /* same bare-8-hex-digit filter as the resolver's fallback scan, for the
+       same reason: it is what keeps the ".incoming-<hash>" temp directory of a
+       download in progress out of the answer */
+    if(strlen(ent) != 8 || strspn(ent, "0123456789abcdefABCDEF") != 8) continue;
+
+    char *cand = g_build_filename(packs, ent, NULL);
+    const uint32_t named = (uint32_t)g_ascii_strtoull(ent, NULL, 16);
+    if(_peek_lut(cand, &h, id, sizeof(id)) && h == named)
+    {
+      sf_fetch_pack_t *e = g_malloc0(sizeof(*e));
+      e->dir = g_strdup(cand);
+      e->lut_id = g_strdup(id);
+      e->lut_hash = h;
+      e->hand_installed = FALSE;
+      GStatBuf st;
+      e->mtime = (g_stat(cand, &st) == 0) ? (gint64)st.st_mtime : 0;
+      g_ptr_array_add(out, e);
+    }
+    g_free(cand);
+  }
+  g_dir_close(d);
+
+  /* g_dir_read_name() returns directory order, which is arbitrary. Sort only
+     the downloaded tail: the hand-installed pack keeps the head because that
+     is the precedence the resolver applies, not because it is newest */
+  if(out->len > first_download + 1)
+    g_qsort_with_data(&g_ptr_array_index(out, first_download),
+                      (gint)(out->len - first_download),
+                      sizeof(gpointer),
+                      _pack_entry_by_mtime, NULL);
+
+  return out;
 }
 
 gboolean sf_fetch_have_lut_hash(const uint32_t lut_hash)
@@ -673,6 +849,10 @@ static void _files_free(GPtrArray *files)
  *
  * wanted 0 picks the entry flagged default, else the first one. */
 static GPtrArray *_parse_manifest(const char *json,
+                                  uint32_t *out_pack_hash,
+                                  char *out_version,
+                                  size_t versionsz,
+                                  const uint32_t wanted_pack,
                                   const uint32_t wanted,
                                   char **out_base,
                                   uint32_t *out_hash,
@@ -745,9 +925,45 @@ static GPtrArray *_parse_manifest(const char *json,
       continue;
     }
 
+    if(wanted_pack)
+    {
+      /* an edit that names its pack gets that pack or nothing. Falling back to
+         a table match here would hand it the other pack carrying the same
+         table, which is the case this hash exists to tell apart */
+      const char *phs = json_object_has_member(p, "pack_hash")
+                            ? json_object_get_string_member(p, "pack_hash") : NULL;
+      if(phs && (uint32_t)g_ascii_strtoull(phs, NULL, 16) == wanted_pack)
+      {
+        chosen = p;
+        chosen_hash = h;
+      }
+      continue;
+    }
     if(wanted)
     {
+      /* lut_hash names the pack's DEFAULT table. A pack_format 3 pack carries
+         others and lists them under "tables", and an edit records whichever it
+         was developed against, so matching the top-level hash alone would
+         leave an edit made with a non-default table unable to fetch the very
+         pack that holds it. The directory is still named for the default
+         table's hash, which is what chosen_hash keeps carrying */
       if(h == wanted) { chosen = p; chosen_hash = h; }
+      else if(json_object_has_member(p, "tables"))
+      {
+        JsonArray *tabs = json_object_get_array_member(p, "tables");
+        const guint nt = tabs ? json_array_get_length(tabs) : 0;
+        for(guint t = 0; t < nt && !chosen; t++)
+        {
+          JsonObject *to = json_array_get_object_element(tabs, t);
+          const char *ths = (to && json_object_has_member(to, "lut_hash"))
+                                ? json_object_get_string_member(to, "lut_hash") : NULL;
+          if(ths && (uint32_t)g_ascii_strtoull(ths, NULL, 16) == wanted)
+          {
+            chosen = p;
+            chosen_hash = h;
+          }
+        }
+      }
     }
     else if(json_object_has_member(p, "default")
             && json_object_get_boolean_member(p, "default"))
@@ -775,6 +991,22 @@ static GPtrArray *_parse_manifest(const char *json,
       chosen = p;
       chosen_hash = h;
     }
+  }
+  /* after the default fallback, so it reports whichever entry was actually
+     chosen. Absent on a pack published before pack_hash existed, which stays
+     0 and simply cannot be compared against an installed one */
+  if(out_pack_hash && chosen && json_object_has_member(chosen, "pack_hash"))
+  {
+    const char *ph = json_object_get_string_member(chosen, "pack_hash");
+    if(ph) *out_pack_hash = (uint32_t)g_ascii_strtoull(ph, NULL, 16);
+  }
+  /* what the pack calls itself, for saying which one is being fetched. It is a
+     label and never an identity: two packs can and do report one version */
+  if(out_version && versionsz && chosen
+     && json_object_has_member(chosen, "spektrafilm_version"))
+  {
+    const char *v = json_object_get_string_member(chosen, "spektrafilm_version");
+    if(v) g_strlcpy(out_version, v, versionsz);
   }
   if(!chosen)
   {
@@ -895,6 +1127,8 @@ static gboolean _rmdir_recursive(const char *path)
 typedef struct sf_worker_args_t
 {
   uint32_t wanted;
+  uint32_t wanted_pack;
+  gboolean check_only;
 } sf_worker_args_t;
 
 /* Reprocess so the freshly installed pack takes effect without the user having
@@ -902,7 +1136,9 @@ typedef struct sf_worker_args_t
    pixelpipe itself. */
 static gboolean _finished_idle(gpointer user_data)
 {
-  const gboolean ok = GPOINTER_TO_INT(user_data);
+  const int code = GPOINTER_TO_INT(user_data);
+  const gboolean ok = code == 1;
+  const gboolean check_done = code == 2;
 
   /* Taken before anything else, and posted under the same lock: if the main
      loop reaches this before the worker has recorded the source id, that store
@@ -915,7 +1151,13 @@ static gboolean _finished_idle(gpointer user_data)
   char msg[256] = { 0 };
   sf_fetch_status(msg, sizeof(msg), NULL);
 
-  if(ok)
+  if(check_done)
+  {
+    /* the answer belongs in the module's row, next to the button that asked.
+       A check that finds nothing is not an event worth a toast, and one that
+       finds something is not a failure */
+  }
+  else if(ok)
   {
     dt_control_log(_("spektrafilm: data pack installed"));
     if(darktable.develop) dt_dev_reprocess_all(darktable.develop);
@@ -930,6 +1172,8 @@ static gpointer _fetch_worker(gpointer data)
 {
   sf_worker_args_t *args = (sf_worker_args_t *)data;
   const uint32_t wanted = args->wanted;
+  const uint32_t wanted_pack = args->wanted_pack;
+  const gboolean check_only = args->check_only;
   g_free(args);
 
   gboolean success = FALSE;
@@ -960,6 +1204,10 @@ static gpointer _fetch_worker(gpointer data)
   _set_status(SF_FETCH_RUNNING, 0.0, _("fetching manifest"));
   manifest_url =
       g_strdup_printf("%s/%s/%s/manifest.json", SF_RAW_HOST, repo, ref);
+  /* which repository and ref were actually read. Both are configurable and
+     default to upstream's, so a check reporting nothing new is ambiguous
+     without this: it cannot be told from one that read the wrong branch */
+  dt_print(DT_DEBUG_DEV, "[spektrafilm] manifest: %s\n", manifest_url);
   manifest = _http_get_string(curl, manifest_url, SF_MAX_MANIFEST_BYTES);
   if(!manifest)
   {
@@ -982,17 +1230,116 @@ static gpointer _fetch_worker(gpointer data)
   uint32_t got_hash = 0;
   guint64 total = 0;
   int unsupported_fmt = 0;
-  files = _parse_manifest(manifest, wanted, &base, &got_hash, &total, &unsupported_fmt);
+  uint32_t got_pack_hash = 0;
+  char got_version[32] = { 0 };
+  files = _parse_manifest(manifest, &got_pack_hash, got_version, sizeof(got_version),
+                          wanted_pack, wanted, &base, &got_hash, &total,
+                          &unsupported_fmt);
+  g_mutex_lock(&_sf.lock);
+  g_strlcpy(_sf.avail_version, got_version, sizeof(_sf.avail_version));
+  g_mutex_unlock(&_sf.lock);
   if(!files)
   {
-    _set_status(SF_FETCH_FAILED, -1.0,
-                unsupported_fmt > SF_PACK_FORMAT_MAX
-                    ? _("that data pack needs a newer darktable")
-                    : unsupported_fmt
-                        ? _("that data pack is too old for this darktable -- "
-                            "the data repository needs re-exporting")
-                        : (wanted ? _("no pack with that spectral table is published")
-                                  : _("could not read the pack manifest")));
+    /* name what was asked for and where: a version lives only in a manifest
+       entry, and there is none for this pack, so its hash and the configured
+       repository are all that identify it. The usual cause is an edit made
+       against another repository or ref */
+    char why[256];
+    if(unsupported_fmt > SF_PACK_FORMAT_MAX)
+      g_strlcpy(why, _("that data pack needs a newer darktable"), sizeof(why));
+    else if(unsupported_fmt)
+      g_strlcpy(why, _("that data pack is too old for this darktable -- "
+                       "the data repository needs re-exporting"), sizeof(why));
+    else if(wanted_pack)
+      g_snprintf(why, sizeof(why), _("data pack %08x is not published in %s at %s"),
+                 wanted_pack, repo, ref);
+    else if(wanted)
+      g_snprintf(why, sizeof(why),
+                 _("no data pack with spectral table %08x is published in %s at %s"),
+                 wanted, repo, ref);
+    else
+      g_strlcpy(why, _("could not read the pack manifest"), sizeof(why));
+    _set_status(SF_FETCH_FAILED, -1.0, why);
+    goto out;
+  }
+
+  if(check_only)
+  {
+    /* every published pack, not the entry a download would choose. That entry
+       is the default, and the default is the pack a fresh edit should get --
+       which is deliberately the older one while a new release is being rolled
+       out, so asking it whether anything is new answers no by construction.
+       Newest last: the manifest is emitted oldest first */
+    uint32_t newest = 0;
+    char newest_ver[32] = { 0 };
+    JsonParser *mp = json_parser_new();
+    GError *jerr = NULL;
+    if(!json_parser_load_from_data(mp, manifest, -1, &jerr))
+      dt_print(DT_DEBUG_DEV, "[spektrafilm] check: manifest unparseable: %s\n",
+               jerr ? jerr->message : "?");
+    g_clear_error(&jerr);
+    {
+      JsonNode *rn = json_parser_get_root(mp);
+      JsonObject *ro = rn ? json_node_get_object(rn) : NULL;
+      JsonArray *arr = (ro && json_object_has_member(ro, "packs"))
+                           ? json_object_get_array_member(ro, "packs") : NULL;
+      for(guint i = 0; arr && i < json_array_get_length(arr); i++)
+      {
+        JsonObject *po = json_array_get_object_element(arr, i);
+        const char *pbase = (po && json_object_has_member(po, "base"))
+                                ? json_object_get_string_member(po, "base") : "?";
+        if(!po || !json_object_has_member(po, "pack_hash"))
+        {
+          dt_print(DT_DEBUG_DEV, "[spektrafilm] check: %s declares no pack_hash\n",
+                   pbase);
+          continue;
+        }
+        const int fmt = json_object_has_member(po, "pack_format")
+                            ? (int)json_object_get_int_member(po, "pack_format") : 0;
+        /* one this darktable could not load is not an update it can offer */
+        if(fmt < SF_PACK_FORMAT_MIN || fmt > SF_PACK_FORMAT_MAX)
+        {
+          dt_print(DT_DEBUG_DEV,
+                   "[spektrafilm] check: %s is pack_format %d, outside %d..%d\n",
+                   pbase, fmt, SF_PACK_FORMAT_MIN, SF_PACK_FORMAT_MAX);
+          continue;
+        }
+        const char *ph = json_object_get_string_member(po, "pack_hash");
+        const uint32_t h = ph ? (uint32_t)g_ascii_strtoull(ph, NULL, 16) : 0u;
+        if(!h)
+        {
+          dt_print(DT_DEBUG_DEV, "[spektrafilm] check: %s pack_hash unreadable\n",
+                   pbase);
+          continue;
+        }
+        char have[PATH_MAX] = { 0 };
+        if(sf_fetch_pack_dir_for_pack_hash(h, have, sizeof(have)))
+        {
+          dt_print(DT_DEBUG_DEV, "[spektrafilm] check: %s (%08x) already at %s\n",
+                   pbase, h, have);
+          continue;
+        }
+        dt_print(DT_DEBUG_DEV, "[spektrafilm] check: %s (%08x) not installed\n",
+                 pbase, h);
+        newest = h;
+        newest_ver[0] = 0;
+        if(json_object_has_member(po, "spektrafilm_version"))
+        {
+          const char *v = json_object_get_string_member(po, "spektrafilm_version");
+          if(v) g_strlcpy(newest_ver, v, sizeof(newest_ver));
+        }
+      }
+    }
+    g_object_unref(mp);
+
+    g_mutex_lock(&_sf.lock);
+    _sf.avail_pack = newest;
+    g_strlcpy(_sf.avail_version, newest_ver, sizeof(_sf.avail_version));
+    g_mutex_unlock(&_sf.lock);
+    _set_status(SF_FETCH_DONE, 1.0,
+                newest ? _("a newer data pack is available")
+                       : _("the installed data packs are up to date"));
+    success = TRUE; /* the check ran; "nothing new" is an answer, not a failure */
     goto out;
   }
 
@@ -1031,8 +1378,13 @@ static gpointer _fetch_worker(gpointer data)
     const sf_fetch_file_t *f = g_ptr_array_index(files, i);
 
     char progress_msg[256];
-    g_snprintf(progress_msg, sizeof(progress_msg), _("downloading %s (%u/%u)"),
-               f->path, i + 1, files->len);
+    if(got_version[0])
+      g_snprintf(progress_msg, sizeof(progress_msg),
+                 _("downloading pack %s: %s (%u/%u)"), got_version, f->path,
+                 i + 1, files->len);
+    else
+      g_snprintf(progress_msg, sizeof(progress_msg), _("downloading %s (%u/%u)"),
+                 f->path, i + 1, files->len);
     _set_status(SF_FETCH_RUNNING, -1.0, progress_msg);
 
     char *url =
@@ -1142,17 +1494,54 @@ out:
   g_mutex_lock(&_sf.lock);
   _sf.cancel = FALSE;
   if(darktable.gui)
-    _sf.finished_idle = g_idle_add(_finished_idle, GINT_TO_POINTER(success ? 1 : 0));
+    _sf.finished_idle = g_idle_add(_finished_idle,
+                                   GINT_TO_POINTER(check_only ? 2 : success ? 1 : 0));
   g_mutex_unlock(&_sf.lock);
 
   return NULL;
 }
 
-gboolean sf_fetch_start(const uint32_t wanted_lut_hash)
+static gboolean _fetch_launch(uint32_t wanted_lut_hash,
+                              uint32_t wanted_pack_hash,
+                              gboolean check_only);
+
+/* ask the repository what it publishes, without fetching a pack. Same worker,
+   same status and polling, stopping after the manifest */
+gboolean sf_fetch_check_start(void)
+{
+  return _fetch_launch(0u, 0u, TRUE);
+}
+
+void sf_fetch_available_version(char *dst, const size_t dstsz)
+{
+  if(!dst || !dstsz) return;
+  g_mutex_lock(&_sf.lock);
+  g_strlcpy(dst, _sf.avail_version, dstsz);
+  g_mutex_unlock(&_sf.lock);
+}
+
+uint32_t sf_fetch_available_pack(void)
+{
+  g_mutex_lock(&_sf.lock);
+  const uint32_t h = _sf.avail_pack;
+  g_mutex_unlock(&_sf.lock);
+  return h;
+}
+
+gboolean sf_fetch_start(const uint32_t wanted_lut_hash,
+                        const uint32_t wanted_pack_hash)
+{
+  return _fetch_launch(wanted_lut_hash, wanted_pack_hash, FALSE);
+}
+
+static gboolean _fetch_launch(const uint32_t wanted_lut_hash,
+                              const uint32_t wanted_pack_hash,
+                              const gboolean check_only)
 {
   if(!_sf.inited) return FALSE;
 
   g_mutex_lock(&_sf.lock);
+  if(check_only) { _sf.avail_pack = 0u; _sf.avail_version[0] = 0; }
   if(_sf.state == SF_FETCH_RUNNING)
   {
     g_mutex_unlock(&_sf.lock);
@@ -1175,6 +1564,8 @@ gboolean sf_fetch_start(const uint32_t wanted_lut_hash)
 
   sf_worker_args_t *args = g_malloc0(sizeof(sf_worker_args_t));
   args->wanted = wanted_lut_hash;
+  args->wanted_pack = wanted_pack_hash;
+  args->check_only = check_only;
   _sf.thread = g_thread_new("sf-fetch", _fetch_worker, args);
   const gboolean started = _sf.thread != NULL;
   if(!started) _sf.state = SF_FETCH_FAILED;

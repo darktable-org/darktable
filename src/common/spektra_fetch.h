@@ -80,6 +80,32 @@ gboolean sf_fetch_resolve_pack_dir(uint32_t wanted_lut_hash,
 /* TRUE when a pack carrying this exact table is already on disk. */
 gboolean sf_fetch_have_lut_hash(uint32_t lut_hash);
 
+/* one installed pack, as sf_fetch_list_packs() reports it */
+typedef struct sf_fetch_pack_t
+{
+  gchar *dir;              /* absolute path, ready for sf_pack_load() */
+  gchar *lut_id;           /* table id from the LUT header; "" if unreadable */
+  uint32_t lut_hash;
+  gboolean hand_installed; /* the top-level folder, not a download */
+  gint64 mtime;
+} sf_fetch_pack_t;
+
+/* every usable pack on disk, in the order sf_fetch_resolve_pack_dir() would
+ * consider them: the hand-installed one first when there is one, then the
+ * downloads newest first.
+ *
+ * Answers "which tables do I have" without loading any of them: it reads the
+ * same 32-byte LUT header sf_fetch_resolve_pack_dir() does, so it is as cheap
+ * as resolving and carries the same guarantees: a directory only appears once
+ * pack.json, spectra_lut.f32 and profiles/ are all present and the header's
+ * hash matches the directory name, which is what keeps a download in progress
+ * out of the list.
+ *
+ * Returns a GPtrArray of sf_fetch_pack_t* that owns its entries; release it
+ * with g_ptr_array_unref(). Never NULL: an empty array means nothing is
+ * installed */
+GPtrArray *sf_fetch_list_packs(void);
+
 /* Bumped every time a download changes what is on disk.
  *
  * A caller that caches a loaded pack cannot detect a new one by watching the
@@ -111,7 +137,34 @@ typedef enum sf_fetch_state_t
  * <cache>/spektrafilm/packs/<lut_hash>/ and the developed pixelpipe is
  * reprocessed so the new data takes effect without the user reopening the
  * image. Call from the GUI thread. */
-gboolean sf_fetch_start(uint32_t wanted_lut_hash);
+/* wanted_pack_hash, when non-zero, is the pack the edit was developed against
+ * and nothing else will do: two packs can carry one spectral table and
+ * render differently. 0 falls back to matching wanted_lut_hash */
+gboolean sf_fetch_start(uint32_t wanted_lut_hash, uint32_t wanted_pack_hash);
+
+/* ask the repository what it publishes and stop there, fetching no pack.
+ * Reports through the same sf_fetch_status() the download uses */
+gboolean sf_fetch_check_start(void);
+
+/* the pack the last check found published and not installed, or 0, which is
+ * also what a repository whose packs declare no identity reports, there being
+ * nothing to compare. Feed it to sf_fetch_start() as the wanted pack */
+uint32_t sf_fetch_available_pack(void);
+
+/* what the manifest calls the pack last looked at, or "" before anything has
+ * been fetched. A label for naming the pack to the user, never an identity:
+ * two packs can report one version */
+void sf_fetch_available_version(char *dst, size_t dstsz);
+
+/* A pack directory's declared identity, or 0 when it declares none, which
+ * for an installed pack means it predates pack_hash, and so is one of the
+ * packs an edit that also predates pack_hash could have been made with */
+uint32_t sf_fetch_peek_pack_hash(const char *packdir);
+
+/* the installed directory holding exactly this pack, or FALSE */
+gboolean sf_fetch_pack_dir_for_pack_hash(uint32_t wanted_pack_hash,
+                                         char *dst,
+                                         size_t dstsz);
 
 /* Ask a running fetch to stop. Returns once the flag is set, not once the
  * thread has finished; the partially downloaded files are discarded. */

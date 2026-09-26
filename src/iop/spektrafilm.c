@@ -47,7 +47,7 @@
  * (tools/spektrafilm_export_data.py) that turns a spektrafilm release into a
  * pack. The module reads a pack from one of two places, the first winning:
  *   <user data>/darktable/spektrafilm/            (installed by hand)
- *   <cache>/darktable/spektrafilm/packs/<hash>/   (downloaded, one per table)
+ *   <user data>/darktable/spektrafilm/packs/<hash>/ (downloaded, one per table)
  * Either directory holds pack.json + spectra_lut.f32 and a profiles/
  * subdirectory of film and paper *.json profiles.
  *
@@ -95,7 +95,7 @@
 #include "common/spektra_core.h"
 #include "common/spektra_sim.h"
 
-DT_MODULE_INTROSPECTION(2, dt_iop_spektrafilm_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_spektrafilm_params_t)
 
 /* Spatial-scale constants, micrometres on film unless noted (see the LUT
    module for the full rationale; these are shared with modify_roi_in() and
@@ -116,7 +116,16 @@ DT_MODULE_INTROSPECTION(2, dt_iop_spektrafilm_params_t)
    them at these values for every profile, so only the amount gets a slider. */
 #define SF_GLARE_ROUGHNESS 0.7f
 #define SF_GLARE_BLUR_PX 0.5f
-#define SF_GRAIN_BLUR_FACTOR 0.8f
+/* the spectral table of the first data pack ever published (0.3.3's
+   hanatos2025, irradiance_xy_tc). An edit predating the table field can only
+   have been rendered with it, that pack having been the only one in
+   existence */
+#define SF_FIRST_PUBLISHED_LUT_HASH 0x565f4ec4u
+/* and the method it is, which that pack does not declare: pack_format 2 named
+   no tables, so its header says only the kind ("irradiance_xy_tc@0.3.3"). */
+#define SF_FIRST_PUBLISHED_LUT_NAME "hanatos2025"
+
+
 #define SF_GRAIN_BLUR_MIN 0.05f
 /* Upstream's GrainParams.blur_dye_clouds_um (params_schema.py): a SECOND,
  * per-sub-layer blur applied to the raw particle draw INSIDE the particle
@@ -198,7 +207,9 @@ typedef struct dt_iop_spektrafilm_params_t
      it on it shifts the automatic result rather than replacing it. */
   float print_exposure_ev;  // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 0.0 $DESCRIPTION: "print exposure compensation"
   gboolean print_auto_exposure; // $DEFAULT: FALSE $DESCRIPTION: "auto print exposure"
-  float print_contrast;     // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.1 $DESCRIPTION: "print contrast"
+  /* the reference's gamma_factor for the print curves; the field name predates
+     the label and is kept, being what presets and styles refer to */
+  float print_contrast;     // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.1 $DESCRIPTION: "print gamma"
   float filter_m;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration M"
   float filter_y;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration Y"
   float couplers_amount;    // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "DIR couplers"
@@ -339,6 +350,73 @@ typedef struct dt_iop_spektrafilm_params_t
      Appended at the end of the struct: legacy_params() copies an older prefix
      and leaves the tail at its default, so anything added later goes here. */
   gboolean gamut_compress;     // $DEFAULT: TRUE $DESCRIPTION: "gamut compression"
+  /* per-channel multipliers on print_contrast, the reference's own
+     gamma_rgb beside its scalar gamma (utils/morph_curves.py). The paper's
+     three density curves are morphed independently, so raising one channel
+     steepens that dye's response alone: contrast and color cross here, and a
+     channel split is how a print is graded for a crossed-over negative, where
+     one layer's contrast is wrong rather than all three.
+
+     Multiplicative on print_contrast rather than replacing it, matching how
+     the engine combines them (morph_gamma * gamma_ch), so the scalar stays the
+     overall control and these three are a trim on top of it */
+  float print_gamma_r;         // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print gamma red"
+  float print_gamma_g;         // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print gamma green"
+  float print_gamma_b;         // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print gamma blue"
+  /* upstream's GrainParams.blur: the clump-blur radius in pixels that
+     grain_blur scales, rather than a second control beside it: hence no
+     widget. 0.89 is the value study b80 fitted jointly with the multiplicative
+     density unsharp mask, whose own halves are already here as
+     grain_usm_sigma (0.7) and grain_usm_amount (1.5); the blur softens grain
+     and the mask takes the resolution back, so the three only reproduce
+     upstream together.
+
+     A parameter and not a constant because it decides how every existing edit
+     with grain renders. legacy_params() holds migrated edits at the 0.8 they
+     were developed at, which a constant could not do */
+  float grain_blur_base;       // $MIN: 0.5 $MAX: 1.5 $DEFAULT: 0.89
+  /* which of the pack's spectral upsampling tables this edit renders with, by
+     content hash: the same identity lut_hash above records, and the same
+     reason: a pack can revise a method's table without renaming it. 0 is the
+     pack's default, which is what every edit made before packs carried more
+     than one table gets, and the only thing a pack_format 2 pack offers.
+
+     A hash the installed pack does not carry is reported rather than silently
+     rendered with another table, exactly as a lut_hash mismatch is */
+  uint32_t upsampling_hash;    // $DEFAULT: 0
+  /* the pack this edit was developed against. lut_hash above names only the
+     spectral table, and a release can carry a table forward byte-identical
+     while its profiles move, so two packs answer to one lut_hash and render
+     differently. 0 on an edit made before packs carried an identity, and on a
+     pack that declares none; both fall back to matching the table */
+  uint32_t pack_hash;          // $DEFAULT: 0
+  /* the params version this edit was first written at, which is what says how
+     much of the pack machinery it could possibly have known about. 3 and above
+     is an edit born with pack identity; 1 and 2 predate it, and predate the
+     packs that carry one, so such an edit belongs on a pack that declares
+     none.
+
+     A field and not a reserved pack_hash value: pack_hash 0 is where every
+     fresh edit sits until its first render stamps it, so it cannot also mean
+     "old", and a sentinel inside the hash space would collide with a real
+     pack one day */
+  int origin_version;          // $DEFAULT: 3
+  /* scanner black/white point, the reference's scanner.black_correction /
+     white_correction and their levels. A slide carries base density and never
+     reaches D-max, so a scan of one is washed out until its endpoints are
+     placed; both default on, which is what the module did before they were
+     adjustable. Reached only by a scan of positive film: a print has its own
+     paper white and black */
+  gboolean scan_black_correction; // $DEFAULT: TRUE $DESCRIPTION: "black point correction"
+  gboolean scan_white_correction; // $DEFAULT: TRUE $DESCRIPTION: "white point correction"
+  /* below 0 the fit sends the densest tone under black, where the scan stage
+     clips it: shadow detail traded away deliberately, which is what crushing
+     a print means and what the reference's own 0 floor cannot express. Above
+     about a tenth the densest tone is already a mid gray and the render is
+     flat, so the useful span is a fraction of the range; the hard limits stay
+     wide and the soft range carries the part worth dragging through */
+  float scan_black_level;      // $MIN: -0.1 $MAX: 1.0 $DEFAULT: 0.01 $DESCRIPTION: "black level"
+  float scan_white_level;      // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.98 $DESCRIPTION: "white level"
 } dt_iop_spektrafilm_params_t;
 
 /* one discovered profile: stock (= file base name), display name, stage */
@@ -366,12 +444,15 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *push_pull_stops, *film_gamma_factor;
   GtkWidget *film_gamma_factor_fast, *film_gamma_factor_slow, *film_developer_exhaustion;
   GtkWidget *quality, *adaptation_bandwidth, *adaptation_surface;
+  GtkWidget *upsampling;
+  GList *tables; /* sf_table_entry_t*, owned; the loaded pack's tables */
   GtkWidget *gamut_compress;
   /* Last status the preview pipe reported, copied out of piece->data at the
      end of commit_params(). The GUI cannot read piece->data itself: it has no
      piece, and the pipes are torn down and rebuilt underneath it. */
   char status_error[256], status_warning[256];
   GtkWidget *print_exposure_ev, *print_auto_exposure, *print_contrast;
+  GtkWidget *print_gamma_r, *print_gamma_g, *print_gamma_b;
   GtkWidget *filter_m, *filter_y, *couplers_amount;
   GtkWidget *couplers_diffusion_um, *couplers_tail_um, *couplers_tail_weight;
   GtkWidget *couplers_inhibition_same, *couplers_inhibition_inter;
@@ -380,6 +461,8 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *grain_granularity, *grain_uniformity, *grain_sublayer_scale;
   GtkWidget *grain_density_min, *grain_dye_cloud;
   GtkWidget *scan_blur, *scan_usm_sigma, *scan_usm_amount, *glare_percent;
+  GtkWidget *scan_black_correction, *scan_white_correction;
+  GtkWidget *scan_black_level, *scan_white_level;
   GtkWidget *development_min, *print_development_min;
   GtkWidget *grain_usm_sigma, *grain_usm_amount;
   GtkWidget *halation_on, *scatter_amount, *scatter_scale, *halation_amount, *halation_scale;
@@ -400,6 +483,8 @@ typedef struct dt_iop_spektrafilm_gui_data_t
      be collapsed to just that row while no usable pack exists. */
   GtkWidget *main_box;
   GtkWidget *data_box, *data_button, *data_status;
+  GtkWidget *update_box, *update_button, *update_status, *update_progress;
+  gboolean update_fetching; /* the running fetch was started from this row */
   /* Sections repoint self->widget at their own container while a page is being
      built, so the page box has to be remembered separately. section_container
      is the last one handed out, which is how a fresh page is recognised. */
@@ -415,7 +500,9 @@ typedef struct dt_iop_spektrafilm_gui_data_t
      the pixelpipe thread that posts it and by the GTK thread that runs or
      cancels it, so it lives under the module's GUI critical section. */
   guint trouble_idle;
-  uint32_t data_wanted; /* spectral table the button will ask for */
+  uint32_t data_wanted;
+  uint32_t data_wanted_pack;
+  gboolean data_checked;  /* a check has run, so "up to date" means something */ /* spectral table the button will ask for */
   sf_fetch_state_t data_last_state; /* to spot the moment a fetch finishes */
 } dt_iop_spektrafilm_gui_data_t;
 
@@ -706,6 +793,78 @@ int flags(void)
    sf_pack_film_grain() wrote the pack's value over it before anything read it.
    So 1.0 does not approximate a v1 edit, it reproduces it exactly, and a v1
    slider position carries no information worth carrying forward. */
+/* v2 -> v3: print_gamma_r/_g/_b appended. v1 and v2 share this layout, so one
+   struct reads both; the incoming blob is this size and not the current one,
+   which is what the copy below is sized against */
+typedef struct dt_iop_spektrafilm_params_v2_t
+{
+  uint32_t film_hash;
+  uint32_t lut_hash;
+  uint32_t paper_hash;
+  float exposure_ev;
+  float print_exposure_ev;
+  gboolean print_auto_exposure;
+  float print_contrast;
+  float filter_m;
+  float filter_y;
+  float couplers_amount;
+  float couplers_diffusion_um;
+  float couplers_tail_um;
+  float couplers_tail_weight;
+  float couplers_inhibition_same;
+  float couplers_inhibition_inter;
+  float preflash_exposure;
+  float preflash_m_shift;
+  float preflash_y_shift;
+  gboolean scan_film;
+  dt_iop_spektrafilm_quality_t quality;
+  gboolean halation_on;
+  float scatter_amount;
+  float scatter_scale;
+  float halation_amount;
+  float halation_scale;
+  float boost_ev;
+  float boost_range;
+  float protect_ev;
+  gboolean diffusion_on;
+  dt_iop_spektrafilm_diffusion_family_t diffusion_filter_family;
+  float diffusion_strength;
+  float diffusion_scale;
+  float diffusion_warmth;
+  gboolean print_diffusion_on;
+  dt_iop_spektrafilm_diffusion_family_t print_diffusion_filter_family;
+  float print_diffusion_strength;
+  float print_diffusion_scale;
+  float print_diffusion_warmth;
+  gboolean grain_on;
+  float grain_amount;
+  float grain_blur;
+  float grain_granularity;
+  float grain_uniformity;
+  float grain_sublayer_scale;
+  float grain_density_min;
+  float grain_dye_cloud;
+  float film_format_mm;
+  float output_luminance_boost;
+  float output_scale;
+  float grain_usm_sigma;
+  float grain_usm_amount;
+  float film_gamma_factor;
+  float film_gamma_factor_fast;
+  float film_gamma_factor_slow;
+  float film_developer_exhaustion;
+  float push_pull_stops;
+  float scan_blur;
+  float scan_usm_sigma;
+  float scan_usm_amount;
+  float glare_percent;
+  float development_min;
+  float print_development_min;
+  gboolean adaptation_bandwidth;
+  gboolean adaptation_surface;
+  gboolean gamut_compress;
+} dt_iop_spektrafilm_params_v2_t;
+
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
@@ -713,16 +872,38 @@ int legacy_params(dt_iop_module_t *self,
                   int32_t *new_params_size,
                   int *new_version)
 {
-  if(old_version != 1) return 1;
+  if(old_version != 1 && old_version != 2) return 1;
 
-  dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
+  dt_iop_spektrafilm_params_t *n = calloc(1, sizeof(dt_iop_spektrafilm_params_t));
   if(!n) return 1;
-  memcpy(n, old_params, sizeof(dt_iop_spektrafilm_params_t));
-  n->grain_density_min = 1.0f;
+  memcpy(n, old_params, sizeof(dt_iop_spektrafilm_params_v2_t));
+  if(old_version == 1) n->grain_density_min = 1.0f;
+  n->print_gamma_r = n->print_gamma_g = n->print_gamma_b = 1.0f;
+  /* not the 0.89 default: these edits were developed against 0.8 */
+  n->grain_blur_base = 0.8f;
+  /* the pack's default table, which is the only one these edits ever had */
+  n->upsampling_hash = 0u;
+  /* named no pack, and could not have: none declared an identity yet */
+  n->pack_hash = 0u;
+  n->origin_version = old_version;
+  /* the endpoints the module placed for these edits before they were exposed */
+  n->scan_black_correction = n->scan_white_correction = TRUE;
+  n->scan_black_level = 0.01f;
+  n->scan_white_level = 0.98f;
+  /* an edit of this vintage that recorded no table was made when exactly one
+     pack existed, so that is the table it used: there was nothing else to
+     render with. Left at 0 it would instead resolve to whatever happens to be
+     installed, which on a machine that has since moved to a later pack is a
+     different set of profiles and a different render.
+
+     Only here, where the record's own version proves it predates the choice. A
+     fresh edit also starts at 0 and must keep resolving to the default pack,
+     which is why this cannot be done in the resolver */
+  if(!n->lut_hash) n->lut_hash = SF_FIRST_PUBLISHED_LUT_HASH;
 
   *new_params = n;
   *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-  *new_version = 2;
+  *new_version = 3;
   return 0;
 }
 
@@ -764,6 +945,135 @@ static void _pack_dir(char *dst,
 /* Pick the pack directory for an edit that recorded wanted_lut_hash (0 = no
    preference). Local lookup only -- no network, safe on the pixelpipe. Falls
    back to the hand-install directory so error text still names somewhere real. */
+/* the installed pack carrying this spectral table, or FALSE. Peeks the same
+   declaration the GUI lists from, so a table the user can pick is a table the
+   pipeline can find. 0 asks for nothing and always answers FALSE */
+static gboolean _pack_dir_with_table(const uint32_t table_hash,
+                                     char *dst,
+                                     const size_t dstsz)
+{
+  if(!table_hash) return FALSE;
+  gboolean found = FALSE;
+  GPtrArray *packs = sf_fetch_list_packs();
+  for(guint pi = 0; packs && pi < packs->len && !found; pi++)
+  {
+    const sf_fetch_pack_t *fp = g_ptr_array_index(packs, pi);
+    sf_table_info_t info[SF_MAX_TABLES];
+    const int n = sf_pack_peek_tables(fp->dir, info, SF_MAX_TABLES);
+    for(int i = 0; i < n && !found; i++)
+      if(info[i].lut_hash == table_hash)
+      {
+        g_strlcpy(dst, fp->dir, dstsz);
+        found = TRUE;
+      }
+  }
+  if(packs) g_ptr_array_unref(packs);
+  return found;
+}
+
+/* the installed pack an edit that names no pack was made with: one carrying its
+   table AND declaring no identity of its own.
+
+   An edit predating pack_hash was necessarily made against a pack predating
+   pack_hash, that being the only kind that existed. Without this, such an edit
+   resolves on its table alone, and a later pack that carries the same table
+   forward byte-identical answers to it just as well, while its profiles render
+   differently. That is the whole failure pack_hash exists to prevent, and the
+   one case pack_hash cannot express, because the pack it wants has none.
+
+   FALSE when no such pack is installed, which leaves the edit to resolve on
+   its table as before; there is nothing better available then */
+static gboolean _legacy_pack_dir_with_table(const uint32_t table_hash,
+                                            char *dst,
+                                            const size_t dstsz)
+{
+  if(!table_hash) return FALSE;
+  gboolean found = FALSE;
+  GPtrArray *packs = sf_fetch_list_packs();
+  for(guint pi = 0; packs && pi < packs->len && !found; pi++)
+  {
+    const sf_fetch_pack_t *fp = g_ptr_array_index(packs, pi);
+    if(sf_fetch_peek_pack_hash(fp->dir)) continue; /* identified: not this one */
+    sf_table_info_t info[SF_MAX_TABLES];
+    const int n = sf_pack_peek_tables(fp->dir, info, SF_MAX_TABLES);
+    for(int i = 0; i < n && !found; i++)
+      if(info[i].lut_hash == table_hash)
+      {
+        g_strlcpy(dst, fp->dir, dstsz);
+        found = TRUE;
+      }
+  }
+  if(packs) g_ptr_array_unref(packs);
+  return found;
+}
+
+/* how an edit resolves to a pack on this machine */
+typedef enum sf_edit_pack_t
+{
+  SF_EDIT_PACK_OK = 0,     /* dir holds the pack this edit asks for */
+  SF_EDIT_PACK_SUBSTITUTE, /* dir holds a pack, but not the one asked for */
+  SF_EDIT_PACK_LEGACY_GONE,/* pre-identity edit, no pre-identity pack installed */
+  SF_EDIT_PACK_NONE,       /* nothing usable at all */
+} sf_edit_pack_t;
+
+/* the pack this edit needs, and whether it is here.
+ *
+ * Three hashes answer three different questions and they are consulted in
+ * priority order, so anything reading fewer than all of them disagrees with
+ * the renderer:
+ *
+ *   upsampling_hash  a table the edit was explicitly moved to. It may exist
+ *                    only in a pack other than the recorded one (that is
+ *                    what choosing it means) and choosing it clears the two
+ *                    below, so such an edit carries a lut_hash of 0.
+ *   pack_hash        the pack the edit was developed against. Two installed
+ *                    packs can carry one table and render differently, so this
+ *                    outranks the table.
+ *   lut_hash         the spectral table it was stamped with, the weakest claim
+ *                    and the only one a pre-identity edit has.
+ *
+ * out_table receives the table the edit needs, which is what a download should
+ * ask for. dir receives the directory when the result is OK or SUBSTITUTE */
+static sf_edit_pack_t _edit_pack_dir(const dt_iop_spektrafilm_params_t *p,
+                                     char *dir,
+                                     const size_t dstsz,
+                                     uint32_t *out_table)
+{
+  const uint32_t want_table = p->upsampling_hash ? p->upsampling_hash : p->lut_hash;
+  if(out_table) *out_table = want_table;
+
+  if(p->upsampling_hash)
+    return _pack_dir_with_table(p->upsampling_hash, dir, dstsz)
+               ? SF_EDIT_PACK_OK : SF_EDIT_PACK_NONE;
+
+  /* an edit carrying a table but no pack was last rendered on a pack that
+     declares no identity. Two ways to arrive there and they want the same
+     thing: the edit predates pack_hash, or the pack it used does, which is
+     still true of anything rendered on 0.3.3 today, origin_version 3 and all.
+     Keying on the params version alone would protect the first and leave the
+     second to be substituted silently */
+  const gboolean unidentified = !p->pack_hash && p->lut_hash;
+  if(!unidentified && p->pack_hash)
+  {
+    if(sf_fetch_pack_dir_for_pack_hash(p->pack_hash, dir, dstsz))
+      return SF_EDIT_PACK_OK;
+    return SF_EDIT_PACK_NONE;
+  }
+  if(unidentified && _legacy_pack_dir_with_table(p->lut_hash, dir, dstsz))
+    return SF_EDIT_PACK_OK;
+
+  gboolean exact = FALSE;
+  if(!sf_fetch_resolve_pack_dir(p->lut_hash, dir, dstsz, &exact))
+    return SF_EDIT_PACK_NONE;
+  /* reaching an identified pack is a substitution: the table matches, so
+     nothing objects, but a release can carry a table forward unchanged while
+     its profiles move */
+  if(unidentified && sf_fetch_peek_pack_hash(dir)) return SF_EDIT_PACK_LEGACY_GONE;
+  /* an edit that records no table has no preference a pack could violate, so
+     whatever the resolver found, a downloaded pack included, is the right one */
+  return (exact || !p->lut_hash) ? SF_EDIT_PACK_OK : SF_EDIT_PACK_SUBSTITUTE;
+}
+
 static void _resolve_pack_dir(uint32_t wanted_lut_hash,
                               char *dst,
                               size_t dstsz)
@@ -850,6 +1160,101 @@ static gint _entry_name_cmp(gconstpointer a,
    the spectral table: a profile names a stock, and the pack holds that stock's
    digested render defaults, so mixing the two silently drops per-film halation,
    grain and coupler data for any stock the other side has never heard of. */
+/* one spectral upsampling table, as the combobox needs it. Snapshotted out of
+   the pack rather than read live: the GUI has no pack reference of its own and
+   the pack can be reloaded underneath it when the resolved directory changes */
+typedef struct sf_table_entry_t
+{
+  char label[64];       /* the method name shown in the combobox */
+  char dir[SF_PATH_LEN];/* the pack that carries it */
+  uint32_t hash;
+  gboolean reflectance;
+  gboolean named;       /* label came from a declaration, not a header id */
+} sf_table_entry_t;
+
+/* every spectral upsampling table on this machine, across all installed packs.
+   Not only the pack this edit resolves to: an edit made against 0.3.3 resolves
+   to a pack carrying one table, and listing just that one would leave it no way
+   to reach a method a later pack added: the control would be permanently
+   inert on exactly the edits most likely to want it. Choosing a table from
+   another pack moves the edit to that pack, which _upsampling_changed() does.
+
+   Read from the directories and not from the loaded pack, for the same reason
+   _scan_profiles() scans directories: _pack is assigned only by _ensure_sim(),
+   which runs in the pixelpipe, so it is still NULL while the GUI is built.
+   Peeking costs a pack.json parse and a 32-byte header per table */
+static GList *_scan_tables(void)
+{
+  GList *list = NULL;
+  GPtrArray *packs = sf_fetch_list_packs();
+  for(guint pi = 0; packs && pi < packs->len; pi++)
+  {
+    const sf_fetch_pack_t *fp = g_ptr_array_index(packs, pi);
+    sf_table_info_t info[SF_MAX_TABLES];
+    const int n = sf_pack_peek_tables(fp->dir, info, SF_MAX_TABLES);
+    dt_print(DT_DEBUG_DEV, "[spektrafilm] %d spectral upsampling table(s) in %s\n",
+             n, fp->dir);
+    for(int i = 0; i < n; i++)
+    {
+      /* one entry per table, not per pack: packs overlap, and 0.3.3's table is
+         byte-identical to the one 0.3.4 carries. Two entries for it would read
+         as two methods and pick between the packs arbitrarily. First pack
+         wins, which is the precedence sf_fetch_list_packs() already reports */
+      sf_table_entry_t *dup = NULL;
+      for(GList *l = list; l && !dup; l = l->next)
+        if(((sf_table_entry_t *)l->data)->hash == info[i].lut_hash)
+          dup = l->data;
+      if(dup)
+      {
+        /* A pack that names the table teaches the entry its method even when
+           an earlier pack supplies the bytes: same table, and "hanatos2025"
+           is what the method is called everywhere else. The directory stays
+           the earlier pack's, precedence being about which files to read */
+        if(!dup->named && info[i].identifier[0])
+        {
+          g_strlcpy(dup->label, info[i].identifier, sizeof dup->label);
+          dup->named = TRUE;
+        }
+        continue;
+      }
+
+      sf_table_entry_t *e = g_malloc0(sizeof(*e));
+      /* A format 2 pack's single table declared no identifier; its header id is
+         the only name it has, and it is the one the mismatch banner and the
+         data repository both use */
+      e->named = info[i].identifier[0] != 0;
+      g_strlcpy(e->label, e->named ? info[i].identifier : info[i].lut_id,
+                sizeof e->label);
+      g_strlcpy(e->dir, fp->dir, sizeof e->dir);
+      e->hash = info[i].lut_hash;
+      e->reflectance = info[i].kind == SF_LUT_REFLECTANCE;
+      list = g_list_append(list, e);
+      dt_print(DT_DEBUG_DEV, "[spektrafilm]   %08x %s %s\n", e->hash, e->label,
+               info[i].lut_id);
+    }
+  }
+  if(packs) g_ptr_array_unref(packs);
+
+  /* nothing installed names the first published table, so fall back to what it
+     is: only one pack ever declared no tables, and this is the one it held */
+  for(GList *l = list; l; l = l->next)
+  {
+    sf_table_entry_t *e = l->data;
+    if(!e->named && e->hash == SF_FIRST_PUBLISHED_LUT_HASH)
+    {
+      g_strlcpy(e->label, SF_FIRST_PUBLISHED_LUT_NAME, sizeof e->label);
+      e->named = TRUE;
+    }
+  }
+  return list;
+}
+
+static const sf_table_entry_t *_table_at(const dt_iop_spektrafilm_gui_data_t *g,
+                                         const int pos)
+{
+  return g ? g_list_nth_data(g->tables, pos) : NULL;
+}
+
 static GList *_scan_profiles(const char *packdir)
 {
   char dir[SF_PATH_LEN];
@@ -913,10 +1318,17 @@ static GList *_scan_profiles(const char *packdir)
 /* resolve a profile hash to its stock name. hash 0 -> default:
    for films the first filming stock, for papers prefer the film's
    target_print. Returns false when nothing matches. */
+/* prefer_bw: 0 or 1 to prefer a stock with that channel model when the named
+   one is absent, -1 for no preference. It is the tier _auto_paper_entry()
+   applies in the GUI, and it has to be applied here too or the two disagree:
+   target_print is optional in the pack, the entry list is sorted by display
+   name, and so the last-resort first printing entry bears no relation to the
+   film: for a black-and-white negative it is a color paper */
 static gboolean _resolve_stock(GList *entries,
                                uint32_t hash,
                                gboolean want_printing,
                                const char *prefer_stock,
+                               int prefer_bw,
                                char *dst,
                                size_t dstsz)
 {
@@ -935,6 +1347,16 @@ static gboolean _resolve_stock(GList *entries,
     {
       const sf_prof_entry_t *e = l->data;
       if(e->printing == want_printing && !strcmp(e->stock, prefer_stock))
+      {
+        g_strlcpy(dst, e->stock, dstsz);
+        return TRUE;
+      }
+    }
+  if(prefer_bw >= 0)
+    for(GList *l = entries; l; l = l->next)
+    {
+      const sf_prof_entry_t *e = l->data;
+      if(e->printing == want_printing && e->bw == (prefer_bw != 0))
       {
         g_strlcpy(dst, e->stock, dstsz);
         return TRUE;
@@ -1092,11 +1514,21 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   uint64_t key = 0xcbf29ce484222325ULL;
   key = _mix64(key, &p->film_hash, sizeof p->film_hash);
   key = _mix64(key, &p->lut_hash, sizeof p->lut_hash);
+  key = _mix64(key, &p->pack_hash, sizeof p->pack_hash);
+  /* decides which pack the edit resolves to, so it decides the sim */
+  key = _mix64(key, &p->origin_version, sizeof p->origin_version);
+  /* picks the spectral table the tc LUT is built from, so the sim is a
+     different one entirely */
+  key = _mix64(key, &p->upsampling_hash, sizeof p->upsampling_hash);
   key = _mix64(key, &p->paper_hash, sizeof p->paper_hash);
   key = _mix64(key, &p->exposure_ev, sizeof p->exposure_ev);
   key = _mix64(key, &p->print_exposure_ev, sizeof p->print_exposure_ev);
   key = _mix64(key, &p->print_auto_exposure, sizeof p->print_auto_exposure);
   key = _mix64(key, &p->print_contrast, sizeof p->print_contrast);
+  /* morph the paper curves at build time, exactly as print_contrast does */
+  key = _mix64(key, &p->print_gamma_r, sizeof p->print_gamma_r);
+  key = _mix64(key, &p->print_gamma_g, sizeof p->print_gamma_g);
+  key = _mix64(key, &p->print_gamma_b, sizeof p->print_gamma_b);
   key = _mix64(key, &p->filter_m, sizeof p->filter_m);
   key = _mix64(key, &p->filter_y, sizeof p->filter_y);
   key = _mix64(key, &p->couplers_amount, sizeof p->couplers_amount);
@@ -1123,6 +1555,11 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   key = _mix64(key, &p->adaptation_bandwidth, sizeof p->adaptation_bandwidth);
   key = _mix64(key, &p->adaptation_surface, sizeof p->adaptation_surface);
   key = _mix64(key, &p->output_luminance_boost, sizeof p->output_luminance_boost);
+  /* the endpoint fit is solved at build time, not per pixel */
+  key = _mix64(key, &p->scan_black_correction, sizeof p->scan_black_correction);
+  key = _mix64(key, &p->scan_white_correction, sizeof p->scan_white_correction);
+  key = _mix64(key, &p->scan_black_level, sizeof p->scan_black_level);
+  key = _mix64(key, &p->scan_white_level, sizeof p->scan_white_level);
   key = _mix64(key, &p->gamut_compress, sizeof p->gamut_compress);
   key = _mix64(key, &p->output_scale, sizeof p->output_scale);
   key = _mix64(key, &p->film_gamma_factor, sizeof p->film_gamma_factor);
@@ -1183,7 +1620,27 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
      open in the same session is rare enough that the reload costs less than
      permanently carrying every pack the user has on disk. */
   char want_dir[SF_PATH_LEN];
-  _resolve_pack_dir(p->lut_hash, want_dir, sizeof want_dir);
+  /* one lookup, shared with the module's data row: the two disagreeing about
+     which pack an edit needs is what left an edit unrenderable while the row
+     reported nothing missing */
+  if(_edit_pack_dir(p, want_dir, sizeof want_dir, NULL) == SF_EDIT_PACK_LEGACY_GONE)
+  {
+    dt_print(DT_DEBUG_DEV,
+             "[spektrafilm] edit predates pack identity and its own pack is not "
+             "installed; %s would render it on different profiles\n", want_dir);
+    g_strlcpy(d->sim_error,
+              _("this edit was made before data packs carried an identity,\n"
+                "and the pack it needs is not installed\n"
+                "the module can fetch it"),
+              sizeof d->sim_error);
+    d->sim_warning[0] = 0;
+    /* d->lock is held from the cache check above, and every exit publishes:
+       returning without either deadlocks the next pipe run and leaves the
+       banner showing whatever the previous run said */
+    _publish_status(d);
+    dt_pthread_mutex_unlock(&d->lock);
+    return NULL;
+  }
 
   const guint gen = fetch_gen;
 
@@ -1266,7 +1723,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   /* resolve stocks */
   GList *entries = _scan_profiles(pack_dir);
   char film_stock[SF_NAME_LEN] = { 0 }, paper_stock[SF_NAME_LEN] = { 0 };
-  if(!_resolve_stock(entries, p->film_hash, FALSE, "kodak_gold_200", film_stock,
+  if(!_resolve_stock(entries, p->film_hash, FALSE, "kodak_gold_200", -1, film_stock,
                      sizeof film_stock))
   {
     g_strlcpy(d->sim_error,
@@ -1282,14 +1739,19 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     return NULL;
   }
   const char *target_print = NULL;
+  int film_bw = -1;
   for(GList *l = entries; l; l = l->next)
   {
     const sf_prof_entry_t *e = l->data;
-    if(!e->printing && !strcmp(e->stock, film_stock)) target_print = e->target_print;
+    if(!e->printing && !strcmp(e->stock, film_stock))
+    {
+      target_print = e->target_print;
+      film_bw = e->bw ? 1 : 0;
+    }
   }
   if(!p->scan_film
-     && !_resolve_stock(entries, p->paper_hash, TRUE, target_print, paper_stock,
-                        sizeof paper_stock))
+     && !_resolve_stock(entries, p->paper_hash, TRUE, target_print, film_bw,
+                        paper_stock, sizeof paper_stock))
   {
     g_strlcpy(d->sim_error,
               _("the installed data pack contains no print papers\n"
@@ -1365,16 +1827,25 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     sp.preflash_m_shift = p->preflash_m_shift;
     sp.preflash_y_shift = p->preflash_y_shift;
     sp.scan_film = p->scan_film;
+    sp.spectral_lut_hash = p->upsampling_hash;
+    sp.scan_black_correction = p->scan_black_correction;
+    sp.scan_white_correction = p->scan_white_correction;
+    sp.scan_black_level = p->scan_black_level;
+    sp.scan_white_level = p->scan_white_level;
     sp.adaptation_bandwidth = p->adaptation_bandwidth;
     sp.adaptation_surface = p->adaptation_surface;
     sp.lut_steps = _quality_steps(p->quality);
     sp.out_luminance_boost = p->output_luminance_boost;
     if(!p->gamut_compress) sp.output_compress = SF_OUTPUT_COMPRESS_OFF;
     sp.out_scale = p->output_scale;
-    if(p->print_contrast != 1.0f)
+    if(p->print_contrast != 1.0f || p->print_gamma_r != 1.0f
+       || p->print_gamma_g != 1.0f || p->print_gamma_b != 1.0f)
     {
       sp.morph_active = true;
       sp.morph_gamma = p->print_contrast;
+      sp.morph_gamma_r = p->print_gamma_r;
+      sp.morph_gamma_g = p->print_gamma_g;
+      sp.morph_gamma_b = p->print_gamma_b;
     }
     if(p->film_gamma_factor != 1.0f || p->film_gamma_factor_fast != 1.0f
        || p->film_gamma_factor_slow != 1.0f || p->film_developer_exhaustion != 0.0f
@@ -1529,7 +2000,7 @@ static float _max_halo_sigma(const dt_iop_spektrafilm_params_t *p,
      it would need the sigma plumbed out of the simulation and made available
      before the simulation is built. */
   const float grain = (p->grain_on && p->grain_amount > 0.0f)
-                          ? fmaxf(SF_GRAIN_BLUR_FACTOR
+                          ? fmaxf(p->grain_blur_base
                                       * fmaxf(p->grain_blur, SF_GRAIN_BLUR_MIN),
                                   (p->grain_usm_amount > 0.0f) ? p->grain_usm_sigma : 0.0f)
                           : 0.0f;
@@ -1808,7 +2279,7 @@ void process(dt_iop_module_t *self,
        curve/coupler state baked in at build time, not just resolution);
        rescale it live to the real pixel_um here. */
     const float npart_scale = (pixel_um * pixel_um) / (SF_GRAIN_REF_UM * SF_GRAIN_REF_UM);
-    /* SF_GRAIN_BLUR_FACTOR/SF_GRAIN_DYE_BLUR_UM/grain_usm_sigma are fixed
+    /* grain_blur_base/SF_GRAIN_DYE_BLUR_UM/grain_usm_sigma are fixed
        pixel radii, validated against upstream at whatever single
        resolution each of its own renders happens to use -- upstream has
        no notion of "the same image, but at a temporarily reduced preview
@@ -1958,7 +2429,7 @@ void process(dt_iop_module_t *self,
        image at a temporarily reduced resolution for interactive speed,
        so this fixed radius needs shrinking there or it over-affects real
        scene detail relative to what 1:1/export shows. */
-    const float sigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_blur, SF_GRAIN_BLUR_MIN)
+    const float sigma = d->p.grain_blur_base * fmaxf(d->p.grain_blur, SF_GRAIN_BLUR_MIN)
                          * preview_scale;
     /* No variance-restoration renorm here -- upstream's own grain
        finalization (_finalize_grain in grain.py) has none either; it just
@@ -2742,7 +3213,7 @@ int process_cl(dt_iop_module_t *self,
     SF_CL_STEP("grain add");
     /* fixed pixel sigma, matching process()'s CPU-side fix -- see comment
        there for the empirical validation. */
-    const float gsigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_blur, SF_GRAIN_BLUR_MIN)
+    const float gsigma = d->p.grain_blur_base * fmaxf(d->p.grain_blur, SF_GRAIN_BLUR_MIN)
                           * preview_scale;
     /* CPU twin is sf_blur_plane3(), which skips below SF_GAUSS_MIN_SIGMA.
        This one matters most: the clump blur runs on the grain field, which is
@@ -2913,6 +3384,10 @@ static void _rescan(dt_iop_module_t *self)
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   g_list_free_full(g->entries, g_free);
   g->entries = _scan_profiles(NULL);
+  /* the tables come from the same pack as the profiles, so they are rescanned
+     together: a reload that changes one changes the other */
+  g_list_free_full(g->tables, g_free);
+  g->tables = _scan_tables();
 }
 
 /* Entry at a list position, or NULL. The comboboxes carry the position as their
@@ -2927,6 +3402,7 @@ static void _update_print_sensitivity(dt_iop_module_t *self);
 static void _update_development_sensitivity(const dt_iop_spektrafilm_gui_data_t *g,
                                             const dt_iop_spektrafilm_params_t *p);
 static float _development_default(const sf_prof_entry_t *e);
+static void _rebaseline_print_development(dt_iop_module_t *self);
 static void _sync_coupler_diffusion(dt_iop_spektrafilm_gui_data_t *g,
                                     const sf_prof_entry_t *e);
 
@@ -2963,8 +3439,58 @@ static void _stamp_lut_hash(dt_iop_module_t *self)
   {
     const uint32_t cur = sf_pack_lut_hash(_pack);
     if(!p->lut_hash || p->lut_hash == cur) p->lut_hash = cur;
+    /* same rule for the pack: record it while the edit is still on the pack it
+       was made with, and leave it alone once it disagrees: overwriting there
+       would erase the very mismatch the field exists to report */
+    const uint32_t curp = sf_pack_hash(_pack);
+    /* never onto an edit that predates pack identity. Such an edit reaching an
+       identified pack means the pack it belongs on is not installed; stamping
+       there would make the substitution permanent, surviving the moment its
+       own pack comes back */
+    if(curp && !(!p->pack_hash && p->lut_hash && p->lut_hash != cur)
+       && (!p->pack_hash || p->pack_hash == curp))
+      p->pack_hash = curp;
   }
   dt_pthread_mutex_unlock(&_pack_lock);
+}
+
+/* both halves of the hanatos sensitivity adaptation belong to the irradiance
+   formula; sf_sim_build() does not run them for a reflectance table. Shown
+   inert there rather than left live, which would offer two switches that
+   change nothing */
+static void _update_adaptation_sensitivity(const dt_iop_spektrafilm_gui_data_t *g,
+                                           const sf_table_entry_t *sel)
+{
+  const gboolean reflectance = sel && sel->reflectance;
+  gtk_widget_set_sensitive(g->adaptation_bandwidth, !reflectance);
+  gtk_widget_set_sensitive(g->adaptation_surface, !reflectance);
+}
+
+static void _upsampling_changed(GtkWidget *w,
+                                dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
+  const sf_table_entry_t *e
+      = _table_at(g, GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(g->upsampling)));
+  if(!e) return;
+  /* the hash and not the list position: a pack revision can reorder its tables
+     or drop one, and the edit has to keep naming the table it was developed
+     against so the mismatch is reported rather than absorbed */
+  p->upsampling_hash = e->hash;
+  /* the chosen table may live in another pack than the one this edit currently
+     resolves to: picking a method a later pack added is the whole point of
+     listing them all. Release the recorded pack and table so resolution
+     follows the choice; both are stamped again on the next render, naming
+     whichever pack actually supplied it */
+  p->pack_hash = 0u;
+  p->lut_hash = 0u;
+  /* here as well as in gui_update(): picking a table is exactly when the pair
+     becomes inert or live again, and gui_update() does not re-run on a
+     combobox change */
+  _update_adaptation_sensitivity(g, e);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void _film_changed(GtkWidget *w,
@@ -3012,6 +3538,11 @@ static void _film_changed(GtkWidget *w,
      the paper is set back to auto later. The pipeline resolves it identically
      either way (_resolve_stock). */
   _update_paper_auto_entry(self);
+  /* A film switch can move the automatic paper (Double-X resolves to print
+     film 2302, a color negative to a color paper), and the print time does
+     not transfer between them any more than the film time does. Only on auto:
+     an explicitly chosen paper has not changed, so neither should its time */
+  if(!p->paper_hash) _rebaseline_print_development(self);
   /* moves the coupler spread sliders' reset targets onto this stock, without
      touching the values the user set */
   _sync_coupler_diffusion(g, e);
@@ -3041,7 +3572,10 @@ static void _paper_changed(GtkWidget *w,
     /* auto, or no paper at all: drop the explicit choice so the film resolves
        it again if the print stage comes back */
     p->paper_hash = 0;
-    p->print_development_min = 0.0f;
+    /* then take the time from whatever that resolves to. Zeroing here instead
+       would render the same (0 means the stock's own default) but leave the
+       slider reading 0 on a paper that has a whole family of times */
+    _rebaseline_print_development(self);
     _update_development_sensitivity(g, p);
     _stamp_lut_hash(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -3290,23 +3824,42 @@ static void _development_widget_update(GtkWidget *w,
    because every film / paper / scan_film change routes through here; driving
    the sliders from gui_update() alone would leave them stale from the moment a
    stock is switched until the module is next rebuilt. */
+/* the paper actually being printed on, or NULL when there is no print stage.
+   "auto" prints on a real paper while leaving paper_hash at 0: the link is
+   the selection, the destination is resolved from the film's target print. A
+   hash lookup alone finds no paper on that selection, which would leave the
+   print slider dead at 0 min even when the paper it resolves to carries a whole
+   development family. Resolved the same way the combobox label and the pipeline
+   resolve it, so all three name one paper */
+static const sf_prof_entry_t *_effective_paper_entry(const dt_iop_spektrafilm_gui_data_t *g,
+                                                     const dt_iop_spektrafilm_params_t *p)
+{
+  if(p->scan_film) return NULL;
+  return p->paper_hash ? _entry_by_hash(g, p->paper_hash, TRUE)
+                       : _auto_paper_entry(g, _current_film_entry(g, p));
+}
+
+/* put the print development slider on the paper in force, as _film_changed()
+   does for the film: a time from the previous paper means nothing on this one,
+   and 0 ("this stock's own default") renders correctly but reads as though
+   nothing is set, on the one discontinuity in the range */
+static void _rebaseline_print_development(dt_iop_module_t *self)
+{
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
+  const sf_prof_entry_t *paper = _effective_paper_entry(g, p);
+  p->print_development_min = paper ? _development_default(paper) : 0.0f;
+  DT_ENTER_GUI_UPDATE();
+  dt_bauhaus_slider_set(g->print_development_min, p->print_development_min);
+  DT_LEAVE_GUI_UPDATE();
+}
+
 static void _update_development_sensitivity(const dt_iop_spektrafilm_gui_data_t *g,
                                             const dt_iop_spektrafilm_params_t *p)
 {
   _development_widget_update(g->development_min, _entry_by_hash(g, p->film_hash, FALSE));
 
-  /* "auto" prints on a real paper while leaving paper_hash at 0 -- the link is
-     the selection, the destination is resolved from the film's target print. A
-     hash lookup alone finds no paper on that selection, which would leave the
-     print slider dead at 0 min even when the paper it resolves to carries a
-     whole development family. Resolve it the same way the combobox label does,
-     so the slider follows the paper actually being printed on. */
-  const sf_prof_entry_t *paper = NULL;
-  if(!p->scan_film)
-    paper = p->paper_hash ? _entry_by_hash(g, p->paper_hash, TRUE)
-                          : _auto_paper_entry(g, _current_film_entry(g, p));
-
-  _development_widget_update(g->print_development_min, paper);
+  _development_widget_update(g->print_development_min, _effective_paper_entry(g, p));
 }
 
 static void _update_print_sensitivity(dt_iop_module_t *self)
@@ -3327,6 +3880,22 @@ static void _update_print_sensitivity(dt_iop_module_t *self)
   gtk_widget_set_sensitive(g->print_exposure_ev, printing);
   gtk_widget_set_sensitive(g->print_auto_exposure, printing);
   gtk_widget_set_sensitive(g->print_contrast, printing);
+  gtk_widget_set_sensitive(g->print_gamma_r, printing);
+  gtk_widget_set_sensitive(g->print_gamma_g, printing);
+  gtk_widget_set_sensitive(g->print_gamma_b, printing);
+  /* the endpoint fit runs where the endpoints come from something other than
+     the medium being rendered: a scan of positive film, whose slide has base
+     density and never reaches D-max, and a print on negative-type paper, whose
+     range is set by the film behind it. A scan of a negative is not placed this
+     way, and positive paper carries its own black and white */
+  const sf_prof_entry_t *film_now = _current_film_entry(g, p);
+  const sf_prof_entry_t *paper_now = _effective_paper_entry(g, p);
+  const gboolean bw_point = printing ? (paper_now && !paper_now->positive)
+                                     : (film_now && film_now->positive);
+  gtk_widget_set_sensitive(g->scan_black_correction, bw_point);
+  gtk_widget_set_sensitive(g->scan_white_correction, bw_point);
+  gtk_widget_set_sensitive(g->scan_black_level, bw_point);
+  gtk_widget_set_sensitive(g->scan_white_level, bw_point);
   gtk_widget_set_sensitive(g->filter_m, printing);
   gtk_widget_set_sensitive(g->filter_y, printing);
   gtk_widget_set_sensitive(g->print_diffusion_on, printing);
@@ -3497,9 +4066,13 @@ static void _update_data_row(dt_iop_module_t *self)
   /* Is any pack usable at all, and is it the one this edit was made with?
      Local-only, so this is cheap enough to answer on every refresh. */
   char dir[SF_PATH_LEN];
-  gboolean exact = FALSE;
-  const gboolean have_any =
-      sf_fetch_resolve_pack_dir(p->lut_hash, dir, sizeof dir, &exact);
+  uint32_t want_table = 0;
+  const sf_edit_pack_t st = _edit_pack_dir(p, dir, sizeof dir, &want_table);
+  /* only the pack the edit asks for counts as having one. A substitute, or a
+     later pack answering to the same table, is what the row exists to offer a
+     way out of */
+  const gboolean have_any = st == SF_EDIT_PACK_OK;
+  const gboolean exact = have_any;
 
   /* With no pack there is nothing any of the controls could act on: a film
      list with no films, sliders driving a simulation that cannot be built.
@@ -3509,6 +4082,18 @@ static void _update_data_row(dt_iop_module_t *self)
 
   if(state == SF_FETCH_RUNNING)
   {
+    /* started from the update row, which reports its own progress. Recorded
+       before returning all the same: the running-to-done transition below is
+       what rebuilds the GUI once a pack lands, and a fetch that never looked
+       like it was running never looks like it finished either: the module
+       would keep the table list it read before the download */
+    if(g->update_fetching)
+    {
+      g->data_last_state = state;
+      gtk_widget_set_visible(g->data_box, FALSE);
+      if(!g->data_poll) g->data_poll = g_timeout_add(500, _data_poll_cb, self);
+      return;
+    }
     g->data_last_state = state;
     /* Percentage first. The message that follows it is a filename and a file
        count, which grows and shrinks as the download moves between files, so a
@@ -3580,16 +4165,141 @@ static void _update_data_row(dt_iop_module_t *self)
     return;
   }
 
-  g->data_wanted = have_any ? p->lut_hash : 0;
+  /* p->lut_hash rather than 0 when the edit names a table: the manifest is
+     ordered oldest first, so asking for the table lands on the pack the edit
+     was made with, where asking for nothing lands on whatever is default */
+  g->data_wanted = (have_any || want_table) ? want_table : 0;
+  g->data_wanted_pack = p->pack_hash;
   gtk_label_set_text(
       GTK_LABEL(g->data_status),
       have_any
           ? _("the table this edit was developed with is not installed")
           : _("no data pack installed -- the module's controls appear once one is"));
+  /* a failed download says why in a toast that is gone in seconds; keep the
+     reason here, beside the button that retries it, until the next attempt */
+  {
+    char why[256] = { 0 };
+    if(sf_fetch_status(why, sizeof why, NULL) == SF_FETCH_FAILED && why[0])
+    {
+      gchar *both = g_strdup_printf("%s\n%s",
+                                    gtk_label_get_text(GTK_LABEL(g->data_status)), why);
+      gtk_label_set_text(GTK_LABEL(g->data_status), both);
+      g_free(both);
+    }
+  }
   gtk_button_set_label(GTK_BUTTON(g->data_button), _("download data pack"));
   gtk_widget_set_tooltip_text(g->data_button,
                               _("fetch the matching spectral data pack over the network"));
   gtk_widget_set_visible(g->data_box, TRUE);
+}
+
+/* the update row, which asks a question the module cannot answer on its own:
+   whether the repository has moved on. Separate from the data row above, which
+   reports a pack missing right now: that belongs at the top of the module
+   because nothing renders without it, while this is housekeeping.
+
+   Offered rather than run on its own: it is network traffic nobody asked for,
+   and a pack fetched here is never adopted behind an existing edit. It
+   installs beside the one in use, and only a fresh edit or a deliberate table
+   choice renders on it */
+static void _update_update_row(dt_iop_module_t *self)
+{
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  if(!g || !g->update_box) return;
+
+  char msg[256] = { 0 };
+  double progress = -1.0;
+  const sf_fetch_state_t state = sf_fetch_status(msg, sizeof msg, &progress);
+  if(g->update_fetching && state == SF_FETCH_RUNNING)
+  {
+    /* reported here rather than in the row at the top of the module: that one
+       is about a pack missing right now, and a check or an update fetch is
+       neither missing nor urgent */
+    gtk_label_set_text(GTK_LABEL(g->update_status), msg);
+    gtk_button_set_label(GTK_BUTTON(g->update_button), _("cancel"));
+    if(progress >= 0.0)
+      gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g->update_progress), progress);
+    else
+      gtk_progress_bar_pulse(GTK_PROGRESS_BAR(g->update_progress));
+    gtk_widget_set_visible(g->update_progress, TRUE);
+    return;
+  }
+  gtk_widget_set_visible(g->update_progress, FALSE);
+  if(state != SF_FETCH_RUNNING) g->update_fetching = FALSE;
+
+  const uint32_t avail = sf_fetch_available_pack();
+  char ver[32];
+  sf_fetch_available_version(ver, sizeof ver);
+  /* the pack the check found may since have been fetched, and nothing clears
+     avail_pack on install: ask the disk rather than keep offering it */
+  char installed_at[SF_PATH_LEN] = { 0 };
+  const gboolean now_installed =
+      avail && sf_fetch_pack_dir_for_pack_hash(avail, installed_at,
+                                               sizeof installed_at);
+
+  char label[96], status[96];
+  if(avail && ver[0])
+  {
+    g_snprintf(label, sizeof label, _("download data pack %s"), ver);
+    g_snprintf(status, sizeof status, _("data pack %s is available"), ver);
+  }
+  else
+  {
+    g_strlcpy(label, _("download data pack"), sizeof label);
+    g_strlcpy(status, _("a newer data pack is available"), sizeof status);
+  }
+
+  char done_msg[96];
+  if(now_installed && ver[0])
+    g_snprintf(done_msg, sizeof done_msg, _("data pack %s installed"), ver);
+  else
+    g_strlcpy(done_msg, _("data pack installed"), sizeof done_msg);
+
+  gtk_label_set_text(GTK_LABEL(g->update_status),
+                     now_installed ? done_msg
+                     : avail       ? status
+                     : g->data_checked
+                         ? _("the installed data packs are up to date")
+                         : "");
+  gtk_button_set_label(GTK_BUTTON(g->update_button),
+                       (avail && !now_installed) ? label
+                                                 : _("check for data pack updates"));
+  gtk_widget_set_tooltip_text(
+      g->update_button,
+      (avail && !now_installed)
+          ? _("fetch the newer pack. it installs beside the one you have;\n"
+              "existing edits keep rendering on the pack they were made with.")
+          : _("ask the data repository whether a newer pack is published"));
+}
+
+static void _update_button_clicked(GtkButton *button,
+                                   dt_iop_module_t *self)
+{
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  if(!g) return;
+  if(sf_fetch_status(NULL, 0, NULL) == SF_FETCH_RUNNING)
+    sf_fetch_cancel();
+  else if(sf_fetch_available_pack())
+  {
+    g->update_fetching = TRUE;
+    sf_fetch_start(0u, sf_fetch_available_pack());
+  }
+  else
+  {
+    /* set whether or not the check finds anything: it is what lets the row say
+       "up to date" rather than stay blank, which before a check has run would
+       claim knowledge it does not have */
+    g->data_checked = TRUE;
+    g->update_fetching = TRUE;
+    sf_fetch_check_start();
+  }
+  /* the worker answers on its own thread, so the row this call paints is the
+     one from before it started. Poll until it finishes, exactly as a download
+     does: _update_data_row() clears the timer once the fetch stops running,
+     and _data_poll_cb repaints both rows on every tick. Without this the row
+     keeps the answer it had when the button was pressed */
+  if(!g->data_poll) g->data_poll = g_timeout_add(500, _data_poll_cb, self);
+  _update_update_row(self);
 }
 
 static gboolean _data_poll_cb(gpointer user_data)
@@ -3598,6 +4308,7 @@ static gboolean _data_poll_cb(gpointer user_data)
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   if(!g || !g->data_box) return G_SOURCE_REMOVE;
   _update_data_row(self);
+  _update_update_row(self);
   /* _update_data_row clears data_poll once the fetch stops running, which is
      also the signal to stop this timeout. */
   return g->data_poll ? G_SOURCE_CONTINUE : G_SOURCE_REMOVE;
@@ -3612,7 +4323,7 @@ static void _data_button_clicked(GtkButton *button,
   if(sf_fetch_status(NULL, 0, NULL) == SF_FETCH_RUNNING)
     sf_fetch_cancel();
   else
-    sf_fetch_start(g->data_wanted);
+    sf_fetch_start(g->data_wanted, g->data_wanted_pack);
 
   _update_data_row(self);
 }
@@ -3684,6 +4395,16 @@ static void _preset_defaults(dt_iop_spektrafilm_params_t *p)
   /* deliberately 1.0, not the 1.1 $DEFAULT: the ten printing presets that
      never name print_contrast were authored at 1.0 and keep it */
   p->print_contrast = 1.0f;
+  p->print_gamma_r = p->print_gamma_g = p->print_gamma_b = 1.0f;
+  /* deliberately 0.8, not the 0.89 $DEFAULT: the presets were authored against
+     it, and none of them names grain_blur_base to say otherwise */
+  p->grain_blur_base = 0.8f;
+  p->upsampling_hash = 0u; /* the pack's default table */
+  p->pack_hash = 0u;       /* resolve by table, as a preset must */
+  p->origin_version = 3;   /* a preset is written now, whatever it is applied to */
+  p->scan_black_correction = p->scan_white_correction = TRUE;
+  p->scan_black_level = 0.01f;
+  p->scan_white_level = 0.98f;
   p->couplers_amount = 1.0f;
   p->couplers_diffusion_um = 20.0f;
   p->couplers_tail_um = 200.0f;
@@ -4234,6 +4955,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
 
   _rescan(self);
+  _update_update_row(self);
 
   /* Films and papers share one list; e->printing separates them, and each
      combobox entry carries its position in that list as its data. */
@@ -4311,6 +5033,37 @@ void gui_update(dt_iop_module_t *self)
     dt_bauhaus_combobox_add_full(g->paper, _("(none)"),
                                  DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                  GINT_TO_POINTER(SF_COMBO_NO_PROFILES), NULL, FALSE);
+
+  /* rebuild the spectral upsampling list from whatever pack is loaded. Hidden
+     outright below two entries: a format 2 pack offers no choice, and a
+     one-entry combobox is a control that cannot be used */
+  dt_bauhaus_combobox_clear(g->upsampling);
+  {
+    const int ntab = g_list_length(g->tables);
+    /* shown even when the pack offers one table, so the control is where the
+       user expects it and names what is in use: hiding it makes a pack that
+       carries fewer tables than expected look like a build without the
+       feature. Insensitive rather than absent when there is nothing to pick */
+    gtk_widget_set_visible(g->upsampling, TRUE);
+    gtk_widget_set_sensitive(g->upsampling, ntab > 1);
+    int tpos = -1, ti = 0;
+    for(const GList *l = g->tables; l; l = l->next, ti++)
+    {
+      const sf_table_entry_t *e = l->data;
+      dt_bauhaus_combobox_add_full(g->upsampling, e->label, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                   GINT_TO_POINTER(ti), NULL, TRUE);
+      if(p->upsampling_hash && e->hash == p->upsampling_hash) tpos = ti;
+    }
+    /* no match means either upsampling_hash 0 (an edit made before the pack
+       carried a choice) or a table this pack does not have. Both render on
+       the pack's default, which is index 0, so the combobox shows that rather
+       than a stale name the pipeline is not using. The wrong-table case is
+       already reported by the pack mismatch banner */
+    if(tpos < 0) tpos = 0;
+    if(ntab) dt_bauhaus_combobox_set_from_value(g->upsampling, tpos);
+    const sf_table_entry_t *sel = _table_at(g, tpos);
+    _update_adaptation_sensitivity(g, sel);
+  }
 
   /* Select the saved film. On no hash match -- a fresh param with film_hash 0,
      or a stock that vanished from the pack -- mirror _resolve_stock's fallback
@@ -4970,6 +5723,24 @@ void gui_init(dt_iop_module_t *self)
                                 "pixel. CPU\n"
                                 "only, and slow."));
 
+  /* not dt_bauhaus_combobox_from_params: the entries are whatever the installed
+     pack carries, which is not knowable at build time. Populated in
+     gui_update() and hidden entirely while there is nothing to choose */
+  g->upsampling = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->upsampling, NULL, N_("spectral upsampling"));
+  gtk_widget_set_tooltip_text(
+      g->upsampling,
+      _("how a pixel's color is turned into the spectrum the film is exposed\n"
+        "to. the stock's measured sensitivities are the same either way; this\n"
+        "is the reconstruction in front of them, and the methods disagree most\n"
+        "on saturated color and near-neutrals.\n"
+        "\n"
+        "only shown when the installed data pack carries more than one table.\n"
+        "changing it is a different render, not a refinement of the same one."));
+  g_signal_connect(G_OBJECT(g->upsampling), "value-changed",
+                   G_CALLBACK(_upsampling_changed), self);
+  dt_gui_box_add(self->widget, g->upsampling);
+
   g->adaptation_bandwidth = dt_bauhaus_toggle_from_params(self, "adaptation_bandwidth");
   gtk_widget_set_tooltip_text(
       g->adaptation_bandwidth,
@@ -4980,6 +5751,7 @@ void gui_init(dt_iop_module_t *self)
         "effect on stocks whose profile carries no bandpass."));
 
   g->adaptation_surface = dt_bauhaus_toggle_from_params(self, "adaptation_surface");
+
   gtk_widget_set_tooltip_text(
       g->adaptation_surface,
       _("second half of the film's sensitivity adaptation: a per-color\n"
@@ -5008,6 +5780,38 @@ void gui_init(dt_iop_module_t *self)
         "leave it on for an image you intend to keep. off, saturated colors\n"
         "are clipped by whatever comes next in the pipeline, which loses the\n"
         "separation between them and can shift their hue."));
+  /* last in the section: housekeeping, and the only control here that talks to
+     the network rather than changing the render */
+  g->update_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(2));
+  g->update_status = gtk_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(g->update_status), TRUE);
+  gtk_label_set_xalign(GTK_LABEL(g->update_status), 0.0);
+  dt_gui_box_add(g->update_box, g->update_status);
+  g->update_button = gtk_button_new_with_label(_("check for data pack updates"));
+  g_signal_connect(G_OBJECT(g->update_button), "clicked",
+                   G_CALLBACK(_update_button_clicked), self);
+  /* the bar is laid over the button rather than placed under it: the row is
+     three lines in a narrow panel, and a fourth that exists only while a fetch
+     runs makes the section jump. A thin strip along the button's bottom edge
+     reads as the button filling up, and the theme's own progressbar colors
+     apply: a css gradient on the button could not reach them, @-colors
+     being private to the provider that defines them */
+  GtkWidget *overlay = gtk_overlay_new();
+  gtk_container_add(GTK_CONTAINER(overlay), g->update_button);
+  g->update_progress = gtk_progress_bar_new();
+  gtk_widget_set_halign(g->update_progress, GTK_ALIGN_FILL);
+  gtk_widget_set_valign(g->update_progress, GTK_ALIGN_END);
+  gtk_widget_set_size_request(g->update_progress, -1, DT_PIXEL_APPLY_DPI(4));
+  gtk_widget_set_no_show_all(g->update_progress, TRUE);
+  /* the strip is an indicator, not a target: clicks belong to the button */
+  gtk_widget_set_can_focus(g->update_progress, FALSE);
+  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), g->update_progress);
+  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), g->update_progress,
+                                       TRUE);
+  dt_gui_box_add(g->update_box, overlay);
+
+  dt_gui_box_add(self->widget, g->update_box);
+
   /* ---- tab 2: print ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("print"), NULL);
 
@@ -5041,6 +5845,29 @@ void gui_init(dt_iop_module_t *self)
                               _("print development time. snaps to the nearest time the "
                                 "paper was\n"
                                 "characterised at; 0 uses its own default."));
+
+  g->print_gamma_r = dt_bauhaus_slider_from_params(self, "print_gamma_r");
+  gtk_widget_set_tooltip_text(
+      g->print_gamma_r,
+      _("gamma of the paper's red-forming layer alone, on top of the\n"
+        "overall print gamma.\n"
+        "\n"
+        "splitting gamma per channel grades out crossover -- a negative\n"
+        "whose layers developed to different gammas, which filtration\n"
+        "cannot fix because it shifts every tone equally while crossover\n"
+        "shifts shadows one way and highlights the other."));
+
+  g->print_gamma_g = dt_bauhaus_slider_from_params(self, "print_gamma_g");
+  gtk_widget_set_tooltip_text(
+      g->print_gamma_g,
+      _("gamma of the paper's green-forming layer alone, on top of the\n"
+        "overall print gamma."));
+
+  g->print_gamma_b = dt_bauhaus_slider_from_params(self, "print_gamma_b");
+  gtk_widget_set_tooltip_text(
+      g->print_gamma_b,
+      _("gamma of the paper's blue-forming layer alone, on top of the\n"
+        "overall print gamma."));
 
   _section_add(self, C_("section", "filtration"), "plugins/darkroom/spektrafilm/expand_print_filtration");
 
@@ -5379,6 +6206,40 @@ void gui_init(dt_iop_module_t *self)
                                 "slightly. not\n"
                                 "applied when scanning the film directly."));
 
+  _section_add(self, C_("section", "black and white point"),
+               "plugins/darkroom/spektrafilm/expand_scan_bw");
+
+  g->scan_black_correction =
+      dt_bauhaus_toggle_from_params(self, "scan_black_correction");
+  gtk_widget_set_tooltip_text(
+      g->scan_black_correction,
+      _("place the scan's black point. a slide carries base density and so\n"
+        "never scans to black on its own; off, the shadows stay lifted."));
+  g->scan_black_level = dt_bauhaus_slider_from_params(self, "scan_black_level");
+  dt_bauhaus_slider_set_soft_range(g->scan_black_level, -0.02f, 0.10f);
+  dt_bauhaus_slider_set_digits(g->scan_black_level, 3);
+  gtk_widget_set_tooltip_text(
+      g->scan_black_level,
+      _("where the film's densest tone is sent, as a display value.\n"
+        "0 sends it to true black; raising it lifts the shadows and flattens\n"
+        "the render, and below 0 it is pushed past black and clipped, which\n"
+        "crushes the deepest tones together."));
+
+  g->scan_white_correction =
+      dt_bauhaus_toggle_from_params(self, "scan_white_correction");
+  gtk_widget_set_tooltip_text(
+      g->scan_white_correction,
+      _("place the scan's white point, from the film's clear base."));
+  g->scan_white_level = dt_bauhaus_slider_from_params(self, "scan_white_level");
+  dt_bauhaus_slider_set_soft_range(g->scan_white_level, 0.80f, 1.0f);
+  dt_bauhaus_slider_set_digits(g->scan_white_level, 3);
+  gtk_widget_set_tooltip_text(
+      g->scan_white_level,
+      _("where the film's clear base is sent, as a display value.\n"
+        "\n"
+        "with one correction off the other still lands exactly here: the\n"
+        "uncorrected end is left where the film puts it."));
+
   /* restore root widget */
   self->widget = sf_main_box;
 }
@@ -5420,6 +6281,8 @@ void gui_cleanup(dt_iop_module_t *self)
     g->sections = NULL;
     g_list_free_full(g->entries, g_free);
     g->entries = NULL;
+    g_list_free_full(g->tables, g_free);
+    g->tables = NULL;
   }
 }
 
