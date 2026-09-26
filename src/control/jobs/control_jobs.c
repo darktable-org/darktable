@@ -26,6 +26,7 @@
 #include "common/hdr_alignment.h"
 #include "common/history.h"
 #include "common/history_snapshot.h"
+#include "common/dtdata.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
@@ -1562,6 +1563,20 @@ static int32_t _control_delete_images_job_run(dt_job_t *job)
               break;
           }
           g_list_free_full(files, g_free);
+
+          // .dtdata sidecars are found on their own: with lazy sidecar
+          // writing an xmp may not exist yet while the .dtdata does
+          if(delete_status == _DT_DELETE_STATUS_DELETED)
+          {
+            GList *data = dt_dtdata_find_all(filename);
+            for(GList *l = data; l; l = g_list_next(l))
+            {
+              delete_status = delete_file_from_disk(l->data, &delete_on_error);
+              if(delete_status != _DT_DELETE_STATUS_DELETED)
+                break;
+            }
+            g_list_free_full(data, g_free);
+          }
         }
       }
       else
@@ -1576,6 +1591,8 @@ static int32_t _control_delete_images_job_run(dt_job_t *job)
       // just delete the xmp file of the duplicate selected.
 
       dt_image_path_append_version(imgid, filename, sizeof(filename));
+      char datafile[PATH_MAX] = { 0 };
+      dt_dtdata_path_for_image(filename, datafile, sizeof(datafile));
       g_strlcat(filename, ".xmp", sizeof(filename));
 
       // remove image from db first ...
@@ -1585,6 +1602,8 @@ static int32_t _control_delete_images_job_run(dt_job_t *job)
 
       // ... and delete afterwards because removing will re-write the XMP
       delete_status = delete_file_from_disk(filename, &delete_on_error);
+      if(delete_status == _DT_DELETE_STATUS_DELETED && g_file_test(datafile, G_FILE_TEST_EXISTS))
+        delete_status = delete_file_from_disk(datafile, &delete_on_error);
     }
 
 delete_next_file:
