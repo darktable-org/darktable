@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-19 17:59+0200\n"
-"PO-Revision-Date: 2026-09-26 02:18+0900\n"
+"PO-Revision-Date: 2026-09-26 19:15+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -897,7 +897,7 @@ msgid ""
 "<b>darker:</b> good for dimly-lit rooms"
 msgstr ""
 "写真の周囲の背景色は、編集時に写真の色やトーンがどのように見えるかに影響しま"
-"す。おすすめはグレーですーー最もニュートラルで、視覚を特定の方向に偏らせませ"
+"す。おすすめはグレーです――――最もニュートラルで、視覚を特定の方向に偏らせませ"
 "ん。\n"
 "\n"
 "<b>グレー:</b> 正確な色調整に最適\n"
@@ -1149,7 +1149,7 @@ msgstr "画像を二度1つ星評価にしても星なしの評価にしない"
 
 #: ../build/bin/preferences_gen.h:3058
 msgid "defines whether rating an image one star twice will zero out star rating"
-msgstr "画像を二度1つ星で評価すると評価が星なしになるかいなかを定義します"
+msgstr "画像を二度1つ星で評価すると評価が星なしになるか否かを定義します"
 
 #: ../build/bin/preferences_gen.h:3067 ../build/bin/preferences_gen.h:3402
 msgid "show scrollbars for central view"
@@ -1157,7 +1157,7 @@ msgstr "センタービューのスクロールバーを表示する"
 
 #: ../build/bin/preferences_gen.h:3075 ../build/bin/preferences_gen.h:3410
 msgid "defines whether scrollbars should be displayed"
-msgstr "スクロールバーを表示するかいなかを定義します"
+msgstr "スクロールバーを表示するか否かを定義します"
 
 #: ../build/bin/preferences_gen.h:3084
 msgid "show image time with milliseconds"
@@ -1165,7 +1165,7 @@ msgstr "画像の時間情報をミリ秒まで表示する"
 
 #: ../build/bin/preferences_gen.h:3092
 msgid "defines whether time should be displayed with milliseconds"
-msgstr "時間情報をミリ秒まで表示するかいなかを定義します"
+msgstr "時間情報をミリ秒まで表示するか否かを定義します"
 
 #: ../build/bin/preferences_gen.h:3098
 msgid "thumbnails"
@@ -1818,7 +1818,7 @@ msgid ""
 msgstr ""
 "特徴検出と位置合わせを計算する際の、センサー解像度全体に対する割合です\n"
 "値を大きくすると、より多くの、より特徴的な点を検出します（繰り返しパターンやコ"
-"ントラストの低いシーンで有利）が、処理時間とメモリ消費がおよそ（スケール / "
+"ントラストの低いシーンで有利）が、処理時間とメモリ消費がおよそ(スケール / "
 "0.5)^2倍になります\n"
 "0.5にすると旧来の速度に戻ります"
 
@@ -1978,7 +1978,7 @@ msgstr ""
 "OpenCL対応システムにおけるプレビューピクセルパイプのタスクおよびフルピクセルパ"
 "イプのタスクの割り当てを定めます\n"
 "- デフォルト：GPU はフルピクセルパイプを処理し、CPUはプレビューパイプを処理し"
-"ます （設定パラメーターで修正可能）\n"
+"ます （設定パラメータで修正可能）\n"
 "- 複数のGPU：2つの異なるGPUで両方のピクセルパイプを並列処理します\n"
 "- 非常に高速なGPU：両方のピクセルパイプを同一のGPUで順次処理します"
 
@@ -2413,7 +2413,7 @@ msgstr "内蔵プリセットを先頭に並べる"
 msgid ""
 "whether to show built-in presets first before user's presets in presets menu."
 msgstr ""
-"プリセットメニューでユーザープリセットの前に内蔵プリセットを表示するかいなか"
+"プリセットメニューでユーザープリセットの前に内蔵プリセットを表示するか否か"
 
 #: ../build/bin/preferences_gen.h:4952
 msgid "mouse wheel scrolls modules side panel by default"
@@ -2719,7 +2719,7 @@ msgid ""
 "tags case sensitivity. without the Sqlite ICU extension, insensitivity works "
 "only for the 26 latin letters"
 msgstr ""
-"タグにおいて大文字と小文字を区別するかいなか\n"
+"タグにおいて大文字と小文字を区別するか否か\n"
 "拡張機能Sqlite ICUがない場合、区別が無効になるのは26個のラテン文字のみです"
 
 #: ../build/bin/preferences_gen.h:5370 ../build/bin/preferences_gen.h:5461
@@ -3205,14 +3205,14 @@ msgstr "ピボットを対角線上に保持"
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:134
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:249
 msgid "target black"
-msgstr "黒のターゲット"
+msgstr "ターゲット黒"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:353
 #: ../build/lib/darktable/plugins/introspection_agx.c:570
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:128
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:245
 msgid "target white"
-msgstr "白のターゲット"
+msgstr "ターゲット白"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:359
 #: ../build/lib/darktable/plugins/introspection_agx.c:574
@@ -4316,7 +4316,7 @@ msgstr "効果の範囲"
 #: ../build/lib/darktable/plugins/introspection_satcurvergb.c:149
 #: ../build/lib/darktable/plugins/introspection_satcurvergb.c:258
 msgid "use guided filter"
-msgstr "ガイデットフィルタを使用"
+msgstr "ガイデッドフィルタを使用"
 
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:296
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:344
@@ -5075,19 +5075,19 @@ msgstr "構造 ↔ テクスチャ"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:460
 #: ../src/iop/filmic.c:1611
 msgid "target middle gray"
-msgstr "ミドルグレーのターゲット"
+msgstr "ターゲットミドルグレー"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:273
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:464
 #: ../src/iop/filmic.c:1602
 msgid "target black luminance"
-msgstr "黒の輝度のターゲット"
+msgstr "ターゲット黒輝度"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:279
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:468
 #: ../src/iop/filmic.c:1620
 msgid "target white luminance"
-msgstr "白の輝度のターゲット"
+msgstr "ターゲット白輝度"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:285
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:472
@@ -5383,7 +5383,7 @@ msgstr "セグメンテーションベース"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:260
 msgid "guided laplacians"
-msgstr "ガイデットラプラシアン"
+msgstr "ガイデッドラプラシアン"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:261
 msgid "reconstruct color"
@@ -5563,7 +5563,7 @@ msgstr "Lensfunデータベース"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:529
 msgid "only manual vignette"
-msgstr "手動ビネットのみ"
+msgstr "手動周辺減光のみ"
 
 #. get nice text for bounds
 #. Side-border hide/show
@@ -6575,12 +6575,12 @@ msgstr "フィルタ拡散"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:373
 msgid "averaged guided filter"
-msgstr "平均ガイデットフィルタ"
+msgstr "平均ガイデッドフィルタ"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:374
 #: ../src/iop/satcurvergb.c:2171
 msgid "guided filter"
-msgstr "ガイデットフィルタ"
+msgstr "ガイデッドフィルタ"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:375
 msgid "averaged EIGF"
@@ -6700,7 +6700,7 @@ msgid ""
 "tethering, print and a slideshow."
 msgstr ""
 "ライトテーブルとダークルーム以外には、ジオタグを利用するためのマップモード、テ"
-"ザリングモード、印刷モード、そしてスライドショーモードがあります"
+"ザー撮影モード、印刷モード、そしてスライドショーモードがあります"
 
 # darktableは近年作られたほとんど全てのカメラのRAWフォーマットをサポートしており、あらゆる処理を非常に高い精度で行います
 #: ../data/org.darktable.darktable.appdata.xml.in.h:4
@@ -7258,7 +7258,7 @@ msgid ""
 "`%s' on port `%s' is not interesting because it supports neither tethering "
 "nor import"
 msgstr ""
-"ポート`%s'の`%s'は、テザリングもインポートもサポートしていないため、使用するこ"
+"ポート`%s'の`%s'は、テザー撮影もインポートもサポートしていないため、使用するこ"
 "とが出来ません"
 
 #: ../src/common/camera_control.c:1034
@@ -8592,7 +8592,7 @@ msgid ""
 "fast exposure independent guided filter failed to allocate memory, check your "
 "RAM settings"
 msgstr ""
-"高速露出非依存ガイデットフィルタがメモリの割り当てに失敗しました。RAM設定を確"
+"高速露出非依存ガイデッドフィルタがメモリの割り当てに失敗しました。RAM設定を確"
 "認してください"
 
 #: ../src/common/exif.cc:6371
@@ -8608,7 +8608,7 @@ msgstr "XMPファイル'%s': '%s'を書き込むことが出来ません"
 #: ../src/common/fast_guided_filter.h:300
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
 msgstr ""
-"高速ガイデットフィルタがメモリの割り当てに失敗しました。RAM設定を確認してくだ"
+"高速ガイデッドフィルタがメモリの割り当てに失敗しました。RAM設定を確認してくだ"
 "さい"
 
 #: ../src/common/film.c:350
@@ -9133,7 +9133,7 @@ msgstr "除外"
 #: ../src/common/styles.c:257
 #, c-format
 msgid "style with name '%s' already exists"
-msgstr "`%s'という名前のスタイルは既に存在しています"
+msgstr "'%s'という名前のスタイルは既に存在しています"
 
 #: ../src/common/styles.c:284 ../src/common/styles.c:1726
 #: ../src/libs/styles.c:55
@@ -9162,12 +9162,12 @@ msgstr "スタイル`%s'を現在の画像に適用しました"
 #: ../src/common/styles.c:1302
 #, c-format
 msgid "failed to overwrite style file for %s"
-msgstr "%s にスタイルファイルを上書きすることが出来ませんでした"
+msgstr "%sにスタイルファイルを上書きすることが出来ませんでした"
 
 #: ../src/common/styles.c:1308
 #, c-format
 msgid "style file for %s exists"
-msgstr "%s というスタイルファイルは既に存在しています"
+msgstr "%sというスタイルファイルは既に存在しています"
 
 #: ../src/common/styles.c:1483 ../src/common/styles.c:1807
 msgid "imported-style"
@@ -9492,7 +9492,7 @@ msgstr "成功： %s 新 (DB) → 旧 (XMP) 同期しました"
 #: ../src/control/crawler.c:1349 ../src/control/crawler.c:1417
 #, c-format
 msgid "EXCEPTION: %s has inconsistent timestamps"
-msgstr "例外：%s のタイムスタンプが不整合です"
+msgstr "例外：%sのタイムスタンプが不整合です"
 
 #: ../src/control/crawler.c:1377
 #, c-format
@@ -10028,7 +10028,7 @@ msgid ""
 "file on disk)?"
 msgstr ""
 "複製を本当に削除しますか？\n"
-"（ソース画像ファイルをディスクから削除しません）"
+"（ディスク上の元画像ファイルは削除されません）"
 
 #: ../src/control/jobs/control_jobs.c:2425
 msgid "move images"
@@ -10213,7 +10213,7 @@ msgstr ""
 #: ../src/control/jobs/image_jobs.c:75
 #, c-format
 msgid "importing image %s"
-msgstr "画像%s をインポートしています"
+msgstr "画像%sをインポートしています"
 
 #: ../src/control/jobs/image_jobs.c:108
 msgid "import image"
@@ -12659,7 +12659,7 @@ msgstr "$(IMAGE.ID.NEXT) - インポート時に割り当てられる次の画�
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:938
 #: ../src/gui/gtkentry.c:41
 msgid "$(VERSION) - duplicate version"
-msgstr "$(VERSION) - 重複バージョン"
+msgstr "$(VERSION) - 複製バージョン"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:939
 #: ../src/gui/gtkentry.c:42
@@ -13921,7 +13921,7 @@ msgstr "利用可能なexifタグリーダがありません。終了します�
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:475
 #, lua-format
 msgid " selected tag reader %s not available"
-msgstr "選択したタグリーダ%s は利用することが出来ません"
+msgstr "選択したタグリーダ%sは利用することが出来ません"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. U S E R  I N T E R F A C E
@@ -14863,12 +14863,12 @@ msgstr "割り込み前の目標タイムスライス"
 #: ../src/external/lua-scripts/official/select_duplicates.lua:238
 #: ../src/external/lua-scripts/official/select_duplicates.lua:262
 msgid "select duplicates"
-msgstr "重複を選択"
+msgstr "複製画像を選択"
 
 #. visible name of script
 #: ../src/external/lua-scripts/official/select_duplicates.lua:87
 msgid "select duplicate images from a collection"
-msgstr "コレクションから重複画像を選択する"
+msgstr "コレクションから複製画像を選択する"
 
 #. purpose of script
 #. your name and optionally e-mail address
@@ -14900,7 +14900,7 @@ msgstr "選択した重複画像のコレクションを作成する"
 
 #: ../src/external/lua-scripts/official/select_duplicates.lua:239
 msgid "select duplicated images"
-msgstr "重複画像を選択"
+msgstr "複製画像を選択"
 
 #.
 #.
@@ -15878,7 +15878,7 @@ msgstr "フォルダ%sはすでに使用されています。別のフォルダ�
 #: ../src/external/lua-scripts/tools/script_manager.lua:949
 #, lua-format
 msgid "scripts successfully installed into folder %s"
-msgstr "スクリプトをフォルダー%s に正常にインストールしました"
+msgstr "スクリプトをフォルダ%sに正常にインストールしました"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:967
 msgid "no scripts found to install"
@@ -17053,7 +17053,7 @@ msgstr "印刷"
 #: ../src/gui/gtk.c:2001
 msgctxt "menu"
 msgid "Tethering"
-msgstr "テザリング"
+msgstr "テザー撮影"
 
 #. Window menu
 #: ../src/gui/gtk.c:2007
@@ -17092,7 +17092,7 @@ msgstr "表示を切り替え"
 
 #: ../src/gui/gtk.c:2148 ../src/views/tethering.c:104
 msgid "tethering"
-msgstr "テザリング"
+msgstr "テザー撮影"
 
 #: ../src/gui/gtk.c:2154 ../src/views/map.c:282
 msgid "map"
@@ -17313,7 +17313,7 @@ msgstr " $(IMAGE.TAGS) - メタデータ設定で設定されたタグ、フラ�
 
 #: ../src/gui/gtkentry.c:116
 msgid "$(OPENCL.ACTIVATED) - whether OpenCL is activated"
-msgstr "$(OPENCL.ACTIVATED) - OpenCLが有効になっているかいなか"
+msgstr "$(OPENCL.ACTIVATED) - OpenCLが有効になっているか否か"
 
 #: ../src/gui/gtkentry.c:118
 msgid "$(TAGS) - tags as set in metadata settings"
@@ -17619,7 +17619,7 @@ msgstr "コンパクトなモジュールコントロールを使用する"
 
 #: ../src/gui/preferences.c:487
 msgid "rounded module headers"
-msgstr "丸みのあるモジュールヘッダー"
+msgstr "丸みのあるモジュールヘッダ"
 
 #: ../src/gui/preferences.c:495
 msgid "use rounded module headers variant"
@@ -18083,7 +18083,7 @@ msgid ""
 "ONNX Runtime %s detected.\n"
 "Restart darktable to apply."
 msgstr ""
-"ONNX Runtime %s が検出されました\n"
+"ONNX Runtime %sが検出されました\n"
 "設定を適用するにはdarktableを再起動してください"
 
 #: ../src/gui/preferences_ai.c:2241
@@ -20207,7 +20207,7 @@ msgid ""
 "not enough structure for automatic correction\n"
 "minimum %d lines in each relevant direction"
 msgstr ""
-"自動補正に必要な構造が描かれていません\n"
+"自動補正に必要な構造が不足しています\n"
 "水平方向の線と垂直方向の線がそれぞれ最低%d本必要です"
 
 #: ../src/iop/ashift.c:3417
@@ -20435,39 +20435,39 @@ msgstr "明瞭化"
 
 #: ../src/iop/atrous.c:868
 msgid "deblur | large blur | strength 3"
-msgstr "ぼけ除去：大きなぼけ：強さ 3"
+msgstr "ぼけ除去 | 大きなぼけ | 強さ 3"
 
 #: ../src/iop/atrous.c:886
 msgid "deblur | medium blur | strength 3"
-msgstr "ぼけ除去：中程度のぼけ：強さ 3"
+msgstr "ぼけ除去 | 中程度のぼけ | 強さ 3"
 
 #: ../src/iop/atrous.c:903
 msgid "deblur | fine blur | strength 3"
-msgstr "ぼけ除去：微細なぼけ：強さ 3"
+msgstr "ぼけ除去 | 微細なぼけ | 強さ 3"
 
 #: ../src/iop/atrous.c:922
 msgid "deblur | large blur | strength 2"
-msgstr "ぼけ除去：大きなぼけ：強さ 2"
+msgstr "ぼけ除去 | 大きなぼけ | 強さ 2"
 
 #: ../src/iop/atrous.c:940
 msgid "deblur | medium blur | strength 2"
-msgstr "ぼけ除去：中程度のぼけ：強さ 2"
+msgstr "ぼけ除去 | 中程度のぼけ | 強さ 2"
 
 #: ../src/iop/atrous.c:957
 msgid "deblur | fine blur | strength 2"
-msgstr "ぼけ除去：微細なぼけ：強さ 2"
+msgstr "ぼけ除去 | 微細なぼけ | 強さ 2"
 
 #: ../src/iop/atrous.c:976
 msgid "deblur | large blur | strength 1"
-msgstr "ぼけ除去：大きなぼけ：強さ 1"
+msgstr "ぼけ除去 | 大きなぼけ | 強さ 1"
 
 #: ../src/iop/atrous.c:994
 msgid "deblur | medium blur | strength 1"
-msgstr "ぼけ除去：中程度のぼけ：強さ 1"
+msgstr "ぼけ除去 | 中程度のぼけ | 強さ 1"
 
 #: ../src/iop/atrous.c:1011
 msgid "deblur | fine blur | strength 1"
-msgstr "ぼけ除去：微細なぼけ：強さ 1"
+msgstr "ぼけ除去 | 微細なぼけ | 強さ 1"
 
 #: ../src/iop/atrous.c:1348 ../src/iop/atrous.c:1602
 #: ../src/iop/denoiseprofile.c:3411 ../src/iop/rawdenoise.c:733
@@ -20756,7 +20756,7 @@ msgid ""
 "if poorly set, it will clip near-black colors out of gamut\n"
 "by pushing RGB values into negatives"
 msgstr ""
-"黒レベルを調整して、負のRGB値をクリップしないようにします\n"
+"黒レベルを調整して、負のRGB値のクリップを解除します\n"
 "黒の濃度を上げるために使用しないでください！\n"
 "設定が間違っている場合、RGB値が負の値になり、色域から黒に近い色がクリップされ"
 "ます"
@@ -21664,7 +21664,7 @@ msgid ""
 "this can lead to inconsistencies unless you\n"
 "use them with masks or know what you are doing."
 msgstr ""
-"カラーキャリブレーションのインスタンスが2つ以上あり、全て色順応を提示していま"
+"カラーキャリブレーションのインスタンスが2つ以上あり、全て色順応を適用していま"
 "す\n"
 "マスクを使用していない、あるいは理解して行っていない場合、一貫性が損なわれる可"
 "能性があります"
@@ -21725,7 +21725,7 @@ msgid ""
 msgstr ""
 "ホワイトバランスモジュールは有効な参照イルミナントを提示していません\n"
 "そのため、このモジュールの色順応で問題が生じています\n"
-"ホワイトモジュールを有効にして参照イルミナントに設定するか、\n"
+"ホワイトバランスモジュールを有効にして参照イルミナントに設定するか、\n"
 "このモジュールの色順応を無効にしてください"
 
 #: ../src/iop/channelmixerrgb.c:2177
@@ -22660,7 +22660,7 @@ msgid ""
 "saturation"
 msgstr ""
 "オフセット、パワー、スロープ|CDL|カラーグレーディング|コントラスト|彩度（クロ"
-"マ）ハイライト|色相|自然な彩度（バイブランス）彩度（サチュレーション）"
+"マ）ハイライト|色相|自然な彩度（バイブランス）|彩度（サチュレーション）"
 
 #: ../src/iop/colorbalancergb.c:179
 msgid ""
@@ -23280,7 +23280,7 @@ msgstr "変更すると色相のカーブがよりシャープまたは緩やか
 #: ../src/iop/colorequal.c:3894
 msgid "restrict effect by using a guided filter based on hue and saturation"
 msgstr ""
-"色相および彩度（サチュレーション）に基づくガイデットフィルタを用いて効果を制限"
+"色相および彩度（サチュレーション）に基づくガイデッドフィルタを用いて効果を制限"
 "します"
 
 #: ../src/iop/colorequal.c:3900
@@ -23288,7 +23288,7 @@ msgid ""
 "set radius of the guided filter chroma analysis (hue).\n"
 "increase if there is large local variance of hue or strong chroma noise."
 msgstr ""
-"ガイデットフィルタクロマ分析（色相）の範囲を設定します\n"
+"ガイデッドフィルタクロマ分析（色相）の範囲を設定します\n"
 "広範囲にわたる色相の局所的な不一致や強いクロマノイズが存在するばあい、値を上げ"
 "てください"
 
@@ -23308,7 +23308,7 @@ msgid ""
 " - increase to restrict changes to higher chromaticities\n"
 "   increases contrast and avoids brightness changes in low chromaticity areas"
 msgstr ""
-"ガイデットフィルタの彩度（サチュレーション）のしきい値を設定します\n"
+"ガイデッドフィルタの彩度（サチュレーション）のしきい値を設定します\n"
 " - 値を下げると、低色度の領域における変化が生じます\n"
 " - 値を上げると、高色度の領域における変化を抑制します\n"
 "    また、低彩度の領域におけるコントラストを強め、明るさ（ブライトネス）の変化"
@@ -23321,13 +23321,13 @@ msgid ""
 "contrast\n"
 " - decrease for smoother transitions"
 msgstr ""
-"ガイデットフィルタの彩度（サチュレーション）のコントラストを設定します\n"
+"ガイデッドフィルタの彩度（サチュレーション）のコントラストを設定します\n"
 " - 値を上げると、彩度間の遷移がシャープになり、コントラストが高まります\n"
 " - 値を下げると、遷移がより滑らかになります"
 
 #: ../src/iop/colorequal.c:3926
 msgid "set radius of applied parameters for the guided filter"
-msgstr "ガイデットフィルタに適用するパラメータの範囲を設定します"
+msgstr "ガイデッドフィルタに適用するパラメータの範囲を設定します"
 
 #: ../src/iop/colorequal.c:3929
 msgid ""
@@ -24114,7 +24114,7 @@ msgid ""
 "number of passes of the guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
 msgstr ""
-"適用するガイデットフィルタのパス回数\n"
+"適用するガイデッドフィルタのパス回数\n"
 "速度を犠牲にして、フィルタのエッジをより滑らかに拡散します"
 
 #: ../src/iop/contrastntexture.c:457
@@ -24683,64 +24683,64 @@ msgstr ""
 #. deblurring presets
 #: ../src/iop/diffuse.c:239
 msgid "lens deblur | soft"
-msgstr "レンズぼけの除去：弱"
+msgstr "レンズぼけの除去 | 弱"
 
 #: ../src/iop/diffuse.c:264
 msgid "lens deblur | medium"
-msgstr "レンズぼけの除去：中"
+msgstr "レンズぼけの除去 | 中"
 
 #: ../src/iop/diffuse.c:289
 msgid "lens deblur | hard"
-msgstr "レンズぼけの除去：強"
+msgstr "レンズぼけの除去 | 強"
 
 #: ../src/iop/diffuse.c:315
 msgid "dehaze | default"
-msgstr "かすみの除去：デフォルト"
+msgstr "かすみの除去 | デフォルト"
 
 #: ../src/iop/diffuse.c:341
 msgid "dehaze | extra contrast"
-msgstr "かすみの除去：コントラスト増強"
+msgstr "かすみの除去 | コントラスト増強"
 
 #: ../src/iop/diffuse.c:367
 msgid "denoise | fine"
-msgstr "ノイズ除去：精緻"
+msgstr "ノイズ除去 | 精緻"
 
 #: ../src/iop/diffuse.c:392
 msgid "denoise | medium"
-msgstr "ノイズ除去：中"
+msgstr "ノイズ除去 | 中"
 
 #: ../src/iop/diffuse.c:417
 msgid "denoise | coarse"
-msgstr "ノイズ除去：粗い"
+msgstr "ノイズ除去 | 粗い"
 
 #: ../src/iop/diffuse.c:467
 msgid "artistic effects | bloom"
-msgstr "芸術的エフェクト：ブルーム"
+msgstr "芸術的エフェクト | ブルーム"
 
 #: ../src/iop/diffuse.c:492
 msgid "sharpen demosaicing | no AA filter"
-msgstr "シャープ化 デモザイク：アンチエイリアスフィルタレス"
+msgstr "シャープ化 デモザイク | アンチエイリアスフィルタレス"
 
 #: ../src/iop/diffuse.c:518
 msgid "sharpen demosaicing | AA filter"
-msgstr "シャープ化 デモザイク：アンチエイリアスフィルタ"
+msgstr "シャープ化 デモザイク | アンチエイリアスフィルタ"
 
 #: ../src/iop/diffuse.c:545
 msgid "artistic effects | simulate watercolor"
-msgstr "芸術的エフェクト：水彩画シミュレーション"
+msgstr "芸術的エフェクト | 水彩画シミュレーション"
 
 #: ../src/iop/diffuse.c:570
 msgid "artistic effects | simulate line drawing"
-msgstr "芸術的エフェクト：線画シミュレーション"
+msgstr "芸術的エフェクト | 線画シミュレーション"
 
 #. local contrast
 #: ../src/iop/diffuse.c:597
 msgid "local contrast | normal"
-msgstr "ローカルコントラスト：ノーマル"
+msgstr "ローカルコントラスト | ノーマル"
 
 #: ../src/iop/diffuse.c:622
 msgid "local contrast | fine"
-msgstr "ローカルコントラスト：精緻"
+msgstr "ローカルコントラスト | 精緻"
 
 #: ../src/iop/diffuse.c:647
 msgid "inpaint highlights"
@@ -24749,20 +24749,20 @@ msgstr "ハイライト修復"
 #. fast presets for slow hardware
 #: ../src/iop/diffuse.c:674
 msgid "sharpness | fast"
-msgstr "シャープ化：高速"
+msgstr "シャープ化 | 高速"
 
 #. two more sharpness (standard & strong)
 #: ../src/iop/diffuse.c:701
 msgid "sharpness | normal"
-msgstr "シャープ化：ノーマル"
+msgstr "シャープ化 | ノーマル"
 
 #: ../src/iop/diffuse.c:726
 msgid "sharpness | strong"
-msgstr "シャープ化：強"
+msgstr "シャープ化 | 強"
 
 #: ../src/iop/diffuse.c:751
 msgid "local contrast | fast"
-msgstr "ローカルコントラスト：高速"
+msgstr "ローカルコントラスト | 高速"
 
 #: ../src/iop/diffuse.c:1401
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
@@ -24899,7 +24899,7 @@ msgstr ""
 "1次の速さ（上の項目）の方向\n"
 "\n"
 "負の値にすると、より勾配に沿います\n"
-"正の値にすると、エッジにならないようにします（等輝度線）\n"
+"正の値にすると、エッジを避けて拡散します（等輝度線）\n"
 "0は両者に等しく作用します（等方的）"
 
 #: ../src/iop/diffuse.c:1850
@@ -25274,7 +25274,7 @@ msgstr "18 EV（HDR++）"
 msgid "read-only graph, use the parameters below to set the nodes"
 msgstr ""
 "読み取り専用グラフ\n"
-"下のパラメーターを使用してノードを設定します"
+"下のパラメータを使用してノードを設定します"
 
 # 被写体の平均輝度に合うよう調整します
 # 逆光の場合をのぞき、18%に近い値になるはずです
@@ -26710,7 +26710,7 @@ msgid ""
 "ctrl+scroll"
 msgstr ""
 "<b>直線を追加</b>：クリック\n"
-"<b>サイズ</b>：スクロール　　<b>強さ</b>:Shift+スクロール　　<b>方向</b>："
+"<b>サイズ</b>：スクロール　　<b>強さ</b>：Shift+スクロール　　<b>方向</b>："
 "Ctrl+スクロール"
 
 #: ../src/iop/liquify.c:3592
@@ -26947,7 +26947,7 @@ msgstr "このdarktableのビルドは圧縮されたCLUTと互換性があり�
 #: ../src/iop/lut3d.c:571 ../src/iop/lut3d.c:826
 #, c-format
 msgid "error - LUT 3D size %d exceeds the maximum supported"
-msgstr "エラー：LUT 3Dのサイズ%d はサポートされている最大値を超えています"
+msgstr "エラー：LUT 3Dのサイズ%dはサポートされている最大値を超えています"
 
 #: ../src/iop/lut3d.c:583
 msgid "error allocating buffer for png LUT"
@@ -26995,7 +26995,7 @@ msgstr "エラー：cube LUTの行数%dは無効です"
 #: ../src/iop/lut3d.c:877
 #, c-format
 msgid "error - cube LUT lines number %d is not correct, should be %d"
-msgstr "エラー：cube LUTの行数%d は正しくありません。%dであるはずです"
+msgstr "エラー：cube LUTの行数%dは正しくありません。%dであるはずです"
 
 #: ../src/iop/lut3d.c:887
 #, c-format
@@ -27604,7 +27604,7 @@ msgstr "外部ラスターマスク"
 
 #: ../src/iop/rasterfile.c:99
 msgid "raster|mask"
-msgstr "ラスター：マスク"
+msgstr "ラスター|マスク"
 
 #: ../src/iop/rasterfile.c:105
 msgid "read PFM/PNG files recorded for use as raster masks"
@@ -27931,7 +27931,7 @@ msgid ""
 "top line indicates that the scale is visible at current zoom level\n"
 "bottom line indicates that the scale has shapes on it"
 msgstr ""
-"上のスライダは、スケールの統合を始める位置を調整します\n"
+"上のスライダーは、スケールの統合を始める位置を調整します\n"
 "下のスライダはスケールの数を調整します\n"
 "点は現在選択中のスケールを示します\n"
 "上の線は現在のズームレベルで見ることの出来るスケールを示します\n"
@@ -28163,7 +28163,7 @@ msgid ""
 "saturation curve: guided filter failed to allocate memory, disabling it for "
 "this run"
 msgstr ""
-"彩度カーブ：ガイデットフィルタがメモリの割り当てに失敗したため、今回はこの処理"
+"彩度カーブ：ガイデッドフィルタがメモリの割り当てに失敗したため、今回はこの処理"
 "を無効にします"
 
 #: ../src/iop/satcurvergb.c:1457
@@ -28212,7 +28212,7 @@ msgid ""
 "spatially modulate the strength of the curves with an edge-aware guided "
 "filter, based on local saturation, to reduce halos"
 msgstr ""
-"局所的な彩度に基づくエッジ考慮型ガイデットフィルタでカーブの強さを空間的に変調"
+"局所的な彩度に基づくエッジ考慮型ガイデッドフィルタでカーブの強さを空間的に変調"
 "し、ハロを軽減します"
 
 #: ../src/iop/satcurvergb.c:2183 ../src/libs/export.c:1551
@@ -28237,7 +28237,7 @@ msgstr "ニュートラル付近を保護"
 
 #: ../src/iop/satcurvergb.c:2200
 msgid "center of the saturation range protected from the guided filter"
-msgstr "ガイデットフィルタから保護される彩度範囲の中心"
+msgstr "ガイデッドフィルタから保護される彩度範囲の中心"
 
 #: ../src/iop/satcurvergb.c:2207
 msgid "protection transition width"
@@ -29971,47 +29971,47 @@ msgstr "単純なトーンカーブ"
 
 #: ../src/iop/toneequal.c:500
 msgid "mask blending | all purposes"
-msgstr "マスクブレンド：汎用"
+msgstr "マスクブレンド | 汎用"
 
 #: ../src/iop/toneequal.c:507
 msgid "mask blending | people with backlight"
-msgstr "マスクブレンド：逆光内の人物"
+msgstr "マスクブレンド | 逆光内の人物"
 
 #: ../src/iop/toneequal.c:524
 msgid "compress shadows/highlights | EIGF | strong"
-msgstr "シャドウとハイライトの圧縮 ：EIGF：強"
+msgstr "シャドウとハイライトの圧縮 | EIGF | 強"
 
 #: ../src/iop/toneequal.c:529
 msgid "compress shadows/highlights | GF | strong"
-msgstr "シャドウとハイライトの圧縮 ：GF：強"
+msgstr "シャドウとハイライトの圧縮 | GF | 強"
 
 #: ../src/iop/toneequal.c:538
 msgid "compress shadows/highlights | EIGF | medium"
-msgstr "シャドウとハイライトの圧縮 ：EIGF：中"
+msgstr "シャドウとハイライトの圧縮 | EIGF | 中"
 
 #: ../src/iop/toneequal.c:543
 msgid "compress shadows/highlights | GF | medium"
-msgstr "シャドウとハイライトの圧縮 ：GF：中"
+msgstr "シャドウとハイライトの圧縮 | GF | 中"
 
 #: ../src/iop/toneequal.c:552
 msgid "compress shadows/highlights | EIGF | soft"
-msgstr "シャドウとハイライトの圧縮 ：EIGF：弱"
+msgstr "シャドウとハイライトの圧縮 | EIGF | 弱"
 
 #: ../src/iop/toneequal.c:557
 msgid "compress shadows/highlights | GF | soft"
-msgstr "シャドウとハイライトの圧縮 ：GF：弱"
+msgstr "シャドウとハイライトの圧縮 | GF | 弱"
 
 #: ../src/iop/toneequal.c:565
 msgid "contrast tone curve | soft"
-msgstr "コントラストトーンカーブ：弱"
+msgstr "コントラストトーンカーブ | 弱"
 
 #: ../src/iop/toneequal.c:570
 msgid "contrast tone curve | medium"
-msgstr "コントラストトーンカーブ：中"
+msgstr "コントラストトーンカーブ | 中"
 
 #: ../src/iop/toneequal.c:575
 msgid "contrast tone curve | strong"
-msgstr "コントラストトーンカーブ：強"
+msgstr "コントラストトーンカーブ | 強"
 
 #: ../src/iop/toneequal.c:598
 msgid "relight: fill-in"
@@ -30041,7 +30041,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:2120
 msgid "some parameters are out-of-bounds"
-msgstr "一部のパラメーターが範囲を逸脱しています"
+msgstr "一部のパラメータが範囲を逸脱しています"
 
 #: ../src/iop/toneequal.c:2307
 #, c-format
@@ -30152,7 +30152,7 @@ msgid ""
 "this allows to spread the exposure histogram over more channels\n"
 "for a better control of the exposure correction."
 msgstr ""
-"これを使用すると、ガイデットフィルタの平均化効果に対抗し、\n"
+"これを使用すると、ガイデッドフィルタの平均化効果に対抗し、\n"
 "-4EV付近のマスクのコントラストを膨らませます\n"
 "これにより露出ヒストグラムがより多くのチャンネルへ広がり、露出補正のコントロー"
 "ルが向上します"
@@ -30189,12 +30189,12 @@ msgid ""
 msgstr ""
 "'なし'は全体のコントラストと局所的なコントラストに影響します（コントラストを加"
 "えるだけの場合安全です）\n"
-"'ガイデットフィルタ'は全体のコントラストにのみ影響し、局所的なコントラストを保"
+"'ガイデッドフィルタ'は全体のコントラストにのみ影響し、局所的なコントラストを保"
 "持するよう試みます\n"
-"'平均ガイデットフィルタ'は'なし'と'ガイデットフィルタ'の幾何平均です\n"
-"'EIGF（露光非依存ガイデットフィルタ）は露出に依存しないガイデットフィルタで"
+"'平均ガイデッドフィルタ'は'なし'と'ガイデッドフィルタ'の幾何平均です\n"
+"'EIGF'（露光非依存ガイデッドフィルタ）は露出に依存しないガイデッドフィルタで"
 "す。シャドウとハイライトを同じように平滑化します（ハイライトの平滑化が少ないガ"
-"イデットフィルタと対照的です）\n"
+"イデッドフィルタと対照的です）\n"
 "'平均EIGF'は'なし'と'EIGF'の幾何平均です"
 
 #: ../src/iop/toneequal.c:3212
@@ -30202,7 +30202,7 @@ msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
 msgstr ""
-"適用するガイデットフィルタのパスの数\n"
+"適用するガイデッドフィルタのパスの数\n"
 "速度を犠牲にして、フィルタのエッジを拡散するのに役立ちます"
 
 #: ../src/iop/toneequal.c:3220
@@ -30212,8 +30212,8 @@ msgid ""
 "preview much slower if denoise profiled is used."
 msgstr ""
 "ぼかしの直径（最大の画像サイズに対するパーセント）\n"
-"警告：ノイズ除去（プロファイル）が使用されている場合、このパラメーターの値が大"
-"きいと、\n"
+"警告：ノイズ除去（プロファイル）が使用されている場合、このパラメータの値が大き"
+"いと、\n"
 "ダークルームでのプレビューが大幅に遅くなる可能性があります"
 
 #: ../src/iop/toneequal.c:3228
@@ -30514,7 +30514,7 @@ msgstr "センタービューのビュープロパティを切り替えます"
 
 #: ../src/libs/camera.c:214
 msgid "connection with camera lost, exiting tethering mode"
-msgstr "カメラの接続が切れました。テザリングモードを終了します"
+msgstr "カメラの接続が切れました。テザー撮影モードを終了します"
 
 #: ../src/libs/camera.c:383
 msgid "battery"
@@ -31145,7 +31145,7 @@ msgstr "この複製を削除"
 #: ../src/libs/duplicate.c:493 ../src/libs/history.c:1165
 #: ../src/libs/snapshots.c:954
 msgid "original"
-msgstr "未編集"
+msgstr "元画像"
 
 #: ../src/libs/export.c:177
 msgid "export"
@@ -32686,7 +32686,7 @@ msgstr ""
 
 #: ../src/libs/import.c:344
 msgid "tethering and importing is disabled for this camera"
-msgstr "このカメラでのテザリングとインポートが無効になりました"
+msgstr "このカメラでのテザー撮影とインポートが無効になりました"
 
 #: ../src/libs/import.c:346 ../src/libs/import.c:2432
 msgid "mount camera"
@@ -33007,7 +33007,7 @@ msgstr "新しいロケーション"
 #: ../src/libs/map_locations.c:592
 #, c-format
 msgid "location name '%s' already exists"
-msgstr "ロケーション名`%s'は既に存在します"
+msgstr "ロケーション名'%s'は既に存在します"
 
 #: ../src/libs/map_locations.c:820
 msgid "edit location"
@@ -35797,8 +35797,8 @@ msgid ""
 "support/\n"
 "and the release notes for this version of darktable)"
 msgstr ""
-"ファイル`%s'はサポートされていない機能をしようしています。ライトテーブルに切り"
-"替えます\n"
+"ファイル`%s'はサポートされていない機能を使用しています。ライトテーブルに切り替"
+"えます\n"
 "\n"
 "カメラのメニューで選択した画像フォーマットや圧縮モードがサポートされているか確"
 "認してください\n"
@@ -36205,9 +36205,9 @@ msgid ""
 msgstr ""
 "ブラックポイントのクリッピングのしきい値\n"
 "単位はEVで、白（0EV）に対する相対値\n"
-"8ビットsRGBでは-12.69EVで黒のクリップです\n"
-"8ビットAdobeRGBクリップでは-19.79EVで黒のクリップです\n"
-"16ビットsRGBクリップでは-20.69EVで黒のクリップです\n"
+"8ビットsRGBでは-12.69EVで黒がクリップします\n"
+"8ビットAdobeRGBクリップでは-19.79EVで黒がクリップします\n"
+"16ビットsRGBクリップでは-20.69EVで黒がクリップします\n"
 "典型的なファインアート紙のマットプリントの黒は-5.30EVです\n"
 "典型的なカラーの高光沢プリントの黒は-8.00EVです\n"
 "典型的な白黒の高光沢プリントの黒は-9.00EVです"
@@ -36743,7 +36743,7 @@ msgstr "新しいセッションが開始されました '%s'"
 
 #: ../src/views/tethering.c:496
 msgid "no camera with tethering support available for use..."
-msgstr "テザリングをサポートしているカメラがありません..."
+msgstr "テザー撮影をサポートしているカメラがありません..."
 
 #: ../src/views/view.c:1567
 msgid "left-click"
