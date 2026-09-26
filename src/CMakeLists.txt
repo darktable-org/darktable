@@ -1165,6 +1165,9 @@ if(HAVE_FFP_CONTRACT_OFF)
     "common/spektra_core.c"
     "common/spektra_sim.c"
     "iop/spektrafilm.c"
+    # compiles data/kernels/grain.h, whose grain draw must match the OpenCL
+    # kernel bit-for-bit
+    "iop/filmgrain.c"
     PROPERTIES COMPILE_OPTIONS "${SPEKTRA_FP_CONTRACT_FLAGS}")
 endif()
 

@@ -64,6 +64,11 @@ changes (where available).
   halation, and diffusion to reproduce characteristic properties of
   analog film and optical printing.
 
+- A new film grain module that adds realistic film grain to
+  scene-referred edits. The grain can be neutral like black & white film
+  or colored like color film, and its amount can be set separately for
+  shadows, midtones and highlights.
+
 - Automatic alignment of exposure brackets in "merge HDR" function,
   removing ghosting and softness caused by handheld or shaky-tripod
   brackets. Enabled by default in builds with OpenCV, and tunable

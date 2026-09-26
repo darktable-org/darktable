@@ -45,6 +45,7 @@ build/lib/darktable/plugins/introspection_dither.c
 build/lib/darktable/plugins/introspection_enlargecanvas.c
 build/lib/darktable/plugins/introspection_equalizer.c
 build/lib/darktable/plugins/introspection_exposure.c
+build/lib/darktable/plugins/introspection_filmgrain.c
 build/lib/darktable/plugins/introspection_filmic.c
 build/lib/darktable/plugins/introspection_filmicrgb.c
 build/lib/darktable/plugins/introspection_finalscale.c
@@ -305,6 +306,7 @@ src/iop/dither.c
 src/iop/enlargecanvas.c
 src/iop/equalizer.c
 src/iop/exposure.c
+src/iop/filmgrain.c
 src/iop/filmic.c
 src/iop/filmicrgb.c
 src/iop/finalscale.c
