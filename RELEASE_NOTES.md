@@ -142,6 +142,9 @@ changes (where available).
 - Some safety checks when switching to the quick access panel were
   added.
 
+- Added a visible toggle to show the color sliders in the
+  color equalizer module.
+
 - The list of color checker charts in the color calibration module now
   has one entry for the Datacolor SpyderCheckr 24 and one for the
   SpyderCheckr 48. As far as we know, there never was a separate 2018
