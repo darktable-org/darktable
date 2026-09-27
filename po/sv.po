@@ -3,6 +3,7 @@
 # Mattias Eriksson <snaggen@acc.umu.se>, 2011.
 # Richard Levitte <richard@levitte.org>, 2012, 2013, 2014, 2015, 2016.
 # Gustav Ernberg <gustav@exceed-it.se> 2015.
+# Johan Schiff <johan@betahaus.net>, 2025, 2026.
 #
 # Ordhjälp:
 #
@@ -54,7 +55,7 @@ msgstr "sista instansen"
 #: ../build/bin/conf_gen.h:212 ../build/bin/preferences_gen.h:4383
 msgctxt "preferences"
 msgid "triangle"
-msgstr "trangel"
+msgstr "triangel"
 
 #: ../build/bin/conf_gen.h:213
 msgctxt "preferences"
@@ -687,7 +688,7 @@ msgstr "komplementär"
 #: ../build/bin/conf_gen.h:4290
 msgctxt "preferences"
 msgid "split complementary"
-msgstr "splittad komplementär"
+msgstr "delad komplementär"
 
 #: ../build/bin/conf_gen.h:4291
 msgctxt "preferences"
@@ -1431,7 +1432,7 @@ msgstr "göm förinställningar för process-moduler"
 
 #: ../build/bin/preferences_gen.h:3237
 msgid "hide built-in presets of processing modules in presets menu."
-msgstr "göm inbyggda stilar i process-moduler i stilmenyn."
+msgstr "göm inbyggda förinställningar för process-moduler i förinställningsmenyn."
 
 #: ../build/bin/preferences_gen.h:3246 ../build/bin/preferences_gen.h:3254
 msgid "show the guides widget in modules UI"
@@ -1485,7 +1486,7 @@ msgstr "flytta listan av process-moduler till vänster sida av skärmen"
 
 #: ../build/bin/preferences_gen.h:3348
 msgid "show right-side buttons in processing module headers"
-msgstr "visa knapparpå höger sida i process-modulers rubriker"
+msgstr "visa knappar på höger sida i process-modulers rubriker"
 
 # ska första ordet översättar från engelska till svenska?
 #: ../build/bin/preferences_gen.h:3357
@@ -1522,7 +1523,7 @@ msgid ""
 "that have a mask applied"
 msgstr ""
 "om aktiverad, kan en ikon visas i rubriken för varje process-modul, som har "
-"en mask allicerad"
+"en mask applicerad"
 
 #: ../build/bin/preferences_gen.h:3383
 msgid "prompt for name on addition of new instance"
@@ -1659,7 +1660,8 @@ msgstr ""
 "tillverkaren om en sådan finns tillgänglig (kräver omstart).\n"
 "detta alternativ tas hänsyn till om \"tillämpa automatiskt standard för pixel-"
 "arbetsflöde\" är satt till \"skärm-tillämpat\".\n"
-"för att förhindra auto-tillämpad baskurva ska valet \"tillämpa automatiskt "
+"för att förhindra auto-tillämpade förinställningar för baskurva ska valet "
+"\"tillämpa automatiskt "
 "standard för pixel-arbetsflöde\" sättas till \"none\""
 
 #: ../build/bin/preferences_gen.h:3552
@@ -1721,7 +1723,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:3609
 msgid "OpenCL GPU acceleration"
-msgstr "OpenCL GPU-accelleration"
+msgstr "OpenCL GPU-acceleration"
 
 #: ../build/bin/preferences_gen.h:3619
 msgid "activate OpenCL support"
@@ -1811,7 +1813,7 @@ msgstr "AMD ROCm"
 
 #: ../build/bin/preferences_gen.h:3761
 msgid "AMD Accelerated Parallel Processing (vendor provided)"
-msgstr "AMD Accellerated Parallel Processing (från tillverkare)"
+msgstr "AMD Accelererad Parallell Beräkning (från tillverkare)"
 
 #: ../build/bin/preferences_gen.h:3774
 msgid "RustiCL"
@@ -1939,7 +1941,7 @@ msgstr "fråga innan en förinställning raderas"
 
 #: ../build/bin/preferences_gen.h:4029
 msgid "will ask for confirmation before deleting or overwriting a preset"
-msgstr "frågar om bekräftelse innan stilar tas bort eller skrivs över"
+msgstr "frågar om bekräftelse innan en förinställning tas bort eller skrivs över"
 
 #: ../build/bin/preferences_gen.h:4038
 msgid "ask before exporting in overwrite mode"
@@ -2205,12 +2207,14 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4428
 msgid "sort built-in presets first"
-msgstr "sorterar inbyggda stilar först"
+msgstr "sorterar inbyggda förinställningar först"
 
 #: ../build/bin/preferences_gen.h:4436
 msgid ""
 "whether to show built-in presets first before user's presets in presets menu."
-msgstr "huruvida inbyggda stilar ska visas före egna stilar i stilmenyn."
+msgstr ""
+"huruvida inbyggda förinställningar ska visas före egna förinställningar i "
+"förinställningsmenyn."
 
 #: ../build/bin/preferences_gen.h:4445
 msgid "mouse wheel scrolls modules side panel by default"
@@ -2286,14 +2290,14 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4497
 msgid "always show panels' scrollbars"
-msgstr "visa alltid panelers rulllister"
+msgstr "visa alltid panelers rullister"
 
 #: ../build/bin/preferences_gen.h:4505
 msgid ""
 "defines whether the panel scrollbars should be always visible or activated "
 "only depending on the content. (restart required)"
 msgstr ""
-"definerar om panelernas rullister alltid ska synas eller aktiveras beroende "
+"definierar om panelernas rullister alltid ska synas eller aktiveras beroende "
 "på innehåll. (kräver omstart)"
 
 #: ../build/bin/preferences_gen.h:4514
@@ -2359,7 +2363,7 @@ msgid ""
 msgstr ""
 "komma-separerad lista med delar av enhetsnamn som om de matchar laddar MIDI-"
 "enheter vid id från plats i listan\n"
-"lätt till kondning och nummer för knappar som 'Loupedeck:127,BeatStep:63:16'\n"
+"lgg till kodning och nummer för knappar som 'Loupedeck:127,BeatStep:63:16'\n"
 "inlett med '-' hindras matchande enheter från att laddas\n"
 "bara '-' stoppar laddning av alla vidare enheter eller om det står helt "
 "ensamt avaktiverar MIDI helt"
@@ -2412,7 +2416,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4669
 msgid "prefer expanded instances"
-msgstr "föredra exanderade instanser"
+msgstr "föredra expanderade instanser"
 
 #: ../build/bin/preferences_gen.h:4677
 msgid "if instances of the module are expanded, ignore collapsed instances"
@@ -3003,7 +3007,7 @@ msgstr "basprimärer"
 #: ../build/lib/darktable/plugins/introspection_agx.c:365
 #: ../build/lib/darktable/plugins/introspection_agx.c:578
 msgid "disable adjustments"
-msgstr "inaktivera justreringar"
+msgstr "inaktivera justeringar"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:371
 #: ../build/lib/darktable/plugins/introspection_agx.c:582
@@ -3767,7 +3771,7 @@ msgstr "F10 (Tonad RGB 5000 K) – lågt CRI"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:532
 msgid "F11 (Tuned RGB 4000 K) – low CRI"
-msgstr "F11 (Tunad RGB 4000 K) – låg CRI"
+msgstr "F11 (Tonad RGB 4000 K) – låg CRI"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:533
 msgid "F12 (Tuned RGB 3000 K) – low CRI"
@@ -3914,7 +3918,7 @@ msgstr "lyft, gamma, förstärkning (sRGB)"
 #: ../src/iop/channelmixerrgb.c:4601 ../src/iop/colorbalancergb.c:1803
 #: ../src/iop/colorzones.c:2626 ../src/iop/nlmeans.c:451
 msgid "chroma"
-msgstr "chroma"
+msgstr "kroma"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:238
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:256
@@ -3987,7 +3991,7 @@ msgstr "högdagrar"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:328
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:529
 msgid "global chroma"
-msgstr "global chroma"
+msgstr "global kroma"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:334
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:352
@@ -4048,7 +4052,7 @@ msgstr "darktable UCS (2022)"
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:54
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:121
 msgid "green-magenta contrast"
-msgstr "grön-mangenta kontrast"
+msgstr "grön-magenta kontrast"
 
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:66
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:129
@@ -4449,7 +4453,7 @@ msgstr "Markesteijn, 3 gånger"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:321
 msgid "frequency domain chroma"
-msgstr "frekvensdomänchroma (långsamt)"
+msgstr "frekvensdomänkroma (långsamt)"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:322
 msgid "Markesteijn 3-pass (dual)"
@@ -6813,7 +6817,7 @@ msgstr "Kinesisk"
 
 #: ../src/common/color_vocabulary.c:93
 msgid "Thai"
-msgstr "Thaländsk"
+msgstr "Thailändsk"
 
 #: ../src/common/color_vocabulary.c:94
 msgid "Kurdish"
@@ -7777,7 +7781,7 @@ msgstr ""
 "\n"
 "<span style=\"italic\">%s</span>\n"
 "\n"
-"detta kan ta lång tid ifall det är en stor databass\n"
+"detta kan ta lång tid ifall det är en stor databas\n"
 "\n"
 "vill du fortsätta eller avsluta nu för att ta en säkerhetskopia\n"
 
@@ -9506,7 +9510,7 @@ msgstr "addition"
 #: ../src/develop/blend_gui.c:69
 msgctxt "blendmode"
 msgid "subtract"
-msgstr "substrahera"
+msgstr "subtrahera"
 
 #: ../src/develop/blend_gui.c:71
 msgctxt "blendmode"
@@ -9804,7 +9808,7 @@ msgstr "C"
 
 #: ../src/develop/blend_gui.c:2356
 msgid "sliders for chroma channel (of LCh)"
-msgstr "reglage för färgkanal (i LCh)"
+msgstr "reglage för kromakanal (i LCh)"
 
 #: ../src/develop/blend_gui.c:2362
 msgid "h"
@@ -9869,7 +9873,7 @@ msgstr "S"
 
 #: ../src/develop/blend_gui.c:2401
 msgid "sliders for chroma channel (of HSL)"
-msgstr "reglage för färgkanal (i HSL)"
+msgstr "reglage för kromakanal (i HSL)"
 
 #: ../src/develop/blend_gui.c:2408
 msgid "sliders for value channel (of HSL)"
@@ -9889,7 +9893,7 @@ msgstr "Cz"
 
 #: ../src/develop/blend_gui.c:2449
 msgid "sliders for chroma channel (of JzCzhz)"
-msgstr "reglage för färgkanal (i JzCzhz)"
+msgstr "reglage för kromakanal (i JzCzhz)"
 
 #: ../src/develop/blend_gui.c:2456
 msgid "hz"
@@ -9940,7 +9944,7 @@ msgid ""
 "pick GUI color from image\n"
 "ctrl+click or right-click to select an area"
 msgstr ""
-"välj gränsnittsfärg från bild\n"
+"välj gränssnittsfärg från bild\n"
 "ctrl+klick eller högerklick för att välja ett område"
 
 #: ../src/develop/blend_gui.c:2586 ../src/iop/colorzones.c:2641
@@ -10173,14 +10177,14 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:3521
 msgid "temporarily switch off blend mask"
-msgstr "slå av blandingsmask tillfälligt"
+msgstr "stäng tillfälligt av blandningsmask"
 
 #: ../src/develop/blend_gui.c:3526
 msgid ""
 "temporarily switch off blend mask.\n"
 "only for module in focus"
 msgstr ""
-"stäng av mask tillfälligt.\n"
+"stäng tillfälligt av mask.\n"
 "gäller endast modul i fokus"
 
 #: ../src/develop/blend_gui.c:3536
@@ -10511,7 +10515,7 @@ msgstr "återställ"
 #: ../src/develop/imageop.c:4129 ../src/gui/preferences.c:1053
 #: ../src/libs/lib.c:1726
 msgid "presets"
-msgstr "fördefinierade"
+msgstr "förinställningar"
 
 #. global <focused> shortcuts
 #: ../src/develop/imageop.c:4130 ../src/views/darkroom.c:2924
@@ -10922,7 +10926,7 @@ msgstr "[PATH skapande] lägg till skarp nod"
 
 #: ../src/develop/masks/path.c:3979
 msgid "[PATH creation] terminate path creation"
-msgstr "[PATH skapande] avsluta skapande av bana"
+msgstr "[PATH skapande] avsluta skapande av slinga"
 
 #: ../src/develop/masks/path.c:3981
 msgid "[PATH on node] switch between smooth/sharp node"
@@ -10971,7 +10975,7 @@ msgid ""
 "<b>finish path</b>: right-click"
 msgstr ""
 "<b>lägg till nod</b>: klick, <b>lägg till skarp nod</b>: ctrl+klick\n"
-"<b>avsluta bana</b>: högerklick"
+"<b>avsluta slinga</b>: högerklick"
 
 #: ../src/develop/masks/path.c:4026
 msgid ""
@@ -12112,11 +12116,11 @@ msgstr "$(Xmp.dc.publisher) - utgivare från metadata"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:1014
 msgid "$(RIGHTS) - rights from metadata"
-msgstr "$(RIGHTS) - rättgheter från metadata"
+msgstr "$(RIGHTS) - rättigheter från metadata"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:1015
 msgid "$(Xmp.dc.rights) - rights from metadata"
-msgstr "$(Xmp.dc.rights) - rättgheter från metadata"
+msgstr "$(Xmp.dc.rights) - rättigheter från metadata"
 
 #. _("$(TAGS) - tags as set in metadata settings"),
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:1017
@@ -14765,7 +14769,7 @@ msgstr "hämta dokumentation för bibliotek"
 
 #: ../src/external/lua-scripts/tools/get_libdoc.lua:66
 msgid "retrieve and print the documentation to the console"
-msgstr "hämta och skriv ut dokumentationen i konsollen"
+msgstr "hämta och skriv ut dokumentationen i konsolen"
 
 #.
 #. This file is part of darktable,
@@ -15347,7 +15351,7 @@ msgstr "option"
 
 #: ../src/gui/accelerators.c:112 ../src/views/view.c:1561
 msgid "alt"
-msgstr "altalla"
+msgstr "alt"
 
 #: ../src/gui/accelerators.c:114
 msgid "cmd"
@@ -15791,7 +15795,7 @@ msgid ""
 msgstr ""
 "definiera en snabbtangent genom att trycka på en tangent, eventuellt "
 "kombinerad med modifierare (ctrl/skift/alt)\n"
-"en tangent kan dubbel- eller trippeltryckas, med ett gångt sista tryck\n"
+"en tangent kan dubbel- eller trippeltryckas, med ett långt sista tryck\n"
 "medan tangenten hålls nere kan en kombination av musknappar (dubbel/trippel/"
 "lång) klickas\n"
 "medan du fortfarande håller nere tangenten (och modifierare/knappar) kan "
@@ -16129,7 +16133,7 @@ msgstr "kort tangenttryckning återställer tangenter som fastnat"
 
 #: ../src/gui/color_picker_proxy.c:415 ../src/iop/watermark.c:1463
 msgid "pick color from image"
-msgstr "välj gränsnittsfärg från bild"
+msgstr "välj färg från bild"
 
 #: ../src/gui/gtk.c:195 ../src/views/darkroom.c:4989
 msgid "darktable - darkroom preview"
@@ -16735,7 +16739,7 @@ msgstr ""
 #. language
 #: ../src/gui/preferences.c:348
 msgid "interface language"
-msgstr "gränsnitt språk"
+msgstr "gränssnitt språk"
 
 #: ../src/gui/preferences.c:368
 msgid "double-click to reset to the system language"
@@ -17067,7 +17071,7 @@ msgstr "aktivera AI-funktioner"
 #. provider dropdown
 #: ../src/gui/preferences_ai.c:1586
 msgid "AI acceleration"
-msgstr "AI-accelleration"
+msgstr "AI-acceleration"
 
 #: ../src/gui/preferences_ai.c:1597
 msgid "select which GPU to use when the active provider supports more than one"
@@ -17194,7 +17198,7 @@ msgstr "monokrom"
 #: ../src/gui/presets.c:153
 #, c-format
 msgid "preset `%s' is write-protected, can't delete!"
-msgstr "stil '%s' är skrivskyddad, kan inte tas bort!"
+msgstr "förinställningen '%s' är skrivskyddad, kan inte tas bort!"
 
 #: ../src/gui/presets.c:159 ../src/gui/presets.c:471 ../src/libs/lib.c:271
 #: ../src/libs/modulegroups.c:3975
@@ -17358,7 +17362,8 @@ msgstr "format"
 
 #: ../src/gui/presets.c:749
 msgid "select image types you want this preset to be available for"
-msgstr "välj bildtyper som du vill att denna stil ska vara tillgänglig för"
+msgstr ""
+"välj bildtyper som du vill att denna förinställning ska vara tillgänglig för"
 
 #: ../src/gui/presets.c:762 ../src/libs/filtering.c:1257
 msgid "and"
@@ -17380,7 +17385,7 @@ msgstr "uppdatera förinställning?"
 #: ../src/gui/presets.c:1004 ../src/libs/lib.c:192
 #, c-format
 msgid "do you really want to update the preset `%s'?"
-msgstr "vill du verkligen ta bort förinställning `%s'?"
+msgstr "vill du verkligen uppdatera förinställningen `%s'?"
 
 #: ../src/gui/presets.c:1130
 msgid "(first)"
@@ -17755,7 +17760,7 @@ msgstr "bildkvalitet, lägre kvalitet betyder färre detaljer"
 #: ../src/imageio/format/avif.c:1018 ../src/imageio/format/heif.c:722
 #: ../src/imageio/format/jpeg.c:587
 msgid "chroma subsampling"
-msgstr "delsampling av mättnad"
+msgstr "delsampling av krominans"
 
 #: ../src/imageio/format/avif.c:1019
 msgid ""
@@ -17766,10 +17771,10 @@ msgid ""
 "4:2:2 - color sampling rate halved horizontally\n"
 "4:2:0 - color sampling rate halved horizontally and vertically"
 msgstr ""
-"inställning för delsampling av mättnad för AVIF-kodaren.\n"
+"inställning för delsampling av krominans för AVIF-kodaren.\n"
 "auto - använda delsampling bestämd utifrån kvalitetsvärde\n"
 "      (5-80: YUV420, 81-90: YUV422, 91-100: YUV444)\n"
-"4:4:4 - ingen delsampling av mättnad\n"
+"4:4:4 - ingen delsampling av krominans\n"
 "4:2:2 - frekvens på färgsampling halveras horisontellt\n"
 "4:2:0 - frekvens på färgsampling halveras horisontellt och vertikalt"
 
@@ -17880,9 +17885,9 @@ msgid ""
 "4:2:2 - color sampling rate halved horizontally\n"
 "4:2:0 - color sampling rate halved horizontally and vertically"
 msgstr ""
-"inställning för delsampling av mättnad för HEIF-kodaren.\n"
+"inställning för delsampling av krominans för HEIF-kodaren.\n"
 "auto - använd delsampling bestämd utifrån kvalitetsvärde\n"
-"4:4:4 - ingen delsampling av mättnad\n"
+"4:4:4 - ingen delsampling av krominans\n"
 "4:2:2 - frekvens på färgsampling halveras horisontellt\n"
 "4:2:0 - frekvens på färgsampling halveras horisontellt och vertikalt"
 
@@ -17923,9 +17928,9 @@ msgid ""
 "4:2:2 - color sampling rate halved horizontally\n"
 "4:2:0 - color sampling rate halved horizontally and vertically"
 msgstr ""
-"inställning för delsampling av mättnad för JPEG-kodaren.\n"
+"inställning för delsampling av krominans för JPEG-kodaren.\n"
 "auto - använd delsampling bestämd utifrån kvalitetsvärde\n"
-"4:4:4 - ingen delsampling av mättnad\n"
+"4:4:4 - ingen delsampling av krominans\n"
 "4:4:0 - frekvens på färgsampling halveras vertikalt\n"
 "4:2:2 - frekvens på färgsampling halveras horisontellt\n"
 "4:2:0 - frekvens på färgsampling halveras horisontellt och vertikalt"
@@ -18056,7 +18061,7 @@ msgstr "dpi"
 
 #: ../src/imageio/format/pdf.c:642
 msgid "dpi of the images inside the PDF"
-msgstr "dpi för bilder i PFD:en"
+msgstr "dpi för bilder i PDF:en"
 
 #. rotate images yes|no
 #: ../src/imageio/format/pdf.c:648
@@ -18138,7 +18143,7 @@ msgstr "normal"
 
 #: ../src/imageio/format/pdf.c:710
 msgid "draft"
-msgstr "förhanstitt"
+msgstr "utkast"
 
 #: ../src/imageio/format/pdf.c:710
 msgid "debug"
@@ -18347,11 +18352,11 @@ msgstr "kunde inte starta email-klienten!"
 
 #: ../src/imageio/storage/gallery.c:76
 msgid "website gallery"
-msgstr "webbsite-galleri"
+msgstr "webbplats-galleri"
 
 #: ../src/imageio/storage/gallery.c:214
 msgid "enter the title of the website"
-msgstr "ange en titel på webbsite"
+msgstr "ange en titel på webbplats"
 
 #: ../src/imageio/storage/latex.c:72
 msgid "LaTeX book template"
@@ -18406,7 +18411,7 @@ msgid ""
 msgstr ""
 "servernamn\n"
 "standardprotokollet är https\n"
-"välj osäkert protokoll http:// uttyckligen om det protokollet krävs"
+"välj osäkert protokoll http:// uttryckligen om det protokollet krävs"
 
 #: ../src/imageio/storage/piwigo.c:1083 ../src/imageio/storage/piwigo.c:1184
 msgid "user"
@@ -18462,7 +18467,7 @@ msgstr "uppdatera listan av album"
 
 #: ../src/imageio/storage/piwigo.c:1140
 msgid "new album"
-msgstr "nyatt album"
+msgstr "nytt album"
 
 #. Available albums
 #: ../src/imageio/storage/piwigo.c:1146
@@ -18616,7 +18621,7 @@ msgid ""
 "the average luminance of the selected region will be\n"
 "used to set the pivot relative to mid-gray"
 msgstr ""
-"den genomsnittliga luminensen för vald region kommer\n"
+"den genomsnittliga luminansen för vald region kommer\n"
 "användas för att sätta mellanpunkt relativt mellangrå"
 
 #: ../src/iop/agx.c:1837
@@ -18630,7 +18635,7 @@ msgid ""
 "and the output will be adjusted based on the default\n"
 "mid-gray to mid-gray mapping"
 msgstr ""
-"den genomsnittliga linumansen för vald region kommer\n"
+"den genomsnittliga luminansen för vald region kommer\n"
 "användas för att sätta mellanpunkt relativt mellangrå,\n"
 "utgående kommer justeras baserat på standard mellangrå\n"
 "till mellangrå-mappning"
@@ -18887,7 +18892,7 @@ msgstr ""
 "avaktivera renhetsjusteringar och rotationer, applicera endast kurvan.\n"
 "notera att dessa justeringar är centrala i AgX, och utan dem\n"
 "kommer resultatet nästan alltid vara sämre, särskilt med ljus,\n"
-"mättad beslysning (exempelvis LED-belysning).\n"
+"mättad belysning (exempelvis LED-belysning).\n"
 "huvudsakligen avsedd för experimentell användning."
 
 #: ../src/iop/agx.c:2281
@@ -19037,7 +19042,7 @@ msgstr "rotera och perspektiv"
 
 #: ../src/iop/ashift.c:118
 msgid "rotation|keystone|distortion|crop|reframe"
-msgstr "totation|keystone|förvrängning|beskärning|omramning"
+msgstr "rotation|keystone|förvrängning|beskärning|omramning"
 
 #: ../src/iop/ashift.c:123
 msgid "rotate or distort perspective"
@@ -19093,7 +19098,7 @@ msgstr ""
 
 #: ../src/iop/ashift.c:3417
 msgid "automatic correction failed, please correct manually"
-msgstr "autoatisk korrigering misslyckades, var god korrigera manuellt"
+msgstr "automatisk korrigering misslyckades, var god korrigera manuellt"
 
 #: ../src/iop/ashift.c:4991
 #, c-format
@@ -19152,7 +19157,7 @@ msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
 msgstr ""
-"objektivmodellering för perspektivkorrigering: generisk eller i englighet med "
+"objektivmodellering för perspektivkorrigering: generisk eller i enlighet med "
 "brännvidden"
 
 #: ../src/iop/ashift.c:6077
@@ -19303,7 +19308,7 @@ msgstr "skärp"
 
 #: ../src/iop/atrous.c:800
 msgid "denoise chroma"
-msgstr "brusreducering färgskala"
+msgstr "brusreducering av färg"
 
 #: ../src/iop/atrous.c:816 ../src/libs/neural_restore.c:1442
 #: ../src/libs/neural_restore.c:4377
@@ -19441,7 +19446,7 @@ msgid ""
 "only changes results of luma and chroma tabs"
 msgstr ""
 "ändra halon vid kanterna vid vardera detaljstorlek\n"
-"ändrar enbart luma- och chroma-flikarna"
+"ändrar enbart luma- och kroma-flikarna"
 
 #: ../src/iop/atrous.c:1801 ../src/iop/colorzones.c:2705
 msgid "make effect stronger or weaker"
@@ -19524,7 +19529,7 @@ msgid ""
 "apply a view transform based on personal or camera maker look,\n"
 "for corrective purposes, to prepare images for display"
 msgstr ""
-"tillämpa en tranformering baserad på personlig eller kameratillverkarens "
+"tillämpa en transformering baserad på personlig eller kameratillverkarens "
 "utseende,\n"
 "med korrigerande avsikt, för att förbereda bilder för visning"
 
@@ -19882,7 +19887,7 @@ msgstr "sätt hur mycket formen ska roteras runt sitt center"
 
 #: ../src/iop/blurs.c:1014
 msgid "orientation of the motion's path"
-msgstr "rörelsebanans orientering"
+msgstr "rörelseslingans orientering"
 
 #: ../src/iop/blurs.c:1015
 msgid ""
@@ -19897,8 +19902,8 @@ msgid ""
 "select which portion of the path to use,\n"
 "allowing the path to become asymmetric"
 msgstr ""
-"välj vilken del av banan som ska användas,\n"
-"vilket tillåter banan att bli assymetrisk"
+"välj vilken del av slingan som ska användas,\n"
+"vilket tillåter slingan att bli asymmetrisk"
 
 #: ../src/iop/borders.c:306
 msgid "framing"
@@ -20723,7 +20728,7 @@ msgstr ""
 "• Linear Bradford (1985) stämmer överens med ICC v4 verktygskedjan.\n"
 "• CAT16 (2016) är mer stabil och korrekt.\n"
 "• Non-linear Bradford (1985) är Bradford-originalet,\n"
-"den kan prducera bättre resultat än den linjära versionen, men är "
+"den kan producera bättre resultat än den linjära versionen, men är "
 "otillförlitlig.\n"
 "• XYZ är en enkel skalning i XYZ-rymden. Den rekommenderas generellt inte.\n"
 "• none stänger av all anpassning och använder arbetsflöde i RGB."
@@ -20760,7 +20765,7 @@ msgid ""
 "part of your subject or a non-moving and consistently-lit surface over your "
 "series of images."
 msgstr ""
-"definiera en målfärg (ton och mättnad) för ett särskilt område av bilden "
+"definiera en målfärg (färgton och kroma) för ett särskilt område av bilden "
 "(färgprovet), vilket du sen passar mot samma målfärg i andra bilder. "
 "Kontrollprovet kan antingen vara en kritisk del av ditt subjekt eller en "
 "orörlig och jämnt belyst yta över en serie med bilder."
@@ -21564,7 +21569,7 @@ msgstr "rotera alla färgtoner med en vinkel, vid samma luminans"
 
 #: ../src/iop/colorbalancergb.c:1794
 msgid "increase colorfulness mostly on low-chroma colors"
-msgstr "öka färgrikheten mest på färger med låg mättnad"
+msgstr "öka färgrikheten mest på färger med låg kroma"
 
 #: ../src/iop/colorbalancergb.c:1800
 msgid "increase the contrast at constant chromaticity"
@@ -21573,7 +21578,7 @@ msgstr "öka kontrasten vid konstant kromaticitet"
 #: ../src/iop/colorbalancergb.c:1802
 msgctxt "section"
 msgid "linear chroma grading"
-msgstr "linjär färggradering"
+msgstr "linjär kromagradering"
 
 #: ../src/iop/colorbalancergb.c:1809
 msgid "increase colorfulness at same luminance globally"
@@ -21661,7 +21666,7 @@ msgstr "nyans på den globala färgförskjutningen"
 
 #: ../src/iop/colorbalancergb.c:1896
 msgid "chroma of the global color offset"
-msgstr "mättnad på den globala färgförskjutningen"
+msgstr "kroma på den globala färgförskjutningen"
 
 #: ../src/iop/colorbalancergb.c:1898
 msgctxt "section"
@@ -21678,7 +21683,7 @@ msgstr "nyans för färgökning i skuggor"
 
 #: ../src/iop/colorbalancergb.c:1917
 msgid "chroma of the color gain in shadows"
-msgstr "mättnad för färgökning i skuggor"
+msgstr "kroma för färgökning i skuggor"
 
 #: ../src/iop/colorbalancergb.c:1919
 msgctxt "section"
@@ -21699,7 +21704,7 @@ msgstr "ändrar lokal nyans för högdagrar"
 
 #: ../src/iop/colorbalancergb.c:1938
 msgid "chroma of the color gain in highlights"
-msgstr "mättnad för färgökning högdagrar"
+msgstr "kroma för färgökning i högdagrar"
 
 #: ../src/iop/colorbalancergb.c:1940
 msgctxt "section"
@@ -21720,7 +21725,7 @@ msgstr "nyans för färgexponent i mellantoner"
 
 #: ../src/iop/colorbalancergb.c:1959
 msgid "chroma of the color exponent in mid-tones"
-msgstr "mättnad för färgexponent i mellantoner"
+msgstr "kroma för färgexponent i mellantoner"
 
 #. Page masks
 #: ../src/iop/colorbalancergb.c:1962
@@ -21750,7 +21755,7 @@ msgid ""
 "the still-visible area of the image (not hidden by the mask) is the area\n"
 "that will be affected by the shadows sliders in the other tabs"
 msgstr ""
-"visar en skuggmask, överlagrad som ett schakbräde\n"
+"visar en skuggmask, överlagrad som ett schackbräde\n"
 "den del av bilden som fortfarande är synlig (ej dolt av masken) är det "
 "område\n"
 "som kommer att påverkas av skuggreglagen i de andra flikarna"
@@ -21765,7 +21770,7 @@ msgid ""
 "the still-visible area of the image (not hidden by the mask) is the area\n"
 "that will be affected by the mid-tones sliders in the other tabs"
 msgstr ""
-"visar en mellantonsmask, överlagrad som ett schakbräde\n"
+"visar en mellantonsmask, överlagrad som ett schackbräde\n"
 "den del av bilden som fortfarande är synlig (ej dolt av masken) är det "
 "område\n"
 "som kommer att påverkas av mellantonreglagen i de andra flikarna"
@@ -21780,7 +21785,7 @@ msgid ""
 "the still-visible area of the image (not hidden by the mask) is the area\n"
 "that will be affected by the highlights sliders in the other tabs"
 msgstr ""
-"visar en högdagermask, överlagrad som ett schakbräde\n"
+"visar en högdagermask, överlagrad som ett schackbräde\n"
 "den del av bilden som fortfarande är synlig (ej dolt av masken) är det "
 "område\n"
 "som kommer att påverkas av högdagerreglagen i de andra flikarna"
@@ -22233,7 +22238,7 @@ msgstr ""
 #: ../src/iop/colorharmonizer.c:1418
 msgid "not yet available — wait for the preview to finish processing."
 msgstr ""
-"ej tillgänlig än – vänta på förhandsgranskningen för att avsluta beräkningen."
+"ej tillgänglig än – vänta på förhandsgranskningen för att avsluta beräkningen."
 
 #: ../src/iop/colorharmonizer.c:1423
 msgid ""
@@ -22426,7 +22431,7 @@ msgid ""
 "gradually from zero and the slider response is distributed evenly across its "
 "range."
 msgstr ""
-"skyddar färger med låg mättnad från färgkorrigering.\n"
+"skyddar färger med låg kroma (avmättade) från färgkorrigering.\n"
 "\n"
 "0: inget skydd — gråtoner, hudblänk och dämpade toner skiftas allihop.\n"
 "låga värden (0.1–0.3): bara nästan helt grå toner undantas; pastelltoner "
@@ -22754,7 +22759,7 @@ msgstr "pixlar med L-värden över denna tröskel kommer att korrigeras"
 
 #: ../src/iop/colorreconstruction.c:1242
 msgid "how far to look for replacement colors in spatial dimensions"
-msgstr "hur långt ersättningsfärger söks i rumbestämt utsträckning"
+msgstr "hur långt ersättningsfärger söks i rumsbestämd utsträckning"
 
 #: ../src/iop/colorreconstruction.c:1243
 msgid "how far to look for replacement colors in the luminance dimension"
@@ -22801,7 +22806,7 @@ msgstr "färgzoner"
 
 #: ../src/iop/colorzones.c:141
 msgid "selectively shift hues, chroma and lightness of pixels"
-msgstr "skifta selektivt färgtoner, mättnad och ljushet på pixlar"
+msgstr "skifta selektivt färgtoner, kroma och ljushet på pixlar"
 
 #: ../src/iop/colorzones.c:668
 msgid "B&W: with red"
@@ -23003,7 +23008,7 @@ msgstr ""
 "LMMSE är långsamma.\n"
 "LMMSE passar bäst för bilder med hög ISO.\n"
 "VNG4 är bra i ovanliga fall för att undvika labyrintmönster.\n"
-"dubbla fårginterpolerare ökar beräkningstiden genom att blanda en VNG-variant "
+"dubbla färginterpolerare ökar beräkningstiden genom att blanda en VNG-variant "
 "i ett andra pass."
 
 #: ../src/iop/demosaic.c:1749
@@ -23163,7 +23168,7 @@ msgstr ""
 # TODO: NEEDS BETTER TRANSLATION
 #: ../src/iop/denoiseprofile.c:808
 msgid "wavelets: chroma only"
-msgstr "wavelets: endast mättnad"
+msgstr "wavelets: endast kroma"
 
 #: ../src/iop/denoiseprofile.c:814
 msgid "denoise (profiled)"
@@ -23287,7 +23292,7 @@ msgstr ""
 "av vitbalans-koefficienter, och en bugg i\n"
 "icke-lokal snittnormalisering som resulterar i\n"
 "för liten mjukning när storleken på mönster ökas.\n"
-"att akvitera av det här alternativet kommer ändra\n"
+"att aktivera det här alternativet ändrar\n"
 "brusreduceringen du får. om du aktiverar kommer du inte\n"
 "kunna gå tillbaka till den gamla algoritmen."
 
@@ -23359,7 +23364,7 @@ msgid ""
 "is quite big."
 msgstr ""
 "öka vikten av centrala pixeln\n"
-"av mönstret i mösterjämförelsen.\n"
+"av mönstret i mönsterjämförelsen.\n"
 "användbar för att återskapa detaljer när\n"
 "mönsterstorleken är rätt stor."
 
@@ -23386,7 +23391,7 @@ msgid ""
 "dark areas of the image."
 msgstr ""
 "finjustera brusreducering av skuggor.\n"
-"minska för att mer aggresivt brusreducera\n"
+"minska för att mer aggressivt brusreducera\n"
 "mörka områden av bilden."
 
 #: ../src/iop/denoiseprofile.c:3775
@@ -24242,7 +24247,7 @@ msgstr "filmic rgb"
 
 #: ../src/iop/filmicrgb.c:336
 msgid "tone mapping|curve|view transform|contrast|saturation|highlights"
-msgstr "tonmappning|kurva|vytransformering|kontast|mättnad|högdagrar"
+msgstr "tonmappning|kurva|vytransformering|kontrast|mättnad|högdagrar"
 
 #: ../src/iop/filmicrgb.c:341
 msgid ""
@@ -24372,7 +24377,7 @@ msgid ""
 "ensure you understand its assumptions before using it."
 msgstr ""
 "försök optimera inställningen genom statistiska gissningar.\n"
-"detta kommer passa in ljuhetsomfånget inom gränserna för histogrammet.\n"
+"detta kommer passa in ljushetsomfånget inom gränserna för histogrammet.\n"
 "fungerar bättre för landskap och jämnt upplysta bilder\n"
 "men misslyckas för mycket ljusa eller mörka bilder och bilder med hög ISO.\n"
 "detta är inte artificiell intelligent, utan en enkel gissning.\n"
@@ -25029,7 +25034,7 @@ msgstr "linjärt eller icke-linjär, Lab, scen-tillämpat"
 
 #: ../src/iop/highpass.c:77 ../src/iop/lowpass.c:105 ../src/iop/sharpen.c:95
 msgid "frequential, Lab"
-msgstr "frekventiell, Lab"
+msgstr "frekvensiell, Lab"
 
 #: ../src/iop/highpass.c:78 ../src/iop/lowpass.c:106
 msgid "special, Lab, scene-referred"
@@ -25103,7 +25108,7 @@ msgstr "linjärt, rå, skärm-tillämpat"
 #. has a bayer sensor we don't need g->RGB_to_CAM and g->CAM_to_RGB corrections
 #: ../src/iop/invert.c:410
 msgid "brightness of film material"
-msgstr "färg på filmmaterial"
+msgstr "ljushet på filmmaterial"
 
 #: ../src/iop/invert.c:414
 msgid "color of film material"
@@ -25266,7 +25271,7 @@ msgstr "finjustera"
 
 #: ../src/iop/lens.cc:4512
 msgid "tune the warp and chromatic aberration correction"
-msgstr "funjustera korrektion av skevhet och kromatisk avvikelse"
+msgstr "finjustera korrektion av skevhet och kromatisk avvikelse"
 
 #: ../src/iop/lens.cc:4517
 msgid "tune the vignette correction"
@@ -25358,7 +25363,7 @@ msgstr "ändra svarta, vita och medelgråa punkter"
 msgid ""
 "drag handles to set black, gray, and white points. operates on L channel."
 msgstr ""
-"dra hantag för att sätta svart-, grå- och vitpunkt.  arbetar på L-kanalen."
+"dra handtag för att sätta svart-, grå- och vitpunkt.  arbetar på L-kanalen."
 
 #: ../src/iop/levels.c:646 ../src/iop/rgblevels.c:1084
 msgid "apply auto levels"
@@ -25458,7 +25463,7 @@ msgstr "redigera, lägg till och ta bort noder"
 #: ../src/libs/masks.c:1851 ../src/libs/masks.c:1859 ../src/libs/masks.c:1867
 #: ../src/libs/masks.c:1876
 msgid "shapes"
-msgstr "form"
+msgstr "former"
 
 #: ../src/iop/liquify.c:3633
 msgid "draw curves"
@@ -25489,7 +25494,7 @@ msgid ""
 "<b>add node</b>: ctrl+click - <b>remove path</b>: right-click\n"
 "<b>toggle line/curve</b>: ctrl+alt+click"
 msgstr ""
-"<b>lägg till nod</b>: ctrl+klick - <b>ta bort bana</b>: högerklick\n"
+"<b>lägg till nod</b>: ctrl+klick - <b>ta bort slinga</b>: högerklick\n"
 "<b>växla linje/kurva</b>: ctrl+alt+klick"
 
 #: ../src/iop/liquify.c:3654
@@ -25504,7 +25509,7 @@ msgstr ""
 
 #: ../src/iop/liquify.c:3658 ../src/iop/liquify.c:3660
 msgid "<b>shape of path</b>: drag"
-msgstr "<b>form på bana</b>: dra"
+msgstr "<b>form på slinga</b>: dra"
 
 #: ../src/iop/liquify.c:3662
 msgid "<b>radius</b>: drag"
@@ -26740,7 +26745,7 @@ msgstr "justera formens opacitet"
 #: ../src/iop/retouch.c:2685
 msgctxt "section"
 msgid "retouch tools"
-msgstr "verktyg för retuchering"
+msgstr "verktyg för retuschering"
 
 # TODO: NEEDS BETTER TRANSLATION
 #: ../src/iop/retouch.c:2687
@@ -26874,7 +26879,7 @@ msgstr ""
 "modul för att sätta bildpunktsförhållande\n"
 "\n"
 "användbart för vissa typer av sensorer\n"
-"och anamorphisk utdragning"
+"och anamorfisk utdragning"
 
 #: ../src/iop/scalepixels.c:280
 msgid "adjust pixel aspect ratio"
@@ -27426,7 +27431,7 @@ msgid ""
 "XYZ is similar but applies the saturation changes in XYZ space."
 msgstr ""
 "om satt till auto har a- och b-kurva ingen effekt och visas inte. L-kanalens "
-"kurva används för att ändra kromatiska pixelvärdet (a och b). auto XYZ är "
+"kurva används för att ändra pixlarnas kromavärden (a och b). auto XYZ är "
 "liknande men handlar om ändring i mättnad i XYZ-området."
 
 #: ../src/iop/tonecurve.c:1270
@@ -27719,7 +27724,7 @@ msgid ""
 "lower values give smoother gradients and better smoothing\n"
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
-"precission för fjädringen:\n"
+"precision för fjädringen:\n"
 "högre värden tvingar masken att följa kanter närmre\n"
 "men kan ta bort effekten av uppmjukningen\n"
 "lägre värden ger mjukare gradienter och bättre uppmjukning\n"
@@ -27991,8 +27996,8 @@ msgid ""
 msgstr ""
 "zoner\n"
 "använd musens rullhjul för att ändra antal zoner\n"
-"vänsterklicka på en zons kant för att skapa hantag att justera med\n"
-"högerklicka på ett hantag för att ta bort det"
+"vänsterklicka på en zons kant för att skapa handtag att justera med\n"
+"högerklicka på ett handtag för att ta bort det"
 
 #: ../src/libs/backgroundjobs.c:52
 msgid "background jobs"
@@ -28004,7 +28009,7 @@ msgstr "kamerainställningar"
 
 #: ../src/libs/camera.c:133
 msgid "toggle view property in center view"
-msgstr "visa inställning i centrervyn"
+msgstr "visa inställning i mittvyn"
 
 #: ../src/libs/camera.c:212
 msgid "connection with camera lost, exiting tethering mode"
@@ -28195,7 +28200,7 @@ msgid ""
 msgstr ""
 "använd <, <=, >, >=, <>, =, [;] som operatorer\n"
 "skriv datum/tid i denna form : YYYY:MM:DD hh:mm:ss.sss (endast året är "
-"obligariskt)"
+"obligatoriskt)"
 
 #: ../src/libs/collect.c:2636
 #, no-c-format
@@ -28927,7 +28932,7 @@ msgstr "export av flera förinställningar"
 
 #: ../src/libs/export.c:1704
 msgid "export the selected images with multiple presets"
-msgstr "exportera de valda bilderna med flera förinställnigar"
+msgstr "exportera de valda bilderna med flera förinställningar"
 
 #: ../src/libs/export.c:1730
 msgctxt "actionbutton"
@@ -29059,7 +29064,7 @@ msgstr ""
 "om formeln är '=' exporteras EXIF-metadata även om EXIF-data är avaktiverad\n"
 "annars beräknas motsvarande metadata och läggs till i exporterad fil\n"
 "klicka på formel-cell för att redigera\n"
-"skriv '$(' för att aktivera komplettering och se listan på varabler"
+"skriv '$(' för att aktivera komplettering och se listan på variabler"
 
 #: ../src/libs/export_metadata.c:280
 msgid "add an output metadata tag"
@@ -29338,7 +29343,7 @@ msgid ""
 "filter by capture month\n"
 "click to toggle month selection"
 msgstr ""
-"filtera på månad\n"
+"filtrera på månad\n"
 "klicka för att växla månadsval"
 
 #. predefined selections
@@ -29460,7 +29465,7 @@ msgid ""
 "\n"
 "right-click to get existing lenses"
 msgstr ""
-"ange objekiv att söka efter.\n"
+"ange objektiv att söka efter.\n"
 "flera värden kan separeras med ','\n"
 "\n"
 "högerklicka för att få fram befintliga objektiv"
@@ -29905,7 +29910,7 @@ msgstr "färgrymd"
 
 #: ../src/libs/history.c:943
 msgid "mask mode"
-msgstr "maskingsmetod"
+msgstr "maskningsmetod"
 
 #: ../src/libs/history.c:945
 msgid "blend mode"
@@ -30161,7 +30166,7 @@ msgstr "enhet \"%s\" ansluten på port \"%s\"."
 
 #: ../src/libs/import.c:313 ../src/libs/import.c:2410
 msgid "unmount camera"
-msgstr "avmonteral kameran"
+msgstr "avmontera kameran"
 
 #: ../src/libs/import.c:332
 msgid ""
@@ -30339,7 +30344,7 @@ msgstr "ta bort förinställning för föråldrad modul"
 
 #: ../src/libs/lib.c:578
 msgid "manage presets..."
-msgstr "hantera stilar..."
+msgstr "hantera förinställningar..."
 
 #: ../src/libs/lib.c:603
 msgid "nothing to save"
@@ -30351,7 +30356,7 @@ msgstr "visa modul"
 
 #: ../src/libs/lib.c:1355
 msgid "presets and preferences"
-msgstr "inställningar"
+msgstr "förinställningar och alternativ"
 
 #: ../src/libs/lib.c:1740
 msgid "utility module"
@@ -30983,7 +30988,7 @@ msgid ""
 msgstr ""
 "drag och släpp en rad i taget tills du uppnår den önska ordningen\n"
 "avmarkera för att gömma metadata som inte är av intresse för dig\n"
-"om olika inställningar önskas, använd stilar"
+"om olika inställningar önskas, använd förinställningar"
 
 #: ../src/libs/metadata_view.c:1657
 msgid "jump to film roll"
@@ -31231,8 +31236,8 @@ msgid ""
 "presets\n"
 "ctrl+click to manage"
 msgstr ""
-"stil\n"
-"ctrl+klick för att rotera"
+"förinställningar\n"
+"ctrl+klick för att hantera"
 
 #: ../src/libs/modulegroups.c:3009
 msgid "search modules"
@@ -31325,7 +31330,7 @@ msgstr "flytta gruppen till höger"
 
 #: ../src/libs/modulegroups.c:3726
 msgid "rename preset"
-msgstr "ändra namn på stil"
+msgstr "ändra namn på förinställning"
 
 #: ../src/libs/modulegroups.c:3729
 msgid "_rename"
@@ -31345,19 +31350,19 @@ msgstr "förinställning: "
 
 #: ../src/libs/modulegroups.c:4081
 msgid "remove the preset"
-msgstr "ta bort stil"
+msgstr "ta bort förinställningen"
 
 #: ../src/libs/modulegroups.c:4085
 msgid "duplicate the preset"
-msgstr "duplicera denna stil"
+msgstr "duplicera förinställningen"
 
 #: ../src/libs/modulegroups.c:4089
 msgid "rename the preset"
-msgstr "ändra namn på stil"
+msgstr "ändra namn på förinställning"
 
 #: ../src/libs/modulegroups.c:4093
 msgid "create a new empty preset"
-msgstr "skapa ny tom stil"
+msgstr "skapa ny tom förinställning"
 
 #: ../src/libs/modulegroups.c:4101
 msgid "show search line"
@@ -31373,7 +31378,7 @@ msgstr "visa alla historik-moduler i aktiv grupp"
 
 #: ../src/libs/modulegroups.c:4124
 msgid "auto-apply this preset"
-msgstr "auto-applicera denna stil"
+msgstr "auto-applicera denna förinställning"
 
 #: ../src/libs/modulegroups.c:4140
 msgid "module groups"
@@ -31677,7 +31682,7 @@ msgid ""
 msgstr ""
 "när på, pixlar utanför sRGB-färgrymden släpps igenom utan att brusreduceras; "
 "när av, alla pixlar brusreduceras, men färger i vid färgrymd kan klippas; "
-"påverkar endast brusdeucering"
+"påverkar endast brusreducering"
 
 #: ../src/libs/neural_restore.c:4567
 msgid "add to the current collection"
@@ -31821,7 +31826,7 @@ msgid ""
 msgstr ""
 "bildens skalningsfaktor med skrivarens DPI:\n"
 " < 1 betyder att bilden skalas ned (bästa kvalitén)\n"
-" > 1 betdyer att bilden skalas upp\n"
+" > 1 betyder att bilden skalas upp\n"
 " ett för stort värde kan innebära sämre utskriftskvalité"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
@@ -32050,7 +32055,7 @@ msgstr "vågform"
 
 #: ../src/libs/scopes/waveform.c:308
 msgid "set scope to vertical"
-msgstr "ställ omfattning till verktikal"
+msgstr "ställ omfattning till vertikal"
 
 #: ../src/libs/scopes/waveform.c:313
 msgid "set scope to horizontal"
@@ -32626,7 +32631,7 @@ msgstr ""
 
 #: ../src/libs/tagging.c:3716
 msgid "import tags from a Lightroom keyword file"
-msgstr "importera taggar från Lightrooms nyckelordfil"
+msgstr "importera taggar från Lightrooms nyckelordsfil"
 
 #: ../src/libs/tagging.c:3723
 msgid "export all tags to a Lightroom keyword file"
@@ -32888,7 +32893,7 @@ msgstr "avgränsningslager"
 
 #: ../src/libs/tools/global_toolbox.c:277
 msgid "preview overlays"
-msgstr "förhandsvisninglager"
+msgstr "förhandsvisningslager"
 
 #: ../src/libs/tools/global_toolbox.c:351
 msgid "overlays not available here..."
@@ -32917,7 +32922,7 @@ msgstr "klicka för att ändra vilken typ av lager som visas på miniatyrbilder"
 # tidigare överlagring
 #: ../src/libs/tools/global_toolbox.c:424 ../src/libs/tools/global_toolbox.c:453
 msgid "overlay mode for size"
-msgstr "täckningläge för storlek"
+msgstr "täckningsläge för storlek"
 
 #: ../src/libs/tools/global_toolbox.c:428
 msgid "thumbnail overlays"
@@ -33546,7 +33551,7 @@ msgid ""
 "select the solid color to indicate overexposure.\n"
 "will only be used if mode = mark with solid color"
 msgstr ""
-"välj vilken färg som ska visa öerexponering.\n"
+"välj vilken färg som ska visa överexponering.\n"
 "den kommer att användas när inställningen är 'markera med fast färg'"
 
 #: ../src/views/darkroom.c:3040
@@ -33596,8 +33601,8 @@ msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes"
 msgstr ""
-"välj måttet du vill förhandgranska\n"
-"full gamut är kombinationen av alla andra läget"
+"välj måttet du vill förhandsgranska\n"
+"full gamut är kombinationen av alla andra lägen"
 
 #: ../src/views/darkroom.c:3099
 msgid "full gamut"
