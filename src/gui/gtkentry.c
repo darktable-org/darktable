@@ -43,6 +43,7 @@ static dt_gtkentry_completion_spec _default_path_compl_list[]
       { "VERSION.NAME", N_("$(VERSION.NAME) - version name from metadata") },
       { "JOBCODE", N_("$(JOBCODE) - job code for import") },
       { "SEQUENCE[4,1]", N_("$(SEQUENCE[n,m]) - sequence number, n: number of digits, m: start number") },
+      { "CONFLICT[2]", N_("$(CONFLICT[n]) - import filename conflict number, null string if there is no conflict, n: number of digits") },
       { "WIDTH.MAX", N_("$(WIDTH.MAX) - maximum image export width") },
       { "WIDTH.SENSOR", N_("$(WIDTH.SENSOR) - image sensor width") },
       { "WIDTH.RAW", N_("$(WIDTH.RAW) - RAW image width") },
