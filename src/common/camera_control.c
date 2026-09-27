@@ -21,6 +21,7 @@
 #include "common/image.h"
 #include "control/control.h"
 #include "imageio/imageio_jpeg.h"
+
 #include <glib-2.0/gio/gmenu.h>
 #include <gphoto2/gphoto2-file.h>
 
@@ -30,7 +31,6 @@
 #include <errno.h>
 #include <locale.h>
 
-/***/
 typedef enum _camctl_camera_job_type_t
 {
   /** Start a scan of devices and announce new and removed. */
@@ -687,8 +687,8 @@ static void _camctl_unlock(const dt_camctl_t *c)
 static void *_update_cameras_thread(void *ptr);
 dt_camctl_t *dt_camctl_new()
 {
-  dt_camctl_t *camctl = g_malloc0(sizeof(dt_camctl_t));
-  if(camctl == NULL)
+  dt_camctl_t *camctl = g_try_malloc0(sizeof(dt_camctl_t));
+  if(!camctl)
     return NULL;
 
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] creating new context %p", camctl);
@@ -1770,7 +1770,8 @@ void dt_camctl_camera_set_property_string(const dt_camctl_t *c,
   dt_camera_t *camera = (dt_camera_t *)cam;
 
   _camctl_camera_set_property_string_job_t *job =
-    g_malloc(sizeof(_camctl_camera_set_property_string_job_t));
+    g_try_malloc(sizeof(_camctl_camera_set_property_string_job_t));
+  if(!job) return;
   job->type = _JOB_TYPE_SET_PROPERTY_STRING;
   job->name = g_strdup(property_name);
   job->value = g_strdup(value);
@@ -1795,7 +1796,8 @@ void dt_camctl_camera_set_property_toggle(const dt_camctl_t *c,
   dt_camera_t *camera = (dt_camera_t *)cam;
 
   _camctl_camera_set_property_toggle_job_t *job =
-    g_malloc(sizeof(_camctl_camera_set_property_toggle_job_t));
+    g_try_malloc(sizeof(_camctl_camera_set_property_toggle_job_t));
+  if(!job) return;
   job->type = _JOB_TYPE_SET_PROPERTY_TOGGLE;
   job->name = g_strdup(property_name);
 
@@ -1820,7 +1822,8 @@ void dt_camctl_camera_set_property_choice(const dt_camctl_t *c,
   dt_camera_t *camera = (dt_camera_t *)cam;
 
   _camctl_camera_set_property_choice_job_t *job =
-    g_malloc(sizeof(_camctl_camera_set_property_choice_job_t));
+    g_try_malloc(sizeof(_camctl_camera_set_property_choice_job_t));
+  if(!job) return;
   job->type = _JOB_TYPE_SET_PROPERTY_CHOICE;
   job->name = g_strdup(property_name);
   job->value = value;
@@ -1846,7 +1849,8 @@ void dt_camctl_camera_set_property_int(const dt_camctl_t *c,
   dt_camera_t *camera = (dt_camera_t *)cam;
 
   _camctl_camera_set_property_int_job_t *job =
-    g_malloc(sizeof(_camctl_camera_set_property_int_job_t));
+    g_try_malloc(sizeof(_camctl_camera_set_property_int_job_t));
+  if(!job) return;
   job->type = _JOB_TYPE_SET_PROPERTY_INT;
   job->name = g_strdup(property_name);
   job->value = value;
@@ -1872,7 +1876,8 @@ void dt_camctl_camera_set_property_float(const dt_camctl_t *c,
   dt_camera_t *camera = (dt_camera_t *)cam;
 
   _camctl_camera_set_property_float_job_t *job =
-    g_malloc(sizeof(_camctl_camera_set_property_float_job_t));
+    g_try_malloc(sizeof(_camctl_camera_set_property_float_job_t));
+  if(!job) return;
   job->type = _JOB_TYPE_SET_PROPERTY_FLOAT;
   job->name = g_strdup(property_name);
   job->value = value;
@@ -2069,7 +2074,8 @@ void dt_camctl_camera_capture(const dt_camctl_t *c,
   }
   dt_camera_t *camera = (dt_camera_t *)cam;
 
-  _camctl_camera_job_t *job = g_malloc(sizeof(_camctl_camera_job_t));
+  _camctl_camera_job_t *job = g_try_malloc(sizeof(_camctl_camera_job_t));
+  if(!job) return;
   job->type = _JOB_TYPE_EXECUTE_CAPTURE;
   _camera_add_job(camctl, camera, job);
 }

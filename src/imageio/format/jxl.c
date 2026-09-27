@@ -467,7 +467,7 @@ size_t params_size(dt_imageio_module_format_t *self)
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_jxl_t *d = g_malloc0(sizeof(dt_imageio_jxl_t));
+  dt_imageio_jxl_t *d = g_try_malloc0(sizeof(dt_imageio_jxl_t));
 
   if(!d) return NULL;
 
@@ -573,7 +573,7 @@ static void tier_changed(GtkWidget *widget, dt_imageio_jxl_gui_data_t *gui)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_jxl_gui_data_t *gui = g_malloc0(sizeof(dt_imageio_jxl_gui_data_t));
+  dt_imageio_jxl_gui_data_t *gui = g_try_malloc0(sizeof(dt_imageio_jxl_gui_data_t));
   if(!gui) return;
   self->gui_data = gui;
 

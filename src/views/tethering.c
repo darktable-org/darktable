@@ -585,7 +585,7 @@ void enter(dt_view_t *self)
                             _view_capture_filmstrip_activate_callback, self);
 
   // register listener
-  lib->listener = g_malloc0(sizeof(dt_camctl_listener_t));
+  lib->listener = g_try_malloc0(sizeof(dt_camctl_listener_t));
   if(lib->listener)
   {
     lib->listener->data = lib;
