@@ -27,6 +27,7 @@
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "develop/openmp_maths.h"
+
 #include <assert.h>
 
 // Per-form grow/shrink state. Every grow/shrink (whether from the scroll wheel
@@ -42,9 +43,11 @@ typedef struct
   GHashTable *results; // key: quantized signed offset px → GList* (deep copy)
   float offset_px;     // signed offset currently applied to the baseline
 } _resize_state_t;
+
 // Cache key quantization: 1/16 image-pixel buckets (offsets are integer px or a
 // percentage of a fixed baseline, so this never collides distinct requests).
 #define RESIZE_KEY_Q 16.0f
+
 // Accessed only from GUI-thread scroll/button/slider events — no mutex needed.
 static GHashTable *_resize_states = NULL;
 
@@ -826,7 +829,7 @@ static void _path_points_fill_border_gaps(float *cmax,
 
   // remember the indexes of the points we add
   const int start_pt_index = dt_masks_dynbuf_position(dpoints)/2;
-  dt_masks_intbuf_add2(fill_seg_indexes, start_pt_index, start_pt_index + 2*(l-1));
+  dt_masks_intbuf_add_2(fill_seg_indexes, start_pt_index, start_pt_index + 2*(l-1));
 
   // allocate entries in the dynbufs
   float *dpoints_ptr = dt_masks_dynbuf_reserve_n(dpoints, 2*(l-1));

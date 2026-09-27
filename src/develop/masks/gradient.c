@@ -1064,8 +1064,10 @@ static int _gradient_get_area(const dt_iop_module_t *const module,
 // caller needs to make sure that input remains within bounds
 static inline float dt_gradient_lookup(const float *lut, const float i)
 {
-  const int bin0 = i;
-  const int bin1 = i + 1;
+  // floor, not truncation: truncating a negative index rounds it up, which
+  // turns the interpolation into an extrapolation below the table's 0.0 floor
+  const int bin0 = floorf(i);
+  const int bin1 = bin0 + 1;
   const float f = i - bin0;
   return lut[bin1] * f + lut[bin0] * (1.0f - f);
 }

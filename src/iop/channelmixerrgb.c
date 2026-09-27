@@ -3801,7 +3801,11 @@ void gui_update(dt_iop_module_t *self)
 
   dt_iop_gui_enter_critical_section(self);
 
-  const int i = dt_conf_get_int("darkroom/modules/channelmixerrgb/colorchecker");
+  // an older darktablerc can point past the end of the list. Without the
+  // clamp, the combobox would show its last entry but dt_get_color_checker()
+  // would fall back to the X-Rite 24
+  const int i = MIN(dt_conf_get_int("darkroom/modules/channelmixerrgb/colorchecker"),
+                    COLOR_CHECKER_LAST - 1);
   dt_bauhaus_combobox_set(g->checkers_list, i);
   g->checker = dt_get_color_checker(i);
 
@@ -4662,10 +4666,8 @@ void gui_init(dt_iop_module_t *self)
      0, _checker_changed_callback, self,
      N_("Xrite ColorChecker 24 pre-2014"),
      N_("Xrite/Calibrite ColorChecker 24 post-2014"),
-     N_("Datacolor SpyderCheckr 24 pre-2018"),
-     N_("Datacolor SpyderCheckr 24 post-2018"),
-     N_("Datacolor SpyderCheckr 48 pre-2018"),
-     N_("Datacolor SpyderCheckr 48 post-2018"),
+     N_("Datacolor SpyderCheckr 24"),
+     N_("Datacolor SpyderCheckr 48"),
      N_("Datacolor SpyderCheckr Photo"));
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL

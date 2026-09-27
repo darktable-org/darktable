@@ -1361,14 +1361,14 @@ blendop_rgb_jzczhz(__read_only image2d_t in_a, __read_only image2d_t in_b, __rea
       break;
 
     case DEVELOP_BLEND_LIGHTNESS:
-      norm_a = fmax(sqrt(a.x * a.x + a.y * a.y + a.z * a.z), 1e-6f);
-      norm_b = fmax(sqrt(b.x * b.x + b.y * b.y + b.z * b.z), 1e-6f);
+      norm_a = fmax(dtcl_sqrt(a.x * a.x + a.y * a.y + a.z * a.z), 1e-6f);
+      norm_b = fmax(dtcl_sqrt(b.x * b.x + b.y * b.y + b.z * b.z), 1e-6f);
       o = a * (1.0f - opacity) + a * norm_b / norm_a * opacity;
       break;
 
     case DEVELOP_BLEND_CHROMA:
-      norm_a = fmax(sqrt(a.x * a.x + a.y * a.y + a.z * a.z), 1e-6f);
-      norm_b = fmax(sqrt(b.x * b.x + b.y * b.y + b.z * b.z), 1e-6f);
+      norm_a = fmax(dtcl_sqrt(a.x * a.x + a.y * a.y + a.z * a.z), 1e-6f);
+      norm_b = fmax(dtcl_sqrt(b.x * b.x + b.y * b.y + b.z * b.z), 1e-6f);
       o = a * (1.0f - opacity) + b * norm_a / norm_b * opacity;
       break;
 
@@ -1399,7 +1399,7 @@ blendop_rgb_jzczhz(__read_only image2d_t in_a, __read_only image2d_t in_b, __rea
       break;
 
     case DEVELOP_BLEND_GEOMETRIC_MEAN:
-      o = a * (1.0f - opacity) + sqrt(fmax(a * b, 0.0f)) * opacity;
+      o = a * (1.0f - opacity) + dtcl_sqrt(fmax(a * b, 0.0f)) * opacity;
       break;
 
     case DEVELOP_BLEND_HARMONIC_MEAN:

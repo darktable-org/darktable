@@ -75,7 +75,6 @@ None;midi:CC24=iop/colorequal/brightness/magenta
 #include "develop/preview_data.h"
 #include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
-#include "dtgtk/expander.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/draw.h"
@@ -261,6 +260,7 @@ typedef struct dt_iop_colorequal_gui_data_t
   GtkDrawingArea *area;
   GtkStack *stack;
   dt_gui_collapsible_section_t cs;
+  dt_gui_collapsible_section_t cs_sliders;
   float *LUT;
   dt_iop_colorequal_channel_t channel;
 
@@ -1027,7 +1027,9 @@ void process(dt_iop_module_t *self,
   const dt_iop_colorequal_data_t *d = piece->data;
   const dt_iop_colorequal_gui_data_t *g = self->gui_data;
   const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
+  dt_iop_gui_enter_critical_section(self);
   const int mask_mode = g && fullpipe ? g->mask_mode : 0;
+  dt_iop_gui_leave_critical_section(self);
   const gboolean run_fast = dt_pipe_is_fast(piece->pipe);
 
   const float *const restrict in = (float*)i;
@@ -1579,7 +1581,9 @@ int process_cl(dt_iop_module_t *self,
 
   const dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
   const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
+  dt_iop_gui_enter_critical_section(self);
   const int mask_mode = g && fullpipe ? g->mask_mode : 0;
+  dt_iop_gui_leave_critical_section(self);
   const int guiding = d->use_filter;
   const gboolean run_fast = dt_pipe_is_fast(piece->pipe);
 
@@ -2118,7 +2122,9 @@ void reload_defaults(dt_iop_module_t *self)
     // reset masking
     dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
     dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
+    dt_iop_gui_enter_critical_section(self);
     g->mask_mode = 0;
+    dt_iop_gui_leave_critical_section(self);
   }
 }
 
@@ -2359,7 +2365,9 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
     // reprocess the preview pipe.
     if(!dt_preview_data_is_fresh(&g->pd) && !g->reprocess_pending)
     {
+      dt_iop_gui_enter_critical_section(self);
       g->reprocess_pending = TRUE;
+      dt_iop_gui_leave_critical_section(self);
       dt_dev_reprocess_preview(self->dev, self->iop_order);
     }
     _switch_cursors(self);
@@ -2367,13 +2375,16 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
   else
   {
     dt_iop_color_picker_reset(self, FALSE);
+    dt_iop_gui_enter_critical_section(self);
     const gboolean buttons = g->mask_mode != 0;
-    dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
-    dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
-    dt_bauhaus_widget_set_quad_active(g->hue_shift, FALSE);
     g->mask_mode = 0;
     g->cursor_valid = FALSE; // disables Gaussian mode when module loses focus
     g->reprocess_pending = FALSE;
+    dt_iop_gui_leave_critical_section(self);
+
+    dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->hue_shift, FALSE);
     dt_preview_data_invalidate(&g->pd);
     if(buttons) dt_dev_reprocess_center(self->dev, self->iop_order);
     _switch_cursors(self);
@@ -2714,9 +2725,11 @@ int mouse_moved(dt_iop_module_t *self,
   if(!g) return 0;
 
   // Disable cursor tracking when mask editor is visible
+  dt_iop_gui_enter_critical_section(self);
   if(in_mask_editing(self))
   {
     g->cursor_valid = FALSE;
+    dt_iop_gui_leave_critical_section(self);
     _switch_cursors(self);
     return 0;
   }
@@ -2724,7 +2737,6 @@ int mouse_moved(dt_iop_module_t *self,
   // Read hue (component 0 of the stored HSB) from the preview buffer
   float hue_rad = 0.f;
   gboolean have_hue = FALSE;
-  dt_iop_gui_enter_critical_section(self);
   const float *buf    = g->pd.buf;
   const int    bwidth  = g->pd.width;
   const int    bheight = g->pd.height;
@@ -2739,16 +2751,19 @@ int mouse_moved(dt_iop_module_t *self,
 
   if(!have_hue)
   {
+    dt_iop_gui_enter_critical_section(self);
     g->cursor_valid = FALSE;
+    const gboolean pending = g->reprocess_pending;
+    if(!pending)
+      g->reprocess_pending = TRUE;
+    dt_iop_gui_leave_critical_section(self);
+
     // The buffer is missing entirely (e.g. gui_init() just reset it, or the
     // module was never reprocessed on the preview pipe yet). Nothing else
     // will refill it on its own — ask for a preview reprocess, debounced so
     // we don't flood the pipeline while hovering with no data available.
-    if(!g->reprocess_pending)
-    {
-      g->reprocess_pending = TRUE;
+    if(!pending)
       dt_dev_reprocess_preview(self->dev, self->iop_order);
-    }
     _switch_cursors(self);
     return 0;
   }
@@ -2757,6 +2772,7 @@ int mouse_moved(dt_iop_module_t *self,
   if(hue_rad < 0.f) hue_rad += DT_2PI_F;
 
   // Convert to GUI degrees: inverse of _conventional_hue_deg_to_ucs_rad()
+  dt_iop_gui_enter_critical_section(self);
   g->cursor_hue = hue_rad * (180.f / M_PI_F) - ANGLE_SHIFT;
 
   // Wrap into [0 ; 360[
@@ -2772,18 +2788,24 @@ int mouse_moved(dt_iop_module_t *self,
   // indicator (gui_post_expose) and the graph Gaussian mode
   // (_area_scrolled_callback) never see stale pipeline data.
   g->cursor_valid = dt_preview_data_is_fresh(&g->pd);
-  if(g->cursor_valid)
-  {
+  const gboolean cursor_valid = g->cursor_valid;
+  const gboolean reprocess_pending = g->reprocess_pending;
+  if(cursor_valid)
     g->reprocess_pending = FALSE;
+  else if(!reprocess_pending)
+    g->reprocess_pending = TRUE;
+  dt_iop_gui_leave_critical_section(self);
+
+  if(cursor_valid)
+  {
     dt_control_queue_redraw_center();
   }
-  else if(!g->reprocess_pending)
+  else if(!reprocess_pending)
   {
     // Buffer exists but is stale (params changed since it was filled) —
     // same debounced reprocess request as above so tracking self-heals
     // instead of staying frozen until an unrelated trigger (e.g. scroll)
     // happens to kick a reprocess.
-    g->reprocess_pending = TRUE;
     dt_dev_reprocess_preview(self->dev, self->iop_order);
   }
   _switch_cursors(self);
@@ -2800,7 +2822,10 @@ int mouse_leave(dt_iop_module_t *self)
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   if(!g) return 0;
 
+  dt_iop_gui_enter_critical_section(self);
   g->cursor_valid = FALSE;
+  dt_iop_gui_leave_critical_section(self);
+
   _switch_cursors(self);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
   dt_control_queue_redraw_center();
@@ -2879,6 +2904,7 @@ void gui_post_expose(dt_iop_module_t *self,
   float in_color[3]  = { bg_rgb[0], bg_rgb[1], bg_rgb[2] };
   float out_color[3] = { bg_rgb[0], bg_rgb[1], bg_rgb[2] };
 
+  dt_iop_gui_enter_critical_section(self);
   if(g->pd.buf && g->pd.width > 0 && g->pd.height > 0 && g->gamut_LUT)
   {
     const int p_cx = CLAMP((int)(g->cursor_pos_x * g->pd.width),  0, (int)g->pd.width  - 1);
@@ -2887,7 +2913,6 @@ void gui_post_expose(dt_iop_module_t *self,
     // Read the 3 HSB components under one lock, like mouse_moved does.
     float hue_in = 0.f, sat_in = 0.f, bright_in = 0.f;
     gboolean have_hsb = FALSE;
-    dt_iop_gui_enter_critical_section(self);
     const float *buf = g->pd.buf;
     if(buf)
     {
@@ -2897,8 +2922,8 @@ void gui_post_expose(dt_iop_module_t *self,
       bright_in = buf[3 * idx + 2];
       have_hsb = TRUE;
     }
-    dt_iop_gui_leave_critical_section(self);
 
+    dt_iop_gui_leave_critical_section(self);
     if(have_hsb)
     {
       // Rebuild the three RBF LUTs from the current params, exactly as
@@ -2945,6 +2970,8 @@ void gui_post_expose(dt_iop_module_t *self,
       out_color[2] = RGB[2];
     }
   }
+  else
+    dt_iop_gui_leave_critical_section(self);
 
   dt_draw_correction_cursor(cr, cx, cy, zoom_scale, correction_norm,
                             frame_color,
@@ -3184,13 +3211,19 @@ int scrolled(dt_iop_module_t *self,
   // slightly stale data rather than falling through to image zoom.
   float hue_rad = 0.f;
   gboolean have_hue = FALSE;
+
+  dt_iop_gui_enter_critical_section(self);
   if(g->pd.buf && g->pd.width > 0 && g->pd.height > 0)
   {
     const int cx = CLAMP((int)(x * g->pd.width),  0, (int)g->pd.width  - 1);
     const int cy = CLAMP((int)(y * g->pd.height), 0, (int)g->pd.height - 1);
     have_hue = dt_preview_data_get(&g->pd, cx, cy, 0, &hue_rad);
   }
-  if(!have_hue) return 0;
+  if(!have_hue)
+  {
+    dt_iop_gui_leave_critical_section(self);
+    return 0;
+  }
 
   // Convert UCS hue → GUI degrees
   if(hue_rad < 0.f) hue_rad += DT_2PI_F;
@@ -3205,6 +3238,7 @@ int scrolled(dt_iop_module_t *self,
   // Step: 1.0 for hue (°), 0.01 for sat/bright (%)
   // Ctrl for fine precision (÷10)
   const float base_step = (g->channel == HUE) ? 1.0f : 0.01f;
+  dt_iop_gui_leave_critical_section(self);
   const float step = dt_modifier_is(state, GDK_CONTROL_MASK) ? base_step * 0.1f : base_step;
   // up=1 → scroll up → increase value
   const float move = up ? +step : -step;
@@ -3244,7 +3278,9 @@ static void _masking_callback_p(GtkWidget *quad, dt_iop_module_t *self)
   DT_GUARD_GUI_UPDATE();
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
+  dt_iop_gui_enter_critical_section(self);
   g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? g->channel + 1 : 0;
+  dt_iop_gui_leave_critical_section(self);
   dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
@@ -3253,7 +3289,9 @@ static void _masking_callback_t(GtkWidget *quad, dt_iop_module_t *self)
   DT_GUARD_GUI_UPDATE();
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
+  dt_iop_gui_enter_critical_section(self);
   g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? GRAD_SWITCH + g->channel + 1 : 0;
+  dt_iop_gui_leave_critical_section(self);
   dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
@@ -3265,16 +3303,15 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
   DT_GUARD_GUI_UPDATE();
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
-  // The 4th tab is options, in which case we do nothing
-  // For the first 3 tabs, update color channel and redraw the graph
-  if(page_num < NUM_CHANNELS)
-  {
-    g->channel = (dt_iop_colorequal_channel_t)page_num;
-  }
-
+  dt_iop_gui_enter_critical_section(self);
+  // the tabs are only the color channels, so map the page straight to
+  // the active channel and redraw the graph
+  g->channel = (dt_iop_colorequal_channel_t)page_num;
   g->page_num = page_num;
 
   const int old_mask_mode = g->mask_mode;
+  dt_iop_gui_leave_critical_section(self);
+
   const gboolean masking_p = dt_bauhaus_widget_get_quad_active(g->param_size);
   const gboolean masking_t = dt_bauhaus_widget_get_quad_active(g->threshold);
   gui_update(self);
@@ -3282,8 +3319,12 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
   dt_bauhaus_widget_set_quad_active(g->param_size, masking_p);
   dt_bauhaus_widget_set_quad_active(g->threshold, masking_t);
 
+  dt_iop_gui_enter_critical_section(self);
   g->mask_mode = masking_p ? g->channel + 1 : (masking_t ? GRAD_SWITCH + g->channel + 1 : 0);
-  if(g->mask_mode != old_mask_mode)
+  const gboolean changed_mode = g->mask_mode != old_mask_mode;
+  dt_iop_gui_leave_critical_section(self);
+
+  if(changed_mode)
     dt_dev_reprocess_center(self->dev, self->iop_order);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
@@ -3524,9 +3565,8 @@ static void _area_button_press_callback(GtkGestureSingle *gesture,
      || (button == GDK_BUTTON_PRIMARY // Ctrl+Click alias for macOS
          && dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK)))
   {
-    dt_conf_set_bool("plugins/darkroom/colorequal/show_sliders",
-                     gtk_notebook_get_n_pages(g->notebook) != 4);
-    gui_update(self);
+    GtkToggleButton *toggle = GTK_TOGGLE_BUTTON(g->cs_sliders.toggle);
+    gtk_toggle_button_set_active(toggle, !gtk_toggle_button_get_active(toggle));
   }
   else if(button == GDK_BUTTON_PRIMARY)
   {
@@ -3654,32 +3694,13 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_toggle_set(g->use_filter, p->use_filter);
   gui_changed(self, NULL, NULL);
 
-  const gboolean show_sliders = dt_conf_get_bool("plugins/darkroom/colorequal/show_sliders");
-
   // reset masking
   g->mask_mode = 0;
   dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
   dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
 
-  const int nbpage = gtk_notebook_get_n_pages(g->notebook);
-  if((nbpage == 4) ^ show_sliders)
-  {
-    if(show_sliders)
-      gtk_widget_show(dt_ui_notebook_page(g->notebook, N_("options"), _("options")));
-    else
-      gtk_notebook_remove_page(g->notebook, 3);
-
-    GtkDarktableExpander *exp = DTGTK_EXPANDER(g->cs.expander);
-    gtk_widget_set_visible(dtgtk_expander_get_header(exp), !show_sliders);
-    gtk_widget_set_name(GTK_WIDGET(g->cs.container), show_sliders ? NULL : "collapsible");
-    gtk_revealer_set_reveal_child(GTK_REVEALER(exp->frame), show_sliders || exp->expanded);
-  }
-
-  // display widgets depending on the selected notebook page
-  gtk_widget_set_visible(GTK_WIDGET(g->area), g->page_num < 3);
-  gtk_widget_set_visible(GTK_WIDGET(g->hue_shift), g->page_num < 3);
-
-  const char numstr[] = {'0' + (show_sliders ? g->page_num : 3), 0};
+  // show the slider page matching the selected channel tab
+  const char numstr[] = {'0' + g->page_num, 0};
   gtk_stack_set_visible_child_name(g->stack, numstr);
 }
 
@@ -3770,7 +3791,7 @@ void gui_init(dt_iop_module_t *self)
 
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), &_action_def_coloreq);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve\nmiddle-click to toggle sliders visibility\nalt+scroll to change page"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve\nmiddle-click to toggle the control sliders\nalt+scroll to change page"));
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_iop_colorequalizer_draw), self);
   gtk_widget_add_events(GTK_WIDGET(g->area),
@@ -3797,15 +3818,19 @@ void gui_init(dt_iop_module_t *self)
     _("pick hue from image and visualize it\nctrl+click to select an area"));
   gtk_widget_set_name(g->hue_shift, "keep-active");
 
+  // the numeric sliders live in their own collapsible section, collapsed by
+  // default, so the graph stays the primary interface
+  dt_gui_new_collapsible_section
+    (&g->cs_sliders,
+     "plugins/darkroom/colorequal/expand_control_sliders",
+     _("control sliders"),
+     GTK_BOX(box),
+     DT_ACTION(self));
+
   g->stack = GTK_STACK(gtk_stack_new());
-  dt_gui_box_add(box, g->stack);
+  dt_gui_box_add(g->cs_sliders.container, g->stack);
   dt_action_define_iop(self, NULL, N_("sliders"), GTK_WIDGET(g->stack), NULL);
   gtk_stack_set_homogeneous(g->stack, FALSE);
-  // this should really be set in gui_update depending on whether sliders are
-  // shown to prevent the module size changing when changing tabs
-  // (as is the custom elsewhere and less confusing)
-  // but since graph is hidden anyway under the options tab this is apparently
-  // not a requirement here
 
   dt_iop_module_t *sect = NULL;
 #define GROUP_SLIDERS(num, page, tooltip)                      \
@@ -3867,13 +3892,11 @@ void gui_init(dt_iop_module_t *self)
   g->bright_sliders[7] = g->bright_magenta =
     dt_bauhaus_slider_from_params(sect, "bright_magenta");
 
-  GtkWidget *options = dt_gui_vbox();
-  gtk_stack_add_named(g->stack, options, "3");
   dt_gui_new_collapsible_section
     (&g->cs,
      "plugins/darkroom/colorequal/expand_options",
      _("options"),
-     GTK_BOX(options),
+     GTK_BOX(box),
      DT_ACTION(self));
   self->widget = GTK_WIDGET(g->cs.container);
 
@@ -3931,14 +3954,13 @@ void gui_init(dt_iop_module_t *self)
 
   _init_sliders(self);
 
-  // restore the previously saved active tab
-  const guint active_page = dt_conf_get_int("plugins/darkroom/colorequal/gui_page");
-  if(active_page < 3)
-  {
-    gtk_widget_show(gtk_notebook_get_nth_page(g->notebook, active_page));
-    gtk_notebook_set_current_page(g->notebook, active_page);
-  }
-  g->channel = (active_page >= NUM_CHANNELS) ? SATURATION : active_page;
+  // restore the previously saved active tab. Clamp in case the stored value
+  // points to the old "options" tab, which no longer exists.
+  int active_page = dt_conf_get_int("plugins/darkroom/colorequal/gui_page");
+  active_page = CLAMP(active_page, 0, NUM_CHANNELS - 1);
+  gtk_widget_show(gtk_notebook_get_nth_page(g->notebook, active_page));
+  gtk_notebook_set_current_page(g->notebook, active_page);
+  g->channel = (dt_iop_colorequal_channel_t)active_page;
   g->page_num = active_page;
 
   self->widget = GTK_WIDGET(box);

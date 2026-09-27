@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-20 07:59-0300\n"
-"PO-Revision-Date: 2026-09-20 07:58-0300\n"
+"POT-Creation-Date: 2026-09-23 14:46-0300\n"
+"PO-Revision-Date: 2026-09-23 14:45-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -3114,7 +3114,7 @@ msgstr "brilho"
 #: ../src/iop/colorchecker.c:1609 ../src/iop/colorcontrast.c:77
 #: ../src/iop/colorcorrection.c:270 ../src/iop/colorequal.c:3834
 #: ../src/iop/colorharmonizer.c:1679 ../src/iop/colorize.c:357
-#: ../src/iop/lowpass.c:576 ../src/iop/satcurvergb.c:2111
+#: ../src/iop/lowpass.c:576 ../src/iop/satcurvergb.c:2115
 #: ../src/iop/soften.c:375 ../src/iop/velvia.c:72 ../src/iop/vibrance.c:69
 #: ../src/iop/vignette.c:1045
 msgid "saturation"
@@ -3774,8 +3774,8 @@ msgstr "evitar desvio de cor"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:48
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:95
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:180
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:271
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:192
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:295
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:117
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:244
 #: ../build/lib/darktable/plugins/introspection_highlights.c:133
@@ -3784,27 +3784,27 @@ msgid "iterations"
 msgstr "iterações"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:109
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:301
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:333
 msgid "once"
 msgstr "uma vez"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:110
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:302
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:334
 msgid "twice"
 msgstr "duas vezes"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:111
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:303
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:335
 msgid "three times"
 msgstr "três vezes"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:112
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:304
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:336
 msgid "four times"
 msgstr "quatro vezes"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:113
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:305
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:337
 msgid "five times"
 msgstr "cinco vezes"
 
@@ -3815,8 +3815,8 @@ msgstr "guia"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:67
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:132
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:162
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:259
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:174
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:283
 #: ../build/lib/darktable/plugins/introspection_lens.cc:340
 #: ../build/lib/darktable/plugins/introspection_lens.cc:501
 #: ../src/iop/atrous.c:1599 ../src/iop/bilateral.cc:367 ../src/iop/clahe.c:323
@@ -3831,7 +3831,7 @@ msgstr "raio"
 #: ../build/lib/darktable/plugins/introspection_lens.cc:334
 #: ../build/lib/darktable/plugins/introspection_lens.cc:497
 #: ../src/iop/bloom.c:389 ../src/iop/denoiseprofile.c:3700
-#: ../src/iop/grain.c:544 ../src/iop/hazeremoval.c:272
+#: ../src/iop/grain.c:565 ../src/iop/hazeremoval.c:272
 #: ../src/iop/hotpixels.c:449 ../src/iop/nlmeans.c:438 ../src/iop/velvia.c:279
 #: ../src/libs/neural_restore.c:4530 ../src/libs/neural_restore.c:4547
 msgid "strength"
@@ -4589,25 +4589,25 @@ msgstr "média local (lento)"
 msgid "static threshold (fast)"
 msgstr "limite estático (rápido)"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:126
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:235
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:138
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:259
 msgid "match greens"
 msgstr "coincidir verdes"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:132
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:239
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:144
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:263
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:141
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:260
 msgid "edge threshold"
 msgstr "limite de borda"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:138
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:243
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:150
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:267
 msgid "color smoothing"
 msgstr "suavização de cor"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:144
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:247
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:156
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:271
 #: ../build/lib/darktable/plugins/introspection_dither.c:74
 #: ../build/lib/darktable/plugins/introspection_dither.c:153
 #: ../build/lib/darktable/plugins/introspection_highlights.c:109
@@ -4615,136 +4615,146 @@ msgstr "suavização de cor"
 msgid "method"
 msgstr "método"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:150
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:251
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:162
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:275
 msgid "LMMSE refine"
 msgstr "refinamento LMMSE"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:156
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:255
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:168
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:279
 msgid "dual threshold"
 msgstr "limiar da interpolação cromática dual"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:168
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:263
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:180
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:287
 msgid "contrast sensitivity"
 msgstr "sensibilidade de contraste"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:174
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:267
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:186
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:291
 msgid "corner boost"
 msgstr "enfatizar os ângulos"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:186
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:275
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:198
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:299
 msgid "sharp center"
 msgstr "acentuar a nitidez no centro"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:192
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:279
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:204
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:303
 msgid "capture sharpen"
 msgstr "captura de nitidez"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:293
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:300
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:210
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:307
+msgid "moire threshold"
+msgstr "limiar de moiré"
+
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:216
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:311
+msgid "moire mix"
+msgstr "mistura de moiré"
+
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:325
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:332
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:197
 msgid "disabled"
 msgstr "desabilitado"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:294
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:326
 msgid "local average"
 msgstr "média local"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:295
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:327
 msgid "full average"
 msgstr "média global"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:296
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:328
 msgid "full and local average"
 msgstr "média global e local"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:309
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:341
 msgid "PPG"
 msgstr "PPG"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:310
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:342
 msgid "AMaZE"
 msgstr "AMaZE"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:311
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:343
 msgid "VNG4"
 msgstr "VNG4"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:312
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:344
 msgid "RCD"
 msgstr "RCD"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:313
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:345
 msgid "LMMSE"
 msgstr "LMMSE"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:314
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:346
 msgid "RCD (dual)"
 msgstr "RCD (dual)"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:315
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:347
 msgid "AMaZE (dual)"
 msgstr "AMaZE (dual)"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:316
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:323
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:348
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:355
 msgid "passthrough (monochrome)"
 msgstr "passar direto (monocromático)"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:317
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:324
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:349
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:356
 msgid "photosite color (debug)"
 msgstr "fotossensível à cor (depuração)"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:318
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:350
 msgid "VNG"
 msgstr "VNG"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:319
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:351
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-passo"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:320
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:352
 msgid "Markesteijn 3-pass"
 msgstr "Markesteijn 3-passos"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:321
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:353
 msgid "frequency domain chroma"
 msgstr "croma no domínio da frequência"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:322
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:354
 msgid "Markesteijn 3-pass (dual)"
 msgstr "Markesteijn 3-passos (dual)"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:325
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:357
 msgid "Monochrome"
 msgstr "Monocromático"
 
 #. history
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:329
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:361
 #: ../src/common/collection.c:1499 ../src/libs/collect.c:2122
 #: ../src/libs/filters/history.c:38
 msgid "basic"
 msgstr "básico"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:330
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:362
 msgid "median"
 msgstr "mediana"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:331
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:363
 msgid "3x median"
 msgstr "3x mediana"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:332
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:364
 msgid "refine & medians"
 msgstr "refinamento & medianas"
 
-#: ../build/lib/darktable/plugins/introspection_demosaic.c:333
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:365
 msgid "2x refine + medians"
 msgstr "2x refinamento & medianas"
 
@@ -5182,7 +5192,7 @@ msgstr "habilitar reconstrução de realces"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:550
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:372
-#: ../src/common/variables.c:197 ../src/common/variables.c:827
+#: ../src/common/variables.c:229 ../src/common/variables.c:922
 #: ../src/develop/imageop_gui.c:171 ../src/gui/preferences_ai.c:282
 #: ../src/imageio/format/avif.c:960 ../src/imageio/format/pdf.c:653
 #: ../src/imageio/format/pdf.c:672 ../src/imageio/format/tiff.c:921
@@ -6088,7 +6098,6 @@ msgstr "raio do filtro"
 
 #: ../build/lib/darktable/plugins/introspection_satcurvergb.c:161
 #: ../build/lib/darktable/plugins/introspection_satcurvergb.c:266
-#, fuzzy
 msgid "edge feathering"
 msgstr "refinamento/enevoamento das bordas"
 
@@ -6154,9 +6163,8 @@ msgstr "porporção RGB"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:432
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:853
-#, fuzzy
 msgid "film exposure"
-msgstr "exposição"
+msgstr "exposição do filme"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:438
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:857
@@ -6172,9 +6180,8 @@ msgstr "duas exposições"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:450
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:865
-#, fuzzy
 msgid "print contrast"
-msgstr "contraste"
+msgstr "contraste de impressão"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:456
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:869
@@ -6191,7 +6198,7 @@ msgstr "iterações"
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:468
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:877
 msgid "DIR couplers"
-msgstr ""
+msgstr "acopladores DIR"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:474
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:881
@@ -6206,20 +6213,18 @@ msgstr "detalhes da captura da foto"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:486
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:889
-#, fuzzy
 msgid "tail weight"
-msgstr "crepúsculo"
+msgstr "peso da cauda"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:492
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:893
 msgid "same-layer inhibition"
-msgstr ""
+msgstr "inibição em mesma camada"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:498
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:897
-#, fuzzy
 msgid "interlayer inhibition"
-msgstr "interpolação"
+msgstr "inibição em entre camadas"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:504
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:901
@@ -6284,9 +6289,8 @@ msgstr "tamanho da halação"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:564
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:941
-#, fuzzy
 msgid "highlight boost"
-msgstr "realces"
+msgstr "potencializar realces"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:570
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:945
@@ -6625,7 +6629,7 @@ msgid "averaged guided filter"
 msgstr "filtro guiado por média"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:374
-#: ../src/iop/satcurvergb.c:2171
+#: ../src/iop/satcurvergb.c:2175
 msgid "guided filter"
 msgstr "filtro guiado"
 
@@ -7982,12 +7986,12 @@ msgstr "imprimindo `%s' em `%s'"
 
 #: ../src/common/darktable.c:142
 msgid ""
-"This console window is required by darktable on this version of Windows.\n"
-"On Windows 11 24H2 and later, darktable normally runs without this window.\n"
-"Do not close it or press Ctrl+C while darktable is running.\n"
-"It will close automatically when darktable exits.\n"
+"this console window is required by darktable on this version of Windows.\n"
+"on Windows 11 24H2 and later, darktable normally runs without this window.\n"
+"do not close it or press ctrl+c while darktable is running.\n"
+"it will close automatically when darktable exits.\n"
 "\n"
-"To hide this window anyway, follow the instructions at:\n"
+"to hide this window anyway, follow the instructions at:\n"
 "https://www.darktable.org/about/faq/#faq-windows-terminal\n"
 msgstr ""
 
@@ -8976,11 +8980,11 @@ msgstr "distribuição de Poisson genérica"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "perfil de controle de ruído `%s' não é válido"
 
-#: ../src/common/opencl.c:1275
+#: ../src/common/opencl.c:1280
 msgid "no working OpenCL library found"
 msgstr "nenhuma biblioteca OpenCL funcional encontrada"
 
-#: ../src/common/opencl.c:1295
+#: ../src/common/opencl.c:1300
 msgid ""
 "platform detection failed. some possible causes:\n"
 "  - OpenCL ICD (ocl-icd) missing,\n"
@@ -8998,23 +9002,23 @@ msgstr ""
 "  - nenhum driver OpenCL instalado,\n"
 "  - múltiplos drivers instalados por plataforma\n"
 
-#: ../src/common/opencl.c:1410
+#: ../src/common/opencl.c:1415
 msgid "no devices found for unknown platform"
 msgstr "nenhum dispositivo encontrado para plataforma desconhecida"
 
-#: ../src/common/opencl.c:1457
+#: ../src/common/opencl.c:1462
 msgid "not enough memory for OpenCL devices"
 msgstr "não há memória suficiente para dispositivos OpenCL"
 
-#: ../src/common/opencl.c:1495
+#: ../src/common/opencl.c:1500
 msgid "no OpenCL devices found"
 msgstr "nenhum dispositivo OpenCL encontrado"
 
-#: ../src/common/opencl.c:1538
+#: ../src/common/opencl.c:1543
 msgid "no suitable OpenCL devices found"
 msgstr "nenhum dispositivo OpenCL adequado encontrado"
 
-#: ../src/common/opencl.c:1562
+#: ../src/common/opencl.c:1567
 #, c-format
 msgid ""
 "OpenCL initializing problem:\n"
@@ -9025,12 +9029,12 @@ msgstr ""
 "%s\n"
 "desabilitando OpenCL por enquanto"
 
-#: ../src/common/opencl.c:1599
+#: ../src/common/opencl.c:1604
 msgid "OpenCL scheduling profile set to default, setup has changed"
 msgstr ""
 "perfil de escalonamento OpenCL ajustado para padrão, a configuração mudou"
 
-#: ../src/common/opencl.c:2382
+#: ../src/common/opencl.c:2387
 #, c-format
 msgid "building OpenCL program %s for %s"
 msgstr "construindo programa OpenCL %s para %s"
@@ -9232,11 +9236,11 @@ msgstr "abaixo do nível do mar"
 msgid "m"
 msgstr "m"
 
-#: ../src/common/variables.c:191
+#: ../src/common/variables.c:223
 msgid "no info"
 msgstr "sem informação"
 
-#: ../src/common/variables.c:197 ../src/common/variables.c:825
+#: ../src/common/variables.c:229 ../src/common/variables.c:920
 #: ../src/develop/imageop_gui.c:172 ../src/gui/preferences_ai.c:282
 #: ../src/imageio/format/avif.c:960 ../src/imageio/format/pdf.c:653
 #: ../src/imageio/format/pdf.c:672 ../src/imageio/format/tiff.c:921
@@ -11063,8 +11067,8 @@ msgstr "raio de enevoamento"
 
 #: ../src/develop/blend_gui.c:3661 ../src/develop/blend_gui.c:3670
 #: ../src/iop/colorbalancergb.c:2049 ../src/iop/colorequal.c:3898
-#: ../src/iop/colorequal.c:3925 ../src/iop/demosaic.c:1892
-#: ../src/iop/demosaic.c:1909 ../src/iop/diffuse.c:1775
+#: ../src/iop/colorequal.c:3925 ../src/iop/demosaic.c:1927
+#: ../src/iop/demosaic.c:1944 ../src/iop/diffuse.c:1775
 #: ../src/iop/diffuse.c:1785 ../src/iop/retouch.c:2667
 msgid " px"
 msgstr " px"
@@ -11780,7 +11784,7 @@ msgstr ""
 #: ../src/develop/masks/path.c:2930
 #, c-format
 msgid "resize: %+d %s"
-msgstr ""
+msgstr "mudar tamanho: %+d %s"
 
 #: ../src/develop/masks/path.c:5325
 msgid "[PATH creation] add a smooth node"
@@ -12704,7 +12708,7 @@ msgid "$(VERSION.NAME) - version name from metadata"
 msgstr "$(VERSION.NAME) - nome de versão nos metadados"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:941
-#: ../src/gui/gtkentry.c:120
+#: ../src/gui/gtkentry.c:121
 msgid "$(DARKTABLE.VERSION) - current darktable version"
 msgstr "$(DARKTABLE.VERSION) - versão atual do darktable"
 
@@ -13028,7 +13032,7 @@ msgstr ""
 "$(CATEGORY[n,category]) - subetiqueta de nível n em etiquetas hierárquicas"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:1018
-#: ../src/gui/gtkentry.c:121
+#: ../src/gui/gtkentry.c:122
 msgid "$(SIDECAR_TXT) - contents of .txt sidecar file, if present"
 msgstr "$(SIDECAR_TXT) - conteúdo do arquivo auxiliar .txt, se presente"
 
@@ -16050,7 +16054,7 @@ msgstr "selecione a pasta do script"
 #: ../src/iop/agx.c:2478 ../src/iop/channelmixerrgb.c:4435
 #: ../src/iop/clipping.c:2091 ../src/iop/colorbalancergb.c:1787
 #: ../src/iop/colorequal.c:3763 ../src/iop/filmicrgb.c:4342
-#: ../src/iop/negadoctor.c:837 ../src/iop/satcurvergb.c:2121
+#: ../src/iop/negadoctor.c:837 ../src/iop/satcurvergb.c:2125
 #: ../src/iop/spektrafilm.c:4780 ../src/iop/toneequal.c:3084
 #: ../src/libs/image.c:499 ../src/libs/neural_restore.c:4510
 #: ../src/views/lighttable.c:1615
@@ -17368,18 +17372,26 @@ msgid "$(OPENCL.ACTIVATED) - whether OpenCL is activated"
 msgstr "$(OPENCL.ACTIVATED) - se OpenCL é ativado"
 
 #: ../src/gui/gtkentry.c:118
+#, fuzzy
+msgid ""
+"$(CATEGORY_EACH[n,category]) - level-n subtag of each matching tag, one path "
+"per tag"
+msgstr ""
+"$(CATEGORY[n,category]) - subetiqueta de nível n em etiquetas hierárquicas"
+
+#: ../src/gui/gtkentry.c:119
 msgid "$(TAGS) - tags as set in metadata settings"
 msgstr "$(TAGS) - etiquetas estabelecidas na configuração de metadados"
 
-#: ../src/gui/gtkentry.c:119
+#: ../src/gui/gtkentry.c:120
 msgid "$(DARKTABLE.NAME) - darktable name"
 msgstr "$(DARKTABLE.NAME) - nome do darktable"
 
-#: ../src/gui/gtkentry.c:122
+#: ../src/gui/gtkentry.c:123
 msgid "$(WORKSPACE.LABEL) - label of the current workspace"
 msgstr "$(WORKSPACE.LABEL) - rótulo da área de trabalho atual"
 
-#: ../src/gui/gtkentry.c:291
+#: ../src/gui/gtkentry.c:292
 msgid "from metadata"
 msgstr "dos metadados"
 
@@ -17940,7 +17952,13 @@ msgid_plural ""
 "\n"
 "%d repositories could not be reached, so there may be more"
 msgstr[0] ""
+"%s\n"
+"\n"
+"%d repositório não pode ser alcançado, então pode haver mais"
 msgstr[1] ""
+"%s\n"
+"\n"
+"%d repositórios não puderam ser alcançados, então pode haver mais<"
 
 #: ../src/gui/preferences_ai.c:784
 #, fuzzy
@@ -18303,6 +18321,8 @@ msgid ""
 "browse every model the configured repository offers for this version of "
 "darktable, including any not listed above"
 msgstr ""
+"navegar por todo modelo que o repositório configurado oferece para esta "
+"versão do darktable, inclusive os não listados acima"
 
 #. delete selected button
 #: ../src/gui/preferences_ai.c:2870
@@ -19147,7 +19167,7 @@ msgstr "tamanho inválido de papel"
 msgid "invalid border size, using 0"
 msgstr "tamanho de borda inválido, utilizando 0"
 
-#: ../src/imageio/format/pdf.c:257 ../src/imageio/storage/disk.c:543
+#: ../src/imageio/format/pdf.c:257 ../src/imageio/storage/disk.c:581
 #: ../src/imageio/storage/email.c:188 ../src/imageio/storage/gallery.c:411
 #: ../src/imageio/storage/gallery.c:453 ../src/imageio/storage/piwigo.c:1368
 #, c-format
@@ -19435,32 +19455,37 @@ msgstr "sobrescrever se modificado"
 msgid "skip"
 msgstr "pular"
 
-#: ../src/imageio/storage/disk.c:426 ../src/imageio/storage/gallery.c:325
+#: ../src/imageio/storage/disk.c:435
+#, c-format
+msgid "filename pattern `%s' expands to too many files"
+msgstr "padrão de nome `%s' expande para arquivos demais"
+
+#: ../src/imageio/storage/disk.c:456 ../src/imageio/storage/gallery.c:325
 #: ../src/imageio/storage/latex.c:284
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "não foi possível criar a pasta `%s'!"
 
-#: ../src/imageio/storage/disk.c:437
+#: ../src/imageio/storage/disk.c:468
 #, c-format
 msgid "could not write to directory `%s'!"
 msgstr "não foi possível salvar na pasta `%s'!"
 
-#: ../src/imageio/storage/disk.c:474
+#: ../src/imageio/storage/disk.c:501
 #, c-format
 msgid "%d/%d skipping `%s'"
 msgid_plural "%d/%d skipping `%s'"
 msgstr[0] "%d/%d pulando `%s'"
 msgstr[1] "%d/%d pulando `%s'"
 
-#: ../src/imageio/storage/disk.c:522
+#: ../src/imageio/storage/disk.c:551
 #, c-format
 msgid "%d/%d skipping (not modified since export) `%s'"
 msgid_plural "%d/%d skipping (not modified since export) `%s'"
 msgstr[0] "%d/%d ignoradas (não modificada desde a exportação) `%s'"
 msgstr[1] "%d/%d ignorada (não modificada desde a exportação) `%s'"
 
-#: ../src/imageio/storage/disk.c:548 ../src/imageio/storage/email.c:196
+#: ../src/imageio/storage/disk.c:587 ../src/imageio/storage/email.c:196
 #: ../src/imageio/storage/gallery.c:461 ../src/imageio/storage/latex.c:383
 #, c-format
 msgid "%d/%d exported to `%s'"
@@ -19468,7 +19493,7 @@ msgid_plural "%d/%d exported to `%s'"
 msgstr[0] "%d/%d exportada para `%s'"
 msgstr[1] "%d/%d exportadas para `%s'"
 
-#: ../src/imageio/storage/disk.c:613
+#: ../src/imageio/storage/disk.c:655
 msgid ""
 "you are going to export in overwrite mode, this will overwrite any existing "
 "images\n"
@@ -19725,7 +19750,7 @@ msgstr "corretivo e criativo"
 #: ../src/iop/colorharmonizer.c:135 ../src/iop/colorharmonizer.c:137
 #: ../src/iop/colorin.c:134 ../src/iop/contrastntexture.c:131
 #: ../src/iop/contrastntexture.c:133 ../src/iop/crop.c:134
-#: ../src/iop/crop.c:136 ../src/iop/demosaic.c:327
+#: ../src/iop/crop.c:136 ../src/iop/demosaic.c:329
 #: ../src/iop/denoiseprofile.c:825 ../src/iop/denoiseprofile.c:827
 #: ../src/iop/diffuse.c:140 ../src/iop/diffuse.c:142
 #: ../src/iop/enlargecanvas.c:81 ../src/iop/enlargecanvas.c:83
@@ -20616,7 +20641,7 @@ msgstr ""
 msgid "make effect stronger or weaker"
 msgstr "torna efeito mais forte ou fraco"
 
-#: ../src/iop/basecurve.c:306 ../src/iop/satcurvergb.c:1451
+#: ../src/iop/basecurve.c:306 ../src/iop/satcurvergb.c:1455
 msgid "neutral"
 msgstr "neutro"
 
@@ -20783,7 +20808,7 @@ msgstr "aplicar ajustes usuais à imagem"
 #: ../src/iop/colisa.c:86 ../src/iop/colorcontrast.c:84
 #: ../src/iop/colorize.c:94 ../src/iop/colormapping.c:152
 #: ../src/iop/colorzones.c:151 ../src/iop/contrastntexture.c:130
-#: ../src/iop/grain.c:390 ../src/iop/highpass.c:76 ../src/iop/levels.c:140
+#: ../src/iop/grain.c:401 ../src/iop/highpass.c:76 ../src/iop/levels.c:140
 #: ../src/iop/liquify.c:295 ../src/iop/lowlight.c:90 ../src/iop/lowpass.c:103
 #: ../src/iop/monochrome.c:102 ../src/iop/soften.c:98
 #: ../src/iop/spektrafilm.c:682 ../src/iop/splittoning.c:103
@@ -20868,7 +20893,7 @@ msgstr "manipula contrastes local e global separadamente"
 #: ../src/iop/colorcorrection.c:75 ../src/iop/colorcorrection.c:77
 #: ../src/iop/colorize.c:97 ../src/iop/colormapping.c:155
 #: ../src/iop/colorreconstruction.c:119 ../src/iop/colorzones.c:154
-#: ../src/iop/defringe.c:83 ../src/iop/grain.c:391 ../src/iop/grain.c:393
+#: ../src/iop/defringe.c:83 ../src/iop/grain.c:402 ../src/iop/grain.c:404
 #: ../src/iop/levels.c:143 ../src/iop/lowlight.c:91 ../src/iop/lowlight.c:93
 #: ../src/iop/monochrome.c:105 ../src/iop/nlmeans.c:89 ../src/iop/nlmeans.c:91
 #: ../src/iop/shadhi.c:144 ../src/iop/tonecurve.c:188 ../src/iop/vibrance.c:97
@@ -20879,7 +20904,7 @@ msgstr "não-linear, Lab, relativo à exibição"
 #: ../src/iop/colorcontrast.c:86 ../src/iop/colorcorrection.c:76
 #: ../src/iop/colorize.c:96 ../src/iop/colormapping.c:154
 #: ../src/iop/colorreconstruction.c:118 ../src/iop/colorzones.c:153
-#: ../src/iop/defringe.c:82 ../src/iop/grain.c:392 ../src/iop/levels.c:142
+#: ../src/iop/defringe.c:82 ../src/iop/grain.c:403 ../src/iop/levels.c:142
 #: ../src/iop/monochrome.c:104 ../src/iop/nlmeans.c:90 ../src/iop/shadhi.c:143
 #: ../src/iop/tonecurve.c:187 ../src/iop/vibrance.c:96
 msgid "non-linear, Lab"
@@ -21309,7 +21334,7 @@ msgid "correct chromatic aberrations for Bayer sensors"
 msgstr "corrige aberrações cromáticas para sensores Bayer"
 
 #: ../src/iop/cacorrect.c:82 ../src/iop/cacorrect.c:84
-#: ../src/iop/demosaic.c:325 ../src/iop/highlights.c:171
+#: ../src/iop/demosaic.c:327 ../src/iop/highlights.c:171
 #: ../src/iop/highlights.c:173 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rasterfile.c:107
 #: ../src/iop/rasterfile.c:109 ../src/iop/rawdenoise.c:142
@@ -21319,7 +21344,7 @@ msgstr "corrige aberrações cromáticas para sensores Bayer"
 msgid "linear, raw, scene-referred"
 msgstr "linear, raw, relativo à cena"
 
-#: ../src/iop/cacorrect.c:83 ../src/iop/demosaic.c:326 ../src/iop/invert.c:133
+#: ../src/iop/cacorrect.c:83 ../src/iop/demosaic.c:328 ../src/iop/invert.c:133
 #: ../src/iop/rasterfile.c:108 ../src/iop/rawdenoise.c:143
 #: ../src/iop/rawprepare.c:172 ../src/iop/temperature.c:250
 msgid "linear, raw"
@@ -22816,7 +22841,7 @@ msgctxt "section"
 msgid "perceptual brilliance grading"
 msgstr "gradação de brilhância perceptual"
 
-#: ../src/iop/colorbalancergb.c:1856 ../src/iop/satcurvergb.c:2112
+#: ../src/iop/colorbalancergb.c:1856 ../src/iop/satcurvergb.c:2116
 msgid "brilliance"
 msgstr "brilhância"
 
@@ -23719,7 +23744,7 @@ msgstr ""
 "converte qualquer entrada RGB para a referência RGB do\n"
 "pipeline usando perfis de cor para remapear valores RGB"
 
-#: ../src/iop/colorin.c:131 ../src/iop/colorout.c:86 ../src/iop/demosaic.c:324
+#: ../src/iop/colorin.c:131 ../src/iop/colorout.c:86 ../src/iop/demosaic.c:326
 #: ../src/iop/rawprepare.c:170
 msgid "mandatory"
 msgstr "obrigatório"
@@ -23997,7 +24022,7 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr ""
 "tom de matiz ao qual deve ser dada precedência sobre outros tons de matiz"
 
-#: ../src/iop/colorreconstruction.c:1246 ../src/iop/demosaic.c:1923
+#: ../src/iop/colorreconstruction.c:1246 ../src/iop/demosaic.c:1958
 #: ../src/iop/highlights.c:1367
 msgid "not applicable"
 msgstr "não aplicável"
@@ -24124,6 +24149,7 @@ msgstr "contraste local|textura|claridade|melhoria de detalhes"
 #: ../src/iop/contrastntexture.c:129
 msgid "enhance local contrast by boosting details while preserving edges"
 msgstr ""
+"melhorar contraste local através do reforço de realces, preservando bordas"
 
 #: ../src/iop/contrastntexture.c:301
 msgid "local contrast failed to allocate memory, check your RAM settings"
@@ -24264,30 +24290,30 @@ msgid "threshold for defringe, higher values mean less defringing"
 msgstr ""
 "limite para mesclagem de borda, valores altos significam menos mesclagem"
 
-#: ../src/iop/demosaic.c:318
+#: ../src/iop/demosaic.c:320
 msgid "demosaic"
 msgstr "interpolação cromática"
 
-#: ../src/iop/demosaic.c:323
+#: ../src/iop/demosaic.c:325
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 "reconstrói pixels RGB completamente a partir de uma leitura da\n"
 "matriz de filtro de cor do sensor da câmera"
 
-#: ../src/iop/demosaic.c:818 ../src/iop/demosaic.c:865
+#: ../src/iop/demosaic.c:853 ../src/iop/demosaic.c:900
 msgid "can't allocate demosaic buffer"
 msgstr "não foi possível alocar buffer para interpolação cromática"
 
-#: ../src/iop/demosaic.c:855
+#: ../src/iop/demosaic.c:890
 msgid "can't equilibrate greens"
 msgstr "não é possível equilibrar os verdes"
 
-#: ../src/iop/demosaic.c:1529
+#: ../src/iop/demosaic.c:1564
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' matriz de cor não encontrada para imagem 4bayer!"
 
-#: ../src/iop/demosaic.c:1840
+#: ../src/iop/demosaic.c:1875
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -24303,7 +24329,7 @@ msgstr ""
 "interpoladores cromáticos duplos aumentam o tempo de processamento ao "
 "incorporar uma variante VNG em um segundo passo."
 
-#: ../src/iop/demosaic.c:1845
+#: ../src/iop/demosaic.c:1880
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -24315,15 +24341,15 @@ msgstr ""
 "interpoladores cromáticos duplos aumentam o tempo de processamento ao "
 "incorporar uma variante VNG em um segundo passo."
 
-#: ../src/iop/demosaic.c:1851
+#: ../src/iop/demosaic.c:1886
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "métodos de interpolação cromática para sensores Bayer4."
 
-#: ../src/iop/demosaic.c:1856
+#: ../src/iop/demosaic.c:1891
 msgid "monochrome sensor demosaicing methods."
 msgstr "métodos de interpolação cromática para sensores monocromáticos."
 
-#: ../src/iop/demosaic.c:1860
+#: ../src/iop/demosaic.c:1895
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -24333,11 +24359,11 @@ msgstr ""
 "defina em 0.0 para conteúdo de alta frequência\n"
 "defina em 1.0 para conteúdo plano"
 
-#: ../src/iop/demosaic.c:1863
+#: ../src/iop/demosaic.c:1898
 msgid "toggle mask visualization"
 msgstr "alterna visualização da máscara"
 
-#: ../src/iop/demosaic.c:1867
+#: ../src/iop/demosaic.c:1902
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -24347,7 +24373,7 @@ msgstr ""
 "defina 0.0 para desativar.\n"
 "defina 1.0 para ignorar bordas."
 
-#: ../src/iop/demosaic.c:1870
+#: ../src/iop/demosaic.c:1905
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -24355,17 +24381,17 @@ msgstr ""
 "passos de refinamento LMMSE. os passos de mediana calculam média da saída,\n"
 "os de refinamento adicionam algum recálculo de canais vermelho & azul."
 
-#: ../src/iop/demosaic.c:1873
+#: ../src/iop/demosaic.c:1908
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "quantos passos de suavização média após interpolação cromática"
 
-#: ../src/iop/demosaic.c:1876
+#: ../src/iop/demosaic.c:1911
 msgid "green channels matching method. only applies for some old sensors"
 msgstr ""
 "método de casamento de canais de verde. somente se aplica a alguns sensores "
 "antigos"
 
-#: ../src/iop/demosaic.c:1879
+#: ../src/iop/demosaic.c:1914
 msgid ""
 "capture sharpen recovers details lost due to in-camera blurring\n"
 "which can be caused by diffraction, the anti-aliasing filter or other\n"
@@ -24375,15 +24401,15 @@ msgstr ""
 "devido ao desfoque da câmera, que pode ser causado por difração, filtros\n"
 "anti-aliasing e outras fontes de desfoque do tipo gaussiano"
 
-#: ../src/iop/demosaic.c:1884
+#: ../src/iop/demosaic.c:1919
 msgid "capture sharpen controls"
 msgstr "controles de captura de nitidez"
 
-#: ../src/iop/demosaic.c:1888
+#: ../src/iop/demosaic.c:1923
 msgid "set effect strength by iterations"
 msgstr "determinar a força do efeito por iterações"
 
-#: ../src/iop/demosaic.c:1893
+#: ../src/iop/demosaic.c:1928
 #, fuzzy
 msgid ""
 "capture sharpen radius should reflect the overall gaussian type blur\n"
@@ -24400,14 +24426,14 @@ msgstr ""
 "Nota: o raio definido em zero será recalculado automaticamente na próxim "
 "vez. use para predefinições"
 
-#: ../src/iop/demosaic.c:1899
+#: ../src/iop/demosaic.c:1934
 #, fuzzy
 msgid "calculate the capture sharpen radius from raw sensor data"
 msgstr ""
 "calcular o raio de ajuste de nitidez a partir dos dados do sensor.\n"
 "para melhores resultados evite cortar o fazer zoom"
 
-#: ../src/iop/demosaic.c:1902
+#: ../src/iop/demosaic.c:1937
 #, fuzzy
 msgid ""
 "restrict capture sharpening to areas with high local contrast,\n"
@@ -24421,11 +24447,11 @@ msgstr ""
 "Nota: o limiar em zero reinicializará aos defaults na próxima vez. use para "
 "predefinições"
 
-#: ../src/iop/demosaic.c:1905
+#: ../src/iop/demosaic.c:1940
 msgid "visualize sharpened areas"
 msgstr "visualizar áreas com nitidez ajustada"
 
-#: ../src/iop/demosaic.c:1910
+#: ../src/iop/demosaic.c:1945
 msgid ""
 "further increase sharpen radius at image corners,\n"
 "the sharp center of the image will not be affected"
@@ -24433,21 +24459,23 @@ msgstr ""
 "aumenta o raio de nitidez dos cantos da imagem,\n"
 "o centro da imagem não é afetado"
 
-#: ../src/iop/demosaic.c:1912
+#: ../src/iop/demosaic.c:1947
 msgid "visualize the overall radius"
 msgstr "visualizar o raio geral"
 
-#: ../src/iop/demosaic.c:1917
+#: ../src/iop/demosaic.c:1952
 msgid "adjust to the sharp image center"
 msgstr "ajusta a nitidez no centro da imagem"
 
-#: ../src/iop/demosaic.c:1924
+#: ../src/iop/demosaic.c:1959
 msgid "demosaicing is only used for color raw images"
 msgstr "demosaic só é usado em imagens RAW."
 
 #: ../src/iop/demosaicing/capture.c:457
 msgid "can't allocate buffer to calculate capture radius so use the default"
 msgstr ""
+"não foi possível alocar um buffer para calcular o raio de captura, então o "
+"default será usado"
 
 #: ../src/iop/demosaicing/capture.c:896
 msgid "capture sharpen failed: can't allocate buffer"
@@ -26119,23 +26147,23 @@ msgid "[%s on line] change hardness"
 msgstr "[%s em linha] mudar dureza"
 
 #. ---- tab 3: grain ----
-#: ../src/iop/grain.c:384 ../src/iop/spektrafilm.c:5131
+#: ../src/iop/grain.c:395 ../src/iop/spektrafilm.c:5131
 msgid "grain"
 msgstr "grão"
 
-#: ../src/iop/grain.c:389
+#: ../src/iop/grain.c:400
 msgid "simulate silver grains from film"
 msgstr "simula grãos de prata do filme"
 
-#: ../src/iop/grain.c:542
+#: ../src/iop/grain.c:563
 msgid "the grain size (~ISO of the film)"
 msgstr "o tamanho do grão (~ISO do filme)"
 
-#: ../src/iop/grain.c:546
+#: ../src/iop/grain.c:567
 msgid "the strength of applied grain"
 msgstr "a força do grão aplicado"
 
-#: ../src/iop/grain.c:550
+#: ../src/iop/grain.c:573
 msgid ""
 "amount of mid-tones bias from the photographic paper response modeling. the "
 "greater the bias, the more pronounced the fall off of the grain in shadows "
@@ -28211,91 +28239,91 @@ msgstr ""
 "o filtro fast guided não conseguiu alocar memória, verifique sua "
 "configuração de RAM"
 
-#: ../src/iop/satcurvergb.c:1457
+#: ../src/iop/satcurvergb.c:1461
 msgid "gentle saturation"
 msgstr "saturação suave"
 
-#: ../src/iop/satcurvergb.c:1464
+#: ../src/iop/satcurvergb.c:1468
 msgid "protect saturated colors"
 msgstr "proteger cores saturadas"
 
-#: ../src/iop/satcurvergb.c:1470
+#: ../src/iop/satcurvergb.c:1474
 msgid "gentle brilliance"
 msgstr "brilhância suave"
 
-#: ../src/iop/satcurvergb.c:1477
+#: ../src/iop/satcurvergb.c:1481
 msgid "bright mids, protect extremes"
 msgstr ""
 
-#: ../src/iop/satcurvergb.c:1941
+#: ../src/iop/satcurvergb.c:1945
 msgid "cannot display saturation masks while the blending mask is displayed"
 msgstr ""
 "não é possível mostrar a máscara de saturação quando a máscara de mesclagem "
 "é mostrada"
 
-#: ../src/iop/satcurvergb.c:2140
+#: ../src/iop/satcurvergb.c:2144
 msgid "pick saturation from image"
 msgstr "seleciona a saturação a partir de imagem"
 
-#: ../src/iop/satcurvergb.c:2144
+#: ../src/iop/satcurvergb.c:2148
 msgid "display saturation mask"
 msgstr "mostrar máscara de saturação"
 
-#: ../src/iop/satcurvergb.c:2155
+#: ../src/iop/satcurvergb.c:2159
 msgid "JzAzBz"
 msgstr "JzAzBz"
 
-#: ../src/iop/satcurvergb.c:2156
+#: ../src/iop/satcurvergb.c:2160
 #, fuzzy
 msgid "darktable UCS"
 msgstr "darktable"
 
-#: ../src/iop/satcurvergb.c:2158
+#: ../src/iop/satcurvergb.c:2162
 msgid "choose the perceptual saturation definition used by both curves"
 msgstr ""
 
-#: ../src/iop/satcurvergb.c:2179
+#: ../src/iop/satcurvergb.c:2183
 msgid ""
 "spatially modulate the strength of the curves with an edge-aware guided "
 "filter, based on local saturation, to reduce halos"
 msgstr ""
 
-#: ../src/iop/satcurvergb.c:2183 ../src/libs/export.c:1551
+#: ../src/iop/satcurvergb.c:2187 ../src/libs/export.c:1551
 #: ../src/libs/tools/global_toolbox.c:216
 msgid "px"
 msgstr "px"
 
-#: ../src/iop/satcurvergb.c:2185
+#: ../src/iop/satcurvergb.c:2189
 #, fuzzy
 msgid "size of the neighborhood used to guide the filter"
 msgstr "inclinação da seção linear ao redor do pivô"
 
-#: ../src/iop/satcurvergb.c:2190
+#: ../src/iop/satcurvergb.c:2194
 msgid ""
 "precision of the feathering: higher values produce softer, less edge-"
 "sensitive transitions"
 msgstr ""
 
-#: ../src/iop/satcurvergb.c:2195
+#: ../src/iop/satcurvergb.c:2199
 msgid "protect near-neutrals"
 msgstr ""
 
-#: ../src/iop/satcurvergb.c:2200
+#: ../src/iop/satcurvergb.c:2204
 #, fuzzy
 msgid "center of the saturation range protected from the guided filter"
 msgstr "definir o raio de parâmetros aplicados para o filtro guiado"
 
-#: ../src/iop/satcurvergb.c:2207
+#: ../src/iop/satcurvergb.c:2211
 msgid "protection transition width"
 msgstr ""
 
-#: ../src/iop/satcurvergb.c:2211
+#: ../src/iop/satcurvergb.c:2215
 msgid ""
 "width of the smooth transition around the protected center; wider values "
 "give a gentler, less abrupt protection falloff"
 msgstr ""
 
-#: ../src/iop/satcurvergb.c:2221
+#: ../src/iop/satcurvergb.c:2225
 msgid "limit curve changes in noisy or uncertain regions"
 msgstr "limitar as mudanças na curva em regiões ruidosas ou incertas"
 

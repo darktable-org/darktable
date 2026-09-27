@@ -721,6 +721,7 @@ void process(dt_iop_module_t *self,
   const gboolean full_gui = self->dev->gui_attached && fullpipe;
   if(full_gui)
   {
+    dt_iop_gui_enter_critical_section(self);
     if(g->dual_mask)
     {
       show_dual = TRUE;
@@ -736,6 +737,7 @@ void process(dt_iop_module_t *self,
       show_sigma = TRUE;
       pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
     }
+    dt_iop_gui_leave_critical_section(self);
   }
 
   float *in = (float *)i;
@@ -1035,6 +1037,7 @@ int process_cl(dt_iop_module_t *self,
   const gboolean full_gui = self->dev->gui_attached && fullpipe;
   if(full_gui)
   {
+    dt_iop_gui_enter_critical_section(self);
     if(g->dual_mask)
     {
       show_dual = TRUE;
@@ -1050,6 +1053,7 @@ int process_cl(dt_iop_module_t *self,
       show_sigma = TRUE;
       pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
     }
+    dt_iop_gui_leave_critical_section(self);
   }
 
   const int devid = pipe->devid;
@@ -1739,12 +1743,14 @@ static void _dual_thrs_callback(GtkWidget *quad, dt_iop_module_t *self)
   DT_GUARD_GUI_UPDATE();
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
 
+  dt_iop_gui_enter_critical_section(self);
   g->dual_mask = dt_bauhaus_widget_get_quad_active(quad);
+  g->cs_mask = FALSE;
+  g->cs_boost_mask = FALSE;
+  dt_iop_gui_leave_critical_section(self);
 
   dt_bauhaus_widget_set_quad_active(g->cs_thrs, FALSE);
-  g->cs_mask = FALSE;
   dt_bauhaus_widget_set_quad_active(g->cs_boost, FALSE);
-  g->cs_boost_mask = FALSE;
 
   dt_dev_reprocess_center(self->dev, self->iop_order);
 }
@@ -1753,12 +1759,15 @@ static void _cs_thrs_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   DT_GUARD_GUI_UPDATE();
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
+
+  dt_iop_gui_enter_critical_section(self);
   g->cs_mask = dt_bauhaus_widget_get_quad_active(quad);
+  g->dual_mask = FALSE;
+  g->cs_boost_mask = FALSE;
+  dt_iop_gui_leave_critical_section(self);
 
   dt_bauhaus_widget_set_quad_active(g->dual_thrs, FALSE);
-  g->dual_mask = FALSE;
   dt_bauhaus_widget_set_quad_active(g->cs_boost, FALSE);
-  g->cs_boost_mask = FALSE;
 
   dt_dev_reprocess_center(self->dev, self->iop_order);
 }
@@ -1767,12 +1776,15 @@ static void _cs_boost_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   DT_GUARD_GUI_UPDATE();
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
+
+  dt_iop_gui_enter_critical_section(self);
   g->cs_boost_mask = dt_bauhaus_widget_get_quad_active(quad);
+  g->dual_mask = FALSE;
+  g->cs_mask = FALSE;
+  dt_iop_gui_leave_critical_section(self);
 
   dt_bauhaus_widget_set_quad_active(g->dual_thrs, FALSE);
-  g->dual_mask = FALSE;
   dt_bauhaus_widget_set_quad_active(g->cs_thrs, FALSE);
-  g->cs_mask = FALSE;
 
   dt_dev_reprocess_center(self->dev, self->iop_order);
 }
@@ -1849,13 +1861,16 @@ void gui_focus(dt_iop_module_t *self, const gboolean in)
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   if(!in)
   {
+    dt_iop_gui_enter_critical_section(self);
     const gboolean was_masking = g->dual_mask || g->cs_mask || g->cs_boost_mask;
-    dt_bauhaus_widget_set_quad_active(g->dual_thrs, FALSE);
     g->dual_mask = FALSE;
-    dt_bauhaus_widget_set_quad_active(g->cs_thrs, FALSE);
     g->cs_mask = FALSE;
-    dt_bauhaus_widget_set_quad_active(g->cs_boost, FALSE);
     g->cs_boost_mask = FALSE;
+    dt_iop_gui_leave_critical_section(self);
+
+    dt_bauhaus_widget_set_quad_active(g->dual_thrs, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->cs_thrs, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->cs_boost, FALSE);
 
     if(was_masking) dt_dev_reprocess_center(self->dev, self->iop_order);
   }

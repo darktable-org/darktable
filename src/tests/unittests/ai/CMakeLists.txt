@@ -16,4 +16,16 @@ if(UNIX AND NOT APPLE AND NOT ONNXRuntime_SYSTEM_PACKAGE)
   list(APPEND _AI_TEST_ENV "LD_LIBRARY_PATH=${ONNXRuntime_LIB_DIR}")
 endif()
 
+# Windows searches the executable's own directory before the system one, and
+# System32 ships its own older onnxruntime.dll that PATH cannot outrank, so the
+# bundled runtime has to sit next to the test binary
+if(WIN32 AND NOT ONNXRuntime_SYSTEM_PACKAGE)
+  file(GLOB _ORT_TEST_DLLS "${ONNXRuntime_LIB_DIR}/onnxruntime*.dll")
+  foreach(_ort_dll ${_ORT_TEST_DLLS})
+    add_custom_command(TARGET test_ai_backend POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+              "${_ort_dll}" "$<TARGET_FILE_DIR:test_ai_backend>")
+  endforeach()
+endif()
+
 set_tests_properties(test_ai_backend PROPERTIES ENVIRONMENT "${_AI_TEST_ENV}")
