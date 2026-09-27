@@ -279,6 +279,13 @@ const model_map_t modelMap[] = {
     .clean_model = "EOS R1",
     .clean_alias = "EOS R1"
   },
+  {
+    .exif_make = "FUJIFILM",
+    .exif_model = "X-T5",
+    .clean_make = "Fujifilm",
+    .clean_model = "X-T5",
+    .clean_alias = "X-T5"
+  },
 #endif
 };
 
@@ -295,14 +302,16 @@ static gboolean is_in_glist(GList *list, const gchar *exif_model)
 
 GList *warning_missing_support_seen = NULL;
 
-/* LibRaw is expected to read only new Canon CR3 files */
+/* LibRaw is expected to read only files that RawSpeed can not decode */
 
 static gboolean _supported_image(const gchar *filename)
 {
   // At the moment of writing this code CR3 files are not supported by RawSpeed,
-  // so they are always processed by LibRaw.
+  // so they are always processed by LibRaw. rawspeed owns raf in the loader
+  // table (imageio.c:300), so listing it here only affects the fallback and
+  // the files rawspeed has declined are the ones LibRaw gets to read.
   gchar *extensions_whitelist;
-  const gchar *always_by_libraw = "cr3 x3f";
+  const gchar *always_by_libraw = "cr3 x3f raf";
 
   gchar *ext = g_strrstr(filename, ".");
   if(!ext)
@@ -377,6 +386,26 @@ gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
   return FALSE;
 }
 
+// LibRaw carries the black level either as four per-channel offsets in
+// cblack[0..3] (CR3, Fuji) or as a 2d grid in cblack[6..] read from DNG
+// levels, sized by cblack[4]/cblack[5]. darktable only has the per-channel
+// form and reads it as an absolute value, so fold the grid's minimum into
+// the common part, which is the split LibRaw makes before adding the
+// per-channel offsets on top.
+static int _libraw_common_black_level(const libraw_colordata_t *color)
+{
+  int black = color->black;
+  if(color->cblack[4] && color->cblack[5])
+  {
+    const unsigned n = MIN(color->cblack[4] * color->cblack[5], LIBRAW_CBLACK_SIZE - 6u);
+    int common = color->cblack[6];
+    for(unsigned c = 1; c < n; ++c)
+      if(color->cblack[6 + c] < common)
+        common = color->cblack[6 + c];
+    black += common;
+  }
+  return black;
+}
 
 dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
                                            const char *filename,
@@ -424,7 +453,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
 
   // If the support detection method above failed (e.g. LibRaw matches color
   // matrix on a model substring), let's also check our internal LibRaw lookup
-  // table for Canon CR3s only.
+  // table for the extensions we always route here.
   gchar *ext = g_strrstr(filename, ".");
   if(!ext)
   {
@@ -432,7 +461,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
     goto error;
   }
   ext++;
-  if(!g_ascii_strncasecmp("cr3", ext, 3))
+  if(!g_ascii_strncasecmp("cr3", ext, 3) || !g_ascii_strncasecmp("raf", ext, 3))
     _check_libraw_missing_support(img);
 
   // Copy white level (all linear_max[] equal single
@@ -442,10 +471,10 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
     :raw->rawdata.color.maximum;
 
   // Copy black level
-  img->raw_black_level = raw->rawdata.color.black;
+  img->raw_black_level = _libraw_common_black_level(&raw->rawdata.color);
   for(size_t c = 0; c < 4; ++c)
     img->raw_black_level_separate[c] =
-      raw->rawdata.color.black + raw->rawdata.color.cblack[c];
+      img->raw_black_level + raw->rawdata.color.cblack[c];
 
   // AsShot WB coeffs
   for(size_t c = 0; c < 4; ++c)
@@ -470,7 +499,22 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   img->p_height = img->height - img->crop_y - img->crop_bottom;
   // We can reuse the libraw filters property, it's already well-handled in dt.
   // It contains (for CR3) the Bayer pattern, but we have to undo some LibRaw logic.
-  if(raw->rawdata.iparams.colors == 3)
+  if(raw->rawdata.iparams.filters == 9)
+  {
+    // x-trans: same 9 sentinel and row-major 6x6 layout as dt, but LibRaw
+    // anchors its pattern to the cropped image, having shifted it by the crop
+    // margins (identify.cpp:2541). We copy the uncropped frame and
+    // dt_dev_prepare_piece_cfa() in pixelpipe_hb.c does the offset, so undo
+    // the shift. Tested before the 3 color branch, which would rewrite the
+    // sentinel as if it were a 4bayer pattern.
+    const int oy = img->crop_y % 6, ox = img->crop_x % 6;
+    img->buf_dsc.filters = 9;
+    for(int j = 0; j < 6; ++j)
+      for(int i = 0; i < 6; ++i)
+        img->buf_dsc.xtrans[j][i] =
+          (uint8_t)raw->rawdata.iparams.xtrans[(j + 6 - oy) % 6][(i + 6 - ox) % 6];
+  }
+  else if(raw->rawdata.iparams.colors == 3)
   {
     // Workaround for 3 color filters (ok for CR3) from LibRaw::pre_interpolate()
     img->buf_dsc.filters = raw->rawdata.iparams.filters & ~((raw->rawdata.iparams.filters & 0x55555555U) << 1);
@@ -488,7 +532,8 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
 
   dt_exif_img_check_additional_tags(img, filename);
 
-  // For CR3, we only have Bayer data and a single channel
+  // CFA data (Bayer, 4bayer or X-Trans) is one sample per pixel, so the buffer
+  // stays a single packed channel in every case
   img->buf_dsc.channels = 1;
 
   img->buf_dsc.datatype = TYPE_UINT16;
