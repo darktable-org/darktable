@@ -3753,6 +3753,26 @@ void dt_dev_exposure_handle_event(int n_press, gdouble delta,
     darktable.develop->proxy.exposure.handle_event(n_press, delta, state, is_blackpoint);
 }
 
+gboolean dt_dev_cat_is_active(dt_develop_t *dev)
+{
+  // the proxy function pointer is set by the first color calibration gui_init(),
+  // so it stays NULL outside the darkroom
+  if(!dev || !dev->proxy.cat_is_active)
+    return FALSE;
+
+  for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
+  {
+    dt_iop_module_t *mod = modules->data;
+
+    if(dt_iop_module_is(mod, "channelmixerrgb")
+       && mod->iop_order != INT_MAX
+       && dev->proxy.cat_is_active(mod))
+      return TRUE;
+  }
+
+  return FALSE;
+}
+
 void dt_dev_modulegroups_set(dt_develop_t *dev,
                              const uint32_t group)
 {
@@ -4359,19 +4379,26 @@ void dt_dev_reset_chroma(dt_develop_t *dev)
   chr->adaptation = NULL;
   chr->temperature = NULL;
   for_four_channels(c)
-    chr->wb_coeffs[c] = 1.0f;
+    chr->wb.coeffs[c] = 1.0f;
+}
+
+void dt_dev_wb_set_neutral(dt_dev_wb_t *wb)
+{
+  wb->late_correction = FALSE;
+  for_four_channels(c)
+  {
+    wb->coeffs[c] = 1.0f;
+    wb->D65coeffs[c] = 1.0;
+  }
 }
 
 void dt_dev_init_chroma(dt_develop_t *dev)
 {
   dt_dev_reset_chroma(dev);
   dt_dev_chroma_t *chr = &dev->chroma;
-  chr->late_correction = FALSE;
+  dt_dev_wb_set_neutral(&chr->wb);
   for_four_channels(c)
-  {
-    chr->D65coeffs[c] = 1.0;
     chr->as_shot[c] = 1.0;
-  }
 }
 
 // clang-format off
