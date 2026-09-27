@@ -457,20 +457,21 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 {
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->xtrans;
   const uint32_t filters = piece->filters;
-  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
+  const dt_dev_pixelpipe_t *pipe = piece->pipe;
+  const gboolean fullpipe = dt_pipe_is_full(pipe);
   const float clipval = MAX(0.1f, highlights_clip_magics[DT_IOP_HIGHLIGHTS_SEGMENTS] * d->clip);
 
-  const dt_aligned_pixel_t icoeffs = { piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
+  const dt_aligned_pixel_t icoeffs = { pipe->dsc.temperature.coeffs[0], pipe->dsc.temperature.coeffs[1], pipe->dsc.temperature.coeffs[2]};
   const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]};
   const dt_aligned_pixel_t cube_coeffs = {cbrtf(clips[0]), cbrtf(clips[1]), cbrtf(clips[2]), 0.0f};
 
-  const dt_dev_chroma_t *chr = &piece->module->dev->chroma;
-  const gboolean late = chr->wb.late_correction;
+  const dt_dev_wb_t *wb = &pipe->wb;
+  const gboolean late = wb->late_correction;
   dt_aligned_pixel_t correction;
   for_four_channels(k)
   {
-    if(late && chr->wb.coeffs[k] > 1e-6f)
-      correction[k] = chr->wb.D65coeffs[k] / chr->wb.coeffs[k];
+    if(late && wb->coeffs[k] > 1e-6f)
+      correction[k] = wb->D65coeffs[k] / wb->coeffs[k];
     else
       correction[k] = 1.0f;
   }
@@ -479,7 +480,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 
   const int recovery_closing[NUM_RECOVERY_MODES] = { 0, 0, 0, 2, 2, 0, 2};
   const int recovery_close = recovery_closing[recovery_mode];
-  const int segmentation_limit = (piece->pipe->iwidth * piece->pipe->iheight) * sqrf(piece->pipe->iscale) / 4000; // 250 segments per mpix
+  const int segmentation_limit = (pipe->iwidth * pipe->iheight) * sqrf(pipe->iscale) / 4000; // 250 segments per mpix
 
   const size_t pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
   const size_t pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
