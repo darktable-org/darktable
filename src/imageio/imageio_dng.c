@@ -618,7 +618,7 @@ int dt_imageio_dng_write_linear(const char *filename,
   //     re-importer recover the [0, 1] range via the standard raw
   //     normalization (val - black) / (white - black)
   const float clip_hi = 65535.0f;
-  uint16_t *scan = g_malloc((size_t)width * 3 * sizeof(uint16_t));
+  uint16_t *scan = g_try_malloc((size_t)width * 3 * sizeof(uint16_t));
   int res = 0;
   if(!scan)
   {

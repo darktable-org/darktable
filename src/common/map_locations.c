@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -143,7 +143,7 @@ GList *dt_map_location_get_locations_by_path(const gchar *path,
     const int lgth = remove_root ? strlen(path1) + 1 : strlen(location_tag_prefix);
     if(name && strlen(name) > lgth)
     {
-      dt_map_location_t *t = g_malloc0(sizeof(dt_map_location_t));
+      dt_map_location_t *t = g_try_malloc0(sizeof(dt_map_location_t));
       if(t)
       {
         name += lgth;
@@ -185,7 +185,7 @@ GList *dt_map_location_get_locations_on_map(const dt_map_box_t *const bbox)
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    dt_location_draw_t *t = g_malloc0(sizeof(dt_location_draw_t));
+    dt_location_draw_t *t = g_try_malloc0(sizeof(dt_location_draw_t));
     if(t)
     {
       t->id = sqlite3_column_int(stmt, 0);
@@ -650,4 +650,3 @@ GList *dt_map_location_convert_polygons(void *polygons, dt_map_box_t *bbox, int 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

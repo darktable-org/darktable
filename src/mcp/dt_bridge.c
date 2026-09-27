@@ -1143,7 +1143,7 @@ static int _mcp_write(dt_imageio_module_data_t *data, const char *filename,
   // from the requested box breaks once a dimension is left unconstrained
   const size_t bytes = sizeof(uint32_t) * (size_t)data->width * data->height;
   g_free(d->buf);
-  d->buf = g_malloc(bytes);
+  d->buf = g_try_malloc(bytes);
   if(!d->buf) return 1;
 
   memcpy(d->buf, in, bytes);

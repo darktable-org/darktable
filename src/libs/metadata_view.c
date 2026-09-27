@@ -215,7 +215,7 @@ static void _lib_metadata_init_queue(dt_lib_module_t *self)
   uint32_t i = 0;
   while(i < md_xmp_metadata)
   {
-    dt_lib_metadata_info_t *m = g_malloc0(sizeof(dt_lib_metadata_info_t));
+    dt_lib_metadata_info_t *m = g_try_malloc0(sizeof(dt_lib_metadata_info_t));
     if(m)
     {
       m->name = g_strdup(_labels[i]);
@@ -238,7 +238,7 @@ static void _lib_metadata_init_queue(dt_lib_module_t *self)
 
     if(!metadata->internal)
     {
-      dt_lib_metadata_info_t *m = g_malloc0(sizeof(dt_lib_metadata_info_t));
+      dt_lib_metadata_info_t *m = g_try_malloc0(sizeof(dt_lib_metadata_info_t));
       if(m)
       {
         m->name = g_strdup(metadata->name);

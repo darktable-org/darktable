@@ -2650,7 +2650,7 @@ void dt_control_paste_history(GList *imgs)
     return;
   }
 
-  _images_job_data_t *images_job_data = g_malloc(sizeof(_images_job_data_t));
+  _images_job_data_t *images_job_data = g_try_malloc(sizeof(_images_job_data_t));
   if(images_job_data)
   {
     images_job_data->imgs = imgs;
@@ -2681,7 +2681,7 @@ void dt_control_paste_parts_history(GList *imgs)
   if(res == GTK_RESPONSE_OK
      || res == GTK_RESPONSE_APPLY)
   {
-    _images_job_data_t *images_job_data = g_malloc(sizeof(_images_job_data_t));
+    _images_job_data_t *images_job_data = g_try_malloc(sizeof(_images_job_data_t));
     if(images_job_data)
     {
       images_job_data->imgs = imgs;
@@ -2738,7 +2738,7 @@ void dt_control_apply_styles(GList *imgs, GList *styles, const gboolean duplicat
   }
   else
   {
-    _images_job_data_t *images_job_data = g_malloc(sizeof(_images_job_data_t));
+    _images_job_data_t *images_job_data = g_try_malloc(sizeof(_images_job_data_t));
     if(images_job_data)
     {
       const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
@@ -3340,7 +3340,7 @@ static void *_control_import_alloc()
   dt_control_image_enumerator_t *params = _control_image_enumerator_alloc();
   if(!params) return NULL;
 
-  params->data = g_malloc0(sizeof(dt_control_import_t));
+  params->data = g_try_malloc0(sizeof(dt_control_import_t));
   if(!params->data)
   {
     _control_import_job_cleanup(params);

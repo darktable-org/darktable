@@ -936,7 +936,7 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
     cmsSaveProfileToMem(dst_cp->profile, NULL, &icc_len);
     if(icc_len > 0)
     {
-      uint8_t *icc_buf = g_malloc(icc_len);
+      uint8_t *icc_buf = g_try_malloc(icc_len);
       if(icc_buf)
       {
         cmsSaveProfileToMem(dst_cp->profile, icc_buf, &icc_len);

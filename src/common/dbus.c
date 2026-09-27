@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2024 darktable developers.
+    Copyright (C) 2013-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -186,7 +186,7 @@ static void _on_name_lost(GDBusConnection *connection, const gchar *name, gpoint
 
 struct dt_dbus_t *dt_dbus_init()
 {
-  dt_dbus_t *dbus = g_malloc0(sizeof(dt_dbus_t));
+  dt_dbus_t *dbus = g_try_malloc0(sizeof(dt_dbus_t));
   if(!dbus) return NULL;
 
   dbus->introspection_data = g_dbus_node_info_new_for_xml(introspection_xml, NULL);
@@ -228,4 +228,3 @@ gboolean dt_dbus_connected(const dt_dbus_t *dbus)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

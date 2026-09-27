@@ -35,6 +35,7 @@
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 #include "imageio/storage/imageio_storage_api.h"
+
 #include <curl/curl.h>
 #include <json-glib/json-glib.h>
 #include <stdio.h>
@@ -1477,7 +1478,7 @@ void *get_params(dt_imageio_module_storage_t *self)
   if(!ui)
     return NULL; // gui not initialized, CLI mode
 
-  dt_storage_piwigo_params_t *p = g_malloc0(sizeof(dt_storage_piwigo_params_t));
+  dt_storage_piwigo_params_t *p = g_try_malloc0(sizeof(dt_storage_piwigo_params_t));
 
   if(!p)
     return NULL;

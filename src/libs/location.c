@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/darktable.h"
 #include "common/geo.h"
 #include "common/curl_tools.h"
@@ -25,6 +26,7 @@
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+
 #include <curl/curl.h>
 #include <gdk/gdkkeysyms.h>
 
@@ -479,7 +481,7 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
   lib->marker_points = NULL;
 
   /* create new place */
-  _lib_location_result_t *place = g_malloc0(sizeof(_lib_location_result_t));
+  _lib_location_result_t *place = g_try_malloc0(sizeof(_lib_location_result_t));
   if(!place) return;
 
   place->lon = NAN;

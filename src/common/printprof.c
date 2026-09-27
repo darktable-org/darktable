@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2024 darktable developers.
+    Copyright (C) 2014-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include "common/printprof.h"
 #include "common/colorspaces.h"
 #include "lcms2.h"
+
 #include <glib.h>
 #include <unistd.h>
 
@@ -65,7 +66,8 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
     return 1;
   }
 
-  void *out = g_malloc((size_t)3 * (bpp == 8 ? 1 : 2) * width * height); //fixed for 16 bit printing: memory allocation was not accounting for bpp for out, was always 8 bit/channel
+  // fixed for 16 bit printing: memory allocation was not accounting for bpp for out, was always 8 bit/channel
+  void *out = g_try_malloc((size_t)3 * (bpp == 8 ? 1 : 2) * width * height);
   if(!out)
   {
     dt_print(DT_DEBUG_ALWAYS, "unable to allocate buffer for printer-proofed image");
@@ -104,4 +106,3 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
