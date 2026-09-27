@@ -374,11 +374,11 @@ reads them in `reload_defaults()`, `commit_params()` and `process()`.
 
 Commit order does not guarantee that white balance commits first: `synch_all` replays the
 history in history order, and `synch_top` re-commits only the top item. Color calibration
-therefore recomputes its camera illuminant (`DT_ILLUMINANT_CAMERA`) in `process()`, which runs
-after all the pipe's commits are done.
+therefore recomputes its white-balance-dependent illuminants (`DT_ILLUMINANT_CAMERA`,
+`DT_ILLUMINANT_FROM_WB`) in `process()`, which runs after all the pipe's commits are done.
 
-The field-by-field map and why reverse-order default loading stays correct are in
-[iop/wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md).
+The field-by-field map, the per-pipe copy `pipe->wb`, and why reverse-order default loading
+stays correct are in [iop/wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md).
 
 ### 4b. Color-profile change (colorin / colorout)
 
