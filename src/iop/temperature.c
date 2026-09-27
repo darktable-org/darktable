@@ -543,11 +543,9 @@ static inline void scaled_copy_4wide(float *const outp,
     outp[c] = inp[c] * coeffs[c];
 }
 
-static inline void _publish_chroma(dt_dev_pixelpipe_iop_t *piece)
+static inline void _update_pipe_dsc(dt_dev_pixelpipe_iop_t *piece)
 {
   const dt_iop_temperature_data_t *const d = piece->data;
-  dt_iop_module_t *self = piece->module;
-  dt_dev_chroma_t *chr = &self->dev->chroma;
 
   piece->pipe->dsc.temperature.enabled = piece->enabled;
   for_four_channels(k)
@@ -555,28 +553,26 @@ static inline void _publish_chroma(dt_dev_pixelpipe_iop_t *piece)
     piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
     piece->pipe->dsc.processed_maximum[k] =
       d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
-    chr->wb.coeffs[k] = d->coeffs[k];
   }
-  chr->wb.late_correction = d->late_correction;
 }
 
 // the white balance this pipe renders with, for modules later in the pipe that
 // complete the correction (colorin, highlights, color calibration). built from
-// this piece: dev->chroma is rewritten by the other pipes' commits and
-// processing. D65coeffs is the exception, only reload_defaults() writes it
+// this piece: dev->chroma is rewritten by the other pipes' commits.
+// D65coeffs is the exception, only reload_defaults() writes it
 static inline void _publish_pipe_wb(dt_dev_pixelpipe_iop_t *piece)
 {
   const dt_iop_temperature_data_t *const d = piece->data;
   const dt_dev_chroma_t *chr = &piece->module->dev->chroma;
-  dt_dev_wb_t *wb = &piece->pipe->wb;
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
 
   for_four_channels(k)
   {
-    wb->coeffs[k] = piece->enabled ? d->coeffs[k] : 1.0f;
-    wb->D65coeffs[k] = chr->wb.D65coeffs[k];
+    pipe->wb.coeffs[k] = piece->enabled ? d->coeffs[k] : 1.0f;
+    pipe->wb.D65coeffs[k] = chr->wb.D65coeffs[k];
   }
   // if disabled, nothing for a later module to finish
-  wb->late_correction = piece->enabled && d->late_correction;
+  pipe->wb.late_correction = piece->enabled && d->late_correction;
 }
 
 void process(dt_iop_module_t *self,
@@ -685,7 +681,7 @@ void process(dt_iop_module_t *self,
     }
   }
 
-  _publish_chroma(piece);
+  _update_pipe_dsc(piece);
 }
 
 #ifdef HAVE_OPENCL
@@ -725,7 +721,7 @@ int process_cl(dt_iop_module_t *self,
                                          CLARG(dev_coeffs), CLARG(filters), CLARG(dev_xtrans));
   if(err != CL_SUCCESS) goto error;
 
-  _publish_chroma(piece);
+  _update_pipe_dsc(piece);
 
 error:
   dt_opencl_release_mem_object(dev_coeffs);
