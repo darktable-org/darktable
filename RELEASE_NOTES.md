@@ -231,6 +231,10 @@ changes (where available).
   once into each person's folder rather than into one "John,Jane"
   folder.
 
+- Fujifilm raws that store the sensor data in a lossy compressed form, as
+  the X-T5 and later models write by default, are now opened instead of
+  being reported as unsupported.
+
 ## Bug Fixes
 
 - Do not convert the pipe input in place for blending, which may result
@@ -467,7 +471,6 @@ changes (where available).
 - Apple ProRAW DNGs
 - CinemaDNG lossless (Blackmagic, some DJI, etc.) and lossy (Blackmagic)
 - DNG 1.7 using JPEG XL (Adobe enhanced, Samsung Expert RAW)
-- Fujifilm lossy RAFs
 - Nikon high efficiency NEFs
 - Phase One other than IIQ L
 - Sony ARW 4.0/5.0 downsized lossless ("M" for full-frame, "S" for full-frame & APS-C)
