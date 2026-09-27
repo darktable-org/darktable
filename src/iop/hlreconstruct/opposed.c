@@ -231,20 +231,21 @@ static float *_process_opposed(dt_iop_module_t *self,
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->xtrans;
   const uint32_t filters = piece->filters;
 
-  const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  const dt_iop_buffer_dsc_t *dsc = &pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;
   const dt_aligned_pixel_t icoeffs = { wbon ? dsc->temperature.coeffs[0] : 1.0f,
                                        wbon ? dsc->temperature.coeffs[1] : 1.0f,
                                        wbon ? dsc->temperature.coeffs[2] : 1.0f};
   const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]};
 
-  const dt_dev_chroma_t *chr = &self->dev->chroma;
-  const gboolean late = chr->wb.late_correction;
+  const dt_dev_wb_t *wb = &pipe->wb;
+  const gboolean late = wb->late_correction;
   dt_aligned_pixel_t correction;
   for_four_channels(k)
   {
-    if(late && chr->wb.coeffs[k] > 1e-6f)
-      correction[k] = chr->wb.D65coeffs[k] / chr->wb.coeffs[k];
+    if(late && wb->coeffs[k] > 1e-6f)
+      correction[k] = wb->D65coeffs[k] / wb->coeffs[k];
     else
       correction[k] = 1.0f;
   }
@@ -257,7 +258,7 @@ static float *_process_opposed(dt_iop_module_t *self,
   const size_t msize = dt_round_size((size_t) mwidth, 8) * dt_round_size(mheight, 8);
 
   const dt_hash_t opphash = _opposed_hash(piece);
-  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
+  const gboolean fullpipe = dt_pipe_is_full(pipe);
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
 
   if(opphash == img_opphash)
@@ -440,11 +441,12 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
   dt_iop_highlights_data_t *d = piece->data;
   const dt_iop_highlights_global_data_t *gd = self->global_data;
 
-  const int devid = piece->pipe->devid;
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  const int devid = pipe->devid;
   const uint32_t filters = piece->filters;
 
   const float clipval = highlights_clip_magics[DT_IOP_HIGHLIGHTS_OPPOSED] * d->clip;
-  const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
+  const dt_iop_buffer_dsc_t *dsc = &pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;
   const dt_aligned_pixel_t icoeffs = { wbon ? dsc->temperature.coeffs[0] : 1.0f,
                                        wbon ? dsc->temperature.coeffs[1] : 1.0f,
@@ -452,13 +454,13 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
 
   dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2], 1.0f};
 
-  const dt_dev_chroma_t *chr = &self->dev->chroma;
-  const gboolean late = chr->wb.late_correction;
+  const dt_dev_wb_t *wb = &pipe->wb;
+  const gboolean late = wb->late_correction;
   dt_aligned_pixel_t correction;
   for_four_channels(k)
   {
-    if(late && chr->wb.coeffs[k] > 1e-6f)
-      correction[k] = chr->wb.D65coeffs[k] / chr->wb.coeffs[k];
+    if(late && wb->coeffs[k] > 1e-6f)
+      correction[k] = wb->D65coeffs[k] / wb->coeffs[k];
     else
       correction[k] = 1.0f;
   }
@@ -474,7 +476,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
   float *claccu = NULL;
 
   const dt_hash_t opphash = _opposed_hash(piece);
-  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
+  const gboolean fullpipe = dt_pipe_is_full(pipe);
   const int fastcopymode = (opphash == img_opphash) && !img_oppclipped;
 
   if(!fastcopymode)

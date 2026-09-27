@@ -784,6 +784,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   double start = dt_get_debug_wtime();
 
   dev->cropping.exposer = NULL;
+
   dt_print_pipe(DT_DEBUG_PARAMS, "synch all module defaults",
     pipe, NULL, DT_DEVICE_NONE, NULL, NULL);
 

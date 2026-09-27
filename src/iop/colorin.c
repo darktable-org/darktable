@@ -660,13 +660,13 @@ int process_cl(dt_iop_module_t *self,
     return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
   }
 
-  const dt_dev_chroma_t *chr = &self->dev->chroma;
-  const gboolean corrected = chr->wb.late_correction;
+  const dt_dev_wb_t *wb = &pipe->wb;
+  const gboolean corrected = wb->late_correction;
   dt_aligned_pixel_t coeffs;
   for_four_channels(k)
   {
-    if(corrected && chr->wb.coeffs[k] > 1e-6f)
-      coeffs[k] = chr->wb.D65coeffs[k] / chr->wb.coeffs[k];
+    if(corrected && wb->coeffs[k] > 1e-6f)
+      coeffs[k] = wb->D65coeffs[k] / wb->coeffs[k];
     else
       coeffs[k] = 1.0f;
   }
@@ -675,7 +675,7 @@ int process_cl(dt_iop_module_t *self,
   {
     for_four_channels(k)
     {
-      pipe->dsc.temperature.coeffs[k] = chr->wb.D65coeffs[k];
+      pipe->dsc.temperature.coeffs[k] = wb->D65coeffs[k];
       // note: tiling takes care about processed_maximum
       pipe->dsc.processed_maximum[k] *= coeffs[k];
     }
@@ -1210,24 +1210,24 @@ void process(dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  const dt_dev_chroma_t *chr = &self->dev->chroma;
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  const dt_dev_wb_t *wb = &pipe->wb;
   const dt_iop_colorin_data_t *const d = piece->data;
-  const gboolean corrected = chr->wb.late_correction && d->type != DT_COLORSPACE_LAB;
+  const gboolean corrected = wb->late_correction && d->type != DT_COLORSPACE_LAB;
   dt_aligned_pixel_t coeffs;
   for_four_channels(k)
   {
-    if(corrected && chr->wb.coeffs[k] > 1e-6f)
-      coeffs[k] = chr->wb.D65coeffs[k] / chr->wb.coeffs[k];
+    if(corrected && wb->coeffs[k] > 1e-6f)
+      coeffs[k] = wb->D65coeffs[k] / wb->coeffs[k];
     else
       coeffs[k] = 1.0f;
   }
 
-  dt_dev_pixelpipe_t *pipe = piece->pipe;
   if(corrected)
   {
     for_four_channels(k)
     {
-      pipe->dsc.temperature.coeffs[k] = chr->wb.D65coeffs[k];
+      pipe->dsc.temperature.coeffs[k] = wb->D65coeffs[k];
       // note: tiling takes care about processed_maximum
       pipe->dsc.processed_maximum[k] *= coeffs[k];
     }
