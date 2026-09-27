@@ -62,6 +62,10 @@ typedef struct dt_iop_buffer_dsc_t
   struct
   {
     gboolean enabled;
+
+    /** white balance multiplied into this buffer. pipe->wb.coeffs keeps what
+        temperature applied; this copy is rewritten to D65coeffs by colorin when
+        it completes the late correction */
     dt_aligned_pixel_t coeffs;
   } temperature;
 
