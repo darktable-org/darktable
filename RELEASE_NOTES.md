@@ -402,6 +402,8 @@ changes (where available).
   a legacy encoding. These fields are now converted to UTF-8 on import.
   Use "refresh EXIF" on already imported images to fix them.
 
+- Fixed a crash on Wayland when disconnecting a monitor.
+
 ## Lua
 
 ### API Version
