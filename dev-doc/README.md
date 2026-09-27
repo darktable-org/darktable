@@ -4,11 +4,17 @@ This guide covers building Image Operation (IOP) modules for darktable's darkroo
 
 ## Documentation Files
 
+### Start Here
+| File | Description |
+|------|-------------|
+| **[Core_Concepts.md](Core_Concepts.md)** | Core objects and terms: image, dev, module type and instance, pipe, piece, history, params vs data |
+
 ### Module API
 | File | Description |
 |------|-------------|
 | **[IOP_Module_API.md](IOP_Module_API.md)** | Module API reference: params_t vs data_t, processing, commit_params, lifecycle |
 | **[pixelpipe_architecture.md](pixelpipe_architecture.md)** | Pixelpipe data flow, caching, ROI, ordering asymmetry |
+| **[Module_Lifecycle.md](Module_Lifecycle.md)** | When callbacks fire: image load, edits, history replay, pipe flags, cross-module data flow |
 | **[introspection.md](introspection.md)** | Introspection system for parameters and GUI |
 | **[Shortcuts.md](Shortcuts.md)** | The Action/Shortcut system and `dt_action_def_t` |
 | **[Module_Groups.md](Module_Groups.md)** | Module grouping explanation and `default_group()` |

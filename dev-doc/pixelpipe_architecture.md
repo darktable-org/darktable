@@ -4,6 +4,9 @@ The **pixelpipe** is the core image processing engine of darktable. It is respon
 
 ## Core Structures
 
+### `dt_develop_t`
+Defined in `src/develop/develop.h`. The dev: the working context for processing one image at a time. The darkroom has one, reused when switching images; exports, thumbnails and some other features create their own (see [Core_Concepts.md](Core_Concepts.md)). Besides the pixelpipes (below) it holds the module list (`dev->iop`, a `GList` of `dt_iop_module_t`), the history stack (`dev->history` plus the `dev->history_end` cursor), and shared inter-module state such as `dev->chroma` (white balance data passed from `temperature.c` to `channelmixerrgb.c`). Most lifecycle operations (image load, history replay, parameter commits) act on this structure. For the event-by-event walkthrough see [Module_Lifecycle.md](Module_Lifecycle.md).
+
 ### `dt_dev_pixelpipe_t`
 Defined in `src/develop/pixelpipe_hb.h`. This structure represents a single instance of a processing pipeline. A `dt_develop_t` (the main development state) holds several pipes:
 - `dev->full.pipe`: Main darkroom center view (via `dt_dev_viewport_t full`).
@@ -129,12 +132,12 @@ The pixelpipe is designed to be threaded.
 
 Two key pipeline operations iterate modules in **different** orders:
 
-- **`commit_params()`** runs in **forward** pipe order (e.g., temperature before channelmixerrgb). This is the normal processing direction.
-- **`_dt_dev_load_pipeline_defaults()`** runs in **reverse** pipe order (e.g., channelmixerrgb before temperature). This happens during history reset and default loading.
+- **`commit_params()`** (through `synch_all`) first commits every piece's defaults in forward pipe order, then replays the history items in **history order**, which is the order of the user's edits. So a downstream module can commit before an upstream one. Only processing itself is guaranteed to run in pipe order.
+- **`_dt_dev_load_pipeline_defaults()`** runs in **reverse** pipe order (e.g., channelmixerrgb before temperature). It is called when an image is loaded (`dt_dev_read_history_ext()`).
 
-This asymmetry matters for modules that communicate via shared state. For example, `temperature.c` writes white balance coefficients into `dev->chroma.wb_coeffs`, and `channelmixerrgb.c` reads them during `commit_params()`. During forward processing, temperature commits first and the data is available. But during reverse-order default loading, channelmixerrgb runs first — before temperature has written its values. This caused a bug where stale values from a previous image or history state influenced the defaults.
+This matters for modules that communicate via shared state. For example, `temperature.c` writes white balance coefficients into `dev->chroma.wb_coeffs`, and `channelmixerrgb.c` reads them in `reload_defaults()`, `commit_params()` and `process()`. During reverse-order default loading, channelmixerrgb runs first, before temperature has refreshed its values, so any shared state a `reload_defaults()` depends on must be reset to a neutral value beforehand. During history replay, channelmixerrgb may commit before temperature, so it recomputes its white-balance-dependent illuminant in `process()`.
 
-**Consequence:** Shared state (like `dev->chroma`) must be properly reset before reverse-order iteration to prevent this class of ordering-dependent bug.
+**Consequence:** Shared state (like `dev->chroma`) must be reset before reverse-order iteration. The framework does this via `dt_dev_reset_chroma()` immediately before `_dt_dev_load_pipeline_defaults()`; the neutral `wb_coeffs` it writes is what keeps the dependent defaults image-local. See [Module_Lifecycle.md](Module_Lifecycle.md#5-pipeline-ordering-asymmetry).
 
 ## Introspection Connection
 
