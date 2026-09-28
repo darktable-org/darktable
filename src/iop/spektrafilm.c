@@ -6164,15 +6164,17 @@ void gui_init(dt_iop_module_t *self)
   _section_add(self, C_("section", "output"), NULL);
 
   g->output_boost = dt_bauhaus_slider_from_params(self, "output_luminance_boost");
-  gtk_widget_set_tooltip_text(g->output_boost,
-                              _("multiplies XYZ luminance just before the OkLCh gamut "
-                                "compressor,\n"
-                                "pushing the histogram right while preserving the film's "
-                                "natural\n"
-                                "shoulder rolloff.\n"
-                                "\n"
-                                "this acts at the END of the module, so the picker measures "
-                                "the processed image."));
+  gtk_widget_set_tooltip_text(
+      g->output_boost,
+      _("brightens the image, with most of the effect in the midtones and\n"
+        "the highlights rolling off above them. it works before the gamut\n"
+        "compressor, so it cannot place white on its own.\n"
+        "\n"
+        "use it to lift midtones into the rolloff, and post-compression\n"
+        "scale to set where highlights and white land.\n"
+        "\n"
+        "this acts at the END of the module, so the picker measures the\n"
+        "processed image."));
   dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->output_boost);
   dt_bauhaus_widget_set_quad_tooltip(g->output_boost,
                                      _("pick brightest tone in the selected area and set "
