@@ -56,7 +56,7 @@
  *
  * Both CPU (process, OpenMP) and GPU (process_cl, data/kernels/spektrafilm.cl)
  * paths exist. The GPU kernels were validated against the CPU engine with
- * POCL to ~1e-6; exact-spectral quality stays CPU-only.
+ * POCL to ~1e-6.
  */
 
 #include "bauhaus/bauhaus.h"
@@ -173,13 +173,9 @@ DT_MODULE_INTROSPECTION(3, dt_iop_spektrafilm_params_t)
 #define SF_COMBO_SCAN_FILM   (-2) /* no print stage: view the developed film */
 #define SF_COMBO_NO_PROFILES (-3) /* placeholder: the pack lists none of this kind */
 
-typedef enum dt_iop_spektrafilm_quality_t
-{
-  DT_SPEKTRAFILM_Q_DRAFT = 0,    // $DESCRIPTION: "draft (17³ table)"
-  DT_SPEKTRAFILM_Q_STANDARD = 1, // $DESCRIPTION: "standard (33³ table)"
-  DT_SPEKTRAFILM_Q_HIGH = 2,     // $DESCRIPTION: "high (49³ table)"
-  DT_SPEKTRAFILM_Q_EXACT = 3,    // $DESCRIPTION: "exact spectral (very slow)"
-} dt_iop_spektrafilm_quality_t;
+/* grid size per axis of the table the color model is evaluated on and
+   PCHIP-interpolated from */
+#define SF_LUT_STEPS 33
 
 /* order must match SF_DIFF_FAMILIES[] in spektra_core.c */
 typedef enum dt_iop_spektrafilm_diffusion_family_t
@@ -228,7 +224,6 @@ typedef struct dt_iop_spektrafilm_params_t
   float preflash_m_shift;   // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "preflash M filter shift"
   float preflash_y_shift;   // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "preflash Y filter shift"
   gboolean scan_film;       // $DEFAULT: FALSE $DESCRIPTION: "scan the film (skip print)"
-  dt_iop_spektrafilm_quality_t quality; // $DEFAULT: DT_SPEKTRAFILM_Q_STANDARD $DESCRIPTION: "quality"
   gboolean halation_on;     // $DEFAULT: TRUE $DESCRIPTION: "enable halation"
   float scatter_amount;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "scatter amount"
   float scatter_scale;      // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "scatter size"
@@ -438,7 +433,7 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *exposure_ev;
   GtkWidget *push_pull_stops, *film_gamma_factor;
   GtkWidget *film_gamma_factor_fast, *film_gamma_factor_slow, *film_developer_exhaustion;
-  GtkWidget *quality, *adaptation_bandwidth, *adaptation_surface;
+  GtkWidget *adaptation_bandwidth, *adaptation_surface;
   GtkWidget *upsampling;
   GList *tables; /* sf_table_entry_t*, owned; the loaded pack's tables */
   GtkWidget *gamut_compress;
@@ -583,7 +578,7 @@ typedef struct dt_iop_spektrafilm_data_t
   /* engine cache */
   dt_pthread_mutex_t lock;
   sf_sim_t *sim;
-  sf_sim_gpu_t *gpu; /* float tables for process_cl; NULL for exact quality */
+  sf_sim_gpu_t *gpu; /* float tables for process_cl */
   uint64_t sim_key;  /* hash of everything the sim build depends on */
   char sim_error[256];
   char sim_warning[256];
@@ -594,7 +589,7 @@ typedef struct dt_iop_spektrafilm_data_t
   dt_iop_module_t *self;
   /* multi-sublayer grain GPU constant buffers (see process_cl's grain
      stage): built from d->gpu's grain_layer_* tables, which only change
-     when d->gpu itself is rebuilt (a new film/paper/quality choice), never
+     when d->gpu itself is rebuilt (a new film/paper choice), never
      per-tile. Cached here and keyed on the `gpu` pointer they were built
      from AND on the device they were built on, so they survive across
      process_cl() calls -- tiled processing calls process_cl() once per tile,
@@ -794,9 +789,10 @@ int flags(void)
    sf_pack_film_grain() wrote the pack's value over it before anything read it.
    So 1.0 does not approximate a v1 edit, it reproduces it exactly, and a v1
    slider position carries no information worth carrying forward. */
-/* v2 -> v3: print_gamma_r/_g/_b appended. v1 and v2 share this layout, so one
-   struct reads both; the incoming blob is this size and not the current one,
-   which is what the copy below is sized against */
+/* v2 -> v3: quality dropped (every edit renders on the SF_LUT_STEPS table),
+   print_gamma_r/_g/_b and the fields after them appended. v1 and v2 share this
+   layout, so one struct reads both; the copy below takes the fields either
+   side of quality, which v3 keeps in the same order */
 typedef struct dt_iop_spektrafilm_params_v2_t
 {
   uint32_t film_hash;
@@ -818,7 +814,7 @@ typedef struct dt_iop_spektrafilm_params_v2_t
   float preflash_m_shift;
   float preflash_y_shift;
   gboolean scan_film;
-  dt_iop_spektrafilm_quality_t quality;
+  int quality;
   gboolean halation_on;
   float scatter_amount;
   float scatter_scale;
@@ -877,7 +873,11 @@ int legacy_params(dt_iop_module_t *self,
 
   dt_iop_spektrafilm_params_t *n = calloc(1, sizeof(dt_iop_spektrafilm_params_t));
   if(!n) return 1;
-  memcpy(n, old_params, sizeof(dt_iop_spektrafilm_params_v2_t));
+  const size_t head = offsetof(dt_iop_spektrafilm_params_v2_t, quality);
+  const size_t tail = offsetof(dt_iop_spektrafilm_params_v2_t, halation_on);
+  memcpy(n, old_params, head);
+  memcpy((char *)n + head, (const char *)old_params + tail,
+         sizeof(dt_iop_spektrafilm_params_v2_t) - tail);
   if(old_version == 1) n->grain_density_min = 1.0f;
   n->print_gamma_r = n->print_gamma_g = n->print_gamma_b = 1.0f;
   /* not the 0.89 default: these edits were developed against 0.8 */
@@ -1427,8 +1427,6 @@ void commit_params(dt_iop_module_t *self,
   d->self = dt_pipe_is_preview(pipe) ? self : NULL;
   /* the sim itself is (re)built lazily in process(), where the pipe's work
      profile is reliably known; a stale sim is detected via sim_key there. */
-  /* exact-spectral quality has no GPU kernels: stay on the CPU path */
-  if(d->p.quality == DT_SPEKTRAFILM_Q_EXACT) piece->process_cl_ready = FALSE;
 }
 
 static uint64_t _mix64(uint64_t h,
@@ -1442,18 +1440,6 @@ static uint64_t _mix64(uint64_t h,
     h *= 0x100000001b3ULL; /* FNV-1a 64 */
   }
   return h;
-}
-
-static int _quality_steps(dt_iop_spektrafilm_quality_t q)
-{
-  switch(q)
-  {
-    case DT_SPEKTRAFILM_Q_DRAFT: return 17;
-    case DT_SPEKTRAFILM_Q_HIGH: return 49;
-    case DT_SPEKTRAFILM_Q_EXACT: return 0; /* exact spectral, no table */
-    case DT_SPEKTRAFILM_Q_STANDARD:
-    default: return 33;
-  }
 }
 
 /* make sure d->sim matches the current params + work profile; returns the sim
@@ -1549,7 +1535,6 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
      built from, so it has to be part of the sim's cache key */
   key = _mix64(key, &p->development_min, sizeof p->development_min);
   key = _mix64(key, &p->print_development_min, sizeof p->print_development_min);
-  key = _mix64(key, &p->quality, sizeof p->quality);
   /* these three rebuild the grain layer tables, which live in the sim */
   key = _mix64(key, &p->grain_granularity, sizeof p->grain_granularity);
   key = _mix64(key, &p->grain_uniformity, sizeof p->grain_uniformity);
@@ -1824,7 +1809,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     sp.scan_white_level = p->scan_white_level;
     sp.adaptation_bandwidth = p->adaptation_bandwidth;
     sp.adaptation_surface = p->adaptation_surface;
-    sp.lut_steps = _quality_steps(p->quality);
+    sp.lut_steps = SF_LUT_STEPS;
     sp.out_luminance_boost = p->output_luminance_boost;
     if(!p->gamut_compress) sp.output_compress = SF_OUTPUT_COMPRESS_OFF;
     sp.out_scale = p->output_scale;
@@ -1908,8 +1893,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     }
     else if(d->sim)
     {
-      /* float tables for the GPU path (NULL for exact-spectral quality,
-         which stays CPU-only) */
+      /* float tables for the GPU path */
       d->gpu = sf_sim_gpu_export(d->sim);
       dt_print(DT_DEBUG_DEV, "[spektrafilm] built sim: %s -> %s (steps %d, gpu %s)\n",
                film_stock, p->scan_film ? "(scan film)" : paper_stock, sp.lut_steps,
@@ -2112,18 +2096,13 @@ void tiling_callback(dt_iop_module_t *self,
   tiling->maxbuf = 1.0f;
   tiling->maxbuf_cl = 1.0f;
   /* Constant tables uploaded once per run and independent of tile size: the
-     two PCHIP table sets dominate, and they scale with the quality steps --
-     roughly 1.3 MB at draft against 17 MB at high. Exact-spectral quality
-     builds no tables at all and reports zero steps. */
-  const int steps = _quality_steps(d->p.quality);
+     two PCHIP table sets dominate, and they scale with SF_LUT_STEPS. */
+  const int steps = SF_LUT_STEPS;
   size_t overhead = (size_t)192 * 192 * 3 * sizeof(float); /* spectral upsampling table */
-  if(steps >= 2)
-  {
-    const size_t n3 = (size_t)steps * steps * steps * 3;
-    const size_t m3 = (size_t)(steps - 1) * (steps - 1) * (steps - 1) * 3;
-    const size_t set = (4 * n3 + 2 * m3) * sizeof(float);
-    overhead += d->p.scan_film ? set : 2 * set;
-  }
+  const size_t n3 = (size_t)steps * steps * steps * 3;
+  const size_t m3 = (size_t)(steps - 1) * (steps - 1) * (steps - 1) * 3;
+  const size_t set = (4 * n3 + 2 * m3) * sizeof(float);
+  overhead += d->p.scan_film ? set : 2 * set;
   tiling->overhead = overhead;
   tiling->overlap = (unsigned)ceilf(SF_HALO_SIGMAS * _max_halo_sigma(&d->p, pixel_um));
   tiling->align = 1;
@@ -2587,7 +2566,7 @@ int process_cl(dt_iop_module_t *self,
     return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_passthrough, ow, oh,
                                             CLARG(dev_in), CLARG(dev_out), CLARG(ow),
                                             CLARG(oh), CLARG(ox), CLARG(oy));
-  if(!g) return DT_OPENCL_DEFAULT_ERROR; /* exact quality etc. -> CPU fallback */
+  if(!g) return DT_OPENCL_DEFAULT_ERROR; /* no GPU tables -> CPU fallback */
 
   /* film_format_mm is the long-edge dimension, see modify_roi_in */
   const float full_long_edge
@@ -4458,7 +4437,6 @@ static void _preset_defaults(dt_iop_spektrafilm_params_t *p)
   p->couplers_tail_weight = 0.03f;
   p->couplers_inhibition_same = 1.0f;
   p->couplers_inhibition_inter = 1.0f;
-  p->quality = DT_SPEKTRAFILM_Q_STANDARD;
   p->halation_on = TRUE;
   p->scatter_amount = 1.0f;
   p->scatter_scale = 1.0f;
@@ -5761,21 +5739,8 @@ void gui_init(dt_iop_module_t *self)
 
 
   /* The knobs to reach for last: the adaptation switches change how faithful
-     the model is, not what the look is, and quality trades accuracy for
-     speed. */
+     the model is, not what the look is. */
   _section_add(self, C_("section", "advanced"), "plugins/darkroom/spektrafilm/expand_film_advanced");
-
-  g->quality = dt_bauhaus_combobox_from_params(self, "quality");
-  gtk_widget_set_tooltip_text(g->quality,
-                              _("spectral accuracy vs speed: the color model is evaluated "
-                                "on a table\n"
-                                "of this size and PCHIP-interpolated between the points, "
-                                "so a finer\n"
-                                "table lands closer to the exact answer and costs more to "
-                                "build.\n"
-                                "\"exact spectral\" skips the table and runs the model per "
-                                "pixel. CPU\n"
-                                "only, and slow."));
 
   /* not dt_bauhaus_combobox_from_params: the entries are whatever the installed
      packs carry, which is not knowable at build time. Populated in
