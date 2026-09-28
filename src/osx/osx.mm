@@ -101,6 +101,28 @@ void dt_osx_disallow_fullscreen(GtkWidget *widget)
 #endif
 }
 
+#ifdef GDK_WINDOWING_QUARTZ
+// every dialog, which per-window calls cannot reach; not the main window,
+// which must keep native fullscreen
+static void _window_map_callback(GtkWidget *widget)
+{
+  if(GTK_IS_DIALOG(widget))
+    dt_osx_disable_fullscreen(widget);
+  g_signal_chain_from_overridden_handler(widget);
+}
+#endif
+
+void dt_osx_setup_dialogs()
+{
+#ifdef GDK_WINDOWING_QUARTZ
+  static gboolean done = FALSE;
+  if(done) return;
+  done = TRUE;
+  g_signal_override_class_handler("map", gtk_window_get_type(),
+                                  G_CALLBACK(_window_map_callback));
+#endif
+}
+
 gboolean dt_osx_file_trash(const char *filename, GError **error)
 {
   @autoreleasepool

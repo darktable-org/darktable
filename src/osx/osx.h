@@ -24,6 +24,8 @@ G_BEGIN_DECLS
 
 float dt_osx_get_ppd();
 void dt_osx_disallow_fullscreen(GtkWidget *widget);
+// opaque titlebar on every dialog; call once after the first GtkWindow exists
+void dt_osx_setup_dialogs();
 gboolean dt_osx_file_trash(const char *filename, GError **error);
 char* dt_osx_get_bundle_res_path();
 void dt_osx_prepare_environment();
