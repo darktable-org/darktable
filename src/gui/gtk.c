@@ -1934,6 +1934,10 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_name(widget, "main_window");
   gui->ui->main_window = widget;
 
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_setup_dialogs();
+#endif
+
   if(!_check_ssd_support())
   {
     // if must use client-side decoration (CSD), set up custom
