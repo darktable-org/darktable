@@ -641,12 +641,17 @@ void process(dt_iop_module_t *self,
   const float *const restrict saturation = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->saturation);
   const float *const restrict brilliance = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->brilliance);
 
-  const gint mask_display
-      = dt_pipe_is_full(piece->pipe) && self->dev->gui_attached
-         && g && g->mask_display;
+  dt_iop_gui_enter_critical_section(self);
+  const gboolean mask_display
+      = dt_pipe_is_full(piece->pipe)
+          && self->dev->gui_attached
+          && g
+          && g->mask_display;
+  const dt_iop_colorbalancergb_mask_data_t mask_type = g->mask_type;
+  dt_iop_gui_leave_critical_section(self);
 
   // pixel size of the checker background
-  const size_t checker_1 = (mask_display) ? DT_PIXEL_APPLY_DPI(d->checker_size) : 0;
+  const size_t checker_1 = mask_display ? DT_PIXEL_APPLY_DPI(d->checker_size) : 0;
   const size_t checker_2 = 2 * checker_1;
 
   const float L_white = Y_to_dt_UCS_L_star(d->white_fulcrum);
@@ -926,7 +931,7 @@ void process(dt_iop_module_t *self,
           copy_pixel(color, d->checker_color_2);
       }
 
-      float opacity = opacities[g->mask_type];
+      float opacity = opacities[mask_type];
       const float opacity_comp = 1.0f - opacity;
 
       dt_vector_clipneg(pix_out);
@@ -1026,12 +1031,17 @@ int process_cl(dt_iop_module_t *self,
   gamut_LUT_cl = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->gamut_LUT);
 
   // Size of the checker
-  const gint mask_display
-      = dt_pipe_is_full(piece->pipe) && self->dev->gui_attached
-         && g && g->mask_display;
-  const int checker_1 = (mask_display) ? DT_PIXEL_APPLY_DPI(d->checker_size) : 0;
+  dt_iop_gui_enter_critical_section(self);
+  const gboolean mask_display
+      = dt_pipe_is_full(piece->pipe)
+        && self->dev->gui_attached
+        && g
+        && g->mask_display;
+  const dt_iop_colorbalancergb_mask_data_t mask_type = mask_display ? g->mask_type : MASK_NONE;
+  dt_iop_gui_leave_critical_section(self);
+
+  const int checker_1 = mask_display ? DT_PIXEL_APPLY_DPI(d->checker_size) : 0;
   const int checker_2 = 2 * checker_1;
-  const int mask_type = (mask_display) ? g->mask_type : 0;
 
   const float L_white = Y_to_dt_UCS_L_star(d->white_fulcrum);
 
@@ -1407,6 +1417,21 @@ static void paint_hue_sliders(const dt_iop_order_iccprofile_info_t *output_profi
   }
 }
 
+void gui_focus(dt_iop_module_t *self, gboolean in)
+{
+  if(!in)
+  {
+    dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
+    const gboolean was_mask = g->mask_display;
+    g->mask_display = FALSE;
+    g->mask_type = MASK_NONE;
+    dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->shadows_weight), FALSE);
+    dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->mask_grey_fulcrum), FALSE);
+    dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->highlights_weight), FALSE);
+    if(was_mask)
+      dt_iop_refresh_center(self);
+  }
+}
 
 static void mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
 {
@@ -1418,16 +1443,16 @@ static void mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
   dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
 
   // if blend module is displaying mask do not display it here
-  if(self->request_mask_display)
-  {
-    dt_control_log(_("cannot display masks when the blending mask is displayed"));
-    g->mask_display = 0;
-  }
-  else
-  {
-    g->mask_display = dt_bauhaus_widget_get_quad_active(GTK_WIDGET(togglebutton));
-  }
 
+  const gboolean mask_display = self->request_mask_display
+                        ? FALSE
+                        : dt_bauhaus_widget_get_quad_active(GTK_WIDGET(togglebutton));
+
+  if(self->request_mask_display)
+    dt_control_log(_("cannot display masks when the blending mask is displayed"));
+
+  dt_iop_gui_enter_critical_section(self);
+  g->mask_display = mask_display;
   if(g->mask_display)
   {
     if(togglebutton == g->shadows_weight) g->mask_type = MASK_SHADOWS;
@@ -1438,10 +1463,12 @@ static void mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
   {
     g->mask_type = MASK_NONE;
   }
+  const dt_iop_colorbalancergb_mask_data_t mask_type = g->mask_type;
+  dt_iop_gui_leave_critical_section(self);
 
-  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->shadows_weight), g->mask_type == MASK_SHADOWS);
-  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->mask_grey_fulcrum), g->mask_type == MASK_MIDTONES);
-  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->highlights_weight), g->mask_type == MASK_HIGHLIGHTS);
+  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->shadows_weight), mask_type == MASK_SHADOWS);
+  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->mask_grey_fulcrum), mask_type == MASK_MIDTONES);
+  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->highlights_weight), mask_type == MASK_HIGHLIGHTS);
 
   dt_iop_refresh_center(self);
 }
@@ -1743,8 +1770,11 @@ void gui_update(dt_iop_module_t *self)
 
   gui_changed(self, NULL, NULL);
   dt_iop_color_picker_reset(self, TRUE);
+
+  dt_iop_gui_enter_critical_section(self);
   g->mask_display = FALSE;
   g->mask_type = MASK_NONE;
+  dt_iop_gui_leave_critical_section(self);
 
   dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->shadows_weight), FALSE);
   dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->mask_grey_fulcrum), FALSE);
@@ -1778,7 +1808,10 @@ void gui_reset(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_colorbalancergb_gui_data_t *g = IOP_GUI_ALLOC(colorbalancergb);
+  dt_iop_gui_enter_critical_section(self);
   g->mask_display = FALSE;
+  dt_iop_gui_leave_critical_section(self);
+
   dt_iop_module_t *sect = NULL;
 
   // start building top level widget

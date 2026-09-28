@@ -445,7 +445,9 @@ void process_display(dt_iop_module_t *self,
   const int ch = piece->colors;
   const float normalize_C = 1.f / (128.0f * M_SQRT2_F);
 
+  dt_iop_gui_enter_critical_section(self);
   const dt_iop_colorzones_channel_t display_channel = g->channel;
+  dt_iop_gui_leave_critical_section(self);
 
   dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
 
@@ -587,12 +589,17 @@ void process(dt_iop_module_t *self,
   dt_iop_colorzones_data_t *d = piece->data;
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
 
+  dt_iop_gui_enter_critical_section(self);
+  const gboolean show_display =
   // display selection if requested
-  if(dt_pipe_is_full(piece->pipe)
-     && g
-     && g->display_mask
-     && dt_iop_has_focus(self)
-     && (piece->pipe == self->dev->full.pipe))
+      dt_pipe_is_full(piece->pipe)
+      && g
+      && g->display_mask
+      && dt_iop_has_focus(self)
+      && (piece->pipe == self->dev->full.pipe);
+  dt_iop_gui_leave_critical_section(self);
+
+  if(show_display)
     process_display(self, piece, ivoid, ovoid, roi_in, roi_out);
   else if(d->mode == DT_IOP_COLORZONES_MODE_SMOOTH)
     process_v3(self, piece, ivoid, ovoid, roi_in, roi_out);
@@ -2331,7 +2338,10 @@ void gui_changed(dt_iop_module_t *self,
   if(w == g->select_by)
   {
     _reset_parameters(p, p->channel, p->splines_version);
-    if(g->display_mask) _reset_display_selection(self);
+    dt_iop_gui_enter_critical_section(self);
+    const gboolean display_mask = g && g->display_mask;
+    dt_iop_gui_leave_critical_section(self);
+    if(display_mask) _reset_display_selection(self);
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
     gtk_widget_queue_draw(GTK_WIDGET(g->bottom_area));
   }
@@ -2377,7 +2387,11 @@ static void _display_mask_callback(GtkToggleButton *togglebutton,
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
 
   // if blend module is displaying mask do not display it here
-  if(self->request_mask_display && !g->display_mask)
+  dt_iop_gui_enter_critical_section(self);
+  gboolean display_mask = g->display_mask;
+  dt_iop_gui_leave_critical_section(self);
+
+  if(self->request_mask_display && !display_mask)
   {
     dt_control_log(_("cannot display masks when the blending mask is displayed"));
 
@@ -2386,8 +2400,10 @@ static void _display_mask_callback(GtkToggleButton *togglebutton,
     DT_LEAVE_GUI_UPDATE();
     return;
   }
-
-  g->display_mask = gtk_toggle_button_get_active(togglebutton);
+  const gboolean is_toggle = gtk_toggle_button_get_active(togglebutton);
+  dt_iop_gui_enter_critical_section(self);
+  g->display_mask = is_toggle;
+  dt_iop_gui_leave_critical_section(self);
 
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
@@ -2403,9 +2419,11 @@ void color_picker_apply(dt_iop_module_t *self,
   {
     dt_iop_colorzones_params_t *p = self->params;
     const dt_iop_colorzones_params_t *const d = self->default_params;
-
+    dt_iop_gui_enter_critical_section(self);
     const int ch_curve = g->channel;
     const int ch_val = p->channel;
+    dt_iop_gui_leave_critical_section(self);
+
     dt_iop_colorzones_node_t *curve = p->curve[ch_curve];
 
     // reset current curve
@@ -2501,10 +2519,13 @@ static float _action_process_zones(gpointer target,
   if(element >= DT_IOP_COLORZONES_BANDS) return DT_ACTION_NOT_VALID;
 
   dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
-  dt_iop_colorzones_gui_data_t *g = self->gui_data;
+  const dt_iop_colorzones_gui_data_t *g = self->gui_data;
   dt_iop_colorzones_params_t *p = self->params;
 
-  const int ch = g->channel;
+  dt_iop_gui_enter_critical_section(self);
+  const int ch = g ? g->channel : 0;
+  dt_iop_gui_leave_critical_section(self);
+
   const int nodes = p->curve_num_nodes[ch];
   dt_iop_colorzones_node_t *curve = p->curve[ch];
   const float x = (float)element / DT_IOP_COLORZONES_BANDS;
@@ -2596,7 +2617,9 @@ void gui_init(dt_iop_module_t *self)
 
   self->histogram_cst = IOP_CS_LCH;
 
-  g->channel = dt_conf_get_int("plugins/darkroom/colorzones/gui_channel");
+  const int channel = dt_conf_get_int("plugins/darkroom/colorzones/gui_channel");
+  dt_iop_gui_enter_critical_section(self);
+  g->channel = channel;
   for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++)
   {
     g->minmax_curve[ch] = dt_draw_curve_new(0.f, 1.f, p->curve_type[ch]);
@@ -2616,6 +2639,7 @@ void gui_init(dt_iop_module_t *self)
   g->dragging = 0;
   g->edit_by_area = 0;
   g->display_mask = FALSE;
+  dt_iop_gui_leave_critical_section(self);
 
   // tabs
   static dt_action_def_t notebook_def = { };
@@ -2627,8 +2651,8 @@ void gui_init(dt_iop_module_t *self)
   dt_ui_notebook_page(g->channel_tabs, N_("chroma"), NULL);
   dt_ui_notebook_page(g->channel_tabs, N_("hue"), NULL);
 
-  gtk_widget_show(gtk_notebook_get_nth_page(g->channel_tabs, g->channel));
-  gtk_notebook_set_current_page(g->channel_tabs, g->channel);
+  gtk_widget_show(gtk_notebook_get_nth_page(g->channel_tabs, channel));
+  gtk_notebook_set_current_page(g->channel_tabs, channel);
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page",
                    G_CALLBACK(_channel_tabs_switch_callback), self);
 
@@ -2809,7 +2833,11 @@ void commit_params(dt_iop_module_t *self,
 #endif
 
   // display selection don't work with opencl
-  piece->process_cl_ready = (g && g->display_mask) ? FALSE : TRUE;
+  dt_iop_gui_enter_critical_section(self);
+  const gboolean display_mask = g && g->display_mask;
+  dt_iop_gui_leave_critical_section(self);
+
+  piece->process_cl_ready = display_mask ? FALSE : TRUE;
   d->channel = (dt_iop_colorzones_channel_t)p->channel;
   d->mode = p->mode;
 
