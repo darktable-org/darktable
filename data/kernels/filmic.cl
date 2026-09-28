@@ -1039,7 +1039,7 @@ filmic_mask_clipped_pixels(read_only image2d_t in,
                            const int height,
                            const float normalize,
                            const float feathering,
-                           global int *const is_clipped)
+                           global int *const clipped)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -1049,15 +1049,14 @@ filmic_mask_clipped_pixels(read_only image2d_t in,
   float4 i = Areadpixel(in, x, y);
   const float4 i2 = i * i;
 
-  const float pix_max = fmax(dtcl_sqrt(i2.x + i2.y + i2.z), 0.f);
+  const float pix_max = dtcl_sqrt(i2.x + i2.y + i2.z);
   const float argument = -pix_max * normalize + feathering;
   const float weight = clipf(1.0f / ( 1.0f + dtcl_exp2(argument)));
 
   /** according to CL specs such writing to buffer is not safe (workgroups)
-      and we should better do atomic_inc(is_clipped)
+      and we should better do atomic_inc(clipped)
   */
-  if(4.f > argument) *is_clipped = 1;
-
+  if(4.f > argument) *clipped += 1;
   write_imagef(out, (int2)(x, y), weight);
 }
 
