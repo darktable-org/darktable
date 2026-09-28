@@ -25,6 +25,13 @@
 #include "imageio/imageio_module.h"
 #include "imageio/storage/imageio_storage_api.h"
 #include <glib/gstdio.h>
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
+#ifdef GDK_WINDOWING_WIN32
+#include "win/dtwin.h"
+#include <gdk/gdkwin32.h>
+#endif
 
 DT_MODULE(1)
 
@@ -53,6 +60,44 @@ typedef struct _clipboard_content_t
   GdkPixbuf *pixbuf;
 } _clipboard_content_t;
 
+// its files outlive clipboard ownership, other apps may still refer to them
+static _clipboard_content_t *_published = NULL;
+static _clipboard_content_t *_owned = NULL;
+
+static void _remove_files(gchar *dirname, GList *files)
+{
+  for(GList *iter = files; iter; iter = g_list_next(iter))
+    g_unlink((gchar *)iter->data);
+  if(dirname) g_rmdir(dirname);
+}
+
+static void _remove_dir(const gchar *dirname)
+{
+  GDir *dir = g_dir_open(dirname, 0, NULL);
+  if(!dir) return;
+  const gchar *name;
+  while((name = g_dir_read_name(dir)))
+  {
+    gchar *path = g_build_filename(dirname, name, (char *)NULL);
+    if(g_file_test(path, G_FILE_TEST_IS_DIR) && !g_file_test(path, G_FILE_TEST_IS_SYMLINK))
+      _remove_dir(path);
+    else
+      g_unlink(path);
+    g_free(path);
+  }
+  g_dir_close(dir);
+  g_rmdir(dirname);
+}
+
+static void _content_free(_clipboard_content_t *c)
+{
+  g_list_free_full(c->files, g_free);
+  if(c->pixbuf) g_object_unref(c->pixbuf);
+  g_free(c->dirname);
+  g_free(c->mime);
+  g_free(c);
+}
+
 const char *name(const struct dt_imageio_module_storage_t *self)
 {
   return _("copy to clipboard");
@@ -64,6 +109,7 @@ void gui_init(dt_imageio_module_storage_t *self)
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
 {
+  // keep _published: clearing GTK's selection empties the macOS and Windows clipboards
 }
 
 void gui_reset(dt_imageio_module_storage_t *self)
@@ -90,13 +136,6 @@ int set_params(dt_imageio_module_storage_t *self,
 {
   if(size != self->params_size(self)) return 1;
   return 0;
-}
-
-static void _remove_files(gchar *dirname, GList *files)
-{
-  for(GList *iter = files; iter; iter = g_list_next(iter))
-    g_unlink((gchar *)iter->data);
-  if(dirname) g_rmdir(dirname);
 }
 
 void free_params(dt_imageio_module_storage_t *self,
@@ -133,10 +172,21 @@ int initialize_store(dt_imageio_module_storage_t *self,
     return 1;
   }
 
-  char tmpdir[PATH_MAX] = { 0 };
-  dt_loc_get_tmp_dir(tmpdir, sizeof(tmpdir));
+  char cachedir[PATH_MAX] = { 0 };
+  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+  gchar *parent = g_build_filename(cachedir, "clipboard", (char *)NULL);
 
-  d->dirname = g_build_filename(tmpdir, "clipboard-XXXXXX", (char *)NULL);
+  // leftovers from the previous session
+  static gsize purged = 0;
+  if(g_once_init_enter(&purged))
+  {
+    _remove_dir(parent);
+    g_once_init_leave(&purged, 1);
+  }
+
+  g_mkdir_with_parents(parent, 0700);
+  d->dirname = g_build_filename(parent, "XXXXXX", (char *)NULL);
+  g_free(parent);
   if(!g_mkdtemp(d->dirname))
   {
     dt_print(DT_DEBUG_ALWAYS,
@@ -271,27 +321,44 @@ static void _clipboard_clear(GtkClipboard *clipboard,
                              gpointer user_data)
 {
   _clipboard_content_t *c = (_clipboard_content_t *)user_data;
-  _remove_files(c->dirname, c->files);
-  g_list_free_full(c->files, g_free);
-  if(c->pixbuf) g_object_unref(c->pixbuf);
-  g_free(c->dirname);
-  g_free(c->mime);
-  g_free(c);
+  if(c == _owned) _owned = NULL;
+  g_clear_object(&c->pixbuf);
 }
 
-static gboolean _clipboard_set(gpointer user_data)
+static gboolean _set_native_files(GList *files)
 {
-  _clipboard_content_t *c = (_clipboard_content_t *)user_data;
-  const guint n = g_list_length(c->files);
+  // release GTK before the old content is freed
+  if(_owned) gtk_clipboard_clear(gtk_clipboard_get_default(gdk_display_get_default()));
 
+#if defined(GDK_WINDOWING_QUARTZ)
+  return dt_osx_clipboard_set_files(files);
+#elif defined(GDK_WINDOWING_WIN32)
+  GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
+  return dtwin_clipboard_set_files(files, (HWND)gdk_win32_window_get_handle(window));
+#else
+  return FALSE;
+#endif
+}
+
+static gboolean _set_gtk(_clipboard_content_t *c, const guint n)
+{
   GtkTargetList *list = gtk_target_list_new(NULL, 0);
+  gint n_images = 0;
 
+  // not gtk_target_list_add_image_targets(), it adds types like text/ico
   if(n == 1)
   {
     if(c->mime && g_str_has_prefix(c->mime, "image/"))
+    {
       gtk_target_list_add(list, gdk_atom_intern(c->mime, FALSE), 0, _TARGET_NATIVE);
-    if(gdk_pixbuf_get_file_info((gchar *)c->files->data, NULL, NULL))
-      gtk_target_list_add_image_targets(list, _TARGET_IMAGE, TRUE);
+      n_images++;
+    }
+    if(g_strcmp0(c->mime, "image/png")
+       && gdk_pixbuf_get_file_info((gchar *)c->files->data, NULL, NULL))
+    {
+      gtk_target_list_add(list, gdk_atom_intern_static_string("image/png"), 0, _TARGET_IMAGE);
+      n_images++;
+    }
   }
   gtk_target_list_add_uri_targets(list, _TARGET_URIS);
   gtk_target_list_add(list, gdk_atom_intern_static_string("x-special/gnome-copied-files"),
@@ -302,20 +369,49 @@ static gboolean _clipboard_set(gpointer user_data)
   gtk_target_list_unref(list);
 
   GtkClipboard *clipboard = gtk_clipboard_get_default(gdk_display_get_default());
-  if(gtk_clipboard_set_with_data(clipboard, targets, n_targets,
-                                 _clipboard_get, _clipboard_clear, c))
+  const gboolean ok = gtk_clipboard_set_with_data(clipboard, targets, n_targets,
+                                                  _clipboard_get, _clipboard_clear, c);
+  if(ok)
   {
-    gtk_clipboard_set_can_store(clipboard, NULL, 0);
+    // the files are temporary, only store the image data
+    if(n_images) gtk_clipboard_set_can_store(clipboard, targets, n_images);
+    _owned = c;
+  }
+
+  gtk_target_table_free(targets, n_targets);
+  return ok;
+}
+
+static gboolean _clipboard_set(gpointer user_data)
+{
+  _clipboard_content_t *c = (_clipboard_content_t *)user_data;
+  const guint n = g_list_length(c->files);
+
+  // GTK only passes the first URI on to macOS and Windows
+#if defined(GDK_WINDOWING_QUARTZ) || defined(GDK_WINDOWING_WIN32)
+  const gboolean native = n > 1;
+#else
+  const gboolean native = FALSE;
+#endif
+
+  if(native ? _set_native_files(c->files) : _set_gtk(c, n))
+  {
+    if(_published)
+    {
+      _remove_files(_published->dirname, _published->files);
+      _content_free(_published);
+    }
+    _published = c;
     dt_control_log(ngettext("%d image copied to clipboard",
                             "%d images copied to clipboard", n), n);
   }
   else
   {
     dt_control_log(_("could not copy to clipboard"));
-    _clipboard_clear(clipboard, c);
+    _remove_files(c->dirname, c->files);
+    _content_free(c);
   }
 
-  gtk_target_table_free(targets, n_targets);
   return G_SOURCE_REMOVE;
 }
 

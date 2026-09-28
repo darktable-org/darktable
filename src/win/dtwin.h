@@ -24,6 +24,7 @@
 const wchar_t *dtwin_get_locale();
 void dtwin_set_thread_name(DWORD dwThreadID, const char *threadName);
 boolean dt_win_file_trash(GFile *file, GCancellable *cancellable, GError **error);
+gboolean dtwin_clipboard_set_files(GList *files, HWND owner);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

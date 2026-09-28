@@ -19,6 +19,7 @@
 #include "dtwin.h"
 #include <setjmp.h>
 #include <windows.h>
+#include <shlobj.h>
 
 // Required by (at least) clang 10.0 as packaged by MSYS2 MinGW64.
 #ifdef __clang__
@@ -378,6 +379,53 @@ boolean dt_win_file_trash(GFile *file, GCancellable *cancellable, GError **error
                 g_file_get_parse_name(file));
 
   g_free(wfilename);
+  return success;
+}
+
+// SetClipboardData() fails without a real owner window
+gboolean dtwin_clipboard_set_files(GList *files, HWND owner)
+{
+  GPtrArray *paths = g_ptr_array_new_with_free_func(g_free);
+  size_t chars = 1; // double NUL terminated
+  for(GList *iter = files; iter; iter = g_list_next(iter))
+  {
+    wchar_t *wpath = g_utf8_to_utf16(iter->data, -1, NULL, NULL, NULL);
+    if(!wpath) continue;
+    chars += wcslen(wpath) + 1;
+    g_ptr_array_add(paths, wpath);
+  }
+
+  HGLOBAL mem = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT,
+                            sizeof(DROPFILES) + chars * sizeof(wchar_t));
+  if(!mem)
+  {
+    g_ptr_array_free(paths, TRUE);
+    return FALSE;
+  }
+
+  DROPFILES *drop = GlobalLock(mem);
+  drop->pFiles = sizeof(DROPFILES);
+  drop->fWide = TRUE;
+  wchar_t *out = (wchar_t *)((char *)drop + sizeof(DROPFILES));
+  for(guint i = 0; i < paths->len; i++)
+  {
+    const wchar_t *wpath = g_ptr_array_index(paths, i);
+    const size_t len = wcslen(wpath) + 1;
+    memcpy(out, wpath, len * sizeof(wchar_t));
+    out += len;
+  }
+  GlobalUnlock(mem);
+  g_ptr_array_free(paths, TRUE);
+
+  gboolean success = FALSE;
+  if(OpenClipboard(owner))
+  {
+    EmptyClipboard();
+    // owned by the clipboard on success
+    success = SetClipboardData(CF_HDROP, mem) != NULL;
+    CloseClipboard();
+  }
+  if(!success) GlobalFree(mem);
   return success;
 }
 
