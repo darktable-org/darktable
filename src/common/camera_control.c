@@ -712,8 +712,8 @@ dt_camctl_t *dt_camctl_new()
            "[camera_control] loaded %d camera drivers",
            gp_abilities_list_count(camctl->gpcams));
 
-  dt_pthread_mutex_init(&camctl->lock, NULL);
-  dt_pthread_mutex_init(&camctl->listeners_lock, NULL);
+  dt_pthread_mutex_init(&camctl->lock);
+  dt_pthread_mutex_init(&camctl->listeners_lock);
 
   /* create thread taking care of connecting gphoto2 devices */
   if(dt_control_running())
@@ -1128,10 +1128,10 @@ static gboolean _camera_initialize(const dt_camctl_t *c,
   CameraAbilities a;
   GPPortInfo pi;
 
-  dt_pthread_mutex_init(&cam->jobqueue_lock, NULL);
-  dt_pthread_mutex_init(&cam->config_lock, NULL);
-  dt_pthread_mutex_init(&cam->live_view_buffer_mutex, NULL);
-  dt_pthread_mutex_init(&cam->live_view_synch, NULL);
+  dt_pthread_mutex_init(&cam->jobqueue_lock);
+  dt_pthread_mutex_init(&cam->config_lock);
+  dt_pthread_mutex_init(&cam->live_view_buffer_mutex);
+  dt_pthread_mutex_init(&cam->live_view_synch);
 
   if(cam->gpcam == NULL)
   {

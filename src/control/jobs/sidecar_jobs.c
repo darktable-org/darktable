@@ -30,7 +30,7 @@ static void _lock_pending_queue()
 {
   if(!lock_initialized)
   {
-    dt_pthread_mutex_init(&pending_mutex, NULL);
+    dt_pthread_mutex_init(&pending_mutex);
     lock_initialized = TRUE;
   }
   dt_pthread_mutex_lock(&pending_mutex);

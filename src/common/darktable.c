@@ -1063,20 +1063,15 @@ int dt_init(int argc,
 
   darktable.progname = argv[0];
 
-  // FIXME: move there into dt_database_t
-  pthread_mutexattr_t recursive_locking;
-  pthread_mutexattr_init(&recursive_locking);
-  pthread_mutexattr_settype(&recursive_locking, PTHREAD_MUTEX_RECURSIVE);
   for(int k=0; k<DT_IMAGE_DBLOCKS; k++)
-  {
-    dt_pthread_mutex_init(&darktable.db_image[k], &recursive_locking);
-  }
-  dt_pthread_mutex_init(&darktable.plugin_threadsafe, NULL);
-  dt_pthread_mutex_init(&darktable.dev_threadsafe, NULL);
-  dt_pthread_mutex_init(&darktable.capabilities_threadsafe, NULL);
-  dt_pthread_mutex_init(&darktable.exiv2_threadsafe, NULL);
-  dt_pthread_mutex_init(&darktable.readFile_mutex, NULL);
-  dt_pthread_mutex_init(&darktable.metadata_threadsafe, NULL);
+    dt_pthread_recursive_mutex_init(&darktable.db_image[k]);
+
+  dt_pthread_mutex_init(&darktable.plugin_threadsafe);
+  dt_pthread_mutex_init(&darktable.dev_threadsafe);
+  dt_pthread_mutex_init(&darktable.capabilities_threadsafe);
+  dt_pthread_mutex_init(&darktable.exiv2_threadsafe);
+  dt_pthread_mutex_init(&darktable.readFile_mutex);
+  dt_pthread_mutex_init(&darktable.metadata_threadsafe);
   darktable.control = calloc(1, sizeof(dt_control_t));
 
   // database

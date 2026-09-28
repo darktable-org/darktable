@@ -118,11 +118,9 @@ void dt_lua_goto_subtable(lua_State *L, const char *sub_name)
 
 void dt_lua_init_lock()
 {
-  pthread_mutexattr_t a;
-  pthread_mutexattr_init(&a);
-  //pthread_mutexattr_settype(&a, PTHREAD_MUTEX_RECURSIVE);
-  dt_pthread_mutex_init(&darktable.lua_state.mutex, &a);
-  pthread_mutexattr_destroy(&a);
+  // or recursive?
+  dt_pthread_mutex_init(&darktable.lua_state.mutex);
+
   pthread_cond_init(&darktable.lua_state.cond,NULL);
   // we want our lock initialized locked so that code between dt_lua_init_early() and dt_lua_init() can't use lua
   dt_pthread_mutex_lock(&darktable.lua_state.mutex);

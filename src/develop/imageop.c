@@ -403,11 +403,7 @@ gboolean dt_iop_load_module_by_so(dt_iop_module_t *module,
   g_strlcpy(module->op, so->op, sizeof(module->op));
   module->raster_mask.source.users = g_hash_table_new(NULL, NULL);
   // recursive: the GUI asks whether a source's mask is used while holding its lock
-  pthread_mutexattr_t recursive_locking;
-  pthread_mutexattr_init(&recursive_locking);
-  pthread_mutexattr_settype(&recursive_locking, PTHREAD_MUTEX_RECURSIVE);
-  dt_pthread_mutex_init(&module->raster_mask.source.users_lock, &recursive_locking);
-  pthread_mutexattr_destroy(&recursive_locking);
+  dt_pthread_recursive_mutex_init(&module->raster_mask.source.users_lock);
   module->raster_mask.source.masks =
     g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
   module->raster_mask.sink.source = NULL;
@@ -1472,10 +1468,7 @@ void dt_iop_gui_init(dt_iop_module_t *module)
   DT_ENTER_GUI_UPDATE();
   --darktable.bauhaus->skip_accel;
 
-  pthread_mutexattr_t recursive_gui_lock;
-  pthread_mutexattr_init(&recursive_gui_lock);
-  pthread_mutexattr_settype(&recursive_gui_lock, PTHREAD_MUTEX_RECURSIVE);
-  dt_pthread_mutex_init(&module->gui_lock, &recursive_gui_lock);
+  dt_pthread_recursive_mutex_init(&module->gui_lock);
 
   if(module->gui_init) module->gui_init(module);
   ++darktable.bauhaus->skip_accel;

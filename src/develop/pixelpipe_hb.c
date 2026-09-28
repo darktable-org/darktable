@@ -304,9 +304,9 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->average_delay = 1000 * delay;
   pipe->input_timestamp = 0;
   pipe->levels = IMAGEIO_RGB | IMAGEIO_INT8;
-  dt_pthread_mutex_init(&pipe->mutex, NULL);
-  dt_pthread_mutex_init(&pipe->backbuf_mutex, NULL);
-  dt_pthread_mutex_init(&pipe->busy_mutex, NULL);
+  dt_pthread_mutex_init(&pipe->mutex);
+  dt_pthread_mutex_init(&pipe->backbuf_mutex);
+  dt_pthread_mutex_init(&pipe->busy_mutex);
   pipe->icc_type = DT_COLORSPACE_NONE;
   pipe->icc_filename = NULL;
   pipe->icc_intent = DT_INTENT_LAST;

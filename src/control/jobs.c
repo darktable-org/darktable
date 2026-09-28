@@ -145,8 +145,8 @@ dt_job_t *dt_control_job_create(dt_job_execute_callback execute,
   job->state = DT_JOB_STATE_INITIALIZED;
   job->view_creator = dt_view_get_current();
 
-  dt_pthread_mutex_init(&job->state_mutex, NULL);
-  dt_pthread_mutex_init(&job->wait_mutex, NULL);
+  dt_pthread_mutex_init(&job->state_mutex);
+  dt_pthread_mutex_init(&job->wait_mutex);
   return job;
 }
 

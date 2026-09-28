@@ -50,10 +50,7 @@ dt_undo_t *dt_undo_init(void)
   udata->redo_list = NULL;
   udata->disable_next = FALSE;
 
-  pthread_mutexattr_t recursive_locking;
-  pthread_mutexattr_init(&recursive_locking);
-  pthread_mutexattr_settype(&recursive_locking, PTHREAD_MUTEX_RECURSIVE);
-  dt_pthread_mutex_init(&udata->mutex, &recursive_locking);
+  dt_pthread_recursive_mutex_init(&udata->mutex);
 
   udata->group = DT_UNDO_NONE;
   udata->group_indent = 0;

@@ -4500,7 +4500,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = d;
   d->env = dt_restore_env_init();
   d->processing_images = g_hash_table_new(g_direct_hash, g_direct_equal);
-  dt_pthread_mutex_init(&d->ctx_lock, NULL);
+  dt_pthread_mutex_init(&d->ctx_lock);
   g_mutex_init(&d->preview_inference_lock);
   d->split_pos = 0.5f;
 
