@@ -3468,7 +3468,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     bd->masks_modes = NULL;
     bd->masks_modes_toggles = NULL;
 
-    dt_pthread_mutex_init(&bd->lock, NULL);
+    dt_pthread_mutex_init(&bd->lock);
     dt_pthread_mutex_lock(&bd->lock);
     bd->timeout_handle = 0;
     bd->save_for_leave = 0;

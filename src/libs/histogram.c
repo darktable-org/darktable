@@ -740,7 +740,7 @@ void gui_init(dt_lib_module_t *self)
       s->cur_mode = &s->modes[i];
   }
 
-  dt_pthread_mutex_init(&s->lock, NULL);
+  dt_pthread_mutex_init(&s->lock);
 
   s->channels[DT_SCOPES_RGB_RED]
     = dt_conf_get_bool("plugins/darkroom/histogram/show_red");

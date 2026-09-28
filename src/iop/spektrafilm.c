@@ -563,7 +563,7 @@ static dt_pthread_mutex_t _pack_lock;
 
 void init_global(dt_iop_module_so_t *self)
 {
-  dt_pthread_mutex_init(&_pack_lock, NULL);
+  dt_pthread_mutex_init(&_pack_lock);
   sf_fetch_init();
 
   const int program = 43; /* spektrafilm.cl in data/kernels/programs.conf */
@@ -961,7 +961,7 @@ void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_spektrafilm_data_t *d = calloc(1, sizeof(dt_iop_spektrafilm_data_t));
-  dt_pthread_mutex_init(&d->lock, NULL);
+  dt_pthread_mutex_init(&d->lock);
   piece->data = d;
 }
 
@@ -4468,7 +4468,7 @@ void color_picker_apply(dt_iop_module_t *self,
   dt_iop_spektrafilm_data_t d_tmp;
   memset(&d_tmp, 0, sizeof(d_tmp));
   d_tmp.p = *(dt_iop_spektrafilm_params_t *)self->params;
-  dt_pthread_mutex_init(&d_tmp.lock, NULL);
+  dt_pthread_mutex_init(&d_tmp.lock);
   sf_sim_t *sim = _ensure_sim(&d_tmp, work_profile);
   if(!sim)
   {

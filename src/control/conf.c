@@ -537,7 +537,7 @@ void dt_conf_init(dt_conf_t *cf,
   {
     cf->table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
     cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-    dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
+    dt_pthread_mutex_init(&darktable.conf->mutex);
   }
 
   // init conf filename

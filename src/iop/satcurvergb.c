@@ -2098,7 +2098,7 @@ void gui_init(dt_iop_module_t *self)
 
   memset(g->histogram, 0, sizeof(g->histogram));
   g->histogram_max = 1e-6f;
-  dt_pthread_mutex_init(&g->histogram_lock, NULL);
+  dt_pthread_mutex_init(&g->histogram_lock);
 
   g->picker_valid = FALSE;
   g->picked_s = g->picked_s_min = g->picked_s_max = 0.f;

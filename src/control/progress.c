@@ -306,7 +306,7 @@ dt_progress_t *dt_control_progress_create(const gboolean has_progress_bar,
   if(!control) return NULL;
 
   dt_progress_t *progress = calloc(1, sizeof(dt_progress_t));
-  dt_pthread_mutex_init(&progress->mutex, NULL);
+  dt_pthread_mutex_init(&progress->mutex);
 
   // fill it with values
   progress->message = g_strdup(message);

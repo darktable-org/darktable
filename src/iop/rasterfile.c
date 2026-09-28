@@ -727,7 +727,7 @@ void init(dt_iop_module_t *self)
 
   dt_rasterfile_cache_t *cd = calloc(1, sizeof(dt_rasterfile_cache_t));
   cd->hash = DT_INVALID_HASH;
-  dt_pthread_mutex_init(&cd->lock, NULL);
+  dt_pthread_mutex_init(&cd->lock);
   cd->mask = NULL;
   cd->width = cd->height = 0;
   self->data = cd;
