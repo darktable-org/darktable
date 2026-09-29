@@ -219,6 +219,7 @@ typedef struct dt_iop_toneequalizer_global_data_t
   int kernel_toneequal_gf_pack;
   int kernel_toneequal_gf_ab;
   int kernel_toneequal_gf_blend;
+  int kernel_toneequal_gf_blend_upsample;
   int kernel_toneequal_eigf_pack_4c;
   int kernel_toneequal_eigf_finish_4c;
   int kernel_toneequal_eigf_pack_2c;
@@ -1319,7 +1320,6 @@ static cl_int _fast_surface_blur_cl(const int devid,
   const int ds_width = MAX(1, (int)((float)width / scaling));
   const int ds_height = MAX(1, (int)((float)height / scaling));
 
-  const size_t bsize = (size_t)width * height * sizeof(float);
   const size_t ds_bsize = (size_t)ds_width * ds_height * sizeof(float);
 
   // without quantization the guide is the image itself: skip the copy
@@ -1328,7 +1328,6 @@ static cl_int _fast_surface_blur_cl(const int devid,
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
-  cl_mem dev_ab = dt_opencl_alloc_device_buffer(devid, 2 * bsize);
   cl_mem dev_ds_image = dt_opencl_alloc_device_buffer(devid, ds_bsize);
   cl_mem dev_ds_mask = use_mask
     ? dt_opencl_alloc_device_buffer(devid, ds_bsize)
@@ -1339,7 +1338,7 @@ static cl_int _fast_surface_blur_cl(const int devid,
   // scratch space of the box average, large enough for both channel counts
   cl_mem dev_tmp = dt_opencl_alloc_device_buffer(devid, 4 * ds_bsize);
 
-  if(!dev_ab || !dev_ds_image || !dev_ds_ab || !dev_packed || !dev_tmp
+  if(!dev_ds_image || !dev_ds_ab || !dev_packed || !dev_tmp
      || (use_mask && !dev_ds_mask))
     goto error;
   err = CL_SUCCESS;
@@ -1398,18 +1397,16 @@ static cl_int _fast_surface_blur_cl(const int devid,
     }
   }
 
-  // Upsample the blending parameters a and b
-  err = dt_interpolate_bilinear_cl(devid, dev_ds_ab, ds_width, ds_height,
-                                   dev_ab, width, height, 2);
-  if(err != CL_SUCCESS) goto error;
-
-  // Finally, blend the guided image
+  // Finally, blend the guided image, sampling the blending parameters a and b
+  // at the downscaled size: this spares the full size buffer their upsampled
+  // copy took, and a full size pass to write and read it
   {
     const int blending = filter;
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_gf_blend,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_gf_blend_upsample,
             width, height,
-            CLARG(dev_image), CLARG(dev_ab),
-            CLARG(width), CLARG(height), CLARG(blending));
+            CLARG(dev_image), CLARG(width), CLARG(height),
+            CLARG(dev_ds_ab), CLARG(ds_width), CLARG(ds_height),
+            CLARG(blending));
   }
 
 error:
@@ -1418,7 +1415,6 @@ error:
   dt_opencl_release_mem_object(dev_ds_ab);
   dt_opencl_release_mem_object(dev_ds_mask);
   dt_opencl_release_mem_object(dev_ds_image);
-  dt_opencl_release_mem_object(dev_ab);
   return err;
 }
 
@@ -1462,11 +1458,11 @@ static cl_int _fast_eigf_surface_blur_cl(const int devid,
     ? dt_opencl_alloc_device_buffer(devid, ds_bsize)
     : NULL;
   cl_mem dev_ds_image = dt_opencl_alloc_device_buffer(devid, ds_bsize);
-  // average - variance arrays: store the guide and mask averages and variances
+  // average - variance arrays: store the guide and mask averages and variances.
+  // they stay at the downscaled size, the blend kernels sample them bilinearly
   cl_mem dev_ds_av = dt_opencl_alloc_device_buffer(devid, ch * ds_bsize);
-  cl_mem dev_av = dt_opencl_alloc_device_buffer(devid, ch * bsize);
 
-  if(!dev_ds_image || !dev_ds_av || !dev_av
+  if(!dev_ds_image || !dev_ds_av
      || (use_mask && (!dev_mask || !dev_ds_mask)))
     goto error;
   err = CL_SUCCESS;
@@ -1508,16 +1504,12 @@ static cl_int _fast_eigf_surface_blur_cl(const int devid,
               CLARG(dev_ds_av), CLARG(ds_width), CLARG(ds_height));
       if(err != CL_SUCCESS) goto error;
 
-      // Upsample the variances and averages
-      err = dt_interpolate_bilinear_cl(devid, dev_ds_av, ds_width, ds_height,
-                                       dev_av, width, height, 4);
-      if(err != CL_SUCCESS) goto error;
-
       // Blend the guided image
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_eigf_blend,
               width, height,
-              CLARG(dev_image), CLARG(dev_mask), CLARG(dev_av),
-              CLARG(width), CLARG(height), CLARG(blending), CLARG(feathering));
+              CLARG(dev_image), CLARG(dev_mask), CLARG(width), CLARG(height),
+              CLARG(dev_ds_av), CLARG(ds_width), CLARG(ds_height),
+              CLARG(blending), CLARG(feathering));
       if(err != CL_SUCCESS) goto error;
     }
     else
@@ -1538,22 +1530,17 @@ static cl_int _fast_eigf_surface_blur_cl(const int devid,
               CLARG(dev_ds_av), CLARG(ds_width), CLARG(ds_height));
       if(err != CL_SUCCESS) goto error;
 
-      // Upsample the variances and averages
-      err = dt_interpolate_bilinear_cl(devid, dev_ds_av, ds_width, ds_height,
-                                       dev_av, width, height, 2);
-      if(err != CL_SUCCESS) goto error;
-
       // Blend the guided image
       err = dt_opencl_enqueue_kernel_2d_args
         (devid, gd->kernel_toneequal_eigf_blend_no_mask, width, height,
-         CLARG(dev_image), CLARG(dev_av),
-         CLARG(width), CLARG(height), CLARG(blending), CLARG(feathering));
+         CLARG(dev_image), CLARG(width), CLARG(height),
+         CLARG(dev_ds_av), CLARG(ds_width), CLARG(ds_height),
+         CLARG(blending), CLARG(feathering));
       if(err != CL_SUCCESS) goto error;
     }
   }
 
 error:
-  dt_opencl_release_mem_object(dev_av);
   dt_opencl_release_mem_object(dev_ds_av);
   dt_opencl_release_mem_object(dev_ds_image);
   dt_opencl_release_mem_object(dev_ds_mask);
@@ -1823,8 +1810,8 @@ void tiling_callback(dt_iop_module_t *self,
   {
     case DT_TONEEQ_AVG_GUIDED:
     case DT_TONEEQ_GUIDED:
-      // full size a and b parameters plus the sixteenth-sized working set
-      factor += 0.5f + 0.25f;
+      // the sixteenth-sized working set of the guided filter
+      factor += 0.25f;
       break;
 
     case DT_TONEEQ_AVG_EIGF:
@@ -1834,8 +1821,8 @@ void tiling_callback(dt_iop_module_t *self,
       const float scaling = fmaxf(fminf((float)d->radius, 4.0f), 1.0f);
       const float ds = 1.0f / (scaling * scaling);
       factor += (d->quantization != 0.0f)
-        ? 1.25f + 3.5f * ds  // mask and averages, plus the gaussian buffers
-        : 0.5f + 1.75f * ds;
+        ? 0.25f + 3.5f * ds  // full size mask, downscaled averages and gaussian buffers
+        : 1.75f * ds;
       break;
     }
 
@@ -2262,6 +2249,8 @@ void init_global(dt_iop_module_so_t *self)
     dt_opencl_create_kernel(program, "toneequal_gf_ab");
   gd->kernel_toneequal_gf_blend =
     dt_opencl_create_kernel(program, "toneequal_gf_blend");
+  gd->kernel_toneequal_gf_blend_upsample =
+    dt_opencl_create_kernel(program, "toneequal_gf_blend_upsample");
   gd->kernel_toneequal_eigf_pack_4c =
     dt_opencl_create_kernel(program, "toneequal_eigf_pack_4c");
   gd->kernel_toneequal_eigf_finish_4c =
@@ -2292,6 +2281,7 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_toneequal_gf_pack);
   dt_opencl_free_kernel(gd->kernel_toneequal_gf_ab);
   dt_opencl_free_kernel(gd->kernel_toneequal_gf_blend);
+  dt_opencl_free_kernel(gd->kernel_toneequal_gf_blend_upsample);
   dt_opencl_free_kernel(gd->kernel_toneequal_eigf_pack_4c);
   dt_opencl_free_kernel(gd->kernel_toneequal_eigf_finish_4c);
   dt_opencl_free_kernel(gd->kernel_toneequal_eigf_pack_2c);
