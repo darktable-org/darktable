@@ -303,6 +303,10 @@ changes (where available).
 - Fixed HEIF export compilation with libheif versions older than 1.15.0,
   and with versions older than 1.16.0 when libsharpyuv is available.
 
+- The lens correction module no longer shows fine-tune sliders for
+  corrections that an Olympus file's embedded metadata does not carry,
+  such as vignetting.
+
 - Do not convert the pipe input in place for blending, which may result
   in a corrputed buffer.
 
