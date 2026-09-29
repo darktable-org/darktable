@@ -235,6 +235,10 @@ changes (where available).
   once into each person's folder rather than into one "John,Jane"
   folder.
 
+- Copy & import can now also copy existing XMP sidecars, including
+  those of duplicates, so edits made elsewhere are kept. Enable it in
+  preferences > import.
+
 ## Bug Fixes
 
 - Do not convert the pipe input in place for blending, which may result

@@ -3044,6 +3044,45 @@ void dt_control_write_sidecar_files()
                                           FALSE));
 }
 
+static void _control_import_copy_sidecars(const char *filename,
+                                          const char *output)
+{
+  const char *src_ext = strrchr(filename, '.');
+  const char *out_ext = strrchr(output, '.');
+  if(!src_ext || !out_ext) return;
+
+  const size_t src_root_len = src_ext - filename;
+  const size_t src_tail_len = strlen(src_ext) + strlen(".xmp");
+
+  GList *sidecars = dt_image_find_duplicates(filename);
+  for(GList *s = sidecars; s; s = g_list_next(s))
+  {
+    const char *sidecar = s->data;
+    const size_t sidecar_len = strlen(sidecar);
+    if(sidecar_len < src_root_len + src_tail_len) continue;
+    const int suffix_len = sidecar_len - src_root_len - src_tail_len;
+
+    gchar *dest = g_strdup_printf("%.*s%.*s%s.xmp",
+                                  (int)(out_ext - output), output,
+                                  suffix_len, sidecar + src_root_len,
+                                  out_ext);
+    GFile *src_file = g_file_new_for_path(sidecar);
+    GFile *dest_file = g_file_new_for_path(dest);
+    GError *error = NULL;
+    if(!g_file_copy(src_file, dest_file, G_FILE_COPY_ALL_METADATA,
+                    NULL, NULL, NULL, &error))
+    {
+      dt_print(DT_DEBUG_CONTROL, "[import_from] failed to copy sidecar %s to %s: %s",
+               sidecar, dest, error->message);
+      g_error_free(error);
+    }
+    g_object_unref(src_file);
+    g_object_unref(dest_file);
+    g_free(dest);
+  }
+  g_list_free_full(sidecars, g_free);
+}
+
 static int _control_import_image_copy(const char *filename,
                                       char **prev_filename,
                                       char **prev_output,
@@ -3117,6 +3156,9 @@ static int _control_import_image_copy(const char *filename,
 #endif
     utimes(output, times); // set origin file timestamps
 #endif
+
+    if(dt_conf_get_bool("session/copy_sidecar_files"))
+      _control_import_copy_sidecars(filename, output);
 
     const dt_imgid_t imgid = dt_image_import(dt_import_session_film_id(session),
                                              output, FALSE, FALSE);
