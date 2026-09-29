@@ -192,6 +192,12 @@ changes (where available).
 
 ## Bug Fixes
 
+- the lens correction module no longer offers a vignetting fine-tune slider
+  for Panasonic and Olympus files under the embedded-metadata method, since
+  vignetting is not read from the metadata of either, and when a correction
+  you selected is unavailable it now names which one and suggests taking it
+  from Lensfun in a second module instance.
+
 - restored transverse chromatic aberration correction on Panasonic
   RW2 files, by decoding Exif.PanasonicRaw.0x011b and applying a
   per-channel radial correction ahead of the 0x0119 distortion
