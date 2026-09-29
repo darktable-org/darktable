@@ -245,9 +245,12 @@ changes (where available).
   image with a clean history is opended in darkroom the first time
   and the opposed algorithm did not find clipped photosites.
 
-- Panasonic RW2 files now offer embedded lens distortion correction,
-  covering built-in and Lumix-branded lenses that lensfun has no
-  profile for.
+- Panasonic RW2 files now offer embedded lens distortion and chromatic
+  aberration correction, covering built-in and Lumix-branded lenses that
+  lensfun has no profile for. Chromatic aberration correction covers high
+  resolution (sensor-shift) frames and the bodies whose correction data
+  has been characterized. When a selected correction is not available from
+  a file's metadata, the lens correction module now says which one.
 
 - Printer (paper) profiled print jobs will remain 16 bit through
   the full print pipeline.
