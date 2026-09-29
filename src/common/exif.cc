@@ -2001,6 +2001,12 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData,
     if(!img->exif_correction_data.panasonic.has_ca)
       dt_print(DT_DEBUG_IMAGEIO,
                "[exif] Panasonic 0x011b: checksum mismatch, payload ignored");
+
+    // ensure files with 0x011b but empty/absent 0x0119 still reach the
+    // Panasonic branch of _init_coeffs_md_v2
+    if(img->exif_correction_data.panasonic.has_ca
+       && img->exif_correction_type == CORRECTION_TYPE_NONE)
+      img->exif_correction_type = CORRECTION_TYPE_PANASONIC;
   }
 
   return img->exif_correction_type != CORRECTION_TYPE_NONE;
