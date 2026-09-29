@@ -27,6 +27,11 @@ add_cmocka_test(test_history_strings
 target_compile_definitions(test_spektra_pack PRIVATE
   SPEKTRA_PACK_DIR="${CMAKE_SOURCE_DIR}/data/spektrafilm")
 
+# the .dtdata sidecar container, on temp files: no database needed
+add_cmocka_test(test_dtdata
+                SOURCES test_dtdata.c
+                LINK_LIBRARIES lib_darktable cmocka)
+
 # Windows: libs have to be copied next to the executable
 if(WIN32)
     _copy_required_library(test_spektra_sim lib_darktable)
@@ -34,4 +39,5 @@ if(WIN32)
     _copy_required_library(test_draw_curve lib_darktable)
     _copy_required_library(test_fixed_strings lib_darktable)
     _copy_required_library(test_history_strings lib_darktable)
+    _copy_required_library(test_dtdata lib_darktable)
 endif(WIN32)

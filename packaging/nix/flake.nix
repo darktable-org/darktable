@@ -62,6 +62,7 @@
                 lensfun
                 lerc
                 libaom
+                libarchive
                 #libavif # TODO re-enable once cmake files are fixed (#425306)
                 libdatrie
                 libepoxy
