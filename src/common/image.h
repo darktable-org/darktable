@@ -195,6 +195,15 @@ typedef union dt_image_correction_data_t
     // (Rd, Ru normalised to half-diagonal)
     float a, b, c;
     float scale;
+    // 0x0119 was present with correction enabled. a file can carry 0x011b
+    // without it, and then a, b, c and scale are left at zero
+    gboolean has_dist;
+
+    // raw 32 signed int16 LE payload from Exif.PanasonicRaw.0x011b, source
+    // for per-channel TCA correction in _init_coeffs_md_v2. has_ca is set
+    // only when the payload's checksums pass
+    gboolean has_ca;
+    int16_t ca_words[32];
   } panasonic;
 } dt_image_correction_data_t;
 

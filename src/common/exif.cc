@@ -1274,6 +1274,35 @@ static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData,
   return has_opcodes;
 }
 
+// validate Rigo's 2011 four-checksum for Panasonic 0x011b: csum = (73 *
+// csum + byte) mod 0xFFEF, applied to four sub-ranges of the 64-byte
+// payload
+static gboolean _validate_panasonic_ca_checksums(const uint8_t buf[64])
+{
+  auto csum = [](const uint8_t *p, size_t n) -> uint16_t {
+    uint32_t x = 0;
+    for(size_t i = 0; i < n; i++)
+      x = (73u * x + p[i]) % 0xFFEFu;
+    return (uint16_t)x;
+  };
+
+  uint8_t even[32], odd[32];
+  for(int i = 0; i < 32; i++)
+  {
+    even[i] = buf[2 * i];
+    odd[i] = buf[2 * i + 1];
+  }
+  const uint16_t w0  = (uint16_t)buf[0]  | ((uint16_t)buf[1]  << 8);
+  const uint16_t w1  = (uint16_t)buf[2]  | ((uint16_t)buf[3]  << 8);
+  const uint16_t w30 = (uint16_t)buf[60] | ((uint16_t)buf[61] << 8);
+  const uint16_t w31 = (uint16_t)buf[62] | ((uint16_t)buf[63] << 8);
+
+  return csum(even + 1, 30) == w0
+      && csum(buf + 4,  28) == w1
+      && csum(buf + 32, 28) == w30
+      && csum(odd + 1,  30) == w31;
+}
+
 static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData,
                                             dt_image_t *img)
 {
@@ -1483,6 +1512,7 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData,
     if(enabled)
     {
       img->exif_correction_type = CORRECTION_TYPE_PANASONIC;
+      img->exif_correction_data.panasonic.has_dist = TRUE;
       img->exif_correction_data.panasonic.scale = 1.0f / (1.0f + (float)v[5] / 32768.0f);
       img->exif_correction_data.panasonic.a = (float)v[8]  / 32768.0f;
       img->exif_correction_data.panasonic.b = (float)v[4]  / 32768.0f;
@@ -1494,6 +1524,40 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData,
                img->exif_correction_data.panasonic.b,
                img->exif_correction_data.panasonic.c);
     }
+  }
+
+  /*
+   * panasonic chromatic aberration correction data (RW2/RWL): tag 0x011b
+   *
+   * 64-byte payload of 32 signed int16 LE, consumed by _init_coeffs_md_v2
+   * in src/iop/lens.cc, where the decode is documented, to produce
+   * per-channel radial coefficients on top of the distortion parsed above.
+   *
+   * we do not gate on Exif.PanasonicRaw.0x011a: on DC-G9M2 that selector is
+   * absent even though 0x011b is valid. a payload failing Rigo's
+   * four-checksum is ignored
+   */
+  if((_exif_read_exif_tag(exifData, &pos, "Exif.PanasonicRaw.0x011b")
+      // on TIFF/DNG round-trip dt_exif_read_blob copies the blob here
+      || _exif_read_exif_tag(exifData, &pos, "Exif.Image.0xf11b"))
+     && pos->size() == 64)
+  {
+    uint8_t buf[64];
+    pos->copy(buf, Exiv2::littleEndian);
+    memcpy(img->exif_correction_data.panasonic.ca_words, buf, 64);
+    // a payload that fails its checksums would feed arbitrary coefficients
+    // into the correction, so it is not used, as Adobe DNG Converter does
+    img->exif_correction_data.panasonic.has_ca =
+        _validate_panasonic_ca_checksums(buf);
+    if(!img->exif_correction_data.panasonic.has_ca)
+      dt_print(DT_DEBUG_IMAGEIO,
+               "[exif] Panasonic 0x011b: checksum mismatch, payload ignored");
+
+    // ensure files with 0x011b but empty/absent 0x0119 still reach the
+    // Panasonic branch of _init_coeffs_md_v2
+    if(img->exif_correction_data.panasonic.has_ca
+       && img->exif_correction_type == CORRECTION_TYPE_NONE)
+      img->exif_correction_type = CORRECTION_TYPE_PANASONIC;
   }
 
   return img->exif_correction_type != CORRECTION_TYPE_NONE;
@@ -3145,6 +3209,22 @@ int dt_exif_read_blob(uint8_t **buf,
     {
       dt_print(DT_DEBUG_IMAGEIO,
                "[exiv2 dt_exif_read_blob] failed to copy Panasonic distortion: %s",
+               e.what());
+    }
+
+    // same for Panasonic CA correction data; 0xF11B is in TIFF's private
+    // range (>= 0x8000), mirroring the 0xF119 design decision above
+    try
+    {
+      Exiv2::ExifData::iterator src =
+        exifData.findKey(Exiv2::ExifKey("Exif.PanasonicRaw.0x011b"));
+      if(src != exifData.end())
+        exifData.add(Exiv2::ExifKey("Exif.Image.0xf11b"), &src->value());
+    }
+    catch(const Exiv2::AnyError &e)
+    {
+      dt_print(DT_DEBUG_IMAGEIO,
+               "[exiv2 dt_exif_read_blob] failed to copy Panasonic CA: %s",
                e.what());
     }
 
