@@ -421,6 +421,10 @@ changes (where available).
   a legacy encoding. These fields are now converted to UTF-8 on import.
   Use "refresh EXIF" on already imported images to fix them.
 
+- Fixed rotate and perspective occasionally computing its automatic
+  crop from a mismatched preview size, which could leave the crop box
+  slightly wrong until the module was adjusted again.
+
 ## Lua
 
 ### API Version
