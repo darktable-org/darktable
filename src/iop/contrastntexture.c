@@ -410,20 +410,19 @@ void process(dt_iop_module_t *self,
   // Display output
   dt_iop_contrastntexture_details_display_t details_display = DT_LC_MASK_OFF;
   gboolean display_mask = FALSE;
-  dt_iop_gui_enter_critical_section(self);
-  if(g)
+  if(self->dev->gui_attached && g && dt_pipe_is_full(piece->pipe))
   {
+    dt_iop_gui_enter_critical_section(self);
     details_display = g->details_display;
     display_mask = g->details_display != DT_LC_MASK_OFF
-                   && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL);
-    if(display_mask)
-      piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+                   && dt_pipe_is_full(piece->pipe);
+    dt_iop_gui_leave_critical_section(self);
   }
-  dt_iop_gui_leave_critical_section(self);
 
   dt_print(DT_DEBUG_PIPE, "display_mask: %d, max_used_level: %d\n", display_mask, d->max_used_level);
   if(display_mask)
   {
+    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     // Preview the displayed band alone, at full strength, across all pyramid levels
     // (the lowpass preview does not use band weights, the final luminance_lowpass suffices)
     if(details_display != DT_LC_MASK_LAST)

@@ -589,15 +589,13 @@ void process(dt_iop_module_t *self,
   dt_iop_colorzones_data_t *d = piece->data;
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
 
-  dt_iop_gui_enter_critical_section(self);
-  const gboolean show_display =
-  // display selection if requested
-      dt_pipe_is_full(piece->pipe)
-      && g
-      && g->display_mask
-      && dt_iop_has_focus(self)
-      && (piece->pipe == self->dev->full.pipe);
-  dt_iop_gui_leave_critical_section(self);
+  gboolean show_display = FALSE;
+  if(self->dev->gui_attached && g && dt_pipe_is_full(piece->pipe) && dt_iop_has_focus(self))
+  {
+    dt_iop_gui_enter_critical_section(self);
+    show_display = g->display_mask;
+    dt_iop_gui_leave_critical_section(self);
+  }
 
   if(show_display)
     process_display(self, piece, ivoid, ovoid, roi_in, roi_out);
@@ -2833,11 +2831,14 @@ void commit_params(dt_iop_module_t *self,
 #endif
 
   // display selection don't work with opencl
-  dt_iop_gui_enter_critical_section(self);
-  const gboolean display_mask = g && g->display_mask;
-  dt_iop_gui_leave_critical_section(self);
-
-  piece->process_cl_ready = display_mask ? FALSE : TRUE;
+  gboolean display_mask = FALSE;
+  if(self->dev->gui_attached && g && dt_pipe_is_full(piece->pipe))
+  {
+    dt_iop_gui_enter_critical_section(self);
+    display_mask = g->display_mask;
+    dt_iop_gui_leave_critical_section(self);
+  }
+  piece->process_cl_ready = !display_mask;
   d->channel = (dt_iop_colorzones_channel_t)p->channel;
   d->mode = p->mode;
 

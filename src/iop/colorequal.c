@@ -1027,9 +1027,14 @@ void process(dt_iop_module_t *self,
   const dt_iop_colorequal_data_t *d = piece->data;
   const dt_iop_colorequal_gui_data_t *g = self->gui_data;
   const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
-  dt_iop_gui_enter_critical_section(self);
-  const int mask_mode = g && fullpipe ? g->mask_mode : 0;
-  dt_iop_gui_leave_critical_section(self);
+
+  int mask_mode = 0;
+  if(self->dev->gui_attached && g && fullpipe)
+  {
+    dt_iop_gui_enter_critical_section(self);
+    mask_mode = g->mask_mode;
+    dt_iop_gui_leave_critical_section(self);
+  }
   const gboolean run_fast = dt_pipe_is_fast(piece->pipe);
 
   const float *const restrict in = (float*)i;
@@ -1581,9 +1586,14 @@ int process_cl(dt_iop_module_t *self,
 
   const dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
   const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
-  dt_iop_gui_enter_critical_section(self);
-  const int mask_mode = g && fullpipe ? g->mask_mode : 0;
-  dt_iop_gui_leave_critical_section(self);
+
+  int mask_mode = 0;
+  if(self->dev->gui_attached && g && fullpipe)
+  {
+    dt_iop_gui_enter_critical_section(self);
+    mask_mode = g->mask_mode;
+    dt_iop_gui_leave_critical_section(self);
+  }
   const int guiding = d->use_filter;
   const gboolean run_fast = dt_pipe_is_fast(piece->pipe);
 
