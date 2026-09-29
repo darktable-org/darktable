@@ -2052,6 +2052,13 @@ int dt_init(int argc,
   MagickWandGenesis();
 #endif
 
+#ifdef _OPENMP
+  // GraphicsMagick's init resets the thread count to the number of CPUs,
+  // overriding --threads. dt_alloc_perthread() pools are sized by
+  // dt_get_num_threads(), so a larger team would write past their end.
+  omp_set_num_threads(darktable.num_openmp_threads);
+#endif
+
 #ifdef HAVE_LIBHEIF
   dt_splash_screen_set_progress(_("initializing libheif"));
   heif_init(NULL);
