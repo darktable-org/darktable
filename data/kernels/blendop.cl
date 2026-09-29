@@ -1657,7 +1657,7 @@ blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, 
     float4 xyz;
     if(use_work_profile)
     {
-      xyz = rgb_matrix_to_xyz(a, work_profile_info, profile_info->matrix_in, work_profile_lut);
+      xyz = rgb_matrix_to_xyz(a, work_profile_info, work_profile_info->matrix_in, work_profile_lut);
     }
     else
     {

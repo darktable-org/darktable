@@ -240,6 +240,9 @@ changes (where available).
 - Do not convert the pipe input in place for blending, which may result
   in a corrputed buffer.
 
+- Fixed an OpenCL bug causing Lab colorspace overlays showing as solid
+  colors.
+
 - Fixed a trashing error dialog when deleting a virgin duplicate of an
   image while sidecar creation is set to "after edit".
 
