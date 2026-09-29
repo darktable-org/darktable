@@ -4447,19 +4447,25 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     const dt_image_t *img = &self->dev->image_storage;
     const dt_image_correction_data_t *cd = &img->exif_correction_data;
 
-    const gboolean has_warp = (img->exif_correction_type == CORRECTION_TYPE_DNG)
-      ? cd->dng.has_warp
+    // offer fine-tuning only for what the metadata carries: an Olympus file
+    // may lack distortion or CA data, and only Sony, Fujifilm and DNG
+    // metadata carry vignetting
+    const dt_image_correction_type_t type = img->exif_correction_type;
+    const gboolean has_warp =
+      type == CORRECTION_TYPE_DNG ? cd->dng.has_warp
+      : type == CORRECTION_TYPE_OLYMPUS ? cd->olympus.has_dist
       : TRUE;
 
-    const gboolean has_vign = (img->exif_correction_type == CORRECTION_TYPE_DNG)
-      ? cd->dng.has_vignette
-      : TRUE;
+    const gboolean has_vign =
+      type == CORRECTION_TYPE_DNG ? cd->dng.has_vignette
+      : (type == CORRECTION_TYPE_SONY || type == CORRECTION_TYPE_FUJI);
 
     // DNG cannot provide CA fine tuning since the CA correction is embedded in
     // the warp correction.
     const gboolean has_ca =
-      img->exif_correction_type != CORRECTION_TYPE_DNG
-      && p->md_version >= DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
+      type != CORRECTION_TYPE_DNG
+      && p->md_version >= DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2
+      && (type != CORRECTION_TYPE_OLYMPUS || cd->olympus.has_ca);
 
     // guard: the callback re-enters gui_changed -> infinite recursion
     DT_ENTER_GUI_UPDATE();
