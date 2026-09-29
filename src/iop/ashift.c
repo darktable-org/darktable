@@ -5610,13 +5610,12 @@ static void _event_process_after_preview_callback(gpointer instance, dt_iop_modu
   switch(jobcode)
   {
     case ASHIFT_JOBCODE_DO_CROP:
+    {
       // the signal can come from a preview run that started before the
       // module was enabled and so never filled g->buf; do_crop() would
       // return without cropping, so keep the request for the next run
-      dt_iop_gui_enter_critical_section(self);
-      const gboolean buf_empty = g->buf_width == 0 || g->buf_height == 0;
-      dt_iop_gui_leave_critical_section(self);
-      if(buf_empty)
+      const dt_iop_ashift_bufgeom_t b = _get_buf_geometry(self);
+      if(b.width == 0 || b.height == 0)
       {
         g->jobcode = ASHIFT_JOBCODE_DO_CROP;
         break;
@@ -5629,6 +5628,7 @@ static void _event_process_after_preview_callback(gpointer instance, dt_iop_modu
       _swap_shadow_crop_box(p, g);
       dt_dev_invalidate_all(darktable.develop);
       break;
+    }
 
     case ASHIFT_JOBCODE_GET_STRUCTURE_QUAD:
       _do_get_structure_quad(self);
