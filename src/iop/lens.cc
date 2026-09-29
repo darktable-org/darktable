@@ -4597,6 +4597,45 @@ static void _autoscale_pressed_lf(GtkWidget *button, dt_iop_module_t *self)
 
 /* -- Lensfun GUI end -- */
 
+// which corrections this file's embedded metadata can actually deliver, as
+// DT_IOP_LENS_MODIFY_FLAG_* bits. this is a per-file question, not a
+// per-manufacturer one: older Olympus bodies write no chromatic aberration
+// data, a DNG may carry a single-plane warp with no per-channel term, and the
+// Panasonic 0x011b payload only decodes for bodies whose coefficients have
+// been characterised. vignetting is never available for Panasonic or Olympus
+// because neither payload is read
+static int _md_corrections(const dt_image_t *img)
+{
+  const dt_image_correction_data_t *cd = &img->exif_correction_data;
+
+  switch(img->exif_correction_type)
+  {
+    case CORRECTION_TYPE_SONY:
+    case CORRECTION_TYPE_FUJI:
+      // both are gated in exif.cc on all three tags being present
+      return DT_IOP_LENS_MODFLAG_ALL;
+
+    case CORRECTION_TYPE_DNG:
+      // one warp plane corrects geometry only; three carry the per-channel
+      // term, which is how a DNG expresses TCA
+      return (cd->dng.has_warp ? DT_IOP_LENS_MODIFY_FLAG_DISTORTION : 0)
+             | (cd->dng.has_warp && cd->dng.planes >= 3
+                ? DT_IOP_LENS_MODIFY_FLAG_TCA : 0)
+             | (cd->dng.has_vignette ? DT_IOP_LENS_MODIFY_FLAG_VIGNETTING : 0);
+
+    case CORRECTION_TYPE_OLYMPUS:
+      return (cd->olympus.has_dist ? DT_IOP_LENS_MODIFY_FLAG_DISTORTION : 0)
+             | (cd->olympus.has_ca ? DT_IOP_LENS_MODIFY_FLAG_TCA : 0);
+
+    case CORRECTION_TYPE_PANASONIC:
+      return DT_IOP_LENS_MODIFY_FLAG_DISTORTION
+             | (_pana_has_decodable_ca(img) ? DT_IOP_LENS_MODIFY_FLAG_TCA : 0);
+
+    default:
+      return 0;
+  }
+}
+
 static void _display_errors(dt_iop_module_t *self)
 {
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
@@ -4608,7 +4647,7 @@ static void _display_errors(dt_iop_module_t *self)
   {
     dt_iop_set_module_trouble_message(self,
        _("camera/lens not found"),
-       _("pick a camera or lens from the buttons below --\n"
+       _("pick a camera or lens from the buttons below:\n"
          "the lens button lists the whole database when the body is unknown\n"
          "scale, target geometry and the TCA override work without a profile\n"
          "you might also want to check if your Lensfun database is up-to-date\n"
@@ -4617,21 +4656,58 @@ static void _display_errors(dt_iop_module_t *self)
   }
   else if(self->enabled
           && p->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA
-          && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA
-          && self->dev->image_storage.exif_correction_type
-               == CORRECTION_TYPE_PANASONIC
-          && !_pana_has_decodable_ca(&self->dev->image_storage))
+          && (p->modify_flags & DT_IOP_LENS_MODFLAG_ALL
+              & ~_md_corrections(&self->dev->image_storage)))
   {
-    // the corrections list still offers TCA, so say why nothing happens:
-    // either the file carries no usable 0x011b, or this body's coefficients
-    // have not been measured. Distortion is unaffected either way
-    dt_iop_set_module_trouble_message(self,
-       _("no CA data for this camera"),
-       _("this raw file provides no chromatic aberration data that darktable\n"
-         "can decode, so only distortion is corrected here --\n"
-         "the Lensfun database method can still correct TCA if it has a\n"
-         "profile for your lens"),
-       "no CA data for this camera");
+    // the corrections list offers all three regardless of what the file
+    // carries, so say which of them this file cannot deliver and why. the
+    // reasons differ in kind: the data may be absent from the file, or
+    // present but not decodable, or of a kind darktable does not read at all
+    const int missing = p->modify_flags & DT_IOP_LENS_MODFLAG_ALL
+                        & ~_md_corrections(&self->dev->image_storage);
+
+    const char *title;
+    const char *detail;
+
+    if(missing == DT_IOP_LENS_MODIFY_FLAG_TCA)
+    {
+      title = _("no chromatic aberration data");
+      detail = _("this file provides no chromatic aberration correction that\n"
+                 "darktable can decode, so only the other corrections apply here");
+    }
+    else if(missing == DT_IOP_LENS_MODIFY_FLAG_VIGNETTING)
+    {
+      title = _("no vignetting data");
+      detail = _("this file provides no vignetting correction that darktable\n"
+                 "can use, so only the other corrections apply here");
+    }
+    else if(missing == DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
+    {
+      title = _("no distortion data");
+      detail = _("this file provides no distortion correction that darktable\n"
+                 "can use, so only the other corrections apply here");
+    }
+    else
+    {
+      title = _("some corrections unavailable");
+      detail = _("this file provides only some of the corrections you\n"
+                 "selected, and the rest are not applied here");
+    }
+
+    // one instance cannot mix methods, but instances stack, so the way to keep
+    // the metadata corrections and take a missing one from Lensfun is a second
+    // instance rather than switching this one over
+    gchar *body = g_strdup_printf
+      ("%s\n%s", detail,
+       _("to correct it from the Lensfun database instead, add a second\n"
+         "instance of this module and set its method to Lensfun"));
+
+    // freeing right away is safe even though the trouble signal is dispatched
+    // asynchronously: its two text parameters are G_TYPE_STRING, which
+    // g_value_set_string copies (control/signal.c:54 and :354)
+    dt_iop_set_module_trouble_message(self, title, body,
+                                      "metadata correction unavailable");
+    g_free(body);
   }
   else
   {
@@ -4682,9 +4758,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       ? cd->dng.has_warp
       : TRUE;
 
-    const gboolean has_vign = (img->exif_correction_type == CORRECTION_TYPE_DNG)
-      ? cd->dng.has_vignette
-      : TRUE;
+    const gboolean has_vign =
+      (_md_corrections(img) & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING) != 0;
 
     // DNG cannot provide CA fine tuning since the CA correction is embedded in
     // the warp correction. Panasonic can only provide it for bodies whose
