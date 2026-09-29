@@ -641,14 +641,15 @@ void process(dt_iop_module_t *self,
   const float *const restrict saturation = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->saturation);
   const float *const restrict brilliance = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->brilliance);
 
-  dt_iop_gui_enter_critical_section(self);
-  const gboolean mask_display
-      = dt_pipe_is_full(piece->pipe)
-          && self->dev->gui_attached
-          && g
-          && g->mask_display;
-  const dt_iop_colorbalancergb_mask_data_t mask_type = g->mask_type;
-  dt_iop_gui_leave_critical_section(self);
+  gboolean mask_display = FALSE;
+  dt_iop_colorbalancergb_mask_data_t mask_type = MASK_NONE;
+  if(self->dev->gui_attached && g && dt_pipe_is_full(piece->pipe))
+  {
+    dt_iop_gui_enter_critical_section(self);
+    mask_display = g->mask_display;
+    mask_type = g->mask_type;
+    dt_iop_gui_leave_critical_section(self);
+  }
 
   // pixel size of the checker background
   const size_t checker_1 = mask_display ? DT_PIXEL_APPLY_DPI(d->checker_size) : 0;
@@ -1031,14 +1032,15 @@ int process_cl(dt_iop_module_t *self,
   gamut_LUT_cl = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->gamut_LUT);
 
   // Size of the checker
-  dt_iop_gui_enter_critical_section(self);
-  const gboolean mask_display
-      = dt_pipe_is_full(piece->pipe)
-        && self->dev->gui_attached
-        && g
-        && g->mask_display;
-  const dt_iop_colorbalancergb_mask_data_t mask_type = mask_display ? g->mask_type : MASK_NONE;
-  dt_iop_gui_leave_critical_section(self);
+  gboolean mask_display = FALSE;
+  dt_iop_colorbalancergb_mask_data_t mask_type = MASK_NONE;
+  if(self->dev->gui_attached && g && dt_pipe_is_full(piece->pipe))
+  {
+    dt_iop_gui_enter_critical_section(self);
+    mask_display = g->mask_display;
+    mask_type = g->mask_type;
+    dt_iop_gui_leave_critical_section(self);
+  }
 
   const int checker_1 = mask_display ? DT_PIXEL_APPLY_DPI(d->checker_size) : 0;
   const int checker_2 = 2 * checker_1;
