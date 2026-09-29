@@ -4668,6 +4668,12 @@ static void _display_errors(dt_iop_module_t *self)
 
     const char *title;
     const char *detail;
+    // the Lensfun suggestion is qualified for vignetting: Panasonic and
+    // Olympus bodies apply part of the vignetting correction to the raw data
+    // themselves when their shading compensation setting is on, measured at
+    // about a third of a stop at the frame edge wide open, so a profile that
+    // describes the lens's full falloff overshoots on such a file
+    gboolean warn_double = FALSE;
 
     if(missing == DT_IOP_LENS_MODIFY_FLAG_TCA)
     {
@@ -4680,6 +4686,7 @@ static void _display_errors(dt_iop_module_t *self)
       title = _("no vignetting data");
       detail = _("this file provides no vignetting correction that darktable\n"
                  "can use, so only the other corrections apply here");
+      warn_double = TRUE;
     }
     else if(missing == DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
     {
@@ -4692,15 +4699,20 @@ static void _display_errors(dt_iop_module_t *self)
       title = _("some corrections unavailable");
       detail = _("this file provides only some of the corrections you\n"
                  "selected, and the rest are not applied here");
+      warn_double = (missing & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING) != 0;
     }
 
     // one instance cannot mix methods, but instances stack, so the way to keep
     // the metadata corrections and take a missing one from Lensfun is a second
     // instance rather than switching this one over
     gchar *body = g_strdup_printf
-      ("%s\n%s", detail,
+      ("%s\n%s%s", detail,
        _("to correct it from the Lensfun database instead, add a second\n"
-         "instance of this module and set its method to Lensfun"));
+         "instance of this module and set its method to Lensfun"),
+       warn_double
+       ? _("\nnote that some cameras already correct part of the vignetting\n"
+           "in the raw data, in which case a Lensfun profile overcorrects it")
+       : "");
 
     // freeing right away is safe even though the trouble signal is dispatched
     // asynchronously: its two text parameters are G_TYPE_STRING, which
