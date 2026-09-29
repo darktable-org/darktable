@@ -242,6 +242,17 @@ void dt_bauhaus_widget_set_field(GtkWidget *widget,
                                  gpointer field,
                                  dt_introspection_type_t field_type);
 gpointer dt_bauhaus_widget_get_field(GtkWidget *widget);
+// put a notebook page back to the module's defaults
+void dt_bauhaus_reset_page(GtkNotebook *notebook, GtkWidget *page);
+
+// re-read the changed state of every tab a module holds; called when a
+// history item is committed for it and after its gui update
+void dt_bauhaus_refresh_module_tabs(dt_iop_module_t *module);
+
+// bring every parameter widget's default in line with the module's
+// current default_params, after reload_defaults() may have changed them
+void dt_bauhaus_update_defaults(dt_iop_module_t *module);
+
 // update one bauhaus widget or all widgets in a module from the provided (blend)params
 void dt_bauhaus_update_from_field(dt_iop_module_t *module,
                                   GtkWidget *widget,
