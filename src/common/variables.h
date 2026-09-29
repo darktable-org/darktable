@@ -38,6 +38,9 @@ typedef struct dt_variables_params_t
   /** used as thread-safe sequence number. only used if >= 0. */
   int sequence;
 
+  /** number of the filename collision being resolved during import */
+  int conflict;
+
   /** internal variables data */
   struct dt_variables_data_t *data;
 

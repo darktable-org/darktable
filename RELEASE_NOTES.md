@@ -235,6 +235,10 @@ changes (where available).
   once into each person's folder rather than into one "John,Jane"
   folder.
 
+- Import filename patterns gained `$(CONFLICT[n])`, a counter that is
+  empty unless the file name is already taken, so burst shots named by
+  capture time no longer clash.
+
 ## Bug Fixes
 
 - Do not convert the pipe input in place for blending, which may result

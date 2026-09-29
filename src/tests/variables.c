@@ -17,6 +17,7 @@ typedef struct test_case_t
 typedef struct test_t
 {
   char *filename, *jobcode, sequence;
+  int conflict;
   test_case_t test_cases[];
 } test_t;
 
@@ -31,6 +32,7 @@ int run_test(const test_t *test, int *n_tests, int *n_failed, expand_fn_t expand
   params->filename = test->filename;//"abcdef12345abcdef";
   params->jobcode = test->jobcode;//"ABCDEF12345ABCDEF";
   params->sequence = test->sequence;
+  params->conflict = test->conflict;
 
   *n_failed = 0;
   *n_tests = 0;
@@ -54,12 +56,14 @@ int run_test(const test_t *test, int *n_tests, int *n_failed, expand_fn_t expand
 
 
 static const test_t test_variables = {
-  "abcdef12345abcdef", "ABCDEF12345ABCDEF", 23,
+  "abcdef12345abcdef", "ABCDEF12345ABCDEF", 23, 0,
   {
     {"$(FILE_NAME)", "abcdef12345abcdef"},
     {"foo-$(FILE_NAME)-bar", "foo-abcdef12345abcdef-bar"},
     {"äöü-$(FILE_NAME)-äöü", "äöü-abcdef12345abcdef-äöü"},
     {"$(FILE_NAME).$(SEQUENCE)", "abcdef12345abcdef.0023"},
+    {"$(FILE_NAME)$(CONFLICT+_$(CONFLICT))", "abcdef12345abcdef"},
+    {"$(FILE_NAME)$(CONFLICT[3])", "abcdef12345abcdef"},
     {"$(NONEXISTANT)", ""},
     {"foo-$(NONEXISTANT)-bar", "foo--bar"},
 
@@ -68,7 +72,7 @@ static const test_t test_variables = {
 };
 
 static const test_t test_simple_substitutions = {
-  "abcdef12345abcdef", "ABCDEF12345ABCDEF", 23,
+  "abcdef12345abcdef", "ABCDEF12345ABCDEF", 23, 0,
   {
     {"$(NONEXISTANT-invälid)", "invälid"},
     {"$(FILE_NAME-invälid)", "abcdef12345abcdef"},
@@ -123,7 +127,7 @@ static const test_t test_simple_substitutions = {
 };
 
 static const test_t test_recursive_substitutions = {
-  "abcdef12345abcdef", "ABCDEF12345ABCDEF", 23,
+  "abcdef12345abcdef", "ABCDEF12345ABCDEF", 23, 0,
   {
     {"x$(TITLE-$(FILE_NAME))y", "xabcdef12345abcdefy"},
     {"x$(TITLE-a-$(FILE_NAME)-b)y", "xa-abcdef12345abcdef-by"},
@@ -136,7 +140,7 @@ static const test_t test_recursive_substitutions = {
 };
 
 static const test_t test_broken_variables = {
-  "abcdef12345abcdef", "ABCDEF12345ABCDEF", 23,
+  "abcdef12345abcdef", "ABCDEF12345ABCDEF", 23, 0,
   {
     {"$(NONEXISTANT", "$(NONEXISTANT"},
     {"x(NONEXISTANT23", "x(NONEXISTANT23"},
@@ -149,7 +153,7 @@ static const test_t test_broken_variables = {
 };
 
 static const test_t test_escapes = {
-  "/home/test/Images/IMG_0123.CR2", "/home/test/", 23,
+  "/home/test/Images/IMG_0123.CR2", "/home/test/", 23, 0,
   {
     {"foobarbaz", "foobarbaz"},
     {"foo/bar/baz", "foo/bar/baz"},
@@ -167,8 +171,20 @@ static const test_t test_escapes = {
   }
 };
 
+static const test_t test_conflict = {
+  "IMG_0123", "ABCDEF12345ABCDEF", 23, 2,
+  {
+    {"$(FILE_NAME)$(CONFLICT+_$(CONFLICT)).CR2", "IMG_0123_02.CR2"},
+    {"$(FILE_NAME)$(CONFLICT+-$(CONFLICT[1])).CR2", "IMG_0123-2.CR2"},
+    {"$(FILE_NAME)_$(CONFLICT[4])", "IMG_0123_0002"},
+    {"$(FILE_NAME).$(SEQUENCE)", "IMG_0123.0023"},
+
+    {NULL, NULL}
+  }
+};
+
 static const test_t test_real_paths = {
-  "/home/test/Images/0023/IMG_0123.CR2", "/home/test", 23,
+  "/home/test/Images/0023/IMG_0123.CR2", "/home/test", 23, 0,
   {
     {"$(FILE_FOLDER#$(JOBCODE))", "/Images/0023"},
     {"$(FILE_FOLDER#$(JOBCODE)/Images)", "/0023"},
@@ -216,7 +232,7 @@ static const test_t test_real_paths = {
 }
 
 static const test_t test_paths = {
-  "/home/test/Images/IMG_0123.CR2", "/home/test/", 23,
+  "/home/test/Images/IMG_0123.CR2", "/home/test/", 23, 0,
   {
     // a path pattern must survive expansion, separators and all
     {"$(FILE_FOLDER)/exported/$(FILE_NAME)",
@@ -480,6 +496,8 @@ int main(int argc, char* argv[])
   TEST(test_escapes)
 
   TEST(test_real_paths)
+
+  TEST(test_conflict)
 
   TEST_PATH(test_paths)
 
