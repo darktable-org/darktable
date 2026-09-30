@@ -425,6 +425,8 @@ changes (where available).
   crop from a mismatched preview size, which could leave the crop box
   slightly wrong until the module was adjusted again.
 
+- Fixed a crash on Wayland when disconnecting a monitor.
+
 ## Lua
 
 ### API Version
