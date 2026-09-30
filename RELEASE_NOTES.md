@@ -442,6 +442,10 @@ changes (where available).
   module has slots. Once all slots are in use, `take_snapshot()` now
   takes none and says so, as the take snapshot button already refused.
 
+- Fixed occasional crashes when a script changed its widgets from a
+  callback or `dt.control.dispatch()`, where the change could run on
+  the script's own thread instead of the interface thread.
+
 ### New Scripts
 
 - N/A
