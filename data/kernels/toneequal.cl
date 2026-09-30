@@ -17,12 +17,12 @@
 */
 
 #include "common.h"
+#include "bilinear.h"
 
 // keep in sync with src/common/luminance_mask.h and src/iop/toneequal.c
 #define TONEEQ_MIN_FLOAT 0x1p-16f     // exp2f(-16.0f)
 #define TONEEQ_MIN_EV (-8.0f)
 #define TONEEQ_MAX_EV (0.0f)
-#define TONEEQ_PIXEL_CHAN 8
 
 // dt_iop_luminance_mask_method_t
 #define TONEEQ_MEAN 0
@@ -382,8 +382,23 @@ kernel void toneequal_gf_ab(global const float4 *const packed,
 }
 
 
-/* Guided filter: blend the guided image with the a and b parameters.
+/* Guided filter: blend one pixel with its a and b parameters.
    Mirrors apply_linear_blending[_w_geomean]() in common/fast_guided_filter.h */
+static inline float _gf_blend(const float pixel,
+                              const float2 blend,
+                              const int filter)
+{
+  // Note : image[k] is positive at the outside of the luminance mask
+  const float blended = fmax(pixel * blend.x + blend.y, TONEEQ_MIN_FLOAT);
+
+  return (filter == TONEEQ_BLENDING_GEOMEAN)
+    ? dtcl_sqrt(pixel * blended)
+    : blended;
+}
+
+
+/* Guided filter: blend the intermediate iterations, where the parameters
+   are at the same (downscaled) size as the image */
 kernel void toneequal_gf_blend(global float *const image,
                                global const float2 *const ab,
                                const int width,
@@ -395,15 +410,29 @@ kernel void toneequal_gf_blend(global float *const image,
   if(x >= width || y >= height) return;
 
   const int k = mad24(y, width, x);
-  const float pixel = image[k];
-  const float2 blend = ab[k];
+  image[k] = _gf_blend(image[k], ab[k], filter);
+}
 
-  // Note : image[k] is positive at the outside of the luminance mask
-  const float blended = fmax(pixel * blend.x + blend.y, TONEEQ_MIN_FLOAT);
 
-  image[k] = (filter == TONEEQ_BLENDING_GEOMEAN)
-    ? dtcl_sqrt(pixel * blended)
-    : blended;
+/* Guided filter: final blend of the full size image, sampling the a and b
+   parameters at the downscaled size rather than upsampling them into a
+   full size buffer first */
+kernel void toneequal_gf_blend_upsample(global float *const image,
+                                        const int width,
+                                        const int height,
+                                        global const float2 *const ds_ab,
+                                        const int ds_width,
+                                        const int ds_height,
+                                        const int filter)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const int k = mad24(y, width, x);
+  const float2 blend =
+    dt_bilinear_sample2(ds_ab, ds_width, ds_height, x, y, width, height);
+  image[k] = _gf_blend(image[k], blend, filter);
 }
 
 
@@ -479,13 +508,42 @@ kernel void toneequal_eigf_finish_2c(global float2 *const av,
 }
 
 
-/* Exposure independent guided filter: blending step.
-   Mirrors eigf_blending() in common/eigf.h */
+/* Exposure independent guided filter: blending step, sampling the averages
+   and variances at the downscaled size. Mirrors eigf_blending() in
+   common/eigf.h */
+static inline float _eigf_blend(const float pixel,
+                                const float mask,
+                                const float4 avg,
+                                const int filter,
+                                const float feathering)
+{
+  const float avg_g = avg.x;
+  const float var_g = avg.y;
+  const float avg_m = avg.z;
+  const float covar_mg = avg.w;
+
+  const float norm_g = fmax(avg_g * pixel, 1E-6f);
+  const float norm_m = fmax(avg_m * mask, 1E-6f);
+  const float normalized_var_guide = var_g / norm_g;
+  const float normalized_covar = covar_mg / dtcl_sqrt(norm_g * norm_m);
+  const float a = normalized_covar / (normalized_var_guide + feathering);
+  const float b = avg_m - a * avg_g;
+
+  const float blended = fmax(pixel * a + b, TONEEQ_MIN_FLOAT);
+
+  return (filter == TONEEQ_BLENDING_GEOMEAN)
+    ? dtcl_sqrt(pixel * blended)
+    : blended;
+}
+
+
 kernel void toneequal_eigf_blend(global float *const image,
                                  global const float *const mask,
-                                 global const float4 *const av,
                                  const int width,
                                  const int height,
+                                 global const float4 *const ds_av,
+                                 const int ds_width,
+                                 const int ds_height,
                                  const int filter,
                                  const float feathering)
 {
@@ -494,45 +552,18 @@ kernel void toneequal_eigf_blend(global float *const image,
   if(x >= width || y >= height) return;
 
   const int k = mad24(y, width, x);
-  const float pixel = image[k];
-  const float4 avg = av[k];
-
-  const float avg_g = avg.x;
-  const float var_g = avg.y;
-  const float avg_m = avg.z;
-  const float covar_mg = avg.w;
-
-  const float norm_g = fmax(avg_g * pixel, 1E-6f);
-  const float norm_m = fmax(avg_m * mask[k], 1E-6f);
-  const float normalized_var_guide = var_g / norm_g;
-  const float normalized_covar = covar_mg / dtcl_sqrt(norm_g * norm_m);
-  const float a = normalized_covar / (normalized_var_guide + feathering);
-  const float b = avg_m - a * avg_g;
-
-  const float blended = fmax(pixel * a + b, TONEEQ_MIN_FLOAT);
-
-  image[k] = (filter == TONEEQ_BLENDING_GEOMEAN)
-    ? dtcl_sqrt(pixel * blended)
-    : blended;
+  const float4 avg =
+    dt_bilinear_sample4(ds_av, ds_width, ds_height, x, y, width, height);
+  image[k] = _eigf_blend(image[k], mask[k], avg, filter, feathering);
 }
 
 
 /* same as above, but specialized for the case where guide == mask */
-kernel void toneequal_eigf_blend_no_mask(global float *const image,
-                                         global const float2 *const av,
-                                         const int width,
-                                         const int height,
-                                         const int filter,
-                                         const float feathering)
+static inline float _eigf_blend_no_mask(const float pixel,
+                                        const float2 avg,
+                                        const int filter,
+                                        const float feathering)
 {
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if(x >= width || y >= height) return;
-
-  const int k = mad24(y, width, x);
-  const float pixel = image[k];
-  const float2 avg = av[k];
-
   const float avg_g = avg.x;
   const float var_g = avg.y;
 
@@ -543,7 +574,27 @@ kernel void toneequal_eigf_blend_no_mask(global float *const image,
 
   const float blended = fmax(pixel * a + b, TONEEQ_MIN_FLOAT);
 
-  image[k] = (filter == TONEEQ_BLENDING_GEOMEAN)
+  return (filter == TONEEQ_BLENDING_GEOMEAN)
     ? dtcl_sqrt(pixel * blended)
     : blended;
+}
+
+
+kernel void toneequal_eigf_blend_no_mask(global float *const image,
+                                         const int width,
+                                         const int height,
+                                         global const float2 *const ds_av,
+                                         const int ds_width,
+                                         const int ds_height,
+                                         const int filter,
+                                         const float feathering)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const int k = mad24(y, width, x);
+  const float2 avg =
+    dt_bilinear_sample2(ds_av, ds_width, ds_height, x, y, width, height);
+  image[k] = _eigf_blend_no_mask(image[k], avg, filter, feathering);
 }

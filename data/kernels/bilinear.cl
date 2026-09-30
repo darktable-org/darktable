@@ -17,6 +17,7 @@
 */
 
 #include "common.h"
+#include "bilinear.h"
 
 /* Bilinear interpolators, GPU counterpart of interpolate_bilinear() in
    common/fast_guided_filter.h.
@@ -24,7 +25,10 @@
    bilinear1/2/4 take global buffers and are used to down- and upscale the grey
    working buffers of the guided filters, see dt_interpolate_bilinear_cl().
    bilinear_image does the same for image2d_t, see
-   dt_interpolate_bilinear_image_cl(). Both are in common/bilinear.h */
+   dt_interpolate_bilinear_image_cl(). Both are in common/bilinear.h.
+
+   The per pixel arithmetic of bilinear1/2/4 lives in bilinear.h, shared with
+   kernels that fuse the resampling into their own work */
 
 #define DT_BILINEAR_KERNEL(SUFFIX, TYPE)                                 \
 kernel void bilinear##SUFFIX(global const TYPE *const in,                \
@@ -38,40 +42,9 @@ kernel void bilinear##SUFFIX(global const TYPE *const in,                \
   const int y = get_global_id(1);                                        \
   if(x >= width_out || y >= height_out) return;                          \
                                                                          \
-  /* Relative coordinates of the pixel in output space */                \
-  const float x_out = (float)x / (float)width_out;                       \
-  const float y_out = (float)y / (float)height_out;                      \
-                                                                         \
-  /* Corresponding absolute coordinates of the pixel in input space */   \
-  const float x_in = x_out * (float)width_in;                            \
-  const float y_in = y_out * (float)height_in;                           \
-                                                                         \
-  /* Nearest neighbours coordinates in input space */                    \
-  int x_prev = (int)floor(x_in);                                         \
-  int x_next = x_prev + 1;                                               \
-  int y_prev = (int)floor(y_in);                                         \
-  int y_next = y_prev + 1;                                               \
-                                                                         \
-  x_prev = (x_prev < width_in) ? x_prev : width_in - 1;                  \
-  x_next = (x_next < width_in) ? x_next : width_in - 1;                  \
-  y_prev = (y_prev < height_in) ? y_prev : height_in - 1;                \
-  y_next = (y_next < height_in) ? y_next : height_in - 1;                \
-                                                                         \
-  /* Nearest pixels in input array (nodes in grid) */                    \
-  const TYPE Q_NW = in[mad24(y_prev, width_in, x_prev)];                 \
-  const TYPE Q_NE = in[mad24(y_prev, width_in, x_next)];                 \
-  const TYPE Q_SE = in[mad24(y_next, width_in, x_next)];                 \
-  const TYPE Q_SW = in[mad24(y_next, width_in, x_prev)];                 \
-                                                                         \
-  /* Spatial differences between nodes */                                \
-  const float Dy_next = (float)y_next - y_in;                            \
-  const float Dy_prev = 1.0f - Dy_next; /* because next - prev = 1 */    \
-  const float Dx_next = (float)x_next - x_in;                            \
-  const float Dx_prev = 1.0f - Dx_next; /* because next - prev = 1 */    \
-                                                                         \
   out[mad24(y, width_out, x)] =                                          \
-      Dy_prev * (Q_SW * Dx_next + Q_SE * Dx_prev)                        \
-    + Dy_next * (Q_NW * Dx_next + Q_NE * Dx_prev);                       \
+    dt_bilinear_sample##SUFFIX(in, width_in, height_in,                  \
+                               x, y, width_out, height_out);             \
 }
 
 DT_BILINEAR_KERNEL(1, float)
