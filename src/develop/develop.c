@@ -3746,7 +3746,8 @@ void dt_dev_exposure_handle_event(int n_press, gdouble delta,
                                   GdkModifierType state,
                                   const gboolean is_blackpoint)
 {
-  if(darktable.develop->proxy.exposure.handle_event)
+  if(dt_view_get_current() == DT_VIEW_DARKROOM
+      && darktable.develop->proxy.exposure.handle_event)
     darktable.develop->proxy.exposure.handle_event(n_press, delta, state, is_blackpoint);
 }
 
