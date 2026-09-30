@@ -1951,7 +1951,8 @@ gboolean dt_history_copy(const dt_imgid_t imgid)
   if(!dt_is_valid_imgid(imgid)) return FALSE;
 
   darktable.view_manager->copy_paste.copied_imageid = imgid;
-  darktable.view_manager->copy_paste.full_copy = FALSE;
+  darktable.view_manager->copy_paste.full_copy = TRUE;
+  darktable.view_manager->copy_paste.copy_iop_order = FALSE;
 
   if(darktable.view_manager->copy_paste.selops)
   {
@@ -1971,7 +1972,8 @@ gboolean dt_history_copy_parts(const dt_imgid_t imgid)
   if(dt_history_copy(imgid))
   {
     // we want to copy all history and let user select the parts needed
-    darktable.view_manager->copy_paste.full_copy = TRUE;
+    darktable.view_manager->copy_paste.full_copy = FALSE;
+    darktable.view_manager->copy_paste.copy_iop_order = FALSE;
 
     // run dialog, it will insert into selops the selected module
 

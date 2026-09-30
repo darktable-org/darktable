@@ -334,7 +334,9 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
   GList *items = dt_history_get_items(imgid, FALSE, TRUE, TRUE);
   if(items)
   {
-    for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
+    for(const GList *items_iter = items;
+        items_iter;
+        items_iter = g_list_next(items_iter))
     {
       const dt_history_item_t *item = items_iter->data;
       const int flags = dt_iop_get_module_flags(item->op);
@@ -404,6 +406,8 @@ void dt_gui_hist_dialog_init(dt_history_copy_item_t *d)
   d->selops = NULL;
   d->copied_imageid = NO_IMGID;
   d->copy_iop_order = FALSE;
+  d->full_copy = FALSE;
+  d->paste_mode = DT_HISTORY_COPY_APPEND;
 }
 
 // clang-format off
