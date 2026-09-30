@@ -172,6 +172,10 @@ changes (where available).
 - Add a OpenCL code path to tone equalizer which gives around 6-20x faster
   processing times in comparison to CPU code path, depending on CPU & GPU.
 
+- Hovering over and dragging nodes of long drawn brush strokes and paths
+  is much faster, as the mask overlay is no longer redrawn on every mouse
+  move and long outlines are drawn with far fewer points.
+
 ## Other Changes
 
 - A new `.dtdata` sidecar next to the XMP holds per-pixel edit data
