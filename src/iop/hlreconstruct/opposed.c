@@ -84,10 +84,10 @@ static void _process_linear_opposed(dt_iop_module_t *self,
                                     dt_dev_pixelpipe_iop_t *piece,
                                     const float *const input,
                                     float *const output,
-                                    const dt_iop_roi_t *const roi_in,
-                                    const gboolean quality)
+                                    const dt_iop_roi_t *const roi_in)
 {
   dt_iop_highlights_data_t *d = piece->data;
+  dt_iop_highlights_gui_data_t *g = self->gui_data;
   const float clipval = highlights_clip_magics[DT_IOP_HIGHLIGHTS_OPPOSED] * d->clip;
   const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;
@@ -102,23 +102,34 @@ static void _process_linear_opposed(dt_iop_module_t *self,
   const size_t mheight = height / 3;
   const size_t msize = dt_round_size((size_t) mwidth+2, 8) * dt_round_size(mheight+2, 8);
 
+  dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
   const dt_hash_t opphash = _opposed_hash(piece);
   const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
-  dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
 
-  if(opphash == img_opphash)
+  gboolean is_hashed = FALSE;
+  gboolean unclipped = FALSE;
+  if(self->dev->gui_attached && g)
   {
-    for_three_channels(c)
-      chrominance[c] = img_oppchroma[c];
-    if(!img_oppclipped)
+    dt_iop_gui_enter_critical_section(self);
+    is_hashed = opphash == g->opphash;
+    unclipped = !g->oppclipped;
+    if(is_hashed)
     {
-      dt_iop_image_copy(output, input, width * height * 4);
-      return;
+      for_three_channels(c)
+        chrominance[c] = g->oppchroma[c];
     }
+    dt_iop_gui_leave_critical_section(self);
   }
-  else
+
+  if(is_hashed && unclipped)
   {
-    char *mask = (quality) ? dt_calloc_aligned(6 * msize) : NULL;
+    dt_iop_image_copy(output, input, width * height * 4);
+    return;
+  }
+
+  if(!is_hashed)
+  {
+    char *mask = dt_calloc_aligned(6 * msize);
     if(mask)
     {
       gboolean anyclipped = FALSE;
@@ -181,23 +192,24 @@ static void _process_linear_opposed(dt_iop_module_t *self,
         for_three_channels(c)
           chrominance[c] = (cnts[c] > 30.0f) ? sums[c] / cnts[c] : 0.0f;
 
-        if(fullpipe)
+        if(self->dev->gui_attached && g && fullpipe)
         {
+          dt_iop_gui_enter_critical_section(self);
           for_three_channels(c)
-            img_oppchroma[c] = chrominance[c];
-          img_opphash = opphash;
-          img_oppclipped = anyclipped;
+            g->oppchroma[c] = chrominance[c];
+          g->opphash = opphash;
+          g->oppclipped = anyclipped;
+          dt_iop_gui_leave_critical_section(self);
         }
         dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
             "opposed chroma", piece->pipe, self, DT_DEVICE_CPU, roi_in, NULL,
-            "RGB %3.4f %3.4f %3.4f%s%s",
+            "RGB %3.4f %3.4f %3.4f clipped=%s",
             chrominance[0], chrominance[1], chrominance[2],
-            fullpipe ? " saved" : "",
-            img_oppclipped ? "" : " unclipped");
+            STR_YESNO(anyclipped));
       }
       dt_free_align(mask);
     }
-    else if(quality)
+    else
       dt_print_pipe(DT_DEBUG_ALWAYS,
           "invalid opposed chroma", piece->pipe, self, DT_DEVICE_CPU, NULL, NULL,
           "allocation for mask generation failed");
@@ -226,9 +238,9 @@ static float *_process_opposed(dt_iop_module_t *self,
                                const dt_iop_roi_t *const roi_in,
                                const dt_iop_roi_t *const roi_out,
                                const gboolean keep,
-                               const gboolean quality,
                                const float clipval)
 {
+  dt_iop_highlights_gui_data_t *g = self->gui_data;
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->xtrans;
   const uint32_t filters = piece->filters;
 
@@ -253,23 +265,35 @@ static float *_process_opposed(dt_iop_module_t *self,
   // we have to over-allocate making sure all later tests fit for all width&height combinations
   const size_t msize = dt_round_size((size_t) mwidth, 8) * dt_round_size(mheight, 8);
 
-  const dt_hash_t opphash = _opposed_hash(piece);
-  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
 
-  if(opphash == img_opphash)
+  const dt_hash_t opphash = _opposed_hash(piece);
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
+
+  gboolean is_hashed = FALSE;
+  gboolean unclipped = FALSE;
+  if(self->dev->gui_attached && g)
   {
-    for_three_channels(c)
-      chrominance[c] = img_oppchroma[c];
-    if(!img_oppclipped && !keep)
+    dt_iop_gui_enter_critical_section(self);
+    is_hashed = opphash == g->opphash;
+    unclipped = !g->oppclipped;
+    if(is_hashed)
     {
-      dt_iop_copy_image_roi(output, input, 1, roi_in, roi_out);
-      return NULL;
+      for_three_channels(c)
+        chrominance[c] = g->oppchroma[c];
     }
+    dt_iop_gui_leave_critical_section(self);
   }
-  else
+
+  if(is_hashed && unclipped)
   {
-    char *mask = (quality) ? dt_calloc_aligned(6 * msize) : NULL;
+    dt_iop_copy_image_roi(output, input, 1, roi_in, roi_out);
+    return NULL;
+  }
+
+  if(!is_hashed)
+  {
+    char *mask = dt_calloc_aligned(6 * msize);
     if(mask)
     {
       gboolean anyclipped = FALSE;
@@ -304,7 +328,6 @@ static float *_process_opposed(dt_iop_module_t *self,
 
       dt_aligned_pixel_t sums = {0.0f, 0.0f, 0.0f, 0.0f};
       dt_aligned_pixel_t cnts = {0.0f, 0.0f, 0.0f, 0.0f};
-
       if(anyclipped)
       {
         /* We want to use the photosites closely around clipped data to be taken into account.
@@ -349,25 +372,25 @@ static float *_process_opposed(dt_iop_module_t *self,
           chrominance[c] = (cnts[c] > 100.0f) ? sums[c] / cnts[c] : 0.0f;
       }
 
-      if(fullpipe)
+      if(self->dev->gui_attached && g && fullpipe)
       {
+        dt_iop_gui_enter_critical_section(self);
         for_three_channels(c)
-          img_oppchroma[c] = chrominance[c];
-        img_opphash = opphash;
-        img_oppclipped = anyclipped;
+          g->oppchroma[c] = chrominance[c];
+        g->opphash = opphash;
+        g->oppclipped = anyclipped;
+        dt_iop_gui_leave_critical_section(self);
       }
-
       dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
           "opposed chroma", piece->pipe, self, DT_DEVICE_CPU, NULL, NULL,
-           "%12.7f (%d)%12.7f (%d)%12.7f (%d)%s%s",
+           "%12.7f (%d)%12.7f (%d)%12.7f (%d) clipped=%s",
           chrominance[0], (int)cnts[0],
           chrominance[1], (int)cnts[1],
           chrominance[2], (int)cnts[2],
-          fullpipe ? " saved" : "",
-          img_oppclipped ? "" : " unclipped");
+          STR_YESNO(anyclipped));
       dt_free_align(mask);
     }
-    else if(quality)
+    else
       dt_print_pipe(DT_DEBUG_ALWAYS,
           "invalid opposed chroma", piece->pipe, self, DT_DEVICE_CPU, NULL, NULL,
           "allocation for mask generation failed");
@@ -436,7 +459,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
 {
   dt_iop_highlights_data_t *d = piece->data;
   const dt_iop_highlights_global_data_t *gd = self->global_data;
-
+  dt_iop_highlights_gui_data_t *g = self->gui_data;
   const int devid = piece->pipe->devid;
   const uint32_t filters = piece->filters;
 
@@ -466,30 +489,39 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
   cl_mem dev_correction = NULL;
   float *claccu = NULL;
 
-  const dt_hash_t opphash = _opposed_hash(piece);
-  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
-  const int fastcopymode = (opphash == img_opphash) && !img_oppclipped;
-
-  if(!fastcopymode)
-  {
-    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), piece->xtrans);
-    if(dev_xtrans == NULL) goto error;
-
-    dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
-    if(dev_clips == NULL) goto error;
-
-    dev_correction = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), correction);
-    if(dev_correction == NULL) goto error;
-  }
-
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
 
-  if(opphash == img_opphash)
+  const dt_hash_t opphash = _opposed_hash(piece);
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
+
+  gboolean is_hashed = FALSE;
+  gboolean unclipped = FALSE;
+  if(self->dev->gui_attached && g)
   {
-    for_three_channels(c)
-      chrominance[c] = img_oppchroma[c];
+    dt_iop_gui_enter_critical_section(self);
+    is_hashed = opphash == g->opphash;
+    unclipped = !g->oppclipped;
+    if(is_hashed)
+    {
+      for_three_channels(c)
+        chrominance[c] = g->oppchroma[c];
+    }
+    dt_iop_gui_leave_critical_section(self);
   }
-  else
+
+  if(is_hashed && unclipped)
+  {
+    return dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
+  }
+
+  dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), piece->xtrans);
+  if(dev_xtrans == NULL) goto error;
+  dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
+  if(dev_clips == NULL) goto error;
+  dev_correction = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), correction);
+  if(dev_correction == NULL) goto error;
+
+  if(!is_hashed)
   {
     // We don't have valid chrominance correction so go the hard way
     const int iwidth = roi_in->width;
@@ -544,6 +576,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
     dt_aligned_pixel_t sums = { 0.0f, 0.0f, 0.0f};
     dt_aligned_pixel_t cnts = { 0.0f, 0.0f, 0.0f};
     float clipped = 0.0f;
+
     for(int row = 0; row < iheight; row++)
     {
       for_three_channels(c)
@@ -556,22 +589,22 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
     for_three_channels(c)
       chrominance[c] = (cnts[c] > 100.0f) ? sums[c] / cnts[c] : 0.0f;
 
-    if(fullpipe)
+    if(self->dev->gui_attached && g && fullpipe)
     {
+      dt_iop_gui_enter_critical_section(self);
       for_three_channels(c)
-        img_oppchroma[c] = chrominance[c];
-      img_opphash = opphash;
-      img_oppclipped = clipped > 0.0f;
+        g->oppchroma[c] = chrominance[c];
+      g->opphash = opphash;
+      g->oppclipped = clipped > 0.0f;
+      dt_iop_gui_leave_critical_section(self);
     }
-
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
         "opposed chroma", piece->pipe, self, piece->pipe->devid, NULL, NULL,
-        "%12.7f (%d)%12.7f (%d)%12.7f (%d)%s%s",
+        "%12.7f (%d)%12.7f (%d)%12.7f (%d) clipped=%s",
         chrominance[0], (int)cnts[0],
         chrominance[1], (int)cnts[1],
         chrominance[2], (int)cnts[2],
-        fullpipe ? " saved" : "",
-        img_oppclipped ? "" : " unclipped");
+        STR_YESNO(clipped > 0.0f));
   }
 
   err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
@@ -586,8 +619,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
           CLARG(filters), CLARG(dev_xtrans),
           CLARG(dev_clips),
           CLARG(dev_chrominance),
-          CLARG(dev_correction),
-          CLARG(fastcopymode));
+          CLARG(dev_correction));
 
   error:
   if(err != CL_SUCCESS)

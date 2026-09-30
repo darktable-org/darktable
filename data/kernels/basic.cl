@@ -487,8 +487,7 @@ kernel void highlights_opposed(read_only image2d_t in,
                                global const unsigned char (*const xtrans)[6],
                                global const float *clips,
                                global const float *chroma,
-                               global const float *correction,
-                               const int fastcopymode)
+                               global const float *correction)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -501,18 +500,14 @@ kernel void highlights_opposed(read_only image2d_t in,
   if((icol >= 0) && (icol < iwidth) && (irow >= 0) && (irow < iheight))
   {
     val = Areadsingle(in, icol, irow);
-
-    if(!fastcopymode)
+    const int color = fcol(irow, icol, filters, xtrans);
+    if(val >= clips[color])
     {
-      const int color = fcol(irow, icol, filters, xtrans);
-      if(val >= clips[color])
-      {
-        const float ref = _calc_refavg(in, xtrans, filters, irow, icol, iheight, iwidth, correction);
-        val = fmax(val, ref + chroma[color]);
-      }
+      const float ref = _calc_refavg(in, xtrans, filters, irow, icol, iheight, iwidth, correction);
+      val = fmax(val, ref + chroma[color]);
     }
   }
-  write_imagef (out, (int2)(x, y), val);
+  write_imagef(out, (int2)(x, y), val);
 }
 
 #define SQRT3 1.7320508075688772935274463415058723669f
