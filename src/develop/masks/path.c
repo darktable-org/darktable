@@ -1697,8 +1697,20 @@ static int _path_get_pts_border(dt_develop_t *dev,
       {
         if(dt_masks_dynbuf_get(dborder, - 2) == DT_INVALID_COORDINATE)
         {
-          dt_masks_dynbuf_set(dborder, -2, dt_masks_dynbuf_get(dborder, -4));
-          dt_masks_dynbuf_set(dborder, -1, dt_masks_dynbuf_get(dborder, -3));
+          if(dt_masks_dynbuf_position(dborder) >= 6 * nb + 4)
+          {
+            dt_masks_dynbuf_set(dborder, -2, dt_masks_dynbuf_get(dborder, -4));
+            dt_masks_dynbuf_set(dborder, -1, dt_masks_dynbuf_get(dborder, -3));
+          }
+          else
+          {
+            // the node header, not a sample, precedes the first segment's
+            // only sample: use where the next segment's border starts
+            float next_c[2], next_b[2];
+            _path_border_get_XY(p3, p4, 0.00001f, p3[4], next_c, next_c + 1, next_b, next_b + 1);
+            dt_masks_dynbuf_set(dborder, -2, next_b[0]);
+            dt_masks_dynbuf_set(dborder, -1, next_b[1]);
+          }
         }
         rb[0] = dt_masks_dynbuf_get(dborder, -2);
         rb[1] = dt_masks_dynbuf_get(dborder, -1);
