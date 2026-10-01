@@ -1221,6 +1221,16 @@ void dt_masks_line_stroke(cairo_t *cr,
                           const gboolean selected,
                           const float zoom_scale);
 
+void dt_masks_stroke_polyline(cairo_t *cr,
+                              const float *const pts,
+                              const int from,
+                              const int to,
+                              const gboolean close_path,
+                              const gboolean border,
+                              const gboolean source,
+                              const gboolean selected,
+                              const float zoom_scale);
+
 static inline float dt_masks_sensitive_dist(const float zoom_scale)
 {
   return DT_PIXEL_APPLY_DPI(7) / zoom_scale;

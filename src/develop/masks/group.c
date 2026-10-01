@@ -239,7 +239,6 @@ static int _group_events_mouse_moved(dt_iop_module_t *module,
                                        sel, sel_fpt->parentid, gui, gui->group_edited);
   }
 
-  dt_control_queue_redraw_center();
   return 0;
 }
 
