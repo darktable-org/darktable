@@ -2952,8 +2952,7 @@ monochrome_filter(read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = readpixel(in, x, y);
-  // TODO: this could be a native_expf, or exp2f, need to evaluate comparisons with cpu though:
+  float4 pixel = Areadpixel(in, x, y);
   pixel.x = 100.0f*dt_fast_expf(-clipf((fsquare(pixel.y - a) + fsquare(pixel.z - b)) / (2.0f * size)));
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -2974,8 +2973,8 @@ monochrome(read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = readpixel(in, x, y);
-  float4 basep = readpixel(base, x, y);
+  float4 pixel = Areadpixel(in, x, y);
+  float4 basep = Areadpixel(base, x, y);
   float filter  = dt_fast_expf(-clipf((fsquare(pixel.y - a) + fsquare(pixel.z - b)) / (2.0f * size)));
   float tt = envelope(pixel.x);
   float t  = tt + (1.0f-tt)*(1.0f-highlights);
