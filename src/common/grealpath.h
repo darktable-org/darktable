@@ -11,6 +11,8 @@
 #include <errno.h>
 #include <glib.h>
 
+#include "common/darktable.h" // for dt_print
+
 #ifdef _WIN32
 #include <fileapi.h>
 #endif
@@ -24,21 +26,25 @@
 static inline gchar *g_realpath(const char *path)
 {
 #ifndef _WIN32
-#ifndef PATH_MAX
-#define PATH_MAX 4096
-#endif
-  char buffer[PATH_MAX] = { 0 };
+  // If 2nd parameter is specified as NULL, then realpath() uses malloc to
+  // allocate a buffer of up to PATH_MAX bytes to hold the resolved pathname,
+  // and returns a pointer to this buffer.
+  // It is explicitly standardized in POSIX.1-2008.
+  char* resolvedpath = realpath(path, NULL);
 
-  char* res = realpath(path, buffer);
-
-  if(res)
+  if(resolvedpath)
   {
-    return g_strdup(buffer);
+    gchar *result = g_strdup(resolvedpath);
+    free(resolvedpath);
+    return result;
   }
   else
   {
-    fprintf(stderr, "path lookup '%s' fails with: '%s'\n", path, strerror(errno));
-    exit(EXIT_FAILURE);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[g_realpath] path lookup '%s' fails with: '%s'",
+             path,
+             strerror(errno));
+    return g_strdup(path);
   }
 #else
   char *buffer;
@@ -74,4 +80,3 @@ static inline gchar *g_realpath(const char *path)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
