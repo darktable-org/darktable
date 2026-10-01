@@ -947,7 +947,7 @@ static void dt_colorspaces_create_cmatrix(float cmatrix[4][3], float mat[3][3])
 }
 #endif
 
-static cmsHPROFILE dt_colorspaces_create_xyzmatrix_profile(const float mat[3][3])
+cmsHPROFILE dt_colorspaces_create_xyzmatrix_profile(const float mat[3][3])
 {
   // mat: cam -> xyz
   dt_aligned_pixel_t x, y;
@@ -1834,6 +1834,8 @@ const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
        return _("HLG P3");
      case DT_COLORSPACE_DISPLAY_P3:
        return _("Display P3");
+     case DT_COLORSPACE_FORWARD_MATRIX:
+       return _("DNG forward matrix");
      case DT_COLORSPACE_LAST:
        break;
   }
@@ -2633,6 +2635,7 @@ gboolean dt_colorspaces_profile_is_wide_gamut(const dt_colorspaces_color_profile
     case DT_COLORSPACE_PQ_P3:
     case DT_COLORSPACE_HLG_P3:
     case DT_COLORSPACE_DISPLAY_P3:
+    case DT_COLORSPACE_FORWARD_MATRIX:
       return TRUE;
 
     // sRGB primaries (gamma may differ but gamut is the same)

@@ -19,6 +19,9 @@
 #pragma once
 
 #include "common/dttypes.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // inverts the given un-padded 3x3 matrix
 int mat3inv(float *const dst, const float *const src);
@@ -26,6 +29,9 @@ int mat3inv(float *const dst, const float *const src);
 // inverts the given padded 3x3 matrix
 int mat3SSEinv(dt_colormatrix_t dst, const dt_colormatrix_t src);
 
+#ifdef __cplusplus
+}
+#endif
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

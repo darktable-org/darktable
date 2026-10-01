@@ -208,6 +208,12 @@ changes (where available).
   optimization level, so models that misbehave under aggressive
   optimization no longer need workarounds in feature code.
 
+- Added support for DNG files providing a forward matrix. These
+  files will have an additonal "DNG forward matrix" profile in
+  colorin module, selectable manually. The existing "embedded
+  matrix" profile remains the default for fresh imports and
+  reloading defaults.
+
 - Panasonic RW2 files now offer embedded lens distortion correction,
   covering built-in and Lumix-branded lenses that lensfun has no
   profile for.
