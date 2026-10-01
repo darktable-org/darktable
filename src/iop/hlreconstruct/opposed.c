@@ -287,6 +287,9 @@ static float *_process_opposed(dt_iop_module_t *self,
 
   if(is_hashed && unclipped)
   {
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+                "copy unclipped opposed",
+                piece->pipe, self, piece->pipe->devid, roi_in, roi_out);
     dt_iop_copy_image_roi(output, input, 1, roi_in, roi_out);
     return NULL;
   }
@@ -511,7 +514,12 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
 
   if(is_hashed && unclipped)
   {
-    return dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
+    const size_t iorigin[2] = { roi_out->x, roi_out->y };
+    const size_t region[2] = { roi_out->width, roi_out->height };
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+                "copy unclipped opposed",
+                piece->pipe, self, devid, roi_in, roi_out);
+    return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, CLIMG_ORIGIN, region);
   }
 
   dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), piece->xtrans);
