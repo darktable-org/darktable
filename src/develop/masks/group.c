@@ -95,8 +95,12 @@ static int _group_events_button_pressed(dt_iop_module_t *module,
       {
         // then make sure we try to select the feather point
         gui->select_only_border = dt_modifier_is(state, GDK_SHIFT_MASK);
+        // no dt_dev_get_zoom_scale_full(): global_mutex under history_mutex can deadlock
+        dt_dev_viewport_t *port = &darktable.develop->full;
+        const float zoom_scale =
+          dt_dev_get_zoom_scale(port, port->zoom, 1 << port->closeup, TRUE);
         sel->functions->mouse_moved(module, pzx, pzy, pressure,
-                                    which, dt_dev_get_zoom_scale_full(), sel, fpt->parentid,
+                                    which, zoom_scale, sel, fpt->parentid,
                                     gui, gui->group_edited);
       }
 
