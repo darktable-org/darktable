@@ -319,7 +319,6 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   gboolean luminance_valid;     // TRUE if the luminance cache is ready
   gboolean histogram_valid;     // TRUE if the histogram cache and stats are ready
   gboolean lut_valid;           // TRUE if the gui_lut is ready
-  gboolean graph_valid;         // TRUE if the UI graph view is ready
   gboolean user_param_valid;    // TRUE if users params set in
                                 // interactive view are in bounds
   gboolean factors_valid;       // TRUE if radial-basis coeffs are ready
@@ -1174,10 +1173,8 @@ void toneeq_process(dt_iop_module_t *self,
     }
     else if(dt_pipe_is_preview(piece->pipe))
     {
-      const dt_hash_t saved_hash = dt_preview_data_get_hash(&g->pd);
-
       dt_iop_gui_enter_critical_section(self);
-      if(saved_hash != hash || !g->luminance_valid)
+      if(dt_preview_data_get_hash(&g->pd) != hash || !g->luminance_valid)
       {
         /* compute only if upstream pipe state has changed */
         // Flag the cache as being recomputed so the GUI threads never
@@ -2006,7 +2003,6 @@ static void gui_cache_init(dt_iop_module_t *self)
   g->luminance_valid = FALSE;      // TRUE if the luminance cache is ready
   g->histogram_valid = FALSE;      // TRUE if the histogram cache and stats are ready
   g->lut_valid = FALSE;            // TRUE if the gui_lut is ready
-  g->graph_valid = FALSE;          // TRUE if the UI graph view is ready
   g->user_param_valid = FALSE;     // TRUE if users params set in interactive view are in bounds
   g->factors_valid = TRUE;         // TRUE if radial-basis coeffs are ready
 
@@ -2111,6 +2107,7 @@ static inline void compute_log_histogram_and_stats(const float *const restrict l
 
   // remap the extended histogram into the normal one
   // bins between [-8; 0] EV remapped between [0 ; UI_SAMPLES]
+  *max_histogram = 1;
   for(size_t k = 0; k < TEMP_SAMPLES; ++k)
   {
     const float EV = 16.0 * (float)k / (float)(TEMP_SAMPLES - 1) - 10.0;
@@ -2977,23 +2974,20 @@ void gui_post_expose(dt_iop_module_t *self,
   const gboolean fail = !g->cursor_valid
                      || !g->interpolation_valid
                      || !g->has_focus;
-
+  gboolean luminance_valid = g->luminance_valid;
+  float cursor_exposure = g->cursor_exposure;
   dt_iop_gui_leave_critical_section(self);
 
   if(fail) return;
 
-  if(!g->graph_valid)
-    if(!_init_drawing(self, self->widget, g))
-      return;
-
   // Re-read the exposure in case it has changed.  While the pipe is busy
   // the module buffer may be mid-recompute, so keep the last value and
   // stay drawing the indicator (no blinking cursor during reprocess).
-  if(g->luminance_valid && self->enabled && !dt_pipe_processing(dev->full.pipe))
-    g->cursor_exposure = log2f(_luminance_from_module_buffer(self));
+  if(luminance_valid && self->enabled && !dt_pipe_processing(dev->full.pipe))
+    cursor_exposure = log2f(_luminance_from_module_buffer(self));
 
   dt_iop_gui_enter_critical_section(self);
-
+  g->cursor_exposure = cursor_exposure;
   // Get coordinates
   const float x_pointer = g->cursor_pos_x;
   const float y_pointer = g->cursor_pos_y;
@@ -3014,13 +3008,13 @@ void gui_post_expose(dt_iop_module_t *self,
     exposure_out = exposure_in + correction;
     luminance_out = exp2f(exposure_out);
   }
-
+  luminance_valid = g->luminance_valid;
   dt_iop_gui_leave_critical_section(self);
 
   if(dt_isnan(exposure_in)) return; // something went wrong
 
   char text[256];
-  if(g->luminance_valid && self->enabled)
+  if(luminance_valid && self->enabled)
     snprintf(text, sizeof(text), _("%+.1f EV"), exposure_in);
   else
     snprintf(text, sizeof(text), "? EV");
@@ -3048,7 +3042,7 @@ void gui_post_expose(dt_iop_module_t *self,
                             inner_color, log2f(luminance_out) > 0.0f,
                             text);
 
-  if(g->luminance_valid && self->enabled)
+  if(luminance_valid && self->enabled)
   {
     // Search for nearest node in graph and highlight it
     const float radius_threshold = 0.45f;
@@ -3268,12 +3262,6 @@ static inline gboolean _init_drawing(dt_iop_module_t *const restrict self,
   cairo_rectangle(g->cr, 0, 0, g->graph_width, g->graph_height);
   cairo_stroke_preserve(g->cr);
 
-  // end of caching section, this will not be drawn again
-
-  dt_iop_gui_enter_critical_section(self);
-  g->graph_valid = TRUE;
-  dt_iop_gui_leave_critical_section(self);
-
   return TRUE;
 }
 
@@ -3314,9 +3302,6 @@ static gboolean area_draw(GtkWidget *widget,
   // Draw the widget equalizer view
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   if(g == NULL) return FALSE;
-
-  // Init or refresh the drawing cache
-  //if(!g->graph_valid)
 
   // this can be cached and drawn just once, but too lazy to debug a
   // cache invalidation for Cairo objects
