@@ -1261,8 +1261,10 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter,
   // border[border_first] because it may be in a self-intersected
   // section so we choose a point where we are sure there's no intersection:
   // one from border shape extrema (here x_max).
-  int lastx = border[(posextr[1] - 1) * 2];
-  int lasty = border[(posextr[1] - 1) * 2 + 1];
+  // the border is closed: the last sample comes before the first one
+  const int prev = posextr[1] > border_first ? posextr[1] - 1 : border_len - 1;
+  int lastx = border[prev * 2];
+  int lasty = border[prev * 2 + 1];
 
   for(int ii = border_first; ii < border_len; ii++)
   {
