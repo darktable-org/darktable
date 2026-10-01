@@ -292,9 +292,10 @@ static void process_wavelets(dt_iop_module_t *self,
   if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe))
   {
     dt_iop_atrous_gui_data_t *g = self->gui_data;
+    dt_iop_gui_enter_critical_section(self);
     g->num_samples = get_samples(g->sample, d, roi_in, piece);
-    // tries to acquire gdk lock and this prone to deadlock:
-    // dt_control_queue_draw(GTK_WIDGET(g->area));
+    dt_iop_gui_leave_critical_section(self);
+    // To be checked: redraw widget here?
   }
 
   // corner case of extremely small image. this is not really likely
@@ -379,10 +380,10 @@ int process_cl(dt_iop_module_t *self,
   if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe))
   {
     dt_iop_atrous_gui_data_t *g = self->gui_data;
+    dt_iop_gui_enter_critical_section(self);
     g->num_samples = get_samples(g->sample, d, roi_in, piece);
-    // dt_control_queue_redraw_widget(GTK_WIDGET(g->area));
-    // tries to acquire gdk lock and this prone to deadlock:
-    // dt_control_queue_draw(GTK_WIDGET(g->area));
+    dt_iop_gui_leave_critical_section(self);
+    // To be checked: redraw widget here?
   }
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
@@ -498,10 +499,10 @@ int process_cl(dt_iop_module_t *self,
   if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe))
   {
     dt_iop_atrous_gui_data_t *g = self->gui_data;
+    dt_iop_gui_enter_critical_section(self);
     g->num_samples = get_samples(g->sample, d, roi_in, piece);
-    // dt_control_queue_redraw_widget(GTK_WIDGET(g->area));
-    // tries to acquire gdk lock and this prone to deadlock:
-    // dt_control_queue_draw(GTK_WIDGET(g->area));
+    dt_iop_gui_leave_critical_section(self);
+    // To be checked: redraw widget here?
   }
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -1077,7 +1078,10 @@ static gboolean area_draw(GtkWidget *widget,
   dt_iop_atrous_gui_data_t *g = self->gui_data;
   dt_iop_atrous_params_t p = *(dt_iop_atrous_params_t *)self->params;
 
+  dt_iop_gui_enter_critical_section(self);
   const float mix = g->in_curve ? 1.0f : p.mix;
+  const int num_samples = g->num_samples;
+  dt_iop_gui_leave_critical_section(self);
 
   for(int k = 0; k < BANDS; k++)
   {
@@ -1164,10 +1168,10 @@ static gboolean area_draw(GtkWidget *widget,
 
 // draw frequency histogram in bg.
 #if 1
-  if(g->num_samples > 0)
+  if(num_samples > 0)
   {
     cairo_save(cr);
-    for(int k = 1; k < g->num_samples; k += 2)
+    for(int k = 1; k < num_samples; k += 2)
     {
       cairo_set_source_rgba(cr, graph_bg.red, graph_bg.green, graph_bg.blue, .3);
       cairo_move_to(cr, width * g->sample[k - 1], 0.0f);
@@ -1176,10 +1180,10 @@ static gboolean area_draw(GtkWidget *widget,
       cairo_line_to(cr, width * g->sample[k], 0.0f);
       cairo_fill(cr);
     }
-    if(g->num_samples & 1)
+    if(num_samples & 1)
     {
-      cairo_move_to(cr, width * g->sample[g->num_samples - 1], 0.0f);
-      cairo_line_to(cr, width * g->sample[g->num_samples - 1], -height);
+      cairo_move_to(cr, width * g->sample[num_samples - 1], 0.0f);
+      cairo_line_to(cr, width * g->sample[num_samples - 1], -height);
       cairo_line_to(cr, 0.0f, -height);
       cairo_line_to(cr, 0.0f, 0.0f);
       cairo_fill(cr);
