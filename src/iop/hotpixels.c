@@ -351,7 +351,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   if(g && self->dev->gui_attached && dt_pipe_is_full(piece->pipe))
   {
+    dt_iop_gui_enter_critical_section(self);
     g->pixels_fixed = fixed;
+    dt_iop_gui_leave_critical_section(self);
   }
 }
 
@@ -419,10 +421,14 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   dt_iop_hotpixels_gui_data_t *g = self->gui_data;
   DT_GUARD_GUI_UPDATE(FALSE);
 
-  if(g->pixels_fixed < 0) return FALSE;
+  dt_iop_gui_enter_critical_section(self);
+  const int pixels_fixed = g->pixels_fixed;
+  g->pixels_fixed = -1;
+  dt_iop_gui_leave_critical_section(self);
+
+  if(pixels_fixed < 0) return FALSE;
 
   char *str = g_strdup_printf(ngettext("fixed %d pixel", "fixed %d pixels", g->pixels_fixed), g->pixels_fixed);
-  g->pixels_fixed = -1;
 
   DT_ENTER_GUI_UPDATE();
   gtk_label_set_text(g->message, str);
