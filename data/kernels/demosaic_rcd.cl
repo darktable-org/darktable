@@ -18,6 +18,15 @@
 
 #include "common.h"
 
+/** Correct index into "half-width" cl_mem buffers if the buffer has an odd width
+    is not a simple idx-full / 2!
+*/
+
+static inline int _half_idx(const int row, const int col, const int w)
+{
+  return mad24(row, (w + 1) / 2, col / 2);
+}
+
 // Populate cfa and rgb data by normalized input
 __kernel void rcd_populate (__read_only image2d_t in, global float *cfa, global float *rgb0, global float *rgb1, global float *rgb2, const int w, const int height, const unsigned int filters, const float scale)
 {
@@ -111,7 +120,7 @@ __kernel void rcd_step_2(global float *lpf, global float *cfa, const int w, cons
   if((col > w - 2) || (row > height - 2)) return;
   const int idx = mad24(row, w, col);
 
-  lpf[idx / 2] = cfa[idx]
+  lpf[_half_idx(row, col, w)] = cfa[idx]
      + 0.5f * (cfa[idx - w    ] + cfa[idx + w    ] + cfa[idx     - 1] + cfa[idx     + 1])
     + 0.25f * (cfa[idx - w - 1] + cfa[idx - w + 1] + cfa[idx + w - 1] + cfa[idx + w + 1]);
 }
@@ -123,7 +132,8 @@ __kernel void rcd_step_3(global float *lpf, global float *cfa, global float *rgb
   const int col = 4 + (FC(row, 0, filters) & 1) + 2 * get_global_id(0);
   if((col > w - 5) || (row > height - 5)) return;
   const int idx = mad24(row, w, col);
-  const int lidx = idx / 2;
+  const int lidx = _half_idx(row, col, w);
+  const int hw2 = 2 * ((w + 1) / 2); // two rows in the half-width buffer
   const int w2 = 2 * w;
   const int w3 = 3 * w;
   const int w4 = 4 * w;
@@ -142,8 +152,8 @@ __kernel void rcd_step_3(global float *lpf, global float *cfa, global float *rgb
 
   const float lfpi = lpf[lidx];
   // Cardinal pixel estimations
-  const float N_Est = cfa[idx - w] * (lfpi + lfpi) / (eps + lfpi + lpf[lidx - w]);
-  const float S_Est = cfa[idx + w] * (lfpi + lfpi) / (eps + lfpi + lpf[lidx + w]);
+  const float N_Est = cfa[idx - w] * (lfpi + lfpi) / (eps + lfpi + lpf[lidx - hw2]);
+  const float S_Est = cfa[idx + w] * (lfpi + lfpi) / (eps + lfpi + lpf[lidx + hw2]);
   const float W_Est = cfa[idx - 1] * (lfpi + lfpi) / (eps + lfpi + lpf[lidx - 1]);
   const float E_Est = cfa[idx + 1] * (lfpi + lfpi) / (eps + lfpi + lpf[lidx + 1]);
 
@@ -162,7 +172,7 @@ __kernel void rcd_step_4_0(global float *cfa, global float *p_diff, global float
   const int col = 3 + 2 * get_global_id(0);
   if((col > w - 4) || (row > height - 4)) return;
   const int idx = mad24(row, w, col);
-  const int idx2 = idx / 2;
+  const int idx2 = _half_idx(row, col, w);
   const int w2 = 2 * w;
   const int w3 = 3 * w;
 
@@ -176,10 +186,9 @@ __kernel void rcd_step_4_1(global float *PQ_dir, global float *p_diff, global fl
   const int row = 2 + get_global_id(1);
   const int col = 2 + (FC(row, 0, filters) & 1) + 2 *get_global_id(0);
   if((col > w - 3) || (row > height - 3)) return;
-  const int idx = mad24(row, w, col);
-  const int idx2 = idx / 2;
-  const int idx3 = (idx - w - 1) / 2;
-  const int idx4 = (idx + w - 1) / 2;
+  const int idx2 = _half_idx(row, col, w);
+  const int idx3 = _half_idx(row - 1, col - 1, w);
+  const int idx4 = _half_idx(row + 1, col - 1, w);
 
   const float P_Stat = fmax(epssq, p_diff[idx3]     + p_diff[idx2] + p_diff[idx4 + 1]);
   const float Q_Stat = fmax(epssq, q_diff[idx3 + 1] + q_diff[idx2] + q_diff[idx4]);
@@ -200,9 +209,9 @@ __kernel void rcd_step_4_2(global float *PQ_dir, global float *rgb0, global floa
   else if(color == BLUE) rgbc = rgb2;
 
   const int idx = mad24(row, w, col);
-  const int pqidx = idx / 2;
-  const int pqidx2 = (idx - w - 1) / 2;
-  const int pqidx3 = (idx + w - 1) / 2;
+  const int pqidx = _half_idx(row, col, w);
+  const int pqidx2 = _half_idx(row - 1, col - 1, w);
+  const int pqidx3 = _half_idx(row + 1, col - 1, w);
   const int w2 = 2 * w;
   const int w3 = 3 * w;
 
