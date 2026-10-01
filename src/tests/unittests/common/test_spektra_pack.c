@@ -763,6 +763,83 @@ static void test_lut_path_tracks_exact_spectral(void **state)
 }
 
 /*
+ * TEST FUNCTIONS: spectral upsampling tables
+ */
+
+/* every table the pack loaded is found by its own hash, 0 asks for the
+   default, and a hash the pack does not carry is refused rather than
+   substituted, both by the lookup and by the sim build */
+static void test_table_lookup_finds_each_table_and_refuses_others(void **state)
+{
+  fixture_t *f = *state;
+  REQUIRE_FILM(f);
+  TR_STEP("each table is reachable by its hash; an unknown one is refused");
+  const int n = sf_pack_n_tables(f->pack);
+  assert_true(n >= 1);
+  assert_int_equal(sf_pack_table_by_hash(f->pack, 0u), 0);
+  assert_int_equal(sf_pack_table_hash(f->pack, 0), sf_pack_lut_hash(f->pack));
+
+  uint32_t unknown = 0xdeadbeefu;
+  for(int i = 0; i < n; i++)
+  {
+    const uint32_t h = sf_pack_table_hash(f->pack, i);
+    assert_int_equal(sf_pack_table_by_hash(f->pack, h), i);
+    if(h == unknown) unknown++;
+  }
+  assert_int_equal(sf_pack_table_by_hash(f->pack, unknown), -1);
+
+  sf_sim_params_t p;
+  sf_sim_params_defaults(&p);
+  p.spectral_lut_hash = unknown;
+  char *err = NULL;
+  sf_sim_t *sim = sf_sim_build(f->pack, f->film, f->print, &p, &err);
+  assert_null(sim);
+  assert_non_null(err);
+  free(err);
+}
+
+/* every table renders: the non-default ones and, where the pack carries one,
+   the reflectance path with its relight and neutral normalization. A pack
+   with a single table still checks that one */
+static void test_every_table_renders_valid_output(void **state)
+{
+  fixture_t *f = *state;
+  REQUIRE_FILM(f);
+  if(!f->print) skip();
+  TR_STEP("every spectral upsampling table builds and renders");
+  enum { N = 8 };
+  float in[N * 3], out[N * 3];
+  for(int i = 0; i < N; i++)
+  {
+    const float level = 0.02f + 0.9f * (float)i / (float)(N - 1);
+    in[i * 3 + 0] = level;
+    in[i * 3 + 1] = level * 0.75f;
+    in[i * 3 + 2] = level * 0.45f;
+  }
+
+  const int n = sf_pack_n_tables(f->pack);
+  for(int t = 0; t < n; t++)
+  {
+    TR_NOTE("table %d: %s (%08x, %s)", t, sf_pack_table_identifier(f->pack, t),
+            sf_pack_table_hash(f->pack, t),
+            sf_pack_table_kind(f->pack, t) == SF_LUT_REFLECTANCE ? "reflectance"
+                                                                 : "irradiance");
+    sf_sim_params_t p;
+    sf_sim_params_defaults(&p);
+    p.spectral_lut_hash = sf_pack_table_hash(f->pack, t);
+    p.lut_steps = 33;
+    char *err = NULL;
+    sf_sim_t *sim = sf_sim_build(f->pack, f->film, f->print, &p, &err);
+    if(!sim) TR_NOTE("sim build failed: %s", err ? err : "(no message)");
+    free(err);
+    assert_non_null(sim);
+    _render(sim, in, out, N);
+    _assert_valid_output(out, N, TRUE);
+    sf_sim_free(sim);
+  }
+}
+
+/*
  * MAIN
  */
 
@@ -785,6 +862,8 @@ int main(int argc,
     cmocka_unit_test(test_exposure_compensation_moves_the_render),
     cmocka_unit_test(test_scan_film_builds_without_a_paper),
     cmocka_unit_test(test_lut_path_tracks_exact_spectral),
+    cmocka_unit_test(test_table_lookup_finds_each_table_and_refuses_others),
+    cmocka_unit_test(test_every_table_renders_valid_output),
   };
 
   return cmocka_run_group_tests(tests, group_setup, group_teardown);
