@@ -1296,12 +1296,14 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter,
       const int xx = (dt_masks_dynbuf_buffer(extra))[j * 2];
       const int yy = (dt_masks_dynbuf_buffer(extra))[j * 2 + 1];
 
-      const int pixel = (yy - ymin) * wb + (xx - xmin);
-      if(pixel < 0 || pixel > ss)
+      // check x and y: the pixel index alone can wrap into another row
+      if(xx < xmin || xx >= xmax || yy < ymin || yy >= ymax)
       {
+        dt_masks_dynbuf_free(extra);
         dt_free_align(binter);
         return 0;
       }
+      const int pixel = (yy - ymin) * wb + (xx - xmin);
       if((xx == lastx && yy == lasty))
       {
         // we haven't move from last pixel.
