@@ -5750,11 +5750,11 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(
       g->upsampling,
       _("how a pixel's color is turned into the spectrum the film is exposed\n"
-        "to. the stock's measured sensitivities are the same either way; this\n"
-        "is the reconstruction in front of them, and the methods disagree most\n"
-        "on saturated color and near-neutrals.\n"
+        "to.\n"
         "\n"
-        "changing it is a different render, not a refinement of the same one."));
+        "only methods from your installed data packs are listed. if there\n"
+        "is just one, it is used and there is nothing to choose."));
+
   g_signal_connect(G_OBJECT(g->upsampling), "value-changed",
                    G_CALLBACK(_upsampling_changed), self);
   dt_gui_box_add(self->widget, g->upsampling);
