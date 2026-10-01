@@ -1189,6 +1189,15 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter,
   const int border_first = _nb_wctrl_points(nb_corners); // index of the first non-control point
   const int nb_border_p = border_len - border_first;     // number of bp without control points
 
+  // an invalid sample takes the place of the one before it, which for
+  // the first sample is the last valid one
+  int last_valid = border_len - 1;
+  while(last_valid >= border_first
+        && (border[last_valid * 2] == DT_INVALID_COORDINATE
+            || border[last_valid * 2 + 1] == DT_INVALID_COORDINATE))
+    last_valid--;
+  if(last_valid < border_first) return 0;
+
   // we search extrema of the shape in x and y
   int xmin = INT_MAX, xmax = INT_MIN, ymin = INT_MAX, ymax = INT_MIN;
   int posextr[4] = { -1 }; // xmin,xmax,ymin,ymax
@@ -1196,8 +1205,9 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter,
   {
     if((border[i * 2] == DT_INVALID_COORDINATE) || (border[i * 2 + 1] == DT_INVALID_COORDINATE))
     {
-      border[i * 2] = border[i * 2 - 2];
-      border[i * 2 + 1] = border[i * 2 - 1];
+      const int src = i > border_first ? i - 1 : last_valid;
+      border[i * 2] = border[src * 2];
+      border[i * 2 + 1] = border[src * 2 + 1];
     }
     if(xmin > border[i * 2])
     {
@@ -1747,6 +1757,21 @@ static int _path_get_pts_border(dt_develop_t *dev,
   {
 
     inter_count = _path_find_self_intersection(intersections, gap_fill_segs, nb, *border, *border_count);
+
+    // the search fills invalid samples in from valid ones. A border with
+    // none, as when all nodes sit on one spot, goes onto the path, whose
+    // samples match the border's one for one
+    if(*points_count == *border_count)
+    {
+      for(int i = _nb_wctrl_points(nb); i < *border_count; i++)
+      {
+        if((*border)[i * 2] == DT_INVALID_COORDINATE)
+        {
+          (*border)[i * 2] = (*points)[i * 2];
+          (*border)[i * 2 + 1] = (*points)[i * 2 + 1];
+        }
+      }
+    }
 
     dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
              "[masks %s] path_points self-intersect took %0.04f sec", form->name,
