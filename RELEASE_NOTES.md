@@ -150,6 +150,9 @@ changes (where available).
   SpyderCheckr 48. As far as we know, there never was a separate 2018
   version of these charts.
 
+- Added a "copy to clipboard" export storage, which places the
+  exported images on the system clipboard.
+
 ## Performance Improvements
 
 - Replaced quadratic XMP history writes with a linear algorithm.

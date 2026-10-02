@@ -249,6 +249,7 @@ src/imageio/imageio.c
 src/imageio/imageio_dng.c
 src/imageio/imageio_libraw.c
 src/imageio/imageio_qoi.c
+src/imageio/storage/clipboard.c
 src/imageio/storage/disk.c
 src/imageio/storage/email.c
 src/imageio/storage/gallery.c

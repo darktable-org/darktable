@@ -327,6 +327,20 @@ gboolean dt_osx_open_url(const char *url)
   return [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@(url)]];
 }
 
+gboolean dt_osx_clipboard_set_files(GList *files)
+{
+  @autoreleasepool
+  {
+    NSMutableArray<NSURL *> *urls = [NSMutableArray array];
+    for(GList *iter = files; iter; iter = g_list_next(iter))
+      [urls addObject:[NSURL fileURLWithPath:@((const char *)iter->data)]];
+
+    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+    [pasteboard clearContents];
+    return [pasteboard writeObjects:urls];
+  }
+}
+
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 @end
 
