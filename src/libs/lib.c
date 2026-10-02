@@ -981,7 +981,10 @@ static void _lib_plugin_arrow_button_press_cb(GtkGestureSingle *gesture,
                                                 gdouble y,
                                                 dt_lib_module_t *module)
 {
-  if(n_press > 1) return;
+  // every press toggles, n_press > 1 included: the gesture reports a quick
+  // second click on the same spot as press 2 of a sequence, and skipping it
+  // swallowed a real click. GTK3's button-press-event sent each click as a
+  // plain press, plus a separate GDK_2BUTTON_PRESS, the only one skipped
   const guint button = gtk_gesture_single_get_current_button(gesture);
   const GdkModifierType state =
     dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
