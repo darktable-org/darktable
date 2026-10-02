@@ -3430,7 +3430,7 @@ gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
 
   float zx = (x + 0.5f * width) / scale, zy = (y + 0.5f * height) / scale;
   dt_dev_zoom_pos_t pts = { zx, zy, zx + 1000.f, zy, zx, zy + 1000.f };
-  dt_dev_distort_backtransform_plus(dev, pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, pts, 3);
+  dt_dev_distort_backtransform_plus(dev, pipe, 0, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, pts, 3);
 
   // get a snapshot of mask list. Serialized against GUI-thread mutation of
   // dev->forms/form->points (mask editing) via the same history_mutex used

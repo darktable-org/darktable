@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -608,7 +608,7 @@ gboolean dt_dev_distort_backtransform
 gboolean dt_dev_distort_transform_plus
   (dt_develop_t *dev,
    struct dt_dev_pixelpipe_t *pipe,
-   const double iop_order,
+   const int iop_order,
    const dt_dev_transform_direction_t transf_direction,
    float *points,
    const size_t points_count);
@@ -617,7 +617,7 @@ gboolean dt_dev_distort_transform_plus
 gboolean dt_dev_distort_backtransform_plus
   (dt_develop_t *dev,
    struct dt_dev_pixelpipe_t *pipe,
-   const double iop_order,
+   const int iop_order,
    const dt_dev_transform_direction_t transf_direction,
    float *points,
    const size_t points_count);
@@ -634,13 +634,13 @@ struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev,
     transfer direction */
 dt_hash_t dt_dev_hash_plus(dt_develop_t *dev,
                           struct dt_dev_pixelpipe_t *pipe,
-                          const double iop_order,
+                          const int iop_order,
                           const dt_dev_transform_direction_t transf_direction);
 /** synchronize pixelpipe by means hash values by waiting with timeout
  * and potential reprocessing */
 gboolean dt_dev_sync_pixelpipe_hash(dt_develop_t *dev,
                                struct dt_dev_pixelpipe_t *pipe,
-                               const double iop_order,
+                               const int iop_order,
                                const dt_dev_transform_direction_t transf_direction,
                                dt_pthread_mutex_t *lock,
                                const volatile dt_hash_t *const hash);
@@ -648,7 +648,7 @@ gboolean dt_dev_sync_pixelpipe_hash(dt_develop_t *dev,
     We can specify iop with priority between pmin and pmax */
 dt_hash_t dt_dev_hash_distort_plus(dt_develop_t *dev,
                                   struct dt_dev_pixelpipe_t *pipe,
-                                  const double iop_order,
+                                  const int iop_order,
                                   const dt_dev_transform_direction_t transf_direction);
 /*
  *   history undo support helpers for darkroom

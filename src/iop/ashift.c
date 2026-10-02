@@ -4077,12 +4077,6 @@ error:
   return FALSE;
 }
 
-/* this function replaces this sentence, it calls distort_transform()
-   for this module on the pipe
-   if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe,
-                                     self->priority, self->priority + 1,
-                                     (float *)V, 4))
-*/
 static int call_distort_transform(const dt_develop_t *dev,
                                   const dt_dev_pixelpipe_t *pipe,
                                   dt_iop_module_t *self,
@@ -4379,7 +4373,7 @@ void gui_post_expose(dt_iop_module_t *self,
   // get hash value that reflects distortions from here to the end of the pixelpipe
   const dt_hash_t hash = dt_dev_hash_distort_plus(dev,
                                                   dev->preview_pipe,
-                                                  (double)self->iop_order,
+                                                  self->iop_order,
                                                   DT_DEV_TRANSFORM_DIR_FORW_INCL);
   // get hash value that changes if coordinates of lines have changed
   const dt_hash_t lines_hash = _get_lines_hash(g->lines, g->lines_count);

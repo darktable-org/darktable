@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1899,7 +1899,7 @@ void dt_view_paint_surface(cairo_t *cr,
   memcpy(pts, buf_zoom_pos, sizeof(dt_dev_zoom_pos_t));
   memcpy(pts + 6, pp->backbuf_zoom_pos, sizeof(dt_dev_zoom_pos_t));
   pts[12] = port->zoom_x; pts[13] = port->zoom_y;
-  dt_dev_distort_transform_plus(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, pts, 7);
+  dt_dev_distort_transform_plus(dev, port->pipe, 0, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, pts, 7);
 
   const float offset_x  = pts[0] / processed_width  - 0.5f;
   const float offset_y  = pts[1] / processed_height - 0.5f;
