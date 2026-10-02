@@ -28336,10 +28336,6 @@ msgstr "Résolution en points par pouce"
 msgid "@"
 msgstr "@"
 
-#: ../src/libs/export.c:1547 ../src/libs/tools/global_toolbox.c:216
-msgid "px"
-msgstr "px"
-
 #: ../src/libs/export.c:1555
 msgid ""
 "it can be an integer, decimal number or simple fraction.\n"
