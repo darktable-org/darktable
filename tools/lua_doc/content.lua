@@ -948,6 +948,13 @@ local widget = dt.new_widget("button"){
   types.lua_entry.placeholder:set_text("The text to display when the entry is empty")
   types.lua_entry.is_password:set_text("True if the text content should be hidden")
   types.lua_entry.editable:set_text("False if the entry should be read-only")
+  types.lua_entry.completion:set_text("A list of strings used for case-insensitive substring completion")
+  types.lua_entry.changed_callback:set_text("A function to call when the text changes")
+  types.lua_entry.changed_callback:set_reported_type("function")
+  types.lua_entry.changed_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
+  types.lua_entry.activate_callback:set_text("A function to call when the entry is activated")
+  types.lua_entry.activate_callback:set_reported_type("function")
+  types.lua_entry.activate_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
 
   types.lua_separator:set_text("A widget providing a separation in the UI.")
   types.lua_separator.extra_registration_parameters:set_text("This widget has no extra registration parameters")

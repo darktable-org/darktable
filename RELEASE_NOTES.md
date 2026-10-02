@@ -448,6 +448,8 @@ changes (where available).
 ### New Features
 
 - Extended dt_lua_snapshot_t and added a function to remove the snapshot.
+- Extended Lua entry widgets with case-insensitive substring completion
+  and callbacks for text changes and activation.
 
 ### Bug Fixes
 
