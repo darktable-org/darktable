@@ -214,6 +214,10 @@ changes (where available).
   matrix" profile remains the default for fresh imports and
   reloading defaults.
 
+- The highlights module will be disabled automatically when a raw
+  image with a clean history is opended in darkroom the first time
+  and the opposed algorithm did not find clipped photosites.
+
 - Panasonic RW2 files now offer embedded lens distortion correction,
   covering built-in and Lumix-branded lenses that lensfun has no
   profile for.
