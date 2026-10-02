@@ -158,6 +158,10 @@ changes (where available).
   with the camera's shading compensation on, which can overcorrect
   the corners.
 
+- In the "select parts to copy" and "select parts to paste" history
+  dialogs, the module order is now a check box below the item list
+  instead of a last entry in the list itself.
+
 ## Performance Improvements
 
 - Replaced quadratic XMP history writes with a linear algorithm.
@@ -471,6 +475,9 @@ changes (where available).
 - Fixed raw denoise on X-Trans images giving slightly different
   results depending on the number of CPU threads, and occasionally
   wrong colors near the left or right image edge.
+
+- Copying a whole history stack no longer carries over the module order
+  that was selected in an earlier "copy parts of the history" dialog.
 
 ## Lua
 
