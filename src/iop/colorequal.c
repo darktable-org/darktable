@@ -2757,17 +2757,17 @@ int mouse_moved(dt_iop_module_t *self,
     hue_rad = buf[3 * ((size_t)cy * bwidth + cx)];
     have_hue = TRUE;
   }
+  const gboolean pending = g->reprocess_pending;
+  if(!have_hue)
+  {
+    g->cursor_valid = FALSE;
+     if(!pending)
+      g->reprocess_pending = TRUE;
+  }
   dt_iop_gui_leave_critical_section(self);
 
   if(!have_hue)
   {
-    dt_iop_gui_enter_critical_section(self);
-    g->cursor_valid = FALSE;
-    const gboolean pending = g->reprocess_pending;
-    if(!pending)
-      g->reprocess_pending = TRUE;
-    dt_iop_gui_leave_critical_section(self);
-
     // The buffer is missing entirely (e.g. gui_init() just reset it, or the
     // module was never reprocessed on the preview pipe yet). Nothing else
     // will refill it on its own — ask for a preview reprocess, debounced so
@@ -3476,7 +3476,10 @@ static void _area_scrolled_callback(GtkEventControllerScroll *controller,
   // single-node adjustment.  Otherwise use Gaussian weighting — we
   // check buffer existence rather than cursor_valid (which gates on
   // pipe hash) so that the graph remains usable with slightly stale data.
-  if(g->pd.buf == NULL)
+  dt_iop_gui_enter_critical_section(self);
+  const gboolean no_pdbuf = g->pd.buf == NULL;
+  dt_iop_gui_leave_critical_section(self);
+  if(no_pdbuf)
   {
     const float base_step = (g->channel == HUE) ? 1.0f : 0.01f;
     const float step = dt_modifier_is(state, GDK_CONTROL_MASK)

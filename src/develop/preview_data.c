@@ -178,14 +178,14 @@ gboolean dt_preview_data_get(dt_preview_data_t *pd,
 
 gboolean dt_preview_data_is_fresh(dt_preview_data_t *pd)
 {
-  if(!pd || !pd->module || !pd->buf) return FALSE;
+  if(!pd || !pd->module) return FALSE;
 
   const dt_iop_module_t *const module = pd->module;
   dt_iop_gui_enter_critical_section((dt_iop_module_t *)module);
 
   // No value stored yet, or the stored data has been invalidated.
   const dt_hash_t stored_hash = pd->hash;
-  gboolean fresh = (stored_hash != DT_INVALID_HASH);
+  gboolean fresh = pd->buf && (stored_hash != DT_INVALID_HASH);
 
   if(fresh)
   {
