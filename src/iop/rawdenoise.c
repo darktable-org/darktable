@@ -407,6 +407,13 @@ static void wavelet_denoise_xtrans(const float *const restrict in,
           src = -2;
         fimgp[width-1] = vstransform(inp[src]);
       }
+      else // green right-most pixel in the green plane
+      {
+        // the loop above stops one column short, so it never writes this sensel into the plane. If the left
+        // neighbor is green, the position would keep that neighbor's value. Otherwise it would keep the value
+        // the red pass left there, or the 0.5f placeholder in the top and bottom rows
+        fimgp[width-1] = vstransform(inp[width-1]);
+      }
     }
 
     // perform the wavelet decomposition and denoising
