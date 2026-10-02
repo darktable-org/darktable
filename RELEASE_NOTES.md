@@ -150,6 +150,11 @@ changes (where available).
   SpyderCheckr 48. As far as we know, there never was a separate 2018
   version of these charts.
 
+- The lens correction module now warns when it applies Lensfun
+  vignetting correction to a Panasonic RW2 or Olympus ORF file shot
+  with the camera's shading compensation on, which can overcorrect
+  the corners.
+
 ## Performance Improvements
 
 - Replaced quadratic XMP history writes with a linear algorithm.
