@@ -288,6 +288,8 @@ typedef struct dt_image_t
 
   dt_image_correction_type_t exif_correction_type;
   dt_image_correction_data_t exif_correction_data;
+  // the camera applied its own vignetting gain to the raw data
+  gboolean exif_shading_compensation;
 
   char camera_maker[64];
   char camera_model[64];
