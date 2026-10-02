@@ -775,8 +775,7 @@ static void _get_point(const dt_iop_module_t *self,
   //       can skip crop only. With the current version if toneequalizer
   //       is moved below rotation & perspective it will fail as we are
   //       then missing all the transform after tone-eq.
-  const double crop_order =
-    dt_ioppr_get_iop_order(self->dev->iop_order_list, "crop", 0);
+  const int crop_order = dt_ioppr_get_iop_order(self->dev->iop_order_list, "crop", 0);
 
   float pts[2] = { c_x, c_y };
 

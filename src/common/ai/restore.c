@@ -668,7 +668,7 @@ static gboolean _sensor_roi_renders(dt_develop_t *dev,
     (float)x,       (float)(y + h),
     (float)(x + w), (float)(y + h),
   };
-  if(!dt_dev_distort_transform_plus(dev, pipe, 0.0,
+  if(!dt_dev_distort_transform_plus(dev, pipe, 0,
                                     DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, c, 4))
     return FALSE;
 
@@ -757,7 +757,7 @@ int dt_restore_display_to_sensor(dt_imgid_t imgid,
     CLAMP(u, 0.0f, 1.0f) * pw, CLAMP(v, 0.0f, 1.0f) * ph,
     0.5f * pw,                 0.5f * ph,
   };
-  if(!dt_dev_distort_backtransform_plus(&dev, &pipe, 0.0,
+  if(!dt_dev_distort_backtransform_plus(&dev, &pipe, 0,
                                         DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY,
                                         pts, 2))
   {
@@ -908,7 +908,7 @@ int dt_restore_run_user_pipe_roi(dt_imgid_t imgid,
     (float)roi_x,             (float)(roi_y + roi_h),
     (float)(roi_x + roi_w),   (float)(roi_y + roi_h),
   };
-  dt_dev_distort_transform_plus(&dev, &pipe, 0.0,
+  dt_dev_distort_transform_plus(&dev, &pipe, 0,
                                 DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY,
                                 corners, 4);
 

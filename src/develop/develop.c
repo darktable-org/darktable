@@ -3646,7 +3646,7 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
       float pts[2] = { port->zoom_x, port->zoom_y };
       dt_dev_distort_transform_plus(port->dev ? port->dev : darktable.develop,
                                     port->pipe,
-                                    0.0f,
+                                    0,
                                     DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY,
                                     pts,
                                     1);
@@ -4014,7 +4014,7 @@ gboolean dt_dev_distort_transform(dt_develop_t *dev,
                                   const size_t points_count)
 {
   return dt_dev_distort_transform_plus(
-    dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
+    dev, dev->preview_pipe, 0, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
 }
 
 gboolean dt_dev_distort_backtransform(dt_develop_t *dev,
@@ -4022,12 +4022,12 @@ gboolean dt_dev_distort_backtransform(dt_develop_t *dev,
                                       const size_t points_count)
 {
   return dt_dev_distort_backtransform_plus(
-    dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
+    dev, dev->preview_pipe, 0, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
 }
 
 gboolean dt_dev_distort_transform_plus(dt_develop_t *dev,
                                        dt_dev_pixelpipe_t *pipe,
-                                       const double iop_order,
+                                       const int iop_order,
                                        const dt_dev_transform_direction_t transf_direction,
                                        float *points,
                                        const size_t points_count)
@@ -4042,7 +4042,7 @@ gboolean dt_dev_distort_transform_plus(dt_develop_t *dev,
 
 gboolean dt_dev_distort_backtransform_plus(dt_develop_t *dev,
                                            dt_dev_pixelpipe_t *pipe,
-                                           const double iop_order,
+                                           const int iop_order,
                                            const dt_dev_transform_direction_t transf_direction,
                                            float *points,
                                            const size_t points_count)
@@ -4073,7 +4073,7 @@ dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev,
 
 dt_hash_t dt_dev_hash_plus(dt_develop_t *dev,
                            dt_dev_pixelpipe_t *pipe,
-                           const double iop_order,
+                           const int iop_order,
                            const dt_dev_transform_direction_t transf_direction)
 {
   dt_hash_t hash = DT_INITHASH;
@@ -4110,7 +4110,7 @@ dt_hash_t dt_dev_hash_plus(dt_develop_t *dev,
 
 static gboolean _dev_wait_hash(dt_develop_t *dev,
                                dt_dev_pixelpipe_t *pipe,
-                               const double iop_order,
+                               const int iop_order,
                                const dt_dev_transform_direction_t transf_direction,
                                dt_pthread_mutex_t *lock,
                                const volatile dt_hash_t *const hash)
@@ -4156,7 +4156,7 @@ static gboolean _dev_wait_hash(dt_develop_t *dev,
 
 gboolean dt_dev_sync_pixelpipe_hash(dt_develop_t *dev,
                                     dt_dev_pixelpipe_t *pipe,
-                                    const double iop_order,
+                                    const int iop_order,
                                     const dt_dev_transform_direction_t transf_direction,
                                     dt_pthread_mutex_t *lock,
                                     const volatile dt_hash_t *const hash)
@@ -4180,7 +4180,7 @@ gboolean dt_dev_sync_pixelpipe_hash(dt_develop_t *dev,
 
 dt_hash_t dt_dev_hash_distort_plus(dt_develop_t *dev,
                                    dt_dev_pixelpipe_t *pipe,
-                                   const double iop_order,
+                                   const int iop_order,
                                    const dt_dev_transform_direction_t transf_direction)
 {
   dt_hash_t hash = DT_INITHASH;
