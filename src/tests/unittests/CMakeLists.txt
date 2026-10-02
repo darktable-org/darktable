@@ -1,5 +1,6 @@
 add_subdirectory(common)
 add_subdirectory(iop)
+add_subdirectory(util)
 
 if(USE_AI)
   add_subdirectory(ai)

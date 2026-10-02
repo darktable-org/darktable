@@ -18,6 +18,7 @@ typedef struct test_t
 {
   char *filename, *jobcode, sequence;
   int conflict;
+  char *export_extension;
   test_case_t test_cases[];
 } test_t;
 
@@ -33,6 +34,7 @@ int run_test(const test_t *test, int *n_tests, int *n_failed, expand_fn_t expand
   params->jobcode = test->jobcode;//"ABCDEF12345ABCDEF";
   params->sequence = test->sequence;
   params->conflict = test->conflict;
+  params->export_extension = test->export_extension;
 
   *n_failed = 0;
   *n_tests = 0;
@@ -56,7 +58,7 @@ int run_test(const test_t *test, int *n_tests, int *n_failed, expand_fn_t expand
 
 
 static const test_t test_variables = {
-  "abcdef12345abcdef", "ABCDEF12345ABCDEF", 23, 0,
+  "abcdef12345abcdef", "ABCDEF12345ABCDEF", 23, 0, NULL,
   {
     {"$(FILE_NAME)", "abcdef12345abcdef"},
     {"foo-$(FILE_NAME)-bar", "foo-abcdef12345abcdef-bar"},
@@ -72,7 +74,7 @@ static const test_t test_variables = {
 };
 
 static const test_t test_simple_substitutions = {
-  "abcdef12345abcdef", "ABCDEF12345ABCDEF", 23, 0,
+  "abcdef12345abcdef", "ABCDEF12345ABCDEF", 23, 0, NULL,
   {
     {"$(NONEXISTANT-invälid)", "invälid"},
     {"$(FILE_NAME-invälid)", "abcdef12345abcdef"},
@@ -127,7 +129,7 @@ static const test_t test_simple_substitutions = {
 };
 
 static const test_t test_recursive_substitutions = {
-  "abcdef12345abcdef", "ABCDEF12345ABCDEF", 23, 0,
+  "abcdef12345abcdef", "ABCDEF12345ABCDEF", 23, 0, NULL,
   {
     {"x$(TITLE-$(FILE_NAME))y", "xabcdef12345abcdefy"},
     {"x$(TITLE-a-$(FILE_NAME)-b)y", "xa-abcdef12345abcdef-by"},
@@ -139,8 +141,26 @@ static const test_t test_recursive_substitutions = {
   }
 };
 
+static const test_t test_export_extension = {
+  "IMG_1234.CR3", "ABCDEF12345ABCDEF", 23, 0, "jpg",
+  {
+    // $(EXPORT_EXTENSION) is the export format; $(FILE_EXTENSION) is the source
+    {"$(FILE_EXTENSION)", "CR3"},
+    {"$(EXPORT_EXTENSION)", "jpg"},
+
+    {"$(EXPORT_EXTENSION^)", "Jpg"},
+    {"$(EXPORT_EXTENSION^^)", "JPG"},
+    {"$(EXPORT_EXTENSION,)", "jpg"},
+    {"$(EXPORT_EXTENSION,,)", "jpg"},
+
+    {"$(FILE_NAME).$(EXPORT_EXTENSION^^)", "IMG_1234.JPG"},
+
+    {NULL, NULL}
+  }
+};
+
 static const test_t test_broken_variables = {
-  "abcdef12345abcdef", "ABCDEF12345ABCDEF", 23, 0,
+  "abcdef12345abcdef", "ABCDEF12345ABCDEF", 23, 0, NULL,
   {
     {"$(NONEXISTANT", "$(NONEXISTANT"},
     {"x(NONEXISTANT23", "x(NONEXISTANT23"},
@@ -153,7 +173,7 @@ static const test_t test_broken_variables = {
 };
 
 static const test_t test_escapes = {
-  "/home/test/Images/IMG_0123.CR2", "/home/test/", 23, 0,
+  "/home/test/Images/IMG_0123.CR2", "/home/test/", 23, 0, NULL,
   {
     {"foobarbaz", "foobarbaz"},
     {"foo/bar/baz", "foo/bar/baz"},
@@ -172,7 +192,7 @@ static const test_t test_escapes = {
 };
 
 static const test_t test_conflict = {
-  "IMG_0123", "ABCDEF12345ABCDEF", 23, 2,
+  "IMG_0123", "ABCDEF12345ABCDEF", 23, 2, NULL,
   {
     {"$(FILE_NAME)$(CONFLICT+_$(CONFLICT)).CR2", "IMG_0123_02.CR2"},
     {"$(FILE_NAME)$(CONFLICT+-$(CONFLICT[1])).CR2", "IMG_0123-2.CR2"},
@@ -184,7 +204,7 @@ static const test_t test_conflict = {
 };
 
 static const test_t test_real_paths = {
-  "/home/test/Images/0023/IMG_0123.CR2", "/home/test", 23, 0,
+  "/home/test/Images/0023/IMG_0123.CR2", "/home/test", 23, 0, NULL,
   {
     {"$(FILE_FOLDER#$(JOBCODE))", "/Images/0023"},
     {"$(FILE_FOLDER#$(JOBCODE)/Images)", "/0023"},
@@ -232,7 +252,7 @@ static const test_t test_real_paths = {
 }
 
 static const test_t test_paths = {
-  "/home/test/Images/IMG_0123.CR2", "/home/test/", 23, 0,
+  "/home/test/Images/IMG_0123.CR2", "/home/test/", 23, 0, NULL,
   {
     // a path pattern must survive expansion, separators and all
     {"$(FILE_FOLDER)/exported/$(FILE_NAME)",
@@ -490,6 +510,8 @@ int main(int argc, char* argv[])
   TEST(test_simple_substitutions)
 
   TEST(test_recursive_substitutions)
+
+  TEST(test_export_extension)
 
   TEST(test_broken_variables)
 
