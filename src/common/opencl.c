@@ -318,7 +318,7 @@ gboolean dt_opencl_avoid_atomics(const int devid)
   const dt_opencl_t *cl = darktable.opencl;
   return (!_cldev_running(devid))
     ? FALSE
-    : (cl->dev[devid].atomic_support & DT_OPENCL_ATOMIC_INT32) == DT_OPENCL_ATOMIC_NONE;
+    : (cl->dev[devid].extensions & DT_OPENCL_ATOMIC_INT32) == DT_OPENCL_EXTENSION_NONE;
 }
 
 gboolean dt_opencl_unified_memory(const int devid)
@@ -520,7 +520,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].headroom = 0;
   cl->dev[dev].vendor_id = 0;
   cl->dev[dev].tunehead = FALSE;
-  cl->dev[dev].atomic_support = DT_OPENCL_ATOMIC_NONE;
+  cl->dev[dev].extensions = DT_OPENCL_EXTENSION_NONE;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
   char *device_name = NULL;
@@ -706,9 +706,14 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   if(err == CL_SUCCESS && deviceextensions_size > 0)
   {
     if(strstr(deviceextensions, "cl_khr_global_int32_extended_atomics"))
-      cl->dev[dev].atomic_support |= DT_OPENCL_ATOMIC_INT32;
+      cl->dev[dev].extensions |= DT_OPENCL_ATOMIC_INT32;
+    if(strstr(deviceextensions, "cl_khr_int64_base_atomics"))
+      cl->dev[dev].extensions |= DT_OPENCL_ATOMIC_INT64;
     if(strstr(deviceextensions, "cl_ext_float_atomics"))
-      cl->dev[dev].atomic_support |= DT_OPENCL_ATOMIC_FLOAT32;
+      cl->dev[dev].extensions |= DT_OPENCL_ATOMIC_FLOAT32;
+    if(strstr(deviceextensions, "cl_khr_fp64"))
+      cl->dev[dev].extensions |= DT_OPENCL_FLOAT64;
+
   }
 
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_TYPE,
@@ -889,9 +894,12 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                "   ASYNC PIXELPIPE:          %s\n", STR_YESNO(cl->dev[dev].asyncmode));
   dt_print_nts(DT_DEBUG_OPENCL,
                "   SUPPORTED ATOMICS:        %s%s%s\n",
-               cl->dev[dev].atomic_support == DT_OPENCL_ATOMIC_NONE ? "none" : "",
-               cl->dev[dev].atomic_support & DT_OPENCL_ATOMIC_INT32 ? "INT32 " : "",
-               cl->dev[dev].atomic_support & DT_OPENCL_ATOMIC_FLOAT32 ? "FLOAT32 " : "");
+               cl->dev[dev].extensions & DT_OPENCL_ATOMIC_INT32 ? "INT32 " : "",
+               cl->dev[dev].extensions & DT_OPENCL_ATOMIC_INT64 ? "INT64 " : "",
+               cl->dev[dev].extensions & DT_OPENCL_ATOMIC_FLOAT32 ? "FLOAT32 " : "");
+  dt_print_nts(DT_DEBUG_OPENCL,
+               "   SUPPORTED DOUBLE:         %s\n",
+               STR_YESNO(cl->dev[dev].extensions & DT_OPENCL_FLOAT64));
 
   /* The roundup data for width&height are mainly relevant for kernels called without locals
      as good values improve performance.
@@ -1003,7 +1011,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   const char* compile_opt = cl->fastcl ? DT_OPENCL_DEFAULT_COMPILE_OPTI : DT_OPENCL_DEFAULT_COMPILE_DEFAULT;
   cl->dev[dev].cflags = g_strdup_printf("-w %s%s -D%s=1",
                                 compile_opt,
-                                cl->dev[dev].cuda && cl->dev[dev].atomic_support ? " -DNVIDIA_SM_20=1" : "",
+                                cl->dev[dev].cuda && cl->dev[dev].extensions ? " -DNVIDIA_SM_20=1" : "",
                                 _opencl_get_vendor_by_id(vendor_id));
   cl->dev[dev].options = g_strdup_printf("%s -I%s",
                              cl->dev[dev].cflags, escapedkerneldir);
@@ -1207,7 +1215,7 @@ void dt_opencl_init(dt_opencl_t *cl,
   cl->no_fast_tiling = (options & DT_OPENCL_OPTION_NOFAST_TILE) || dt_conf_get_bool("no_opencl_fast_tiling");
   cl->spurious = options & DT_OPENCL_OPTION_SPURIOS;
   cl->migrate = options & DT_OPENCL_OPTION_MIGRATE;
-#if CL_TARGET_OPENCL_VERSION == 300
+#if CL_TARGET_OPENCL_VERSION >= 300
   cl->api30 = TRUE;
 #else
   cl->api30 = FALSE;
