@@ -252,6 +252,17 @@ darktable.tags.get_tags:add_parameter("image",types.dt_lua_image_t,[[The image t
 darktable.tags.get_tags:add_return("table of "..my_tostring(types.dt_lua_tag_t),[[A table of tags that are attached to the image.]])
 darktable.tags.get_tags:set_main_parent(darktable.tags)
 
+----------------------
+darktable.metadata:set_text([[Access to the metadata fields defined in darktable.]])
+darktable.metadata.exists:set_text([[Checks whether a metadata field with the given tag name is defined.]])
+darktable.metadata.exists:add_parameter("tagname","string",[[The full tag name, for example "Xmp.dc.title".]])
+darktable.metadata.exists:add_return("boolean",[[True if the field is defined.]])
+darktable.metadata.register:set_text([[Defines a per-image storage field for a script. The field is created as the metadata tag "Xmp.darktable.lua_<script>_<key>". By default it is hidden from the metadata editor and left out of exported files; XMP sidecars always carry it, like any other metadata. Calling this again for an existing field does nothing. Values are read and written with the get_metadata and set_metadata functions of the image.]])
+darktable.metadata.register:add_parameter("script","string",[[The name of the script; only letters, digits and underscores are allowed.]])
+darktable.metadata.register:add_parameter("key","string",[[The name of the field within the script; only letters, digits and underscores are allowed.]])
+tmp_node = darktable.metadata.register:add_parameter("options","table",[[A table with the optional boolean fields "visible" (show the field in the metadata editor, default false) and "private" (keep the field out of exported files, default true).]])
+tmp_node:set_attribute("optional",true)
+
 ------------------------------
 --  DARKTABLE.CONFIGURATION --
 ------------------------------
@@ -654,6 +665,16 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	"This function should be called if an image is modified out of darktable to force DT to regenerate the thumbnail"..para()..
 	"darktable will regenerate the thumbnail by itself when it is needed")
 	types.dt_lua_image_t.drop_cache:add_parameter("self",types.dt_lua_image_t,[[The image whose cache must be dropped.]]):set_attribute("is_self",true)
+	types.dt_lua_image_t.get_metadata:set_text([[Reads a per-image value stored by a script; the field must have been defined with darktable.metadata.register.]])
+	types.dt_lua_image_t.get_metadata:add_parameter("self",types.dt_lua_image_t,[[The image to read from.]]):set_attribute("is_self",true)
+	types.dt_lua_image_t.get_metadata:add_parameter("script","string",[[The script name the field was registered with.]])
+	types.dt_lua_image_t.get_metadata:add_parameter("key","string",[[The field name the field was registered with.]])
+	types.dt_lua_image_t.get_metadata:add_return("string",[[The stored value, or an empty string if nothing was stored.]])
+	types.dt_lua_image_t.set_metadata:set_text([[Stores a per-image value for a script; the field must have been defined with darktable.metadata.register.]])
+	types.dt_lua_image_t.set_metadata:add_parameter("self",types.dt_lua_image_t,[[The image to write to.]]):set_attribute("is_self",true)
+	types.dt_lua_image_t.set_metadata:add_parameter("script","string",[[The script name the field was registered with.]])
+	types.dt_lua_image_t.set_metadata:add_parameter("key","string",[[The field name the field was registered with.]])
+	types.dt_lua_image_t.set_metadata:add_parameter("value","string",[[The value to store; an empty string clears it.]])
 
 	types.dt_imageio_module_format_t:set_text([[A virtual type representing all format types.]])
 	types.dt_imageio_module_format_t.plugin_name:set_text([[A unique name for the plugin.]])
