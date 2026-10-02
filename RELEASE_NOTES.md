@@ -267,6 +267,13 @@ changes (where available).
   empty unless the file name is already taken, so burst shots named by
   capture time no longer clash.
 
+- Added `--print-paths` and `--print-paths-as-flags` to darktable
+  and darktable-cli. These print the resolved configdir, cachedir,
+  tmpdir, datadir, moduledir, localedir and library paths for the
+  current install (honoring path overrides), then exit. The
+  `-as-flags` form emits a single line of `--flag value` pairs
+  ready to splice into another invocation.
+
 ## Bug Fixes
 
 - Do not convert the pipe input in place for blending, which may result
