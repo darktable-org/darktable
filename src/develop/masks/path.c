@@ -198,6 +198,12 @@ static void _path_border_get_XY(const float *seg_start,
       dy = wa * ay + wb * by;
     }
   }
+  else if(p0x == p1x && p0y == p1y && p1x == p2x && p1y == p2y && p2x == p3x && p2y == p3y)
+  {
+    // a segment of zero length, as between two sharp nodes on one spot,
+    // has no direction: one computed from it is rounding noise
+    dx = dy = 0.0;
+  }
   else
   {
     // derivative in double precision to survive rounding on sharp corners
@@ -1735,6 +1741,21 @@ static int _path_get_pts_border(dt_develop_t *dev,
       if(bmax[0] == DT_INVALID_COORDINATE)
       {
         _path_border_get_XY(p3, p4, 0.00001f, p3[4], cmin, cmin + 1, bmax, bmax + 1);
+      }
+      // the last segment closes on the border's first valid sample,
+      // which is past the first segment when that one has zero length
+      if(bmax[0] == DT_INVALID_COORDINATE && k == nb - 1)
+      {
+        const float *const db = dt_masks_dynbuf_buffer(dborder);
+        for(size_t i = 6 * nb; i < dt_masks_dynbuf_position(dborder); i += 2)
+        {
+          if(db[i] != DT_INVALID_COORDINATE)
+          {
+            bmax[0] = db[i];
+            bmax[1] = db[i + 1];
+            break;
+          }
+        }
       }
       if(bmax[0] - rb[0] > 1
          || bmax[0] - rb[0] < -1
