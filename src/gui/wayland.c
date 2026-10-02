@@ -22,6 +22,7 @@
 #include "color-management-v1-client-protocol.h"
 #include <gdk/gdkwayland.h>
 #include <glib/gstdio.h>
+#include <errno.h>
 #include <limits.h>
 #include <math.h>
 #include <stdint.h>
@@ -43,7 +44,7 @@ typedef struct dt_wayland_display_t
   struct wp_image_description_v1 *ui_description;
   guint map_signal;
   gulong map_hook;
-  gboolean parametric, rec2020, bt709, gamma22, relative, done, ready, ui_ready;
+  gboolean parametric, rec2020, bt709, gamma22, relative, done, ready, ui_ready, failed;
 } dt_wayland_display_t;
 
 typedef struct dt_wayland_window_t
@@ -187,6 +188,8 @@ static void _failed(void *data,
                      uint32_t cause,
                      const char *message)
 {
+  dt_wayland_display_t *d = data;
+  d->failed = TRUE;
   g_debug("Wayland color description rejected: %s", message);
 }
 
@@ -288,6 +291,44 @@ static struct wp_image_description_v1 *_create_description(dt_wayland_display_t 
   return description;
 }
 
+static gboolean _wait_for_descriptions(struct wl_display *connection,
+                                       struct wl_event_queue *queue,
+                                       dt_wayland_display_t *d)
+{
+  const gint64 deadline = g_get_monotonic_time() + 2 * G_TIME_SPAN_SECOND;
+  while(TRUE)
+  {
+    if(wl_display_dispatch_queue_pending(connection, queue) < 0) return FALSE;
+    if(d->failed) return FALSE;
+    if(d->ready && d->ui_ready) return TRUE;
+    const gint64 remaining = deadline - g_get_monotonic_time();
+    if(remaining <= 0) return FALSE;
+    if(wl_display_prepare_read_queue(connection, queue) < 0) continue;
+
+    GPollFD fd = { .fd = wl_display_get_fd(connection), .events = G_IO_IN };
+    if(wl_display_flush(connection) < 0)
+    {
+      if(errno != EAGAIN)
+      {
+        wl_display_cancel_read(connection);
+        return FALSE;
+      }
+      fd.events |= G_IO_OUT;
+    }
+    const int status = g_poll(&fd, 1, (remaining + 999) / 1000);
+    if(status > 0 && (fd.revents & G_IO_IN))
+    {
+      if(wl_display_read_events(connection) < 0) return FALSE;
+    }
+    else
+    {
+      wl_display_cancel_read(connection);
+      if(status == 0 || (status < 0 && errno != EINTR)
+         || (fd.revents & (G_IO_ERR | G_IO_HUP | G_IO_NVAL))) return FALSE;
+    }
+  }
+}
+
 void dt_wayland_color_init(GdkDisplay *display)
 {
   if(display != gdk_display_get_default()
@@ -330,9 +371,10 @@ void dt_wayland_color_init(GdkDisplay *display)
   {
     d->description = _create_description(d, WP_COLOR_MANAGER_V1_PRIMARIES_BT2020);
     d->ui_description = _create_description(d, WP_COLOR_MANAGER_V1_PRIMARIES_SRGB);
-    if(wl_display_roundtrip_queue(connection, queue) < 0) d->ready = FALSE;
+    // readiness may arrive after a sync reply
+    if(!_wait_for_descriptions(connection, queue, d)) d->ready = FALSE;
   }
-  // a slow asynchronous creator must not enable layers after the pipes chose sRGB
+  // freeze the fallback before image processing starts
   if(!d->ready || !d->ui_ready)
   {
     if(d->description) wp_image_description_v1_destroy(d->description);

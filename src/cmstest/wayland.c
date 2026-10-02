@@ -268,8 +268,8 @@ static void _tf_named(void *data, struct wp_image_description_info_v1 *info, uin
     case WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_BT1886: name = "BT.1886"; break;
     case WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22: name = "gamma 2.2"; break;
     case WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA28: name = "gamma 2.8"; break;
-    case WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_SRGB: name = "sRGB piecewise"; break;
-    case WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR: name = "extended linear"; break;
+    case WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_SRGB: name = _("sRGB piecewise"); break;
+    case WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR: name = _("extended linear"); break;
     case WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_ST2084_PQ: name = "ST 2084 PQ"; break;
     case WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_HLG: name = "HLG"; break;
   }

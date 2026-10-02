@@ -32,6 +32,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <lcms2.h>
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -136,6 +137,25 @@ static gint sort_monitor_list(gconstpointer a, gconstpointer b)
 }
 #endif // HAVE_X11
 
+static void _init_locale(const char *program)
+{
+  setlocale(LC_ALL, "");
+#ifdef DARKTABLE_LOCALEDIR
+  char *path = g_find_program_in_path(program);
+  if(path)
+  {
+    char *directory = g_path_get_dirname(path);
+    char *localedir = g_build_filename(directory, DARKTABLE_LOCALEDIR, NULL);
+    bindtextdomain("darktable", localedir);
+    g_free(localedir);
+    g_free(directory);
+    g_free(path);
+  }
+#endif
+  bind_textdomain_codeset("darktable", "UTF-8");
+  textdomain("darktable");
+}
+
 int main(int argc, char *argv[])
 {
   const gboolean wayland_session = g_getenv("WAYLAND_DISPLAY") || g_getenv("WAYLAND_SOCKET")
@@ -145,6 +165,7 @@ int main(int argc, char *argv[])
   else if(argc == 2 && !strcmp(argv[1], "--x11")) wayland = FALSE;
   else if(argc != 1)
   {
+    _init_locale(argv[0]);
     const gboolean help = argc == 2 && !strcmp(argv[1], "--help");
     fprintf(help ? stdout : stderr,
             _("usage: darktable-cmstest [--wayland | --x11 | --help]\n"));
@@ -154,6 +175,7 @@ int main(int argc, char *argv[])
   printf("darktable-cmstest version %s\n", darktable_package_version);
   if(wayland)
   {
+    _init_locale(argv[0]);
 #ifdef HAVE_WAYLAND_COLOR_MANAGEMENT
     return dt_cmstest_wayland();
 #else
