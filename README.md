@@ -14,28 +14,28 @@ darktable is **not** a free Adobe® Lightroom® replacement.
 1. [Documentation](#documentation)
 2. [Website](#website)
 3. [Requirements](#requirements)
-   - [Supported platforms](#supported-platforms)
-   - [Hardware](#hardware)
-   - [AI features (optional)](#ai-features-optional )
+    - [Supported platforms](#supported-platforms)
+    - [Hardware](#hardware)
+    - [AI features (optional)](#ai-features-optional )
 4. [Installing](#installing)
-   - [Latest release](#latest-release)
-   - [Development snapshot](#development-snapshot)
+    - [Latest release](#latest-release)
+    - [Development snapshot](#development-snapshot)
 5. [Updating from older versions](#updating-from-older-versions)
 6. [Obtaining extensions](#obtaining-extensions)
 7. [Building](#building)
-   - [Dependencies](#dependencies)
-   - [Get the source](#get-the-source)
-   - [Get submodules](#get-submodules)
-   - [Compile](#compile)
-   - [Further reading](#further-reading)
+    - [Dependencies](#dependencies)
+    - [Get the source](#get-the-source)
+    - [Get submodules](#get-submodules)
+    - [Compile](#compile)
+    - [Further reading](#further-reading)
 8. [Using](#using)
-   - [Test/unstable version](#testunstable-version)
-   - [Regular/stable version](#regularstable-version)
+    - [Test/unstable version](#testunstable-version)
+    - [Regular/stable version](#regularstable-version)
 9. [Contributing](#contributing)
 10. [FAQ](#faq)
-   - [Why is my camera not detected when plugged-in ?](#why-is-my-camera-not-detected-when-plugged-in-)
-   - [Why is my lens not detected/corrected in darkroom ?](#why-is-my-lens-not-detectedcorrected-in-darkroom-)
-   - [Why do the thumbnails in the lighttable view look different to the preview in the darkroom view ?](#why-do-the-thumbnails-in-the-lighttable-view-look-different-to-the-preview-in-the-darkroom-view-)
+    - [Why is my camera not detected when plugged-in ?](#why-is-my-camera-not-detected-when-plugged-in-)
+    - [Why is my lens not detected/corrected in darkroom ?](#why-is-my-lens-not-detectedcorrected-in-darkroom-)
+    - [Why do the thumbnails in the lighttable view look different to the preview in the darkroom view ?](#why-do-the-thumbnails-in-the-lighttable-view-look-different-to-the-preview-in-the-darkroom-view-)
 11. [Wiki](#wiki)
 12. [Community](#community)
 
@@ -384,13 +384,16 @@ This builds the software for your architecture only, with:
 * OpenCL support (GPU offloading) if detected,
 * Lua scripting support if detected.
 
-If you want to have dartkable displayed along your other applications, you only need to add a symbolic link:
+#### System Integration / fixing missing icon on wayland
+
+To display darktable alongside your installed applications, and to ensure darktable's application icon is displayed in wayland sessions, add these two symbolic links:
 
 ```bash
-ln -s /opt/darktable/share/applications/org.darktable.darktable.desktop /usr/share/applications/org.darktable.darktable.desktop
+sudo ln -s /opt/darktable/share/applications/org.darktable.darktable.desktop /usr/share/applications/org.darktable.darktable.desktop
+sudo ln -s /opt/darktable/share/icons/hicolor/scalable/apps/darktable.svg /usr/share/pixmaps/darktable.svg
 ```
 
-Now, your custom-built darktable is ready to be used just like any pre-packaged software.
+Signing out and into your session may be required for this to take effect.
 
 #### Manual way
 
