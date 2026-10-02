@@ -811,13 +811,6 @@ its cursor and whether to request a reprocess, and reads the buffer again on the
 mouse move. If a value must be tied to its hash, read `pd.hash` in the same section as
 the value: `dt_preview_data_store()` commits the two together.
 
-> **In tree today:** not all of `dt_preview_data_is_fresh()` runs in its section. It tests
-> the buffer pointer in an early return, before it takes the lock at all, against a field
-> that `dt_preview_data_store()` and `dt_preview_data_resize()` free and replace while
-> holding it. The pointer is only compared with NULL and never dereferenced, so racing the
-> first allocation can make the function answer FALSE, but not a wrong TRUE. A caller that
-> already holds the section is not exposed to this race.
-
 `toneequal` and `colorequal` use the service. What stays yours is what the header says
 is module-specific: computing the value, drawing it, and mapping the cursor position to
 a buffer pixel — that last one depends on which geometry modules sit after yours in the
