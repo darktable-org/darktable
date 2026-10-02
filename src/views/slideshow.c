@@ -574,7 +574,7 @@ void expose(dt_view_t *self,
     cairo_surface_t *surface = dt_view_create_surface(slot->buf, slot->width, slot->height);
     cairo_set_source_surface(cr, surface, - 0.5 * slot->width, -0.5 * slot->height);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
-    cairo_paint(cr);
+    dt_view_paint_display_surface(cr);
     cairo_surface_destroy(surface);
 
     d->id_displayed = imgid;

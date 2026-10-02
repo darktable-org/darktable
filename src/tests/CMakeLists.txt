@@ -3,6 +3,26 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/../")
 add_executable(darktable-test-variables variables.c)
 target_link_libraries(darktable-test-variables lib_darktable)
 
+add_executable(darktable-test-display-transport
+               display_transport.c ../common/display_transport.c)
+target_include_directories(darktable-test-display-transport PRIVATE ${LCMS2_INCLUDE_DIRS})
+target_link_libraries(darktable-test-display-transport PRIVATE ${LCMS2_LIBRARIES})
+if(NOT WIN32)
+  target_link_libraries(darktable-test-display-transport PRIVATE m)
+endif()
+add_test(NAME display-transport COMMAND darktable-test-display-transport)
+
+if(USE_WAYLAND AND GTK3Wayland_FOUND AND WaylandClient_FOUND AND WAYLAND_SCANNER)
+  add_executable(darktable-test-wayland-color wayland_color.c
+                 "${COLOR_MANAGEMENT_CODE}" "${COLOR_MANAGEMENT_HEADER}")
+  target_compile_definitions(darktable-test-wayland-color PRIVATE HAVE_WAYLAND_COLOR_MANAGEMENT)
+  target_include_directories(darktable-test-wayland-color PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/..")
+  target_link_libraries(darktable-test-wayland-color PRIVATE ${GTK3_LIBRARIES} PkgConfig::WaylandClient)
+  if(NOT WIN32)
+    target_link_libraries(darktable-test-wayland-color PRIVATE m)
+  endif()
+endif()
+
 if(WIN32)
     # This tester sets up a darktable instance (of sorts). Hence it expects libraries at ../lib/darktable
     # Easiest way to comply with this on Windows: Put tester executable in same directory as darktable executable

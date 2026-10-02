@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "gui/wayland.h"
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
@@ -492,6 +493,14 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
                             const size_t npixels)
 {
   const int gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
+  const dt_aligned_pixel_t srgb_cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
+  dt_aligned_pixel_t cyan;
+  if(d->type == DT_COLORSPACE_DISPLAY_TRANSPORT
+     && darktable.color_profiles->transform_srgb_to_transport_float)
+    cmsDoTransform(darktable.color_profiles->transform_srgb_to_transport_float,
+                   srgb_cyan, cyan, 1);
+  else
+    copy_pixel(cyan, srgb_cyan);
   // figure out the number of pixels each thread needs to process,
   // rounded up to a multiple of the CPU's cache line size
   const size_t nthreads = dt_get_num_threads();
@@ -506,7 +515,6 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
 
     if(gamutcheck)
     {
-      static const dt_aligned_pixel_t cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
       for(int j = 0; j < count; j++)
       {
         if(outp[4*j+0] < 0.0f || outp[4*j+1] < 0.0f || outp[4*j+2] < 0.0f)
@@ -620,12 +628,20 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     out_intent = darktable.color_profiles->display_intent;
   }
 
+  if(dt_wayland_color_available() && !dt_pipe_is_export(pipe) && !dt_pipe_is_thumb(pipe))
+  {
+    // the compositor applies the physical display profile after composition
+    out_type = DT_COLORSPACE_DISPLAY_TRANSPORT;
+    out_filename = "";
+    out_intent = DT_INTENT_RELATIVE_COLORIMETRIC;
+  }
+
   // when the output type is Lab then process is a nop, so we can avoid creating a transform
   // and the subsequent error messages but still have to publish the profile_info
   d->type = out_type;
   if(out_type == DT_COLORSPACE_LAB)
   {
-    dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, p->intent);
+    dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, out_intent);
     return;
   }
 
@@ -764,7 +780,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // softproof is never the original but always a copy that went through dt_colorspaces_make_temporary_profile()
   dt_colorspaces_cleanup_profile(softproof);
 
-  dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, p->intent);
+  dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, out_intent);
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "gui/wayland.h"
 #include "common/gdk_event_utils.h"
 
 #include "common/darktable.h"
@@ -827,7 +828,9 @@ static gboolean _draw(GtkWidget *da,
   darktable.gui->drawing_snapshot = da == ss;
   if(!darktable.gui->drawing_snapshot) gtk_widget_queue_draw(ss);
 
+  dt_wayland_color_begin(da, cr);
   dt_control_expose(da, cr);
+  dt_wayland_color_end(cr);
 
   return TRUE;
 }
@@ -2352,6 +2355,7 @@ static void _init_widgets(dt_gui_gtk_t *gui)
 
   // Creating the main window
   widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  dt_wayland_color_prepare_window(widget);
   gtk_widget_set_name(widget, "main_window");
   gui->ui->main_window = widget;
 

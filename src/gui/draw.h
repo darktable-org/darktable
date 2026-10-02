@@ -20,6 +20,7 @@
 
 /** some common drawing routines. */
 
+#include "gui/wayland.h"
 #include "common/curve_tools.h"
 #include "common/darktable.h"
 #include "common/splines.h"
@@ -223,9 +224,14 @@ static inline void dt_draw_backbuf_contrast(const dt_develop_t *dev,
     }
   }
 
-  rgb[0] = r;
-  rgb[1] = g;
-  rgb[2] = b;
+  const dt_aligned_pixel_t sampled = { r, g, b, 1.0f };
+  dt_aligned_pixel_t swatch;
+  if(dt_wayland_color_available() && darktable.color_profiles->transform_transport_to_ui_float)
+    cmsDoTransform(darktable.color_profiles->transform_transport_to_ui_float,
+                   sampled, swatch, 1);
+  else
+    copy_pixel(swatch, sampled);
+  for(size_t c = 0; c < 3; c++) rgb[c] = CLAMP(swatch[c], 0.0f, 1.0f);
 
   // Rec.601 mean luminance of the window: the plain switch keeps maximal
   // contrast, the averaging alone is what removes the texture flicker

@@ -105,7 +105,8 @@ typedef enum dt_colorspaces_color_profile_type_t
   DT_COLORSPACE_HLG_P3 = 25,
   DT_COLORSPACE_DISPLAY_P3 = 26,
   DT_COLORSPACE_FORWARD_MATRIX = 27,
-  DT_COLORSPACE_LAST = 28
+  DT_COLORSPACE_DISPLAY_TRANSPORT = 28, // internal Wayland surface encoding
+  DT_COLORSPACE_LAST = 29
 } dt_colorspaces_color_profile_type_t;
 
 typedef enum dt_colorspaces_color_mode_t
@@ -189,6 +190,9 @@ typedef struct dt_colorspaces_t
 
   dt_colorspaces_color_mode_t mode;
 
+  cmsHPROFILE ui_profile;
+  cmsHTRANSFORM transform_transport_to_ui8, transform_transport_to_ui_float;
+  cmsHTRANSFORM transform_srgb_to_transport8, transform_srgb_to_transport_float;
   cmsHTRANSFORM transform_srgb_to_display, transform_adobe_rgb_to_display;
   cmsHTRANSFORM transform_srgb_to_display2, transform_adobe_rgb_to_display2;
 
