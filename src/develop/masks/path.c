@@ -4095,7 +4095,6 @@ static int _path_events_mouse_moved(dt_iop_module_t *module,
       {
         gui->feather_selected = k;
         gui->bezier_ctrl = DT_MASKS_PATH_CTRL1;
-        dt_control_queue_redraw_center();
         return 1;
       }
 
@@ -4106,7 +4105,6 @@ static int _path_events_mouse_moved(dt_iop_module_t *module,
       {
         gui->feather_selected = k;
         gui->bezier_ctrl = DT_MASKS_PATH_CTRL2;
-        dt_control_queue_redraw_center();
         return 1;
       }
     }
@@ -4117,7 +4115,6 @@ static int _path_events_mouse_moved(dt_iop_module_t *module,
        && pzy - gpt->points[k * 6 + 3] < as)
     {
       gui->point_selected = k;
-      dt_control_queue_redraw_center();
       return 1;
     }
   }
@@ -4132,7 +4129,6 @@ static int _path_events_mouse_moved(dt_iop_module_t *module,
        && pzy - gpt->points[k * 6 + 3] < as)
     {
       gui->point_selected = k;
-      dt_control_queue_redraw_center();
       return 1;
     }
 
@@ -4143,7 +4139,6 @@ static int _path_events_mouse_moved(dt_iop_module_t *module,
        && pzy - gpt->border[k * 6 + 1] < as)
     {
       gui->point_border_selected = k;
-      dt_control_queue_redraw_center();
       return 1;
     }
   }
@@ -4178,7 +4173,6 @@ static int _path_events_mouse_moved(dt_iop_module_t *module,
       gui->form_selected = TRUE;
     }
   }
-  dt_control_queue_redraw_center();
   if(!gui->form_selected && !gui->border_selected && gui->seg_selected < 0)
     return 0;
   if(gui->edit_mode != DT_MASKS_EDIT_FULL)
@@ -4199,26 +4193,25 @@ static void _path_events_post_expose(cairo_t *cr,
   // draw path
   if(gpt->points_count > _nb_wctrl_points(nb) + 6)
   {
-    cairo_move_to(cr, gpt->points[nb * 6], gpt->points[nb * 6 + 1]);
     int seg = 1, seg2 = 0;
-    for(int i = _nb_wctrl_points(nb); i < gpt->points_count; i++)
+    int start = _nb_wctrl_points(nb);
+    for(int i = start; i < gpt->points_count; i++)
     {
-      cairo_line_to(cr, gpt->points[i * 2], gpt->points[i * 2 + 1]);
       // we decide to highlight the form segment by segment
       if(gpt->points[i * 2 + 1] == gpt->points[seg * 6 + 3]
          && gpt->points[i * 2] == gpt->points[seg * 6 + 2])
       {
         // this is the end of the last segment, so we have to draw it
 
-        dt_masks_line_stroke
-          (cr, FALSE, FALSE,
+        dt_masks_stroke_polyline
+          (cr, gpt->points, start, i, FALSE, FALSE, FALSE,
            (gui->group_selected == index)
            && (gui->form_selected || gui->form_dragging || gui->seg_selected == seg2),
            zoom_scale);
         // and we update the segment number
         seg = (seg + 1) % nb;
         seg2++;
-        cairo_move_to(cr, gpt->points[i * 2], gpt->points[i * 2 + 1]);
+        start = i;
       }
     }
   }
@@ -4259,28 +4252,26 @@ static void _path_events_post_expose(cairo_t *cr,
       || gui->group_selected == index)
      && gpt->border_count > _nb_wctrl_points(nb) + 6)
   {
-    int dep = 1;
+    int start = -1;
     for(int i = _nb_wctrl_points(nb); i < gpt->border_count; i++)
     {
       if(gpt->border[i * 2] == DT_INVALID_COORDINATE)
       {
-        if(gpt->border[i * 2 + 1] == DT_INVALID_COORDINATE) break;
-        i = gpt->border[i * 2 + 1] - 1;
         // break the polyline at each self-intersection cut so cairo
         // doesn't draw a shortcut line_to across the invalid region
-        dep = 1;
+        if(start >= 0)
+          dt_masks_stroke_polyline(cr, gpt->border, start, i - 1, FALSE, TRUE, FALSE,
+                                   gui->border_selected, zoom_scale);
+        start = -1;
+        if(gpt->border[i * 2 + 1] == DT_INVALID_COORDINATE) break;
+        i = gpt->border[i * 2 + 1] - 1;
         continue;
       }
-      if(dep)
-      {
-        cairo_move_to(cr, gpt->border[i * 2], gpt->border[i * 2 + 1]);
-        dep = 0;
-      }
-      else
-        cairo_line_to(cr, gpt->border[i * 2], gpt->border[i * 2 + 1]);
+      if(start < 0) start = i;
     }
-    // we execute the drawing
-    dt_masks_line_stroke(cr, TRUE, FALSE, gui->border_selected, zoom_scale);
+    if(start >= 0)
+      dt_masks_stroke_polyline(cr, gpt->border, start, gpt->border_count - 1, FALSE, TRUE, FALSE,
+                               gui->border_selected, zoom_scale);
 
     // we draw the path segment by segment
     for(int k = 0; k < nb; k++)
@@ -4376,15 +4367,8 @@ static void _path_events_post_expose(cairo_t *cr,
     dt_masks_stroke_arrow(cr, gui, index, zoom_scale);
 
     // we draw the source
-    cairo_move_to(cr, gpt->source[nb * 6], gpt->source[nb * 6 + 1]);
-
-    for(int i = _nb_wctrl_points(nb); i < gpt->source_count; i++)
-      cairo_line_to(cr, gpt->source[i * 2], gpt->source[i * 2 + 1]);
-
-    cairo_line_to(cr, gpt->source[nb * 6], gpt->source[nb * 6 + 1]);
-
-    dt_masks_line_stroke
-      (cr, FALSE, TRUE,
+    dt_masks_stroke_polyline
+      (cr, gpt->source, _nb_wctrl_points(nb), gpt->source_count - 1, TRUE, FALSE, TRUE,
        (gui->group_selected == index) && (gui->form_selected || gui->form_dragging),
        zoom_scale);
   }

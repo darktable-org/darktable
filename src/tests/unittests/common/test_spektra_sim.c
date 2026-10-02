@@ -544,6 +544,117 @@ static void test_couplers_correction_scales_with_density(void **state)
 }
 
 /*
+ * TEST FUNCTIONS: spectral upsampling table declarations
+ */
+
+/* a minimal SFS2 table header: what sf_pack_peek_tables() reads and nothing
+   more, so the test needs no real table data */
+static void _write_table_header(const char *path,
+                                const uint32_t lut_hash,
+                                const char *lut_id)
+{
+  FILE *fh = g_fopen(path, "wb");
+  assert_non_null(fh);
+  const int32_t version = 2, dims[3] = { 2, 2, SF_NWL }, dtype = 0;
+  const int32_t id_len = (int32_t)strlen(lut_id);
+  assert_int_equal(fwrite("SFS2", 1, 4, fh), 4);
+  assert_int_equal(fwrite(&version, 4, 1, fh), 1);
+  assert_int_equal(fwrite(dims, 4, 3, fh), 3);
+  assert_int_equal(fwrite(&dtype, 4, 1, fh), 1);
+  assert_int_equal(fwrite(&lut_hash, 4, 1, fh), 1);
+  assert_int_equal(fwrite(&id_len, 4, 1, fh), 1);
+  assert_int_equal(fwrite(lut_id, 1, id_len, fh), (size_t)id_len);
+  fclose(fh);
+}
+
+static void _write_file(const char *dir,
+                        const char *name,
+                        const char *text)
+{
+  char *path = g_build_filename(dir, name, NULL);
+  assert_true(g_file_set_contents(path, text, -1, NULL));
+  g_free(path);
+}
+
+static void _remove_in(const char *dir,
+                       const char *name)
+{
+  char *path = g_build_filename(dir, name, NULL);
+  g_remove(path);
+  g_free(path);
+}
+
+/* pack_format 3: the declaration decides which files are tables and which one
+   is the default, the headers decide their identity. The default comes first
+   whatever its position in the declaration, and an entry naming a path
+   outside the pack is not a table */
+static void test_peek_tables_reads_a_format_3_declaration(void **state)
+{
+  (void)state;
+  TR_STEP("a format 3 pack lists its tables, default first");
+  gchar *dir = g_dir_make_tmp("spektra-pack-XXXXXX", NULL);
+  assert_non_null(dir);
+
+  _write_file(dir, "pack.json",
+              "{ \"pack_format\": 3, \"spectral_upsampling\": ["
+              " { \"identifier\": \"first\", \"kind\": \"irradiance\","
+              "   \"file\": \"first.f32\" },"
+              " { \"identifier\": \"second\", \"kind\": \"reflectance\","
+              "   \"scene_illuminant\": \"D65\", \"file\": \"second.f32\","
+              "   \"default\": true },"
+              " { \"identifier\": \"escape\", \"kind\": \"irradiance\","
+              "   \"file\": \"../first.f32\" } ] }");
+  char *first = g_build_filename(dir, "first.f32", NULL);
+  char *second = g_build_filename(dir, "second.f32", NULL);
+  _write_table_header(first, 0x11111111u, "first_id");
+  _write_table_header(second, 0x22222222u, "second_id");
+
+  sf_table_info_t info[SF_MAX_TABLES];
+  const int n = sf_pack_peek_tables(dir, info, SF_MAX_TABLES);
+  assert_int_equal(n, 2);
+  assert_string_equal(info[0].identifier, "second");
+  assert_int_equal(info[0].lut_hash, 0x22222222u);
+  assert_string_equal(info[0].lut_id, "second_id");
+  assert_int_equal(info[0].kind, SF_LUT_REFLECTANCE);
+  assert_string_equal(info[1].identifier, "first");
+  assert_int_equal(info[1].lut_hash, 0x11111111u);
+  assert_int_equal(info[1].kind, SF_LUT_IRRADIANCE);
+
+  g_remove(first);
+  g_remove(second);
+  _remove_in(dir, "pack.json");
+  g_rmdir(dir);
+  g_free(first);
+  g_free(second);
+  g_free(dir);
+}
+
+/* below format 3 nothing is declared: spectra_lut.f32 is the one table, and
+   it is the irradiance one */
+static void test_peek_tables_reads_a_format_2_pack(void **state)
+{
+  (void)state;
+  TR_STEP("a format 2 pack has one undeclared irradiance table");
+  gchar *dir = g_dir_make_tmp("spektra-pack-XXXXXX", NULL);
+  assert_non_null(dir);
+  _write_file(dir, "pack.json", "{ \"pack_format\": 2 }");
+  char *lut = g_build_filename(dir, "spectra_lut.f32", NULL);
+  _write_table_header(lut, 0x33333333u, "irradiance_xy_tc@0.3.3");
+
+  sf_table_info_t info[SF_MAX_TABLES];
+  assert_int_equal(sf_pack_peek_tables(dir, info, SF_MAX_TABLES), 1);
+  assert_string_equal(info[0].identifier, "");
+  assert_int_equal(info[0].lut_hash, 0x33333333u);
+  assert_int_equal(info[0].kind, SF_LUT_IRRADIANCE);
+
+  g_remove(lut);
+  _remove_in(dir, "pack.json");
+  g_rmdir(dir);
+  g_free(lut);
+  g_free(dir);
+}
+
+/*
  * MAIN
  */
 
@@ -575,6 +686,8 @@ int main(int argc,
     cmocka_unit_test(test_couplers_diagonal_matrix_keeps_channels_independent),
     cmocka_unit_test(test_couplers_interlayer_crosses_channels),
     cmocka_unit_test(test_couplers_correction_scales_with_density),
+    cmocka_unit_test(test_peek_tables_reads_a_format_3_declaration),
+    cmocka_unit_test(test_peek_tables_reads_a_format_2_pack),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

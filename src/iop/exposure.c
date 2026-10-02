@@ -82,8 +82,6 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkWidget *exposure;
   GtkWidget *deflicker_percentile;
   GtkWidget *deflicker_target_level;
-  uint32_t *deflicker_histogram; // used to cache histogram of source file
-  dt_dev_histogram_stats_t deflicker_histogram_stats;
   GtkLabel *deflicker_used_EC;
   GtkWidget *compensate_exposure_bias;
   GtkWidget *compensate_hilite_preserv;
@@ -106,6 +104,10 @@ typedef struct dt_iop_exposure_data_t
   gboolean deflicker;
   float black;
   float scale;
+  // cache the raw source histogram per pipe: cleanup is serialized with
+  // processing, and image changes rebuild the pipe nodes
+  uint32_t *deflicker_histogram;
+  dt_dev_histogram_stats_t deflicker_histogram_stats;
 } dt_iop_exposure_data_t;
 
 typedef struct dt_iop_exposure_global_data_t
@@ -485,22 +487,12 @@ static void _process_common_setup(dt_iop_module_t *self,
 
   if(d->deflicker)
   {
-    if(g)
-    {
-      // histogram is precomputed and cached
-      _compute_deflicker_correction(&d->params, piece->pipe,
-                          g->deflicker_histogram, &g->deflicker_histogram_stats,
-                          &exposure);
-    }
-    else
-    {
-      uint32_t *histogram = NULL;
-      dt_dev_histogram_stats_t histogram_stats;
-      _deflicker_prepare_histogram(self, &histogram, &histogram_stats);
-      _compute_deflicker_correction(&d->params, piece->pipe, histogram,
-                          &histogram_stats, &exposure);
-      dt_free_align(histogram);
-    }
+    if(!d->deflicker_histogram)
+      _deflicker_prepare_histogram(self, &d->deflicker_histogram,
+                                   &d->deflicker_histogram_stats);
+    _compute_deflicker_correction(&d->params, piece->pipe,
+                                  d->deflicker_histogram, &d->deflicker_histogram_stats,
+                                  &exposure);
 
     // second, show computed correction in UI.
     if(g && dt_pipe_is_preview(piece->pipe))
@@ -685,6 +677,8 @@ void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
+  dt_iop_exposure_data_t *d = piece->data;
+  dt_free_align(d->deflicker_histogram);
   free(piece->data);
   piece->data = NULL;
 }
@@ -743,9 +737,6 @@ void gui_update(dt_iop_module_t *self)
 
   dt_iop_gui_leave_critical_section(self);
 
-  dt_free_align(g->deflicker_histogram);
-  g->deflicker_histogram = NULL;
-
   gtk_label_set_text(g->deflicker_used_EC, "");
   dt_iop_gui_enter_critical_section(self);
   g->deflicker_computed_exposure = EXPOSURE_CORRECTION_UNDEFINED;
@@ -756,8 +747,6 @@ void gui_update(dt_iop_module_t *self)
     case EXPOSURE_MODE_DEFLICKER:
       _autoexp_disable(self);
       gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "deflicker");
-      _deflicker_prepare_histogram(self, &g->deflicker_histogram,
-                                   &g->deflicker_histogram_stats);
       break;
     case EXPOSURE_MODE_MANUAL:
     default:
@@ -1030,9 +1019,6 @@ void gui_changed(dt_iop_module_t *self,
 
   if(w == g->mode)
   {
-    dt_free_align(g->deflicker_histogram);
-    g->deflicker_histogram = NULL;
-
     switch(p->mode)
     {
       case EXPOSURE_MODE_DEFLICKER:
@@ -1048,8 +1034,6 @@ void gui_changed(dt_iop_module_t *self,
           break;
         }
         gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "deflicker");
-        _deflicker_prepare_histogram(self, &g->deflicker_histogram,
-                                     &g->deflicker_histogram_stats);
         break;
       case EXPOSURE_MODE_MANUAL:
       default:
@@ -1247,8 +1231,6 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_exposure_gui_data_t *g = IOP_GUI_ALLOC(exposure);
 
-  g->deflicker_histogram = NULL;
-
   g->mode_stack = GTK_STACK(gtk_stack_new());
   gtk_stack_set_homogeneous(GTK_STACK(g->mode_stack),FALSE);
 
@@ -1403,13 +1385,8 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_iop_exposure_gui_data_t *g = self->gui_data;
-
   if(darktable.develop->proxy.exposure.module == self)
     darktable.develop->proxy.exposure.module = NULL;
-
-  dt_free_align(g->deflicker_histogram);
-  g->deflicker_histogram = NULL;
 
   g_idle_remove_by_data(self);
 }

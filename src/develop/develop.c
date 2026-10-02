@@ -78,10 +78,7 @@ void dt_dev_init(dt_develop_t *dev,
   dev->gui_leaving = FALSE;
   dev->gui_synch = FALSE;
 
-  pthread_mutexattr_t recursive_locking;
-  pthread_mutexattr_init(&recursive_locking);
-  pthread_mutexattr_settype(&recursive_locking, PTHREAD_MUTEX_RECURSIVE);
-  dt_pthread_mutex_init(&dev->history_mutex, &recursive_locking);
+  dt_pthread_recursive_mutex_init(&dev->history_mutex);
 
   dev->snapshot_id = -1;
   dev->history_end = 0;
@@ -3749,7 +3746,8 @@ void dt_dev_exposure_handle_event(int n_press, gdouble delta,
                                   GdkModifierType state,
                                   const gboolean is_blackpoint)
 {
-  if(darktable.develop->proxy.exposure.handle_event)
+  if(dt_view_get_current() == DT_VIEW_DARKROOM
+      && darktable.develop->proxy.exposure.handle_event)
     darktable.develop->proxy.exposure.handle_event(n_press, delta, state, is_blackpoint);
 }
 

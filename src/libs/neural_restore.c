@@ -936,7 +936,7 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
     cmsSaveProfileToMem(dst_cp->profile, NULL, &icc_len);
     if(icc_len > 0)
     {
-      uint8_t *icc_buf = g_malloc(icc_len);
+      uint8_t *icc_buf = g_try_malloc(icc_len);
       if(icc_buf)
       {
         cmsSaveProfileToMem(dst_cp->profile, icc_buf, &icc_len);
@@ -4500,7 +4500,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = d;
   d->env = dt_restore_env_init();
   d->processing_images = g_hash_table_new(g_direct_hash, g_direct_equal);
-  dt_pthread_mutex_init(&d->ctx_lock, NULL);
+  dt_pthread_mutex_init(&d->ctx_lock);
   g_mutex_init(&d->preview_inference_lock);
   d->split_pos = 0.5f;
 

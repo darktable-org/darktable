@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "common/collection.h"
@@ -32,13 +33,16 @@
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #include "views/view.h"
+
 #include <glib-2.0/gio/gio.h>
 #include <glib-2.0/gio/gmenu.h>
 #include <glib-2.0/gio/gmenumodel.h>
 #include <glib-2.0/glib-object.h>
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
+
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
 
@@ -2200,7 +2204,7 @@ static void _pop_menu_dictionary_edit_tag(GSimpleAction *action,
 
       // update the store
       GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
-      dt_tag_op_t *to = g_malloc(sizeof(dt_tag_op_t));
+      dt_tag_op_t *to = g_try_malloc(sizeof(dt_tag_op_t));
       if(to)
       {
         to->tree_flag = d->tree_flag;

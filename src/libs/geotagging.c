@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "common/debug.h"
@@ -31,9 +32,11 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib_api.h"
+
 #ifdef HAVE_MAP
 #include "views/view.h"
 #endif
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -692,7 +695,7 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
 
   GList *trkseg = dt_gpx_get_trkseg(d->map.gpx);
   d->map.nb_tracks = g_list_length(trkseg);
-  d->map.tracks = g_malloc0(sizeof(dt_lib_tracks_data_t) * d->map.nb_tracks);
+  d->map.tracks = g_try_malloc0(sizeof(dt_lib_tracks_data_t) * d->map.nb_tracks);
   if(!d->map.tracks)
   {
     d->map.nb_tracks = 0;
@@ -935,7 +938,7 @@ static void _setup_selected_images_list(dt_lib_module_t *self)
     dt_datetime_img_to_exif(dt, sizeof(dt), cimg);
     dt_image_cache_read_release(cimg);
 
-    dt_sel_img_t *img = g_malloc0(sizeof(dt_sel_img_t));
+    dt_sel_img_t *img = g_try_malloc0(sizeof(dt_sel_img_t));
     if(!img) continue;
     memcpy(img->dt, dt, DT_DATETIME_LENGTH);
     img->imgid = imgid;

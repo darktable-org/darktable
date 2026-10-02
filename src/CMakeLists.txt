@@ -60,6 +60,7 @@ FILE(GLOB SOURCE_FILES
   "common/histogram.c"
   "common/history.c"
   "common/history_snapshot.c"
+  "common/dtdata.c"
   "common/image.c"
   "common/image_cache.c"
   "common/imagebuf.c"
@@ -327,20 +328,6 @@ add_definitions("-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_24")
 include_directories(SYSTEM ${GTK3_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK3_LIBRARIES})
 
-# When GTK3 carries the Wayland backend, gui/gtk.c calls into libwayland-client
-# directly (registry roundtrip for server-side decoration support), so we have to
-# link it ourselves. gtk+-3.0.pc does not list it, and relying on libgdk-3 to drag
-# it in breaks with linkers using --no-undefined (e.g. openSUSE's default LDFLAGS).
-if(NOT WIN32 AND NOT APPLE)
-  pkg_check_modules(GTK3_WAYLAND QUIET gtk+-wayland-3.0)
-  if(GTK3_WAYLAND_FOUND)
-    pkg_check_modules(WAYLAND_CLIENT REQUIRED wayland-client)
-    include_directories(SYSTEM ${WAYLAND_CLIENT_INCLUDE_DIRS})
-    link_directories(${WAYLAND_CLIENT_LIBRARY_DIRS})
-    list(APPEND LIBS ${WAYLAND_CLIENT_LIBRARIES})
-  endif()
-endif()
-
 # Check for libxml2 / broken cmake module can't be included in the foreach() below
 find_package(LibXml2 2.6 REQUIRED)
 include_directories(SYSTEM ${LIBXML2_INCLUDE_DIR})
@@ -522,29 +509,27 @@ endif()
 find_package(CURL 7.56 REQUIRED)
 list(APPEND LIBS CURL::libcurl)
 
-if(USE_AI)
-  # libarchive for AI model ZIP extraction
-  # On macOS with Homebrew, libarchive is keg-only
-  if(APPLE)
-    execute_process(
-      COMMAND brew --prefix libarchive
-      OUTPUT_VARIABLE HOMEBREW_LIBARCHIVE_PREFIX
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-      ERROR_QUIET
-      RESULT_VARIABLE HOMEBREW_LIBARCHIVE_RESULT
-    )
-    if(HOMEBREW_LIBARCHIVE_RESULT EQUAL 0 AND EXISTS "${HOMEBREW_LIBARCHIVE_PREFIX}")
-      list(APPEND CMAKE_PREFIX_PATH "${HOMEBREW_LIBARCHIVE_PREFIX}")
-    endif()
+# libarchive for the .dtdata sidecar (common/dtdata.c) and AI model ZIP extraction
+# On macOS with Homebrew, libarchive is keg-only
+if(APPLE)
+  execute_process(
+    COMMAND brew --prefix libarchive
+    OUTPUT_VARIABLE HOMEBREW_LIBARCHIVE_PREFIX
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+    RESULT_VARIABLE HOMEBREW_LIBARCHIVE_RESULT
+  )
+  if(HOMEBREW_LIBARCHIVE_RESULT EQUAL 0 AND EXISTS "${HOMEBREW_LIBARCHIVE_PREFIX}")
+    list(APPEND CMAKE_PREFIX_PATH "${HOMEBREW_LIBARCHIVE_PREFIX}")
   endif()
-  find_package(LibArchive)
-  if(NOT LibArchive_FOUND)
-    message(FATAL_ERROR "libarchive not found")
-  else()
-    include_directories(SYSTEM ${LibArchive_INCLUDE_DIRS})
-    list(APPEND LIBS ${LibArchive_LIBRARIES})
-  endif()
-endif(USE_AI)
+endif()
+find_package(LibArchive)
+if(NOT LibArchive_FOUND)
+  message(FATAL_ERROR "libarchive not found")
+else()
+  include_directories(SYSTEM ${LibArchive_INCLUDE_DIRS})
+  list(APPEND LIBS ${LibArchive_LIBRARIES})
+endif()
 
 # Require exiv2 >= 0.27.2 to make sure everything we need is available
 find_package(Exiv2 0.27.2 REQUIRED)

@@ -479,7 +479,7 @@ jobs:
 
             You can use this if you want to try new features without waiting for releases. From time to time, in development builds, old difficult-to-reproduce bugs are fixed, but it is also true that in the development process with the introduction of new complex code, the stability of the program may suffer compared to official releases, so **use it with caution**!
 
-            Also, new versions can make changes to the database schema, so it's best to run them with a separate library.
+            Also, new versions can make changes to the database schema, so it's best to run them with a separate library. We recommended to separate your stable installation from the nightly, see our [guide](https://docs.darktable.org/usermanual/development/en/special-topics/test-environment/) in the manual. 
 
             The `*-x86_64.AppImage` package is compatible with distribution releases that have glibc version 2.35 or higher. For example, if we consider some popular distributions, Ubuntu 22.04, Debian 12, Fedora 36 and newer releases are compatible. The `*-aarch64.AppImage` package requires glibc 2.39 or higher (e.g. Ubuntu 24.04, Debian 13, Fedora 40 and newer).
 

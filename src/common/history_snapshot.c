@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2024 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 
 dt_undo_lt_history_t *dt_history_snapshot_item_init(void)
 {
-  return (dt_undo_lt_history_t *)g_malloc0(sizeof(dt_undo_lt_history_t));
+  return (dt_undo_lt_history_t *)g_try_malloc0(sizeof(dt_undo_lt_history_t));
 }
 
 void dt_history_snapshot_create(const dt_imgid_t imgid,
@@ -324,6 +324,7 @@ void dt_history_snapshot_undo_pop(gpointer user_data,
     *imgs = g_list_append(*imgs, GINT_TO_POINTER(hist->imgid));
   }
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

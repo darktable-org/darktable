@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "common/collection.h"
@@ -35,6 +36,7 @@
 #include "libs/lib.h"
 #include "views/view.h"
 #include "views/view_api.h"
+
 #include <gdk/gdkkeysyms.h>
 
 #include <osm-gps-map.h>
@@ -1163,7 +1165,7 @@ static void _view_map_draw_main_location(dt_map_t *lib,
     dt_location_draw_t *d = _others_location_draw(lib, lib->loc.main.id);
     if(!d)
     {
-      d = g_malloc0(sizeof(dt_location_draw_t));
+      d = g_try_malloc0(sizeof(dt_location_draw_t));
       if(d)
         lib->loc.others = g_list_append(lib->loc.others, d);
     }

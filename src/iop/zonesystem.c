@@ -214,7 +214,7 @@ static void process_common_cleanup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
 
     dt_gaussian_t *gauss = dt_gaussian_init(width, height, 1, Lmax, Lmin, sigma, DT_IOP_GAUSSIAN_ZERO);
 
-    float *tmp = g_malloc_n((size_t)width * height, sizeof(float));
+    float *tmp = g_try_malloc_n((size_t)width * height, sizeof(float));
 
     if(gauss && tmp)
     {

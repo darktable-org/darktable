@@ -1027,9 +1027,14 @@ void process(dt_iop_module_t *self,
   const dt_iop_colorequal_data_t *d = piece->data;
   const dt_iop_colorequal_gui_data_t *g = self->gui_data;
   const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
-  dt_iop_gui_enter_critical_section(self);
-  const int mask_mode = g && fullpipe ? g->mask_mode : 0;
-  dt_iop_gui_leave_critical_section(self);
+
+  int mask_mode = 0;
+  if(self->dev->gui_attached && g && fullpipe)
+  {
+    dt_iop_gui_enter_critical_section(self);
+    mask_mode = g->mask_mode;
+    dt_iop_gui_leave_critical_section(self);
+  }
   const gboolean run_fast = dt_pipe_is_fast(piece->pipe);
 
   const float *const restrict in = (float*)i;
@@ -1581,9 +1586,14 @@ int process_cl(dt_iop_module_t *self,
 
   const dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
   const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
-  dt_iop_gui_enter_critical_section(self);
-  const int mask_mode = g && fullpipe ? g->mask_mode : 0;
-  dt_iop_gui_leave_critical_section(self);
+
+  int mask_mode = 0;
+  if(self->dev->gui_attached && g && fullpipe)
+  {
+    dt_iop_gui_enter_critical_section(self);
+    mask_mode = g->mask_mode;
+    dt_iop_gui_leave_critical_section(self);
+  }
   const int guiding = d->use_filter;
   const gboolean run_fast = dt_pipe_is_fast(piece->pipe);
 
@@ -2747,17 +2757,17 @@ int mouse_moved(dt_iop_module_t *self,
     hue_rad = buf[3 * ((size_t)cy * bwidth + cx)];
     have_hue = TRUE;
   }
+  const gboolean pending = g->reprocess_pending;
+  if(!have_hue)
+  {
+    g->cursor_valid = FALSE;
+     if(!pending)
+      g->reprocess_pending = TRUE;
+  }
   dt_iop_gui_leave_critical_section(self);
 
   if(!have_hue)
   {
-    dt_iop_gui_enter_critical_section(self);
-    g->cursor_valid = FALSE;
-    const gboolean pending = g->reprocess_pending;
-    if(!pending)
-      g->reprocess_pending = TRUE;
-    dt_iop_gui_leave_critical_section(self);
-
     // The buffer is missing entirely (e.g. gui_init() just reset it, or the
     // module was never reprocessed on the preview pipe yet). Nothing else
     // will refill it on its own — ask for a preview reprocess, debounced so
@@ -3466,7 +3476,10 @@ static void _area_scrolled_callback(GtkEventControllerScroll *controller,
   // single-node adjustment.  Otherwise use Gaussian weighting — we
   // check buffer existence rather than cursor_valid (which gates on
   // pipe hash) so that the graph remains usable with slightly stale data.
-  if(g->pd.buf == NULL)
+  dt_iop_gui_enter_critical_section(self);
+  const gboolean no_pdbuf = g->pd.buf == NULL;
+  dt_iop_gui_leave_critical_section(self);
+  if(no_pdbuf)
   {
     const float base_step = (g->channel == HUE) ? 1.0f : 0.01f;
     const float step = dt_modifier_is(state, GDK_CONTROL_MASK)

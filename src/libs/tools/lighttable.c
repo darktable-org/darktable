@@ -280,6 +280,20 @@ static void _lib_lighttable_restricted_btn_release_cb(GtkGestureSingle *gesture,
     dt_gui_get_widget(gesture));
 }
 
+typedef void _btn_released_cb_t(GtkGestureSingle *, int, double, double, dt_lib_module_t *);
+
+static void _lib_lighttable_connect_btn(GtkWidget *w,
+                                        _btn_released_cb_t *released,
+                                        dt_lib_module_t *self)
+{
+  // the handlers set the toggle state of the buttons themselves; claim the
+  // click in capture phase so GtkToggleButton never sees it, as on a primary
+  // click it would toggle the state again right after the handler has set it
+  GtkGestureSingle *gesture = dt_gui_connect_click(w, NULL, released, self);
+  gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(gesture), GTK_PHASE_CAPTURE);
+  g_signal_connect(gesture, "begin", G_CALLBACK(dt_gui_gesture_claim), NULL);
+}
+
 static void _lib_lighttable_key_accel_toggle_filemanager(dt_action_t *action)
 {
   dt_lib_module_t *self = darktable.view_manager->proxy.lighttable.module;
@@ -478,7 +492,7 @@ void gui_init(dt_lib_module_t *self)
   ac = dt_action_widget(d->layout_filemanager);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_filemanager, 0, 0);
   dt_gui_add_help_link(d->layout_filemanager, "layout_filemanager");
-  dt_gui_connect_click(d->layout_filemanager, NULL, _lib_lighttable_layout_btn_release_cb, self);
+  _lib_lighttable_connect_btn(d->layout_filemanager, _lib_lighttable_layout_btn_release_cb, self);
 
   d->layout_zoomable = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_zoom, 0, NULL,
       &(dtgtk_button_config_t){
@@ -489,7 +503,7 @@ void gui_init(dt_lib_module_t *self)
   ac = dt_action_widget(d->layout_zoomable);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_zoomable, 0, 0);
   dt_gui_add_help_link(d->layout_zoomable, "layout_zoomable");
-  dt_gui_connect_click(d->layout_zoomable, NULL, _lib_lighttable_layout_btn_release_cb, self);
+  _lib_lighttable_connect_btn(d->layout_zoomable, _lib_lighttable_layout_btn_release_cb, self);
 
   d->layout_culling_fix = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_culling_fixed, 0, NULL,
       &(dtgtk_button_config_t){
@@ -501,7 +515,7 @@ void gui_init(dt_lib_module_t *self)
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD_TOGGLE, GDK_KEY_x, 0);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_CULLING_NO_RESTRICTION, DT_ACTION_EFFECT_HOLD_TOGGLE, GDK_KEY_x, GDK_SHIFT_MASK);
   dt_gui_add_help_link(d->layout_culling_fix, "layout_culling");
-  dt_gui_connect_click(d->layout_culling_fix, NULL, _lib_lighttable_layout_btn_release_cb, self);
+  _lib_lighttable_connect_btn(d->layout_culling_fix, _lib_lighttable_layout_btn_release_cb, self);
 
   d->layout_culling_dynamic = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_culling_dynamic, 0, NULL,
       &(dtgtk_button_config_t){
@@ -511,7 +525,7 @@ void gui_init(dt_lib_module_t *self)
   ac = dt_action_widget(d->layout_culling_dynamic);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_culling_dynamic_mode, GDK_KEY_x, GDK_CONTROL_MASK);
   dt_gui_add_help_link(d->layout_culling_dynamic, "layout_culling");
-  dt_gui_connect_click(d->layout_culling_dynamic, NULL, _lib_lighttable_layout_btn_release_cb, self);
+  _lib_lighttable_connect_btn(d->layout_culling_dynamic, _lib_lighttable_layout_btn_release_cb, self);
 
   d->layout_preview = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_fullpreview, 0, NULL,
       &(dtgtk_button_config_t){
@@ -525,7 +539,7 @@ void gui_init(dt_lib_module_t *self)
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_PREVIEW_FOCUS_DETECT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, GDK_CONTROL_MASK);
   dt_gui_add_help_link(d->layout_preview, "layout_preview");
-  dt_gui_connect_click(d->layout_preview, NULL, _lib_lighttable_layout_btn_release_cb, self);
+  _lib_lighttable_connect_btn(d->layout_preview, _lib_lighttable_layout_btn_release_cb, self);
 
   d->layout_box = dt_gui_hbox(d->layout_filemanager, d->layout_zoomable,
                               d->layout_culling_fix, d->layout_culling_dynamic,
@@ -550,7 +564,7 @@ void gui_init(dt_lib_module_t *self)
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_restricted_mode, GDK_KEY_r, GDK_CONTROL_MASK);
   dt_gui_add_help_link(d->layout_culling_restricted, "layout_culling");
   gtk_widget_set_no_show_all(d->layout_culling_restricted, TRUE);
-  dt_gui_connect_click(d->layout_culling_restricted, NULL, _lib_lighttable_restricted_btn_release_cb, self);
+  _lib_lighttable_connect_btn(d->layout_culling_restricted, _lib_lighttable_restricted_btn_release_cb, self);
 
   self->widget = dt_gui_hbox(d->layout_box, d->zoom, d->layout_culling_restricted);
 

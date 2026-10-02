@@ -1946,10 +1946,15 @@ static void process_variance(dt_iop_module_t *self,
   {
     var[c] = out[c] / (npixels - 1);
   }
-  g->variance_R = var[0];
-  g->variance_G = var[1];
-  g->variance_B = var[2];
 
+  if(g && self->dev->gui_attached)
+  {
+    dt_iop_gui_enter_critical_section(self);
+    g->variance_R = var[0];
+    g->variance_G = var[1];
+    g->variance_B = var[2];
+    dt_iop_gui_leave_critical_section(self);
+  }
   dt_iop_image_copy_by_size(ovoid, ivoid, width, height, 4);
 }
 
@@ -3185,25 +3190,32 @@ static gboolean denoiseprofile_draw_variance(GtkWidget *widget,
   DT_GUARD_GUI_UPDATE(FALSE);
   dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
 
-  if(!dt_isnan(g->variance_R))
+  dt_iop_gui_enter_critical_section(self);
+  const float variance_R = g->variance_R;
+  const float variance_B = g->variance_B;
+  const float variance_G = g->variance_G;
+  dt_iop_gui_leave_critical_section(self);
+
+
+  if(!dt_isnan(variance_R))
   {
-    gchar *str = g_strdup_printf("%.2f", g->variance_R);
+    gchar *str = g_strdup_printf("%.2f", variance_R);
     DT_ENTER_GUI_UPDATE();
     gtk_label_set_text(g->label_var_R, str);
     DT_LEAVE_GUI_UPDATE();
     g_free(str);
   }
-  if(!dt_isnan(g->variance_G))
+  if(!dt_isnan(variance_G))
   {
-    gchar *str = g_strdup_printf("%.2f", g->variance_G);
+    gchar *str = g_strdup_printf("%.2f", variance_G);
     DT_ENTER_GUI_UPDATE();
     gtk_label_set_text(g->label_var_G, str);
     DT_LEAVE_GUI_UPDATE();
     g_free(str);
   }
-  if(!dt_isnan(g->variance_B))
+  if(!dt_isnan(variance_B))
   {
-    gchar *str = g_strdup_printf("%.2f", g->variance_B);
+    gchar *str = g_strdup_printf("%.2f", variance_B);
     DT_ENTER_GUI_UPDATE();
     gtk_label_set_text(g->label_var_B, str);
     DT_LEAVE_GUI_UPDATE();

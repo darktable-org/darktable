@@ -1541,7 +1541,7 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
 
       for(int j = 3; j < g_strv_length(gr2); j++)
       {
-        dt_lib_modulegroups_basic_item_t *item = g_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
+        dt_lib_modulegroups_basic_item_t *item = g_try_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
         if(!item)
           continue;
         item->id = g_strdup(gr2[j]);
@@ -1567,7 +1567,7 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
       const int nb = g_strv_length(gr2);
       if(nb > 2)
       {
-        dt_lib_modulegroups_group_t *group = g_malloc0(sizeof(dt_lib_modulegroups_group_t));
+        dt_lib_modulegroups_group_t *group = g_try_malloc0(sizeof(dt_lib_modulegroups_group_t));
         if(group)
         {
           group->name = g_strdup(gr2[0]);
@@ -2403,7 +2403,7 @@ static int _lib_modulegroups_basics_module_toggle_action(dt_lib_module_t *self,
 
     if(!found_item)
     {
-      dt_lib_modulegroups_basic_item_t *item = g_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
+      dt_lib_modulegroups_basic_item_t *item = g_try_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
       if(item)
       {
         item->id = action_id;
@@ -2469,7 +2469,7 @@ static void _manage_editor_basics_add(GSimpleAction *action,
     g_free(action_id);
   else
   {
-    dt_lib_modulegroups_basic_item_t *item = g_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
+    dt_lib_modulegroups_basic_item_t *item = g_try_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
     if(item)
     {
       item->id = action_id;
@@ -3886,7 +3886,7 @@ static void _manage_editor_group_add(GtkWidget *widget,
                                      dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = self->data;
-  dt_lib_modulegroups_group_t *gr = g_malloc0(sizeof(dt_lib_modulegroups_group_t));
+  dt_lib_modulegroups_group_t *gr = g_try_malloc0(sizeof(dt_lib_modulegroups_group_t));
   if(gr)
   {
     gr->name = g_strdup(_("new"));
@@ -4560,6 +4560,7 @@ gboolean preset_autoapply(dt_lib_module_t *self)
 }
 
 #undef PADDING
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

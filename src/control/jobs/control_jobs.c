@@ -26,6 +26,7 @@
 #include "common/hdr_alignment.h"
 #include "common/history.h"
 #include "common/history_snapshot.h"
+#include "common/dtdata.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
@@ -1347,7 +1348,7 @@ static gint _dt_delete_file_display_modal_dialog(const int send_to_trash,
 
   modal_dialog.dialog_result = GTK_RESPONSE_NONE;
 
-  dt_pthread_mutex_init(&modal_dialog.mutex, NULL);
+  dt_pthread_mutex_init(&modal_dialog.mutex);
   pthread_cond_init(&modal_dialog.cond, NULL);
 
   dt_pthread_mutex_lock(&modal_dialog.mutex);
@@ -1562,6 +1563,20 @@ static int32_t _control_delete_images_job_run(dt_job_t *job)
               break;
           }
           g_list_free_full(files, g_free);
+
+          // .dtdata sidecars are found on their own: with lazy sidecar
+          // writing an xmp may not exist yet while the .dtdata does
+          if(delete_status == _DT_DELETE_STATUS_DELETED)
+          {
+            GList *data = dt_dtdata_find_all(filename);
+            for(GList *l = data; l; l = g_list_next(l))
+            {
+              delete_status = delete_file_from_disk(l->data, &delete_on_error);
+              if(delete_status != _DT_DELETE_STATUS_DELETED)
+                break;
+            }
+            g_list_free_full(data, g_free);
+          }
         }
       }
       else
@@ -1576,6 +1591,8 @@ static int32_t _control_delete_images_job_run(dt_job_t *job)
       // just delete the xmp file of the duplicate selected.
 
       dt_image_path_append_version(imgid, filename, sizeof(filename));
+      char datafile[PATH_MAX] = { 0 };
+      dt_dtdata_path_for_image(filename, datafile, sizeof(datafile));
       g_strlcat(filename, ".xmp", sizeof(filename));
 
       // remove image from db first ...
@@ -1585,6 +1602,8 @@ static int32_t _control_delete_images_job_run(dt_job_t *job)
 
       // ... and delete afterwards because removing will re-write the XMP
       delete_status = delete_file_from_disk(filename, &delete_on_error);
+      if(delete_status == _DT_DELETE_STATUS_DELETED && g_file_test(datafile, G_FILE_TEST_EXISTS))
+        delete_status = delete_file_from_disk(datafile, &delete_on_error);
     }
 
 delete_next_file:
@@ -2650,7 +2669,7 @@ void dt_control_paste_history(GList *imgs)
     return;
   }
 
-  _images_job_data_t *images_job_data = g_malloc(sizeof(_images_job_data_t));
+  _images_job_data_t *images_job_data = g_try_malloc(sizeof(_images_job_data_t));
   if(images_job_data)
   {
     images_job_data->imgs = imgs;
@@ -2681,7 +2700,7 @@ void dt_control_paste_parts_history(GList *imgs)
   if(res == GTK_RESPONSE_OK
      || res == GTK_RESPONSE_APPLY)
   {
-    _images_job_data_t *images_job_data = g_malloc(sizeof(_images_job_data_t));
+    _images_job_data_t *images_job_data = g_try_malloc(sizeof(_images_job_data_t));
     if(images_job_data)
     {
       images_job_data->imgs = imgs;
@@ -2738,7 +2757,7 @@ void dt_control_apply_styles(GList *imgs, GList *styles, const gboolean duplicat
   }
   else
   {
-    _images_job_data_t *images_job_data = g_malloc(sizeof(_images_job_data_t));
+    _images_job_data_t *images_job_data = g_try_malloc(sizeof(_images_job_data_t));
     if(images_job_data)
     {
       const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
@@ -3340,7 +3359,7 @@ static void *_control_import_alloc()
   dt_control_image_enumerator_t *params = _control_image_enumerator_alloc();
   if(!params) return NULL;
 
-  params->data = g_malloc0(sizeof(dt_control_import_t));
+  params->data = g_try_malloc0(sizeof(dt_control_import_t));
   if(!params->data)
   {
     _control_import_job_cleanup(params);

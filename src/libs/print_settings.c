@@ -332,7 +332,7 @@ static int write_image(dt_imageio_module_data_t *data,
   dt_print_format_t *d = (dt_print_format_t *)data;
 
   d->params->buf =
-    (uint16_t *)g_malloc((size_t)3 * (d->bpp == 8?1:2) * d->head.width * d->head.height);
+    (uint16_t *)g_try_malloc((size_t)3 * (d->bpp == 8?1:2) * d->head.width * d->head.height);
   if(!d->params->buf)
   {
     dt_print(DT_DEBUG_ALWAYS, "[print] unable to allocate memory for image %s", filename);
@@ -2937,7 +2937,7 @@ void gui_init(dt_lib_module_t *self)
   d->has_changed = FALSE;
 
   d->printer_list = NULL;
-  dt_pthread_mutex_init(&d->printer_list_mutex, NULL);
+  dt_pthread_mutex_init(&d->printer_list_mutex);
 
   dt_init_print_info(&d->prt);
   dt_view_print_settings(darktable.view_manager, &d->prt, &d->imgs);

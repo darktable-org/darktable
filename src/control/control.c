@@ -224,7 +224,7 @@ void dt_control_init(const gboolean withgui)
   s->log_pos = s->log_ack = 0;
   s->busy = 0;
   s->log_message_timeout_id = 0;
-  dt_pthread_mutex_init(&s->log_mutex, NULL);
+  dt_pthread_mutex_init(&s->log_mutex);
 
   s->toast_pos = s->toast_ack = 0;
   s->toast_message_timeout_id = 0;
@@ -232,14 +232,14 @@ void dt_control_init(const gboolean withgui)
   // persistent log history initialization
   s->log_history = NULL;
   s->unread_messages = FALSE;
-  dt_pthread_mutex_init(&s->log_history_mutex, NULL);
+  dt_pthread_mutex_init(&s->log_history_mutex);
 
   pthread_cond_init(&s->cond, NULL);
-  dt_pthread_mutex_init(&s->cond_mutex, NULL);
-  dt_pthread_mutex_init(&s->queue_mutex, NULL);
-  dt_pthread_mutex_init(&s->res_mutex, NULL);
-  dt_pthread_mutex_init(&s->global_mutex, NULL);
-  dt_pthread_mutex_init(&s->progress_system.mutex, NULL);
+  dt_pthread_mutex_init(&s->cond_mutex);
+  dt_pthread_mutex_init(&s->queue_mutex);
+  dt_pthread_mutex_init(&s->res_mutex);
+  dt_pthread_mutex_init(&s->global_mutex);
+  dt_pthread_mutex_init(&s->progress_system.mutex);
 
   // start threads
   dt_control_jobs_init();

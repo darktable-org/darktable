@@ -823,6 +823,13 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
                              ? params->sequence + shift - 1
                              : params->data->sequence + shift - 1);
   }
+  else if(_has_prefix(variable, "CONFLICT"))
+  {
+    const uint8_t nb_digit = _get_var_parameter(variable, 2);
+    result = params->conflict > 0
+      ? g_strdup_printf("%.*u", nb_digit, params->conflict)
+      : g_strdup("");
+  }
   else if(_has_prefix(variable, "USERNAME"))
     result = g_strdup(g_get_user_name());
   else if(_has_prefix(variable, "FOLDER.HOME")

@@ -702,7 +702,7 @@ void process(dt_iop_module_t *self,
 
   /* create a cairo memory surface that is later used for reading
    * watermark overlay data */
-  guint8 *image = (guint8 *)g_malloc0_n(roi_out->height, stride);
+  guint8 *image = (guint8 *)g_try_malloc0_n(roi_out->height, stride);
   if(!image)
   {
     dt_print(DT_DEBUG_ALWAYS, "[watermark] out of memory, could not allocate %d*%d",

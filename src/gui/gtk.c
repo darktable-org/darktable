@@ -52,7 +52,6 @@
 #include <gdk/gdkkeysyms.h>
 #ifdef GDK_WINDOWING_WAYLAND
 #include <gdk/gdkwayland.h>
-#include <wayland-client.h>
 #endif
 #ifdef GDK_WINDOWING_X11
 #include <gdk/gdkx.h>
@@ -1523,23 +1522,6 @@ dt_gui_session_type_t dt_gui_get_session_type(void)
 #endif
 }
 
-#ifdef GDK_WINDOWING_WAYLAND
-static gboolean _wayland_ssd_support;
-
-static void _reg_global(void *data, struct wl_registry *reg,
-                       uint32_t name, const char *iface, uint32_t version)
-{
-  if (g_strcmp0(iface, "zxdg_decoration_manager_v1") == 0)
-    _wayland_ssd_support = TRUE;
-}
-
-static const struct wl_registry_listener reg_listener = {
-  .global = _reg_global,
-  // it is highly unlikely that decoration manager will disappear
-  .global_remove = NULL
-};
-#endif
-
 // does display server suport windows with server-side decorations (SSD)?
 static gboolean _check_ssd_support(void)
 {
@@ -1549,12 +1531,7 @@ static gboolean _check_ssd_support(void)
   if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
   {
     GdkDisplay* disp = gdk_display_get_default();
-    struct wl_display *wd = gdk_wayland_display_get_wl_display(disp);
-    struct wl_registry *reg = wl_display_get_registry(wd);
-    wl_registry_add_listener(reg, &reg_listener, NULL);
-    // receive the globals
-    wl_display_roundtrip(wd);
-    return _wayland_ssd_support;
+    return gdk_wayland_display_query_registry(disp, "zxdg_decoration_manager_v1");
   }
   else
 #endif
@@ -2377,6 +2354,10 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_name(widget, "main_window");
   gui->ui->main_window = widget;
+
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_setup_dialogs();
+#endif
 
   if(!_check_ssd_support())
   {

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2025 darktable developers.
+    Copyright (C) 2012-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -119,8 +119,8 @@ gchar *dt_loc_get_home_dir(const gchar *user)
   int bufsize = 4096;
 #endif
 
-  gchar *buffer = g_malloc0_n(bufsize, sizeof(gchar));
-  if(buffer == NULL)
+  gchar *buffer = g_try_malloc0_n(bufsize, sizeof(gchar));
+  if(!buffer)
   {
     return NULL;
   }
@@ -317,22 +317,27 @@ void dt_loc_get_user_config_dir(char *configdir, size_t bufsize)
 {
   g_strlcpy(configdir, darktable.configdir, bufsize);
 }
+
 void dt_loc_get_user_cache_dir(char *cachedir, size_t bufsize)
 {
   g_strlcpy(cachedir, darktable.cachedir, bufsize);
 }
+
 void dt_loc_get_tmp_dir(char *tmpdir, size_t bufsize)
 {
   g_strlcpy(tmpdir, darktable.tmpdir, bufsize);
 }
+
 void dt_loc_get_datadir(char *datadir, size_t bufsize)
 {
   g_strlcpy(datadir, darktable.datadir, bufsize);
 }
+
 void dt_loc_get_sharedir(char *sharedir, size_t bufsize)
 {
   g_strlcpy(sharedir, darktable.sharedir, bufsize);
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

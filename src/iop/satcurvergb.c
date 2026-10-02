@@ -795,7 +795,14 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     _update_sat_histogram(self, d, inputmatrix_trans, in, npixels);
 
   // Display a grayscale preview of the normalized saturation mask.
-  if (self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && g && g->mask_display)
+  gboolean mask_display = FALSE;
+  if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && g)
+  {
+    dt_iop_gui_enter_critical_section(self);
+    mask_display = g->mask_display;
+    dt_iop_gui_leave_critical_section(self);
+  }
+  if(mask_display)
   {
     float *const restrict mask = dt_alloc_align_float(npixels);
     if (mask)
@@ -1071,8 +1078,13 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   // scratch buffers fail to allocate, mirroring the CPU fallback in process()
   gboolean gf_active = guided_filter_active(d);
 
-  const gboolean want_mask =
-      self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && g && g->mask_display;
+  gboolean want_mask = FALSE;
+  if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && g)
+  {
+    dt_iop_gui_enter_critical_section(self);
+    want_mask = g->mask_display;
+    dt_iop_gui_leave_critical_section(self);
+  }
 
   cl_mem input_matrix_cl = NULL;
   cl_mem output_matrix_cl = NULL;
@@ -2098,7 +2110,7 @@ void gui_init(dt_iop_module_t *self)
 
   memset(g->histogram, 0, sizeof(g->histogram));
   g->histogram_max = 1e-6f;
-  dt_pthread_mutex_init(&g->histogram_lock, NULL);
+  dt_pthread_mutex_init(&g->histogram_lock);
 
   g->picker_valid = FALSE;
   g->picked_s = g->picked_s_min = g->picked_s_max = 0.f;

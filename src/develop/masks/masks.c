@@ -965,6 +965,11 @@ dt_masks_form_t *dt_masks_get_from_id(const dt_develop_t *dev, const dt_mask_id_
   return dt_masks_get_from_id_ext(dev->forms, id);
 }
 
+static inline gboolean _sane_val(const float val)
+{
+  return !dt_isnan(val) && val >= 0.0f;
+}
+
 void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
 {
   dt_dev_history_item_t *hist_item = NULL;
@@ -1048,6 +1053,79 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
         char *point = malloc(point_size);
         memcpy(point, ptbuf + i*point_size, point_size);
         form->points = g_list_append(form->points, point);
+      }
+    }
+
+    /** For some reason we might find crazy radius or borders here so we check
+        and report via log and a control message.
+        We must never have a negative or NAN border/radius.
+        In case of such errors we set bad values to something that can be handled
+        in the module's mask interface
+    */
+    if(form->type & DT_MASKS_CIRCLE)
+    {
+      dt_masks_point_circle_t *ref = form->points->data;
+      const gboolean safe_radius = _sane_val(ref->radius);
+      const gboolean safe_border = _sane_val(ref->border);
+      if(!safe_radius || !safe_border)
+      {
+        dt_print(DT_DEBUG_ALWAYS,
+             "Image ID=%d has insane circle mask: radius=%.3f border=%.3f",
+             imgid, ref->radius, ref->border);
+        dt_control_log(_("Image ID=%d has insane circle mask: radius=%.3f border=%.3f"),
+          imgid, ref->radius, ref->border);
+        if(!safe_radius)  ref->radius = 0.01f;
+        if(!safe_border)  ref->border = 0.01f * ref->radius;
+      }
+    }
+    else if(form->type & DT_MASKS_ELLIPSE)
+    {
+      dt_masks_point_ellipse_t *ref = form->points->data;
+      const gboolean safe_radius0 = _sane_val(ref->radius[0]);
+      const gboolean safe_radius1 = _sane_val(ref->radius[1]);
+      const gboolean safe_border = _sane_val(ref->border);
+      if(!safe_radius0 || !safe_radius1 || !safe_border)
+      {
+        dt_print(DT_DEBUG_ALWAYS,
+             "Image ID=%d has insane ellipse mask: radii=%.3f/%.3f, border=%.3f",
+             imgid, ref->radius[0], ref->radius[1], ref->border);
+        dt_control_log(_("Image ID=%d has insane ellipse mask: radii=%.3f/%.3f, border=%.3f"),
+          imgid, ref->radius[0], ref->radius[1], ref->border);
+        if(!safe_radius0) ref->radius[0] = 0.01f;
+        if(!safe_radius1) ref->radius[1] = 0.01f;
+        if(!safe_border)  ref->border = 0.01f * ref->radius[0];
+      }
+    }
+    else if(form->type & DT_MASKS_PATH)
+    {
+      dt_masks_point_path_t *ref = form->points->data;
+      const gboolean safe_border0 = _sane_val(ref->border[0]);
+      const gboolean safe_border1 = _sane_val(ref->border[1]);
+      if(!safe_border0 || !safe_border1)
+      {
+        dt_print(DT_DEBUG_ALWAYS,
+          "Image ID=%d has insane path mask: borders=%.3f/%.3f",
+          imgid, ref->border[0], ref->border[1]);
+        dt_control_log(_("Image ID=%d has insane path mask: borders=%.3f/%.3f"),
+          imgid, ref->border[0], ref->border[1]);
+        if(!safe_border0)  ref->border[0] = 0.01f;
+        if(!safe_border1)  ref->border[1] = 0.01f;
+      }
+    }
+    else if(form->type & DT_MASKS_BRUSH)
+    {
+      dt_masks_point_brush_t *ref = form->points->data;
+      const gboolean safe_border0 = _sane_val(ref->border[0]);
+      const gboolean safe_border1 = _sane_val(ref->border[1]);
+      if(!safe_border0 || !safe_border1)
+      {
+        dt_print(DT_DEBUG_ALWAYS,
+          "Image ID=%d has insane brush mask: borders=%.3f/%.3f",
+          formid, ref->border[0], ref->border[1]);
+        dt_control_log(_("Image ID=%d has insane brush mask: borders=%.3f/%.3f"),
+          imgid, ref->border[0], ref->border[1]);
+        if(!safe_border0)  ref->border[0] = 0.1f;
+        if(!safe_border1)  ref->border[1] = 0.1f;
       }
     }
 
@@ -1178,6 +1256,26 @@ gboolean dt_masks_events_mouse_enter(dt_iop_module_t *module)
   return FALSE;
 }
 
+// the parts of the gui state that hovering can change and that the
+// shapes' post_expose() draw
+static gboolean _gui_hover_state_equal(const dt_masks_form_gui_t *a,
+                                       const dt_masks_form_gui_t *b)
+{
+  return a->form_selected == b->form_selected
+    && a->border_selected == b->border_selected
+    && a->source_selected == b->source_selected
+    && a->pivot_selected == b->pivot_selected
+    && a->select_only_border == b->select_only_border
+    && a->point_selected == b->point_selected
+    && a->point_edited == b->point_edited
+    && a->feather_selected == b->feather_selected
+    && a->bezier_ctrl == b->bezier_ctrl
+    && a->seg_selected == b->seg_selected
+    && a->point_border_selected == b->point_border_selected
+    && a->group_edited == b->group_edited
+    && a->group_selected == b->group_selected;
+}
+
 // return true in case of something has been exposed
 gboolean dt_masks_events_mouse_moved(dt_iop_module_t *module,
                                      const float pzx,
@@ -1221,11 +1319,21 @@ gboolean dt_masks_events_mouse_moved(dt_iop_module_t *module,
   // this must be serialized against that read (see history_mutex there).
   dt_pthread_mutex_lock(&darktable.develop->history_mutex);
 
+  dt_masks_form_gui_t before;
+  if(gui) before = *gui;
+
   int rep = 0;
   if(form->functions)
     rep = form->functions->mouse_moved(module, pzx, pzy, pressure, which, zoom_scale, form, 0, gui, 0);
 
   dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
+
+  // brushes, paths and groups don't redraw for plain hovering (a long
+  // brush or path takes long enough to draw that redrawing on every
+  // motion event makes the pointer lag), so redraw here only if the
+  // highlighted part changed
+  if(gui && !_gui_hover_state_equal(&before, gui))
+    dt_control_queue_redraw_center();
 
   if(gui) _set_hinter_message(gui, form);
 
@@ -1257,6 +1365,8 @@ gboolean dt_masks_events_button_released(dt_iop_module_t *module,
     ret = form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
     form->functions->mouse_moved(module, pzx, pzy, 0, which, zoom_scale, form, 0, gui, 0);
     dt_pthread_mutex_unlock(&dev->history_mutex);
+    // mouse_moved() no longer redraws for hovering, see dt_masks_events_mouse_moved()
+    dt_control_queue_redraw_center();
   }
 
   return ret;
@@ -2998,6 +3108,66 @@ void dt_masks_line_stroke(cairo_t *cr,
   }
 
   cairo_stroke(cr);
+}
+
+// stroke the outline points from..to, and back to from if close_path.
+// they are about one image pixel apart, so a long brush or path has
+// hundreds of thousands of them and one cairo stroke over all of them
+// stalls the GUI thread for seconds. points closer than a screen pixel
+// to the last one drawn are skipped, and the path is stroked in chunks
+// so cairo can drop the ones outside the view cheaply. a chunk is a
+// whole number of dash periods long (4+4 and 8+12 in
+// dt_masks_line_stroke()), which keeps the dashes continuous across
+// chunks.
+void dt_masks_stroke_polyline(cairo_t *cr,
+                              const float *const pts,
+                              const int from,
+                              const int to,
+                              const gboolean close_path,
+                              const gboolean border,
+                              const gboolean source,
+                              const gboolean selected,
+                              const float zoom_scale)
+{
+  const float min_dist2 = 1.0f / (zoom_scale * zoom_scale);
+  const float chunk_len = DT_PIXEL_APPLY_DPI(320.0f) / zoom_scale;
+  const int end = close_path ? to + 1 : to;
+
+  float last_x = pts[from * 2];
+  float last_y = pts[from * 2 + 1];
+  float len = 0.0f;
+  cairo_move_to(cr, last_x, last_y);
+
+  for(int i = from + 1; i <= end; i++)
+  {
+    const int k = i > to ? from : i;
+    const float x = pts[k * 2];
+    const float y = pts[k * 2 + 1];
+    float dx = x - last_x;
+    float dy = y - last_y;
+    const float d2 = dx * dx + dy * dy;
+    if(i < end && d2 < min_dist2) continue;
+
+    float d = sqrtf(d2);
+    while(len + d >= chunk_len)
+    {
+      const float t = (chunk_len - len) / d;
+      last_x += t * dx;
+      last_y += t * dy;
+      cairo_line_to(cr, last_x, last_y);
+      dt_masks_line_stroke(cr, border, source, selected, zoom_scale);
+      cairo_move_to(cr, last_x, last_y);
+      dx = x - last_x;
+      dy = y - last_y;
+      d -= chunk_len - len;
+      len = 0.0f;
+    }
+    cairo_line_to(cr, x, y);
+    len += d;
+    last_x = x;
+    last_y = y;
+  }
+  dt_masks_line_stroke(cr, border, source, selected, zoom_scale);
 }
 
 #include "detail.c"

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2024 darktable developers.
+    Copyright (C) 2013-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -96,7 +96,7 @@ int wb_presets_size = 10000;
 int wb_presets_count = 0;
 
 #define _ERROR(...)     {\
-                          dt_print(DT_DEBUG_CONTROL, "[wb_presets] error: " __VA_ARGS__);\
+                          dt_print(DT_DEBUG_ALWAYS, "[wb_presets] error: " __VA_ARGS__);\
                           valid = FALSE; \
                           goto end;\
                         }
@@ -299,7 +299,11 @@ void dt_wb_presets_init(const char *alternative)
 end:
   if(parser) g_object_unref(parser);
   if(reader) g_object_unref(reader);
-  if(!valid) exit(1);
+  if(!valid)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[wb_presets] error in preset file, continuing without presets");
+    dt_control_log(_("error in WB presets file, continuing without presets"));
+  }
   return;
 }
 

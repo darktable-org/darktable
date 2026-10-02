@@ -563,7 +563,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   char *confentry = calloc(PATH_MAX, sizeof(char));
   char *binname = calloc(PATH_MAX, sizeof(char));
 
-  dt_pthread_mutex_init(&cl->dev[dev].lock, NULL);
+  dt_pthread_mutex_init(&cl->dev[dev].lock);
 
   // test GPU availability, vendor, memory, image support etc:
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_AVAILABLE,
@@ -1020,7 +1020,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                                                      "common.h",
                                                      "guided_filter.cl",
                                                      "grain.h",
-                                                     NULL };
+                                                     "bilinear.h" };
 
   char *includemd5[DT_OPENCL_MAX_INCLUDES] = { NULL };
   _opencl_md5sum(clincludes, includemd5);
@@ -1193,7 +1193,7 @@ void dt_opencl_init(dt_opencl_t *cl,
                     const gboolean print_statistics)
 {
   const gboolean exclude_opencl = options & DT_OPENCL_OPTION_EXCLUDE;
-  dt_pthread_mutex_init(&cl->lock, NULL);
+  dt_pthread_mutex_init(&cl->lock);
   cl->inited = FALSE;
   cl->enabled = FALSE;
   cl->stopped = FALSE;
@@ -2652,8 +2652,11 @@ void dt_opencl_free_kernel(const int kernel)
   dt_pthread_mutex_lock(&cl->lock);
   for(int dev = 0; dev < cl->num_devs; dev++)
   {
-    cl->dev[dev].kernel_used[kernel] = FALSE;
-    (cl->dlocl->symbols->dt_clReleaseKernel)(cl->dev[dev].kernel[kernel]);
+    if(cl->dev[dev].kernel_used[kernel])
+    {
+      cl->dev[dev].kernel_used[kernel] = FALSE;
+      (cl->dlocl->symbols->dt_clReleaseKernel)(cl->dev[dev].kernel[kernel]);
+    }
   }
   dt_pthread_mutex_unlock(&cl->lock);
 }

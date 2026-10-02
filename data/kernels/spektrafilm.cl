@@ -42,7 +42,6 @@
  *   - the CPU engine computes in double; these kernels are float, so expect
  *     ~1e-3 vs the CPU path (validated with POCL against the sf_sim_* stage
  *     functions).
- *   - exact-spectral quality has NO GPU path; process_cl falls back to CPU.
  */
 
 /* OpenCL C defaults FP_CONTRACT to ON, so the device compiler is free to fuse

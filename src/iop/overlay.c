@@ -1325,10 +1325,7 @@ void init_global(dt_iop_module_so_t *self)
 {
   dt_iop_overlay_global_data_t *gd = calloc(1, sizeof(dt_iop_overlay_global_data_t));
 
-  pthread_mutexattr_t recursive_locking;
-  pthread_mutexattr_init(&recursive_locking);
-  pthread_mutexattr_settype(&recursive_locking, PTHREAD_MUTEX_RECURSIVE);
-  dt_pthread_mutex_init(&gd->overlay_threadsafe, &recursive_locking);
+  dt_pthread_recursive_mutex_init(&gd->overlay_threadsafe);
 
 #ifdef HAVE_OPENCL
   const int program = 41; // overlay.cl

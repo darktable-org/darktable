@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021-2024 darktable developers.
+    Copyright (C) 2021-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -389,7 +389,7 @@ int dt_imageio_heif_read_profile(const char *filename,
         // image has no embedded ICC profile
         goto out;
       }
-      icc_data = (uint8_t *)g_malloc0(sizeof(uint8_t) * icc_size);
+      icc_data = (uint8_t *)g_try_malloc0(sizeof(uint8_t) * icc_size);
       if(!icc_data)
       {
         goto out;

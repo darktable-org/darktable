@@ -70,6 +70,9 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
   #define dtcl_exp2(A) native_exp2(A)
   #define dtcl_sin(A) native_sin(A)
   #define dtcl_cos(A) native_cos(A)
+  #define dtcl_exp(A) native_exp(A)
+  #define dtcl_exp10(A) native_exp10(A)
+  #define dtcl_log10(A) native_log10(A)
 
   static inline float dt_fast_hypot(const float x, const float y)
   {
@@ -90,6 +93,9 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
   #define dtcl_exp2(A) exp2(A)
   #define dtcl_sin(A) sin(A)
   #define dtcl_cos(A) cos(A)
+  #define dtcl_exp(A) exp(A)
+  #define dtcl_exp10(A) exp10(A)
+  #define dtcl_log10(A) log10(A)
 
   static inline float dt_fast_hypot(const float x, const float y)
   {

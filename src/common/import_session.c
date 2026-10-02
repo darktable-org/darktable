@@ -276,6 +276,7 @@ const char *dt_import_session_filename(dt_import_session_t *self, const gboolean
     do
     {
       /* file exists, yield a new filename */
+      self->vp->conflict++;
       g_free(result_fname);
       result_fname = _import_session_filename_from_pattern(self, pattern);
       fname = g_build_path(G_DIR_SEPARATOR_S, path, result_fname, (char *)NULL);
@@ -284,6 +285,7 @@ const char *dt_import_session_filename(dt_import_session_t *self, const gboolean
       /* check if same filename was yielded as before */
       if(strcmp(previous_fname, fname) == 0)
       {
+        self->vp->conflict = 0;
         g_free(previous_fname);
         g_free(fname);
         dt_control_log(_(
@@ -297,6 +299,7 @@ const char *dt_import_session_filename(dt_import_session_t *self, const gboolean
     } while(g_file_test(fname, G_FILE_TEST_EXISTS));
   }
 
+  self->vp->conflict = 0;
   g_free(previous_fname);
   g_free(pattern);
 

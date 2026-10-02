@@ -487,8 +487,7 @@ kernel void highlights_opposed(read_only image2d_t in,
                                global const unsigned char (*const xtrans)[6],
                                global const float *clips,
                                global const float *chroma,
-                               global const float *correction,
-                               const int fastcopymode)
+                               global const float *correction)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -501,18 +500,14 @@ kernel void highlights_opposed(read_only image2d_t in,
   if((icol >= 0) && (icol < iwidth) && (irow >= 0) && (irow < iheight))
   {
     val = Areadsingle(in, icol, irow);
-
-    if(!fastcopymode)
+    const int color = fcol(irow, icol, filters, xtrans);
+    if(val >= clips[color])
     {
-      const int color = fcol(irow, icol, filters, xtrans);
-      if(val >= clips[color])
-      {
-        const float ref = _calc_refavg(in, xtrans, filters, irow, icol, iheight, iwidth, correction);
-        val = fmax(val, ref + chroma[color]);
-      }
+      const float ref = _calc_refavg(in, xtrans, filters, irow, icol, iheight, iwidth, correction);
+      val = fmax(val, ref + chroma[color]);
     }
   }
-  write_imagef (out, (int2)(x, y), val);
+  write_imagef(out, (int2)(x, y), val);
 }
 
 #define SQRT3 1.7320508075688772935274463415058723669f
@@ -2957,8 +2952,7 @@ monochrome_filter(read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = readpixel(in, x, y);
-  // TODO: this could be a native_expf, or exp2f, need to evaluate comparisons with cpu though:
+  float4 pixel = Areadpixel(in, x, y);
   pixel.x = 100.0f*dt_fast_expf(-clipf((fsquare(pixel.y - a) + fsquare(pixel.z - b)) / (2.0f * size)));
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -2979,8 +2973,8 @@ monochrome(read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = readpixel(in, x, y);
-  float4 basep = readpixel(base, x, y);
+  float4 pixel = Areadpixel(in, x, y);
+  float4 basep = Areadpixel(base, x, y);
   float filter  = dt_fast_expf(-clipf((fsquare(pixel.y - a) + fsquare(pixel.z - b)) / (2.0f * size)));
   float tt = envelope(pixel.x);
   float t  = tt + (1.0f-tt)*(1.0f-highlights);
