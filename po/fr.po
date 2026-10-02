@@ -25260,6 +25260,115 @@ msgstr ""
 "\n"
 "Vous ne devriez pas changer les valeurs."
 
+#: ../src/iop/satcurvergb.c:180
+msgid "saturation curve"
+msgstr "Courbe de saturation"
+
+#: ../src/iop/satcurvergb.c:185
+msgid "sat vs sat|saturation versus saturation|brilliance curve|satcurve"
+msgstr "sat vs sat|saturation versus saturation|Courbe de brillance|satcurve"
+
+#: ../src/iop/satcurvergb.c:190
+msgid "remap saturation and brilliance with curves"
+msgstr "Remappe la saturation et la brillance avec des courbes"
+
+#: ../src/iop/satcurvergb.c:857 ../src/iop/satcurvergb.c:961
+msgid ""
+"saturation curve: guided filter failed to allocate memory, disabling it for "
+"this run"
+msgstr ""
+"Courbe de saturation : le filtre guidé n'a pas réussi à allouer de la mémoire, "
+"pour cette exécution"
+
+#: ../src/iop/satcurvergb.c:1457
+msgid "gentle saturation"
+msgstr "Saturation douce"
+
+#: ../src/iop/satcurvergb.c:1464
+msgid "protect saturated colors"
+msgstr "Protége les couleurs saturées"
+
+#: ../src/iop/satcurvergb.c:1470
+msgid "gentle brilliance"
+msgstr "Brillance douce"
+
+#: ../src/iop/satcurvergb.c:1477
+msgid "bright mids, protect extremes"
+msgstr "Tons moyens brillants, protège les extrêmes"
+
+#: ../src/iop/satcurvergb.c:1941
+msgid "cannot display saturation masks while the blending mask is displayed"
+msgstr "Impossible d'afficher les masques de saturation avec le masque de mélange affiché"
+
+#: ../src/iop/satcurvergb.c:2140
+msgid "pick saturation from image"
+msgstr "Relever la saturation de l'image"
+
+#: ../src/iop/satcurvergb.c:2144
+msgid "display saturation mask"
+msgstr "Affiche le masque de saturation"
+
+#: ../src/iop/satcurvergb.c:2155
+msgid "JzAzBz"
+msgstr "JzAzBz"
+
+#: ../src/iop/satcurvergb.c:2156
+msgid "darktable UCS"
+msgstr "Darktable UCS"
+
+#: ../src/iop/satcurvergb.c:2158
+msgid "choose the perceptual saturation definition used by both curves"
+msgstr "Choisir la définition de saturation perceptuelle utilisée par les deux courbes"
+
+#: ../src/iop/satcurvergb.c:2179
+msgid ""
+"spatially modulate the strength of the curves with an edge-aware guided "
+"filter, based on local saturation, to reduce halos"
+msgstr ""
+"Module spatialement la force des courbes avec un filtre guidé sensible aux "
+"bords, basé sur la saturation locale, pour réduire les halos"
+
+#: ../src/iop/satcurvergb.c:2183 ../src/libs/export.c:1551
+#: ../src/libs/tools/global_toolbox.c:216
+msgid "px"
+msgstr "px"
+
+#: ../src/iop/satcurvergb.c:2185
+msgid "size of the neighborhood used to guide the filter"
+msgstr "Taille du voisinage utilisé pour guider le filtre"
+
+#: ../src/iop/satcurvergb.c:2190
+msgid ""
+"precision of the feathering: higher values produce softer, less edge-"
+"sensitive transitions"
+msgstr ""
+"Précision du dégradé : des valeurs plus élevées produisent des transitions "
+"plus douces et moins sensibles aux transitions"
+
+#: ../src/iop/satcurvergb.c:2195
+msgid "protect near-neutrals"
+msgstr "Protége les presque-neutres"
+
+#: ../src/iop/satcurvergb.c:2200
+msgid "center of the saturation range protected from the guided filter"
+msgstr "Centre de la plage de saturation protégée du filtre guidé"
+
+#: ../src/iop/satcurvergb.c:2207
+msgid "protection transition width"
+msgstr "Largeur de transition de protection"
+
+#: ../src/iop/satcurvergb.c:2211
+msgid ""
+"width of the smooth transition around the protected center; wider values give "
+"a gentler, less abrupt protection falloff"
+msgstr ""
+"Largeur de la zone de transition progressive autour du centre protégé ; plus cette valeur "
+"est élevée, plus la diminution de la protection est progressive et moins elle est brusque."
+
+#: ../src/iop/satcurvergb.c:2221
+msgid "limit curve changes in noisy or uncertain regions"
+msgstr "Limite les modifications de la courbe dans les régions bruyantes ou incertaines"
+
 #: ../src/iop/scalepixels.c:53
 msgctxt "modulename"
 msgid "scale pixels"
