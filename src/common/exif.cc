@@ -1645,9 +1645,30 @@ static void _check_highlight_preservation(Exiv2::ExifData &exifData,
     }
 }
 
+// some Panasonic and Olympus bodies apply a vignetting gain to the raw data
+// themselves, which a Lensfun profile then corrects a second time
+static void _check_shading_compensation(Exiv2::ExifData &exifData,
+                                        dt_image_t *img)
+{
+  Exiv2::ExifData::const_iterator pos;
+
+  if(FIND_EXIF_TAG("Exif.Panasonic.0x008a")
+     || FIND_EXIF_TAG("Exif.OlympusCs.0x050c"))
+  {
+    img->exif_shading_compensation = pos->count() == 1 && pos->toLong() == 1;
+    if(img->exif_shading_compensation)
+      dt_print(DT_DEBUG_IMAGEIO, "[exif] `%s` has %s on",
+               img->filename, pos->key().c_str());
+  }
+}
+
 void dt_exif_img_check_additional_tags(dt_image_t *img,
                                        const char *filename)
 {
+  // a reload starts from the cached image, so clear the flag before
+  // anything that can return early
+  img->exif_shading_compensation = FALSE;
+
   try
   {
     std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(filename)));
@@ -1663,6 +1684,7 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
       _check_linear_response_limit(exifData, img);
       _check_forward_matrix(exifData, img);
       _check_highlight_preservation(exifData, img);
+      _check_shading_compensation(exifData, img);
     }
     return;
   }
