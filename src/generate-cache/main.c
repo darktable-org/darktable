@@ -35,6 +35,7 @@
 #include "common/file_location.h"
 #include "common/history.h"      // for dt_history_hash_set_mipmap
 #include "control/conf.h"        // for dt_conf_get_bool
+#include "gui/wayland.h"
 
 #ifdef __APPLE__
 #include "osx/osx.h"
@@ -156,7 +157,8 @@ int main(int argc, char *arg[])
   bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
   textdomain(GETTEXT_PACKAGE);
 
-  gtk_init_check(&argc, &arg);
+  if(gtk_init_check(&argc, &arg))
+    dt_wayland_color_init(gdk_display_get_default());
 
   // parse command line arguments
   dt_mipmap_size_t min_mip = DT_MIPMAP_0;

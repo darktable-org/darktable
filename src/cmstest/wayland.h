@@ -18,23 +18,7 @@
 
 #pragma once
 
-#include <gtk/gtk.h>
-
-// initialize on the GTK thread before starting image processing
-// the transport encoding remains fixed for the lifetime of the display
-void dt_wayland_color_init(GdkDisplay *display);
-gboolean dt_wayland_color_available(void);
-void dt_wayland_color_prepare_window(GtkWidget *window);
-
-// call draw helpers on the GTK thread; bracket each widget draw with begin/end
-void dt_wayland_color_begin(GtkWidget *widget, cairo_t *cr);
-void dt_wayland_color_end(cairo_t *cr);
-// reuse the last image while loading
-gboolean dt_wayland_color_repaint(cairo_t *cr);
-
-// paint the current source, encoded as Rec2020 gamma22, beneath the GTK overlay
-// FALSE leaves cr unchanged; the caller must draw a BT709 gamma22 fallback
-gboolean dt_wayland_color_paint(cairo_t *cr);
+int dt_cmstest_wayland(void);
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -6,6 +6,14 @@ add_executable(darktable-cmstest main.c ${DARKTABLE_BINDIR}/version_gen.c)
 set_source_files_properties(${DARKTABLE_BINDIR}/version_gen.c PROPERTIES GENERATED TRUE)
 add_dependencies(darktable-cmstest generate_version)
 
+if(USE_WAYLAND AND GTK3Wayland_FOUND AND WaylandClient_FOUND AND WAYLAND_SCANNER)
+  target_sources(darktable-cmstest PRIVATE wayland.c
+                 "${COLOR_MANAGEMENT_CODE}" "${COLOR_MANAGEMENT_HEADER}")
+  target_compile_definitions(darktable-cmstest PRIVATE HAVE_WAYLAND_COLOR_MANAGEMENT)
+  target_include_directories(darktable-cmstest PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/..")
+  target_link_libraries(darktable-cmstest PkgConfig::WaylandClient)
+endif()
+
 target_link_libraries(darktable-cmstest ${LCMS2_LIBRARIES})
 add_definitions(${LCMS2_DEFINITIONS})
 

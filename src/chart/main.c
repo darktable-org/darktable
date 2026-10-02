@@ -21,6 +21,7 @@
 #include "chart/dtcairo.h"
 #include "chart/colorchart.h"
 #include "chart/common.h"
+#include "gui/wayland.h"
 #include "chart/deltaE.h"
 #include "chart/thinplate.h"
 #include "chart/tonecurve.h"
@@ -1672,6 +1673,7 @@ static void image_lab_to_xyz(float *image, const int width, const int height)
 
 static void gui_command_line(GApplication *app, GApplicationCommandLine* cmdline, gpointer user_data)
 {
+  dt_wayland_color_init(gdk_display_get_default());
   int argc;
   char **argv = g_application_command_line_get_arguments(cmdline, &argc);
   dt_lut_t *self = user_data;
