@@ -111,12 +111,14 @@ typedef struct dt_opencl_eventtag_t
   char tag[DT_OPENCL_EVENTNAMELENGTH];
 } dt_opencl_eventtag_t;
 
-typedef enum dt_opencl_atomics_t
+typedef enum dt_opencl_extensions_t
 {
-  DT_OPENCL_ATOMIC_NONE = 0,
+  DT_OPENCL_EXTENSION_NONE = 0,
   DT_OPENCL_ATOMIC_INT32 = 1,
   DT_OPENCL_ATOMIC_FLOAT32 = 2,
-} dt_opencl_atomics_t;
+  DT_OPENCL_FLOAT64 = 4,
+  DT_OPENCL_ATOMIC_INT64 = 8,
+} dt_opencl_extensions_t;
 
 /**
  * to support multi-gpu and mixed systems with cpu support,
@@ -167,7 +169,7 @@ typedef struct dt_opencl_device_t
   // flags if we want headroom mode
   gboolean tunehead;
   // we checked for atomic support; tested by avoid_atomics functions
-  dt_opencl_atomics_t atomic_support;
+  dt_opencl_extensions_t extensions;
 
   // keep track of devices using unified memory so we can adopt
   // runtime code
