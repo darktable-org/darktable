@@ -1787,6 +1787,18 @@ static int _path_get_pts_border(dt_develop_t *dev,
       }
     }
 
+    // a feather handle copied its segment's first sample before the
+    // search filled the invalid ones in
+    for(int k = 0; k < nb; k++)
+    {
+      if((*border)[k * 6] == DT_INVALID_COORDINATE)
+      {
+        const int pb = -border_init[k * 6 + 2];
+        (*border)[k * 6] = (*border)[pb];
+        (*border)[k * 6 + 1] = (*border)[pb + 1];
+      }
+    }
+
     dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
              "[masks %s] path_points self-intersect took %0.04f sec", form->name,
              dt_get_lap_time(&start2));
