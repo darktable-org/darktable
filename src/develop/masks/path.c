@@ -1455,7 +1455,7 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter,
 /** this take care of gaps and self-intersection and iop distortions */
 static int _path_get_pts_border(dt_develop_t *dev,
                                 dt_masks_form_t *form,
-                                const double iop_order,
+                                const int iop_order,
                                 const int transf_direction,
                                 dt_dev_pixelpipe_t *pipe,
                                 float **points,
@@ -2039,7 +2039,7 @@ static int _path_get_points_border(dt_develop_t *dev,
                                    const dt_iop_module_t *module)
 {
   if(source && !module) return 0;
-  const double ioporder = (module) ? module->iop_order : 0.0f;
+  const int ioporder = (module) ? module->iop_order : 0;
   return _path_get_pts_border(dev, form, ioporder,
                               DT_DEV_TRANSFORM_DIR_ALL, dev->preview_pipe, points,
                               points_count, border, border_count, source);

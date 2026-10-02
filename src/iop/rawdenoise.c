@@ -335,115 +335,77 @@ static void wavelet_denoise_xtrans(const float *const restrict in,
       fimg[col] = 0.5f;
       fimg[(size_t)(height-1)*width + col] = 0.5f;
     }
-    const size_t nthreads = dt_get_num_threads();
-    const size_t chunksize = (height + nthreads - 1) / nthreads;
-    DT_OMP_FOR(num_threads(nthreads))
-    for(size_t chunk = 0; chunk < nthreads; chunk++)
+    // build the plane in one pass, top to bottom: sensels are also copied into the neighboring rows, so
+    // the order of the writes decides which value a position keeps; splitting the rows among threads
+    // would make the result depend on the thread count
+    for(size_t row = 0; row < height; row++)
     {
-      const size_t start = chunk * chunksize;
-      const size_t pastend = MIN(start + chunksize,height);
-      for(size_t row = start; row < pastend; row++)
+      const float *const restrict inp = in + row * width;
+      float *const restrict fimgp = fimg + row * width;
+      // handle red/blue pixel in first column
+      if(c != 1 && FCNxtrans(row, 0, xtrans) == c)
       {
-        const float *const restrict inp = in + row * width;
-        float *const restrict fimgp = fimg + row * width;
-        // handle red/blue pixel in first column
-        if(c != 1 && FCNxtrans(row, 0, xtrans) == c)
+        // copy to neighbors above and right
+        const float d = vstransform(inp[0]);
+        fimgp[0] = fimgp[-width] = fimgp[-width+1] = d;
+      }
+      for(size_t col = (c != 1); col < width-1; col++)
+      {
+        if(FCNxtrans(row, col, xtrans) == c)
         {
-          // copy to neighbors above and right
-          const float d = vstransform(inp[0]);
-          fimgp[0] = fimgp[-width] = fimgp[-width+1] = d;
-        }
-        for(size_t col = (c != 1); col < width-1; col++)
-        {
-          if(FCNxtrans(row, col, xtrans) == c)
+          // the pixel at the current location has the desired color, so apply sqrt() as a variance-stablizing
+          // transform, and then do cheap nearest-neighbor interpolation by copying it to appropriate neighbors
+          const float d = vstransform(inp[col]);
+          fimgp[col] = d;
+          if(c == 1) // green pixel
           {
-            // the pixel at the current location has the desired color, so apply sqrt() as a variance-stablizing
-            // transform, and then do cheap nearest-neighbor interpolation by copying it to appropriate neighbors
-            const float d = vstransform(inp[col]);
-            fimgp[col] = d;
-            if(c == 1) // green pixel
-            {
-              // Copy to the right and down.  The X-Trans color layout is such that copying to those two neighbors
-              // results in all positions being filled except in the left-most and right-most columns and sometimes
-              // the topmost and bottom-most rows (depending on how the ROI aligns with the CFA).
-              fimgp[col+1] = fimgp[col+width] = d;
-            }
-            else // red or blue pixel
-            {
-              // Copy value to all eight neighbors; it's OK to copy to the row above even when we're in row 0 (or
-              // the row below when in the last row) because the destination is sandwiched between other buffers
-              // that will be overwritten afterwards anyway.  We need to copy to all adjacent positions because
-              // there may be two green pixels between nearest red/red or blue/blue, so each will cover one of the
-              // greens.
-              fimgp[col-width-1] = fimgp[col-width] = fimgp[col-width+1] = d; // row above
-              fimgp[col-1] = fimgp[col+1] = d;                                // left and right
-              if(row < pastend-1)
-                fimgp[col+width-1] = fimgp[col+width] = fimgp[col+width+1] = d; // row below
-            }
+            // Copy to the right and down.  The X-Trans color layout is such that copying to those two neighbors
+            // results in all positions being filled except in the left-most and right-most columns and sometimes
+            // the topmost and bottom-most rows (depending on how the ROI aligns with the CFA).
+            fimgp[col+1] = fimgp[col+width] = d;
           }
-        }
-        // leftmost and rightmost pixel in the row may still need to be filled in from a neighbor
-        if(FCNxtrans(row, 0, xtrans) != c)
-        {
-          int src = 0;	// fallback is current sensel even if it has the wrong color
-          if(row > 1 && FCNxtrans(row-1, 0, xtrans) == c)
-            src = -width;
-          else if(FCNxtrans(row, 1, xtrans) == c)
-            src = 1;
-          else if(row > 1 && FCNxtrans(row-1, 1, xtrans) == c)
-            src = -width + 1;
-          fimgp[0] = vstransform(inp[src]);
-        }
-        // check the right-most pixel; if it's the desired color and not green, copy it to the neighbors
-        if(c != 1 && FCNxtrans(row, width-1, xtrans) == c)
-        {
-          // copy to neighbors above and left
-          const float d = vstransform(inp[width-1]);
-          fimgp[width-2] = fimgp[width-1] = fimgp[-1] = d;
-        }
-        else if(FCNxtrans(row, width-1, xtrans) != c)
-        {
-          int src = width-1;	// fallback is current sensel even if it has the wrong color
-          if(FCNxtrans(row, width-2, xtrans) == c)
-            src = width-2;
-          else if(row > 1 && FCNxtrans(row-1, width-1, xtrans) == c)
-            src = -1;
-          else if(row > 1 && FCNxtrans(row-1, width-2, xtrans) == c)
-            src = -2;
-          fimgp[width-1] = vstransform(inp[src]);
+          else // red or blue pixel
+          {
+            // Copy value to all eight neighbors; it's OK to copy to the row above even when we're in row 0 (or
+            // the row below when in the last row) because the destination is then one of the two extra rows of
+            // the buffer, which dwt_denoise() never reads.  We need to copy to all adjacent positions because
+            // there may be two green pixels between nearest red/red or blue/blue, so each will cover one of the
+            // greens.
+            fimgp[col-width-1] = fimgp[col-width] = fimgp[col-width+1] = d; // row above
+            fimgp[col-1] = fimgp[col+1] = d;                                // left and right
+            fimgp[col+width-1] = fimgp[col+width] = fimgp[col+width+1] = d; // row below
+          }
         }
       }
-      if(pastend < height)
+      // leftmost and rightmost pixel in the row may still need to be filled in from a neighbor
+      if(FCNxtrans(row, 0, xtrans) != c)
       {
-        // Another slice follows us, and by updating the last row of our slice, we've clobbered values that
-        // were previously written by the other thread.  Restore them.
-        const float *const restrict inp = in + pastend * width;
-        float *const restrict fimgp = fimg + pastend * width;
-        for(size_t col = 0; col < width-1; col++)
-        {
-          if(FCNxtrans(pastend, col, xtrans) == c)
-          {
-            const float d = vstransform(inp[col]);
-            if(c == 1) // green pixel
-            {
-              if(FCNxtrans(pastend, col+1, xtrans) != c)
-                fimgp[col] = fimgp[col+1] = d;  // copy to the right
-            }
-            else // red/blue pixel
-            {
-              // copy the pixel's adjusted value to the prior row and left and right (if not at edge)
-              fimgp[col-width] = fimgp[col-width+1] = d;
-              if(col > 0) fimgp[col-width-1] = d;
-            }
-          }
-          // some red and blue values may need to be restored from the row TWO past the end of our slice
-          if(c != 1 && pastend+1 < height && FCNxtrans(pastend+1, col, xtrans) == c)
-          {
-            const float d = vstransform(inp[col+width]);
-            fimgp[col] = fimgp[col+1] = d;
-            if(col > 0) fimgp[col-1] = d;
-          }
-        }
+        int src = 0;	// fallback is current sensel even if it has the wrong color
+        if(row > 1 && FCNxtrans(row-1, 0, xtrans) == c)
+          src = -width;
+        else if(FCNxtrans(row, 1, xtrans) == c)
+          src = 1;
+        else if(row > 1 && FCNxtrans(row-1, 1, xtrans) == c)
+          src = -width + 1;
+        fimgp[0] = vstransform(inp[src]);
+      }
+      // check the right-most pixel; if it's the desired color and not green, copy it to the neighbors
+      if(c != 1 && FCNxtrans(row, width-1, xtrans) == c)
+      {
+        // copy to neighbors above and left
+        const float d = vstransform(inp[width-1]);
+        fimgp[width-2] = fimgp[width-1] = fimgp[-1] = d;
+      }
+      else if(FCNxtrans(row, width-1, xtrans) != c)
+      {
+        int src = width-1;	// fallback is current sensel even if it has the wrong color
+        if(FCNxtrans(row, width-2, xtrans) == c)
+          src = width-2;
+        else if(row > 1 && FCNxtrans(row-1, width-1, xtrans) == c)
+          src = -1;
+        else if(row > 1 && FCNxtrans(row-1, width-2, xtrans) == c)
+          src = -2;
+        fimgp[width-1] = vstransform(inp[src]);
       }
     }
 

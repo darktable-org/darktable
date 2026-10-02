@@ -1298,7 +1298,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   double scale = _get_pipescale(&pipe, width, height, max_scale);
   float origin[2] = { 0.0f, 0.0f };
 
-  if(dt_dev_distort_backtransform_plus(&dev, &pipe, 0.0,
+  if(dt_dev_distort_backtransform_plus(&dev, &pipe, 0,
                                        DT_DEV_TRANSFORM_DIR_ALL, origin, 1))
   {
     if(width == 0) width = pipe.processed_width;

@@ -6077,7 +6077,7 @@ static void _transform_face_tags(Exiv2::XmpData &xmp,
     points.emplace_back(r[1]);
   }
 
-  if(dt_dev_distort_transform_plus(dev, pipe, 0.0f,
+  if(dt_dev_distort_transform_plus(dev, pipe, 0,
                                    DT_DEV_TRANSFORM_DIR_ALL,
                                    points.data(), 4 * regions.size())
      != 1)

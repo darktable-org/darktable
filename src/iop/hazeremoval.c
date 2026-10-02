@@ -713,8 +713,12 @@ static float _ambient_light_cl(dt_iop_module_t *self,
   const int width = dt_opencl_get_image_width(img);
   const int height = dt_opencl_get_image_height(img);
   const int element_size = dt_opencl_get_image_element_size(img);
+
+  cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
   float *in = dt_alloc_aligned((size_t)width * height * element_size);
-  cl_int err = dt_opencl_copy_image_to_host(devid, in, img, width, height, element_size);
+  if(!in) goto error;
+
+  err = dt_opencl_copy_image_to_host(devid, in, img, width, height, element_size);
   if(err != CL_SUCCESS) goto error;
 
   const const_rgb_image img_in = (const_rgb_image) {in, width, height, element_size / sizeof(float)};
@@ -722,7 +726,7 @@ static float _ambient_light_cl(dt_iop_module_t *self,
   dt_free_align(in);
   return max_depth;
 error:
-  dt_print(DT_DEBUG_OPENCL, "[hazeremoval, ambient_light_cl] unknown error: %d", err);
+  dt_print(DT_DEBUG_OPENCL, "[hazeremoval, ambient_light_cl] error: %s", cl_errstr(err));
   dt_free_align(in);
   return 0.f;
 }

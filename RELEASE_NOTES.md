@@ -150,6 +150,9 @@ changes (where available).
   SpyderCheckr 48. As far as we know, there never was a separate 2018
   version of these charts.
 
+- Added a "copy to clipboard" export storage, which places the
+  exported images on the system clipboard.
+
 ## Performance Improvements
 
 - Replaced quadratic XMP history writes with a linear algorithm.
@@ -213,6 +216,10 @@ changes (where available).
   colorin module, selectable manually. The existing "embedded
   matrix" profile remains the default for fresh imports and
   reloading defaults.
+
+- The highlights module will be disabled automatically when a raw
+  image with a clean history is opended in darkroom the first time
+  and the opposed algorithm did not find clipped photosites.
 
 - Panasonic RW2 files now offer embedded lens distortion correction,
   covering built-in and Lumix-branded lenses that lensfun has no
@@ -438,6 +445,10 @@ changes (where available).
   slightly wrong until the module was adjusted again.
 
 - Fixed a crash on Wayland when disconnecting a monitor.
+
+- Fixed raw denoise on X-Trans images giving slightly different
+  results depending on the number of CPU threads, and occasionally
+  wrong colors near the left or right image edge.
 
 ## Lua
 

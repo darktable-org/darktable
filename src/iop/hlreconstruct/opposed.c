@@ -199,6 +199,7 @@ static void _process_linear_opposed(dt_iop_module_t *self,
             g->oppchroma[c] = chrominance[c];
           g->opphash = opphash;
           g->oppclipped = anyclipped;
+          g->oppresult = TRUE;
           dt_iop_gui_leave_critical_section(self);
         }
         dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
@@ -382,6 +383,7 @@ static float *_process_opposed(dt_iop_module_t *self,
           g->oppchroma[c] = chrominance[c];
         g->opphash = opphash;
         g->oppclipped = anyclipped;
+        g->oppresult = TRUE;
         dt_iop_gui_leave_critical_section(self);
       }
       dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
@@ -604,6 +606,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
         g->oppchroma[c] = chrominance[c];
       g->opphash = opphash;
       g->oppclipped = clipped > 0.0f;
+      g->oppresult = TRUE;
       dt_iop_gui_leave_critical_section(self);
     }
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
