@@ -1393,7 +1393,8 @@ static dt_imgid_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
      "   orientation, longitude, latitude, altitude, color_matrix,"
      "   colorspace, version, max_version,"
      "   history_end, position, aspect_ratio, exposure_bias, import_timestamp,"
-     "   whitebalance_id, flash_id, exposure_program_id, metering_mode_id, flash_tagvalue)"
+     "   whitebalance_id, flash_id, exposure_program_id, metering_mode_id, flash_tagvalue,"
+     "   sha1sum, filesize)"
      " SELECT NULL, group_id, film_id, width, height, filename,"
      "        maker_id, model_id, camera_id, lens_id,"
      "        exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
@@ -1401,7 +1402,9 @@ static dt_imgid_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
      "        raw_black, raw_maximum, orientation,"
      "        longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, ?1,"
      "        aspect_ratio, exposure_bias, import_timestamp,"
-     "        whitebalance_id, flash_id, exposure_program_id, metering_mode_id, flash_tagvalue"
+     "        whitebalance_id, flash_id, exposure_program_id, metering_mode_id, flash_tagvalue,"
+     // same file: copy DB identity (not from XMP)
+     "        sha1sum, filesize"
      " FROM main.images WHERE id = ?2",
      -1, &stmt, NULL);
   // clang-format on
@@ -2209,6 +2212,8 @@ void dt_image_init(dt_image_t *img)
   img->film_id = -1;
   img->group_id = NO_IMGID;
   img->flags = 0;
+  img->filesize = 0;
+  memset(img->sha1sum, 0, sizeof(img->sha1sum));
   img->id = NO_IMGID;
   img->version = -1;
   img->loader = LOADER_UNKNOWN;
@@ -2667,6 +2672,7 @@ dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
          "   longitude, latitude, altitude, color_matrix, colorspace, version, max_version,"
          "   position, aspect_ratio, exposure_bias,"
          "   whitebalance_id, flash_id, exposure_program_id, metering_mode_id, flash_tagvalue)"
+         // new path/file: do not copy sha1sum/filesize
          " SELECT NULL, group_id, ?1 as film_id, width, height, ?2 as filename,"
          "        maker_id, model_id, lens_id,"
          "        exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
