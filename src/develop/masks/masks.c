@@ -1276,6 +1276,30 @@ static gboolean _gui_hover_state_equal(const dt_masks_form_gui_t *a,
     && a->group_selected == b->group_selected;
 }
 
+// The shapes' event callbacks run with history_mutex held. A view clamp they ask for
+// through dt_masks_set_edit_mode() takes global_mutex, so it waits for the unlock
+static int _events_locked = 0;
+static gboolean _events_zoom_move = FALSE;
+
+static void _events_lock(dt_develop_t *dev)
+  ACQUIRE(&dev->history_mutex)
+{
+  dt_pthread_mutex_lock(&dev->history_mutex);
+  _events_locked++;
+}
+
+static void _events_unlock(dt_develop_t *dev)
+  RELEASE(&dev->history_mutex)
+{
+  _events_locked--;
+  dt_pthread_mutex_unlock(&dev->history_mutex);
+  if(!_events_locked && _events_zoom_move)
+  {
+    _events_zoom_move = FALSE;
+    dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
+  }
+}
+
 // return true in case of something has been exposed
 gboolean dt_masks_events_mouse_moved(dt_iop_module_t *module,
                                      const float pzx,
@@ -1317,7 +1341,7 @@ gboolean dt_masks_events_mouse_moved(dt_iop_module_t *module,
   // form->points can be mutated below (dragging a node); pixelpipe worker
   // threads deep-copy dev->forms concurrently in dt_dev_pixelpipe_process, so
   // this must be serialized against that read (see history_mutex there).
-  dt_pthread_mutex_lock(&darktable.develop->history_mutex);
+  _events_lock(darktable.develop);
 
   dt_masks_form_gui_t before;
   if(gui) before = *gui;
@@ -1326,7 +1350,7 @@ gboolean dt_masks_events_mouse_moved(dt_iop_module_t *module,
   if(form->functions)
     rep = form->functions->mouse_moved(module, pzx, pzy, pressure, which, zoom_scale, form, 0, gui, 0);
 
-  dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
+  _events_unlock(darktable.develop);
 
   // brushes, paths and groups don't redraw for plain hovering (a long
   // brush or path takes long enough to draw that redrawing on every
@@ -1361,10 +1385,10 @@ gboolean dt_masks_events_button_released(dt_iop_module_t *module,
   {
     // serialized against the pixelpipe's dt_masks_dup_forms_deep read of
     // dev->forms/form->points, see history_mutex use in dt_dev_pixelpipe_process.
-    dt_pthread_mutex_lock(&dev->history_mutex);
+    _events_lock(dev);
     ret = form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
     form->functions->mouse_moved(module, pzx, pzy, 0, which, zoom_scale, form, 0, gui, 0);
-    dt_pthread_mutex_unlock(&dev->history_mutex);
+    _events_unlock(dev);
     // mouse_moved() no longer redraws for hovering, see dt_masks_events_mouse_moved()
     dt_control_queue_redraw_center();
   }
@@ -1410,11 +1434,11 @@ gboolean dt_masks_events_button_pressed(dt_iop_module_t *module,
   {
     // serialized against the pixelpipe's dt_masks_dup_forms_deep read of
     // dev->forms/form->points, see history_mutex use in dt_dev_pixelpipe_process.
-    dt_pthread_mutex_lock(&darktable.develop->history_mutex);
+    _events_lock(darktable.develop);
     const gboolean ret = form->functions->button_pressed(
                            module, pzx, pzy, pressure, which, type, state, form, 0, gui, 0) ||
                          which == 3; // swallow right-clicks so right-drag rotate is disabled
-    dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
+    _events_unlock(darktable.develop);
     return ret;
   }
   return FALSE;
@@ -1453,11 +1477,11 @@ gboolean dt_masks_events_mouse_scrolled(dt_iop_module_t *module,
   {
     // serialized against the pixelpipe's dt_masks_dup_forms_deep read of
     // dev->forms/form->points, see history_mutex use in dt_dev_pixelpipe_process.
-    dt_pthread_mutex_lock(&darktable.develop->history_mutex);
+    _events_lock(darktable.develop);
     ret = (form->functions->mouse_scrolled(module, pzx, pzy,
                                           incr ? 1 : 0,
                                           state, form, 0, gui, 0)) != 0;
-    dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
+    _events_unlock(darktable.develop);
   }
 
   if(gui)
@@ -1688,8 +1712,15 @@ void dt_masks_set_edit_mode(dt_iop_module_t *module,
   // reload the dirty pipe runs the image-only clamp itself. Worker validation
   // deliberately does not inspect mutable GUI overlay points.
   // Also avoid if we didn't change edit mode
+  // Under a shape's event callback, which holds history_mutex too, the
+  // clamp waits for _events_unlock()
   if(!darktable.develop->history_updating && old_shown != value)
-    dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
+  {
+    if(_events_locked)
+      _events_zoom_move = TRUE;
+    else
+      dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
+  }
 
   dt_control_queue_redraw_center();
 }

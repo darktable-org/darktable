@@ -427,7 +427,10 @@ static int _gradient_events_button_released(dt_iop_module_t *module,
   else if(gui->creation)
   {
     // get the rotation angle only if we are not too close from starting point
-    const float zoom_scale = dt_dev_get_zoom_scale_full();
+    // no dt_dev_get_zoom_scale_full(): global_mutex under history_mutex can deadlock
+    dt_dev_viewport_t *port = &darktable.develop->full;
+    const float zoom_scale =
+      dt_dev_get_zoom_scale(port, port->zoom, 1 << port->closeup, TRUE);
 
     // we create the gradient
     dt_masks_point_gradient_t *gradient = malloc(sizeof(dt_masks_point_gradient_t));
