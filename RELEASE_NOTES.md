@@ -439,6 +439,10 @@ changes (where available).
 
 - Fixed a crash on Wayland when disconnecting a monitor.
 
+- Fixed raw denoise on X-Trans images giving slightly different
+  results depending on the number of CPU threads, and occasionally
+  wrong colors near the left or right image edge.
+
 ## Lua
 
 ### API Version
