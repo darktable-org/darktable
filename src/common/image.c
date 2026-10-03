@@ -2245,6 +2245,8 @@ void dt_image_init(dt_image_t *img)
   img->raw_white_point = 16384; // 2^14
   dt_mark_colormatrix_invalid(&img->d65_color_matrix[0]);
   dt_mark_colormatrix_invalid(&img->dng_forward_matrix[0]);
+  img->profile_hsm_data = NULL;
+  img->profile_hsm_hue_div = img->profile_hsm_sat_div = img->profile_hsm_val_div = 0;
   img->profile = NULL;
   img->profile_size = 0;
   img->colorspace = DT_IMAGE_COLORSPACE_NONE;

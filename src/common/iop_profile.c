@@ -937,8 +937,10 @@ dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev,
     dt_image_cache_write_release_info(wimg, DT_IMAGE_CACHE_RELAXED, NULL);
   }
 
-  if(ptype >= DT_COLORSPACE_EMBEDDED_ICC
-     && ptype <= DT_COLORSPACE_ALTERNATE_MATRIX)
+  if((ptype >= DT_COLORSPACE_EMBEDDED_ICC
+      && ptype <= DT_COLORSPACE_ALTERNATE_MATRIX)
+     || ptype == DT_COLORSPACE_FORWARD_MATRIX
+     || ptype == DT_COLORSPACE_DNG_LOOK)
   {
     /* We have a camera input matrix, these are not generated from files but in colorin,
     * so we need to fetch and replace them from somewhere.

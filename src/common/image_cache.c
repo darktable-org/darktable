@@ -116,6 +116,9 @@ static void _image_cache_allocate(void *data,
     g_free(img->profile);
     img->profile = NULL;
     img->profile_size = 0;
+    g_free(img->profile_hsm_data);
+    img->profile_hsm_data = NULL;
+    img->profile_hsm_hue_div = img->profile_hsm_sat_div = img->profile_hsm_val_div = 0;
     img->colorspace = sqlite3_column_int(stmt, 23);
     img->version = sqlite3_column_int(stmt, 24);
     img->raw_black_level = sqlite3_column_int(stmt, 25);
@@ -205,6 +208,7 @@ static void _image_cache_deallocate(void *data, dt_cache_entry_t *entry)
 {
   dt_image_t *img = entry->data;
   g_free(img->profile);
+  g_free(img->profile_hsm_data);
   g_list_free_full(img->dng_gain_maps, g_free);
   g_free(img);
   entry->data = NULL;

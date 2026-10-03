@@ -1077,8 +1077,8 @@ static bool _valid_dng_matrix(const float *M)
   return fabsf(det) > 1e-6f;
 }
 
-static void _check_forward_matrix(Exiv2::ExifData &exifData,
-                                         dt_image_t *img)
+static int _check_forward_matrix(Exiv2::ExifData &exifData,
+                                 dt_image_t *img)
 {
   Exiv2::ExifData::const_iterator pos;
   dt_mark_colormatrix_invalid(&img->dng_forward_matrix[0]);
@@ -1202,7 +1202,7 @@ static void _check_forward_matrix(Exiv2::ExifData &exifData,
   // We only want a valid forward matrix if we got an illu and matrix are good
   const gboolean has_forward_illuminant = sel_illu >= 0 && sel_illu < 3 && has_FM[sel_illu];
   if(!has_forward_illuminant)
-    return;
+    return sel_illu;
 
   // CameraToXYZ = ForwardMatrix * Inverse(AnalogBalance * CameraCalibration)
   // (white balance D is applied later, upstream, via temperature.iop's wb_coeffs)
@@ -1226,7 +1226,52 @@ static void _check_forward_matrix(Exiv2::ExifData &exifData,
                 illu[2] ? ", [3] " : "", illu[2] ? _illu_to_str(illu[2]) : "" );
     _print_matrix_data("img forward matrix", 0, img->dng_forward_matrix);
     _print_matrix_data(has_CC[sel_illu] ? "calibration matrix" : "ident calibration matrix", 0, CC[sel_illu]);
+    return sel_illu;
   }
+  return sel_illu;
+}
+
+static void _check_profile_look_table(Exiv2::ExifData &exifData,
+                                      dt_image_t *img,
+                                      const int sel_illu)
+{
+  g_free(img->profile_hsm_data);
+  img->profile_hsm_data = NULL;
+  img->profile_hsm_hue_div = img->profile_hsm_sat_div = img->profile_hsm_val_div = 0;
+  Exiv2::ExifData::const_iterator dims_pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.ProfileHueSatMapDims"));
+  if(dims_pos != exifData.end() && dims_pos->count() == 3)
+  {
+    const auto hue_div = dims_pos->toLong(0);
+    const auto sat_div = dims_pos->toLong(1);
+    const auto val_div = dims_pos->toLong(2);
+    if(hue_div >= 1 && sat_div >= 2 && val_div >= 1
+       && hue_div <= G_MAXINT / 3 / sat_div / val_div)
+    {
+      const int n_entries = hue_div * sat_div * val_div * 3;
+      const char *keys[] = {
+        "Exif.Image.ProfileHueSatMapData1",
+        "Exif.Image.ProfileHueSatMapData2",
+#if EXIV2_TEST_VERSION(0,27,4)
+        "Exif.Image.ProfileHueSatMapData3"
+#endif
+      };
+      const int index = sel_illu >= 0 && sel_illu < (int)G_N_ELEMENTS(keys) ? sel_illu : 0;
+      Exiv2::ExifData::const_iterator pos = exifData.findKey(Exiv2::ExifKey(keys[index]));
+      if(pos != exifData.end() && (int)pos->count() == n_entries)
+      {
+        img->profile_hsm_data = (float *)g_malloc_n(n_entries, sizeof(float));
+        for(int i = 0; i < n_entries; i++)
+          img->profile_hsm_data[i] = pos->toFloat(i);
+        img->profile_hsm_hue_div = hue_div;
+        img->profile_hsm_sat_div = sat_div;
+        img->profile_hsm_val_div = val_div;
+        dt_print(DT_DEBUG_IMAGEIO, "[exif] found ProfileHueSatMapData%d (%dx%dx%d)",
+                 index + 1, img->profile_hsm_hue_div, img->profile_hsm_sat_div, img->profile_hsm_val_div);
+      }
+    }
+  }
+
 }
 
 static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData,
@@ -1682,7 +1727,8 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
       _check_dng_opcodes(exifData, img);
       _check_lens_correction_data(exifData, img);
       _check_linear_response_limit(exifData, img);
-      _check_forward_matrix(exifData, img);
+      const int sel_illu = _check_forward_matrix(exifData, img);
+      _check_profile_look_table(exifData, img, sel_illu);
       _check_highlight_preservation(exifData, img);
       _check_shading_compensation(exifData, img);
     }
@@ -3298,7 +3344,6 @@ int dt_exif_read_blob(uint8_t **buf,
       "Exif.Image.ProfileHueSatMapDims",
       "Exif.Image.ProfileHueSatMapData1",
       "Exif.Image.ProfileHueSatMapData2",
-      "Exif.Image.ProfileToneCurve",
       "Exif.Image.ProfileEmbedPolicy",
       "Exif.Image.ProfileCopyright",
       "Exif.Image.ForwardMatrix1",

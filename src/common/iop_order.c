@@ -113,6 +113,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {25.0f }, "profile_gamma", 0},
   { {26.0f }, "hazeremoval", 0},
   { {27.0f }, "colorin", 0},
+  { {27.1f }, "dng_look", 0},
   { {27.5f }, "channelmixerrgb", 0},
   { {27.5f }, "contrastntexture", 0}, 
   { {27.5f }, "diffuse", 0},
@@ -221,6 +222,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {26.0f }, "profile_gamma", 0},
   { {27.0f }, "equalizer", 0},
   { {28.0f }, "colorin", 0},
+  { {28.1f }, "dng_look", 0},
   { {28.5f }, "channelmixerrgb", 0},
   { {28.5f }, "contrastntexture", 0},
   { {28.5f }, "diffuse", 0},
@@ -344,6 +346,7 @@ const dt_iop_order_entry_t v50_order[] = {
   { {26.0f }, "profile_gamma", 0},
   { {27.0f }, "equalizer", 0},
   { {28.0f }, "colorin", 0},
+  { {28.1f }, "dng_look", 0},
   { {28.5f }, "channelmixerrgb", 0},
   { {28.5f }, "contrastntexture", 0},
   { {28.5f }, "diffuse", 0},
@@ -441,6 +444,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 8.5f }, "demosaicscale", 0 },
   // all the modules between [8.5; 28] expect linear RGB, so they need to be moved after colorin
   { { 28.0f }, "colorin", 0 },
+  { { 28.0f }, "dng_look", 0 },
   // moved modules : (copy-pasted in the same order)
   { { 28.0f }, "denoiseprofile", 0},
   { { 28.0f }, "bilateral", 0},
@@ -567,6 +571,7 @@ const dt_iop_order_entry_t v50_jpg_order[] = {
   { { 8.5f }, "demosaicscale", 0 },
   // all the modules between [8.5; 28] expect linear RGB, so they need to be moved after colorin
   { { 28.0f }, "colorin", 0 },
+  { { 28.0f }, "dng_look", 0 },
   // moved modules : (copy-pasted in the same order)
   { { 28.0f }, "denoiseprofile", 0},
   { { 28.0f }, "bilateral", 0},
@@ -767,6 +772,7 @@ void dt_ioppr_migrate_legacy_iop_order_list(GList *iop_order_list)
   _insert_before_after(iop_order_list, "highlights", "rasterfile", TRUE);
   _insert_before_after(iop_order_list, "demosaic", "demosaicscale", FALSE);
   _insert_before_after(iop_order_list, "colorbalance", "colorharmonizer", TRUE);
+  _insert_before_after(iop_order_list, "colorin", "dng_look", FALSE);
 }
 
 static dt_iop_order_t _ioppr_get_default_iop_order_version(const dt_imgid_t imgid)

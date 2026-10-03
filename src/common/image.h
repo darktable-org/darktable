@@ -324,6 +324,10 @@ typedef struct dt_image_t
 
   float d65_color_matrix[9];                // the 3x3 matrix embedded in some DNGs
   float dng_forward_matrix[9];              // the 3x3 forward matrix supplied in some DNG files
+  float *profile_hsm_data;                   // hue_div * sat_div * val_div * 3 floats, owned by the struct
+  int profile_hsm_hue_div;
+  int profile_hsm_sat_div;
+  int profile_hsm_val_div;
   uint8_t *profile;             // embedded profile, for example from JPEGs
   uint32_t profile_size;
   dt_image_colorspace_t colorspace; // the colorspace that is
