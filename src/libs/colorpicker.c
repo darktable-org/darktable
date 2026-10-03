@@ -15,7 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "gui/wayland.h"
 #include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
@@ -194,11 +193,7 @@ static void _update_sample_label(dt_lib_module_t *self,
   const dt_lib_colorpicker_statistic_t statistic = data->statistic;
 
   dt_aligned_pixel_t swatch;
-  if(dt_wayland_color_available() && darktable.color_profiles->transform_transport_to_ui_float)
-    cmsDoTransform(darktable.color_profiles->transform_transport_to_ui_float,
-                   sample->display[statistic], swatch, 1);
-  else
-    memcpy(swatch, sample->display[statistic], sizeof(swatch));
+  dt_colorspaces_convert_display_to_ui(sample->display[statistic], swatch);
   sample->swatch.red   = CLAMP(swatch[0], 0.0f, 1.0f);
   sample->swatch.green = CLAMP(swatch[1], 0.0f, 1.0f);
   sample->swatch.blue  = CLAMP(swatch[2], 0.0f, 1.0f);
@@ -379,11 +374,7 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget,
   for(int i = 0; i < DT_PICK_N; i++)
   {
     dt_aligned_pixel_t swatch;
-    if(dt_wayland_color_available() && darktable.color_profiles->transform_transport_to_ui_float)
-      cmsDoTransform(darktable.color_profiles->transform_transport_to_ui_float,
-                     sample->display[i], swatch, 1);
-    else
-      copy_pixel(swatch, sample->display[i]);
+    dt_colorspaces_convert_display_to_ui(sample->display[i], swatch);
     sample_parts[i] = g_strdup_printf
       ("<span background='#%02X%02X%02X'>%32s</span>",
        (int)roundf(CLAMP(swatch[0], 0.f, 1.f) * 255.f),

@@ -407,6 +407,9 @@ void dt_colorspaces_convert_srgb_to_display(const dt_colorspaces_color_profile_t
                                            float *output,
                                            const uint32_t pixels);
 
+void dt_colorspaces_convert_display_to_ui(const dt_aligned_pixel_t input,
+                                         dt_aligned_pixel_t output);
+
 /** Calculate CAM->XYZ, XYZ->CAM matrices **/
 gboolean dt_colorspaces_conversion_matrices_xyz(const float adobe_XYZ_to_CAM[4][3],
                                            float in_XYZ_to_CAM[9],
