@@ -3246,6 +3246,8 @@ msgid "contrast gray fulcrum"
 msgstr "Pivot du gris contrasté"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:418 ../build/lib/darktable/plugins/introspection_colorbalancergb.c:589
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:143
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:254
 msgid "saturation formula"
 msgstr "Formule de saturation"
 
@@ -3286,6 +3288,8 @@ msgid "effect radius"
 msgstr "Rayon de l’effet"
 
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:254 ../build/lib/darktable/plugins/introspection_colorequal.c:471
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:149
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:258
 msgid "use guided filter"
 msgstr "Utiliser un filtre guidé"
 
@@ -25286,7 +25290,7 @@ msgstr "Saturation douce"
 
 #: ../src/iop/satcurvergb.c:1464
 msgid "protect saturated colors"
-msgstr "Protége les couleurs saturées"
+msgstr "Protection des couleurs saturées"
 
 #: ../src/iop/satcurvergb.c:1470
 msgid "gentle brilliance"
@@ -25294,7 +25298,7 @@ msgstr "Brillance douce"
 
 #: ../src/iop/satcurvergb.c:1477
 msgid "bright mids, protect extremes"
-msgstr "Tons moyens brillants, protège les extrêmes"
+msgstr "Tons moyens brillants, protection des extrêmes"
 
 #: ../src/iop/satcurvergb.c:1941
 msgid "cannot display saturation masks while the blending mask is displayed"
@@ -25302,7 +25306,7 @@ msgstr "Impossible d'afficher les masques de saturation avec le masque de mélan
 
 #: ../src/iop/satcurvergb.c:2140
 msgid "pick saturation from image"
-msgstr "Relever la saturation de l'image"
+msgstr "Choisir la saturation de l'image"
 
 #: ../src/iop/satcurvergb.c:2144
 msgid "display saturation mask"
@@ -25347,7 +25351,7 @@ msgstr ""
 
 #: ../src/iop/satcurvergb.c:2195
 msgid "protect near-neutrals"
-msgstr "Protége les presque-neutres"
+msgstr "Protction de la gamme neutre"
 
 #: ../src/iop/satcurvergb.c:2200
 msgid "center of the saturation range protected from the guided filter"
@@ -25367,7 +25371,32 @@ msgstr ""
 
 #: ../src/iop/satcurvergb.c:2221
 msgid "limit curve changes in noisy or uncertain regions"
-msgstr "Limite les modifications de la courbe dans les régions bruyantes ou incertaines"
+msgstr "Limite les modifications de la courbe dans les régions bruitées ou incertaines"
+
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:155
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:262
+msgid "filter radius"
+msgstr "Rayon du filtre"
+
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:161
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:266
+msgid "edge feathering"
+msgstr "Dégradé des bords"
+
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:167
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:270
+msgid "protect near-neutrals from"
+msgstr "Protection de la gamme de neutre de"
+
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:173
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:274
+msgid "protect near-neutrals to"
+msgstr "Protection de la gamme de neutre de"
+
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:179
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:278
+msgid "noise protection"
+msgstr "Protection du bruit"
 
 #: ../src/iop/scalepixels.c:53
 msgctxt "modulename"
@@ -25380,7 +25409,7 @@ msgid ""
 "\n"
 "useful for certain sensor types\n"
 "and anamorphic desqueeze"
-msgstr ""
+msgstr ""8711
 "Module pour positionner le ratio d’aspect des pixels.\n"
 "\n"
 "Utile pour certains capteurs \n"
