@@ -1660,6 +1660,8 @@ int dt_init(int argc,
   }
 
 #ifdef _OPENMP
+  // avoid allocating per-thread buffers for workers excluded by the hard limit
+  darktable.num_openmp_threads = MIN(darktable.num_openmp_threads, omp_get_thread_limit());
   omp_set_num_threads(darktable.num_openmp_threads);
   omp_set_dynamic(FALSE);
 #endif
@@ -2050,6 +2052,13 @@ int dt_init(int argc,
   /* ImageMagick init */
   dt_splash_screen_set_progress(_("initializing ImageMagick"));
   MagickWandGenesis();
+#endif
+
+#ifdef _OPENMP
+  // GraphicsMagick's init resets the thread count to the number of CPUs,
+  // overriding --threads. dt_alloc_perthread() pools are sized by
+  // dt_get_num_threads(), so a larger team would write past their end.
+  omp_set_num_threads(darktable.num_openmp_threads);
 #endif
 
 #ifdef HAVE_LIBHEIF

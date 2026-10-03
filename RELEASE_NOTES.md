@@ -472,6 +472,9 @@ changes (where available).
   results depending on the number of CPU threads, and occasionally
   wrong colors near the left or right image edge.
 
+- Fixed darktable-cli crashing when `--threads` was set below the
+  number of CPUs.
+
 ## Lua
 
 ### API Version
