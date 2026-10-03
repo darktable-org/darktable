@@ -63,15 +63,18 @@ changes (where available).
 
 ## Documentation updates
 
-- The manual has seen a lot of attention this cycle: the [documentation](https://docs.darktable.org/usermanual/development/en/) is up to date
-  again, and translations are flowing once more via [Weblate](https://hosted.weblate.org/projects/darktable-documentation/).
+- Versioning of the docs has resumed! With release of each new major version of
+  darktable we take a snapshot of the current state of the development-docs.
 
-- We've also expanded the docs on how dtdocs itself is set up and
-  [maintained](https://docs.darktable.org/usermanual/development/en/contributing/development-deployment/),
-  making it easier for new contributors to [get involved](https://docs.darktable.org/usermanual/development/en/contributing/workflow/).
-- If you find room for improvement, you are welcome to open an
+- The stable documentation for 5.6.2 can be found [here](https://docs.darktable.org/usermanual/5.6/en/)
+  and now contains a version switcher at the top to switch between 5.6 and development version of the manual. 
+
+- If you find room for improvement on the manual, you are welcome to open an
   [issue](https://github.com/darktable-org/dtdocs/issues), post to
-  [pixls.us](https://discuss.pixls.us/c/software/darktable/19), or submit a [PR](https://github.com/darktable-org/dtdocs/pulls) yourself.
+  [pixls.us](https://discuss.pixls.us/c/software/darktable/19),
+  or submit a [PR](https://github.com/darktable-org/dtdocs/pulls) yourself.
+
+- Translations of the docs are maintained through [weblate](https://hosted.weblate.org/projects/darktable-documentation/).
 
 ## Bug Fixes
 
