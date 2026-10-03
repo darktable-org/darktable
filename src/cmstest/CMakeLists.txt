@@ -28,6 +28,10 @@ include_directories(SYSTEM ${GObject_INCLUDE_DIRS})
 target_link_libraries(darktable-cmstest ${GObject_LIBRARIES})
 add_definitions(${GObject_DEFINITIONS})
 
+find_package(Intl REQUIRED)
+target_include_directories(darktable-cmstest SYSTEM PRIVATE ${Intl_INCLUDE_DIRS})
+target_link_libraries(darktable-cmstest ${Intl_LIBRARIES})
+
 find_package(X11)
 if(X11_FOUND AND X11_Xrandr_FOUND)
   include_directories(SYSTEM ${X11_INCLUDE_DIRS} ${X11_Xrandr_INCLUDE_PATH})
