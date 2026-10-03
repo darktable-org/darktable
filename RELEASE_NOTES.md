@@ -231,6 +231,11 @@ changes (where available).
   colorin module, selectable manually. The existing "embedded
   matrix" profile remains the default for fresh imports and
   reloading defaults.
+  DNG files now also supports provided "ProfileHueSatMapData"
+  and applies these automatically if "DNG forward matrix" is
+  selected as the colorin profile.
+  Some images have "ProfileHueSatMapData" but no forward matrix.
+  You may chose the "DNG embedded look" to apply the DNG look.
 
 - The highlights module will be disabled automatically when a raw
   image with a clean history is opended in darkroom the first time

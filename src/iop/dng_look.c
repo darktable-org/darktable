@@ -203,17 +203,20 @@ void process(dt_iop_module_t *self,
   // colorin requests full sync on look-profile transitions to re-evaluate enablement
   const dt_iop_order_iccprofile_info_t *input_profile =
     dt_ioppr_get_pipe_input_profile_info(piece->pipe);
-  if(!input_profile || (input_profile->type != DT_COLORSPACE_FORWARD_MATRIX
+
+  // the DNG hue/saturation tables are specified for ProPhoto primaries!
+  const dt_iop_order_iccprofile_info_t *work_profile =
+    dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+
+  if(!input_profile
+      || !work_profile
+      || (input_profile->type != DT_COLORSPACE_FORWARD_MATRIX
                        && input_profile->type != DT_COLORSPACE_DNG_LOOK)
-     || !d->hsm)
+      || !d->hsm)
   {
     dt_iop_image_copy(ovoid, ivoid, (size_t)4 * roi_out->width * roi_out->height);
     return;
   }
-
-  // the DNG hue/saturation tables use ProPhoto primaries, independently of the working profile
-  const dt_iop_order_iccprofile_info_t *work_profile =
-    dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   DT_OMP_FOR(collapse(2))
   for(size_t row = 0; row < roi_out->height; row++)
@@ -223,46 +226,24 @@ void process(dt_iop_module_t *self,
       const float *in = (const float *)ivoid + (size_t)4 * (roi_in->width * row + col);
       float *out = (float *)ovoid + (size_t)4 * (roi_out->width * row + col);
       dt_aligned_pixel_t rgb = { in[0], in[1], in[2], in[3] };
-      if(isfinite(rgb[0]) && isfinite(rgb[1]) && isfinite(rgb[2]))
-      {
-        dt_aligned_pixel_t look_rgb;
-        if(work_profile)
-        {
-          dt_aligned_pixel_t XYZ;
-          dt_apply_transposed_color_matrix(rgb, work_profile->matrix_in_transposed, XYZ);
-          dt_XYZ_to_prophotorgb(XYZ, look_rgb);
-        }
-        else
-        {
-          for_each_channel(c) look_rgb[c] = rgb[c];
-        }
+      dt_aligned_pixel_t look_rgb;
+      dt_aligned_pixel_t XYZ;
+      dt_apply_transposed_color_matrix(rgb, work_profile->matrix_in_transposed, XYZ);
+      dt_XYZ_to_prophotorgb(XYZ, look_rgb);
 
-        dt_aligned_pixel_t hsv;
-        dt_aligned_pixel_t correction;
-        dt_RGB_2_HSV(look_rgb, hsv);
-        if(!isfinite(hsv[0]) || !isfinite(hsv[1]) || !isfinite(hsv[2]))
-        {
-          copy_pixel(out, rgb);
-          continue;
-        }
-        _lookup_hsm(d, hsv, correction);
-        hsv[0] += correction[0] / 360.0f;
-        hsv[0] -= floorf(hsv[0]);
-        hsv[1] = CLIP(hsv[1] * correction[1]);
-        dt_HSV_2_RGB(hsv, look_rgb);
+      dt_aligned_pixel_t hsv;
+      dt_aligned_pixel_t correction;
+      dt_RGB_2_HSV(look_rgb, hsv);
+      _lookup_hsm(d, hsv, correction);
+      hsv[0] += correction[0] / 360.0f;
+      hsv[0] -= floorf(hsv[0]);
+      hsv[1] = CLIP(hsv[1] * correction[1]);
+      dt_HSV_2_RGB(hsv, look_rgb);
 
-        if(work_profile)
-        {
-          dt_aligned_pixel_t XYZ;
-          dt_prophotorgb_to_XYZ(look_rgb, XYZ);
-          dt_apply_transposed_color_matrix(XYZ, work_profile->matrix_out_transposed, rgb);
-          rgb[3] = in[3];
-        }
-        else
-        {
-          for_each_channel(c) rgb[c] = look_rgb[c];
-        }
-      }
+        // dt_aligned_pixel_t XYZ;
+      dt_prophotorgb_to_XYZ(look_rgb, XYZ);
+      dt_apply_transposed_color_matrix(XYZ, work_profile->matrix_out_transposed, rgb);
+      rgb[3] = in[3];
       copy_pixel(out, rgb);
     }
   }
