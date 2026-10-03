@@ -447,6 +447,28 @@ int main(int argc, char **argv)
   dt_wayland_color_init(display);
   _check(g_object_get_data(G_OBJECT(display), DISPLAY_KEY) == state,
          "repeated initialization replaced the display state");
+  if(argc == 2 && !strcmp(argv[1], "--disable"))
+  {
+    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_widget_show(window);
+    _check(g_object_get_data(G_OBJECT(window), WINDOW_KEY) != NULL,
+           "startup window has no color binding");
+    dt_wayland_color_disable();
+    dt_wayland_color_disable();
+    dt_wayland_color_init(display);
+    _check(!dt_wayland_color_available() && !state->map_hook
+           && !state->ready && !state->ui_ready
+           && !g_object_get_data(G_OBJECT(window), WINDOW_KEY),
+           "disabled startup retained color management");
+    gtk_widget_hide(window);
+    gtk_widget_show(window);
+    _check(!g_object_get_data(G_OBJECT(window), WINDOW_KEY),
+           "remapping restored disabled color management");
+    gdk_display_sync(display);
+    gtk_widget_destroy(window);
+    puts("passed: startup fallback removes color bindings and stays disabled");
+    return EXIT_SUCCESS;
+  }
   g_object_ref(display);
 
   _window = gtk_window_new(GTK_WINDOW_TOPLEVEL);

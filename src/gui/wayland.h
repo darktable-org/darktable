@@ -23,6 +23,8 @@
 // initialize on the GTK thread before starting image processing
 // the transport encoding remains fixed for the lifetime of the display
 void dt_wayland_color_init(GdkDisplay *display);
+// disable only during startup, before image processing
+void dt_wayland_color_disable(void);
 gboolean dt_wayland_color_available(void);
 void dt_wayland_color_prepare_window(GtkWidget *window);
 

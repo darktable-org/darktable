@@ -408,6 +408,31 @@ gboolean dt_wayland_color_available(void)
   return g_atomic_int_get(&_available);
 }
 
+void dt_wayland_color_disable(void)
+{
+  if(!dt_wayland_color_available()) return;
+  GdkDisplay *display = gdk_display_get_default();
+  dt_wayland_display_t *d = g_object_get_data(G_OBJECT(display), DISPLAY_KEY);
+  g_atomic_int_set(&_available, FALSE);
+  d->ready = d->ui_ready = FALSE;
+  if(d->map_hook)
+  {
+    g_signal_remove_emission_hook(d->map_signal, d->map_hook);
+    d->map_hook = 0;
+  }
+  GList *windows = gtk_window_list_toplevels();
+  for(GList *l = windows; l; l = g_list_next(l))
+  {
+    GtkWidget *window = l->data;
+    if(g_object_get_data(G_OBJECT(window), WINDOW_KEY))
+    {
+      g_object_set_data(G_OBJECT(window), WINDOW_KEY, NULL);
+      gtk_widget_queue_draw(window);
+    }
+  }
+  g_list_free(windows);
+}
+
 void dt_wayland_color_prepare_window(GtkWidget *window)
 {
   if(!dt_wayland_color_available()) return;
@@ -770,6 +795,9 @@ void dt_wayland_color_end(cairo_t *cr)
 #else
 
 void dt_wayland_color_init(GdkDisplay *display)
+{
+}
+void dt_wayland_color_disable(void)
 {
 }
 gboolean dt_wayland_color_available(void)

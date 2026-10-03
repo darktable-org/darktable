@@ -1737,19 +1737,37 @@ dt_colorspaces_t *dt_colorspaces_init()
     _get_profile(res, DT_COLORSPACE_DISPLAY_TRANSPORT, "", DT_PROFILE_DIRECTION_ANY)->profile;
   const cmsHPROFILE srgb =
     _get_profile(res, DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_DISPLAY)->profile;
-  const cmsUInt32Number format = G_BYTE_ORDER == G_LITTLE_ENDIAN ? TYPE_BGRA_8 : TYPE_ARGB_8;
-  res->transform_transport_to_ui8 =
-    cmsCreateTransform(transport, format, res->ui_profile, format,
-                       INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE);
-  res->transform_transport_to_ui_float =
-    cmsCreateTransform(transport, TYPE_RGBA_FLT, res->ui_profile, TYPE_RGBA_FLT,
-                       INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE | cmsFLAGS_COPY_ALPHA);
-  res->transform_srgb_to_transport8 =
-    cmsCreateTransform(srgb, format, transport, format,
-                       INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE);
-  res->transform_srgb_to_transport_float =
-    cmsCreateTransform(srgb, TYPE_RGBA_FLT, transport, TYPE_RGBA_FLT,
-                       INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE | cmsFLAGS_COPY_ALPHA);
+  if(transport && srgb && res->ui_profile)
+  {
+    // pipe buffers are BGRA bytes; Cairo stores native-endian RGB24
+    const cmsUInt32Number cairo_format =
+      G_BYTE_ORDER == G_LITTLE_ENDIAN ? TYPE_BGRA_8 : TYPE_ARGB_8;
+    res->transform_transport_to_ui8 =
+      cmsCreateTransform(transport, TYPE_BGRA_8, res->ui_profile, cairo_format,
+                         INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE);
+    res->transform_transport_to_ui_float =
+      cmsCreateTransform(transport, TYPE_RGBA_FLT, res->ui_profile, TYPE_RGBA_FLT,
+                         INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE | cmsFLAGS_COPY_ALPHA);
+    res->transform_srgb_to_transport8 =
+      cmsCreateTransform(srgb, TYPE_BGRA_8, transport, TYPE_BGRA_8,
+                         INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE);
+    res->transform_srgb_to_transport_float =
+      cmsCreateTransform(srgb, TYPE_RGBA_FLT, transport, TYPE_RGBA_FLT,
+                         INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE | cmsFLAGS_COPY_ALPHA);
+  }
+
+  if(dt_wayland_color_available()
+     && (!res->transform_transport_to_ui8 || !res->transform_transport_to_ui_float
+         || !res->transform_srgb_to_transport8 || !res->transform_srgb_to_transport_float
+         || !res->transform_srgb_to_display || !res->transform_adobe_rgb_to_display
+         || !res->transform_srgb_to_display2 || !res->transform_adobe_rgb_to_display2))
+  {
+    dt_wayland_color_disable();
+    _update_display_transforms(res);
+    _update_display2_transforms(res);
+    dt_print(DT_DEBUG_ALWAYS,
+             _("Wayland color management disabled: cannot create display transforms"));
+  }
 
   return res;
 }
