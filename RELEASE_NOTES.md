@@ -181,6 +181,14 @@ changes (where available).
 
 ## Other Changes
 
+- Added Wayland output diagnostics to darktable-cmstest and Wayland
+  color management to the chart viewer and thumbnail cache generator.
+
+- Added native Wayland color management for wide-gamut darkroom and
+  second-window previews on compositors supporting the color-management
+  protocol. Darkroom softproofing and gamut checks remain available.
+  Display ICC profiles are configured in the desktop's display settings.
+
 - A new `.dtdata` sidecar next to the XMP holds per-pixel edit data
   such as raster masks. It is only created for images that use such
   data, and only when sidecar writing is enabled; most images never get
@@ -275,6 +283,9 @@ changes (where available).
   ready to splice into another invocation.
 
 ## Bug Fixes
+
+- Fixed gamut warnings appearing gray instead of cyan with LittleCMS 2.17
+  and later.
 
 - Do not convert the pipe input in place for blending, which may result
   in a corrputed buffer.

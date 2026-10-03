@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "gui/wayland.h"
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
@@ -52,6 +53,7 @@ typedef struct dt_iop_colorout_data_t
   float lut[3][LUT_SAMPLES];
   dt_colormatrix_t cmatrix;
   cmsHTRANSFORM *xform;
+  cmsContext context;
   float unbounded_coeffs[3][3]; // for extrapolation of shaper curves
 } dt_iop_colorout_data_t;
 
@@ -486,12 +488,51 @@ static int _transform_cmatrix(const dt_iop_colorout_data_t *const d,
   return is_linear != 0; // not done if nonlinear, need to apply tonecurve
 }
 
+static void _gamut_warning_color(const dt_iop_colorout_data_t *const d,
+                                 dt_aligned_pixel_t cyan)
+{
+  const dt_aligned_pixel_t srgb_cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
+  if(d->type == DT_COLORSPACE_DISPLAY_TRANSPORT
+     && darktable.color_profiles->transform_srgb_to_transport_float)
+    cmsDoTransform(darktable.color_profiles->transform_srgb_to_transport_float,
+                   srgb_cyan, cyan, 1);
+  else
+    copy_pixel(cyan, srgb_cyan);
+}
+
+static cmsHTRANSFORM _create_transform(dt_iop_colorout_data_t *const d,
+                                      cmsHPROFILE lab,
+                                      cmsHPROFILE output,
+                                      const cmsUInt32Number output_format,
+                                      cmsHPROFILE softproof,
+                                      const dt_iop_color_intent_t intent,
+                                      const cmsUInt32Number flags)
+{
+  if(flags & cmsFLAGS_GAMUTCHECK)
+  {
+    // lcms 2.17 emits the alarm color directly; keep it local to this pipe
+    if(!d->context) d->context = cmsCreateContext(NULL, NULL);
+    if(!d->context) return NULL;
+    dt_aligned_pixel_t cyan;
+    _gamut_warning_color(d, cyan);
+    cmsUInt16Number alarm[cmsMAXCHANNELS] = { 0 };
+    for(int c = 0; c < 3; c++)
+      alarm[c] = (cmsUInt16Number)roundf(CLAMP(cyan[c], 0.0f, 1.0f) * 65535.0f);
+    cmsSetAlarmCodesTHR(d->context, alarm);
+  }
+  return cmsCreateProofingTransformTHR(d->context, lab, TYPE_LabA_FLT,
+                                       output, output_format, softproof,
+                                       intent, INTENT_RELATIVE_COLORIMETRIC, flags);
+}
+
 static void _transform_lcms(const dt_iop_colorout_data_t *const d,
                             float *restrict out,
                             const float *restrict in,
                             const size_t npixels)
 {
   const int gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
+  dt_aligned_pixel_t cyan;
+  _gamut_warning_color(d, cyan);
   // figure out the number of pixels each thread needs to process,
   // rounded up to a multiple of the CPU's cache line size
   const size_t nthreads = dt_get_num_threads();
@@ -506,7 +547,6 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
 
     if(gamutcheck)
     {
-      static const dt_aligned_pixel_t cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
       for(int j = 0; j < count; j++)
       {
         if(outp[4*j+0] < 0.0f || outp[4*j+1] < 0.0f || outp[4*j+2] < 0.0f)
@@ -620,12 +660,20 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     out_intent = darktable.color_profiles->display_intent;
   }
 
+  if(dt_wayland_color_available() && !dt_pipe_is_export(pipe) && !dt_pipe_is_thumb(pipe))
+  {
+    // the compositor applies the physical display profile after composition
+    out_type = DT_COLORSPACE_DISPLAY_TRANSPORT;
+    out_filename = "";
+    out_intent = DT_INTENT_RELATIVE_COLORIMETRIC;
+  }
+
   // when the output type is Lab then process is a nop, so we can avoid creating a transform
   // and the subsequent error messages but still have to publish the profile_info
   d->type = out_type;
   if(out_type == DT_COLORSPACE_LAB)
   {
-    dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, p->intent);
+    dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, out_intent);
     return;
   }
 
@@ -713,8 +761,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   {
     dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
     piece->process_cl_ready = FALSE;
-    d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
-                                          out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
+    d->xform = _create_transform(d, Lab, output, output_format, softproof, out_intent, transformFlags);
   }
 
   // user selected a non-supported output profile, check that:
@@ -733,8 +780,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       piece->process_cl_ready = FALSE;
 
-      d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
-                                            out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
+      d->xform = _create_transform(d, Lab, output, output_format, softproof, out_intent, transformFlags);
     }
   }
 
@@ -764,7 +810,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // softproof is never the original but always a copy that went through dt_colorspaces_make_temporary_profile()
   dt_colorspaces_cleanup_profile(softproof);
 
-  dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, p->intent);
+  dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, out_intent);
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -782,6 +828,7 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
     cmsDeleteTransform(d->xform);
     d->xform = NULL;
   }
+  if(d->context) cmsDeleteContext(d->context);
 
   free(piece->data);
   piece->data = NULL;

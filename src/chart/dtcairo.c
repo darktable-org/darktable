@@ -18,6 +18,8 @@
 
 #include "chart/dtcairo.h"
 #include "chart/common.h"
+#include "common/display_transport.h"
+#include "gui/wayland.h"
 
 void draw_no_image(cairo_t *cr, GtkWidget *widget)
 {
@@ -147,7 +149,19 @@ void draw_color_boxes_inside(cairo_t *cr, const float *homography, chart_t *char
     inner_box.h -= 2.0 * y_shrink;
     draw_box(cr, inner_box, homography);
 
-    if(colored) cairo_set_source_rgb(cr, box->rgb[0], box->rgb[1], box->rgb[2]);
+    if(colored)
+    {
+      dt_aligned_pixel_t color;
+      if(dt_wayland_color_available())
+      {
+        // convert the displayed color without changing the measured patch
+        dt_sRGB_to_linear_sRGB(box->rgb, color);
+        for(int c = 0; c < 3; c++) color[c] = powf(fmaxf(color[c], 0.0f), 1.0f / 2.2f);
+      }
+      else
+        copy_pixel(color, box->rgb);
+      cairo_set_source_rgb(cr, color[0], color[1], color[2]);
+    }
 
     cairo_stroke(cr);
   }
@@ -185,17 +199,38 @@ cairo_surface_t *cairo_surface_create_from_xyz_data(const float *const image, co
 {
   unsigned char *rgbbuf = (unsigned char *)malloc(sizeof(unsigned char) * height * width * 4);
 
-  DT_OMP_FOR()
-  for(int y = 0; y < height; y++)
+  cmsHTRANSFORM transform = NULL;
+  if(dt_wayland_color_available())
   {
-    const float *iter = image + y * width * 3;
-    for(int x = 0; x < width; x++, iter += 3)
+    cmsHPROFILE xyz = cmsCreateXYZProfile();
+    cmsHPROFILE ui = dt_display_ui_create_profile();
+    if(xyz && ui)
+      transform = cmsCreateTransform
+        (xyz, TYPE_XYZ_FLT, ui,
+         G_BYTE_ORDER == G_LITTLE_ENDIAN ? TYPE_BGRA_8 : TYPE_ARGB_8,
+         INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE);
+    if(xyz) cmsCloseProfile(xyz);
+    if(ui) cmsCloseProfile(ui);
+  }
+  if(transform)
+  {
+    cmsDoTransform(transform, image, rgbbuf, (size_t)width * height);
+    cmsDeleteTransform(transform);
+  }
+  else
+  {
+    DT_OMP_FOR()
+    for(int y = 0; y < height; y++)
     {
-      dt_aligned_pixel_t sRGB;
-      int32_t pixel = 0;
-      dt_XYZ_to_sRGB_clipped(iter, sRGB);
-      for(int c = 0; c < 3; c++) pixel |= ((int)(sRGB[c] * 255) & 0xff) << (16 - c * 8);
-      *((int *)(&rgbbuf[(x + (size_t)y * width) * 4])) = pixel;
+      const float *iter = image + y * width * 3;
+      for(int x = 0; x < width; x++, iter += 3)
+      {
+        dt_aligned_pixel_t sRGB;
+        int32_t pixel = 0;
+        dt_XYZ_to_sRGB_clipped(iter, sRGB);
+        for(int c = 0; c < 3; c++) pixel |= ((int)(sRGB[c] * 255) & 0xff) << (16 - c * 8);
+        *((int *)(&rgbbuf[(x + (size_t)y * width) * 4])) = pixel;
+      }
     }
   }
 

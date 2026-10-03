@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "gui/wayland.h"
 #include "is_supported_platform.h"
 
 #if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
@@ -1758,6 +1759,7 @@ int dt_init(int argc,
   if(init_gui)
   {
     gtk_init(&argc, &argv);
+    dt_wayland_color_init(gdk_display_get_default());
 
     darktable.themes = NULL;
     dt_gui_theme_init(darktable.gui);

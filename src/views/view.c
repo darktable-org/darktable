@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "gui/wayland.h"
 #include "common/extra_optimizations.h"
 
 #include "views/view.h"
@@ -886,7 +887,7 @@ dt_view_surface_value_t dt_view_image_get_surface_cached(const dt_imgid_t imgid,
     gboolean have_lock = FALSE;
     cmsHTRANSFORM transform = NULL;
 
-    if(dt_conf_get_bool("cache_color_managed"))
+    if(dt_conf_get_bool("cache_color_managed") || dt_wayland_color_available())
     {
       pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
       have_lock = TRUE;
@@ -2101,7 +2102,7 @@ void dt_view_paint_surface(cairo_t *cr,
     cairo_surface_t *preview = dt_view_create_surface(pp->backbuf, pp->backbuf_width, pp->backbuf_height);
     cairo_set_source_surface(cr, preview, -0.5 * pp->backbuf_width, -0.5 * pp->backbuf_height);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    cairo_paint(cr);
+    dt_view_paint_display_surface(cr);
     cairo_surface_destroy(preview);
     cairo_restore(cr);
 
@@ -2138,7 +2139,7 @@ void dt_view_paint_surface(cairo_t *cr,
     cairo_surface_t *surface = dt_view_create_surface(buf, buf_width, buf_height);
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    cairo_paint(cr);
+    dt_view_paint_display_surface(cr);
 
     if(darktable.gui->show_focus_peaking
       && window != DT_WINDOW_SLIDESHOW)
@@ -2160,6 +2161,54 @@ cairo_surface_t *dt_view_create_surface(uint8_t *buffer,
     cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, processed_width);
   return cairo_image_surface_create_for_data
     (buffer, CAIRO_FORMAT_RGB24, processed_width, processed_height, stride);
+}
+
+cairo_surface_t *dt_view_create_display_surface(uint8_t *buffer,
+                                                const size_t width,
+                                                const size_t height)
+{
+  if(!dt_wayland_color_available()) return dt_view_create_surface(buffer, width, height);
+  cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
+  if(cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS
+     && darktable.color_profiles->transform_transport_to_ui8)
+  {
+    cmsDoTransform(darktable.color_profiles->transform_transport_to_ui8,
+                   buffer, cairo_image_surface_get_data(surface), width * height);
+    cairo_surface_mark_dirty(surface);
+  }
+  return surface;
+}
+
+void dt_view_paint_display_surface(cairo_t *cr)
+{
+  if(!dt_wayland_color_available())
+  {
+    cairo_paint(cr);
+    return;
+  }
+  if(dt_wayland_color_paint(cr)) return;
+
+  // a busy native layer must fall back to correctly encoded GTK pixels
+  cairo_pattern_t *source = cairo_get_source(cr);
+  cairo_surface_t *image = NULL;
+  if(cairo_pattern_get_surface(source, &image) != CAIRO_STATUS_SUCCESS
+     || cairo_surface_get_type(image) != CAIRO_SURFACE_TYPE_IMAGE) return;
+  cairo_surface_flush(image);
+  cairo_surface_t *fallback = dt_view_create_display_surface
+    (cairo_image_surface_get_data(image), cairo_image_surface_get_width(image),
+     cairo_image_surface_get_height(image));
+  cairo_pattern_t *pattern = cairo_pattern_create_for_surface(fallback);
+  cairo_matrix_t matrix;
+  cairo_pattern_get_matrix(source, &matrix);
+  cairo_pattern_set_matrix(pattern, &matrix);
+  cairo_pattern_set_filter(pattern, cairo_pattern_get_filter(source));
+  cairo_pattern_set_extend(pattern, cairo_pattern_get_extend(source));
+  cairo_save(cr);
+  cairo_set_source(cr, pattern);
+  cairo_paint(cr);
+  cairo_restore(cr);
+  cairo_pattern_destroy(pattern);
+  cairo_surface_destroy(fallback);
 }
 
 dt_view_context_t dt_view_get_context_hash(void)

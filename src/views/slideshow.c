@@ -25,6 +25,7 @@
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/wayland.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 #include "views/view.h"
@@ -574,11 +575,29 @@ void expose(dt_view_t *self,
     cairo_surface_t *surface = dt_view_create_surface(slot->buf, slot->width, slot->height);
     cairo_set_source_surface(cr, surface, - 0.5 * slot->width, -0.5 * slot->height);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
-    cairo_paint(cr);
+    dt_view_paint_display_surface(cr);
     cairo_surface_destroy(surface);
 
     d->id_displayed = imgid;
     d->id_preview_displayed = imgid;
+  }
+  else if(dt_wayland_color_available()
+          && dt_is_valid_imgid(imgid) && imgid != d->id_preview_displayed)
+  {
+    cairo_surface_t *surface = NULL;
+    dt_view_image_get_surface(imgid, MAX(1, width / 8), MAX(1, height / 8), &surface, FALSE);
+    if(surface && cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS)
+    {
+      const int w = cairo_image_surface_get_width(surface);
+      const int h = cairo_image_surface_get_height(surface);
+      const double scale = MIN((double)width / w, (double)height / h);
+      cairo_scale(cr, scale, scale);
+      cairo_set_source_surface(cr, surface, -0.5 * w, -0.5 * h);
+      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_GOOD);
+      cairo_paint(cr);
+      d->id_preview_displayed = imgid;
+    }
+    if(surface) cairo_surface_destroy(surface);
   }
   else if(dt_is_valid_imgid(imgid) && imgid != d->id_preview_displayed)
   {

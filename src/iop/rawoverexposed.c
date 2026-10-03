@@ -16,6 +16,7 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "common/iop_profile.h"
 #include "common/darktable.h"    // for darktable, darktable_t, dt_alloc_a...
 #include "common/image.h"        // for dt_image_t, ::DT_IMAGE_4BAYER
 #include "common/imagebuf.h"     // for dt_iop_image_copy_by_size
@@ -126,7 +127,16 @@ void process(dt_iop_module_t *self,
 
   const dt_dev_rawoverexposed_mode_t mode = dev->rawoverexposed.mode;
   const int colorscheme = dev->rawoverexposed.colorscheme;
-  const float *const color = dt_iop_rawoverexposed_colors[colorscheme];
+  dt_aligned_pixel_t colors[4];
+  const dt_iop_order_iccprofile_info_t *output_profile =
+    dt_ioppr_get_pipe_output_profile_info(piece->pipe);
+  if(output_profile && output_profile->type == DT_COLORSPACE_DISPLAY_TRANSPORT
+     && darktable.color_profiles->transform_srgb_to_transport_float)
+    cmsDoTransform(darktable.color_profiles->transform_srgb_to_transport_float,
+                   dt_iop_rawoverexposed_colors, colors, 4);
+  else
+    memcpy(colors, dt_iop_rawoverexposed_colors, sizeof(colors));
+  const float *const color = colors[colorscheme];
 
   dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
 
@@ -150,7 +160,7 @@ void process(dt_iop_module_t *self,
   size_t coordbufsize;
   float *const restrict coordbuf = dt_alloc_perthread_float(2*roi_out->width, &coordbufsize);
 
-  DT_OMP_FOR(firstprivate(dt_iop_rawoverexposed_colors))
+  DT_OMP_FOR(firstprivate(colors))
   for(int j = 0; j < roi_out->height; j++)
   {
     float *const restrict bufptr = dt_get_perthread(coordbuf, coordbufsize);
@@ -194,7 +204,7 @@ void process(dt_iop_module_t *self,
       switch(mode)
       {
         case DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA:
-          memcpy(out + pout, dt_iop_rawoverexposed_colors[c], sizeof(float) * 4);
+          memcpy(out + pout, colors[c], sizeof(float) * 4);
           break;
         case DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID:
           memcpy(out + pout, color, sizeof(float) * 4);
@@ -255,7 +265,16 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   if(err != CL_SUCCESS) goto error;
 
   const int colorscheme = dev->rawoverexposed.colorscheme;
-  const float *const color = dt_iop_rawoverexposed_colors[colorscheme];
+  dt_aligned_pixel_t colors[4];
+  const dt_iop_order_iccprofile_info_t *output_profile =
+    dt_ioppr_get_pipe_output_profile_info(piece->pipe);
+  if(output_profile && output_profile->type == DT_COLORSPACE_DISPLAY_TRANSPORT
+     && darktable.color_profiles->transform_srgb_to_transport_float)
+    cmsDoTransform(darktable.color_profiles->transform_srgb_to_transport_float,
+                   dt_iop_rawoverexposed_colors, colors, 4);
+  else
+    memcpy(colors, dt_iop_rawoverexposed_colors, sizeof(colors));
+  const float *const color = colors[colorscheme];
 
   // NOT FROM THE PIPE !!!
   const uint32_t filters = image->buf_dsc.filters;
@@ -296,7 +315,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     case DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA:
       kernel = gd->kernel_rawoverexposed_mark_cfa;
 
-      dev_colors = dt_opencl_copy_host_to_device_constant(devid, sizeof(dt_iop_rawoverexposed_colors), (void *)dt_iop_rawoverexposed_colors);
+      dev_colors = dt_opencl_copy_host_to_device_constant(devid, sizeof(colors), colors);
       if(dev_colors == NULL) goto error;
 
       break;

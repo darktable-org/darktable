@@ -32,6 +32,7 @@ FILE(GLOB SOURCE_FILES
   "common/color_vocabulary.c"
   "common/colorlabels.c"
   "common/colorspaces.c"
+  "common/display_transport.c"
   "common/curl_tools.c"
   "common/curve_tools.c"
   "common/custom_primaries.c"
@@ -159,6 +160,7 @@ FILE(GLOB SOURCE_FILES
   "gui/color_picker_proxy.c"
   "gui/workspace.c"
   "gui/gtk.c"
+  "gui/wayland.c"
   "gui/gtkentry.c"
   "gui/guides.c"
   "gui/hist_dialog.c"
@@ -327,6 +329,39 @@ add_definitions("-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_24")
 #add_definitions("-DGDK_VERSION_MAX_ALLOWED=GDK_VERSION_MIN_REQUIRED")
 include_directories(SYSTEM ${GTK3_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK3_LIBRARIES})
+
+option(USE_WAYLAND "Enable Wayland color management" ON)
+if(USE_WAYLAND)
+  pkg_check_modules(GTK3Wayland QUIET gdk-wayland-3.0)
+  pkg_check_modules(WaylandClient QUIET IMPORTED_TARGET wayland-client>=1.18)
+  find_program(WAYLAND_SCANNER wayland-scanner)
+  if(GTK3Wayland_FOUND AND WaylandClient_FOUND AND WAYLAND_SCANNER)
+    set(COLOR_MANAGEMENT_XML
+        "${CMAKE_CURRENT_SOURCE_DIR}/external/wayland-protocols/staging/color-management/color-management-v1.xml")
+    if(NOT EXISTS "${COLOR_MANAGEMENT_XML}")
+      message(FATAL_ERROR "wayland-protocols submodule not found. Run:\n$ git submodule update --init src/external/wayland-protocols")
+    endif()
+    set(COLOR_MANAGEMENT_HEADER "${CMAKE_CURRENT_BINARY_DIR}/color-management-v1-client-protocol.h")
+    set(COLOR_MANAGEMENT_CODE "${CMAKE_CURRENT_BINARY_DIR}/color-management-v1-protocol.c")
+    add_custom_command(OUTPUT "${COLOR_MANAGEMENT_HEADER}"
+      COMMAND "${WAYLAND_SCANNER}" client-header "${COLOR_MANAGEMENT_XML}" "${COLOR_MANAGEMENT_HEADER}"
+      DEPENDS "${COLOR_MANAGEMENT_XML}" VERBATIM)
+    add_custom_command(OUTPUT "${COLOR_MANAGEMENT_CODE}"
+      COMMAND "${WAYLAND_SCANNER}" private-code "${COLOR_MANAGEMENT_XML}" "${COLOR_MANAGEMENT_CODE}"
+      DEPENDS "${COLOR_MANAGEMENT_XML}" VERBATIM)
+    add_custom_target(generate_wayland_color
+      DEPENDS "${COLOR_MANAGEMENT_HEADER}" "${COLOR_MANAGEMENT_CODE}")
+    list(APPEND LIB_DEPS generate_wayland_color)
+    list(APPEND SOURCES "${COLOR_MANAGEMENT_CODE}" "${COLOR_MANAGEMENT_HEADER}")
+    list(APPEND LIBS PkgConfig::WaylandClient)
+    set_source_files_properties(gui/wayland.c PROPERTIES
+      COMPILE_DEFINITIONS HAVE_WAYLAND_COLOR_MANAGEMENT
+      INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}")
+    message(STATUS "Wayland color management: enabled")
+  else()
+    message(STATUS "Wayland color management: disabled (GTK Wayland, libwayland-client or wayland-scanner missing)")
+  endif()
+endif()
 
 # Check for libxml2 / broken cmake module can't be included in the foreach() below
 find_package(LibXml2 2.6 REQUIRED)
