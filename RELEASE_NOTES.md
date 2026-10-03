@@ -242,6 +242,9 @@ changes (where available).
 
 ## Other Changes
 
+- HEIF exports using a PQ output color profile now include HDR10 content
+  light level metadata (MaxCLL and MaxFALL).
+
 - Added 2 apertures, f/0.95 and f/1.2, to the aperture section of the
   presets dialogue.
 
