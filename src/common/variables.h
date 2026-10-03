@@ -32,6 +32,9 @@ typedef struct dt_variables_params_t
   /** used for expanding variable $(JOBCODE) */
   const gchar *jobcode;
 
+  /** used for expanding variable $(EXPORT_EXTENSION) */
+  const gchar *export_extension;
+
   /** used for expanding variables such as $(IMAGE_WIDTH) $(IMAGE_HEIGHT). */
   dt_imgid_t imgid;
 
