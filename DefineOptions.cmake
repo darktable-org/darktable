@@ -40,6 +40,12 @@ option(USE_OPENCV "Use OpenCV for HDR exposure-bracket auto-alignment." ON)
 option(FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." OFF)
 option(USE_SDL2 "Enable SDL2 support" ON)
 
+# Runtime sanitizers. Empty (the default) means no instrumentation at all and
+# leaves every other build flag untouched. See cmake/sanitizers.cmake.
+set(DT_SANITIZE "" CACHE STRING
+    "Runtime sanitizers to build with, comma separated: address, undefined, leak, thread")
+option(DT_SANITIZE_EXTRA_CHECKS "Add the noisy clang-only UBSan checks (integer, implicit-conversion)" OFF)
+
 if (USE_OPENCL)
     option(TESTBUILD_OPENCL_PROGRAMS "Test-compile OpenCL programs (needs LLVM and Clang 7+)" ON)
 else ()

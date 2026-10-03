@@ -22,7 +22,7 @@ BUILD_DIR="$BUILD_DIR_DEFAULT"
 BUILD_GENERATOR_DEFAULT="Unix Makefiles"
 BUILD_GENERATOR="$BUILD_GENERATOR_DEFAULT"
 MAKE_TASKS=-1
-ADDRESS_SANITIZER=0
+SANITIZE=""
 DO_CLEAN_BUILD=0
 DO_CLEAN_INSTALL=0
 MANIFEST_FILE="$BUILD_DIR/install_manifest.txt"
@@ -103,8 +103,16 @@ parse_args()
 			feature=${option#--disable-}
 			parse_feature "$feature" 0
 			;;
+		--sanitize)
+			SANITIZE="$2"
+			shift
+			;;
+		--sanitize=*)
+			SANITIZE="${option#--sanitize=}"
+			;;
 		--asan)
-			ADDRESS_SANITIZER=1
+			# deprecated spelling, kept so existing muscle memory keeps working
+			SANITIZE="address,undefined"
 			;;
 		--skip-config)
 			DO_CONFIG=0
@@ -160,8 +168,15 @@ Build:
 -j --jobs <integer>           Number of tasks
                               (default: number of CPUs)
 
-   --asan                     Enable address sanitizer options
+   --sanitize       <list>    Build with runtime sanitizers. Comma separated
+                              list of: address, undefined, leak, thread.
+                              'address' implies leak checking; 'thread' cannot
+                              be combined with 'address' or 'leak'.
+                              Use a dedicated --build-dir, and prefer
+                              --build-type RelWithDebInfo.
+                              e.g. --sanitize address,undefined
                               (default: disabled)
+   --asan                     Deprecated alias for --sanitize address,undefined
 
 Actual actions:
    --skip-build               Configure but exit before building the binaries
@@ -332,6 +347,7 @@ Installation prefix: $INSTALL_PREFIX
 Build type:          $BUILD_TYPE
 Build generator:     $BUILD_GENERATOR
 Build tasks:         $MAKE_TASKS
+Sanitizers:          ${SANITIZE:-none}
 
 EOF
 
@@ -364,14 +380,21 @@ fi
 
 mkdir -p "$BUILD_DIR"
 
-if [ $ADDRESS_SANITIZER -ne 0 ] ; then
-	ASAN_FLAGS="CFLAGS=\"-fsanitize=address -fno-omit-frame-pointer\""
-	ASAN_FLAGS="$ASAN_FLAGS CXXFLAGS=\"-fsanitize=address -fno-omit-frame-pointer\""
-	ASAN_FLAGS="$ASAN_FLAGS LDFLAGS=\"-fsanitize=address\" "
+if [ -n "$SANITIZE" ] ; then
+	# Passed as a -D option rather than as CFLAGS/CXXFLAGS/LDFLAGS environment
+	# variables: CMake only picks those up on the very first configure into an
+	# empty cache, so the old env-prefix approach silently produced an
+	# uninstrumented binary whenever an existing build dir was reused.
+	CMAKE_MORE_OPTIONS="$CMAKE_MORE_OPTIONS -DDT_SANITIZE=$SANITIZE"
+
+	if [ "$BUILD_DIR" = "$BUILD_DIR_DEFAULT" ] ; then
+		log warn "Building with sanitizers into the default build directory."
+		log warn "Consider a dedicated one, e.g. --build-dir $DT_SRC_DIR/build-sanitize"
+	fi
 fi
 
 
-cmd_config="${ASAN_FLAGS}cmake -G \"$BUILD_GENERATOR\" -DCMAKE_INSTALL_PREFIX=\"${INSTALL_PREFIX}\" -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_MORE_OPTIONS} ${CMAKE_OPTIONS_FROM_CMDLINE} \"$DT_SRC_DIR\""
+cmd_config="cmake -G \"$BUILD_GENERATOR\" -DCMAKE_INSTALL_PREFIX=\"${INSTALL_PREFIX}\" -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_MORE_OPTIONS} ${CMAKE_OPTIONS_FROM_CMDLINE} \"$DT_SRC_DIR\""
 cmd_build="cmake --build \"$BUILD_DIR\" -- -j$MAKE_TASKS"
 cmd_install="${SUDO}cmake --build \"$BUILD_DIR\" --target install -- -j$MAKE_TASKS"
 
