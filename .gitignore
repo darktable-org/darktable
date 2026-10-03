@@ -31,3 +31,4 @@ AppDir/
 
 # personal, per-project agent instructions (see AGENTS.md)
 AGENTS.local.md
+install/
