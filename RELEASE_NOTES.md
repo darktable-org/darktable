@@ -186,6 +186,9 @@ changes (where available).
 
 ## Other Changes
 
+- PNG exports using a PQ output color profile now include content light
+  level metadata (MaxCLL and MaxFALL) for HDR tone mapping.
+
 - A new `.dtdata` sidecar next to the XMP holds per-pixel edit data
   such as raster masks. It is only created for images that use such
   data, and only when sidecar writing is enabled; most images never get

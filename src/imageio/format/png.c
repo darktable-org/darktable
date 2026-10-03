@@ -17,6 +17,7 @@
 */
 
 #include <inttypes.h>
+#include <math.h>
 #include <png.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -133,6 +134,52 @@ cleanup:
   png_free(ping, text);
 }
 #endif
+
+/* SMPTE ST 2084 EOTF, normalized PQ to absolute light level in cd/m^2. */
+static double _pq_to_nits(const double value)
+{
+  const double m1 = 2610.0 / 16384.0;
+  const double m2 = 2523.0 / 32.0;
+  const double c1 = 3424.0 / 4096.0;
+  const double c2 = 2413.0 / 128.0;
+  const double c3 = 2392.0 / 128.0;
+  const double peak_nits = 10000.0;
+  const double ep = pow(value, 1.0 / m2);
+  return peak_nits * pow(fmax(ep - c1, 0.0) / (c2 - c3 * ep), 1.0 / m1);
+}
+
+/* PNG stores cLLI in units of 0.0001 cd/m^2, unlike HDR10's whole nits.
+ * Analyze quantized RGBA export pixels; alpha is not part of the light level.
+ */
+static void _png_compute_clli(const void *const pixels, const size_t count,
+                              const int bpp, png_uint_32 *const max_cll,
+                              png_uint_32 *const max_fall)
+{
+  const size_t levels = bpp == 8 ? (size_t)UINT8_MAX + 1 : (size_t)UINT16_MAX + 1;
+  double *const nits = g_new(double, levels);
+  for(size_t k = 0; k < levels; k++)
+    nits[k] = _pq_to_nits((double)k / (double)(levels - 1));
+
+  double peak = 0.0;
+  double sum = 0.0;
+  const uint8_t *const rgba8 = pixels;
+  const uint16_t *const rgba16 = pixels;
+  DT_OMP_FOR(reduction(max : peak) reduction(+ : sum))
+  for(size_t k = 0; k < count; k++)
+  {
+    const size_t offset = 4 * k;
+    const unsigned code = bpp == 8
+      ? MAX(MAX(rgba8[offset], rgba8[offset + 1]), rgba8[offset + 2])
+      : MAX(MAX(rgba16[offset], rgba16[offset + 1]), rgba16[offset + 2]);
+    const double light = nits[code];
+    peak = fmax(peak, light);
+    sum += light;
+  }
+  g_free(nits);
+  const double clli_scale = 10000.0;
+  *max_cll = (png_uint_32)round(peak * clli_scale);
+  *max_fall = count ? (png_uint_32)round(sum / (double)count * clli_scale) : 0;
+}
 
 int write_image(dt_imageio_module_data_t *p_tmp,
                 const char *filename,
@@ -259,6 +306,16 @@ int write_image(dt_imageio_module_data_t *p_tmp,
   }
 #endif
 
+  const gboolean have_clli = data[1] == DT_CICP_TRANSFER_CHARACTERISTICS_PQ;
+  png_uint_32 max_cll = 0, max_fall = 0;
+  if(have_clli)
+  {
+    _png_compute_clli(ivoid, (size_t)width * height, p->bpp, &max_cll, &max_fall);
+#if defined(PNG_WRITE_cLLI_SUPPORTED) && defined(PNG_FIXED_POINT_SUPPORTED)
+    png_set_cLLI_fixed(png_ptr, info_ptr, max_cll, max_fall);
+#endif
+  }
+
 #ifdef PNG_iCCP_SUPPORTED
   // embed ICC profile regardless of cICP (compliant readers shall
   // check cICP first)
@@ -305,6 +362,17 @@ int write_image(dt_imageio_module_data_t *p_tmp,
   {
     const png_byte chunk_name[5] = "cICP";
     png_write_chunk(png_ptr, chunk_name, data, 4);
+  }
+#endif
+
+#if !defined(PNG_WRITE_cLLI_SUPPORTED) || !defined(PNG_FIXED_POINT_SUPPORTED)
+  if(have_clli)
+  {
+    const png_byte chunk_name[5] = "cLLI";
+    png_byte clli[8];
+    png_save_uint_32(clli, max_cll);
+    png_save_uint_32(clli + 4, max_fall);
+    png_write_chunk(png_ptr, chunk_name, clli, sizeof(clli));
   }
 #endif
 
