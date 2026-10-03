@@ -234,6 +234,14 @@ static void _check_composition(cmsHPROFILE source,
      INTENT_RELATIVE_COLORIMETRIC, INTENT_RELATIVE_COLORIMETRIC, flags | cmsFLAGS_GAMUTCHECK);
   _require(gamut_transport != NULL && gamut_display != NULL, "cannot create gamut-check transforms");
 
+  // lcms 2.17 uses configured alarm colors for float output
+  cmsUInt16Number alarm_codes[cmsMAXCHANNELS];
+  cmsGetAlarmCodes(alarm_codes);
+  const int legacy_alarm = cmsGetEncodedCMMversion() < 2170;
+  float alarm[3];
+  for(int c = 0; c < 3; c++)
+    alarm[c] = legacy_alarm ? -1.0f : alarm_codes[c] / 65535.0f;
+
   double max_float = 0.0, max_float_interior = 0.0, max_8bit = 0.0;
   double max_proof = 0.0, max_proof_8bit = 0.0;
   double max_srgb_loss = 0.0, max_wrong_description = 0.0, max_proof_effect = 0.0;
@@ -283,8 +291,12 @@ static void _check_composition(cmsHPROFILE source,
 
         cmsDoTransform(gamut_display, pcs, direct, 1);
         cmsDoTransform(gamut_transport, pcs, encoded, 1);
-        const int display_alarm = direct[0] < 0.0f || direct[1] < 0.0f || direct[2] < 0.0f;
-        const int transport_alarm = encoded[0] < 0.0f || encoded[1] < 0.0f || encoded[2] < 0.0f;
+        const int display_alarm = fabsf(direct[0] - alarm[0]) < 1e-6f
+                                  && fabsf(direct[1] - alarm[1]) < 1e-6f
+                                  && fabsf(direct[2] - alarm[2]) < 1e-6f;
+        const int transport_alarm = fabsf(encoded[0] - alarm[0]) < 1e-6f
+                                    && fabsf(encoded[1] - alarm[1]) < 1e-6f
+                                    && fabsf(encoded[2] - alarm[2]) < 1e-6f;
         _require(display_alarm == transport_alarm, "transport changed the softproof gamut warning");
         gamut_alarms += transport_alarm;
       }
