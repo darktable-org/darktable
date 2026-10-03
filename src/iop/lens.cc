@@ -184,6 +184,8 @@ typedef struct dt_iop_lens_gui_data_t
   GtkLabel *message;
   GtkBox *hbox1;
   int corrections_done;
+  // the shading compensation warning is up, GUI thread only
+  gboolean shading_warned;
   gboolean lensfun_trouble;
   gboolean vig_masking;
   const lfCamera *camera;
@@ -337,6 +339,29 @@ static dt_iop_lens_modflag_t _modflags_from_lensfun_mods(int lf_mods)
   mods |= lf_mods & LF_MODIFY_TCA        ? DT_IOP_LENS_MODIFY_FLAG_TCA        : 0;
 
   return (dt_iop_lens_modflag_t)mods;
+}
+
+// whether Lensfun corrects vignetting on a raw the camera already corrected
+static gboolean _shading_overcorrected(dt_iop_module_t *self)
+{
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
+  const dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
+
+  dt_iop_gui_enter_critical_section(self);
+  const int corrections_done = g->corrections_done;
+  dt_iop_gui_leave_critical_section(self);
+
+  // corrections_done holds the flags Lensfun reported for the last params
+  // committed to the preview pipe, -1 before the first. the params are checked as well, because
+  // gui_changed() asks before the preview has caught up, and in
+  // distort mode Lensfun reports vignetting while it darkens the corners
+  return self->enabled
+    && p->method == DT_IOP_LENS_METHOD_LENSFUN
+    && p->inverse == DT_IOP_LENS_MODE_CORRECT
+    && (p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING)
+    && self->dev->image_storage.exif_shading_compensation
+    && corrections_done > 0
+    && (corrections_done & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING);
 }
 
 static dt_iop_lens_lenstype_t _lenstype_from_lensfun_lenstype(lfLensType lt)
@@ -4389,7 +4414,20 @@ static void _display_errors(dt_iop_module_t *self)
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
 
-  if(g->lensfun_trouble
+  g->shading_warned = _shading_overcorrected(self);
+
+  if(g->shading_warned)
+  {
+    dt_iop_set_module_trouble_message(self,
+       _("vignetting may be overcorrected"),
+       _("the camera's shading compensation already corrected vignetting\n"
+         "in the raw data, and Lensfun corrects it again on top of that,\n"
+         "possibly brightening the corners\n"
+         "leave vignetting out of the corrections, or turn shading\n"
+         "compensation off in the camera for future shots"),
+       "");
+  }
+  else if(g->lensfun_trouble
      && self->enabled
      && p->method == DT_IOP_LENS_METHOD_LENSFUN)
   {
@@ -4515,6 +4553,11 @@ static void _have_corrections_done(gpointer instance, dt_iop_module_t *self)
 
   gtk_label_set_text(g->message, Q_(message));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->message), Q_(message));
+
+  // the shading compensation warning depends on what the preview applied.
+  // only on a change: every trouble message is also printed to stderr
+  if(_shading_overcorrected(self) != g->shading_warned)
+    _display_errors(self);
 }
 
 static void _visualize_callback(GtkWidget *quad,

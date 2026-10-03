@@ -285,6 +285,9 @@ endif(VALIDATE_APPDATA_FILE)
 if(TESTBUILD_OPENCL_PROGRAMS)
   set(TESTBUILD_OPENCL_PROGRAMS OFF)
 
+  # LLVM's Findzstd.cmake defines only some of zstd's targets, which makes a
+  # later find_package(zstd CONFIG) (via OpenEXR) fail; define them all first
+  find_package(zstd CONFIG QUIET)
   find_package(LLVM CONFIG)
 
   if(LLVM_FOUND)

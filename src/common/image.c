@@ -2261,6 +2261,7 @@ void dt_image_init(dt_image_t *img)
   img->dng_gain_maps = NULL;
   img->exif_correction_type = CORRECTION_TYPE_NONE;
   memset(&img->exif_correction_data, 0, sizeof(img->exif_correction_data));
+  img->exif_shading_compensation = FALSE;
   img->cache_entry = 0;
 
   for(int k=0; k<4; k++)
