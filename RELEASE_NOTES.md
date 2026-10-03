@@ -472,6 +472,11 @@ changes (where available).
   results depending on the number of CPU threads, and occasionally
   wrong colors near the left or right image edge.
 
+- Fixed raw denoise on X-Trans images replacing the green pixels in the
+  rightmost column with the value of a neighboring pixel, often a red
+  one, which slightly changed the colors along the right edge of the
+  image.
+
 ## Lua
 
 ### API Version
