@@ -525,6 +525,9 @@ changes (where available).
   different image. Removing an image that had snapshots from the
   library, then taking a new snapshot, could cause the mix-up.
 
+- Fixed darktable-cli crashing when `--threads` was set below the
+  number of CPUs.
+
 ## Lua
 
 ### API Version
