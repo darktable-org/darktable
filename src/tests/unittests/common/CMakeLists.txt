@@ -32,6 +32,10 @@ add_cmocka_test(test_dtdata
                 SOURCES test_dtdata.c
                 LINK_LIBRARIES lib_darktable cmocka)
 
+add_cmocka_mock_test(test_imageio
+                     SOURCES test_imageio.c
+                     LINK_LIBRARIES lib_darktable cmocka)
+
 # Windows: libs have to be copied next to the executable
 if(WIN32)
     _copy_required_library(test_spektra_sim lib_darktable)
@@ -40,4 +44,5 @@ if(WIN32)
     _copy_required_library(test_fixed_strings lib_darktable)
     _copy_required_library(test_history_strings lib_darktable)
     _copy_required_library(test_dtdata lib_darktable)
+    _copy_required_library(test_imageio lib_darktable)
 endif(WIN32)

@@ -4980,6 +4980,11 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
 
     _read_xmp_timestamps(xmpData, img, xmp_version);
 
+    // Do not read image_checksum / image_size from XMP into img.
+    // Identity is file/DB only; XMP is a write-only mirror (_set_xmp_checksum).
+    // Contract: dt_imageio_identity_accept_from_sidecar() is always FALSE.
+    g_assert(!dt_imageio_identity_accept_from_sidecar());
+
     _read_xmp_harmony_guide(xmpData, img, xmp_version);
 
     if(stmt)
@@ -5294,6 +5299,45 @@ static void _set_xmp_timestamps(Exiv2::XmpData &xmpData,
   sqlite3_finalize(stmt);
 }
 
+// Write sha1sum/filesize to XMP from the DB only (never the reverse).
+// Strip existing tags first; omit them if this image row has no identity.
+static void _set_xmp_checksum(Exiv2::XmpData &xmpData,
+                              const dt_imgid_t imgid)
+{
+  static const char *keys[] =
+  {
+    "Xmp.darktable.image_checksum",
+    "Xmp.darktable.image_size"
+  };
+  static const guint n_keys = G_N_ELEMENTS(keys);
+  _remove_xmp_keys(xmpData, keys, n_keys);
+
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "SELECT sha1sum, filesize"
+      " FROM main.images"
+      " WHERE id = ?1",
+      -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  // clang-format on
+
+  const gboolean has_checksum = (sqlite3_step(stmt) == SQLITE_ROW
+                                 && sqlite3_column_type(stmt, 0) != SQLITE_NULL
+                                 && sqlite3_column_bytes(stmt, 0) == 20);
+  if(dt_imageio_identity_mirror_to_sidecar(has_checksum))
+  {
+    const unsigned char *digest = (const unsigned char *)sqlite3_column_blob(stmt, 0);
+    char hex[41];
+    for(int i = 0; i < 20; i++)
+      snprintf(hex + i * 2, 3, "%02X", digest[i]);
+    xmpData["Xmp.darktable.image_checksum"] = std::string("sha1:") + hex;
+    xmpData["Xmp.darktable.image_size"] = sqlite3_column_int64(stmt, 1);
+  }
+  sqlite3_finalize(stmt);
+}
+
 static void _set_xmp_harmony_guide(Exiv2::XmpData &xmpData,
                                    const dt_imgid_t imgid)
 {
@@ -5581,6 +5625,9 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData,
 
   // Timestamps
   _set_xmp_timestamps(xmpData, imgid);
+
+  // sha1sum/filesize, if computed
+  _set_xmp_checksum(xmpData, imgid);
 
   _set_xmp_harmony_guide(xmpData, imgid);
 

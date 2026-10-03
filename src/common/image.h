@@ -104,6 +104,8 @@ typedef enum
   // produced by neural restore raw denoise; derived at import from
   // Xmp.darktable.neural_restore in the file
   DT_IMAGE_AI_DENOISED = 1 << 21,
+  // file identity set by hashing (never from XMP)
+  DT_IMAGE_HAS_SHA1SUM = 1 << 22,
 } dt_image_flags_t;
 
 typedef enum dt_image_colorspace_t
@@ -317,6 +319,10 @@ typedef struct dt_image_t
   dt_imgid_t group_id;
   //timestamps
   GTimeSpan import_timestamp, change_timestamp, export_timestamp, print_timestamp;
+  // SHA-1 + size of the image file; valid when flags & DT_IMAGE_HAS_SHA1SUM
+  // (file/DB only — never from XMP; duplicates may copy from same-file parent)
+  unsigned char sha1sum[20];
+  uint64_t filesize;
 
   dt_image_loader_t loader;
 
