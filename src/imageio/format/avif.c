@@ -143,6 +143,7 @@ static int floor_log2(int i)
   return floor_log2_table[i];
 }
 
+#if AVIF_VERSION >= 1000000
 /*
  * SMPTE ST 2084 (PQ) EOTF: map a normalized PQ-encoded value in [0, 1] to
  * absolute luminance in cd/m^2 (nits), peak white = 10000 nits.
@@ -161,6 +162,8 @@ static float _pq_to_nits(const float e)
   if(den <= 0.0f) return 10000.0f;
   return 10000.0f * powf(num / den, 1.0f / m1);
 }
+
+#endif
 
 void init(dt_imageio_module_format_t *self)
 {
@@ -425,6 +428,7 @@ int write_image(struct dt_imageio_module_data_t *data,
 
   dt_print(DT_DEBUG_IMAGEIO, "[avif colorprofile profile: %s]", dt_colorspaces_get_name(cp->type, filename));
 
+#if AVIF_VERSION >= 1000000
   /*
    * HDR10 content light level (clli) metadata.
    *
@@ -464,6 +468,8 @@ int write_image(struct dt_imageio_module_data_t *data,
     dt_print(DT_DEBUG_IMAGEIO, "[avif HDR10 clli: MaxCLL=%u nits, MaxFALL=%u nits]",
              image->clli.maxCLL, image->clli.maxPALL);
   }
+
+#endif
 
   if(!have_nclx)
   {

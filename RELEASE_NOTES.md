@@ -242,6 +242,10 @@ changes (where available).
 
 ## Other Changes
 
+- AVIF exports using a PQ output color profile now include HDR10 content
+  light level metadata (MaxCLL and MaxFALL) when built with libavif 1.0.0
+  or newer.
+
 - Added 2 apertures, f/0.95 and f/1.2, to the aperture section of the
   presets dialogue.
 
