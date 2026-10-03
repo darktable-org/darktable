@@ -192,6 +192,9 @@ changes (where available).
   one. It follows the image when it is moved, renamed, duplicated or
   deleted.
 
+- HEIF exports using a PQ output color profile now include HDR10 content
+  light level metadata (MaxCLL and MaxFALL).
+
 - AVIF exports using a PQ output color profile now include HDR10 content
   light level metadata (MaxCLL and MaxFALL) when built with libavif 1.0.0
   or newer.
