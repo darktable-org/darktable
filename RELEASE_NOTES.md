@@ -472,6 +472,10 @@ changes (where available).
   results depending on the number of CPU threads, and occasionally
   wrong colors near the left or right image edge.
 
+- Fixed the lens correction module reporting distortion correction as
+  applied from embedded metadata when the file only carries chromatic
+  aberration correction data.
+
 ## Lua
 
 ### API Version
