@@ -15,6 +15,7 @@ add_test(NAME display-transport COMMAND darktable-test-display-transport)
 if(USE_WAYLAND AND GTK3Wayland_FOUND AND WaylandClient_FOUND AND WAYLAND_SCANNER)
   add_executable(darktable-test-wayland-color wayland_color.c
                  "${COLOR_MANAGEMENT_CODE}" "${COLOR_MANAGEMENT_HEADER}")
+  add_dependencies(darktable-test-wayland-color generate_wayland_color)
   target_compile_definitions(darktable-test-wayland-color PRIVATE HAVE_WAYLAND_COLOR_MANAGEMENT)
   target_include_directories(darktable-test-wayland-color PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/..")
   target_link_libraries(darktable-test-wayland-color PRIVATE ${GTK3_LIBRARIES} PkgConfig::WaylandClient)

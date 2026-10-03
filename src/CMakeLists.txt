@@ -330,8 +330,6 @@ add_definitions("-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_24")
 include_directories(SYSTEM ${GTK3_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK3_LIBRARIES})
 
-# The version 1 protocol XML is vendored with its upstream MIT license.
-# Generate bindings in the build tree, leaving builds without Wayland unchanged.
 option(USE_WAYLAND "Enable Wayland color management" ON)
 if(USE_WAYLAND)
   pkg_check_modules(GTK3Wayland QUIET gdk-wayland-3.0)
@@ -339,7 +337,10 @@ if(USE_WAYLAND)
   find_program(WAYLAND_SCANNER wayland-scanner)
   if(GTK3Wayland_FOUND AND WaylandClient_FOUND AND WAYLAND_SCANNER)
     set(COLOR_MANAGEMENT_XML
-        "${CMAKE_CURRENT_SOURCE_DIR}/external/wayland-protocols/color-management-v1.xml")
+        "${CMAKE_CURRENT_SOURCE_DIR}/external/wayland-protocols/staging/color-management/color-management-v1.xml")
+    if(NOT EXISTS "${COLOR_MANAGEMENT_XML}")
+      message(FATAL_ERROR "wayland-protocols submodule not found. Run:\n$ git submodule update --init src/external/wayland-protocols")
+    endif()
     set(COLOR_MANAGEMENT_HEADER "${CMAKE_CURRENT_BINARY_DIR}/color-management-v1-client-protocol.h")
     set(COLOR_MANAGEMENT_CODE "${CMAKE_CURRENT_BINARY_DIR}/color-management-v1-protocol.c")
     add_custom_command(OUTPUT "${COLOR_MANAGEMENT_HEADER}"
@@ -348,6 +349,9 @@ if(USE_WAYLAND)
     add_custom_command(OUTPUT "${COLOR_MANAGEMENT_CODE}"
       COMMAND "${WAYLAND_SCANNER}" private-code "${COLOR_MANAGEMENT_XML}" "${COLOR_MANAGEMENT_CODE}"
       DEPENDS "${COLOR_MANAGEMENT_XML}" VERBATIM)
+    add_custom_target(generate_wayland_color
+      DEPENDS "${COLOR_MANAGEMENT_HEADER}" "${COLOR_MANAGEMENT_CODE}")
+    list(APPEND LIB_DEPS generate_wayland_color)
     list(APPEND SOURCES "${COLOR_MANAGEMENT_CODE}" "${COLOR_MANAGEMENT_HEADER}")
     list(APPEND LIBS PkgConfig::WaylandClient)
     set_source_files_properties(gui/wayland.c PROPERTIES
