@@ -202,7 +202,9 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
                            const dt_imgid_t imgid,
                            const gboolean iscopy)
 {
-  int res;
+  // keep previous state of the dialog
+  const dt_history_copy_item_t old_d = *d;
+
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
 
   GtkDialog *dialog = NULL;
@@ -359,6 +361,8 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
 
   gtk_widget_show_all(GTK_WIDGET(dialog));
 
+  int res = GTK_RESPONSE_CANCEL;
+
   while(1)
   {
     res = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -366,6 +370,13 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
        || res == GTK_RESPONSE_DELETE_EVENT
        || res == GTK_RESPONSE_OK
        || res == GTK_RESPONSE_APPLY) break;
+  }
+
+  // restore previous state if needed
+  if(res == GTK_RESPONSE_CANCEL || res == GTK_RESPONSE_DELETE_EVENT)
+  {
+    // restore previous state if needed
+    *d = old_d;
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
