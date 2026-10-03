@@ -13,6 +13,8 @@ endif()
 add_test(NAME display-transport COMMAND darktable-test-display-transport)
 
 if(USE_WAYLAND AND GTK3Wayland_FOUND AND WaylandClient_FOUND AND WAYLAND_SCANNER)
+  set_source_files_properties("${COLOR_MANAGEMENT_CODE}" "${COLOR_MANAGEMENT_HEADER}"
+                              PROPERTIES GENERATED TRUE)
   add_executable(darktable-test-wayland-color wayland_color.c
                  "${COLOR_MANAGEMENT_CODE}" "${COLOR_MANAGEMENT_HEADER}")
   add_dependencies(darktable-test-wayland-color generate_wayland_color)

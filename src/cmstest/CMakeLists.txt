@@ -7,6 +7,8 @@ set_source_files_properties(${DARKTABLE_BINDIR}/version_gen.c PROPERTIES GENERAT
 add_dependencies(darktable-cmstest generate_version)
 
 if(USE_WAYLAND AND GTK3Wayland_FOUND AND WaylandClient_FOUND AND WAYLAND_SCANNER)
+  set_source_files_properties("${COLOR_MANAGEMENT_CODE}" "${COLOR_MANAGEMENT_HEADER}"
+                              PROPERTIES GENERATED TRUE)
   add_dependencies(darktable-cmstest generate_wayland_color)
   target_sources(darktable-cmstest PRIVATE wayland.c
                  "${COLOR_MANAGEMENT_CODE}" "${COLOR_MANAGEMENT_HEADER}")
