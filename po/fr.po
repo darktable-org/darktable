@@ -25409,7 +25409,7 @@ msgid ""
 "\n"
 "useful for certain sensor types\n"
 "and anamorphic desqueeze"
-msgstr ""8711
+msgstr ""
 "Module pour positionner le ratio d’aspect des pixels.\n"
 "\n"
 "Utile pour certains capteurs \n"
