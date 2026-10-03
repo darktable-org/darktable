@@ -401,6 +401,12 @@ void dt_colorspaces_update_display_transforms();
 /** same for display2 */
 void dt_colorspaces_update_display2_transforms();
 
+// other output profiles retain the original diagnostic colors
+void dt_colorspaces_convert_srgb_to_display(const dt_colorspaces_color_profile_type_t type,
+                                           const float *input,
+                                           float *output,
+                                           const uint32_t pixels);
+
 /** Calculate CAM->XYZ, XYZ->CAM matrices **/
 gboolean dt_colorspaces_conversion_matrices_xyz(const float adobe_XYZ_to_CAM[4][3],
                                            float in_XYZ_to_CAM[9],

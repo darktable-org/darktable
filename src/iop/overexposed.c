@@ -128,12 +128,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   dt_aligned_pixel_t colors[2];
   const dt_iop_order_iccprofile_info_t *output_profile =
     dt_ioppr_get_pipe_output_profile_info(piece->pipe);
-  if(output_profile && output_profile->type == DT_COLORSPACE_DISPLAY_TRANSPORT
-     && darktable.color_profiles->transform_srgb_to_transport_float)
-    cmsDoTransform(darktable.color_profiles->transform_srgb_to_transport_float,
-                   dt_iop_overexposed_colors[colorscheme], colors, 2);
-  else
-    memcpy(colors, dt_iop_overexposed_colors[colorscheme], sizeof(colors));
+  dt_colorspaces_convert_srgb_to_display
+    (output_profile ? output_profile->type : DT_COLORSPACE_NONE,
+     dt_iop_overexposed_colors[colorscheme][0], colors[0], 2);
   const float *const upper_color = colors[0];
   const float *const lower_color = colors[1];
 
@@ -365,12 +362,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dt_aligned_pixel_t colors[2];
   const dt_iop_order_iccprofile_info_t *output_profile =
     dt_ioppr_get_pipe_output_profile_info(piece->pipe);
-  if(output_profile && output_profile->type == DT_COLORSPACE_DISPLAY_TRANSPORT
-     && darktable.color_profiles->transform_srgb_to_transport_float)
-    cmsDoTransform(darktable.color_profiles->transform_srgb_to_transport_float,
-                   dt_iop_overexposed_colors[colorscheme], colors, 2);
-  else
-    memcpy(colors, dt_iop_overexposed_colors[colorscheme], sizeof(colors));
+  dt_colorspaces_convert_srgb_to_display
+    (output_profile ? output_profile->type : DT_COLORSPACE_NONE,
+     dt_iop_overexposed_colors[colorscheme][0], colors[0], 2);
 
   const float *upper_color = colors[0];
   const float *lower_color = colors[1];

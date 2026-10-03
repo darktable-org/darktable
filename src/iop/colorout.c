@@ -492,12 +492,7 @@ static void _gamut_warning_color(const dt_iop_colorout_data_t *const d,
                                  dt_aligned_pixel_t cyan)
 {
   const dt_aligned_pixel_t srgb_cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
-  if(d->type == DT_COLORSPACE_DISPLAY_TRANSPORT
-     && darktable.color_profiles->transform_srgb_to_transport_float)
-    cmsDoTransform(darktable.color_profiles->transform_srgb_to_transport_float,
-                   srgb_cyan, cyan, 1);
-  else
-    copy_pixel(cyan, srgb_cyan);
+  dt_colorspaces_convert_srgb_to_display(d->type, srgb_cyan, cyan, 1);
 }
 
 static cmsHTRANSFORM _create_transform(dt_iop_colorout_data_t *const d,

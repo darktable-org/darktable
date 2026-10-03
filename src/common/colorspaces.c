@@ -1260,6 +1260,19 @@ void dt_colorspaces_update_display2_transforms()
   _update_display2_transforms(darktable.color_profiles);
 }
 
+void dt_colorspaces_convert_srgb_to_display(const dt_colorspaces_color_profile_type_t type,
+                                           const float *input,
+                                           float *output,
+                                           const uint32_t pixels)
+{
+  if(type == DT_COLORSPACE_DISPLAY_TRANSPORT
+     && darktable.color_profiles->transform_srgb_to_transport_float)
+    cmsDoTransform(darktable.color_profiles->transform_srgb_to_transport_float,
+                   input, output, pixels);
+  else
+    memcpy(output, input, 4 * sizeof(float) * pixels);
+}
+
 // make sure that darktable.color_profiles->xprofile_lock is held when calling this!
 static gboolean _update_display_profile(guchar *tmp_data,
                                         const gsize size,
