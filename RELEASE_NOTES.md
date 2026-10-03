@@ -186,11 +186,21 @@ changes (where available).
 
 ## Other Changes
 
+- PNG exports using a PQ output color profile now include content light
+  level metadata (MaxCLL and MaxFALL) for HDR tone mapping.
+
 - A new `.dtdata` sidecar next to the XMP holds per-pixel edit data
   such as raster masks. It is only created for images that use such
   data, and only when sidecar writing is enabled; most images never get
   one. It follows the image when it is moved, renamed, duplicated or
   deleted.
+
+- HEIF exports using a PQ output color profile now include HDR10 content
+  light level metadata (MaxCLL and MaxFALL).
+
+- AVIF exports using a PQ output color profile now include HDR10 content
+  light level metadata (MaxCLL and MaxFALL) when built with libavif 1.0.0
+  or newer.
 
 - The external raster masks module imports its mask into the image's
   `.dtdata` sidecar instead of referencing a file in a root folder.
