@@ -2564,11 +2564,12 @@ static int _check_corrections_md(dt_iop_lens_data_t *d)
   {
     if(!(feqf(d->vig[i], 1.0f, 1e-7)))
        has_vignette |= TRUE;
-    for(int c = 0; c < 3; c++)
-    {
-      if(!(feqf(d->cor_rgb[c][i], 1.0f, 1e-7)))
-         has_distort |= TRUE;
-    }
+    // green is the reference plane: chromatic aberration correction
+    // alone moves red and blue away from it. both algorithms divide every
+    // channel by an autoscale, so a constant green is scaling, and only a
+    // green that varies with the radius is distortion
+    if(!(feqf(d->cor_rgb[1][i], d->cor_rgb[1][0], 1e-7)))
+       has_distort |= TRUE;
     if((d->cor_rgb[0][i] != d->cor_rgb[1][i])
        || (d->cor_rgb[0][i] != d->cor_rgb[2][i])
        || (d->cor_rgb[1][i] != d->cor_rgb[2][i]))
