@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2025 darktable developers.
+    Copyright (C) 2013-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -837,7 +837,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
         data->lon_ref = 1;
         if(!isnan(data->lon))
         {
-          data->lon = (data->lon > 0) ? data->lat : -data->lon;
+          data->lon = (data->lon > 0) ? data->lon : -data->lon;
         }
       }
       else
@@ -845,7 +845,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
         data->lon_ref = -1;
         if(!isnan(data->lon))
         {
-          data->lon = (data->lon < 0) ? data->lat : -data->lon;
+          data->lon = (data->lon < 0) ? data->lon : -data->lon;
         }
       }
     }
@@ -1624,6 +1624,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   }
   return TRUE;
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
