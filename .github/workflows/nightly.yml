@@ -72,6 +72,11 @@ jobs:
             liblensfun-bin \
             liblensfun-data-v1 \
             liblensfun1 \
+            libopencv-calib3d-dev \
+            libopencv-core-dev \
+            libopencv-features2d-dev \
+            libopencv-flann-dev \
+            libopencv-imgproc-dev \
             libosmgpsmap-1.0-dev \
             libpango1.0-dev \
             libpng-dev \
@@ -123,7 +128,7 @@ jobs:
             libxfixes-dev
       - name: Build and install fresh libheif with built-in decoders
         run: |
-          git clone --branch v1.23.1 --depth 1 https://github.com/strukturag/libheif src-libheif
+          git clone --branch v1.23.5 --depth 1 https://github.com/strukturag/libheif src-libheif
           cd src-libheif
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
@@ -141,7 +146,7 @@ jobs:
           cd ..
       - name: Build and install a more recent version of exiv2
         run: |
-          git clone --branch v0.28.8 --depth 1 https://github.com/Exiv2/exiv2 src-exiv2
+          git clone --branch v0.28.9 --depth 1 https://github.com/Exiv2/exiv2 src-exiv2
           cd src-exiv2
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
@@ -258,6 +263,7 @@ jobs:
             libxml2:p
             lua54:p
             omp:p
+            opencv:p
             openexr:p
             openjpeg2:p
             osm-gps-map:p
@@ -341,8 +347,7 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-14,       xcode: 16.2, deployment: 14.0 } # AppleClang 16, arm64
-          - { os: macos-15-intel, xcode: 26.3, deployment: 15.0 } # AppleClang 17, x86_64
+          - { os: macos-15,       xcode: 26.3, deployment: 15.0 } # AppleClang 17, arm64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
@@ -376,6 +381,9 @@ jobs:
           popd
       - name: Install Base Dependencies
         run: |
+          # The GitHub runner images ship aws/tap, which Homebrew does not trust and
+          # thus warns about on every invocation. We don't use it, so drop it.
+          brew untap --force aws/tap || true
           brew update > /dev/null || true
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
@@ -423,7 +431,7 @@ jobs:
     steps:
       - name: Checkout master to update 'nightly' tag
         if: github.ref_name == 'master' # will be true only for nightly builds
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: master
           submodules: false
@@ -479,7 +487,7 @@ jobs:
 
             The Windows package `*-win64.exe` requires at least Windows 10. The `*-woa64.exe` package requires at least Windows 11.
 
-            The macOS package `*-arm64.dmg` requires at least macOS 14.0 (Sonoma). The `*-x86_64.dmg` package requires at least macOS 15.0 (Sequoia).
+            The macOS package `*-arm64.dmg` requires at least macOS 15.0 (Sequoia).
 
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
           artifacts: |
