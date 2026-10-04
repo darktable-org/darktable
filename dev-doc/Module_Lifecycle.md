@@ -365,20 +365,24 @@ history up to the given position, updates every module's GUI, then calls
 
 ## 4. Cross-module interactions
 
-### 4a. White balance -> color calibration (through `dev->chroma`)
+### 4a. White balance -> color calibration (through `dev->chroma` and `pipe->wb`)
 
 White balance (`temperature.c`) and color calibration (`channelmixerrgb.c`) share state in
-`dev->chroma`; there is no signal. White balance writes the camera's reference coefficients in
-`reload_defaults()` and the coefficients it applies in `commit_params()`; color calibration
-reads them in `reload_defaults()`, `commit_params()` and `process()`.
+`dev->chroma` and in each pipe's `pipe->wb`. There is no signal. White balance writes the
+camera's reference coefficients into `dev->chroma` in `reload_defaults()`. In
+`commit_params()`, it writes the coefficients it applies into `dev->chroma` and into its pipe's
+`pipe->wb`. Color calibration reads `dev->chroma` in `reload_defaults()` and in its GUI, and
+`pipe->wb` in `commit_params()` and `process()`.
 
 Commit order does not guarantee that white balance commits first: `synch_all` replays the
 history in history order, and `synch_top` re-commits only the top item. Color calibration
-therefore recomputes its white-balance-dependent illuminants (`DT_ILLUMINANT_CAMERA`,
-`DT_ILLUMINANT_FROM_WB`) in `process()`, which runs after all the pipe's commits are done.
+therefore recomputes the two illuminants that depend on white balance, `DT_ILLUMINANT_CAMERA`
+and `DT_ILLUMINANT_FROM_WB`, in `process()`, which runs after all the pipe's commits are done.
 
-The field-by-field map, the per-pipe copy `pipe->wb`, and why reverse-order default loading
-stays correct are in [iop/wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md).
+[How white balance and color calibration
+share state](iop/wb_and_colorcalibration/README.md) lists which module writes and reads each
+field, explains the per-pipe copy `pipe->wb`, and shows why the reverse-order default load
+stays correct.
 
 ### 4b. Color-profile change (colorin / colorout)
 
@@ -427,8 +431,8 @@ Shared state that a `reload_defaults()` depends on must therefore be **reset to 
 value before the reverse default-load**. The framework does this for white balance: it calls
 `dt_dev_reset_chroma()` just before `_dt_dev_load_pipeline_defaults()`. The neutral white
 balance coefficients make color calibration compute its default illuminant from the image's own
-as-shot coefficients, instead of from values left by the previous image. The details are in
-[iop/wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md).
+as-shot coefficients, instead of from values left by the previous image. [How white balance
+and color calibration share state](iop/wb_and_colorcalibration/README.md) has the details.
 
 ---
 
@@ -512,9 +516,9 @@ section above.
 | `enter` | views/darkroom.c | Darkroom entry: load image, create GUIs, reload defaults, replay history |
 | `_dev_load_requested_image` | views/darkroom.c | Darkroom image switch: keep base instances, read history, replay |
 
-For the white balance and color calibration symbols (`temperature.*`, `channelmixerrgb.*` and
-the `dev->chroma` helpers), see
-[iop/wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md#key-symbols).
+The white balance and color calibration symbols (`temperature.*`, `channelmixerrgb.*`, and the
+`dev->chroma` helpers) are listed in [How white balance and color calibration share
+state](iop/wb_and_colorcalibration/README.md#key-symbols).
 
 ## See also
 
@@ -522,6 +526,7 @@ the `dev->chroma` helpers), see
   [`reload_defaults`](IOP_Module_API.md#reload_defaults---per-image-defaults) jobs).
 - [pixelpipe_architecture.md](pixelpipe_architecture.md): pipeline architecture, including the
   [ordering-asymmetry note](pixelpipe_architecture.md#pipeline-ordering-asymmetry).
-- [iop/wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md): the white balance and
-  color calibration interaction through `dev->chroma` (worked example of the ordering
-  principle).
+- [How white balance and color calibration share
+  state](iop/wb_and_colorcalibration/README.md): the data that the two modules exchange through
+  `dev->chroma` and `pipe->wb`, as a worked example of the ordering rule in
+  [section 5](#5-pipeline-ordering-asymmetry).

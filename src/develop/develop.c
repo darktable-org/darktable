@@ -3859,8 +3859,10 @@ void dt_dev_exposure_handle_event(int n_press, gdouble delta,
 
 gboolean dt_dev_cat_is_active(dt_develop_t *dev)
 {
-  // the proxy function pointer is set by the first color calibration gui_init(),
-  // so it stays NULL outside the darkroom
+  // only color calibration's gui_init() sets this, only on darktable.develop,
+  // and nothing clears it. The throw-away instance from _init_module_so() sets
+  // it at startup, so a set pointer does not mean a live instance: ask only the
+  // instances in dev->iop. Other devs, and darktable-cli, keep it NULL
   if(!dev || !dev->proxy.cat_is_active)
     return FALSE;
 
