@@ -118,7 +118,7 @@ fi
 echo "* Developers:"
 
 {
-    short-log $RANGE $SHORTLOG_THRESHOLD |
+    short-log $RANGE $SHORTLOG_THRESHOLD ". :!po/" |
         while read name; do
             is-developer "$name"
             if [ $? == 1 ]; then
@@ -126,7 +126,7 @@ echo "* Developers:"
             fi
         done
 
-    short-log $RANGE $CONTRIBUTOR_THRESHOLD |
+    short-log $RANGE $CONTRIBUTOR_THRESHOLD ". :!po/" |
         while read name; do
             is-developer "$name"
             if [ $? == 0 ]; then
