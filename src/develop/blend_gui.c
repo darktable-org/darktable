@@ -2511,6 +2511,17 @@ const dt_iop_gui_blendif_channel_t rgbj_channels[]
           N_("hue") },
         { NULL } };
 
+const dt_iop_gui_blendif_channel_t *dt_develop_blendif_channels_for_csp(const int csp)
+{
+  switch(csp)
+  {
+  case DEVELOP_BLEND_CS_LAB: return Lab_channels;
+  case DEVELOP_BLEND_CS_RGB_DISPLAY: return rgb_channels;
+  case DEVELOP_BLEND_CS_RGB_SCENE: return rgbj_channels;
+  default: return NULL;
+  }
+}
+
 const char *slider_tooltip[] =
   { N_("adjustment based on input received by this module:\n"
        "* range defined by upper markers: blend fully\n"

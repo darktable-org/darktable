@@ -2078,6 +2078,95 @@ void dt_iop_advertise_rastermask(dt_iop_module_t *module, const int mask_mode)
   }
 }
 
+/* make `source` re-run in this pipe when its piece has not stored the raster
+   mask `id` a consumer needs. Registering a user does not change the source's
+   params, so its cache line would be served without storing the mask. Decide
+   by the pipe's own state, not by whether the registration is new: GUI code
+   and history replay register consumers in the shared users table before any
+   pipe commits, so the registration is never new by then */
+static void _invalidate_raster_source_if_missing(dt_dev_pixelpipe_t *pipe,
+                                                 dt_iop_module_t *source,
+                                                 const dt_mask_id_t id)
+{
+  if(!pipe) return;
+
+  dt_dev_pixelpipe_iop_t *source_piece = NULL;
+  for(GList *n = pipe->nodes; n; n = g_list_next(n))
+  {
+    dt_dev_pixelpipe_iop_t *p = n->data;
+    if(p->module == source)
+    {
+      source_piece = p;
+      break;
+    }
+  }
+
+  if(!source_piece
+     || !g_hash_table_lookup(source_piece->raster_masks, GINT_TO_POINTER(id)))
+    dt_dev_pixelpipe_cache_invalidate_later(pipe, source->iop_order, "blend new raster: ");
+}
+
+/* register this module as a user of the source of every raster element of its
+   mask, and unregister it from the others, so that each source keeps its mask.
+   A module can hold several raster elements, each reading another source. The
+   raster sink of classic raster mode (blend_params.raster_mask_*) is left to
+   dt_iop_commit_blend_params. Runs at commit, so a reload needs no GUI.
+
+   raster_mask.source.users maps a consumer to one mask id, so a consumer can
+   read several sources but not two masks of one source (every element reads
+   BLEND_RASTER_ID). With `pipe`, a source that has not stored its mask in that
+   pipe is made to re-run (_invalidate_raster_source_if_missing) */
+static void _reconcile_raster_form_users(dt_iop_module_t *module,
+                                         const dt_develop_blend_params_t *bp,
+                                         dt_dev_pixelpipe_t *pipe)
+{
+  if(!module->dev) return;
+  dt_masks_form_t *grp = dt_masks_get_from_id(module->dev, bp->mask_id);
+
+  for(GList *iter = module->dev->iop; iter; iter = g_list_next(iter))
+  {
+    dt_iop_module_t *cand = iter->data;
+    if(cand == module) continue;
+    // leave the raster sink of classic raster mode alone
+    if((bp->mask_mode & DEVELOP_MASK_RASTER)
+       && dt_iop_module_is(cand, bp->raster_mask_source)
+       && cand->multi_priority == bp->raster_mask_instance)
+      continue;
+
+    // does a raster element of this module's mask read `cand`?
+    dt_mask_id_t want = INVALID_MASKID;
+    if(grp)
+    {
+      const dt_masks_point_raster_t *rp =
+        dt_masks_group_find_raster_of(module->dev->forms, grp, cand, NO_MASKID, TRUE);
+      if(rp) want = rp->id;
+    }
+
+    // `want` is a raster mask id, BLEND_RASTER_ID (0), not a form id: do not
+    // test it with dt_is_valid_maskid(), which rejects 0
+    if(want != INVALID_MASKID)
+    {
+      dt_iop_raster_users_lock(cand);
+      g_hash_table_insert(cand->raster_mask.source.users, module, GINT_TO_POINTER(want));
+      dt_iop_raster_users_unlock(cand);
+      _invalidate_raster_source_if_missing(pipe, cand, want);
+    }
+    else
+    {
+      dt_iop_raster_users_lock(cand);
+      const gboolean removed = g_hash_table_remove(cand->raster_mask.source.users, module);
+      dt_iop_raster_users_unlock(cand);
+      if(removed)
+        dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
+                      "raster form unregister",
+                      NULL, module, DT_DEVICE_NONE, NULL, NULL,
+                      "from '%s%s' (grp=%s)",
+                      cand->op, dt_iop_get_instance_id(cand),
+                      grp ? "present" : "NULL");
+    }
+  }
+}
+
 /* make sure that blend_params are in sync with the iop struct
    1. Handling of raster mask users must only be done if we don't use module's default
       blending parameters.
@@ -2096,6 +2185,21 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
                                 const dt_develop_blend_params_t *blendop_params,
                                 dt_dev_pixelpipe_t *pipe)
 {
+  // log a commit that replaces the module's mask_id or mask_mode: the panel
+  // loses the mask when a valid flexi mask_id is overwritten by mistake
+  if(module->blend_params
+     && dt_is_valid_maskid(module->blend_params->mask_id)
+     && (blendop_params->mask_id != module->blend_params->mask_id
+         || blendop_params->mask_mode != module->blend_params->mask_mode))
+  {
+    dt_print(DT_DEBUG_MASKS,
+             "[masks] dt_iop_commit_blend_params '%s': mask_id %d->%d mask_mode 0x%x->0x%x"
+             " (src=%s)",
+             module->op, module->blend_params->mask_id, blendop_params->mask_id,
+             module->blend_params->mask_mode, blendop_params->mask_mode,
+             blendop_params == module->default_blendop_params ? "default_blendop_params"
+                                                               : "other");
+  }
   memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
   if(blendop_params->blend_cst == DEVELOP_BLEND_CS_NONE)
   {
@@ -2114,7 +2218,12 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
     return;
   }
 
-  for(GList *iter = module->dev->iop; iter; iter = g_list_next(iter))
+  // only a module in raster mode consumes the source it names; one that left
+  // raster mode keeps the name. Registered, it would be pruned on every run
+  // (dt_dev_pixelpipe_prune_stale_raster_users), and every commit would
+  // register it again and invalidate the source's cache
+  const gboolean raster_mode = blendop_params->mask_mode & DEVELOP_MASK_RASTER;
+  for(GList *iter = raster_mode ? module->dev->iop : NULL; iter; iter = g_list_next(iter))
   {
     dt_iop_module_t *candidate = iter->data;
     if(dt_iop_module_is(candidate, blendop_params->raster_mask_source))
@@ -2145,35 +2254,11 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
                         candidate->op,
                         dt_iop_get_instance_id(candidate));
 
-        // Whether *this pipe* needs to invalidate the source's cacheline must
-        // not be decided from `new`: that flag is shared across all pipes via
-        // `candidate->raster_mask.source.users`, and GUI code
-        // (_raster_value_changed_callback) as well as history replay register
-        // the consumer there before any pipe ever commits, so by the time a
-        // real per-pipe commit runs, `new` is already false everywhere and no
-        // pipe would invalidate -- silently starving the consumer of a mask
-        // that was never actually computed. Instead check this pipe's own
-        // state: has its source piece already stored a mask for this id? If
-        // not, the source must (re-)run so it writes one.
-        if(pipe)
-        {
-          dt_dev_pixelpipe_iop_t *source_piece = NULL;
-          for(GList *n = pipe->nodes; n; n = g_list_next(n))
-          {
-            dt_dev_pixelpipe_iop_t *p = n->data;
-            if(p->module == candidate)
-            {
-              source_piece = p;
-              break;
-            }
-          }
-          const gboolean mask_missing =
-            !source_piece || !g_hash_table_lookup(source_piece->raster_masks,
-                                                  GINT_TO_POINTER(blendop_params->raster_mask_id));
-          if(mask_missing)
-            dt_dev_pixelpipe_cache_invalidate_later(
-              pipe, candidate->iop_order, "blend new raster: ");
-        }
+        _invalidate_raster_source_if_missing(pipe, candidate,
+                                             blendop_params->raster_mask_id);
+
+        // and the sources of the mask's raster elements
+        _reconcile_raster_form_users(module, blendop_params, pipe);
         return;
       }
     }
@@ -2196,6 +2281,10 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
   }
   module->raster_mask.sink.source = NULL;
   module->raster_mask.sink.id = INVALID_MASKID;
+
+  // the sources of the mask's raster elements: a flexi mask gets here, as it
+  // has no raster sink
+  _reconcile_raster_form_users(module, blendop_params, pipe);
 }
 
 gboolean _iop_validate_params(dt_introspection_field_t *field,
@@ -2393,6 +2482,10 @@ void dt_iop_commit_params(dt_iop_module_t *module,
 {
   memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
 
+  // copy the refinements previewed as off into the piece, under the blend
+  // data's lock: the renderer reads only this copy
+  dt_masks_refine_bypass_commit(module, piece);
+
   /* We have to take blending parameters into account for the hash if
       a) there is some blending active detected via the mask_mode or
       b) we have a blending module in focus so we have valid cachelines
@@ -2407,10 +2500,11 @@ void dt_iop_commit_params(dt_iop_module_t *module,
         this case by having dt_iop_commit_blend_params() partly invalidate the cache
         to enforce a valid raster, but only when the raster mask is actually in use.
   */
-  dt_iop_commit_blend_params(
-    module,
-    blendop_params,
-    (blendop_params->mask_mode & DEVELOP_MASK_RASTER) && is_blending ? pipe : NULL);
+  // the pipe goes along whenever the module blends, not only in raster mode: a
+  // raster element of the mask reads a source too, with no RASTER bit. It is
+  // harmless, as dt_iop_commit_blend_params only invalidates a source that is
+  // read and whose mask is missing from this pipe
+  dt_iop_commit_blend_params(module, blendop_params, is_blending ? pipe : NULL);
 
 #ifdef HAVE_OPENCL
   // assume process_cl is ready, commit_params can overwrite this.
@@ -2457,6 +2551,11 @@ void dt_iop_commit_params(dt_iop_module_t *module,
       {
         phash = dt_masks_group_hash(phash, grp);
       }
+
+      // previewing a refinement as off changes the render but no parameter, so
+      // it enters the hash, from the snapshot above, not from blend_data
+      const dt_hash_t bph = dt_masks_refine_bypass_hash(&piece->refine_bypass);
+      phash = dt_hash(phash, &bph, sizeof(dt_hash_t));
     }
   }
   piece->hash = phash;
@@ -3978,6 +4077,26 @@ gboolean dt_iop_is_raster_mask_used(const dt_iop_module_t *module, const dt_mask
   return used;
 }
 
+// does an enabled module downstream of `piece` in its own pipe hold a raster
+// element reading mask `id` from piece's module? Judged from the pipe's nodes
+// and its forms snapshot, which dt_dev_pixelpipe_process() refreshed before
+// this run
+static gboolean _pipe_has_raster_form_consumer(const dt_dev_pixelpipe_iop_t *piece,
+                                               const dt_mask_id_t id)
+{
+  const GList *self = g_list_find(piece->pipe->nodes, piece);
+  for(const GList *n = self ? g_list_next(self) : NULL; n; n = g_list_next(n))
+  {
+    const dt_dev_pixelpipe_iop_t *sink = n->data;
+    const dt_develop_blend_params_t *bp = sink->blendop_data;
+    if(!sink->enabled || !bp || !(bp->mask_mode & DEVELOP_MASK_FLEXI)) continue;
+    const dt_masks_form_t *grp = dt_masks_get_from_id_ext(piece->pipe->forms, bp->mask_id);
+    if(dt_masks_group_find_raster_of(piece->pipe->forms, grp, piece->module, id, FALSE))
+      return TRUE;
+  }
+  return FALSE;
+}
+
 /** checks if we should store the mask for export or use in subsequent modules.
     The pipe->store_all_raster_masks is true if export has mask exporting so we
     want the mask data.
@@ -3989,7 +4108,12 @@ gboolean dt_iop_is_raster_mask_stored(const dt_dev_pixelpipe_iop_t *piece, const
   if(piece->pipe->store_all_raster_masks)
     return TRUE;
 
-  return dt_iop_is_raster_mask_used(piece->module, id);
+  if(dt_iop_is_raster_mask_used(piece->module, id)) return TRUE;
+  // the users table is shared by every pipe, and another pipe's synch_all
+  // takes a raster element's module out of it while it replays history from
+  // the defaults (_reconcile_raster_form_users): a source processing then
+  // would drop the mask its consumer is about to read
+  return _pipe_has_raster_form_consumer(piece, id);
 }
 
 void dt_iop_piece_set_raster(dt_dev_pixelpipe_iop_t *piece,

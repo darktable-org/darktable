@@ -293,6 +293,44 @@ typedef struct dt_iop_gui_blendif_channel_t
   char *name;
 } dt_iop_gui_blendif_channel_t;
 
+// the channel table of a blend colorspace (blend_gui.c)
+const dt_iop_gui_blendif_channel_t *dt_develop_blendif_channels_for_csp(const int csp);
+
+// the localized type label of a parametric form: its channel's name, or a
+// generic one when its colorspace has no channel table
+const char *dt_masks_parametric_type_label(const dt_masks_form_t *const form);
+/** does this parametric form, held by a member inverted or not, still cover
+    its channel's whole span, i.e. restrict the mask not at all? */
+gboolean dt_masks_parametric_is_noop(const dt_masks_form_t *const sel,
+                                     const gboolean inverted);
+/** a single-channel parametric form read from storage names a channel of its
+    colorspace's table, which every reader indexes unchecked: one that does
+    not is reset to the first channel. TRUE if it had to be */
+gboolean dt_masks_parametric_sanitize(dt_masks_form_t *const form);
+
+// the group renderers (masks/group.c), which object.c reuses: an AI object's
+// points are group points, as a group's are
+int dt_masks_group_get_mask(const dt_iop_module_t *const module,
+                            const dt_dev_pixelpipe_iop_t *const piece,
+                            struct dt_masks_form_t *const form,
+                            float **buffer,
+                            int *width,
+                            int *height,
+                            int *posx,
+                            int *posy);
+int dt_masks_group_get_mask_roi(const dt_iop_module_t *const module,
+                                const dt_dev_pixelpipe_iop_t *const piece,
+                                struct dt_masks_form_t *const form,
+                                const dt_iop_roi_t *const roi,
+                                float *const buffer);
+void dt_masks_group_duplicate_points(struct dt_develop_t *const dev,
+                                     struct dt_masks_form_t *const base,
+                                     struct dt_masks_form_t *const dest);
+
+// drop a path's cached shrink and grow results (masks/path.c), for object.c,
+// which resizes and rotates an object's paths without going through path.c
+void dt_masks_path_resize_invalidate(const dt_mask_id_t formid);
+
 typedef struct dt_iop_gui_blendif_filter_t
 {
   GtkDarktableGradientSlider *slider;
@@ -384,8 +422,47 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *raster_polarity;
 
   int control_button_pressed;
+  // transient (non-serialized, flexi-only) refinement bypass set: which
+  // refinement passes the user is previewing "off". Keyed by
+  // dt_masks_refine_key_*() below. Mutated on the GTK thread under `lock`,
+  // which commit_params takes to snapshot it (dt_dev_refine_bypass_t, see
+  // dt_masks_refine_bypass_commit); the renderer reads only the snapshot.
+  GHashTable *masks_refine_bypassed;
+
   dt_pthread_mutex_t lock;
 } dt_iop_gui_blend_data_t;
+
+// keys into the refinement bypass set and its snapshot: the whole mask, an
+// element's refinement or a group's. A group key has the top bit set, which
+// no mask id has
+#define DT_MASKS_REFINE_KEY_GROUP_FLAG (0x80000000U)
+#define DT_MASKS_REFINE_KEY_GLOBAL     (0U)
+
+static inline guint32 dt_masks_refine_key_element(const dt_mask_id_t id)
+{
+  return (guint32)id;
+}
+
+static inline guint32 dt_masks_refine_key_group(const dt_mask_id_t cid)
+{
+  return (guint32)cid | DT_MASKS_REFINE_KEY_GROUP_FLAG;
+}
+
+/** copy the module's refinement bypass set into the piece, under bd->lock,
+    from commit_params on a pipe worker. Without a GUI (export, CLI,
+    thumbnails) the snapshot is empty: bypass is a preview only */
+void dt_masks_refine_bypass_commit(const dt_iop_module_t *const module,
+                                   dt_dev_pixelpipe_iop_t *const piece);
+
+/** release a snapshot's key array */
+void dt_masks_refine_bypass_cleanup(dt_dev_refine_bypass_t *const bypass);
+
+/** is `key` (see dt_masks_refine_key_*) bypassed in this snapshot? */
+gboolean dt_masks_refine_bypass_lookup(const dt_dev_refine_bypass_t *const bypass,
+                                       const guint32 key);
+
+/** hash of a snapshot, for mask cache invalidation */
+dt_hash_t dt_masks_refine_bypass_hash(const dt_dev_refine_bypass_t *const bypass);
 
 
 /** global init of blendops */
@@ -428,6 +505,18 @@ gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
                                         void *new_params,
                                         const int new_version,
                                         const int length);
+/** dt_develop_blend_legacy_params(), plus the main.history `num` the row will
+    be written back under, negative when there is none (a style item or a
+    preset). With one, dt_masks_migrate_classic_to_flexi() writes the forms it
+    creates into main.masks_history, which dt_masks_read_masks_history()
+    reloads dev->forms from. dt_dev_read_history_ext() is the caller with one */
+gboolean dt_develop_blend_legacy_params_ext(dt_iop_module_t *module,
+                                            const void *const old_params,
+                                            const int old_version,
+                                            void *new_params,
+                                            const int new_version,
+                                            const int length,
+                                            const int history_num);
 gboolean dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so,
                                                 const void *const old_params,
                                                 const int old_version,
@@ -462,9 +551,25 @@ gboolean dt_develop_blendif_init_masking_profile(dt_dev_pixelpipe_iop_t *piece,
                                                  dt_iop_order_iccprofile_info_t *blending_profile,
                                                  const dt_develop_blend_colorspace_t cst);
 
-/** color blending mask generation functions */
+/** refine one element's mask (details, feathering, blur, contrast and
+ * brightness) in the group renderer, before it is combined. Does nothing when
+ * the refinement is off. The feathering guide comes from the piece's
+ * blend_refine_* context */
+void dt_develop_blend_refine_form_mask(struct dt_iop_module_t *self,
+                                       dt_dev_pixelpipe_iop_t *piece,
+                                       float *const mask,
+                                       const dt_iop_roi_t *const roi,
+                                       const dt_masks_refinement_t *const r);
+
+/** color blending mask generation functions.
+
+    `d` is the blend configuration to evaluate. It is not always the piece's
+    own: a parametric form (masks/parametric.c) evaluates its own blendif
+    settings. The piece still provides the channel count and the mask display
+    state. The module's own mask passes piece->blendop_data */
 
 void dt_develop_blendif_raw_make_mask(dt_dev_pixelpipe_iop_t *piece,
+                                      const dt_develop_blend_params_t *const d,
                                       const float *const a,
                                       const float *const b,
                                       const dt_iop_roi_t *const roi_in,
@@ -472,6 +577,7 @@ void dt_develop_blendif_raw_make_mask(dt_dev_pixelpipe_iop_t *piece,
                                       float *const mask);
 
 void dt_develop_blendif_lab_make_mask(dt_dev_pixelpipe_iop_t *piece,
+                                      const dt_develop_blend_params_t *const d,
                                       const float *const a,
                                       const float *const b,
                                       const dt_iop_roi_t *const roi_in,
@@ -479,6 +585,7 @@ void dt_develop_blendif_lab_make_mask(dt_dev_pixelpipe_iop_t *piece,
                                       float *const mask);
 
 void dt_develop_blendif_rgb_hsl_make_mask(dt_dev_pixelpipe_iop_t *piece,
+                                          const dt_develop_blend_params_t *const d,
                                           const float *const a,
                                           const float *const b,
                                           const dt_iop_roi_t *const roi_in,
@@ -486,6 +593,7 @@ void dt_develop_blendif_rgb_hsl_make_mask(dt_dev_pixelpipe_iop_t *piece,
                                           float *const mask);
 
 void dt_develop_blendif_rgb_jzczhz_make_mask(dt_dev_pixelpipe_iop_t *piece,
+                                             const dt_develop_blend_params_t *const d,
                                              const float *const a,
                                              const float *const b,
                                              const dt_iop_roi_t *const roi_in,
@@ -526,6 +634,16 @@ void dt_develop_blendif_rgb_jzczhz_blend(dt_dev_pixelpipe_iop_t *piece,
                                          const float *const mask,
                                          const dt_dev_pixelpipe_display_mask_t request_mask_display);
 
+
+/** May the blend render mask_id's group as this module's blend mask?
+
+    FALSE only for an IOP_FLAGS_NO_MASKS module (retouch, spots) with a
+    classic drawn mask: such a module uses its own forms in process(), and
+    rendering mask_id's group would paint them. A flexi group is never those
+    forms and always renders. Exported for the masks tests: getting this wrong
+    silently drops the parametric mask of such modules */
+gboolean dt_blend_may_render_group(struct dt_iop_module_t *self,
+                                   const dt_develop_mask_mode_t mask_mode);
 
 /** gui related stuff */
 void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module);

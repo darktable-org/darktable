@@ -2601,6 +2601,12 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
   // clang-format on
 
   dev->history_end = 0;
+  // both migration queues are drained by the previous call; a stale entry
+  // would act on the previously loaded image
+  g_list_free_full(dev->pending_flexi_migrations, free);
+  dev->pending_flexi_migrations = NULL;
+  g_list_free(dev->pending_flexi_group_splits);
+  dev->pending_flexi_group_splits = NULL;
 
   // Specific handling for None workflow (interdependency)
 
@@ -2781,9 +2787,9 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
       memcpy(hist->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
     }
     else if(blendop_params
-            && dt_develop_blend_legacy_params
+            && dt_develop_blend_legacy_params_ext
             (hist->module, blendop_params, blendop_version,
-             hist->blend_params, dt_develop_blend_version(), bl_length) == FALSE)
+             hist->blend_params, dt_develop_blend_version(), bl_length, num) == FALSE)
     {
       legacy_params = TRUE;
     }
@@ -2906,7 +2912,15 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
   dt_ioppr_check_iop_order(dev, imgid, "dt_dev_read_history_no_image end");
 
+  // history_end is final: create the forms of the queued mask migrations, for
+  // the read below to pick up
+  dt_masks_finish_flexi_migrations(dev);
+
   dt_masks_read_masks_history(dev, imgid);
+
+  // after the read, which replaces dev->forms: this converts groups already in
+  // the database
+  dt_masks_normalize_flexi_groups(dev);
 
   // FIXME : this probably needs to capture dev thread lock
   if(dev->gui_attached && !no_image)

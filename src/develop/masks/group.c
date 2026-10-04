@@ -22,6 +22,7 @@
 #include "develop/blend.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
+#include "develop/masks/group_internal.h"
 
 static int _group_events_mouse_scrolled(dt_iop_module_t *module,
                                         const float pzx,
@@ -337,7 +338,8 @@ static int _group_get_mask(const dt_iop_module_t *const module,
   {
     dt_masks_point_group_t *fpt = fpts->data;
     dt_masks_form_t *sel = dt_masks_get_from_id_ext(piece->pipe->forms, fpt->formid);
-    if(sel)
+    // a hidden or disabled shape contributes nothing
+    if(sel && !(fpt->state & (DT_MASKS_STATE_HIDDEN | DT_MASKS_STATE_DISABLE)))
     {
       ok[pos] = dt_masks_get_mask(module, piece, sel, &bufs[pos],
                                   &w[pos], &h[pos], &px[pos], &py[pos]);
@@ -353,6 +355,11 @@ static int _group_get_mask(const dt_iop_module_t *const module,
       states[pos] = fpt->state;
       if(ok[pos]) nb_ok++;
     }
+    else
+    {
+      // hidden or missing form: takes no slot in the composite
+      ok[pos] = 0;
+    }
     pos++;
   }
   if(nb_ok == 0) goto error;
@@ -361,6 +368,7 @@ static int _group_get_mask(const dt_iop_module_t *const module,
   int l = INT_MAX, r = INT_MIN, t = INT_MAX, b = INT_MIN;
   for(int i = 0; i < nb; i++)
   {
+    if(!ok[i]) continue;
     l = MIN(l, px[i]);
     t = MIN(t, py[i]);
     r = MAX(r, px[i] + w[i]);
@@ -375,10 +383,15 @@ static int _group_get_mask(const dt_iop_module_t *const module,
   *buffer = dt_alloc_align_float((size_t)(r - l) * (b - t));
 
   // and we copy each buffer inside, row by row
+  // the first *visible* shape always composites as a plain copy onto the
+  // (uninitialized) buffer, whatever its explicit operator, so that no
+  // operator reads the uninitialized values
+  gboolean first_visible = TRUE;
   for(int i = 0; i < nb; i++)
   {
+    if(!ok[i]) continue; // hidden/missing form: nothing to composite
     double start = dt_get_debug_wtime();
-    if(states[i] & (DT_MASKS_STATE_UNION | DT_MASKS_STATE_SUM))
+    if(!first_visible && (states[i] & (DT_MASKS_STATE_UNION | DT_MASKS_STATE_SUM)))
     {
       for(int y = 0; y < h[i]; y++)
       {
@@ -390,7 +403,7 @@ static int _group_get_mask(const dt_iop_module_t *const module,
         }
       }
     }
-    else if(states[i] & DT_MASKS_STATE_INTERSECTION)
+    else if(!first_visible && (states[i] & DT_MASKS_STATE_INTERSECTION))
     {
       for(int y = 0; y < b - t; y++)
       {
@@ -410,7 +423,7 @@ static int _group_get_mask(const dt_iop_module_t *const module,
         }
       }
     }
-    else if(states[i] & DT_MASKS_STATE_DIFFERENCE)
+    else if(!first_visible && (states[i] & DT_MASKS_STATE_DIFFERENCE))
     {
       for(int y = 0; y < h[i]; y++)
       {
@@ -423,7 +436,7 @@ static int _group_get_mask(const dt_iop_module_t *const module,
         }
       }
     }
-    else if(states[i] & DT_MASKS_STATE_EXCLUSION)
+    else if(!first_visible && (states[i] & DT_MASKS_STATE_EXCLUSION))
     {
       for(int y = 0; y < h[i]; y++)
       {
@@ -461,6 +474,7 @@ static int _group_get_mask(const dt_iop_module_t *const module,
     dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
              "[masks %d] combine took %0.04f sec",
              i, dt_get_lap_time(&start));
+    first_visible = FALSE;
   }
 
   free(op);
@@ -487,11 +501,11 @@ error:
   return 0;
 }
 
-static void _combine_masks_union(float *const restrict dest,
-                                 float *const restrict newmask,
-                                 const size_t npixels,
-                                 const float opacity,
-                                 const int inverted)
+void dt_masks_combine_maximum(float *const restrict dest,
+                              float *const restrict newmask,
+                              const size_t npixels,
+                              const float opacity,
+                              const int inverted)
 {
   if(inverted)
   {
@@ -513,11 +527,11 @@ static void _combine_masks_union(float *const restrict dest,
   }
 }
 
-static void _combine_masks_intersect(float *const restrict dest,
-                                     float *const restrict newmask,
-                                     const size_t npixels,
-                                     const float opacity,
-                                     const int inverted)
+void dt_masks_combine_minimum(float *const restrict dest,
+                              float *const restrict newmask,
+                              const size_t npixels,
+                              const float opacity,
+                              const int inverted)
 {
   if(inverted)
   {
@@ -546,11 +560,11 @@ static inline int both_positive(const float val1, const float val2)
   return (val1 > 0.0f) && (val2 > 0.0f);
 }
 
-static void _combine_masks_difference(float *const restrict dest,
-                                      float *const restrict newmask,
-                                      const size_t npixels,
-                                      const float opacity,
-                                      const int inverted)
+void dt_masks_combine_difference(float *const restrict dest,
+                                 float *const restrict newmask,
+                                 const size_t npixels,
+                                 const float opacity,
+                                 const int inverted)
 {
   if(inverted)
   {
@@ -572,11 +586,11 @@ static void _combine_masks_difference(float *const restrict dest,
   }
 }
 
-static void _combine_masks_sum(float *const restrict dest,
-                               float *const restrict newmask,
-                               const size_t npixels,
-                               const float opacity,
-                               const int inverted)
+void dt_masks_combine_sum(float *const restrict dest,
+                          float *const restrict newmask,
+                          const size_t npixels,
+                          const float opacity,
+                          const int inverted)
 {
   if(inverted)
   {
@@ -598,11 +612,11 @@ static void _combine_masks_sum(float *const restrict dest,
   }
 }
 
-static void _combine_masks_exclusion(float *const restrict dest,
-                                     float *const restrict newmask,
-                                     const size_t npixels,
-                                     const float opacity,
-                                     const int inverted)
+void dt_masks_combine_exclusion(float *const restrict dest,
+                                float *const restrict newmask,
+                                const size_t npixels,
+                                const float opacity,
+                                const int inverted)
 {
   if(inverted)
   {
@@ -631,19 +645,236 @@ static void _combine_masks_exclusion(float *const restrict dest,
   }
 }
 
+void dt_masks_combine_product(float *const restrict dest,
+                              float *const restrict newmask,
+                              const size_t npixels,
+                              const float opacity,
+                              const int inverted)
+{
+  // multiply the accumulator by this shape, as a classic multi-channel
+  // parametric mask combines its channels. Onto the empty base this gives 0,
+  // as intersection does
+  if(inverted)
+  {
+    DT_OMP_FOR_SIMD(aligned(dest, newmask : 64))
+    for(size_t index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * (1.0f - newmask[index]);
+      dest[index] *= mask;
+    }
+  }
+  else
+  {
+    DT_OMP_FOR_SIMD(aligned(dest, newmask : 64))
+    for(size_t index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * newmask[index];
+      dest[index] *= mask;
+    }
+  }
+}
+
+// soft union ("screen"): a + b - ab, a flexi group operator. Like union it is
+// associative and commutative, with the empty mask as identity, but not
+// idempotent, so feathered overlaps build up smoothly instead of leaving the
+// crease max() makes
+void dt_masks_combine_screen(float *const restrict dest,
+                             float *const restrict newmask,
+                             const size_t npixels,
+                             const float opacity,
+                             const int inverted)
+{
+  if(inverted)
+  {
+    DT_OMP_FOR_SIMD(aligned(dest, newmask : 64))
+    for(size_t index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * (1.0f - newmask[index]);
+      const float d = dest[index];
+      dest[index] = d + mask - d * mask;
+    }
+  }
+  else
+  {
+    DT_OMP_FOR_SIMD(aligned(dest, newmask : 64))
+    for(size_t index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * newmask[index];
+      const float d = dest[index];
+      dest[index] = d + mask - d * mask;
+    }
+  }
+}
+
+// Flexi group fold (flexi masks only). A group's list starts with its marker,
+// which holds the group's settings, followed by its members. The members fold
+// into the mask in list order with the group's operator (see the list below);
+// the result is then refined once with the refinement the marker holds,
+// inverted and scaled. A nested group renders through here as a member of its
+// parent. A group with no visible member contributes nothing: the caller skips
+// it, so an empty intersection group never blanks the mask. Classic masks render
+// through the sequential fold below
+static int _group_get_mask_roi_flexi(const dt_iop_module_t *const restrict module,
+                                     const dt_dev_pixelpipe_iop_t *const restrict piece,
+                                     dt_masks_form_t *const form,
+                                     const dt_iop_roi_t *const roi,
+                                     float *const restrict buffer)
+{
+  // the group's marker heads its list, holding the group's settings
+  // (dev-doc/masks_data_model.md)
+  if(!form->points || !dt_masks_point_is_marker(form->points->data)) return 0;
+  const dt_masks_point_group_t *const head = form->points->data;
+  GList *fpts = form->points->next;
+
+  const int width = roi->width;
+  const int height = roi->height;
+  const size_t npixels = (size_t)width * height;
+
+  float *const restrict bufs = dt_alloc_align_float(npixels); // one raw member
+  if(bufs == NULL) return 0;
+
+  // the refinements previewed as off: the pipe's snapshot, committed with the
+  // params (dt_masks_refine_bypass_commit). Never read blend_data from this
+  // thread
+  const dt_dev_refine_bypass_t *const bypass = &piece->refine_bypass;
+
+  // a bypassed group contributes nothing, exactly as if it were not there
+  const gboolean bypassed = (head->state & DT_MASKS_STATE_OP_BYPASS) != 0;
+  // the group's operator (how members fold together, in list order): maximum
+  // (default), screen (soft union), minimum, product (true per-pixel product),
+  // sum (min(1, a + b)), difference (the first member less the others) or
+  // exclusion
+  const gboolean screen = (head->state & DT_MASKS_STATE_FLEXI_SCREEN) != 0;
+  const gboolean flexi_minimum = (head->state & DT_MASKS_STATE_FLEXI_MINIMUM) != 0;
+  const gboolean flexi_product = (head->state & DT_MASKS_STATE_FLEXI_PRODUCT) != 0;
+  const gboolean flexi_sum = (head->state & DT_MASKS_STATE_FLEXI_SUM) != 0;
+  const gboolean flexi_difference = (head->state & DT_MASKS_STATE_FLEXI_DIFFERENCE) != 0;
+  const gboolean flexi_exclusion = (head->state & DT_MASKS_STATE_FLEXI_EXCLUSION) != 0;
+
+  // minimum and product seed at 1.0 (everything, then min/multiply each
+  // member in); maximum/screen/sum/exclusion seed at 0.0 (nothing, then
+  // max/soft-union/add/exclusion in, each of which copies its first member onto
+  // 0). Difference has no seed that copies, so its first member is copied
+  // explicitly below
+  if(flexi_minimum || flexi_product)
+    for(size_t i = 0; i < npixels; i++) buffer[i] = 1.0f;
+  else
+    memset(buffer, 0, npixels * sizeof(float));
+
+  int nb_members = 0; // members whose mask actually folded into `buffer`
+  int nb_folded = 0;  // the same, counting no-op parametric channels too
+  for(; fpts && !bypassed; fpts = g_list_next(fpts))
+  {
+    dt_masks_point_group_t *const m = fpts->data;
+    if(m->state & (DT_MASKS_STATE_HIDDEN | DT_MASKS_STATE_DISABLE)) continue;
+    dt_masks_form_t *const sel = dt_masks_get_from_id_ext(piece->pipe->forms, m->formid);
+    if(!sel) continue;
+
+    memset(bufs, 0, npixels * sizeof(float));
+    if(!dt_masks_get_mask_roi(module, piece, sel, roi, bufs)) continue;
+
+    // the member's own refinement, on its raw mask before inversion and
+    // combining, where the classic fold below applies it too
+    const gboolean elem_bypassed =
+      dt_masks_refine_bypass_lookup(bypass, dt_masks_refine_key_element(m->formid));
+    if(m->refinement.enabled == DT_MASKS_REFINE_ELEMENT && !elem_bypassed)
+      dt_develop_blend_refine_form_mask((dt_iop_module_t *)module,
+                                        (dt_dev_pixelpipe_iop_t *)piece, bufs, roi,
+                                        &m->refinement);
+
+    const float op = m->opacity;
+    // a raster element that cannot obtain a mask renders 0. Inverted, it
+    // would select the whole frame and apply the module everywhere, so it is
+    // not inverted, as classic's raster branch fills 0 without inverting
+    // (blend.c). The panel badges its row
+    const int inverted = (m->state & DT_MASKS_STATE_INVERSE)
+                         && !dt_masks_raster_is_unresolved(module, piece, sel);
+    if(flexi_minimum)
+      dt_masks_combine_minimum(buffer, bufs, npixels, op, inverted);
+    else if(screen)
+      dt_masks_combine_screen(buffer, bufs, npixels, op, inverted);
+    else if(flexi_product)
+      dt_masks_combine_product(buffer, bufs, npixels, op, inverted);
+    else if(flexi_sum)
+      dt_masks_combine_sum(buffer, bufs, npixels, op, inverted);
+    else if(flexi_difference && nb_folded > 0)
+      dt_masks_combine_difference(buffer, bufs, npixels, op, inverted);
+    else if(flexi_exclusion)
+      dt_masks_combine_exclusion(buffer, bufs, npixels, op, inverted);
+    else
+      // union, and the base of a difference: max onto the zero seed is a copy
+      dt_masks_combine_maximum(buffer, bufs, npixels, op, inverted);
+    nb_folded++;
+    // a parametric channel at its full range renders all ones and restricts
+    // nothing, so a group of nothing else takes the "no active mask element"
+    // fallback below (opaque, no overlay) while a new channel is set up.
+    // Decide it from the form's ranges, as the panel's badge does, never from
+    // the pixels: a narrowed channel that happens to cover this image is a
+    // real element, and skipping it would drop the group's invert and opacity
+    if(!dt_masks_parametric_is_noop(sel, inverted)) nb_members++;
+  }
+  dt_free_align(bufs);
+
+  if(bypassed || nb_members == 0)
+  {
+    // nothing contributed (bypassed, or every member hidden, disabled or
+    // gone). As the mask, this renders as "no active mask element", which in
+    // dt is a fully opaque mask (the module stays 100% active), matching the
+    // `mode_drawn && !form` fallback in dt_develop_blend_process. As a nested group,
+    // returning 0 makes its parent skip it
+    for(size_t i = 0; i < npixels; i++) buffer[i] = 1.0f;
+    return 0;
+  }
+
+  // per-group refinement, applied once to the folded mask (skipped while this
+  // group is bypassed for preview). A group is keyed by its marker.
+  const gboolean group_bypassed =
+    dt_masks_refine_bypass_lookup(bypass, dt_masks_refine_key_group(head->formid));
+  if(head->refinement.enabled == DT_MASKS_REFINE_GROUP && !group_bypassed)
+    dt_develop_blend_refine_form_mask((dt_iop_module_t *)module,
+                                      (dt_dev_pixelpipe_iop_t *)piece, buffer, roi,
+                                      &head->refinement);
+
+  // invert-output (true group invert, see DT_MASKS_STATE_OP_INVERT): applied
+  // to the folded mask, after any group refinement
+  if(head->state & DT_MASKS_STATE_OP_INVERT)
+    for(size_t i = 0; i < npixels; i++) buffer[i] = 1.0f - buffer[i];
+
+  // group-level opacity (see dt_masks_point_group_t.group_opacity): a
+  // multiplicative gain on the group's finished mask, on top of each member's
+  // own opacity. Applied after invert-output, for the same reason element
+  // opacity multiplies a shape's already-inverted mask in dt_masks_combine_maximum
+  // et al: it scales the group's actual contribution
+  for(size_t i = 0; i < npixels; i++) buffer[i] *= head->group_opacity;
+
+  return 1;
+}
+
 static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
                                const dt_dev_pixelpipe_iop_t *const restrict piece,
                                dt_masks_form_t *const form,
                                const dt_iop_roi_t *const roi,
                                float *const restrict buffer)
 {
-  if(!form->points) return 0;
+  // flexi masks use the group-composition fold; legacy masks fall through to
+  // the classic sequential fold below, byte-identically.
+  const dt_develop_blend_params_t *const bp =
+    piece ? (const dt_develop_blend_params_t *)piece->blendop_data : NULL;
+  if(bp && (bp->mask_mode & DEVELOP_MASK_FLEXI))
+    return _group_get_mask_roi_flexi(module, piece, form, roi, buffer);
+
   double start = dt_get_debug_wtime();
   int nb_ok = 0;
 
   const int width = roi->width;
   const int height = roi->height;
   const size_t npixels = (size_t)width * height;
+
+  // start from an empty result: an empty group renders an empty mask, and a
+  // hidden/absent base form does not leave the first composited shape reading
+  // uninitialized memory
+  memset(buffer, 0, npixels * sizeof(float));
+  if(!form->points) return 0;
 
   // we need to allocate a zeroed temporary buffer for intermediate
   // creation of individual shapes
@@ -654,6 +885,8 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
   for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
     dt_masks_point_group_t *fpt = fpts->data;
+    // a hidden or disabled shape contributes nothing
+    if(fpt->state & (DT_MASKS_STATE_HIDDEN | DT_MASKS_STATE_DISABLE)) continue;
     dt_masks_form_t *sel = dt_masks_get_from_id_ext(piece->pipe->forms, fpt->formid);
 
     if(sel)
@@ -679,28 +912,42 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
 
       if(ok)
       {
-        // first see if we need to invert this shape
-        const int inverted = (state & DT_MASKS_STATE_INVERSE);
+        // the shape's own refinement, on its raw mask before inversion and
+        // combining
+        if(fpt->refinement.enabled)
+          dt_develop_blend_refine_form_mask((dt_iop_module_t *)module,
+                                            (dt_dev_pixelpipe_iop_t *)piece, bufs, roi,
+                                            &fpt->refinement);
 
+        // first see if we need to invert this shape, unless it is a raster
+        // element that renders 0 for want of a mask (see
+        // _group_get_mask_roi_flexi above)
+        const int inverted = (state & DT_MASKS_STATE_INVERSE)
+                             && !dt_masks_raster_is_unresolved(module, piece, sel);
+
+        // every shape applies its own operator, the bottom one included: onto
+        // the empty accumulator, intersection and difference leave nothing.
+        // Migration turns such shapes into zero-opacity unions
+        // (_zero_empty_base_members in migrate_legacy.c)
         if(state & DT_MASKS_STATE_UNION)
         {
-          _combine_masks_union(buffer, bufs, npixels, op, inverted);
+          dt_masks_combine_maximum(buffer, bufs, npixels, op, inverted);
         }
         else if(state & DT_MASKS_STATE_INTERSECTION)
         {
-          _combine_masks_intersect(buffer, bufs, npixels, op, inverted);
+          dt_masks_combine_minimum(buffer, bufs, npixels, op, inverted);
         }
         else if(state & DT_MASKS_STATE_DIFFERENCE)
         {
-          _combine_masks_difference(buffer, bufs, npixels, op, inverted);
+          dt_masks_combine_difference(buffer, bufs, npixels, op, inverted);
         }
         else if(state & DT_MASKS_STATE_SUM)
         {
-          _combine_masks_sum(buffer, bufs, npixels, op, inverted);
+          dt_masks_combine_sum(buffer, bufs, npixels, op, inverted);
         }
         else if(state & DT_MASKS_STATE_EXCLUSION)
         {
-          _combine_masks_exclusion(buffer, bufs, npixels, op, inverted);
+          dt_masks_combine_exclusion(buffer, bufs, npixels, op, inverted);
         }
         else // if we are here, this mean that we just have to copy
              // the shape and null other parts
@@ -780,20 +1027,63 @@ static GSList *_group_setup_mouse_actions(const dt_masks_form_t *const form)
   return lm;
 }
 
-static void _group_duplicate_points(dt_develop_t *const dev,
-                                    dt_masks_form_t *const base,
-                                    dt_masks_form_t *const dest)
+void dt_masks_group_duplicate_points(dt_develop_t *const dev,
+                                     dt_masks_form_t *const base,
+                                     dt_masks_form_t *const dest)
 {
   for(GList *pts = base->points; pts; pts = g_list_next(pts))
   {
     dt_masks_point_group_t *pt = pts->data;
+    if(dt_masks_point_is_marker(pt))
+    {
+      dt_masks_group_copy_marker(dev->forms, dest, pt);
+      continue;
+    }
     dt_masks_point_group_t *npt = calloc(1, sizeof(dt_masks_point_group_t));
-    memcpy(npt, pt, sizeof(dt_masks_point_group_t));
 
     npt->formid = dt_masks_form_duplicate(dev, pt->formid);
     npt->parentid = dest->formid;
+    npt->state = pt->state;
+    npt->opacity = pt->opacity;
+    npt->refinement = pt->refinement;
+    npt->group_opacity = pt->group_opacity;
     dest->points = g_list_append(dest->points, npt);
   }
+}
+
+// a group renders a member group by recursing through the functions table,
+// which has no room for a depth, so a cyclic tree would recurse until the
+// stack is gone. Pipes render on threads of their own, hence the per-thread
+// count
+static __thread int _render_depth = 0;
+
+int dt_masks_group_get_mask(const dt_iop_module_t *const module,
+                            const dt_dev_pixelpipe_iop_t *const piece,
+                            dt_masks_form_t *const form,
+                            float **buffer,
+                            int *width,
+                            int *height,
+                            int *posx,
+                            int *posy)
+{
+  if(_render_depth > DT_MASKS_NESTING_MAX) return 0;
+  _render_depth++;
+  const int ok = _group_get_mask(module, piece, form, buffer, width, height, posx, posy);
+  _render_depth--;
+  return ok;
+}
+
+int dt_masks_group_get_mask_roi(const dt_iop_module_t *const restrict module,
+                                const dt_dev_pixelpipe_iop_t *const restrict piece,
+                                dt_masks_form_t *const form,
+                                const dt_iop_roi_t *const roi,
+                                float *const restrict buffer)
+{
+  if(_render_depth > DT_MASKS_NESTING_MAX) return 0;
+  _render_depth++;
+  const int ok = _group_get_mask_roi(module, piece, form, roi, buffer);
+  _render_depth--;
+  return ok;
 }
 
 // The function table for groups.  This must be public, i.e. no "static" keyword.
@@ -803,13 +1093,13 @@ const dt_masks_functions_t dt_masks_functions_group = {
   .setup_mouse_actions = _group_setup_mouse_actions,
   .set_form_name = NULL,
   .set_hint_message = NULL,
-  .duplicate_points = _group_duplicate_points,
+  .duplicate_points = dt_masks_group_duplicate_points,
   .initial_source_pos = NULL,
   .get_distance = NULL,
   .get_points = NULL,
   .get_points_border = NULL,
-  .get_mask = _group_get_mask,
-  .get_mask_roi = _group_get_mask_roi,
+  .get_mask = dt_masks_group_get_mask,
+  .get_mask_roi = dt_masks_group_get_mask_roi,
   .get_area = NULL,
   .get_source_area = NULL,
   .mouse_moved = _group_events_mouse_moved,
