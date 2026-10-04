@@ -97,7 +97,8 @@ typedef enum dt_develop_mask_mode_t
   DEVELOP_MASK_MASK = 1 << 1,                                                        // drawn mask
   DEVELOP_MASK_CONDITIONAL = 1 << 2,                                                 // parametric mask
   DEVELOP_MASK_RASTER = 1 << 3,                                                      // raster mask
-  DEVELOP_MASK_MASK_CONDITIONAL = (DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL)     // drawn & parametric
+  DEVELOP_MASK_MASK_CONDITIONAL = (DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL),    // drawn & parametric
+  DEVELOP_MASK_FLEXI = 1 << 4                                                        // flexi mask: a tree of groups
 } dt_develop_mask_mode_t;
 
 typedef enum dt_develop_mask_combine_mode_t
@@ -220,6 +221,34 @@ typedef struct dt_develop_blend_params_t
   dt_mask_id_t raster_mask_id;
   gboolean raster_mask_invert;
 } dt_develop_blend_params_t;
+
+/** point struct for a DT_MASKS_PARAMETRIC form: its own copy of the blendif
+    configuration, mirroring the blendif fields of dt_develop_blend_params_t,
+    so that several parametric masks can be elements of one group */
+typedef struct dt_masks_point_parametric_t
+{
+  uint32_t blendif;                            // active channel flags (+ polarity)
+  float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
+  float blendif_boost_factors[DEVELOP_BLENDIF_SIZE];
+  uint32_t colorspace;                         // dt_develop_blend_colorspace_t the form was made in
+  // the form edits one blendif channel, `channel`, an index into its
+  // colorspace's channel table. Input and output ranges of the channel both
+  // refine the mask, as in classic blendif; `in_out` only says whether the
+  // output range is shown
+  uint32_t channel;                            // index into the colorspace's channel table
+  uint32_t in_out;                             // GUI only: 1 = show the output range too
+  uint32_t disabled;                           // bit 0: input range off, bit 1: output range off
+} dt_masks_point_parametric_t;
+
+/** point struct for a DT_MASKS_RASTER form: a reference to another module's
+    raster mask, by that module's operation and instance and the mask's id
+    within it, so that the reference survives serialization */
+typedef struct dt_masks_point_raster_t
+{
+  dt_dev_operation_t source;                   // op of the module writing the raster mask
+  int instance;                                // multi_priority of that module instance
+  dt_mask_id_t id;                             // which mask of the source module
+} dt_masks_point_raster_t;
 
 
 typedef struct dt_blendop_cl_global_t

@@ -27,7 +27,7 @@
 
 #include <assert.h>
 
-#define DEVELOP_MASKS_VERSION (6)
+#define DEVELOP_MASKS_VERSION (7)
 
 G_BEGIN_DECLS
 
@@ -46,6 +46,8 @@ typedef enum dt_masks_type_t
 #ifdef HAVE_AI
   DT_MASKS_OBJECT = 1 << 8,
 #endif
+  DT_MASKS_PARAMETRIC = 1 << 9, // a parametric (blendif) mask as an element of a group
+  DT_MASKS_RASTER = 1 << 10,    // another module's raster mask as an element of a group
 } dt_masks_type_t;
 
 /**masts states */
@@ -60,12 +62,73 @@ typedef enum dt_masks_state_t
   DT_MASKS_STATE_DIFFERENCE = 1 << 5,
   DT_MASKS_STATE_EXCLUSION = 1 << 6,
   DT_MASKS_STATE_SUM = 1 << 7,
-  DT_MASKS_STATE_OP = DT_MASKS_STATE_UNION
-                    | DT_MASKS_STATE_INTERSECTION
-                    | DT_MASKS_STATE_DIFFERENCE
-                    | DT_MASKS_STATE_SUM
-                    | DT_MASKS_STATE_EXCLUSION
+  // a hidden member is skipped by the group renderer: what solo sets on every
+  // member it does not keep
+  DT_MASKS_STATE_HIDDEN = 1 << 8,
+  // flexi group operators: how a group folds its members, in list order. They
+  // are set on the group's marker and are mutually exclusive; none set is
+  // maximum, the default. See DT_MASKS_STATE_FLEXI_OP
+  //   screen: the soft union a + b - ab, smoothing feathered overlaps
+  DT_MASKS_STATE_FLEXI_SCREEN = 1 << 9,
+  //   minimum: min
+  DT_MASKS_STATE_FLEXI_MINIMUM = 1 << 12,
+  // bypass (on a group's marker): the group contributes nothing, as if it were
+  // not there. A modifier: the group keeps its operator
+  DT_MASKS_STATE_OP_DISABLE = 1 << 14,
+  DT_MASKS_STATE_OP_BYPASS = DT_MASKS_STATE_OP_DISABLE,
+  //   product: the per-pixel product. Not minimum's min(): the two agree only
+  //   for hard 0/1 membership
+  DT_MASKS_STATE_FLEXI_PRODUCT = 1 << 15,
+  // invert output (on a group's marker): flips the group's folded mask after
+  // its refinement and before its opacity. Not DT_MASKS_STATE_INVERSE, which
+  // flips one member's mask before it is folded in: for more than one member
+  // the two differ
+  DT_MASKS_STATE_OP_INVERT = 1 << 16,
+  // disabled (element-level): the group fold skips this element
+  DT_MASKS_STATE_DISABLE = 1 << 17,
+  // a flexi group's own record in its group's point list: it refers to no
+  // form (its formid is an id of its own, in the same id space as the forms)
+  // and holds the group's settings once, followed by the group's members
+  DT_MASKS_STATE_GROUP_MARKER = 1 << 18,
+  //   sum: min(1, a + b), the clamp classic's sum applies after every shape.
+  //   A clamp at 1 is absorbing for non-negative terms, so the fold order
+  //   does not matter
+  DT_MASKS_STATE_FLEXI_SUM = 1 << 19,
+  //   difference: the first visible member is the base and every later one is
+  //   subtracted from it in turn, as classic's difference does
+  DT_MASKS_STATE_FLEXI_DIFFERENCE = 1 << 20,
+  //   exclusion: classic's exclusion combiner, member by member in list
+  //   order. It is not associative, so the order is part of it
+  DT_MASKS_STATE_FLEXI_EXCLUSION = 1 << 21,
+  // a classic member's operator: exactly one of these is set on every member
+  // of a classic group but the bottom one
+  DT_MASKS_STATE_OP_COMBINE = DT_MASKS_STATE_UNION
+                            | DT_MASKS_STATE_INTERSECTION
+                            | DT_MASKS_STATE_DIFFERENCE
+                            | DT_MASKS_STATE_SUM
+                            | DT_MASKS_STATE_EXCLUSION,
+  DT_MASKS_STATE_OP = DT_MASKS_STATE_OP_COMBINE
+                    | DT_MASKS_STATE_OP_DISABLE
+                    | DT_MASKS_STATE_OP_INVERT,
+  // a flexi group's operator
+  DT_MASKS_STATE_FLEXI_OP = DT_MASKS_STATE_FLEXI_SCREEN
+                        | DT_MASKS_STATE_FLEXI_MINIMUM
+                        | DT_MASKS_STATE_FLEXI_PRODUCT
+                        | DT_MASKS_STATE_FLEXI_SUM
+                        | DT_MASKS_STATE_FLEXI_DIFFERENCE
+                        | DT_MASKS_STATE_FLEXI_EXCLUSION
 } dt_masks_state_t;
+
+// one `state` word carries independent roles, a classic member's operator
+// and a group's bypass/invert (DT_MASKS_STATE_OP), a flexi group's operator
+// (DT_MASKS_STATE_FLEXI_OP) and the per-element flags. Their bits must never
+// overlap: a collision switches on an unrelated feature, and bits stored in
+// blobs and XMP cannot be reassigned later
+G_STATIC_ASSERT((DT_MASKS_STATE_OP & DT_MASKS_STATE_FLEXI_OP) == 0);
+G_STATIC_ASSERT((DT_MASKS_STATE_OP_COMBINE
+                 & (DT_MASKS_STATE_OP_DISABLE | DT_MASKS_STATE_OP_INVERT)) == 0);
+G_STATIC_ASSERT((DT_MASKS_STATE_GROUP_MARKER
+                 & (DT_MASKS_STATE_OP | DT_MASKS_STATE_FLEXI_OP)) == 0);
 
 typedef enum dt_masks_property_t
 {
@@ -202,13 +265,49 @@ typedef struct dt_masks_point_gradient_t
   dt_masks_gradient_states_t state;
 } dt_masks_point_gradient_t;
 
-/** structure used to store all forms's id for a group */
+/** which mask a refinement applies to */
+typedef enum dt_masks_refine_scope_t
+{
+  DT_MASKS_REFINE_OFF = 0,     // no refinement
+  DT_MASKS_REFINE_ELEMENT = 1, // a member's own mask, before it is folded in
+  DT_MASKS_REFINE_GROUP = 2,   // on a group's marker: the group's folded mask
+} dt_masks_refine_scope_t;
+
+/** an optional mask refinement (since masks v7). The fields mirror the
+    refinement controls of dt_develop_blend_params_t, which refine the
+    module's finished mask */
+typedef struct dt_masks_refinement_t
+{
+  int32_t enabled;           // dt_masks_refine_scope_t
+  float details;             // detail-mask threshold, [-1..1]
+  float feathering_radius;   // guided-filter radius, [0..]
+  uint32_t feathering_guide; // dt_develop_mask_feathering_guide_t
+  float blur_radius;         // gaussian blur radius, [0..]
+  float contrast;            // mask contrast, [-1..1]
+  float brightness;          // mask brightness, [-1..1]
+} dt_masks_refinement_t;
+
+/** structure used to store all forms's id for a group.
+    The fields after opacity were added in masks v7. A point stored before
+    stops where they start (see dt_masks_point_stride) and is read with them
+    zero-filled, which is neutral for all but group_opacity */
 typedef struct dt_masks_point_group_t
 {
   dt_mask_id_t formid;
   dt_mask_id_t parentid;
   int state;
   float opacity;
+  dt_masks_refinement_t refinement; // zero-filled = no refinement
+  // a user-given group name, on a group's marker. Empty = none
+  char name[128];
+  // a group's own opacity, on its marker, multiplying its folded mask on top
+  // of its members' own opacities. 1.0 is neutral, so the v6 to v7 step sets
+  // it rather than leaving it zero-filled
+  float group_opacity;
+  // a group made from a built-in group layout preset: "<preset id>/<group id>",
+  // the key of the notes the panel shows for it. On a group's marker; empty =
+  // not from a preset. No pixel depends on it
+  char preset_note[64];
 } dt_masks_point_group_t;
 
 /** structure used to store pointers to the functions implementing operations on a mask shape */
@@ -559,6 +658,11 @@ int dt_masks_group_render_roi(dt_iop_module_t *module,
 int dt_masks_version(void);
 
 // update masks from older versions
+/** bytes one stored point of a `type` form takes in a blob written at masks
+    `version`, for a current point struct of `point_size` bytes */
+size_t dt_masks_point_stride(const dt_masks_type_t type,
+                             const int version,
+                             const size_t point_size);
 int dt_masks_legacy_params(dt_develop_t *dev,
                            void *params,
                            const int old_version,

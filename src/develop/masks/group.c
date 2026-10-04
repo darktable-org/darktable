@@ -787,12 +787,11 @@ static void _group_duplicate_points(dt_develop_t *const dev,
   for(GList *pts = base->points; pts; pts = g_list_next(pts))
   {
     dt_masks_point_group_t *pt = pts->data;
-    dt_masks_point_group_t *npt = malloc(sizeof(dt_masks_point_group_t));
+    dt_masks_point_group_t *npt = calloc(1, sizeof(dt_masks_point_group_t));
+    memcpy(npt, pt, sizeof(dt_masks_point_group_t));
 
     npt->formid = dt_masks_form_duplicate(dev, pt->formid);
     npt->parentid = dest->formid;
-    npt->state = pt->state;
-    npt->opacity = pt->opacity;
     dest->points = g_list_append(dest->points, npt);
   }
 }

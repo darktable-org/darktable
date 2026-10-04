@@ -735,10 +735,11 @@ static void _tree_group(GtkButton *button, dt_lib_module_t *self)
 
       if(dt_is_valid_maskid(id))
       {
-        dt_masks_point_group_t *fpt = malloc(sizeof(dt_masks_point_group_t));
+        dt_masks_point_group_t *fpt = calloc(1, sizeof(dt_masks_point_group_t));
         fpt->formid = id;
         fpt->parentid = grp->formid;
         fpt->opacity = 1.0f;
+        fpt->group_opacity = 1.0f;
         fpt->state = DT_MASKS_STATE_USE;
         if(pos > 0) fpt->state |= DT_MASKS_STATE_UNION;
         grp->points = g_list_append(grp->points, fpt);
@@ -1175,11 +1176,12 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
       dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, id);
       if(form)
       {
-        dt_masks_point_group_t *fpt = malloc(sizeof(dt_masks_point_group_t));
+        dt_masks_point_group_t *fpt = calloc(1, sizeof(dt_masks_point_group_t));
         fpt->formid = id;
         fpt->parentid = grid;
         fpt->state = DT_MASKS_STATE_USE;
         fpt->opacity = 1.0f;
+        fpt->group_opacity = 1.0f;
         grp->points = g_list_append(grp->points, fpt);
         // we eventually set the "show masks" icon of iops
         if(nb == 1 && (form->type & DT_MASKS_GROUP))

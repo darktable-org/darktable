@@ -440,10 +440,11 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev,
         grp = _group_create(dev, module, DT_MASKS_GROUP);
     }
     // we add the form in this group
-    dt_masks_point_group_t *grpt = malloc(sizeof(dt_masks_point_group_t));
+    dt_masks_point_group_t *grpt = calloc(1, sizeof(dt_masks_point_group_t));
     grpt->formid = form->formid;
     grpt->parentid = grp->formid;
     grpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
+    grpt->group_opacity = 1.0f;
     if(grp->points)
     {
       if(form->type == DT_MASKS_BRUSH)
@@ -842,50 +843,52 @@ static int _masks_legacy_params_v5_to_v6(dt_develop_t *dev, void *params)
   return 0;
 }
 
+static int _masks_legacy_params_v6_to_v7(dt_develop_t *dev, void *params)
+{
+  /*
+   * masks v7 appended the refinement, the group name, the group opacity and
+   * the preset note to the group point. The loader zero-fills them, which is
+   * neutral for all but the group opacity, a gain that would blank the mask
+   */
+  dt_masks_form_t *m = (dt_masks_form_t *)params;
+  if(m->type & DT_MASKS_GROUP)
+    for(GList *l = m->points; l; l = g_list_next(l))
+      ((dt_masks_point_group_t *)l->data)->group_opacity = 1.0f;
+  m->version = 7;
+  return 0;
+}
+
+size_t dt_masks_point_stride(const dt_masks_type_t type,
+                             const int version,
+                             const size_t point_size)
+{
+  // a group point stored before masks v7 stops where the refinement starts
+  if((type & DT_MASKS_GROUP) && version < 7)
+    return offsetof(dt_masks_point_group_t, refinement);
+  return point_size;
+}
 
 int dt_masks_legacy_params(dt_develop_t *dev,
                            void *params,
                            const int old_version,
                            const int new_version)
 {
-  int res = 1;
-#if 0 // we should not need this any longer
-  if(old_version == 1 && new_version == 2)
-  {
-    res = dt_masks_legacy_params_v1_to_v2(dev, params);
-  }
-#endif
+  // apply every step from old_version up to new_version, in order
+  if(old_version < 1 || old_version > new_version) return 1;
 
-  if(old_version == 1 && new_version == 6)
-  {
+  int res = 0;
+  if(!res && old_version < 2 && new_version >= 2)
     res = _masks_legacy_params_v1_to_v2(dev, params);
-    if(!res) res = _masks_legacy_params_v2_to_v3(dev, params);
-    if(!res) res = _masks_legacy_params_v3_to_v4(dev, params);
-    if(!res) res = _masks_legacy_params_v4_to_v5(dev, params);
-    if(!res) res = _masks_legacy_params_v5_to_v6(dev, params);
-  }
-  else if(old_version == 2 && new_version == 6)
-  {
+  if(!res && old_version < 3 && new_version >= 3)
     res = _masks_legacy_params_v2_to_v3(dev, params);
-    if(!res) res = _masks_legacy_params_v3_to_v4(dev, params);
-    if(!res) res = _masks_legacy_params_v4_to_v5(dev, params);
-    if(!res) res = _masks_legacy_params_v5_to_v6(dev, params);
-  }
-  else if(old_version == 3 && new_version == 6)
-  {
+  if(!res && old_version < 4 && new_version >= 4)
     res = _masks_legacy_params_v3_to_v4(dev, params);
-    if(!res) res = _masks_legacy_params_v4_to_v5(dev, params);
-    if(!res) res = _masks_legacy_params_v5_to_v6(dev, params);
-  }
-  else if(old_version == 4 && new_version == 6)
-  {
+  if(!res && old_version < 5 && new_version >= 5)
     res = _masks_legacy_params_v4_to_v5(dev, params);
-    if(!res) res = _masks_legacy_params_v5_to_v6(dev, params);
-  }
-  else if(old_version == 5 && new_version == 6)
-  {
+  if(!res && old_version < 6 && new_version >= 6)
     res = _masks_legacy_params_v5_to_v6(dev, params);
-  }
+  if(!res && old_version < 7 && new_version >= 7)
+    res = _masks_legacy_params_v6_to_v7(dev, params);
 
   return res;
 }
@@ -1048,10 +1051,11 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
     {
       const char *const ptbuf = (char *)sqlite3_column_blob(stmt, 5);
       const size_t point_size = form->functions->point_struct_size;
+      const size_t read_size = dt_masks_point_stride(type, form->version, point_size);
       for(int i = 0; i < nb_points; i++)
       {
-        char *point = malloc(point_size);
-        memcpy(point, ptbuf + i*point_size, point_size);
+        char *point = calloc(1, point_size);
+        memcpy(point, ptbuf + i * read_size, MIN(read_size, point_size));
         form->points = g_list_append(form->points, point);
       }
     }
@@ -1756,11 +1760,12 @@ void dt_masks_set_edit_mode_single_form(dt_iop_module_t *module,
   const dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, formid);
   if(form)
   {
-    dt_masks_point_group_t *fpt = malloc(sizeof(dt_masks_point_group_t));
+    dt_masks_point_group_t *fpt = calloc(1, sizeof(dt_masks_point_group_t));
     fpt->formid = formid;
     fpt->parentid = grid;
     fpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
     fpt->opacity = 1.0f;
+    fpt->group_opacity = 1.0f;
     grp->points = g_list_append(grp->points, fpt);
   }
 
@@ -2260,12 +2265,13 @@ dt_masks_point_group_t *dt_masks_group_add_form(dt_masks_form_t *grp,
   // or we go through all points of form to see if we find a ref to grp->formid
   if(!(form->type & DT_MASKS_GROUP) || _find_in_group(form, grp->formid) == 0)
   {
-    dt_masks_point_group_t *grpt = malloc(sizeof(dt_masks_point_group_t));
+    dt_masks_point_group_t *grpt = calloc(1, sizeof(dt_masks_point_group_t));
     grpt->formid = form->formid;
     grpt->parentid = grp->formid;
     grpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
     if(grp->points) grpt->state |= DT_MASKS_STATE_UNION;
     grpt->opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
+    grpt->group_opacity = 1.0f;
     grp->points = g_list_append(grp->points, grpt);
     return grpt;
   }
@@ -2294,11 +2300,8 @@ void dt_masks_group_ungroup(dt_masks_form_t *dest_grp,
       }
       else
       {
-        dt_masks_point_group_t *fpt = malloc(sizeof(dt_masks_point_group_t));
-        fpt->formid = grpt->formid;
-        fpt->parentid = grpt->parentid;
-        fpt->state = grpt->state;
-        fpt->opacity = grpt->opacity;
+        dt_masks_point_group_t *fpt = calloc(1, sizeof(dt_masks_point_group_t));
+        memcpy(fpt, grpt, sizeof(dt_masks_point_group_t));
         dest_grp->points = g_list_append(dest_grp->points, fpt);
       }
     }

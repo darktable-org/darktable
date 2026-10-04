@@ -714,11 +714,12 @@ static void rt_show_forms_for_current_scale(dt_iop_module_t *self)
       dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, formid);
       if(form)
       {
-        dt_masks_point_group_t *fpt = malloc(sizeof(dt_masks_point_group_t));
+        dt_masks_point_group_t *fpt = calloc(1, sizeof(dt_masks_point_group_t));
         fpt->formid = formid;
         fpt->parentid = grid;
         fpt->state = DT_MASKS_STATE_USE;
         fpt->opacity = 1.0f;
+        fpt->group_opacity = 1.0f;
         grp->points = g_list_append(grp->points, fpt);
       }
     }
