@@ -37,9 +37,9 @@ You are strongly advised to take a backup first.
 
 Since darktable 5.6.1:
 
-- 150 commits to darktable+rawspeed
-- 100 pull requests handled
--   8 issues closed
+- 63 commits to darktable+rawspeed
+- 26 pull requests handled
+-  0 issues closed
 
 ## The Big Ones
 
@@ -67,7 +67,7 @@ changes (where available).
   darktable we take a snapshot of the current state of the development-docs.
 
 - The stable documentation for 5.6.2 can be found [here](https://docs.darktable.org/usermanual/5.6/en/)
-  and now contains a version switcher at the top to switch between 5.6 and development version of the manual. 
+  and now contains a version switcher at the top to switch between 5.6 and development version of the manual.
 
 - If you find room for improvement on the manual, you are welcome to open an
   [issue](https://github.com/darktable-org/dtdocs/issues), post to
@@ -186,7 +186,8 @@ changes (where available).
 
 ### White Balance Presets
 
-- N/A
+- Leica SL3-P (DNG)
+- Sony ILCE-7RM6
 
 ### Noise Profiles
 
