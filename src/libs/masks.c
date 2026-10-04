@@ -2262,9 +2262,9 @@ void gui_init(dt_lib_module_t *self)
   const int bs2 = DT_PIXEL_APPLY_DPI(13);
   d->ic_inverse = _get_pixbuf_from_cairo(dtgtk_cairo_paint_masks_inverse, bs2, bs2);
   d->ic_used = _get_pixbuf_from_cairo(dtgtk_cairo_paint_masks_used, bs2, bs2);
-  d->ic_union = _get_pixbuf_from_cairo(dtgtk_cairo_paint_masks_union, bs2 * 2, bs2);
+  d->ic_union = _get_pixbuf_from_cairo(dtgtk_cairo_paint_masks_maximum, bs2 * 2, bs2);
   d->ic_intersection =
-    _get_pixbuf_from_cairo(dtgtk_cairo_paint_masks_intersection, bs2 * 2, bs2);
+    _get_pixbuf_from_cairo(dtgtk_cairo_paint_masks_minimum, bs2 * 2, bs2);
   d->ic_difference =
     _get_pixbuf_from_cairo(dtgtk_cairo_paint_masks_difference, bs2 * 2, bs2);
   d->ic_sum =

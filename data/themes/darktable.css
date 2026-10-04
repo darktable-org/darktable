@@ -951,6 +951,12 @@ menuitem check:selected
   padding-right: 0.42em;
 }
 
+.dt_bauhaus_popup_slider /* room past both ends of the range, so min and max are easy to click */
+{
+  padding-left: 1.2em;
+  padding-right: 1.2em;
+}
+
 /* ??? workaround a wayland issue where the sub-menu in the presets
    closing when close to the right border of the screen. */
 menuitem *
