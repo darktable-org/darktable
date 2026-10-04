@@ -3064,6 +3064,28 @@ gboolean dt_exif_read(dt_image_t *img,
   }
 }
 
+gboolean dt_exif_get_dimensions(const char *path, int *width, int *height)
+{
+  try
+  {
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
+    if(!image.get()) return FALSE;
+    read_metadata_threadsafe(image);
+    const int w = (int)image->pixelWidth();
+    const int h = (int)image->pixelHeight();
+    if(w <= 0 || h <= 0) return FALSE;
+    *width = w;
+    *height = h;
+    return TRUE;
+  }
+  catch(const std::exception &)
+  {
+    // an unreadable or unrecognized file is not worth reporting here: the
+    // caller has a fallback and says how often it used it
+    return FALSE;
+  }
+}
+
 // must run AFTER dt_exif_write_blob(), which merges the source image's
 // metadata into the output and would otherwise overwrite this
 gboolean dt_exif_xmp_write_neural_restore(const char *path, const char *task)

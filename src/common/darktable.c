@@ -28,6 +28,8 @@
 #include "common/collection.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "develop/masks/harvest.h"
+#include "develop/masks/verify.h"
 #include "common/datetime.h"
 #include "common/exif.h"
 #include "common/pwstorage/pwstorage.h"
@@ -171,6 +173,22 @@ static void _show_console_notice(void)
 }
 #endif
 
+/* the report path for a harvest FILE: FILE + `suffix`, without a trailing
+   ".gz", so that a compressed harvest and the same one unpacked get the same
+   report name */
+static gchar *_masks_report_path(const char *input, const char *suffix)
+{
+  const size_t len = strlen(input);
+  if(len > 3 && !strcmp(input + len - 3, ".gz"))
+  {
+    gchar *stem = g_strndup(input, len - 3);
+    gchar *out = g_strconcat(stem, suffix, NULL);
+    g_free(stem);
+    return out;
+  }
+  return g_strconcat(input, suffix, NULL);
+}
+
 static int usage(const char *argv0)
 {
 #ifdef _WIN32
@@ -221,6 +239,37 @@ static int usage(const char *argv0)
          "    The default location depends on your installation.\n"
          "    Typical locations are /opt/darktable/share/darktable/ \n"
          "    and /usr/share/darktable/\n"
+         "\n"
+         "--verify-masks FILE\n"
+         "    Replay the mask configurations in a --harvest-masks FILE, rendering\n"
+         "    each one before and after migration to the new mask model and\n"
+         "    comparing the results, then exit. Writes FILE.report.json.\n"
+         "\n"
+         "--harvest-masks-xmp DIR FILE\n"
+         "    The same, for people who do not use darktable's library: walk DIR\n"
+         "    recursively, read the mask configurations out of every .xmp sidecar\n"
+         "    found and write them to FILE (plus FILE.gz). Reads nothing else from\n"
+         "    the sidecars -- no file names, no GPS, no timestamps -- and writes\n"
+         "    nothing anywhere else.\n"
+         "\n"
+         "--harvest-masks FILE\n"
+         "    Export every mask configuration in the library to FILE as JSON, then\n"
+         "    exit. Used to check that migrating masks to the new model leaves real\n"
+         "    edits rendering identically; sharing the file with the developers helps\n"
+         "    test that against a wider range of edits than we can invent.\n"
+         "\n"
+         "    The library is opened strictly read-only and is never locked, written\n"
+         "    to, or schema-upgraded. Use --library / --configdir to choose which\n"
+         "    library to read.\n"
+         "\n"
+         "    The output is plain, readable JSON holding only numbers and darktable\n"
+         "    module names: no file or folder names, no shape, group or module\n"
+         "    instance names, no image content or thumbnails, no EXIF, no timestamps.\n"
+         "    Images appear only as pixel dimensions and a sequential index. Please\n"
+         "    read the file before sharing it.\n"
+         "\n"
+         "    A compressed copy is also written to FILE.gz (this data compresses by\n"
+         "    roughly 12x). Read FILE, send FILE.gz -- they hold the same thing.\n"
          "\n"
          "--library FILE\n"
          "    Specifies an alternate location for darktable's image information database,\n"
@@ -1080,6 +1129,9 @@ int dt_init(int argc,
 
   // database
   char *dbfilename_from_command = NULL;
+  char *harvest_masks_output = NULL;
+  char *harvest_masks_xmp_dir = NULL;
+  char *verify_masks_input = NULL;
   char *noiseprofiles_from_command = NULL;
   char *datadir_from_command = NULL;
   char *moduledir_from_command = NULL;
@@ -1168,6 +1220,43 @@ int dt_init(int argc,
       else if(!strcmp(argv[k], "--library") && argc > k + 1)
       {
         dbfilename_from_command = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--harvest-masks-xmp"))
+      {
+        if(argc <= k + 2 || argv[k + 1][0] == '-' || argv[k + 2][0] == '-')
+        {
+          g_strfreev(myoptions);
+          return usage(argv[0]);
+        }
+        harvest_masks_xmp_dir = argv[++k];
+        harvest_masks_output = argv[++k];
+        argv[k - 2] = NULL;
+        argv[k - 1] = NULL;
+        argv[k] = NULL;
+        // handled below, before anything opens a database
+        continue;
+      }
+      else if(!strcmp(argv[k], "--harvest-masks"))
+      {
+        if(argc <= k + 1 || argv[k + 1][0] == '-')
+        {
+          g_strfreev(myoptions);
+          return usage(argv[0]);
+        }
+        harvest_masks_output = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--verify-masks"))
+      {
+        if(argc <= k + 1 || argv[k + 1][0] == '-')
+        {
+          g_strfreev(myoptions);
+          return usage(argv[0]);
+        }
+        verify_masks_input = argv[++k];
         argv[k-1] = NULL;
         argv[k] = NULL;
       }
@@ -1578,6 +1667,42 @@ int dt_init(int argc,
     dt_print(DT_DEBUG_ALWAYS,
              "[init] darktable dump directory is '%s'",
              darktable.tmp_directory ? darktable.tmp_directory : "NOT AVAILABLE");
+  }
+
+  if(harvest_masks_xmp_dir)
+  {
+    // here for the reason --harvest-masks below is: before anything opens or
+    // locks a database
+    const gboolean ok =
+      dt_masks_harvest_xmp_dir(harvest_masks_xmp_dir, harvest_masks_output);
+    exit(ok ? 0 : 1);
+  }
+
+  if(harvest_masks_output)
+  {
+    // harvest and exit here, before dt_database_init() locks the library and
+    // may upgrade its schema: the user's library must not be touched (see
+    // harvest.h)
+    gchar *library = NULL;
+    if(dbfilename_from_command)
+      library = g_strdup(dbfilename_from_command);
+    else
+    {
+      gchar *cfg = configdir_from_command
+        ? g_strdup(configdir_from_command)
+        : g_build_filename(g_get_user_config_dir(), "darktable", NULL);
+      library = g_build_filename(cfg, "library.db", NULL);
+      g_free(cfg);
+    }
+
+    const gboolean ok = dt_masks_harvest_library(library, harvest_masks_output);
+    if(!ok)
+      fprintf(stderr,
+              "[harvest] no output written.\n"
+              "[harvest] Use --library FILE to name the library explicitly, or\n"
+              "[harvest] --configdir DIR to name the directory holding library.db.\n");
+    g_free(library);
+    exit(ok ? 0 : 1);
   }
 
   // Set directories as requested or default.
@@ -2153,6 +2278,18 @@ int dt_init(int argc,
     dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: iop order looks bad, aborting.");
     dt_splash_screen_destroy();
     return 1;
+  }
+
+  if(verify_masks_input)
+  {
+    // here: the replay runs the real blend, which needs the color profiles
+    // (dt_colorspaces_init) and real module instances (dt_iop_load_modules_so)
+    // above, but no window, so that it runs headless and in CI
+    dt_splash_screen_destroy();
+    gchar *report = _masks_report_path(verify_masks_input, ".report.json");
+    const gboolean ok = dt_masks_verify_harvest(verify_masks_input, report);
+    g_free(report);
+    exit(ok ? 0 : 1);
   }
 
   if(darktable.dump_pfm_module)
