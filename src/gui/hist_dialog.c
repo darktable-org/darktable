@@ -41,29 +41,12 @@ typedef enum _style_items_columns_t
   DT_HIST_ITEMS_NUM_COLS
 } _styles_columns_t;
 
-static gboolean _gui_hist_is_copy_module_order_set(dt_history_copy_item_t *d)
+static void _gui_hist_iop_order_toggled(GtkToggleButton *button,
+                                        gpointer data)
 {
-  /* iterate through TreeModel to find if module order was copied
-   * (num=-1 and active) */
-  GtkTreeIter iter;
-  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->items));
+  dt_history_copy_item_t *d = (dt_history_copy_item_t *)data;
 
-  gboolean active = FALSE;
-  gboolean module_order_was_copied = FALSE;
-  gint num = 0;
-
-  gtk_tree_model_get_iter_first(model, &iter);
-  do
-  {
-      gtk_tree_model_get(model, &iter,
-                         DT_HIST_ITEMS_COL_ENABLED, &active,
-                         DT_HIST_ITEMS_COL_NUM, &num,
-                         -1);
-      if(active && (num == -1)) module_order_was_copied = TRUE;
-  }
-  while(gtk_tree_model_iter_next(model, &iter));
-
-  return module_order_was_copied;
+  d->copy_iop_order = gtk_toggle_button_get_active(button);
 }
 
 static GList *_gui_hist_get_active_items(dt_history_copy_item_t *d)
@@ -86,7 +69,7 @@ static GList *_gui_hist_get_active_items(dt_history_copy_item_t *d)
                          DT_HIST_ITEMS_COL_NUM, &num,
                          -1);
 
-      if(active && num >= 0)
+      if(active)
         result = g_list_prepend(result, GINT_TO_POINTER(autoinit ? -num : num));
 
     } while(gtk_tree_model_iter_next(model, &iter));
@@ -130,13 +113,11 @@ static void _gui_hist_copy_response(GtkDialog *dialog,
 
     case GTK_RESPONSE_OK:
       g->selops = _gui_hist_get_active_items(g);
-      g->copy_iop_order = _gui_hist_is_copy_module_order_set(g);
       g->paste_mode = DT_HISTORY_COPY_APPEND;
       break;
 
     case GTK_RESPONSE_APPLY:
       g->selops = _gui_hist_get_active_items(g);
-      g->copy_iop_order = _gui_hist_is_copy_module_order_set(g);
       g->paste_mode = DT_HISTORY_COPY_OVERWRITE;
       break;
   }
@@ -221,7 +202,9 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
                            const dt_imgid_t imgid,
                            const gboolean iscopy)
 {
-  int res;
+  // keep previous state of the dialog
+  const dt_history_copy_item_t old_d = *d;
+
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
 
   GtkDialog *dialog = NULL;
@@ -352,21 +335,6 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
       }
     }
     g_list_free_full(items, dt_history_item_free);
-
-    /* last item is for copying the module order, or if paste and was selected */
-    if(iscopy || d->copy_iop_order)
-    {
-      const dt_iop_order_t order = dt_ioppr_get_iop_order_version(imgid);
-      char *label = g_strdup_printf("%s (%s)", _("module order"),
-                                    dt_iop_order_string(order));
-      gtk_list_store_insert_with_values(liststore, NULL, -1,
-                         DT_HIST_ITEMS_COL_ENABLED, d->copy_iop_order,
-                         DT_HIST_ITEMS_COL_ISACTIVE, is_active_pb,
-                         DT_HIST_ITEMS_COL_NAME, label,
-                         DT_HIST_ITEMS_COL_NUM, -1,
-                         -1);
-      g_free(label);
-    }
   }
   else
   {
@@ -378,9 +346,22 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
                    G_CALLBACK(tree_on_row_activated), GTK_WIDGET(dialog));
   g_object_unref(liststore);
 
+  // the module order travels as a whole, not as one of the items above
+  const dt_iop_order_t order = dt_ioppr_get_iop_order_version(imgid);
+  char *label = g_strdup_printf("%s (%s)", _("module order"),
+                                dt_iop_order_string(order));
+  GtkWidget *iop_order = gtk_check_button_new_with_label(label);
+  g_free(label);
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(iop_order), d->copy_iop_order);
+  g_signal_connect(iop_order, "toggled", G_CALLBACK(_gui_hist_iop_order_toggled), d);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), iop_order);
+
   g_signal_connect(dialog, "response", G_CALLBACK(_gui_hist_copy_response), d);
 
   gtk_widget_show_all(GTK_WIDGET(dialog));
+
+  int res = GTK_RESPONSE_CANCEL;
 
   while(1)
   {
@@ -389,6 +370,13 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
        || res == GTK_RESPONSE_DELETE_EVENT
        || res == GTK_RESPONSE_OK
        || res == GTK_RESPONSE_APPLY) break;
+  }
+
+  // restore previous state if needed
+  if(res == GTK_RESPONSE_CANCEL || res == GTK_RESPONSE_DELETE_EVENT)
+  {
+    // restore previous state if needed
+    *d = old_d;
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
@@ -404,6 +392,8 @@ void dt_gui_hist_dialog_init(dt_history_copy_item_t *d)
   d->selops = NULL;
   d->copied_imageid = NO_IMGID;
   d->copy_iop_order = FALSE;
+  d->full_copy = FALSE;
+  d->paste_mode = DT_HISTORY_COPY_APPEND;
 }
 
 // clang-format off
