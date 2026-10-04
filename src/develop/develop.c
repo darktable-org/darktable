@@ -4336,15 +4336,33 @@ gboolean dt_dev_equal_chroma(const float *f, const double *d)
       && feqf(f[2], (float)d[2], 0.00001f);
 }
 
+// dev->chroma.temperature/adaptation are raw module pointers that nothing owns.
+// dt_iop_cleanup_module clears the one it frees, but the cache is written from
+// too many places to rely on that alone: a module missing from dev->iop has
+// been freed, whatever freed it, and must not be dereferenced
+static gboolean _chroma_module_alive(const dt_develop_t *dev,
+                                     const dt_iop_module_t *const module)
+{
+  if(!module) return FALSE;
+  for(const GList *m = dev->iop; m; m = g_list_next(m))
+    if(m->data == module) return TRUE;
+
+  // loud on purpose: some write site left a dangling module in the cache
+  dt_print(DT_DEBUG_ALWAYS,
+           "[chroma] stale module %p in dev->chroma (not in dev->iop) -- ignored",
+           (const void *)module);
+  return FALSE;
+}
+
 void dt_dev_clear_chroma_troubles(dt_develop_t *dev)
 {
   if(!dev->gui_attached)
     return;
 
   dt_dev_chroma_t *chr = &dev->chroma;
-  if(chr->temperature)
+  if(_chroma_module_alive(dev, chr->temperature))
     dt_iop_clear_module_trouble_message(chr->temperature);
-  if(chr->adaptation)
+  if(_chroma_module_alive(dev, chr->adaptation))
     dt_iop_clear_module_trouble_message(chr->adaptation);
 }
 
