@@ -28,13 +28,11 @@
 #include "common/metadata.h"
 #include "control/control.h"
 
-#include <ctype.h>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 
 // copy here the iop params struct with the actual version. This is so to
 // be as independent as possible of any iop evolutions. Indeed, we create
