@@ -492,6 +492,10 @@ changes (where available).
   one, which slightly changed the colors along the right edge of the
   image.
 
+- Fixed darktable-cli failing with "can't acquire database lock" when
+  several instances run in parallel with the same configuration
+  directory.
+
 ## Lua
 
 ### API Version
