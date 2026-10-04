@@ -479,6 +479,10 @@ changes (where available).
 - Copying a whole history stack no longer carries over the module order
   that was selected in an earlier "copy parts of the history" dialog.
 
+- Fixed the lens correction module reporting distortion correction as
+  applied from embedded metadata when the file only carries chromatic
+  aberration correction data.
+
 ## Lua
 
 ### API Version
