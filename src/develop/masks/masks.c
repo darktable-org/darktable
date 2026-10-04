@@ -1607,6 +1607,25 @@ void dt_masks_change_form_gui(dt_masks_form_t *newform)
   DT_LEAVE_GUI_UPDATE();
 }
 
+gboolean dt_masks_cancel_creation(void)
+{
+  dt_masks_form_gui_t *gui = darktable.develop ? darktable.develop->form_gui : NULL;
+  if(!gui || !gui->creation) return FALSE;
+
+  dt_iop_module_t *module = gui->creation_module;
+  gui->creation_continuous = FALSE;
+  gui->creation_continuous_module = NULL;
+  if(module)
+  {
+    dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
+    dt_masks_iop_update(module);
+  }
+  else
+    dt_masks_change_form_gui(NULL);
+  dt_control_queue_redraw_center();
+  return TRUE;
+}
+
 void dt_masks_reset_form_gui(void)
 {
   dt_masks_change_form_gui(NULL);
