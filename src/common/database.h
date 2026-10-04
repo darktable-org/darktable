@@ -25,9 +25,16 @@ G_BEGIN_DECLS
 
 struct dt_database_t;
 
+typedef enum dt_database_data_t
+{
+  DT_DATABASE_DATA_NONE = 0,        // empty in-memory data.db
+  DT_DATABASE_DATA_FILE = 1,        // data.db on disk, locked for this process
+  DT_DATABASE_DATA_MEMORY_COPY = 2, // in-memory copy of data.db, never written back
+} dt_database_data_t;
+
 /** allocates and initializes database */
 struct dt_database_t *dt_database_init(const char *alternative,
-                                       const gboolean load_data,
+                                       const dt_database_data_t load_data,
                                        const gboolean has_gui);
 /** closes down database and frees memory */
 void dt_database_destroy(const struct dt_database_t *);

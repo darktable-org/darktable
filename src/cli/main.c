@@ -496,7 +496,8 @@ int main(int argc, char *arg[])
     // dt_init() resolves and prints the paths, then exit()s directly -
     // skip the input/output file requirements below, they don't apply
     // to a paths query.
-    dt_init(m_argc, m_arg, FALSE, custom_presets, NULL);
+    dt_init(m_argc, m_arg, FALSE,
+            custom_presets ? DT_DATABASE_DATA_MEMORY_COPY : DT_DATABASE_DATA_NONE, NULL);
   }
 
   gboolean args_error = FALSE;
@@ -600,8 +601,9 @@ int main(int argc, char *arg[])
     // or not if we decide we don't replace file ext with output ext specified
   }
 
-  // init dt without gui and without data.db:
-  if(dt_init(m_argc, m_arg, FALSE, custom_presets, NULL))
+  // init dt without gui, with a private in-memory copy of data.db
+  if(dt_init(m_argc, m_arg, FALSE,
+             custom_presets ? DT_DATABASE_DATA_MEMORY_COPY : DT_DATABASE_DATA_NONE, NULL))
   {
     free(m_arg);
     g_free(output_filename);

@@ -1033,7 +1033,7 @@ char *version = g_strdup_printf(
 int dt_init(int argc,
             char *argv[],
             const gboolean init_gui,
-            const gboolean load_data,
+            const dt_database_data_t load_data,
             lua_State *L)
 {
 #ifndef _WIN32

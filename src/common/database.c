@@ -4257,8 +4257,45 @@ gchar* _get_pragma_string_val(sqlite3 *db,
   return val;
 }
 
+static gboolean _snapshot_data_db(sqlite3 *handle, const char *filename)
+{
+  sqlite3 *src = NULL;
+  if(sqlite3_open_v2(filename, &src, SQLITE_OPEN_READONLY, NULL) != SQLITE_OK)
+  {
+    sqlite3_close(src);
+    return FALSE;
+  }
+
+  // sqlite refuses to back up into an in-memory database of another page size
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(src, "PRAGMA page_size", -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    gchar *query = g_strdup_printf("PRAGMA data.page_size = %d", sqlite3_column_int(stmt, 0));
+    sqlite3_exec(handle, query, NULL, NULL, NULL);
+    g_free(query);
+  }
+  sqlite3_finalize(stmt);
+
+  sqlite3_backup *backup = sqlite3_backup_init(handle, "data", src, "main");
+  int rc = SQLITE_ERROR;
+  if(backup)
+  {
+    // a running darktable may hold a write lock on data.db for a moment
+    for(int tries = 0; tries < 50; tries++)
+    {
+      rc = sqlite3_backup_step(backup, -1);
+      if(rc != SQLITE_BUSY && rc != SQLITE_LOCKED) break;
+      sqlite3_sleep(100);
+    }
+    sqlite3_backup_finish(backup);
+  }
+  sqlite3_close(src);
+  return rc == SQLITE_DONE;
+}
+
 dt_database_t *dt_database_init(const char *alternative,
-                                const gboolean load_data,
+                                const dt_database_data_t load_data,
                                 const gboolean has_gui)
 {
   /*  set the threading mode to Serialized */
@@ -4308,11 +4345,17 @@ start:
 
   /* we also need a 2nd db with permanent data like presets, styles and tags */
   char dbfilename_data[PATH_MAX] = { 0 };
-  if(load_data)
+  char dbfilename_snapshot[PATH_MAX] = { 0 };
+  if(load_data == DT_DATABASE_DATA_FILE)
     snprintf(dbfilename_data, sizeof(dbfilename_data),
              "%s%sdata.db", datadir, G_DIR_SEPARATOR_S);
   else
     snprintf(dbfilename_data, sizeof(dbfilename_data), ":memory:");
+  // no lock and no backup on the snapshot path: parallel darktable-cli runs
+  // would otherwise fail on each other's data.db.lock
+  if(load_data == DT_DATABASE_DATA_MEMORY_COPY)
+    snprintf(dbfilename_snapshot, sizeof(dbfilename_snapshot),
+             "%s%sdata.db", datadir, G_DIR_SEPARATOR_S);
 
   // It may happen that we will not have write access to the database restored
   // from a backup or snapshot. Running darktable with a database that cannot
@@ -4412,7 +4455,8 @@ start:
 
   // attach the data database which contains presets, styles, tags and similar things not tied to single images
   sqlite3_stmt *stmt;
-  gboolean have_data_db = load_data && g_file_test(dbfilename_data, G_FILE_TEST_EXISTS);
+  gboolean have_data_db = load_data == DT_DATABASE_DATA_FILE
+                          && g_file_test(dbfilename_data, G_FILE_TEST_EXISTS);
   int rc = sqlite3_prepare_v2(db->handle, "ATTACH DATABASE ?1 AS data", -1, &stmt, NULL);
   sqlite3_bind_text(stmt, 1, dbfilename_data, -1, SQLITE_TRANSIENT);
   if(rc != SQLITE_OK || sqlite3_step(stmt) != SQLITE_DONE)
@@ -4425,6 +4469,19 @@ start:
     goto error;
   }
   sqlite3_finalize(stmt);
+
+  if(dbfilename_snapshot[0] && g_file_test(dbfilename_snapshot, G_FILE_TEST_EXISTS))
+  {
+    if(!_snapshot_data_db(db->handle, dbfilename_snapshot))
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[init] database `%s' couldn't be copied to memory. aborting",
+               dbfilename_snapshot);
+      dt_database_destroy(db);
+      db = NULL;
+      goto error;
+    }
+    have_data_db = TRUE;
+  }
 
   // some sqlite3 config
   sqlite3_exec(db->handle, "PRAGMA synchronous = OFF", NULL, NULL, NULL);
