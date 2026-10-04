@@ -200,7 +200,8 @@ changes (where available).
   deleted.
 
 - HEIF exports using a PQ output color profile now include HDR10 content
-  light level metadata (MaxCLL and MaxFALL).
+  light level metadata (MaxCLL and MaxFALL) when built with libheif 1.15.0
+  or newer.
 
 - AVIF exports using a PQ output color profile now include HDR10 content
   light level metadata (MaxCLL and MaxFALL) when built with libavif 1.0.0
@@ -294,6 +295,9 @@ changes (where available).
   ready to splice into another invocation.
 
 ## Bug Fixes
+
+- Fixed HEIF export compilation with libheif versions older than 1.15.0,
+  and with versions older than 1.16.0 when libsharpyuv is available.
 
 - Do not convert the pipe input in place for blending, which may result
   in a corrputed buffer.

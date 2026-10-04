@@ -118,6 +118,7 @@ void cleanup(dt_imageio_module_format_t *self)
 {
 }
 
+#if LIBHEIF_HAVE_VERSION(1, 15, 0)
 /*
  * SMPTE ST 2084 (PQ) EOTF: map a normalized PQ-encoded value in [0, 1] to
  * absolute luminance in cd/m^2 (nits), peak white = 10000 nits.
@@ -136,6 +137,8 @@ static float _pq_to_nits(const float e)
   if(den <= 0.0f) return 10000.0f;
   return 10000.0f * powf(num / den, 1.0f / m1);
 }
+
+#endif
 
 int write_image(dt_imageio_module_data_t *data,
                 const char *filename,
@@ -344,6 +347,7 @@ int write_image(dt_imageio_module_data_t *data,
     }
   }
 
+#if LIBHEIF_HAVE_VERSION(1, 15, 0)
   /*
    * HDR10 content light level (clli) metadata.
    *
@@ -384,6 +388,7 @@ int write_image(dt_imageio_module_data_t *data,
     dt_print(DT_DEBUG_IMAGEIO, "[heif HDR10 clli: MaxCLL=%u nits, MaxFALL=%u nits]",
              cll.max_content_light_level, cll.max_pic_average_light_level);
   }
+#endif
 
   struct heif_context* context = heif_context_alloc();
   if(!context)
@@ -477,7 +482,7 @@ int write_image(dt_imageio_module_data_t *data,
     return 1; // failure
   }
 
-#ifdef HAVE_LIBSHARPYUV
+#if defined(HAVE_LIBSHARPYUV) && LIBHEIF_HAVE_VERSION(1, 16, 0)
   options->color_conversion_options.preferred_chroma_downsampling_algorithm = heif_chroma_downsampling_sharp_yuv;
   options->color_conversion_options.only_use_preferred_chroma_algorithm = FALSE;
 #endif
