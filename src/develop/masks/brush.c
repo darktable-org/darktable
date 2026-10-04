@@ -1421,7 +1421,7 @@ static int _brush_events_mouse_scrolled(dt_iop_module_t *module,
     if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       // we try to change the opacity
-      dt_masks_form_change_opacity(form, parentid, up ? 0.05f : -0.05f);
+      dt_masks_form_change_opacity(module, form, parentid, up ? 0.05f : -0.05f);
     }
     else
     {
@@ -1825,7 +1825,7 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
       }
 
       // we delete or remove the shape
-      dt_masks_form_remove(module, NULL, form);
+      dt_masks_remove_shape(module, form, parentid, FALSE);
       dt_control_queue_redraw_center();
       return 1;
     }
@@ -1888,7 +1888,7 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
     }
 
     // we remove the shape
-    dt_masks_form_remove(module, dt_masks_get_from_id(darktable.develop, parentid), form);
+    dt_masks_remove_shape(module, form, parentid, TRUE);
     return 1;
   }
 
@@ -2037,7 +2037,6 @@ static int _brush_events_button_released(dt_iop_module_t *module,
         dt_masks_iop_update(crea_module);
       }
 
-      dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid);
       gui->creation_module = NULL;
 
       if(gui->creation_continuous)

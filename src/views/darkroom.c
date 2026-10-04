@@ -1076,11 +1076,9 @@ void expose(dt_view_t *self,
 
   dt_iop_module_t *dmod = dev->gui_module;
 
-  // display mask if we have a current module activated or if the
-  // masks manager module is expanded
+  // display mask if we have a current module activated
   const gboolean display_masks =
-    (dmod && dmod->enabled && dt_dev_modulegroups_test_activated(darktable.develop))
-    || dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
+    dmod && dmod->enabled && dt_dev_modulegroups_test_activated(darktable.develop);
 
   if(dev->form_visible && display_masks)
   {
@@ -2148,6 +2146,44 @@ static void _latescaling_quickbutton_clicked(GtkWidget *w,
 }
 
 /* overlay color */
+static void _masks_panel_quickbutton_clicked(GtkWidget *widget,
+                                             gpointer user_data)
+{
+  // dt_iop_gui_blend_masks_panel_sync_toolbox drives this button with
+  // gtk_toggle_button_set_active, which emits "clicked" too -- without this the
+  // button would toggle the panel straight back every time it was synced
+  if(darktable.gui->reset) return;
+  dt_iop_gui_blend_masks_panel_toggle();
+  // the toggle only reports the panel's state, it does not own it: the panel
+  // may refuse to move (no focused module with a mask panel), so re-read rather
+  // than leave the button showing a change that did not happen
+  dt_iop_gui_blend_masks_panel_sync_toolbox();
+}
+
+// right-click opens the blending options, the way the guides icon's right-click
+// opens the guide settings. Left-click keeps showing and hiding the panel.
+static void _masks_panel_quickbutton_right_click(GtkGestureSingle *gesture,
+                                                 int n_press,
+                                                 double x,
+                                                 double y,
+                                                 gpointer user_data)
+{
+  if(n_press > 1) return;
+  GtkWidget *widget = dt_gui_get_widget(gesture);
+  // the toggle shortcut reaches the button through this gesture too, as a
+  // synthetic primary press (see _action_process_toggle)
+  if(dt_gui_current_button(gesture) == GDK_BUTTON_PRIMARY)
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),
+                                 !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+    return;
+  }
+  // the public entry point resolves the module itself and still opens a useful
+  // menu when nothing is focused, which is the case a toolbar button has to
+  // survive but a module's own header button never sees
+  dt_iop_gui_blend_masks_options_popup(GTK_BUTTON(widget), NULL);
+}
+
 static void _guides_quickbutton_clicked(GtkWidget *widget,
                                         gpointer user_data)
 {
@@ -3754,6 +3790,34 @@ void gui_init(dt_view_t *self)
     DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, _guides_view_changed);
   }
 
+  /* mask panel toggle, last so it sits at the right-hand end of the toolbar.
+     The fixed, labeled, discoverable way to the mask panel: the panel's own
+     edge sliver is quicker to reach from the canvas but is only visible while
+     the panel is folded, and says nothing about itself until hovered. */
+  {
+    dev->masks_panel_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_masks_panel, 0, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = _("show/hide the blend mask panel of the focused module"),
+          .action = sa,
+          .action_label = N_("blend mask panel"),
+          .action_def = &dt_action_def_toggle,
+          .clicked_cb = G_CALLBACK(_masks_panel_quickbutton_clicked),
+          .clicked_data = dev,
+        });
+    // the panel's on-screen state is shown as a highlighted, bordered box round
+    // the icon rather than by the icon itself, which is busy saying whether the
+    // module has a mask at all (see dt_iop_gui_blend_masks_panel_sync_toolbox)
+    dt_gui_add_class(dev->masks_panel_button, "dt_masks_panel_toggle");
+    // and the blending options hang off a right-click here, the way the guides
+    // icon two along carries its guide settings: this is where the panel's
+    // presence is established, so it is where its settings belong
+    dt_gui_connect_click_secondary(dev->masks_panel_button,
+                                   _masks_panel_quickbutton_right_click, NULL, NULL);
+    dt_view_manager_module_toolbox_add(darktable.view_manager,
+                                       dev->masks_panel_button, DT_VIEW_DARKROOM);
+    dt_gui_add_help_link(dev->masks_panel_button, "masks_blending");
+  }
+
   darktable.view_manager->proxy.darkroom.get_layout = _lib_darkroom_get_layout;
   dev->full.border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
 
@@ -4133,6 +4197,7 @@ void enter(dt_view_t *self)
     }
   }
   _expand_focused_instance(dev);
+  dt_iop_gui_blend_masks_panel_sync_toolbox();
 
   // image should be there now.
   dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, -1.f, 1, 0.0f, 0.0f, TRUE);
@@ -4217,6 +4282,23 @@ static inline void _clear_pipecache(dt_dev_pixelpipe_t *pipe)
 
 void leave(dt_view_t *self)
 {
+  // ask a running pipe (a full-resolution reprocess can take seconds on a
+  // mask-heavy image) to abort at its next checkpoint. First of all:
+  // dt_image_update_final_size, via dt_dev_pixelpipe_get_dimensions, waits
+  // on full.pipe->busy_mutex, which the running worker holds, before the
+  // full.pipe->mutex locks below. As in _darkroom_ui_second_window_cleanup
+  {
+    dt_develop_t *dev0 = self->data;
+    dt_dev_pixelpipe_set_shutdown(dev0->preview_pipe, DT_DEV_PIXELPIPE_STOP_NODES);
+    dt_dev_pixelpipe_set_shutdown(dev0->preview2.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
+    dt_dev_pixelpipe_set_shutdown(dev0->full.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
+  }
+
+  // flexi masks panel (the canvas position) is darkroom-only window chrome,
+  // not per-view lib content -- hide it and its edge strips explicitly, since
+  // nothing else does this when leaving the view
+  dt_ui_flexi_panel_set_collapsed(darktable.gui->ui, TRUE, FALSE, FALSE);
+
   dt_iop_color_picker_cleanup();
   if(darktable.lib->proxy.colorpicker.picker_proxy)
     dt_iop_color_picker_reset(darktable.lib->proxy.colorpicker.picker_proxy->module, FALSE);
@@ -4542,7 +4624,15 @@ void mouse_moved(dt_view_t *self,
     else
     {
       const int32_t bs = dev->full.border_size;
-      const float dx = MIN(0, x - bs) + MAX(0, x - dev->full.width  - bs);
+      // dragging a mask handle past the edge scrolls the canvas after it. What
+      // counts as the edge is where the canvas stops being *visible*: an
+      // overlay panel standing on one side of it (the masks panel) covers a
+      // strip that the pointer can still travel over, where the drag would
+      // neither scroll nor show the handle. Both are 0 with nothing covering
+      // the canvas
+      const int32_t ol = dev->full.occlusion_left;
+      const int32_t orr = dev->full.occlusion_right;
+      const float dx = MIN(0, x - bs - ol) + MAX(0, x - dev->full.width  - bs + orr);
       const float dy = MIN(0, y - bs) + MAX(0, y - dev->full.height - bs);
       if(fabsf(dx) + fabsf(dy) > 0.5f)
         dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.f, 0, dx, dy, TRUE);

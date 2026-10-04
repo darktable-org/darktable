@@ -81,6 +81,15 @@ static void _set_last_expanded(GtkWidget *widget)
     g_object_add_weak_pointer(G_OBJECT(_last_expanded), (gpointer *)&_last_expanded);
 }
 
+// only module expanders scroll their panel into view: expanders nested inside
+// a module (the masks panel's sections and groups) must not take the target
+static gboolean _is_scroll_target(GtkWidget *widget)
+{
+  return !g_strcmp0("iop-expander", gtk_widget_get_name(widget))
+         || (darktable.lib && darktable.lib->gui_module
+             && darktable.lib->gui_module->expander == widget);
+}
+
 void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expanded)
 {
   g_return_if_fail(DTGTK_IS_EXPANDER(expander));
@@ -103,12 +112,15 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
     {
       // expose expansion state to CSS so themes can style expanded modules
       dt_gui_add_class(GTK_WIDGET(expander), "dt_module_expanded");
-      _set_last_expanded(GTK_WIDGET(expander));
-      GtkWidget *sw = gtk_widget_get_ancestor(_last_expanded, GTK_TYPE_SCROLLED_WINDOW);
-      if(sw)
+      if(_is_scroll_target(GTK_WIDGET(expander)))
       {
-        gtk_widget_get_allocation(_last_expanded, &_start_pos);
-        _start_pos.x = gtk_adjustment_get_value(gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw)));
+        _set_last_expanded(GTK_WIDGET(expander));
+        GtkWidget *sw = gtk_widget_get_ancestor(_last_expanded, GTK_TYPE_SCROLLED_WINDOW);
+        if(sw)
+        {
+          gtk_widget_get_allocation(_last_expanded, &_start_pos);
+          _start_pos.x = gtk_adjustment_get_value(gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw)));
+        }
       }
     }
     else
@@ -123,7 +135,7 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
       gtk_revealer_set_reveal_child(GTK_REVEALER(expander->frame), expander->expanded);
     }
   }
-  else if(expanded)
+  else if(expanded && _is_scroll_target(GTK_WIDGET(expander)))
   {
     // The expander is already expanded. Still update scroll tracking
     // so that _expander_resize can scroll to this widget. This is
@@ -256,17 +268,7 @@ static void _expander_resize(GtkWidget *widget, GdkRectangle *allocation, gpoint
     }
     else
     {
-      const gboolean height_changed =
-        gtk_widget_get_allocated_height(widget) != _start_pos.height;
-
-      if(!height_changed)
-        return;
-
-      const gboolean frame_selected =
-        gtk_widget_get_state_flags(user_data) & GTK_STATE_FLAG_SELECTED;
-
-      if(!frame_selected && !is_lib_gui_module)
-        return;
+      return;
     }
   }
 

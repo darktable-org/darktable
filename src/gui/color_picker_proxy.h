@@ -40,7 +40,13 @@ typedef enum _iop_color_picker_flags_t
   // only works with 4-channel images
   DT_COLOR_PICKER_DENOISE = 1 << 2,
   // all pickers sample input, only ones with this flag set sample output
-  DT_COLOR_PICKER_IO = 1 << 3
+  DT_COLOR_PICKER_IO = 1 << 3,
+  // area-mode only: on arm, do not reset to a large default box and sample
+  // immediately -- wait for the user's own drag on canvas to define the box,
+  // and only then request/apply a sample (see _color_picker_callback_button_press
+  // and dt_iop_color_picker_t.armed_pending_drag). Point mode is unaffected
+  // (a point pick has nothing to "wait" for).
+  DT_COLOR_PICKER_DEFERRED_AREA = 1 << 4
 } dt_iop_color_picker_flags_t;
 
 typedef struct dt_iop_color_picker_t
@@ -67,10 +73,21 @@ typedef struct dt_iop_color_picker_t
   dt_pickerbox_t pick_box;
   gboolean initialized;
   gboolean changed;
+  // the next arm samples pick_box at once, deferred or not (see
+  // dt_iop_color_picker_reuse_area)
+  gboolean sample_on_arm;
 } dt_iop_color_picker_t;
 
 
 gboolean dt_iop_color_picker_is_visible(const dt_develop_t *dev);
+
+/* forget a picker's remembered box/point, so its next arm starts blank
+   instead of resuming from its last position (see color_picker_proxy.c) */
+void dt_iop_color_picker_forget(GtkWidget *picker_widget);
+
+/* make a picker's next arm sample `box` straight away, even when it is
+   DT_COLOR_PICKER_DEFERRED_AREA (see color_picker_proxy.c) */
+void dt_iop_color_picker_reuse_area(GtkWidget *picker_widget, const dt_pickerbox_t box);
 
 /* g_object data key on the picker widget: the owning dt_iop_color_picker_t */
 #define DT_COLOR_PICKER_INSTANCE_KEY "dt-color-picker-instance"

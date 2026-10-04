@@ -649,7 +649,6 @@ static void _pop_undo(gpointer user_data,
       dt_masks_set_edit_mode(dev->gui_module, hist->mask_edit_mode);
       darktable.develop->gui_module->request_mask_display =
         hist->request_mask_display;
-      dt_iop_gui_update_blendif(darktable.develop->gui_module);
       dt_iop_gui_blend_data_t *bd = dev->gui_module->blend_data;
       if(bd)
         gtk_toggle_button_set_active
@@ -1004,7 +1003,8 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget,
     {
       gboolean first = TRUE;
 
-      for(const dt_iop_gui_blendif_channel_t *b = bd ? bd->channel : NULL;
+      for(const dt_iop_gui_blendif_channel_t *b =
+            bd ? dt_develop_blendif_channels_for_csp(bd->csp) : NULL;
           b && b->label != NULL;
           b++)
       {

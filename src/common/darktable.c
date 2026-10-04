@@ -28,7 +28,13 @@
 #include "common/collection.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "develop/masks/check.h"
+#include "develop/masks/persist.h"
 #include "develop/masks/harvest.h"
+#include "develop/masks/roundtrip.h"
+#include "develop/masks/styleapply.h"
+#include "develop/masks/undo.h"
+#include "develop/masks/lockcheck.h"
 #include "develop/masks/verify.h"
 #include "common/datetime.h"
 #include "common/exif.h"
@@ -239,6 +245,59 @@ static int usage(const char *argv0)
          "    The default location depends on your installation.\n"
          "    Typical locations are /opt/darktable/share/darktable/ \n"
          "    and /usr/share/darktable/\n"
+         "\n"
+         "--check-masks FILE\n"
+         "    Run every migration check over a --harvest-masks FILE and exit: the\n"
+         "    save/load round trip, the before/after render comparison, and the\n"
+         "    classic-style application. Writes one self-contained\n"
+         "    FILE.check.json holding a row for every harvested edit plus a\n"
+         "    summary of each check, so nothing has to be read off the terminal.\n"
+         "    Exits 0 only if all three passed.\n"
+         "\n"
+         "    Use --library :memory: with this: it writes to a scratch image id\n"
+         "    and must never be pointed at a real catalog.\n"
+         "\n"
+         "    FILE may be gzipped; the .gz a contributor sends is read directly,\n"
+         "    with no need to unpack it first. The same is true of\n"
+         "    --verify-masks, --roundtrip-masks and --styleapply-masks.\n"
+         "\n"
+         "    The three checks can also be run one at a time -- --roundtrip-masks,\n"
+         "    --verify-masks and --styleapply-masks below -- which is useful when\n"
+         "    investigating one of them, but --check-masks is what a contributed\n"
+         "    harvest should be run through.\n"
+         "\n"
+         "--persist-masks FILE\n"
+         "    Replay the mask configurations in a --harvest-masks FILE, migrate\n"
+         "    each one, then apply short sequences of panel edits to it twice:\n"
+         "    once wholly in memory, once saving and reopening the image between\n"
+         "    every edit. The two must render the same mask. Writes\n"
+         "    FILE.persist.json.\n"
+         "\n"
+         "    Needs `--library :memory:`: it writes to the database.\n"
+         "\n"
+         "    Catches state that a save does not carry, such as migrated\n"
+         "    blend_params reaching the database without the group markers\n"
+         "    migration made: the mask would then render wrong from the second\n"
+         "    load on, with no edit involved.\n"
+         "\n"
+         "--undo-masks FILE\n"
+         "    Replay the mask configurations in a --harvest-masks FILE, migrate\n"
+         "    each one, then for every action the masks panel offers: make the\n"
+         "    change, undo it, and redo it. Undoing must give back the mask that\n"
+         "    was there before, and redoing the one that was there after. Writes\n"
+         "    FILE.undo.json.\n"
+         "\n"
+         "    Needs `--library :memory:`: it writes to the database.\n"
+         "\n"
+         "    Undo is the one operation that has to RECOVER a mask rather than\n"
+         "    build one, and it recovers it from a copy taken before the edit.\n"
+         "    Nothing else here exercises that copy.\n"
+         "\n"
+         "--lock-masks\n"
+         "    Check that a locked mask survives paste, in append and overwrite\n"
+         "    mode, and styles, on two scratch images. Prints one line per case.\n"
+         "\n"
+         "    Needs `--library :memory:`: it writes to the database.\n"
          "\n"
          "--verify-masks FILE\n"
          "    Replay the mask configurations in a --harvest-masks FILE, rendering\n"
@@ -1132,6 +1191,12 @@ int dt_init(int argc,
   char *harvest_masks_output = NULL;
   char *harvest_masks_xmp_dir = NULL;
   char *verify_masks_input = NULL;
+  char *roundtrip_masks_input = NULL;
+  char *styleapply_masks_input = NULL;
+  char *persist_masks_input = NULL;
+  char *undo_masks_input = NULL;
+  gboolean lock_masks = FALSE;
+  char *check_masks_input = NULL;
   char *noiseprofiles_from_command = NULL;
   char *datadir_from_command = NULL;
   char *moduledir_from_command = NULL;
@@ -1257,6 +1322,66 @@ int dt_init(int argc,
           return usage(argv[0]);
         }
         verify_masks_input = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--persist-masks"))
+      {
+        if(argc <= k + 1 || argv[k + 1][0] == '-')
+        {
+          g_strfreev(myoptions);
+          return usage(argv[0]);
+        }
+        persist_masks_input = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--lock-masks"))
+      {
+        lock_masks = TRUE;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--undo-masks"))
+      {
+        if(argc <= k + 1 || argv[k + 1][0] == '-')
+        {
+          g_strfreev(myoptions);
+          return usage(argv[0]);
+        }
+        undo_masks_input = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--roundtrip-masks"))
+      {
+        if(argc <= k + 1 || argv[k + 1][0] == '-')
+        {
+          g_strfreev(myoptions);
+          return usage(argv[0]);
+        }
+        roundtrip_masks_input = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--styleapply-masks"))
+      {
+        if(argc <= k + 1 || argv[k + 1][0] == '-')
+        {
+          g_strfreev(myoptions);
+          return usage(argv[0]);
+        }
+        styleapply_masks_input = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--check-masks"))
+      {
+        if(argc <= k + 1 || argv[k + 1][0] == '-')
+        {
+          g_strfreev(myoptions);
+          return usage(argv[0]);
+        }
+        check_masks_input = argv[++k];
         argv[k-1] = NULL;
         argv[k] = NULL;
       }
@@ -2288,6 +2413,70 @@ int dt_init(int argc,
     dt_splash_screen_destroy();
     gchar *report = _masks_report_path(verify_masks_input, ".report.json");
     const gboolean ok = dt_masks_verify_harvest(verify_masks_input, report);
+    g_free(report);
+    exit(ok ? 0 : 1);
+  }
+
+  if(roundtrip_masks_input)
+  {
+    // here for the reason --verify-masks is, and it drives the real history
+    // reader and writer too, so it needs a library: a throwaway one,
+    // `--library :memory:`, never a real one, as it creates and wipes a
+    // scratch image
+    dt_splash_screen_destroy();
+    gchar *report = _masks_report_path(roundtrip_masks_input, ".roundtrip.json");
+    const gboolean ok = dt_masks_roundtrip_harvest(roundtrip_masks_input, report);
+    g_free(report);
+    exit(ok ? 0 : 1);
+  }
+
+  if(styleapply_masks_input)
+  {
+    // as --roundtrip-masks: `--library :memory:`, never a real library
+    dt_splash_screen_destroy();
+    gchar *report = _masks_report_path(styleapply_masks_input, ".styleapply.json");
+    const gboolean ok = dt_masks_styleapply_harvest(styleapply_masks_input, report);
+    g_free(report);
+    exit(ok ? 0 : 1);
+  }
+
+  if(persist_masks_input)
+  {
+    // renders as --verify-masks does, and drives the history reader and
+    // writer as --roundtrip-masks does: `--library :memory:`, never a real
+    // library
+    dt_splash_screen_destroy();
+    gchar *report = _masks_report_path(persist_masks_input, ".persist.json");
+    const gboolean ok = dt_masks_persist_harvest(persist_masks_input, report);
+    g_free(report);
+    exit(ok ? 0 : 1);
+  }
+
+  if(undo_masks_input)
+  {
+    // as --persist-masks: `--library :memory:`, never a real library
+    dt_splash_screen_destroy();
+    gchar *report = _masks_report_path(undo_masks_input, ".undo.json");
+    const gboolean ok = dt_masks_undo_harvest(undo_masks_input, report);
+    g_free(report);
+    exit(ok ? 0 : 1);
+  }
+
+  if(lock_masks)
+  {
+    // drives the history reader and writer, paste and styles against two
+    // scratch images: `--library :memory:`, never a real library
+    dt_splash_screen_destroy();
+    exit(dt_masks_lock_check() ? 0 : 1);
+  }
+
+  if(check_masks_input)
+  {
+    // --roundtrip-masks, --verify-masks and --styleapply-masks in one run and
+    // one report: `--library :memory:`, never a real library
+    dt_splash_screen_destroy();
+    gchar *report = _masks_report_path(check_masks_input, ".check.json");
+    const gboolean ok = dt_masks_check_harvest(check_masks_input, report);
     g_free(report);
     exit(ok ? 0 : 1);
   }

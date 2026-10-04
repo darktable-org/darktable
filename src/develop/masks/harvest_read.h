@@ -62,6 +62,27 @@ void dt_masks_harvest_remember(GHashTable *seen,
                                const void *rep,
                                const size_t size);
 
+/* in a check's loop over the edits: count edit `i` as skipped, for `why`,
+   record that in the report `rf`, and go on to the next edit. Uses the loop's
+   `skipped`, `rf`, `first_report` and `i`.
+
+   A plain block, not the usual do{...}while(0): `continue` binds to the
+   nearest enclosing loop, and do/while(0) is one, so the skip would fall
+   through into the code it exists to avoid, and a skipped edit would be
+   judged too. So never follow it with an `else`; a skip ends an iteration, so
+   there is nothing for an `else` to do */
+#define DT_MASKS_HARVEST_SKIP(why)                                              \
+  {                                                                             \
+    skipped++;                                                                  \
+    if(rf)                                                                      \
+    {                                                                           \
+      fprintf(rf, "%s\n    {\"index\": %u, \"result\": \"skipped\","             \
+                  " \"reason\": \"%s\"}", first_report ? "" : ",", i, (why));   \
+      first_report = FALSE;                                                     \
+    }                                                                           \
+    continue;                                                                   \
+  }
+
 /** a classic edit of a harvest, as the checks that migrate it read it */
 typedef struct dt_masks_harvest_edit_t
 {

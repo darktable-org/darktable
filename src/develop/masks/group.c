@@ -24,6 +24,113 @@
 #include "develop/masks.h"
 #include "develop/masks/group_internal.h"
 
+// the AI object `fpt` is a path of, or NULL. In the flattened edit group a
+// point's parentid is its own parent (dt_masks_group_ungroup), which for a
+// path of an object is the object
+static dt_masks_form_t *_object_of(const dt_masks_point_group_t *fpt)
+{
+  dt_masks_form_t *parent = dt_masks_get_from_id(darktable.develop, fpt->parentid);
+  return (parent && (parent->type & DT_MASKS_OBJECT)) ? parent : NULL;
+}
+
+dt_masks_form_t *dt_masks_bundle_of(const dt_masks_point_group_t *fpt)
+{
+  dt_masks_form_t *object = _object_of(fpt);
+  const dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+  return (object && gui && gui->entered_object == object->formid) ? NULL : object;
+}
+
+gboolean dt_masks_object_center(const dt_masks_form_t *object, double *cx, double *cy)
+{
+  double sx = 0.0, sy = 0.0;
+  int npts = 0;
+  for(GList *l = object->points; l; l = g_list_next(l))
+  {
+    const dt_masks_point_group_t *pt = l->data;
+    const dt_masks_form_t *child = dt_masks_get_from_id(darktable.develop, pt->formid);
+    if(!child) continue;
+    for(GList *p = child->points; p; p = g_list_next(p))
+    {
+      const dt_masks_point_path_t *pp = p->data;
+      sx += pp->corner[0];
+      sy += pp->corner[1];
+      npts++;
+    }
+  }
+  if(npts == 0) return FALSE;
+  *cx = sx / npts;
+  *cy = sy / npts;
+  return TRUE;
+}
+
+gboolean dt_masks_gui_step_object(dt_iop_module_t *module,
+                                  dt_masks_form_gui_t *gui,
+                                  const dt_mask_id_t hit_object,
+                                  const gboolean primary,
+                                  const gboolean double_click)
+{
+  if(!gui || !primary) return FALSE;
+  const dt_mask_id_t was_entered = gui->entered_object;
+  if(dt_is_valid_maskid(gui->entered_object) && hit_object != gui->entered_object)
+    gui->entered_object = INVALID_MASKID;
+  const gboolean step_in = double_click && dt_is_valid_maskid(hit_object)
+                           && gui->entered_object != hit_object;
+  if(step_in) gui->entered_object = hit_object;
+  if(gui->entered_object != was_entered)
+  {
+    dt_control_queue_redraw_center();
+    dt_iop_gui_blend_masks_entered_object_changed(module);
+  }
+  return step_in;
+}
+
+// after an edit of a whole AI object changed its paths' points, rebuild their
+// outlines in gui->points: dt_masks_gui_form_create() always recomputes,
+// unlike dt_masks_gui_form_test_create()
+static void _bundle_refresh_children(dt_masks_form_t *scratch_grp,
+                                     const dt_masks_form_t *bundle,
+                                     dt_masks_form_gui_t *gui,
+                                     const dt_iop_module_t *module)
+{
+  int pos = 0;
+  for(GList *l = scratch_grp->points; l; l = g_list_next(l), pos++)
+  {
+    const dt_masks_point_group_t *pt = l->data;
+    if(pt->parentid != bundle->formid) continue;
+    dt_masks_form_t *child = dt_masks_get_from_id(darktable.develop, pt->formid);
+    if(child) dt_masks_gui_form_create(child, gui, pos, module);
+  }
+}
+
+// a scroll changed the paths of the whole AI object `bundle`, a member of the
+// canvas group `form`: record it and show it
+static void _bundle_scrolled(dt_iop_module_t *module,
+                             dt_masks_form_t *form,
+                             const dt_masks_form_t *bundle,
+                             dt_masks_form_gui_t *gui)
+{
+  dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
+  _bundle_refresh_children(form, bundle, gui, module);
+  dt_masks_iop_update(module);
+  dt_control_queue_redraw_center();
+}
+
+// scale the property `prop` of every path of the AI object `bundle` by one
+// scroll step, as the panel's slider for it does
+static void _bundle_scroll_property(dt_iop_module_t *module,
+                                    dt_masks_form_t *form,
+                                    dt_masks_form_t *bundle,
+                                    dt_masks_form_gui_t *gui,
+                                    const dt_masks_property_t prop,
+                                    const int up)
+{
+  const float ratio = up ? 1.0f / 0.97f : 0.97f;
+  float sum = 0.0f, minv = 0.0f, maxv = 0.0f;
+  int count = 0;
+  bundle->functions->modify_property(bundle, prop, 1.0f, ratio, &sum, &count, &minv, &maxv);
+  _bundle_scrolled(module, form, bundle, gui);
+}
+
 static int _group_events_mouse_scrolled(dt_iop_module_t *module,
                                         const float pzx,
                                         const float pzy,
@@ -38,13 +145,81 @@ static int _group_events_mouse_scrolled(dt_iop_module_t *module,
   {
     // we get the form
     dt_masks_point_group_t *fpt = g_list_nth_data(form->points, gui->group_edited);
+    // the canvas list can be rebuilt between a press and its release (a
+    // selection change narrowing solo edit, say): the index then names nothing
+    if(!fpt) return 0;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
-    if(sel && sel->functions)
-      return sel->functions->mouse_scrolled(module, pzx, pzy, up, state, sel,
-                                            fpt->parentid, gui, gui->group_edited);
+    if(!sel || !sel->functions) return 0;
+
+    // an AI object's scroll gestures. dt_modifier_is() matches the modifiers
+    // exactly, so none, ctrl, shift and ctrl+shift are told apart by one
+    // if/else-if chain, as in path.c: separate conditions would overlap.
+    // ctrl+scroll changes the object's opacity, as the panel's opacity control
+    // for it does, even inside the object: a path's own opacity within the
+    // object is shown nowhere
+    dt_masks_form_t *object = _object_of(fpt);
+    if(object && dt_modifier_is(state, GDK_CONTROL_MASK))
+    {
+      const float amount = up ? 0.05f : -0.05f;
+      dt_masks_form_change_opacity(module, object, module->blend_params->mask_id, amount);
+      dt_masks_iop_update(module);
+      dt_control_queue_redraw_center();
+      return 1;
+    }
+    dt_masks_form_t *bundle = dt_masks_bundle_of(fpt);
+    if(bundle && !dt_modifier_is(state, GDK_CONTROL_MASK))
+    {
+      if(dt_modifier_is(state, GDK_SHIFT_MASK) && bundle->functions
+         && bundle->functions->modify_property)
+      {
+        // shift+scroll feathers every path by one step, as the panel's
+        // feather slider does
+        _bundle_scroll_property(module, form, bundle, gui, DT_MASKS_PROPERTY_FEATHER, up);
+        return 1;
+      }
+      else if(dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)
+              && gui->edit_mode == DT_MASKS_EDIT_FULL && bundle->functions
+              && bundle->functions->modify_property)
+      {
+        // ctrl+shift+scroll scales the object about its center by one step,
+        // as path.c's centroid resize does for a path and the panel's size
+        // slider does for the object
+        _bundle_scroll_property(module, form, bundle, gui, DT_MASKS_PROPERTY_SIZE, up);
+        return 1;
+      }
+      else if(gui->edit_mode == DT_MASKS_EDIT_FULL && bundle->functions
+              && bundle->functions->resize && bundle->functions->resize_get)
+      {
+        // plain scroll grows or shrinks the object, as the panel's "shrink
+        // or grow" slider does (_object_bundle_resize in object.c)
+        const gboolean use_percent = !g_strcmp0(
+          dt_conf_get_string_const("masks/path_resize_unit"), "% of path size");
+        float amount = 0.0f;
+        bundle->functions->resize_get(bundle, use_percent, &amount);
+        const int new_amount = (int)roundf(amount) + (up ? 1 : -1);
+        if(bundle->functions->resize(bundle, new_amount, use_percent))
+          _bundle_scrolled(module, form, bundle, gui);
+        return 1;
+      }
+    }
+    // anything else goes to the shape's own handler
+    return sel->functions->mouse_scrolled(module, pzx, pzy, up, state, sel, fpt->parentid,
+                                          gui, gui->group_edited);
   }
   return 0;
 }
+
+static int _group_events_mouse_moved(dt_iop_module_t *module,
+                                     const float pzx,
+                                     const float pzy,
+                                     const double pressure,
+                                     const int which,
+                                     const float zoom_scale,
+                                     dt_masks_form_t *form,
+                                     const int unused1,
+                                     dt_masks_form_gui_t *gui,
+                                     const int unused2);
+static inline gboolean _is_handling_form(dt_masks_form_gui_t *gui);
 
 static int _group_events_button_pressed(dt_iop_module_t *module,
                                         const float pzx,
@@ -58,6 +233,42 @@ static int _group_events_button_pressed(dt_iop_module_t *module,
                                         dt_masks_form_gui_t *gui,
                                         const int unused2)
 {
+  // the shape under the pointer is only picked as the pointer moves, so a
+  // canvas rebuilt since knows none: the panel's rebuild after stepping into
+  // an object is one. Pick it here, or the press lands on empty canvas, steps
+  // out of the object and the next press drags the whole object
+  if(gui->group_selected < 0 && !_is_handling_form(gui))
+    _group_events_mouse_moved(module, pzx, pzy, pressure, state,
+                              dt_dev_get_zoom_scale_full(), form, 0, gui, 0);
+
+  // double-click on an AI object steps into it: its paths are then picked,
+  // edited and removed one by one (see dt_masks_bundle_of). A click anywhere
+  // else steps back out, and still does what it would have done
+  const dt_masks_point_group_t *hit =
+    gui->group_selected >= 0 ? g_list_nth_data(form->points, gui->group_selected) : NULL;
+  const dt_masks_form_t *hit_object = hit ? _object_of(hit) : NULL;
+  const dt_mask_id_t was_entered = gui->entered_object;
+  const gboolean stepped_in =
+    dt_masks_gui_step_object(module, gui,
+                             hit_object ? hit_object->formid : INVALID_MASKID,
+                             which == GDK_BUTTON_PRIMARY, type == GDK_2BUTTON_PRESS);
+  if(stepped_in) return 1;
+
+  // stepping out on empty canvas leaves the object selected, as one unit
+  // again, rather than nothing (the click itself just cleared the selection,
+  // see dt_masks_events_button_pressed)
+  if(dt_is_valid_maskid(was_entered) && !dt_is_valid_maskid(gui->entered_object)
+     && gui->group_selected < 0)
+  {
+    const dt_masks_form_t *object = dt_masks_get_from_id(darktable.develop, was_entered);
+    if(object) dt_masks_select_form(module, object);
+  }
+  // outside any object, a plain click on empty canvas selects nothing, group
+  // included
+  else if(!dt_is_valid_maskid(was_entered) && gui->group_selected < 0
+          && which == GDK_BUTTON_PRIMARY && type == GDK_BUTTON_PRESS)
+    dt_iop_gui_blend_masks_clear_selection(module);
+
   if(gui->group_edited != gui->group_selected)
   {
     // we set the selected form in edit mode
@@ -87,6 +298,7 @@ static int _group_events_button_pressed(dt_iop_module_t *module,
   {
     // we get the form
     dt_masks_point_group_t *fpt = g_list_nth_data(form->points, gui->group_edited);
+    if(!fpt) return 0;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(!sel) return 0;
     if(sel->functions)
@@ -105,8 +317,17 @@ static int _group_events_button_pressed(dt_iop_module_t *module,
                                     gui, gui->group_edited);
       }
 
-      return sel->functions->button_pressed(module, pzx, pzy, pressure, which, type, state, sel,
-                                           fpt->parentid, gui, gui->group_edited);
+      const int ret =
+        sel->functions->button_pressed(module, pzx, pzy, pressure, which, type, state,
+                                       sel, fpt->parentid, gui, gui->group_edited);
+      // the click selected one path of an AI object: select the object as one
+      // unit, as its row in the panel does
+      if(darktable.develop->mask_form_selected_id == sel->formid)
+      {
+        dt_masks_form_t *bundle = dt_masks_bundle_of(fpt);
+        if(bundle) dt_masks_select_form(module, bundle);
+      }
+      return ret;
     }
   }
   return 0;
@@ -126,10 +347,18 @@ static int _group_events_button_released(dt_iop_module_t *module,
   {
     // we get the form
     dt_masks_point_group_t *fpt = g_list_nth_data(form->points, gui->group_edited);
+    if(!fpt) return 0;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
-    if(sel && sel->functions)
-      return sel->functions->button_released(module, pzx, pzy, which, state, sel, fpt->parentid,
-                                             gui, gui->group_edited);
+    if(!sel || !sel->functions) return 0;
+
+    // rotating an AI object updates no panel control while the drag lasts
+    // (_bundle_rotate_step), so they are updated once it ends
+    const gboolean was_rotating = gui->form_rotating;
+    const dt_masks_form_t *bundle = was_rotating ? dt_masks_bundle_of(fpt) : NULL;
+    const int ret = sel->functions->button_released(
+      module, pzx, pzy, which, state, sel, fpt->parentid, gui, gui->group_edited);
+    if(bundle) dt_masks_iop_update(module);
+    return ret;
   }
   return 0;
 }
@@ -148,6 +377,86 @@ static inline gboolean _is_handling_form(dt_masks_form_gui_t *gui)
     || (gui->seg_dragging != -1);
 }
 
+// a rotation drag on a path of an AI object rotates the whole object about
+// its center, as the panel's rotation slider does
+// (_object_bundle_modify_property), not the path about its own. Always
+// handles the motion: returns 1
+static int _bundle_rotate_step(dt_iop_module_t *module,
+                               dt_masks_form_t *bundle,
+                               dt_masks_form_t *scratch_grp,
+                               dt_masks_form_gui_t *gui,
+                               const float pzx,
+                               const float pzy)
+{
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+  if(iwidth <= 0.0f || iheight <= 0.0f || wd <= 0.0f || ht <= 0.0f)
+  {
+    gui->dx = pzx;
+    gui->dy = pzy;
+    return 1;
+  }
+
+  // the object's center, as _object_bundle_modify_property takes it
+  double cx, cy;
+  if(!dt_masks_object_center(bundle, &cx, &cy))
+  {
+    gui->dx = pzx;
+    gui->dy = pzy;
+    return 1;
+  }
+
+  // the center on screen, where the pointer's angle is measured, so the drag
+  // pivots where the object is shown
+  float piv[2] = { (float)cx * iwidth, (float)cy * iheight };
+  dt_dev_distort_transform(darktable.develop, piv, 1);
+
+  const float cmx = pzx * wd, cmy = pzy * ht;
+  const float pmx = gui->dx * wd, pmy = gui->dy * ht;
+  float dv = atan2f(cmy - piv[1], cmx - piv[0]) - atan2f(pmy - piv[1], pmx - piv[0]);
+  if(fabsf(dv) > M_PI_F) dv -= copysignf(DT_2PI_F, dv);
+  const float dv_deg = rad2degf(dv);
+
+  if(dv_deg != 0.0f && bundle->functions && bundle->functions->modify_property)
+  {
+    float sum = 0.0f, minv = 0.0f, maxv = 0.0f;
+    int count = 0;
+    bundle->functions->modify_property(bundle, DT_MASKS_PROPERTY_ROTATION, 0.0f, dv_deg,
+                                       &sum, &count, &minv, &maxv);
+    _bundle_refresh_children(scratch_grp, bundle, gui, module);
+  }
+
+  gui->dx = pzx;
+  gui->dy = pzy;
+  dt_control_queue_redraw_center();
+  return 1;
+}
+
+// highlight the hovered shape's row in the panel (or its folded cluster's
+// header), or clear it for INVALID_MASKID, when the hovered shape changes
+static void _group_hover_form(dt_iop_module_t *module,
+                              dt_masks_form_gui_t *gui,
+                              const dt_mask_id_t formid)
+{
+  if(gui->canvas_hover_formid == formid) return;
+  gui->canvas_hover_formid = formid;
+  dt_iop_gui_blend_masks_hover_form(module, formid);
+}
+
+// does the cursor sit on any editable part of the form whose selection flags
+// were just refreshed? mirrors what the per-form mouse_moved implementations set
+static gboolean _form_under_cursor(const dt_masks_form_gui_t *gui)
+{
+  return gui->form_selected
+    || gui->border_selected
+    || gui->source_selected
+    || gui->pivot_selected
+    || gui->point_selected >= 0
+    || gui->feather_selected >= 0
+    || gui->seg_selected >= 0
+    || gui->point_border_selected >= 0;
+}
+
 static int _group_events_mouse_moved(dt_iop_module_t *module,
                                      const float pzx,
                                      const float pzy,
@@ -160,6 +469,13 @@ static int _group_events_mouse_moved(dt_iop_module_t *module,
                                      const int unused2)
 {
   const float as = dt_masks_sensitive_dist(zoom_scale);
+
+  // the outlines hit-testing reads are made when the canvas is drawn: after a
+  // rebuild (dt_masks_change_form_gui, the panel's rebuild after stepping into
+  // an AI object among them) there are none until the next draw, and a hover
+  // or press before it would find nothing under the pointer. A no-op while
+  // they are current
+  if(!gui->creation) dt_masks_gui_form_test_create(form, gui, module);
 
   // we first don't do anything if we are inside a scrolling session
 
@@ -178,16 +494,75 @@ static int _group_events_mouse_moved(dt_iop_module_t *module,
   {
     // we get the form
     dt_masks_point_group_t *fpt = g_list_nth_data(form->points, gui->group_edited);
+    if(!fpt) return 0;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(!sel) return 0;
+
+    // a rotation drag on a path of an AI object rotates the object
+    // (_bundle_rotate_step)
+    if(gui->form_rotating)
+    {
+      dt_masks_form_t *rot_bundle = dt_masks_bundle_of(fpt);
+      if(rot_bundle) return _bundle_rotate_step(module, rot_bundle, form, gui, pzx, pzy);
+    }
+
+    // dragging a path of an AI object by its body moves the whole object:
+    // how far path.c moves the path's first point is applied to the other
+    // paths. Node, feather and segment drags stay on the one path
+    dt_masks_form_t *bundle = gui->form_dragging ? dt_masks_bundle_of(fpt) : NULL;
+    float anchor_before[2] = { 0.0f, 0.0f };
+    if(bundle && sel->points)
+    {
+      const dt_masks_point_path_t *p0 = sel->points->data;
+      anchor_before[0] = p0->corner[0];
+      anchor_before[1] = p0->corner[1];
+    }
+
     int rep = 0;
     if(sel->functions)
       rep = sel->functions->mouse_moved(module, pzx, pzy, pressure, which, zoom_scale, sel, fpt->parentid,
                                         gui, gui->group_edited);
+
+    if(bundle && sel->points)
+    {
+      const dt_masks_point_path_t *p0 = sel->points->data;
+      const float dx = p0->corner[0] - anchor_before[0];
+      const float dy = p0->corner[1] - anchor_before[1];
+      if(dx != 0.0f || dy != 0.0f)
+      {
+        for(GList *l = bundle->points; l; l = g_list_next(l))
+        {
+          const dt_masks_point_group_t *cpt = l->data;
+          if(cpt->formid == sel->formid) continue; // already moved above
+          dt_masks_form_t *sib = dt_masks_get_from_id(darktable.develop, cpt->formid);
+          if(!sib) continue;
+          for(GList *pp = sib->points; pp; pp = g_list_next(pp))
+          {
+            dt_masks_point_path_t *pt = pp->data;
+            pt->corner[0] += dx;
+            pt->corner[1] += dy;
+            pt->ctrl1[0] += dx;
+            pt->ctrl1[1] += dy;
+            pt->ctrl2[0] += dx;
+            pt->ctrl2[1] += dy;
+          }
+        }
+        _bundle_refresh_children(form, bundle, gui, module);
+      }
+    }
+
     if(rep) return 1;
     // if a point is in state editing, then we don't want that another
     // form can be selected
-    if(gui->point_edited >= 0) return 0;
+    if(gui->point_edited >= 0)
+    {
+      // the code below that syncs the row highlight is skipped while a node
+      // holds the selection, so sync it here from the hover flags the call
+      // above set. Otherwise canvas_hover_formid stays on the last shape and
+      // keeps the panel's halo off (_flexi_shape_highlighted in gui/gtk.c)
+      _group_hover_form(module, gui, _form_under_cursor(gui) ? sel->formid : INVALID_MASKID);
+      return 0;
+    }
   }
 
   // now we check if we are near a form
@@ -211,6 +586,13 @@ static int _group_events_mouse_moved(dt_iop_module_t *module,
   {
     dt_masks_point_group_t *fpt = fpts->data;
     dt_masks_form_t *frm = dt_masks_get_from_id(darktable.develop, fpt->formid);
+    // a hidden or disabled shape draws no outline and cannot be edited on the
+    // canvas: it is never the shape under the cursor
+    if(fpt->state & (DT_MASKS_STATE_HIDDEN | DT_MASKS_STATE_DISABLE))
+    {
+      pos++;
+      continue;
+    }
     int inside, inside_border, near, inside_source;
     float dist = FLT_MAX;
     inside = inside_border = inside_source = 0;
@@ -240,11 +622,44 @@ static int _group_events_mouse_moved(dt_iop_module_t *module,
   if(sel && sel->functions)
   {
     gui->group_edited = gui->group_selected = sel_pos;
+    _group_hover_form(module, gui, sel_fpt->formid);
     return sel->functions->mouse_moved(module, pzx, pzy, pressure, which, zoom_scale,
                                        sel, sel_fpt->parentid, gui, gui->group_edited);
   }
 
+  // nothing under the cursor: drop the list row hover highlight
+  _group_hover_form(module, gui, INVALID_MASKID);
+
   return 0;
+}
+
+// does the panel ask for this shape to be highlighted: its row or a cluster
+// header holding it is hovered? `parentid` makes the row of an AI object
+// highlight all of its paths
+static gboolean _panel_hovered(const dt_masks_form_gui_t *gui,
+                               const dt_mask_id_t formid,
+                               const dt_mask_id_t parentid)
+{
+  for(const GList *l = gui->panel_hover_formids; l; l = g_list_next(l))
+  {
+    const dt_mask_id_t id = GPOINTER_TO_INT(l->data);
+    if(id == formid || id == parentid) return TRUE;
+  }
+  return FALSE;
+}
+
+// is this shape soloed or solo-edited in the panel? Unlike a hover, this
+// highlight stays whatever the pointer does
+static gboolean _panel_soloed(const dt_masks_form_gui_t *gui,
+                              const dt_mask_id_t formid,
+                              const dt_mask_id_t parentid)
+{
+  for(const GList *l = gui->solo_formids; l; l = g_list_next(l))
+  {
+    const dt_mask_id_t id = GPOINTER_TO_INT(l->data);
+    if(id == formid || id == parentid) return TRUE;
+  }
+  return FALSE;
 }
 
 void dt_group_events_post_expose(cairo_t *cr,
@@ -252,14 +667,69 @@ void dt_group_events_post_expose(cairo_t *cr,
                                  dt_masks_form_t *form,
                                  dt_masks_form_gui_t *gui)
 {
+  // base_sel is the canvas hover: the shape currently under the cursor (or -1).
+  // A hovered shape always wins; the persistent panel selection is only drawn
+  // when nothing at all is being hovered (no canvas hover, no list-row hover).
+  const int base_sel = gui->group_selected;
+  const gboolean any_list_hover = gui->panel_hover_formids != NULL;
+
+  // a hovered path of an AI object highlights all its paths: the object acts
+  // as one unit (dt_masks_bundle_of)
+  dt_mask_id_t base_sel_bundle = INVALID_MASKID;
+  if(base_sel >= 0)
+  {
+    const dt_masks_point_group_t *base_fpt = g_list_nth_data(form->points, base_sel);
+    const dt_masks_form_t *bundle = base_fpt ? dt_masks_bundle_of(base_fpt) : NULL;
+    if(bundle) base_sel_bundle = bundle->formid;
+  }
+
   int pos = 0;
   for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
     dt_masks_point_group_t *fpt = fpts->data;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(!sel) return;
-    if(sel->functions)
+    // a hidden or disabled shape draws nothing, as it renders nothing. Only the
+    // draw is skipped, so that pos stays in step with gui->points
+    if(sel->functions && !(fpt->state & (DT_MASKS_STATE_HIDDEN | DT_MASKS_STATE_DISABLE)))
+    {
+      // decide whether this shape draws its own highlight (feather + anchors) by
+      // posing as the selected group member for the duration of its post_expose
+      // call only: a hovered list row/cluster member, else -- when nothing is
+      // hovered -- the persistently selected shape.
+      int eff = base_sel;
+      // a row hover must look like a canvas hover, which takes two flags:
+      // group_selected brings out the feather and the anchors, form_selected
+      // the bold outline (the `selected` test in circle.c's post_expose and
+      // the other shapes'). Both are set for this one call only, so nothing
+      // outside the draw sees a hover the pointer never made
+      gboolean bold = FALSE;
+      // inside the object stepped into, its paths are highlighted one by one:
+      // being soloed or selected as a whole no longer lights them all up, or
+      // the one under the cursor could not be told apart
+      const dt_mask_id_t unit =
+        fpt->parentid == gui->entered_object ? INVALID_MASKID : fpt->parentid;
+      if(_panel_hovered(gui, fpt->formid, fpt->parentid))
+      {
+        eff = pos;
+        bold = TRUE;
+      }
+      else if(_panel_soloed(gui, fpt->formid, unit))
+        eff = pos;
+      else if(!any_list_hover && base_sel < 0
+              && dt_is_valid_maskid(gui->panel_selected_formid)
+              && (fpt->formid == gui->panel_selected_formid
+                  || unit == gui->panel_selected_formid))
+        eff = pos;
+      else if(dt_is_valid_maskid(base_sel_bundle) && fpt->parentid == base_sel_bundle)
+        eff = pos;
+      const gboolean base_form_selected = gui->form_selected;
+      gui->group_selected = eff;
+      if(bold) gui->form_selected = TRUE;
       sel->functions->post_expose(cr, zoom_scale, gui, pos, g_list_length(sel->points));
+      gui->group_selected = base_sel;
+      if(bold) gui->form_selected = base_form_selected;
+    }
     pos++;
   }
 }

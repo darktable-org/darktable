@@ -3,6 +3,10 @@
 How a flexi mask is stored: a module's mask as a tree of groups, in the
 structures darktable already has. There is no database schema change.
 
+A module whose `mask_mode` has `DEVELOP_MASK_FLEXI` renders its mask
+through `_group_get_mask_roi_flexi` in `masks/group.c`. Classic masks are
+converted to this model when an edit is loaded, by `masks/migrate_legacy.c`.
+
 ## Summary
 
 A module's mask is a tree of groups. Each group folds its members in list
@@ -66,8 +70,13 @@ the bits are stored, so a clash could not be fixed by renumbering.
 ### Blend parameters
 
 `mask_mode` gains `DEVELOP_MASK_FLEXI` (`1 << 4`): `mask_id` then names the
-module's mask group, the root of its tree. The layout of
-`dt_develop_blend_params_t` is unchanged.
+module's mask group, the root of its tree.
+
+Blend parameters v15 have the same layout as v14. The version bump routes
+every older edit through `dt_develop_blend_legacy_params_ext`, which runs
+the migration. `mask_lock` takes over the first reserved field: a locked
+mask survives reset, presets, styles and paste. Every legacy conversion
+clears it, since the reserved field was never guaranteed to be zero.
 
 ## The tree
 
@@ -81,6 +90,9 @@ module's mask group, the root of its tree. The layout of
   opacity, inversion (`INVERSE`), element refinement, `HIDDEN` and
   `DISABLE`. A member that refers to a group carries no settings of its
   own: that group's marker holds them.
+- **Nesting.** A walk follows groups nested in groups at most
+  `DT_MASKS_NESTING_MAX` (8) deep, which is also how deep the panel lets
+  groups nest.
 - **Refinement scopes.** Element scope applies to one member's mask before
   it is folded in, group scope to a group's folded mask, and the module's
   own refinement controls (blend parameters) to the whole mask, as for a

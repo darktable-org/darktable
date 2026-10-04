@@ -54,7 +54,8 @@ static dt_develop_blend_params_t _default_blendop_params
         0.0f,
         0.0f, // detail mask threshold
         1, // feather_version
-        { 0, 0 },
+        0, // mask_lock
+        { 0 },
         { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
@@ -2754,6 +2755,16 @@ static gboolean _develop_blend_legacy_params_convert(dt_iop_module_t *module,
     _fix_raster_blend(n);
     return FALSE;
   }
+  if(old_version == 14 && new_version == DEVELOP_BLEND_VERSION)
+  {
+    if(length != sizeof(dt_develop_blend_params_t)) return TRUE;
+
+    dt_develop_blend_params_t *o = (dt_develop_blend_params_t *)old_params;
+    dt_develop_blend_params_t *n = new_params;
+
+    *n = *o;
+    return FALSE;
+  }
 
   return TRUE;
 }
@@ -2766,8 +2777,37 @@ gboolean dt_develop_blend_legacy_params_ext(dt_iop_module_t *module,
                                             const int length,
                                             const int history_num)
 {
-  return _develop_blend_legacy_params_convert(module, old_params, old_version,
-                                              new_params, new_version, length);
+  const gboolean failed = _develop_blend_legacy_params_convert(module, old_params, old_version,
+                                                                new_params, new_version, length);
+  if(failed) return TRUE;
+
+  // every conversion goes to the current version, so new_params has the
+  // current layout, maybe with a classic mask_mode, whatever version it came
+  // from. Migration cannot fail
+  dt_develop_blend_params_t *n = new_params;
+  dt_masks_migrate_classic_to_flexi(module, n, history_num);
+  // every conversion is from a version older than the lock, whose reserved
+  // field it took over
+  n->mask_lock = 0;
+  return FALSE;
+}
+
+void dt_develop_blend_keep_locked_mask(dt_develop_blend_params_t *incoming,
+                                       const dt_develop_blend_params_t *const locked)
+{
+  if(!dt_develop_blend_mask_locked(locked))
+  {
+    incoming->mask_lock = 0;
+    return;
+  }
+
+  const uint32_t blend_mode = incoming->blend_mode;
+  const float blend_parameter = incoming->blend_parameter;
+  const float opacity = incoming->opacity;
+  *incoming = *locked;
+  incoming->blend_mode = blend_mode;
+  incoming->blend_parameter = blend_parameter;
+  incoming->opacity = opacity;
 }
 
 gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,

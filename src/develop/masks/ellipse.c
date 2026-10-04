@@ -465,8 +465,8 @@ static int _ellipse_events_mouse_scrolled(dt_iop_module_t *module,
 
       dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, border), masks_border);
 
-      dt_toast_log(_("feather size: %3.2f%%"),
-                   (masks_border/fmaxf(radius_a, radius_b))*100.0f);
+      dt_toast_log(_("fade-out border: %3.2f%%"),
+                   (masks_border / fmaxf(radius_a, radius_b)) * 100.0f);
     }
     else if(dt_modifier_is(state, 0))
     {
@@ -496,7 +496,7 @@ static int _ellipse_events_mouse_scrolled(dt_iop_module_t *module,
     if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       // we try to change the opacity
-      dt_masks_form_change_opacity(form, parentid, up ? 0.05f : -0.05f);
+      dt_masks_form_change_opacity(module, form, parentid, up ? 0.05f : -0.05f);
     }
     else
     {
@@ -525,7 +525,7 @@ static int _ellipse_events_mouse_scrolled(dt_iop_module_t *module,
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, border), ellipse->border);
-        dt_toast_log(_("feather size: %3.2f%%"), ellipse->border*100.0f);
+        dt_toast_log(_("fade-out border: %3.2f%%"), ellipse->border * 100.0f);
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL && dt_modifier_is(state, 0))
       {
@@ -716,7 +716,6 @@ static int _ellipse_events_button_pressed(dt_iop_module_t *module,
       dt_masks_iop_update(crea_module);
     }
 
-    dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid);
     gui->creation_module = NULL;
 
     // if we draw a clone ellipse, we start now the source dragging
@@ -824,7 +823,7 @@ static int _ellipse_events_button_released(dt_iop_module_t *module,
     }
 
     // we remove the shape
-    dt_masks_form_remove(module, dt_masks_get_from_id(darktable.develop, parentid), form);
+    dt_masks_remove_shape(module, form, parentid, TRUE);
     return 1;
   }
   if(gui->form_dragging)
@@ -870,6 +869,14 @@ static int _ellipse_events_button_released(dt_iop_module_t *module,
 
       ellipse->flags |= DT_MASKS_ELLIPSE_PROPORTIONAL;
     }
+    // the border keeps its width on the short axis, but its number changes
+    // unit with the mode: say which one it is now
+    if(ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL)
+      dt_toast_log(_("fade-out border: proportional, %3.2f%% of the radius"),
+                   ellipse->border * 100.0f);
+    else
+      dt_toast_log(_("fade-out border: fixed width, %3.2f%% of the image"),
+                   ellipse->border * 100.0f);
 
     dt_conf_set_int(DT_MASKS_CONF(form->type, ellipse, flags), ellipse->flags);
     dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, border), ellipse->border);
@@ -1989,9 +1996,8 @@ static GSList *_ellipse_setup_mouse_actions(const struct dt_masks_form_t *const 
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
                                      0,
                                      _("[ELLIPSE] change size"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
-                                     GDK_SHIFT_MASK,
-                                     _("[ELLIPSE] change feather size"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK,
+                                     _("[ELLIPSE] change fade-out border"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
                                      GDK_SHIFT_MASK|GDK_CONTROL_MASK,
                                      _("[ELLIPSE] rotate shape"));
@@ -2052,9 +2058,10 @@ static void _ellipse_set_hint_message(const dt_masks_form_gui_t *const gui,
 {
   if(gui->creation)
     g_snprintf(msgbuf, msgbuf_len,
-               _("<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
+               _("<b>size</b>: scroll, <b>fade-out border</b>: shift+scroll\n"
                  "<b>rotation</b>: ctrl+shift+scroll, "
-                 "<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
+                 "<b>opacity</b>: ctrl+scroll (%d%%)"),
+               opacity);
   else if(gui->point_selected >= 0)
     g_strlcat(msgbuf, _("<b>rotate</b>: ctrl+drag"), msgbuf_len);
   else if(gui->source_selected)
@@ -2067,8 +2074,9 @@ static void _ellipse_set_hint_message(const dt_masks_form_gui_t *const gui,
   {
     g_snprintf(msgbuf, msgbuf_len,
                _("<b>feather mode</b>: alt+click, <b>rotate</b>: ctrl+drag,"
-                 "<b>size</b>: scroll\n<b>feather size</b>: shift+scroll"
-                 " <b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
+                 "<b>size</b>: scroll\n<b>fade-out border</b>: shift+scroll"
+                 " <b>opacity</b>: ctrl+scroll (%d%%)"),
+               opacity);
     // joint rotation of both shapes only makes sense when there is a source
     // (clone/heal forms, e.g. in the retouch module)
     if(form->type & DT_MASKS_CLONE)

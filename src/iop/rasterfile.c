@@ -253,7 +253,7 @@ static void _vectorize_button_clicked(GtkWidget *widget,
 
     // add all forms into the mask manager
 
-    dt_masks_register_forms(dev, forms);
+    dt_masks_register_forms(dev, self, forms);
   }
 }
 
