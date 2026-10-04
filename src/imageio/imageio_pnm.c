@@ -16,21 +16,18 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
-#include "develop/imageop.h"         // for IOP_CS_RGB
-#include "imageio/imageio_pfm.h"
+#include "common/colorspaces.h"   // for IOP_CS_RGB
+#include "common/image.h"         // for dt_imageio_retval_t, dt_image_t
+#include "common/mipmap_cache.h"  // for dt_mipmap_buffer_t, dt_mipmap_cache_alloc
 
-#include <errno.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <strings.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <time.h>
-#include <unistd.h>
+#include <errno.h>        // for errno
+#include <glib.h>         // for GUINT16_SWAP_LE_BE, G_BIG_ENDIAN
+#include <glib/gstdio.h>  // for g_fopen
+#include <stdint.h>       // for uint8_t, uint16_t
+#include <stdio.h>        // for size_t, fclose, fread, FILE, fgets
+#include <stdlib.h>       // for calloc, free, atoi, strtol
 
-// pbm -- portable bit map. values are either 0 or 1, single channel
+// PBM -- portable bit map. values are either 0 or 1, single channel
 static dt_imageio_retval_t _read_pbm(dt_image_t *img, FILE*f, float *buf)
 {
   dt_imageio_retval_t result = DT_IMAGEIO_OK;
@@ -67,7 +64,7 @@ static dt_imageio_retval_t _read_pbm(dt_image_t *img, FILE*f, float *buf)
   return result;
 }
 
-// pgm -- portable gray map. values are between 0 and max, single channel
+// PGM -- portable gray map. values are between 0 and max, single channel
 static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
 {
   dt_imageio_retval_t result = DT_IMAGEIO_OK;
@@ -140,7 +137,7 @@ static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
   return result;
 }
 
-// ppm -- portable pix map. values are between 0 and max, three channels
+// PPM -- portable pix map. values are between 0 and max, three channels
 static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
 {
   dt_imageio_retval_t result = DT_IMAGEIO_OK;
