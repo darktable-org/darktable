@@ -415,7 +415,9 @@ instance. It is torn down again straight away, and `exposure`'s `gui_cleanup()` 
 instance behind it. In tree the callers carry that check:
 `dt_dev_exposure_get_effective_exposure()` resolves a live, enabled instance itself and
 passes that one, and the other two getters go through a helper that requires
-`proxy.exposure.module` to be set (`src/develop/develop.c`).
+`proxy.exposure.module` to be set (`src/develop/develop.c`). `dt_dev_cat_is_active()`, the
+only caller of color calibration's `proxy.cat_is_active`, passes only the `channelmixerrgb`
+instances it finds in `dev->iop` (`src/develop/develop.c`).
 
 The producing side — usually `commit_params()` or `process()` — must take the same lock.
 Publishing a raw pointer into `gui_data` through a proxy is worse still: the reader then
