@@ -2511,12 +2511,26 @@ static void _sf_build_grain_layers(sf_sim_t *s,
                                    const double density_min[3],
                                    const double uniformity[3],
                                    const double rms[3],
-                                   const double particle_scale[SF_GRAIN_MAX_SUBLAYERS],
+                                   const double particle_scale_in[SF_GRAIN_MAX_SUBLAYERS],
                                    int n_scale)
 {
   const sf_curves_model_t *m = &film->curves_model;
-  const int nl = (m->n_layers > 1 && n_scale > 1) ? MIN(m->n_layers, MIN(n_scale, SF_GRAIN_MAX_SUBLAYERS))
-                                                   : 1;
+  n_scale = MIN(n_scale, SF_GRAIN_MAX_SUBLAYERS);
+  const int nl = (m->n_layers > 1 && n_scale > 1) ? MIN(m->n_layers, SF_GRAIN_MAX_SUBLAYERS) : 1;
+  /* Every layer of the curve model is sampled: the inverse lookup reads the
+     summed layer curve as the film's total density, so a model layer left out
+     of the sum would leave each draw short of the density it is compared
+     against, and the delta with a mean of minus that layer's density. Where
+     the pack lists fewer scales than the model has layers, the missing ones
+     continue the geometric progression of the last two listed. */
+  double particle_scale[SF_GRAIN_MAX_SUBLAYERS] = { 0.0 };
+  for(int l = 0; l < MIN(n_scale, nl); l++) particle_scale[l] = particle_scale_in[l];
+  if(nl > n_scale)
+  {
+    const double prev = particle_scale_in[n_scale - 2], last = particle_scale_in[n_scale - 1];
+    const double ratio = (prev > 0.0 && last > 0.0) ? last / prev : 0.5;
+    for(int l = n_scale; l < nl; l++) particle_scale[l] = particle_scale[l - 1] * ratio;
+  }
   s->grain_n_sublayers = nl;
   const float ref_um = SF_GRAIN_REF_UM;
   const double pix_ref = (double)ref_um * (double)ref_um;
