@@ -63,8 +63,8 @@ gboolean dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png)
     return FALSE;
   }
 
-  // TODO: gate by version once known cICP chunk read support is added to libpng
-#ifdef PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED
+  /* Keeping a known chunk as unknown disables libpng's native cICP parser. */
+#if defined(PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED) && !defined(PNG_READ_cICP_SUPPORTED)
   png_set_keep_unknown_chunks(png->png_ptr, 3, (png_const_bytep) "cICP", 1);
 #endif
 
@@ -282,13 +282,13 @@ int dt_imageio_png_read_profile(const char *filename,
   // get CICP codes
   png_byte data[4];
   png_uint_32 ret = 0;
-#ifdef PNG_cICP_SUPPORTED
+#ifdef PNG_READ_cICP_SUPPORTED
   ret = png_get_cICP(image.png_ptr, image.info_ptr, &data[0], &data[1], &data[2], &data[3]);
 #elif defined(PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED)
   png_unknown_chunkp unknowns = NULL;
   const int num = png_get_unknown_chunks(image.png_ptr, image.info_ptr, &unknowns);
   for(size_t c = 0; c < num; ++c)
-    if(!strcmp((const char *)unknowns[c].name, "cICP"))
+    if(!strcmp((const char *)unknowns[c].name, "cICP") && unknowns[c].size == sizeof(data))
     {
       data[0] = unknowns[c].data[0];
       data[1] = unknowns[c].data[1];

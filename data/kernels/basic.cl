@@ -1308,7 +1308,7 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
                  global float *cmat, global float *lmat,
                  read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
                  const int blue_mapping, global const float (*const a)[3], global const float *corr,
-                 const float scale, const int hue_div, const int sat_div, const int val_div, global const float *dev_hsm, const int encoding, const int use_hsm)
+                 const float scale, const int hue_div, const int sat_div, const int val_div, global const float *dev_hsm, const int encoding, const int use_hsm, const int hdr_transfer)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1323,6 +1323,13 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
   cam[0] = lerp_lookup_unbounded0(lutr, pixel.x, a[0]);
   cam[1] = lerp_lookup_unbounded0(lutg, pixel.y, a[1]);
   cam[2] = lerp_lookup_unbounded0(lutb, pixel.z, a[2]);
+  if(hdr_transfer)
+  {
+    cam[0] = pixel.x;
+    cam[1] = pixel.y;
+    cam[2] = pixel.z;
+    dt_hdr_decode(cam, hdr_transfer);
+  }
 
   if(blue_mapping)
   {
@@ -1387,7 +1394,7 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
                   global float *cmat, global float *lmat,
                   read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
                   const int blue_mapping, global const float (*const a)[3], global const float *corr,
-                  const float scale, const int hue_div, const int sat_div, const int val_div, global const float *dev_hsm, const int encoding, const int use_hsm)
+                  const float scale, const int hue_div, const int sat_div, const int val_div, global const float *dev_hsm, const int encoding, const int use_hsm, const int hdr_transfer)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1402,6 +1409,13 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
   cam[0] = lerp_lookup_unbounded0(lutr, pixel.x, a[0]);
   cam[1] = lerp_lookup_unbounded0(lutg, pixel.y, a[1]);
   cam[2] = lerp_lookup_unbounded0(lutb, pixel.z, a[2]);
+  if(hdr_transfer)
+  {
+    cam[0] = pixel.x;
+    cam[1] = pixel.y;
+    cam[2] = pixel.z;
+    dt_hdr_decode(cam, hdr_transfer);
+  }
 
   if(blue_mapping)
   {
@@ -3092,7 +3106,7 @@ colorout (read_only image2d_t in,
           read_only image2d_t lutr,
           read_only image2d_t lutg,
           read_only image2d_t lutb,
-          global const float (*const a)[3])
+          global const float (*const a)[3], const int hdr_transfer)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3110,6 +3124,7 @@ colorout (read_only image2d_t in,
     rgb[i] = 0.0f;
     for(int j=0;j<3;j++) rgb[i] += mat[3*i+j]*XYZ[j];
   }
+  dt_hdr_encode(rgb, hdr_transfer);
   pixel.x = lerp_lookup_unbounded0(lutr, rgb[0], a[0]);
   pixel.y = lerp_lookup_unbounded0(lutg, rgb[1], a[1]);
   pixel.z = lerp_lookup_unbounded0(lutb, rgb[2], a[2]);
