@@ -65,30 +65,6 @@
 
 #define SF_LOG_EPS 1e-10
 
-/* 4-pixel NEON 3×3 matrix multiply: vld3q → vmlaq_n ×3 → vst3q. */
-#if defined(__ARM_NEON)
-#include <arm_neon.h>
-
-static inline void neon_mat3_mulv_batch(const float m[9],
-                                        const float *in,
-                                        float out[12])
-{
-  float32x4x3_t rgb = vld3q_f32(in);
-  const float32x4_t r0 = rgb.val[0], r1 = rgb.val[1], r2 = rgb.val[2];
-  float32x4_t x0 = vmulq_n_f32(r0, m[0]);
-  x0 = vmlaq_n_f32(x0, r1, m[1]);
-  x0 = vmlaq_n_f32(x0, r2, m[2]);
-  float32x4_t x1 = vmulq_n_f32(r0, m[3]);
-  x1 = vmlaq_n_f32(x1, r1, m[4]);
-  x1 = vmlaq_n_f32(x1, r2, m[5]);
-  float32x4_t x2 = vmulq_n_f32(r0, m[6]);
-  x2 = vmlaq_n_f32(x2, r1, m[7]);
-  x2 = vmlaq_n_f32(x2, r2, m[8]);
-  rgb.val[0] = x0; rgb.val[1] = x1; rgb.val[2] = x2;
-  vst3q_f32(out, rgb);
-}
-#endif /* __ARM_NEON */
-
 /* pow10 / log10 through spektra_core.h's own exp2/log2, NOT the platform
    exp2f/log2f. The kernel has to compute the same thing, and OpenCL specifies
    exp2/log2 only to <=3 ULP where glibc rounds correctly, so a library call
@@ -781,7 +757,7 @@ int sf_pack_peek_tables(const char *dir,
     return 0;
   }
   JsonNode *rootn = json_parser_get_root(parser);
-  JsonObject *root = rootn ? json_node_get_object(rootn) : NULL;
+  JsonObject *root = (rootn && JSON_NODE_HOLDS_OBJECT(rootn)) ? json_node_get_object(rootn) : NULL;
   if(!root)
   {
     g_object_unref(parser);
@@ -1065,7 +1041,13 @@ sf_pack_t *sf_pack_load(const char *dir,
     g_clear_error(&gerr);
     goto fail;
   }
-  JsonObject *root = json_node_get_object(json_parser_get_root(pack->parser));
+  JsonNode *rootn = json_parser_get_root(pack->parser);
+  JsonObject *root = (rootn && JSON_NODE_HOLDS_OBJECT(rootn)) ? json_node_get_object(rootn) : NULL;
+  if(!root)
+  {
+    set_error(errmsg, "spektra_sim: %s is not a JSON object", json_path);
+    goto fail;
+  }
   pack->version = json_dup_string(root, "spektrafilm_version");
 
   /* Container format check, before anything is read out of the object. A pack
@@ -1110,8 +1092,12 @@ sf_pack_t *sf_pack_load(const char *dir,
 
   /* spectral locus polygon */
   {
-    JsonArray *arr = json_object_get_array_member(root, "spectral_locus_xy");
-    if(!arr)
+    JsonNode *node = json_object_has_member(root, "spectral_locus_xy")
+                         ? json_object_get_member(root, "spectral_locus_xy") : NULL;
+    JsonArray *arr = (node && JSON_NODE_HOLDS_ARRAY(node)) ? json_node_get_array(node) : NULL;
+    /* a polygon needs at least a closed triangle: three vertices plus the
+       repeated first one */
+    if(!arr || json_array_get_length(arr) < 4)
     {
       set_error(errmsg, "spektra_sim: pack.json misses spectral_locus_xy");
       goto fail;
@@ -1120,7 +1106,13 @@ sf_pack_t *sf_pack_load(const char *dir,
     pack->locus = g_malloc0(sizeof(double) * 2 * pack->locus_n);
     for(int i = 0; i < pack->locus_n; i++)
     {
-      JsonArray *row = json_array_get_array_element(arr, i);
+      JsonNode *rn = json_array_get_element(arr, i);
+      JsonArray *row = (rn && JSON_NODE_HOLDS_ARRAY(rn)) ? json_node_get_array(rn) : NULL;
+      if(!row || json_array_get_length(row) != 2)
+      {
+        set_error(errmsg, "spektra_sim: pack.json has a malformed spectral_locus_xy");
+        goto fail;
+      }
       pack->locus[i][0] = json_array_get_double_element(row, 0);
       pack->locus[i][1] = json_array_get_double_element(row, 1);
     }
@@ -1328,8 +1320,12 @@ bool sf_pack_film_defaults(const sf_pack_t *pack,
   JsonObject *db = json_node_get_object(pack->film_defaults);
   if(!db || !json_object_has_member(db, film_stock)) return false;
   JsonObject *entry = json_object_get_object_member(db, film_stock);
-  JsonObject *dc = json_object_get_object_member(entry, "dir_couplers");
-  JsonObject *ha = json_object_get_object_member(entry, "halation");
+  if(!entry) return false;
+  /* has_member first: json-glib raises a critical for an absent member */
+  JsonObject *dc = json_object_has_member(entry, "dir_couplers")
+                       ? json_object_get_object_member(entry, "dir_couplers") : NULL;
+  JsonObject *ha = json_object_has_member(entry, "halation")
+                       ? json_object_get_object_member(entry, "halation") : NULL;
   if(dc)
   {
     if(gamma_samelayer) json_read_darray(dc, "gamma_samelayer_rgb", gamma_samelayer, 3);
@@ -2940,6 +2936,14 @@ static void build_print_curves(double (*curves)[3],
   const sf_curves_model_t *m = &print->curves_model;
   const int nl = m->n_layers;
 
+  /* a paper without a curve model has nothing to evaluate or morph; its
+     measured curves are what it develops along */
+  if(nl <= 0)
+  {
+    memcpy(curves, print->density_curves, sizeof(double) * SF_NLE * 3);
+    return;
+  }
+
   for(int c = 0; c < 3; c++)
   {
     double centers[8], amps[8], sigmas[8], alphas[8];
@@ -3841,6 +3845,12 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     if(p->input_gamut_compress)
     {
       double *old = malloc((size_t)n * n * 3 * sizeof(double));
+      if(!old)
+      {
+        set_error(errmsg, "spektra_sim: out of memory for the input gamut remap");
+        sf_sim_free(s);
+        return NULL;
+      }
       memcpy(old, s->tc_lut, (size_t)n * n * 3 * sizeof(double));
       const double scale = (double)(n - 1);
 #ifdef _OPENMP
@@ -4218,6 +4228,16 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
   /* ----- printing -------------------------------------------------------- */
   if(s->has_print)
   {
+    /* print develop indexes the paper's curves with the film's exposure grid
+       (le0 / le_step), which holds only while both profiles share it */
+    for(int i = 0; i < SF_NLE; i++)
+      if(fabs(print->log_exposure[i] - film->log_exposure[i]) > 1e-9)
+      {
+        set_error(errmsg, "spektra_sim: film and print profiles use different "
+                          "log-exposure grids");
+        sf_sim_free(s);
+        return NULL;
+      }
     const double *illu_src = g_hash_table_lookup(pack->illuminants, p->enlarger_illuminant);
     const double *filters = g_hash_table_lookup(pack->dichroics, p->dichroic_brand);
     if(!illu_src || !filters)
@@ -4676,47 +4696,6 @@ void sf_sim_expose(const sf_sim_t *sim,
                    int nch_in,
                    int nch_out)
 {
-#if defined(__ARM_NEON)
-  if(nch_in == 3 && nch_out == 3 && sim->tc_lut_f && npix >= 4)
-  {
-    const size_t n4 = npix & ~(size_t)3; /* round down to multiple of 4 */
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static)
-#endif
-    for(size_t px = 0; px < n4; px += 4)
-    {
-      const float *in = rgb_in + px * 3;
-      float *out = raw + px * 3;
-      float xyz[12];
-      neon_mat3_mulv_batch(sim->m_in_f, in, xyz);
-      for(int k = 0; k < 4; k++)
-      {
-        const float *xyz_k = xyz + k * 3;
-        float r[3];
-        const float b = xyz_k[0] + xyz_k[1] + xyz_k[2];
-        /* see expose_pixel_f: reciprocal-multiply, matching spektrafilm_expose */
-        const float inv_b = 1.0f / fmaxf(b, 1e-10f);
-        const float xy[2] = { xyz_k[0] * inv_b, xyz_k[1] * inv_b };
-        float tc[2];
-        tri2quad_f(tc, xy);
-        const float scale = (float)(sim->tc_n - 1);
-        cubic_interp_2d_f(r, sim->tc_lut_f, sim->tc_n, tc[0] * scale, tc[1] * scale);
-        const float bb = isfinite(b) ? b : 0.0f;
-        for(int c = 0; c < 3; c++) out[k * 3 + c] = r[c] * bb * sim->ev_scale_f;
-      }
-    }
-    /* remainder (1-3 pixels, scalar fallback) */
-    for(size_t px = n4; px < npix; px++)
-    {
-      const float *in = rgb_in + px * 3;
-      float *out = raw + px * 3;
-      float r[3];
-      expose_pixel_f(sim->m_in_f, sim->tc_lut_f, sim->tc_n, in, r);
-      for(int c = 0; c < 3; c++) out[c] = r[c] * sim->ev_scale_f;
-    }
-    return;
-  }
-#endif
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
 #endif
