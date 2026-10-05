@@ -487,6 +487,11 @@ changes (where available).
   applied from embedded metadata when the file only carries chromatic
   aberration correction data.
 
+- Fixed raw denoise on X-Trans images replacing the green pixels in the
+  rightmost column with the value of a neighboring pixel, often a red
+  one, which slightly changed the colors along the right edge of the
+  image.
+
 ## Lua
 
 ### API Version
