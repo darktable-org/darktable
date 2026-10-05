@@ -21,7 +21,9 @@
 #include "imageio/imageio_rgbe.h"
 
 #include <ctype.h>
+#include <limits.h>
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -448,7 +450,22 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img,
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
+  if(img->width <= 0 || img->height <= 0
+     || (size_t)img->width > SIZE_MAX / (size_t)img->height)
+  {
+    fclose(f);
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
+
   const size_t npixels = (size_t)img->width * img->height;
+
+  // RGBE_ReadPixels() uses an int for its pixel count. Also ensure that the
+  // temporary three-channel float allocation below cannot overflow.
+  if(npixels > INT_MAX || npixels > SIZE_MAX / (3 * sizeof(float)))
+  {
+    fclose(f);
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
 
   // The decoder writes three RGB channels to rgbe_buf, so size = number of pixels * 3
   float *rgbe_buf = dt_alloc_align_float(npixels * 3);
