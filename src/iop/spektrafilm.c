@@ -290,7 +290,7 @@ typedef struct dt_iop_spektrafilm_params_t
      LONG EDGE (36 mm). Both describe the same format, so the two carry
      different labels -- "format" and "frame long edge" -- to keep the preset
      from reading as a contradiction of the slider beneath it. */
-  float film_format_mm;     // $MIN: 8.0 $MAX: 130.0 $DEFAULT: 36.0 $DESCRIPTION: "frame long edge"
+  float film_format_mm;     // $MIN: 5.0 $MAX: 250.0 $DEFAULT: 36.0 $DESCRIPTION: "frame long edge"
   float output_luminance_boost; // $MIN: 0.5 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "pre-compression boost"
   /* Gain on the finished colour, after the gamut compressor -- what a tone
      curve moving its white point does, and the other half of the pair with the
@@ -5593,6 +5593,9 @@ void gui_init(dt_iop_module_t *self)
 
   g->film_format_mm_slider = dt_bauhaus_slider_from_params(self, "film_format_mm");
   dt_bauhaus_slider_set_format(g->film_format_mm_slider, _(" mm"));
+  /* the hard range spans every format preset, Super 8 to 8x10; dragging
+     covers the common still and cine gauges */
+  dt_bauhaus_slider_set_soft_range(g->film_format_mm_slider, 8.0f, 130.0f);
   gtk_widget_set_tooltip_text(g->film_format_mm_slider,
                               _("physical frame size, long edge. sets the scale that "
                                 "grain, scatter,\n"
