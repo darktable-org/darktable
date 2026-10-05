@@ -201,8 +201,6 @@ if(APPLE)
 endif(APPLE)
 
 if(WIN32)
-  list(APPEND SOURCE_FILES "win/strptime.c")
-  list(APPEND HEADER_FILES "win/strptime.h")
   list(APPEND SOURCE_FILES "win/statvfs.c")
   list(APPEND HEADER_FILES "win/statvfs.h")
 

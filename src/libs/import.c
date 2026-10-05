@@ -43,11 +43,6 @@
 #include "osx/osx.h"
 #endif
 
-#ifdef _WIN32
-//MSVCRT does not have strptime implemented
-#include "win/strptime.h"
-#endif
-
 #include <strings.h>
 #include <librsvg/rsvg.h>
 
