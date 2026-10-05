@@ -470,16 +470,14 @@ static void _blur_per_channel(float *const buf,
      a      = 28^(1 - boost_range)              (curve sharpness)
      k      = (2^boost_ev - 1) / (e^(a(1-x0)) - a(1-x0) - 1)   (normaliser)
      above x0:  y = x + k*max * (e^(a*dx) - a*dx - 1),  dx=(x-x0)/max
-   Operates in place on a linear w*h*3 plane; max is the plane's peak value. */
-void sf_boost_highlights(float *const raw,
-                         const int w,
-                         const int h,
-                         const float boost_ev,
-                         const float boost_range,
-                         const float protect_ev)
+   max is midgray * 2^(protect_ev + SF_BOOST_SPAN_EV), and above it the curve
+   continues along its tangent (see sf_boost_plan_t). */
+int sf_boost_build_plan(const float boost_ev,
+                        const float boost_range,
+                        const float protect_ev,
+                        sf_boost_plan_t *plan)
 {
-  if(boost_ev <= 0.0f) return;
-  const size_t nn = (size_t)w * h * 3;
+  if(boost_ev <= 0.0f) return 0;
 
   /* The reference normalises this curve by max(raw) over the whole frame, so its
      brightest pixel lands exactly boost_ev stops higher. That is a whole-image
@@ -495,27 +493,61 @@ void sf_boost_highlights(float *const raw,
      everywhere. Anchoring it to the film's own shoulder was the other candidate
      and is a trap: the log exposure at 95% of curve excursion ranges from 2.5
      (Velvia) to 272 (Vision3 250D) in raw units across the shipped stocks, which
-     would leave the slider nearly inert on negatives and violent on slides. */
-  const float midgray = 0.184f;
-  const float rng = fminf(fmaxf(boost_range, 0.0f), 1.0f);
-  const float prot = fmaxf(protect_ev, 0.0f);
-  const float raw_x0 = midgray * exp2f(prot);
-  const float maxv = midgray * exp2f(prot + SF_BOOST_SPAN_EV);
-  const float a = powf(28.0f, 1.0f - rng);
-  const float x0 = raw_x0 / maxv;
-  const float denom = expf(a * (1.0f - x0)) - a * (1.0f - x0) - 1.0f;
-  if(denom <= 0.0f) return;
-  const float k = (exp2f(boost_ev) - 1.0f) / denom;
-  const float inv_max = 1.0f / maxv, boost_scale = k * maxv;
+     would leave the slider nearly inert on negatives and violent on slides.
 
+     The reference's normalisation also bounds dx to 1 - x0, which a fixed
+     ceiling does not: anything above xmax would follow the bare exponential,
+     overflow float within a few stops and reach the recursive blurs as inf,
+     where inf - inf turns whole rows and columns into NaN. Above xmax the curve
+     therefore continues along its tangent. */
+  const double midgray = 0.184;
+  const double rng = fmin(fmax((double)boost_range, 0.0), 1.0);
+  const double prot = fmax((double)protect_ev, 0.0);
+  const double raw_x0 = midgray * exp2(prot);
+  const double maxv = midgray * exp2(prot + SF_BOOST_SPAN_EV);
+  const double a = pow(28.0, 1.0 - rng);
+  const double dxm = 1.0 - raw_x0 / maxv;
+  const double e_m = exp(a * dxm);
+  const double denom = e_m - a * dxm - 1.0;
+  if(denom <= 0.0) return 0;
+  const double gain = exp2((double)boost_ev) - 1.0;
+  const double k = gain / denom;
+  plan->raw_x0 = (float)raw_x0;
+  plan->xmax = (float)maxv;
+  plan->inv_max = (float)(1.0 / maxv);
+  plan->a = (float)a;
+  plan->a_log2e = (float)(a * M_LOG2E);
+  plan->scale = (float)(k * maxv);
+  plan->ext = (float)(gain * maxv);
+  plan->slope = (float)(k * a * (e_m - 1.0));
+  return 1;
+}
+
+void sf_boost_highlights(float *const raw,
+                         const int w,
+                         const int h,
+                         const float boost_ev,
+                         const float boost_range,
+                         const float protect_ev)
+{
+  sf_boost_plan_t bp;
+  if(!sf_boost_build_plan(boost_ev, boost_range, protect_ev, &bp)) return;
+  const size_t nn = (size_t)w * h * 3;
+
+  /* same expression, in the same association, as spektrafilm_boost */
+  DT_OMP_FOR()
   for(size_t i = 0; i < nn; i++)
   {
     const float x = raw[i];
-    if(x > raw_x0)
+    if(x <= bp.raw_x0) continue;
+    if(x <= bp.xmax)
     {
-      const float dx = (x - raw_x0) * inv_max;
-      raw[i] = x + boost_scale * (expf(a * dx) - a * dx - 1.0f);
+      const float dx = (x - bp.raw_x0) * bp.inv_max;
+      const float t = bp.a * dx;
+      raw[i] = fmaf(bp.scale, (grain_exp2f(bp.a_log2e * dx) - t) - 1.0f, x);
     }
+    else
+      raw[i] = fmaf(bp.slope, x - bp.xmax, x + bp.ext);
   }
 }
 

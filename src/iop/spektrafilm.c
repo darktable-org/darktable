@@ -2796,16 +2796,20 @@ int process_cl(dt_iop_module_t *self,
   SF_CL_STEP("expose");
 
   /* ---- 2) pre-film spatial effects on linear exposure -------------------- */
-  if(d->p.boost_ev > 0.0f)
   {
     /* The curve is anchored to the exposure scale, not to a frame maximum, so
        the boost agrees between the preview pipe, the export pipe and every
        tile. A frame maximum would differ per ROI. */
-    const float b_ev = d->p.boost_ev, b_rng = d->p.boost_range, b_prot = d->p.protect_ev;
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_boost, w, h, CLARG(plane),
-                                           CLARG(w), CLARG(h), CLARG(b_ev), CLARG(b_rng),
-                                           CLARG(b_prot));
-    SF_CL_STEP("boost");
+    sf_boost_plan_t bp;
+    if(sf_boost_build_plan(d->p.boost_ev, d->p.boost_range, d->p.protect_ev, &bp))
+    {
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_boost, w, h, CLARG(plane),
+                                             CLARG(w), CLARG(h), CLARG(bp.raw_x0),
+                                             CLARG(bp.xmax), CLARG(bp.inv_max), CLARG(bp.a),
+                                             CLARG(bp.a_log2e), CLARG(bp.scale),
+                                             CLARG(bp.ext), CLARG(bp.slope));
+      SF_CL_STEP("boost");
+    }
   }
 
   if(d->p.diffusion_on)

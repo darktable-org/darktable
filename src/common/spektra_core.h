@@ -124,6 +124,27 @@ void sf_halation(float *raw,
    strength. 4 EV matches the reference's typical frame peak for a normally
    exposed scene (midgray + 4-6 EV). */
 #define SF_BOOST_SPAN_EV 4.0f
+
+/* Highlight boost curve constants, shared by the CPU loop and the GPU kernel so
+   both evaluate the same numbers. Below raw_x0 the curve is the identity; from
+   raw_x0 up to xmax it is x + scale*(e^(a*dx) - a*dx - 1) with
+   dx = (x - raw_x0)*inv_max; above xmax it continues along its tangent at xmax,
+   x + ext + slope*(x - xmax), so a highlight brighter than the span gets a
+   bounded, C1-continuous lift instead of an exponential one. a_log2e is
+   a*log2(e), for evaluating e^(a*dx) as grain_exp2f(a_log2e*dx). */
+typedef struct sf_boost_plan_t
+{
+  float raw_x0, xmax, inv_max;
+  float a, a_log2e, scale;
+  float ext, slope;
+} sf_boost_plan_t;
+
+/* Fill `plan`; returns 0 when the boost is a no-op. */
+int sf_boost_build_plan(float boost_ev,
+                        float boost_range,
+                        float protect_ev,
+                        sf_boost_plan_t *plan);
+
 void sf_boost_highlights(float *raw,
                          int w,
                          int h,
