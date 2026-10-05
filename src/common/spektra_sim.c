@@ -3333,7 +3333,10 @@ float sf_sim_probe_lightness_scale(const sf_sim_t *sim,
  * the highlight/gamut compressor (compress_rgb_oklch_f/aces_f), using
  * `boost_override` in place of sim->out_luminance_boost, and returns the
  * resulting OkLab lightness -- the precompression-boost picker's actual
- * measurement primitive. This needs the pre-compression value specifically:
+ * measurement primitive. out_scale is held at 1: it is applied after the
+ * compressor, so it is no part of what the boost hands to it, and with the
+ * scanner black/white point clipping Y at 1 a scale below 0.97^3 would put
+ * the picker's 0.97 target out of reach at any boost. This needs the pre-compression value specifically:
  * the reinhard knee (see SF_OUT_LIGHT_T/_L/_P) asymptotically approaches its
  * limit regardless of how hard the input is pushed, so measuring the
  * post-compression lightness would tell the picker almost nothing about how
@@ -3351,6 +3354,7 @@ float sf_sim_probe_lightness(const sf_sim_t *sim,
   sf_sim_t tmp_sim = *sim;
   tmp_sim.out_luminance_boost = (double)boost_override;
   tmp_sim.out_compress = SF_OUTPUT_COMPRESS_OFF;
+  tmp_sim.out_scale = 1.0;
   return _probe_lightness_run(&tmp_sim, rgb_in);
 }
 
