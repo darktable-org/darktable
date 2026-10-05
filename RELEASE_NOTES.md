@@ -300,6 +300,9 @@ changes (where available).
 
 ## Bug Fixes
 
+- Fixed overly dark PQ and HLG image imports and overly bright exports,
+  including HDR PNG and JPEG XL profile detection.
+
 - Fixed HEIF export compilation with libheif versions older than 1.15.0,
   and with versions older than 1.16.0 when libsharpyuv is available.
 
