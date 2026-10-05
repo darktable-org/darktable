@@ -223,13 +223,18 @@ int sf_diffusion_build_plan(int family,
    divergence shows as full-height coloured striping: the column pass runs after
    the row pass, so each column blows up on its own.
 
-   Clamping keeps the filter inside the range where it is a Gaussian at the cost
-   of a narrower halo than asked for at extreme diffusion settings. That is a
-   stopgap, not the answer -- a large-sigma blur wants downsample/blur/upsample,
-   which is also faster. This just stops it producing garbage in the meantime. */
+   A wider blur is therefore run as a cascade of n passes of sigma/sqrt(n),
+   each inside this limit: Gaussians compose by adding variances, so the
+   cascade delivers the requested sigma at every resolution instead of a
+   pixel-capped one that would make preview, 1:1 and export disagree. */
 #define SF_GAUSS_MAX_IIR_SIGMA 150.0f
 void sf_gauss_yvv_coeffs(float sigma,
                          float out[4]);
+/* Number of recursive passes for `sigma`, and the per-pass sigma in
+   *pass_sigma. 1 and sigma itself up to SF_GAUSS_MAX_IIR_SIGMA. Shared by the
+   CPU blur and the GPU host so both run the same cascade. */
+int sf_gauss_iir_passes(float sigma,
+                        float *pass_sigma);
 
 /* Build a normalized, truncated 1D Gaussian kernel. truncate = 3 sigma with
  * radius = int(3*sigma + 0.5), matching the reference's own

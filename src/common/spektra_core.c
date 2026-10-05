@@ -93,6 +93,20 @@ void sf_gauss_yvv_coeffs(const float sigma_req,
   dt_gaussian_yvv_coeffs(fminf(sigma_req, SF_GAUSS_MAX_IIR_SIGMA), out);
 }
 
+int sf_gauss_iir_passes(const float sigma,
+                        float *const pass_sigma)
+{
+  if(!(sigma > SF_GAUSS_MAX_IIR_SIGMA))
+  {
+    *pass_sigma = sigma;
+    return 1;
+  }
+  const float r = sigma / SF_GAUSS_MAX_IIR_SIGMA;
+  const int n = (int)ceilf(r * r);
+  *pass_sigma = sigma / sqrtf((float)n);
+  return n;
+}
+
 /* Forward then backward sweep over `len` stride-1 elements. Both sweeps seed
  * their state by replicating the edge sample, as the reference does. */
 static void _sf_gauss_iir_1d(const float *const in,
@@ -199,64 +213,73 @@ static void _blur_flat_inplace(float *const plane,
   const int use_iir = !exact_only && sigma >= SF_GAUSS_EXACT_MAX_SIGMA;
   float kernel[2 * SF_GAUSS_MAX_RADIUS + 1];
   int radius = 0;
+  int passes = 1;
   float yvv[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-  if(use_iir) sf_gauss_yvv_coeffs(sigma, yvv);
+  if(use_iir)
+  {
+    float pass_sigma = sigma;
+    passes = sf_gauss_iir_passes(sigma, &pass_sigma);
+    sf_gauss_yvv_coeffs(pass_sigma, yvv);
+  }
   else radius = dt_gaussian_kernel_1d(sigma, kernel, SF_GAUSS_MAX_RADIUS);
 
-  if(trans && w >= 16 && h >= 16)
+  for(int pass = 0; pass < passes; pass++)
   {
-    float *const temp = trans;
-    /* Pass 1: row-major on each row -> temp */
-    DT_OMP_FOR()
-    for(int j = 0; j < h; j++)
+    if(trans && w >= 16 && h >= 16)
     {
-      const size_t off = (size_t)j * w;
-      if(use_iir) _sf_gauss_iir_1d(plane + off, temp + off, w, yvv[0], yvv[1], yvv[2], yvv[3]);
-      else _sf_gauss_convolve_1d(plane + off, temp + off, w, kernel, radius);
-    }
-    /* Transpose temp (w×h) -> plane (h×w) */
-    _sf_transpose(temp, plane, w, h);
-    /* Pass 2: row-major on transposed data -> temp */
-    DT_OMP_FOR()
-    for(int j = 0; j < w; j++)
-    {
-      const size_t off = (size_t)j * h;
-      if(use_iir) _sf_gauss_iir_1d(plane + off, temp + off, h, yvv[0], yvv[1], yvv[2], yvv[3]);
-      else _sf_gauss_convolve_1d(plane + off, temp + off, h, kernel, radius);
-    }
-    /* Transpose back temp (h×w) -> plane (w×h) */
-    _sf_transpose(temp, plane, h, w);
-  }
-  else
-  {
-    /* small buffer: skip the cache-blocking transpose, convolve directly */
-    float *const row_tmp = dt_alloc_align_float((size_t)MAX(w, h));
-    if(row_tmp)
-    {
+      float *const temp = trans;
+      /* Pass 1: row-major on each row -> temp */
+      DT_OMP_FOR()
       for(int j = 0; j < h; j++)
       {
-        if(use_iir)
-          _sf_gauss_iir_1d(plane + (size_t)j * w, row_tmp, w, yvv[0], yvv[1], yvv[2], yvv[3]);
-        else
-          _sf_gauss_convolve_1d(plane + (size_t)j * w, row_tmp, w, kernel, radius);
-        memcpy(plane + (size_t)j * w, row_tmp, sizeof(float) * w);
+        const size_t off = (size_t)j * w;
+        if(use_iir) _sf_gauss_iir_1d(plane + off, temp + off, w, yvv[0], yvv[1], yvv[2], yvv[3]);
+        else _sf_gauss_convolve_1d(plane + off, temp + off, w, kernel, radius);
       }
-      float *const col_in = dt_alloc_align_float((size_t)h);
-      float *const col_out = dt_alloc_align_float((size_t)h);
-      if(col_in && col_out)
+      /* Transpose temp (w×h) -> plane (h×w) */
+      _sf_transpose(temp, plane, w, h);
+      /* Pass 2: row-major on transposed data -> temp */
+      DT_OMP_FOR()
+      for(int j = 0; j < w; j++)
       {
-        for(int i = 0; i < w; i++)
-        {
-          for(int j = 0; j < h; j++) col_in[j] = plane[(size_t)j * w + i];
-          if(use_iir) _sf_gauss_iir_1d(col_in, col_out, h, yvv[0], yvv[1], yvv[2], yvv[3]);
-          else _sf_gauss_convolve_1d(col_in, col_out, h, kernel, radius);
-          for(int j = 0; j < h; j++) plane[(size_t)j * w + i] = col_out[j];
-        }
+        const size_t off = (size_t)j * h;
+        if(use_iir) _sf_gauss_iir_1d(plane + off, temp + off, h, yvv[0], yvv[1], yvv[2], yvv[3]);
+        else _sf_gauss_convolve_1d(plane + off, temp + off, h, kernel, radius);
       }
-      dt_free_align(col_in);
-      dt_free_align(col_out);
+      /* Transpose back temp (h×w) -> plane (w×h) */
+      _sf_transpose(temp, plane, h, w);
     }
-    dt_free_align(row_tmp);
+    else
+    {
+      /* small buffer: skip the cache-blocking transpose, convolve directly */
+      float *const row_tmp = dt_alloc_align_float((size_t)MAX(w, h));
+      if(row_tmp)
+      {
+        for(int j = 0; j < h; j++)
+        {
+          if(use_iir)
+            _sf_gauss_iir_1d(plane + (size_t)j * w, row_tmp, w, yvv[0], yvv[1], yvv[2], yvv[3]);
+          else
+            _sf_gauss_convolve_1d(plane + (size_t)j * w, row_tmp, w, kernel, radius);
+          memcpy(plane + (size_t)j * w, row_tmp, sizeof(float) * w);
+        }
+        float *const col_in = dt_alloc_align_float((size_t)h);
+        float *const col_out = dt_alloc_align_float((size_t)h);
+        if(col_in && col_out)
+        {
+          for(int i = 0; i < w; i++)
+          {
+            for(int j = 0; j < h; j++) col_in[j] = plane[(size_t)j * w + i];
+            if(use_iir) _sf_gauss_iir_1d(col_in, col_out, h, yvv[0], yvv[1], yvv[2], yvv[3]);
+            else _sf_gauss_convolve_1d(col_in, col_out, h, kernel, radius);
+            for(int j = 0; j < h; j++) plane[(size_t)j * w + i] = col_out[j];
+          }
+        }
+        dt_free_align(col_in);
+        dt_free_align(col_out);
+      }
+      dt_free_align(row_tmp);
+    }
   }
 }
 

@@ -2543,16 +2543,23 @@ static cl_int _sf_yvv_blur_cl(const int devid,
                               const int ch)
 {
   float b[4];
-  sf_gauss_yvv_coeffs(sigma, b);
+  float pass_sigma = sigma;
+  const int passes = sf_gauss_iir_passes(sigma, &pass_sigma);
+  sf_gauss_yvv_coeffs(pass_sigma, b);
   const int krow = (ch == 4) ? gd->kernel_yvv_row_4c : gd->kernel_yvv_row_1c;
   const int kcol = (ch == 4) ? gd->kernel_yvv_col_4c : gd->kernel_yvv_col_1c;
-  cl_int e = dt_opencl_enqueue_kernel_2d_args(devid, krow, h, 1, CLARG(buf), CLARG(tmp),
-                                              CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[1]),
-                                              CLARG(b[2]), CLARG(b[3]));
-  if(e != CL_SUCCESS) return e;
-  return dt_opencl_enqueue_kernel_2d_args(devid, kcol, w, 1, CLARG(tmp), CLARG(buf),
-                                          CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[1]),
-                                          CLARG(b[2]), CLARG(b[3]));
+  cl_int e = CL_SUCCESS;
+  for(int pass = 0; pass < passes && e == CL_SUCCESS; pass++)
+  {
+    e = dt_opencl_enqueue_kernel_2d_args(devid, krow, h, 1, CLARG(buf), CLARG(tmp),
+                                         CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[1]),
+                                         CLARG(b[2]), CLARG(b[3]));
+    if(e == CL_SUCCESS)
+      e = dt_opencl_enqueue_kernel_2d_args(devid, kcol, w, 1, CLARG(tmp), CLARG(buf),
+                                           CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[1]),
+                                           CLARG(b[2]), CLARG(b[3]));
+  }
+  return e;
 }
 
 /* GPU path: mirrors process(). Per-pixel stages run as kernels on the
