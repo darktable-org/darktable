@@ -675,6 +675,29 @@ __kernel void spektrafilm_print_expose(__global const float4 *cmy, __global floa
   loge[k] = (float4)(out.x, out.y, out.z, in.w);
 }
 
+/* print diffusion runs on linear print exposure, as the reference's
+   printing.expose does: these two convert the log plane there and back, with
+   the same 1e-10 floor the reference applies on the way back */
+__kernel void spektrafilm_pow10(__global float4 *plane, const int w, const int h)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  const size_t k = (size_t)y * w + x;
+  const float4 p = plane[k];
+  plane[k] = (float4)(sf_pow10f(p.x), sf_pow10f(p.y), sf_pow10f(p.z), p.w);
+}
+
+__kernel void spektrafilm_log10(__global float4 *plane, const int w, const int h)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  const size_t k = (size_t)y * w + x;
+  const float4 p = plane[k];
+  plane[k] = (float4)(sf_log10f(fmax(p.x, 0.0f) + SF_LOG_EPS),
+                      sf_log10f(fmax(p.y, 0.0f) + SF_LOG_EPS),
+                      sf_log10f(fmax(p.z, 0.0f) + SF_LOG_EPS), p.w);
+}
+
 /* stage 5b: print log exposure -> print CMY density (sf_sim_print_develop) */
 __kernel void spektrafilm_print_develop(__global const float4 *loge, __global float4 *cmy,
                                         const int w, const int h,

@@ -31,7 +31,7 @@
  *     -> CMY film density -> grain                          (density, spatial)
  *     -> enlarger (dichroic-filtered light through the negative,
  *        print paper sensitivity, midgray-balanced)         = print exposure
- *     -> print diffusion filter (optional)                  (density, spatial)
+ *     -> print diffusion filter (optional)        (linear print exposure, spatial)
  *     -> print density curves (with optional contrast morph)
  *     -> viewing illuminant through the print, CMFs -> XYZ
  *        -> CAT02 -> work RGB -> OkLCh gamut compression    = scanning
@@ -622,6 +622,7 @@ typedef struct dt_iop_spektrafilm_global_data_t
   int kernel_gauss_row_4c, kernel_gauss_col_4c, kernel_gauss_row_1c, kernel_gauss_col_1c;
   int kernel_yvv_row_4c, kernel_yvv_col_4c, kernel_yvv_row_1c, kernel_yvv_col_1c;
   int kernel_boost, kernel_diffusion_accum, kernel_diffusion_mix;
+  int kernel_pow10, kernel_log10;
 } dt_iop_spektrafilm_global_data_t;
 
 /* the data pack is large (spectra LUT ~12 MB) and shared by all pieces;
@@ -687,6 +688,8 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_boost = dt_opencl_create_kernel(program, "spektrafilm_boost");
   gd->kernel_diffusion_accum = dt_opencl_create_kernel(program, "spektrafilm_diffusion_accum");
   gd->kernel_diffusion_mix = dt_opencl_create_kernel(program, "spektrafilm_diffusion_mix");
+  gd->kernel_pow10 = dt_opencl_create_kernel(program, "spektrafilm_pow10");
+  gd->kernel_log10 = dt_opencl_create_kernel(program, "spektrafilm_log10");
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
@@ -727,6 +730,8 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_boost);
     dt_opencl_free_kernel(gd->kernel_diffusion_accum);
     dt_opencl_free_kernel(gd->kernel_diffusion_mix);
+    dt_opencl_free_kernel(gd->kernel_pow10);
+    dt_opencl_free_kernel(gd->kernel_log10);
     free(self->data);
     self->data = NULL;
   }
@@ -2112,6 +2117,17 @@ void tiling_callback(dt_iop_module_t *self,
 /* process                                                                */
 /* ---------------------------------------------------------------------- */
 
+/* base-10 conversions matching sf_pow10f / sf_log10f in spektrafilm.cl */
+static inline float _sf_pow10f(const float x)
+{
+  return grain_exp2f(x * 3.321928094887362f);
+}
+
+static inline float _sf_log10f(const float x)
+{
+  return grain_log2f(x) * 0.3010299956639812f;
+}
+
 static void _passthrough(const float *in,
                          float *out,
                          int w,
@@ -2449,10 +2465,25 @@ void process(dt_iop_module_t *self,
   if(!d->p.scan_film)
   {
     sf_sim_print_expose(sim, plane, plane, npix, 3, 3);
-    if(d->p.print_diffusion_on)
+    sf_diffusion_plan_t pplan;
+    if(d->p.print_diffusion_on
+       && sf_diffusion_build_plan((int)d->p.print_diffusion_filter_family,
+                                  d->p.print_diffusion_strength,
+                                  d->p.print_diffusion_warmth, &pplan)
+       && pplan.p_s > 0.0f)
+    {
+      /* the filter scatters light, so it runs on linear print exposure, as the
+         reference's printing.expose does, and the result goes back to log10
+         with the reference's 1e-10 floor. Same conversions as the
+         spektrafilm_pow10 / spektrafilm_log10 kernels. */
+      DT_OMP_FOR()
+      for(size_t k = 0; k < npix * 3; k++) plane[k] = _sf_pow10f(plane[k]);
       sf_diffusion_filter(plane, w, h, (double)pixel_um, (int)d->p.print_diffusion_filter_family,
                           d->p.print_diffusion_strength, d->p.print_diffusion_scale,
                           d->p.print_diffusion_warmth);
+      DT_OMP_FOR()
+      for(size_t k = 0; k < npix * 3; k++) plane[k] = _sf_log10f(fmaxf(plane[k], 0.0f) + 1e-10f);
+    }
     sf_sim_print_develop(sim, plane, plane, npix, 3, 3);
   }
 
@@ -3246,7 +3277,7 @@ int process_cl(dt_iop_module_t *self,
         CLARG(g->enl_inv_range[0]), CLARG(g->enl_inv_range[1]), CLARG(g->enl_inv_range[2]),
         CLARG(g->log10_print_exposure));
     SF_CL_STEP("print_expose");
-    /* ---- print diffusion (optional, on the exposed print density) ---- */
+    /* ---- print diffusion (optional, on linear print exposure) ---- */
     if(d->p.print_diffusion_on)
     {
       sf_diffusion_plan_t pplan;
@@ -3255,6 +3286,10 @@ int process_cl(dt_iop_module_t *self,
                                  d->p.print_diffusion_warmth, &pplan)
          && pplan.p_s > 0.0f)
       {
+        /* linear print exposure, see process() */
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_pow10, w, h, CLARG(plane),
+                                               CLARG(w), CLARG(h));
+        SF_CL_STEP("print_diffusion pow10");
         /* see the pre-film diffusion above for why this is in double */
         const double pdsc = fmax((double)d->p.print_diffusion_scale, 1e-6);
         for(int j = 0; j < pplan.n; j++)
@@ -3278,6 +3313,9 @@ int process_cl(dt_iop_module_t *self,
                                                   CLARG(ps));
         }
         SF_CL_STEP("print_diffusion");
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_log10, w, h, CLARG(plane),
+                                               CLARG(w), CLARG(h));
+        SF_CL_STEP("print_diffusion log10");
       }
     }
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_print_develop, w, h, CLARG(plane),
