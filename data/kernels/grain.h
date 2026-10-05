@@ -43,14 +43,12 @@
  *    library calls, nor into native_* variants, which have no accuracy
  *    guarantee at all.
  *
- *  - No multiply-add may be contracted into an FMA on one side and not the
- *    other. The host side gets -ffp-contract=off from src/CMakeLists.txt
- *    (GCC has never implemented "#pragma STDC FP_CONTRACT OFF"), the device
- *    side gets "#pragma OPENCL FP_CONTRACT OFF" at the top of the .cl.
- *    ANY .c file that includes this header must be added to the
- *    set_source_files_properties() list in src/CMakeLists.txt that applies
- *    SPEKTRA_FP_CONTRACT_FLAGS, or its copy of this math will silently
- *    diverge from the kernel's.
+ *  - Every multiply-add is written as an explicit fmaf(), which is
+ *    correctly rounded on both sides, and every other product stands
+ *    alone, so no expression is left for a compiler to contract. Device
+ *    compilers do not reliably honour "#pragma OPENCL FP_CONTRACT OFF",
+ *    and GCC has never implemented the C pragma, so the association is
+ *    pinned in the source rather than by flags.
  *
  *  - Changing anything here changes rendered output. The file is listed in
  *    clincludes[] in src/common/opencl.c so that editing it invalidates the
@@ -92,6 +90,7 @@ typedef uint uint32_t;
 #define sqrtf sqrt
 #define fmaxf fmax
 #define fminf fmin
+#define fmaf fma
 #else
 #include <math.h>
 #include <stdint.h>
@@ -230,15 +229,15 @@ GRAIN_INLINE float grain_exp2i(int k)
 GRAIN_INLINE float grain_exp_neg(float lam)
 {
   const float t = -lam;
-  const int k = (int)floorf(t * 1.4426950216293335f + 0.5f); /* log2(e) */
-  const float r = t - (float)k * 0.6931471824645996f;        /* ln(2) */
-  float p = 0.00138888892f;                                  /* 1/720 */
-  p = p * r + 0.00833333377f;                                /* 1/120 */
-  p = p * r + 0.0416666679f;                                 /* 1/24 */
-  p = p * r + 0.166666672f;                                  /* 1/6 */
-  p = p * r + 0.5f;
-  p = p * r + 1.0f;
-  p = p * r + 1.0f;
+  const int k = (int)floorf(fmaf(t, 1.4426950216293335f, 0.5f)); /* log2(e) */
+  const float r = fmaf(-(float)k, 0.6931471824645996f, t);       /* ln(2) */
+  float p = 0.00138888892f;                                      /* 1/720 */
+  p = fmaf(p, r, 0.00833333377f);                                /* 1/120 */
+  p = fmaf(p, r, 0.0416666679f);                                 /* 1/24 */
+  p = fmaf(p, r, 0.166666672f);                                  /* 1/6 */
+  p = fmaf(p, r, 0.5f);
+  p = fmaf(p, r, 1.0f);
+  p = fmaf(p, r, 1.0f);
   return p * grain_exp2i(k);
 }
 
@@ -267,13 +266,13 @@ GRAIN_INLINE float grain_exp2f(float x)
   const int k = (int)floorf(x + 0.5f);
   const float t = (x - (float)k) * 0.6931471824645996f; /* ln(2) */
   float p = 0.000198412700f;                            /* 1/5040 */
-  p = p * t + 0.00138888892f;                           /* 1/720 */
-  p = p * t + 0.00833333377f;                           /* 1/120 */
-  p = p * t + 0.0416666679f;                            /* 1/24 */
-  p = p * t + 0.166666672f;                             /* 1/6 */
-  p = p * t + 0.5f;
-  p = p * t + 1.0f;
-  p = p * t + 1.0f;
+  p = fmaf(p, t, 0.00138888892f);                       /* 1/720 */
+  p = fmaf(p, t, 0.00833333377f);                       /* 1/120 */
+  p = fmaf(p, t, 0.0416666679f);                        /* 1/24 */
+  p = fmaf(p, t, 0.166666672f);                         /* 1/6 */
+  p = fmaf(p, t, 0.5f);
+  p = fmaf(p, t, 1.0f);
+  p = fmaf(p, t, 1.0f);
   return p * grain_exp2i(k);
 }
 
@@ -297,12 +296,12 @@ GRAIN_INLINE float grain_log2f(float x)
   if(m > 1.41421356f) { m *= 0.5f; e += 1; }
   const float s = (m - 1.0f) / (m + 1.0f);
   const float s2 = s * s;
-  float p = 0.222222224f;    /* 2/9 */
-  p = p * s2 + 0.285714298f; /* 2/7 */
-  p = p * s2 + 0.400000006f; /* 2/5 */
-  p = p * s2 + 0.666666687f; /* 2/3 */
-  p = p * s2 + 2.0f;
-  return (float)e + p * s * 1.4426950216293335f; /* log2(e) */
+  float p = 0.222222224f;        /* 2/9 */
+  p = fmaf(p, s2, 0.285714298f); /* 2/7 */
+  p = fmaf(p, s2, 0.400000006f); /* 2/5 */
+  p = fmaf(p, s2, 0.666666687f); /* 2/3 */
+  p = fmaf(p, s2, 2.0f);
+  return fmaf(p * s, 1.4426950216293335f, (float)e); /* log2(e) */
 }
 
 GRAIN_INLINE float grain_poisson(float lam,
@@ -327,7 +326,7 @@ GRAIN_INLINE float grain_poisson(float lam,
      and commonly maps to a low-precision hardware rsqrt, which was
      decorrelating the two renders' grain for every pixel landing in this
      branch (lam >= GRAIN_POISSON_EXACT_MAX). */
-  return lam + sqrtf(lam) * grain_normal(seed);
+  return fmaf(sqrtf(lam), grain_normal(seed), lam);
 }
 
 /* grain_layer_particle: draw the developed density of one emulsion layer.
@@ -355,7 +354,7 @@ GRAIN_INLINE float grain_layer_particle(float density,
      returns the non-NaN operand), but this divide has no such guard and its
      NaN would reach the returned sample and from there the density buffer. */
   const float od = dmax / fmaxf(npart, 1e-9f);
-  const float sat = 1.0f - p * unif * (1.0f - 1e-6f);
+  const float sat = fmaf(-(p * unif), 1.0f - 1e-6f, 1.0f);
   return grain_poisson(npart * p / sat, seed * 0x9e3779b9u + 1u) * od * sat;
 }
 
@@ -364,4 +363,5 @@ GRAIN_INLINE float grain_layer_particle(float density,
 #undef sqrtf
 #undef fmaxf
 #undef fminf
+#undef fmaf
 #endif

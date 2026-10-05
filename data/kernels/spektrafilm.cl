@@ -197,11 +197,20 @@ static inline float sf_curve(__global const float *curves, float x,
 
 /* ---- [fi] monotone-PCHIP 3D LUT (values + per-axis slopes + cell clamp) - */
 
+/* fma-pinned, matching hermite_value_f() / linear_mix_f() in spektra_sim.c */
 static inline float sf_hermite(float y0, float y1, float m0, float m1, float t)
 {
   const float t2 = t * t, t3 = t2 * t;
-  return (2.0f * t3 - 3.0f * t2 + 1.0f) * y0 + (t3 - 2.0f * t2 + t) * m0
-         + (-2.0f * t3 + 3.0f * t2) * y1 + (t3 - t2) * m1;
+  const float h00 = fma(2.0f, t3, fma(-3.0f, t2, 1.0f));
+  const float h10 = fma(-2.0f, t2, t3) + t;
+  const float h01 = fma(-2.0f, t3, 3.0f * t2);
+  const float h11 = t3 - t2;
+  return fma(h00, y0, fma(h10, m0, fma(h01, y1, h11 * m1)));
+}
+
+static inline float sf_lerp(float v0, float v1, float t)
+{
+  return fma(t, v1 - v0, v0);
 }
 
 static float3 sf_pchip3d(__global const float *lut, __global const float *sx,
@@ -228,17 +237,17 @@ static float3 sf_pchip3d(__global const float *lut, __global const float *sx,
     const float v011
         = sf_hermite(AT(lut, i, j + 1, k + 1, c), AT(lut, i + 1, j + 1, k + 1, c),
                      AT(sx, i, j + 1, k + 1, c), AT(sx, i + 1, j + 1, k + 1, c), tr);
-    const float sy00 = mix(AT(sy, i, j, k, c), AT(sy, i + 1, j, k, c), tr);
-    const float sy10 = mix(AT(sy, i, j + 1, k, c), AT(sy, i + 1, j + 1, k, c), tr);
-    const float sy01 = mix(AT(sy, i, j, k + 1, c), AT(sy, i + 1, j, k + 1, c), tr);
-    const float sy11 = mix(AT(sy, i, j + 1, k + 1, c), AT(sy, i + 1, j + 1, k + 1, c), tr);
+    const float sy00 = sf_lerp(AT(sy, i, j, k, c), AT(sy, i + 1, j, k, c), tr);
+    const float sy10 = sf_lerp(AT(sy, i, j + 1, k, c), AT(sy, i + 1, j + 1, k, c), tr);
+    const float sy01 = sf_lerp(AT(sy, i, j, k + 1, c), AT(sy, i + 1, j, k + 1, c), tr);
+    const float sy11 = sf_lerp(AT(sy, i, j + 1, k + 1, c), AT(sy, i + 1, j + 1, k + 1, c), tr);
     const float vz0 = sf_hermite(v000, v010, sy00, sy10, tg);
     const float vz1 = sf_hermite(v001, v011, sy01, sy11, tg);
-    const float sz0 = mix(mix(AT(sz, i, j, k, c), AT(sz, i + 1, j, k, c), tr),
-                          mix(AT(sz, i, j + 1, k, c), AT(sz, i + 1, j + 1, k, c), tr), tg);
+    const float sz0 = sf_lerp(sf_lerp(AT(sz, i, j, k, c), AT(sz, i + 1, j, k, c), tr),
+                          sf_lerp(AT(sz, i, j + 1, k, c), AT(sz, i + 1, j + 1, k, c), tr), tg);
     const float sz1
-        = mix(mix(AT(sz, i, j, k + 1, c), AT(sz, i + 1, j, k + 1, c), tr),
-              mix(AT(sz, i, j + 1, k + 1, c), AT(sz, i + 1, j + 1, k + 1, c), tr), tg);
+        = sf_lerp(sf_lerp(AT(sz, i, j, k + 1, c), AT(sz, i + 1, j, k + 1, c), tr),
+              sf_lerp(AT(sz, i, j + 1, k + 1, c), AT(sz, i + 1, j + 1, k + 1, c), tr), tg);
     float v = sf_hermite(vz0, vz1, sz0, sz1, tb);
     const size_t ci = ((((size_t)i) * m + j) * m + k) * 3 + c;
     v = grain_clampf(v, cmin[ci], cmax[ci]);
@@ -283,7 +292,7 @@ static inline float sf_knee(float d, float threshold, float limit, float power)
   const float scale = limit - threshold;
   const float x = (d - threshold) / scale;
   const float y = x / pow(1.0f + pow(x, power), 1.0f / power);
-  return threshold + scale * y;
+  return fma(scale, y, threshold); /* matching reinhard_knee_f() */
 }
 
 static inline float3 sf_xyz_to_oklab(__constant const float *mats, float3 xyz)
@@ -320,8 +329,9 @@ static float sf_cmax_lookup(__global const float *table, const int nl, const int
   const float v01 = table[(size_t)L_lo * nh + h_hi];
   const float v10 = table[(size_t)(L_lo + 1) * nh + h_lo];
   const float v11 = table[(size_t)(L_lo + 1) * nh + h_hi];
-  return v00 * (1 - L_frac) * (1 - h_frac) + v01 * (1 - L_frac) * h_frac
-         + v10 * L_frac * (1 - h_frac) + v11 * L_frac * h_frac;
+  /* fma-pinned, matching cmax_lookup_f() */
+  const float l0 = 1.0f - L_frac, hh0 = 1.0f - h_frac;
+  return fma(v00 * l0, hh0, fma(v01 * l0, h_frac, fma(v10 * L_frac, hh0, (v11 * L_frac) * h_frac)));
 }
 
 
@@ -349,7 +359,9 @@ __kernel void spektrafilm_expose(__read_only image2d_t in, __global float4 *plan
   const float scale = (float)(tc_n - 1);
   float3 raw = sf_cubic2d(tc_lut, tc_n, tcx * scale, tcy * scale);
   const float bb = isfinite(b) ? b : 0.0f;
-  raw *= bb * ev_scale;
+  /* (raw * b) * ev, the association sf_sim_expose() uses: expose_pixel_f
+     scales by b and the caller then by ev_scale */
+  raw = (raw * bb) * ev_scale;
   plane[(size_t)y * w + x] = (float4)(raw.x, raw.y, raw.z, px.w);
 }
 
@@ -475,7 +487,8 @@ static float sf_cl_grain_curve_sample(__global const float *arr, int n, int stri
   if(i0 < 0) i0 = 0;
   if(i0 > n - 2) i0 = (n - 2 < 0) ? 0 : n - 2;
   const float frac = pos - (float)i0;
-  return arr[i0 * stride] * (1.0f - frac) + arr[(i0 + 1) * stride] * frac;
+  /* fma-pinned, matching _sf_grain_curve_sample() */
+  return fma(arr[(i0 + 1) * stride], frac, arr[i0 * stride] * (1.0f - frac));
 }
 
 /* stage 4: grain. Restructured into three kernels (raw sub-layer sample,
@@ -621,12 +634,12 @@ __kernel void spektrafilm_grain_usm(__global float4 *cmy, __global const float4 
      the next candidate for a shared portable implementation (cf. grain_exp_neg
      in spektra_core.h). */
   float4 out;
-  out.x = fmax(D.x * pow(fmax(fmin(D.x / fmax(blur.x, eps), ratmax), ratmin), amount) - dmin.x,
-               0.0f);
-  out.y = fmax(D.y * pow(fmax(fmin(D.y / fmax(blur.y, eps), ratmax), ratmin), amount) - dmin.y,
-               0.0f);
-  out.z = fmax(D.z * pow(fmax(fmin(D.z / fmax(blur.z, eps), ratmax), ratmin), amount) - dmin.z,
-               0.0f);
+  out.x = fmax(fma(D.x, pow(fmax(fmin(D.x / fmax(blur.x, eps), ratmax), ratmin), amount),
+                   -dmin.x), 0.0f);
+  out.y = fmax(fma(D.y, pow(fmax(fmin(D.y / fmax(blur.y, eps), ratmax), ratmin), amount),
+                   -dmin.y), 0.0f);
+  out.z = fmax(fma(D.z, pow(fmax(fmin(D.z / fmax(blur.z, eps), ratmax), ratmin), amount),
+                   -dmin.z), 0.0f);
   out.w = 0.0f;
   cmy[k] = out;
 }
@@ -753,7 +766,7 @@ __kernel void spektrafilm_scan(__global const float4 *cmy, __global float4 *rgb_
   if(out_luminance_boost != 1.0f) xyz *= out_luminance_boost;
   if(bw_on) /* scanner black/white point (positive film scans) */
   {
-    const float yc = grain_clampf(bw_m * xyz.y + bw_q, 0.0f, 1.0f);
+    const float yc = grain_clampf(fma(bw_m, xyz.y, bw_q), 0.0f, 1.0f);
     xyz *= yc / (xyz.y + 1e-10f);
   }
   float3 rgb = sf_mat3(mats + SF_M_OUT, xyz);
@@ -813,8 +826,9 @@ __kernel void spektrafilm_scan_usm(__global float4 *rgb, __global const float4 *
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
   const float4 D = orig[k], blur = rgb[k];
-  rgb[k] = (float4)(D.x + amount * (D.x - blur.x), D.y + amount * (D.y - blur.y),
-                    D.z + amount * (D.z - blur.z), D.w);
+  /* fma-pinned, matching sf_unsharp_mask3() */
+  rgb[k] = (float4)(fma(amount, D.x - blur.x, D.x), fma(amount, D.y - blur.y, D.y),
+                    fma(amount, D.z - blur.z, D.z), D.w);
 }
 
 /* Viewing-glare field: lognormal of linear-space mean `mean` and shape (s, bias)
@@ -827,7 +841,7 @@ __kernel void spektrafilm_glare_gen(__global float4 *field, const int w, const i
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const uint seed = grain_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y), 0x5eedu);
-  const float g = mean * exp(bias + s * grain_normal(seed));
+  const float g = mean * exp(fma(s, grain_normal(seed), bias));
   field[(size_t)y * w + x] = (float4)(g, g, g, 0.0f);
 }
 
@@ -993,7 +1007,7 @@ __kernel void spektrafilm_gauss_row_4c(__global const float4 *src, __global floa
   {
     int xx = x + k;
     xx = xx < 0 ? 0 : (xx >= w ? w - 1 : xx);
-    acc += weights[k + radius] * src[(size_t)y * w + xx];
+    acc = fma(weights[k + radius], src[(size_t)y * w + xx], acc);
   }
   dst[(size_t)y * w + x] = acc;
 }
@@ -1009,7 +1023,7 @@ __kernel void spektrafilm_gauss_col_4c(__global const float4 *src, __global floa
   {
     int yy = y + k;
     yy = yy < 0 ? 0 : (yy >= h ? h - 1 : yy);
-    acc += weights[k + radius] * src[(size_t)yy * w + x];
+    acc = fma(weights[k + radius], src[(size_t)yy * w + x], acc);
   }
   dst[(size_t)y * w + x] = acc;
 }
@@ -1025,7 +1039,7 @@ __kernel void spektrafilm_gauss_row_1c(__global const float *src, __global float
   {
     int xx = x + k;
     xx = xx < 0 ? 0 : (xx >= w ? w - 1 : xx);
-    acc += weights[k + radius] * src[(size_t)y * w + xx];
+    acc = fma(weights[k + radius], src[(size_t)y * w + xx], acc);
   }
   dst[(size_t)y * w + x] = acc;
 }
@@ -1041,7 +1055,7 @@ __kernel void spektrafilm_gauss_col_1c(__global const float *src, __global float
   {
     int yy = y + k;
     yy = yy < 0 ? 0 : (yy >= h ? h - 1 : yy);
-    acc += weights[k + radius] * src[(size_t)yy * w + x];
+    acc = fma(weights[k + radius], src[(size_t)yy * w + x], acc);
   }
   dst[(size_t)y * w + x] = acc;
 }

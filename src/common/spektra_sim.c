@@ -1796,7 +1796,7 @@ static inline float reinhard_knee_f(float d,
   const float scale = limit - threshold;
   const float x = (d - threshold) / scale;
   const float y = x / powf(1.0f + powf(x, power), 1.0f / power);
-  return threshold + scale * y;
+  return fmaf(scale, y, threshold); /* matching sf_knee() in spektrafilm.cl */
 }
 
 /* distance from origin along unit direction to the first polygon crossing */
@@ -2121,14 +2121,18 @@ static inline float hermite_value_f(float y0,
                                     float m1,
                                     float t)
 {
+  /* fma-pinned, matching sf_hermite() / sf_lerp() in spektrafilm.cl */
   const float t2 = t * t, t3 = t2 * t;
-  return (2.0f * t3 - 3.0f * t2 + 1.0f) * y0 + (t3 - 2.0f * t2 + t) * m0
-         + (-2.0f * t3 + 3.0f * t2) * y1 + (t3 - t2) * m1;
+  const float h00 = fmaf(2.0f, t3, fmaf(-3.0f, t2, 1.0f));
+  const float h10 = fmaf(-2.0f, t2, t3) + t;
+  const float h01 = fmaf(-2.0f, t3, 3.0f * t2);
+  const float h11 = t3 - t2;
+  return fmaf(h00, y0, fmaf(h10, m0, fmaf(h01, y1, h11 * m1)));
 }
 
 static inline float linear_mix_f(float v0,
                                  float v1,
-                                 float t) { return v0 + t * (v1 - v0); }
+                                 float t) { return fmaf(t, v1 - v0, v0); }
 
 /* float, single-precision twin of pchip3d_interp() below -- same monotone
    cubic Hermite blend over the same slope/bound tables, term for term the
@@ -3227,8 +3231,9 @@ static inline float cmax_lookup_f(const sf_sim_t *s,
   const float v01 = T[(size_t)L_lo * SF_CMAX_NH + h_hi];
   const float v10 = T[(size_t)L_hi * SF_CMAX_NH + h_lo];
   const float v11 = T[(size_t)L_hi * SF_CMAX_NH + h_hi];
-  return v00 * (1 - L_frac) * (1 - h_frac) + v01 * (1 - L_frac) * h_frac
-         + v10 * L_frac * (1 - h_frac) + v11 * L_frac * h_frac;
+  /* fma-pinned, matching sf_cmax_lookup() in spektrafilm.cl */
+  const float l0 = 1.0f - L_frac, hh0 = 1.0f - h_frac;
+  return fmaf(v00 * l0, hh0, fmaf(v01 * l0, h_frac, fmaf(v10 * L_frac, hh0, (v11 * L_frac) * h_frac)));
 }
 
 /* [gc] compress_rgb_oklch_chroma with lightness_compression (0.7, 1, 2.2),
@@ -4927,7 +4932,7 @@ void sf_sim_scan(const sf_sim_t *sim,
     if(sim->scan_bw_on)
     {
       const float y = xyz[1];
-      float yc = (float)sim->scan_bw_m * y + (float)sim->scan_bw_q;
+      float yc = fmaf((float)sim->scan_bw_m, y, (float)sim->scan_bw_q);
       yc = yc < 0.0f ? 0.0f : (yc > 1.0f ? 1.0f : yc);
       const float sc = yc / (y + 1e-10f);
       for(int m = 0; m < 3; m++) xyz[m] *= sc;
@@ -5278,7 +5283,8 @@ static float _sf_grain_curve_sample(const float *arr,
   if(i0 < 0) i0 = 0;
   if(i0 > n - 2) i0 = (n - 2 < 0) ? 0 : n - 2;
   const float frac = pos - (float)i0;
-  return arr[i0 * stride] * (1.0f - frac) + arr[(i0 + 1) * stride] * frac;
+  /* fma-pinned, matching sf_cl_grain_curve_sample() */
+  return fmaf(arr[(i0 + 1) * stride], frac, arr[i0 * stride] * (1.0f - frac));
 }
 
 /* Multi-sublayer grain delta, for a film whose fitted density-curve model has

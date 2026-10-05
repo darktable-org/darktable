@@ -171,7 +171,8 @@ static void _sf_gauss_convolve_1d(const float *const in,
     {
       int xx = x + k;
       xx = xx < 0 ? 0 : (xx >= len ? len - 1 : xx);
-      acc += kernel[k + radius] * in[xx];
+      /* fma-pinned, matching spektrafilm_gauss_row/col_*c */
+      acc = fmaf(kernel[k + radius], in[xx], acc);
     }
     out[x] = acc;
   }
@@ -387,7 +388,8 @@ void sf_multiplicative_unsharp_mask3(float *const buf,
     const float D = fmaxf(orig[i] + d0, 0.0f);
     const float blur = fmaxf(buf[i] + d0, eps);
     const float ratio = fmaxf(fminf(D / blur, ratio_max), 1.0f / ratio_max);
-    buf[i] = fmaxf(D * powf(ratio, amount) - d0, 0.0f);
+    /* fma-pinned, matching spektrafilm_grain_usm */
+    buf[i] = fmaxf(fmaf(D, powf(ratio, amount), -d0), 0.0f);
   }
 }
 
@@ -408,7 +410,8 @@ void sf_unsharp_mask3(float *const buf,
   const size_t nn = (size_t)w * h * 3;
   dt_iop_image_copy(orig, buf, nn);
   sf_blur_plane3(buf, w, h, sigma, work);
-  for(size_t i = 0; i < nn; i++) buf[i] = orig[i] + amount * (orig[i] - buf[i]);
+  /* fma-pinned, matching spektrafilm_scan_usm */
+  for(size_t i = 0; i < nn; i++) buf[i] = fmaf(amount, orig[i] - buf[i], orig[i]);
 }
 
 /* Viewing glare ([gl] add_glare): a faint veil of the viewing illuminant, drawn
@@ -446,7 +449,7 @@ void sf_glare(float *const rgb,
     for(int x = 0; x < w; x++)
     {
       const uint32_t seed = grain_pixel_seed((uint32_t)(x + roi_x), (uint32_t)(y + roi_y), 0x5eedu);
-      field[(size_t)y * w + x] = mean * expf(bias + s * grain_normal(seed));
+      field[(size_t)y * w + x] = mean * expf(fmaf(s, grain_normal(seed), bias));
     }
   float *const trans = dt_alloc_align_float((size_t)w * h);
   sf_blur_plane1(field, w, h, blur, NULL, trans);
