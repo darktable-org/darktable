@@ -618,8 +618,7 @@ void sf_halation(float *const raw,
                             halation_strength[2] * (double)halation_amount };
   const double first_sigma_um = halation_first_sigma_um; /* base bounce radius */
   const double hscl = fmax((double)halation_scale, 1e-3);
-  const int n_bounces = 3;
-  const double rho = 0.5;             /* bounce decay */
+  const int n_bounces = 3; /* bounce weights decay by 0.5 each, see decay[] below */
 
   const size_t npix = (size_t)w * h;
   const size_t nn = npix * 3;
@@ -648,13 +647,17 @@ void sf_halation(float *const raw,
         for(int c = 0; c < 3; c++)
           lt[c] = fmaxf((float)(tail_rat[g] * (sc_tail[c] * scl / pixel_um)), 1e-6f);
         _blur_per_channel(comp, w, h, lt, plane, trans);
-        for(size_t i = 0; i < nn; i++) tail[i] += (float)tail_amp[g] * comp[i];
+        const float amp_g = (float)tail_amp[g];
+        for(size_t i = 0; i < nn; i++) tail[i] = fmaf(amp_g, comp[i], tail[i]);
       }
+      /* float and fma-pinned, matching spektrafilm_scatter_combine */
+      const float s_f = (float)s_amount;
+      const float ws[3] = { (float)w_s[0], (float)w_s[1], (float)w_s[2] };
       for(size_t i = 0; i < nn; i++)
       {
         const int c = i % 3;
-        const double scattered = (1.0 - w_s[c]) * core[i] + w_s[c] * tail[i];
-        raw[i] = (float)((1.0 - s_amount) * (double)raw[i] + s_amount * scattered);
+        const float scattered = fmaf(ws[c], tail[i], (1.0f - ws[c]) * core[i]);
+        raw[i] = fmaf(s_f, scattered - raw[i], raw[i]);
       }
     }
     dt_free_align(core);
@@ -665,13 +668,10 @@ void sf_halation(float *const raw,
   /* --- stage 2: multi-bounce halation --- */
   if(halation_amount > 0.0f && (a_tot[0] > 0.0 || a_tot[1] > 0.0 || a_tot[2] > 0.0))
   {
-    double decay[8], dsum = 0.0;
-    for(int k = 1; k <= n_bounces; k++)
-    {
-      decay[k - 1] = pow(rho, k - 1);
-      dsum += decay[k - 1];
-    }
-    for(int k = 0; k < n_bounces; k++) decay[k] /= dsum;
+    /* 0.5^(k-1) normalised by their sum 1.75, as float literals identical to
+       spektrafilm.c's GPU host so both paths weight the bounces alike */
+    static const float decay[3] = { 1.0f / 1.75f, 0.5f / 1.75f, 0.25f / 1.75f };
+    const float a_f[3] = { (float)a_tot[0], (float)a_tot[1], (float)a_tot[2] };
 
     float *const blur = dt_alloc_align_float(nn);
     float *const comp = dt_alloc_align_float(nn);
@@ -684,13 +684,14 @@ void sf_halation(float *const raw,
         const float sk = fmaxf((float)((first_sigma_um * hscl / pixel_um) * sqrt((double)k)), 1e-6f);
         const float sig3[3] = { sk, sk, sk };
         _blur_per_channel(comp, w, h, sig3, plane, trans);
-        const float wk = (float)decay[k - 1];
-        for(size_t i = 0; i < nn; i++) blur[i] += wk * comp[i];
+        const float wk = decay[k - 1];
+        for(size_t i = 0; i < nn; i++) blur[i] = fmaf(wk, comp[i], blur[i]);
       }
+      /* float and fma-pinned, matching spektrafilm_halation_apply */
       for(size_t i = 0; i < nn; i++)
       {
         const int c = i % 3;
-        raw[i] = (float)((raw[i] + a_tot[c] * blur[i]) / (1.0 + a_tot[c]));
+        raw[i] = fmaf(a_f[c], blur[i], raw[i]) / (1.0f + a_f[c]);
       }
     }
     dt_free_align(blur);
@@ -954,14 +955,15 @@ void sf_diffusion_filter(float *const raw,
     const float wr = plan.wr[j], wg = plan.wg[j], wb = plan.wb[j];
     for(size_t i = 0; i < npix; i++)
     {
-      acc[i * 3 + 0] += wr * comp[i * 3 + 0];
-      acc[i * 3 + 1] += wg * comp[i * 3 + 1];
-      acc[i * 3 + 2] += wb * comp[i * 3 + 2];
+      acc[i * 3 + 0] = fmaf(wr, comp[i * 3 + 0], acc[i * 3 + 0]);
+      acc[i * 3 + 1] = fmaf(wg, comp[i * 3 + 1], acc[i * 3 + 1]);
+      acc[i * 3 + 2] = fmaf(wb, comp[i * 3 + 2], acc[i * 3 + 2]);
     }
   }
 
+  /* fma-pinned, matching spektrafilm_diffusion_accum / _mix */
   const float ps = plan.p_s;
-  for(size_t i = 0; i < nn; i++) raw[i] = (1.0f - ps) * raw[i] + ps * acc[i];
+  for(size_t i = 0; i < nn; i++) raw[i] = fmaf(ps, acc[i], (1.0f - ps) * raw[i]);
 
   dt_free_align(acc);
   dt_free_align(comp);

@@ -2259,7 +2259,8 @@ void process(dt_iop_module_t *self,
           const float ts = rat[g3] * tail_px;
           if(ts > 0.1f) sf_blur_plane3_fast(tmp, w, h, ts, scratch);
           const float wk = (float)ctail_w * amp[g3];
-          for(size_t i = 0; i < npix * 3; i++) mix[i] += wk * tmp[i];
+          /* fma-pinned, matching spektrafilm_diffusion_accum */
+          for(size_t i = 0; i < npix * 3; i++) mix[i] = fmaf(wk, tmp[i], mix[i]);
         }
         memcpy(corr, mix, sizeof(float) * npix * 3);
       }
@@ -2973,13 +2974,10 @@ int process_cl(dt_iop_module_t *self,
                                                  CLARG(amp[g3]), CLARG(c), CLARG(reset));
           SF_CL_STEP("scatter tail accum");
         }
-      /* CPU: sf_halation() takes w_s[] as the sim's double and blends with
-         (1.0 - w_s[c]) * core + w_s[c] * tail. Round the same double once here
-         rather than reading sf_sim_gpu_t's float mirror, so the constant the
-         kernel gets is the CPU's to the last bit. The blend itself still runs
-         in float on-device and in double on the CPU, so this narrows the
-         divergence to the per-pixel arithmetic instead of adding a second
-         rounding on top of it. */
+      /* CPU: sf_halation() rounds the sim's double w_s[] to float once and
+         blends with the same fma nesting as spektrafilm_scatter_combine.
+         Rounded from the same double here, not read from sf_sim_gpu_t's
+         float mirror, so the constant the kernel gets is the CPU's. */
       const float ws_r = (float)cl_sc_w[0], ws_g = (float)cl_sc_w[1],
                   ws_b = (float)cl_sc_w[2];
       /* (1-s)*raw + s*scattered, matching sf_halation()'s CPU blend; `plane`
@@ -3026,13 +3024,10 @@ int process_cl(dt_iop_module_t *self,
       /* per-film halation strength (e.g. a strong-AH stock stays near-zero on
          blue and much lower on red/green than a no-AH/redscale stock).
 
-         CPU: a_tot[c] = halation_strength[c] * halation_amount, both doubles
-         (sf_halation()). Formed the same way here from cl_hal_strength -- the
-         sim's own double, as the sigma above is -- and rounded once, instead of
-         multiplying two independently-rounded floats. sf_halation() then keeps
-         a_tot in double through (raw + a_tot*blur) / (1 + a_tot) per pixel and
-         the kernel cannot, so the two still part company on that arithmetic;
-         this only stops them parting company on the constant as well. */
+         CPU: a_tot[c] = halation_strength[c] * halation_amount in double
+         (sf_halation()), rounded once to float for the per-pixel
+         fma(a, blur, raw) / (1 + a). Formed the same way here from
+         cl_hal_strength -- the sim's own double, as the sigma above is. */
       const float a_r = (float)(cl_hal_strength[0] * (double)h_eff),
                   a_g = (float)(cl_hal_strength[1] * (double)h_eff),
                   a_b = (float)(cl_hal_strength[2] * (double)h_eff);
@@ -3061,13 +3056,16 @@ int process_cl(dt_iop_module_t *self,
     const float csigma = g->coupler_diff_um / fmaxf(pixel_um, 1e-3f);
     if(g->coupler_tail_w > 0.0f)
     {
-      const float amp[4] = { 1.0f - g->coupler_tail_w, g->coupler_tail_w * SF_EXPTAIL_A0,
-                             g->coupler_tail_w * SF_EXPTAIL_A1, g->coupler_tail_w * SF_EXPTAIL_A2 };
-      /* CPU computes tail_px = ctail_um / pixel_um once and then
+      /* float operands throughout, as process() forms them: amp/rat are float
+         arrays there, so each product is a float multiply, not a double one
+         rounded afterwards. tail_px is ctail_um / pixel_um once, then
          rat[g3] * tail_px -- R * (tail / pixel), not (R * tail) / pixel. */
+      const float ea[3] = { SF_EXPTAIL_A0, SF_EXPTAIL_A1, SF_EXPTAIL_A2 };
+      const float er[3] = { SF_EXPTAIL_R0, SF_EXPTAIL_R1, SF_EXPTAIL_R2 };
+      const float amp[4] = { 1.0f - g->coupler_tail_w, g->coupler_tail_w * ea[0],
+                             g->coupler_tail_w * ea[1], g->coupler_tail_w * ea[2] };
       const float tail_px = g->coupler_tail_um / fmaxf(pixel_um, 1e-3f);
-      const float sig[4] = { csigma, SF_EXPTAIL_R0 * tail_px,
-                             SF_EXPTAIL_R1 * tail_px, SF_EXPTAIL_R2 * tail_px };
+      const float sig[4] = { csigma, er[0] * tail_px, er[1] * tail_px, er[2] * tail_px };
       for(int g3 = 0; g3 < 4; g3++)
       {
         /* >= SF_GAUSS_MIN_SIGMA, not > 0.1f: the CPU twin guards with

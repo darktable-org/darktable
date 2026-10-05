@@ -2416,7 +2416,8 @@ static inline float interp_curve_uniform_f(float x,
   if(t >= (float)(SF_NLE - 1)) return curves[SF_NLE - 1][c];
   const int i = (int)t;
   const float f = t - i;
-  return curves[i][c] + f * (curves[i + 1][c] - curves[i][c]);
+  /* fma-pinned, matching sf_curve() in spektrafilm.cl */
+  return fmaf(f, curves[i + 1][c] - curves[i][c], curves[i][c]);
 }
 
 /* ------------------------------------------------------------------------ */
@@ -4758,12 +4759,11 @@ void sf_sim_develop_corr(const sf_sim_t *sim,
         silver[c] = silver[c] * ((float)sim->couplers_donor_K[c] + (float)sim->couplers_donor_Dref[c])
                     / ((float)sim->couplers_donor_K[c] + silver[c]);
     }
+    /* fma-pinned, matching spektrafilm_develop_corr */
     for(int m = 0; m < 3; m++)
-    {
-      float acc = 0.0f;
-      for(int k = 0; k < 3; k++) acc += silver[k] * (float)sim->couplers_M[k][m];
-      out[m] = acc;
-    }
+      out[m] = fmaf(silver[0], (float)sim->couplers_M[0][m],
+                    fmaf(silver[1], (float)sim->couplers_M[1][m],
+                         silver[2] * (float)sim->couplers_M[2][m]));
   }
 }
 

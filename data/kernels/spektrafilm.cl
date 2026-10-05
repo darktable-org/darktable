@@ -191,7 +191,8 @@ static inline float sf_curve(__global const float *curves, float x,
   if(t >= (float)(SF_NLE - 1)) return curves[(SF_NLE - 1) * 3 + c];
   const int i = (int)t;
   const float f = t - i;
-  return curves[i * 3 + c] + f * (curves[(i + 1) * 3 + c] - curves[i * 3 + c]);
+  /* fma-pinned, matching interp_curve_uniform_f() in spektra_sim.c */
+  return fma(f, curves[(i + 1) * 3 + c] - curves[i * 3 + c], curves[i * 3 + c]);
 }
 
 /* ---- [fi] monotone-PCHIP 3D LUT (values + per-axis slopes + cell clamp) - */
@@ -404,8 +405,9 @@ __kernel void spektrafilm_develop_corr(__global const float4 *lograw, __global f
   }
   __constant const float *M = mats + SF_M_COUPLERS; /* row donor -> col receiver */
   float out[3];
+  /* fma-pinned, matching sf_sim_develop_corr() -- see sf_mat3 */
   for(int m = 0; m < 3; m++)
-    out[m] = silver[0] * M[0 * 3 + m] + silver[1] * M[1 * 3 + m] + silver[2] * M[2 * 3 + m];
+    out[m] = fma(silver[0], M[0 * 3 + m], fma(silver[1], M[1 * 3 + m], silver[2] * M[2 * 3 + m]));
   corr[k] = (float4)(out[0], out[1], out[2], 0.0f);
 }
 
@@ -1053,9 +1055,10 @@ __kernel void spektrafilm_scatter_combine(__global const float4 *raw, __global c
   if(x >= w || y >= h) return;
   size_t k = (size_t)y * w + x;
   float4 r = raw[k], c = core[k], t = tail[k], o;
-  o.x = r.x + s_amount * (((1.f - ws_r) * c.x + ws_r * t.x) - r.x);
-  o.y = r.y + s_amount * (((1.f - ws_g) * c.y + ws_g * t.y) - r.y);
-  o.z = r.z + s_amount * (((1.f - ws_b) * c.z + ws_b * t.z) - r.z);
+  /* fma-pinned, matching sf_halation()'s stage 1 blend */
+  o.x = fma(s_amount, fma(ws_r, t.x, (1.f - ws_r) * c.x) - r.x, r.x);
+  o.y = fma(s_amount, fma(ws_g, t.y, (1.f - ws_g) * c.y) - r.y, r.y);
+  o.z = fma(s_amount, fma(ws_b, t.z, (1.f - ws_b) * c.z) - r.z, r.z);
   o.w = r.w;
   out[k] = o;
 }
@@ -1068,9 +1071,9 @@ __kernel void spektrafilm_accum(__global const float4 *blurred, __global float4 
   size_t k = (size_t)y * w + x;
   float4 b = blurred[k];
   float4 a = reset ? (float4)(0.f) : acc[k];
-  a.x += wk * b.x;
-  a.y += wk * b.y;
-  a.z += wk * b.z;
+  a.x = fma(wk, b.x, a.x);
+  a.y = fma(wk, b.y, a.y);
+  a.z = fma(wk, b.z, a.z);
   acc[k] = a;
 }
 
@@ -1106,7 +1109,7 @@ __kernel void spektrafilm_channel_accum(__global const float *blurred, __global 
   const float bv = blurred[k];
   float4 a = reset ? (float4)(0.f) : acc[k];
   const float av = (channel == 0) ? a.x : (channel == 1) ? a.y : a.z;
-  const float nv = av + weight * bv;
+  const float nv = fma(weight, bv, av);
   if(channel == 0) a.x = nv; else if(channel == 1) a.y = nv; else a.z = nv;
   acc[k] = a;
 }
@@ -1119,9 +1122,9 @@ __kernel void spektrafilm_halation_apply(__global float4 *raw, __global const fl
   if(x >= w || y >= h) return;
   size_t k = (size_t)y * w + x;
   float4 r = raw[k], b = blur[k];
-  r.x = (r.x + a_r * b.x) / (1.f + a_r);
-  r.y = (r.y + a_g * b.y) / (1.f + a_g);
-  r.z = (r.z + a_b * b.z) / (1.f + a_b);
+  r.x = fma(a_r, b.x, r.x) / (1.f + a_r);
+  r.y = fma(a_g, b.y, r.y) / (1.f + a_g);
+  r.z = fma(a_b, b.z, r.z) / (1.f + a_b);
   raw[k] = r;
 }
 
@@ -1164,7 +1167,7 @@ __kernel void spektrafilm_diffusion_accum(__global const float4 *blurred, __glob
   const int k = y * w + x;
   float4 b = blurred[k];
   float4 a = reset ? (float4)(0.f, 0.f, 0.f, 0.f) : acc[k];
-  acc[k] = (float4)(a.x + wr * b.x, a.y + wg * b.y, a.z + wb * b.z, b.w);
+  acc[k] = (float4)(fma(wr, b.x, a.x), fma(wg, b.y, a.y), fma(wb, b.z, a.z), b.w);
 }
 
 __kernel void spektrafilm_diffusion_mix(__global float4 *plane, __global const float4 *acc,
@@ -1174,6 +1177,6 @@ __kernel void spektrafilm_diffusion_mix(__global float4 *plane, __global const f
   if(x >= w || y >= h) return;
   const int k = y * w + x;
   float4 e = plane[k], s = acc[k];
-  plane[k] = (float4)((1.f - p_s) * e.x + p_s * s.x, (1.f - p_s) * e.y + p_s * s.y,
-                      (1.f - p_s) * e.z + p_s * s.z, e.w);
+  plane[k] = (float4)(fma(p_s, s.x, (1.f - p_s) * e.x), fma(p_s, s.y, (1.f - p_s) * e.y),
+                      fma(p_s, s.z, (1.f - p_s) * e.z), e.w);
 }
