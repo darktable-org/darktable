@@ -4555,6 +4555,7 @@ void init_presets(dt_iop_module_so_t *self)
        since _preset_defaults() holds the baseline the shipped looks were
        authored against and does not track later changes to the annotations. */
     p.print_contrast = 1.1f;
+    p.grain_blur_base = 0.89f;
     dt_gui_presets_add_generic(_("scene-referred default"), self->op,
                                self->version(), &p, sizeof(p), TRUE,
                                DEVELOP_BLEND_CS_RGB_SCENE);
@@ -5180,9 +5181,16 @@ void gui_update(dt_iop_module_t *self)
       ppos = pos;
   }
   /* an edit that never picked a paper shows "auto", not the stock it happens to
-     resolve to -- otherwise the link looks broken the moment it is displayed */
+     resolve to -- otherwise the link looks broken the moment it is displayed.
+     A picked paper the pack no longer carries shows the paper the pipeline
+     falls back to, which _resolve_stock() takes in the same order as
+     _auto_paper_entry(). */
   if(!p->paper_hash) ppos = SF_COMBO_PAPER_AUTO;
-  else if(ppos < 0) ppos = pfirst;
+  else if(ppos < 0)
+  {
+    const sf_prof_entry_t *fb = _auto_paper_entry(g, fe);
+    ppos = fb ? g_list_index(g->entries, fb) : pfirst;
+  }
   /* scanning outranks any stored paper: it is the state the pipeline is in */
   if(p->scan_film) ppos = SF_COMBO_SCAN_FILM;
   dt_bauhaus_combobox_set_from_value(g->paper, ppos);
