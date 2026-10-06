@@ -31,7 +31,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
 {
   JxlBasicInfo basicinfo;
   size_t icc_size = 0;
-  uint64_t exif_size = 0;
+  size_t exif_size = 0;
   uint8_t *exif_data = NULL;
 
   FILE* inputfile = g_fopen(filename, "rb");
@@ -197,6 +197,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
       if(img->exif_inited) continue;
 
       JxlBoxType type;
+      uint64_t box_size = 0;
 
       // Calling JxlDecoderReleaseBoxBuffer when no buffer is set
       // is not an error
@@ -207,15 +208,15 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
       status = JxlDecoderGetBoxType(decoder, type, JXL_FALSE);
       if(status != JXL_DEC_SUCCESS) continue;
 
-      // Initially we get the full size of a box in exif_size
+      // Initially we get the full size of the current box
       // (the content of the box will be less)
-      status = JxlDecoderGetBoxSizeRaw(decoder, &exif_size);
+      status = JxlDecoderGetBoxSizeRaw(decoder, &box_size);
 
       // If the size is too small, it doesn't make sense to check the type.
       // At least 4 bytes are occupied by the box type and another 4 by the
       // "offset of the start of Exif data" field (if it was Exif). Thus, the
       // size of 8 bytes excludes the presence of the data we are looking for.
-      if((status != JXL_DEC_SUCCESS) || (exif_size <= 8)) continue;
+      if((status != JXL_DEC_SUCCESS) || (box_size <= 8)) continue;
 
       if(memcmp(type, "Exif", 4) == 0)
       {
@@ -224,10 +225,21 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
         // and https://github.com/darktable-org/darktable/pull/13463
         // In short: we may be subtracting too little, but it is safer to do
         // so than to subtract too much.
-        exif_size -= 4;
+        box_size -= 4;
+#if SIZE_MAX < UINT64_MAX
+        if(box_size > SIZE_MAX) continue;
+#endif
+        exif_size = box_size;
+        g_free(exif_data);
         exif_data = g_try_malloc0(exif_size);
         if(!exif_data) continue;
         status = JxlDecoderSetBoxBuffer(decoder, exif_data, exif_size);
+        if(status != JXL_DEC_SUCCESS)
+        {
+          g_free(exif_data);
+          exif_data = NULL;
+          exif_size = 0;
+        }
       }
     }
 
@@ -313,15 +325,18 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
   {
     JxlDecoderReleaseBoxBuffer(decoder);
     // First 4 bytes of Exif blob is an offset of the actual Exif data
-    const uint32_t exif_offset = exif_data[0] << 24 |
-                                 exif_data[1] << 16 |
-                                 exif_data[2] <<  8 |
-                                 exif_data[3];
-    if(exif_size > 4 + exif_offset)
+    const uint32_t exif_offset = (uint32_t)exif_data[0] << 24 |
+                                 (uint32_t)exif_data[1] << 16 |
+                                 (uint32_t)exif_data[2] <<  8 |
+                                 (uint32_t)exif_data[3];
+    if(exif_size > 4 && exif_offset < exif_size - 4)
     {
-      dt_exif_read_from_blob(img,
-                             exif_data + 4 + exif_offset,
-                             exif_size - 4 - exif_offset);
+      const size_t tiff_offset = 4 + (size_t)exif_offset;
+      const size_t tiff_size = exif_size - tiff_offset;
+      if(tiff_size <= G_MAXINT)
+        dt_exif_read_from_blob(img,
+                               exif_data + tiff_offset,
+                               tiff_size);
     }
     g_free(exif_data);
   }
