@@ -89,6 +89,7 @@ void dt_imageio_dng_write_float(const char *filename,
 //   - AsShotNeutral                from img->wb_coeffs (inverted)
 //   - ColorMatrix1                 from img->adobe_XYZ_to_CAM
 //   - Make / Model / UniqueModel   from img->camera_maker / camera_model
+//   - OpcodeList2/3                from img->exif_correction_data (if present)
 //
 // @param filename output path (UTF-8)
 // @param cfa      Bayer mosaic (uint16, width * height samples, row-major)
