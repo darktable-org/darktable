@@ -3451,6 +3451,8 @@ static void _sync_coupler_diffusion(dt_iop_spektrafilm_gui_data_t *g,
 static void _update_paper_auto_entry(dt_iop_module_t *self);
 static const sf_prof_entry_t *_current_film_entry(const dt_iop_spektrafilm_gui_data_t *g,
                                                   const dt_iop_spektrafilm_params_t *p);
+static const sf_prof_entry_t *_effective_paper_entry(const dt_iop_spektrafilm_gui_data_t *g,
+                                                     const dt_iop_spektrafilm_params_t *p);
 
 /* Stamp the spectral table this edit is being made against, at the point where
    a user change has written its param and the history item has not been created
@@ -3570,9 +3572,19 @@ static void _film_changed(GtkWidget *w,
        mode: a slide scans washed out without it, and a print is not fitted
        unless asked */
     p->scan_black_correction = p->scan_white_correction = e->positive;
+    /* leaving scan mode returns to whatever paper_hash names: "auto" when it
+       is 0, otherwise the pinned paper, which is still what the pipeline
+       prints on */
+    int ppos = SF_COMBO_PAPER_AUTO;
+    if(p->scan_film)
+      ppos = SF_COMBO_SCAN_FILM;
+    else if(p->paper_hash)
+    {
+      const sf_prof_entry_t *pe = _effective_paper_entry(g, p);
+      if(pe) ppos = g_list_index(g->entries, pe);
+    }
     DT_ENTER_GUI_UPDATE();
-    dt_bauhaus_combobox_set_from_value(
-        g->paper, p->scan_film ? SF_COMBO_SCAN_FILM : SF_COMBO_PAPER_AUTO);
+    dt_bauhaus_combobox_set_from_value(g->paper, ppos);
     dt_bauhaus_toggle_set(g->scan_black_correction, p->scan_black_correction);
     dt_bauhaus_toggle_set(g->scan_white_correction, p->scan_white_correction);
     DT_LEAVE_GUI_UPDATE();
@@ -3887,8 +3899,10 @@ static const sf_prof_entry_t *_effective_paper_entry(const dt_iop_spektrafilm_gu
                                                      const dt_iop_spektrafilm_params_t *p)
 {
   if(p->scan_film) return NULL;
-  return p->paper_hash ? _entry_by_hash(g, p->paper_hash, TRUE)
-                       : _auto_paper_entry(g, _current_film_entry(g, p));
+  const sf_prof_entry_t *pinned = p->paper_hash ? _entry_by_hash(g, p->paper_hash, TRUE) : NULL;
+  /* a pinned paper missing from the pack falls back the way _resolve_stock()
+     does, to the film's automatic paper */
+  return pinned ? pinned : _auto_paper_entry(g, _current_film_entry(g, p));
 }
 
 /* put the print development slider on the paper in force, as _film_changed()
