@@ -1448,7 +1448,18 @@ sf_profile_t *sf_profile_load(const char *path,
       ok = FALSE;
   }
   else
-    ok &= json_read_darray(data, "base_density", p->base_density, SF_NWL);
+  {
+    /* a stock characterised at a single development may store its base
+       density as a one-member family, (n_wl, 1), instead of a flat vector */
+    JsonNode *bn = json_object_has_member(data, "base_density")
+                       ? json_object_get_member(data, "base_density") : NULL;
+    JsonArray *ba = (bn && JSON_NODE_HOLDS_ARRAY(bn)) ? json_node_get_array(bn) : NULL;
+    JsonNode *b0 = (ba && json_array_get_length(ba)) ? json_array_get_element(ba, 0) : NULL;
+    if(b0 && JSON_NODE_HOLDS_ARRAY(b0))
+      ok &= json_read_dmatrix(data, "base_density", p->base_density, SF_NWL, 1);
+    else
+      ok &= json_read_darray(data, "base_density", p->base_density, SF_NWL);
+  }
   ok &= json_read_darray(data, "log_exposure", p->log_exposure, SF_NLE);
   if(dev_family)
   {
