@@ -360,7 +360,9 @@ dt_colorspaces_color_profile_type_t dt_imageio_jpegxl_read_hdr_profile(const cha
   if(JxlDecoderSubscribeEvents(decoder, JXL_DEC_COLOR_ENCODING) != JXL_DEC_SUCCESS
      || JxlDecoderSetInput(decoder, (const uint8_t *)g_mapped_file_get_contents(file),
                             g_mapped_file_get_length(file)) != JXL_DEC_SUCCESS)
+  {
     goto cleanup;
+  }
   JxlDecoderCloseInput(decoder);
   if(JxlDecoderProcessInput(decoder) != JXL_DEC_COLOR_ENCODING) goto cleanup;
   JxlColorEncoding encoding;
@@ -371,7 +373,9 @@ dt_colorspaces_color_profile_type_t dt_imageio_jpegxl_read_hdr_profile(const cha
                                          JXL_COLOR_PROFILE_TARGET_DATA, &encoding) != JXL_DEC_SUCCESS
      || encoding.color_space != JXL_COLOR_SPACE_RGB
      || encoding.white_point != JXL_WHITE_POINT_D65)
+  {
     goto cleanup;
+  }
   dt_colorspaces_cicp_t cicp = {
     .color_primaries = encoding.primaries == JXL_PRIMARIES_2100
       ? DT_CICP_COLOR_PRIMARIES_REC2020
@@ -385,7 +389,9 @@ dt_colorspaces_color_profile_type_t dt_imageio_jpegxl_read_hdr_profile(const cha
   };
   if(cicp.color_primaries != DT_CICP_COLOR_PRIMARIES_UNSPECIFIED
      && cicp.transfer_characteristics != DT_CICP_TRANSFER_CHARACTERISTICS_UNSPECIFIED)
+  {
     type = dt_colorspaces_cicp_to_type(&cicp, filename);
+  }
 cleanup:
   if(decoder) JxlDecoderDestroy(decoder);
   g_mapped_file_unref(file);

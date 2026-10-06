@@ -1320,15 +1320,18 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
   const float alpha = pixel.w;
 
   float cam[3], XYZ[3];
-  cam[0] = lerp_lookup_unbounded0(lutr, pixel.x, a[0]);
-  cam[1] = lerp_lookup_unbounded0(lutg, pixel.y, a[1]);
-  cam[2] = lerp_lookup_unbounded0(lutb, pixel.z, a[2]);
   if(hdr_transfer)
   {
     cam[0] = pixel.x;
     cam[1] = pixel.y;
     cam[2] = pixel.z;
     dt_hdr_decode(cam, hdr_transfer);
+  }
+  else
+  {
+    cam[0] = lerp_lookup_unbounded0(lutr, pixel.x, a[0]);
+    cam[1] = lerp_lookup_unbounded0(lutg, pixel.y, a[1]);
+    cam[2] = lerp_lookup_unbounded0(lutb, pixel.z, a[2]);
   }
 
   if(blue_mapping)
@@ -1406,15 +1409,18 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
   const float alpha = pixel.w;
 
   float cam[3], RGB[3], XYZ[3];
-  cam[0] = lerp_lookup_unbounded0(lutr, pixel.x, a[0]);
-  cam[1] = lerp_lookup_unbounded0(lutg, pixel.y, a[1]);
-  cam[2] = lerp_lookup_unbounded0(lutb, pixel.z, a[2]);
   if(hdr_transfer)
   {
     cam[0] = pixel.x;
     cam[1] = pixel.y;
     cam[2] = pixel.z;
     dt_hdr_decode(cam, hdr_transfer);
+  }
+  else
+  {
+    cam[0] = lerp_lookup_unbounded0(lutr, pixel.x, a[0]);
+    cam[1] = lerp_lookup_unbounded0(lutg, pixel.y, a[1]);
+    cam[2] = lerp_lookup_unbounded0(lutb, pixel.z, a[2]);
   }
 
   if(blue_mapping)

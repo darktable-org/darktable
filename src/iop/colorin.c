@@ -779,18 +779,20 @@ static inline void _apply_tone_curves(dt_aligned_pixel_t pixel,
   if(d->hdr_transfer)
   {
     dt_hdr_decode(pixel, d->hdr_transfer);
-    return;
   }
-  // assures unbounded color management without extrapolation.  Should not be called
-  // for linear profiles, as there is no need to apply a tone curve to them.
-  for(int c = 0; c < 3; c++)
-    if(d->lut[c][0] >= 0.0f)
-    {
-      if(__builtin_expect(pixel[c] < 1.0f, 1))
-        pixel[c] = _lerp_lut(d->lut[c], pixel[c]);
-      else
-        pixel[c] = dt_iop_eval_exp(d->unbounded_coeffs[c], pixel[c]);
-    }
+  else
+  {
+    // assures unbounded color management without extrapolation.  Should not be called
+    // for linear profiles, as there is no need to apply a tone curve to them.
+    for(int c = 0; c < 3; c++)
+      if(d->lut[c][0] >= 0.0f)
+      {
+        if(__builtin_expect(pixel[c] < 1.0f, 1))
+          pixel[c] = _lerp_lut(d->lut[c], pixel[c]);
+        else
+          pixel[c] = dt_iop_eval_exp(d->unbounded_coeffs[c], pixel[c]);
+      }
+  }
 }
 
 #ifdef HAVE_OPENCL

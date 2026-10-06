@@ -117,10 +117,14 @@ static inline int dt_colorspaces_hdr_transfer(const dt_colorspaces_color_profile
   switch(type)
   {
     case DT_COLORSPACE_PQ_REC2020:
-    case DT_COLORSPACE_PQ_P3: return DT_HDR_PQ;
-    case DT_COLORSPACE_HLG_REC2020: return DT_HDR_HLG_REC2020;
-    case DT_COLORSPACE_HLG_P3: return DT_HDR_HLG_P3;
-    default: return DT_HDR_NONE;
+    case DT_COLORSPACE_PQ_P3:
+      return DT_HDR_PQ;
+    case DT_COLORSPACE_HLG_REC2020:
+      return DT_HDR_HLG_REC2020;
+    case DT_COLORSPACE_HLG_P3:
+      return DT_HDR_HLG_P3;
+    default:
+      return DT_HDR_NONE;
   }
 }
 
