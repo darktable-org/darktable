@@ -4468,6 +4468,20 @@
     <longdescription>this is just to store whether to show advanced curve parameters or not</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/filmgrain/expand_texture</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to expand the film grain texture controls</shortdescription>
+    <longdescription>this is just to store whether to show the film grain texture controls or not</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/filmgrain/expand_tone_sliders</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to expand the film grain tonal range sliders</shortdescription>
+    <longdescription>this is just to store whether to show the film grain tonal range sliders or not</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/agx/enable_curve_warnings</name>
     <type>bool</type>
     <default>true</default>
