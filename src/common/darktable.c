@@ -78,6 +78,7 @@
 #include "lua/init.h"
 #include "views/view.h"
 #include "conf_gen.h"
+#include "whereami.h"
 
 #include <errno.h>
 #include <glib.h>
@@ -1113,7 +1114,47 @@ int dt_init(int argc,
   darktable.unmuted = 0;
   GSList *config_override = NULL;
 
-  // keep a copy of argv array for possibly reporting later
+  /* Keep original argv for possible workspace relaunch (before gtk_init
+   * mutates argv). Always copy argv[0] at least. */
+  darktable.restart = FALSE;
+  darktable.restart_argv = NULL;
+  if(init_gui)
+  {
+    darktable.restart_argv = g_new0(char *, (gsize)argc + 1);
+    for(int i = 0; i < argc; i++)
+      darktable.restart_argv[i] = g_strdup(argv[i] ? argv[i] : "");
+
+    /* Prefer absolute executable path so spawn works from any cwd. */
+    int dirname_length = 0;
+    const int length = wai_getExecutablePath(NULL, 0, &dirname_length);
+    if(length > 0)
+    {
+      char *exe = g_malloc((gsize)length + 1);
+      wai_getExecutablePath(exe, length, &dirname_length);
+      exe[length] = '\0';
+      g_free(darktable.restart_argv[0]);
+      darktable.restart_argv[0] = exe;
+    }
+
+    /* --library would override the workspace DB on relaunch */
+    GPtrArray *args = g_ptr_array_new();
+    for(int i = 0; darktable.restart_argv[i]; i++)
+    {
+      if(!strcmp(darktable.restart_argv[i], "--library"))
+      {
+        g_free(darktable.restart_argv[i]);
+        if(darktable.restart_argv[i + 1])
+          g_free(darktable.restart_argv[++i]);
+        continue;
+      }
+      g_ptr_array_add(args, darktable.restart_argv[i]);
+    }
+    g_free(darktable.restart_argv);
+    g_ptr_array_add(args, NULL);
+    darktable.restart_argv = (char **)g_ptr_array_free(args, FALSE);
+  }
+
+  /* Keep a copy of argv array for possibly reporting later */
   gchar **myoptions = init_gui && argc > 1 ? g_strdupv(argv) : NULL;
 
   for(int k = 1; k < argc; k++)
@@ -2524,6 +2565,12 @@ void dt_cleanup()
   dt_pthread_mutex_destroy(&(darktable.metadata_threadsafe));
 
   dt_exif_cleanup();
+
+  if(!darktable.restart && darktable.restart_argv)
+  {
+    g_strfreev(darktable.restart_argv);
+    darktable.restart_argv = NULL;
+  }
 }
 
 /* The dt_print variations can be used with a combination of DT_DEBUG_ flags.
