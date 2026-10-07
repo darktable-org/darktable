@@ -2245,6 +2245,9 @@ void dt_image_init(dt_image_t *img)
   img->raw_white_point = 16384; // 2^14
   dt_mark_colormatrix_invalid(&img->d65_color_matrix[0]);
   dt_mark_colormatrix_invalid(&img->dng_forward_matrix[0]);
+  // initialization also accepts uninitialized structs; owners must free existing tables first
+  img->profile_hsm_data = NULL;
+  img->profile_hsm_data_size = img->profile_hsm_hue_div = img->profile_hsm_sat_div = img->profile_hsm_val_div = img->profile_hsm_encoding = 0;
   img->profile = NULL;
   img->profile_size = 0;
   img->colorspace = DT_IMAGE_COLORSPACE_NONE;
