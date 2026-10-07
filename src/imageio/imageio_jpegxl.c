@@ -17,6 +17,7 @@
 */
 
 #include <inttypes.h>
+#include <limits.h>
 
 #include <jxl/decode.h>
 #include <jxl/resizable_parallel_runner.h>
@@ -31,7 +32,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
 {
   JxlBasicInfo basicinfo;
   size_t icc_size = 0;
-  size_t exif_size = 0;
+  uint64_t exif_size = 0;
   uint8_t *exif_data = NULL;
 
   FILE* inputfile = g_fopen(filename, "rb");
@@ -225,11 +226,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
         // and https://github.com/darktable-org/darktable/pull/13463
         // In short: we may be subtracting too little, but it is safer to do
         // so than to subtract too much.
-        box_size -= 4;
-#if SIZE_MAX < UINT64_MAX
-        if(box_size > SIZE_MAX) continue;
-#endif
-        exif_size = box_size;
+        exif_size = box_size - 4;
         g_free(exif_data);
         exif_data = g_try_malloc0(exif_size);
         if(!exif_data) continue;
@@ -331,12 +328,12 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
                                  (uint32_t)exif_data[3];
     if(exif_size > 4 && exif_offset < exif_size - 4)
     {
-      const size_t tiff_offset = 4 + (size_t)exif_offset;
-      const size_t tiff_size = exif_size - tiff_offset;
-      if(tiff_size <= G_MAXINT)
+      const uint64_t data_offset = 4 + (uint64_t)exif_offset;
+      const uint64_t data_size = exif_size - data_offset;
+      if(data_size <= INT_MAX)
         dt_exif_read_from_blob(img,
-                               exif_data + tiff_offset,
-                               tiff_size);
+                               exif_data + data_offset,
+                               data_size);
     }
     g_free(exif_data);
   }
