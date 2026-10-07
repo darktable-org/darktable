@@ -24,6 +24,7 @@
 #endif
 
 #include <inttypes.h>
+#include <limits.h>
 #include <memory.h>
 #include <stdio.h>
 #include <strings.h>
@@ -121,12 +122,12 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
               | (uint32_t)exif_data[3];
             if(exif_offset < exif_size - 4)
             {
-              const size_t tiff_offset = 4 + (size_t)exif_offset;
-              const size_t tiff_size = exif_size - tiff_offset;
-              if(tiff_size <= G_MAXINT)
+              const size_t data_offset = 4 + (size_t)exif_offset;
+              const size_t data_size = exif_size - data_offset;
+              if(data_size <= INT_MAX)
                 dt_exif_read_from_blob(img,
-                                       exif_data + tiff_offset,
-                                       tiff_size);
+                                       exif_data + data_offset,
+                                       data_size);
             }
           }
           g_free(exif_data);
