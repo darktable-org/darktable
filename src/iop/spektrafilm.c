@@ -6203,15 +6203,24 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->halation_scale,
                               _("halation size: scales the glow radius (1.0 = film-accurate)"));
 
-  _section_add(self, C_("section", "highlight boost"),
-               "plugins/darkroom/spektrafilm/expand_halation_threshold");
+  GtkWidget *boost_section
+      = _section_add(self, C_("section", "highlight boost"),
+                     "plugins/darkroom/spektrafilm/expand_halation_threshold");
+  gtk_widget_set_tooltip_text(
+      dtgtk_expander_get_header(DTGTK_EXPANDER(boost_section)),
+      _("reconstructs clipped highlights before any light spreads, so they\n"
+        "bloom through the film diffusion filter, scatter and halation.\n"
+        "it is not part of halation: the halation toggle does not switch it\n"
+        "off. set highlight boost to 0 to disable it."));
 
   g->boost_ev = dt_bauhaus_slider_from_params(self, "boost_ev");
   dt_bauhaus_slider_set_format(g->boost_ev, _(" EV"));
   gtk_widget_set_tooltip_text(g->boost_ev,
                               _("highlight boost: reconstructs clipped highlights so they "
                                 "bloom into\n"
-                                "halation/diffusion (0 = off)."));
+                                "halation/diffusion (0 = off).\n"
+                                "\n"
+                                "runs on its own, independent of the halation toggle."));
 
   g->boost_range = dt_bauhaus_slider_from_params(self, "boost_range");
   gtk_widget_set_tooltip_text(
