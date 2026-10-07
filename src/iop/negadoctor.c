@@ -1060,8 +1060,11 @@ void gui_update(dt_iop_module_t *const self)
   dt_iop_color_picker_reset(self, TRUE);
 
 
+  // the slider reads in EV while the parameter is linear, so its default is
+  // converted as well
+  const dt_iop_negadoctor_params_t *const dp = self->default_params;
   dt_bauhaus_slider_set(g->exposure, log2f(p->exposure));     // warning: GUI is in EV
-  dt_bauhaus_slider_set_default(g->exposure, log2f(p->exposure)); // otherwise always showes as "changed"
+  dt_bauhaus_slider_set_default(g->exposure, log2f(dp->exposure));
 
   // Update custom stuff
   gui_changed(self, NULL, NULL);
