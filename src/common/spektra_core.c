@@ -93,6 +93,20 @@ void sf_gauss_yvv_coeffs(const float sigma_req,
   dt_gaussian_yvv_coeffs(fminf(sigma_req, SF_GAUSS_MAX_IIR_SIGMA), out);
 }
 
+int sf_gauss_iir_passes(const float sigma,
+                        float *const pass_sigma)
+{
+  if(!(sigma > SF_GAUSS_MAX_IIR_SIGMA))
+  {
+    *pass_sigma = sigma;
+    return 1;
+  }
+  const float r = sigma / SF_GAUSS_MAX_IIR_SIGMA;
+  const int n = (int)ceilf(r * r);
+  *pass_sigma = sigma / sqrtf((float)n);
+  return n;
+}
+
 /* Forward then backward sweep over `len` stride-1 elements. Both sweeps seed
  * their state by replicating the edge sample, as the reference does. */
 static void _sf_gauss_iir_1d(const float *const in,
@@ -157,7 +171,8 @@ static void _sf_gauss_convolve_1d(const float *const in,
     {
       int xx = x + k;
       xx = xx < 0 ? 0 : (xx >= len ? len - 1 : xx);
-      acc += kernel[k + radius] * in[xx];
+      /* fma-pinned, matching spektrafilm_gauss_row/col_*c */
+      acc = fmaf(kernel[k + radius], in[xx], acc);
     }
     out[x] = acc;
   }
@@ -199,64 +214,73 @@ static void _blur_flat_inplace(float *const plane,
   const int use_iir = !exact_only && sigma >= SF_GAUSS_EXACT_MAX_SIGMA;
   float kernel[2 * SF_GAUSS_MAX_RADIUS + 1];
   int radius = 0;
+  int passes = 1;
   float yvv[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-  if(use_iir) sf_gauss_yvv_coeffs(sigma, yvv);
+  if(use_iir)
+  {
+    float pass_sigma = sigma;
+    passes = sf_gauss_iir_passes(sigma, &pass_sigma);
+    sf_gauss_yvv_coeffs(pass_sigma, yvv);
+  }
   else radius = dt_gaussian_kernel_1d(sigma, kernel, SF_GAUSS_MAX_RADIUS);
 
-  if(trans && w >= 16 && h >= 16)
+  for(int pass = 0; pass < passes; pass++)
   {
-    float *const temp = trans;
-    /* Pass 1: row-major on each row -> temp */
-    DT_OMP_FOR()
-    for(int j = 0; j < h; j++)
+    if(trans && w >= 16 && h >= 16)
     {
-      const size_t off = (size_t)j * w;
-      if(use_iir) _sf_gauss_iir_1d(plane + off, temp + off, w, yvv[0], yvv[1], yvv[2], yvv[3]);
-      else _sf_gauss_convolve_1d(plane + off, temp + off, w, kernel, radius);
-    }
-    /* Transpose temp (w×h) -> plane (h×w) */
-    _sf_transpose(temp, plane, w, h);
-    /* Pass 2: row-major on transposed data -> temp */
-    DT_OMP_FOR()
-    for(int j = 0; j < w; j++)
-    {
-      const size_t off = (size_t)j * h;
-      if(use_iir) _sf_gauss_iir_1d(plane + off, temp + off, h, yvv[0], yvv[1], yvv[2], yvv[3]);
-      else _sf_gauss_convolve_1d(plane + off, temp + off, h, kernel, radius);
-    }
-    /* Transpose back temp (h×w) -> plane (w×h) */
-    _sf_transpose(temp, plane, h, w);
-  }
-  else
-  {
-    /* small buffer: skip the cache-blocking transpose, convolve directly */
-    float *const row_tmp = dt_alloc_align_float((size_t)MAX(w, h));
-    if(row_tmp)
-    {
+      float *const temp = trans;
+      /* Pass 1: row-major on each row -> temp */
+      DT_OMP_FOR()
       for(int j = 0; j < h; j++)
       {
-        if(use_iir)
-          _sf_gauss_iir_1d(plane + (size_t)j * w, row_tmp, w, yvv[0], yvv[1], yvv[2], yvv[3]);
-        else
-          _sf_gauss_convolve_1d(plane + (size_t)j * w, row_tmp, w, kernel, radius);
-        memcpy(plane + (size_t)j * w, row_tmp, sizeof(float) * w);
+        const size_t off = (size_t)j * w;
+        if(use_iir) _sf_gauss_iir_1d(plane + off, temp + off, w, yvv[0], yvv[1], yvv[2], yvv[3]);
+        else _sf_gauss_convolve_1d(plane + off, temp + off, w, kernel, radius);
       }
-      float *const col_in = dt_alloc_align_float((size_t)h);
-      float *const col_out = dt_alloc_align_float((size_t)h);
-      if(col_in && col_out)
+      /* Transpose temp (w×h) -> plane (h×w) */
+      _sf_transpose(temp, plane, w, h);
+      /* Pass 2: row-major on transposed data -> temp */
+      DT_OMP_FOR()
+      for(int j = 0; j < w; j++)
       {
-        for(int i = 0; i < w; i++)
-        {
-          for(int j = 0; j < h; j++) col_in[j] = plane[(size_t)j * w + i];
-          if(use_iir) _sf_gauss_iir_1d(col_in, col_out, h, yvv[0], yvv[1], yvv[2], yvv[3]);
-          else _sf_gauss_convolve_1d(col_in, col_out, h, kernel, radius);
-          for(int j = 0; j < h; j++) plane[(size_t)j * w + i] = col_out[j];
-        }
+        const size_t off = (size_t)j * h;
+        if(use_iir) _sf_gauss_iir_1d(plane + off, temp + off, h, yvv[0], yvv[1], yvv[2], yvv[3]);
+        else _sf_gauss_convolve_1d(plane + off, temp + off, h, kernel, radius);
       }
-      dt_free_align(col_in);
-      dt_free_align(col_out);
+      /* Transpose back temp (h×w) -> plane (w×h) */
+      _sf_transpose(temp, plane, h, w);
     }
-    dt_free_align(row_tmp);
+    else
+    {
+      /* small buffer: skip the cache-blocking transpose, convolve directly */
+      float *const row_tmp = dt_alloc_align_float((size_t)MAX(w, h));
+      if(row_tmp)
+      {
+        for(int j = 0; j < h; j++)
+        {
+          if(use_iir)
+            _sf_gauss_iir_1d(plane + (size_t)j * w, row_tmp, w, yvv[0], yvv[1], yvv[2], yvv[3]);
+          else
+            _sf_gauss_convolve_1d(plane + (size_t)j * w, row_tmp, w, kernel, radius);
+          memcpy(plane + (size_t)j * w, row_tmp, sizeof(float) * w);
+        }
+        float *const col_in = dt_alloc_align_float((size_t)h);
+        float *const col_out = dt_alloc_align_float((size_t)h);
+        if(col_in && col_out)
+        {
+          for(int i = 0; i < w; i++)
+          {
+            for(int j = 0; j < h; j++) col_in[j] = plane[(size_t)j * w + i];
+            if(use_iir) _sf_gauss_iir_1d(col_in, col_out, h, yvv[0], yvv[1], yvv[2], yvv[3]);
+            else _sf_gauss_convolve_1d(col_in, col_out, h, kernel, radius);
+            for(int j = 0; j < h; j++) plane[(size_t)j * w + i] = col_out[j];
+          }
+        }
+        dt_free_align(col_in);
+        dt_free_align(col_out);
+      }
+      dt_free_align(row_tmp);
+    }
   }
 }
 
@@ -364,7 +388,8 @@ void sf_multiplicative_unsharp_mask3(float *const buf,
     const float D = fmaxf(orig[i] + d0, 0.0f);
     const float blur = fmaxf(buf[i] + d0, eps);
     const float ratio = fmaxf(fminf(D / blur, ratio_max), 1.0f / ratio_max);
-    buf[i] = fmaxf(D * powf(ratio, amount) - d0, 0.0f);
+    /* fma-pinned, matching spektrafilm_grain_usm */
+    buf[i] = fmaxf(fmaf(D, powf(ratio, amount), -d0), 0.0f);
   }
 }
 
@@ -385,7 +410,8 @@ void sf_unsharp_mask3(float *const buf,
   const size_t nn = (size_t)w * h * 3;
   dt_iop_image_copy(orig, buf, nn);
   sf_blur_plane3(buf, w, h, sigma, work);
-  for(size_t i = 0; i < nn; i++) buf[i] = orig[i] + amount * (orig[i] - buf[i]);
+  /* fma-pinned, matching spektrafilm_scan_usm */
+  for(size_t i = 0; i < nn; i++) buf[i] = fmaf(amount, orig[i] - buf[i], orig[i]);
 }
 
 /* Viewing glare ([gl] add_glare): a faint veil of the viewing illuminant, drawn
@@ -423,7 +449,7 @@ void sf_glare(float *const rgb,
     for(int x = 0; x < w; x++)
     {
       const uint32_t seed = grain_pixel_seed((uint32_t)(x + roi_x), (uint32_t)(y + roi_y), 0x5eedu);
-      field[(size_t)y * w + x] = mean * expf(bias + s * grain_normal(seed));
+      field[(size_t)y * w + x] = mean * expf(fmaf(s, grain_normal(seed), bias));
     }
   float *const trans = dt_alloc_align_float((size_t)w * h);
   sf_blur_plane1(field, w, h, blur, NULL, trans);
@@ -470,16 +496,14 @@ static void _blur_per_channel(float *const buf,
      a      = 28^(1 - boost_range)              (curve sharpness)
      k      = (2^boost_ev - 1) / (e^(a(1-x0)) - a(1-x0) - 1)   (normaliser)
      above x0:  y = x + k*max * (e^(a*dx) - a*dx - 1),  dx=(x-x0)/max
-   Operates in place on a linear w*h*3 plane; max is the plane's peak value. */
-void sf_boost_highlights(float *const raw,
-                         const int w,
-                         const int h,
-                         const float boost_ev,
-                         const float boost_range,
-                         const float protect_ev)
+   max is midgray * 2^(protect_ev + SF_BOOST_SPAN_EV), and above it the curve
+   continues along its tangent (see sf_boost_plan_t). */
+int sf_boost_build_plan(const float boost_ev,
+                        const float boost_range,
+                        const float protect_ev,
+                        sf_boost_plan_t *plan)
 {
-  if(boost_ev <= 0.0f) return;
-  const size_t nn = (size_t)w * h * 3;
+  if(boost_ev <= 0.0f) return 0;
 
   /* The reference normalises this curve by max(raw) over the whole frame, so its
      brightest pixel lands exactly boost_ev stops higher. That is a whole-image
@@ -495,27 +519,61 @@ void sf_boost_highlights(float *const raw,
      everywhere. Anchoring it to the film's own shoulder was the other candidate
      and is a trap: the log exposure at 95% of curve excursion ranges from 2.5
      (Velvia) to 272 (Vision3 250D) in raw units across the shipped stocks, which
-     would leave the slider nearly inert on negatives and violent on slides. */
-  const float midgray = 0.184f;
-  const float rng = fminf(fmaxf(boost_range, 0.0f), 1.0f);
-  const float prot = fmaxf(protect_ev, 0.0f);
-  const float raw_x0 = midgray * exp2f(prot);
-  const float maxv = midgray * exp2f(prot + SF_BOOST_SPAN_EV);
-  const float a = powf(28.0f, 1.0f - rng);
-  const float x0 = raw_x0 / maxv;
-  const float denom = expf(a * (1.0f - x0)) - a * (1.0f - x0) - 1.0f;
-  if(denom <= 0.0f) return;
-  const float k = (exp2f(boost_ev) - 1.0f) / denom;
-  const float inv_max = 1.0f / maxv, boost_scale = k * maxv;
+     would leave the slider nearly inert on negatives and violent on slides.
 
+     The reference's normalisation also bounds dx to 1 - x0, which a fixed
+     ceiling does not: anything above xmax would follow the bare exponential,
+     overflow float within a few stops and reach the recursive blurs as inf,
+     where inf - inf turns whole rows and columns into NaN. Above xmax the curve
+     therefore continues along its tangent. */
+  const double midgray = 0.184;
+  const double rng = fmin(fmax((double)boost_range, 0.0), 1.0);
+  const double prot = fmax((double)protect_ev, 0.0);
+  const double raw_x0 = midgray * exp2(prot);
+  const double maxv = midgray * exp2(prot + SF_BOOST_SPAN_EV);
+  const double a = pow(28.0, 1.0 - rng);
+  const double dxm = 1.0 - raw_x0 / maxv;
+  const double e_m = exp(a * dxm);
+  const double denom = e_m - a * dxm - 1.0;
+  if(denom <= 0.0) return 0;
+  const double gain = exp2((double)boost_ev) - 1.0;
+  const double k = gain / denom;
+  plan->raw_x0 = (float)raw_x0;
+  plan->xmax = (float)maxv;
+  plan->inv_max = (float)(1.0 / maxv);
+  plan->a = (float)a;
+  plan->a_log2e = (float)(a * M_LOG2E);
+  plan->scale = (float)(k * maxv);
+  plan->ext = (float)(gain * maxv);
+  plan->slope = (float)(k * a * (e_m - 1.0));
+  return 1;
+}
+
+void sf_boost_highlights(float *const raw,
+                         const int w,
+                         const int h,
+                         const float boost_ev,
+                         const float boost_range,
+                         const float protect_ev)
+{
+  sf_boost_plan_t bp;
+  if(!sf_boost_build_plan(boost_ev, boost_range, protect_ev, &bp)) return;
+  const size_t nn = (size_t)w * h * 3;
+
+  /* same expression, in the same association, as spektrafilm_boost */
+  DT_OMP_FOR()
   for(size_t i = 0; i < nn; i++)
   {
     const float x = raw[i];
-    if(x > raw_x0)
+    if(x <= bp.raw_x0) continue;
+    if(x <= bp.xmax)
     {
-      const float dx = (x - raw_x0) * inv_max;
-      raw[i] = x + boost_scale * (expf(a * dx) - a * dx - 1.0f);
+      const float dx = (x - bp.raw_x0) * bp.inv_max;
+      const float t = bp.a * dx;
+      raw[i] = fmaf(bp.scale, (grain_exp2f(bp.a_log2e * dx) - t) - 1.0f, x);
     }
+    else
+      raw[i] = fmaf(bp.slope, x - bp.xmax, x + bp.ext);
   }
 }
 
@@ -563,8 +621,7 @@ void sf_halation(float *const raw,
                             halation_strength[2] * (double)halation_amount };
   const double first_sigma_um = halation_first_sigma_um; /* base bounce radius */
   const double hscl = fmax((double)halation_scale, 1e-3);
-  const int n_bounces = 3;
-  const double rho = 0.5;             /* bounce decay */
+  const int n_bounces = 3; /* bounce weights decay by 0.5 each, see decay[] below */
 
   const size_t npix = (size_t)w * h;
   const size_t nn = npix * 3;
@@ -593,13 +650,17 @@ void sf_halation(float *const raw,
         for(int c = 0; c < 3; c++)
           lt[c] = fmaxf((float)(tail_rat[g] * (sc_tail[c] * scl / pixel_um)), 1e-6f);
         _blur_per_channel(comp, w, h, lt, plane, trans);
-        for(size_t i = 0; i < nn; i++) tail[i] += (float)tail_amp[g] * comp[i];
+        const float amp_g = (float)tail_amp[g];
+        for(size_t i = 0; i < nn; i++) tail[i] = fmaf(amp_g, comp[i], tail[i]);
       }
+      /* float and fma-pinned, matching spektrafilm_scatter_combine */
+      const float s_f = (float)s_amount;
+      const float ws[3] = { (float)w_s[0], (float)w_s[1], (float)w_s[2] };
       for(size_t i = 0; i < nn; i++)
       {
         const int c = i % 3;
-        const double scattered = (1.0 - w_s[c]) * core[i] + w_s[c] * tail[i];
-        raw[i] = (float)((1.0 - s_amount) * (double)raw[i] + s_amount * scattered);
+        const float scattered = fmaf(ws[c], tail[i], (1.0f - ws[c]) * core[i]);
+        raw[i] = fmaf(s_f, scattered - raw[i], raw[i]);
       }
     }
     dt_free_align(core);
@@ -610,13 +671,10 @@ void sf_halation(float *const raw,
   /* --- stage 2: multi-bounce halation --- */
   if(halation_amount > 0.0f && (a_tot[0] > 0.0 || a_tot[1] > 0.0 || a_tot[2] > 0.0))
   {
-    double decay[8], dsum = 0.0;
-    for(int k = 1; k <= n_bounces; k++)
-    {
-      decay[k - 1] = pow(rho, k - 1);
-      dsum += decay[k - 1];
-    }
-    for(int k = 0; k < n_bounces; k++) decay[k] /= dsum;
+    /* 0.5^(k-1) normalised by their sum 1.75, as float literals identical to
+       spektrafilm.c's GPU host so both paths weight the bounces alike */
+    static const float decay[3] = { 1.0f / 1.75f, 0.5f / 1.75f, 0.25f / 1.75f };
+    const float a_f[3] = { (float)a_tot[0], (float)a_tot[1], (float)a_tot[2] };
 
     float *const blur = dt_alloc_align_float(nn);
     float *const comp = dt_alloc_align_float(nn);
@@ -629,13 +687,14 @@ void sf_halation(float *const raw,
         const float sk = fmaxf((float)((first_sigma_um * hscl / pixel_um) * sqrt((double)k)), 1e-6f);
         const float sig3[3] = { sk, sk, sk };
         _blur_per_channel(comp, w, h, sig3, plane, trans);
-        const float wk = (float)decay[k - 1];
-        for(size_t i = 0; i < nn; i++) blur[i] += wk * comp[i];
+        const float wk = decay[k - 1];
+        for(size_t i = 0; i < nn; i++) blur[i] = fmaf(wk, comp[i], blur[i]);
       }
+      /* float and fma-pinned, matching spektrafilm_halation_apply */
       for(size_t i = 0; i < nn; i++)
       {
         const int c = i % 3;
-        raw[i] = (float)((raw[i] + a_tot[c] * blur[i]) / (1.0 + a_tot[c]));
+        raw[i] = fmaf(a_f[c], blur[i], raw[i]) / (1.0f + a_f[c]);
       }
     }
     dt_free_align(blur);
@@ -899,14 +958,15 @@ void sf_diffusion_filter(float *const raw,
     const float wr = plan.wr[j], wg = plan.wg[j], wb = plan.wb[j];
     for(size_t i = 0; i < npix; i++)
     {
-      acc[i * 3 + 0] += wr * comp[i * 3 + 0];
-      acc[i * 3 + 1] += wg * comp[i * 3 + 1];
-      acc[i * 3 + 2] += wb * comp[i * 3 + 2];
+      acc[i * 3 + 0] = fmaf(wr, comp[i * 3 + 0], acc[i * 3 + 0]);
+      acc[i * 3 + 1] = fmaf(wg, comp[i * 3 + 1], acc[i * 3 + 1]);
+      acc[i * 3 + 2] = fmaf(wb, comp[i * 3 + 2], acc[i * 3 + 2]);
     }
   }
 
+  /* fma-pinned, matching spektrafilm_diffusion_accum / _mix */
   const float ps = plan.p_s;
-  for(size_t i = 0; i < nn; i++) raw[i] = (1.0f - ps) * raw[i] + ps * acc[i];
+  for(size_t i = 0; i < nn; i++) raw[i] = fmaf(ps, acc[i], (1.0f - ps) * raw[i]);
 
   dt_free_align(acc);
   dt_free_align(comp);
