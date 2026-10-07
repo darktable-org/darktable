@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
+import struct
 import subprocess
 from pathlib import Path
 
@@ -20,6 +22,19 @@ HLG_PEAK_NITS = 1000.0
 HLG_GAMMA = 1.2
 IMPORT_TOLERANCE = 0.003
 EXPORT_TOLERANCE = 0.003
+CLIPPING_SIGNAL_GAIN = 4.0 / 3.0
+CLIPPING_HIGHLIGHT_MIN = 1.1
+CLIPPING_LOW_LEVEL_MAX = 0.01
+
+# colorin v7 public XMP parameter layout: fixed-width filenames and int32 fields.
+COLORIN_VERSION = 7
+ICC_FILENAME_LENGTH = 512
+COLORIN_PARAMS_FORMAT = f"<i{ICC_FILENAME_LENGTH}siiii{ICC_FILENAME_LENGTH}s"
+INTENT_PERCEPTUAL = 0
+NORMALIZE_SRGB = 1
+WORKING_LINEAR_REC2020 = 4
+HDR_INPUT_PROFILE = {("pq", "rec2020"): 22, ("hlg", "rec2020"): 23,
+                     ("pq", "p3"): 24, ("hlg", "p3"): 25}
 
 # Independent D65 gamut matrices used by the reference generator.
 GAMUT = {
@@ -50,6 +65,11 @@ def srgb_decode(signal: np.ndarray) -> np.ndarray:
                     ((signal + 0.055) / 1.055) ** 2.4)
 
 
+def srgb_encode(linear: np.ndarray) -> np.ndarray:
+    return np.where(linear <= 0.0031308, 12.92 * linear,
+                    1.055 * linear ** (1.0 / 2.4) - 0.055)
+
+
 def hdr_decode(signal: np.ndarray, transfer: str, primaries: str) -> np.ndarray:
     if transfer == "pq":
         m1, m2 = 2610.0 / 16384.0, 2523.0 / 32.0
@@ -68,22 +88,69 @@ def hdr_decode(signal: np.ndarray, transfer: str, primaries: str) -> np.ndarray:
 
 
 def export(cli: Path, source: Path, output: Path, profile: str,
-           force_lcms: bool) -> None:
+           force_lcms: bool, xmp: Path | None = None,
+           opencl: bool = False) -> None:
     case = output.stem
-    command = [str(cli), str(source), str(output), "--icc-type", profile,
+    command = [str(cli), str(source)]
+    if xmp is not None:
+        command.append(str(xmp))
+    command += [str(output), "--icc-type", profile,
                "--apply-custom-presets", "false", "--core",
                "--configdir", str(output.parent / (case + "-config")),
                "--cachedir", str(output.parent / (case + "-cache")),
-               "--library", ":memory:", "--disable-opencl", "--threads", "4",
+               "--library", ":memory:", "--threads", "4",
                "--conf", "plugins/darkroom/workflow=none",
                "--conf", "plugins/imageio/format/png/bpp=16",
                "--conf", "plugins/lighttable/export/force_lcms2=" + str(force_lcms).lower()]
+    if not opencl:
+        command.append("--disable-opencl")
+    else:
+        command += ["-d", "opencl", "-d", "pipe", "--conf", "opencl=TRUE",
+                    "--conf", "opencl_device_priority=+*/+*/+*/+*/+*"]
     # Never reuse a previous image as evidence for a failed current invocation.
     output.unlink(missing_ok=True)
     with output.with_suffix(".log").open("w") as log:
         subprocess.run(command, stdout=log, stderr=log, check=True, timeout=120)
     if not output.is_file():
         raise AssertionError(f"CLI produced no output for {case}")
+    if opencl:
+        log_text = output.with_suffix(".log").read_text()
+        if not re.search(r"\bprocess\s+CL\d+\b[^\n]*\bcolorin\b", log_text):
+            raise AssertionError(f"{case}: colorin did not run on an OpenCL device")
+        if re.search(r"\bprocess\s+CPU\b[^\n]*\bcolorin\b", log_text):
+            raise AssertionError(f"{case}: colorin fell back to CPU")
+        events = re.findall(r"(\d+) out of (\d+) events were successful and (\d+) events lost", log_text)
+        if not events or any(success != total or int(lost) != 0 for success, total, lost in events):
+            raise AssertionError(f"{case}: OpenCL events failed or were lost")
+
+
+def clipping_png(source: Path, output: Path, magick: str) -> None:
+    signal = np.clip(read_png(source, magick) * CLIPPING_SIGNAL_GAIN, 0.0, 1.0)
+    height, width, _ = signal.shape
+    samples = np.rint(signal * 65535.0).astype("<u2")
+    subprocess.run([magick, "-size", f"{width}x{height}", "-depth", "16",
+                    "-endian", "LSB", "rgb:-", "-define", "png:color-type=2", str(output)],
+                   input=samples.tobytes(), check=True)
+
+
+def clipping_xmp(path: Path, transfer: str, primaries: str) -> None:
+    params = struct.pack(COLORIN_PARAMS_FORMAT, HDR_INPUT_PROFILE[transfer, primaries],
+                         b"", INTENT_PERCEPTUAL, NORMALIZE_SRGB, 0,
+                         WORKING_LINEAR_REC2020, b"")
+    path.write_text(f'''<?xml version="1.0" encoding="UTF-8"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+ <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <rdf:Description xmlns:darktable="http://darktable.sf.net/"
+   darktable:xmp_version="5" darktable:history_end="1" darktable:iop_order_version="2">
+   <darktable:history><rdf:Seq>
+    <rdf:li darktable:num="0" darktable:operation="colorin" darktable:enabled="1"
+     darktable:modversion="{COLORIN_VERSION}" darktable:params="{params.hex()}"
+     darktable:multi_name="" darktable:multi_priority="0"/>
+   </rdf:Seq></darktable:history>
+  </rdf:Description>
+ </rdf:RDF>
+</x:xmpmeta>
+''')
 
 
 def fixture(root: Path, transfer: str, primaries: str, extension: str) -> Path:
@@ -102,7 +169,11 @@ def main() -> int:
     parser.add_argument("--fixtures", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--smoke", action="store_true", help="AVIF Rec2020 only")
+    parser.add_argument("--clipping-opencl", action="store_true",
+                        help="also check the four gamut-clipping cases with OpenCL")
     args = parser.parse_args()
+    if args.smoke and args.clipping_opencl:
+        parser.error("--clipping-opencl requires the full PNG fixtures, without --smoke")
     magick = shutil.which("magick")
     if magick is None:
         parser.error("ImageMagick is required for unmodified 16-bit PNG sample decoding")
@@ -149,8 +220,32 @@ def main() -> int:
                     cases.append({"case": name + "-icc-reimport", "max_error": error})
                     if error > IMPORT_TOLERANCE:
                         raise AssertionError(f"{name} ICC reimport: max error {error}")
+    if not args.smoke:
+        for primaries in primaries_list:
+            for transfer in ("pq", "hlg"):
+                name = f"import-png-{primaries}-{transfer}-clip-srgb"
+                input_path = output / (name + "-input.png")
+                clipping_png(fixture(args.fixtures, transfer, primaries, "png"), input_path, magick)
+                sidecar = output / (name + ".xmp")
+                clipping_xmp(sidecar, transfer, primaries)
+                linear = hdr_decode(read_png(input_path, magick), transfer, primaries)
+                if not np.any(linear > CLIPPING_HIGHLIGHT_MIN):
+                    raise AssertionError(f"{name}: fixture does not exercise highlight clipping")
+                if not np.any(np.max(linear, axis=-1) < CLIPPING_LOW_LEVEL_MAX):
+                    raise AssertionError(f"{name}: fixture does not exercise the low end")
+                expected = srgb_encode(np.clip(linear, 0.0, 1.0))
+                backends = (False, True) if args.clipping_opencl else (False,)
+                for opencl in backends:
+                    case = name + ("-opencl" if opencl else "")
+                    path = output / (case + ".png")
+                    export(cli, input_path, path, "SRGB", False, sidecar, opencl)
+                    error = float(np.max(np.abs(read_png(path, magick) - expected)))
+                    cases.append({"case": case, "max_error": error})
+                    if error > IMPORT_TOLERANCE:
+                        raise AssertionError(f"{case}: max error {error}, limit {IMPORT_TOLERANCE}")
     report = {"status": "passed", "cases": cases,
-              "gpu_runtime": "not tested by this CPU regression harness"}
+              "gpu_runtime": "four clipping cases verified on OpenCL with no lost events" if args.clipping_opencl
+                             else "not tested by this CPU regression harness"}
     (output / "results.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report))
     return 0
