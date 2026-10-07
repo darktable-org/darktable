@@ -56,10 +56,10 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget,
                                              dt_lib_module_t *self);
 /* button press callback */
 static void _lib_darktable_clicked(GtkGestureSingle *gesture,
-                                     gint n_press,
-                                     gdouble x,
-                                     gdouble y,
-                                     dt_lib_module_t *self);
+                                   gint n_press,
+                                   gdouble x,
+                                   gdouble y,
+                                   dt_lib_module_t *self);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -84,6 +84,36 @@ gboolean expandable(dt_lib_module_t *self)
 int position(const dt_lib_module_t *self)
 {
   return 1001;
+}
+
+static void _lib_darktable_update_size(dt_lib_module_t *self)
+{
+  dt_lib_darktable_t *d = self->data;
+
+  const char *wp = dt_conf_get_string_const("workspace/label");
+  char *txt = g_strdup_printf("%s%s%s",
+                              darktable_package_version,
+                              (wp && *wp) ? " - " : "",
+                              (wp && *wp) ? wp : "");
+
+  PangoLayout *layout = gtk_widget_create_pango_layout(self->widget, txt);
+  PangoFontDescription *font_desc = pango_font_description_new();
+  pango_font_description_set_absolute_size(font_desc,
+                                           DT_PIXEL_APPLY_DPI(10) * PANGO_SCALE);
+  pango_layout_set_font_description(layout, font_desc);
+
+  int subtitle_w = 0;
+  pango_layout_get_pixel_size(layout, &subtitle_w, NULL);
+
+  const int text_w = MAX(d->text_width, subtitle_w);
+  gtk_widget_set_size_request
+    (self->widget,
+     d->image_width + text_w + (int)DT_PIXEL_APPLY_DPI(16),
+     d->image_height + (int)DT_PIXEL_APPLY_DPI(8));
+
+  g_free(txt);
+  g_object_unref(layout);
+  pango_font_description_free(font_desc);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -174,9 +204,7 @@ done:
   d->text_width = d->text ? dt_cairo_image_surface_get_width(d->text) : 0;
   d->text_height = d->text ? dt_cairo_image_surface_get_height(d->text) : 0;
 
-  /* set size of drawing area */
-  gtk_widget_set_size_request(self->widget, d->image_width + (int)DT_PIXEL_APPLY_DPI(180),
-                              d->image_height + (int)DT_PIXEL_APPLY_DPI(8));
+  _lib_darktable_update_size(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -194,8 +222,6 @@ void gui_cleanup(dt_lib_module_t *self)
   g_free(self->data);
   self->data = NULL;
 }
-
-
 
 static gboolean _lib_darktable_draw_callback(GtkWidget *widget,
                                              cairo_t *cr,
@@ -256,11 +282,11 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget,
   }
 
   /* print version & workspace */
-  const char *wp = dt_conf_get_string("workspace/label");
+  const char *wp = dt_conf_get_string_const("workspace/label");
   char *txt = g_strdup_printf("%s%s%s",
                               darktable_package_version,
-                              *wp ? " - " : "",
-                              *wp ? wp    : "");
+                              (wp && *wp) ? " - " : "",
+                              (wp && *wp) ? wp    : "");
   pango_font_description_set_absolute_size(font_desc, DT_PIXEL_APPLY_DPI(10) * PANGO_SCALE);
   pango_layout_set_font_description(layout, font_desc);
   pango_layout_set_text(layout, txt, -1);
@@ -277,15 +303,18 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget,
 }
 
 static void _lib_darktable_clicked(GtkGestureSingle *gesture,
-                                     gint n_press,
-                                     gdouble x,
-                                     gdouble y,
-                                     dt_lib_module_t *self)
+                                   gint n_press,
+                                   gdouble x,
+                                   gdouble y,
+                                   dt_lib_module_t *self)
 {
-  /* show about box */
+  (void)gesture;
+  (void)n_press;
+  (void)x;
+  (void)y;
+  (void)self;
   darktable_show_about_dialog();
 }
-
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

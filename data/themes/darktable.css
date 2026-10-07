@@ -2001,6 +2001,8 @@ dialog .sidebar :hover,
 menuitem:hover,
 notebook tab:hover,
 radiobutton:hover label,
+#dt-workspace-create:hover,
+#dt-workspace-create:hover label,
 treeview:not(#lutname) *:hover:not(check),
 #dt-range-date-popup .text-button:hover,
 #lens-module .text-button:hover,
@@ -2072,6 +2074,17 @@ menuitem check:hover,
 treeview check:hover
 {
   color: @bauhaus_fg_hover;
+}
+
+/* workspace menu: action row without button chrome; hover shares radiobutton rule */
+#dt-workspace-create
+{
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  padding: 0;
+  min-height: 0;
+  box-shadow: none;
 }
 
 entry:hover

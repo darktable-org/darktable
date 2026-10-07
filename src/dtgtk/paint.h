@@ -216,6 +216,8 @@ void dtgtk_cairo_paint_rect_portrait(cairo_t *cr, gint x, gint y, gint w, gint h
 void dtgtk_cairo_paint_polygon(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint a zoom icon */
 void dtgtk_cairo_paint_zoom(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint a workspace icon */
+void dtgtk_cairo_paint_workspace(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint a duplicate/multi instance indicator */
 void dtgtk_cairo_paint_multiinstance(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint a simple grid icon */
