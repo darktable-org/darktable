@@ -484,6 +484,8 @@ typedef struct darktable_t
   dt_pthread_mutex_t readFile_mutex;
   dt_pthread_mutex_t metadata_threadsafe;
   char *progname;
+  gboolean restart;     /* relaunch after dt_cleanup */
+  char **restart_argv;  /* NULL-terminated copy of original argv */
   char *datadir;
   char *sharedir;
   char *plugindir;
