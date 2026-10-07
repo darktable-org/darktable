@@ -6203,7 +6203,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->halation_scale,
                               _("halation size: scales the glow radius (1.0 = film-accurate)"));
 
-  _section_add(self, C_("section", "threshold"),
+  _section_add(self, C_("section", "highlight boost"),
                "plugins/darkroom/spektrafilm/expand_halation_threshold");
 
   g->boost_ev = dt_bauhaus_slider_from_params(self, "boost_ev");
