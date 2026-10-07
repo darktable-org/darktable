@@ -22,6 +22,15 @@
 
 int dt_lua_init_metadata(lua_State *L);
 
+/** build the tag name of a script's per-image storage key,
+ * Xmp.darktable.lua_<script>_<key>, from the script name at
+ * script_index and the key at key_index on the lua stack. raises a lua
+ * error if either contains anything but letters, digits and underscores.
+ * the result must be g_free()d */
+char *dt_lua_metadata_script_tagname(lua_State *L,
+                                     const int script_index,
+                                     const int key_index);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
