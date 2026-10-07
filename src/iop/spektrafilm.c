@@ -205,7 +205,7 @@ typedef struct dt_iop_spektrafilm_params_t
   gboolean print_auto_exposure; // $DEFAULT: FALSE $DESCRIPTION: "auto print exposure"
   /* the reference's gamma_factor for the print curves; the field name predates
      the label and is kept, being what presets and styles refer to */
-  float print_contrast;     // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.1 $DESCRIPTION: "print gamma"
+  float print_contrast;     // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print gamma"
   float filter_m;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration M"
   float filter_y;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration Y"
   float couplers_amount;    // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "DIR couplers"
@@ -4472,14 +4472,12 @@ static void _update_trouble_message(dt_iop_module_t *self)
    The values are the presets' baseline, not a mirror of the annotations. They
    track $DEFAULT wherever a preset has no opinion, but a preset was tuned
    against the values in force when it was authored, so a later change to a
-   $DEFAULT does not propagate here -- see print_contrast below. Never
+   $DEFAULT does not propagate here -- see grain_blur_base below. Never
    "resynchronise" this function against the struct without rendering the
    presets that leave the field unset. */
 static void _preset_defaults(dt_iop_spektrafilm_params_t *p)
 {
   memset(p, 0, sizeof(*p));
-  /* deliberately 1.0, not the 1.1 $DEFAULT: the ten printing presets that
-     never name print_contrast were authored at 1.0 and keep it */
   p->print_contrast = 1.0f;
   p->print_gamma_r = p->print_gamma_g = p->print_gamma_b = 1.0f;
   /* deliberately 0.8, not the 0.89 $DEFAULT: the presets were authored against
@@ -4568,7 +4566,6 @@ void init_presets(dt_iop_module_so_t *self)
        $DEFAULT is meant to reach new images are therefore named here as well,
        since _preset_defaults() holds the baseline the shipped looks were
        authored against and does not track later changes to the annotations. */
-    p.print_contrast = 1.1f;
     p.grain_blur_base = 0.89f;
     dt_gui_presets_add_generic(_("scene-referred default"), self->op,
                                self->version(), &p, sizeof(p), TRUE,
