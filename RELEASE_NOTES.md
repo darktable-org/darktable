@@ -231,11 +231,15 @@ changes (where available).
   optimization level, so models that misbehave under aggressive
   optimization no longer need workarounds in feature code.
 
-- Added support for DNG files providing a forward matrix. These
-  files will have an additonal "DNG forward matrix" profile in
-  colorin module, selectable manually. The existing "embedded
-  matrix" profile remains the default for fresh imports and
-  reloading defaults.
+- Added support for DNG files providing a forward matrix (FM) and
+  'ProfileHueSatMapData'.
+  Two new input profiles in colorin can be selected if any of these
+  tags are available.
+  - 'DNG forward matrix' is available if a FM is provided
+  - 'DNG embedded look' is available if there is no FM but
+    'ProfileHueSatMapData' is provided.
+  If one of these new input profiles is selected, the pipe gets its
+  data corrected according to DNG specs matching the intended look.
 
 - The highlights module will be disabled automatically when a raw
   image with a clean history is opended in darkroom the first time

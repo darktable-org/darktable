@@ -1836,6 +1836,8 @@ const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
        return _("Display P3");
      case DT_COLORSPACE_FORWARD_MATRIX:
        return _("DNG forward matrix");
+     case DT_COLORSPACE_DNG_LOOK:
+       return _("DNG embedded look");
      case DT_COLORSPACE_LAST:
        break;
   }
@@ -2654,6 +2656,7 @@ gboolean dt_colorspaces_profile_is_wide_gamut(const dt_colorspaces_color_profile
     case DT_COLORSPACE_DISPLAY2:
     case DT_COLORSPACE_EMBEDDED_ICC:
     case DT_COLORSPACE_EMBEDDED_MATRIX:
+    case DT_COLORSPACE_DNG_LOOK:
     case DT_COLORSPACE_STANDARD_MATRIX:
     case DT_COLORSPACE_ENHANCED_MATRIX:
     case DT_COLORSPACE_VENDOR_MATRIX:

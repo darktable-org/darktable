@@ -105,7 +105,8 @@ typedef enum dt_colorspaces_color_profile_type_t
   DT_COLORSPACE_HLG_P3 = 25,
   DT_COLORSPACE_DISPLAY_P3 = 26,
   DT_COLORSPACE_FORWARD_MATRIX = 27,
-  DT_COLORSPACE_LAST = 28
+  DT_COLORSPACE_DNG_LOOK = 28,
+  DT_COLORSPACE_LAST = 29
 } dt_colorspaces_color_profile_type_t;
 
 typedef enum dt_colorspaces_color_mode_t
