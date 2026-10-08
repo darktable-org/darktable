@@ -18,6 +18,7 @@
 
 #include "common/colorspaces_inline_conversions.h"
 #include "common/colorspaces.h"
+#include "common/hdr-transfer.h"
 #include "common/colormatrices.c"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -1063,6 +1064,24 @@ void dt_colorspaces_cleanup_profile(cmsHPROFILE p)
 {
   if(!p) return;
   cmsCloseProfile(p);
+}
+
+cmsHPROFILE dt_colorspaces_linearize_profile(cmsHPROFILE profile)
+{
+  cmsHPROFILE linear = dt_colorspaces_make_temporary_profile(profile);
+  if(!linear) return NULL;
+  cmsToneCurve *trc = cmsBuildGamma(NULL, 1.0);
+  const gboolean valid = trc
+    && cmsWriteTag(linear, cmsSigRedTRCTag, trc)
+    && cmsWriteTag(linear, cmsSigGreenTRCTag, trc)
+    && cmsWriteTag(linear, cmsSigBlueTRCTag, trc);
+  cmsFreeToneCurve(trc);
+  if(!valid)
+  {
+    cmsCloseProfile(linear);
+    return NULL;
+  }
+  return linear;
 }
 
 cmsHPROFILE dt_colorspaces_make_temporary_profile(cmsHPROFILE profile)

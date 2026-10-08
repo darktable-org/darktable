@@ -22,6 +22,7 @@
 #include "common/chromatic_adaptation.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/colorspaces.h"
+#include "common/hdr-transfer.h"
 #include "common/file_location.h"
 #include "common/dttypes.h"
 #include "develop/imageop.h"
@@ -204,6 +205,7 @@ typedef struct dt_colorspaces_iccprofile_info_cl_t
   cl_float unbounded_coeffs_out[3][3];
   cl_int nonlinearlut;
   cl_float grey;
+  cl_int hdr_transfer;
 } dt_colorspaces_iccprofile_info_cl_t;
 
 dt_colorspaces_cl_global_t *dt_colorspaces_init_cl_global(void);
@@ -306,6 +308,62 @@ static inline void dt_ioppr_apply_trc(const dt_aligned_pixel_t rgb_in,
          : eval_exp(unbounded_coeffs[c], rgb_in[c]))
       : rgb_in[c];
   }
+}
+
+/* Apply the transfer at an RGB boundary, before/after the gamut matrix. */
+static inline void dt_ioppr_decode_rgb(const float *const in,
+                                      float *const out,
+                                      const dt_iop_order_iccprofile_info_t *const profile)
+{
+  const int hdr = dt_colorspaces_hdr_transfer(profile->type);
+  if(hdr)
+  {
+    copy_pixel(out, in);
+    dt_hdr_decode(out, hdr);
+  }
+  else
+  {
+    dt_ioppr_apply_trc(in, out, profile->lut_in,
+                       profile->unbounded_coeffs_in, profile->lutsize);
+    out[3] = in[3];
+  }
+}
+
+static inline void dt_ioppr_encode_rgb(const float *const in,
+                                      float *const out,
+                                      const dt_iop_order_iccprofile_info_t *const profile)
+{
+  const int hdr = dt_colorspaces_hdr_transfer(profile->type);
+  if(hdr)
+  {
+    copy_pixel(out, in);
+    dt_hdr_encode(out, hdr);
+  }
+  else
+  {
+    dt_ioppr_apply_trc(in, out, profile->lut_out,
+                       profile->unbounded_coeffs_out, profile->lutsize);
+    out[3] = in[3];
+  }
+}
+
+static inline void dt_ioppr_rgb_to_xyz(const float *const rgb,
+                                      float *const xyz,
+                                      const dt_iop_order_iccprofile_info_t *const profile)
+{
+  dt_aligned_pixel_t linear;
+  dt_ioppr_decode_rgb(rgb, linear, profile);
+  dt_apply_transposed_color_matrix(linear, profile->matrix_in_transposed, xyz);
+}
+
+static inline float dt_ioppr_rgb_luminance(const float *const rgb,
+                                          const dt_iop_order_iccprofile_info_t *const profile)
+{
+  dt_aligned_pixel_t linear;
+  dt_ioppr_decode_rgb(rgb, linear, profile);
+  return profile->matrix_in[1][0] * linear[0]
+       + profile->matrix_in[1][1] * linear[1]
+       + profile->matrix_in[1][2] * linear[2];
 }
 
 DT_OMP_DECLARE_SIMD(
@@ -458,13 +516,10 @@ static inline float dt_ioppr_compensate_middle_grey
   // we transform the curve nodes from the image colorspace to lab
   dt_aligned_pixel_t lab = { 0.0f };
   const dt_aligned_pixel_t rgb = { x, x, x };
-  dt_ioppr_rgb_matrix_to_lab(rgb,
-                             lab,
-                             profile_info->matrix_in_transposed,
-                             profile_info->lut_in,
-                             profile_info->unbounded_coeffs_in,
-                             profile_info->lutsize,
-                             profile_info->nonlinearlut);
+  dt_aligned_pixel_t linear, xyz;
+  dt_ioppr_decode_rgb(rgb, linear, profile_info);
+  dt_apply_transposed_color_matrix(linear, profile_info->matrix_in_transposed, xyz);
+  dt_XYZ_to_Lab(xyz, lab);
   return lab[0] * .01f;
 }
 
@@ -477,12 +532,11 @@ static inline float dt_ioppr_uncompensate_middle_grey
   const dt_aligned_pixel_t lab = { x * 100.f, 0.0f, 0.0f };
   dt_aligned_pixel_t rgb = { 0.0f };
 
-  dt_ioppr_lab_to_rgb_matrix(lab,
-                             rgb,
-                             profile_info->matrix_out_transposed,
-                             profile_info->lut_out,
-                             profile_info->unbounded_coeffs_out,
-                             profile_info->lutsize, profile_info->nonlinearlut);
+  dt_aligned_pixel_t xyz, linear;
+  dt_Lab_to_XYZ(lab, xyz);
+  dt_apply_transposed_color_matrix(xyz, profile_info->matrix_out_transposed, linear);
+  linear[3] = 0.0f;
+  dt_ioppr_encode_rgb(linear, rgb, profile_info);
   return rgb[0];
 }
 

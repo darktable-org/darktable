@@ -176,10 +176,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     DT_OMP_FOR()
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
-      const float luminance = dt_ioppr_get_rgb_matrix_luminance(img_tmp + k,
-                                                                work_profile->matrix_in, work_profile->lut_in,
-                                                                work_profile->unbounded_coeffs_in,
-                                                                work_profile->lutsize, work_profile->nonlinearlut);
+      const float luminance = dt_ioppr_rgb_luminance(img_tmp + k, work_profile);
 
       // luminance is out of bounds
       if(luminance >= upper)
@@ -229,10 +226,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     DT_OMP_FOR()
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
-      const float luminance = dt_ioppr_get_rgb_matrix_luminance(img_tmp + k,
-                                                                work_profile->matrix_in, work_profile->lut_in,
-                                                                work_profile->unbounded_coeffs_in,
-                                                                work_profile->lutsize, work_profile->nonlinearlut);
+      const float luminance = dt_ioppr_rgb_luminance(img_tmp + k, work_profile);
 
       if(luminance >= upper)
       {
@@ -256,10 +250,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     DT_OMP_FOR()
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
-      const float luminance = dt_ioppr_get_rgb_matrix_luminance(img_tmp + k,
-                                                                work_profile->matrix_in, work_profile->lut_in,
-                                                                work_profile->unbounded_coeffs_in,
-                                                                work_profile->lutsize, work_profile->nonlinearlut);
+      const float luminance = dt_ioppr_rgb_luminance(img_tmp + k, work_profile);
       if(luminance < upper && luminance > lower)
       {
         dt_aligned_pixel_t saturation = { 0.f };

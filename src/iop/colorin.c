@@ -21,6 +21,7 @@
 #include "common/iop_profile.h"
 #include "common/colormatrices.c"
 #include "common/colorspaces.h"
+#include "common/hdr-transfer.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/image_cache.h"
 #include "common/opencl.h"
@@ -31,6 +32,9 @@
 #include "gui/accelerators.h"
 #include "imageio/imageio_jpeg.h"
 #include "imageio/imageio_png.h"
+#ifdef HAVE_LIBJXL
+#include "imageio/imageio_jpegxl.h"
+#endif
 #include "imageio/imageio_tiff.h"
 
 #ifdef HAVE_LIBAVIF
@@ -112,6 +116,7 @@ typedef struct dt_iop_colorin_data_t
   float unbounded_coeffs[3][3]; // approximation for extrapolation of shaper curves
   gboolean blue_mapping;
   gboolean nonlinearlut;
+  int hdr_transfer;
   dt_colorspaces_color_profile_type_t type;
   dt_colorspaces_color_profile_type_t type_work;
   char filename[DT_IOP_COLOR_ICC_LEN];
@@ -771,16 +776,23 @@ static inline float _lerp_lut(const float *const lut, const float v)
 static inline void _apply_tone_curves(dt_aligned_pixel_t pixel,
                                       const dt_iop_colorin_data_t *const d)
 {
-  // assures unbounded color management without extrapolation.  Should not be called
-  // for linear profiles, as there is no need to apply a tone curve to them.
-  for(int c = 0; c < 3; c++)
-    if(d->lut[c][0] >= 0.0f)
-    {
-      if(__builtin_expect(pixel[c] < 1.0f, 1))
-        pixel[c] = _lerp_lut(d->lut[c], pixel[c]);
-      else
-        pixel[c] = dt_iop_eval_exp(d->unbounded_coeffs[c], pixel[c]);
-    }
+  if(d->hdr_transfer)
+  {
+    dt_hdr_decode(pixel, d->hdr_transfer);
+  }
+  else
+  {
+    // assures unbounded color management without extrapolation.  Should not be called
+    // for linear profiles, as there is no need to apply a tone curve to them.
+    for(int c = 0; c < 3; c++)
+      if(d->lut[c][0] >= 0.0f)
+      {
+        if(__builtin_expect(pixel[c] < 1.0f, 1))
+          pixel[c] = _lerp_lut(d->lut[c], pixel[c]);
+        else
+          pixel[c] = dt_iop_eval_exp(d->unbounded_coeffs[c], pixel[c]);
+      }
+  }
 }
 
 #ifdef HAVE_OPENCL
@@ -884,7 +896,7 @@ int process_cl(dt_iop_module_t *self,
                                          CLARG(dev_g), CLARG(dev_b),
                                          CLARG(blue_mapping), CLARG(dev_coeffs), CLARG(dev_corr),
                                          CLARG(scale), CLARG(d->hue_div), CLARG(d->sat_div), CLARG(d->val_div),
-                                         CLARG(dev_hsm), CLARG(d->hsm_encode), CLARG(use_hsm));
+                                         CLARG(dev_hsm), CLARG(d->hsm_encode), CLARG(use_hsm), CLARG(d->hdr_transfer));
 error:
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_l);
@@ -948,17 +960,9 @@ static void _process_cmatrix_bm(dt_iop_module_t *self,
     float *const restrict out = (float *)ovoid + 4*j;
     dt_aligned_pixel_t cam;
 
-    // memcpy(cam, buf_in, sizeof(float)*3);
-    // avoid calling this for linear profiles (marked with negative
-    // entries), assures unbounded color management without
-    // extrapolation.
-    for(int c = 0; c < 3; c++)
-      cam[c] = (d->lut[c][0] >= 0.0f)
-        ? ((in[c] < 1.0f)
-           ? _lerp_lut(d->lut[c], in[c])
-           : dt_iop_eval_exp(d->unbounded_coeffs[c], in[c]))
-        : in[c];
-    cam[3] = 0.0f; // avoid uninitialized-variable warning
+    copy_pixel(cam, in);
+    _apply_tone_curves(cam, d);
+    cam[3] = 0.0f;
 
     _apply_blue_mapping(cam, cam);
 
@@ -1631,6 +1635,19 @@ void commit_params(dt_iop_module_t *self,
     return;
   }
 
+  d->hdr_transfer = dt_colorspaces_hdr_transfer(type);
+  if(d->hdr_transfer)
+  {
+    cmsHPROFILE linear = dt_colorspaces_linearize_profile(d->input);
+    if(!linear)
+    {
+      piece->enabled = FALSE;
+      return;
+    }
+    d->input = linear;
+    d->clear_input = TRUE;
+  }
+
   cmsColorSpaceSignature input_color_space = cmsGetColorSpace(d->input);
   cmsUInt32Number input_format;
   switch(input_color_space)
@@ -1763,6 +1780,8 @@ void commit_params(dt_iop_module_t *self,
     else
       d->unbounded_coeffs[k][0] = -1.0f;
   }
+
+  d->nonlinearlut |= d->hdr_transfer != DT_HDR_NONE;
 
   // commit color profiles to pipeline
   dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work,
@@ -1897,12 +1916,30 @@ void reload_defaults(dt_iop_module_t *self)
   // currently we only support jpeg, j2k, tiff, png, avif, and heif
   dt_image_t *img = dt_image_cache_get(self->dev->image_storage.id, 'w');
 
+  char filename[PATH_MAX] = { 0 };
+  gboolean from_cache = TRUE;
+  dt_image_full_path(img->id, filename, sizeof(filename), &from_cache);
+  const char *extension = strrchr(filename, '.');
+  if(extension && !g_ascii_strcasecmp(extension, ".png"))
+  {
+    /* PNG cICP has priority over ICC, including after the ICC was cached. */
+    dt_colorspaces_cicp_t cicp;
+    uint8_t *profile = NULL;
+    const int size = dt_imageio_png_read_profile(filename, &profile, &cicp);
+    if(!img->profile)
+    {
+      img->profile = profile;
+      img->profile_size = size;
+    }
+    else
+      g_free(profile);
+    color_profile = dt_colorspaces_cicp_to_type(&cicp, filename);
+    if(color_profile == DT_COLORSPACE_NONE && img->profile_size > 0)
+      color_profile = DT_COLORSPACE_EMBEDDED_ICC;
+  }
   if(!img->profile)
   {
     // the image has not a profile inited
-    char filename[PATH_MAX] = { 0 };
-    gboolean from_cache = TRUE;
-    dt_image_full_path(img->id, filename, sizeof(filename), &from_cache);
     const gchar *cc = filename + strlen(filename);
     for(; *cc != '.' && cc > filename; cc--)
       ;
@@ -1932,19 +1969,6 @@ void reload_defaults(dt_iop_module_t *self)
       color_profile = (img->profile_size > 0)
         ? DT_COLORSPACE_EMBEDDED_ICC
         : DT_COLORSPACE_NONE;
-    }
-    else if(!strcmp(ext, "png"))
-    {
-      dt_colorspaces_cicp_t cicp;
-      img->profile_size = dt_imageio_png_read_profile(filename, &img->profile, &cicp);
-      /* PNG spec says try the cICP chunk first, but rather than
-       * ignoring, we also try any ICC profile present if CICP combo
-       * is unsupported */
-      color_profile = dt_colorspaces_cicp_to_type(&cicp, filename);
-      if(color_profile == DT_COLORSPACE_NONE)
-        color_profile = (img->profile_size > 0)
-          ? DT_COLORSPACE_EMBEDDED_ICC
-          : DT_COLORSPACE_NONE;
     }
 #ifdef HAVE_LIBAVIF
     else if(!strcmp(ext, "avif"))
@@ -1983,9 +2007,21 @@ void reload_defaults(dt_iop_module_t *self)
   }
   else
   {
-    // there is an inited embedded profile
-    color_profile = DT_COLORSPACE_EMBEDDED_ICC;
+    // Keep any PNG cICP selected above when its ICC profile was cached.
+    if(color_profile == DT_COLORSPACE_NONE)
+      color_profile = DT_COLORSPACE_EMBEDDED_ICC;
   }
+
+#ifdef HAVE_LIBJXL
+  /* A synthesized ICC shaper cannot express absolute PQ luminance or the
+     RGB-dependent HLG OOTF. Prefer structured HDR metadata when present. */
+  const char *ext = strrchr(filename, '.');
+  if(ext && !g_ascii_strcasecmp(ext, ".jxl"))
+  {
+    const dt_colorspaces_color_profile_type_t hdr = dt_imageio_jpegxl_read_hdr_profile(filename);
+    if(hdr != DT_COLORSPACE_NONE) color_profile = hdr;
+  }
+#endif
 
   // We'll update the input profile hint with information on the
   // embedded ICC profile if it exists.  Since the tooltip info is now

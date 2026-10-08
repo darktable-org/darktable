@@ -23,6 +23,7 @@
 
 #include "common/exif.h"
 #include "common/image.h"
+#include "imageio/imageio_jpegxl.h"
 #include "imageio/imageio_common.h"
 
 dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
@@ -347,6 +348,54 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
   }
 
   return DT_IMAGEIO_OK;
+}
+
+dt_colorspaces_color_profile_type_t dt_imageio_jpegxl_read_hdr_profile(const char *filename)
+{
+  GMappedFile *file = g_mapped_file_new(filename, FALSE, NULL);
+  if(!file) return DT_COLORSPACE_NONE;
+  JxlDecoder *decoder = JxlDecoderCreate(NULL);
+  dt_colorspaces_color_profile_type_t type = DT_COLORSPACE_NONE;
+  if(!decoder) goto cleanup;
+  if(JxlDecoderSubscribeEvents(decoder, JXL_DEC_COLOR_ENCODING) != JXL_DEC_SUCCESS
+     || JxlDecoderSetInput(decoder, (const uint8_t *)g_mapped_file_get_contents(file),
+                            g_mapped_file_get_length(file)) != JXL_DEC_SUCCESS)
+  {
+    goto cleanup;
+  }
+  JxlDecoderCloseInput(decoder);
+  if(JxlDecoderProcessInput(decoder) != JXL_DEC_COLOR_ENCODING) goto cleanup;
+  JxlColorEncoding encoding;
+  if(JxlDecoderGetColorAsEncodedProfile(decoder,
+#if JPEGXL_NUMERIC_VERSION < JPEGXL_COMPUTE_NUMERIC_VERSION(0, 9, 0)
+                                         NULL,
+#endif
+                                         JXL_COLOR_PROFILE_TARGET_DATA, &encoding) != JXL_DEC_SUCCESS
+     || encoding.color_space != JXL_COLOR_SPACE_RGB
+     || encoding.white_point != JXL_WHITE_POINT_D65)
+  {
+    goto cleanup;
+  }
+  dt_colorspaces_cicp_t cicp = {
+    .color_primaries = encoding.primaries == JXL_PRIMARIES_2100
+      ? DT_CICP_COLOR_PRIMARIES_REC2020
+      : encoding.primaries == JXL_PRIMARIES_P3
+        ? DT_CICP_COLOR_PRIMARIES_P3 : DT_CICP_COLOR_PRIMARIES_UNSPECIFIED,
+    .transfer_characteristics = encoding.transfer_function == JXL_TRANSFER_FUNCTION_PQ
+      ? DT_CICP_TRANSFER_CHARACTERISTICS_PQ
+      : encoding.transfer_function == JXL_TRANSFER_FUNCTION_HLG
+        ? DT_CICP_TRANSFER_CHARACTERISTICS_HLG : DT_CICP_TRANSFER_CHARACTERISTICS_UNSPECIFIED,
+    .matrix_coefficients = DT_CICP_MATRIX_COEFFICIENTS_IDENTITY
+  };
+  if(cicp.color_primaries != DT_CICP_COLOR_PRIMARIES_UNSPECIFIED
+     && cicp.transfer_characteristics != DT_CICP_TRANSFER_CHARACTERISTICS_UNSPECIFIED)
+  {
+    type = dt_colorspaces_cicp_to_type(&cicp, filename);
+  }
+cleanup:
+  if(decoder) JxlDecoderDestroy(decoder);
+  g_mapped_file_unref(file);
+  return type;
 }
 
 // clang-format off

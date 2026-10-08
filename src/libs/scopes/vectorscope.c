@@ -251,13 +251,7 @@ static void _lib_histogram_vectorscope_bkgd(dt_scopes_vec_t *d,
       {
         case DT_SCOPES_VEC_VECTORSCOPE_CIELUV:
         {
-          dt_ioppr_rgb_matrix_to_xyz(rgb_scope,
-                                     XYZ_D50,
-                                     vs_prof->matrix_in_transposed,
-                                     vs_prof->lut_in,
-                                     vs_prof->unbounded_coeffs_in,
-                                     vs_prof->lutsize,
-                                     vs_prof->nonlinearlut);
+          dt_ioppr_rgb_to_xyz(rgb_scope, XYZ_D50, vs_prof);
           dt_aligned_pixel_t xyY;
           dt_D50_XYZ_to_xyY(XYZ_D50, xyY);
           dt_xyY_to_Luv(xyY, chromaticity);
@@ -266,13 +260,7 @@ static void _lib_histogram_vectorscope_bkgd(dt_scopes_vec_t *d,
         }
         case DT_SCOPES_VEC_VECTORSCOPE_JZAZBZ:
         {
-          dt_ioppr_rgb_matrix_to_xyz(rgb_scope,
-                                     XYZ_D50,
-                                     vs_prof->matrix_in_transposed,
-                                     vs_prof->lut_in,
-                                     vs_prof->unbounded_coeffs_in,
-                                     vs_prof->lutsize,
-                                     vs_prof->nonlinearlut);
+          dt_ioppr_rgb_to_xyz(rgb_scope, XYZ_D50, vs_prof);
           dt_aligned_pixel_t XYZ_D65;
           dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
           dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
@@ -429,12 +417,7 @@ static void _get_chromaticity(const dt_aligned_pixel_t RGB,
       // NOTE: see for comparison/reference rgb_to_JzCzhz() in color_picker.c
       dt_aligned_pixel_t XYZ_D50;
       // this goes to the PCS which has standard illuminant D50
-      dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50,
-                                 vs_prof->matrix_in_transposed,
-                                 vs_prof->lut_in,
-                                 vs_prof->unbounded_coeffs_in,
-                                 vs_prof->lutsize,
-                                 vs_prof->nonlinearlut);
+      dt_ioppr_rgb_to_xyz(RGB, XYZ_D50, vs_prof);
       // FIXME: do have to worry about chromatic adaptation? this
       // assumes that the histogram profile white point is the same as
       // PCS whitepoint (D50) -- if we have a D65 whitepoint profile,
@@ -452,10 +435,7 @@ static void _get_chromaticity(const dt_aligned_pixel_t RGB,
     {
       dt_aligned_pixel_t XYZ_D50;
       // this goes to the PCS which has standard illuminant D50
-      dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50,
-                                 vs_prof->matrix_in_transposed,
-                                 vs_prof->lut_in,
-      vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
+      dt_ioppr_rgb_to_xyz(RGB, XYZ_D50, vs_prof);
       // FIXME: can skip a hop by pre-multipying matrices: see
       // colorbalancergb and dt_develop_blendif_init_masking_profile()
       // for how to make hacked profile
