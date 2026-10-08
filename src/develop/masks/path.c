@@ -198,6 +198,12 @@ static void _path_border_get_XY(const float *seg_start,
       dy = wa * ay + wb * by;
     }
   }
+  else if(p0x == p1x && p0y == p1y && p1x == p2x && p1y == p2y && p2x == p3x && p2y == p3y)
+  {
+    // a segment of zero length, as between two sharp nodes on one spot,
+    // has no direction: one computed from it is rounding noise
+    dx = dy = 0.0;
+  }
   else
   {
     // derivative in double precision to survive rounding on sharp corners
@@ -1189,6 +1195,15 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter,
   const int border_first = _nb_wctrl_points(nb_corners); // index of the first non-control point
   const int nb_border_p = border_len - border_first;     // number of bp without control points
 
+  // an invalid sample takes the place of the one before it, which for
+  // the first sample is the last valid one
+  int last_valid = border_len - 1;
+  while(last_valid >= border_first
+        && (border[last_valid * 2] == DT_INVALID_COORDINATE
+            || border[last_valid * 2 + 1] == DT_INVALID_COORDINATE))
+    last_valid--;
+  if(last_valid < border_first) return 0;
+
   // we search extrema of the shape in x and y
   int xmin = INT_MAX, xmax = INT_MIN, ymin = INT_MAX, ymax = INT_MIN;
   int posextr[4] = { -1 }; // xmin,xmax,ymin,ymax
@@ -1196,8 +1211,9 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter,
   {
     if((border[i * 2] == DT_INVALID_COORDINATE) || (border[i * 2 + 1] == DT_INVALID_COORDINATE))
     {
-      border[i * 2] = border[i * 2 - 2];
-      border[i * 2 + 1] = border[i * 2 - 1];
+      const int src = i > border_first ? i - 1 : last_valid;
+      border[i * 2] = border[src * 2];
+      border[i * 2 + 1] = border[src * 2 + 1];
     }
     if(xmin > border[i * 2])
     {
@@ -1261,8 +1277,10 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter,
   // border[border_first] because it may be in a self-intersected
   // section so we choose a point where we are sure there's no intersection:
   // one from border shape extrema (here x_max).
-  int lastx = border[(posextr[1] - 1) * 2];
-  int lasty = border[(posextr[1] - 1) * 2 + 1];
+  // the border is closed: the last sample comes before the first one
+  const int prev = posextr[1] > border_first ? posextr[1] - 1 : border_len - 1;
+  int lastx = border[prev * 2];
+  int lasty = border[prev * 2 + 1];
 
   for(int ii = border_first; ii < border_len; ii++)
   {
@@ -1284,12 +1302,14 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter,
       const int xx = (dt_masks_dynbuf_buffer(extra))[j * 2];
       const int yy = (dt_masks_dynbuf_buffer(extra))[j * 2 + 1];
 
-      const int pixel = (yy - ymin) * wb + (xx - xmin);
-      if(pixel < 0 || pixel > ss)
+      // check x and y: the pixel index alone can wrap into another row
+      if(xx < xmin || xx >= xmax || yy < ymin || yy >= ymax)
       {
+        dt_masks_dynbuf_free(extra);
         dt_free_align(binter);
         return 0;
       }
+      const int pixel = (yy - ymin) * wb + (xx - xmin);
       if((xx == lastx && yy == lasty))
       {
         // we haven't move from last pixel.
@@ -1683,8 +1703,20 @@ static int _path_get_pts_border(dt_develop_t *dev,
       {
         if(dt_masks_dynbuf_get(dborder, - 2) == DT_INVALID_COORDINATE)
         {
-          dt_masks_dynbuf_set(dborder, -2, dt_masks_dynbuf_get(dborder, -4));
-          dt_masks_dynbuf_set(dborder, -1, dt_masks_dynbuf_get(dborder, -3));
+          if(dt_masks_dynbuf_position(dborder) >= 6 * nb + 4)
+          {
+            dt_masks_dynbuf_set(dborder, -2, dt_masks_dynbuf_get(dborder, -4));
+            dt_masks_dynbuf_set(dborder, -1, dt_masks_dynbuf_get(dborder, -3));
+          }
+          else
+          {
+            // the node header, not a sample, precedes the first segment's
+            // only sample: use where the next segment's border starts
+            float next_c[2], next_b[2];
+            _path_border_get_XY(p3, p4, 0.00001f, p3[4], next_c, next_c + 1, next_b, next_b + 1);
+            dt_masks_dynbuf_set(dborder, -2, next_b[0]);
+            dt_masks_dynbuf_set(dborder, -1, next_b[1]);
+          }
         }
         rb[0] = dt_masks_dynbuf_get(dborder, -2);
         rb[1] = dt_masks_dynbuf_get(dborder, -1);
@@ -1709,6 +1741,21 @@ static int _path_get_pts_border(dt_develop_t *dev,
       if(bmax[0] == DT_INVALID_COORDINATE)
       {
         _path_border_get_XY(p3, p4, 0.00001f, p3[4], cmin, cmin + 1, bmax, bmax + 1);
+      }
+      // the last segment closes on the border's first valid sample,
+      // which is past the first segment when that one has zero length
+      if(bmax[0] == DT_INVALID_COORDINATE && k == nb - 1)
+      {
+        const float *const db = dt_masks_dynbuf_buffer(dborder);
+        for(size_t i = 6 * nb; i < dt_masks_dynbuf_position(dborder); i += 2)
+        {
+          if(db[i] != DT_INVALID_COORDINATE)
+          {
+            bmax[0] = db[i];
+            bmax[1] = db[i + 1];
+            break;
+          }
+        }
       }
       if(bmax[0] - rb[0] > 1
          || bmax[0] - rb[0] < -1
@@ -1745,6 +1792,33 @@ static int _path_get_pts_border(dt_develop_t *dev,
   {
 
     inter_count = _path_find_self_intersection(intersections, gap_fill_segs, nb, *border, *border_count);
+
+    // the search fills invalid samples in from valid ones. A border with
+    // none, as when all nodes sit on one spot, goes onto the path, whose
+    // samples match the border's one for one
+    if(*points_count == *border_count)
+    {
+      for(int i = _nb_wctrl_points(nb); i < *border_count; i++)
+      {
+        if((*border)[i * 2] == DT_INVALID_COORDINATE)
+        {
+          (*border)[i * 2] = (*points)[i * 2];
+          (*border)[i * 2 + 1] = (*points)[i * 2 + 1];
+        }
+      }
+    }
+
+    // a feather handle copied its segment's first sample before the
+    // search filled the invalid ones in
+    for(int k = 0; k < nb; k++)
+    {
+      if((*border)[k * 6] == DT_INVALID_COORDINATE)
+      {
+        const int pb = -border_init[k * 6 + 2];
+        (*border)[k * 6] = (*border)[pb];
+        (*border)[k * 6 + 1] = (*border)[pb + 1];
+      }
+    }
 
     dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
              "[masks %s] path_points self-intersect took %0.04f sec", form->name,
