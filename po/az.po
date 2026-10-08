@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-05 09:26+0200\n"
-"PO-Revision-Date: 2026-09-09 12:00+0400\n"
+"POT-Creation-Date: 2026-10-07 21:33+0200\n"
+"PO-Revision-Date: 2026-10-09 02:12+0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: az\n"
@@ -36435,3 +36435,1061 @@ msgstr "düymə buraxıldıqdan sonra açıq qalacaq klassik pəncərəyə keç"
 #: ../src/views/view.c:1725
 msgid "mouse actions"
 msgstr "sıçan hərəkətləri"
+
+#: ../build/lib/darktable/plugins/introspection_contrastntexture.c:75
+#: ../build/lib/darktable/plugins/introspection_contrastntexture.c:160
+msgid "coarse details"
+msgstr "iri detallar"
+
+#: ../build/lib/darktable/plugins/introspection_contrastntexture.c:81
+#: ../build/lib/darktable/plugins/introspection_contrastntexture.c:164
+msgid "medium details"
+msgstr "orta detallar"
+
+#: ../build/lib/darktable/plugins/introspection_contrastntexture.c:87
+#: ../build/lib/darktable/plugins/introspection_contrastntexture.c:168
+msgid "fine details"
+msgstr "incə detallar"
+
+#: ../build/lib/darktable/plugins/introspection_contrastntexture.c:93
+#: ../build/lib/darktable/plugins/introspection_contrastntexture.c:172
+msgid "base detail level"
+msgstr "əsas detal səviyyəsi"
+
+#: ../build/lib/darktable/plugins/introspection_contrastntexture.c:99
+#: ../build/lib/darktable/plugins/introspection_contrastntexture.c:176
+msgid "halo control"
+msgstr "halo nəzarəti"
+
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:210
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:307
+msgid "moire threshold"
+msgstr "muar həddi"
+
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:216
+#: ../build/lib/darktable/plugins/introspection_demosaic.c:311
+msgid "moire mix"
+msgstr "muar qarışımı"
+
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:155
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:262
+msgid "filter radius"
+msgstr "süzgəc radiusu"
+
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:161
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:266
+msgid "edge feathering"
+msgstr "kənarların yumşaldılması"
+
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:167
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:270
+msgid "protect near-neutrals from"
+msgstr "neytrala yaxın rəngləri qorumağın başlanğıcı"
+
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:173
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:274
+msgid "protect near-neutrals to"
+msgstr "neytrala yaxın rəngləri qorumağın sonu"
+
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:179
+#: ../build/lib/darktable/plugins/introspection_satcurvergb.c:278
+msgid "noise protection"
+msgstr "küylü sahələrin qorunması"
+
+#: ../build/lib/darktable/plugins/introspection_spektrafilm.c:496
+#: ../build/lib/darktable/plugins/introspection_spektrafilm.c:965
+msgid "print gamma"
+msgstr "çap qamması"
+
+#: ../build/lib/darktable/plugins/introspection_spektrafilm.c:844
+#: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1197
+msgid "print gamma red"
+msgstr "qırmızı üçün çap qamması"
+
+#: ../build/lib/darktable/plugins/introspection_spektrafilm.c:850
+#: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1201
+msgid "print gamma green"
+msgstr "yaşıl üçün çap qamması"
+
+#: ../build/lib/darktable/plugins/introspection_spektrafilm.c:856
+#: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1205
+msgid "print gamma blue"
+msgstr "mavi üçün çap qamması"
+
+#: ../build/lib/darktable/plugins/introspection_spektrafilm.c:880
+#: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1221
+msgid "black point correction"
+msgstr "qara nöqtənin düzəldilməsi"
+
+#: ../build/lib/darktable/plugins/introspection_spektrafilm.c:886
+#: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1225
+msgid "white point correction"
+msgstr "ağ nöqtənin düzəldilməsi"
+
+#: ../src/common/colorspaces.c:1838
+msgid "DNG forward matrix"
+msgstr "DNG irəli çevirmə matrisi"
+
+#: ../src/common/colorspaces.c:1840
+msgid "DNG embedded look"
+msgstr "DNG-yə daxil edilmiş görünüş"
+
+#: ../src/common/darktable.c:142
+msgid ""
+"this console window is required by darktable on this version of Windows.\n"
+"on Windows 11 24H2 and later, darktable normally runs without this window.\n"
+"do not close it or press ctrl+c while darktable is running.\n"
+"it will close automatically when darktable exits.\n"
+"\n"
+"to hide this window anyway, follow the instructions at:\n"
+"https://www.darktable.org/about/faq/#faq-windows-terminal\n"
+msgstr ""
+"darktable-ın Windows-un bu versiyasında işləməsi üçün bu konsol "
+"pəncərəsi lazımdır.\n"
+"Windows 11 24H2 və sonrakı versiyalarda darktable adətən bu pəncərəsiz "
+"işləyir.\n"
+"darktable işləyərkən pəncərəni bağlamayın və ctrl+c düymələrini "
+"basmayın.\n"
+"darktable bağlandıqda bu pəncərə avtomatik bağlanacaq.\n"
+"\n"
+"bu pəncərəni yenə də gizlətmək istəyirsinizsə, buradakı təlimatlara "
+"əməl edin:\n"
+"https://www.darktable.org/about/faq/#faq-windows-terminal\n"
+
+#: ../src/common/history.c:974
+msgid "raster masks could not be copied to the pasted history"
+msgstr ""
+"rastr maskalarını yapışdırılan dəyişiklik tarixçəsinə köçürmək mümkün "
+"olmadı"
+
+#: ../src/common/image.c:3028
+msgid "cannot remove local copy: its raster masks could not be merged back"
+msgstr ""
+"yerli nüsxəni silmək mümkün deyil: onun rastr maskalarını geri "
+"birləşdirmək alınmadı"
+
+#: ../src/common/opencl.c:1304
+msgid ""
+"couldn't get platform ID.\n"
+"check your OpenCL ICD loader (ocl-icd)"
+msgstr ""
+"platformanın ID-sini əldə etmək mümkün olmadı.\n"
+"OpenCL ICD yükləyicinizi (ocl-icd) yoxlayın"
+
+#: ../src/common/opencl.c:1312
+msgid ""
+"no valid OpenCL platform found.\n"
+"check your OpenCL ICD loader (ocl-icd)"
+msgstr ""
+"etibarlı OpenCL platforması tapılmadı.\n"
+"OpenCL ICD yükləyicinizi (ocl-icd) yoxlayın"
+
+#: ../src/common/wb_presets.c:305
+msgid "error in WB presets file, continuing without presets"
+msgstr ""
+"ağ balansının hazır parametr dəstləri faylında xəta var, hazır parametr "
+"dəstləri olmadan davam edilir"
+
+#: ../src/develop/develop.c:2767
+#, c-format
+msgid "%s: module `%s' has unknown version %d, using default parameters"
+msgstr ""
+"%s: `%s' modulunun %d versiyası tanınmır, standart parametrlər istifadə "
+"edilir"
+
+#: ../src/develop/imageop.c:1092
+msgid "delete this instance"
+msgstr "bu nüsxəni sil"
+
+#: ../src/develop/masks/masks.c:1075
+#, c-format
+msgid "Image ID=%d has insane circle mask: radius=%.3f border=%.3f"
+msgstr ""
+"ID=%d olan şəklin dairəvi maskasının dəyərləri məntiqsizdir: "
+"radius=%.3f border=%.3f"
+
+#: ../src/develop/masks/masks.c:1092
+#, c-format
+msgid "Image ID=%d has insane ellipse mask: radii=%.3f/%.3f, border=%.3f"
+msgstr ""
+"ID=%d olan şəklin ellips maskasının dəyərləri məntiqsizdir: "
+"radii=%.3f/%.3f, border=%.3f"
+
+#: ../src/develop/masks/masks.c:1109
+#, c-format
+msgid "Image ID=%d has insane path mask: borders=%.3f/%.3f"
+msgstr ""
+"ID=%d olan şəklin kontur maskasının dəyərləri məntiqsizdir: "
+"borders=%.3f/%.3f"
+
+#: ../src/develop/masks/masks.c:1125
+#, c-format
+msgid "Image ID=%d has insane brush mask: borders=%.3f/%.3f"
+msgstr ""
+"ID=%d olan şəklin fırça maskasının dəyərləri məntiqsizdir: "
+"borders=%.3f/%.3f"
+
+#: ../src/gui/gtkentry.c:46
+msgid ""
+"$(CONFLICT[n]) - import filename conflict number, null string if there is no "
+"conflict, n: number of digits"
+msgstr ""
+"$(CONFLICT[n]) - idxal zamanı fayl adı toqquşmasının nömrəsi, toqquşma "
+"olmadıqda boş sətir; n: rəqəmlərin sayı"
+
+#: ../src/gui/gtkentry.c:119
+msgid ""
+"$(CATEGORY_EACH[n,category]) - level-n subtag of each matching tag, one path "
+"per tag"
+msgstr ""
+"$(CATEGORY_EACH[n,category]) - uyğun gələn hər etiketin n-ci səviyyəli "
+"alt etiketi, hər etiket üçün bir yol"
+
+#: ../src/gui/presets.c:1747
+msgid "edit this preset..."
+msgstr "bu hazır parametr dəstini redaktə et..."
+
+#. no active preset, or the active preset is writeprotect (a shipped
+#. * default): edit/delete are not allowed, so fall through to store/
+#. * update instead of leaving a bare separator behind the preset list.
+#: ../src/gui/presets.c:1755
+msgid "store new preset..."
+msgstr "yeni hazır parametr dəstini saxla..."
+
+#: ../src/imageio/storage/clipboard.c:256
+#, c-format
+msgid "%d/%d exported to clipboard"
+msgid_plural "%d/%d exported to clipboard"
+msgstr[0] "%d/%d mübadilə buferinə ixrac edildi"
+msgstr[1] "%d/%d mübadilə buferinə ixrac edildi"
+
+#: ../src/imageio/storage/clipboard.c:405
+#, c-format
+msgid "%d image copied to clipboard"
+msgid_plural "%d images copied to clipboard"
+msgstr[0] "%d şəkil mübadilə buferinə köçürüldü"
+msgstr[1] "%d şəkil mübadilə buferinə köçürüldü"
+
+#: ../src/imageio/storage/clipboard.c:410
+msgid "could not copy to clipboard"
+msgstr "mübadilə buferinə köçürmək mümkün olmadı"
+
+#: ../src/imageio/storage/disk.c:435
+#, c-format
+msgid "filename pattern `%s' expands to too many files"
+msgstr "`%s' fayl adı şablonu həddindən artıq çox fayla uyğun gəlir"
+
+#: ../src/imageio/storage/latex.c:378
+#, c-format
+msgid "could not export to latex book '%s'!"
+msgstr "'%s' LaTeX kitabına ixrac etmək mümkün olmadı!"
+
+#: ../src/iop/channelmixerrgb.c:4669
+msgid "Datacolor SpyderCheckr 24"
+msgstr "Datacolor SpyderCheckr 24"
+
+#: ../src/iop/channelmixerrgb.c:4670
+msgid "Datacolor SpyderCheckr 48"
+msgstr "Datacolor SpyderCheckr 48"
+
+#: ../src/iop/colorequal.c:3807
+msgid ""
+"double-click to reset the curve\n"
+"middle-click to toggle the control sliders\n"
+"alt+scroll to change page"
+msgstr ""
+"əyrini sıfırlamaq üçün iki dəfə klikləyin\n"
+"idarəetmə sürgülərini açıb-bağlamaq üçün orta düymə ilə klikləyin\n"
+"səhifəni dəyişmək üçün alt+scroll istifadə edin"
+
+#: ../src/iop/colorequal.c:3839
+msgid "control sliders"
+msgstr "idarəetmə sürgüləri"
+
+#: ../src/iop/colorharmonizer.c:1386
+msgid "analyzing the image's hue distribution..."
+msgstr "şəklin rəng çalarlarının paylanması təhlil edilir..."
+
+#: ../src/iop/contrastntexture.c:138
+msgid ""
+"local contrast|texture|clarity|detail enhancement|highlights and shadows"
+msgstr ""
+"yerli kontrast|tekstura|aydınlıq|detalların gücləndirilməsi|işıqlı və "
+"kölgəli sahələr"
+
+#: ../src/iop/contrastntexture.c:399
+msgid "contrast and texture failed to allocate memory, check your RAM settings"
+msgstr ""
+"kontrast və tekstura üçün yaddaş ayırmaq mümkün olmadı, RAM "
+"parametrlərinizi yoxlayın"
+
+#: ../src/iop/contrastntexture.c:663
+msgid ""
+"adjust the detail level used for highlights, shadows, and coarse details.\n"
+"higher = more contrast boost in finer details\n"
+"lower = more contrast boost in coarser details\n"
+"press the mask button to preview the low pass filter result used for shadows/"
+"highlights."
+msgstr ""
+"işıqlar, kölgələr və iri detallar üçün istifadə olunan detal "
+"səviyyəsini tənzimləyir.\n"
+"daha yüksək = incə detallarda kontrast daha çox güclənir\n"
+"daha aşağı = iri detallarda kontrast daha çox güclənir\n"
+"kölgələr/işıqlar üçün istifadə olunan aşağı tezlikli süzgəcin "
+"nəticəsinə önbaxış etmək üçün maska düyməsini basın."
+
+#: ../src/iop/contrastntexture.c:668
+msgid ""
+"preview the low pass filter result used for shadows(blue)/highlights(yellow)."
+msgstr ""
+"kölgələr (mavi)/işıqlar (sarı) üçün istifadə olunan aşağı tezlikli "
+"süzgəcin nəticəsinə önbaxış edin."
+
+#: ../src/iop/contrastntexture.c:674
+msgid "adjust highlights at the base detail level size."
+msgstr "işıqları əsas detal səviyyəsinin ölçüsündə tənzimləyin."
+
+#: ../src/iop/contrastntexture.c:678
+msgid "adjust shadows at the base detail level size."
+msgstr "kölgələri əsas detal səviyyəsinin ölçüsündə tənzimləyin."
+
+#: ../src/iop/contrastntexture.c:693
+msgid ""
+"adjust coarse, low frequency content.\n"
+"press the mask button to preview the effect."
+msgstr ""
+"iri, aşağı tezlikli detalları tənzimləyin.\n"
+"təsirin önbaxışını göstərmək üçün maska düyməsini basın."
+
+#: ../src/iop/contrastntexture.c:696
+msgid "preview the size of the coarse details to adjust."
+msgstr "tənzimlənəcək iri detalların ölçüsünə önbaxış keçirin."
+
+#: ../src/iop/contrastntexture.c:699
+msgid ""
+"adjust medium, frequency content between coarse and fine.\n"
+"press the mask button to preview the effect."
+msgstr ""
+"iri və incə detallar arasındakı orta tezlikli detalları tənzimləyin.\n"
+"təsirin önbaxışını göstərmək üçün maska düyməsini basın."
+
+#: ../src/iop/contrastntexture.c:702
+msgid "preview the size of the medium details to adjust."
+msgstr "tənzimlənəcək orta detalların ölçüsünə önbaxış keçirin."
+
+#: ../src/iop/contrastntexture.c:705
+msgid ""
+"adjust fine, high frequency content.\n"
+"press the mask button to preview the effect."
+msgstr ""
+"incə, yüksək tezlikli detalları tənzimləyin.\n"
+"təsirin önbaxışını göstərmək üçün maska düyməsini basın."
+
+#: ../src/iop/contrastntexture.c:708
+msgid "preview the size of the fine details to adjust."
+msgstr "tənzimlənəcək incə detalların ölçüsünə önbaxış keçirin."
+
+#: ../src/iop/contrastntexture.c:718
+msgid ""
+"adjust the halo control of the filter.\n"
+"higher = suppress halos at the expense of details around edges.\n"
+"lower = allow more halos to get more local contrast and details."
+msgstr ""
+"süzgəcin halo nəzarətini tənzimləyin.\n"
+"yüksək = kənarlardakı detalların hesabına haloları azaldır.\n"
+"aşağı = daha çox yerli kontrast və detal əldə etmək üçün daha çox "
+"haloya imkan verir."
+
+#: ../src/iop/demosaic.c:1943
+msgid ""
+"capture sharpen radius should reflect the overall gaussian type blur\n"
+"of the camera sensor, possibly the anti-aliasing filter and the lens.\n"
+"increasing this too far will soon lead to artifacts like halos and\n"
+"ringing especially when used with a large 'iterations' setting.\n"
+"set it to zero for presets that should enforce auto calculation"
+msgstr ""
+"çəkiliş kəskinləşdirməsinin radiusu kamera sensorunun ümumi Qauss tipli "
+"bulanıqlığını,\n"
+"ola bilsin, antialiasinq süzgəcinin və obyektivin bulanıqlığını əks "
+"etdirməlidir.\n"
+"bunu həddindən artıq artırmaq tezliklə halo və halqalanma kimi "
+"artefaktlara\n"
+"səbəb olacaq, xüsusilə də \"təkrarlamalar\" parametri yüksək olduqda.\n"
+"avtomatik hesablamanı tətbiq edən hazır parametr dəstləri üçün dəyəri "
+"sıfır edin"
+
+#: ../src/iop/demosaic.c:1949
+msgid "calculate the capture sharpen radius from raw sensor data"
+msgstr ""
+"çəkiliş kəskinləşdirməsinin radiusunu xam sensor məlumatlarından "
+"hesablayın"
+
+#: ../src/iop/demosaic.c:1952
+msgid ""
+"restrict capture sharpening to areas with high local contrast,\n"
+"increase to exclude flat areas in very dark or noisy images,\n"
+"decrease for well exposed and low noise images"
+msgstr ""
+"çəkiliş kəskinləşdirməsini yüksək yerli kontrastlı sahələrlə "
+"məhdudlaşdırın,\n"
+"çox qaranlıq və ya küylü şəkillərdə hamar sahələri istisna etmək üçün "
+"artırın,\n"
+"yaxşı ekspozisiyalı və az küylü şəkillər üçün azaldın"
+
+#: ../src/iop/demosaicing/capture.c:457
+msgid "can't allocate buffer to calculate capture radius so use the default"
+msgstr ""
+"çəkiliş radiusunu hesablamaq üçün bufer ayrıla bilmədi, buna görə "
+"standart dəyər istifadə olunur"
+
+#: ../src/iop/demosaicing/capture.c:896
+msgid "capture sharpen failed: can't allocate buffer"
+msgstr "çəkiliş kəskinləşdirməsi uğursuz oldu: bufer ayrıla bilmədi"
+
+#: ../src/iop/demosaicing/capture.c:1063
+msgid "OpenCL capture sharpen failed"
+msgstr "OpenCL çəkiliş kəskinləşdirməsi uğursuz oldu"
+
+#: ../src/iop/demosaicscale.c:38
+msgctxt "modulename"
+msgid "crop and scale input"
+msgstr "girişi kəs və ölçüləndir"
+
+#: ../src/iop/lens.cc:4423
+msgid "vignetting may be overcorrected"
+msgstr "vinyetləmə həddindən artıq düzəldilmiş ola bilər"
+
+#: ../src/iop/lens.cc:4424
+msgid ""
+"the camera's shading compensation already corrected vignetting\n"
+"in the raw data, and Lensfun corrects it again on top of that,\n"
+"possibly brightening the corners\n"
+"leave vignetting out of the corrections, or turn shading\n"
+"compensation off in the camera for future shots"
+msgstr ""
+"kameranın kölgələnmə kompensasiyası xam məlumatlardakı vinyetləməni "
+"artıq düzəldib\n"
+"və Lensfun bunun üzərindən onu bir daha düzəldir,\n"
+"bu da küncləri həddindən artıq işıqlandıra bilər\n"
+"vinyetləməni düzəlişlərdən çıxarın və ya gələcək çəkilişlər üçün "
+"kamerada kölgələnmə\n"
+"kompensasiyasını söndürün"
+
+#: ../src/iop/rasterfile.c:401
+#, c-format
+msgid "mask %.8s, %d x %d"
+msgstr "maska %.8s, %d x %d"
+
+#: ../src/iop/rasterfile.c:404
+#, c-format
+msgid "mask %.8s"
+msgstr "maska %.8s"
+
+#: ../src/iop/rasterfile.c:407
+msgid "missing from sidecar"
+msgstr "müşayiətçi faylda yoxdur"
+
+#: ../src/iop/rasterfile.c:413
+#, c-format
+msgid "folder: %s"
+msgstr "qovluq: %s"
+
+#: ../src/iop/rasterfile.c:415
+msgid "no mask imported"
+msgstr "heç bir maska idxal edilməyib"
+
+#: ../src/iop/rasterfile.c:510
+msgid "cannot write the raster mask sidecar for this image"
+msgstr "bu şəkil üçün rastr maskasının müşayiətçi faylı yazıla bilmir"
+
+#: ../src/iop/rasterfile.c:534
+msgid ""
+"import a PNG or PFM file as a raster mask\n"
+"it is stored in the image's .dtdata sidecar and travels with the image"
+msgstr ""
+"PNG və ya PFM faylını rastr maskası kimi idxal edin\n"
+"o, şəklin .dtdata müşayiətçi faylında saxlanılır və şəkillə birlikdə "
+"daşınır"
+
+#: ../src/iop/rasterfile.c:536
+msgid ""
+"select a PNG or PFM file from the raster mask root folder\n"
+"sidecar files are disabled in preferences, so the mask is referenced by its "
+"path"
+msgstr ""
+"rastr maskalarının kök qovluğundan PNG və ya PFM faylı seçin\n"
+"tərcihlərdə müşayiətçi fayllar söndürülüb, buna görə maskaya onun yolu "
+"ilə istinad edilir"
+
+#: ../src/iop/rasterfile.c:898
+msgid ""
+"select the RGB channels taken into account when a color file is imported"
+msgstr "rəngli fayl idxal edilərkən nəzərə alınacaq RGB kanallarını seçin"
+
+#: ../src/iop/rasterfile.c:911
+msgid ""
+"the raster mask this instance uses\n"
+"importing another file replaces it; masks no longer used by any\n"
+"history item are removed from the sidecar when leaving the darkroom"
+msgstr ""
+"bu nüsxənin istifadə etdiyi rastr maskası\n"
+"başqa faylın idxalı onu əvəz edir; artıq heç bir\n"
+"redaktə tarixçəsi addımında istifadə olunmayan maskalar qaranlıq "
+"otaqdan çıxarkən müşayiətçi fayldan silinir"
+
+#: ../src/iop/satcurvergb.c:180
+msgid "saturation curve"
+msgstr "doyğunluq əyrisi"
+
+#: ../src/iop/satcurvergb.c:185
+msgid "sat vs sat|saturation versus saturation|brilliance curve|satcurve"
+msgstr ""
+"doyğunluğa görə doyğunluq|doyğunluqla doyğunluğun müqayisəsi|parlaqlıq "
+"intensivliyi əyrisi|satcurve"
+
+#: ../src/iop/satcurvergb.c:190
+msgid "remap saturation and brilliance with curves"
+msgstr "doyğunluğu və parlaqlıq intensivliyini əyrilərlə yenidən uyğunlaşdırın"
+
+#: ../src/iop/satcurvergb.c:864 ../src/iop/satcurvergb.c:968
+msgid ""
+"saturation curve: guided filter failed to allocate memory, disabling it for "
+"this run"
+msgstr ""
+"doyğunluq əyrisi: yönləndirilən süzgəc üçün yaddaş ayrıla bilmədi, bu "
+"işləmə zamanı süzgəc söndürülür"
+
+#: ../src/iop/satcurvergb.c:1473
+msgid "gentle saturation"
+msgstr "yumşaq doyğunluq"
+
+#: ../src/iop/satcurvergb.c:1480
+msgid "protect saturated colors"
+msgstr "doymuş rəngləri qoruyun"
+
+#: ../src/iop/satcurvergb.c:1486
+msgid "gentle brilliance"
+msgstr "yumşaq parlaqlıq intensivliyi"
+
+#: ../src/iop/satcurvergb.c:1493
+msgid "bright mids, protect extremes"
+msgstr "orta tonları işıqlandırın, ifrat dəyərləri qoruyun"
+
+#: ../src/iop/satcurvergb.c:1957
+msgid "cannot display saturation masks while the blending mask is displayed"
+msgstr ""
+"qarışdırma maskası göstərilərkən doyğunluq maskalarını göstərmək mümkün "
+"deyil"
+
+#: ../src/iop/satcurvergb.c:2156
+msgid "pick saturation from image"
+msgstr "şəkildən doyğunluğu seçin"
+
+#: ../src/iop/satcurvergb.c:2160
+msgid "display saturation mask"
+msgstr "doyğunluq maskasını göstərin"
+
+#: ../src/iop/satcurvergb.c:2171
+msgid "JzAzBz"
+msgstr "JzAzBz"
+
+#: ../src/iop/satcurvergb.c:2172
+msgid "darktable UCS"
+msgstr "darktable UCS"
+
+#: ../src/iop/satcurvergb.c:2174
+msgid "choose the perceptual saturation definition used by both curves"
+msgstr ""
+"hər iki əyridə istifadə edilən qavrayışa əsaslanan doyğunluq tərifini "
+"seçin"
+
+#: ../src/iop/satcurvergb.c:2195
+msgid ""
+"spatially modulate the strength of the curves with an edge-aware guided "
+"filter, based on local saturation, to reduce halos"
+msgstr ""
+"haloları azaltmaq üçün əyrilərin gücünü yerli doyğunluğa əsaslanan, "
+"kənarları nəzərə alan yönləndirilən süzgəclə məkan üzrə tənzimləyin"
+
+#: ../src/iop/satcurvergb.c:2201
+msgid "size of the neighborhood used to guide the filter"
+msgstr "süzgəci yönləndirmək üçün istifadə edilən qonşu sahənin ölçüsü"
+
+#: ../src/iop/satcurvergb.c:2206
+msgid ""
+"precision of the feathering: higher values produce softer, less edge-"
+"sensitive transitions"
+msgstr ""
+"kənarların yumşaldılmasının dəqiqliyi: yüksək dəyərlər daha yumşaq, "
+"kənarlara daha az həssas keçidlər yaradır"
+
+#: ../src/iop/satcurvergb.c:2211
+msgid "protect near-neutrals"
+msgstr "neytrala yaxın rəngləri qoruyun"
+
+#: ../src/iop/satcurvergb.c:2216
+msgid "center of the saturation range protected from the guided filter"
+msgstr "yönləndirilən süzgəcdən qorunan doyğunluq diapazonunun mərkəzi"
+
+#: ../src/iop/satcurvergb.c:2223
+msgid "protection transition width"
+msgstr "qoruma keçidinin eni"
+
+#: ../src/iop/satcurvergb.c:2227
+msgid ""
+"width of the smooth transition around the protected center; wider values "
+"give a gentler, less abrupt protection falloff"
+msgstr ""
+"qorunan mərkəzin ətrafındakı hamar keçidin eni; daha böyük dəyərlər "
+"qoruma təsirinin daha yumşaq və tədricən azalmasını təmin edir"
+
+#: ../src/iop/satcurvergb.c:2237
+msgid "limit curve changes in noisy or uncertain regions"
+msgstr ""
+"küylü və ya qeyri-müəyyən sahələrdə əyri dəyişikliklərini məhdudlaşdırın"
+
+#: ../src/iop/spektrafilm.c:1861
+#, c-format
+msgid ""
+"developed with a spectral table this data pack does not carry\n"
+"recorded: %08x    rendering with: %s\n"
+"the matching pack can be fetched with the button below"
+msgstr ""
+"bu verilənlər paketində olmayan spektral cədvəllə işlənib\n"
+"qeydə alınan: %08x    təsvir üçün istifadə olunan: %s\n"
+"uyğun paket aşağıdakı düymə ilə endirilə bilər"
+
+#: ../src/iop/spektrafilm.c:1869
+msgid ""
+"made before data packs carried an identity, and the pack it\n"
+"was made with is not installed: rendering with a later one\n"
+"the matching pack can be fetched with the button below"
+msgstr ""
+"verilənlər paketlərinə identifikator verilməzdən əvvəl işlənib və\n"
+"işlənərkən istifadə olunan paket quraşdırılmayıb: daha yeni paketlə "
+"təsvir olunur\n"
+"uyğun paket aşağıdakı düymə ilə endirilə bilər"
+
+#: ../src/iop/spektrafilm.c:1875
+#, c-format
+msgid ""
+"developed with data pack %08x, which is not installed\n"
+"rendering with %s\n"
+"the matching pack can be fetched with the button below"
+msgstr ""
+"quraşdırılmamış %08x verilənlər paketi ilə işlənib\n"
+"%s ilə təsvir olunur\n"
+"uyğun paket aşağıdakı düymə ilə endirilə bilər"
+
+#: ../src/iop/spektrafilm.c:4247
+msgid "the data pack this edit was developed with is not installed"
+msgstr ""
+"bu düzəlişin hazırlanmasında istifadə olunan verilənlər paketi "
+"quraşdırılmayıb"
+
+#: ../src/iop/spektrafilm.c:4303
+msgid "the data repository could not be reached"
+msgstr "verilənlər deposuna qoşulmaq mümkün olmadı"
+
+#: ../src/iop/spektrafilm.c:4320
+#, c-format
+msgid "download data pack %s"
+msgstr "%s verilənlər paketini endir"
+
+#: ../src/iop/spektrafilm.c:4321
+#, c-format
+msgid "data pack %s is available"
+msgstr "%s verilənlər paketi mövcuddur"
+
+#: ../src/iop/spektrafilm.c:4326
+msgid "a newer data pack is available"
+msgstr "daha yeni verilənlər paketi mövcuddur"
+
+#: ../src/iop/spektrafilm.c:4331
+#, c-format
+msgid "data pack %s installed"
+msgstr "%s verilənlər paketi quraşdırıldı"
+
+#: ../src/iop/spektrafilm.c:4333
+msgid "data pack installed"
+msgstr "verilənlər paketi quraşdırıldı"
+
+#: ../src/iop/spektrafilm.c:4340
+msgid "the installed data packs are up to date"
+msgstr "quraşdırılmış verilənlər paketləri yenidir"
+
+#: ../src/iop/spektrafilm.c:4344 ../src/iop/spektrafilm.c:5877
+msgid "check for data pack updates"
+msgstr "verilənlər paketləri üçün yeniləmələri yoxla"
+
+#: ../src/iop/spektrafilm.c:4348
+msgid ""
+"fetch the newer pack. it installs beside the one you have;\n"
+"existing edits keep rendering on the pack they were made with."
+msgstr ""
+"daha yeni paketi endir. o, mövcud paketlə yanaşı quraşdırılır;\n"
+"əvvəlki düzəlişlər hazırlandıqları paketlə təsvir olunmağa davam edir."
+
+#: ../src/iop/spektrafilm.c:4350
+msgid "ask the data repository whether a newer pack is published"
+msgstr "verilənlər deposunda daha yeni paketin dərc edilib-edilmədiyini yoxla"
+
+#: ../src/iop/spektrafilm.c:5818
+msgid "spectral upsampling"
+msgstr "spektral yuxarı nümunələmə"
+
+#: ../src/iop/spektrafilm.c:5821
+msgid ""
+"how a pixel's color is turned into the spectrum the film is exposed\n"
+"to.\n"
+"\n"
+"only methods from your installed data packs are listed. if there\n"
+"is just one, it is used and there is nothing to choose."
+msgstr ""
+"pikselin rənginin fotoplyonkanın məruz qaldığı spektrə necə\n"
+"çevrildiyi.\n"
+"\n"
+"yalnız quraşdırılmış verilənlər paketlərindəki üsullar göstərilir. əgər\n"
+"tək bir üsul varsa, o istifadə edilir və seçim etməyə ehtiyac qalmır."
+
+#: ../src/iop/spektrafilm.c:5844
+msgid ""
+"second half of the film's sensitivity adaptation: a per-color\n"
+"exposure correction of up to two stops, zero at the film's own white\n"
+"point and growing with distance from it. off by default: it shifts\n"
+"saturated colors substantially. no effect on stocks whose profile\n"
+"carries no surface (the monochrome films and every print paper)."
+msgstr ""
+"fotoplyonkanın həssaslığının uyğunlaşdırılmasının ikinci mərhələsi: hər "
+"rəng üçün\n"
+"ikiyə qədər ekspozisiya pilləsi düzəlişi; fotoplyonkanın öz ağ "
+"nöqtəsində sıfırdır,\n"
+"ondan uzaqlaşdıqca artır. ilkin olaraq söndürülüb: bu düzəliş\n"
+"doyğun rəngləri xeyli dəyişir. profilində səth məlumatı olmayan "
+"fotoplyonka növlərinə\n"
+"(monoxrom fotoplyonkalar və bütün çap kağızları) təsir etmir."
+
+#: ../src/iop/spektrafilm.c:5853
+msgid ""
+"pull what the output profile cannot hold back inside it, along\n"
+"curves that leave everything already inside untouched. this is two\n"
+"knees: chroma towards the profile's boundary, and lightness from\n"
+"the upper midtones up, which rolls the highlights off to white.\n"
+"\n"
+"switching it off shows where the film is producing colors the\n"
+"profile has no room for: they leave the range, so darktable's\n"
+"clipping indicator marks them and the raw extent of the overshoot\n"
+"is visible. the highlights stop rolling off and reach further at\n"
+"the same time, since the lightness knee goes away with the rest.\n"
+"to place the highlights without losing the rolloff, use the\n"
+"pre-compression boost and post-compression scale on the scanner\n"
+"tab instead.\n"
+"\n"
+"leave it on for an image you intend to keep. off, saturated colors\n"
+"are clipped by whatever comes next in the pipeline, which loses the\n"
+"separation between them and can shift their hue."
+msgstr ""
+"çıxış profilinin əhatə edə bilmədiyi dəyərləri, artıq əhatə olunanları\n"
+"dəyişməyən əyrilər boyunca geri çəkərək onun daxilində saxlayır. bunun "
+"üçün iki\n"
+"əyri keçidi var: xroma profilin sərhədinə doğru, açıqlıq isə yuxarı\n"
+"orta tonlardan başlayaraq işıqları tədricən ağa yaxınlaşdırır.\n"
+"\n"
+"bunu söndürdükdə fotoplyonkanın profilə sığmayan rəngləri\n"
+"harada yaratdığı görünür: onlar diapazondan çıxır, buna görə "
+"darktable-ın\n"
+"kəsilmə göstəricisi onları işarələyir və sərhədi nə qədər aşdıqları\n"
+"görünür. eyni zamanda işıqların ağa doğru yumşaq keçidi dayanır\n"
+"və onlar daha yüksək dəyərlərə çatır, çünki açıqlıq əyrisinin "
+"keçidi də aradan qalxır.\n"
+"işıqları bu tədrici keçidi itirmədən yerləşdirmək üçün bunun əvəzinə\n"
+"skaner vərəqində sıxılmadan əvvəl gücləndirmə və sıxılmadan sonra\n"
+"miqyas parametrlərindən istifadə edin.\n"
+"\n"
+"saxlayacağınız şəkil üçün bunu aktiv saxlayın. söndürüləndə doymuş "
+"rəngləri\n"
+"emal zəncirindəki növbəti mərhələ kəsir; bu, onların bir-birindən\n"
+"fərqlənməsini itirə və rəng çalarını dəyişə bilər."
+
+#: ../src/iop/spektrafilm.c:5939
+msgid ""
+"gamma of the paper's red-forming layer alone, on top of the\n"
+"overall print gamma.\n"
+"\n"
+"splitting gamma per channel grades out crossover -- a negative\n"
+"whose layers developed to different gammas, which filtration\n"
+"cannot fix because it shifts every tone equally while crossover\n"
+"shifts shadows one way and highlights the other."
+msgstr ""
+"ümumi çap qammasına əlavə olaraq, kağızın yalnız qırmızı rəng yaradan\n"
+"təbəqəsinin qamması.\n"
+"\n"
+"qammanın kanallar üzrə ayrılması krossoveri düzəldir: təbəqələri fərqli "
+"qamma ilə\n"
+"işlənmiş neqativdə tonlar müxtəlif istiqamətlərdə dəyişir.\n"
+"filtrləmə bunu düzəldə bilmir, çünki bütün tonları eyni istiqamətdə "
+"dəyişir,\n"
+"krossover isə kölgələri bir, işıqları başqa istiqamətə dəyişir."
+
+#: ../src/iop/spektrafilm.c:5950
+msgid ""
+"gamma of the paper's green-forming layer alone, on top of the\n"
+"overall print gamma."
+msgstr ""
+"ümumi çap qammasına əlavə olaraq, kağızın yalnız yaşıl rəng yaradan\n"
+"təbəqəsinin qamması."
+
+#: ../src/iop/spektrafilm.c:5956
+msgid ""
+"gamma of the paper's blue-forming layer alone, on top of the\n"
+"overall print gamma."
+msgstr ""
+"ümumi çap qammasına əlavə olaraq, kağızın yalnız mavi rəng yaradan\n"
+"təbəqəsinin qamması."
+
+#: ../src/iop/spektrafilm.c:6083
+msgid ""
+"how evenly the crystals are distributed, relative to the stock's own\n"
+"figure. raising it bends the noise toward a bell: grain that peaks\n"
+"in the midtones and eases off again in the densest areas. lowering\n"
+"it lets grain keep growing all the way into the densest areas."
+msgstr ""
+"kristalların fotoplyonka növünün öz göstəricisinə nisbətən nə qədər "
+"bərabər\n"
+"paylandığı. bunu artırmaq küyü zəngvari paylanmaya yaxınlaşdırır: "
+"dənəvərlik\n"
+"orta tonlarda ən yüksək həddə çatır, ən sıx sahələrdə isə yenidən "
+"azalır. azaltmaq\n"
+"dənəvərliyin ən sıx sahələrədək artmağa davam etməsinə imkan verir."
+
+#: ../src/iop/spektrafilm.c:6102
+msgid ""
+"the density each crystal sits at even where the film received no\n"
+"light, which is why grain does not disappear entirely in clear\n"
+"areas. scales the loaded stock's own measured floor, which is per\n"
+"channel, so the balance between channels is kept. typical stocks\n"
+"measure between 0.03 and 0.06, cine stocks considerably higher."
+msgstr ""
+"fotoplyonkaya işıq düşməyən yerlərdə belə hər kristalın yerləşdiyi\n"
+"sıxlıq; buna görə açıq sahələrdə dənəvərlik tamamilə yox olmur.\n"
+"yüklənmiş fotoplyonka növünün hər kanal üzrə ayrıca ölçülmüş baza "
+"sıxlığını\n"
+"miqyaslayır, beləliklə kanallar arasındakı balans qorunur. adi "
+"fotoplyonkalarda\n"
+"bu dəyər 0.03 ilə 0.06 arasındadır, kino fotoplyonkalarında isə xeyli "
+"yüksəkdir."
+
+#: ../src/iop/spektrafilm.c:6204
+msgctxt "section"
+msgid "highlight boost"
+msgstr "işıqların gücləndirilməsi"
+
+#: ../src/iop/spektrafilm.c:6208
+msgid ""
+"reconstructs clipped highlights before any light spreads, so they\n"
+"bloom through the film diffusion filter, scatter and halation.\n"
+"it is not part of halation: the halation toggle does not switch it\n"
+"off. set highlight boost to 0 to disable it."
+msgstr ""
+"işıq yayılmazdan əvvəl kəsilmiş işıqları bərpa edir ki, onlar\n"
+"fotoplyonka diffuziyası süzgəcində, səpələnmədə və halasiyada yayılsın.\n"
+"bu, halasiyanın bir hissəsi deyil: halasiya keçidi onu söndürmür.\n"
+"söndürmək üçün işıqların gücləndirilməsini 0-a təyin edin."
+
+#: ../src/iop/spektrafilm.c:6216
+msgid ""
+"highlight boost: reconstructs clipped highlights so they bloom into\n"
+"halation/diffusion (0 = off).\n"
+"\n"
+"runs on its own, independent of the halation toggle."
+msgstr ""
+"işıqların gücləndirilməsi: kəsilmiş işıqları bərpa edir ki, onlar\n"
+"halasiya/diffuziya ilə yayılsın (0 = sönülü).\n"
+"\n"
+"halasiya keçidindən asılı olmadan ayrıca işləyir."
+
+#: ../src/iop/spektrafilm.c:6247
+msgid ""
+"brightens the image, with most of the effect in the midtones and\n"
+"the highlights rolling off above them. it works before the gamut\n"
+"compressor, so it cannot place white on its own.\n"
+"\n"
+"use it to lift midtones into the rolloff, and post-compression\n"
+"scale to set where highlights and white land.\n"
+"\n"
+"this acts at the END of the module, so the picker measures the\n"
+"processed image."
+msgstr ""
+"şəkli işıqlandırır; təsiri əsasən orta tonlarda hiss olunur,\n"
+"onlardan yuxarıda isə işıqlar tədricən azalır. rəng əhatəsini\n"
+"sıxan alətdən əvvəl işlədiyi üçün ağı təkbaşına yerləşdirə bilmir.\n"
+"\n"
+"orta tonları bu keçidə doğru qaldırmaq üçün ondan, işıqların və\n"
+"ağın yerini təyin etmək üçün isə sıxılmadan sonra miqyasdan istifadə "
+"edin.\n"
+"\n"
+"bu, modulun SONUNDA işləyir, ona görə rəng seçici artıq\n"
+"işlənmiş şəkli ölçür."
+
+#: ../src/iop/spektrafilm.c:6265
+msgid ""
+"scales the finished picture, after the gamut compressor.\n"
+"\n"
+"the boost above pushes more light into the compressor, which lifts\n"
+"the image and desaturates colors that were already near the edge of\n"
+"the gamut. this only changes the level, leaving the relationship\n"
+"between the channels alone, the same thing a tone curve does by\n"
+"moving its white point.\n"
+"\n"
+"nothing rolls off behind the compressor, so this can push values\n"
+"past white for the rest of the pipeline to handle."
+msgstr ""
+"rəng əhatəsini sıxan alətdən sonra hazır şəkli miqyaslayır.\n"
+"\n"
+"yuxarıdakı gücləndirmə sıxma alətinə daha çox işıq ötürür; bu,\n"
+"şəkli işıqlandırır və artıq rəng əhatəsinin sərhədinə yaxın olan\n"
+"rənglərin doyğunluğunu azaldır. bu parametr isə yalnız səviyyəni "
+"dəyişir,\n"
+"kanallar arasındakı nisbətə toxunmur; ton əyrisində ağ nöqtənin\n"
+"yerini dəyişməklə edilənlə eyni təsiri göstərir.\n"
+"\n"
+"sıxma alətindən sonra tədrici keçid olmadığından, bu parametr dəyərləri\n"
+"ağ həddini aşırıb emal zəncirinin qalan hissəsinə ötürə bilər."
+
+#: ../src/iop/spektrafilm.c:6307
+msgctxt "section"
+msgid "black and white point"
+msgstr "qara və ağ nöqtə"
+
+#: ../src/iop/spektrafilm.c:6314
+msgid ""
+"set the darkest tone of the image with black level below.\n"
+"off, the shadows stay where the film puts them, which is often\n"
+"short of black."
+msgstr ""
+"aşağıdakı qara səviyyəsi ilə şəklin ən tünd tonunu təyin edin.\n"
+"söndürüləndə kölgələr fotoplyonkanın verdiyi yerdə qalır; bu da çox "
+"vaxt\n"
+"tam qaraya çatmır."
+
+#: ../src/iop/spektrafilm.c:6322
+msgid ""
+"lift or crush the shadows.\n"
+"\n"
+"0 is true black. higher values lift the blacks and soften the\n"
+"image; below 0 the deepest shadows are crushed together."
+msgstr ""
+"kölgələri açır və ya əzərək qaraldır.\n"
+"\n"
+"0 əsl qaradır. daha yüksək dəyərlər qaraları açır və şəkli yumşaldır;\n"
+"0-dan aşağı dəyərlər isə ən tünd kölgələri bir-birinə qarışdırır."
+
+#: ../src/iop/spektrafilm.c:6331
+msgid ""
+"set the lightest tone of the image with white level below.\n"
+"off, the highlights stay where the film puts them."
+msgstr ""
+"aşağıdakı ağ səviyyəsi ilə şəklin ən açıq tonunu təyin edin.\n"
+"söndürüləndə işıqlar fotoplyonkanın verdiyi yerdə qalır."
+
+#: ../src/iop/spektrafilm.c:6338
+msgid ""
+"brightness of the lightest tone.\n"
+"\n"
+"1 is full white. lowering it dims the highlights and, since mid\n"
+"gray is held in place, darkens the shadows a little too."
+msgstr ""
+"ən açıq tonun parlaqlığı.\n"
+"\n"
+"1 tam ağdır. dəyəri azaltmaq işıqları zəiflədir və orta boz sabit\n"
+"saxlandığından kölgələri də bir qədər tündləşdirir."
+
+#: ../src/libs/export.c:1468
+msgid ""
+"images will be exported according to the format specified here\n"
+"\n"
+"when exporting to AVIF, EXR, HEIF, JPEG XL, or XCF, selecting\n"
+"specific metadata is not currently possible\n"
+"\n"
+"for these formats, no metadata fields will be included\n"
+"unless the user selects <b>all</b> of the metadata checkboxes in\n"
+"the export module preferences"
+msgstr ""
+"şəkillər burada göstərilən formata uyğun ixrac ediləcək\n"
+"\n"
+"AVIF, EXR, HEIF, JPEG XL və ya XCF formatlarına ixrac zamanı\n"
+"konkret metaverilənləri seçmək hazırda mümkün deyil\n"
+"\n"
+"bu formatlarda istifadəçi ixrac modulunun seçimlərindəki\n"
+"metaverilənlər xanalarının <b>hamısını</b> işarələməsə, heç bir "
+"metaverilən sahəsi\n"
+"ixraca daxil edilməyəcək"
+
+#: ../src/libs/modulegroups.c:1056
+#, c-format
+msgid "close `%s` before switching to quick access panel"
+msgstr "sürətli giriş panelinə keçməzdən əvvəl `%s` modulunu bağlayın"
+
+#: ../src/libs/modulegroups.c:1075
+#, c-format
+msgid "finish mask work in `%s` before switching to quick access panel"
+msgstr ""
+"sürətli giriş panelinə keçməzdən əvvəl `%s` modulunda maska üzərində "
+"işi bitirin"
+
+#: ../src/libs/neural_restore.c:1642
+msgid "neural restore: the output pattern expands to nothing"
+msgstr "neyron bərpası: çıxış şablonu boş nəticəyə çevrilir"
+
+#: ../src/libs/neural_restore.c:4734
+msgid ""
+"where this task writes, without the extension. whatever follows the source "
+"name is the suffix\n"
+"$(FILE_FOLDER) = source image folder\n"
+"$(FILE.NAME) = source name without extension"
+msgstr ""
+"bu tapşırığın yazdığı yer, fayl uzantısı olmadan. mənbə adından sonra "
+"gələn hər şey şəkilçidir\n"
+"$(FILE_FOLDER) = mənbə şəklin qovluğu\n"
+"$(FILE.NAME) = uzantısız mənbə adı"
+
+#: ../src/libs/print_settings.c:665
+msgid "Windows printing failed"
+msgstr "Windows-da çap uğursuz oldu"
+
+#: ../src/libs/print_settings.c:865
+msgid "no settings context"
+msgstr "parametrlər konteksti yoxdur"
+
+#: ../src/libs/print_settings.c:897
+msgid "could not open print ticket provider"
+msgstr "çap bileti təminatçısını açmaq mümkün olmadı"
+
+#: ../src/libs/print_settings.c:946
+msgid "could not convert printer settings to print ticket"
+msgstr "printer parametrlərini çap biletinə çevirmək mümkün olmadı"
+
+#. not fatal — dt_win_print_file can fall back to driver
+#. defaults if print_ticket_data is NULL
+#: ../src/libs/print_settings.c:1032
+msgid "printing with default printer settings"
+msgstr "standart printer parametrləri ilə çap edilir"
+
+#. gtk_widget_set_sensitive(ps->papers, FALSE);
+#: ../src/libs/print_settings.c:1221
+#, c-format
+msgid "loading printer details for %s…"
+msgstr "%s üçün printer məlumatları yüklənir…"
+
+#: ../src/libs/print_settings.c:3505
+msgid "open printer settings"
+msgstr "printer parametrlərini aç"
+
+#: ../src/libs/snapshots.c:918
+#, c-format
+msgid "all %d snapshot slots are in use"
+msgstr "bütün %d anlıq təsvir yeri istifadə olunur"
+
+#: ../src/libs/tagging.c:2656
+msgid "set as tag"
+msgstr "etiket kimi təyin et"
