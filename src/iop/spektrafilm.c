@@ -2559,6 +2559,11 @@ static cl_int _sf_yvv_blur_cl(const int devid,
       e = dt_opencl_enqueue_kernel_2d_args(devid, kcol, w, 1, CLARG(tmp), CLARG(buf),
                                            CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[1]),
                                            CLARG(b[2]), CLARG(b[3]));
+    /* a wide sigma runs as many cascaded passes; waiting on each one keeps
+       every device submission to a single pass, well inside the driver's
+       job timeout, instead of letting the whole cascade queue up as one job */
+    if(e == CL_SUCCESS && passes > 1 && !dt_opencl_finish(devid))
+      e = DT_OPENCL_DEFAULT_ERROR;
   }
   return e;
 }
