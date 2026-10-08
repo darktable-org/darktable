@@ -621,6 +621,7 @@ typedef struct dt_iop_spektrafilm_global_data_t
   int kernel_scatter_combine, kernel_accum, kernel_channel_extract, kernel_channel_accum, kernel_halation_apply;
   int kernel_gauss_row_4c, kernel_gauss_col_4c, kernel_gauss_row_1c, kernel_gauss_col_1c;
   int kernel_yvv_row_4c, kernel_yvv_col_4c, kernel_yvv_row_1c, kernel_yvv_col_1c;
+  int kernel_wide_down, kernel_wide_up;
   int kernel_boost, kernel_diffusion_accum, kernel_diffusion_mix;
   int kernel_pow10, kernel_log10;
 } dt_iop_spektrafilm_global_data_t;
@@ -679,6 +680,8 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_yvv_col_4c = dt_opencl_create_kernel(program, "spektrafilm_yvv_col_4c");
   gd->kernel_yvv_row_1c = dt_opencl_create_kernel(program, "spektrafilm_yvv_row_1c");
   gd->kernel_yvv_col_1c = dt_opencl_create_kernel(program, "spektrafilm_yvv_col_1c");
+  gd->kernel_wide_down = dt_opencl_create_kernel(program, "spektrafilm_wide_down");
+  gd->kernel_wide_up = dt_opencl_create_kernel(program, "spektrafilm_wide_up");
   gd->kernel_gauss_row_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_4c");
   gd->kernel_gauss_col_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_col_4c");
   gd->kernel_gauss_row_1c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_1c");
@@ -721,6 +724,8 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_yvv_col_4c);
     dt_opencl_free_kernel(gd->kernel_yvv_row_1c);
     dt_opencl_free_kernel(gd->kernel_yvv_col_1c);
+    dt_opencl_free_kernel(gd->kernel_wide_down);
+    dt_opencl_free_kernel(gd->kernel_wide_up);
     dt_opencl_free_kernel(gd->kernel_gauss_row_4c);
     dt_opencl_free_kernel(gd->kernel_gauss_col_4c);
     dt_opencl_free_kernel(gd->kernel_gauss_row_1c);
@@ -2251,13 +2256,13 @@ void process(dt_iop_module_t *self,
       {
         const float wbase = 1.0f - (float)ctail_w;
         memcpy(tmp, corr, sizeof(float) * npix * 3);
-        if(csigma > 0.1f) sf_blur_plane3_fast(tmp, w, h, csigma, scratch);
+        if(csigma > 0.1f) sf_blur_plane3_wide(tmp, w, h, roi_in->x, roi_in->y, csigma, scratch);
         for(size_t i = 0; i < npix * 3; i++) mix[i] = wbase * tmp[i];
         for(int g3 = 0; g3 < 3; g3++)
         {
           memcpy(tmp, corr, sizeof(float) * npix * 3);
           const float ts = rat[g3] * tail_px;
-          if(ts > 0.1f) sf_blur_plane3_fast(tmp, w, h, ts, scratch);
+          if(ts > 0.1f) sf_blur_plane3_wide(tmp, w, h, roi_in->x, roi_in->y, ts, scratch);
           const float wk = (float)ctail_w * amp[g3];
           /* fma-pinned, matching spektrafilm_diffusion_accum */
           for(size_t i = 0; i < npix * 3; i++) mix[i] = fmaf(wk, tmp[i], mix[i]);
@@ -2265,12 +2270,12 @@ void process(dt_iop_module_t *self,
         memcpy(corr, mix, sizeof(float) * npix * 3);
       }
       else if(csigma > 0.1f)
-        sf_blur_plane3_fast(corr, w, h, csigma, scratch); /* alloc failed: core only */
+        sf_blur_plane3_wide(corr, w, h, roi_in->x, roi_in->y, csigma, scratch); /* alloc failed: core only */
       dt_free_align(mix);
       dt_free_align(tmp);
     }
     else if(csigma > 0.1f)
-      sf_blur_plane3_fast(corr, w, h, csigma, scratch);
+      sf_blur_plane3_wide(corr, w, h, roi_in->x, roi_in->y, csigma, scratch);
   }
   sf_sim_develop(sim, plane, couplers ? corr : NULL, plane, npix, 3, 3);
 
@@ -2553,13 +2558,80 @@ static cl_int _sf_yvv_blur_cl(const int devid,
   for(int pass = 0; pass < passes && e == CL_SUCCESS; pass++)
   {
     e = dt_opencl_enqueue_kernel_2d_args(devid, krow, h, 1, CLARG(buf), CLARG(tmp),
-                                         CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[1]),
-                                         CLARG(b[2]), CLARG(b[3]));
+                                         CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[2]),
+                                         CLARG(b[3]));
     if(e == CL_SUCCESS)
       e = dt_opencl_enqueue_kernel_2d_args(devid, kcol, w, 1, CLARG(tmp), CLARG(buf),
-                                           CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[1]),
-                                           CLARG(b[2]), CLARG(b[3]));
+                                           CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[2]),
+                                           CLARG(b[3]));
+    /* a wide sigma runs as many cascaded passes; waiting on each one keeps
+       every device submission to a single pass, well inside the driver's
+       job timeout, instead of letting the whole cascade queue up as one job */
+    if(e == CL_SUCCESS && passes > 1 && !dt_opencl_finish(devid))
+      e = DT_OPENCL_DEFAULT_ERROR;
   }
+  return e;
+}
+
+/* Device half of sf_blur_plane3_wide(): in place on a float4 w*h buffer.
+   Sets *done and returns the error when sf_wide_blur_plan() decimates;
+   leaves *done at 0 and does nothing otherwise, so the caller runs its own
+   blur. */
+static cl_int _sf_blur_wide_cl(const int devid,
+                               dt_iop_spektrafilm_global_data_t *gd,
+                               cl_mem buf,
+                               const int w,
+                               const int h,
+                               const int roi_x,
+                               const int roi_y,
+                               const float sigma,
+                               int *const done)
+{
+  int k, lw, lh, ox, oy;
+  float sigma_low;
+  *done = 0;
+  if(!sf_wide_blur_plan(sigma, w, h, roi_x, roi_y, &k, &sigma_low, &lw, &lh, &ox, &oy))
+    return CL_SUCCESS;
+  *done = 1;
+  float *inv = dt_alloc_align_float((size_t)k + 1);
+  float kw[2 * SF_GAUSS_MAX_RADIUS + 1];
+  const int kr = dt_gaussian_kernel_1d(sigma_low, kw, SF_GAUSS_MAX_RADIUS);
+  cl_mem low = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * lw * lh);
+  cl_mem lowtmp = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * lw * lh);
+  cl_mem inv_cl = dt_opencl_alloc_device_buffer(devid, sizeof(float) * (k + 1));
+  cl_mem kw_cl = dt_opencl_alloc_device_buffer(devid, sizeof(float) * (2 * kr + 1));
+  cl_int e = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  if(inv && low && lowtmp && inv_cl && kw_cl)
+  {
+    sf_wide_blur_inv_table(k, inv);
+    const float inv2k = 1.0f / (float)(2 * k);
+    e = dt_opencl_write_buffer_to_device(devid, inv, inv_cl, 0, sizeof(float) * (k + 1), TRUE);
+    if(e == CL_SUCCESS)
+      e = dt_opencl_write_buffer_to_device(devid, kw, kw_cl, 0, sizeof(float) * (2 * kr + 1), TRUE);
+    if(e == CL_SUCCESS)
+      e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_wide_down, lw, lh, CLARG(buf),
+                                           CLARG(low), CLARG(w), CLARG(h), CLARG(k), CLARG(lw),
+                                           CLARG(lh), CLARG(ox), CLARG(oy), CLARG(inv_cl));
+    /* exact kernel at the reduced sigma: the twin of sf_blur_plane3() on the
+       CPU, rows then columns */
+    if(e == CL_SUCCESS)
+      e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_row_4c, lw, lh, CLARG(low),
+                                           CLARG(lowtmp), CLARG(lw), CLARG(lh), CLARG(kw_cl),
+                                           CLARG(kr));
+    if(e == CL_SUCCESS)
+      e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_col_4c, lw, lh, CLARG(lowtmp),
+                                           CLARG(low), CLARG(lw), CLARG(lh), CLARG(kw_cl),
+                                           CLARG(kr));
+    if(e == CL_SUCCESS)
+      e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_wide_up, w, h, CLARG(low),
+                                           CLARG(buf), CLARG(w), CLARG(h), CLARG(k), CLARG(lw),
+                                           CLARG(lh), CLARG(ox), CLARG(oy), CLARG(inv2k));
+  }
+  dt_free_align(inv);
+  if(low) dt_opencl_release_mem_object(low);
+  if(lowtmp) dt_opencl_release_mem_object(lowtmp);
+  if(inv_cl) dt_opencl_release_mem_object(inv_cl);
+  if(kw_cl) dt_opencl_release_mem_object(kw_cl);
   return e;
 }
 
@@ -3069,12 +3141,21 @@ int process_cl(dt_iop_module_t *self,
       for(int g3 = 0; g3 < 4; g3++)
       {
         /* >= SF_GAUSS_MIN_SIGMA, not > 0.1f: the CPU twin guards with
-           `if(ts > 0.1f) sf_blur_plane3_fast(...)`, and sf_blur_plane3_fast
-           itself returns without touching the buffer below
+           `if(ts > 0.1f) sf_blur_plane3_wide(...)`, which decimates from
+           SF_WIDE_BLUR_MIN_SIGMA up and below that hands over to
+           sf_blur_plane3_fast, which returns without touching the buffer below
            SF_GAUSS_MIN_SIGMA -- so the CPU blurs iff the sigma clears 0.3.
            Between 0.1 and 0.3 it copies the unblurred correction, which is
-           what the else branch below already does. */
-        if(sig[g3] >= SF_GAUSS_MIN_SIGMA)
+           what the else branch below does. */
+        if(sig[g3] >= SF_WIDE_BLUR_MIN_SIGMA)
+        {
+          int wide = 0;
+          err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, acc, plane2, 0, 0, npix * f * 4);
+          if(err == CL_SUCCESS)
+            err = _sf_blur_wide_cl(devid, gd, plane2, w, h, roi_in->x, roi_in->y, sig[g3], &wide);
+          if(err != CL_SUCCESS) break;
+        }
+        else if(sig[g3] >= SF_GAUSS_MIN_SIGMA)
         {
           SF_GAUSS_BLUR4_OP_L(acc, plane2, sig[g3]);
           if(err != CL_SUCCESS) break;
@@ -3093,10 +3174,20 @@ int process_cl(dt_iop_module_t *self,
       }
     }
     else if(csigma > 0.1f)
-      /* CPU twin is sf_blur_plane3_fast(), which returns without touching the
-         buffer below SF_GAUSS_MIN_SIGMA -- match that cut here. */
-      if(csigma >= SF_GAUSS_MIN_SIGMA)
+    {
+      /* CPU twin is sf_blur_plane3_wide(): decimated from
+         SF_WIDE_BLUR_MIN_SIGMA up, sf_blur_plane3_fast below, which returns
+         without touching the buffer below SF_GAUSS_MIN_SIGMA -- match both
+         cuts here. */
+      if(csigma >= SF_WIDE_BLUR_MIN_SIGMA)
+      {
+        int wide = 0;
+        err = _sf_blur_wide_cl(devid, gd, acc, w, h, roi_in->x, roi_in->y, csigma, &wide);
+        SF_CL_STEP("coupler blur");
+      }
+      else if(csigma >= SF_GAUSS_MIN_SIGMA)
         SF_GAUSS_BLUR4_FAST(acc, csigma, "coupler blur");
+    }
   }
   cl_mem corr_buf = (g->coupler_tail_w > 0.0f) ? tmpa : acc;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_develop, w, h, CLARG(plane),

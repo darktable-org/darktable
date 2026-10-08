@@ -881,16 +881,17 @@ __kernel void spektrafilm_passthrough(__read_only image2d_t in, __write_only ima
    _sf_gauss_iir_1d on the CPU, so both paths deliver the identical blur above
    SF_GAUSS_EXACT_MAX_SIGMA. Launch with global size (h, 1) for rows and
    (w, 1) for columns. */
-/* Explicit fma(), in the same nesting as _sf_gauss_iir_1d() in
-   spektra_core.c -- see the long comment there. A bare
-   B*x + B1*w1 + B2*w2 + B3*w3 leaves the compiler free to fuse or reassociate,
-   the host and the device need not choose alike, and the recursion feeds the
-   result back in, so one differing rounding becomes a different filter rather
-   than a one-ULP difference. FP_CONTRACT pragmas do not settle this on either
-   side; an explicit fma does. */
+/* Incremental form and explicit fma(), in the same nesting as
+   _sf_gauss_iir_1d() in spektra_core.c -- see the comment there:
+   v = w1 + (B*(x - w1) + B2*(w2 - w1) + B3*(w3 - w1)), which uses
+   B1 = 1 - B - B2 - B3 and so takes no B1. It has unit DC gain whatever the
+   coefficients round to, and no cancelling large terms. The recursion feeds
+   the result back in, so one differing rounding between host and device
+   becomes a different filter rather than a one-ulp difference; FP_CONTRACT
+   pragmas do not settle this on either side, an explicit fma does. */
 __kernel void spektrafilm_yvv_row_4c(__global const float4 *src, __global float4 *dst,
-                                     const int w, const int h, const float B, const float B1,
-                                     const float B2, const float B3)
+                                     const int w, const int h, const float B, const float B2,
+                                     const float B3)
 {
   /* One work-item per line. The launch asks for a second global dimension of
      1, but dt_opencl_enqueue_kernel_2d_args rounds every dimension up to the
@@ -904,20 +905,20 @@ __kernel void spektrafilm_yvv_row_4c(__global const float4 *src, __global float4
   float4 w1 = s[0], w2 = s[0], w3 = s[0];
   for(int j = 0; j < w; j++)
   {
-    const float4 v = fma(B, s[j], fma(B1, w1, fma(B2, w2, B3 * w3)));
+    const float4 v = w1 + fma(B, s[j] - w1, fma(B2, w2 - w1, B3 * (w3 - w1)));
     d[j] = v; w3 = w2; w2 = w1; w1 = v;
   }
   float4 v1 = d[w - 1], v2 = v1, v3 = v1;
   for(int j = w - 1; j >= 0; j--)
   {
-    const float4 v = fma(B, d[j], fma(B1, v1, fma(B2, v2, B3 * v3)));
+    const float4 v = v1 + fma(B, d[j] - v1, fma(B2, v2 - v1, B3 * (v3 - v1)));
     d[j] = v; v3 = v2; v2 = v1; v1 = v;
   }
 }
 
 __kernel void spektrafilm_yvv_col_4c(__global const float4 *src, __global float4 *dst,
-                                     const int w, const int h, const float B, const float B1,
-                                     const float B2, const float B3)
+                                     const int w, const int h, const float B, const float B2,
+                                     const float B3)
 {
   /* One work-item per line. The launch asks for a second global dimension of
      1, but dt_opencl_enqueue_kernel_2d_args rounds every dimension up to the
@@ -930,21 +931,21 @@ __kernel void spektrafilm_yvv_col_4c(__global const float4 *src, __global float4
   for(int i = 0; i < h; i++)
   {
     const size_t k = (size_t)i * w + col;
-    const float4 v = fma(B, src[k], fma(B1, w1, fma(B2, w2, B3 * w3)));
+    const float4 v = w1 + fma(B, src[k] - w1, fma(B2, w2 - w1, B3 * (w3 - w1)));
     dst[k] = v; w3 = w2; w2 = w1; w1 = v;
   }
   float4 v1 = dst[(size_t)(h - 1) * w + col], v2 = v1, v3 = v1;
   for(int i = h - 1; i >= 0; i--)
   {
     const size_t k = (size_t)i * w + col;
-    const float4 v = fma(B, dst[k], fma(B1, v1, fma(B2, v2, B3 * v3)));
+    const float4 v = v1 + fma(B, dst[k] - v1, fma(B2, v2 - v1, B3 * (v3 - v1)));
     dst[k] = v; v3 = v2; v2 = v1; v1 = v;
   }
 }
 
 __kernel void spektrafilm_yvv_row_1c(__global const float *src, __global float *dst,
-                                     const int w, const int h, const float B, const float B1,
-                                     const float B2, const float B3)
+                                     const int w, const int h, const float B, const float B2,
+                                     const float B3)
 {
   /* One work-item per line. The launch asks for a second global dimension of
      1, but dt_opencl_enqueue_kernel_2d_args rounds every dimension up to the
@@ -958,20 +959,20 @@ __kernel void spektrafilm_yvv_row_1c(__global const float *src, __global float *
   float w1 = s[0], w2 = s[0], w3 = s[0];
   for(int j = 0; j < w; j++)
   {
-    const float v = fma(B, s[j], fma(B1, w1, fma(B2, w2, B3 * w3)));
+    const float v = w1 + fma(B, s[j] - w1, fma(B2, w2 - w1, B3 * (w3 - w1)));
     d[j] = v; w3 = w2; w2 = w1; w1 = v;
   }
   float v1 = d[w - 1], v2 = v1, v3 = v1;
   for(int j = w - 1; j >= 0; j--)
   {
-    const float v = fma(B, d[j], fma(B1, v1, fma(B2, v2, B3 * v3)));
+    const float v = v1 + fma(B, d[j] - v1, fma(B2, v2 - v1, B3 * (v3 - v1)));
     d[j] = v; v3 = v2; v2 = v1; v1 = v;
   }
 }
 
 __kernel void spektrafilm_yvv_col_1c(__global const float *src, __global float *dst,
-                                     const int w, const int h, const float B, const float B1,
-                                     const float B2, const float B3)
+                                     const int w, const int h, const float B, const float B2,
+                                     const float B3)
 {
   /* One work-item per line. The launch asks for a second global dimension of
      1, but dt_opencl_enqueue_kernel_2d_args rounds every dimension up to the
@@ -984,16 +985,73 @@ __kernel void spektrafilm_yvv_col_1c(__global const float *src, __global float *
   for(int i = 0; i < h; i++)
   {
     const size_t k = (size_t)i * w + col;
-    const float v = fma(B, src[k], fma(B1, w1, fma(B2, w2, B3 * w3)));
+    const float v = w1 + fma(B, src[k] - w1, fma(B2, w2 - w1, B3 * (w3 - w1)));
     dst[k] = v; w3 = w2; w2 = w1; w1 = v;
   }
   float v1 = dst[(size_t)(h - 1) * w + col], v2 = v1, v3 = v1;
   for(int i = h - 1; i >= 0; i--)
   {
     const size_t k = (size_t)i * w + col;
-    const float v = fma(B, dst[k], fma(B1, v1, fma(B2, v2, B3 * v3)));
+    const float v = v1 + fma(B, dst[k] - v1, fma(B2, v2 - v1, B3 * (v3 - v1)));
     dst[k] = v; v3 = v2; v2 = v1; v1 = v;
   }
+}
+
+/* Decimated wide blur, the device half of sf_blur_plane3_wide() in
+   spektra_core.c; the two must agree operation for operation. Block averages
+   over a k x k grid anchored at absolute multiples of k (ox, oy are the
+   buffer's offset into its first block), clipped at the buffer edge. Each
+   block row is summed left to right, its mean folded in with fma in
+   top-to-bottom order, and the result scaled by inv[rows]. inv[i] = 1/i is
+   built on the host so the device does not divide. One work-item per
+   low-resolution pixel. */
+__kernel void spektrafilm_wide_down(__global const float4 *in, __global float4 *low,
+                                    const int w, const int h, const int k,
+                                    const int lw, const int lh, const int ox, const int oy,
+                                    __global const float *inv)
+{
+  const int X = get_global_id(0), Y = get_global_id(1);
+  if(X >= lw || Y >= lh) return;
+  const int x0 = max(X * k - ox, 0), x1 = min((X + 1) * k - ox, w);
+  const int y0 = max(Y * k - oy, 0), y1 = min((Y + 1) * k - oy, h);
+  const float ix = inv[x1 - x0];
+  float4 lo = (float4)(0.0f);
+  for(int y = y0; y < y1; y++)
+  {
+    float4 rs = (float4)(0.0f);
+    for(int x = x0; x < x1; x++) rs += in[(size_t)y * w + x];
+    lo = fma(rs, (float4)(ix), lo);
+  }
+  low[(size_t)Y * lw + X] = lo * inv[y1 - y0];
+}
+
+/* Bilinear interpolation of the low-resolution field back to w x h at block
+   centres: u = (2 * (x + ox) + 1 - k) / (2k), with 1/(2k) passed in from the
+   host. Clamped to the outermost block centres. */
+__kernel void spektrafilm_wide_up(__global const float4 *low, __global float4 *out,
+                                  const int w, const int h, const int k,
+                                  const int lw, const int lh, const int ox, const int oy,
+                                  const float inv2k)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  const float v = (float)(2 * (y + oy) + 1 - k) * inv2k;
+  int j0 = (int)floor(v), j1;
+  float fy;
+  if(j0 < 0) { j0 = j1 = 0; fy = 0.0f; }
+  else if(j0 >= lh - 1) { j0 = j1 = lh - 1; fy = 0.0f; }
+  else { j1 = j0 + 1; fy = v - (float)j0; }
+  const float u = (float)(2 * (x + ox) + 1 - k) * inv2k;
+  int i0 = (int)floor(u), i1;
+  float fx;
+  if(i0 < 0) { i0 = i1 = 0; fx = 0.0f; }
+  else if(i0 >= lw - 1) { i0 = i1 = lw - 1; fx = 0.0f; }
+  else { i1 = i0 + 1; fx = u - (float)i0; }
+  const float4 p00 = low[(size_t)j0 * lw + i0], p01 = low[(size_t)j0 * lw + i1];
+  const float4 p10 = low[(size_t)j1 * lw + i0], p11 = low[(size_t)j1 * lw + i1];
+  const float4 top = fma((float4)(fx), p01 - p00, p00);
+  const float4 bot = fma((float4)(fx), p11 - p10, p10);
+  out[(size_t)y * w + x] = fma((float4)(fy), bot - top, top);
 }
 
 __kernel void spektrafilm_gauss_row_4c(__global const float4 *src, __global float4 *dst,
