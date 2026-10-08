@@ -3793,13 +3793,14 @@ static const sf_prof_entry_t *_auto_paper_entry(const dt_iop_spektrafilm_gui_dat
 {
   const sf_prof_entry_t *first = NULL;
   const sf_prof_entry_t *same_channel = NULL;
+  const char *target = film && film->target_print[0] ? film->target_print : NULL;
   for(const GList *l = g->entries; l; l = l->next)
   {
     const sf_prof_entry_t *pe = l->data;
     if(!pe->printing) continue;
     if(!first) first = pe;
     if(film && !same_channel && pe->bw == film->bw) same_channel = pe;
-    if(film && film->target_print[0] && !strcmp(pe->stock, film->target_print)) return pe;
+    if(target && !strcmp(pe->stock, target)) return pe;
   }
   /* Three tiers, in order: the film's own named target print, then any print
      stock with the same channel model, then the first printing entry there is.
