@@ -43,6 +43,51 @@ void sf_blur_plane3_fast(float *buf,
                          int h,
                          float sigma,
                          float *plane);
+
+/* Wide Gaussian by decimation, for sigmas where even the recursive filter
+   is too imprecise in float32 to give the same result on two devices: its
+   input weight B falls below 1e-4 by sigma 16, so a one-ulp difference in
+   the input moves the output by around 1e-3 at sigma 60-130. The field is
+   box-averaged down by k = floor(sigma / SF_WIDE_BLUR_LOW_SIGMA), blurred
+   with the exact kernel at the reduced sigma (below 16, so at most 48 taps
+   on k^2 fewer pixels), and bilinearly interpolated back. The low-resolution sigma is reduced by the variance the
+   box ((k^2 - 1) / 12) and the interpolation (k^2 / 6) add, so the total is
+   the requested sigma.
+
+   The block grid is anchored to absolute image coordinates (roi_x, roi_y),
+   so tiles of one image share it. sf_wide_blur_plan() decides whether this
+   applies and is shared with the OpenCL host code, which runs the same
+   arithmetic in spektrafilm_wide_down / spektrafilm_wide_up. */
+#define SF_WIDE_BLUR_MIN_SIGMA 16.0f
+#define SF_WIDE_BLUR_LOW_SIGMA 8.0f
+/* Returns 1 and fills k, sigma_low, and the low-resolution size and grid
+   offset for a w x h buffer at (roi_x, roi_y) when sigma is wide enough to
+   decimate; returns 0 otherwise. */
+int sf_wide_blur_plan(float sigma,
+                      int w,
+                      int h,
+                      int roi_x,
+                      int roi_y,
+                      int *k,
+                      float *sigma_low,
+                      int *lw,
+                      int *lh,
+                      int *ox,
+                      int *oy);
+/* inv[i] = 1.0f / i for i = 1..k, the divisors of the block averages. Built
+   on the host for both paths so the device never divides. */
+void sf_wide_blur_inv_table(int k,
+                            float *inv);
+/* In place on an interleaved 3-channel w*h buffer. Falls back to
+   sf_blur_plane3_fast below SF_WIDE_BLUR_MIN_SIGMA. `plane` is a w*h
+   scratch as for sf_blur_plane3_fast. */
+void sf_blur_plane3_wide(float *buf,
+                         int w,
+                         int h,
+                         int roi_x,
+                         int roi_y,
+                         float sigma,
+                         float *plane);
 /* Same exact-kernel blur as sf_blur_plane3, but operating directly on a
    single flat w*h buffer (no 3-channel interleave) -- used for the
    per-sublayer dye-cloud blur inside grain generation, where each
@@ -210,18 +255,19 @@ int sf_diffusion_build_plan(int family,
    identical to the reference's _yvv_coeffs. Exported so the GPU host side can
    build the same filter the CPU runs. */
 /* Widest sigma the recursive filter is asked for. Above this its float32
-   coefficients stop describing the filter we want: B falls to ~1e-7 while
-   B1..B3 stay near 3, and the poles walk out to the unit circle. Measured
-   effective vs requested sigma, single pass, float32:
+   coefficients stop describing the filter we want: B falls towards 1e-7 while
+   B2 and B3 stay near -3 and 1, and their rounding moves the poles. The
+   incremental evaluation in _sf_gauss_iir_1d keeps the DC gain at exactly 1
+   whatever the coefficients round to, but the width still drifts. Measured
+   effective vs requested sigma, single pass, float32, impulse response:
 
-       requested   100    150    200    400    700
-       effective   102    155    254    875  105395
+       requested   100    120    135    150    200    400    700
+       effective   100    116    128    138    167    214    159
 
-   -- so it tracks to ~150, is unusable by 200, and diverges outright past ~700,
-   which is where cinebloom and pro-mist land at export resolution (their bloom
-   reaches 2500 um and 1625 um, ~1000 px on a 6000 px frame at 26 mm). The
-   divergence shows as full-height coloured striping: the column pass runs after
-   the row pass, so each column blows up on its own.
+   -- so it tracks to ~120, is about 8% narrow at 150, and the width no longer
+   follows the request past ~200, which is where cinebloom and pro-mist land at
+   export resolution (their bloom reaches 2500 um and 1625 um, ~1000 px on a
+   6000 px frame at 26 mm).
 
    A wider blur is therefore run as a cascade of n passes of sigma/sqrt(n),
    each inside this limit: Gaussians compose by adding variances, so the
