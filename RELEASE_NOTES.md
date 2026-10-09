@@ -169,6 +169,9 @@ changes (where available).
   dialogs, the module order is now a check box below the item list
   instead of a last entry in the list itself.
 
+- The recent collections module now handles single or double click
+  according to the preference setting for collections.
+
 ## Performance Improvements
 
 - Replaced quadratic XMP history writes with a linear algorithm.
