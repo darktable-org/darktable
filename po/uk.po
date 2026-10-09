@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-07 21:33+0200\n"
-"PO-Revision-Date: 2026-10-08 19:01+0300\n"
+"PO-Revision-Date: 2026-10-09 18:07+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -8699,10 +8699,8 @@ msgstr ""
 "Вам потрібно скопіювати історію із зображення, перш ніж вставити її в інше"
 
 #: ../src/common/history.c:974
-#, fuzzy
-#| msgid "the mask file path is saved with the image history"
 msgid "raster masks could not be copied to the pasted history"
-msgstr "Шлях до файлу маски зберігається з історією зображень"
+msgstr "Растрові маски не вдалося скопіювати до вставленої історії"
 
 #: ../src/common/image.c:354
 msgid "orphaned image"
@@ -11744,22 +11742,24 @@ msgstr "Копія '%s'"
 #: ../src/develop/masks/masks.c:1075
 #, c-format
 msgid "Image ID=%d has insane circle mask: radius=%.3f border=%.3f"
-msgstr ""
+msgstr "Зображення ID=%d має екстремальну кругову маску: радіус=%.3f, межа=%.3f"
 
 #: ../src/develop/masks/masks.c:1092
 #, c-format
 msgid "Image ID=%d has insane ellipse mask: radii=%.3f/%.3f, border=%.3f"
 msgstr ""
+"Зображення ID=%d має екстремальну еліптичну маску: радіуси=%.3f/%.3f, "
+"межа=%.3f"
 
 #: ../src/develop/masks/masks.c:1109
 #, c-format
 msgid "Image ID=%d has insane path mask: borders=%.3f/%.3f"
-msgstr ""
+msgstr "Зображення ID=%d має екстремальну маску контуру: межі=%.3f/%.3f"
 
 #: ../src/develop/masks/masks.c:1125
 #, c-format
 msgid "Image ID=%d has insane brush mask: borders=%.3f/%.3f"
-msgstr ""
+msgstr "Зображення ID=%d має екстремальну маску пензля: межі=%.3f/%.3f"
 
 #: ../src/develop/masks/masks.c:1145
 #, c-format
@@ -17486,12 +17486,12 @@ msgid "$(OPENCL.ACTIVATED) - whether OpenCL is activated"
 msgstr "$(OPENCL.ACTIVATED) - чи активовано OpenCL"
 
 #: ../src/gui/gtkentry.c:119
-#, fuzzy
-#| msgid "$(CATEGORY[n,category]) - subtag of level n in hierarchical tags"
 msgid ""
 "$(CATEGORY_EACH[n,category]) - level-n subtag of each matching tag, one path "
 "per tag"
-msgstr "$(CATEGORY[n,category]) - підтег рівня n в ієрархічних тегах"
+msgstr ""
+"$(CATEGORY[n,category]) - підтег рівня n кожного відповідного тегу; один шлях "
+"для кожного тегу"
 
 #: ../src/gui/gtkentry.c:120
 msgid "$(TAGS) - tags as set in metadata settings"
@@ -23487,11 +23487,6 @@ msgid "teal & orange"
 msgstr "Бірюзовий + оранжевий"
 
 #: ../src/iop/colorequal.c:3807
-#, fuzzy
-#| msgid ""
-#| "double-click to reset the curve\n"
-#| "middle-click to toggle sliders visibility\n"
-#| "alt+scroll to change page"
 msgid ""
 "double-click to reset the curve\n"
 "middle-click to toggle the control sliders\n"
@@ -24353,11 +24348,9 @@ msgstr ""
 "цьому краї"
 
 #: ../src/iop/contrastntexture.c:399
-#, fuzzy
-#| msgid "local contrast failed to allocate memory, check your RAM settings"
 msgid "contrast and texture failed to allocate memory, check your RAM settings"
 msgstr ""
-"Локальному контрасту не вдалося виділити пам'ять, перевірте налаштування "
+"Для Контрасту і Текстури не вдалося виділити пам'ять, перевірте використання "
 "оперативної пам'яті"
 
 #: ../src/iop/contrastntexture.c:663
@@ -24386,41 +24379,47 @@ msgstr ""
 
 #: ../src/iop/contrastntexture.c:674
 msgid "adjust highlights at the base detail level size."
-msgstr ""
+msgstr "Налаштуйте світлі ділянки на базовому рівні деталізації"
 
 #: ../src/iop/contrastntexture.c:678
 msgid "adjust shadows at the base detail level size."
-msgstr ""
+msgstr "Налаштуйте тіні на базовому рівні деталізації"
 
 #: ../src/iop/contrastntexture.c:693
 msgid ""
 "adjust coarse, low frequency content.\n"
 "press the mask button to preview the effect."
 msgstr ""
+"Налаштуйте грубі низькочастотні складові.\n"
+"Натисніть кнопку маски, щоб переглянути ефект"
 
 #: ../src/iop/contrastntexture.c:696
 msgid "preview the size of the coarse details to adjust."
-msgstr ""
+msgstr "Попередньо перегляньте розмір грубих деталей для коригування"
 
 #: ../src/iop/contrastntexture.c:699
 msgid ""
 "adjust medium, frequency content between coarse and fine.\n"
 "press the mask button to preview the effect."
 msgstr ""
+"Налаштуйте вміст середніх частот (між грубим і дрібним).\n"
+"Натисніть кнопку маски, щоб переглянути ефект"
 
 #: ../src/iop/contrastntexture.c:702
 msgid "preview the size of the medium details to adjust."
-msgstr ""
+msgstr "Попередньо перегляньте розмір деталей середнього рівня для коригування"
 
 #: ../src/iop/contrastntexture.c:705
 msgid ""
 "adjust fine, high frequency content.\n"
 "press the mask button to preview the effect."
 msgstr ""
+"Налаштуйте дрібні, високочастотні складові.\n"
+"Натисніть кнопку маски, щоб переглянути ефект"
 
 #: ../src/iop/contrastntexture.c:708
 msgid "preview the size of the fine details to adjust."
-msgstr ""
+msgstr "Попередньо перегляньте розмір дрібних деталей для коригування"
 
 #. Filter settings section
 #: ../src/iop/contrastntexture.c:711
@@ -24434,6 +24433,10 @@ msgid ""
 "higher = suppress halos at the expense of details around edges.\n"
 "lower = allow more halos to get more local contrast and details."
 msgstr ""
+"Налаштуйте параметр контролю ореолів фільтра.\n"
+"Вище значення — пригнічення ореолів ціною втрати деталей навколо країв.\n"
+"Нижче значення — дозволити більше ореолів заради вищого локального контрасту "
+"та деталізації."
 
 #: ../src/iop/contrastntexture.c:726
 msgid ""
@@ -24680,14 +24683,8 @@ msgstr ""
 "Використовуйте для пресетів."
 
 #: ../src/iop/demosaic.c:1949
-#, fuzzy
-#| msgid ""
-#| "calculate the capture sharpen radius from available raw sensor data.\n"
-#| "for best results avoid cropping or darkroom zooming in"
 msgid "calculate the capture sharpen radius from raw sensor data"
-msgstr ""
-"Розрахувати радіус збільшенні різкості на основі доступних даних сенсора.\n"
-"Для найкращих результатів уникайте обрізання або збільшення масштабу"
+msgstr "Розрахувати радіус збільшенні різкості на основі даних сенсора"
 
 #: ../src/iop/demosaic.c:1952
 #, fuzzy
@@ -26812,6 +26809,11 @@ msgid ""
 "leave vignetting out of the corrections, or turn shading\n"
 "compensation off in the camera for future shots"
 msgstr ""
+"Функція компенсації віньєтування в камері вже усунула віньєтування\n"
+"в raw даних, а Lensfun коригує його повторно, що може призвести\n"
+"до надмірного освітлення кутів.\n"
+"Виключіть віньєтування зі списку корекцій або вимкніть функцію\n"
+"компенсації віньєтування в камері для майбутніх знімків."
 
 #: ../src/iop/lens.cc:4436
 msgid "camera/lens not found"
@@ -28010,10 +28012,9 @@ msgid "missing from sidecar"
 msgstr "Запис %zu файлу XMP"
 
 #: ../src/iop/rasterfile.c:413
-#, fuzzy, c-format
-#| msgid "folders"
+#, c-format
 msgid "folder: %s"
-msgstr "Каталоги"
+msgstr "Папка: %s"
 
 #: ../src/iop/rasterfile.c:415
 msgid "no mask imported"
@@ -28057,11 +28058,9 @@ msgstr ""
 "посилання на маску здійснюється за шляхом до неї."
 
 #: ../src/iop/rasterfile.c:898
-#, fuzzy
-#| msgid ""
-#| "select the RGB channels taken into account to generate the raster mask"
 msgid "select the RGB channels taken into account when a color file is imported"
-msgstr "Виберіть канали RGB, які будуть враховані для створення растрової маски"
+msgstr ""
+"Виберіть канали RGB, які будуть враховані під час імпорту кольорового файлу"
 
 #: ../src/iop/rasterfile.c:911
 msgid ""
@@ -28069,6 +28068,11 @@ msgid ""
 "importing another file replaces it; masks no longer used by any\n"
 "history item are removed from the sidecar when leaving the darkroom"
 msgstr ""
+"Растрова маска, яку використовує цей екземпляр.\n"
+"\n"
+"Імпорт іншого файлу замінює її; маски, що більше не використовуються\n"
+"жодним елементом історії, видаляються із супровідного файлу при виході\n"
+"з режиму Темної кімнати"
 
 #. Vectorize button
 #: ../src/iop/rasterfile.c:917
@@ -29001,6 +29005,10 @@ msgid ""
 "was made with is not installed: rendering with a later one\n"
 "the matching pack can be fetched with the button below"
 msgstr ""
+"Створено до того, як пакети даних отримали ідентифікатор,\n"
+"і відповідний пакет не встановлено: рендеринг виконується\n"
+"за допомогою новішої версії. Потрібний пакет можна\n"
+"завантажити за допомогою кнопки нижче"
 
 #: ../src/iop/spektrafilm.c:1875
 #, c-format
@@ -29009,6 +29017,9 @@ msgid ""
 "rendering with %s\n"
 "the matching pack can be fetched with the button below"
 msgstr ""
+"Створено з пакетом даних %08x, який не встановлено.\n"
+"Рендеринг за допомогою %s.\n"
+"Відповідний пакет можна завантажити за допомогою кнопки нижче"
 
 #: ../src/iop/spektrafilm.c:1888
 #, c-format
@@ -29125,10 +29136,8 @@ msgid "the installed data packs are up to date"
 msgstr "Встановлені пакети даних є актуальними"
 
 #: ../src/iop/spektrafilm.c:4344 ../src/iop/spektrafilm.c:5877
-#, fuzzy
-#| msgid "check for updates"
 msgid "check for data pack updates"
-msgstr "Перевірка оновлень"
+msgstr "Перевірити чи є оновлення пакетів даних"
 
 #: ../src/iop/spektrafilm.c:4348
 msgid ""
@@ -29564,6 +29573,10 @@ msgid ""
 "only methods from your installed data packs are listed. if there\n"
 "is just one, it is used and there is nothing to choose."
 msgstr ""
+"Як колір пікселя перетворюється на спектр, яким експонується плівка.\n"
+"\n"
+"Перелічено лише методи з установлених вами пакетів даних. Якщо\n"
+"є лише один метод, він використовується, і вибирати не потрібно"
 
 #: ../src/iop/spektrafilm.c:5834
 msgid ""
@@ -29662,18 +29675,30 @@ msgid ""
 "cannot fix because it shifts every tone equally while crossover\n"
 "shifts shadows one way and highlights the other."
 msgstr ""
+"Гамма лише червоноутворювального шару паперу на додаток до загальної гамми "
+"друку.\n"
+"\n"
+"Роздільна гамма за каналами дозволяє нівелювати колірне розбалансування, яке\n"
+"характерне для негативів, шари яких проявлені до різних значень гамми.\n"
+"Звичайна фільтрація тут безсила, оскільки вона зміщує всі тони однаково, тоді "
+"як\n"
+"колірне розбалансування (кросовер) зміщує тіні в один бік, а світлі ділянки в "
+"інший."
 
 #: ../src/iop/spektrafilm.c:5950
 msgid ""
 "gamma of the paper's green-forming layer alone, on top of the\n"
 "overall print gamma."
 msgstr ""
+"Гамма лише зеленоутворювального шару паперу на додаток до загальної гамми "
+"друку"
 
 #: ../src/iop/spektrafilm.c:5956
 msgid ""
 "gamma of the paper's blue-forming layer alone, on top of the\n"
 "overall print gamma."
 msgstr ""
+"Гамма лише синьоутворювального шару паперу на додаток до загальної гамми друку"
 
 #: ../src/iop/spektrafilm.c:5959
 msgctxt "section"
@@ -29704,6 +29729,9 @@ msgid ""
 "through the film's base density, before the main print exposure.\n"
 "lifts shadows and reduces contrast (0 = off)."
 msgstr ""
+"Експозиція попередньої засвітки: коротке рівномірне попереднє експонування\n"
+"паперу через оптичну щільність підкладки плівки перед основною експозицією.\n"
+"Освітлює тіні та знижує контраст (0 — вимкнено)"
 
 #: ../src/iop/spektrafilm.c:5991
 msgid ""
@@ -29987,8 +30015,6 @@ msgid "halation size: scales the glow radius (1.0 = film-accurate)"
 msgstr "Розмір ореолу: масштабує радіус світіння (1,0 — відповідає плівці)"
 
 #: ../src/iop/spektrafilm.c:6204
-#, fuzzy
-#| msgid "highlight boost"
 msgctxt "section"
 msgid "highlight boost"
 msgstr "Підсилення світлих ділянок"
@@ -30002,10 +30028,6 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/spektrafilm.c:6216
-#, fuzzy
-#| msgid ""
-#| "highlight boost: reconstructs clipped highlights so they bloom into\n"
-#| "halation/diffusion (0 = off)."
 msgid ""
 "highlight boost: reconstructs clipped highlights so they bloom into\n"
 "halation/diffusion (0 = off).\n"
@@ -30013,7 +30035,9 @@ msgid ""
 "runs on its own, independent of the halation toggle."
 msgstr ""
 "Підсилення світлих ділянок: відновлює обрізані (засвічені) ділянки,\n"
-"розмиваючи їх в ореоли та дифузію (0 — вимкнено)."
+"розмиваючи їх в ореоли та дифузію (0 — вимкнено).\n"
+"\n"
+"Працює самостійно, незалежно від перемикача ефекту ореолу."
 
 #: ../src/iop/spektrafilm.c:6225
 msgid ""
@@ -30136,6 +30160,10 @@ msgid ""
 "off, the shadows stay where the film puts them, which is often\n"
 "short of black."
 msgstr ""
+"Визначте найтемніший тон зображення за допомогою\n"
+"налаштування рівня чорного нижче.\n"
+"Якщо вимкнено, тіні залишаються там, де їх розміщує\n"
+"плівка, а це часто не дотягує до чорного кольору"
 
 #: ../src/iop/spektrafilm.c:6322
 msgid ""
@@ -30144,12 +30172,21 @@ msgid ""
 "0 is true black. higher values lift the blacks and soften the\n"
 "image; below 0 the deepest shadows are crushed together."
 msgstr ""
+"Освітлити або стиснути тіні.\n"
+"\n"
+"Значення 0 відповідає чистому чорному кольору. Вищі значення\n"
+"освітлюють темні ділянки та пом’якшують зображення; значення\n"
+"нижче 0 призводять до злиття найглибших тіней."
 
 #: ../src/iop/spektrafilm.c:6331
 msgid ""
 "set the lightest tone of the image with white level below.\n"
 "off, the highlights stay where the film puts them."
 msgstr ""
+"Встановіть найсвітліший тон зображення за\n"
+"допомогою параметра рівня білого нижче.\n"
+"Якщо вимкнено, світлі ділянки залишаються\n"
+"такими, якими їх відтворює плівка"
 
 #: ../src/iop/spektrafilm.c:6338
 msgid ""
