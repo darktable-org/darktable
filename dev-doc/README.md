@@ -37,6 +37,12 @@ This guide covers building Image Operation (IOP) modules for darktable's darkroo
 | **[AI.md](AI.md)** | AI subsystem architecture, backend API, and how to add new AI features |
 | **[AI_Tasks.md](AI_Tasks.md)** | Reference for each AI task: mask, denoise, upscale |
 
+### Masks
+| File | Description |
+|------|-------------|
+| **[masks_data_model.md](masks_data_model.md)** | Flexi masks: the mask as a tree of groups, masks v7 storage, markers and operators |
+| **[flexi_masks/styling.md](flexi_masks/styling.md)** | Restyling the masks panel's icons and colors from a theme or CSS tweaks |
+
 ### Sidecar Files
 | File | Description |
 |------|-------------|

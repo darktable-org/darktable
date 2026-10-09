@@ -100,7 +100,6 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
     dt_develop_blend_default_module_blend_colorspace(module);
   dt_develop_blend_init_blend_parameters(module->default_blendop_params, cst);
   dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
-  dt_iop_gui_blending_reload_defaults(module);
 }
 
 static void _iop_modify_roi_in(dt_iop_module_t *self,
@@ -1393,6 +1392,12 @@ void dt_iop_gui_update_header(dt_iop_module_t *module)
   // set panel name to display correct multi-instance
   _iop_panel_name(module);
   dt_iop_gui_set_enable_button(module);
+  // only the focused module's masks panel is placed anywhere, and its title
+  // carries the instance name. Every header is updated several times while an
+  // image or its history loads: relocating each would be hundreds of calls for
+  // the one that matters
+  if(module == darktable.develop->gui_module)
+    dt_iop_gui_blend_masks_panel_relocate(module);
 
   DT_LEAVE_GUI_UPDATE();
 }
@@ -2078,6 +2083,95 @@ void dt_iop_advertise_rastermask(dt_iop_module_t *module, const int mask_mode)
   }
 }
 
+/* make `source` re-run in this pipe when its piece has not stored the raster
+   mask `id` a consumer needs. Registering a user does not change the source's
+   params, so its cache line would be served without storing the mask. Decide
+   by the pipe's own state, not by whether the registration is new: GUI code
+   and history replay register consumers in the shared users table before any
+   pipe commits, so the registration is never new by then */
+static void _invalidate_raster_source_if_missing(dt_dev_pixelpipe_t *pipe,
+                                                 dt_iop_module_t *source,
+                                                 const dt_mask_id_t id)
+{
+  if(!pipe) return;
+
+  dt_dev_pixelpipe_iop_t *source_piece = NULL;
+  for(GList *n = pipe->nodes; n; n = g_list_next(n))
+  {
+    dt_dev_pixelpipe_iop_t *p = n->data;
+    if(p->module == source)
+    {
+      source_piece = p;
+      break;
+    }
+  }
+
+  if(!source_piece
+     || !g_hash_table_lookup(source_piece->raster_masks, GINT_TO_POINTER(id)))
+    dt_dev_pixelpipe_cache_invalidate_later(pipe, source->iop_order, "blend new raster: ");
+}
+
+/* register this module as a user of the source of every raster element of its
+   mask, and unregister it from the others, so that each source keeps its mask.
+   A module can hold several raster elements, each reading another source. The
+   raster sink of classic raster mode (blend_params.raster_mask_*) is left to
+   dt_iop_commit_blend_params. Runs at commit, so a reload needs no GUI.
+
+   raster_mask.source.users maps a consumer to one mask id, so a consumer can
+   read several sources but not two masks of one source (every element reads
+   BLEND_RASTER_ID). With `pipe`, a source that has not stored its mask in that
+   pipe is made to re-run (_invalidate_raster_source_if_missing) */
+static void _reconcile_raster_form_users(dt_iop_module_t *module,
+                                         const dt_develop_blend_params_t *bp,
+                                         dt_dev_pixelpipe_t *pipe)
+{
+  if(!module->dev) return;
+  dt_masks_form_t *grp = dt_masks_get_from_id(module->dev, bp->mask_id);
+
+  for(GList *iter = module->dev->iop; iter; iter = g_list_next(iter))
+  {
+    dt_iop_module_t *cand = iter->data;
+    if(cand == module) continue;
+    // leave the raster sink of classic raster mode alone
+    if((bp->mask_mode & DEVELOP_MASK_RASTER)
+       && dt_iop_module_is(cand, bp->raster_mask_source)
+       && cand->multi_priority == bp->raster_mask_instance)
+      continue;
+
+    // does a raster element of this module's mask read `cand`?
+    dt_mask_id_t want = INVALID_MASKID;
+    if(grp)
+    {
+      const dt_masks_point_raster_t *rp =
+        dt_masks_group_find_raster_of(module->dev->forms, grp, cand, NO_MASKID, TRUE);
+      if(rp) want = rp->id;
+    }
+
+    // `want` is a raster mask id, BLEND_RASTER_ID (0), not a form id: do not
+    // test it with dt_is_valid_maskid(), which rejects 0
+    if(want != INVALID_MASKID)
+    {
+      dt_iop_raster_users_lock(cand);
+      g_hash_table_insert(cand->raster_mask.source.users, module, GINT_TO_POINTER(want));
+      dt_iop_raster_users_unlock(cand);
+      _invalidate_raster_source_if_missing(pipe, cand, want);
+    }
+    else
+    {
+      dt_iop_raster_users_lock(cand);
+      const gboolean removed = g_hash_table_remove(cand->raster_mask.source.users, module);
+      dt_iop_raster_users_unlock(cand);
+      if(removed)
+        dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
+                      "raster form unregister",
+                      NULL, module, DT_DEVICE_NONE, NULL, NULL,
+                      "from '%s%s' (grp=%s)",
+                      cand->op, dt_iop_get_instance_id(cand),
+                      grp ? "present" : "NULL");
+    }
+  }
+}
+
 /* make sure that blend_params are in sync with the iop struct
    1. Handling of raster mask users must only be done if we don't use module's default
       blending parameters.
@@ -2096,6 +2190,21 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
                                 const dt_develop_blend_params_t *blendop_params,
                                 dt_dev_pixelpipe_t *pipe)
 {
+  // log a commit that replaces the module's mask_id or mask_mode: the panel
+  // loses the mask when a valid flexi mask_id is overwritten by mistake
+  if(module->blend_params
+     && dt_is_valid_maskid(module->blend_params->mask_id)
+     && (blendop_params->mask_id != module->blend_params->mask_id
+         || blendop_params->mask_mode != module->blend_params->mask_mode))
+  {
+    dt_print(DT_DEBUG_MASKS,
+             "[masks] dt_iop_commit_blend_params '%s': mask_id %d->%d mask_mode 0x%x->0x%x"
+             " (src=%s)",
+             module->op, module->blend_params->mask_id, blendop_params->mask_id,
+             module->blend_params->mask_mode, blendop_params->mask_mode,
+             blendop_params == module->default_blendop_params ? "default_blendop_params"
+                                                               : "other");
+  }
   memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
   if(blendop_params->blend_cst == DEVELOP_BLEND_CS_NONE)
   {
@@ -2114,7 +2223,12 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
     return;
   }
 
-  for(GList *iter = module->dev->iop; iter; iter = g_list_next(iter))
+  // only a module in raster mode consumes the source it names; one that left
+  // raster mode keeps the name. Registered, it would be pruned on every run
+  // (dt_dev_pixelpipe_prune_stale_raster_users), and every commit would
+  // register it again and invalidate the source's cache
+  const gboolean raster_mode = blendop_params->mask_mode & DEVELOP_MASK_RASTER;
+  for(GList *iter = raster_mode ? module->dev->iop : NULL; iter; iter = g_list_next(iter))
   {
     dt_iop_module_t *candidate = iter->data;
     if(dt_iop_module_is(candidate, blendop_params->raster_mask_source))
@@ -2145,35 +2259,11 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
                         candidate->op,
                         dt_iop_get_instance_id(candidate));
 
-        // Whether *this pipe* needs to invalidate the source's cacheline must
-        // not be decided from `new`: that flag is shared across all pipes via
-        // `candidate->raster_mask.source.users`, and GUI code
-        // (_raster_value_changed_callback) as well as history replay register
-        // the consumer there before any pipe ever commits, so by the time a
-        // real per-pipe commit runs, `new` is already false everywhere and no
-        // pipe would invalidate -- silently starving the consumer of a mask
-        // that was never actually computed. Instead check this pipe's own
-        // state: has its source piece already stored a mask for this id? If
-        // not, the source must (re-)run so it writes one.
-        if(pipe)
-        {
-          dt_dev_pixelpipe_iop_t *source_piece = NULL;
-          for(GList *n = pipe->nodes; n; n = g_list_next(n))
-          {
-            dt_dev_pixelpipe_iop_t *p = n->data;
-            if(p->module == candidate)
-            {
-              source_piece = p;
-              break;
-            }
-          }
-          const gboolean mask_missing =
-            !source_piece || !g_hash_table_lookup(source_piece->raster_masks,
-                                                  GINT_TO_POINTER(blendop_params->raster_mask_id));
-          if(mask_missing)
-            dt_dev_pixelpipe_cache_invalidate_later(
-              pipe, candidate->iop_order, "blend new raster: ");
-        }
+        _invalidate_raster_source_if_missing(pipe, candidate,
+                                             blendop_params->raster_mask_id);
+
+        // and the sources of the mask's raster elements
+        _reconcile_raster_form_users(module, blendop_params, pipe);
         return;
       }
     }
@@ -2196,6 +2286,10 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
   }
   module->raster_mask.sink.source = NULL;
   module->raster_mask.sink.id = INVALID_MASKID;
+
+  // the sources of the mask's raster elements: a flexi mask gets here, as it
+  // has no raster sink
+  _reconcile_raster_form_users(module, blendop_params, pipe);
 }
 
 gboolean _iop_validate_params(dt_introspection_field_t *field,
@@ -2393,6 +2487,10 @@ void dt_iop_commit_params(dt_iop_module_t *module,
 {
   memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
 
+  // copy the refinements previewed as off into the piece, under the blend
+  // data's lock: the renderer reads only this copy
+  dt_masks_refine_bypass_commit(module, piece);
+
   /* We have to take blending parameters into account for the hash if
       a) there is some blending active detected via the mask_mode or
       b) we have a blending module in focus so we have valid cachelines
@@ -2407,10 +2505,11 @@ void dt_iop_commit_params(dt_iop_module_t *module,
         this case by having dt_iop_commit_blend_params() partly invalidate the cache
         to enforce a valid raster, but only when the raster mask is actually in use.
   */
-  dt_iop_commit_blend_params(
-    module,
-    blendop_params,
-    (blendop_params->mask_mode & DEVELOP_MASK_RASTER) && is_blending ? pipe : NULL);
+  // the pipe goes along whenever the module blends, not only in raster mode: a
+  // raster element of the mask reads a source too, with no RASTER bit. It is
+  // harmless, as dt_iop_commit_blend_params only invalidates a source that is
+  // read and whose mask is missing from this pipe
+  dt_iop_commit_blend_params(module, blendop_params, is_blending ? pipe : NULL);
 
 #ifdef HAVE_OPENCL
   // assume process_cl is ready, commit_params can overwrite this.
@@ -2457,6 +2556,11 @@ void dt_iop_commit_params(dt_iop_module_t *module,
       {
         phash = dt_masks_group_hash(phash, grp);
       }
+
+      // previewing a refinement as off changes the render but no parameter, so
+      // it enters the hash, from the snapshot above, not from blend_data
+      const dt_hash_t bph = dt_masks_refine_bypass_hash(&piece->refine_bypass);
+      phash = dt_hash(phash, &bph, sizeof(dt_hash_t));
     }
   }
   piece->hash = phash;
@@ -2470,6 +2574,9 @@ void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
   module->widget_list = NULL;
   DT_CONTROL_SIGNAL_DISCONNECT_ALL(module, module->so->op);
   if(module->gui_cleanup) module->gui_cleanup(module);
+  // before the destroy below: while hosted, the masks panel is parented in its
+  // host, not in this module's expander, and would outlive it
+  dt_iop_gui_blend_masks_panel_release(module);
   gtk_widget_destroy(module->expander ? module->expander : module->widget);
   // Do not leave borrowed GTK pointers behind while asynchronous signals can
   // still carry this module until the GUI thread drains their queue.
@@ -2528,6 +2635,22 @@ void dt_iop_gui_reset(dt_iop_module_t *module)
   DT_LEAVE_GUI_UPDATE();
 }
 
+// resets the blend params to the defaults, but for a locked mask, which keeps
+// its own (see dt_develop_blend_keep_locked_mask)
+static void _commit_reset_blend_params(dt_iop_module_t *module)
+{
+  if(!dt_develop_blend_mask_locked(module->blend_params))
+  {
+    dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
+    return;
+  }
+  // not the default_blendop_params pointer itself: dt_iop_commit_blend_params
+  // drops the raster mask source for that one, and a locked mask keeps it
+  dt_develop_blend_params_t reset = *module->default_blendop_params;
+  dt_develop_blend_keep_locked_mask(&reset, module->blend_params);
+  dt_iop_commit_blend_params(module, &reset, NULL);
+}
+
 // kept for direct callers from accelerators
 static gboolean _gui_reset_callback(GtkButton *button,
                                     GdkEventButton *event,
@@ -2543,8 +2666,9 @@ static gboolean _gui_reset_callback(GtkButton *button,
        && dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
      || !dt_gui_presets_autoapply_for_module(module, NULL))
   {
-    // if a drawn mask is set, remove it from the list
-    if(dt_is_valid_maskid(module->blend_params->mask_id))
+    // if a drawn mask is set, remove it from the list, unless it is locked
+    if(dt_is_valid_maskid(module->blend_params->mask_id)
+       && !dt_develop_blend_mask_locked(module->blend_params))
     {
       dt_masks_form_t *grp =
         dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
@@ -2552,7 +2676,10 @@ static gboolean _gui_reset_callback(GtkButton *button,
     }
     /* reset to default params */
     dt_iop_reload_defaults(module);
-    dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
+    _commit_reset_blend_params(module);
+
+    // the module's forms changed behind the masks panel
+    dt_iop_gui_blend_forms_reloaded(module);
 
     /* reset ui to its defaults */
     dt_iop_gui_reset(module);
@@ -2584,8 +2711,9 @@ static void _gui_reset_clicked(GtkGestureSingle *gesture,
   if(!((dt_key_modifier_state() & GDK_CONTROL_MASK)
        && dt_gui_presets_autoapply_for_module(module, NULL)))
   {
-    // if a drawn mask is set, remove it from the list
-    if(dt_is_valid_maskid(module->blend_params->mask_id))
+    // if a drawn mask is set, remove it from the list, unless it is locked
+    if(dt_is_valid_maskid(module->blend_params->mask_id)
+       && !dt_develop_blend_mask_locked(module->blend_params))
     {
       dt_masks_form_t *grp =
         dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
@@ -2593,7 +2721,10 @@ static void _gui_reset_clicked(GtkGestureSingle *gesture,
     }
     /* reset to default params */
     dt_iop_reload_defaults(module);
-    dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
+    _commit_reset_blend_params(module);
+
+    // the module's forms changed behind the masks panel
+    dt_iop_gui_blend_forms_reloaded(module);
 
     /* reset ui to its defaults */
     dt_iop_gui_reset(module);
@@ -2779,6 +2910,9 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if(module->gui_focus)
       module->gui_focus(module, TRUE);
 
+    /* do stuff needed in the blending gui */
+    dt_iop_gui_blending_gain_focus(module);
+
     /* redraw the expander */
     gtk_widget_queue_draw(module->expander);
 
@@ -2814,6 +2948,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
   // update guides button state
   dt_guides_update_button_state();
+  dt_iop_gui_blend_masks_panel_sync_toolbox();
 
   dt_control_change_cursor("default");
   dt_control_queue_redraw_center();
@@ -2840,6 +2975,7 @@ static void _gui_set_single_expanded(dt_iop_module_t *module, gboolean expanded)
   {
     /* set this module to receive focus / draw events*/
     dt_iop_request_focus(module);
+    dt_iop_gui_blending_gain_focus(module);
 
     /* focus the current module */
     for(int k = 0; k < DT_UI_CONTAINER_SIZE; k++)
@@ -3176,6 +3312,71 @@ static void _display_mask_indicator_callback(GtkToggleButton *bt,
   dt_iop_refresh_center(module);
 }
 
+static void _collect_mask_counts(const dt_develop_t *dev,
+                                 const dt_masks_form_t *form,
+                                 int *total,
+                                 int *circles,
+                                 int *ellipses,
+                                 int *paths,
+                                 int *gradients,
+                                 int *brushes,
+                                 int *objects,
+                                 int *rasters,
+                                 GHashTable *param_counts,
+                                 const int depth)
+{
+  if(!form || !dev || depth > DT_MASKS_NESTING_MAX) return;
+
+  if(form->type & DT_MASKS_GROUP)
+  {
+    for(const GList *l = form->points; l; l = g_list_next(l))
+    {
+      const dt_masks_point_group_t *pt = l->data;
+      const dt_masks_form_t *child = dt_masks_get_from_id(dev, pt->formid);
+      if(child)
+      {
+        if(child->type & DT_MASKS_GROUP)
+        {
+          _collect_mask_counts(dev, child, total, circles, ellipses, paths,
+                               gradients, brushes, objects, rasters, param_counts,
+                               depth + 1);
+        }
+        else
+        {
+          (*total)++;
+          if(child->type & DT_MASKS_CIRCLE) (*circles)++;
+          else if(child->type & DT_MASKS_ELLIPSE) (*ellipses)++;
+          else if(child->type & DT_MASKS_PATH) (*paths)++;
+          else if(child->type & DT_MASKS_GRADIENT) (*gradients)++;
+          else if(child->type & DT_MASKS_BRUSH) (*brushes)++;
+          // an edit made with AI support still holds its objects without it
+          else if(child->type & DT_MASKS_OBJECT) (*objects)++;
+          else if(child->type & DT_MASKS_RASTER) (*rasters)++;
+          else if(child->type & DT_MASKS_PARAMETRIC)
+          {
+            const char *label = dt_masks_parametric_type_label(child);
+            if(param_counts && label)
+            {
+              gpointer count_ptr = g_hash_table_lookup(param_counts, label);
+              g_hash_table_insert(param_counts, (gpointer)label,
+                                  GINT_TO_POINTER(GPOINTER_TO_INT(count_ptr) + 1));
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// appends "<n> <kind>" to a comma-separated list, `fmt` being the plural
+// form for `n` (ngettext at the caller, so each pair is extracted)
+static void _append_count(GString *list, const int n, const char *fmt)
+{
+  if(n <= 0) return;
+  if(list->len) g_string_append(list, ", ");
+  g_string_append_printf(list, fmt, n);
+}
+
 static gboolean _mask_indicator_tooltip(GtkWidget *treeview,
                                         gint x,
                                         gint y,
@@ -3183,47 +3384,118 @@ static gboolean _mask_indicator_tooltip(GtkWidget *treeview,
                                         GtkTooltip* tooltip,
                                         dt_iop_module_t *module)
 {
-  gboolean res = FALSE;
+  if(!module || !module->mask_indicator || !module->blend_params) return FALSE;
+
   const gboolean raster = module->blend_params->mask_mode & DEVELOP_MASK_RASTER;
-  if(module->mask_indicator)
+  int total = 0, circles = 0, ellipses = 0, paths = 0, gradients = 0;
+  int brushes = 0, objects = 0, rasters = 0;
+  GHashTable *param_counts = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
+
+  if(raster)
   {
-    gchar *type = _("unknown mask");
-    gchar *text;
-    const uint32_t mm = module->blend_params->mask_mode;
-    if((mm & DEVELOP_MASK_MASK) && (mm & DEVELOP_MASK_CONDITIONAL))
-      type=_("drawn + parametric mask");
-    else if(mm & DEVELOP_MASK_MASK)
-      type=_("drawn mask");
-    else if(mm & DEVELOP_MASK_CONDITIONAL)
-      type=_("parametric mask");
-    else if(mm & DEVELOP_MASK_RASTER)
-      type=_("raster mask");
-    else
-      dt_print(DT_DEBUG_PARAMS, "unknown mask mode '%u' in module '%s'", mm, module->op);
-    gchar *part1 = g_strdup_printf(_("this module has a `%s'"), type);
-    gchar *part2 = NULL;
-    if(raster && module->raster_mask.sink.source)
+    total = 1;
+    rasters = 1;
+  }
+  else
+  {
+    const dt_masks_form_t *grp =
+      dt_masks_get_from_id(module->dev, module->blend_params->mask_id);
+    _collect_mask_counts(module->dev, grp, &total, &circles, &ellipses, &paths,
+                         &gradients, &brushes, &objects, &rasters, param_counts, 0);
+  }
+
+  gchar *part1 = NULL;
+  if(total == 0)
+  {
+    part1 = g_strdup(_("this module has a mask with 0 elements (uniform mask)"));
+  }
+  else
+  {
+    GString *breakdown = g_string_new(NULL);
+    _append_count(breakdown, circles, ngettext("%d circle", "%d circles", circles));
+    _append_count(breakdown, ellipses, ngettext("%d ellipse", "%d ellipses", ellipses));
+    _append_count(breakdown, paths, ngettext("%d path", "%d paths", paths));
+    _append_count(breakdown, gradients, ngettext("%d gradient", "%d gradients", gradients));
+    _append_count(breakdown, brushes, ngettext("%d brush", "%d brushes", brushes));
+    _append_count(breakdown, objects, ngettext("%d AI object", "%d AI objects", objects));
+    _append_count(breakdown, rasters,
+                  ngettext("%d raster mask", "%d raster masks", rasters));
+
+    GHashTableIter iter;
+    gpointer key, value;
+    g_hash_table_iter_init(&iter, param_counts);
+    while(g_hash_table_iter_next(&iter, &key, &value))
     {
-      gchar *source = dt_history_item_get_name(module->raster_mask.sink.source);
-      part2 = g_strdup_printf(_("taken from module %s"), source);
-      g_free(source);
+      const int cnt = GPOINTER_TO_INT(value);
+      const char *label = (const char *)key;
+      g_string_append_printf(breakdown, "%s%d %s", (breakdown->len ? ", " : ""),
+                             cnt, label);
     }
 
-    if(!raster && !part2)
-      part2 = g_strdup(_("click to display (module must be activated first)"));
+    part1 = g_strdup_printf(ngettext("this module has a mask with %d element (%s)",
+                                     "this module has a mask with %d elements (%s)", total),
+                            total, breakdown->str);
 
-    if(part2)
-      text = g_strconcat(part1, "\n", part2, NULL);
-    else
-      text = g_strdup(part1);
-
-    gtk_tooltip_set_text(tooltip, text);
-    res = TRUE;
-    g_free(part1);
-    g_free(part2);
-    g_free(text);
+    g_string_free(breakdown, TRUE);
   }
-  return res;
+  g_hash_table_destroy(param_counts);
+
+  gchar *part2 = NULL;
+  if(raster && module->raster_mask.sink.source)
+  {
+    // the name is markup and the tooltip plain text: unescaped, a "&" in an
+    // instance name would read "&amp;"
+    gchar *markup = dt_history_item_get_name(module->raster_mask.sink.source);
+    gchar *source = NULL;
+    if(!pango_parse_markup(markup, -1, 0, NULL, &source, NULL, NULL))
+      source = g_strdup(markup);
+    g_free(markup);
+    part2 = g_strdup_printf(_("taken from module %s"), source);
+    g_free(source);
+  }
+
+  if(!raster && !part2)
+    part2 = g_strdup(_("click to display (module must be activated first)"));
+
+  gchar *text;
+  if(part2)
+    text = g_strconcat(part1, "\n", part2, NULL);
+  else
+    text = g_strdup(part1);
+
+  gtk_tooltip_set_text(tooltip, text);
+  g_free(part1);
+  g_free(part2);
+  g_free(text);
+  return TRUE;
+}
+
+// packs an indicator into the module header, clear of the buttons that
+// dt_iop_show_hide_header_buttons hides
+static void _header_pack_indicator(dt_iop_module_t *module, GtkWidget *indicator)
+{
+  gtk_box_pack_end(GTK_BOX(module->header), indicator, FALSE, FALSE, 0);
+
+  // in dynamic modes, we need to put the indicator after the drawing area
+  GList *children = gtk_container_get_children(GTK_CONTAINER(module->header));
+  GList *child;
+
+  for(child = g_list_last(children);
+      child && GTK_IS_BUTTON(child->data);
+      child = g_list_previous(child));
+
+  if(GTK_IS_DRAWING_AREA(child->data))
+  {
+    GValue position = G_VALUE_INIT;
+    g_value_init (&position, G_TYPE_INT);
+    gtk_container_child_get_property(GTK_CONTAINER(module->header),
+                                     child->data ,"position", &position);
+    gtk_box_reorder_child(GTK_BOX(module->header), indicator,
+                          g_value_get_int(&position));
+  }
+  g_list_free(children);
+
+  dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
 }
 
 void dt_iop_add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
@@ -3244,35 +3516,41 @@ void dt_iop_add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
   else if(show)
   {
     module->mask_indicator = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, 0, NULL);
-    dt_gui_add_class(module->mask_indicator, "dt_transparent_background");
     g_signal_connect(G_OBJECT(module->mask_indicator), "toggled",
                      G_CALLBACK(_display_mask_indicator_callback), module);
     g_signal_connect(G_OBJECT(module->mask_indicator), "query-tooltip",
                      G_CALLBACK(_mask_indicator_tooltip), module);
     gtk_widget_set_has_tooltip(module->mask_indicator, TRUE);
     gtk_widget_set_sensitive(module->mask_indicator, module->enabled);
-    gtk_box_pack_end(GTK_BOX(module->header), module->mask_indicator, FALSE, FALSE, 0);
+    _header_pack_indicator(module, module->mask_indicator);
+  }
+}
 
-    // in dynamic modes, we need to put the mask indicator after the drawing area
-    GList *children = gtk_container_get_children(GTK_CONTAINER(module->header));
-    GList *child;
+static void _mask_lock_indicator_clicked(GtkButton *button, dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_set_mask_lock(module, FALSE);
+}
 
-    for(child = g_list_last(children);
-        child && GTK_IS_BUTTON(child->data);
-        child = g_list_previous(child));
-
-    if(GTK_IS_DRAWING_AREA(child->data))
-    {
-      GValue position = G_VALUE_INIT;
-      g_value_init (&position, G_TYPE_INT);
-      gtk_container_child_get_property(GTK_CONTAINER(module->header),
-                                       child->data ,"position", &position);
-      gtk_box_reorder_child(GTK_BOX(module->header), module->mask_indicator,
-                            g_value_get_int(&position));
-    }
-    g_list_free(children);
-
+void dt_iop_add_remove_mask_lock_indicator(dt_iop_module_t *module, const gboolean add)
+{
+  if(module->mask_lock_indicator && !add)
+  {
+    gtk_widget_destroy(module->mask_lock_indicator);
+    module->mask_lock_indicator = NULL;
     dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
+  }
+  else if(!module->mask_lock_indicator && add)
+  {
+    // a plain button rather than a toggle: it only ever shows the locked
+    // state, and only the panel's own lock button locks
+    module->mask_lock_indicator =
+      dtgtk_button_new_full(dtgtk_cairo_paint_mask_lock, 0, NULL,
+                            &(dtgtk_button_config_t){
+                              .tooltip = _("mask locked\nclick to unlock"),
+                            });
+    g_signal_connect(G_OBJECT(module->mask_lock_indicator), "clicked",
+                     G_CALLBACK(_mask_lock_indicator_clicked), module);
+    _header_pack_indicator(module, module->mask_lock_indicator);
   }
 }
 
@@ -3376,6 +3654,10 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
           .toggled_data = module,
         });
     gtk_widget_set_sensitive(button, !module->hide_enable_button);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
+    // marks the module's on/off toggle, so that darktable.css can style it
+    // (.dt_module_enable_btn) without relying on its place in the header
+    dt_gui_add_class(button, "dt_module_enable_btn");
     gtk_box_pack_start(GTK_BOX(header), button, FALSE, FALSE, 0);
   }
   else
@@ -3958,6 +4240,7 @@ void dt_iop_update_multi_name(dt_iop_module_t *module,
     g_strlcpy(module->multi_name, l_name, sizeof(module->multi_name));
     module->multi_name_hand_edited = hand_edited;
     dt_iop_gui_update_header(module);
+    dt_iop_gui_blend_module_renamed(module);
     dt_dev_add_history_item(module->dev, module, enable);
   }
 
@@ -3978,6 +4261,26 @@ gboolean dt_iop_is_raster_mask_used(const dt_iop_module_t *module, const dt_mask
   return used;
 }
 
+// does an enabled module downstream of `piece` in its own pipe hold a raster
+// element reading mask `id` from piece's module? Judged from the pipe's nodes
+// and its forms snapshot, which dt_dev_pixelpipe_process() refreshed before
+// this run
+static gboolean _pipe_has_raster_form_consumer(const dt_dev_pixelpipe_iop_t *piece,
+                                               const dt_mask_id_t id)
+{
+  const GList *self = g_list_find(piece->pipe->nodes, piece);
+  for(const GList *n = self ? g_list_next(self) : NULL; n; n = g_list_next(n))
+  {
+    const dt_dev_pixelpipe_iop_t *sink = n->data;
+    const dt_develop_blend_params_t *bp = sink->blendop_data;
+    if(!sink->enabled || !bp || !(bp->mask_mode & DEVELOP_MASK_FLEXI)) continue;
+    const dt_masks_form_t *grp = dt_masks_get_from_id_ext(piece->pipe->forms, bp->mask_id);
+    if(dt_masks_group_find_raster_of(piece->pipe->forms, grp, piece->module, id, FALSE))
+      return TRUE;
+  }
+  return FALSE;
+}
+
 /** checks if we should store the mask for export or use in subsequent modules.
     The pipe->store_all_raster_masks is true if export has mask exporting so we
     want the mask data.
@@ -3989,7 +4292,12 @@ gboolean dt_iop_is_raster_mask_stored(const dt_dev_pixelpipe_iop_t *piece, const
   if(piece->pipe->store_all_raster_masks)
     return TRUE;
 
-  return dt_iop_is_raster_mask_used(piece->module, id);
+  if(dt_iop_is_raster_mask_used(piece->module, id)) return TRUE;
+  // the users table is shared by every pipe, and another pipe's synch_all
+  // takes a raster element's module out of it while it replays history from
+  // the defaults (_reconcile_raster_form_users): a source processing then
+  // would drop the mask its consumer is about to read
+  return _pipe_has_raster_form_consumer(piece, id);
 }
 
 void dt_iop_piece_set_raster(dt_dev_pixelpipe_iop_t *piece,

@@ -1150,7 +1150,9 @@ void dt_dev_configure(dt_dev_viewport_t *port)
   }
 
   port->border_size = tb;
-  // fixed border on every side
+  // fixed border on every side. Not reduced by occlusion_left/right, so that
+  // showing or hiding an overlay never moves the image: the pan clamp
+  // (_clamp_zoom_to_mask) keeps the covered strip reachable instead
   const int32_t wd = port->orig_width - 2*tb;
   const int32_t ht = port->orig_height - 2*tb;
   if(port->width != wd || port->height != ht)
@@ -1160,6 +1162,20 @@ void dt_dev_configure(dt_dev_viewport_t *port)
     port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
     dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, 1, 0.0f, 0.0f, TRUE);
   }
+}
+
+void dt_dev_set_occlusion(dt_dev_viewport_t *port,
+                          const int32_t left,
+                          const int32_t right)
+{
+  if(!port) return;
+
+  port->occlusion_left = left;
+  port->occlusion_right = right;
+  // the allowance grows at once, as the covered strip must be reachable now;
+  // the clamp shrinks it (see occlusion_hold_left). The layout stays as it is
+  port->occlusion_hold_left = MAX(port->occlusion_hold_left, left);
+  port->occlusion_hold_right = MAX(port->occlusion_hold_right, right);
 }
 
 // helper used to synch a single history item with db
@@ -1618,6 +1634,14 @@ void dt_dev_add_masks_history_item(dt_develop_t *dev,
     if(fpt) target = GINT_TO_POINTER(fpt->formid);
   }
 
+  // editing a mask, in the panel or on the canvas, switches the mask on, as
+  // `enable` switches the module on: the panel's controls stay live with the
+  // mask off. Replay, undo, style apply and history copy call
+  // dt_dev_add_masks_history_item_ext() directly. Before the lock: enabling
+  // commits a history item of its own, which takes history_mutex
+  if(enable && dev->gui_attached)
+    dt_iop_gui_blend_mask_enable(module ? module : dev->gui_module);
+
   dt_pthread_mutex_lock(&dev->history_mutex);
 
   const gboolean need_end_record =
@@ -1715,6 +1739,12 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
 
   // set the module list order
   dt_dev_reorder_gui_module_list(dev);
+
+  // the forms were just replaced: the masks panel's empty-group placeholders,
+  // which exist in the GUI only, have no counterpart in them any more (see
+  // dt_iop_gui_blend_forms_reloaded)
+  for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
+    dt_iop_gui_blend_forms_reloaded((dt_iop_module_t *)modules->data);
 
   dt_unlock_image(dev->image_storage.id);
 }
@@ -2601,6 +2631,12 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
   // clang-format on
 
   dev->history_end = 0;
+  // both migration queues are drained by the previous call; a stale entry
+  // would act on the previously loaded image
+  g_list_free_full(dev->pending_flexi_migrations, free);
+  dev->pending_flexi_migrations = NULL;
+  g_list_free(dev->pending_flexi_group_splits);
+  dev->pending_flexi_group_splits = NULL;
 
   // Specific handling for None workflow (interdependency)
 
@@ -2781,9 +2817,9 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
       memcpy(hist->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
     }
     else if(blendop_params
-            && dt_develop_blend_legacy_params
+            && dt_develop_blend_legacy_params_ext
             (hist->module, blendop_params, blendop_version,
-             hist->blend_params, dt_develop_blend_version(), bl_length) == FALSE)
+             hist->blend_params, dt_develop_blend_version(), bl_length, num) == FALSE)
     {
       legacy_params = TRUE;
     }
@@ -2906,7 +2942,15 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
   dt_ioppr_check_iop_order(dev, imgid, "dt_dev_read_history_no_image end");
 
+  // history_end is final: create the forms of the queued mask migrations, for
+  // the read below to pick up
+  dt_masks_finish_flexi_migrations(dev);
+
   dt_masks_read_masks_history(dev, imgid);
+
+  // after the read, which replaces dev->forms: this converts groups already in
+  // the database
+  dt_masks_normalize_flexi_groups(dev);
 
   // FIXME : this probably needs to capture dev thread lock
   if(dev->gui_attached && !no_image)
@@ -3335,9 +3379,16 @@ _dev_mask_overlay_bounds(const dt_develop_t *dev, float *x0, float *y0, float *x
 //   - by any overlay point already outside the image (e.g. a node dragged past
 //     the edge), plus MASK_HANDLE_MARGIN so it isn't flush to the border.
 // boxw/boxh are the viewport extents in image units along each axis.
+// `occl0`/`occl1` are how much of the canvas an overlay hides on the left and
+// right, in the units of boxw (see dt_dev_viewport_t::occlusion_left), and
+// `used0`/`used1` receive how much of that the clamped position still uses
 static void _clamp_zoom_to_mask(const dt_develop_t *dev,
                                 const float boxw,
                                 const float boxh,
+                                const float occl0,
+                                const float occl1,
+                                float *used0,
+                                float *used1,
                                 float *zoom_x,
                                 float *zoom_y,
                                 const gboolean use_mask_overlay)
@@ -3389,12 +3440,21 @@ static void _clamp_zoom_to_mask(const dt_develop_t *dev,
   const float halfw = 0.5f * boxw, halfh = 0.5f * boxh;
   const float homew = boxw >= 1.0f ? 0.0f : 0.5f - halfw;
   const float homeh = boxh >= 1.0f ? 0.0f : 0.5f - halfh;
-  const float cminx = (lox < -0.5f) ? lox : -homew;
-  const float cmaxx = (hix > 0.5f) ? hix : homew;
+  // the image is laid out for the whole canvas, overlay or not, so the center
+  // may travel one covered strip further on that side: what lies under the
+  // overlay can be pulled out into view
+  const float basex0 = (lox < -0.5f) ? lox : -homew;
+  const float basex1 = (hix > 0.5f) ? hix : homew;
+  const float cminx = basex0 - occl0;
+  const float cmaxx = basex1 + occl1;
   const float cminy = (loy < -0.5f) ? loy : -homeh;
   const float cmaxy = (hiy > 0.5f) ? hiy : homeh;
   *zoom_x = CLAMP(*zoom_x, cminx, cmaxx);
   *zoom_y = CLAMP(*zoom_y, cminy, cmaxy);
+
+  // how much of the allowance the clamped position still uses
+  *used0 = fmaxf(0.0f, basex0 - *zoom_x);
+  *used1 = fmaxf(0.0f, *zoom_x - basex1);
 }
 
 static void _dev_zoom_move(dt_dev_viewport_t *port,
@@ -3565,7 +3625,21 @@ static void _dev_zoom_move(dt_dev_viewport_t *port,
 
     // While editing a mask, allow panning beyond the canvas to reach
     // handles that lie outside the image (see helper for the details).
-    _clamp_zoom_to_mask(dev, boxw, boxh, &zoom_x, &zoom_y, use_mask_overlay);
+    // the held allowance, not the raw occlusion: an overlay that has just been
+    // hidden still has its allowance until the view stops needing it
+    const float pw = procw * new_scale;
+    const float occl0 = pw > 0.0f ? port->occlusion_hold_left / pw : 0.0f;
+    const float occl1 = pw > 0.0f ? port->occlusion_hold_right / pw : 0.0f;
+    float used0 = 0.0f, used1 = 0.0f;
+    _clamp_zoom_to_mask(dev, boxw, boxh, occl0, occl1, &used0, &used1,
+                        &zoom_x, &zoom_y, use_mask_overlay);
+
+    // give back whatever the settled position no longer leans on, but never
+    // below what is covered right now
+    port->occlusion_hold_left =
+      MAX(port->occlusion_left, MIN(port->occlusion_hold_left, (int32_t)ceilf(used0 * pw)));
+    port->occlusion_hold_right =
+      MAX(port->occlusion_right, MIN(port->occlusion_hold_right, (int32_t)ceilf(used1 * pw)));
   }
 
   pts[0] = (zoom_x + 0.5f) * procw;
@@ -3878,28 +3952,9 @@ int dt_dev_modulegroups_basics_module_toggle(dt_develop_t *dev,
 
 void dt_dev_masks_list_change(dt_develop_t *dev)
 {
-  if(dev->proxy.masks.module && dev->proxy.masks.list_change)
-    dev->proxy.masks.list_change(dev->proxy.masks.module);
-}
-void dt_dev_masks_list_update(dt_develop_t *dev)
-{
-  if(dev->proxy.masks.module && dev->proxy.masks.list_update)
-    dev->proxy.masks.list_update(dev->proxy.masks.module);
-}
-
-void dt_dev_masks_list_remove(dt_develop_t *dev,
-                              const dt_mask_id_t formid,
-                              const dt_mask_id_t parentid)
-{
-  if(dev->proxy.masks.module && dev->proxy.masks.list_remove)
-    dev->proxy.masks.list_remove(dev->proxy.masks.module, formid, parentid);
-}
-void dt_dev_masks_selection_change(dt_develop_t *dev,
-                                   dt_iop_module_t *module,
-                                   const dt_mask_id_t selectid)
-{
-  if(dev->proxy.masks.module && dev->proxy.masks.selection_change)
-    dev->proxy.masks.selection_change(dev->proxy.masks.module, module, selectid);
+  // the canvas edits the focused module's mask, which the blend panel shows
+  if(dev->gui_attached && dev->gui_module)
+    dt_iop_gui_blend_masks_changed(dev->gui_module);
 }
 
 /** duplicate a existent module */

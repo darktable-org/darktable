@@ -991,8 +991,8 @@ static void _lib_plugin_arrow_button_press_cb(GtkGestureSingle *gesture,
 
   if(button == GDK_BUTTON_PRIMARY)
   {
-    /* bail out if module is static */
-    if(!module->expandable(module)) return;
+    /* bail out if module is static or disabled */
+    if(!module->expandable(module) || (module->arrow && !gtk_widget_is_sensitive(module->arrow))) return;
 
     if(dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
       ; // do nothing (for easier dragging)
@@ -1073,8 +1073,8 @@ static void _lib_plugin_header_button_release_cb(GtkGestureSingle *gesture,
 
 static void show_module_callback(dt_lib_module_t *module)
 {
-  /* bail out if module is static */
-  if(!module->expandable(module)) return;
+  /* bail out if module is static or disabled */
+  if(!module->expandable(module) || (module->arrow && !gtk_widget_is_sensitive(module->arrow))) return;
 
   if(dt_conf_get_bool("lighttable/ui/single_module"))
   {

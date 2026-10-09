@@ -185,6 +185,8 @@ static void _combobox_set(dt_bauhaus_widget_t *w,
                           const gboolean mute);
 static void _slider_set_normalized(dt_bauhaus_widget_t *w,
                                    const float pos);
+static float _slider_normalized_to_value(const dt_bauhaus_slider_data_t *d,
+                                         float pos);
 static void _toggle_set(dt_bauhaus_widget_t *w,
                         const gboolean active);
 
@@ -626,10 +628,18 @@ static void _window_motion_handle(GtkWidget *widget,
   const gint ex = root_x - allocation.x;
   const gint ey = root_y - allocation.y;
 
+  // a popup tagged "dt-bauhaus-static-popup" opened where its caller placed
+  // it (dt_bauhaus_widget_set_popup_position), not at the pointer, which may
+  // start far from it: it is not rejected for a straying pointer, and hover
+  // alone does not change its value, only a drag, a scroll or typing
+  const gboolean static_popup =
+    g_object_get_data(G_OBJECT(w), "dt-bauhaus-static-popup") != NULL;
+
   const int tol = DT_PIXEL_APPLY_DPI(state & GDK_BUTTON1_MASK ? 400 : 50);
-  if(ex < - tol || ex > allocation.width + tol
-     || ey + pop->offcut < - tol
-     || ey + pop->offcut > pop->position.height + tol)
+  if(!static_popup
+     && (ex < - tol || ex > allocation.width + tol
+         || ey + pop->offcut < - tol
+         || ey + pop->offcut > pop->position.height + tol))
   {
     _popup_reject();
     return;
@@ -670,13 +680,24 @@ static void _window_motion_handle(GtkWidget *widget,
       (pop->oldpos, 5.0 * powf(10.0f, -d->digits) / (d->max - d->min) / fabsf(d->factor),
        bh->mouse_x / (width - _widget_get_quad_width(w)), bh->mouse_y / width, ht / width);
     if(state & GDK_BUTTON1_MASK
-       || (bh->mouse_line_distance
+       || (!static_popup && (ex >= 0 && ex <= allocation.width && ey >= 0 && ey <= allocation.height))
+       || (!static_popup && bh->mouse_line_distance
            && ((bh->mouse_line_distance * mouse_off <= 0) ^
                (fabsf(bh->mouse_line_distance - mouse_off) > .5f))))
       bh->change_active = TRUE;
     bh->mouse_line_distance = mouse_off;
     if(bh->change_active)
       _slider_set_normalized(w, pop->oldpos + mouse_off);
+    else if(static_popup)
+    {
+      // hover leaves a static popup's value alone, but reports the value
+      // under the pointer to the caller's hook, to preview it elsewhere
+      dt_bauhaus_static_hover_preview_t hover_preview =
+        g_object_get_data(G_OBJECT(w), "dt-bauhaus-static-hover-preview");
+      if(hover_preview)
+        hover_preview(GTK_WIDGET(w), _slider_normalized_to_value(d, pop->oldpos + mouse_off),
+                     g_object_get_data(G_OBJECT(w), "dt-bauhaus-static-hover-preview-data"));
+    }
   }
   else if(w->type == DT_BAUHAUS_COMBOBOX)
   {
@@ -2291,7 +2312,8 @@ static void _draw_indicator(dt_bauhaus_widget_t *w,
                             cairo_t *cr,
                             const float wd,
                             const GdkRGBA fg_color,
-                            const GdkRGBA border_color)
+                            const GdkRGBA border_color,
+                            const float content_height)
 {
   // draw scale indicator (the tiny triangle)
   if(w->type != DT_BAUHAUS_SLIDER) return;
@@ -2300,12 +2322,17 @@ static void _draw_indicator(dt_bauhaus_widget_t *w,
 
   const float border_width = bh->border_width;
   const float size = bh->marker_size;
+  const float htM = bh->baseline_size - border_width;
+  // a slider reserves a text line above its baseline for its label. With the
+  // label hidden and a height given (content_height > 0), the baseline is
+  // centered in that height instead. The popup passes -1
+  const float htm = (!w->show_label && content_height > 0.0f)
+    ? (content_height - htM) / 2.0f
+    : bh->line_height + INNER_PADDING;
 
   cairo_save(cr);
   if(wd)
-    cairo_translate(cr, pos * wd,
-                    bh->line_height + INNER_PADDING
-                    + (bh->baseline_size - border_width) / 2.0f);
+    cairo_translate(cr, pos * wd, htm + htM / 2.0f);
   cairo_scale(cr, 1.0f, -1.0f);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
@@ -2475,14 +2502,15 @@ static void _draw_color_wheel(dt_bauhaus_widget_t *w,
   cairo_translate(cr, 0, r);
   cairo_scale(cr, 1.5, 1.5);
 
-  _draw_indicator(w, d->pos, cr, .0f, *fg_color, *bg_color);
+  _draw_indicator(w, d->pos, cr, .0f, *fg_color, *bg_color, -1.0f);
 
   cairo_restore(cr);
 }
 
 static void _draw_baseline(dt_bauhaus_widget_t *w,
                            cairo_t *cr,
-                           const float slider_width)
+                           const float slider_width,
+                           const float content_height)
 {
   // draw line for orientation in slider
   if(w->type != DT_BAUHAUS_SLIDER) return;
@@ -2491,11 +2519,13 @@ static void _draw_baseline(dt_bauhaus_widget_t *w,
   cairo_save(cr);
   const dt_bauhaus_slider_data_t *d = &w->slider;
 
-  // pos of baseline
-  const float htm = bh->line_height + INNER_PADDING;
-
   // thickness of baseline
   const float htM = bh->baseline_size - bh->border_width;
+
+  // pos of baseline, centered when the label is hidden (see _draw_indicator)
+  const float htm = (!w->show_label && content_height > 0.0f)
+    ? (content_height - htM) / 2.0f
+    : bh->line_height + INNER_PADDING;
 
   // the background of the line
   cairo_pattern_t *gradient = NULL;
@@ -2556,7 +2586,7 @@ static void _draw_baseline(dt_bauhaus_widget_t *w,
 
   cairo_restore(cr);
 
-  if(d->grad_cnt > 0) cairo_pattern_destroy(gradient);
+  if(gradient) cairo_pattern_destroy(gradient);
 }
 
 static void _popup_reject(void)
@@ -2673,7 +2703,7 @@ static gboolean _popup_draw(GtkWidget *widget,
         _draw_color_wheel(w, context, cr, w2, fg_color, bg_color);
       else
       {
-        _draw_baseline(w, cr, w3);
+        _draw_baseline(w, cr, w3, -1.0f);
 
         cairo_save(cr);
         cairo_set_line_width(cr, 0.5);
@@ -2700,7 +2730,7 @@ static gboolean _popup_draw(GtkWidget *widget,
         _slider_draw_line(cr, pop->oldpos, d->pos - pop->oldpos, scale, w3, h2, ht, w);
         cairo_restore(cr);
 
-        _draw_indicator(w, d->pos, cr, w3, *fg_color, *bg_color);
+        _draw_indicator(w, d->pos, cr, w3, *fg_color, *bg_color, -1.0f);
 
         // show min/max of range
         set_color(cr, text_color_insensitive);
@@ -3022,7 +3052,7 @@ static gboolean _widget_draw(GtkWidget *widget,
     case DT_BAUHAUS_SLIDER:
     {
       // line for orientation
-      _draw_baseline(w, cr, w3);
+      _draw_baseline(w, cr, w3, h3);
 
       float value_width = 0;
       if(gtk_widget_is_sensitive(widget))
@@ -3030,27 +3060,35 @@ static gboolean _widget_draw(GtkWidget *widget,
         cairo_save(cr);
         cairo_rectangle(cr, 0, 0, w3, h3 + INNER_PADDING);
         cairo_clip(cr);
-        _draw_indicator(w, w->slider.pos, cr, w3, *fg_color, *bg_color);
+        _draw_indicator(w, w->slider.pos, cr, w3, *fg_color, *bg_color, h3);
         cairo_restore(cr);
 
-        // TODO: merge that text with combo
+        // as for the combobox and the toggle above, a hidden label hides the
+        // value too, so that a slider can show its indicator alone
+        if(w->show_label)
+        {
+          // TODO: merge that text with combo
 
-        char *text = dt_bauhaus_slider_get_text(widget, dt_bauhaus_slider_get(widget));
-        set_color(cr, *text_color);
-        value_width = _show_pango_text(w, context, cr,
-                                       text, w3, 0, 0,
-                                       TRUE, FALSE, PANGO_ELLIPSIZE_END,
-                                       FALSE, FALSE, NULL, NULL);
-        g_free(text);
+          char *text = dt_bauhaus_slider_get_text(widget, dt_bauhaus_slider_get(widget));
+          set_color(cr, *text_color);
+          value_width = _show_pango_text(w, context, cr,
+                                         text, w3, 0, 0,
+                                         TRUE, FALSE, PANGO_ELLIPSIZE_END,
+                                         FALSE, FALSE, NULL, NULL);
+          g_free(text);
+        }
       }
       // label on top of marker:
-      gchar *label_text = _build_label(w);
-      set_color(cr, *text_color);
-      const float label_width = w3 - value_width;
-      if(label_width > 0)
-        _show_pango_text(w, context, cr, label_text, 0, 0, label_width,
-                         FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE, TRUE, NULL, NULL);
-      g_free(label_text);
+      if(w->show_label)
+      {
+        gchar *label_text = _build_label(w);
+        set_color(cr, *text_color);
+        const float label_width = w3 - value_width;
+        if(label_width > 0)
+          _show_pango_text(w, context, cr, label_text, 0, 0, label_width,
+                           FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE, TRUE, NULL, NULL);
+        g_free(label_text);
+      }
     }
     break;
     case DT_BAUHAUS_TOGGLE:
@@ -3173,6 +3211,10 @@ static void _widget_get_preferred_width(GtkWidget *widget,
 
   *natural_width = _natural_width(widget, FALSE)
                    + w->margin.left + w->margin.right + w->padding.left + w->padding.right;
+  // gtk_widget_get_preferred_size() reads it. 0 rather than the natural width,
+  // so that a panel of sliders can still shrink below the sum of their full
+  // label widths
+  *minimum_width = 0;
 }
 
 static void _widget_get_preferred_height(GtkWidget *widget,
@@ -3182,8 +3224,11 @@ static void _widget_get_preferred_height(GtkWidget *widget,
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   _margins_retrieve(w);
 
-  *minimum_height = w->margin.top + w->margin.bottom + w->padding.top + w->padding.bottom
-                    + darktable.bauhaus->line_height;
+  *minimum_height = w->margin.top + w->margin.bottom + w->padding.top + w->padding.bottom;
+  if(w->show_label || w->type != DT_BAUHAUS_SLIDER)
+  {
+    *minimum_height += darktable.bauhaus->line_height;
+  }
   if(w->type == DT_BAUHAUS_SLIDER)
   {
     // the lower thing to draw is indicator. See _draw_baseline for compute details
@@ -3245,6 +3290,12 @@ static void _popup_show(GtkWidget *widget)
     gtk_style_context_remove_class(context, "dt_bauhaus_popup_right");
   else
     gtk_style_context_add_class(context, "dt_bauhaus_popup_right");
+  // a slider's popup needs room past both ends of its range: a click there
+  // clamps to min/max, while one outside the window rejects the popup
+  if(w->type == DT_BAUHAUS_SLIDER)
+    gtk_style_context_add_class(context, "dt_bauhaus_popup_slider");
+  else
+    gtk_style_context_remove_class(context, "dt_bauhaus_popup_slider");
 
   const GtkStateFlags state = gtk_widget_get_state_flags(pop->area);
   gtk_style_context_get_padding(context, state, &pop->padding);
@@ -3351,6 +3402,25 @@ static void _popup_show(GtkWidget *widget)
   p->height += pop->padding.top + pop->padding.bottom;
   pop->offcut = 0;
 
+  // a position the caller pinned (dt_bauhaus_widget_set_popup_position)
+  // replaces all of the above, converted from root coordinates to `top`'s,
+  // which _window_position anchors against. Stolen, not read: the pin is for
+  // this opening only, not for a later one, by a shortcut say
+  GdkRectangle *pinned =
+    g_object_steal_data(G_OBJECT(widget), "dt-bauhaus-popup-position");
+  if(pinned)
+  {
+    if(top)
+    {
+      gint top_x = 0, top_y = 0;
+      gdk_window_get_origin(top, &top_x, &top_y);
+      *p = *pinned;
+      p->x -= top_x;
+      p->y -= top_y;
+    }
+    g_free(pinned);
+  }
+
   gtk_tooltip_trigger_tooltip_query(gdk_display_get_default());
   if(top == main_window)
     g_signal_connect(pop->window, "event", G_CALLBACK(dt_shortcut_dispatcher), NULL);
@@ -3383,6 +3453,18 @@ void dt_bauhaus_widget_show_popup(GtkWidget *widget)
   bh->mouse_x = 0;
   bh->mouse_y = 0;
   _popup_show(widget);
+}
+
+void dt_bauhaus_widget_set_popup_position(GtkWidget *widget,
+                                          const GdkRectangle *rect)
+{
+  GdkRectangle *copy = NULL;
+  if(rect)
+  {
+    copy = g_new(GdkRectangle, 1);
+    *copy = *rect;
+  }
+  g_object_set_data_full(G_OBJECT(widget), "dt-bauhaus-popup-position", copy, g_free);
 }
 
 static void _slider_add_step(GtkWidget *widget,
@@ -3805,14 +3887,22 @@ static gboolean _slider_value_change_dragging(gpointer data)
   return G_SOURCE_REMOVE;
 }
 
-static void _slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
+// the value, as dt_bauhaus_slider_get() returns it, that a normalized popup
+// position sets, rounded to the slider's display precision, so that the
+// static popup's hover preview can report it without setting it
+static float _slider_normalized_to_value(const dt_bauhaus_slider_data_t *d, float pos)
 {
-  dt_bauhaus_slider_data_t *d = &w->slider;
   float rpos = CLAMP(pos, 0.0f, 1.0f);
   rpos = d->curve(rpos, DT_BAUHAUS_GET);
   rpos = d->min + (d->max - d->min) * rpos;
   const float base = powf(10.0f, d->digits) * d->factor;
-  rpos = roundf(base * rpos) / base;
+  return roundf(base * rpos) / base;
+}
+
+static void _slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
+{
+  dt_bauhaus_slider_data_t *d = &w->slider;
+  float rpos = _slider_normalized_to_value(d, pos);
 
   rpos = (rpos - d->min) / (d->max - d->min);
   d->pos = d->curve(rpos, DT_BAUHAUS_SET);

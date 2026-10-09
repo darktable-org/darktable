@@ -127,6 +127,18 @@ typedef struct dt_dev_viewport_t
   // dimensions of window
   int width, height;
   int32_t border_size;
+  /* width hidden per side behind an overlay on the canvas: the flexi masks
+     panel, which floats over it (see gui/gtk.c). Not subtracted from `width`,
+     so that showing or hiding the overlay never moves the image. Instead the
+     pan clamp (_clamp_zoom_to_mask) lets the view travel that much further, so
+     what lies underneath can be pulled into view. 0 when nothing overlays the
+     canvas */
+  int32_t occlusion_left, occlusion_right;
+  /* the allowance the clamp grants, at least the occlusion above. Hiding the
+     overlay leaves it as it is: dropping it at once would make the next pan
+     or zoom yank the view back inside. It shrinks only to what the current
+     position still uses */
+  int32_t occlusion_hold_left, occlusion_hold_right;
   double dpi, dpi_factor, ppd;
 
   gboolean color_assessment;
@@ -247,6 +259,20 @@ typedef struct dt_develop_t
   struct dt_masks_form_gui_t *form_gui;
   // all forms to be linked here for cleanup:
   GList *allforms;
+  // mask migrations that create forms, queued while dt_dev_read_history_ext()
+  // converts the history rows (dt_masks_migrate_classic_to_flexi()). The new
+  // forms go under the final history_end, which is only known once every row
+  // is read. Drained by dt_masks_finish_flexi_migrations(), before
+  // dt_masks_read_masks_history(), so that the read picks the forms up.
+  // Empty between dt_dev_read_history_ext() calls
+  GList *pending_flexi_migrations;
+
+  // mask_ids (GINT_TO_POINTER) of classic groups a migration kept, to convert
+  // to flexi groups. Drained by dt_masks_normalize_flexi_groups(), after
+  // dt_masks_read_masks_history(): the groups are already in the database, and
+  // the read would replace a conversion made before it. Empty between
+  // dt_dev_read_history_ext() calls
+  GList *pending_flexi_group_splits;
 
   //full preview stuff
   gboolean full_preview;
@@ -296,22 +322,36 @@ typedef struct dt_develop_t
                                        const gboolean doit);
     } modulegroups;
 
-    // masks plugin hooks
+    // the utility module that hosts the flexi masks panel in the "utility
+    // module" position (masks_flexi_host.c). The separate panel positions use
+    // gui/gtk.c's dt_ui_flexi_panel_* instead. The lib fills this in whatever
+    // the position, and stays hidden outside "utility module"
     struct
     {
       struct dt_lib_module_t *module;
-      /* treview list refresh */
-      void (*list_change)(struct dt_lib_module_t *self);
-      void (*list_remove)(struct dt_lib_module_t *self,
-                          const dt_mask_id_t formid,
-                          const dt_mask_id_t parentid);
-      void (*list_update)(struct dt_lib_module_t *self);
-      /* selected forms change */
-      void (*selection_change)(struct dt_lib_module_t *self,
-                               struct dt_iop_module_t *module,
-                               const dt_mask_id_t selectid);
-    } masks;
+      // where flexi content gets reparented into; owned by the lib
+      GtkBox *content_box;
+      // header action buttons container; owned by the lib
+      GtkBox *actions_box;
+      // header on/off toggle container; owned by the lib
+      GtkBox *toggle_box;
+      // header title label and event box
+      GtkWidget *header_label;
+      GtkWidget *label_evb;
+      // the module whose panel is in content_box, NULL if none, for
+      // dt_iop_gui_blend_masks_panel_relocate to move out first
+      struct dt_iop_module_t *hosted_module;
+      // called right after the blending options write a new
+      // masks_panel_position (see _masks_flexi_host_reconfigure), so the lib
+      // can show/hide itself live
+      void (*reconfigure)(struct dt_lib_module_t *self);
+    } masks_flexi_host;
   } proxy;
+
+  // the darkroom toolbar toggle that shows or hides the masks panel, owned by
+  // views/darkroom.c, for masks_gui_panel_host.c to show the panel's state on
+  // (dt_iop_gui_blend_masks_panel_sync_toolbox)
+  GtkWidget *masks_panel_button;
 
   dt_dev_chroma_t chroma;
 
@@ -522,6 +562,13 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
 
 void dt_dev_configure(dt_dev_viewport_t *port);
 
+/** record how much of the canvas an overlay hides on each side. Only the pan
+    clamp reads it (see dt_dev_viewport_t::occlusion_left), so it is cheap to
+    call on every GUI event that may change it */
+void dt_dev_set_occlusion(dt_dev_viewport_t *port,
+                          const int32_t left,
+                          const int32_t right);
+
 /** the four calls below go through dt_dev_proxy_exposure_t: GTK main thread only,
     see the thread contract on that struct */
 /** get exposure level */
@@ -566,16 +613,10 @@ int dt_dev_modulegroups_basics_module_toggle(dt_develop_t *dev,
                                              const gboolean doit);
 
 /*
- * masks plugin hooks
+ * the focused module's shapes, or the defaults of the shape being drawn,
+ * changed on canvas: its blend mask panel shows the new values
  */
 void dt_dev_masks_list_change(dt_develop_t *dev);
-void dt_dev_masks_list_update(dt_develop_t *dev);
-void dt_dev_masks_list_remove(dt_develop_t *dev,
-                              const dt_mask_id_t formid,
-                              const dt_mask_id_t parentid);
-void dt_dev_masks_selection_change(dt_develop_t *dev,
-                                   struct dt_iop_module_t *module,
-                                   const dt_mask_id_t selectid);
 
 /*
  * multi instances

@@ -28,6 +28,14 @@
 #include "common/collection.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "develop/masks/check.h"
+#include "develop/masks/persist.h"
+#include "develop/masks/harvest.h"
+#include "develop/masks/roundtrip.h"
+#include "develop/masks/styleapply.h"
+#include "develop/masks/undo.h"
+#include "develop/masks/lockcheck.h"
+#include "develop/masks/verify.h"
 #include "common/datetime.h"
 #include "common/exif.h"
 #include "common/pwstorage/pwstorage.h"
@@ -171,6 +179,22 @@ static void _show_console_notice(void)
 }
 #endif
 
+/* the report path for a harvest FILE: FILE + `suffix`, without a trailing
+   ".gz", so that a compressed harvest and the same one unpacked get the same
+   report name */
+static gchar *_masks_report_path(const char *input, const char *suffix)
+{
+  const size_t len = strlen(input);
+  if(len > 3 && !strcmp(input + len - 3, ".gz"))
+  {
+    gchar *stem = g_strndup(input, len - 3);
+    gchar *out = g_strconcat(stem, suffix, NULL);
+    g_free(stem);
+    return out;
+  }
+  return g_strconcat(input, suffix, NULL);
+}
+
 static int usage(const char *argv0)
 {
 #ifdef _WIN32
@@ -221,6 +245,90 @@ static int usage(const char *argv0)
          "    The default location depends on your installation.\n"
          "    Typical locations are /opt/darktable/share/darktable/ \n"
          "    and /usr/share/darktable/\n"
+         "\n"
+         "--check-masks FILE\n"
+         "    Run every migration check over a --harvest-masks FILE and exit: the\n"
+         "    save/load round trip, the before/after render comparison, and the\n"
+         "    classic-style application. Writes one self-contained\n"
+         "    FILE.check.json holding a row for every harvested edit plus a\n"
+         "    summary of each check, so nothing has to be read off the terminal.\n"
+         "    Exits 0 only if all three passed.\n"
+         "\n"
+         "    Use --library :memory: with this: it writes to a scratch image id\n"
+         "    and must never be pointed at a real catalog.\n"
+         "\n"
+         "    FILE may be gzipped; the .gz a contributor sends is read directly,\n"
+         "    with no need to unpack it first. The same is true of\n"
+         "    --verify-masks, --roundtrip-masks and --styleapply-masks.\n"
+         "\n"
+         "    The three checks can also be run one at a time -- --roundtrip-masks,\n"
+         "    --verify-masks and --styleapply-masks below -- which is useful when\n"
+         "    investigating one of them, but --check-masks is what a contributed\n"
+         "    harvest should be run through.\n"
+         "\n"
+         "--persist-masks FILE\n"
+         "    Replay the mask configurations in a --harvest-masks FILE, migrate\n"
+         "    each one, then apply short sequences of panel edits to it twice:\n"
+         "    once wholly in memory, once saving and reopening the image between\n"
+         "    every edit. The two must render the same mask. Writes\n"
+         "    FILE.persist.json.\n"
+         "\n"
+         "    Needs `--library :memory:`: it writes to the database.\n"
+         "\n"
+         "    Catches state that a save does not carry, such as migrated\n"
+         "    blend_params reaching the database without the group markers\n"
+         "    migration made: the mask would then render wrong from the second\n"
+         "    load on, with no edit involved.\n"
+         "\n"
+         "--undo-masks FILE\n"
+         "    Replay the mask configurations in a --harvest-masks FILE, migrate\n"
+         "    each one, then for every action the masks panel offers: make the\n"
+         "    change, undo it, and redo it. Undoing must give back the mask that\n"
+         "    was there before, and redoing the one that was there after. Writes\n"
+         "    FILE.undo.json.\n"
+         "\n"
+         "    Needs `--library :memory:`: it writes to the database.\n"
+         "\n"
+         "    Undo is the one operation that has to RECOVER a mask rather than\n"
+         "    build one, and it recovers it from a copy taken before the edit.\n"
+         "    Nothing else here exercises that copy.\n"
+         "\n"
+         "--lock-masks\n"
+         "    Check that a locked mask survives paste, in append and overwrite\n"
+         "    mode, and styles, on two scratch images. Prints one line per case.\n"
+         "\n"
+         "    Needs `--library :memory:`: it writes to the database.\n"
+         "\n"
+         "--verify-masks FILE\n"
+         "    Replay the mask configurations in a --harvest-masks FILE, rendering\n"
+         "    each one before and after migration to the new mask model and\n"
+         "    comparing the results, then exit. Writes FILE.report.json.\n"
+         "\n"
+         "--harvest-masks-xmp DIR FILE\n"
+         "    The same, for people who do not use darktable's library: walk DIR\n"
+         "    recursively, read the mask configurations out of every .xmp sidecar\n"
+         "    found and write them to FILE (plus FILE.gz). Reads nothing else from\n"
+         "    the sidecars -- no file names, no GPS, no timestamps -- and writes\n"
+         "    nothing anywhere else.\n"
+         "\n"
+         "--harvest-masks FILE\n"
+         "    Export every mask configuration in the library to FILE as JSON, then\n"
+         "    exit. Used to check that migrating masks to the new model leaves real\n"
+         "    edits rendering identically; sharing the file with the developers helps\n"
+         "    test that against a wider range of edits than we can invent.\n"
+         "\n"
+         "    The library is opened strictly read-only and is never locked, written\n"
+         "    to, or schema-upgraded. Use --library / --configdir to choose which\n"
+         "    library to read.\n"
+         "\n"
+         "    The output is plain, readable JSON holding only numbers and darktable\n"
+         "    module names: no file or folder names, no shape, group or module\n"
+         "    instance names, no image content or thumbnails, no EXIF, no timestamps.\n"
+         "    Images appear only as pixel dimensions and a sequential index. Please\n"
+         "    read the file before sharing it.\n"
+         "\n"
+         "    A compressed copy is also written to FILE.gz (this data compresses by\n"
+         "    roughly 12x). Read FILE, send FILE.gz -- they hold the same thing.\n"
          "\n"
          "--library FILE\n"
          "    Specifies an alternate location for darktable's image information database,\n"
@@ -1080,6 +1188,15 @@ int dt_init(int argc,
 
   // database
   char *dbfilename_from_command = NULL;
+  char *harvest_masks_output = NULL;
+  char *harvest_masks_xmp_dir = NULL;
+  char *verify_masks_input = NULL;
+  char *roundtrip_masks_input = NULL;
+  char *styleapply_masks_input = NULL;
+  char *persist_masks_input = NULL;
+  char *undo_masks_input = NULL;
+  gboolean lock_masks = FALSE;
+  char *check_masks_input = NULL;
   char *noiseprofiles_from_command = NULL;
   char *datadir_from_command = NULL;
   char *moduledir_from_command = NULL;
@@ -1168,6 +1285,103 @@ int dt_init(int argc,
       else if(!strcmp(argv[k], "--library") && argc > k + 1)
       {
         dbfilename_from_command = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--harvest-masks-xmp"))
+      {
+        if(argc <= k + 2 || argv[k + 1][0] == '-' || argv[k + 2][0] == '-')
+        {
+          g_strfreev(myoptions);
+          return usage(argv[0]);
+        }
+        harvest_masks_xmp_dir = argv[++k];
+        harvest_masks_output = argv[++k];
+        argv[k - 2] = NULL;
+        argv[k - 1] = NULL;
+        argv[k] = NULL;
+        // handled below, before anything opens a database
+        continue;
+      }
+      else if(!strcmp(argv[k], "--harvest-masks"))
+      {
+        if(argc <= k + 1 || argv[k + 1][0] == '-')
+        {
+          g_strfreev(myoptions);
+          return usage(argv[0]);
+        }
+        harvest_masks_output = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--verify-masks"))
+      {
+        if(argc <= k + 1 || argv[k + 1][0] == '-')
+        {
+          g_strfreev(myoptions);
+          return usage(argv[0]);
+        }
+        verify_masks_input = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--persist-masks"))
+      {
+        if(argc <= k + 1 || argv[k + 1][0] == '-')
+        {
+          g_strfreev(myoptions);
+          return usage(argv[0]);
+        }
+        persist_masks_input = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--lock-masks"))
+      {
+        lock_masks = TRUE;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--undo-masks"))
+      {
+        if(argc <= k + 1 || argv[k + 1][0] == '-')
+        {
+          g_strfreev(myoptions);
+          return usage(argv[0]);
+        }
+        undo_masks_input = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--roundtrip-masks"))
+      {
+        if(argc <= k + 1 || argv[k + 1][0] == '-')
+        {
+          g_strfreev(myoptions);
+          return usage(argv[0]);
+        }
+        roundtrip_masks_input = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--styleapply-masks"))
+      {
+        if(argc <= k + 1 || argv[k + 1][0] == '-')
+        {
+          g_strfreev(myoptions);
+          return usage(argv[0]);
+        }
+        styleapply_masks_input = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--check-masks"))
+      {
+        if(argc <= k + 1 || argv[k + 1][0] == '-')
+        {
+          g_strfreev(myoptions);
+          return usage(argv[0]);
+        }
+        check_masks_input = argv[++k];
         argv[k-1] = NULL;
         argv[k] = NULL;
       }
@@ -1578,6 +1792,42 @@ int dt_init(int argc,
     dt_print(DT_DEBUG_ALWAYS,
              "[init] darktable dump directory is '%s'",
              darktable.tmp_directory ? darktable.tmp_directory : "NOT AVAILABLE");
+  }
+
+  if(harvest_masks_xmp_dir)
+  {
+    // here for the reason --harvest-masks below is: before anything opens or
+    // locks a database
+    const gboolean ok =
+      dt_masks_harvest_xmp_dir(harvest_masks_xmp_dir, harvest_masks_output);
+    exit(ok ? 0 : 1);
+  }
+
+  if(harvest_masks_output)
+  {
+    // harvest and exit here, before dt_database_init() locks the library and
+    // may upgrade its schema: the user's library must not be touched (see
+    // harvest.h)
+    gchar *library = NULL;
+    if(dbfilename_from_command)
+      library = g_strdup(dbfilename_from_command);
+    else
+    {
+      gchar *cfg = configdir_from_command
+        ? g_strdup(configdir_from_command)
+        : g_build_filename(g_get_user_config_dir(), "darktable", NULL);
+      library = g_build_filename(cfg, "library.db", NULL);
+      g_free(cfg);
+    }
+
+    const gboolean ok = dt_masks_harvest_library(library, harvest_masks_output);
+    if(!ok)
+      fprintf(stderr,
+              "[harvest] no output written.\n"
+              "[harvest] Use --library FILE to name the library explicitly, or\n"
+              "[harvest] --configdir DIR to name the directory holding library.db.\n");
+    g_free(library);
+    exit(ok ? 0 : 1);
   }
 
   // Set directories as requested or default.
@@ -2153,6 +2403,82 @@ int dt_init(int argc,
     dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: iop order looks bad, aborting.");
     dt_splash_screen_destroy();
     return 1;
+  }
+
+  if(verify_masks_input)
+  {
+    // here: the replay runs the real blend, which needs the color profiles
+    // (dt_colorspaces_init) and real module instances (dt_iop_load_modules_so)
+    // above, but no window, so that it runs headless and in CI
+    dt_splash_screen_destroy();
+    gchar *report = _masks_report_path(verify_masks_input, ".report.json");
+    const gboolean ok = dt_masks_verify_harvest(verify_masks_input, report);
+    g_free(report);
+    exit(ok ? 0 : 1);
+  }
+
+  if(roundtrip_masks_input)
+  {
+    // here for the reason --verify-masks is, and it drives the real history
+    // reader and writer too, so it needs a library: a throwaway one,
+    // `--library :memory:`, never a real one, as it creates and wipes a
+    // scratch image
+    dt_splash_screen_destroy();
+    gchar *report = _masks_report_path(roundtrip_masks_input, ".roundtrip.json");
+    const gboolean ok = dt_masks_roundtrip_harvest(roundtrip_masks_input, report);
+    g_free(report);
+    exit(ok ? 0 : 1);
+  }
+
+  if(styleapply_masks_input)
+  {
+    // as --roundtrip-masks: `--library :memory:`, never a real library
+    dt_splash_screen_destroy();
+    gchar *report = _masks_report_path(styleapply_masks_input, ".styleapply.json");
+    const gboolean ok = dt_masks_styleapply_harvest(styleapply_masks_input, report);
+    g_free(report);
+    exit(ok ? 0 : 1);
+  }
+
+  if(persist_masks_input)
+  {
+    // renders as --verify-masks does, and drives the history reader and
+    // writer as --roundtrip-masks does: `--library :memory:`, never a real
+    // library
+    dt_splash_screen_destroy();
+    gchar *report = _masks_report_path(persist_masks_input, ".persist.json");
+    const gboolean ok = dt_masks_persist_harvest(persist_masks_input, report);
+    g_free(report);
+    exit(ok ? 0 : 1);
+  }
+
+  if(undo_masks_input)
+  {
+    // as --persist-masks: `--library :memory:`, never a real library
+    dt_splash_screen_destroy();
+    gchar *report = _masks_report_path(undo_masks_input, ".undo.json");
+    const gboolean ok = dt_masks_undo_harvest(undo_masks_input, report);
+    g_free(report);
+    exit(ok ? 0 : 1);
+  }
+
+  if(lock_masks)
+  {
+    // drives the history reader and writer, paste and styles against two
+    // scratch images: `--library :memory:`, never a real library
+    dt_splash_screen_destroy();
+    exit(dt_masks_lock_check() ? 0 : 1);
+  }
+
+  if(check_masks_input)
+  {
+    // --roundtrip-masks, --verify-masks and --styleapply-masks in one run and
+    // one report: `--library :memory:`, never a real library
+    dt_splash_screen_destroy();
+    gchar *report = _masks_report_path(check_masks_input, ".check.json");
+    const gboolean ok = dt_masks_check_harvest(check_masks_input, report);
+    g_free(report);
+    exit(ok ? 0 : 1);
   }
 
   if(darktable.dump_pfm_module)

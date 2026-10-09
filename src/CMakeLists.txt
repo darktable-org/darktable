@@ -116,6 +116,9 @@ FILE(GLOB SOURCE_FILES
   "control/signal.c"
   "develop/blend.c"
   "develop/blend_gui.c"
+  "develop/masks_gui_presets.c"
+  "develop/masks_gui_panel_host.c"
+  "develop/masks_gui_toolbar.c"
   "develop/blends/blendif_lab.c"
   "develop/blends/blendif_raw.c"
   "develop/blends/blendif_rgb_hsl.c"
@@ -128,12 +131,26 @@ FILE(GLOB SOURCE_FILES
   "develop/imageop_math.c"
   "develop/lightroom.c"
   "develop/masks/brush.c"
+  "develop/masks/check.c"
   "develop/masks/circle.c"
   "develop/masks/ellipse.c"
   "develop/masks/gradient.c"
   "develop/masks/group.c"
+  "develop/masks/harvest.c"
   "develop/masks/masks.c"
+  "develop/masks/migrate_legacy.c"
+  "develop/masks/parametric.c"
   "develop/masks/path.c"
+  "develop/masks/probe_image.c"
+  "develop/masks/raster.c"
+  "develop/masks/lockcheck.c"
+  "develop/masks/persist.c"
+  "develop/masks/postedit.c"
+  "develop/masks/roundtrip.c"
+  "develop/masks/scratch_image.c"
+  "develop/masks/styleapply.c"
+  "develop/masks/undo.c"
+  "develop/masks/verify.c"
   "develop/pixelpipe.c"
   "develop/preview_data.c"
   "develop/tiling.c"
@@ -1093,6 +1110,23 @@ add_custom_target(
   generate_styles_string ALL
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/styles_string.h
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# the masks panel's built-in group layout presets are read from JSON at
+# runtime; their strings are only extracted here, for translation
+add_custom_command(
+  DEPENDS ${CMAKE_SOURCE_DIR}/data/masks_group_presets.json
+          ${CMAKE_SOURCE_DIR}/tools/generate_masks_presets_strings.sh
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/masks_group_presets_strings.h
+  COMMAND bash ${CMAKE_SOURCE_DIR}/tools/generate_masks_presets_strings.sh
+          ${CMAKE_SOURCE_DIR}/data/masks_group_presets.json
+          ${CMAKE_CURRENT_BINARY_DIR}/masks_group_presets_strings.h
+  COMMENT "Generating masks group preset strings for translation"
+)
+
+add_custom_target(
+  generate_masks_presets_strings ALL
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/masks_group_presets_strings.h
 )
 
 add_custom_target(

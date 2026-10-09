@@ -99,6 +99,23 @@ changes (where available).
   control over highlights and shadows. Uses edge aware and exposure
   invariant guided filters for its processing.
 
+- A new masks panel replaces the separate drawn, parametric, raster and
+  combined mask modes, and the mask manager. A module's mask is now
+  built in one place from groups of elements: drawn shapes, parametric
+  channels, raster masks from other modules and AI objects can be freely
+  combined and nested. Each group combines its elements with one
+  operator and has its own opacity, inversion and refinement (details,
+  feathering, blur, contrast and brightness), which each element can
+  also have on its own. Elements and groups can be renamed, reordered by
+  drag and drop, disabled, soloed, and a mask can be locked against
+  reset, presets, styles and paste. The panel and the canvas follow each
+  other: hovering or selecting an element in either shows it in the
+  other. The panel can stay in the module's blending section, move to a
+  utility module, or be docked beside the image, and built-in layout
+  presets set up common masks in one click, with notes on how to use
+  them. Existing masks are converted when an edit is opened and render
+  as before.
+
 ## UI/UX Improvements
 
 - The code has received a large set of changes in preparation of the
@@ -540,6 +557,12 @@ changes (where available).
   and no longer stuck at the image's own pixel size.
 
 ## Notes
+
+- Masks are converted to the new masks panel's format when an edit is
+  opened, and written back in that format. The conversion is one way:
+  edits saved by this version cannot be read by older versions of
+  darktable with their masks intact. Take a backup before opening
+  edits you may still want to use with an older version.
 
 - When exporting to AVIF, EXR, JPEG XL, or XCF, selecting specific
   metadata (e.g. geo-tag or creator) is not currently possible. For

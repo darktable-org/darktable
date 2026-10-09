@@ -55,6 +55,18 @@ gboolean dt_dev_pixelpipe_prepare_mask_cache(struct dt_dev_pixelpipe_iop_t *piec
 void dt_dev_pixelpipe_clear_mask_cache(struct dt_dev_pixelpipe_t *pipe,
                                        dt_dev_distorted_mask_cache_t *c);
 
+/** the pipe's snapshot of the refinements previewed as off. The set itself
+ *  (dt_iop_gui_blend_data_t.masks_refine_bypassed) changes on the GTK thread,
+ *  where the renderer must not read it, so dt_masks_refine_bypass_commit()
+ *  copies it here under the blend data's lock, in commit_params. The keys
+ *  (dt_masks_refine_key_*() in blend.h) are sorted, so that lookups can bisect
+ *  and the hash does not depend on the set's order */
+typedef struct dt_dev_refine_bypass_t
+{
+  guint32 *keys;  // sorted bypass keys, or NULL when nothing is bypassed
+  int nkeys;
+} dt_dev_refine_bypass_t;
+
 typedef struct dt_dev_pixelpipe_iop_t
 {
   struct dt_iop_module_t *module;  // the module in the dev operation stack
@@ -91,7 +103,23 @@ typedef struct dt_dev_pixelpipe_iop_t
   // cached distorted masks at geometric module boundaries
   dt_dev_distorted_mask_cache_t detail_mask_cache;
   dt_dev_distorted_mask_cache_t raster_mask_cache;
+  // the output of dt_masks_group_render_roi, before the whole-mask refinement
+  // and inversion (key: see _render_drawn_mask_cached in blend.c). src_hash is
+  // pipe->scharr.hash, for element details thresholds. Not filled when the
+  // group's parametric members or feathering read the module's pixels
   dt_dev_distorted_mask_cache_t drawn_mask_cache;
+
+  // the module's input and output images, lent to the group renderer for its
+  // parametric members and feathering while dt_develop_blend_process runs;
+  // NULL otherwise
+  const float *blend_refine_guide_in;
+  const float *blend_refine_guide_out;
+  const dt_iop_roi_t *blend_refine_roi_in;
+  const dt_iop_roi_t *blend_refine_roi_out;
+
+  // the refinements previewed as off, copied at commit time so that the
+  // renderer never reads the GUI's set from a worker thread
+  dt_dev_refine_bypass_t refine_bypass;
 } dt_dev_pixelpipe_iop_t;
 
 typedef enum dt_dev_pixelpipe_change_t
@@ -424,6 +452,18 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *d
 void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev);
 // force a rebuild of the pipe, needed when a module order is changed for example
 void dt_dev_pixelpipe_rebuild(struct dt_develop_t *dev);
+
+/* drop the deleted, disabled or out-of-sync consumers from `module`'s raster
+   mask users, judging each consumer by its node in this pipe.
+
+   Called by synch_all and synch_top, and declared here only so the tests can
+   call it directly. It must handle two kinds of consumer, the raster sink and
+   a raster element of a mask, in every pipe, the export one included, where
+   piece->enabled is right and module->enabled is not. A wrong answer drops a
+   live consumer's mask, silently and only on export (integration test
+   0167-raster-mask) */
+void dt_dev_pixelpipe_prune_stale_raster_users(dt_dev_pixelpipe_t *pipe,
+                                               struct dt_iop_module_t *module);
 
 // process region of interest of pixels. returns TRUE if pipe was altered during processing.
 gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,

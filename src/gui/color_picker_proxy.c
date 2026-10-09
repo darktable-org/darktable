@@ -104,6 +104,34 @@ static gboolean _record_point_area(dt_iop_color_picker_t *self)
   return changed;
 }
 
+// forget this picker's box and point, so that its next arm starts blank (the
+// `!self->initialized` branches of _color_picker_callback_button_press). A
+// deferred picker then waits for a new selection, as after resetting the
+// value it feeds (_param_row_slider_reset_callback in blend_gui.c)
+void dt_iop_color_picker_forget(GtkWidget *picker_widget)
+{
+  dt_iop_color_picker_t *picker =
+    picker_widget ? g_object_get_data(G_OBJECT(picker_widget), DT_COLOR_PICKER_INSTANCE_KEY) : NULL;
+  if(!picker) return;
+  picker->initialized = FALSE;
+  memset(picker->pick_box, 0, sizeof(picker->pick_box));
+  memset(picker->pick_pos, 0, sizeof(picker->pick_pos));
+}
+
+// start this picker's next arm from `box` and sample it at once: a deferred
+// picker otherwise waits for a drag on canvas even with a box to resume from.
+// The flexi mask panel uses it to carry one area across a module's parametric
+// elements
+void dt_iop_color_picker_reuse_area(GtkWidget *picker_widget, const dt_pickerbox_t box)
+{
+  dt_iop_color_picker_t *picker =
+    picker_widget ? g_object_get_data(G_OBJECT(picker_widget), DT_COLOR_PICKER_INSTANCE_KEY) : NULL;
+  if(!picker) return;
+  memcpy(picker->pick_box, box, sizeof(picker->pick_box));
+  picker->initialized = TRUE;
+  picker->sample_on_arm = TRUE;
+}
+
 static void _color_picker_reset(dt_iop_color_picker_t *picker)
 {
   if(picker)
@@ -151,6 +179,7 @@ static void _init_picker(dt_iop_color_picker_t *picker,
   picker->changed     = FALSE;
   picker->fixed_cst   = FALSE;
   picker->initialized = FALSE;
+  picker->sample_on_arm = FALSE;
 
   _color_picker_reset(picker);
 }
@@ -191,11 +220,26 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
     dt_iop_color_picker_flags_t kind = self->flags & DT_COLOR_PICKER_POINT_AREA;
     if(kind == DT_COLOR_PICKER_POINT_AREA)
       kind = to_area_mode ? DT_COLOR_PICKER_AREA : DT_COLOR_PICKER_POINT;
+    // DT_COLOR_PICKER_DEFERRED_AREA: skip resetting to the usual large
+    // (~96%-of-frame) default box and skip the immediate sample below --
+    // wait for the user's own drag on canvas to define a box instead. Point
+    // mode has no default-box/immediate-sample to defer, so it is unaffected.
+    const gboolean deferred_area =
+      (kind & DT_COLOR_PICKER_AREA) && (flags & DT_COLOR_PICKER_DEFERRED_AREA)
+      && !self->sample_on_arm;
+    self->sample_on_arm = FALSE;
     // pull picker's last recorded positions
     if(kind & DT_COLOR_PICKER_AREA)
     {
-      if(!self->initialized)
+      // never armed, or forgotten (dt_iop_color_picker_forget): start blank.
+      // A picker with a remembered box resumes from it
+      if(!self->initialized && deferred_area)
+        memset(self->pick_box, 0, sizeof(self->pick_box));
+      else if(!self->initialized)
         dt_lib_colorpicker_reset_box_area(self->pick_box);
+      // a box sample all the same, so that darkroom.c's button_pressed lets
+      // the user drag one: the zeroed pick_box is replaced by the first
+      // click on the canvas
       dt_lib_colorpicker_set_box_area(darktable.lib, self->pick_box);
     }
     else if(kind & DT_COLOR_PICKER_POINT)
@@ -222,17 +266,26 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
       dt_bauhaus_widget_set_quad_active(self->colorpick, TRUE);
     DT_LEAVE_GUI_UPDATE();
 
-    if(module)
+    if(deferred_area)
+    {
+      // focus the module without sampling the box there is: a deferred
+      // picker samples when a drag on the canvas defines its box
+      // (darkroom.c's button_pressed)
+      if(module) dt_iop_request_focus(module);
+    }
+    else if(module)
     {
       module->dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
       dt_iop_request_focus(module);
+      // force applying the next incoming sample
+      self->changed = TRUE;
     }
     else
     {
       dt_dev_invalidate_all(darktable.develop);
+      // force applying the next incoming sample
+      self->changed = TRUE;
     }
-    // force applying the next incoming sample
-    self->changed = TRUE;
   }
   else
   {
@@ -321,7 +374,8 @@ float dt_iop_color_picker_toggle(GtkWidget *target,
                                       self);
 
   const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(target));
-  if(!gtk_widget_is_visible(target))
+  if(!gtk_widget_is_visible(target)
+     && !g_object_get_data(G_OBJECT(target), "param-row-formid"))
     dt_action_widget_toast(NULL, target, active ? _("on") : _("off"));
 
   return active;
