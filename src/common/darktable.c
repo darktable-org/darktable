@@ -305,6 +305,10 @@ static int usage(const char *argv0)
          "    Enforce safe on-device cl_mem allocation.\n"
          "    Use for debugging sessions analysing cl_mem usage because of a performance penalty.\n"
          "\n"
+         "--opencl-diffstat\n"
+         "    Report statistics about OpenCL vs CPU module processing.\n"
+         "    Use for debugging sessions only.\n"
+         "\n"
 #endif
          "--disable-pipecache\n"
          "    Disable the pixelpipe cache. This option allows only\n"
@@ -1091,6 +1095,7 @@ int dt_init(int argc,
   darktable.dump_diff_pipe = NULL;
   darktable.tmp_directory = NULL;
   darktable.bench_module = NULL;
+  darktable.cldiff_stats = FALSE;
 
   int options = DT_OPENCL_OPTION_EXCLUDE;
   gboolean print_statistics = FALSE;
@@ -1442,6 +1447,11 @@ int dt_init(int argc,
       else if(!strcmp(argv[k], "--disable-pipecache"))
       {
         darktable.pipe_cache = FALSE;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--opencl-diffstat"))
+      {
+        darktable.cldiff_stats = TRUE;
         argv[k] = NULL;
       }
       else if(!strcmp(argv[k], "--gimp"))

@@ -1607,6 +1607,25 @@ void dt_masks_change_form_gui(dt_masks_form_t *newform)
   DT_LEAVE_GUI_UPDATE();
 }
 
+gboolean dt_masks_cancel_creation(void)
+{
+  dt_masks_form_gui_t *gui = darktable.develop ? darktable.develop->form_gui : NULL;
+  if(!gui || !gui->creation) return FALSE;
+
+  dt_iop_module_t *module = gui->creation_module;
+  gui->creation_continuous = FALSE;
+  gui->creation_continuous_module = NULL;
+  if(module)
+  {
+    dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
+    dt_masks_iop_update(module);
+  }
+  else
+    dt_masks_change_form_gui(NULL);
+  dt_control_queue_redraw_center();
+  return TRUE;
+}
+
 void dt_masks_reset_form_gui(void)
 {
   dt_masks_change_form_gui(NULL);
@@ -2896,6 +2915,27 @@ void dt_masks_calculate_source_pos_value(const dt_masks_form_gui_t *gui,
   *py = y;
 }
 
+// shapes are drawn in the overlay color over a neutral edge, white round a dark
+// color and black round a light one, so one of the two stays visible whatever
+// is underneath. Not the color's own dark shade, as guides use: that is black
+// at full contrast and vanishes over a dark picture
+static void _masks_set_line_color(cairo_t *cr, const double alpha)
+{
+  dt_draw_set_color_overlay(cr, TRUE, alpha);
+}
+
+static void _masks_set_edge_color(cairo_t *cr, const double alpha)
+{
+  const double amt = 0.5 + darktable.gui->overlay_contrast * 0.5;
+  const double lum = amt * (0.2126 * darktable.gui->overlay_red
+                            + 0.7152 * darktable.gui->overlay_green
+                            + 0.0722 * darktable.gui->overlay_blue);
+  const double edge = lum < 0.5 ? 1.0 : 0.0;
+  // the overlay contrast setting sets how far the two tones stand apart
+  cairo_set_source_rgba(cr, edge, edge, edge,
+                        alpha * (0.4 + 0.5 * darktable.gui->overlay_contrast));
+}
+
 void dt_masks_draw_anchor(cairo_t *cr,
                           const gboolean selected,
                           const float zoom_scale,
@@ -2905,7 +2945,7 @@ void dt_masks_draw_anchor(cairo_t *cr,
   const float anchor_size = DT_PIXEL_APPLY_DPI(selected ? 8.0f : 5.0f) / zoom_scale;
 
   cairo_set_dash(cr, NULL, 0, 0);
-  dt_draw_set_color_overlay(cr, TRUE, 0.8);
+  _masks_set_line_color(cr, 0.8);
   cairo_rectangle(cr,
                   x - (anchor_size * 0.5f),
                   y - (anchor_size * 0.5f),
@@ -2914,7 +2954,7 @@ void dt_masks_draw_anchor(cairo_t *cr,
   cairo_fill_preserve(cr);
   const double lwidth = (dt_iop_canvas_not_sensitive(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(selected ? 2.0 : 1.0) * lwidth);
-  dt_draw_set_color_overlay(cr, FALSE, 0.8);
+  _masks_set_edge_color(cr, 1.0);
   cairo_stroke(cr);
 }
 
@@ -2928,12 +2968,12 @@ void dt_masks_draw_ctrl(cairo_t *cr,
 
   cairo_arc(cr, x, y, ctrl_size, 0, 2.0 * M_PI);
 
-  dt_draw_set_color_overlay(cr, TRUE, 0.8);
+  _masks_set_line_color(cr, 0.8);
   cairo_fill_preserve(cr);
 
   const double lwidth = (dt_iop_canvas_not_sensitive(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
   cairo_set_line_width(cr, lwidth);
-  dt_draw_set_color_overlay(cr, FALSE, 0.8);
+  _masks_set_edge_color(cr, 1.0);
   cairo_stroke(cr);
 }
 
@@ -3003,7 +3043,7 @@ void dt_masks_stroke_arrow(cairo_t *cr,
   else
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5) * lwidth);
 
-  dt_draw_set_color_overlay(cr, FALSE, 0.8);
+  _masks_set_edge_color(cr, 1.0);
   cairo_stroke_preserve(cr);
 
   if((gui->group_selected == group) && (gui->form_selected || gui->form_dragging))
@@ -3011,7 +3051,7 @@ void dt_masks_stroke_arrow(cairo_t *cr,
   else
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5) * lwidth);
 
-  dt_draw_set_color_overlay(cr, TRUE, 0.8);
+  _masks_set_line_color(cr, 0.8);
   cairo_stroke(cr);
 }
 
@@ -3091,10 +3131,16 @@ void dt_masks_line_stroke(cairo_t *cr,
                           const gboolean selected,
                           const float zoom_scale)
 {
+  // the colored line's width, and the edge added on each side of it
   const double size_border     = DT_PIXEL_APPLY_DPI(1.0);
   const double size_source     = DT_PIXEL_APPLY_DPI(1.5);
-  const double size_mask       = DT_PIXEL_APPLY_DPI(1.7);
-  const double factor_selected = DT_PIXEL_APPLY_DPI(1.5);
+  const double size_mask       = DT_PIXEL_APPLY_DPI(1.25);
+  const double edge_border     = DT_PIXEL_APPLY_DPI(0.75);
+  const double edge_mask       = DT_PIXEL_APPLY_DPI(0.75);
+  // a hovered or selected shape has to stand out from the ones at rest, in
+  // weight as well as in opacity
+  const double factor_selected = 2.0;
+  const double edge_selected   = 1.5;
 
   double dashed[] = { DT_PIXEL_APPLY_DPI(4.0), DT_PIXEL_APPLY_DPI(4.0) };
   dashed[0] /= zoom_scale;
@@ -3107,36 +3153,40 @@ void dt_masks_line_stroke(cairo_t *cr,
 
   const gboolean restricted = _masks_is_restricted_mode();
 
-  // first the background draw, darker
-  if(restricted && !border)
-    dt_draw_set_color_overlay(cr, FALSE, 0.1);
-  else
-    dt_draw_set_color_overlay(cr, FALSE, selected ? 0.8 : 0.5);
-
-  cairo_set_dash(cr, dashed, border ? len : 0, 0);
-
   const double lwidth = (dt_iop_canvas_not_sensitive(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
   const double line_width =
     ((border ? size_border : (source ? size_source : size_mask))
      * (selected ? factor_selected : 1.0)) * lwidth;
+  const double edge_width =
+    (border ? edge_border : edge_mask) * (selected ? edge_selected : 1.0) * lwidth;
 
-  cairo_set_line_width(cr, line_width);
+  // first the edge, as wide as the line plus an edge on each side. A border's
+  // dashes are edged dash by dash, so it still reads as dashed. A clone source
+  // is the negative of a shape, the two tones swapped, which keeps it apart
+  // from the shape it copies to
+  if(restricted && !border)
+    _masks_set_edge_color(cr, 0.1);
+  else if(source)
+    _masks_set_line_color(cr, selected ? 1.0 : 0.6);
+  else
+    _masks_set_edge_color(cr, selected ? 1.0 : 0.6);
 
+  cairo_set_dash(cr, dashed, border ? len : 0, 0);
+  cairo_set_line_width(cr, line_width + 2.0 * edge_width);
   cairo_stroke_preserve(cr);
 
-  // second the foreground draw, lighter (same size as darker if selected)
-  cairo_set_line_width(cr, (line_width / (selected && !border ? 1.0 : 2.0)));
+  // then the line itself, in the overlay color (the edge tone for a source)
+  cairo_set_line_width(cr, line_width);
 
   if(restricted && !border)
   {
     cairo_set_dash(cr, dashed_restricted, len, 4);
-    dt_draw_set_color_overlay(cr, TRUE, 1.0);
+    _masks_set_line_color(cr, 1.0);
   }
-  else if(!source)
-  {
-    dt_draw_set_color_overlay(cr, TRUE, selected ? 0.9 : 0.6);
-    cairo_set_dash(cr, dashed, border ? len : 0, 4);
-  }
+  else if(source)
+    _masks_set_edge_color(cr, selected ? 1.0 : 0.6);
+  else
+    _masks_set_line_color(cr, selected ? 1.0 : 0.75);
 
   cairo_stroke(cr);
 }

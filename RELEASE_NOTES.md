@@ -108,6 +108,13 @@ changes (where available).
 - Checkboxes are now Bauhaus widgets and are reset to default values
   when e.g. a tab or a module is reset.
 
+- Mask shapes on the canvas now have a contrasting edge, so they stay
+  visible over dark and bright areas alike, and the hovered or selected
+  shape is drawn heavier.
+
+- Escape now cancels a mask shape that is being drawn, as a right-click
+  does.
+
 - Mask nodes close or outside the image boundaries are now editable.
   When "edit shapes on canvas" is enabled, the node editing area is
   extended beyond the image borders to allow editing of these nodes.
@@ -299,6 +306,16 @@ changes (where available).
   ready to splice into another invocation.
 
 ## Bug Fixes
+
+- Fixed overly dark PQ and HLG image imports and overly bright exports,
+  including HDR PNG and JPEG XL profile detection.
+
+- Fixed a possible crash when opening an image in the darkroom after
+  leaving it, caused by white balance data still pointing at the
+  previous image's modules.
+
+- Fixed the feather of paths created by vectorizing a raster mask or an
+  AI object, which could not be changed from the mask manager.
 
 - Fixed HEIF export compilation with libheif versions older than 1.15.0,
   and with versions older than 1.16.0 when libsharpyuv is available.

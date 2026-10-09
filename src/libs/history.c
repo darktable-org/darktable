@@ -1212,51 +1212,7 @@ void gui_update(dt_lib_module_t *self)
 
 static void _lib_history_truncate(const gboolean compress)
 {
-  const dt_imgid_t imgid = darktable.develop->image_storage.id;
-  if(!dt_is_valid_imgid(imgid)) return;
-
-  dt_dev_undo_start_record(darktable.develop);
-
-  // As dt_history_compress_on_image does *not* use the history stack data at all
-  // make sure the current stack is in the database
-  dt_dev_write_history(darktable.develop);
-
-  if(compress)
-    dt_history_compress_on_image(imgid);
-  else
-    dt_history_truncate_on_image(imgid, darktable.develop->history_end);
-
-  sqlite3_stmt *stmt;
-
-  // load new history and write it back to ensure that all history are
-  // properly numbered without a gap
-  dt_dev_reload_history_items(darktable.develop);
-  dt_dev_write_history(darktable.develop);
-  dt_image_synch_xmp(imgid);
-
-  // then we can get the item to select in the new clean-up history
-  // retrieve the position of the module corresponding to the history
-  // end.  clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT IFNULL(MAX(num)+1, 0)"
-                              " FROM main.history"
-                              " WHERE imgid=?1", -1, &stmt, NULL);
-  // clang-format on
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-    darktable.develop->history_end = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
-
-  // select the new history end corresponding to the one before the history compression
-  dt_image_set_history_end(imgid, darktable.develop->history_end);
-
-  dt_dev_reload_history_items(darktable.develop);
-  dt_dev_undo_end_record(darktable.develop);
-
-  dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
-
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_HISTORY_INVALIDATED);
+  dt_dev_history_truncate(darktable.develop, compress);
 }
 
 
