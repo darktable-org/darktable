@@ -427,7 +427,8 @@ void sf_wide_blur_inv_table(const int k,
 }
 
 /* Box average of each k x k block (clipped at the buffer edge) into `low`.
-   Must match spektrafilm_wide_down in spektrafilm.cl operation for operation:
+   Must match spektrafilm_wide_rows and spektrafilm_wide_down in spektrafilm.cl
+   operation for operation:
    each block row is summed left to right, its mean is folded in with fmaf in
    top-to-bottom row order, and the sum of row means is scaled by inv[rows].
    The x loop runs over the whole buffer row with the block index computed per

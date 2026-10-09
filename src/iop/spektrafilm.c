@@ -621,7 +621,7 @@ typedef struct dt_iop_spektrafilm_global_data_t
   int kernel_scatter_combine, kernel_accum, kernel_channel_extract, kernel_channel_accum, kernel_halation_apply;
   int kernel_gauss_row_4c, kernel_gauss_col_4c, kernel_gauss_row_1c, kernel_gauss_col_1c;
   int kernel_yvv_row_4c, kernel_yvv_col_4c, kernel_yvv_row_1c, kernel_yvv_col_1c;
-  int kernel_wide_down, kernel_wide_up;
+  int kernel_wide_rows, kernel_wide_down, kernel_wide_up;
   int kernel_boost, kernel_diffusion_accum, kernel_diffusion_mix;
   int kernel_pow10, kernel_log10;
 } dt_iop_spektrafilm_global_data_t;
@@ -680,6 +680,7 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_yvv_col_4c = dt_opencl_create_kernel(program, "spektrafilm_yvv_col_4c");
   gd->kernel_yvv_row_1c = dt_opencl_create_kernel(program, "spektrafilm_yvv_row_1c");
   gd->kernel_yvv_col_1c = dt_opencl_create_kernel(program, "spektrafilm_yvv_col_1c");
+  gd->kernel_wide_rows = dt_opencl_create_kernel(program, "spektrafilm_wide_rows");
   gd->kernel_wide_down = dt_opencl_create_kernel(program, "spektrafilm_wide_down");
   gd->kernel_wide_up = dt_opencl_create_kernel(program, "spektrafilm_wide_up");
   gd->kernel_gauss_row_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_4c");
@@ -724,6 +725,7 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_yvv_col_4c);
     dt_opencl_free_kernel(gd->kernel_yvv_row_1c);
     dt_opencl_free_kernel(gd->kernel_yvv_col_1c);
+    dt_opencl_free_kernel(gd->kernel_wide_rows);
     dt_opencl_free_kernel(gd->kernel_wide_down);
     dt_opencl_free_kernel(gd->kernel_wide_up);
     dt_opencl_free_kernel(gd->kernel_gauss_row_4c);
@@ -2598,12 +2600,13 @@ static cl_int _sf_blur_wide_cl(const int devid,
   float *inv = dt_alloc_align_float((size_t)k + 1);
   float kw[2 * SF_GAUSS_MAX_RADIUS + 1];
   const int kr = dt_gaussian_kernel_1d(sigma_low, kw, SF_GAUSS_MAX_RADIUS);
+  cl_mem rows = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * lw * h);
   cl_mem low = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * lw * lh);
   cl_mem lowtmp = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * lw * lh);
   cl_mem inv_cl = dt_opencl_alloc_device_buffer(devid, sizeof(float) * (k + 1));
   cl_mem kw_cl = dt_opencl_alloc_device_buffer(devid, sizeof(float) * (2 * kr + 1));
   cl_int e = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-  if(inv && low && lowtmp && inv_cl && kw_cl)
+  if(inv && rows && low && lowtmp && inv_cl && kw_cl)
   {
     sf_wide_blur_inv_table(k, inv);
     const float inv2k = 1.0f / (float)(2 * k);
@@ -2611,7 +2614,11 @@ static cl_int _sf_blur_wide_cl(const int devid,
     if(e == CL_SUCCESS)
       e = dt_opencl_write_buffer_to_device(devid, kw, kw_cl, 0, sizeof(float) * (2 * kr + 1), TRUE);
     if(e == CL_SUCCESS)
-      e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_wide_down, lw, lh, CLARG(buf),
+      e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_wide_rows, lw, h, CLARG(buf),
+                                           CLARG(rows), CLARG(w), CLARG(h), CLARG(k), CLARG(lw),
+                                           CLARG(ox));
+    if(e == CL_SUCCESS)
+      e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_wide_down, lw, lh, CLARG(rows),
                                            CLARG(low), CLARG(w), CLARG(h), CLARG(k), CLARG(lw),
                                            CLARG(lh), CLARG(ox), CLARG(oy), CLARG(inv_cl));
     /* exact kernel at the reduced sigma: the twin of sf_blur_plane3() on the
@@ -2630,6 +2637,7 @@ static cl_int _sf_blur_wide_cl(const int devid,
                                            CLARG(lh), CLARG(ox), CLARG(oy), CLARG(inv2k));
   }
   dt_free_align(inv);
+  if(rows) dt_opencl_release_mem_object(rows);
   if(low) dt_opencl_release_mem_object(low);
   if(lowtmp) dt_opencl_release_mem_object(lowtmp);
   if(inv_cl) dt_opencl_release_mem_object(inv_cl);
