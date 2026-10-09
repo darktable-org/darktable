@@ -128,7 +128,10 @@ static void _add_point(dt_masks_form_t *form,
   }
 
   bzpt->state = DT_MASKS_POINT_STATE_USER;
-  bzpt->border[0] = bzpt->border[1] = 0.f;
+  // not 0: the feather control scales a border by new/old value and leaves it
+  // alone when either is 0 (_path_modify_property), so a zero border could
+  // never be changed. 0.0005 is path.c's own minimum
+  bzpt->border[0] = bzpt->border[1] = 0.0005f;
 
   form->points = g_list_append(form->points, bzpt);
 }
