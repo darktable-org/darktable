@@ -74,6 +74,55 @@ GList *dt_masks_dup_forms_deep(GList *forms,
   return (GList *)g_list_copy_deep(forms, _dup_masks_form_cb, (gpointer)form);
 }
 
+static dt_masks_point_group_t *_group_entry_in(const dt_develop_t *dev,
+                                               const dt_masks_form_t *grp,
+                                               const dt_mask_id_t formid,
+                                               dt_mask_id_t *parentid)
+{
+  if(!grp || !(grp->type & DT_MASKS_GROUP)) return NULL;
+  for(GList *l = grp->points; l; l = g_list_next(l))
+  {
+    dt_masks_point_group_t *pt = l->data;
+    if(pt->formid == formid)
+    {
+      if(parentid) *parentid = grp->formid;
+      return pt;
+    }
+    // a form in a nested group (the mask manager builds those) is still used
+    // by this module: without following it down, whichever group lists the
+    // form first would win over the module's own
+    const dt_masks_form_t *child = dt_masks_get_from_id(dev, pt->formid);
+    if(child && (child->type & DT_MASKS_GROUP))
+    {
+      dt_masks_point_group_t *sub = _group_entry_in(dev, child, formid, parentid);
+      if(sub) return sub;
+    }
+  }
+  return NULL;
+}
+
+// gui->creation is set for any single form, including an AI object reopened
+// to refine it, so a shape still being created is told apart by being in no
+// group. the creation module's group is searched first: a form can be in
+// several, and the tool must change the opacity its own module applies
+dt_masks_point_group_t *dt_masks_group_entry(const dt_masks_form_t *form,
+                                             dt_mask_id_t *parentid)
+{
+  if(parentid) *parentid = NO_MASKID;
+  if(!form || (form->type & DT_MASKS_GROUP)) return NULL;
+
+  const dt_develop_t *dev = darktable.develop;
+  const dt_masks_form_gui_t *gui = dev->form_gui;
+  const dt_iop_module_t *module = gui ? gui->creation_module : NULL;
+  dt_masks_point_group_t *pt = (module && module->blend_params)
+    ? _group_entry_in(dev, dt_masks_get_from_id(dev, module->blend_params->mask_id),
+                      form->formid, parentid)
+    : NULL;
+  for(const GList *l = dev->forms; l && !pt; l = g_list_next(l))
+    pt = _group_entry_in(dev, l->data, form->formid, parentid);
+  return pt;
+}
+
 static int _get_opacity(const dt_masks_form_gui_t *gui,
                         const dt_masks_form_t *form)
 {
@@ -160,7 +209,12 @@ static void _set_hinter_message(const dt_masks_form_gui_t *gui,
   }
   else
   {
-    opacity = (int)(dt_conf_get_float("plugins/darkroom/masks/opacity") * 100);
+    // a new shape shows the default opacity; a tool reopened on a grouped
+    // shape shows that shape's own, which is what ctrl+scroll changes there
+    const dt_masks_point_group_t *pt = dt_masks_group_entry(form, NULL);
+    opacity = pt
+      ? (int)(pt->opacity * 100.0f)
+      : (int)(dt_conf_get_float("plugins/darkroom/masks/opacity") * 100);
   }
 
   if(sel->functions && sel->functions->set_hint_message)
@@ -334,24 +388,6 @@ static dt_masks_form_t *_group_from_module(const dt_develop_t *dev,
   return dt_masks_get_from_id(dev, module->blend_params->mask_id);
 }
 
-static gboolean _form_is_in_group(const dt_develop_t *dev,
-                                  const dt_masks_form_t *group,
-                                  const dt_mask_id_t maskid)
-{
-  for(const GList *iter = group->points; iter; iter = g_list_next(iter))
-  {
-    const dt_masks_point_group_t *pt = iter->data;
-    if(pt->formid == maskid) return TRUE;
-
-    const dt_masks_form_t *child = dt_masks_get_from_id(dev, pt->formid);
-    if(child && (child->type & DT_MASKS_GROUP))
-    {
-      if(_form_is_in_group(dev, child, maskid)) return TRUE;
-    }
-  }
-  return FALSE;
-}
-
 gboolean dt_masks_is_in_module(const dt_mask_id_t maskid, const dt_iop_module_t *module)
 {
   if(!dt_is_valid_maskid(maskid) || !module) return FALSE;
@@ -359,10 +395,7 @@ gboolean dt_masks_is_in_module(const dt_mask_id_t maskid, const dt_iop_module_t 
   if(maskid == module->blend_params->mask_id) return TRUE;
 
   const dt_masks_form_t *root = dt_masks_get_from_id(module->dev, module->blend_params->mask_id);
-  if(root && (root->type & DT_MASKS_GROUP))
-    return _form_is_in_group(module->dev, root, maskid);
-
-  return FALSE;
+  return _group_entry_in(module->dev, root, maskid, NULL) != NULL;
 }
 
 void dt_masks_register_forms(dt_develop_t *dev,
@@ -842,6 +875,24 @@ static int _masks_legacy_params_v5_to_v6(dt_develop_t *dev, void *params)
   return 0;
 }
 
+static int _masks_legacy_params_v6_to_v7(dt_develop_t *dev, void *params)
+{
+  /*
+   * difference affecting object
+   * up to v6: a point was one prompt, and the form was never written
+   * after v7: the first point references the stored mask pixels
+   *
+   * nothing to convert: the bump only marks the new point for builds that
+   * cannot read it
+   */
+
+  dt_masks_form_t *m = (dt_masks_form_t *)params;
+
+  m->version = 7;
+
+  return 0;
+}
+
 
 int dt_masks_legacy_params(dt_develop_t *dev,
                            void *params,
@@ -856,35 +907,44 @@ int dt_masks_legacy_params(dt_develop_t *dev,
   }
 #endif
 
-  if(old_version == 1 && new_version == 6)
+  if(old_version == 1 && new_version == 7)
   {
     res = _masks_legacy_params_v1_to_v2(dev, params);
     if(!res) res = _masks_legacy_params_v2_to_v3(dev, params);
     if(!res) res = _masks_legacy_params_v3_to_v4(dev, params);
     if(!res) res = _masks_legacy_params_v4_to_v5(dev, params);
     if(!res) res = _masks_legacy_params_v5_to_v6(dev, params);
+    if(!res) res = _masks_legacy_params_v6_to_v7(dev, params);
   }
-  else if(old_version == 2 && new_version == 6)
+  else if(old_version == 2 && new_version == 7)
   {
     res = _masks_legacy_params_v2_to_v3(dev, params);
     if(!res) res = _masks_legacy_params_v3_to_v4(dev, params);
     if(!res) res = _masks_legacy_params_v4_to_v5(dev, params);
     if(!res) res = _masks_legacy_params_v5_to_v6(dev, params);
+    if(!res) res = _masks_legacy_params_v6_to_v7(dev, params);
   }
-  else if(old_version == 3 && new_version == 6)
+  else if(old_version == 3 && new_version == 7)
   {
     res = _masks_legacy_params_v3_to_v4(dev, params);
     if(!res) res = _masks_legacy_params_v4_to_v5(dev, params);
     if(!res) res = _masks_legacy_params_v5_to_v6(dev, params);
+    if(!res) res = _masks_legacy_params_v6_to_v7(dev, params);
   }
-  else if(old_version == 4 && new_version == 6)
+  else if(old_version == 4 && new_version == 7)
   {
     res = _masks_legacy_params_v4_to_v5(dev, params);
     if(!res) res = _masks_legacy_params_v5_to_v6(dev, params);
+    if(!res) res = _masks_legacy_params_v6_to_v7(dev, params);
   }
-  else if(old_version == 5 && new_version == 6)
+  else if(old_version == 5 && new_version == 7)
   {
     res = _masks_legacy_params_v5_to_v6(dev, params);
+    if(!res) res = _masks_legacy_params_v6_to_v7(dev, params);
+  }
+  else if(old_version == 6 && new_version == 7)
+  {
+    res = _masks_legacy_params_v6_to_v7(dev, params);
   }
 
   return res;
@@ -913,10 +973,8 @@ dt_masks_form_t *dt_masks_create(const dt_masks_type_t type)
     form->functions = &dt_masks_functions_gradient;
   else if(type & DT_MASKS_GROUP)
     form->functions = &dt_masks_functions_group;
-#ifdef HAVE_AI
   else if(type & DT_MASKS_OBJECT)
     form->functions = &dt_masks_functions_object;
-#endif
 
   if(form->functions && form->functions->sanitize_config)
     form->functions->sanitize_config(type);
@@ -968,6 +1026,55 @@ dt_masks_form_t *dt_masks_get_from_id(const dt_develop_t *dev, const dt_mask_id_
 static inline gboolean _sane_val(const float val)
 {
   return !dt_isnan(val) && val >= 0.0f;
+}
+
+// the point structs before the mask versions that grew them, so an older
+// history is read at its stored size. only ellipse and gradient points ever
+// changed size: see _masks_legacy_params_v3_to_v4 and the two after it
+typedef struct _masks_point_ellipse_v3_t
+{
+  float center[2];
+  float radius[2];
+  float rotation;
+  float border;
+} _masks_point_ellipse_v3_t;
+
+typedef struct _masks_point_gradient_v4_t
+{
+  float anchor[2];
+  float rotation;
+  float compression;
+  float steepness;
+} _masks_point_gradient_v4_t;
+
+typedef struct _masks_point_gradient_v5_t
+{
+  float anchor[2];
+  float rotation;
+  float compression;
+  float steepness;
+  float curvature;
+} _masks_point_gradient_v5_t;
+
+// a point's size in this form's blob: the current struct size for every
+// type and version but the older ellipse and gradient layouts above. by the
+// functions, which size the allocation, not by the type bits: a crafted type
+// can carry two shapes' bits, and a legacy size from the other shape would
+// overflow the point
+static size_t _point_size_at_version(const dt_masks_form_t *form)
+{
+  const size_t current = form->functions->point_struct_size;
+
+  if(form->functions == &dt_masks_functions_ellipse)
+    return form->version < 4 ? sizeof(_masks_point_ellipse_v3_t) : current;
+
+  if(form->functions == &dt_masks_functions_gradient)
+  {
+    if(form->version < 5) return sizeof(_masks_point_gradient_v4_t);
+    if(form->version == 5) return sizeof(_masks_point_gradient_v5_t);
+  }
+
+  return current;
 }
 
 void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
@@ -1048,11 +1155,40 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
     {
       const char *const ptbuf = (char *)sqlite3_column_blob(stmt, 5);
       const size_t point_size = form->functions->point_struct_size;
+      const size_t stored_size = _point_size_at_version(form);
+      const size_t blob_size = sqlite3_column_bytes(stmt, 5);
+      // anything but nb_points points at the stored size is corrupt or an
+      // unknown layout, and copying out of it would read past its end. a
+      // group leaves the dropped form out like any it cannot find
+      if(nb_points < 0 || blob_size != (size_t)nb_points * stored_size)
+      {
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[_dev_read_masks_history] mask %s(%i) of image %i has %zu bytes"
+                 " of points, expected %d of %zu at mask version %d, dropped",
+                 form->name, formid, imgid, blob_size, nb_points, stored_size,
+                 form->version);
+        dt_masks_free_form(form);
+        continue;
+      }
       for(int i = 0; i < nb_points; i++)
       {
-        char *point = malloc(point_size);
-        memcpy(point, ptbuf + i*point_size, point_size);
+        // zeroed: a point stored at an older version is shorter than ours,
+        // and dt_masks_legacy_params below defaults the fields added since
+        char *point = calloc(1, point_size);
+        memcpy(point, ptbuf + i*stored_size, stored_size);
         form->points = g_list_append(form->points, point);
+      }
+
+      // the entry and producer of a pixel form's ref are read as strings,
+      // but a blob from the database or an xmp need not terminate them:
+      // force it here, the one place they enter the tree. by the functions,
+      // which sized the points, not by the type bits: a crafted type can
+      // carry a pixel form's bit along with another's
+      if(form->functions == &dt_masks_functions_object && form->points)
+      {
+        dt_dtdata_ref_t *ref = form->points->data;
+        ref->entry[sizeof(ref->entry) - 1] = '\0';
+        ref->producer[sizeof(ref->producer) - 1] = '\0';
       }
     }
 
@@ -1489,14 +1625,23 @@ gboolean dt_masks_events_mouse_scrolled(dt_iop_module_t *module,
     // Do not update brush opacity here; it is mask density.
     if(gui->creation && dt_modifier_is(state, GDK_CONTROL_MASK))
     {
-      float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
       const float amount = incr ? 0.05f : -0.05f;
+      // a tool reopened on a grouped shape (the AI object's edit) changes
+      // that shape's opacity, as outside the tool, and leaves the default
+      // for the next new shape alone
+      dt_mask_id_t parentid = NO_MASKID;
+      if(dt_masks_group_entry(form, &parentid))
+        dt_masks_form_change_opacity(form, parentid, amount);
+      else
+      {
+        float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
 
-      opacity = CLAMP(opacity + amount, 0.05f, 1.0f);
-      dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
+        opacity = CLAMP(opacity + amount, 0.05f, 1.0f);
+        dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
 
-      dt_toast_log(_("opacity: %.0f%%"), opacity * 100);
-      dt_dev_masks_list_change(darktable.develop);
+        dt_toast_log(_("opacity: %.0f%%"), opacity * 100);
+        dt_dev_masks_list_change(darktable.develop);
+      }
 
       ret = TRUE;
     }

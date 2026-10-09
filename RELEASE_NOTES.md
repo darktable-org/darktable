@@ -220,6 +220,17 @@ changes (where available).
   a folder keep working, and the folder chooser remains available when
   sidecar writing is set to "never".
 
+- AI object masks are now stored as pixels in the image's `.dtdata`
+  sidecar, exactly as selected, instead of being traced into paths.
+  This replaces the shift+right-click PNG export that fed the external
+  raster masks module, which is removed; the module itself is
+  unchanged. Click an object's icon to refine it. "apply as paths" in
+  the mask manager keeps the traced output; it is always on when
+  sidecar writing is "never". When an object's stored mask is missing,
+  the module it masks applies nowhere and the loss is reported;
+  clicking the object's icon regenerates it when sidecar writing is
+  enabled.
+
 - Added a new collection filter for the original image dimensions.
 
 - Support for Canon's Highlight Tone Priority.
@@ -550,6 +561,11 @@ changes (where available).
 - Starting with release 5.4, macOS versions older than 14.0 are no
   longer supported on Apple Silicon Macs, nor older than macOS 15 on
   Intel Macs.
+
+- AI object masks raise the mask format version to 7. An image whose
+  masks this release has written is not readable by darktable 5.6 or
+  earlier: it reports a mask version mismatch and drops every mask on
+  that image, not only the AI object.
 
 ## Changed Dependencies
 

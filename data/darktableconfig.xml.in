@@ -3808,15 +3808,15 @@
     <name>plugins/darkroom/masks/object/threshold</name>
     <type min="0.3" max="0.9">float</type>
     <default>0.5</default>
-    <shortdescription>AI mask binarization threshold</shortdescription>
-    <longdescription>sigmoid threshold for converting AI mask to binary. higher values (0.6-0.7) tighten boundaries, lower values include more area.</longdescription>
+    <shortdescription>AI mask threshold</shortdescription>
+    <longdescription>the level at which the AI mask is cut into contours when the selection is committed as paths. higher values (0.6-0.7) tighten boundaries, lower values include more area. a selection stored as pixels keeps the model's confidence as the mask's opacity, so the threshold shapes how the selection is found rather than where its edge falls.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/object/render_size</name>
-    <type min="1024">int</type>
+    <type min="1024" max="6144">int</type>
     <default>1536</default>
     <shortdescription>AI mask render resolution</shortdescription>
-    <longdescription>target resolution (longest side in pixels) for rendering the image before AI mask encoding. higher values improve edge accuracy but increase processing time. the AI encoder always works at 1024px internally.</longdescription>
+    <longdescription>target resolution (longest side in pixels) for rendering the image before AI mask encoding, and the resolution an object mask is stored at. higher values improve edge accuracy but cost processing time, memory and sidecar size. the AI encoder always works at 1024px internally.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/object/persist_model</name>
@@ -3826,11 +3826,11 @@
     <longdescription>keep the AI segmentation model loaded in memory between mask creation sessions within the same darkroom view. reduces latency when creating multiple masks but uses more memory</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/masks/object/path_preview</name>
+    <name>plugins/darkroom/masks/object/vectorize</name>
     <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription>show AI mask path preview overlay</shortdescription>
-    <longdescription>display the vectorized path (with anchor points) on top of the AI mask while creating it. useful for previewing the final shape before committing</longdescription>
+    <default>false</default>
+    <shortdescription>apply AI object masks as paths</shortdescription>
+    <longdescription>trace the AI object mask into paths when it is applied, with a live preview of the outline while selecting. otherwise the mask is stored as pixels in the image's sidecar</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/object/refine_boundary</name>
