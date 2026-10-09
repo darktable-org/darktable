@@ -48,8 +48,9 @@ typedef enum dt_dtdata_origin_t
   DT_DTDATA_ORIGIN_AUTHORITATIVE = 1,  // a person made it, cannot be recomputed
 } dt_dtdata_origin_t;
 
-/* serialized as-is inside module params and mask blobs: fixed layout,
-   no pointers, no padding */
+/* stored as-is in rasterfile's params and at the start of a pixel form's
+   first point (masks.h): no pointers or padding, and a layout change needs a
+   version bump of rasterfile's params and of the masks */
 typedef struct dt_dtdata_ref_t
 {
   char entry[DT_DTDATA_ENTRY_LEN];  // "<kind>-<sha1>.png", empty = no reference
@@ -64,6 +65,11 @@ typedef struct dt_dtdata_ref_t
 /** FALSE when sidecar writing is set to "never": the feature is then
     unavailable rather than falling back to the database */
 gboolean dt_dtdata_enabled(void);
+
+/** a count of sidecar changes in this session, moved by every write, merge
+    or removal, so a caller caching a failed read can retry when it moves
+    rather than remembering the failure for good */
+guint dt_dtdata_generation(void);
 
 /** path of the sidecar for an image, next to its xmp */
 void dt_dtdata_path(const dt_imgid_t imgid, char *path, const size_t len);
@@ -89,11 +95,21 @@ gboolean dt_dtdata_write_gray(const dt_imgid_t imgid,
 
 /** read an entry back as a [0,1] float mask, caller frees with
     dt_free_align(). NULL if the file or entry is missing or its checksum
-    does not match its name */
+    does not match its name, with *width and *height then 0; NULL with them
+    set if the entry is fine but memory was short to decode it */
 float *dt_dtdata_read_gray(const dt_imgid_t imgid,
                            const dt_dtdata_ref_t *ref,
                            int *width,
                            int *height);
+
+/** the same, also naming the sidecar read, or for a failure the one looked
+    in first, for a caller noticing its removal; empty when there is none */
+float *dt_dtdata_read_gray_from(const dt_imgid_t imgid,
+                                const dt_dtdata_ref_t *ref,
+                                int *width,
+                                int *height,
+                                char *from,
+                                const size_t len);
 
 /** entry names in the image's sidecar, without "version". a GList of
     strings, free with g_list_free_full(list, g_free) */

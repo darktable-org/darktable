@@ -7,7 +7,8 @@ https://github.com/darktable-org/darktable/issues/22226
 ## File
 
 `IMG_0001.RAF.dtdata` next to `IMG_0001.RAF.xmp`; duplicates get the same
-`_NN` suffix as their XMP. A flat zip with no manifest:
+`_NN` suffix as their XMP. A flat zip with no manifest, its entries
+stored rather than deflated, since PNGs are compressed already:
 
 ```
 version                 "1"
@@ -58,6 +59,9 @@ the entries:
   folder
 - `dt_dtdata_path()`, `dt_dtdata_path_for_image()`
 - `dt_dtdata_write_gray()`, `dt_dtdata_read_gray()`, `dt_dtdata_list_entries()`
+- `dt_dtdata_read_gray_from()`: the read, also naming the sidecar it used,
+  for the object mask cache, which reads it again once that file is
+  removed or put back
 - `dt_dtdata_merge()`: copy one image's entries into another's; called
   from `dt_history_copy_and_paste_on_image()` because a pasted reference
   needs its entry on the destination

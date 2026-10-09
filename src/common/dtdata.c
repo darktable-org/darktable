@@ -23,6 +23,7 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/math.h"
+#include "develop/masks.h"
 
 #include <archive.h>
 #include <archive_entry.h>
@@ -46,6 +47,12 @@
 // open. not recursive: under the write lock use _zip_list_unlocked, never
 // _zip_read or _zip_list
 static GRWLock _lock;
+
+// bumped on every sidecar change, so a caller remembering a failed read can
+// tell when to retry. global and coarse on purpose: a needless retry costs a
+// read from the page cache, a missed one loses the mask until a restart.
+// atomic, as the readers are pipe threads
+static guint _generation = 0;
 
 typedef struct _scanner_t
 {
@@ -84,6 +91,11 @@ int dt_dtdata_entry_kind(const char *entry)
 gboolean dt_dtdata_enabled(void)
 {
   return dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER;
+}
+
+guint dt_dtdata_generation(void)
+{
+  return (guint)g_atomic_int_get(&_generation);
 }
 
 void dt_dtdata_path_for_image(const char *versioned_image_path,
@@ -247,7 +259,13 @@ static float *_decode_gray_png(const uint8_t *data,
   const int out_depth = png_get_bit_depth(png, info);
   rows = dt_alloc_aligned(rowbytes);
   mask = dt_alloc_align_float((size_t)w * h);
-  if(!rows || !mask) png_error(png, "out of memory");
+  if(!rows || !mask)
+  {
+    // the size tells the caller that the entry is fine and memory was short
+    *width = (int)w;
+    *height = (int)h;
+    png_error(png, "out of memory");
+  }
 
   // one row at a time straight into the mask, no second full-size buffer
   const float norm = out_depth == 16 ? 1.0f / 65535.0f : 1.0f / 255.0f;
@@ -371,6 +389,9 @@ static gboolean _zip_rewrite(const char *path,
   }
   struct archive *w = archive_write_new();
   archive_write_set_format_zip(w);
+  // the entries are PNGs, already deflated: stored, a rewrite copies them
+  // rather than inflating and deflating every one again
+  archive_write_set_format_option(w, "zip", "compression", "store");
   // zip is not a tape format: no zero padding to the 10 KiB block
   archive_write_set_bytes_in_last_block(w, 1);
   if(archive_write_open_FILE(w, wf) != ARCHIVE_OK)
@@ -436,6 +457,7 @@ static gboolean _zip_rewrite(const char *path,
     dt_print(DT_DEBUG_ALWAYS, "[dtdata] cannot replace '%s'", path);
     ok = FALSE;
   }
+  if(ok) g_atomic_int_inc(&_generation);
   if(!ok) g_unlink(tmp);
   g_free(tmp);
   return ok;
@@ -617,8 +639,14 @@ gboolean dt_dtdata_file_write_gray(const char *path,
     ref->bpc = bpc;
     if(producer) g_strlcpy(ref->producer, producer, sizeof(ref->producer));
   }
-  dt_print(DT_DEBUG_MASKS, "[dtdata] wrote %s (%dx%d, %d bit) to '%s'",
-           name, width, height, bpc, path);
+  // the sidecar's file name and 12 digits of the entry's hash identify both
+  // in a line that fits the terminal
+  const char *dash = strchr(name, '-');
+  const int shown = dash ? MIN((int)strlen(name), (int)(dash - name) + 13) : (int)strlen(name);
+  gchar *file = g_path_get_basename(path);
+  dt_print(DT_DEBUG_MASKS, "[dtdata] wrote %.*s %dx%d %d-bit to %s",
+           shown, name, width, height, bpc, file);
+  g_free(file);
   return TRUE;
 }
 
@@ -630,16 +658,21 @@ float *dt_dtdata_file_read_gray(const char *path,
   *width = *height = 0;
   if(!path || !ref || !ref->entry[0]) return NULL;
 
-  GBytes *png = _zip_read(path, ref->entry);
+  // a reference is raw bytes from rasterfile's params or a pixel form's
+  // points blob, which need not terminate the entry name: copy it bounded
+  char entry[DT_DTDATA_ENTRY_LEN + 1] = { 0 };
+  memcpy(entry, ref->entry, sizeof(ref->entry));
+
+  GBytes *png = _zip_read(path, entry);
   if(!png)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[dtdata] entry '%s' not found in '%s'", ref->entry, path);
+    dt_print(DT_DEBUG_ALWAYS, "[dtdata] entry '%s' not found in '%s'", entry, path);
     return NULL;
   }
 
   // the hash sits between the kind prefix and ".png"
-  const char *dash = strchr(ref->entry, '-');
-  const char *dot = strrchr(ref->entry, '.');
+  const char *dash = strchr(entry, '-');
+  const char *dot = strrchr(entry, '.');
   gchar *sha = g_compute_checksum_for_bytes(G_CHECKSUM_SHA1, png);
   const gboolean intact = dash && dot && dot > dash + 1
                           && strlen(sha) == (size_t)(dot - dash - 1)
@@ -648,7 +681,7 @@ float *dt_dtdata_file_read_gray(const char *path,
   if(!intact)
   {
     dt_print(DT_DEBUG_ALWAYS, "[dtdata] entry '%s' in '%s' does not match its checksum",
-             ref->entry, path);
+             entry, path);
     g_bytes_unref(png);
     return NULL;
   }
@@ -657,9 +690,12 @@ float *dt_dtdata_file_read_gray(const char *path,
   const void *data = g_bytes_get_data(png, &len);
   float *mask = _decode_gray_png(data, len, width, height);
   g_bytes_unref(png);
-  if(!mask)
+  if(!mask && *width)
+    dt_print(DT_DEBUG_ALWAYS, "[dtdata] no memory to decode the %dx%d entry '%s' in '%s'",
+             *width, *height, entry, path);
+  else if(!mask)
     dt_print(DT_DEBUG_ALWAYS, "[dtdata] entry '%s' in '%s' is not a readable PNG",
-             ref->entry, path);
+             entry, path);
   return mask;
 }
 
@@ -673,6 +709,7 @@ gboolean dt_dtdata_file_merge(const char *src_path, const char *dst_path)
     const gboolean ok = g_file_copy(src, dst, G_FILE_COPY_NONE, NULL, NULL, NULL, NULL);
     g_object_unref(src);
     g_object_unref(dst);
+    if(ok) g_atomic_int_inc(&_generation);
     return ok;
   }
 
@@ -740,7 +777,10 @@ gboolean dt_dtdata_file_sweep(const char *path,
   if(drop)
   {
     if(remaining == 0)
+    {
       ok = g_unlink(path) == 0;
+      if(ok) g_atomic_int_inc(&_generation);
+    }
     else
       ok = _zip_rewrite(path, drop, NULL, NULL, 0);
     dt_print(DT_DEBUG_MASKS, "[dtdata] swept %d unreferenced entries from '%s'%s",
@@ -779,6 +819,10 @@ void dt_dtdata_sweep(const dt_imgid_t imgid)
   dt_dtdata_path(imgid, path, sizeof(path));
   if(!path[0] || !g_file_test(path, G_FILE_TEST_EXISTS)) return;
 
+  // only kinds some scanner claims: an entry goes only once every module
+  // that could reference it was asked. DT_DTDATA_KIND_MASK is not forced on
+  // for the masks_history query below, as src/iop/rasterfile.c references
+  // mask entries too; a missing scanner leaks entries rather than losing them
   uint32_t kinds = 0;
   for(const GList *l = _scanners; l; l = g_list_next(l))
     kinds |= ((_scanner_t *)l->data)->kinds;
@@ -811,12 +855,54 @@ void dt_dtdata_sweep(const dt_imgid_t imgid)
   }
   sqlite3_finalize(stmt);
 
+  // mask forms are core, not plugins: a pixel form's ref, at the start of its
+  // first point, is read here rather than through a scanner. form is a
+  // bitmask and tested as one, or a form with a second bit set would be
+  // swept. snapshots count too, or an undo after a destructive paste
+  // restores a mask whose pixels are gone
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT points, version"
+                              " FROM main.masks_history"
+                              " WHERE imgid = ?1 AND (form & ?2) != 0"
+                              " UNION ALL"
+                              " SELECT points, version"
+                              " FROM memory.snapshot_masks_history"
+                              " WHERE imgid = ?1 AND (form & ?2) != 0",
+                              -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_MASKS_PIXEL_FORMS);
+  while(readable && sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    // an unknown mask version can hold its ref anywhere in the blob, and
+    // reading our layout would sweep the live entry: leave the file alone.
+    // a DEVELOP_MASKS_VERSION bump must be handled here too, the way
+    // _point_size_at_version() handles the older point layouts
+    if(sqlite3_column_int(stmt, 1) != DEVELOP_MASKS_VERSION)
+    {
+      readable = FALSE;
+      break;
+    }
+    // the blob is sqlite's and carries no alignment: copy it rather than cast
+    dt_dtdata_ref_t ref;
+    if(sqlite3_column_blob(stmt, 0)
+       && sqlite3_column_bytes(stmt, 0) >= (int)sizeof(ref))
+    {
+      memcpy(&ref, sqlite3_column_blob(stmt, 0), sizeof(ref));
+      if(ref.entry[0])
+        keep = g_list_prepend(keep, g_strndup(ref.entry, sizeof(ref.entry)));
+    }
+  }
+  sqlite3_finalize(stmt);
+
   // a params version this build cannot read might reference anything:
   // leave the file to the build that wrote it
   if(readable)
     dt_dtdata_file_sweep(path, keep, kinds);
   else
-    dt_print(DT_DEBUG_MASKS, "[dtdata] history of image %d has unreadable params, '%s' not swept",
+    dt_print(DT_DEBUG_MASKS,
+             "[dtdata] history of image %d is not fully readable, '%s' not swept",
              imgid, path);
   g_list_free_full(keep, g_free);
 }
@@ -861,21 +947,38 @@ float *dt_dtdata_read_gray(const dt_imgid_t imgid,
                            int *width,
                            int *height)
 {
+  return dt_dtdata_read_gray_from(imgid, ref, width, height, NULL, 0);
+}
+
+float *dt_dtdata_read_gray_from(const dt_imgid_t imgid,
+                                const dt_dtdata_ref_t *ref,
+                                int *width,
+                                int *height,
+                                char *from,
+                                const size_t len)
+{
+  if(from && len) from[0] = 0;
   *width = *height = 0;
   if(!dt_is_valid_imgid(imgid)) return NULL;
   char path[PATH_MAX] = { 0 };
   dt_dtdata_path(imgid, path, sizeof(path));
   if(!path[0]) return NULL;
+  if(from && len) g_strlcpy(from, path, len);
   float *mask = dt_dtdata_file_read_gray(path, ref, width, height);
-  if(mask) return mask;
+  // found but not decoded for lack of memory: the copy would not fare better
+  if(mask || *width) return mask;
 
   char cache[PATH_MAX] = { 0 };
   _cache_path(imgid, cache, sizeof(cache));
   if(!cache[0] || !strcmp(cache, path) || !g_file_test(cache, G_FILE_TEST_EXISTS))
     return NULL;
-  dt_print(DT_DEBUG_MASKS, "[dtdata] entry '%s' not beside the original, trying '%s'",
-           ref ? ref->entry : "", cache);
-  return dt_dtdata_file_read_gray(cache, ref, width, height);
+  // bounded, as above: the entry name need not be terminated
+  dt_print(DT_DEBUG_MASKS, "[dtdata] entry '%.*s' not beside the original, trying '%s'",
+           (int)sizeof(ref->entry), ref ? ref->entry : "", cache);
+  mask = dt_dtdata_file_read_gray(cache, ref, width, height);
+  // a failure names the first: that is where a mask would be put back
+  if(mask && from && len) g_strlcpy(from, cache, len);
+  return mask;
 }
 
 GList *dt_dtdata_list_entries(const dt_imgid_t imgid)

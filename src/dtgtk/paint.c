@@ -628,7 +628,6 @@ void dtgtk_cairo_paint_masks_brush(cairo_t *cr, const gint x, const gint y, cons
   FINISH
 }
 
-#ifdef HAVE_AI
 void dtgtk_cairo_paint_masks_object(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.15, 1, 0, 0)
@@ -682,7 +681,6 @@ void dtgtk_cairo_paint_masks_object(cairo_t *cr, const gint x, const gint y, con
 
   FINISH
 }
-#endif
 
 void dtgtk_cairo_paint_masks_uniform(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {

@@ -631,6 +631,21 @@ static void _combine_masks_exclusion(float *const restrict dest,
   }
 }
 
+// a pixel form, or a group holding one: rendering nothing then means a stored
+// mask could not be read, not a shape with nothing to draw
+static gboolean _holds_pixels(GList *forms, const dt_masks_form_t *form)
+{
+  if(form->type & DT_MASKS_PIXEL_FORMS) return TRUE;
+  if(!(form->type & DT_MASKS_GROUP)) return FALSE;
+  for(const GList *l = form->points; l; l = g_list_next(l))
+  {
+    const dt_masks_point_group_t *pt = l->data;
+    const dt_masks_form_t *sel = dt_masks_get_from_id_ext(forms, pt->formid);
+    if(sel && _holds_pixels(forms, sel)) return TRUE;
+  }
+  return FALSE;
+}
+
 static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
                                const dt_dev_pixelpipe_iop_t *const restrict piece,
                                dt_masks_form_t *const form,
@@ -640,6 +655,8 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
   if(!form->points) return 0;
   double start = dt_get_debug_wtime();
   int nb_ok = 0;
+  // every pixel of buffer holds a value this call put there
+  gboolean written = FALSE;
 
   const int width = roi->width;
   const int height = roi->height;
@@ -665,6 +682,18 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
       const float op = fpt->opacity;
       const int state = fpt->state;
 
+      // a stored mask that cannot be read, e.g. an object whose pixels are
+      // missing from the sidecar, fails the whole group: left out, it would
+      // widen an intersection, and an emptied result counted as rendered
+      // would be inverted to "everywhere" (blend.c applies a failed mask
+      // nowhere). any other shape that renders nothing, a path of two
+      // points, is left out as it always was
+      if(!ok && _holds_pixels(piece->pipe->forms, sel))
+      {
+        nb_ok = 0;
+        break;
+      }
+
       if(darktable.dump_pfm_module)
       {
         char *filename = g_strdup_printf("mask-%d", fpt->formid);
@@ -681,6 +710,13 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
       {
         // first see if we need to invert this shape
         const int inverted = (state & DT_MASKS_STATE_INVERSE);
+
+        // the combines read what they write and need buffer at 0.0f, their
+        // identity, which the caller does not provide. the plain copy below
+        // writes every pixel, so the common single-shape group skips the clear
+        if(!written && (state & DT_MASKS_STATE_OP))
+          memset(buffer, 0, npixels * sizeof(float));
+        written = TRUE;
 
         if(state & DT_MASKS_STATE_UNION)
         {
