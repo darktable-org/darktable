@@ -214,6 +214,8 @@ changes (where available).
   parameters and for the mask indicator in module headers moved from
   the preferences dialog to the masks panel's options popover, and the
   masking section of the preferences dialog is gone.
+- The recent collections module now handles single or double click
+  according to the preference setting for collections.
 
 ## Performance Improvements
 
