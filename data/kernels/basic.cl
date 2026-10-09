@@ -756,11 +756,8 @@ interpolate_and_mask(read_only image2d_t input,
 
   if(j >= width || i >= height) return;
 
-  /** For some not understood reason we need to use the non-A-read() variant.
-      Checked roi_in vs roi_out dimensions and cl_img width/height just to make sure
-      Don't know so keep it like this for now
-  */
-  const float center = fmax(0.0f, readsingle(input, j, i));
+  /** On current mesa we have to use one sampler in one kernel!! */
+  const float center = fmax(0.0f, Areadsingle(input, j, i));
 
   const int c = FC(i, j, filters);
 
@@ -791,15 +788,15 @@ interpolate_and_mask(read_only image2d_t input,
     const size_t j_prev = (j - 1);
     const size_t j_next = (j + 1);
 
-    const float north = read_imagef(input, sampleri, (int2)(j, i_prev)).x;
-    const float south = read_imagef(input, sampleri, (int2)(j, i_next)).x;
-    const float west = read_imagef(input, sampleri, (int2)(j_prev, i)).x;
-    const float east = read_imagef(input, sampleri, (int2)(j_next, i)).x;
+    const float north = Areadsingle(input, j, i_prev);
+    const float south = Areadsingle(input, j, i_next);
+    const float west = Areadsingle(input, j_prev, i);
+    const float east = Areadsingle(input, j_next, i);
 
-    const float north_east = read_imagef(input, sampleri, (int2)(j_next, i_prev)).x;
-    const float north_west = read_imagef(input, sampleri, (int2)(j_prev, i_prev)).x;
-    const float south_east = read_imagef(input, sampleri, (int2)(j_next, i_next)).x;
-    const float south_west = read_imagef(input, sampleri, (int2)(j_prev, i_next)).x;
+    const float north_east = Areadsingle(input, j_next, i_prev);
+    const float north_west = Areadsingle(input, j_prev, i_prev);
+    const float south_east = Areadsingle(input, j_next, i_next);
+    const float south_west = Areadsingle(input, j_prev, i_next);
 
     if(c == GREEN) // green pixel
     {
