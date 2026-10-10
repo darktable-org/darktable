@@ -108,6 +108,16 @@ static void _process_common_setup(const dt_iop_module_t *self, dt_dev_pixelpipe_
   }
 }
 
+static void _display_colors(const dt_dev_pixelpipe_iop_t *piece,
+                            dt_aligned_pixel_t colors[4])
+{
+  const dt_iop_order_iccprofile_info_t *output_profile =
+    dt_ioppr_get_pipe_output_profile_info(piece->pipe);
+  dt_colorspaces_convert_srgb_to_display
+    (output_profile ? output_profile->type : DT_COLORSPACE_NONE,
+     dt_iop_rawoverexposed_colors[0], colors[0], 4);
+}
+
 void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
@@ -128,11 +138,7 @@ void process(dt_iop_module_t *self,
   const dt_dev_rawoverexposed_mode_t mode = dev->rawoverexposed.mode;
   const int colorscheme = dev->rawoverexposed.colorscheme;
   dt_aligned_pixel_t colors[4];
-  const dt_iop_order_iccprofile_info_t *output_profile =
-    dt_ioppr_get_pipe_output_profile_info(piece->pipe);
-  dt_colorspaces_convert_srgb_to_display
-    (output_profile ? output_profile->type : DT_COLORSPACE_NONE,
-     dt_iop_rawoverexposed_colors[0], colors[0], 4);
+  _display_colors(piece, colors);
   const float *const color = colors[colorscheme];
 
   dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
@@ -263,11 +269,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   const int colorscheme = dev->rawoverexposed.colorscheme;
   dt_aligned_pixel_t colors[4];
-  const dt_iop_order_iccprofile_info_t *output_profile =
-    dt_ioppr_get_pipe_output_profile_info(piece->pipe);
-  dt_colorspaces_convert_srgb_to_display
-    (output_profile ? output_profile->type : DT_COLORSPACE_NONE,
-     dt_iop_rawoverexposed_colors[0], colors[0], 4);
+  _display_colors(piece, colors);
   const float *const color = colors[colorscheme];
 
   // NOT FROM THE PIPE !!!
