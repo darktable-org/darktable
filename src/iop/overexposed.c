@@ -102,6 +102,17 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 //   dt_accel_connect_slider_iop(self, "color scheme", GTK_WIDGET(g->colorscheme));
 // }
 
+static void _display_colors(const dt_dev_pixelpipe_iop_t *piece,
+                            const int colorscheme,
+                            dt_aligned_pixel_t colors[2])
+{
+  const dt_iop_order_iccprofile_info_t *output_profile =
+    dt_ioppr_get_pipe_output_profile_info(piece->pipe);
+  dt_colorspaces_convert_srgb_to_display
+    (output_profile ? output_profile->type : DT_COLORSPACE_NONE,
+     dt_iop_overexposed_colors[colorscheme][0], colors[0], 2);
+}
+
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -126,11 +137,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   const int colorscheme = dev->overexposed.colorscheme;
   dt_aligned_pixel_t colors[2];
-  const dt_iop_order_iccprofile_info_t *output_profile =
-    dt_ioppr_get_pipe_output_profile_info(piece->pipe);
-  dt_colorspaces_convert_srgb_to_display
-    (output_profile ? output_profile->type : DT_COLORSPACE_NONE,
-     dt_iop_overexposed_colors[colorscheme][0], colors[0], 2);
+  _display_colors(piece, colorscheme, colors);
   const float *const upper_color = colors[0];
   const float *const lower_color = colors[1];
 
@@ -360,11 +367,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const float upper = dev->overexposed.upper / 100.0f;              // in %
   const int colorscheme = dev->overexposed.colorscheme;
   dt_aligned_pixel_t colors[2];
-  const dt_iop_order_iccprofile_info_t *output_profile =
-    dt_ioppr_get_pipe_output_profile_info(piece->pipe);
-  dt_colorspaces_convert_srgb_to_display
-    (output_profile ? output_profile->type : DT_COLORSPACE_NONE,
-     dt_iop_overexposed_colors[colorscheme][0], colors[0], 2);
+  _display_colors(piece, colorscheme, colors);
 
   const float *upper_color = colors[0];
   const float *lower_color = colors[1];
