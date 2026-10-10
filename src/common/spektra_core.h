@@ -49,10 +49,14 @@ void sf_blur_plane3_fast(float *buf,
    input weight B falls below 1e-4 by sigma 16, so a one-ulp difference in
    the input moves the output by around 1e-3 at sigma 60-130. The field is
    box-averaged down by k = floor(sigma / SF_WIDE_BLUR_LOW_SIGMA), blurred
-   with the exact kernel at the reduced sigma (below 16, so at most 48 taps
-   on k^2 fewer pixels), and bilinearly interpolated back. The low-resolution sigma is reduced by the variance the
-   box ((k^2 - 1) / 12) and the interpolation (k^2 / 6) add, so the total is
-   the requested sigma.
+   with the exact kernel at the reduced sigma (below 13, so at most 79 taps
+   on k^2 fewer pixels), and bilinearly interpolated back. The low-resolution
+   sigma is reduced by the variance the box ((k^2 - 1) / 12) and the
+   interpolation (k^2 / 6) add, so the total is the width the recursive path
+   gives the same sigma: the reference's Young-van Vliet filter runs 8-11%
+   wide at small sigma and narrower than asked from about 120, every radius in
+   the module was tuned against that, and sf_blur_plane3_fast() at the same
+   sigma gives this width too.
 
    The block grid is anchored to absolute image coordinates (roi_x, roi_y),
    so tiles of one image share it. sf_wide_blur_plan() decides whether this

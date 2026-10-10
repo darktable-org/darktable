@@ -367,6 +367,27 @@ void sf_blur_plane3_fast(float *const buf,
   dt_free_align(trans);
 }
 
+/* Variance of the reference's Young-van Vliet filter at `sigma`, forward and
+   backward sweep together, from the same coefficients dt_gaussian_yvv_coeffs()
+   rounds to float, kept in double. For a causal B / (1 - b1 z - b2 z^2 - b3 z^3)
+   with S = 1 - b1 - b2 - b3, P = b1 + 2 b2 + 3 b3 and Q = b1 + 4 b2 + 9 b3 the
+   impulse response has variance P^2 / S^2 + Q / S; the backward sweep doubles
+   it. Matches the measured response of the double-precision recursion to the
+   second decimal (5 -> 5.56, 30 -> 32.28, 150 -> 137.88). */
+static double _yvv_ref_variance(const double s)
+{
+  const double q = (s >= 2.5) ? (0.98711 * s - 0.96330) : (3.97156 - 4.14554 * sqrt(1.0 - 0.26891 * s));
+  const double q2 = q * q, q3 = q2 * q;
+  const double b0 = 1.57825 + 2.44413 * q + 1.4281 * q2 + 0.422205 * q3;
+  const double b1 = (2.44413 * q + 2.85619 * q2 + 1.26661 * q3) / b0;
+  const double b2 = -(1.4281 * q2 + 1.26661 * q3) / b0;
+  const double b3 = 0.422205 * q3 / b0;
+  const double S = 1.0 - b1 - b2 - b3;
+  const double P = b1 + 2.0 * b2 + 3.0 * b3;
+  const double Q = b1 + 4.0 * b2 + 9.0 * b3;
+  return 2.0 * (P * P / (S * S) + Q / S);
+}
+
 int sf_wide_blur_plan(const float sigma,
                       const int w,
                       const int h,
@@ -381,8 +402,12 @@ int sf_wide_blur_plan(const float sigma,
 {
   if(!(sigma >= SF_WIDE_BLUR_MIN_SIGMA) || w < 1 || h < 1) return 0;
   const int kk = (int)(sigma / SF_WIDE_BLUR_LOW_SIGMA);
-  const double s = (double)sigma;
-  const double var = s * s - ((double)kk * kk - 1.0) / 12.0 - (double)kk * kk / 6.0;
+  /* the width the recursive path delivers: n cascaded passes of pass_sigma,
+     variances adding */
+  float pass_sigma = sigma;
+  const int passes = sf_gauss_iir_passes(sigma, &pass_sigma);
+  const double target = (double)passes * _yvv_ref_variance((double)pass_sigma);
+  const double var = target - ((double)kk * kk - 1.0) / 12.0 - (double)kk * kk / 6.0;
   *k = kk;
   *sigma_low = (float)(sqrt(var) / kk);
   /* offset of the buffer's first pixel inside its block: the grid sits on
