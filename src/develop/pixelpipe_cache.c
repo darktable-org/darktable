@@ -121,6 +121,7 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
   hash = dt_hash(hash, &pipe->input_profile_info, sizeof(pipe->input_profile_info));
   hash = dt_hash(hash, &pipe->work_profile_info, sizeof(pipe->work_profile_info));
   hash = dt_hash(hash, &pipe->output_profile_info, sizeof(pipe->output_profile_info));
+  hash = dt_hash(hash, &pipe->output_encoding, sizeof(pipe->output_encoding));
   hash = dt_hash(hash, &pipe->export_profile_info, sizeof(pipe->export_profile_info));
   // the PQ peak is a preference, so the output profile alone does not fix the headroom
   hash = dt_hash(hash, &pipe->output_headroom, sizeof(pipe->output_headroom));

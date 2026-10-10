@@ -233,8 +233,10 @@ typedef struct dt_dev_pixelpipe_t
   struct dt_iop_order_iccprofile_info_t *work_profile_info;
   /** input profile info **/
   struct dt_iop_order_iccprofile_info_t *input_profile_info;
-  /** output profile info **/
+  /** matrix-compatible output profile info for processing **/
   struct dt_iop_order_iccprofile_info_t *output_profile_info;
+  /** actual colorout encoding, including nonmatrix ICC profiles **/
+  struct dt_iop_order_iccprofile_info_t *output_encoding;
   /** used only as a cache-identity tag to invalidate the cache **/
   struct dt_iop_order_iccprofile_info_t *export_profile_info;
   /** peak luminance of the output relative to the 203 nit reference white,
