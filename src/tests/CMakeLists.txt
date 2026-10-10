@@ -12,6 +12,24 @@ if(NOT WIN32)
 endif()
 add_test(NAME display-transport COMMAND darktable-test-display-transport)
 
+if(USE_WAYLAND)
+  set_source_files_properties("${COLOR_MANAGEMENT_CODE}" "${COLOR_MANAGEMENT_HEADER}"
+                              PROPERTIES GENERATED TRUE)
+  add_executable(darktable-test-wayland-color wayland_color.c
+                 "${COLOR_MANAGEMENT_CODE}" "${COLOR_MANAGEMENT_HEADER}")
+  add_dependencies(darktable-test-wayland-color generate_wayland_color)
+  target_compile_definitions(darktable-test-wayland-color PRIVATE HAVE_WAYLAND_COLOR_MANAGEMENT)
+  target_include_directories(darktable-test-wayland-color PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/..")
+  target_link_libraries(darktable-test-wayland-color PRIVATE ${GTK3_LIBRARIES} PkgConfig::WaylandClient)
+  add_test(NAME wayland-color COMMAND darktable-test-wayland-color)
+  add_test(NAME wayland-color-disabled COMMAND darktable-test-wayland-color --disable)
+  set_tests_properties(wayland-color wayland-color-disabled
+                       PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 30)
+  if(NOT WIN32)
+    target_link_libraries(darktable-test-wayland-color PRIVATE m)
+  endif()
+endif()
+
 if(WIN32)
     # This tester sets up a darktable instance (of sorts). Hence it expects libraries at ../lib/darktable
     # Easiest way to comply with this on Windows: Put tester executable in same directory as darktable executable
