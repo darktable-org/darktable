@@ -194,9 +194,9 @@ static void _update_sample_label(dt_lib_module_t *self,
 
   dt_aligned_pixel_t swatch;
   dt_colorspaces_convert_display_to_ui(sample->display[statistic], swatch);
-  sample->swatch.red   = CLAMP(swatch[0], 0.0f, 1.0f);
-  sample->swatch.green = CLAMP(swatch[1], 0.0f, 1.0f);
-  sample->swatch.blue  = CLAMP(swatch[2], 0.0f, 1.0f);
+  sample->swatch.red   = swatch[0];
+  sample->swatch.green = swatch[1];
+  sample->swatch.blue  = swatch[2];
   for_each_channel(ch)
   {
     sample->label_rgb[ch]  = (int)roundf(sample->scope[statistic][ch] * 255.f);
@@ -377,9 +377,9 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget,
     dt_colorspaces_convert_display_to_ui(sample->display[i], swatch);
     sample_parts[i] = g_strdup_printf
       ("<span background='#%02X%02X%02X'>%32s</span>",
-       (int)roundf(CLAMP(swatch[0], 0.f, 1.f) * 255.f),
-       (int)roundf(CLAMP(swatch[1], 0.f, 1.f) * 255.f),
-       (int)roundf(CLAMP(swatch[2], 0.f, 1.f) * 255.f), " ");
+       (int)roundf(swatch[0] * 255.f),
+       (int)roundf(swatch[1] * 255.f),
+       (int)roundf(swatch[2] * 255.f), " ");
 
     sample_parts[i + 4] = g_strdup_printf("<span foreground='#FF7F7F'>%6d</span>  "
                                           "<span foreground='#7FFF7F'>%6d</span>  "

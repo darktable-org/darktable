@@ -416,6 +416,7 @@ void dt_colorspaces_convert_srgb_to_display(const dt_colorspaces_color_profile_t
 
 // input is float RGBA in the current preview encoding: transport on native
 // Wayland, otherwise device RGB; convert to GTK UI RGB or copy, respectively
+// output RGB is clamped to [0,1] for swatches; alpha is preserved
 void dt_colorspaces_convert_display_to_ui(const dt_aligned_pixel_t input,
                                          dt_aligned_pixel_t output);
 

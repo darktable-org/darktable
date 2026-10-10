@@ -1282,6 +1282,7 @@ void dt_colorspaces_convert_display_to_ui(const dt_aligned_pixel_t input,
                    input, output, 1);
   else
     copy_pixel(output, input);
+  for(size_t c = 0; c < 3; c++) output[c] = CLAMP(output[c], 0.0f, 1.0f);
 }
 
 // make sure that darktable.color_profiles->xprofile_lock is held when calling this!
