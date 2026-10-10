@@ -50,6 +50,24 @@ else(Colord_FOUND AND NOT ${Colord_VERSION} VERSION_LESS "0.1.32")
   message(STATUS "no colord support for darktable-cmstest. not cool.")
 endif(Colord_FOUND AND NOT ${Colord_VERSION} VERSION_LESS "0.1.32")
 
+if(BUILD_TESTING)
+  get_target_property(_CMSTEST_LIBRARIES darktable-cmstest LINK_LIBRARIES)
+  if(X11_FOUND AND X11_Xrandr_FOUND)
+    foreach(_backend enabled disabled)
+      add_cmocka_test(test_cmstest_${_backend}
+                      SOURCES ../tests/cmstest_selection.c
+                      LINK_LIBRARIES ${_CMSTEST_LIBRARIES} cmocka)
+    endforeach()
+    target_compile_definitions(test_cmstest_enabled PRIVATE CMSTEST_TEST_WAYLAND)
+  endif()
+  if(USE_WAYLAND)
+    add_cmocka_test(test_cmstest_wayland
+                    SOURCES ../tests/cmstest_wayland.c "${COLOR_MANAGEMENT_CODE}"
+                    LINK_LIBRARIES ${_CMSTEST_LIBRARIES} cmocka)
+    add_dependencies(test_cmstest_wayland generate_wayland_color)
+    target_include_directories(test_cmstest_wayland PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/..")
+  endif()
+endif()
 
 
 set_target_properties(darktable-cmstest 
