@@ -248,7 +248,8 @@ void gui_post_expose(dt_lib_module_t *self,
                    NULL,
                    DT_DEVICE_NONE,
                    FALSE,
-                   FALSE);
+                   FALSE,
+                   NULL);
       d->snap_requested = FALSE;
       d->expose_again_timeout_id = 0;
     }

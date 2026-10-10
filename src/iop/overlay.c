@@ -18,6 +18,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
+#include "common/iop_profile.h"
 #include "common/math.h"
 #include "common/overlay.h"
 #include "common/utility.h"
@@ -121,19 +122,14 @@ typedef struct dt_iop_overlay_data_t
 
 typedef struct dt_iop_overlay_global_data_t
 {
-  // Cached overlay buffer, one slot per instance (index = multi_priority).
-  // The stored format depends on the instance's compositing mode:
-  //  - HQ: 4-channel float in the pipe's scene-referred linear working RGB
-  //    (colorout filtered out, gamma terminal but passing the float through),
-  //    so compositing stays high-precision and colour-matched to the host pipe.
-  //  - LEGACY: 8-bit Cairo ARGB32 (the original behaviour), kept for backward
-  //    compatibility with edits made before the float path existed.
-  // cache_legacy[] records which format the slot currently holds, so a mode
-  // change invalidates and re-renders it.
+  // one slot per instance, shared by preview and export of the current image
+  // the HQ format is float RGBA; legacy stores 8-bit Cairo RGB24
+  // colorout's encoding and proof context must match before reusing either format
   void *cache[MAX_OVERLAY];
   size_t cwidth[MAX_OVERLAY];
   size_t cheight[MAX_OVERLAY];
   gboolean cache_legacy[MAX_OVERLAY];
+  dt_dev_image_output_t cache_output[MAX_OVERLAY];
   dt_pthread_mutex_t overlay_threadsafe;
   int kernel_overlay_blend;        // float RGBA blend (HQ)
   int kernel_overlay_blend_legacy; // 8-bit Cairo ARGB blend (legacy)
@@ -202,40 +198,66 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
+static dt_dev_image_output_t _get_overlay_output(const dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_dev_image_output_t output = { .type = DT_COLORSPACE_NONE,
+                                 .proof_type = DT_COLORSPACE_NONE };
+  const dt_dev_pixelpipe_t *pipe = piece->pipe;
+  gboolean after_colorout = FALSE;
+  for(GList *iter = pipe->nodes; iter; iter = g_list_next(iter))
+  {
+    const dt_dev_pixelpipe_iop_t *node = iter->data;
+    if(node == piece)
+      break;
+    if(dt_iop_module_is(node->module, "colorout")
+       && node->enabled && node->module->iop_order != INT_MAX
+       && !(dt_pipe_is_basic(pipe) && dt_iop_module_is_skipped(node->module->dev, node->module)))
+      after_colorout = TRUE;
+  }
+  const dt_iop_order_iccprofile_info_t *encoding = dt_ioppr_get_pipe_output_encoding(pipe);
+  if(after_colorout && encoding)
+  {
+    output.type = encoding->type;
+    g_strlcpy(output.filename, encoding->filename, sizeof(output.filename));
+    output.intent = pipe->output_intent;
+    output.mode = pipe->output_proof_mode;
+    output.proof_type = pipe->output_proof_type;
+    g_strlcpy(output.proof_filename, pipe->output_proof_filename, sizeof(output.proof_filename));
+  }
+  return output;
+}
+
+static gboolean _same_overlay_output(const dt_dev_image_output_t *a,
+                                     const dt_dev_image_output_t *b)
+{
+  return a->type == b->type && a->intent == b->intent && a->mode == b->mode
+    && a->proof_type == b->proof_type && !strcmp(a->filename, b->filename)
+    && !strcmp(a->proof_filename, b->proof_filename);
+}
+
 static GList *_get_disabled_modules(const dt_iop_module_t *self,
-                                    const dt_imgid_t imgid)
+                                    const dt_dev_pixelpipe_iop_t *piece,
+                                    const dt_imgid_t imgid,
+                                    const dt_dev_image_output_t *output)
 {
   const dt_develop_t *dev = self->dev;
-  const int multi_priority = self->multi_priority;
 
-  /* we want a list of all modules that are after the current
-     overlay module iop-order to ensure they are not processed via dt_dev_image().
-     There are some exceptions:
-       - gamma and finalscale are required
-       - crop and &ashift make sense
-     colorout is *not* an exception: keeping it filtered out (as it always was)
-     means the overlay is rendered in the pipe's scene-referred linear working
-     RGB. Combined with the want_float passthrough render in dt_dev_image(), the
-     overlay reaches process() as linear float instead of a posterized 8-bit
-     linear buffer, matching the host pipe at this module's position.
-     The list order does not matter
-  */
-
-  const dt_iop_module_t *self_module = dt_iop_get_module_by_op_priority
-    (dev->iop, "overlay", multi_priority);
+  // retain placement modules, but colorout must match the host's processed nodes
   const gboolean is_current = dt_dev_is_current_image(dev, imgid);
 
   GList *result = NULL;
   gboolean after = FALSE;
 
-  for(GList *l = dev->iop; l; l = g_list_next(l))
+  for(GList *l = piece->pipe->nodes; l; l = g_list_next(l))
   {
-    dt_iop_module_t *mod = l->data;
+    const dt_dev_pixelpipe_iop_t *node = l->data;
+    dt_iop_module_t *mod = node->module;
     if((after
           && !dt_iop_module_is_gamma(mod)
           && !dt_iop_module_is_finalscale(mod)
           && !dt_iop_module_is(mod, "crop")
           && !dt_iop_module_is(mod, "ashift"))
+    || (dt_iop_module_is(mod, "colorout") && output->type == DT_COLORSPACE_NONE)
     || (is_current
          && ( dt_iop_module_is(mod, "overlay")
            || dt_iop_module_is(mod, "enlargecanvas"))))
@@ -244,8 +266,7 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
     }
 
     // look for ourself, disable all modules after this point
-    if(dt_iop_module_is(mod, self_module->op)
-         && mod->multi_priority == multi_priority)
+    if(node == piece)
       after = TRUE;
   }
 
@@ -290,6 +311,7 @@ static void _module_remove_callback(gpointer instance,
 static void _setup_overlay(dt_iop_module_t *self,
                            const dt_dev_pixelpipe_iop_t *piece,
                            const gboolean legacy,
+                           const dt_dev_image_output_t *output,
                            void **pbuf,
                            size_t *pwidth,
                            size_t *pheight)
@@ -339,15 +361,10 @@ static void _setup_overlay(dt_iop_module_t *self,
     size_t bw;
     size_t bh;
 
-    GList *disabled_modules = _get_disabled_modules(self, imgid);
+    GList *disabled_modules = _get_disabled_modules(self, piece, imgid, output);
 
-    // HQ (legacy == FALSE): render scene-referred linear float (want_float):
-    // colorout is filtered out by _get_disabled_modules() while gamma stays the
-    // terminal module and passes the 4-channel float straight through (see
-    // gamma.c process()), so the overlay arrives in the working RGB space rather
-    // than as an 8-bit ARGB display backbuf.
-    // LEGACY (legacy == TRUE): render the 8-bit ARGB display backbuf (want_float
-    // FALSE), the original behaviour that the Cairo compositing path expects.
+    // keep float precision for HQ; both formats use the host encoding when
+    // colorout precedes this piece, and working RGB when colorout is filtered
     const gboolean want_float = !legacy;
 
     // Render at the parent image's storage resolution. The result is
@@ -373,7 +390,8 @@ static void _setup_overlay(dt_iop_module_t *self,
                  disabled_modules,
                  piece->pipe->devid,
                  TRUE,
-                 want_float);
+                 want_float,
+                 output->type == DT_COLORSPACE_NONE ? NULL : output);
 
     void *old_buf = *pbuf;
 
@@ -574,7 +592,7 @@ static _overlay_geometry_t _overlay_compute_geometry(const dt_iop_overlay_data_t
 }
 
 /* Composite the overlay into a straight-alpha float RGBA buffer at roi_out
- * dimensions, in the host pipe's scene-referred linear working RGB.
+ * dimensions, in the host pipe's encoding at the overlay module.
  *
  * The cached overlay (*pbuf) is rendered once at parent-image storage
  * resolution and reused across zoom levels. Placement / scale / rotation are
@@ -601,6 +619,7 @@ static float *_get_overlay_rgba_f(dt_iop_module_t *self,
   dt_iop_overlay_global_data_t *gd = self->global_data;
   const int index = self->multi_priority;
   const float angle = deg2radf(-data->rotate);
+  const dt_dev_image_output_t output = _get_overlay_output(piece);
 
   // ── Acquire / refresh the overlay buffer ─────────────────────────────────
   dt_pthread_mutex_lock(&gd->overlay_threadsafe);
@@ -617,15 +636,19 @@ static float *_get_overlay_rgba_f(dt_iop_module_t *self,
   if(!dt_is_valid_imgid(data->imgid))
     _clear_cache_entry(self, index);
 
-  // drop a cached buffer left over from the other compositing mode
-  if(use_cache && gd->cache[index] && gd->cache_legacy[index])
+  // the same slot can serve native previews and exports of the current image
+  if(use_cache && gd->cache[index]
+     && (gd->cache_legacy[index] || !_same_overlay_output(&gd->cache_output[index], &output)))
     _clear_cache_entry(self, index);
 
   if(!*pbuf)
   {
-    _setup_overlay(self, piece, FALSE /* legacy */, pbuf, pwidth, pheight);
+    _setup_overlay(self, piece, FALSE /* legacy */, &output, pbuf, pwidth, pheight);
     if(use_cache)
+    {
       gd->cache_legacy[index] = FALSE;
+      gd->cache_output[index] = output;
+    }
   }
 
   if(!*pbuf)
@@ -742,12 +765,11 @@ static float *_get_overlay_rgba_f(dt_iop_module_t *self,
   return canvas;
 }
 
-/* Legacy (8-bit) compositor: the original behaviour, kept so edits made before
- * the float path existed render identically. The overlay is rendered to an
- * 8-bit Cairo ARGB32 surface (display-encoded sRGB, BGRA), scaled/rotated by
+/* legacy compositor: retain the original 8-bit Cairo compositing path
+ * the overlay is rendered to an 8-bit Cairo ARGB32 surface in the host encoding, scaled/rotated by
  * Cairo, and returned as a Cairo ARGB32 buffer (row pitch = *out_stride bytes)
  * that the caller must g_free(), or NULL on failure. Placement geometry is the
- * same _overlay_compute_geometry() used by the float path.
+ * same _overlay_compute_geometry() used by the float path
  */
 static guint8 *_get_overlay_argb(dt_iop_module_t *self,
                                  dt_dev_pixelpipe_iop_t *piece,
@@ -759,6 +781,7 @@ static guint8 *_get_overlay_argb(dt_iop_module_t *self,
   dt_iop_overlay_global_data_t *gd = self->global_data;
   const int index = self->multi_priority;
   const float angle = deg2radf(-data->rotate);
+  const dt_dev_image_output_t output = _get_overlay_output(piece);
 
   // ── Acquire / refresh the overlay buffer ─────────────────────────────────
   dt_pthread_mutex_lock(&gd->overlay_threadsafe);
@@ -775,15 +798,18 @@ static guint8 *_get_overlay_argb(dt_iop_module_t *self,
   if(!dt_is_valid_imgid(data->imgid))
     _clear_cache_entry(self, index);
 
-  // drop a cached buffer left over from the HQ float mode
-  if(use_cache && gd->cache[index] && !gd->cache_legacy[index])
+  if(use_cache && gd->cache[index]
+     && (!gd->cache_legacy[index] || !_same_overlay_output(&gd->cache_output[index], &output)))
     _clear_cache_entry(self, index);
 
   if(!*pbuf)
   {
-    _setup_overlay(self, piece, TRUE /* legacy */, pbuf, pwidth, pheight);
+    _setup_overlay(self, piece, TRUE /* legacy */, &output, pbuf, pwidth, pheight);
     if(use_cache)
+    {
       gd->cache_legacy[index] = TRUE;
+      gd->cache_output[index] = output;
+    }
   }
 
   if(!*pbuf)
@@ -897,7 +923,7 @@ void process(dt_iop_module_t *self,
 
   if(data->compositing == DT_OVERLAY_COMPOSITE_LEGACY)
   {
-    // legacy 8-bit Cairo ARGB32 overlay (display-encoded sRGB, BGRA byte order)
+    // legacy 8-bit Cairo ARGB32 overlay in host encoding, BGRA byte order
     int stride = 0;
     guint8 *image = _get_overlay_argb(self, piece, roi_in, roi_out, &stride);
 
@@ -928,7 +954,7 @@ void process(dt_iop_module_t *self,
     return;
   }
 
-  // HQ: straight-alpha float RGBA overlay (R,G,B linear working RGB, A=coverage)
+  // HQ: straight-alpha float RGBA in host encoding, alpha is coverage
   float *const image = _get_overlay_rgba_f(self, piece, roi_in, roi_out);
 
   if(!image)
@@ -1008,7 +1034,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     return lerr;
   }
 
-  // HQ: straight-alpha float RGBA overlay (R,G,B linear working RGB, A=coverage)
+  // HQ: straight-alpha float RGBA in host encoding, alpha is coverage
   float *image = _get_overlay_rgba_f(self, piece, roi_in, roi_out);
 
   if(!image)

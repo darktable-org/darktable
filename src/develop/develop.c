@@ -4266,7 +4266,8 @@ void dt_dev_image(const dt_imgid_t imgid,
                   GList *module_filter_out,
                   const int devid,
                   const gboolean finalscale,
-                  const gboolean want_float)
+                  const gboolean want_float,
+                  const dt_dev_image_output_t *output)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, TRUE);
@@ -4274,11 +4275,11 @@ void dt_dev_image(const dt_imgid_t imgid,
   dt_dev_pixelpipe_t *pipe = dev.full.pipe;
 
   pipe->type |= DT_DEV_PIXELPIPE_IMAGE | (finalscale ? DT_DEV_PIXELPIPE_IMAGE_FINAL : DT_DEV_PIXELPIPE_NONE);
-  // want_float: keep gamma as the terminal module (so backbuf dimensions stay
-  // consistent) but have it pass the linear-float working RGB straight through
-  // instead of packing it to 8-bit. See gamma.c process().
+  // keep gamma terminal for consistent dimensions, passing through floats
+  // in the current encoding instead of packing them to 8-bit
   if(want_float)
     pipe->type |= DT_DEV_PIXELPIPE_IMAGE_FLOAT;
+  pipe->image_output = output;
   // load image and set history_end
 
   dev.snapshot_id = snapshot_id;
@@ -4309,10 +4310,8 @@ void dt_dev_image(const dt_imgid_t imgid,
 
   // record resulting image and dimensions
 
-  // Destination size the caller expects: 16 B/px for float, else 8-bit ARGB.
-  // The pipe's terminate step (dt_dev_pixelpipe_process) sizes pipe->backbuf to
-  // match: 4 floats/px when want_float (gamma passed the linear float through),
-  // 8-bit ARGB otherwise. So a straight copy of bufsize is exact.
+  // gamma and the pipe's backbuffer use 4 floats per pixel for want_float,
+  // otherwise 8-bit ARGB, so the destination keeps the same format
   const size_t bufsize = (want_float ? 4 * sizeof(float) : sizeof(uint32_t)) * pipe->backbuf_width *
                          pipe->backbuf_height;
   *buf = dt_alloc_aligned(bufsize);

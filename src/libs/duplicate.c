@@ -258,7 +258,8 @@ void gui_post_expose(dt_lib_module_t *self,
                  NULL,
                  DT_DEVICE_NONE,
                  FALSE,
-                 FALSE);
+                 FALSE,
+                 NULL);
 
     d->preview_id = d->imgid;
   }

@@ -658,6 +658,17 @@ dt_hash_t dt_dev_hash_distort_plus(dt_develop_t *dev,
 void dt_dev_undo_start_record(dt_develop_t *dev);
 void dt_dev_undo_end_record(dt_develop_t *dev);
 
+// output contract for images composited after the host's colorout
+typedef struct dt_dev_image_output_t
+{
+  dt_colorspaces_color_profile_type_t type;
+  char filename[DT_IOP_COLOR_ICC_LEN];
+  dt_iop_color_intent_t intent;
+  dt_colorspaces_color_mode_t mode;
+  dt_colorspaces_color_profile_type_t proof_type;
+  char proof_filename[DT_IOP_COLOR_ICC_LEN];
+} dt_dev_image_output_t;
+
 /*
  * develop an image and returns the buf and processed width / height.
  * this is done as in the context of the darkroom, meaning that the
@@ -677,7 +688,8 @@ void dt_dev_image(const dt_imgid_t imgid,
                   GList *module_filter_out,
                   const int devid,
                   const gboolean finalscale,
-                  const gboolean want_float);
+                  const gboolean want_float,
+                  const dt_dev_image_output_t *output);
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d);
 void dt_dev_reset_chroma(dt_develop_t *dev);

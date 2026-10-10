@@ -293,10 +293,8 @@ void process(dt_iop_module_t *self,
   if(roi_in->width != roi_out->width || roi_in->height != roi_out->height)
     return;
 
-  // dt_dev_image(want_float): the caller wants the scene-referred linear float
-  // working RGB, not display-encoded 8-bit ARGB. Pass the 4-channel float buffer
-  // straight through (the output buffer is already allocated 16 B/px). gamma
-  // stays the terminal module so backbuf dimensions remain consistent.
+  // preserve the current encoding and float precision for overlay sources
+  // while keeping gamma terminal so backbuffer dimensions remain consistent
   if(piece->pipe->type & DT_DEV_PIXELPIPE_IMAGE_FLOAT)
   {
     dt_iop_image_copy_by_size(

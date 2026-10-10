@@ -318,6 +318,11 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->input_profile_info = NULL;
   pipe->output_profile_info = NULL;
   pipe->output_encoding = NULL;
+  pipe->output_intent = DT_INTENT_LAST;
+  pipe->output_proof_mode = DT_PROFILE_NORMAL;
+  pipe->output_proof_type = DT_COLORSPACE_NONE;
+  pipe->output_proof_filename[0] = '\0';
+  pipe->image_output = NULL;
   pipe->export_profile_info = NULL;
   pipe->runs = 0;
   pipe->bcache_data = NULL;
@@ -3556,9 +3561,8 @@ restart:
   //FIXME lock/release cache line instead of copying
   if(dt_pipe_is_screen(pipe))
   {
-    // dt_dev_image(want_float) keeps gamma terminal but lets it pass the
-    // 4-channel linear float working RGB through unpacked. In that case the
-    // backbuf is 16 B/px (4 floats) rather than the usual 8-bit ARGB.
+    // dt_dev_image(want_float) keeps gamma terminal and preserves the
+    // current encoding as 4 floats per pixel instead of packing it to 8-bit
     const size_t bbpp =
       (pipe->type & DT_DEV_PIXELPIPE_IMAGE_FLOAT) ? 4 * sizeof(float) : 4 * sizeof(uint8_t);
     if(pipe->backbuf == NULL || pipe->backbuf_width * pipe->backbuf_height != width * height ||

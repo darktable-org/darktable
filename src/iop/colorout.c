@@ -602,7 +602,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   const gboolean force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
   dt_colorspaces_color_profile_type_t out_type = DT_COLORSPACE_SRGB;
-  gchar *out_filename = NULL;
+  const gchar *out_filename = NULL;
   dt_iop_color_intent_t out_intent = DT_INTENT_PERCEPTUAL;
 
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
@@ -611,7 +611,12 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   cmsHPROFILE softproof = NULL;
   cmsUInt32Number output_format = TYPE_RGBA_FLT;
 
-  d->mode = dt_pipe_is_full(pipe) ? darktable.color_profiles->mode : DT_PROFILE_NORMAL;
+  const dt_dev_image_output_t *image_output = pipe->image_output;
+  d->mode = image_output ? image_output->mode
+    : dt_pipe_is_full(pipe) ? darktable.color_profiles->mode : DT_PROFILE_NORMAL;
+  pipe->output_proof_mode = DT_PROFILE_NORMAL;
+  pipe->output_proof_type = DT_COLORSPACE_NONE;
+  pipe->output_proof_filename[0] = '\0';
 
   if(d->xform)
   {
@@ -625,7 +630,13 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   piece->process_cl_ready = TRUE;
 
   /* if we are exporting then check and set usage of override profile */
-  if(dt_pipe_is_export(pipe))
+  if(image_output)
+  {
+    out_type = image_output->type;
+    out_filename = image_output->filename;
+    out_intent = image_output->intent;
+  }
+  else if(dt_pipe_is_export(pipe))
   {
     if(pipe->icc_type != DT_COLORSPACE_NONE)
     {
@@ -662,6 +673,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // when the output type is Lab then process is a nop, so we can avoid creating a transform
   // and the subsequent error messages but still have to publish the profile_info
   d->type = out_type;
+  pipe->output_intent = out_intent;
   if(out_type == DT_COLORSPACE_LAB)
   {
     dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, out_intent);
@@ -704,9 +716,12 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   /* creating softproof profile if softproof is enabled */
   if((d->mode != DT_PROFILE_NORMAL) && dt_pipe_is_full(pipe))
   {
+    dt_colorspaces_color_profile_type_t proof_type = image_output
+      ? image_output->proof_type : darktable.color_profiles->softproof_type;
+    const char *proof_filename = image_output
+      ? image_output->proof_filename : darktable.color_profiles->softproof_filename;
     const dt_colorspaces_color_profile_t *prof = dt_colorspaces_get_profile
-      (darktable.color_profiles->softproof_type,
-       darktable.color_profiles->softproof_filename,
+      (proof_type, proof_filename,
        DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY | DT_PROFILE_DIRECTION_DISPLAY2);
 
     if(prof)
@@ -720,8 +735,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
                       ->profile;
       dt_control_log(_("missing softproof profile has been replaced by sRGB!"));
       dt_print(DT_DEBUG_ALWAYS, "missing softproof profile `%s' has been replaced by sRGB!",
-               dt_colorspaces_get_name(darktable.color_profiles->softproof_type,
-                                       darktable.color_profiles->softproof_filename));
+               dt_colorspaces_get_name(proof_type, proof_filename));
+      proof_type = DT_COLORSPACE_SRGB;
+      proof_filename = "";
     }
 
     // some of our internal profiles are what lcms considers ideal profiles as they have a parametric TRC so
@@ -731,6 +747,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     softproof = dt_colorspaces_make_temporary_profile(softproof);
     if(softproof)
     {
+      pipe->output_proof_mode = d->mode;
+      pipe->output_proof_type = proof_type;
+      g_strlcpy(pipe->output_proof_filename, proof_filename, sizeof(pipe->output_proof_filename));
       /* TODO: the use of bpc should be userconfigurable either from module or preference pane */
       /* softproof flag and black point compensation */
       transformFlags |= cmsFLAGS_SOFTPROOFING | cmsFLAGS_NOCACHE | cmsFLAGS_BLACKPOINTCOMPENSATION;
