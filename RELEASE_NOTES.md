@@ -276,6 +276,9 @@ changes (where available).
 
 ## Bug Fixes
 
+- Fixed gamut warnings appearing gray instead of cyan with LittleCMS 2.17
+  and later.
+
 - Do not convert the pipe input in place for blending, which may result
   in a corrputed buffer.
 
