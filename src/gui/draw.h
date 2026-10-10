@@ -223,9 +223,10 @@ static inline void dt_draw_backbuf_contrast(const dt_develop_t *dev,
     }
   }
 
-  rgb[0] = r;
-  rgb[1] = g;
-  rgb[2] = b;
+  const dt_aligned_pixel_t sampled = { r, g, b, 1.0f };
+  dt_aligned_pixel_t swatch;
+  dt_colorspaces_convert_display_to_ui(sampled, swatch);
+  for(size_t c = 0; c < 3; c++) rgb[c] = CLAMP(swatch[c], 0.0f, 1.0f);
 
   // Rec.601 mean luminance of the window: the plain switch keeps maximal
   // contrast, the averaging alone is what removes the texture flicker

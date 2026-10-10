@@ -3629,7 +3629,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   // Get the current display profile
   struct dt_iop_order_iccprofile_info_t *work_profile =
-    dt_ioppr_get_pipe_output_profile_info(self->dev->full.pipe);
+    dt_ioppr_get_ui_profile_info(self->dev->full.pipe);
 
   // Check if it is different than the one in cache, and update it if needed
   if(work_profile != g->work_profile)
@@ -3757,7 +3757,7 @@ void gui_init(dt_iop_module_t *self)
   // Init the color profiles and cache them
   struct dt_iop_order_iccprofile_info_t *work_profile = NULL;
   if(self->dev)
-    work_profile = dt_ioppr_get_pipe_output_profile_info(self->dev->full.pipe);
+    work_profile = dt_ioppr_get_ui_profile_info(self->dev->full.pipe);
   if(g->white_adapted_profile)
     dt_free_align(g->white_adapted_profile);
   g->white_adapted_profile = D65_adapt_iccprofile(work_profile);
