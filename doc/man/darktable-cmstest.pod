@@ -5,7 +5,7 @@ darktable-cmstest - test if the color management subsystem of your computer is c
 
 =head1 SYNOPSIS
 
-    darktable-cmstest
+    darktable-cmstest [--wayland | --x11 | --help]
 
 =head1 DESCRIPTION
 
@@ -13,6 +13,34 @@ B<darktable> is a digital photography workflow application for B<Linux>, B<Mac O
 It's described further in L<darktable(1)|darktable(1)>.
 
 B<darktable-cmstest> investigates if the color management subsystem of your computer is correctly configured and it displays some useful information about the installed monitor profile(s).
+
+On Wayland, reports compositor capabilities and output color descriptions:
+primaries, transfer functions, luminance, and ICC profiles when provided.
+After discovery, it waits up to two seconds for the requested output descriptions.
+An unfinished description is reported as timed out, and the command fails.
+
+=head1 OPTIONS
+
+=over
+
+=item B<--wayland>
+
+Query Wayland. Selected automatically when
+C<WAYLAND_DISPLAY> or C<WAYLAND_SOCKET> is set, or C<XDG_SESSION_TYPE> is
+C<wayland>. Automatic selection falls back to X11 if Wayland support was disabled
+at build time or a connection cannot be opened. Errors after connecting do not
+trigger this fallback. Explicit C<--wayland> requires Wayland support and never
+falls back to X11.
+
+=item B<--x11>
+
+Run XRandR and colord checks, including on XWayland.
+
+=item B<--help>
+
+Show usage information.
+
+=back
 
 =head1 SEE ALSO
 
