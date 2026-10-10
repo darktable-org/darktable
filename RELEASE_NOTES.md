@@ -513,6 +513,14 @@ changes (where available).
   one, which slightly changed the colors along the right edge of the
   image.
 
+- Fixed possible crashes after removing an image that had snapshots
+  from the library, while either a snapshot was shown for comparison
+  or all ten snapshot slots were in use.
+
+- Fixed a snapshot showing edits from another snapshot, even one of a
+  different image. Removing an image that had snapshots from the
+  library, then taking a new snapshot, could cause the mix-up.
+
 ## Lua
 
 ### API Version
