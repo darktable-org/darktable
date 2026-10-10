@@ -22,6 +22,7 @@
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/image_cache.h"
+#include "common/iop_profile.h"
 #include "common/mipmap_cache.h"
 #include "common/styles.h"
 #include "control/conf.h"
@@ -31,6 +32,7 @@
 #include "develop/imageop.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
+#include "gui/wayland.h"
 
 #ifdef HAVE_OPENEXR
 #include "imageio/imageio_exr.h"
@@ -1732,7 +1734,24 @@ static int _preview_write_image(dt_imageio_module_data_t *data,
   _imageio_preview_t *d = (_imageio_preview_t *)data;
 
   if(!in) return 1;
-  memcpy(d->buf, in, sizeof(uint32_t) * (size_t)data->width * data->height);
+  if(d->bpp == 32)
+  {
+    const dt_iop_order_iccprofile_info_t *encoding = dt_ioppr_get_pipe_output_encoding(pipe);
+    if(!encoding) return 1;
+    const dt_colorspaces_color_profile_t *profile =
+      dt_colorspaces_get_profile(encoding->type, encoding->filename, DT_PROFILE_DIRECTION_ANY);
+    if(!profile || !profile->profile || !darktable.color_profiles->ui_profile) return 1;
+    const cmsUInt32Number cairo_format =
+      G_BYTE_ORDER == G_LITTLE_ENDIAN ? TYPE_BGRA_8 : TYPE_ARGB_8;
+    cmsHTRANSFORM transform = cmsCreateTransform
+      (profile->profile, TYPE_RGBA_FLT, darktable.color_profiles->ui_profile, cairo_format,
+       DT_INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE);
+    if(!transform) return 1;
+    cmsDoTransform(transform, in, d->buf, (size_t)data->width * data->height);
+    cmsDeleteTransform(transform);
+  }
+  else
+    memcpy(d->buf, in, sizeof(uint32_t) * (size_t)data->width * data->height);
   d->width = data->width;
   d->height = data->height;
 
@@ -1741,12 +1760,12 @@ static int _preview_write_image(dt_imageio_module_data_t *data,
 
 static int _preview_bpp(dt_imageio_module_data_t *data)
 {
-  return 8;
+  return ((_imageio_preview_t *)data)->bpp;
 }
 
 static int _preview_levels(dt_imageio_module_data_t *data)
 {
-  return IMAGEIO_RGB | IMAGEIO_INT8;
+  return IMAGEIO_RGB | (_preview_bpp(data) == 32 ? IMAGEIO_FLOAT : IMAGEIO_INT8);
 }
 
 static const char *_preview_mime(dt_imageio_module_data_t *data)
@@ -1772,7 +1791,9 @@ cairo_surface_t *dt_imageio_preview(const dt_imgid_t imgid,
   dat.head.width = width;
   dat.head.height = height;
   dat.head.style_append = TRUE;
-  dat.bpp = 8;
+  const gboolean managed = dt_wayland_color_available();
+  // keep transport pixels in float until conversion to the narrower GTK surface
+  dat.bpp = managed ? 32 : 8;
   dat.buf = (uint8_t *)dt_alloc_aligned(sizeof(uint32_t) * width * height);
   if(!dat.buf)
     return NULL;
@@ -1785,11 +1806,17 @@ cairo_surface_t *dt_imageio_preview(const dt_imgid_t imgid,
   const gboolean is_scaling = FALSE;
   const double scale_factor = 1.0;
 
-  dt_imageio_export_with_flags
+  const gboolean failed = dt_imageio_export_with_flags
     (imgid, "preview", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
      high_quality, upscale, is_scaling, scale_factor, FALSE, NULL, FALSE,
-     export_masks, DT_COLORSPACE_DISPLAY, NULL, DT_INTENT_LAST, NULL, NULL,
+     export_masks, managed ? DT_COLORSPACE_DISPLAY_TRANSPORT : DT_COLORSPACE_DISPLAY,
+     NULL, DT_INTENT_LAST, NULL, NULL,
      1, 1, NULL, history_end);
+  if(failed)
+  {
+    dt_free_align(dat.buf);
+    return NULL;
+  }
 
   const int32_t stride =
     cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, dat.head.width);
