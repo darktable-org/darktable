@@ -779,6 +779,8 @@ void sf_boost_highlights(float *const raw,
 void sf_halation(float *const raw,
                  const int w,
                  const int h,
+                 const int roi_x,
+                 const int roi_y,
                  const double pixel_um,
                  const double sc_core[3],
                  const double sc_tail[3],
@@ -885,7 +887,12 @@ void sf_halation(float *const raw,
         dt_iop_image_copy(comp, raw, nn);
         const float sk = fmaxf((float)((first_sigma_um * hscl / pixel_um) * sqrt((double)k)), 1e-6f);
         const float sig3[3] = { sk, sk, sk };
-        _blur_per_channel(comp, w, h, sig3, plane, trans);
+        /* one sigma for all three channels: wide bounces decimate, as
+           spektrafilm.c's GPU bounce loop does from the same threshold */
+        if(sk >= SF_WIDE_BLUR_EFFECT_SIGMA)
+          sf_blur_plane3_wide(comp, w, h, roi_x, roi_y, sk, plane);
+        else
+          _blur_per_channel(comp, w, h, sig3, plane, trans);
         const float wk = decay[k - 1];
         for(size_t i = 0; i < nn; i++) blur[i] = fmaf(wk, comp[i], blur[i]);
       }
@@ -1122,6 +1129,8 @@ int sf_diffusion_build_plan(int family,
 void sf_diffusion_filter(float *const raw,
                          const int w,
                          const int h,
+                         const int roi_x,
+                         const int roi_y,
                          const double pixel_um,
                          const int family,
                          const float strength,
@@ -1153,7 +1162,12 @@ void sf_diffusion_filter(float *const raw,
   {
     const float sigma = (float)(plan.sigma_um[j] * sc / fmax(pixel_um, 1e-3));
     dt_iop_image_copy(comp, raw, nn);
-    for(int c = 0; c < 3; c++) _blur_channel(comp, w, h, c, sigma, plane1, trans, /*exact_only=*/0);
+    /* wide components decimate, as spektrafilm.c's GPU bank loop does from
+       the same threshold */
+    if(sigma >= SF_WIDE_BLUR_EFFECT_SIGMA)
+      sf_blur_plane3_wide(comp, w, h, roi_x, roi_y, sigma, plane1);
+    else
+      for(int c = 0; c < 3; c++) _blur_channel(comp, w, h, c, sigma, plane1, trans, /*exact_only=*/0);
     const float wr = plan.wr[j], wg = plan.wg[j], wb = plan.wb[j];
     for(size_t i = 0; i < npix; i++)
     {

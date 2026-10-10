@@ -2209,7 +2209,8 @@ void process(dt_iop_module_t *self,
         highlight boost -> diffusion filter -> halation */
   sf_boost_highlights(plane, w, h, d->p.boost_ev, d->p.boost_range, d->p.protect_ev);
   if(d->p.diffusion_on)
-    sf_diffusion_filter(plane, w, h, (double)pixel_um, (int)d->p.diffusion_filter_family,
+    sf_diffusion_filter(plane, w, h, roi_in->x, roi_in->y, (double)pixel_um,
+                        (int)d->p.diffusion_filter_family,
                         d->p.diffusion_strength, d->p.diffusion_scale, d->p.diffusion_warmth);
   if(d->p.halation_on && (d->p.scatter_amount > 0.0f || d->p.halation_amount > 0.0f))
   {
@@ -2227,9 +2228,9 @@ void process(dt_iop_module_t *self,
       sc_core[c] = fmin(sc_core[c], (double)SF_SCATTER_CORE_CLAMP_UM);
       sc_tail[c] = fmin(sc_tail[c], (double)SF_SCATTER_TAIL_CLAMP_UM);
     }
-    sf_halation(plane, w, h, (double)pixel_um, sc_core, sc_tail, sc_w, d->p.scatter_amount,
-                d->p.scatter_scale, d->p.halation_amount, d->p.halation_scale, hal_strength,
-                hal_sigma_um);
+    sf_halation(plane, w, h, roi_in->x, roi_in->y, (double)pixel_um, sc_core, sc_tail, sc_w,
+                d->p.scatter_amount, d->p.scatter_scale, d->p.halation_amount,
+                d->p.halation_scale, hal_strength, hal_sigma_um);
   }
 
   /* 3) film development: log exposure, DIR coupler inhibition (the correction
@@ -2484,7 +2485,8 @@ void process(dt_iop_module_t *self,
          spektrafilm_pow10 / spektrafilm_log10 kernels. */
       DT_OMP_FOR()
       for(size_t k = 0; k < npix * 3; k++) plane[k] = _sf_pow10f(plane[k]);
-      sf_diffusion_filter(plane, w, h, (double)pixel_um, (int)d->p.print_diffusion_filter_family,
+      sf_diffusion_filter(plane, w, h, roi_in->x, roi_in->y, (double)pixel_um,
+                          (int)d->p.print_diffusion_filter_family,
                           d->p.print_diffusion_strength, d->p.print_diffusion_scale,
                           d->p.print_diffusion_warmth);
       DT_OMP_FOR()
@@ -2852,6 +2854,21 @@ int process_cl(dt_iop_module_t *self,
       } \
     } \
   } while(0)
+/* SF_GAUSS_BLUR4_OP_L, decimated from SF_WIDE_BLUR_EFFECT_SIGMA up: the
+   device twin of sf_diffusion_filter() and sf_halation()'s bounces, which call
+   sf_blur_plane3_wide() from the same threshold. */
+#define SF_BLUR4_WIDE_OP_L(src, dst, _sg) do { \
+    const float _ws = (_sg); \
+    if(err == CL_SUCCESS && _ws >= SF_WIDE_BLUR_EFFECT_SIGMA) \
+    { \
+      int _wide = 0; \
+      err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, (src), (dst), 0, 0, npix * f * 4); \
+      if(err == CL_SUCCESS) \
+        err = _sf_blur_wide_cl(devid, gd, (dst), w, h, roi_in->x, roi_in->y, _ws, &_wide); \
+    } \
+    else \
+      SF_GAUSS_BLUR4_OP_L(src, dst, _ws); \
+  } while(0)
 /* single-channel in-place blur (scatter stage only, on plane1). Same fast
    fallback above SF_GAUSS_EXACT_MAX_SIGMA -- scatter's core/tail sigmas are
    normally small (sub-few-px), but the fallback is here for whatever a user's
@@ -2941,7 +2958,7 @@ int process_cl(dt_iop_module_t *self,
       {
         const float sigma
             = (float)((double)plan.sigma_um[j] * dsc / fmax((double)pixel_um, 1e-3));
-        SF_GAUSS_BLUR4_OP_L(plane, tmpa, sigma);
+        SF_BLUR4_WIDE_OP_L(plane, tmpa, sigma);
         if(err != CL_SUCCESS) break;
         const int reset = (j == 0);
         const float wr = plan.wr[j], wg = plan.wg[j], wb = plan.wb[j];
@@ -3080,9 +3097,9 @@ int process_cl(dt_iop_module_t *self,
            the sim's double rather than sf_sim_gpu_t's float mirror, double
            arithmetic throughout, sqrt() and not sqrtf(), the divide before the
            sqrt factor, and the CPU's 1e-6f floor. */
-        SF_GAUSS_BLUR4_OP_L(plane, plane2,
-                            fmaxf((float)((cl_hal_sigma_um * (double)hscl
-                                           / (double)pixel_um) * sqrt((double)k)), 1e-6f));
+        SF_BLUR4_WIDE_OP_L(plane, plane2,
+                           fmaxf((float)((cl_hal_sigma_um * (double)hscl
+                                          / (double)pixel_um) * sqrt((double)k)), 1e-6f));
         if(err != CL_SUCCESS) break;
         const int reset = (k == 1);
         err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_accum, w, h, CLARG(plane2),
@@ -3392,7 +3409,7 @@ int process_cl(dt_iop_module_t *self,
         {
           const float sigma
               = (float)((double)pplan.sigma_um[j] * pdsc / fmax((double)pixel_um, 1e-3));
-          SF_GAUSS_BLUR4_OP_L(plane, tmpa, sigma);
+          SF_BLUR4_WIDE_OP_L(plane, tmpa, sigma);
           if(err != CL_SUCCESS) break;
           const int reset = (j == 0);
           const float wr = pplan.wr[j], wg = pplan.wg[j], wb = pplan.wb[j];
