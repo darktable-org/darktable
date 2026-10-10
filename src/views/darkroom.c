@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "gui/wayland.h"
 #include "common/gdk_event_utils.h"
 /** this is the view for the darkroom module.  */
 
@@ -827,7 +828,7 @@ void expose(dt_view_t *self,
       cairo_surface_destroy(darktable.gui->surface);
       darktable.gui->surface = NULL;
     }
-    if(!dt_conf_get_bool("darkroom/ui/loading_screen"))
+    if(!dt_wayland_color_available() && !dt_conf_get_bool("darkroom/ui/loading_screen"))
     {
       // Cache the rendered content for display while loading the next image.
 #ifdef _WIN32
@@ -970,7 +971,11 @@ void expose(dt_view_t *self,
     {
       // repaint the image we are switching away from, to avoid a
       // flash of the background color
-      if(darktable.gui->surface)
+      if(dt_wayland_color_repaint(cri))
+      {
+        // the native layer retains the previous image while loading
+      }
+      else if(darktable.gui->surface)
       {
         cairo_save(cri);
         cairo_identity_matrix(cri);
@@ -2594,6 +2599,7 @@ static void _preference_changed(gpointer instance,
 
 static void _update_display_profile_cmb(GtkWidget *cmb_display_profile)
 {
+  if(dt_wayland_color_available()) return;
   for(const GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {
     dt_colorspaces_color_profile_t *prof = l->data;
@@ -2615,6 +2621,7 @@ static void _update_display_profile_cmb(GtkWidget *cmb_display_profile)
 
 static void _update_display2_profile_cmb(GtkWidget *cmb_display_profile)
 {
+  if(dt_wayland_color_available()) return;
   for(const GList *l = darktable.color_profiles->profiles;
       l;
       l = g_list_next(l))
@@ -3695,6 +3702,22 @@ void gui_init(dt_view_t *self)
                                             _("histogram and color picker ICC profiles"));
     gtk_widget_set_tooltip_markup(histogram_profile, tooltip);
     g_free(tooltip);
+
+    if(dt_wayland_color_available())
+    {
+      GtkWidget *profiles[] = { display_profile, display2_profile };
+      for(size_t i = 0; i < G_N_ELEMENTS(profiles); i++)
+      {
+        dt_bauhaus_combobox_clear(profiles[i]);
+        dt_bauhaus_combobox_add(profiles[i], _("managed by the compositor"));
+        dt_bauhaus_combobox_set(profiles[i], 0);
+        gtk_widget_set_sensitive(profiles[i], FALSE);
+        gtk_widget_set_tooltip_text
+          (profiles[i], _("configure the display ICC profile in your desktop display settings"));
+      }
+      gtk_widget_set_sensitive(dev->profile.display_intent_widget, FALSE);
+      gtk_widget_set_sensitive(dev->profile.display2_intent_widget, FALSE);
+    }
 
     g_signal_connect(G_OBJECT(display_profile), "value-changed",
                      G_CALLBACK(_display_profile_callback), dev);
@@ -5155,6 +5178,8 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
   if(!dev->preview2.widget || dev->gui_leaving)
     return TRUE;
 
+  dt_wayland_color_begin(widget, cri);
+
   // Determine which develop and viewport to use
   // Take a local copy of the pointer to avoid race conditions
   dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
@@ -5221,6 +5246,7 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
     if(_preview2_request(dev)) dt_dev_process_preview2(dev);
   }
 
+  dt_wayland_color_end(cri);
   return TRUE;
 }
 
@@ -5791,6 +5817,7 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
     dev->preview2.height = -1;
 
     dev->second_wnd = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    dt_wayland_color_prepare_window(dev->second_wnd);
     gtk_widget_set_name(dev->second_wnd, "second_window");
 
     _second_window_configure_ppd_dpi(dev);

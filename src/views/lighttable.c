@@ -42,6 +42,7 @@
 #include "gui/drag_and_drop.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
+#include "gui/wayland.h"
 #include "libs/lib.h"
 #include "views/view.h"
 #include "views/view_api.h"
@@ -1396,6 +1397,7 @@ end:
 
 static void _profile_update_display_cmb(GtkWidget *cmb_display_profile)
 {
+  if(dt_wayland_color_available()) return;
   for(const GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {
     dt_colorspaces_color_profile_t *prof = l->data;
@@ -1417,6 +1419,7 @@ static void _profile_update_display_cmb(GtkWidget *cmb_display_profile)
 
 static void _profile_update_display2_cmb(GtkWidget *cmb_display_profile)
 {
+  if(dt_wayland_color_available()) return;
   for(const GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {
     dt_colorspaces_color_profile_t *prof = l->data;
@@ -1563,6 +1566,22 @@ void gui_init(dt_view_t *self)
   tooltip = dt_ioppr_get_location_tooltip("out", _("preview display ICC profiles"));
   gtk_widget_set_tooltip_markup(display2_profile, tooltip);
   g_free(tooltip);
+
+  if(dt_wayland_color_available())
+  {
+    GtkWidget *profiles[] = { display_profile, display2_profile };
+    for(size_t i = 0; i < G_N_ELEMENTS(profiles); i++)
+    {
+      dt_bauhaus_combobox_clear(profiles[i]);
+      dt_bauhaus_combobox_add(profiles[i], _("managed by the compositor"));
+      dt_bauhaus_combobox_set(profiles[i], 0);
+      gtk_widget_set_sensitive(profiles[i], FALSE);
+      gtk_widget_set_tooltip_text
+        (profiles[i], _("configure the display ICC profile in your desktop display settings"));
+    }
+    gtk_widget_set_sensitive(display_intent, FALSE);
+    gtk_widget_set_sensitive(display2_intent, FALSE);
+  }
 
   g_signal_connect(G_OBJECT(display_profile), "value-changed",
                    G_CALLBACK(_profile_display_profile_callback), NULL);
