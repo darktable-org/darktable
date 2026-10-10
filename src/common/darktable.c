@@ -947,6 +947,12 @@ char *version = g_strdup_printf(
                "  Colord                 -> DISABLED\n"
 #endif
 
+#ifdef HAVE_WAYLAND_COLOR_MANAGEMENT
+               "  Wayland                -> ENABLED\n"
+#else
+               "  Wayland                -> DISABLED\n"
+#endif
+
 #ifdef HAVE_GPHOTO2
                "  gPhoto2                -> ENABLED  - Camera tethering is available\n"
 #else

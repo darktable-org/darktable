@@ -356,6 +356,8 @@ if(USE_WAYLAND)
     set_source_files_properties(gui/wayland.c PROPERTIES
       COMPILE_DEFINITIONS HAVE_WAYLAND_COLOR_MANAGEMENT
       INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}")
+    set_source_files_properties(common/darktable.c PROPERTIES
+      COMPILE_DEFINITIONS HAVE_WAYLAND_COLOR_MANAGEMENT)
     message(STATUS "Wayland color management: enabled")
   else()
     set(USE_WAYLAND OFF)
