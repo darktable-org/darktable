@@ -43,6 +43,7 @@ typedef struct _workspace_t {
   // TRUE once the user picks or creates a workspace; closing the dialog
   // without choosing leaves it FALSE
   gboolean selected;
+  gboolean protect_active;
 } dt_workspace_t;
 
 static gboolean _workspace_label_is_default(const char *label)
@@ -69,45 +70,6 @@ static gboolean _workspace_db_file_exists(const char *datadir,
   char path[PATH_MAX] = { 0 };
   snprintf(path, sizeof(path), "%s/library-%s.db", datadir, label);
   return g_file_test(path, G_FILE_TEST_EXISTS);
-}
-
-static void _workspace_show_message(dt_workspace_t *session,
-                                    const char *title,
-                                    const char *body)
-{
-  GtkWidget *const dlg = gtk_message_dialog_new(GTK_WINDOW(session->db_screen),
-                                                GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                GTK_MESSAGE_WARNING,
-                                                GTK_BUTTONS_OK,
-                                                "%s", body);
-  gtk_window_set_title(GTK_WINDOW(dlg), title);
-  GtkWidget *const content = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
-  gtk_widget_set_name(content, "wpdialog");
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(dlg);
-#endif
-  gtk_dialog_run(GTK_DIALOG(dlg));
-  gtk_widget_destroy(dlg);
-}
-
-static void _workspace_screen_destroy(dt_workspace_t *session)
-{
-  if(session->db_screen)
-    gtk_widget_destroy(session->db_screen);
-  session->db_screen = NULL;
-
-  if(session->template_radios)
-  {
-    g_slist_free(session->template_radios);
-    session->template_radios = NULL;
-  }
-  session->template_radio_leader = NULL;
-
-  if(session->selected_template)
-  {
-    g_free(session->selected_template);
-    session->selected_template = NULL;
-  }
 }
 
 static void _workspace_copy_settings(const char *source_label,
@@ -153,6 +115,8 @@ static gboolean _workspace_should_skip_copied_key(const char *key)
   static const char *exact[] = {"database",
                                 "workspace/label",
                                 "plugins/imageio/storage/disk/file_directory",
+                                "plugins/imageio/storage/disk/file_path",
+                                "plugins/imageio/storage/disk/file_name",
                                 NULL};
 
   for(int i = 0; exact[i]; i++)
@@ -208,6 +172,150 @@ static void _workspace_sanitize_copied_settings(const char *dest_label,
   g_string_free(cleaned, TRUE);
   g_strfreev(lines);
   g_free(contents);
+}
+
+void dt_workspace_apply(const char *label)
+{
+  if(!label || _workspace_label_is_default(label) || !*label)
+  {
+    dt_conf_set_string("database", "library.db");
+    dt_conf_set_string("workspace/label", "");
+  }
+  else if(_workspace_label_is_memory(label))
+  {
+    dt_conf_set_string("database", ":memory:");
+    dt_conf_set_string("workspace/label", "memory");
+  }
+  else
+  {
+    char *dbname = g_strdup_printf("library-%s.db", label);
+    dt_conf_set_string("database", dbname);
+    dt_conf_set_string("workspace/label", label);
+    g_free(dbname);
+  }
+}
+
+void dt_workspace_request_relaunch_skip_picker(const char *datadir)
+{
+  if(!datadir) return;
+  char *marker = g_build_filename(datadir, "workspace-relaunch", NULL);
+  g_file_set_contents(marker, "", 0, NULL);
+  g_free(marker);
+}
+
+gboolean dt_workspace_new(const char *datadir, const char *label)
+{
+  if(!datadir || !label || !*label) return FALSE;
+  if(_workspace_label_is_reserved(label)) return FALSE;
+  if(_workspace_db_file_exists(datadir, label)) return FALSE;
+
+  /* Seed darktablerc-<label> from the current workspace "before"
+   *  dt_workspace_apply() rewrites workspace/label in conf. */
+  const char *src = dt_conf_get_string_const("workspace/label");
+  if(!src) src = "";
+  /* memory has no persistent rc; treat like default for the copy */
+  if(_workspace_label_is_memory(src)) src = "";
+
+  _workspace_copy_settings(src, label, datadir);
+  _workspace_sanitize_copied_settings(label, datadir);
+
+  /* If the source rc was missing, copy/sanitize wrote nothing -
+   * fall back to a minimal stub so relaunch still opens the new DB. */
+  {
+    char path[PATH_MAX] = { 0 };
+    snprintf(path, sizeof(path), "%s/darktablerc-%s", datadir, label);
+    if(!g_file_test(path, G_FILE_TEST_EXISTS))
+    {
+      char *body = g_strdup_printf("database=library-%s.db\n"
+                                   "workspace/label=%s\n",
+                                   label, label);
+      const gboolean ok = g_file_set_contents(path, body, -1, NULL);
+      g_free(body);
+      if(!ok) return FALSE;
+    }
+  }
+
+  dt_workspace_apply(label);
+  return TRUE;
+}
+
+static gint _workspace_library_db_compare(gconstpointer a,
+                                          gconstpointer b)
+{
+  const char *const sa = (const char *)a;
+  const char *const sb = (const char *)b;
+  /* same offset as when extracting the workspace label in the loop below */
+  const char *const la = sa + strlen("library") + 1;
+  const char *const lb = sb + strlen("library") + 1;
+
+  const gint cmp = g_ascii_strcasecmp(la, lb);
+  if(cmp != 0) return cmp;
+
+  /* tie-breaker when labels differ only by case (possible on case-sensitive FS) */
+  return g_strcmp0(sa, sb);
+}
+
+GList *dt_workspace_list(const char *datadir)
+{
+  GList *named = NULL;
+  GList *dbs = dt_read_file_pattern(datadir, "library-*.db");
+  if(dbs)
+    dbs = g_list_sort(dbs, _workspace_library_db_compare);
+
+  for(GList *l = dbs; l; l = g_list_next(l))
+  {
+    char *name = (char *)l->data;
+    char *f = name + strlen("library") + 1;
+    char *e = strchr(f, '.');
+    if(e) *e = '\0';
+    named = g_list_append(named, g_strdup(f));
+  }
+  g_list_free_full(dbs, g_free);
+
+  GList *labels = NULL;
+  labels = g_list_append(labels, g_strdup(""));
+  labels = g_list_append(labels, g_strdup("memory"));
+  labels = g_list_concat(labels, named);
+  return labels;
+}
+
+static void _workspace_show_message(dt_workspace_t *session,
+                                    const char *title,
+                                    const char *body)
+{
+  GtkWidget *const dlg = gtk_message_dialog_new(GTK_WINDOW(session->db_screen),
+                                                GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                GTK_MESSAGE_WARNING,
+                                                GTK_BUTTONS_OK,
+                                                "%s", body);
+  gtk_window_set_title(GTK_WINDOW(dlg), title);
+  GtkWidget *const content = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
+  gtk_widget_set_name(content, "wpdialog");
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dlg);
+#endif
+  gtk_dialog_run(GTK_DIALOG(dlg));
+  gtk_widget_destroy(dlg);
+}
+
+static void _workspace_screen_destroy(dt_workspace_t *session)
+{
+  if(session->db_screen)
+    gtk_widget_destroy(session->db_screen);
+  session->db_screen = NULL;
+
+  if(session->template_radios)
+  {
+    g_slist_free(session->template_radios);
+    session->template_radios = NULL;
+  }
+  session->template_radio_leader = NULL;
+
+  if(session->selected_template)
+  {
+    g_free(session->selected_template);
+    session->selected_template = NULL;
+  }
 }
 
 static void _workspace_template_radio_toggled(GtkToggleButton *radio,
@@ -296,6 +404,19 @@ static void _workspace_delete_db(GtkWidget *button, dt_workspace_t *session)
   GtkWidget *b = g_object_get_data(G_OBJECT(button), "db");
   const gchar *label = gtk_button_get_label(GTK_BUTTON(b));
 
+  if(session->protect_active)
+  {
+    const char *cur = dt_conf_get_string_const("workspace/label");
+    if(cur && !strcmp(cur, label))
+    {
+      _workspace_show_message
+        (session, _("delete workspace"),
+         _("WARNING\n\nyou cannot delete the workspace that is currently active."
+           "\n\nswitch to another workspace first."));
+      return;
+    }
+  }
+
   if(dt_gui_show_yes_no_dialog
      (_("delete workspace"), "wpdialog",
       _("WARNING\n\ndo you really want to delete the '%s' workspace?"
@@ -367,24 +488,7 @@ static void _workspace_select_db(GtkWidget *button,
   }
 
   const gchar *label = gtk_button_get_label(GTK_BUTTON(button));
-
-  if(_workspace_label_is_default(label))
-  {
-    dt_conf_set_string("database", "library.db");
-    dt_conf_set_string("workspace/label", "");
-  }
-  else if(_workspace_label_is_memory(label))
-  {
-    dt_conf_set_string("database", ":memory:");
-    dt_conf_set_string("workspace/label", "memory");
-  }
-  else
-  {
-    char *dbname = g_strdup_printf("library-%s.db", label);
-    dt_conf_set_string("database", dbname);
-    dt_conf_set_string("workspace/label", label);
-    g_free(dbname);
-  }
+  dt_workspace_apply(label);
 
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(session->remember_selection_check)))
     dt_conf_set_bool("database/multiple_workspace", FALSE);
@@ -429,10 +533,7 @@ static void _workspace_new_db(GtkWidget *button,
     return;
   }
 
-  char *dbname = g_strdup_printf("library-%s.db", label);
-  dt_conf_set_string("database", dbname);
-  dt_conf_set_string("workspace/label", label);
-  g_free(dbname);
+  dt_workspace_apply(label);
 
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(session->copy_template_check)))
   {
@@ -530,32 +631,14 @@ static GtkWidget *_insert_button(dt_workspace_t *session,
   return b;
 }
 
-static gint _workspace_library_db_compare(gconstpointer a, gconstpointer b)
+gboolean dt_workspace_show_dialog(const char *datadir,
+                                  const gboolean protect_active)
 {
-  const char *const sa = (const char *)a;
-  const char *const sb = (const char *)b;
-  /* same offset as when extracting the workspace label in the loop below */
-  const char *const la = sa + strlen("library") + 1;
-  const char *const lb = sb + strlen("library") + 1;
-
-  const gint cmp = g_ascii_strcasecmp(la, lb);
-  if(cmp != 0) return cmp;
-
-  /* tie-breaker when labels differ only by case (possible on case-sensitive FS) */
-  return g_strcmp0(sa, sb);
-}
-
-gboolean dt_workspace_create(const char *datadir)
-{
-  if(dt_check_gimpmode("file")
-     || dt_check_gimpmode("thumb")
-     || !dt_conf_get_bool("database/multiple_workspace"))
-  {
-    return FALSE;
-  }
+  if(!datadir) return FALSE;
 
   dt_workspace_t *session = g_malloc0(sizeof(dt_workspace_t));
   session->datadir = datadir;
+  session->protect_active = protect_active;
   session->selected_template = g_strdup("");
   session->grid = gtk_grid_new();
   gtk_grid_set_column_spacing(GTK_GRID(session->grid), 5);
@@ -581,39 +664,72 @@ gboolean dt_workspace_create(const char *datadir)
 
   gtk_window_set_position(GTK_WINDOW(session->db_screen), GTK_WIN_POS_CENTER);
 
-  GList *dbs = dt_read_file_pattern(datadir, "library-*.db");
-  if(dbs)
-    dbs = g_list_sort(dbs, _workspace_library_db_compare);
+  GList *labels = dt_workspace_list(datadir);
 
   GtkWidget *l1 = gtk_label_new(_("select an existing workspace"));
   dt_gui_dialog_add(session->db_screen, l1);
 
-  const char *current_db = dt_conf_get_string("database");
-  gboolean current_db_found = strcmp("default", current_db) == 0 ? TRUE : FALSE;
+  const char *current_db = dt_conf_get_string_const("database");
+  gboolean current_db_found = FALSE;
 
-  // add default workspace
-  _insert_button(session, _("default"), FALSE, TRUE, 0);
-  // add a memory workspace just after default one
-  session->memory_workspace_button = _insert_button(session, _("memory"), FALSE, FALSE, 1);
-
-  int index = 2;
-
-  // add now only the non default libraries
-  for(GList *l = g_list_first(dbs); l; l = g_list_next(l), index++)
+  int index = 0;
+  for(GList *l = labels; l; l = g_list_next(l), index++)
   {
-    char *name = (char *)l->data;
+    const char *canon = (const char *)l->data;
+    const char *ui;
+    gboolean with_del;
+    gboolean with_radio;
 
-    // skip "library-" prefix
-    char *f = name + strlen("library") + 1;
-    // end with the dot
-    char *e = f;
-    while(*e != '.') e++;
-    *e = '\0';
+    if(!*canon)
+    {
+      ui = _("default");
+      with_del = FALSE;
+      with_radio = TRUE;
+      if(!current_db
+         || !strcmp(current_db, "library.db")
+         || !strcmp(current_db, "default"))
+        current_db_found = TRUE;
+    }
+    else if(_workspace_label_is_memory(canon))
+    {
+      ui = _("memory");
+      with_del = FALSE;
+      with_radio = FALSE;
+      if(current_db && !strcmp(current_db, ":memory:"))
+        current_db_found = TRUE;
+    }
+    else
+    {
+      ui = canon;
+      with_del = TRUE;
+      with_radio = TRUE;
 
-    _insert_button(session, f, TRUE, TRUE, index);
+      /* Don't allow deleting the workspace that's currently active. */
+      if(session->protect_active)
+      {
+        const char *cur = dt_conf_get_string_const("workspace/label");
+        if(cur && !strcmp(cur, canon))
+          with_del = FALSE;
+      }
 
-    if(strcmp(name, current_db) == 0)
-      current_db_found = TRUE;
+      char *dbname = g_strdup_printf("library-%s.db", canon);
+      if(current_db && !strcmp(current_db, dbname))
+        current_db_found = TRUE;
+      g_free(dbname);
+    }
+
+    GtkWidget *b = _insert_button(session, ui, with_del, with_radio, index);
+    if(_workspace_label_is_memory(canon))
+      session->memory_workspace_button = b;
+  }
+
+  g_list_free_full(labels, g_free);
+
+  // if the current registered db is not found reset to default.
+  // This can happen when a DB is renamed or deleted on disk.
+  if(!current_db_found)
+  {
+    dt_conf_set_string("database", "library.db");
   }
 
   dt_gui_dialog_add(session->db_screen, session->grid);
@@ -626,15 +742,6 @@ gboolean dt_workspace_create(const char *datadir)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(session->remember_selection_check), FALSE);
   dt_gui_box_add(remember_box, session->remember_selection_check);
   dt_gui_dialog_add(session->db_screen, remember_box);
-
-  g_list_free_full(dbs, g_free);
-
-  //  if the current registerred db is not found reset to
-  //  default. This can happens when a DB is renamed or deleted on disk.
-  if(!current_db_found)
-  {
-    dt_conf_set_string("database", "library.db");
-  }
 
   GtkWidget *l2 = gtk_label_new(_("or create a new one"));
 
@@ -684,6 +791,27 @@ gboolean dt_workspace_create(const char *datadir)
   g_free(session);
 
   return selected;
+}
+
+gboolean dt_workspace_create(const char *datadir)
+{
+  char *marker = g_build_filename(datadir, "workspace-relaunch", NULL);
+  if(g_file_test(marker, G_FILE_TEST_EXISTS))
+  {
+    g_unlink(marker);
+    g_free(marker);
+    const char *label = dt_conf_get_string_const("workspace/label");
+    dt_workspace_apply(label ? label : "");
+    return TRUE;
+  }
+  g_free(marker);
+
+  if(dt_check_gimpmode("file")
+     || dt_check_gimpmode("thumb")
+     || !dt_conf_get_bool("database/multiple_workspace"))
+    return FALSE;
+
+  return dt_workspace_show_dialog(datadir, FALSE);
 }
 
 // clang-format off

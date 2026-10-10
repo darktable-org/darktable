@@ -22,9 +22,11 @@
 #include "common/image_cache.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "control/crawler.h"
 #include "develop/develop.h"
 #include "dtgtk/thumbtable.h"
 #include "gui/gtk.h"
+#include "gui/workspace.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #include "gui/about.h"
@@ -84,6 +86,36 @@ gboolean expandable(dt_lib_module_t *self)
 int position(const dt_lib_module_t *self)
 {
   return 1001;
+}
+
+static void _lib_darktable_update_size(dt_lib_module_t *self)
+{
+  dt_lib_darktable_t *d = self->data;
+
+  const char *wp = dt_conf_get_string_const("workspace/label");
+  char *txt = g_strdup_printf("%s%s%s",
+                              darktable_package_version,
+                              (wp && *wp) ? " - " : "",
+                              (wp && *wp) ? wp : "");
+
+  PangoLayout *layout = gtk_widget_create_pango_layout(self->widget, txt);
+  PangoFontDescription *font_desc = pango_font_description_new();
+  pango_font_description_set_absolute_size(font_desc,
+                                           DT_PIXEL_APPLY_DPI(10) * PANGO_SCALE);
+  pango_layout_set_font_description(layout, font_desc);
+
+  int subtitle_w = 0;
+  pango_layout_get_pixel_size(layout, &subtitle_w, NULL);
+
+  const int text_w = MAX(d->text_width, subtitle_w);
+  gtk_widget_set_size_request
+    (self->widget,
+     d->image_width + text_w + (int)DT_PIXEL_APPLY_DPI(16),
+     d->image_height + (int)DT_PIXEL_APPLY_DPI(8));
+
+  g_free(txt);
+  g_object_unref(layout);
+  pango_font_description_free(font_desc);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -174,9 +206,7 @@ done:
   d->text_width = d->text ? dt_cairo_image_surface_get_width(d->text) : 0;
   d->text_height = d->text ? dt_cairo_image_surface_get_height(d->text) : 0;
 
-  /* set size of drawing area */
-  gtk_widget_set_size_request(self->widget, d->image_width + (int)DT_PIXEL_APPLY_DPI(180),
-                              d->image_height + (int)DT_PIXEL_APPLY_DPI(8));
+  _lib_darktable_update_size(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -256,11 +286,11 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget,
   }
 
   /* print version & workspace */
-  const char *wp = dt_conf_get_string("workspace/label");
+  const char *wp = dt_conf_get_string_const("workspace/label");
   char *txt = g_strdup_printf("%s%s%s",
                               darktable_package_version,
-                              *wp ? " - " : "",
-                              *wp ? wp    : "");
+                              (wp && *wp) ? " - " : "",
+                              (wp && *wp) ? wp    : "");
   pango_font_description_set_absolute_size(font_desc, DT_PIXEL_APPLY_DPI(10) * PANGO_SCALE);
   pango_layout_set_font_description(layout, font_desc);
   pango_layout_set_text(layout, txt, -1);
@@ -276,14 +306,203 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget,
   return TRUE;
 }
 
+static gboolean _lib_darktable_restart_idle(gpointer data)
+{
+  (void)data;
+  dt_stop_backthumbs_crawler(FALSE);
+  dt_control_crawler_stop(FALSE);
+  dt_control_restart();
+  return G_SOURCE_REMOVE;
+}
+
+static void _lib_darktable_workspace_clicked(GtkButton *button,
+                                              gpointer user_data)
+{
+  GtkWidget *pop = GTK_WIDGET(user_data);
+  const char *label = g_object_get_data(G_OBJECT(button), "workspace-label");
+  const char *current = dt_conf_get_string_const("workspace/label");
+
+  if(!label) label = "";
+  if(!current) current = "";
+  if(!strcmp(label, current)) return;
+
+  if(pop) gtk_popover_popdown(GTK_POPOVER(pop));
+
+  dt_workspace_apply(label);
+  /* One-shot: next start skips the picker; normal quits still show it. */
+  {
+    char datadir[PATH_MAX] = { 0 };
+    dt_loc_get_user_config_dir(datadir, sizeof(datadir));
+    dt_workspace_request_relaunch_skip_picker(datadir);
+  }
+
+  g_idle_add(_lib_darktable_restart_idle, NULL);
+}
+
+static void _lib_darktable_manage_clicked(GtkButton *button,
+                                          gpointer user_data)
+{
+  (void)button;
+  GtkWidget *pop = GTK_WIDGET(user_data);
+  if(pop) gtk_popover_popdown(GTK_POPOVER(pop));
+
+  char datadir[PATH_MAX] = { 0 };
+  dt_loc_get_user_config_dir(datadir, sizeof(datadir));
+
+  const char *before = dt_conf_get_string_const("workspace/label");
+  if(!before) before = "";
+  char *prev = g_strdup(before);
+
+  if(dt_workspace_show_dialog(datadir, TRUE))
+  {
+    const char *after = dt_conf_get_string_const("workspace/label");
+    if(!after) after = "";
+    if(g_strcmp0(prev, after) != 0)
+    {
+      dt_workspace_request_relaunch_skip_picker(datadir);
+      g_idle_add(_lib_darktable_restart_idle, NULL);
+    }
+  }
+  g_free(prev);
+}
+
+static void _lib_darktable_about_clicked(GtkButton *button,
+                                         gpointer user_data)
+{
+  (void)button;
+  GtkWidget *pop = GTK_WIDGET(user_data);
+  if(pop) gtk_popover_popdown(GTK_POPOVER(pop));
+  darktable_show_about_dialog();
+}
+
+static void _lib_darktable_create_clicked(GtkButton *button,
+                                          gpointer user_data)
+{
+  GtkWidget *pop = GTK_WIDGET(user_data);
+  GtkWidget *entry = g_object_get_data(G_OBJECT(button), "entry");
+  const char *text = gtk_entry_get_text(GTK_ENTRY(entry));
+  gchar *label = g_strdup(text ? text : "");
+  g_strstrip(label);
+
+  char datadir[PATH_MAX] = { 0 };
+  dt_loc_get_user_config_dir(datadir, sizeof(datadir));
+
+  if(!*label)
+  {
+    dt_control_log(_("enter a workspace name"));
+    g_free(label);
+    return;
+  }
+
+  if(g_ascii_strcasecmp(label, "default") == 0
+     || g_ascii_strcasecmp(label, "memory") == 0
+     || strcmp(label, _("default")) == 0
+     || strcmp(label, _("memory")) == 0)
+  {
+    dt_control_log(_("the names \"default\" and \"memory\" are reserved"));
+    g_free(label);
+    return;
+  }
+
+  if(!dt_workspace_new(datadir, label))
+  {
+    dt_control_log(_("a workspace named \"%s\" already exists"), label);
+    g_free(label);
+    return;
+  }
+
+  if(pop) gtk_popover_popdown(GTK_POPOVER(pop));
+  dt_workspace_request_relaunch_skip_picker(datadir);
+  g_free(label);
+  g_idle_add(_lib_darktable_restart_idle, NULL);
+}
+
 static void _lib_darktable_clicked(GtkGestureSingle *gesture,
                                      gint n_press,
                                      gdouble x,
                                      gdouble y,
                                      dt_lib_module_t *self)
 {
-  /* show about box */
-  darktable_show_about_dialog();
+  (void)gesture;
+  (void)n_press;
+  (void)x;
+  (void)y;
+
+  char datadir[PATH_MAX] = { 0 };
+  dt_loc_get_user_config_dir(datadir, sizeof(datadir));
+
+  GList *labels = dt_workspace_list(datadir);
+  const char *current = dt_conf_get_string_const("workspace/label");
+  if(!current) current = "";
+
+  GtkWidget *pop = gtk_popover_new(self->widget);
+  gtk_widget_set_name(pop, "workspace-switcher");
+  gtk_popover_set_position(GTK_POPOVER(pop), GTK_POS_BOTTOM);
+  gtk_popover_set_modal(GTK_POPOVER(pop), TRUE);
+  g_object_set(G_OBJECT(pop), "transitions-enabled", FALSE, NULL);
+  g_signal_connect(pop, "closed", G_CALLBACK(gtk_widget_destroy), NULL);
+
+  GtkWidget *vbox = dt_gui_vbox();
+  gtk_container_add(GTK_CONTAINER(pop), vbox);
+
+  for(GList *l = labels; l; l = g_list_next(l))
+  {
+    const char *canon = (const char *)l->data;
+    const char *name = !*canon ? _("default")
+                       : !g_strcmp0(canon, "memory") ? _("memory")
+                       : canon;
+
+    GtkWidget *btn = gtk_button_new_with_label(name);
+    gtk_widget_set_halign(btn, GTK_ALIGN_FILL);
+    dt_gui_add_class(btn, "dt_transparent_background");
+
+    const gboolean is_current = !g_strcmp0(canon, current);
+    if(is_current)
+    {
+      dt_gui_add_class(btn, "dt_workspace_current");
+      gtk_widget_set_sensitive(btn, FALSE);
+    }
+
+    g_object_set_data_full(G_OBJECT(btn), "workspace-label",
+                           g_strdup(canon), g_free);
+    g_signal_connect(G_OBJECT(btn), "clicked",
+                     G_CALLBACK(_lib_darktable_workspace_clicked), pop);
+    dt_gui_box_add(vbox, btn);
+  }
+  g_list_free_full(labels, g_free);
+
+  dt_gui_box_add(vbox, gtk_separator_new(GTK_ORIENTATION_HORIZONTAL));
+
+  GtkWidget *entry = gtk_entry_new();
+  gtk_widget_set_hexpand(entry, TRUE);
+  gtk_entry_set_placeholder_text(GTK_ENTRY(entry), _("new workspace"));
+  GtkWidget *create = gtk_button_new_with_label(_("create"));
+  g_object_set_data(G_OBJECT(create), "entry", entry);
+  g_signal_connect(G_OBJECT(create), "clicked",
+                   G_CALLBACK(_lib_darktable_create_clicked), pop);
+  g_signal_connect_swapped(G_OBJECT(entry), "activate",
+                           G_CALLBACK(gtk_button_clicked), create);
+  GtkWidget *hbox = dt_gui_hbox(entry, create);
+  dt_gui_box_add(vbox, hbox);
+
+  GtkWidget *manage = gtk_button_new_with_label(_("manage workspaces…"));
+  gtk_widget_set_halign(manage, GTK_ALIGN_FILL);
+  dt_gui_add_class(manage, "dt_transparent_background");
+  g_signal_connect(G_OBJECT(manage), "clicked",
+                  G_CALLBACK(_lib_darktable_manage_clicked), pop);
+  dt_gui_box_add(vbox, manage);
+
+  dt_gui_box_add(vbox, gtk_separator_new(GTK_ORIENTATION_HORIZONTAL));
+
+  GtkWidget *about = gtk_button_new_with_label(_("about darktable"));
+  gtk_widget_set_halign(about, GTK_ALIGN_FILL);
+  dt_gui_add_class(about, "dt_transparent_background");
+  g_signal_connect(G_OBJECT(about), "clicked",
+                   G_CALLBACK(_lib_darktable_about_clicked), pop);
+  dt_gui_box_add(vbox, about);
+
+  gtk_widget_show_all(pop);
+  gtk_popover_popup(GTK_POPOVER(pop));
 }
 
 // clang-format off

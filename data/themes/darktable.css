@@ -2604,6 +2604,39 @@ filmstrip-thumbnail-boxes as for the canvas background */
     min-height: 1.28em;
 }
 
+/* in-app workspace switcher (logo popover) */
+#workspace-switcher
+{
+  padding: 0.28em;
+}
+
+#workspace-switcher button
+{
+  padding: 0.28em 0.56em;
+}
+
+#workspace-switcher button label
+{
+  margin: 0;
+}
+
+#workspace-switcher button.dt_workspace_current label
+{
+  font-weight: bold;
+}
+
+#workspace-switcher button.dt_workspace_current,
+#workspace-switcher button.dt_workspace_current:disabled
+{
+  background-color: alpha(@grey_00, 0.15);
+  border: 0.07em solid alpha(@grey_00, 0.25);
+}
+
+#workspace-switcher separator
+{
+  margin: 0.28em 0;
+}
+
 /* splash screen */
 #splashscreen
 {
