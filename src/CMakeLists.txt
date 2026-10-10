@@ -32,6 +32,7 @@ FILE(GLOB SOURCE_FILES
   "common/color_vocabulary.c"
   "common/colorlabels.c"
   "common/colorspaces.c"
+  "common/display_transport.c"
   "common/curl_tools.c"
   "common/curve_tools.c"
   "common/custom_primaries.c"
