@@ -1279,8 +1279,6 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
   return found;
 }
 
-static guint _click_time = G_MAXUINT;
-
 // need to catch "activate" signal as well to handle keyboard
 static void _menuitem_activate_preset(GSimpleAction *action,
                                       GVariant *parameter,
@@ -1944,7 +1942,6 @@ void dt_gui_presets_popup_menu_show_for_module(GtkWidget *button, dt_iop_module_
   };
 
   darktable.gui->active_popover_menu = dt_gui_presets_popup_menu_show(button, &ops);
-  _click_time = 0;
 }
 
 void dt_gui_presets_update_mml(const char *name,
