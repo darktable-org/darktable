@@ -575,7 +575,7 @@ void expose(dt_view_t *self,
     cairo_surface_t *surface = dt_view_create_surface(slot->buf, slot->width, slot->height);
     cairo_set_source_surface(cr, surface, - 0.5 * slot->width, -0.5 * slot->height);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
-    cairo_paint(cr);
+    dt_view_paint_display_surface(cr);
     cairo_surface_destroy(surface);
 
     d->id_displayed = imgid;
@@ -583,25 +583,29 @@ void expose(dt_view_t *self,
   }
   else if(dt_is_valid_imgid(imgid) && imgid != d->id_preview_displayed)
   {
-    // get a small preview
+    // get a small preview. dt_view_image_get_surface() only takes a cached
+    // mipmap, so wait for one first
     dt_mipmap_buffer_t buf;
     dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(width / 8, height / 8);
     dt_mipmap_cache_get(&buf, imgid, mip, DT_MIPMAP_BLOCKING, 'r');
-    if(buf.buf)
+    dt_mipmap_cache_release(&buf);
+
+    // the surface is color-managed like lighttable thumbnails
+    cairo_surface_t *surface = NULL;
+    dt_view_image_get_surface(imgid, MAX(1, width / 8), MAX(1, height / 8), &surface, FALSE);
+    if(surface && cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS)
     {
-      double scale = MIN((double)width / buf.width, (double)height / buf.height);
+      const int w = cairo_image_surface_get_width(surface);
+      const int h = cairo_image_surface_get_height(surface);
+      const double scale = MIN((double)width / w, (double)height / h);
       cairo_scale(cr, scale, scale);
-      GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data
-          (buf.buf, GDK_COLORSPACE_RGB, TRUE, 8, buf.width, buf.height,
-           buf.width * 4, NULL, NULL);
-      gdk_cairo_set_source_pixbuf(cr, pixbuf, - 0.5 * buf.width, -0.5 * buf.height);
+      cairo_set_source_surface(cr, surface, -0.5 * w, -0.5 * h);
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_GOOD);
       cairo_paint(cr);
-      g_object_unref(pixbuf);
     }
+    if(surface) cairo_surface_destroy(surface);
 
     d->id_preview_displayed = imgid;
-    dt_mipmap_cache_release(&buf);
   }
 
   cairo_restore(cr);
