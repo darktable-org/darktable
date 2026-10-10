@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "gui/wayland.h"
 #include "common/mipmap_cache.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -560,6 +561,10 @@ static void _mipmap_cache_allocate_dynamic(void *data,
                    _get_imgid(entry->key), filename);
           goto read_error;
         }
+        // untagged disk thumbnails may contain device RGB from an earlier X11 session
+        if(dt_wayland_color_available()
+           && (color_space == DT_COLORSPACE_DISPLAY || color_space == DT_COLORSPACE_DISPLAY2))
+          goto read_error;
         dt_print(DT_DEBUG_CACHE,
                  "[mipmap_cache] grab mip %d for ID=%d from disk cache", mip,
                  _get_imgid(entry->key));
@@ -1612,6 +1617,11 @@ static void _init_8(uint8_t *buf,
     }
   }
 
+  // unknown source RGB may have an ICC profile that only the full pixelpipe reads
+  if(!res && dt_wayland_color_available()
+     && (*color_space == DT_COLORSPACE_DISPLAY || *color_space == DT_COLORSPACE_DISPLAY2))
+    res = TRUE;
+
   if(res)
   {
     //try to generate mip from larger mip
@@ -1621,6 +1631,12 @@ static void _init_8(uint8_t *buf,
       dt_mipmap_cache_get(&tmp, imgid, k, DT_MIPMAP_TESTLOCK, 'r');
       if(tmp.buf == NULL)
         continue;
+      if(dt_wayland_color_available()
+         && (tmp.color_space == DT_COLORSPACE_DISPLAY || tmp.color_space == DT_COLORSPACE_DISPLAY2))
+      {
+        dt_mipmap_cache_release(&tmp);
+        continue;
+      }
       dt_print(DT_DEBUG_CACHE,
                "[mipmap_cache] generate mip %d for ID=%d from level %d",
                size, imgid, k);
@@ -1691,6 +1707,7 @@ dt_colorspaces_color_profile_type_t dt_mipmap_cache_get_colorspace()
 {
   if(dt_conf_get_bool("cache_color_managed"))
     return DT_COLORSPACE_ADOBERGB;
+  if(dt_wayland_color_available()) return DT_COLORSPACE_SRGB;
   return DT_COLORSPACE_DISPLAY;
 }
 

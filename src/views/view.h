@@ -672,6 +672,13 @@ cairo_surface_t *dt_view_create_surface(uint8_t *buffer,
                                         const size_t processed_width,
                                         const size_t processed_height);
 
+// input is transport RGB when managed, otherwise display RGB; the caller must
+// keep the buffer alive until the returned surface is destroyed (it may borrow it)
+cairo_surface_t *dt_view_create_display_surface(uint8_t *buffer,
+                                                const size_t width,
+                                                const size_t height);
+void dt_view_paint_display_surface(cairo_t *cr);
+
 void dt_view_paint_surface(cairo_t *cr,
                            const size_t width,
                            const size_t height,

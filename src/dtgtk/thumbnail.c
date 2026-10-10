@@ -772,11 +772,8 @@ static gboolean _event_image_draw(GtkWidget *widget,
       memcpy(rgbbuf, dev->preview_pipe->backbuf, bbufsize);
       dt_pthread_mutex_unlock(mutex);
 
-      const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf_width);
       cairo_surface_t *tmp_surface
-          = cairo_image_surface_create_for_data(rgbbuf,
-                                                CAIRO_FORMAT_RGB24,
-                                                buf_width, buf_height, stride);
+          = dt_view_create_display_surface(rgbbuf, buf_width, buf_height);
 
       // copy preview image into final surface
       if(tmp_surface)
