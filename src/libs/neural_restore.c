@@ -187,6 +187,8 @@
 // CONF_EXPAND_OUTPUT       — output section collapsed/expanded state
 
 #include "common/ai/restore.h"
+#include "common/display_transport.h"
+#include "gui/wayland.h"
 #include "common/ai/restore_rgb.h"
 #include "common/ai/restore_raw_bayer.h"
 #include "common/ai/restore_raw_linear.h"
@@ -546,8 +548,9 @@ static int _preview_capture_write_image(dt_imageio_module_data_t *data,
   return 0;
 }
 
-static inline float _linear_to_srgb(const float v)
+static inline float _linear_to_preview(const float v, const gboolean managed)
 {
+  if(managed) return dt_display_ui_encode(v);
   if(v <= 0.0f) return 0.0f;
   if(v >= 1.0f) return 1.0f;
   return (v <= 0.0031308f) ? 12.92f * v : 1.055f * powf(v, 1.0f / 2.4f) - 0.055f;
@@ -628,15 +631,16 @@ static void _float_rgb_to_cairo(const float *const restrict src,
                                 const int height,
                                 const int stride)
 {
+  const gboolean managed = dt_wayland_color_available();
   for(int y = 0; y < height; y++)
   {
     uint32_t *row = (uint32_t *)(dst + y * stride);
     for(int x = 0; x < width; x++)
     {
       const int si = (y * width + x) * 3;
-      const uint8_t r = (uint8_t)(_linear_to_srgb(src[si + 0]) * 255.0f + 0.5f);
-      const uint8_t g = (uint8_t)(_linear_to_srgb(src[si + 1]) * 255.0f + 0.5f);
-      const uint8_t b = (uint8_t)(_linear_to_srgb(src[si + 2]) * 255.0f + 0.5f);
+      const uint8_t r = (uint8_t)(_linear_to_preview(src[si + 0], managed) * 255.0f + 0.5f);
+      const uint8_t g = (uint8_t)(_linear_to_preview(src[si + 1], managed) * 255.0f + 0.5f);
+      const uint8_t b = (uint8_t)(_linear_to_preview(src[si + 2], managed) * 255.0f + 0.5f);
       row[x] = ((uint32_t)r << 16) | ((uint32_t)g << 8) | (uint32_t)b;
     }
   }
@@ -2082,6 +2086,7 @@ static void _rebuild_cairo_after(dt_lib_neural_restore_t *d)
     ? dt_conf_get_float(CONF_STRENGTH) : 100.0f;
   const float alpha = 1.0f - strength / 100.0f;
   const gboolean recover = (alpha > 0.0f && d->preview_detail);
+  const gboolean managed = dt_wayland_color_available();
 
   for(int y = 0; y < h; y++)
   {
@@ -2100,9 +2105,9 @@ static void _rebuild_cairo_after(dt_lib_neural_restore_t *d)
         g += detail;
         b += detail;
       }
-      const uint8_t cr = (uint8_t)(_linear_to_srgb(r) * 255.0f + 0.5f);
-      const uint8_t cg = (uint8_t)(_linear_to_srgb(g) * 255.0f + 0.5f);
-      const uint8_t cb = (uint8_t)(_linear_to_srgb(b) * 255.0f + 0.5f);
+      const uint8_t cr = (uint8_t)(_linear_to_preview(r, managed) * 255.0f + 0.5f);
+      const uint8_t cg = (uint8_t)(_linear_to_preview(g, managed) * 255.0f + 0.5f);
+      const uint8_t cb = (uint8_t)(_linear_to_preview(b, managed) * 255.0f + 0.5f);
       row[x] = ((uint32_t)cr << 16) | ((uint32_t)cg << 8) | (uint32_t)cb;
     }
   }
@@ -2420,7 +2425,7 @@ static gpointer _preview_thread(gpointer data)
   g_free(out_4ch);
 
   // convert LIN_REC2020 → linear sRGB for cairo
-  // (_float_rgb_to_cairo applies sRGB gamma, assumes sRGB primaries)
+  // (_float_rgb_to_cairo applies the UI transfer curve, assumes BT.709 primaries)
   cmsHTRANSFORM xform_disp
     = _build_output_color_transform(DT_COLORSPACE_LIN_REC709, "");
   if(xform_disp)
@@ -3679,6 +3684,7 @@ static void _build_export_cairo(dt_lib_neural_restore_t *d)
     = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, ew);
   d->export_cairo = g_malloc(stride * eh);
   d->export_cairo_stride = stride;
+  const gboolean managed = dt_wayland_color_available();
 
   for(int y = 0; y < eh; y++)
   {
@@ -3687,11 +3693,11 @@ static void _build_export_cairo(dt_lib_neural_restore_t *d)
     {
       const size_t si = ((size_t)y * ew + x) * 4;
       const uint8_t r
-        = (uint8_t)(_linear_to_srgb(d->export_pixels[si + 0]) * 255.0f + 0.5f);
+        = (uint8_t)(_linear_to_preview(d->export_pixels[si + 0], managed) * 255.0f + 0.5f);
       const uint8_t g
-        = (uint8_t)(_linear_to_srgb(d->export_pixels[si + 1]) * 255.0f + 0.5f);
+        = (uint8_t)(_linear_to_preview(d->export_pixels[si + 1], managed) * 255.0f + 0.5f);
       const uint8_t b
-        = (uint8_t)(_linear_to_srgb(d->export_pixels[si + 2]) * 255.0f + 0.5f);
+        = (uint8_t)(_linear_to_preview(d->export_pixels[si + 2], managed) * 255.0f + 0.5f);
       row[x] = ((uint32_t)r << 16) | ((uint32_t)g << 8) | (uint32_t)b;
     }
   }

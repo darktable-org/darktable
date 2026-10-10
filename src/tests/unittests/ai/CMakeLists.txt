@@ -2,6 +2,14 @@ add_cmocka_test(test_ai_backend
                 SOURCES test_ai_backend.c dt_stubs.c
                 LINK_LIBRARIES darktable_ai cmocka::cmocka)
 
+add_cmocka_test(test_neural_preview
+                SOURCES test_neural_preview.c
+                LINK_LIBRARIES lib_darktable cmocka)
+
+if(WIN32)
+  _copy_required_library(test_neural_preview lib_darktable)
+endif()
+
 target_compile_definitions(test_ai_backend PRIVATE
   TEST_MODEL_DIR="${CMAKE_CURRENT_SOURCE_DIR}/models")
 
