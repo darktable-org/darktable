@@ -105,7 +105,8 @@ typedef enum dt_colorspaces_color_profile_type_t
   DT_COLORSPACE_HLG_P3 = 25,
   DT_COLORSPACE_DISPLAY_P3 = 26,
   DT_COLORSPACE_FORWARD_MATRIX = 27,
-  DT_COLORSPACE_LAST = 28
+  DT_COLORSPACE_DISPLAY_TRANSPORT = 28, // internal Wayland surface encoding
+  DT_COLORSPACE_LAST = 29
 } dt_colorspaces_color_profile_type_t;
 
 typedef enum dt_colorspaces_color_mode_t
@@ -189,6 +190,10 @@ typedef struct dt_colorspaces_t
 
   dt_colorspaces_color_mode_t mode;
 
+  cmsHPROFILE ui_profile;
+  struct dt_iop_order_iccprofile_info_t *ui_profile_info;
+  cmsHTRANSFORM transform_transport_to_ui8, transform_transport_to_ui_float;
+  cmsHTRANSFORM transform_srgb_to_transport8, transform_srgb_to_transport_float;
   cmsHTRANSFORM transform_srgb_to_display, transform_adobe_rgb_to_display;
   cmsHTRANSFORM transform_srgb_to_display2, transform_adobe_rgb_to_display2;
 
@@ -214,6 +219,11 @@ typedef struct dt_colorspaces_cicp_t
     dt_colorspaces_cicp_transfer_characteristics_t transfer_characteristics;
     dt_colorspaces_cicp_matrix_coefficients_t matrix_coefficients;
 } dt_colorspaces_cicp_t;
+
+/** error callback shared by the default and per-pipe LCMS contexts */
+void dt_colorspaces_error_handler(const cmsContext context,
+                                  const cmsUInt32Number code,
+                                  const char *text);
 
 /** populate the global color profile lists */
 dt_colorspaces_t *dt_colorspaces_init();
@@ -396,6 +406,18 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
 void dt_colorspaces_update_display_transforms();
 /** same for display2 */
 void dt_colorspaces_update_display2_transforms();
+
+// convert float RGBA diagnostic colors from sRGB to DISPLAY_TRANSPORT;
+// other output types retain the original sRGB values
+void dt_colorspaces_convert_srgb_to_display(const dt_colorspaces_color_profile_type_t type,
+                                           const float *input,
+                                           float *output,
+                                           const uint32_t pixels);
+
+// input is float RGBA in the current preview encoding: transport on native
+// Wayland, otherwise device RGB; convert to GTK UI RGB or copy, respectively
+void dt_colorspaces_convert_display_to_ui(const dt_aligned_pixel_t input,
+                                         dt_aligned_pixel_t output);
 
 /** Calculate CAM->XYZ, XYZ->CAM matrices **/
 gboolean dt_colorspaces_conversion_matrices_xyz(const float adobe_XYZ_to_CAM[4][3],

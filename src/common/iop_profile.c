@@ -27,6 +27,7 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/pixelpipe.h"
+#include "gui/wayland.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -669,7 +670,8 @@ void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info)
 static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
                                              const int type,
                                              const char *filename,
-                                             const int intent)
+                                             const int intent,
+                                             cmsHPROFILE rgb_profile)
 {
   _mark_as_nonmatrix_profile(profile_info);
   _clear_lut_curves(profile_info);
@@ -693,10 +695,12 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
   if(locking)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
-  const dt_colorspaces_color_profile_t *profile =
-    dt_colorspaces_get_profile(type, filename, DT_PROFILE_DIRECTION_ANY);
-
-  cmsHPROFILE *rgb_profile = profile ? profile->profile : NULL;;
+  if(!rgb_profile)
+  {
+    const dt_colorspaces_color_profile_t *profile =
+      dt_colorspaces_get_profile(type, filename, DT_PROFILE_DIRECTION_ANY);
+    rgb_profile = profile ? profile->profile : NULL;
+  }
 
   cmsColorSpaceSignature rgb_profile_color_space = rgb_profile ? cmsGetColorSpace(rgb_profile) : 0;
 
@@ -779,6 +783,31 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
   return FALSE;
 }
 
+dt_iop_order_iccprofile_info_t *dt_ioppr_create_ui_profile_info(cmsHPROFILE profile)
+{
+  if(!profile) return NULL;
+  dt_iop_order_iccprofile_info_t *info = dt_alloc1_align_type(dt_iop_order_iccprofile_info_t);
+  if(!info) return NULL;
+  dt_ioppr_init_profile_info(info, 0);
+  _ioppr_generate_profile_info(info, DT_COLORSPACE_NONE, "",
+                              DT_INTENT_RELATIVE_COLORIMETRIC, profile);
+  if(!dt_is_valid_colormatrix(info->matrix_in[0][0])
+     || !dt_is_valid_colormatrix(info->matrix_out[0][0]))
+  {
+    dt_ioppr_cleanup_profile_info(info);
+    dt_free_align(info);
+    return NULL;
+  }
+  return info;
+}
+
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_ui_profile_info(const struct dt_dev_pixelpipe_t *pipe)
+{
+  // widgets paint into a different surface than the wide-gamut image canvas
+  if(dt_wayland_color_available()) return darktable.color_profiles->ui_profile_info;
+  return pipe ? dt_ioppr_get_pipe_output_profile_info(pipe) : NULL;
+}
+
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,
                                     const dt_colorspaces_color_profile_type_t profile_type,
@@ -811,7 +840,7 @@ dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
   {
     profile_info = dt_alloc1_align_type(dt_iop_order_iccprofile_info_t);
     dt_ioppr_init_profile_info(profile_info, 0);
-    if(!_ioppr_generate_profile_info(profile_info, profile_type, profile_filename, intent))
+    if(!_ioppr_generate_profile_info(profile_info, profile_type, profile_filename, intent, NULL))
     {
       dev->allprofile_info = g_list_append(dev->allprofile_info, profile_info);
     }
@@ -963,6 +992,9 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
   dt_iop_order_iccprofile_info_t *profile_info =
     dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
 
+  // colorout can use LCMS for profiles that matrix-based processing cannot represent
+  pipe->output_encoding = profile_info;
+
   if(!profile_info && dt_pipe_is_preview(pipe) && (type == DT_COLORSPACE_FILE))
     dt_control_log(_("output icc profile '%s' missing"), filename);
 
@@ -1020,6 +1052,11 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_input_profile_info(const struc
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_output_profile_info(const struct dt_dev_pixelpipe_t *pipe)
 {
   return pipe->output_profile_info;
+}
+
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_output_encoding(const struct dt_dev_pixelpipe_t *pipe)
+{
+  return pipe->output_encoding;
 }
 
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(const dt_iop_module_t *module,

@@ -61,6 +61,10 @@ void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
 /** must be called when done with profile_info */
 void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info);
 
+// owned by colorspaces; only matrix/TRC consumers may use this unlisted UI profile
+dt_iop_order_iccprofile_info_t *dt_ioppr_create_ui_profile_info(cmsHPROFILE profile);
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_ui_profile_info(const struct dt_dev_pixelpipe_t *pipe);
+
 /** returns the profile info from dev profiles info list that matches
  * (profile_type, profile_filename) NULL if not found
  */
@@ -137,6 +141,10 @@ dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_pipe_input_profile_info(const struct dt_dev_pixelpipe_t *pipe);
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_pipe_output_profile_info(const struct dt_dev_pixelpipe_t *pipe);
+
+/** actual colorout encoding for interpreting pixels; matrices may be invalid */
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_get_pipe_output_encoding(const struct dt_dev_pixelpipe_t *pipe);
 
 /** Get the relevant RGB -> XYZ profile at the position of current module */
 dt_iop_order_iccprofile_info_t *

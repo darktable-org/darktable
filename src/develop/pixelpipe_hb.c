@@ -317,6 +317,7 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->work_profile_info = NULL;
   pipe->input_profile_info = NULL;
   pipe->output_profile_info = NULL;
+  pipe->output_encoding = NULL;
   pipe->export_profile_info = NULL;
   pipe->runs = 0;
   pipe->bcache_data = NULL;
@@ -1288,9 +1289,7 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
   const dt_iop_order_iccprofile_info_t *const histogram_profile =
     dt_ioppr_get_histogram_profile_info(dev);
   const dt_iop_order_iccprofile_info_t *const display_profile =
-    dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
-                                      darktable.color_profiles->display_filename,
-                                      INTENT_RELATIVE_COLORIMETRIC);
+    dt_ioppr_get_pipe_output_encoding(dev->preview_pipe);
 
   // if we have a primary picker, prepend to the list of any live
   // samples, so that we don't have to differentiate when looping
@@ -3271,11 +3270,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
       _pixelpipe_pick_samples(dev, module, *out_format, input, &roi_in);
     }
 
-    // FIXME: read this from dt_ioppr_get_pipe_output_profile_info()?
     const dt_iop_order_iccprofile_info_t *const display_profile
-      = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
-                                          darktable.color_profiles->display_filename,
-                                          INTENT_RELATIVE_COLORIMETRIC);
+      = dt_ioppr_get_pipe_output_encoding(pipe);
 
     // Since histogram is being treated as the second-to-last link
     // in the pixelpipe and has a "process" call, why not treat it

@@ -16,6 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "gui/wayland.h"
+#include "common/display_transport.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/colorspaces.h"
 #include "common/colormatrices.c"
@@ -24,6 +26,7 @@
 #include "common/dttypes.h"
 #include "common/file_location.h"
 #include "common/math.h"
+#include "common/iop_profile.h"
 #include "common/matrices.h"
 #include "common/utility.h"
 #include "control/conf.h"
@@ -1175,13 +1178,15 @@ static void _update_display_transforms(dt_colorspaces_t *self)
     cmsDeleteTransform(self->transform_adobe_rgb_to_display);
   self->transform_adobe_rgb_to_display = NULL;
 
-  const dt_colorspaces_color_profile_t *display_dt_profile =
-    _get_profile(self,
-                 self->display_type,
-                 self->display_filename,
-                 DT_PROFILE_DIRECTION_DISPLAY);
-  if(!display_dt_profile) return;
-  cmsHPROFILE display_profile = display_dt_profile->profile;
+  cmsHPROFILE display_profile = self->ui_profile;
+  if(!dt_wayland_color_available())
+  {
+    const dt_colorspaces_color_profile_t *display_dt_profile =
+      _get_profile(self, self->display_type, self->display_filename,
+                   DT_PROFILE_DIRECTION_DISPLAY);
+    if(!display_dt_profile) return;
+    display_profile = display_dt_profile->profile;
+  }
   if(!display_profile) return;
 
   self->transform_srgb_to_display =
@@ -1213,15 +1218,15 @@ static void _update_display2_transforms(dt_colorspaces_t *self)
     cmsDeleteTransform(self->transform_adobe_rgb_to_display2);
   self->transform_adobe_rgb_to_display2 = NULL;
 
-  const dt_colorspaces_color_profile_t *display2_dt_profile
-      = _get_profile(self,
-                     self->display2_type,
-                     self->display2_filename,
-                     DT_PROFILE_DIRECTION_DISPLAY2);
-
-  if(!display2_dt_profile)
-    return;
-  cmsHPROFILE display2_profile = display2_dt_profile->profile;
+  cmsHPROFILE display2_profile = self->ui_profile;
+  if(!dt_wayland_color_available())
+  {
+    const dt_colorspaces_color_profile_t *display2_dt_profile =
+      _get_profile(self, self->display2_type, self->display2_filename,
+                   DT_PROFILE_DIRECTION_DISPLAY2);
+    if(!display2_dt_profile) return;
+    display2_profile = display2_dt_profile->profile;
+  }
   if(!display2_profile)
     return;
 
@@ -1254,6 +1259,29 @@ void dt_colorspaces_update_display_transforms()
 void dt_colorspaces_update_display2_transforms()
 {
   _update_display2_transforms(darktable.color_profiles);
+}
+
+void dt_colorspaces_convert_srgb_to_display(const dt_colorspaces_color_profile_type_t type,
+                                           const float *input,
+                                           float *output,
+                                           const uint32_t pixels)
+{
+  if(type == DT_COLORSPACE_DISPLAY_TRANSPORT
+     && darktable.color_profiles->transform_srgb_to_transport_float)
+    cmsDoTransform(darktable.color_profiles->transform_srgb_to_transport_float,
+                   input, output, pixels);
+  else
+    memcpy(output, input, 4 * sizeof(float) * pixels);
+}
+
+void dt_colorspaces_convert_display_to_ui(const dt_aligned_pixel_t input,
+                                         dt_aligned_pixel_t output)
+{
+  if(dt_wayland_color_available() && darktable.color_profiles->transform_transport_to_ui_float)
+    cmsDoTransform(darktable.color_profiles->transform_transport_to_ui_float,
+                   input, output, 1);
+  else
+    copy_pixel(output, input);
 }
 
 // make sure that darktable.color_profiles->xprofile_lock is held when calling this!
@@ -1345,7 +1373,7 @@ static gboolean _update_display2_profile(guchar *tmp_data,
   return match;
 }
 
-static void cms_error_handler(const cmsContext ContextID,
+void dt_colorspaces_error_handler(const cmsContext ContextID,
                               const cmsUInt32Number ErrorCode,
                               const char *text)
 {
@@ -1440,7 +1468,7 @@ icc_loading_done:
 
 dt_colorspaces_t *dt_colorspaces_init()
 {
-  cmsSetLogErrorHandler(cms_error_handler);
+  cmsSetLogErrorHandler(dt_colorspaces_error_handler);
 
   dt_colorspaces_t *res = calloc(1, sizeof(dt_colorspaces_t));
 
@@ -1455,6 +1483,13 @@ dt_colorspaces_t *dt_colorspaces_init()
       display2_pos = -1,
       category_pos = -1,
       work_pos = -1;
+
+  // keep the compositor transport out of user-selectable profile lists
+  res->profiles = g_list_append
+    (res->profiles,
+     _create_profile(DT_COLORSPACE_DISPLAY_TRANSPORT,
+                     dt_display_transport_create_profile(), "Wayland Rec2020 gamma22",
+                     -1, -1, -1, -1, -1, -1));
 
   // init the category profile with NULL profile, the actual profile
   // must be retrieved dynamically by the caller
@@ -1718,8 +1753,48 @@ dt_colorspaces_t *dt_colorspaces_init()
 
   if((unsigned int)res->mode > DT_PROFILE_GAMUTCHECK) res->mode = DT_PROFILE_NORMAL;
 
+  res->ui_profile = dt_display_ui_create_profile();
+  if(dt_wayland_color_available())
+    res->ui_profile_info = dt_ioppr_create_ui_profile_info(res->ui_profile);
   _update_display_transforms(res);
   _update_display2_transforms(res);
+
+  const cmsHPROFILE transport =
+    _get_profile(res, DT_COLORSPACE_DISPLAY_TRANSPORT, "", DT_PROFILE_DIRECTION_ANY)->profile;
+  const cmsHPROFILE srgb =
+    _get_profile(res, DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_DISPLAY)->profile;
+  if(transport && srgb && res->ui_profile)
+  {
+    // pipe buffers are BGRA bytes; Cairo stores native-endian RGB24
+    const cmsUInt32Number cairo_format =
+      G_BYTE_ORDER == G_LITTLE_ENDIAN ? TYPE_BGRA_8 : TYPE_ARGB_8;
+    res->transform_transport_to_ui8 =
+      cmsCreateTransform(transport, TYPE_BGRA_8, res->ui_profile, cairo_format,
+                         INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE);
+    res->transform_transport_to_ui_float =
+      cmsCreateTransform(transport, TYPE_RGBA_FLT, res->ui_profile, TYPE_RGBA_FLT,
+                         INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE | cmsFLAGS_COPY_ALPHA);
+    res->transform_srgb_to_transport8 =
+      cmsCreateTransform(srgb, TYPE_BGRA_8, transport, TYPE_BGRA_8,
+                         INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE);
+    res->transform_srgb_to_transport_float =
+      cmsCreateTransform(srgb, TYPE_RGBA_FLT, transport, TYPE_RGBA_FLT,
+                         INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE | cmsFLAGS_COPY_ALPHA);
+  }
+
+  if(dt_wayland_color_available()
+     && (!res->ui_profile_info
+         || !res->transform_transport_to_ui8 || !res->transform_transport_to_ui_float
+         || !res->transform_srgb_to_transport8 || !res->transform_srgb_to_transport_float
+         || !res->transform_srgb_to_display || !res->transform_adobe_rgb_to_display
+         || !res->transform_srgb_to_display2 || !res->transform_adobe_rgb_to_display2))
+  {
+    dt_wayland_color_disable();
+    _update_display_transforms(res);
+    _update_display2_transforms(res);
+    dt_print(DT_DEBUG_ALWAYS,
+             _("Wayland color management disabled: cannot create display transforms"));
+  }
 
   return res;
 }
@@ -1739,6 +1814,21 @@ void dt_colorspaces_cleanup(dt_colorspaces_t *self)
   dt_conf_set_int("ui_last/color/display2_intent", self->display2_intent);
   dt_conf_set_int("ui_last/color/softproof_intent", self->softproof_intent);
   dt_conf_set_int("ui_last/color/mode", self->mode);
+
+  if(self->ui_profile) cmsCloseProfile(self->ui_profile);
+  if(self->ui_profile_info)
+  {
+    dt_ioppr_cleanup_profile_info(self->ui_profile_info);
+    dt_free_align(self->ui_profile_info);
+  }
+  if(self->transform_srgb_to_transport8)
+    cmsDeleteTransform(self->transform_srgb_to_transport8);
+  if(self->transform_srgb_to_transport_float)
+    cmsDeleteTransform(self->transform_srgb_to_transport_float);
+  if(self->transform_transport_to_ui8)
+    cmsDeleteTransform(self->transform_transport_to_ui8);
+  if(self->transform_transport_to_ui_float)
+    cmsDeleteTransform(self->transform_transport_to_ui_float);
 
   if(self->transform_srgb_to_display)
     cmsDeleteTransform(self->transform_srgb_to_display);
@@ -1836,6 +1926,8 @@ const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
        return _("Display P3");
      case DT_COLORSPACE_FORWARD_MATRIX:
        return _("DNG forward matrix");
+     case DT_COLORSPACE_DISPLAY_TRANSPORT:
+       return "Wayland Rec2020 gamma22";
      case DT_COLORSPACE_LAST:
        break;
   }
@@ -2306,7 +2398,8 @@ static const dt_colorspaces_color_profile_t *_get_profile
   for(GList *iter = self->profiles; iter; iter = g_list_next(iter))
   {
     dt_colorspaces_color_profile_t *p = iter->data;
-    if(((direction & DT_PROFILE_DIRECTION_IN && p->in_pos > -1)
+    if(((p->type == DT_COLORSPACE_DISPLAY_TRANSPORT)
+        || (direction & DT_PROFILE_DIRECTION_IN && p->in_pos > -1)
         || (direction & DT_PROFILE_DIRECTION_OUT && p->out_pos > -1)
         || (direction & DT_PROFILE_DIRECTION_WORK && p->work_pos > -1)
         || (direction & DT_PROFILE_DIRECTION_DISPLAY && p->display_pos > -1)
@@ -2627,6 +2720,7 @@ gboolean dt_colorspaces_profile_is_wide_gamut(const dt_colorspaces_color_profile
   switch(type)
   {
     // wider than sRGB
+    case DT_COLORSPACE_DISPLAY_TRANSPORT:
     case DT_COLORSPACE_ADOBERGB:
     case DT_COLORSPACE_PROPHOTO_RGB:
     case DT_COLORSPACE_LIN_REC2020:
