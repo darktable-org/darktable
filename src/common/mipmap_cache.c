@@ -323,6 +323,12 @@ static inline int _buffer_is_broken(dt_mipmap_buffer_t *buf)
 }
 #endif
 
+static inline gboolean _reject_display_rgb_on_wayland(const dt_colorspaces_color_profile_type_t color_space)
+{
+  return dt_wayland_color_available()
+    && (color_space == DT_COLORSPACE_DISPLAY || color_space == DT_COLORSPACE_DISPLAY2);
+}
+
 static inline uint32_t _get_key(const dt_imgid_t imgid,
                                 const dt_mipmap_size_t size)
 {
@@ -548,23 +554,31 @@ static void _mipmap_cache_allocate_dynamic(void *data,
         fseek(f, 0, SEEK_SET);
         const int rd = fread(blob, sizeof(uint8_t), len, f);
         if(rd != len) goto read_error;
-        dt_colorspaces_color_profile_type_t color_space;
         dt_imageio_jpeg_t jpg;
-        if(dt_imageio_jpeg_decompress_header(blob, len, &jpg)
-           || (jpg.width > cache->max_width[mip]
-               || jpg.height > cache->max_height[mip])
-           || ((color_space = dt_imageio_jpeg_read_color_space(&jpg)) == DT_COLORSPACE_NONE) // pointless test to keep it in the if clause
-           || dt_imageio_jpeg_decompress(&jpg, (uint8_t *)entry->data + sizeof(*dsc)))
+        if(dt_imageio_jpeg_decompress_header(blob, len, &jpg))
+          goto decompress_error;
+        const dt_colorspaces_color_profile_type_t color_space = dt_imageio_jpeg_read_color_space(&jpg);
+        // untagged disk thumbnails may contain device RGB from an earlier X11 session
+        if(_reject_display_rgb_on_wayland(color_space))
         {
+          jpeg_destroy_decompress(&jpg.dinfo);
+          goto read_error;
+        }
+        if(jpg.width > cache->max_width[mip]
+           || jpg.height > cache->max_height[mip]
+           || color_space == DT_COLORSPACE_NONE)
+        {
+          jpeg_destroy_decompress(&jpg.dinfo);
+          goto decompress_error;
+        }
+        if(dt_imageio_jpeg_decompress(&jpg, (uint8_t *)entry->data + sizeof(*dsc)))
+        {
+decompress_error:
           dt_print(DT_DEBUG_ALWAYS,
                    "[mipmap_cache] failed to decompress thumbnail for ID=%d from `%s'!",
                    _get_imgid(entry->key), filename);
           goto read_error;
         }
-        // untagged disk thumbnails may contain device RGB from an earlier X11 session
-        if(dt_wayland_color_available()
-           && (color_space == DT_COLORSPACE_DISPLAY || color_space == DT_COLORSPACE_DISPLAY2))
-          goto read_error;
         dt_print(DT_DEBUG_CACHE,
                  "[mipmap_cache] grab mip %d for ID=%d from disk cache", mip,
                  _get_imgid(entry->key));
@@ -1618,8 +1632,7 @@ static void _init_8(uint8_t *buf,
   }
 
   // unknown source RGB may have an ICC profile that only the full pixelpipe reads
-  if(!res && dt_wayland_color_available()
-     && (*color_space == DT_COLORSPACE_DISPLAY || *color_space == DT_COLORSPACE_DISPLAY2))
+  if(!res && _reject_display_rgb_on_wayland(*color_space))
     res = TRUE;
 
   if(res)
@@ -1631,8 +1644,7 @@ static void _init_8(uint8_t *buf,
       dt_mipmap_cache_get(&tmp, imgid, k, DT_MIPMAP_TESTLOCK, 'r');
       if(tmp.buf == NULL)
         continue;
-      if(dt_wayland_color_available()
-         && (tmp.color_space == DT_COLORSPACE_DISPLAY || tmp.color_space == DT_COLORSPACE_DISPLAY2))
+      if(_reject_display_rgb_on_wayland(tmp.color_space))
       {
         dt_mipmap_cache_release(&tmp);
         continue;
