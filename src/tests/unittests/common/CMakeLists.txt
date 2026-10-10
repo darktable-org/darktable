@@ -24,6 +24,10 @@ add_cmocka_test(test_history_strings
                 SOURCES test_history_strings.c
                 LINK_LIBRARIES lib_darktable cmocka)
 
+add_cmocka_test(test_style_preview
+                SOURCES test_style_preview.c
+                LINK_LIBRARIES lib_darktable cmocka)
+
 add_cmocka_test(test_mipmap_color
                 SOURCES test_mipmap_color.c
                 LINK_LIBRARIES lib_darktable cmocka)
@@ -47,6 +51,7 @@ if(WIN32)
     _copy_required_library(test_draw_curve lib_darktable)
     _copy_required_library(test_fixed_strings lib_darktable)
     _copy_required_library(test_history_strings lib_darktable)
+    _copy_required_library(test_style_preview lib_darktable)
     _copy_required_library(test_mipmap_color lib_darktable)
     _copy_required_library(test_view_color lib_darktable)
     _copy_required_library(test_dtdata lib_darktable)

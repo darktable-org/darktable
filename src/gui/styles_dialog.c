@@ -884,7 +884,7 @@ typedef struct _preview_data_t
 {
   char style_name[128];
   dt_imgid_t imgid;
-  gboolean first_draw;
+  gboolean first_draw, preview_attempted;
   cairo_surface_t *surface;
   guint8 *hash;
   int hash_len;
@@ -897,8 +897,12 @@ static gboolean _preview_draw(GtkWidget *widget,
 {
   _preview_data_t *data = (_preview_data_t *)user_data;
 
-  if(dt_is_valid_imgid(data->imgid) && !data->first_draw && !data->surface)
+  if(dt_is_valid_imgid(data->imgid) && !data->first_draw
+     && !data->surface && !data->preview_attempted)
+  {
+    data->preview_attempted = TRUE;
     data->surface = dt_gui_get_style_preview(data->imgid, data->style_name, data->psize);
+  }
 
   if(data->surface)
   {
@@ -908,7 +912,7 @@ static gboolean _preview_draw(GtkWidget *widget,
     cairo_set_source_surface(cr, data->surface, .5f * (psize - swidth), .5f * (psize - sheight));
     cairo_paint(cr);
   }
-  else
+  else if(data->first_draw)
   {
     data->first_draw = FALSE;
     gtk_widget_queue_draw(widget);
@@ -919,7 +923,7 @@ static gboolean _preview_draw(GtkWidget *widget,
 
 GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
 {
-  static _preview_data_t data = { "", -1, FALSE, NULL, NULL, 0, 0};
+  static _preview_data_t data = { "", -1, FALSE, FALSE, NULL, NULL, 0, 0};
 
   dt_history_hash_values_t hash = { NULL, 0, NULL, 0, NULL, 0 };
   dt_history_hash_read(imgid, &hash);
@@ -1044,6 +1048,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
       dt_gui_add_class(da, "dt_transparent_background");
       gtk_box_pack_start(GTK_BOX(ht), da, TRUE, TRUE, 0);
       data.first_draw = TRUE;
+      data.preview_attempted = FALSE;
       g_signal_connect(G_OBJECT(da), "draw", G_CALLBACK(_preview_draw), &data);
     }
   }
