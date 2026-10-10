@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "gui/wayland.h"
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
@@ -487,6 +488,13 @@ static int _transform_cmatrix(const dt_iop_colorout_data_t *const d,
   return is_linear != 0; // not done if nonlinear, need to apply tonecurve
 }
 
+static void _gamut_warning_color(const dt_iop_colorout_data_t *const d,
+                                 dt_aligned_pixel_t cyan)
+{
+  const dt_aligned_pixel_t srgb_cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
+  dt_colorspaces_convert_srgb_to_display(d->type, srgb_cyan, cyan, 1);
+}
+
 static cmsHTRANSFORM _create_transform(dt_iop_colorout_data_t *const d,
                                       cmsHPROFILE lab,
                                       cmsHPROFILE output,
@@ -498,9 +506,14 @@ static cmsHTRANSFORM _create_transform(dt_iop_colorout_data_t *const d,
   if(flags & cmsFLAGS_GAMUTCHECK)
   {
     // lcms 2.17 emits the alarm color directly; keep it local to this pipe
-    if(!d->context) d->context = cmsCreateContext(NULL, NULL);
-    if(!d->context) return NULL;
-    const dt_aligned_pixel_t cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
+    if(!d->context)
+    {
+      d->context = cmsCreateContext(NULL, NULL);
+      if(!d->context) return NULL;
+      cmsSetLogErrorHandlerTHR(d->context, dt_colorspaces_error_handler);
+    }
+    dt_aligned_pixel_t cyan;
+    _gamut_warning_color(d, cyan);
     cmsUInt16Number alarm[cmsMAXCHANNELS] = { 0 };
     for(int c = 0; c < 3; c++)
       alarm[c] = (cmsUInt16Number)roundf(CLAMP(cyan[c], 0.0f, 1.0f) * 65535.0f);
@@ -517,6 +530,8 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
                             const size_t npixels)
 {
   const int gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
+  dt_aligned_pixel_t cyan;
+  _gamut_warning_color(d, cyan);
   // figure out the number of pixels each thread needs to process,
   // rounded up to a multiple of the CPU's cache line size
   const size_t nthreads = dt_get_num_threads();
@@ -531,7 +546,6 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
 
     if(gamutcheck)
     {
-      static const dt_aligned_pixel_t cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
       for(int j = 0; j < count; j++)
       {
         if(outp[4*j+0] < 0.0f || outp[4*j+1] < 0.0f || outp[4*j+2] < 0.0f)
@@ -650,7 +664,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->type = out_type;
   if(out_type == DT_COLORSPACE_LAB)
   {
-    dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, p->intent);
+    dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, out_intent);
     return;
   }
 
@@ -683,6 +697,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     dt_control_log(_("missing output profile has been replaced by sRGB!"));
     dt_print(DT_DEBUG_ALWAYS, "missing output profile `%s' has been replaced by sRGB!",
              dt_colorspaces_get_name(out_type, out_filename));
+    d->type = DT_COLORSPACE_SRGB;
+    out_filename = "";
   }
 
   /* creating softproof profile if softproof is enabled */
@@ -747,8 +763,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
     dt_print(DT_DEBUG_ALWAYS,
              "unsupported output profile `%s' has been replaced by sRGB!",
-             out_profile->name);
+             dt_colorspaces_get_name(out_type, out_filename));
     output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT)->profile;
+    d->type = DT_COLORSPACE_SRGB;
+    out_filename = "";
+    output_format = TYPE_RGBA_FLT;
 
     if(d->mode != DT_PROFILE_NORMAL
        || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix,
@@ -787,7 +806,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // softproof is never the original but always a copy that went through dt_colorspaces_make_temporary_profile()
   dt_colorspaces_cleanup_profile(softproof);
 
-  dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, p->intent);
+  dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, out_intent);
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -805,7 +824,6 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
     cmsDeleteTransform(d->xform);
     d->xform = NULL;
   }
-
   if(d->context) cmsDeleteContext(d->context);
 
   free(piece->data);
