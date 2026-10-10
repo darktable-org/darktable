@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "common/iop_profile.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/imagebuf.h"
 #include "control/control.h"
@@ -308,28 +309,47 @@ void process(dt_iop_module_t *self,
   const size_t buffsize = (size_t)roi_out->width * roi_out->height * 4;
   const float alpha = (mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) ? 1.0f : 0.0f;
 
+  const dt_iop_order_iccprofile_info_t *profile =
+    dt_ioppr_get_pipe_output_profile_info(piece->pipe);
+  const gboolean diagnostic = (mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    || ((mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
+        && (mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY));
+  // diagnostic colors originate in sRGB, independently of colorout's encoding
+  uint8_t *temporary = diagnostic && profile
+    && profile->type == DT_COLORSPACE_DISPLAY_TRANSPORT
+    && darktable.color_profiles->transform_srgb_to_transport8
+    ? dt_alloc_align_uint8(buffsize) : NULL;
+  uint8_t *const output = temporary ? temporary : o;
+
   if((mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
      && (mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY))
   {
     if(fcolor)
     {
       _channel_display_false_color((const float *const restrict)i,
-                                   (uint8_t *const restrict)o, buffsize, alpha,
+                                   output, buffsize, alpha,
                                    mask_display);
     }
     else
     {
       _channel_display_monochrome((const float *const restrict)i,
-                                  (uint8_t *const restrict)o, buffsize, alpha);
+                                  output, buffsize, alpha);
     }
   }
   else if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
   {
-    _mask_display((const float *const restrict)i, (uint8_t *const restrict)o, buffsize, 1.0f);
+    _mask_display((const float *const restrict)i, output, buffsize, 1.0f);
   }
   else
   {
-    _copy_output((const float *const restrict)i, (uint8_t *const restrict)o, buffsize);
+    _copy_output((const float *const restrict)i, output, buffsize);
+  }
+
+  if(temporary)
+  {
+    cmsDoTransform(darktable.color_profiles->transform_srgb_to_transport8,
+                   temporary, o, buffsize / 4);
+    dt_free_align(temporary);
   }
 
   if(mask_display)
