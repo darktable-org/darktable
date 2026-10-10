@@ -287,6 +287,9 @@ changes (where available).
 - Fixed gamut warnings appearing gray instead of cyan with LittleCMS 2.17
   and later.
 
+- Fixed incorrect composite colors in exports and secondary previews
+  when the composite module follows the output color profile module.
+
 - Do not convert the pipe input in place for blending, which may result
   in a corrputed buffer.
 
