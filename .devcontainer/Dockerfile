@@ -91,6 +91,8 @@ RUN eatmydata apt-get update && eatmydata apt-get --yes install \
     libsecret-1-dev \
     libsqlite3-dev \
     libtiff5-dev \
+    libwayland-bin \
+    libwayland-dev \
     libwebp-dev \
     libx11-dev \
     libxml2-dev \
