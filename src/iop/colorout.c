@@ -655,6 +655,14 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     out_filename = (out_type == DT_COLORSPACE_DISPLAY ? darktable.color_profiles->display_filename : "");
     out_intent = darktable.color_profiles->display_intent;
   }
+  // dt_dev_image() with finalscale renders overlay sources in the host's encoding
+  else if(dt_wayland_color_available() && !dt_pipe_is_image_final(pipe))
+  {
+    // the compositor applies the physical display profile after composition
+    out_type = DT_COLORSPACE_DISPLAY_TRANSPORT;
+    out_filename = "";
+    out_intent = DT_INTENT_RELATIVE_COLORIMETRIC;
+  }
   else if(dt_pipe_is_preview2(pipe))
   {
     /* preview2 is only used in second darkroom window, using display2 profile as output */
@@ -668,20 +676,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     out_type = darktable.color_profiles->display_type;
     out_filename = darktable.color_profiles->display_filename;
     out_intent = darktable.color_profiles->display_intent;
-  }
-
-  // dt_dev_image() with finalscale renders overlay sources, which are composited
-  // into the host pipe rather than shown on a native canvas
-  if(dt_wayland_color_available()
-     && !image_output
-     && !dt_pipe_is_export(pipe)
-     && !dt_pipe_is_thumb(pipe)
-     && !dt_pipe_is_image_final(pipe))
-  {
-    // the compositor applies the physical display profile after composition
-    out_type = DT_COLORSPACE_DISPLAY_TRANSPORT;
-    out_filename = "";
-    out_intent = DT_INTENT_RELATIVE_COLORIMETRIC;
   }
 
   // when the output type is Lab then process is a nop, so we can avoid creating a transform
