@@ -513,6 +513,9 @@ changes (where available).
 - Fixed HEIF export compilation with libheif versions older than 1.15.0,
   and with versions older than 1.16.0 when libsharpyuv is available.
 
+- Fixed gamut warnings appearing gray instead of cyan with LittleCMS 2.17
+  and later.
+
 - Do not convert the pipe input in place for blending, which may result
   in a corrputed buffer.
 
