@@ -156,7 +156,7 @@ void draw_color_boxes_inside(cairo_t *cr, const float *homography, chart_t *char
       {
         // convert the displayed color without changing the measured patch
         dt_sRGB_to_linear_sRGB(box->rgb, color);
-        for(int c = 0; c < 3; c++) color[c] = powf(fmaxf(color[c], 0.0f), 1.0f / 2.2f);
+        for(int c = 0; c < 3; c++) color[c] = dt_display_ui_encode(color[c]);
       }
       else
         copy_pixel(color, box->rgb);
