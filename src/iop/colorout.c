@@ -52,6 +52,7 @@ typedef struct dt_iop_colorout_data_t
   float lut[3][LUT_SAMPLES];
   dt_colormatrix_t cmatrix;
   cmsHTRANSFORM *xform;
+  cmsContext context;
   float unbounded_coeffs[3][3]; // for extrapolation of shaper curves
 } dt_iop_colorout_data_t;
 
@@ -486,6 +487,30 @@ static int _transform_cmatrix(const dt_iop_colorout_data_t *const d,
   return is_linear != 0; // not done if nonlinear, need to apply tonecurve
 }
 
+static cmsHTRANSFORM _create_transform(dt_iop_colorout_data_t *const d,
+                                      cmsHPROFILE lab,
+                                      cmsHPROFILE output,
+                                      const cmsUInt32Number output_format,
+                                      cmsHPROFILE softproof,
+                                      const dt_iop_color_intent_t intent,
+                                      const cmsUInt32Number flags)
+{
+  if(flags & cmsFLAGS_GAMUTCHECK)
+  {
+    // lcms 2.17 emits the alarm color directly; keep it local to this pipe
+    if(!d->context) d->context = cmsCreateContext(NULL, NULL);
+    if(!d->context) return NULL;
+    const dt_aligned_pixel_t cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
+    cmsUInt16Number alarm[cmsMAXCHANNELS] = { 0 };
+    for(int c = 0; c < 3; c++)
+      alarm[c] = (cmsUInt16Number)roundf(CLAMP(cyan[c], 0.0f, 1.0f) * 65535.0f);
+    cmsSetAlarmCodesTHR(d->context, alarm);
+  }
+  return cmsCreateProofingTransformTHR(d->context, lab, TYPE_LabA_FLT,
+                                       output, output_format, softproof,
+                                       intent, INTENT_RELATIVE_COLORIMETRIC, flags);
+}
+
 static void _transform_lcms(const dt_iop_colorout_data_t *const d,
                             float *restrict out,
                             const float *restrict in,
@@ -713,8 +738,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   {
     dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
     piece->process_cl_ready = FALSE;
-    d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
-                                          out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
+    d->xform = _create_transform(d, Lab, output, output_format, softproof, out_intent, transformFlags);
   }
 
   // user selected a non-supported output profile, check that:
@@ -733,8 +757,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       piece->process_cl_ready = FALSE;
 
-      d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
-                                            out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
+      d->xform = _create_transform(d, Lab, output, output_format, softproof, out_intent, transformFlags);
     }
   }
 
@@ -782,6 +805,8 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
     cmsDeleteTransform(d->xform);
     d->xform = NULL;
   }
+
+  if(d->context) cmsDeleteContext(d->context);
 
   free(piece->data);
   piece->data = NULL;
