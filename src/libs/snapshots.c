@@ -706,19 +706,25 @@ static void _remove_snapshot_entry(dt_lib_module_t *self, const uint32_t index)
   //  First clean the entry
   _clear_snapshot_entry(&d->snapshot[index]);
 
-  //  Repack all entries
-  for(uint32_t k = index; k < MAX_SNAPSHOT-1; k++)
-  {
-    memcpy(&d->snapshot[k], &d->snapshot[k+1], sizeof(dt_lib_snapshot_t));
-  }
+  // move the later entries down, and reuse the cleared entry, widgets
+  // included, as the free last slot. Clearing the old last slot after the
+  // move instead would free the data, and delete the stored history, of
+  // the snapshot copied down from it
+  const dt_lib_snapshot_t removed = d->snapshot[index];
+  memmove(&d->snapshot[index], &d->snapshot[index + 1],
+          (MAX_SNAPSHOT - 1 - index) * sizeof(dt_lib_snapshot_t));
+  d->snapshot[MAX_SNAPSHOT - 1] = removed;
 
-  //  And finally clear last entry
-  _clear_snapshot_entry(&d->snapshot[MAX_SNAPSHOT-1]);
-  //  And dedup widgets by initializing the last entry
-  _init_snapshot_entry(self, &d->snapshot[MAX_SNAPSHOT-1]);
+  // the reused row is still shown where the removed snapshot was. Rows are
+  // packed from the end, so the last child is at the top, where the newest
+  // snapshot belongs
+  gtk_box_reorder_child(GTK_BOX(d->snapshots_box), removed.bbox, -1);
 
   //  We have one less snapshot
   d->num_snapshots--;
+
+  // taking the tenth snapshot disabled the button, and a slot is free again
+  gtk_widget_set_sensitive(d->take_button, TRUE);
 }
 
 static void _signal_image_removed(gpointer instance,
