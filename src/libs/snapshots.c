@@ -654,7 +654,6 @@ static void _clear_snapshots(dt_lib_module_t *self)
   for(uint32_t k = 0; k < d->num_snapshots; k++)
   {
     dt_lib_snapshot_t *s = &d->snapshot[k];
-    s->id = SNAPSHOT_ID_OFFSET | k;
     _clear_snapshot_entry(s);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->button), FALSE);
   }
@@ -847,6 +846,9 @@ void gui_init(dt_lib_module_t *self)
   for(int k = 0; k < MAX_SNAPSHOT; k++)
   {
     dt_lib_snapshot_t *s = &d->snapshot[k];
+    // each entry keeps this id for the whole session, as it moves between
+    // slots in _remove_snapshot_entry(). The stored history of a snapshot is
+    // read by id alone, so two entries must never share one
     s->id = SNAPSHOT_ID_OFFSET | k;
 
     _clear_snapshot_entry(s);
@@ -938,10 +940,6 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
   dt_dev_write_history(darktable.develop);
 
   dt_lib_snapshot_t *s = &d->snapshot[d->num_snapshots];
-
-  // set new snapshot_id, to not clash with the undo snapshot make the snapshot
-  // id at a specific offset.
-  s->id = SNAPSHOT_ID_OFFSET | d->num_snapshots;
 
   _clear_snapshot_entry(s);
 
