@@ -6,6 +6,17 @@ add_executable(darktable-cmstest main.c ${DARKTABLE_BINDIR}/version_gen.c)
 set_source_files_properties(${DARKTABLE_BINDIR}/version_gen.c PROPERTIES GENERATED TRUE)
 add_dependencies(darktable-cmstest generate_version)
 
+if(USE_WAYLAND)
+  set_source_files_properties("${COLOR_MANAGEMENT_CODE}" "${COLOR_MANAGEMENT_HEADER}"
+                              PROPERTIES GENERATED TRUE)
+  add_dependencies(darktable-cmstest generate_wayland_color)
+  target_sources(darktable-cmstest PRIVATE wayland.c
+                 "${COLOR_MANAGEMENT_CODE}" "${COLOR_MANAGEMENT_HEADER}")
+  target_compile_definitions(darktable-cmstest PRIVATE HAVE_WAYLAND_COLOR_MANAGEMENT)
+  target_include_directories(darktable-cmstest PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/..")
+  target_link_libraries(darktable-cmstest PkgConfig::WaylandClient)
+endif()
+
 target_link_libraries(darktable-cmstest ${LCMS2_LIBRARIES})
 add_definitions(${LCMS2_DEFINITIONS})
 
@@ -16,6 +27,10 @@ find_package(Glib REQUIRED)
 include_directories(SYSTEM ${GObject_INCLUDE_DIRS})
 target_link_libraries(darktable-cmstest ${GObject_LIBRARIES})
 add_definitions(${GObject_DEFINITIONS})
+
+find_package(Intl REQUIRED)
+target_include_directories(darktable-cmstest SYSTEM PRIVATE ${Intl_INCLUDE_DIRS})
+target_link_libraries(darktable-cmstest ${Intl_LIBRARIES})
 
 find_package(X11)
 if(X11_FOUND AND X11_Xrandr_FOUND)
@@ -34,6 +49,7 @@ if(Colord_FOUND AND NOT ${Colord_VERSION} VERSION_LESS "0.1.32")
 else(Colord_FOUND AND NOT ${Colord_VERSION} VERSION_LESS "0.1.32")
   message(STATUS "no colord support for darktable-cmstest. not cool.")
 endif(Colord_FOUND AND NOT ${Colord_VERSION} VERSION_LESS "0.1.32")
+
 
 
 set_target_properties(darktable-cmstest 
