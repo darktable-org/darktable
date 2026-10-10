@@ -690,6 +690,19 @@ static void _remove_snapshot_entry(dt_lib_module_t *self, const uint32_t index)
 {
   dt_lib_snapshots_t *d = self->data;
 
+  // the entries after index move down one slot: keep the selection on the
+  // same snapshot, or end the comparison if it is the one removed. A stale
+  // index points at the next snapshot or, past the last one, at an empty
+  // slot, which gui_post_expose() then renders as image NO_IMGID
+  if(d->selected == (int)index)
+  {
+    d->selected = -1;
+    darktable.lib->proxy.snapshots.enabled = FALSE;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[index].button), FALSE);
+  }
+  else if(d->selected > (int)index)
+    d->selected--;
+
   //  First clean the entry
   _clear_snapshot_entry(&d->snapshot[index]);
 
@@ -706,10 +719,6 @@ static void _remove_snapshot_entry(dt_lib_module_t *self, const uint32_t index)
 
   //  We have one less snapshot
   d->num_snapshots--;
-
-  //  If the remove image snapshot was selected, unselect it
-  if(d->selected == index)
-    d->selected = -1;
 }
 
 static void _signal_image_removed(gpointer instance,
