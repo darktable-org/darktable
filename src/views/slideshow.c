@@ -216,7 +216,8 @@ static int _process_image(dt_slideshow_t *d,
                NULL,
                DT_DEVICE_NONE,
                FALSE,
-               FALSE);
+               FALSE,
+               NULL);
 
   dt_pthread_mutex_lock(&d->lock);
 

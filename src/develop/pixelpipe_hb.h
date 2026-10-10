@@ -237,6 +237,13 @@ typedef struct dt_dev_pixelpipe_t
   struct dt_iop_order_iccprofile_info_t *output_profile_info;
   /** actual colorout encoding, including nonmatrix ICC profiles **/
   struct dt_iop_order_iccprofile_info_t *output_encoding;
+  // committed values: profile-info interning does not distinguish rendering intents
+  dt_iop_color_intent_t output_intent;
+  dt_colorspaces_color_mode_t output_proof_mode;
+  dt_colorspaces_color_profile_type_t output_proof_type;
+  char output_proof_filename[DT_IOP_COLOR_ICC_LEN];
+  // borrowed for the synchronous dt_dev_image() render
+  const struct dt_dev_image_output_t *image_output;
   /** used only as a cache-identity tag to invalidate the cache **/
   struct dt_iop_order_iccprofile_info_t *export_profile_info;
   /** peak luminance of the output relative to the 203 nit reference white,

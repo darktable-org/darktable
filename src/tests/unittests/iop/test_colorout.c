@@ -242,6 +242,54 @@ static void _test_output_encoding(void **state)
     }
   }
 
+  // overlay sources use their host's committed output, even in a FULL temporary pipe
+  pipe.type = DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_IMAGE | DT_DEV_PIXELPIPE_IMAGE_FINAL;
+  dt_dev_image_output_t output = { .intent = DT_INTENT_ABSOLUTE_COLORIMETRIC,
+                                  .proof_type = DT_COLORSPACE_NONE };
+  pipe.image_output = &output;
+  profiles.mode = DT_PROFILE_GAMUTCHECK;
+  const int destinations[] = { 4, 0, 2, -1, 3 };
+  for(int k = 0; k < G_N_ELEMENTS(destinations); k++)
+  {
+    const int index = destinations[k];
+    output.type = index < 0 ? DT_COLORSPACE_FILE : entries[index].type;
+    g_strlcpy(output.filename, index < 0 ? "missing-output.icc" : "", sizeof(output.filename));
+    commit_params(&module, (dt_iop_params_t *)&params, &pipe, &piece);
+    assert_int_equal(d->mode, DT_PROFILE_NORMAL);
+    assert_int_equal(pipe.output_intent, output.intent);
+    assert_int_equal(pipe.output_proof_mode, DT_PROFILE_NORMAL);
+    const int actual_index = index < 0 || index == 3 ? 0 : index;
+    assert_int_equal(pipe.output_encoding->type, entries[actual_index].type);
+    dt_aligned_pixel_t actual, expected;
+    process(&module, &piece, input, actual, &roi, &roi);
+    cmsHTRANSFORM reference = cmsCreateTransform
+      (entries[1].profile, TYPE_LabA_FLT, entries[actual_index].profile, TYPE_RGBA_FLT,
+       output.intent, 0);
+    assert_non_null(reference);
+    cmsDoTransform(reference, input, expected, 1);
+    for(int c = 0; c < 3; c++)
+      assert_float_equal(actual[c], expected[c], 2e-4f);
+    cmsDeleteTransform(reference);
+  }
+
+  output.type = DT_COLORSPACE_SRGB;
+  output.filename[0] = '\0';
+  output.mode = DT_PROFILE_GAMUTCHECK;
+  output.proof_type = DT_COLORSPACE_FILE;
+  g_strlcpy(output.proof_filename, "missing-proof.icc", sizeof(output.proof_filename));
+  profiles.mode = DT_PROFILE_NORMAL;
+  commit_params(&module, (dt_iop_params_t *)&params, &pipe, &piece);
+  assert_int_equal(d->mode, DT_PROFILE_GAMUTCHECK);
+  assert_int_equal(pipe.output_proof_mode, DT_PROFILE_GAMUTCHECK);
+  assert_int_equal(pipe.output_proof_type, DT_COLORSPACE_SRGB);
+  assert_string_equal(pipe.output_proof_filename, "");
+  const dt_aligned_pixel_t outside = { 50.0f, 100.0f, 100.0f, 1.0f };
+  dt_aligned_pixel_t actual, cyan;
+  process(&module, &piece, outside, actual, &roi, &roi);
+  _gamut_warning_color(d, cyan);
+  for(int c = 0; c < 3; c++)
+    assert_float_equal(actual[c], cyan[c], 2e-5f);
+
   cleanup_pipe(&module, &pipe, &piece);
   for(GList *iter = dev.allprofile_info; iter; iter = g_list_next(iter))
   {
