@@ -1434,13 +1434,13 @@ msgid ""
 msgstr ""
 "Sélectionne le flux de travail utilisé par défaut dans la chambre noire\n"
 "\n"
-"<b>Relatif à la scène (sigmoid)</b> flux de travail moderne, moins de contrôles de mappage des tons\n"
+"<b>Relatif à la scène (sigmoid)</b> flux de travail moderne, moins de contrôles de mappage de tonalité\n"
 "\n"
-"<b>Relatif à la scène (filmic)</b> flux de travail moderne, plus de contrôles de mappage des tons\n"
+"<b>Relatif à la scène (filmic)</b> flux de travail moderne, plus de contrôles de mappage de tonalité\n"
 "\n"
-"<b>Relatif à la scène (AgX)</b> flux de travail moderne, contrôle maximal du mappage des tons\n"
+"<b>Relatif à la scène (AgX)</b> flux de travail moderne, contrôle maximal du mappage de tonalité\n"
 "\n"
-"<b>Relatif à la scène (spektrafilm)</b> flux de travail moderne, le mappage des tons est effectué par un film et un tirage simulés\n"
+"<b>Relatif à la scène (spektrafilm)</b> flux de travail moderne, le mappage de tonalité est effectué par un film et un tirage simulés\n"
 "\n"
 "<b>Relatif à l'affichage (ancien)</b> flux de travail hérité (non recommandé)\n"
 "\n"
@@ -24920,7 +24920,7 @@ msgstr "Lumière d’appoint"
 
 #: ../src/iop/relight.c:92 ../src/iop/zonesystem.c:106
 msgid "this module is deprecated. please use the tone equalizer module instead."
-msgstr "Ce module est déprécié, utiliser « Égaliseur de tons » à la place."
+msgstr "Ce module est déprécié, utiliser « Égaliseur de tonalité » à la place."
 
 #: ../src/iop/relight.c:249
 msgid "the fill-light in EV"
@@ -27072,7 +27072,7 @@ msgstr "Sélectionner une couleur"
 
 #: ../src/iop/toneequal.c:318
 msgid "tone equalizer"
-msgstr "Égaliseur de tons"
+msgstr "Égaliseur de tonalité"
 
 #: ../src/iop/toneequal.c:323
 msgid "tone curve|tone mapping|relight|background light|shadows highlights"
@@ -27352,7 +27352,7 @@ msgstr "Mappage des tonalités"
 
 #: ../src/iop/tonemap.cc:84
 msgid "this module is deprecated. please use the local contrast or tone equalizer module instead."
-msgstr "Ce module est déprécié, utiliser « Égaliseur de tons » ou « Contraste local » à la place."
+msgstr "Ce module est déprécié, utiliser « Égaliseur de tonalité » ou « Contraste local » à la place."
 
 #: ../src/iop/velvia.c:67
 msgid "velvia"
@@ -34465,7 +34465,7 @@ msgstr "Actions de la souris"
 #~ msgstr "N&B en échelle de gris"
 
 #~ msgid "tone equalizer needs to be after distortion modules in the pipeline – disabled"
-#~ msgstr "L’égaliseur de tons doit être après les modules de distorsion - désactivé"
+#~ msgstr "L’égaliseur de tonalité doit être après les modules de distorsion - désactivé"
 
 #~ msgid "red inset"
 #~ msgstr "Incrustation rouge"
