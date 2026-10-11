@@ -431,6 +431,10 @@ gboolean dt_image_use_monochrome_workflow(const dt_image_t *img);
 char *dt_image_get_filename(const dt_imgid_t imgid);
 /** returns true if the image exists on the database */
 gboolean dt_image_exists(const dt_imgid_t imgid);
+/** number of images in the library */
+uint32_t dt_image_count(void);
+/** n-th image id (from 0, by id) of the library, or NO_IMGID */
+dt_imgid_t dt_image_get_nth(const int n);
 /** TRUE if the given output profile type has primaries wider than sRGB for
  *  this image. Handles the three UI cases used by export-style controls:
  *    DT_COLORSPACE_NONE — "image settings", falls back to the image's

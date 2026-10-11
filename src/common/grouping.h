@@ -36,6 +36,9 @@ dt_imgid_t dt_grouping_change_representative(const dt_imgid_t image_id);
 /** get images of the group */
 GList *dt_grouping_get_group_images(const dt_imgid_t imgid);
 
+/** all images of a group, whatever the GUI grouping state */
+GList *dt_grouping_get_members(const dt_imgid_t group_id);
+
 /** add grouped images to images list */
 void dt_grouping_add_grouped_images(GList **images);
 

@@ -68,18 +68,11 @@ static void releasewriteimage(lua_State *L, dt_image_t *image)
 void dt_lua_image_push(lua_State *L, const dt_imgid_t imgid)
 {
   // check that id is valid
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id FROM main.images WHERE id = ?1", -1, &stmt,
-                              NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) != SQLITE_ROW)
+  if(!dt_image_exists(imgid))
   {
-    sqlite3_finalize(stmt);
     luaL_error(L, "invalid id for image : %d", imgid);
     return;
   }
-  sqlite3_finalize(stmt);
   luaA_push(L, dt_lua_image_t, &imgid);
 }
 
@@ -481,21 +474,17 @@ int get_group(lua_State *L)
   const dt_image_t *cimg = dt_image_cache_get(first_image, 'r');
   const dt_imgid_t group_id = cimg->group_id;
   dt_image_cache_read_release(cimg);
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id FROM main.images WHERE group_id = ?1", -1,
-                              &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
+  GList *members = dt_grouping_get_members(group_id);
   lua_newtable(L);
   int table_index = 1;
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  for(GList *iter = members; iter; iter = g_list_next(iter))
   {
-    const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
+    const dt_imgid_t imgid = GPOINTER_TO_INT(iter->data);
     luaA_push(L, dt_lua_image_t, &imgid);
     lua_seti(L, -2, table_index);
     table_index++;
   }
-  sqlite3_finalize(stmt);
+  g_list_free(members);
   luaA_push(L, dt_lua_image_t, &group_id);
   lua_setfield(L, -2, "leader");
   return 1;

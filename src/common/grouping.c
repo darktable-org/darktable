@@ -222,6 +222,20 @@ GList *dt_grouping_get_group_images(const dt_imgid_t imgid)
   return g_list_reverse(imgs);
 }
 
+GList *dt_grouping_get_members(const dt_imgid_t group_id)
+{
+  GList *imgs = NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id FROM main.images WHERE group_id = ?1", -1,
+                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+    imgs = g_list_prepend(imgs, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+  sqlite3_finalize(stmt);
+  return g_list_reverse(imgs);
+}
+
 /** add grouped images to images list */
 void dt_grouping_add_grouped_images(GList **images)
 {
