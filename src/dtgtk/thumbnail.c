@@ -2415,6 +2415,7 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
   {
     if(thumb->over != DT_THUMBNAIL_OVERLAYS_NONE)
     {
+      g_free(thumb->filename);
       thumb->filename = g_strdup(img->filename);
       thumb->has_audio = (img->flags & DT_IMAGE_HAS_WAV);
       thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
