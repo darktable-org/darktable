@@ -61,7 +61,7 @@ Requirements
 * NetBSD
 * OpenBSD
 * Windows 10 and later
-* Apple Silicon Macs running macOS 14 and later
+* Apple Silicon Macs running macOS 15 and later
 
 *Big-endian platforms are not supported.*
 

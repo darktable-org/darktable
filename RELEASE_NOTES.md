@@ -547,9 +547,8 @@ changes (where available).
   metadata fields unless the user selects all of the checkboxes in the
   export module's preference options.
 
-- Starting with release 5.4, macOS versions older than 14.0 are no
-  longer supported on Apple Silicon Macs, nor older than macOS 15 on
-  Intel Macs.
+- Starting with release 5.6, macOS versions older than 15.0 are no
+  longer supported on Apple Silicon Macs. Intel Macs are no longer supported.
 
 ## Changed Dependencies
 
