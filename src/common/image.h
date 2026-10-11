@@ -435,6 +435,13 @@ gboolean dt_image_exists(const dt_imgid_t imgid);
 uint32_t dt_image_count(void);
 /** n-th image id (from 0, by id) of the library, or NO_IMGID */
 dt_imgid_t dt_image_get_nth(const int n);
+/** ids of all images of the library */
+GList *dt_image_get_all(void);
+/** lower thumb_maxmip to level for the images above it */
+void dt_image_cap_thumb_maxmip(const int level);
+/** number of images whose id is returned by the SQL query `images`, and the
+ *  first of them in *first (left unchanged when there are none) */
+int dt_image_count_in_query(const char *images, dt_imgid_t *first);
 /** TRUE if the given output profile type has primaries wider than sRGB for
  *  this image. Handles the three UI cases used by export-style controls:
  *    DT_COLORSPACE_NONE — "image settings", falls back to the image's

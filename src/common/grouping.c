@@ -277,6 +277,86 @@ void dt_grouping_add_grouped_images(GList **images)
     *images = g_list_concat(*images, g_list_reverse(gimgs));
 }
 
+GList *dt_grouping_get_members_info(const dt_imgid_t group_id)
+{
+  GList *members = NULL;
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id, version, filename"
+                              " FROM main.images"
+                              " WHERE group_id = ?1", -1, &stmt,
+                              NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    dt_grouping_member_t *m = g_malloc0(sizeof(dt_grouping_member_t));
+    m->id = sqlite3_column_int(stmt, 0);
+    m->version = sqlite3_column_int(stmt, 1);
+    m->filename = g_strdup((const char *)sqlite3_column_text(stmt, 2));
+    members = g_list_prepend(members, m);
+  }
+  sqlite3_finalize(stmt);
+  return g_list_reverse(members);
+}
+
+void dt_grouping_member_free(gpointer member)
+{
+  dt_grouping_member_t *m = member;
+  g_free(m->filename);
+  g_free(m);
+}
+
+void dt_grouping_select_members(const dt_imgid_t group_id)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "INSERT OR IGNORE INTO main.selected_images (imgid)"
+      " SELECT id FROM main.images WHERE group_id = ?1", -1, &stmt,
+      NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+int dt_grouping_count_others(const dt_imgid_t group_id, const dt_imgid_t imgid)
+{
+  int count = 0;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(id)"
+                              " FROM main.images"
+                              " WHERE group_id = ?1 AND id != ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+  if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0);
+  if(stmt) sqlite3_finalize(stmt);
+  return count;
+}
+
+gboolean dt_grouping_has_others(const dt_imgid_t imgid)
+{
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id"
+                              " FROM main.images"
+                              " WHERE group_id = (SELECT group_id"
+                              "                   FROM main.images"
+                              "                   WHERE id=?1)"
+                              "   AND id != ?2",
+                              -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+  const gboolean others = (sqlite3_step(stmt) == SQLITE_ROW);
+  sqlite3_finalize(stmt);
+  return others;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

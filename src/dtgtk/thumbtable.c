@@ -1917,8 +1917,6 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
     min_level = DT_MIPMAP_4;
   }
 
-  sqlite3_stmt *stmt = NULL;
-
   if(min_level < max_level)
   {
     gchar *txt =
@@ -1947,29 +1945,21 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
     if(dt_gui_show_yes_no_dialog(_("cached thumbnails invalidation"), "",
                                  "%s", txt))
     {
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT id FROM main.images", -1, &stmt, NULL);
-      while(sqlite3_step(stmt) == SQLITE_ROW)
+      GList *imgs = dt_image_get_all();
+      for(const GList *l = imgs; l; l = g_list_next(l))
       {
-        const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
+        const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
         for(int i = max_level; i >= min_level; i--)
         {
           dt_mipmap_cache_remove_at_size(imgid, i);
         }
       }
-      sqlite3_finalize(stmt);
+      g_list_free(imgs);
     }
     g_free(txt);
   }
   // in any case, we update thumbtable prefs values to new ones and update backthumbs database
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images"
-                              " SET thumb_maxmip = ?1"
-                              " WHERE thumb_maxmip > ?1 ",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, min_level);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  dt_image_cap_thumb_maxmip(min_level);
 
   table->pref_hq = hql;
   table->pref_embedded = embeddedl;

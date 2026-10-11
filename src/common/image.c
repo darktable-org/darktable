@@ -488,6 +488,52 @@ dt_imgid_t dt_image_get_nth(const int n)
   return imgid;
 }
 
+GList *dt_image_get_all(void)
+{
+  GList *imgs = NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id FROM main.images", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+    imgs = g_list_prepend(imgs, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+  sqlite3_finalize(stmt);
+  return g_list_reverse(imgs);
+}
+
+void dt_image_cap_thumb_maxmip(const int level)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images"
+                              " SET thumb_maxmip = ?1"
+                              " WHERE thumb_maxmip > ?1 ",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, level);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+int dt_image_count_in_query(const char *images, dt_imgid_t *first)
+{
+  int count = 0;
+  sqlite3_stmt *stmt;
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT id, COUNT(id) "
+                                 "FROM main.images "
+                                 "WHERE id IN (%s)",
+                                 images);
+  // clang-format on
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    *first = sqlite3_column_int(stmt, 0);
+    count = sqlite3_column_int(stmt, 1);
+  }
+  sqlite3_finalize(stmt);
+  g_free(query);
+  return count;
+}
+
 gboolean dt_image_exists(const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;

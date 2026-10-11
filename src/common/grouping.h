@@ -42,6 +42,27 @@ GList *dt_grouping_get_members(const dt_imgid_t group_id);
 /** add grouped images to images list */
 void dt_grouping_add_grouped_images(GList **images);
 
+/** an image of a group, as listed by dt_grouping_get_members_info() */
+typedef struct dt_grouping_member_t
+{
+  dt_imgid_t id;
+  int version;
+  gchar *filename;
+} dt_grouping_member_t;
+
+/** id, version and filename of all images of a group */
+GList *dt_grouping_get_members_info(const dt_imgid_t group_id);
+void dt_grouping_member_free(gpointer member);
+
+/** add all images of a group to the selection table, without signals */
+void dt_grouping_select_members(const dt_imgid_t group_id);
+
+/** number of images of a group other than imgid */
+int dt_grouping_count_others(const dt_imgid_t group_id, const dt_imgid_t imgid);
+
+/** whether the group of imgid holds other images */
+gboolean dt_grouping_has_others(const dt_imgid_t imgid);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
