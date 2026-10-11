@@ -114,6 +114,20 @@ void dt_lua_init_early(lua_State *L)
   }
 }
 
+// set once run_early_script has run, see load_from_lua()
+static gboolean _early_script_done = FALSE;
+static GMutex _early_script_mutex;
+static GCond _early_script_cond;
+
+static void _early_script_finished(lua_State *L, int result, void *data)
+{
+  dt_lua_check_print_error(L, result);
+  g_mutex_lock(&_early_script_mutex);
+  _early_script_done = TRUE;
+  g_cond_signal(&_early_script_cond);
+  g_mutex_unlock(&_early_script_mutex);
+}
+
 static int run_early_script(lua_State* L)
 {
   char basedir[PATH_MAX] = { 0 };
@@ -191,7 +205,7 @@ void dt_lua_init(lua_State *L, const char *lua_command)
   lua_pushcfunction(L,run_early_script);
   lua_pushstring(L,lua_command);
 
-  dt_lua_async_call(L,1,0,NULL,NULL);
+  dt_lua_async_call(L,1,0,_early_script_finished,NULL);
   // allow other threads to wake up and do their job
   dt_lua_unlock();
 }
@@ -230,6 +244,16 @@ static int load_from_lua(lua_State *L)
   if(dt_init(argc, argv, FALSE, TRUE, L)) {
     luaL_error(L,"Starting darktable failed.");
   }
+  // dt_init() queued run_early_script on darktable's Lua thread and released
+  // the Lua lock. The calling interpreter runs on that same lua_State, so wait
+  // for the script, then hold the lock while control is back in the caller,
+  // as a --luacmd script does; darktable's Lua thread runs when the caller
+  // yields (dt.control.sleep and the other blocking calls release the lock)
+  g_mutex_lock(&_early_script_mutex);
+  while(!_early_script_done)
+    g_cond_wait(&_early_script_cond, &_early_script_mutex);
+  g_mutex_unlock(&_early_script_mutex);
+  dt_lua_lock();
   for(int i = 0; i < argc; i++)
   {
     free(argv_copy[i]);
