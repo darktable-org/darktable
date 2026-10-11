@@ -904,9 +904,9 @@ GList *dt_tag_get_list(const dt_imgid_t imgid)
   if(count < 1)
     return NULL;
 
-  for(; taglist; taglist = g_list_next(taglist))
+  for(const GList *l = taglist; l; l = g_list_next(l))
   {
-    dt_tag_t *t = taglist->data;
+    dt_tag_t *t = l->data;
     gchar *value = t->tag;
 
     gchar **pch = g_strsplit(value, "|", -1);
