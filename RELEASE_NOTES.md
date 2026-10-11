@@ -307,6 +307,10 @@ changes (where available).
 
 ## Bug Fixes
 
+- Fixed ratings and rejects set while thumbnails were being generated
+  in the background, which could be reverted when that image finished
+  loading.
+
 - Fixed overly dark PQ and HLG image imports and overly bright exports,
   including HDR PNG and JPEG XL profile detection.
 
