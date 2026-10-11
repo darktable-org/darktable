@@ -752,6 +752,90 @@ void dt_image_reset_thumb_state(void)
   sqlite3_finalize(stmt);
 }
 
+void dt_image_set_write_timestamp_now(const dt_imgid_t imgid)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "UPDATE main.images"
+     " SET write_timestamp = STRFTIME('%s', 'now')"
+     " WHERE id = ?1", -1,
+     &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+void dt_image_add_flags_in_list(const char *imgs, const int flags)
+{
+  sqlite3_stmt *stmt = NULL;
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "UPDATE main.images SET flags = (flags|?1) WHERE id IN (?2)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, flags);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgs, -1, SQLITE_STATIC);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+GList *dt_image_get_full_paths_in_list(const char *imgs)
+{
+  sqlite3_stmt *stmt = NULL;
+  GList *list = NULL;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT DISTINCT folder || '" G_DIR_SEPARATOR_S "' || filename"
+     " FROM main.images i, main.film_rolls f "
+     "   ON i.film_id = f.id"
+     " WHERE i.id IN (?1)",
+     -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, imgs, -1, SQLITE_STATIC);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    list = g_list_prepend(list, g_strdup((const gchar *)sqlite3_column_text(stmt, 0)));
+  }
+  sqlite3_finalize(stmt);
+  return g_list_reverse(list);  // list was built in reverse order, so un-reverse it
+}
+
+GList *dt_image_get_with_flags_in_list(const char *imgs, const int flags)
+{
+  sqlite3_stmt *stmt = NULL;
+  GList *list = NULL;
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT id FROM main.images WHERE id IN (?2) AND flags&?1=?1",
+     -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, flags);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgs, -1, SQLITE_STATIC);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+    list = g_list_prepend(list, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+  sqlite3_finalize(stmt);
+  return g_list_reverse(list);
+}
+
+int dt_image_count_same_file(const dt_imgid_t imgid)
+{
+  int count = 0;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT COUNT(*)"
+     " FROM main.images"
+     " WHERE filename IN (SELECT filename"
+     "                    FROM main.images"
+     "                    WHERE id = ?1)"
+     "       AND film_id IN (SELECT film_id FROM main.images WHERE id = ?1)",
+     -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  return count;
+}
+
 gboolean dt_image_exists(const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;

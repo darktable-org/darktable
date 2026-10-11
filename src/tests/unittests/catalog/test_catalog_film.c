@@ -239,6 +239,40 @@ static void test_film_by_access(void **state)
   g_list_free(rolls);
 }
 
+static void test_jobs_queries(void **state)
+{
+  const dt_filmid_t film = dt_film_get_nth(0);
+  GList *imgs = dt_film_get_images(film);
+  assert_int_equal(g_list_length(imgs), dt_film_count_images(film));
+  g_list_free(imgs);
+
+  const dt_imgid_t cr2 = dt_test_catalog_image("mire1.cr2");
+  gchar *q = g_strdup_printf("SELECT write_timestamp FROM main.images WHERE id = %d", cr2);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "UPDATE main.images SET write_timestamp = 0", NULL, NULL, NULL);
+  dt_image_set_write_timestamp_now(cr2);
+  assert_true(_count(q) > 0);
+  g_free(q);
+
+  // the remove and delete jobs pass ids as a text list built by
+  // _get_image_list(); one id is what this covers
+  gchar *one = g_strdup_printf("%6d", cr2);
+  GList *paths = dt_image_get_full_paths_in_list(one);
+  assert_int_equal(g_list_length(paths), 1);
+  assert_non_null(strstr(paths->data, "mire1.cr2"));
+  g_list_free_full(paths, g_free);
+
+  assert_null(dt_image_get_with_flags_in_list(one, 1 << 30));
+  dt_image_add_flags_in_list(one, 1 << 30);
+  GList *flagged = dt_image_get_with_flags_in_list(one, 1 << 30);
+  assert_int_equal(g_list_length(flagged), 1);
+  assert_int_equal(GPOINTER_TO_INT(flagged->data), cr2);
+  g_list_free(flagged);
+  g_free(one);
+
+  assert_int_equal(dt_image_count_same_file(cr2), 1);
+}
+
 static void test_group_members(void **state)
 {
   const dt_imgid_t crw = dt_test_catalog_image("bayer4.crw");
@@ -290,6 +324,7 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_image_flags_and_stamps),
     cmocka_unit_test(test_thumb_state),
     cmocka_unit_test(test_film_by_access),
+    cmocka_unit_test(test_jobs_queries),
     cmocka_unit_test(test_group_members),
   };
   return cmocka_run_group_tests(tests, dt_test_catalog_setup, dt_test_catalog_teardown);

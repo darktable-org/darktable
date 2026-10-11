@@ -492,6 +492,18 @@ typedef struct dt_image_thumb_stamp_t
 GList *dt_image_get_outdated_thumbs(const int max_mip);
 /** mark the thumbnails of all images as never made */
 void dt_image_reset_thumb_state(void);
+/** set write_timestamp of an image to now */
+void dt_image_set_write_timestamp_now(const dt_imgid_t imgid);
+/** add flags to the images whose ids are in `imgs`, a comma-separated id
+ *  list as built by the remove and delete jobs */
+void dt_image_add_flags_in_list(const char *imgs, const int flags);
+/** distinct full paths of the images whose ids are in `imgs` */
+GList *dt_image_get_full_paths_in_list(const char *imgs);
+/** ids of the images in `imgs` that carry all of `flags` */
+GList *dt_image_get_with_flags_in_list(const char *imgs, const int flags);
+/** number of images with the same file (film roll and filename) as imgid,
+ *  imgid included */
+int dt_image_count_same_file(const dt_imgid_t imgid);
 /** TRUE if the given output profile type has primaries wider than sRGB for
  *  this image. Handles the three UI cases used by export-style controls:
  *    DT_COLORSPACE_NONE — "image settings", falls back to the image's

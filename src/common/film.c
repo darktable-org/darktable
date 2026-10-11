@@ -640,6 +640,20 @@ GList *dt_film_get_by_access(void)
   return g_list_reverse(rolls);
 }
 
+GList *dt_film_get_images(const dt_filmid_t id)
+{
+  sqlite3_stmt *stmt;
+  GList *imgs = NULL;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id FROM main.images WHERE film_id = ?1", -1,
+                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+    imgs = g_list_prepend(imgs, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+  sqlite3_finalize(stmt);
+  return g_list_reverse(imgs);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
