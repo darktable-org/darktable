@@ -529,6 +529,10 @@ changes (where available).
   module has slots. Once all slots are in use, `take_snapshot()` now
   takes none and says so, as the take snapshot button already refused.
 
+- Fixed random errors and crashes in scripts that load darktable as a
+  library from a standalone Lua interpreter (`require("darktable")`),
+  which ran at the same time as darktable's own Lua thread.
+
 ### New Scripts
 
 - N/A
