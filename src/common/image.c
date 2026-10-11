@@ -3457,6 +3457,7 @@ static int32_t _image_get_set_name_id(const char *table,
   }
   else
   {
+    sqlite3_finalize(stmt);
     g_free(query);
     query = g_strdup_printf("INSERT"
                             "  INTO main.%s (name)"
