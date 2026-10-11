@@ -23,6 +23,7 @@
 #include "common/file_location.h"
 #include "common/grealpath.h"
 #include "common/image_cache.h"
+#include "common/ratings.h"
 #include "control/conf.h"
 #include "control/jobs.h"
 #include "develop/imageop_math.h"
@@ -1024,7 +1025,11 @@ void dt_mipmap_cache_get_with_caller(dt_mipmap_buffer_t *buf,
             buffered_image.profile_hsm_val_div = img->profile_hsm_val_div;
             buffered_image.profile_hsm_encoding = img->profile_hsm_encoding;
           }
+          // the rating and the reject flag may have been changed while the raw
+          // was decoding, and the loader does not set them: keep the current ones
+          const int32_t user_flags = img->flags & (DT_VIEW_RATINGS_MASK | DT_IMAGE_REJECTED);
           *img = buffered_image;
+          img->flags = (img->flags & ~(DT_VIEW_RATINGS_MASK | DT_IMAGE_REJECTED)) | user_flags;
           img->load_status = DT_IMAGEIO_OK;
           // dt_print(DT_DEBUG_ALWAYS, "[mipmap read get] initializing full buffer img %u with %u %u -> %d %d (%p)",
           // imgid, data[0], data[1], img->width, img->height, data);
