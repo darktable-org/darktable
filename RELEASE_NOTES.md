@@ -171,6 +171,10 @@ changes (where available).
 
 ## Performance Improvements
 
+- The lighttable timeline no longer slows down quadratically with the
+  number of collected images: with a 100,000-image collection it took
+  about 15 minutes to draw, now a few seconds.
+
 - Replaced quadratic XMP history writes with a linear algorithm.
 
 - Don't invalidate the pixelpipe cache on every commit
