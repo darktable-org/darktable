@@ -1048,6 +1048,19 @@ void dt_dev_reload_image(dt_develop_t *dev,
   dt_dev_invalidate(dev); // only invalidate image, preview will follow once it's loaded.
 }
 
+static int32_t _dev_border_size(const dt_dev_viewport_t *port,
+                                const gboolean color_assessment)
+{
+  if(color_assessment)
+    return (int32_t)(dt_conf_get_float("darkroom/ui/color_assessment_total_border_width")
+                     * MIN(port->orig_width, port->orig_height));
+  else if(port == &darktable.develop->full)
+    // Reset border size from config
+    return DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  else
+    return 0;
+}
+
 float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
                             const dt_dev_zoom_t zoom,
                             const int closeup_factor,
@@ -1076,6 +1089,17 @@ float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
       break;
     default: // DT_ZOOM_FREE
       zoom_scale = port->zoom_scale;
+      if(port->color_assessment)
+      {
+        // zoomed out beyond fit of the viewport without the assessment
+        // border: shrink to fit inside the border but leave
+        // port->zoom_scale alone, so leaving the mode restores it
+        const int32_t tb = _dev_border_size(port, FALSE);
+        const float fit = fminf((float)(port->orig_width - 2*tb) / procw,
+                                (float)(port->orig_height - 2*tb) / proch);
+        if(zoom_scale <= fit)
+          zoom_scale = fminf(zoom_scale, fminf(w, h));
+      }
       break;
   }
 
@@ -1137,17 +1161,7 @@ void dt_dev_load_image(dt_develop_t *dev,
 
 void dt_dev_configure(dt_dev_viewport_t *port)
 {
-  int32_t tb = 0;
-  if(port->color_assessment)
-  {
-    tb = (int32_t)(dt_conf_get_float("darkroom/ui/color_assessment_total_border_width")
-                   * MIN(port->orig_width, port->orig_height));
-  }
-  else if(port == &darktable.develop->full)
-  {
-    // Reset border size from config
-    tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
-  }
+  const int32_t tb = _dev_border_size(port, port->color_assessment);
 
   port->border_size = tb;
   // fixed border on every side. Not reduced by occlusion_left/right, so that
