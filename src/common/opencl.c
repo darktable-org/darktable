@@ -2411,7 +2411,7 @@ static gboolean _opencl_build_program(const int dev,
                                       char *md5sum,
                                       const gboolean loaded_cached)
 {
-  if(prog < 0 || prog > DT_OPENCL_MAX_PROGRAMS) return TRUE;
+  if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return TRUE;
 
   dt_opencl_t *cl = darktable.opencl;
   cl_program program = cl->dev[dev].program[prog];
