@@ -625,6 +625,133 @@ void dt_image_id_filename_free(gpointer item)
   g_free(i);
 }
 
+void dt_image_foreach_sidecar_row(const dt_filmid_t filmid,
+                                  gboolean (*cb)(const dt_image_sidecar_row_t *row, void *data),
+                                  void *data)
+{
+  sqlite3_stmt *stmt;
+  // ordering by film roll keeps the images of one directory in a
+  // contiguous run, which is what lets them be examined a directory at a
+  // time against a single listing of it
+  // clang-format off
+  if(dt_is_valid_filmid(filmid))
+    sqlite3_prepare_v2(dt_database_get(darktable.db),
+                       "SELECT i.id, write_timestamp, version,"
+                       "       folder, filename, flags"
+                       " FROM main.images i, main.film_rolls f"
+                       " ON i.film_id = f.id"
+                       " WHERE f.id = ?1"
+                       " ORDER BY f.id, filename",
+                       -1, &stmt, NULL);
+  else
+    sqlite3_prepare_v2(dt_database_get(darktable.db),
+                       "SELECT i.id, write_timestamp, version,"
+                       "       folder, filename, flags"
+                       " FROM main.images i, main.film_rolls f"
+                       " ON i.film_id = f.id"
+                       " ORDER BY f.id, filename",
+                       -1, &stmt, NULL);
+  // clang-format on
+  if(dt_is_valid_filmid(filmid)) DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const dt_image_sidecar_row_t row = {
+      .id = sqlite3_column_int(stmt, 0),
+      .write_timestamp = sqlite3_column_int64(stmt, 1),
+      .version = sqlite3_column_int(stmt, 2),
+      .folder = (const char *)sqlite3_column_text(stmt, 3),
+      .filename = (const char *)sqlite3_column_text(stmt, 4),
+      .flags = sqlite3_column_int(stmt, 5) };
+    if(!cb(&row, data)) break;
+  }
+  sqlite3_finalize(stmt);
+}
+
+void dt_image_set_flags_list(const dt_imgid_t *ids, const int *flags, const int n)
+{
+  sqlite3_stmt *inner_stmt;
+  sqlite3_prepare_v2(dt_database_get(darktable.db),
+                     "UPDATE main.images SET flags = ?1 WHERE id = ?2", -1,
+                     &inner_stmt, NULL);
+
+  // let's wrap this into a transaction, it might make it a little faster.
+  dt_database_start_transaction(darktable.db);
+  for(int i = 0; i < n; i++)
+  {
+    sqlite3_bind_int(inner_stmt, 1, flags[i]);
+    sqlite3_bind_int(inner_stmt, 2, ids[i]);
+    sqlite3_step(inner_stmt);
+    sqlite3_reset(inner_stmt);
+    sqlite3_clear_bindings(inner_stmt);
+  }
+  dt_database_release_transaction(darktable.db);
+  sqlite3_finalize(inner_stmt);
+}
+
+void dt_image_set_write_timestamp(const dt_imgid_t imgid, const int64_t timestamp)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "UPDATE main.images"
+     " SET write_timestamp = ?2"
+     " WHERE id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 2, timestamp);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+void dt_image_set_thumb_state(const dt_imgid_t imgid, const int max_mip, const int64_t stamp)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images"
+                              " SET thumb_maxmip = ?2, thumb_timestamp = ?3"
+                              " WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_mip);
+  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 3, stamp);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+GList *dt_image_get_outdated_thumbs(const int max_mip)
+{
+  GList *imgs = NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id, import_timestamp, change_timestamp"
+                              " FROM main.images"
+                              " WHERE thumb_timestamp < import_timestamp"
+                              "  OR thumb_timestamp < change_timestamp"
+                              "  OR thumb_maxmip < ?1"
+                              " ORDER BY id DESC",
+                                -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, max_mip);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    dt_image_thumb_stamp_t *t = g_malloc(sizeof(dt_image_thumb_stamp_t));
+    t->id = sqlite3_column_int(stmt, 0);
+    t->stamp = MAX(sqlite3_column_int64(stmt, 1), sqlite3_column_int64(stmt, 2));
+    imgs = g_list_prepend(imgs, t);
+  }
+  sqlite3_finalize(stmt);
+  return g_list_reverse(imgs);
+}
+
+void dt_image_reset_thumb_state(void)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),                              "UPDATE main.images"
+                              " SET thumb_maxmip = 0, thumb_timestamp = -1",
+                              -1, &stmt, NULL);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
 gboolean dt_image_exists(const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;

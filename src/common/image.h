@@ -460,6 +460,38 @@ int dt_image_count_in_range(const dt_imgid_t min, const dt_imgid_t max);
 /** id and filename of the images with an id in [min, max] */
 GList *dt_image_get_in_range(const dt_imgid_t min, const dt_imgid_t max);
 void dt_image_id_filename_free(gpointer item);
+/** an image row as the XMP crawler reads it, see dt_image_foreach_sidecar_row() */
+typedef struct dt_image_sidecar_row_t
+{
+  dt_imgid_t id;
+  int64_t write_timestamp;
+  int version;
+  const char *folder;
+  const char *filename;
+  int flags;
+} dt_image_sidecar_row_t;
+/** call cb on the images of film roll filmid (all images for an invalid id),
+ *  ordered by film roll and filename, until cb returns FALSE */
+void dt_image_foreach_sidecar_row(const dt_filmid_t filmid,
+                                  gboolean (*cb)(const dt_image_sidecar_row_t *row, void *data),
+                                  void *data);
+/** set the flags of n images in one transaction */
+void dt_image_set_flags_list(const dt_imgid_t *ids, const int *flags, const int n);
+/** set write_timestamp of an image */
+void dt_image_set_write_timestamp(const dt_imgid_t imgid, const int64_t timestamp);
+/** record the thumbnails of an image as made up to max_mip at stamp */
+void dt_image_set_thumb_state(const dt_imgid_t imgid, const int max_mip, const int64_t stamp);
+/** an image of dt_image_get_outdated_thumbs() */
+typedef struct dt_image_thumb_stamp_t
+{
+  dt_imgid_t id;
+  int64_t stamp;
+} dt_image_thumb_stamp_t;
+/** images whose thumbnails are older than the image or below max_mip, by
+ *  descending id, with the newer of their import and change timestamps */
+GList *dt_image_get_outdated_thumbs(const int max_mip);
+/** mark the thumbnails of all images as never made */
+void dt_image_reset_thumb_state(void);
 /** TRUE if the given output profile type has primaries wider than sRGB for
  *  this image. Handles the three UI cases used by export-style controls:
  *    DT_COLORSPACE_NONE — "image settings", falls back to the image's

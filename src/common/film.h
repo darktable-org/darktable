@@ -67,6 +67,8 @@ dt_imgid_t dt_film_get_nth_image(const dt_filmid_t id, const int n);
 uint32_t dt_film_count(void);
 /** n-th film roll id (from 0, by id), or NO_FILMID */
 dt_filmid_t dt_film_get_nth(const int n);
+/** all film roll ids, most recently opened first (never opened last) */
+GList *dt_film_get_by_access(void);
 /** Creating a new filmroll */
 dt_filmid_t dt_film_new(dt_film_t *film, const char *directory);
 /** removes all empty film rolls. */

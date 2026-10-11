@@ -19,6 +19,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <setjmp.h>
+#include <string.h>
 #include <cmocka.h>
 
 #include "catalog_fixture.h"
@@ -143,6 +144,101 @@ static void test_image_range(void **state)
   assert_null(dt_image_get_in_range(hi, lo));
 }
 
+static gboolean _collect_row(const dt_image_sidecar_row_t *row, void *data)
+{
+  GPtrArray *names = data;
+  g_ptr_array_add(names, g_strdup(row->filename));
+  assert_non_null(row->folder);
+  return names->len < 2; // stop after two rows
+}
+
+static gboolean _count_row(const dt_image_sidecar_row_t *row, void *data)
+{
+  (*(int *)data)++;
+  return TRUE;
+}
+
+static void test_sidecar_rows(void **state)
+{
+  int n = 0;
+  dt_image_foreach_sidecar_row(NO_FILMID, _count_row, &n);
+  assert_int_equal(n, dt_image_count());
+
+  const dt_filmid_t film = dt_film_get_nth(0);
+  n = 0;
+  dt_image_foreach_sidecar_row(film, _count_row, &n);
+  assert_int_equal(n, dt_film_count_images(film));
+
+  // ordered by film roll then filename, and stopped by the callback
+  GPtrArray *names = g_ptr_array_new_with_free_func(g_free);
+  dt_image_foreach_sidecar_row(film, _collect_row, names);
+  assert_int_equal(names->len, 2);
+  assert_true(strcmp(g_ptr_array_index(names, 0), g_ptr_array_index(names, 1)) <= 0);
+  g_ptr_array_free(names, TRUE);
+}
+
+static void test_image_flags_and_stamps(void **state)
+{
+  const dt_imgid_t cr2 = dt_test_catalog_image("mire1.cr2");
+  const dt_imgid_t arw = dt_test_catalog_image("hlrecovery.arw");
+  const dt_imgid_t ids[] = { cr2, arw };
+  gchar *q0 = g_strdup_printf("SELECT flags FROM main.images WHERE id = %d", cr2);
+  gchar *q1 = g_strdup_printf("SELECT flags FROM main.images WHERE id = %d", arw);
+  const int saved[] = { _count(q0), _count(q1) };
+  g_free(q0);
+  g_free(q1);
+  const int flags[] = { 3, 5 };
+  dt_image_set_flags_list(ids, flags, 2);
+  gchar *q = g_strdup_printf("SELECT flags FROM main.images WHERE id = %d", cr2);
+  assert_int_equal(_count(q), 3);
+  g_free(q);
+  q = g_strdup_printf("SELECT flags FROM main.images WHERE id = %d", arw);
+  assert_int_equal(_count(q), 5);
+  g_free(q);
+
+  dt_image_set_flags_list(ids, saved, 2);
+
+  dt_image_set_write_timestamp(cr2, 1234567);
+  q = g_strdup_printf("SELECT write_timestamp FROM main.images WHERE id = %d", cr2);
+  assert_int_equal(_count(q), 1234567);
+  g_free(q);
+}
+
+static void test_thumb_state(void **state)
+{
+  const int n = dt_image_count();
+  dt_image_reset_thumb_state();
+  assert_int_equal(_count("SELECT COUNT(*) FROM main.images WHERE thumb_maxmip = 0 AND thumb_timestamp = -1"), n);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "UPDATE main.images SET import_timestamp = 100, change_timestamp = 200",
+                        NULL, NULL, NULL);
+
+  // all outdated, by descending id, with the newer of the two timestamps
+  const dt_imgid_t last = _count("SELECT MAX(id) FROM main.images");
+  GList *out = dt_image_get_outdated_thumbs(2);
+  assert_int_equal(g_list_length(out), n);
+  const dt_image_thumb_stamp_t *first = out->data;
+  assert_int_equal(first->id, last);
+  assert_int_equal(first->stamp, 200);
+  g_list_free_full(out, g_free);
+
+  // made up to mip 2 after the change: no longer outdated at 2, still at 3
+  dt_image_set_thumb_state(last, 2, 300);
+  out = dt_image_get_outdated_thumbs(2);
+  assert_int_equal(g_list_length(out), n - 1);
+  g_list_free_full(out, g_free);
+  out = dt_image_get_outdated_thumbs(3);
+  assert_int_equal(g_list_length(out), n);
+  g_list_free_full(out, g_free);
+}
+
+static void test_film_by_access(void **state)
+{
+  GList *rolls = dt_film_get_by_access();
+  assert_int_equal(g_list_length(rolls), dt_film_count());
+  g_list_free(rolls);
+}
+
 static void test_group_members(void **state)
 {
   const dt_imgid_t crw = dt_test_catalog_image("bayer4.crw");
@@ -190,6 +286,10 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_image_lists),
     cmocka_unit_test(test_history_end),
     cmocka_unit_test(test_image_range),
+    cmocka_unit_test(test_sidecar_rows),
+    cmocka_unit_test(test_image_flags_and_stamps),
+    cmocka_unit_test(test_thumb_state),
+    cmocka_unit_test(test_film_by_access),
     cmocka_unit_test(test_group_members),
   };
   return cmocka_run_group_tests(tests, dt_test_catalog_setup, dt_test_catalog_teardown);

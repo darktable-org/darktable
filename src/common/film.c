@@ -624,6 +624,22 @@ dt_filmid_t dt_film_get_nth(const int n)
   return id;
 }
 
+GList *dt_film_get_by_access(void)
+{
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id FROM main.film_rolls"
+                              " ORDER BY access_timestamp DESC, id DESC",
+                              -1, &stmt, NULL);
+  // clang-format on
+  GList *rolls = NULL;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+    rolls = g_list_prepend(rolls, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+  sqlite3_finalize(stmt);
+  return g_list_reverse(rolls);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
