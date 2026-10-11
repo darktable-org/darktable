@@ -123,6 +123,10 @@ changes (where available).
   dashed line on the sides of the white border where the image
   extends beyond the current view (horizontally or vertically).
 
+- In color assessment mode, the image now always fits inside the
+  white border when zoomed out beyond "fit", not only at exactly
+  "fit". The previous zoom level is kept for when the mode is left.
+
 - Added support for XMP drag&drop directly in the darkroom. Single
   XMPs can be used to create duplicates or replace the current
   edit. Multiple XMPs create one duplicate per file.
