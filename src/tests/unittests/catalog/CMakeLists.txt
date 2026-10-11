@@ -4,7 +4,7 @@
 set(DT_TEST_IMAGES "${CMAKE_SOURCE_DIR}/src/tests/integration/images")
 
 if(EXISTS "${DT_TEST_IMAGES}/mire1.cr2")
-  foreach(suite test_catalog_basics test_catalog_metadata test_catalog_tags)
+  foreach(suite test_catalog_basics test_catalog_metadata test_catalog_styles test_catalog_tags)
     add_cmocka_test(${suite}
                     SOURCES ${suite}.c catalog_fixture.c
                     LINK_LIBRARIES lib_darktable cmocka)
