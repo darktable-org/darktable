@@ -25351,7 +25351,7 @@ msgstr ""
 
 #: ../src/iop/satcurvergb.c:2195
 msgid "protect near-neutrals"
-msgstr "Protction de la gamme neutre"
+msgstr "Protection de la gamme neutre"
 
 #: ../src/iop/satcurvergb.c:2200
 msgid "center of the saturation range protected from the guided filter"
