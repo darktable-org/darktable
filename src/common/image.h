@@ -442,6 +442,24 @@ void dt_image_cap_thumb_maxmip(const int level);
 /** number of images whose id is returned by the SQL query `images`, and the
  *  first of them in *first (left unchanged when there are none) */
 int dt_image_count_in_query(const char *images, dt_imgid_t *first);
+/** history_end of an image in *history_end; FALSE, *history_end untouched,
+ *  when the image is missing or has none */
+gboolean dt_image_get_history_end(const dt_imgid_t imgid, int *history_end);
+/** move history_end of an image by delta; FALSE when the update fails */
+gboolean dt_image_shift_history_end(const dt_imgid_t imgid, const int delta);
+/** set history_end of an image past its last history item, 0 without any */
+void dt_image_sync_history_end(const dt_imgid_t imgid);
+/** an image of dt_image_get_in_range() */
+typedef struct dt_image_id_filename_t
+{
+  dt_imgid_t id;
+  gchar *filename;
+} dt_image_id_filename_t;
+/** number of images with an id in [min, max], -1 on failure */
+int dt_image_count_in_range(const dt_imgid_t min, const dt_imgid_t max);
+/** id and filename of the images with an id in [min, max] */
+GList *dt_image_get_in_range(const dt_imgid_t min, const dt_imgid_t max);
+void dt_image_id_filename_free(gpointer item);
 /** TRUE if the given output profile type has primaries wider than sRGB for
  *  this image. Handles the three UI cases used by export-style controls:
  *    DT_COLORSPACE_NONE — "image settings", falls back to the image's

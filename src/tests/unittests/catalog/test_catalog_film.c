@@ -99,6 +99,50 @@ static void test_image_lists(void **state)
   assert_int_equal(_count("SELECT COUNT(*) FROM main.images WHERE thumb_maxmip = 2"), 1);
 }
 
+static void test_history_end(void **state)
+{
+  const dt_imgid_t imgid = dt_test_catalog_image("hlrecovery.arw");
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "DELETE FROM main.history", NULL, NULL, NULL);
+
+  // no history: synced to 0
+  dt_image_sync_history_end(imgid);
+  int end = -1;
+  assert_true(dt_image_get_history_end(imgid, &end));
+  assert_int_equal(end, 0);
+
+  assert_true(dt_image_shift_history_end(imgid, 3));
+  assert_true(dt_image_get_history_end(imgid, &end));
+  assert_int_equal(end, 3);
+
+  // missing image: FALSE, value untouched
+  end = 42;
+  assert_false(dt_image_get_history_end(imgid + 1000, &end));
+  assert_int_equal(end, 42);
+
+  dt_image_sync_history_end(imgid);
+  assert_true(dt_image_get_history_end(imgid, &end));
+  assert_int_equal(end, 0);
+}
+
+static void test_image_range(void **state)
+{
+  const dt_imgid_t lo = _count("SELECT MIN(id) FROM main.images");
+  const dt_imgid_t hi = _count("SELECT MAX(id) FROM main.images");
+  const int n = dt_image_count();
+  assert_int_equal(dt_image_count_in_range(lo, hi), n);
+  assert_int_equal(dt_image_count_in_range(lo, lo), 1);
+  assert_int_equal(dt_image_count_in_range(hi, lo), 0);
+
+  GList *imgs = dt_image_get_in_range(lo, hi);
+  assert_int_equal(g_list_length(imgs), n);
+  const dt_image_id_filename_t *first = imgs->data;
+  assert_int_equal(first->id, lo);
+  assert_non_null(first->filename);
+  g_list_free_full(imgs, dt_image_id_filename_free);
+  assert_null(dt_image_get_in_range(hi, lo));
+}
+
 static void test_group_members(void **state)
 {
   const dt_imgid_t crw = dt_test_catalog_image("bayer4.crw");
@@ -144,6 +188,8 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_films),
     cmocka_unit_test(test_images),
     cmocka_unit_test(test_image_lists),
+    cmocka_unit_test(test_history_end),
+    cmocka_unit_test(test_image_range),
     cmocka_unit_test(test_group_members),
   };
   return cmocka_run_group_tests(tests, dt_test_catalog_setup, dt_test_catalog_teardown);

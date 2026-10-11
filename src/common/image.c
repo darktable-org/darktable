@@ -534,6 +534,97 @@ int dt_image_count_in_query(const char *images, dt_imgid_t *first)
   return count;
 }
 
+gboolean dt_image_get_history_end(const dt_imgid_t imgid, int *history_end)
+{
+  gboolean found = FALSE;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT history_end FROM main.images WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW
+     && sqlite3_column_type(stmt, 0) != SQLITE_NULL)
+  {
+    *history_end = sqlite3_column_int(stmt, 0);
+    found = TRUE;
+  }
+  sqlite3_finalize(stmt);
+  return found;
+}
+
+gboolean dt_image_shift_history_end(const dt_imgid_t imgid, const int delta)
+{
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images"
+                              " SET history_end=history_end+?1"
+                              " WHERE id=?2",
+                              -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, delta);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+  const gboolean ok = (sqlite3_step(stmt) == SQLITE_DONE);
+  sqlite3_finalize(stmt);
+  return ok;
+}
+
+void dt_image_sync_history_end(const dt_imgid_t imgid)
+{
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images"
+                              " SET history_end = (SELECT IFNULL(MAX(num) + 1, 0)"
+                              "                    FROM main.history"
+                              "                    WHERE imgid = ?1)"
+                              " WHERE id = ?1", -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+int dt_image_count_in_range(const dt_imgid_t min, const dt_imgid_t max)
+{
+  int count = -1;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(*) FROM main.images WHERE id >= ?1 AND id <= ?2", -1, &stmt, 0);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, min);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  return count;
+}
+
+GList *dt_image_get_in_range(const dt_imgid_t min, const dt_imgid_t max)
+{
+  GList *imgs = NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id, filename FROM main.images WHERE id >= ?1 AND id <= ?2", -1, &stmt, 0);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, min);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    dt_image_id_filename_t *item = g_malloc0(sizeof(dt_image_id_filename_t));
+    item->id = sqlite3_column_int(stmt, 0);
+    item->filename = g_strdup((const char *)sqlite3_column_text(stmt, 1));
+    imgs = g_list_prepend(imgs, item);
+  }
+  sqlite3_finalize(stmt);
+  return g_list_reverse(imgs);
+}
+
+void dt_image_id_filename_free(gpointer item)
+{
+  dt_image_id_filename_t *i = item;
+  g_free(i->filename);
+  g_free(i);
+}
+
 gboolean dt_image_exists(const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
