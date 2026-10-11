@@ -525,6 +525,10 @@ changes (where available).
   different image. Removing an image that had snapshots from the
   library, then taking a new snapshot, could cause the mix-up.
 
+- Fixed an unexpected image change in AgX when disabling 'keep the pivot
+  on the diagonal' after using 'read exposure from metadata and exposure
+  module'.
+
 ## Lua
 
 ### API Version
