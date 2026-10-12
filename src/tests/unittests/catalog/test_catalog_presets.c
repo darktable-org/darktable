@@ -164,12 +164,56 @@ static void test_autoapply(void **state)
   dt_presets_params_clear(&p);
 }
 
+static void test_utility_module(void **state)
+{
+  // _add() writes OP at version 5: "alpha", "beta" moved to 6, "gamma", "auto"
+  GList *names = dt_presets_version_names(OP, 5);
+  assert_int_equal(g_list_length(names), 3);
+  assert_string_equal(names->data, "alpha");
+  assert_string_equal(g_list_last(names)->data, "gamma");
+  g_list_free_full(names, g_free);
+
+  GList *all = dt_presets_list_params(OP, 5, TRUE);
+  assert_int_equal(g_list_length(all), 3);
+  for(GList *l = all; l; l = g_list_next(l))
+  {
+    const dt_presets_params_t *row = l->data;
+    assert_non_null(row->name);
+    assert_int_equal(row->op_params_size, sizeof(int));
+    // copies end with a zero byte for the modules that store strings
+    assert_int_equal(((char *)row->op_params)[row->op_params_size], 0);
+  }
+  g_list_free_full(all, dt_presets_params_free);
+
+  dt_presets_params_t p = { 0 };
+  assert_true(dt_presets_get_params(OP, 5, "auto", &p));
+  assert_int_equal(p.autoapply, 1);
+  dt_presets_params_clear(&p);
+
+  dt_presets_rename(OP, 5, "alpha", "omega");
+  assert_false(dt_presets_exists("alpha", OP, 5));
+  assert_true(dt_presets_exists("omega", OP, 5));
+
+  // "auto" applies to everything; the descending name order picks it
+  dt_image_t image;
+  memset(&image, 0, sizeof(image));
+  gchar *name = dt_presets_find_lib_autoapply(OP, 5, &image);
+  assert_string_equal(name, "auto");
+  g_free(name);
+  assert_null(dt_presets_find_lib_autoapply(OP, 6, &image));
+
+  dt_presets_delete_version(OP, 5);
+  assert_null(dt_presets_version_names(OP, 5));
+  assert_true(dt_presets_exists("beta", OP, 6));
+}
+
 int main(int argc, char *argv[])
 {
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_edit_dialog_round_trip),
     cmocka_unit_test(test_apply_and_step),
     cmocka_unit_test(test_autoapply),
+    cmocka_unit_test(test_utility_module),
   };
   return cmocka_run_group_tests(tests, dt_test_catalog_setup, dt_test_catalog_teardown);
 }
