@@ -1003,9 +1003,26 @@ __kernel void spektrafilm_yvv_col_1c(__global const float *src, __global float *
    buffer's offset into its first block), clipped at the buffer edge. Each
    block row is summed left to right, its mean folded in with fma in
    top-to-bottom order, and the result scaled by inv[rows]. inv[i] = 1/i is
-   built on the host so the device does not divide. One work-item per
-   low-resolution pixel. */
-__kernel void spektrafilm_wide_down(__global const float4 *in, __global float4 *low,
+   built on the host so the device does not divide.
+
+   Two kernels, so no work-item loops over a whole block: k reaches 100 and
+   more for the diffusion bank, and one item per block would leave a few
+   thousand items each reading k^2 pixels. spektrafilm_wide_rows sums each
+   block row, one item per (block column, image row); spektrafilm_wide_down
+   folds those sums, one item per block. */
+__kernel void spektrafilm_wide_rows(__global const float4 *in, __global float4 *rows,
+                                    const int w, const int h, const int k,
+                                    const int lw, const int ox)
+{
+  const int X = get_global_id(0), y = get_global_id(1);
+  if(X >= lw || y >= h) return;
+  const int x0 = max(X * k - ox, 0), x1 = min((X + 1) * k - ox, w);
+  float4 rs = (float4)(0.0f);
+  for(int x = x0; x < x1; x++) rs += in[(size_t)y * w + x];
+  rows[(size_t)y * lw + X] = rs;
+}
+
+__kernel void spektrafilm_wide_down(__global const float4 *rows, __global float4 *low,
                                     const int w, const int h, const int k,
                                     const int lw, const int lh, const int ox, const int oy,
                                     __global const float *inv)
@@ -1016,12 +1033,7 @@ __kernel void spektrafilm_wide_down(__global const float4 *in, __global float4 *
   const int y0 = max(Y * k - oy, 0), y1 = min((Y + 1) * k - oy, h);
   const float ix = inv[x1 - x0];
   float4 lo = (float4)(0.0f);
-  for(int y = y0; y < y1; y++)
-  {
-    float4 rs = (float4)(0.0f);
-    for(int x = x0; x < x1; x++) rs += in[(size_t)y * w + x];
-    lo = fma(rs, (float4)(ix), lo);
-  }
+  for(int y = y0; y < y1; y++) lo = fma(rows[(size_t)y * lw + X], (float4)(ix), lo);
   low[(size_t)Y * lw + X] = lo * inv[y1 - y0];
 }
 
