@@ -1254,6 +1254,34 @@ void dt_presets_delete_builtin(const char *operation)
   sqlite3_finalize(stmt);
 }
 
+void dt_presets_insert_lib_preset(const char *name,
+                                  const char *operation,
+                                  const int op_version,
+                                  const void *op_params,
+                                  const int op_params_size)
+{
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "INSERT INTO data.presets (name, description, operation, op_version, op_params,"
+      "  blendop_params, blendop_version, enabled, model, maker, lens,"
+      "  iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max,"
+      "  focal_length_min, focal_length_max, writeprotect, "
+      "  autoapply, filter, def, format)"
+      " VALUES (?1, '', ?2, ?3, ?4, NULL, 0, 1, '%', "
+      "         '%', '%', 0, 340282346638528859812000000000000000000, 0, 100000000,"
+      "          0, 100000000, 0, 1000, 0, 0, 0, 0, 0)",
+      -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, operation, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, op_version);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, op_params, op_params_size, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

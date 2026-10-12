@@ -297,6 +297,13 @@ void dt_presets_set_blendop_params(const char *operation,
 /** delete the module's built-in presets */
 void dt_presets_delete_builtin(const char *operation);
 
+/** insert an unfiltered, user preset of a utility module */
+void dt_presets_insert_lib_preset(const char *name,
+                                  const char *operation,
+                                  const int op_version,
+                                  const void *op_params,
+                                  const int op_params_size);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
