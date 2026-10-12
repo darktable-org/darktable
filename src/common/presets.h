@@ -81,6 +81,90 @@ void dt_insert_preset_in_menu_hierarchy(const char *name,
                                         gboolean isdefault,
                                         gboolean writeprotect);
 
+/** TRUE when the module has a preset of that name at that version */
+gboolean dt_presets_exists(const char *name,
+                           const char *operation,
+                           const int op_version);
+
+/** the module and version of the preset at rowid; FALSE, nothing set,
+    when there is none. Free *operation with g_free() */
+gboolean dt_presets_get_operation(const int rowid,
+                                  char **operation,
+                                  int *op_version);
+
+/** delete the preset at rowid unless it is write-protected */
+void dt_presets_delete_unprotected(const int rowid);
+
+/** a preset's fields as the preset edit dialog shows them */
+typedef struct dt_presets_details_t
+{
+  int rowid;
+  char *description;
+  char *model;
+  char *maker;
+  char *lens;
+  // the ISO bounds as SQLite prints them: the dialog cuts the decimals and
+  // spots FLT_MAX by its "e+38" suffix
+  char *iso_min;
+  char *iso_max;
+  double exposure_min;
+  double exposure_max;
+  double aperture_min;
+  double aperture_max;
+  double focal_length_min;
+  double focal_length_max;
+  int autoapply;
+  int filter;
+  int format;
+  int op_params_size;
+} dt_presets_details_t;
+
+/** read the preset of that name, module and version into details; FALSE
+    when there is none. Release with dt_presets_details_clear() */
+gboolean dt_presets_get_details(const char *name,
+                                const char *operation,
+                                const int op_version,
+                                dt_presets_details_t *details);
+void dt_presets_details_clear(dt_presets_details_t *details);
+
+/** a preset as the preset edit dialog saves it */
+typedef struct dt_presets_write_t
+{
+  const char *name;
+  const char *description;
+  const char *model;
+  const char *maker;
+  const char *lens;
+  double iso_min;
+  double iso_max;
+  double exposure_min;
+  double exposure_max;
+  double aperture_min;
+  double aperture_max;
+  double focal_length_min;
+  double focal_length_max;
+  int autoapply;
+  int filter;
+  int format;
+  // a processing module's preset: the fields below are written
+  gboolean iop;
+  const void *op_params;
+  int op_params_size;
+  int enabled;
+  const char *multi_name;
+  int multi_name_hand_edited;
+  // written for a processing module's preset, or a new one
+  const void *blendop_params;
+  int blendop_params_size;
+  int blendop_version;
+  // written for a new preset only
+  const char *operation;
+  int op_version;
+} dt_presets_write_t;
+
+/** update the preset at rowid, or insert a new one when rowid < 0 */
+void dt_presets_write(const int rowid, const dt_presets_write_t *p);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

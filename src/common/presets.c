@@ -586,6 +586,198 @@ void dt_insert_preset_in_menu_hierarchy(const char *name,
   }
 }
 
+gboolean dt_presets_exists(const char *name,
+                           const char *operation,
+                           const int op_version)
+{
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "SELECT name"
+      " FROM data.presets"
+      " WHERE name = ?1 AND operation=?2 AND op_version=?3"
+      " LIMIT 1",
+      -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, operation, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, op_version);
+  const gboolean exists = sqlite3_step(stmt) == SQLITE_ROW;
+  sqlite3_finalize(stmt);
+  return exists;
+}
+
+gboolean dt_presets_get_operation(const int rowid,
+                                  char **operation,
+                                  int *op_version)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT operation, op_version"
+                              " FROM data.presets"
+                              " WHERE rowid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
+  const gboolean found = sqlite3_step(stmt) == SQLITE_ROW;
+  if(found)
+  {
+    *operation = g_strdup((const char *)sqlite3_column_text(stmt, 0));
+    *op_version = sqlite3_column_int(stmt, 1);
+  }
+  sqlite3_finalize(stmt);
+  return found;
+}
+
+void dt_presets_delete_unprotected(const int rowid)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "DELETE FROM data.presets"
+                              " WHERE rowid=?1 AND writeprotect=0", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+gboolean dt_presets_get_details(const char *name,
+                                const char *operation,
+                                const int op_version,
+                                dt_presets_details_t *d)
+{
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT rowid, description, model, maker, lens, iso_min, iso_max, "
+     "       exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, "
+     "       focal_length_max, autoapply, filter, format, op_params"
+     " FROM data.presets"
+     " WHERE name = ?1 AND operation = ?2 AND op_version = ?3",
+     -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, operation, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, op_version);
+  const gboolean found = sqlite3_step(stmt) == SQLITE_ROW;
+  if(found)
+  {
+    d->rowid = sqlite3_column_int(stmt, 0);
+    d->description = g_strdup((const char *)sqlite3_column_text(stmt, 1));
+    d->model = g_strdup((const char *)sqlite3_column_text(stmt, 2));
+    d->maker = g_strdup((const char *)sqlite3_column_text(stmt, 3));
+    d->lens = g_strdup((const char *)sqlite3_column_text(stmt, 4));
+    d->iso_min = g_strdup((const char *)sqlite3_column_text(stmt, 5));
+    d->iso_max = g_strdup((const char *)sqlite3_column_text(stmt, 6));
+    d->exposure_min = sqlite3_column_double(stmt, 7);
+    d->exposure_max = sqlite3_column_double(stmt, 8);
+    d->aperture_min = sqlite3_column_double(stmt, 9);
+    d->aperture_max = sqlite3_column_double(stmt, 10);
+    d->focal_length_min = sqlite3_column_double(stmt, 11);
+    d->focal_length_max = sqlite3_column_double(stmt, 12);
+    d->autoapply = sqlite3_column_int(stmt, 13);
+    d->filter = sqlite3_column_int(stmt, 14);
+    d->format = sqlite3_column_int(stmt, 15);
+    d->op_params_size = sqlite3_column_bytes(stmt, 16);
+  }
+  sqlite3_finalize(stmt);
+  return found;
+}
+
+void dt_presets_details_clear(dt_presets_details_t *d)
+{
+  g_free(d->description);
+  g_free(d->model);
+  g_free(d->maker);
+  g_free(d->lens);
+  g_free(d->iso_min);
+  g_free(d->iso_max);
+  memset(d, 0, sizeof(*d));
+}
+
+void dt_presets_write(const int rowid, const dt_presets_write_t *p)
+{
+  gchar *query = NULL;
+  if(rowid >= 0)
+  {
+    // clang-format off
+    query = g_strdup_printf
+      ("UPDATE data.presets "
+       "SET"
+       "  name=?1, description=?2,"
+       "  model=?3, maker=?4, lens=?5, iso_min=?6, iso_max=?7, exposure_min=?8,"
+       "  exposure_max=?9, aperture_min=?10,"
+       "  aperture_max=?11, focal_length_min=?12, focal_length_max=?13, autoapply=?14,"
+       "  filter=?15, format=?16 %s"
+       " WHERE rowid=%d",
+       p->iop
+         ? ", op_params=?19, enabled=?20, blendop_params=?21, blendop_version=?22,"
+           "  multi_name=?23, multi_name_hand_edited=?24"
+         : "",
+       rowid);
+    // clang-format on
+  }
+  else
+  {
+    // clang-format off
+    query = g_strdup_printf
+      ("INSERT INTO data.presets"
+       " (name, description, "
+       "  model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min,"
+       "  aperture_max, focal_length_min, focal_length_max, autoapply,"
+       "  filter, format, def, writeprotect, operation, op_version, op_params, enabled,"
+       "  blendop_params, blendop_version,"
+       "  multi_priority, multi_name, multi_name_hand_edited) "
+       "VALUES"
+       " (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16,"
+       "   0, 0, ?17, ?18, ?19, ?20, ?21, ?22, 0, ?23, ?24)");
+    // clang-format on
+  }
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  g_free(query);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, p->name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, p->description, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, p->model, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, p->maker, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, p->lens, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, p->iso_min);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, p->iso_max);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, p->exposure_min);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, p->exposure_max);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, p->aperture_min);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11, p->aperture_max);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 12, p->focal_length_min);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 13, p->focal_length_max);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, p->autoapply);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, p->filter);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, p->format);
+
+  if(p->iop)
+  {
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 19, p->op_params, p->op_params_size, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, p->enabled);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, p->multi_name, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, p->multi_name_hand_edited);
+  }
+
+  if(p->iop || rowid < 0)
+  {
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 21, p->blendop_params, p->blendop_params_size,
+                               SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, p->blendop_version);
+  }
+
+  if(rowid < 0)
+  {
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 17, p->operation, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 18, p->op_version);
+  }
+
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
