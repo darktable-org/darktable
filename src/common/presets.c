@@ -1135,6 +1135,125 @@ char *dt_presets_find_lib_autoapply(const char *operation,
   return name;
 }
 
+GList *dt_presets_list_stored(const char *operation)
+{
+  GList *list = NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "SELECT name, op_version, op_params, blendop_version, blendop_params"
+      " FROM data.presets"
+      " WHERE operation = ?1",
+      -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, operation, -1, SQLITE_TRANSIENT);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    dt_presets_params_t *p = g_new0(dt_presets_params_t, 1);
+    p->name = g_strdup((const char *)sqlite3_column_text(stmt, 0));
+    p->op_version = sqlite3_column_int(stmt, 1);
+    p->op_params = _blob_copy(stmt, 2, &p->op_params_size);
+    p->blendop_version = sqlite3_column_int(stmt, 3);
+    p->blendop_params = _blob_copy(stmt, 4, &p->blendop_params_size);
+    list = g_list_prepend(list, p);
+  }
+  sqlite3_finalize(stmt);
+  return g_list_reverse(list);
+}
+
+GList *dt_presets_names_by_rowid(const char *operation)
+{
+  GList *names = NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT name"
+                              " FROM data.presets"
+                              " WHERE operation=?1"
+                              " ORDER BY writeprotect DESC, rowid",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, operation, -1, SQLITE_TRANSIENT);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+    names = g_list_prepend(names, g_strdup((const char *)sqlite3_column_text(stmt, 0)));
+  sqlite3_finalize(stmt);
+  return g_list_reverse(names);
+}
+
+void dt_presets_set_op_version(const char *operation,
+                               const char *name,
+                               const int op_version)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "UPDATE data.presets"
+     " SET op_version=?1"
+     " WHERE operation=?2 AND name=?3", -1,
+     &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, op_version);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, operation, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, name, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+void dt_presets_set_op_params(const char *operation,
+                              const char *name,
+                              const int op_version,
+                              const void *op_params,
+                              const int op_params_size)
+{
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE data.presets"
+                              " SET op_version=?1, op_params=?2"
+                              " WHERE operation=?3 AND name=?4",
+                              -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, op_version);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, op_params, op_params_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, operation, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, name, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+void dt_presets_set_blendop_params(const char *operation,
+                                   const char *name,
+                                   const int blendop_version,
+                                   const void *blendop_params,
+                                   const int blendop_params_size)
+{
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE data.presets"
+                              " SET blendop_version=?1, blendop_params=?2"
+                              " WHERE operation=?3 AND name=?4",
+                              -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, blendop_version);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, blendop_params, blendop_params_size,
+                             SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, operation, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, name, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+void dt_presets_delete_builtin(const char *operation)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "DELETE FROM data.presets"
+     " WHERE writeprotect = 1"
+     "   AND operation = ?1",
+     -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, operation, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
