@@ -181,6 +181,7 @@ void dt_presets_update_params(const char *operation,
     empty or NULL blob is NULL */
 typedef struct dt_presets_params_t
 {
+  int rowid;
   char *name;
   int op_version;
   void *op_params;
@@ -236,9 +237,11 @@ GList *dt_presets_list_names(const char *operation,
                              const gboolean writeprotect_first);
 void dt_presets_name_free(gpointer data);
 
-/** the names of the module's presets at that version, built-in ones
-    first, then by name. Free with g_list_free_full(list, g_free) */
-GList *dt_presets_version_names(const char *operation, const int op_version);
+/** the names of the module's presets at that version, by name, built-in
+    ones first when builtin_first. Free with g_list_free_full(list, g_free) */
+GList *dt_presets_version_names(const char *operation,
+                                const int op_version,
+                                const gboolean builtin_first);
 
 /** the name and module parameters of the module's presets at that
     version, the user's only or all of them.
@@ -264,7 +267,7 @@ char *dt_presets_find_lib_autoapply(const char *operation,
                                     const int op_version,
                                     const dt_image_t *image);
 
-/** every stored preset of the module, all versions, with name,
+/** every stored preset of the module, all versions, with rowid, name,
     op_version, op_params, blendop_version and blendop_params.
     Free with g_list_free_full(list, dt_presets_params_free) */
 GList *dt_presets_list_stored(const char *operation);
@@ -303,6 +306,21 @@ void dt_presets_insert_lib_preset(const char *name,
                                   const int op_version,
                                   const void *op_params,
                                   const int op_params_size);
+
+/** the module parameters of the module's preset of that name, whatever
+    its version; FALSE when there is none. Free *op_params with g_free() */
+gboolean dt_presets_get_params_any_version(const char *operation,
+                                           const char *name,
+                                           void **op_params,
+                                           int *op_params_size);
+
+/** replace the module parameters of the preset at rowid */
+void dt_presets_set_op_params_at_rowid(const int rowid,
+                                       const void *op_params,
+                                       const int op_params_size);
+
+/** delete the preset at rowid, write-protected or not */
+void dt_presets_delete_at_rowid(const int rowid);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
