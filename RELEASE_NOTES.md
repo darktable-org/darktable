@@ -108,6 +108,13 @@ changes (where available).
 - Checkboxes are now Bauhaus widgets and are reset to default values
   when e.g. a tab or a module is reset.
 
+- Mask shapes on the canvas now have a contrasting edge, so they stay
+  visible over dark and bright areas alike, and the hovered or selected
+  shape is drawn heavier.
+
+- Escape now cancels a mask shape that is being drawn, as a right-click
+  does.
+
 - Mask nodes close or outside the image boundaries are now editable.
   When "edit shapes on canvas" is enabled, the node editing area is
   extended beyond the image borders to allow editing of these nodes.
@@ -231,11 +238,15 @@ changes (where available).
   optimization level, so models that misbehave under aggressive
   optimization no longer need workarounds in feature code.
 
-- Added support for DNG files providing a forward matrix. These
-  files will have an additonal "DNG forward matrix" profile in
-  colorin module, selectable manually. The existing "embedded
-  matrix" profile remains the default for fresh imports and
-  reloading defaults.
+- Added support for DNG files providing a forward matrix (FM) and
+  'ProfileHueSatMapData'.
+  Two new input profiles in colorin can be selected if any of these
+  tags are available.
+  - 'DNG forward matrix' is available if a FM is provided
+  - 'DNG embedded look' is available if there is no FM but
+    'ProfileHueSatMapData' is provided.
+  If one of these new input profiles is selected, the pipe gets its
+  data corrected according to DNG specs matching the intended look.
 
 - The highlights module will be disabled automatically when a raw
   image with a clean history is opended in darkroom the first time
@@ -295,6 +306,16 @@ changes (where available).
   ready to splice into another invocation.
 
 ## Bug Fixes
+
+- Fixed overly dark PQ and HLG image imports and overly bright exports,
+  including HDR PNG and JPEG XL profile detection.
+
+- Fixed a possible crash when opening an image in the darkroom after
+  leaving it, caused by white balance data still pointing at the
+  previous image's modules.
+
+- Fixed the feather of paths created by vectorizing a raster mask or an
+  AI object, which could not be changed from the mask manager.
 
 - Fixed HEIF export compilation with libheif versions older than 1.15.0,
   and with versions older than 1.16.0 when libsharpyuv is available.
@@ -487,6 +508,11 @@ changes (where available).
   applied from embedded metadata when the file only carries chromatic
   aberration correction data.
 
+- Fixed raw denoise on X-Trans images replacing the green pixels in the
+  rightmost column with the value of a neighboring pixel, often a red
+  one, which slightly changed the colors along the right edge of the
+  image.
+
 ## Lua
 
 ### API Version
@@ -521,9 +547,8 @@ changes (where available).
   metadata fields unless the user selects all of the checkboxes in the
   export module's preference options.
 
-- Starting with release 5.4, macOS versions older than 14.0 are no
-  longer supported on Apple Silicon Macs, nor older than macOS 15 on
-  Intel Macs.
+- Starting with release 5.6, macOS versions older than 15.0 are no
+  longer supported on Apple Silicon Macs. Intel Macs are no longer supported.
 
 ## Changed Dependencies
 

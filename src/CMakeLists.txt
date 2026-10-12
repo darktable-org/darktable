@@ -201,8 +201,6 @@ if(APPLE)
 endif(APPLE)
 
 if(WIN32)
-  list(APPEND SOURCE_FILES "win/strptime.c")
-  list(APPEND HEADER_FILES "win/strptime.h")
   list(APPEND SOURCE_FILES "win/statvfs.c")
   list(APPEND HEADER_FILES "win/statvfs.h")
 
@@ -1149,8 +1147,10 @@ if(HAVE_FFP_CONTRACT_OFF)
   set_source_files_properties(
     "common/spektra_core.c"
     "common/spektra_sim.c"
-    "iop/spektrafilm.c"
     PROPERTIES COMPILE_OPTIONS "${SPEKTRA_FP_CONTRACT_FLAGS}")
+  # iop/spektrafilm.c is built in src/iop from its generated introspection
+  # copy, where a source property set here does not reach; the flags are
+  # applied to that target in src/iop/CMakeLists.txt.
 endif()
 
 add_dependencies(lib_darktable generate_styles_string)

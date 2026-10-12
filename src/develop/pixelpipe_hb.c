@@ -1954,6 +1954,51 @@ static cl_int _opencl_benchmark(dt_dev_pixelpipe_t *pipe,
   return err;
 }
 
+static void _diff_statistics(const dt_iop_module_t *self,
+                             const dt_iop_roi_t *roi,
+                             const float *const dat_a,
+                             const float *const dat_b,
+                             const int ch,
+                             const int devid)
+{
+  const int width = roi->width;
+  const int height = roi->height;
+  const size_t npix = (size_t)width * height;
+
+  double sum = 0.0;
+  double sum2 = 0.0;
+  double max_abs = 0.0;
+  double max_rel = 0.0;
+
+  DT_OMP_FOR(reduction(+ : sum, sum2) reduction(max : max_abs, max_rel))
+  for(size_t i = 0; i < npix * ch; i+=ch)
+  {
+    // We don't calculate per RGB channel but define a RGB pixel as average of three
+    const double a = ch == 1 ? dat_a[i] : (dat_a[i] + dat_a[i+1] + dat_a[i+2]) / 3.0;
+    const double b = ch == 1 ? dat_b[i] : (dat_b[i] + dat_b[i+1] + dat_b[i+2]) / 3.0;
+    const double d = a - b;
+    const double ad = fabs(d);
+
+    sum += d;
+    sum2 += d * d;
+    if(ad > max_abs)
+      max_abs = ad;
+
+    const double ref = fmax(fabs(a), fabs(b));
+    const double rel = ref > 1e-9 ? ad / ref : 0.0;
+    if(rel > max_rel)
+      max_rel = rel;
+  }
+
+  const double mean = sum / (double)npix;
+  const double var = fmax(sum2 / (double)npix - mean * mean, 0.0);
+  const double stddev = sqrt(var);
+
+  dt_print_pipe(DT_DEBUG_ALWAYS, "OpenCL diff stats", NULL, self, devid, NULL, NULL,
+           "(%dx%d)  max_abs_diff=%.6e  max_rel_diff=%.6e  stddev=%.6e  mean_diff=%+.6e",
+           width, height, max_abs, max_rel, stddev, mean);
+}
+
 static void _opencl_dump_diff_pipe_pfm(dt_dev_pixelpipe_t *pipe,
                                        dt_iop_module_t *module,
                                        dt_dev_pixelpipe_iop_t *piece,
@@ -1965,10 +2010,13 @@ static void _opencl_dump_diff_pipe_pfm(dt_dev_pixelpipe_t *pipe,
 {
   const int ch = dt_opencl_get_image_element_size(in);
   const int cho = dt_opencl_get_image_element_size(out) / sizeof(float);
-  if((ch == 4 || ch == 16 || ch == 2) // input supports 1/4 channel floats and 1ch uint16
-    && (cho == 1 || cho == 4)       // output for 1/4 channel floats
-    && (dt_str_commasubstring(darktable.dump_diff_pipe, module->op)
-        || dt_str_commasubstring(darktable.dump_diff_pipe, "complete")))
+
+  const gboolean do_diffstat = darktable.cldiff_stats && (cho == 1 || cho == 4);
+  const gboolean do_dumpfile = (ch == 4 || ch == 16 || ch == 2) // input supports 1/4 channel floats and 1ch uint16
+                            && (cho == 1 || cho == 4)           // output for 1/4 channel floats
+                            && (dt_str_commasubstring(darktable.dump_diff_pipe, module->op)
+                              || dt_str_commasubstring(darktable.dump_diff_pipe, "complete"));
+  if(do_diffstat || do_dumpfile)
   {
     const int ow = roi_out->width;
     const int oh = roi_out->height;
@@ -1997,7 +2045,10 @@ static void _opencl_dump_diff_pipe_pfm(dt_dev_pixelpipe_t *pipe,
               dt_XYZ_to_linearRGB(XYZ, clout + k);
             }
           }
-          dt_dump_pipe_diff_pfm(module->op, clout, cpudata, ow, oh, cho,
+          if(do_diffstat)
+            _diff_statistics(module, roi_out, cpudata, clout, cho, pipe->devid);
+          if(do_dumpfile)
+            dt_dump_pipe_diff_pfm(module->op, clout, cpudata, ow, oh, cho,
                                             dt_dev_pixelpipe_type_to_str(pipe->type));
         }
       }
@@ -2737,7 +2788,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
               dt_opencl_dump_pipe_pfm(module->op, pipe->devid, *cl_mem_output,
                                     FALSE, dt_dev_pixelpipe_type_to_str(pipe->type));
 
-            if(darktable.dump_diff_pipe)
+            if(darktable.dump_diff_pipe || darktable.cldiff_stats)
               _opencl_dump_diff_pipe_pfm(pipe, module, piece, cl_mem_input, *cl_mem_output, roi_out, &roi_in, cst_out);
           }
 

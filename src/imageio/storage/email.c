@@ -155,7 +155,8 @@ int store(dt_imageio_module_storage_t *self,
     (_email_attachment_t *)g_malloc(sizeof(_email_attachment_t));
   attachment->imgid = imgid;
 
-  /* construct a temporary file name */
+  // construct a temporary file name
+
   char tmpdir[PATH_MAX] = { 0 };
   dt_loc_get_tmp_dir(tmpdir, sizeof(tmpdir));
 
@@ -167,9 +168,9 @@ int store(dt_imageio_module_storage_t *self,
 
   dt_image_path_append_version(imgid, dirname, sizeof(dirname));
 
-  gchar *end = g_strrstr(dirname, ".") + 1;
+  gchar *end = g_strrstr(dirname, ".");
 
-  if(end) *end = '\0';
+  if(end) *(end + 1) = '\0';
 
   g_strlcat(dirname, format->extension(fdata), sizeof(dirname));
 

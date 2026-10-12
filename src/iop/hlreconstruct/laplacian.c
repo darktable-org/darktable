@@ -804,9 +804,6 @@ static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
   const int ds_height = height / DS_FACTOR;
   const int ds_width = width / DS_FACTOR;
 
-  const size_t sizes[2] = { width, height };
-  const size_t ds_sizes[2] = { ds_width, ds_height };
-
   const uint32_t filters = piece->filters;
 
   dt_aligned_pixel_t wb = { 1.f, 1.f, 1.f, 1.f };
@@ -822,37 +819,37 @@ static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
   const int scales = CLAMP((int)ceilf(log2f(final_radius)), 1, MAX_NUM_SCALES);
   const float noise_level = data->noise_level / scale;
 
-  cl_mem interpolated = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);  // [R, G, B, norm] for each pixel
-  cl_mem clipping_mask = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4); // [R, G, B, norm] for each pixel
+  cl_mem interpolated = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);  // [R, G, B, norm] for each pixel
+  cl_mem clipping_mask = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4); // [R, G, B, norm] for each pixel
+  cl_mem temp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
 
   // temp buffer for blurs. We will need to cycle between them for memory efficiency
   // all are downscaled
-  cl_mem LF_odd = dt_opencl_alloc_device(devid, ds_sizes[0], ds_sizes[1], sizeof(float) * 4);
-  cl_mem LF_even = dt_opencl_alloc_device(devid, ds_sizes[0], ds_sizes[1], sizeof(float) * 4);
-  cl_mem temp = dt_opencl_alloc_device(devid, ds_sizes[0], ds_sizes[1], sizeof(float) * 4);
+  cl_mem LF_odd = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float) * 4);
+  cl_mem LF_even = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float) * 4);
 
   // wavelets scales buffers
-  cl_mem HF = dt_opencl_alloc_device(devid, ds_sizes[0], ds_sizes[1], sizeof(float) * 4);
-  cl_mem ds_interpolated = dt_opencl_alloc_device(devid, ds_sizes[0], ds_sizes[1], sizeof(float) * 4);
-  cl_mem ds_clipping_mask = dt_opencl_alloc_device(devid, ds_sizes[0], ds_sizes[1], sizeof(float) * 4);
+  cl_mem HF = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float) * 4);
+  cl_mem ds_interpolated = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float) * 4);
+  cl_mem ds_clipping_mask = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float) * 4);
   // ping-pong accumulator buffers for the reconstruction in guide_laplacians/diffuse_color
-  cl_mem ds_acc_odd = dt_opencl_alloc_device(devid, ds_sizes[0], ds_sizes[1], sizeof(float) * 4);
-  cl_mem ds_acc_even = dt_opencl_alloc_device(devid, ds_sizes[0], ds_sizes[1], sizeof(float) * 4);
+  cl_mem ds_acc_odd = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float) * 4);
+  cl_mem ds_acc_even = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float) * 4);
 
-  cl_mem clips_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), &clips);
-  cl_mem wb_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), &wb);
+  cl_mem clips_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), (float*)clips);
+  cl_mem wb_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), (float*)wb);
   if(!interpolated || !clipping_mask || !LF_odd || !LF_even || !temp || !HF
       || !ds_interpolated || !ds_clipping_mask || !ds_acc_odd || !ds_acc_even || !clips_cl || !wb_cl)
     goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_bilinear_and_mask, width, height,
     CLARG(dev_in), CLARG(interpolated), CLARG(temp),
-    CLARG(clips_cl), CLARG(wb_cl), CLARG(filters), CLARG(roi_out->width), CLARG(roi_out->height));
+    CLARG(clips_cl), CLARG(wb_cl), CLARG(filters), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_box_blur, width, height,
     CLARG(temp), CLARG(clipping_mask),
-    CLARG(roi_out->width), CLARG(roi_out->height));
+    CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) goto error;
 
   // Downsample
@@ -868,11 +865,13 @@ static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
   for(int i = 0; i < data->iterations; i++)
   {
     const int salt = (i == data->iterations - 1); // add noise on the last iteration only
-    err = wavelets_process_cl(devid, ds_interpolated, temp, ds_clipping_mask, ds_width, ds_height, gd, scales, HF,
+    err = wavelets_process_cl(devid, ds_interpolated, temp, ds_clipping_mask, ds_width, ds_height,
+                              gd, scales, HF,
                               LF_odd, LF_even, ds_acc_odd, ds_acc_even, DIFFUSE_RECONSTRUCT_RGB, noise_level, salt, data->solid_color);
     if(err != CL_SUCCESS) goto error;
 
-    err = wavelets_process_cl(devid, temp, ds_interpolated, ds_clipping_mask, ds_width, ds_height, gd, scales, HF,
+    err = wavelets_process_cl(devid, temp, ds_interpolated, ds_clipping_mask, ds_width, ds_height,
+                              gd, scales, HF,
                               LF_odd, LF_even, ds_acc_odd, ds_acc_even, DIFFUSE_RECONSTRUCT_CHROMA, noise_level, salt, data->solid_color);
     if(err != CL_SUCCESS) goto error;
   }
@@ -880,6 +879,9 @@ static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
   // Upsample
   err = dt_interpolate_bilinear_image_cl(devid, ds_interpolated, ds_width, ds_height,
                                          interpolated, width, height);
+  if(err != CL_SUCCESS) goto error;
+  err = dt_interpolate_bilinear_image_cl(devid, ds_clipping_mask, ds_width, ds_height,
+                                         clipping_mask, width, height);
   if(err != CL_SUCCESS) goto error;
 
   // Remosaic

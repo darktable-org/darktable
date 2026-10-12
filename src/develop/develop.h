@@ -441,6 +441,7 @@ void dt_dev_add_masks_history_item(dt_develop_t *dev,
 void dt_dev_reload_history_items(dt_develop_t *dev);
 void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt);
 void dt_dev_pop_history_items(dt_develop_t *dev, const int32_t cnt);
+void dt_dev_history_truncate(dt_develop_t *dev, const gboolean compress);
 void dt_dev_write_history_ext(dt_develop_t *dev, const dt_imgid_t imgid);
 void dt_dev_write_history(dt_develop_t *dev);
 void dt_dev_read_history_ext(dt_develop_t *dev,

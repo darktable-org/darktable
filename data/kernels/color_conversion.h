@@ -18,6 +18,7 @@
 
 #include "common.h"
 #include "colorspace.h"
+#include "hdr-transfer.h"
 
 // must be in synch with dt_iop_colorspace_type_t in colorspaces.h
 typedef enum dt_iop_colorspace_type_t
@@ -41,6 +42,7 @@ typedef struct dt_colorspaces_iccprofile_info_cl_t
   float unbounded_coeffs_out[3][3];
   int nonlinearlut;
   float grey;
+  int hdr_transfer;
 } dt_colorspaces_iccprofile_info_cl_t;
 
 static inline float lerp_lookup_unbounded(const float x, read_only image2d_t lut,
@@ -95,22 +97,36 @@ static inline float4 apply_trc_in(const float4 rgb_in,
                                   constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
                                   read_only image2d_t lut)
 {
-  const float R = lerp_lookup_unbounded(rgb_in.x, lut, profile_info->unbounded_coeffs_in[0], 0, profile_info->lutsize);
-  const float G = lerp_lookup_unbounded(rgb_in.y, lut, profile_info->unbounded_coeffs_in[1], 1, profile_info->lutsize);
-  const float B = lerp_lookup_unbounded(rgb_in.z, lut, profile_info->unbounded_coeffs_in[2], 2, profile_info->lutsize);
-  const float a = rgb_in.w;
-  return (float4)(R, G, B, a);
+  float rgb[3] = { rgb_in.x, rgb_in.y, rgb_in.z };
+  if(profile_info->hdr_transfer)
+  {
+    dt_hdr_decode(rgb, profile_info->hdr_transfer);
+  }
+  else
+  {
+    rgb[0] = lerp_lookup_unbounded(rgb_in.x, lut, profile_info->unbounded_coeffs_in[0], 0, profile_info->lutsize);
+    rgb[1] = lerp_lookup_unbounded(rgb_in.y, lut, profile_info->unbounded_coeffs_in[1], 1, profile_info->lutsize);
+    rgb[2] = lerp_lookup_unbounded(rgb_in.z, lut, profile_info->unbounded_coeffs_in[2], 2, profile_info->lutsize);
+  }
+  return (float4)(rgb[0], rgb[1], rgb[2], rgb_in.w);
 }
 
 static inline float4 apply_trc_out(const float4 rgb_in,
                                    constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
                                    read_only image2d_t lut)
 {
-  const float R = lerp_lookup_unbounded(rgb_in.x, lut, profile_info->unbounded_coeffs_out[0], 3, profile_info->lutsize);
-  const float G = lerp_lookup_unbounded(rgb_in.y, lut, profile_info->unbounded_coeffs_out[1], 4, profile_info->lutsize);
-  const float B = lerp_lookup_unbounded(rgb_in.z, lut, profile_info->unbounded_coeffs_out[2], 5, profile_info->lutsize);
-  const float a = rgb_in.w;
-  return (float4)(R, G, B, a);
+  float rgb[3] = { rgb_in.x, rgb_in.y, rgb_in.z };
+  if(profile_info->hdr_transfer)
+  {
+    dt_hdr_encode(rgb, profile_info->hdr_transfer);
+  }
+  else
+  {
+    rgb[0] = lerp_lookup_unbounded(rgb_in.x, lut, profile_info->unbounded_coeffs_out[0], 3, profile_info->lutsize);
+    rgb[1] = lerp_lookup_unbounded(rgb_in.y, lut, profile_info->unbounded_coeffs_out[1], 4, profile_info->lutsize);
+    rgb[2] = lerp_lookup_unbounded(rgb_in.z, lut, profile_info->unbounded_coeffs_out[2], 5, profile_info->lutsize);
+  }
+  return (float4)(rgb[0], rgb[1], rgb[2], rgb_in.w);
 }
 
 static inline float get_rgb_matrix_luminance(const float4 rgb,

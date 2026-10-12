@@ -31,7 +31,7 @@
  *     -> CMY film density -> grain                          (density, spatial)
  *     -> enlarger (dichroic-filtered light through the negative,
  *        print paper sensitivity, midgray-balanced)         = print exposure
- *     -> print diffusion filter (optional)                  (density, spatial)
+ *     -> print diffusion filter (optional)        (linear print exposure, spatial)
  *     -> print density curves (with optional contrast morph)
  *     -> viewing illuminant through the print, CMFs -> XYZ
  *        -> CAT02 -> work RGB -> OkLCh gamut compression    = scanning
@@ -205,7 +205,7 @@ typedef struct dt_iop_spektrafilm_params_t
   gboolean print_auto_exposure; // $DEFAULT: FALSE $DESCRIPTION: "auto print exposure"
   /* the reference's gamma_factor for the print curves; the field name predates
      the label and is kept, being what presets and styles refer to */
-  float print_contrast;     // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.1 $DESCRIPTION: "print gamma"
+  float print_contrast;     // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print gamma"
   float filter_m;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration M"
   float filter_y;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration Y"
   float couplers_amount;    // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "DIR couplers"
@@ -290,7 +290,7 @@ typedef struct dt_iop_spektrafilm_params_t
      LONG EDGE (36 mm). Both describe the same format, so the two carry
      different labels -- "format" and "frame long edge" -- to keep the preset
      from reading as a contradiction of the slider beneath it. */
-  float film_format_mm;     // $MIN: 8.0 $MAX: 130.0 $DEFAULT: 36.0 $DESCRIPTION: "frame long edge"
+  float film_format_mm;     // $MIN: 5.0 $MAX: 250.0 $DEFAULT: 36.0 $DESCRIPTION: "frame long edge"
   float output_luminance_boost; // $MIN: 0.5 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "pre-compression boost"
   /* Gain on the finished colour, after the gamut compressor -- what a tone
      curve moving its white point does, and the other half of the pair with the
@@ -621,7 +621,9 @@ typedef struct dt_iop_spektrafilm_global_data_t
   int kernel_scatter_combine, kernel_accum, kernel_channel_extract, kernel_channel_accum, kernel_halation_apply;
   int kernel_gauss_row_4c, kernel_gauss_col_4c, kernel_gauss_row_1c, kernel_gauss_col_1c;
   int kernel_yvv_row_4c, kernel_yvv_col_4c, kernel_yvv_row_1c, kernel_yvv_col_1c;
+  int kernel_wide_down, kernel_wide_up;
   int kernel_boost, kernel_diffusion_accum, kernel_diffusion_mix;
+  int kernel_pow10, kernel_log10;
 } dt_iop_spektrafilm_global_data_t;
 
 /* the data pack is large (spectra LUT ~12 MB) and shared by all pieces;
@@ -678,6 +680,8 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_yvv_col_4c = dt_opencl_create_kernel(program, "spektrafilm_yvv_col_4c");
   gd->kernel_yvv_row_1c = dt_opencl_create_kernel(program, "spektrafilm_yvv_row_1c");
   gd->kernel_yvv_col_1c = dt_opencl_create_kernel(program, "spektrafilm_yvv_col_1c");
+  gd->kernel_wide_down = dt_opencl_create_kernel(program, "spektrafilm_wide_down");
+  gd->kernel_wide_up = dt_opencl_create_kernel(program, "spektrafilm_wide_up");
   gd->kernel_gauss_row_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_4c");
   gd->kernel_gauss_col_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_col_4c");
   gd->kernel_gauss_row_1c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_1c");
@@ -687,6 +691,8 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_boost = dt_opencl_create_kernel(program, "spektrafilm_boost");
   gd->kernel_diffusion_accum = dt_opencl_create_kernel(program, "spektrafilm_diffusion_accum");
   gd->kernel_diffusion_mix = dt_opencl_create_kernel(program, "spektrafilm_diffusion_mix");
+  gd->kernel_pow10 = dt_opencl_create_kernel(program, "spektrafilm_pow10");
+  gd->kernel_log10 = dt_opencl_create_kernel(program, "spektrafilm_log10");
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
@@ -718,6 +724,8 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_yvv_col_4c);
     dt_opencl_free_kernel(gd->kernel_yvv_row_1c);
     dt_opencl_free_kernel(gd->kernel_yvv_col_1c);
+    dt_opencl_free_kernel(gd->kernel_wide_down);
+    dt_opencl_free_kernel(gd->kernel_wide_up);
     dt_opencl_free_kernel(gd->kernel_gauss_row_4c);
     dt_opencl_free_kernel(gd->kernel_gauss_col_4c);
     dt_opencl_free_kernel(gd->kernel_gauss_row_1c);
@@ -727,6 +735,8 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_boost);
     dt_opencl_free_kernel(gd->kernel_diffusion_accum);
     dt_opencl_free_kernel(gd->kernel_diffusion_mix);
+    dt_opencl_free_kernel(gd->kernel_pow10);
+    dt_opencl_free_kernel(gd->kernel_log10);
     free(self->data);
     self->data = NULL;
   }
@@ -2112,6 +2122,17 @@ void tiling_callback(dt_iop_module_t *self,
 /* process                                                                */
 /* ---------------------------------------------------------------------- */
 
+/* base-10 conversions matching sf_pow10f / sf_log10f in spektrafilm.cl */
+static inline float _sf_pow10f(const float x)
+{
+  return grain_exp2f(x * 3.321928094887362f);
+}
+
+static inline float _sf_log10f(const float x)
+{
+  return grain_log2f(x) * 0.3010299956639812f;
+}
+
 static void _passthrough(const float *in,
                          float *out,
                          int w,
@@ -2235,25 +2256,26 @@ void process(dt_iop_module_t *self,
       {
         const float wbase = 1.0f - (float)ctail_w;
         memcpy(tmp, corr, sizeof(float) * npix * 3);
-        if(csigma > 0.1f) sf_blur_plane3_fast(tmp, w, h, csigma, scratch);
+        if(csigma > 0.1f) sf_blur_plane3_wide(tmp, w, h, roi_in->x, roi_in->y, csigma, scratch);
         for(size_t i = 0; i < npix * 3; i++) mix[i] = wbase * tmp[i];
         for(int g3 = 0; g3 < 3; g3++)
         {
           memcpy(tmp, corr, sizeof(float) * npix * 3);
           const float ts = rat[g3] * tail_px;
-          if(ts > 0.1f) sf_blur_plane3_fast(tmp, w, h, ts, scratch);
+          if(ts > 0.1f) sf_blur_plane3_wide(tmp, w, h, roi_in->x, roi_in->y, ts, scratch);
           const float wk = (float)ctail_w * amp[g3];
-          for(size_t i = 0; i < npix * 3; i++) mix[i] += wk * tmp[i];
+          /* fma-pinned, matching spektrafilm_diffusion_accum */
+          for(size_t i = 0; i < npix * 3; i++) mix[i] = fmaf(wk, tmp[i], mix[i]);
         }
         memcpy(corr, mix, sizeof(float) * npix * 3);
       }
       else if(csigma > 0.1f)
-        sf_blur_plane3_fast(corr, w, h, csigma, scratch); /* alloc failed: core only */
+        sf_blur_plane3_wide(corr, w, h, roi_in->x, roi_in->y, csigma, scratch); /* alloc failed: core only */
       dt_free_align(mix);
       dt_free_align(tmp);
     }
     else if(csigma > 0.1f)
-      sf_blur_plane3_fast(corr, w, h, csigma, scratch);
+      sf_blur_plane3_wide(corr, w, h, roi_in->x, roi_in->y, csigma, scratch);
   }
   sf_sim_develop(sim, plane, couplers ? corr : NULL, plane, npix, 3, 3);
 
@@ -2449,10 +2471,25 @@ void process(dt_iop_module_t *self,
   if(!d->p.scan_film)
   {
     sf_sim_print_expose(sim, plane, plane, npix, 3, 3);
-    if(d->p.print_diffusion_on)
+    sf_diffusion_plan_t pplan;
+    if(d->p.print_diffusion_on
+       && sf_diffusion_build_plan((int)d->p.print_diffusion_filter_family,
+                                  d->p.print_diffusion_strength,
+                                  d->p.print_diffusion_warmth, &pplan)
+       && pplan.p_s > 0.0f)
+    {
+      /* the filter scatters light, so it runs on linear print exposure, as the
+         reference's printing.expose does, and the result goes back to log10
+         with the reference's 1e-10 floor. Same conversions as the
+         spektrafilm_pow10 / spektrafilm_log10 kernels. */
+      DT_OMP_FOR()
+      for(size_t k = 0; k < npix * 3; k++) plane[k] = _sf_pow10f(plane[k]);
       sf_diffusion_filter(plane, w, h, (double)pixel_um, (int)d->p.print_diffusion_filter_family,
                           d->p.print_diffusion_strength, d->p.print_diffusion_scale,
                           d->p.print_diffusion_warmth);
+      DT_OMP_FOR()
+      for(size_t k = 0; k < npix * 3; k++) plane[k] = _sf_log10f(fmaxf(plane[k], 0.0f) + 1e-10f);
+    }
     sf_sim_print_develop(sim, plane, plane, npix, 3, 3);
   }
 
@@ -2512,16 +2549,90 @@ static cl_int _sf_yvv_blur_cl(const int devid,
                               const int ch)
 {
   float b[4];
-  sf_gauss_yvv_coeffs(sigma, b);
+  float pass_sigma = sigma;
+  const int passes = sf_gauss_iir_passes(sigma, &pass_sigma);
+  sf_gauss_yvv_coeffs(pass_sigma, b);
   const int krow = (ch == 4) ? gd->kernel_yvv_row_4c : gd->kernel_yvv_row_1c;
   const int kcol = (ch == 4) ? gd->kernel_yvv_col_4c : gd->kernel_yvv_col_1c;
-  cl_int e = dt_opencl_enqueue_kernel_2d_args(devid, krow, h, 1, CLARG(buf), CLARG(tmp),
-                                              CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[1]),
-                                              CLARG(b[2]), CLARG(b[3]));
-  if(e != CL_SUCCESS) return e;
-  return dt_opencl_enqueue_kernel_2d_args(devid, kcol, w, 1, CLARG(tmp), CLARG(buf),
-                                          CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[1]),
-                                          CLARG(b[2]), CLARG(b[3]));
+  cl_int e = CL_SUCCESS;
+  for(int pass = 0; pass < passes && e == CL_SUCCESS; pass++)
+  {
+    e = dt_opencl_enqueue_kernel_2d_args(devid, krow, h, 1, CLARG(buf), CLARG(tmp),
+                                         CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[2]),
+                                         CLARG(b[3]));
+    if(e == CL_SUCCESS)
+      e = dt_opencl_enqueue_kernel_2d_args(devid, kcol, w, 1, CLARG(tmp), CLARG(buf),
+                                           CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[2]),
+                                           CLARG(b[3]));
+    /* a wide sigma runs as many cascaded passes; waiting on each one keeps
+       every device submission to a single pass, well inside the driver's
+       job timeout, instead of letting the whole cascade queue up as one job */
+    if(e == CL_SUCCESS && passes > 1 && !dt_opencl_finish(devid))
+      e = DT_OPENCL_DEFAULT_ERROR;
+  }
+  return e;
+}
+
+/* Device half of sf_blur_plane3_wide(): in place on a float4 w*h buffer.
+   Sets *done and returns the error when sf_wide_blur_plan() decimates;
+   leaves *done at 0 and does nothing otherwise, so the caller runs its own
+   blur. */
+static cl_int _sf_blur_wide_cl(const int devid,
+                               dt_iop_spektrafilm_global_data_t *gd,
+                               cl_mem buf,
+                               const int w,
+                               const int h,
+                               const int roi_x,
+                               const int roi_y,
+                               const float sigma,
+                               int *const done)
+{
+  int k, lw, lh, ox, oy;
+  float sigma_low;
+  *done = 0;
+  if(!sf_wide_blur_plan(sigma, w, h, roi_x, roi_y, &k, &sigma_low, &lw, &lh, &ox, &oy))
+    return CL_SUCCESS;
+  *done = 1;
+  float *inv = dt_alloc_align_float((size_t)k + 1);
+  float kw[2 * SF_GAUSS_MAX_RADIUS + 1];
+  const int kr = dt_gaussian_kernel_1d(sigma_low, kw, SF_GAUSS_MAX_RADIUS);
+  cl_mem low = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * lw * lh);
+  cl_mem lowtmp = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * lw * lh);
+  cl_mem inv_cl = dt_opencl_alloc_device_buffer(devid, sizeof(float) * (k + 1));
+  cl_mem kw_cl = dt_opencl_alloc_device_buffer(devid, sizeof(float) * (2 * kr + 1));
+  cl_int e = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  if(inv && low && lowtmp && inv_cl && kw_cl)
+  {
+    sf_wide_blur_inv_table(k, inv);
+    const float inv2k = 1.0f / (float)(2 * k);
+    e = dt_opencl_write_buffer_to_device(devid, inv, inv_cl, 0, sizeof(float) * (k + 1), TRUE);
+    if(e == CL_SUCCESS)
+      e = dt_opencl_write_buffer_to_device(devid, kw, kw_cl, 0, sizeof(float) * (2 * kr + 1), TRUE);
+    if(e == CL_SUCCESS)
+      e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_wide_down, lw, lh, CLARG(buf),
+                                           CLARG(low), CLARG(w), CLARG(h), CLARG(k), CLARG(lw),
+                                           CLARG(lh), CLARG(ox), CLARG(oy), CLARG(inv_cl));
+    /* exact kernel at the reduced sigma: the twin of sf_blur_plane3() on the
+       CPU, rows then columns */
+    if(e == CL_SUCCESS)
+      e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_row_4c, lw, lh, CLARG(low),
+                                           CLARG(lowtmp), CLARG(lw), CLARG(lh), CLARG(kw_cl),
+                                           CLARG(kr));
+    if(e == CL_SUCCESS)
+      e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_col_4c, lw, lh, CLARG(lowtmp),
+                                           CLARG(low), CLARG(lw), CLARG(lh), CLARG(kw_cl),
+                                           CLARG(kr));
+    if(e == CL_SUCCESS)
+      e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_wide_up, w, h, CLARG(low),
+                                           CLARG(buf), CLARG(w), CLARG(h), CLARG(k), CLARG(lw),
+                                           CLARG(lh), CLARG(ox), CLARG(oy), CLARG(inv2k));
+  }
+  dt_free_align(inv);
+  if(low) dt_opencl_release_mem_object(low);
+  if(lowtmp) dt_opencl_release_mem_object(lowtmp);
+  if(inv_cl) dt_opencl_release_mem_object(inv_cl);
+  if(kw_cl) dt_opencl_release_mem_object(kw_cl);
+  return e;
 }
 
 /* GPU path: mirrors process(). Per-pixel stages run as kernels on the
@@ -2796,16 +2907,20 @@ int process_cl(dt_iop_module_t *self,
   SF_CL_STEP("expose");
 
   /* ---- 2) pre-film spatial effects on linear exposure -------------------- */
-  if(d->p.boost_ev > 0.0f)
   {
     /* The curve is anchored to the exposure scale, not to a frame maximum, so
        the boost agrees between the preview pipe, the export pipe and every
        tile. A frame maximum would differ per ROI. */
-    const float b_ev = d->p.boost_ev, b_rng = d->p.boost_range, b_prot = d->p.protect_ev;
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_boost, w, h, CLARG(plane),
-                                           CLARG(w), CLARG(h), CLARG(b_ev), CLARG(b_rng),
-                                           CLARG(b_prot));
-    SF_CL_STEP("boost");
+    sf_boost_plan_t bp;
+    if(sf_boost_build_plan(d->p.boost_ev, d->p.boost_range, d->p.protect_ev, &bp))
+    {
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_boost, w, h, CLARG(plane),
+                                             CLARG(w), CLARG(h), CLARG(bp.raw_x0),
+                                             CLARG(bp.xmax), CLARG(bp.inv_max), CLARG(bp.a),
+                                             CLARG(bp.a_log2e), CLARG(bp.scale),
+                                             CLARG(bp.ext), CLARG(bp.slope));
+      SF_CL_STEP("boost");
+    }
   }
 
   if(d->p.diffusion_on)
@@ -2931,13 +3046,10 @@ int process_cl(dt_iop_module_t *self,
                                                  CLARG(amp[g3]), CLARG(c), CLARG(reset));
           SF_CL_STEP("scatter tail accum");
         }
-      /* CPU: sf_halation() takes w_s[] as the sim's double and blends with
-         (1.0 - w_s[c]) * core + w_s[c] * tail. Round the same double once here
-         rather than reading sf_sim_gpu_t's float mirror, so the constant the
-         kernel gets is the CPU's to the last bit. The blend itself still runs
-         in float on-device and in double on the CPU, so this narrows the
-         divergence to the per-pixel arithmetic instead of adding a second
-         rounding on top of it. */
+      /* CPU: sf_halation() rounds the sim's double w_s[] to float once and
+         blends with the same fma nesting as spektrafilm_scatter_combine.
+         Rounded from the same double here, not read from sf_sim_gpu_t's
+         float mirror, so the constant the kernel gets is the CPU's. */
       const float ws_r = (float)cl_sc_w[0], ws_g = (float)cl_sc_w[1],
                   ws_b = (float)cl_sc_w[2];
       /* (1-s)*raw + s*scattered, matching sf_halation()'s CPU blend; `plane`
@@ -2984,13 +3096,10 @@ int process_cl(dt_iop_module_t *self,
       /* per-film halation strength (e.g. a strong-AH stock stays near-zero on
          blue and much lower on red/green than a no-AH/redscale stock).
 
-         CPU: a_tot[c] = halation_strength[c] * halation_amount, both doubles
-         (sf_halation()). Formed the same way here from cl_hal_strength -- the
-         sim's own double, as the sigma above is -- and rounded once, instead of
-         multiplying two independently-rounded floats. sf_halation() then keeps
-         a_tot in double through (raw + a_tot*blur) / (1 + a_tot) per pixel and
-         the kernel cannot, so the two still part company on that arithmetic;
-         this only stops them parting company on the constant as well. */
+         CPU: a_tot[c] = halation_strength[c] * halation_amount in double
+         (sf_halation()), rounded once to float for the per-pixel
+         fma(a, blur, raw) / (1 + a). Formed the same way here from
+         cl_hal_strength -- the sim's own double, as the sigma above is. */
       const float a_r = (float)(cl_hal_strength[0] * (double)h_eff),
                   a_g = (float)(cl_hal_strength[1] * (double)h_eff),
                   a_b = (float)(cl_hal_strength[2] * (double)h_eff);
@@ -3019,22 +3128,34 @@ int process_cl(dt_iop_module_t *self,
     const float csigma = g->coupler_diff_um / fmaxf(pixel_um, 1e-3f);
     if(g->coupler_tail_w > 0.0f)
     {
-      const float amp[4] = { 1.0f - g->coupler_tail_w, g->coupler_tail_w * SF_EXPTAIL_A0,
-                             g->coupler_tail_w * SF_EXPTAIL_A1, g->coupler_tail_w * SF_EXPTAIL_A2 };
-      /* CPU computes tail_px = ctail_um / pixel_um once and then
+      /* float operands throughout, as process() forms them: amp/rat are float
+         arrays there, so each product is a float multiply, not a double one
+         rounded afterwards. tail_px is ctail_um / pixel_um once, then
          rat[g3] * tail_px -- R * (tail / pixel), not (R * tail) / pixel. */
+      const float ea[3] = { SF_EXPTAIL_A0, SF_EXPTAIL_A1, SF_EXPTAIL_A2 };
+      const float er[3] = { SF_EXPTAIL_R0, SF_EXPTAIL_R1, SF_EXPTAIL_R2 };
+      const float amp[4] = { 1.0f - g->coupler_tail_w, g->coupler_tail_w * ea[0],
+                             g->coupler_tail_w * ea[1], g->coupler_tail_w * ea[2] };
       const float tail_px = g->coupler_tail_um / fmaxf(pixel_um, 1e-3f);
-      const float sig[4] = { csigma, SF_EXPTAIL_R0 * tail_px,
-                             SF_EXPTAIL_R1 * tail_px, SF_EXPTAIL_R2 * tail_px };
+      const float sig[4] = { csigma, er[0] * tail_px, er[1] * tail_px, er[2] * tail_px };
       for(int g3 = 0; g3 < 4; g3++)
       {
         /* >= SF_GAUSS_MIN_SIGMA, not > 0.1f: the CPU twin guards with
-           `if(ts > 0.1f) sf_blur_plane3_fast(...)`, and sf_blur_plane3_fast
-           itself returns without touching the buffer below
+           `if(ts > 0.1f) sf_blur_plane3_wide(...)`, which decimates from
+           SF_WIDE_BLUR_MIN_SIGMA up and below that hands over to
+           sf_blur_plane3_fast, which returns without touching the buffer below
            SF_GAUSS_MIN_SIGMA -- so the CPU blurs iff the sigma clears 0.3.
            Between 0.1 and 0.3 it copies the unblurred correction, which is
-           what the else branch below already does. */
-        if(sig[g3] >= SF_GAUSS_MIN_SIGMA)
+           what the else branch below does. */
+        if(sig[g3] >= SF_WIDE_BLUR_MIN_SIGMA)
+        {
+          int wide = 0;
+          err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, acc, plane2, 0, 0, npix * f * 4);
+          if(err == CL_SUCCESS)
+            err = _sf_blur_wide_cl(devid, gd, plane2, w, h, roi_in->x, roi_in->y, sig[g3], &wide);
+          if(err != CL_SUCCESS) break;
+        }
+        else if(sig[g3] >= SF_GAUSS_MIN_SIGMA)
         {
           SF_GAUSS_BLUR4_OP_L(acc, plane2, sig[g3]);
           if(err != CL_SUCCESS) break;
@@ -3053,10 +3174,20 @@ int process_cl(dt_iop_module_t *self,
       }
     }
     else if(csigma > 0.1f)
-      /* CPU twin is sf_blur_plane3_fast(), which returns without touching the
-         buffer below SF_GAUSS_MIN_SIGMA -- match that cut here. */
-      if(csigma >= SF_GAUSS_MIN_SIGMA)
+    {
+      /* CPU twin is sf_blur_plane3_wide(): decimated from
+         SF_WIDE_BLUR_MIN_SIGMA up, sf_blur_plane3_fast below, which returns
+         without touching the buffer below SF_GAUSS_MIN_SIGMA -- match both
+         cuts here. */
+      if(csigma >= SF_WIDE_BLUR_MIN_SIGMA)
+      {
+        int wide = 0;
+        err = _sf_blur_wide_cl(devid, gd, acc, w, h, roi_in->x, roi_in->y, csigma, &wide);
+        SF_CL_STEP("coupler blur");
+      }
+      else if(csigma >= SF_GAUSS_MIN_SIGMA)
         SF_GAUSS_BLUR4_FAST(acc, csigma, "coupler blur");
+    }
   }
   cl_mem corr_buf = (g->coupler_tail_w > 0.0f) ? tmpa : acc;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_develop, w, h, CLARG(plane),
@@ -3242,7 +3373,7 @@ int process_cl(dt_iop_module_t *self,
         CLARG(g->enl_inv_range[0]), CLARG(g->enl_inv_range[1]), CLARG(g->enl_inv_range[2]),
         CLARG(g->log10_print_exposure));
     SF_CL_STEP("print_expose");
-    /* ---- print diffusion (optional, on the exposed print density) ---- */
+    /* ---- print diffusion (optional, on linear print exposure) ---- */
     if(d->p.print_diffusion_on)
     {
       sf_diffusion_plan_t pplan;
@@ -3251,6 +3382,10 @@ int process_cl(dt_iop_module_t *self,
                                  d->p.print_diffusion_warmth, &pplan)
          && pplan.p_s > 0.0f)
       {
+        /* linear print exposure, see process() */
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_pow10, w, h, CLARG(plane),
+                                               CLARG(w), CLARG(h));
+        SF_CL_STEP("print_diffusion pow10");
         /* see the pre-film diffusion above for why this is in double */
         const double pdsc = fmax((double)d->p.print_diffusion_scale, 1e-6);
         for(int j = 0; j < pplan.n; j++)
@@ -3274,6 +3409,9 @@ int process_cl(dt_iop_module_t *self,
                                                   CLARG(ps));
         }
         SF_CL_STEP("print_diffusion");
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_log10, w, h, CLARG(plane),
+                                               CLARG(w), CLARG(h));
+        SF_CL_STEP("print_diffusion log10");
       }
     }
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_print_develop, w, h, CLARG(plane),
@@ -3404,6 +3542,8 @@ static void _sync_coupler_diffusion(dt_iop_spektrafilm_gui_data_t *g,
 static void _update_paper_auto_entry(dt_iop_module_t *self);
 static const sf_prof_entry_t *_current_film_entry(const dt_iop_spektrafilm_gui_data_t *g,
                                                   const dt_iop_spektrafilm_params_t *p);
+static const sf_prof_entry_t *_effective_paper_entry(const dt_iop_spektrafilm_gui_data_t *g,
+                                                     const dt_iop_spektrafilm_params_t *p);
 
 /* Stamp the spectral table this edit is being made against, at the point where
    a user change has written its param and the history item has not been created
@@ -3523,9 +3663,19 @@ static void _film_changed(GtkWidget *w,
        mode: a slide scans washed out without it, and a print is not fitted
        unless asked */
     p->scan_black_correction = p->scan_white_correction = e->positive;
+    /* leaving scan mode returns to whatever paper_hash names: "auto" when it
+       is 0, otherwise the pinned paper, which is still what the pipeline
+       prints on */
+    int ppos = SF_COMBO_PAPER_AUTO;
+    if(p->scan_film)
+      ppos = SF_COMBO_SCAN_FILM;
+    else if(p->paper_hash)
+    {
+      const sf_prof_entry_t *pe = _effective_paper_entry(g, p);
+      if(pe) ppos = g_list_index(g->entries, pe);
+    }
     DT_ENTER_GUI_UPDATE();
-    dt_bauhaus_combobox_set_from_value(
-        g->paper, p->scan_film ? SF_COMBO_SCAN_FILM : SF_COMBO_PAPER_AUTO);
+    dt_bauhaus_combobox_set_from_value(g->paper, ppos);
     dt_bauhaus_toggle_set(g->scan_black_correction, p->scan_black_correction);
     dt_bauhaus_toggle_set(g->scan_white_correction, p->scan_white_correction);
     DT_LEAVE_GUI_UPDATE();
@@ -3643,13 +3793,14 @@ static const sf_prof_entry_t *_auto_paper_entry(const dt_iop_spektrafilm_gui_dat
 {
   const sf_prof_entry_t *first = NULL;
   const sf_prof_entry_t *same_channel = NULL;
+  const char *target = film && film->target_print[0] ? film->target_print : NULL;
   for(const GList *l = g->entries; l; l = l->next)
   {
     const sf_prof_entry_t *pe = l->data;
     if(!pe->printing) continue;
     if(!first) first = pe;
     if(film && !same_channel && pe->bw == film->bw) same_channel = pe;
-    if(film && film->target_print[0] && !strcmp(pe->stock, film->target_print)) return pe;
+    if(target && !strcmp(pe->stock, target)) return pe;
   }
   /* Three tiers, in order: the film's own named target print, then any print
      stock with the same channel model, then the first printing entry there is.
@@ -3840,8 +3991,10 @@ static const sf_prof_entry_t *_effective_paper_entry(const dt_iop_spektrafilm_gu
                                                      const dt_iop_spektrafilm_params_t *p)
 {
   if(p->scan_film) return NULL;
-  return p->paper_hash ? _entry_by_hash(g, p->paper_hash, TRUE)
-                       : _auto_paper_entry(g, _current_film_entry(g, p));
+  const sf_prof_entry_t *pinned = p->paper_hash ? _entry_by_hash(g, p->paper_hash, TRUE) : NULL;
+  /* a pinned paper missing from the pack falls back the way _resolve_stock()
+     does, to the film's automatic paper */
+  return pinned ? pinned : _auto_paper_entry(g, _current_film_entry(g, p));
 }
 
 /* put the print development slider on the paper in force, as _film_changed()
@@ -4411,14 +4564,12 @@ static void _update_trouble_message(dt_iop_module_t *self)
    The values are the presets' baseline, not a mirror of the annotations. They
    track $DEFAULT wherever a preset has no opinion, but a preset was tuned
    against the values in force when it was authored, so a later change to a
-   $DEFAULT does not propagate here -- see print_contrast below. Never
+   $DEFAULT does not propagate here -- see grain_blur_base below. Never
    "resynchronise" this function against the struct without rendering the
    presets that leave the field unset. */
 static void _preset_defaults(dt_iop_spektrafilm_params_t *p)
 {
   memset(p, 0, sizeof(*p));
-  /* deliberately 1.0, not the 1.1 $DEFAULT: the ten printing presets that
-     never name print_contrast were authored at 1.0 and keep it */
   p->print_contrast = 1.0f;
   p->print_gamma_r = p->print_gamma_g = p->print_gamma_b = 1.0f;
   /* deliberately 0.8, not the 0.89 $DEFAULT: the presets were authored against
@@ -4507,7 +4658,7 @@ void init_presets(dt_iop_module_so_t *self)
        $DEFAULT is meant to reach new images are therefore named here as well,
        since _preset_defaults() holds the baseline the shipped looks were
        authored against and does not track later changes to the annotations. */
-    p.print_contrast = 1.1f;
+    p.grain_blur_base = 0.89f;
     dt_gui_presets_add_generic(_("scene-referred default"), self->op,
                                self->version(), &p, sizeof(p), TRUE,
                                DEVELOP_BLEND_CS_RGB_SCENE);
@@ -5133,9 +5284,16 @@ void gui_update(dt_iop_module_t *self)
       ppos = pos;
   }
   /* an edit that never picked a paper shows "auto", not the stock it happens to
-     resolve to -- otherwise the link looks broken the moment it is displayed */
+     resolve to -- otherwise the link looks broken the moment it is displayed.
+     A picked paper the pack no longer carries shows the paper the pipeline
+     falls back to, which _resolve_stock() takes in the same order as
+     _auto_paper_entry(). */
   if(!p->paper_hash) ppos = SF_COMBO_PAPER_AUTO;
-  else if(ppos < 0) ppos = pfirst;
+  else if(ppos < 0)
+  {
+    const sf_prof_entry_t *fb = _auto_paper_entry(g, fe);
+    ppos = fb ? g_list_index(g->entries, fb) : pfirst;
+  }
   /* scanning outranks any stored paper: it is the state the pipeline is in */
   if(p->scan_film) ppos = SF_COMBO_SCAN_FILM;
   dt_bauhaus_combobox_set_from_value(g->paper, ppos);
@@ -5546,6 +5704,9 @@ void gui_init(dt_iop_module_t *self)
 
   g->film_format_mm_slider = dt_bauhaus_slider_from_params(self, "film_format_mm");
   dt_bauhaus_slider_set_format(g->film_format_mm_slider, _(" mm"));
+  /* the hard range spans every format preset, Super 8 to 8x10; dragging
+     covers the common still and cine gauges */
+  dt_bauhaus_slider_set_soft_range(g->film_format_mm_slider, 8.0f, 130.0f);
   gtk_widget_set_tooltip_text(g->film_format_mm_slider,
                               _("physical frame size, long edge. sets the scale that "
                                 "grain, scatter,\n"
@@ -6131,15 +6292,24 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->halation_scale,
                               _("halation size: scales the glow radius (1.0 = film-accurate)"));
 
-  _section_add(self, C_("section", "threshold"),
-               "plugins/darkroom/spektrafilm/expand_halation_threshold");
+  GtkWidget *boost_section
+      = _section_add(self, C_("section", "highlight boost"),
+                     "plugins/darkroom/spektrafilm/expand_halation_threshold");
+  gtk_widget_set_tooltip_text(
+      dtgtk_expander_get_header(DTGTK_EXPANDER(boost_section)),
+      _("reconstructs clipped highlights before any light spreads, so they\n"
+        "bloom through the film diffusion filter, scatter and halation.\n"
+        "it is not part of halation: the halation toggle does not switch it\n"
+        "off. set highlight boost to 0 to disable it."));
 
   g->boost_ev = dt_bauhaus_slider_from_params(self, "boost_ev");
   dt_bauhaus_slider_set_format(g->boost_ev, _(" EV"));
   gtk_widget_set_tooltip_text(g->boost_ev,
                               _("highlight boost: reconstructs clipped highlights so they "
                                 "bloom into\n"
-                                "halation/diffusion (0 = off)."));
+                                "halation/diffusion (0 = off).\n"
+                                "\n"
+                                "runs on its own, independent of the halation toggle."));
 
   g->boost_range = dt_bauhaus_slider_from_params(self, "boost_range");
   gtk_widget_set_tooltip_text(

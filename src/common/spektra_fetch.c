@@ -383,7 +383,8 @@ uint32_t sf_fetch_peek_pack_hash(const char *packdir)
   if(json_parser_load_from_file(parser, path, NULL))
   {
     JsonNode *rootn = json_parser_get_root(parser);
-    JsonObject *root = rootn ? json_node_get_object(rootn) : NULL;
+    JsonObject *root = (rootn && JSON_NODE_HOLDS_OBJECT(rootn)) ? json_node_get_object(rootn)
+                                                                 : NULL;
     if(root && json_object_has_member(root, "pack_hash"))
     {
       const char *ph = json_object_get_string_member(root, "pack_hash");

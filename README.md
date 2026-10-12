@@ -61,7 +61,7 @@ Requirements
 * NetBSD
 * OpenBSD
 * Windows 10 and later
-* Apple Silicon Macs running macOS 14 and later
+* Apple Silicon Macs running macOS 15 and later
 
 *Big-endian platforms are not supported.*
 
@@ -157,6 +157,7 @@ you can build the software yourself following the instructions [below](#building
 5.6.2 (stable)
 
 * [Download package for Windows](https://github.com/darktable-org/darktable/releases/download/release-5.6.2/darktable-5.6.2-win64.exe)
+* [Download package for Windows on Arm](https://github.com/darktable-org/darktable/releases/download/release-5.6.2/darktable-5.6.2-woa64.exe)
 * [Download disk image for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-5.6.2/darktable-5.6.2-arm64.dmg)
 * [Download AppImage for Linux](https://github.com/darktable-org/darktable/releases/download/release-5.6.2/Darktable-5.6.2-x86_64.AppImage)
 * [Download AppImage for Linux on ARM64](https://github.com/darktable-org/darktable/releases/download/release-5.6.2/Darktable-5.6.2-aarch64.AppImage)

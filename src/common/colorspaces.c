@@ -18,6 +18,7 @@
 
 #include "common/colorspaces_inline_conversions.h"
 #include "common/colorspaces.h"
+#include "common/hdr-transfer.h"
 #include "common/colormatrices.c"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -1065,6 +1066,24 @@ void dt_colorspaces_cleanup_profile(cmsHPROFILE p)
   cmsCloseProfile(p);
 }
 
+cmsHPROFILE dt_colorspaces_linearize_profile(cmsHPROFILE profile)
+{
+  cmsHPROFILE linear = dt_colorspaces_make_temporary_profile(profile);
+  if(!linear) return NULL;
+  cmsToneCurve *trc = cmsBuildGamma(NULL, 1.0);
+  const gboolean valid = trc
+    && cmsWriteTag(linear, cmsSigRedTRCTag, trc)
+    && cmsWriteTag(linear, cmsSigGreenTRCTag, trc)
+    && cmsWriteTag(linear, cmsSigBlueTRCTag, trc);
+  cmsFreeToneCurve(trc);
+  if(!valid)
+  {
+    cmsCloseProfile(linear);
+    return NULL;
+  }
+  return linear;
+}
+
 cmsHPROFILE dt_colorspaces_make_temporary_profile(cmsHPROFILE profile)
 {
   cmsUInt32Number size;
@@ -1836,6 +1855,8 @@ const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
        return _("Display P3");
      case DT_COLORSPACE_FORWARD_MATRIX:
        return _("DNG forward matrix");
+     case DT_COLORSPACE_DNG_LOOK:
+       return _("DNG embedded look");
      case DT_COLORSPACE_LAST:
        break;
   }
@@ -2654,6 +2675,7 @@ gboolean dt_colorspaces_profile_is_wide_gamut(const dt_colorspaces_color_profile
     case DT_COLORSPACE_DISPLAY2:
     case DT_COLORSPACE_EMBEDDED_ICC:
     case DT_COLORSPACE_EMBEDDED_MATRIX:
+    case DT_COLORSPACE_DNG_LOOK:
     case DT_COLORSPACE_STANDARD_MATRIX:
     case DT_COLORSPACE_ENHANCED_MATRIX:
     case DT_COLORSPACE_VENDOR_MATRIX:

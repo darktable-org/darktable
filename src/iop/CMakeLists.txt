@@ -99,6 +99,11 @@ add_iop(velvia "velvia.c")
 add_iop(vignette "vignette.c")
 add_iop(splittoning "splittoning.c")
 add_iop(spektrafilm "spektrafilm.c")
+# same floating-point contract as common/spektra_core.c and spektra_sim.c,
+# see SPEKTRA_FP_CONTRACT_FLAGS in src/CMakeLists.txt
+if(SPEKTRA_FP_CONTRACT_FLAGS)
+  target_compile_options(spektrafilm PRIVATE ${SPEKTRA_FP_CONTRACT_FLAGS})
+endif()
 add_iop(grain "grain.c")
 add_iop(clahe "clahe.c")
 add_iop(bilateral "bilateral.cc")

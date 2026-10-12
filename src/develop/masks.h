@@ -603,6 +603,7 @@ void dt_masks_change_form_gui(dt_masks_form_t *newform);
 void dt_masks_clear_form_gui(const dt_develop_t *dev);
 void dt_masks_reset_form_gui(void);
 void dt_masks_reset_show_masks_icons(void);
+gboolean dt_masks_cancel_creation(void);
 
 gboolean dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
                                      const float x,

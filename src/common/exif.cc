@@ -1077,7 +1077,7 @@ static bool _valid_dng_matrix(const float *M)
   return fabsf(det) > 1e-6f;
 }
 
-static void _check_forward_matrix(Exiv2::ExifData &exifData,
+static int _check_forward_matrix(Exiv2::ExifData &exifData,
                                          dt_image_t *img)
 {
   Exiv2::ExifData::const_iterator pos;
@@ -1202,7 +1202,7 @@ static void _check_forward_matrix(Exiv2::ExifData &exifData,
   // We only want a valid forward matrix if we got an illu and matrix are good
   const gboolean has_forward_illuminant = sel_illu >= 0 && sel_illu < 3 && has_FM[sel_illu];
   if(!has_forward_illuminant)
-    return;
+    return -1;
 
   // CameraToXYZ = ForwardMatrix * Inverse(AnalogBalance * CameraCalibration)
   // (white balance D is applied later, upstream, via temperature.iop's wb_coeffs)
@@ -1226,6 +1226,105 @@ static void _check_forward_matrix(Exiv2::ExifData &exifData,
                 illu[2] ? ", [3] " : "", illu[2] ? _illu_to_str(illu[2]) : "" );
     _print_matrix_data("img forward matrix", 0, img->dng_forward_matrix);
     _print_matrix_data(has_CC[sel_illu] ? "calibration matrix" : "ident calibration matrix", 0, CC[sel_illu]);
+  }
+  return dt_is_valid_colormatrix(img->dng_forward_matrix[0]) ? sel_illu : -1;
+}
+
+static void _check_profile_look_table(Exiv2::ExifData &exifData,
+                                      dt_image_t *img,
+                                      int sel_illu)
+{
+  g_free(img->profile_hsm_data);
+  img->profile_hsm_data = NULL;
+  img->profile_hsm_data_size = 0;
+  img->profile_hsm_hue_div = img->profile_hsm_sat_div = img->profile_hsm_val_div = img->profile_hsm_encoding = 0;
+
+  if(sel_illu < 0)
+  {
+    Exiv2::ExifData::const_iterator pos;
+    // We calculate the illu as we do while reading metadata ...
+    dt_dng_illuminant_t illu[3] = { DT_LS_Unknown, DT_LS_Unknown, DT_LS_Unknown };
+    if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant1"))
+      illu[0] = MIN(DT_LS_Other, (dt_dng_illuminant_t) pos->toLong());
+    if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant2"))
+      illu[1] = MIN(DT_LS_Other, (dt_dng_illuminant_t) pos->toLong());
+#if EXIV2_TEST_VERSION(0,27,4)
+    if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant3"))
+      illu[2] = MIN(DT_LS_Other, (dt_dng_illuminant_t) pos->toLong());
+#endif
+    // Find illuminant as we do for d65 matrix to use the same hsm profile if there
+    // was no forward matrix and we use the profile with the matching d65 illuminant.
+    sel_illu = -1;
+    int sel_temp = 0;
+    int min_temp = 100000;
+    const int D65temp = _illu_to_temp(DT_LS_D65);
+    int delta_min = D65temp;
+    for(int i = 0; i < 3; ++i)
+    {
+      if(illu[i] != DT_LS_Unknown)
+      {
+        const int temp_cur = _illu_to_temp(illu[i]);
+        min_temp = MIN(min_temp, temp_cur);
+        const int delta_cur = abs(temp_cur - D65temp);
+        if(temp_cur > sel_temp && delta_cur <= delta_min)
+        {
+          sel_illu = i;
+          sel_temp = temp_cur;
+          delta_min = delta_cur;
+        }
+      }
+    }
+    if(sel_illu < 0 || illu[sel_illu] == DT_LS_Unknown)
+      return;
+  }
+
+  Exiv2::ExifData::const_iterator enc_pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.ProfileHueSatMapEncoding"));
+  if(enc_pos != exifData.end())
+  {
+    img->profile_hsm_encoding = (int)enc_pos->toLong(0);  // 0=linear, 1=sRGB
+  }
+
+  Exiv2::ExifData::const_iterator dims_pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.ProfileHueSatMapDims"));
+  if(dims_pos != exifData.end() && (dims_pos->count() == 2 || dims_pos->count() == 3))
+  {
+    const auto hue_div = dims_pos->toLong(0);
+    const auto sat_div = dims_pos->toLong(1);
+    const auto val_div = dims_pos->count() == 3 ? dims_pos->toLong(2) : 1;
+    if(hue_div >= 1 && sat_div >= 2 && val_div >= 1
+       && hue_div <= G_MAXINT / 3 / sat_div / val_div)
+    {
+      const int n_entries = hue_div * sat_div * val_div * 3;
+      const char *keys[] = {
+        "Exif.Image.ProfileHueSatMapData1",
+        "Exif.Image.ProfileHueSatMapData2",
+#if EXIV2_TEST_VERSION(0,27,4)
+        "Exif.Image.ProfileHueSatMapData3"
+#endif
+      };
+      int index = sel_illu >= 0 && sel_illu < (int)G_N_ELEMENTS(keys) ? sel_illu : 0;
+      Exiv2::ExifData::const_iterator pos = exifData.findKey(Exiv2::ExifKey(keys[index]));
+      // DNG specs allows to provide just one hsm profile.
+      if(pos == exifData.end() && index != 0)
+      {
+       index = 0;
+       pos = exifData.findKey(Exiv2::ExifKey(keys[index]));
+      }
+      if(pos != exifData.end() && (int)pos->count() == n_entries)
+      {
+        img->profile_hsm_data = (float *)g_malloc_n(n_entries, sizeof(float));
+        for(int i = 0; i < n_entries; i++)
+          img->profile_hsm_data[i] = pos->toFloat(i);
+        img->profile_hsm_hue_div = hue_div;
+        img->profile_hsm_sat_div = sat_div;
+        img->profile_hsm_val_div = val_div;
+        img->profile_hsm_data_size = sizeof(float) * n_entries;
+        dt_print(DT_DEBUG_IMAGEIO, "[exif] found ProfileHueSatMapData%d (%dx%dx%d), %s encoding",
+                 index + 1, img->profile_hsm_hue_div, img->profile_hsm_sat_div, img->profile_hsm_val_div,
+                 img->profile_hsm_encoding ? "sRGB" : "linear");
+      }
+    }
   }
 }
 
@@ -1682,7 +1781,8 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
       _check_dng_opcodes(exifData, img);
       _check_lens_correction_data(exifData, img);
       _check_linear_response_limit(exifData, img);
-      _check_forward_matrix(exifData, img);
+      const int sel_illu = _check_forward_matrix(exifData, img);
+      _check_profile_look_table(exifData, img, sel_illu);
       _check_highlight_preservation(exifData, img);
       _check_shading_compensation(exifData, img);
     }
@@ -2550,7 +2650,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       int sel_illu = -1;
 
       int sel_temp = 0;
-       int min_temp = 100000;
+      int min_temp = 100000;
       const int D65temp = _illu_to_temp(DT_LS_D65);
       int delta_min = D65temp;
 

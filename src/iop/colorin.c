@@ -21,6 +21,7 @@
 #include "common/iop_profile.h"
 #include "common/colormatrices.c"
 #include "common/colorspaces.h"
+#include "common/hdr-transfer.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/image_cache.h"
 #include "common/opencl.h"
@@ -31,6 +32,9 @@
 #include "gui/accelerators.h"
 #include "imageio/imageio_jpeg.h"
 #include "imageio/imageio_png.h"
+#ifdef HAVE_LIBJXL
+#include "imageio/imageio_jpegxl.h"
+#endif
 #include "imageio/imageio_tiff.h"
 
 #ifdef HAVE_LIBAVIF
@@ -112,10 +116,16 @@ typedef struct dt_iop_colorin_data_t
   float unbounded_coeffs[3][3]; // approximation for extrapolation of shaper curves
   gboolean blue_mapping;
   gboolean nonlinearlut;
+  int hdr_transfer;
   dt_colorspaces_color_profile_type_t type;
   dt_colorspaces_color_profile_type_t type_work;
   char filename[DT_IOP_COLOR_ICC_LEN];
   char filename_work[DT_IOP_COLOR_ICC_LEN];
+  float *hsm;
+  int hue_div;
+  int sat_div;
+  int val_div;
+  int hsm_encode;
 } dt_iop_colorin_data_t;
 
 
@@ -189,6 +199,139 @@ static void _resolve_work_profile(dt_colorspaces_color_profile_type_t *work_type
            dt_colorspaces_get_name(*work_type, work_filename));
   *work_type = DT_COLORSPACE_LIN_REC2020;
   work_filename[0] = '\0';
+}
+
+// Start of dng image support for ProfileHueSatMapDims and ProfileHueSatMapData
+// the used set is chosen via the illuminant in exif.cc
+static inline void _lookup_hsm(const dt_aligned_pixel_t hsv,
+                               dt_aligned_pixel_t correction,
+                               const int hue_div,
+                               const int sat_div,
+                               const int val_div,
+                               const float *hsm)
+{
+  const float h = (hsv[0] - floorf(hsv[0])) * (float)hue_div;
+  const float s = CLIP(hsv[1]) * (float)(sat_div-1);
+  const float v = CLIP(hsv[2]) * (float)(val_div-1);
+  const int hi[2] = { MIN((int)h, hue_div-1), (MIN((int)h,   hue_div-1)+1) % hue_div };
+  const int si[2] = { MIN((int)s, sat_div-1),  MIN((int)s+1, sat_div-1) };
+  const int vi[2] = { MIN((int)v, val_div-1),  MIN((int)v+1, val_div-1) };
+  const float hf = CLIP(h - hi[0]);
+  const float sf = CLIP(s - si[0]);
+  const float vf = CLIP(v - vi[0]);
+
+  correction[0] = correction[1] = correction[2] = 0.0f;
+  for(int z = 0; z < 2; z++)
+    for(int y = 0; y < 2; y++)
+      for(int x = 0; x < 2; x++)
+      {
+        // DNG stores saturation first, then hue, then value, with three floats per cell
+        const size_t index = 3 * (((size_t)vi[z] * hue_div + hi[y]) * sat_div + si[x]);
+        const float weight = (z ? vf : 1.0f - vf)
+                           * (y ? hf : 1.0f - hf)
+                           * (x ? sf : 1.0f - sf);
+        for(int c = 0; c < 3; c++)
+          correction[c] += weight * hsm[index + c];
+      }
+}
+
+// the DNG hue/saturation tables are specified for ProPhoto primaries
+// and are scaled to levels without any exposure or RGB coeffs as found
+// after rawprepare.
+static inline float _srgb_to_linear(const float x)
+{
+  return x <= 0.04045f ? x / 12.92f : powf((x + 0.055f) / 1.055f, 2.4f);
+}
+static inline float _linear_to_srgb(const float x)
+{
+  return x <= 0.0031308f ? 12.92f * x : 1.055f * powf(x, 1.0f / 2.4f) - 0.055f;
+}
+
+static void _process_dng_look(float *data,
+                              const size_t width,
+                              const size_t height,
+                              const dt_iop_colorin_data_t *d,
+                              const float exposure)
+{
+  DT_OMP_FOR(collapse(2))
+  for(size_t row = 0; row < height; row++)
+  {
+    for(size_t col = 0; col < width; col++)
+    {
+      const size_t k = (size_t)4 * (width * row + col);
+
+      dt_aligned_pixel_t prophoto_rgb = { 0.0f };
+      dt_aligned_pixel_t hsv;
+      dt_aligned_pixel_t correction;
+      dt_aligned_pixel_t out;
+
+      dt_Lab_to_prophotorgb(&data[k], prophoto_rgb);
+      dt_vector_div1(prophoto_rgb, prophoto_rgb, exposure);
+      dt_RGB_2_HSV(prophoto_rgb, hsv);
+
+      float v_encoded = hsv[2];
+      if(d->hsm_encode == 1)  // sRGB
+        v_encoded = _linear_to_srgb(CLIP(v_encoded));
+
+      dt_aligned_pixel_t hsv_for_lookup = { hsv[0], hsv[1], v_encoded, 0.0f};
+      _lookup_hsm(hsv_for_lookup, correction, d->hue_div, d->sat_div, d->val_div, d->hsm);
+
+      hsv[0] += correction[0] / 360.0f;
+      hsv[0] -= floorf(hsv[0]); // stay within the 360° hue circle
+      hsv[1] = CLIP(hsv[1] * correction[1]);
+      float v_corrected = v_encoded * correction[2];
+      if(d->hsm_encode == 1)  // sRGB
+        v_corrected = _srgb_to_linear(v_corrected);
+      hsv[2] = CLIP(v_corrected);
+      dt_HSV_2_RGB(hsv, prophoto_rgb);
+      dt_vector_mul1(prophoto_rgb, prophoto_rgb, exposure);
+      dt_prophotorgb_to_Lab(prophoto_rgb, out);
+      out[3] = data[k+3]; // copy alpha
+      copy_pixel(&data[k], out);
+    }
+  }
+}
+
+static void _commit_hsm(dt_iop_colorin_data_t *d, const dt_imgid_t imgid)
+{
+  // pipe->image borrows its table; keep the cache locked through validation and copying
+  const dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  // safety check before committing
+  if(img && img->profile_hsm_data
+      && img->profile_hsm_hue_div >= 1
+      && img->profile_hsm_sat_div >= 2
+      && img->profile_hsm_val_div >= 1
+      && img->profile_hsm_hue_div <= (G_MAXINT / 3 / img->profile_hsm_sat_div / img->profile_hsm_val_div))
+  {
+    const int count = 3 * img->profile_hsm_hue_div
+                        * img->profile_hsm_sat_div
+                        * img->profile_hsm_val_div;
+    if((size_t)count > img->profile_hsm_data_size / sizeof(float))
+    {
+      dt_image_cache_read_release(img);
+      return;
+    }
+    gboolean valid = TRUE;
+    for(int i = 0; i < count; i++)
+    {
+      if(!isfinite(img->profile_hsm_data[i])
+         || (i % 3 != 0 && img->profile_hsm_data[i] < 0.0f))
+      {
+        valid = FALSE;
+        break;
+      }
+    }
+    if(valid)
+    {
+      d->hsm = g_malloc_n(count, sizeof(float));
+      memcpy(d->hsm, img->profile_hsm_data, (size_t)count * sizeof(float));
+      d->hue_div = img->profile_hsm_hue_div;
+      d->sat_div = img->profile_hsm_sat_div;
+      d->val_div = img->profile_hsm_val_div;
+      d->hsm_encode = img->profile_hsm_encoding;
+    }
+  }
+  dt_image_cache_read_release(img);
 }
 
 int legacy_params(dt_iop_module_t *self,
@@ -522,9 +665,16 @@ static void _profile_changed(GtkWidget *widget, dt_iop_module_t *self)
     dt_colorspaces_color_profile_t *pp = prof->data;
     if(pp->in_pos == pos)
     {
+      const gboolean old_look = p->type == DT_COLORSPACE_FORWARD_MATRIX
+                                || p->type == DT_COLORSPACE_DNG_LOOK;
+      const gboolean new_look = pp->type == DT_COLORSPACE_FORWARD_MATRIX
+                                || pp->type == DT_COLORSPACE_DNG_LOOK;
       p->type = pp->type;
       memcpy(p->filename, pp->filename, sizeof(p->filename));
       dt_dev_add_history_item(darktable.develop, self, TRUE);
+      // top-only sync would leave dng_look's enablement stale on the other pipes
+      if(old_look != new_look)
+        dt_dev_pipe_synch_all(self->dev);
 
       DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                               DT_COLORSPACES_PROFILE_TYPE_INPUT);
@@ -626,16 +776,23 @@ static inline float _lerp_lut(const float *const lut, const float v)
 static inline void _apply_tone_curves(dt_aligned_pixel_t pixel,
                                       const dt_iop_colorin_data_t *const d)
 {
-  // assures unbounded color management without extrapolation.  Should not be called
-  // for linear profiles, as there is no need to apply a tone curve to them.
-  for(int c = 0; c < 3; c++)
-    if(d->lut[c][0] >= 0.0f)
-    {
-      if(__builtin_expect(pixel[c] < 1.0f, 1))
-        pixel[c] = _lerp_lut(d->lut[c], pixel[c]);
-      else
-        pixel[c] = dt_iop_eval_exp(d->unbounded_coeffs[c], pixel[c]);
-    }
+  if(d->hdr_transfer)
+  {
+    dt_hdr_decode(pixel, d->hdr_transfer);
+  }
+  else
+  {
+    // assures unbounded color management without extrapolation.  Should not be called
+    // for linear profiles, as there is no need to apply a tone curve to them.
+    for(int c = 0; c < 3; c++)
+      if(d->lut[c][0] >= 0.0f)
+      {
+        if(__builtin_expect(pixel[c] < 1.0f, 1))
+          pixel[c] = _lerp_lut(d->lut[c], pixel[c]);
+        else
+          pixel[c] = dt_iop_eval_exp(d->unbounded_coeffs[c], pixel[c]);
+      }
+  }
 }
 
 #ifdef HAVE_OPENCL
@@ -685,6 +842,7 @@ int process_cl(dt_iop_module_t *self,
   cl_mem dev_m = NULL, dev_l = NULL, dev_r = NULL;
   cl_mem dev_g = NULL, dev_b = NULL, dev_coeffs = NULL;
   cl_mem dev_corr = NULL;
+  cl_mem dev_hsm = NULL;
 
   int kernel;
   float cmat[9], lmat[9];
@@ -722,12 +880,23 @@ int process_cl(dt_iop_module_t *self,
     dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3 * 3,
                                            (float *)d->unbounded_coeffs);
   if(dev_coeffs == NULL) goto error;
+
+  const float scale = dt_iop_get_processed_maximum(piece);
+  const int use_hsm = d->hsm != NULL;
+  float dummy_hsm = 0.0f;
+  const size_t len = use_hsm ? (size_t)d->hue_div * d->sat_div * d->val_div * 3 : 1;
+  dev_hsm = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * len,
+                                                  use_hsm ? d->hsm : &dummy_hsm);
+  if(dev_hsm == NULL) goto error;
+
   err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
                                          CLARG(dev_in), CLARG(dev_out),
                                          CLARG(width), CLARG(height),
                                          CLARG(dev_m), CLARG(dev_l), CLARG(dev_r),
                                          CLARG(dev_g), CLARG(dev_b),
-                                         CLARG(blue_mapping), CLARG(dev_coeffs), CLARG(dev_corr));
+                                         CLARG(blue_mapping), CLARG(dev_coeffs), CLARG(dev_corr),
+                                         CLARG(scale), CLARG(d->hue_div), CLARG(d->sat_div), CLARG(d->val_div),
+                                         CLARG(dev_hsm), CLARG(d->hsm_encode), CLARG(use_hsm), CLARG(d->hdr_transfer));
 error:
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_l);
@@ -736,6 +905,7 @@ error:
   dt_opencl_release_mem_object(dev_b);
   dt_opencl_release_mem_object(dev_coeffs);
   dt_opencl_release_mem_object(dev_corr);
+  dt_opencl_release_mem_object(dev_hsm);
   return err;
 }
 #endif
@@ -790,17 +960,9 @@ static void _process_cmatrix_bm(dt_iop_module_t *self,
     float *const restrict out = (float *)ovoid + 4*j;
     dt_aligned_pixel_t cam;
 
-    // memcpy(cam, buf_in, sizeof(float)*3);
-    // avoid calling this for linear profiles (marked with negative
-    // entries), assures unbounded color management without
-    // extrapolation.
-    for(int c = 0; c < 3; c++)
-      cam[c] = (d->lut[c][0] >= 0.0f)
-        ? ((in[c] < 1.0f)
-           ? _lerp_lut(d->lut[c], in[c])
-           : dt_iop_eval_exp(d->unbounded_coeffs[c], in[c]))
-        : in[c];
-    cam[3] = 0.0f; // avoid uninitialized-variable warning
+    copy_pixel(cam, in);
+    _apply_tone_curves(cam, d);
+    cam[3] = 0.0f;
 
     _apply_blue_mapping(cam, cam);
 
@@ -1252,6 +1414,11 @@ void process(dt_iop_module_t *self,
       process_lcms2_proper(self, piece, ivoid, ovoid, roi_in, roi_out, coeffs);
     }
   }
+
+  if(d->hsm)
+  {
+    _process_dng_look((float *)ovoid, roi_in->width, roi_in->height, d, dt_iop_get_processed_maximum(piece));
+  }
 }
 
 void commit_params(dt_iop_module_t *self,
@@ -1280,6 +1447,9 @@ void commit_params(dt_iop_module_t *self,
   d->input = NULL;
   d->clear_input = FALSE;
   d->nrgb = NULL;
+  g_free(d->hsm);
+  d->hsm = NULL;
+  d->hue_div = d->sat_div = d->val_div = d->hsm_encode = 0;
 
   d->blue_mapping = p->blue_mapping;
 
@@ -1377,25 +1547,27 @@ void commit_params(dt_iop_module_t *self,
     {
       // ForwardMatrix (DNG spec) is already camera -> XYZ, unlike
       // d65_color_matrix (XYZ -> camera). Do NOT invert it again.
-      d->input = dt_colorspaces_create_xyzmatrix_profile(
-        (const float(*)[3])pipe->image.dng_forward_matrix);
+      d->input = dt_colorspaces_create_xyzmatrix_profile((const float(*)[3])pipe->image.dng_forward_matrix);
       d->clear_input = TRUE;
+      _commit_hsm(d, pipe->image.id);
     }
     else
       type = DT_COLORSPACE_EMBEDDED_MATRIX;
   }
-  if(type == DT_COLORSPACE_EMBEDDED_MATRIX)
+  if(type == DT_COLORSPACE_EMBEDDED_MATRIX || type == DT_COLORSPACE_DNG_LOOK)
   {
     // embedded matrix, hopefully D65
-    const dt_image_t *cimg = dt_image_cache_get(pipe->image.id, 'r');
-    if(cimg && dt_is_valid_colormatrix(cimg->d65_color_matrix[0]))
+    if(dt_is_valid_colormatrix(pipe->image.d65_color_matrix[0]))
     {
-      d->input = dt_colorspaces_create_xyzimatrix_profile((float(*)[3])cimg->d65_color_matrix);
+      d->input = dt_colorspaces_create_xyzimatrix_profile((float(*)[3])pipe->image.d65_color_matrix);
       d->clear_input = TRUE;
+      if(type == DT_COLORSPACE_DNG_LOOK)
+      {
+        _commit_hsm(d, pipe->image.id);
+      }
     }
     else
       type = DT_COLORSPACE_STANDARD_MATRIX;
-    dt_image_cache_read_release(cimg);
   }
   if(type == DT_COLORSPACE_STANDARD_MATRIX)
   {
@@ -1461,6 +1633,19 @@ void commit_params(dt_iop_module_t *self,
     dt_control_log(_("input profile could not be generated!"));
     piece->enabled = FALSE;
     return;
+  }
+
+  d->hdr_transfer = dt_colorspaces_hdr_transfer(type);
+  if(d->hdr_transfer)
+  {
+    cmsHPROFILE linear = dt_colorspaces_linearize_profile(d->input);
+    if(!linear)
+    {
+      piece->enabled = FALSE;
+      return;
+    }
+    d->input = linear;
+    d->clear_input = TRUE;
   }
 
   cmsColorSpaceSignature input_color_space = cmsGetColorSpace(d->input);
@@ -1596,6 +1781,8 @@ void commit_params(dt_iop_module_t *self,
       d->unbounded_coeffs[k][0] = -1.0f;
   }
 
+  d->nonlinearlut |= d->hdr_transfer != DT_HDR_NONE;
+
   // commit color profiles to pipeline
   dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work,
                                       d->filename_work, DT_INTENT_PERCEPTUAL);
@@ -1614,6 +1801,7 @@ void init_pipe(dt_iop_module_t *self,
   d->xform_cam_Lab = NULL;
   d->xform_cam_nrgb = NULL;
   d->xform_nrgb_Lab = NULL;
+  d->hsm = NULL;
 }
 
 void cleanup_pipe(dt_iop_module_t *self,
@@ -1638,6 +1826,7 @@ void cleanup_pipe(dt_iop_module_t *self,
     d->xform_nrgb_Lab = NULL;
   }
 
+  g_free(d->hsm);
   free(piece->data);
   piece->data = NULL;
 }
@@ -1727,12 +1916,30 @@ void reload_defaults(dt_iop_module_t *self)
   // currently we only support jpeg, j2k, tiff, png, avif, and heif
   dt_image_t *img = dt_image_cache_get(self->dev->image_storage.id, 'w');
 
+  char filename[PATH_MAX] = { 0 };
+  gboolean from_cache = TRUE;
+  dt_image_full_path(img->id, filename, sizeof(filename), &from_cache);
+  const char *extension = strrchr(filename, '.');
+  if(extension && !g_ascii_strcasecmp(extension, ".png"))
+  {
+    /* PNG cICP has priority over ICC, including after the ICC was cached. */
+    dt_colorspaces_cicp_t cicp;
+    uint8_t *profile = NULL;
+    const int size = dt_imageio_png_read_profile(filename, &profile, &cicp);
+    if(!img->profile)
+    {
+      img->profile = profile;
+      img->profile_size = size;
+    }
+    else
+      g_free(profile);
+    color_profile = dt_colorspaces_cicp_to_type(&cicp, filename);
+    if(color_profile == DT_COLORSPACE_NONE && img->profile_size > 0)
+      color_profile = DT_COLORSPACE_EMBEDDED_ICC;
+  }
   if(!img->profile)
   {
     // the image has not a profile inited
-    char filename[PATH_MAX] = { 0 };
-    gboolean from_cache = TRUE;
-    dt_image_full_path(img->id, filename, sizeof(filename), &from_cache);
     const gchar *cc = filename + strlen(filename);
     for(; *cc != '.' && cc > filename; cc--)
       ;
@@ -1762,19 +1969,6 @@ void reload_defaults(dt_iop_module_t *self)
       color_profile = (img->profile_size > 0)
         ? DT_COLORSPACE_EMBEDDED_ICC
         : DT_COLORSPACE_NONE;
-    }
-    else if(!strcmp(ext, "png"))
-    {
-      dt_colorspaces_cicp_t cicp;
-      img->profile_size = dt_imageio_png_read_profile(filename, &img->profile, &cicp);
-      /* PNG spec says try the cICP chunk first, but rather than
-       * ignoring, we also try any ICC profile present if CICP combo
-       * is unsupported */
-      color_profile = dt_colorspaces_cicp_to_type(&cicp, filename);
-      if(color_profile == DT_COLORSPACE_NONE)
-        color_profile = (img->profile_size > 0)
-          ? DT_COLORSPACE_EMBEDDED_ICC
-          : DT_COLORSPACE_NONE;
     }
 #ifdef HAVE_LIBAVIF
     else if(!strcmp(ext, "avif"))
@@ -1813,9 +2007,21 @@ void reload_defaults(dt_iop_module_t *self)
   }
   else
   {
-    // there is an inited embedded profile
-    color_profile = DT_COLORSPACE_EMBEDDED_ICC;
+    // Keep any PNG cICP selected above when its ICC profile was cached.
+    if(color_profile == DT_COLORSPACE_NONE)
+      color_profile = DT_COLORSPACE_EMBEDDED_ICC;
   }
+
+#ifdef HAVE_LIBJXL
+  /* A synthesized ICC shaper cannot express absolute PQ luminance or the
+     RGB-dependent HLG OOTF. Prefer structured HDR metadata when present. */
+  const char *ext = strrchr(filename, '.');
+  if(ext && !g_ascii_strcasecmp(ext, ".jxl"))
+  {
+    const dt_colorspaces_color_profile_type_t hdr = dt_imageio_jpegxl_read_hdr_profile(filename);
+    if(hdr != DT_COLORSPACE_NONE) color_profile = hdr;
+  }
+#endif
 
   // We'll update the input profile hint with information on the
   // embedded ICC profile if it exists.  Since the tooltip info is now
@@ -1964,6 +2170,7 @@ static void update_profile_list(dt_iop_module_t *self)
   // some file formats like jpeg can have an embedded color profile
   // currently we only support jpeg, j2k, tiff and png
   const dt_image_t *cimg = dt_image_cache_get(self->dev->image_storage.id, 'r');
+  const gboolean has_dng_look = cimg && cimg->profile_hsm_data;
   if(cimg && cimg->profile)
   {
     dt_colorspaces_color_profile_t *prof = calloc(1, sizeof(dt_colorspaces_color_profile_t));
@@ -1983,6 +2190,16 @@ static void update_profile_list(dt_iop_module_t *self)
     prof->type = DT_COLORSPACE_EMBEDDED_MATRIX;
     g->image_profiles = g_list_append(g->image_profiles, prof);
     prof->in_pos = ++pos;
+
+    if(!dt_is_valid_colormatrix(self->dev->image_storage.dng_forward_matrix[0]) && has_dng_look)
+    {
+      prof = calloc(1, sizeof(dt_colorspaces_color_profile_t));
+      g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_DNG_LOOK, ""),
+                sizeof(prof->name));
+      prof->type = DT_COLORSPACE_DNG_LOOK;
+      g->image_profiles = g_list_append(g->image_profiles, prof);
+      prof->in_pos = ++pos;
+    }
   }
 
   // use the DNG forward matrix if present -- gives the "as intended by

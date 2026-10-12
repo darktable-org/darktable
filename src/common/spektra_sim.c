@@ -65,30 +65,6 @@
 
 #define SF_LOG_EPS 1e-10
 
-/* 4-pixel NEON 3×3 matrix multiply: vld3q → vmlaq_n ×3 → vst3q. */
-#if defined(__ARM_NEON)
-#include <arm_neon.h>
-
-static inline void neon_mat3_mulv_batch(const float m[9],
-                                        const float *in,
-                                        float out[12])
-{
-  float32x4x3_t rgb = vld3q_f32(in);
-  const float32x4_t r0 = rgb.val[0], r1 = rgb.val[1], r2 = rgb.val[2];
-  float32x4_t x0 = vmulq_n_f32(r0, m[0]);
-  x0 = vmlaq_n_f32(x0, r1, m[1]);
-  x0 = vmlaq_n_f32(x0, r2, m[2]);
-  float32x4_t x1 = vmulq_n_f32(r0, m[3]);
-  x1 = vmlaq_n_f32(x1, r1, m[4]);
-  x1 = vmlaq_n_f32(x1, r2, m[5]);
-  float32x4_t x2 = vmulq_n_f32(r0, m[6]);
-  x2 = vmlaq_n_f32(x2, r1, m[7]);
-  x2 = vmlaq_n_f32(x2, r2, m[8]);
-  rgb.val[0] = x0; rgb.val[1] = x1; rgb.val[2] = x2;
-  vst3q_f32(out, rgb);
-}
-#endif /* __ARM_NEON */
-
 /* pow10 / log10 through spektra_core.h's own exp2/log2, NOT the platform
    exp2f/log2f. The kernel has to compute the same thing, and OpenCL specifies
    exp2/log2 only to <=3 ULP where glibc rounds correctly, so a library call
@@ -781,7 +757,7 @@ int sf_pack_peek_tables(const char *dir,
     return 0;
   }
   JsonNode *rootn = json_parser_get_root(parser);
-  JsonObject *root = rootn ? json_node_get_object(rootn) : NULL;
+  JsonObject *root = (rootn && JSON_NODE_HOLDS_OBJECT(rootn)) ? json_node_get_object(rootn) : NULL;
   if(!root)
   {
     g_object_unref(parser);
@@ -1065,7 +1041,13 @@ sf_pack_t *sf_pack_load(const char *dir,
     g_clear_error(&gerr);
     goto fail;
   }
-  JsonObject *root = json_node_get_object(json_parser_get_root(pack->parser));
+  JsonNode *rootn = json_parser_get_root(pack->parser);
+  JsonObject *root = (rootn && JSON_NODE_HOLDS_OBJECT(rootn)) ? json_node_get_object(rootn) : NULL;
+  if(!root)
+  {
+    set_error(errmsg, "spektra_sim: %s is not a JSON object", json_path);
+    goto fail;
+  }
   pack->version = json_dup_string(root, "spektrafilm_version");
 
   /* Container format check, before anything is read out of the object. A pack
@@ -1110,8 +1092,12 @@ sf_pack_t *sf_pack_load(const char *dir,
 
   /* spectral locus polygon */
   {
-    JsonArray *arr = json_object_get_array_member(root, "spectral_locus_xy");
-    if(!arr)
+    JsonNode *node = json_object_has_member(root, "spectral_locus_xy")
+                         ? json_object_get_member(root, "spectral_locus_xy") : NULL;
+    JsonArray *arr = (node && JSON_NODE_HOLDS_ARRAY(node)) ? json_node_get_array(node) : NULL;
+    /* a polygon needs at least a closed triangle: three vertices plus the
+       repeated first one */
+    if(!arr || json_array_get_length(arr) < 4)
     {
       set_error(errmsg, "spektra_sim: pack.json misses spectral_locus_xy");
       goto fail;
@@ -1120,7 +1106,13 @@ sf_pack_t *sf_pack_load(const char *dir,
     pack->locus = g_malloc0(sizeof(double) * 2 * pack->locus_n);
     for(int i = 0; i < pack->locus_n; i++)
     {
-      JsonArray *row = json_array_get_array_element(arr, i);
+      JsonNode *rn = json_array_get_element(arr, i);
+      JsonArray *row = (rn && JSON_NODE_HOLDS_ARRAY(rn)) ? json_node_get_array(rn) : NULL;
+      if(!row || json_array_get_length(row) != 2)
+      {
+        set_error(errmsg, "spektra_sim: pack.json has a malformed spectral_locus_xy");
+        goto fail;
+      }
       pack->locus[i][0] = json_array_get_double_element(row, 0);
       pack->locus[i][1] = json_array_get_double_element(row, 1);
     }
@@ -1328,8 +1320,12 @@ bool sf_pack_film_defaults(const sf_pack_t *pack,
   JsonObject *db = json_node_get_object(pack->film_defaults);
   if(!db || !json_object_has_member(db, film_stock)) return false;
   JsonObject *entry = json_object_get_object_member(db, film_stock);
-  JsonObject *dc = json_object_get_object_member(entry, "dir_couplers");
-  JsonObject *ha = json_object_get_object_member(entry, "halation");
+  if(!entry) return false;
+  /* has_member first: json-glib raises a critical for an absent member */
+  JsonObject *dc = json_object_has_member(entry, "dir_couplers")
+                       ? json_object_get_object_member(entry, "dir_couplers") : NULL;
+  JsonObject *ha = json_object_has_member(entry, "halation")
+                       ? json_object_get_object_member(entry, "halation") : NULL;
   if(dc)
   {
     if(gamma_samelayer) json_read_darray(dc, "gamma_samelayer_rgb", gamma_samelayer, 3);
@@ -1452,7 +1448,18 @@ sf_profile_t *sf_profile_load(const char *path,
       ok = FALSE;
   }
   else
-    ok &= json_read_darray(data, "base_density", p->base_density, SF_NWL);
+  {
+    /* a stock characterised at a single development may store its base
+       density as a one-member family, (n_wl, 1), instead of a flat vector */
+    JsonNode *bn = json_object_has_member(data, "base_density")
+                       ? json_object_get_member(data, "base_density") : NULL;
+    JsonArray *ba = (bn && JSON_NODE_HOLDS_ARRAY(bn)) ? json_node_get_array(bn) : NULL;
+    JsonNode *b0 = (ba && json_array_get_length(ba)) ? json_array_get_element(ba, 0) : NULL;
+    if(b0 && JSON_NODE_HOLDS_ARRAY(b0))
+      ok &= json_read_dmatrix(data, "base_density", p->base_density, SF_NWL, 1);
+    else
+      ok &= json_read_darray(data, "base_density", p->base_density, SF_NWL);
+  }
   ok &= json_read_darray(data, "log_exposure", p->log_exposure, SF_NLE);
   if(dev_family)
   {
@@ -1800,7 +1807,7 @@ static inline float reinhard_knee_f(float d,
   const float scale = limit - threshold;
   const float x = (d - threshold) / scale;
   const float y = x / powf(1.0f + powf(x, power), 1.0f / power);
-  return threshold + scale * y;
+  return fmaf(scale, y, threshold); /* matching sf_knee() in spektrafilm.cl */
 }
 
 /* distance from origin along unit direction to the first polygon crossing */
@@ -2125,14 +2132,18 @@ static inline float hermite_value_f(float y0,
                                     float m1,
                                     float t)
 {
+  /* fma-pinned, matching sf_hermite() / sf_lerp() in spektrafilm.cl */
   const float t2 = t * t, t3 = t2 * t;
-  return (2.0f * t3 - 3.0f * t2 + 1.0f) * y0 + (t3 - 2.0f * t2 + t) * m0
-         + (-2.0f * t3 + 3.0f * t2) * y1 + (t3 - t2) * m1;
+  const float h00 = fmaf(2.0f, t3, fmaf(-3.0f, t2, 1.0f));
+  const float h10 = fmaf(-2.0f, t2, t3) + t;
+  const float h01 = fmaf(-2.0f, t3, 3.0f * t2);
+  const float h11 = t3 - t2;
+  return fmaf(h00, y0, fmaf(h10, m0, fmaf(h01, y1, h11 * m1)));
 }
 
 static inline float linear_mix_f(float v0,
                                  float v1,
-                                 float t) { return v0 + t * (v1 - v0); }
+                                 float t) { return fmaf(t, v1 - v0, v0); }
 
 /* float, single-precision twin of pchip3d_interp() below -- same monotone
    cubic Hermite blend over the same slope/bound tables, term for term the
@@ -2416,7 +2427,8 @@ static inline float interp_curve_uniform_f(float x,
   if(t >= (float)(SF_NLE - 1)) return curves[SF_NLE - 1][c];
   const int i = (int)t;
   const float f = t - i;
-  return curves[i][c] + f * (curves[i + 1][c] - curves[i][c]);
+  /* fma-pinned, matching sf_curve() in spektrafilm.cl */
+  return fmaf(f, curves[i + 1][c] - curves[i][c], curves[i][c]);
 }
 
 /* ------------------------------------------------------------------------ */
@@ -2510,12 +2522,26 @@ static void _sf_build_grain_layers(sf_sim_t *s,
                                    const double density_min[3],
                                    const double uniformity[3],
                                    const double rms[3],
-                                   const double particle_scale[SF_GRAIN_MAX_SUBLAYERS],
+                                   const double particle_scale_in[SF_GRAIN_MAX_SUBLAYERS],
                                    int n_scale)
 {
   const sf_curves_model_t *m = &film->curves_model;
-  const int nl = (m->n_layers > 1 && n_scale > 1) ? MIN(m->n_layers, MIN(n_scale, SF_GRAIN_MAX_SUBLAYERS))
-                                                   : 1;
+  n_scale = MIN(n_scale, SF_GRAIN_MAX_SUBLAYERS);
+  const int nl = (m->n_layers > 1 && n_scale > 1) ? MIN(m->n_layers, SF_GRAIN_MAX_SUBLAYERS) : 1;
+  /* Every layer of the curve model is sampled: the inverse lookup reads the
+     summed layer curve as the film's total density, so a model layer left out
+     of the sum would leave each draw short of the density it is compared
+     against, and the delta with a mean of minus that layer's density. Where
+     the pack lists fewer scales than the model has layers, the missing ones
+     continue the geometric progression of the last two listed. */
+  double particle_scale[SF_GRAIN_MAX_SUBLAYERS] = { 0.0 };
+  for(int l = 0; l < MIN(n_scale, nl); l++) particle_scale[l] = particle_scale_in[l];
+  if(nl > n_scale)
+  {
+    const double prev = particle_scale_in[n_scale - 2], last = particle_scale_in[n_scale - 1];
+    const double ratio = (prev > 0.0 && last > 0.0) ? last / prev : 0.5;
+    for(int l = n_scale; l < nl; l++) particle_scale[l] = particle_scale[l - 1] * ratio;
+  }
   s->grain_n_sublayers = nl;
   const float ref_um = SF_GRAIN_REF_UM;
   const double pix_ref = (double)ref_um * (double)ref_um;
@@ -2925,6 +2951,14 @@ static void build_print_curves(double (*curves)[3],
   const sf_curves_model_t *m = &print->curves_model;
   const int nl = m->n_layers;
 
+  /* a paper without a curve model has nothing to evaluate or morph; its
+     measured curves are what it develops along */
+  if(nl <= 0)
+  {
+    memcpy(curves, print->density_curves, sizeof(double) * SF_NLE * 3);
+    return;
+  }
+
   for(int c = 0; c < 3; c++)
   {
     double centers[8], amps[8], sigmas[8], alphas[8];
@@ -3208,8 +3242,9 @@ static inline float cmax_lookup_f(const sf_sim_t *s,
   const float v01 = T[(size_t)L_lo * SF_CMAX_NH + h_hi];
   const float v10 = T[(size_t)L_hi * SF_CMAX_NH + h_lo];
   const float v11 = T[(size_t)L_hi * SF_CMAX_NH + h_hi];
-  return v00 * (1 - L_frac) * (1 - h_frac) + v01 * (1 - L_frac) * h_frac
-         + v10 * L_frac * (1 - h_frac) + v11 * L_frac * h_frac;
+  /* fma-pinned, matching sf_cmax_lookup() in spektrafilm.cl */
+  const float l0 = 1.0f - L_frac, hh0 = 1.0f - h_frac;
+  return fmaf(v00 * l0, hh0, fmaf(v01 * l0, h_frac, fmaf(v10 * L_frac, hh0, (v11 * L_frac) * h_frac)));
 }
 
 /* [gc] compress_rgb_oklch_chroma with lightness_compression (0.7, 1, 2.2),
@@ -3314,7 +3349,10 @@ float sf_sim_probe_lightness_scale(const sf_sim_t *sim,
  * the highlight/gamut compressor (compress_rgb_oklch_f/aces_f), using
  * `boost_override` in place of sim->out_luminance_boost, and returns the
  * resulting OkLab lightness -- the precompression-boost picker's actual
- * measurement primitive. This needs the pre-compression value specifically:
+ * measurement primitive. out_scale is held at 1: it is applied after the
+ * compressor, so it is no part of what the boost hands to it, and with the
+ * scanner black/white point clipping Y at 1 a scale below 0.97^3 would put
+ * the picker's 0.97 target out of reach at any boost. This needs the pre-compression value specifically:
  * the reinhard knee (see SF_OUT_LIGHT_T/_L/_P) asymptotically approaches its
  * limit regardless of how hard the input is pushed, so measuring the
  * post-compression lightness would tell the picker almost nothing about how
@@ -3332,6 +3370,7 @@ float sf_sim_probe_lightness(const sf_sim_t *sim,
   sf_sim_t tmp_sim = *sim;
   tmp_sim.out_luminance_boost = (double)boost_override;
   tmp_sim.out_compress = SF_OUTPUT_COMPRESS_OFF;
+  tmp_sim.out_scale = 1.0;
   return _probe_lightness_run(&tmp_sim, rgb_in);
 }
 
@@ -3826,6 +3865,12 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     if(p->input_gamut_compress)
     {
       double *old = malloc((size_t)n * n * 3 * sizeof(double));
+      if(!old)
+      {
+        set_error(errmsg, "spektra_sim: out of memory for the input gamut remap");
+        sf_sim_free(s);
+        return NULL;
+      }
       memcpy(old, s->tc_lut, (size_t)n * n * 3 * sizeof(double));
       const double scale = (double)(n - 1);
 #ifdef _OPENMP
@@ -4203,6 +4248,16 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
   /* ----- printing -------------------------------------------------------- */
   if(s->has_print)
   {
+    /* print develop indexes the paper's curves with the film's exposure grid
+       (le0 / le_step), which holds only while both profiles share it */
+    for(int i = 0; i < SF_NLE; i++)
+      if(fabs(print->log_exposure[i] - film->log_exposure[i]) > 1e-9)
+      {
+        set_error(errmsg, "spektra_sim: film and print profiles use different "
+                          "log-exposure grids");
+        sf_sim_free(s);
+        return NULL;
+      }
     const double *illu_src = g_hash_table_lookup(pack->illuminants, p->enlarger_illuminant);
     const double *filters = g_hash_table_lookup(pack->dichroics, p->dichroic_brand);
     if(!illu_src || !filters)
@@ -4661,47 +4716,6 @@ void sf_sim_expose(const sf_sim_t *sim,
                    int nch_in,
                    int nch_out)
 {
-#if defined(__ARM_NEON)
-  if(nch_in == 3 && nch_out == 3 && sim->tc_lut_f && npix >= 4)
-  {
-    const size_t n4 = npix & ~(size_t)3; /* round down to multiple of 4 */
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static)
-#endif
-    for(size_t px = 0; px < n4; px += 4)
-    {
-      const float *in = rgb_in + px * 3;
-      float *out = raw + px * 3;
-      float xyz[12];
-      neon_mat3_mulv_batch(sim->m_in_f, in, xyz);
-      for(int k = 0; k < 4; k++)
-      {
-        const float *xyz_k = xyz + k * 3;
-        float r[3];
-        const float b = xyz_k[0] + xyz_k[1] + xyz_k[2];
-        /* see expose_pixel_f: reciprocal-multiply, matching spektrafilm_expose */
-        const float inv_b = 1.0f / fmaxf(b, 1e-10f);
-        const float xy[2] = { xyz_k[0] * inv_b, xyz_k[1] * inv_b };
-        float tc[2];
-        tri2quad_f(tc, xy);
-        const float scale = (float)(sim->tc_n - 1);
-        cubic_interp_2d_f(r, sim->tc_lut_f, sim->tc_n, tc[0] * scale, tc[1] * scale);
-        const float bb = isfinite(b) ? b : 0.0f;
-        for(int c = 0; c < 3; c++) out[k * 3 + c] = r[c] * bb * sim->ev_scale_f;
-      }
-    }
-    /* remainder (1-3 pixels, scalar fallback) */
-    for(size_t px = n4; px < npix; px++)
-    {
-      const float *in = rgb_in + px * 3;
-      float *out = raw + px * 3;
-      float r[3];
-      expose_pixel_f(sim->m_in_f, sim->tc_lut_f, sim->tc_n, in, r);
-      for(int c = 0; c < 3; c++) out[c] = r[c] * sim->ev_scale_f;
-    }
-    return;
-  }
-#endif
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
 #endif
@@ -4758,12 +4772,11 @@ void sf_sim_develop_corr(const sf_sim_t *sim,
         silver[c] = silver[c] * ((float)sim->couplers_donor_K[c] + (float)sim->couplers_donor_Dref[c])
                     / ((float)sim->couplers_donor_K[c] + silver[c]);
     }
+    /* fma-pinned, matching spektrafilm_develop_corr */
     for(int m = 0; m < 3; m++)
-    {
-      float acc = 0.0f;
-      for(int k = 0; k < 3; k++) acc += silver[k] * (float)sim->couplers_M[k][m];
-      out[m] = acc;
-    }
+      out[m] = fmaf(silver[0], (float)sim->couplers_M[0][m],
+                    fmaf(silver[1], (float)sim->couplers_M[1][m],
+                         silver[2] * (float)sim->couplers_M[2][m]));
   }
 }
 
@@ -4930,7 +4943,7 @@ void sf_sim_scan(const sf_sim_t *sim,
     if(sim->scan_bw_on)
     {
       const float y = xyz[1];
-      float yc = (float)sim->scan_bw_m * y + (float)sim->scan_bw_q;
+      float yc = fmaf((float)sim->scan_bw_m, y, (float)sim->scan_bw_q);
       yc = yc < 0.0f ? 0.0f : (yc > 1.0f ? 1.0f : yc);
       const float sc = yc / (y + 1e-10f);
       for(int m = 0; m < 3; m++) xyz[m] *= sc;
@@ -5281,7 +5294,8 @@ static float _sf_grain_curve_sample(const float *arr,
   if(i0 < 0) i0 = 0;
   if(i0 > n - 2) i0 = (n - 2 < 0) ? 0 : n - 2;
   const float frac = pos - (float)i0;
-  return arr[i0 * stride] * (1.0f - frac) + arr[(i0 + 1) * stride] * frac;
+  /* fma-pinned, matching sf_cl_grain_curve_sample() */
+  return fmaf(arr[(i0 + 1) * stride], frac, arr[i0 * stride] * (1.0f - frac));
 }
 
 /* Multi-sublayer grain delta, for a film whose fitted density-curve model has

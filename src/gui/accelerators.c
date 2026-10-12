@@ -28,6 +28,7 @@
 #include "gui/presets.h"
 #include "dtgtk/expander.h"
 #include "bauhaus/bauhaus.h"
+#include "develop/masks.h"
 
 #include <gtk/gtk.h>
 #include <math.h>
@@ -5035,6 +5036,18 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
        || dt_gdk_event_get_keyval(event) == GDK_KEY_Meta_R
        || dt_gdk_event_get_keyval(event) == GDK_KEY_ISO_Level3_Shift)
       return FALSE;
+
+    // Escape cancels the shape being drawn ahead of the lookup below, so it
+    // wins over any user binding of Escape while a shape is being added, and
+    // reaches that binding as usual the rest of the time
+    if(!_sc.action && !dt_action_widget(darktable.control->mapping_widget)
+       && (dt_view_get_current() & DT_VIEW_DARKROOM)
+       && dt_gdk_event_get_keyval(event) == GDK_KEY_Escape
+       && !_key_modifiers_clean(dt_gdk_event_get_state(event)))
+    {
+      if(dt_masks_cancel_creation())
+        return TRUE;
+    }
 
     dt_shortcut_t ko = { .key = _fix_keyval(event) - 1, .press = 0x7,
                          .views = dt_view_get_current() };

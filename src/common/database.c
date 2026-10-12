@@ -4669,7 +4669,7 @@ start:
     // we inform the user here and let him decide what to do: exit or delete and try again.
 
     gchar* quick_check_text = NULL;
-    if(g_strcmp0(libdb_status, "ok")) // data_status is not ok
+    if(g_strcmp0(libdb_status, "ok"))
     {
       quick_check_text = g_strdup_printf(_("quick_check said:\n"
                                           "%s \n"), libdb_status);
@@ -4722,7 +4722,7 @@ start:
                                                  "it seems that the database is corrupted.\n"
                                                  "%s"
                                                  "%s"),
-                                               dbfilename_data, quick_check_text, label_options);
+                                               dbfilename_library, quick_check_text, label_options);
 
     g_free(quick_check_text);
     g_free(libdb_status);
