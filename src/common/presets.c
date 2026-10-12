@@ -31,8 +31,10 @@
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 
+#include <float.h>
 #include <glib.h>
 #include <inttypes.h>
+#include <math.h>
 #include <sqlite3.h>
 
 static char *_preset_encode(sqlite3_stmt *stmt,
@@ -776,6 +778,186 @@ void dt_presets_write(const int rowid, const dt_presets_write_t *p)
 
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+}
+
+void dt_presets_update_params(const char *operation,
+                              const int op_version,
+                              const char *name,
+                              const void *op_params,
+                              const int op_params_size,
+                              const int enabled,
+                              const void *blendop_params,
+                              const int blendop_params_size,
+                              const int blendop_version)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE data.presets"
+                              " SET op_version=?2, op_params=?3, enabled=?4, "
+                              "     blendop_params=?5, blendop_version=?6"
+                              " WHERE name=?7 AND operation=?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, operation, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, op_version);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, op_params, op_params_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, enabled);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, blendop_params, blendop_params_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, blendop_version);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 7, name, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+static void *_blob_copy(sqlite3_stmt *stmt, const int col, int *size)
+{
+  const void *blob = sqlite3_column_blob(stmt, col);
+  *size = sqlite3_column_bytes(stmt, col);
+  if(!blob) return NULL;
+  void *copy = g_malloc(*size);
+  memcpy(copy, blob, *size);
+  return copy;
+}
+
+gboolean dt_presets_get_params(const char *operation,
+                               const int op_version,
+                               const char *name,
+                               dt_presets_params_t *p)
+{
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+     dt_database_get(darktable.db),
+     "SELECT op_params, enabled, blendop_params, blendop_version, writeprotect,"
+     "       multi_name, multi_name_hand_edited"
+     " FROM data.presets"
+     " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
+     -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, operation, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, op_version);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, name, -1, SQLITE_TRANSIENT);
+  const gboolean found = sqlite3_step(stmt) == SQLITE_ROW;
+  if(found)
+  {
+    p->op_params = _blob_copy(stmt, 0, &p->op_params_size);
+    p->enabled = sqlite3_column_int(stmt, 1);
+    p->blendop_params = _blob_copy(stmt, 2, &p->blendop_params_size);
+    p->blendop_version = sqlite3_column_int(stmt, 3);
+    p->writeprotect = sqlite3_column_int(stmt, 4);
+    p->multi_name = g_strdup((const char *)sqlite3_column_text(stmt, 5));
+    p->multi_name_hand_edited = sqlite3_column_int(stmt, 6);
+  }
+  sqlite3_finalize(stmt);
+  return found;
+}
+
+void dt_presets_params_clear(dt_presets_params_t *p)
+{
+  g_free(p->name);
+  g_free(p->op_params);
+  g_free(p->blendop_params);
+  g_free(p->multi_name);
+  memset(p, 0, sizeof(*p));
+}
+
+char *dt_presets_adjacent_name(const char *operation,
+                               const int op_version,
+                               const char *name,
+                               const int direction)
+{
+  char *found = NULL;
+  sqlite3_stmt *stmt;
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT name"
+                                 " FROM data.presets"
+                                 " WHERE operation=?1 AND op_version=?2 AND"
+                                 "       (?3='' OR LOWER(name) %s LOWER(?3))"
+                                 " ORDER BY writeprotect %s, LOWER(name) %s"
+                                 " LIMIT ?4",
+                                 direction < 0 ? "<" : ">",
+                                 direction < 0 ? "ASC" : "DESC",
+                                 direction < 0 ? "DESC" : "ASC");
+  // clang-format on
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, operation, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, op_version);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, name ? name : "", -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, abs(direction));
+  g_free(query);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    g_free(found);
+    found = g_strdup((gchar *)sqlite3_column_text(stmt, 0));
+  }
+  sqlite3_finalize(stmt);
+  return found;
+}
+
+gboolean dt_presets_find_autoapply(const char *operation,
+                                   const int op_version,
+                                   const dt_image_t *image,
+                                   const gboolean is_display_referred,
+                                   const char *workflow_preset,
+                                   dt_presets_params_t *p)
+{
+  char *format_filter = dt_presets_get_filter(image);
+
+  // Take the first auto-applied preset (autoapply = 1) and select first the
+  // user's presets if they exist (writeprotect = 0) by ordering on writeprotect.
+  // Also make sure we pick the last user's defined preset (ORDER BY rowid DESC).
+  char query[2024];
+  // clang-format off
+  snprintf(query, sizeof(query),
+     "SELECT name, op_params, blendop_params"
+     " FROM data.presets"
+     " WHERE operation = ?1"
+     "        AND ((autoapply=1"
+     "           AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
+     "           AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
+     "           AND ?8 BETWEEN exposure_min AND exposure_max"
+     "           AND ?9 BETWEEN aperture_min AND aperture_max"
+     "           AND ?10 BETWEEN focal_length_min AND focal_length_max"
+     "           AND (%s)"
+     "           AND operation NOT IN"
+     "               ('ioporder', 'metadata', 'export', 'tagging', 'collect', '%s'))"
+     "  OR (name = ?13)) AND op_version = ?14"
+     " ORDER BY writeprotect ASC, rowid DESC",
+     format_filter,
+     is_display_referred?"":"basecurve");
+  // clang-format on
+
+  g_free(format_filter);
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, operation, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, image->exif_maker, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, image->camera_alias, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, image->camera_maker, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 6, image->exif_lens, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f,
+                                              fminf(FLT_MAX, image->exif_iso)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f,
+                                              fminf(1000000, image->exif_exposure)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f,
+                                              fminf(1000000, image->exif_aperture)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, fmaxf(0.0f,
+                                               fminf(1000000, image->exif_focal_length)));
+  // 0: dontcare, 1: ldr, 2: raw plus monochrome & color
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 13, workflow_preset, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, op_version);
+
+  const gboolean found = sqlite3_step(stmt) == SQLITE_ROW;
+  if(found)
+  {
+    p->name = g_strdup((const char *)sqlite3_column_text(stmt, 0));
+    p->op_params = _blob_copy(stmt, 1, &p->op_params_size);
+    p->blendop_params = _blob_copy(stmt, 2, &p->blendop_params_size);
+  }
+  sqlite3_finalize(stmt);
+  return found;
 }
 
 // clang-format off

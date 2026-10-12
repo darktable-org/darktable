@@ -165,6 +165,62 @@ typedef struct dt_presets_write_t
 /** update the preset at rowid, or insert a new one when rowid < 0 */
 void dt_presets_write(const int rowid, const dt_presets_write_t *p);
 
+/** overwrite the module parameters of the module's preset of that name,
+    whatever its version, with the given ones at version op_version */
+void dt_presets_update_params(const char *operation,
+                              const int op_version,
+                              const char *name,
+                              const void *op_params,
+                              const int op_params_size,
+                              const int enabled,
+                              const void *blendop_params,
+                              const int blendop_params_size,
+                              const int blendop_version);
+
+/** a preset's parameters, blobs copied: an empty or NULL blob is NULL */
+typedef struct dt_presets_params_t
+{
+  char *name;
+  void *op_params;
+  int op_params_size;
+  int enabled;
+  void *blendop_params;
+  int blendop_params_size;
+  int blendop_version;
+  int writeprotect;
+  char *multi_name;
+  int multi_name_hand_edited;
+} dt_presets_params_t;
+
+/** read the module's preset of that name and version into p (name is
+    left NULL); FALSE when there is none. Release with
+    dt_presets_params_clear() */
+gboolean dt_presets_get_params(const char *operation,
+                               const int op_version,
+                               const char *name,
+                               dt_presets_params_t *p);
+void dt_presets_params_clear(dt_presets_params_t *p);
+
+/** the name of the module's preset up to |direction| steps after name
+    (direction > 0) or before it (direction < 0), in the presets menu
+    order; the last one when fewer follow, NULL when none does. An empty
+    or NULL name starts from the end of the list. Free with g_free() */
+char *dt_presets_adjacent_name(const char *operation,
+                               const int op_version,
+                               const char *name,
+                               const int direction);
+
+/** the preset to auto-apply to the module for the image, among those
+    whose filters match it and the workflow preset: user presets before
+    built-in ones, the newest first. Read into p (name, op_params and
+    blendop_params only); FALSE when there is none */
+gboolean dt_presets_find_autoapply(const char *operation,
+                                   const int op_version,
+                                   const dt_image_t *image,
+                                   const gboolean is_display_referred,
+                                   const char *workflow_preset,
+                                   dt_presets_params_t *p);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

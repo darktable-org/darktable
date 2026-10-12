@@ -79,10 +79,88 @@ static void test_edit_dialog_round_trip(void **state)
   assert_false(dt_presets_exists("renamed", OP, 3));
 }
 
+static void _add(const char *name, const int params, const int autoapply)
+{
+  const int blend = 7;
+  dt_presets_write_t p = {
+    .name = name, .description = "", .model = "%", .maker = "%", .lens = "%",
+    .iso_min = 0.0, .iso_max = FLT_MAX, .exposure_min = 0.0, .exposure_max = 100000000.0,
+    .aperture_min = 0.0, .aperture_max = 100000000.0,
+    .focal_length_min = 0.0, .focal_length_max = 1000.0,
+    .autoapply = autoapply, .format = 0,
+    .iop = TRUE, .op_params = &params, .op_params_size = sizeof(params), .enabled = 1,
+    .multi_name = "", .multi_name_hand_edited = 0,
+    .operation = OP, .op_version = 5,
+    .blendop_params = &blend, .blendop_params_size = sizeof(blend), .blendop_version = 2,
+  };
+  dt_presets_write(-1, &p);
+}
+
+static void test_apply_and_step(void **state)
+{
+  _add("alpha", 1, 0);
+  _add("beta", 2, 0);
+  _add("gamma", 3, 0);
+
+  dt_presets_params_t p = { 0 };
+  assert_true(dt_presets_get_params(OP, 5, "beta", &p));
+  assert_int_equal(p.op_params_size, sizeof(int));
+  assert_int_equal(*(int *)p.op_params, 2);
+  assert_int_equal(p.enabled, 1);
+  assert_int_equal(p.blendop_version, 2);
+  assert_string_equal(p.multi_name, "");
+  dt_presets_params_clear(&p);
+  assert_false(dt_presets_get_params(OP, 4, "beta", &p));
+
+  // the menu's next and previous, by name
+  gchar *n = dt_presets_adjacent_name(OP, 5, "beta", 1);
+  assert_string_equal(n, "gamma");
+  g_free(n);
+  n = dt_presets_adjacent_name(OP, 5, "beta", -1);
+  assert_string_equal(n, "alpha");
+  g_free(n);
+  n = dt_presets_adjacent_name(OP, 5, "alpha", 2);
+  assert_string_equal(n, "gamma");
+  g_free(n);
+  assert_null(dt_presets_adjacent_name(OP, 5, "gamma", 1));
+
+  // updating the params moves the preset to the given version
+  const int params = 9;
+  dt_presets_update_params(OP, 6, "beta", &params, sizeof(params), 0, NULL, 0, 3);
+  assert_false(dt_presets_get_params(OP, 5, "beta", &p));
+  assert_true(dt_presets_get_params(OP, 6, "beta", &p));
+  assert_int_equal(*(int *)p.op_params, 9);
+  assert_int_equal(p.enabled, 0);
+  assert_null(p.blendop_params);
+  dt_presets_params_clear(&p);
+}
+
+static void test_autoapply(void **state)
+{
+  dt_image_t image;
+  memset(&image, 0, sizeof(image));
+
+  // the workflow preset is picked even without autoapply
+  dt_presets_params_t p = { 0 };
+  assert_true(dt_presets_find_autoapply(OP, 5, &image, TRUE, "gamma", &p));
+  assert_string_equal(p.name, "gamma");
+  assert_int_equal(*(int *)p.op_params, 3);
+  dt_presets_params_clear(&p);
+  assert_false(dt_presets_find_autoapply(OP, 5, &image, TRUE, "\t\n", &p));
+
+  // an auto-applied user preset matching everything comes first
+  _add("auto", 4, 1);
+  assert_true(dt_presets_find_autoapply(OP, 5, &image, TRUE, "gamma", &p));
+  assert_string_equal(p.name, "auto");
+  dt_presets_params_clear(&p);
+}
+
 int main(int argc, char *argv[])
 {
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_edit_dialog_round_trip),
+    cmocka_unit_test(test_apply_and_step),
+    cmocka_unit_test(test_autoapply),
   };
   return cmocka_run_group_tests(tests, dt_test_catalog_setup, dt_test_catalog_teardown);
 }
