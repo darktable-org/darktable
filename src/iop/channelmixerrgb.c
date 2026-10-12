@@ -2049,12 +2049,15 @@ static void _set_trouble_messages(dt_iop_module_t *self)
   const gboolean temperature_enabled = temperature->enabled;
   const gboolean adaptation_enabled = adaptation->enabled;
 
+  dt_dev_wb_t wb;
+  dt_dev_get_gui_wb(self->dev, &wb);
+
   // this instance does CAT while WB uses an incompatible setup (neither camera reference
   // D65, nor another mode with late_correction)
   const gboolean wb_applied_twice = valid
                             && adaptation == self
                             && temperature_enabled
-                            && !_dev_is_D65_chroma(&self->dev->chroma.wb);
+                            && !_dev_is_D65_chroma(&wb);
 
   // another channelmixerrgb instance is doing CAT
   // earlier in the pipe, and we don't use masking here
@@ -3098,7 +3101,10 @@ static void _preview_pipe_finished_callback(gpointer instance, dt_iop_module_t *
     // WB coefficients might have changed temperature.c; recalculate xy and update the GUI
     float x, y;
 
-    if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), self->dev->chroma.wb.coeffs, &x, &y))
+    dt_dev_wb_t wb;
+    dt_dev_get_gui_wb(self->dev, &wb);
+
+    if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), wb.coeffs, &x, &y))
     {
       DT_ENTER_GUI_UPDATE();
       _update_approx_cct(self);
@@ -3628,7 +3634,11 @@ static gboolean _illuminant_color_draw(GtkWidget *widget,
   float x = p->x;
   float y = p->y;
   dt_aligned_pixel_t RGB = { 0.f };
-  _get_corrected_illuminant_xy(self, &self->dev->chroma.wb, p, &x, &y);
+
+  dt_dev_wb_t wb;
+  dt_dev_get_gui_wb(self->dev, &wb);
+
+  _get_corrected_illuminant_xy(self, &wb, p, &x, &y);
   illuminant_xy_to_RGB(x, y, RGB);
   cairo_set_source_rgb(cr, RGB[0], RGB[1], RGB[2]);
   cairo_rectangle(cr, INNER_PADDING, margin, width, height);
@@ -3728,7 +3738,11 @@ static void _update_approx_cct(const dt_iop_module_t *self)
 
   float x = p->x;
   float y = p->y;
-  _get_corrected_illuminant_xy(self, &self->dev->chroma.wb, p, &x, &y);
+
+  dt_dev_wb_t wb;
+  dt_dev_get_gui_wb(self->dev, &wb);
+
+  _get_corrected_illuminant_xy(self, &wb, p, &x, &y);
 
   dt_illuminant_t test_illuminant;
   float t = 5000.f;
@@ -3984,6 +3998,8 @@ void reload_defaults(dt_iop_module_t *self)
   {
     d->adaptation = DT_ADAPTATION_CAT16;
 
+    // can't get WB via dt_dev_get_gui_wb() here: while defaults load, temperature's
+    // params still belong to the previous image, or are temperature's defaults
     dt_aligned_pixel_t correction_ratios;
     if(!_get_d65_correction_ratios(self, &self->dev->chroma.wb, correction_ratios))
     {
@@ -4066,6 +4082,9 @@ void gui_changed(dt_iop_module_t *self,
   dt_iop_channelmixer_rgb_params_t *p = self->params;
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
+  dt_dev_wb_t wb;
+  dt_dev_get_gui_wb(self->dev, &wb);
+
   if(w == g->illuminant)
   {
     if(previous)
@@ -4081,7 +4100,7 @@ void gui_changed(dt_iop_module_t *self,
         // chromaticity are inited with the preset content when
         // illuminant is changed.
         dt_aligned_pixel_t correction_ratios;
-        _get_d65_correction_ratios(self, &self->dev->chroma.wb, correction_ratios);
+        _get_d65_correction_ratios(self, &wb, correction_ratios);
         find_illuminant_xy_from_as_shot_coeffs(&(self->dev->image_storage), correction_ratios,
                                          &(p->x), &(p->y));
         _check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
@@ -4092,7 +4111,7 @@ void gui_changed(dt_iop_module_t *self,
         // (x, y) were computed at runtime from the WB module's coefficients
         // and p->x, p->y may hold stale values. Recompute them now so
         // the new illuminant mode starts from the correct chromaticity.
-        find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), self->dev->chroma.wb.coeffs,
+        find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), wb.coeffs,
                                          &(p->x), &(p->y));
         _check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
       }
@@ -4108,7 +4127,7 @@ void gui_changed(dt_iop_module_t *self,
     {
       // Get camera WB and update illuminant
       dt_aligned_pixel_t correction_ratios;
-      _get_d65_correction_ratios(self, &self->dev->chroma.wb, correction_ratios);
+      _get_d65_correction_ratios(self, &wb, correction_ratios);
       const gboolean found = find_illuminant_xy_from_as_shot_coeffs(&(self->dev->image_storage),
                                                          correction_ratios, &(p->x), &(p->y));
       _check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
@@ -4119,7 +4138,7 @@ void gui_changed(dt_iop_module_t *self,
     else if(p->illuminant == DT_ILLUMINANT_FROM_WB)
     {
       const gboolean found = find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage),
-                                                         self->dev->chroma.wb.coeffs, &(p->x), &(p->y));
+                                                         wb.coeffs, &(p->x), &(p->y));
       _check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
 
       if(found)
@@ -4325,7 +4344,11 @@ static void _auto_set_illuminant(dt_iop_module_t *self,
     // find x y coordinates of illuminant for CIE 1931 2° observer
     float x = p->x;
     float y = p->y;
-    _get_corrected_illuminant_xy(self, &self->dev->chroma.wb, p, &x, &y);
+
+    dt_dev_wb_t wb;
+    dt_dev_get_gui_wb(self->dev, &wb);
+
+    _get_corrected_illuminant_xy(self, &wb, p, &x, &y);
 
     dt_adaptation_t adaptation = p->adaptation;
 

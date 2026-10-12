@@ -6,9 +6,13 @@ dev's `dev->chroma` and into each pipe's `pipe->wb`. Color calibration and sever
 modules read it from there. Whether a reader sees current values depends on the order in which
 darktable runs the two modules' callbacks.
 
-In the other direction, white balance's GUI asks color calibration, through a proxy, whether
-any instance applies chromatic adaptation. [White balance asks color calibration through a
-proxy](#white-balance-asks-color-calibration-through-a-proxy) describes this call.
+The two modules' GUIs ask each other through proxies, function pointers in `dev->proxy`. White
+balance's GUI asks color calibration whether any instance applies chromatic adaptation. Color
+calibration's GUI asks white balance for the values that white balance's current params give,
+instead of reading `dev->chroma`. [White balance asks color calibration through a
+proxy](#white-balance-asks-color-calibration-through-a-proxy) and [Color calibration asks white
+balance through a proxy](#color-calibration-asks-white-balance-through-a-proxy) describe these
+calls.
 
 This page describes that state and the ordering it relies on. For the general mechanics (pipe
 change flags, `synch_all` and `synch_top`, the reverse-order default load), see
@@ -29,7 +33,26 @@ change flags, `synch_all` and `synch_top`, the reverse-order default load), see
   later module completes the correction to D65.
 
 Each pipe has its own `dt_dev_wb_t`, `pipe->wb`. White balance's `commit_params()` fills it
-from its own piece, through `_publish_pipe_wb()`.
+from the params that it commits, through `_wb_from_params()`.
+
+### Four places hold white balance values
+
+White balance values are also in two other places: the white balance piece's own data, and the
+descriptor of each buffer that passes down the pipe. The table compares all four. For
+`dev->chroma` and `pipe->wb`, it names only the main writers and readers. [Who writes and reads
+each field](#who-writes-and-reads-each-field) lists all of them.
+
+| Place | Scope | Written by | Holds | Read by |
+|---|---|---|---|---|
+| `dev->chroma.wb` | all pipes of a dev | `temperature.commit_params()`, which copies `pipe->wb`, and `temperature.reload_defaults()` for `D65coeffs[]` | the values that white balance last committed, in any pipe | color calibration's `reload_defaults()`, and white balance's GUI for `D65coeffs[]`. `_wb_from_params()` gets `D65coeffs[]` from it |
+| white balance's `piece->data` (`dt_iop_temperature_data_t`) | the white balance piece of one pipe | `temperature.commit_params()` | the coefficients that white balance multiplies into the image | white balance's `process()` and `process_cl()` |
+| `pipe->wb` | one pipe | `temperature.commit_params()`, through `_wb_from_params()` | what white balance applied, the same for every module in the pipe | colorin, highlight reconstruction, and color calibration |
+| `pipe->dsc.temperature` | one buffer | white balance's `process()` and `process_cl()`, through `_update_pipe_dsc()`, and colorin, which rewrites `coeffs[]` to `D65coeffs[]` when it completes the late correction | the white balance multiplied into this buffer | highlight reconstruction, demosaic (dual demosaic and capture sharpening), denoise (profiled), and the details mask |
+
+`pipe->dsc` is a `dt_iop_buffer_dsc_t`, the descriptor of the buffer that the pipe passes to the
+next module. The pipe cache stores it with the buffer. If white balance is disabled, its
+`process()` does not run, and `temperature` keeps the values of the image's input descriptor:
+`enabled` is `FALSE` and `coeffs[]` are `0` (`dt_image_init()`).
 
 ### Why each pipe has its own copy
 
@@ -45,7 +68,10 @@ parameters, so the wrong image stays in the cache.
 
 So code that runs in a pipe thread reads `pipe->wb`, never `dev->chroma.wb`. The one exception
 is white balance's `commit_params()`, which copies `dev->chroma.wb.D65coeffs[]` into
-`pipe->wb`. GUI code and `reload_defaults()` read `dev->chroma`.
+`pipe->wb`. Color calibration's GUI does not read `dev->chroma.wb` either. It calls
+`dt_dev_get_gui_wb()`, as described in [Color calibration asks white balance through a
+proxy](#color-calibration-asks-white-balance-through-a-proxy). The remaining readers are white
+balance's GUI and color calibration's `reload_defaults()`.
 
 ---
 
@@ -56,16 +82,21 @@ is white balance's `commit_params()`, which copies `dev->chroma.wb.D65coeffs[]` 
 | Field | Written by | Read by |
 |---|---|---|
 | `as_shot[]` | `temperature.reload_defaults()` | `temperature` only (its "as shot" preset, GUI, and debug output) |
-| `wb.D65coeffs[]` | `temperature.reload_defaults()` | `temperature` (GUI), `channelmixerrgb`; `_publish_pipe_wb()` copies it into `pipe->wb` |
-| `wb.coeffs[]` | `temperature.commit_params()` | `channelmixerrgb` |
-| `wb.late_correction` | `temperature.commit_params()`, `_update_preset()` (GUI) | `channelmixerrgb`, through `_dev_is_D65_chroma()` |
+| `wb.D65coeffs[]` | `temperature.reload_defaults()` | `temperature` (GUI, `commit_params()`, and `_gui_wb_proxy()`, which pass it to `_wb_from_params()`), `channelmixerrgb` (`reload_defaults()`) |
+| `wb.coeffs[]` | `temperature.commit_params()`, copied from `pipe->wb` | `channelmixerrgb` (`reload_defaults()`) |
+| `wb.late_correction` | `temperature.commit_params()`, copied from `pipe->wb` | `channelmixerrgb` (`reload_defaults()`, through `_dev_is_D65_chroma()`) |
 | `temperature` | `temperature.commit_params()` | `channelmixerrgb` (`_set_trouble_messages()`) |
 | `adaptation` | `channelmixerrgb` (`_declare_cat_on_pipe()`, only when the module has a GUI; `gui_cleanup()` clears it) | `channelmixerrgb` (`reload_defaults()`, `_set_trouble_messages()`) |
 
-In `channelmixerrgb`, these functions read `dev->chroma.wb`: `reload_defaults()`,
-`_set_trouble_messages()`, and the GUI functions `gui_changed()`,
-`_preview_pipe_finished_callback()`, `_illuminant_color_draw()`, and `_update_approx_cct()`.
-Most of them read it through `_get_d65_correction_ratios()` and `_dev_is_D65_chroma()`.
+`dt_dev_get_gui_wb()` also copies all of `dev->chroma.wb` when no white balance instance
+answers its proxy.
+
+In `channelmixerrgb`, only `reload_defaults()` reads `dev->chroma.wb`, through
+`_get_d65_correction_ratios()` and `_dev_is_D65_chroma()`. While the defaults load, white
+balance's params do not hold the edit's white balance yet, so `reload_defaults()` cannot ask
+the proxy. The GUI functions `gui_changed()`, `_set_trouble_messages()`,
+`_preview_pipe_finished_callback()`, `_illuminant_color_draw()`, `_update_approx_cct()`, and
+`_auto_set_illuminant()` get their `dt_dev_wb_t` from `dt_dev_get_gui_wb()`.
 
 Two functions also reset fields. `dt_dev_reset_chroma()` sets `temperature` and `adaptation` to
 `NULL` and `wb.coeffs[]` to `1.0`. It runs before the defaults of each image are loaded, and
@@ -91,11 +122,16 @@ Notes:
 
 ### `pipe->wb`
 
-`temperature.commit_params()` writes all three fields through `_publish_pipe_wb()`:
+`temperature.commit_params()` writes all three fields through `_wb_from_params()`. White balance
+applies nothing when the piece is disabled or the image is true monochrome:
 
-- `coeffs[]` from its piece, or `1.0` when the piece is disabled.
-- `late_correction` from its piece, or `FALSE` when the piece is disabled.
+- `coeffs[]` from the params, or `1.0` when white balance applies nothing.
+- `late_correction` from the params. It is `FALSE` in camera reference mode
+  (`DT_IOP_TEMP_D65`) and when white balance applies nothing.
 - `D65coeffs[]`, copied from `dev->chroma.wb`.
+
+`commit_params()` then copies `coeffs[]` and `late_correction` from `pipe->wb` into
+`dev->chroma.wb`.
 
 `dt_dev_wb_set_neutral()` sets `pipe->wb` to neutral when the pipe is created.
 
@@ -133,6 +169,32 @@ The proxy has three limits:
 - Nothing clears the pointer. The instance that `_init_module_so()` (`imageop.c`) creates and
   destroys at startup also sets it, so a set pointer does not mean that a live instance exists.
   This is why `dt_dev_cat_is_active()` asks only the instances in `dev->iop`.
+
+---
+
+## Color calibration asks white balance through a proxy
+
+Color calibration's GUI uses white balance's values in several places. It sets `p->x` and
+`p->y` from them in `gui_changed()`, when the user selects `DT_ILLUMINANT_CAMERA` or
+`DT_ILLUMINANT_FROM_WB`, so the values go into the history. It also uses them for the
+illuminant swatch, the approximate CCT, the spot measurement, and the trouble messages.
+
+`dev->chroma.wb` does not suit these readers. It changes only when a pipe commits, so after a
+white balance edit it holds the previous values until the next commit. A pipe thread can also
+rewrite it while the GTK thread reads it.
+
+So these functions call `dt_dev_get_gui_wb()` (`develop.c`). It looks up the white balance
+instance in `dev->iop` and calls `dev->proxy.gui_wb` for it. White balance's `gui_init()` sets
+that pointer to `_gui_wb_proxy()`, which passes the instance's current params,
+`self->enabled`, `self->hide_enable_button`, and `dev->chroma.wb.D65coeffs[]` to
+`_wb_from_params()`. `commit_params()` uses the same function, so the GUI gets the values that
+the next commit writes into `pipe->wb`. The GTK thread owns the params, so the GUI sees an edit
+before any pipe commits it.
+
+This proxy has the same three limits as `cat_is_active`. Call it from the GTK main thread
+only. Only `darktable.develop` gets the pointer. Nothing clears the pointer, so
+`dt_dev_get_gui_wb()` asks only an instance that it finds in `dev->iop`. If no instance
+answers, the helper copies `dev->chroma.wb`. For a `NULL` dev, it returns neutral values.
 
 ---
 
@@ -261,6 +323,8 @@ would let later modules read the previous image's `pipe->wb`.
 ## Developer rules
 
 - Code that runs in a pipe thread reads `pipe->wb`, not `dev->chroma.wb`.
+- GTK code that needs white balance's current values calls `dt_dev_get_gui_wb()`, not
+  `dev->chroma.wb`.
 - A `reload_defaults()` cannot assume that modules earlier in the pipe have already written
   shared state for the current image. In the reverse default load, they have not run yet. Color
   calibration stays correct only because the framework resets `wb.coeffs[]` to neutral before
@@ -280,9 +344,11 @@ would let later modules read the previous image's `pipe->wb`.
 | `dt_dev_init_chroma` | develop.c | Resets, then sets `wb` and `as_shot[]` to neutral; runs when the dev is created and cleaned up |
 | `dt_dev_wb_set_neutral` | develop.c | Sets a `dt_dev_wb_t` to neutral; also used when a pipe is created (`pixelpipe_hb.c`) |
 | `temperature.reload_defaults` | temperature.c | Writes `dev->chroma.as_shot[]` and `dev->chroma.wb.D65coeffs[]` |
-| `temperature.commit_params` | temperature.c | Writes `dev->chroma.wb.coeffs[]`, `dev->chroma.wb.late_correction`, and `dev->chroma.temperature`; fills `pipe->wb` through `_publish_pipe_wb()` |
-| `_publish_pipe_wb` | temperature.c | Fills `pipe->wb` from the white balance piece; copies `D65coeffs[]` from `dev->chroma.wb` |
-| `_update_preset` | temperature.c | GUI: writes `dev->chroma.wb.late_correction` when the user changes the white balance mode; when the user leaves camera reference, sets `p->late_correction` from `dt_dev_cat_is_active()` |
+| `temperature.commit_params` | temperature.c | Fills `pipe->wb` through `_wb_from_params()`; copies its `coeffs[]` and `late_correction` into `dev->chroma.wb`; writes `dev->chroma.temperature` |
+| `_wb_from_params` | temperature.c | Computes the `dt_dev_wb_t` that white balance applies with the given params; used by `commit_params()` and `_gui_wb_proxy()` |
+| `_gui_wb_proxy` | temperature.c | The proxy that white balance's `gui_init()` registers; returns `_wb_from_params()` for the instance's current params |
+| `dt_dev_get_gui_wb` | develop.c | GUI: asks the white balance instance in `dev->iop`, through `dev->proxy.gui_wb`; copies `dev->chroma.wb` if no instance answers |
+| `_update_preset` | temperature.c | GUI: when the user leaves camera reference, sets `p->late_correction` from `dt_dev_cat_is_active()` |
 | `dt_dev_cat_is_active` | develop.c | GUI: asks each color calibration instance in `dev->iop`, through `dev->proxy.cat_is_active`, whether it applies chromatic adaptation |
 | `_cat_proxy_is_active` | channelmixerrgb.c | The proxy that color calibration's `gui_init()` registers; returns `_applies_cat()` |
 | `channelmixerrgb.reload_defaults` | channelmixerrgb.c | Computes the default illuminant from `img->wb_coeffs` |
