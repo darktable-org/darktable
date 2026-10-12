@@ -1243,7 +1243,6 @@ static void _menuitem_manage_quick_presets(GSimpleAction *action,
                                            GVariant *parameter, 
                                            gpointer user_data)
 {
-  sqlite3_stmt *stmt;
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
   GtkWidget *dialog = gtk_dialog_new_with_buttons
     (_("manage module layouts"), win,
@@ -1308,21 +1307,13 @@ static void _menuitem_manage_quick_presets(GSimpleAction *action,
       g_free(iopname);
 
       /* query presets for module */
-      // clang-format off
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT name"
-                                  " FROM data.presets"
-                                  " WHERE operation=?1"
-                                  " ORDER BY writeprotect DESC, LOWER(name), rowid",
-                                  -1, &stmt, NULL);
-      // clang-format on
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, iop->op, -1, SQLITE_TRANSIENT);
+      GList *names = dt_presets_list_names(iop->op, TRUE);
 
       int nb = 0;
-      while(sqlite3_step(stmt) == SQLITE_ROW)
+      for(const GList *l = names; l; l = g_list_next(l))
       {
         nb++;
-        const char *name = (char *)sqlite3_column_text(stmt, 0);
+        const char *name = ((dt_presets_name_t *)l->data)->name;
         gchar *presetname = g_markup_escape_text(name, -1);
         // is this preset part of the list ?
         gchar *txt = g_strdup_printf("ꬹ%s|%sꬹ", iop->op, name);
@@ -1334,7 +1325,7 @@ static void _menuitem_manage_quick_presets(GSimpleAction *action,
         g_free(presetname);
       }
 
-      sqlite3_finalize(stmt);
+      g_list_free_full(names, dt_presets_name_free);
 
       // we don't show modules with no presets
       if(nb == 0) gtk_tree_store_remove(treestore, &toplevel);
@@ -1377,20 +1368,10 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *favorite_presets_button)
                                    G_ACTION_GROUP(action_group));
   }
 
-  sqlite3_stmt *stmt;
   GMenu *menu = g_menu_new();
 
   const gboolean default_first =
     dt_conf_get_bool("plugins/darkroom/default_presets_first");
-
-  // clang-format off
-  gchar *query = g_strdup_printf("SELECT name, writeprotect"
-                                 " FROM data.presets"
-                                 " WHERE operation=?1"
-                                 " ORDER BY writeprotect %s, LOWER(name), rowid",
-                                 default_first ? "DESC" : "ASC"
-                                );
-  // clang-format on
 
   gboolean retrieve_list = FALSE;
   gchar *config = NULL;
@@ -1410,14 +1391,12 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *favorite_presets_button)
     if(dt_dev_modulegroups_is_visible(darktable.develop, iop->so->op))
     {
       /* query presets for module */
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query,
-                                  -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, iop->op, -1, SQLITE_TRANSIENT);
+      GList *names = dt_presets_list_names(iop->op, default_first);
 
-      while(sqlite3_step(stmt) == SQLITE_ROW)
+      for(const GList *l = names; l; l = g_list_next(l))
       {
-        const char *name = (char *)sqlite3_column_text(stmt, 0);
-        const gboolean write_protect = (gboolean)sqlite3_column_int(stmt, 1);
+        const char *name = ((dt_presets_name_t *)l->data)->name;
+        const gboolean write_protect = ((dt_presets_name_t *)l->data)->writeprotect;
         if(retrieve_list)
         {
           // we only show it if module is in favorite
@@ -1451,12 +1430,11 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *favorite_presets_button)
         g_free(txt);
       }
 
-      sqlite3_finalize(stmt);
+      g_list_free_full(names, dt_presets_name_free);
     }
   }
   if(retrieve_list) dt_conf_set_string("plugins/darkroom/quick_preset_list", config);
   g_free(config);
-  g_free(query);
 
   GMenu *submenu = g_menu_new();
   g_menu_append_section(menu, NULL, G_MENU_MODEL(submenu));
