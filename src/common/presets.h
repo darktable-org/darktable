@@ -177,7 +177,8 @@ void dt_presets_update_params(const char *operation,
                               const int blendop_params_size,
                               const int blendop_version);
 
-/** a preset's parameters, blobs copied: an empty or NULL blob is NULL */
+/** a preset's parameters, blobs copied with a zero byte after them: an
+    empty or NULL blob is NULL */
 typedef struct dt_presets_params_t
 {
   char *name;
@@ -190,6 +191,7 @@ typedef struct dt_presets_params_t
   int writeprotect;
   char *multi_name;
   int multi_name_hand_edited;
+  int autoapply;
 } dt_presets_params_t;
 
 /** read the module's preset of that name and version into p (name is
@@ -232,6 +234,34 @@ typedef struct dt_presets_name_t
 GList *dt_presets_list_names(const char *operation,
                              const gboolean writeprotect_first);
 void dt_presets_name_free(gpointer data);
+
+/** the names of the module's presets at that version, built-in ones
+    first, then by name. Free with g_list_free_full(list, g_free) */
+GList *dt_presets_version_names(const char *operation, const int op_version);
+
+/** the name and module parameters of the module's presets at that
+    version, the user's only or all of them.
+    Free with g_list_free_full(list, dt_presets_params_free) */
+GList *dt_presets_list_params(const char *operation,
+                              const int op_version,
+                              const gboolean user_only);
+void dt_presets_params_free(gpointer data);
+
+/** delete all the module's presets at that version, built-in ones too */
+void dt_presets_delete_version(const char *operation, const int op_version);
+
+/** rename the module's preset at that version */
+void dt_presets_rename(const char *operation,
+                       const int op_version,
+                       const char *name,
+                       const char *new_name);
+
+/** the name of the auto-applied preset of a utility module matching the
+    image: built-in ones first, then by name, descending; NULL when there
+    is none. Free with g_free() */
+char *dt_presets_find_lib_autoapply(const char *operation,
+                                    const int op_version,
+                                    const dt_image_t *image);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
