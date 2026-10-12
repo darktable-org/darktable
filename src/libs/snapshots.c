@@ -654,7 +654,6 @@ static void _clear_snapshots(dt_lib_module_t *self)
   for(uint32_t k = 0; k < d->num_snapshots; k++)
   {
     dt_lib_snapshot_t *s = &d->snapshot[k];
-    s->id = SNAPSHOT_ID_OFFSET | k;
     _clear_snapshot_entry(s);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->button), FALSE);
   }
@@ -690,26 +689,41 @@ static void _remove_snapshot_entry(dt_lib_module_t *self, const uint32_t index)
 {
   dt_lib_snapshots_t *d = self->data;
 
+  // the entries after index move down one slot: keep the selection on the
+  // same snapshot, or end the comparison if it is the one removed. A stale
+  // index points at the next snapshot or, past the last one, at an empty
+  // slot, which gui_post_expose() then renders as image NO_IMGID
+  if(d->selected == (int)index)
+  {
+    d->selected = -1;
+    darktable.lib->proxy.snapshots.enabled = FALSE;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[index].button), FALSE);
+  }
+  else if(d->selected > (int)index)
+    d->selected--;
+
   //  First clean the entry
   _clear_snapshot_entry(&d->snapshot[index]);
 
-  //  Repack all entries
-  for(uint32_t k = index; k < MAX_SNAPSHOT-1; k++)
-  {
-    memcpy(&d->snapshot[k], &d->snapshot[k+1], sizeof(dt_lib_snapshot_t));
-  }
+  // move the later entries down, and reuse the cleared entry, widgets
+  // included, as the free last slot. Clearing the old last slot after the
+  // move instead would free the data, and delete the stored history, of
+  // the snapshot copied down from it
+  const dt_lib_snapshot_t removed = d->snapshot[index];
+  memmove(&d->snapshot[index], &d->snapshot[index + 1],
+          (MAX_SNAPSHOT - 1 - index) * sizeof(dt_lib_snapshot_t));
+  d->snapshot[MAX_SNAPSHOT - 1] = removed;
 
-  //  And finally clear last entry
-  _clear_snapshot_entry(&d->snapshot[MAX_SNAPSHOT-1]);
-  //  And dedup widgets by initializing the last entry
-  _init_snapshot_entry(self, &d->snapshot[MAX_SNAPSHOT-1]);
+  // the reused row is still shown where the removed snapshot was. Rows are
+  // packed from the end, so the last child is at the top, where the newest
+  // snapshot belongs
+  gtk_box_reorder_child(GTK_BOX(d->snapshots_box), removed.bbox, -1);
 
   //  We have one less snapshot
   d->num_snapshots--;
 
-  //  If the remove image snapshot was selected, unselect it
-  if(d->selected == index)
-    d->selected = -1;
+  // taking the tenth snapshot disabled the button, and a slot is free again
+  gtk_widget_set_sensitive(d->take_button, TRUE);
 }
 
 static void _signal_image_removed(gpointer instance,
@@ -832,6 +846,9 @@ void gui_init(dt_lib_module_t *self)
   for(int k = 0; k < MAX_SNAPSHOT; k++)
   {
     dt_lib_snapshot_t *s = &d->snapshot[k];
+    // each entry keeps this id for the whole session, as it moves between
+    // slots in _remove_snapshot_entry(). The stored history of a snapshot is
+    // read by id alone, so two entries must never share one
     s->id = SNAPSHOT_ID_OFFSET | k;
 
     _clear_snapshot_entry(s);
@@ -923,10 +940,6 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
   dt_dev_write_history(darktable.develop);
 
   dt_lib_snapshot_t *s = &d->snapshot[d->num_snapshots];
-
-  // set new snapshot_id, to not clash with the undo snapshot make the snapshot
-  // id at a specific offset.
-  s->id = SNAPSHOT_ID_OFFSET | d->num_snapshots;
 
   _clear_snapshot_entry(s);
 
