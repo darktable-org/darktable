@@ -155,21 +155,13 @@ typedef struct dt_dev_viewport_t
   struct dt_develop_t *dev;
 } dt_dev_viewport_t;
 
-/* keep track on what and where we do chromatic adaptation, used
-  a)  to display warnings in GUI of modules that should probably not be doing
-      white balance
-  b)  missing required white balance
-  c)  allow late correction of as-shot or modified coeffs to D65 in color-input
-      but keep processing until then with more reliable (at least for highlights,
-      raw chromatic aberrations and more.
-  d)  avoids keeping of fixed data in temperature gui data
-  e)  we have 3 coefficients kept here
-      - the currently used wb_coeffs in temperature module
-      - D65coeffs and as_shot are read from exif data
-  f)  - late_correction set by temperature if we want to process data as following
-      If we enable this for non-D65 modes of temperature.c and don't have any
-      temp parameters changes later we can calc correction ratios
-      to take white-balanced (neutralized) data to D65
+/* white balance and chromatic adaptation state, shared by all pipes of a dev
+   - temperature, adaptation: pipe threads set them
+   - as_shot: only temperature's GUI reads it
+   - wb: what temperature's commit_params() last wrote, in any pipe. processing code reads
+     pipe->wb instead. GUI code calls dt_dev_get_gui_wb(). the exceptions are
+     temperature.c commit_params() and channelmixerrgb.c reload_defaults(), see their
+     comments.
 */
 typedef struct dt_dev_chroma_t
 {
@@ -264,6 +256,11 @@ typedef struct dt_develop_t
     // temperature asks through dt_dev_cat_is_active()
     // thread contract: must only be called from the GTK main thread
     gboolean (*cat_is_active)(struct dt_iop_module_t *cat);
+
+    // temperature reports the WB that its commit_params() would publish for its
+    // current params; color calibration's GUI asks through dt_dev_get_gui_wb()
+    // thread contract: must only be called from the GTK main thread
+    void (*gui_wb)(const struct dt_iop_module_t *temperature, dt_dev_wb_t *wb);
 
     // this module receives right-drag events if not already claimed
     struct dt_iop_module_t *rotate;
@@ -539,6 +536,11 @@ void dt_dev_exposure_handle_event(int n_press, gdouble delta,
 /** TRUE if a live color calibration instance is actually applying CAT.
     GTK main thread only: the accessor reads params. */
 gboolean dt_dev_cat_is_active(dt_develop_t *dev);
+
+/** the WB that temperature's current params give, as its commit_params()
+    would publish it; dev->chroma.wb if no temperature instance answers.
+    GTK main thread only: the accessor reads params. */
+void dt_dev_get_gui_wb(dt_develop_t *dev, dt_dev_wb_t *wb);
 
 /*
  * modulegroups plugin hooks
