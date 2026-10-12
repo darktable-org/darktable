@@ -207,6 +207,61 @@ static void test_utility_module(void **state)
   assert_true(dt_presets_exists("beta", OP, 6));
 }
 
+static void test_legacy_upgrade(void **state)
+{
+  // after test_utility_module only "beta" is left, at version 6
+  _add("delta", 5, 0);
+  GList *stored = dt_presets_list_stored(OP);
+  assert_int_equal(g_list_length(stored), 2);
+  gboolean seen_beta = FALSE;
+  for(GList *l = stored; l; l = g_list_next(l))
+  {
+    const dt_presets_params_t *row = l->data;
+    if(!strcmp(row->name, "beta"))
+    {
+      seen_beta = TRUE;
+      assert_int_equal(row->op_version, 6);
+      assert_null(row->blendop_params);
+    }
+    else
+    {
+      assert_string_equal(row->name, "delta");
+      assert_int_equal(row->blendop_version, 2);
+      assert_int_equal(row->blendop_params_size, sizeof(int));
+    }
+  }
+  assert_true(seen_beta);
+  g_list_free_full(stored, dt_presets_params_free);
+
+  dt_presets_set_op_version(OP, "delta", 7);
+  assert_true(dt_presets_exists("delta", OP, 7));
+  const int params = 11, blend = 12;
+  dt_presets_set_op_params(OP, "delta", 8, &params, sizeof(params));
+  dt_presets_set_blendop_params(OP, "delta", 4, &blend, sizeof(blend));
+  dt_presets_params_t p = { 0 };
+  assert_true(dt_presets_get_params(OP, 8, "delta", &p));
+  assert_int_equal(*(int *)p.op_params, 11);
+  assert_int_equal(*(int *)p.blendop_params, 12);
+  assert_int_equal(p.blendop_version, 4);
+  dt_presets_params_clear(&p);
+  // an auto-init preset has no params
+  dt_presets_set_op_params(OP, "delta", 8, NULL, 0);
+  assert_true(dt_presets_get_params(OP, 8, "delta", &p));
+  assert_null(p.op_params);
+  dt_presets_params_clear(&p);
+
+  GList *names = dt_presets_names_by_rowid(OP);
+  assert_int_equal(g_list_length(names), 2);
+  assert_string_equal(names->data, "beta");
+  g_list_free_full(names, g_free);
+
+  // no built-in preset here: nothing goes
+  dt_presets_delete_builtin(OP);
+  names = dt_presets_names_by_rowid(OP);
+  assert_int_equal(g_list_length(names), 2);
+  g_list_free_full(names, g_free);
+}
+
 int main(int argc, char *argv[])
 {
   const struct CMUnitTest tests[] = {
@@ -214,6 +269,7 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_apply_and_step),
     cmocka_unit_test(test_autoapply),
     cmocka_unit_test(test_utility_module),
+    cmocka_unit_test(test_legacy_upgrade),
   };
   return cmocka_run_group_tests(tests, dt_test_catalog_setup, dt_test_catalog_teardown);
 }

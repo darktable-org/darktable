@@ -182,6 +182,7 @@ void dt_presets_update_params(const char *operation,
 typedef struct dt_presets_params_t
 {
   char *name;
+  int op_version;
   void *op_params;
   int op_params_size;
   int enabled;
@@ -262,6 +263,39 @@ void dt_presets_rename(const char *operation,
 char *dt_presets_find_lib_autoapply(const char *operation,
                                     const int op_version,
                                     const dt_image_t *image);
+
+/** every stored preset of the module, all versions, with name,
+    op_version, op_params, blendop_version and blendop_params.
+    Free with g_list_free_full(list, dt_presets_params_free) */
+GList *dt_presets_list_stored(const char *operation);
+
+/** the names of the module's presets, built-in ones first, then in the
+    order they were stored. Free with g_list_free_full(list, g_free) */
+GList *dt_presets_names_by_rowid(const char *operation);
+
+/** set the version of the module's preset of that name, every version */
+void dt_presets_set_op_version(const char *operation,
+                               const char *name,
+                               const int op_version);
+
+/** replace the module parameters, and their version, of the module's
+    preset of that name; NULL params for an auto-init preset */
+void dt_presets_set_op_params(const char *operation,
+                              const char *name,
+                              const int op_version,
+                              const void *op_params,
+                              const int op_params_size);
+
+/** replace the blend parameters, and their version, of the module's
+    preset of that name */
+void dt_presets_set_blendop_params(const char *operation,
+                                   const char *name,
+                                   const int blendop_version,
+                                   const void *blendop_params,
+                                   const int blendop_params_size);
+
+/** delete the module's built-in presets */
+void dt_presets_delete_builtin(const char *operation);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
