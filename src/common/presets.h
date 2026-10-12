@@ -221,6 +221,18 @@ gboolean dt_presets_find_autoapply(const char *operation,
                                    const char *workflow_preset,
                                    dt_presets_params_t *p);
 
+typedef struct dt_presets_name_t
+{
+  char *name;
+  gboolean writeprotect;
+} dt_presets_name_t;
+
+/** the module's presets, all versions, built-in ones first or last, then
+    by name. Free with g_list_free_full(list, dt_presets_name_free) */
+GList *dt_presets_list_names(const char *operation,
+                             const gboolean writeprotect_first);
+void dt_presets_name_free(gpointer data);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

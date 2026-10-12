@@ -960,6 +960,40 @@ gboolean dt_presets_find_autoapply(const char *operation,
   return found;
 }
 
+GList *dt_presets_list_names(const char *operation,
+                             const gboolean writeprotect_first)
+{
+  GList *names = NULL;
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT name, writeprotect"
+                                 " FROM data.presets"
+                                 " WHERE operation=?1"
+                                 " ORDER BY writeprotect %s, LOWER(name), rowid",
+                                 writeprotect_first ? "DESC" : "ASC"
+                                );
+  // clang-format on
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, operation, -1, SQLITE_TRANSIENT);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    dt_presets_name_t *n = g_new(dt_presets_name_t, 1);
+    n->name = g_strdup((const char *)sqlite3_column_text(stmt, 0));
+    n->writeprotect = sqlite3_column_int(stmt, 1);
+    names = g_list_prepend(names, n);
+  }
+  sqlite3_finalize(stmt);
+  g_free(query);
+  return g_list_reverse(names);
+}
+
+void dt_presets_name_free(gpointer data)
+{
+  dt_presets_name_t *n = data;
+  g_free(n->name);
+  g_free(n);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

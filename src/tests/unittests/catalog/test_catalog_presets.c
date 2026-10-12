@@ -133,6 +133,15 @@ static void test_apply_and_step(void **state)
   assert_int_equal(p.enabled, 0);
   assert_null(p.blendop_params);
   dt_presets_params_clear(&p);
+
+  // the menus' lists: every version, by name (no built-in preset here)
+  GList *names = dt_presets_list_names(OP, TRUE);
+  assert_int_equal(g_list_length(names), 3);
+  assert_string_equal(((dt_presets_name_t *)names->data)->name, "alpha");
+  assert_false(((dt_presets_name_t *)names->data)->writeprotect);
+  assert_string_equal(((dt_presets_name_t *)g_list_last(names)->data)->name, "gamma");
+  g_list_free_full(names, dt_presets_name_free);
+  assert_null(dt_presets_list_names("no_such_op", FALSE));
 }
 
 static void test_autoapply(void **state)
