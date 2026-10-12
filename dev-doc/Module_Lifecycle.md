@@ -371,8 +371,9 @@ White balance (`temperature.c`) and color calibration (`channelmixerrgb.c`) shar
 `dev->chroma` and in each pipe's `pipe->wb`. There is no signal. White balance writes the
 camera's reference coefficients into `dev->chroma` in `reload_defaults()`. In
 `commit_params()`, it writes the coefficients it applies into `dev->chroma` and into its pipe's
-`pipe->wb`. Color calibration reads `dev->chroma` in `reload_defaults()` and in its GUI, and
-`pipe->wb` in `commit_params()` and `process()`.
+`pipe->wb`. Color calibration reads `dev->chroma` in `reload_defaults()`, and `pipe->wb` in
+`commit_params()` and `process()`. Its GUI calls `dt_dev_get_gui_wb()`, which asks white
+balance, through a proxy, for the values that white balance's current params give.
 
 Commit order does not guarantee that white balance commits first: `synch_all` replays the
 history in history order, and `synch_top` re-commits only the top item. Color calibration
@@ -381,8 +382,8 @@ and `DT_ILLUMINANT_FROM_WB`, in `process()`, which runs after all the pipe's com
 
 [How white balance and color calibration
 share state](iop/wb_and_colorcalibration/README.md) lists which module writes and reads each
-field, explains the per-pipe copy `pipe->wb`, and shows why the reverse-order default load
-stays correct.
+field, explains the per-pipe copy `pipe->wb` and the proxies between the two modules' GUIs, and
+shows why the reverse-order default load stays correct.
 
 ### 4b. Color-profile change (colorin / colorout)
 

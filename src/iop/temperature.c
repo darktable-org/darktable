@@ -100,7 +100,6 @@ typedef struct dt_iop_temperature_data_t
 {
   float coeffs[4];
   int preset;
-  gboolean late_correction;
 } dt_iop_temperature_data_t;
 
 typedef struct dt_iop_temperature_global_data_t
@@ -224,7 +223,7 @@ static inline void _temp_params_from_array(dt_iop_temperature_params_t *p,
 static inline void _temp_array_from_params(double a[4],
                                            const dt_iop_temperature_params_t *p)
 {
-  float *coeffs = (float *)p;
+  const float *coeffs = (const float *)p;
   for_four_channels(c)
    a[c] = coeffs[c];
 }
@@ -556,23 +555,28 @@ static inline void _update_pipe_dsc(dt_dev_pixelpipe_iop_t *piece)
   }
 }
 
-// the white balance this pipe renders with, for modules later in the pipe that
-// complete the correction (colorin, highlights, color calibration). built from
-// this piece: dev->chroma is rewritten by the other pipes' commits.
-// D65coeffs is the exception, only reload_defaults() writes it
-static inline void _publish_pipe_wb(dt_dev_pixelpipe_iop_t *piece)
+// the WB that temperature applies with params p, for the modules that
+// complete the correction: pipe->wb at commit time, and color calibration's
+// GUI before any pipe has committed
+static void _wb_from_params(const dt_iop_temperature_params_t *p,
+                            const gboolean enabled,
+                            const gboolean true_monochrome,
+                            const double *const D65coeffs,
+                            dt_dev_wb_t *wb)
 {
-  const dt_iop_temperature_data_t *const d = piece->data;
-  const dt_dev_chroma_t *chr = &piece->module->dev->chroma;
-  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  // a style or pasted history can enable the module on a true monochrome
+  // image; nothing is applied there, whatever enabled says
+  const gboolean applied = enabled && !true_monochrome;
+  const float *const pcoeffs = (const float *)p;
 
   for_four_channels(k)
   {
-    pipe->wb.coeffs[k] = piece->enabled ? d->coeffs[k] : 1.0f;
-    pipe->wb.D65coeffs[k] = chr->wb.D65coeffs[k];
+    wb->coeffs[k] = applied ? pcoeffs[k] : 1.0f;
+    wb->D65coeffs[k] = D65coeffs[k];
   }
-  // if disabled, nothing for a later module to finish
-  pipe->wb.late_correction = piece->enabled && d->late_correction;
+  // no late correction in 'camera reference' mode; if not applied,
+  // nothing for a later module to finish
+  wb->late_correction = applied && p->preset != DT_IOP_TEMP_D65 && p->late_correction;
 }
 
 void process(dt_iop_module_t *self,
@@ -735,61 +739,43 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)p1;
-  dt_iop_temperature_data_t *d = piece->data;
-  float *tcoeffs = (float *)p;
-
-  dt_dev_chroma_t *chr = &self->dev->chroma;
-
-  if(self->hide_enable_button)
-  {
-    // true monochrome: nothing to white balance
-    piece->enabled = FALSE;
-
-    // commit and publish neutral data, so nothing reads undefined or stale values
-    for_four_channels(k)
-    {
-      d->coeffs[k] = 1.0f;
-      chr->wb.coeffs[k] = 1.0f;
-    }
-    chr->wb.late_correction = d->late_correction = FALSE;
-    d->preset = p->preset;
-
-    _publish_pipe_wb(piece);
-    // publish for channelmixerrgb's warning logic - details at the end
-    // of this function
-    chr->temperature = self;
-    return;
-  }
-
-  for_four_channels(k)
-  {
-    d->coeffs[k] = tcoeffs[k];
-    chr->wb.coeffs[k] = piece->enabled ? d->coeffs[k] : 1.0f;
-  }
-
-  // 4Bayer images not implemented in OpenCL yet
-  if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
-    piece->process_cl_ready = FALSE;
+  const dt_iop_temperature_params_t *const p = p1;
+  dt_iop_temperature_data_t *const d = piece->data;
+  // first items in the struct are the coefficients
+  const float *const pcoeffs = (const float *)p;
 
   d->preset = p->preset;
 
-  // no late correction in 'camera reference' mode
-  const gboolean effective_late_correction =
-    p->preset == DT_IOP_TEMP_D65 ? FALSE : p->late_correction;
+  dt_dev_chroma_t *const chr = &self->dev->chroma;
 
-  d->late_correction = effective_late_correction;
-  // When 'temperature' is disabled it applies no coefficients (wb.coeffs are
-  // published as 1.0 above). Do not ask colorin (or any other consumer) to
-  // "finish" a correction that never started, otherwise disabling WB would
-  // still pull the image to D65 via D65coeffs/1.0.
-  chr->wb.late_correction = piece->enabled ? effective_late_correction : FALSE;
-  _publish_pipe_wb(piece);
+  const gboolean true_monochrome = self->hide_enable_button;
+
+  if(true_monochrome)
+  {
+    // nothing to white balance
+    piece->enabled = FALSE;
+  }
+
+  for_four_channels(k)
+    d->coeffs[k] = true_monochrome ? 1.0f : pcoeffs[k];
+
+  // D65coeffs is the one value read from dev->chroma here: only
+  // reload_defaults() writes it, on the GTK thread at image load
+  _wb_from_params(p, piece->enabled, true_monochrome, chr->wb.D65coeffs, &pipe->wb);
+
+  // color calibration's reload_defaults() still reads the shared copy
+  for_four_channels(k)
+    chr->wb.coeffs[k] = pipe->wb.coeffs[k];
+  chr->wb.late_correction = pipe->wb.late_correction;
 
   // Always publish the module handle for channelmixerrgb _set_trouble_messages,
   // regardless of the enabled state. This lets color calibration warn about a disabled
   // white balance module while it is still doing chromatic adaptation.
   chr->temperature = self;
+
+  // 4Bayer images not implemented in OpenCL yet
+  if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
+    piece->process_cl_ready = FALSE;
 }
 
 void init_pipe(dt_iop_module_t *self,
@@ -1211,7 +1197,6 @@ static inline const char *_preset_to_str(const int preset)
 static void _update_preset(dt_iop_module_t *self, int mode)
 {
   dt_iop_temperature_params_t *p = self->params;
-  dt_dev_chroma_t *chr = &self->dev->chroma;
   dt_iop_temperature_gui_data_t *g = self->gui_data;
 
   const gboolean is_current_reference = p->preset == DT_IOP_TEMP_D65;
@@ -1223,16 +1208,6 @@ static void _update_preset(dt_iop_module_t *self, int mode)
   }
 
   p->preset = mode;
-
-  if(mode == DT_IOP_TEMP_D65)
-  {
-    chr->wb.late_correction = FALSE;
-  }
-  else
-  {
-    // For non-D65 modes, use the parameter
-    chr->wb.late_correction = p->late_correction;
-  }
 
   if(g && g->check_late_correction)
   {
@@ -1280,7 +1255,7 @@ void gui_update(dt_iop_module_t *self)
   gboolean found = FALSE;
   const dt_dev_chroma_t *chr = &self->dev->chroma;
   // is this a "as shot" white balance?
-  if(dt_dev_equal_chroma((float *)p, chr->as_shot))
+  if(dt_dev_equal_chroma((const float *)p, chr->as_shot))
   {
     dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_AS_SHOT);
     p->preset = DT_IOP_TEMP_AS_SHOT;
@@ -1288,7 +1263,7 @@ void gui_update(dt_iop_module_t *self)
   }
 
   // is this a "D65 white balance"?
-  else if(dt_dev_equal_chroma((float *)p, chr->wb.D65coeffs))
+  else if(dt_dev_equal_chroma((const float *)p, chr->wb.D65coeffs))
   {
     dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65);
     p->preset = DT_IOP_TEMP_D65;
@@ -1310,7 +1285,7 @@ void gui_update(dt_iop_module_t *self)
           i++)
       {
         const dt_wb_data *wbp = dt_wb_preset(i);
-        if(dt_dev_equal_chroma((float *)p, wbp->channels))
+        if(dt_dev_equal_chroma((const float *)p, wbp->channels))
         {
           // got exact match!
           dt_bauhaus_combobox_set(g->presets, j);
@@ -1372,7 +1347,7 @@ void gui_update(dt_iop_module_t *self)
             dt_wb_preset_interpolate(dt_wb_preset(i - 1),
                                      dt_wb_preset(i), &interpolated);
 
-            if(dt_dev_equal_chroma((float *)p, interpolated.channels))
+            if(dt_dev_equal_chroma((const float *)p, interpolated.channels))
             {
               // got exact match!
 
@@ -1988,7 +1963,7 @@ static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
   }
 
   DT_ENTER_GUI_UPDATE();
-  float *pcoeffs = (float *)p;
+  const float *pcoeffs = (const float *)p;
   dt_bauhaus_slider_set(g->scale_k, TempK);
   dt_bauhaus_slider_set(g->scale_tint, tint);
   dt_bauhaus_slider_set(g->scale_r, pcoeffs[0]);
@@ -2020,7 +1995,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   // normalize green:
   const float gnormal = grayrgb[1] > 0.001f ? 1.0f / grayrgb[1] : 1.0f;
   for_four_channels(c)
-    pcoeffs[c]  = fmaxf(0.0f,fminf(8.0f,(grayrgb[c] > 0.001f ? 1.0f / grayrgb[c] : 1.0f) / gnormal));
+    pcoeffs[c] = fmaxf(0.0f,fminf(8.0f,(grayrgb[c] > 0.001f ? 1.0f / grayrgb[c] : 1.0f) / gnormal));
   pcoeffs[1] = 1.0f;
 
   dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_SPOT);
@@ -2119,6 +2094,19 @@ static void _preference_changed(gpointer instance, dt_iop_module_t *self)
   _color_temptint_sliders(self);
   _color_rgb_sliders(self);
   _color_finetuning_slider(self);
+}
+
+static void _gui_wb_proxy(const dt_iop_module_t *self, dt_dev_wb_t *wb)
+{
+  if(!self || !self->dev)
+  {
+    dt_dev_wb_set_neutral(wb);
+    return;
+  }
+
+  const dt_iop_temperature_params_t *p = self->params;
+
+  _wb_from_params(p, self->enabled, self->hide_enable_button, self->dev->chroma.wb.D65coeffs, wb);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -2276,6 +2264,8 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_stack_add_named(GTK_STACK(self->widget), GTK_WIDGET(box_enabled), "enabled");
   gtk_stack_add_named(GTK_STACK(self->widget), label_disabled, "disabled");
+
+  darktable.develop->proxy.gui_wb = _gui_wb_proxy;
 }
 
 void gui_cleanup(dt_iop_module_t *self)
