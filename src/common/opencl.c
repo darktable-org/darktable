@@ -2411,7 +2411,7 @@ static gboolean _opencl_build_program(const int dev,
                                       char *md5sum,
                                       const gboolean loaded_cached)
 {
-  if(prog < 0 || prog > DT_OPENCL_MAX_PROGRAMS) return TRUE;
+  if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return TRUE;
 
   dt_opencl_t *cl = darktable.opencl;
   cl_program program = cl->dev[dev].program[prog];
@@ -2603,16 +2603,18 @@ int dt_opencl_create_kernel(const int prog,
   dt_opencl_t *cl = darktable.opencl;
 
   static int k = 0;
-  cl->name_saved[k] = name;
-  cl->program_saved[k] = prog;
 
   if(k >= DT_OPENCL_MAX_KERNELS)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
-             "[opencl_create_kernel] too many kernels! can't create kernel `%s'\n",
+             "[opencl_create_kernel] too many kernels! can't create kernel '%s'\n",
               name);
     return -1;
   }
+
+  cl->name_saved[k] = name;
+  cl->program_saved[k] = prog;
+
   return k++;
 }
 
