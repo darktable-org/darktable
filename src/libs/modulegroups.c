@@ -3992,7 +3992,7 @@ static void _manage_editor_preset_action(GtkWidget *btn,
     return;
 
   // we first get the list of all the existing preset names
-  GList *names = dt_presets_version_names(self->plugin_name, self->version());
+  GList *names = dt_presets_version_names(self->plugin_name, self->version(), TRUE);
 
   gint res = GTK_RESPONSE_OK;
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("rename preset"), GTK_WINDOW(d->dialog),
@@ -4240,7 +4240,7 @@ static void _manage_preset_update_list(dt_lib_module_t *self)
   gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(d->presets_combo));
 
   // and we repopulate it, shipped defaults first
-  GList *names = dt_presets_version_names(self->plugin_name, self->version());
+  GList *names = dt_presets_version_names(self->plugin_name, self->version(), TRUE);
   for(const GList *l = names; l; l = g_list_next(l))
     gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(d->presets_combo), l->data, l->data);
   g_list_free_full(names, g_free);

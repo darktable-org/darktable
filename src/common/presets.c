@@ -996,17 +996,24 @@ void dt_presets_name_free(gpointer data)
   g_free(n);
 }
 
-GList *dt_presets_version_names(const char *operation, const int op_version)
+GList *dt_presets_version_names(const char *operation,
+                                const int op_version,
+                                const gboolean builtin_first)
 {
   GList *names = NULL;
   sqlite3_stmt *stmt;
-  // order: get shipped defaults first
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name"
-                              " FROM data.presets"
-                              " WHERE operation=?1 AND op_version=?2"
-                              " ORDER BY writeprotect DESC, name, rowid",
+                              builtin_first
+                              ? "SELECT name"
+                                " FROM data.presets"
+                                " WHERE operation=?1 AND op_version=?2"
+                                " ORDER BY writeprotect DESC, name, rowid"
+                              : "SELECT name"
+                                " FROM data.presets"
+                                " WHERE operation=?1"
+                                " AND op_version = ?2"
+                                " ORDER BY name",
                               -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, operation, -1, SQLITE_TRANSIENT);
@@ -1141,7 +1148,7 @@ GList *dt_presets_list_stored(const char *operation)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT name, op_version, op_params, blendop_version, blendop_params"
+      "SELECT name, op_version, op_params, blendop_version, blendop_params, rowid"
       " FROM data.presets"
       " WHERE operation = ?1",
       -1, &stmt, NULL);
@@ -1154,6 +1161,7 @@ GList *dt_presets_list_stored(const char *operation)
     p->op_params = _blob_copy(stmt, 2, &p->op_params_size);
     p->blendop_version = sqlite3_column_int(stmt, 3);
     p->blendop_params = _blob_copy(stmt, 4, &p->blendop_params_size);
+    p->rowid = sqlite3_column_int(stmt, 5);
     list = g_list_prepend(list, p);
   }
   sqlite3_finalize(stmt);
@@ -1278,6 +1286,53 @@ void dt_presets_insert_lib_preset(const char *name,
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, operation, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, op_version);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, op_params, op_params_size, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+gboolean dt_presets_get_params_any_version(const char *operation,
+                                           const char *name,
+                                           void **op_params,
+                                           int *op_params_size)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "SELECT op_params"
+      " FROM data.presets"
+      " WHERE operation=?2"
+      " AND name = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, operation, -1, SQLITE_TRANSIENT);
+  const gboolean found = sqlite3_step(stmt) == SQLITE_ROW;
+  if(found) *op_params = _blob_copy(stmt, 0, op_params_size);
+  sqlite3_finalize(stmt);
+  return found;
+}
+
+void dt_presets_set_op_params_at(const int rowid,
+                                 const void *op_params,
+                                 const int op_params_size)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE data.presets"
+                              " SET op_params=?1"
+                              " WHERE rowid=?2",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 1, op_params, op_params_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, rowid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+void dt_presets_delete_at(const int rowid)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "DELETE FROM data.presets WHERE rowid=?1", -1,
+                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 }

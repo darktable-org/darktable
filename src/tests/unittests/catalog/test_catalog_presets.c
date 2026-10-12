@@ -167,7 +167,7 @@ static void test_autoapply(void **state)
 static void test_utility_module(void **state)
 {
   // _add() writes OP at version 5: "alpha", "beta" moved to 6, "gamma", "auto"
-  GList *names = dt_presets_version_names(OP, 5);
+  GList *names = dt_presets_version_names(OP, 5, TRUE);
   assert_int_equal(g_list_length(names), 3);
   assert_string_equal(names->data, "alpha");
   assert_string_equal(g_list_last(names)->data, "gamma");
@@ -203,7 +203,7 @@ static void test_utility_module(void **state)
   assert_null(dt_presets_find_lib_autoapply(OP, 6, &image));
 
   dt_presets_delete_version(OP, 5);
-  assert_null(dt_presets_version_names(OP, 5));
+  assert_null(dt_presets_version_names(OP, 5, TRUE));
   assert_true(dt_presets_exists("beta", OP, 6));
 }
 
@@ -275,6 +275,31 @@ static void test_legacy_upgrade(void **state)
   assert_int_equal(g_list_length(rows), 1);
   assert_string_equal(((dt_presets_params_t *)rows->data)->op_params, "a|b");
   g_list_free_full(rows, dt_presets_params_free);
+
+  // export's lookups: any version, by rowid
+  void *blob = NULL;
+  int blob_size = 0;
+  assert_true(dt_presets_get_params_any_version(OP, "fresh", &blob, &blob_size));
+  assert_int_equal(blob_size, 3);
+  g_free(blob);
+  assert_false(dt_presets_get_params_any_version(OP, "nope", &blob, &blob_size));
+  names = dt_presets_version_names(OP, 9, FALSE);
+  assert_int_equal(g_list_length(names), 1);
+  g_list_free_full(names, g_free);
+
+  int fresh_rowid = -1;
+  stored = dt_presets_list_stored(OP);
+  for(GList *l = stored; l; l = g_list_next(l))
+    if(!strcmp(((dt_presets_params_t *)l->data)->name, "fresh"))
+      fresh_rowid = ((dt_presets_params_t *)l->data)->rowid;
+  g_list_free_full(stored, dt_presets_params_free);
+  assert_true(fresh_rowid > 0);
+  dt_presets_set_op_params_at(fresh_rowid, "xy", 2);
+  assert_true(dt_presets_get_params_any_version(OP, "fresh", &blob, &blob_size));
+  assert_int_equal(blob_size, 2);
+  g_free(blob);
+  dt_presets_delete_at(fresh_rowid);
+  assert_false(dt_presets_exists("fresh", OP, 9));
 }
 
 int main(int argc, char *argv[])
