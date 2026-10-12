@@ -260,6 +260,21 @@ static void test_legacy_upgrade(void **state)
   names = dt_presets_names_by_rowid(OP);
   assert_int_equal(g_list_length(names), 2);
   g_list_free_full(names, g_free);
+
+  // a utility module's "new preset": unfiltered, no blend params
+  const char text[] = "a|b";
+  dt_presets_insert_lib_preset("fresh", OP, 9, text, sizeof(text) - 1);
+  dt_presets_details_t d = { 0 };
+  assert_true(dt_presets_get_details("fresh", OP, 9, &d));
+  assert_string_equal(d.model, "%");
+  assert_true(g_str_has_suffix(d.iso_max, "e+38"));
+  assert_int_equal(d.autoapply, 0);
+  assert_int_equal(d.op_params_size, 3);
+  dt_presets_details_clear(&d);
+  GList *rows = dt_presets_list_params(OP, 9, TRUE);
+  assert_int_equal(g_list_length(rows), 1);
+  assert_string_equal(((dt_presets_params_t *)rows->data)->op_params, "a|b");
+  g_list_free_full(rows, dt_presets_params_free);
 }
 
 int main(int argc, char *argv[])

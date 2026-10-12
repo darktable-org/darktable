@@ -79,31 +79,20 @@ static void _lib_unload_module(dt_lib_module_t *module);
 
 gchar *dt_lib_get_active_preset_name(dt_lib_module_info_t *minfo)
 {
-  sqlite3_stmt *stmt;
-  // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "SELECT name, op_params, writeprotect"
-      " FROM data.presets"
-      " WHERE operation=?1 AND op_version=?2",
-      -1, &stmt, NULL);
-  // clang-format on
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, minfo->plugin_name, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minfo->version);
+  GList *presets = dt_presets_list_params(minfo->plugin_name, minfo->version, FALSE);
   gchar *name = NULL;
   // collect all presets for op from db
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  for(const GList *l = presets; l; l = g_list_next(l))
   {
-    void *op_params = (void *)sqlite3_column_blob(stmt, 1);
-    int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
-    if(op_params_size == minfo->params_size
-       && !memcmp(minfo->params, op_params, op_params_size))
+    const dt_presets_params_t *p = l->data;
+    if(p->op_params_size == minfo->params_size
+       && !memcmp(minfo->params, p->op_params, p->op_params_size))
     {
-      name = g_strdup((char *)sqlite3_column_text(stmt, 0));
+      name = g_strdup(p->name);
       break;
     }
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(presets, dt_presets_params_free);
   return name;
 }
 
@@ -169,22 +158,10 @@ static void _edit_preset(const char *name_in,
 
   // find the rowid of the preset
   int rowid = -1;
-  sqlite3_stmt *stmt;
-  // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT rowid"
-                              " FROM data.presets"
-                              " WHERE name = ?1 AND operation = ?2 AND op_version = ?3",
-                              -1, &stmt, NULL);
-  // clang-format on
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, minfo2->plugin_name, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo2->version);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    rowid = sqlite3_column_int(stmt, 0);
-  }
-  sqlite3_finalize(stmt);
+  dt_presets_details_t details = { 0 };
+  if(dt_presets_get_details(name, minfo2->plugin_name, minfo2->version, &details))
+    rowid = details.rowid;
+  dt_presets_details_clear(&details);
 
   // if we don't have a valid rowid, just exit, there's a problem !
   if(rowid < 0) return;
@@ -211,23 +188,8 @@ static void _menuitem_update_preset(GSimpleAction *action,
                                   name))
   {
     // commit all the module fields
-    sqlite3_stmt *stmt;
-    // clang-format off
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE data.presets"
-                                " SET op_version=?2, op_params=?3"
-                                " WHERE name=?4 AND operation=?1",
-                                -1, &stmt, NULL);
-    // clang-format on
-
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, minfo2->plugin_name, -1,
-                               SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minfo2->version);
-    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, minfo2->params, minfo2->params_size,
-                               SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, name, -1, SQLITE_TRANSIENT);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
+    dt_presets_set_op_params(minfo2->plugin_name, name, minfo2->version,
+                             minfo2->params, minfo2->params_size);
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_PRESETS_CHANGED,
                             g_strdup(minfo->plugin_name));
   }
@@ -245,26 +207,8 @@ static void _menuitem_new_preset(GSimpleAction *action,
   dt_lib_presets_remove(_("new preset"), minfo2->plugin_name, minfo2->version);
 
   // add new preset
-  sqlite3_stmt *stmt;
-  // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "INSERT INTO data.presets (name, description, operation, op_version, op_params,"
-      "  blendop_params, blendop_version, enabled, model, maker, lens,"
-      "  iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max,"
-      "  focal_length_min, focal_length_max, writeprotect, "
-      "  autoapply, filter, def, format)"
-      " VALUES (?1, '', ?2, ?3, ?4, NULL, 0, 1, '%', "
-      "         '%', '%', 0, 340282346638528859812000000000000000000, 0, 100000000,"
-      "          0, 100000000, 0, 1000, 0, 0, 0, 0, 0)",
-      -1, &stmt, NULL);
-  // clang-format on
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, _("new preset"), -1, SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, minfo2->plugin_name, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo2->version);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, minfo2->params, minfo2->params_size, SQLITE_TRANSIENT);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  dt_presets_insert_lib_preset(_("new preset"), minfo2->plugin_name, minfo2->version,
+                               minfo2->params, minfo2->params_size);
   // create a shortcut for the new entry
 
   dt_action_define_preset(&minfo2->module->actions, _("new preset"));
