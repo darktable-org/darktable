@@ -302,6 +302,36 @@ static void test_legacy_upgrade(void **state)
   assert_false(dt_presets_exists("fresh", OP, 9));
 }
 
+static void test_builtin(void **state)
+{
+  // the built-in presets the modules add at startup, and their setters
+  const int params = 1, blend = 2;
+  dt_presets_add_builtin("bi", OP, 3, &params, sizeof(params), &blend, TRUE);
+  dt_presets_update_mml("bi", OP, 3, "Canon", "", "lens x");
+  dt_presets_update_iso("bi", OP, 3, 100.0f, 800.0f);
+  dt_presets_update_autoapply("bi", OP, 3, TRUE);
+  dt_presets_update_format("bi", OP, 3, 5);
+  dt_presets_update_filter("bi", OP, 3, 1);
+  dt_presets_details_t d = { 0 };
+  assert_true(dt_presets_get_details("bi", OP, 3, &d));
+  assert_string_equal(d.maker, "%Canon%");
+  assert_string_equal(d.model, "%");
+  assert_string_equal(d.lens, "lens x");
+  assert_int_equal(atoi(d.iso_min), 100);
+  assert_int_equal(d.autoapply, 1);
+  assert_int_equal(d.format, 5);
+  assert_int_equal(d.filter, 1);
+  dt_presets_details_clear(&d);
+  dt_presets_params_t p = { 0 };
+  assert_true(dt_presets_get_params(OP, 3, "bi", &p));
+  assert_int_equal(p.writeprotect, 1);
+  dt_presets_params_clear(&p);
+
+  // a built-in preset can't be deleted as a user one, only as built-in
+  dt_presets_delete_all_builtin();
+  assert_false(dt_presets_exists("bi", OP, 3));
+}
+
 int main(int argc, char *argv[])
 {
   const struct CMUnitTest tests[] = {
@@ -310,6 +340,7 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_autoapply),
     cmocka_unit_test(test_utility_module),
     cmocka_unit_test(test_legacy_upgrade),
+    cmocka_unit_test(test_builtin),
   };
   return cmocka_run_group_tests(tests, dt_test_catalog_setup, dt_test_catalog_teardown);
 }

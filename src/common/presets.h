@@ -21,6 +21,9 @@
 #include "common/darktable.h"
 #include "develop/imageop.h"
 
+// upper bound of a preset's focal length range
+#define MAX_FOCAL_LEN 100000
+
 /** save preset to file */
 void dt_presets_save_to_file(const int rowid,
                              const char *preset_name,
@@ -321,6 +324,66 @@ void dt_presets_set_op_params_at_rowid(const int rowid,
 
 /** delete the preset at rowid, write-protected or not */
 void dt_presets_delete_at_rowid(const int rowid);
+
+/** built-in presets: dt_gui_presets_add_with_blendop() and the
+    dt_gui_presets_update_*() setters of gui/presets.h call these; see there.
+    The operation is a module name. */
+void dt_presets_update_mml(const char *name,
+                           const char *op,
+                           const int32_t version,
+                           const char *maker,
+                           const char *model,
+                           const char *lens);
+
+void dt_presets_update_iso(const char *name,
+                           const char *op,
+                           const int32_t version,
+                           const float min,
+                           const float max);
+
+void dt_presets_update_av(const char *name,
+                          const char *op,
+                          const int32_t version,
+                          const float min,
+                          const float max);
+
+void dt_presets_update_tv(const char *name,
+                          const char *op,
+                          const int32_t version,
+                          const float min,
+                          const float max);
+
+void dt_presets_update_fl(const char *name,
+                          const char *op,
+                          const int32_t version,
+                          const float min,
+                          const float max);
+
+void dt_presets_update_format(const char *name,
+                              const char *op,
+                              const int32_t version,
+                              const int flag);
+
+void dt_presets_update_autoapply(const char *name,
+                                 const char *op,
+                                 const int32_t version,
+                                 const gboolean autoapply);
+
+void dt_presets_update_filter(const char *name,
+                              const char *op,
+                              const int32_t version,
+                              const int filter);
+
+void dt_presets_add_builtin(const char *name,
+                            const char *op,
+                            const int32_t version,
+                            const void *params,
+                            const int32_t params_size,
+                            const void *blend_params,
+                            const gboolean enabled);
+
+/** delete the built-in presets of every module */
+void dt_presets_delete_all_builtin(void);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
