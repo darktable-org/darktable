@@ -525,6 +525,9 @@ changes (where available).
   different image. Removing an image that had snapshots from the
   library, then taking a new snapshot, could cause the mix-up.
 
+- Fixed green tints and color shifts along image edges when using raw
+  denoise on X-Trans images, including some downscaled exports.
+
 ## Lua
 
 ### API Version
