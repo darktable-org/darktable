@@ -89,7 +89,9 @@ jobs:
       CMAKE_BUILD_TYPE: RelWithDebInfo
       GENERATOR: Ninja
       TARGET: skiptest
-      ECO: -DDONT_USE_INTERNAL_LIBRAW=ON
+      # generic code rather than -march=native: a result must not depend on
+      # the CPU of the runner the job lands on
+      ECO: -DDONT_USE_INTERNAL_LIBRAW=ON -DBINARY_PACKAGE_BUILD=ON
       DEBIAN_FRONTEND: noninteractive
     steps:
       - name: Update base packages
