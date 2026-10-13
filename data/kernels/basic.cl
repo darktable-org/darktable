@@ -33,7 +33,7 @@ kernel void
 rawprepare_1f(read_only image2d_t in, write_only image2d_t out,
               const int width, const int height,
               const int cx, const int cy,
-              global const float *sub, global const float *div,
+              global const float *sub, global const float *div, global const float *rdiv,
               const int rx, const int ry)
 {
   const int x = get_global_id(0);
@@ -41,19 +41,21 @@ rawprepare_1f(read_only image2d_t in, write_only image2d_t out,
 
   if(x >= width || y >= height) return;
 
-  const float pixel = read_imageui(in, sampleri, (int2)(x + cx, y + cy)).x;
-
+  const float pix = read_imageui(in, sampleri, (int2)(x + cx, y + cy)).x;
   const int id = BL(ry+cy+y, rx+cx+x);
-  const float pixel_scaled = (pixel - sub[id]) / div[id];
+  const float n = pix - sub[id];
+  const float q = n * rdiv[id];
+  const float rem = fma(-q, div[id], n);
+  const float oval = fma(rem, rdiv[id], q);
 
-  write_imagef(out, (int2)(x, y), pixel_scaled);
+  write_imagef(out, (int2)(x, y), oval);
 }
 
 kernel void
 rawprepare_1f_gainmap(read_only image2d_t in, write_only image2d_t out,
               const int width, const int height,
               const int cx, const int cy,
-              global const float *sub, global const float *div,
+              global const float *sub, global const float *div, global const float *rdiv,
               const int rx, const int ry,
               read_only image2d_t map0, read_only image2d_t map1,
               read_only image2d_t map2, read_only image2d_t map3,
@@ -65,10 +67,12 @@ rawprepare_1f_gainmap(read_only image2d_t in, write_only image2d_t out,
 
   if(x >= width || y >= height) return;
 
-  const float pixel = read_imageui(in, sampleri, (int2)(x + cx, y + cy)).x;
-
+  const float pix = read_imageui(in, sampleri, (int2)(x + cx, y + cy)).x;
   const int id = BL(ry+cy+y, rx+cx+x);
-  float pixel_scaled = (pixel - sub[id]) / div[id];
+  const float n = pix - sub[id];
+  const float q = n * rdiv[id];
+  const float rem = fma(-q, div[id], n);
+  float pixel_scaled = fma(rem, rdiv[id], q);
 
   // Add 0.5 to compensate for CLK_FILTER_LINEAR subtracting 0.5 from the specified coordinates
   const float2 map_pt = ((float2)(rx+cx+x,ry+cy+y) * im_to_rel - map_origin) * rel_to_map + (float2)(0.5, 0.5);
@@ -95,7 +99,7 @@ kernel void
 rawprepare_1f_unnormalized(read_only image2d_t in, write_only image2d_t out,
                            const int width, const int height,
                            const int cx, const int cy,
-                           global const float *sub, global const float *div,
+                           global const float *sub, global const float *div, global const float *rdiv,
                            const int rx, const int ry)
 {
   const int x = get_global_id(0);
@@ -103,19 +107,21 @@ rawprepare_1f_unnormalized(read_only image2d_t in, write_only image2d_t out,
 
   if(x >= width  || y >= height) return;
 
-  const float pixel = read_imagef(in, sampleri, (int2)(x + cx, y + cy)).x;
-
+  const float pix = read_imagef(in, sampleri, (int2)(x + cx, y + cy)).x;
   const int id = BL(ry+cy+y, rx+cx+x);
-  const float pixel_scaled = (pixel - sub[id]) / div[id];
+  const float n = pix - sub[id];
+  const float q = n * rdiv[id];
+  const float rem = fma(-q, div[id], n);
+  const float oval = fma(rem, rdiv[id], q);
 
-  write_imagef(out, (int2)(x, y), pixel_scaled);
+  write_imagef(out, (int2)(x, y), oval);
 }
 
 kernel void
 rawprepare_1f_unnormalized_gainmap(read_only image2d_t in, write_only image2d_t out,
                            const int width, const int height,
                            const int cx, const int cy,
-                           global const float *sub, global const float *div,
+                           global const float *sub, global const float *div, global const float *rdiv,
                            const int rx, const int ry,
                            read_only image2d_t map0, read_only image2d_t map1,
                            read_only image2d_t map2, read_only image2d_t map3,
@@ -127,10 +133,12 @@ rawprepare_1f_unnormalized_gainmap(read_only image2d_t in, write_only image2d_t 
 
   if(x >= width  || y >= height) return;
 
-  const float pixel = read_imagef(in, sampleri, (int2)(x + cx, y + cy)).x;
-
+  const float pix = read_imageui(in, sampleri, (int2)(x + cx, y + cy)).x;
   const int id = BL(ry+cy+y, rx+cx+x);
-  float pixel_scaled = (pixel - sub[id]) / div[id];
+  const float n = pix - sub[id];
+  const float q = n * rdiv[id];
+  const float rem = fma(-q, div[id], n);
+  float pixel_scaled = fma(rem, rdiv[id], q);
 
   // Add 0.5 to compensate for CLK_FILTER_LINEAR subtracting 0.5 from the specified coordinates
   const float2 map_pt = ((float2)(rx+cx+x,ry+cy+y) * im_to_rel - map_origin) * rel_to_map + (float2)(0.5, 0.5);
@@ -157,7 +165,7 @@ kernel void
 rawprepare_4f(read_only image2d_t in, write_only image2d_t out,
               const int width, const int height,
               const int cx, const int cy,
-              global const float *black, global const float *div,
+              global const float *sub, global const float *div, global const float *rdiv,
               const int rx, const int ry)
 {
   const int x = get_global_id(0);
@@ -165,12 +173,16 @@ rawprepare_4f(read_only image2d_t in, write_only image2d_t out,
 
   if(x >= width || y >= height) return;
 
-  const float4 black4 = (const float4)(black[0], black[1], black[2], black[3]);
+  const float4 sub4 = (const float4)(sub[0], sub[1], sub[2], sub[3]);
   const float4 div4 = (const float4)(div[0], div[1], div[2], div[3]);
-  float4 pixel = readpixel(in, x + cx, y + cy);
-  pixel.xyz = (pixel.xyz - black4.xyz) / div4.xyz;
-
-  write_imagef(out, (int2)(x, y), pixel);
+  const float4 rdiv4 = (const float4)(rdiv[0], rdiv[1], rdiv[2], rdiv[3]);
+  const float4 pix = readpixel(in, x + cx, y + cy);
+  const float4 n = pix - sub4;
+  const float4 q = n * rdiv4;
+  const float4 rem = fma(-q, div4, n);
+  float4 oval = fma(rem, rdiv4, q);
+  oval.w = 0.0f;
+  write_imagef(out, (int2)(x, y), oval);
 }
 
 kernel void
