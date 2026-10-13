@@ -19,9 +19,14 @@
 # Selects the integration tests worth running for a set of changed files,
 # and splits them into shards for parallel jobs.
 #
-#   - a processing module's source (src/iop/<op>.*, its OpenCL kernel
-#     data/kernels/<op>.cl, or a file only that module uses) selects the
-#     tests whose history uses <op>;
+#   - a processing module's source (a file add_iop() lists in
+#     src/iop/CMakeLists.txt, its OpenCL kernel data/kernels/<op>.cl, or a
+#     file only that module includes) selects the tests whose history uses
+#     <op>;
+#   - a module no history names (finalscale, which the pixelpipe inserts by
+#     itself) selects the whole suite: there is no telling which tests run
+#     it. A module that runs by default without being in some histories
+#     (highlights) is only caught there by a full run;
 #   - code with no visible effect on the pixels (the GUI, Lua, the unit
 #     tests) selects nothing;
 #   - anything else under src/, data/kernels or the build files can affect
@@ -60,26 +65,36 @@ for meta in glob.glob(os.path.join(suite, "[0-9]*", "ci.toml")):
     if tomllib.load(f).get("critical") is True:
       critical.add(os.path.basename(os.path.dirname(meta)))
 
-# files of src/iop/ that belong to a single module without being named after it
-MODULE_OF = [
+# the sources of each module, as add_iop(<op> "<source>"...) lists them;
+# the operation name is not always the file's (colorreconstruct)
+SOURCES_OF = {}
+with open("src/iop/CMakeLists.txt") as f:
+  for op, sources in re.findall(r'add_iop\s*\(\s*(\w+)((?:\s+"[^"]+")+)', f.read()):
+    for source in re.findall(r'"([^"]+)"', sources):
+      SOURCES_OF.setdefault(os.path.normpath(os.path.join("src/iop", source)), set()).add(op)
+OPS = {op for ops in SOURCES_OF.values() for op in ops}
+
+# files of src/iop/ that the module's source #includes
+INCLUDED_BY = [
   (r"^src/iop/demosaicing/", "demosaic"),
   (r"^src/iop/hlreconstruct/", "highlights"),
   (r"^src/iop/ashift_[^/]*$", "ashift"),
-  (r"^src/iop/lut3dgmic\.cpp$", "lut3d"),
 ]
 # no visible effect on the pixels of darktable-cli's output
-NO_PIXELS = r"^(src/(libs|views|gui|dtgtk|bauhaus|lua|tests/unittests)/" \
+NO_PIXELS = r"^(src/(libs|views|gui|dtgtk|bauhaus|lua|tests/unittests|osx|win|mcp)/|src/main\.c$" \
             r"|po/|doc/|data/(themes|lua|pixmaps|style|watermarks|latex|pswp)/|tools/|packaging/)" \
             r"|\.md$"
 
 
-def module_of(path):
-  for pattern, op in MODULE_OF:
+def modules_of(path):
+  for pattern, op in INCLUDED_BY:
     if re.search(pattern, path):
-      return op
-  m = re.match(r"^src/iop/([^/]+)\.(c|cc|cpp)$", path) or re.match(r"^data/kernels/([^/]+)\.cl$", path)
-  if m and (os.path.exists(f"src/iop/{m.group(1)}.c") or os.path.exists(f"src/iop/{m.group(1)}.cc")):
-    return m.group(1)
+      return {op}
+  if path in SOURCES_OF:
+    return SOURCES_OF[path]
+  m = re.match(r"^data/kernels/([^/]+)\.cl$", path)
+  if m and m.group(1) in OPS:
+    return {m.group(1)}
   return None
 
 
@@ -87,11 +102,14 @@ selected, reasons, everything = set(), [], None
 for path in changed:
   if re.search(NO_PIXELS, path):
     continue
-  op = module_of(path)
-  if op is not None:
-    tests = uses.get(op, set())
+  ops = modules_of(path)
+  if ops and not any(op in uses for op in ops):
+    everything = path
+    break
+  if ops is not None:
+    tests = set().union(*(uses.get(op, set()) for op in ops))
     selected |= tests
-    reasons.append(f"{path}: {op}, {len(tests)} tests")
+    reasons.append(f"{path}: {','.join(sorted(ops))}, {len(tests)} tests")
   elif path.startswith(("src/", "data/kernels/", "cmake/")) or os.path.basename(path) == "CMakeLists.txt" \
        or path.startswith((".github/workflows/integration.yml", ".ci/integration-select.py")):
     everything = path
