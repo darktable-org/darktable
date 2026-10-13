@@ -381,11 +381,11 @@ static void wavelet_denoise_xtrans(const float *const restrict in,
       if(FCNxtrans(row, 0, xtrans) != c)
       {
         int src = 0;	// fallback is current sensel even if it has the wrong color
-        if(row > 1 && FCNxtrans(row-1, 0, xtrans) == c)
+        if(row > 0 && FCNxtrans(row-1, 0, xtrans) == c)
           src = -width;
         else if(FCNxtrans(row, 1, xtrans) == c)
           src = 1;
-        else if(row > 1 && FCNxtrans(row-1, 1, xtrans) == c)
+        else if(row > 0 && FCNxtrans(row-1, 1, xtrans) == c)
           src = -width + 1;
         fimgp[0] = vstransform(inp[src]);
       }
@@ -401,9 +401,9 @@ static void wavelet_denoise_xtrans(const float *const restrict in,
         int src = width-1;	// fallback is current sensel even if it has the wrong color
         if(FCNxtrans(row, width-2, xtrans) == c)
           src = width-2;
-        else if(row > 1 && FCNxtrans(row-1, width-1, xtrans) == c)
+        else if(row > 0 && FCNxtrans(row-1, width-1, xtrans) == c)
           src = -1;
-        else if(row > 1 && FCNxtrans(row-1, width-2, xtrans) == c)
+        else if(row > 0 && FCNxtrans(row-1, width-2, xtrans) == c)
           src = -2;
         fimgp[width-1] = vstransform(inp[src]);
       }
