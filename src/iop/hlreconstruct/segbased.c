@@ -42,14 +42,14 @@ The algorithm follows these basic ideas:
    Choosing the candidate is done at all non-clipped locations of a segment, the best candidate is selected via a weighting
    function - the weight is derived from
    - the local standard deviation in a 5x5 area and
-   - the median value of unclipped positions also in a 5x5 area.
+   - the median value of unclipped positions in a 3x3 area.
    The best candidate points to the location in the color plane holding the reference value.
    If there is no good candidate we use an averaging approximation over the whole segment with correction of chrominance.
 5. A core principle is to inpaint pseudo-chromacity, calculated by subtracting opponent channel means rather than luminance.
 6. Cube root is used instead of logarithm for better stability, which suffices for an estimate.
 
 The chosen segmentation algorithm works like this:
-1. Doing the segmentation in every color plane.
+1. Do the segmentation for every color plane.
 2. To combine small segments for a shared candidate we use a morphological closing operation, the radius of that UI op
    can be chosen interactively between 0 and 8.
 3. The segmentation algorithm uses a modified floodfill, it also takes care of the surrounding rectangle of every segment
@@ -74,8 +74,8 @@ The chosen segmentation algorithm works like this:
      By doing so we avoid direction problems.
   2. Do a box-blur to suppress ridges, the radius depends on segment size.
   3. Possibly add some noise.
-  4. Do a sigmoid correction suppressing artefacts at the borders.
-     and write back data from this segment to the gradients plane
+  4. Do a sigmoid correction suppressing artefacts at the borders
+     and write back data from this segment to the gradients plane.
 
   The UI offers
   1. A drop down menu defining the recovery mode
@@ -112,9 +112,18 @@ static float _calc_weight(const float *s, const size_t loc, const int w, const f
   for(int y = -1; y < 2; y++)
   {
     for(int x = -1; x < 2; x++)
-      val += s[loc + y*w + x] / 9.0f;
+      val += s[loc + y*w + x];
   }
-  const float sval = fmaxf(1.0f, powf(fminf(clipval, val) / clipval, 2.0f));
+  val = val / (9.0f * clipval);
+  /** val is now the normalized medium at the tested position.
+      The weight for being the best candidate is much better if close
+      to clip level and certainly zero if above clip.
+      Why do we test smoothness at all?
+      At the borders of unclipped to clipped transitions we often have noisy signals
+      and we want the image section with a smooth hue gradient.
+      This is also very important to stabilize the segments candidate vs clip threshold.
+  */
+  const float sval = val < 1.0f ? sqrf(val) : 0.0f;
   return sval * smoothness;
 }
 
@@ -168,8 +177,8 @@ static void _calc_plane_candidates(const float *plane,
           {
             const size_t pos = testref + y*seg->width + x;
             const gboolean unclipped = plane[pos] < clipval;
-            sum += (unclipped) ? plane[pos] * weights[y+2][x+2] : 0.0f;
-            pix += (unclipped) ? weights[y+2][x+2] : 0.0f;
+            sum += unclipped ? plane[pos] * weights[y+2][x+2] : 0.0f;
+            pix += unclipped ? weights[y+2][x+2] : 0.0f;
           }
         }
         const float av = sum / fmaxf(1.0f, pix);
@@ -177,6 +186,7 @@ static void _calc_plane_candidates(const float *plane,
         {
           seg->val1[id] = fminf(clipval, av);
           seg->val2[id] = refavg[testref];
+          seg->data[testref] |= DT_SEG_ID_CANDIDATE;
         }
       }
     }
@@ -727,8 +737,15 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 
           else if(vmode == DT_HIGHLIGHTS_MASK_CANDIDATING)
           {
-            if(pid && !feqf(isegments[color].val1[pid], 0.0f, 1e-9))
-              output[odx] += 1.0f;
+            const gboolean inside = col > 2 && row > 2 && col < roi_out->width-2 && row < roi_out->height-2;
+            if(inside && (isegments[color].data[ppos] & DT_SEG_ID_CANDIDATE))
+            {
+              for(int ry = row-1; ry <= row+1; ry++)
+                for(int rx = col-1; rx <= col+1; rx++)
+                  output[(size_t)ry * roi_out->width + rx] += 1.0f;
+            }
+            else if(pid && !feqf(isegments[color].val1[pid], 0.0f, 1e-9))
+              output[odx] += 0.6f;
           }
 
           else if(vmode == DT_HIGHLIGHTS_MASK_STRENGTH)
@@ -744,7 +761,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
     }
   }
 
-  dt_print(DT_DEBUG_PERF, "[segmentation report %-12s] %5.1fMpix, segments: %3i red, %3i green, %3i blue, %3i all, %4i allowed",
+  dt_print(DT_DEBUG_PIPE, "[segmentation report %-12s] %5.1fMpix, segments: %3i red, %3i green, %3i blue, %3i all, %4i allowed",
       dt_dev_pixelpipe_type_to_str(piece->pipe->type),
       (float) (roi_in->width * roi_in->height) / 1.0e6f, isegments[0].nr -2, isegments[1].nr-2, isegments[2].nr-2, isegments[3].nr-2,
       segmentation_limit-2);

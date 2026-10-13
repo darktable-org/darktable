@@ -21,7 +21,7 @@
 
    Morphological closing operation supporting radius up to 8, tuned for performance
 
-   The segmentation algorithm uses a modified floodfill, while floddfilling it
+   The segmentation algorithm uses a modified floodfill, while floodfilling it
    - also takes keeps track of the surrounding rectangle of every segment and
    - marks the segment border locations.
 
@@ -29,6 +29,7 @@
 */
 
 #define DT_SEG_ID_MASK 0x40000
+#define DT_SEG_ID_CANDIDATE 0x80000
 
 typedef struct dt_pos_t
 {
