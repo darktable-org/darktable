@@ -443,6 +443,11 @@ gboolean dt_presets_get_line(const int rowid, dt_presets_line_t *line);
 void dt_presets_line_clear(dt_presets_line_t *line);
 void dt_presets_line_free(gpointer data);
 
+/** the name and module parameters of every preset of the module, all
+    versions, built-in ones first, then by name when by_name.
+    Free with g_list_free_full(list, dt_presets_params_free) */
+GList *dt_presets_list_all_params(const char *operation, const gboolean by_name);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

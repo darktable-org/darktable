@@ -1810,6 +1810,34 @@ void dt_presets_line_free(gpointer data)
   g_free(data);
 }
 
+GList *dt_presets_list_all_params(const char *operation, const gboolean by_name)
+{
+  GList *list = NULL;
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              by_name
+                              ? "SELECT name, op_params FROM data.presets "
+                                "WHERE operation = ?1 "
+                                "ORDER BY writeprotect DESC, LOWER(name)"
+                              : "SELECT name, op_params"
+                                " FROM data.presets"
+                                " WHERE operation=?1"
+                                " ORDER BY writeprotect DESC",
+                              -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, operation, -1, SQLITE_TRANSIENT);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    dt_presets_params_t *p = g_new0(dt_presets_params_t, 1);
+    p->name = g_strdup((const char *)sqlite3_column_text(stmt, 0));
+    p->op_params = _blob_copy(stmt, 1, &p->op_params_size);
+    list = g_list_prepend(list, p);
+  }
+  sqlite3_finalize(stmt);
+  return g_list_reverse(list);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

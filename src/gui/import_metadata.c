@@ -18,6 +18,7 @@
 
 #include "common/debug.h"
 #include "common/metadata.h"
+#include "common/presets.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/import_metadata.h"
@@ -248,18 +249,12 @@ static void _import_metadata_presets_changed(GtkWidget *widget,
 static void _import_metadata_presets_update(dt_import_metadata_t *metadata)
 {
   gtk_list_store_clear(metadata->m_model);
-  sqlite3_stmt *stmt;
-  // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, op_params FROM data.presets "
-                              "WHERE operation = 'metadata' "
-                              "ORDER BY writeprotect DESC, LOWER(name)",
-                              -1, &stmt, NULL);
-  // clang-format on
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  GList *presets = dt_presets_list_all_params("metadata", TRUE);
+  for(const GList *l = presets; l; l = g_list_next(l))
   {
-    void *op_params = (void *)sqlite3_column_blob(stmt, 1);
-    int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
+    const dt_presets_params_t *preset = l->data;
+    void *op_params = preset->op_params;
+    int32_t op_params_size = preset->op_params_size;
 
     // key/value list of metadata
     GHashTable *metadata_kv = g_hash_table_new(NULL, NULL);
@@ -279,12 +274,12 @@ static void _import_metadata_presets_update(dt_import_metadata_t *metadata)
     if(op_params_size == pos)
     {
       gtk_list_store_insert_with_values(metadata->m_model, NULL, -1,
-                         0, (char *)sqlite3_column_text(stmt, 0),
+                         0, preset->name,
                          1, metadata_kv,
                          -1);
     }
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(presets, dt_presets_params_free);
 }
 
 static void _import_tags_presets_changed(GtkWidget *widget,
@@ -309,18 +304,12 @@ static void _import_tags_presets_changed(GtkWidget *widget,
 static void _import_tags_presets_update(dt_import_metadata_t *metadata)
 {
   gtk_list_store_clear(metadata->t_model);
-  sqlite3_stmt *stmt;
-  // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, op_params FROM data.presets "
-                              "WHERE operation = 'tagging' "
-                              "ORDER BY writeprotect DESC, LOWER(name)",
-                              -1, &stmt, NULL);
-  // clang-format on
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  GList *presets = dt_presets_list_all_params("tagging", TRUE);
+  for(const GList *l = presets; l; l = g_list_next(l))
   {
-    void *op_params = (void *)sqlite3_column_blob(stmt, 1);
-    int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
+    const dt_presets_params_t *preset = l->data;
+    void *op_params = preset->op_params;
+    int32_t op_params_size = preset->op_params_size;
     if(op_params_size)
     {
       char *tags = NULL;
@@ -340,13 +329,13 @@ static void _import_tags_presets_update(dt_import_metadata_t *metadata)
           tags[strlen(tags) - 1] = '\0';
         g_strfreev(tokens);
         gtk_list_store_insert_with_values(metadata->t_model, NULL, -1,
-                           0, (char *)sqlite3_column_text(stmt, 0),
+                           0, preset->name,
                            1, tags, -1);
         g_free(tags);
       }
     }
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(presets, dt_presets_params_free);
 }
 
 static void _metadata_presets_changed(gpointer instance,

@@ -399,6 +399,18 @@ static void test_lib_presets(void **state)
   dt_presets_line_clear(&one);
   g_list_free_full(lines, dt_presets_line_free);
   assert_false(dt_presets_get_line(-1, &one));
+
+  // every version, built-in first, then by name when asked
+  dt_presets_add_lib("mid", OP, 7, text, sizeof(text) - 1, FALSE, 0);
+  GList *all = dt_presets_list_all_params(OP, TRUE);
+  assert_int_equal(g_list_length(all), 3);
+  assert_string_equal(((dt_presets_params_t *)all->data)->name, "aa");
+  assert_string_equal(((dt_presets_params_t *)all->next->data)->name, "mid");
+  assert_string_equal(((dt_presets_params_t *)all->data)->op_params, "x|y");
+  g_list_free_full(all, dt_presets_params_free);
+  all = dt_presets_list_all_params(OP, FALSE);
+  assert_string_equal(((dt_presets_params_t *)all->data)->name, "aa");
+  g_list_free_full(all, dt_presets_params_free);
   dt_presets_delete_module(OP);
 }
 
