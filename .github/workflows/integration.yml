@@ -7,9 +7,9 @@ name: Integration (selected tests)
 # Tests marked critical (critical = true in their ci.toml) run on every
 # pull request. The selected tests are split into up to 4 parallel shards.
 #
-# Informational for now: a failing test does not fail the workflow, it is
-# listed in the job summary. Which tests may differ across machines, and by
-# how much, is discussed in #22589.
+# Informational for now: a failing test does not fail the job, it is listed
+# in the job summary and shows as a warning on the pull request. Which tests
+# may differ across machines, and by how much, is discussed in #22589.
 
 on:
   pull_request:
@@ -72,7 +72,6 @@ jobs:
     if: needs.select.outputs.count != '0'
     name: Integration shard ${{ strategy.job-index }}
     runs-on: ubuntu-latest
-    continue-on-error: true
     container:
       image: ubuntu:26.04
       options: --tmpfs /tmp:exec
@@ -189,7 +188,10 @@ jobs:
           DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
         run: |
           ./run --disable-opencl ${{ matrix.tests }} 2>&1 | tee run.log
-          # ./run exits with check-performance's status: judge by its count
           sed -n '/^Total test/,/^[^ E]/p' run.log | grep -v '^$' >> "$GITHUB_STEP_SUMMARY"
-          errors=$(sed -n 's/^Errors *//p' run.log)
-          [ "${errors:-1}" = 0 ]
+          # informational: a failing test is a warning on the pull request,
+          # not a failed check (./run's own status is check-performance's)
+          sed -n 's/^   - \([0-9].*\)/\1/p' run.log | while read -r test; do
+            echo "::warning title=integration test::$test differs from its reference"
+          done
+          grep -q '^Errors *[0-9]' run.log || { echo "::error::the suite did not report its results"; exit 1; }
