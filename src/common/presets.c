@@ -1737,6 +1737,80 @@ void dt_presets_upgrade_at(const int rowid,
 }
 
 // clang-format off
+#define _LINE_COLUMNS                                                      \
+  "SELECT rowid, name, operation, autoapply, model, maker, lens, iso_min, " \
+  "iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "      \
+  "focal_length_min, focal_length_max, writeprotect "                      \
+  "FROM data.presets "
+// clang-format on
+
+static void _read_line(sqlite3_stmt *stmt, dt_presets_line_t *l)
+{
+  l->rowid = sqlite3_column_int(stmt, 0);
+  l->name = g_strdup((const char *)sqlite3_column_text(stmt, 1));
+  l->operation = g_strdup((const char *)sqlite3_column_text(stmt, 2));
+  l->autoapply = sqlite3_column_int(stmt, 3);
+  l->model = g_strdup((const char *)sqlite3_column_text(stmt, 4));
+  l->maker = g_strdup((const char *)sqlite3_column_text(stmt, 5));
+  l->lens = g_strdup((const char *)sqlite3_column_text(stmt, 6));
+  l->iso_min = sqlite3_column_double(stmt, 7);
+  l->iso_max = sqlite3_column_double(stmt, 8);
+  l->exposure_min = sqlite3_column_double(stmt, 9);
+  l->exposure_max = sqlite3_column_double(stmt, 10);
+  l->aperture_min = sqlite3_column_double(stmt, 11);
+  l->aperture_max = sqlite3_column_double(stmt, 12);
+  l->focal_length_min = sqlite3_column_double(stmt, 13);
+  l->focal_length_max = sqlite3_column_double(stmt, 14);
+  l->writeprotect = sqlite3_column_int(stmt, 15);
+}
+
+GList *dt_presets_list_lines(void)
+{
+  GList *lines = NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              _LINE_COLUMNS "ORDER BY operation, name",
+                              -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    dt_presets_line_t *l = g_new0(dt_presets_line_t, 1);
+    _read_line(stmt, l);
+    lines = g_list_prepend(lines, l);
+  }
+  sqlite3_finalize(stmt);
+  return g_list_reverse(lines);
+}
+
+gboolean dt_presets_get_line(const int rowid, dt_presets_line_t *line)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              _LINE_COLUMNS "WHERE rowid = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
+  const gboolean found = sqlite3_step(stmt) == SQLITE_ROW;
+  if(found) _read_line(stmt, line);
+  sqlite3_finalize(stmt);
+  return found;
+}
+
+void dt_presets_line_clear(dt_presets_line_t *l)
+{
+  g_free(l->name);
+  g_free(l->operation);
+  g_free(l->model);
+  g_free(l->maker);
+  g_free(l->lens);
+  memset(l, 0, sizeof(*l));
+}
+
+void dt_presets_line_free(gpointer data)
+{
+  dt_presets_line_clear(data);
+  g_free(data);
+}
+
+// clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

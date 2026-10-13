@@ -375,6 +375,31 @@ static void test_lib_presets(void **state)
 
   dt_presets_delete_module(OP);
   assert_null(dt_presets_list_stored(OP));
+
+  // the preferences' list: every module, by module then name
+  dt_presets_add_lib("zz", OP, 2, text, sizeof(text) - 1, FALSE, 0);
+  dt_presets_add_lib("aa", OP, 2, text, sizeof(text) - 1, TRUE, 0);
+  GList *lines = dt_presets_list_lines();
+  const dt_presets_line_t *first = NULL, *last = NULL;
+  for(GList *l = lines; l; l = g_list_next(l))
+  {
+    const dt_presets_line_t *line = l->data;
+    if(strcmp(line->operation, OP)) continue;
+    if(!first) first = line;
+    last = line;
+  }
+  assert_non_null(first);
+  assert_string_equal(first->name, "aa");
+  assert_true(first->writeprotect);
+  assert_string_equal(last->name, "zz");
+  dt_presets_line_t one = { 0 };
+  assert_true(dt_presets_get_line(last->rowid, &one));
+  assert_string_equal(one.name, "zz");
+  assert_string_equal(one.maker, "%");
+  dt_presets_line_clear(&one);
+  g_list_free_full(lines, dt_presets_line_free);
+  assert_false(dt_presets_get_line(-1, &one));
+  dt_presets_delete_module(OP);
 }
 
 int main(int argc, char *argv[])
