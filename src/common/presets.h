@@ -448,6 +448,30 @@ void dt_presets_line_free(gpointer data);
     Free with g_list_free_full(list, dt_presets_params_free) */
 GList *dt_presets_list_all_params(const char *operation, const gboolean by_name);
 
+/** stage in memory.history the auto-applied presets matching the image
+    (format flags iformat, excluded as dt_presets_get_filter() computes
+    them): the user's, or the built-in ones of the modules that have no
+    matching user preset. auto_module labels them by preset name rather
+    than instance number; skip_basecurve and skip_denoise leave out
+    basecurve, and denoiseprofile with rawdenoise */
+void dt_presets_stage_auto_apply(const dt_imgid_t imgid,
+                                 const dt_image_t *image,
+                                 const int iformat,
+                                 const int excluded,
+                                 const gboolean auto_module,
+                                 const gboolean skip_basecurve,
+                                 const gboolean skip_denoise);
+
+/** the module order list of the auto-applied ioporder preset matching the
+    image, the user's first; FALSE when there is none.
+    Free *op_params with g_free() */
+gboolean dt_presets_find_auto_ioporder(const dt_imgid_t imgid,
+                                       const dt_image_t *image,
+                                       const int iformat,
+                                       const int excluded,
+                                       void **op_params,
+                                       int *op_params_size);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

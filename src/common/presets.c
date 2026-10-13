@@ -1838,6 +1838,147 @@ GList *dt_presets_list_all_params(const char *operation, const gboolean by_name)
   return g_list_reverse(list);
 }
 
+void dt_presets_stage_auto_apply(const dt_imgid_t imgid,
+                                 const dt_image_t *image,
+                                 const int iformat,
+                                 const int excluded,
+                                 const gboolean auto_module,
+                                 const gboolean skip_basecurve,
+                                 const gboolean skip_denoise)
+{
+  char query[2048];
+  // clang-format off
+
+  // operations that must not auto-apply on this particular image
+  GString *skip_ops = g_string_new("");
+  if(skip_basecurve)
+    g_string_append(skip_ops, ", 'basecurve'");
+  if(skip_denoise)
+    g_string_append(skip_ops, ", 'denoiseprofile', 'rawdenoise'");
+
+  snprintf(query, sizeof(query),
+           "INSERT OR REPLACE INTO memory.history"
+           " SELECT ?1, 0, op_version, operation AS op, op_params,"
+           "       enabled, blendop_params, blendop_version,"
+           "       ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1,"
+           "       %s, multi_name_hand_edited"
+           " FROM data.presets"
+           // only auto-applied presets matching the camera/lens/focal/format/exposure
+           " WHERE ( (autoapply=1"
+           "          AND ((?2 LIKE model AND ?3 LIKE maker)"
+           "               OR (?4 LIKE model AND ?5 LIKE maker))"
+           "          AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
+           "          AND ?8 BETWEEN exposure_min AND exposure_max"
+           "          AND ?9 BETWEEN aperture_min AND aperture_max"
+           "          AND ?10 BETWEEN focal_length_min AND focal_length_max"
+           "          AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))))"
+           // skip non iop modules:
+           "   AND operation NOT IN"
+           "       ('ioporder', 'metadata', 'modulegroups', 'export',"
+           "        'tagging', 'collect'%s)"
+           // select all user's auto presets or the hard-coded presets (for the workflow)
+           // if non auto-presets for the same operation and matching
+           // camera/lens/focal/format/exposure found.
+           "   AND (writeprotect = 0"
+           "        OR (SELECT NOT EXISTS"
+           "             (SELECT op"
+           "              FROM presets"
+           "              WHERE autoapply = 1 AND operation = op AND writeprotect = 0"
+           "                    AND ((?2 LIKE model AND ?3 LIKE maker)"
+           "                         OR (?4 LIKE model AND ?5 LIKE maker))"
+           "                    AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
+           "                    AND ?8 BETWEEN exposure_min AND exposure_max"
+           "                    AND ?9 BETWEEN aperture_min AND aperture_max"
+           "                    AND ?10 BETWEEN focal_length_min AND focal_length_max"
+           "                    AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0)))))"
+           " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
+           // auto module:
+           //  ON  : we take as the preset label either the multi-name
+           //        if defined or the preset name.
+           //  OFF : we take the multi-name only if hand-edited otherwise a
+           //        simple incremental instance number (equivalent to the multi_priority
+           //        field is used).
+           auto_module
+             ? "COALESCE(NULLIF(multi_name,''), NULLIF(name,''))"
+             : "CASE WHEN multi_name_hand_edited"
+               "  THEN multi_name"
+               "  ELSE (ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1)"
+               " END",
+           skip_ops->str);
+  g_string_free(skip_ops, TRUE);
+  // clang-format on
+
+  // query for all modules at once:
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, image->exif_maker, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, image->camera_alias, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, image->camera_maker, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 6, image->exif_lens, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(FLT_MAX, image->exif_iso)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, image->exif_exposure)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f, fminf(1000000, image->exif_aperture)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, fmaxf(0.0f, fminf(1000000, image->exif_focal_length)));
+  // 0: dontcare, 1: ldr, 2: raw plus monochrome & color
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+gboolean dt_presets_find_auto_ioporder(const dt_imgid_t imgid,
+                                       const dt_image_t *image,
+                                       const int iformat,
+                                       const int excluded,
+                                       void **op_params,
+                                       int *op_params_size)
+{
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT op_params"
+     " FROM data.presets"
+     " WHERE autoapply=1"
+     "       AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
+     "       AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
+     "       AND ?8 BETWEEN exposure_min AND exposure_max"
+     "       AND ?9 BETWEEN aperture_min AND aperture_max"
+     "       AND ?10 BETWEEN focal_length_min AND focal_length_max"
+     "       AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))"
+     "       AND operation = 'ioporder'"
+     " ORDER BY writeprotect ASC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
+     -1, &stmt, NULL);
+  // NOTE: the order "writeprotect ASC" is very important as it ensure that
+  //       user's defined presets are listed first and will be used instead of
+  //       the darktable internal ones.
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, image->exif_maker, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, image->camera_alias, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, image->camera_maker, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 6, image->exif_lens, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(FLT_MAX, image->exif_iso)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f,
+                                              fminf(1000000, image->exif_exposure)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f,
+                                              fminf(1000000, image->exif_aperture)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, fmaxf(0.0f,
+                                               fminf(1000000, image->exif_focal_length)));
+  // 0: dontcare, 1: ldr, 2: raw plus monochrome & color
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
+
+  const gboolean found = sqlite3_step(stmt) == SQLITE_ROW;
+  if(found) *op_params = _blob_copy(stmt, 0, op_params_size);
+  sqlite3_finalize(stmt);
+  return found;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
