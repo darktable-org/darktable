@@ -525,6 +525,10 @@ changes (where available).
   different image. Removing an image that had snapshots from the
   library, then taking a new snapshot, could cause the mix-up.
 
+- Fixed small memory leaks in the lighttable that grew with each rating,
+  color label, tag or duplicate applied, and each time the thumbnails or
+  the range filters were refreshed.
+
 ## Lua
 
 ### API Version

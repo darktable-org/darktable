@@ -106,7 +106,7 @@ static void _pop_undo(gpointer user_data,
 static void _colorlabels_undo_data_free(gpointer data)
 {
   GList *l = (GList *)data;
-  g_list_free(l);
+  g_list_free_full(l, free);
 }
 
 void dt_colorlabels_remove_all_labels(const dt_imgid_t imgid)
