@@ -1979,6 +1979,113 @@ gboolean dt_presets_find_auto_ioporder(const dt_imgid_t imgid,
   return found;
 }
 
+GList *dt_presets_menu_rows_iop(const char *operation,
+                                const dt_image_t *image,
+                                const gboolean default_first)
+{
+  gchar *query = NULL;
+  if(image)
+  {
+    char *format_filter = dt_presets_get_filter(image);
+
+    // clang-format off
+    query = g_strdup_printf
+      ("SELECT name, op_params, writeprotect, description, blendop_params, "
+       "  op_version, enabled"
+       " FROM data.presets"
+       " WHERE operation=?1"
+       "   AND (filter=0"
+       "          OR"
+       "       (((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
+       "        AND ?6 LIKE lens"
+       "        AND ?7 BETWEEN iso_min AND iso_max"
+       "        AND ?8 BETWEEN exposure_min AND exposure_max"
+       "        AND ?9 BETWEEN aperture_min AND aperture_max"
+       "        AND ?10 BETWEEN focal_length_min AND focal_length_max"
+       "        AND (%s)))"
+       " ORDER BY writeprotect %s, LOWER(name), rowid",
+       format_filter,
+       default_first ? "DESC":"ASC");
+    // clang-format on
+
+    g_free(format_filter);
+  }
+  else
+  {
+    // don't know for which image. show all we got:
+    // clang-format off
+    query = g_strdup_printf("SELECT name, op_params, writeprotect, "
+                            "       description, blendop_params, op_version, enabled"
+                            " FROM data.presets"
+                            " WHERE operation=?1"
+                            " ORDER BY writeprotect %s, LOWER(name), rowid",
+                            default_first ? "DESC":"ASC");
+    // clang-format on
+  }
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  g_free(query);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, operation, -1, SQLITE_TRANSIENT);
+  if(image)
+  {
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, image->exif_maker, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, image->camera_alias, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, image->camera_maker, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 6, image->exif_lens, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, image->exif_iso);
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, image->exif_exposure);
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, image->exif_aperture);
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, image->exif_focal_length);
+  }
+
+  GList *rows = NULL;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    dt_presets_params_t *p = g_new0(dt_presets_params_t, 1);
+    p->name = g_strdup((const char *)sqlite3_column_text(stmt, 0));
+    p->op_params = _blob_copy(stmt, 1, &p->op_params_size);
+    p->writeprotect = sqlite3_column_int(stmt, 2);
+    p->blendop_params = _blob_copy(stmt, 4, &p->blendop_params_size);
+    p->op_version = sqlite3_column_int(stmt, 5);
+    p->enabled = sqlite3_column_int(stmt, 6);
+    rows = g_list_prepend(rows, p);
+  }
+  sqlite3_finalize(stmt);
+  return g_list_reverse(rows);
+}
+
+GList *dt_presets_menu_rows_lib(const char *operation,
+                                const int op_version,
+                                const gboolean default_first)
+{
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT name, op_params, writeprotect, description"
+                                 " FROM data.presets"
+                                 " WHERE operation=?1 AND op_version=?2"
+                                 " ORDER BY writeprotect %s, LOWER(name), rowid",
+                                 default_first ? "DESC" : "ASC");
+  // clang-format on
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  g_free(query);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, operation, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, op_version);
+
+  GList *rows = NULL;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    dt_presets_params_t *p = g_new0(dt_presets_params_t, 1);
+    p->name = g_strdup((const char *)sqlite3_column_text(stmt, 0));
+    p->op_params = _blob_copy(stmt, 1, &p->op_params_size);
+    p->writeprotect = sqlite3_column_int(stmt, 2);
+    rows = g_list_prepend(rows, p);
+  }
+  sqlite3_finalize(stmt);
+  return g_list_reverse(rows);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

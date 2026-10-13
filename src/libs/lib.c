@@ -369,37 +369,24 @@ static void _menuitem_activate_preset(GSimpleAction *action,
 
 /* ---------- lib preset menu (dt_gui_presets_popup_menu_show() ops) ---------- */
 
-static gchar *_lib_presets_query(gpointer data)
-{
-  (void)data;
-  const gboolean default_first = dt_conf_get_bool("modules/default_presets_first");
-  // clang-format off
-  return g_strdup_printf("SELECT name, op_params, writeprotect, description"
-                         " FROM data.presets"
-                         " WHERE operation=?1 AND op_version=?2"
-                         " ORDER BY writeprotect %s, LOWER(name), rowid",
-                         default_first ? "DESC" : "ASC");
-  // clang-format on
-}
-
-static void _lib_presets_bind(sqlite3_stmt *stmt, gpointer data)
+static GList *_lib_presets_rows(gpointer data)
 {
   const dt_lib_module_info_t *minfo = data;
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, minfo->plugin_name, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minfo->version);
+  const gboolean default_first = dt_conf_get_bool("modules/default_presets_first");
+  return dt_presets_menu_rows_lib(minfo->plugin_name, minfo->version, default_first);
 }
 
-static gboolean _lib_presets_is_active(sqlite3_stmt *stmt, gpointer data,
+static gboolean _lib_presets_is_active(const dt_presets_params_t *row, gpointer data,
                                       gboolean *writeprotect)
 {
   const dt_lib_module_info_t *minfo = data;
-  const void *op_params = sqlite3_column_blob(stmt, 1);
-  const int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
+  const void *op_params = row->op_params;
+  const int32_t op_params_size = row->op_params_size;
 
   if(op_params_size == minfo->params_size
      && !memcmp(minfo->params, op_params, op_params_size))
   {
-    *writeprotect = sqlite3_column_int(stmt, 2);
+    *writeprotect = row->writeprotect;
     return TRUE;
   }
   return FALSE;
@@ -730,8 +717,7 @@ static void _presets_popup_callback(GtkWidget *button,
   const dt_gui_presets_menu_ops_t ops = {
     .data = minfo,
     .hide_defaults_pref = "plugins/lighttable/hide_default_presets",
-    .query = _lib_presets_query,
-    .bind = _lib_presets_bind,
+    .rows = _lib_presets_rows,
     .is_active = _lib_presets_is_active,
     .params_size = minfo->params_size,
     .activate_cb = _menuitem_activate_preset,
