@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/presets.h"
 #include "control/signal.h"
 #include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"
@@ -70,21 +71,13 @@ static void _update(dt_lib_module_t *self)
     gboolean found = FALSE;
     int index = 0;
 
-    sqlite3_stmt *stmt;
-
-    // clang-format off
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT op_params, name"
-                                " FROM data.presets"
-                                " WHERE operation='ioporder'"
-                                " ORDER BY writeprotect DESC", -1, &stmt, NULL);
-    // clang-format on
-
-    while(sqlite3_step(stmt) == SQLITE_ROW)
+    GList *presets = dt_presets_list_all_params("ioporder", FALSE);
+    for(const GList *l = presets; l; l = g_list_next(l))
     {
-      const char *params = (char *)sqlite3_column_blob(stmt, 0);
-      const int32_t params_len = sqlite3_column_bytes(stmt, 0);
-      const char *name = (const char *)sqlite3_column_text(stmt, 1);
+      const dt_presets_params_t *preset = l->data;
+      const char *params = preset->op_params;
+      const int32_t params_len = preset->op_params_size;
+      const char *name = preset->name;
       GList *iop_list = dt_ioppr_deserialize_iop_order_list(params, params_len);
       gchar *iop_list_text = dt_ioppr_serialize_text_iop_order_list(iop_list);
       g_list_free(iop_list);
@@ -102,7 +95,7 @@ static void _update(dt_lib_module_t *self)
       g_free(iop_list_text);
     }
 
-    sqlite3_finalize(stmt);
+    g_list_free_full(presets, dt_presets_params_free);
 
     g_free(iop_order_list);
 
