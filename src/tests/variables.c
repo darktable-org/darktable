@@ -144,16 +144,21 @@ static const test_t test_recursive_substitutions = {
 static const test_t test_export_extension = {
   "IMG_1234.CR3", "ABCDEF12345ABCDEF", 23, 0, "jpg",
   {
-    // $(EXPORT_EXTENSION) is the export format; $(FILE_EXTENSION) is the source
+    // $(FILE.EXTENSION) is the source extension; $(EXPORT.EXTENSION) is the export format
     {"$(FILE_EXTENSION)", "CR3"},
+    {"$(EXPORT.EXTENSION)", "jpg"},
+    // backward-compat underscore form still works
     {"$(EXPORT_EXTENSION)", "jpg"},
 
-    {"$(EXPORT_EXTENSION^)", "Jpg"},
-    {"$(EXPORT_EXTENSION^^)", "JPG"},
-    {"$(EXPORT_EXTENSION,)", "jpg"},
-    {"$(EXPORT_EXTENSION,,)", "jpg"},
+    {"$(EXPORT.EXTENSION^)", "Jpg"},
+    {"$(EXPORT.EXTENSION^^)", "JPG"},
+    {"$(EXPORT.EXTENSION,)", "jpg"},
+    {"$(EXPORT.EXTENSION,,)", "jpg"},
 
-    {"$(FILE_NAME).$(EXPORT_EXTENSION^^)", "IMG_1234.JPG"},
+    // $(FILE.BASE_NAME) is the filename without extension
+    {"$(FILE.BASE_NAME)", "IMG_1234"},
+    {"$(FILE.BASE_NAME).$(EXPORT.EXTENSION^^)", "IMG_1234.JPG"},
+    {"$(FILE.BASE_NAME).$(EXPORT.EXTENSION,,)", "IMG_1234.jpg"},
 
     {NULL, NULL}
   }

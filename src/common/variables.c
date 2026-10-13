@@ -771,7 +771,8 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     if(params->filename)
       result = g_strdup(params->filename);
   }
-  else if(_has_prefix(variable, "FILE.NAME")
+  else if(_has_prefix(variable, "FILE.BASE_NAME")
+          || _has_prefix(variable, "FILE.NAME")
           || _has_prefix(variable, "FILE_NAME")
           || _has_prefix(variable, "IMAGE.BASENAME"))
   {
@@ -785,7 +786,8 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "FILE.EXTENSION")
           || _has_prefix(variable, "FILE_EXTENSION"))
     result = g_strdup(params->data->file_ext);
-  else if(_has_prefix(variable, "EXPORT_EXTENSION"))
+  else if(_has_prefix(variable, "EXPORT.EXTENSION")
+          || _has_prefix(variable, "EXPORT_EXTENSION"))
     result = g_strdup(params->export_extension);
   else if(_has_prefix(variable, "SEQUENCE"))
   {
