@@ -517,6 +517,9 @@ changes (where available).
   one, which slightly changed the colors along the right edge of the
   image.
 
+- Fixed raw denoise using pixels of the wrong color near the top
+  corners of some X-Trans images.
+
 - Fixed possible crashes after removing an image that had snapshots
   from the library, while either a snapshot was shown for comparison
   or all ten snapshot slots were in use.
