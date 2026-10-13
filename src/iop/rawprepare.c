@@ -348,7 +348,7 @@ void process(dt_iop_module_t *self,
         const size_t pout = (size_t)j * roi_out->width + i;
 
         const int id = _BL(roi_out, d, j, i);
-        out[pout] = (in[pin] - d->sub[id]) / d->div[id];
+        out[pout] = (in[pin] - d->sub[id]) * d->div[id];
       }
     }
 
@@ -371,7 +371,7 @@ void process(dt_iop_module_t *self,
         const size_t pout = (size_t)j * roi_out->width + i;
 
         const int id = _BL(roi_out, d, j, i);
-        out[pout] = (in[pin] - d->sub[id]) / d->div[id];
+        out[pout] = (in[pin] - d->sub[id]) * d->div[id];
       }
     }
 
@@ -395,7 +395,7 @@ void process(dt_iop_module_t *self,
           const size_t pin = (size_t)ch * (roi_in->width * (j + csy) + csx + i) + c;
           const size_t pout = (size_t)ch * (j * roi_out->width + i) + c;
 
-          out[pout] = (in[pin] - d->sub[c]) / d->div[c];
+          out[pout] = (in[pin] - d->sub[c]) * d->div[c];
         }
       }
     }
@@ -693,11 +693,10 @@ void commit_params(dt_iop_module_t *self,
   if(piece->pipe->dsc.filters)
   {
     const float white = (float)p->raw_white_point;
-
     for(int i = 0; i < 4; i++)
     {
       d->sub[i] = (float)p->raw_black_level_separate[i];
-      d->div[i] = (white - d->sub[i]);
+      d->div[i] = 1.0f / (white - d->sub[i]);
     }
   }
   else
@@ -705,22 +704,23 @@ void commit_params(dt_iop_module_t *self,
     const float normalizer =
       ((piece->pipe->image.flags & DT_IMAGE_HDR) == DT_IMAGE_HDR)
       ? 1.0f
-      : (float)UINT16_MAX;
+      : 1.0f / (float)UINT16_MAX;
 
-    const float white = (float)p->raw_white_point / normalizer;
+    const float white = (float)p->raw_white_point * normalizer;
     for(int i = 0; i < 4; i++)
     {
-      d->sub[i] = (float)p->raw_black_level_separate[i] / normalizer;
-      d->div[i] = (white - d->sub[i]);
+      const float sepi = (float)p->raw_black_level_separate[i] * normalizer;
+      d->sub[i] = sepi;
+      d->div[i] = 1.0f / (white - sepi);
     }
   }
 
-  float black = 0.0f;
+  uint32_t black = 2; // for rounding
   for(uint8_t i = 0; i < 4; i++)
   {
-    black += (float)p->raw_black_level_separate[i];
+    black += p->raw_black_level_separate[i];
   }
-  d->rawprepare.raw_black_level = (uint16_t)roundf(black / 4.0f);
+  d->rawprepare.raw_black_level = (uint16_t)(black / 4);
   d->rawprepare.raw_white_point = p->raw_white_point;
 
   if(p->flat_field == FLAT_FIELD_EMBEDDED)

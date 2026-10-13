@@ -44,7 +44,7 @@ rawprepare_1f(read_only image2d_t in, write_only image2d_t out,
   const float pixel = read_imageui(in, sampleri, (int2)(x + cx, y + cy)).x;
 
   const int id = BL(ry+cy+y, rx+cx+x);
-  const float pixel_scaled = (pixel - sub[id]) / div[id];
+  const float pixel_scaled = (pixel - sub[id]) * div[id];
 
   write_imagef(out, (int2)(x, y), pixel_scaled);
 }
@@ -68,7 +68,7 @@ rawprepare_1f_gainmap(read_only image2d_t in, write_only image2d_t out,
   const float pixel = read_imageui(in, sampleri, (int2)(x + cx, y + cy)).x;
 
   const int id = BL(ry+cy+y, rx+cx+x);
-  float pixel_scaled = (pixel - sub[id]) / div[id];
+  float pixel_scaled = (pixel - sub[id]) * div[id];
 
   // Add 0.5 to compensate for CLK_FILTER_LINEAR subtracting 0.5 from the specified coordinates
   const float2 map_pt = ((float2)(rx+cx+x,ry+cy+y) * im_to_rel - map_origin) * rel_to_map + (float2)(0.5, 0.5);
@@ -106,7 +106,7 @@ rawprepare_1f_unnormalized(read_only image2d_t in, write_only image2d_t out,
   const float pixel = read_imagef(in, sampleri, (int2)(x + cx, y + cy)).x;
 
   const int id = BL(ry+cy+y, rx+cx+x);
-  const float pixel_scaled = (pixel - sub[id]) / div[id];
+  const float pixel_scaled = (pixel - sub[id]) * div[id];
 
   write_imagef(out, (int2)(x, y), pixel_scaled);
 }
@@ -130,7 +130,7 @@ rawprepare_1f_unnormalized_gainmap(read_only image2d_t in, write_only image2d_t 
   const float pixel = read_imagef(in, sampleri, (int2)(x + cx, y + cy)).x;
 
   const int id = BL(ry+cy+y, rx+cx+x);
-  float pixel_scaled = (pixel - sub[id]) / div[id];
+  float pixel_scaled = (pixel - sub[id]) * div[id];
 
   // Add 0.5 to compensate for CLK_FILTER_LINEAR subtracting 0.5 from the specified coordinates
   const float2 map_pt = ((float2)(rx+cx+x,ry+cy+y) * im_to_rel - map_origin) * rel_to_map + (float2)(0.5, 0.5);
@@ -168,7 +168,7 @@ rawprepare_4f(read_only image2d_t in, write_only image2d_t out,
   const float4 black4 = (const float4)(black[0], black[1], black[2], black[3]);
   const float4 div4 = (const float4)(div[0], div[1], div[2], div[3]);
   float4 pixel = readpixel(in, x + cx, y + cy);
-  pixel.xyz = (pixel.xyz - black4.xyz) / div4.xyz;
+  pixel.xyz = (pixel.xyz - black4.xyz) * div4.xyz;
 
   write_imagef(out, (int2)(x, y), pixel);
 }
