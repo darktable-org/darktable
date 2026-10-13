@@ -529,6 +529,10 @@ changes (where available).
   color label, tag or duplicate applied, and each time the thumbnails or
   the range filters were refreshed.
 
+- Fixed edits made just before quitting darktable, such as a rating,
+  being missing from the image's XMP sidecar while the library kept
+  them.
+
 ## Lua
 
 ### API Version
