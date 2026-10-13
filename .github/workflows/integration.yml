@@ -4,7 +4,8 @@ name: Integration (selected tests)
 # affect: .ci/integration-select.py maps the changed files to the tests
 # whose history uses the changed module, to the whole suite for code shared
 # by every module, and to nothing for code without effect on the pixels.
-# The selected tests are split into up to 4 parallel shards.
+# Tests marked critical (critical = true in their ci.toml) run on every
+# pull request. The selected tests are split into up to 4 parallel shards.
 #
 # Informational for now: a failing test does not fail the workflow, it is
 # listed in the job summary. Which tests may differ across machines, and by
@@ -42,13 +43,13 @@ jobs:
           submodules: false
           fetch-depth: 0
       - name: The test histories only
-        # the tests' XMP files, at the commit the checkout pins, without the
-        # images and references (~2 GB)
+        # the tests' XMP files and ci.toml annotations, at the commit the
+        # checkout pins, without the images and references (~2 GB)
         run: |
           sha=$(git ls-tree HEAD src/tests/integration | awk '{ print $3 }')
           git init --quiet suite
           git -C suite remote add origin "$(git config -f .gitmodules submodule.src/tests/integration.url)"
-          git -C suite sparse-checkout set --no-cone '/[0-9]*/*.xmp'
+          git -C suite sparse-checkout set --no-cone '/[0-9]*/*.xmp' '/[0-9]*/ci.toml'
           git -C suite fetch --quiet --depth 1 --filter=blob:none origin "$sha"
           git -C suite checkout --quiet FETCH_HEAD
       - name: Select the tests

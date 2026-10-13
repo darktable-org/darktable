@@ -27,6 +27,11 @@
 #   - anything else under src/, data/kernels or the build files can affect
 #     any test, and selects the whole suite.
 #
+# A test marked critical runs whatever changed: its directory holds a
+# ci.toml with
+#
+#   critical = true
+#
 # usage: integration-select.py <integration dir> <max shards> < changed-files
 #   prints {"tests": [...], "shards": ["<tests>", ...], "reason": "..."}
 
@@ -35,6 +40,7 @@ import json
 import os
 import re
 import sys
+import tomllib
 
 suite, max_shards = sys.argv[1], int(sys.argv[2])
 changed = [line.strip() for line in sys.stdin if line.strip()]
@@ -47,6 +53,12 @@ for xmp in glob.glob(os.path.join(suite, "[0-9]*", "*.xmp")):
     for op in set(re.findall(r'darktable:operation="([^"]+)"', f.read())):
       uses.setdefault(op, set()).add(test)
 all_tests = sorted({t for ts in uses.values() for t in ts})
+
+critical = set()
+for meta in glob.glob(os.path.join(suite, "[0-9]*", "ci.toml")):
+  with open(meta, "rb") as f:
+    if tomllib.load(f).get("critical") is True:
+      critical.add(os.path.basename(os.path.dirname(meta)))
 
 # files of src/iop/ that belong to a single module without being named after it
 MODULE_OF = [
@@ -88,7 +100,9 @@ for path in changed:
 if everything:
   selected = set(all_tests)
   reasons = [f"{everything}: may affect any test, the whole suite"]
-tests = sorted(selected)
+if critical - selected:
+  reasons.append(f"{len(critical - selected)} critical tests")
+tests = sorted(selected | critical)
 
 # round-robin over the sorted list, up to ~45 tests (~7 min on a runner) a shard
 n = min(max_shards, max(1, -(-len(tests) // 45))) if tests else 0
