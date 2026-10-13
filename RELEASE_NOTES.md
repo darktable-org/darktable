@@ -582,6 +582,9 @@ changes (where available).
 - Improved internal stability (more reproducible wavelet denoising and
   haze removal).
 
+- Fixed green tints and color shifts along image edges when using raw
+  denoise on X-Trans images, including some downscaled exports.
+
 ## Lua
 
 ### API Version
