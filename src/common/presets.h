@@ -413,6 +413,36 @@ void dt_presets_upgrade_at_rowid(const int rowid,
                                  const void *op_params,
                                  const int op_params_size);
 
+/** a preset as the preferences' presets tab lists it */
+typedef struct dt_presets_line_t
+{
+  int rowid;
+  char *name;
+  char *operation;
+  int autoapply;
+  char *model;
+  char *maker;
+  char *lens;
+  double iso_min;
+  double iso_max;
+  double exposure_min;
+  double exposure_max;
+  double aperture_min;
+  double aperture_max;
+  double focal_length_min;
+  double focal_length_max;
+  int writeprotect;
+} dt_presets_line_t;
+
+/** every preset of every module, by module then name.
+    Free with g_list_free_full(list, dt_presets_line_free) */
+GList *dt_presets_list_lines(void);
+/** the preset at rowid; FALSE when there is none. Release with
+    dt_presets_line_clear() */
+gboolean dt_presets_get_line_at_rowid(const int rowid, dt_presets_line_t *line);
+void dt_presets_line_clear(dt_presets_line_t *line);
+void dt_presets_line_free(gpointer data);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
