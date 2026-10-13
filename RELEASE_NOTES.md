@@ -533,6 +533,10 @@ changes (where available).
   being missing from the image's XMP sidecar while the library kept
   them.
 
+- Fixed an unexpected image change in AgX when disabling 'keep the pivot
+  on the diagonal' after using 'read exposure from metadata and exposure
+  module'.
+
 ## Lua
 
 ### API Version
