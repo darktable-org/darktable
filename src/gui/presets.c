@@ -1453,11 +1453,7 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
 
   const gboolean hide_default = dt_conf_get_bool(ops->hide_defaults_pref);
 
-  gchar *query = ops->query(ops->data);
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  g_free(query);
-  ops->bind(stmt, ops->data);
+  GList *rows = ops->rows(ops->data);
 
   int cnt = 0;
   gchar *active_preset_name = NULL;
@@ -1470,10 +1466,11 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
   GSList *menu_path = NULL; // stack of menuitems which are the parents of submenus on menu_stack
   GAction *item_action;
 
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  for(const GList *l = rows; l; l = g_list_next(l))
   {
+    const dt_presets_params_t *row = l->data;
     // default vs built-in stuff
-    const gboolean writeprotect = sqlite3_column_int(stmt, 2);
+    const gboolean writeprotect = row->writeprotect;
     if(hide_default && writeprotect)
     {
       // skip default module if set to hide them.
@@ -1492,7 +1489,7 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
       *prev_split[0] = '\0'; // make first level mismatch so we start over
     }
 
-    const char *name = (const char *)sqlite3_column_text(stmt, 0);
+    const char *name = row->name;
 
     if(darktable.gui->last_preset && strcmp(darktable.gui->last_preset, name) == 0)
       found = TRUE;
@@ -1505,13 +1502,13 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
                                        &submenu,
                                        &prev_split,
                                        ops->is_default
-                                         ? ops->is_default(stmt, ops->data)
+                                         ? ops->is_default(row, ops->data)
                                          : FALSE,
                                        writeprotect);
     g_free(action);
 
     gboolean wp = FALSE;
-    if(ops->is_active(stmt, ops->data, &wp))
+    if(ops->is_active(row, ops->data, &wp))
     {
       active_preset_name = g_strdup(name);
       selected_writeprotect = wp;
@@ -1519,7 +1516,7 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
 
     item_action = g_action_map_lookup_action(G_ACTION_MAP(action_group), "activate");
 
-    if(ops->is_disabled && ops->is_disabled(stmt, ops->data))
+    if(ops->is_disabled && ops->is_disabled(row, ops->data))
     {
       g_simple_action_set_enabled(G_SIMPLE_ACTION(item_action), FALSE);
     }
@@ -1530,7 +1527,7 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
 
     cnt++;
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(rows, dt_presets_params_free);
   g_slist_free(menu_path);
   g_strfreev(prev_split);
 
@@ -1599,78 +1596,21 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
 
 /* ---------- darkroom iop preset menu ---------- */
 
-static gchar *_iop_query(gpointer data)
+static GList *_iop_rows(gpointer data)
 {
   dt_iop_module_t *module = data;
   const dt_image_t *image = &module->dev->image_storage;
   const gboolean default_first = dt_conf_get_bool("modules/default_presets_first");
-
-  if(image)
-  {
-    char *format_filter = dt_presets_get_filter(image);
-
-    // clang-format off
-    gchar *query = g_strdup_printf
-      ("SELECT name, op_params, writeprotect, description, blendop_params, "
-       "  op_version, enabled"
-       " FROM data.presets"
-       " WHERE operation=?1"
-       "   AND (filter=0"
-       "          OR"
-       "       (((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
-       "        AND ?6 LIKE lens"
-       "        AND ?7 BETWEEN iso_min AND iso_max"
-       "        AND ?8 BETWEEN exposure_min AND exposure_max"
-       "        AND ?9 BETWEEN aperture_min AND aperture_max"
-       "        AND ?10 BETWEEN focal_length_min AND focal_length_max"
-       "        AND (%s)))"
-       " ORDER BY writeprotect %s, LOWER(name), rowid",
-       format_filter,
-       default_first ? "DESC":"ASC");
-    // clang-format on
-
-    g_free(format_filter);
-    return query;
-  }
-
-  // don't know for which image. show all we got:
-  // clang-format off
-  return g_strdup_printf("SELECT name, op_params, writeprotect, "
-                         "       description, blendop_params, op_version, enabled"
-                         " FROM data.presets"
-                         " WHERE operation=?1"
-                         " ORDER BY writeprotect %s, LOWER(name), rowid",
-                         default_first ? "DESC":"ASC");
-  // clang-format on
+  return dt_presets_menu_rows_iop(module->op, image, default_first);
 }
 
-static void _iop_bind(sqlite3_stmt *stmt, gpointer data)
+static gboolean _iop_is_default(const dt_presets_params_t *row, gpointer data)
 {
   dt_iop_module_t *module = data;
-  const dt_image_t *image = &module->dev->image_storage;
-
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
-  if(image)
-  {
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, image->exif_maker, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, image->camera_alias, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, image->camera_maker, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 6, image->exif_lens, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, image->exif_iso);
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, image->exif_exposure);
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, image->exif_aperture);
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, image->exif_focal_length);
-  }
-}
-
-static gboolean _iop_is_default(sqlite3_stmt *stmt, gpointer data)
-{
-  dt_iop_module_t *module = data;
-  const void *op_params = sqlite3_column_blob(stmt, 1);
-  const int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
-  const void *blendop_params = sqlite3_column_blob(stmt, 4);
-  const int32_t bl_params_size = sqlite3_column_bytes(stmt, 4);
+  const void *op_params = row->op_params;
+  const int32_t op_params_size = row->op_params_size;
+  const void *blendop_params = row->blendop_params;
+  const int32_t bl_params_size = row->blendop_params_size;
 
   return module
     && (op_params_size == 0
@@ -1680,20 +1620,21 @@ static gboolean _iop_is_default(sqlite3_stmt *stmt, gpointer data)
                MIN(bl_params_size, sizeof(dt_develop_blend_params_t)));
 }
 
-static gboolean _iop_is_disabled(sqlite3_stmt *stmt, gpointer data)
+static gboolean _iop_is_disabled(const dt_presets_params_t *row, gpointer data)
 {
   dt_iop_module_t *module = data;
-  return sqlite3_column_int(stmt, 5) != module->version();
+  return row->op_version != module->version();
 }
 
-static gboolean _iop_is_active(sqlite3_stmt *stmt, gpointer data, gboolean *writeprotect)
+static gboolean _iop_is_active(const dt_presets_params_t *row, gpointer data,
+                               gboolean *writeprotect)
 {
   dt_iop_module_t *module = data;
-  const void *op_params = sqlite3_column_blob(stmt, 1);
-  const int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
-  const void *blendop_params = sqlite3_column_blob(stmt, 4);
-  const int32_t bl_params_size = sqlite3_column_bytes(stmt, 4);
-  const int32_t enabled = sqlite3_column_int(stmt, 6);
+  const void *op_params = row->op_params;
+  const int32_t op_params_size = row->op_params_size;
+  const void *blendop_params = row->blendop_params;
+  const int32_t bl_params_size = row->blendop_params_size;
+  const int32_t enabled = row->enabled;
 
   if(((op_params_size == 0
        && !memcmp(module->params, module->default_params,
@@ -1703,7 +1644,7 @@ static gboolean _iop_is_active(sqlite3_stmt *stmt, gpointer data, gboolean *writ
      && dt_presets_module_blend_match(module, blendop_params, bl_params_size)
      && (module->enabled && enabled))
   {
-    *writeprotect = sqlite3_column_int(stmt, 2);
+    *writeprotect = row->writeprotect;
     return TRUE;
   }
   return FALSE;
@@ -1728,8 +1669,7 @@ void dt_gui_presets_popup_menu_show_for_module(GtkWidget *button, dt_iop_module_
   const dt_gui_presets_menu_ops_t ops = {
     .data = module,
     .hide_defaults_pref = "plugins/darkroom/hide_default_presets",
-    .query = _iop_query,
-    .bind = _iop_bind,
+    .rows = _iop_rows,
     .is_default = _iop_is_default,
     .is_disabled = _iop_is_disabled,
     .is_active = _iop_is_active,

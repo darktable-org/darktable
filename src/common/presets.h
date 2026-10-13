@@ -472,6 +472,21 @@ gboolean dt_presets_find_auto_ioporder(const dt_imgid_t imgid,
                                        void **op_params,
                                        int *op_params_size);
 
+/** the rows of a processing module's presets menu, matching the image's
+    filters (all of them when image is NULL), built-in ones first or last,
+    then by name: name, op_params, writeprotect, blendop_params, op_version
+    and enabled. Free with g_list_free_full(list, dt_presets_params_free) */
+GList *dt_presets_menu_rows_iop(const char *operation,
+                                const dt_image_t *image,
+                                const gboolean default_first);
+
+/** the rows of a utility module's presets menu at that version: name,
+    op_params and writeprotect.
+    Free with g_list_free_full(list, dt_presets_params_free) */
+GList *dt_presets_menu_rows_lib(const char *operation,
+                                const int op_version,
+                                const gboolean default_first);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
