@@ -332,6 +332,51 @@ static void test_builtin(void **state)
   assert_false(dt_presets_exists("bi", OP, 3));
 }
 
+static void test_lib_presets(void **state)
+{
+  // a utility module's presets: add, duplicate, update, remove
+  const char text[] = "x|y";
+  dt_presets_add_lib("lp", OP, 2, text, sizeof(text) - 1, FALSE, 0);
+  dt_presets_add_lib("ro", OP, 2, text, sizeof(text) - 1, TRUE, 3);
+  dt_presets_params_t p = { 0 };
+  assert_true(dt_presets_get_params(OP, 2, "ro", &p));
+  assert_int_equal(p.writeprotect, 1);
+  assert_int_equal(p.autoapply, 1);
+  dt_presets_params_clear(&p);
+
+  gchar *dup = dt_presets_duplicate("lp", OP, 2);
+  assert_string_equal(dup, "lp_1");
+  g_free(dup);
+  dup = dt_presets_duplicate("lp", OP, 2);
+  assert_string_equal(dup, "lp_2");
+  g_free(dup);
+  // a copy of a built-in preset is a user one
+  dup = dt_presets_duplicate("ro", OP, 2);
+  assert_true(dt_presets_get_params(OP, 2, dup, &p));
+  assert_int_equal(p.writeprotect, 0);
+  dt_presets_params_clear(&p);
+  g_free(dup);
+
+  dt_presets_update_named("lp_2", OP, 2, "lp_two", "desc", "z", 1);
+  dt_presets_details_t d = { 0 };
+  assert_true(dt_presets_get_details("lp_two", OP, 2, &d));
+  assert_string_equal(d.description, "desc");
+  assert_int_equal(d.op_params_size, 1);
+  const int rowid = d.rowid;
+  dt_presets_details_clear(&d);
+  dt_presets_upgrade_at(rowid, 4, "ab", 2);
+  assert_true(dt_presets_exists("lp_two", OP, 4));
+
+  // remove spares the built-in ones
+  dt_presets_remove("ro", OP, 2);
+  assert_true(dt_presets_exists("ro", OP, 2));
+  dt_presets_remove("lp", OP, 2);
+  assert_false(dt_presets_exists("lp", OP, 2));
+
+  dt_presets_delete_module(OP);
+  assert_null(dt_presets_list_stored(OP));
+}
+
 int main(int argc, char *argv[])
 {
   const struct CMUnitTest tests[] = {
@@ -341,6 +386,7 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_utility_module),
     cmocka_unit_test(test_legacy_upgrade),
     cmocka_unit_test(test_builtin),
+    cmocka_unit_test(test_lib_presets),
   };
   return cmocka_run_group_tests(tests, dt_test_catalog_setup, dt_test_catalog_teardown);
 }
