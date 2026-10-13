@@ -525,6 +525,10 @@ changes (where available).
   different image. Removing an image that had snapshots from the
   library, then taking a new snapshot, could cause the mix-up.
 
+- Fixed edits made just before quitting darktable, such as a rating,
+  being missing from the image's XMP sidecar while the library kept
+  them.
+
 ## Lua
 
 ### API Version
