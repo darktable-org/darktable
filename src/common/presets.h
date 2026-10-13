@@ -385,6 +385,34 @@ void dt_presets_add_builtin(const char *name,
 /** delete the built-in presets of every module */
 void dt_presets_delete_all_builtin(void);
 
+/** utility module presets: the dt_lib_presets_*() functions of libs/lib.h
+    call these; see there */
+void dt_presets_remove(const char *name, const char *operation, const int op_version);
+gchar *dt_presets_duplicate(const char *name, const char *operation, const int op_version);
+void dt_presets_update_named(const char *name,
+                             const char *operation,
+                             const int op_version,
+                             const char *new_name,
+                             const char *description,
+                             const void *op_params,
+                             const int32_t op_params_size);
+void dt_presets_add_lib(const char *name,
+                        const char *operation,
+                        const int32_t op_version,
+                        const void *op_params,
+                        const int32_t op_params_size,
+                        const gboolean readonly,
+                        const int format);
+
+/** delete all the module's presets, user ones too */
+void dt_presets_delete_module(const char *operation);
+
+/** set the version and module parameters of the preset at rowid */
+void dt_presets_upgrade_at_rowid(const int rowid,
+                                 const int op_version,
+                                 const void *op_params,
+                                 const int op_params_size);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
