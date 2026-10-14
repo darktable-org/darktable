@@ -194,6 +194,9 @@ changes (where available).
 - In tethering mode, the tethering info bar (located above the live
   camera view) now displays the camera model.
 
+- Pressing ESC or clicking on the dialog X icon (top-right) now exits
+  Darktable instead of launching the previous workspace.
+
 ## Performance Improvements
 
 - The lighttable timeline no longer slows down quadratically with the

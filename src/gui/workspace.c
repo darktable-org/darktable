@@ -707,7 +707,12 @@ gboolean dt_workspace_create(const char *datadir)
   _workspace_template_radios_set_visible
     (session,
      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(session->copy_template_check)));
-  while(gtk_dialog_run(GTK_DIALOG(session->db_screen)) == GTK_RESPONSE_ACCEPT);
+
+  gint dres = GTK_RESPONSE_CANCEL;
+  while((dres = gtk_dialog_run(GTK_DIALOG(session->db_screen))) == GTK_RESPONSE_ACCEPT);
+
+  if(dres == GTK_RESPONSE_DELETE_EVENT)
+    exit(0);
 
   // only an actual choice may override the per-workspace rc
   const gboolean selected = session->selected;
