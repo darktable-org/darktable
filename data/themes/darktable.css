@@ -2534,6 +2534,12 @@ filmstrip-thumbnail-boxes as for the canvas background */
     margin: 0.5em;
 }
 
+#workspace scrolledwindow
+{
+  background-color: transparent;
+  border: none;
+}
+
 #wpdialog
 {
     background-color: #852A2A;
