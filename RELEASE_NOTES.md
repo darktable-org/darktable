@@ -169,6 +169,11 @@ changes (where available).
   dialogs, the module order is now a check box below the item list
   instead of a last entry in the list itself.
 
+- In the AI object mask tool, every object you click on is kept in
+  the selection, including one that doesn't touch the others. This
+  needs a model that returns separate objects, such as SAM; SegNext
+  selects one region at a time.
+
 ## Performance Improvements
 
 - The lighttable timeline no longer slows down quadratically with the
