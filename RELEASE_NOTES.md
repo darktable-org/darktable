@@ -169,6 +169,9 @@ changes (where available).
   dialogs, the module order is now a check box below the item list
   instead of a last entry in the list itself.
 
+- Pressing ESC or clicking on the dialog X icon (top-right) now exits
+  Darktable instead of launching the previous workspace.
+
 ## Performance Improvements
 
 - The lighttable timeline no longer slows down quadratically with the
