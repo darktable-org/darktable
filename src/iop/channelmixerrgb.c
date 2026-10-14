@@ -2444,8 +2444,8 @@ static inline void _update_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g,
 }
 
 static inline void _init_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g,
-                                     const float width,
-                                     const float height)
+                                      const float width,
+                                      const float height)
 {
   if(!g->checker_ready)
   {
@@ -4396,7 +4396,6 @@ static void _auto_set_illuminant(dt_iop_module_t *self,
   }
 }
 
-
 void color_picker_apply(dt_iop_module_t *self,
                         GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
@@ -4405,6 +4404,11 @@ void color_picker_apply(dt_iop_module_t *self,
   _auto_set_illuminant(self, pipe);
 }
 
+static void _dt_active_images_callback(gpointer instance,
+                                       dt_iop_channelmixer_rgb_gui_data_t * g)
+{
+  g->checker_ready = FALSE;
+}
 
 void gui_init(dt_iop_module_t *self)
 {
@@ -4737,20 +4741,24 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_box_add(g->cs.container, g->checkers_list, g->optimize, g->safety,
                  g->label_delta_E, dt_gui_hbox(dt_gui_align_right(g->button_validate),
                  g->button_profile, g->button_commit));
+
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
+                            _dt_active_images_callback, g);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
 {
+  dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_active_images_callback, g);
+
   if(self && self->dev)
   {
     dt_dev_chroma_t *chr = &self->dev->chroma;
     if(chr->adaptation == self)
       chr->adaptation = NULL;
   }
-
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
-  dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
   dt_conf_set_int("plugins/darkroom/channelmixerrgb/gui_page",
                   gtk_notebook_get_current_page (g->notebook));
 
