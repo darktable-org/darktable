@@ -1193,6 +1193,83 @@ GList *dt_tag_get_images(const gint tagid)
   return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
 }
 
+dt_imgid_t dt_tag_get_nth_image(const gint tagid, const int n)
+{
+  dt_imgid_t imgid = NO_IMGID;
+  sqlite3_stmt *stmt = NULL;
+  char query[1024];
+  snprintf(query, sizeof(query),
+           "SELECT imgid FROM main.tagged_images WHERE tagid=?1 ORDER BY imgid LIMIT 1 OFFSET %d", n);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    imgid = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  return imgid;
+}
+
+GList *dt_tag_get_tag_ids(const dt_imgid_t imgid)
+{
+  GList *result = NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT tagid FROM main.tagged_images WHERE imgid=?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+    result = g_list_prepend(result, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+  sqlite3_finalize(stmt);
+  return g_list_reverse(result);
+}
+
+uint32_t dt_tag_count_tags(void)
+{
+  uint32_t count = 0;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM data.tags", -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  return count;
+}
+
+gint dt_tag_get_nth_tag(const int n)
+{
+  gint tagid = -1;
+  sqlite3_stmt *stmt = NULL;
+  char query[1024];
+  snprintf(query, sizeof(query), "SELECT id FROM data.tags ORDER BY id LIMIT 1 OFFSET %d", n);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    tagid = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  return tagid;
+}
+
+GList *dt_tag_get_flags_counts(const char *images)
+{
+  GList *result = NULL;
+  sqlite3_stmt *stmt = NULL;
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT flags, COUNT(DISTINCT imgid)"
+                                 " FROM main.tagged_images"
+                                 " JOIN data.tags"
+                                 " ON data.tags.id = main.tagged_images.tagid"
+                                 "   AND name NOT LIKE 'darktable|%%' "
+                                 " WHERE imgid in (%s) GROUP BY tagid", images);
+  // clang-format on
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  g_free(query);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    dt_tag_flags_count_t *fc = g_malloc(sizeof(dt_tag_flags_count_t));
+    fc->flags = sqlite3_column_int(stmt, 0);
+    fc->count = sqlite3_column_int(stmt, 1);
+    result = g_list_prepend(result, fc);
+  }
+  sqlite3_finalize(stmt);
+  return g_list_reverse(result);
+}
+
 GList *dt_tag_get_images_from_list(const GList *img, const gint tagid)
 {
   GList *result = NULL;

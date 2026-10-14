@@ -23,6 +23,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
+#include "common/colorlabels.h"
 #include "common/debug.h"
 #include "common/focus.h"
 #include "common/focus_peaking.h"
@@ -270,25 +271,18 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
 
   // colorlabels
   thumb->colorlabels = 0;
-  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_color);
-  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_color);
-  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_color, 1, thumb->imgid);
-
-  while(sqlite3_step(darktable.view_manager->statements.get_color) == SQLITE_ROW)
-  {
-    const int col = sqlite3_column_int(darktable.view_manager->statements.get_color, 0);
-    // we reuse CPF_* flags, as we'll pass them to the paint fct after
-    if(col == 0)
-      thumb->colorlabels |= CPF_LABEL_RED;
-    else if(col == 1)
-      thumb->colorlabels |= CPF_LABEL_YELLOW;
-    else if(col == 2)
-      thumb->colorlabels |= CPF_LABEL_GREEN;
-    else if(col == 3)
-      thumb->colorlabels |= CPF_LABEL_BLUE;
-    else if(col == 4)
-      thumb->colorlabels |= CPF_LABEL_PURPLE;
-  }
+  const int labels = dt_colorlabels_get_labels(thumb->imgid);
+  // we reuse CPF_* flags, as we'll pass them to the paint fct after
+  if(labels & (1 << DT_COLORLABELS_RED))
+    thumb->colorlabels |= CPF_LABEL_RED;
+  if(labels & (1 << DT_COLORLABELS_YELLOW))
+    thumb->colorlabels |= CPF_LABEL_YELLOW;
+  if(labels & (1 << DT_COLORLABELS_GREEN))
+    thumb->colorlabels |= CPF_LABEL_GREEN;
+  if(labels & (1 << DT_COLORLABELS_BLUE))
+    thumb->colorlabels |= CPF_LABEL_BLUE;
+  if(labels & (1 << DT_COLORLABELS_PURPLE))
+    thumb->colorlabels |= CPF_LABEL_PURPLE;
   if(thumb->w_color)
   {
     GtkDarktableThumbnailBtn *btn = (GtkDarktableThumbnailBtn *)thumb->w_color;

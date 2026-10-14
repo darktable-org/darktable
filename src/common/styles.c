@@ -128,6 +128,30 @@ gboolean dt_styles_exists(const char *name)
   return FALSE;
 }
 
+uint32_t dt_styles_count(void)
+{
+  uint32_t count = 0;
+  sqlite3_stmt *stmt = NULL;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM data.styles", -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  return count;
+}
+
+gchar *dt_styles_get_nth_name(const int n)
+{
+  gchar *name = NULL;
+  sqlite3_stmt *stmt = NULL;
+  char query[1024];
+  snprintf(query, sizeof(query), "SELECT name FROM data.styles ORDER BY name LIMIT 1 OFFSET %d", n);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    name = g_strdup((const char *)sqlite3_column_text(stmt, 0));
+  sqlite3_finalize(stmt);
+  return name;
+}
+
 static void _dt_style_cleanup_multi_instance(int id)
 {
   sqlite3_stmt *stmt;
