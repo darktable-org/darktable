@@ -283,7 +283,10 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
     };
   const int boundary = 2 * mult;
 
-  dt_aligned_pixel_t sum_sq = { 0.0f, 0.0f, 0.0f, 0.0f };
+  // accumulated in double: the reduction adds the threads' partial sums
+  // in the order they finish, and in float that order changed the
+  // denoising thresholds, and so the output, from run to run
+  double sum_sq[4] = { 0.0, 0.0, 0.0, 0.0 };
 
 #if !(defined(__apple_build_version__) && __apple_build_version__ < 11030000) //makes Xcode 11.3.1 compiler crash
   DT_OMP_FOR(reduction(+: sum_sq[0:4]))

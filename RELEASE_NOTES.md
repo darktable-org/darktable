@@ -548,6 +548,9 @@ changes (where available).
   on the diagonal' after using 'read exposure from metadata and exposure
   module'.
 
+- Improved internal stability (more reproducible wavelet denoising and
+  haze removal).
+
 ## Lua
 
 ### API Version

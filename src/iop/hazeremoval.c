@@ -520,7 +520,10 @@ static float _ambient_light(const const_rgb_image img,
   free_gray_image(&bright_hazy);
   // average over the brightest pixels among the most hazy pixels to
   // estimate the diffusive ambient light
-  dt_aligned_pixel_t A0 = { 0.0f, 0.0f, 0.0f, 0.0f };
+  // accumulated in double: the reduction adds the threads' partial sums
+  // in the order they finish, and in float that order changed the
+  // ambient light, and so the output, from run to run
+  double A0[4] = { 0.0, 0.0, 0.0, 0.0 };
   size_t N_bright_hazy = 0;
   const float *const restrict data = dark_ch.data;
   const float *const restrict in_data = img.data;
