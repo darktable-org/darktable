@@ -30,8 +30,13 @@ Interactive object masking using SAM/SAM2/SegNext models.
    form stays a `DT_MASKS_OBJECT`; its first point references the
    sidecar entry and the rest are the click prompts, input-image
    normalized and in click order, so the mask can be regenerated. a
-   decode sends all of those inside the encoded view at once, and the
-   last foreground one picks the connected component that is kept. a
+   decode sends all of those inside the encoded view at once. of the
+   areas it returns, each a core above the threshold and the soft edge
+   around it down to 0.05, every one a foreground prompt falls in is
+   kept, so a click on a separate area adds it, and the rest are
+   removed; with no foreground prompt in an area, the largest is kept.
+   each edge pixel belongs to the nearest core, so a click on an edge
+   picks that area and a removed area takes its edge along. a
    selection with no pixel above the threshold is not stored
 7. with "apply as paths" on in the mask manager, right-click traces the
    mask into path forms instead, and the outline is traced while

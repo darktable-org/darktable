@@ -521,19 +521,66 @@ static gpointer _encode_thread_func(gpointer data)
   return NULL;
 }
 
-// how far below the user threshold the kept component may grow: without it
-// the cleanup below would cut the stored mask off hard at the threshold
+// how far below the user threshold a kept area may reach: without it the
+// cleanup below would cut the stored mask off hard at the threshold
 #define MASK_COMPONENT_FLOOR 0.05f
 
-// keep the component holding the seed pixel, or the largest if none does:
-// found at the threshold, it grows down to MASK_COMPONENT_FLOOR for its
-// soft fringe, and everything else is zeroed
-static void _keep_seed_component(float *mask,
-                                 const int w,
-                                 const int h,
-                                 const float threshold,
-                                 const int seed_x,
-                                 const int seed_y)
+// an area's label once it is to be kept. -1 marks cores past the label
+// budget, positive labels the areas found
+#define MASK_AREA_KEPT -2
+
+// mark the area holding pixel start as kept: the pixels of its label
+// connected to start, which is all of them, as the area grew from one core
+static void _mark_area_kept(int16_t *const labels,
+                            int *const stack,
+                            const int w,
+                            const int h,
+                            const int start)
+{
+  const int16_t label = labels[start];
+  int sp = 0;
+  stack[sp++] = start;
+  labels[start] = MASK_AREA_KEPT;
+  while(sp > 0)
+  {
+    const int p = stack[--sp];
+    const int px = p % w;
+    const int py = p / w;
+    if(py > 0 && labels[p - w] == label)
+    {
+      labels[p - w] = MASK_AREA_KEPT;
+      stack[sp++] = p - w;
+    }
+    if(py < h - 1 && labels[p + w] == label)
+    {
+      labels[p + w] = MASK_AREA_KEPT;
+      stack[sp++] = p + w;
+    }
+    if(px > 0 && labels[p - 1] == label)
+    {
+      labels[p - 1] = MASK_AREA_KEPT;
+      stack[sp++] = p - 1;
+    }
+    if(px < w - 1 && labels[p + 1] == label)
+    {
+      labels[p + 1] = MASK_AREA_KEPT;
+      stack[sp++] = p + 1;
+    }
+  }
+}
+
+// keep the areas the foreground prompts are in, so a click on a separate
+// area adds it rather than replacing the selection, or the largest area if
+// no prompt is in one. an area is a core above the threshold and the soft
+// edge around it down to MASK_COMPONENT_FLOOR, each edge pixel going to the
+// nearest core: a click on an area's edge or a thin part still picks it,
+// and a removed area takes its edge along. everything else is zeroed
+static void _keep_seed_components(float *mask,
+                                  const int w,
+                                  const int h,
+                                  const float threshold,
+                                  const dt_seg_point_t *const prompts,
+                                  const int n_prompts)
 {
   const int npix = w * h;
   int16_t *labels = g_try_malloc0((size_t)npix * sizeof(int16_t));
@@ -547,9 +594,8 @@ static void _keep_seed_component(float *mask,
   }
 
   int16_t n_labels = 0;
-  int16_t best_label = 0;
   int best_area = 0;
-  int16_t seed_label = 0;
+  int best_start = -1;
 
   for(int i = 0; i < npix; i++)
   {
@@ -558,7 +604,7 @@ static void _keep_seed_component(float *mask,
     if(n_labels >= INT16_MAX)
     {
       // out of labels: the cores left are other components, which the
-      // growth below must not take for fringe, and which end up zeroed
+      // growth below must not take for edge, and which end up zeroed
       for(int k = i; k < npix; k++)
         if(mask[k] > threshold && labels[k] == 0) labels[k] = -1;
       break;
@@ -577,9 +623,6 @@ static void _keep_seed_component(float *mask,
       area++;
       const int px = p % w;
       const int py = p / w;
-
-      if(px == seed_x && py == seed_y)
-        seed_label = label;
 
       // 4-connected neighbors
       if(py > 0 && labels[p - w] == 0 && mask[p - w] > threshold)
@@ -607,58 +650,64 @@ static void _keep_seed_component(float *mask,
     if(area > best_area)
     {
       best_area = area;
-      best_label = label;
+      best_start = i;
     }
   }
 
-  // prefer component containing the seed point; fall back to largest
-  const int16_t keep = (seed_label > 0) ? seed_label : best_label;
-
-  if(keep > 0)
+  if(best_start >= 0)
   {
-    // hysteresis: grow the kept component down to the floor to take in its
-    // soft fringe. a zero label here means "at or below the threshold", so
-    // growth can never reach another component's core and merge two objects
-    int sp = 0;
+    // the edges: grown from every core at once, breadth first, so an edge
+    // pixel goes to the nearest core. a zero label means "at or below the
+    // threshold", so growth never reaches another core and merges two
+    // areas. each pixel is queued once, so the stack serves as the queue
+    int head = 0, tail = 0;
     for(int i = 0; i < npix; i++)
-    {
-      if(labels[i] == keep)
-        stack[sp++] = i;
-    }
+      if(labels[i] > 0) stack[tail++] = i;
 
-    while(sp > 0)
+    while(head < tail)
     {
-      const int p = stack[--sp];
+      const int p = stack[head++];
+      const int16_t label = labels[p];
       const int px = p % w;
       const int py = p / w;
 
       if(py > 0 && labels[p - w] == 0 && mask[p - w] > MASK_COMPONENT_FLOOR)
       {
-        labels[p - w] = keep;
-        stack[sp++] = p - w;
+        labels[p - w] = label;
+        stack[tail++] = p - w;
       }
       if(py < h - 1 && labels[p + w] == 0 && mask[p + w] > MASK_COMPONENT_FLOOR)
       {
-        labels[p + w] = keep;
-        stack[sp++] = p + w;
+        labels[p + w] = label;
+        stack[tail++] = p + w;
       }
       if(px > 0 && labels[p - 1] == 0 && mask[p - 1] > MASK_COMPONENT_FLOOR)
       {
-        labels[p - 1] = keep;
-        stack[sp++] = p - 1;
+        labels[p - 1] = label;
+        stack[tail++] = p - 1;
       }
       if(px < w - 1 && labels[p + 1] == 0 && mask[p + 1] > MASK_COMPONENT_FLOOR)
       {
-        labels[p + 1] = keep;
-        stack[sp++] = p + 1;
+        labels[p + 1] = label;
+        stack[tail++] = p + 1;
       }
     }
 
-    for(int i = 0; i < npix; i++)
+    gboolean any = FALSE;
+    for(int k = 0; k < n_prompts; k++)
     {
-      if(labels[i] != keep)
-        mask[i] = 0.0f;
+      if(prompts[k].label != 1) continue;
+      // pixel j covers [j - 0.5, j + 0.5)
+      const int sx = CLAMP((int)lrintf(prompts[k].x), 0, w - 1);
+      const int sy = CLAMP((int)lrintf(prompts[k].y), 0, h - 1);
+      const int s = sy * w + sx;
+      if(labels[s] > 0) _mark_area_kept(labels, stack, w, h, s);
+      any |= labels[s] == MASK_AREA_KEPT;
     }
+    if(!any) _mark_area_kept(labels, stack, w, h, best_start);
+
+    for(int i = 0; i < npix; i++)
+      if(labels[i] != MASK_AREA_KEPT) mask[i] = 0.0f;
   }
 
   g_free(stack);
@@ -893,8 +942,10 @@ static void _run_decoder(_object_data_t *d)
                              1, 3);
   dt_seg_point_t *points = g_new(dt_seg_point_t,
                                  g_list_length(d->prompts) + n_passes + 2);
-  // every decode sends all the prompts in view at once
-  int n_points = _encoded_prompts(d, points);
+  // every decode sends all the prompts in view at once. the passes below
+  // append their own, and only the user's pick the areas kept
+  const int n_prompts = _encoded_prompts(d, points);
+  int n_points = n_prompts;
   if(n_points == 0)
   {
     g_free(points);
@@ -903,19 +954,6 @@ static void _run_decoder(_object_data_t *d)
   }
 
   dt_gui_cursor_set_busy();
-
-  // the connected component filter keeps what the last foreground prompt is in
-  int seed_x = -1, seed_y = -1;
-  for(int i = n_points - 1; i >= 0; i--)
-  {
-    if(points[i].label == 1)
-    {
-      // pixel j covers [j - 0.5, j + 0.5)
-      seed_x = (int)lrintf(points[i].x);
-      seed_y = (int)lrintf(points[i].y);
-      break;
-    }
-  }
 
   const float threshold
     = CLAMP(dt_conf_get_float(CONF_OBJECT_THRESHOLD_KEY), 0.3f, 0.9f);
@@ -963,14 +1001,11 @@ static void _run_decoder(_object_data_t *d)
     }
     if(!any_added) break;
   }
-  g_free(points);
 
   if(mask)
   {
-    // remove disconnected blobs: keep only the component at the seed point
-    seed_x = CLAMP(seed_x, 0, mw - 1);
-    seed_y = CLAMP(seed_y, 0, mh - 1);
-    _keep_seed_component(mask, mw, mh, threshold, seed_x, seed_y);
+    // remove disconnected blobs: keep the areas clicked on
+    _keep_seed_components(mask, mw, mh, threshold, points, n_prompts);
 
     // optional DenseCRF edge refinement using the encoded RGB as guide
     if(dt_conf_get_bool(CONF_OBJECT_REFINE_BOUNDARY_KEY))
@@ -1004,6 +1039,7 @@ static void _run_decoder(_object_data_t *d)
     d->mask_h = mh;
     _schedule_outline(d);
   }
+  g_free(points);
   d->decoding = FALSE;
   dt_gui_cursor_clear_busy();
 }
