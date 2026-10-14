@@ -435,7 +435,19 @@ static inline float _compute_upsampling_kernel(const dt_interpolation_t *itor,
   return itor->maketaps(kernel, 2*itor->width, itor->width, t, -1.0f);
 }
 
-
+// Note: this ceilf variant has been used for very long specific for calculating the
+// filter taps, it's **not** ceilf
+static inline float _ceil_fast(const float x)
+{
+  if(x <= 0.f)
+  {
+    return (float)(int)x;
+  }
+  else
+  {
+    return -((float)(int)-x) + 1.f;
+  }
+}
 /** Computes a downsampling filtering kernel (vectorized version, four taps
  * per inner loop iteration)
  *
@@ -459,7 +471,7 @@ static inline void _compute_downsampling_kernel(const dt_interpolation_t *itor,
 
   /* Compute the phase difference between output pixel and its
    * input corresponding input pixel */
-  const float xin = ceil_fast(((float)xout - w) / outoinratio);
+  const float xin = _ceil_fast(((float)xout - w) / outoinratio);
   if(first)
   {
     *first = (int)xin;
@@ -828,7 +840,7 @@ static gboolean _prepare_resampling_plan(const dt_interpolation_t *itor,
   else
   {
     // Downscale... going for worst case values memory wise
-    maxtapsapixel = ceil_fast((float)2 * (float)itor->width / scale);
+    maxtapsapixel = _ceil_fast((float)2 * (float)itor->width / scale);
   }
 
   int nlengths = out;

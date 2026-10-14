@@ -74,11 +74,6 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
   #define dtcl_exp10(A) native_exp10(A)
   #define dtcl_log10(A) native_log10(A)
 
-  static inline float dt_fast_hypot(const float x, const float y)
-  {
-    return native_sqrt(x * x + y * y);
-  }
-
   // Allow the compiler to convert a * b + c to fused multiply-add to use hardware acceleration
   // on compatible platforms
   #pragma OPENCL FP_CONTRACT ON
@@ -97,13 +92,13 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
   #define dtcl_exp10(A) exp10(A)
   #define dtcl_log10(A) log10(A)
 
-  static inline float dt_fast_hypot(const float x, const float y)
-  {
-    return hypot(x, y);
-  }
-
   #pragma OPENCL FP_CONTRACT OFF
 #endif
+
+static inline float dt_fast_hypot(const float x, const float y)
+{
+  return sqrt(x * x + y * y);
+}
 
 // Kahan summation algorithm
 #define Kahan_sum(m, c, add)        \
@@ -116,10 +111,10 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
 
 static inline float scharr_gradient(global float *in, const int k, const int w)
 {
-  const float gx = 47.0f / 255.0f * (in[k-w-1] - in[k-w+1] + in[k+w-1] - in[k+w+1])
-                + 162.0f / 255.0f * (in[k-1]   - in[k+1]);
-  const float gy = 47.0f / 255.0f * (in[k-w-1] - in[k+w-1] + in[k-w+1] - in[k+w+1])
-                + 162.0f / 255.0f * (in[k-w]   - in[k+w]);
+  const float gx = 47.0f / 255.0f  * (in[k-w-1] - in[k-w+1] + in[k+w-1] - in[k+w+1])
+                 + 162.0f / 255.0f * (in[k-1]   - in[k+1]);
+  const float gy = 47.0f / 255.0f  * (in[k-w-1] - in[k+w-1] + in[k-w+1] - in[k+w+1])
+                 + 162.0f / 255.0f * (in[k-w]   - in[k+w]);
   return dt_fast_hypot(gx, gy);
 }
 
