@@ -10,3 +10,5 @@ Requires:
 Version: @RAW_LIB_VERSION_STRING@
 Libs: -L${libdir} -lraw_r
 Cflags: -I${includedir} -I${includedir}/libraw
+Libs.private: @LIBRAW_PC_LIBS_PRIVATE@
+Requires.private: @LIBRAW_PC_REQUIRES_PRIVATE@
