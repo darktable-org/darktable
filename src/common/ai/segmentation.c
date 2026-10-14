@@ -1157,6 +1157,50 @@ void dt_seg_reset_prev_mask(dt_seg_context_t *ctx)
            (size_t)ctx->prev_mask_dim * ctx->prev_mask_dim * sizeof(float));
 }
 
+void dt_seg_set_prev_mask(dt_seg_context_t *ctx,
+                          const float *mask,
+                          const int width,
+                          const int height)
+{
+  if(!ctx || !ctx->image_encoded || !ctx->prev_mask || !mask
+     || width <= 0 || height <= 0 || ctx->scale <= 0.0f)
+    return;
+
+  const gboolean is_sam = ctx->model_type == DT_SEG_MODEL_SAM;
+  const int pm_dim = ctx->prev_mask_dim;
+  // prev_mask spans the padded model input, with the encoded image in its
+  // top-left corner at ctx->scale model pixels per image pixel
+  const float to_image = (float)ctx->input_size / (float)pm_dim / ctx->scale;
+
+  for(int y = 0; y < pm_dim; y++)
+    for(int x = 0; x < pm_dim; x++)
+    {
+      const float ix = (x + 0.5f) * to_image - 0.5f;
+      const float iy = (y + 0.5f) * to_image - 0.5f;
+      float p = 0.0f;
+      if(ix > -0.5f && iy > -0.5f && ix < width - 0.5f && iy < height - 0.5f)
+      {
+        const float cx = CLAMP(ix, 0.0f, width - 1.0f);
+        const float cy = CLAMP(iy, 0.0f, height - 1.0f);
+        const int x0 = (int)cx, y0 = (int)cy;
+        const int x1 = MIN(x0 + 1, width - 1), y1 = MIN(y0 + 1, height - 1);
+        p = _bilinear4(mask[(size_t)y0 * width + x0], mask[(size_t)y0 * width + x1],
+                       mask[(size_t)y1 * width + x0], mask[(size_t)y1 * width + x1],
+                       cx - x0, cy - y0);
+      }
+      // SAM feeds back low-res logits, SegNext its probabilities. the clamp
+      // keeps the logits within what the decoder itself produces
+      float v = p;
+      if(is_sam)
+      {
+        const float q = CLAMP(p, 1e-4f, 1.0f - 1e-4f);
+        v = logf(q / (1.0f - q));
+      }
+      ctx->prev_mask[(size_t)y * pm_dim + x] = v;
+    }
+  ctx->has_prev_mask = TRUE;
+}
+
 void dt_seg_reset_encoding(dt_seg_context_t *ctx)
 {
   if(!ctx)
@@ -1186,9 +1230,10 @@ void dt_seg_reset_encoding(dt_seg_context_t *ctx)
 // file format: magic + version + metadata + encoder outputs + RGB.
 // bump the version when anything upstream of the encoder changes: the key
 // (imgid, distort hash, model) would not notice, and stale embeddings would
-// be reused forever. v2 = _preprocess_image moved to pixel-centre sampling
+// be reused forever. v2 = _preprocess_image moved to pixel-centre sampling.
+// v3 = the frame and scale the RGB was rendered at, after its size
 #define SEG_CACHE_MAGIC 0x44545347  // "DTSG"
-#define SEG_CACHE_VERSION 2
+#define SEG_CACHE_VERSION 3
 #define SEG_CACHE_SUBDIR "objmasks"
 
 // build the per-database cache directory path.
@@ -1231,7 +1276,10 @@ gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
                                 const dt_hash_t distort_hash,
                                 const uint8_t *rgb,
                                 const int rgb_w,
-                                const int rgb_h)
+                                const int rgb_h,
+                                const int frame_w,
+                                const int frame_h,
+                                const float render_scale)
 {
   if(!ctx || !ctx->image_encoded)
     return FALSE;
@@ -1295,8 +1343,12 @@ gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
   // RGB footer
   const int32_t rw = rgb ? rgb_w : 0;
   const int32_t rh = rgb ? rgb_h : 0;
+  const int32_t fw = frame_w, fh = frame_h;
   ok = ok && fwrite(&rw, 4, 1, fp) == 1;
   ok = ok && fwrite(&rh, 4, 1, fp) == 1;
+  ok = ok && fwrite(&fw, 4, 1, fp) == 1;
+  ok = ok && fwrite(&fh, 4, 1, fp) == 1;
+  ok = ok && fwrite(&render_scale, 4, 1, fp) == 1;
   if(rw > 0 && rh > 0 && rgb)
   {
     const size_t rgb_sz = (size_t)rw * rh * 3;
@@ -1323,7 +1375,10 @@ gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
 
 gboolean dt_seg_disk_cache_load(dt_seg_context_t *ctx,
                                 const dt_imgid_t imgid,
-                                const dt_hash_t distort_hash)
+                                const dt_hash_t distort_hash,
+                                int *frame_w,
+                                int *frame_h,
+                                float *render_scale)
 {
   if(!ctx) return FALSE;
 
@@ -1457,12 +1512,16 @@ gboolean dt_seg_disk_cache_load(dt_seg_context_t *ctx,
   }
 
   // read RGB footer
-  int32_t rw = 0, rh = 0;
+  int32_t rw = 0, rh = 0, fw = 0, fh = 0;
+  float rscale = 0.0f;
   uint8_t *rgb = NULL;
   if(ok)
   {
     ok = ok && fread(&rw, 4, 1, fp) == 1;
     ok = ok && fread(&rh, 4, 1, fp) == 1;
+    ok = ok && fread(&fw, 4, 1, fp) == 1;
+    ok = ok && fread(&fh, 4, 1, fp) == 1;
+    ok = ok && fread(&rscale, 4, 1, fp) == 1;
     if(ok && rw > 0 && rh > 0)
     {
       const size_t rgb_sz = (size_t)rw * rh * 3;
@@ -1515,6 +1574,9 @@ gboolean dt_seg_disk_cache_load(dt_seg_context_t *ctx,
   // install the RGB guide so JBU/CRF still work after a cache hit
   g_free(ctx->encoded_rgb);
   ctx->encoded_rgb = rgb;
+  if(frame_w) *frame_w = fw;
+  if(frame_h) *frame_h = fh;
+  if(render_scale) *render_scale = rscale;
 
   dt_print(DT_DEBUG_AI,
            "[segmentation] disk cache: loaded imgid %d (%dx%d, rgb=%dx%d)",

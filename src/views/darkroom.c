@@ -2671,6 +2671,31 @@ static void _brush_size_down_callback(dt_action_t *action)
     dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, 0);
 }
 
+#ifdef HAVE_AI
+// a key handler on the main window, not an action: an action would claim
+// escape for the whole view (accelerators.c:5041); this takes it only during
+// an edit. a focused entry or popup still gets it first (accelerators.c:5003),
+// and with no shortcut on it the dispatcher hands it back to the window
+// whichever widget has the focus, a mask manager slider included. the cost:
+// it cannot be remapped
+static gboolean _escape_key_pressed(GtkEventControllerKey *controller,
+                                    const guint keyval,
+                                    const guint keycode,
+                                    const GdkModifierType state,
+                                    gpointer user_data)
+{
+  (void)controller;
+  (void)keycode;
+  (void)user_data;
+  if(keyval != GDK_KEY_Escape || !dt_modifier_is(state, 0))
+    return FALSE;
+  // the center widget is shared with the other views
+  if(dt_view_get_current() != DT_VIEW_DARKROOM)
+    return FALSE;
+  return dt_masks_object_cancel_edit();
+}
+#endif
+
 static void _brush_hardness_up_callback(dt_action_t *action)
 {
   dt_develop_t *dev = dt_action_view(action)->data;
@@ -3806,6 +3831,11 @@ void gui_init(dt_view_t *self)
                      _brush_size_up_callback, 0, 0);
   dt_action_register(DT_ACTION(self), N_("decrease brush size"),
                      _brush_size_down_callback, 0, 0);
+
+#ifdef HAVE_AI
+  // see _escape_key_pressed for why this is not an action
+  dt_gui_connect_key(dt_ui_main_window(darktable.gui->ui), _escape_key_pressed, NULL);
+#endif
 
   // brush hardness +/-
   dt_action_register(DT_ACTION(self), N_("increase brush hardness"),

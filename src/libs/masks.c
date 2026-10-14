@@ -208,7 +208,9 @@ typedef enum dt_masks_tree_cols_t
   TREE_COUNT
 } dt_masks_tree_cols_t;
 
-// boolean = TRUE renders as a checkbox; min/max/relative are unused
+// boolean = TRUE renders as a checkbox, relative unused and min/max 0 and 1.
+// a form whose value is fixed collapses the range in modify_property, which
+// grays the checkbox out
 const struct
 {
   gchar *name;
@@ -216,8 +218,23 @@ const struct
   float min, max;
   gboolean relative;
   gboolean boolean;
+  gchar *tooltip;
 } _masks_properties[DT_MASKS_PROPERTY_LAST]
   = { [ DT_MASKS_PROPERTY_OPACITY] = {N_("opacity"), "%", 0, 1, FALSE, FALSE },
+      [ DT_MASKS_PROPERTY_REFINE] = { N_("refine mask boundary"), "",
+                                      0, 1, FALSE, TRUE,
+                                      N_("snap the mask boundary to nearby"
+                                         " image edges on each click, which"
+                                         " recovers notches the model missed"
+                                         " and costs a few hundred ms") },
+      [ DT_MASKS_PROPERTY_VECTORIZE] = { N_("apply as paths"), "",
+                                         0, 1, FALSE, TRUE,
+                                         N_("trace the object into paths that"
+                                            " can be edited node by node,"
+                                            " instead of storing it as pixels"
+                                            " in the image's sidecar.\nalways"
+                                            " on when sidecar writing is set"
+                                            " to \"never\"") },
       [ DT_MASKS_PROPERTY_SIZE] = { N_("size"), "%", 0.0001, 1, TRUE, FALSE },
       [ DT_MASKS_PROPERTY_HARDNESS] = { N_("hardness"), "%", 0.0001, 1, TRUE, FALSE },
       [ DT_MASKS_PROPERTY_FEATHER] = { N_("feather"), "%", 0.0001, 1, TRUE, FALSE },
@@ -226,7 +243,6 @@ const struct
       [ DT_MASKS_PROPERTY_COMPRESSION] = { N_("compression"), "%", 0.0001, 1, TRUE, FALSE },
       [ DT_MASKS_PROPERTY_CLEANUP] = { N_("cleanup"), "", 0, 100, FALSE, FALSE },
       [ DT_MASKS_PROPERTY_SMOOTHING] = { N_("smoothing"), "", 0, 1.3, FALSE, FALSE },
-      [ DT_MASKS_PROPERTY_REFINE] = { N_("refine mask boundary"), "", 0, 1, FALSE, TRUE },
 };
 
 gboolean _timeout_show_all_feathers(gpointer userdata)
@@ -280,11 +296,26 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
 
   if(prop == DT_MASKS_PROPERTY_OPACITY && gui->creation)
   {
-    float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
-    opacity = CLAMP(opacity + value - d->last_value[prop], 0.05f, 1.0f);
-    dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
-    sum += opacity;
-    ++count;
+    // a tool reopened on a grouped shape (the AI object's edit) changes that
+    // shape's opacity and leaves the default for new shapes alone
+    dt_mask_id_t parentid = NO_MASKID;
+    if(dt_masks_group_entry(form, &parentid))
+    {
+      const float new_opacity =
+        dt_masks_form_change_opacity(form, parentid, value - d->last_value[prop]);
+      sum += new_opacity;
+      max = fminf(max, 1.0f - new_opacity);
+      min = fmaxf(min, .05f - new_opacity);
+      ++count;
+    }
+    else
+    {
+      float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
+      opacity = CLAMP(opacity + value - d->last_value[prop], 0.05f, 1.0f);
+      dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
+      sum += opacity;
+      ++count;
+    }
   }
   else if(!(form->type & DT_MASKS_GROUP)
           && form->functions
@@ -351,6 +382,8 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
 
     if(is_bool)
     {
+      // every time, so the checkbox comes back once the value is free again
+      gtk_widget_set_sensitive(widget, max > min);
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),
                                    (sum / count) > 0.5f);
       d->last_value[prop] =
@@ -2230,7 +2263,9 @@ static void _lib_masks_selection_change(dt_lib_module_t *self,
   // a property slider, making the sliders visibly jump. gui_update applies (and
   // clears) the pending selection. dt_lib_gui_update is a no-op unless a rebuild
   // was already queued (dt_dev_masks_list_change, which creation triggers).
-  if(dt_is_valid_maskid(lm->pending_selectid))
+  // skipped during a gui update, where gui_update bails out but the module is
+  // still marked up to date (lib.c:830), losing the new row's rebuild
+  if(dt_is_valid_maskid(lm->pending_selectid) && !DT_IN_GUI_UPDATE())
     dt_lib_gui_update(self);
 }
 
@@ -2435,6 +2470,8 @@ void gui_init(dt_lib_module_t *self)
       g_signal_connect(G_OBJECT(w), "value-changed",
                        G_CALLBACK(_property_changed), GINT_TO_POINTER(i));
     }
+    if(_masks_properties[i].tooltip)
+      gtk_widget_set_tooltip_text(w, _(_masks_properties[i].tooltip));
     d->property[i] = w;
     dt_gui_box_add(d->cs.container, w);
   }

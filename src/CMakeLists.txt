@@ -131,6 +131,8 @@ FILE(GLOB SOURCE_FILES
   "develop/masks/circle.c"
   "develop/masks/ellipse.c"
   "develop/masks/gradient.c"
+  "develop/masks/object.c"
+  "develop/masks/pixel_mask.c"
   "develop/masks/group.c"
   "develop/masks/masks.c"
   "develop/masks/path.c"
@@ -484,7 +486,6 @@ if(USE_AI)
     "common/ai/restore_rgb.c"
     "common/ai/restore_raw_bayer.c"
     "common/ai/restore_raw_linear.c"
-    "develop/masks/object.c"
     "gui/preferences_ai.c"
   )
   set(SOURCES ${SOURCES} ${SOURCE_FILES_AI})

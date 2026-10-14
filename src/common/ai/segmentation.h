@@ -134,6 +134,21 @@ void dt_seg_reset_encoding(dt_seg_context_t *ctx);
  */
 void dt_seg_reset_prev_mask(dt_seg_context_t *ctx);
 
+/**
+ * @brief Seed the iterative refinement with an existing mask, as if
+ *        dt_seg_compute_mask() had just returned it, so the next click
+ *        refines it. Must call dt_seg_encode_image() first.
+ * @param ctx Segmentation context (NULL-safe).
+ * @param mask Probabilities in [0,1] over the encoded image, laid out as
+ *        dt_seg_compute_mask() returns them.
+ * @param width Mask width, the encoded image width.
+ * @param height Mask height, the encoded image height.
+ */
+void dt_seg_set_prev_mask(dt_seg_context_t *ctx,
+                          const float *mask,
+                          const int width,
+                          const int height);
+
 /* --- disk cache for encoder embeddings --- */
 
 /**
@@ -145,6 +160,10 @@ void dt_seg_reset_prev_mask(dt_seg_context_t *ctx);
  * @param rgb RGB image (uint8, HWC, 3ch) for edge refinement.
  * @param rgb_w RGB width.
  * @param rgb_h RGB height.
+ * @param frame_w Width of the frame the RGB was rendered from, at scale 1.
+ * @param frame_h Height of that frame.
+ * @param render_scale The scale the RGB was rendered at: with the frame,
+ *        what places a mask over the RGB (dt_masks_pixel_grid_t).
  * @return TRUE on success.
  */
 gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
@@ -152,7 +171,10 @@ gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
                                 const dt_hash_t distort_hash,
                                 const uint8_t *rgb,
                                 const int rgb_w,
-                                const int rgb_h);
+                                const int rgb_h,
+                                const int frame_w,
+                                const int frame_h,
+                                const float render_scale);
 
 /**
  * @brief Load encoder embeddings + RGB from disk cache.
@@ -163,11 +185,18 @@ gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
  * @param ctx Segmentation context with model loaded.
  * @param imgid Image ID to look up.
  * @param distort_hash Current distortion module param hash.
+ * @param frame_w Set on a hit to the frame width saved with the RGB.
+ *        Optional, as are frame_h and render_scale.
+ * @param frame_h Set on a hit to the frame height.
+ * @param render_scale Set on a hit to the scale the RGB was rendered at.
  * @return TRUE on cache hit, FALSE on miss or mismatch.
  */
 gboolean dt_seg_disk_cache_load(dt_seg_context_t *ctx,
                                 const dt_imgid_t imgid,
-                                const dt_hash_t distort_hash);
+                                const dt_hash_t distort_hash,
+                                int *frame_w,
+                                int *frame_h,
+                                float *render_scale);
 
 /**
  * @brief Return the encoded RGB guide (uint8 HWC, 3ch) and its

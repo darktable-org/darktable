@@ -23,8 +23,59 @@ Interactive object masking using SAM/SAM2/SegNext models.
 3. user clicks to place foreground/background points
 4. each click runs the lightweight decoder to produce a mask
 5. iterative refinement: previous mask is fed back to improve accuracy
-6. the mask is resized to image dimensions and applied as a darktable
-   mask shape
+6. right-click commits the object as pixels: the mask is resampled into
+   input-image space, at the encoded view's density so a crop keeps its
+   detail but at most 4096 pixels on the long side, and stored in the
+   image's `.dtdata` sidecar. the
+   form stays a `DT_MASKS_OBJECT`; its first point references the
+   sidecar entry and the rest are the click prompts, input-image
+   normalized and in click order, so the mask can be regenerated. a
+   decode sends all of those inside the encoded view at once, and the
+   last foreground one picks the connected component that is kept. a
+   selection with no pixel above the threshold is not stored
+7. with "apply as paths" on in the mask manager, right-click traces the
+   mask into path forms instead, and the outline is traced while
+   selecting, once input settles, on the same settings. the switch is
+   remembered between sessions and is always on when sidecar files are
+   disabled. an edited object stays pixels, so it gets no switch
+
+The form type exists in every build. Its rendering and canvas display are
+in `pixel_mask.c`, compiled unconditionally and written for any form stored
+as pixels, while `object.c` compiles its creation code only with
+`HAVE_AI`, so a build without AI still applies a committed object. On the
+canvas a committed object is its icon at the point deepest inside the
+mask. The icon is the object's only handle: hovering it tints the mask
+over the image, a click on it opens it for refinement, and a right-click
+removes it, as for every shape. Over the
+object's pixels the icon only lights up, which shows which icon a region
+belongs to without flooding the canvas when masks are large.
+
+Clicking the icon reopens the object for refinement (AI builds only). The
+image is encoded again, from the embeddings disk cache when it is still
+valid, then the stored mask becomes the selection and is seeded into the
+decoder with `dt_seg_set_prev_mask()`, and the stored prompts are
+restored. The next click refines what the user already has rather than a
+fresh decode, which could differ once the image or the settings changed.
+If the sidecar entry is missing, the mask is decoded from the prompts
+instead. Right-click stores the result as an update of the same form;
+editing never vectorizes. With sidecar files disabled there is nowhere to
+store the result, so the icon does not open an edit. Escape leaves the
+edit without storing anything. It is a key handler on the main window
+rather than a darkroom action, so it stays scoped to an active edit and
+the rest of the darkroom still receives the key; a focused text entry or
+a bauhaus popup resolves it first, any other focused widget, such as a
+slider, does not stop it, and a new object has nothing to go back to and
+ignores it.
+
+A committed object whose sidecar entry is missing is left out of its
+group, never rendered as an empty mask, which an inverted object would
+turn into "everywhere". Nothing regenerates it behind the user's back: its
+icon is struck through, the darkroom says so once per mask, and a pipe of
+export type names the image and the object in a toast and on stderr,
+which is what `darktable-cli` shows. Neural restore also renders through
+export pipes, so the toast does not claim an export; the object tool's own
+encoder render says nothing.
+Clicking the icon regenerates the mask from the stored prompts.
 
 ### Supported Architectures
 
@@ -88,6 +139,9 @@ Outputs:
   `has_mask_input = 1.0`
 - `dt_seg_reset_prev_mask()` clears the cached mask without clearing
   image embeddings
+- `dt_seg_set_prev_mask()` seeds it from a probability mask over the
+  encoded image instead, resampled into the decoder's padded square and,
+  for SAM, converted to logits, so refinement can resume on an earlier mask
 - `dt_seg_reset_encoding()` clears everything (call on image change)
 
 ### config.json Example
