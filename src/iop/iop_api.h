@@ -238,6 +238,32 @@ OPTIONAL(void, modify_roi_out, struct dt_iop_module_t *self,
                                struct dt_dev_pixelpipe_iop_t *piece,
                                struct dt_iop_roi_t *roi_out,
                                const struct dt_iop_roi_t *roi_in);
+/* Converts dt_iop_..._params_t from old versions to newer ones,
+   providing data compatibility through darktable upgrades.
+
+   The version of the updated data structure is reported as an output by the implementation,
+   alongside the data itself and its size,
+   and does not have to be the latest version.
+   If it is not, the output is treated as an intermediary result,
+   the function will be called again to perform step-by-step migrations
+   as many time as needed to reach the current version.
+
+   Return 0 in when the conversion was successful,
+   or 1 when no migration can be offered
+   from the version requested.
+
+   When introducing a new version,
+   in order to unsure that direct updates from very old versions
+   yield the same result as users updating through each successive versions,
+   the recommended implementation strategy is to leave existing migrations unchanged
+   and to add an n-to-n+1 migration, which will automatically be invoked.
+
+   In the absence of an identified bug that needs addressing,
+   the code of pre-existing migrations should generally be left as is,
+   even when it does not follow this gradual update convention
+   to avoid introducing regressions in code that sees very limited testing
+   as few developers still have old versions lying around.
+*/
 OPTIONAL(int, legacy_params, struct dt_iop_module_t *self,
                              const void *const old_params,
                              const int old_version,
