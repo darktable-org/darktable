@@ -521,6 +521,9 @@ changes (where available).
   from the library, while either a snapshot was shown for comparison
   or all ten snapshot slots were in use.
 
+- Fixed the workspace selection dialog growing past the screen when
+  many workspaces are present; the list is now capped and scrollable.
+
 - Fixed a snapshot showing edits from another snapshot, even one of a
   different image. Removing an image that had snapshots from the
   library, then taking a new snapshot, could cause the mix-up.
