@@ -4480,15 +4480,23 @@ static void _add_mask_entries_to_db(const dt_imgid_t imgid,
   // If it's a group: recurse into the children first
   if(entry->mask_type & DT_MASKS_GROUP)
   {
-    dt_masks_point_group_t *group = (dt_masks_point_group_t *)entry->mask_points;
-    if((int)(entry->mask_nb * sizeof(dt_masks_point_group_t)) != entry->mask_points_len)
+    // the points are stored at the size of the masks version that wrote them
+    const size_t stride = dt_masks_point_stride(DT_MASKS_GROUP, entry->mask_version,
+                                                sizeof(dt_masks_point_group_t));
+    if((size_t)entry->mask_nb * stride != (size_t)entry->mask_points_len)
     {
       dt_print(DT_DEBUG_ALWAYS,
                "[masks] error loading masks from XMP file, bad binary blob size.");
       return;
     }
+    const char *const points = (const char *)entry->mask_points;
     for(int i = 0; i < entry->mask_nb; i++)
-      _add_mask_entries_to_db(imgid, mask_entries, group[i].formid);
+    {
+      dt_mask_id_t formid;
+      memcpy(&formid, points + i * stride + offsetof(dt_masks_point_group_t, formid),
+             sizeof(formid));
+      _add_mask_entries_to_db(imgid, mask_entries, formid);
+    }
   }
 
   _add_mask_entry_to_db(imgid, entry);
