@@ -1309,6 +1309,8 @@ static inline void inpaint_mask(float *const restrict inpainted,
                                 const size_t width,
                                 const size_t height)
 {
+  const uint32_t splitmix32_1337 = splitmix32(1337);
+  const uint32_t splitmix32_666 = splitmix32(666);
   // init the reconstruction with noise inside the masked areas
   DT_OMP_FOR()
   for(size_t k = 0; k < height * width * 4; k += 4)
@@ -1318,8 +1320,10 @@ static inline void inpaint_mask(float *const restrict inpainted,
       const uint32_t i = k / width;
       const uint32_t j = k - i;
       uint32_t DT_ALIGNED_ARRAY state[4]
-          = { splitmix32(j + 1), splitmix32((uint64_t)(j + 1) * (i + 3)),
-              splitmix32(1337), splitmix32(666) };
+          = { splitmix32(j + 1),
+              splitmix32((uint64_t)(j + 1) * (i + 3)),
+              splitmix32_1337,
+              splitmix32_666 };
       xoshiro128plus(state);
       xoshiro128plus(state);
       xoshiro128plus(state);
