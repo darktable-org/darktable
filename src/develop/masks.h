@@ -619,6 +619,21 @@ typedef struct dt_masks_form_gui_t
   dt_mask_id_t formid;
   dt_hash_t pipe_hash;
 
+  // masks panel and canvas feedback, set by blend_gui.c:
+  // panel_hover_formids: shapes highlighted on the canvas because their row,
+  //   or the header of a cluster holding them, is hovered. NULL = none
+  // panel_selected_formid: the panel's selection, highlighted on the canvas
+  //   while nothing is hovered
+  // canvas_hover_formid: the shape under the cursor, whose row the panel
+  //   highlights; kept to skip repeated updates
+  // solo_formids: shapes soloed or solo-edited in the panel, highlighted
+  //   whatever is hovered (_sync_solo_canvas_highlight in blend_gui.c).
+  //   NULL = none
+  GList *panel_hover_formids;
+  dt_mask_id_t panel_selected_formid;
+  dt_mask_id_t canvas_hover_formid;
+  GList *solo_formids;
+
   // opaque per-type data (e.g. segmentation context for object masks)
   void *scratchpad;
   void (*scratchpad_cleanup)(struct dt_masks_form_gui_t *gui);
@@ -841,6 +856,25 @@ gboolean dt_masks_pixel_store(const float *mask,
                               const dt_dtdata_ref_t *old,
                               const char *producer,
                               dt_dtdata_ref_t *ref);
+/** apply a change of an AI object tool setting from the panel's pending-row
+    controls, as the properties of a shape would. Does nothing outside the
+    tool */
+void dt_masks_object_creation_apply_property(const dt_masks_property_t prop,
+                                             const float old_val,
+                                             const float new_val);
+/** the AI object tool's settings, for the pending-row controls to show */
+typedef struct dt_masks_object_creation_params_t
+{
+  gboolean editing;         // a committed object reopened, not a new one
+  gboolean as_paths;        // the "apply as paths" switch
+  gboolean as_paths_locked; // on, and fixed, without sidecar files
+  gboolean traced;          // a commit traces paths: smoothing and cleanup apply
+  gboolean refine;          // "refine mask boundary"
+  float smoothing;
+  int cleanup;
+} dt_masks_object_creation_params_t;
+/** FALSE, with *p untouched, outside the tool */
+gboolean dt_masks_object_creation_get_params(dt_masks_object_creation_params_t *p);
 #endif
 
 /** init dt_masks_form_gui_t struct with default values */
@@ -977,8 +1011,10 @@ dt_masks_form_t *dt_masks_get_from_id_ext(GList *forms, dt_mask_id_t id);
 dt_masks_form_t *dt_masks_get_from_id(const dt_develop_t *dev, dt_mask_id_t id);
 /** check if a form is used by a given module (directly or as a child of its group) */
 gboolean dt_masks_is_in_module(dt_mask_id_t maskid, const struct dt_iop_module_t *module);
-/** register forms into the mask manager */
+/** register forms into the mask manager, recording them in `module`'s history
+    item (the mask manager's when NULL) */
 void dt_masks_register_forms(dt_develop_t *dev,
+                             struct dt_iop_module_t *module,
                              GList *forms);
 
 /** read the forms from the db */
@@ -1059,15 +1095,28 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev,
                                      struct dt_iop_module_t *module,
                                      dt_masks_form_t *form,
                                      dt_masks_form_gui_t *gui);
+// add a registered form to the module's mask group where the panel's insert
+// hint says the next element goes (_recompute_insert_hint in blend_gui.c).
+// dt_masks_gui_form_save_creation() ends with it, and code that registers its
+// own forms (object.c) calls it, so a new element lands in the same place
+// whatever created it
+void dt_masks_group_insert_member(dt_develop_t *dev,
+                                  struct dt_iop_module_t *module,
+                                  dt_masks_form_t *form,
+                                  dt_masks_form_gui_t *gui);
 /** a new flexi mask group for `module`, holding nothing but its marker,
     registered in dev->forms and made its mask. Records no history */
 dt_masks_form_t *dt_masks_module_group_create(dt_develop_t *dev,
                                               struct dt_iop_module_t *module);
-// assigns `form` the next free "<type label> #<n>" name, exactly like a
-// freshly-created shape/channel gets from dt_masks_gui_form_save_creation
-// (which now calls this too) -- used directly by callers that build forms
-// without going through the rest of that function's GUI-creation-state and
-// history-item side effects (see migrate_legacy.c)
+/** dt_masks_group_insert_member()'s placement, recording no history and
+    touching no selection: for a caller adding several elements and committing
+    once. Returns the new point */
+dt_masks_point_group_t *dt_masks_group_insert_point(dt_develop_t *dev,
+                                                    struct dt_iop_module_t *module,
+                                                    dt_masks_form_t *form);
+// give `form` the next free "<type label> #<n>" name, as
+// dt_masks_gui_form_save_creation() names a new shape, for code that creates
+// forms without the GUI (migrate_legacy.c)
 void dt_masks_assign_unique_name(dt_develop_t *dev, dt_masks_form_t *form);
 /** Solo: clear `bits` on the members named by `formids` and set them on every
  * other member of `grp`. A nested group holding a named point keeps its own
@@ -1153,17 +1202,18 @@ const struct dt_masks_point_raster_t *dt_masks_group_find_raster_of(GList *forms
 dt_masks_point_group_t *dt_masks_group_add_form(dt_masks_form_t *grp,
                                                 const dt_masks_form_t *form);
 
-void dt_masks_iop_value_changed_callback(GtkWidget *widget,
-                                         struct dt_iop_module_t *module);
 dt_masks_edit_mode_t dt_masks_get_edit_mode(void);
 void dt_masks_set_edit_mode(struct dt_iop_module_t *module,
                             const dt_masks_edit_mode_t value);
 void dt_masks_set_edit_mode_single_form(struct dt_iop_module_t *module,
                                         const dt_mask_id_t formid,
                                         const dt_masks_edit_mode_t value);
+// restrict canvas editing to `formids` (solo edit): only their outlines and
+// handles can be edited, while the whole mask still renders
+void dt_masks_set_edit_mode_forms(struct dt_iop_module_t *module,
+                                  GList *formids,
+                                  const dt_masks_edit_mode_t value);
 void dt_masks_iop_update(struct dt_iop_module_t *module);
-void dt_masks_iop_combo_populate(GtkWidget *w,
-                                 struct dt_iop_module_t **m);
 void dt_masks_iop_use_same_as(struct dt_iop_module_t *module,
                               struct dt_iop_module_t *src);
 dt_hash_t dt_masks_group_hash(dt_hash_t hash, dt_masks_form_t *form);
@@ -1183,8 +1233,31 @@ void dt_masks_form_remove(struct dt_iop_module_t *module,
     NO_MASKID for a shape no group lists yet, one still being created */
 dt_masks_point_group_t *dt_masks_group_entry(const dt_masks_form_t *form,
                                              dt_mask_id_t *parentid);
-float dt_masks_form_change_opacity(dt_masks_form_t *form,
-                                   const dt_imgid_t parentid,
+/** delete a shape, from the canvas or the panel alike: for an element of the
+    module's flexi mask, the same as the panel's delete (see
+    dt_iop_gui_blend_delete_element), otherwise removal from `parentid` */
+void dt_masks_remove_shape(struct dt_iop_module_t *module,
+                           dt_masks_form_t *form,
+                           const dt_mask_id_t parentid);
+/** what dt_masks_remove_shape takes away: an element of the module's flexi
+    mask (the panel's delete), or anything else out of its parent */
+typedef enum dt_masks_remove_target_t
+{
+  DT_MASKS_REMOVE_ELEMENT = 1,
+  DT_MASKS_REMOVE_FROM_PARENT = 2
+} dt_masks_remove_target_t;
+dt_masks_remove_target_t dt_masks_remove_shape_target(const struct dt_iop_module_t *module,
+                                                      const dt_masks_form_t *form,
+                                                      const dt_mask_id_t parentid);
+/** add every element of `src_grp` to `grp`, keeping its operator and opacity:
+    shapes are shared, parametric channels copied. No history item */
+void dt_masks_group_add_members_of(dt_masks_form_t *grp, const dt_masks_form_t *src_grp);
+/** change the opacity of `form` in its parent group `parentid`, by `amount`,
+    clamped to [0, 1]. Returns the opacity it now has, or
+    0 when it has none there to change: it is a group, or no member */
+float dt_masks_form_change_opacity(struct dt_iop_module_t *module,
+                                   dt_masks_form_t *form,
+                                   const dt_mask_id_t parentid,
                                    const float amount);
 void dt_masks_form_move(dt_masks_form_t *grp,
                         const dt_mask_id_t formid,

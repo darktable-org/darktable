@@ -3006,7 +3006,7 @@ static int _path_events_mouse_scrolled(dt_iop_module_t *module,
     if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       // we try to change the opacity
-      dt_masks_form_change_opacity(form, parentid, up ? 0.05f : -0.05f);
+      dt_masks_form_change_opacity(module, form, parentid, up ? 0.05f : -0.05f);
     }
     else
     {
@@ -3052,7 +3052,7 @@ static int _path_events_mouse_scrolled(dt_iop_module_t *module,
         // a resize restores the baseline's borders wholesale, so drop it
         // here as _path_modify_property does for the same property
         _resize_state_invalidate(form->formid);
-        dt_toast_log(_("feather size: %3.2f%%"),
+        dt_toast_log(_("fade-out border: %3.2f%%"),
                      feather_size * 50.0f / g_list_length(form->points));
       }
       else if(dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK) &&
@@ -3171,7 +3171,6 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
         dt_masks_iop_update(crea_module);
       }
 
-      dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid);
       gui->creation_module = NULL;
 
       if(gui->creation_continuous)
@@ -3347,6 +3346,13 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
     {
       gui->form_dragging = TRUE;
       gui->point_edited = -1;
+      // gpt is only refreshed by a redraw (dt_masks_gui_form_create, from
+      // post_expose). If the shape or the view changed since, as after an
+      // edit elsewhere or on the first click in edit mode, its corner is stale
+      // and the drag would jump the shape away, so it is refreshed here, for
+      // one shape only. gpt stays the same struct
+      dt_masks_gui_form_create(form, gui, index, module);
+      if(!gpt->points || gpt->points_count == 0) return 0;
       gui->dx = gpt->points[2] - gui->posx;
       gui->dy = gpt->points[3] - gui->posy;
       return 1;
@@ -3508,7 +3514,7 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
 
       // we delete or remove the shape
       _resize_state_invalidate(form->formid);
-      dt_masks_form_remove(module, NULL, form);
+      dt_masks_remove_shape(module, form, parentid);
       dt_control_queue_redraw_center();
       return 1;
     }
@@ -3580,8 +3586,7 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
     }
 
     // we remove the shape
-    dt_dev_masks_list_remove(darktable.develop, form->formid, parentid);
-    dt_masks_form_remove(module, dt_masks_get_from_id(darktable.develop, parentid), form);
+    dt_masks_remove_shape(module, form, parentid);
     return 1;
   }
 
@@ -3620,6 +3625,7 @@ static int _path_events_button_released(dt_iop_module_t *module,
     // corner) right on mouse-up.
     gui->form_dragging = FALSE;
 
+    _resize_state_invalidate(form->formid);
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
@@ -5334,8 +5340,8 @@ static GSList *_path_setup_mouse_actions(const dt_masks_form_t *const form)
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("[PATH] grow/shrink"));
   lm = dt_mouse_action_create_simple(
     lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK | GDK_SHIFT_MASK, _("[PATH] resize"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
-                                     GDK_SHIFT_MASK, _("[PATH] change feather size"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK,
+                                     _("[PATH] change fade-out border"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
                                      GDK_CONTROL_MASK, _("[PATH] change opacity"));
   return lm;
@@ -5391,12 +5397,12 @@ static void _path_set_hint_message(const dt_masks_form_gui_t *const gui,
               msgbuf_len);
   else if(gui->form_selected)
   {
-    g_snprintf(msgbuf,
-               msgbuf_len,
-               _("<b>grow/shrink</b>: scroll, <b>resize</b>: ctrl+shift+scroll\n"
-                 "<b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%), "
-                 "<b>rotate</b>: ctrl+drag"),
-               opacity);
+    g_snprintf(
+      msgbuf, msgbuf_len,
+      _("<b>grow/shrink</b>: scroll, <b>resize</b>: ctrl+shift+scroll\n"
+        "<b>fade-out border</b>: shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%), "
+        "<b>rotate</b>: ctrl+drag"),
+      opacity);
     // joint rotation of both shapes only makes sense when there is a source
     // (clone/heal forms, e.g. in the retouch module)
     if(form->type & DT_MASKS_CLONE)

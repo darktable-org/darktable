@@ -17,3 +17,32 @@
  border-radius: 0px;
  margin-right: 0.9em;
 }
+
+/* the masks panel: the "blend mask" header's on/off toggle is the mask's
+   power button, so the accent marks it exactly as it marks a module's above,
+   and nothing else says the state. The mask is equally on wherever the panel
+   lives, so both of its homes are listed: embedded in the module and docked
+   over the canvas the toggle sits inside the panel's own #blending-tabs
+   header, but hosted in the utility panel it is reparented onto the lib's
+   expander header instead, out of #blending-tabs entirely (see
+   _masks_flexi_relocate in masks_gui_panel_host.c), which is why one selector
+   was not enough.
+
+   Both selectors are scoped through an id, and that is what makes them
+   stick: the color this has to beat is set by an id-bearing rule, so no
+   number of classes is enough (an id outranks them all). Hence #module-header
+   for the utility position, which is what dt_lib names a lib's expander
+   header (libs/lib.c), rather than the .dt_masks_host_header class the panel
+   puts on the same widget, which matches but loses.
+
+   Two further traps in this file, both measured rather than reasoned:
+   matching the toggle's class alone also loses, to
+   "button.dt_masks_enable_toggle:checked" in darktable.css, and an
+   equal-specificity selector loses too, because a tie goes to darktable.css
+   even though this chunk is imported after it (gtk.c:5652). A rule here has
+   to win on specificity outright. */
+#blending-tabs .dt_masks_enable_toggle:checked,
+#module-header .dt_masks_enable_toggle:checked
+{
+  color: @active_module_icon_fg;
+}

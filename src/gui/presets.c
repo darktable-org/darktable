@@ -1101,6 +1101,8 @@ void dt_gui_presets_apply_preset(const gchar* name,
                              strlen(multi_name) > 0 ? multi_name : name,
                              multi_name_hand_edited, FALSE, FALSE);
 
+    const dt_develop_blend_params_t replaced = *module->blend_params;
+
     if(blendop_params
        && (blendop_version == dt_develop_blend_version())
        && (bl_length == sizeof(dt_develop_blend_params_t)))
@@ -1118,6 +1120,13 @@ void dt_gui_presets_apply_preset(const gchar* name,
     {
       dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
     }
+
+    // a locked mask survives the preset; committed again rather than patched
+    // in place so a kept raster mask source is registered with its module
+    dt_develop_blend_params_t kept = *module->blend_params;
+    dt_develop_blend_keep_locked_mask(&kept, &replaced);
+    if(memcmp(&kept, module->blend_params, sizeof(kept)))
+      dt_iop_commit_blend_params(module, &kept, NULL);
 
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_PRESET_APPLIED, module);
 

@@ -3665,6 +3665,83 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/blend/preview_channel_on_hover</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>preview the channel under the cursor</shortdescription>
+    <longdescription>while enabled, resting the pointer on one of the add-parametric-element buttons displays that channel in the center view; the preview only starts after a short pause, so passing over the buttons costs nothing</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/parametric_picker_reuse_area</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>reuse the last picked area</shortdescription>
+    <longdescription>while enabled, a parametric mask element's color picker starts from the area the module's last pick used and sets the range from it at once, so one area can set the range of several channels in turn; the first pick still waits for an area dragged on the image</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/solo_edit_mode</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>solo edit the selected mask element</shortdescription>
+    <longdescription>while enabled, only the selected element's nodes and handles are editable on canvas; the other elements still contribute to the mask</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/auto_expand_selected</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>auto-expand whatever is selected</shortdescription>
+    <longdescription>while enabled, selecting a group or an element expands it and collapses whatever was expanded before, so the panel always shows the thing being worked on and tidies away the last one; selecting something with nothing to expand leaves whatever is open open</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/properties_subpanel</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>element properties in subpanel</shortdescription>
+    <longdescription>while enabled, the properties of the selected element or group are shown in a collapsible section of their own between the mask list and the refinements instead of in the list, and so are the creation controls of a shape being drawn: a shape's geometry, a parametric element's boost factor, and the opacity of anything</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/refinements_collapsed</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>collapse the refinements section</shortdescription>
+    <longdescription>whether the mask panel's refinements section is folded, for every module and target</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/properties_collapsed</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>collapse the properties section</shortdescription>
+    <longdescription>whether the mask panel's element and group properties section is folded, for every module and target</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/consumers_collapsed</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>collapse the mask consumers section</shortdescription>
+    <longdescription>whether the mask panel's mask consumers section is folded, for every module</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/show_panel_handle</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show the mask panel's resize handle</shortdescription>
+    <longdescription>while enabled, the mask panel's edge carries a visible handle with an arrow showing which way the panel folds away; while disabled the handle is invisible, like the main panels', and still resizes the panel by dragging and hides it on a click</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/show_preset_notes</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show preset notes</shortdescription>
+    <longdescription>while enabled, a group made by a built-in group layout preset shows a short note under its header on how to use it, until it is dismissed</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/default_group_preset</name>
+    <type>string</type>
+    <default>drawn</default>
+    <shortdescription>default group layout</shortdescription>
+    <longdescription>the group layout preset a module's mask starts with when it is switched on for the first time: the id of a built-in preset in masks_group_presets.json, or user: followed by the name of a saved one</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/masks/opacity</name>
     <type>float</type>
     <default>1.0</default>

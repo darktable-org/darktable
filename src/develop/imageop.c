@@ -103,7 +103,6 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
     dt_develop_blend_default_module_blend_colorspace(module);
   dt_develop_blend_init_blend_parameters(module->default_blendop_params, cst);
   dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
-  dt_iop_gui_blending_reload_defaults(module);
 }
 
 static void _iop_modify_roi_in(dt_iop_module_t *self,
@@ -1396,6 +1395,12 @@ void dt_iop_gui_update_header(dt_iop_module_t *module)
   // set panel name to display correct multi-instance
   _iop_panel_name(module);
   dt_iop_gui_set_enable_button(module);
+  // only the focused module's masks panel is placed anywhere, and its title
+  // carries the instance name. Every header is updated several times while an
+  // image or its history loads: relocating each would be hundreds of calls for
+  // the one that matters
+  if(module == darktable.develop->gui_module)
+    dt_iop_gui_blend_masks_panel_relocate(module);
 
   DT_LEAVE_GUI_UPDATE();
 }
@@ -2572,6 +2577,9 @@ void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
   module->widget_list = NULL;
   DT_CONTROL_SIGNAL_DISCONNECT_ALL(module, module->so->op);
   if(module->gui_cleanup) module->gui_cleanup(module);
+  // before the destroy below: while hosted, the masks panel is parented in its
+  // host, not in this module's expander, and would outlive it
+  dt_iop_gui_blend_masks_panel_release(module);
   gtk_widget_destroy(module->expander ? module->expander : module->widget);
   // Do not leave borrowed GTK pointers behind while asynchronous signals can
   // still carry this module until the GUI thread drains their queue.
@@ -2630,6 +2638,22 @@ void dt_iop_gui_reset(dt_iop_module_t *module)
   DT_LEAVE_GUI_UPDATE();
 }
 
+// resets the blend params to the defaults, but for a locked mask, which keeps
+// its own (see dt_develop_blend_keep_locked_mask)
+static void _commit_reset_blend_params(dt_iop_module_t *module)
+{
+  if(!dt_develop_blend_mask_locked(module->blend_params))
+  {
+    dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
+    return;
+  }
+  // not the default_blendop_params pointer itself: dt_iop_commit_blend_params
+  // drops the raster mask source for that one, and a locked mask keeps it
+  dt_develop_blend_params_t reset = *module->default_blendop_params;
+  dt_develop_blend_keep_locked_mask(&reset, module->blend_params);
+  dt_iop_commit_blend_params(module, &reset, NULL);
+}
+
 // kept for direct callers from accelerators
 static gboolean _gui_reset_callback(GtkButton *button,
                                     GdkEventButton *event,
@@ -2645,8 +2669,9 @@ static gboolean _gui_reset_callback(GtkButton *button,
        && dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
      || !dt_gui_presets_autoapply_for_module(module, NULL))
   {
-    // if a drawn mask is set, remove it from the list
-    if(dt_is_valid_maskid(module->blend_params->mask_id))
+    // if a drawn mask is set, remove it from the list, unless it is locked
+    if(dt_is_valid_maskid(module->blend_params->mask_id)
+       && !dt_develop_blend_mask_locked(module->blend_params))
     {
       dt_masks_form_t *grp =
         dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
@@ -2654,7 +2679,10 @@ static gboolean _gui_reset_callback(GtkButton *button,
     }
     /* reset to default params */
     dt_iop_reload_defaults(module);
-    dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
+    _commit_reset_blend_params(module);
+
+    // the module's forms changed behind the masks panel
+    dt_iop_gui_blend_forms_reloaded(module);
 
     /* reset ui to its defaults */
     dt_iop_gui_reset(module);
@@ -2686,8 +2714,9 @@ static void _gui_reset_clicked(GtkGestureSingle *gesture,
   if(!((dt_key_modifier_state() & GDK_CONTROL_MASK)
        && dt_gui_presets_autoapply_for_module(module, NULL)))
   {
-    // if a drawn mask is set, remove it from the list
-    if(dt_is_valid_maskid(module->blend_params->mask_id))
+    // if a drawn mask is set, remove it from the list, unless it is locked
+    if(dt_is_valid_maskid(module->blend_params->mask_id)
+       && !dt_develop_blend_mask_locked(module->blend_params))
     {
       dt_masks_form_t *grp =
         dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
@@ -2695,7 +2724,10 @@ static void _gui_reset_clicked(GtkGestureSingle *gesture,
     }
     /* reset to default params */
     dt_iop_reload_defaults(module);
-    dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
+    _commit_reset_blend_params(module);
+
+    // the module's forms changed behind the masks panel
+    dt_iop_gui_blend_forms_reloaded(module);
 
     /* reset ui to its defaults */
     dt_iop_gui_reset(module);
@@ -2881,6 +2913,9 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if(module->gui_focus)
       module->gui_focus(module, TRUE);
 
+    /* do stuff needed in the blending gui */
+    dt_iop_gui_blending_gain_focus(module);
+
     /* redraw the expander */
     gtk_widget_queue_draw(module->expander);
 
@@ -2916,6 +2951,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
   // update guides button state
   dt_guides_update_button_state();
+  dt_iop_gui_blend_masks_panel_sync_toolbox();
 
   dt_control_change_cursor("default");
   dt_control_queue_redraw_center();
@@ -2942,6 +2978,7 @@ static void _gui_set_single_expanded(dt_iop_module_t *module, gboolean expanded)
   {
     /* set this module to receive focus / draw events*/
     dt_iop_request_focus(module);
+    dt_iop_gui_blending_gain_focus(module);
 
     /* focus the current module */
     for(int k = 0; k < DT_UI_CONTAINER_SIZE; k++)
@@ -3278,6 +3315,48 @@ static void _display_mask_indicator_callback(GtkToggleButton *bt,
   dt_iop_refresh_center(module);
 }
 
+typedef struct _mask_counts_t
+{
+  int total, circles, ellipses, paths, gradients, brushes, objects, rasters;
+  GHashTable *params; // parametric elements by channel label
+} _mask_counts_t;
+
+static gboolean _count_mask_element(const dt_masks_point_group_t *pt,
+                                    const dt_masks_form_t *form,
+                                    const dt_masks_form_t *owner,
+                                    void *data)
+{
+  _mask_counts_t *c = data;
+  if(!form || (form->type & DT_MASKS_GROUP)) return FALSE;
+  c->total++;
+  if(form->type & DT_MASKS_CIRCLE) c->circles++;
+  else if(form->type & DT_MASKS_ELLIPSE) c->ellipses++;
+  else if(form->type & DT_MASKS_PATH) c->paths++;
+  else if(form->type & DT_MASKS_GRADIENT) c->gradients++;
+  else if(form->type & DT_MASKS_BRUSH) c->brushes++;
+  // an edit made with AI support still holds its objects without it
+  else if(form->type & DT_MASKS_OBJECT) c->objects++;
+  else if(form->type & DT_MASKS_RASTER) c->rasters++;
+  else if(form->type & DT_MASKS_PARAMETRIC)
+  {
+    const char *label = dt_masks_parametric_type_label(form);
+    if(label)
+      g_hash_table_insert(c->params, (gpointer)label,
+                          GINT_TO_POINTER(GPOINTER_TO_INT(g_hash_table_lookup(c->params, label))
+                                          + 1));
+  }
+  return FALSE;
+}
+
+// appends "<n> <kind>" to a comma-separated list, `fmt` being the plural
+// form for `n` (ngettext at the caller, so each pair is extracted)
+static void _append_count(GString *list, const int n, const char *fmt)
+{
+  if(n <= 0) return;
+  if(list->len) g_string_append(list, ", ");
+  g_string_append_printf(list, fmt, n);
+}
+
 static gboolean _mask_indicator_tooltip(GtkWidget *treeview,
                                         gint x,
                                         gint y,
@@ -3285,47 +3364,110 @@ static gboolean _mask_indicator_tooltip(GtkWidget *treeview,
                                         GtkTooltip* tooltip,
                                         dt_iop_module_t *module)
 {
-  gboolean res = FALSE;
+  if(!module || !module->mask_indicator || !module->blend_params) return FALSE;
+
   const gboolean raster = module->blend_params->mask_mode & DEVELOP_MASK_RASTER;
-  if(module->mask_indicator)
+  _mask_counts_t c = { .params = g_hash_table_new(g_str_hash, g_str_equal) };
+
+  if(raster)
+    c.total = c.rasters = 1;
+  else
+    dt_masks_group_walk(module->dev->forms,
+                        dt_masks_get_from_id(module->dev, module->blend_params->mask_id),
+                        _count_mask_element, &c);
+
+  gchar *part1 = NULL;
+  if(c.total == 0)
   {
-    gchar *type = _("unknown mask");
-    gchar *text;
-    const uint32_t mm = module->blend_params->mask_mode;
-    if((mm & DEVELOP_MASK_MASK) && (mm & DEVELOP_MASK_CONDITIONAL))
-      type=_("drawn + parametric mask");
-    else if(mm & DEVELOP_MASK_MASK)
-      type=_("drawn mask");
-    else if(mm & DEVELOP_MASK_CONDITIONAL)
-      type=_("parametric mask");
-    else if(mm & DEVELOP_MASK_RASTER)
-      type=_("raster mask");
-    else
-      dt_print(DT_DEBUG_PARAMS, "unknown mask mode '%u' in module '%s'", mm, module->op);
-    gchar *part1 = g_strdup_printf(_("this module has a `%s'"), type);
-    gchar *part2 = NULL;
-    if(raster && module->raster_mask.sink.source)
+    part1 = g_strdup(_("this module has a mask with 0 elements (uniform mask)"));
+  }
+  else
+  {
+    GString *breakdown = g_string_new(NULL);
+    _append_count(breakdown, c.circles, ngettext("%d circle", "%d circles", c.circles));
+    _append_count(breakdown, c.ellipses, ngettext("%d ellipse", "%d ellipses", c.ellipses));
+    _append_count(breakdown, c.paths, ngettext("%d path", "%d paths", c.paths));
+    _append_count(breakdown, c.gradients, ngettext("%d gradient", "%d gradients", c.gradients));
+    _append_count(breakdown, c.brushes, ngettext("%d brush", "%d brushes", c.brushes));
+    _append_count(breakdown, c.objects, ngettext("%d AI object", "%d AI objects", c.objects));
+    _append_count(breakdown, c.rasters,
+                  ngettext("%d raster mask", "%d raster masks", c.rasters));
+
+    GHashTableIter iter;
+    gpointer key, value;
+    g_hash_table_iter_init(&iter, c.params);
+    while(g_hash_table_iter_next(&iter, &key, &value))
     {
-      gchar *source = dt_history_item_get_name(module->raster_mask.sink.source);
-      part2 = g_strdup_printf(_("taken from module %s"), source);
-      g_free(source);
+      const int cnt = GPOINTER_TO_INT(value);
+      const char *label = (const char *)key;
+      g_string_append_printf(breakdown, "%s%d %s", (breakdown->len ? ", " : ""),
+                             cnt, label);
     }
 
-    if(!raster && !part2)
-      part2 = g_strdup(_("click to display (module must be activated first)"));
+    part1 = g_strdup_printf(ngettext("this module has a mask with %d element (%s)",
+                                     "this module has a mask with %d elements (%s)", c.total),
+                            c.total, breakdown->str);
 
-    if(part2)
-      text = g_strconcat(part1, "\n", part2, NULL);
-    else
-      text = g_strdup(part1);
-
-    gtk_tooltip_set_text(tooltip, text);
-    res = TRUE;
-    g_free(part1);
-    g_free(part2);
-    g_free(text);
+    g_string_free(breakdown, TRUE);
   }
-  return res;
+  g_hash_table_destroy(c.params);
+
+  gchar *part2 = NULL;
+  if(raster && module->raster_mask.sink.source)
+  {
+    // the name is markup and the tooltip plain text: unescaped, a "&" in an
+    // instance name would read "&amp;"
+    gchar *markup = dt_history_item_get_name(module->raster_mask.sink.source);
+    gchar *source = NULL;
+    if(!pango_parse_markup(markup, -1, 0, NULL, &source, NULL, NULL))
+      source = g_strdup(markup);
+    g_free(markup);
+    part2 = g_strdup_printf(_("taken from module %s"), source);
+    g_free(source);
+  }
+
+  if(!raster && !part2)
+    part2 = g_strdup(_("click to display (module must be activated first)"));
+
+  gchar *text;
+  if(part2)
+    text = g_strconcat(part1, "\n", part2, NULL);
+  else
+    text = g_strdup(part1);
+
+  gtk_tooltip_set_text(tooltip, text);
+  g_free(part1);
+  g_free(part2);
+  g_free(text);
+  return TRUE;
+}
+
+// packs an indicator into the module header, clear of the buttons that
+// dt_iop_show_hide_header_buttons hides
+static void _header_pack_indicator(dt_iop_module_t *module, GtkWidget *indicator)
+{
+  gtk_box_pack_end(GTK_BOX(module->header), indicator, FALSE, FALSE, 0);
+
+  // in dynamic modes, we need to put the indicator after the drawing area
+  GList *children = gtk_container_get_children(GTK_CONTAINER(module->header));
+  GList *child;
+
+  for(child = g_list_last(children);
+      child && GTK_IS_BUTTON(child->data);
+      child = g_list_previous(child));
+
+  if(GTK_IS_DRAWING_AREA(child->data))
+  {
+    GValue position = G_VALUE_INIT;
+    g_value_init (&position, G_TYPE_INT);
+    gtk_container_child_get_property(GTK_CONTAINER(module->header),
+                                     child->data ,"position", &position);
+    gtk_box_reorder_child(GTK_BOX(module->header), indicator,
+                          g_value_get_int(&position));
+  }
+  g_list_free(children);
+
+  dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
 }
 
 void dt_iop_add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
@@ -3346,35 +3488,41 @@ void dt_iop_add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
   else if(show)
   {
     module->mask_indicator = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, 0, NULL);
-    dt_gui_add_class(module->mask_indicator, "dt_transparent_background");
     g_signal_connect(G_OBJECT(module->mask_indicator), "toggled",
                      G_CALLBACK(_display_mask_indicator_callback), module);
     g_signal_connect(G_OBJECT(module->mask_indicator), "query-tooltip",
                      G_CALLBACK(_mask_indicator_tooltip), module);
     gtk_widget_set_has_tooltip(module->mask_indicator, TRUE);
     gtk_widget_set_sensitive(module->mask_indicator, module->enabled);
-    gtk_box_pack_end(GTK_BOX(module->header), module->mask_indicator, FALSE, FALSE, 0);
+    _header_pack_indicator(module, module->mask_indicator);
+  }
+}
 
-    // in dynamic modes, we need to put the mask indicator after the drawing area
-    GList *children = gtk_container_get_children(GTK_CONTAINER(module->header));
-    GList *child;
+static void _mask_lock_indicator_clicked(GtkButton *button, dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_set_mask_lock(module, FALSE);
+}
 
-    for(child = g_list_last(children);
-        child && GTK_IS_BUTTON(child->data);
-        child = g_list_previous(child));
-
-    if(GTK_IS_DRAWING_AREA(child->data))
-    {
-      GValue position = G_VALUE_INIT;
-      g_value_init (&position, G_TYPE_INT);
-      gtk_container_child_get_property(GTK_CONTAINER(module->header),
-                                       child->data ,"position", &position);
-      gtk_box_reorder_child(GTK_BOX(module->header), module->mask_indicator,
-                            g_value_get_int(&position));
-    }
-    g_list_free(children);
-
+void dt_iop_add_remove_mask_lock_indicator(dt_iop_module_t *module, const gboolean add)
+{
+  if(module->mask_lock_indicator && !add)
+  {
+    gtk_widget_destroy(module->mask_lock_indicator);
+    module->mask_lock_indicator = NULL;
     dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
+  }
+  else if(!module->mask_lock_indicator && add)
+  {
+    // a plain button rather than a toggle: it only ever shows the locked
+    // state, and only the panel's own lock button locks
+    module->mask_lock_indicator =
+      dtgtk_button_new_full(dtgtk_cairo_paint_mask_lock, 0, NULL,
+                            &(dtgtk_button_config_t){
+                              .tooltip = _("mask locked\nclick to unlock"),
+                            });
+    g_signal_connect(G_OBJECT(module->mask_lock_indicator), "clicked",
+                     G_CALLBACK(_mask_lock_indicator_clicked), module);
+    _header_pack_indicator(module, module->mask_lock_indicator);
   }
 }
 
@@ -3478,6 +3626,10 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
           .toggled_data = module,
         });
     gtk_widget_set_sensitive(button, !module->hide_enable_button);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
+    // marks the module's on/off toggle, so that darktable.css can style it
+    // (.dt_module_enable_btn) without relying on its place in the header
+    dt_gui_add_class(button, "dt_module_enable_btn");
     gtk_box_pack_start(GTK_BOX(header), button, FALSE, FALSE, 0);
   }
   else
@@ -4060,6 +4212,7 @@ void dt_iop_update_multi_name(dt_iop_module_t *module,
     g_strlcpy(module->multi_name, l_name, sizeof(module->multi_name));
     module->multi_name_hand_edited = hand_edited;
     dt_iop_gui_update_header(module);
+    dt_iop_gui_blend_module_renamed(module);
     dt_dev_add_history_item(module->dev, module, enable);
   }
 

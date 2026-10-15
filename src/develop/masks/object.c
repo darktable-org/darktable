@@ -1044,6 +1044,38 @@ static void _run_decoder(_object_data_t *d)
   dt_gui_cursor_clear_busy();
 }
 
+// a member of a group the traced object is built of, as the group's own:
+// opacity 1, no operator of its own. FALSE when out of memory
+static gboolean _add_member(dt_masks_form_t *grp, const dt_masks_form_t *f)
+{
+  dt_masks_point_group_t *pt = calloc(1, sizeof(dt_masks_point_group_t));
+  if(!pt) return FALSE;
+  pt->formid = f->formid;
+  pt->parentid = grp->formid;
+  pt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
+  pt->opacity = 1.0f;
+  pt->group_opacity = 1.0f;
+  grp->points = g_list_append(grp->points, pt);
+  return TRUE;
+}
+
+// a new flexi group folding with flexi_op, registered in dev->forms and
+// named "<prefix> #<*nb>". NULL when out of memory
+static dt_masks_form_t *_new_group(dt_develop_t *dev,
+                                   const char *prefix,
+                                   guint *nb,
+                                   const dt_masks_state_t flexi_op)
+{
+  dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP);
+  if(!grp) return NULL;
+  snprintf(grp->name, sizeof(grp->name), "%s #%d", prefix, (int)(*nb)++);
+  dev->forms = g_list_append(dev->forms, grp);
+  dt_masks_point_group_t *marker = dt_masks_marker_new(dev->forms, grp, flexi_op);
+  if(!marker) return NULL;
+  grp->points = g_list_append(NULL, marker);
+  return grp;
+}
+
 // transform mask-space forms to input-normalized coords and register them,
 // takes ownership of `forms` and `signs` lists (forms are appended to dev->forms)
 static dt_masks_form_t *
@@ -1123,13 +1155,11 @@ _register_vectorized_forms(GList *forms,
     return NULL;
   }
 
-  // always wrap paths in a group; holes use difference mode
-
-  // count existing AI object groups/paths for numbering
   dt_develop_t *dev = darktable.develop;
   const char *group_prefix = _("ai object group");
   const char *path_prefix = _("ai object");
 
+  // count existing AI object groups/paths for numbering
   guint grp_nb = 0;
   guint path_nb = 0;
   for(GList *l = dev->forms; l; l = g_list_next(l))
@@ -1149,38 +1179,74 @@ _register_vectorized_forms(GList *forms,
              "%s #%d", path_prefix, (int)path_nb++);
   }
 
-  dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP);
-  snprintf(grp->name, sizeof(grp->name), "%s #%d", group_prefix, (int)grp_nb);
-
-  // register all path forms so they exist in dev->forms
+  // register all path forms so they exist in dev->forms, before any group
+  // marker is made, whose id must differ from theirs
   for(GList *l = forms; l; l = g_list_next(l))
-  {
-    dt_masks_form_t *f = l->data;
-    dev->forms = g_list_append(dev->forms, f);
-  }
+    dev->forms = g_list_append(dev->forms, l->data);
 
-  // add each path to the group; holes get difference mode
+  // potrace lists each outline before its holes, and an island inside a hole
+  // as a new outline after it. each outline less its holes is one area, and
+  // the object is the union of its areas: one difference group per area with
+  // holes, in a union group when there are several. a flexi group has one
+  // operator, so a single difference group would subtract every later area
+  GList *areas = NULL; // dt_masks_form_t*, a path or an area's group
+  gboolean ok = TRUE;
   GList *s = signs;
-  for(GList *l = forms; l; l = g_list_next(l), s = s ? g_list_next(s) : NULL)
+  for(GList *l = forms; l && ok; )
   {
-    dt_masks_form_t *f = l->data;
-    const int sign = s ? GPOINTER_TO_INT(s->data) : '+';
-    dt_masks_point_group_t *grpt = dt_masks_group_add_form(grp, f);
-    if(grpt && sign == '-')
+    dt_masks_form_t *outline = l->data;
+    GList *holes = NULL;
+    l = g_list_next(l);
+    s = s ? g_list_next(s) : NULL;
+    for(; l && s && GPOINTER_TO_INT(s->data) == '-'; l = g_list_next(l), s = g_list_next(s))
+      holes = g_list_append(holes, l->data);
+
+    if(!holes)
     {
-      grpt->state = (grpt->state & ~DT_MASKS_STATE_UNION) | DT_MASKS_STATE_DIFFERENCE;
+      areas = g_list_append(areas, outline);
+      continue;
     }
+    dt_masks_form_t *area = _new_group(dev, group_prefix, &grp_nb,
+                                       DT_MASKS_STATE_FLEXI_DIFFERENCE);
+    ok = area && _add_member(area, outline);
+    for(GList *h = holes; h && ok; h = g_list_next(h))
+      ok = _add_member(area, h->data);
+    g_list_free(holes);
+    if(area) areas = g_list_append(areas, area);
   }
 
-  // register the group (history item added by caller after blend mask
-  // assignment)
-  dev->forms = g_list_append(dev->forms, grp);
-
+  dt_masks_form_t *object = NULL;
+  if(ok && areas && !areas->next)
+    object = areas->data;
+  else if(ok)
+  {
+    object = _new_group(dev, group_prefix, &grp_nb, 0);
+    for(GList *l = areas; l && object && ok; l = g_list_next(l))
+      ok = _add_member(object, l->data);
+    ok = ok && object;
+  }
+  g_list_free(areas);
   g_list_free(forms);
   g_list_free(signs);
 
+  // out of memory: what was registered is left to the cleanup of unused
+  // forms, as nothing refers to it
+  if(!ok)
+  {
+    dt_control_log(_("could not store the object, it is discarded"));
+    return NULL;
+  }
+
+  // the outer group is named after the object in the panel (a marker's name)
+  if(object->type & DT_MASKS_GROUP)
+  {
+    dt_masks_point_group_t *marker = object->points->data;
+    dt_strlcpy_fixed_to_fixed(marker->name, sizeof(marker->name),
+                              object->name, sizeof(object->name));
+  }
+
   dt_print(DT_DEBUG_MASKS, "[object mask] created %d paths", nbform);
-  return grp;
+  return object;
 }
 
 // the selection stored in the sidecar: the form's new points, or NULL to
@@ -1263,6 +1329,7 @@ static int _object_events_mouse_scrolled(dt_iop_module_t *module,
       dt_conf_set_float(CONF_OBJECT_SMOOTHING_KEY, smoothing);
       dt_toast_log(_("smoothing: %3.2f"), smoothing);
       dt_dev_masks_list_change(darktable.develop);
+      dt_iop_gui_blend_sync_pending_ai_sliders(module);
       _schedule_outline(d);
       dt_control_queue_redraw_center();
       return 1;
@@ -1275,6 +1342,7 @@ static int _object_events_mouse_scrolled(dt_iop_module_t *module,
       dt_conf_set_int(CONF_OBJECT_CLEANUP_KEY, cleanup);
       dt_toast_log(_("cleanup: %d"), cleanup);
       dt_dev_masks_list_change(darktable.develop);
+      dt_iop_gui_blend_sync_pending_ai_sliders(module);
       _schedule_outline(d);
       dt_control_queue_redraw_center();
       return 1;
@@ -1441,7 +1509,7 @@ static void _leave_creation(dt_iop_module_t *module,
     dt_masks_change_form_gui(NULL);
   }
   if(dt_is_valid_maskid(select))
-    dt_dev_masks_selection_change(darktable.develop, module, select);
+    dt_iop_gui_blend_masks_select_form(module, select);
   dt_control_queue_redraw_center();
 }
 
@@ -1506,7 +1574,7 @@ static dt_mask_id_t _commit_edit(dt_iop_module_t *module,
   return live->formid;
 }
 
-// a new object traced into paths, grouped into the module's mask group
+// a new object traced into paths, into the module's mask
 static dt_mask_id_t _commit_paths(dt_iop_module_t *module, const _object_data_t *d)
 {
   GList *forms = NULL, *signs = NULL;
@@ -1521,25 +1589,13 @@ static dt_mask_id_t _commit_paths(dt_iop_module_t *module, const _object_data_t 
   dt_masks_form_t *grp = _register_vectorized_forms(forms, signs, a, b);
   if(!grp) return NO_MASKID;
 
+  // into the module's mask where the panel's insert hint says, as a
+  // hand-drawn shape goes
   dt_develop_t *dev = darktable.develop;
   if(module)
-  {
-    dt_masks_form_t *mod_grp = dt_masks_get_from_id(dev, module->blend_params->mask_id);
-    if(!mod_grp)
-    {
-      mod_grp = dt_masks_create(DT_MASKS_GROUP);
-      gchar *module_label = dt_history_item_get_name(module);
-      // the string masks.c names a module's group with, so a group made
-      // here is not a second msgid saying the same thing
-      snprintf(mod_grp->name, sizeof(mod_grp->name),
-               _("group `%s'"), module_label);
-      g_free(module_label);
-      dev->forms = g_list_append(dev->forms, mod_grp);
-      module->blend_params->mask_id = mod_grp->formid;
-    }
-    dt_masks_group_add_form(mod_grp, grp);
-  }
-  dt_dev_add_masks_history_item(dev, module, TRUE);
+    dt_masks_group_insert_member(dev, module, grp, NULL);
+  else
+    dt_dev_add_masks_history_item(dev, module, TRUE);
   return grp->formid;
 }
 
@@ -1595,9 +1651,7 @@ static int _object_events_button_pressed(dt_iop_module_t *module,
     if(d && d->has_selection && d->encode_state == ENCODE_READY)
     {
       _clear_selection(d);
-      if(darktable.develop->proxy.masks.module)
-        darktable.develop->proxy.masks.list_change(
-          darktable.develop->proxy.masks.module);
+      dt_dev_masks_list_change(darktable.develop);
     }
     return 1;
   }
@@ -1728,8 +1782,7 @@ static int _object_events_button_released(dt_iop_module_t *module,
 
   // refresh mask properties panel so sliders update for
   // the current creation step (size vs cleanup/smoothing)
-  if(darktable.develop->proxy.masks.module)
-    darktable.develop->proxy.masks.list_change(darktable.develop->proxy.masks.module);
+  dt_dev_masks_list_change(darktable.develop);
 
   dt_control_queue_redraw_center();
   return 1;
@@ -2320,6 +2373,40 @@ static int _start_edit(dt_iop_module_t *module, dt_masks_form_t *form)
     = dt_masks_is_in_module(form->formid, module) ? module : NULL;
   dt_control_queue_redraw_center();
   return 1;
+}
+
+// the panel's pending-row controls (_make_pending_shape_row in blend_gui.c)
+// edit the object in the tool, which no group holds yet while it is new: the
+// same settings, through the same handler, as the properties of a shape
+void dt_masks_object_creation_apply_property(const dt_masks_property_t prop,
+                                             const float old_val,
+                                             const float new_val)
+{
+  dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+  if(!gui || !gui->creation) return;
+
+  float sum = 0.0f;
+  int count = 0;
+  float min = 0.0f, max = 1.0f;
+  _object_modify_property(darktable.develop->form_visible, prop, old_val, new_val,
+                          &sum, &count, &min, &max);
+  dt_control_queue_redraw_center();
+}
+
+gboolean dt_masks_object_creation_get_params(dt_masks_object_creation_params_t *p)
+{
+  const dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+  if(!gui || !gui->creation) return FALSE;
+
+  const dt_masks_form_t *form = darktable.develop->form_visible;
+  p->editing = _is_edit(form);
+  p->as_paths = _as_paths();
+  p->as_paths_locked = !dt_dtdata_enabled();
+  p->traced = _commits_paths(form);
+  p->refine = dt_conf_get_bool(CONF_OBJECT_REFINE_BOUNDARY_KEY);
+  p->smoothing = dt_conf_get_float(CONF_OBJECT_SMOOTHING_KEY);
+  p->cleanup = dt_conf_get_int(CONF_OBJECT_CLEANUP_KEY);
+  return TRUE;
 }
 
 #endif // HAVE_AI

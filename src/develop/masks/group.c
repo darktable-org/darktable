@@ -38,13 +38,29 @@ static int _group_events_mouse_scrolled(dt_iop_module_t *module,
   {
     // we get the form
     dt_masks_point_group_t *fpt = g_list_nth_data(form->points, gui->group_edited);
+    // the canvas list can be rebuilt between a press and its release (a
+    // selection change narrowing solo edit, say): the index then names nothing
+    if(!fpt) return 0;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
-    if(sel && sel->functions)
-      return sel->functions->mouse_scrolled(module, pzx, pzy, up, state, sel,
-                                            fpt->parentid, gui, gui->group_edited);
+    if(!sel || !sel->functions) return 0;
+
+    return sel->functions->mouse_scrolled(module, pzx, pzy, up, state, sel, fpt->parentid,
+                                          gui, gui->group_edited);
   }
   return 0;
 }
+
+static int _group_events_mouse_moved(dt_iop_module_t *module,
+                                     const float pzx,
+                                     const float pzy,
+                                     const double pressure,
+                                     const int which,
+                                     const float zoom_scale,
+                                     dt_masks_form_t *form,
+                                     const int unused1,
+                                     dt_masks_form_gui_t *gui,
+                                     const int unused2);
+static inline gboolean _is_handling_form(dt_masks_form_gui_t *gui);
 
 static int _group_events_button_pressed(dt_iop_module_t *module,
                                         const float pzx,
@@ -58,6 +74,17 @@ static int _group_events_button_pressed(dt_iop_module_t *module,
                                         dt_masks_form_gui_t *gui,
                                         const int unused2)
 {
+  // the shape under the pointer is only picked as the pointer moves, so a
+  // canvas rebuilt since knows none. Pick it here, or the press lands on
+  // empty canvas
+  if(gui->group_selected < 0 && !_is_handling_form(gui))
+    _group_events_mouse_moved(module, pzx, pzy, pressure, state,
+                              dt_dev_get_zoom_scale_full(), form, 0, gui, 0);
+
+  // a plain click on empty canvas selects nothing, group included
+  if(gui->group_selected < 0 && which == GDK_BUTTON_PRIMARY && type == GDK_BUTTON_PRESS)
+    dt_iop_gui_blend_masks_clear_selection(module);
+
   if(gui->group_edited != gui->group_selected)
   {
     // we set the selected form in edit mode
@@ -87,6 +114,7 @@ static int _group_events_button_pressed(dt_iop_module_t *module,
   {
     // we get the form
     dt_masks_point_group_t *fpt = g_list_nth_data(form->points, gui->group_edited);
+    if(!fpt) return 0;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(!sel) return 0;
     if(sel->functions)
@@ -105,8 +133,8 @@ static int _group_events_button_pressed(dt_iop_module_t *module,
                                     gui, gui->group_edited);
       }
 
-      return sel->functions->button_pressed(module, pzx, pzy, pressure, which, type, state, sel,
-                                           fpt->parentid, gui, gui->group_edited);
+      return sel->functions->button_pressed(module, pzx, pzy, pressure, which, type, state,
+                                            sel, fpt->parentid, gui, gui->group_edited);
     }
   }
   return 0;
@@ -126,10 +154,12 @@ static int _group_events_button_released(dt_iop_module_t *module,
   {
     // we get the form
     dt_masks_point_group_t *fpt = g_list_nth_data(form->points, gui->group_edited);
+    if(!fpt) return 0;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
-    if(sel && sel->functions)
-      return sel->functions->button_released(module, pzx, pzy, which, state, sel, fpt->parentid,
-                                             gui, gui->group_edited);
+    if(!sel || !sel->functions) return 0;
+
+    return sel->functions->button_released(module, pzx, pzy, which, state, sel,
+                                           fpt->parentid, gui, gui->group_edited);
   }
   return 0;
 }
@@ -148,6 +178,31 @@ static inline gboolean _is_handling_form(dt_masks_form_gui_t *gui)
     || (gui->seg_dragging != -1);
 }
 
+// highlight the hovered shape's row in the panel (or its folded cluster's
+// header), or clear it for INVALID_MASKID, when the hovered shape changes
+static void _group_hover_form(dt_iop_module_t *module,
+                              dt_masks_form_gui_t *gui,
+                              const dt_mask_id_t formid)
+{
+  if(gui->canvas_hover_formid == formid) return;
+  gui->canvas_hover_formid = formid;
+  dt_iop_gui_blend_masks_hover_form(module, formid);
+}
+
+// does the cursor sit on any editable part of the form whose selection flags
+// were just refreshed? mirrors what the per-form mouse_moved implementations set
+static gboolean _form_under_cursor(const dt_masks_form_gui_t *gui)
+{
+  return gui->form_selected
+    || gui->border_selected
+    || gui->source_selected
+    || gui->pivot_selected
+    || gui->point_selected >= 0
+    || gui->feather_selected >= 0
+    || gui->seg_selected >= 0
+    || gui->point_border_selected >= 0;
+}
+
 static int _group_events_mouse_moved(dt_iop_module_t *module,
                                      const float pzx,
                                      const float pzy,
@@ -160,6 +215,12 @@ static int _group_events_mouse_moved(dt_iop_module_t *module,
                                      const int unused2)
 {
   const float as = dt_masks_sensitive_dist(zoom_scale);
+
+  // the outlines hit-testing reads are made when the canvas is drawn: after a
+  // rebuild (dt_masks_change_form_gui) there are none until the next draw, and a hover
+  // or press before it would find nothing under the pointer. A no-op while
+  // they are current
+  if(!gui->creation) dt_masks_gui_form_test_create(form, gui, module);
 
   // we first don't do anything if we are inside a scrolling session
 
@@ -178,16 +239,27 @@ static int _group_events_mouse_moved(dt_iop_module_t *module,
   {
     // we get the form
     dt_masks_point_group_t *fpt = g_list_nth_data(form->points, gui->group_edited);
+    if(!fpt) return 0;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(!sel) return 0;
+
     int rep = 0;
     if(sel->functions)
       rep = sel->functions->mouse_moved(module, pzx, pzy, pressure, which, zoom_scale, sel, fpt->parentid,
                                         gui, gui->group_edited);
+
     if(rep) return 1;
     // if a point is in state editing, then we don't want that another
     // form can be selected
-    if(gui->point_edited >= 0) return 0;
+    if(gui->point_edited >= 0)
+    {
+      // the code below that syncs the row highlight is skipped while a node
+      // holds the selection, so sync it here from the hover flags the call
+      // above set. Otherwise canvas_hover_formid stays on the last shape and
+      // keeps the panel's halo off (_flexi_shape_highlighted in gui/gtk.c)
+      _group_hover_form(module, gui, _form_under_cursor(gui) ? sel->formid : INVALID_MASKID);
+      return 0;
+    }
   }
 
   // now we check if we are near a form
@@ -211,6 +283,13 @@ static int _group_events_mouse_moved(dt_iop_module_t *module,
   {
     dt_masks_point_group_t *fpt = fpts->data;
     dt_masks_form_t *frm = dt_masks_get_from_id(darktable.develop, fpt->formid);
+    // a hidden or disabled shape draws no outline and cannot be edited on the
+    // canvas: it is never the shape under the cursor
+    if(fpt->state & (DT_MASKS_STATE_HIDDEN | DT_MASKS_STATE_DISABLE))
+    {
+      pos++;
+      continue;
+    }
     int inside, inside_border, near, inside_source;
     float dist = FLT_MAX;
     inside = inside_border = inside_source = 0;
@@ -240,11 +319,32 @@ static int _group_events_mouse_moved(dt_iop_module_t *module,
   if(sel && sel->functions)
   {
     gui->group_edited = gui->group_selected = sel_pos;
+    _group_hover_form(module, gui, sel_fpt->formid);
     return sel->functions->mouse_moved(module, pzx, pzy, pressure, which, zoom_scale,
                                        sel, sel_fpt->parentid, gui, gui->group_edited);
   }
 
+  // nothing under the cursor: drop the list row hover highlight
+  _group_hover_form(module, gui, INVALID_MASKID);
+
   return 0;
+}
+
+// does the panel list `ids` name this shape, or the group holding it? The
+// panel's hover (gui->panel_hover_formids: a row or a cluster header) and its
+// solo highlight (gui->solo_formids, which stays whatever the pointer does)
+// are such lists. `parentid` makes the row of a group highlight all of its
+// members
+static gboolean _panel_lists(const GList *ids,
+                             const dt_mask_id_t formid,
+                             const dt_mask_id_t parentid)
+{
+  for(const GList *l = ids; l; l = g_list_next(l))
+  {
+    const dt_mask_id_t id = GPOINTER_TO_INT(l->data);
+    if(id == formid || id == parentid) return TRUE;
+  }
+  return FALSE;
 }
 
 void dt_group_events_post_expose(cairo_t *cr,
@@ -252,14 +352,52 @@ void dt_group_events_post_expose(cairo_t *cr,
                                  dt_masks_form_t *form,
                                  dt_masks_form_gui_t *gui)
 {
+  // base_sel is the canvas hover: the shape currently under the cursor (or -1).
+  // A hovered shape always wins; the persistent panel selection is only drawn
+  // when nothing at all is being hovered (no canvas hover, no list-row hover).
+  const int base_sel = gui->group_selected;
+  const gboolean any_list_hover = gui->panel_hover_formids != NULL;
+
   int pos = 0;
   for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
     dt_masks_point_group_t *fpt = fpts->data;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(!sel) return;
-    if(sel->functions)
+    // a hidden or disabled shape draws nothing, as it renders nothing. Only the
+    // draw is skipped, so that pos stays in step with gui->points
+    if(sel->functions && !(fpt->state & (DT_MASKS_STATE_HIDDEN | DT_MASKS_STATE_DISABLE)))
+    {
+      // decide whether this shape draws its own highlight (feather + anchors) by
+      // posing as the selected group member for the duration of its post_expose
+      // call only: a hovered list row/cluster member, else -- when nothing is
+      // hovered -- the persistently selected shape.
+      int eff = base_sel;
+      // a row hover must look like a canvas hover, which takes two flags:
+      // group_selected brings out the feather and the anchors, form_selected
+      // the bold outline (the `selected` test in circle.c's post_expose and
+      // the other shapes'). Both are set for this one call only, so nothing
+      // outside the draw sees a hover the pointer never made
+      gboolean bold = FALSE;
+      if(_panel_lists(gui->panel_hover_formids, fpt->formid, fpt->parentid))
+      {
+        eff = pos;
+        bold = TRUE;
+      }
+      else if(_panel_lists(gui->solo_formids, fpt->formid, fpt->parentid))
+        eff = pos;
+      else if(!any_list_hover && base_sel < 0
+              && dt_is_valid_maskid(gui->panel_selected_formid)
+              && (fpt->formid == gui->panel_selected_formid
+                  || fpt->parentid == gui->panel_selected_formid))
+        eff = pos;
+      const gboolean base_form_selected = gui->form_selected;
+      gui->group_selected = eff;
+      if(bold) gui->form_selected = TRUE;
       sel->functions->post_expose(cr, zoom_scale, gui, pos, g_list_length(sel->points));
+      gui->group_selected = base_sel;
+      if(bold) gui->form_selected = base_form_selected;
+    }
     pos++;
   }
 }
