@@ -1253,15 +1253,9 @@ static void _lib_history_button_clicked_callback(GtkGestureSingle *gesture,
 
   if(reset) return;
 
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
-  {
-    // Exactly one history row must stay selected. Claiming the press prevents
-    // GtkToggleButton's default gesture from toggling the active row off.
-    dt_gui_claim(gesture);
-    return;
-  }
-
-  // shift-click just show the corresponding module in modulegroups
+  // shift-click just show the corresponding module in modulegroups.
+  // tested before the active-row guard below: revealing a module never changes
+  // the selection, so it must work on the selected row too
   if(dt_key_modifier_state() & GDK_SHIFT_MASK)
   {
     /* Claim the sequence, replacing the `return TRUE` of the button-press-event
@@ -1277,6 +1271,14 @@ static void _lib_history_button_clicked_callback(GtkGestureSingle *gesture,
       dt_dev_modulegroups_switch(darktable.develop, hist->module);
       dt_iop_gui_set_expanded(hist->module, TRUE, TRUE);
     }
+    return;
+  }
+
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+  {
+    // Exactly one history row must stay selected. Claiming the press prevents
+    // GtkToggleButton's default gesture from toggling the active row off.
+    dt_gui_claim(gesture);
     return;
   }
 
