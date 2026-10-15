@@ -247,6 +247,20 @@ typedef struct dt_develop_t
   struct dt_masks_form_gui_t *form_gui;
   // all forms to be linked here for cleanup:
   GList *allforms;
+  // mask migrations that create forms, queued while dt_dev_read_history_ext()
+  // converts the history rows (dt_masks_migrate_classic_to_flexi()). The new
+  // forms go under the final history_end, which is only known once every row
+  // is read. Drained by dt_masks_finish_flexi_migrations(), before
+  // dt_masks_read_masks_history(), so that the read picks the forms up.
+  // Empty between dt_dev_read_history_ext() calls
+  GList *pending_flexi_migrations;
+
+  // mask_ids (GINT_TO_POINTER) of classic groups a migration kept, to convert
+  // to flexi groups. Drained by dt_masks_normalize_flexi_groups(), after
+  // dt_masks_read_masks_history(): the groups are already in the database, and
+  // the read would replace a conversion made before it. Empty between
+  // dt_dev_read_history_ext() calls
+  GList *pending_flexi_group_splits;
 
   //full preview stuff
   gboolean full_preview;
