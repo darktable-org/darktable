@@ -549,7 +549,7 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
       in += linestride;
     }
   }
-  else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
+  else if(ix >= -1 && iy >= -1 && ix < width && iy < height)
   {
     // At least a valid coordinate
     // Point to the upper left pixel index wise
