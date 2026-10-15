@@ -371,6 +371,7 @@ int store(dt_imageio_module_storage_t *self,
     d->vp->jobcode = "export";
     d->vp->imgid = imgid;
     d->vp->sequence = num;
+    d->vp->export_extension = format->extension(fdata);
 
     GList *filenames = NULL;
     if(variable_expand)
@@ -472,10 +473,13 @@ int store(dt_imageio_module_storage_t *self,
       }
       g_free(output_dir);
 
-      const char *ext = format->extension(fdata);
-      char *c = filename + strlen(filename);
+      // don't append ".ext" again if the pattern already ends with it
+      // (any case); c marks where unique-filename suffixes insert
+      const char *ext = d->vp->export_extension;
+      char *c = filename + dt_util_str_extension_offset(filename, ext);
       size_t filename_free_space = sizeof(filename) - (c - filename);
-      snprintf(c, filename_free_space, ".%s", ext);
+      if(!dt_util_str_ends_with_extension(filename, ext))
+        snprintf(c, filename_free_space, ".%s", ext);
 
       // conflict handling option: unique filename is generated if the
       // file already exists
