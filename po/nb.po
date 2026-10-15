@@ -20,7 +20,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.4.2\n"
-"X-Poedit-Bookmarks: 1098,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: ../build/bin/conf_gen.h:156
 msgctxt "preferences"
@@ -4507,39 +4506,28 @@ msgstr "sterk"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:75
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:160
-#, fuzzy
-#| msgid "capture details"
 msgid "coarse details"
-msgstr "opptaksdetaljer"
+msgstr "grove detaljer"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:81
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:164
-#, fuzzy
-#| msgid "medium magenta"
 msgid "medium details"
-msgstr "medium magenta"
+msgstr "medium detaljer"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:87
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:168
-#, fuzzy
-#| msgid "details"
 msgid "fine details"
-msgstr "detaljer"
+msgstr "fine detaljer"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:93
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:172
-#, fuzzy
-#| msgid "detail level"
 msgid "base detail level"
-msgstr "detaljnivå"
+msgstr "grunnleggende detaljnivå"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:99
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:176
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "controls"
 msgid "halo control"
-msgstr "kontroller"
+msgstr "gloriekontroll"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:105
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:180
@@ -4636,17 +4624,13 @@ msgstr "opptaksskjerping"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:210
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:307
-#, fuzzy
-#| msgid "noise threshold"
 msgid "moire threshold"
-msgstr "grenseverdi for støy"
+msgstr "grenseverdi for moire"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:216
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:311
-#, fuzzy
-#| msgid "source mix"
 msgid "moire mix"
-msgstr "miks kilder"
+msgstr "moire miks"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:325
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:332
@@ -6171,10 +6155,8 @@ msgstr "automatisk printeksponering"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:496
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:965
-#, fuzzy
-#| msgid "target gamma"
 msgid "print gamma"
-msgstr "ønsket gamma"
+msgstr "print-gamma"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:502
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:969
@@ -6455,38 +6437,31 @@ msgstr "overflatetilpasning"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:844
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1197
-#, fuzzy
 #| msgid "print time"
 msgid "print gamma red"
-msgstr "utskriftstidspunkt"
+msgstr "print gamma rød"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:850
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1201
-#, fuzzy
 #| msgid "light sea green"
 msgid "print gamma green"
-msgstr "lys sjøgrønn"
+msgstr "print gamma grønn"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:856
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1205
-#, fuzzy
 #| msgid "print time"
 msgid "print gamma blue"
-msgstr "utskriftstidspunkt"
+msgstr "print gamma blå"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:880
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1221
-#, fuzzy
-#| msgid "black point compensation"
 msgid "black point correction"
-msgstr "kompensasjon for svartnivå"
+msgstr "korreksjon av svartnivå"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:886
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1225
-#, fuzzy
-#| msgid "lens correction"
 msgid "white point correction"
-msgstr "objektivkorrigering"
+msgstr "korreksjon av hvittnivå"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1247
 msgid "black pro-mist"
@@ -7922,10 +7897,8 @@ msgid "DNG forward matrix"
 msgstr "fremoverrettet matrise for DNG"
 
 #: ../src/common/colorspaces.c:1840
-#, fuzzy
-#| msgid "only embedded"
 msgid "DNG embedded look"
-msgstr "bare innebygget"
+msgstr "DNG innebygget utseende"
 
 #: ../src/common/cups_print.c:447
 #, c-format
@@ -7952,16 +7925,6 @@ msgid "printing `%s' on `%s'"
 msgstr "skriver ut `%s' på `%s'"
 
 #: ../src/common/darktable.c:142
-#, fuzzy
-#| msgid ""
-#| "This console window is required by darktable on this version of Windows.\n"
-#| "On Windows 11 24H2 and later, darktable normally runs without this "
-#| "window.\n"
-#| "Do not close it or press Ctrl+C while darktable is running.\n"
-#| "It will close automatically when darktable exits.\n"
-#| "\n"
-#| "To hide this window anyway, follow the instructions at:\n"
-#| "https://www.darktable.org/about/faq/#faq-windows-terminal\n"
 msgid ""
 "this console window is required by darktable on this version of Windows.\n"
 "on Windows 11 24H2 and later, darktable normally runs without this window.\n"
@@ -8666,10 +8629,8 @@ msgstr ""
 "du må kopiere redigeringshistoren fra et bilde før du limer den inn i et annet"
 
 #: ../src/common/history.c:974
-#, fuzzy
-#| msgid "the mask file path is saved with the image history"
 msgid "raster masks could not be copied to the pasted history"
-msgstr "banen til maskefilen lagres med bildehistorikken"
+msgstr "rastermasker kunne ikke kopieres til den innlimte historikken"
 
 #: ../src/common/image.c:354
 msgid "orphaned image"
@@ -8753,7 +8714,7 @@ msgstr ""
 
 #: ../src/common/image.c:3028
 msgid "cannot remove local copy: its raster masks could not be merged back"
-msgstr ""
+msgstr "kan ikke fjerne lokal kopi: rastermaskene kunne ikke slås sammen igjen"
 
 #: ../src/common/image.c:3197
 #, c-format
@@ -8990,12 +8951,16 @@ msgid ""
 "couldn't get platform ID.\n"
 "check your OpenCL ICD loader (ocl-icd)"
 msgstr ""
+"kunne ikke hente plattform-ID.\n"
+"sjekk OpenCL ICD-lasteren din (ocl-icd)"
 
 #: ../src/common/opencl.c:1312
 msgid ""
 "no valid OpenCL platform found.\n"
 "check your OpenCL ICD loader (ocl-icd)"
 msgstr ""
+"ingen gyldig OpenCL-plattform funnet.\n"
+"sjekk OpenCL ICD-lasteren din (ocl-icd)"
 
 #: ../src/common/opencl.c:1403
 msgid "no devices found for unknown platform"
@@ -9373,6 +9338,8 @@ msgstr "automatisk hvitbalanse"
 #: ../src/common/wb_presets.c:305
 msgid "error in WB presets file, continuing without presets"
 msgstr ""
+"feil i forhåndsinnstillingsfilen for hvitbalanse, fortsetter uten "
+"forhåndsinnstillinger"
 
 #: ../src/control/control.c:67 ../src/gui/accelerators.c:163
 #: ../src/views/darkroom.c:2842
@@ -11630,22 +11597,22 @@ msgstr "kopi av `%s'"
 #: ../src/develop/masks/masks.c:1075
 #, c-format
 msgid "Image ID=%d has insane circle mask: radius=%.3f border=%.3f"
-msgstr ""
+msgstr "Bilde-ID=%d har en ekstrem sirkelmaske: radius=%.3f kant=%.3f"
 
 #: ../src/develop/masks/masks.c:1092
 #, c-format
 msgid "Image ID=%d has insane ellipse mask: radii=%.3f/%.3f, border=%.3f"
-msgstr ""
+msgstr "Bilde-ID=%d har en ekstrem ellipsemaske: radier=%.3f/%.3f, kant=%.3f"
 
 #: ../src/develop/masks/masks.c:1109
 #, c-format
 msgid "Image ID=%d has insane path mask: borders=%.3f/%.3f"
-msgstr ""
+msgstr "Bilde-ID=%d har en ekstrem banemaske: kanter=%.3f/%.3f"
 
 #: ../src/develop/masks/masks.c:1125
 #, c-format
 msgid "Image ID=%d has insane brush mask: borders=%.3f/%.3f"
-msgstr ""
+msgstr "Bilde-ID=%d har en ekstrem penselmaske: kanter=%.3f/%.3f"
 
 #: ../src/develop/masks/masks.c:1145
 #, c-format
@@ -17273,6 +17240,8 @@ msgid ""
 "$(CONFLICT[n]) - import filename conflict number, null string if there is no "
 "conflict, n: number of digits"
 msgstr ""
+"$(CONFLICT[n]) - konfliktnummer for importert filnavn, tom streng hvis det "
+"ikke er konflikt, n: antall siffer"
 
 #: ../src/gui/gtkentry.c:47
 msgid "$(WIDTH.MAX) - maximum image export width"
@@ -17348,12 +17317,12 @@ msgid "$(OPENCL.ACTIVATED) - whether OpenCL is activated"
 msgstr "$(OPENCL.ACTIVATED) - hvorvidt OpenCL er aktivert"
 
 #: ../src/gui/gtkentry.c:119
-#, fuzzy
-#| msgid "$(CATEGORY[n,category]) - subtag of level n in hierarchical tags"
 msgid ""
 "$(CATEGORY_EACH[n,category]) - level-n subtag of each matching tag, one path "
 "per tag"
-msgstr "$(CATEGORY[n,category]) - underordnet nøkkelord av nivå n i hierarkiet"
+msgstr ""
+"$(CATEGORY_EACH[n,category]) - underordnet nøkkelord av nivå n i hierarkiet, "
+"en bane pr nøkkelord"
 
 #: ../src/gui/gtkentry.c:120
 msgid "$(TAGS) - tags as set in metadata settings"
@@ -19407,27 +19376,22 @@ msgid "could not create directory `%s'!"
 msgstr "kunne ikke opprette mappe `%s'!"
 
 #: ../src/imageio/storage/clipboard.c:256
-#, fuzzy, c-format
-#| msgid "%d/%d exported to `%s'"
-#| msgid_plural "%d/%d exported to `%s'"
+#, c-format
 msgid "%d/%d exported to clipboard"
 msgid_plural "%d/%d exported to clipboard"
-msgstr[0] "%d/%d eksportert til `%s'"
-msgstr[1] "%d/%d eksportert til `%s'"
+msgstr[0] "%d/%d eksportert til utklippstavlen"
+msgstr[1] "%d/%d eksportert til utklippstavlen"
 
 #: ../src/imageio/storage/clipboard.c:405
-#, fuzzy, c-format
-#| msgid "copy to clipboard"
+#, c-format
 msgid "%d image copied to clipboard"
 msgid_plural "%d images copied to clipboard"
-msgstr[0] "kopier til utklippstavle"
-msgstr[1] "kopier til utklippstavle"
+msgstr[0] "%d bilde kopiert til utklippstavle"
+msgstr[1] "%d bilder kopiert til utklippstavle"
 
 #: ../src/imageio/storage/clipboard.c:410
-#, fuzzy
-#| msgid "copy to clipboard"
 msgid "could not copy to clipboard"
-msgstr "kopier til utklippstavle"
+msgstr "kunne ikke kopiere til utklippstavle"
 
 #: ../src/imageio/storage/disk.c:79 ../src/libs/export.c:1282
 msgid "file on disk"
@@ -19468,7 +19432,7 @@ msgstr "hopp over"
 #: ../src/imageio/storage/disk.c:435
 #, c-format
 msgid "filename pattern `%s' expands to too many files"
-msgstr ""
+msgstr "filnavnmønsteret `%s' utvides til for mange filer"
 
 #: ../src/imageio/storage/disk.c:468
 #, c-format
@@ -22120,16 +22084,12 @@ msgid "Xrite/Calibrite ColorChecker 24 post-2014"
 msgstr "Xrite/Calibrite ColorChecker 24 etter 2014"
 
 #: ../src/iop/channelmixerrgb.c:4669
-#, fuzzy
-#| msgid "Datacolor SpyderCheckr Photo"
 msgid "Datacolor SpyderCheckr 24"
-msgstr "Datacolor SpyderCheckr Photo"
+msgstr "Datacolor SpyderCheckr 24"
 
 #: ../src/iop/channelmixerrgb.c:4670
-#, fuzzy
-#| msgid "Datacolor SpyderCheckr Photo"
 msgid "Datacolor SpyderCheckr 48"
-msgstr "Datacolor SpyderCheckr Photo"
+msgstr "Datacolor SpyderCheckr 48"
 
 #: ../src/iop/channelmixerrgb.c:4671
 msgid "Datacolor SpyderCheckr Photo"
@@ -23279,11 +23239,6 @@ msgid "teal & orange"
 msgstr "teal & orange"
 
 #: ../src/iop/colorequal.c:3807
-#, fuzzy
-#| msgid ""
-#| "double-click to reset the curve\n"
-#| "middle-click to toggle sliders visibility\n"
-#| "alt+scroll to change page"
 msgid ""
 "double-click to reset the curve\n"
 "middle-click to toggle the control sliders\n"
@@ -23306,10 +23261,8 @@ msgstr ""
 "ctrl+klikk for å velge et område"
 
 #: ../src/iop/colorequal.c:3839
-#, fuzzy
-#| msgid "color control sliders"
 msgid "control sliders"
-msgstr "glidere for fargekontroll"
+msgstr "kontrollglidere"
 
 #: ../src/iop/colorequal.c:3854
 msgid "change hue hue-wise"
@@ -24123,27 +24076,21 @@ msgid "contrast & texture"
 msgstr "kontrast og tekstur"
 
 #: ../src/iop/contrastntexture.c:138
-#, fuzzy
-#| msgid "local contrast|texture|clarity|detail enhancement"
 msgid "local contrast|texture|clarity|detail enhancement|highlights and shadows"
-msgstr "lokal kontrast|tekstur|clarity|detaljforbedring"
+msgstr ""
+"lokal kontrast|tekstur|clarity|detaljforbedring|highlights and shadows|høylys "
+"og skygger"
 
 #: ../src/iop/contrastntexture.c:144
 msgid "enhance local contrast by boosting details while preserving edges"
 msgstr "forbedre lokal kontrast ved å fremheve detaljer mens kanter bevares"
 
 #: ../src/iop/contrastntexture.c:399
-#, fuzzy
-#| msgid "local contrast failed to allocate memory, check your RAM settings"
 msgid "contrast and texture failed to allocate memory, check your RAM settings"
-msgstr "lokal kontrast kunne ikke allokere minne, sjekk innstillingene for RAM"
+msgstr ""
+"kontrast og tekstur kunne ikke tilordne minne, sjekk innstillingene for RAM"
 
 #: ../src/iop/contrastntexture.c:663
-#, fuzzy
-#| msgid ""
-#| "detail level adjusted by the local contrast.\n"
-#| "higher = more contrast boost in finer details\n"
-#| "lower = more contrast boost in coarser details"
 msgid ""
 "adjust the detail level used for highlights, shadows, and coarse details.\n"
 "higher = more contrast boost in finer details\n"
@@ -24151,52 +24098,62 @@ msgid ""
 "press the mask button to preview the low pass filter result used for shadows/"
 "highlights."
 msgstr ""
-"detaljnivå som justeres med lokal kontrast.\n"
+"juster detaljnivået som brukes til høylys, skygger og grove detaljer.\n"
 "høyere = mer kontrastøkning i finere detaljer\n"
-"lavere = mer kontrastøkning i grovere detaljer"
+"lavere = mer kontrastøkning i grovere detaljer\n"
+"trykk på maskeknappen for å se resultatet av lavpassfilteret som\n"
+"brukes til skygger og høylys."
 
 #: ../src/iop/contrastntexture.c:668
 msgid ""
 "preview the low pass filter result used for shadows(blue)/highlights(yellow)."
 msgstr ""
+"Forhåndsvis resultatet av lavpassfilteret som brukes for skygger (blått) / "
+"høylys (gult)."
 
 #: ../src/iop/contrastntexture.c:674
 msgid "adjust highlights at the base detail level size."
-msgstr ""
+msgstr "Juster høylysene ved størrelsen for grunnleggende detaljnivå."
 
 #: ../src/iop/contrastntexture.c:678
 msgid "adjust shadows at the base detail level size."
-msgstr ""
+msgstr "Juster skyggene ved størrelsen for grunnleggende detaljnivå."
 
 #: ../src/iop/contrastntexture.c:693
 msgid ""
 "adjust coarse, low frequency content.\n"
 "press the mask button to preview the effect."
 msgstr ""
+"juster grovt, lavfrekvent innhold.\n"
+"trykk på maskeknappen for å forhåndsvise effekten."
 
 #: ../src/iop/contrastntexture.c:696
 msgid "preview the size of the coarse details to adjust."
-msgstr ""
+msgstr "forhåndsvis størrelsen på de grove detaljene som skal justeres."
 
 #: ../src/iop/contrastntexture.c:699
 msgid ""
 "adjust medium, frequency content between coarse and fine.\n"
 "press the mask button to preview the effect."
 msgstr ""
+"juster middels, frekvensinnhold mellom grov og fin.\n"
+"trykk på maskeknappen for å forhåndsvise effekten."
 
 #: ../src/iop/contrastntexture.c:702
 msgid "preview the size of the medium details to adjust."
-msgstr ""
+msgstr "forhåndsvis størrelsen på de middels store detaljene som skal justeres."
 
 #: ../src/iop/contrastntexture.c:705
 msgid ""
 "adjust fine, high frequency content.\n"
 "press the mask button to preview the effect."
 msgstr ""
+"juster fint, høyfrekvent innhold.\n"
+"trykk på maskeknappen for å forhåndsvise effekten."
 
 #: ../src/iop/contrastntexture.c:708
 msgid "preview the size of the fine details to adjust."
-msgstr ""
+msgstr "forhåndsvis størrelsen på de fine detaljene som skal justeres."
 
 #. Filter settings section
 #: ../src/iop/contrastntexture.c:711
@@ -24210,6 +24167,9 @@ msgid ""
 "higher = suppress halos at the expense of details around edges.\n"
 "lower = allow more halos to get more local contrast and details."
 msgstr ""
+"juster filterets gloriekontroll.\n"
+"høyere = undertrykk glorier på bekostning av detaljer rundt kanter.\n"
+"lavere = tillat flere glorier for å få mer lokal kontrast og flere detaljer."
 
 #: ../src/iop/contrastntexture.c:726
 msgid ""
@@ -24426,15 +24386,6 @@ msgid "set effect strength by iterations"
 msgstr "effektens styrke ved gjentakelser"
 
 #: ../src/iop/demosaic.c:1943
-#, fuzzy
-#| msgid ""
-#| "capture sharpen radius should reflect the overall gaussian type blur\n"
-#| "of the camera sensor, possibly the anti-aliasing filter and the lens.\n"
-#| "increasing this too far will soon lead to artifacts like halos and\n"
-#| "ringing especially when used with a large 'iterations' setting.\n"
-#| "\n"
-#| "Note: a radius set to zero will be recalculated automatically the next "
-#| "run. use for presets"
 msgid ""
 "capture sharpen radius should reflect the overall gaussian type blur\n"
 "of the camera sensor, possibly the anti-aliasing filter and the lens.\n"
@@ -24442,33 +24393,18 @@ msgid ""
 "ringing especially when used with a large 'iterations' setting.\n"
 "set it to zero for presets that should enforce auto calculation"
 msgstr ""
-"opptaksskjerpingens radius skal gjengi den totale gaussiske uskarphet\n"
+"opptaksskjerpingens radius skal gjengi den totale gaussiske uskarpheten\n"
 "til kamerasensoren, eventuelt anti-aliasingfilter og objektivet.\n"
 "økes denne for mye vil det føre til glorier og\n"
 "ringing særlig med en høy 'gjentakelser'-innstilling.\n"
 "\n"
-"Merk: en radius satt til null vil blli beregnet automatisk ved neste kjøring. "
-"brukes til forhåndsinnstillinger"
+"sett til null for forhåndsinnstillinger som skal bruke automatisk beregning"
 
 #: ../src/iop/demosaic.c:1949
-#, fuzzy
-#| msgid ""
-#| "calculate the capture sharpen radius from available raw sensor data.\n"
-#| "for best results avoid cropping or darkroom zooming in"
 msgid "calculate the capture sharpen radius from raw sensor data"
-msgstr ""
-"beregn radius for opptaksskjerping fra tilgjengelige raw sensordata.\n"
-"for best resultat unngå beskjæring eller zooming i mørkerommet"
+msgstr "beregn radius for opptaksskjerping fra tilgjengelige raw sensordata"
 
 #: ../src/iop/demosaic.c:1952
-#, fuzzy
-#| msgid ""
-#| "restrict capture sharpening to areas with high local contrast,\n"
-#| "increase to exclude flat areas in very dark or noisy images,\n"
-#| "decrease for well exposed and low noise images.\n"
-#| "\n"
-#| "Note: a threshold set to zero will be reset to defaults the next run. use "
-#| "for presets"
 msgid ""
 "restrict capture sharpening to areas with high local contrast,\n"
 "increase to exclude flat areas in very dark or noisy images,\n"
@@ -24476,10 +24412,7 @@ msgid ""
 msgstr ""
 "begrens opptaksskjerping til områder med høy lokal kontrast,\n"
 "øk for å utelate flate områder i veldig mørke eller støyfulle bilder,\n"
-"reduser for godt eksponerte bilder med lite støy.\n"
-"\n"
-"Merk: en radius satt til null vil bli beregnet automatisk ved neste kjøring. "
-"brukes til forhåndsinnstillinger"
+"reduser for godt eksponerte bilder med lite støy."
 
 #: ../src/iop/demosaic.c:1955
 msgid "visualize sharpened areas"
@@ -24508,16 +24441,15 @@ msgstr "mosaikkfjerning brukes kun for raw-bilder"
 #: ../src/iop/demosaicing/capture.c:457
 msgid "can't allocate buffer to calculate capture radius so use the default"
 msgstr ""
+"kan ikke tildele buffer for å beregne opptaksradius, så standardverdien brukes"
 
 #: ../src/iop/demosaicing/capture.c:896
 msgid "capture sharpen failed: can't allocate buffer"
-msgstr ""
+msgstr "opptaksskjerping feilet: kan ikke tildele buffer"
 
 #: ../src/iop/demosaicing/capture.c:1063
-#, fuzzy
-#| msgid "capture sharpen"
 msgid "OpenCL capture sharpen failed"
-msgstr "opptaksskjerping"
+msgstr "OpenCL opptaksskjerping feilet"
 
 #: ../src/iop/demosaicscale.c:38
 msgctxt "modulename"
@@ -26545,7 +26477,7 @@ msgstr "d"
 
 #: ../src/iop/lens.cc:4423
 msgid "vignetting may be overcorrected"
-msgstr ""
+msgstr "vignettering kan være overkorrigert"
 
 #: ../src/iop/lens.cc:4424
 msgid ""
@@ -26555,6 +26487,11 @@ msgid ""
 "leave vignetting out of the corrections, or turn shading\n"
 "compensation off in the camera for future shots"
 msgstr ""
+"kameraets vignetteringskompensasjon har allerede korrigert vignettering\n"
+"i rådataene, og Lensfun korrigerer igjen på toppen av dette,\n"
+"noe som kanskje lysner hjørnene\n"
+"utelat vignettering fra korreksjonene, eller skru av vignetterings-\n"
+"korreksjon i kameraet for fremtiden"
 
 #: ../src/iop/lens.cc:4436
 msgid "camera/lens not found"
@@ -27725,32 +27662,25 @@ msgstr "kan ikke lese rastermaskefil '%s'"
 #: ../src/iop/rasterfile.c:401
 #, c-format
 msgid "mask %.8s, %d x %d"
-msgstr ""
+msgstr "maske %.8s, %d x %d"
 
 #: ../src/iop/rasterfile.c:404
-#, fuzzy, c-format
-#| msgid "masks"
+#, c-format
 msgid "mask %.8s"
-msgstr "masker"
+msgstr "maske %.8s"
 
 #: ../src/iop/rasterfile.c:407
-#, fuzzy
-#| msgid "writing sidecar file"
-#| msgid_plural "writing %zu sidecar files"
 msgid "missing from sidecar"
-msgstr "skriver redigeringsfil"
+msgstr "mangler fra sidefil"
 
 #: ../src/iop/rasterfile.c:413
-#, fuzzy, c-format
-#| msgid "folders"
+#, c-format
 msgid "folder: %s"
-msgstr "mapper"
+msgstr "mappe: %s"
 
 #: ../src/iop/rasterfile.c:415
-#, fuzzy
-#| msgid "%zd tags imported"
 msgid "no mask imported"
-msgstr "%zd nøkkelord importert"
+msgstr "ingen maske ble importert"
 
 #: ../src/iop/rasterfile.c:426
 msgid "select raster mask file"
@@ -27765,16 +27695,16 @@ msgid "selected file not within raster masks root folder"
 msgstr "den valgte filen er ikke i rastermaskenes grunnmappe"
 
 #: ../src/iop/rasterfile.c:510
-#, fuzzy
-#| msgid "cannot create raster mask folder"
 msgid "cannot write the raster mask sidecar for this image"
-msgstr "kan ikke opprette mappe for rastermasker"
+msgstr "kan ikke skrive sidefil for rastermaske til dette bildet"
 
 #: ../src/iop/rasterfile.c:534
 msgid ""
 "import a PNG or PFM file as a raster mask\n"
 "it is stored in the image's .dtdata sidecar and travels with the image"
 msgstr ""
+"importer en PNG eller PFM-fil som rastermaske\n"
+"den lagres i bildets .dtdata sidefil og følger med bildet"
 
 #: ../src/iop/rasterfile.c:536
 msgid ""
@@ -27782,13 +27712,13 @@ msgid ""
 "sidecar files are disabled in preferences, so the mask is referenced by its "
 "path"
 msgstr ""
+"velg en PNG- eller PFM-fil fra rotmappen for rastermasker\n"
+"sidefiler er deaktivert i innstillingene, så masken refereres til ved hjelp "
+"av banen sin"
 
 #: ../src/iop/rasterfile.c:898
-#, fuzzy
-#| msgid ""
-#| "select the RGB channels taken into account to generate the raster mask"
 msgid "select the RGB channels taken into account when a color file is imported"
-msgstr "velg RGB-kanalene som skal regnes med for å generere rastermasken"
+msgstr "velg RGB-kanalene som skal regnes med når en fargefil importeres"
 
 #: ../src/iop/rasterfile.c:911
 msgid ""
@@ -27796,6 +27726,10 @@ msgid ""
 "importing another file replaces it; masks no longer used by any\n"
 "history item are removed from the sidecar when leaving the darkroom"
 msgstr ""
+"rastermasken denne forekomsten bruker\n"
+"hvis en annen fil importeres vil den bli erstattet;\n"
+"masker som ikke lenger brukes av noe historikkelement\n"
+"fjernes fra sidefilen når mørkerommet forlates"
 
 #. Vectorize button
 #: ../src/iop/rasterfile.c:917
@@ -28705,49 +28639,36 @@ msgid "this film or paper could not be loaded"
 msgstr "denne filmen eller papiret kunne ikke lastes"
 
 #: ../src/iop/spektrafilm.c:1861
-#, fuzzy, c-format
-#| msgid ""
-#| "developed with a different spectral table\n"
-#| "recorded: %08x    installed: %s (%08x)\n"
-#| "the matching pack can be fetched with the button below"
+#, c-format
 msgid ""
 "developed with a spectral table this data pack does not carry\n"
 "recorded: %08x    rendering with: %s\n"
 "the matching pack can be fetched with the button below"
 msgstr ""
-"fremkalt med en annen spektraltabell\n"
-"registrert: %08x    installert: %s (%08x)\n"
-"den matchende pakkenb kan hentes med knappen under"
+"fremkalt med en spektraltabell som denne pakken ikke inneholder\n"
+"registrert: %08x    rendrer med: %s\n"
+"den matchende pakken kan hentes med knappen under"
 
 #: ../src/iop/spektrafilm.c:1869
-#, fuzzy
-#| msgid ""
-#| "developed with a different spectral table\n"
-#| "recorded: %08x    installed: %s (%08x)\n"
-#| "the matching pack can be fetched with the button below"
 msgid ""
 "made before data packs carried an identity, and the pack it\n"
 "was made with is not installed: rendering with a later one\n"
 "the matching pack can be fetched with the button below"
 msgstr ""
-"fremkalt med en annen spektraltabell\n"
-"registrert: %08x    installert: %s (%08x)\n"
-"den matchende pakkenb kan hentes med knappen under"
+"laget før datapakker bar en identitet, og pakken den ble\n"
+"laget med er ikke installert: rendrer med en senere pakke\n"
+"den matchende pakken kan hentes med knappen under"
 
 #: ../src/iop/spektrafilm.c:1875
-#, fuzzy, c-format
-#| msgid ""
-#| "developed with a different spectral table\n"
-#| "recorded: %08x    installed: %s (%08x)\n"
-#| "the matching pack can be fetched with the button below"
+#, c-format
 msgid ""
 "developed with data pack %08x, which is not installed\n"
 "rendering with %s\n"
 "the matching pack can be fetched with the button below"
 msgstr ""
-"fremkalt med en annen spektraltabell\n"
-"registrert: %08x    installert: %s (%08x)\n"
-"den matchende pakkenb kan hentes med knappen under"
+"fremkalt med datapakke %08x, som ikke er installert\n"
+"rendrer med %s\n"
+"den matchende pakken kan hentes med knappen under"
 
 #: ../src/iop/spektrafilm.c:1888
 #, c-format
@@ -28808,10 +28729,8 @@ msgid "cancel"
 msgstr "avbryt"
 
 #: ../src/iop/spektrafilm.c:4247
-#, fuzzy
-#| msgid "the table this edit was developed with is not installed"
 msgid "the data pack this edit was developed with is not installed"
-msgstr "tabellen denne redigeringen ble fremkalt med er ikke installert"
+msgstr "datapakken denne redigeringen ble fremkalt med er ikke installert"
 
 #: ../src/iop/spektrafilm.c:4248
 msgid "no data pack installed -- the module's controls appear once one is"
@@ -28827,69 +28746,51 @@ msgid "fetch the matching spectral data pack over the network"
 msgstr "hent den matchende spektraldatapakken over nettverket"
 
 #: ../src/iop/spektrafilm.c:4303
-#, fuzzy
-#| msgid ""
-#| "%s\n"
-#| "\n"
-#| "%d repository could not be reached, so there may be more"
-#| msgid_plural ""
-#| "%s\n"
-#| "\n"
-#| "%d repositories could not be reached, so there may be more"
 msgid "the data repository could not be reached"
-msgstr ""
-"%s\n"
-"\n"
-"%d depot kunne ikke nås, så det kan være flere"
+msgstr "datadepotet kunne ikke nås"
 
 #: ../src/iop/spektrafilm.c:4320
-#, fuzzy, c-format
-#| msgid "download data pack"
+#, c-format
 msgid "download data pack %s"
-msgstr "last ned datapakke"
+msgstr "last ned datapakke %s"
 
 #: ../src/iop/spektrafilm.c:4321
-#, fuzzy, c-format
-#| msgid "image `%s' is not available!"
+#, c-format
 msgid "data pack %s is available"
-msgstr "bilde `%s' er ikke tilgjengelig!"
+msgstr "datapakke %s er tilgjengelig"
 
 #: ../src/iop/spektrafilm.c:4326
 msgid "a newer data pack is available"
-msgstr ""
+msgstr "en nyere datapakke er tilgjengelig"
 
 #: ../src/iop/spektrafilm.c:4331
 #, c-format
 msgid "data pack %s installed"
-msgstr ""
+msgstr "datapakke %s er installert"
 
 #: ../src/iop/spektrafilm.c:4333
-#, fuzzy
-#| msgid "a local install"
 msgid "data pack installed"
-msgstr "en lokal installasjon"
+msgstr "datapakke installert"
 
 #: ../src/iop/spektrafilm.c:4340
-#, fuzzy
-#| msgid "all installed models are up to date"
 msgid "the installed data packs are up to date"
-msgstr "alle installerte modeller er oppdatert"
+msgstr "alle installerte datapakker er oppdatert"
 
 #: ../src/iop/spektrafilm.c:4344 ../src/iop/spektrafilm.c:5877
-#, fuzzy
-#| msgid "check for updates"
 msgid "check for data pack updates"
-msgstr "se etter oppdateringer"
+msgstr "se etter oppdateringer til datapakker"
 
 #: ../src/iop/spektrafilm.c:4348
 msgid ""
 "fetch the newer pack. it installs beside the one you have;\n"
 "existing edits keep rendering on the pack they were made with."
 msgstr ""
+"hent den nyere pakken. den installeres ved siden av den du har;\n"
+"eksisterende redigeringer bruker fortsatt den pakken de ble laget med."
 
 #: ../src/iop/spektrafilm.c:4350
 msgid "ask the data repository whether a newer pack is published"
-msgstr ""
+msgstr "spør datadepotet om en nyere pakke er publisert"
 
 #: ../src/iop/spektrafilm.c:4454
 msgid "cannot render"
@@ -29297,10 +29198,8 @@ msgid "advanced"
 msgstr "avansert"
 
 #: ../src/iop/spektrafilm.c:5818
-#, fuzzy
-#| msgid "chroma subsampling"
 msgid "spectral upsampling"
-msgstr "farge-subsampling"
+msgstr "spektral oppsampling"
 
 #: ../src/iop/spektrafilm.c:5821
 msgid ""
@@ -29310,6 +29209,11 @@ msgid ""
 "only methods from your installed data packs are listed. if there\n"
 "is just one, it is used and there is nothing to choose."
 msgstr ""
+"hvordan en piksels farge endres til det spekteret filmen er\n"
+"eksponert i.\n"
+"\n"
+"bare metoder fra dine installerte datapakker vises. Hvis der\n"
+"bare er en blir den brukt og det er ikke noe å velge."
 
 #: ../src/iop/spektrafilm.c:5834
 msgid ""
@@ -29408,6 +29312,7 @@ msgstr ""
 "ble beregnet til; 0 bruker papirets egen standardverdi."
 
 #: ../src/iop/spektrafilm.c:5939
+#, fuzzy
 msgid ""
 "gamma of the paper's red-forming layer alone, on top of the\n"
 "overall print gamma.\n"
@@ -29417,18 +29322,29 @@ msgid ""
 "cannot fix because it shifts every tone equally while crossover\n"
 "shifts shadows one way and highlights the other."
 msgstr ""
+"gamma for papirets rød-formende lag alene,\n"
+"på toppen av den totale printgammaen.\n"
+"\n"
+"å dele opp gamma pr kanal jevner ut kryssing -- et negativ\n"
+"hvis lag framkalles til ulike gammaverdier, noe som filtrering\n"
+"ikke kan fikse fordi det flytter alle toner likt mens kryssing\n"
+"flytter skygger en vei og høylys en annen."
 
 #: ../src/iop/spektrafilm.c:5950
 msgid ""
 "gamma of the paper's green-forming layer alone, on top of the\n"
 "overall print gamma."
 msgstr ""
+"gamma for papirets grønn-formende lag alene,\n"
+"på toppen av den totale printgammaen."
 
 #: ../src/iop/spektrafilm.c:5956
 msgid ""
 "gamma of the paper's blue-forming layer alone, on top of the\n"
 "overall print gamma."
 msgstr ""
+"gamma for papirets blå-formende lag alene,\n"
+"på toppen av den totale printgammaen."
 
 #: ../src/iop/spektrafilm.c:5959
 msgctxt "section"
@@ -29726,8 +29642,6 @@ msgid "halation size: scales the glow radius (1.0 = film-accurate)"
 msgstr "halasjonsstørrelse: skalerer glødens radius (1.0 = filmnøyaktig)"
 
 #: ../src/iop/spektrafilm.c:6204
-#, fuzzy
-#| msgid "highlight boost"
 msgctxt "section"
 msgid "highlight boost"
 msgstr "økning av høylys"
@@ -29739,12 +29653,12 @@ msgid ""
 "it is not part of halation: the halation toggle does not switch it\n"
 "off. set highlight boost to 0 to disable it."
 msgstr ""
+"rekonstruerer klipte høylys før noe lys spres, så det\n"
+"gløder gjennom filmens diffusjonsfilter, spredning og halasjon.\n"
+"det er ikke en del av halasjonen: halasjonsvalget skrur det ikke av.\n"
+"sett fremheving av høylys til 0 for å deaktivere."
 
 #: ../src/iop/spektrafilm.c:6216
-#, fuzzy
-#| msgid ""
-#| "highlight boost: reconstructs clipped highlights so they bloom into\n"
-#| "halation/diffusion (0 = off)."
 msgid ""
 "highlight boost: reconstructs clipped highlights so they bloom into\n"
 "halation/diffusion (0 = off).\n"
@@ -29752,7 +29666,9 @@ msgid ""
 "runs on its own, independent of the halation toggle."
 msgstr ""
 "fremheving av høylys: rekonstruerer klipte høylys så de gløder inn\n"
-"i halasjon/diffusjon (0 = av)."
+"i halasjon/diffusjon (0 = av).\n"
+"\n"
+"kjører på egen hånd, uavhengig av halasjonsvalget."
 
 #: ../src/iop/spektrafilm.c:6225
 msgid ""
@@ -29797,6 +29713,15 @@ msgid ""
 "this acts at the END of the module, so the picker measures the\n"
 "processed image."
 msgstr ""
+"lysner bildet, med den største effekten i mellomtonene og\n"
+"høylysene rundes av over dem. den virker før gamut-\n"
+"kompressoren, så den kan ikke plassere hvitt på egen hånd.\n"
+"\n"
+"bruk den til å løfte mellomtonene inn i avrundingen og skalering\n"
+"etter kompresjon for å bestemme hvor høylys og hvitt lander.\n"
+"\n"
+"dette påvirker utgangen av modulen, så pipetten måler\n"
+"det behandlede bildet."
 
 #: ../src/iop/spektrafilm.c:6258
 msgid ""
@@ -29874,11 +29799,9 @@ msgstr ""
 "blir ikke lagt til når filmen skannes direkte."
 
 #: ../src/iop/spektrafilm.c:6307
-#, fuzzy
-#| msgid "black and white film"
 msgctxt "section"
 msgid "black and white point"
-msgstr "svart/hvitt film"
+msgstr "svart- og hvitt-punkt"
 
 #: ../src/iop/spektrafilm.c:6314
 msgid ""
@@ -29886,6 +29809,9 @@ msgid ""
 "off, the shadows stay where the film puts them, which is often\n"
 "short of black."
 msgstr ""
+"setter bildets mørkeste tone med svartnivå under.\n"
+"når av havner skyggene der filmen legger dem, som ofte \n"
+"ikke er helt svart."
 
 #: ../src/iop/spektrafilm.c:6322
 msgid ""
@@ -29894,12 +29820,18 @@ msgid ""
 "0 is true black. higher values lift the blacks and soften the\n"
 "image; below 0 the deepest shadows are crushed together."
 msgstr ""
+"løft eller klem skyggene.\n"
+"\n"
+"0 er ekte svart. høyere verdier løfter svart og mykner bildet;\n"
+"under 0 blir de dypeste skyggene klemt sammen."
 
 #: ../src/iop/spektrafilm.c:6331
 msgid ""
 "set the lightest tone of the image with white level below.\n"
 "off, the highlights stay where the film puts them."
 msgstr ""
+"setter bildets lyseste tone med hvittnivå under.\n"
+"når av havner høylysene der filmen legger dem."
 
 #: ../src/iop/spektrafilm.c:6338
 msgid ""
@@ -29908,6 +29840,10 @@ msgid ""
 "1 is full white. lowering it dims the highlights and, since mid\n"
 "gray is held in place, darkens the shadows a little too."
 msgstr ""
+"den lyseste tonens lyshet.\n"
+"\n"
+"1 er helt hvitt. lavere verdier demper høylysene, og siden\n"
+"middels grå holdes fast, mørknes skyggene litt også."
 
 #: ../src/iop/splittoning.c:79
 msgid "split-toning"
