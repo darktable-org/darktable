@@ -327,6 +327,9 @@ changes (where available).
 
 ## Bug Fixes
 
+- Fixed shift-click on the selected entry of the history stack, which
+  did nothing instead of revealing that module in the right-hand panel.
+
 - Fixed overly dark PQ and HLG image imports and overly bright exports,
   including HDR PNG and JPEG XL profile detection.
 
