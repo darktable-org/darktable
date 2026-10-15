@@ -502,6 +502,8 @@ changes (where available).
   that the module's effect was applied to in reverse, most visible on
   gradients with a sharp transition.
 
+- Fixed various interpolating issues at top & lest image border.
+
 - Fixed a bug in OpenCL demosaicer leading to slighly increased chroma
   differences compared with CPU code.
 
