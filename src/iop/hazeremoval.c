@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2025 darktable developers.
+    Copyright (C) 2017-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -406,10 +406,10 @@ static float *_partition(float *first,
 // be in that position if the entire range [first, last) had been
 // sorted, additionally, none of the elements in the range [nth, last)
 // is less than any of the elements in the range [first, nth)
-void _quick_select(float *first,
-                   float *nth,
-                   float *last,
-                   const gboolean compatibility_mode)
+static void _quick_select(float *first,
+                          float *nth,
+                          float *last,
+                          const gboolean compatibility_mode)
 {
   if(first == last) return;
   for(;last > first+1;)
@@ -520,7 +520,10 @@ static float _ambient_light(const const_rgb_image img,
   free_gray_image(&bright_hazy);
   // average over the brightest pixels among the most hazy pixels to
   // estimate the diffusive ambient light
-  dt_aligned_pixel_t A0 = { 0.0f, 0.0f, 0.0f, 0.0f };
+  // accumulated in double: the reduction adds the threads' partial sums
+  // in the order they finish, and in float that order changed the
+  // ambient light, and so the output, from run to run
+  double A0[4] = { 0.0, 0.0, 0.0, 0.0 };
   size_t N_bright_hazy = 0;
   const float *const restrict data = dark_ch.data;
   const float *const restrict in_data = img.data;

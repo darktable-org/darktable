@@ -43,6 +43,7 @@
 #include "common/grealpath.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "develop/masks.h"
 #include "common/iop_order.h"
 #include "common/l10n.h"
 #include "common/mipmap_cache.h"
@@ -2425,6 +2426,7 @@ void dt_cleanup()
     dt_control_cleanup(FALSE);
 
 
+  dt_masks_pixel_cache_cleanup();
   dt_image_cache_cleanup();
   dt_mipmap_cache_cleanup();
 

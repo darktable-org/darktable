@@ -476,6 +476,19 @@ static const char *_develop_blend_colorspace_to_str(const dt_develop_blend_color
   }
 }
 
+// a drawn mask that did not render, a pixel form's entry missing or memory
+// short to read it, may be back by the next run with nothing in the piece's
+// hash to say so: that run recomputes this module rather than reuse the
+// output made without it. an empty group renders nothing for good
+static void _recompute_next_run(const dt_iop_module_t *self,
+                                dt_dev_pixelpipe_iop_t *piece,
+                                const dt_masks_form_t *form)
+{
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  if(form->points && self->iop_order < pipe->cache_obsolete_order)
+    pipe->cache_obsolete_order = self->iop_order;
+}
+
 // Rasterize the module's drawn mask group into `mask`, reusing a previously
 // rasterized result when nothing it depends on changed. This spares the (often
 // expensive) group rasterization when the module reprocesses with an unchanged
@@ -509,6 +522,9 @@ static gboolean _render_drawn_mask_cached(dt_iop_module_t *self,
   dt_hash_t mkey = dt_masks_group_hash_ext(DT_INITHASH, form, piece->pipe->forms);
   mkey = dt_hash(mkey, roi_out, sizeof(dt_iop_roi_t));
   mkey = dt_hash(mkey, &d->mask_mode, sizeof(d->mask_mode));
+  // the hash covers the forms, not whether each one rendered: it need not,
+  // as a group with a member that did not render fails whole and is not
+  // stored below (_group_get_mask_roi)
 
   if(mc->data && mkey != DT_INVALID_HASH
      && mc->hash == mkey
@@ -520,6 +536,8 @@ static gboolean _render_drawn_mask_cached(dt_iop_module_t *self,
     return TRUE;
   }
 
+  // when anything renders, the group writes every pixel of mask (see
+  // _group_get_mask_roi); when nothing does, the callers fill it
   const gboolean form_ok = dt_masks_group_render_roi(self, piece, form, roi_out, mask);
   if(form_ok)
   {
@@ -680,6 +698,7 @@ void dt_develop_blend_process(dt_iop_module_t *self,
   {
     const gboolean inverted = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS);
     gboolean form_ok = FALSE;
+    gboolean form_missing = FALSE;
 
     // get the drawn mask if there is one
     dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
@@ -690,7 +709,18 @@ void dt_develop_blend_process(dt_iop_module_t *self,
       form_ok = _render_drawn_mask_cached(self, piece, form, roi_in, roi_out,
                                          DT_DEVICE_CPU, mask);
 
-      if(inverted)
+      // nothing rendered, e.g. an object whose pixels are missing from the
+      // sidecar: apply nowhere, like the raster fallback above, not like the
+      // unshaped mask below. no invert either, here or in the combine with
+      // the parametric mask, which would turn a missing mask into
+      // "everywhere" (dev-doc/AI_Tasks.md)
+      form_missing = !form_ok;
+      if(form_missing)
+      {
+        dt_iop_image_fill(mask, 0.0f, owidth, oheight, 1);
+        _recompute_next_run(self, piece, form);
+      }
+      else if(inverted)
       {
         // if we have a mask and this flag is set -> invert the mask
         dt_iop_image_invert(mask, 1.0f, owidth, oheight, 1); // mask[k] = 1.0f - mask[k];
@@ -747,6 +777,11 @@ void dt_develop_blend_process(dt_iop_module_t *self,
       default:
         break;
     }
+
+    // the combine inverts for DEVELOP_COMBINE_INV. the post-processing
+    // below keeps 0 at 0
+    if(form_missing)
+      dt_iop_image_fill(mask, 0.0f, owidth, oheight, 1);
   }
 
   if(!uniform)
@@ -1183,6 +1218,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
   {
     const gboolean inverted = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS);
     gboolean form_ok = FALSE;
+    gboolean form_missing = FALSE;
     // get the drawn mask if there is one
     dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
 
@@ -1195,7 +1231,15 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
       form_ok = _render_drawn_mask_cached(self, piece, form, roi_in, roi_out,
                                          devid, mask);
 
-      if(inverted)
+      // as on the CPU path: nothing rendered means the module applies
+      // nowhere, invert included
+      form_missing = !form_ok;
+      if(form_missing)
+      {
+        dt_iop_image_fill(mask, 0.0f, owidth, oheight, 1);
+        _recompute_next_run(self, piece, form);
+      }
+      else if(inverted)
       {
         // if we have a mask and this flag is set -> invert the mask
         dt_iop_image_invert(mask, 1.0f, owidth, oheight, 1); //mask[k] = 1.0f - mask[k]
@@ -1254,6 +1298,14 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
       dt_print(DT_DEBUG_OPENCL,
                "[opencl_blendop] apply global opacity: %s", cl_errstr(err));
       goto error;
+    }
+
+    // as on the CPU path: the combine inverts for DEVELOP_COMBINE_INV, so
+    // the mask, still 0 on the host, goes over its result
+    if(form_missing)
+    {
+      err = dt_opencl_write_host_to_image(devid, mask, dev_mask, owidth, oheight, sizeof(float));
+      if(err != CL_SUCCESS) goto error;
     }
   }
 

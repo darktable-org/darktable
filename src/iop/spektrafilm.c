@@ -621,7 +621,7 @@ typedef struct dt_iop_spektrafilm_global_data_t
   int kernel_scatter_combine, kernel_accum, kernel_channel_extract, kernel_channel_accum, kernel_halation_apply;
   int kernel_gauss_row_4c, kernel_gauss_col_4c, kernel_gauss_row_1c, kernel_gauss_col_1c;
   int kernel_yvv_row_4c, kernel_yvv_col_4c, kernel_yvv_row_1c, kernel_yvv_col_1c;
-  int kernel_wide_down, kernel_wide_up;
+  int kernel_wide_rows, kernel_wide_down, kernel_wide_up;
   int kernel_boost, kernel_diffusion_accum, kernel_diffusion_mix;
   int kernel_pow10, kernel_log10;
 } dt_iop_spektrafilm_global_data_t;
@@ -680,6 +680,7 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_yvv_col_4c = dt_opencl_create_kernel(program, "spektrafilm_yvv_col_4c");
   gd->kernel_yvv_row_1c = dt_opencl_create_kernel(program, "spektrafilm_yvv_row_1c");
   gd->kernel_yvv_col_1c = dt_opencl_create_kernel(program, "spektrafilm_yvv_col_1c");
+  gd->kernel_wide_rows = dt_opencl_create_kernel(program, "spektrafilm_wide_rows");
   gd->kernel_wide_down = dt_opencl_create_kernel(program, "spektrafilm_wide_down");
   gd->kernel_wide_up = dt_opencl_create_kernel(program, "spektrafilm_wide_up");
   gd->kernel_gauss_row_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_4c");
@@ -724,6 +725,7 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_yvv_col_4c);
     dt_opencl_free_kernel(gd->kernel_yvv_row_1c);
     dt_opencl_free_kernel(gd->kernel_yvv_col_1c);
+    dt_opencl_free_kernel(gd->kernel_wide_rows);
     dt_opencl_free_kernel(gd->kernel_wide_down);
     dt_opencl_free_kernel(gd->kernel_wide_up);
     dt_opencl_free_kernel(gd->kernel_gauss_row_4c);
@@ -2209,7 +2211,8 @@ void process(dt_iop_module_t *self,
         highlight boost -> diffusion filter -> halation */
   sf_boost_highlights(plane, w, h, d->p.boost_ev, d->p.boost_range, d->p.protect_ev);
   if(d->p.diffusion_on)
-    sf_diffusion_filter(plane, w, h, (double)pixel_um, (int)d->p.diffusion_filter_family,
+    sf_diffusion_filter(plane, w, h, roi_in->x, roi_in->y, (double)pixel_um,
+                        (int)d->p.diffusion_filter_family,
                         d->p.diffusion_strength, d->p.diffusion_scale, d->p.diffusion_warmth);
   if(d->p.halation_on && (d->p.scatter_amount > 0.0f || d->p.halation_amount > 0.0f))
   {
@@ -2227,9 +2230,9 @@ void process(dt_iop_module_t *self,
       sc_core[c] = fmin(sc_core[c], (double)SF_SCATTER_CORE_CLAMP_UM);
       sc_tail[c] = fmin(sc_tail[c], (double)SF_SCATTER_TAIL_CLAMP_UM);
     }
-    sf_halation(plane, w, h, (double)pixel_um, sc_core, sc_tail, sc_w, d->p.scatter_amount,
-                d->p.scatter_scale, d->p.halation_amount, d->p.halation_scale, hal_strength,
-                hal_sigma_um);
+    sf_halation(plane, w, h, roi_in->x, roi_in->y, (double)pixel_um, sc_core, sc_tail, sc_w,
+                d->p.scatter_amount, d->p.scatter_scale, d->p.halation_amount,
+                d->p.halation_scale, hal_strength, hal_sigma_um);
   }
 
   /* 3) film development: log exposure, DIR coupler inhibition (the correction
@@ -2484,7 +2487,8 @@ void process(dt_iop_module_t *self,
          spektrafilm_pow10 / spektrafilm_log10 kernels. */
       DT_OMP_FOR()
       for(size_t k = 0; k < npix * 3; k++) plane[k] = _sf_pow10f(plane[k]);
-      sf_diffusion_filter(plane, w, h, (double)pixel_um, (int)d->p.print_diffusion_filter_family,
+      sf_diffusion_filter(plane, w, h, roi_in->x, roi_in->y, (double)pixel_um,
+                          (int)d->p.print_diffusion_filter_family,
                           d->p.print_diffusion_strength, d->p.print_diffusion_scale,
                           d->p.print_diffusion_warmth);
       DT_OMP_FOR()
@@ -2596,12 +2600,13 @@ static cl_int _sf_blur_wide_cl(const int devid,
   float *inv = dt_alloc_align_float((size_t)k + 1);
   float kw[2 * SF_GAUSS_MAX_RADIUS + 1];
   const int kr = dt_gaussian_kernel_1d(sigma_low, kw, SF_GAUSS_MAX_RADIUS);
+  cl_mem rows = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * lw * h);
   cl_mem low = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * lw * lh);
   cl_mem lowtmp = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * lw * lh);
   cl_mem inv_cl = dt_opencl_alloc_device_buffer(devid, sizeof(float) * (k + 1));
   cl_mem kw_cl = dt_opencl_alloc_device_buffer(devid, sizeof(float) * (2 * kr + 1));
   cl_int e = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-  if(inv && low && lowtmp && inv_cl && kw_cl)
+  if(inv && rows && low && lowtmp && inv_cl && kw_cl)
   {
     sf_wide_blur_inv_table(k, inv);
     const float inv2k = 1.0f / (float)(2 * k);
@@ -2609,7 +2614,11 @@ static cl_int _sf_blur_wide_cl(const int devid,
     if(e == CL_SUCCESS)
       e = dt_opencl_write_buffer_to_device(devid, kw, kw_cl, 0, sizeof(float) * (2 * kr + 1), TRUE);
     if(e == CL_SUCCESS)
-      e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_wide_down, lw, lh, CLARG(buf),
+      e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_wide_rows, lw, h, CLARG(buf),
+                                           CLARG(rows), CLARG(w), CLARG(h), CLARG(k), CLARG(lw),
+                                           CLARG(ox));
+    if(e == CL_SUCCESS)
+      e = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_wide_down, lw, lh, CLARG(rows),
                                            CLARG(low), CLARG(w), CLARG(h), CLARG(k), CLARG(lw),
                                            CLARG(lh), CLARG(ox), CLARG(oy), CLARG(inv_cl));
     /* exact kernel at the reduced sigma: the twin of sf_blur_plane3() on the
@@ -2628,6 +2637,7 @@ static cl_int _sf_blur_wide_cl(const int devid,
                                            CLARG(lh), CLARG(ox), CLARG(oy), CLARG(inv2k));
   }
   dt_free_align(inv);
+  if(rows) dt_opencl_release_mem_object(rows);
   if(low) dt_opencl_release_mem_object(low);
   if(lowtmp) dt_opencl_release_mem_object(lowtmp);
   if(inv_cl) dt_opencl_release_mem_object(inv_cl);
@@ -2852,6 +2862,21 @@ int process_cl(dt_iop_module_t *self,
       } \
     } \
   } while(0)
+/* SF_GAUSS_BLUR4_OP_L, decimated from SF_WIDE_BLUR_EFFECT_SIGMA up: the
+   device twin of sf_diffusion_filter() and sf_halation()'s bounces, which call
+   sf_blur_plane3_wide() from the same threshold. */
+#define SF_BLUR4_WIDE_OP_L(src, dst, _sg) do { \
+    const float _ws = (_sg); \
+    if(err == CL_SUCCESS && _ws >= SF_WIDE_BLUR_EFFECT_SIGMA) \
+    { \
+      int _wide = 0; \
+      err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, (src), (dst), 0, 0, npix * f * 4); \
+      if(err == CL_SUCCESS) \
+        err = _sf_blur_wide_cl(devid, gd, (dst), w, h, roi_in->x, roi_in->y, _ws, &_wide); \
+    } \
+    else \
+      SF_GAUSS_BLUR4_OP_L(src, dst, _ws); \
+  } while(0)
 /* single-channel in-place blur (scatter stage only, on plane1). Same fast
    fallback above SF_GAUSS_EXACT_MAX_SIGMA -- scatter's core/tail sigmas are
    normally small (sub-few-px), but the fallback is here for whatever a user's
@@ -2941,7 +2966,7 @@ int process_cl(dt_iop_module_t *self,
       {
         const float sigma
             = (float)((double)plan.sigma_um[j] * dsc / fmax((double)pixel_um, 1e-3));
-        SF_GAUSS_BLUR4_OP_L(plane, tmpa, sigma);
+        SF_BLUR4_WIDE_OP_L(plane, tmpa, sigma);
         if(err != CL_SUCCESS) break;
         const int reset = (j == 0);
         const float wr = plan.wr[j], wg = plan.wg[j], wb = plan.wb[j];
@@ -3080,9 +3105,9 @@ int process_cl(dt_iop_module_t *self,
            the sim's double rather than sf_sim_gpu_t's float mirror, double
            arithmetic throughout, sqrt() and not sqrtf(), the divide before the
            sqrt factor, and the CPU's 1e-6f floor. */
-        SF_GAUSS_BLUR4_OP_L(plane, plane2,
-                            fmaxf((float)((cl_hal_sigma_um * (double)hscl
-                                           / (double)pixel_um) * sqrt((double)k)), 1e-6f));
+        SF_BLUR4_WIDE_OP_L(plane, plane2,
+                           fmaxf((float)((cl_hal_sigma_um * (double)hscl
+                                          / (double)pixel_um) * sqrt((double)k)), 1e-6f));
         if(err != CL_SUCCESS) break;
         const int reset = (k == 1);
         err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_accum, w, h, CLARG(plane2),
@@ -3392,7 +3417,7 @@ int process_cl(dt_iop_module_t *self,
         {
           const float sigma
               = (float)((double)pplan.sigma_um[j] * pdsc / fmax((double)pixel_um, 1e-3));
-          SF_GAUSS_BLUR4_OP_L(plane, tmpa, sigma);
+          SF_BLUR4_WIDE_OP_L(plane, tmpa, sigma);
           if(err != CL_SUCCESS) break;
           const int reset = (j == 0);
           const float wr = pplan.wr[j], wg = pplan.wg[j], wb = pplan.wb[j];

@@ -127,6 +127,12 @@ dt_style_t *dt_styles_get_by_name(const char *name);
 /** check if style exists by name*/
 gboolean dt_styles_exists(const char *name);
 
+/** number of styles */
+uint32_t dt_styles_count(void);
+
+/** name of the n-th style (from 0, by name), or NULL; free with g_free() */
+gchar *dt_styles_get_nth_name(const int n);
+
 /** returns TRUE if the style has a module order defined */
 gboolean dt_styles_has_module_order(const char *name);
 /** the returned iop order list is migrated to the current version ensuring

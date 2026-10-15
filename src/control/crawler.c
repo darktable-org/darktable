@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2025 darktable developers.
+    Copyright (C) 2014-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include "crawler.h"
 #include "gui/gtk.h"
 #include "gui/splash.h"
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -1437,7 +1438,7 @@ static void _reload_button_clicked(GtkButton *button, gpointer user_data)
 }
 
 // overwrite xmp with database
-void _overwrite_button_clicked(GtkButton *button, gpointer user_data)
+static void _overwrite_button_clicked(GtkButton *button, gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);

@@ -1,3 +1,4 @@
+add_subdirectory(catalog)
 add_subdirectory(common)
 add_subdirectory(hdr)
 add_subdirectory(iop)

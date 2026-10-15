@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -159,12 +160,12 @@ static inline void _bin_Lab_LCh(const dt_dev_histogram_collection_params_t *cons
 
 //==============================================================================
 
-void _hist_worker(dt_dev_histogram_collection_params_t *const histogram_params,
-                  dt_dev_histogram_stats_t *histogram_stats,
-                  const void *const pixel,
-                  uint32_t **histogram,
-                  const _histogram_worker Worker,
-                  const dt_iop_order_iccprofile_info_t *const profile_info)
+static void _hist_worker(dt_dev_histogram_collection_params_t *const histogram_params,
+                         dt_dev_histogram_stats_t *histogram_stats,
+                         const void *const pixel,
+                         uint32_t **histogram,
+                         const _histogram_worker Worker,
+                         const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   const size_t bins_total = (size_t)(histogram_stats->ch == 1 ? 1 : 4)
     * histogram_params->bins_count;

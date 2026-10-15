@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "common/collection.h"
@@ -29,6 +30,7 @@
 #include "gui/preferences.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -547,7 +549,7 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-void _lib_preferences_button_clicked(GtkWidget *widget, gpointer user_data)
+static void _lib_preferences_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_gui_preferences_show();
 }

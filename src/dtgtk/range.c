@@ -66,6 +66,13 @@ typedef struct _range_block
   dt_range_bounds_t bounds;
 } _range_block;
 
+static void _range_block_free(gpointer data)
+{
+  _range_block *block = data;
+  g_free(block->txt);
+  g_free(block);
+}
+
 typedef struct _range_icon
 {
   int posx; // position of the icon in percent of the band width
@@ -156,7 +163,7 @@ static void _range_select_dispose(GObject *object)
   range->markers = NULL;
 
   if(!g_list_is_empty(range->blocks))
-    g_list_free_full(range->blocks, g_free);
+    g_list_free_full(range->blocks, _range_block_free);
   range->blocks = NULL;
 
   if(!g_list_is_empty(range->icons))
@@ -1907,7 +1914,7 @@ void dtgtk_range_select_add_range_block(GtkDarktableRangeSelect *range, const do
 void dtgtk_range_select_reset_blocks(GtkDarktableRangeSelect *range)
 {
   if(!range->blocks) return;
-  g_list_free_full(range->blocks, g_free);
+  g_list_free_full(range->blocks, _range_block_free);
   range->blocks = NULL;
 }
 

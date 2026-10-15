@@ -62,11 +62,11 @@ static const char *_gui_presets_format_value_str[5]
 static const int _gui_presets_format_flag[5] =
   { FOR_LDR, FOR_RAW, FOR_HDR, FOR_NOT_MONO, FOR_NOT_COLOR };
 
-void _insert_text_event(GtkEditable *editable,
-                        const gchar *text,
-                        const gint length,
-                        gint *position,
-                        gpointer data)
+static void _insert_text_event(GtkEditable *editable,
+                               const gchar *text,
+                               const gint length,
+                               gint *position,
+                               gpointer data)
 {
   for(int i = 0; i < length; i++)
   {

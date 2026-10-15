@@ -19,6 +19,7 @@
 #pragma once
 
 #include "common/darktable.h"
+#include "common/dtdata.h"
 #include "common/opencl.h"
 #include "develop/pixelpipe.h"
 #include "dtgtk/button.h"
@@ -27,7 +28,7 @@
 
 #include <assert.h>
 
-#define DEVELOP_MASKS_VERSION (6)
+#define DEVELOP_MASKS_VERSION (7)
 
 G_BEGIN_DECLS
 
@@ -43,10 +44,15 @@ typedef enum dt_masks_type_t
   DT_MASKS_ELLIPSE = 1 << 5,
   DT_MASKS_BRUSH = 1 << 6,
   DT_MASKS_NON_CLONE = 1 << 7,
-#ifdef HAVE_AI
+  // defined in every build: an object made with AI is stored as pixels and
+  // has to render where AI is not compiled in
   DT_MASKS_OBJECT = 1 << 8,
-#endif
 } dt_masks_type_t;
+
+// the pixel forms, whose first point starts with a dt_dtdata_ref_t to their
+// pixels in the .dtdata sidecar (masks/pixel_mask.c). a new one goes here
+// too, or the sidecar sweep would delete what it references
+#define DT_MASKS_PIXEL_FORMS (DT_MASKS_OBJECT)
 
 /**masts states */
 typedef enum dt_masks_state_t
@@ -67,9 +73,13 @@ typedef enum dt_masks_state_t
                     | DT_MASKS_STATE_EXCLUSION
 } dt_masks_state_t;
 
+// the mask manager lists properties in this order. a switch comes before the
+// settings it shows, so turning it on does not move it from under the pointer
 typedef enum dt_masks_property_t
 {
   DT_MASKS_PROPERTY_OPACITY,
+  DT_MASKS_PROPERTY_REFINE,
+  DT_MASKS_PROPERTY_VECTORIZE,
   DT_MASKS_PROPERTY_SIZE,
   DT_MASKS_PROPERTY_HARDNESS,
   DT_MASKS_PROPERTY_FEATHER,
@@ -78,7 +88,6 @@ typedef enum dt_masks_property_t
   DT_MASKS_PROPERTY_COMPRESSION,
   DT_MASKS_PROPERTY_CLEANUP,
   DT_MASKS_PROPERTY_SMOOTHING,
-  DT_MASKS_PROPERTY_REFINE,
   DT_MASKS_PROPERTY_LAST
 } dt_masks_property_t;
 
@@ -160,14 +169,22 @@ typedef struct dt_masks_point_ellipse_t
   dt_masks_ellipse_flags_t flags;
 } dt_masks_point_ellipse_t;
 
-#ifdef HAVE_AI
-/** structure used to store 1 point for an object (AI segmentation) form */
+/** structure used to store 1 point for an object (AI segmentation) form.
+    the first point is the mask's .dtdata reference and must stay first:
+    the sidecar sweep reads it at the start of the points blob. the rest
+    are its prompts, in click order, kept so the mask can be regenerated */
 typedef struct dt_masks_point_object_t
 {
-  float anchor[2]; // click position (normalized image coords)
-  int label;       // 1 = foreground, 0 = background
+  union
+  {
+    dt_dtdata_ref_t ref;
+    struct
+    {
+      float pos[2]; // input-image normalized
+      float label;  // 1 foreground, 0 background
+    } prompt;
+  };
 } dt_masks_point_object_t;
-#endif
 
 /** structure used to store 1 point for a path form */
 typedef struct dt_masks_point_path_t
@@ -482,10 +499,194 @@ extern const dt_masks_functions_t dt_masks_functions_brush;
 extern const dt_masks_functions_t dt_masks_functions_path;
 extern const dt_masks_functions_t dt_masks_functions_gradient;
 extern const dt_masks_functions_t dt_masks_functions_group;
-#ifdef HAVE_AI
 extern const dt_masks_functions_t dt_masks_functions_object;
+#ifdef HAVE_AI
 /** check if AI object mask model is downloaded and AI is enabled */
 gboolean dt_masks_object_available(void);
+/** leave the edit of a saved AI object without storing anything. FALSE,
+    doing nothing, when none is being edited, so the darkroom's escape
+    handler knows whether the key was its to take */
+gboolean dt_masks_object_cancel_edit(void);
+#endif
+
+// --- pixel forms (masks/pixel_mask.c): the shape is a mask stored in the
+// image's .dtdata sidecar, referenced by a dt_dtdata_ref_t at the start of
+// the form's first point. what differs between them is in the type below
+
+typedef struct dt_masks_pixel_type_t
+{
+  // drawn on the icon at the mask's anchor
+  DTGTKCairoPaintIconFunc icon;
+  // where the icon goes, input-image normalized, when the stored mask gives
+  // no place: it is missing or has no interior. FALSE when there is none
+  gboolean (*fallback_anchor)(const dt_masks_form_t *form, float anchor[2]);
+  // the committed form's mouse actions, N_() marked, translated on use
+  const char *edit_action;
+  const char *opacity_action;
+} dt_masks_pixel_type_t;
+
+// a decoded stored mask, shared and reference counted
+typedef struct dt_masks_pixel_cache_t dt_masks_pixel_cache_t;
+
+void dt_masks_pixel_cache_cleanup(void);
+// NULL for a form not stored yet
+const dt_dtdata_ref_t *dt_masks_pixel_ref(const dt_masks_form_t *form);
+// release with dt_masks_pixel_release. NULL when missing or damaged;
+// *transient, if given, is TRUE when only memory was short
+dt_masks_pixel_cache_t *dt_masks_pixel_get(const dt_imgid_t imgid,
+                                           const dt_dtdata_ref_t *ref,
+                                           gboolean *transient);
+void dt_masks_pixel_release(dt_masks_pixel_cache_t *c);
+// as dt_masks_pixel_get, but only whether the entry reads: known once read,
+// so the pixels need not stay decoded for the gui to ask
+gboolean dt_masks_pixel_readable(const dt_imgid_t imgid,
+                                 const dt_dtdata_ref_t *ref,
+                                 gboolean *transient);
+// a mask as the red overlay tint: in proportion, or full above threshold
+cairo_surface_t *dt_masks_pixel_tint(const float *const mask,
+                                     const int w,
+                                     const int h,
+                                     const gboolean proportional,
+                                     const float threshold);
+// a committed form's functions, set in its dt_masks_functions_t directly
+// or called from a wrapper passing its type
+void dt_masks_pixel_duplicate_points(dt_develop_t *const dev,
+                                     dt_masks_form_t *const base,
+                                     dt_masks_form_t *const dest);
+void dt_masks_pixel_get_distance(const float x,
+                                 const float y,
+                                 const float as,
+                                 dt_masks_form_gui_t *gui,
+                                 const int index,
+                                 const int num_points,
+                                 gboolean *inside,
+                                 gboolean *inside_border,
+                                 int *near,
+                                 gboolean *inside_source,
+                                 float *dist);
+int dt_masks_pixel_get_points_border(const dt_masks_pixel_type_t *type,
+                                     dt_develop_t *dev,
+                                     dt_masks_form_t *form,
+                                     float **points,
+                                     int *points_count,
+                                     float **border,
+                                     int *border_count,
+                                     const int source,
+                                     const dt_iop_module_t *const module);
+int dt_masks_pixel_get_mask_roi(const dt_iop_module_t *const module,
+                                const dt_dev_pixelpipe_iop_t *const piece,
+                                dt_masks_form_t *const form,
+                                const dt_iop_roi_t *roi,
+                                float *buffer);
+int dt_masks_pixel_mouse_scrolled(dt_iop_module_t *module,
+                                  const float pzx,
+                                  const float pzy,
+                                  const gboolean up,
+                                  const uint32_t state,
+                                  dt_masks_form_t *form,
+                                  const dt_imgid_t parentid,
+                                  dt_masks_form_gui_t *gui,
+                                  const int index);
+int dt_masks_pixel_button_released(dt_iop_module_t *module,
+                                   const int which,
+                                   dt_masks_form_t *form,
+                                   const dt_mask_id_t parentid,
+                                   dt_masks_form_gui_t *gui);
+int dt_masks_pixel_mouse_moved(dt_iop_module_t *module,
+                               float pzx,
+                               float pzy,
+                               const double pressure,
+                               const int which,
+                               const float zoom_scale,
+                               dt_masks_form_t *form,
+                               const dt_imgid_t parentid,
+                               dt_masks_form_gui_t *gui,
+                               const int index);
+void dt_masks_pixel_post_expose(const dt_masks_pixel_type_t *type,
+                                cairo_t *cr,
+                                const float zoom_scale,
+                                dt_masks_form_gui_t *gui,
+                                const int index,
+                                const int num_points);
+GSList *dt_masks_pixel_setup_mouse_actions(const dt_masks_pixel_type_t *type);
+void dt_masks_pixel_set_hint_message(const int opacity,
+                                     char *const __restrict__ msgbuf,
+                                     const size_t msgbuf_len);
+#ifdef HAVE_AI
+// a hash of every enabled distorting module of dev->iop (IOP_TAG_DISTORT),
+// in pipe order, by its iop_order and params: equal hashes mean a mask made
+// from the view still fits it. dev->iop holds the state at history_end in
+// the darkroom (dt_dev_pop_history_items_ext)
+dt_hash_t dt_masks_pixel_distort_hash(dt_develop_t *dev);
+// a private develop and export pipe on imgid, for a worker thread: history
+// up to history_end when that is ahead of the database's. *width and
+// *height are the processed size at scale 1. NULL on error
+typedef struct dt_masks_pixel_render_t dt_masks_pixel_render_t;
+dt_masks_pixel_render_t *dt_masks_pixel_render_init(const dt_imgid_t imgid,
+                                                    const int32_t history_end,
+                                                    int *width,
+                                                    int *height);
+// the view at width x height and scale as 8-bit RGB, 3 bytes a pixel,
+// g_free'd by the caller. NULL on error
+uint8_t *dt_masks_pixel_render(dt_masks_pixel_render_t *r,
+                               const int width,
+                               const int height,
+                               const float scale);
+void dt_masks_pixel_render_cleanup(dt_masks_pixel_render_t *r);
+// a render a mask was made from: rw x rh at scale, of the frame that
+// dt_masks_pixel_render_init gave as width x height. the pipe puts render
+// pixel j at j / scale (interpolation.c:469, 882), not at (j + 0.5) / scale,
+// and a render rounded down to whole pixels covers a little less than the
+// frame: spread over the whole frame instead, a mask sits half a render pixel
+// right and down, more toward the far edges
+typedef struct dt_masks_pixel_grid_t
+{
+  int width, height;
+  int rw, rh;
+  float scale;
+} dt_masks_pixel_grid_t;
+// where a w x h mask covering grid's render edge to edge, as area
+// resampling does and align-corners does not, lands on the preview frame:
+// mask coordinate c, pixel i covering [i, i + 1), sits at c * a + b. FALSE
+// when the view has no size, grid is unset, or w or h is not positive
+gboolean dt_masks_pixel_grid_to_preview(const dt_masks_pixel_grid_t *grid,
+                                        const int w,
+                                        const int h,
+                                        float a[2],
+                                        float b[2]);
+// the stored mask resampled onto a w x h grid covering grid's render edge to
+// edge, where dt_masks_pixel_store took it from. FALSE as
+// dt_masks_pixel_grid_to_preview, or when out of memory
+gboolean dt_masks_pixel_to_render(const dt_masks_pixel_cache_t *c,
+                                  const dt_masks_pixel_grid_t *grid,
+                                  const int w,
+                                  const int h,
+                                  float *const out);
+// the long side a stored mask is kept under: decoded masks share a 64 MB
+// cache, and storing resamples on the gui thread
+#define DT_MASKS_PIXEL_MAX_STORED 4096
+// the tw x th to store a mask_w x mask_h mask made over the preview frame
+// at: its density over the view, kept over the whole input frame, so a crop
+// keeps every sample. never finer than the image nor longer than max_side,
+// keeping the aspect ratio. FALSE when the view has no size
+gboolean dt_masks_pixel_store_size(const int mask_w,
+                                   const int mask_h,
+                                   const int max_side,
+                                   int *tw,
+                                   int *th);
+// a mask_w x mask_h mask covering grid's render edge to edge, stored at
+// tw x th in input image space, filling *ref. outside the view it keeps old's
+// pixels, if old is given. ref must already be where the form keeps it: a
+// failure after the write would leave an unreferenced entry
+gboolean dt_masks_pixel_store(const float *mask,
+                              const int mask_w,
+                              const int mask_h,
+                              const dt_masks_pixel_grid_t *grid,
+                              const int tw,
+                              const int th,
+                              const dt_dtdata_ref_t *old,
+                              const char *producer,
+                              dt_dtdata_ref_t *ref);
 #endif
 
 /** init dt_masks_form_gui_t struct with default values */
@@ -695,6 +896,11 @@ dt_hash_t dt_masks_group_hash_ext(dt_hash_t hash,
 void dt_masks_form_remove(struct dt_iop_module_t *module,
                           dt_masks_form_t *grp,
                           dt_masks_form_t *form);
+/** the entry a shape has in the group that lists it, which holds its
+    opacity and blend state, and that group's id in *parentid. NULL and
+    NO_MASKID for a shape no group lists yet, one still being created */
+dt_masks_point_group_t *dt_masks_group_entry(const dt_masks_form_t *form,
+                                             dt_mask_id_t *parentid);
 float dt_masks_form_change_opacity(dt_masks_form_t *form,
                                    const dt_imgid_t parentid,
                                    const float amount);

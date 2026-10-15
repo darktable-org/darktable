@@ -34,6 +34,7 @@
 #include "imageio/imageio_module.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -643,11 +644,11 @@ static void _size_in_px_update(dt_lib_export_t *d)
   }
 }
 
-void _set_dimensions(dt_lib_export_t *d,
-                     const uint32_t max_width,
-                     const uint32_t max_height,
-                     const uint32_t print_dpi,
-                     const gchar *scale)
+static void _set_dimensions(dt_lib_export_t *d,
+                            const uint32_t max_width,
+                            const uint32_t max_height,
+                            const uint32_t print_dpi,
+                            const gchar *scale)
 {
   gchar *max_width_char = g_strdup_printf("%u", max_width);
   gchar *max_height_char = g_strdup_printf("%u", max_height);
@@ -673,7 +674,7 @@ void _set_dimensions(dt_lib_export_t *d,
 }
 
 
-void _size_update_display(dt_lib_export_t *self)
+static void _size_update_display(dt_lib_export_t *self)
 {
   const dt_dimensions_type_t d_type =
     (dt_dimensions_type_t)dt_bauhaus_combobox_get(self->dimensions_type);

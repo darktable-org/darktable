@@ -543,7 +543,7 @@ static void _create_pdf(dt_job_t *job,
 }
 #endif
 
-void _fill_box_values(dt_lib_print_settings_t *ps)
+static void _fill_box_values(dt_lib_print_settings_t *ps)
 {
   float x = 0.0f, y = 0.0f, swidth = 0.0f, sheight = 0.0f;
 
@@ -2060,9 +2060,9 @@ static gboolean _expose_again(gpointer user_data)
   return FALSE;
 }
 
-void _get_control(dt_lib_print_settings_t *ps,
-                  const float x,
-                  const float y)
+static void _get_control(dt_lib_print_settings_t *ps,
+                         const float x,
+                         const float y)
 {
   const float dist = 20.0;
 
@@ -2355,12 +2355,12 @@ int button_pressed(struct dt_lib_module_t *self,
   return 0;
 }
 
-void _cairo_rectangle(cairo_t *cr,
-                      const int sel_controls,
-                      const int x1,
-                      const int y1,
-                      const int x2,
-                      const int y2)
+static void _cairo_rectangle(cairo_t *cr,
+                             const int sel_controls,
+                             const int x1,
+                             const int y1,
+                             const int x2,
+                             const int y2)
 {
   const float sel_width = DT_PIXEL_APPLY_DPI(3.0);
   const float std_width = DT_PIXEL_APPLY_DPI(1.0);

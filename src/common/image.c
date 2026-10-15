@@ -1557,7 +1557,7 @@ static dt_imgid_t _image_duplicate_with_version(const dt_imgid_t imgid,
       dupundo->orig_imgid = imgid;
       dupundo->version = newversion;
       dupundo->new_imgid = newid;
-      dt_undo_record(darktable.undo, NULL, DT_UNDO_DUPLICATE, dupundo, _pop_undo, NULL);
+      dt_undo_record(darktable.undo, NULL, DT_UNDO_DUPLICATE, dupundo, _pop_undo, free);
     }
 
     // make sure that the duplicate doesn't have some magic darktable| tags

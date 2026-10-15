@@ -626,17 +626,6 @@ void gui_update(dt_lib_module_t *self)
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
-    sqlite3_stmt *stmt_tags = NULL;
-    // clang-format off
-    gchar *tag_query = g_strdup_printf("SELECT flags, COUNT(DISTINCT imgid)"
-                                       " FROM main.tagged_images"
-                                       " JOIN data.tags"
-                                       " ON data.tags.id = main.tagged_images.tagid"
-                                       "   AND name NOT LIKE 'darktable|%%' "
-                                       " WHERE imgid in (%s) GROUP BY tagid", images);
-    // clang-format on
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), tag_query, -1, &stmt_tags, NULL);
-    g_free(tag_query);
     g_free(query);
 
     if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -656,22 +645,23 @@ void gui_update(dt_lib_module_t *self)
     gboolean same_tags = TRUE;
     gboolean same_categories = TRUE;
 
-    while(sqlite3_step(stmt_tags) == SQLITE_ROW)
+    GList *tag_counts = dt_tag_get_flags_counts(images);
+    for(GList *iter = tag_counts; iter; iter = g_list_next(iter))
     {
-      if(sqlite3_column_int(stmt_tags, 0) & DT_TF_CATEGORY)
+      const dt_tag_flags_count_t *fc = iter->data;
+      if(fc->flags & DT_TF_CATEGORY)
       {
-        same_categories &= (sqlite3_column_int(stmt_tags, 1) == count);
+        same_categories &= (fc->count == count);
       }
       else
       {
-        same_tags &= (sqlite3_column_int(stmt_tags, 1) == count);
+        same_tags &= (fc->count == count);
       }
     }
+    g_list_free_full(tag_counts, g_free);
 
     skip[md_tag_names] = !same_tags;
     skip[md_categories] = !same_categories;
-
-    sqlite3_finalize(stmt_tags);
   }
 
   g_free(images);

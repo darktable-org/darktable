@@ -664,8 +664,9 @@ static int _block_get_at_zoom(dt_lib_module_t *self, int width)
   sqlite3_stmt *stmt;
   // clang-format off
   gchar *query = g_strdup_printf("SELECT db.datetime_taken AS dt,"
-                                 " col.imgid FROM main.images AS db "
-                                 "LEFT JOIN memory.collected_images AS col ON db.id=col.imgid "
+                                 " CASE WHEN db.id IN (SELECT imgid FROM memory.collected_images)"
+                                 " THEN db.id END "
+                                 "FROM main.images AS db "
                                  "WHERE dt > %lld "
                                  "ORDER BY dt ASC",
                                  (long long)_time_format_for_db(strip->time_pos, strip->zoom));

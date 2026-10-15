@@ -93,6 +93,87 @@ gboolean dt_metadata_add_metadata(dt_metadata_t *metadata)
   return success;
 }
 
+void dt_metadata_update_metadata(const dt_metadata_t *metadata)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+    "UPDATE data.meta_data"
+    " SET name = ?2"
+    "   , visible = ?3"
+    "   , private = ?4"
+    "   , display_order = ?5"
+    " WHERE key = ?1",
+    -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, metadata->key);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, metadata->name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, metadata->visible);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, metadata->priv);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, metadata->display_order);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+static gchar *_keys_to_str(const GList *keys)
+{
+  GList *keys_str = NULL;
+  for(const GList *key_iter = keys; key_iter; key_iter = key_iter->next)
+    keys_str = g_list_prepend(keys_str, g_strdup_printf("%d", GPOINTER_TO_INT(key_iter->data)));
+  gchar *str = dt_util_glist_to_str(",", keys_str);
+  g_list_free_full(keys_str, g_free);
+  return str;
+}
+
+uint32_t dt_metadata_count_assigned(const GList *keys)
+{
+  gchar *keys_str = _keys_to_str(keys);
+  if(!keys_str) return 0;
+
+  uint32_t count = 0;
+  sqlite3_stmt *stmt;
+  gchar *query = g_strdup_printf("SELECT COUNT(*)"
+                                 " FROM main.meta_data"
+                                 " WHERE key in (%s)",
+                                 keys_str);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              query,
+                              -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  g_free(query);
+  g_free(keys_str);
+  return count;
+}
+
+void dt_metadata_remove_keys(const GList *keys)
+{
+  gchar *keys_str = _keys_to_str(keys);
+  if(!keys_str) return;
+
+  sqlite3_stmt *stmt;
+  // delete the assignments
+  gchar *query = g_strdup_printf("DELETE FROM main.meta_data WHERE key IN (%s)",
+                                 keys_str);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              query,
+                              -1, &stmt, NULL);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  g_free(query);
+
+  // now the metadata entries
+  query = g_strdup_printf("DELETE FROM data.meta_data WHERE key IN (%s)",
+                          keys_str);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              query,
+                              -1, &stmt, NULL);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  g_free(query);
+  g_free(keys_str);
+}
+
 dt_metadata_t *dt_metadata_get_metadata_by_keyid(const uint32_t keyid)
 {
   for(GList *iter = _metadata_list; iter; iter = iter->next)
@@ -782,6 +863,79 @@ void dt_metadata_set_list(const GList *imgs, GList *key_value, const gboolean un
 
     g_list_free_full(metadata, g_free);
   }
+}
+
+GList *dt_metadata_get_counts(const char *images)
+{
+  GList *counts = NULL;
+  sqlite3_stmt *stmt;
+  // clang-format off
+  gchar *query = g_strdup_printf(
+                          "SELECT key, value, COUNT(id)"
+                          " FROM main.meta_data"
+                          " WHERE id IN (%s)"
+                          " GROUP BY key, value",
+                          images);
+  // clang-format on
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    if(sqlite3_column_bytes(stmt, 1))
+    {
+      dt_metadata_count_t *c = g_malloc(sizeof(dt_metadata_count_t));
+      c->key = (uint32_t)sqlite3_column_int(stmt, 0);
+      c->value = g_strdup((char *)sqlite3_column_text(stmt, 1));
+      c->count = (uint32_t)sqlite3_column_int(stmt, 2);
+      counts = g_list_prepend(counts, c);
+    }
+  }
+  sqlite3_finalize(stmt);
+  g_free(query);
+  return g_list_reverse(counts);
+}
+
+void dt_metadata_count_free(gpointer data)
+{
+  dt_metadata_count_t *c = data;
+  g_free(c->value);
+  g_free(c);
+}
+
+GList *dt_metadata_get_versions(const dt_filmid_t film_id, const char *filename)
+{
+  GList *versions = NULL;
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT i.version, i.id, m.value"
+                              " FROM images AS i"
+                              " LEFT JOIN meta_data AS m ON m.id = i.id"
+                              " AND m.key = (SELECT key FROM data.meta_data WHERE tagname = 'Xmp.darktable.version_name')"
+                              " WHERE film_id = ?1 AND filename = ?2"
+                              " ORDER BY i.version",
+                              -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, filename, -1, SQLITE_TRANSIENT);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    dt_metadata_version_t *v = g_malloc(sizeof(dt_metadata_version_t));
+    v->version = sqlite3_column_int(stmt, 0);
+    v->imgid = sqlite3_column_int(stmt, 1);
+    v->name = g_strdup((char *)sqlite3_column_text(stmt, 2));
+    versions = g_list_prepend(versions, v);
+  }
+  sqlite3_finalize(stmt);
+  return g_list_reverse(versions);
+}
+
+void dt_metadata_version_free(gpointer data)
+{
+  dt_metadata_version_t *v = data;
+  g_free(v->name);
+  g_free(v);
 }
 
 void dt_metadata_clear(const GList *imgs, const gboolean undo_on)

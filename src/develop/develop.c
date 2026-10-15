@@ -1494,6 +1494,9 @@ static void _dev_add_history_item(dt_develop_t *dev,
 {
   if(!darktable.gui || DT_IN_GUI_UPDATE()) return;
 
+  // check if newly enabled for later visiblity updates
+  const gboolean new_enabled = enable && !module->enabled;
+
   // record current name, needed to ensure we do an undo record
   // if the module name is changed.
 
@@ -1540,6 +1543,9 @@ static void _dev_add_history_item(dt_develop_t *dev,
 
   if(dev->gui_attached)
   {
+    if(new_enabled && dt_dev_modulegroups_get_activated(module->dev) == DT_MODULEGROUP_ACTIVE_PIPE)
+      dt_dev_modulegroups_update_visibility(dev);
+
     /* signal that history has changed */
     if(tag_change)
       DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);

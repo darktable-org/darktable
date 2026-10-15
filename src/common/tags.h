@@ -37,6 +37,13 @@ typedef struct dt_tag_t
   gint flags;
 } dt_tag_t;
 
+// the flags of a tag and the number of images holding it
+typedef struct dt_tag_flags_count_t
+{
+  gint flags;
+  int count;
+} dt_tag_flags_count_t;
+
 typedef enum dt_tag_flags_t
 {
   DT_TF_NONE        = 0,
@@ -191,6 +198,23 @@ GList *dt_tag_get_tags(const dt_imgid_t imgid,
 
 /** get the subset of images that have a given tag attached */
 GList *dt_tag_get_images(const gint tagid);
+
+/** get the n-th image (from 0, by id) that has a given tag attached, or NO_IMGID */
+dt_imgid_t dt_tag_get_nth_image(const gint tagid, const int n);
+
+/** get the ids of the tags attached to an image, darktable tags included */
+GList *dt_tag_get_tag_ids(const dt_imgid_t imgid);
+
+/** get the number of tags in the tag dictionary */
+uint32_t dt_tag_count_tags(void);
+
+/** get the n-th tag id (from 0, by id) of the tag dictionary, or -1 */
+gint dt_tag_get_nth_tag(const int n);
+
+/** get the flags and image count of each user tag attached to the images of a
+    comma-separated id list, as dt_tag_flags_count_t. Free with
+    g_list_free_full(list, g_free). */
+GList *dt_tag_get_flags_counts(const char *images);
 
 /** get the subset of images from the given list that have a given tag
  * attached */

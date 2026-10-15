@@ -169,7 +169,16 @@ changes (where available).
   dialogs, the module order is now a check box below the item list
   instead of a last entry in the list itself.
 
+- In the AI object mask tool, every object you click on is kept in
+  the selection, including one that doesn't touch the others. This
+  needs a model that returns separate objects, such as SAM; SegNext
+  selects one region at a time.
+
 ## Performance Improvements
+
+- The lighttable timeline no longer slows down quadratically with the
+  number of collected images: with a 100,000-image collection it took
+  about 15 minutes to draw, now a few seconds.
 
 - Replaced quadratic XMP history writes with a linear algorithm.
 
@@ -219,6 +228,17 @@ changes (where available).
   Each instance holds one imported mask. Existing edits that point at
   a folder keep working, and the folder chooser remains available when
   sidecar writing is set to "never".
+
+- AI object masks are now stored as pixels in the image's `.dtdata`
+  sidecar, exactly as selected, instead of being traced into paths.
+  This replaces the shift+right-click PNG export that fed the external
+  raster masks module, which is removed; the module itself is
+  unchanged. Click an object's icon to refine it. "apply as paths" in
+  the mask manager keeps the traced output; it is always on when
+  sidecar writing is "never". When an object's stored mask is missing,
+  the module it masks applies nowhere and the loss is reported;
+  clicking the object's icon regenerates it when sidecar writing is
+  enabled.
 
 - Added a new collection filter for the original image dimensions.
 
@@ -513,6 +533,32 @@ changes (where available).
   one, which slightly changed the colors along the right edge of the
   image.
 
+- Fixed possible crashes after removing an image that had snapshots
+  from the library, while either a snapshot was shown for comparison
+  or all ten snapshot slots were in use.
+
+- Fixed the workspace selection dialog growing past the screen when
+  many workspaces are present; the list is now capped and scrollable.
+
+- Fixed a snapshot showing edits from another snapshot, even one of a
+  different image. Removing an image that had snapshots from the
+  library, then taking a new snapshot, could cause the mix-up.
+
+- Fixed small memory leaks in the lighttable that grew with each rating,
+  color label, tag or duplicate applied, and each time the thumbnails or
+  the range filters were refreshed.
+
+- Fixed edits made just before quitting darktable, such as a rating,
+  being missing from the image's XMP sidecar while the library kept
+  them.
+
+- Fixed an unexpected image change in AgX when disabling 'keep the pivot
+  on the diagonal' after using 'read exposure from metadata and exposure
+  module'.
+
+- Improved internal stability (more reproducible wavelet denoising and
+  haze removal).
+
 ## Lua
 
 ### API Version
@@ -549,6 +595,11 @@ changes (where available).
 
 - Starting with release 5.6, macOS versions older than 15.0 are no
   longer supported on Apple Silicon Macs. Intel Macs are no longer supported.
+
+- AI object masks raise the mask format version to 7. An image whose
+  masks this release has written is not readable by darktable 5.6 or
+  earlier: it reports a mask version mismatch and drops every mask on
+  that image, not only the AI object.
 
 ## Changed Dependencies
 

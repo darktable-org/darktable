@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #include "common/math.h"
 #include "dtgtk/paint.h"
 #include "gui/draw.h"
+
 #include <math.h>
 
 #define PREAMBLE(scaling, line_scaling, x_offset, y_offset) {  \
@@ -628,7 +629,6 @@ void dtgtk_cairo_paint_masks_brush(cairo_t *cr, const gint x, const gint y, cons
   FINISH
 }
 
-#ifdef HAVE_AI
 void dtgtk_cairo_paint_masks_object(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.15, 1, 0, 0)
@@ -682,7 +682,6 @@ void dtgtk_cairo_paint_masks_object(cairo_t *cr, const gint x, const gint y, con
 
   FINISH
 }
-#endif
 
 void dtgtk_cairo_paint_masks_uniform(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
@@ -727,8 +726,8 @@ void dtgtk_cairo_paint_masks_drawn(cairo_t *cr, const gint x, const gint y, cons
 
 /** draws an arc with a B&W gradient following the arc path.
  *  nb_steps must be adjusted depending on the displayed size of the element, 16 is fine for small buttons*/
-void _gradient_arc(cairo_t *cr, const double lw, const int nb_steps, const double x_center, const double y_center, const double radius,
-                   double angle_from, double angle_to, const double color_from, const double color_to, const double alpha)
+static void _gradient_arc(cairo_t *cr, const double lw, const int nb_steps, const double x_center, const double y_center, const double radius,
+                          double angle_from, double angle_to, const double color_from, const double color_to, const double alpha)
 {
   cairo_set_line_width(cr, lw);
 
@@ -3212,7 +3211,7 @@ void dtgtk_cairo_paint_auto_levels(cairo_t *cr, const gint x, const gint y, cons
   FINISH
 }
 
-void _compass_star(cairo_t *cr, const double cx, const double cy, const double size)
+static void _compass_star(cairo_t *cr, const double cx, const double cy, const double size)
 {
   const double a = size / 2.0;
   const double b = size / 10.0;

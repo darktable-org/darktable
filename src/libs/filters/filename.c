@@ -89,7 +89,7 @@ static gboolean _filename_focus_out(GtkWidget *entry, GdkEventFocus *event, gpoi
   return FALSE;
 }
 
-void _filename_tree_update(_widgets_filename_t *filename)
+static void _filename_tree_update(_widgets_filename_t *filename)
 {
   dt_lib_filtering_t *d = filename->rule->lib;
 
@@ -186,7 +186,7 @@ void _filename_tree_update(_widgets_filename_t *filename)
   filename->tree_ok = TRUE;
 }
 
-void _filename_tree_update_visibility(GtkWidget *w, _widgets_filename_t *filename)
+static void _filename_tree_update_visibility(GtkWidget *w, _widgets_filename_t *filename)
 {
   if(!filename->tree_ok) _filename_tree_update(filename);
   gtk_widget_set_visible(gtk_widget_get_parent(filename->name_tree), w == filename->name);
@@ -329,8 +329,8 @@ static void _filename_ok_clicked(GtkWidget *w, _widgets_filename_t *filename)
   gtk_widget_hide(filename->pop);
 }
 
-void _filename_tree_count_func(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model,
-                               GtkTreeIter *iter, gpointer data)
+static void _filename_tree_count_func(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model,
+                                      GtkTreeIter *iter, gpointer data)
 {
   gchar *name;
   guint count;

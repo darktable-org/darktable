@@ -5429,9 +5429,9 @@ GTimeSpan _convert_unix_to_gtimespan(const time_t unix)
 }
 
 // Read timestamps from XmpData
-void _read_xmp_timestamps(Exiv2::XmpData &xmpData,
-                          dt_image_t *img,
-                          const int xmp_version)
+static void _read_xmp_timestamps(Exiv2::XmpData &xmpData,
+                                 dt_image_t *img,
+                                 const int xmp_version)
 {
   Exiv2::XmpData::iterator pos;
 
@@ -5463,9 +5463,9 @@ void _read_xmp_timestamps(Exiv2::XmpData &xmpData,
 }
 
 // Read color harmony guides from XmpData
-void _read_xmp_harmony_guide(Exiv2::XmpData &xmpData,
-                             dt_image_t *img,
-                             const int xmp_version)
+static void _read_xmp_harmony_guide(Exiv2::XmpData &xmpData,
+                                    dt_image_t *img,
+                                    const int xmp_version)
 {
   Exiv2::XmpData::iterator pos;
 

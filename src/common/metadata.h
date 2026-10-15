@@ -44,6 +44,22 @@ typedef enum dt_metadata_signal_t
 }
 dt_metadata_signal_t;
 
+// a metadata value and the number of images holding it
+typedef struct dt_metadata_count_t
+{
+  uint32_t key;
+  gchar *value;
+  uint32_t count;
+} dt_metadata_count_t;
+
+// a version of an image and its version name
+typedef struct dt_metadata_version_t
+{
+  int version;
+  dt_imgid_t imgid;
+  gchar *name;
+} dt_metadata_version_t;
+
 typedef enum dt_metadata_flag_t
 {
   DT_METADATA_FLAG_IMPORTED = 1 << 2    // metadata import
@@ -58,6 +74,19 @@ void dt_metadata_sort();
 
 /** add a metadata entry */
 gboolean dt_metadata_add_metadata(dt_metadata_t *metadata);
+
+/** update name, visibility, privacy and display order of a metadata entry,
+    in the database only: the caller updates the cached entry
+    (dt_metadata_get_metadata_by_keyid()) */
+void dt_metadata_update_metadata(const dt_metadata_t *metadata);
+
+/** number of image assignments for the metadata keys in the list */
+uint32_t dt_metadata_count_assigned(const GList *keys);
+
+/** remove the metadata entries in the list and their image assignments,
+    in the database only: the caller refreshes the cached list with
+    dt_metadata_init() */
+void dt_metadata_remove_keys(const GList *keys);
 
 /** return the metadata by keyid */
 dt_metadata_t *dt_metadata_get_metadata_by_keyid(const uint32_t keyid);
@@ -109,6 +138,17 @@ GList *dt_metadata_get(const dt_imgid_t imgid, const char *key, uint32_t *count)
 
 /** Get metadata (id keys) for a specific image. The caller has to free the list after usage. */
 GList *dt_metadata_get_list_id(const dt_imgid_t imgid); // libs/image.c
+
+/** Get the non-empty values set on the images of a comma-separated id list,
+    as dt_metadata_count_t, each with the number of images holding it.
+    Free with g_list_free_full(list, dt_metadata_count_free). */
+GList *dt_metadata_get_counts(const char *images); // libs/metadata.c
+void dt_metadata_count_free(gpointer data);
+
+/** Get all versions of an image, by version, as dt_metadata_version_t.
+    Free with g_list_free_full(list, dt_metadata_version_free). */
+GList *dt_metadata_get_versions(const dt_filmid_t film_id, const char *filename); // libs/duplicate.c
+void dt_metadata_version_free(gpointer data);
 
 /** Remove metadata from images in list */
 void dt_metadata_clear(const GList *imgs, const gboolean undo_on); // libs/metadata.c

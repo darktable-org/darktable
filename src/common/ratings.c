@@ -103,7 +103,7 @@ static void _pop_undo(gpointer user_data,
 static void _ratings_undo_data_free(gpointer data)
 {
   GList *l = (GList *)data;
-  g_list_free(l);
+  g_list_free_full(l, free);
 }
 
 static int _ratings_effective(const int old_rating,
