@@ -47,6 +47,8 @@ typedef enum dt_masks_type_t
   // defined in every build: an object made with AI is stored as pixels and
   // has to render where AI is not compiled in
   DT_MASKS_OBJECT = 1 << 8,
+  DT_MASKS_PARAMETRIC = 1 << 9, // a parametric (blendif) mask as an element of a group
+  DT_MASKS_RASTER = 1 << 10,    // another module's raster mask as an element of a group
 } dt_masks_type_t;
 
 // the pixel forms, whose first point starts with a dt_dtdata_ref_t to their
@@ -66,12 +68,87 @@ typedef enum dt_masks_state_t
   DT_MASKS_STATE_DIFFERENCE = 1 << 5,
   DT_MASKS_STATE_EXCLUSION = 1 << 6,
   DT_MASKS_STATE_SUM = 1 << 7,
-  DT_MASKS_STATE_OP = DT_MASKS_STATE_UNION
-                    | DT_MASKS_STATE_INTERSECTION
-                    | DT_MASKS_STATE_DIFFERENCE
-                    | DT_MASKS_STATE_SUM
-                    | DT_MASKS_STATE_EXCLUSION
+  // a hidden member is skipped by the group renderer: what solo sets on every
+  // member it does not keep
+  DT_MASKS_STATE_HIDDEN = 1 << 8,
+  // flexi group operators: how a group folds its members, in list order. They
+  // are set on the group's marker and are mutually exclusive; none set is
+  // maximum, the default. See DT_MASKS_STATE_FLEXI_OP
+  //   screen: the soft union a + b - ab, smoothing feathered overlaps
+  DT_MASKS_STATE_FLEXI_SCREEN = 1 << 9,
+  //   minimum: min
+  DT_MASKS_STATE_FLEXI_MINIMUM = 1 << 12,
+  // bypass (on a group's marker): the group contributes nothing, as if it were
+  // not there. A modifier: the group keeps its operator
+  DT_MASKS_STATE_OP_DISABLE = 1 << 14,
+  DT_MASKS_STATE_OP_BYPASS = DT_MASKS_STATE_OP_DISABLE,
+  //   product: the per-pixel product. Not minimum's min(): the two agree only
+  //   for hard 0/1 membership
+  DT_MASKS_STATE_FLEXI_PRODUCT = 1 << 15,
+  // invert output (on a group's marker): flips the group's folded mask after
+  // its refinement and before its opacity. Not DT_MASKS_STATE_INVERSE, which
+  // flips one member's mask before it is folded in: for more than one member
+  // the two differ
+  DT_MASKS_STATE_OP_INVERT = 1 << 16,
+  // disabled (element-level): the group fold skips this element
+  DT_MASKS_STATE_DISABLE = 1 << 17,
+  // a flexi group's own record in its group's point list: it refers to no
+  // form (its formid is an id of its own, in the same id space as the forms)
+  // and holds the group's settings once, followed by the group's members
+  DT_MASKS_STATE_GROUP_MARKER = 1 << 18,
+  //   sum: min(1, a + b), the clamp classic's sum applies after every shape.
+  //   A clamp at 1 is absorbing for non-negative terms, so the fold order
+  //   does not matter
+  DT_MASKS_STATE_FLEXI_SUM = 1 << 19,
+  //   difference: the first visible member is the base and every later one is
+  //   subtracted from it in turn, as classic's difference does
+  DT_MASKS_STATE_FLEXI_DIFFERENCE = 1 << 20,
+  //   exclusion: classic's exclusion combiner, member by member in list
+  //   order. It is not associative, so the order is part of it
+  DT_MASKS_STATE_FLEXI_EXCLUSION = 1 << 21,
+  // a classic member's operator: exactly one of these is set on every member
+  // of a classic group but the bottom one
+  DT_MASKS_STATE_OP_COMBINE = DT_MASKS_STATE_UNION
+                            | DT_MASKS_STATE_INTERSECTION
+                            | DT_MASKS_STATE_DIFFERENCE
+                            | DT_MASKS_STATE_SUM
+                            | DT_MASKS_STATE_EXCLUSION,
+  DT_MASKS_STATE_OP = DT_MASKS_STATE_OP_COMBINE
+                    | DT_MASKS_STATE_OP_DISABLE
+                    | DT_MASKS_STATE_OP_INVERT,
+  // a flexi group's operator
+  DT_MASKS_STATE_FLEXI_OP = DT_MASKS_STATE_FLEXI_SCREEN
+                        | DT_MASKS_STATE_FLEXI_MINIMUM
+                        | DT_MASKS_STATE_FLEXI_PRODUCT
+                        | DT_MASKS_STATE_FLEXI_SUM
+                        | DT_MASKS_STATE_FLEXI_DIFFERENCE
+                        | DT_MASKS_STATE_FLEXI_EXCLUSION
 } dt_masks_state_t;
+
+// one `state` word carries independent roles, a classic member's operator
+// and a group's bypass/invert (DT_MASKS_STATE_OP), a flexi group's operator
+// (DT_MASKS_STATE_FLEXI_OP) and the per-element flags. Their bits must never
+// overlap: a collision switches on an unrelated feature, and bits stored in
+// blobs and XMP cannot be reassigned later
+G_STATIC_ASSERT((DT_MASKS_STATE_OP & DT_MASKS_STATE_FLEXI_OP) == 0);
+G_STATIC_ASSERT((DT_MASKS_STATE_OP_COMBINE
+                 & (DT_MASKS_STATE_OP_DISABLE | DT_MASKS_STATE_OP_INVERT)) == 0);
+G_STATIC_ASSERT((DT_MASKS_STATE_GROUP_MARKER
+                 & (DT_MASKS_STATE_OP | DT_MASKS_STATE_FLEXI_OP)) == 0);
+
+// a classic member's effective operator. dt_masks_group_add_form() gives a
+// group's first shape no combine bit, which there means union onto nothing
+static inline dt_masks_state_t dt_masks_eff_group_op(const int state)
+{
+  // cast: masks.h is included from C++ too (common/exif.cc), where the masked
+  // int does not convert back to the enum on its own
+  const dt_masks_state_t op = (dt_masks_state_t)(state & DT_MASKS_STATE_OP);
+  // only a combining bit counts: bypass and invert output modify an operator
+  // and never stand in for one
+  return (op & DT_MASKS_STATE_OP_COMBINE)
+             ? op
+             : (dt_masks_state_t)(op | DT_MASKS_STATE_UNION);
+}
 
 // the mask manager lists properties in this order. a switch comes before the
 // settings it shows, so turning it on does not move it from under the pointer
@@ -219,14 +296,64 @@ typedef struct dt_masks_point_gradient_t
   dt_masks_gradient_states_t state;
 } dt_masks_point_gradient_t;
 
-/** structure used to store all forms's id for a group */
+/** which mask a refinement applies to */
+typedef enum dt_masks_refine_scope_t
+{
+  DT_MASKS_REFINE_OFF = 0,     // no refinement
+  DT_MASKS_REFINE_ELEMENT = 1, // a member's own mask, before it is folded in
+  DT_MASKS_REFINE_GROUP = 2,   // on a group's marker: the group's folded mask
+} dt_masks_refine_scope_t;
+
+/** an optional mask refinement (since masks v7). The fields mirror the
+    refinement controls of dt_develop_blend_params_t, which refine the
+    module's finished mask */
+typedef struct dt_masks_refinement_t
+{
+  int32_t enabled;           // dt_masks_refine_scope_t
+  float details;             // detail-mask threshold, [-1..1]
+  float feathering_radius;   // guided-filter radius, [0..]
+  uint32_t feathering_guide; // dt_develop_mask_feathering_guide_t
+  float blur_radius;         // gaussian blur radius, [0..]
+  float contrast;            // mask contrast, [-1..1]
+  float brightness;          // mask brightness, [-1..1]
+} dt_masks_refinement_t;
+
+/** structure used to store all forms's id for a group.
+    The fields after opacity were added in masks v7. A point stored before
+    stops where they start (see dt_masks_point_stride) and is read with them
+    zero-filled, which is neutral for all but group_opacity */
 typedef struct dt_masks_point_group_t
 {
   dt_mask_id_t formid;
   dt_mask_id_t parentid;
   int state;
   float opacity;
+  dt_masks_refinement_t refinement; // zero-filled = no refinement
+  // a user-given group name, on a group's marker. Empty = none
+  char name[128];
+  // a group's own opacity, on its marker, multiplying its folded mask on top
+  // of its members' own opacities. 1.0 is neutral, so the v6 to v7 step sets
+  // it rather than leaving it zero-filled
+  float group_opacity;
+  // a group made from a built-in group layout preset: "<preset id>/<group id>",
+  // the key of the notes the panel shows for it. On a group's marker; empty =
+  // not from a preset. No pixel depends on it
+  char preset_note[64];
 } dt_masks_point_group_t;
+
+// Is `pt` a group's marker rather than a member? A marker's formid resolves to
+// no form, so code that looks a member's form up and skips what does not
+// resolve is already safe. What has to ask is code that counts members, copies
+// them, or keys something on a member's formid as if it were a form's
+static inline gboolean dt_masks_point_is_marker(const dt_masks_point_group_t *pt)
+{
+  return (pt->state & DT_MASKS_STATE_GROUP_MARKER) != 0;
+}
+
+// how deep a walk follows groups nested in groups, and so how deep the panel
+// lets groups nest. A deeper tree is malformed or cyclic, and a walk stops
+// there instead of recursing until the stack is gone
+#define DT_MASKS_NESTING_MAX 8
 
 /** structure used to store pointers to the functions implementing operations on a mask shape */
 /** plus a few per-class descriptive data items */
@@ -388,6 +515,15 @@ typedef struct dt_masks_form_t
   int version;
 } dt_masks_form_t;
 
+// a flexi group's marker: the first point of its list. NULL for a classic
+// group, an empty one, and no group at all. The casts are for C++ (exif.cc)
+static inline dt_masks_point_group_t *dt_masks_group_marker(const dt_masks_form_t *grp)
+{
+  dt_masks_point_group_t *pt =
+    grp && grp->points ? (dt_masks_point_group_t *)grp->points->data : NULL;
+  return pt && dt_masks_point_is_marker(pt) ? pt : NULL;
+}
+
 typedef struct dt_masks_form_gui_points_t
 {
   float *points;
@@ -483,6 +619,21 @@ typedef struct dt_masks_form_gui_t
   dt_mask_id_t formid;
   dt_hash_t pipe_hash;
 
+  // masks panel and canvas feedback, set by blend_gui.c:
+  // panel_hover_formids: shapes highlighted on the canvas because their row,
+  //   or the header of a cluster holding them, is hovered. NULL = none
+  // panel_selected_formid: the panel's selection, highlighted on the canvas
+  //   while nothing is hovered
+  // canvas_hover_formid: the shape under the cursor, whose row the panel
+  //   highlights; kept to skip repeated updates
+  // solo_formids: shapes soloed or solo-edited in the panel, highlighted
+  //   whatever is hovered (_sync_solo_canvas_highlight in blend_gui.c).
+  //   NULL = none
+  GList *panel_hover_formids;
+  dt_mask_id_t panel_selected_formid;
+  dt_mask_id_t canvas_hover_formid;
+  GList *solo_formids;
+
   // opaque per-type data (e.g. segmentation context for object masks)
   void *scratchpad;
   void (*scratchpad_cleanup)(struct dt_masks_form_gui_t *gui);
@@ -499,6 +650,24 @@ extern const dt_masks_functions_t dt_masks_functions_brush;
 extern const dt_masks_functions_t dt_masks_functions_path;
 extern const dt_masks_functions_t dt_masks_functions_gradient;
 extern const dt_masks_functions_t dt_masks_functions_group;
+extern const dt_masks_functions_t dt_masks_functions_parametric;
+extern const dt_masks_functions_t dt_masks_functions_raster;
+/** the darkroom module a raster form reads its mask from, or NULL when it is
+    gone. Resolved by operation and instance, as the form stores them */
+struct dt_iop_module_t *dt_masks_raster_source(const dt_masks_form_t *form);
+/** TRUE when this raster form cannot obtain a mask, so it renders all zero:
+    its source module is gone, unnamed, switched off, or writes no raster mask.
+    The group fold then skips its inversion, and the panel badges its row.
+    FALSE for anything that is not a raster form.
+
+    `piece` may be NULL outside a pipe (the panel). Inside one, pass it: in an
+    export pipe only the source's piece knows whether it is on.
+
+    A mask merely missing from the source's table this pass does not count:
+    the next render brings it, and a badge would flicker */
+gboolean dt_masks_raster_is_unresolved(const dt_iop_module_t *module,
+                                       const dt_dev_pixelpipe_iop_t *piece,
+                                       const dt_masks_form_t *form);
 extern const dt_masks_functions_t dt_masks_functions_object;
 #ifdef HAVE_AI
 /** check if AI object mask model is downloaded and AI is enabled */
@@ -687,6 +856,25 @@ gboolean dt_masks_pixel_store(const float *mask,
                               const dt_dtdata_ref_t *old,
                               const char *producer,
                               dt_dtdata_ref_t *ref);
+/** apply a change of an AI object tool setting from the panel's pending-row
+    controls, as the properties of a shape would. Does nothing outside the
+    tool */
+void dt_masks_object_creation_apply_property(const dt_masks_property_t prop,
+                                             const float old_val,
+                                             const float new_val);
+/** the AI object tool's settings, for the pending-row controls to show */
+typedef struct dt_masks_object_creation_params_t
+{
+  gboolean editing;         // a committed object reopened, not a new one
+  gboolean as_paths;        // the "apply as paths" switch
+  gboolean as_paths_locked; // on, and fixed, without sidecar files
+  gboolean traced;          // a commit traces paths: smoothing and cleanup apply
+  gboolean refine;          // "refine mask boundary"
+  float smoothing;
+  int cleanup;
+} dt_masks_object_creation_params_t;
+/** FALSE, with *p untouched, outside the tool */
+gboolean dt_masks_object_creation_get_params(dt_masks_object_creation_params_t *p);
 #endif
 
 /** init dt_masks_form_gui_t struct with default values */
@@ -750,16 +938,26 @@ int dt_masks_group_render(dt_iop_module_t *module,
                           float **buffer,
                           int *roi,
                           const float scale);
+/** render a module's mask group. FALSE when nothing rendered, and then
+    *pixels_missing, if given, is TRUE when that is for a pixel form whose
+    stored mask could not be read rather than for a group with nothing to
+    contribute */
 int dt_masks_group_render_roi(dt_iop_module_t *module,
                               dt_dev_pixelpipe_iop_t *piece,
                               dt_masks_form_t *form,
                               const dt_iop_roi_t *roi,
-                              float *buffer);
+                              float *buffer,
+                              gboolean *pixels_missing);
 
 // returns current masks version
 int dt_masks_version(void);
 
 // update masks from older versions
+/** bytes one stored point of a `type` form takes in a blob written at masks
+    `version`, for a current point struct of `point_size` bytes */
+size_t dt_masks_point_stride(const dt_masks_type_t type,
+                             const int version,
+                             const size_t point_size);
 int dt_masks_legacy_params(dt_develop_t *dev,
                            void *params,
                            const int old_version,
@@ -774,6 +972,33 @@ int dt_masks_legacy_params(dt_develop_t *dev,
  *   void *new_params,             const int new_version);
  */
 
+/** convert a module's classic mask_mode in place into a flexi mask (see
+    migrate_legacy.c). Called from dt_develop_blend_legacy_params_ext().
+
+    `history_num` is the main.history row `bp` will be written back under, or
+    negative when there is none (style and preset conversion). With one, a
+    conversion that creates forms is deferred to
+    dt_masks_finish_flexi_migrations(), which knows the history position the
+    forms must be written under: mask_mode turns flexi at once, mask_id then.
+
+    It cannot fail: migration is one way. */
+void dt_masks_migrate_classic_to_flexi(struct dt_iop_module_t *module,
+                                       struct dt_develop_blend_params_t *bp,
+                                       const int history_num);
+
+/** create the forms of every migration dt_masks_migrate_classic_to_flexi()
+    deferred, writing them under the masks_history position
+    dt_masks_read_masks_history() reads as current. Call it once
+    dev->history_end is read from the database and before
+    dt_masks_read_masks_history() */
+void dt_masks_finish_flexi_migrations(dt_develop_t *dev);
+
+/** convert to flexi groups every classic group a migration kept
+    (dev->pending_flexi_group_splits), in the live tree and every history
+    snapshot, for the caller to write back. Call it after
+    dt_masks_read_masks_history(), which replaces dev->forms */
+void dt_masks_normalize_flexi_groups(dt_develop_t *dev);
+
 /** we create a completely new form. */
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type);
 /** we create a completely new form and add it to darktable.develop->allforms. */
@@ -786,8 +1011,10 @@ dt_masks_form_t *dt_masks_get_from_id_ext(GList *forms, dt_mask_id_t id);
 dt_masks_form_t *dt_masks_get_from_id(const dt_develop_t *dev, dt_mask_id_t id);
 /** check if a form is used by a given module (directly or as a child of its group) */
 gboolean dt_masks_is_in_module(dt_mask_id_t maskid, const struct dt_iop_module_t *module);
-/** register forms into the mask manager */
+/** register forms into the mask manager, recording them in `module`'s history
+    item (the mask manager's when NULL) */
 void dt_masks_register_forms(dt_develop_t *dev,
+                             struct dt_iop_module_t *module,
                              GList *forms);
 
 /** read the forms from the db */
@@ -798,6 +1025,8 @@ void dt_masks_write_masks_history_item(const dt_imgid_t imgid,
                                        const dt_masks_form_t *form);
 void dt_masks_free_form(dt_masks_form_t *form);
 void dt_masks_cleanup_unused(dt_develop_t *dev);
+/** drop from every forms snapshot in history_list the forms nothing reads */
+void dt_masks_cleanup_unused_from_list(GList *history_list);
 
 /** function used to manipulate forms for masks */
 void dt_masks_change_form_gui(dt_masks_form_t *newform);
@@ -866,22 +1095,125 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev,
                                      struct dt_iop_module_t *module,
                                      dt_masks_form_t *form,
                                      dt_masks_form_gui_t *gui);
+// add a registered form to the module's mask group where the panel's insert
+// hint says the next element goes (_recompute_insert_hint in blend_gui.c).
+// dt_masks_gui_form_save_creation() ends with it, and code that registers its
+// own forms (object.c) calls it, so a new element lands in the same place
+// whatever created it
+void dt_masks_group_insert_member(dt_develop_t *dev,
+                                  struct dt_iop_module_t *module,
+                                  dt_masks_form_t *form,
+                                  dt_masks_form_gui_t *gui);
+/** a new flexi mask group for `module`, holding nothing but its marker,
+    registered in dev->forms and made its mask. Records no history */
+dt_masks_form_t *dt_masks_module_group_create(dt_develop_t *dev,
+                                              struct dt_iop_module_t *module);
+/** dt_masks_group_insert_member()'s placement, recording no history and
+    touching no selection: for a caller adding several elements and committing
+    once. Returns the new point */
+dt_masks_point_group_t *dt_masks_group_insert_point(dt_develop_t *dev,
+                                                    struct dt_iop_module_t *module,
+                                                    dt_masks_form_t *form);
+// give `form` the next free "<type label> #<n>" name, as
+// dt_masks_gui_form_save_creation() names a new shape, for code that creates
+// forms without the GUI (migrate_legacy.c)
+void dt_masks_assign_unique_name(dt_develop_t *dev, dt_masks_form_t *form);
+/** Solo: clear `bits` on the members named by `formids` and set them on every
+ * other member of `grp`. A nested group holding a named point keeps its own
+ * member clear and is isolated the same way, at any depth; one that is named
+ * is cleared whole. Passing formids == NULL clears `bits` on every member at
+ * every depth (i.e. "solo off"). A nested group another module's mask also
+ * holds is isolated for that mask too, since the two share its points. */
+void dt_masks_group_isolate_state(dt_masks_form_t *grp,
+                                  GList *formids,
+                                  const dt_masks_state_t bits);
 void dt_masks_group_ungroup(dt_masks_form_t *dest_grp, dt_masks_form_t *grp);
 void dt_masks_group_update_name(dt_iop_module_t *module);
+/** a fresh id for a group marker, used by no form and no marker in `forms` */
+dt_mask_id_t dt_masks_new_marker_id(GList *forms);
+/** a new group marker for `grp`, folding with the flexi operator `flexi_op`
+    (0 = maximum), not yet in any list */
+dt_masks_point_group_t *dt_masks_marker_new(GList *forms,
+                                            const dt_masks_form_t *grp,
+                                            const dt_masks_state_t flexi_op);
+/** append a copy of group marker `marker` to `dest` under a fresh id */
+dt_masks_point_group_t *dt_masks_group_copy_marker(GList *forms,
+                                                   dt_masks_form_t *dest,
+                                                   const dt_masks_point_group_t *marker);
+/** convert a classic group, and the classic groups nested in it, into flexi
+    groups, each holding one marker and folding its members in order with one
+    operator (dev-doc/masks_data_model.md). Where classic's operator
+    changes along a list, what comes before becomes the first member of a
+    new group; the last one keeps `grp`'s id. The members become plain
+    elements, keeping their own opacity and inversion: the classic fold
+    cannot read the result. A nested group converted here is replaced by its
+    own members wherever that renders the same mask; a flexi-authored one is
+    left as it is. A nested group the mask still holds twice gets a copy for
+    each reference past the first, so a group has one parent within a mask.
+    `roots` holds the id of every group a module renders as its mask, or is
+    NULL: a nested group one of them names is shared, so the settings of the
+    reference to it stay on that reference. TRUE if anything changed */
+gboolean dt_masks_group_mark_classic_runs(GList **forms,
+                                          dt_masks_form_t *grp,
+                                          GHashTable *roots);
+/** make the tree of flexi group `grp` shallower where that renders the same
+    mask: empty nested groups go, a nested group folding with its holder's
+    operator is replaced by its members, a group applying nothing to its one
+    member by that member, and so on. A group with a name, or settings that
+    change its result, stays, and one another module renders as its mask
+    keeps its own settings. TRUE if anything changed */
+gboolean dt_masks_group_simplify(GList *forms, dt_masks_form_t *grp);
+/** the list node of point `id` of the mask `root`, a member or a marker, at
+    any depth. `*owner`, when given, is set to the group form whose list holds
+    it. NULL if none does */
+GList *dt_masks_group_find_node(GList *forms,
+                                dt_masks_form_t *root,
+                                const dt_mask_id_t id,
+                                dt_masks_form_t **owner);
+/** the same for point `pt` itself, which is only compared. A mask can hold a
+    shape twice, and this finds that reference, not the first with its id */
+GList *dt_masks_group_find_point(GList *forms,
+                                 dt_masks_form_t *root,
+                                 const dt_masks_point_group_t *pt,
+                                 dt_masks_form_t **owner);
+/** called by dt_masks_group_walk for each point, with its form (NULL for a
+    marker, or an id `forms` does not hold) and the group whose list holds it.
+    TRUE stops the walk */
+typedef gboolean (*dt_masks_group_visit_t)(const dt_masks_point_group_t *pt,
+                                           const dt_masks_form_t *form,
+                                           const dt_masks_form_t *owner,
+                                           void *data);
+/** visit every point of the mask `grp`, markers included, in list order and
+    at any depth: a nested group's points come right after its reference. A
+    group listing itself is not followed, nor a tree deeper than
+    DT_MASKS_NESTING_MAX. TRUE if `visit` stopped the walk */
+gboolean dt_masks_group_walk(GList *forms,
+                             const dt_masks_form_t *grp,
+                             dt_masks_group_visit_t visit,
+                             void *data);
+/** the first raster element in the mask `grp`, nested groups included, that
+    reads a mask of `source`: mask `id`, or any of its masks with `any_id`.
+    NULL if there is none */
+const struct dt_masks_point_raster_t *dt_masks_group_find_raster_of(GList *forms,
+                                                                    const dt_masks_form_t *grp,
+                                                                    const dt_iop_module_t *source,
+                                                                    const dt_mask_id_t id,
+                                                                    const gboolean any_id);
 dt_masks_point_group_t *dt_masks_group_add_form(dt_masks_form_t *grp,
                                                 const dt_masks_form_t *form);
 
-void dt_masks_iop_value_changed_callback(GtkWidget *widget,
-                                         struct dt_iop_module_t *module);
 dt_masks_edit_mode_t dt_masks_get_edit_mode(void);
 void dt_masks_set_edit_mode(struct dt_iop_module_t *module,
                             const dt_masks_edit_mode_t value);
 void dt_masks_set_edit_mode_single_form(struct dt_iop_module_t *module,
                                         const dt_mask_id_t formid,
                                         const dt_masks_edit_mode_t value);
+// restrict canvas editing to `formids` (solo edit): only their outlines and
+// handles can be edited, while the whole mask still renders
+void dt_masks_set_edit_mode_forms(struct dt_iop_module_t *module,
+                                  GList *formids,
+                                  const dt_masks_edit_mode_t value);
 void dt_masks_iop_update(struct dt_iop_module_t *module);
-void dt_masks_iop_combo_populate(GtkWidget *w,
-                                 struct dt_iop_module_t **m);
 void dt_masks_iop_use_same_as(struct dt_iop_module_t *module,
                               struct dt_iop_module_t *src);
 dt_hash_t dt_masks_group_hash(dt_hash_t hash, dt_masks_form_t *form);
@@ -901,14 +1233,40 @@ void dt_masks_form_remove(struct dt_iop_module_t *module,
     NO_MASKID for a shape no group lists yet, one still being created */
 dt_masks_point_group_t *dt_masks_group_entry(const dt_masks_form_t *form,
                                              dt_mask_id_t *parentid);
-float dt_masks_form_change_opacity(dt_masks_form_t *form,
-                                   const dt_imgid_t parentid,
+/** delete a shape, from the canvas or the panel alike: for an element of the
+    module's flexi mask, the same as the panel's delete (see
+    dt_iop_gui_blend_delete_element), otherwise removal from `parentid` */
+void dt_masks_remove_shape(struct dt_iop_module_t *module,
+                           dt_masks_form_t *form,
+                           const dt_mask_id_t parentid);
+/** what dt_masks_remove_shape takes away: an element of the module's flexi
+    mask (the panel's delete), or anything else out of its parent */
+typedef enum dt_masks_remove_target_t
+{
+  DT_MASKS_REMOVE_ELEMENT = 1,
+  DT_MASKS_REMOVE_FROM_PARENT = 2
+} dt_masks_remove_target_t;
+dt_masks_remove_target_t dt_masks_remove_shape_target(const struct dt_iop_module_t *module,
+                                                      const dt_masks_form_t *form,
+                                                      const dt_mask_id_t parentid);
+/** add every element of `src_grp` to `grp`, keeping its operator and opacity:
+    shapes are shared, parametric channels copied. No history item */
+void dt_masks_group_add_members_of(dt_masks_form_t *grp, const dt_masks_form_t *src_grp);
+/** change the opacity of `form` in its parent group `parentid`, by `amount`,
+    clamped to [0, 1]. Returns the opacity it now has, or
+    0 when it has none there to change: it is a group, or no member */
+float dt_masks_form_change_opacity(struct dt_iop_module_t *module,
+                                   dt_masks_form_t *form,
+                                   const dt_mask_id_t parentid,
                                    const float amount);
 void dt_masks_form_move(dt_masks_form_t *grp,
                         const dt_mask_id_t formid,
                         const gboolean up);
 int dt_masks_form_duplicate(dt_develop_t *dev,
                             const dt_mask_id_t formid);
+/** an independent copy of a form under a new id, keeping its name, registered
+    in dev->forms. Records no history */
+dt_mask_id_t dt_masks_form_copy(dt_develop_t *dev, const dt_mask_id_t formid);
 /* returns a duplicate tof form, including the formid */
 dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form);
 /* duplicate the list of forms, replace item in the list with form with the same formid */

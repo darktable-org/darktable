@@ -38,14 +38,13 @@ typedef void(_blend_row_func)(const float *const restrict a, const float *const 
 #define _BLEND_FUNC _BLEND_FUNC_PROTO((a, b, out: 16), (stride))
 
 void dt_develop_blendif_raw_make_mask(dt_dev_pixelpipe_iop_t *piece,
+                                      const dt_develop_blend_params_t *const d,
                                       const float *const restrict a,
                                       const float *const restrict b,
                                       const dt_iop_roi_t *const roi_in,
                                       const dt_iop_roi_t *const roi_out,
                                       float *const restrict mask)
 {
-  const dt_develop_blend_params_t *const d = piece->blendop_data;
-
   if(piece->colors != 1) return;
 
   const int owidth = roi_out->width;

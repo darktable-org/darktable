@@ -26,3 +26,31 @@
 {
    background-color: @header_color_bg;
 }
+
+/* the masks panel, docked: headed like a module (#module-header, see
+   _ui_init_panel_flexi in gui/gtk.c) but in neither #left nor #right, so it
+   is named here to take this variant's header color too */
+#masks-docked-panel #module-header
+{
+  background-color: @header_color;
+}
+
+/* and the same treatment on the corner that faces the canvas: the side it is
+   read from, and the only one of its corners that has an edge to be rounded
+   against. Which side that is follows the panel's dock (.dt_masks_left or
+   .dt_masks_right, applied by _flexi_apply_side_classes in gui/gtk.c), not
+   the theme. The panel, its module-like frame and its header all carry the
+   radius, so none of them squares the corner off for the others */
+#masks-docked-panel.dt_masks_left,
+#masks-docked-panel.dt_masks_left #iop-expander,
+#masks-docked-panel.dt_masks_left #module-header
+{
+  border-top-right-radius: 15px;
+}
+
+#masks-docked-panel.dt_masks_right,
+#masks-docked-panel.dt_masks_right #iop-expander,
+#masks-docked-panel.dt_masks_right #module-header
+{
+  border-top-left-radius: 15px;
+}

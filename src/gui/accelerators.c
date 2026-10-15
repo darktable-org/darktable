@@ -474,8 +474,50 @@ const dt_action_def_t dt_action_def_value
 const dt_action_def_t _action_def_dummy
   = { };
 
+// actions that moved, by the path a shortcut was saved under. Such a shortcut
+// is bound to the new action and saved again under its path. The mask
+// manager went with the flexi masks panel, which took over its controls
+static const struct
+{
+  const gchar *from, *to;
+} _action_moved[] = {
+  { "lib/masks", "lib/masks_flexi_host" },
+  { "lib/masks/shapes/add gradient", "iop/blend/shapes/add gradient" },
+  { "lib/masks/shapes/add path", "iop/blend/shapes/add path" },
+  { "lib/masks/shapes/add ellipse", "iop/blend/shapes/add ellipse" },
+  { "lib/masks/shapes/add circle", "iop/blend/shapes/add circle" },
+  { "lib/masks/shapes/add brush", "iop/blend/shapes/add brush" },
+  { "lib/masks/shapes/add object", "iop/blend/shapes/add AI object" },
+  { "lib/masks/properties/opacity", "iop/blend/properties/opacity" },
+  { "lib/masks/properties/size", "iop/blend/properties/size" },
+  { "lib/masks/properties/hardness", "iop/blend/properties/hardness" },
+  { "lib/masks/properties/feather", "iop/blend/properties/fade-out border" },
+  { "lib/masks/properties/rotation", "iop/blend/properties/rotation" },
+  { "lib/masks/properties/curvature", "iop/blend/properties/curvature" },
+  { "lib/masks/properties/compression", "iop/blend/properties/compression" },
+  { "lib/masks/properties/cleanup", "iop/blend/properties/cleanup" },
+  { "lib/masks/properties/refine mask boundary", "iop/blend/properties/refine mask boundary" },
+  // the brush preference took this path from the AI object's smoothing slider,
+  // being defined after it
+  { "lib/masks/properties/smoothing", "iop/blend/properties/brush smoothing" },
+  { "lib/masks/properties/pressure", "iop/blend/properties/brush pressure" },
+  { "lib/masks/properties/shrink or grow", "iop/blend/properties/shrink or grow" },
+  { "iop/blend/tools/show and edit mask elements", "iop/blend/tools/edit on canvas" },
+  { "iop/blend/mask opacity", "iop/blend/mask brightness" },
+  { "iop/blend/tools/toggle polarity of drawn mask",
+    "iop/blend/masks/invert output of selected group" },
+  { "iop/blend/tools/toggle polarity of raster mask", "iop/blend/masks/invert selected element" },
+};
+
 static dt_action_t *_action_find(const gchar *action_name)
 {
+  for(size_t i = 0; i < G_N_ELEMENTS(_action_moved); i++)
+    if(!strcmp(action_name, _action_moved[i].from))
+    {
+      action_name = _action_moved[i].to;
+      break;
+    }
+
   gchar **path = g_strsplit(action_name, "/", 0);
   for(gchar **cur = path; *cur; cur++)
   {

@@ -189,14 +189,13 @@ static void _blendif_combine_channels(const float *const restrict pixels,
 }
 
 void dt_develop_blendif_lab_make_mask(dt_dev_pixelpipe_iop_t *piece,
+                                      const dt_develop_blend_params_t *const d,
                                       const float *const restrict a,
                                       const float *const restrict b,
                                       const struct dt_iop_roi_t *const roi_in,
                                       const struct dt_iop_roi_t *const roi_out,
                                       float *const restrict mask)
 {
-  const dt_develop_blend_params_t *const d = piece->blendop_data;
-
   if(piece->colors != DT_BLENDIF_LAB_CH) return;
 
   const int xoffs = roi_out->x - roi_in->x;

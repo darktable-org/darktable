@@ -26,6 +26,7 @@
 #include "gradientslider.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
+#include "bauhaus/bauhaus.h"
 
 #define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MAX 50
 #define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MIN 10
@@ -124,6 +125,115 @@ static inline gboolean _test_if_marker_is_upper_or_down(const gint marker,
     return TRUE; // must be a DOUBLE
 }
 
+// a gradient slider is sized by three independent css numbers, so that a
+// theme can retune any one of them without the others moving:
+//   1. min-height on the widget itself -- the whole thing
+//   2. min-height on its gslider-bar node -- the colored bar, centered in it
+//   3. min-height on its gslider-marker node -- the handles, which are
+//      always drawn flush with the widget's top and bottom edge
+// shrinking (2) while (1) stays put therefore parks the handles further off
+// the bar, and growing it closes the gap. 0 (the default for both parts)
+// means "unset": the bar fills the widget but for a pixel of breathing room,
+// and the marker matches a bauhaus slider's indicator so the two families of
+// slider read alike.
+//
+// the two parts are css child nodes of the widget, so a theme writes
+// `<selector> gslider-bar { min-height: 5px; }`, and the widget's own
+// selectors, which size the whole control, do not size a part
+#define GRADIENT_SLIDER_NODE_BAR "gslider-bar"
+#define GRADIENT_SLIDER_NODE_MARKER "gslider-marker"
+
+// min-height of a named css child node of the widget
+static int _css_part_height(GtkWidget *widget,
+                            const char *node_name)
+{
+  GtkWidgetPath *path = gtk_widget_path_copy(gtk_widget_get_path(widget));
+  const gint pos = gtk_widget_path_append_type(path, G_TYPE_NONE);
+  gtk_widget_path_iter_set_object_name(path, pos, node_name);
+
+  GtkStyleContext *ctx = gtk_style_context_new();
+  gtk_style_context_set_screen(ctx, gtk_widget_get_screen(widget));
+  gtk_style_context_set_path(ctx, path);
+
+  gint height = 0;
+  gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "min-height", &height, NULL);
+
+  g_object_unref(ctx);
+  gtk_widget_path_unref(path);
+  return MAX(height, 0);
+}
+
+static void _update_css_metrics(GtkWidget *widget)
+{
+  GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
+  if(gslider->css_metrics_valid) return;
+
+  gslider->css_bar_height = _css_part_height(widget, GRADIENT_SLIDER_NODE_BAR);
+  gslider->css_marker_height = _css_part_height(widget, GRADIENT_SLIDER_NODE_MARKER);
+  gslider->css_metrics_valid = TRUE;
+}
+
+static void _gradient_slider_style_updated(GtkWidget *widget,
+                                           gpointer user_data)
+{
+  DTGTK_GRADIENT_SLIDER(widget)->css_metrics_valid = FALSE;
+}
+
+static inline double _marker_border_width(void)
+{
+  return DT_PIXEL_APPLY_DPI(1.0);
+}
+
+static inline dt_bauhaus_marker_shape_t _marker_shape(void)
+{
+  const dt_bauhaus_t *bh = darktable.bauhaus;
+  return bh ? bh->marker_shape : DT_BAUHAUS_MARKER_TRIANGLE;
+}
+
+// vertical extent of a marker of radius r: a triangle reaches r one way and
+// half that the other, every other shape r both ways
+static inline double _marker_height_factor(const dt_bauhaus_marker_shape_t shape)
+{
+  return (shape == DT_BAUHAUS_MARKER_TRIANGLE) ? 1.5 : 2.0;
+}
+
+// one size for every handle, whatever its state: the selected one is picked
+// out by color alone, the way a bauhaus slider's indicator is. a handle that
+// grew under the pointer would shift its own outer edge off the widget
+// border and nudge the neighboring positions' apparent spacing
+static double _marker_radius(GtkWidget *widget,
+                             const dt_bauhaus_marker_shape_t shape)
+{
+  _update_css_metrics(widget);
+  const gint css = DTGTK_GRADIENT_SLIDER(widget)->css_marker_height;
+  const dt_bauhaus_t *bh = darktable.bauhaus;
+  return css > 0
+    ? css / _marker_height_factor(shape)
+    : ((bh && bh->marker_size > 0.0f) ? bh->marker_size : DT_PIXEL_APPLY_DPI(4.0));
+}
+
+static inline double _marker_half_width(const double r,
+                                        const dt_bauhaus_marker_shape_t shape)
+{
+  return (shape == DT_BAUHAUS_MARKER_TRIANGLE) ? 0.866025404 * r
+       : (shape == DT_BAUHAUS_MARKER_BAR)      ? 0.2 * r
+                                               : r; // circle and diamond
+}
+
+// how far a marker of radius r reaches beyond the edge it is drawn against:
+// the tip of a triangle points inwards, so only its base sits on the edge
+static inline double _marker_outer_extent(const double r,
+                                          const dt_bauhaus_marker_shape_t shape)
+{
+  return (shape == DT_BAUHAUS_MARKER_TRIANGLE) ? 0.5 * r : r;
+}
+
+static inline int _marker_h_padding(GtkWidget *widget,
+                                    const dt_bauhaus_marker_shape_t shape)
+{
+  return ceil(_marker_half_width(_marker_radius(widget, shape), shape));
+}
+
 static inline gdouble _screen_to_scale(GtkWidget *widget,
                                        const gint screen)
 {
@@ -167,41 +277,46 @@ static inline void _clamp_marker(GtkDarktableGradientSlider *gslider,
   gslider->position[selected] = CLAMP(gslider->position[selected], min, max);
 }
 
-static gint _get_active_marker_internal(GtkWidget *widget,
-                                        const gdouble x,
-                                        const gboolean up)
-{
-  GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
-  gint lselected = -1;
-  const gdouble newposition = _get_position_from_screen(widget, x);
-
-  assert(gslider->positions > 0);
-
-  for(int k = 0; k < gslider->positions; k++)
-    if(_test_if_marker_is_upper_or_down(gslider->marker[k], up))
-    {
-      if(lselected < 0) lselected = k;
-      if(fabs(newposition - gslider->position[k]) < fabs(newposition - gslider->position[lselected]))
-        lselected = k;
-    }
-
-  return lselected;
-}
-
 static gint _get_active_marker_from_screen(GtkWidget *widget,
                                            const gdouble x,
                                            const gdouble y)
 {
+  GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
+  assert(gslider->positions > 0);
+
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
+  const gboolean up = (y <= allocation.height / 2.f);
 
-  gboolean up = (y <= allocation.height / 2.f);
-  gint lselected = _get_active_marker_internal(widget, x, up);
-  if(lselected < 0) lselected = _get_active_marker_internal(widget, x, !up);
+  // only the markers on the pointer's half (upper or lower) are eligible, so
+  // that an upper and a lower marker at the same place (a zero-width feather)
+  // can each be picked. A full-height marker counts on both halves; with none
+  // on the pointer's half, the closest marker overall wins
+  const gdouble newposition = _get_position_from_screen(widget, x);
 
-  assert(lselected >= 0);
+  gint best = -1;
+  gdouble bestdx = 0;
+  gint best_any = 0;
+  gdouble bestdx_any = fabs(newposition - gslider->position[0]);
 
-  return lselected;
+  for(int k = 0; k < gslider->positions; k++)
+  {
+    const gdouble dx = fabs(newposition - gslider->position[k]);
+    if(dx < bestdx_any - 1e-9)
+    {
+      bestdx_any = dx;
+      best_any = k;
+    }
+
+    if(_test_if_marker_is_upper_or_down(gslider->marker[k], up)
+       && (best == -1 || dx < bestdx - 1e-9))
+    {
+      best = k;
+      bestdx = dx;
+    }
+  }
+
+  return (best >= 0) ? best : best_any;
 }
 
 static gdouble _slider_move(GtkWidget *widget,
@@ -380,6 +495,11 @@ static void _gradient_slider_button_pressed(GtkGestureSingle *gesture,
       gtk_widget_queue_draw(widget);
     }
   }
+
+  // claim the sequence, or an ancestor's gesture (the scrolled panel the
+  // slider is in) claims it on the first move, and this gesture's cancel
+  // (_gesture_cancel in gui/gtk.c) ends the drag there
+  dt_gui_claim(gesture);
 }
 
 static void _gradient_slider_motion(GtkEventControllerMotion *controller,
@@ -405,7 +525,12 @@ static void _gradient_slider_motion(GtkEventControllerMotion *controller,
   }
   else
   {
-    gslider->active = _get_active_marker_from_screen(widget, x, y);
+    const gint active = _get_active_marker_from_screen(widget, x, y);
+    if(active != gslider->active)
+    {
+      gslider->active = active;
+      gtk_widget_queue_draw(widget);
+    }
   }
 
   if(gslider->selected != -1) gtk_widget_grab_focus(widget);
@@ -438,6 +563,8 @@ static void _gradient_slider_button_released(GtkGestureSingle *gesture,
     gslider->timeout_handle = 0;
     g_signal_emit_by_name(G_OBJECT(widget), "value-changed");
   }
+
+  dt_gui_claim(gesture);
 }
 
 static void _gradient_slider_scroll(GtkEventControllerScroll *controller,
@@ -550,6 +677,10 @@ static void _gradient_slider_init(GtkDarktableGradientSlider *gslider)
                           | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
                         _gradient_slider_scroll, NULL);
   dt_gui_connect_key(widget, _gradient_slider_key_pressed, NULL);
+
+  gslider->css_metrics_valid = FALSE;
+  g_signal_connect(G_OBJECT(widget), "style-updated",
+                   G_CALLBACK(_gradient_slider_style_updated), NULL);
 }
 
 static void _gradient_slider_get_preferred_height(GtkWidget *widget,
@@ -587,8 +718,10 @@ static void _gradient_slider_get_preferred_width(GtkWidget *widget,
   gtk_style_context_get_padding(context, state, &padding);
   *min_width = *nat_width = css_min_width + padding.left + padding.right + border.left + border.right + margin.left + margin.right;
 
-  DTGTK_GRADIENT_SLIDER(widget)->margin_left = padding.left + border.left + margin.left;
-  DTGTK_GRADIENT_SLIDER(widget)->margin_right = padding.right + border.right + margin.right;
+  const int hpad = _marker_h_padding(widget, _marker_shape());
+
+  DTGTK_GRADIENT_SLIDER(widget)->margin_left = padding.left + border.left + margin.left + hpad;
+  DTGTK_GRADIENT_SLIDER(widget)->margin_right = padding.right + border.right + margin.right + hpad;
 }
 
 static void _gradient_slider_dispose(GObject *object)
@@ -608,6 +741,77 @@ static void _gradient_slider_dispose(GObject *object)
   gslider->colors = NULL;
 
   G_OBJECT_CLASS(parent_class)->dispose(object);
+}
+
+static void _draw_gradient_marker_shape(cairo_t *cr,
+                                        const double vx,
+                                        const double cy,
+                                        const double r,
+                                        const gboolean is_upper,
+                                        const dt_bauhaus_marker_shape_t shape)
+{
+  if(shape == DT_BAUHAUS_MARKER_CIRCLE)
+  {
+    cairo_arc(cr, vx, cy, r, 0, 2.0 * M_PI);
+  }
+  else if(shape == DT_BAUHAUS_MARKER_DIAMOND)
+  {
+    cairo_move_to(cr, vx, cy - r);
+    cairo_line_to(cr, vx - r, cy);
+    cairo_line_to(cr, vx, cy + r);
+    cairo_line_to(cr, vx + r, cy);
+  }
+  else if(shape == DT_BAUHAUS_MARKER_BAR)
+  {
+    cairo_rectangle(cr, vx - r * 0.2, cy - r, r * 0.4, 2.0 * r);
+  }
+  else
+  {
+    // DT_BAUHAUS_MARKER_TRIANGLE (default)
+    const double sin_r = 0.866025404 * r;
+    const double cos_r = 0.5 * r;
+    if(is_upper)
+    {
+      cairo_move_to(cr, vx, cy + r);
+      cairo_line_to(cr, vx - sin_r, cy - cos_r);
+      cairo_line_to(cr, vx + sin_r, cy - cos_r);
+    }
+    else
+    {
+      cairo_move_to(cr, vx, cy - r);
+      cairo_line_to(cr, vx - sin_r, cy + cos_r);
+      cairo_line_to(cr, vx + sin_r, cy + cos_r);
+    }
+  }
+  cairo_close_path(cr);
+}
+
+// the two marker styles are each other's negative: one is filled with the
+// foreground color and outlined in the background one, the other the way
+// round. both are the same silhouette, and the outline is drawn *inside* it
+// (stroked at twice the width, clipped to the shape, so half the stroke
+// lands within the edge), so neither style grows the marker beyond r -- an
+// outline stroked around the path would make the handle read larger than
+// every other slider's indicator.
+static void _draw_gradient_marker(cairo_t *cr,
+                                  const double vx,
+                                  const double cy,
+                                  const double r,
+                                  const gboolean is_upper,
+                                  const dt_bauhaus_marker_shape_t shape,
+                                  const GdkRGBA *fill,
+                                  const GdkRGBA *border,
+                                  const double border_width)
+{
+  cairo_save(cr);
+  _draw_gradient_marker_shape(cr, vx, cy, r, is_upper, shape);
+  cairo_set_source_rgba(cr, fill->red, fill->green, fill->blue, fill->alpha);
+  cairo_fill_preserve(cr);
+  cairo_clip_preserve(cr);
+  cairo_set_source_rgba(cr, border->red, border->green, border->blue, border->alpha);
+  cairo_set_line_width(cr, 2.0 * border_width);
+  cairo_stroke(cr);
+  cairo_restore(cr);
 }
 
 static gboolean _gradient_slider_draw(GtkWidget *widget,
@@ -645,13 +849,45 @@ static gboolean _gradient_slider_draw(GtkWidget *widget,
   starty += padding.top + border.top;
   cwidth -= padding.left + padding.right + border.left + border.right;
   cheight -= padding.top + padding.bottom + border.top + border.bottom;
-  const int y1 = round(0.3f * cheight);
-  const int gheight = cheight - 2 * y1;
+
+  const dt_bauhaus_marker_shape_t shape = _marker_shape();
+  const double marker_border_width = _marker_border_width();
+  const int hpad = _marker_h_padding(widget, shape);
+
+  // the two edges of a range slider are told apart by inverting one pair of
+  // theme colors rather than by size: the range handles are filled with the
+  // foreground and outlined in the background, the feather ones the other
+  // way round. a theme that defines neither falls back to the widget's own
+  // css color, dimmed while idle, over black.
+  GdkRGBA c_fg, c_fg_hover, c_bg;
+  if(!gtk_style_context_lookup_color(context, "gslider_marker_fg", &c_fg))
+    c_fg = (GdkRGBA){ color.red * 0.85, color.green * 0.85, color.blue * 0.85, 1.0 };
+  if(!gtk_style_context_lookup_color(context, "gslider_marker_fg_hover", &c_fg_hover))
+    c_fg_hover = color;
+  if(!gtk_style_context_lookup_color(context, "gslider_marker_bg", &c_bg))
+    c_bg = (GdkRGBA){ 0.0, 0.0, 0.0, 1.0 };
+
+  gslider->margin_left = padding.left + border.left + margin.left + hpad;
+  gslider->margin_right = padding.right + border.right + margin.right + hpad;
+
+  const int gx = startx + hpad;
+  const int gw = cwidth - 2 * hpad;
+
+  // the bar takes the height css gives it, centered in the widget, and the
+  // markers below sit against the widget's edges, not the bar's: a theme sets
+  // the gap between them with the two heights. Unset (0), the bar fills the
+  // widget but for a pixel top and bottom
+  _update_css_metrics(widget);
+  const int y1 = DT_PIXEL_APPLY_DPI(1);
+  const int gheight = CLAMP(gslider->css_bar_height > 0
+                            ? gslider->css_bar_height
+                            : cheight - 2 * y1, 1, cheight);
+  const int gtop = starty + (cheight - gheight) / 2;
 
   // First build the cairo gradient and then fill the gradient
   if(gslider->colors)
   {
-    cairo_pattern_t *gradient = cairo_pattern_create_linear(0, 0, cwidth, 0);
+    cairo_pattern_t *gradient = cairo_pattern_create_linear(0, 0, gw, 0);
     for(GList *current = gslider->colors; current; current = g_list_next(current))
     {
       _gradient_slider_stop_t *stop = (_gradient_slider_stop_t *)current->data;
@@ -662,12 +898,13 @@ static gboolean _gradient_slider_draw(GtkWidget *widget,
     {
       cairo_set_line_width(cr, 0.1);
       cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-      cairo_translate(cr, 0, starty);
+      cairo_translate(cr, gx, gtop);
       cairo_set_source(cr, gradient);
-      cairo_rectangle(cr, startx, y1, cwidth, gheight);
+      cairo_rectangle(cr, 0, 0, gw, gheight);
       cairo_fill(cr);
       cairo_stroke(cr);
       cairo_pattern_destroy(gradient);
+      cairo_translate(cr, -gx, -gtop);
     }
   }
 
@@ -683,45 +920,107 @@ static gboolean _gradient_slider_draw(GtkWidget *widget,
 
     cairo_set_source_rgba(cr, color.red, color.green, color.blue, 0.33);
 
-    cairo_rectangle(cr, vx_min, y1, fmax((float)vx_max - vx_min, 0.0f), gheight);
+    cairo_rectangle(cr, vx_min, gtop, fmax((float)vx_max - vx_min, 0.0f), gheight);
     cairo_fill(cr);
 
     cairo_set_source_rgba(cr, color.red, color.green, color.blue, 1.0);
 
-    cairo_move_to(cr, vx_avg, y1);
+    cairo_move_to(cr, vx_avg, gtop);
     cairo_rel_line_to(cr, 0, gheight);
     cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
     cairo_set_line_width(cr, 1.0);
     cairo_stroke(cr);
   }
 
+  // A 4-point open/filled/filled/open marker set is the "range + feather"
+  // convention (parametric blendif channels): paint the feather zones
+  // directly on the gradient bar, white and fading from the open (feather)
+  // point to full opacity at the neighboring filled (range) point, plus a
+  // plain outline around the flat, fully-selected zone between the two
+  // filled points. The open marker's own up/down bit decides which edge
+  // (top or bottom) each wedge's point sits on, so this follows polarity
+  // (the "invert" toggle swaps that bit) instead of assuming a fixed orientation.
+  if(gslider->positions == 4
+     && !(gslider->marker[0] & 0x01) && (gslider->marker[1] & 0x01)
+     && (gslider->marker[2] & 0x01) && !(gslider->marker[3] & 0x01))
+  {
+    const int x0 = _scale_to_screen(widget, gslider->position[0]);
+    const int x1 = _scale_to_screen(widget, gslider->position[1]);
+    const int x2 = _scale_to_screen(widget, gslider->position[2]);
+    const int x3 = _scale_to_screen(widget, gslider->position[3]);
+    const int top = gtop;
+    const int bottom = gtop + gheight;
+
+    cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
+    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.55);
+
+    const int apex0 = (gslider->marker[0] & 0x04) ? top : bottom;
+    cairo_move_to(cr, x0, apex0);
+    cairo_line_to(cr, x1, top);
+    cairo_line_to(cr, x1, bottom);
+    cairo_close_path(cr);
+    cairo_fill(cr);
+
+    const int apex3 = (gslider->marker[3] & 0x04) ? top : bottom;
+    cairo_move_to(cr, x3, apex3);
+    cairo_line_to(cr, x2, top);
+    cairo_line_to(cr, x2, bottom);
+    cairo_close_path(cr);
+    cairo_fill(cr);
+
+    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.8);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
+    // marker[0]'s up bit is the polarity, as for the wedges: inverted, the
+    // selection is everything outside [x1, x2], so the two outer bands get
+    // the outline instead of the inner one
+    if(gslider->marker[0] & 0x04)
+    {
+      cairo_rectangle(cr, gx + 0.5, top + 0.5, fmax(x1 - gx - 1, 0), fmax(bottom - top - 1, 0));
+      cairo_stroke(cr);
+      cairo_rectangle(cr, x2 + 0.5, top + 0.5, fmax(gx + gw - x2 - 1, 0), fmax(bottom - top - 1, 0));
+      cairo_stroke(cr);
+    }
+    else
+    {
+      cairo_rectangle(cr, x1 + 0.5, top + 0.5, fmax(x2 - x1 - 1, 0), fmax(bottom - top - 1, 0));
+      cairo_stroke(cr);
+    }
+  }
+
+  // highlight the marker closest to the pointer (gslider->active, from the
+  // click's hit test on every motion), or the dragged one while dragging, so
+  // that it stays lit when the pointer passes a neighbor, or the pinned one.
+  // Not gslider->selected, which stays set after release for the keyboard
+  // and the scroll wheel
+  const gint hovered_marker = gslider->pinned >= 0 ? gslider->pinned
+                             : gslider->is_dragging ? gslider->selected
+                             : (gslider->is_entered ? gslider->active : -1);
+
+  const double r = _marker_radius(widget, shape);
+  const double outer = _marker_outer_extent(r, shape);
+
   for(int k = 0; k < gslider->positions; k++)
   {
     const int vx = _scale_to_screen(widget, gslider->position[k]);
     const int mk = gslider->marker[k];
-    const int sz = round((mk & (1 << 3)) ? 1.9f * y1 : 1.4f * y1); // big or small marker?
-
-    if(k == gslider->selected && gslider->is_entered) // highlight the active marker
-      cairo_set_source_rgba(cr, color.red, color.green, color.blue, 1.0);
-    else
-      cairo_set_source_rgba(cr, color.red * 0.8, color.green * 0.8, color.blue * 0.8, 1.0);
+    const gboolean hovered = (k == hovered_marker);
+    const gboolean filled = mk & 0x01;
+    const GdkRGBA accent = hovered ? c_fg_hover : c_fg;
+    const GdkRGBA *m_fill = filled ? &accent : &c_bg;
+    const GdkRGBA *m_border = filled ? &c_bg : &accent;
 
     cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
 
-    if(mk & 0x04) /* upper arrow */
+    if(mk & 0x04) /* upper handle, flush with the widget's top edge */
     {
-      if(mk & 0x01) /* filled */
-        dtgtk_cairo_paint_solid_triangle(cr, round(vx - 0.5f * sz), round((float)y1 - 0.55f * sz), sz, sz, CPF_DIRECTION_DOWN, NULL);
-      else
-        dtgtk_cairo_paint_triangle(cr, round(vx - 0.5f * sz), round((float)y1 - 0.55f * sz), sz, sz, CPF_DIRECTION_DOWN, NULL);
+      _draw_gradient_marker(cr, vx, starty + outer, r, TRUE, shape,
+                            m_fill, m_border, marker_border_width);
     }
 
-    if(mk & 0x02) /* lower arrow */
+    if(mk & 0x02) /* lower handle, flush with the widget's bottom edge */
     {
-      if(mk & 0x01) /* filled */
-        dtgtk_cairo_paint_solid_triangle(cr, round(vx - 0.5f * sz), round((float)cheight - y1 - 0.45f * sz), sz, sz, CPF_DIRECTION_UP, NULL);
-      else
-        dtgtk_cairo_paint_triangle(cr, round(vx - 0.5f * sz), round((float)cheight - y1 - 0.45f * sz), sz, sz, CPF_DIRECTION_UP, NULL);
+      _draw_gradient_marker(cr, vx, starty + cheight - outer, r, FALSE, shape,
+                            m_fill, m_border, marker_border_width);
     }
   }
 
@@ -744,6 +1043,7 @@ static void _gradient_slider_set_defaults(GtkDarktableGradientSlider *gslider)
   gslider->timeout_handle = 0;
   gslider->selected = gslider->positions == 1 ? 0 : -1;
   gslider->active = -1;
+  gslider->pinned = -1;
   gslider->scale_callback = _default_linear_scale_callback;
   gslider->is_resettable = FALSE;
   gslider->is_entered = FALSE;
@@ -899,6 +1199,30 @@ void dtgtk_gradient_slider_multivalue_set_value
                                                          value,
                                                          GRADIENT_SLIDER_SET),
                                  0.0, 1.0);
+  gslider->selected = gslider->positions == 1 ? 0 : -1;
+  if(!DT_IN_GUI_UPDATE()) g_signal_emit_by_name(G_OBJECT(gslider),
+                                                  "value-changed");
+  gtk_widget_queue_draw(GTK_WIDGET(gslider));
+}
+
+void dtgtk_gradient_slider_multivalue_set_value_pushing
+  (GtkDarktableGradientSlider *gslider,
+   const gdouble value,
+   const gint pos)
+{
+  g_return_if_fail(gslider != NULL);
+  assert(pos <= gslider->positions);
+
+  const gdouble newpos = CLAMP(gslider->scale_callback((GtkWidget *)gslider,
+                                                        value,
+                                                        GRADIENT_SLIDER_SET),
+                               0.0, 1.0);
+  // _slider_move (FREE_MARKERS branch) only ever pushes the neighbor that
+  // lies on the side newpos is heading towards -- the same direction a mouse
+  // drag would be moving in to reach it.
+  const gint direction = (newpos < gslider->position[pos]) ? MOVE_LEFT : MOVE_RIGHT;
+  _slider_move((GtkWidget *)gslider, pos, newpos, direction);
+
   gslider->selected = gslider->positions == 1 ? 0 : -1;
   if(!DT_IN_GUI_UPDATE()) g_signal_emit_by_name(G_OBJECT(gslider),
                                                   "value-changed");

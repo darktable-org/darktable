@@ -263,6 +263,8 @@ typedef struct dt_iop_module_t
   GtkWidget *instance_name;
   /** this is the module mask indicator, inside header */
   GtkWidget *mask_indicator;
+  /** shown in the header while the mask is locked, click to unlock */
+  GtkWidget *mask_lock_indicator;
   /** expander containing the widget and flag to store expanded state */
   GtkWidget *expander;
   gboolean expanded;
@@ -563,6 +565,7 @@ gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,
 
 /** add/remove mask indicator to iop module header */
 void dt_iop_add_remove_mask_indicator(dt_iop_module_t *module, gboolean add);
+void dt_iop_add_remove_mask_lock_indicator(dt_iop_module_t *module, const gboolean add);
 
 /** Set the trouble message for the module.  If non-empty, also flag
  ** the module as being in trouble; if empty or NULL, clear the

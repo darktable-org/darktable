@@ -203,7 +203,11 @@ void dt_iop_copy_image_roi(float *const __restrict__ out,
   const int dx = roi_out->x - roi_in->x;
 
   // we may copy data per line if data for roi_out are fully available in roi_in
-  if((roi_in->width - dx >= roi_out->width)
+  // a negative offset puts the first requested row or column before the start of
+  // the input buffer, which the checks against its width and height do not catch,
+  // so require both to be non-negative and leave the rest to the slow path
+  if(dx >= 0 && dy >= 0
+      && (roi_in->width - dx >= roi_out->width)
       && (roi_in->height - dy >= roi_out->height))
   {
     const size_t lwidth = sizeof(float) * roi_out->width * ch;

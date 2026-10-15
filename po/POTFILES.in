@@ -1,5 +1,6 @@
 build/bin/conf_gen.h
 build/bin/preferences_gen.h
+build/bin/masks_group_presets_strings.h
 build/bin/styles_string.h
 build/bin/tools/darktable_authors.h
 build/lib/darktable/plugins/introspection_agx.c
