@@ -2888,8 +2888,11 @@ static float _action_process_preview(gpointer target,
         dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_RESTORE,
                          0.0f, 0, -1.0f, -1.0f, TRUE);
         lib->full_preview = FALSE;
-        dt_iop_request_focus(lib->full_preview_last_module);
-        dt_masks_set_edit_mode(dt_dev_gui_module(), lib->full_preview_masks_state);
+        if(lib->full_preview_last_module)
+        {
+          dt_iop_request_focus(lib->full_preview_last_module);
+          dt_masks_set_edit_mode(lib->full_preview_last_module, lib->full_preview_masks_state);
+        }
         dt_dev_invalidate(darktable.develop);
         dt_control_queue_redraw_center();
         dt_control_navigation_redraw();
@@ -2905,26 +2908,27 @@ static float _action_process_preview(gpointer target,
         // we hide all panels
         for(int k = 0; k < DT_UI_PANEL_SIZE; k++)
           dt_ui_panel_show(darktable.gui->ui, k, FALSE, FALSE);
-        // we remember the masks edit state
+
+        // we remember the gui_module and its masks edit state
         dt_iop_module_t *gui_module = dt_dev_gui_module();
+        lib->full_preview_last_module = gui_module;
+        lib->full_preview_masks_state = 0;
         if(gui_module)
         {
           dt_iop_gui_blend_data_t *bd = gui_module->blend_data;
           if(bd) lib->full_preview_masks_state = bd->masks_shown;
+          // we quit the active iop if any
+          dt_iop_request_focus(NULL);
         }
         // we set the zoom values to "fit" after storing previous settings
         dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_FULL_PREVIEW,
                          0.0f, 0, -1.0f, -1.0f, TRUE);
-        // we quit the active iop if any
-        lib->full_preview_last_module = gui_module;
-        dt_iop_request_focus(NULL);
         gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
         dt_dev_invalidate(darktable.develop);
         dt_control_queue_redraw_center();
       }
     }
   }
-
   return (float)lib->full_preview;
 }
 
