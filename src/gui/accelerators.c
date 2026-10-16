@@ -4061,7 +4061,9 @@ static gboolean _shortcut_match(dt_shortcut_t *f,
     f->action = matched_action;
   }
 
-  return f->action != NULL && !f->move;
+  // modifiers that neither the shortcut nor a fallback consumed mean the
+  // combination is unassigned, not the base shortcut pressed carelessly
+  return f->action != NULL && !f->move && !f->mods;
 }
 
 
