@@ -577,6 +577,10 @@ changes (where available).
 - Improved internal stability (more reproducible wavelet denoising and
   haze removal).
 
+- Fixed shortcuts firing when pressed together with modifiers they were
+  not assigned with: ctrl+K, for example, no longer runs the action
+  bound to K, unless a fallback gives the modifier a meaning for it.
+
 ## Lua
 
 ### API Version
