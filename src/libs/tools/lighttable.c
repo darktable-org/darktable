@@ -636,6 +636,7 @@ static void _lib_lighttable_set_zoom(dt_lib_module_t *self, gint zoom)
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), zoom);
   d->current_zoom = zoom;
   d->updating_zoom = FALSE;
+  _set_zoom(self, zoom);
 }
 
 static gint _lib_lighttable_get_zoom(dt_lib_module_t *self)
