@@ -579,6 +579,11 @@ changes (where available).
   on the diagonal' after using 'read exposure from metadata and exposure
   module'.
 
+- Fixed modules with mask feathering guided by the input image falling
+  back to the CPU when processed with OpenCL, whenever the module needs
+  a larger input area than it outputs, for example liquify in a
+  zoomed-in darkroom view.
+
 - Improved internal stability (more reproducible wavelet denoising and
   haze removal).
 

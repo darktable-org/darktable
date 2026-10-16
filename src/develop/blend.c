@@ -1831,7 +1831,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
           if(dev_guide == NULL) goto error;
 
           const size_t origin_1[2] = { dx, dy };
-          err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_guide, CLIMG_ORIGIN, origin_1, region);
+          err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_guide, origin_1, CLIMG_ORIGIN, region);
           if(err != CL_SUCCESS)
           {
             dt_opencl_release_mem_object(dev_guide);
