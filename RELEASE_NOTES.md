@@ -585,6 +585,10 @@ changes (where available).
 - Fixed green tints and color shifts along image edges when using raw
   denoise on X-Trans images, including some downscaled exports.
 
+- Fixed shortcuts firing when pressed together with modifiers they were
+  not assigned with: ctrl+K, for example, no longer runs the action
+  bound to K, unless a fallback gives the modifier a meaning for it.
+
 ## Lua
 
 ### API Version
