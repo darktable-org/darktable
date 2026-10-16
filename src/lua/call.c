@@ -663,7 +663,14 @@ static int gtk_wrap(lua_State*L)
     g_cond_init(&communication.end_cond);
     communication.L = L;
     communication.retval = -1;
-    g_main_context_invoke_full(NULL,G_PRIORITY_HIGH_IDLE, dt_lua_gtk_wrap_callback,&communication, NULL);
+    // g_main_context_invoke_full() runs the callback inline on this thread whenever it
+    // can acquire the default context, which put gtk calls on a Lua worker. queue it
+    // while the gui main loop is serviced; headless, or when the gui thread is joining
+    // workers at shutdown, nothing would dispatch the idle and we would wait forever
+    if(darktable.gui && dt_control_running())
+      g_idle_add_full(G_PRIORITY_HIGH_IDLE, dt_lua_gtk_wrap_callback, &communication, NULL);
+    else
+      g_main_context_invoke_full(NULL,G_PRIORITY_HIGH_IDLE, dt_lua_gtk_wrap_callback,&communication, NULL);
     g_mutex_lock(&communication.end_mutex);
     while(communication.retval == -1)
       g_cond_wait(&communication.end_cond,&communication.end_mutex);
