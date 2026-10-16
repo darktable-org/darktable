@@ -241,9 +241,11 @@ static void test_subpanel_takes_boost_and_opacity_out_of_the_row(void **state)
 
 // selection is the anchor whenever there is one, at both levels -- selecting
 // an element sets the group half too (see _set_form_target), so picking an
-// element anchors its group as well as itself
+// element anchors its group as well as itself. A shape row only has an
+// expander with the properties in the list.
 static void test_auto_expand_anchors_on_the_selection(void **state)
 {
+  dt_conf_set_bool("plugins/darkroom/masks/properties_subpanel", FALSE);
   flexi_build("u{1,2,i{3}}");
   flexi_bd.panel_selected_formid = 2;
   flexi_bd.panel_selected_group_cid = 1;
@@ -268,11 +270,12 @@ static void test_auto_expand_falls_back_to_the_last_expanded(void **state)
   assert_int_equal(dt_masks_model_auto_expand_group_anchor(&flexi_bd), 1);
 }
 
-// a raster mask expands to its opacity slider, so selecting one makes it the
-// anchor like any other element. Its *group* anchors on its own, never
-// consulting the element's kind.
+// with the properties in the list, a raster mask expands to its opacity
+// slider, so selecting one makes it the anchor like any other element. Its
+// *group* anchors on its own, never consulting the element's kind.
 static void test_auto_expand_anchors_on_a_raster_mask(void **state)
 {
+  dt_conf_set_bool("plugins/darkroom/masks/properties_subpanel", FALSE);
   flexi_build("u{1,2}");
   dt_masks_form_t *f = dt_masks_get_from_id(&flexi_dev, 2);
   const dt_masks_type_t saved = f->type;

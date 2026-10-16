@@ -2556,7 +2556,7 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
     _("when enabled, the properties of the selected element or group\n"
       "are shown in a collapsible section of their own, between the\n"
       "mask list and the refinements, instead of expanding in the list.\n"
-      "disabled by default."),
+      "enabled by default."),
     _props_subpanel(), _masks_props_subpanel_toggled)
 
   _MASKS_OPT_CHECK(
