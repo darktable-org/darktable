@@ -432,9 +432,6 @@ typedef struct dt_iop_gui_blend_data_t
   // selected so that the next shape drawn joins it (_stage_new_group)
   GtkWidget *masks_new_op;
   GtkWidget *masks_new_op_box;
-  // the operator the "add group above selected group" shortcut uses: the one
-  // last picked in the add-group menu, not one taken from the selection
-  int masks_new_group_op;
   // the toolbar of every "add to the mask" action, above masks_list_box:
   // add group, the shapes, the parametric channels and import, plus the group
   // layout presets at the top right. It wraps onto two or three rows when the

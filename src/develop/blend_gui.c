@@ -6997,14 +6997,10 @@ static void _soloedit_follow_selection(dt_iop_gui_blend_data_t *bd)
 // the channel-preview mode next to it, so it survives moving between modules;
 // applying it to every module also lets whichever one is showing its panel pick
 // the change up without a further click.
-static void _soloedit_mode_toggled(GtkGestureSingle *gesture,
-                                   gint n_press,
-                                   gdouble x,
-                                   gdouble y,
-                                   dt_iop_module_t *module)
+// flip the mode, for every module's header toggle at once. Shared by a click on
+// the toggle and the "solo edit the selection" command
+static void _soloedit_mode_toggle(void)
 {
-  DT_GUARD_GUI_UPDATE();
-
   const gboolean on = !_soloedit_mode_is_on();
   dt_conf_set_bool(MASKS_SOLOEDIT_MODE_CONF, on);
 
@@ -7026,6 +7022,16 @@ static void _soloedit_mode_toggled(GtkGestureSingle *gesture,
     dt_iop_gui_blend_data_t *bd = ((dt_iop_module_t *)m->data)->blend_data;
     if(bd && bd->masks_list_box) _soloedit_follow_selection(bd);
   }
+}
+
+static void _soloedit_mode_toggled(GtkGestureSingle *gesture,
+                                   gint n_press,
+                                   gdouble x,
+                                   gdouble y,
+                                   dt_iop_module_t *module)
+{
+  DT_GUARD_GUI_UPDATE();
+  _soloedit_mode_toggle();
 }
 
 // lightweight: update only the selected-row border on the existing rows, without
@@ -10039,7 +10045,6 @@ static void _stage_new_group(dt_iop_module_t *module, const int flexi_op)
   }
   bd->panel_selected_formid = INVALID_MASKID;
   bd->panel_selected_group_cid = nid;
-  bd->masks_new_group_op = flexi_op & DT_MASKS_STATE_FLEXI_OP;
   dt_print(DT_DEBUG_MASKS, "[masks] add group %d inside group %d flexi_op=0x%x", nid, cid,
            flexi_op);
   dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
@@ -10116,19 +10121,12 @@ static void _new_shape_op_action(GSimpleAction *action, GVariant *parameter, gpo
   if(module) _stage_new_group(module, g_variant_get_int32(parameter));
 }
 
-// the add-group operator chooser: every operator a group can fold its members
-// with
-static void _new_shape_op_pressed(GtkGestureSingle *gesture,
-                                  const int n_press,
-                                  const double x,
-                                  const double y,
-                                  GtkWidget *btn)
+// build and show the add-group operator chooser: every operator a group can
+// fold its members with. Shared by a click on the "+" button and the "add group
+// in selected group" shortcut
+static void _build_new_group_op_menu(GtkWidget *anchor, dt_iop_module_t *module)
 {
-  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
-  dt_gui_claim(gesture);
-
-  dt_iop_module_t *module = g_object_get_data(G_OBJECT(btn), "module");
-  GActionGroup *action_group = gtk_widget_get_action_group(btn, "masks_new_op");
+  GActionGroup *action_group = gtk_widget_get_action_group(anchor, "masks_new_op");
   if(action_group == NULL)
   {
     GActionEntry action_entries[] =
@@ -10138,14 +10136,25 @@ static void _new_shape_op_pressed(GtkGestureSingle *gesture,
     action_group = G_ACTION_GROUP(g_simple_action_group_new());
     g_action_map_add_action_entries(G_ACTION_MAP(action_group), action_entries,
                                     G_N_ELEMENTS(action_entries), module);
-    gtk_widget_insert_action_group(btn, "masks_new_op", action_group);
+    gtk_widget_insert_action_group(anchor, "masks_new_op", action_group);
     g_object_unref(action_group);
   }
 
   GMenu *menu = _flexi_op_menu_model("masks_new_op.add", -1);
-  darktable.gui->active_popover_menu = dt_gui_popover_menu_from_model(btn, menu);
+  darktable.gui->active_popover_menu = dt_gui_popover_menu_from_model(anchor, menu);
   gtk_popover_popup(GTK_POPOVER(darktable.gui->active_popover_menu));
   g_object_unref(menu);
+}
+
+static void _new_shape_op_pressed(GtkGestureSingle *gesture,
+                                  const int n_press,
+                                  const double x,
+                                  const double y,
+                                  GtkWidget *btn)
+{
+  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
+  dt_gui_claim(gesture);
+  _build_new_group_op_menu(btn, g_object_get_data(G_OBJECT(btn), "module"));
 }
 
 // the group layout presets, which build a whole set of groups at once. They
@@ -10632,10 +10641,10 @@ static void _group_toggle_bypass(dt_iop_module_t *module, dt_mask_id_t cid)
 // flip every member's own inversion bit independently (not a group-wide state
 // to set/clear): ON, OFF, ON becomes OFF, ON, OFF. A one-shot action, not a
 // persistent "group is inverted" mode -- shared by the actions menu's
-// "invert all elements" entry and the "invert selected group" shortcut. Not
-// the same operation as _group_toggle_output_invert below: inverting every
-// member and folding is mathematically different from folding and then
-// inverting the result, for anything but a single-member group (see
+// "invert all elements" entry and the "invert all elements of selected group"
+// shortcut. Not the same operation as _group_toggle_output_invert below:
+// inverting every member and folding is mathematically different from folding
+// and then inverting the result, for anything but a single-member group (see
 // DT_MASKS_STATE_OP_INVERT in masks.h).
 static void _invert_group_members(dt_iop_module_t *module, const dt_mask_id_t cid)
 {
@@ -16325,9 +16334,9 @@ static void _add_raster_mask(dt_iop_module_t *self,
 // They act on the focused module's panel selection, so they have no widget of
 // their own to bind to, and each calls the helper its click handler calls
 // (_invert_element, _invert_group_members, _group_toggle_bypass,
-// _build_flexi_op_menu, _stage_new_group). A command action carries no module,
-// so they act on dt_dev_gui_module(), the one instance whose panel selection
-// means anything
+// _build_flexi_op_menu, _build_new_group_op_menu). A command action carries
+// no module, so they act on dt_dev_gui_module(), the one instance whose panel
+// selection means anything
 
 // the focused module's panel data, NULL without one
 static dt_iop_gui_blend_data_t *_shortcut_target(void)
@@ -16344,10 +16353,17 @@ static dt_mask_id_t _shortcut_selected_group(void)
                                                           : INVALID_MASKID;
 }
 
-static void _shortcut_add_group_above_selected(dt_action_t *action)
+// opens the "+" button's operator chooser, from the button when it is on
+// screen, or else where "change operator of selected group" opens its own
+static void _shortcut_add_group_in_selected(dt_action_t *action)
 {
   dt_iop_gui_blend_data_t *bd = _shortcut_target();
-  if(bd && bd->masks_inited) _stage_new_group(bd->module, bd->masks_new_group_op);
+  if(!bd || !bd->masks_inited) return;
+  GtkWidget *anchor = bd->masks_new_op && gtk_widget_get_mapped(bd->masks_new_op)
+                        ? bd->masks_new_op
+                        : bd->masks_list_box ? GTK_WIDGET(bd->masks_list_box)
+                                             : bd->module->widget;
+  _build_new_group_op_menu(anchor, bd->module);
 }
 
 static void _shortcut_invert_selected_group(dt_action_t *action)
@@ -16369,14 +16385,17 @@ static void _shortcut_invert_selected_element(dt_action_t *action)
     _invert_element(bd->module, bd->panel_selected_formid);
 }
 
+// the header toggle has its own widget action under "blend`tools", but
+// _process_action skips a widget action whose target is invisible
+// (dt_action_widget_invisible in gui/accelerators.c), and the toggle goes with
+// the mask panel when it is hidden, while the mode still acts on the canvas.
+// Flips the mode,
+// not bd->soloedit_formid: solo edit follows the selection, which would undo
+// an isolation set by hand
 static void _shortcut_toggle_soloedit(dt_action_t *action)
 {
   dt_iop_gui_blend_data_t *bd = _shortcut_target();
-  if(!bd || !bd->soloedit_mode) return;
-  // drive the header toggle, not bd->soloedit_formid: solo edit follows the
-  // selection, which would undo an isolation set by hand
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->soloedit_mode),
-                               !_soloedit_mode_is_on());
+  if(bd && bd->soloedit_mode) _soloedit_mode_toggle();
 }
 
 static void _shortcut_change_group_mode(dt_action_t *action)
@@ -16578,19 +16597,19 @@ static void _register_masks_action_shortcuts(void)
 
   dt_action_register(masks, N_("show/hide mask panel"),
                      _shortcut_toggle_masks_panel, 0, 0);
-  dt_action_register(masks, N_("add group above selected group"),
-                     _shortcut_add_group_above_selected, 0, 0);
+  dt_action_register(masks, N_("add group in selected group"),
+                     _shortcut_add_group_in_selected, 0, 0);
   dt_action_register(masks, N_("invert all elements of selected group"),
                      _shortcut_invert_selected_group, 0, 0);
   dt_action_register(masks, N_("invert output of selected group"),
                      _shortcut_invert_selected_group_output, 0, 0);
   dt_action_register(masks, N_("invert selected element"),
                      _shortcut_invert_selected_element, 0, 0);
-  dt_action_register(masks, N_("toggle solo edit"),
+  dt_action_register(masks, N_("solo edit the selection"),
                      _shortcut_toggle_soloedit, 0, 0);
   dt_action_register(masks, N_("change operator of selected group"),
                      _shortcut_change_group_mode, 0, 0);
-  dt_action_register(masks, N_("bypass/resume current group"),
+  dt_action_register(masks, N_("disable/enable selected group"),
                      _shortcut_toggle_group_bypass, 0, 0);
   dt_action_register(masks, N_("preview channel under cursor"),
                      _shortcut_toggle_preview_on_hover, 0, 0);
@@ -16619,9 +16638,6 @@ void dt_iop_gui_init_masks(GtkWidget *blendw, dt_iop_module_t *module)
                                   "(click to pick)"));
     _press_before_widget(dt_gui_connect_click(bd->masks_import_btn, _masks_import_btn_pressed,
                                               NULL, module));
-
-    // default operator for a newly added group
-    bd->masks_new_group_op = DT_MASKS_STATE_UNION;
 
     // ---- masks_toolbar's "add an element" actions (see its field comment in
     // blend.h): add group, shapes, parametric channels and link or copy. The
