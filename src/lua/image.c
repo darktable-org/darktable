@@ -33,6 +33,7 @@
 #include "lua/database.h"
 #include "lua/film.h"
 #include "lua/glist.h"
+#include "lua/metadata.h"
 #include "lua/styles.h"
 #include "lua/tags.h"
 #include "lua/types.h"
@@ -333,6 +334,48 @@ static int metadata_member(lua_State *L)
     releasewriteimage(L, my_image);
     return 0;
   }
+}
+
+// tag name for the (image, script, key) call at stack 1..3; raises a lua
+// error, before any image lock is taken, if the key was never registered
+static char *_script_metadata_tagname(lua_State *L)
+{
+  char *tagname = dt_lua_metadata_script_tagname(L, 2, 3);
+  if(!dt_metadata_get_metadata_by_tagname(tagname))
+  {
+    lua_pushfstring(L, "metadata key '%s' is not registered, call darktable.metadata.register first",
+                    tagname);
+    g_free(tagname);
+    lua_error(L);
+  }
+  return tagname;
+}
+
+static int get_metadata(lua_State *L)
+{
+  char *tagname = _script_metadata_tagname(L);
+  const dt_image_t *my_image = checkreadimage(L, 1);
+  GList *res = dt_metadata_get_lock(my_image->id, tagname, NULL);
+  if(res)
+    lua_pushstring(L, (char *)res->data);
+  else
+    lua_pushstring(L, "");
+  releasereadimage(L, my_image);
+  g_list_free_full(res, g_free);
+  g_free(tagname);
+  return 1;
+}
+
+static int set_metadata(lua_State *L)
+{
+  const char *value = luaL_checkstring(L, 4);
+  char *tagname = _script_metadata_tagname(L);
+  dt_image_t *my_image = checkwriteimage(L, 1);
+  dt_metadata_set(my_image->id, tagname, value, FALSE);
+  dt_image_synch_xmp(my_image->id);
+  releasewriteimage(L, my_image);
+  g_free(tagname);
+  return 0;
 }
 
 static int exif_datetime_taken_member(lua_State *L)
@@ -683,6 +726,12 @@ int dt_lua_init_image(lua_State *L)
   lua_pushcfunction(L, apply_sidecar);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const(L, dt_lua_image_t, "apply_sidecar");
+  lua_pushcfunction(L, get_metadata);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_lua_image_t, "get_metadata");
+  lua_pushcfunction(L, set_metadata);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_lua_image_t, "set_metadata");
   lua_pushcfunction(L, image_tostring);
   dt_lua_type_setmetafield(L,dt_lua_image_t,"__tostring");
 
