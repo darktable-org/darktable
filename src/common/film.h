@@ -57,6 +57,16 @@ dt_filmid_t dt_film_get_id(const char *folder);
 void dt_film_remove(const dt_filmid_t id);
 /** checks if film is empty */
 gboolean dt_film_is_empty(const dt_filmid_t id);
+/** folder of a film roll, or NULL if it does not exist; free with g_free() */
+gchar *dt_film_get_folder(const dt_filmid_t id);
+/** number of images in a film roll */
+uint32_t dt_film_count_images(const dt_filmid_t id);
+/** n-th image (from 0, by id) of a film roll, or NO_IMGID */
+dt_imgid_t dt_film_get_nth_image(const dt_filmid_t id, const int n);
+/** number of film rolls */
+uint32_t dt_film_count(void);
+/** n-th film roll id (from 0, by id), or NO_FILMID */
+dt_filmid_t dt_film_get_nth(const int n);
 /** Creating a new filmroll */
 dt_filmid_t dt_film_new(dt_film_t *film, const char *directory);
 /** removes all empty film rolls. */
