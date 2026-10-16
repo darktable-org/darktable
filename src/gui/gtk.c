@@ -7750,6 +7750,12 @@ PangoFontDescription *dt_gui_get_font(void)
 }
 
 #if !GTK_CHECK_VERSION(4, 0, 0)
+typedef struct dt_popover_tooltip_context_t
+{
+  dt_gui_popover_tooltip_factory_t factory;
+  gpointer user_data;
+} dt_popover_tooltip_context_t;
+
 // the menu a GtkPopoverMenu builds from a model is a GtkStack of GtkBoxes of
 // GtkModelButtons, with no scrolling of its own, so a model with more items
 // than fit on the monitor is simply cut off. wrap each stack page in a
@@ -7876,10 +7882,77 @@ static void _popover_menu_item_buttons(GtkWidget *w, GList **out)
   }
 }
 
+static gboolean _popover_menu_query_tooltip(GtkWidget *widget,
+                                            gint x,
+                                            gint y,
+                                            gboolean keyboard_mode,
+                                            GtkTooltip *tooltip,
+                                            gpointer user_data)
+{
+  (void)x;
+  (void)y;
+  (void)keyboard_mode;
+
+  dt_popover_tooltip_context_t *ctx = (dt_popover_tooltip_context_t *)user_data;
+  const char *tooltip_id = g_object_get_data(G_OBJECT(widget), "dt-popover-tooltip-id");
+  const char *tooltip_text = g_object_get_data(G_OBJECT(widget), "dt-popover-tooltip-text");
+
+  if(ctx && ctx->factory && tooltip_id)
+  {
+    GtkWidget *custom = ctx->factory(tooltip_id, ctx->user_data);
+    if(custom)
+    {
+      gtk_tooltip_set_custom(tooltip, custom);
+      return TRUE;
+    }
+  }
+
+  if(tooltip_text)
+  {
+    gtk_tooltip_set_text(tooltip, tooltip_text);
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+static void _popover_menu_apply_item_tooltip(GtkWidget *button,
+                                             GMenuModel *model,
+                                             const int i,
+                                             dt_popover_tooltip_context_t *ctx)
+{
+  char *tooltip_id = NULL;
+  char *tip = NULL;
+
+  const gboolean has_tooltip_id = g_menu_model_get_item_attribute(model, i, "tooltip-id", "s", &tooltip_id);
+  const gboolean has_tip = g_menu_model_get_item_attribute(model, i, "tooltip", "s", &tip);
+
+  if(has_tooltip_id && ctx && ctx->factory)
+  {
+    gtk_widget_set_has_tooltip(button, TRUE);
+    g_object_set_data_full(G_OBJECT(button), "dt-popover-tooltip-id", tooltip_id, g_free);
+    tooltip_id = NULL;
+    if(has_tip)
+      g_object_set_data_full(G_OBJECT(button), "dt-popover-tooltip-text", tip, g_free);
+    else
+      g_object_set_data(G_OBJECT(button), "dt-popover-tooltip-text", NULL);
+    tip = NULL;
+    g_signal_connect(button, "query-tooltip", G_CALLBACK(_popover_menu_query_tooltip), ctx);
+  }
+  else if(has_tip)
+  {
+    gtk_widget_set_tooltip_text(button, tip);
+  }
+
+  g_free(tooltip_id);
+  g_free(tip);
+}
+
 static void _popover_menu_apply_submenu_tooltips(GMenuModel *model,
                                                  const int i,
                                                  GMenuModel *submenu,
-                                                 GtkStack *stack);
+                                                 GtkStack *stack,
+                                                 dt_popover_tooltip_context_t *ctx);
 
 // apply the "tooltip" attributes of `model` to the buttons of a submenu page,
 // matched by label: GTK3 packs a back button first on such a page, which
@@ -7887,7 +7960,10 @@ static void _popover_menu_apply_submenu_tooltips(GMenuModel *model,
 // item's label (gtkmenusectionbox.c). Callers only set the attribute on the
 // model, so a GTK4 port replaces this walk and nothing else
 // (GTK4 builds a nested popover per submenu, with no stack pages)
-static void _popover_menu_apply_page_tooltips(GMenuModel *model, GList *buttons, GtkStack *stack)
+static void _popover_menu_apply_page_tooltips(GMenuModel *model,
+                                              GList *buttons,
+                                              GtkStack *stack,
+                                              dt_popover_tooltip_context_t *ctx)
 {
   const int n_items = g_menu_model_get_n_items(model);
   for(int i = 0; i < n_items; i++)
@@ -7895,30 +7971,28 @@ static void _popover_menu_apply_page_tooltips(GMenuModel *model, GList *buttons,
     GMenuModel *section = g_menu_model_get_item_link(model, i, G_MENU_LINK_SECTION);
     if(section)
     {
-      _popover_menu_apply_page_tooltips(section, buttons, stack);
+      _popover_menu_apply_page_tooltips(section, buttons, stack, ctx);
       g_object_unref(section);
       continue;
     }
     GMenuModel *submenu = g_menu_model_get_item_link(model, i, G_MENU_LINK_SUBMENU);
     if(submenu)
     {
-      _popover_menu_apply_submenu_tooltips(model, i, submenu, stack);
+      _popover_menu_apply_submenu_tooltips(model, i, submenu, stack, ctx);
       g_object_unref(submenu);
     }
-    char *label = NULL, *tip = NULL;
-    if(g_menu_model_get_item_attribute(model, i, G_MENU_ATTRIBUTE_LABEL, "s", &label)
-       && g_menu_model_get_item_attribute(model, i, "tooltip", "s", &tip))
+    char *label = NULL;
+    if(g_menu_model_get_item_attribute(model, i, G_MENU_ATTRIBUTE_LABEL, "s", &label))
     {
       for(GList *b = buttons; b; b = b->next)
       {
         gchar *text = NULL;
         g_object_get(b->data, "text", &text, NULL);
-        if(!g_strcmp0(text, label)) gtk_widget_set_tooltip_text(GTK_WIDGET(b->data), tip);
+        if(!g_strcmp0(text, label)) _popover_menu_apply_item_tooltip(GTK_WIDGET(b->data), model, i, ctx);
         g_free(text);
       }
     }
     g_free(label);
-    g_free(tip);
   }
 }
 
@@ -7927,7 +8001,8 @@ static void _popover_menu_apply_page_tooltips(GMenuModel *model, GList *buttons,
 static void _popover_menu_apply_submenu_tooltips(GMenuModel *model,
                                                  const int i,
                                                  GMenuModel *submenu,
-                                                 GtkStack *stack)
+                                                 GtkStack *stack,
+                                                 dt_popover_tooltip_context_t *ctx)
 {
   char *label = NULL;
   if(!g_menu_model_get_item_attribute(model, i, G_MENU_ATTRIBUTE_LABEL, "s", &label)) return;
@@ -7936,12 +8011,15 @@ static void _popover_menu_apply_submenu_tooltips(GMenuModel *model,
   if(!page) return;
   GList *buttons = NULL;
   _popover_menu_item_buttons(page, &buttons);
-  _popover_menu_apply_page_tooltips(submenu, buttons, stack);
+  _popover_menu_apply_page_tooltips(submenu, buttons, stack, ctx);
   g_list_free(buttons);
 }
 
 // walk GMenuModel and apply "tooltip" attributes to corresponding GtkModelButton widgets
-static void _popover_menu_apply_tooltips(GMenuModel *model, GtkWidget *box, GtkStack *stack)
+static void _popover_menu_apply_tooltips(GMenuModel *model,
+                                         GtkWidget *box,
+                                         GtkStack *stack,
+                                         dt_popover_tooltip_context_t *ctx)
 {
   if(!model || !box) return;
   GtkWidget *target_box = box;
@@ -7970,7 +8048,7 @@ static void _popover_menu_apply_tooltips(GMenuModel *model, GtkWidget *box, GtkS
         child_iter = child_iter->next;
       if(child_iter)
       {
-        _popover_menu_apply_tooltips(section, GTK_WIDGET(child_iter->data), stack);
+        _popover_menu_apply_tooltips(section, GTK_WIDGET(child_iter->data), stack, ctx);
         child_iter = child_iter->next;
       }
       g_object_unref(section);
@@ -7981,15 +8059,10 @@ static void _popover_menu_apply_tooltips(GMenuModel *model, GtkWidget *box, GtkS
         child_iter = child_iter->next;
       if(child_iter)
       {
-        char *tip = NULL;
-        if(g_menu_model_get_item_attribute(model, i, "tooltip", "s", &tip))
-        {
-          gtk_widget_set_tooltip_text(GTK_WIDGET(child_iter->data), tip);
-          g_free(tip);
-        }
+        _popover_menu_apply_item_tooltip(GTK_WIDGET(child_iter->data), model, i, ctx);
         child_iter = child_iter->next;
       }
-      _popover_menu_apply_submenu_tooltips(model, i, submenu, stack);
+      _popover_menu_apply_submenu_tooltips(model, i, submenu, stack, ctx);
       g_object_unref(submenu);
     }
     else
@@ -7999,12 +8072,7 @@ static void _popover_menu_apply_tooltips(GMenuModel *model, GtkWidget *box, GtkS
       if(child_iter)
       {
         GtkWidget *item_widget = GTK_WIDGET(child_iter->data);
-        char *tip = NULL;
-        if(g_menu_model_get_item_attribute(model, i, "tooltip", "s", &tip))
-        {
-          gtk_widget_set_tooltip_text(item_widget, tip);
-          g_free(tip);
-        }
+        _popover_menu_apply_item_tooltip(item_widget, model, i, ctx);
         child_iter = child_iter->next;
       }
     }
@@ -8012,14 +8080,16 @@ static void _popover_menu_apply_tooltips(GMenuModel *model, GtkWidget *box, GtkS
   g_list_free(children);
 }
 
-static void _popover_menu_set_tooltips(GtkWidget *popover, GMenuModel *model)
+static void _popover_menu_set_tooltips(GtkWidget *popover,
+                                       GMenuModel *model,
+                                       dt_popover_tooltip_context_t *ctx)
 {
   GtkWidget *stack = gtk_bin_get_child(GTK_BIN(popover));
   if(!stack || !GTK_IS_STACK(stack)) return;
   GList *pages = gtk_container_get_children(GTK_CONTAINER(stack));
   if(pages)
   {
-    _popover_menu_apply_tooltips(model, GTK_WIDGET(pages->data), GTK_STACK(stack));
+    _popover_menu_apply_tooltips(model, GTK_WIDGET(pages->data), GTK_STACK(stack), ctx);
     g_list_free(pages);
   }
 }
@@ -8070,19 +8140,39 @@ static void _popover_menu_unique_submenu_labels(GMenuModel *model, GHashTable *s
 
 GtkWidget *dt_gui_popover_menu_from_model(GtkWidget *parent, GMenu *menu)
 {
+  return dt_gui_popover_menu_from_model_full(parent, menu, NULL, NULL);
+}
+
+GtkWidget *dt_gui_popover_menu_from_model_full(GtkWidget *parent,
+                                               GMenu *menu,
+                                               dt_gui_popover_tooltip_factory_t tooltip_factory,
+                                               gpointer tooltip_user_data)
+{
   GtkWidget *popover_menu;
 
 #if !GTK_CHECK_VERSION(4, 0, 0)
+  dt_popover_tooltip_context_t *tooltip_ctx = NULL;
+  if(tooltip_factory)
+  {
+    tooltip_ctx = g_malloc0(sizeof(dt_popover_tooltip_context_t));
+    tooltip_ctx->factory = tooltip_factory;
+    tooltip_ctx->user_data = tooltip_user_data;
+  }
+
   GHashTable *seen = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
   // the popover's own top page
   g_hash_table_add(seen, g_strdup("main"));
   _popover_menu_unique_submenu_labels(G_MENU_MODEL(menu), seen);
   g_hash_table_destroy(seen);
   popover_menu = gtk_popover_new_from_model(parent, G_MENU_MODEL(menu));
+  if(tooltip_ctx)
+    g_object_set_data_full(G_OBJECT(popover_menu), "dt-popover-tooltip-context", tooltip_ctx, g_free);
   _popover_menu_reveal_icons(popover_menu);
-  _popover_menu_set_tooltips(popover_menu, G_MENU_MODEL(menu));
+  _popover_menu_set_tooltips(popover_menu, G_MENU_MODEL(menu), tooltip_ctx);
   _popover_menu_make_scrollable(popover_menu, parent);
 #else
+  (void)tooltip_factory;
+  (void)tooltip_user_data;
   popover_menu = gtk_popover_menu_new_from_model_full(G_MENU_MODEL(menu),
                                                       GTK_POPOVER_MENU_NESTED);
   gtk_widget_set_parent(popover_menu, parent);
