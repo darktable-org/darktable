@@ -1481,7 +1481,7 @@ static cl_int_t _apply_global_distortion_map_cl(const dt_iop_module_t *self,
        kdesc.size = 2;
        k = malloc(sizeof(float) * ((size_t)kdesc.size * kdesc.resolution + 1));
        for(int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
-         k[i] = bicubic(0.5f, (float) i / kdesc.resolution);
+         k[i] = bicubic(-0.5f, (float) i / kdesc.resolution);
        break;
      case DT_INTERPOLATION_LANCZOS2:
        kdesc.size = 2;

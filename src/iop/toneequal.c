@@ -843,10 +843,9 @@ static float gaussian_func(const float radius, const float denominator)
 
 #define DT_TONEEQ_MIN_EV (-8.0f)
 #define DT_TONEEQ_MAX_EV (0.0f)
-#define DT_TONEEQ_USE_LUT TRUE
-#if DT_TONEEQ_USE_LUT
 
-// this is the version currently used, as using a lut gives a
+#ifdef _DARKTABLE_RELEASE
+// this is currently used for release version, as using a lut gives a
 // big performance speedup on some cpus
 __DT_CLONE_TARGETS__
 static inline void apply_toneequalizer(const float *const restrict in,

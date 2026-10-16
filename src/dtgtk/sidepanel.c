@@ -36,10 +36,12 @@ static void dtgtk_side_panel_get_preferred_width(GtkWidget *widget,
   GTK_WIDGET_CLASS(dtgtk_side_panel_parent_class)->get_preferred_width
     (widget, minimum_size, natural_size);
 
-  const int width =
-    dt_ui_panel_get_size(darktable.gui->ui,
-                         strcmp(gtk_widget_get_name(widget), "right")
-                         ? DT_UI_PANEL_LEFT : DT_UI_PANEL_RIGHT);
+  const char *name = gtk_widget_get_name(widget);
+  dt_ui_panel_t p = DT_UI_PANEL_LEFT;
+  if(!strcmp(name, "right")) p = DT_UI_PANEL_RIGHT;
+  else if(!strcmp(name, "masks-docked-panel")) p = DT_UI_PANEL_FLEXI;
+
+  const int width = dt_ui_panel_get_size(darktable.gui->ui, p);
 
   if(width > 10)
     *natural_size = MAX(*minimum_size, width);

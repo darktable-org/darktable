@@ -649,7 +649,6 @@ static void _pop_undo(gpointer user_data,
       dt_masks_set_edit_mode(dev->gui_module, hist->mask_edit_mode);
       darktable.develop->gui_module->request_mask_display =
         hist->request_mask_display;
-      dt_iop_gui_update_blendif(darktable.develop->gui_module);
       dt_iop_gui_blend_data_t *bd = dev->gui_module->blend_data;
       if(bd)
         gtk_toggle_button_set_active
@@ -1004,7 +1003,8 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget,
     {
       gboolean first = TRUE;
 
-      for(const dt_iop_gui_blendif_channel_t *b = bd ? bd->channel : NULL;
+      for(const dt_iop_gui_blendif_channel_t *b =
+            bd ? dt_develop_blendif_channels_for_csp(bd->csp) : NULL;
           b && b->label != NULL;
           b++)
       {
@@ -1342,6 +1342,17 @@ void gui_reset(dt_lib_module_t *self)
     dt_dev_undo_end_record(darktable.develop);
 
     dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
+
+    // the reset removes the focused module's mask; left open, the separate masks
+    // panel would go on offering to edit it. A module still on screen keeps the
+    // focus, so that an undo brings its panel back with the mask. One the group
+    // just hid (active modules) loses it: the group's own focus drop is ignored
+    // inside its gui update (modulegroups.c:1153, imageop.c:2854)
+    dt_iop_module_t *focused = dt_dev_gui_module();
+    if(focused && !(focused->expander && gtk_widget_get_visible(focused->expander)))
+      dt_iop_request_focus(NULL);
+    else
+      dt_iop_gui_blend_masks_panel_fold_unmasked();
 
     dt_control_queue_redraw_center();
   }

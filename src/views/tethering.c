@@ -28,7 +28,6 @@
 
 */
 
-
 #include "common/camera_control.h"
 #include "common/collection.h"
 #include "common/colorspaces.h"
@@ -301,6 +300,8 @@ static void _expose_tethered_mode(dt_view_t *self,
       float *const tmp_f = dt_alloc_align_float((size_t)4 * pw * ph);
       if(tmp_f)
       {
+        const uint32_t splitmix32_1337 = splitmix32(1337);
+        const uint32_t splitmix32_666 = splitmix32(666);
         dt_develop_t *dev = darktable.develop;
         // FIXME: add OpenMP
         for(size_t p = 0; p < (size_t)4 * pw * ph; p += 4)
@@ -308,8 +309,8 @@ static void _expose_tethered_mode(dt_view_t *self,
           uint32_t DT_ALIGNED_ARRAY state[4]
               = { splitmix32(p + 1),
                   splitmix32((p + 1) * (p + 3)),
-                  splitmix32(1337),
-                  splitmix32(666) };
+                  splitmix32_1337,
+                  splitmix32_666 };
 
           xoshiro128plus(state);
           xoshiro128plus(state);

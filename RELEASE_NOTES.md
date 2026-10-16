@@ -99,6 +99,24 @@ changes (where available).
   control over highlights and shadows. Uses edge aware and exposure
   invariant guided filters for its processing.
 
+- A new masks panel replaces the separate drawn, parametric, raster and
+  combined mask modes, and the mask manager. A module's mask is now
+  built in one place from groups of elements: drawn shapes, parametric
+  channels, raster masks from other modules and AI objects can be freely
+  combined and nested. Each group combines its elements with one
+  operator and has its own opacity, inversion and refinement (details,
+  feathering, blur, contrast and brightness), which each element can
+  also have on its own. Elements and groups can be renamed, reordered by
+  drag and drop, disabled, soloed, and a mask can be locked against
+  reset, presets, styles and paste. The panel and the canvas follow each
+  other: hovering or selecting an element in either shows it in the
+  other. The panel can stay in the module's blending section, move to a
+  utility module, or be docked beside the image, and built-in layout
+  presets set up common masks in one click, with notes on how to use
+  them. Shortcuts assigned to the mask manager now drive the same
+  controls in the panel. Existing masks are converted when an edit is
+  opened and render as before.
+
 ## UI/UX Improvements
 
 - The code has received a large set of changes in preparation of the
@@ -502,6 +520,8 @@ changes (where available).
   that the module's effect was applied to in reverse, most visible on
   gradients with a sharp transition.
 
+- Fixed various interpolating issues at top & lest image border.
+
 - Fixed a bug in OpenCL demosaicer leading to slighly increased chroma
   differences compared with CPU code.
 
@@ -533,6 +553,9 @@ changes (where available).
   one, which slightly changed the colors along the right edge of the
   image.
 
+- Fixed raw denoise using pixels of the wrong color near the top
+  corners of some X-Trans images.
+
 - Fixed possible crashes after removing an image that had snapshots
   from the library, while either a snapshot was shown for comparison
   or all ten snapshot slots were in use.
@@ -556,8 +579,20 @@ changes (where available).
   on the diagonal' after using 'read exposure from metadata and exposure
   module'.
 
+- Fixed modules with mask feathering guided by the input image falling
+  back to the CPU when processed with OpenCL, whenever the module needs
+  a larger input area than it outputs, for example liquify in a
+  zoomed-in darkroom view.
+
 - Improved internal stability (more reproducible wavelet denoising and
   haze removal).
+
+- Fixed green tints and color shifts along image edges when using raw
+  denoise on X-Trans images, including some downscaled exports.
+
+- Fixed shortcuts firing when pressed together with modifiers they were
+  not assigned with: ctrl+K, for example, no longer runs the action
+  bound to K, unless a fallback gives the modifier a meaning for it.
 
 ## Lua
 
@@ -587,6 +622,12 @@ changes (where available).
 
 ## Notes
 
+- Masks are converted to the new masks panel's format when an edit is
+  opened, and written back in that format. The conversion is one way:
+  edits saved by this version cannot be read by older versions of
+  darktable with their masks intact. Take a backup before opening
+  edits you may still want to use with an older version.
+
 - When exporting to AVIF, EXR, JPEG XL, or XCF, selecting specific
   metadata (e.g. geo-tag or creator) is not currently possible. For
   AVIF, EXR, JPEG XL, and XCF formats, darktable will not include any
@@ -596,10 +637,10 @@ changes (where available).
 - Starting with release 5.6, macOS versions older than 15.0 are no
   longer supported on Apple Silicon Macs. Intel Macs are no longer supported.
 
-- AI object masks raise the mask format version to 7. An image whose
-  masks this release has written is not readable by darktable 5.6 or
-  earlier: it reports a mask version mismatch and drops every mask on
-  that image, not only the AI object.
+- AI object masks and the new masks panel raise the mask format version
+  to 7. An image whose masks this release has written is not readable by
+  darktable 5.6 or earlier: it reports a mask version mismatch and drops
+  every mask on that image.
 
 ## Changed Dependencies
 

@@ -108,7 +108,16 @@ struct _GtkDarktableGradientSlider
   gboolean is_resettable;
   gboolean do_reset;
   gboolean is_entered;
+  // a marker kept highlighted whatever the pointer does (-1: none), for an
+  // editor opened away from the pointer to show which marker it edits
+  gint pinned;
   gint markers_type;
+  // css-driven geometry, cached because reading it back costs a full
+  // selector match: the bar's height and the marker's height, both 0 until
+  // first read and invalidated on "style-updated". See _css_part_height()
+  gint css_bar_height;
+  gint css_marker_height;
+  gboolean css_metrics_valid;
   guint timeout_handle;
   float (*scale_callback)(GtkWidget*, float, int); // scale callback function
 };
@@ -168,6 +177,10 @@ void dtgtk_gradient_slider_multivalue_set_stop(GtkDarktableGradientSlider *gslid
 gdouble dtgtk_gradient_slider_multivalue_get_value(GtkDarktableGradientSlider *gslider, gint position);
 void dtgtk_gradient_slider_multivalue_get_values(GtkDarktableGradientSlider *gslider, gdouble *values);
 void dtgtk_gradient_slider_multivalue_set_value(GtkDarktableGradientSlider *gslider, gdouble value, gint position);
+/** the same for a FREE_MARKERS slider, but moving a marker past its neighbor
+ *  pushes the neighbor along, as a drag does, instead of leaving the markers
+ *  out of order: for code that sets a value the way a drag would */
+void dtgtk_gradient_slider_multivalue_set_value_pushing(GtkDarktableGradientSlider *gslider, gdouble value, gint position);
 void dtgtk_gradient_slider_multivalue_set_values(GtkDarktableGradientSlider *gslider, gdouble *values);
 gboolean dtgtk_gradient_slider_multivalue_is_dragging(GtkDarktableGradientSlider *gslider);
 

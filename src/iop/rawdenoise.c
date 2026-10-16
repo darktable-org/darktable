@@ -311,6 +311,12 @@ static void wavelet_denoise_xtrans(const float *const restrict in,
   const int width = roi->width;
   const int height = roi->height;
   const size_t size = (size_t)width * height;
+  // regions smaller than a CFA period may lack matching sensels for the border interpolation
+  if(width < 6 || height < 6)
+  {
+    memcpy(out, in, sizeof(float) * size);
+    return;
+  }
   // allocate a buffer for the particular color channel to be denoise; we add two rows to simplify the
   // channel-extraction code (no special case for top/bottom row)
   float *const img = dt_alloc_align_float((size_t)width * (height+2));
@@ -327,13 +333,12 @@ static void wavelet_denoise_xtrans(const float *const restrict in,
     float noise[DT_IOP_RAWDENOISE_BANDS];
     compute_channel_noise(noise, c, data);
 
-    // ensure a defined value for every pixel in the top and bottom rows, even if they are more than
-    // one pixel away from the nearest neighbor of the same color and thus the simple interpolation
-    // used in the following loop does not set them
+    // negative values mark border positions that no matching sensel fills; vstransform() is nonnegative
+    // so these positions can be filled from the completed plane before wavelet filtering
     for(size_t col = 0; col < width; col++)
     {
-      fimg[col] = 0.5f;
-      fimg[(size_t)(height-1)*width + col] = 0.5f;
+      fimg[col] = -1.0f;
+      fimg[(size_t)(height-1)*width + col] = -1.0f;
     }
     // build the plane in one pass, top to bottom: sensels are also copied into the neighboring rows, so
     // the order of the writes decides which value a position keeps; splitting the rows among threads
@@ -381,13 +386,13 @@ static void wavelet_denoise_xtrans(const float *const restrict in,
       if(FCNxtrans(row, 0, xtrans) != c)
       {
         int src = 0;	// fallback is current sensel even if it has the wrong color
-        if(row > 1 && FCNxtrans(row-1, 0, xtrans) == c)
+        if(row > 0 && FCNxtrans(row-1, 0, xtrans) == c)
           src = -width;
         else if(FCNxtrans(row, 1, xtrans) == c)
           src = 1;
-        else if(row > 1 && FCNxtrans(row-1, 1, xtrans) == c)
+        else if(row > 0 && FCNxtrans(row-1, 1, xtrans) == c)
           src = -width + 1;
-        fimgp[0] = vstransform(inp[src]);
+        fimgp[0] = (src == 0 && (row == 0 || row == height-1)) ? -1.0f : vstransform(inp[src]);
       }
       // check the right-most pixel; if it's the desired color and not green, copy it to the neighbors
       if(c != 1 && FCNxtrans(row, width-1, xtrans) == c)
@@ -401,19 +406,27 @@ static void wavelet_denoise_xtrans(const float *const restrict in,
         int src = width-1;	// fallback is current sensel even if it has the wrong color
         if(FCNxtrans(row, width-2, xtrans) == c)
           src = width-2;
-        else if(row > 1 && FCNxtrans(row-1, width-1, xtrans) == c)
+        else if(row > 0 && FCNxtrans(row-1, width-1, xtrans) == c)
           src = -1;
-        else if(row > 1 && FCNxtrans(row-1, width-2, xtrans) == c)
+        else if(row > 0 && FCNxtrans(row-1, width-2, xtrans) == c)
           src = -2;
-        fimgp[width-1] = vstransform(inp[src]);
+        fimgp[width-1] = (src == width-1 && (row == 0 || row == height-1)) ? -1.0f : vstransform(inp[src]);
       }
       else // green right-most pixel in the green plane
       {
         // the loop above stops one column short, so it never writes this sensel into the plane. If the left
         // neighbor is green, the position would keep that neighbor's value. Otherwise it would keep the value
-        // the red pass left there, or the 0.5f placeholder in the top and bottom rows
+        // the red pass left there, or an unset position in the top and bottom rows
         fimgp[width-1] = vstransform(inp[width-1]);
       }
+    }
+
+    // missing neighbors beyond the border leave holes; extend the completed plane one row outward
+    float *const last = fimg + (size_t)(height-1)*width;
+    for(size_t col = 0; col < width; col++)
+    {
+      if(fimg[col] < 0.0f) fimg[col] = fimg[width + col];
+      if(last[col] < 0.0f) last[col] = fimg[(size_t)(height-2)*width + col];
     }
 
     // perform the wavelet decomposition and denoising

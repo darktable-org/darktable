@@ -799,7 +799,7 @@ int dt_masks_pixel_mouse_scrolled(dt_iop_module_t *module,
 {
   if(gui && gui->form_selected && dt_modifier_is(state, GDK_CONTROL_MASK))
   {
-    dt_masks_form_change_opacity(form, parentid, up ? 0.05f : -0.05f);
+    dt_masks_form_change_opacity(module, form, parentid, up ? 0.05f : -0.05f);
     return 1;
   }
   return 0;
@@ -838,8 +838,8 @@ int dt_masks_pixel_button_released(dt_iop_module_t *module,
     gui->edit_mode = DT_MASKS_EDIT_FULL;
   }
 
-  // we remove the shape
-  dt_masks_form_remove(module, dt_masks_get_from_id(dev, parentid), form);
+  // we delete or remove the shape
+  dt_masks_remove_shape(module, form, parentid);
   return 1;
 }
 

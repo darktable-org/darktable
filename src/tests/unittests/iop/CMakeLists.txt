@@ -10,9 +10,14 @@ add_cmocka_test(test_colorin_hsm
                 SOURCES test_colorin_hsm.c
                 LINK_LIBRARIES lib_darktable cmocka)
 
+add_cmocka_test(test_rawdenoise
+                SOURCES test_rawdenoise.c
+                LINK_LIBRARIES lib_darktable cmocka)
+
 # Windows: libs have to be copied next to the executable
 if(WIN32)
     _copy_required_library(test_filmicrgb lib_darktable)
     _copy_required_library(test_lut3d_bounds lib_darktable)
     _copy_required_library(test_colorin_hsm lib_darktable)
+    _copy_required_library(test_rawdenoise lib_darktable)
 endif(WIN32)

@@ -42,6 +42,8 @@ float kmix(global const float *k,
   float flor;
   t = fract(t, &flor);
   int i = (int) flor;
+  // make sure we don't read out of bounds
+  i = min(i, kdesc->size * kdesc->resolution - 1);
   return mix(k[i], k[i+1], t);
 }
 
@@ -103,6 +105,14 @@ warp_kernel (read_only image2d_t in,
   const int2 roi_out_origin = (int2) (roi_out->x,   roi_out->y);
 
   float2 in_pos = convert_float2(pos - roi_in_origin) + warp;
+  const int iwidth = roi_in->width;
+  const int iheight = roi_in->height;
+
+  if(in_pos.x < -1.0f || in_pos.y < -1.0f || in_pos.x >= (float)iwidth || in_pos.y >= (float)iheight)
+  {
+    write_ipixel(out, pos - roi_out_origin, (float4)0.0f);
+    return;
+  }
 
   const int a = kdesc->size;      // half the kernel width
 
@@ -120,12 +130,16 @@ warp_kernel (read_only image2d_t in,
   int2 sample_pos;
   float4 Sxy = (float4) 0.0f;
 
-  // loop over support region (eg. 6x6 pixels for lanczos3)
+  // loop over support region (eg. 6x6 pixels for lanczos3) and mirror at borders
   for (sample_pos.y = 1 - a; sample_pos.y <= a; ++sample_pos.y)
+  {
     for (sample_pos.x = 1 - a; sample_pos.x <= a; ++sample_pos.x)
-      Sxy += read_imagef(in, sampleri, in_pos + convert_float2(sample_pos))
-	      * lk[sample_pos.x].x * lk[sample_pos.y].y;
-
+    {
+      const int sx = clip_mirror((int)in_pos.x + sample_pos.x, iwidth - 1);
+      const int sy = clip_mirror((int)in_pos.y + sample_pos.y, iheight - 1);
+      Sxy += Areadpixel(in, sx, sy) * lk[sample_pos.x].x * lk[sample_pos.y].y;
+    }
+  }
   Sxy = Sxy / (norm.x * norm.y);
   write_ipixel(out, pos - roi_out_origin, Sxy);
 }

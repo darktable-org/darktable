@@ -2222,23 +2222,65 @@ lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const i
     }
   }
 
+  float4 px = (float4)0.0f;
   rx = ppi[0] - roi_in_x;
   ry = ppi[1] - roi_in_y;
-  rx = clamp(rx, 0.0f, (float)(iwidth - 1));
-  ry = clamp(ry, 0.0f, (float)(iheight - 1));
-  pixel.x = read_imagef(in, samplerf, (float2)(rx, ry)).x;
+  if(rx >= -1.0f && ry >= -1.0f && rx < (float)iwidth && ry < (float)iheight)
+  {
+    const float fx = floor(rx);
+    const float fy = floor(ry);
+    const float dx = rx - fx;
+    const float dy = ry - fy;
+
+    const int x0 = clip_mirror((int)fx,     iwidth - 1);
+    const int x1 = clip_mirror((int)fx + 1, iwidth - 1);
+    const int y0 = clip_mirror((int)fy,     iheight - 1);
+    const int y1 = clip_mirror((int)fy + 1, iheight - 1);
+
+    px = (1.0f - dy) * ((1.0f - dx) * Areadpixel(in, x0, y0) + dx * Areadpixel(in, x1, y0))
+                  + dy  * ((1.0f - dx) * Areadpixel(in, x0, y1) + dx * Areadpixel(in, x1, y1));
+    pixel.x = px.x;
+  }
 
   rx = ppi[2] - roi_in_x;
   ry = ppi[3] - roi_in_y;
-  rx = clamp(rx, 0.0f, (float)(iwidth - 1));
-  ry = clamp(ry, 0.0f, (float)(iheight - 1));
-  pixel.yw = read_imagef(in, samplerf, (float2)(rx, ry)).yw;
+  px = (float4)0.0f;
+  if(rx >= -1.0f && ry >= -1.0f && rx < (float)iwidth && ry < (float)iheight)
+  {
+    const float fx = floor(rx);
+    const float fy = floor(ry);
+    const float dx = rx - fx;
+    const float dy = ry - fy;
+
+    const int x0 = clip_mirror((int)fx,     iwidth - 1);
+    const int x1 = clip_mirror((int)fx + 1, iwidth - 1);
+    const int y0 = clip_mirror((int)fy,     iheight - 1);
+    const int y1 = clip_mirror((int)fy + 1, iheight - 1);
+
+    px = (1.0f - dy) * ((1.0f - dx) * Areadpixel(in, x0, y0) + dx * Areadpixel(in, x1, y0))
+                  + dy  * ((1.0f - dx) * Areadpixel(in, x0, y1) + dx * Areadpixel(in, x1, y1));
+    pixel.yw = px.yw;
+  }
 
   rx = ppi[4] - roi_in_x;
   ry = ppi[5] - roi_in_y;
-  rx = clamp(rx, 0.0f, (float)(iwidth - 1));
-  ry = clamp(ry, 0.0f, (float)(iheight - 1));
-  pixel.z = read_imagef(in, samplerf, (float2)(rx, ry)).z;
+  px = (float4)0.0f;
+  if(rx >= -1.0f && ry >= -1.0f && rx < (float)iwidth && ry < (float)iheight)
+  {
+    const float fx = floor(rx);
+    const float fy = floor(ry);
+    const float dx = rx - fx;
+    const float dy = ry - fy;
+
+    const int x0 = clip_mirror((int)fx,     iwidth - 1);
+    const int x1 = clip_mirror((int)fx + 1, iwidth - 1);
+    const int y0 = clip_mirror((int)fy,     iheight - 1);
+    const int y1 = clip_mirror((int)fy + 1, iheight - 1);
+
+    px = (1.0f - dy) * ((1.0f - dx) * Areadpixel(in, x0, y0) + dx * Areadpixel(in, x1, y0))
+                  + dy  * ((1.0f - dx) * Areadpixel(in, x0, y1) + dx * Areadpixel(in, x1, y1));
+    pixel.z = px.z;
+  }
 
   pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
 
@@ -2290,8 +2332,8 @@ lens_distort_bicubic (read_only image2d_t in,
 
   rx = ppi[0] - (float)roi_in_x;
   ry = ppi[1] - (float)roi_in_y;
-  tx = (int)rx;
-  ty = (int)ry;
+  tx = floor(rx);
+  ty = floor(ry);
 
   sum = 0.0f;
   weight = 0.0f;
@@ -2312,8 +2354,8 @@ lens_distort_bicubic (read_only image2d_t in,
 
   rx = ppi[2] - (float)roi_in_x;
   ry = ppi[3] - (float)roi_in_y;
-  tx = (int)rx;
-  ty = (int)ry;
+  tx = floor(rx);
+  ty = floor(ry);
 
   sum2 = (float2)0.0f;
   weight = 0.0f;
@@ -2334,8 +2376,8 @@ lens_distort_bicubic (read_only image2d_t in,
 
   rx = ppi[4] - (float)roi_in_x;
   ry = ppi[5] - (float)roi_in_y;
-  tx = (int)rx;
-  ty = (int)ry;
+  tx = floor(rx);
+  ty = floor(ry);
 
   sum = 0.0f;
   weight = 0.0f;
@@ -2405,8 +2447,8 @@ lens_distort_lanczos2 (read_only image2d_t in,
 
   rx = ppi[0] - (float)roi_in_x;
   ry = ppi[1] - (float)roi_in_y;
-  tx = (int)rx;
-  ty = (int)ry;
+  tx = floor(rx);
+  ty = floor(ry);
 
   sum = 0.0f;
   weight = 0.0f;
@@ -2428,8 +2470,8 @@ lens_distort_lanczos2 (read_only image2d_t in,
 
   rx = ppi[2] - (float)roi_in_x;
   ry = ppi[3] - (float)roi_in_y;
-  tx = (int)rx;
-  ty = (int)ry;
+  tx = floor(rx);
+  ty = floor(ry);
 
   sum2 = (float2)0.0f;
   weight = 0.0f;
@@ -2450,8 +2492,8 @@ lens_distort_lanczos2 (read_only image2d_t in,
 
   rx = ppi[4] - (float)roi_in_x;
   ry = ppi[5] - (float)roi_in_y;
-  tx = (int)rx;
-  ty = (int)ry;
+  tx = floor(rx);
+  ty = floor(ry);
 
   sum = 0.0f;
   weight = 0.0f;
@@ -2513,8 +2555,8 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
 
   rx = ppi[0] - (float)roi_in_x;
   ry = ppi[1] - (float)roi_in_y;
-  tx = (int)rx;
-  ty = (int)ry;
+  tx = floor(rx);
+  ty = floor(ry);
 
   sum = 0.0f;
   weight = 0.0f;
@@ -2535,8 +2577,8 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
 
   rx = ppi[2] - (float)roi_in_x;
   ry = ppi[3] - (float)roi_in_y;
-  tx = (int)rx;
-  ty = (int)ry;
+  tx = floor(rx);
+  ty = floor(ry);
 
   sum2 = (float2)0.0f;
   weight = 0.0f;
@@ -2557,8 +2599,8 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
 
   rx = ppi[4] - (float)roi_in_x;
   ry = ppi[5] - (float)roi_in_y;
-  tx = (int)rx;
-  ty = (int)ry;
+  tx = floor(rx);
+  ty = floor(ry);
 
   sum = 0.0f;
   weight = 0.0f;
@@ -2617,17 +2659,29 @@ ashift_bilinear(read_only image2d_t in, write_only image2d_t out, const int widt
   pin[1] *= in_scale;
   pin[0] -= roi_in.x;
   pin[1] -= roi_in.y;
+  const float rx = pin[0];
+  const float ry = pin[1];
 
-  // get output values by interpolation from input image using fast hardware bilinear interpolation
-  float rx = pin[0];
-  float ry = pin[1];
-  int tx = rx;
-  int ty = ry;
+  /** don't get output values by interpolation from input image using fast hardware bilinear interpolation
+      as that can't mirror and thus doesn't match CPU output.
+      Instead do that manually.
+  */
+  float4 pixel = (float4)0.0f;
+  if(rx >= -1.0f && ry >= -1.0f && rx < (float)iwidth && ry < (float)iheight)
+  {
+    const float fx = floor(rx);
+    const float fy = floor(ry);
+    const float dx = rx - fx;
+    const float dy = ry - fy;
 
-  float4 pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight)
-                ? read_imagef(in, samplerf, (float2)(rx+0.5f, ry+0.5f))
-                : (float4)0.0f;
+    const int x0 = clip_mirror((int)fx,     iwidth - 1);
+    const int x1 = clip_mirror((int)fx + 1, iwidth - 1);
+    const int y0 = clip_mirror((int)fy,     iheight - 1);
+    const int y1 = clip_mirror((int)fy + 1, iheight - 1);
 
+    pixel = (1.0f - dy) * ((1.0f - dx) * Areadpixel(in, x0, y0) + dx * Areadpixel(in, x1, y0))
+                  + dy  * ((1.0f - dx) * Areadpixel(in, x0, y1) + dx * Areadpixel(in, x1, y1));
+  }
   write_ipixel(out, (int2)(x, y), pixel);
 }
 
@@ -2680,8 +2734,8 @@ ashift_bicubic (read_only image2d_t in,
   // get output values by interpolation from input image
   float rx = pin[0];
   float ry = pin[1];
-  int tx = (int)rx;
-  int ty = (int)ry;
+  int tx = floor(rx);
+  int ty = floor(ry);
 
   float4 pixel = (float4)0.0f;
   float weight = 0.0f;
@@ -2699,7 +2753,7 @@ ashift_bicubic (read_only image2d_t in,
     weight += w;
   }
 
-  pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight)
+  pixel = (tx >= -1 && ty >= -1 && tx < iwidth && ty < iheight)
           ? pixel/weight
           : (float4)0.0f;
 
@@ -2756,8 +2810,8 @@ ashift_lanczos2(read_only image2d_t in,
   // get output values by interpolation from input image
   float rx = pin[0];
   float ry = pin[1];
-  int tx = (int)rx;
-  int ty = (int)ry;
+  int tx = floor(rx);
+  int ty = floor(ry);
 
   float4 pixel = (float4)0.0f;
   float weight = 0.0f;
@@ -2775,7 +2829,7 @@ ashift_lanczos2(read_only image2d_t in,
     weight += w;
   }
 
-  pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight)
+  pixel = (tx >= -1 && ty >= -1 && tx < iwidth && ty < iheight)
         ? pixel/weight
         : (float4)0.0f;
 
@@ -2832,26 +2886,27 @@ ashift_lanczos3(read_only image2d_t in,
   // get output values by interpolation from input image
   float rx = pin[0];
   float ry = pin[1];
-  int tx = (int)rx;
-  int ty = (int)ry;
+  int tx = floor(rx);
+  int ty = floor(ry);
 
   float4 pixel = (float4)0.0f;
   float weight = 0.0f;
   for(int jj = 1 - kwidth; jj <= kwidth; jj++)
-    for(int ii= 1 - kwidth; ii <= kwidth; ii++)
   {
-    const int i = tx + ii;
-    const int j = ty + jj;
+    for(int ii= 1 - kwidth; ii <= kwidth; ii++)
+    {
+      const int i = tx + ii;
+      const int j = ty + jj;
 
-    float wx = interpolation_func_lanczos(3, (float)i - rx);
-    float wy = interpolation_func_lanczos(3, (float)j - ry);
-    float w = wx * wy;
+      float wx = interpolation_func_lanczos(3, (float)i - rx);
+      float wy = interpolation_func_lanczos(3, (float)j - ry);
+      float w = wx * wy;
 
-    pixel += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)) * (float4)w;
-    weight += w;
+      pixel += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)) * (float4)w;
+      weight += w;
+    }
   }
-
-  pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight)
+  pixel = (tx >= -1 && ty >= -1 && tx < iwidth && ty < iheight)
           ? pixel/weight
           : (float4)0.0f;
 
