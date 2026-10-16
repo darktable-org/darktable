@@ -25,18 +25,10 @@ typedef struct {
   gpointer user_data;
 } dt_stylemenu_data_t;
 
-typedef void dtgtk_menuitem_activate_callback_fn(GtkMenuItem *menuitem,
-                                                 const dt_stylemenu_data_t *menu_data);
-typedef void dtgtk_menuitem_button_callback_fn(GtkGestureSingle *gesture,
-                                               gint n_press,
-                                               gdouble x,
-                                               gdouble y,
-                                               const dt_stylemenu_data_t *menu_data);
+void dtgtk_stylemenu_free_menu_data();
 
-GtkMenuShell *dtgtk_build_style_menu_hierarchy(gboolean allow_none,
-                                               dtgtk_menuitem_activate_callback_fn *activate_callback,
-                                               dtgtk_menuitem_button_callback_fn *button_callback,
-                                               gpointer user_data);
+GMenu *dtgtk_build_style_menu_hierarchy(gboolean allow_none,
+                                        gpointer user_data);
 
 G_END_DECLS
 
