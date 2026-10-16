@@ -1646,13 +1646,9 @@ static void _style_popupmenu_callback(GtkWidget *w, gpointer user_data)
   }
 
   /* if we got any styles, lets popup menu for selection */
-  GMenu *menu = dtgtk_build_style_menu_hierarchy(TRUE,
-                                                        user_data);
-  if(menu)
+  GtkWidget *popover_menu = dtgtk_build_style_popover_menu(w, TRUE, user_data);
+  if(popover_menu)
   {
-    // popup the menu
-    GtkWidget *popover_menu = dt_gui_popover_menu_from_model(w, menu);
-    g_object_unref(menu);
     gtk_popover_popup(GTK_POPOVER(popover_menu));
   }
   else

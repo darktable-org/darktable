@@ -29,6 +29,9 @@ void dtgtk_stylemenu_free_menu_data();
 
 GMenu *dtgtk_build_style_menu_hierarchy(gboolean allow_none,
                                         gpointer user_data);
+GtkWidget *dtgtk_build_style_popover_menu(GtkWidget *parent,
+                                          gboolean allow_none,
+                                          gpointer user_data);
 
 G_END_DECLS
 

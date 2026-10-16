@@ -31,32 +31,30 @@
 
 static GList *_menu_data_list = NULL;
 
-// static gboolean _styles_tooltip_callback(GtkWidget* self,
-//                                          const gint x,
-//                                          const gint y,
-//                                          const gboolean keyboard_mode,
-//                                          GtkTooltip* tooltip,
-//                                          gpointer user_data)
-// {
-//   gchar *name = (char *)user_data;
-//   dt_develop_t *dev = darktable.develop;
-//   // get the center-view image in darkroom view, or the active act-on image otherwise
-//   const dt_imgid_t imgid = (dev && dt_is_valid_imgid(dev->image_storage.id))
-//     ? dev->image_storage.id : dt_act_on_get_main_image();
-//
-//   if(!dt_is_valid_imgid(imgid))
-//     return FALSE;
-//
-//   // write history to ensure the preview will be done with latest
-//   // development history.
-//   if(dev)
-//     dt_dev_write_history(dev);
-//
-//   GtkWidget *ht = dt_gui_style_content_dialog(name, imgid);
-//
-//   return dt_shortcut_tooltip_callback(self, x, y, keyboard_mode, tooltip, ht);
-// }
+static GtkWidget *_styles_tooltip_factory(const char *tooltip_id,
+                                          gpointer user_data)
+{
+  (void)user_data;
 
+  if(!tooltip_id || !tooltip_id[0]) return NULL;
+
+  dt_develop_t *dev = darktable.develop;
+  // get the center-view image in darkroom view, or the active act-on image otherwise
+  const dt_imgid_t imgid = (dev && dt_is_valid_imgid(dev->image_storage.id))
+    ? dev->image_storage.id : dt_act_on_get_main_image();
+
+  if(!dt_is_valid_imgid(imgid))
+    return NULL;
+
+  // write history to ensure the preview will be done with latest development history
+  if(dev)
+    dt_dev_write_history(dev);
+
+  GtkWidget *tooltip = dt_gui_style_content_dialog((char *)tooltip_id, imgid);
+  if(tooltip)
+    gtk_widget_show_all(tooltip);
+  return tooltip;
+}
 
 static void _free_menu_data(void *data)
 {
@@ -136,26 +134,12 @@ static void _build_style_submenus(GMenu *menu,
     g_menu_item_set_action_and_target_value(mi,
                                             "styles.activate",
                                             g_variant_new("t", (guintptr)menu_data));
+    if(style_name && style_name[0])
+      g_menu_item_set_attribute(mi, "tooltip-id", "s", style_name);
     g_menu_append_item(menu, mi);
     g_object_unref(mi);
   }
-
-  // we've reached the bottom level, so build a final menu item with preview popup
-  // need a tooltip for the signal below to be raised
-  // GtkMenuItem *mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label(split0[0] ? split0 : _("none")));
-  // gtk_menu_shell_append(menu, GTK_WIDGET(mi));
-  // if(style_name && style_name[0]) // don't add tooltip for "none" style
-  // {
-  //   gtk_widget_set_has_tooltip(GTK_WIDGET(mi), TRUE);
-  //   g_signal_connect_data(mi, "query-tooltip",
-  //                         G_CALLBACK(_styles_tooltip_callback),
-  //                         g_strdup(style_name), (GClosureNotify)g_free, 0);
-  //   dt_action_define(&darktable.control->actions_global, "styles", style_name, GTK_WIDGET(mi), NULL);
-  // }
-  // else
-  //   gtk_widget_set_has_tooltip(GTK_WIDGET(mi), FALSE);
 }
-
 
 GMenu *dtgtk_build_style_menu_hierarchy(gboolean allow_none,
                                         gpointer user_data)
@@ -183,6 +167,21 @@ GMenu *dtgtk_build_style_menu_hierarchy(gboolean allow_none,
     g_list_free_full(styles, dt_style_free);
   }
   return menu;
+}
+
+GtkWidget *dtgtk_build_style_popover_menu(GtkWidget *parent,
+                                          gboolean allow_none,
+                                          gpointer user_data)
+{
+  GMenu *menu = dtgtk_build_style_menu_hierarchy(allow_none, user_data);
+  if(!menu) return NULL;
+
+  GtkWidget *popover_menu = dt_gui_popover_menu_from_model_full(parent,
+                                                                menu,
+                                                                _styles_tooltip_factory,
+                                                                NULL);
+  g_object_unref(menu);
+  return popover_menu;
 }
 
 // clang-format off

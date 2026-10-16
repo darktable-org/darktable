@@ -2015,14 +2015,9 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w,
   }
 
   /* if we got any styles, lets popup menu for selection */
-  GMenu *menu =
-    dtgtk_build_style_menu_hierarchy(FALSE,
-                                     user_data);
-  if(menu)
+  GtkWidget *popover_menu = dtgtk_build_style_popover_menu(w, FALSE, user_data);
+  if(popover_menu)
   {
-    // popup the menu
-    GtkWidget *popover_menu = dt_gui_popover_menu_from_model(w, menu);
-    g_object_unref(menu);
     gtk_popover_popup(GTK_POPOVER(popover_menu));
   }
   else
