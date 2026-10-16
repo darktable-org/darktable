@@ -1528,7 +1528,6 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
       break;
   }
   int kernel_mask_tone_curve = darktable.opencl->blendop->kernel_blendop_mask_tone_curve;
-  int kernel_set_mask = darktable.opencl->blendop->kernel_blendop_set_mask;
   int kernel_display_channel = darktable.opencl->blendop->kernel_blendop_display_channel;
 
   const int devid = piece->pipe->devid;
@@ -1602,14 +1601,8 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     else
     {
       // set dev_mask with global opacity value
-      err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_set_mask, owidth, oheight,
-                                CLARG(dev_mask), CLARG(owidth), CLARG(oheight), CLARG(opacity));
-      if(err != CL_SUCCESS)
-      {
-        dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_blendop] kernel_set_mask: %s", cl_errstr(err));
-        goto error;
-      }
+      err = dt_opencl_fill_image(devid, dev_mask, CLIMG_ORIGIN, region, opacity);
+      if(err != CL_SUCCESS) goto error;
     }
   }
   else if(raster)
@@ -1663,6 +1656,8 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     gboolean form_ok = FALSE;
     gboolean form_missing = FALSE;
     gboolean pixels_missing = FALSE;
+    // the uniform value a fallback branch below fills the mask with, or -1
+    float fill = -1.0f;
     // get the drawn mask if there is one
     dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
 
@@ -1744,15 +1739,26 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     {
       // no form defined but drawn mask active
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
-      const float fill = inverted ? 0.0f : 1.0f;
-      dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
+      fill = inverted ? 0.0f : 1.0f;
     }
     else
     {
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
-      const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
-      dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
+      fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
     }
+
+    // without a parametric mask the mask kernel computes
+    // gopacity * (INV ? 1 - form : form) (blendop.cl), so a fill comes out as
+    // a constant, written on the device below instead of filled and uploaded.
+    // This is every blended module without a mask, which is a flexi mask_mode
+    // with no group. Not when the details threshold carves into the fill, nor
+    // in scene RGB without a profile, where the kernel writes nothing
+    const gboolean constant_mask =
+      fill >= 0.0f && !(mask_mode & DEVELOP_MASK_CONDITIONAL)
+      && (global_refine_bypass || feqf(d->details, 0.0f, 1e-6f))
+      && (blend_csp != DEVELOP_BLEND_CS_RGB_SCENE || use_profile);
+    if(fill >= 0.0f && !constant_mask)
+      dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
 
     // as in dt_develop_blend_process: keep the two in step
     mask_is_uniform_fallback =
@@ -1767,38 +1773,44 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
        inverted ? ", inverted" : "",
        rois_equal ? "" : ", roi differ");
 
-    _refine_with_detail_mask_cl(self, piece, mask, roi_in, roi_out,
-                                global_refine_bypass ? 0.0f : d->details, devid);
-
-    err = dt_opencl_write_host_to_image(devid, mask, dev_mask_2, owidth, oheight, sizeof(float));
-    if(err != CL_SUCCESS) goto error;
-
-    // The following call to clFinish() works around a bug in some OpenCL
-    // drivers (namely AMD).
-    // Without this synchronization point, reads to dev_in would often not
-    // return the correct value.
-    // This depends on the module after which blending is called. One of the
-    // affected ones is sharpen.
-    dt_opencl_finish(devid);
-
-    // get parametric mask (if any) and apply global opacity
-    const uint32_t blendif = d->blendif;
-
-    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_mask, owidth, oheight,
-              CLARG(dev_in), CLARG(dev_out),
-              CLARG(dev_mask_2), CLARG(dev_mask),
-              CLARG(owidth), CLARG(oheight),
-              CLARG(opacity),
-              CLARG(blendif),
-              CLARG(dev_blendif_params),
-              CLARG(mask_mode), CLARG(d->mask_combine),
-              CLARRAY(2, offs),
-              CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_profile));
-    if(err != CL_SUCCESS)
+    if(constant_mask)
     {
-      dt_print(DT_DEBUG_OPENCL,
-               "[opencl_blendop] apply global opacity: %s", cl_errstr(err));
-      goto error;
+      const float value =
+        opacity * ((d->mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - fill : fill);
+      err = dt_opencl_fill_image(devid, dev_mask, CLIMG_ORIGIN, region, value);
+      if(err != CL_SUCCESS) goto error;
+    }
+    else
+    {
+      _refine_with_detail_mask_cl(self, piece, mask, roi_in, roi_out,
+                                  global_refine_bypass ? 0.0f : d->details, devid);
+
+      err = dt_opencl_write_host_to_image(devid, mask, dev_mask_2, owidth, oheight, sizeof(float));
+      if(err != CL_SUCCESS) goto error;
+
+      // FIXME: still required? It worked around stale reads of dev_in on
+      // old AMD drivers
+      dt_opencl_finish(devid);
+
+      // get parametric mask (if any) and apply global opacity
+      const uint32_t blendif = d->blendif;
+
+      err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_mask, owidth, oheight,
+                CLARG(dev_in), CLARG(dev_out),
+                CLARG(dev_mask_2), CLARG(dev_mask),
+                CLARG(owidth), CLARG(oheight),
+                CLARG(opacity),
+                CLARG(blendif),
+                CLARG(dev_blendif_params),
+                CLARG(mask_mode), CLARG(d->mask_combine),
+                CLARRAY(2, offs),
+                CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_profile));
+      if(err != CL_SUCCESS)
+      {
+        dt_print(DT_DEBUG_OPENCL,
+                 "[opencl_blendop] apply global opacity: %s", cl_errstr(err));
+        goto error;
+      }
     }
 
     // as on the CPU path: the combine inverts for DEVELOP_COMBINE_INV, so
@@ -2052,8 +2064,6 @@ dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void)
     dt_opencl_create_kernel(program, "blendop_rgb_jzczhz");
   b->kernel_blendop_mask_tone_curve =
     dt_opencl_create_kernel(program, "blendop_mask_tone_curve");
-  b->kernel_blendop_set_mask =
-    dt_opencl_create_kernel(program, "blendop_set_mask");
   b->kernel_blendop_display_channel =
     dt_opencl_create_kernel(program, "blendop_display_channel");
   b->kernel_calc_Y0_mask =
@@ -2085,7 +2095,6 @@ void dt_develop_blend_free_cl_global(dt_blendop_cl_global_t *b)
   dt_opencl_free_kernel(b->kernel_blendop_rgb_hsl);
   dt_opencl_free_kernel(b->kernel_blendop_rgb_jzczhz);
   dt_opencl_free_kernel(b->kernel_blendop_mask_tone_curve);
-  dt_opencl_free_kernel(b->kernel_blendop_set_mask);
   dt_opencl_free_kernel(b->kernel_blendop_display_channel);
   dt_opencl_free_kernel(b->kernel_calc_Y0_mask);
   dt_opencl_free_kernel(b->kernel_calc_scharr_mask);
