@@ -3688,14 +3688,14 @@
   <dtconfig>
     <name>plugins/darkroom/masks/auto_expand_selected</name>
     <type>bool</type>
-    <default>true</default>
+    <default>false</default>
     <shortdescription>auto-expand whatever is selected</shortdescription>
     <longdescription>while enabled, selecting a group or an element expands it and collapses whatever was expanded before, so the panel always shows the thing being worked on and tidies away the last one; selecting something with nothing to expand leaves whatever is open open</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/properties_subpanel</name>
     <type>bool</type>
-    <default>false</default>
+    <default>true</default>
     <shortdescription>element properties in subpanel</shortdescription>
     <longdescription>while enabled, the properties of the selected element or group are shown in a collapsible section of their own between the mask list and the refinements instead of in the list, and so are the creation controls of a shape being drawn: a shape's geometry, a parametric element's boost factor, and the opacity of anything</longdescription>
   </dtconfig>

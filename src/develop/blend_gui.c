@@ -2541,13 +2541,14 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
 
   _MASKS_OPT_CHECK(
     autoexpand, _("auto-expand selected"),
-    _("when enabled (default), whatever you select is the one thing\n"
+    _("when enabled, whatever you select is the one thing\n"
       "expanded, and whatever was expanded before collapses:\n"
       "selecting a group shows its elements, selecting an element\n"
       "shows its controls and its group.\n"
       "selecting something with nothing to expand leaves what is\n"
       "open as it is.\n"
-      "when disabled, everything is expanded and collapsed by hand."),
+      "when disabled (default), everything is expanded and collapsed\n"
+      "by hand, with the chevron at the right end of the row."),
     _auto_expand_selected(), _masks_auto_expand_selected_toggled)
 
   _MASKS_OPT_CHECK(
@@ -2555,7 +2556,7 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
     _("when enabled, the properties of the selected element or group\n"
       "are shown in a collapsible section of their own, between the\n"
       "mask list and the refinements, instead of expanding in the list.\n"
-      "disabled by default."),
+      "enabled by default."),
     _props_subpanel(), _masks_props_subpanel_toggled)
 
   _MASKS_OPT_CHECK(
