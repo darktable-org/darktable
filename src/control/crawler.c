@@ -27,6 +27,7 @@
 #include "common/database.h"
 #include "common/debug.h"
 #include "common/history.h"
+#include "common/film.h"
 #include "common/image.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -444,6 +445,68 @@ static void _crawler_scan_items(dt_crawler_scan_t *scan,
   }
 }
 
+typedef struct _crawler_collect_t
+{
+  dt_crawler_item_t *items;
+  int capacity;
+  int count;
+  dt_crawler_dir_t *dirs;
+  int num_dirs;
+  int dirs_capacity;
+} _crawler_collect_t;
+
+static gboolean _crawler_collect_row(const dt_image_sidecar_row_t *row, void *data)
+{
+  _crawler_collect_t *c = data;
+  if(c->count >= c->capacity)
+  {
+    // the database changed underneath us, grow to fit
+    const int new_capacity = c->capacity * 2;
+    dt_crawler_item_t *grown =
+      realloc(c->items, new_capacity * sizeof(dt_crawler_item_t));
+    if(!grown) return FALSE;
+    memset(grown + c->capacity, 0,
+           (new_capacity - c->capacity) * sizeof(dt_crawler_item_t));
+    c->items = grown;
+    c->capacity = new_capacity;
+  }
+
+  if(!row->folder || !row->filename) return TRUE;
+
+  // start a new directory whenever the folder changes
+  if(c->num_dirs == 0 || strcmp(c->dirs[c->num_dirs - 1].folder, row->folder))
+  {
+    if(c->num_dirs >= c->dirs_capacity)
+    {
+      const int new_capacity = MAX(16, c->dirs_capacity * 2);
+      dt_crawler_dir_t *grown =
+        realloc(c->dirs, new_capacity * sizeof(dt_crawler_dir_t));
+      if(!grown) return FALSE;
+      memset(grown + c->dirs_capacity, 0,
+             (new_capacity - c->dirs_capacity) * sizeof(dt_crawler_dir_t));
+      c->dirs = grown;
+      c->dirs_capacity = new_capacity;
+    }
+    c->dirs[c->num_dirs].folder = g_strdup(row->folder);
+    c->dirs[c->num_dirs].first = c->count;
+    c->dirs[c->num_dirs].count = 0;
+    c->dirs[c->num_dirs].entries = NULL;
+    c->num_dirs++;
+  }
+
+  dt_crawler_item_t *item = &c->items[c->count];
+  item->id = row->id;
+  item->timestamp_db = row->write_timestamp;
+  item->version = row->version;
+  item->folder = c->dirs[c->num_dirs - 1].folder;
+  item->filename = g_strdup(row->filename);
+  item->flags = row->flags;
+  item->new_flags = item->flags;
+  c->dirs[c->num_dirs - 1].count++;
+  c->count++;
+  return TRUE;
+}
+
 // collect the images to be examined.  when filmid is a valid film roll
 // only that roll is collected, otherwise the whole library is.
 static dt_crawler_item_t *_crawler_collect_items(const dt_filmid_t filmid,
@@ -451,23 +514,10 @@ static dt_crawler_item_t *_crawler_collect_items(const dt_filmid_t filmid,
                                                  dt_crawler_dir_t **dirs_out,
                                                  int *num_dirs_out)
 {
-  sqlite3_stmt *stmt;
-  int capacity = 1024;
-
   // reserve based on the number of images we expect to see
-  // clang-format off
-  if(dt_is_valid_filmid(filmid))
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT COUNT(*) FROM main.images WHERE film_id = ?1",
-                                -1, &stmt, 0);
-  else
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT COUNT(*) FROM main.images", -1, &stmt, 0);
-  // clang-format on
-  if(dt_is_valid_filmid(filmid)) DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-    capacity = MAX(1, sqlite3_column_int(stmt, 0));
-  sqlite3_finalize(stmt);
+  const int capacity = MAX(1, (int)(dt_is_valid_filmid(filmid)
+                                    ? dt_film_count_images(filmid)
+                                    : dt_image_count()));
 
   dt_crawler_item_t *items = calloc(capacity, sizeof(dt_crawler_item_t));
   if(!items)
@@ -478,91 +528,16 @@ static dt_crawler_item_t *_crawler_collect_items(const dt_filmid_t filmid,
     return NULL;
   }
 
-  // ordering by film roll keeps the images of one directory in a
+  _crawler_collect_t c = { .items = items, .capacity = capacity };
+  // ordered by film roll, so the images of one directory come in a
   // contiguous run, which is what lets them be examined a directory at a
   // time against a single listing of it
-  // clang-format off
-  if(dt_is_valid_filmid(filmid))
-    sqlite3_prepare_v2(dt_database_get(darktable.db),
-                       "SELECT i.id, write_timestamp, version,"
-                       "       folder, filename, flags"
-                       " FROM main.images i, main.film_rolls f"
-                       " ON i.film_id = f.id"
-                       " WHERE f.id = ?1"
-                       " ORDER BY f.id, filename",
-                       -1, &stmt, NULL);
-  else
-    sqlite3_prepare_v2(dt_database_get(darktable.db),
-                       "SELECT i.id, write_timestamp, version,"
-                       "       folder, filename, flags"
-                       " FROM main.images i, main.film_rolls f"
-                       " ON i.film_id = f.id"
-                       " ORDER BY f.id, filename",
-                       -1, &stmt, NULL);
-  // clang-format on
-  if(dt_is_valid_filmid(filmid)) DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
+  dt_image_foreach_sidecar_row(filmid, _crawler_collect_row, &c);
 
-  int count = 0;
-  int num_dirs = 0, dirs_capacity = 0;
-  dt_crawler_dir_t *dirs = NULL;
-
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    if(count >= capacity)
-    {
-      // the database changed underneath us, grow to fit
-      const int new_capacity = capacity * 2;
-      dt_crawler_item_t *grown =
-        realloc(items, new_capacity * sizeof(dt_crawler_item_t));
-      if(!grown) break;
-      memset(grown + capacity, 0,
-             (new_capacity - capacity) * sizeof(dt_crawler_item_t));
-      items = grown;
-      capacity = new_capacity;
-    }
-
-    const char *folder = (const char *)sqlite3_column_text(stmt, 3);
-    const char *filename = (const char *)sqlite3_column_text(stmt, 4);
-    if(!folder || !filename) continue;
-
-    // start a new directory whenever the folder changes
-    if(num_dirs == 0 || strcmp(dirs[num_dirs - 1].folder, folder))
-    {
-      if(num_dirs >= dirs_capacity)
-      {
-        const int new_capacity = MAX(16, dirs_capacity * 2);
-        dt_crawler_dir_t *grown =
-          realloc(dirs, new_capacity * sizeof(dt_crawler_dir_t));
-        if(!grown) break;
-        memset(grown + dirs_capacity, 0,
-               (new_capacity - dirs_capacity) * sizeof(dt_crawler_dir_t));
-        dirs = grown;
-        dirs_capacity = new_capacity;
-      }
-      dirs[num_dirs].folder = g_strdup(folder);
-      dirs[num_dirs].first = count;
-      dirs[num_dirs].count = 0;
-      dirs[num_dirs].entries = NULL;
-      num_dirs++;
-    }
-
-    dt_crawler_item_t *item = &items[count];
-    item->id = sqlite3_column_int(stmt, 0);
-    item->timestamp_db = sqlite3_column_int64(stmt, 1);
-    item->version = sqlite3_column_int(stmt, 2);
-    item->folder = dirs[num_dirs - 1].folder;
-    item->filename = g_strdup(filename);
-    item->flags = sqlite3_column_int(stmt, 5);
-    item->new_flags = item->flags;
-    dirs[num_dirs - 1].count++;
-    count++;
-  }
-  sqlite3_finalize(stmt);
-
-  *num_items = count;
-  *num_dirs_out = num_dirs;
-  *dirs_out = dirs;
-  return items;
+  *num_items = c.count;
+  *num_dirs_out = c.num_dirs;
+  *dirs_out = c.dirs;
+  return c.items;
 }
 
 static void _crawler_free_items(dt_crawler_item_t *items,
@@ -595,15 +570,9 @@ static GList *_crawler_apply_results(dt_crawler_item_t *items,
                                      int *flags_changed)
 {
   GList *result = NULL;
-  sqlite3_stmt *inner_stmt;
   int changed = 0;
-
-  sqlite3_prepare_v2(dt_database_get(darktable.db),
-                     "UPDATE main.images SET flags = ?1 WHERE id = ?2", -1,
-                     &inner_stmt, NULL);
-
-  // let's wrap this into a transaction, it might make it a little faster.
-  dt_database_start_transaction(darktable.db);
+  dt_imgid_t *changed_ids = g_new(dt_imgid_t, MAX(1, num_items));
+  int *changed_flags = g_new(int, MAX(1, num_items));
 
   for(int i = 0; i < num_items; i++)
   {
@@ -638,17 +607,15 @@ static GList *_crawler_apply_results(dt_crawler_item_t *items,
 
     if(item->new_flags != item->flags)
     {
-      sqlite3_bind_int(inner_stmt, 1, item->new_flags);
-      sqlite3_bind_int(inner_stmt, 2, item->id);
-      sqlite3_step(inner_stmt);
-      sqlite3_reset(inner_stmt);
-      sqlite3_clear_bindings(inner_stmt);
+      changed_ids[changed] = item->id;
+      changed_flags[changed] = item->new_flags;
       changed++;
     }
   }
 
-  dt_database_release_transaction(darktable.db);
-  sqlite3_finalize(inner_stmt);
+  dt_image_set_flags_list(changed_ids, changed_flags, changed);
+  g_free(changed_ids);
+  g_free(changed_flags);
 
   if(flags_changed) *flags_changed = changed;
 
@@ -886,19 +853,7 @@ void dt_control_crawler_start_background(void)
   // most recently opened film rolls first -- those are the ones the user
   // is most likely to look at in this session.  rolls that have never
   // been opened have a NULL access_timestamp and sort last.
-  sqlite3_stmt *stmt;
-  // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id FROM main.film_rolls"
-                              " ORDER BY access_timestamp DESC, id DESC",
-                              -1, &stmt, NULL);
-  // clang-format on
-  GList *rolls = NULL;
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-    rolls = g_list_prepend(rolls, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
-  sqlite3_finalize(stmt);
-
-  _crawler_bg.pending = g_list_reverse(rolls);
+  _crawler_bg.pending = dt_film_get_by_access();
   _crawler_bg.num_rolls = g_list_length(_crawler_bg.pending);
   _crawler_bg.num_done = 0;
   _crawler_bg.conflicts = NULL;
@@ -1178,16 +1133,7 @@ static void _select_invert_callback(GtkButton *button, gpointer user_data)
 static void _db_update_timestamp(const dt_imgid_t id, const time_t timestamp)
 {
   // Update DB writing timestamp with XMP file timestamp
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2
-    (dt_database_get(darktable.db),
-     "UPDATE main.images"
-     " SET write_timestamp = ?2"
-     " WHERE id = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 2, timestamp);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  dt_image_set_write_timestamp(id, timestamp);
 }
 
 
@@ -1688,17 +1634,7 @@ static int _update_img_thumbs(const dt_imgid_t imgid,
     return 0;
 
   // we have written all thumbs and are in running state so it's safe to write timestamp, hash and mipsize
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images"
-                              " SET thumb_maxmip = ?2, thumb_timestamp = ?3"
-                              " WHERE id = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_mip);
-  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 3, stamp);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  dt_image_set_thumb_state(imgid, max_mip, stamp);
 
   dt_mipmap_cache_evict(imgid);
   dt_history_hash_set_mipmap(imgid);
@@ -1709,21 +1645,13 @@ static int _update_all_thumbs(const dt_mipmap_size_t max_mip)
 {
   int missed = 0;
   int updated = 0;
-  sqlite3_stmt *stmt;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id, import_timestamp, change_timestamp"
-                              " FROM main.images"
-                              " WHERE thumb_timestamp < import_timestamp"
-                              "  OR thumb_timestamp < change_timestamp"
-                              "  OR thumb_maxmip < ?1"
-                              " ORDER BY id DESC",
-                                -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, max_mip);
-  while(sqlite3_step(stmt) == SQLITE_ROW && _still_thumbing())
+  GList *imgs = dt_image_get_outdated_thumbs(max_mip);
+  for(const GList *l = imgs; l && _still_thumbing(); l = g_list_next(l))
   {
-    const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
-    const int64_t stamp = MAX(sqlite3_column_int64(stmt, 1), sqlite3_column_int64(stmt, 2));
+    const dt_image_thumb_stamp_t *t = l->data;
+    const dt_imgid_t imgid = t->id;
+    const int64_t stamp = t->stamp;
 
     char path[PATH_MAX] = { 0 };
     dt_image_full_path(imgid, path, sizeof(path), NULL);
@@ -1737,7 +1665,7 @@ static int _update_all_thumbs(const dt_mipmap_size_t max_mip)
       dt_print(DT_DEBUG_CACHE, "[thumb crawler] '%s' ID=%d NOT available", path, imgid);
     }
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(imgs, g_free);
 
   if(updated)
     dt_print(DT_DEBUG_CACHE,
@@ -1751,12 +1679,7 @@ static int _update_all_thumbs(const dt_mipmap_size_t max_mip)
 static void _reinitialize_thumbs_database(void)
 {
   dt_print(DT_DEBUG_CACHE, "[thumb crawler] initialize database");
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),                              "UPDATE main.images"
-                              " SET thumb_maxmip = 0, thumb_timestamp = -1",
-                              -1, &stmt, NULL);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  dt_image_reset_thumb_state();
 }
 
 /* public */

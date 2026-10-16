@@ -2453,20 +2453,10 @@ static void _dev_merge_history(dt_develop_t *dev,
       if(sqlite3_step(stmt) == SQLITE_DONE)
       {
         sqlite3_finalize(stmt);
-        // clang-format off
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "UPDATE main.images"
-                                    " SET history_end=history_end+?1"
-                                    " WHERE id=?2",
-                                    -1, &stmt, NULL);
-        // clang-format on
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
 
-        if(sqlite3_step(stmt) == SQLITE_DONE)
+        if(dt_image_shift_history_end(imgid, cnt))
         {
           // and finally prepend the rest with increasing numbers (starting at 0)
-          sqlite3_finalize(stmt);
           // clang-format off
           DT_DEBUG_SQLITE3_PREPARE_V2(
             dt_database_get(darktable.db),
@@ -2594,15 +2584,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
   // Get the end of the history - What's that ???
 
   int history_end_current = 0;
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT history_end FROM main.images WHERE id = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW) // seriously, this should never fail
-    if(sqlite3_column_type(stmt, 0) != SQLITE_NULL)
-      history_end_current = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
+  dt_image_get_history_end(imgid, &history_end_current);
 
   // Load current image history from DB
   // clang-format off
@@ -2936,14 +2918,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
   if(dev->snapshot_id == -1)
   {
     // find the new history end
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT history_end FROM main.images WHERE id = ?1",
-                                -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    if(sqlite3_step(stmt) == SQLITE_ROW) // seriously, this should never fail
-      if(sqlite3_column_type(stmt, 0) != SQLITE_NULL)
-        dev->history_end = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
+    dt_image_get_history_end(imgid, &dev->history_end);
   }
 
   dt_ioppr_check_iop_order(dev, imgid, "dt_dev_read_history_no_image end");

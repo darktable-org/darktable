@@ -73,14 +73,6 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT num FROM main.history WHERE imgid = ?1", -1,
                               &vm->statements.have_history, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id"
-                              " FROM main.images"
-                              " WHERE group_id = (SELECT group_id"
-                              "                   FROM main.images"
-                              "                   WHERE id=?1)"
-                              "   AND id != ?2",
-                              -1, &vm->statements.get_grouped, NULL);
 
   vm->module_toolbox = dt_gui_hbox();
   vm->view_toolbox = dt_gui_hbox();

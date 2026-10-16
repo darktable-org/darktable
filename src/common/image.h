@@ -431,6 +431,79 @@ gboolean dt_image_use_monochrome_workflow(const dt_image_t *img);
 char *dt_image_get_filename(const dt_imgid_t imgid);
 /** returns true if the image exists on the database */
 gboolean dt_image_exists(const dt_imgid_t imgid);
+/** number of images in the library */
+uint32_t dt_image_count(void);
+/** n-th image id (from 0, by id) of the library, or NO_IMGID */
+dt_imgid_t dt_image_get_nth(const int n);
+/** ids of all images of the library */
+GList *dt_image_get_all(void);
+/** lower thumb_maxmip to level for the images above it */
+void dt_image_cap_thumb_maxmip(const int level);
+/** number of images whose id is returned by the SQL query `images`, and the
+ *  first of them in *first (left unchanged when there are none) */
+int dt_image_count_in_query(const char *images, dt_imgid_t *first);
+/** history_end of an image in *history_end; FALSE, *history_end untouched,
+ *  when the image is missing or has none */
+gboolean dt_image_get_history_end(const dt_imgid_t imgid, int *history_end);
+/** move history_end of an image by delta; FALSE when the update fails */
+gboolean dt_image_shift_history_end(const dt_imgid_t imgid, const int delta);
+/** set history_end of an image past its last history item, 0 without any */
+void dt_image_sync_history_end(const dt_imgid_t imgid);
+/** an image of dt_image_get_in_range() */
+typedef struct dt_image_id_filename_t
+{
+  dt_imgid_t id;
+  gchar *filename;
+} dt_image_id_filename_t;
+/** number of images with an id in [min, max], -1 on failure */
+int dt_image_count_in_range(const dt_imgid_t min, const dt_imgid_t max);
+/** id and filename of the images with an id in [min, max] */
+GList *dt_image_get_in_range(const dt_imgid_t min, const dt_imgid_t max);
+void dt_image_id_filename_free(gpointer item);
+/** an image row as the XMP crawler reads it, see dt_image_foreach_sidecar_row() */
+typedef struct dt_image_sidecar_row_t
+{
+  dt_imgid_t id;
+  int64_t write_timestamp;
+  int version;
+  const char *folder;
+  const char *filename;
+  int flags;
+} dt_image_sidecar_row_t;
+/** call cb on the images of film roll filmid (all images for an invalid id),
+ *  ordered by film roll and filename, until cb returns FALSE */
+void dt_image_foreach_sidecar_row(const dt_filmid_t filmid,
+                                  gboolean (*cb)(const dt_image_sidecar_row_t *row, void *data),
+                                  void *data);
+/** set the flags of n images in one transaction */
+void dt_image_set_flags_list(const dt_imgid_t *ids, const int *flags, const int n);
+/** set write_timestamp of an image */
+void dt_image_set_write_timestamp(const dt_imgid_t imgid, const int64_t timestamp);
+/** record the thumbnails of an image as made up to max_mip at stamp */
+void dt_image_set_thumb_state(const dt_imgid_t imgid, const int max_mip, const int64_t stamp);
+/** an image of dt_image_get_outdated_thumbs() */
+typedef struct dt_image_thumb_stamp_t
+{
+  dt_imgid_t id;
+  int64_t stamp;
+} dt_image_thumb_stamp_t;
+/** images whose thumbnails are older than the image or below max_mip, by
+ *  descending id, with the newer of their import and change timestamps */
+GList *dt_image_get_outdated_thumbs(const int max_mip);
+/** mark the thumbnails of all images as never made */
+void dt_image_reset_thumb_state(void);
+/** set write_timestamp of an image to now */
+void dt_image_set_write_timestamp_now(const dt_imgid_t imgid);
+/** add flags to the images whose ids are in `imgs`, a comma-separated id
+ *  list as built by the remove and delete jobs */
+void dt_image_add_flags_in_list(const char *imgs, const int flags);
+/** distinct full paths of the images whose ids are in `imgs` */
+GList *dt_image_get_full_paths_in_list(const char *imgs);
+/** ids of the images in `imgs` that carry all of `flags` */
+GList *dt_image_get_with_flags_in_list(const char *imgs, const int flags);
+/** number of images with the same file (film roll and filename) as imgid,
+ *  imgid included */
+int dt_image_count_same_file(const dt_imgid_t imgid);
 /** TRUE if the given output profile type has primaries wider than sRGB for
  *  this image. Handles the three UI cases used by export-style controls:
  *    DT_COLORSPACE_NONE — "image settings", falls back to the image's

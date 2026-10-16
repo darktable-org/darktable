@@ -246,8 +246,6 @@ typedef struct dt_view_manager_t
     sqlite3_stmt *delete_from_selected;
     /* insert into selected_images values (?1) */
     sqlite3_stmt *make_selected;
-    /* select images in group from images where imgid=?1 (also bind to ?2) */
-    sqlite3_stmt *get_grouped;
   } statements;
 
   struct
