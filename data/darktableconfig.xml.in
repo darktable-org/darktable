@@ -3688,7 +3688,7 @@
   <dtconfig>
     <name>plugins/darkroom/masks/auto_expand_selected</name>
     <type>bool</type>
-    <default>true</default>
+    <default>false</default>
     <shortdescription>auto-expand whatever is selected</shortdescription>
     <longdescription>while enabled, selecting a group or an element expands it and collapses whatever was expanded before, so the panel always shows the thing being worked on and tidies away the last one; selecting something with nothing to expand leaves whatever is open open</longdescription>
   </dtconfig>

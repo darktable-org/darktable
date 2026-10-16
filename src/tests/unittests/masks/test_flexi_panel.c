@@ -395,14 +395,14 @@ static void test_auto_expand_preference_roundtrips(void **state)
   assert_false(dt_conf_get_bool("plugins/darkroom/masks/auto_expand_selected"));
 }
 
-// the expander option ships with the default the panel's own documentation
-// promises: auto-expand on. It comes from darktableconfig.xml via conf_gen.h,
-// so an unset key must already read that way -- the panel never writes it
-// until the user touches it.
+// the expander option ships off: a click on a row only selects it, and rows
+// open and close by their chevron alone. It comes from darktableconfig.xml via
+// conf_gen.h, so an unset key must already read that way -- the panel never
+// writes it until the user touches it.
 static void test_expander_option_defaults(void **state)
 {
   dt_conf_remove_key("plugins/darkroom/masks/auto_expand_selected");
-  assert_true(dt_conf_get_bool("plugins/darkroom/masks/auto_expand_selected"));
+  assert_false(dt_conf_get_bool("plugins/darkroom/masks/auto_expand_selected"));
 }
 
 // ---------------------------------------------------------------------------
