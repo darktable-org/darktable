@@ -3630,8 +3630,8 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(denoiseprofile_tab_switch), self);
 
   g->channel_tabs_Y0U0V0 = GTK_NOTEBOOK(gtk_notebook_new());
-  dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("Y0"), NULL);
-  dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("U0V0"), NULL);
+  dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("luma"), N_("Y0"));
+  dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("chroma"), N_("U0V0"));
   g_signal_connect(G_OBJECT(g->channel_tabs_Y0U0V0), "switch_page",
                    G_CALLBACK(denoiseprofile_tab_switch), self);
 
