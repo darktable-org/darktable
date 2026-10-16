@@ -2261,6 +2261,11 @@ int dt_init(int argc,
     dt_film_set_folder_status();
   }
 
+  if(init_gui)
+  {
+    dt_gui_init_tooltip();
+  }
+
   // the update crawl needs to run after db and conf are up, but before LUA
   // starts any scripts
   GList *changed_xmp_files = NULL;

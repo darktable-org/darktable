@@ -2845,6 +2845,8 @@ static gboolean _row_tooltip_setup(GtkWidget *treeview,
 {
   gboolean res = FALSE;
   GtkTreePath *path = NULL;
+  if(!darktable.gui->show_thumbs_tips) return res;
+
   // Get tree path mouse position
   if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), x, y, &path, NULL, NULL, NULL))
   {
@@ -2864,17 +2866,29 @@ static gboolean _row_tooltip_setup(GtkWidget *treeview,
 
       if(tagid)
       {
-        if((flags & DT_TF_PRIVATE) || (synonyms && synonyms[0]))
+        const char *css = "";
+        #if GTK_CHECK_VERSION(4, 0, 0)
+        gtk_css_provider_load_from_data(darktable.gui->tooltip_css_provider, css, -1);
+#else
+        GError *error = NULL;
+        if(!gtk_css_provider_load_from_data(darktable.gui->tooltip_css_provider,
+                                            css, -1, &error))
         {
-          gchar *text = g_strdup_printf(_("%s"), tagname);
-          dt_util_str_cat(&text, " %s\n",
-                          (flags & DT_TF_PRIVATE) ? _("(private)") : "");
-          dt_util_str_cat(&text, "synonyms: %s",
-                          (synonyms && synonyms[0]) ? synonyms : " - ");
-          gtk_tooltip_set_text(tooltip, text);
-          g_free(text);
-          res = TRUE;
+          dt_print(DT_DEBUG_ALWAYS, "%s: error parsing tooltip CSS: %s",
+                   G_STRFUNC, error->message);
+          g_clear_error(&error);
         }
+#endif
+        gchar *text = g_strdup_printf(_("%s"), tagname);
+        dt_util_str_cat(&text, " %s\n", (flags & DT_TF_PRIVATE) ? _("(private)") : "");
+        dt_util_str_cat(&text, "synonyms: %s", (synonyms && synonyms[0]) ? synonyms : " - ");
+        if(!darktable.gui->hide_tooltips)
+        {
+          dt_util_str_cat(&text, "\n\n%s", gtk_widget_get_tooltip_text(treeview));
+        }
+        gtk_tooltip_set_text(tooltip, text);
+        g_free(text);
+        res = TRUE;
       }
       g_free(synonyms);
       g_free(tagname);
