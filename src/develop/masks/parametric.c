@@ -177,11 +177,10 @@ static int _parametric_get_mask_roi(const dt_iop_module_t *const module,
   for(size_t k = 0; k < npix; k++) buffer[k] = 1.0f;
 
   // guide images come from the transient blend context. The OpenCL pipe lends
-  // its device images instead, and reads them back only for feathering: the
-  // form is evaluated on the device unless they are on the host anyway
+  // its device images instead, and the form is evaluated there
   const float *const a = piece->blend_refine_guide_in;
   const float *const b = piece->blend_refine_guide_out;
-  const gboolean on_device = piece->blend_refine_cl && (!a || !b);
+  const gboolean on_device = piece->blend_refine_cl != NULL;
   if(!on_device && (!a || !b))
   {
     dt_print(DT_DEBUG_MASKS,

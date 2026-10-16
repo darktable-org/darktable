@@ -472,18 +472,6 @@ static gboolean _group_reads_pixels(const dt_masks_form_t *const form,
   return dt_masks_group_walk(piece->pipe->forms, form, _reads_pixels, (void *)piece);
 }
 
-#ifdef HAVE_OPENCL
-// in the OpenCL pipe the images live on the device. Parametric members are
-// evaluated there (dt_develop_blendif_make_mask_cl), but feathering runs on
-// the host and needs the images read back; without them it is skipped. Plain
-// shapes and parametric members keep the fast path without the readback
-static gboolean _group_needs_host_guides(const dt_masks_form_t *const form,
-                                         const dt_dev_pixelpipe_iop_t *const piece)
-{
-  return dt_masks_group_walk(piece->pipe->forms, form, _needs_guide, (void *)piece);
-}
-#endif
-
 typedef struct _raster_sources_hash_t
 {
   dt_hash_t hash;
@@ -705,6 +693,65 @@ static void _develop_blend_process_mask_tone_curve(float *const restrict mask,
   }
 }
 
+#ifdef HAVE_OPENCL
+// _feather_form_mask on the OpenCL blend's device images: only the mask makes
+// the round trip
+static void _feather_form_mask_cl(dt_dev_pixelpipe_iop_t *piece,
+                                  float *const mask,
+                                  const dt_iop_roi_t *const roi,
+                                  const gboolean use_out,
+                                  const float radius,
+                                  const float guide_weight,
+                                  const float sqrt_eps)
+{
+  dt_develop_blend_cl_context_t *const c = piece->blend_refine_cl;
+  const int devid = c->devid;
+  const int width = roi->width;
+  const int height = roi->height;
+  const int ch = piece->colors;
+  const int w = _required_w(radius, roi->scale / piece->iscale, MAX(width, height));
+  const dt_iop_roi_t *rin = piece->blend_refine_roi_in;
+
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_mem guide = use_out ? c->dev_out : c->dev_in;
+  cl_mem dev_guide = NULL;
+  cl_mem dev_mask_in = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem dev_mask_out = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  if(!dev_mask_in || !dev_mask_out) goto error;
+
+  if(!use_out && rin && (rin->width != width || rin->height != height))
+  {
+    // the mask's part of the input, as dt_iop_copy_image_roi crops it on the
+    // host and the whole-mask feathering does in dt_develop_blend_process_cl
+    dev_guide = dt_opencl_alloc_device(devid, width, height, sizeof(float) * ch);
+    if(!dev_guide) goto error;
+    const size_t origin[2] = { c->offs[0], c->offs[1] };
+    const size_t region[2] = { width, height };
+    err = dt_opencl_enqueue_copy_image(devid, c->dev_in, dev_guide, origin, CLIMG_ORIGIN,
+                                       region);
+    if(err != CL_SUCCESS) goto error;
+    guide = dev_guide;
+  }
+
+  err = dt_opencl_write_host_to_image(devid, mask, dev_mask_in, width, height, sizeof(float));
+  if(err != CL_SUCCESS) goto error;
+  err = guided_filter_cl(devid, guide, dev_mask_in, dev_mask_out, width, height, ch, w,
+                         sqrt_eps, guide_weight, 0.0f, 1.0f);
+  if(err != CL_SUCCESS) goto error;
+  err = dt_opencl_copy_image_to_host(devid, mask, dev_mask_out, width, height, sizeof(float));
+
+error:
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] element feathering: %s", cl_errstr(err));
+    c->failed = TRUE;
+  }
+  dt_opencl_release_mem_object(dev_guide);
+  dt_opencl_release_mem_object(dev_mask_in);
+  dt_opencl_release_mem_object(dev_mask_out);
+}
+#endif
+
 // one guided-filter feathering pass on an element's mask, guided by the input
 // or the output image from the piece's blend_refine_* context, cropped to the
 // mask's roi when the input roi differs
@@ -720,6 +767,14 @@ static void _feather_form_mask(dt_dev_pixelpipe_iop_t *piece,
   const size_t height = roi->height;
   const int ch = piece->colors;
   const float scale = roi->scale / piece->iscale;
+
+#ifdef HAVE_OPENCL
+  if(piece->blend_refine_cl)
+  {
+    _feather_form_mask_cl(piece, mask, roi, use_out, radius, guide_weight, sqrt_eps);
+    return;
+  }
+#endif
 
   if(use_out)
   {
@@ -1771,39 +1826,9 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     if(form && (form->points || !(mask_mode & DEVELOP_MASK_FLEXI)) && mode_drawn
        && dt_blend_may_render_group(self, mask_mode))
     {
-      // the group renders on the CPU in this pipe too. Its parametric members
-      // are evaluated on the device, through the context below, while its
-      // feathering needs the input and output images on the host: they are
-      // read back when the group needs them (_group_needs_host_guides)
-      float *guide_in = NULL;
-      float *guide_out = NULL;
-      if(_group_needs_host_guides(form, piece))
-      {
-        const size_t in_sz = (size_t)roi_in->width * roi_in->height * ch;
-        const size_t out_sz = (size_t)roi_out->width * roi_out->height * ch;
-        guide_in = dt_alloc_align_float(in_sz);
-        guide_out = dt_alloc_align_float(out_sz);
-        err = guide_in && guide_out ? CL_SUCCESS : DT_OPENCL_SYSMEM_ALLOCATION;
-        if(err == CL_SUCCESS)
-          err = dt_opencl_copy_image_to_host(devid, guide_in, dev_in,
-                                             roi_in->width, roi_in->height,
-                                             ch * sizeof(float));
-        if(err == CL_SUCCESS)
-          err = dt_opencl_copy_image_to_host(devid, guide_out, dev_out,
-                                             roi_out->width, roi_out->height,
-                                             ch * sizeof(float));
-        if(err != CL_SUCCESS)
-        {
-          // without guides per-shape feathering is skipped: let the CPU path
-          // render it instead
-          dt_print(DT_DEBUG_OPENCL,
-                   "[opencl_blendop] mask guide readback failed: %s",
-                   cl_errstr(err));
-          dt_free_align(guide_in);
-          dt_free_align(guide_out);
-          goto error;
-        }
-      }
+      // the group renders on the CPU in this pipe too. What its parametric
+      // members and feathering read from the input and output images is done
+      // on the device, through the context below, so the images stay there
       dt_develop_blend_cl_context_t cl_context =
         { .devid = devid,
           .dev_in = dev_in,
@@ -1813,8 +1838,6 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
           .use_profile = use_profile,
           .offs = { dx, dy },
           .failed = FALSE };
-      piece->blend_refine_guide_in = guide_in;
-      piece->blend_refine_guide_out = guide_out;
       piece->blend_refine_roi_in = roi_in;
       piece->blend_refine_roi_out = roi_out;
       piece->blend_refine_cl = &cl_context;
@@ -1825,18 +1848,14 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
       form_ok = _render_drawn_mask_cached(self, piece, form, roi_in, roi_out,
                                          devid, mask, &pixels_missing);
 
-      piece->blend_refine_guide_in = NULL;
-      piece->blend_refine_guide_out = NULL;
       piece->blend_refine_roi_in = NULL;
       piece->blend_refine_roi_out = NULL;
       piece->blend_refine_cl = NULL;
       dt_opencl_release_mem_object(cl_context.dev_ones);
       dt_opencl_release_mem_object(cl_context.dev_mask);
-      dt_free_align(guide_in);
-      dt_free_align(guide_out);
 
-      // a member that failed on the device rendered opaque: let the CPU path
-      // render the module instead
+      // a member that failed on the device rendered opaque or unfeathered: let
+      // the CPU path render the module instead
       if(cl_context.failed)
       {
         err = DT_OPENCL_PROCESS_CL;
@@ -2300,6 +2319,16 @@ void tiling_callback_blendop(dt_iop_module_t *self,
       : NULL;
   if(form && dt_masks_group_walk(piece->pipe->forms, form, _is_parametric, NULL))
     tiling->factor_cl += 0.5f * outnorm;
+
+  // feathering an element on the device takes two more, a crop of the input
+  // when the rois differ (_feather_form_mask_cl), and room for the internal
+  // tiling of guided_filter_cl, as the whole-mask feathering reserves above
+  if(form && dt_masks_group_walk(piece->pipe->forms, form, _needs_guide, (void *)piece))
+  {
+    const gboolean crop = roi_in->width != roi_out->width
+                          || roi_in->height != roi_out->height;
+    tiling->factor_cl += 1.0f + (crop ? 1.5f : 0.5f) * outnorm;
+  }
 }
 
 /** check if content of params is all zero, indicating a
