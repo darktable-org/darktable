@@ -149,6 +149,15 @@ void dt_iop_gui_blend_masks_panel_fold_unmasked(void)
   dt_iop_gui_blend_masks_panel_sync_toolbox();
 }
 
+// why the panel has nothing to show with no module focused, for the controls
+// that stand for it: the toolbar button, and the utility lib's header
+static const char *_no_focused_module_tip(void)
+{
+  return _("unavailable: the blend mask panel shows the mask of the focused"
+           " module, and no module is focused.\n"
+           "click a module's header to focus it");
+}
+
 void dt_iop_gui_blend_masks_panel_sync_toolbox(void)
 {
   GtkWidget *btn = darktable.develop ? darktable.develop->masks_panel_button : NULL;
@@ -226,9 +235,7 @@ void dt_iop_gui_blend_masks_panel_sync_toolbox(void)
       "%s\n%s",
       module
         ? _("unavailable: the focused module does not support masks")
-        : _("unavailable: the blend mask panel shows the mask of the focused"
-            " module, and no module is focused.\n"
-            "click a module's header to focus it"),
+        : _no_focused_module_tip(),
       rc);
     gtk_widget_set_tooltip_text(btn, tt);
     g_free(tt);
@@ -280,8 +287,8 @@ static void _masks_utility_apply_collapsed(dt_lib_module_t *host,
 
 // apply the embedded position's collapse state to `module`'s panel: fold the
 // body away below the header (or bring it back), and point the header arrow
-// the way the next click will take it -- DOWN when open, RIGHT when folded,
-// as everywhere else in the UI.
+// the way the next click will take it -- DOWN when open, LEFT when folded,
+// as the panel's other expanders closing a header on the right do.
 static void _masks_embedded_apply_collapsed(dt_iop_module_t *module,
                                             const gboolean collapsed)
 {
@@ -291,92 +298,78 @@ static void _masks_embedded_apply_collapsed(dt_iop_module_t *module,
   gtk_widget_set_visible(GTK_WIDGET(bd->masks_panel_body), !collapsed);
   dtgtk_button_set_paint(DTGTK_BUTTON(bd->flexi_inline_collapse_btn),
                          dtgtk_cairo_paint_solid_arrow,
-                         collapsed ? CPF_DIRECTION_RIGHT : CPF_DIRECTION_DOWN, NULL);
+                         collapsed ? CPF_DIRECTION_LEFT : CPF_DIRECTION_DOWN, NULL);
   gtk_widget_set_tooltip_text(bd->flexi_inline_collapse_btn,
                               collapsed
                                 ? _("show the blend mask panel")
                                 : _("hide the blend mask panel"));
 }
 
-// the lock sits immediately left of the mask overlay, so it goes wherever the
-// overlay is reparented: the panel's header, or the utility lib's in its place
-static void _place_mask_lock(dt_iop_gui_blend_data_t *bd)
-{
-  GtkWidget *lock = bd->mask_lock_btn;
-  GtkWidget *parent = bd->showmask ? gtk_widget_get_parent(bd->showmask) : NULL;
-  if(!lock || !GTK_IS_WIDGET(lock) || !parent || !GTK_IS_BOX(parent)) return;
-
-  dt_masks_gui_reparent_into(lock, parent, FALSE, FALSE);
-  int lock_pos = 0, showmask_pos = 0;
-  gtk_container_child_get(GTK_CONTAINER(parent), lock, "position", &lock_pos, NULL);
-  gtk_container_child_get(GTK_CONTAINER(parent), bd->showmask, "position", &showmask_pos, NULL);
-  // moving the lock out from ahead of the overlay shifts the overlay down one
-  gtk_box_reorder_child(GTK_BOX(parent), lock,
-                        lock_pos < showmask_pos ? showmask_pos - 1 : showmask_pos);
-}
-
-// the header's reading order, in every position:
+// the header's layout:
 //
-//   [expander] | caption | <space> | lock | overlay | edit | toggle
+//   toggle <space> edit solo | overlay eye | lock <space> expander
 //
-// with the same controls on the right in every case: the mask lock, the mask
-// overlay, the edit run (edit on canvas and solo edit, between two gaps, see
-// masks_header_edit_box), and the mask on/off toggle at the very end. They act
-// on the canvas, so they stay wherever the panel is hosted; in the utility
-// position they sit on the lib's own header, which stands in for this one.
+// with no name: which module is focused is the UI's to show, not the
+// panel's. The controls (masks_header_cluster) are the header's center
+// widget, centered on its whole width whatever its sides hold. Embedded, the
+// on/off toggle sits under the module's own on/off button and the expander
+// under its presets menu. In the utility position the header leads the lib's
+// body as embedded, without the two: the toggle moves onto the lib's own
+// header, where its presets menu would be (see view_enter in
+// libs/masks_flexi_host.c), and the lib's expander folds the panel.
 // There is no preferences button: the blending options open on a right-click
 // of the on/off toggle (see _blendop_mask_enable_toggled), the way guide
 // settings hang off the guides icon. The expander is embedded-only: the
-// utility position already has the lib's own expander to its left, and out on
+// utility position already has the lib's own expander, and out on
 // the canvas the panel is opened and closed from the darkroom toolbar button,
 // which is a bigger and more findable target than an icon on a floating panel.
-// `mirrored` (the canvas panel docked on the right) would move the expander to
-// the far right, where it is hidden anyway
+// There the expander stays as a placeholder, `on_canvas`: laid out but not
+// drawn, on the panel's outer edge (`expander_start`, docked left, swaps the
+// two sides). That edge is where the panel insets the header by its
+// scrollbar's width, once that is known (_flexi_sync_header_scrollbar_pad in
+// gui/gtk.c), and the placeholder takes the inset, so nothing visible shifts
 static void _masks_header_apply_side(dt_iop_gui_blend_data_t *bd,
-                                     const gboolean mirrored)
+                                     const gboolean on_canvas,
+                                     const gboolean expander_start)
 {
   GtkWidget *pin = bd->flexi_inline_collapse_btn;
   GtkWidget *toggle = bd->mask_enable_toggle;
-  GtkWidget *showmask = bd->showmask;
-  if(!pin || !toggle || !showmask || !bd->masks_blend_header || !bd->masks_right_cluster) return;
-  if(!GTK_IS_WIDGET(pin) || !GTK_IS_WIDGET(toggle) || !GTK_IS_WIDGET(showmask)
-     || !GTK_IS_BOX(bd->masks_blend_header) || !GTK_IS_BOX(bd->masks_right_cluster)) return;
+  GtkWidget *header = bd->masks_blend_header;
+  if(!pin || !toggle || !header) return;
+  if(!GTK_IS_WIDGET(pin) || !GTK_IS_WIDGET(toggle) || !GTK_IS_BOX(header)) return;
 
-  dt_masks_gui_reparent_into(showmask, bd->masks_right_cluster, FALSE, FALSE);
-  dt_masks_gui_reparent_into(toggle, bd->masks_right_cluster, FALSE, FALSE);
+  // the toggle (back from the utility lib's header, if it was there) and the
+  // expander on opposite sides, each outermost on its own.
+  // Each side by its pack type, since a box with a center widget lays its
+  // start children out only up to it; first in the list is outermost
+  dt_masks_gui_reparent_into(toggle, header, FALSE, FALSE);
+  dt_masks_gui_reparent_into(pin, header, FALSE, FALSE);
+  gtk_container_child_set(GTK_CONTAINER(header), toggle,
+                          "pack-type", expander_start ? GTK_PACK_END : GTK_PACK_START, NULL);
+  gtk_container_child_set(GTK_CONTAINER(header), pin,
+                          "pack-type", expander_start ? GTK_PACK_START : GTK_PACK_END, NULL);
+  gtk_box_reorder_child(GTK_BOX(header), toggle, 0);
+  gtk_box_reorder_child(GTK_BOX(header), pin, 0);
+  dt_gui_remove_class(pin, expander_start ? "dt_masks_right" : "dt_masks_left");
+  dt_gui_add_class(pin, expander_start ? "dt_masks_left" : "dt_masks_right");
 
-  // the edit run comes back from the utility lib's header with the overlay
-  GtkWidget *edit = bd->masks_header_edit_box;
-  if(edit) dt_masks_gui_reparent_into(edit, bd->masks_right_cluster, FALSE, FALSE);
-  gtk_box_reorder_child(GTK_BOX(bd->masks_right_cluster), showmask, 0);
-  if(edit) gtk_box_reorder_child(GTK_BOX(bd->masks_right_cluster), edit, 1);
-  gtk_box_reorder_child(GTK_BOX(bd->masks_right_cluster), toggle, -1);
-  _place_mask_lock(bd);
-
-  // the expander belongs to the embedded position alone
+  // the expander works in the embedded position alone, and holds its place
+  // on the canvas. child-visible after visible: a widget is allocated while
+  // visible, and drawn and reached by the pointer only while child-visible too
   const gboolean show_pin = dt_masks_gui_panel_position() == MASKS_PANEL_POS_EMBEDDED;
-
-  if(mirrored)
-  {
-    // canvas panel docked right: the arrow goes to the far right
-    dt_gui_remove_class(pin, "dt_masks_left");
-    dt_gui_add_class(pin, "dt_masks_right");
-    dt_masks_gui_reparent_into(pin, bd->masks_right_cluster, FALSE, FALSE);
-    gtk_box_reorder_child(GTK_BOX(bd->masks_right_cluster), pin, -1);
-  }
-  else
-  {
-    // otherwise the arrow is ahead of the caption
-    dt_gui_remove_class(pin, "dt_masks_right");
-    dt_gui_add_class(pin, "dt_masks_left");
-    dt_masks_gui_reparent_into(pin, bd->masks_blend_header, FALSE, FALSE);
-    gtk_box_reorder_child(GTK_BOX(bd->masks_blend_header), pin, 0);
-  }
-
-  const gboolean is_mask_enabled = (bd->module->blend_params->mask_mode != DEVELOP_MASK_DISABLED);
-  gtk_widget_set_visible(pin, show_pin);
-  gtk_widget_set_visible(showmask, is_mask_enabled && !bd->module->hide_enable_button);
+  gtk_widget_set_visible(pin, show_pin || on_canvas);
+  gtk_widget_set_child_visible(pin, !on_canvas);
   gtk_widget_show(toggle);
+}
+
+void dt_iop_gui_blend_masks_panel_side_changed(void)
+{
+  dt_iop_module_t *module =
+    darktable.develop ? darktable.develop->proxy.masks_flexi_host.hosted_module : NULL;
+  if(!module || !module->blend_data
+     || dt_masks_gui_panel_position() != MASKS_PANEL_POS_CANVAS) return;
+  _masks_header_apply_side(module->blend_data, TRUE,
+                           !dt_ui_flexi_panel_is_right(darktable.gui->ui));
 }
 
 static gboolean _scroll_widget_into_view_idle(gpointer user_data)
@@ -673,98 +666,60 @@ gboolean dt_masks_model_pin_should_expand_iop(const gboolean is_expanded,
   return !is_expanded && is_collapsed;
 }
 
-char *dt_masks_model_panel_header_markup(const char *module_name,
-                                         const char *instance_name,
-                                         const gboolean is_hosted)
-{
-  if(!is_hosted)
-  {
-    return g_strdup(_("blend mask"));
-  }
-
-  const char *mname = module_name ? module_name : "";
-  gchar *esc_mname = g_markup_escape_text(mname, -1);
-  gchar *esc_iname = (instance_name && strlen(instance_name) > 0)
-    ? g_markup_escape_text(instance_name, -1)
-    : NULL;
-
-  gchar *markup;
-  if(esc_iname && strlen(esc_iname) > 0)
-  {
-    markup = g_strdup_printf("<span size=\"smaller\" alpha=\"70%%\">%s</span>\n%s <span size=\"smaller\" weight=\"light\" alpha=\"80%%\">• %s</span>",
-                             _("blend mask"), esc_mname, esc_iname);
-  }
-  else if(strlen(esc_mname) > 0)
-  {
-    markup = g_strdup_printf("<span size=\"smaller\" alpha=\"70%%\">%s</span>\n%s",
-                             _("blend mask"), esc_mname);
-  }
-  else
-  {
-    markup = g_strdup_printf("<span size=\"smaller\" alpha=\"70%%\">%s</span>\n<span weight=\"light\" alpha=\"70%%\">%s</span>",
-                             _("blend mask"), _("no focused module"));
-  }
-
-  g_free(esc_mname);
-  g_free(esc_iname);
-  return markup;
-}
-
-// put the panel's header and body back into bd->relocatable_box, in that order
+// put the panel's header and body back into bd->relocatable_box, in that
+// order: the header into its own home there (masks_header_home), the body
+// after it
 static void _masks_header_body_home(dt_iop_gui_blend_data_t *bd)
 {
-  GtkWidget *home = GTK_WIDGET(bd->relocatable_box);
   GtkWidget *const parts[2] = { bd->masks_blend_header, GTK_WIDGET(bd->masks_panel_body) };
+  GtkWidget *const homes[2] = { GTK_WIDGET(bd->masks_header_home),
+                                GTK_WIDGET(bd->relocatable_box) };
   for(int i = 0; i < 2; i++)
-    if(parts[i] && GTK_IS_WIDGET(parts[i]) && gtk_widget_get_parent(parts[i]) != home)
+    if(parts[i] && GTK_IS_WIDGET(parts[i]) && homes[i]
+       && gtk_widget_get_parent(parts[i]) != homes[i])
     {
-      dt_masks_gui_reparent_into(parts[i], home, FALSE, FALSE);
-      gtk_box_reorder_child(bd->relocatable_box, parts[i], i);
+      dt_masks_gui_reparent_into(parts[i], homes[i], FALSE, FALSE);
+      gtk_box_reorder_child(GTK_BOX(homes[i]), parts[i], i);
+
+      // on the canvas, the header's outermost child is inset by the panel's
+      // scrollbar width (_flexi_sync_header_scrollbar_pad in gui/gtk.c), which
+      // nothing clears when the header leaves: it would stay pushed in
+      if(parts[i] == bd->masks_blend_header)
+      {
+        GList *kids = gtk_container_get_children(GTK_CONTAINER(parts[i]));
+        for(GList *k = kids; k; k = g_list_next(k))
+        {
+          gtk_widget_set_margin_start(GTK_WIDGET(k->data), 0);
+          gtk_widget_set_margin_end(GTK_WIDGET(k->data), 0);
+        }
+        g_list_free(kids);
+      }
     }
 }
 
-// the title label on the utility lib's expander header, and in *evb the event
-// box around it. Looked up once, then kept in the host proxy
-static GtkWidget *_utility_header_label(dt_lib_module_t *host, GtkWidget **evb)
+// the utility lib, with or without a module's mask in it: with none, the
+// whole lib is insensitive, a stand-in takes the toggle's place, and the
+// header's tooltip says why. The header's buttons have no tooltip of their
+// own then, so the header's shows over them. Hosting, the reset button
+// follows the mask's lock (dt_iop_gui_blend_mask_header_sync)
+static void _utility_header_hosting(dt_lib_module_t *host, const gboolean hosting)
 {
-  GtkWidget *lbl = darktable.develop->proxy.masks_flexi_host.header_label;
-  if(!lbl)
-  {
-    GList *children =
-      gtk_container_get_children(GTK_CONTAINER(DTGTK_EXPANDER(host->expander)->header));
-    for(GList *c = children; c && !lbl; c = g_list_next(c))
-    {
-      GtkWidget *child = GTK_IS_EVENT_BOX(c->data) ? gtk_bin_get_child(GTK_BIN(c->data)) : NULL;
-      if(child && GTK_IS_LABEL(child))
-      {
-        lbl = darktable.develop->proxy.masks_flexi_host.header_label = child;
-        darktable.develop->proxy.masks_flexi_host.label_evb = GTK_WIDGET(c->data);
-      }
-    }
-    g_list_free(children);
-  }
-  *evb = darktable.develop->proxy.masks_flexi_host.label_evb;
-  return lbl && GTK_IS_LABEL(lbl) ? lbl : NULL;
+  GtkWidget *idle = darktable.develop->proxy.masks_flexi_host.idle_toggle;
+  if(idle) gtk_widget_set_visible(idle, !hosting);
+  if(!host || !host->expander) return;
+  gtk_widget_set_sensitive(host->expander, hosting);
+  gtk_widget_set_tooltip_text(DTGTK_EXPANDER(host->expander)->header,
+                              !hosting ? _no_focused_module_tip()
+                              : host->description ? host->description(host) : NULL);
+  if(host->arrow)
+    gtk_widget_set_tooltip_text(host->arrow, hosting ? _("show module") : NULL);
+  if(host->reset_button)
+    gtk_widget_set_tooltip_text(host->reset_button, hosting ? _("reset mask") : NULL);
 }
 
 void dt_masks_gui_utility_header_unhosted(dt_lib_module_t *host)
 {
-  if(!host || !host->expander) return;
-  GtkWidget *levb = NULL;
-  GtkWidget *lbl = _utility_header_label(host, &levb);
-  if(lbl)
-  {
-    gchar *markup = dt_masks_model_panel_header_markup(NULL, NULL, TRUE);
-    gtk_label_set_markup(GTK_LABEL(lbl), markup);
-    g_free(markup);
-  }
-  GtkWidget *const off[2] = { host->arrow, levb };
-  for(int i = 0; i < 2; i++)
-    if(off[i])
-    {
-      gtk_widget_set_sensitive(off[i], FALSE);
-      gtk_widget_set_tooltip_text(off[i], _("disabled because no module is selected"));
-    }
+  _utility_header_hosting(host, FALSE);
 }
 
 // `handoff`: whether the module giving the panel up is doing so because
@@ -797,19 +752,15 @@ static void _masks_flexi_release_full(dt_iop_module_t *module, const gboolean ha
   // back in the module's own expander. When that is where the panel actually
   // lives (embedded), the in-header arrow keeps working, now folding the panel
   // body away in place; when the box only landed here because this module lost
-  // focus, its real home is a host and the arrow has nothing to act on.
+  // focus, its real home is a host and the arrow has nothing to act on (both
+  // decided by _masks_header_apply_side)
   const gboolean embedded =
     dt_masks_gui_panel_position() == MASKS_PANEL_POS_EMBEDDED;
-  gtk_widget_set_visible(bd->flexi_inline_collapse_btn, embedded);
-  // the right-dock mirroring is that dock's alone -- back home, the header
-  // reads left-to-right like every other module's
-  _masks_header_apply_side(bd, FALSE);
+  _masks_header_apply_side(bd, FALSE, FALSE);
   _masks_embedded_apply_collapsed(module, embedded && (!module->expanded || _masks_panel_collapsed_pref()));
   // back in the module's own content -- restore the embedded inset (see
   // darktable.css's "#blending-tabs.dt_masks_embedded")
   dt_gui_add_class(bd->masks_blend_header, "dt_masks_embedded");
-  if(bd->masks_blend_header_label && GTK_IS_LABEL(bd->masks_blend_header_label))
-    gtk_label_set_text(GTK_LABEL(bd->masks_blend_header_label), _("blend mask"));
 
   if(was_hosted)
   {
@@ -918,6 +869,10 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   if(!bd->relocatable_box) return;
 
+  // the header's buttons follow the module's power too (the eye): here
+  // because every power change of the focused module relocates
+  dt_iop_gui_blend_mask_header_sync(bd);
+
   const int pos = dt_masks_gui_panel_position();
   const uint32_t mask_mode = module->blend_params->mask_mode;
   const gboolean is_focused = darktable.develop->gui_module == module;
@@ -969,13 +924,10 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
         gtk_widget_set_visible(GTK_WIDGET(bd->relocatable_box), module->expanded);
       }
 
-      gtk_widget_set_visible(bd->flexi_inline_collapse_btn, TRUE);
-      _masks_header_apply_side(bd, FALSE);
+      _masks_header_apply_side(bd, FALSE, FALSE);
       if(focus_changed)
         _masks_embedded_apply_collapsed(module, _masks_panel_collapsed_for(module));
       dt_gui_add_class(bd->masks_blend_header, "dt_masks_embedded");
-      if(bd->masks_blend_header_label && GTK_IS_LABEL(bd->masks_blend_header_label))
-        gtk_label_set_text(GTK_LABEL(bd->masks_blend_header_label), _("blend mask"));
       dt_iop_gui_blend_masks_panel_sync_toolbox();
       return;
     }
@@ -1025,59 +977,21 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
 
   if(pos == MASKS_PANEL_POS_UTILITY)
   {
-    GtkBox *toggle_box = darktable.develop->proxy.masks_flexi_host.toggle_box;
-    if(toggle_box)
-    {
-      dt_masks_gui_reparent_into(bd->mask_enable_toggle, GTK_WIDGET(toggle_box), FALSE, FALSE);
-      gtk_widget_set_valign(bd->mask_enable_toggle, GTK_ALIGN_CENTER);
-      gtk_widget_show(bd->mask_enable_toggle);
-      gtk_widget_show(GTK_WIDGET(toggle_box));
-    }
-    GtkBox *actions_box = darktable.develop->proxy.masks_flexi_host.actions_box;
-    if(actions_box)
-    {
-      dt_masks_gui_reparent_into(bd->showmask, GTK_WIDGET(actions_box), FALSE, FALSE);
-      gtk_widget_set_valign(bd->showmask, GTK_ALIGN_CENTER);
-      // the edit run follows the overlay, since this header replaces the
-      // panel's own (hidden below): edit on canvas and solo edit stay on the
-      // header wherever the panel is hosted
-      if(bd->masks_header_edit_box)
-      {
-        dt_masks_gui_reparent_into(bd->masks_header_edit_box, GTK_WIDGET(actions_box), FALSE, FALSE);
-        gtk_widget_set_valign(bd->masks_header_edit_box, GTK_ALIGN_CENTER);
-      }
-      _place_mask_lock(bd);
-      const gboolean is_mask_enabled = (module->blend_params->mask_mode != DEVELOP_MASK_DISABLED);
-      gtk_widget_set_visible(bd->showmask, is_mask_enabled && !module->hide_enable_button);
-      gtk_widget_show(GTK_WIDGET(actions_box));
-    }
-    gtk_widget_set_visible(bd->masks_blend_header, FALSE);
-
+    // the panel's header leads the lib's body as it leads the module's
+    // embedded, with the embedded look, but without its expander (hidden by
+    // _masks_header_apply_side) and its toggle, which goes last on the lib's
+    // header
     dt_lib_module_t *host = darktable.develop->proxy.masks_flexi_host.module;
-    if(host && host->expander)
-    {
-      GtkWidget *levb = NULL;
-      GtkWidget *lbl = _utility_header_label(host, &levb);
-      if(lbl)
-      {
-        gchar *markup = dt_masks_model_panel_header_markup(module ? module->name() : NULL,
-                                                           module ? dt_iop_get_instance_name(module) : NULL,
-                                                           TRUE);
-        gtk_label_set_markup(GTK_LABEL(lbl), markup);
-        g_free(markup);
-      }
+    _utility_header_hosting(host, TRUE);
+    _masks_header_apply_side(bd, FALSE, FALSE);
+    GtkWidget *toggle_box = GTK_WIDGET(darktable.develop->proxy.masks_flexi_host.toggle_box);
+    if(toggle_box) dt_masks_gui_reparent_into(bd->mask_enable_toggle, toggle_box, FALSE, FALSE);
+    gtk_widget_show(bd->mask_enable_toggle);
+    gtk_widget_set_visible(bd->masks_blend_header, TRUE);
+    dt_gui_add_class(bd->masks_blend_header, "dt_masks_embedded");
+    // again, now that the lib hosts the mask: its reset button
+    dt_iop_gui_blend_mask_header_sync(bd);
 
-      if(host->arrow)
-      {
-        gtk_widget_set_sensitive(host->arrow, TRUE);
-        gtk_widget_set_tooltip_text(host->arrow, _("show module"));
-      }
-      if(levb)
-      {
-        gtk_widget_set_sensitive(levb, TRUE);
-        gtk_widget_set_tooltip_text(levb, _("click to show or hide the blend mask panel"));
-      }
-    }
     if(host && host->preset_label)
       gtk_widget_set_visible(host->preset_label, FALSE);
 
@@ -1090,24 +1004,11 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
   }
   else
   {
-    // the header's controls come home with _masks_header_apply_side below
+    // the toggle comes home with _masks_header_apply_side below
     gtk_widget_set_visible(bd->masks_blend_header, TRUE);
-    // hosted elsewhere now -- drop the embedded inset, the host already
+    // on the canvas now -- drop the embedded inset, the panel already
     // provides its own (see darktable.css's "#blending-tabs.dt_masks_embedded")
     dt_gui_remove_class(bd->masks_blend_header, "dt_masks_embedded");
-  }
-
-  if(bd->masks_blend_header_label && GTK_IS_LABEL(bd->masks_blend_header_label))
-  {
-    const gboolean is_hosted = (pos == MASKS_PANEL_POS_CANVAS);
-    gchar *markup = dt_masks_model_panel_header_markup(module ? module->name() : NULL,
-                                                       module ? dt_iop_get_instance_name(module) : NULL,
-                                                       is_hosted);
-    if(is_hosted)
-      gtk_label_set_markup(GTK_LABEL(bd->masks_blend_header_label), markup);
-    else
-      gtk_label_set_text(GTK_LABEL(bd->masks_blend_header_label), markup);
-    g_free(markup);
   }
 
   if(pos == MASKS_PANEL_POS_CANVAS)
@@ -1129,9 +1030,8 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
     // able to do to it, and the darkroom toolbar's mask-panel button (which
     // shows whether the panel is out) does the same job at a fixed, learnable
     // position. It stays for the embedded position, where the header is the only
-    // control there is.
-    gtk_widget_set_visible(bd->flexi_inline_collapse_btn, FALSE);
-    _masks_header_apply_side(bd, dt_ui_flexi_panel_is_right(darktable.gui->ui));
+    // control there is; out here it only holds its place
+    _masks_header_apply_side(bd, TRUE, !dt_ui_flexi_panel_is_right(darktable.gui->ui));
   }
   else
   {
@@ -1139,14 +1039,7 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
     dt_ui_flexi_panel_set_collapsed(darktable.gui->ui, TRUE, FALSE, FALSE);
 
     if(pos == MASKS_PANEL_POS_EMBEDDED)
-    {
-      gtk_widget_set_visible(bd->flexi_inline_collapse_btn, TRUE);
-      _masks_header_apply_side(bd, FALSE);
-    }
-    else // MASKS_PANEL_POS_UTILITY
-    {
-      gtk_widget_set_visible(bd->flexi_inline_collapse_btn, FALSE);
-    }
+      _masks_header_apply_side(bd, FALSE, FALSE);
   }
 
   // the on/off toggle is carried between headers by hand above, and a

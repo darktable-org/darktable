@@ -34,6 +34,8 @@
 #include "develop/blend_gui_internal.h"
 #include "develop/develop.h"
 #include "dtgtk/expander.h"
+#include "dtgtk/paint.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
@@ -43,15 +45,16 @@ DT_MODULE(1)
 typedef struct dt_lib_masks_flexi_host_t
 {
   GtkBox *content_box;
-  GtkBox *actions_box;
   GtkBox *toggle_box;
+  // the stand-in in toggle_box while no module is focused
+  GtkWidget *idle_toggle;
 } dt_lib_masks_flexi_host_t;
 
 static void _reconfigure(dt_lib_module_t *self);
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("blend mask");
+  return _("masking");
 }
 
 const char *description(dt_lib_module_t *self)
@@ -72,15 +75,11 @@ uint32_t container(dt_lib_module_t *self)
 
 int position(const dt_lib_module_t *self)
 {
-  // sorts before the libs sharing its container: the duplicate manager (850),
-  // history (900) and snapshots (1000)
-  return 2;
-}
-
-GtkWidget *gui_tool_box(dt_lib_module_t *self)
-{
-  dt_lib_masks_flexi_host_t *d = (dt_lib_masks_flexi_host_t *)self->data;
-  return GTK_WIDGET(d->actions_box);
+  // first in its container: view.c packs the highest position at the top,
+  // past snapshots (1000), history (900), the duplicate manager (850) and the
+  // color picker (800). A position the user gives it by dragging is stored
+  // and wins over this one (_lib_position in libs/lib.c)
+  return 1100;
 }
 
 // show self->expander only in the "utility" position, by gtk_widget_show and
@@ -111,6 +110,16 @@ void expanded_state(dt_lib_module_t *self, const gboolean expanded)
   dt_iop_gui_blend_masks_panel_host_expanded(expanded);
 }
 
+// the header's reset button resets the hosted mask, as "reset mask" in the
+// mask group's menu does. Insensitive with nothing hosted or the mask locked
+// (dt_iop_gui_blend_mask_header_sync), but a shortcut reaches it all the same
+void gui_reset(dt_lib_module_t *self)
+{
+  dt_iop_module_t *module =
+    darktable.develop ? darktable.develop->proxy.masks_flexi_host.hosted_module : NULL;
+  if(module) dt_iop_gui_blend_mask_reset(module);
+}
+
 /* a raster element's badge depends on its source module, which can be
  * switched off, stop masking or be removed without touching this module's
  * forms. Each of those adds a history item, so the badges of every module are
@@ -131,27 +140,34 @@ void gui_init(dt_lib_module_t *self)
 
   d->content_box = GTK_BOX(dt_gui_vbox());
   gtk_widget_set_name(GTK_WIDGET(d->content_box), "masks-host-content");
-  // both live in the expander header, which view.c destroys on every view
-  // leave and rebuilds on enter: own them, and take them out of the header
-  // before it goes (see view_leave), or the next darkroom visit packs dead
-  // widgets and the mask's on/off toggle and overlay button vanish with them
-  d->actions_box = GTK_BOX(g_object_ref_sink(dt_gui_hbox()));
+  // it lives in the expander header, which view.c destroys on every view
+  // leave and rebuilds on enter: own it, and take it out of the header before
+  // it goes (see view_leave), or the next darkroom visit packs a dead widget
+  // and the mask's toggle vanishes with it
   d->toggle_box = GTK_BOX(g_object_ref_sink(dt_gui_hbox()));
-  gtk_widget_set_valign(GTK_WIDGET(d->actions_box), GTK_ALIGN_CENTER);
   gtk_widget_set_valign(GTK_WIDGET(d->toggle_box), GTK_ALIGN_CENTER);
-  // the theme sizes the module's controls these boxes take in, and only them:
-  // the lib's own header buttons (its arrow above all) keep every lib's size
-  dt_gui_add_class(GTK_WIDGET(d->actions_box), "dt_masks_host_controls");
+  // the theme sizes the toggle this box takes in, and only it: the lib's own
+  // header buttons (its arrow above all) keep every lib's size
   dt_gui_add_class(GTK_WIDGET(d->toggle_box), "dt_masks_host_controls");
-  gtk_widget_show(GTK_WIDGET(d->actions_box));
   gtk_widget_show(GTK_WIDGET(d->toggle_box));
+
+  // with no module focused there is no mask toggle to take in: a stand-in
+  // keeps the header's shape, insensitive with the whole lib then. No
+  // tooltip: the header's says why it does nothing (_utility_header_hosting
+  // in develop/masks_gui_panel_host.c). no_show_all: shown and hidden by the
+  // panel host alone
+  d->idle_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_panel, 0, NULL);
+  dt_masks_gui_header_toggle_style(d->idle_toggle);
+  gtk_widget_set_no_show_all(d->idle_toggle, TRUE);
+  dt_gui_box_add(d->toggle_box, d->idle_toggle);
+
   self->widget = GTK_WIDGET(d->content_box);
   gtk_widget_show_all(self->widget);
 
   darktable.develop->proxy.masks_flexi_host.module = self;
   darktable.develop->proxy.masks_flexi_host.content_box = d->content_box;
-  darktable.develop->proxy.masks_flexi_host.actions_box = d->actions_box;
   darktable.develop->proxy.masks_flexi_host.toggle_box = d->toggle_box;
+  darktable.develop->proxy.masks_flexi_host.idle_toggle = d->idle_toggle;
   darktable.develop->proxy.masks_flexi_host.hosted_module = NULL;
   darktable.develop->proxy.masks_flexi_host.reconfigure = _reconfigure;
 
@@ -173,27 +189,21 @@ void view_enter(dt_lib_module_t *self,
   _reconfigure(self);
 
   dt_lib_masks_flexi_host_t *d = (dt_lib_masks_flexi_host_t *)self->data;
-  if(self->expander && d && d->toggle_box && !gtk_widget_get_parent(GTK_WIDGET(d->toggle_box)))
+  if(self->expander && d)
   {
     GtkWidget *header = DTGTK_EXPANDER(self->expander)->header;
-    gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(d->toggle_box), FALSE, FALSE, 0);
-    // visual reading order from left to right: overlay | toggle
-    // For GTK_PACK_END, the earlier child in the list is placed further to the right.
-    // child 2 = toggle (rightmost), child 3 = overlay
-    gtk_box_reorder_child(GTK_BOX(header), GTK_WIDGET(d->toggle_box), 2);
-    if(d->actions_box)
-      gtk_box_reorder_child(GTK_BOX(header), GTK_WIDGET(d->actions_box), 3);
-    gtk_widget_show(GTK_WIDGET(d->toggle_box));
-  }
+    dt_gui_add_class(header, "dt_masks_host_header");
 
-  if(self->expander)
-  {
-    dt_gui_add_class(DTGTK_EXPANDER(self->expander)->header, "dt_masks_host_header");
-    if(self->arrow) gtk_widget_set_valign(self->arrow, GTK_ALIGN_CENTER);
+    // a lib's own header, with the mask's on/off toggle last, where every
+    // other lib has its presets menu (hidden below, so the toggle takes its
+    // place). The mask's other header controls stay on the panel's own header,
+    // which leads the lib's body (see dt_iop_gui_blend_masks_panel_relocate)
+    if(!gtk_widget_get_parent(GTK_WIDGET(d->toggle_box)))
+    {
+      gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(d->toggle_box), FALSE, FALSE, 0);
+      gtk_box_reorder_child(GTK_BOX(header), GTK_WIDGET(d->toggle_box), 0);
+    }
   }
-
-  if(self->reset_button)
-    gtk_widget_set_visible(self->reset_button, FALSE);
 
   // the lib has no presets or preferences, so lib.c's header hamburger has
   // nothing to open; the masking options open on a right-click of the on/off
@@ -223,15 +233,9 @@ void view_leave(dt_lib_module_t *self,
 {
   dt_lib_masks_flexi_host_t *d = (dt_lib_masks_flexi_host_t *)self->data;
   if(!d) return;
-  GtkWidget *boxes[] = { GTK_WIDGET(d->toggle_box), GTK_WIDGET(d->actions_box) };
-  for(int i = 0; i < G_N_ELEMENTS(boxes); i++)
-  {
-    GtkWidget *parent = boxes[i] ? gtk_widget_get_parent(boxes[i]) : NULL;
-    if(parent) gtk_container_remove(GTK_CONTAINER(parent), boxes[i]);
-  }
-  // they point into the same header; the next use finds them in the new one
-  darktable.develop->proxy.masks_flexi_host.header_label = NULL;
-  darktable.develop->proxy.masks_flexi_host.label_evb = NULL;
+  GtkWidget *box = GTK_WIDGET(d->toggle_box);
+  GtkWidget *parent = box ? gtk_widget_get_parent(box) : NULL;
+  if(parent) gtk_container_remove(GTK_CONTAINER(parent), box);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -240,19 +244,13 @@ void gui_cleanup(dt_lib_module_t *self)
 
   darktable.develop->proxy.masks_flexi_host.module = NULL;
   darktable.develop->proxy.masks_flexi_host.content_box = NULL;
-  darktable.develop->proxy.masks_flexi_host.actions_box = NULL;
   darktable.develop->proxy.masks_flexi_host.toggle_box = NULL;
-  darktable.develop->proxy.masks_flexi_host.header_label = NULL;
-  darktable.develop->proxy.masks_flexi_host.label_evb = NULL;
+  darktable.develop->proxy.masks_flexi_host.idle_toggle = NULL;
   darktable.develop->proxy.masks_flexi_host.hosted_module = NULL;
   darktable.develop->proxy.masks_flexi_host.reconfigure = NULL;
 
   dt_lib_masks_flexi_host_t *d = (dt_lib_masks_flexi_host_t *)self->data;
-  if(d)
-  {
-    g_clear_object(&d->actions_box);
-    g_clear_object(&d->toggle_box);
-  }
+  if(d) g_clear_object(&d->toggle_box);
   g_free(self->data);
   self->data = NULL;
 }

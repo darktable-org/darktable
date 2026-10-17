@@ -3089,14 +3089,16 @@ popover#log-history-popover label
   padding-right: 2px;
 }
 
-/* two ids and a class, to outrank the docked header's own padding rule
-   ("#blending-tabs.dt_section_label:not(.dt_masks_embedded)", one id and two
-   classes) without touching the embedded position, which is inset by its
-   module's metrics instead and must keep them */
+/* the header docked: a row of its own, with none of the rule, margin or
+   padding .dt_section_label gives a section title. The sides are widened
+   below on the handle's side; the outer one is inset in code by the
+   scrollbar's width (_flexi_sync_header_scrollbar_pad in gui/gtk.c) */
 #masks-docked-panel #blending-tabs.dt_section_label
 {
-  padding-left: 2px;
-  padding-right: 2px;
+  padding: 0.2em 2px;
+  min-height: 2em;
+  margin: 0;
+  border-bottom: none;
 }
 
 #masks-docked-panel.dt_masks_left #blending-tabs.dt_section_label
@@ -3237,7 +3239,7 @@ button.dt_masks_panel_toggle:checked
   padding: 0;
 }
 
-/* the panel's controls moved onto the utility lib's header, sized as in
+/* the mask's on/off toggle moved onto the utility lib's header, sized as in
    #blending-tabs. Not the whole header: its arrow would grow past every
    other lib's */
 .dt_masks_host_controls .dt_module_btn,
@@ -3251,42 +3253,45 @@ button.dt_masks_panel_toggle:checked
 
 /* ---- the "blend mask" header (#blending-tabs) ------------------------- */
 
-/* thicker when docked in the dedicated panel, flush and compact when
-   embedded (.dt_masks_embedded).
+/* embedded (.dt_masks_embedded), in its module or in the utility lib, the
+   header blends into what hosts it: the section rule, the vertical margin
+   and the band .dt_section_label brings belong to a section title inside a
+   module, not to a header row, so all go. Docked, the header drops the
+   class and is styled with the docked panel (#masks-docked-panel).
 
-   Both rules qualify on .dt_section_label, the class the header carries, and
+   The rules qualify on .dt_section_label, the class the header carries, and
    that is not decoration: ".dt_section_label:not(#blending-box)" sets
    "padding: 0.14em 0", and :not() carries the specificity of its argument,
    so an id plus a class ties with it. Without the extra class here the
-   horizontal padding silently comes out as 0 */
-#blending-tabs.dt_section_label:not(.dt_masks_embedded)
-{
-  padding: 0.45em 0.5em;
-  min-height: 2em;
-  margin: 0;
-  border-bottom: none;
-}
+   horizontal padding silently comes out as 0.
 
-/* embedded, the module's own controls sit between this header and the
-   module's header, so the column its icons have to share is the panel's
-   below it: the side inset of #blending-box (0.65em) and the button box of
-   the buttons in there (the .dt_module_btn base metrics plus the global 1px
-   button padding, and the default #button-canvas inset), rather than the
-   wider, taller box the dedicated panel uses. The section rule and the
-   vertical margin .dt_section_label brings belong to a section title inside
-   a module, not to a header row, so both go.
-
-   It is also easy to lose among the module's own controls, so it reads as a
-   header instead: some room and a rule after the controls above it, and a
-   band in the color module headers show (the panel background, which
-   #module-header leaves showing through) */
+   In its module, the side padding is #module-header's, so the mask toggle
+   lines up with the module's on/off button and the arrow with its presets
+   button */
 #blending-tabs.dt_section_label.dt_masks_embedded
 {
-  padding: 0.5em 0.65em;
-  margin: 0.5em 0 0 0;
-  border-bottom: none;
-  border-top: 1px solid shade(@plugin_bg_color, 1.05);
-  background-color: @bg_color;
+  padding: 0.3em 0.5em 0.6em 0.5em;
+  margin: 0;
+  border: none;
+  background-color: @plugin_bg_color;
+}
+
+/* in its module only, a section rule above the header sets the mask apart
+   from the module's own controls. The utility position also carries
+   .dt_masks_embedded, but is not inside an #iop-expander; the docked panel
+   is one, but its header drops the class */
+#iop-expander #blending-tabs.dt_section_label.dt_masks_embedded
+{
+  border-top: 0.05em solid @section_label;
+  padding-bottom: 0.4em;
+  padding-top: 0.4em;
+}
+
+/* hosted in the utility lib, the header is a row of controls under the lib's
+   own header, with no module header to line up with */
+#masks-host-content #blending-tabs.dt_section_label.dt_masks_embedded
+{
+  padding: 0.2em;
 }
 
 .dt_plugin_ui #blending-tabs.dt_masks_embedded .dt_module_btn
@@ -3299,7 +3304,7 @@ button.dt_masks_panel_toggle:checked
 
 /* the panel collapse arrow, not styled like the .dt_module_btn toggles
    beside it so that it does not read as a mask control: a light plate sets
-   it apart. Ahead of the caption (.dt_masks_left) or at the far right
+   it apart. Leading the header (.dt_masks_left) or closing it
    (.dt_masks_right) */
 #masks-collapse
 {
@@ -3343,38 +3348,22 @@ button.dt_masks_panel_toggle:checked
   background-color: alpha(@fg_color, 0.18);
 }
 
-/* the "blend mask" caption, a small gap after what leads it */
-#masks-header-caption
-{
-  margin-left: 0.3em;
-}
-
-/* embedded, it heads a part of the module and has to read as the same kind
-   of title as the module's name, so it takes the box and size of
-   #iop-panel-label (color is left alone: this header dims with the mask's
-   on/off state) */
-#blending-tabs.dt_masks_embedded #masks-header-caption
-{
-  margin-left: 0;
-  padding: 0 0.14em 0.14em 0.45em;
-  font-size: 1.1em;
-}
-
 /* the mask's on/off toggle. The header itself says nothing about the
    mask's state: that is this toggle's job alone, the way a module header
    leaves "is this module on" to its power button. The .dt_masks_enabled
-   class on the header is left for a theme that wants to say it twice */
+   class on the header is left for a theme that wants to say it twice. It
+   draws the toolbar button's domino, so it dims as .dt_masks_empty does */
 button.dt_masks_enable_toggle
 {
   background-color: transparent;
   border: none;
-  opacity: 0.55;
+  opacity: 0.45;
   color: @button_fg;
 }
 
 button.dt_masks_enable_toggle:hover
 {
-  opacity: 0.85;
+  opacity: 0.75;
 }
 
 button.dt_masks_enable_toggle:checked
@@ -3383,19 +3372,29 @@ button.dt_masks_enable_toggle:checked
   color: @field_active_fg;
 }
 
-/* the rows of buttons in the header and the toolbar: a run of buttons and a
-   .dt_masks_button_gap between two runs measure the same on each */
+/* the rows of buttons in the header and the toolbar: no margin of their
+   own, so the spacing between runs is the theme's alone (the toolbar's
+   .dt_masks_button_gap, the header's .dt_masks_group_end) */
 .dt_masks_button_row > *
 {
   margin-right: 0px;
 }
 
-/* fixed separator between two runs of buttons in the toolbar and the
-   header: one icon wide, so the runs read as runs without competing with the
-   row's own expanding spacer for the leftover width */
+/* fixed separator between two runs of buttons in the toolbar: one icon
+   wide, so the runs read as runs without competing with the row's own
+   expanding spacer for the leftover width */
 .dt_masks_button_gap
 {
   min-width: 4px;
+}
+
+/* the space between the header's three groups of buttons: editing (edit
+   on canvas, solo edit), viewing (overlay, eye) and the lock. The first two
+   end in .dt_masks_group_end. Qualified past ".dt_masks_button_row > *",
+   which zeroes the margin */
+#blending-tabs .dt_masks_group_end
+{
+  margin-right: 0.7em;
 }
 
 /* ---- blend mode and opacity ------------------------------------------- */
@@ -3416,9 +3415,8 @@ button.dt_masks_enable_toggle:checked
   padding: 0;
 }
 
-/* docked, blend mode and blend opacity start where the header's caption
-   does: its margin (#masks-header-caption) on the same 2px edge, as nothing
-   leads it here */
+/* docked, blend mode and blend opacity start a little in from the cards'
+   edge, as nothing leads them here */
 #masks-docked-panel #blending-box.dt_masks_blend_box .dt_bauhaus
 {
   margin-left: 0.3em;
