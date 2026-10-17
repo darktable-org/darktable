@@ -462,23 +462,6 @@ static inline float fast_mexp2f(const float x)
   return k.f;
 }
 
-/** Compute ceil value of a float
- * @remark Avoid libc ceil for now. Maybe we'll revert to libc later.
- * @param x Value to ceil
- * @return ceil value
- */
-static inline float ceil_fast(const float x)
-{
-  if(x <= 0.f)
-  {
-    return (float)(int)x;
-  }
-  else
-  {
-    return -((float)(int)-x) + 1.f;
-  }
-}
-
 static inline void dt_vector_min(dt_aligned_pixel_t min,
                                  const dt_aligned_pixel_t v1,
                                  const dt_aligned_pixel_t v2)
