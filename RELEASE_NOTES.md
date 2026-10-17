@@ -227,6 +227,13 @@ changes (where available).
 
 ## Other Changes
 
+- AgX, sigmoid and filmic have a new "target white from output" option
+  that sets target white to the peak of the output instead of the
+  slider, so one edit exports correctly to SDR, HLG and PQ: 100% for
+  SDR, about 493% (1000 nits) for HLG, and for PQ the peak set by the
+  new "peak luminance of PQ output" preference in processing, 1000 nits
+  by default.
+
 - PNG exports using a PQ output color profile now include content light
   level metadata (MaxCLL and MaxFALL) for HDR tone mapping.
 
