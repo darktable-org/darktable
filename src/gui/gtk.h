@@ -485,6 +485,10 @@ void dt_ui_flexi_panel_set_collapsed(struct dt_ui_t *ui,
                                      const gboolean collapsed,
                                      const gboolean has_content,
                                      const gboolean persist);
+/** \brief whether the darkroom is the current view. While it is, and the
+    canvas position is chosen, the edge strips keep their room in the center
+    row even with nothing to show, so that focus changes do not move the image */
+void dt_ui_flexi_panel_set_in_view(struct dt_ui_t *ui, const gboolean in_view);
 gboolean dt_ui_flexi_panel_is_collapsed(struct dt_ui_t *ui);
 /** \brief which edge the panel is on now, which can differ from the stored
     preference: anything mirroring the panel's own chrome follows this */

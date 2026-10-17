@@ -4134,6 +4134,10 @@ void enter(dt_view_t *self)
   // clean the undo list
   dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
 
+  // before any module takes focus, so the canvas is laid out with the edge
+  // strips' room from the start
+  dt_ui_flexi_panel_set_in_view(darktable.gui->ui, TRUE);
+
   /* connect to ui pipe finished signal for redraw */
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
                            _darkroom_ui_image_changed_callback);
@@ -4333,6 +4337,7 @@ void leave(dt_view_t *self)
   // not per-view lib content -- hide it and its edge strips explicitly, since
   // nothing else does this when leaving the view
   dt_ui_flexi_panel_set_collapsed(darktable.gui->ui, TRUE, FALSE, FALSE);
+  dt_ui_flexi_panel_set_in_view(darktable.gui->ui, FALSE);
 
   dt_iop_color_picker_cleanup();
   if(darktable.lib->proxy.colorpicker.picker_proxy)

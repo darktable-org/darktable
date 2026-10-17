@@ -34,6 +34,7 @@
 #include "gui/splash.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/blend.h"
+#include "develop/blend_gui_internal.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 // dt_masks_get_edit_mode: the flexi panel's edge halo stands down while
@@ -168,7 +169,9 @@ typedef struct dt_ui_t
   gboolean flexi_mask_active;      // TRUE when the hosted module's mask is actually in use
   gchar *flexi_mask_label;         // human-readable current mask type, for the hint
   gboolean flexi_panel_right;      // current side (FALSE = left, TRUE = right)
-  GtkWidget *flexi_centerrow;      // the panel's home when docked as a real column
+  gboolean flexi_has_content;      // the edge strips are live (there is a panel to reach)
+  gboolean flexi_in_view;          // the darkroom is showing, so the strips may take room
+  GtkWidget *flexi_centerrow;     // the panel's home when docked as a real column
 } dt_ui_t;
 
 /* initialize the whole left panel */
@@ -4248,6 +4251,15 @@ static double _flexi_halo_arrow_size(GtkWidget *halo)
 
 static gboolean _flexi_sliver_draw(GtkWidget *w, cairo_t *cr, gpointer user_data)
 {
+  // kept only for its room (see _flexi_slivers_update): the canvas' own margin
+  // color, as darkroom.c paints it, so it reads as part of the canvas
+  if(!darktable.gui->ui->flexi_has_content)
+  {
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+    cairo_paint(cr);
+    return FALSE;
+  }
+
   GtkStyleContext *ctx = gtk_widget_get_style_context(w);
   const int width = gtk_widget_get_allocated_width(w);
   const int height = gtk_widget_get_allocated_height(w);
@@ -4381,6 +4393,7 @@ static void _flexi_sliver_enter(GtkEventControllerMotion *controller,
                                 GtkWidget *w)
 {
   dt_ui_t *ui = darktable.gui->ui;
+  if(!ui->flexi_has_content) return;
   _flexi_sliver_hint(ui, _flexi_sliver_is_right(ui, w));
 }
 
@@ -4396,8 +4409,9 @@ static void _flexi_sliver_pressed(GtkGestureSingle *gesture,
                                   GtkWidget *w)
 {
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
-  dt_gui_claim(gesture);
   dt_ui_t *ui = darktable.gui->ui;
+  if(!ui->flexi_has_content) return;
+  dt_gui_claim(gesture);
   const gboolean right = _flexi_sliver_is_right(ui, w);
 
   // the strip stays put once the panel is docked, so it needs something to do
@@ -4739,9 +4753,21 @@ static void _flexi_slivers_update(dt_ui_t *ui, const gboolean show)
 {
   _flexi_halo_sync_width(ui);
 
+  ui->flexi_has_content = show;
+  // the strips are columns of centerrow, so showing or hiding them re-lays out
+  // the canvas and moves the image by a pixel. Their room is kept for as long
+  // as the canvas position is in use, whatever is focused; with no panel to
+  // reach they pass for canvas (_flexi_sliver_draw) and take no input
+  const gboolean reserve =
+    show || (ui->flexi_in_view && dt_masks_gui_panel_position() == MASKS_PANEL_POS_CANVAS);
+
   for(int i = 0; i < 2; i++)
   {
-    if(ui->flexi_sliver[i]) gtk_widget_set_visible(ui->flexi_sliver[i], show);
+    if(ui->flexi_sliver[i])
+    {
+      gtk_widget_set_visible(ui->flexi_sliver[i], reserve);
+      gtk_widget_queue_draw(ui->flexi_sliver[i]);
+    }
     // whether a halo is up is the proximity poll's business, but with no panel
     // to reach for there must be none, and no poll looking for one either
     if(!show && ui->flexi_halo[i]) gtk_widget_set_visible(ui->flexi_halo[i], FALSE);
@@ -4906,6 +4932,13 @@ void dt_ui_flexi_panel_set_icon(dt_ui_t *ui, const gboolean active, const char *
   if(active_changed)
     for(int i = 0; i < 2; i++)
       if(ui->flexi_halo[i]) gtk_widget_queue_draw(ui->flexi_halo[i]);
+}
+
+void dt_ui_flexi_panel_set_in_view(dt_ui_t *ui, const gboolean in_view)
+{
+  if(!ui) return;
+  ui->flexi_in_view = in_view;
+  _flexi_slivers_update(ui, in_view && ui->flexi_has_content);
 }
 
 gboolean dt_ui_flexi_panel_is_collapsed(dt_ui_t *ui)
