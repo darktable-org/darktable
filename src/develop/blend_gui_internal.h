@@ -284,10 +284,6 @@ dt_masks_panel_state_t dt_masks_model_panel_state(const int pos,
 gboolean dt_masks_model_pin_should_expand_iop(const gboolean is_expanded,
                                               const gboolean is_collapsed);
 
-char *dt_masks_model_panel_header_markup(const char *module_name,
-                                        const char *instance_name,
-                                        const gboolean is_hosted);
-
 /** the shape solo-edit mode should be isolating, given the panel's selection,
     or INVALID_MASKID if the mode must stand down */
 dt_mask_id_t dt_masks_model_soloedit_target(dt_iop_gui_blend_data_t *bd);
@@ -449,14 +445,26 @@ void dt_masks_gui_pref_section(GtkWidget *box, const gchar *title, const gchar *
     shown state */
 void dt_masks_gui_reparent_into(GtkWidget *w, GtkWidget *parent,
                                 const gboolean at_end, const gboolean expand);
+/** the visibility and sensitivity of the mask header's buttons, from the
+    mask's and the module's state */
+void dt_iop_gui_blend_mask_header_sync(dt_iop_gui_blend_data_t *data);
+/** the mask header's controls between its on/off toggle and its expander,
+    grouped as the theme spaces them (.dt_masks_group_end): the edit run, the
+    overlay and the eye, the lock. Also builds the utility lib's stand-ins */
+GtkWidget *dt_masks_gui_header_cluster_new(GtkWidget *edit_run,
+                                           GtkWidget *overlay,
+                                           GtkWidget *eye,
+                                           GtkWidget *lock);
+/** the classes and alignment of the mask header's on/off toggle */
+void dt_masks_gui_header_toggle_style(GtkWidget *toggle);
 
 
 // ---------------------------------------------------------------------------
 // masks_gui_panel_host.c -> blend_gui.c
 // ---------------------------------------------------------------------------
 
-/** the utility lib's header with no module hosted: titled for no module, its
-    arrow and title insensitive */
+/** the utility lib's header with no module hosted: its stand-in controls
+    shown, its arrow insensitive */
 void dt_masks_gui_utility_header_unhosted(struct dt_lib_module_t *host);
 /** move this module's panel content back into its own expander */
 void dt_masks_gui_flexi_release(dt_iop_module_t *module);

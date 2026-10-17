@@ -359,14 +359,16 @@ typedef struct dt_iop_gui_blend_data_t
   // switches the mask on (DEVELOP_MASK_ENABLED | DEVELOP_MASK_FLEXI) or off,
   // in the "blend mask" header (see _blendop_mask_enable_toggled)
   GtkWidget *mask_enable_toggle;
-  // the module name in the "blend mask" header
-  GtkWidget *masks_blend_header_label;
-  // the arrow at the start of the "blend mask" header that folds the panel
-  // body away, shown only in the embedded position: the hosts fold themselves
+  // the arrow on the "blend mask" header that folds the panel body away, at
+  // work only in the embedded position: the hosts fold themselves, and on the
+  // canvas it only holds its place (see _masks_header_apply_side)
   GtkWidget *flexi_inline_collapse_btn;
   // the "blend mask" header and everything below it: what moves into the
   // host the masks panel position names (dt_iop_gui_blend_masks_panel_relocate)
   GtkBox *relocatable_box;
+  // the header's place in relocatable_box, inside an event box so that a
+  // click anywhere on the embedded header but on a button folds the panel
+  GtkBox *masks_header_home;
   // everything in relocatable_box below the header, folded away in the
   // embedded position while the header stays as the way back. Only this
   // wrapper is hidden, so its children keep their own visibility
@@ -442,16 +444,19 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_toolbar;
   // the "blend mask" section header. Reading order:
   //
-  //   expander | title | <space> | lock | show_mask_overlay | edit run | toggle
+  //   toggle | <space> | edit run | show_mask_overlay | eye | lock
+  //   | <space> | expander
   //
-  // (the expander moves to the far right when the canvas panel is docked on
-  // the right, see _masks_header_apply_side)
+  // (the two sides swap when the canvas panel is docked on the left, see
+  // _masks_header_apply_side)
   GtkWidget *masks_blend_header;
-  // lock + show_mask_overlay + edit run + toggle, packed END
-  GtkWidget *masks_right_cluster;
-  // the edit run on the panel header: edit on canvas and solo edit between two
-  // fixed gaps (see _pack_header_edit_run). Whole-mask canvas controls, so on
-  // the header wherever the panel is hosted, never on the mask's own group
+  // edit run + show_mask_overlay + eye + lock, the header's center widget
+  // between the toggle and the expander (dt_masks_gui_header_cluster_new).
+  // In the utility position it moves, as one, onto the lib's header
+  GtkWidget *masks_header_cluster;
+  // the edit run on the panel header: edit on canvas and solo edit (see
+  // _pack_header_edit_run). Whole-mask canvas controls, so on the header
+  // wherever the panel is hosted, never on the mask's own group
   GtkWidget *masks_header_edit_box;
   // the mask list: each group's header, its element rows indented under it
   // (_pack_group_elements), reorderable by drag and drop
@@ -910,6 +915,17 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module);
 void dt_iop_gui_blend_masks_panel_toggle(void);
 // open the focused module's mask panel where it is hosted, if it is folded
 void dt_iop_gui_blend_masks_panel_show(void);
+// the canvas panel changed sides: lay its header out for the new one
+void dt_iop_gui_blend_masks_panel_side_changed(void);
+// the tooltip of both buttons that display the mask: the overlay in the mask
+// header and the indicator in the module header
+const char *dt_iop_gui_blend_showmask_tooltip(void);
+// show the mask overlay or stop, from either of those buttons: showing it
+// switches an off module and an off mask on
+void dt_iop_gui_blend_mask_display(dt_iop_module_t *module, const gboolean show);
+// stand the overlay and the eye down, with nothing for them to show: the
+// module or its mask switched off, or no alpha channel to show the mask in
+void dt_iop_gui_blend_mask_view_off(dt_iop_module_t *module);
 // fold the panel away for the focused module if it has lost its mask, as when
 // it takes focus without one: the mask coming back (an undo) shows it again
 void dt_iop_gui_blend_masks_panel_fold_unmasked(void);

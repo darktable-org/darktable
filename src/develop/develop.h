@@ -331,13 +331,16 @@ typedef struct dt_develop_t
       struct dt_lib_module_t *module;
       // where flexi content gets reparented into; owned by the lib
       GtkBox *content_box;
-      // header action buttons container; owned by the lib
+      // the lib header's center widget, where a hosted module's header
+      // controls go (masks_header_cluster); owned by the lib
       GtkBox *actions_box;
       // header on/off toggle container; owned by the lib
       GtkBox *toggle_box;
-      // header title label and event box
-      GtkWidget *header_label;
-      GtkWidget *label_evb;
+      // stand-ins for the mask header's buttons while no module is focused,
+      // in actions_box and toggle_box: always insensitive, shown only then
+      // (see dt_masks_gui_utility_header_unhosted); owned by the lib
+      GtkWidget *idle_actions;
+      GtkWidget *idle_toggle;
       // the module whose panel is in content_box, NULL if none, for
       // dt_iop_gui_blend_masks_panel_relocate to move out first
       struct dt_iop_module_t *hosted_module;

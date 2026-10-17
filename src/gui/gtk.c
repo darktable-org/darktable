@@ -3850,7 +3850,7 @@ static void _flexi_sliver_activate(dt_ui_t *ui, const gboolean right)
 }
 
 // click the docked panel's header to fold it away, as the "blend mask" header
-// does embedded in a module (see _masks_caption_clicked in blend_gui.c). The
+// does embedded in a module (see _masks_header_clicked in blend_gui.c). The
 // buttons on the header consume their own clicks
 static void _flexi_header_pressed(GtkGestureSingle *gesture,
                                   const gint n_press,
@@ -4468,8 +4468,8 @@ static void _flexi_sync_header_scrollbar_pad(dt_ui_t *ui)
     GList *kids = gtk_container_get_children(GTK_CONTAINER(r->data));
 
     // the outermost visible child on that side, found from the allocations
-    // rather than from the packing order: which of the caption and the icon
-    // cluster leads mirrors with the dock (_masks_header_apply_side in
+    // rather than from the packing order: which of the toggle and the expander
+    // placeholder leads mirrors with the dock (_masks_header_apply_side in
     // develop/masks_gui_panel_host.c)
     GtkWidget *edge = NULL;
     int best = 0;
@@ -4845,6 +4845,9 @@ void dt_ui_flexi_panel_set_side(dt_ui_t *ui, const gboolean right)
 
   // the handle moved to the other edge, so the scrollbar has to move too
   _flexi_sync_scrollbar_side(ui);
+
+  // and the header's sides with it, now rather than at the next relocate
+  dt_iop_gui_blend_masks_panel_side_changed();
 }
 
 void dt_ui_flexi_panel_set_collapsed(dt_ui_t *ui,
