@@ -273,7 +273,6 @@ typedef struct dt_blendop_cl_global_t
   int kernel_blendop_rgb_hsl;
   int kernel_blendop_rgb_jzczhz;
   int kernel_blendop_mask_tone_curve;
-  int kernel_blendop_set_mask;
   int kernel_blendop_display_channel;
   int kernel_calc_Y0_mask;
   int kernel_calc_scharr_mask;
@@ -951,6 +950,33 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
                                      cl_mem dev_out,
                                      const dt_iop_roi_t *roi_in,
                                      const dt_iop_roi_t *roi_out);
+
+/** the OpenCL blend's device images and masking profile, lent to the group
+ * renderer as piece->blend_refine_cl */
+typedef struct dt_develop_blend_cl_context_t
+{
+  int devid;
+  cl_mem dev_in;
+  cl_mem dev_out;
+  cl_mem dev_profile_info;
+  cl_mem dev_profile_lut;
+  int use_profile;
+  int offs[2];
+  // the parametric elements' buffers, allocated by the first of them and
+  // released by the blend
+  cl_mem dev_ones;
+  cl_mem dev_mask;
+  // an element could not be rendered on the device: the blend fails, and the
+  // pipe redoes the module on the CPU
+  gboolean failed;
+} dt_develop_blend_cl_context_t;
+
+/** evaluate blendif settings `d` on the device into `mask`, sized by
+ * piece->blend_refine_roi_out, as the make_mask functions do on the host for a
+ * mask of ones. Sets the context's failed flag on an OpenCL error */
+void dt_develop_blendif_make_mask_cl(dt_dev_pixelpipe_iop_t *piece,
+                                     const dt_develop_blend_params_t *const d,
+                                     float *const mask);
 #endif
 
 #define _BLEND_FUNC_PROTO(align, uni) DT_OMP_DECLARE_SIMD(aligned align uniform uni) static void

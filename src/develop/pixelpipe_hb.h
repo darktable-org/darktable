@@ -116,6 +116,9 @@ typedef struct dt_dev_pixelpipe_iop_t
   const float *blend_refine_guide_out;
   const dt_iop_roi_t *blend_refine_roi_in;
   const dt_iop_roi_t *blend_refine_roi_out;
+  // the same images on the device while dt_develop_blend_process_cl runs,
+  // where the guides above are not read back; NULL otherwise
+  struct dt_develop_blend_cl_context_t *blend_refine_cl;
 
   // the refinements previewed as off, copied at commit time so that the
   // renderer never reads the GUI's set from a worker thread

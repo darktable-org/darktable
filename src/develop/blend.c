@@ -434,29 +434,42 @@ static gboolean _flexi_global_refine_bypassed(const dt_dev_pixelpipe_iop_t *cons
                                        DT_MASKS_REFINE_KEY_GLOBAL);
 }
 
-// the guided-filter feathering of a member or group reads the guide image, and
-// a parametric form evaluates blendif against it
-static gboolean _needs_host_guides(const dt_masks_point_group_t *pt,
-                                   const dt_masks_form_t *form,
-                                   const dt_masks_form_t *owner,
-                                   void *data)
+// the guided-filter feathering of a member or group reads the guide image
+static gboolean _needs_guide(const dt_masks_point_group_t *pt,
+                             const dt_masks_form_t *form,
+                             const dt_masks_form_t *owner,
+                             void *data)
 {
   const dt_dev_pixelpipe_iop_t *const piece = data;
-  return (pt->refinement.enabled && pt->refinement.feathering_radius > 0.1f
-          && piece->colors >= 3)
+  return pt->refinement.enabled && pt->refinement.feathering_radius > 0.1f
+         && piece->colors >= 3;
+}
+
+// ... and a parametric form evaluates blendif against the pixels
+static gboolean _reads_pixels(const dt_masks_point_group_t *pt,
+                              const dt_masks_form_t *form,
+                              const dt_masks_form_t *owner,
+                              void *data)
+{
+  return _needs_guide(pt, form, owner, data)
          || (form && (form->type & DT_MASKS_PARAMETRIC));
 }
 
-// does rendering this group need the module's input and output images? A
-// parametric member evaluates its channels against them, and the guided-filter
-// feathering of a member or group uses them as guide. In the OpenCL pipe they
-// live on the device, and are then read back to the host; without them a
-// parametric member renders opaque and feathering is skipped. Plain shapes
-// keep the fast path without the readback
-static gboolean _group_needs_host_guides(const dt_masks_form_t *const form,
-                                         const dt_dev_pixelpipe_iop_t *const piece)
+static gboolean _is_parametric(const dt_masks_point_group_t *pt,
+                               const dt_masks_form_t *form,
+                               const dt_masks_form_t *owner,
+                               void *data)
 {
-  return dt_masks_group_walk(piece->pipe->forms, form, _needs_host_guides, (void *)piece);
+  return form && (form->type & DT_MASKS_PARAMETRIC);
+}
+
+// does rendering this group read the module's input and output images? A
+// parametric member evaluates its channels against them, and the guided-filter
+// feathering of a member or group uses them as guide
+static gboolean _group_reads_pixels(const dt_masks_form_t *const form,
+                                    const dt_dev_pixelpipe_iop_t *const piece)
+{
+  return dt_masks_group_walk(piece->pipe->forms, form, _reads_pixels, (void *)piece);
 }
 
 typedef struct _raster_sources_hash_t
@@ -680,6 +693,65 @@ static void _develop_blend_process_mask_tone_curve(float *const restrict mask,
   }
 }
 
+#ifdef HAVE_OPENCL
+// _feather_form_mask on the OpenCL blend's device images: only the mask makes
+// the round trip
+static void _feather_form_mask_cl(dt_dev_pixelpipe_iop_t *piece,
+                                  float *const mask,
+                                  const dt_iop_roi_t *const roi,
+                                  const gboolean use_out,
+                                  const float radius,
+                                  const float guide_weight,
+                                  const float sqrt_eps)
+{
+  dt_develop_blend_cl_context_t *const c = piece->blend_refine_cl;
+  const int devid = c->devid;
+  const int width = roi->width;
+  const int height = roi->height;
+  const int ch = piece->colors;
+  const int w = _required_w(radius, roi->scale / piece->iscale, MAX(width, height));
+  const dt_iop_roi_t *rin = piece->blend_refine_roi_in;
+
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_mem guide = use_out ? c->dev_out : c->dev_in;
+  cl_mem dev_guide = NULL;
+  cl_mem dev_mask_in = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem dev_mask_out = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  if(!dev_mask_in || !dev_mask_out) goto error;
+
+  if(!use_out && rin && (rin->width != width || rin->height != height))
+  {
+    // the mask's part of the input, as dt_iop_copy_image_roi crops it on the
+    // host and the whole-mask feathering does in dt_develop_blend_process_cl
+    dev_guide = dt_opencl_alloc_device(devid, width, height, sizeof(float) * ch);
+    if(!dev_guide) goto error;
+    const size_t origin[2] = { c->offs[0], c->offs[1] };
+    const size_t region[2] = { width, height };
+    err = dt_opencl_enqueue_copy_image(devid, c->dev_in, dev_guide, origin, CLIMG_ORIGIN,
+                                       region);
+    if(err != CL_SUCCESS) goto error;
+    guide = dev_guide;
+  }
+
+  err = dt_opencl_write_host_to_image(devid, mask, dev_mask_in, width, height, sizeof(float));
+  if(err != CL_SUCCESS) goto error;
+  err = guided_filter_cl(devid, guide, dev_mask_in, dev_mask_out, width, height, ch, w,
+                         sqrt_eps, guide_weight, 0.0f, 1.0f);
+  if(err != CL_SUCCESS) goto error;
+  err = dt_opencl_copy_image_to_host(devid, mask, dev_mask_out, width, height, sizeof(float));
+
+error:
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] element feathering: %s", cl_errstr(err));
+    c->failed = TRUE;
+  }
+  dt_opencl_release_mem_object(dev_guide);
+  dt_opencl_release_mem_object(dev_mask_in);
+  dt_opencl_release_mem_object(dev_mask_out);
+}
+#endif
+
 // one guided-filter feathering pass on an element's mask, guided by the input
 // or the output image from the piece's blend_refine_* context, cropped to the
 // mask's roi when the input roi differs
@@ -695,6 +767,14 @@ static void _feather_form_mask(dt_dev_pixelpipe_iop_t *piece,
   const size_t height = roi->height;
   const int ch = piece->colors;
   const float scale = roi->scale / piece->iscale;
+
+#ifdef HAVE_OPENCL
+  if(piece->blend_refine_cl)
+  {
+    _feather_form_mask_cl(piece, mask, roi, use_out, radius, guide_weight, sqrt_eps);
+    return;
+  }
+#endif
 
   if(use_out)
   {
@@ -823,17 +903,17 @@ static void _recompute_next_run(const dt_iop_module_t *self,
 // mask -- e.g. while the mask overlay is shown (pipe cache disabled downstream
 // of focus) or when a non-mask slider on a masked module moves.
 //
-// Only safe when the group needs no host guides: guided-filter feathering and
+// Only safe when the group reads no pixels: guided-filter feathering and
 // parametric-as-form members depend on the module in/out pixels, which have no
 // cheap stable hash here. Per-shape details refinement depends on the scharr
 // buffer, tracked via src_hash. Global post-ops, invert and global opacity are
 // applied by the callers *after* this point, so they need not be in the key.
 //
-// Shared by the CPU and OpenCL blend paths: the group renderer runs on the host
-// in both, so a cached buffer is valid for either, and going through one
-// function is what keeps the two from drifting apart. The caller must have set
-// piece->blend_refine_guide_* already. *pixels_missing as for
-// dt_masks_group_render_roi
+// Shared by the CPU and OpenCL blend paths: a group that reads no pixels
+// renders on the host in both, so a cached buffer is valid for either, and
+// going through one function is what keeps the two from drifting apart. The
+// caller must have set the piece's blend_refine_* context already.
+// *pixels_missing as for dt_masks_group_render_roi
 static gboolean _render_drawn_mask_cached(dt_iop_module_t *self,
                                           dt_dev_pixelpipe_iop_t *piece,
                                           dt_masks_form_t *form,
@@ -849,7 +929,7 @@ static gboolean _render_drawn_mask_cached(dt_iop_module_t *self,
   const int oheight = roi_out->height;
 
   dt_dev_distorted_mask_cache_t *const mc = &piece->drawn_mask_cache;
-  const gboolean cacheable = !_group_needs_host_guides(form, piece);
+  const gboolean cacheable = !_group_reads_pixels(form, piece);
   const dt_hash_t msrc = piece->pipe->scharr.hash;
   dt_hash_t mkey = DT_INVALID_HASH;
   if(cacheable)
@@ -887,7 +967,7 @@ static gboolean _render_drawn_mask_cached(dt_iop_module_t *self,
 
   // a miss names its reason: a hit alone cannot tell a mask that is not
   // cacheable from one whose key keeps changing
-  const char *why = !cacheable                       ? "needs host guides"
+  const char *why = !cacheable                       ? "reads pixels"
                     : !mc->data                      ? "empty"
                     : mc->hash != mkey               ? "mask changed"
                     : mc->src_hash != msrc           ? "details source changed"
@@ -1399,6 +1479,86 @@ static void _refine_with_detail_mask_cl(dt_iop_module_t *self,
   dt_opencl_release_mem_object(out);
 }
 
+void dt_develop_blendif_make_mask_cl(dt_dev_pixelpipe_iop_t *piece,
+                                     const dt_develop_blend_params_t *const d,
+                                     float *const mask)
+{
+  dt_develop_blend_cl_context_t *const c = piece->blend_refine_cl;
+  const int width = piece->blend_refine_roi_out->width;
+  const int height = piece->blend_refine_roi_out->height;
+  const int devid = c->devid;
+
+  // the host make_mask functions leave the mask as they found it, all ones
+  // here, for a buffer of the wrong channel count or a scene RGB blend without
+  // a profile, where the kernel would write nothing
+  int kernel;
+  switch(d->blend_cst)
+  {
+    case DEVELOP_BLEND_CS_LAB:
+      kernel = darktable.opencl->blendop->kernel_blendop_mask_Lab;
+      break;
+    case DEVELOP_BLEND_CS_RGB_DISPLAY:
+      kernel = darktable.opencl->blendop->kernel_blendop_mask_rgb_hsl;
+      break;
+    case DEVELOP_BLEND_CS_RGB_SCENE:
+      if(!c->use_profile) return;
+      kernel = darktable.opencl->blendop->kernel_blendop_mask_rgb_jzczhz;
+      break;
+    case DEVELOP_BLEND_CS_RAW:
+      kernel = darktable.opencl->blendop->kernel_blendop_mask_RAW;
+      break;
+    default:
+      return;
+  }
+  if(piece->colors != (d->blend_cst == DEVELOP_BLEND_CS_RAW ? 1 : 4)) return;
+
+  float parameters[DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_SIZE] DT_ALIGNED_ARRAY;
+  dt_develop_blendif_process_parameters(parameters, d);
+  const float opacity = CLIP(d->opacity / 100.0f);
+
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_mem dev_params = dt_opencl_copy_host_to_device_constant(devid, sizeof(parameters),
+                                                             parameters);
+  if(!dev_params) goto error;
+
+  if(!c->dev_ones)
+  {
+    c->dev_ones = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+    c->dev_mask = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+    if(!c->dev_ones || !c->dev_mask) goto error;
+
+    const size_t region[2] = { width, height };
+    err = dt_opencl_fill_image(devid, c->dev_ones, CLIMG_ORIGIN, region, 1.0f);
+    if(err != CL_SUCCESS) goto error;
+
+    // FIXME: still required? As in dt_develop_blend_process_cl
+    dt_opencl_finish(devid);
+  }
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+                                         CLARG(c->dev_in), CLARG(c->dev_out),
+                                         CLARG(c->dev_ones), CLARG(c->dev_mask),
+                                         CLARG(width), CLARG(height),
+                                         CLARG(opacity),
+                                         CLARG(d->blendif),
+                                         CLARG(dev_params),
+                                         CLARG(d->mask_mode), CLARG(d->mask_combine),
+                                         CLARRAY(2, c->offs),
+                                         CLARG(c->dev_profile_info), CLARG(c->dev_profile_lut),
+                                         CLARG(c->use_profile));
+  if(err != CL_SUCCESS) goto error;
+
+  err = dt_opencl_copy_image_to_host(devid, mask, c->dev_mask, width, height, sizeof(float));
+
+error:
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] parametric element: %s", cl_errstr(err));
+    c->failed = TRUE;
+  }
+  dt_opencl_release_mem_object(dev_params);
+}
+
 static inline void _blend_process_cl_exchange(cl_mem *a, cl_mem *b)
 {
   cl_mem tmp = *a;
@@ -1528,7 +1688,6 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
       break;
   }
   int kernel_mask_tone_curve = darktable.opencl->blendop->kernel_blendop_mask_tone_curve;
-  int kernel_set_mask = darktable.opencl->blendop->kernel_blendop_set_mask;
   int kernel_display_channel = darktable.opencl->blendop->kernel_blendop_display_channel;
 
   const int devid = piece->pipe->devid;
@@ -1602,14 +1761,8 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     else
     {
       // set dev_mask with global opacity value
-      err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_set_mask, owidth, oheight,
-                                CLARG(dev_mask), CLARG(owidth), CLARG(oheight), CLARG(opacity));
-      if(err != CL_SUCCESS)
-      {
-        dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_blendop] kernel_set_mask: %s", cl_errstr(err));
-        goto error;
-      }
+      err = dt_opencl_fill_image(devid, dev_mask, CLIMG_ORIGIN, region, opacity);
+      if(err != CL_SUCCESS) goto error;
     }
   }
   else if(raster)
@@ -1663,6 +1816,8 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     gboolean form_ok = FALSE;
     gboolean form_missing = FALSE;
     gboolean pixels_missing = FALSE;
+    // the uniform value a fallback branch below fills the mask with, or -1
+    float fill = -1.0f;
     // get the drawn mask if there is one
     dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
 
@@ -1671,43 +1826,21 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     if(form && (form->points || !(mask_mode & DEVELOP_MASK_FLEXI)) && mode_drawn
        && dt_blend_may_render_group(self, mask_mode))
     {
-      // the group renders on the CPU in this pipe too. Its parametric members
-      // and feathering need the input and output images, which live on the
-      // device: they are read back when the group needs them
-      // (_group_needs_host_guides)
-      float *guide_in = NULL;
-      float *guide_out = NULL;
-      if(_group_needs_host_guides(form, piece))
-      {
-        const size_t in_sz = (size_t)roi_in->width * roi_in->height * ch;
-        const size_t out_sz = (size_t)roi_out->width * roi_out->height * ch;
-        guide_in = dt_alloc_align_float(in_sz);
-        guide_out = dt_alloc_align_float(out_sz);
-        err = guide_in && guide_out ? CL_SUCCESS : DT_OPENCL_SYSMEM_ALLOCATION;
-        if(err == CL_SUCCESS)
-          err = dt_opencl_copy_image_to_host(devid, guide_in, dev_in,
-                                             roi_in->width, roi_in->height,
-                                             ch * sizeof(float));
-        if(err == CL_SUCCESS)
-          err = dt_opencl_copy_image_to_host(devid, guide_out, dev_out,
-                                             roi_out->width, roi_out->height,
-                                             ch * sizeof(float));
-        if(err != CL_SUCCESS)
-        {
-          // without guides a parametric member renders fully opaque and
-          // per-shape feathering is skipped: let the CPU path render it instead
-          dt_print(DT_DEBUG_OPENCL,
-                   "[opencl_blendop] mask guide readback failed: %s",
-                   cl_errstr(err));
-          dt_free_align(guide_in);
-          dt_free_align(guide_out);
-          goto error;
-        }
-      }
-      piece->blend_refine_guide_in = guide_in;
-      piece->blend_refine_guide_out = guide_out;
+      // the group renders on the CPU in this pipe too. What its parametric
+      // members and feathering read from the input and output images is done
+      // on the device, through the context below, so the images stay there
+      dt_develop_blend_cl_context_t cl_context =
+        { .devid = devid,
+          .dev_in = dev_in,
+          .dev_out = dev_out,
+          .dev_profile_info = dev_profile_info,
+          .dev_profile_lut = dev_profile_lut,
+          .use_profile = use_profile,
+          .offs = { dx, dy },
+          .failed = FALSE };
       piece->blend_refine_roi_in = roi_in;
       piece->blend_refine_roi_out = roi_out;
+      piece->blend_refine_cl = &cl_context;
 
       // same memoized rasterization as the CPU path: the group renderer runs on
       // the host here too, so a cached buffer is equally valid, and sharing the
@@ -1715,12 +1848,19 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
       form_ok = _render_drawn_mask_cached(self, piece, form, roi_in, roi_out,
                                          devid, mask, &pixels_missing);
 
-      piece->blend_refine_guide_in = NULL;
-      piece->blend_refine_guide_out = NULL;
       piece->blend_refine_roi_in = NULL;
       piece->blend_refine_roi_out = NULL;
-      dt_free_align(guide_in);
-      dt_free_align(guide_out);
+      piece->blend_refine_cl = NULL;
+      dt_opencl_release_mem_object(cl_context.dev_ones);
+      dt_opencl_release_mem_object(cl_context.dev_mask);
+
+      // a member that failed on the device rendered opaque or unfeathered: let
+      // the CPU path render the module instead
+      if(cl_context.failed)
+      {
+        err = DT_OPENCL_PROCESS_CL;
+        goto error;
+      }
 
       // as on the CPU path: a missing stored mask means the module applies
       // nowhere, invert included
@@ -1744,15 +1884,26 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     {
       // no form defined but drawn mask active
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
-      const float fill = inverted ? 0.0f : 1.0f;
-      dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
+      fill = inverted ? 0.0f : 1.0f;
     }
     else
     {
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
-      const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
-      dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
+      fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
     }
+
+    // without a parametric mask the mask kernel computes
+    // gopacity * (INV ? 1 - form : form) (blendop.cl), so a fill comes out as
+    // a constant, written on the device below instead of filled and uploaded.
+    // This is every blended module without a mask, which is a flexi mask_mode
+    // with no group. Not when the details threshold carves into the fill, nor
+    // in scene RGB without a profile, where the kernel writes nothing
+    const gboolean constant_mask =
+      fill >= 0.0f && !(mask_mode & DEVELOP_MASK_CONDITIONAL)
+      && (global_refine_bypass || feqf(d->details, 0.0f, 1e-6f))
+      && (blend_csp != DEVELOP_BLEND_CS_RGB_SCENE || use_profile);
+    if(fill >= 0.0f && !constant_mask)
+      dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
 
     // as in dt_develop_blend_process: keep the two in step
     mask_is_uniform_fallback =
@@ -1767,38 +1918,44 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
        inverted ? ", inverted" : "",
        rois_equal ? "" : ", roi differ");
 
-    _refine_with_detail_mask_cl(self, piece, mask, roi_in, roi_out,
-                                global_refine_bypass ? 0.0f : d->details, devid);
-
-    err = dt_opencl_write_host_to_image(devid, mask, dev_mask_2, owidth, oheight, sizeof(float));
-    if(err != CL_SUCCESS) goto error;
-
-    // The following call to clFinish() works around a bug in some OpenCL
-    // drivers (namely AMD).
-    // Without this synchronization point, reads to dev_in would often not
-    // return the correct value.
-    // This depends on the module after which blending is called. One of the
-    // affected ones is sharpen.
-    dt_opencl_finish(devid);
-
-    // get parametric mask (if any) and apply global opacity
-    const uint32_t blendif = d->blendif;
-
-    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_mask, owidth, oheight,
-              CLARG(dev_in), CLARG(dev_out),
-              CLARG(dev_mask_2), CLARG(dev_mask),
-              CLARG(owidth), CLARG(oheight),
-              CLARG(opacity),
-              CLARG(blendif),
-              CLARG(dev_blendif_params),
-              CLARG(mask_mode), CLARG(d->mask_combine),
-              CLARRAY(2, offs),
-              CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_profile));
-    if(err != CL_SUCCESS)
+    if(constant_mask)
     {
-      dt_print(DT_DEBUG_OPENCL,
-               "[opencl_blendop] apply global opacity: %s", cl_errstr(err));
-      goto error;
+      const float value =
+        opacity * ((d->mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - fill : fill);
+      err = dt_opencl_fill_image(devid, dev_mask, CLIMG_ORIGIN, region, value);
+      if(err != CL_SUCCESS) goto error;
+    }
+    else
+    {
+      _refine_with_detail_mask_cl(self, piece, mask, roi_in, roi_out,
+                                  global_refine_bypass ? 0.0f : d->details, devid);
+
+      err = dt_opencl_write_host_to_image(devid, mask, dev_mask_2, owidth, oheight, sizeof(float));
+      if(err != CL_SUCCESS) goto error;
+
+      // FIXME: still required? It worked around stale reads of dev_in on
+      // old AMD drivers
+      dt_opencl_finish(devid);
+
+      // get parametric mask (if any) and apply global opacity
+      const uint32_t blendif = d->blendif;
+
+      err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_mask, owidth, oheight,
+                CLARG(dev_in), CLARG(dev_out),
+                CLARG(dev_mask_2), CLARG(dev_mask),
+                CLARG(owidth), CLARG(oheight),
+                CLARG(opacity),
+                CLARG(blendif),
+                CLARG(dev_blendif_params),
+                CLARG(mask_mode), CLARG(d->mask_combine),
+                CLARRAY(2, offs),
+                CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_profile));
+      if(err != CL_SUCCESS)
+      {
+        dt_print(DT_DEBUG_OPENCL,
+                 "[opencl_blendop] apply global opacity: %s", cl_errstr(err));
+        goto error;
+      }
     }
 
     // as on the CPU path: the combine inverts for DEVELOP_COMBINE_INV, so
@@ -2052,8 +2209,6 @@ dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void)
     dt_opencl_create_kernel(program, "blendop_rgb_jzczhz");
   b->kernel_blendop_mask_tone_curve =
     dt_opencl_create_kernel(program, "blendop_mask_tone_curve");
-  b->kernel_blendop_set_mask =
-    dt_opencl_create_kernel(program, "blendop_set_mask");
   b->kernel_blendop_display_channel =
     dt_opencl_create_kernel(program, "blendop_display_channel");
   b->kernel_calc_Y0_mask =
@@ -2085,7 +2240,6 @@ void dt_develop_blend_free_cl_global(dt_blendop_cl_global_t *b)
   dt_opencl_free_kernel(b->kernel_blendop_rgb_hsl);
   dt_opencl_free_kernel(b->kernel_blendop_rgb_jzczhz);
   dt_opencl_free_kernel(b->kernel_blendop_mask_tone_curve);
-  dt_opencl_free_kernel(b->kernel_blendop_set_mask);
   dt_opencl_free_kernel(b->kernel_blendop_display_channel);
   dt_opencl_free_kernel(b->kernel_calc_Y0_mask);
   dt_opencl_free_kernel(b->kernel_calc_scharr_mask);
@@ -2154,6 +2308,27 @@ void tiling_callback_blendop(dt_iop_module_t *self,
   const float outnorm = (float)(roi_out->width * roi_out->height) / (roi_in->width * roi_in->height);
   tiling->factor += outnorm;
   tiling->factor_cl += outnorm;
+
+  // the OpenCL blend renders a flexi group on the host, but evaluates its
+  // parametric elements on the device, into two one-channel buffers of the
+  // output size (dt_develop_blendif_make_mask_cl)
+  const dt_masks_form_t *const form =
+    piece->pipe->devid > DT_DEVICE_CPU
+    && (bldata->mask_mode & (DEVELOP_MASK_MASK | DEVELOP_MASK_FLEXI))
+      ? dt_masks_get_from_id_ext(piece->pipe->forms, bldata->mask_id)
+      : NULL;
+  if(form && dt_masks_group_walk(piece->pipe->forms, form, _is_parametric, NULL))
+    tiling->factor_cl += 0.5f * outnorm;
+
+  // feathering an element on the device takes two more, a crop of the input
+  // when the rois differ (_feather_form_mask_cl), and room for the internal
+  // tiling of guided_filter_cl, as the whole-mask feathering reserves above
+  if(form && dt_masks_group_walk(piece->pipe->forms, form, _needs_guide, (void *)piece))
+  {
+    const gboolean crop = roi_in->width != roi_out->width
+                          || roi_in->height != roi_out->height;
+    tiling->factor_cl += 1.0f + (crop ? 1.5f : 0.5f) * outnorm;
+  }
 }
 
 /** check if content of params is all zero, indicating a
