@@ -2238,7 +2238,7 @@ filmstrip-thumbnail-boxes as for the canvas background */
 
 #thumbtable-filmstrip #thumb-main:active #thumb-cursor
 {
-  color: @border_color;
+  color: @bg_color;
 }
 
 /* Set border color around grouped thumbnails */

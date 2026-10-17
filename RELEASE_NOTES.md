@@ -585,6 +585,9 @@ changes (where available).
   on the diagonal' after using 'read exposure from metadata and exposure
   module'.
 
+- Fixed the filmstrip cursor triangle ignoring CSS. Its color again
+  follows `#thumb-cursor`; the default is unchanged (`@bg_color`).
+
 - Fixed modules with mask feathering guided by the input image falling
   back to the CPU when processed with OpenCL, whenever the module needs
   a larger input area than it outputs, for example liquify in a
