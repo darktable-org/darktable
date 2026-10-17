@@ -370,8 +370,11 @@ static void _expose_info_bar(dt_lib_module_t *self,
   const int fontsize = DT_PIXEL_APPLY_DPI(11.5);
   pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
   pango_layout_set_font_description(layout, desc);
-  char model[4096] = { 0 };
-  g_strlcpy(model, lib->data.camera_model, strlen(model));
+
+  char model[128] = { 0 };
+  if(lib->data.camera_model)
+    g_strlcpy(model, lib->data.camera_model, sizeof(model));
+
   pango_layout_set_text(layout, model, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, DT_PIXEL_APPLY_DPI(5), DT_PIXEL_APPLY_DPI(1) + BAR_HEIGHT - ink.height / 2 - fontsize);
@@ -379,8 +382,9 @@ static void _expose_info_bar(dt_lib_module_t *self,
 
   // Draw right aligned battery value
   const char *battery_value = dt_camctl_camera_get_property(darktable.camctl, NULL, "batterylevel");
-  char battery[4096] = { 0 };
+  char battery[64] = { 0 };
   snprintf(battery, sizeof(battery), "%s: %s", _("battery"), battery_value ? battery_value : _("n/a"));
+
   pango_layout_set_text(layout, battery, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, width - ink.width - DT_PIXEL_APPLY_DPI(5), DT_PIXEL_APPLY_DPI(1) + BAR_HEIGHT - ink.height / 2 - fontsize);

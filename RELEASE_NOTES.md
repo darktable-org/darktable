@@ -192,6 +192,9 @@ changes (where available).
   needs a model that returns separate objects, such as SAM; SegNext
   selects one region at a time.
 
+- In tethering mode, the tethering info bar (located above the live
+  camera view) now displays the camera model.
+
 ## Performance Improvements
 
 - The lighttable timeline no longer slows down quadratically with the
