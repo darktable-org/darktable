@@ -3882,6 +3882,65 @@ void dt_dev_exposure_handle_event(int n_press, gdouble delta,
     darktable.develop->proxy.exposure.handle_event(n_press, delta, state, is_blackpoint);
 }
 
+gboolean dt_dev_cat_is_active(dt_develop_t *dev)
+{
+  // only color calibration's gui_init() sets this, only on darktable.develop,
+  // and nothing clears it. The throw-away instance from _init_module_so() sets
+  // it at startup, so a set pointer does not mean a live instance: ask only the
+  // instances in dev->iop. Other devs, and darktable-cli, keep it NULL
+  if(!dev || !dev->proxy.cat_is_active)
+    return FALSE;
+
+  for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
+  {
+    dt_iop_module_t *mod = modules->data;
+
+    if(dt_iop_module_is(mod, "channelmixerrgb")
+       && mod->iop_order != INT_MAX
+       && dev->proxy.cat_is_active(mod))
+      return TRUE;
+  }
+
+  return FALSE;
+}
+
+static const dt_iop_module_t *_find_temperature(dt_develop_t *dev)
+{
+  for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
+  {
+    const dt_iop_module_t *mod = modules->data;
+
+    if(dt_iop_module_is(mod, "temperature"))
+      return mod;
+  }
+
+  return NULL;
+}
+
+void dt_dev_get_gui_wb(dt_develop_t *dev, dt_dev_wb_t *wb)
+{
+  if(!dev)
+  {
+    dt_dev_wb_set_neutral(wb);
+    return;
+  }
+
+  // only temperature's gui_init() sets the proxy, only on darktable.develop,
+  // and nothing clears it: other devs, and darktable-cli, keep it NULL. The
+  // throw-away instance from _init_module_so() sets it at startup, so a set
+  // proxy does not mean a live instance: look one up in dev->iop
+  const dt_iop_module_t *temperature = dev->proxy.gui_wb ? _find_temperature(dev) : NULL;
+
+  if(temperature)
+  {
+    dev->proxy.gui_wb(temperature, wb);
+  }
+  else
+  {
+    memcpy(wb, &dev->chroma.wb, sizeof(dt_dev_wb_t));
+  }
+}
+
 void dt_dev_modulegroups_set(dt_develop_t *dev,
                              const uint32_t group)
 {
@@ -4487,19 +4546,26 @@ void dt_dev_reset_chroma(dt_develop_t *dev)
   chr->adaptation = NULL;
   chr->temperature = NULL;
   for_four_channels(c)
-    chr->wb_coeffs[c] = 1.0f;
+    chr->wb.coeffs[c] = 1.0f;
+}
+
+void dt_dev_wb_set_neutral(dt_dev_wb_t *wb)
+{
+  wb->late_correction = FALSE;
+  for_four_channels(c)
+  {
+    wb->coeffs[c] = 1.0f;
+    wb->D65coeffs[c] = 1.0;
+  }
 }
 
 void dt_dev_init_chroma(dt_develop_t *dev)
 {
   dt_dev_reset_chroma(dev);
   dt_dev_chroma_t *chr = &dev->chroma;
-  chr->late_correction = FALSE;
+  dt_dev_wb_set_neutral(&chr->wb);
   for_four_channels(c)
-  {
-    chr->D65coeffs[c] = 1.0;
     chr->as_shot[c] = 1.0;
-  }
 }
 
 // clang-format off
