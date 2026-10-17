@@ -76,7 +76,7 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
 
   static inline float dt_fast_hypot(const float x, const float y)
   {
-    return native_sqrt(x * x + y * y);
+    return sqrt(x * x + y * y);
   }
 
   // Allow the compiler to convert a * b + c to fused multiply-add to use hardware acceleration
