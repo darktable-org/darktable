@@ -64,7 +64,7 @@
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
 
 
-DT_MODULE_INTROSPECTION(6, dt_iop_filmicrgb_params_t)
+DT_MODULE_INTROSPECTION(7, dt_iop_filmicrgb_params_t)
 
 /**
  * DOCUMENTATION
@@ -196,6 +196,7 @@ typedef struct dt_iop_filmicrgb_params_t
   gboolean compensate_icc_black; // $DEFAULT: FALSE $DESCRIPTION: "compensate output ICC profile black point"
   dt_iop_filmicrgb_spline_version_type_t spline_version; // $DEFAULT: DT_FILMIC_SPLINE_VERSION_V3 $DESCRIPTION: "spline handling"
   gboolean enable_highlight_reconstruction; // $DEFAULT: FALSE $DESCRIPTION: "enable highlight reconstruction"
+  gboolean white_target_from_output; // $DEFAULT: FALSE $DESCRIPTION: "target white from output"
 } dt_iop_filmicrgb_params_t;
 // clang-format on
 
@@ -307,6 +308,8 @@ typedef struct dt_iop_filmicrgb_data_t
   struct dt_iop_filmic_rgb_spline_t spline DT_ALIGNED_ARRAY;
   dt_noise_distribution_t noise_distribution;
   gboolean enable_highlight_reconstruction;
+  // to rebuild the spline for the output headroom, only known at process time
+  dt_iop_filmicrgb_params_t params;
 } dt_iop_filmicrgb_data_t;
 
 
@@ -818,6 +821,17 @@ int legacy_params(dt_iop_module_t *self,
     *new_params = n;
     *new_params_size = sizeof(dt_iop_filmicrgb_params_v6_t);
     *new_version = 6;
+    return 0;
+  }
+  if(old_version == 6)
+  {
+    // v7 appends white_target_from_output, off for existing edits
+    dt_iop_filmicrgb_params_t *n = calloc(1, sizeof(dt_iop_filmicrgb_params_t));
+    memcpy(n, old_params, sizeof(dt_iop_filmicrgb_params_v6_t));
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_filmicrgb_params_t);
+    *new_version = 7;
     return 0;
   }
   return 1;
@@ -2087,6 +2101,22 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   return;
 }
 
+// with target white from output, the pipe's output headroom replaces the slider value
+static const dt_iop_filmicrgb_data_t *_pipe_data(const dt_dev_pixelpipe_iop_t *piece,
+                                                 dt_iop_filmicrgb_data_t *output_data)
+{
+  const dt_iop_filmicrgb_data_t *d = piece->data;
+  if(!d->params.white_target_from_output) return d;
+
+  *output_data = *d;
+  dt_iop_filmicrgb_params_t p = d->params;
+  p.white_point_target = 100.0f * piece->pipe->output_headroom;
+  dt_iop_filmic_rgb_compute_spline(&p, &output_data->spline);
+  output_data->sigma_toe = powf(output_data->spline.latitude_min / 3.0f, 2.0f);
+  output_data->sigma_shoulder = powf((1.0f - output_data->spline.latitude_max) / 3.0f, 2.0f);
+  return output_data;
+}
+
 void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const restrict ivoid,
@@ -2098,7 +2128,8 @@ void process(dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  const dt_iop_filmicrgb_data_t *const data = piece->data;
+  dt_iop_filmicrgb_data_t output_data;
+  const dt_iop_filmicrgb_data_t *const data = _pipe_data(piece, &output_data);
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   const dt_iop_order_iccprofile_info_t *const export_profile = dt_ioppr_get_pipe_output_profile_info(piece->pipe);
 
@@ -2379,7 +2410,8 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_filmicrgb_data_t *const d = piece->data;
+  dt_iop_filmicrgb_data_t output_data;
+  const dt_iop_filmicrgb_data_t *const d = _pipe_data(piece, &output_data);
   const dt_iop_filmicrgb_global_data_t *const gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -3133,6 +3165,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->reconstruct_grey_vs_color = (p->reconstruct_grey_vs_color / 100.0f + 1.f) / 2.f;
 
   d->enable_highlight_reconstruction = p->enable_highlight_reconstruction;
+  d->params = *p;
 }
 
 void gui_focus(dt_iop_module_t *self, gboolean in)
@@ -4567,6 +4600,14 @@ void gui_init(dt_iop_module_t *self)
                               _("luminance of output pure white, this should be 100%\n"
                                 "except if you want a faded look"));
 
+  GtkWidget *toggle = dt_bauhaus_toggle_from_params(self, "white_target_from_output");
+  gtk_widget_set_tooltip_text
+    (toggle,
+     _("set target white to the peak of the output instead of the slider,\n"
+       "so one edit renders correctly for SDR and HDR:\n"
+       "100% for SDR, 493% for HLG (1000 nits), and for PQ the peak\n"
+       "set in preferences > processing (default 1000 nits, 493%)"));
+
   // Page OPTIONS
   self->widget = dt_ui_notebook_page(g->notebook, N_("options"), NULL);
 
@@ -4641,6 +4682,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_filmicrgb_params_t *p = self->params;
   const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+
+  gtk_widget_set_sensitive(g->white_point_target, !p->white_target_from_output);
 
   if(!w || w == g->auto_hardness || w == g->security_factor || w == g->grey_point_source
      || w == g->black_point_source || w == g->white_point_source)
