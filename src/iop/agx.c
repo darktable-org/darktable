@@ -2052,13 +2052,15 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
     dt_bauhaus_slider_from_params(section, "curve_target_display_white_ratio");
   dt_bauhaus_slider_set_soft_range(slider, 0.5f, 1.f);
   gtk_widget_set_tooltip_text(slider,
-                              _("max linear output power.\n"
-                                "values above the default leave headroom for HDR "
-                                "output,\n"
-                                "where the default is the 203 nit HDR reference "
-                                "white.\n"
-                                "peak nits = target white x 203, e.g. "
-                                "1000 nits is about 493 percent"));
+                              _("peak output brightness: the brightest a highlight "
+                                "can reach.\n"
+                                "the default is the reference white. for SDR, "
+                                "keep it at or below that.\n"
+                                "for HDR (PQ or HLG) output, "
+                                "raise it to give highlights headroom;\n"
+                                "reference white stays at 203 nits, "
+                                "so peak nits = target white x 203,\n"
+                                "e.g. 1000 nits is about 493 percent"));
 
   // no field: this only chooses how the slider above is shown, so it is
   // kept in conf rather than in the params
