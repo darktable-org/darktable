@@ -78,6 +78,15 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img,
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
                                     const char *filename,
                                     dt_mipmap_buffer_t *buf);
+// true if sha1sum/filesize should be (re)computed
+gboolean dt_imageio_identity_needs_recompute(const gboolean has_checksum,
+                                             const uint64_t recorded_filesize,
+                                             const gboolean stat_ok,
+                                             const uint64_t actual_filesize);
+// sidecar identity must never update the image (always FALSE)
+gboolean dt_imageio_identity_accept_from_sidecar(void);
+// write identity tags to XMP only when the image/DB already has them
+gboolean dt_imageio_identity_mirror_to_sidecar(const gboolean has_checksum);
 // tries to open the files not opened by the other routines using
 // GraphicsMagick (if supported)
 dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename,

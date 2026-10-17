@@ -1623,6 +1623,59 @@ void dt_imageio_set_hdr_tag(dt_image_t *img)
 //   combined reading
 // =================================================
 
+// SHA-1 + byte count via a dedicated read (loaders don't share one buffer)
+static gboolean _compute_sha1sum(const char *filename,
+                                 unsigned char sha1sum_out[20],
+                                 uint64_t *filesize_out)
+{
+  FILE *f = g_fopen(filename, "rb");
+  if(!f)
+    return FALSE;
+
+  GChecksum *chk = g_checksum_new(G_CHECKSUM_SHA1);
+  unsigned char buf[65536];
+  size_t n;
+  uint64_t total = 0;
+  while((n = fread(buf, 1, sizeof(buf), f)) > 0)
+  {
+    g_checksum_update(chk, buf, n);
+    total += n;
+  }
+  const gboolean ok = !ferror(f);
+  fclose(f);
+
+  if(ok)
+  {
+    gsize digest_len = 20;
+    g_checksum_get_digest(chk, sha1sum_out, &digest_len);
+    *filesize_out = total;
+  }
+  g_checksum_free(chk);
+  return ok;
+}
+
+// Recompute if unset, or if recorded size != size on disk (stat_ok)
+gboolean dt_imageio_identity_needs_recompute(const gboolean has_checksum,
+                                             const uint64_t recorded_filesize,
+                                             const gboolean stat_ok,
+                                             const uint64_t actual_filesize)
+{
+  if(!has_checksum)
+    return TRUE;
+  return stat_ok && (recorded_filesize != actual_filesize);
+}
+
+// Identity is file/DB only; XMP must never be treated as authoritative.
+gboolean dt_imageio_identity_accept_from_sidecar(void)
+{
+  return FALSE;
+}
+
+gboolean dt_imageio_identity_mirror_to_sidecar(const gboolean has_checksum)
+{
+  return has_checksum;
+}
+
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
                                     const char *filename,
                                     dt_mipmap_buffer_t *buf)
@@ -1675,6 +1728,19 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
 
   img->p_width = img->width - img->crop_x - img->crop_right;
   img->p_height = img->height - img->crop_y - img->crop_bottom;
+
+  // Hash the image file when enabled (only place identity is set from content;
+  // XMP is write-only for these tags).
+  if((ret == DT_IMAGEIO_OK) && dt_conf_get_bool("plugins/darkroom/compute_checksum"))
+  {
+    GStatBuf st;
+    const gboolean stat_ok = (g_stat(filename, &st) == 0);
+    if(dt_imageio_identity_needs_recompute(img->flags & DT_IMAGE_HAS_SHA1SUM,
+                                           img->filesize, stat_ok,
+                                           (uint64_t)st.st_size)
+       && _compute_sha1sum(filename, img->sha1sum, &img->filesize))
+      img->flags |= DT_IMAGE_HAS_SHA1SUM;
+  }
 
   return ret;
 }
