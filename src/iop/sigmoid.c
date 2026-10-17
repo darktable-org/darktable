@@ -31,7 +31,7 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
-DT_MODULE_INTROSPECTION(3, dt_iop_sigmoid_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_sigmoid_params_t)
 
 
 #define MIDDLE_GREY 0.1845f
@@ -70,6 +70,7 @@ typedef struct dt_iop_sigmoid_params_t
   float blue_rotation;    // $MIN: -0.4  $MAX: 0.4  $DEFAULT: 0.0 $DESCRIPTION: "blue rotation"
   float purity;           // $MIN:  0.0  $MAX: 1.0  $DEFAULT: 0.0 $DESCRIPTION: "recover purity"
   dt_iop_sigmoid_base_primaries_t base_primaries; // $DEFAULT: DT_SIGMOID_WORK_PROFILE $DESCRIPTION: "base primaries"
+  gboolean white_target_from_output; // $DEFAULT: FALSE $DESCRIPTION: "target white from output"
 } dt_iop_sigmoid_params_t;
 
 int legacy_params(dt_iop_module_t *self,
@@ -153,6 +154,18 @@ int legacy_params(dt_iop_module_t *self,
 
     return 0;
   }
+  else if(old_version == 3)
+  {
+    // v4 appends white_target_from_output, off for existing edits
+    dt_iop_sigmoid_params_t *n = calloc(1, sizeof(dt_iop_sigmoid_params_t));
+    memcpy(n, old_params, sizeof(dt_iop_sigmoid_params_v3_t));
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_sigmoid_params_t);
+    *new_version = 4;
+
+    return 0;
+  }
 
   return 1;
 }
@@ -171,11 +184,16 @@ typedef struct dt_iop_sigmoid_data_t
   float rotation[3];
   float purity;
   dt_iop_sigmoid_base_primaries_t base_primaries;
+  // to rebuild the curve for the output headroom, only known at process time
+  gboolean white_target_from_output;
+  float middle_grey_contrast;
+  float contrast_skewness;
 } dt_iop_sigmoid_data_t;
 
 typedef struct dt_iop_sigmoid_gui_data_t
 {
   GtkWidget *color_processing_list, *hue_preservation_slider;
+  GtkWidget *white_target_slider;
 
   dt_gui_collapsible_section_t display_luminance_section, primaries_section;
 } dt_iop_sigmoid_gui_data_t;
@@ -315,13 +333,9 @@ static inline float _generalized_loglogistic_sigmoid(const float value,
   return dt_isnan(paper_response) ? magnitude : paper_response;
 }
 
-void commit_params(dt_iop_module_t *self,
-                   dt_iop_params_t *p1,
-                   dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+// fit the curve to the contrast, skew, black target and the given white target ratio
+static void _compute_curve(dt_iop_sigmoid_data_t *module_data, const float white_target)
 {
-  const dt_iop_sigmoid_params_t *params = (dt_iop_sigmoid_params_t *)p1;
-  dt_iop_sigmoid_data_t *module_data = piece->data;
   /* Calculate actual skew log logistic parameters to fulfill the following:
    * f(scene_zero) = display_black_target
    * f(scene_grey) = MIDDLE_GREY
@@ -330,7 +344,7 @@ void commit_params(dt_iop_module_t *self,
    */
 
   // Calculate a reference slope for no skew and a normalized display
-  const float ref_film_power = params->middle_grey_contrast;
+  const float ref_film_power = module_data->middle_grey_contrast;
   const float ref_paper_power = 1.0f;
   const float ref_magnitude = 1.0f;
   const float ref_film_fog = 0.0f;
@@ -345,11 +359,11 @@ void commit_params(dt_iop_module_t *self,
         / 2.0f / delta;
 
   // Add skew
-  module_data->paper_power = powf(5.0f, -params->contrast_skewness);
+  module_data->paper_power = powf(5.0f, -module_data->contrast_skewness);
 
   // Slope at low film power
   const float temp_film_power = 1.0f;
-  const float temp_white_target = 0.01f * params->display_white_target;
+  const float temp_white_target = white_target;
   const float temp_white_grey_relation
       = powf(temp_white_target / MIDDLE_GREY, 1.0f / module_data->paper_power) - 1.0f;
   const float temp_paper_exposure = powf(MIDDLE_GREY, temp_film_power) * temp_white_grey_relation;
@@ -365,8 +379,7 @@ void commit_params(dt_iop_module_t *self,
   module_data->film_power = ref_slope / temp_slope;
 
   // Calculate the other parameters now that both film and paper power is known
-  module_data->white_target = 0.01f * params->display_white_target;
-  module_data->black_target = 0.01f * params->display_black_target;
+  module_data->white_target = white_target;
   const float white_grey_relation
       = powf(module_data->white_target / MIDDLE_GREY, 1.0f / module_data->paper_power) - 1.0f;
   const float white_black_relation
@@ -377,6 +390,21 @@ void commit_params(dt_iop_module_t *self,
                              - powf(white_grey_relation, 1.0f / module_data->film_power));
   module_data->paper_exposure
       = powf(module_data->film_fog + MIDDLE_GREY, module_data->film_power) * white_grey_relation;
+}
+
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *p1,
+                   dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
+{
+  const dt_iop_sigmoid_params_t *params = (dt_iop_sigmoid_params_t *)p1;
+  dt_iop_sigmoid_data_t *module_data = piece->data;
+
+  module_data->middle_grey_contrast = params->middle_grey_contrast;
+  module_data->contrast_skewness = params->contrast_skewness;
+  module_data->black_target = 0.01f * params->display_black_target;
+  module_data->white_target_from_output = params->white_target_from_output;
+  _compute_curve(module_data, 0.01f * params->display_white_target);
 
   module_data->color_processing = params->color_processing;
   module_data->hue_preservation = fminf(fmaxf(0.01f * params->hue_preservation, 0.0f), 1.0f);
@@ -389,6 +417,18 @@ void commit_params(dt_iop_module_t *self,
   module_data->rotation[1] = params->green_rotation;
   module_data->rotation[2] = params->blue_rotation;
   module_data->base_primaries = params->base_primaries;
+}
+
+// with target white from output, the pipe's output headroom replaces the slider value
+static const dt_iop_sigmoid_data_t *_pipe_data(const dt_dev_pixelpipe_iop_t *piece,
+                                               dt_iop_sigmoid_data_t *output_data)
+{
+  const dt_iop_sigmoid_data_t *module_data = piece->data;
+  if(!module_data->white_target_from_output) return module_data;
+
+  *output_data = *module_data;
+  _compute_curve(output_data, piece->pipe->output_headroom);
+  return output_data;
 }
 
 static void _calculate_adjusted_primaries(const dt_iop_sigmoid_data_t *const module_data,
@@ -563,13 +603,12 @@ static void _pixel_channel_order(const dt_aligned_pixel_t pix_in, dt_iop_sigmoid
   }
 }
 
-void process_loglogistic_rgb_ratio(const dt_dev_pixelpipe_iop_t *piece,
+void process_loglogistic_rgb_ratio(const dt_iop_sigmoid_data_t *module_data,
                                    const void *const ivoid,
                                    void *const ovoid,
                                    const dt_iop_roi_t *const roi_in,
                                    const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_sigmoid_data_t *module_data = piece->data;
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
   const size_t npixels = (size_t)roi_in->width * roi_in->height;
@@ -702,11 +741,11 @@ static inline void _preserve_hue_and_energy(const dt_aligned_pixel_t pix_in,
 
 void process_loglogistic_per_channel(dt_develop_t *dev,
                                      const dt_dev_pixelpipe_iop_t *piece,
+                                     const dt_iop_sigmoid_data_t *module_data,
                                      const void *const ivoid, void *const ovoid,
                                      const dt_iop_roi_t *const roi_in,
                                      const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_sigmoid_data_t *module_data = piece->data;
 
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
@@ -769,15 +808,16 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
-  const dt_iop_sigmoid_data_t *module_data = piece->data;
+  dt_iop_sigmoid_data_t output_data;
+  const dt_iop_sigmoid_data_t *module_data = _pipe_data(piece, &output_data);
 
   if(module_data->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL)
   {
-    process_loglogistic_per_channel(self->dev, piece, ivoid, ovoid, roi_in, roi_out);
+    process_loglogistic_per_channel(self->dev, piece, module_data, ivoid, ovoid, roi_in, roi_out);
   }
   else // DT_SIGMOID_METHOD_RGB_RATIO
   {
-    process_loglogistic_rgb_ratio(piece, ivoid, ovoid, roi_in, roi_out);
+    process_loglogistic_rgb_ratio(module_data, ivoid, ovoid, roi_in, roi_out);
   }
 }
 
@@ -789,7 +829,8 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_sigmoid_data_t *const d = piece->data;
+  dt_iop_sigmoid_data_t output_data;
+  const dt_iop_sigmoid_data_t *const d = _pipe_data(piece, &output_data);
   const dt_iop_sigmoid_global_data_t *const gd = self->global_data;
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
@@ -865,6 +906,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   const dt_iop_sigmoid_gui_data_t *g = self->gui_data;
   const dt_iop_sigmoid_params_t *p = self->params;
+
+  gtk_widget_set_sensitive(g->white_target_slider, !p->white_target_from_output);
 
   if(!w || w == g->color_processing_list)
   {
@@ -965,11 +1008,18 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(slider, "%");
   gtk_widget_set_tooltip_text(slider, _("the black luminance of the target display or print.\n"
                                         "can be used creatively for a faded look."));
-  slider = dt_bauhaus_slider_from_params(self, "display_white_target");
+  g->white_target_slider = slider = dt_bauhaus_slider_from_params(self, "display_white_target");
   dt_bauhaus_slider_set_soft_range(slider, 50.0f, 100.0f);
   dt_bauhaus_slider_set_format(slider, "%");
   gtk_widget_set_tooltip_text(slider, _("the white luminance of the target display or print.\n"
                                         "can be used creatively for a faded look or blowing out whites earlier."));
+  GtkWidget *toggle = dt_bauhaus_toggle_from_params(self, "white_target_from_output");
+  gtk_widget_set_tooltip_text
+    (toggle,
+     _("set target white to the peak of the output instead of the slider,\n"
+       "so one edit renders correctly for SDR and HDR:\n"
+       "100% for SDR, 493% for HLG (1000 nits), and for PQ the peak\n"
+       "set in preferences > processing (default 1000 nits, 493%)"));
 
   self->widget = main_box;
 }
