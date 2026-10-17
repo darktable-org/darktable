@@ -4552,6 +4552,13 @@
     <longdescription>this is just to store whether to show curve warnings</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/agx/target_white_in_nits</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>show agx target white in nits</shortdescription>
+    <longdescription>this is just to store whether the target white slider shows nits instead of percent</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/collect/windowheight</name>
     <type>int</type>
     <default>500</default>

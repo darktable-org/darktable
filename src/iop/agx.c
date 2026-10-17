@@ -18,6 +18,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/hdr-transfer.h"
 #include "common/custom_primaries.h"
 #include "common/image.h"
 #include "common/iop_profile.h"
@@ -129,7 +130,7 @@ typedef struct dt_iop_agx_params_t
   // t_ly
   float curve_target_display_black_ratio; // $MIN: 0.f $MAX: 0.15f $DEFAULT: 0.f $DESCRIPTION: "target black"
   // s_ly
-  float curve_target_display_white_ratio; // $MIN: 0.2f $MAX: 1.f $DEFAULT: 1.f $DESCRIPTION: "target white"
+  float curve_target_display_white_ratio; // $MIN: 0.2f $MAX: 50.f $DEFAULT: 1.f $DESCRIPTION: "target white"
 
   // custom primaries; rotation limits below: +/- 0.5236 radian => +/- 30 degrees
   dt_iop_agx_base_primaries_t base_primaries; // $DEFAULT: DT_AGX_REC2020 $DESCRIPTION: "base primaries"
@@ -168,6 +169,8 @@ typedef struct dt_iop_agx_gui_data_t
   GtkNotebook *notebook;
   GtkWidget *auto_gamma;
   GtkWidget *curve_gamma;
+  GtkWidget *target_white;
+  GtkWidget *target_white_in_nits;
   GtkDrawingArea *graph_drawing_area;
 
   dt_gui_collapsible_section_t look_section;
@@ -1464,6 +1467,8 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
 
   const float graph_width = g->allocation.width - margin_right - margin_left;
   const float graph_height = g->allocation.height - margin_bottom - margin_top;
+  // with HDR headroom the curve ends above 1, so shrink the y axis to fit it
+  const float y_scale = graph_height / fmaxf(1.f, tone_mapping_params.target_white);
 
   gtk_render_background(g->context, cr, 0, 0, g->allocation.width, g->allocation.height);
 
@@ -1487,7 +1492,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
                         darktable.bauhaus->graph_border.blue,
                         0.5);
   cairo_move_to(cr, 0, 0);
-  cairo_line_to(cr, graph_width, graph_height);
+  cairo_line_to(cr, graph_width, y_scale);
   cairo_stroke(cr);
   cairo_restore(cr);
 
@@ -1511,15 +1516,26 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
                                     0.18f,
                                     0.18f * 2.f,
                                     0.18f * 4.f,
-                                    1.f };
+                                    1.f,
+                                    2.f,
+                                    4.f,
+                                    8.f,
+                                    16.f,
+                                    32.f };
   const int num_guides = sizeof(linear_y_guides) / sizeof(linear_y_guides[0]);
+  const gboolean white_in_nits =
+    dt_conf_get_bool("plugins/darkroom/agx/target_white_in_nits");
 
-  for(int i = 0; i < num_guides; ++i)
+  // labels go top-down so that, when HDR headroom squeezes the lower guides
+  // together, the reference white and peak labels win over the shadow ones
+  float last_label_y = -FLT_MAX;
+  for(int i = num_guides - 1; i >= 0; --i)
   {
     const float y_linear = linear_y_guides[i];
+    if(y_linear > fmaxf(1.f, p->curve_target_display_white_ratio)) continue;
     const float y_pre_gamma = powf(y_linear, 1.f / tone_mapping_params.curve_gamma);
 
-    const float y_graph = y_pre_gamma * graph_height;
+    const float y_graph = y_pre_gamma * y_scale;
 
     cairo_move_to(cr, 0, y_graph);
     cairo_line_to(cr, graph_width, y_graph);
@@ -1530,7 +1546,13 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
     cairo_identity_matrix(cr);                  // Reset transformations for text
     set_color(cr, darktable.bauhaus->graph_fg); // Use standard text color
 
-    snprintf(text, sizeof(text), "%.0f%%", 100.0f * y_linear); // Format the linear value
+    if(white_in_nits)
+    {
+      const float nits = DT_HDR_REFERENCE_WHITE_NITS * y_linear;
+      snprintf(text, sizeof(text), nits < 10.f ? "%.1f" : "%.0f", nits);
+    }
+    else
+      snprintf(text, sizeof(text), "%.0f%%", 100.0f * y_linear); // Format the linear value
     pango_layout_set_text(layout, text, -1);
     pango_layout_get_pixel_extents(layout, &g->ink, NULL);
 
@@ -1544,8 +1566,12 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
                      margin_top - g->ink.height / 2.f - g->ink.y,
                      margin_top + graph_height - g->ink.height / 2.f - g->ink.y);
 
-    cairo_move_to(cr, label_x, label_y);
-    pango_cairo_show_layout(cr, layout);
+    if(label_y - last_label_y >= g->ink.height)
+    {
+      cairo_move_to(cr, label_x, label_y);
+      pango_cairo_show_layout(cr, layout);
+      last_label_y = label_y;
+    }
     cairo_restore(cr);
   }
 
@@ -1614,12 +1640,12 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
   const int steps = 200;
 
   // draw the main curve
-  cairo_move_to(cr, 0, _apply_curve(0, &tone_mapping_params) * graph_height);
+  cairo_move_to(cr, 0, _apply_curve(0, &tone_mapping_params) * y_scale);
   for(int k = 1; k <= steps; k++)
   {
     const float x_norm = (float)k / steps;
     const float y_norm = _apply_curve(x_norm, &tone_mapping_params);
-    cairo_line_to(cr, x_norm * graph_width, y_norm * graph_height);
+    cairo_line_to(cr, x_norm * graph_width, y_norm * y_scale);
   }
   cairo_stroke(cr);
 
@@ -1628,12 +1654,12 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
   {
     cairo_set_source_rgb(cr, 0.75, .5, 0.);
     const int toe_end_step = ceilf(tone_mapping_params.toe_transition_x * steps);
-    cairo_move_to(cr, 0, _apply_curve(0, &tone_mapping_params) * graph_height);
+    cairo_move_to(cr, 0, _apply_curve(0, &tone_mapping_params) * y_scale);
     for(int k = 1; k <= toe_end_step; k++)
     {
       const float x_norm = (float)k / steps;
       const float y_norm = _apply_curve(x_norm, &tone_mapping_params);
-      cairo_line_to(cr, x_norm * graph_width, y_norm * graph_height);
+      cairo_line_to(cr, x_norm * graph_width, y_norm * y_scale);
     }
     cairo_stroke(cr);
   }
@@ -1644,12 +1670,12 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
     const int shoulder_start_step = floorf(tone_mapping_params.shoulder_transition_x * steps);
     float x_norm = (float)shoulder_start_step / steps;
     float y_norm = _apply_curve(x_norm, &tone_mapping_params);
-    cairo_move_to(cr, x_norm * graph_width, y_norm * graph_height);
+    cairo_move_to(cr, x_norm * graph_width, y_norm * y_scale);
     for(int k = shoulder_start_step + 1; k <= steps; k++)
     {
       x_norm = (float)k / steps;
       y_norm = _apply_curve(x_norm, &tone_mapping_params);
-      cairo_line_to(cr, x_norm * graph_width, y_norm * graph_height);
+      cairo_line_to(cr, x_norm * graph_width, y_norm * y_scale);
     }
     cairo_stroke(cr);
   }
@@ -1666,21 +1692,21 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
   cairo_clip(cr);
 
   const float x_toe_graph = tone_mapping_params.toe_transition_x * graph_width;
-  const float y_toe_graph = tone_mapping_params.toe_transition_y * graph_height;
+  const float y_toe_graph = tone_mapping_params.toe_transition_y * y_scale;
   set_color(cr, darktable.bauhaus->graph_fg_active);
   cairo_arc(cr, x_toe_graph, y_toe_graph, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
   cairo_fill(cr);
   cairo_stroke(cr);
 
   const float x_shoulder_graph = tone_mapping_params.shoulder_transition_x * graph_width;
-  const float y_shoulder_graph = tone_mapping_params.shoulder_transition_y * graph_height;
+  const float y_shoulder_graph = tone_mapping_params.shoulder_transition_y * y_scale;
   set_color(cr, darktable.bauhaus->graph_fg_active);
   cairo_arc(cr, x_shoulder_graph, y_shoulder_graph, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
   cairo_fill(cr);
   cairo_stroke(cr);
 
   const float x_pivot_graph = tone_mapping_params.pivot_x * graph_width;
-  const float y_pivot_graph = tone_mapping_params.pivot_y * graph_height;
+  const float y_pivot_graph = tone_mapping_params.pivot_y * y_scale;
   set_color(cr, darktable.bauhaus->graph_fg_active);
   cairo_arc(cr, x_pivot_graph, y_pivot_graph, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
   cairo_fill(cr);
@@ -1740,6 +1766,28 @@ static void _update_curve_warnings(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_paint(g->basic_curve_controls.curve_shoulder_power,
                                     params.need_concave_shoulder && warnings_enabled
                                     ? dtgtk_cairo_paint_warning : NULL, CPF_ACTIVE, NULL);
+
+  // HLG tops out at its nominal display peak, so a higher target white
+  // clips in dt_hdr_hlg_encode() instead of rolling off
+  dt_colorspaces_color_profile_type_t export_type;
+  const char *export_filename;
+  dt_ioppr_get_export_profile_type(self->dev, &export_type, &export_filename);
+  const int transfer = dt_colorspaces_hdr_transfer(export_type);
+  const gboolean hlg_clips =
+    (transfer == DT_HDR_HLG_REC2020 || transfer == DT_HDR_HLG_P3)
+    && p->curve_target_display_white_ratio
+       > DT_HDR_HLG_PEAK_NITS / DT_HDR_REFERENCE_WHITE_NITS + 0.005f;
+  dt_bauhaus_widget_set_quad_paint(g->target_white,
+                                    hlg_clips && warnings_enabled
+                                    ? dtgtk_cairo_paint_warning : NULL, CPF_ACTIVE, NULL);
+}
+
+static void _signal_profile_user_changed(gpointer instance,
+                                         const uint8_t profile_type,
+                                         dt_iop_module_t *self)
+{
+  if(profile_type == DT_COLORSPACES_PROFILE_TYPE_EXPORT)
+    _update_curve_warnings(self);
 }
 
 static void _update_redraw_dynamic_gui(dt_iop_module_t* const self,
@@ -1969,6 +2017,33 @@ static GtkWidget* _create_curve_graph_box(dt_iop_module_t *self,
   return graph_box;
 }
 
+static void _set_target_white_unit(const dt_iop_agx_gui_data_t *g)
+{
+  if(dt_bauhaus_toggle_get(g->target_white_in_nits))
+  {
+    dt_bauhaus_slider_set_format(g->target_white, _(" nits"));
+    dt_bauhaus_slider_set_digits(g->target_white, 0);
+    dt_bauhaus_slider_set_factor(g->target_white, DT_HDR_REFERENCE_WHITE_NITS);
+  }
+  else
+  {
+    dt_bauhaus_slider_set_format(g->target_white, "%");
+    dt_bauhaus_slider_set_digits(g->target_white, 2);
+    dt_bauhaus_slider_set_factor(g->target_white, 100.f);
+  }
+  gtk_widget_queue_draw(g->target_white);
+}
+
+static void _target_white_unit_callback(GtkWidget *widget,
+                                        dt_iop_module_t *self)
+{
+  const dt_iop_agx_gui_data_t *g = self->gui_data;
+  dt_conf_set_bool("plugins/darkroom/agx/target_white_in_nits",
+                   dt_bauhaus_toggle_get(g->target_white_in_nits));
+  _set_target_white_unit(g);
+  gtk_widget_queue_draw(GTK_WIDGET(g->graph_drawing_area));
+}
+
 static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
                                        dt_iop_agx_gui_data_t *g)
 {
@@ -1995,12 +2070,38 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
                                   "may clip highlights"));
 
   // Shoulder intersection point
-  slider = dt_bauhaus_slider_from_params(section, "curve_target_display_white_ratio");
+  g->target_white = slider =
+    dt_bauhaus_slider_from_params(section, "curve_target_display_white_ratio");
   dt_bauhaus_slider_set_soft_range(slider, 0.5f, 1.f);
-  dt_bauhaus_slider_set_format(slider, "%");
-  dt_bauhaus_slider_set_digits(slider, 2);
-  dt_bauhaus_slider_set_factor(slider, 100.f);
-  gtk_widget_set_tooltip_text(slider, _("max linear output power"));
+  gtk_widget_set_tooltip_text(slider,
+                              _("peak output brightness: the brightest a highlight "
+                                "can reach.\n"
+                                "the default is the reference white. for SDR, "
+                                "keep it at or below that.\n"
+                                "for HDR (PQ or HLG) output, "
+                                "raise it to give highlights headroom;\n"
+                                "reference white stays at 203 nits, "
+                                "so peak nits = target white x 203,\n"
+                                "e.g. 1000 nits is about 493 percent.\n"
+                                "HLG output peaks at 1000 nits, "
+                                "so higher values clip there;\n"
+                                "a warning shows when the export profile is HLG"));
+
+  // no field: this only chooses how the slider above is shown, so it is
+  // kept in conf rather than in the params
+  g->target_white_in_nits = dt_bauhaus_toggle_new(self);
+  dt_bauhaus_widget_set_label(g->target_white_in_nits,
+                              N_("curve"), N_("show target white in nits"));
+  gtk_widget_set_tooltip_text(g->target_white_in_nits,
+                              _("show and type the target white as display luminance\n"
+                                "relative to the 203 nit HDR reference white, "
+                                "instead of in percent"));
+  dt_bauhaus_toggle_set(g->target_white_in_nits,
+                        dt_conf_get_bool("plugins/darkroom/agx/target_white_in_nits"));
+  _set_target_white_unit(g);
+  g_signal_connect(G_OBJECT(g->target_white_in_nits), "value-changed",
+                   G_CALLBACK(_target_white_unit_callback), self);
+  dt_gui_box_add(g->advanced_section.container, g->target_white_in_nits);
 
   // Toe length
   slider = dt_bauhaus_slider_from_params(section, "curve_linear_ratio_below_pivot");
@@ -2509,6 +2610,8 @@ void gui_init(dt_iop_module_t *self)
   // Finally, add the remaining sections to the settings page
   _add_look_box(settings_section, g);
   _create_primaries_page(self, g);
+
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, _signal_profile_user_changed);
 }
 
 static void _set_default_curve_and_look_params(dt_iop_agx_params_t *p)
