@@ -31,8 +31,8 @@ struct dt_iop_module_t;
 typedef struct dt_dev_wb_t
 {
   dt_aligned_pixel_t coeffs;  // coeffs actually set by temperature
-  // we want processing code never to read dev->chroma, so keep it here
-  double D65coeffs[4];        // both read from exif data or "best guess"
+  // an image constant, but kept here so processing code never reads dev->chroma
+  double D65coeffs[4];        // read from exif data or "best guess"
   gboolean late_correction;
 } dt_dev_wb_t;
 
