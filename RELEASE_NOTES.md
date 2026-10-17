@@ -133,6 +133,11 @@ changes (where available).
 - Escape now cancels a mask shape that is being drawn, as a right-click
   does.
 
+- The histogram, waveform and RGB parade have a new button to switch to
+  an HDR scale, showing the image as the PQ or HLG signal of an HDR
+  export. The PQ scale is marked in nits and the HLG scale in percent
+  of signal, with reference white marked on both.
+
 - Mask nodes close or outside the image boundaries are now editable.
   When "edit shapes on canvas" is enabled, the node editing area is
   extended beyond the image borders to allow editing of these nodes.
