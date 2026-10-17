@@ -129,7 +129,7 @@ typedef struct dt_iop_agx_params_t
   // t_ly
   float curve_target_display_black_ratio; // $MIN: 0.f $MAX: 0.15f $DEFAULT: 0.f $DESCRIPTION: "target black"
   // s_ly
-  float curve_target_display_white_ratio; // $MIN: 0.2f $MAX: 1.f $DEFAULT: 1.f $DESCRIPTION: "target white"
+  float curve_target_display_white_ratio; // $MIN: 0.2f $MAX: 50.f $DEFAULT: 1.f $DESCRIPTION: "target white"
 
   // custom primaries; rotation limits below: +/- 0.5236 radian => +/- 30 degrees
   dt_iop_agx_base_primaries_t base_primaries; // $DEFAULT: DT_AGX_REC2020 $DESCRIPTION: "base primaries"
@@ -1464,6 +1464,8 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
 
   const float graph_width = g->allocation.width - margin_right - margin_left;
   const float graph_height = g->allocation.height - margin_bottom - margin_top;
+  // with HDR headroom the curve ends above 1, so shrink the y axis to fit it
+  const float y_scale = graph_height / fmaxf(1.f, tone_mapping_params.target_white);
 
   gtk_render_background(g->context, cr, 0, 0, g->allocation.width, g->allocation.height);
 
@@ -1487,7 +1489,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
                         darktable.bauhaus->graph_border.blue,
                         0.5);
   cairo_move_to(cr, 0, 0);
-  cairo_line_to(cr, graph_width, graph_height);
+  cairo_line_to(cr, graph_width, y_scale);
   cairo_stroke(cr);
   cairo_restore(cr);
 
@@ -1511,15 +1513,21 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
                                     0.18f,
                                     0.18f * 2.f,
                                     0.18f * 4.f,
-                                    1.f };
+                                    1.f,
+                                    2.f,
+                                    4.f,
+                                    8.f,
+                                    16.f,
+                                    32.f };
   const int num_guides = sizeof(linear_y_guides) / sizeof(linear_y_guides[0]);
 
   for(int i = 0; i < num_guides; ++i)
   {
     const float y_linear = linear_y_guides[i];
+    if(y_linear > fmaxf(1.f, p->curve_target_display_white_ratio)) break;
     const float y_pre_gamma = powf(y_linear, 1.f / tone_mapping_params.curve_gamma);
 
-    const float y_graph = y_pre_gamma * graph_height;
+    const float y_graph = y_pre_gamma * y_scale;
 
     cairo_move_to(cr, 0, y_graph);
     cairo_line_to(cr, graph_width, y_graph);
@@ -1614,12 +1622,12 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
   const int steps = 200;
 
   // draw the main curve
-  cairo_move_to(cr, 0, _apply_curve(0, &tone_mapping_params) * graph_height);
+  cairo_move_to(cr, 0, _apply_curve(0, &tone_mapping_params) * y_scale);
   for(int k = 1; k <= steps; k++)
   {
     const float x_norm = (float)k / steps;
     const float y_norm = _apply_curve(x_norm, &tone_mapping_params);
-    cairo_line_to(cr, x_norm * graph_width, y_norm * graph_height);
+    cairo_line_to(cr, x_norm * graph_width, y_norm * y_scale);
   }
   cairo_stroke(cr);
 
@@ -1628,12 +1636,12 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
   {
     cairo_set_source_rgb(cr, 0.75, .5, 0.);
     const int toe_end_step = ceilf(tone_mapping_params.toe_transition_x * steps);
-    cairo_move_to(cr, 0, _apply_curve(0, &tone_mapping_params) * graph_height);
+    cairo_move_to(cr, 0, _apply_curve(0, &tone_mapping_params) * y_scale);
     for(int k = 1; k <= toe_end_step; k++)
     {
       const float x_norm = (float)k / steps;
       const float y_norm = _apply_curve(x_norm, &tone_mapping_params);
-      cairo_line_to(cr, x_norm * graph_width, y_norm * graph_height);
+      cairo_line_to(cr, x_norm * graph_width, y_norm * y_scale);
     }
     cairo_stroke(cr);
   }
@@ -1644,12 +1652,12 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
     const int shoulder_start_step = floorf(tone_mapping_params.shoulder_transition_x * steps);
     float x_norm = (float)shoulder_start_step / steps;
     float y_norm = _apply_curve(x_norm, &tone_mapping_params);
-    cairo_move_to(cr, x_norm * graph_width, y_norm * graph_height);
+    cairo_move_to(cr, x_norm * graph_width, y_norm * y_scale);
     for(int k = shoulder_start_step + 1; k <= steps; k++)
     {
       x_norm = (float)k / steps;
       y_norm = _apply_curve(x_norm, &tone_mapping_params);
-      cairo_line_to(cr, x_norm * graph_width, y_norm * graph_height);
+      cairo_line_to(cr, x_norm * graph_width, y_norm * y_scale);
     }
     cairo_stroke(cr);
   }
@@ -1666,21 +1674,21 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
   cairo_clip(cr);
 
   const float x_toe_graph = tone_mapping_params.toe_transition_x * graph_width;
-  const float y_toe_graph = tone_mapping_params.toe_transition_y * graph_height;
+  const float y_toe_graph = tone_mapping_params.toe_transition_y * y_scale;
   set_color(cr, darktable.bauhaus->graph_fg_active);
   cairo_arc(cr, x_toe_graph, y_toe_graph, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
   cairo_fill(cr);
   cairo_stroke(cr);
 
   const float x_shoulder_graph = tone_mapping_params.shoulder_transition_x * graph_width;
-  const float y_shoulder_graph = tone_mapping_params.shoulder_transition_y * graph_height;
+  const float y_shoulder_graph = tone_mapping_params.shoulder_transition_y * y_scale;
   set_color(cr, darktable.bauhaus->graph_fg_active);
   cairo_arc(cr, x_shoulder_graph, y_shoulder_graph, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
   cairo_fill(cr);
   cairo_stroke(cr);
 
   const float x_pivot_graph = tone_mapping_params.pivot_x * graph_width;
-  const float y_pivot_graph = tone_mapping_params.pivot_y * graph_height;
+  const float y_pivot_graph = tone_mapping_params.pivot_y * y_scale;
   set_color(cr, darktable.bauhaus->graph_fg_active);
   cairo_arc(cr, x_pivot_graph, y_pivot_graph, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
   cairo_fill(cr);
@@ -2000,7 +2008,14 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
-  gtk_widget_set_tooltip_text(slider, _("max linear output power"));
+  gtk_widget_set_tooltip_text(slider,
+                              _("max linear output power.\n"
+                                "values above the default leave headroom for HDR "
+                                "output,\n"
+                                "where the default is the 203 nit HDR reference "
+                                "white.\n"
+                                "peak nits = target white x 203, e.g. "
+                                "1000 nits is about 493 percent"));
 
   // Toe length
   slider = dt_bauhaus_slider_from_params(section, "curve_linear_ratio_below_pivot");
