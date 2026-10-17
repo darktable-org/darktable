@@ -64,6 +64,13 @@ gboolean dt_imageio_is_ldr(const char *filename);
 gboolean dt_imageio_has_mono_preview(const char *filename);
 // Set the darktable/mode/hdr tag
 void dt_imageio_set_hdr_tag(dt_image_t *img);
+// HDR10 content light levels in nits of a PQ encoded RGBA float buffer:
+// MaxCLL is the brightest RGB component, MaxFALL the mean of each pixel's
+// brightest component (for a still, the only frame is the brightest one)
+void dt_imageio_pq_light_level(const float *const rgba,
+                               const size_t npixels,
+                               float *const max_cll,
+                               float *const max_fall);
 // Update the tag for b&w workflow
 void dt_imageio_update_monochrome_workflow_tag(int32_t id, int mask);
 // opens the file using pfm, hdr, exr.
