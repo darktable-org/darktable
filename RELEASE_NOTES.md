@@ -608,6 +608,10 @@ changes (where available).
   lighttable, and when importing images with a new camera maker, model
   or lens.
 
+- Fixed the filmic rgb graphs cutting off the curve when target white
+  is above 100% for HDR output: the look and mapping views now scale
+  their y axis to fit the curve and mark 100% display.
+
 ## Lua
 
 ### API Version
