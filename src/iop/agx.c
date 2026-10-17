@@ -38,7 +38,7 @@
 #include <pango/pangocairo.h>
 #include <stdlib.h>
 
-DT_MODULE_INTROSPECTION(7, dt_iop_agx_params_t)
+DT_MODULE_INTROSPECTION(8, dt_iop_agx_params_t)
 
 const char *name()
 {
@@ -152,6 +152,9 @@ typedef struct dt_iop_agx_params_t
 
   // v5
   gboolean completely_reverse_primaries; // $DEFAULT: FALSE $DESCRIPTION: "reverse all"
+
+  // v8
+  gboolean target_white_from_output; // $DEFAULT: FALSE $DESCRIPTION: "target white from output"
 } dt_iop_agx_params_t;
 
 typedef struct dt_iop_basic_curve_controls_t
@@ -168,6 +171,8 @@ typedef struct dt_iop_agx_gui_data_t
   GtkNotebook *notebook;
   GtkWidget *auto_gamma;
   GtkWidget *curve_gamma;
+  GtkWidget *target_white;
+  GtkWidget *target_white_from_output;
   GtkDrawingArea *graph_drawing_area;
 
   dt_gui_collapsible_section_t look_section;
@@ -269,6 +274,8 @@ typedef struct dt_iop_agx_data_t
 {
   tone_mapping_params_t tone_mapping_params;
   primaries_params_t primaries_params;
+  // to rebuild the curve for the output headroom, only known at process time
+  dt_iop_agx_params_t params;
 } dt_iop_agx_data_t;
 
 static void _set_scene_referred_default_params(dt_iop_agx_params_t *p);
@@ -290,6 +297,18 @@ int legacy_params(dt_iop_module_t *self,
     *new_params = np;
     *new_params_size = sizeof(dt_iop_agx_params_t);
     *new_version = self->so->version(); // SPECIAL CASE: jump directly to latest version
+
+    return 0;
+  }
+
+  if(old_version == 7)
+  {
+    // v8 appends target_white_from_output, off for existing edits
+    dt_iop_agx_params_t *np = calloc(1, sizeof(dt_iop_agx_params_t));
+    memcpy(np, old_params, offsetof(dt_iop_agx_params_t, target_white_from_output));
+    *new_params = np;
+    *new_params_size = sizeof(dt_iop_agx_params_t);
+    *new_version = 8;
 
     return 0;
   }
@@ -960,6 +979,18 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
   return tone_mapping_params;
 }
 
+// with target white from output, the pipe's output headroom replaces the slider value
+static tone_mapping_params_t _pipe_tone_mapping_params(const dt_iop_agx_params_t *p,
+                                                       const dt_dev_pixelpipe_t *pipe)
+{
+  if(!p->target_white_from_output || !pipe)
+    return _calculate_tone_mapping_params(p);
+
+  dt_iop_agx_params_t output_params = *p;
+  output_params.curve_target_display_white_ratio = pipe->output_headroom;
+  return _calculate_tone_mapping_params(&output_params);
+}
+
 static primaries_params_t _get_primaries_params(const dt_iop_agx_params_t *p)
 {
   primaries_params_t primaries_params;
@@ -1378,6 +1409,9 @@ void process(dt_iop_module_t *self,
   rendering_profile.nonlinearlut = FALSE; // no LUT for this linear transform
 
   const gboolean base_working_same_profile = pipe_work_profile == base_profile;
+  const tone_mapping_params_t tone_mapping_params = d->params.target_white_from_output
+    ? _pipe_tone_mapping_params(&d->params, piece->pipe)
+    : d->tone_mapping_params;
 
   DT_OMP_FOR()
   for(size_t k = 0; k < 4 * n_pixels; k += 4)
@@ -1409,7 +1443,7 @@ void process(dt_iop_module_t *self,
     dt_apply_transposed_color_matrix(base_rgb, base_to_rendering_transposed, rendering_rgb);
 
     // Apply the tone mapping curve and look adjustments
-    _agx_tone_mapping(rendering_rgb, &d->tone_mapping_params,
+    _agx_tone_mapping(rendering_rgb, &tone_mapping_params,
                       rendering_profile.matrix_in_transposed);
 
     // Convert from internal rendering space back to pipe working space
@@ -1427,7 +1461,9 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
   const dt_iop_agx_params_t *p = self->params;
   dt_iop_agx_gui_data_t *g = self->gui_data;
 
-  const tone_mapping_params_t tone_mapping_params = _calculate_tone_mapping_params(p);
+  // draw the curve the center view renders
+  const tone_mapping_params_t tone_mapping_params =
+    _pipe_tone_mapping_params(p, self->dev->full.pipe);
 
   gtk_widget_get_allocation(widget, &g->allocation);
   g->allocation.height -= DT_RESIZE_HANDLE_SIZE;
@@ -1732,7 +1768,8 @@ static void _update_curve_warnings(dt_iop_module_t *self)
   if(!g) return;
 
   const gboolean warnings_enabled = dt_conf_get_bool("plugins/darkroom/agx/enable_curve_warnings");
-  const tone_mapping_params_t params = _calculate_tone_mapping_params(p);
+  const tone_mapping_params_t params =
+    _pipe_tone_mapping_params(p, self->dev->full.pipe);
 
   dt_bauhaus_widget_set_quad_paint(g->basic_curve_controls.curve_toe_power,
                                     params.need_convex_toe && warnings_enabled
@@ -1747,6 +1784,7 @@ static void _update_redraw_dynamic_gui(dt_iop_module_t* const self,
                                        const dt_iop_agx_params_t* const p)
 {
   gtk_widget_set_visible(g->curve_gamma, !p->auto_gamma);
+  gtk_widget_set_sensitive(g->target_white, !p->target_white_from_output);
   gtk_widget_set_visible(g->primaries_controls_vbox, !p->disable_primaries_adjustments);
   const gboolean post_curve_primaries_available = !p->completely_reverse_primaries && !p->disable_primaries_adjustments;
   gtk_widget_set_visible(g->post_curve_primaries_controls_vbox, post_curve_primaries_available);
@@ -1996,11 +2034,21 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
 
   // Shoulder intersection point
   slider = dt_bauhaus_slider_from_params(section, "curve_target_display_white_ratio");
+  g->target_white = slider;
   dt_bauhaus_slider_set_soft_range(slider, 0.5f, 1.f);
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
   gtk_widget_set_tooltip_text(slider, _("max linear output power"));
+
+  g->target_white_from_output =
+    dt_bauhaus_toggle_from_params(section, "target_white_from_output");
+  gtk_widget_set_tooltip_text
+    (g->target_white_from_output,
+     _("set target white to the peak of the output instead of the slider,\n"
+       "so one edit renders correctly for SDR and HDR:\n"
+       "100% for SDR, 493% for HLG (1000 nits), and for PQ the peak\n"
+       "set in preferences > processing (default 1000 nits, 493%)"));
 
   // Toe length
   slider = dt_bauhaus_slider_from_params(section, "curve_linear_ratio_below_pivot");
@@ -2729,6 +2777,7 @@ void commit_params(dt_iop_module_t *self,
   // Calculate curve parameters once
   processing_params->tone_mapping_params = _calculate_tone_mapping_params(p);
   processing_params->primaries_params = _get_primaries_params(p);
+  processing_params->params = *p;
 }
 
 void reload_defaults(dt_iop_module_t *self)
@@ -2843,11 +2892,14 @@ int process_cl(dt_iop_module_t *self,
   }
 
   const int base_working_same_profile = pipe_work_profile == base_profile;
+  const tone_mapping_params_t tone_mapping_params = d->params.target_white_from_output
+    ? _pipe_tone_mapping_params(&d->params, piece->pipe)
+    : d->tone_mapping_params;
 
   err = dt_opencl_enqueue_kernel_2d_args(
     devid, gd->kernel_agx, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
-    CLARG(d->tone_mapping_params),
+    CLARG(tone_mapping_params),
     CLARG(dev_pipe_to_base),
     CLARG(dev_base_to_rendering),
     CLARG(dev_rendering_to_pipe),
