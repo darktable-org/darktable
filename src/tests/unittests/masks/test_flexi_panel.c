@@ -682,34 +682,6 @@ static void test_panel_state_no_separate_panel_for_utility_or_embedded(void **st
   assert_false(s_emb.corner_icon_visible);
 }
 
-// dedicated panel caption reflects module name and instance name with 2-line markup
-static void test_masks_panel_header_markup(void **state)
-{
-  char *m_hosted_no_inst = dt_masks_model_panel_header_markup("exposure", "", TRUE);
-  assert_non_null(strstr(m_hosted_no_inst, "blend mask"));
-  assert_non_null(strstr(m_hosted_no_inst, "exposure"));
-  assert_non_null(strstr(m_hosted_no_inst, "\n"));
-  assert_null(strstr(m_hosted_no_inst, "•"));
-  free(m_hosted_no_inst);
-
-  char *m_hosted_inst = dt_masks_model_panel_header_markup("exposure", "foreground", TRUE);
-  assert_non_null(strstr(m_hosted_inst, "blend mask"));
-  assert_non_null(strstr(m_hosted_inst, "exposure"));
-  assert_non_null(strstr(m_hosted_inst, "• foreground"));
-  assert_non_null(strstr(m_hosted_inst, "\n"));
-  free(m_hosted_inst);
-
-  char *m_hosted_no_mod = dt_masks_model_panel_header_markup(NULL, NULL, TRUE);
-  assert_non_null(strstr(m_hosted_no_mod, "blend mask"));
-  assert_non_null(strstr(m_hosted_no_mod, "no focused module"));
-  assert_non_null(strstr(m_hosted_no_mod, "\n"));
-  free(m_hosted_no_mod);
-
-  char *m_embedded = dt_masks_model_panel_header_markup("exposure", "foreground", FALSE);
-  assert_string_equal(m_embedded, "blend mask");
-  free(m_embedded);
-}
-
 static void test_param_channel_tooltips(void **state)
 {
   const int csps[] = { DEVELOP_BLEND_CS_LAB, DEVELOP_BLEND_CS_RGB_DISPLAY, DEVELOP_BLEND_CS_RGB_SCENE };
@@ -796,7 +768,6 @@ int main(void)
     cmocka_unit_test_teardown(test_panel_state_utility_position_follows_pref, _teardown),
     cmocka_unit_test_teardown(test_panel_state_no_separate_panel_for_utility_or_embedded, _teardown),
     cmocka_unit_test_teardown(test_pinning_collapsed_module_expands_iop, _teardown),
-    cmocka_unit_test_teardown(test_masks_panel_header_markup, _teardown),
     cmocka_unit_test_teardown(test_param_channel_tooltips, _teardown),
   };
   return cmocka_run_group_tests(tests, NULL, NULL);

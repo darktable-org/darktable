@@ -1277,6 +1277,9 @@ static void _gui_off_callback(GtkToggleButton *togglebutton,
     else
     {
       module->enabled = FALSE;
+      // an off module is not rendered: its mask overlay and its compare
+      // (the eye) have nothing to show, and stand down in both headers
+      if(module->blend_data) dt_iop_gui_blend_mask_view_off(module);
       if(!basics && module->expanded)
       {
         if(activate_expand)
@@ -1287,10 +1290,6 @@ static void _gui_off_callback(GtkToggleButton *togglebutton,
     }
 
     dt_dev_add_history_item(module->dev, module, FALSE);
-
-    // set mask indicator sensitive according to module activation and raster mask
-    if(module->mask_indicator)
-      gtk_widget_set_sensitive(module->mask_indicator, module->enabled);
 
     if(!gtk_widget_is_visible(module->header))
       dt_dev_modulegroups_update_visibility(darktable.develop);
@@ -3300,19 +3299,8 @@ static void _display_mask_indicator_callback(GtkToggleButton *bt,
                                              dt_iop_module_t *module)
 {
   DT_GUARD_GUI_UPDATE();
-
-  const gboolean is_active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bt));
-  const dt_iop_gui_blend_data_t *bd = module->blend_data;
-
-  module->request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_MASK;
-  module->request_mask_display |= (is_active ? DT_DEV_PIXELPIPE_DISPLAY_MASK : DT_DEV_PIXELPIPE_DISPLAY_NONE);
-
-  // set the module show mask button too
-  if(bd->showmask)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), is_active);
-
-  dt_iop_request_focus(module);
-  dt_iop_refresh_center(module);
+  // the same as the mask header's overlay button, which it mirrors
+  dt_iop_gui_blend_mask_display(module, gtk_toggle_button_get_active(bt));
 }
 
 typedef struct _mask_counts_t
@@ -3426,14 +3414,10 @@ static gboolean _mask_indicator_tooltip(GtkWidget *treeview,
     g_free(source);
   }
 
-  if(!raster && !part2)
-    part2 = g_strdup(_("click to display (module must be activated first)"));
-
-  gchar *text;
-  if(part2)
-    text = g_strconcat(part1, "\n", part2, NULL);
-  else
-    text = g_strdup(part1);
+  // the mask overlay button's tooltip first, as this one is clicked the same
+  gchar *text = part2
+    ? g_strconcat(dt_iop_gui_blend_showmask_tooltip(), "\n\n", part1, "\n", part2, NULL)
+    : g_strconcat(dt_iop_gui_blend_showmask_tooltip(), "\n\n", part1, NULL);
 
   gtk_tooltip_set_text(tooltip, text);
   g_free(part1);
@@ -3482,8 +3466,6 @@ void dt_iop_add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
       module->mask_indicator = NULL;
       dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
     }
-    else
-      gtk_widget_set_sensitive(module->mask_indicator, module->enabled);
   }
   else if(show)
   {
@@ -3492,8 +3474,9 @@ void dt_iop_add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
                      G_CALLBACK(_display_mask_indicator_callback), module);
     g_signal_connect(G_OBJECT(module->mask_indicator), "query-tooltip",
                      G_CALLBACK(_mask_indicator_tooltip), module);
+    // live with the module off too: clicking it switches the module on
+    // (dt_iop_gui_blend_mask_display)
     gtk_widget_set_has_tooltip(module->mask_indicator, TRUE);
-    gtk_widget_set_sensitive(module->mask_indicator, module->enabled);
     _header_pack_indicator(module, module->mask_indicator);
   }
 }
