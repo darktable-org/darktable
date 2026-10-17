@@ -58,7 +58,7 @@ typedef struct dt_iop_sigmoid_params_t
 {
   float middle_grey_contrast; // $MIN: 0.1  $MAX: 10.0 $DEFAULT: 1.5 $DESCRIPTION: "contrast"
   float contrast_skewness;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "skew"
-  float display_white_target; // $MIN: 20.0  $MAX: 1600.0 $DEFAULT: 100.0 $DESCRIPTION: "target white"
+  float display_white_target; // $MIN: 20.0  $MAX: 5000.0 $DEFAULT: 100.0 $DESCRIPTION: "target white"
   float display_black_target; // $MIN: 0.0  $MAX: 15.0 $DEFAULT: 0.0152 $DESCRIPTION: "target black"
   dt_iop_sigmoid_methods_type_t color_processing; // $DEFAULT: DT_SIGMOID_METHOD_PER_CHANNEL $DESCRIPTION: "color processing"
   float hue_preservation; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "preserve hue"
@@ -969,7 +969,11 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(slider, 50.0f, 100.0f);
   dt_bauhaus_slider_set_format(slider, "%");
   gtk_widget_set_tooltip_text(slider, _("the white luminance of the target display or print.\n"
-                                        "can be used creatively for a faded look or blowing out whites earlier."));
+                                        "can be used creatively for a faded look or blowing out whites earlier.\n"
+                                        "for HDR (PQ or HLG) output, raise it above "
+                                        "100 percent to give highlights headroom;\n"
+                                        "100 percent is the 203 nit reference white, "
+                                        "so 1000 nits is about 493 percent"));
 
   self->widget = main_box;
 }
