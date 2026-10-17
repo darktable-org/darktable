@@ -3435,6 +3435,16 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
   const float grey = p->grey_point_source / 100.f;
   const float DR = p->white_point_source - p->black_point_source;
 
+  // a target white above 100% puts the end of the curve above y = 1,
+  // so the y axis is stretched to y_top and y = 1 is y_height pixels high
+  const float spline_top = fmaxf(1.f, g->spline.y[4]);
+  float y_top = spline_top;
+  if(g->gui_mode == DT_FILMIC_GUI_BASECURVE)
+    y_top = powf(spline_top, p->output_power);
+  else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
+    y_top = dt_log_scale_axis(powf(spline_top, p->output_power), LOGBASE);
+  const float y_height = g->graph_height / y_top;
+
   // set the graph as the origin of the coordinates
   cairo_translate(cr, margin_left, margin_top);
 
@@ -3493,16 +3503,23 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
     cairo_translate(cr, 0., -g->graph_height);
 
     if(g->gui_mode == DT_FILMIC_GUI_LOOK || g->gui_mode == DT_FILMIC_GUI_BASECURVE)
-      dt_draw_grid(cr, 4, 0, 0, g->graph_width, g->graph_height);
+      dt_draw_grid(cr, 4, 0, 0, g->graph_width, y_height);
     else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
-      dt_draw_loglog_grid(cr, 4, 0, 0, g->graph_width, g->graph_height, LOGBASE);
+      dt_draw_loglog_grid(cr, 4, 0, 0, g->graph_width, y_height, LOGBASE);
+
+    // mark 100% display when the graph extends above it
+    if(y_top > 1.f)
+    {
+      dt_draw_line(cr, 0, y_height, g->graph_width, y_height);
+      cairo_stroke(cr);
+    }
 
     // reset coordinates
     cairo_restore(cr);
 
     // draw identity line
     cairo_move_to(cr, 0, g->graph_height);
-    cairo_line_to(cr, g->graph_width, 0);
+    cairo_line_to(cr, g->graph_width, g->graph_height - y_height);
     cairo_stroke(cr);
 
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
@@ -3571,7 +3588,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
     else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
       y_start = dt_log_scale_axis(powf(y_start, p->output_power), LOGBASE);
 
-    cairo_move_to(cr, 0, g->graph_height * (1.0 - y_start));
+    cairo_move_to(cr, 0, g->graph_height - y_start * y_height);
 
     for(int k = 1; k < 256; k++)
     {
@@ -3597,7 +3614,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
       const float margin = 1E-5;
       if(y > g->spline.y[4] + margin)
       {
-        y = fminf(y, 1.0f);
+        y = fminf(y, spline_top);
         cairo_set_source_rgb(cr, 0.75, .5, 0.);
       }
       else if(y < g->spline.y[0] - margin)
@@ -3615,9 +3632,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
       else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
         y = dt_log_scale_axis(powf(y, p->output_power), LOGBASE);
 
-      cairo_line_to(cr, x * g->graph_width, g->graph_height * (1.0 - y));
+      cairo_line_to(cr, x * g->graph_width, g->graph_height - y * y_height);
       cairo_stroke(cr);
-      cairo_move_to(cr, x * g->graph_width, g->graph_height * (1.0 - y));
+      cairo_move_to(cr, x * g->graph_width, g->graph_height - y * y_height);
     }
 
     cairo_restore(cr);
@@ -3644,7 +3661,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
     }
 
     cairo_set_source_rgb(cr, 0.75, 0.5, 0.0);
-    cairo_arc(cr, x_grey * g->graph_width, (1.0 - y_grey) * g->graph_height, DT_PIXEL_APPLY_DPI(6), 0,
+    cairo_arc(cr, x_grey * g->graph_width, g->graph_height - y_grey * y_height, DT_PIXEL_APPLY_DPI(6), 0,
               2. * M_PI);
     cairo_fill(cr);
     cairo_stroke(cr);
@@ -3715,7 +3732,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
         if(red) cairo_set_source_rgb(cr, 0.8, 0.35, 0.35);
 
         // draw bullet
-        cairo_arc(cr, x * g->graph_width, (1.0 - y) * g->graph_height, DT_PIXEL_APPLY_DPI(4), start_angle, end_angle);
+        cairo_arc(cr, x * g->graph_width, g->graph_height - y * y_height, DT_PIXEL_APPLY_DPI(4), start_angle, end_angle);
         cairo_fill(cr);
         cairo_stroke(cr);
 
@@ -3736,7 +3753,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
       pango_layout_set_text(layout, text, -1);
       pango_layout_get_pixel_extents(layout, &g->ink, NULL);
       cairo_move_to(cr, -2. * g->inset - g->ink.width - g->ink.x,
-                    (1.0 - y_grey) * g->graph_height - 0.5 * g->ink.height - g->ink.y);
+                    g->graph_height - y_grey * y_height - 0.5 * g->ink.height - g->ink.y);
       pango_cairo_show_layout(cr, layout);
       cairo_stroke(cr);
 
@@ -3759,7 +3776,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
       pango_layout_set_text(layout, text, -1);
       pango_layout_get_pixel_extents(layout, &g->ink, NULL);
       cairo_move_to(cr, -2. * g->inset - g->ink.width - g->ink.x,
-                    (1.0 - y_black) * g->graph_height - 0.5 * g->ink.height - g->ink.y);
+                    g->graph_height - y_black * y_height - 0.5 * g->ink.height - g->ink.y);
       pango_cairo_show_layout(cr, layout);
       cairo_stroke(cr);
 
@@ -3769,9 +3786,22 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
       pango_layout_set_text(layout, text, -1);
       pango_layout_get_pixel_extents(layout, &g->ink, NULL);
       cairo_move_to(cr, -2. * g->inset - g->ink.width - g->ink.x,
-                    (1.0 - y_white) * g->graph_height - 0.5 * g->ink.height - g->ink.y);
+                    g->graph_height - y_white * y_height - 0.5 * g->ink.height - g->ink.y);
       pango_cairo_show_layout(cr, layout);
       cairo_stroke(cr);
+
+      // mark the y axis graduation at 100% display, unless the white label already sits there
+      if(y_top > 1.f && (y_white - 1.f) * y_height > 1.5f * g->line_height)
+      {
+        set_color(cr, darktable.bauhaus->graph_fg);
+        snprintf(text, sizeof(text), "%.0f", 100.f);
+        pango_layout_set_text(layout, text, -1);
+        pango_layout_get_pixel_extents(layout, &g->ink, NULL);
+        cairo_move_to(cr, -2. * g->inset - g->ink.width - g->ink.x,
+                      g->graph_height - y_height - 0.5 * g->ink.height - g->ink.y);
+        pango_cairo_show_layout(cr, layout);
+        cairo_stroke(cr);
+      }
 
       // mark the x axis graduation at black spot
       set_color(cr, darktable.bauhaus->graph_fg);
