@@ -247,7 +247,9 @@ changes (where available).
 - AgX's target white can now be raised above 100%, up to 5000%, to
   leave headroom for PQ and HLG exports. 100% is the 203 nit HDR
   reference white, so 1000 nit highlights need about 493%. The curve
-  graph rescales to show the extended shoulder.
+  graph rescales to show the extended shoulder. A new "show target
+  white in nits" option displays and accepts the value in nits
+  instead.
 
 - The external raster masks module imports its mask into the image's
   `.dtdata` sidecar instead of referencing a file in a root folder.
