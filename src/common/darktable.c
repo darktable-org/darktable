@@ -196,6 +196,48 @@ static gchar *_masks_report_path(const char *input, const char *suffix)
   return g_strconcat(input, suffix, NULL);
 }
 
+#ifdef _WIN32
+  const char *system_name = "windows";
+#else
+  #ifdef __APPLE__
+    const char *system_name = "mac";
+  #else
+    #ifdef __linux__
+      const char *system_name = "linux";
+    #else
+      const char *system_name = "other";
+    #endif
+  #endif
+#endif
+
+#if (defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64))
+  #if !defined(__SSE2__) || !defined(__SSE__)
+    const char *platform_name = "x64";
+  #else
+    const char *platform_name = "x64 sse2";
+  #endif
+#else
+  #if defined(__aarch64__) && (defined(__ARM_64BIT_STATE) && defined(__ARM_ARCH) && (defined(__ARM_ARCH_8A) || __ARM_ARCH_PROFILE == 'A') || defined(__APPLE__) || defined(__MINGW64__))
+    #if defined(__ARM_NEON)
+      const char *platform_name = "arm neon";
+    #else
+      const char *platform_name = "arm";
+    #endif
+  #else
+    const char *platform_name = "other";
+  #endif
+#endif
+
+#ifdef _DEBUG
+  const char *build_name = "debug";
+#else
+  #ifdef _DARKTABLE_RELEASE
+    const char *build_name = "release";
+  #else
+    const char *build_name = "reldebinfo";
+  #endif
+#endif
+
 static int usage(const char *argv0)
 {
 #ifdef _WIN32
@@ -210,7 +252,7 @@ static int usage(const char *argv0)
 // Trying to keep the length of the text within 80 columns
 // Using 2-4 spaces for the indentation of the inline help
 
-  printf("darktable %s\n"
+  printf("darktable %s [%s %s %s]\n"
          "Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
          "<https://www.darktable.org>\n"
          "darktable is an open source photography workflow application and\n"
@@ -219,6 +261,9 @@ static int usage(const char *argv0)
          "This is free software: you are free to change and redistribute it.\n"
          "There is NO WARRANTY, to the extent permitted by law.\n\n",
          darktable_package_version,
+         system_name,
+         platform_name,
+         build_name,
          darktable_last_commit_year);
 
   printf("Usage:\n"
@@ -433,8 +478,10 @@ static int usage(const char *argv0)
          "\n"
          "--dump-pipe MODULE_A,MODULE_B\n"
          "\n"
+#ifdef HAVE_OPENCL
          "--dump-diff-pipe MODULE_A,MODULE_B\n"
          "\n"
+#endif
          "--dumpdir DIR\n"
          "\n"
          "-d CHANNEL\n"
@@ -970,38 +1017,6 @@ static char *_get_version_string(void)
   const char *libraw_version = LIBRAW_VERSION_STR "\n";
 #endif
 
-#ifdef _WIN32
-  const char *system_name = "windows";
-#else
-  #ifdef __APPLE__
-    const char *system_name = "mac";
-  #else
-    #ifdef __linux__
-      const char *system_name = "linux";
-    #else
-      const char *system_name = "other";
-    #endif
-  #endif
-#endif
-
-#if (defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64))
-  #if !defined(__SSE2__) || !defined(__SSE__)
-    const char *platform_name = "x64";
-  #else
-    const char *platform_name = "x64 sse2";
-  #endif
-#else
-  #if defined(__aarch64__) && (defined(__ARM_64BIT_STATE) && defined(__ARM_ARCH) && (defined(__ARM_ARCH_8A) || __ARM_ARCH_PROFILE == 'A') || defined(__APPLE__) || defined(__MINGW64__))
-    #if defined(__ARM_NEON)
-      const char *platform_name = "arm neon";
-    #else
-      const char *platform_name = "arm";
-    #endif
-  #else
-    const char *platform_name = "other";
-  #endif
-#endif
-
 
 #ifdef USE_LUA
   const char *lua_api_version = strcmp(LUA_API_VERSION_SUFFIX, "") ?
@@ -1015,7 +1030,7 @@ static char *_get_version_string(void)
 #endif
 
 char *version = g_strdup_printf(
-               "darktable %s [%s %s]\n"
+               "darktable %s [%s %s %s]\n"
                "Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
                "Compile options:\n"
                "%s%s%s%s%s%s%s%s%s\n"
@@ -1024,15 +1039,11 @@ char *version = g_strdup_printf(
                darktable_package_version,
                system_name,
                platform_name,
+               build_name,
                darktable_last_commit_year,
 
                "  Exiv2                  -> ", exiv2_version,
                "  Lensfun                -> ", liblensfun_version,
-#ifdef _DEBUG
-               "  Debug                  -> ENABLED\n"
-#else
-               "  Debug                  -> DISABLED\n"
-#endif
 
 #ifdef _OPENMP
                "  OpenMP                 -> ENABLED\n"
