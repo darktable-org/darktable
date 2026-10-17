@@ -387,6 +387,41 @@ int write_image(dt_imageio_module_data_t *data,
 
     dt_print(DT_DEBUG_IMAGEIO, "[heif HDR10 clli: MaxCLL=%u nits, MaxFALL=%u nits]",
              cll.max_content_light_level, cll.max_pic_average_light_level);
+
+    /*
+     * Mastering display color volume (mdcv): the output primaries and D65 white,
+     * with the measured peak standing in for the mastering display's peak, since
+     * darktable has no other notion of the display the image was graded on.
+     * Chromaticities are CIE 1931 xy in 0.00002 steps, ordered green, blue, red
+     * as in SMPTE ST 2086; luminances are in 0.0001 cd/m^2 steps, and ST 2086
+     * only allows a peak of 5 to 10000 cd/m^2.
+     */
+    static const uint16_t bt2020_xy[2][3] = { { 8500, 6550, 35400 },
+                                              { 39850, 2300, 14600 } };
+    static const uint16_t p3_xy[2][3] = { { 13250, 7500, 34000 },
+                                          { 34500, 3000, 16000 } };
+    const uint16_t(*xy)[3]
+      = nclx_profile->color_primaries == heif_color_primaries_SMPTE_EG_432_1
+        ? p3_xy
+        : bt2020_xy;
+
+    struct heif_mastering_display_colour_volume mdcv = {
+      .white_point_x = 15635,
+      .white_point_y = 16450,
+      .max_display_mastering_luminance
+        = (uint32_t)CLAMP(roundf(max_cll), 5.0f, 10000.0f) * 10000u,
+      .min_display_mastering_luminance = 1,
+    };
+    for(int c = 0; c < 3; c++)
+    {
+      mdcv.display_primaries_x[c] = xy[0][c];
+      mdcv.display_primaries_y[c] = xy[1][c];
+    }
+    heif_image_set_mastering_display_colour_volume(image, &mdcv);
+
+    dt_print(DT_DEBUG_IMAGEIO, "[heif HDR10 mdcv: max %u nits, %s primaries]",
+             mdcv.max_display_mastering_luminance / 10000u,
+             xy == p3_xy ? "P3" : "BT.2020");
   }
 #endif
 
