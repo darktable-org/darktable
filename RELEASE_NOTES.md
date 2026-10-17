@@ -249,7 +249,8 @@ changes (where available).
   reference white, so 1000 nit highlights need about 493%. The curve
   graph rescales to show the extended shoulder. A new "show target
   white in nits" option displays and accepts the value in nits
-  instead.
+  instead. A warning appears when the value exceeds what an HLG export
+  can hold (about 493%), since HLG clips above 1000 nits.
 
 - The external raster masks module imports its mask into the image's
   `.dtdata` sidecar instead of referencing a file in a root folder.
