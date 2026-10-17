@@ -244,6 +244,12 @@ changes (where available).
   light level metadata (MaxCLL and MaxFALL) when built with libavif 1.0.0
   or newer.
 
+- JPEG XL exports using a PQ output color profile now record the image's
+  measured peak luminance, so viewers no longer tone map them as if they
+  reached 10000 nits. HEIF and PNG exports using a PQ output color profile
+  also include mastering display metadata with the output primaries and
+  that peak.
+
 - The external raster masks module imports its mask into the image's
   `.dtdata` sidecar instead of referencing a file in a root folder.
   Each instance holds one imported mask. Existing edits that point at
