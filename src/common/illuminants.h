@@ -228,7 +228,6 @@ static inline gboolean find_illuminant_xy_from_as_shot_coeffs(const dt_image_t *
 static inline int illuminant_to_xy(const dt_illuminant_t illuminant,           // primary type of illuminant
                                    const dt_image_t *img,                      // image container
                                    const dt_aligned_pixel_t correction_ratios, // optional D65 correction ratios derived from user-set coefficients
-                                   const dt_aligned_pixel_t wb_coeffs,         // optional user-set WB coeffs (absolute)
                                    float *x_out, float *y_out,                 // chromaticity output
                                    const float t,                              // temperature in K, if needed
                                    const dt_illuminant_fluo_t fluo,            // sub-type of fluorescent illuminant, if needed
@@ -311,15 +310,7 @@ static inline int illuminant_to_xy(const dt_illuminant_t illuminant,           /
       // xy calculation failed
       return FALSE;
     }
-    case DT_ILLUMINANT_FROM_WB:
-    {
-      // Detect WB from user-provided coefficients
-      if(img && find_illuminant_xy_from_wb_coeffs(img, wb_coeffs, &x, &y))
-        break;
-
-      // xy calculation failed
-      return FALSE;
-    }
+    case DT_ILLUMINANT_FROM_WB: // needs white balance's coefficients: the caller derives x and y
     case DT_ILLUMINANT_CUSTOM: // leave x and y as-is
     case DT_ILLUMINANT_DETECT_EDGES:
     case DT_ILLUMINANT_DETECT_SURFACES:

@@ -175,9 +175,10 @@ The proxy has three limits:
 ## Color calibration asks white balance through a proxy
 
 Color calibration's GUI uses white balance's values in several places. It sets `p->x` and
-`p->y` from them in `gui_changed()`, when the user selects `DT_ILLUMINANT_CAMERA` or
-`DT_ILLUMINANT_FROM_WB`, so the values go into the history. It also uses them for the
-illuminant swatch, the approximate CCT, the spot measurement, and the trouble messages.
+`p->y` from them in `gui_changed()` when the user selects `DT_ILLUMINANT_CAMERA` or
+`DT_ILLUMINANT_FROM_WB`, or switches away from one of them, so the values go into the history.
+It also uses them for the illuminant swatch, the approximate CCT, the spot measurement, and the
+trouble messages.
 
 `dev->chroma.wb` does not suit these readers. It changes only when a pipe commits, so after a
 white balance edit it holds the previous values until the next commit. A pipe thread can also
@@ -198,7 +199,7 @@ answers, the helper copies `dev->chroma.wb`. For a `NULL` dev, it returns neutra
 
 ---
 
-## Commit order changes the result only when the illuminant lookup fails
+## Commit order changes the stored illuminant, not the rendered one
 
 `synch_all` commits in two passes:
 
@@ -216,39 +217,53 @@ the top item, `_dev_add_history_item_ext()` (`develop.c`) sets `DT_DEV_PIPE_TOP_
 only white balance re-commits. Color calibration's `piece->data` keeps the illuminant that its
 last commit or its last processing run computed.
 
-In both cases, processing corrects the illuminant if it can. Only two illuminants depend on
-white balance, `DT_ILLUMINANT_CAMERA` and `DT_ILLUMINANT_FROM_WB` (`illuminant_to_xy()` in
-`illuminants.h`). `channelmixerrgb.process()` and `process_cl()` look up both again from
+In both cases, processing replaces that illuminant. Only two illuminants depend on white
+balance, `DT_ILLUMINANT_CAMERA` and `DT_ILLUMINANT_FROM_WB` (`_get_corrected_illuminant_xy()` in
+`channelmixerrgb.c`). `channelmixerrgb.process()` and `process_cl()` look up both again from
 `pipe->wb` and write the result into `piece->data`. Processing starts only after all of the
-pipe's commits are done, so the lookup sees white balance's final `pipe->wb`.
+pipe's commits are done, so the lookup sees white balance's final `pipe->wb`. The one exception
+is a failed `DT_ILLUMINANT_CAMERA` lookup, which writes nothing. [A failed as-shot lookup keeps
+the saved illuminant](#a-failed-as-shot-lookup-keeps-the-saved-illuminant) explains why that is
+safe.
 
-### A failed lookup keeps an illuminant that depends on commit order
+### A failed lookup from white balance gives D50
 
-If the lookup in `process()` or `process_cl()` fails, the illuminant in `piece->data` stays as
-it is. That value can come from an earlier white balance setting, so commit order then changes
-the rendered image.
+Every `DT_ILLUMINANT_FROM_WB` lookup goes through `_illuminant_xy_from_wb_or_D50()`
+(`channelmixerrgb.c`). `commit_params()`, `process()`, `process_cl()`, and the GUI call it. If
+`find_illuminant_xy_from_wb_coeffs()` fails, the helper returns D50. D50 is the pipe's own
+illuminant, so chromatic adaptation then leaves the image unchanged.
 
-`DT_ILLUMINANT_FROM_WB` can reach this case. `find_illuminant_xy_from_wb_coeffs()` fails when
-one of the first three values in `pipe->wb.coeffs[]` is zero or is not a normal float
-(`_wb_coeffs_invalid()` in `illuminants.h`). White balance allows a zero coefficient. Its
-params start at `0.0`, and its sliders take their range from the params. Take a history whose
+The lookup fails when the image has no usable camera matrix, or when one of the first three
+values in `pipe->wb.coeffs[]` is zero or is not a normal float (`_wb_coeffs_invalid()` in
+`illuminants.h`). White balance allows a zero coefficient. Its params start at `0.0`, and its
+sliders take their range from the params.
+
+The fallback does not use the saved `p->x` and `p->y`. In this mode nothing keeps them up to
+date. They hold the values from when the user selected the illuminant, or whatever a preset or
+a pasted history stored.
+
+Commit order still changes the illuminant that `commit_params()` stores. Take a history whose
 last two entries are color calibration in `DT_ILLUMINANT_FROM_WB` mode and white balance with a
 zero red coefficient:
 
 - If color calibration commits first, its lookup uses the valid coefficients of white
   balance's previous commit, and it stores that illuminant.
-- If white balance commits first, color calibration's lookup fails, and it stores the
-  illuminant from its saved `p->x` and `p->y`.
+- If white balance commits first, color calibration's lookup fails, and it stores D50.
 
-Processing fails the same lookup in both cases and keeps the stored illuminant, so the two
-renders differ. After `synch_top`, the illuminant that stays is the one from before the user's
-white balance edit.
+Processing fails the same lookup in both cases and replaces the stored illuminant with D50, so
+the two renders are the same. After `synch_top`, processing replaces the illuminant from before
+the user's white balance edit in the same way. The stored illuminant has no other effect.
+`commit_params()` also derives `d->p` from it, but only Bradford adaptation uses `d->p`, and
+`commit_params()` always selects CAT16 for this illuminant.
 
-`DT_ILLUMINANT_CAMERA` does not depend on commit order in this way. Its lookup scales the
+### A failed as-shot lookup keeps the saved illuminant
+
+A failed `DT_ILLUMINANT_CAMERA` lookup does not depend on commit order. The lookup scales the
 image's own as-shot coefficients by ratios that are positive in the three channels the lookup
 checks (`_get_d65_correction_ratios()`). So it fails only because of the image, for example
 when the image has no camera matrix. It then fails at commit time too, and the illuminant
-comes from `p->x` and `p->y` in every order.
+comes from `p->x` and `p->y` in every order. A D50 fallback for this illuminant would change
+how existing edits render.
 
 ---
 
@@ -325,13 +340,15 @@ would let later modules read the previous image's `pipe->wb`.
 - Code that runs in a pipe thread reads `pipe->wb`, not `dev->chroma.wb`.
 - GTK code that needs white balance's current values calls `dt_dev_get_gui_wb()`, not
   `dev->chroma.wb`.
-- A `reload_defaults()` cannot assume that modules earlier in the pipe have already written
-  shared state for the current image. In the reverse default load, they have not run yet. Color
-  calibration stays correct only because the framework resets `wb.coeffs[]` to neutral before
-  that load. The reset keeps the previous image's `D65coeffs[]` and `late_correction` out of
-  the result.
-- Reset shared state before a reverse walk over the modules. `dt_dev_reset_chroma()` does this
-  for `dev->chroma`.
+- A `reload_defaults()` must not depend on another module's `reload_defaults()` having run
+  earlier in the same walk over the modules. The walks do not all go in one direction.
+  `_dt_dev_load_pipeline_defaults()` walks the last module first, so modules earlier in the
+  pipe have not written shared state for the current image yet. `_pin_image()` and
+  `dt_dev_reload_history_items()` walk the first module first.
+- If a `reload_defaults()` reads shared state, reset that state to neutral values before the
+  walk. `dt_dev_reset_chroma()` does this for `dev->chroma` before the defaults of each image
+  load. Color calibration stays correct only because that reset sets `wb.coeffs[]` to `1.0`,
+  which keeps the previous image's `D65coeffs[]` and `late_correction` out of the result.
 
 ---
 
@@ -353,11 +370,13 @@ would let later modules read the previous image's `pipe->wb`.
 | `_cat_proxy_is_active` | channelmixerrgb.c | The proxy that color calibration's `gui_init()` registers; returns `_applies_cat()` |
 | `channelmixerrgb.reload_defaults` | channelmixerrgb.c | Computes the default illuminant from `img->wb_coeffs` |
 | `channelmixerrgb.commit_params` | channelmixerrgb.c | Reads `pipe->wb` to build the chromatic adaptation matrix |
+| `_get_corrected_illuminant_xy` | channelmixerrgb.c | Illuminant xy for the params' illuminant; uses the given `dt_dev_wb_t` for `DT_ILLUMINANT_CAMERA` and `DT_ILLUMINANT_FROM_WB` |
 | `_declare_cat_on_pipe` | channelmixerrgb.c | Registers the instance that does chromatic adaptation in `dev->chroma.adaptation` (GUI only) |
 | `_get_d65_correction_ratios` | channelmixerrgb.c | `D65coeffs[] / coeffs[]` of the given `dt_dev_wb_t`, gated by `changed_chroma` |
 | `_dev_is_D65_chroma` | channelmixerrgb.c | True when `late_correction` is set or `coeffs[]` equals `D65coeffs[]` |
 | `find_illuminant_xy_from_as_shot_coeffs` | illuminants.h | Default illuminant xy from `img->wb_coeffs` |
 | `find_illuminant_xy_from_wb_coeffs` | illuminants.h | Illuminant xy from white balance coefficients (the `DT_ILLUMINANT_FROM_WB` illuminant) |
+| `_illuminant_xy_from_wb_or_D50` | channelmixerrgb.c | Illuminant xy from `find_illuminant_xy_from_wb_coeffs()`, or D50 if that fails; used by every `DT_ILLUMINANT_FROM_WB` lookup |
 
 ## See also
 

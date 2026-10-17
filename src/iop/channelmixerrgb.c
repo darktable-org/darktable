@@ -423,7 +423,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.illum_fluo = DT_ILLUMINANT_FLUO_F3;
   p.illum_led = DT_ILLUMINANT_LED_B5;
   p.temperature = 5003.f;
-  illuminant_to_xy(DT_ILLUMINANT_PIPE, NULL, NULL, NULL, &p.x, &p.y, p.temperature,
+  illuminant_to_xy(DT_ILLUMINANT_PIPE, NULL, NULL, &p.x, &p.y, p.temperature,
                    DT_ILLUMINANT_FLUO_LAST, DT_ILLUMINANT_LED_LAST);
 
   p.red[0] = 1.f;
@@ -645,21 +645,35 @@ static gboolean _get_d65_correction_ratios(const dt_iop_module_t *self,
   return FALSE;
 }
 
+// returns FALSE if the lookup failed; x and y are then D50, so callers never
+// keep an illuminant from an earlier white balance setting
+static gboolean _illuminant_xy_from_wb_or_D50(const dt_iop_module_t *self,
+                                              const dt_dev_wb_t *wb,
+                                              float *x, float *y)
+{
+  if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), wb->coeffs, x, y))
+    return TRUE;
+
+  *x = D50xyY.x;
+  *y = D50xyY.y;
+  return FALSE;
+}
+
 static void _get_corrected_illuminant_xy(const dt_iop_module_t *self,
                                          const dt_dev_wb_t *wb,
                                          const dt_iop_channelmixer_rgb_params_t *p,
                                          float *x, float *y)
 {
-  dt_aligned_pixel_t correction_ratios;
-  _get_d65_correction_ratios(self, wb, correction_ratios);
-  dt_aligned_pixel_t wb_coeffs = { 0.f };
   if(p->illuminant == DT_ILLUMINANT_FROM_WB)
   {
-    for(int k = 0; k < 4; k++)
-      wb_coeffs[k] = wb->coeffs[k];
+    _illuminant_xy_from_wb_or_D50(self, wb, x, y);
+    return;
   }
+
+  dt_aligned_pixel_t correction_ratios;
+  _get_d65_correction_ratios(self, wb, correction_ratios);
   illuminant_to_xy(p->illuminant, &(self->dev->image_storage), correction_ratios,
-                   wb_coeffs, x, y, p->temperature, p->illum_fluo,
+                   x, y, p->temperature, p->illum_fluo,
                    p->illum_led);
 }
 
@@ -1270,7 +1284,7 @@ static void _check_if_close_to_daylight(const float x,
   float uv_test[2];
 
   // Compute the test chromaticity from the daylight model
-  illuminant_to_xy(DT_ILLUMINANT_D, NULL, NULL, NULL, &xy_test[0], &xy_test[1], t,
+  illuminant_to_xy(DT_ILLUMINANT_D, NULL, NULL, &xy_test[0], &xy_test[1], t,
                    DT_ILLUMINANT_FLUO_LAST, DT_ILLUMINANT_LED_LAST);
   xy_to_uv(xy_test, uv_test);
 
@@ -1279,7 +1293,7 @@ static void _check_if_close_to_daylight(const float x,
   const float delta_daylight = dt_fast_hypotf(uv_test[0] - uv_ref[0], uv_test[1] - uv_ref[1]);
 
   // Compute the test chromaticity from the blackbody model
-  illuminant_to_xy(DT_ILLUMINANT_BB, NULL, NULL, NULL, &xy_test[0], &xy_test[1], t,
+  illuminant_to_xy(DT_ILLUMINANT_BB, NULL, NULL, &xy_test[0], &xy_test[1], t,
                    DT_ILLUMINANT_FLUO_LAST, DT_ILLUMINANT_LED_LAST);
   xy_to_uv(xy_test, uv_test);
 
@@ -2251,20 +2265,15 @@ void process(dt_iop_module_t *self,
     // which don't come from the EXIF this time).
     float x, y;
 
-    if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), pipe->wb.coeffs, &x, &y))
-    {
-      // Convert illuminant from xyY to XYZ
-      dt_aligned_pixel_t XYZ;
-      illuminant_xy_to_XYZ(x, y, XYZ);
+    _illuminant_xy_from_wb_or_D50(self, &pipe->wb, &x, &y);
 
-      // Convert illuminant from XYZ to Bradford modified LMS
-      convert_any_XYZ_to_LMS(XYZ, data->illuminant, data->adaptation);
-      data->illuminant[3] = 0.f;
-    }
-    else
-    {
-      // just use whatever was defined in commit_params hoping the defaults work…
-    }
+    // Convert illuminant from xyY to XYZ
+    dt_aligned_pixel_t XYZ;
+    illuminant_xy_to_XYZ(x, y, XYZ);
+
+    // Convert illuminant from XYZ to Bradford modified LMS
+    convert_any_XYZ_to_LMS(XYZ, data->illuminant, data->adaptation);
+    data->illuminant[3] = 0.f;
   }
 
   // force loop unswitching in a controlled way
@@ -2380,16 +2389,15 @@ int process_cl(dt_iop_module_t *self,
     // which don't come from the EXIF this time).
     float x, y;
 
-    if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), pipe->wb.coeffs, &x, &y))
-    {
-      // Convert illuminant from xyY to XYZ
-      dt_aligned_pixel_t XYZ;
-      illuminant_xy_to_XYZ(x, y, XYZ);
+    _illuminant_xy_from_wb_or_D50(self, &pipe->wb, &x, &y);
 
-      // Convert illuminant from XYZ to Bradford modified LMS
-      convert_any_XYZ_to_LMS(XYZ, d->illuminant, d->adaptation);
-      d->illuminant[3] = 0.f;
-    }
+    // Convert illuminant from xyY to XYZ
+    dt_aligned_pixel_t XYZ;
+    illuminant_xy_to_XYZ(x, y, XYZ);
+
+    // Convert illuminant from XYZ to Bradford modified LMS
+    convert_any_XYZ_to_LMS(XYZ, d->illuminant, d->adaptation);
+    d->illuminant[3] = 0.f;
   }
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
@@ -3104,22 +3112,21 @@ static void _preview_pipe_finished_callback(gpointer instance, dt_iop_module_t *
     dt_dev_wb_t wb;
     dt_dev_get_gui_wb(self->dev, &wb);
 
-    if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), wb.coeffs, &x, &y))
-    {
-      DT_ENTER_GUI_UPDATE();
-      _update_approx_cct(self);
-      _update_illuminant_color(self);
+    _illuminant_xy_from_wb_or_D50(self, &wb, &x, &y);
 
-      dt_aligned_pixel_t xyY = { x, y, 1.f };
-      dt_aligned_pixel_t Lch;
-      dt_xyY_to_Lch(xyY, Lch);
+    DT_ENTER_GUI_UPDATE();
+    _update_approx_cct(self);
+    _update_illuminant_color(self);
 
-      if(Lch[1] > 0)
-        dt_bauhaus_slider_set(g->illum_x, rad2degf(Lch[2]));
-      dt_bauhaus_slider_set(g->illum_y, Lch[1]);
+    dt_aligned_pixel_t xyY = { x, y, 1.f };
+    dt_aligned_pixel_t Lch;
+    dt_xyY_to_Lch(xyY, Lch);
 
-      DT_LEAVE_GUI_UPDATE();
-    }
+    if(Lch[1] > 0)
+      dt_bauhaus_slider_set(g->illum_x, rad2degf(Lch[2]));
+    dt_bauhaus_slider_set(g->illum_y, Lch[1]);
+
+    DT_LEAVE_GUI_UPDATE();
   }
 
   dt_iop_gui_leave_critical_section(self);
@@ -4111,8 +4118,7 @@ void gui_changed(dt_iop_module_t *self,
         // (x, y) were computed at runtime from the WB module's coefficients
         // and p->x, p->y may hold stale values. Recompute them now so
         // the new illuminant mode starts from the correct chromaticity.
-        find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), wb.coeffs,
-                                         &(p->x), &(p->y));
+        _illuminant_xy_from_wb_or_D50(self, &wb, &(p->x), &(p->y));
         _check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
       }
     }
@@ -4137,8 +4143,7 @@ void gui_changed(dt_iop_module_t *self,
     }
     else if(p->illuminant == DT_ILLUMINANT_FROM_WB)
     {
-      const gboolean found = find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage),
-                                                         wb.coeffs, &(p->x), &(p->y));
+      const gboolean found = _illuminant_xy_from_wb_or_D50(self, &wb, &(p->x), &(p->y));
       _check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
 
       if(found)
@@ -4176,7 +4181,7 @@ void gui_changed(dt_iop_module_t *self,
     {
       // We are in any mode defining (x, y) indirectly from an
       // interface, so commit (x, y) explicitly
-      illuminant_to_xy(p->illuminant, NULL, NULL, NULL, &(p->x), &(p->y),
+      illuminant_to_xy(p->illuminant, NULL, NULL, &(p->x), &(p->y),
                        p->temperature, p->illum_fluo, p->illum_led);
     }
 
