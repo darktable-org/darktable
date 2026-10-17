@@ -53,10 +53,10 @@ The following is a summary of the main features added to darktable
 changes (where available).
 
 - A new tone mapper for analog film simulation based on the
-  [spektrafilm](https://github.com/andreavolpato/spektrafilm) project by
-  Andrea Volpato. The module models the physical photographic process
-  from film exposure and development through optical printing and
-  scanning, rather than applying a conventional mathematical tone
+  [spektrafilm](https://github.com/andreavolpato/spektrafilm) project
+  by Andrea Volpato. The module models the physical photographic
+  process from film exposure and development through optical printing
+  and scanning, rather than applying a conventional mathematical tone
   curve. It reproduces the characteristic tonal and color response
   resulting from these stages, including the compression of highlights
   and shadows and the gradual color changes that occur as film reaches
@@ -99,23 +99,23 @@ changes (where available).
   control over highlights and shadows. Uses edge aware and exposure
   invariant guided filters for its processing.
 
-- A new masks panel replaces the separate drawn, parametric, raster and
-  combined mask modes, and the mask manager. A module's mask is now
-  built in one place from groups of elements: drawn shapes, parametric
-  channels, raster masks from other modules and AI objects can be freely
-  combined and nested. Each group combines its elements with one
-  operator and has its own opacity, inversion and refinement (details,
-  feathering, blur, contrast and brightness), which each element can
-  also have on its own. Elements and groups can be renamed, reordered by
-  drag and drop, disabled, soloed, and a mask can be locked against
-  reset, presets, styles and paste. The panel and the canvas follow each
-  other: hovering or selecting an element in either shows it in the
-  other. The panel can stay in the module's blending section, move to a
-  utility module, or be docked beside the image, and built-in layout
-  presets set up common masks in one click, with notes on how to use
-  them. Shortcuts assigned to the mask manager now drive the same
-  controls in the panel. Existing masks are converted when an edit is
-  opened and render as before.
+- A new masks panel replaces the separate drawn, parametric, raster
+  and combined mask modes, and the mask manager. A module's mask is
+  now built in one place from groups of elements: drawn shapes,
+  parametric channels, raster masks from other modules and AI objects
+  can be freely combined and nested. Each group combines its elements
+  with one operator and has its own opacity, inversion and refinement
+  (details, feathering, blur, contrast and brightness), which each
+  element can also have on its own. Elements and groups can be
+  renamed, reordered by drag and drop, disabled, soloed, and a mask
+  can be locked against reset, presets, styles and paste. The panel
+  and the canvas follow each other: hovering or selecting an element
+  in either shows it in the other. The panel can stay in the module's
+  blending section, move to a utility module, or be docked beside the
+  image, and built-in layout presets set up common masks in one click,
+  with notes on how to use them. Shortcuts assigned to the mask
+  manager now drive the same controls in the panel. Existing masks are
+  converted when an edit is opened and render as before.
 
 ## UI/UX Improvements
 
@@ -127,8 +127,8 @@ changes (where available).
   when e.g. a tab or a module is reset.
 
 - Mask shapes on the canvas now have a contrasting edge, so they stay
-  visible over dark and bright areas alike, and the hovered or selected
-  shape is drawn heavier.
+  visible over dark and bright areas alike, and the hovered or
+  selected shape is drawn heavier.
 
 - Escape now cancels a mask shape that is being drawn, as a right-click
   does.
@@ -149,9 +149,8 @@ changes (where available).
   buttons (instead of a single drawing area), so spacing and sizing
   can be themed. The rating filter reuses the same star paoint helper.
 
-- In the borders (framing) module, disable frame line controls
-  when the border settings would prevent the frame line from
-  being visible.
+- In the borders (framing) module, disable frame line controls when
+  the border settings would prevent the frame line from being visible.
 
 - Added an interactive editing mode allowing users to correct a color
   by selecting it directly on the photo with the mouse wheel, just as
@@ -180,17 +179,17 @@ changes (where available).
 
 - The lens correction module now warns when it applies Lensfun
   vignetting correction to a Panasonic RW2 or Olympus ORF file shot
-  with the camera's shading compensation on, which can overcorrect
-  the corners.
+  with the camera's shading compensation on, which can overcorrect the
+  corners.
 
 - In the "select parts to copy" and "select parts to paste" history
   dialogs, the module order is now a check box below the item list
   instead of a last entry in the list itself.
 
-- In the AI object mask tool, every object you click on is kept in
-  the selection, including one that doesn't touch the others. This
-  needs a model that returns separate objects, such as SAM; SegNext
-  selects one region at a time.
+- In the AI object mask tool, every object you click on is kept in the
+  selection, including one that doesn't touch the others. This needs a
+  model that returns separate objects, such as SAM; SegNext selects
+  one region at a time.
 
 - In tethering mode, the tethering info bar (located above the live
   camera view) now displays the camera model.
@@ -218,12 +217,13 @@ changes (where available).
 - Separated the demosaicer's crop-and-scale step into a new hidden
   module to improve cache efficiency and UI responsiveness.
 
-- Add a OpenCL code path to tone equalizer which gives around 6-20x faster
-  processing times in comparison to CPU code path, depending on CPU & GPU.
+- Add a OpenCL code path to tone equalizer which gives around 6-20x
+  faster processing times in comparison to CPU code path, depending on
+  CPU & GPU.
 
-- Hovering over and dragging nodes of long drawn brush strokes and paths
-  is much faster, as the mask overlay is no longer redrawn on every mouse
-  move and long outlines are drawn with far fewer points.
+- Hovering over and dragging nodes of long drawn brush strokes and
+  paths is much faster, as the mask overlay is no longer redrawn on
+  every mouse move and long outlines are drawn with far fewer points.
 
 ## Other Changes
 
@@ -239,17 +239,17 @@ changes (where available).
 
 - A new `.dtdata` sidecar next to the XMP holds per-pixel edit data
   such as raster masks. It is only created for images that use such
-  data, and only when sidecar writing is enabled; most images never get
-  one. It follows the image when it is moved, renamed, duplicated or
-  deleted.
+  data, and only when sidecar writing is enabled; most images never
+  get one. It follows the image when it is moved, renamed, duplicated
+  or deleted.
 
-- HEIF exports using a PQ output color profile now include HDR10 content
-  light level metadata (MaxCLL and MaxFALL) when built with libheif 1.15.0
-  or newer.
+- HEIF exports using a PQ output color profile now include HDR10
+  content light level metadata (MaxCLL and MaxFALL) when built with
+  libheif 1.15.0 or newer.
 
-- AVIF exports using a PQ output color profile now include HDR10 content
-  light level metadata (MaxCLL and MaxFALL) when built with libavif 1.0.0
-  or newer.
+- AVIF exports using a PQ output color profile now include HDR10
+  content light level metadata (MaxCLL and MaxFALL) when built with
+  libavif 1.0.0 or newer.
 
 - The external raster masks module imports its mask into the image's
   `.dtdata` sidecar instead of referencing a file in a root folder.
@@ -273,8 +273,8 @@ changes (where available).
 - Support for Canon's Highlight Tone Priority.
 
 - AI models can now be installed from additional repositories. Models
-  installed this way remember where they came from and are included
-  in the update check.
+  installed this way remember where they came from and are included in
+  the update check.
 
 - Added a preference to disable automatic AI model update checks,
   with a manual check button for when it is off.
@@ -282,9 +282,9 @@ changes (where available).
 - Added a compression option for the TIFF files written by neural
   restore denoise and upscale, matching the TIFF export module.
 
-- Model packages can now declare their ONNX Runtime graph
-  optimization level, so models that misbehave under aggressive
-  optimization no longer need workarounds in feature code.
+- Model packages can now declare their ONNX Runtime graph optimization
+  level, so models that misbehave under aggressive optimization no
+  longer need workarounds in feature code.
 
 - Added support for DNG files providing a forward matrix (FM) and
   'ProfileHueSatMapData'.
@@ -312,10 +312,10 @@ changes (where available).
   configuration-directory and custom shortcut-name, useful for
   multiple parallel darktable installations.
 
-- Added a control in the bottom panel of the lighttable to reset
-  the star rating of images.
+- Added a control in the bottom panel of the lighttable to reset the
+  star rating of images.
 
-- pixelpipe dump files requested via cli switches are now written
+- The pixelpipe dump files requested via cli switches are now written
   in ppm or pgm format.
 
 - The OpenCL configs had a bump to v7 and were simplified for user edits.
@@ -335,12 +335,12 @@ changes (where available).
   framed as intended while the full sensor area stays available to
   reframe within. Read from Canon and Olympus raws.
 
-- Export filename patterns gained `$(CATEGORY_EACH[n,category])`, which
-  yields one path per matching tag instead of a single comma-joined
-  value. Referencing several levels of the same category walks each
-  tag's path, so an image tagged for several people can be exported
-  once into each person's folder rather than into one "John,Jane"
-  folder.
+- Export filename patterns gained `$(CATEGORY_EACH[n,category])`,
+  which yields one path per matching tag instead of a single
+  comma-joined value. Referencing several levels of the same category
+  walks each tag's path, so an image tagged for several people can be
+  exported once into each person's folder rather than into one
+  "John,Jane" folder.
 
 - Import filename patterns gained `$(CONFLICT[n])`, a counter that is
   empty unless the file name is already taken, so burst shots named by
@@ -495,8 +495,8 @@ changes (where available).
   not crash. The offending modules are now reset to use the default
   parameters and a message is displayed to the user.
 
-- Fixed auto calculation of capture radius and jumping of capture radius
-  sliders in UI.
+- Fixed auto calculation of capture radius and jumping of capture
+  radius sliders in UI.
 
 - Fixed small memory leaks when expanding variables, which grew with
   the number of images exported or imported in one run.
@@ -519,12 +519,12 @@ changes (where available).
   crop when the rotation was changed (e.g. with a shortcut) before the
   module had been enabled, leaving empty corners in the image.
 
-- Corrected the reference colors of the Datacolor SpyderCheckr Photo in
-  the color calibration module. Existing calibrations are not updated.
-  Profile the chart again for a more accurate calibration.
+- Corrected the reference colors of the Datacolor SpyderCheckr Photo
+  in the color calibration module. Existing calibrations are not
+  updated.  Profile the chart again for a more accurate calibration.
 
-- Fixed the color calibration module swapping the white and middle gray
-  reference patches on the Datacolor SpyderCheckr Photo.
+- Fixed the color calibration module swapping the white and middle
+  gray reference patches on the Datacolor SpyderCheckr Photo.
 
 - Fixed the color calibration module not using the gray patch closest to
   middle gray on the Datacolor SpyderCheckr 48 and Photo.
@@ -541,8 +541,8 @@ changes (where available).
 - Fixed XMP sidecar files not being written for images whose creator,
   description or copyright Exif fields (e.g. Artist, Canon OwnerName)
   contain non-ASCII characters such as umlauts stored by the camera in
-  a legacy encoding. These fields are now converted to UTF-8 on import.
-  Use "refresh EXIF" on already imported images to fix them.
+  a legacy encoding. These fields are now converted to UTF-8 on
+  import.  Use "refresh EXIF" on already imported images to fix them.
 
 - Fixed rotate and perspective occasionally computing its automatic
   crop from a mismatched preview size, which could leave the crop box
@@ -561,10 +561,10 @@ changes (where available).
   applied from embedded metadata when the file only carries chromatic
   aberration correction data.
 
-- Fixed raw denoise on X-Trans images replacing the green pixels in the
-  rightmost column with the value of a neighboring pixel, often a red
-  one, which slightly changed the colors along the right edge of the
-  image.
+- Fixed raw denoise on X-Trans images replacing the green pixels in
+  the rightmost column with the value of a neighboring pixel, often a
+  red one, which slightly changed the colors along the right edge of
+  the image.
 
 - Fixed raw denoise using pixels of the wrong color near the top
   corners of some X-Trans images.
@@ -592,9 +592,12 @@ changes (where available).
   on the diagonal' after using 'read exposure from metadata and exposure
   module'.
 
+- Fixed the filmstrip cursor triangle ignoring CSS. Its color again
+  follows `#thumb-cursor`; the default is unchanged (`@bg_color`).
+
 - Fixed modules with mask feathering guided by the input image falling
-  back to the CPU when processed with OpenCL, whenever the module needs
-  a larger input area than it outputs, for example liquify in a
+  back to the CPU when processed with OpenCL, whenever the module
+  needs a larger input area than it outputs, for example liquify in a
   zoomed-in darkroom view.
 
 - Improved internal stability (more reproducible wavelet denoising and
@@ -603,13 +606,14 @@ changes (where available).
 - Fixed green tints and color shifts along image edges when using raw
   denoise on X-Trans images, including some downscaled exports.
 
-- Fixed shortcuts firing when pressed together with modifiers they were
-  not assigned with: ctrl+K, for example, no longer runs the action
-  bound to K, unless a fallback gives the modifier a meaning for it.
+- Fixed shortcuts firing when pressed together with modifiers they
+  were not assigned with: ctrl+K, for example, no longer runs the
+  action bound to K, unless a fallback gives the modifier a meaning
+  for it.
 
 - Fixed small memory leaks when hovering over unselected images in the
-  lighttable, and when importing images with a new camera maker, model or
-  lens.
+  lighttable, and when importing images with a new camera maker, model
+  or lens.
 
 ## Lua
 

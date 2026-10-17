@@ -445,7 +445,7 @@ static gboolean _event_cursor_draw(GtkWidget *widget,
   const double w_height = gtk_widget_get_allocated_height(widget);
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
   GdkRGBA col;
-  gtk_style_context_lookup_color(context, "bg_color", &col);
+  gtk_style_context_get_color(context, gtk_widget_get_state_flags(widget), &col);
 
   cairo_set_source_rgba(cr, col.red, col.green, col.blue, col.alpha);
   cairo_line_to(cr, w_width, 0);

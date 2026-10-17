@@ -2710,16 +2710,7 @@ static GMenu *_build_menu_from_actions(dt_action_t *actions,
       {
         action = actions;
         action_label = _action_label(actions);
-
-        // TODO: Gtk4:
-        // prefix the parent's label: gtk3 flattens GtkPopoverMenu into a single
-        // GtkStack and names each page after its item label, so equally named
-        // submenus under different modules collide and navigation follows the
-        // first one. under gtk4 dt_gui_popover_menu_from_model() nests the menu
-        // for real (GTK_POPOVER_MENU_NESTED) and the prefix can go
-        item = g_menu_item_new(action_label, NULL);
-        // Gtk4:
-        // item = g_menu_item_new(actions->label, NULL);
+        item = g_menu_item_new(actions->label, NULL);
       }
 
       actions = actions->next;
