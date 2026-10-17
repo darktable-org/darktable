@@ -985,10 +985,17 @@ void dt_gui_dialog_restore_size(GtkDialog *dialog,
 
 PangoFontDescription *dt_gui_get_font(void);
 
+typedef GtkWidget *(*dt_gui_popover_tooltip_factory_t)(const char *tooltip_id,
+                                                       gpointer user_data);
+
 // returns the session type at runtime
 dt_gui_session_type_t dt_gui_get_session_type(void);
 // Popover menu
 GtkWidget *dt_gui_popover_menu_from_model(GtkWidget *parent, GMenu *menu);
+GtkWidget *dt_gui_popover_menu_from_model_full(GtkWidget *parent,
+                                               GMenu *menu,
+                                               dt_gui_popover_tooltip_factory_t tooltip_factory,
+                                               gpointer tooltip_user_data);
 
 
 #if !defined(__cplusplus)
