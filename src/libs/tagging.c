@@ -1917,15 +1917,17 @@ static void _pop_menu_dictionary_create_tag(GSimpleAction *action,
         DT_LIB_TAGGING_COL_PATH, &path, DT_LIB_TAGGING_COL_ID, &tagid, -1);
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("create tag"), GTK_WINDOW(win),
-                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                  _("_cancel"), GTK_RESPONSE_NONE,
-                                                  _("_save"), GTK_RESPONSE_YES, NULL);
-  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_YES);
+  GtkDialog *dialog = GTK_DIALOG(
+        gtk_dialog_new_with_buttons(_("create tag"), GTK_WINDOW(win),
+                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    _("_cancel"), GTK_RESPONSE_NONE,
+                                    _("_save"), GTK_RESPONSE_YES, NULL));
+  gtk_dialog_set_default_response(dialog, GTK_RESPONSE_YES);
+  dt_gui_dialog_restore_size(dialog, "create_tag");
 
   GtkWidget *entry = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
-  gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog), GTK_RESPONSE_YES, FALSE);
+  gtk_dialog_set_response_sensitive(dialog, GTK_RESPONSE_YES, FALSE);
   g_signal_connect(entry, "changed", G_CALLBACK(_name_changed), dialog);
 
   GtkWidget *category;
@@ -1955,7 +1957,7 @@ static void _pop_menu_dictionary_create_tag(GSimpleAction *action,
                                 dt_gui_expand(entry)),
                     private, category, parent,
                     dt_gui_hbox(gtk_label_new(_("synonyms: ")), dt_gui_expand(synonyms)));
-  gtk_widget_show_all(dialog);
+  gtk_widget_show_all(GTK_WIDGET(dialog));
 
   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
   {
@@ -1982,7 +1984,7 @@ static void _pop_menu_dictionary_create_tag(GSimpleAction *action,
                                GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE, "%s", message);
       gtk_dialog_run(GTK_DIALOG(warning_dialog));
       gtk_widget_destroy(warning_dialog);
-      gtk_widget_destroy(dialog);
+      gtk_widget_destroy(GTK_WIDGET(dialog));
       g_free(tagname);
       return;
     }
@@ -2010,7 +2012,7 @@ static void _pop_menu_dictionary_create_tag(GSimpleAction *action,
     g_free(new_tagname);
   }
   _init_treeview(self, 0);
-  gtk_widget_destroy(dialog);
+  gtk_widget_destroy(GTK_WIDGET(dialog));
   g_free(tagname);
 }
 
@@ -2048,11 +2050,13 @@ static void _pop_menu_dictionary_edit_tag(GSimpleAction *action,
   }
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("edit"), GTK_WINDOW(win),
-                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                  _("_cancel"), GTK_RESPONSE_NONE,
-                                                  _("_save"), GTK_RESPONSE_YES, NULL);
+  GtkDialog *dialog = GTK_DIALOG(
+        gtk_dialog_new_with_buttons(_("edit"), GTK_WINDOW(win),
+                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    _("_cancel"), GTK_RESPONSE_NONE,
+                                    _("_save"), GTK_RESPONSE_YES, NULL));
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_YES);
+  dt_gui_dialog_restore_size(dialog, "edit_tag");
 
   text = g_strdup_printf(_("selected: %s"), tagname);
   GtkWidget *label1 = gtk_label_new(text);
@@ -2106,7 +2110,7 @@ static void _pop_menu_dictionary_edit_tag(GSimpleAction *action,
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
-  gtk_widget_show_all(dialog);
+  gtk_widget_show_all(GTK_WIDGET(dialog));
 
   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
   {
@@ -2129,7 +2133,7 @@ static void _pop_menu_dictionary_edit_tag(GSimpleAction *action,
                                                            "%s", message);
         gtk_dialog_run(GTK_DIALOG(warning_dialog));
         gtk_widget_destroy(warning_dialog);
-        gtk_widget_destroy(dialog);
+        gtk_widget_destroy(GTK_WIDGET(dialog));
         g_free(tagname);
         return;
       }
@@ -2173,7 +2177,7 @@ static void _pop_menu_dictionary_edit_tag(GSimpleAction *action,
           gtk_widget_destroy(warning_dialog);
           g_free(new_tagname);
           if(subtag) g_free(new_prefix_tag);
-          gtk_widget_destroy(dialog);
+          gtk_widget_destroy(GTK_WIDGET(dialog));
           g_free(tagname);
           return;
         };
@@ -2262,7 +2266,7 @@ static void _pop_menu_dictionary_edit_tag(GSimpleAction *action,
     }
   }
   _init_treeview(self, 0);
-  gtk_widget_destroy(dialog);
+  gtk_widget_destroy(GTK_WIDGET(dialog));
   g_free(synonyms_list);
   g_free(tagname);
 }
