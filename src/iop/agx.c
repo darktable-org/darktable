@@ -18,6 +18,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/hdr-transfer.h"
 #include "common/custom_primaries.h"
 #include "common/image.h"
 #include "common/iop_profile.h"
@@ -168,6 +169,8 @@ typedef struct dt_iop_agx_gui_data_t
   GtkNotebook *notebook;
   GtkWidget *auto_gamma;
   GtkWidget *curve_gamma;
+  GtkWidget *target_white;
+  GtkWidget *target_white_in_nits;
   GtkDrawingArea *graph_drawing_area;
 
   dt_gui_collapsible_section_t look_section;
@@ -1520,11 +1523,16 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
                                     16.f,
                                     32.f };
   const int num_guides = sizeof(linear_y_guides) / sizeof(linear_y_guides[0]);
+  const gboolean white_in_nits =
+    dt_conf_get_bool("plugins/darkroom/agx/target_white_in_nits");
 
-  for(int i = 0; i < num_guides; ++i)
+  // labels go top-down so that, when HDR headroom squeezes the lower guides
+  // together, the reference white and peak labels win over the shadow ones
+  float last_label_y = -FLT_MAX;
+  for(int i = num_guides - 1; i >= 0; --i)
   {
     const float y_linear = linear_y_guides[i];
-    if(y_linear > fmaxf(1.f, p->curve_target_display_white_ratio)) break;
+    if(y_linear > fmaxf(1.f, p->curve_target_display_white_ratio)) continue;
     const float y_pre_gamma = powf(y_linear, 1.f / tone_mapping_params.curve_gamma);
 
     const float y_graph = y_pre_gamma * y_scale;
@@ -1538,7 +1546,13 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
     cairo_identity_matrix(cr);                  // Reset transformations for text
     set_color(cr, darktable.bauhaus->graph_fg); // Use standard text color
 
-    snprintf(text, sizeof(text), "%.0f%%", 100.0f * y_linear); // Format the linear value
+    if(white_in_nits)
+    {
+      const float nits = DT_HDR_REFERENCE_WHITE_NITS * y_linear;
+      snprintf(text, sizeof(text), nits < 10.f ? "%.1f" : "%.0f", nits);
+    }
+    else
+      snprintf(text, sizeof(text), "%.0f%%", 100.0f * y_linear); // Format the linear value
     pango_layout_set_text(layout, text, -1);
     pango_layout_get_pixel_extents(layout, &g->ink, NULL);
 
@@ -1552,8 +1566,12 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
                      margin_top - g->ink.height / 2.f - g->ink.y,
                      margin_top + graph_height - g->ink.height / 2.f - g->ink.y);
 
-    cairo_move_to(cr, label_x, label_y);
-    pango_cairo_show_layout(cr, layout);
+    if(label_y - last_label_y >= g->ink.height)
+    {
+      cairo_move_to(cr, label_x, label_y);
+      pango_cairo_show_layout(cr, layout);
+      last_label_y = label_y;
+    }
     cairo_restore(cr);
   }
 
@@ -1977,6 +1995,33 @@ static GtkWidget* _create_curve_graph_box(dt_iop_module_t *self,
   return graph_box;
 }
 
+static void _set_target_white_unit(const dt_iop_agx_gui_data_t *g)
+{
+  if(dt_bauhaus_toggle_get(g->target_white_in_nits))
+  {
+    dt_bauhaus_slider_set_format(g->target_white, _(" nits"));
+    dt_bauhaus_slider_set_digits(g->target_white, 0);
+    dt_bauhaus_slider_set_factor(g->target_white, DT_HDR_REFERENCE_WHITE_NITS);
+  }
+  else
+  {
+    dt_bauhaus_slider_set_format(g->target_white, "%");
+    dt_bauhaus_slider_set_digits(g->target_white, 2);
+    dt_bauhaus_slider_set_factor(g->target_white, 100.f);
+  }
+  gtk_widget_queue_draw(g->target_white);
+}
+
+static void _target_white_unit_callback(GtkWidget *widget,
+                                        dt_iop_module_t *self)
+{
+  const dt_iop_agx_gui_data_t *g = self->gui_data;
+  dt_conf_set_bool("plugins/darkroom/agx/target_white_in_nits",
+                   dt_bauhaus_toggle_get(g->target_white_in_nits));
+  _set_target_white_unit(g);
+  gtk_widget_queue_draw(GTK_WIDGET(g->graph_drawing_area));
+}
+
 static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
                                        dt_iop_agx_gui_data_t *g)
 {
@@ -2003,11 +2048,9 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
                                   "may clip highlights"));
 
   // Shoulder intersection point
-  slider = dt_bauhaus_slider_from_params(section, "curve_target_display_white_ratio");
+  g->target_white = slider =
+    dt_bauhaus_slider_from_params(section, "curve_target_display_white_ratio");
   dt_bauhaus_slider_set_soft_range(slider, 0.5f, 1.f);
-  dt_bauhaus_slider_set_format(slider, "%");
-  dt_bauhaus_slider_set_digits(slider, 2);
-  dt_bauhaus_slider_set_factor(slider, 100.f);
   gtk_widget_set_tooltip_text(slider,
                               _("max linear output power.\n"
                                 "values above the default leave headroom for HDR "
@@ -2016,6 +2059,22 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
                                 "white.\n"
                                 "peak nits = target white x 203, e.g. "
                                 "1000 nits is about 493 percent"));
+
+  // no field: this only chooses how the slider above is shown, so it is
+  // kept in conf rather than in the params
+  g->target_white_in_nits = dt_bauhaus_toggle_new(self);
+  dt_bauhaus_widget_set_label(g->target_white_in_nits,
+                              N_("curve"), N_("show target white in nits"));
+  gtk_widget_set_tooltip_text(g->target_white_in_nits,
+                              _("show and type the target white as display luminance\n"
+                                "relative to the 203 nit HDR reference white, "
+                                "instead of in percent"));
+  dt_bauhaus_toggle_set(g->target_white_in_nits,
+                        dt_conf_get_bool("plugins/darkroom/agx/target_white_in_nits"));
+  _set_target_white_unit(g);
+  g_signal_connect(G_OBJECT(g->target_white_in_nits), "value-changed",
+                   G_CALLBACK(_target_white_unit_callback), self);
+  dt_gui_box_add(g->advanced_section.container, g->target_white_in_nits);
 
   // Toe length
   slider = dt_bauhaus_slider_from_params(section, "curve_linear_ratio_below_pivot");
