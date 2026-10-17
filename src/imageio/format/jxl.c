@@ -200,16 +200,42 @@ int write_image(struct dt_imageio_module_data_t *data,
   LIBJXL_ASSERT(
       JxlEncoderFrameSettingsSetOption(frame_settings, JXL_ENC_FRAME_SETTING_DECODING_SPEED, params->tier));
 
-  // Codestream level should be chosen automatically given the settings
-  LIBJXL_ASSERT(JxlEncoderSetBasicInfo(encoder, &basic_info));
-
-  // Determine and set the encoder color space
+  // Determine the encoder color space, needed below for the PQ intensity target
   const dt_colorspaces_color_profile_t *output_profile
       = dt_colorspaces_get_output_profile(imgid, over_type, over_filename);
   const cmsHPROFILE out_profile = output_profile->profile;
   // Previous call will give us a more accurate color profile type
   // (not what the user requested in the export menu but what the image is actually using)
   over_type = output_profile->type;
+
+  // PQ samples are absolute luminance, so the brightest one is the content peak.
+  // Left at 0, libjxl assumes 10000 nits and viewers tone map for a peak the
+  // image never reaches. HLG is relative and keeps libjxl's default.
+  if(over_type == DT_COLORSPACE_PQ_REC2020 || over_type == DT_COLORSPACE_PQ_P3)
+  {
+    const float *const restrict in = (const float *)in_tmp;
+    const size_t npixels = (size_t)width * height;
+    float peak = 0.0f;
+
+    // fmaxf() drops NaN, and dt_hdr_pq_decode() clamps Inf to the PQ maximum
+    DT_OMP_FOR_SIMD(reduction(max : peak))
+    for(size_t k = 0; k < npixels; k++)
+    {
+      const float *const px = &in[4 * k];
+      peak = fmaxf(peak, fmaxf(fmaxf(px[0], px[1]), px[2]));
+    }
+
+    // the PQ curve is monotonic, so decoding the brightest signal is enough
+    const float peak_nits = dt_hdr_pq_decode(peak) * DT_HDR_REFERENCE_WHITE_NITS;
+    if(peak_nits > 0.0f)
+      basic_info.intensity_target = peak_nits;
+
+    dt_print(DT_DEBUG_IMAGEIO, "[jxl] PQ intensity target: %.1f nits",
+             basic_info.intensity_target);
+  }
+
+  // Codestream level should be chosen automatically given the settings
+  LIBJXL_ASSERT(JxlEncoderSetBasicInfo(encoder, &basic_info));
 
   // If possible we want libjxl to save the color encoding in its own format, rather
   // than as an ICC binary blob which is possible.

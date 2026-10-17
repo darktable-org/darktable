@@ -316,6 +316,28 @@ int write_image(dt_imageio_module_data_t *p_tmp,
 #endif
   }
 
+  /*
+   * mDCV goes with cLLI: the output primaries and D65 white, with the measured
+   * peak standing in for the mastering display's peak, as in the HEIF writer.
+   * Chromaticities are CIE 1931 xy scaled by 100000 (png_fixed_point), ordered
+   * red, green, blue, white. Luminances share cLLI's 0.0001 cd/m^2 steps, and
+   * SMPTE ST 2086 only allows a peak of 5 to 10000 cd/m^2.
+   */
+  static const png_fixed_point rec2020_xy[8] = { 70800, 29200, 17000, 79700,
+                                                 13100, 4600, 31270, 32900 };
+  static const png_fixed_point p3_xy[8] = { 68000, 32000, 26500, 69000,
+                                            15000, 6000, 31270, 32900 };
+  const png_fixed_point *const mdcv_xy
+    = data[0] == DT_CICP_COLOR_PRIMARIES_P3 ? p3_xy : rec2020_xy;
+  const png_uint_32 mdcv_max = CLAMP(max_cll, 50000u, 100000000u);
+  const png_uint_32 mdcv_min = 1;
+#if defined(PNG_WRITE_mDCV_SUPPORTED) && defined(PNG_FIXED_POINT_SUPPORTED)
+  if(have_clli)
+    png_set_mDCV_fixed(png_ptr, info_ptr, mdcv_xy[6], mdcv_xy[7],
+                       mdcv_xy[0], mdcv_xy[1], mdcv_xy[2], mdcv_xy[3],
+                       mdcv_xy[4], mdcv_xy[5], mdcv_max, mdcv_min);
+#endif
+
 #ifdef PNG_iCCP_SUPPORTED
   // embed ICC profile regardless of cICP (compliant readers shall
   // check cICP first)
@@ -373,6 +395,20 @@ int write_image(dt_imageio_module_data_t *p_tmp,
     png_save_uint_32(clli, max_cll);
     png_save_uint_32(clli + 4, max_fall);
     png_write_chunk(png_ptr, chunk_name, clli, sizeof(clli));
+  }
+#endif
+
+#if !defined(PNG_WRITE_mDCV_SUPPORTED) || !defined(PNG_FIXED_POINT_SUPPORTED)
+  if(have_clli)
+  {
+    const png_byte chunk_name[5] = "mDCV";
+    png_byte mdcv[24];
+    // the chunk stores chromaticities in 0.00002 steps
+    for(int k = 0; k < 8; k++)
+      png_save_uint_16(mdcv + 2 * k, (png_uint_16)(mdcv_xy[k] / 2));
+    png_save_uint_32(mdcv + 16, mdcv_max);
+    png_save_uint_32(mdcv + 20, mdcv_min);
+    png_write_chunk(png_ptr, chunk_name, mdcv, sizeof(mdcv));
   }
 #endif
 
