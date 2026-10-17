@@ -244,6 +244,11 @@ changes (where available).
   light level metadata (MaxCLL and MaxFALL) when built with libavif 1.0.0
   or newer.
 
+- Sigmoid's target white can now be set up to 5000%, instead of 1600%,
+  to leave more headroom for PQ and HLG exports. 100% is the 203 nit HDR
+  reference white, so the new limit reaches about 10000 nits, the top of
+  the PQ range. The slider's default range is unchanged.
+
 - The external raster masks module imports its mask into the image's
   `.dtdata` sidecar instead of referencing a file in a root folder.
   Each instance holds one imported mask. Existing edits that point at
