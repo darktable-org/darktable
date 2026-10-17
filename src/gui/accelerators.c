@@ -503,6 +503,8 @@ static const struct
   { "lib/masks/properties/pressure", "iop/blend/properties/brush pressure" },
   { "lib/masks/properties/shrink or grow", "iop/blend/properties/shrink or grow" },
   { "iop/blend/tools/show and edit mask elements", "iop/blend/tools/edit on canvas" },
+  // matched before unescaping: the label's "/" is saved as "@<"
+  { "iop/blend/tools/display mask and@<or color channel", "iop/blend/tools/display mask" },
   { "iop/blend/mask opacity", "iop/blend/mask brightness" },
   { "iop/blend/tools/toggle polarity of drawn mask",
     "iop/blend/masks/invert output of selected group" },
