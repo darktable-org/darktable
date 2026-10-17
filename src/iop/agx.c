@@ -1766,6 +1766,28 @@ static void _update_curve_warnings(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_paint(g->basic_curve_controls.curve_shoulder_power,
                                     params.need_concave_shoulder && warnings_enabled
                                     ? dtgtk_cairo_paint_warning : NULL, CPF_ACTIVE, NULL);
+
+  // HLG tops out at its nominal display peak, so a higher target white
+  // clips in dt_hdr_hlg_encode() instead of rolling off
+  dt_colorspaces_color_profile_type_t export_type;
+  const char *export_filename;
+  dt_ioppr_get_export_profile_type(self->dev, &export_type, &export_filename);
+  const int transfer = dt_colorspaces_hdr_transfer(export_type);
+  const gboolean hlg_clips =
+    (transfer == DT_HDR_HLG_REC2020 || transfer == DT_HDR_HLG_P3)
+    && p->curve_target_display_white_ratio
+       > DT_HDR_HLG_PEAK_NITS / DT_HDR_REFERENCE_WHITE_NITS + 0.005f;
+  dt_bauhaus_widget_set_quad_paint(g->target_white,
+                                    hlg_clips && warnings_enabled
+                                    ? dtgtk_cairo_paint_warning : NULL, CPF_ACTIVE, NULL);
+}
+
+static void _signal_profile_user_changed(gpointer instance,
+                                         const uint8_t profile_type,
+                                         dt_iop_module_t *self)
+{
+  if(profile_type == DT_COLORSPACES_PROFILE_TYPE_EXPORT)
+    _update_curve_warnings(self);
 }
 
 static void _update_redraw_dynamic_gui(dt_iop_module_t* const self,
@@ -2060,7 +2082,10 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
                                 "raise it to give highlights headroom;\n"
                                 "reference white stays at 203 nits, "
                                 "so peak nits = target white x 203,\n"
-                                "e.g. 1000 nits is about 493 percent"));
+                                "e.g. 1000 nits is about 493 percent.\n"
+                                "HLG output peaks at 1000 nits, "
+                                "so higher values clip there;\n"
+                                "a warning shows when the export profile is HLG"));
 
   // no field: this only chooses how the slider above is shown, so it is
   // kept in conf rather than in the params
@@ -2585,6 +2610,8 @@ void gui_init(dt_iop_module_t *self)
   // Finally, add the remaining sections to the settings page
   _add_look_box(settings_section, g);
   _create_primaries_page(self, g);
+
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, _signal_profile_user_changed);
 }
 
 static void _set_default_curve_and_look_params(dt_iop_agx_params_t *p)
