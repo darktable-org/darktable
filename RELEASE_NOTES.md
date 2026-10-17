@@ -594,6 +594,10 @@ changes (where available).
   not assigned with: ctrl+K, for example, no longer runs the action
   bound to K, unless a fallback gives the modifier a meaning for it.
 
+- Fixed small memory leaks when hovering over unselected images in the
+  lighttable, and when importing images with a new camera maker, model or
+  lens.
+
 ## Lua
 
 ### API Version

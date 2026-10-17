@@ -256,8 +256,8 @@ static gboolean _cache_update_hover(const gboolean only_visible,
       if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
       {
         inside_sel = TRUE;
-        sqlite3_finalize(stmt);
       }
+      sqlite3_finalize(stmt);
       g_free(query);
 
       if(inside_sel)
@@ -458,8 +458,8 @@ static gchar *_get_query_hover(const gboolean only_visible)
       if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
       {
         inside_sel = TRUE;
-        sqlite3_finalize(stmt);
       }
+      sqlite3_finalize(stmt);
       g_free(query);
 
       if(inside_sel)
