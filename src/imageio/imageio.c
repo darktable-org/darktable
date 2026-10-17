@@ -674,7 +674,7 @@ gboolean dt_imageio_large_thumbnail(const char *filename,
     if(dt_imageio_jpeg_decompress_header(buf, bufsize, &jpg))
       goto error;
 
-    *buffer = dt_alloc_align_uint8(4 * jpg.width * jpg.height);
+    *buffer = dt_alloc_align_uint8((size_t)4 * jpg.width * jpg.height);
     if(!*buffer) goto error;
 
     *width = jpg.width;
