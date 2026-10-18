@@ -230,6 +230,16 @@ changes (where available).
 
 ## Other Changes
 
+- AgX and sigmoid now adapt to HDR output, so one edit exports to
+  SDR, HLG and PQ alike. HLG output peaks at 1000 nits, and PQ output
+  at the new "PQ peak" setting of the export module, 1000 nits by
+  default. With AgX, shadows and midtones keep their SDR brightness
+  and highlights extend to the peak, following Blender's AgX HDR, with
+  a new "HDR purity" slider for the highlights' saturation. Sigmoid
+  scales its target white to the peak, up to 1600% (3248 nits). SDR
+  output is unchanged. Existing edits render as before, and a "follow
+  output peak" toggle in each module opts them in.
+
 - PNG exports using a PQ output color profile now include content
   light level metadata (MaxCLL and MaxFALL) for HDR tone mapping.
 
