@@ -129,8 +129,14 @@ typedef unsigned long u_long;
 
 #define DT_OMP_SIMD(clauses) DT_OMP_PRAGMA(simd clauses)
 #define DT_OMP_DECLARE_SIMD(clauses) DT_OMP_PRAGMA(declare simd clauses)
-#define DT_OMP_FOR(clauses) DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(static) clauses)
-#define DT_OMP_FOR_SIMD(clauses) DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(simd:static) clauses)
+// num_threads() overrides any thread count a library set with
+// omp_set_num_threads(), so a loop never runs more threads than the
+// per-thread buffers have slots. The field is read directly because
+// dt_get_num_threads() makes a system call on each loop start with libgomp
+#define DT_OMP_FOR_CAP_THREADS(max_threads, clauses) DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(static) num_threads(MIN((int)(max_threads), darktable.num_openmp_threads)) clauses)
+#define DT_OMP_FOR_SIMD_CAP_THREADS(max_threads, clauses) DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(simd:static) num_threads(MIN((int)(max_threads), darktable.num_openmp_threads)) clauses)
+#define DT_OMP_FOR(clauses) DT_OMP_FOR_CAP_THREADS(darktable.num_openmp_threads, clauses)
+#define DT_OMP_FOR_SIMD(clauses) DT_OMP_FOR_SIMD_CAP_THREADS(darktable.num_openmp_threads, clauses)
 
 #ifndef _RELEASE
 #include "common/poison.h"

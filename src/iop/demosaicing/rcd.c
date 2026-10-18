@@ -132,7 +132,7 @@ static void rcd_demosaic(float *const restrict out,
   const int num_vertical = 1 + (height - 2 * RCD_BORDER -1) / RCD_TILEVALID;
   const int num_horizontal = 1 + (width - 2 * RCD_BORDER -1) / RCD_TILEVALID;
 
-  DT_OMP_PRAGMA(parallel firstprivate(width, height, filters, out, in, scaler, revscaler))
+  DT_OMP_PRAGMA(parallel num_threads(darktable.num_openmp_threads) firstprivate(width, height, filters, out, in, scaler, revscaler))
   {
     // ensure that border elements which are read but never actually set below are zeroed out so use calloc
     float *const VH_Dir = dt_calloc_align_float((size_t) DT_RCD_TILESIZE * DT_RCD_TILESIZE);

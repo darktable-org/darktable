@@ -3180,7 +3180,7 @@ static bool build_cmax_table(sf_sim_t *s)
   s->cmax = malloc(sizeof(float) * SF_CMAX_NL * SF_CMAX_NH);
   if(!s->cmax) return false;
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for num_threads(darktable.num_openmp_threads) schedule(static)
 #endif
   for(int i = 0; i < SF_CMAX_NL; i++)
   {
@@ -3526,7 +3526,7 @@ static bool build_lut3d(const sf_sim_t *s,
     return false;
   }
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for num_threads(darktable.num_openmp_threads) schedule(static)
 #endif
   for(int i = 0; i < steps; i++)
     for(int j = 0; j < steps; j++)
@@ -3750,7 +3750,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
       }
     }
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for num_threads(darktable.num_openmp_threads) schedule(static)
 #endif
     for(int i = 0; i < n; i++)
       for(int j = 0; j < n; j++)
@@ -3803,7 +3803,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
           return NULL;
         }
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for num_threads(darktable.num_openmp_threads) schedule(static)
 #endif
       for(int i = 0; i < n; i++)
         for(int j = 0; j < n; j++)
@@ -3843,7 +3843,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
       tri2quad(center_tc, film_ref_xy);
       const double step = 1.0 / (double)(n - 1);
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for num_threads(darktable.num_openmp_threads) schedule(static)
 #endif
       for(int i = 0; i < n; i++)
         for(int j = 0; j < n; j++)
@@ -3874,7 +3874,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
       memcpy(old, s->tc_lut, (size_t)n * n * 3 * sizeof(double));
       const double scale = (double)(n - 1);
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for num_threads(darktable.num_openmp_threads) schedule(static)
 #endif
       for(int i = 0; i < n; i++)
         for(int j = 0; j < n; j++)
@@ -4717,7 +4717,7 @@ void sf_sim_expose(const sf_sim_t *sim,
                    int nch_out)
 {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for num_threads(darktable.num_openmp_threads) schedule(static)
 #endif
   for(size_t px = 0; px < npix; px++)
   {
@@ -4734,7 +4734,7 @@ void sf_sim_lograw(float *raw,
                    int nch)
 {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for num_threads(darktable.num_openmp_threads) schedule(static)
 #endif
   for(size_t px = 0; px < npix; px++)
   {
@@ -4756,7 +4756,7 @@ void sf_sim_develop_corr(const sf_sim_t *sim,
     return;
   }
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for num_threads(darktable.num_openmp_threads) schedule(static)
 #endif
   for(size_t px = 0; px < npix; px++)
   {
@@ -4791,7 +4791,7 @@ void sf_sim_develop(const sf_sim_t *sim,
   const int use_corr = sim->couplers_active && corr != NULL;
   const float(*curves)[3] = use_corr ? sim->curves_before_f : sim->curves_norm_f;
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for num_threads(darktable.num_openmp_threads) schedule(static)
 #endif
   for(size_t px = 0; px < npix; px++)
   {
@@ -4822,7 +4822,7 @@ void sf_sim_print_expose(const sf_sim_t *sim,
 {
   const int steps = sim->lut_steps;
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for num_threads(darktable.num_openmp_threads) schedule(static)
 #endif
   for(size_t px = 0; px < npix; px++)
   {
@@ -4874,7 +4874,7 @@ void sf_sim_print_develop(const sf_sim_t *sim,
                           int nch_out)
 {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for num_threads(darktable.num_openmp_threads) schedule(static)
 #endif
   for(size_t px = 0; px < npix; px++)
   {
@@ -4895,7 +4895,7 @@ void sf_sim_scan(const sf_sim_t *sim,
 {
   const int steps = sim->lut_steps;
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for num_threads(darktable.num_openmp_threads) schedule(static)
 #endif
   for(size_t px = 0; px < npix; px++)
   {

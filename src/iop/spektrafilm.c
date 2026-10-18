@@ -2369,7 +2369,7 @@ void process(dt_iop_module_t *self,
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                          \
     shared(plane, raw, layers) firstprivate(w, npix, roi_x, roi_y, mono, channel_idx, seed_ch,   \
-                                            unif_ch, npart_scale, nsub) schedule(static)
+                                            unif_ch, npart_scale, nsub) schedule(static) num_threads(darktable.num_openmp_threads)
 #endif
         for(size_t k = 0; k < npix; k++)
         {
@@ -2391,7 +2391,7 @@ void process(dt_iop_module_t *self,
            original clean density, scale by strength. */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(plane, gbuf, raw)                                  \
-    firstprivate(npix, nsub, channel_idx, mono, oc, amount, gdmin) schedule(static)
+    firstprivate(npix, nsub, channel_idx, mono, oc, amount, gdmin) schedule(static) num_threads(darktable.num_openmp_threads)
 #endif
         for(size_t k = 0; k < npix; k++)
         {
@@ -2432,7 +2432,7 @@ void process(dt_iop_module_t *self,
        what the emulsion does, and what upstream's own output shows. */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(plane, gbuf) firstprivate(npix)              \
-    schedule(static)
+    schedule(static) num_threads(darktable.num_openmp_threads)
 #endif
     for(size_t k = 0; k < npix * 3; k++) plane[k] += gbuf[k];
     /* Upstream's grain blur (GrainParams.blur, params_schema.py) is a
@@ -2516,7 +2516,7 @@ void process(dt_iop_module_t *self,
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(plane) firstprivate(out, in, w, ow, oh, ox, oy)      \
-    schedule(static)
+    schedule(static) num_threads(darktable.num_openmp_threads)
 #endif
   for(int y = 0; y < oh; y++)
     for(int x = 0; x < ow; x++)

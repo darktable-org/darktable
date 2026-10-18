@@ -162,7 +162,7 @@ void dt_iop_image_copy(float *const __restrict__ out,
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
     // determine the number of 4-float vectors to be processed by each thread
     const size_t chunksize = (((nfloats + nthreads - 1) / nthreads) + 3) / 4;
-    DT_OMP_FOR(num_threads(nthreads))
+    DT_OMP_FOR_CAP_THREADS(nthreads, )
     for(size_t chunk = 0; chunk < nthreads; chunk++)
     {
       const size_t limit = MIN(4*(chunk+1)*chunksize, nfloats);
@@ -258,7 +258,7 @@ void dt_iop_image_scaled_copy(float *const restrict buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf, src : 16))
+    DT_OMP_FOR_SIMD_CAP_THREADS(nthreads, aligned(buf, src : 16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] = scale * src[k];
     return;
@@ -283,7 +283,7 @@ void dt_iop_image_fill(float *const buf,
     const size_t nthreads = MIN(16, dt_get_num_threads());
     // determine the number of 4-float vectors to be processed by each thread
     const size_t chunksize = (((nfloats + nthreads - 1) / nthreads) + 3) / 4;
-    DT_OMP_FOR(num_threads(nthreads))
+    DT_OMP_FOR_CAP_THREADS(nthreads, )
     for(size_t chunk = 0; chunk < nthreads; chunk++)
     {
       size_t limit = MIN(4*(chunk+1)*chunksize, nfloats);
@@ -328,7 +328,7 @@ void dt_iop_image_add_const(float *const buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-    DT_OMP_FOR_SIMD(num_threads(nthreads))
+    DT_OMP_FOR_SIMD_CAP_THREADS(nthreads, )
     for(size_t k = 0; k < nfloats; k++)
       buf[k] += add_value;
     return;
@@ -356,7 +356,7 @@ void dt_iop_image_add_image(float *const buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf, other_image : 16))
+    DT_OMP_FOR_SIMD_CAP_THREADS(nthreads, aligned(buf, other_image : 16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] += other_image[k];
     return;
@@ -384,7 +384,7 @@ void dt_iop_image_sub_image(float *const buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf, other_image : 16))
+    DT_OMP_FOR_SIMD_CAP_THREADS(nthreads, aligned(buf, other_image : 16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] -= other_image[k];
     return;
@@ -412,7 +412,7 @@ void dt_iop_image_invert(float *const buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf:16))
+    DT_OMP_FOR_SIMD_CAP_THREADS(nthreads, aligned(buf:16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] = max_value - buf[k];
     return;
@@ -440,7 +440,7 @@ void dt_iop_image_mul_const(float *const buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf:16))
+    DT_OMP_FOR_SIMD_CAP_THREADS(nthreads, aligned(buf:16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] *= mul_value;
     return;
@@ -471,7 +471,7 @@ void dt_iop_image_linear_blend(float *const restrict buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf:16))
+    DT_OMP_FOR_SIMD_CAP_THREADS(nthreads, aligned(buf:16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] = lambda*buf[k] + lambda_1*other[k];
     return;
