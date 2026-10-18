@@ -101,6 +101,20 @@ static void dt_rawspeed_load_meta()
   }
 }
 
+gboolean dt_rawspeed_has_headerless_camera(const uint64_t filesize)
+{
+  try
+  {
+    dt_rawspeed_load_meta();
+    return filesize <= UINT32_MAX && meta->hasChdkCamera((uint32_t)filesize);
+  }
+  catch(const std::exception &exc)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] %s", exc.what());
+    return FALSE;
+  }
+}
+
 gboolean dt_rawspeed_lookup_makermodel(const char *maker,
                                        const char *model,
                                        char *mk,

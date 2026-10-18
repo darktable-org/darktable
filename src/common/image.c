@@ -2192,6 +2192,26 @@ static int _image_read_duplicates(const uint32_t id,
   return count_xmps_processed;
 }
 
+// a network mount can report a file's size while reads fail or return zeros
+static gboolean _image_data_readable(const char *filename)
+{
+  FILE *f = g_fopen(filename, "rb");
+  if(!f) return FALSE;
+
+  uint8_t buf[4096];
+  const size_t count = fread(buf, 1, sizeof(buf), f);
+  const gboolean failed = ferror(f) || count == 0;
+  fclose(f);
+  if(failed) return FALSE;
+
+  for(size_t i = 0; i < count; i++)
+    if(buf[i]) return TRUE;
+
+  // only headerless raws, known to rawspeed by file size alone, can start with 4 KiB of zeros (black sensor rows)
+  GStatBuf st;
+  return !g_stat(filename, &st) && dt_rawspeed_has_headerless_camera(st.st_size);
+}
+
 static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
                                          const char *filename,
                                          const gboolean override_ignore_nonraws,
@@ -2270,6 +2290,18 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
       DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
     }
     return id;
+  }
+
+  // before the INSERT: the grouping below also changes other images
+  if(!_image_data_readable(normalized_filename))
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[image_import_internal] can't read image data from `%s', not imported",
+             normalized_filename);
+    g_free(imgfname);
+    g_free(ext);
+    g_free(normalized_filename);
+    return NO_IMGID;
   }
 
   dt_set_backthumb_time(0.0);
