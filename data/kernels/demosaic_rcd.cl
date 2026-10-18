@@ -17,6 +17,7 @@
 */
 
 #include "common.h"
+#pragma OPENCL FP_CONTRACT ON
 
 /** Correct index into "half-width" cl_mem buffers if the buffer has an odd width
     is not a simple idx-full / 2!
@@ -34,14 +35,12 @@ __kernel void rcd_populate (__read_only image2d_t in, global float *cfa, global 
   const int row = get_global_id(1);
   if(col >= w || row >= height) return;
   const float val = scale * fmax(0.0f, Areadsingle(in, col, row));
-  const int color = FC(row, col, filters);
-
-  global float *rgbcol = rgb0;
-  if(color == GREEN) rgbcol = rgb1;
-  else if(color == BLUE) rgbcol = rgb2;
-
+  const int c0 = FC(row, 0, filters);
+  const int c1 = FC(row, 1, filters);
+  global float *p0 = (c0 == GREEN) ? rgb1 : (c0 == BLUE) ? rgb2 : rgb0;
+  global float *p1 = (c1 == GREEN) ? rgb1 : (c1 == BLUE) ? rgb2 : rgb0;
   const int idx = mad24(row, w, col);
-  cfa[idx] = rgbcol[idx] = val;
+  cfa[idx] = p0[idx] = p1[idx] = val;
 }
 
 // Write back-normalized data in rgb channels to output
@@ -109,7 +108,8 @@ __kernel void rcd_step_1(global float *cfa, global float *VH_dir, const int w, c
   const float H_Stat = fmax(epssq, rcd_hdiff_local(buf - 1)
                                   + rcd_hdiff_local(buf)
                                   + rcd_hdiff_local(buf + 1));
-  VH_dir[idx] = V_Stat / (V_Stat + H_Stat);
+  VH_dir[idx] = (row < 4 || row > height - 5 || col < 4 || col > w - 5)
+                ? 0.0f : fp32_div(V_Stat, V_Stat + H_Stat);
 }
 
 // Step 2: Low pass filter incorporating green, red and blue local samples from the raw data
@@ -117,7 +117,7 @@ __kernel void rcd_step_2(global float *lpf, global float *cfa, const int w, cons
 {
   const int row = 2 + get_global_id(1);
   const int col = 2 + (FC(row, 0, filters) & 1) + 2 *get_global_id(0);
-  if((col > w - 2) || (row > height - 2)) return;
+  if((col > w - 3) || (row > height - 3)) return;
   const int idx = mad24(row, w, col);
 
   lpf[_half_idx(row, col, w)] = cfa[idx]
@@ -152,14 +152,14 @@ __kernel void rcd_step_3(global float *lpf, global float *cfa, global float *rgb
 
   const float lfpi = lpf[lidx];
   // Cardinal pixel estimations
-  const float N_Est = cfa[idx - w] * (lfpi + lfpi) / (eps + lfpi + lpf[lidx - hw2]);
-  const float S_Est = cfa[idx + w] * (lfpi + lfpi) / (eps + lfpi + lpf[lidx + hw2]);
-  const float W_Est = cfa[idx - 1] * (lfpi + lfpi) / (eps + lfpi + lpf[lidx - 1]);
-  const float E_Est = cfa[idx + 1] * (lfpi + lfpi) / (eps + lfpi + lpf[lidx + 1]);
+  const float N_Est = fp32_div(cfa[idx - w] * (lfpi + lfpi), eps + lfpi + lpf[lidx - hw2]);
+  const float S_Est = fp32_div(cfa[idx + w] * (lfpi + lfpi), eps + lfpi + lpf[lidx + hw2]);
+  const float W_Est = fp32_div(cfa[idx - 1] * (lfpi + lfpi), eps + lfpi + lpf[lidx - 1]);
+  const float E_Est = fp32_div(cfa[idx + 1] * (lfpi + lfpi), eps + lfpi + lpf[lidx + 1]);
 
   // Vertical and horizontal estimations
-  const float V_Est = (S_Grad * N_Est + N_Grad * S_Est) / (N_Grad + S_Grad);
-  const float H_Est = (W_Grad * E_Est + E_Grad * W_Est) / (E_Grad + W_Grad);
+  const float V_Est = fp32_div(S_Grad * N_Est + N_Grad * S_Est, N_Grad + S_Grad);
+  const float H_Est = fp32_div(W_Grad * E_Est + E_Grad * W_Est, E_Grad + W_Grad);
 
   // G@B and G@R interpolation
   rgb1[idx] = mix(V_Est, H_Est, clipf(VH_Disc));
@@ -185,14 +185,14 @@ __kernel void rcd_step_4_1(global float *PQ_dir, global float *p_diff, global fl
 {
   const int row = 2 + get_global_id(1);
   const int col = 2 + (FC(row, 0, filters) & 1) + 2 *get_global_id(0);
-  if((col > w - 3) || (row > height - 3)) return;
+  if(row < 4 || (col > w - 5) || (row > height - 5)) return;
   const int idx2 = _half_idx(row, col, w);
   const int idx3 = _half_idx(row - 1, col - 1, w);
   const int idx4 = _half_idx(row + 1, col - 1, w);
 
   const float P_Stat = fmax(epssq, p_diff[idx3]     + p_diff[idx2] + p_diff[idx4 + 1]);
   const float Q_Stat = fmax(epssq, q_diff[idx3 + 1] + q_diff[idx2] + q_diff[idx4]);
-  PQ_dir[idx2] = P_Stat / (P_Stat + Q_Stat);
+  PQ_dir[idx2] = fp32_div(P_Stat, P_Stat + Q_Stat);
 }
 
 // Step 4.2: Populate the red and blue channels at blue and red CFA positions
@@ -200,7 +200,7 @@ __kernel void rcd_step_4_2(global float *PQ_dir, global float *rgb0, global floa
 {
   const int row = 4 + get_global_id(1);
   const int col = 4 + (FC(row, 0, filters) & 1) + 2 * get_global_id(0);
-  if((col > w - 4) || (row > height - 4)) return;
+  if((col > w - 5) || (row > height - 5)) return;
 
   const int color = 2 - FC(row, col, filters);
 
@@ -229,8 +229,8 @@ __kernel void rcd_step_4_2(global float *PQ_dir, global float *rgb0, global floa
   const float SW_Est = rgbc[idx + w - 1] - rgb1[idx + w - 1];
   const float SE_Est = rgbc[idx + w + 1] - rgb1[idx + w + 1];
 
-  const float P_Est = (NW_Grad * SE_Est + SE_Grad * NW_Est) / (NW_Grad + SE_Grad);
-  const float Q_Est = (NE_Grad * SW_Est + SW_Grad * NE_Est) / (NE_Grad + SW_Grad);
+  const float P_Est = fp32_div(NW_Grad * SE_Est + SE_Grad * NW_Est, NW_Grad + SE_Grad);
+  const float Q_Est = fp32_div(NE_Grad * SW_Est + SW_Grad * NE_Est, NE_Grad + SW_Grad);
 
   rgbc[idx]= rgb1[idx] + mix(P_Est, Q_Est, clipf(PQ_Disc));
 }
@@ -240,7 +240,7 @@ __kernel void rcd_step_4_3(global float *VH_dir, global float *rgb0, global floa
 {
   const int row = 4 + get_global_id(1);
   const int col = 4 + (FC(row, 1, filters) & 1) + 2 * get_global_id(0);
-  if((col > w - 4) || (row > height - 4)) return;
+  if((col > w - 5) || (row > height - 5)) return;
 
   const int idx = mad24(row, w, col);
   const int w2 = 2 * w;
@@ -283,8 +283,8 @@ __kernel void rcd_step_4_3(global float *VH_dir, global float *rgb0, global floa
     const float E_Est = rgbc[idx + 1] - rgb1p1;
 
     // Vertical and horizontal estimations
-    const float V_Est = (N_Grad * S_Est + S_Grad * N_Est) / (N_Grad + S_Grad);
-    const float H_Est = (E_Grad * W_Est + W_Grad * E_Est) / (E_Grad + W_Grad);
+    const float V_Est = fp32_div(N_Grad * S_Est + S_Grad * N_Est, N_Grad + S_Grad);
+    const float H_Est = fp32_div(E_Grad * W_Est + W_Grad * E_Est, E_Grad + W_Grad);
 
     // R@G and B@G interpolation
     rgbc[idx] = rgb1[idx] + mix(V_Est, H_Est, clipf(VH_Disc));
@@ -339,7 +339,7 @@ kernel void demosaic_box3(read_only image2d_t in,
       }
     }
   }
-  const float4 rgb = { sum[0]/fmax(1.0f, cnt[0]), sum[1]/fmax(1.0f, cnt[1]), sum[2]/fmax(1.0f, cnt[2]), 0.0f};
+  const float4 rgb = { fp32_div(sum[0], fmax(1.0f, cnt[0])), fp32_div(sum[1], fmax(1.0f, cnt[1])), fp32_div(sum[2], fmax(1.0f, cnt[2])), 0.0f};
   write_imagef(out, (int2)(col, row), rgb);
 }
 
