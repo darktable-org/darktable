@@ -358,8 +358,12 @@ void reload_defaults(dt_iop_module_t *self)
   {
     const gboolean mono = dt_image_is_monochrome(&self->dev->image_storage);
     // DNG BaselineExposure states how much the raw data has to be pushed
-    // relative to a typical camera, so it adds to the generic boost
-    d->exposure = (mono ? 0.0f : 0.7f) + self->dev->image_storage.dng_baseline_exposure;
+    // relative to a typical camera, so it adds to the generic boost. A DNG
+    // ProfileGainTableMap, which colorin applies by default, provides the
+    // brightening itself and expects its input at BaselineExposure alone.
+    const gboolean dng_gtm = self->dev->image_storage.profile_gtm != NULL;
+    d->exposure = (mono || dng_gtm ? 0.0f : 0.7f)
+                  + self->dev->image_storage.dng_baseline_exposure;
     d->black =    mono ? 0.0f : -0.000244140625f;
     d->compensate_exposure_bias = TRUE;
   }

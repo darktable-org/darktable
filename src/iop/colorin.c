@@ -2729,6 +2729,14 @@ corrupted_profile:
     d->type = DT_COLORSPACE_ADOBERGB;
   else if(dt_image_is_ldr(img))
     d->type = DT_COLORSPACE_SRGB;
+  // a DNG with a ProfileGainTableMap carries its local tone mapping in the
+  // profile, which only the DNG profiles apply
+  else if(self->dev->image_storage.profile_gtm
+          && dt_is_valid_colormatrix(self->dev->image_storage.dng_forward_matrix[0]))
+    d->type = DT_COLORSPACE_FORWARD_MATRIX;
+  else if(self->dev->image_storage.profile_gtm
+          && dt_is_valid_colormatrix(img->d65_color_matrix[0]))
+    d->type = DT_COLORSPACE_DNG_LOOK;
   else if(dt_is_valid_colormatrix(img->d65_color_matrix[0])) // image is DNG, EXR, or RGBE
     d->type = DT_COLORSPACE_EMBEDDED_MATRIX;
   else if(dt_is_valid_colormatrix(self->dev->image_storage.dng_forward_matrix[0])) // DNG with forward matrix
