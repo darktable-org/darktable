@@ -123,6 +123,24 @@ static inline float scharr_gradient(global float *in, const int k, const int w)
   return dt_fast_hypot(gx, gy);
 }
 
+static inline float fp32_div(const float a, const float b)
+{
+  /** OpenCL accepts an error of ~2.5 for a default division, full IEEE precision
+      can be enforced wit a global compiler flag but that is not supported on all
+      drivers/platforms.
+      As almost all platforms support fma() we can use Newton-Raphson refinement
+      of the quotient for precise results.
+      (See OpenCL manuals like from nvidia, amd ... they use such code)
+      Also rawprepare uses this already.
+  */
+  float y = native_recip(b);
+  float e = fma(-b, y, 1.0f);
+  y = fma(y, e, y);
+  float q = a * y;
+  float r = fma(-b, q, a);
+  return fma(r, y, q);
+}
+
 static inline int
 FC(const int row, const int col, const unsigned int filters)
 {
