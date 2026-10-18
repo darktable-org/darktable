@@ -474,8 +474,9 @@ static gboolean find_illuminant_xy_from_as_shot_coeffs(const dt_image_t *img, co
   dt_aligned_pixel_t WB = { img->wb_coeffs[0], img->wb_coeffs[1], img->wb_coeffs[2], img->wb_coeffs[3] };
 
   // Adapt the camera coeffs with custom D65 coefficients if provided ('caveats' workaround)
-  // this can deal with WB coeffs that don't use the input matrix reference
-  // correction_ratios[k] = chr->wb.D65coeffs[k] / chr->wb.coeffs[k]
+  // this can deal with WB coeffs that don't use the input matrix reference.
+  // correction_ratios come from channelmixerrgb.c _get_d65_correction_ratios():
+  // D65coeffs[k] / coeffs[k] of a dt_dev_wb_t, or 1.0
   if(correction_ratios)
     for(size_t k = 0; k < 4; k++) WB[k] *= correction_ratios[k];
   // for a neutral surface, raw RGB * img->wb_coeffs would produce neutral R=G=B
