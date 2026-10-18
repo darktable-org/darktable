@@ -1,0 +1,199 @@
+name: Integration (selected tests)
+
+# Runs the pixel integration tests (src/tests/integration) that a change can
+# affect: .ci/integration-select.py maps the changed files to the tests
+# whose history uses the changed module, to the whole suite for code shared
+# by every module, and to nothing for code without effect on the pixels.
+# Tests marked critical (critical = true in their ci.toml) run on every
+# pull request. The selected tests are split into up to 4 parallel shards.
+#
+# Informational for now: a failing test does not fail the job, it is listed
+# in the job summary and shows as a warning on the pull request. Which tests
+# may differ across machines, and by how much, is discussed in #22589.
+
+on:
+  pull_request:
+    branches:
+      - master
+      - 'release-*'
+  workflow_dispatch:
+    inputs:
+      base:
+        description: "the commit or branch to compare the checkout with"
+        default: "master"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  select:
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      shards: ${{ steps.select.outputs.shards }}
+      count: ${{ steps.select.outputs.count }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: false
+          fetch-depth: 0
+      - name: The test histories only
+        # the tests' XMP files and ci.toml annotations, at the commit the
+        # checkout pins, without the images and references (~2 GB)
+        run: |
+          sha=$(git ls-tree HEAD src/tests/integration | awk '{ print $3 }')
+          git init --quiet suite
+          git -C suite remote add origin "$(git config -f .gitmodules submodule.src/tests/integration.url)"
+          git -C suite sparse-checkout set --no-cone '/[0-9]*/*.xmp' '/[0-9]*/ci.toml'
+          git -C suite fetch --quiet --depth 1 --filter=blob:none origin "$sha"
+          git -C suite checkout --quiet FETCH_HEAD
+      - name: Select the tests
+        id: select
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || inputs.base }}
+        run: |
+          # a commit or a branch: the full history is already here
+          ref=$(git rev-parse --verify --quiet "$BASE^{commit}" || git rev-parse --verify --quiet "origin/$BASE^{commit}")
+          base=$(git merge-base HEAD "$ref")
+          git diff --name-only "$base" HEAD | tee changed.txt
+          python3 .ci/integration-select.py suite 4 < changed.txt > selection.json
+          python3 -c 'import json; d = json.load(open("selection.json")); print(len(d["tests"]), "tests:", d["reason"])' \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "shards=$(python3 -c 'import json; print(json.dumps(json.load(open("selection.json"))["shards"]))')" >> "$GITHUB_OUTPUT"
+          echo "count=$(python3 -c 'import json; print(len(json.load(open("selection.json"))["tests"]))')" >> "$GITHUB_OUTPUT"
+
+  suite:
+    needs: select
+    if: needs.select.outputs.count != '0'
+    name: Integration shard ${{ strategy.job-index }}
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:26.04
+      options: --tmpfs /tmp:exec
+    strategy:
+      fail-fast: false
+      matrix:
+        tests: ${{ fromJSON(needs.select.outputs.shards) }}
+    env:
+      CC: gcc-16
+      CXX: g++-16
+      SRC_DIR: ${{ github.workspace }}/src
+      BUILD_DIR: ${{ github.workspace }}/build
+      INSTALL_PREFIX: ${{ github.workspace }}/install
+      # RelWithDebInfo, as the references are made: Release adds -ffast-math
+      CMAKE_BUILD_TYPE: RelWithDebInfo
+      GENERATOR: Ninja
+      TARGET: skiptest
+      # generic code rather than -march=native: a result must not depend on
+      # the CPU of the runner the job lands on
+      ECO: -DDONT_USE_INTERNAL_LIBRAW=ON -DBINARY_PACKAGE_BUILD=ON
+      DEBIAN_FRONTEND: noninteractive
+    steps:
+      - name: Update base packages
+        timeout-minutes: 15
+        run: |
+          set -xe
+          rm -rf /var/lib/apt/lists/*
+          apt-get --yes update
+          apt-get --yes install eatmydata
+          eatmydata apt-get --yes upgrade
+      - name: Install compiler
+        run: |
+          eatmydata apt-get --yes install gcc-16 g++-16
+      - name: Install Base Dependencies
+        run: |
+          eatmydata apt-get --yes install \
+            build-essential \
+            cmake \
+            appstream-util \
+            desktop-file-utils \
+            gettext \
+            git \
+            gdb \
+            intltool \
+            libarchive-dev \
+            libatk1.0-dev \
+            libavif-dev \
+            libcairo2-dev \
+            libcmocka-dev \
+            libcolord-dev \
+            libcolord-gtk-dev \
+            libcups2-dev \
+            libcurl4-gnutls-dev \
+            libexiv2-dev \
+            libgdk-pixbuf-2.0-dev \
+            libglib2.0-dev \
+            libgmic-dev \
+            libgphoto2-dev \
+            libgraphicsmagick1-dev \
+            libgtk-3-dev \
+            libheif-dev \
+            libjpeg-dev \
+            libjson-glib-dev \
+            liblcms2-dev \
+            liblensfun-dev \
+            liblua5.4-dev \
+            libonnxruntime-dev \
+            libopencv-calib3d-dev \
+            libopencv-core-dev \
+            libopencv-features2d-dev \
+            libopencv-flann-dev \
+            libopencv-imgproc-dev \
+            libopenexr-dev \
+            libopenjp2-7-dev \
+            libosmgpsmap-1.0-dev \
+            libpango1.0-dev \
+            libpng-dev \
+            libportmidi-dev \
+            libpotrace-dev \
+            libpugixml-dev \
+            libraw-dev \
+            librsvg2-dev \
+            libsaxon-java \
+            libsdl2-dev \
+            libsecret-1-dev \
+            libsqlite3-dev \
+            libtiff5-dev \
+            libwebp-dev \
+            libx11-dev \
+            libxml2-dev \
+            libxml2-utils \
+            ninja-build \
+            perl \
+            po4a \
+            python3-jsonschema \
+            xsltproc \
+            zlib1g-dev \
+            python3-venv;
+      - uses: actions/checkout@v7
+        with:
+          submodules: false
+          path: src
+          fetch-depth: 1
+      - name: Submodules, the integration suite at depth 1
+        run: |
+          cd src
+          git submodule update --init --depth 1
+      - name: Build and Install
+        run: |
+          cmake -E make_directory "${BUILD_DIR}"
+          cmake -E make_directory "${INSTALL_PREFIX}"
+          ./src/.ci/ci-script.sh
+      - name: Run the selected tests
+        working-directory: src/src/tests/integration
+        env:
+          DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
+        run: |
+          ./run --disable-opencl ${{ matrix.tests }} 2>&1 | tee run.log
+          sed -n '/^Total test/,/^[^ E]/p' run.log | grep -v '^$' >> "$GITHUB_STEP_SUMMARY"
+          # informational: a failing test is a warning on the pull request,
+          # not a failed check (./run's own status is check-performance's)
+          sed -n 's/^   - \([0-9].*\)/\1/p' run.log | while read -r test; do
+            echo "::warning title=integration test::$test differs from its reference"
+          done
+          grep -q '^Errors *[0-9]' run.log || { echo "::error::the suite did not report its results"; exit 1; }
