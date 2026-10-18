@@ -2627,6 +2627,7 @@ void dt_image_init(dt_image_t *img)
   img->pixel_aspect_ratio = 1.0f;
   img->linear_response_limit = 1.0f;
   img->dng_baseline_exposure = 0.0f;
+  img->has_dng_noise_profile = FALSE;
   img->wb_coeffs[0] = NAN;
   img->wb_coeffs[1] = NAN;
   img->wb_coeffs[2] = NAN;

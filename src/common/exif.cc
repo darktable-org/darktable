@@ -1100,6 +1100,55 @@ static void _check_baseline_exposure(Exiv2::ExifData &exifData,
            img->filename, img->dng_baseline_exposure);
 }
 
+static void _check_noise_profile(Exiv2::ExifData &exifData,
+                                 dt_image_t *img)
+{
+  img->has_dng_noise_profile = FALSE;
+
+  Exiv2::ExifData::const_iterator pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.NoiseProfile"));
+  if(pos == exifData.end())
+    pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.NoiseProfile"));
+  if(pos == exifData.end())
+    return;
+
+  // one (scale, offset) pair for all planes or one per CFA plane, in the
+  // order of CFAPlaneColor which is red, green, blue for the supported files
+  const long n = pos->count();
+  if(n != 2 && n != 6)
+    return;
+
+  for(int c = 0; c < 3; c++)
+  {
+    const int k = n == 2 ? 0 : 2 * c;
+    const float a = pos->toFloat(k);
+    const float b = pos->toFloat(k + 1);
+    if(!std::isfinite(a) || !std::isfinite(b) || a <= 0.0f)
+      return;
+    img->dng_noise_a[c] = a;
+    img->dng_noise_b[c] = b;
+  }
+
+  // some cameras write the values of the generic poissonian profile
+  // (a = 1e-4, b ~ 0) for all planes, which add nothing to it
+  gboolean generic = TRUE;
+  for(int c = 0; c < 3; c++)
+    if(fabsf(img->dng_noise_a[c] - 1e-4f) > 1e-6f || fabsf(img->dng_noise_b[c]) > 1e-7f)
+      generic = FALSE;
+  if(generic)
+  {
+    dt_print(DT_DEBUG_IMAGEIO, "[exif] `%s` DNG noise profile equals the generic one, ignored",
+             img->filename);
+    return;
+  }
+
+  img->has_dng_noise_profile = TRUE;
+  dt_print(DT_DEBUG_IMAGEIO, "[exif] `%s` has DNG noise profile a=%g %g %g b=%g %g %g",
+           img->filename,
+           img->dng_noise_a[0], img->dng_noise_a[1], img->dng_noise_a[2],
+           img->dng_noise_b[0], img->dng_noise_b[1], img->dng_noise_b[2]);
+}
+
 static bool _valid_dng_matrix(const float *M)
 {
   const float det = M[0] * (M[4] * M[8] - M[5] * M[7])
@@ -2065,6 +2114,7 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
   // anything that can return early
   img->exif_shading_compensation = FALSE;
   img->dng_baseline_exposure = 0.0f;
+  img->has_dng_noise_profile = FALSE;
 
   try
   {
@@ -2080,6 +2130,7 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
       _check_lens_correction_data(exifData, img);
       _check_linear_response_limit(exifData, img);
       _check_baseline_exposure(exifData, img);
+      _check_noise_profile(exifData, img);
       float weights[3] = { 0.0f, 0.0f, 0.0f };
       gboolean blended = FALSE;
       const int sel_illu = _check_forward_matrix(exifData, img, weights, &blended);

@@ -362,6 +362,11 @@ typedef struct dt_image_t
   /* DNG BaselineExposure + BaselineExposureOffset in EV, 0 when absent */
   float dng_baseline_exposure;
 
+  /* DNG NoiseProfile as variance = a * x + b per RGB plane, x in [0,1] */
+  gboolean has_dng_noise_profile;
+  float dng_noise_a[3];
+  float dng_noise_b[3];
+
   /* White balance coeffs from the raw */
   dt_aligned_pixel_t wb_coeffs;
 
