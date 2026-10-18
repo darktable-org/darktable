@@ -617,6 +617,8 @@ changes (where available).
 
 - Fixed memory leaks when processing images.
 
+- Fixed memory leaks when exporting images or the tag list.
+
 ## Lua
 
 ### API Version
