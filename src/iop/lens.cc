@@ -1756,7 +1756,7 @@ static void _modify_roi_in_lf(dt_iop_module_t *self,
 
     float *const buf = (float *)dt_alloc_align_float(nbpoints * 2 * 3);
 
-    DT_OMP_PRAGMA(parallel default(none)
+    DT_OMP_PRAGMA(parallel num_threads(darktable.num_openmp_threads) default(none)
                   dt_omp_firstprivate(aheight, awidth, buf, height, nbpoints, width,
                                       xoff, xstep, yoff, ystep)
                   shared(modifier) reduction(min : xm, ym) reduction(max : xM, yM))

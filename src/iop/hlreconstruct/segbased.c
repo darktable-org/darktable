@@ -133,7 +133,7 @@ static void _calc_plane_candidates(const float *plane,
                                    const float clipval,
                                    const float badlevel)
 {
-  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(dynamic))
+  DT_OMP_PRAGMA(parallel for num_threads(darktable.num_openmp_threads) default(firstprivate) schedule(dynamic))
   for(uint32_t id = 2; id < seg->nr; id++)
   {
     seg->val1[id] = 0.0f;

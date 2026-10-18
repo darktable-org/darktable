@@ -302,7 +302,7 @@ void dt_develop_blendif_rgb_hsl_make_mask(dt_dev_pixelpipe_iop_t *piece,
       return;
     }
 
-    DT_OMP_PRAGMA(parallel default(none)
+    DT_OMP_PRAGMA(parallel num_threads(darktable.num_openmp_threads) default(none)
                   dt_omp_firstprivate(temp_mask, mask, a, b, oheight, owidth, iwidth, yoffs, xoffs, buffsize,
                                       blendif, profile, parameters, mask_inclusive, mask_inversed, global_opacity))
     {

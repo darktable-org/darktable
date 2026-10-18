@@ -322,27 +322,22 @@ static void kmeans(const float *col, const int width, const int height, const in
     float2 *var_perthread = dt_calloc_perthread(n,sizeof(float2),&var_size);
     size_t mean_size;
     float2 *mean_perthread = dt_calloc_perthread(n,sizeof(float2),&mean_size);
-    DT_OMP_PRAGMA(parallel default(none)
-                  dt_omp_firstprivate(col, npixels, n, mean_perthread, mean_size,
-                                      cnt_perthread, cnt_size, var_perthread, var_size, mean_out))
+    DT_OMP_FOR()
+    for(size_t k = 0; k < npixels; k++)
     {
       const unsigned int threadnum = dt_get_thread_num();
       float2 *t_var = dt_get_bythread(var_perthread,var_size,threadnum);
       float2 *t_mean = dt_get_bythread(mean_perthread,mean_size,threadnum);
       int *t_cnt = dt_get_bythread(cnt_perthread,cnt_size,threadnum);
-      DT_OMP_PRAGMA(for schedule(static))
-      for(size_t k = 0; k < npixels; k++)
-      {
-        dt_aligned_pixel_t Lab;
-        copy_pixel(Lab, col + 4*k);
-        const int c = get_cluster(Lab, n, mean_out);
-        t_cnt[c]++;
-        // update mean, var
-        t_var[c][0] += Lab[1] * Lab[1];
-        t_var[c][1] += Lab[2] * Lab[2];
-        t_mean[c][0] += Lab[1];
-        t_mean[c][1] += Lab[2];
-      }
+      dt_aligned_pixel_t Lab;
+      copy_pixel(Lab, col + 4*k);
+      const int c = get_cluster(Lab, n, mean_out);
+      t_cnt[c]++;
+      // update mean, var
+      t_var[c][0] += Lab[1] * Lab[1];
+      t_var[c][1] += Lab[2] * Lab[2];
+      t_mean[c][0] += Lab[1];
+      t_mean[c][1] += Lab[2];
     }
     // accumulate the per-thread statistics
     for(size_t clus = 0; clus < n; clus++)
@@ -518,35 +513,30 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     size_t allocsize;
     float *const weight_buf = dt_alloc_perthread(data->n, sizeof(float), &allocsize);
 
-    DT_OMP_PRAGMA(parallel default(firstprivate))
+    DT_OMP_FOR()
+    for(size_t j = 0; j < 4*npixels; j += 4)
     {
-      // get a thread-private scratch buffer; do this before the actual loop so we don't have to look it up for
-      // every single pixel
       float *const restrict weight = dt_get_perthread(weight_buf,allocsize);
-      DT_OMP_PRAGMA(for schedule(static))
-      for(size_t j = 0; j < 4*npixels; j += 4)
+      const float L = in[j];
+      const dt_aligned_pixel_t Lab = { L, in[j + 1], in[j + 2] };
+
+      // transfer back scaled and blurred delta L to output L
+      out[j] = 2.0f * (out[j] - 50.0f) + L;
+      out[j] = CLAMP(out[j], 0.0f, 100.0f);
+
+      get_clusters(in + j, data->n, data->target_mean, weight);
+      // zero the 'a' and 'b' channels
+      out[j + 1] = out[j + 2] = 0.0f;
+      // then accumulate a weighted average for a and b
+      for(int c = 0; c < data->n; c++)
       {
-        const float L = in[j];
-        const dt_aligned_pixel_t Lab = { L, in[j + 1], in[j + 2] };
-
-        // transfer back scaled and blurred delta L to output L
-        out[j] = 2.0f * (out[j] - 50.0f) + L;
-        out[j] = CLAMP(out[j], 0.0f, 100.0f);
-
-        get_clusters(in + j, data->n, data->target_mean, weight);
-        // zero the 'a' and 'b' channels
-        out[j + 1] = out[j + 2] = 0.0f;
-        // then accumulate a weighted average for a and b
-        for(int c = 0; c < data->n; c++)
-        {
-          out[j + 1] += weight[c] * ((Lab[1] - data->target_mean[c][0]) * var_ratio[c][0]
-                                     + data->source_mean[mapio[c]][0]);
-          out[j + 2] += weight[c] * ((Lab[2] - data->target_mean[c][1]) * var_ratio[c][1]
-                                     + data->source_mean[mapio[c]][1]);
-        }
-        // pass through the alpha channel
-        out[j + 3] = in[j + 3];
+        out[j + 1] += weight[c] * ((Lab[1] - data->target_mean[c][0]) * var_ratio[c][0]
+                                   + data->source_mean[mapio[c]][0]);
+        out[j + 2] += weight[c] * ((Lab[2] - data->target_mean[c][1]) * var_ratio[c][1]
+                                   + data->source_mean[mapio[c]][1]);
       }
+      // pass through the alpha channel
+      out[j + 3] = in[j + 3];
     }
 
     dt_free_align(weight_buf);

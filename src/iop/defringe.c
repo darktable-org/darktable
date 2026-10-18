@@ -298,7 +298,7 @@ void process(dt_iop_module_t *self,
 
   // dynamically/guided scheduled due to possible uneven edge-chroma
   // distribution (thanks to rawtherapee code for this hint!)
-  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(dynamic,3))
+  DT_OMP_PRAGMA(parallel for num_threads(darktable.num_openmp_threads) default(firstprivate) schedule(dynamic,3))
   for(int v = 0; v < height; v++)
   {
     const size_t row_above = (size_t)MAX(0, (v-1)) * width * ch;

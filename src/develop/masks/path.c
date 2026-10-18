@@ -5208,7 +5208,7 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
       const int yymin = MAX(ymin, 0);
       const int yymax = MIN(ymax, height - 1);
 
-      DT_OMP_FOR(num_threads(MIN(8, dt_get_num_threads())))
+      DT_OMP_FOR_CAP_THREADS(MIN(8, dt_get_num_threads()), )
       for(int yy = yymin; yy <= yymax; yy++)
       {
         int state = 0;
