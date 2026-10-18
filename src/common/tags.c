@@ -1983,7 +1983,7 @@ ssize_t dt_tag_export(const char *filename)
 
   g_strfreev(hierarchy);
 
-  dt_tag_free_result(&tags);
+  dt_tag_free_result(&sorted_tags);
 
   fclose(fd);
 
