@@ -3187,6 +3187,7 @@ static int32_t _control_import_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   dt_control_import_t *data = params->data;
   uint32_t cntr = 0;
+  uint32_t failed = 0;
 
 #ifdef USE_LUA
   if(!data->session)
@@ -3212,6 +3213,7 @@ static int32_t _control_import_job_run(dt_job_t *job)
   char *prev_output = NULL;
   for(GList *img = t; img && !_job_cancelled(job); img = g_list_next(img))
   {
+    const GList *imgs_before = imgs;
     if(data->session)
     {
       filmid = _control_import_image_copy((char *)img->data,
@@ -3242,15 +3244,18 @@ static int32_t _control_import_job_run(dt_job_t *job)
     else
       filmid = _control_import_image_insitu((char *)img->data, &imgs,
                                             &last_coll_update, &update_interval);
-    if(filmid != -1)
+    // the film id may be returned anyway; imgs only grows on success
+    if(imgs != imgs_before)
       cntr++;
+    else
+      failed++;
     fraction += 1.0 / total;
     const double currtime  = dt_get_wtime();
     if(currtime - last_prog_update > PROGRESS_UPDATE_INTERVAL)
     {
       last_prog_update = currtime;
       dt_control_job_set_progress_message(job, _("importing image %d/%d"),
-                                               cntr, total);
+                                               cntr + failed, total);
       dt_control_job_set_progress(job, fraction);
       g_usleep(100);
     }
@@ -3258,6 +3263,9 @@ static int32_t _control_import_job_run(dt_job_t *job)
   g_free(prev_output);
 
   dt_control_log(ngettext("imported %d image", "imported %d images", cntr), cntr);
+  if(failed)
+    dt_control_log(ngettext("%d file could not be imported",
+                            "%d files could not be imported", failed), failed);
   dt_set_darktable_tags();
   dt_control_queue_redraw_center();
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
