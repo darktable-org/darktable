@@ -1800,6 +1800,30 @@ cairo_surface_t *dt_imageio_preview(const dt_imgid_t imgid,
   return surface;
 }
 
+void dt_imageio_pq_light_level(const float *const rgba,
+                               const size_t npixels,
+                               float *const max_cll,
+                               float *const max_fall)
+{
+  float peak = 0.0f;
+  double sum = 0.0;
+
+  // dt_hdr_pq_decode() maps NaN to black and clamps Inf to the PQ maximum,
+  // so neither can poison the sum or overflow the writers' integer fields
+  DT_OMP_FOR_SIMD(reduction(max : peak) reduction(+ : sum))
+  for(size_t k = 0; k < npixels; k++)
+  {
+    const float *const px = &rgba[4 * k];
+    const float nits = DT_HDR_REFERENCE_WHITE_NITS
+      * dt_hdr_pq_decode(fmaxf(fmaxf(px[0], px[1]), px[2]));
+    peak = fmaxf(peak, nits);
+    sum += nits;
+  }
+
+  *max_cll = peak;
+  *max_fall = npixels ? (float)(sum / (double)npixels) : 0.0f;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
