@@ -608,6 +608,8 @@ changes (where available).
   lighttable, and when importing images with a new camera maker, model
   or lens.
 
+- Fixed memory leaks when processing images.
+
 ## Lua
 
 ### API Version
