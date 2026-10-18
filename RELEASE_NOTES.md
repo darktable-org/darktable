@@ -758,6 +758,9 @@ changes (where available).
   instead of the copies bundled in the app. Without Homebrew, the
   modules were not found at all.
 
+- Fixed stale color temperature and illuminant color in color calibration
+  after white balance changes when using "as shot in camera".
+
 ## Lua
 
 ### API Version
