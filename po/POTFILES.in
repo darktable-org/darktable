@@ -123,6 +123,7 @@ src/common/darktable.c
 src/common/darktable.h
 src/common/database.c
 src/common/debug.h
+src/common/dng_opcode.c
 src/common/eigf.h
 src/common/exif.cc
 src/common/fast_guided_filter.h

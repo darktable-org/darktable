@@ -1686,7 +1686,13 @@ static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData,
     if(data)
     {
       pos->copy(data, Exiv2::invalidByteOrder);
-      dt_dng_opcode_process_opcode_list_2(data, pos->size(), img);
+      // rawspeed applies stage 2 opcodes itself to lossy JPEG DNGs
+      Exiv2::ExifData::const_iterator comp =
+        exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.Compression"));
+      if(comp == exifData.end())
+        comp = exifData.findKey(Exiv2::ExifKey("Exif.Image.Compression"));
+      const gboolean lossy = comp != exifData.end() && comp->toLong() == 34892;
+      dt_dng_opcode_process_opcode_list_2(data, pos->size(), img, lossy);
       g_free(data);
       has_opcodes = TRUE;
     }

@@ -44,7 +44,10 @@ typedef struct dt_dng_gain_map_t
   float map_gain[];
 } dt_dng_gain_map_t;
 
-void dt_dng_opcode_process_opcode_list_2(uint8_t *buf, uint32_t size, dt_image_t *img);
+// loader_applied tells that the raw loader already applied the opcodes it
+// supports, as rawspeed does for lossy DNGs
+void dt_dng_opcode_process_opcode_list_2(uint8_t *buf, uint32_t size, dt_image_t *img,
+                                         gboolean loader_applied);
 void dt_dng_opcode_process_opcode_list_3(uint8_t *buf, uint32_t size, dt_image_t *img);
 
 struct dt_iop_roi_t;
