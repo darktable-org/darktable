@@ -267,6 +267,23 @@ struct dt_cache_entry_t;
 
 // TODO: add color labels and such as cacheable
 // __attribute__ ((aligned (128)))
+/* DNG ProfileGainTableMap: a grid of tables of gains, looked up by position
+   and by a weighted combination of the linear ProPhoto RGB values */
+typedef struct dt_dng_gain_table_map_t
+{
+  uint32_t points_v;
+  uint32_t points_h;
+  uint32_t points_n;
+  float spacing_v;
+  float spacing_h;
+  float origin_v;
+  float origin_h;
+  float weights[5];  // R, G, B, min(R,G,B), max(R,G,B)
+  float gamma;
+  float area[4];     // top, left, bottom, right in raw pixels; bottom 0 for the full image
+  float gains[];     // points_v * points_h * points_n, ordered by v, h, n
+} dt_dng_gain_table_map_t;
+
 typedef struct dt_image_t
 {
   // minimal exif data here (all in multiples of 4-byte to interface nicely with c++):
@@ -340,6 +357,10 @@ typedef struct dt_image_t
   int profile_lut_sat_div;
   int profile_lut_val_div;
   int profile_lut_encoding;                 // 0 = linear prophoto (default), 1 = sRGB
+  dt_dng_gain_table_map_t *profile_gtm;     // DNG ProfileGainTableMap, owned by the struct
+  size_t profile_gtm_size;                  // size of the profile_gtm allocation in bytes
+  float *profile_tone_curve;                // DNG ProfileToneCurve as x, y pairs, owned by the struct
+  int profile_tone_curve_points;
 
   uint8_t *profile;                         // embedded profile, for example from JPEGs
   uint32_t profile_size;

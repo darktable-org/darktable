@@ -1397,6 +1397,57 @@ static float4 _apply_dng_table(float4 prophoto_rgb,
   return HSV_2_RGB(hsv) * (float4)scale;
 }
 
+// gain of a DNG ProfileGainTableMap for linear ProPhoto RGB at output position
+// (x, y); grid holds the map position (row, column) of every grid_step-th
+// pixel and params the points v, h, n, the five input weights, gamma, grid
+// width, grid step and the scale of the map input
+static float4 _apply_dng_gain_table_map(float4 prophoto_rgb,
+                                        const int x,
+                                        const int y,
+                                        global const float *gains,
+                                        global const float *grid,
+                                        global const float *params)
+{
+  const int pv = (int)params[0], ph = (int)params[1], pn = (int)params[2];
+  const int grid_w = (int)params[9];
+  const float step = params[10];
+
+  const float gx = fp32_div((float)x, step);
+  const float gy = fp32_div((float)y, step);
+  const int x0 = (int)gx, y0 = (int)gy;
+  const float ax = gx - x0, ay = gy - y0;
+  const int i00 = 2 * (y0 * grid_w + x0);
+  const int i10 = i00 + 2 * grid_w;
+  const float mv = (1.0f - ay) * ((1.0f - ax) * grid[i00] + ax * grid[i00 + 2])
+                 + ay * ((1.0f - ax) * grid[i10] + ax * grid[i10 + 2]);
+  const float mh = (1.0f - ay) * ((1.0f - ax) * grid[i00 + 1] + ax * grid[i00 + 3])
+                 + ay * ((1.0f - ax) * grid[i10 + 1] + ax * grid[i10 + 3]);
+
+  const float4 rgb = prophoto_rgb / (float4)params[11];
+  const float mn = fmin(rgb.x, fmin(rgb.y, rgb.z));
+  const float mx = fmax(rgb.x, fmax(rgb.y, rgb.z));
+  float in = params[3] * rgb.x + params[4] * rgb.y + params[5] * rgb.z
+           + params[6] * mn + params[7] * mx;
+  in = clipf(in);
+  if(params[8] != 1.0f) in = dtcl_pow(in, params[8]);
+
+  // the DNG specification scales the table input by MapPointsN
+  const float fv = clamp(mv, 0.0f, (float)(pv - 1));
+  const float fh = clamp(mh, 0.0f, (float)(ph - 1));
+  const float fn = clamp(in * pn, 0.0f, (float)(pn - 1));
+  const int v0 = (int)fv, h0 = (int)fh, n0 = (int)fn;
+  const int v1 = min(v0 + 1, pv - 1), h1 = min(h0 + 1, ph - 1), n1 = min(n0 + 1, pn - 1);
+  const float av = fv - v0, ah = fh - h0, an = fn - n0;
+
+  const float g00 = mix(gains[(v0 * ph + h0) * pn + n0], gains[(v0 * ph + h0) * pn + n1], an);
+  const float g01 = mix(gains[(v0 * ph + h1) * pn + n0], gains[(v0 * ph + h1) * pn + n1], an);
+  const float g10 = mix(gains[(v1 * ph + h0) * pn + n0], gains[(v1 * ph + h0) * pn + n1], an);
+  const float g11 = mix(gains[(v1 * ph + h1) * pn + n0], gains[(v1 * ph + h1) * pn + n1], an);
+  const float gain = mix(mix(g00, g01, ah), mix(g10, g11, ah), av);
+
+  return prophoto_rgb * (float4)gain;
+}
+
 /* kernel for the plugin colorin: unbound processing */
 kernel void
 colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
@@ -1404,7 +1455,8 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
                  read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
                  const int blue_mapping, global const float (*const a)[3], global const float *corr,
                  const float scale, const int hue_div, const int sat_div, const int val_div, global const float *dev_hsm, const int encoding, const int use_hsm, const int hdr_transfer,
-                 const int look_hue_div, const int look_sat_div, const int look_val_div, global const float *dev_look, const int look_encoding, const int use_look, const float look_scale)
+                 const int look_hue_div, const int look_sat_div, const int look_val_div, global const float *dev_look, const int look_encoding, const int use_look, const float look_scale,
+                 global const float *dev_gtm, global const float *dev_gtm_grid, global const float *dev_gtm_params, const int use_gtm)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1458,11 +1510,13 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
   }
   float4 xyz = (float4)(XYZ[0], XYZ[1], XYZ[2], 0.0f);
   pixel.xyz = XYZ_to_Lab(xyz).xyz;
-  if(use_hsm || use_look)
+  if(use_hsm || use_gtm || use_look)
   {
     float4 prophoto_rgb = Lab_to_prophotorgb(pixel);
     if(use_hsm)
       prophoto_rgb = _apply_dng_table(prophoto_rgb, scale, hue_div, sat_div, val_div, dev_hsm, encoding);
+    if(use_gtm)
+      prophoto_rgb = _apply_dng_gain_table_map(prophoto_rgb, x, y, dev_gtm, dev_gtm_grid, dev_gtm_params);
     if(use_look)
       prophoto_rgb = _apply_dng_table(prophoto_rgb, look_scale, look_hue_div, look_sat_div, look_val_div, dev_look, look_encoding);
     pixel = prophotorgb_to_Lab(prophoto_rgb);
@@ -1496,7 +1550,8 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
                   read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
                   const int blue_mapping, global const float (*const a)[3], global const float *corr,
                   const float scale, const int hue_div, const int sat_div, const int val_div, global const float *dev_hsm, const int encoding, const int use_hsm, const int hdr_transfer,
-                  const int look_hue_div, const int look_sat_div, const int look_val_div, global const float *dev_look, const int look_encoding, const int use_look, const float look_scale)
+                  const int look_hue_div, const int look_sat_div, const int look_val_div, global const float *dev_look, const int look_encoding, const int use_look, const float look_scale,
+                  global const float *dev_gtm, global const float *dev_gtm_grid, global const float *dev_gtm_params, const int use_gtm)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1561,11 +1616,13 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
 
   float4 xyz = (float4)(XYZ[0], XYZ[1], XYZ[2], 0.0f);
   pixel.xyz = XYZ_to_Lab(xyz).xyz;
-  if(use_hsm || use_look)
+  if(use_hsm || use_gtm || use_look)
   {
     float4 prophoto_rgb = Lab_to_prophotorgb(pixel);
     if(use_hsm)
       prophoto_rgb = _apply_dng_table(prophoto_rgb, scale, hue_div, sat_div, val_div, dev_hsm, encoding);
+    if(use_gtm)
+      prophoto_rgb = _apply_dng_gain_table_map(prophoto_rgb, x, y, dev_gtm, dev_gtm_grid, dev_gtm_params);
     if(use_look)
       prophoto_rgb = _apply_dng_table(prophoto_rgb, look_scale, look_hue_div, look_sat_div, look_val_div, dev_look, look_encoding);
     pixel = prophotorgb_to_Lab(prophoto_rgb);
@@ -1583,7 +1640,8 @@ colorin_rgb (read_only image2d_t in, write_only image2d_t out, const int width, 
                  const float scale, const int hue_div, const int sat_div, const int val_div, global const float *dev_hsm, const int encoding, const int use_hsm, const int hdr_transfer,
                  const int clipping, constant dt_colorspaces_iccprofile_info_cl_t *work,
                  read_only image2d_t work_lut, const int lab_input,
-                 const int look_hue_div, const int look_sat_div, const int look_val_div, global const float *dev_look, const int look_encoding, const int use_look, const float look_scale)
+                 const int look_hue_div, const int look_sat_div, const int look_val_div, global const float *dev_look, const int look_encoding, const int use_look, const float look_scale,
+                 global const float *dev_gtm, global const float *dev_gtm_grid, global const float *dev_gtm_params, const int use_gtm)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1652,11 +1710,13 @@ colorin_rgb (read_only image2d_t in, write_only image2d_t out, const int width, 
       for(int i = 0; i < 3; i++) linear[j] += lmat[3*j+i] * clipped[i];
   }
   pixel = linear;
-  if(use_hsm || use_look)
+  if(use_hsm || use_gtm || use_look)
   {
     float4 prophoto_rgb = XYZ_to_prophotorgb(matrix_product(pixel, work->matrix_in));
     if(use_hsm)
       prophoto_rgb = _apply_dng_table(prophoto_rgb, scale, hue_div, sat_div, val_div, dev_hsm, encoding);
+    if(use_gtm)
+      prophoto_rgb = _apply_dng_gain_table_map(prophoto_rgb, x, y, dev_gtm, dev_gtm_grid, dev_gtm_params);
     if(use_look)
       prophoto_rgb = _apply_dng_table(prophoto_rgb, look_scale, look_hue_div, look_sat_div, look_val_div, dev_look, look_encoding);
     pixel = matrix_product(prophotorgb_to_XYZ(prophoto_rgb), work->matrix_out);

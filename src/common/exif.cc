@@ -1668,6 +1668,198 @@ static void _check_profile_lut(Exiv2::ExifData &exifData,
            img->profile_lut_encoding ? "sRGB" : "linear");
 }
 
+static uint32_t _dng_u32(const uint8_t *p, const Exiv2::ByteOrder order)
+{
+  return order == Exiv2::bigEndian
+    ? ((uint32_t)p[0] << 24) | ((uint32_t)p[1] << 16) | ((uint32_t)p[2] << 8) | p[3]
+    : ((uint32_t)p[3] << 24) | ((uint32_t)p[2] << 16) | ((uint32_t)p[1] << 8) | p[0];
+}
+
+static float _dng_f32(const uint8_t *p, const Exiv2::ByteOrder order)
+{
+  const uint32_t u = _dng_u32(p, order);
+  float f;
+  memcpy(&f, &u, sizeof(f));
+  return f;
+}
+
+static double _dng_f64(const uint8_t *p, const Exiv2::ByteOrder order)
+{
+  const uint64_t hi = _dng_u32(order == Exiv2::bigEndian ? p : p + 4, order);
+  const uint64_t lo = _dng_u32(order == Exiv2::bigEndian ? p + 4 : p, order);
+  const uint64_t u = (hi << 32) | lo;
+  double d;
+  memcpy(&d, &u, sizeof(d));
+  return d;
+}
+
+// ProfileGainTableMap (DNG 1.6, tag 0xcd2d): MapPointsV, MapPointsH (uint32),
+// MapSpacingV, MapSpacingH, MapOriginV, MapOriginH (double), MapPointsN
+// (uint32), MapInputWeights (5 floats) and the float gains, in the byte order
+// of the file
+#define DNG_GTM_TAG 0xcd2d
+#define DNG_GTM_HEADER_SIZE 64
+
+static dt_dng_gain_table_map_t *_parse_gain_table_map(const uint8_t *buf,
+                                                      const size_t size,
+                                                      const Exiv2::ByteOrder order,
+                                                      size_t *alloc_size)
+{
+  if(size < DNG_GTM_HEADER_SIZE)
+    return NULL;
+
+  const uint32_t pv = _dng_u32(buf, order);
+  const uint32_t ph = _dng_u32(buf + 4, order);
+  const uint32_t pn = _dng_u32(buf + 40, order);
+  if(pv == 0 || ph == 0 || pn == 0 || pv > 65536 || ph > 65536 || pn > 65536)
+    return NULL;
+
+  const uint64_t count = (uint64_t)pv * ph * pn;
+  if((size - DNG_GTM_HEADER_SIZE) / 4 != count || (size - DNG_GTM_HEADER_SIZE) % 4)
+    return NULL;
+
+  const double sv = _dng_f64(buf + 8, order);
+  const double sh = _dng_f64(buf + 16, order);
+  const double ov = _dng_f64(buf + 24, order);
+  const double oh = _dng_f64(buf + 32, order);
+  if(!std::isfinite(ov) || !std::isfinite(oh)
+     || (pv > 1 && !(sv > 0.0 && std::isfinite(1.0f / (float)sv)))
+     || (ph > 1 && !(sh > 0.0 && std::isfinite(1.0f / (float)sh))))
+    return NULL;
+
+  *alloc_size = sizeof(dt_dng_gain_table_map_t) + count * sizeof(float);
+  dt_dng_gain_table_map_t *gtm = (dt_dng_gain_table_map_t *)g_try_malloc(*alloc_size);
+  if(!gtm)
+    return NULL;
+
+  gtm->points_v = pv;
+  gtm->points_h = ph;
+  gtm->points_n = pn;
+  gtm->spacing_v = pv > 1 ? sv : 1.0f;
+  gtm->spacing_h = ph > 1 ? sh : 1.0f;
+  gtm->origin_v = ov;
+  gtm->origin_h = oh;
+  gtm->gamma = 1.0f;
+  for(int i = 0; i < 4; i++) gtm->area[i] = 0.0f;
+  for(int i = 0; i < 5; i++)
+  {
+    gtm->weights[i] = _dng_f32(buf + 44 + 4 * i, order);
+    if(!std::isfinite(gtm->weights[i]))
+    {
+      g_free(gtm);
+      return NULL;
+    }
+  }
+  for(uint64_t i = 0; i < count; i++)
+  {
+    const float g = _dng_f32(buf + DNG_GTM_HEADER_SIZE + 4 * i, order);
+    if(!std::isfinite(g) || g < 0.0f)
+    {
+      g_free(gtm);
+      return NULL;
+    }
+    gtm->gains[i] = g;
+  }
+  return gtm;
+}
+
+static void _check_profile_gain_table_map(Exiv2::ExifData &exifData,
+                                          const Exiv2::ByteOrder file_order,
+                                          dt_image_t *img)
+{
+  g_free(img->profile_gtm);
+  img->profile_gtm = NULL;
+  img->profile_gtm_size = 0;
+
+  // the raw IFD takes precedence over IFD0
+  Exiv2::ExifData::const_iterator found = exifData.end();
+  for(Exiv2::ExifData::const_iterator it = exifData.begin(); it != exifData.end(); ++it)
+  {
+    if(it->tag() != DNG_GTM_TAG) continue;
+    if(it->groupName() == "SubImage1")
+    {
+      found = it;
+      break;
+    }
+    if(it->groupName() == "Image" && found == exifData.end())
+      found = it;
+  }
+  if(found == exifData.end())
+    return;
+
+  const size_t size = found->size();
+  uint8_t *buf = (uint8_t *)g_try_malloc(size);
+  if(!buf)
+    return;
+  found->copy(buf, Exiv2::invalidByteOrder);
+
+  // the tag is stored in the byte order of the file; the other order is
+  // tried when that does not give a consistent header
+  const Exiv2::ByteOrder other =
+    file_order == Exiv2::bigEndian ? Exiv2::littleEndian : Exiv2::bigEndian;
+  size_t alloc_size = 0;
+  dt_dng_gain_table_map_t *gtm = _parse_gain_table_map(buf, size, file_order, &alloc_size);
+  if(!gtm)
+    gtm = _parse_gain_table_map(buf, size, other, &alloc_size);
+  g_free(buf);
+
+  if(!gtm)
+  {
+    dt_print(DT_DEBUG_IMAGEIO, "[exif] `%s` has an invalid ProfileGainTableMap", img->filename);
+    return;
+  }
+
+  // map coordinates are relative to the active area, the full image when absent
+  Exiv2::ExifData::const_iterator area =
+    exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.ActiveArea"));
+  if(area == exifData.end())
+    area = exifData.findKey(Exiv2::ExifKey("Exif.Image.ActiveArea"));
+  if(area != exifData.end() && area->count() == 4
+     && area->toFloat(2) > area->toFloat(0) && area->toFloat(3) > area->toFloat(1))
+    for(int i = 0; i < 4; i++) gtm->area[i] = area->toFloat(i);
+
+  img->profile_gtm = gtm;
+  img->profile_gtm_size = alloc_size;
+  dt_print(DT_DEBUG_IMAGEIO,
+           "[exif] `%s` has ProfileGainTableMap %ux%u points, %u table entries",
+           img->filename, gtm->points_v, gtm->points_h, gtm->points_n);
+}
+
+static void _check_profile_tone_curve(Exiv2::ExifData &exifData,
+                                      dt_image_t *img)
+{
+  g_free(img->profile_tone_curve);
+  img->profile_tone_curve = NULL;
+  img->profile_tone_curve_points = 0;
+
+  Exiv2::ExifData::const_iterator pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.ProfileToneCurve"));
+  if(pos == exifData.end())
+    return;
+
+  const long count = pos->count();
+  if(count < 4 || count % 2 || count > 2 * 65536)
+    return;
+
+  float *curve = (float *)g_malloc_n(count, sizeof(float));
+  for(long i = 0; i < count; i++)
+  {
+    curve[i] = pos->toFloat(i);
+    // x and y in [0,1] and x strictly increasing
+    if(!std::isfinite(curve[i]) || curve[i] < 0.0f || curve[i] > 1.0f
+       || (i % 2 == 0 && i >= 2 && curve[i] <= curve[i - 2]))
+    {
+      g_free(curve);
+      return;
+    }
+  }
+
+  img->profile_tone_curve = curve;
+  img->profile_tone_curve_points = count / 2;
+  dt_print(DT_DEBUG_IMAGEIO, "[exif] `%s` has ProfileToneCurve with %ld points",
+           img->filename, count / 2);
+}
+
 static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData,
                                    dt_image_t *img)
 {
@@ -2133,6 +2325,8 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
       const int sel_illu = _check_forward_matrix(exifData, img, weights, &blended);
       _check_profile_look_table(exifData, img, sel_illu, blended ? weights : NULL);
       _check_profile_lut(exifData, img);
+      _check_profile_gain_table_map(exifData, image->byteOrder(), img);
+      _check_profile_tone_curve(exifData, img);
       _check_highlight_preservation(exifData, img);
       _check_shading_compensation(exifData, img);
     }

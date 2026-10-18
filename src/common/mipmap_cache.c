@@ -982,6 +982,10 @@ void dt_mipmap_cache_get_with_caller(dt_mipmap_buffer_t *buf,
         buffered_image.profile_hsm_data_size = buffered_image.profile_hsm_hue_div = buffered_image.profile_hsm_sat_div = buffered_image.profile_hsm_val_div = buffered_image.profile_hsm_encoding = 0;
         buffered_image.profile_lut_data = NULL;
         buffered_image.profile_lut_data_size = buffered_image.profile_lut_hue_div = buffered_image.profile_lut_sat_div = buffered_image.profile_lut_val_div = buffered_image.profile_lut_encoding = 0;
+        buffered_image.profile_gtm = NULL;
+        buffered_image.profile_gtm_size = 0;
+        buffered_image.profile_tone_curve = NULL;
+        buffered_image.profile_tone_curve_points = 0;
         // dt_image_t *img = dt_image_cache_write_get(cimg);
         // dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
         dt_image_cache_read_release(cimg);
@@ -1029,6 +1033,20 @@ void dt_mipmap_cache_get_with_caller(dt_mipmap_buffer_t *buf,
             buffered_image.profile_lut_val_div = img->profile_lut_val_div;
             buffered_image.profile_lut_encoding = img->profile_lut_encoding;
           }
+          if(buffered_image.profile_gtm)
+            g_free(img->profile_gtm);
+          else
+          {
+            buffered_image.profile_gtm = img->profile_gtm;
+            buffered_image.profile_gtm_size = img->profile_gtm_size;
+          }
+          if(buffered_image.profile_tone_curve)
+            g_free(img->profile_tone_curve);
+          else
+          {
+            buffered_image.profile_tone_curve = img->profile_tone_curve;
+            buffered_image.profile_tone_curve_points = img->profile_tone_curve_points;
+          }
           *img = buffered_image;
           img->load_status = DT_IMAGEIO_OK;
           // dt_print(DT_DEBUG_ALWAYS, "[mipmap read get] initializing full buffer img %u with %u %u -> %d %d (%p)",
@@ -1040,6 +1058,8 @@ void dt_mipmap_cache_get_with_caller(dt_mipmap_buffer_t *buf,
         {
           g_free(buffered_image.profile_hsm_data);
           g_free(buffered_image.profile_lut_data);
+          g_free(buffered_image.profile_gtm);
+          g_free(buffered_image.profile_tone_curve);
           dt_print(DT_DEBUG_PIPE, "[mipmap read get] error loading ID=%d", imgid);
           //
           // we can only return a zero dimension buffer if the buffer
