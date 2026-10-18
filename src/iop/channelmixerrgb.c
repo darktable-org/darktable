@@ -149,8 +149,8 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   GtkWidget *scale_grey_R, *scale_grey_G, *scale_grey_B;
   GtkWidget *normalize_R, *normalize_G, *normalize_B, *normalize_sat, *normalize_light, *normalize_grey;
   GtkWidget *color_picker;
-  float xy[2];
-  float XYZ[4];
+  float colorchecker_xy[2];
+  float ai_wb_XYZ[4];
 
   point_t box[4];           // the current coordinates, possibly non rectangle, of the bounding box for the color checker
   point_t ideal_box[4];     // the desired coordinates of the perfect rectangle bounding box for the color checker
@@ -591,12 +591,9 @@ void init_presets(dt_iop_module_so_t *self)
                              self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
-static gboolean _dev_is_D65_chroma(const dt_develop_t *dev)
+static gboolean _dev_is_D65_chroma(const dt_dev_wb_t *wb)
 {
-  const dt_dev_chroma_t *chr = &dev->chroma;
-  return chr->late_correction
-    ? dt_dev_equal_chroma(chr->wb_coeffs, chr->as_shot)
-    : dt_dev_equal_chroma(chr->wb_coeffs, chr->D65coeffs);
+  return wb->late_correction || dt_dev_equal_chroma(wb->coeffs, wb->D65coeffs);
 }
 
 static gboolean _area_mapping_active(const dt_iop_channelmixer_rgb_gui_data_t *g)
@@ -612,36 +609,72 @@ static const char *_area_mapping_section_text(const dt_iop_channelmixer_rgb_gui_
   return _area_mapping_active(g) ? _("area color mapping (active)") : _("area color mapping");
 }
 
-static gboolean _get_white_balance_coeff(const dt_iop_module_t *self,
-                                         dt_aligned_pixel_t custom_wb)
+static gboolean _get_d65_correction_ratios(const dt_iop_module_t *self,
+                                           const dt_dev_wb_t *wb,
+                                           dt_aligned_pixel_t out_correction_ratios)
 {
-  const dt_dev_chroma_t *chr = &self->dev->chroma;
-
   // Init output with a no-op
   for_four_channels(k)
-    custom_wb[k] = 1.0f;
+    out_correction_ratios[k] = 1.0f;
 
   if(!dt_image_is_matrix_correction_supported(&self->dev->image_storage))
     return TRUE;
 
   // If we use D65 there are unchanged corrections
-  if(_dev_is_D65_chroma(self->dev))
+  if(_dev_is_D65_chroma(wb))
     return FALSE;
 
   const gboolean valid_chroma =
-    chr->D65coeffs[0] > 0.0 && chr->D65coeffs[1] > 0.0 && chr->D65coeffs[2] > 0.0;
+    wb->D65coeffs[0] > 0.0 && wb->D65coeffs[1] > 0.0 && wb->D65coeffs[2] > 0.0;
 
   const gboolean changed_chroma =
-    chr->wb_coeffs[0] > 1.0f || chr->wb_coeffs[1] > 1.0f || chr->wb_coeffs[2] > 1.0f;
+    wb->coeffs[0] > 1.0f || wb->coeffs[1] > 1.0f || wb->coeffs[2] > 1.0f;
 
   // Otherwise - for example because the user made a correct preset, find the
   // WB adaptation ratio
   if(valid_chroma && changed_chroma)
   {
     for_four_channels(k)
-      custom_wb[k] = (float)chr->D65coeffs[k] / chr->wb_coeffs[k];
+    {
+      if(wb->coeffs[k] > 1e-6f)
+        out_correction_ratios[k] = wb->D65coeffs[k] / wb->coeffs[k];
+      else
+        out_correction_ratios[k] = 1.0f;
+    }
   }
   return FALSE;
+}
+
+// returns FALSE if the lookup failed; x and y are then D50, so callers never
+// keep an illuminant from an earlier white balance setting
+static gboolean _illuminant_xy_from_wb_or_D50(const dt_iop_module_t *self,
+                                              const dt_dev_wb_t *wb,
+                                              float *x, float *y)
+{
+  if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), wb->coeffs, x, y))
+    return TRUE;
+
+  *x = D50xyY.x;
+  *y = D50xyY.y;
+  return FALSE;
+}
+
+static void _get_corrected_illuminant_xy(const dt_iop_module_t *self,
+                                         const dt_dev_wb_t *wb,
+                                         const dt_iop_channelmixer_rgb_params_t *p,
+                                         float *x, float *y)
+{
+  if(p->illuminant == DT_ILLUMINANT_FROM_WB)
+  {
+    _illuminant_xy_from_wb_or_D50(self, wb, x, y);
+    return;
+  }
+
+  dt_aligned_pixel_t correction_ratios;
+  _get_d65_correction_ratios(self, wb, correction_ratios);
+  illuminant_to_xy(p->illuminant, &(self->dev->image_storage), correction_ratios,
+                   x, y, p->temperature, p->illum_fluo,
+                   p->illum_led);
 }
 
 
@@ -1709,8 +1742,8 @@ static void _extract_color_checker(const float *const restrict in,
   dt_D50_XYZ_to_xyY(illuminant_XYZ, illuminant_xyY);
 
   // save the illuminant in GUI struct for commit
-  g->xy[0] = illuminant_xyY[0];
-  g->xy[1] = illuminant_xyY[1];
+  g->colorchecker_xy[0] = illuminant_xyY[0];
+  g->colorchecker_xy[1] = illuminant_xyY[1];
 
   // and recompute back the LMS to be sure we use the parameters that
   // will be computed later
@@ -1983,62 +2016,79 @@ static void _validate_color_checker(const float *const restrict in,
   dt_free_align(patches);
 }
 
+static gboolean _applies_cat(const dt_iop_module_t *self)
+{
+  if(!self->enabled)
+    return FALSE;
+
+  const dt_iop_channelmixer_rgb_params_t *p = self->params;
+
+  return !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB)
+         && !dt_image_is_monochrome(&self->dev->image_storage);
+}
+
 static void _set_trouble_messages(dt_iop_module_t *self)
 {
-  const dt_iop_channelmixer_rgb_params_t *p = self->params;
   const dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
   const dt_develop_t *dev = self->dev;
   const dt_dev_chroma_t *chr = &dev->chroma;
 
+  // module handle snapshots: dt_dev_reset_chroma() may NULL them
+  // from the pipe worker thread. single aligned pointer loads can't tear;
+  // the pointed-to modules are only freed on this (main) thread,
+  // so the snapshots stay valid for this call
+  dt_iop_module_t *const temperature = chr->temperature;
+  dt_iop_module_t *const adaptation = chr->adaptation;
+
   dt_print(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "trouble message for %s%s : temp=%p adapt=%p",
-    self->op, dt_iop_get_instance_id(self), chr->temperature, chr->adaptation);
+    self->op, dt_iop_get_instance_id(self), temperature, adaptation);
 
   // in temperature module we make sure this is only presented if temperature is enabled
-  if(!chr->temperature)
+  if(!temperature)
   {
-    if(chr->adaptation)
-      dt_iop_clear_module_trouble_message(chr->adaptation);
+    if(adaptation)
+      dt_iop_clear_module_trouble_message(adaptation);
     return;
   }
 
-  if(!chr->adaptation)
+  if(!adaptation)
   {
-    dt_iop_clear_module_trouble_message(chr->temperature);
+    dt_iop_clear_module_trouble_message(temperature);
     dt_iop_clear_module_trouble_message(self);
     return;
   }
 
-  const gboolean valid =
-    self->enabled
-    && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB)
-    && !dt_image_is_monochrome(&dev->image_storage);
+  const gboolean valid = _applies_cat(self);
 
-  const gboolean temperature_enabled = chr->temperature && chr->temperature->enabled;
-  const gboolean adaptation_enabled = chr->adaptation && chr->adaptation->enabled;
+  const gboolean temperature_enabled = temperature->enabled;
+  const gboolean adaptation_enabled = adaptation->enabled;
 
-  // our first and biggest problem : white balance module is being
-  // clever with WB coeffs
-  const gboolean problem1 = valid
-                            && chr->adaptation == self
+  dt_dev_wb_t wb;
+  dt_dev_get_gui_wb(self->dev, &wb);
+
+  // this instance does CAT while WB uses an incompatible setup (neither camera reference
+  // D65, nor another mode with late_correction)
+  const gboolean wb_applied_twice = valid
+                            && adaptation == self
                             && temperature_enabled
-                            && !_dev_is_D65_chroma(dev);
+                            && !_dev_is_D65_chroma(&wb);
 
-  // our second biggest problem : another channelmixerrgb instance is doing CAT
-  // earlier in the pipe and we don't use masking here.
-  const gboolean problem2 = valid
+  // another channelmixerrgb instance is doing CAT
+  // earlier in the pipe, and we don't use masking here
+  const gboolean double_cat = valid
                             && adaptation_enabled
                             && temperature_enabled
-                            && chr->adaptation != self
+                            && adaptation != self
                             && !g->is_blending;
 
-  // our third and minor problem: white balance module is not active but default_enabled
-  // and we do chromatic adaptation in color calibration
-  const gboolean problem3 = valid
+  // white balance is off on an image that needs it (default_enabled), but we rely on
+  // it to pre-process the data (neutralizing coeffs + late_correction, or D65 coeffs)
+  const gboolean wb_missing = valid
                             && adaptation_enabled
                             && !temperature_enabled
-                            && chr->temperature->default_enabled;
+                            && temperature->default_enabled;
 
-  if(problem2)
+  if(double_cat)
   {
     dt_iop_set_module_trouble_message(self,
         _("double CAT applied"),
@@ -2050,9 +2100,9 @@ static void _set_trouble_messages(dt_iop_module_t *self)
     return;
   }
 
-  if(problem1)
+  if(wb_applied_twice)
   {
-    dt_iop_set_module_trouble_message(chr->temperature,
+    dt_iop_set_module_trouble_message(temperature,
         _("white balance applied twice (<u>details</u>)"),
         _("the color calibration module is enabled and already provides\n"
           "chromatic adaptation.\n"
@@ -2070,9 +2120,9 @@ static void _set_trouble_messages(dt_iop_module_t *self)
     return;
   }
 
-  if(problem3)
+  if(wb_missing)
   {
-    dt_iop_set_module_trouble_message(chr->temperature,
+    dt_iop_set_module_trouble_message(temperature,
         _("white balance missing (<u>details</u>)"),
         _("this module is not providing a valid reference illuminant\n"
           "causing chromatic adaptation issues in color calibration.\n"
@@ -2090,9 +2140,9 @@ static void _set_trouble_messages(dt_iop_module_t *self)
     return;
   }
 
-  if(chr->adaptation && chr->adaptation == self)
+  if(adaptation == self)
   {
-    dt_iop_clear_module_trouble_message(chr->temperature);
+    dt_iop_clear_module_trouble_message(temperature);
     dt_iop_clear_module_trouble_message(self);
   }
 }
@@ -2105,10 +2155,11 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_out)
 {
   dt_iop_channelmixer_rbg_data_t *data = piece->data;
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
   const dt_iop_order_iccprofile_info_t *const work_profile =
-    dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
+    dt_ioppr_get_pipe_current_profile_info(self, pipe);
   const dt_iop_order_iccprofile_info_t *const input_profile =
-    dt_ioppr_get_pipe_input_profile_info(piece->pipe);
+    dt_ioppr_get_pipe_input_profile_info(pipe);
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/,
@@ -2117,7 +2168,7 @@ void process(dt_iop_module_t *self,
     return; // image has been copied through to output and module's
             // trouble flag has been updated
 
-  if(dt_pipe_is_preview(piece->pipe))
+  if(dt_pipe_is_preview(pipe))
     _declare_cat_on_pipe(self, FALSE);
 
   dt_colormatrix_t RGB_to_XYZ;
@@ -2145,7 +2196,7 @@ void process(dt_iop_module_t *self,
 #ifdef AI_ACTIVATED
     gboolean exit = FALSE;
 #endif
-    if(g->run_profile && dt_pipe_is_preview(piece->pipe))
+    if(g->run_profile && dt_pipe_is_preview(pipe))
     {
       dt_iop_gui_enter_critical_section(self);
       _extract_color_checker(in, out, roi_in, g, RGB_to_XYZ,
@@ -2158,7 +2209,7 @@ void process(dt_iop_module_t *self,
     if(data->illuminant_type == DT_ILLUMINANT_DETECT_EDGES
        || data->illuminant_type == DT_ILLUMINANT_DETECT_SURFACES)
     {
-      if(dt_pipe_is_full(piece->pipe))
+      if(dt_pipe_is_full(pipe))
       {
         // detection on full image only
         dt_iop_gui_enter_critical_section(self);
@@ -2166,8 +2217,8 @@ void process(dt_iop_module_t *self,
         // as scratch space since we will be overwriting it afterwards
         // anyway
         _auto_detect_WB(in, out, data->illuminant_type, roi_in->width, roi_in->height,
-                        ch, RGB_to_XYZ, g->XYZ);
-        dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order, "AI RGB: ");
+                        ch, RGB_to_XYZ, g->ai_wb_XYZ);
+        dt_dev_pixelpipe_cache_invalidate_later(pipe, self->iop_order, "AI RGB: ");
         dt_iop_gui_leave_critical_section(self);
       }
 
@@ -2194,10 +2245,10 @@ void process(dt_iop_module_t *self,
     // change here, so we can't update the defaults.  So we need to
     // re-run the detection at runtime…
     float x, y;
-    dt_aligned_pixel_t custom_wb;
-    _get_white_balance_coeff(self, custom_wb);
+    dt_aligned_pixel_t correction_ratios;
+    _get_d65_correction_ratios(self, &pipe->wb, correction_ratios);
 
-    if(find_temperature_from_raw_coeffs(&(self->dev->image_storage), custom_wb, &(x), &(y)))
+    if(find_illuminant_xy_from_as_shot_coeffs(&(self->dev->image_storage), correction_ratios, &x, &y))
     {
       // Convert illuminant from xyY to XYZ
       dt_aligned_pixel_t XYZ;
@@ -2207,10 +2258,22 @@ void process(dt_iop_module_t *self,
       convert_any_XYZ_to_LMS(XYZ, data->illuminant, data->adaptation);
       data->illuminant[3] = 0.f;
     }
-    else
-    {
-      // just use whatever was defined in commit_params hoping the defaults work…
-    }
+  }
+  else if(data->illuminant_type == DT_ILLUMINANT_FROM_WB)
+  {
+    // Same logic as above (we depend on the coefficients from white balance,
+    // which don't come from the EXIF this time).
+    float x, y;
+
+    _illuminant_xy_from_wb_or_D50(self, &pipe->wb, &x, &y);
+
+    // Convert illuminant from xyY to XYZ
+    dt_aligned_pixel_t XYZ;
+    illuminant_xy_to_XYZ(x, y, XYZ);
+
+    // Convert illuminant from XYZ to Bradford modified LMS
+    convert_any_XYZ_to_LMS(XYZ, data->illuminant, data->adaptation);
+    data->illuminant[3] = 0.f;
   }
 
   // force loop unswitching in a controlled way
@@ -2270,7 +2333,7 @@ void process(dt_iop_module_t *self,
 
   // run dE validation at output
   if(self->dev->gui_attached && g)
-    if(g->run_validation && dt_pipe_is_preview(piece->pipe))
+    if(g->run_validation && dt_pipe_is_preview(pipe))
     {
       _validate_color_checker(out, roi_out, g, RGB_to_XYZ, XYZ_to_RGB, XYZ_to_CAM);
       g->run_validation = FALSE;
@@ -2288,10 +2351,11 @@ int process_cl(dt_iop_module_t *self,
   dt_iop_channelmixer_rbg_data_t *const d = piece->data;
   const dt_iop_channelmixer_rgb_global_data_t *const gd = self->global_data;
 
+  const dt_dev_pixelpipe_t *pipe = piece->pipe;
   const dt_iop_order_iccprofile_info_t *const work_profile =
-    dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
+    dt_ioppr_get_pipe_current_profile_info(self, pipe);
 
-  if(dt_pipe_is_preview(piece->pipe))
+  if(dt_pipe_is_preview(pipe))
     _declare_cat_on_pipe(self, FALSE);
 
   if(d->illuminant_type == DT_ILLUMINANT_CAMERA)
@@ -2305,10 +2369,10 @@ int process_cl(dt_iop_module_t *self,
     // change here, so we can't update the defaults.  So we need to
     // re-run the detection at runtime…
     float x, y;
-    dt_aligned_pixel_t custom_wb;
-    _get_white_balance_coeff(self, custom_wb);
+    dt_aligned_pixel_t correction_ratios;
+    _get_d65_correction_ratios(self, &pipe->wb, correction_ratios);
 
-    if(find_temperature_from_raw_coeffs(&(self->dev->image_storage), custom_wb, &(x), &(y)))
+    if(find_illuminant_xy_from_as_shot_coeffs(&(self->dev->image_storage), correction_ratios, &x, &y))
     {
       // Convert illuminant from xyY to XYZ
       dt_aligned_pixel_t XYZ;
@@ -2319,6 +2383,22 @@ int process_cl(dt_iop_module_t *self,
       d->illuminant[3] = 0.f;
     }
   }
+  else if(d->illuminant_type == DT_ILLUMINANT_FROM_WB)
+  {
+    // Same logic as above (we depend on the coefficients from white balance,
+    // which don't come from the EXIF this time).
+    float x, y;
+
+    _illuminant_xy_from_wb_or_D50(self, &pipe->wb, &x, &y);
+
+    // Convert illuminant from xyY to XYZ
+    dt_aligned_pixel_t XYZ;
+    illuminant_xy_to_XYZ(x, y, XYZ);
+
+    // Convert illuminant from XYZ to Bradford modified LMS
+    convert_any_XYZ_to_LMS(XYZ, d->illuminant, d->adaptation);
+    d->illuminant[3] = 0.f;
+  }
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
@@ -2328,7 +2408,7 @@ int process_cl(dt_iop_module_t *self,
     return err;
   }
 
-  const int devid = piece->pipe->devid;
+  const int devid = pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
 
@@ -2923,8 +3003,8 @@ static void _commit_profile_callback(GtkWidget *widget,
 
   dt_iop_gui_enter_critical_section(self);
 
-  p->x = g->xy[0];
-  p->y = g->xy[1];
+  p->x = g->colorchecker_xy[0];
+  p->y = g->colorchecker_xy[1];
   p->illuminant = DT_ILLUMINANT_CUSTOM;
   _check_if_close_to_daylight(p->x, p->y, &p->temperature, NULL, NULL);
 
@@ -2984,8 +3064,8 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, dt_iop_module_
     return;
 
   dt_iop_gui_enter_critical_section(self);
-  p->x = g->XYZ[0];
-  p->y = g->XYZ[1];
+  p->x = g->ai_wb_XYZ[0];
+  p->y = g->ai_wb_XYZ[1];
   dt_iop_gui_leave_critical_section(self);
 
   _check_if_close_to_daylight(p->x, p->y,
@@ -3022,6 +3102,40 @@ static void _preview_pipe_finished_callback(gpointer instance, dt_iop_module_t *
 
   dt_iop_gui_enter_critical_section(self);
   gtk_label_set_markup(GTK_LABEL(g->label_delta_E), g->delta_E_label_text);
+
+  dt_iop_channelmixer_rgb_params_t *p = self->params;
+  if(p->illuminant == DT_ILLUMINANT_FROM_WB)
+  {
+    // WB coefficients might have changed temperature.c; recalculate xy and update the GUI
+    float x, y;
+
+    dt_dev_wb_t wb;
+    dt_dev_get_gui_wb(self->dev, &wb);
+
+    _illuminant_xy_from_wb_or_D50(self, &wb, &x, &y);
+
+    DT_ENTER_GUI_UPDATE();
+    _update_approx_cct(self);
+    _update_illuminant_color(self);
+
+    dt_aligned_pixel_t xyY = { x, y, 1.f };
+    dt_aligned_pixel_t Lch;
+    dt_xyY_to_Lch(xyY, Lch);
+
+    if(Lch[1] > 0)
+      dt_bauhaus_slider_set(g->illum_x, rad2degf(Lch[2]));
+    dt_bauhaus_slider_set(g->illum_y, Lch[1]);
+
+    DT_LEAVE_GUI_UPDATE();
+  }
+  else if(p->illuminant == DT_ILLUMINANT_CAMERA)
+  {
+    DT_ENTER_GUI_UPDATE();
+    _update_approx_cct(self);
+    _update_illuminant_color(self);
+    DT_LEAVE_GUI_UPDATE();
+  }
+
   dt_iop_gui_leave_critical_section(self);
   _set_trouble_messages(self);
 }
@@ -3092,16 +3206,12 @@ void commit_params(dt_iop_module_t *self,
   // find x y coordinates of illuminant for CIE 1931 2° observer
   float x = p->x;
   float y = p->y;
-  dt_aligned_pixel_t custom_wb;
-  _get_white_balance_coeff(self, custom_wb);
-  illuminant_to_xy(p->illuminant, &(self->dev->image_storage),
-                   custom_wb, &x, &y, p->temperature, p->illum_fluo, p->illum_led);
+  _get_corrected_illuminant_xy(self, &pipe->wb, p, &x, &y);
 
-  // if illuminant is set as camera, x and y are set on-the-fly at
+  // if illuminant is from camera or user WB coefficients, x and y are set on-the-fly at
   // commit time, so we need to set adaptation too
-  if(p->illuminant == DT_ILLUMINANT_CAMERA)
+  if(p->illuminant == DT_ILLUMINANT_CAMERA || p->illuminant == DT_ILLUMINANT_FROM_WB)
     _check_if_close_to_daylight(x, y, NULL, NULL, &(d->adaptation));
-
   d->illuminant_type = p->illuminant;
 
   // Convert illuminant from xyY to XYZ
@@ -3244,6 +3354,7 @@ static void _update_illuminants(const dt_iop_module_t *self)
       break;
     }
     case DT_ILLUMINANT_CAMERA:
+    case DT_ILLUMINANT_FROM_WB:
     {
       gtk_widget_set_visible(g->adaptation, TRUE);
       gtk_widget_set_visible(g->temperature, FALSE);
@@ -3536,11 +3647,12 @@ static gboolean _illuminant_color_draw(GtkWidget *widget,
   // camera RAW is chosen
   float x = p->x;
   float y = p->y;
-  dt_aligned_pixel_t RGB = { 0 };
-  dt_aligned_pixel_t custom_wb;
-  _get_white_balance_coeff(self, custom_wb);
-  illuminant_to_xy(p->illuminant, &(self->dev->image_storage), custom_wb,
-                   &x, &y, p->temperature, p->illum_fluo, p->illum_led);
+  dt_aligned_pixel_t RGB = { 0.f };
+
+  dt_dev_wb_t wb;
+  dt_dev_get_gui_wb(self->dev, &wb);
+
+  _get_corrected_illuminant_xy(self, &wb, p, &x, &y);
   illuminant_xy_to_RGB(x, y, RGB);
   cairo_set_source_rgb(cr, RGB[0], RGB[1], RGB[2]);
   cairo_rectangle(cr, INNER_PADDING, margin, width, height);
@@ -3640,10 +3752,11 @@ static void _update_approx_cct(const dt_iop_module_t *self)
 
   float x = p->x;
   float y = p->y;
-  dt_aligned_pixel_t custom_wb;
-  _get_white_balance_coeff(self, custom_wb);
-  illuminant_to_xy(p->illuminant, &(self->dev->image_storage),
-                   custom_wb, &x, &y, p->temperature, p->illum_fluo, p->illum_led);
+
+  dt_dev_wb_t wb;
+  dt_dev_get_gui_wb(self->dev, &wb);
+
+  _get_corrected_illuminant_xy(self, &wb, p, &x, &y);
 
   dt_illuminant_t test_illuminant;
   float t = 5000.f;
@@ -3845,6 +3958,24 @@ void init(dt_iop_module_t *self)
   d->red[0] = d->green[1] = d->blue[2] = 1.0;
 }
 
+static void _add_or_remove_illuminant(const dt_iop_module_t *self,
+                                      const int illuminant,
+                                      const gboolean use_illuminant)
+{
+  // we only call this if g is not NULL
+  dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
+  const int pos = dt_bauhaus_combobox_get_from_value(g->illuminant, illuminant);
+  if(use_illuminant)
+  {
+    if(pos == -1)
+      dt_bauhaus_combobox_add_introspection(g->illuminant, NULL,
+                                            self->so->get_f("illuminant")->Enum.values,
+                                            illuminant, illuminant);
+  }
+  else if (pos != -1)
+    dt_bauhaus_combobox_remove_at(g->illuminant, pos);
+}
+
 void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_channelmixer_rgb_params_t *d = self->default_params;
@@ -3881,10 +4012,12 @@ void reload_defaults(dt_iop_module_t *self)
   {
     d->adaptation = DT_ADAPTATION_CAT16;
 
-    dt_aligned_pixel_t custom_wb;
-    if(!_get_white_balance_coeff(self, custom_wb))
+    // can't get WB via dt_dev_get_gui_wb() here: while defaults load, temperature's
+    // params still belong to the previous image, or are temperature's defaults
+    dt_aligned_pixel_t correction_ratios;
+    if(!_get_d65_correction_ratios(self, &self->dev->chroma.wb, correction_ratios))
     {
-      if(find_temperature_from_raw_coeffs(img, custom_wb, &(d->x), &(d->y)))
+      if(find_illuminant_xy_from_as_shot_coeffs(img, correction_ratios, &(d->x), &(d->y)))
         d->illuminant = DT_ILLUMINANT_CAMERA;
       _check_if_close_to_daylight(d->x, d->y,
                                   &(d->temperature), &(d->illuminant), &(d->adaptation));
@@ -3912,16 +4045,9 @@ void reload_defaults(dt_iop_module_t *self)
       g->delta_E_label_text = NULL;
     }
 
-    const int pos = dt_bauhaus_combobox_get_from_value(g->illuminant, DT_ILLUMINANT_CAMERA);
-    if(dt_image_is_matrix_correction_supported(img) && !dt_image_is_monochrome(img))
-    {
-      if(pos == -1)
-        dt_bauhaus_combobox_add_introspection(g->illuminant, NULL,
-                                              self->so->get_f("illuminant")->Enum.values,
-                                              DT_ILLUMINANT_CAMERA, DT_ILLUMINANT_CAMERA);
-    }
-    else
-      dt_bauhaus_combobox_remove_at(g->illuminant, pos);
+    const gboolean has_color_matrix = dt_image_is_matrix_correction_supported(img) && !dt_image_is_monochrome(img);
+    _add_or_remove_illuminant(self, DT_ILLUMINANT_CAMERA, has_color_matrix);
+    _add_or_remove_illuminant(self, DT_ILLUMINANT_FROM_WB, has_color_matrix);
 
     gui_changed(self, NULL, NULL);
   }
@@ -3970,6 +4096,9 @@ void gui_changed(dt_iop_module_t *self,
   dt_iop_channelmixer_rgb_params_t *p = self->params;
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
+  dt_dev_wb_t wb;
+  dt_dev_get_gui_wb(self->dev, &wb);
+
   if(w == g->illuminant)
   {
     if(previous)
@@ -3984,10 +4113,19 @@ void gui_changed(dt_iop_module_t *self,
         // illuminant = "as set in camera", temperature and
         // chromaticity are inited with the preset content when
         // illuminant is changed.
-        dt_aligned_pixel_t custom_wb;
-        _get_white_balance_coeff(self, custom_wb);
-        find_temperature_from_raw_coeffs(&(self->dev->image_storage), custom_wb,
+        dt_aligned_pixel_t correction_ratios;
+        _get_d65_correction_ratios(self, &wb, correction_ratios);
+        find_illuminant_xy_from_as_shot_coeffs(&(self->dev->image_storage), correction_ratios,
                                          &(p->x), &(p->y));
+        _check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
+      }
+      if(*prev_illuminant == DT_ILLUMINANT_FROM_WB)
+      {
+        // If illuminant was previously "as set in white balance module",
+        // (x, y) were computed at runtime from the WB module's coefficients
+        // and p->x, p->y may hold stale values. Recompute them now so
+        // the new illuminant mode starts from the correct chromaticity.
+        _illuminant_xy_from_wb_or_D50(self, &wb, &(p->x), &(p->y));
         _check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
       }
     }
@@ -4001,14 +4139,22 @@ void gui_changed(dt_iop_module_t *self,
     if(p->illuminant == DT_ILLUMINANT_CAMERA)
     {
       // Get camera WB and update illuminant
-      dt_aligned_pixel_t custom_wb;
-      _get_white_balance_coeff(self, custom_wb);
-      const gboolean found = find_temperature_from_raw_coeffs(&(self->dev->image_storage),
-                                                         custom_wb, &(p->x), &(p->y));
+      dt_aligned_pixel_t correction_ratios;
+      _get_d65_correction_ratios(self, &wb, correction_ratios);
+      const gboolean found = find_illuminant_xy_from_as_shot_coeffs(&(self->dev->image_storage),
+                                                         correction_ratios, &(p->x), &(p->y));
       _check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
 
       if(found)
         dt_control_log(_("white balance successfully extracted from raw image"));
+    }
+    else if(p->illuminant == DT_ILLUMINANT_FROM_WB)
+    {
+      const gboolean found = _illuminant_xy_from_wb_or_D50(self, &wb, &(p->x), &(p->y));
+      _check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
+
+      if(found)
+        dt_control_log(_("white balance successfully extracted from white balance module"));
     }
 #ifdef AI_ACTIVATED
     else if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES
@@ -4037,7 +4183,8 @@ void gui_changed(dt_iop_module_t *self,
     // illuminant to allow swapping modes
 
     if(p->illuminant != DT_ILLUMINANT_CUSTOM
-       && p->illuminant != DT_ILLUMINANT_CAMERA)
+       && p->illuminant != DT_ILLUMINANT_CAMERA
+       && p->illuminant != DT_ILLUMINANT_FROM_WB)
     {
       // We are in any mode defining (x, y) indirectly from an
       // interface, so commit (x, y) explicitly
@@ -4047,7 +4194,8 @@ void gui_changed(dt_iop_module_t *self,
 
     if(p->illuminant != DT_ILLUMINANT_D
        && p->illuminant != DT_ILLUMINANT_BB
-       && p->illuminant != DT_ILLUMINANT_CAMERA)
+       && p->illuminant != DT_ILLUMINANT_CAMERA
+       && p->illuminant != DT_ILLUMINANT_FROM_WB)
     {
       // We are in any mode not defining explicitly a temperature, so
       // find the the closest CCT and commit it
@@ -4132,7 +4280,7 @@ void gui_changed(dt_iop_module_t *self,
   // If "as shot in camera" illuminant is used, CAT space is forced automatically
   // therefore, make the control insensitive
   dt_bauhaus_combobox_set_from_value(g->adaptation, p->adaptation);
-  gtk_widget_set_sensitive(g->adaptation, p->illuminant != DT_ILLUMINANT_CAMERA);
+  gtk_widget_set_sensitive(g->adaptation, p->illuminant != DT_ILLUMINANT_CAMERA && p->illuminant != DT_ILLUMINANT_FROM_WB);
 
   _declare_cat_on_pipe(self, FALSE);
 
@@ -4208,15 +4356,17 @@ static void _auto_set_illuminant(dt_iop_module_t *self,
     // find x y coordinates of illuminant for CIE 1931 2° observer
     float x = p->x;
     float y = p->y;
+
+    dt_dev_wb_t wb;
+    dt_dev_get_gui_wb(self->dev, &wb);
+
+    _get_corrected_illuminant_xy(self, &wb, p, &x, &y);
+
     dt_adaptation_t adaptation = p->adaptation;
-    dt_aligned_pixel_t custom_wb;
-    _get_white_balance_coeff(self, custom_wb);
-    illuminant_to_xy(p->illuminant, &(self->dev->image_storage),
-                     custom_wb, &x, &y, p->temperature, p->illum_fluo, p->illum_led);
 
     // if illuminant is set as camera, x and y are set on-the-fly at
     // commit time, so we need to set adaptation too
-    if(p->illuminant == DT_ILLUMINANT_CAMERA)
+    if(p->illuminant == DT_ILLUMINANT_CAMERA || p->illuminant == DT_ILLUMINANT_FROM_WB)
       _check_if_close_to_daylight(x, y, NULL, NULL, &adaptation);
 
     // Convert illuminant from xyY to XYZ
@@ -4410,6 +4560,16 @@ static void _dt_active_images_callback(gpointer instance,
   g->checker_ready = FALSE;
 }
 
+// TRUE if this instance is applying chromatic adaptation. reads params, so
+// GTK main thread only
+static gboolean _cat_proxy_is_active(dt_iop_module_t *self)
+{
+  if(!self || !self->dev)
+    return FALSE;
+
+  return _applies_cat(self);
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_channelmixer_rgb_gui_data_t *g = IOP_GUI_ALLOC(channelmixer_rgb);
@@ -4430,7 +4590,7 @@ void gui_init(dt_iop_module_t *self)
   g->delta_E_in = NULL;
   g->delta_E_label_text = NULL;
 
-  g->XYZ[0] = NAN;
+  g->ai_wb_XYZ[0] = NAN;
 
 #ifdef AI_ACTIVATED
    DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _develop_ui_pipe_finished_callback);
@@ -4744,6 +4904,8 @@ void gui_init(dt_iop_module_t *self)
 
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
                             _dt_active_images_callback, g);
+
+  darktable.develop->proxy.cat_is_active = _cat_proxy_is_active;
 }
 
 void gui_cleanup(dt_iop_module_t *self)
