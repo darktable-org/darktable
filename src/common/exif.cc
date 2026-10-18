@@ -1069,6 +1069,37 @@ static void _check_linear_response_limit(Exiv2::ExifData &exifData,
       img->filename, img->linear_response_limit);
 }
 
+static void _check_baseline_exposure(Exiv2::ExifData &exifData,
+                                     dt_image_t *img)
+{
+  img->dng_baseline_exposure = 0.0f;
+
+  float ev = 0.0f;
+  bool found = false;
+
+  Exiv2::ExifData::const_iterator pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.BaselineExposure"));
+  if(pos != exifData.end() && pos->count() == 1)
+  {
+    ev += pos->toFloat();
+    found = true;
+  }
+
+  pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.BaselineExposureOffset"));
+  if(pos != exifData.end() && pos->count() == 1)
+  {
+    ev += pos->toFloat();
+    found = true;
+  }
+
+  if(!found || !std::isfinite(ev))
+    return;
+
+  img->dng_baseline_exposure = CLAMPS(ev, -10.0f, 10.0f);
+  dt_print(DT_DEBUG_IMAGEIO, "[exif] `%s` has DNG baseline exposure %+.2f EV",
+           img->filename, img->dng_baseline_exposure);
+}
+
 static bool _valid_dng_matrix(const float *M)
 {
   const float det = M[0] * (M[4] * M[8] - M[5] * M[7])
@@ -1767,6 +1798,7 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
   // a reload starts from the cached image, so clear the flag before
   // anything that can return early
   img->exif_shading_compensation = FALSE;
+  img->dng_baseline_exposure = 0.0f;
 
   try
   {
@@ -1781,6 +1813,7 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
       _check_dng_opcodes(exifData, img);
       _check_lens_correction_data(exifData, img);
       _check_linear_response_limit(exifData, img);
+      _check_baseline_exposure(exifData, img);
       const int sel_illu = _check_forward_matrix(exifData, img);
       _check_profile_look_table(exifData, img, sel_illu);
       _check_highlight_preservation(exifData, img);

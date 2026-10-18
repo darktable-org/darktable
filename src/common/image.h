@@ -359,6 +359,9 @@ typedef struct dt_image_t
   /* might help to improve highlights reconstruction module */
   float linear_response_limit;
 
+  /* DNG BaselineExposure + BaselineExposureOffset in EV, 0 when absent */
+  float dng_baseline_exposure;
+
   /* White balance coeffs from the raw */
   dt_aligned_pixel_t wb_coeffs;
 
