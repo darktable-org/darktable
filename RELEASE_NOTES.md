@@ -888,6 +888,9 @@ changes (where available).
   depending on the number of CPU threads. Its noise pattern changed,
   so exports using it differ in the noise but not in its strength.
 
+- Fixed stale color temperature and illuminant color in color calibration
+  after white balance changes when using "as shot in camera".
+
 ## Lua
 
 ### API Version

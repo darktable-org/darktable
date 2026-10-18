@@ -3128,6 +3128,13 @@ static void _preview_pipe_finished_callback(gpointer instance, dt_iop_module_t *
 
     DT_LEAVE_GUI_UPDATE();
   }
+  else if(p->illuminant == DT_ILLUMINANT_CAMERA)
+  {
+    DT_ENTER_GUI_UPDATE();
+    _update_approx_cct(self);
+    _update_illuminant_color(self);
+    DT_LEAVE_GUI_UPDATE();
+  }
 
   dt_iop_gui_leave_critical_section(self);
   _set_trouble_messages(self);
