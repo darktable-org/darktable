@@ -615,6 +615,9 @@ changes (where available).
 - Fixed darktable-cli crashing when `--threads` was set below the
   number of CPUs.
 
+- Fixed stale color temperature and illuminant color in color calibration
+  after white balance changes when using "as shot in camera".
+
 ## Lua
 
 ### API Version
