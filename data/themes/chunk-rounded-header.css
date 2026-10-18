@@ -27,6 +27,20 @@
    background-color: @header_color_bg;
 }
 
+/* round the module frame on the header's corner, so the focused/expanded
+   module border variants follow the header instead of squaring it off. The
+   border sits outside the header, so its radius is the header's plus about
+   the border width (0.1em, see chunk-focused-module-border.css) */
+#left #iop-expander
+{
+  border-top-right-radius: 16px;
+}
+
+#right #iop-expander
+{
+  border-top-left-radius: 16px;
+}
+
 /* the masks panel, docked: headed like a module (#module-header, see
    _ui_init_panel_flexi in gui/gtk.c) but in neither #left nor #right, so it
    is named here to take this variant's header color too */
