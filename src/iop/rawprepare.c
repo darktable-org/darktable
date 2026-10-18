@@ -652,41 +652,74 @@ static gboolean _image_set_rawcrops(dt_iop_module_t *self,
 
 // check if image contains GainMaps of the exact type that we can apply here
 // we may reject some GainMaps that are valid according to Adobe DNG spec but we do not support
+static gboolean _gain_map_covers_image(const dt_dng_gain_map_t *g,
+                                       const dt_image_t *image,
+                                       const uint32_t pitch)
+{
+  // the GainMap applies to all planes of a single-plane CFA image,
+  // covers the entire image with the given pitch and is not a 1x1 no-op
+  // FIXME checks for width / height might be wrong
+  return g != NULL
+    && g->plane == 0
+    && g->planes == 1
+    && g->map_planes == 1
+    && g->row_pitch == pitch
+    && g->col_pitch == pitch
+    && g->map_points_v >= 2
+    && g->map_points_h >= 2
+    && g->top < pitch
+    && g->left < pitch
+    && g->bottom == image->height
+    && g->right == image->width;
+}
+
 static gboolean _check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gainmaps_out)
 {
   const dt_image_t *const image = &(self->dev->image_storage);
   dt_dng_gain_map_t *gainmaps[4] = {0};
+  const guint n_maps = g_list_length(image->dng_gain_maps);
 
-  if(g_list_length(image->dng_gain_maps) != 4)
+  if(n_maps == 0)
     return FALSE;
 
-  // FIXME checks for width / height might be wrong
-  for(int i = 0; i < 4; i++)
+  if(n_maps == 1)
   {
-    // check that each GainMap applies to one filter of a Bayer image,
-    // covers the entire image, and is not a 1x1 no-op
-    dt_dng_gain_map_t *g = g_list_nth_data(image->dng_gain_maps, i);
-    if(g == NULL
-       || g->plane != 0
-       || g->planes != 1
-       || g->map_planes != 1
-       || g->row_pitch != 2
-       || g->col_pitch != 2
-       || g->map_points_v < 2
-       || g->map_points_h < 2
-       || g->top > 1
-       || g->left > 1
-       || g->bottom != image->height
-       || g->right != image->width)
+    // one map for every photosite is used for all four Bayer filters
+    dt_dng_gain_map_t *g = g_list_nth_data(image->dng_gain_maps, 0);
+    if(!_gain_map_covers_image(g, image, 1))
+    {
+      dt_print(DT_DEBUG_IMAGEIO, "[rawprepare] unsupported layout of the DNG GainMap, not applied");
       return FALSE;
+    }
+    for(int i = 0; i < 4; i++) gainmaps[i] = g;
+  }
+  else if(n_maps == 4)
+  {
+    for(int i = 0; i < 4; i++)
+    {
+      dt_dng_gain_map_t *g = g_list_nth_data(image->dng_gain_maps, i);
+      if(!_gain_map_covers_image(g, image, 2))
+      {
+        dt_print(DT_DEBUG_IMAGEIO, "[rawprepare] unsupported layout of the DNG GainMaps, not applied");
+        return FALSE;
+      }
 
-    const uint32_t filter = ((g->top & 1) << 1) + (g->left & 1);
-    gainmaps[filter] = g;
+      const uint32_t filter = ((g->top & 1) << 1) + (g->left & 1);
+      gainmaps[filter] = g;
+    }
+  }
+  else
+  {
+    dt_print(DT_DEBUG_IMAGEIO, "[rawprepare] %u DNG GainMaps are not supported, not applied", n_maps);
+    return FALSE;
   }
 
   // check that there is a GainMap for each filter of the Bayer pattern
   if(gainmaps[0] == NULL || gainmaps[1] == NULL || gainmaps[2] == NULL || gainmaps[3] == NULL)
+  {
+    dt_print(DT_DEBUG_IMAGEIO, "[rawprepare] DNG GainMaps do not cover all Bayer filters, not applied");
     return FALSE;
+  }
 
   // check that each GainMap has the same shape
   for(int i = 1; i < 4; i++)
@@ -697,7 +730,10 @@ static gboolean _check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gain
        || gainmaps[i]->map_spacing_v != gainmaps[0]->map_spacing_v
        || gainmaps[i]->map_origin_h != gainmaps[0]->map_origin_h
        || gainmaps[i]->map_origin_v != gainmaps[0]->map_origin_v)
+    {
+      dt_print(DT_DEBUG_IMAGEIO, "[rawprepare] DNG GainMaps differ in shape, not applied");
       return FALSE;
+    }
   }
 
   if(gainmaps_out)
