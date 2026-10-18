@@ -1376,10 +1376,11 @@ static float4 _apply_dng_table(float4 prophoto_rgb,
 {
   prophoto_rgb /= (float4)scale;
   float4 hsv = RGB_2_HSV(prophoto_rgb);
-  // encode value for table lookup if needed
-  float v_encoded = hsv.z;
+  // the lookup clamps value to the table range, the scaled value keeps
+  // its headroom above 1 for the scene-referred pipeline
+  float v_encoded = fmax(hsv.z, 0.0f);
   if(encoding == 1) // sRGB
-    v_encoded = _linear_to_srgb(clipf(v_encoded));
+    v_encoded = _linear_to_srgb(v_encoded);
 
   // use the encoded value for table lookup
   float4 hsv_for_lookup = hsv;
@@ -1393,7 +1394,7 @@ static float4 _apply_dng_table(float4 prophoto_rgb,
   float v_corrected = v_encoded * correction.z;
   if(encoding == 1)  // sRGB
     v_corrected = _srgb_to_linear(v_corrected);
-  hsv.z = clipf(v_corrected);
+  hsv.z = fmax(v_corrected, 0.0f);
   return HSV_2_RGB(hsv) * (float4)scale;
 }
 

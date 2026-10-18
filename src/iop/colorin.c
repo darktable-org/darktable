@@ -325,9 +325,11 @@ static inline void _apply_dng_table(dt_aligned_pixel_t prophoto_rgb,
   dt_vector_div1(prophoto_rgb, prophoto_rgb, scale);
   dt_RGB_2_HSV(prophoto_rgb, hsv);
 
-  float v_encoded = hsv[2];
+  // the lookup clamps value to the table range, the scaled value keeps
+  // its headroom above 1 for the scene-referred pipeline
+  float v_encoded = MAX(hsv[2], 0.0f);
   if(encoding == 1)  // sRGB
-    v_encoded = _linear_to_srgb(CLIP(v_encoded));
+    v_encoded = _linear_to_srgb(v_encoded);
 
   dt_aligned_pixel_t hsv_for_lookup = { hsv[0], hsv[1], v_encoded, 0.0f};
   _lookup_hsm(hsv_for_lookup, correction, hue_div, sat_div, val_div, table);
@@ -338,7 +340,7 @@ static inline void _apply_dng_table(dt_aligned_pixel_t prophoto_rgb,
   float v_corrected = v_encoded * correction[2];
   if(encoding == 1)  // sRGB
     v_corrected = _srgb_to_linear(v_corrected);
-  hsv[2] = CLIP(v_corrected);
+  hsv[2] = MAX(v_corrected, 0.0f);
   dt_HSV_2_RGB(hsv, prophoto_rgb);
   dt_vector_mul1(prophoto_rgb, prophoto_rgb, scale);
 }
