@@ -334,6 +334,12 @@ typedef struct dt_image_t
   int profile_hsm_sat_div;
   int profile_hsm_val_div;
   int profile_hsm_encoding;                 // 0 = linear prophoto (default), 1 = sRGB
+  float *profile_lut_data;                  // DNG ProfileLookTable, same layout as profile_hsm_data
+  size_t profile_lut_data_size;
+  int profile_lut_hue_div;
+  int profile_lut_sat_div;
+  int profile_lut_val_div;
+  int profile_lut_encoding;                 // 0 = linear prophoto (default), 1 = sRGB
 
   uint8_t *profile;                         // embedded profile, for example from JPEGs
   uint32_t profile_size;

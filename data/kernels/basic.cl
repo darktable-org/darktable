@@ -1364,13 +1364,47 @@ static float _linear_to_srgb(const float x)
   return x <= 0.0031308f ? 12.92f * x : 1.055f * dtcl_pow(x, 1.0f / 2.4f) - 0.055f;
 }
 
+// applies a DNG ProfileHueSatMap or ProfileLookTable to linear ProPhoto RGB,
+// looked up at the values divided by scale
+static float4 _apply_dng_table(float4 prophoto_rgb,
+                               const float scale,
+                               const int hue_div,
+                               const int sat_div,
+                               const int val_div,
+                               global const float *table,
+                               const int encoding)
+{
+  prophoto_rgb /= (float4)scale;
+  float4 hsv = RGB_2_HSV(prophoto_rgb);
+  // encode value for table lookup if needed
+  float v_encoded = hsv.z;
+  if(encoding == 1) // sRGB
+    v_encoded = _linear_to_srgb(clipf(v_encoded));
+
+  // use the encoded value for table lookup
+  float4 hsv_for_lookup = hsv;
+  hsv_for_lookup.z = v_encoded;
+  float4 correction = _lookup_hsm(hsv_for_lookup, hue_div, sat_div, val_div, table);
+
+  hsv.x += fp32_div(correction.x, 360.0f);
+  hsv.x -= floor(hsv.x); // stay within the 360° hue circle
+  hsv.y = clipf(hsv.y * correction.y);
+
+  float v_corrected = v_encoded * correction.z;
+  if(encoding == 1)  // sRGB
+    v_corrected = _srgb_to_linear(v_corrected);
+  hsv.z = clipf(v_corrected);
+  return HSV_2_RGB(hsv) * (float4)scale;
+}
+
 /* kernel for the plugin colorin: unbound processing */
 kernel void
 colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                  global float *cmat, global float *lmat,
                  read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
                  const int blue_mapping, global const float (*const a)[3], global const float *corr,
-                 const float scale, const int hue_div, const int sat_div, const int val_div, global const float *dev_hsm, const int encoding, const int use_hsm, const int hdr_transfer)
+                 const float scale, const int hue_div, const int sat_div, const int val_div, global const float *dev_hsm, const int encoding, const int use_hsm, const int hdr_transfer,
+                 const int look_hue_div, const int look_sat_div, const int look_val_div, global const float *dev_look, const int look_encoding, const int use_look, const float look_scale)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1424,29 +1458,13 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
   }
   float4 xyz = (float4)(XYZ[0], XYZ[1], XYZ[2], 0.0f);
   pixel.xyz = XYZ_to_Lab(xyz).xyz;
-  if(use_hsm)
+  if(use_hsm || use_look)
   {
-    float4 prophoto_rgb = Lab_to_prophotorgb(pixel) / (float4)scale;
-    float4 hsv = RGB_2_HSV(prophoto_rgb);
-    // Encode valueV for table lookup if needed
-    float v_encoded = hsv.z;
-    if(encoding == 1) // sRGB
-      v_encoded = _linear_to_srgb(clipf(v_encoded));
-
-    // Use encoded value for table lookup (need to temporarily set hsv[2])
-    float4 hsv_for_lookup = hsv;
-    hsv_for_lookup.z = v_encoded;
-    float4 correction = _lookup_hsm(hsv_for_lookup, hue_div, sat_div, val_div, dev_hsm);
-
-    hsv.x += fp32_div(correction.x, 360.0f);
-    hsv.x -= floor(hsv.x); // stay within the 360° hue circle
-    hsv.y = clipf(hsv.y * correction.y);
-
-    float v_corrected = v_encoded * correction.z;
-    if(encoding == 1)  // sRGB
-      v_corrected = _srgb_to_linear(v_corrected);
-    hsv.z = clipf(v_corrected);
-    prophoto_rgb = HSV_2_RGB(hsv) * (float4)scale;
+    float4 prophoto_rgb = Lab_to_prophotorgb(pixel);
+    if(use_hsm)
+      prophoto_rgb = _apply_dng_table(prophoto_rgb, scale, hue_div, sat_div, val_div, dev_hsm, encoding);
+    if(use_look)
+      prophoto_rgb = _apply_dng_table(prophoto_rgb, look_scale, look_hue_div, look_sat_div, look_val_div, dev_look, look_encoding);
     pixel = prophotorgb_to_Lab(prophoto_rgb);
   }
   pixel.w = alpha;
@@ -1477,7 +1495,8 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
                   global float *cmat, global float *lmat,
                   read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
                   const int blue_mapping, global const float (*const a)[3], global const float *corr,
-                  const float scale, const int hue_div, const int sat_div, const int val_div, global const float *dev_hsm, const int encoding, const int use_hsm, const int hdr_transfer)
+                  const float scale, const int hue_div, const int sat_div, const int val_div, global const float *dev_hsm, const int encoding, const int use_hsm, const int hdr_transfer,
+                  const int look_hue_div, const int look_sat_div, const int look_val_div, global const float *dev_look, const int look_encoding, const int use_look, const float look_scale)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1542,30 +1561,13 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
 
   float4 xyz = (float4)(XYZ[0], XYZ[1], XYZ[2], 0.0f);
   pixel.xyz = XYZ_to_Lab(xyz).xyz;
-  if(use_hsm)
+  if(use_hsm || use_look)
   {
-    float4 prophoto_rgb = Lab_to_prophotorgb(pixel) / (float4)scale;
-    float4 hsv = RGB_2_HSV(prophoto_rgb);
-    // Encode valueV for table lookup if needed
-    float v_encoded = hsv.z;
-    if(encoding == 1)  // sRGB
-      v_encoded = _linear_to_srgb(clipf(v_encoded));
-
-    // Use encoded value for table lookup (need to temporarily set hsv[2])
-    float4 hsv_for_lookup = hsv;
-    hsv_for_lookup.z = v_encoded;
-    float4 correction = _lookup_hsm(hsv_for_lookup, hue_div, sat_div, val_div, dev_hsm);
-
-    hsv.x += fp32_div(correction.x, 360.0f);
-    hsv.x -= floor(hsv.x); // stay within the 360° hue circle
-    hsv.y = clipf(hsv.y * correction.y);
-
-    float v_corrected = v_encoded * correction.z;
-    if(encoding == 1)  // sRGB
-      v_corrected = _srgb_to_linear(v_corrected);
-    hsv.z = clipf(v_corrected);
-    prophoto_rgb = HSV_2_RGB(hsv) * (float4)scale;
-
+    float4 prophoto_rgb = Lab_to_prophotorgb(pixel);
+    if(use_hsm)
+      prophoto_rgb = _apply_dng_table(prophoto_rgb, scale, hue_div, sat_div, val_div, dev_hsm, encoding);
+    if(use_look)
+      prophoto_rgb = _apply_dng_table(prophoto_rgb, look_scale, look_hue_div, look_sat_div, look_val_div, dev_look, look_encoding);
     pixel = prophotorgb_to_Lab(prophoto_rgb);
   }
   pixel.w = alpha;
@@ -1580,7 +1582,8 @@ colorin_rgb (read_only image2d_t in, write_only image2d_t out, const int width, 
                  const int blue_mapping, global const float (*const a)[3], global const float *corr,
                  const float scale, const int hue_div, const int sat_div, const int val_div, global const float *dev_hsm, const int encoding, const int use_hsm, const int hdr_transfer,
                  const int clipping, constant dt_colorspaces_iccprofile_info_cl_t *work,
-                 read_only image2d_t work_lut, const int lab_input)
+                 read_only image2d_t work_lut, const int lab_input,
+                 const int look_hue_div, const int look_sat_div, const int look_val_div, global const float *dev_look, const int look_encoding, const int use_look, const float look_scale)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1649,29 +1652,13 @@ colorin_rgb (read_only image2d_t in, write_only image2d_t out, const int width, 
       for(int i = 0; i < 3; i++) linear[j] += lmat[3*j+i] * clipped[i];
   }
   pixel = linear;
-  if(use_hsm)
+  if(use_hsm || use_look)
   {
-    float4 prophoto_rgb = XYZ_to_prophotorgb(matrix_product(pixel, work->matrix_in)) / (float4)scale;
-    float4 hsv = RGB_2_HSV(prophoto_rgb);
-    // encode value for table lookup if needed
-    float v_encoded = hsv.z;
-    if(encoding == 1) // sRGB
-      v_encoded = _linear_to_srgb(clipf(v_encoded));
-
-    // use the encoded value for table lookup
-    float4 hsv_for_lookup = hsv;
-    hsv_for_lookup.z = v_encoded;
-    float4 correction = _lookup_hsm(hsv_for_lookup, hue_div, sat_div, val_div, dev_hsm);
-
-    hsv.x += fp32_div(correction.x, 360.0f);
-    hsv.x -= floor(hsv.x); // stay within the 360° hue circle
-    hsv.y = clipf(hsv.y * correction.y);
-
-    float v_corrected = v_encoded * correction.z;
-    if(encoding == 1)  // sRGB
-      v_corrected = _srgb_to_linear(v_corrected);
-    hsv.z = clipf(v_corrected);
-    prophoto_rgb = HSV_2_RGB(hsv) * (float4)scale;
+    float4 prophoto_rgb = XYZ_to_prophotorgb(matrix_product(pixel, work->matrix_in));
+    if(use_hsm)
+      prophoto_rgb = _apply_dng_table(prophoto_rgb, scale, hue_div, sat_div, val_div, dev_hsm, encoding);
+    if(use_look)
+      prophoto_rgb = _apply_dng_table(prophoto_rgb, look_scale, look_hue_div, look_sat_div, look_val_div, dev_look, look_encoding);
     pixel = matrix_product(prophotorgb_to_XYZ(prophoto_rgb), work->matrix_out);
   }
   if(work->nonlinearlut || work->hdr_transfer)

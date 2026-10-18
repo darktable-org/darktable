@@ -1625,6 +1625,49 @@ static void _check_profile_look_table(Exiv2::ExifData &exifData,
   }
 }
 
+static void _check_profile_lut(Exiv2::ExifData &exifData,
+                               dt_image_t *img)
+{
+  g_free(img->profile_lut_data);
+  img->profile_lut_data = NULL;
+  img->profile_lut_data_size = 0;
+  img->profile_lut_hue_div = img->profile_lut_sat_div = img->profile_lut_val_div = img->profile_lut_encoding = 0;
+
+  Exiv2::ExifData::const_iterator dims_pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.ProfileLookTableDims"));
+  if(dims_pos == exifData.end() || dims_pos->count() != 3)
+    return;
+
+  const auto hue_div = dims_pos->toLong(0);
+  const auto sat_div = dims_pos->toLong(1);
+  const auto val_div = dims_pos->toLong(2);
+  if(hue_div < 1 || sat_div < 2 || val_div < 1
+     || hue_div > G_MAXINT / 3 / sat_div / val_div)
+    return;
+
+  const int n_entries = hue_div * sat_div * val_div * 3;
+  Exiv2::ExifData::const_iterator pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.ProfileLookTableData"));
+  if(pos == exifData.end() || (int)pos->count() != n_entries)
+    return;
+
+  Exiv2::ExifData::const_iterator enc_pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.ProfileLookTableEncoding"));
+  if(enc_pos != exifData.end())
+    img->profile_lut_encoding = (int)enc_pos->toLong(0);  // 0=linear, 1=sRGB
+
+  img->profile_lut_data = (float *)g_malloc_n(n_entries, sizeof(float));
+  for(int i = 0; i < n_entries; i++)
+    img->profile_lut_data[i] = pos->toFloat(i);
+  img->profile_lut_hue_div = hue_div;
+  img->profile_lut_sat_div = sat_div;
+  img->profile_lut_val_div = val_div;
+  img->profile_lut_data_size = sizeof(float) * n_entries;
+  dt_print(DT_DEBUG_IMAGEIO, "[exif] found ProfileLookTableData (%dx%dx%d), %s encoding",
+           img->profile_lut_hue_div, img->profile_lut_sat_div, img->profile_lut_val_div,
+           img->profile_lut_encoding ? "sRGB" : "linear");
+}
+
 static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData,
                                    dt_image_t *img)
 {
@@ -2083,6 +2126,7 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
       gboolean blended = FALSE;
       const int sel_illu = _check_forward_matrix(exifData, img, weights, &blended);
       _check_profile_look_table(exifData, img, sel_illu, blended ? weights : NULL);
+      _check_profile_lut(exifData, img);
       _check_highlight_preservation(exifData, img);
       _check_shading_compensation(exifData, img);
     }

@@ -980,6 +980,8 @@ void dt_mipmap_cache_get_with_caller(dt_mipmap_buffer_t *buf,
         buffered_image = *cimg;
         buffered_image.profile_hsm_data = NULL;
         buffered_image.profile_hsm_data_size = buffered_image.profile_hsm_hue_div = buffered_image.profile_hsm_sat_div = buffered_image.profile_hsm_val_div = buffered_image.profile_hsm_encoding = 0;
+        buffered_image.profile_lut_data = NULL;
+        buffered_image.profile_lut_data_size = buffered_image.profile_lut_hue_div = buffered_image.profile_lut_sat_div = buffered_image.profile_lut_val_div = buffered_image.profile_lut_encoding = 0;
         // dt_image_t *img = dt_image_cache_write_get(cimg);
         // dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
         dt_image_cache_read_release(cimg);
@@ -1016,6 +1018,17 @@ void dt_mipmap_cache_get_with_caller(dt_mipmap_buffer_t *buf,
             buffered_image.profile_hsm_val_div = img->profile_hsm_val_div;
             buffered_image.profile_hsm_encoding = img->profile_hsm_encoding;
           }
+          if(buffered_image.profile_lut_data)
+            g_free(img->profile_lut_data);
+          else
+          {
+            buffered_image.profile_lut_data = img->profile_lut_data;
+            buffered_image.profile_lut_data_size = img->profile_lut_data_size;
+            buffered_image.profile_lut_hue_div = img->profile_lut_hue_div;
+            buffered_image.profile_lut_sat_div = img->profile_lut_sat_div;
+            buffered_image.profile_lut_val_div = img->profile_lut_val_div;
+            buffered_image.profile_lut_encoding = img->profile_lut_encoding;
+          }
           *img = buffered_image;
           img->load_status = DT_IMAGEIO_OK;
           // dt_print(DT_DEBUG_ALWAYS, "[mipmap read get] initializing full buffer img %u with %u %u -> %d %d (%p)",
@@ -1026,6 +1039,7 @@ void dt_mipmap_cache_get_with_caller(dt_mipmap_buffer_t *buf,
         else
         {
           g_free(buffered_image.profile_hsm_data);
+          g_free(buffered_image.profile_lut_data);
           dt_print(DT_DEBUG_PIPE, "[mipmap read get] error loading ID=%d", imgid);
           //
           // we can only return a zero dimension buffer if the buffer
