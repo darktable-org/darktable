@@ -5614,9 +5614,16 @@ void dt_gui_load_theme(const char *theme)
 
   GError *error = NULL;
 
-  GtkStyleProvider *themes_style_provider = GTK_STYLE_PROVIDER(gtk_css_provider_new());
-  gtk_style_context_add_provider_for_screen
-    (gdk_screen_get_default(), themes_style_provider, GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
+  // one provider, reloaded in place: adding a new one per reload left the
+  // previous ones on the screen, so a theme variant switched off in
+  // preferences kept applying until restart
+  static GtkStyleProvider *themes_style_provider = NULL;
+  if(!themes_style_provider)
+  {
+    themes_style_provider = GTK_STYLE_PROVIDER(gtk_css_provider_new());
+    gtk_style_context_add_provider_for_screen
+      (gdk_screen_get_default(), themes_style_provider, GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
+  }
 
   // We load the themes in this specific order:
   //   1. The main darktable-*.css
@@ -5731,7 +5738,6 @@ void dt_gui_load_theme(const char *theme)
 
   g_free(themecss);
 
-  g_object_unref(themes_style_provider);
   _set_tooltip_css(dt_conf_get_bool("ui/hide_tooltips"));
 }
 
