@@ -1214,8 +1214,7 @@ static void _update_preset(dt_iop_module_t *self, int mode)
     // show the checkbox only in modes where user can adjust multipliers
     gtk_widget_set_visible(g->check_late_correction, is_new_mode_manual);
 
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->check_late_correction),
-                                 p->late_correction);
+    dt_bauhaus_toggle_set(g->check_late_correction, p->late_correction);
   }
 }
 
