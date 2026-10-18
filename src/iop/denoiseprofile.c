@@ -2744,6 +2744,8 @@ void reload_defaults(dt_iop_module_t *self)
 
     gui_update(self);
   }
+  else
+    g_list_free_full(profiles, dt_noiseprofile_free);
 }
 
 void init_global(dt_iop_module_so_t *self)
