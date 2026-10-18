@@ -971,7 +971,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(slider, _("the white luminance of the target display or print.\n"
                                         "can be used creatively for a faded look or blowing out whites earlier.\n"
                                         "for HDR (PQ or HLG) output, raise it above "
-                                        "100 percent to give highlights headroom;\n"
+                                        "100 % to give highlights headroom;\n"
                                         "100 percent is the 203 nit reference white, "
                                         "so 1000 nits is about 493 percent"));
 
