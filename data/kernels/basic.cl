@@ -3357,7 +3357,9 @@ kernel void md_lens_correction(read_only image2d_t in,
                                const int knots,
                                const int itor_mode,
                                const int itor_width,
-                               const int pass_mode)
+                               const int pass_mode,
+                               global const float *tangential,
+                               const int use_tangential)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3375,8 +3377,22 @@ kernel void md_lens_correction(read_only image2d_t in,
     const int plane = (c == 3 || pass_mode) ? 1 : c;
     const float dr =
       _interpolate_linear_spline(knots_dist, &cor_rgb[plane * MAXKNOTS], knots, radius);
-    const float xs = clamp(fma(dr, cx, w2) - roix, 0.0f, limw);
-    const float ys = clamp(fma(dr, cy, h2) - roiy, 0.0f, limh);
+    float tx = 0.0f, ty = 0.0f;
+    if(use_tangential)
+    {
+      // DNG WarpRectilinear tangential terms, tangential[6] and [7] scale the
+      // normalised radius and the displacement
+      const float nx = cx * r * tangential[6];
+      const float ny = cy * r * tangential[6];
+      const float rr = nx * nx + ny * ny;
+      const float kt0 = tangential[2 * plane];
+      const float kt1 = tangential[2 * plane + 1];
+      const float k = fp32_div(tangential[7], r);
+      tx = k * (2.0f * kt0 * nx * ny + kt1 * (rr + 2.0f * nx * nx));
+      ty = k * (kt0 * (rr + 2.0f * ny * ny) + 2.0f * kt1 * nx * ny);
+    }
+    const float xs = clamp(fma(dr, cx, w2 + tx) - roix, 0.0f, limw);
+    const float ys = clamp(fma(dr, cy, h2 + ty) - roiy, 0.0f, limh);
     output[c] = interpolation_compute_single(in, itor_mode, itor_width,
                                              xs, ys, iwidth, iheight, c);
   }
