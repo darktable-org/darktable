@@ -175,34 +175,25 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
   }
 
   // and the other images
-  sqlite3_stmt *stmt;
-  // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id, version, filename"
-                              " FROM main.images"
-                              " WHERE group_id = ?1", -1, &stmt,
-                              NULL);
-  // clang-format on
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, thumb->groupid);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  GList *members = dt_grouping_get_members_info(thumb->groupid);
+  for(const GList *l = members; l; l = g_list_next(l))
   {
     nb++;
-    const dt_imgid_t id = sqlite3_column_int(stmt, 0);
-    const int v = sqlite3_column_int(stmt, 1);
+    const dt_grouping_member_t *m = l->data;
 
-    if(id != thumb->groupid)
+    if(m->id != thumb->groupid)
     {
-      if(id == thumb->imgid)
+      if(m->id == thumb->imgid)
         dt_util_str_cat(&tt, "\n\u2022 %s", _("current"));
       else
       {
-        dt_util_str_cat(&tt, "\n\u2022 %s", sqlite3_column_text(stmt, 2));
-        if(v > 0)
-          dt_util_str_cat(&tt, " v%d", v);
+        dt_util_str_cat(&tt, "\n\u2022 %s", m->filename);
+        if(m->version > 0)
+          dt_util_str_cat(&tt, " v%d", m->version);
       }
     }
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(members, dt_grouping_member_free);
 
   // and the number of grouped images
   gchar *ttf = g_strdup_printf("%d %s\n%s", nb, _("grouped images"), tt);
@@ -293,14 +284,7 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
   thumb->is_altered = dt_image_altered(thumb->imgid);
 
   // grouping
-  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_grouped);
-  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_grouped);
-  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped,
-                            1, thumb->imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped,
-                            2, thumb->imgid);
-  thumb->is_grouped =
-    (sqlite3_step(darktable.view_manager->statements.get_grouped) == SQLITE_ROW);
+  thumb->is_grouped = dt_grouping_has_others(thumb->imgid);
 
   // grouping tooltip
   _image_update_group_tooltip(thumb);
@@ -1105,15 +1089,7 @@ static void _event_grouping_release_cb(GtkGestureSingle *gesture,
     {
       // just add the whole group to the selection. TODO: make this
       // also work for collapsed groups.
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(
-          dt_database_get(darktable.db),
-          "INSERT OR IGNORE INTO main.selected_images (imgid)"
-          " SELECT id FROM main.images WHERE group_id = ?1", -1, &stmt,
-          NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, thumb->groupid);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
+      dt_grouping_select_members(thumb->groupid);
     }
     else if(!darktable.gui->grouping
             || thumb->groupid == darktable.gui->expanded_group_id)

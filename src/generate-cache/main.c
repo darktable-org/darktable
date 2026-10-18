@@ -34,6 +34,7 @@
 #include "common/mipmap_cache.h" // for dt_mipmap_size_t, etc
 #include "common/file_location.h"
 #include "common/history.h"      // for dt_history_hash_set_mipmap
+#include "common/image.h"        // for dt_image_get_in_range
 #include "control/conf.h"        // for dt_conf_get_bool
 
 #ifdef __APPLE__
@@ -61,21 +62,10 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mip
   }
 
   // some progress counter
-  sqlite3_stmt *stmt;
   size_t image_count = 0, counter = 0;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT COUNT(*) FROM main.images WHERE id >= ?1 AND id <= ?2", -1, &stmt, 0);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, min_imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    image_count = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
-  }
-  else
-  {
-    return 1;
-  }
+  const int count = dt_image_count_in_range(min_imgid, max_imgid);
+  if(count < 0) return 1;
+  image_count = count;
 
   if(!image_count)
   {
@@ -87,14 +77,12 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mip
   }
 
   // go through all images:
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id, filename FROM main.images WHERE id >= ?1 AND id <= ?2", -1, &stmt, 0);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, min_imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_imgid);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  GList *imgs = dt_image_get_in_range(min_imgid, max_imgid);
+  for(const GList *l = imgs; l; l = g_list_next(l))
   {
-    const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
-    const char *imgfilename = (const char*)sqlite3_column_text(stmt, 1);
+    const dt_image_id_filename_t *item = l->data;
+    const dt_imgid_t imgid = item->id;
+    const char *imgfilename = item->filename;
 
     counter++;
     fprintf(stderr, "image %zu/%zu (%.02f%%) (id:%d, file=%s)\n", counter, image_count, 100.0 * counter / (float)image_count, imgid, imgfilename);
@@ -119,7 +107,7 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mip
     dt_history_hash_set_mipmap(imgid);
   }
 
-  sqlite3_finalize(stmt);
+  g_list_free_full(imgs, dt_image_id_filename_free);
   fprintf(stderr, "done\n");
 
   return 0;

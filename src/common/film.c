@@ -558,6 +558,72 @@ void dt_film_set_folder_status()
   sqlite3_finalize(stmt2);
 }
 
+gchar *dt_film_get_folder(const dt_filmid_t id)
+{
+  gchar *folder = NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT folder FROM main.film_rolls WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    folder = g_strdup((char *)sqlite3_column_text(stmt, 0));
+  sqlite3_finalize(stmt);
+  return folder;
+}
+
+uint32_t dt_film_count_images(const dt_filmid_t id)
+{
+  uint32_t count = 0;
+  sqlite3_stmt *stmt = NULL;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(*) FROM main.images WHERE film_id = ?1  ", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  return count;
+}
+
+dt_imgid_t dt_film_get_nth_image(const dt_filmid_t id, const int n)
+{
+  dt_imgid_t imgid = NO_IMGID;
+  sqlite3_stmt *stmt = NULL;
+  char query[1024];
+  snprintf(query, sizeof(query), "SELECT id FROM main.images WHERE film_id = ?1 ORDER BY id LIMIT 1 OFFSET %d",
+           n);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    imgid = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  return imgid;
+}
+
+uint32_t dt_film_count(void)
+{
+  uint32_t count = 0;
+  sqlite3_stmt *stmt = NULL;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM main.film_rolls ", -1, &stmt,
+                              NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  return count;
+}
+
+dt_filmid_t dt_film_get_nth(const int n)
+{
+  dt_filmid_t id = NO_FILMID;
+  sqlite3_stmt *stmt = NULL;
+  char query[1024];
+  snprintf(query, sizeof(query), "SELECT id FROM main.film_rolls ORDER BY id LIMIT 1 OFFSET %d", n);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    id = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  return id;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

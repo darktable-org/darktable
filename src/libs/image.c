@@ -250,21 +250,8 @@ void gui_update(dt_lib_module_t *self)
       dt_image_cache_read_release(img);
       gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), !is_bw);
       gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), is_bw);
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT COUNT(id)"
-                                  " FROM main.images"
-                                  " WHERE group_id = ?1 AND id != ?2", -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img_group_id);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-      if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        const int images_in_grp = sqlite3_column_int(stmt, 0);
-        gtk_widget_set_sensitive(GTK_WIDGET(d->ungroup_button), images_in_grp > 0);
-      }
-      else
-        gtk_widget_set_sensitive(GTK_WIDGET(d->ungroup_button), FALSE);
-      if(stmt) sqlite3_finalize(stmt);
+      const int images_in_grp = dt_grouping_count_others(img_group_id, imgid);
+      gtk_widget_set_sensitive(GTK_WIDGET(d->ungroup_button), images_in_grp > 0);
     }
     else
     {

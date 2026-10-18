@@ -362,17 +362,7 @@ static void dt_add_hist(const dt_imgid_t imgid, const char *operation, const dt_
   sqlite3_finalize(stmt);
 
   // also bump history_end
-  // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images"
-                              " SET history_end = (SELECT IFNULL(MAX(num) + 1, 0)"
-                              "                    FROM main.history"
-                              "                    WHERE imgid = ?1)"
-                              " WHERE id = ?1", -1, &stmt, NULL);
-  // clang-format on
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  dt_image_sync_history_end(imgid);
 
   if(imported[0]) g_strlcat(imported, ", ", imported_len);
   g_strlcat(imported, dt_iop_get_localized_name(operation), imported_len);
