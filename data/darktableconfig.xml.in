@@ -2685,6 +2685,13 @@
     <longdescription>this is slower than the default.</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/export/pq_peak_nits</name>
+    <type min="203" max="10000">int</type>
+    <default>1000</default>
+    <shortdescription>PQ peak luminance</shortdescription>
+    <longdescription>the brightest highlight a PQ (HDR) output should reach, in nits. tone mappers that follow the output map their white to this peak. HLG output always peaks at 1000 nits and SDR output at the 203 nit reference white.</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/export/high_quality_processing</name>
     <type>bool</type>
     <default>false</default>
