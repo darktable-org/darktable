@@ -314,14 +314,93 @@ static gboolean dt_styles_create_style_header(const char *name,
   return TRUE;
 }
 
+// the flexi mask of stored blend params `blob`, of module `operation`, into
+// `bp`: FALSE when there is none to carry. A module without masks references
+// its shapes from its params: they are its content, not a mask to carry (see
+// dt_develop_blend_params_read())
+static gboolean _flexi_mask_of(const char *operation,
+                               const void *blob,
+                               const int bytes,
+                               const int version,
+                               dt_develop_blend_params_t *bp)
+{
+  if(!blob || version != dt_develop_blend_version() || bytes != sizeof(*bp)) return FALSE;
+  const dt_iop_module_so_t *so = dt_iop_get_module_so(operation);
+  memcpy(bp, blob, sizeof(*bp));
+  return so && !(so->flags() & IOP_FLAGS_NO_MASKS)
+    && (bp->mask_mode & DEVELOP_MASK_FLEXI) && dt_is_valid_maskid(bp->mask_id);
+}
+
+// does history row `num` of `imgid` hold a flexi mask with a form stored as
+// pixels in its tree? Read as _style_item_attach_mask() reads it
+static gboolean _history_row_has_pixel_mask(const dt_imgid_t imgid,
+                                            const int num,
+                                            const char *operation,
+                                            const void *blob,
+                                            const int bytes,
+                                            const int version)
+{
+  dt_develop_blend_params_t bp;
+  if(!_flexi_mask_of(operation, blob, bytes, version, &bp)) return FALSE;
+  GList *forms = dt_masks_read_forms_at(imgid, num);
+  const gboolean pixels = dt_masks_tree_has_pixel_forms(forms, bp.mask_id);
+  g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+  dt_print(DT_DEBUG_MASKS, "[styles] image %d history %d '%s': mask %d%s",
+           imgid, num, operation, bp.mask_id, pixels ? " holds a form stored as pixels" : "");
+  return pixels;
+}
+
+gchar *dt_styles_history_pixel_mask_modules(const dt_imgid_t imgid, GList *nums)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT num, operation, blendop_params, blendop_version,"
+                              "       multi_name, multi_name_hand_edited"
+                              " FROM main.history"
+                              " WHERE imgid = ?1"
+                              " ORDER BY num",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  GString *modules = g_string_new(NULL);
+  // a module edited in several listed items is named once
+  GHashTable *named = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int num = sqlite3_column_int(stmt, 0);
+    const char *op = (const char *)sqlite3_column_text(stmt, 1);
+    const void *blendop_params = sqlite3_column_blob(stmt, 2);
+    const int blendop_params_size = sqlite3_column_bytes(stmt, 2);
+    const int blendop_version = sqlite3_column_int(stmt, 3);
+    const char *multi_name = (const char *)sqlite3_column_text(stmt, 4);
+    const gboolean multi_name_hand_edited = sqlite3_column_int(stmt, 5);
+    // an auto-init item is listed negated (dt_styles_create_from_image())
+    gboolean listed = nums == NULL;
+    for(GList *l = nums; l && !listed; l = g_list_next(l))
+      listed = abs(GPOINTER_TO_INT(l->data)) == num;
+    if(!listed
+       || !_history_row_has_pixel_mask(imgid, num, op, blendop_params,
+                                       blendop_params_size, blendop_version))
+      continue;
+    // as the history stack names it
+    char *label = dt_history_get_name_label(dt_iop_get_localized_name(op),
+                                            multi_name, FALSE, multi_name_hand_edited);
+    if(g_hash_table_add(named, g_strdup(label)))
+      g_string_append_printf(modules, "%s%s", modules->len ? "\n" : "", label);
+    g_free(label);
+  }
+  sqlite3_finalize(stmt);
+  g_hash_table_destroy(named);
+  return g_string_free(modules, modules->len == 0);
+}
+
 // a style item copied from history row `hist_num` of `imgid` names its flexi
 // mask group by id, but the forms are in main.masks_history: they go along in
 // the item's blendop_params (dt_masks_blend_blob_encode()), as for a preset.
 // TRUE when they hold a form stored as pixels, which other images cannot use
 static gboolean _style_item_attach_mask(const int styleid,
-                                    const int style_num,
-                                    const dt_imgid_t imgid,
-                                    const int hist_num)
+                                        const int style_num,
+                                        const dt_imgid_t imgid,
+                                        const int hist_num)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -334,17 +413,14 @@ static gboolean _style_item_attach_mask(const int styleid,
 
   dt_develop_blend_params_t bp;
   gboolean flexi = FALSE;
-  if(sqlite3_step(stmt) == SQLITE_ROW
-     && sqlite3_column_int(stmt, 2) == dt_develop_blend_version()
-     && sqlite3_column_bytes(stmt, 1) == sizeof(bp))
+  if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    // a module without masks references its shapes from its params: they are
-    // its content, not a mask to carry (see dt_develop_blend_params_read())
-    const dt_iop_module_so_t *so =
-      dt_iop_get_module_so((const char *)sqlite3_column_text(stmt, 0));
-    memcpy(&bp, sqlite3_column_blob(stmt, 1), sizeof(bp));
-    flexi = so && !(so->flags() & IOP_FLAGS_NO_MASKS)
-      && (bp.mask_mode & DEVELOP_MASK_FLEXI) && dt_is_valid_maskid(bp.mask_id);
+    const char *operation = (const char *)sqlite3_column_text(stmt, 0);
+    const void *blendop_params = sqlite3_column_blob(stmt, 1);
+    const int blendop_params_size = sqlite3_column_bytes(stmt, 1);
+    const int blendop_version = sqlite3_column_int(stmt, 2);
+    flexi = _flexi_mask_of(operation, blendop_params, blendop_params_size,
+                           blendop_version, &bp);
   }
   sqlite3_finalize(stmt);
   if(!flexi) return FALSE;
@@ -372,10 +448,13 @@ static gboolean _style_item_attach_mask(const int styleid,
   return pixels;
 }
 
+// the styles dialog asks before saving such a style
+// (dt_styles_history_pixel_mask_modules()); a caller without one is told here
 static void _warn_pixel_forms(const char *style_name)
 {
-  dt_control_log(_("a mask in style '%s' holds AI objects stored as pixels,"
-                   " which do not apply to other images"), style_name);
+  dt_print(DT_DEBUG_ALWAYS,
+           "[styles] a mask in style '%s' holds AI objects stored as pixels,"
+           " which do not apply to other images", style_name);
 }
 
 // TRUE when an item it updated carries a form stored as pixels

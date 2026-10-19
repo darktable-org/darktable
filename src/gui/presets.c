@@ -97,12 +97,46 @@ void *dt_gui_presets_module_blend_blob(dt_iop_module_t *module, size_t *size)
   GList *forms = module->dev && !(module->flags() & IOP_FLAGS_NO_MASKS)
     ? module->dev->forms
     : NULL;
-  void *blob = dt_masks_blend_blob_encode(module->blend_params, forms, size);
-  if(dt_masks_blend_blob_has_tail(*size)
-     && dt_masks_tree_has_pixel_forms(forms, module->blend_params->mask_id))
-    dt_control_log(_("the preset's mask holds AI objects stored as pixels,"
-                     " which do not apply to other images"));
-  return blob;
+  return dt_masks_blend_blob_encode(module->blend_params, forms, size);
+}
+
+gboolean dt_gui_presets_confirm_pixel_masks(const char *style_modules)
+{
+  if(!darktable.gui || !dt_control_running())
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[presets] the mask of a %s holds AI objects stored as pixels,"
+             " which do not apply to other images", style_modules ? "style" : "preset");
+    return TRUE;
+  }
+  if(style_modules)
+  {
+    gchar **names = g_strsplit(style_modules, "\n", -1);
+    gchar *list = g_strjoinv("\n    ", names);
+    g_strfreev(names);
+    const gboolean save = dt_gui_show_yes_no_dialog
+      (_("save style with AI objects?"), "",
+       _("the masks of these modules hold AI objects stored as pixels of this image:\n\n"
+         "    %s\n\n"
+         "they will not apply to other images.\n\n"
+         "do you want to save the style anyway?"), list);
+    g_free(list);
+    return save;
+  }
+  return dt_gui_show_yes_no_dialog
+    (_("save preset with an AI object?"), "",
+     _("the mask holds an AI object stored as pixels of this image.\n"
+       "it will not apply to other images.\n\n"
+       "do you want to save the preset anyway?"));
+}
+
+gboolean dt_gui_presets_confirm_module_mask(dt_iop_module_t *module)
+{
+  if(!module->dev || (module->flags() & IOP_FLAGS_NO_MASKS)
+     || !(module->blend_params->mask_mode & DEVELOP_MASK_FLEXI)
+     || !dt_masks_tree_has_pixel_forms(module->dev->forms, module->blend_params->mask_id))
+    return TRUE;
+  return dt_gui_presets_confirm_pixel_masks(NULL);
 }
 
 void (dt_gui_presets_add_generic)(const char *name,
@@ -203,6 +237,10 @@ static void _edit_preset_response(GtkDialog *dialog,
 {
   if(response_id == GTK_RESPONSE_OK)
   {
+    // a new or edited iop preset takes the module's mask: asked before anything
+    // changes, and no returns to the dialog
+    if(g->iop && !dt_gui_presets_confirm_module_mask(g->iop)) return;
+
     // find the module action list this preset belongs to
     dt_action_t *module_actions = g->iop ? &g->iop->so->actions : NULL;
 
@@ -303,7 +341,8 @@ static void _edit_preset_response(GtkDialog *dialog,
          "  filter=?15, format=?16 %s"
          " WHERE rowid=%d",
          g->iop
-           ? ", op_params=?19, enabled=?20, multi_name=?23, multi_name_hand_edited=?24"
+           ? ", op_params=?19, enabled=?20, blendop_params=?21, blendop_version=?22,"
+             "  multi_name=?23, multi_name_hand_edited=?24"
            : "",
          g->old_id);
       // clang-format on
@@ -411,6 +450,12 @@ static void _edit_preset_response(GtkDialog *dialog,
                                  : name,
                                  -1, SQLITE_TRANSIENT);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, g->iop->multi_name_hand_edited);
+      // the mask goes with the params, as an update of the preset stores it
+      size_t blend_size = 0;
+      void *blend = dt_gui_presets_module_blend_blob(g->iop, &blend_size);
+      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 21, blend, blend_size, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, dt_develop_blend_version());
+      g_free(blend);
     }
 
     // commit specific fields in case of newly created preset
@@ -419,15 +464,7 @@ static void _edit_preset_response(GtkDialog *dialog,
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 17, g->operation, -1, SQLITE_TRANSIENT);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 18, g->op_version);
 
-      if(g->iop)
-      {
-        size_t blend_size = 0;
-        void *blend = dt_gui_presets_module_blend_blob(g->iop, &blend_size);
-        DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 21, blend, blend_size, SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, dt_develop_blend_version());
-        g_free(blend);
-      }
-      else
+      if(!g->iop)
       {
         // we are in the lib case currently we set set all params to 0
         DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 21, NULL, 0, SQLITE_TRANSIENT);
@@ -1029,10 +1066,11 @@ static void _menuitem_update_preset(GSimpleAction *action,
 
   const gchar *name = g_variant_get_string(parameter,  NULL);
 
-  if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
-     || dt_gui_show_yes_no_dialog(_("update preset?"), "",
-                                  _("do you really want to update the preset `%s'?"),
-                                  name))
+  if((!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
+      || dt_gui_show_yes_no_dialog(_("update preset?"), "",
+                                   _("do you really want to update the preset `%s'?"),
+                                   name))
+     && dt_gui_presets_confirm_module_mask(module))
   {
     // commit all the module fields
     sqlite3_stmt *stmt;

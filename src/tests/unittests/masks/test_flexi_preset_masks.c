@@ -35,6 +35,7 @@
 
 #include "catalog_fixture.h"
 #include "common/database.h"
+#include "common/history.h"
 #include "common/debug.h"
 #include "common/image.h"
 #include "common/presets.h"
@@ -354,6 +355,92 @@ static void test_pixel_forms_found(void **state)
   // outside the tree it does not count
   assert_false(dt_masks_tree_has_pixel_forms(forms, NO_MASKID));
   g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+}
+
+// a fresh image whose mask, as _build_mask() makes it, also holds an AI object
+// stored as pixels, recorded in its history
+static dt_imgid_t _image_with_pixel_object(void)
+{
+  const dt_imgid_t imgid = dt_image_duplicate(dt_test_catalog_image("bayer4.crw"));
+  dt_develop_t dev;
+  _open(&dev, imgid);
+  dt_iop_module_t *module = _module(&dev);
+  _build_mask(&dev, module);
+  _commit(&dev, module);
+  // a later history item of the same module, as an edit after a focus change
+  dev.focus_hash++;
+  dt_masks_form_t *grp = dt_masks_get_from_id(&dev, module->blend_params->mask_id);
+  dt_masks_form_t *object = dt_masks_create(DT_MASKS_OBJECT);
+  object->points = g_list_append(NULL, calloc(1, object->functions->point_struct_size));
+  dev.forms = g_list_append(dev.forms, object);
+  grp->points = g_list_append(grp->points, _member(object->formid, grp->formid));
+  _commit(&dev, module);
+  dt_dev_cleanup(&dev);
+  return imgid;
+}
+
+// a style made from an image whose mask holds an AI object stored as pixels:
+// the styles dialog asks first, naming the module whose mask holds it
+// (dt_styles_history_pixel_mask_modules()) among the history items it lists,
+// and the style then carries the object
+static void test_style_from_pixel_object(void **state)
+{
+  _ensure_source();
+  const dt_imgid_t imgid = _image_with_pixel_object();
+
+  // the items the styles dialog lists and passes on
+  GList *items = dt_history_get_items(imgid, FALSE, TRUE, TRUE);
+  GList *all = NULL, *others = NULL;
+  for(GList *l = items; l; l = g_list_next(l))
+  {
+    const dt_history_item_t *it = l->data;
+    all = g_list_append(all, GINT_TO_POINTER(it->num));
+    if(strcmp(it->op, OP)) others = g_list_append(others, GINT_TO_POINTER(it->num));
+  }
+  g_list_free_full(items, dt_history_item_free);
+
+  // as the history stack names it
+  gchar *modules = dt_styles_history_pixel_mask_modules(imgid, all);
+  assert_string_equal(modules, dt_iop_get_localized_name(OP));
+  g_free(modules);
+  modules = dt_styles_history_pixel_mask_modules(imgid, NULL);
+  assert_string_equal(modules, dt_iop_get_localized_name(OP));
+  g_free(modules);
+  // without the module, or from an image with no object, nothing to ask
+  assert_null(dt_styles_history_pixel_mask_modules(imgid, others));
+  assert_null(dt_styles_history_pixel_mask_modules(_src, NULL));
+
+  assert_true(dt_styles_create_from_image("test pixel style", "", imgid, all, FALSE));
+  g_list_free(all);
+  g_list_free(others);
+
+  GBytes *item = _select_blob(STYLE_BLOB_QUERY, "test pixel style");
+  assert_non_null(item);
+  gsize size = 0;
+  const void *blob = g_bytes_get_data(item, &size);
+  dt_develop_blend_params_t bp;
+  GList *forms = NULL;
+  assert_true(dt_masks_blend_blob_decode(blob, size, &bp, &forms));
+  assert_true(dt_masks_tree_has_pixel_forms(forms, bp.mask_id));
+  g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+  g_bytes_unref(item);
+}
+
+// every interactive save asks through dt_gui_presets_confirm_pixel_masks();
+// without a GUI to ask in, as for import, Lua or the cli, it never refuses
+static void test_pixel_object_save_headless(void **state)
+{
+  const dt_imgid_t imgid = _image_with_pixel_object();
+  dt_develop_t dev;
+  _open(&dev, imgid);
+  dt_iop_module_t *module = _module(&dev);
+  // the module as the darkroom holds it: a headless load leaves it at defaults
+  memcpy(module->blend_params, _last_item(&dev)->blend_params,
+         sizeof(dt_develop_blend_params_t));
+  assert_true(dt_masks_tree_has_pixel_forms(dev.forms, module->blend_params->mask_id));
+  assert_true(dt_gui_presets_confirm_module_mask(module));
+  assert_true(dt_gui_presets_confirm_pixel_masks("exposure"));
+  dt_dev_cleanup(&dev);
 }
 
 static gboolean _decodes(const void *blob, const size_t size)
@@ -802,6 +889,8 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_blob_roundtrip),
     cmocka_unit_test(test_blob_malformed),
     cmocka_unit_test(test_pixel_forms_found),
+    cmocka_unit_test(test_style_from_pixel_object),
+    cmocka_unit_test(test_pixel_object_save_headless),
     cmocka_unit_test(test_preset_apply_other_image),
     cmocka_unit_test(test_auto_apply_with_mask),
     cmocka_unit_test(test_style_with_mask),
