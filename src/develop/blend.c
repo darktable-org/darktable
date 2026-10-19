@@ -3030,6 +3030,15 @@ gboolean dt_develop_blend_migrate_classic_mask(dt_iop_module_t *module,
                                                dt_develop_blend_params_t *bp,
                                                const int history_num)
 {
+  // a uniform blend with no flexi bit, which development builds of 5.7 stored
+  // as the migration of a classic mask rendering a constant: a flexi mask with
+  // no group, as the panel expects, which needs no image
+  if(module && bp && bp->mask_mode == DEVELOP_MASK_ENABLED)
+  {
+    dt_masks_migrate_classic_to_flexi(module, bp, history_num);
+    return TRUE;
+  }
+
   // dt_masks_migrate_classic_to_flexi() rewrites a mask with no classic mode
   // bit, a flexi one included: only a classic mask may reach it
   if(!module || !module->dev || !dt_develop_blend_mask_is_classic(bp)) return FALSE;

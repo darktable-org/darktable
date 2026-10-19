@@ -756,7 +756,9 @@ static inline gboolean dt_develop_blend_mask_is_classic(const dt_develop_blend_p
 /** migrates the classic mask of current-version params, as
     dt_develop_blend_legacy_params_ext() migrates a legacy one, with the same
     `history_num`. Development builds of 5.7 stored presets so, at the current
-    version, and auto-apply copied them into history. TRUE when it migrated */
+    version, and auto-apply copied them into history. A uniform blend without
+    the flexi bit, which their migration wrote for a classic mask rendering a
+    constant, becomes flexi too. TRUE when it migrated */
 gboolean dt_develop_blend_migrate_classic_mask(dt_iop_module_t *module,
                                                dt_develop_blend_params_t *bp,
                                                const int history_num);

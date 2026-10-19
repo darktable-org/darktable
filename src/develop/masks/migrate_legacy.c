@@ -576,6 +576,23 @@ static void _clear_toplevel_blendif(dt_develop_blend_params_t *n)
   memset(n->blendif_boost_factors, 0, sizeof(n->blendif_boost_factors));
 }
 
+// a classic mask that renders a constant becomes a flexi mask with no group, as
+// a uniform blend migrates (dt_masks_migrate_classic_to_flexi()): the panel
+// expects every mask_mode to be DISABLED or flexi. With no form, the flexi
+// renderer fills 1, or 0 with MASKS_POS, which is cleared here, and scales it
+// by the opacity: at zero opacity for an empty mask. The group goes through
+// the setter, as a NO_MASKS module's mask_id is its own shapes
+static void _migrate_to_uniform(const dt_iop_module_t *module,
+                                dt_develop_blend_params_t *n,
+                                const gboolean opaque)
+{
+  _clear_toplevel_blendif(n);
+  n->mask_mode = DEVELOP_MASK_ENABLED | DEVELOP_MASK_FLEXI;
+  dt_develop_blend_set_mask_group_id(module, n, NO_MASKID);
+  n->mask_combine &= ~(uint32_t)DEVELOP_COMBINE_MASKS_POS;
+  if(!opaque) n->opacity = 0.0f;
+}
+
 // DEVELOP_COMBINE_INCL is not an invert of the result: the make_mask()
 // functions that read it (Lab, RGB HSL and JzCzhz; raw ignores it) flip every
 // channel's polarity bit with this colorspace mask before selecting. A
@@ -758,11 +775,7 @@ static void _migrate_parametric_only(dt_iop_module_t *module,
     opaque = (incl == inv);
   if(branch != DT_COND_REAL)
   {
-    _clear_toplevel_blendif(n);
-    n->mask_mode = DEVELOP_MASK_ENABLED;
-    n->mask_id = NO_MASKID;
-    n->mask_combine &= ~(uint32_t)DEVELOP_COMBINE_MASKS_POS;
-    if(!opaque) n->opacity = 0.0f;
+    _migrate_to_uniform(module, n, opaque);
     return;
   }
 
@@ -881,11 +894,7 @@ static void _migrate_drawn_and_parametric(dt_iop_module_t *module,
 
     const gboolean inv = (o->mask_combine & DEVELOP_COMBINE_INV) != 0;
     const gboolean opaque = (incl != inv);
-    _clear_toplevel_blendif(n);
-    n->mask_mode = DEVELOP_MASK_ENABLED;
-    n->mask_id = NO_MASKID;
-    n->mask_combine &= ~(uint32_t)DEVELOP_COMBINE_MASKS_POS;
-    if(!opaque) n->opacity = 0.0f;
+    _migrate_to_uniform(module, n, opaque);
     return;
   }
 
@@ -899,11 +908,7 @@ static void _migrate_drawn_and_parametric(dt_iop_module_t *module,
       // dt_iop_image_fill() replaces the whole buffer, drawn shapes included,
       // so the shapes change nothing
       const gboolean opaque = (incl != inv);
-      _clear_toplevel_blendif(n);
-      n->mask_mode = DEVELOP_MASK_ENABLED;
-      n->mask_id = NO_MASKID;
-      n->mask_combine &= ~(uint32_t)DEVELOP_COMBINE_MASKS_POS;
-      if(!opaque) n->opacity = 0.0f;
+      _migrate_to_uniform(module, n, opaque);
       return;
     }
 
@@ -1084,16 +1089,14 @@ void dt_masks_migrate_classic_to_flexi(dt_iop_module_t *module,
     bp->mask_mode &= ~(uint32_t)DEVELOP_MASK_MASK;
 
   // no mask mode: disabled, or a uniform blend, which renders as a flexi mask
-  // with no group does. The panel relies on every mask_mode being DISABLED or
-  // flexi
+  // with no group does once the combine bits are gone: classic's uniform blend
+  // reads none of them, while the flexi renderer inverts for MASKS_POS and
+  // INV (_migrate_to_uniform). The panel relies on every mask_mode being
+  // DISABLED or flexi
   if(!(bp->mask_mode
        & (DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL | DEVELOP_MASK_RASTER)))
   {
-    if(bp->mask_mode & DEVELOP_MASK_ENABLED)
-    {
-      bp->mask_mode = DEVELOP_MASK_ENABLED | DEVELOP_MASK_FLEXI;
-      dt_develop_blend_set_mask_group_id(module, bp, NO_MASKID);
-    }
+    if(bp->mask_mode & DEVELOP_MASK_ENABLED) _migrate_to_uniform(module, bp, TRUE);
     return;
   }
 
