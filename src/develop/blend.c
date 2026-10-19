@@ -55,7 +55,7 @@ static dt_develop_blend_params_t _default_blendop_params
         0.0f, // detail mask threshold
         1, // feather_version
         0, // mask_lock
-        { 0 },
+        NO_MASKID, // blend_mask_id
         { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
@@ -400,7 +400,7 @@ void dt_masks_refine_bypass_commit(const dt_iop_module_t *const module,
     // look up the keys this mask can use rather than copying the table, which
     // holds what the user bypassed in any mask
     dt_masks_form_t *const grp =
-      dt_masks_get_from_id(darktable.develop, bp->mask_id);
+      dt_masks_get_from_id(darktable.develop, dt_develop_blend_mask_group_id(module, bp));
     if(g_hash_table_lookup(set, GUINT_TO_POINTER(DT_MASKS_REFINE_KEY_GLOBAL)))
     {
       const guint32 gk = DT_MASKS_REFINE_KEY_GLOBAL;
@@ -422,7 +422,7 @@ void dt_masks_refine_bypass_commit(const dt_iop_module_t *const module,
   dt_print(DT_DEBUG_MASKS,
            "[masks] refine bypass '%s': %d of %u table entries apply to this"
            " mask (mask_id=%d)",
-           module->op, n, table_size, bp->mask_id);
+           module->op, n, table_size, dt_develop_blend_mask_group_id(module, bp));
 }
 
 // is the refinement of the whole flexi mask previewed as off?
@@ -520,9 +520,8 @@ static dt_hash_t _group_raster_sources_hash(const dt_hash_t hash,
    process() (see pixelpipe_hb.c), so the blend must not render its classic
    drawn mask: it would paint the module's own shapes as a mask.
 
-   A flexi group is never those shapes. In such a module it holds parametric
-   and raster elements only: the panel offers no shapes there
-   (bd->masks_support in blend_gui.c), and migration adds none. Do not test the
+   Its flexi group is never those shapes: it lives in blend_mask_id, apart
+   from the shapes in mask_id (dt_develop_blend_mask_group_id). Do not test the
    flag alone: a parametric mask of such a module lives in a flexi group once
    migrated, and would collapse to a flat opacity. */
 gboolean dt_blend_may_render_group(dt_iop_module_t *self,
@@ -1162,7 +1161,8 @@ void dt_develop_blend_process(dt_iop_module_t *self,
     gboolean pixels_missing = FALSE;
 
     // get the drawn mask if there is one
-    dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
+    dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms,
+                                                     dt_develop_blend_mask_group_id(self, d));
 
     // we blend with a drawn and/or parametric mask. An empty flexi group, which
     // emptying it in the panel leaves behind (_detach_group_members in
@@ -1819,7 +1819,8 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     // the uniform value a fallback branch below fills the mask with, or -1
     float fill = -1.0f;
     // get the drawn mask if there is one
-    dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
+    dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms,
+                                                     dt_develop_blend_mask_group_id(self, d));
 
     // we blend with a drawn and/or parametric mask. An empty flexi group takes
     // the "no form" branch below, as in dt_develop_blend_process
@@ -2315,7 +2316,8 @@ void tiling_callback_blendop(dt_iop_module_t *self,
   const dt_masks_form_t *const form =
     piece->pipe->devid > DT_DEVICE_CPU
     && (bldata->mask_mode & (DEVELOP_MASK_MASK | DEVELOP_MASK_FLEXI))
-      ? dt_masks_get_from_id_ext(piece->pipe->forms, bldata->mask_id)
+      ? dt_masks_get_from_id_ext(piece->pipe->forms,
+                                 dt_develop_blend_mask_group_id(piece->module, bldata))
       : NULL;
   if(form && dt_masks_group_walk(piece->pipe->forms, form, _is_parametric, NULL))
     tiling->factor_cl += 0.5f * outnorm;
@@ -3015,6 +3017,8 @@ gboolean dt_develop_blend_legacy_params_ext(dt_iop_module_t *module,
   // current layout, maybe with a classic mask_mode, whatever version it came
   // from. Migration cannot fail
   dt_develop_blend_params_t *n = new_params;
+  // a reserved field before, which older versions do not keep zero
+  n->blend_mask_id = NO_MASKID;
   dt_masks_migrate_classic_to_flexi(module, n, history_num);
   // every conversion is from a version older than the lock, whose reserved
   // field it took over
@@ -3022,7 +3026,8 @@ gboolean dt_develop_blend_legacy_params_ext(dt_iop_module_t *module,
   return FALSE;
 }
 
-void dt_develop_blend_keep_locked_mask(dt_develop_blend_params_t *incoming,
+void dt_develop_blend_keep_locked_mask(const dt_iop_module_t *module,
+                                       dt_develop_blend_params_t *incoming,
                                        const dt_develop_blend_params_t *const locked)
 {
   if(!dt_develop_blend_mask_locked(locked))
@@ -3034,10 +3039,31 @@ void dt_develop_blend_keep_locked_mask(dt_develop_blend_params_t *incoming,
   const uint32_t blend_mode = incoming->blend_mode;
   const float blend_parameter = incoming->blend_parameter;
   const float opacity = incoming->opacity;
+  const dt_mask_id_t own_shapes = incoming->mask_id;
   *incoming = *locked;
   incoming->blend_mode = blend_mode;
   incoming->blend_parameter = blend_parameter;
   incoming->opacity = opacity;
+  // a NO_MASKS module's mask_id is its own shapes, which go with its params
+  if(module && (module->flags() & IOP_FLAGS_NO_MASKS))
+    incoming->mask_id = own_shapes;
+}
+
+dt_mask_id_t dt_develop_blend_mask_group_id(const dt_iop_module_t *module,
+                                            const dt_develop_blend_params_t *const bp)
+{
+  if(!bp) return NO_MASKID;
+  return module && (module->flags() & IOP_FLAGS_NO_MASKS) ? bp->blend_mask_id : bp->mask_id;
+}
+
+void dt_develop_blend_set_mask_group_id(const dt_iop_module_t *module,
+                                        dt_develop_blend_params_t *bp,
+                                        const dt_mask_id_t id)
+{
+  if(module && (module->flags() & IOP_FLAGS_NO_MASKS))
+    bp->blend_mask_id = id;
+  else
+    bp->mask_id = id;
 }
 
 gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,

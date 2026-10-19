@@ -176,8 +176,9 @@ static gchar *_check_group_invariant(dt_develop_t *dev)
     const dt_dev_history_item_t *h = m->data;
     const dt_develop_blend_params_t *bp = h->blend_params;
     if(!bp || !(bp->mask_mode & DEVELOP_MASK_FLEXI)) continue;
-    if(!dt_is_valid_maskid(bp->mask_id)) continue;
-    gchar *v = _check_groups(dev, bp->mask_id, NULL, 0);
+    const dt_mask_id_t grid = dt_develop_blend_mask_group_id(h->module, bp);
+    if(!dt_is_valid_maskid(grid)) continue;
+    gchar *v = _check_groups(dev, grid, NULL, 0);
     if(v) return v;
   }
   return NULL;

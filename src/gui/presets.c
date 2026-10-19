@@ -1124,7 +1124,7 @@ void dt_gui_presets_apply_preset(const gchar* name,
     // a locked mask survives the preset; committed again rather than patched
     // in place so a kept raster mask source is registered with its module
     dt_develop_blend_params_t kept = *module->blend_params;
-    dt_develop_blend_keep_locked_mask(&kept, &replaced);
+    dt_develop_blend_keep_locked_mask(module, &kept, &replaced);
     if(memcmp(&kept, module->blend_params, sizeof(kept)))
       dt_iop_commit_blend_params(module, &kept, NULL);
 

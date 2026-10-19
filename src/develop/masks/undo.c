@@ -198,8 +198,8 @@ static gboolean _undo_cycle(const step_t *st, const int group_index,
   for(GList *m = dev.iop; m; m = g_list_next(m))
   {
     dt_iop_module_t *cand = m->data;
-    if(!dt_masks_postedit_target_group(&dev, cand->blend_params)) continue;
-    GList *all = dt_masks_postedit_groups(&dev, cand->blend_params);
+    if(!dt_masks_postedit_target_group(&dev, cand, cand->blend_params)) continue;
+    GList *all = dt_masks_postedit_groups(&dev, cand, cand->blend_params);
     grp = g_list_nth_data(all, group_index);
     g_list_free(all);
     if(grp) mod = cand;
@@ -348,7 +348,7 @@ static void _undo_edit(JsonObject *edit, undo_report_t *rep, case_tally_t *tally
       // tree has to be installed before it is walked
       g_list_free_full(r.dev.forms, (GDestroyNotify)dt_masks_free_form);
       r.dev.forms = dt_masks_dup_forms_deep(opened.forms, NULL);
-      GList *g0 = dt_masks_postedit_groups(&r.dev, &opened.bp);
+      GList *g0 = dt_masks_postedit_groups(&r.dev, &r.module, &opened.bp);
       rep->groups = (int)g_list_length(g0);
       g_list_free(g0);
     }

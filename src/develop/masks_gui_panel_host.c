@@ -530,6 +530,8 @@ void dt_iop_gui_blend_masks_panel_collapsed(const gboolean collapsed)
 
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   if(!bd || !bd->masks_support || !bd->masks_inited) return;
+  // the canvas of a module without shapes is not the panel's
+  if(!bd->shapes_support) return;
 
   if(collapsed)
   {

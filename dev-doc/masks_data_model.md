@@ -76,11 +76,19 @@ the bits are stored, so a clash could not be fixed by renumbering.
 `mask_mode` gains `DEVELOP_MASK_FLEXI` (`1 << 4`): `mask_id` then names the
 module's mask group, the root of its tree.
 
+The exception is an `IOP_FLAGS_NO_MASKS` module (retouch, spots): its
+`mask_id` holds the shapes it uses itself in `process()`, so its mask group
+is in `blend_mask_id` instead. Resolve the mask group with
+`dt_develop_blend_mask_group_id()`, never from `mask_id` directly. Such a
+module's mask panel offers parametric and raster elements but no shapes, and
+leaves the canvas to the module's own tools (`bd->shapes_support`).
+
 Blend parameters v15 have the same layout as v14. The version bump routes
 every older edit through `dt_develop_blend_legacy_params_ext`, which runs
-the migration. `mask_lock` takes over the first reserved field: a locked
-mask survives reset, presets, styles and paste. Every legacy conversion
-clears it, since the reserved field was never guaranteed to be zero.
+the migration. `mask_lock` and `blend_mask_id` take over the two reserved
+fields: a locked mask survives reset, presets, styles and paste. Every
+legacy conversion clears both, since the reserved fields were never
+guaranteed to be zero.
 
 ## The tree
 

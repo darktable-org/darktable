@@ -990,10 +990,13 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget,
     if(new_combine != old_combine)
       change_parts[num_parts++] = CHG_STR(%c, _("drawn mask polarity"), old_combine, new_combine);
 
-    if(hitem->blend_params->mask_id != old_blend->mask_id)
-      change_parts[num_parts++] = old_blend->mask_id == 0
+    const dt_mask_id_t old_grid = dt_develop_blend_mask_group_id(hitem->module, old_blend);
+    const dt_mask_id_t new_grid =
+      dt_develop_blend_mask_group_id(hitem->module, hitem->blend_params);
+    if(new_grid != old_grid)
+      change_parts[num_parts++] = old_grid == 0
                                 ? g_strdup_printf(_("a drawn mask was added"))
-                                : hitem->blend_params->mask_id == 0
+                                : new_grid == 0
                                 ? g_strdup_printf(_("the drawn mask was removed"))
                                 : g_strdup_printf(_("the drawn mask was changed"));
 

@@ -388,6 +388,16 @@ static void _set_group_name_from_module(const dt_iop_module_t *module,
   g_free(module_label);
 }
 
+// a module's group: with `own`, the shapes an IOP_FLAGS_NO_MASKS module
+// (retouch, spots) uses itself, otherwise its blend mask. The same group for
+// every other module
+static dt_mask_id_t _module_group_id(const dt_iop_module_t *module, const gboolean own)
+{
+  return own ? module->blend_params->mask_id
+             : dt_develop_blend_mask_group_id(module, module->blend_params);
+}
+
+// a clone group is retouch's own list of shapes, never a blend mask
 static dt_masks_form_t *_group_create(dt_develop_t *dev,
                                       const dt_iop_module_t *module,
                                       const dt_masks_type_t type)
@@ -396,7 +406,10 @@ static dt_masks_form_t *_group_create(dt_develop_t *dev,
   _set_group_name_from_module(module, grp);
   _check_id(grp);
   dev->forms = g_list_append(dev->forms, grp);
-  module->blend_params->mask_id = grp->formid;
+  if(type & DT_MASKS_CLONE)
+    module->blend_params->mask_id = grp->formid;
+  else
+    dt_develop_blend_set_mask_group_id(module, module->blend_params, grp->formid);
   return grp;
 }
 
@@ -408,18 +421,20 @@ dt_masks_form_t *dt_masks_module_group_create(dt_develop_t *dev, dt_iop_module_t
 }
 
 static dt_masks_form_t *_group_from_module(const dt_develop_t *dev,
-                                           const dt_iop_module_t *module)
+                                           const dt_iop_module_t *module,
+                                           const gboolean own)
 {
-  return dt_masks_get_from_id(dev, module->blend_params->mask_id);
+  return dt_masks_get_from_id(dev, _module_group_id(module, own));
 }
 
 gboolean dt_masks_is_in_module(const dt_mask_id_t maskid, const dt_iop_module_t *module)
 {
   if(!dt_is_valid_maskid(maskid) || !module) return FALSE;
 
-  if(maskid == module->blend_params->mask_id) return TRUE;
+  const dt_mask_id_t grid = _module_group_id(module, FALSE);
+  if(maskid == grid) return TRUE;
 
-  const dt_masks_form_t *root = dt_masks_get_from_id(module->dev, module->blend_params->mask_id);
+  const dt_masks_form_t *root = dt_masks_get_from_id(module->dev, grid);
   return _group_entry_in(module->dev, root, maskid, NULL, 0) != NULL;
 }
 
@@ -497,7 +512,7 @@ dt_masks_point_group_t *dt_masks_group_insert_point(dt_develop_t *dev,
   // commits (dt_dev_add_masks_history_item)
   const gboolean flexi = !(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE));
   // is there already a masks group for this module ?
-  dt_masks_form_t *grp = _group_from_module(dev, module);
+  dt_masks_form_t *grp = _group_from_module(dev, module, !flexi);
   if(!grp)
   {
     // we create a new group
@@ -563,7 +578,8 @@ void dt_masks_group_insert_member(dt_develop_t *dev,
   {
     dev->form_gui->panel_selected_formid = form->formid;
   }
-  if(module && module->blend_data)
+  // the panel selects what joined the mask, never a retouch shape
+  if(module && module->blend_data && !(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE)))
   {
     dt_iop_gui_blend_data_t *bd = module->blend_data;
     bd->panel_selected_formid = form->formid;
@@ -596,7 +612,7 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev,
     dev->form_gui->formid = form->formid;
     dev->form_gui->panel_selected_formid = form->formid;
   }
-  if(module && module->blend_data)
+  if(module && module->blend_data && !(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE)))
   {
     dt_iop_gui_blend_data_t *bd = module->blend_data;
     bd->panel_selected_formid = form->formid;
@@ -1906,7 +1922,9 @@ static gboolean _is_module_mask(const dt_mask_id_t fid)
   for(const GList *m = dev ? dev->iop : NULL; m; m = g_list_next(m))
   {
     const dt_iop_module_t *mod = m->data;
-    if(mod->blend_params && mod->blend_params->mask_id == fid) return TRUE;
+    if(mod->blend_params
+       && (mod->blend_params->mask_id == fid || mod->blend_params->blend_mask_id == fid))
+      return TRUE;
   }
   return FALSE;
 }
@@ -1922,6 +1940,8 @@ static GHashTable *_module_masks(void)
     const dt_iop_module_t *mod = m->data;
     if(mod->blend_params && dt_is_valid_maskid(mod->blend_params->mask_id))
       g_hash_table_add(ids, GINT_TO_POINTER(mod->blend_params->mask_id));
+    if(mod->blend_params && dt_is_valid_maskid(mod->blend_params->blend_mask_id))
+      g_hash_table_add(ids, GINT_TO_POINTER(mod->blend_params->blend_mask_id));
   }
   return ids;
 }
@@ -3151,9 +3171,11 @@ static gboolean _edit_mode_refused(const dt_iop_module_t *module)
 {
   dt_pthread_mutex_lock(&darktable.develop->history_mutex);
   const dt_develop_blend_params_t *bp = module->blend_params;
-  const gboolean refused = dt_develop_blend_mask_locked(bp)
-                           || (bp->mask_mode == DEVELOP_MASK_DISABLED
-                               && !(module->flags() & IOP_FLAGS_NO_MASKS));
+  // the canvas of a NO_MASKS module is its own shapes, which the blend
+  // mask's lock does not cover
+  const gboolean refused = !(module->flags() & IOP_FLAGS_NO_MASKS)
+                           && (dt_develop_blend_mask_locked(bp)
+                               || bp->mask_mode == DEVELOP_MASK_DISABLED);
   dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
   return refused;
 }
@@ -3194,7 +3216,9 @@ void dt_masks_set_edit_mode(dt_iop_module_t *module,
   dt_masks_change_form_gui(grp);
   darktable.develop->form_gui->edit_mode = value;
 
-  if(bd->masks_support)
+  // the panel's "edit on canvas" does not stand for a NO_MASKS module's own
+  // shapes
+  if(bd->shapes_support)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),
                                  value == DT_MASKS_EDIT_OFF ? FALSE : TRUE);
 
@@ -3283,7 +3307,7 @@ void dt_masks_set_edit_mode_forms(dt_iop_module_t *module,
   if(bd)
   {
     bd->masks_shown = value;
-    if(bd->masks_support)
+    if(bd->shapes_support)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),
                                    value == DT_MASKS_EDIT_OFF ? FALSE : TRUE);
   }
@@ -3293,7 +3317,9 @@ void dt_masks_set_edit_mode_forms(dt_iop_module_t *module,
 
 void dt_masks_group_update_name(dt_iop_module_t *module)
 {
-  dt_masks_form_t *grp = _group_from_module(darktable.develop, module);
+  dt_masks_form_t *grp = _group_from_module(darktable.develop, module, TRUE);
+  dt_masks_form_t *blend_grp = _group_from_module(darktable.develop, module, FALSE);
+  if(blend_grp && blend_grp != grp) _set_group_name_from_module(module, blend_grp);
   if(!grp)
     return;
 
@@ -3336,12 +3362,11 @@ void dt_masks_iop_use_same_as(dt_iop_module_t *module,
   if(!module || !src) return;
 
   // we get the source group
-  const dt_mask_id_t srcid = src->blend_params->mask_id;
-  dt_masks_form_t *src_grp = dt_masks_get_from_id(darktable.develop, srcid);
+  dt_masks_form_t *src_grp = _group_from_module(darktable.develop, src, FALSE);
   if(!src_grp || src_grp->type != DT_MASKS_GROUP) return;
 
   // is there already a masks group for this module ?
-  dt_masks_form_t *grp = _group_from_module(darktable.develop, module);
+  dt_masks_form_t *grp = _group_from_module(darktable.develop, module, FALSE);
   if(!grp)
   {
     grp = _group_create(darktable.develop, module, DT_MASKS_GROUP);
@@ -3415,22 +3440,29 @@ void dt_masks_form_remove(dt_iop_module_t *module,
   for(GList *iops = darktable.develop->iop; iops; iops = g_list_next(iops))
   {
     dt_iop_module_t *m = iops->data;
-    if(m->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+    if(!(m->flags() & IOP_FLAGS_SUPPORTS_BLENDING)) continue;
+    // a NO_MASKS module has two groups, its own shapes and its blend mask
+    const int ngroups = (m->flags() & IOP_FLAGS_NO_MASKS) ? 2 : 1;
+    for(int k = 0; k < ngroups; k++)
     {
+      const gboolean own = k == 0;
       // is the form the base group of the iop ?
-      if(id == m->blend_params->mask_id)
+      if(id == _module_group_id(m, own))
       {
         dt_print(DT_DEBUG_MASKS,
-                 "[masks] dt_masks_form_remove '%s': mask_id %d->NO_MASKID"
+                 "[masks] dt_masks_form_remove '%s': %s %d->NO_MASKID"
                  " (form %d permanently removed)",
-                 m->op, m->blend_params->mask_id, id);
-        m->blend_params->mask_id = NO_MASKID;
+                 m->op, own ? "mask_id" : "blend_mask_id", id, id);
+        if(own)
+          m->blend_params->mask_id = NO_MASKID;
+        else
+          dt_develop_blend_set_mask_group_id(m, m->blend_params, NO_MASKID);
         dt_masks_iop_update(m);
         dt_dev_add_history_item(darktable.develop, m, TRUE);
       }
       else
       {
-        dt_masks_form_t *iopgrp = _group_from_module(darktable.develop, m);
+        dt_masks_form_t *iopgrp = _group_from_module(darktable.develop, m, own);
         if(iopgrp && (iopgrp->type & DT_MASKS_GROUP))
         {
           gboolean ok = FALSE;
@@ -3483,7 +3515,7 @@ dt_masks_remove_target_t dt_masks_remove_shape_target(const dt_iop_module_t *mod
   if(module && module->blend_data && module->blend_params
      && !(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE)))
   {
-    const dt_mask_id_t mask_id = module->blend_params->mask_id;
+    const dt_mask_id_t mask_id = _module_group_id(module, FALSE);
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, mask_id);
     if(parentid == mask_id
        || (grp && dt_masks_group_find_node(darktable.develop->forms, grp, parentid, NULL)))
@@ -3840,7 +3872,10 @@ static int _masks_cleanup_unused(GList **_forms,
   {
     const dt_dev_history_item_t *hist = history->data;
     const dt_develop_blend_params_t *blend_params = hist->blend_params;
-    if(!blend_params || !dt_is_valid_maskid(blend_params->mask_id)) continue;
+    if(!blend_params
+       || !(dt_is_valid_maskid(blend_params->mask_id)
+            || dt_is_valid_maskid(blend_params->blend_mask_id)))
+      continue;
 
     gboolean replaced = FALSE;
     if(num < start && hist->module)
@@ -3858,7 +3893,11 @@ static int _masks_cleanup_unused(GList **_forms,
       }
     }
     if(!replaced)
+    {
+      // NO_MASKID for every module but a NO_MASKS one (blend.h)
       _cleanup_unused_recurs(forms, blend_params->mask_id, used, nbf, 0);
+      _cleanup_unused_recurs(forms, blend_params->blend_mask_id, used, nbf, 0);
+    }
   }
 
   // and we delete all unused forms

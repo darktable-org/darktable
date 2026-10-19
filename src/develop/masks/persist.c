@@ -193,10 +193,11 @@ static const seq_t _sequences[] =
 /** the `index`-th group of dt_masks_postedit_groups(), or NULL when the tree
     has fewer */
 static dt_masks_form_t *_group_at(dt_develop_t *dev,
+                                  const dt_iop_module_t *module,
                                   const dt_develop_blend_params_t *bp,
                                   const int index)
 {
-  GList *all = dt_masks_postedit_groups(dev, bp);
+  GList *all = dt_masks_postedit_groups(dev, module, bp);
   dt_masks_form_t *grp = g_list_nth_data(all, index);
   g_list_free(all);
   return grp;
@@ -224,8 +225,8 @@ static gboolean _read_poke_write(const step_t *st, const int group_index)
   for(GList *m = dev.iop; m; m = g_list_next(m))
   {
     dt_iop_module_t *mod = m->data;
-    if(!dt_masks_postedit_target_group(&dev, mod->blend_params)) continue;
-    dt_masks_form_t *grp = _group_at(&dev, mod->blend_params, group_index);
+    if(!dt_masks_postedit_target_group(&dev, mod, mod->blend_params)) continue;
+    dt_masks_form_t *grp = _group_at(&dev, mod, mod->blend_params, group_index);
     if(!grp) break;
 
     {
@@ -357,7 +358,7 @@ static void _persist_edit(JsonObject *edit,
   _install_state(&r, &bp, forms);
 
   // a mask this check cannot poke: no group means no run and no member
-  if(!dt_masks_postedit_target_group(&r.dev, &bp))
+  if(!dt_masks_postedit_target_group(&r.dev, &r.module, &bp))
   {
     rep->skip_reason = "no group to edit";
     goto out;
@@ -376,7 +377,7 @@ static void _persist_edit(JsonObject *edit,
   // how many groups the module renders through, counted once on the un-poked
   // tree: no poke here creates or destroys a group, so the count is stable and
   // both arms resolve the same index to the same group
-  GList *g0 = dt_masks_postedit_groups(&r.dev, &bp);
+  GList *g0 = dt_masks_postedit_groups(&r.dev, &r.module, &bp);
   const int ngroups = (int)g_list_length(g0);
   g_list_free(g0);
   rep->groups = ngroups;
@@ -393,7 +394,7 @@ static void _persist_edit(JsonObject *edit,
     if(!dt_masks_scratch_reset_to_migrated(PERSIST_IMGID, &e, &bp, &forms))
       continue;
     _install_state(&r, &bp, forms);
-    dt_masks_form_t *grp = _group_at(&r.dev, &bp, gi);
+    dt_masks_form_t *grp = _group_at(&r.dev, &r.module, &bp, gi);
     if(!grp) continue;
 
     for(int s = 0; s < seq->n; s++)

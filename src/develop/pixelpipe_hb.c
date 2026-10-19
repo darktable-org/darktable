@@ -700,7 +700,8 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
         if(valid_mask
            && pipe->want_detail_mask == FALSE
            && (!feqf(bp->details, 0.0f, 1e-6)
-               || _blend_group_wants_details(dev, bp->mask_id)))
+               || _blend_group_wants_details(dev, dt_develop_blend_mask_group_id(piece->module,
+                                                                                 bp))))
         {
           // during synch_all replay the flush is deferred to a single
           // presence-gated invalidation at the end (see
@@ -808,7 +809,9 @@ void dt_dev_pixelpipe_prune_stale_raster_users(dt_dev_pixelpipe_t *pipe,
     const gboolean consumes =
       sink_piece->enabled && bp
       && ((points_back && (bp->mask_mode & DEVELOP_MASK_RASTER))
-          || _raster_form_consumes(module->dev, bp->mask_id, module));
+          || _raster_form_consumes(module->dev,
+                                   dt_develop_blend_mask_group_id(sink_piece->module, bp),
+                                   module));
     if(!consumes)
     {
       g_hash_table_iter_remove(&iter);

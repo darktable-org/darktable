@@ -112,16 +112,18 @@ static gboolean _pick_host(JsonObject *root, JsonArray *edits, _host_t *host)
     whole question for a style, since the immediate migration path writes its
     synthesized form to dev->forms only. */
 static gchar *_describe_mask(dt_develop_t *dev,
+                             const dt_iop_module_t *module,
                              const dt_develop_blend_params_t *bp,
                              gboolean *resolved)
 {
   if(resolved) *resolved = FALSE;
   if(!bp) return g_strdup("(no blend params)");
+  const dt_mask_id_t grid = dt_develop_blend_mask_group_id(module, bp);
 
   GString *s = g_string_new(NULL);
-  g_string_append_printf(s, "mask_mode=%u mask_id=%d", bp->mask_mode, bp->mask_id);
+  g_string_append_printf(s, "mask_mode=%u mask_id=%d", bp->mask_mode, grid);
 
-  if(!dt_is_valid_maskid(bp->mask_id))
+  if(!dt_is_valid_maskid(grid))
   {
     /* No mask_id is not automatically a failure -- two migration outcomes
        legitimately end with no form at all, and both are correct:
@@ -147,7 +149,7 @@ static gchar *_describe_mask(dt_develop_t *dev,
     return g_string_free(s, FALSE);
   }
 
-  const dt_masks_form_t *grp = dt_masks_get_from_id(dev, bp->mask_id);
+  const dt_masks_form_t *grp = dt_masks_get_from_id(dev, grid);
   if(!grp)
   {
     g_string_append(s, " -> DANGLING (no such form)");
@@ -215,7 +217,7 @@ static void _settle(const _host_t *host, gchar **host_desc)
   dt_dev_write_history_ext(&dev, STYLEAPPLY_IMGID);
 
   const dt_dev_history_item_t *h = _history_item_for(&dev, host->operation, 0);
-  *host_desc = _describe_mask(&dev, h ? h->blend_params : NULL, NULL);
+  *host_desc = _describe_mask(&dev, h ? h->module : NULL, h ? h->blend_params : NULL, NULL);
 
   dt_dev_cleanup(&dev);
 }
@@ -540,7 +542,8 @@ gboolean dt_masks_styleapply_harvest_section(const char *json_path,
     {
       gboolean k_resolved = FALSE;
       const dt_dev_history_item_t *ih = _history_item_for(&dev, op, landed[k]);
-      gchar *d = _describe_mask(&dev, ih ? ih->blend_params : NULL, &k_resolved);
+      gchar *d = _describe_mask(&dev, ih ? ih->module : NULL, ih ? ih->blend_params : NULL,
+                                 &k_resolved);
 
       const gboolean k_same_id =
         ih && ih->blend_params && ih->blend_params->mask_id == bp.mask_id;
@@ -579,7 +582,7 @@ gboolean dt_masks_styleapply_harvest_section(const char *json_path,
     if(!collides)
     {
       const dt_dev_history_item_t *hh = _history_item_for(&dev, host.operation, 0);
-      host_after = _describe_mask(&dev, hh ? hh->blend_params : NULL, NULL);
+      host_after = _describe_mask(&dev, hh ? hh->module : NULL, hh ? hh->blend_params : NULL, NULL);
       host_ok = host_before && host_after && !strcmp(host_before, host_after);
     }
 
