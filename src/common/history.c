@@ -584,9 +584,10 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     /* only the masks variant snapshots dev_dest->forms into the item, and
        only such an item writes forms (dt_dev_write_history_ext()). `nbf`
        counts forms copied from a source image, and a style has none
-       (dev_src == NULL); yet dt_styles_apply_style_item() migrates a style's
-       blend_params (dt_masks_migrate_classic_to_flexi()), which synthesizes a
-       form for a parametric or raster mask. So the masks variant is also
+       (dev_src == NULL); yet dt_styles_apply_style_item() adds the forms a
+       style item carries to dev_dest->forms, or migrates its blend_params
+       (dt_develop_blend_params_read()), which synthesizes a form for a
+       parametric or raster mask. So the masks variant is also
        taken when the module's mask_id resolves in dev_dest->forms, or the
        mask would be lost on the next load: the destination's forms, as the
        form may have been made here */

@@ -89,6 +89,19 @@ if(EXISTS "${DT_TEST_IMAGES}/mire1.cr2")
     DT_TEST_MODULEDIR="${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/darktable"
     DT_TEST_IMAGES="${DT_TEST_IMAGES}")
   list(APPEND _flexi_tests_catalog test_flexi_presets)
+
+  # Presets and styles carrying the forms of a flexi mask, and the classic
+  # masks of older ones, migrated as a history row is.
+  add_cmocka_test(test_flexi_preset_masks
+                  SOURCES test_flexi_preset_masks.c ../catalog/catalog_fixture.c
+                  LINK_LIBRARIES lib_darktable cmocka)
+  target_compile_definitions(test_flexi_preset_masks PRIVATE
+    DT_TEST_DATADIR="${CMAKE_BINARY_DIR}/share/darktable"
+    DT_TEST_MODULEDIR="${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/darktable"
+    DT_TEST_IMAGES="${DT_TEST_IMAGES}")
+  target_include_directories(test_flexi_preset_masks PRIVATE
+                             ${CMAKE_SOURCE_DIR}/src/tests/unittests/catalog)
+  list(APPEND _flexi_tests_catalog test_flexi_preset_masks)
 else()
   message(WARNING "test_flexi_presets disabled: integration test images missing (git submodule)")
 endif()

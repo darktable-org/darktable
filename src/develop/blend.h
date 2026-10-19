@@ -753,6 +753,25 @@ static inline gboolean dt_develop_blend_mask_is_classic(const dt_develop_blend_p
     && !(p->mask_mode & DEVELOP_MASK_FLEXI);
 }
 
+/** reads blend params as a history row, a preset or a style item stores them,
+    `length` bytes at blend version `version`, into `bp`, for `module`:
+    - the current version: the params, and the mask forms after them, which
+      go to the image of `module` under fresh ids
+      (dt_masks_import_stored_forms())
+    - the current version with a classic mask and no forms: migrated
+      (dt_develop_blend_migrate_classic_mask())
+    - an older version: converted, and its mask migrated
+    `history_num` as for dt_develop_blend_legacy_params_ext(). `*converted`
+    (may be NULL) tells whether the params were converted or migrated. TRUE
+    when the blob cannot be read: the caller then uses the default params */
+gboolean dt_develop_blend_params_read(dt_iop_module_t *module,
+                                      const void *const blob,
+                                      const int length,
+                                      const int version,
+                                      dt_develop_blend_params_t *bp,
+                                      const int history_num,
+                                      gboolean *converted);
+
 /** migrates the classic mask of current-version params, as
     dt_develop_blend_legacy_params_ext() migrates a legacy one, with the same
     `history_num`. Development builds of 5.7 stored presets so, at the current

@@ -986,6 +986,17 @@ void dt_masks_migrate_classic_to_flexi(struct dt_iop_module_t *module,
                                        struct dt_develop_blend_params_t *bp,
                                        const int history_num);
 
+/** adds `forms`, the mask tree a preset, style or history row carried with
+    `bp` (dt_masks_blend_blob_decode()), to the image of `module` under fresh
+    ids, and points `bp` at them. Takes the forms. With a `history_num`, as
+    for dt_masks_migrate_classic_to_flexi(), they are written to
+    main.masks_history by dt_masks_finish_flexi_migrations(); with none,
+    they go into dev->forms at once */
+void dt_masks_import_stored_forms(struct dt_iop_module_t *module,
+                                  struct dt_develop_blend_params_t *bp,
+                                  GList *forms,
+                                  const int history_num);
+
 /** create the forms of every migration dt_masks_migrate_classic_to_flexi()
     deferred, writing them under the masks_history position
     dt_masks_read_masks_history() reads as current. Call it once
@@ -1022,6 +1033,57 @@ gboolean dt_masks_is_in_module(dt_mask_id_t maskid, const struct dt_iop_module_t
 void dt_masks_register_forms(dt_develop_t *dev,
                              struct dt_iop_module_t *module,
                              GList *forms);
+
+/** a form as a main.masks_history row stores it, converted to the current
+    masks version, or NULL when it cannot be read (logged). `dev` is the image
+    the form belongs to, which converting a form stored before masks v3 needs:
+    with none, such a form is not read */
+dt_masks_form_t *dt_masks_form_from_stored(dt_develop_t *dev,
+                                           const dt_imgid_t imgid,
+                                           const dt_mask_id_t formid,
+                                           const dt_masks_type_t type,
+                                           const char *name,
+                                           const int version,
+                                           const void *points,
+                                           const size_t points_bytes,
+                                           const int nb_points,
+                                           const void *source,
+                                           const size_t source_bytes);
+/** the forms of the main.masks_history snapshot history position `num` of
+    `imgid` renders with: its last one at or before `num` */
+GList *dt_masks_read_forms_at(const dt_imgid_t imgid, const int num);
+/** the forms of `forms` the group `mask_id` reaches, itself first and then
+    depth first. The list is new, the forms are not */
+GList *dt_masks_tree_forms(GList *forms, const dt_mask_id_t mask_id);
+
+/** does the tree of the group `mask_id` hold a form stored as pixels (an AI
+    object not traced into paths)? Its pixels belong to its own image: carried
+    by a preset or a style, it renders nowhere on another one */
+gboolean dt_masks_tree_has_pixel_forms(GList *forms, const dt_mask_id_t mask_id);
+
+/** blend params as presets and styles store them (masks/blend_blob.c):
+    `bp`, followed, when its flexi mask group is in `forms`, by the forms of
+    that group's tree. g_free() the result, of `*size` bytes */
+void *dt_masks_blend_blob_encode(const struct dt_develop_blend_params_t *bp,
+                                 GList *forms,
+                                 size_t *size);
+/** does stored blend params of `size` bytes go on after the struct? */
+gboolean dt_masks_blend_blob_has_tail(const size_t size);
+/** the reverse of dt_masks_blend_blob_encode(), for blobs from files too:
+    FALSE, with nothing in `*forms`, when the blob is not one it makes. The
+    forms keep the ids of the image they came from: see
+    dt_masks_blend_blob_remap() */
+gboolean dt_masks_blend_blob_decode(const void *blob,
+                                    const size_t size,
+                                    struct dt_develop_blend_params_t *bp,
+                                    GList **forms);
+/** gives `forms` and their markers fresh ids, used neither in `taken` (forms
+    and markers) nor in `taken_ids` (when not NULL, the new ids are added to
+    it), and rewrites every reference to them, `bp->mask_id` included */
+void dt_masks_blend_blob_remap(GList *forms,
+                               struct dt_develop_blend_params_t *bp,
+                               GList *taken,
+                               GHashTable *taken_ids);
 
 /** read the forms from the db */
 void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid);

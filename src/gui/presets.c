@@ -90,6 +90,21 @@ void dt_gui_presets_init()
                         NULL, NULL);
 }
 
+void *dt_gui_presets_module_blend_blob(dt_iop_module_t *module, size_t *size)
+{
+  // a module without masks references its shapes from its params: they are
+  // its content, not a mask to carry
+  GList *forms = module->dev && !(module->flags() & IOP_FLAGS_NO_MASKS)
+    ? module->dev->forms
+    : NULL;
+  void *blob = dt_masks_blend_blob_encode(module->blend_params, forms, size);
+  if(dt_masks_blend_blob_has_tail(*size)
+     && dt_masks_tree_has_pixel_forms(forms, module->blend_params->mask_id))
+    dt_control_log(_("the preset's mask holds AI objects stored as pixels,"
+                     " which do not apply to other images"));
+  return blob;
+}
+
 void (dt_gui_presets_add_generic)(const char *name,
                                   const dt_dev_operation_t op,
                                   const int32_t version,
@@ -406,9 +421,11 @@ static void _edit_preset_response(GtkDialog *dialog,
 
       if(g->iop)
       {
-        DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 21, g->iop->blend_params,
-                                   sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
+        size_t blend_size = 0;
+        void *blend = dt_gui_presets_module_blend_blob(g->iop, &blend_size);
+        DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 21, blend, blend_size, SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, dt_develop_blend_version());
+        g_free(blend);
       }
       else
       {
@@ -1031,13 +1048,14 @@ static void _menuitem_update_preset(GSimpleAction *action,
     DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, module->params, module->params_size,
                                SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, module->enabled);
-    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, module->blend_params,
-                               sizeof(dt_develop_blend_params_t),
-                               SQLITE_TRANSIENT);
+    size_t blend_size = 0;
+    void *blend = dt_gui_presets_module_blend_blob(module, &blend_size);
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, blend, blend_size, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, dt_develop_blend_version());
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 7, name, -1, SQLITE_TRANSIENT);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+    g_free(blend);
   }
 }
 
@@ -1065,28 +1083,14 @@ void dt_gui_presets_apply_blend_params(dt_iop_module_t *module,
 {
   const dt_develop_blend_params_t replaced = *module->blend_params;
 
-  if(blendop_params
-     && (blendop_version == dt_develop_blend_version())
-     && (bl_length == sizeof(dt_develop_blend_params_t)))
-  {
-    dt_develop_blend_params_t bp;
-    memcpy(&bp, blendop_params, sizeof(bp));
-    // a preset that development builds of 5.7 stored current with its
-    // classic mask (see _init_presets() in imageop.c)
-    dt_develop_blend_migrate_classic_mask(module, &bp, -1);
-    dt_iop_commit_blend_params(module, &bp, NULL);
-  }
-  else if(blendop_params
-          && dt_develop_blend_legacy_params(module, blendop_params,
-                                            blendop_version, module->blend_params,
-                                            dt_develop_blend_version(), bl_length) == FALSE)
-  {
-    // do nothing
-  }
-  else
-  {
+  // converted or migrated if need be, the forms of its mask added to the image
+  // under fresh ids (dt_develop_blend_params_read())
+  dt_develop_blend_params_t bp;
+  if(dt_develop_blend_params_read(module, blendop_params, bl_length, blendop_version,
+                                  &bp, -1, NULL))
     dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
-  }
+  else
+    dt_iop_commit_blend_params(module, &bp, NULL);
 
   // a locked mask survives the preset; committed again rather than patched
   // in place so a kept raster mask source is registered with its module
@@ -1155,8 +1159,8 @@ void dt_gui_presets_apply_preset(const gchar* name,
   // parameter changes after leaving that guard; tone equalizer needs this
   // synchronization to rebuild its luminance cache and histogram.
   dt_iop_refresh_all(module);
-  // only the masks variant records the forms: those of a mask the preset's
-  // migration created would be lost on the next load
+  // only the masks variant records the forms: those the preset carried, or
+  // that its migration created, would be lost on the next load
   if(dt_masks_module_mask_in_forms(module, darktable.develop->forms))
     dt_dev_add_masks_history_item(darktable.develop, module, FALSE);
   else
@@ -1291,8 +1295,9 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
     {
       dt_iop_params_t *params = (dt_iop_params_t *)sqlite3_column_blob(stmt, 1);
       dt_develop_blend_params_t *blend_params = (dt_iop_params_t *)sqlite3_column_blob(stmt, 2);
+      // the forms a preset may carry after the blend params play no part here
       if(sqlite3_column_bytes(stmt, 1) == module->params_size
-         && sqlite3_column_bytes(stmt, 2) == sizeof(dt_develop_blend_params_t))
+         && sqlite3_column_bytes(stmt, 2) >= sizeof(dt_develop_blend_params_t))
         dt_bauhaus_update_from_field(module, widget, params, blend_params);
     }
     else
@@ -1924,8 +1929,7 @@ static gboolean _iop_is_active(sqlite3_stmt *stmt, gpointer data, gboolean *writ
                   MIN(module->params_size, module->params_size)))
       || (op_params_size > 0
           && !memcmp(module->params, op_params, MIN(op_params_size, module->params_size))))
-     && !memcmp(module->blend_params, blendop_params,
-                MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))
+     && dt_presets_blend_params_match(module->blend_params, blendop_params, bl_params_size)
      && (module->enabled && enabled))
   {
     *writeprotect = sqlite3_column_int(stmt, 2);

@@ -3026,6 +3026,49 @@ gboolean dt_develop_blend_legacy_params_ext(dt_iop_module_t *module,
   return FALSE;
 }
 
+gboolean dt_develop_blend_params_read(dt_iop_module_t *module,
+                                      const void *const blob,
+                                      const int length,
+                                      const int version,
+                                      dt_develop_blend_params_t *bp,
+                                      const int history_num,
+                                      gboolean *converted)
+{
+  if(converted) *converted = FALSE;
+  if(!blob || length <= 0) return TRUE;
+
+  if(version != DEVELOP_BLEND_VERSION)
+  {
+    // no tail: only this version writes one
+    if(dt_develop_blend_legacy_params_ext(module, blob, version, bp,
+                                          DEVELOP_BLEND_VERSION, length, history_num))
+      return TRUE;
+    if(converted) *converted = TRUE;
+    return FALSE;
+  }
+
+  GList *forms = NULL;
+  if(!dt_masks_blend_blob_decode(blob, length, bp, &forms)) return TRUE;
+
+  if(forms)
+  {
+    // the shapes of a module that has no mask are its own content, referenced
+    // by id from its params, which fresh ids would break
+    if(module && (module->flags() & IOP_FLAGS_NO_MASKS))
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[blend] '%s': mask forms of a module without masks ignored",
+               module->op);
+      g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+    }
+    else
+      dt_masks_import_stored_forms(module, bp, forms, history_num);
+  }
+  else if(dt_develop_blend_migrate_classic_mask(module, bp, history_num) && converted)
+    *converted = TRUE;
+
+  return FALSE;
+}
+
 gboolean dt_develop_blend_migrate_classic_mask(dt_iop_module_t *module,
                                                dt_develop_blend_params_t *bp,
                                                const int history_num)

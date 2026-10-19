@@ -130,6 +130,7 @@ FILE(GLOB SOURCE_FILES
   "develop/imageop_gui.c"
   "develop/imageop_math.c"
   "develop/lightroom.c"
+  "develop/masks/blend_blob.c"
   "develop/masks/brush.c"
   "develop/masks/check.c"
   "develop/masks/circle.c"

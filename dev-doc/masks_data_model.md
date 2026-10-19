@@ -40,6 +40,21 @@ Older darktable versions cannot read a v7 group blob. Nor can this one read
 the group blobs of development builds made before the group point grew, which
 already wrote v7 with 16-byte group points; no release did.
 
+### Presets and styles
+
+A preset or a style item stores a module's blend parameters in
+`blendop_params`. When their mask is flexi, the forms of the mask group's
+tree follow the struct in the same blob, each as a `main.masks_history` row
+holds it. `masks/blend_blob.c` defines the format and is the only code that
+reads or writes it. A blob without these forms is the plain struct, as it
+was before. Applying the blob gives the forms fresh ids
+(`dt_masks_blend_blob_remap`), so two applies never share a form.
+
+Presets and styles made before flexi masks hold a classic `mask_mode` and no
+forms, at blend version 14 or older, or at version 15 where a conversion had
+no image to create the forms in. `dt_develop_blend_params_read` migrates
+them when they are applied, as a history row is migrated.
+
 ### Form types
 
 Two form types are new, each with its point struct in `develop/blend.h`:

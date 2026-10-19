@@ -314,11 +314,77 @@ static gboolean dt_styles_create_style_header(const char *name,
   return TRUE;
 }
 
-static void _dt_style_update_from_image(const int id,
-                                        const dt_imgid_t imgid,
-                                        GList *filter,
-                                        GList *update)
+// a style item copied from history row `hist_num` of `imgid` names its flexi
+// mask group by id, but the forms are in main.masks_history: they go along in
+// the item's blendop_params (dt_masks_blend_blob_encode()), as for a preset.
+// TRUE when they hold a form stored as pixels, which other images cannot use
+static gboolean _style_item_attach_mask(const int styleid,
+                                    const int style_num,
+                                    const dt_imgid_t imgid,
+                                    const int hist_num)
 {
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT operation, blendop_params, blendop_version"
+                              " FROM data.style_items"
+                              " WHERE styleid = ?1 AND num = ?2",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, styleid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, style_num);
+
+  dt_develop_blend_params_t bp;
+  gboolean flexi = FALSE;
+  if(sqlite3_step(stmt) == SQLITE_ROW
+     && sqlite3_column_int(stmt, 2) == dt_develop_blend_version()
+     && sqlite3_column_bytes(stmt, 1) == sizeof(bp))
+  {
+    // a module without masks references its shapes from its params: they are
+    // its content, not a mask to carry (see dt_develop_blend_params_read())
+    const dt_iop_module_so_t *so =
+      dt_iop_get_module_so((const char *)sqlite3_column_text(stmt, 0));
+    memcpy(&bp, sqlite3_column_blob(stmt, 1), sizeof(bp));
+    flexi = so && !(so->flags() & IOP_FLAGS_NO_MASKS)
+      && (bp.mask_mode & DEVELOP_MASK_FLEXI) && dt_is_valid_maskid(bp.mask_id);
+  }
+  sqlite3_finalize(stmt);
+  if(!flexi) return FALSE;
+
+  GList *forms = dt_masks_read_forms_at(imgid, hist_num);
+  size_t size = 0;
+  void *blob = dt_masks_blend_blob_encode(&bp, forms, &size);
+  const gboolean pixels =
+    size > sizeof(bp) && dt_masks_tree_has_pixel_forms(forms, bp.mask_id);
+  g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+
+  if(size > sizeof(bp))
+  {
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "UPDATE data.style_items SET blendop_params = ?3"
+                                " WHERE styleid = ?1 AND num = ?2",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, styleid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, style_num);
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, blob, size, SQLITE_TRANSIENT);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
+  g_free(blob);
+  return pixels;
+}
+
+static void _warn_pixel_forms(const char *style_name)
+{
+  dt_control_log(_("a mask in style '%s' holds AI objects stored as pixels,"
+                   " which do not apply to other images"), style_name);
+}
+
+// TRUE when an item it updated carries a form stored as pixels
+static gboolean _dt_style_update_from_image(const int id,
+                                            const dt_imgid_t imgid,
+                                            GList *filter,
+                                            GList *update)
+{
+  gboolean pixels = FALSE;
   if(update && dt_is_valid_imgid(imgid))
   {
     GList *list = filter;
@@ -380,12 +446,30 @@ static void _dt_style_update_from_image(const int id,
         // clang-format on
       }
 
-      if(*query) DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
+      if(*query)
+      {
+        DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
+
+        // the item updated, or the one just appended, the last
+        int style_num = item_included;
+        if(item_included == 0)
+        {
+          sqlite3_stmt *stmt;
+          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                      "SELECT MAX(num) FROM data.style_items WHERE styleid = ?1",
+                                      -1, &stmt, NULL);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+          if(sqlite3_step(stmt) == SQLITE_ROW) style_num = sqlite3_column_int(stmt, 0);
+          sqlite3_finalize(stmt);
+        }
+        pixels |= _style_item_attach_mask(id, style_num, imgid, abs(item_updated));
+      }
 
       list = g_list_next(list);
       upd = g_list_next(upd);
     } while(list);
   }
+  return pixels;
 }
 
 static void  _dt_style_update_iop_order(const gchar *name,
@@ -480,7 +564,7 @@ void dt_styles_update(const char *name,
     sqlite3_finalize(stmt);
   }
 
-  _dt_style_update_from_image(id, imgid, filter, update);
+  if(_dt_style_update_from_image(id, imgid, filter, update)) _warn_pixel_forms(newname);
 
   _dt_style_update_iop_order(name, id, imgid, copy_iop_order, update_iop_order);
 
@@ -574,7 +658,7 @@ void dt_styles_create_from_style(const char *name,
 
     /* insert items from imgid if defined */
 
-    _dt_style_update_from_image(id, imgid, filter, update);
+    if(_dt_style_update_from_image(id, imgid, filter, update)) _warn_pixel_forms(newname);
 
     _dt_style_update_iop_order(name, id, imgid, copy_iop_order, update_iop_order);
 
@@ -664,6 +748,25 @@ gboolean dt_styles_create_from_image(const char *name,
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
+    // each item has the num of the history row it was copied from
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT num FROM data.style_items WHERE styleid = ?1",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+    GList *nums = NULL;
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      const int num = sqlite3_column_int(stmt, 0);
+      nums = g_list_prepend(nums, GINT_TO_POINTER(num));
+    }
+    sqlite3_finalize(stmt);
+    gboolean pixels = FALSE;
+    for(GList *l = nums; l; l = g_list_next(l))
+      pixels |= _style_item_attach_mask(id, GPOINTER_TO_INT(l->data), imgid,
+                                        GPOINTER_TO_INT(l->data));
+    g_list_free(nums);
+    if(pixels) _warn_pixel_forms(name);
+
     _dt_style_cleanup_multi_instance(id);
 
     /* backup style to disk */
@@ -726,27 +829,15 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
       g_strlcpy(module->multi_name, style_item->multi_name, sizeof(module->multi_name));
       module->multi_name_hand_edited = style_item->multi_name_hand_edited;
 
-      // TODO: this is copied from dt_dev_read_history_ext(), maybe do a helper with this?
-      if(style_item->blendop_params
-         && (style_item->blendop_version == dt_develop_blend_version())
-         && (style_item->blendop_params_size == sizeof(dt_develop_blend_params_t)))
-      {
-        memcpy(module->blend_params, style_item->blendop_params,
-               sizeof(dt_develop_blend_params_t));
-      }
-      else if(style_item->blendop_params
-              && dt_develop_blend_legacy_params(module, style_item->blendop_params,
-                                                style_item->blendop_version,
-                                                module->blend_params, dt_develop_blend_version(),
-                                                style_item->blendop_params_size) == FALSE)
-      {
-        // do nothing
-      }
-      else
-      {
+      // as dt_dev_read_history_ext() reads a history row: the forms of the
+      // mask go into dev->forms, which dt_history_merge_module_into_history()
+      // then records with the item
+      if(dt_develop_blend_params_read(module, style_item->blendop_params,
+                                      style_item->blendop_params_size,
+                                      style_item->blendop_version,
+                                      module->blend_params, -1, NULL))
         memcpy(module->blend_params, module->default_blendop_params,
                sizeof(dt_develop_blend_params_t));
-      }
 
       gboolean autoinit = FALSE;
 

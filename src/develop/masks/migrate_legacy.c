@@ -1075,6 +1075,9 @@ typedef struct _pending_flexi_migration_t
   dt_iop_module_t *module;
   dt_develop_blend_params_t classic; // bp's original, pre-migration snapshot
   dt_develop_blend_params_t *bp;     // the live params to update once resolved
+  // not a migration but the forms a stored blend params blob carried
+  // (dt_masks_import_stored_forms()), to add under fresh ids
+  GList *forms;
 } _pending_flexi_migration_t;
 
 void dt_masks_migrate_classic_to_flexi(dt_iop_module_t *module,
@@ -1156,19 +1159,79 @@ static int _current_masks_history_num(const dt_develop_t *dev)
   return num;
 }
 
+// the form ids main.masks_history holds for the image, any snapshot: dev->forms
+// is not this image's yet when the history loads
+static GHashTable *_stored_form_ids(const dt_develop_t *dev)
+{
+  GHashTable *ids = g_hash_table_new(NULL, NULL);
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT DISTINCT formid FROM main.masks_history WHERE imgid = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const dt_mask_id_t formid = sqlite3_column_int(stmt, 0);
+    g_hash_table_add(ids, GINT_TO_POINTER(formid));
+  }
+  sqlite3_finalize(stmt);
+  return ids;
+}
+
+void dt_masks_import_stored_forms(dt_iop_module_t *module,
+                                  dt_develop_blend_params_t *bp,
+                                  GList *forms,
+                                  const int history_num)
+{
+  if(!forms) return;
+  if(!module || !module->dev)
+  {
+    g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+    return;
+  }
+
+  if(history_num >= 0)
+  {
+    // as a migration's new forms: written under the position
+    // dt_masks_read_masks_history() reads as current, once it is known
+    _pending_flexi_migration_t *pending = calloc(1, sizeof(_pending_flexi_migration_t));
+    pending->module = module;
+    pending->bp = bp;
+    pending->forms = forms;
+    module->dev->pending_flexi_migrations =
+      g_list_append(module->dev->pending_flexi_migrations, pending);
+    return;
+  }
+
+  dt_masks_blend_blob_remap(forms, bp, module->dev->forms, NULL);
+  module->dev->forms = g_list_concat(module->dev->forms, forms);
+}
+
 void dt_masks_finish_flexi_migrations(dt_develop_t *dev)
 {
   if(!dev->pending_flexi_migrations) return;
 
   const int history_num = _current_masks_history_num(dev);
+  GHashTable *taken_ids = NULL;
 
   for(GList *l = dev->pending_flexi_migrations; l; l = g_list_next(l))
   {
     _pending_flexi_migration_t *pending = l->data;
 
-    _dispatch(pending->module, &pending->classic, pending->bp, history_num);
+    if(pending->forms)
+    {
+      if(!taken_ids) taken_ids = _stored_form_ids(dev);
+      dt_masks_blend_blob_remap(pending->forms, pending->bp, NULL, taken_ids);
+      for(GList *f = pending->forms; f; f = g_list_next(f))
+        dt_masks_write_masks_history_item(dev->image_storage.id, history_num, f->data);
+      // dt_masks_read_masks_history() reads them back
+      g_list_free_full(pending->forms, (GDestroyNotify)dt_masks_free_form);
+    }
+    else
+      _dispatch(pending->module, &pending->classic, pending->bp, history_num);
     free(pending);
   }
+  if(taken_ids) g_hash_table_destroy(taken_ids);
 
   g_list_free(dev->pending_flexi_migrations);
   dev->pending_flexi_migrations = NULL;

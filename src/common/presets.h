@@ -35,6 +35,14 @@ gboolean dt_presets_module_can_autoapply(const gchar *operation);
 /** get the preset filters */
 char *dt_presets_get_filter(const dt_image_t *image);
 
+/** do the blend params `bp` of a module match a preset's stored ones, `blob`
+    of `size` bytes? A preset carrying the forms of its mask
+    (dt_masks_blend_blob_encode()) gives them fresh ids when applied, so its
+    mask_id is not compared, nor are the forms */
+gboolean dt_presets_blend_params_match(const struct dt_develop_blend_params_t *bp,
+                                       const void *blob,
+                                       const int size);
+
 /** get preset multi_name for given module params */
 char *dt_presets_get_module_label(const char *module_name,
                                   const void *params,
