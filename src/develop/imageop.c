@@ -1741,11 +1741,6 @@ static void _init_presets(dt_iop_module_so_t *module_so)
 
     if(!old_blend_params || dt_develop_blend_version() > old_blend_params_version)
     {
-      dt_print(DT_DEBUG_ALWAYS,
-              "[imageop_init_presets] updating '%s' preset '%s' from blendop"
-               " version %d to version %d",
-               module_so->op, name, old_blend_params_version, dt_develop_blend_version());
-
       // we need a dt_iop_module_t for dt_develop_blend_legacy_params()
       // using dt_develop_blend_legacy_params_by_so won't help as we need "module" anyway
       dt_iop_module_t *module;
@@ -1777,6 +1772,27 @@ static void _init_presets(dt_iop_module_so_t *module_so)
         memcpy(new_blend_params, module->default_blendop_params,
                sizeof(dt_develop_blend_params_t));
       }
+
+      // a classic mask needs an image to create its flexi forms in, and this
+      // module has none (dt_masks_migrate_classic_to_flexi()). Stored as
+      // current, it would never be migrated: the preset stays as it is, for
+      // preset apply and auto-apply to convert with the image they have
+      if(dt_develop_blend_mask_is_classic(new_blend_params))
+      {
+        dt_print(DT_DEBUG_PARAMS,
+                 "[imageop_init_presets] keeping '%s' preset '%s' at blendop"
+                 " version %d: its mask is converted when it is applied",
+                 module_so->op, name, old_blend_params_version);
+        free(new_blend_params);
+        dt_iop_cleanup_module(module);
+        free(module);
+        continue;
+      }
+
+      dt_print(DT_DEBUG_ALWAYS,
+               "[imageop_init_presets] updating '%s' preset '%s' from blendop"
+               " version %d to version %d",
+               module_so->op, name, old_blend_params_version, dt_develop_blend_version());
 
       // and write the new blend params back to the database
       sqlite3_stmt *stmt2;

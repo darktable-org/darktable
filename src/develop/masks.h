@@ -1009,6 +1009,12 @@ void dt_masks_replace_current_forms(dt_develop_t *dev, GList *forms);
 dt_masks_form_t *dt_masks_get_from_id_ext(GList *forms, dt_mask_id_t id);
 /** returns a form with formid == id from dev->forms */
 dt_masks_form_t *dt_masks_get_from_id(const dt_develop_t *dev, dt_mask_id_t id);
+/** does the mask_id or blend_mask_id of `module`, a module that blends, name
+    a form in `forms`?
+    Then a history item for it must be the masks variant
+    (dt_dev_add_masks_history_item()), the only one that records forms, or a
+    form made for the module (a migrated classic mask) is lost on the next load */
+gboolean dt_masks_module_mask_in_forms(struct dt_iop_module_t *module, GList *forms);
 /** check if a form is used by a given module (directly or as a child of its group) */
 gboolean dt_masks_is_in_module(dt_mask_id_t maskid, const struct dt_iop_module_t *module);
 /** register forms into the mask manager, recording them in `module`'s history

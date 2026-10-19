@@ -3026,6 +3026,19 @@ gboolean dt_develop_blend_legacy_params_ext(dt_iop_module_t *module,
   return FALSE;
 }
 
+gboolean dt_develop_blend_migrate_classic_mask(dt_iop_module_t *module,
+                                               dt_develop_blend_params_t *bp,
+                                               const int history_num)
+{
+  // dt_masks_migrate_classic_to_flexi() rewrites a mask with no classic mode
+  // bit, a flexi one included: only a classic mask may reach it
+  if(!module || !module->dev || !dt_develop_blend_mask_is_classic(bp)) return FALSE;
+
+  // mask_lock is left alone: the params are current, so the field is the lock
+  dt_masks_migrate_classic_to_flexi(module, bp, history_num);
+  return TRUE;
+}
+
 void dt_develop_blend_keep_locked_mask(const dt_iop_module_t *module,
                                        dt_develop_blend_params_t *incoming,
                                        const dt_develop_blend_params_t *const locked)

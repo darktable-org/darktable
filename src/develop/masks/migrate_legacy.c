@@ -1097,9 +1097,12 @@ void dt_masks_migrate_classic_to_flexi(dt_iop_module_t *module,
     return;
   }
 
-  // no image to create forms for: dt_develop_blend_legacy_params_from_so(),
-  // converting a built-in preset at module registration. Such presets hold no
-  // shapes, so they stay classic
+  // no image to create forms for: a module with no dev, converting a preset at
+  // module registration (_init_presets() in imageop.c,
+  // dt_develop_blend_legacy_params_from_so()). The mask stays classic, and must
+  // be migrated once an image is there: _init_presets() leaves such a preset
+  // at its stored version, and preset apply and history read migrate a current
+  // one still classic (dt_develop_blend_migrate_classic_mask())
   if(!module->dev) return;
 
   const dt_develop_blend_params_t o = *bp;

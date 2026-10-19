@@ -2311,6 +2311,17 @@ dt_masks_form_t *dt_masks_get_from_id(const dt_develop_t *dev, const dt_mask_id_
   return dt_masks_get_from_id_ext(dev->forms, id);
 }
 
+gboolean dt_masks_module_mask_in_forms(dt_iop_module_t *module, GList *forms)
+{
+  return module
+    && (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+    && module->blend_params
+    && ((dt_is_valid_maskid(module->blend_params->mask_id)
+         && dt_masks_get_from_id_ext(forms, module->blend_params->mask_id) != NULL)
+        || (dt_is_valid_maskid(module->blend_params->blend_mask_id)
+            && dt_masks_get_from_id_ext(forms, module->blend_params->blend_mask_id) != NULL));
+}
+
 static inline gboolean _sane_val(const float val)
 {
   return !dt_isnan(val) && val >= 0.0f;

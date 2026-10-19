@@ -180,6 +180,14 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w);
 /** apply a preset to the current module **/
 void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module);
 
+/** the blend part of dt_gui_presets_apply_preset(): commits a preset's stored
+    blend params to `module`, converted to the current version with its mask
+    migrated to flexi, and keeps a locked mask. Needs no GUI **/
+void dt_gui_presets_apply_blend_params(dt_iop_module_t *module,
+                                       const void *blendop_params,
+                                       const int blendop_version,
+                                       const int bl_length);
+
 /** apply next or previous preset to the current module **/
 void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module, const int direction);
 

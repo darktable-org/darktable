@@ -2803,6 +2803,11 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
        && is_valid_blendop_size)
     {
       memcpy(hist->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
+      // current with a classic mask: what auto-apply copied from a preset that
+      // development builds of 5.7 stored so (see _init_presets() in imageop.c).
+      // Migrated as a legacy row is, under this row's num
+      if(dt_develop_blend_migrate_classic_mask(hist->module, hist->blend_params, num))
+        legacy_params = TRUE;
     }
     else if(blendop_params
             && dt_develop_blend_legacy_params_ext

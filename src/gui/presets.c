@@ -1058,6 +1058,44 @@ static void _menuitem_new_preset(GSimpleAction *action,
   _edit_preset(_("new preset"), module);
 }
 
+void dt_gui_presets_apply_blend_params(dt_iop_module_t *module,
+                                       const void *blendop_params,
+                                       const int blendop_version,
+                                       const int bl_length)
+{
+  const dt_develop_blend_params_t replaced = *module->blend_params;
+
+  if(blendop_params
+     && (blendop_version == dt_develop_blend_version())
+     && (bl_length == sizeof(dt_develop_blend_params_t)))
+  {
+    dt_develop_blend_params_t bp;
+    memcpy(&bp, blendop_params, sizeof(bp));
+    // a preset that development builds of 5.7 stored current with its
+    // classic mask (see _init_presets() in imageop.c)
+    dt_develop_blend_migrate_classic_mask(module, &bp, -1);
+    dt_iop_commit_blend_params(module, &bp, NULL);
+  }
+  else if(blendop_params
+          && dt_develop_blend_legacy_params(module, blendop_params,
+                                            blendop_version, module->blend_params,
+                                            dt_develop_blend_version(), bl_length) == FALSE)
+  {
+    // do nothing
+  }
+  else
+  {
+    dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
+  }
+
+  // a locked mask survives the preset; committed again rather than patched
+  // in place so a kept raster mask source is registered with its module
+  dt_develop_blend_params_t kept = *module->blend_params;
+  dt_develop_blend_keep_locked_mask(module, &kept, &replaced);
+  if(memcmp(&kept, module->blend_params, sizeof(kept)))
+    dt_iop_commit_blend_params(module, &kept, NULL);
+}
+
 void dt_gui_presets_apply_preset(const gchar* name,
                                  dt_iop_module_t *module)
 {
@@ -1101,32 +1139,7 @@ void dt_gui_presets_apply_preset(const gchar* name,
                              strlen(multi_name) > 0 ? multi_name : name,
                              multi_name_hand_edited, FALSE, FALSE);
 
-    const dt_develop_blend_params_t replaced = *module->blend_params;
-
-    if(blendop_params
-       && (blendop_version == dt_develop_blend_version())
-       && (bl_length == sizeof(dt_develop_blend_params_t)))
-    {
-      dt_iop_commit_blend_params(module, blendop_params, NULL);
-    }
-    else if(blendop_params
-            && dt_develop_blend_legacy_params(module, blendop_params,
-                                              blendop_version, module->blend_params,
-                                              dt_develop_blend_version(), bl_length) == FALSE)
-    {
-      // do nothing
-    }
-    else
-    {
-      dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
-    }
-
-    // a locked mask survives the preset; committed again rather than patched
-    // in place so a kept raster mask source is registered with its module
-    dt_develop_blend_params_t kept = *module->blend_params;
-    dt_develop_blend_keep_locked_mask(module, &kept, &replaced);
-    if(memcmp(&kept, module->blend_params, sizeof(kept)))
-      dt_iop_commit_blend_params(module, &kept, NULL);
+    dt_gui_presets_apply_blend_params(module, blendop_params, blendop_version, bl_length);
 
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_PRESET_APPLIED, module);
 
@@ -1142,7 +1155,12 @@ void dt_gui_presets_apply_preset(const gchar* name,
   // parameter changes after leaving that guard; tone equalizer needs this
   // synchronization to rebuild its luminance cache and histogram.
   dt_iop_refresh_all(module);
-  dt_dev_add_history_item(darktable.develop, module, FALSE);
+  // only the masks variant records the forms: those of a mask the preset's
+  // migration created would be lost on the next load
+  if(dt_masks_module_mask_in_forms(module, darktable.develop->forms))
+    dt_dev_add_masks_history_item(darktable.develop, module, FALSE);
+  else
+    dt_dev_add_history_item(darktable.develop, module, FALSE);
   gtk_widget_queue_draw(module->widget);
 
   if(dt_conf_get_bool("accel/prefer_enabled")

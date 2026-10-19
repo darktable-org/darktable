@@ -743,6 +743,24 @@ gboolean dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so,
                                                 const int new_version,
                                                 const int length);
 
+/** the mask of these params is still a classic one (drawn, parametric or
+    raster mask_mode, no DEVELOP_MASK_FLEXI): a conversion with no image to
+    create the forms for left it so (dt_masks_migrate_classic_to_flexi()) */
+static inline gboolean dt_develop_blend_mask_is_classic(const dt_develop_blend_params_t *const p)
+{
+  return p
+    && (p->mask_mode & (DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL | DEVELOP_MASK_RASTER))
+    && !(p->mask_mode & DEVELOP_MASK_FLEXI);
+}
+
+/** migrates the classic mask of current-version params, as
+    dt_develop_blend_legacy_params_ext() migrates a legacy one, with the same
+    `history_num`. Development builds of 5.7 stored presets so, at the current
+    version, and auto-apply copied them into history. TRUE when it migrated */
+gboolean dt_develop_blend_migrate_classic_mask(dt_iop_module_t *module,
+                                               dt_develop_blend_params_t *bp,
+                                               const int history_num);
+
 /** color blending utility functions */
 
 #define DEVELOP_BLENDIF_PARAMETER_ITEMS 6

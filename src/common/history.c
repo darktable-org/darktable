@@ -591,14 +591,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
        mask would be lost on the next load: the destination's forms, as the
        form may have been made here */
     const gboolean module_owns_a_form =
-      (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
-      && module->blend_params
-      && ((dt_is_valid_maskid(module->blend_params->mask_id)
-           && dt_masks_get_from_id_ext(dev_dest->forms,
-                                       module->blend_params->mask_id) != NULL)
-          || (dt_is_valid_maskid(module->blend_params->blend_mask_id)
-              && dt_masks_get_from_id_ext(dev_dest->forms,
-                                          module->blend_params->blend_mask_id) != NULL));
+      dt_masks_module_mask_in_forms(module, dev_dest->forms);
 
     if((nbf > 0 && forms_used_replace[0] > 0) || module_owns_a_form)
       dt_dev_add_masks_history_item_ext(dev_dest, module, FALSE, TRUE);
