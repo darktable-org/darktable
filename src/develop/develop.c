@@ -2802,7 +2802,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     // Defaults if they cannot be read
     gboolean blend_converted = FALSE;
     if(dt_develop_blend_params_read(hist->module, blendop_params, bl_length, blendop_version,
-                                    hist->blend_params, num, &blend_converted))
+                                    hist->blend_params, num, FALSE, &blend_converted))
       memcpy(hist->blend_params, hist->module->default_blendop_params,
              sizeof(dt_develop_blend_params_t));
     else if(blend_converted)

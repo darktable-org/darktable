@@ -314,6 +314,99 @@ static void _fill_used_forms(GList *forms_list,
 }
 
 // dev_src is used only to copy masks, if no mask will be copied it can be null
+// the module of dev_dest that merging mod_src replaces, NULL for a new
+// instance. *searched tells whether it was found among the modules not yet
+// used, which the merge then marks used; *missing that mod_src allows a single
+// instance and dev_dest has none
+static dt_iop_module_t *_merge_target(dt_develop_t *dev_dest,
+                                      const dt_iop_module_t *mod_src,
+                                      GList *modules_used,
+                                      const gboolean append,
+                                      gboolean *searched,
+                                      gboolean *missing)
+{
+  *searched = FALSE;
+  *missing = FALSE;
+
+  // one-instance modules always replace the existing one
+  if(mod_src->flags() & IOP_FLAGS_ONE_INSTANCE)
+  {
+    dt_iop_module_t *mod_replace =
+      dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
+    *missing = mod_replace == NULL;
+    return mod_replace;
+  }
+
+  if(append && mod_src->enabled) return NULL;
+
+  dt_iop_module_t *mod_same_name = NULL;
+  dt_iop_module_t *mod_same_prio = NULL;
+  dt_iop_module_t *mod_unused = NULL;
+  dt_iop_module_t *mod_default = NULL;
+
+  // we haven't found a module to replace check if there's a module
+  // with the same (operation, multi_name) on dev->iop
+
+  for(GList *modules_dest = dev_dest->iop;
+      modules_dest;
+      modules_dest = g_list_next(modules_dest))
+  {
+    dt_iop_module_t *mod_dest = modules_dest->data;
+
+    // look for not yet used module
+    if(strcmp(mod_src->op, mod_dest->op) == 0
+       && _search_list_iop_by_module(modules_used, mod_dest) == NULL)
+    {
+      if(strcmp(mod_src->multi_name, mod_dest->multi_name) == 0)
+      {
+        mod_same_name = mod_dest;
+      }
+      else if(!mod_dest->multi_name_hand_edited
+              && mod_src->multi_priority == mod_dest->multi_priority)
+      {
+        mod_same_prio = mod_dest;
+      }
+      else if(!mod_dest->enabled)
+      {
+        mod_unused = mod_dest;
+      }
+      else if(memcmp(mod_dest->params,
+                     mod_dest->default_params,
+                     mod_dest->params_size) == 0
+              && memcmp(mod_dest->blend_params,
+                        mod_dest->default_blendop_params,
+                        sizeof(dt_develop_blend_params_t)) == 0)
+      {
+        mod_default = mod_dest;
+      }
+    }
+  }
+
+  // now select the destination module by order of preference:
+  // - same name
+  // - not enabled
+  // - enabled but has default params
+  // - same prio
+  dt_iop_module_t *mod_dest =
+    mod_same_name ? mod_same_name
+    : (mod_unused ? mod_unused
+       : (mod_default ? mod_default
+          : (mod_same_prio ? mod_same_prio
+             : NULL)));
+
+  *searched = mod_dest != NULL;
+  return mod_dest;
+}
+
+dt_iop_module_t *dt_history_merge_target(dt_develop_t *dev_dest,
+                                         const dt_iop_module_t *mod_src,
+                                         GList *modules_used,
+                                         const gboolean append)
+{
+  gboolean searched, missing;
+  return _merge_target(dev_dest, mod_src, modules_used, append, &searched, &missing);
+}
+
 gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
                                               dt_develop_t *dev_src,
                                               dt_iop_module_t *mod_src,
@@ -324,7 +417,6 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
   gboolean module_added = TRUE;
   GList *modules_used = *_modules_used;
   dt_iop_module_t *module = NULL;
-  dt_iop_module_t *mod_replace = NULL;
 
   char modsrc_multi_name[128] = { 0 };
 
@@ -334,86 +426,19 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
   g_strlcpy(modsrc_multi_name,
             dt_iop_get_instance_name(mod_src), sizeof(modsrc_multi_name));
 
-  // one-instance modules always replace the existing one
-  if(mod_src->flags() & IOP_FLAGS_ONE_INSTANCE)
+  gboolean searched, missing;
+  dt_iop_module_t *mod_replace =
+    _merge_target(dev_dest, mod_src, modules_used, append, &searched, &missing);
+  if(missing)
   {
-    mod_replace = dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
-    if(mod_replace == NULL)
-    {
-      dt_print(DT_DEBUG_ALWAYS,
-               "[dt_history_merge_module_into_history]"
-               " can't find single instance module %s",
-               mod_src->op);
-      module_added = FALSE;
-    }
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_history_merge_module_into_history]"
+             " can't find single instance module %s",
+             mod_src->op);
+    module_added = FALSE;
   }
-
-  if(module_added
-     && mod_replace == NULL
-     && (!append || !mod_src->enabled))
-  {
-    dt_iop_module_t *mod_same_name = NULL;
-    dt_iop_module_t *mod_same_prio = NULL;
-    dt_iop_module_t *mod_unused = NULL;
-    dt_iop_module_t *mod_default = NULL;
-
-    // we haven't found a module to replace check if there's a module
-    // with the same (operation, multi_name) on dev->iop
-
-    for(GList *modules_dest = dev_dest->iop;
-        modules_dest;
-        modules_dest = g_list_next(modules_dest))
-    {
-      dt_iop_module_t *mod_dest = modules_dest->data;
-
-      // look for not yet used module
-      if(strcmp(mod_src->op, mod_dest->op) == 0
-         && _search_list_iop_by_module(modules_used, mod_dest) == NULL)
-      {
-        if(strcmp(mod_src->multi_name, mod_dest->multi_name) == 0)
-        {
-          mod_same_name = mod_dest;
-        }
-        else if(!mod_dest->multi_name_hand_edited
-                && mod_src->multi_priority == mod_dest->multi_priority)
-        {
-          mod_same_prio = mod_dest;
-        }
-        else if(!mod_dest->enabled)
-        {
-          mod_unused = mod_dest;
-        }
-        else if(memcmp(mod_dest->params,
-                       mod_dest->default_params,
-                       mod_dest->params_size) == 0
-                && memcmp(mod_dest->blend_params,
-                          mod_dest->default_blendop_params,
-                          sizeof(dt_develop_blend_params_t)) == 0)
-        {
-          mod_default = mod_dest;
-        }
-      }
-    }
-
-    // now select the destination module by order of preference:
-    // - same name
-    // - not enabled
-    // - enabled but has default params
-    // - same prio
-    dt_iop_module_t *mod_dest =
-      mod_same_name ? mod_same_name
-      : (mod_unused ? mod_unused
-         : (mod_default ? mod_default
-            : (mod_same_prio ? mod_same_prio
-               : NULL)));
-
-    if(mod_dest)
-    {
-      // we will replace this module
-      modules_used = g_list_append(modules_used, mod_dest);
-      mod_replace = mod_dest;
-    }
-  }
+  // we will replace this module
+  if(searched) modules_used = g_list_append(modules_used, mod_replace);
 
   if(module_added)
   {

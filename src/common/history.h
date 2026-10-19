@@ -73,6 +73,13 @@ typedef struct dt_history_copy_item_t
 /** helper function to free a GList of dt_history_item_t */
 void dt_history_item_free(gpointer data);
 
+/** the module of `dev_dest` that dt_history_merge_module_into_history()
+    replaces with `mod_src`, NULL when it adds a new instance: what a style
+    item lands on, known before its params are read */
+struct dt_iop_module_t *dt_history_merge_target(struct dt_develop_t *dev_dest,
+                                                const struct dt_iop_module_t *mod_src,
+                                                GList *modules_used,
+                                                const gboolean append);
 /** adds to dev_dest module mod_src */
 gboolean dt_history_merge_module_into_history(struct dt_develop_t *dev_dest,
                                               struct dt_develop_t *dev_src,

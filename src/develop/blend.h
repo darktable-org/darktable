@@ -761,15 +761,19 @@ static inline gboolean dt_develop_blend_mask_is_classic(const dt_develop_blend_p
     - the current version with a classic mask and no forms: migrated
       (dt_develop_blend_migrate_classic_mask())
     - an older version: converted, and its mask migrated
-    `history_num` as for dt_develop_blend_legacy_params_ext(). `*converted`
-    (may be NULL) tells whether the params were converted or migrated. TRUE
-    when the blob cannot be read: the caller then uses the default params */
+    `history_num` as for dt_develop_blend_legacy_params_ext(). With
+    `ignore_mask`, for a module whose locked mask stays
+    (dt_develop_blend_keep_locked_mask()), the mask is neither migrated nor
+    given its forms: the image gets no form from it. `*converted` (may be
+    NULL) tells whether the params were converted or migrated. TRUE when the
+    blob cannot be read: the caller then uses the default params */
 gboolean dt_develop_blend_params_read(dt_iop_module_t *module,
                                       const void *const blob,
                                       const int length,
                                       const int version,
                                       dt_develop_blend_params_t *bp,
                                       const int history_num,
+                                      const gboolean ignore_mask,
                                       gboolean *converted);
 
 /** migrates the classic mask of current-version params, as

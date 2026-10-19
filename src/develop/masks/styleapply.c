@@ -323,8 +323,12 @@ static gboolean _apply_as_style(const char *operation,
     if(landed) landed[k] = si[k].multi_priority;
 
     // the migration call, the one styles.c makes
+    const dt_iop_module_t *target =
+      dt_history_merge_target(&dev, module, modules_used, FALSE);
     if(dt_develop_blend_params_read(module, classic, sizeof(dt_develop_blend_params_t),
-                                    blendop_version, module->blend_params, -1, NULL))
+                                    blendop_version, module->blend_params, -1,
+                                    target && dt_develop_blend_mask_locked(target->blend_params),
+                                    NULL))
       memcpy(module->blend_params, module->default_blendop_params,
              sizeof(dt_develop_blend_params_t));
 

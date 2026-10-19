@@ -911,11 +911,16 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
 
       // as dt_dev_read_history_ext() reads a history row: the forms of the
       // mask go into dev->forms, which dt_history_merge_module_into_history()
-      // then records with the item
+      // then records with the item. Not onto a locked mask, which the merge
+      // keeps: the style's must leave no form behind
+      const dt_iop_module_t *target =
+        dt_history_merge_target(dev, module, *modules_used, append);
       if(dt_develop_blend_params_read(module, style_item->blendop_params,
                                       style_item->blendop_params_size,
                                       style_item->blendop_version,
-                                      module->blend_params, -1, NULL))
+                                      module->blend_params, -1,
+                                      target && dt_develop_blend_mask_locked(target->blend_params),
+                                      NULL))
         memcpy(module->blend_params, module->default_blendop_params,
                sizeof(dt_develop_blend_params_t));
 

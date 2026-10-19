@@ -701,6 +701,105 @@ static void test_files_roundtrip(void **state)
 }
 
 // ---------------------------------------------------------------------------
+// onto a locked mask
+// ---------------------------------------------------------------------------
+
+#define LOCK_STYLE "test flexi lock style"
+
+// a fresh image whose module holds a locked "select green" mask
+static dt_imgid_t _locked_image(dt_develop_t *dev, GBytes **canon, int *n_forms)
+{
+  const dt_imgid_t imgid = dt_image_duplicate(dt_test_catalog_image("bayer4.crw"));
+  _open(dev, imgid);
+  dt_iop_module_t *module = _module(dev);
+  dt_develop_blend_params_t bp;
+  _classic_green(&bp);
+  dt_gui_presets_apply_blend_params(module, &bp, 14, sizeof(bp));
+  module->blend_params->mask_lock = 1;
+  *canon = _canon(dev->forms, module->blend_params);
+  *n_forms = g_list_length(dev->forms);
+  return imgid;
+}
+
+// the locked mask stays, and the incoming one leaves no form behind
+static void _assert_kept(const dt_develop_t *dev,
+                         const dt_develop_blend_params_t *bp,
+                         GBytes *canon,
+                         const int n_forms)
+{
+  assert_true(dt_develop_blend_mask_locked(bp));
+  GBytes *now = _canon(dev->forms, bp);
+  assert_true(g_bytes_equal(now, canon));
+  g_bytes_unref(now);
+  assert_int_equal(g_list_length(dev->forms), n_forms);
+}
+
+static void test_locked_mask_kept_on_preset_apply(void **state)
+{
+  _ensure_source();
+  dt_develop_t dev;
+  GBytes *canon = NULL;
+  int n_forms = 0;
+  _locked_image(&dev, &canon, &n_forms);
+  dt_iop_module_t *module = _module(&dev);
+
+  // a preset carrying forms
+  gsize size = 0;
+  const void *blob = g_bytes_get_data(_src_blob, &size);
+  dt_gui_presets_apply_blend_params(module, blob, dt_develop_blend_version(), size);
+  _assert_kept(&dev, module->blend_params, canon, n_forms);
+
+  // a 5.6 preset, and the same as the startup upgrade of development builds
+  // of 5.7 stored it: their migration must create no form either
+  dt_develop_blend_params_t classic, stamped;
+  _classic_green(&classic);
+  classic.blendif |= 1u << DEVELOP_BLENDIF_Cz_in;
+  dt_gui_presets_apply_blend_params(module, &classic, 14, sizeof(classic));
+  _assert_kept(&dev, module->blend_params, canon, n_forms);
+  assert_false(dt_develop_blend_legacy_params_from_so(dt_iop_get_module_so(OP), &classic, 14,
+                                                      &stamped, dt_develop_blend_version(),
+                                                      sizeof(classic)));
+  dt_gui_presets_apply_blend_params(module, &stamped, dt_develop_blend_version(),
+                                    sizeof(stamped));
+  _assert_kept(&dev, module->blend_params, canon, n_forms);
+
+  g_bytes_unref(canon);
+  dt_dev_cleanup(&dev);
+}
+
+static void test_locked_mask_kept_on_style_apply(void **state)
+{
+  _ensure_source();
+  if(!dt_styles_exists(LOCK_STYLE))
+    assert_true(dt_styles_create_from_image(LOCK_STYLE, "", _src, NULL, FALSE));
+
+  dt_develop_t dev;
+  GBytes *canon = NULL;
+  int n_forms = 0;
+  const dt_imgid_t imgid = _locked_image(&dev, &canon, &n_forms);
+  _commit(&dev, _module(&dev));
+  dt_dev_cleanup(&dev);
+
+  dt_styles_apply_to_image(LOCK_STYLE, FALSE, FALSE, imgid);
+
+  _open(&dev, imgid);
+  _assert_kept(&dev, _last_item(&dev)->blend_params, canon, n_forms);
+  dt_dev_cleanup(&dev);
+
+  // nor anywhere in the stored masks history
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(DISTINCT formid) FROM main.masks_history"
+                              " WHERE imgid = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  assert_int_equal(sqlite3_step(stmt), SQLITE_ROW);
+  assert_int_equal(sqlite3_column_int(stmt, 0), n_forms);
+  sqlite3_finalize(stmt);
+  g_bytes_unref(canon);
+}
+
+// ---------------------------------------------------------------------------
 // presets and styles from before flexi masks
 // ---------------------------------------------------------------------------
 
@@ -920,6 +1019,8 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_auto_apply_with_mask),
     cmocka_unit_test(test_style_with_mask),
     cmocka_unit_test(test_files_roundtrip),
+    cmocka_unit_test(test_locked_mask_kept_on_preset_apply),
+    cmocka_unit_test(test_locked_mask_kept_on_style_apply),
     cmocka_unit_test(test_classic_lossless),
   };
   return cmocka_run_group_tests(tests, dt_test_catalog_setup, dt_test_catalog_teardown);

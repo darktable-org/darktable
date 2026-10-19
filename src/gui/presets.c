@@ -1126,10 +1126,11 @@ void dt_gui_presets_apply_blend_params(dt_iop_module_t *module,
   const dt_develop_blend_params_t replaced = *module->blend_params;
 
   // converted or migrated if need be, the forms of its mask added to the image
-  // under fresh ids (dt_develop_blend_params_read())
+  // under fresh ids (dt_develop_blend_params_read()). Not for a locked mask,
+  // which stays: the preset's must leave no form behind
   dt_develop_blend_params_t bp;
   if(dt_develop_blend_params_read(module, blendop_params, bl_length, blendop_version,
-                                  &bp, -1, NULL))
+                                  &bp, -1, dt_develop_blend_mask_locked(&replaced), NULL))
     dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
   else
     dt_iop_commit_blend_params(module, &bp, NULL);
