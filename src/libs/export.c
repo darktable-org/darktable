@@ -421,13 +421,14 @@ static void _export_with_current_settings(dt_lib_module_t *self)
     dt_conf_get_int(CONFIG_PREFIX "icctype");
   gchar *icc_filename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
   const dt_iop_color_intent_t icc_intent = dt_conf_get_int(CONFIG_PREFIX "iccintent");
+  const int pq_peak_nits = dt_conf_get_int(CONFIG_PREFIX "pq_peak_nits");
 
   GList *list = dt_act_on_get_images(TRUE, TRUE, TRUE);
   dt_control_export(list, max_width, max_height, format_index, storage_index,
                     high_quality, upscale, scaledimension,
                     is_scaling, scale_factor,
                     export_masks, style, style_append,
-                    icc_type, icc_filename, icc_intent,
+                    icc_type, icc_filename, icc_intent, pq_peak_nits,
                     d->metadata_export);
 
   g_free(icc_filename);

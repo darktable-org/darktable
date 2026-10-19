@@ -806,13 +806,26 @@ dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev,
   return profile_info;
 }
 
+// per thread, so that an export job keeps the peak it was started with
+// without writing the setting shared with the export module and the darkroom
+static __thread int _thread_pq_peak_nits = 0;
+
+void dt_ioppr_set_thread_pq_peak_nits(const int nits)
+{
+  _thread_pq_peak_nits = nits;
+}
+
 static float _output_headroom(const dt_colorspaces_color_profile_type_t type)
 {
   switch(dt_colorspaces_hdr_transfer(type))
   {
     case DT_HDR_PQ:
-      return fmaxf(1.0f, dt_conf_get_int("plugins/lighttable/export/pq_peak_nits")
-                         / DT_HDR_REFERENCE_WHITE_NITS);
+    {
+      const int nits = _thread_pq_peak_nits > 0
+        ? _thread_pq_peak_nits
+        : dt_conf_get_int("plugins/lighttable/export/pq_peak_nits");
+      return fmaxf(1.0f, nits / DT_HDR_REFERENCE_WHITE_NITS);
+    }
     case DT_HDR_HLG_REC2020:
     case DT_HDR_HLG_P3:
       // colorout's OOTF clips HLG at the nominal 1000 nit display
