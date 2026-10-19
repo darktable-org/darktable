@@ -2454,6 +2454,16 @@ static void _dev_merge_history(dt_develop_t *dev,
       {
         sqlite3_finalize(stmt);
 
+        // the masks history rows go with the items they belong to: each row
+        // set is the forms snapshot of one history num
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "UPDATE main.masks_history SET num=num+?1 WHERE imgid=?2",
+                                    -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+
         if(dt_image_shift_history_end(imgid, cnt))
         {
           // and finally prepend the rest with increasing numbers (starting at 0)

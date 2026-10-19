@@ -701,6 +701,58 @@ static void test_files_roundtrip(void **state)
 }
 
 // ---------------------------------------------------------------------------
+// the masks history of a history the first load prepends to
+// ---------------------------------------------------------------------------
+
+// a style applied in the lighttable to an image never opened writes history
+// rows and their forms snapshot; its first load then prepends the auto-applied
+// modules. Every history position must render the forms it rendered before:
+// none before the item that brought the mask, the mask from it on
+static void test_masks_follow_prepended_history(void **state)
+{
+  _ensure_source();
+  if(!dt_styles_exists("test flexi style"))
+    assert_true(dt_styles_create_from_image("test flexi style", "", _src, NULL, FALSE));
+  const dt_imgid_t imgid = dt_image_duplicate(dt_test_catalog_image("bayer4.crw"));
+  dt_styles_apply_to_image("test flexi style", FALSE, FALSE, imgid);
+
+  // the first load: auto-apply prepends, and the history is written back
+  dt_develop_t dev;
+  _open(&dev, imgid);
+  const int history_end = dev.history_end;
+  dt_dev_cleanup(&dev);
+
+  int item_num = -1;
+  dt_develop_blend_params_t bp;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT num, blendop_params FROM main.history"
+                              " WHERE imgid = ?1 AND operation = '" OP "'"
+                              " ORDER BY num DESC LIMIT 1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW && sqlite3_column_bytes(stmt, 1) == sizeof(bp))
+  {
+    item_num = sqlite3_column_int(stmt, 0);
+    memcpy(&bp, sqlite3_column_blob(stmt, 1), sizeof(bp));
+  }
+  sqlite3_finalize(stmt);
+  assert_true(item_num > 0);
+  assert_true(bp.mask_mode & DEVELOP_MASK_FLEXI);
+
+  // position p renders the snapshot of the last item below it
+  for(int p = 1; p <= history_end; p++)
+  {
+    GList *forms = dt_masks_read_forms_at(imgid, p - 1);
+    const gboolean has_mask = dt_masks_get_from_id_ext(forms, bp.mask_id) != NULL;
+    g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+    if(has_mask != (p > item_num))
+      fail_msg("history position %d of %d: mask %s, its item is num %d",
+               p, history_end, has_mask ? "present" : "missing", item_num);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // onto a locked mask
 // ---------------------------------------------------------------------------
 
@@ -1019,6 +1071,7 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_auto_apply_with_mask),
     cmocka_unit_test(test_style_with_mask),
     cmocka_unit_test(test_files_roundtrip),
+    cmocka_unit_test(test_masks_follow_prepended_history),
     cmocka_unit_test(test_locked_mask_kept_on_preset_apply),
     cmocka_unit_test(test_locked_mask_kept_on_style_apply),
     cmocka_unit_test(test_classic_lossless),
