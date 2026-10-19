@@ -622,6 +622,13 @@ changes (where available).
 
 - Fixed memory leaks when exporting images or the tag list.
 
+- Fixed images being added to the library with a size and aspect ratio
+  of zero when their file couldn't be read during import, for example
+  on a network or cloud mount that failed mid-transfer. Such files are
+  now skipped, and the import reports how many could not be imported.
+  Images imported that way before are repaired when their thumbnail is
+  regenerated, or right away with "refresh EXIF".
+
 ## Lua
 
 ### API Version
