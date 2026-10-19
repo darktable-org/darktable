@@ -2666,10 +2666,13 @@ static void _reset_remove_masks(dt_iop_module_t *module)
 }
 
 // resets the blend params to the defaults, but for a locked mask, which keeps
-// its own (see dt_develop_blend_keep_locked_mask)
-static void _commit_reset_blend_params(dt_iop_module_t *module)
+// its own (see dt_develop_blend_keep_locked_mask). `before` is the params as
+// they were before dt_iop_reload_defaults(), which commits the defaults
+// itself and so clears the lock
+static void _commit_reset_blend_params(dt_iop_module_t *module,
+                                       const dt_develop_blend_params_t *before)
 {
-  if(!dt_develop_blend_mask_locked(module->blend_params))
+  if(!dt_develop_blend_mask_locked(before))
   {
     dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
     return;
@@ -2677,8 +2680,16 @@ static void _commit_reset_blend_params(dt_iop_module_t *module)
   // not the default_blendop_params pointer itself: dt_iop_commit_blend_params
   // drops the raster mask source for that one, and a locked mask keeps it
   dt_develop_blend_params_t reset = *module->default_blendop_params;
-  dt_develop_blend_keep_locked_mask(module, &reset, module->blend_params);
+  dt_develop_blend_keep_locked_mask(module, &reset, before);
   dt_iop_commit_blend_params(module, &reset, NULL);
+}
+
+void dt_iop_reset_params(dt_iop_module_t *module)
+{
+  _reset_remove_masks(module);
+  const dt_develop_blend_params_t before = *module->blend_params;
+  dt_iop_reload_defaults(module);
+  _commit_reset_blend_params(module, &before);
 }
 
 // kept for direct callers from accelerators
@@ -2696,10 +2707,8 @@ static gboolean _gui_reset_callback(GtkButton *button,
        && dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
      || !dt_gui_presets_autoapply_for_module(module, NULL))
   {
-    _reset_remove_masks(module);
     /* reset to default params */
-    dt_iop_reload_defaults(module);
-    _commit_reset_blend_params(module);
+    dt_iop_reset_params(module);
 
     // the module's forms changed behind the masks panel
     dt_iop_gui_blend_forms_reloaded(module);
@@ -2734,10 +2743,8 @@ static void _gui_reset_clicked(GtkGestureSingle *gesture,
   if(!((dt_key_modifier_state() & GDK_CONTROL_MASK)
        && dt_gui_presets_autoapply_for_module(module, NULL)))
   {
-    _reset_remove_masks(module);
     /* reset to default params */
-    dt_iop_reload_defaults(module);
-    _commit_reset_blend_params(module);
+    dt_iop_reset_params(module);
 
     // the module's forms changed behind the masks panel
     dt_iop_gui_blend_forms_reloaded(module);

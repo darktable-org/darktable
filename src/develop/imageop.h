@@ -425,6 +425,11 @@ void dt_iop_load_default_params(dt_iop_module_t *module);
 void dt_iop_gui_init(dt_iop_module_t *module);
 /** reloads certain gui/param defaults when the image was switched. */
 void dt_iop_reload_defaults(dt_iop_module_t *module);
+/** resets the params and blend params of `module` to their defaults, as its
+    reset button does: its mask goes, but a locked one stays
+    (dt_develop_blend_keep_locked_mask), and the own shapes of an
+    IOP_FLAGS_NO_MASKS module go whatever the lock */
+void dt_iop_reset_params(dt_iop_module_t *module);
 
 extern const struct dt_action_def_t dt_action_def_iop;
 
