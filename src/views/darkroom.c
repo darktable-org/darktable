@@ -4229,15 +4229,17 @@ void enter(dt_view_t *self)
   dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui),
                                  dev->image_storage.id, TRUE);
 
-  // get last active plugin:
+  // get last active plugin, focused only if it was left expanded: collapsing
+  // a module drops its focus, so a collapsed one must not come back focused
   const char *active_plugin = dt_conf_get_string_const("plugins/darkroom/active");
   if(active_plugin)
   {
+    const gboolean expanded = _darkroom_iop_expanded(active_plugin);
     for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = modules->data;
       if(dt_iop_module_is(module, active_plugin))
-        dt_iop_request_focus(module);
+        dt_iop_request_focus(expanded ? module : NULL);
     }
   }
   _expand_focused_instance(dev);

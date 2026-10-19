@@ -7,8 +7,12 @@
   margin-right: 1px;
 }
 
-/* border for focused modules */
-#iop-expander.dt_module_expanded.dt_module_focus
+/* border for focused modules, collapsed ones included: a module can take the
+   focus without expanding (ctrl+click on its on/off button, its focus shortcut,
+   or its widgets in the quick access panel). The expanded+focused selector
+   outranks the expanded-module-border chunk, which is imported later */
+#iop-expander.dt_module_expanded.dt_module_focus,
+#iop-expander.dt_module_focus
 {
   border: 1px solid @plugin_focus_border_color;
 }
