@@ -336,7 +336,7 @@ static void test_locked_mask_survives_replacement(void **state)
   incoming.blend_mode = DEVELOP_BLEND_MULTIPLY;
   incoming.blend_parameter = 2.0f;
 
-  dt_develop_blend_keep_locked_mask(&incoming, &locked);
+  dt_develop_blend_keep_locked_mask(NULL, &incoming, &locked);
 
   assert_int_equal(incoming.mask_lock, 1);
   assert_int_equal(incoming.mask_mode, DEVELOP_MASK_ENABLED | DEVELOP_MASK_FLEXI);
@@ -357,10 +357,35 @@ static void test_incoming_lock_is_dropped(void **state)
   incoming.mask_lock = 1;
   incoming.mask_id = 9;
 
-  dt_develop_blend_keep_locked_mask(&incoming, &replaced);
+  dt_develop_blend_keep_locked_mask(NULL, &incoming, &replaced);
 
   assert_int_equal(incoming.mask_lock, 0);
   assert_int_equal(incoming.mask_id, 9);
+}
+
+static int _flags_no_masks(void)
+{
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_NO_MASKS;
+}
+
+// a NO_MASKS module's mask_id is its own shapes, which go with its params:
+// a locked blend mask keeps its group, blend_mask_id, and not the shapes
+static void test_locked_mask_of_no_masks_module_leaves_own_shapes(void **state)
+{
+  dt_iop_module_t mod = { 0 };
+  mod.flags = _flags_no_masks;
+  dt_develop_blend_params_t locked = { 0 }, incoming = { 0 };
+  locked.mask_lock = 1;
+  locked.mask_mode = DEVELOP_MASK_ENABLED | DEVELOP_MASK_FLEXI;
+  locked.mask_id = 7;
+  locked.blend_mask_id = 8;
+  incoming.mask_id = 9;
+
+  dt_develop_blend_keep_locked_mask(&mod, &incoming, &locked);
+
+  assert_int_equal(incoming.mask_lock, 1);
+  assert_int_equal(incoming.mask_id, 9);
+  assert_int_equal(incoming.blend_mask_id, 8);
 }
 
 int main(void)
@@ -379,6 +404,7 @@ int main(void)
     cmocka_unit_test_teardown(test_cleanup_keeps_shapes_another_module_still_uses, _teardown),
     cmocka_unit_test(test_locked_mask_survives_replacement),
     cmocka_unit_test(test_incoming_lock_is_dropped),
+    cmocka_unit_test(test_locked_mask_of_no_masks_module_leaves_own_shapes),
   };
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

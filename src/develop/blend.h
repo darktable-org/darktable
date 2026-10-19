@@ -221,8 +221,11 @@ typedef struct dt_develop_blend_params_t
    *  dt_develop_blend_keep_locked_mask). It took over a reserved field, which
    *  older versions do not keep zero, so every legacy conversion clears it */
   uint32_t mask_lock;
-  /** some reserved fields for future use */
-  uint32_t reserved[1];
+  /** the blend mask group of an IOP_FLAGS_NO_MASKS module (retouch, spots),
+   *  whose mask_id holds the module's own shapes. NO_MASKID for every other
+   *  module. Read and write it through dt_develop_blend_mask_group_id(). It
+   *  took over a reserved field, so every legacy conversion clears it */
+  dt_mask_id_t blend_mask_id;
   /** blendif parameters */
   float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
   float blendif_boost_factors[DEVELOP_BLENDIF_SIZE];
@@ -347,6 +350,10 @@ typedef struct dt_iop_gui_blend_data_t
   gboolean blendif_support;
   gboolean blend_inited;
   gboolean masks_support;
+  // FALSE for an IOP_FLAGS_NO_MASKS module (retouch, spots): its canvas edits
+  // its own shapes, so its mask panel offers no shapes and leaves the canvas
+  // alone
+  gboolean shapes_support;
   gboolean masks_inited;
 
   dt_develop_blend_colorspace_t csp;
@@ -687,8 +694,19 @@ static inline gboolean dt_develop_blend_mask_locked(const dt_develop_blend_param
  *  parameter and opacity) over `incoming`, when `locked` is locked. Otherwise
  *  only clears the lock `incoming` brings along: the params being replaced
  *  decide whether the result is locked, never the incoming ones */
-void dt_develop_blend_keep_locked_mask(dt_develop_blend_params_t *incoming,
+void dt_develop_blend_keep_locked_mask(const dt_iop_module_t *module,
+                                       dt_develop_blend_params_t *incoming,
                                        const dt_develop_blend_params_t *const locked);
+
+/** the id of the group `module`'s blend mask renders: bp->mask_id, but for an
+ *  IOP_FLAGS_NO_MASKS module (retouch, spots), which keeps its own shapes in
+ *  mask_id and its blend mask in bp->blend_mask_id */
+dt_mask_id_t dt_develop_blend_mask_group_id(const dt_iop_module_t *module,
+                                            const dt_develop_blend_params_t *const bp);
+/** sets the id dt_develop_blend_mask_group_id() returns */
+void dt_develop_blend_set_mask_group_id(const dt_iop_module_t *module,
+                                        dt_develop_blend_params_t *bp,
+                                        const dt_mask_id_t id);
 
 /** initializes the default blendif parameters for the given color space in blend_params */
 void dt_develop_blend_init_blendif_parameters(dt_develop_blend_params_t *blend_params,
@@ -841,7 +859,8 @@ void dt_develop_blendif_rgb_jzczhz_blend(dt_dev_pixelpipe_iop_t *piece,
     FALSE only for an IOP_FLAGS_NO_MASKS module (retouch, spots) with a
     classic drawn mask: such a module uses its own forms in process(), and
     rendering mask_id's group would paint them. A flexi group is never those
-    forms and always renders. Exported for the masks tests: getting this wrong
+    forms (it is in blend_mask_id) and always renders. Exported for the masks
+    tests: getting this wrong
     silently drops the parametric mask of such modules */
 gboolean dt_blend_may_render_group(struct dt_iop_module_t *self,
                                    const dt_develop_mask_mode_t mask_mode);

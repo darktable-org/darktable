@@ -1364,6 +1364,62 @@ static void test_parametric_on_no_masks_module_stays_renderable(void **state)
   assert_true(dt_blend_may_render_group(&flexi_module, flexi_bp.mask_mode));
 }
 
+/** mask_id of a NO_MASKS module is its own shapes (retouch's clones and heals):
+    migrating its parametric mask must leave them alone and put the mask's
+    group in blend_mask_id. Overwriting mask_id dropped every retouch shape */
+static void test_parametric_on_no_masks_module_keeps_its_own_shapes(void **state)
+{
+  _classic(DEVELOP_MASK_ENABLED | DEVELOP_MASK_CONDITIONAL);
+  flexi_module.flags = _flags_no_masks;
+  flexi_bp.blendif = _two_active_channel_bits();
+  _migrate();
+  _assert_flexi();
+
+  assert_int_equal(flexi_bp.mask_id, FLEXI_MASK_ID);
+  assert_true(dt_is_valid_maskid(flexi_bp.blend_mask_id));
+  assert_int_not_equal(flexi_bp.blend_mask_id, FLEXI_MASK_ID);
+  assert_int_equal(dt_develop_blend_mask_group_id(&flexi_module, &flexi_bp),
+                   flexi_bp.blend_mask_id);
+
+  const dt_masks_form_t *grp =
+    dt_masks_get_from_id_ext(flexi_dev.forms, flexi_bp.blend_mask_id);
+  assert_non_null(grp);
+  for(const GList *l = grp->points; l; l = g_list_next(l))
+  {
+    const dt_masks_point_group_t *pt = l->data;
+    if(dt_masks_point_is_marker(pt)) continue;
+    const dt_masks_form_t *f = dt_masks_get_from_id_ext(flexi_dev.forms, pt->formid);
+    assert_non_null(f);
+    assert_true(f->type & DT_MASKS_PARAMETRIC);
+  }
+}
+
+/** a uniform blend on a NO_MASKS module needs no group at all, and must not
+    clear the module's own shapes either */
+static void test_uniform_on_no_masks_module_keeps_its_own_shapes(void **state)
+{
+  _classic(DEVELOP_MASK_ENABLED);
+  flexi_module.flags = _flags_no_masks;
+  _migrate();
+
+  assert_int_equal(flexi_bp.mask_mode, DEVELOP_MASK_ENABLED | DEVELOP_MASK_FLEXI);
+  assert_int_equal(flexi_bp.mask_id, FLEXI_MASK_ID);
+  assert_int_equal(flexi_bp.blend_mask_id, NO_MASKID);
+}
+
+/** classic never rendered a NO_MASKS module's drawn mask: its group is the
+    module's shapes. The drawn bit is dropped, and the shapes stay out of the
+    mask */
+static void test_drawn_on_no_masks_module_is_not_a_mask(void **state)
+{
+  _classic(DEVELOP_MASK_ENABLED | DEVELOP_MASK_MASK);
+  flexi_module.flags = _flags_no_masks;
+  _migrate();
+
+  assert_int_equal(flexi_bp.mask_id, FLEXI_MASK_ID);
+  assert_false(dt_is_valid_maskid(dt_develop_blend_mask_group_id(&flexi_module, &flexi_bp)));
+}
+
 // migrating an already-migrated edit is a no-op -- the FLEXI guard at the top
 // makes this structural rather than something a runtime flag has to enforce
 // ---------------------------------------------------------------------------
@@ -2112,6 +2168,10 @@ int main(void)
     cmocka_unit_test_teardown(test_no_masks_module_still_renders_a_flexi_group, _teardown),
     cmocka_unit_test_teardown(test_ordinary_module_always_renders_its_group, _teardown),
     cmocka_unit_test_teardown(test_parametric_on_no_masks_module_stays_renderable, _teardown),
+    cmocka_unit_test_teardown(test_parametric_on_no_masks_module_keeps_its_own_shapes,
+                              _teardown),
+    cmocka_unit_test_teardown(test_uniform_on_no_masks_module_keeps_its_own_shapes, _teardown),
+    cmocka_unit_test_teardown(test_drawn_on_no_masks_module_is_not_a_mask, _teardown),
     cmocka_unit_test_teardown(test_nested_union_group_joins_its_group, _teardown),
     cmocka_unit_test_teardown(test_inverted_nested_group_becomes_an_inverted_group, _teardown),
     cmocka_unit_test_teardown(test_a_sum_under_an_inverted_member_is_an_inverted_group,

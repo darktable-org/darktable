@@ -136,6 +136,7 @@ typedef struct { poke_t k; scope_t s; step_kind_t kind; } step_t;
     routinely carries groups belonging to other modules and groups orphaned by
     earlier edits (see roundtrip.c). */
 dt_masks_form_t *dt_masks_postedit_target_group(dt_develop_t *dev,
+                                                const dt_iop_module_t *module,
                                                 const dt_develop_blend_params_t *bp);
 
 /** Every group the module renders through: the target group first, then its
@@ -145,7 +146,9 @@ dt_masks_form_t *dt_masks_postedit_target_group(dt_develop_t *dev,
     to the same group. 5.7% of harvested edits carry a nested group. The walk
     is bounded and deduplicated, so a malformed or cyclic tree cannot spin.
     Free the list (not its data) with g_list_free(). */
-GList *dt_masks_postedit_groups(dt_develop_t *dev, const dt_develop_blend_params_t *bp);
+GList *dt_masks_postedit_groups(dt_develop_t *dev,
+                                const dt_iop_module_t *module,
+                                const dt_develop_blend_params_t *bp);
 
 /** Apply one step to `grp` as it currently stands.
 

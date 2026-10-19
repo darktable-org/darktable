@@ -355,17 +355,21 @@ void dt_masks_postedit_apply_step(dt_develop_t *dev, dt_masks_form_t *grp, const
 }
 
 dt_masks_form_t *dt_masks_postedit_target_group(dt_develop_t *dev,
+                                                const dt_iop_module_t *module,
                                                 const dt_develop_blend_params_t *bp)
 {
   if(!bp || !(bp->mask_mode & DEVELOP_MASK_FLEXI)) return NULL;
-  if(!dt_is_valid_maskid(bp->mask_id)) return NULL;
-  dt_masks_form_t *grp = dt_masks_get_from_id(dev, bp->mask_id);
+  const dt_mask_id_t grid = dt_develop_blend_mask_group_id(module, bp);
+  if(!dt_is_valid_maskid(grid)) return NULL;
+  dt_masks_form_t *grp = dt_masks_get_from_id(dev, grid);
   return (grp && (grp->type & DT_MASKS_GROUP)) ? grp : NULL;
 }
 
-GList *dt_masks_postedit_groups(dt_develop_t *dev, const dt_develop_blend_params_t *bp)
+GList *dt_masks_postedit_groups(dt_develop_t *dev,
+                                const dt_iop_module_t *module,
+                                const dt_develop_blend_params_t *bp)
 {
-  dt_masks_form_t *top = dt_masks_postedit_target_group(dev, bp);
+  dt_masks_form_t *top = dt_masks_postedit_target_group(dev, module, bp);
   if(!top) return NULL;
 
   GList *out = g_list_append(NULL, top);

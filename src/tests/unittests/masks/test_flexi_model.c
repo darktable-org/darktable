@@ -637,6 +637,7 @@ static void _other_module(const dt_mask_id_t *fids, const int n)
 {
   memset(&_other, 0, sizeof(_other));
   memset(&_other_bp, 0, sizeof(_other_bp));
+  _other.flags = flexi_fixture_flags;
   _other_grp = _new_form(OTHER_GROUP_ID, DT_MASKS_GROUP);
   dt_masks_point_group_t *marker = calloc(1, sizeof(dt_masks_point_group_t));
   marker->formid = OTHER_GROUP_ID + 1;
@@ -1933,7 +1934,7 @@ static void test_simplify_leaves_a_group_another_module_renders(void **state)
   dt_masks_form_t *grp = flexi_build("u{1,u{11,12}@0.5}");
 
   static dt_develop_blend_params_t other_bp = { .mask_id = FLEXI_SUB(1) };
-  static dt_iop_module_t other = { .blend_params = &other_bp };
+  static dt_iop_module_t other = { .blend_params = &other_bp, .flags = flexi_fixture_flags };
   flexi_dev.iop = g_list_append(NULL, &other);
 
   dt_masks_group_simplify(flexi_dev.forms, grp);

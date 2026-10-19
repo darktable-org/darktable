@@ -468,7 +468,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
       memcpy(module->blend_params, mod_src->blend_params,
              sizeof(dt_develop_blend_params_t));
       module->blend_params->mask_id = mod_src->blend_params->mask_id;
-      dt_develop_blend_keep_locked_mask(module->blend_params, &replaced);
+      dt_develop_blend_keep_locked_mask(module, module->blend_params, &replaced);
     }
   }
 
@@ -530,21 +530,25 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     guint nbf = 0;
     int *forms_used_replace = NULL;
 
-    // a locked mask kept its own mask_id above, so the source's forms have no
-    // use here, and one sharing an id with a locked form would replace it
-    if(dev_src && !dt_develop_blend_mask_locked(module->blend_params))
+    // a locked mask kept its own group above, so the source's forms have no
+    // use here, and one sharing an id with a locked form would replace it. A
+    // NO_MASKS module's own shapes (mask_id) are not its mask, and always come
+    const gboolean locked = dt_develop_blend_mask_locked(module->blend_params);
+    if(dev_src && (mod_src->flags() & IOP_FLAGS_SUPPORTS_BLENDING))
     {
+      const gboolean own_shapes = mod_src->flags() & IOP_FLAGS_NO_MASKS;
+      const dt_mask_id_t roots[] = {
+        !locked || own_shapes ? mod_src->blend_params->mask_id : NO_MASKID,
+        !locked ? mod_src->blend_params->blend_mask_id : NO_MASKID };
       // we will copy only used forms
       // record the masks used by this module
-      if(mod_src->flags() & IOP_FLAGS_SUPPORTS_BLENDING
-         && dt_is_valid_maskid(mod_src->blend_params->mask_id))
+      if(dt_is_valid_maskid(roots[0]) || dt_is_valid_maskid(roots[1]))
       {
         nbf = g_list_length(dev_src->forms);
         forms_used_replace = calloc(nbf, sizeof(int));
-        if(forms_used_replace)
-          _fill_used_forms(dev_src->forms,
-                           mod_src->blend_params->mask_id,
-                           forms_used_replace, nbf, 0);
+        for(size_t r = 0; r < G_N_ELEMENTS(roots) && forms_used_replace; r++)
+          if(dt_is_valid_maskid(roots[r]))
+            _fill_used_forms(dev_src->forms, roots[r], forms_used_replace, nbf, 0);
 
         // now copy masks
         for(int i = 0; i < nbf && forms_used_replace && forms_used_replace[i] > 0; i++)
@@ -589,9 +593,12 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     const gboolean module_owns_a_form =
       (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
       && module->blend_params
-      && dt_is_valid_maskid(module->blend_params->mask_id)
-      && dt_masks_get_from_id_ext(dev_dest->forms,
-                                  module->blend_params->mask_id) != NULL;
+      && ((dt_is_valid_maskid(module->blend_params->mask_id)
+           && dt_masks_get_from_id_ext(dev_dest->forms,
+                                       module->blend_params->mask_id) != NULL)
+          || (dt_is_valid_maskid(module->blend_params->blend_mask_id)
+              && dt_masks_get_from_id_ext(dev_dest->forms,
+                                          module->blend_params->blend_mask_id) != NULL));
 
     if((nbf > 0 && forms_used_replace[0] > 0) || module_owns_a_form)
       dt_dev_add_masks_history_item_ext(dev_dest, module, FALSE, TRUE);
@@ -722,7 +729,7 @@ static void _locked_masks_restore(dt_develop_t *dev_dest,
                                 dest->multi_name, sizeof(dest->multi_name));
       mod->multi_name_hand_edited = dest->multi_name_hand_edited;
     }
-    dt_develop_blend_keep_locked_mask(&blend, mod->blend_params);
+    dt_develop_blend_keep_locked_mask(mod, &blend, mod->blend_params);
     // merged unlocked, so the merge copies its shapes over; locked below
     blend.mask_lock = 0;
     *mod->blend_params = blend;

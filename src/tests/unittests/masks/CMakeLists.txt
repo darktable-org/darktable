@@ -86,3 +86,20 @@ foreach(_t test_flexi_model test_flexi_cache test_flexi_persistence test_flexi_d
       _copy_required_library(${_t} lib_darktable)
   endif(WIN32)
 endforeach()
+
+# What a module reset does to its mask, locked or not, on real modules of a
+# headless darktable (the catalog fixture: needs the integration test images)
+set(DT_TEST_IMAGES "${CMAKE_SOURCE_DIR}/src/tests/integration/images")
+if(EXISTS "${DT_TEST_IMAGES}/mire1.cr2")
+  add_cmocka_test(test_flexi_reset
+                  SOURCES test_flexi_reset.c ../catalog/catalog_fixture.c
+                  LINK_LIBRARIES lib_darktable cmocka)
+  target_compile_definitions(test_flexi_reset PRIVATE
+    DT_TEST_DATADIR="${CMAKE_BINARY_DIR}/share/darktable"
+    DT_TEST_MODULEDIR="${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/darktable"
+    DT_TEST_IMAGES="${DT_TEST_IMAGES}")
+  target_include_directories(test_flexi_reset PRIVATE ${CMAKE_SOURCE_DIR}/src)
+  if(WIN32)
+    _copy_required_library(test_flexi_reset lib_darktable)
+  endif(WIN32)
+endif()
