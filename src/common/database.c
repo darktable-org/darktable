@@ -3958,11 +3958,10 @@ static gboolean pid_is_alive(int pid)
   if(pid_is_alive)
   {
     gchar *contents;
-    gsize length;
     gchar filename[64];
     snprintf(filename, sizeof(filename), "/proc/%d/cmdline", pid);
 
-    if(g_file_get_contents(filename, &contents, &length, NULL))
+    if(g_file_get_contents(filename, &contents, NULL, NULL))
     {
       if(strstr(contents, "darktable") == NULL)
       {
