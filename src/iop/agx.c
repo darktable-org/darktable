@@ -210,6 +210,19 @@ typedef struct dt_iop_agx_gui_data_t
   GtkWidget *set_post_curve_primaries_from_pre_button;
 } dt_iop_agx_gui_data_t;
 
+// HDR output, see _set_hdr_params()
+typedef struct hdr_params_t
+{
+  gboolean enabled;
+  float headroom;
+  float purity;
+  float log_min;
+  float pivot_x;
+  float pivot_y;
+  float toe_scale;
+  float shoulder_scale;
+} hdr_params_t;
+
 typedef struct tone_mapping_params_t
 {
   float black_relative_ev;
@@ -259,15 +272,7 @@ typedef struct tone_mapping_params_t
   gboolean look_tuned;
   gboolean restore_hue;
 
-  // HDR output, see _set_hdr_params()
-  gboolean hdr;
-  float hdr_headroom;
-  float hdr_purity;
-  float hdr_log_min;
-  float hdr_pivot_x;
-  float hdr_pivot_y;
-  float hdr_toe_scale;
-  float hdr_shoulder_scale;
+  hdr_params_t hdr;
 } tone_mapping_params_t;
 
 typedef struct primaries_params_t
@@ -876,7 +881,7 @@ static inline float _calculate_slope_gamma_compensation(const float gamma,
 static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_params_t *p)
 {
   tone_mapping_params_t tone_mapping_params = { 0 };
-  tone_mapping_params.hdr_headroom = 1.f;
+  tone_mapping_params.hdr.headroom = 1.f;
 
   // look
   tone_mapping_params.look_lift = p->look_lift;
@@ -1002,25 +1007,24 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
 // the pivot up to 1.0, the peak, maps to [0, 1]. It moves the pivot output
 // down by the headroom, so the pivot keeps its SDR brightness, with slope 1
 // and power 3 below it and power 1 above it
-static void _set_hdr_params(tone_mapping_params_t *params,
+static void _set_hdr_params(hdr_params_t *hdr,
                             const dt_iop_agx_params_t *p,
                             const float headroom)
 {
   const float pivot = CLAMPF(p->curve_pivot_y_linear_output, _epsilon, 0.99f);
 
-  params->hdr = TRUE;
-  params->hdr_headroom = headroom;
-  params->hdr_purity = p->hdr_purity;
-  params->hdr_log_min = log2f(pivot) - 20.f;
-  params->hdr_pivot_x = 1.f - log2f(pivot) / params->hdr_log_min;
-  params->hdr_pivot_y = 1.f - log2f(pivot / headroom) / params->hdr_log_min;
-  params->hdr_toe_scale = -_scale(1.f, 1.f, 1.f - params->hdr_pivot_x, 1.f - params->hdr_pivot_y,
-                                  1.f, 3.f);
+  hdr->enabled = TRUE;
+  hdr->headroom = headroom;
+  hdr->purity = p->hdr_purity;
+  hdr->log_min = log2f(pivot) - 20.f;
+  hdr->pivot_x = 1.f - log2f(pivot) / hdr->log_min;
+  hdr->pivot_y = 1.f - log2f(pivot / headroom) / hdr->log_min;
+  hdr->toe_scale = -_scale(1.f, 1.f, 1.f - hdr->pivot_x, 1.f - hdr->pivot_y, 1.f, 3.f);
   // _scale() cannot give the negative scale of a convex segment: with
   // power 1 the shoulder is the hyperbola through the pivot and (1, 1)
-  const float dx = 1.f - params->hdr_pivot_x;
-  const float dy = 1.f - params->hdr_pivot_y;
-  params->hdr_shoulder_scale = -dx * dy / (dy - dx);
+  const float dx = 1.f - hdr->pivot_x;
+  const float dy = 1.f - hdr->pivot_y;
+  hdr->shoulder_scale = -dx * dy / (dy - dx);
 }
 
 // when following the output, the curve's output, target white included,
@@ -1041,7 +1045,7 @@ static tone_mapping_params_t _pipe_tone_mapping_params(const dt_iop_agx_params_t
 
   tone_mapping_params_t tone_mapping_params = _calculate_tone_mapping_params(&pipe_p);
   if(hdr_headroom > 1.f)
-    _set_hdr_params(&tone_mapping_params, &pipe_p, hdr_headroom);
+    _set_hdr_params(&tone_mapping_params.hdr, &pipe_p, hdr_headroom);
   return tone_mapping_params;
 }
 
@@ -1144,21 +1148,21 @@ static void _adjust_relative_exposure_from_exposure_params(dt_iop_module_t *self
 
 // x is linear, relative to the peak
 static inline float _hdr_darken(const float x,
-                                const tone_mapping_params_t *params)
+                                const hdr_params_t *hdr)
 {
-  const float log_x = CLIP(1.f - log2f(fmaxf(x, 1e-12f)) / params->hdr_log_min);
-  const float u = log_x - params->hdr_pivot_x;
+  const float log_x = CLIP(1.f - log2f(fmaxf(x, 1e-12f)) / hdr->log_min);
+  const float u = log_x - hdr->pivot_x;
   const float log_y =
     u < 0.f
-    ? _scaled_sigmoid(log_x, params->hdr_toe_scale, 1.f, 3.f,
-                      params->hdr_pivot_x, params->hdr_pivot_y)
-    : params->hdr_pivot_y
-      + params->hdr_shoulder_scale * u / (params->hdr_shoulder_scale + u);
-  return x > 0.f ? exp2f(params->hdr_log_min * (1.f - log_y)) : 0.f;
+    ? _scaled_sigmoid(log_x, hdr->toe_scale, 1.f, 3.f,
+                      hdr->pivot_x, hdr->pivot_y)
+    : hdr->pivot_y
+      + hdr->shoulder_scale * u / (hdr->shoulder_scale + u);
+  return x > 0.f ? exp2f(hdr->log_min * (1.f - log_y)) : 0.f;
 }
 
 static inline void _agx_hdr(dt_aligned_pixel_t pixel_in_out,
-                            const tone_mapping_params_t *params)
+                            const hdr_params_t *hdr)
 {
   dt_aligned_pixel_t hsv_before = { 0.f };
   dt_aligned_pixel_t hsv_after = { 0.f };
@@ -1166,17 +1170,17 @@ static inline void _agx_hdr(dt_aligned_pixel_t pixel_in_out,
 
   dt_RGB_2_HSV(pixel_in_out, hsv_before);
   for_three_channels(k, aligned(pixel_in_out, darkened : 16))
-    darkened[k] = _hdr_darken(pixel_in_out[k], params);
+    darkened[k] = _hdr_darken(pixel_in_out[k], hdr);
   dt_RGB_2_HSV(darkened, hsv_after);
 
   // keep part of the hue and saturation shift of the per-channel darkening
-  hsv_after[0] = _lerp_hue(hsv_before[0], hsv_after[0], 1.f - params->hdr_purity);
-  hsv_after[1] = hsv_before[1] + params->hdr_purity * (hsv_after[1] - hsv_before[1]);
+  hsv_after[0] = _lerp_hue(hsv_before[0], hsv_after[0], 1.f - hdr->purity);
+  hsv_after[1] = hsv_before[1] + hdr->purity * (hsv_after[1] - hsv_before[1]);
   dt_HSV_2_RGB(hsv_after, darkened);
 
   // back to 1.0 = reference white
   for_three_channels(k, aligned(pixel_in_out, darkened : 16))
-    pixel_in_out[k] = params->hdr_headroom * darkened[k];
+    pixel_in_out[k] = hdr->headroom * darkened[k];
 }
 
 static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
@@ -1206,8 +1210,8 @@ static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
     transformed_pixel[k] = powf(fmaxf(0.f, transformed_pixel[k]), params->curve_gamma);
   }
 
-  if(params->hdr)
-    _agx_hdr(transformed_pixel, params);
+  if(params->hdr.enabled)
+    _agx_hdr(transformed_pixel, &params->hdr);
 
   // get post-curve chroma angle
   if(params->restore_hue)
@@ -1233,8 +1237,8 @@ static float _rendered_curve(const float x,
                              const tone_mapping_params_t *params)
 {
   const float y = _apply_curve(x, params);
-  return params->hdr
-    ? powf(_hdr_darken(powf(y, params->curve_gamma), params), 1.f / params->curve_gamma)
+  return params->hdr.enabled
+    ? powf(_hdr_darken(powf(y, params->curve_gamma), &params->hdr), 1.f / params->curve_gamma)
     : y;
 }
 
@@ -1331,7 +1335,7 @@ static void _apply_auto_pivot_xy(dt_iop_module_t *self, const dt_iop_order_iccpr
   // try to avoid changing the brightness of the pivot; with HDR
   // output the pivot keeps its brightness relative to reference white
   const float target_y_linearised =
-    powf(target_y, p->curve_gamma) * tone_mapping_params.hdr_headroom;
+    powf(target_y, p->curve_gamma) * tone_mapping_params.hdr.headroom;
   p->curve_pivot_y_linear_output = fminf(1.f, target_y_linearised);
   p->curve_pivot_x = picked_pivot_x;
 
@@ -1673,7 +1677,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
     set_color(cr, darktable.bauhaus->graph_fg); // Use standard text color
 
     // the top of the graph is the peak, so HDR output labels it above 100%
-    snprintf(text, sizeof(text), "%.0f%%", 100.0f * y_linear * tone_mapping_params.hdr_headroom);
+    snprintf(text, sizeof(text), "%.0f%%", 100.0f * y_linear * tone_mapping_params.hdr.headroom);
     pango_layout_set_text(layout, text, -1);
     pango_layout_get_pixel_extents(layout, &g->ink, NULL);
 
