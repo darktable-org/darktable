@@ -445,6 +445,8 @@ static void _export_with_preset(const gchar *preset_name, dt_lib_module_t *self)
   // get current settings from the GUI
   int params_size;
   void *params = get_params(self, &params_size);
+  // not in params when the current profile cannot be PQ
+  const int pq_peak_nits = dt_conf_get_int(CONFIG_PREFIX "pq_peak_nits");
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -475,6 +477,7 @@ static void _export_with_preset(const gchar *preset_name, dt_lib_module_t *self)
 
   // restore previous settings
   set_params(self, params, params_size);
+  dt_bauhaus_slider_set(d->pq_peak, pq_peak_nits);
 }
 
 static void _export_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
@@ -989,11 +992,14 @@ static void _storage_changed(GtkWidget *widget, dt_lib_module_t *self)
 }
 
 // the PQ peak only matters when the export may be PQ
+static gboolean _export_may_be_pq(const dt_colorspaces_color_profile_type_t icctype)
+{
+  return icctype == DT_COLORSPACE_NONE || dt_colorspaces_hdr_transfer(icctype) == DT_HDR_PQ;
+}
+
 static void _update_pq_peak_visibility(dt_lib_export_t *d)
 {
-  const dt_colorspaces_color_profile_type_t icctype = dt_conf_get_int(CONFIG_PREFIX "icctype");
-  gtk_widget_set_visible(d->pq_peak, icctype == DT_COLORSPACE_NONE
-                                     || dt_colorspaces_hdr_transfer(icctype) == DT_HDR_PQ);
+  gtk_widget_set_visible(d->pq_peak, _export_may_be_pq(dt_conf_get_int(CONFIG_PREFIX "icctype")));
 }
 
 static void _set_profile_conf(GtkWidget *widget)
@@ -2366,8 +2372,10 @@ void *legacy_params(dt_lib_module_t *self,
     //                  pq_peak_nits)
     //  - old rest
 
-    const int32_t pq_peak_nits =
-      dt_confgen_get_int(CONFIG_PREFIX "pq_peak_nits", DT_DEFAULT);
+    if(old_params_size < sizeof(int32_t) * 9) return NULL;
+
+    // 0: applying the preset leaves the PQ peak as it is, as before
+    const int32_t pq_peak_nits = 0;
 
     const size_t new_params_size = old_params_size + sizeof(int32_t);
     void *new_params = calloc(1, new_params_size);
@@ -2425,7 +2433,10 @@ void *get_params(dt_lib_module_t *self, int *size)
   const int32_t upscale = dt_conf_get_bool(CONFIG_PREFIX "upscale") ? 1 : 0;
   const int32_t dimensions_type = dt_conf_get_int(CONFIG_PREFIX "dimensions_type");
   const int32_t print_dpi = dt_conf_get_int(CONFIG_PREFIX "print_dpi");
-  const int32_t pq_peak_nits = dt_conf_get_int(CONFIG_PREFIX "pq_peak_nits");
+  // 0 when the export cannot be PQ, so that applying the preset does not
+  // change a PQ peak that is hidden and unused for its profile
+  const int32_t pq_peak_nits =
+    _export_may_be_pq(icctype) ? dt_conf_get_int(CONFIG_PREFIX "pq_peak_nits") : 0;
   gchar *scale = dt_conf_get_string(CONFIG_PREFIX "resizing_factor");
   const int32_t high_quality =
     dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing") ? 1 : 0;
@@ -2640,7 +2651,7 @@ int set_params(dt_lib_module_t *self,
   dt_bauhaus_combobox_set(d->high_quality, high_quality ? 1 : 0);
   dt_bauhaus_combobox_set(d->export_masks, export_masks ? 1 : 0);
   dt_bauhaus_combobox_set(d->dimensions_type, dimensions_type);
-  dt_bauhaus_slider_set(d->pq_peak, pq_peak_nits);
+  if(pq_peak_nits > 0) dt_bauhaus_slider_set(d->pq_peak, pq_peak_nits);
   _size_update_display(d);
 
   // propagate to modules
