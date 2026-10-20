@@ -7993,6 +7993,13 @@ static void _popover_menu_apply_item_tooltip(GtkWidget *button,
 
   g_free(tooltip_id);
   g_free(tip);
+
+  // the item's action target, for a caller that reacts to the pointer over
+  // it: GTK3 keeps the item behind the button private (gtkmenusectionbox.c)
+  GVariant *target = g_menu_model_get_item_attribute_value(model, i, G_MENU_ATTRIBUTE_TARGET, NULL);
+  if(target)
+    g_object_set_data_full(G_OBJECT(button), "dt-popover-target", target,
+                           (GDestroyNotify)g_variant_unref);
 }
 
 static void _popover_menu_apply_submenu_tooltips(GMenuModel *model,
@@ -8146,9 +8153,11 @@ static void _popover_menu_set_tooltips(GtkWidget *popover,
 // gtkmenusectionbox.c), and a menu model has no other name to give them. Two
 // submenus with the same label then open the same page, whichever was meant.
 // A repeated label gets zero-width spaces appended: it looks the same and
-// names a page of its own. GTK4's nested popovers attach each submenu to its
-// own button, so the GTK4 port drops this
-static void _popover_menu_unique_submenu_labels(GMenuModel *model, GHashTable *seen)
+// names a page of its own. Labels on one page are made unique the same way,
+// as _popover_menu_apply_page_tooltips finds an item's button by its label.
+// GTK4's nested popovers attach each submenu to its own button, so the GTK4
+// port drops this
+static void _popover_menu_unique_labels(GMenuModel *model, GHashTable *seen, GHashTable *page)
 {
   if(!G_IS_MENU(model)) return;
   const int n_items = g_menu_model_get_n_items(model);
@@ -8157,17 +8166,18 @@ static void _popover_menu_unique_submenu_labels(GMenuModel *model, GHashTable *s
     GMenuModel *section = g_menu_model_get_item_link(model, i, G_MENU_LINK_SECTION);
     if(section)
     {
-      _popover_menu_unique_submenu_labels(section, seen);
+      _popover_menu_unique_labels(section, seen, page);
       g_object_unref(section);
       continue;
     }
     GMenuModel *submenu = g_menu_model_get_item_link(model, i, G_MENU_LINK_SUBMENU);
-    if(!submenu) continue;
     gchar *label = NULL;
     if(g_menu_model_get_item_attribute(model, i, G_MENU_ATTRIBUTE_LABEL, "s", &label))
     {
       GString *unique = g_string_new(label);
-      while(g_hash_table_contains(seen, unique->str)) g_string_append(unique, "\xe2\x80\x8b"); // U+200B
+      while(g_hash_table_contains(page, unique->str)
+            || (submenu && g_hash_table_contains(seen, unique->str)))
+        g_string_append(unique, "\xe2\x80\x8b"); // U+200B
       if(strcmp(unique->str, label))
       {
         GMenuItem *item = g_menu_item_new_from_model(model, i);
@@ -8176,11 +8186,18 @@ static void _popover_menu_unique_submenu_labels(GMenuModel *model, GHashTable *s
         g_menu_insert_item(G_MENU(model), i, item);
         g_object_unref(item);
       }
-      g_hash_table_add(seen, g_string_free(unique, FALSE));
+      g_hash_table_add(page, g_strdup(unique->str));
+      if(submenu) g_hash_table_add(seen, g_strdup(unique->str));
+      g_string_free(unique, TRUE);
       g_free(label);
     }
-    _popover_menu_unique_submenu_labels(submenu, seen);
-    g_object_unref(submenu);
+    if(submenu)
+    {
+      GHashTable *sub_page = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+      _popover_menu_unique_labels(submenu, seen, sub_page);
+      g_hash_table_destroy(sub_page);
+      g_object_unref(submenu);
+    }
   }
 }
 #endif
@@ -8209,7 +8226,9 @@ GtkWidget *dt_gui_popover_menu_from_model_full(GtkWidget *parent,
   GHashTable *seen = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
   // the popover's own top page
   g_hash_table_add(seen, g_strdup("main"));
-  _popover_menu_unique_submenu_labels(G_MENU_MODEL(menu), seen);
+  GHashTable *top_page = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+  _popover_menu_unique_labels(G_MENU_MODEL(menu), seen, top_page);
+  g_hash_table_destroy(top_page);
   g_hash_table_destroy(seen);
   popover_menu = gtk_popover_new_from_model(parent, G_MENU_MODEL(menu));
   if(tooltip_ctx)

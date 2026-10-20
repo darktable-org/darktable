@@ -687,9 +687,13 @@ void dt_masks_pixel_duplicate_points(dt_develop_t *const dev,
 #define RASTER_OVERLAY_STEP 2.0f
 
 // the form drawn at index in the visible group: gui->points follows the
-// group's direct members in order (dt_masks_gui_form_test_create)
-static dt_masks_form_t *_raster_form_at(const int index)
+// group's direct members in order (dt_masks_gui_form_test_create). the
+// import menu's preview draws its own list (dt_masks_import_preview_post_expose)
+static dt_masks_form_t *_raster_form_at(const dt_masks_form_gui_t *gui, const int index)
 {
+  if(gui->import_preview_points && gui->points == gui->import_preview_points)
+    return dt_masks_get_from_id(darktable.develop,
+                                GPOINTER_TO_INT(g_list_nth_data(gui->import_preview, index)));
   dt_masks_form_t *grp = darktable.develop->form_visible;
   if(!grp) return NULL;
   if(!(grp->type & DT_MASKS_GROUP)) return grp;
@@ -1010,7 +1014,7 @@ void dt_masks_pixel_post_expose(const dt_masks_pixel_type_t *type,
   const dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
   if(!gpt || gpt->points_count < 1) return;
 
-  const dt_masks_form_t *form = _raster_form_at(index);
+  const dt_masks_form_t *form = _raster_form_at(gui, index);
   // over the icon, the only part that selects (dt_masks_pixel_get_distance)
   const gboolean hovered = gui->group_selected == index && gui->form_selected;
   const dt_dtdata_ref_t *ref = form ? dt_masks_pixel_ref(form) : NULL;

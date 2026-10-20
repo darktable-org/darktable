@@ -785,8 +785,10 @@ void expose(dt_view_t *self,
   */
   // Mask editing (including creation) is the only state that relaxes the pan
   // clamp to allow the viewport past the image; it is disabled while the crop
-  // overlay is active, so form_visible is NULL there.
-  const gboolean mask_editing = dev->form_visible != NULL;
+  // overlay is active, so form_visible is NULL there. The import menu's
+  // preview draws shapes in the same frame, whatever the module shows
+  const gboolean mask_editing = dev->form_visible != NULL
+    || (dev->form_gui && dev->form_gui->import_preview);
 
   float sb_zoom_x = zoom_x, sb_zoom_y = zoom_y, sb_boxw = boxw, sb_boxh = boxh;
   if(boxw > 0.95f)
@@ -1081,7 +1083,9 @@ void expose(dt_view_t *self,
   const gboolean display_masks =
     dmod && dmod->enabled && dt_dev_modulegroups_test_activated(darktable.develop);
 
-  if(dev->form_visible && display_masks)
+  // the import menu's preview shows even while this module's mask is hidden
+  if((dev->form_visible && display_masks)
+     || (dmod && dev->form_gui && dev->form_gui->import_preview))
   {
     dt_print_pipe(DT_DEBUG_EXPOSE,
         "expose masks",
@@ -1113,7 +1117,9 @@ void expose(dt_view_t *self,
     const float corr_x = CLAMP((zoom_x - zoom_x_vp) * wd, -max_corr, max_corr);
     const float corr_y = CLAMP((zoom_y - zoom_y_vp) * ht, -max_corr, max_corr);
     cairo_translate(cri, corr_x, corr_y);
-    dt_masks_events_post_expose(dmod, cri, width, height, 0.0f, 0.0f, zoom_scale);
+    dt_masks_import_preview_post_expose(cri, zoom_scale);
+    if(dev->form_visible && display_masks)
+      dt_masks_events_post_expose(dmod, cri, width, height, 0.0f, 0.0f, zoom_scale);
     cairo_restore(cri);
   }
 

@@ -633,6 +633,14 @@ typedef struct dt_masks_form_gui_t
   dt_mask_id_t panel_selected_formid;
   dt_mask_id_t canvas_hover_formid;
   GList *solo_formids;
+  // import_preview: the shapes the import menu entry under the pointer would
+  //   bring in, drawn on the canvas whether a mask is shown or not, with their
+  //   outlines (dt_masks_form_gui_points_t) in import_preview_points, computed
+  //   for the preview pipe output import_preview_hash. NULL = none. Set
+  //   through dt_masks_set_import_preview
+  GList *import_preview;
+  GList *import_preview_points;
+  dt_hash_t import_preview_hash;
 
   // opaque per-type data (e.g. segmentation context for object masks)
   void *scratchpad;
@@ -1132,6 +1140,9 @@ gboolean dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
 // mask (size/border/opacity) instead of zoom/pan. Returns FALSE while drawing
 // a path, since path creation has no scroll-adjustable parameter.
 gboolean dt_masks_scroll_over_mask(void);
+// draw the shapes `formids` on the canvas until the next call; NULL clears
+void dt_masks_set_import_preview(GList *formids);
+void dt_masks_import_preview_post_expose(cairo_t *cr, const float zoom_scale);
 void dt_masks_events_post_expose(const struct dt_iop_module_t *module,
                                  cairo_t *cr,
                                  const int32_t width,
