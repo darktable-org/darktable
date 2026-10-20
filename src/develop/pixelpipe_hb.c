@@ -2015,8 +2015,8 @@ static cl_int _opencl_benchmark(dt_dev_pixelpipe_t *pipe,
 
 static void _diff_statistics(const dt_iop_module_t *self,
                              const dt_iop_roi_t *roi,
-                             const float *const dat_a,
-                             const float *const dat_b,
+                             const float *const dat_a,  // output CPU
+                             const float *const dat_b,  // output OpenCL
                              const int ch,
                              const int devid)
 {
@@ -2027,9 +2027,8 @@ static void _diff_statistics(const dt_iop_module_t *self,
   double sum = 0.0;
   double sum2 = 0.0;
   double max_abs = 0.0;
-  double max_rel = 0.0;
 
-  DT_OMP_FOR(reduction(+ : sum, sum2) reduction(max : max_abs, max_rel))
+  DT_OMP_FOR(reduction(+ : sum, sum2) reduction(max : max_abs))
   for(size_t i = 0; i < npix * ch; i+=ch)
   {
     // We don't calculate per RGB channel but define a RGB pixel as average of three
@@ -2042,20 +2041,30 @@ static void _diff_statistics(const dt_iop_module_t *self,
     sum2 += d * d;
     if(ad > max_abs)
       max_abs = ad;
-
-    const double ref = fmax(fabs(a), fabs(b));
-    const double rel = ref > 1e-9 ? ad / ref : 0.0;
-    if(rel > max_rel)
-      max_rel = rel;
   }
 
   const double mean = sum / (double)npix;
   const double var = fmax(sum2 / (double)npix - mean * mean, 0.0);
   const double stddev = sqrt(var);
 
+  int outrange_2 = 0;
+  int outrange_4 = 0;
+  DT_OMP_FOR(reduction(+ : outrange_2, outrange_4))
+  for(size_t i = 0; i < npix * ch; i+=ch)
+  {
+    const double a = ch == 1 ? dat_a[i] : (dat_a[i] + dat_a[i+1] + dat_a[i+2]) / 3.0;
+    const double b = ch == 1 ? dat_b[i] : (dat_b[i] + dat_b[i+1] + dat_b[i+2]) / 3.0;
+    const double d = a - b;
+    const double ad = fabs(d);
+    outrange_2 += ad > 2.0 * stddev ? 1 : 0;
+    outrange_4 += ad > 4.0 * stddev ? 1 : 0;
+  }
+
   dt_print_pipe(DT_DEBUG_ALWAYS, "OpenCL diff stats", NULL, self, devid, NULL, NULL,
-           "(%dx%d)  max_abs_diff=%.6e  max_rel_diff=%.6e  stddev=%.6e  mean_diff=%+.6e",
-           width, height, max_abs, max_rel, stddev, mean);
+           "(%4dx%4d) max_diff=%.5e  stddev=%.5e  mean_diff=%+.5e  S2:%6d (%.1f%%)  S4:%6d (%.1f%%)",
+           width, height, max_abs, stddev, mean,
+           outrange_2, 100.0f * (float)outrange_2 / (float)npix,
+           outrange_4, 100.0f * (float)outrange_4 / (float)npix);
 }
 
 static void _opencl_dump_diff_pipe_pfm(dt_dev_pixelpipe_t *pipe,
