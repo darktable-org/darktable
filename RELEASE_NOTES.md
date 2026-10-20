@@ -627,6 +627,8 @@ changes (where available).
 
 - Fixed memory leaks when exporting images or the tag list.
 
+- Fixed month collection filter layout issues.
+
 ## Lua
 
 ### API Version
