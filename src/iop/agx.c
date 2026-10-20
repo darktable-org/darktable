@@ -1330,16 +1330,16 @@ static void _apply_auto_pivot_xy(dt_iop_module_t *self, const dt_iop_order_iccpr
   const float range = p->range_white_relative_ev - p->range_black_relative_ev;
   const float picked_pivot_x = (picked_ev - p->range_black_relative_ev) / range;
 
+  // the SDR curve, also with HDR output: pivot target output is an SDR
+  // value, and the pick must not depend on the display it was made on
   const tone_mapping_params_t tone_mapping_params =
-     _pipe_tone_mapping_params(p, g->output_headroom);
+     _calculate_tone_mapping_params(p);
 
   // see where the target_pivot is currently mapped
-  const float target_y = _rendered_curve(picked_pivot_x, &tone_mapping_params);
-  // try to avoid changing the brightness of the pivot; with HDR
-  // output the pivot keeps its brightness relative to reference white
-  const float target_y_linearised =
-    powf(target_y, p->curve_gamma) * tone_mapping_params.hdr.headroom;
-  p->curve_pivot_y_linear_output = fminf(1.f, target_y_linearised);
+  const float target_y = _apply_curve(picked_pivot_x, &tone_mapping_params);
+  // try to avoid changing the brightness of the pivot
+  const float target_y_linearised = powf(target_y, p->curve_gamma);
+  p->curve_pivot_y_linear_output = target_y_linearised;
   p->curve_pivot_x = picked_pivot_x;
 
   DT_ENTER_GUI_UPDATE();
