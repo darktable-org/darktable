@@ -955,6 +955,26 @@ menu
   padding: 0.14em 0;
 }
 
+/* same outline as tooltips, so a popup stays distinct over a dark image or panel */
+menu,
+popover
+{
+  border: 0.07em solid shade(@tooltip_bg_color, 1.5);
+}
+
+/* a popover draws its shadow inside the 12px it keeps around itself for the
+   arrow, so blur plus offset must stay below that or the shadow is clipped */
+popover
+{
+  box-shadow: 0 2px 6px alpha(black, 0.5);
+}
+
+/* a menu is its own popup window: the shadow belongs to its decoration */
+.csd.popup decoration
+{
+  box-shadow: 0 2px 6px alpha(black, 0.5);
+}
+
 .popup,
 popover
 {
