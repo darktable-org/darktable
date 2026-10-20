@@ -16179,7 +16179,44 @@ static void _element_cluster_released(GtkGestureSingle *gesture,
     _element_cluster_toggle(gesture, module);
 }
 
-// right-click deletes every member of the cluster; a primary press is left to
+static void _cluster_act_delete(GSimpleAction *action, GVariant *param, gpointer u)
+{
+  dt_iop_module_t *module = g_object_get_data(G_OBJECT(u), "module");
+  if(darktable.gui->active_popover_menu)
+    gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
+  // a copy: the rebuild the delete commits destroys the header holding the list
+  GList *members = g_list_copy(g_object_get_data(G_OBJECT(u), "hover-formids"));
+  if(module) _delete_elements(module, members);
+  g_list_free(members);
+}
+
+// the cluster's actions menu, as an element row or a group header has one
+static void _build_cluster_actions_menu(GtkWidget *anchor, dt_iop_module_t *module)
+{
+  g_object_set_data(G_OBJECT(anchor), "module", module);
+
+  GSimpleActionGroup *sag = g_simple_action_group_new();
+  const GActionEntry action_entries[] =
+  {
+    { "delete", _cluster_act_delete, NULL, NULL },
+  };
+  g_action_map_add_action_entries(G_ACTION_MAP(sag), action_entries,
+                                  G_N_ELEMENTS(action_entries), anchor);
+  gtk_widget_insert_action_group(anchor, "masks_cluster_act", G_ACTION_GROUP(sag));
+  g_object_unref(sag);
+
+  GMenu *menu = g_menu_new();
+  GMenu *sec_edit = g_menu_new();
+  _menu_append_tip(sec_edit, _("delete all"), "masks_cluster_act.delete",
+                   _("remove every element folded into this row"));
+  g_menu_append_section(menu, _("edit"), G_MENU_MODEL(sec_edit));
+  g_object_unref(sec_edit);
+
+  darktable.gui->active_popover_menu = dt_gui_popover_menu_from_model(anchor, menu);
+  g_object_unref(menu);
+}
+
+// right-click opens the cluster's actions menu; a primary press is left to
 // the drag source and to the release (see _element_cluster_released)
 static void _element_cluster_press(GtkGestureSingle *gesture,
                                    const int n_press,
@@ -16189,8 +16226,11 @@ static void _element_cluster_press(GtkGestureSingle *gesture,
 {
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_SECONDARY) return;
   dt_gui_claim(gesture);
-  GList *members = g_object_get_data(G_OBJECT(dt_gui_get_widget(gesture)), "hover-formids");
-  _delete_elements(module, members);
+  GtkWidget *w = dt_gui_get_widget(gesture);
+  _build_cluster_actions_menu(w, module);
+  GdkRectangle rect = { (int)x, (int)y, 1, 1 };
+  gtk_popover_set_pointing_to(GTK_POPOVER(darktable.gui->active_popover_menu), &rect);
+  gtk_popover_popup(GTK_POPOVER(darktable.gui->active_popover_menu));
 }
 
 // a member that is a nested group, shown as a group of its own like a
@@ -16345,7 +16385,7 @@ static void _pack_group_elements(dt_iop_module_t *module,
                                              "click to expand or collapse\n"
                                              "drag anywhere in the row to move them all"
                                              " together, like a single element\n"
-                                             "right-click to delete them all"));
+                                             "right-click for actions"));
 
     GtkWidget *rev = gtk_revealer_new();
     gtk_container_add(GTK_CONTAINER(rev), inner);
