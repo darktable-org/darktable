@@ -59,15 +59,15 @@ namespace
 {
 // rawspeed throws, and an unlock after the call is skipped when it does
 // common/exif.cc does the same for exiv2, with its Lock class
-class _mutex_guard
+class SCOPED_CAPABILITY _mutex_guard
 {
 public:
-  explicit _mutex_guard(dt_pthread_mutex_t *mutex)
+  explicit _mutex_guard(dt_pthread_mutex_t *mutex) ACQUIRE(mutex)
     : _mutex(mutex)
   {
-    dt_pthread_mutex_lock(_mutex);
+    dt_pthread_mutex_lock(mutex);
   }
-  ~_mutex_guard()
+  ~_mutex_guard() RELEASE()
   {
     dt_pthread_mutex_unlock(_mutex);
   }
