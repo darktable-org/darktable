@@ -582,12 +582,15 @@ static inline float _line(const float x,
   // the actual 'rise' the curve needs to cover.
   const float actual_rise = fmaxf(_epsilon, limit_y - transition_y);
 
-  const float transformed_projected_rise = powf(projected_rise, -power);
-  const float transformed_actual_rise = powf(actual_rise, -power);
+  // in double: when the pivot reaches target white, the rise is clamped to
+  // _epsilon and powf() overflows to inf for powers above about 6.4, which
+  // gives a zero scale and NaN in _scaled_sigmoid()
+  const double transformed_projected_rise = pow(projected_rise, -power);
+  const double transformed_actual_rise = pow(actual_rise, -power);
 
-  const float base = fmaxf(_epsilon, transformed_actual_rise - transformed_projected_rise);
+  const double base = fmax(_epsilon, transformed_actual_rise - transformed_projected_rise);
 
-  const float scale_value = powf(base, -1.f / power);
+  const float scale_value = pow(base, -1.0 / power);
 
   // avoid 'explosions'
   return fminf(1e9f, scale_value);
@@ -1038,7 +1041,7 @@ static tone_mapping_params_t _pipe_tone_mapping_params(const dt_iop_agx_params_t
 
   const float hdr_headroom = fmaxf(1.f, headroom);
   dt_iop_agx_params_t pipe_p = *p;
-  // capped at the slider's maximum: above it the curve fit in _scale()
+  // capped at the slider's maximum: well above it, powf() in _sigmoid()
   // overflows, e.g. for a high pivot target and the highest PQ peaks
   pipe_p.curve_shoulder_power = fminf(pipe_p.curve_shoulder_power
                                       * powf(hdr_headroom, log10f(2.f)), 10.f);
