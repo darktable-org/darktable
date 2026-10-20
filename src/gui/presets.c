@@ -105,8 +105,8 @@ gboolean dt_gui_presets_confirm_pixel_masks(const char *style_modules)
   if(!darktable.gui || !dt_control_running())
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[presets] the mask of a %s holds AI objects stored as pixels,"
-             " which do not apply to other images", style_modules ? "style" : "preset");
+             "[presets] AI objects stored as pixels are left out of the mask of a %s",
+             style_modules ? "style" : "preset");
     return TRUE;
   }
   if(style_modules)
@@ -115,19 +115,23 @@ gboolean dt_gui_presets_confirm_pixel_masks(const char *style_modules)
     gchar *list = g_strjoinv("\n    ", names);
     g_strfreev(names);
     const gboolean save = dt_gui_show_yes_no_dialog
-      (_("save style with AI objects?"), "",
+      (_("save style without its AI objects?"), "",
        _("the masks of these modules hold AI objects stored as pixels of this image:\n\n"
          "    %s\n\n"
-         "they will not apply to other images.\n\n"
-         "do you want to save the style anyway?"), list);
+         "they cannot apply to other images and will be left out of the style.\n\n"
+         "to keep an AI object in presets and styles, create it with\n"
+         "'apply as paths' selected.\n\n"
+         "do you want to save the style without them?"), list);
     g_free(list);
     return save;
   }
   return dt_gui_show_yes_no_dialog
-    (_("save preset with an AI object?"), "",
-     _("the mask holds an AI object stored as pixels of this image.\n"
-       "it will not apply to other images.\n\n"
-       "do you want to save the preset anyway?"));
+    (_("save preset without its AI objects?"), "",
+     _("the mask holds AI objects stored as pixels of this image,\n"
+       "which cannot apply to other images: they will be left out of the preset.\n\n"
+       "to keep an AI object in presets and styles, create it with\n"
+       "'apply as paths' selected.\n\n"
+       "do you want to save the preset without them?"));
 }
 
 gboolean dt_gui_presets_confirm_module_mask(dt_iop_module_t *module)

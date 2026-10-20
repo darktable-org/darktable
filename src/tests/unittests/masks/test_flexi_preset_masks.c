@@ -332,7 +332,7 @@ static void test_blob_roundtrip(void **state)
 }
 
 // an AI object stored as pixels renders only on its own image, so saving one
-// in a preset or a style warns; one traced into paths is ordinary shapes
+// in a preset or a style asks; one traced into paths is ordinary shapes
 static void test_pixel_forms_found(void **state)
 {
   _ensure_source();
@@ -382,7 +382,8 @@ static dt_imgid_t _image_with_pixel_object(void)
 // a style made from an image whose mask holds an AI object stored as pixels:
 // the styles dialog asks first, naming the module whose mask holds it
 // (dt_styles_history_pixel_mask_modules()) among the history items it lists,
-// and the style then carries the object
+// and the style then leaves the object out, with the
+// group member referring to it, and keeps the rest of the mask
 static void test_style_from_pixel_object(void **state)
 {
   _ensure_source();
@@ -421,7 +422,20 @@ static void test_style_from_pixel_object(void **state)
   dt_develop_blend_params_t bp;
   GList *forms = NULL;
   assert_true(dt_masks_blend_blob_decode(blob, size, &bp, &forms));
-  assert_true(dt_masks_tree_has_pixel_forms(forms, bp.mask_id));
+  assert_false(dt_masks_tree_has_pixel_forms(forms, bp.mask_id));
+  // the root group, the parametric element, the nested group and its circle
+  assert_int_equal(g_list_length(forms), 4);
+  for(const GList *l = forms; l; l = g_list_next(l))
+  {
+    const dt_masks_form_t *f = l->data;
+    if(!(f->type & DT_MASKS_GROUP)) continue;
+    for(const GList *p = f->points; p; p = g_list_next(p))
+    {
+      const dt_masks_point_group_t *pt = p->data;
+      if(!dt_masks_point_is_marker(pt))
+        assert_non_null(dt_masks_get_from_id_ext(forms, pt->formid));
+    }
+  }
   g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
   g_bytes_unref(item);
 }
@@ -440,6 +454,17 @@ static void test_pixel_object_save_headless(void **state)
   assert_true(dt_masks_tree_has_pixel_forms(dev.forms, module->blend_params->mask_id));
   assert_true(dt_gui_presets_confirm_module_mask(module));
   assert_true(dt_gui_presets_confirm_pixel_masks("exposure"));
+
+  // and the preset leaves the object out, as a style does
+  size_t size = 0;
+  void *blob = dt_gui_presets_module_blend_blob(module, &size);
+  dt_develop_blend_params_t bp;
+  GList *forms = NULL;
+  assert_true(dt_masks_blend_blob_decode(blob, size, &bp, &forms));
+  assert_false(dt_masks_tree_has_pixel_forms(forms, bp.mask_id));
+  assert_int_equal(g_list_length(forms), 4);
+  g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+  g_free(blob);
   dt_dev_cleanup(&dev);
 }
 

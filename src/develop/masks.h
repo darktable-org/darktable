@@ -1057,13 +1057,14 @@ GList *dt_masks_read_forms_at(const dt_imgid_t imgid, const int num);
 GList *dt_masks_tree_forms(GList *forms, const dt_mask_id_t mask_id);
 
 /** does the tree of the group `mask_id` hold a form stored as pixels (an AI
-    object not traced into paths)? Its pixels belong to its own image: carried
-    by a preset or a style, it renders nowhere on another one */
+    object not traced into paths)? Its pixels belong to its own image, so a
+    preset or a style leaves it out (dt_masks_blend_blob_encode()) */
 gboolean dt_masks_tree_has_pixel_forms(GList *forms, const dt_mask_id_t mask_id);
 
 /** blend params as presets and styles store them (masks/blend_blob.c):
     `bp`, followed, when its flexi mask group is in `forms`, by the forms of
-    that group's tree. g_free() the result, of `*size` bytes */
+    that group's tree, less those stored as pixels and the group members
+    referring to them. g_free() the result, of `*size` bytes */
 void *dt_masks_blend_blob_encode(const struct dt_develop_blend_params_t *bp,
                                  GList *forms,
                                  size_t *size);

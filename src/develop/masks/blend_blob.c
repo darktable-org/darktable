@@ -137,6 +137,23 @@ void *dt_masks_blend_blob_encode(const dt_develop_blend_params_t *bp,
   g_byte_array_append(out, (const guint8 *)bp, sizeof(*bp));
 
   GList *tree = _carries_tree(bp, forms) ? dt_masks_tree_forms(forms, bp->mask_id) : NULL;
+
+  // a form stored as pixels refers to its own image's sidecar, so on any
+  // other image it would only show as missing: it is left out, and so are
+  // the group members referring to it
+  GHashTable *dropped = g_hash_table_new(NULL, NULL);
+  for(GList *l = tree; l;)
+  {
+    GList *next = g_list_next(l);
+    const dt_masks_form_t *form = l->data;
+    if(form->type & DT_MASKS_PIXEL_FORMS)
+    {
+      g_hash_table_add(dropped, GINT_TO_POINTER(form->formid));
+      tree = g_list_delete_link(tree, l);
+    }
+    l = next;
+  }
+
   if(tree)
   {
     _blob_header_t header = { .format = DT_MASKS_BLOB_FORMAT,
@@ -148,7 +165,16 @@ void *dt_masks_blend_blob_encode(const dt_develop_blend_params_t *bp,
     {
       const dt_masks_form_t *form = l->data;
       const size_t point_size = form->functions ? form->functions->point_struct_size : 0;
-      const guint nb = point_size ? g_list_length(form->points) : 0;
+      GList *points = NULL;
+      for(GList *p = point_size ? form->points : NULL; p; p = g_list_next(p))
+      {
+        const dt_masks_point_group_t *pt = p->data;
+        if(!(form->type & DT_MASKS_GROUP) || dt_masks_point_is_marker(pt)
+           || !g_hash_table_contains(dropped, GINT_TO_POINTER(pt->formid)))
+          points = g_list_prepend(points, p->data);
+      }
+      points = g_list_reverse(points);
+      const guint nb = g_list_length(points);
       _blob_form_t rec = { .formid = form->formid,
                            .type = form->type,
                            .version = form->version,
@@ -158,11 +184,13 @@ void *dt_masks_blend_blob_encode(const dt_develop_blend_params_t *bp,
       memcpy(rec.source, form->source, sizeof(rec.source));
       g_byte_array_append(out, (const guint8 *)&rec, sizeof(rec));
       g_byte_array_append(out, (const guint8 *)form->name, rec.name_bytes);
-      for(const GList *p = nb ? form->points : NULL; p; p = g_list_next(p))
+      for(const GList *p = points; p; p = g_list_next(p))
         g_byte_array_append(out, (const guint8 *)p->data, point_size);
+      g_list_free(points);
     }
     g_list_free(tree);
   }
+  g_hash_table_destroy(dropped);
 
   *size = out->len;
   return g_byte_array_free(out, FALSE);

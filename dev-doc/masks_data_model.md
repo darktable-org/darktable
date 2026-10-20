@@ -50,6 +50,12 @@ reads or writes it. A blob without these forms is the plain struct, as it
 was before. Applying the blob gives the forms fresh ids
 (`dt_masks_blend_blob_remap`), so two applies never share a form.
 
+An AI object stored as pixels is left out of the blob, along with the group
+members that refer to it. Its pixels are in the sidecar of the image version
+it was made on, so on any other image it could only show as missing. The
+interactive saves ask first (`dt_gui_presets_confirm_pixel_masks`); an
+object traced into paths is ordinary shapes and is kept.
+
 Presets and styles made before flexi masks hold a classic `mask_mode` and no
 forms, at blend version 14 or older, or at version 15 where a conversion had
 no image to create the forms in. `dt_develop_blend_params_read` migrates

@@ -397,6 +397,7 @@ gchar *dt_styles_history_pixel_mask_modules(const dt_imgid_t imgid, GList *nums)
 // mask group by id, but the forms are in main.masks_history: they go along in
 // the item's blendop_params (dt_masks_blend_blob_encode()), as for a preset.
 // TRUE when they hold a form stored as pixels, which other images cannot use
+// and the blob leaves out
 static gboolean _style_item_attach_mask(const int styleid,
                                         const int style_num,
                                         const dt_imgid_t imgid,
@@ -453,11 +454,11 @@ static gboolean _style_item_attach_mask(const int styleid,
 static void _warn_pixel_forms(const char *style_name)
 {
   dt_print(DT_DEBUG_ALWAYS,
-           "[styles] a mask in style '%s' holds AI objects stored as pixels,"
-           " which do not apply to other images", style_name);
+           "[styles] AI objects stored as pixels are left out of a mask"
+           " in style '%s'", style_name);
 }
 
-// TRUE when an item it updated carries a form stored as pixels
+// TRUE when an item it updated left out a form stored as pixels
 static gboolean _dt_style_update_from_image(const int id,
                                             const dt_imgid_t imgid,
                                             GList *filter,
