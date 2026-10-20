@@ -2893,6 +2893,9 @@ void dt_iop_gui_blend_masks_options_popup(GtkButton *button, gpointer user_data)
   dt_iop_module_t *module = darktable.develop ? darktable.develop->gui_module : NULL;
   if(!module && darktable.develop)
     module = darktable.develop->proxy.masks_flexi_host.hosted_module;
+  // a module that cannot blend has no options of its own: offer the general
+  // ones, as with nothing focused, rather than open nothing
+  if(module && !module->blend_data) module = NULL;
   _blendif_options_callback(button, module);
 }
 

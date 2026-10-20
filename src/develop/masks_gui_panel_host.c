@@ -158,8 +158,17 @@ static const char *_no_focused_module_tip(void)
            "click a module's header to focus it");
 }
 
+static void _utility_header_hosting(dt_lib_module_t *host, const gboolean hosting);
+
 void dt_iop_gui_blend_masks_panel_sync_toolbox(void)
 {
+  // the utility lib's unhosted header says why it is empty, which depends on
+  // the focused module. Nothing else refreshes it when focus moves between
+  // modules without a mask: relocating one of those returns early
+  if(darktable.develop && !darktable.develop->proxy.masks_flexi_host.hosted_module
+     && dt_masks_gui_panel_position() == MASKS_PANEL_POS_UTILITY)
+    _utility_header_hosting(darktable.develop->proxy.masks_flexi_host.module, FALSE);
+
   GtkWidget *btn = darktable.develop ? darktable.develop->masks_panel_button : NULL;
   if(!btn || !GTK_IS_TOGGLE_BUTTON(btn)) return;
 
@@ -710,8 +719,13 @@ static void _utility_header_hosting(dt_lib_module_t *host, const gboolean hostin
   if(idle) gtk_widget_set_visible(idle, !hosting);
   if(!host || !host->expander) return;
   gtk_widget_set_sensitive(host->expander, hosting);
+  // this position hosts every focused module with masks
+  // (dt_masks_model_panel_state), so a focused one left unhosted has none
+  const char *idle_tip = dt_dev_gui_module()
+    ? _("unavailable: the focused module does not support masks")
+    : _no_focused_module_tip();
   gtk_widget_set_tooltip_text(DTGTK_EXPANDER(host->expander)->header,
-                              !hosting ? _no_focused_module_tip()
+                              !hosting ? idle_tip
                               : host->description ? host->description(host) : NULL);
   if(host->arrow)
     gtk_widget_set_tooltip_text(host->arrow, hosting ? _("show module") : NULL);
