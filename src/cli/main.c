@@ -34,6 +34,7 @@
 #include "common/history.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/iop_profile.h"
 #include "common/points.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
@@ -102,6 +103,8 @@ fprintf(stderr, "darktable %s\n"
                 "   --icc-file <file> specify icc filename, default to NONE\n"
                 "   --icc-intent <intent> specify icc intent, default to LAST\n"
                 "                     use --help icc-intent for list of supported intents\n"
+                "   --pq-peak <nits>  peak luminance of PQ output, 203 to 10000,\n"
+                "                     default from the export module's setting\n"
                 "   --print-paths     print the resolved configdir, cachedir, tmpdir,\n"
                 "                     datadir, moduledir, localedir and library paths\n"
                 "                     for this install, then exit\n"
@@ -250,6 +253,7 @@ int main(int argc, char *arg[])
   dt_colorspaces_color_profile_type_t icc_type = DT_COLORSPACE_NONE;
   gchar *icc_filename = NULL;
   dt_iop_color_intent_t icc_intent = DT_INTENT_LAST;
+  int pq_peak_nits = 0;
 
   int k;
   for(k = 1; k < argc; k++)
@@ -434,6 +438,17 @@ int main(int argc, char *arg[])
         if(icc_intent >= DT_INTENT_LAST){
           fprintf(stderr, _("incorrect ICC intent for --icc-intent: '%s'\n"), arg[k]);
           icc_intents();
+          usage(arg[0]);
+          exit(1);
+        }
+      }
+      else if(!strcmp(arg[k], "--pq-peak") && argc > k + 1)
+      {
+        k++;
+        pq_peak_nits = atoi(arg[k]);
+        if(pq_peak_nits < DT_HDR_REFERENCE_WHITE_NITS || pq_peak_nits > 10000)
+        {
+          fprintf(stderr, _("incorrect PQ peak for --pq-peak: '%s'\n"), arg[k]);
           usage(arg[0]);
           exit(1);
         }
@@ -879,6 +894,9 @@ int main(int argc, char *arg[])
   }
 
   // TODO: add a callback to set the bpp without going through the config
+
+  // the exports below run in this thread
+  dt_ioppr_set_thread_pq_peak_nits(pq_peak_nits);
 
   int num = 1, res = 0;
   for(GList *iter = id_list; iter; iter = g_list_next(iter), num++)
