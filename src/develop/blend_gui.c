@@ -2893,6 +2893,9 @@ void dt_iop_gui_blend_masks_options_popup(GtkButton *button, gpointer user_data)
   dt_iop_module_t *module = darktable.develop ? darktable.develop->gui_module : NULL;
   if(!module && darktable.develop)
     module = darktable.develop->proxy.masks_flexi_host.hosted_module;
+  // a module that cannot blend has no options of its own: offer the general
+  // ones, as with nothing focused, rather than open nothing
+  if(module && !module->blend_data) module = NULL;
   _blendif_options_callback(button, module);
 }
 
@@ -3330,8 +3333,7 @@ const char *slider_tooltip[] =
        "drag marker to adjust\n"
        "right-click marker for precise numeric entry\n"
        "double-click to reset\n"
-       "press 'm' to toggle mask view\n"
-       "press 'a' to toggle display modes"),
+       "press 'm' to toggle mask view"),
     N_("adjustment based on unblended output of this module:\n"
        "- upper markers: full opacity (100% mask)\n"
        "- lower markers: zero opacity (0% mask)\n"
@@ -3339,8 +3341,16 @@ const char *slider_tooltip[] =
        "drag marker to adjust\n"
        "right-click marker for precise numeric entry\n"
        "double-click to reset\n"
-       "press 'm' to toggle mask view\n"
-       "press 'a' to toggle display modes") };
+       "press 'm' to toggle mask view") };
+
+// the 'a' key only means something on a channel with an alternative display
+// scale: the hue channels have none
+static gchar *_param_slider_tooltip(const int in_out, const gboolean altdisplay)
+{
+  return altdisplay ? g_strdup_printf("%s\n%s", _(slider_tooltip[in_out]),
+                                      _("press 'a' to toggle display modes"))
+                    : g_strdup(_(slider_tooltip[in_out]));
+}
 
 static void _rebuild_param_channel_buttons(dt_iop_module_t *module);
 
@@ -12874,17 +12884,19 @@ static void _update_param_row_visibility(dt_masks_param_row_editor_t *ed)
 // its display scale when that is not the linear one
 static void _param_row_slider_set_tooltip(const dt_iop_gui_blendif_filter_t *sl,
                                           const int in_out,
+                                          const gboolean altdisplay,
                                           char range_text[4][256])
 {
   const char *which = in_out ? _("output") : _("input");
   gchar *head = sl->altmode_name ? g_strdup_printf("%s (%s)", which, sl->altmode_name)
                                  : g_strdup(which);
+  gchar *tip = _param_slider_tooltip(in_out, altdisplay);
   gchar *full_tip =
     g_strdup_printf("%s: %s  %s  %s  %s\n\n%s", head,
-                    range_text[0], range_text[1], range_text[2], range_text[3],
-                    _(slider_tooltip[in_out]));
+                    range_text[0], range_text[1], range_text[2], range_text[3], tip);
   gtk_widget_set_tooltip_text(GTK_WIDGET(sl->slider), full_tip);
   g_free(full_tip);
+  g_free(tip);
   g_free(head);
 }
 
@@ -12933,7 +12945,7 @@ static void _update_param_row_display(dt_masks_param_row_editor_t *ed)
     for(int k = 0; k < 4; k++)
       channel->scale_print(parameters[k], boost_factor, range_text[k],
                            sizeof(range_text[k]));
-    _param_row_slider_set_tooltip(sl, in_out, range_text);
+    _param_row_slider_set_tooltip(sl, in_out, channel->altdisplay != NULL, range_text);
 
     dtgtk_gradient_slider_multivalue_clear_stops(sl->slider);
     for(int k = 0; k < channel->numberstops; k++)
@@ -13044,7 +13056,8 @@ static void _param_row_slider_callback(GtkDarktableGradientSlider *slider,
 
   // keep the range tooltip in sync with a live drag too, not just the initial
   // build
-  _param_row_slider_set_tooltip(&ed->filter[in_out], in_out, range_text);
+  _param_row_slider_set_tooltip(&ed->filter[in_out], in_out,
+                                channels[p->channel].altdisplay != NULL, range_text);
 
   if(parameters[1] == 0.0f && parameters[2] == 1.0f)
     p->blendif &= ~(1 << ch);
@@ -13946,12 +13959,16 @@ static gboolean _param_row_picker_apply(dt_iop_module_t *module,
 
 // build one input-or-output slider bundle. There is no per-slider polarity
 // button: the element's own invert (the row's actions menu) stands in for it
-static void _build_param_row_filter(dt_iop_gui_blendif_filter_t *sl, const int in_out)
+static void _build_param_row_filter(dt_iop_gui_blendif_filter_t *sl,
+                                    const int in_out,
+                                    const gboolean altdisplay)
 {
   sl->slider =
     DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
   dt_gui_add_class(GTK_WIDGET(sl->slider), "dt_masks_range_slider");
-  gtk_widget_set_tooltip_text(GTK_WIDGET(sl->slider), _(slider_tooltip[in_out]));
+  gchar *tip = _param_slider_tooltip(in_out, altdisplay);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(sl->slider), tip);
+  g_free(tip);
   sl->altmode = 0;
   sl->altmode_name = NULL;
 }
@@ -14047,8 +14064,10 @@ static GtkWidget *_build_param_row_editor(dt_iop_module_t *module,
   ed->formid = form->formid;
   ed->module = module;
 
-  _build_param_row_filter(&ed->filter[0], 0);
-  _build_param_row_filter(&ed->filter[1], 1);
+  const dt_iop_gui_blendif_channel_t *channels = _param_channels(p);
+  const gboolean altdisplay = channels && channels[p->channel].altdisplay;
+  _build_param_row_filter(&ed->filter[0], 0, altdisplay);
+  _build_param_row_filter(&ed->filter[1], 1, altdisplay);
 
   for(int in_out = 0; in_out < 2; in_out++)
   {
@@ -14181,7 +14200,9 @@ static GtkWidget *_build_param_row_editor(dt_iop_module_t *module,
   gtk_grid_set_row_spacing(GTK_GRID(sliders_grid), DT_PIXEL_APPLY_DPI(2));
 
   GtkWidget *input_lbl = _make_icon_widget(_paint_param_input);
-  gtk_widget_set_tooltip_text(input_lbl, _(slider_tooltip[0]));
+  gchar *input_tip = _param_slider_tooltip(0, altdisplay);
+  gtk_widget_set_tooltip_text(input_lbl, input_tip);
+  g_free(input_tip);
   dt_gui_add_class(input_lbl, "dt_masks_channel_icon");
   gtk_grid_attach(GTK_GRID(sliders_grid), input_lbl, 0, 0, 1, 1);
   ed->input_lbl = input_lbl;
@@ -14211,7 +14232,9 @@ static GtkWidget *_build_param_row_editor(dt_iop_module_t *module,
   ed->input_slot = input_overlay;
 
   GtkWidget *output_lbl = _make_icon_widget(_paint_param_output);
-  gtk_widget_set_tooltip_text(output_lbl, _(slider_tooltip[1]));
+  gchar *output_tip = _param_slider_tooltip(1, altdisplay);
+  gtk_widget_set_tooltip_text(output_lbl, output_tip);
+  g_free(output_tip);
   dt_gui_add_class(output_lbl, "dt_masks_channel_icon");
   gtk_grid_attach(GTK_GRID(sliders_grid), output_lbl, 0, 1, 1, 1);
   ed->output_lbl = output_lbl;
