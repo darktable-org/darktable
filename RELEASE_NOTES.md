@@ -633,6 +633,8 @@ changes (where available).
   mask of filmic rgb, and possible crashes in basic adjustments, rgb
   levels and base curve when OpenCL memory allocation fails.
 
+- Fixed a GPU memory leak in the OpenCL path of the clipping indicator.
+
 ## Lua
 
 ### API Version
