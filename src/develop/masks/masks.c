@@ -2966,6 +2966,84 @@ gboolean dt_masks_events_mouse_scrolled(dt_iop_module_t *module,
   return ret;
 }
 
+// one outline per import_preview entry, in the same order: an entry without
+// one keeps an empty outline, so the index still finds its form. In preview
+// pipe coordinates, so redone whenever that pipe's output changes, as
+// dt_masks_gui_form_test_create does for the shown mask
+static void _import_preview_outlines(dt_develop_t *dev, dt_masks_form_gui_t *gui)
+{
+  g_list_free_full(gui->import_preview_points, dt_masks_form_gui_points_free);
+  gui->import_preview_points = NULL;
+  for(GList *l = gui->import_preview; l; l = g_list_next(l))
+  {
+    dt_masks_form_gui_points_t *gpt = calloc(1, sizeof(dt_masks_form_gui_points_t));
+    dt_masks_form_t *f = dt_masks_get_from_id(dev, GPOINTER_TO_INT(l->data));
+    if(gpt && f
+       && !dt_masks_get_points_border(dev, f, &gpt->points, &gpt->points_count,
+                                      &gpt->border, &gpt->border_count, 0, NULL))
+      gpt->points_count = gpt->border_count = 0;
+    gui->import_preview_points = g_list_append(gui->import_preview_points, gpt);
+  }
+  gui->import_preview_hash = dev->preview_pipe->backbuf_hash;
+}
+
+void dt_masks_set_import_preview(GList *formids)
+{
+  dt_develop_t *dev = darktable.develop;
+  dt_masks_form_gui_t *gui = dev ? dev->form_gui : NULL;
+  if(!gui || (!formids && !gui->import_preview)) return;
+
+  g_list_free(gui->import_preview);
+  gui->import_preview = NULL;
+  for(GList *l = formids; l; l = g_list_next(l))
+  {
+    const dt_masks_form_t *f = dt_masks_get_from_id(dev, GPOINTER_TO_INT(l->data));
+    if(f && f->functions && f->functions->post_expose)
+      gui->import_preview = g_list_append(gui->import_preview, l->data);
+  }
+  _import_preview_outlines(dev, gui);
+  dt_control_queue_redraw_center();
+}
+
+// each shape draws itself as a hovered panel row would have it, bold and with
+// its anchors, through a scratch gui of its own: the shapes' post_expose read
+// their outline from gui->points by index, and their highlight from the
+// selection fields, which must not point at anything (see
+// dt_masks_clear_form_gui)
+void dt_masks_import_preview_post_expose(cairo_t *cr, const float zoom_scale)
+{
+  dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+  if(!gui || !gui->import_preview) return;
+  if(gui->import_preview_hash != darktable.develop->preview_pipe->backbuf_hash)
+    _import_preview_outlines(darktable.develop, gui);
+
+  cairo_save(cr);
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+  dt_masks_form_gui_t scratch;
+  dt_masks_init_form_gui(&scratch);
+  // both lists too, so a raster shape finds its form by index (pixel_mask.c)
+  scratch.points = scratch.import_preview_points = gui->import_preview_points;
+  scratch.import_preview = gui->import_preview;
+  scratch.form_selected = TRUE;
+  scratch.point_border_selected = scratch.seg_selected = scratch.point_selected =
+    scratch.feather_selected = -1;
+  scratch.point_border_dragging = scratch.seg_dragging = scratch.feather_dragging =
+    scratch.point_dragging = -1;
+  scratch.point_edited = -1;
+
+  int pos = 0;
+  GList *p = gui->import_preview_points;
+  for(GList *l = gui->import_preview; l && p; l = g_list_next(l), p = g_list_next(p), pos++)
+  {
+    const dt_masks_form_gui_points_t *gpt = p->data;
+    dt_masks_form_t *f = dt_masks_get_from_id(darktable.develop, GPOINTER_TO_INT(l->data));
+    if(!gpt || gpt->points_count < 1 || !f || !f->functions) continue;
+    scratch.group_selected = pos;
+    f->functions->post_expose(cr, zoom_scale, &scratch, pos, g_list_length(f->points));
+  }
+  cairo_restore(cr);
+}
+
 // visualize mask from viewport
 void dt_masks_events_post_expose(const dt_iop_module_t *module,
                                  cairo_t *cr,

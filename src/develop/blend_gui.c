@@ -836,6 +836,20 @@ static void _masks_use_mask_of(dt_iop_module_t *module,
   dt_masks_gui_refresh_canvas_edit(module);
 }
 
+// the forms a shape pick (op, a, b) brings in, and the module they come from
+static GList *_masks_import_pick_fids(GPtrArray *mods,
+                                      const int op,
+                                      const int a,
+                                      const int b,
+                                      dt_iop_module_t **src_out)
+{
+  dt_iop_module_t *src = (mods && a >= 0 && a < (int)mods->len) ? g_ptr_array_index(mods, a) : NULL;
+  if(src_out) *src_out = src;
+  const gboolean whole = op == _IMPORT_LINK_GROUP || op == _IMPORT_COPY_GROUP;
+  if(whole && !src) return NULL;
+  return whole ? dt_masks_model_module_shapes(src) : g_list_prepend(NULL, GINT_TO_POINTER(b));
+}
+
 static void _masks_import_pick_action(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
   GtkWidget *btn = GTK_WIDGET(user_data);
@@ -859,10 +873,9 @@ static void _masks_import_pick_action(GSimpleAction *action, GVariant *parameter
     return;
   }
 
-  dt_iop_module_t *src = (mods && a >= 0 && a < (int)mods->len) ? g_ptr_array_index(mods, a) : NULL;
-  const gboolean whole = op == _IMPORT_LINK_GROUP || op == _IMPORT_COPY_GROUP;
-  if(whole && !src) return;
-  GList *fids = whole ? dt_masks_model_module_shapes(src) : g_list_prepend(NULL, GINT_TO_POINTER(b));
+  dt_iop_module_t *src = NULL;
+  GList *fids = _masks_import_pick_fids(mods, op, a, b, &src);
+  if(!fids && !src) return;
   const gboolean copy =
     op == _IMPORT_COPY_ONE || op == _IMPORT_COPY_GROUP || op == _IMPORT_COPY_PARAMETRIC;
   _masks_import_forms(module, src, fids, copy);
@@ -896,6 +909,7 @@ static void _masks_import_append(GMenu *menu,
 }
 
 #define _IMPORT_MAX_KIND_BUCKETS 16
+#define _IMPORT_RECENT 5
 
 // find (or create, appending to menu) the submenu for a given shape kind
 static GMenu *_masks_import_kind_bucket(
@@ -912,6 +926,23 @@ static GMenu *_masks_import_kind_bucket(
 
   g_menu_append_submenu(menu, _kind_name(kind, TRUE), G_MENU_MODEL(sub));
   return sub;
+}
+
+// a shape's name without the kind it starts with, as in a default name like
+// "circle #4", compared caselessly ("ai object #2" vs "AI object"). A name
+// that does not start with it is kept whole. Caller frees
+static gchar *_name_without_kind(const char *name, const char *kind)
+{
+  const glong nk = g_utf8_strlen(kind, -1);
+  if(g_utf8_strlen(name, -1) <= nk + 1) return g_strdup(name);
+  const char *rest = g_utf8_offset_to_pointer(name, nk);
+  if(*rest != ' ') return g_strdup(name);
+  gchar *head = g_utf8_casefold(name, rest - name);
+  gchar *fkind = g_utf8_casefold(kind, -1);
+  const gboolean prefixed = !g_strcmp0(head, fkind);
+  g_free(head);
+  g_free(fkind);
+  return g_strdup(prefixed ? rest + 1 : name);
 }
 
 // index of `m` in the menu's module table, adding it if new
@@ -941,8 +972,8 @@ static GList *_masks_import_candidates(dt_iop_module_t *src, dt_masks_form_t *gr
 
 // "link shapes" or "copy shapes": every shape and AI object that another
 // module's mask uses, or that no mask does, and that this module's mask does
-// not use yet, reachable by the module it comes from and by its kind. Added
-// to `menu` as one section. Returns how many there are
+// not use yet, reachable among the newest, by the module it comes from and
+// by its kind. Added to `menu` as one section each. Returns how many there are
 static int _masks_import_fill_shapes(GMenu *menu,
                                      dt_iop_module_t *module,
                                      GPtrArray *mods,
@@ -996,6 +1027,11 @@ static int _masks_import_fill_shapes(GMenu *menu,
   // every shape once, by kind, plus the ones no module uses at all
   GMenu *unused = g_menu_new();
   int n_unused = 0;
+  // the newest shapes a module uses, newest first: a form's id grows with its
+  // creation time (dt_masks_create in masks/masks.c)
+  const dt_masks_form_t *recent[_IMPORT_RECENT] = { NULL };
+  dt_iop_module_t *recent_owner[_IMPORT_RECENT] = { NULL };
+  int n_recent = 0;
   for(GList *l = darktable.develop->forms; l; l = g_list_next(l))
   {
     const dt_masks_form_t *f = l->data;
@@ -1010,11 +1046,33 @@ static int _masks_import_fill_shapes(GMenu *menu,
       n_unused++;
       n++;
     }
-    GMenu *bucket =
-      _masks_import_kind_bucket(by_type, kinds, kind_submenus, &n_kinds, _form_kind(f));
+    const guint kind = _form_kind(f);
+    GMenu *bucket = _masks_import_kind_bucket(by_type, kinds, kind_submenus, &n_kinds, kind);
     if(bucket)
-      _masks_import_append(bucket, f->name, one, _masks_import_module_index(mods, owner),
+    {
+      // the submenu already names the kind
+      gchar *short_name = _name_without_kind(f->name, _kind_name(kind, FALSE));
+      gchar *plain = owner ? _module_plain_name(owner) : NULL;
+      gchar *label = plain ? g_strdup_printf("%s (%s)", short_name, plain)
+                           : g_strdup(short_name);
+      _masks_import_append(bucket, label, one, _masks_import_module_index(mods, owner),
                            f->formid);
+      g_free(label);
+      g_free(plain);
+      g_free(short_name);
+    }
+
+    if(!owner) continue;
+    int k = MIN(n_recent, _IMPORT_RECENT - 1);
+    if(n_recent == _IMPORT_RECENT && recent[k]->formid >= f->formid) continue;
+    for(; k > 0 && recent[k - 1]->formid < f->formid; k--)
+    {
+      recent[k] = recent[k - 1];
+      recent_owner[k] = recent_owner[k - 1];
+    }
+    recent[k] = f;
+    recent_owner[k] = owner;
+    n_recent = MIN(n_recent + 1, _IMPORT_RECENT);
   }
   if(n_unused)
     g_menu_append_submenu(by_module, _("not currently used"), G_MENU_MODEL(unused));
@@ -1022,11 +1080,21 @@ static int _masks_import_fill_shapes(GMenu *menu,
 
   if(n)
   {
-    GMenu *sec = g_menu_new();
-    g_menu_append_submenu(sec, _("by source module"), G_MENU_MODEL(by_module));
-    g_menu_append_submenu(sec, _("by type"), G_MENU_MODEL(by_type));
-    g_menu_append_section(menu, NULL, G_MENU_MODEL(sec));
-    g_object_unref(sec);
+    GMenu *recent_sec = g_menu_new();
+    for(int k = 0; k < n_recent; k++)
+    {
+      gchar *plain = _module_plain_name(recent_owner[k]);
+      gchar *label = g_strdup_printf("%s (%s)", recent[k]->name, plain);
+      _masks_import_append(recent_sec, label, one,
+                           _masks_import_module_index(mods, recent_owner[k]),
+                           recent[k]->formid);
+      g_free(label);
+      g_free(plain);
+    }
+    g_menu_append_section(menu, _("recent"), G_MENU_MODEL(recent_sec));
+    g_object_unref(recent_sec);
+    g_menu_append_section(menu, _("by source module"), G_MENU_MODEL(by_module));
+    g_menu_append_section(menu, _("by type"), G_MENU_MODEL(by_type));
   }
   g_object_unref(by_module);
   g_object_unref(by_type);
@@ -1161,6 +1229,45 @@ static void _masks_import_compress_action(GSimpleAction *action, GVariant *param
   if(module && module->blend_data) dt_masks_gui_build_list(module);
 }
 
+// the pointer over a shape entry draws on the canvas what picking it would
+// bring in. `btn` is the import button, holding the menu's module table
+static void _masks_import_item_enter(GtkEventControllerMotion *controller,
+                                     const double x,
+                                     const double y,
+                                     GtkWidget *btn)
+{
+  GVariant *target = g_object_get_data(G_OBJECT(dt_gui_get_widget(controller)), "dt-popover-target");
+  if(!target || !g_variant_is_of_type(target, G_VARIANT_TYPE("(iii)"))) return;
+  int op = 0, a = -1, b = INVALID_MASKID;
+  g_variant_get(target, "(iii)", &op, &a, &b);
+  if(op == _IMPORT_ADD_MASK || op == _IMPORT_USE_MASK) return;
+  GList *fids = _masks_import_pick_fids(g_object_get_data(G_OBJECT(btn), "import_modules"),
+                                        op, a, b, NULL);
+  dt_masks_set_import_preview(fids);
+  g_list_free(fids);
+}
+
+static void _masks_import_item_leave(GtkEventControllerMotion *controller, GtkWidget *btn)
+{
+  dt_masks_set_import_preview(NULL);
+}
+
+// every entry of the popover, on every submenu page, that has a target (see
+// _popover_menu_apply_item_tooltip in gui/gtk.c)
+static void _masks_import_connect_preview(GtkWidget *w, gpointer btn)
+{
+  if(GTK_IS_MODEL_BUTTON(w) && g_object_get_data(G_OBJECT(w), "dt-popover-target"))
+    dt_gui_connect_motion(w, NULL, _masks_import_item_enter, _masks_import_item_leave,
+                          (GtkWidget *)btn);
+  else if(GTK_IS_CONTAINER(w))
+    gtk_container_forall(GTK_CONTAINER(w), _masks_import_connect_preview, btn);
+}
+
+static void _masks_import_menu_closed(GtkPopover *popover, gpointer user_data)
+{
+  dt_masks_set_import_preview(NULL);
+}
+
 // run a click gesture before the widget's own event handling: in the capture
 // phase, a press its handler claims (dt_gui_claim) reaches neither the
 // widget's own gesture (a GtkButton's "clicked" included) nor the row the
@@ -1288,6 +1395,9 @@ static void _masks_import_btn_pressed(GtkGestureSingle *gesture,
   g_ptr_array_unref(later);
 
   darktable.gui->active_popover_menu = dt_gui_popover_menu_from_model(btn, menu);
+  _masks_import_connect_preview(darktable.gui->active_popover_menu, btn);
+  g_signal_connect(darktable.gui->active_popover_menu, "closed",
+                   G_CALLBACK(_masks_import_menu_closed), NULL);
   gtk_popover_popup(GTK_POPOVER(darktable.gui->active_popover_menu));
   g_object_unref(menu);
 }
