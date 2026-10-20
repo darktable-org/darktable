@@ -371,6 +371,9 @@ changes (where available).
   opened: going back in the history showed masks from before the step
   that added them.
 
+- Fixed AgX rendering everything above the pivot black when pivot
+  target output was 100% and shoulder power was 7 or more.
+
 - Fixed shift-click on the selected entry of the history stack, which
   did nothing instead of revealing that module in the right-hand panel.
 
