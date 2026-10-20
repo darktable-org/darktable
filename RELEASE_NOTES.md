@@ -633,6 +633,9 @@ changes (where available).
   mask of filmic rgb, and possible crashes in basic adjustments, rgb
   levels and base curve when OpenCL memory allocation fails.
 
+- Fixed an issue where the Windows installer wouldn't run without user
+  input when requested.
+
 ## Lua
 
 ### API Version
