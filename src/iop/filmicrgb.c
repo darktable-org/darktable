@@ -2483,9 +2483,7 @@ int process_cl(dt_iop_module_t *self,
     {
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_filmic_show_mask, width, height,
         CLARG(mask), CLARG(dev_out), CLARG(width), CLARG(height));
-      dt_opencl_release_mem_object(mask);
-      dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
-      return err;
+      goto error;
     }
   }
 
