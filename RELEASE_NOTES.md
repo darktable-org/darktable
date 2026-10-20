@@ -622,6 +622,10 @@ changes (where available).
 
 - Fixed memory leaks when exporting images or the tag list.
 
+- Fixed GPU memory leaks while displaying the highlight reconstruction
+  mask of filmic rgb, and possible crashes in basic adjustments, rgb
+  levels and base curve when OpenCL memory allocation fails.
+
 ## Lua
 
 ### API Version
