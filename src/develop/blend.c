@@ -1452,6 +1452,7 @@ static void _refine_with_detail_mask_cl(dt_iop_module_t *self,
   // here we have the slightly blurred full detail mask available
   float *warp_mask = dt_dev_distort_detail_mask(piece, lum, self, src_hash);
   dt_free_align(lum);
+  lum = NULL;
   if(warp_mask == NULL)
   {
     err = DT_OPENCL_PROCESS_CL;
@@ -1477,6 +1478,7 @@ static void _refine_with_detail_mask_cl(dt_iop_module_t *self,
   dt_opencl_release_mem_object(tmp);
   dt_opencl_release_mem_object(blur);
   dt_opencl_release_mem_object(out);
+  dt_free_align(lum);
 }
 
 void dt_develop_blendif_make_mask_cl(dt_dev_pixelpipe_iop_t *piece,

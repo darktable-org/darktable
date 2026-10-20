@@ -1288,7 +1288,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   cl_mem dev_profile_info = NULL;
   cl_mem dev_profile_lut = NULL;
-  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl;
+  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl = NULL;
   cl_float *profile_lut_cl = NULL;
 
   const int devid = piece->pipe->devid;

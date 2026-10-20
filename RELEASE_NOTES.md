@@ -629,6 +629,10 @@ changes (where available).
 
 - Fixed month collection filter layout issues.
 
+- Fixed GPU memory leaks while displaying the highlight reconstruction
+  mask of filmic rgb, and possible crashes in basic adjustments, rgb
+  levels and base curve when OpenCL memory allocation fails.
+
 ## Lua
 
 ### API Version
