@@ -325,13 +325,17 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     goto error;
   }
 
-  if(current_profile && work_profile)
-    dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_in, dev_tmp, roi_out->width, roi_out->height,
-                                               current_profile, work_profile, self->op);
-  else
+  if(!current_profile || !work_profile)
   {
     dt_print(DT_DEBUG_ALWAYS, "[overexposed process_cl] can't create transform profile");
     dt_control_log(_("module overexposed failed in color conversion"));
+    goto error;
+  }
+
+  if(!dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_in, dev_tmp, roi_out->width, roi_out->height,
+                                                 current_profile, work_profile, self->op))
+  {
+    err = DT_OPENCL_PROCESS_CL;
     goto error;
   }
 
