@@ -4226,6 +4226,24 @@ button.dt_masks_channel_eye
   margin-right: 4px;
 }
 
+/* the selection's delete button, on the right of its name */
+button.dt_masks_selection_delete
+{
+  min-width: 18px;
+  min-height: 18px;
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  border: none;
+  color: @button_fg;
+}
+
+/* dimmed while the row names the whole mask, which cannot be deleted */
+button.dt_masks_selection_delete:disabled
+{
+  opacity: 0.4;
+}
+
 /* the gap between sections is the header's top margin, as between groups */
 #masks-selection-area #collapse-block
 {

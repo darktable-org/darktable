@@ -221,7 +221,8 @@ A rail takes its header's shade, the bottom one of a gradient.
 ## The selection panel
 
 Under the list, `#masks-selection-area` holds the selection's icon and name
-(`.dt_masks_selection_row`, `.dt_masks_selection_name`), then its properties
+(`.dt_masks_selection_row`, `.dt_masks_selection_name`) with the button
+deleting it on their right (`.dt_masks_selection_delete`), then its properties
 and refinement, each a header (`.dt_masks_selection_section`, plus
 `.dt_masks_open` while open) over a card (`.dt_masks_selection_card`). It has
 tokens of its own, which start out as the list's:

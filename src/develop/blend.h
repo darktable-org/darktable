@@ -567,11 +567,12 @@ typedef struct dt_iop_gui_blend_data_t
   guint masks_rebuild_idle_id;
   // the selection panel under the list: the selection's icon and name
   // (masks_selection_icon_box, masks_selection_name_label, see
-  // _refine_update_header), then the properties and the refinement, which act
-  // on it
+  // _refine_update_header) with the button deleting it on their right, then
+  // the properties and the refinement, which act on it
   GtkWidget *masks_selection_area;
   GtkWidget *masks_selection_icon_box;
   GtkWidget *masks_selection_name_label;
+  GtkWidget *masks_selection_delete_btn;
   // the refinement section's title; its tooltip says why the section is
   // inactive, when it is (see _update_refine_sensitivity)
   GtkWidget *masks_refine_section_label;

@@ -46,6 +46,11 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
 gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
                                       GtkTooltip *tooltip, GtkWidget *vbox);
 void dt_shortcut_copy_lua(dt_action_t *action, gchar *preset_name);
+// the shortcuts of `action` active in any of `views`, as tooltips show them
+// and separated by `separator`; NULL when it has none. Free with g_free()
+gchar *dt_shortcut_action_keys(dt_action_t *action,
+                               const dt_view_type_flags_t views,
+                               const gchar *separator);
 
 float dt_action_process(const gchar *action, int instance, const gchar *element, const gchar *effect, float size);
 
