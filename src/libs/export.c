@@ -44,7 +44,7 @@
 
 #include <glib.h>
 
-DT_MODULE(8)
+DT_MODULE(9)
 
 typedef enum dt_export_batch_cols_t
 {
@@ -1937,9 +1937,10 @@ void init_presets(dt_lib_module_t *self)
       // extract the interesting parts from the blob
       const char *buf = (const char *)op_params;
 
-      // skip 9*int32_t: max_width, max_height, upscale, high_quality,
-      // export_masks, iccintent, icctype, dimensions_type, print_dpi
-      buf += 9 * sizeof(int32_t);
+      // skip 10*int32_t: max_width, max_height, upscale, high_quality,
+      // export_masks, iccintent, icctype, dimensions_type, print_dpi,
+      // pq_peak_nits
+      buf += 10 * sizeof(int32_t);
       // skip scale string
       buf += strlen(buf) + 1;
       // skip metadata presets string
@@ -2351,6 +2352,35 @@ void *legacy_params(dt_lib_module_t *self,
     *new_version = 8;
     return new_params;
   }
+  else if(old_version == 8)
+  {
+    // add pq_peak_nits
+
+    // format of v8:
+    //  - 9 x int32_t (max_width, max_height, upscale, high_quality,
+    //                 export_masks, iccintent, icctype, dimensions_type, print_dpi)
+    //  - old rest
+    // format of v9:
+    //  - 10 x int32_t (max_width, max_height, upscale, high_quality,
+    //                  export_masks, iccintent, icctype, dimensions_type, print_dpi,
+    //                  pq_peak_nits)
+    //  - old rest
+
+    const int32_t pq_peak_nits =
+      dt_confgen_get_int(CONFIG_PREFIX "pq_peak_nits", DT_DEFAULT);
+
+    const size_t new_params_size = old_params_size + sizeof(int32_t);
+    void *new_params = calloc(1, new_params_size);
+
+    memcpy(new_params, old_params, sizeof(int32_t) * 9);
+    memcpy((uint8_t *)new_params + sizeof(int32_t) * 9, &pq_peak_nits, sizeof(int32_t));
+    memcpy((uint8_t *)new_params + sizeof(int32_t) * 10,
+           (uint8_t *)old_params + sizeof(int32_t) * 9,
+           old_params_size - sizeof(int32_t) * 9);
+    *new_size = new_params_size;
+    *new_version = 9;
+    return new_params;
+  }
 
   return NULL;
 }
@@ -2395,6 +2425,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   const int32_t upscale = dt_conf_get_bool(CONFIG_PREFIX "upscale") ? 1 : 0;
   const int32_t dimensions_type = dt_conf_get_int(CONFIG_PREFIX "dimensions_type");
   const int32_t print_dpi = dt_conf_get_int(CONFIG_PREFIX "print_dpi");
+  const int32_t pq_peak_nits = dt_conf_get_int(CONFIG_PREFIX "pq_peak_nits");
   gchar *scale = dt_conf_get_string(CONFIG_PREFIX "resizing_factor");
   const int32_t high_quality =
     dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing") ? 1 : 0;
@@ -2428,7 +2459,7 @@ void *get_params(dt_lib_module_t *self, int *size)
           + 4 * sizeof(int32_t)
           + fsize
           + ssize
-          + 9 * sizeof(int32_t)
+          + 10 * sizeof(int32_t)
           + strlen(scale) + 1
           + strlen(iccfilename) + 1
           + strlen(metadata_export) + 1;
@@ -2454,6 +2485,8 @@ void *get_params(dt_lib_module_t *self, int *size)
   memcpy(params + pos, &dimensions_type, sizeof(int32_t));
   pos += sizeof(int32_t);
   memcpy(params + pos, &print_dpi, sizeof(int32_t));
+  pos += sizeof(int32_t);
+  memcpy(params + pos, &pq_peak_nits, sizeof(int32_t));
   pos += sizeof(int32_t);
   memcpy(params + pos, scale, strlen(scale) + 1);
   pos += strlen(scale) + 1;
@@ -2522,6 +2555,8 @@ int set_params(dt_lib_module_t *self,
   buf += sizeof(int32_t);
   const int print_dpi = *(const int *)buf;
   buf += sizeof(int32_t);
+  const int pq_peak_nits = *(const int *)buf;
+  buf += sizeof(int32_t);
   const char *scale = buf;
   buf += strlen(scale) + 1;
   const char *metadata_export = buf;
@@ -2580,7 +2615,7 @@ int set_params(dt_lib_module_t *self,
         + 4 * sizeof(int32_t)
         + fsize
         + ssize
-        + 9 * sizeof(int32_t)
+        + 10 * sizeof(int32_t)
         + strlen(scale) + 1
         + strlen(metadata_export) + 1
         + strlen(iccfilename) + 1)
@@ -2605,6 +2640,7 @@ int set_params(dt_lib_module_t *self,
   dt_bauhaus_combobox_set(d->high_quality, high_quality ? 1 : 0);
   dt_bauhaus_combobox_set(d->export_masks, export_masks ? 1 : 0);
   dt_bauhaus_combobox_set(d->dimensions_type, dimensions_type);
+  dt_bauhaus_slider_set(d->pq_peak, pq_peak_nits);
   _size_update_display(d);
 
   // propagate to modules
