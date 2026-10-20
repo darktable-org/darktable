@@ -64,6 +64,13 @@ typedef struct dt_style_item_t
 void dt_style_free(gpointer data);
 void dt_style_item_free(gpointer data);
 
+/** the modules whose history rows of `imgid` listed in `nums` (all rows when
+ * NULL) hold a flexi mask with an AI object stored as pixels, as the history
+ * stack names them, one per line; NULL when there are none. Those objects
+ * apply to that image only, so a style made of the rows leaves them out.
+ * g_free() the result */
+gchar *dt_styles_history_pixel_mask_modules(const dt_imgid_t imgid, GList *nums);
+
 /** creates a new style from specified image, items are the history
  * stack number of items to include in style
  */

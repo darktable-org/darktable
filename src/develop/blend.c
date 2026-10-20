@@ -3026,6 +3026,77 @@ gboolean dt_develop_blend_legacy_params_ext(dt_iop_module_t *module,
   return FALSE;
 }
 
+gboolean dt_develop_blend_params_read(dt_iop_module_t *module,
+                                      const void *const blob,
+                                      const int length,
+                                      const int version,
+                                      dt_develop_blend_params_t *bp,
+                                      const int history_num,
+                                      const gboolean ignore_mask,
+                                      gboolean *converted)
+{
+  if(converted) *converted = FALSE;
+  if(!blob || length <= 0) return TRUE;
+
+  // a mask that is not kept must leave no form behind, and migration creates
+  // forms only for a module with an image (dt_masks_migrate_classic_to_flexi())
+  dt_develop_t *const dev = module ? module->dev : NULL;
+  if(ignore_mask && module) module->dev = NULL;
+
+  gboolean failed = FALSE;
+  if(version != DEVELOP_BLEND_VERSION)
+  {
+    // no tail: only this version writes one
+    failed = dt_develop_blend_legacy_params_ext(module, blob, version, bp,
+                                                DEVELOP_BLEND_VERSION, length, history_num);
+    if(!failed && converted) *converted = TRUE;
+  }
+  else
+  {
+    GList *forms = NULL;
+    failed = !dt_masks_blend_blob_decode(blob, length, bp, &forms);
+    if(forms && (ignore_mask || (module && (module->flags() & IOP_FLAGS_NO_MASKS))))
+    {
+      // the shapes of a module that has no mask are its own content,
+      // referenced by id from its params, which fresh ids would break
+      if(!ignore_mask)
+        dt_print(DT_DEBUG_ALWAYS, "[blend] '%s': mask forms of a module without masks ignored",
+                 module->op);
+      g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+    }
+    else if(forms)
+      dt_masks_import_stored_forms(module, bp, forms, history_num);
+    else if(!failed && !ignore_mask
+            && dt_develop_blend_migrate_classic_mask(module, bp, history_num) && converted)
+      *converted = TRUE;
+  }
+
+  if(module) module->dev = dev;
+  return failed;
+}
+
+gboolean dt_develop_blend_migrate_classic_mask(dt_iop_module_t *module,
+                                               dt_develop_blend_params_t *bp,
+                                               const int history_num)
+{
+  // a uniform blend with no flexi bit, which development builds of 5.7 stored
+  // as the migration of a classic mask rendering a constant: a flexi mask with
+  // no group, as the panel expects, which needs no image
+  if(module && bp && bp->mask_mode == DEVELOP_MASK_ENABLED)
+  {
+    dt_masks_migrate_classic_to_flexi(module, bp, history_num);
+    return TRUE;
+  }
+
+  // dt_masks_migrate_classic_to_flexi() rewrites a mask with no classic mode
+  // bit, a flexi one included: only a classic mask may reach it
+  if(!module || !module->dev || !dt_develop_blend_mask_is_classic(bp)) return FALSE;
+
+  // mask_lock is left alone: the params are current, so the field is the lock
+  dt_masks_migrate_classic_to_flexi(module, bp, history_num);
+  return TRUE;
+}
+
 void dt_develop_blend_keep_locked_mask(const dt_iop_module_t *module,
                                        dt_develop_blend_params_t *incoming,
                                        const dt_develop_blend_params_t *const locked)

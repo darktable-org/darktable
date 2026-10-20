@@ -743,6 +743,49 @@ gboolean dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so,
                                                 const int new_version,
                                                 const int length);
 
+/** the mask of these params is still a classic one (drawn, parametric or
+    raster mask_mode, no DEVELOP_MASK_FLEXI): a conversion with no image to
+    create the forms for left it so (dt_masks_migrate_classic_to_flexi()) */
+static inline gboolean dt_develop_blend_mask_is_classic(const dt_develop_blend_params_t *const p)
+{
+  return p
+    && (p->mask_mode & (DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL | DEVELOP_MASK_RASTER))
+    && !(p->mask_mode & DEVELOP_MASK_FLEXI);
+}
+
+/** reads blend params as a history row, a preset or a style item stores them,
+    `length` bytes at blend version `version`, into `bp`, for `module`:
+    - the current version: the params, and the mask forms after them, which
+      go to the image of `module` under fresh ids
+      (dt_masks_import_stored_forms())
+    - the current version with a classic mask and no forms: migrated
+      (dt_develop_blend_migrate_classic_mask())
+    - an older version: converted, and its mask migrated
+    `history_num` as for dt_develop_blend_legacy_params_ext(). With
+    `ignore_mask`, for a module whose locked mask stays
+    (dt_develop_blend_keep_locked_mask()), the mask is neither migrated nor
+    given its forms: the image gets no form from it. `*converted` (may be
+    NULL) tells whether the params were converted or migrated. TRUE when the
+    blob cannot be read: the caller then uses the default params */
+gboolean dt_develop_blend_params_read(dt_iop_module_t *module,
+                                      const void *const blob,
+                                      const int length,
+                                      const int version,
+                                      dt_develop_blend_params_t *bp,
+                                      const int history_num,
+                                      const gboolean ignore_mask,
+                                      gboolean *converted);
+
+/** migrates the classic mask of current-version params, as
+    dt_develop_blend_legacy_params_ext() migrates a legacy one, with the same
+    `history_num`. Development builds of 5.7 stored presets so, at the current
+    version, and auto-apply copied them into history. A uniform blend without
+    the flexi bit, which their migration wrote for a classic mask rendering a
+    constant, becomes flexi too. TRUE when it migrated */
+gboolean dt_develop_blend_migrate_classic_mask(dt_iop_module_t *module,
+                                               dt_develop_blend_params_t *bp,
+                                               const int history_num);
+
 /** color blending utility functions */
 
 #define DEVELOP_BLENDIF_PARAMETER_ITEMS 6

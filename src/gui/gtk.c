@@ -5423,6 +5423,10 @@ gboolean dt_gui_show_yes_no_dialog(const char *title,
     if(gtk_window_is_active(wins->data))
       win = wins->data;
   }
+  // asked from a popover menu, which has just closed, no window is active:
+  // without a parent the window manager places the dialog anywhere
+  if(!win && darktable.gui)
+    win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
 
   GtkWidget *dialog = gtk_message_dialog_new(win,
                                              GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -5437,6 +5441,7 @@ gboolean dt_gui_show_yes_no_dialog(const char *title,
                          NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NO);
   gtk_window_set_title(GTK_WINDOW(dialog), title);
+  if(win) gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
 
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);

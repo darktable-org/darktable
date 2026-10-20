@@ -2454,6 +2454,16 @@ static void _dev_merge_history(dt_develop_t *dev,
       {
         sqlite3_finalize(stmt);
 
+        // the masks history rows go with the items they belong to: each row
+        // set is the forms snapshot of one history num
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "UPDATE main.masks_history SET num=num+?1 WHERE imgid=?2",
+                                    -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+
         if(dt_image_shift_history_end(imgid, cnt))
         {
           // and finally prepend the rest with increasing numbers (starting at 0)
@@ -2797,25 +2807,16 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     if(history_end_current > dev->history_end)
       hist->module->iop_order = hist->iop_order;
 
-    // Copy blending params if valid, else try to convert legacy params
-    if(blendop_params
-       && is_valid_blendop_version
-       && is_valid_blendop_size)
-    {
-      memcpy(hist->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
-    }
-    else if(blendop_params
-            && dt_develop_blend_legacy_params_ext
-            (hist->module, blendop_params, blendop_version,
-             hist->blend_params, dt_develop_blend_version(), bl_length, num) == FALSE)
-    {
-      legacy_params = TRUE;
-    }
-    else
-    {
+    // the blend params, converted or migrated if need be, with any mask forms
+    // they carry (an auto-applied preset's) added under this row's num.
+    // Defaults if they cannot be read
+    gboolean blend_converted = FALSE;
+    if(dt_develop_blend_params_read(hist->module, blendop_params, bl_length, blendop_version,
+                                    hist->blend_params, num, FALSE, &blend_converted))
       memcpy(hist->blend_params, hist->module->default_blendop_params,
              sizeof(dt_develop_blend_params_t));
-    }
+    else if(blend_converted)
+      legacy_params = TRUE;
 
     // Copy module params if valid, else try to convert legacy params
     if(param_length == 0)

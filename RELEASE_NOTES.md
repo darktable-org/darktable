@@ -355,6 +355,11 @@ changes (where available).
 
 ## Bug Fixes
 
+- Fixed drawn masks appearing too early in the history stack of an
+  image that got a style or a pasted history before it was first
+  opened: going back in the history showed masks from before the step
+  that added them.
+
 - Fixed shift-click on the selected entry of the history stack, which
   did nothing instead of revealing that module in the right-hand panel.
 

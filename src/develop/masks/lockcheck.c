@@ -132,9 +132,11 @@ typedef struct _expect_t
   gboolean locked;
   float feather;
   float opacity;
-  // a style carries no forms (data.style_items has no column for them), so
-  // a mask a style brings along is only an id
   gboolean form;
+  // a style carries the forms of its mask, and applying it gives them ids of
+  // their own (dt_masks_blend_blob_remap()): `mask_id` is then the one the
+  // mask must not have
+  gboolean fresh_id;
 } _expect_t;
 
 // reads the destination back from the database and compares its exposure
@@ -149,8 +151,12 @@ static gboolean _check(const char *name, const _expect_t *want)
   const gboolean has_form =
     bp && dt_masks_get_from_id_ext(dev.forms, bp->mask_id) != NULL;
 
+  const gboolean id_ok = bp
+    && (want->fresh_id
+        ? bp->mask_id != want->mask_id && bp->mask_id != DEST_GROUP
+        : bp->mask_id == want->mask_id);
   const gboolean ok = bp
-    && bp->mask_id == want->mask_id
+    && id_ok
     && dt_develop_blend_mask_locked(bp) == want->locked
     && bp->feathering_radius == want->feather
     && bp->opacity == want->opacity
@@ -161,9 +167,10 @@ static gboolean _check(const char *name, const _expect_t *want)
   {
     if(bp)
       printf("  (mask_id %d lock %u feather %g opacity %g form %s;"
-             " want mask_id %d lock %d feather %g opacity %g form %s)",
+             " want mask_id %s%d lock %d feather %g opacity %g form %s)",
              bp->mask_id, bp->mask_lock, bp->feathering_radius, bp->opacity,
              has_form ? "found" : "missing",
+             want->fresh_id ? "other than " : "",
              want->mask_id, want->locked, want->feather, want->opacity,
              want->form ? "found" : "missing");
     else
@@ -192,10 +199,10 @@ gboolean dt_masks_lock_check(void)
 {
   // what a locked destination keeps: its mask, and the lock. Only the
   // opacity differs between cases, taken from whatever replaced the module
-  const _expect_t kept_pasted = { DEST_GROUP, TRUE, DEST_FEATHER, SRC_OPACITY, TRUE };
-  const _expect_t kept_reset = { DEST_GROUP, TRUE, DEST_FEATHER, 100.0f, TRUE };
-  const _expect_t replaced = { SRC_GROUP, FALSE, SRC_FEATHER, SRC_OPACITY, TRUE };
-  const _expect_t replaced_by_style = { SRC_GROUP, FALSE, SRC_FEATHER, SRC_OPACITY, FALSE };
+  const _expect_t kept_pasted = { DEST_GROUP, TRUE, DEST_FEATHER, SRC_OPACITY, TRUE, FALSE };
+  const _expect_t kept_reset = { DEST_GROUP, TRUE, DEST_FEATHER, 100.0f, TRUE, FALSE };
+  const _expect_t replaced = { SRC_GROUP, FALSE, SRC_FEATHER, SRC_OPACITY, TRUE, FALSE };
+  const _expect_t replaced_by_style = { SRC_GROUP, FALSE, SRC_FEATHER, SRC_OPACITY, TRUE, TRUE };
 
   gboolean ok = TRUE;
   GList *ops_exposure = g_list_append(NULL, GINT_TO_POINTER(0));
