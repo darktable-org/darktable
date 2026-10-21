@@ -24,6 +24,9 @@
 #define PAD_G_INTERP 3
 #define PAD_G_RECALC 6
 
+#define HOMOGENITY_EPS 1e-10f
+#define SOLITARY_EPS 1e-12f
+
 /** Lookup for allhex[], making sure that row/col aren't negative **/
 static inline const short *_hexmap(const int row,
                                    const int col,
@@ -338,7 +341,7 @@ static void xtrans_markesteijn_interpolate(float *out,
               if((d < 2) || (d & 1))
               { // output for passes 0, 1, 3, 5
                 // for 0, 1 just use hori/vert, for 3, 5 use best of x/y dir
-                const int d_out = d - ((d > 1) && (diff[d-1] < diff[d]));
+                const int d_out = d - ((d > 1) && (diff[d-1] + SOLITARY_EPS < diff[d]));
                 rfx[0][0] = color[0][d_out] / 2.f;
                 rfx[0][2] = color[1][d_out] / 2.f;
                 rfx += TS * TS;
@@ -449,7 +452,7 @@ static void xtrans_markesteijn_interpolate(float *out,
           float tr = FLT_MAX;
           for(unsigned d = 0; d < ndir; ++d)
             if(tr > drv[d][row][col]) tr = drv[d][row][col];
-          tr *= 8;
+          tr = fmaxf(8.0f * tr, HOMOGENITY_EPS);
           for(unsigned d = 0; d < ndir; ++d)
             for(int v = -1; v <= 1; v++)
               for(int h = -1; h <= 1; h++)
