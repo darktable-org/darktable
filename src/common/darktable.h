@@ -152,7 +152,10 @@ G_BEGIN_DECLS
 /* Create cloned functions for various CPU SSE generations */
 /* See for instructions https://hannes.hauswedell.net/post/2017/12/09/fmv/ */
 /* TL;DR : use only on SIMD functions containing low-level paralellized/vectorized loops */
-#if __has_attribute(target_clones) \
+/* DT_NO_CLONE_TARGETS builds the default version only: the integration CI
+   uses it so that an output does not depend on the runner's instruction set */
+#if !defined(DT_NO_CLONE_TARGETS) \
+    && __has_attribute(target_clones) \
     && (((defined(__linux__) || defined(__GNU__)) && defined(__GLIBC__)) \
         || (!defined(NATIVE_ARCH) \
             && !defined(_WIN32) \
