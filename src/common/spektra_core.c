@@ -829,21 +829,22 @@ void sf_halation(float *const raw,
   const size_t nn = npix * 3;
   float *const plane = dt_alloc_align_float(npix);
   float *const trans = dt_alloc_align_float(npix);
-  if(!plane) { dt_free_align(trans); return; }
+  if(!plane || !trans)
+  {
+    dt_free_align(plane);
+    dt_free_align(trans);
+    return;
+  }
 
   /* --- stage 1: scatter PSF (core + 3-component tail) --- */
   if(s_amount > 0.0)
   {
-    float *const core = dt_alloc_align_float(nn);
+    /* raw stays untouched until the final combine, so the core blur runs
+       after the tail loop and reuses comp */
     float *const tail = dt_alloc_align_float(nn);
     float *const comp = dt_alloc_align_float(nn);
-    if(core && tail && comp)
+    if(tail && comp)
     {
-      dt_iop_image_copy(core, raw, nn);
-      float sc[3];
-      for(int c = 0; c < 3; c++) sc[c] = fmaxf((float)(sc_core[c] * scl / pixel_um), 1e-6f);
-      _blur_per_channel(core, w, h, sc, plane, trans);
-
       memset(tail, 0, sizeof(float) * nn);
       for(int g = 0; g < 3; g++)
       {
@@ -855,6 +856,11 @@ void sf_halation(float *const raw,
         const float amp_g = (float)tail_amp[g];
         for(size_t i = 0; i < nn; i++) tail[i] = fmaf(amp_g, comp[i], tail[i]);
       }
+      float *const core = comp;
+      dt_iop_image_copy(core, raw, nn);
+      float sc[3];
+      for(int c = 0; c < 3; c++) sc[c] = fmaxf((float)(sc_core[c] * scl / pixel_um), 1e-6f);
+      _blur_per_channel(core, w, h, sc, plane, trans);
       /* float and fma-pinned, matching spektrafilm_scatter_combine */
       const float s_f = (float)s_amount;
       const float ws[3] = { (float)w_s[0], (float)w_s[1], (float)w_s[2] };
@@ -865,7 +871,6 @@ void sf_halation(float *const raw,
         raw[i] = fmaf(s_f, scattered - raw[i], raw[i]);
       }
     }
-    dt_free_align(core);
     dt_free_align(tail);
     dt_free_align(comp);
   }
