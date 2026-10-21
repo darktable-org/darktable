@@ -3479,11 +3479,22 @@ button.dt_masks_enable_toggle:checked
 .dt_masks_channel_add:hover,
 .dt_masks_channel_add:active
 {
-  border: none;
+  border: 1px solid transparent;
   outline-style: none;
   outline-width: 0;
   background-color: transparent;
   box-shadow: none;
+}
+
+/* persistent channel overlay toggled on: framed with a border and subtle tint */
+.dt_masks_channel_add.dt_masks_channel_active,
+.dt_masks_channel_add.dt_masks_channel_active:disabled,
+.dt_masks_channel_add.dt_masks_channel_active:focus,
+.dt_masks_channel_add.dt_masks_channel_active:hover,
+.dt_masks_channel_add.dt_masks_channel_active:active
+{
+  border: 1px solid shade(@button_border, 1.6);
+  background-color: alpha(@field_active_bg, 0.4);
 }
 
 /* operator selectors: a thin border alone marks them as choosers (no
