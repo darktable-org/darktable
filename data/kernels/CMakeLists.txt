@@ -17,9 +17,11 @@ macro (testcompile_opencl_kernel IN)
 
   set(KERNAME_OUT "opencl-program-${KERNAME}")
 
+  # fp64 is masked off because Apple's OpenCL, Metal and MoltenVK have no
+  # double precision: a kernel using it would build here and fail there
   add_custom_command(
     OUTPUT  ${TOUCH}
-    COMMAND ${CLANG_OPENCL_COMPILER} -cc1 -cl-std=CL1.2 -isystem ${CLANG_OPENCL_INCLUDE_DIR} -D__IMAGE_SUPPORT__=1 -finclude-default-header -I${CMAKE_CURRENT_SOURCE_DIR} -I${CMAKE_CURRENT_BINARY_DIR} ${IN}
+    COMMAND ${CLANG_OPENCL_COMPILER} -cc1 -cl-std=CL1.2 -cl-ext=-cl_khr_fp64,-cl_amd_fp64 -isystem ${CLANG_OPENCL_INCLUDE_DIR} -D__IMAGE_SUPPORT__=1 -finclude-default-header -I${CMAKE_CURRENT_SOURCE_DIR} -I${CMAKE_CURRENT_BINARY_DIR} ${IN}
     COMMAND ${CMAKE_COMMAND} -E touch ${TOUCH} # will be empty!
     DEPENDS ${IN} ${DT_OPENCL_EXTRA}
     COMMENT "Test-compiling OpenCL program ${KERNAME}"
