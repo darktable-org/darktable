@@ -18,6 +18,9 @@
 
 #include "common.h"
 
+#define HOMOGENITY_EPS 1e-10f
+#define SOLITARY_EPS 1e-12f
+
 // directions along the both axes and both diagonals
 constant const char2 dir[4] = { (char2)(1, 0), (char2)(0, 1), (char2)(1, 1), (char2)(-1, 1) };
 
@@ -335,7 +338,7 @@ markesteijn_solitary_green(global float *rgb, global float *aux, const int width
   color[3] = diff;
 
   if((d > 1) && (d & 1))
-    for(int c = 0; c < 2; c++) color[c * 2] = (ocolor[3] < diff) ?  ocolor[c * 2] : color[c * 2];
+    for(int c = 0; c < 2; c++) color[c * 2] = (ocolor[3] + SOLITARY_EPS < diff) ? ocolor[c * 2] : color[c * 2];
 
   if((d < 2) || (d & 1))
     for(int c = 0; c < 2; c++) rgb[c * 2] = color[c * 2] / 2.0f;
@@ -718,7 +721,7 @@ markesteijn_homo_set(global float *drv, global float *thresh, global uchar *homo
 
   const int glidx = mad24(y, width, x);
 
-  const float tr = 8.0f * thresh[glidx];
+  const float tr = fmax(8.0f * thresh[glidx], HOMOGENITY_EPS);
 
   uchar accu = 0;
   for(int v = -1; v <= 1; v++)
