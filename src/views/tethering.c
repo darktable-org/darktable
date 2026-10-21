@@ -258,9 +258,10 @@ static void _expose_tethered_mode(dt_view_t *self,
         const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, pw);
         pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
         // FIXME: if liveview image is tagged and we can read its colorspace, use that
-        cmsDoTransformLineStride(darktable.color_profiles->transform_srgb_to_display,
-                                 p_buf, tmp_i, pw, ph, pw * 4,
-                                 stride, 0, 0);
+        dt_colorspaces_transform_to_display(darktable.color_profiles->transform_srgb_to_display,
+                                            darktable.color_profiles->display_hdr_transfer,
+                                            p_buf, tmp_i, pw, ph, (size_t)pw * 4,
+                                            stride);
         pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
         cairo_surface_t *source
