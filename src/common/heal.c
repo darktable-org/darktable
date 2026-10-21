@@ -313,7 +313,7 @@ static void _heal_laplace_loop(float *const restrict red_pixels, float *const re
   size_t nmask_red = 0;
   size_t nmask_black = 0;
 
-  DT_OMP_PRAGMA(parallel sections)
+  DT_OMP_PRAGMA(parallel sections num_threads(darktable.num_openmp_threads))
   {
     collect_runs(1, mask, width, height, subwidth, red_runs, &num_red, &nmask_red);
     DT_OMP_PRAGMA(section)

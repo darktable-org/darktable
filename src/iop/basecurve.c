@@ -906,7 +906,7 @@ int process_cl_lut(dt_iop_module_t *self,
 
   cl_mem dev_profile_info = NULL;
   cl_mem dev_profile_lut = NULL;
-  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl;
+  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl = NULL;
   cl_float *profile_lut_cl = NULL;
 
   const int use_work_profile = (work_profile == NULL) ? 0 : 1;

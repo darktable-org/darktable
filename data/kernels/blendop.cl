@@ -1460,18 +1460,6 @@ blendop_mask_tone_curve(__read_only image2d_t mask_in,
 
 
 __kernel void
-blendop_set_mask (__write_only image2d_t mask, const int width, const int height, const float value)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  write_imagef(mask, (int2)(x, y), value);
-}
-
-
-__kernel void
 blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask,
                         __write_only image2d_t out, const int width, const int height, const int2 offs,
                         const int mask_display, constant float *boost_factors,

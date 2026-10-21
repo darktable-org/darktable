@@ -779,23 +779,26 @@ static inline float _calculate_pivot_y_at_gamma(const dt_iop_agx_params_t * p,
               1.f / gamma);
 }
 
+static float _calculate_auto_gamma(const dt_iop_agx_params_t *p, const float pivot_x)
+{
+  if(!p->auto_gamma)
+    return p->curve_gamma;
+
+  const float gamma =
+    pivot_x > 0.f && p->curve_pivot_y_linear_output > 0.f
+    ? log2f(p->curve_pivot_y_linear_output) / log2f(pivot_x)
+    : p->curve_gamma;
+
+  return CLAMPF(gamma, 0.01f, 100.f);
+}
+
 static void _adjust_pivot(const dt_iop_agx_params_t *p,
                           tone_mapping_params_t *tone_mapping_params)
 {
   // don't allow pivot_x to touch the endpoints
   tone_mapping_params->pivot_x = CLAMPF(p->curve_pivot_x, _epsilon, 1.f - _epsilon);
 
-  if(p->auto_gamma)
-  {
-    tone_mapping_params->curve_gamma =
-      tone_mapping_params->pivot_x > 0.f && p->curve_pivot_y_linear_output > 0.f
-      ? log2f(p->curve_pivot_y_linear_output) / log2f(tone_mapping_params->pivot_x)
-      : p->curve_gamma;
-  }
-  else
-  {
-    tone_mapping_params->curve_gamma = p->curve_gamma;
-  }
+  tone_mapping_params->curve_gamma = _calculate_auto_gamma(p, tone_mapping_params->pivot_x);
 
   tone_mapping_params->pivot_y = _calculate_pivot_y_at_gamma(p, tone_mapping_params->curve_gamma);
 }
@@ -1162,6 +1165,10 @@ static void _read_exposure_params_callback(GtkWidget *widget,
   if(g)
   {
     _adjust_relative_exposure_from_exposure_params(self);
+    dt_iop_agx_params_t *p = self->params;
+    const float pivot_x = CLAMPF(p->curve_pivot_x, _epsilon, 1.f - _epsilon);
+    p->curve_gamma = _calculate_auto_gamma(p, pivot_x);
+
     dt_iop_gui_update(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
@@ -2540,7 +2547,7 @@ static void _set_neutral_params(dt_iop_agx_params_t *p)
   _set_unmodified_primaries(p);
 }
 
-void _set_smooth_params(dt_iop_agx_params_t *p)
+static void _set_smooth_params(dt_iop_agx_params_t *p)
 {
   _set_default_curve_and_look_params(p);
   _set_smooth_primaries(p);

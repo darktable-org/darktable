@@ -602,7 +602,9 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self,
 
     // watermark color
     const GdkRGBA c = { data->color[0], data->color[1], data->color[2], 1.0f };
-    g_strlcpy(buffer, gdk_rgba_to_string(&c), sizeof(buffer));
+    gchar *color = gdk_rgba_to_string(&c);
+    g_strlcpy(buffer, color, sizeof(buffer));
+    g_free(color);
     svgdata = _string_substitute(svgdata, "$(WATERMARK_COLOR)", buffer);
 
     // standard calculation on the remaining variables

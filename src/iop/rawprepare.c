@@ -67,6 +67,7 @@ typedef struct dt_iop_rawprepare_data_t
   int32_t left, top, right, bottom;
   float sub[4];
   float div[4];
+  float rdiv[4];
 
   // cached for dt_iop_buffer_dsc_t::rawprepare
   struct
@@ -346,9 +347,23 @@ void process(dt_iop_module_t *self,
       {
         const size_t pin = (size_t)(roi_in->width * (j + csy) + csx) + i;
         const size_t pout = (size_t)j * roi_out->width + i;
-
         const int id = _BL(roi_out, d, j, i);
-        out[pout] = (in[pin] - d->sub[id]) / d->div[id];
+/** Instead of doing a simple division with some precision problems leading to
+    differences between OpenCL vs CPU results also depending on compiler flags
+    this snippet was suggested by claude and it's used in all process() variants
+    so for reference:
+
+    const float n = in - sub[id];          // exact for integer raw input
+    const float q = n * r[id];
+    const float rem = fmaf(-q, d[id], n);  // exact residual
+    out = fmaf(rem, r[id], q);             // = RN(n / d)
+*/
+        const float n = in[pin] - d->sub[id];
+        const float q = n * d->rdiv[id];
+        const float rem = fmaf(-q, d->div[id], n);
+        const float oval = fmaf(rem, d->rdiv[id], q);
+
+        out[pout] = oval;
       }
     }
 
@@ -369,9 +384,14 @@ void process(dt_iop_module_t *self,
       {
         const size_t pin = (size_t)(roi_in->width * (j + csy) + csx) + i;
         const size_t pout = (size_t)j * roi_out->width + i;
-
         const int id = _BL(roi_out, d, j, i);
-        out[pout] = (in[pin] - d->sub[id]) / d->div[id];
+
+        const float n = in[pin] - d->sub[id];
+        const float q = n * d->rdiv[id];
+        const float rem = fmaf(-q, d->div[id], n);
+        const float oval = fmaf(rem, d->rdiv[id], q);
+
+        out[pout] = oval;
       }
     }
 
@@ -395,7 +415,11 @@ void process(dt_iop_module_t *self,
           const size_t pin = (size_t)ch * (roi_in->width * (j + csy) + csx + i) + c;
           const size_t pout = (size_t)ch * (j * roi_out->width + i) + c;
 
-          out[pout] = (in[pin] - d->sub[c]) / d->div[c];
+          const float n = in[pin] - d->sub[c];
+          const float q = n * d->rdiv[c];
+          const float rem = fmaf(-q, d->div[c], n);
+          const float oval = fmaf(rem, d->rdiv[c], q);
+          out[pout] = oval;
         }
       }
     }
@@ -461,6 +485,7 @@ int process_cl(dt_iop_module_t *self,
   const int devid = piece->pipe->devid;
   cl_mem dev_sub = NULL;
   cl_mem dev_div = NULL;
+  cl_mem dev_rdiv = NULL;
   cl_mem dev_gainmap[4] = {NULL};
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
@@ -509,6 +534,9 @@ int process_cl(dt_iop_module_t *self,
   dev_div = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4, d->div);
   if(dev_div == NULL) goto finish;
 
+  dev_rdiv = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4, d->rdiv);
+  if(dev_rdiv == NULL) goto finish;
+
   const int width = roi_out->width;
   const int height = roi_out->height;
 
@@ -517,7 +545,7 @@ int process_cl(dt_iop_module_t *self,
     CLARG(dev_in), CLARG(dev_out),
     CLARG(width), CLARG(height),
     CLARG(csx), CLARG(csy),
-    CLARG(dev_sub), CLARG(dev_div), CLARG(roi_out->x), CLARG(roi_out->y));
+    CLARG(dev_sub), CLARG(dev_div),  CLARG(dev_rdiv), CLARG(roi_out->x), CLARG(roi_out->y));
   if(gainmap_args)
   {
     const int map_size[2] = { d->gainmaps[0]->map_points_h, d->gainmaps[0]->map_points_v };
@@ -535,7 +563,7 @@ int process_cl(dt_iop_module_t *self,
       if(err != CL_SUCCESS) goto finish;
     }
 
-    dt_opencl_set_kernel_args(devid, kernel, 10,
+    dt_opencl_set_kernel_args(devid, kernel, 11,
        CLARG(dev_gainmap[0]), CLARG(dev_gainmap[1]), CLARG(dev_gainmap[2]), CLARG(dev_gainmap[3]),
        CLARG(map_size), CLARG(im_to_rel), CLARG(rel_to_map), CLARG(map_origin));
   }
@@ -544,6 +572,7 @@ int process_cl(dt_iop_module_t *self,
 finish:
   dt_opencl_release_mem_object(dev_sub);
   dt_opencl_release_mem_object(dev_div);
+  dt_opencl_release_mem_object(dev_rdiv);
 
   for(int i = 0; i < 4; i++)
     dt_opencl_release_mem_object(dev_gainmap[i]);
@@ -693,11 +722,11 @@ void commit_params(dt_iop_module_t *self,
   if(piece->pipe->dsc.filters)
   {
     const float white = (float)p->raw_white_point;
-
     for(int i = 0; i < 4; i++)
     {
       d->sub[i] = (float)p->raw_black_level_separate[i];
-      d->div[i] = (white - d->sub[i]);
+      d->div[i] = white - d->sub[i];
+      d->rdiv[i] = 1.0f / d->div[i];
     }
   }
   else
@@ -705,22 +734,24 @@ void commit_params(dt_iop_module_t *self,
     const float normalizer =
       ((piece->pipe->image.flags & DT_IMAGE_HDR) == DT_IMAGE_HDR)
       ? 1.0f
-      : (float)UINT16_MAX;
+      : 1.0f / (float)UINT16_MAX;
 
-    const float white = (float)p->raw_white_point / normalizer;
+    const float white = (float)p->raw_white_point * normalizer;
     for(int i = 0; i < 4; i++)
     {
-      d->sub[i] = (float)p->raw_black_level_separate[i] / normalizer;
-      d->div[i] = (white - d->sub[i]);
+      const float sepi = (float)p->raw_black_level_separate[i] * normalizer;
+      d->sub[i] = sepi;
+      d->div[i] = white - sepi;
+      d->rdiv[i] = 1.0f / d->div[i];
     }
   }
 
-  float black = 0.0f;
+  uint32_t black = 2; // for rounding
   for(uint8_t i = 0; i < 4; i++)
   {
-    black += (float)p->raw_black_level_separate[i];
+    black += p->raw_black_level_separate[i];
   }
-  d->rawprepare.raw_black_level = (uint16_t)roundf(black / 4.0f);
+  d->rawprepare.raw_black_level = (uint16_t)(black / 4);
   d->rawprepare.raw_white_point = p->raw_white_point;
 
   if(p->flat_field == FLAT_FIELD_EMBEDDED)

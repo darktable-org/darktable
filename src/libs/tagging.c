@@ -1778,19 +1778,7 @@ static void _pop_menu_dictionary_delete_tag(GSimpleAction *action,
     return;
   }
 
-  GList *tagged_images = NULL;
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT imgid FROM main.tagged_images WHERE tagid=?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    tagged_images = g_list_prepend(tagged_images,
-                                   GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
-  }
-  sqlite3_finalize(stmt);
-  tagged_images = g_list_reverse(tagged_images); // list was built in reverse order, so unreverse it
+  GList *tagged_images = dt_tag_get_images(tagid);
 
   dt_tag_remove(tagid, TRUE);
   dt_control_log(_("tag %s removed"), tagname);

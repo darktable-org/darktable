@@ -369,6 +369,20 @@ char *dt_presets_get_filter(const dt_image_t *image)
      exl);
 }
 
+gboolean dt_presets_blend_params_match(const dt_develop_blend_params_t *bp,
+                                       const void *blob,
+                                       const int size)
+{
+  if(size <= 0 || !blob) return TRUE;
+  if(!dt_masks_blend_blob_has_tail(size))
+    return !memcmp(bp, blob, MIN((size_t)size, sizeof(dt_develop_blend_params_t)));
+
+  dt_develop_blend_params_t stored;
+  memcpy(&stored, blob, sizeof(stored));
+  stored.mask_id = bp->mask_id;
+  return !memcmp(bp, &stored, sizeof(stored));
+}
+
 gchar *dt_get_active_preset_name(dt_iop_module_t *module,
                                  gboolean *writeprotect)
 {
@@ -406,8 +420,7 @@ gchar *dt_get_active_preset_name(dt_iop_module_t *module,
         || ((op_params_size > 0
              && !memcmp(module->params, op_params,
                         MIN(op_params_size, module->params_size)))))
-       && !memcmp(module->blend_params, blendop_params,
-                  MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))
+       && dt_presets_blend_params_match(module->blend_params, blendop_params, bl_params_size)
        && module->enabled == enabled)
     {
       name = g_strdup((char *)sqlite3_column_text(stmt, 0));
@@ -434,12 +447,15 @@ char *dt_presets_get_module_label(const char *module_name,
   sqlite3_stmt *stmt;
 
   // clang-format off
-  char *query = g_strdup_printf("SELECT name, multi_name"
+  // a preset carrying the forms of its mask is longer than the blend params,
+  // and is compared in C (dt_presets_blend_params_match())
+  char *query = g_strdup_printf("SELECT name, multi_name, blendop_params"
                                 " FROM data.presets"
                                 " WHERE operation = ?1"
                                 "   AND (op_params = ?2"
                                 "        %s)"
-                                "   AND blendop_params = ?3",
+                                "   AND (blendop_params = ?3"
+                                "        OR LENGTH(blendop_params) > ?4)",
                                 is_default_params ? "OR op_params IS NULL" : "");
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -448,17 +464,26 @@ char *dt_presets_get_module_label(const char *module_name,
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module_name, strlen(module_name), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, params, param_size, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, blend_params, blend_params_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, (int)sizeof(dt_develop_blend_params_t));
 
   char *result = NULL;
 
   // returns the preset's multi_name if defined otherwise the preset
   // name is returned.
-  if(sqlite3_step(stmt) == SQLITE_ROW)
+  while(sqlite3_step(stmt) == SQLITE_ROW)
   {
+    const void *stored = sqlite3_column_blob(stmt, 2);
+    const int stored_size = sqlite3_column_bytes(stmt, 2);
+    if(dt_masks_blend_blob_has_tail(stored_size)
+       && (blend_params_size != sizeof(dt_develop_blend_params_t)
+           || !dt_presets_blend_params_match(blend_params, stored, stored_size)))
+      continue;
+
     const char *name = (const char *)sqlite3_column_text(stmt, 0);
     const char *multi_name = (const char *)sqlite3_column_text(stmt, 1);
     if(multi_name && (strlen(multi_name) == 0 || multi_name[0] != ' '))
       result = dt_presets_get_multi_name(name, multi_name, FALSE);
+    break;
   }
   g_free(query);
   sqlite3_finalize(stmt);
@@ -515,31 +540,10 @@ void dt_insert_preset_in_menu_hierarchy(const char *name,
   for(; *(s+1); s++)
   {
     GMenu *sm = g_menu_new();
-
-    // TODO: Gtk4:
-    // prefix the parent's label: gtk3 flattens GtkPopoverMenu into a single
-    // GtkStack and names each page after its item label, so equally named
-    // submenus under different presets collide and navigation follows the
-    // first one. under gtk4 dt_gui_popover_menu_from_model() nests the menu
-    // for real (GTK_POPOVER_MENU_NESTED) and the prefix can go
-    gchar *sm_name = NULL;
     gchar *label_unm = NULL;
-    gchar **s2 = split;
-    for(; s2 != s; s2++)
-    {
-      label_unm = dt_str_unmnemonic(*s2);
-      dt_util_str_cat(&sm_name, "%s - ", label_unm);
-      g_free(label_unm);
-    }
     label_unm = dt_str_unmnemonic(*s);
-    dt_util_str_cat(&sm_name, "%s", label_unm);
+    GMenuItem *smi = g_menu_item_new_submenu(label_unm, G_MENU_MODEL(sm));
     g_free(label_unm);
-    GMenuItem *smi = g_menu_item_new_submenu(sm_name, G_MENU_MODEL(sm));
-    g_free(sm_name);
-    // Gtk4:
-    // label_unm = dt_str_unmnemonic(*s);
-    // GMenuItem *smi = g_menu_item_new_submenu(label_unm, G_MENU_MODEL(sm));
-    // g_free(label_unm);
 
     g_menu_append_item(*submenu, smi);
     g_object_unref(smi);

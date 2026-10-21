@@ -448,8 +448,8 @@ static void _lib_location_result_item_activated(GtkGestureSingle *gesture, int n
   _show_location(lib, result);
 }
 
-void _lib_location_entry_activated(GtkButton *button,
-                                   dt_lib_module_t *self)
+static void _lib_location_entry_activated(GtkButton *button,
+                                          dt_lib_module_t *self)
 {
   dt_lib_location_t *lib = self->data;
   const gchar *text = gtk_entry_get_text(lib->search);

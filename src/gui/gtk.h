@@ -21,6 +21,7 @@
 #include "common/atomic.h"
 #include "common/darktable.h"
 #include "common/dtpthread.h"
+#include "dtgtk/paint.h"
 
 #include <gtk/gtk.h>
 #include <stdint.h>
@@ -389,6 +390,9 @@ typedef enum dt_ui_panel_t
   DT_UI_PANEL_RIGHT,
   /* bottom panel */
   DT_UI_PANEL_BOTTOM,
+  /* flexi masks panel: an overlay on the canvas, for the canvas position of
+     masks_panel_position (see dt_ui_flexi_panel_* below) */
+  DT_UI_PANEL_FLEXI,
 
   DT_UI_PANEL_SIZE
 } dt_ui_panel_t;
@@ -458,6 +462,46 @@ GtkWidget *dt_ui_snapshot(const struct dt_ui_t *ui);
 GtkWidget *dt_ui_main_window(const struct dt_ui_t *ui);
 /** \brief get the thumb table */
 struct dt_thumbtable_t *dt_ui_thumbtable(const struct dt_ui_t *ui);
+/** \brief flexi masks panel: the container of its header, above the scroll */
+GtkWidget *dt_ui_flexi_panel_header(struct dt_ui_t *ui);
+/** \brief flexi masks panel: box to reparent flexi masks content into
+    (see develop/blend_gui.c, plugins/darkroom/blend/masks_panel_position) */
+GtkWidget *dt_ui_flexi_panel_content(struct dt_ui_t *ui);
+/** \brief flexi masks panel: mark its module-like frame active (the mask it
+    shows is on) or not, as dt_module_active marks an enabled module, so themes
+    style the panel's header the way they style an enabled module's */
+void dt_ui_flexi_panel_set_active(struct dt_ui_t *ui, const gboolean active);
+/** \brief move the flexi masks panel to the left (FALSE) or right (TRUE)
+    side of the main window, live (no view reopen needed) */
+void dt_ui_flexi_panel_set_side(struct dt_ui_t *ui, const gboolean right);
+/** \brief show or hide the flexi masks panel. With has_content, the edge
+    strips show either way, and a click on them toggles the panel; without,
+    neither shows. persist writes the state to
+    "plugins/darkroom/blend/masks_panel_collapsed": TRUE only for a user
+    action (a fold or an edge-strip click), FALSE for automatic changes
+    (applying the stored preference, hiding on view leave), which must not
+    overwrite what the user chose. */
+void dt_ui_flexi_panel_set_collapsed(struct dt_ui_t *ui,
+                                     const gboolean collapsed,
+                                     const gboolean has_content,
+                                     const gboolean persist);
+/** \brief whether the darkroom is the current view. While it is, and the
+    canvas position is chosen, the edge strips keep their room in the center
+    row even with nothing to show, so that focus changes do not move the image */
+void dt_ui_flexi_panel_set_in_view(struct dt_ui_t *ui, const gboolean in_view);
+gboolean dt_ui_flexi_panel_is_collapsed(struct dt_ui_t *ui);
+/** \brief which edge the panel is on now, which can differ from the stored
+    preference: anything mirroring the panel's own chrome follows this */
+gboolean dt_ui_flexi_panel_is_right(struct dt_ui_t *ui);
+/** \brief re-read "plugins/darkroom/masks/show_panel_handle" and resize/repaint
+    the panel's resize-and-collapse handle to match, so the option applies
+    without a view reopen */
+void dt_ui_flexi_panel_update_handle(struct dt_ui_t *ui);
+/** \brief whether the hosted module's mask is in use, which the edge halo's
+    icon shows, and the mask-type label of the edge strips' hint (may be
+    NULL) */
+void dt_ui_flexi_panel_set_icon(struct dt_ui_t *ui, const gboolean active,
+                                const char *mask_type_label);
 /** \brief get the log message widget */
 GtkWidget *dt_ui_log_msg(const struct dt_ui_t *ui);
 /** \brief get the toast message widget */
@@ -945,10 +989,17 @@ void dt_gui_dialog_restore_size(GtkDialog *dialog,
 
 PangoFontDescription *dt_gui_get_font(void);
 
+typedef GtkWidget *(*dt_gui_popover_tooltip_factory_t)(const char *tooltip_id,
+                                                       gpointer user_data);
+
 // returns the session type at runtime
 dt_gui_session_type_t dt_gui_get_session_type(void);
 // Popover menu
 GtkWidget *dt_gui_popover_menu_from_model(GtkWidget *parent, GMenu *menu);
+GtkWidget *dt_gui_popover_menu_from_model_full(GtkWidget *parent,
+                                               GMenu *menu,
+                                               dt_gui_popover_tooltip_factory_t tooltip_factory,
+                                               gpointer tooltip_user_data);
 
 
 #if !defined(__cplusplus)

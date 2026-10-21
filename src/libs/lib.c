@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "libs/lib.h"
@@ -31,6 +32,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "gui/splash.h"
+
 #include <gtk/gtk.h>
 #include <string.h>
 #include <stdbool.h>
@@ -868,7 +870,7 @@ static void dt_lib_init_module(void *m)
   }
 }
 
-void _lib_unload_module(dt_lib_module_t *module)
+static void _lib_unload_module(dt_lib_module_t *module)
 {
   if(module->module)
     g_module_close(module->module);
@@ -991,8 +993,8 @@ static void _lib_plugin_arrow_button_press_cb(GtkGestureSingle *gesture,
 
   if(button == GDK_BUTTON_PRIMARY)
   {
-    /* bail out if module is static */
-    if(!module->expandable(module)) return;
+    /* bail out if module is static or disabled */
+    if(!module->expandable(module) || (module->arrow && !gtk_widget_is_sensitive(module->arrow))) return;
 
     if(dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
       ; // do nothing (for easier dragging)
@@ -1073,8 +1075,8 @@ static void _lib_plugin_header_button_release_cb(GtkGestureSingle *gesture,
 
 static void show_module_callback(dt_lib_module_t *module)
 {
-  /* bail out if module is static */
-  if(!module->expandable(module)) return;
+  /* bail out if module is static or disabled */
+  if(!module->expandable(module) || (module->arrow && !gtk_widget_is_sensitive(module->arrow))) return;
 
   if(dt_conf_get_bool("lighttable/ui/single_module"))
   {

@@ -190,13 +190,7 @@ static int import_images(lua_State *L)
 
 static int database_len(lua_State *L)
 {
-  sqlite3_stmt *stmt = NULL;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM main.images ", -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-    lua_pushinteger(L, sqlite3_column_int(stmt, 0));
-  else
-    lua_pushinteger(L, 0);
-  sqlite3_finalize(stmt);
+  lua_pushinteger(L, dt_image_count());
   return 1;
 }
 
@@ -208,20 +202,11 @@ static int database_numindex(lua_State *L)
     lua_pushnil(L);
     return 1;
   }
-  sqlite3_stmt *stmt = NULL;
-  char query[1024];
-  snprintf(query, sizeof(query), "SELECT id FROM main.images ORDER BY id LIMIT 1 OFFSET %d",
-           index - 1);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
+  dt_imgid_t imgid = dt_image_get_nth(index - 1);
+  if(dt_is_valid_imgid(imgid))
     luaA_push(L, dt_lua_image_t, &imgid);
-  }
   else
     lua_pushnil(L);
-
-  sqlite3_finalize(stmt);
   return 1;
 }
 
@@ -233,20 +218,11 @@ static int database_get_image(lua_State *L)
     lua_pushnil(L);
     return 1;
   }
-  sqlite3_stmt *stmt = NULL;
-  char query[1024];
-  snprintf(query, sizeof(query), "SELECT id FROM main.images WHERE id = %d LIMIT 1",
-           img_id);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
+  dt_imgid_t imgid = img_id;
+  if(dt_image_exists(imgid))
     luaA_push(L, dt_lua_image_t, &imgid);
-  }
   else
     lua_pushnil(L);
-
-  sqlite3_finalize(stmt);
   return 1;
 }
 

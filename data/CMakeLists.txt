@@ -165,6 +165,12 @@ endif()
 FILE(COPY wb_presets.json DESTINATION "${DARKTABLE_DATADIR}")
 install(FILES wb_presets.json DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 
+#
+# Install the masks panel's built-in group layout presets
+#
+FILE(COPY masks_group_presets.json DESTINATION "${DARKTABLE_DATADIR}")
+install(FILES masks_group_presets.json DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
+
 if(USE_AI)
   #
   # Install AI models registry

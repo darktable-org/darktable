@@ -474,8 +474,52 @@ const dt_action_def_t dt_action_def_value
 const dt_action_def_t _action_def_dummy
   = { };
 
+// actions that moved, by the path a shortcut was saved under. Such a shortcut
+// is bound to the new action and saved again under its path. The mask
+// manager went with the flexi masks panel, which took over its controls
+static const struct
+{
+  const gchar *from, *to;
+} _action_moved[] = {
+  { "lib/masks", "lib/masks_flexi_host" },
+  { "lib/masks/shapes/add gradient", "iop/blend/shapes/add gradient" },
+  { "lib/masks/shapes/add path", "iop/blend/shapes/add path" },
+  { "lib/masks/shapes/add ellipse", "iop/blend/shapes/add ellipse" },
+  { "lib/masks/shapes/add circle", "iop/blend/shapes/add circle" },
+  { "lib/masks/shapes/add brush", "iop/blend/shapes/add brush" },
+  { "lib/masks/shapes/add object", "iop/blend/shapes/add AI object" },
+  { "lib/masks/properties/opacity", "iop/blend/properties/opacity" },
+  { "lib/masks/properties/size", "iop/blend/properties/size" },
+  { "lib/masks/properties/hardness", "iop/blend/properties/hardness" },
+  { "lib/masks/properties/feather", "iop/blend/properties/fade-out border" },
+  { "lib/masks/properties/rotation", "iop/blend/properties/rotation" },
+  { "lib/masks/properties/curvature", "iop/blend/properties/curvature" },
+  { "lib/masks/properties/compression", "iop/blend/properties/compression" },
+  { "lib/masks/properties/cleanup", "iop/blend/properties/cleanup" },
+  { "lib/masks/properties/refine mask boundary", "iop/blend/properties/refine mask boundary" },
+  // the brush preference took this path from the AI object's smoothing slider,
+  // being defined after it
+  { "lib/masks/properties/smoothing", "iop/blend/properties/brush smoothing" },
+  { "lib/masks/properties/pressure", "iop/blend/properties/brush pressure" },
+  { "lib/masks/properties/shrink or grow", "iop/blend/properties/shrink or grow" },
+  { "iop/blend/tools/show and edit mask elements", "iop/blend/tools/edit on canvas" },
+  // matched before unescaping: the label's "/" is saved as "@<"
+  { "iop/blend/tools/display mask and@<or color channel", "iop/blend/tools/display mask" },
+  { "iop/blend/mask opacity", "iop/blend/mask brightness" },
+  { "iop/blend/tools/toggle polarity of drawn mask",
+    "iop/blend/masks/invert output of selected group" },
+  { "iop/blend/tools/toggle polarity of raster mask", "iop/blend/masks/invert selected element" },
+};
+
 static dt_action_t *_action_find(const gchar *action_name)
 {
+  for(size_t i = 0; i < G_N_ELEMENTS(_action_moved); i++)
+    if(!strcmp(action_name, _action_moved[i].from))
+    {
+      action_name = _action_moved[i].to;
+      break;
+    }
+
   gchar **path = g_strsplit(action_name, "/", 0);
   for(gchar **cur = path; *cur; cur++)
   {
@@ -1040,13 +1084,34 @@ static gchar *_shortcut_lua_command(GtkWidget *widget,
                          s->speed, instance_string);
 }
 
-void _shortcut_copy_lua(GtkWidget *widget, dt_shortcut_t *shortcut, gchar *preset_name)
+static void _shortcut_copy_lua(GtkWidget *widget, dt_shortcut_t *shortcut, gchar *preset_name)
 {
   gchar *lua_command = _shortcut_lua_command(widget, shortcut);
   if(!lua_command) return;
   gtk_clipboard_set_text(gtk_clipboard_get_default(gdk_display_get_default()), lua_command, -1);
   dt_control_log(_("Lua script command copied to clipboard:\n\n<tt>%s</tt>"), lua_command);
   g_free(lua_command);
+}
+
+gchar *dt_shortcut_action_keys(dt_action_t *action,
+                               const dt_view_type_flags_t views,
+                               const gchar *separator)
+{
+  if(!action) return NULL;
+  GString *keys = NULL;
+  for(GSequenceIter *iter = g_sequence_get_begin_iter(darktable.control->shortcuts);
+      !g_sequence_iter_is_end(iter);
+      iter = g_sequence_iter_next(iter))
+  {
+    dt_shortcut_t *s = g_sequence_get(iter);
+    if(s->action != action || !(s->views & views)) continue;
+    if(keys)
+      g_string_append(keys, separator);
+    else
+      keys = g_string_new(NULL);
+    g_string_append(keys, _shortcut_description(s));
+  }
+  return keys ? g_string_free(keys, FALSE) : NULL;
 }
 
 void dt_shortcut_copy_lua(dt_action_t *action, gchar *preset_name)
@@ -1097,6 +1162,61 @@ static void _tooltip_reposition(GtkWidget *widget,
     gdk_window_move(window, nx, wy);
 }
 
+#if !GTK_CHECK_VERSION(4, 0, 0)
+// GTK3 on Wayland keeps each GtkPopover in its own subsurface.
+// gtk_tooltip_position measures from that subsurface, not the main window.
+// Adjust the tooltip anchor from the pointer position when the content maps.
+typedef struct _tooltip_anchor_t
+{
+  GdkRectangle rect;
+  gint dx;
+} _tooltip_anchor_t;
+
+static _tooltip_anchor_t *_tooltip_popover_anchor(GtkWidget *widget,
+                                                  const gint x,
+                                                  const gint y)
+{
+  // the placement of gtk_tooltip_position, with the pointer where it is
+  GtkWidget *toplevel = gtk_widget_get_toplevel(widget);
+  GtkAllocation top;
+  gtk_widget_get_allocation(toplevel, &top);
+  _tooltip_anchor_t *anchor = g_new0(_tooltip_anchor_t, 1);
+  GdkRectangle *rect = &anchor->rect;
+  gint px = 0, py = 0;
+  gtk_widget_translate_coordinates(widget, toplevel, top.x, top.y, &rect->x, &rect->y);
+  gtk_widget_translate_coordinates(widget, toplevel, top.x + x, top.y + y, &px, &py);
+
+  gint cursor_size = 0;
+  g_object_get(gtk_widget_get_settings(widget),
+               "gtk-cursor-theme-size", &cursor_size, NULL);
+  if(!cursor_size)
+    cursor_size = gdk_display_get_default_cursor_size(gtk_widget_get_display(widget));
+  const gint padding = MAX(4, cursor_size - 32);
+  rect->x -= padding;
+  rect->y -= padding;
+  rect->width = gtk_widget_get_allocated_width(widget) + 2 * padding;
+  rect->height = gtk_widget_get_allocated_height(widget) + 2 * padding;
+
+  if(rect->height > 48 + 8)
+    *rect = (GdkRectangle){ px - 4, py - 4, cursor_size, cursor_size };
+  else
+  {
+    const gint distance = px - (rect->x + rect->width / 2);
+    anchor->dx = distance > 32 ? distance - 32 : distance < -32 ? distance + 32 : 0;
+  }
+  return anchor;
+}
+
+static void _tooltip_move_to_anchor(GtkWidget *content,
+                                    const _tooltip_anchor_t *anchor)
+{
+  GdkWindow *window = gtk_widget_get_window(gtk_widget_get_toplevel(content));
+  if(window)
+    gdk_window_move_to_rect(window, &anchor->rect, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH,
+                            GDK_ANCHOR_FLIP_Y | GDK_ANCHOR_SLIDE_X, anchor->dx, 0);
+}
+#endif
+
 gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
                                       gint x,
                                       gint y,
@@ -1114,6 +1234,12 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
      || darktable.bauhaus->current
      || darktable.gui->hide_tooltips)
     return FALSE;
+
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  // GTK anchors the tooltip to the widget it queried, which the code below may replace by its parent
+  GtkWidget *const queried = widget;
+  const gint queried_x = x, queried_y = y;
+#endif
 
   gchar *markup_text = NULL;
   gchar *description = NULL;
@@ -1310,6 +1436,14 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
   gtk_widget_show_all(vbox);
   gtk_tooltip_set_custom(tooltip, vbox);
   g_signal_connect(G_OBJECT(vbox), "size-allocate", G_CALLBACK(_tooltip_reposition), widget);
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  if(!keyboard_mode
+     && dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND
+     && gtk_widget_get_ancestor(queried, GTK_TYPE_POPOVER))
+    g_signal_connect_data(G_OBJECT(vbox), "map", G_CALLBACK(_tooltip_move_to_anchor),
+                          _tooltip_popover_anchor(queried, queried_x, queried_y),
+                          (GClosureNotify)g_free, 0);
+#endif
 
   return TRUE;
 }
@@ -4019,7 +4153,9 @@ static gboolean _shortcut_match(dt_shortcut_t *f,
     f->action = matched_action;
   }
 
-  return f->action != NULL && !f->move;
+  // modifiers that neither the shortcut nor a fallback consumed mean the
+  // combination is unassigned, not the base shortcut pressed carelessly
+  return f->action != NULL && !f->move && !f->mods;
 }
 
 

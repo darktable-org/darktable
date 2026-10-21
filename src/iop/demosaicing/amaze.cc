@@ -203,7 +203,7 @@ void amaze_demosaic(const float *const in,
     float v;
   } s_hv;
 
-  DT_OMP_PRAGMA(parallel)
+  DT_OMP_PRAGMA(parallel num_threads(darktable.num_openmp_threads))
   {
     constexpr int cldf = 2; // factor to multiply cache line distance. 1 = 64 bytes, 2 = 128 bytes ...
     // assign working space

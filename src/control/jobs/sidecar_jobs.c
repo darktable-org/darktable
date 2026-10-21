@@ -45,6 +45,22 @@ static void _unlock_pending_queue()
 }
 #endif /* !_OPENMP */
 
+static GSList *_take_pending(void)
+{
+  GSList *imgs = NULL;
+#ifdef _OPENMP
+#pragma omp atomic capture
+  { imgs = pending_images; pending_images = NULL ; }
+#else
+  // don't have atomics, so use locks instead
+  _lock_pending_queue();
+  imgs = pending_images;
+  pending_images = NULL;
+  _unlock_pending_queue();
+#endif
+  return imgs;
+}
+
 static int32_t _control_write_sidecars_job_run(dt_job_t *job)
 {
   GSList *imgs = NULL;
@@ -60,16 +76,7 @@ static int32_t _control_write_sidecars_job_run(dt_job_t *job)
     if(curr_fetch > prev_fetch + 0.25)
     {
       prev_fetch = curr_fetch;
-#ifdef _OPENMP
-#pragma omp atomic capture
-      { new_imgs = pending_images; pending_images = NULL ; }
-#else
-      // don't have atomics, so use locks instead
-      _lock_pending_queue();
-      new_imgs = pending_images;
-      pending_images = NULL;
-      _unlock_pending_queue();
-#endif
+      new_imgs = _take_pending();
       if(new_imgs)
       {
         // add the new images to the queue being processed if they are not already on the queue
@@ -107,6 +114,17 @@ static int32_t _control_write_sidecars_job_run(dt_job_t *job)
       g_usleep(1000000);
     }
   }
+  // darktable is stopping: the loop above only finishes the images it had
+  // picked up, so write those queued since, or their sidecars keep the
+  // state from before the last edits
+  GSList *late = _take_pending();
+  for(GSList *imglist = late; imglist; imglist = g_slist_next(imglist))
+  {
+    const dt_imgid_t imgid = GPOINTER_TO_INT(imglist->data);
+    if(g_hash_table_add(enqueued, GINT_TO_POINTER(imgid)))
+      dt_image_write_sidecar_file(imgid);
+  }
+  g_slist_free(late);
   g_hash_table_destroy(enqueued);
   return 0;
 }

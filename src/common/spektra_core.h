@@ -49,10 +49,13 @@ void sf_blur_plane3_fast(float *buf,
    input weight B falls below 1e-4 by sigma 16, so a one-ulp difference in
    the input moves the output by around 1e-3 at sigma 60-130. The field is
    box-averaged down by k = floor(sigma / SF_WIDE_BLUR_LOW_SIGMA), blurred
-   with the exact kernel at the reduced sigma (below 16, so at most 48 taps
-   on k^2 fewer pixels), and bilinearly interpolated back. The low-resolution sigma is reduced by the variance the
-   box ((k^2 - 1) / 12) and the interpolation (k^2 / 6) add, so the total is
-   the requested sigma.
+   with the exact kernel at the reduced sigma (below 13, so at most 79 taps
+   on k^2 fewer pixels), and bilinearly interpolated back. The low-resolution
+   sigma is reduced by the variance the box ((k^2 - 1) / 12) and the interpolation (k^2 / 6) add, so the total is
+   the width the recursive path gives the same sigma: the reference's
+   Young-van Vliet filter runs 8-11% wide at small sigma and narrower than
+   asked from about 120, every radius in the module was tuned against that,
+   and sf_blur_plane3_fast() at the same sigma gives this width too.
 
    The block grid is anchored to absolute image coordinates (roi_x, roi_y),
    so tiles of one image share it. sf_wide_blur_plan() decides whether this
@@ -60,6 +63,15 @@ void sf_blur_plane3_fast(float *buf,
    arithmetic in spektrafilm_wide_down / spektrafilm_wide_up. */
 #define SF_WIDE_BLUR_MIN_SIGMA 16.0f
 #define SF_WIDE_BLUR_LOW_SIGMA 8.0f
+/* Where halation's bounces and the diffusion bank switch to the decimated
+   blur. Below this the float recursion stays within 5e-3 of the reference's
+   own double-precision filter, and the decimated path, a true Gaussian of the
+   same width, differs from that filter's non-Gaussian shape by about 1e-2 on a
+   hard edge, so there is nothing to gain. From here up the recursion drifts
+   (1.2e-2 at sigma 149, and through the cascade above SF_GAUSS_MAX_IIR_SIGMA
+   3e-2 to 5e-2 with a mean bias of up to 9e-3) while the decimated path stays
+   within 2e-4. Every default halation and diffusion render stays below it. */
+#define SF_WIDE_BLUR_EFFECT_SIGMA 100.0f
 /* Returns 1 and fills k, sigma_low, and the low-resolution size and grid
    offset for a w x h buffer at (roi_x, roi_y) when sigma is wide enough to
    decimate; returns 0 otherwise. */
@@ -146,10 +158,13 @@ void sf_multiplicative_unsharp_mask3(float *buf,
    sf_sim_scatter_params(): Gaussian core radius and exponential tail decay in
    micrometres on film, and the core/tail mix weight. Already collapsed to one
    value per channel for a single-emulsion stock, and already clamped by the
-   caller to what the ROI padding covers. */
+   caller to what the ROI padding covers. roi_x/roi_y are the buffer's origin
+   in image coordinates, for sf_blur_plane3_wide()'s block grid. */
 void sf_halation(float *raw,
                  int w,
                  int h,
+                 int roi_x,
+                 int roi_y,
                  double pixel_um,
                  const double sc_core[3],
                  const double sc_tail[3],
@@ -196,9 +211,12 @@ void sf_boost_highlights(float *raw,
                          float boost_ev,
                          float boost_range,
                          float protect_ev);
+/* roi_x/roi_y as for sf_halation(). */
 void sf_diffusion_filter(float *raw,
                          int w,
                          int h,
+                         int roi_x,
+                         int roi_y,
                          double pixel_um,
                          int family,
                          float strength,

@@ -1282,8 +1282,8 @@ static void _lib_histogram_cycle_harmony_callback(dt_action_t *action)
   _color_harmony_changed_record(vec_mode);
 }
 
-void _vec_signal_image_changed(gpointer instance,
-                               dt_scopes_mode_t *const self)
+static void _vec_signal_image_changed(gpointer instance,
+                                      dt_scopes_mode_t *const self)
 {
   dt_scopes_vec_t *const d = self->data;
   dt_color_harmony_guide_t new_guide;

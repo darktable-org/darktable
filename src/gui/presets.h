@@ -180,6 +180,32 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w);
 /** apply a preset to the current module **/
 void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module);
 
+/** the blend params of `module` as a preset stores them: with the forms of
+    its mask (dt_masks_blend_blob_encode()). g_free() the result **/
+void *dt_gui_presets_module_blend_blob(dt_iop_module_t *module, size_t *size);
+
+/** an AI object stored as pixels, in a mask a preset or a style is about to
+    store, applies to its own image only and is left out. TRUE to save without
+    it: the user is asked, or, without a GUI to ask in, the log says so. For a
+    style, `style_modules` names the modules whose masks hold one, one per line
+    (dt_styles_history_pixel_mask_modules()); NULL for a preset. Every
+    interactive save of a preset or style mask goes through here before it
+    changes anything **/
+gboolean dt_gui_presets_confirm_pixel_masks(const char *style_modules);
+
+/** dt_gui_presets_confirm_pixel_masks() for a preset of `module`, when its
+    mask holds such an object. TRUE to save the preset **/
+gboolean dt_gui_presets_confirm_module_mask(dt_iop_module_t *module);
+
+/** the blend part of dt_gui_presets_apply_preset(): commits a preset's stored
+    blend params to `module`, converted to the current version with its mask
+    migrated to flexi, or with the forms of its mask added to the image
+    (dt_develop_blend_params_read()), and keeps a locked mask. Needs no GUI **/
+void dt_gui_presets_apply_blend_params(dt_iop_module_t *module,
+                                       const void *blendop_params,
+                                       const int blendop_version,
+                                       const int bl_length);
+
 /** apply next or previous preset to the current module **/
 void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module, const int direction);
 

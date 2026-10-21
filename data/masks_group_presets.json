@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "presets": [
+    {
+      "id": "drawn",
+      "name": "drawn (classic)",
+      "description": "one group combining its shapes by screen (smooth union), so that\noverlapping feathered edges merge without a seam; a classic drawn mask\nused maximum (union)",
+      "mask": {
+        "operator": "screen",
+        "notes": [
+          "draw shapes or add AI objects here to mask an area",
+          "with <b>union</b> operators, the pixels covered by <b>any</b> of the shapes are masked",
+          "<b>screen (smooth union)</b>, used here, lets the feathered edges of overlapping shapes blend smoothly",
+          "<b>maximum (union)</b> keeps the stronger shape, as a classic drawn mask did",
+          "use <b>minimum</b> or <b>product</b> to mask only the pixels covered by <b>all</b> shapes"
+        ]
+      }
+    },
+    {
+      "id": "parametric",
+      "name": "parametric (classic)",
+      "description": "one group combining its parametric channels by\nproduct (smooth intersection), as a classic parametric mask did",
+      "mask": {
+        "operator": "product",
+        "notes": [
+          "add parametric channels here to select the area to mask, e.g. by color or brightness",
+          "with the <b>intersection</b> operators, only the pixels selected by <b>all</b> channels are masked",
+          "change the operator to some type of <b>union</b> to mask the pixels selected by <b>any</b> channel",
+          "<b>screen</b> and <b>product</b>, the smooth variants, make smoother transitions between feathered areas"
+        ]
+      }
+    },
+    {
+      "id": "drawn_parametric",
+      "name": "drawn + parametric (classic)",
+      "description": "a \"drawn\" group, maximum (union), and a \"parametric\" group,\nproduct (smooth intersection), combined by product (smooth\nintersection), as a classic drawn + parametric mask did",
+      "mask": {
+        "operator": "product",
+        "notes": [
+          "mask an area with <b>parametric</b> channels, and refine the selection with <b>drawn</b> shapes",
+          "start by selecting the <b>parametric</b> group and adding channels to it, then move on to the <b>drawn</b> group",
+          "with the <b>intersection</b> operators, only the area where the two groups overlap is masked",
+          "<b>product (smooth intersection)</b> lets their soft edges fade together; <b>minimum (intersection)</b> keeps the weaker of the two",
+          "use the <b>difference</b> operator to exclude the area masked by the <b>drawn</b> group instead",
+          "alternatively, <b>invert</b> the output of the <b>drawn</b> group"
+        ],
+        "groups": [
+          {
+            "preset": "drawn",
+            "name": "drawn"
+          },
+          {
+            "preset": "parametric",
+            "name": "parametric"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mask_intersect_subtract",
+      "name": "drawn + parametric, minus an area (advanced)",
+      "description": "a drawn + parametric mask, with the elements added above it subtracted\nfrom it",
+      "mask": {
+        "operator": "difference",
+        "notes": [
+          "subtract unwanted spill from a drawn + parametric mask",
+          "start by creating a mask in the <b>drawn + parametric</b> group, then add elements <b>here</b> to remove the spill"
+        ],
+        "groups": [
+          {
+            "preset": "drawn_parametric",
+            "name": "drawn + parametric"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -459,7 +459,7 @@ static inline void _compute_downsampling_kernel(const dt_interpolation_t *itor,
 
   /* Compute the phase difference between output pixel and its
    * input corresponding input pixel */
-  const float xin = ceil_fast(((float)xout - w) / outoinratio);
+  const float xin = ceilf(((float)xout - w) / outoinratio);
   if(first)
   {
     *first = (int)xin;
@@ -519,8 +519,8 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
   // Precompute the inverse of the filter norm for later use
   const float oonorm = (1.f / (normh * normv));
 
-  int ix = (int)x;
-  int iy = (int)y;
+  int ix = (int)floorf(x);
+  int iy = (int)floorf(y);
 
   float s = 0.0f;
   /* Now 2 cases, the pixel + filter width goes outside the image
@@ -549,7 +549,7 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
       in += linestride;
     }
   }
-  else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
+  else if(ix >= -1 && iy >= -1 && ix < width && iy < height)
   {
     // At least a valid coordinate
     // Point to the upper left pixel index wise
@@ -605,8 +605,8 @@ void dt_interpolation_compute_pixel4c(const dt_interpolation_t *itor,
    * in that case we have to use index clipping to keep all reads
    * in the input image (slow path) or we are sure it won't fall
    * outside and can do more simple code */
-  int ix = (int)x;
-  int iy = (int)y;
+  int ix = (int)floorf(x);
+  int iy = (int)floorf(y);
 
   if(ix >= (itor->width - 1)
     && iy >= (itor->width - 1)
@@ -641,7 +641,7 @@ void dt_interpolation_compute_pixel4c(const dt_interpolation_t *itor,
     for_each_channel(c,aligned(out))
       out[c] = pixel[c] * oonorm;
   }
-  else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
+  else if(ix >= -1 && iy >= -1 && ix < width && iy < height)
   {
     // At least a valid coordinate
     // Point to the upper left pixel index wise
@@ -828,7 +828,7 @@ static gboolean _prepare_resampling_plan(const dt_interpolation_t *itor,
   else
   {
     // Downscale... going for worst case values memory wise
-    maxtapsapixel = ceil_fast((float)2 * (float)itor->width / scale);
+    maxtapsapixel = ceilf(2.0f * (float)itor->width / scale);
   }
 
   int nlengths = out;

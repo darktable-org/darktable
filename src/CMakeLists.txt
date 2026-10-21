@@ -116,6 +116,9 @@ FILE(GLOB SOURCE_FILES
   "control/signal.c"
   "develop/blend.c"
   "develop/blend_gui.c"
+  "develop/masks_gui_presets.c"
+  "develop/masks_gui_panel_host.c"
+  "develop/masks_gui_toolbar.c"
   "develop/blends/blendif_lab.c"
   "develop/blends/blendif_raw.c"
   "develop/blends/blendif_rgb_hsl.c"
@@ -127,13 +130,30 @@ FILE(GLOB SOURCE_FILES
   "develop/imageop_gui.c"
   "develop/imageop_math.c"
   "develop/lightroom.c"
+  "develop/masks/blend_blob.c"
   "develop/masks/brush.c"
+  "develop/masks/check.c"
   "develop/masks/circle.c"
   "develop/masks/ellipse.c"
   "develop/masks/gradient.c"
+  "develop/masks/object.c"
+  "develop/masks/pixel_mask.c"
   "develop/masks/group.c"
+  "develop/masks/harvest.c"
   "develop/masks/masks.c"
+  "develop/masks/migrate_legacy.c"
+  "develop/masks/parametric.c"
   "develop/masks/path.c"
+  "develop/masks/probe_image.c"
+  "develop/masks/raster.c"
+  "develop/masks/lockcheck.c"
+  "develop/masks/persist.c"
+  "develop/masks/postedit.c"
+  "develop/masks/roundtrip.c"
+  "develop/masks/scratch_image.c"
+  "develop/masks/styleapply.c"
+  "develop/masks/undo.c"
+  "develop/masks/verify.c"
   "develop/pixelpipe.c"
   "develop/preview_data.c"
   "develop/tiling.c"
@@ -484,7 +504,6 @@ if(USE_AI)
     "common/ai/restore_rgb.c"
     "common/ai/restore_raw_bayer.c"
     "common/ai/restore_raw_linear.c"
-    "develop/masks/object.c"
     "gui/preferences_ai.c"
   )
   set(SOURCES ${SOURCES} ${SOURCE_FILES_AI})
@@ -793,7 +812,7 @@ if(NOT CUSTOM_CFLAGS)
   #-g MUST be set for ALL builds, or there will be no support for them when bugs happen
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MARCH} -g")
   set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -O2 -ftree-vectorize")
-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math -fno-finite-math-only")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math -fno-finite-math-only -D_DARKTABLE_RELEASE")
   if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g3 -ggdb3")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fexpensive-optimizations")
@@ -1093,6 +1112,23 @@ add_custom_target(
   generate_styles_string ALL
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/styles_string.h
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# the masks panel's built-in group layout presets are read from JSON at
+# runtime; their strings are only extracted here, for translation
+add_custom_command(
+  DEPENDS ${CMAKE_SOURCE_DIR}/data/masks_group_presets.json
+          ${CMAKE_SOURCE_DIR}/tools/generate_masks_presets_strings.sh
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/masks_group_presets_strings.h
+  COMMAND bash ${CMAKE_SOURCE_DIR}/tools/generate_masks_presets_strings.sh
+          ${CMAKE_SOURCE_DIR}/data/masks_group_presets.json
+          ${CMAKE_CURRENT_BINARY_DIR}/masks_group_presets_strings.h
+  COMMENT "Generating masks group preset strings for translation"
+)
+
+add_custom_target(
+  generate_masks_presets_strings ALL
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/masks_group_presets_strings.h
 )
 
 add_custom_target(

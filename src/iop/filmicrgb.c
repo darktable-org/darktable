@@ -1079,13 +1079,19 @@ inline static void inpaint_noise(const float *const in, const float *const mask,
   // this creates "particules" in highlights, that will help the implicit partial derivative equation
   // solver used in wavelets reconstruction to generate texture
 
+  const uint32_t splitmix32_1337 = splitmix32(1337);
+  const uint32_t splitmix32_666 = splitmix32(666);
+
   DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
     {
       // Init random number generator
       uint32_t DT_ALIGNED_ARRAY state[4]
-        = { splitmix32(j + 1), splitmix32((j + 1) * (i + 3)), splitmix32(1337), splitmix32(666) };
+        = { splitmix32(j + 1),
+            splitmix32((j + 1) * (i + 3)),
+            splitmix32_1337,
+            splitmix32_666 };
       xoshiro128plus(state);
       xoshiro128plus(state);
       xoshiro128plus(state);
@@ -2477,9 +2483,7 @@ int process_cl(dt_iop_module_t *self,
     {
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_filmic_show_mask, width, height,
         CLARG(mask), CLARG(dev_out), CLARG(width), CLARG(height));
-      dt_opencl_release_mem_object(mask);
-      dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
-      return err;
+      goto error;
     }
   }
 

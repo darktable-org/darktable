@@ -33,6 +33,7 @@
 #include "lua/database.h"
 #include "lua/film.h"
 #include "lua/glist.h"
+#include "lua/metadata.h"
 #include "lua/styles.h"
 #include "lua/tags.h"
 #include "lua/types.h"
@@ -68,18 +69,11 @@ static void releasewriteimage(lua_State *L, dt_image_t *image)
 void dt_lua_image_push(lua_State *L, const dt_imgid_t imgid)
 {
   // check that id is valid
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id FROM main.images WHERE id = ?1", -1, &stmt,
-                              NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) != SQLITE_ROW)
+  if(!dt_image_exists(imgid))
   {
-    sqlite3_finalize(stmt);
     luaL_error(L, "invalid id for image : %d", imgid);
     return;
   }
-  sqlite3_finalize(stmt);
   luaA_push(L, dt_lua_image_t, &imgid);
 }
 
@@ -335,6 +329,48 @@ static int metadata_member(lua_State *L)
   }
 }
 
+// tag name for the (image, script, key) call at stack 1..3; raises a lua
+// error, before any image lock is taken, if the key was never registered
+static char *_script_metadata_tagname(lua_State *L)
+{
+  char *tagname = dt_lua_metadata_script_tagname(L, 2, 3);
+  if(!dt_metadata_get_metadata_by_tagname(tagname))
+  {
+    lua_pushfstring(L, "metadata key '%s' is not registered, call darktable.metadata.register first",
+                    tagname);
+    g_free(tagname);
+    lua_error(L);
+  }
+  return tagname;
+}
+
+static int get_metadata(lua_State *L)
+{
+  char *tagname = _script_metadata_tagname(L);
+  const dt_image_t *my_image = checkreadimage(L, 1);
+  GList *res = dt_metadata_get_lock(my_image->id, tagname, NULL);
+  if(res)
+    lua_pushstring(L, (char *)res->data);
+  else
+    lua_pushstring(L, "");
+  releasereadimage(L, my_image);
+  g_list_free_full(res, g_free);
+  g_free(tagname);
+  return 1;
+}
+
+static int set_metadata(lua_State *L)
+{
+  const char *value = luaL_checkstring(L, 4);
+  char *tagname = _script_metadata_tagname(L);
+  dt_image_t *my_image = checkwriteimage(L, 1);
+  dt_metadata_set(my_image->id, tagname, value, FALSE);
+  dt_image_synch_xmp(my_image->id);
+  releasewriteimage(L, my_image);
+  g_free(tagname);
+  return 0;
+}
+
 static int exif_datetime_taken_member(lua_State *L)
 {
   if(lua_gettop(L) != 3)
@@ -481,21 +517,17 @@ int get_group(lua_State *L)
   const dt_image_t *cimg = dt_image_cache_get(first_image, 'r');
   const dt_imgid_t group_id = cimg->group_id;
   dt_image_cache_read_release(cimg);
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id FROM main.images WHERE group_id = ?1", -1,
-                              &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
+  GList *members = dt_grouping_get_members(group_id);
   lua_newtable(L);
   int table_index = 1;
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  for(GList *iter = members; iter; iter = g_list_next(iter))
   {
-    const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
+    const dt_imgid_t imgid = GPOINTER_TO_INT(iter->data);
     luaA_push(L, dt_lua_image_t, &imgid);
     lua_seti(L, -2, table_index);
     table_index++;
   }
-  sqlite3_finalize(stmt);
+  g_list_free(members);
   luaA_push(L, dt_lua_image_t, &group_id);
   lua_setfield(L, -2, "leader");
   return 1;
@@ -683,6 +715,12 @@ int dt_lua_init_image(lua_State *L)
   lua_pushcfunction(L, apply_sidecar);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const(L, dt_lua_image_t, "apply_sidecar");
+  lua_pushcfunction(L, get_metadata);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_lua_image_t, "get_metadata");
+  lua_pushcfunction(L, set_metadata);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_lua_image_t, "set_metadata");
   lua_pushcfunction(L, image_tostring);
   dt_lua_type_setmetafield(L,dt_lua_image_t,"__tostring");
 

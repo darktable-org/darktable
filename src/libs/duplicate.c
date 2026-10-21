@@ -296,31 +296,21 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   // and the other widgets too
   dt_gui_container_destroy_children(GTK_CONTAINER(d->duplicate_box));
   // retrieve all the versions of the image
-  sqlite3_stmt *stmt;
   dt_develop_t *dev = darktable.develop;
 
   int count = 0;
 
   // we get a summarize of all versions of the image
-  // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT i.version, i.id, m.value"
-                              " FROM images AS i"
-                              " LEFT JOIN meta_data AS m ON m.id = i.id"
-                              " AND m.key = (SELECT key FROM data.meta_data WHERE tagname = 'Xmp.darktable.version_name')"
-                              " WHERE film_id = ?1 AND filename = ?2"
-                              " ORDER BY i.version",
-                              -1, &stmt, NULL);
-  // clang-format on
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.film_id);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, dev->image_storage.filename, -1, SQLITE_TRANSIENT);
+  GList *versions = dt_metadata_get_versions(dev->image_storage.film_id,
+                                             dev->image_storage.filename);
 
   GtkWidget *bt = NULL;
 
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  for(GList *iter = versions; iter; iter = iter->next)
   {
+    const dt_metadata_version_t *version = iter->data;
     GtkWidget *hb = gtk_grid_new();
-    const dt_imgid_t imgid = sqlite3_column_int(stmt, 1);
+    const dt_imgid_t imgid = version->imgid;
     dt_gui_add_class(hb, "dt_overlays_always");
     dt_thumbnail_t *thumb = dt_thumbnail_new(100,
                                              100,
@@ -343,8 +333,8 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     }
 
     gchar chl[256];
-    gchar *path = (gchar *)sqlite3_column_text(stmt, 2);
-    g_snprintf(chl, sizeof(chl), "%d", sqlite3_column_int(stmt, 0));
+    const gchar *path = version->name;
+    g_snprintf(chl, sizeof(chl), "%d", version->version);
 
     GtkWidget *tb = dt_ui_entry_new(0);
     if(path) gtk_entry_set_text(GTK_ENTRY(tb), path);
@@ -422,7 +412,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     d->thumbs = g_list_append(d->thumbs, thumb);
     count++;
   }
-  sqlite3_finalize (stmt);
+  g_list_free_full(versions, dt_metadata_version_free);
 
   gtk_widget_show(d->duplicate_box);
 

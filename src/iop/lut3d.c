@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
@@ -40,6 +41,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <dirent.h>
+
 #if defined (_WIN32)
 #include "win/getdelim.h"
 #include "win/scandir.h"

@@ -481,6 +481,7 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
     g_hash_table_destroy(piece->raster_masks);
     piece->raster_masks = NULL;
     _clear_piece_mask_caches(piece);
+    dt_masks_refine_bypass_cleanup(&piece->refine_bypass);
     free(piece);
   }
   g_list_free(pipe->nodes);
@@ -557,6 +558,24 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe,
     pipe->nodes = g_list_append(pipe->nodes, piece);
   }
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
+}
+
+static gboolean _wants_details(const dt_masks_point_group_t *pt,
+                               const dt_masks_form_t *form,
+                               const dt_masks_form_t *owner,
+                               void *data)
+{
+  return pt->refinement.enabled && !feqf(pt->refinement.details, 0.0f, 1e-6);
+}
+
+// does an element or group of the mask refine with a detail threshold? It
+// needs the detail buffer even when bp->details is 0
+static gboolean _blend_group_wants_details(dt_develop_t *dev,
+                                           const dt_mask_id_t mask_id)
+{
+  if(!dt_is_valid_maskid(mask_id)) return FALSE;
+  return dt_masks_group_walk(dev->forms, dt_masks_get_from_id(dev, mask_id), _wants_details,
+                             NULL);
 }
 
 // helper
@@ -670,9 +689,19 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
       if(piece->enabled && piece->blendop_data)
       {
         const dt_develop_blend_params_t *const bp = piece->blendop_data;
-        const gboolean valid_mask = bp->mask_mode > DEVELOP_MASK_ENABLED;
+        // the details threshold applies to a uniform blend too
+        // (dt_develop_blend_process); only a disabled mask needs no detail
+        // buffer
+        const gboolean valid_mask = bp->mask_mode >= DEVELOP_MASK_ENABLED;
 
-        if(!feqf(bp->details, 0.0f, 1e-6) && valid_mask && pipe->want_detail_mask == FALSE)
+        // the detail buffer is needed for the whole mask's threshold, and for
+        // an element's or group's, kept in its own refinement. Without it the
+        // element's pass fails with "detail mask blending error"
+        if(valid_mask
+           && pipe->want_detail_mask == FALSE
+           && (!feqf(bp->details, 0.0f, 1e-6)
+               || _blend_group_wants_details(dev, dt_develop_blend_mask_group_id(piece->module,
+                                                                                 bp))))
         {
           // during synch_all replay the flush is deferred to a single
           // presence-gated invalidation at the end (see
@@ -691,10 +720,32 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
   }
 }
 
+/* does the consumer's mask hold a raster element reading `source`?
+
+   A raster element is a group member, not the module's raster sink: it leaves
+   blend_params.raster_mask_* alone, and its mask_mode is flexi, never RASTER.
+   Without this test a live consumer would be pruned, and the source would stop
+   keeping its mask.
+
+   `mask_id` comes from the consumer's piece->blendop_data, right in every
+   pipe, but the forms from dev->forms, not pipe->forms: the pipe's copy is
+   refreshed later, in dt_dev_pixelpipe_process(), and is the previous run's
+   here. dev->forms is right in the export pipe too, unlike module->enabled and
+   module->blend_params, which follow the darkroom and must not be read here */
+static gboolean _raster_form_consumes(dt_develop_t *dev,
+                                      const dt_mask_id_t mask_id,
+                                      const dt_iop_module_t *source)
+{
+  if(!dev || !dt_is_valid_maskid(mask_id)) return FALSE;
+  const dt_masks_form_t *grp = dt_masks_get_from_id(dev, mask_id);
+  return dt_masks_group_find_raster_of(dev->forms, grp, source, NO_MASKID, TRUE) != NULL;
+}
+
 /** remove stale entries (deleted, disabled or de-synced consumers) from a
     raster mask source's users table, so it doesn't keep
     publishing/invalidating forever */
-static void _iop_prune_stale_raster_users(dt_dev_pixelpipe_t *pipe, dt_iop_module_t *module)
+void dt_dev_pixelpipe_prune_stale_raster_users(dt_dev_pixelpipe_t *pipe,
+                                               dt_iop_module_t *module)
 {
   GHashTable *users = module->raster_mask.source.users;
   if(!module->dev || !users)
@@ -754,8 +805,13 @@ static void _iop_prune_stale_raster_users(dt_dev_pixelpipe_t *pipe, dt_iop_modul
     const dt_develop_blend_params_t *bp = sink_piece->blendop_data;
     const gboolean points_back = bp && dt_iop_module_is(module, bp->raster_mask_source)
                                  && module->multi_priority == bp->raster_mask_instance;
-    const gboolean consumes = points_back && sink_piece->enabled &&
-                              (bp->mask_mode & DEVELOP_MASK_RASTER);
+    // as the module's raster sink, or through a raster element of its mask
+    const gboolean consumes =
+      sink_piece->enabled && bp
+      && ((points_back && (bp->mask_mode & DEVELOP_MASK_RASTER))
+          || _raster_form_consumes(module->dev,
+                                   dt_develop_blend_mask_group_id(sink_piece->module, bp),
+                                   module));
     if(!consumes)
     {
       g_hash_table_iter_remove(&iter);
@@ -821,9 +877,10 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
      essentially every interactive render -- every history change, every mask
      edit, every overlay toggle -- so clearing it here meant it could never hit
      in the darkroom and the memoization bought nothing. It does not need the
-     blanket clear either: its key (group hash, roi_out, mask_mode; blend.c)
-     already covers everything a replay can change about the rendered mask.
-     It is still freed with the piece and whenever the scharr is dropped. */
+     blanket clear either: its key (group hash, refine-bypass hash, roi_out,
+     mask_mode, scharr hash; blend.c) already covers everything a replay can
+     change about the rendered mask. It is still freed with the piece and
+     whenever the scharr is dropped. */
   for(GList *n = pipe->nodes; n; n = g_list_next(n))
     _clear_piece_distortion_caches(n->data);
 
@@ -839,7 +896,8 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   // history has been (re)applied, so real raster consumers have re-registered;
   // drop any phantom users left behind by deleted or de-synced consumers
   for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
-    _iop_prune_stale_raster_users(pipe, ((dt_dev_pixelpipe_iop_t *)nodes->data)->module);
+    dt_dev_pixelpipe_prune_stale_raster_users(pipe,
+      ((dt_dev_pixelpipe_iop_t *)nodes->data)->module);
 
   /* decide from the actual state, not from a cross-synch_all compare of
      want_detail_mask: that flag is unreliable here, as node rebuilds reset it and
@@ -890,7 +948,8 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   // clear any phantom raster users (deleted/de-synced consumers) so a source
   // doesn't keep republishing its mask and invalidating downstream every run
   for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
-    _iop_prune_stale_raster_users(pipe, ((dt_dev_pixelpipe_iop_t *)nodes->data)->module);
+    dt_dev_pixelpipe_prune_stale_raster_users(pipe,
+      ((dt_dev_pixelpipe_iop_t *)nodes->data)->module);
 
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
 }
@@ -1956,8 +2015,8 @@ static cl_int _opencl_benchmark(dt_dev_pixelpipe_t *pipe,
 
 static void _diff_statistics(const dt_iop_module_t *self,
                              const dt_iop_roi_t *roi,
-                             const float *const dat_a,
-                             const float *const dat_b,
+                             const float *const dat_a,  // output CPU
+                             const float *const dat_b,  // output OpenCL
                              const int ch,
                              const int devid)
 {
@@ -1968,9 +2027,8 @@ static void _diff_statistics(const dt_iop_module_t *self,
   double sum = 0.0;
   double sum2 = 0.0;
   double max_abs = 0.0;
-  double max_rel = 0.0;
 
-  DT_OMP_FOR(reduction(+ : sum, sum2) reduction(max : max_abs, max_rel))
+  DT_OMP_FOR(reduction(+ : sum, sum2) reduction(max : max_abs))
   for(size_t i = 0; i < npix * ch; i+=ch)
   {
     // We don't calculate per RGB channel but define a RGB pixel as average of three
@@ -1983,20 +2041,30 @@ static void _diff_statistics(const dt_iop_module_t *self,
     sum2 += d * d;
     if(ad > max_abs)
       max_abs = ad;
-
-    const double ref = fmax(fabs(a), fabs(b));
-    const double rel = ref > 1e-9 ? ad / ref : 0.0;
-    if(rel > max_rel)
-      max_rel = rel;
   }
 
   const double mean = sum / (double)npix;
   const double var = fmax(sum2 / (double)npix - mean * mean, 0.0);
   const double stddev = sqrt(var);
 
+  int outrange_2 = 0;
+  int outrange_4 = 0;
+  DT_OMP_FOR(reduction(+ : outrange_2, outrange_4))
+  for(size_t i = 0; i < npix * ch; i+=ch)
+  {
+    const double a = ch == 1 ? dat_a[i] : (dat_a[i] + dat_a[i+1] + dat_a[i+2]) / 3.0;
+    const double b = ch == 1 ? dat_b[i] : (dat_b[i] + dat_b[i+1] + dat_b[i+2]) / 3.0;
+    const double d = a - b;
+    const double ad = fabs(d);
+    outrange_2 += ad > 2.0 * stddev ? 1 : 0;
+    outrange_4 += ad > 4.0 * stddev ? 1 : 0;
+  }
+
   dt_print_pipe(DT_DEBUG_ALWAYS, "OpenCL diff stats", NULL, self, devid, NULL, NULL,
-           "(%dx%d)  max_abs_diff=%.6e  max_rel_diff=%.6e  stddev=%.6e  mean_diff=%+.6e",
-           width, height, max_abs, max_rel, stddev, mean);
+           "(%4dx%4d) max_diff=%.5e  stddev=%.5e  mean_diff=%+.5e  S2:%6d (%.1f%%)  S4:%6d (%.1f%%)",
+           width, height, max_abs, stddev, mean,
+           outrange_2, 100.0f * (float)outrange_2 / (float)npix,
+           outrange_4, 100.0f * (float)outrange_4 / (float)npix);
 }
 
 static void _opencl_dump_diff_pipe_pfm(dt_dev_pixelpipe_t *pipe,
@@ -3995,6 +4063,10 @@ float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
       // search backward from target for a valid cached raster mask
       GList *start_iter = NULL;
       const float *start_data = NULL;
+      // the length of start_data, for the final copy to check against rather
+      // than trust final_roi. 0 while start_data is the source mask, which is
+      // never copied out
+      size_t start_floats = 0;
 
       // find target position so we can walk backward
       GList *target_iter = NULL;
@@ -4023,6 +4095,7 @@ float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
             {
               start_iter = g_list_next(iter);
               start_data = it_piece->raster_mask_cache.data;
+              start_floats = it_piece->raster_mask_cache.size / sizeof(float);
               final_roi = &it_piece->raster_mask_cache.roi;
               dt_print_pipe(DT_DEBUG_MASKS | DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
                             "raster mask cache hit",
@@ -4043,11 +4116,13 @@ float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
       {
         start_iter = g_list_next(source_iter);
         start_data = raster_mask;
+        start_floats = 0;
       }
 
       // walk forward using ping-pong buffers
       int buf_idx = 0;
       const float *inmask = start_data;
+      size_t inmask_floats = start_floats;
 
       for(GList *iter = start_iter; iter; iter = g_list_next(iter))
       {
@@ -4088,6 +4163,7 @@ float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
             _update_raster_mask_cache(it_piece, out, roo, source_piece, raster_mask_id);
 
             inmask = out;
+            inmask_floats = piece->pipe->mask_distort_buf_size[buf_idx] / sizeof(float);
             final_roi = roo;
             buf_idx = 1 - buf_idx;
           }
@@ -4106,6 +4182,22 @@ float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
       if(inmask != raster_mask)
       {
         const size_t num_floats = (size_t)final_roi->width * final_roi->height;
+
+        /* final_roi and inmask are set together above, so this should hold.
+           Check it anyway rather than read past the end of the buffer, and log
+           both sizes if it ever fails
+        */
+        if(num_floats > inmask_floats)
+        {
+          dt_print_pipe(DT_DEBUG_ALWAYS,
+                        "RASTER BUFFER TOO SMALL",
+                        piece->pipe, target_module, DT_DEVICE_NONE, NULL, final_roi,
+                        "from module `%s%s', mask holds %zu floats, roi wants %zu",
+                        raster_mask_source->op, dt_iop_get_instance_id(raster_mask_source),
+                        inmask_floats, num_floats);
+          goto failure;
+        }
+
         float *result = dt_iop_image_alloc(final_roi->width, final_roi->height, 1);
         if(result)
         {

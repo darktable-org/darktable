@@ -763,7 +763,7 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img,
 
   img->width = jpg.width;
   img->height = jpg.height;
-  uint8_t *tmp = dt_alloc_align_uint8(4 * jpg.width * jpg.height);
+  uint8_t *tmp = dt_alloc_align_uint8((size_t)4 * jpg.width * jpg.height);
   if(!tmp)
   {
     return DT_IMAGEIO_LOAD_FAILED;

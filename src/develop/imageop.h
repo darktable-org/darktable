@@ -263,6 +263,8 @@ typedef struct dt_iop_module_t
   GtkWidget *instance_name;
   /** this is the module mask indicator, inside header */
   GtkWidget *mask_indicator;
+  /** shown in the header while the mask is locked, click to unlock */
+  GtkWidget *mask_lock_indicator;
   /** expander containing the widget and flag to store expanded state */
   GtkWidget *expander;
   gboolean expanded;
@@ -423,6 +425,11 @@ void dt_iop_load_default_params(dt_iop_module_t *module);
 void dt_iop_gui_init(dt_iop_module_t *module);
 /** reloads certain gui/param defaults when the image was switched. */
 void dt_iop_reload_defaults(dt_iop_module_t *module);
+/** resets the params and blend params of `module` to their defaults, as its
+    reset button does: its mask goes, but a locked one stays
+    (dt_develop_blend_keep_locked_mask), and the own shapes of an
+    IOP_FLAGS_NO_MASKS module go whatever the lock */
+void dt_iop_reset_params(dt_iop_module_t *module);
 
 extern const struct dt_action_def_t dt_action_def_iop;
 
@@ -563,6 +570,7 @@ gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,
 
 /** add/remove mask indicator to iop module header */
 void dt_iop_add_remove_mask_indicator(dt_iop_module_t *module, gboolean add);
+void dt_iop_add_remove_mask_lock_indicator(dt_iop_module_t *module, const gboolean add);
 
 /** Set the trouble message for the module.  If non-empty, also flag
  ** the module as being in trouble; if empty or NULL, clear the

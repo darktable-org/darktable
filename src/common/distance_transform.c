@@ -115,7 +115,7 @@ float dt_image_distance_transform(const float *const src,
 
   const size_t maxdim = MAX(width, height);
   float max_distance = 0.0f;
-  DT_OMP_PRAGMA(parallel reduction(max : max_distance)
+  DT_OMP_PRAGMA(parallel num_threads(darktable.num_openmp_threads) reduction(max : max_distance)
                 dt_omp_firstprivate(out, maxdim, width, height))
   {
     float *f = dt_alloc_align_float(maxdim);

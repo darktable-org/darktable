@@ -674,7 +674,7 @@ gboolean dt_imageio_large_thumbnail(const char *filename,
     if(dt_imageio_jpeg_decompress_header(buf, bufsize, &jpg))
       goto error;
 
-    *buffer = dt_alloc_align_uint8(4 * jpg.width * jpg.height);
+    *buffer = dt_alloc_align_uint8((size_t)4 * jpg.width * jpg.height);
     if(!*buffer) goto error;
 
     *width = jpg.width;
@@ -1798,6 +1798,30 @@ cairo_surface_t *dt_imageio_preview(const dt_imgid_t imgid,
     (dat.buf, CAIRO_FORMAT_RGB24, dat.head.width, dat.head.height, stride);
 
   return surface;
+}
+
+void dt_imageio_pq_light_level(const float *const rgba,
+                               const size_t npixels,
+                               float *const max_cll,
+                               float *const max_fall)
+{
+  float peak = 0.0f;
+  double sum = 0.0;
+
+  // dt_hdr_pq_decode() maps NaN to black and clamps Inf to the PQ maximum,
+  // so neither can poison the sum or overflow the writers' integer fields
+  DT_OMP_FOR_SIMD(reduction(max : peak) reduction(+ : sum))
+  for(size_t k = 0; k < npixels; k++)
+  {
+    const float *const px = &rgba[4 * k];
+    const float nits = DT_HDR_REFERENCE_WHITE_NITS
+      * dt_hdr_pq_decode(fmaxf(fmaxf(px[0], px[1]), px[2]));
+    peak = fmaxf(peak, nits);
+    sum += nits;
+  }
+
+  *max_cll = peak;
+  *max_fall = npixels ? (float)(sum / (double)npixels) : 0.0f;
 }
 
 // clang-format off

@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 /** this is the view for the darkroom module.  */
 
@@ -325,10 +326,10 @@ static gboolean _darkroom_module_is_active(const dt_iop_module_t *module)
   return FALSE;
 }
 
-void _display_module_trouble_message_callback(gpointer instance,
-                                              dt_iop_module_t *module,
-                                              const char *const trouble_msg,
-                                              const char *const trouble_tooltip)
+static void _display_module_trouble_message_callback(gpointer instance,
+                                                     dt_iop_module_t *module,
+                                                     const char *const trouble_msg,
+                                                     const char *const trouble_tooltip)
 {
   if(!module || !instance || dt_view_get_current() != DT_VIEW_DARKROOM)
     return;
@@ -784,8 +785,10 @@ void expose(dt_view_t *self,
   */
   // Mask editing (including creation) is the only state that relaxes the pan
   // clamp to allow the viewport past the image; it is disabled while the crop
-  // overlay is active, so form_visible is NULL there.
-  const gboolean mask_editing = dev->form_visible != NULL;
+  // overlay is active, so form_visible is NULL there. The import menu's
+  // preview draws shapes in the same frame, whatever the module shows
+  const gboolean mask_editing = dev->form_visible != NULL
+    || (dev->form_gui && dev->form_gui->import_preview);
 
   float sb_zoom_x = zoom_x, sb_zoom_y = zoom_y, sb_boxw = boxw, sb_boxh = boxh;
   if(boxw > 0.95f)
@@ -1076,13 +1079,13 @@ void expose(dt_view_t *self,
 
   dt_iop_module_t *dmod = dev->gui_module;
 
-  // display mask if we have a current module activated or if the
-  // masks manager module is expanded
+  // display mask if we have a current module activated
   const gboolean display_masks =
-    (dmod && dmod->enabled && dt_dev_modulegroups_test_activated(darktable.develop))
-    || dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
+    dmod && dmod->enabled && dt_dev_modulegroups_test_activated(darktable.develop);
 
-  if(dev->form_visible && display_masks)
+  // the import menu's preview shows even while this module's mask is hidden
+  if((dev->form_visible && display_masks)
+     || (dmod && dev->form_gui && dev->form_gui->import_preview))
   {
     dt_print_pipe(DT_DEBUG_EXPOSE,
         "expose masks",
@@ -1114,7 +1117,9 @@ void expose(dt_view_t *self,
     const float corr_x = CLAMP((zoom_x - zoom_x_vp) * wd, -max_corr, max_corr);
     const float corr_y = CLAMP((zoom_y - zoom_y_vp) * ht, -max_corr, max_corr);
     cairo_translate(cri, corr_x, corr_y);
-    dt_masks_events_post_expose(dmod, cri, width, height, 0.0f, 0.0f, zoom_scale);
+    dt_masks_import_preview_post_expose(cri, zoom_scale);
+    if(dev->form_visible && display_masks)
+      dt_masks_events_post_expose(dmod, cri, width, height, 0.0f, 0.0f, zoom_scale);
     cairo_restore(cri);
   }
 
@@ -1984,37 +1989,42 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w,
   dt_gui_favorite_presets_menu_show(w);
 }
 
-static void _darkroom_ui_apply_style_activate_callback(GtkMenuItem *menuitem,
-                                                       const dt_stylemenu_data_t *menu_data)
+static void _darkroom_ui_apply_style_activate_callback(GSimpleAction *action,
+                                                       GVariant *parameter,
+                                                       gpointer user_data)
 {
-  if(dt_gui_menuitem_activated_by_keyboard(GTK_WIDGET(menuitem)))
-    dt_styles_apply_to_dev(menu_data->name, darktable.develop->image_storage.id);
-}
+  const dt_stylemenu_data_t *menu_data = (dt_stylemenu_data_t *)g_variant_get_uint64(parameter);
 
-static void _darkroom_ui_apply_style_button_callback(GtkGestureSingle *gesture,
-                                                     gint n_press,
-                                                     gdouble x,
-                                                     gdouble y,
-                                                     const dt_stylemenu_data_t *menu_data)
-{
-  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
-    dt_styles_apply_to_dev(menu_data->name, darktable.develop->image_storage.id);
-  else
-    dt_shortcut_copy_lua(NULL, menu_data->name);
+  dt_styles_apply_to_dev(menu_data->name, darktable.develop->image_storage.id);
+  dtgtk_stylemenu_free_menu_data();
 }
 
 static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w,
                                                gpointer user_data)
 {
-  /* if we got any styles, lets popup menu for selection */
-  GtkMenuShell *menu =
-    dtgtk_build_style_menu_hierarchy(FALSE,
-                                     _darkroom_ui_apply_style_activate_callback,
-                                     _darkroom_ui_apply_style_button_callback,
-                                     user_data);
-  if(menu)
+  GActionGroup *action_group = gtk_widget_get_action_group(w, "styles");
+  if(action_group == NULL)
   {
-    dt_gui_menu_popup(GTK_MENU(menu), w, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
+    GActionEntry action_entries[] =
+    {
+      { "activate", _darkroom_ui_apply_style_activate_callback, "t", NULL },
+    };
+
+    action_group = G_ACTION_GROUP(g_simple_action_group_new());
+    g_action_map_add_action_entries(G_ACTION_MAP(action_group),
+                                    action_entries,
+                                    G_N_ELEMENTS(action_entries),
+                                    NULL);
+    gtk_widget_insert_action_group(w, 
+                                   "styles",
+                                   G_ACTION_GROUP(action_group));
+  }
+
+  /* if we got any styles, lets popup menu for selection */
+  GtkWidget *popover_menu = dtgtk_build_style_popover_menu(w, FALSE, user_data);
+  if(popover_menu)
+  {
+    gtk_popover_popup(GTK_POPOVER(popover_menu));
   }
   else
     dt_control_log(_("no styles have been created yet"));
@@ -2148,6 +2158,44 @@ static void _latescaling_quickbutton_clicked(GtkWidget *w,
 }
 
 /* overlay color */
+static void _masks_panel_quickbutton_clicked(GtkWidget *widget,
+                                             gpointer user_data)
+{
+  // dt_iop_gui_blend_masks_panel_sync_toolbox drives this button with
+  // gtk_toggle_button_set_active, which emits "clicked" too -- without this the
+  // button would toggle the panel straight back every time it was synced
+  if(darktable.gui->reset) return;
+  dt_iop_gui_blend_masks_panel_toggle();
+  // the toggle only reports the panel's state, it does not own it: the panel
+  // may refuse to move (no focused module with a mask panel), so re-read rather
+  // than leave the button showing a change that did not happen
+  dt_iop_gui_blend_masks_panel_sync_toolbox();
+}
+
+// right-click opens the blending options, the way the guides icon's right-click
+// opens the guide settings. Left-click keeps showing and hiding the panel.
+static void _masks_panel_quickbutton_right_click(GtkGestureSingle *gesture,
+                                                 int n_press,
+                                                 double x,
+                                                 double y,
+                                                 gpointer user_data)
+{
+  if(n_press > 1) return;
+  GtkWidget *widget = dt_gui_get_widget(gesture);
+  // the toggle shortcut reaches the button through this gesture too, as a
+  // synthetic primary press (see _action_process_toggle)
+  if(dt_gui_current_button(gesture) == GDK_BUTTON_PRIMARY)
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),
+                                 !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+    return;
+  }
+  // the public entry point resolves the module itself and still opens a useful
+  // menu when nothing is focused, which is the case a toolbar button has to
+  // survive but a module's own header button never sees
+  dt_iop_gui_blend_masks_options_popup(GTK_BUTTON(widget), NULL);
+}
+
 static void _guides_quickbutton_clicked(GtkWidget *widget,
                                         gpointer user_data)
 {
@@ -2671,6 +2719,31 @@ static void _brush_size_down_callback(dt_action_t *action)
     dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, 0);
 }
 
+#ifdef HAVE_AI
+// a key handler on the main window, not an action: an action would claim
+// escape for the whole view (accelerators.c:5041); this takes it only during
+// an edit. a focused entry or popup still gets it first (accelerators.c:5003),
+// and with no shortcut on it the dispatcher hands it back to the window
+// whichever widget has the focus, a mask manager slider included. the cost:
+// it cannot be remapped
+static gboolean _escape_key_pressed(GtkEventControllerKey *controller,
+                                    const guint keyval,
+                                    const guint keycode,
+                                    const GdkModifierType state,
+                                    gpointer user_data)
+{
+  (void)controller;
+  (void)keycode;
+  (void)user_data;
+  if(keyval != GDK_KEY_Escape || !dt_modifier_is(state, 0))
+    return FALSE;
+  // the center widget is shared with the other views
+  if(dt_view_get_current() != DT_VIEW_DARKROOM)
+    return FALSE;
+  return dt_masks_object_cancel_edit();
+}
+#endif
+
 static void _brush_hardness_up_callback(dt_action_t *action)
 {
   dt_develop_t *dev = dt_action_view(action)->data;
@@ -2862,8 +2935,11 @@ static float _action_process_preview(gpointer target,
         dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_RESTORE,
                          0.0f, 0, -1.0f, -1.0f, TRUE);
         lib->full_preview = FALSE;
-        dt_iop_request_focus(lib->full_preview_last_module);
-        dt_masks_set_edit_mode(dt_dev_gui_module(), lib->full_preview_masks_state);
+        if(lib->full_preview_last_module)
+        {
+          dt_iop_request_focus(lib->full_preview_last_module);
+          dt_masks_set_edit_mode(lib->full_preview_last_module, lib->full_preview_masks_state);
+        }
         dt_dev_invalidate(darktable.develop);
         dt_control_queue_redraw_center();
         dt_control_navigation_redraw();
@@ -2879,26 +2955,27 @@ static float _action_process_preview(gpointer target,
         // we hide all panels
         for(int k = 0; k < DT_UI_PANEL_SIZE; k++)
           dt_ui_panel_show(darktable.gui->ui, k, FALSE, FALSE);
-        // we remember the masks edit state
+
+        // we remember the gui_module and its masks edit state
         dt_iop_module_t *gui_module = dt_dev_gui_module();
+        lib->full_preview_last_module = gui_module;
+        lib->full_preview_masks_state = 0;
         if(gui_module)
         {
           dt_iop_gui_blend_data_t *bd = gui_module->blend_data;
           if(bd) lib->full_preview_masks_state = bd->masks_shown;
+          // we quit the active iop if any
+          dt_iop_request_focus(NULL);
         }
         // we set the zoom values to "fit" after storing previous settings
         dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_FULL_PREVIEW,
                          0.0f, 0, -1.0f, -1.0f, TRUE);
-        // we quit the active iop if any
-        lib->full_preview_last_module = gui_module;
-        dt_iop_request_focus(NULL);
         gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
         dt_dev_invalidate(darktable.develop);
         dt_control_queue_redraw_center();
       }
     }
   }
-
   return (float)lib->full_preview;
 }
 
@@ -3754,6 +3831,34 @@ void gui_init(dt_view_t *self)
     DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, _guides_view_changed);
   }
 
+  /* mask panel toggle, last so it sits at the right-hand end of the toolbar.
+     The fixed, labeled, discoverable way to the mask panel: the panel's own
+     edge sliver is quicker to reach from the canvas but is only visible while
+     the panel is folded, and says nothing about itself until hovered. */
+  {
+    dev->masks_panel_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_masks_panel, 0, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = _("show/hide the blend mask panel of the focused module"),
+          .action = sa,
+          .action_label = N_("blend mask panel"),
+          .action_def = &dt_action_def_toggle,
+          .clicked_cb = G_CALLBACK(_masks_panel_quickbutton_clicked),
+          .clicked_data = dev,
+        });
+    // the panel's on-screen state is shown as a highlighted, bordered box round
+    // the icon rather than by the icon itself, which is busy saying whether the
+    // module has a mask at all (see dt_iop_gui_blend_masks_panel_sync_toolbox)
+    dt_gui_add_class(dev->masks_panel_button, "dt_masks_panel_toggle");
+    // and the blending options hang off a right-click here, the way the guides
+    // icon two along carries its guide settings: this is where the panel's
+    // presence is established, so it is where its settings belong
+    dt_gui_connect_click_secondary(dev->masks_panel_button,
+                                   _masks_panel_quickbutton_right_click, NULL, NULL);
+    dt_view_manager_module_toolbox_add(darktable.view_manager,
+                                       dev->masks_panel_button, DT_VIEW_DARKROOM);
+    dt_gui_add_help_link(dev->masks_panel_button, "masks_blending");
+  }
+
   darktable.view_manager->proxy.darkroom.get_layout = _lib_darkroom_get_layout;
   dev->full.border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
 
@@ -3806,6 +3911,11 @@ void gui_init(dt_view_t *self)
                      _brush_size_up_callback, 0, 0);
   dt_action_register(DT_ACTION(self), N_("decrease brush size"),
                      _brush_size_down_callback, 0, 0);
+
+#ifdef HAVE_AI
+  // see _escape_key_pressed for why this is not an action
+  dt_gui_connect_key(dt_ui_main_window(darktable.gui->ui), _escape_key_pressed, NULL);
+#endif
 
   // brush hardness +/-
   dt_action_register(DT_ACTION(self), N_("increase brush hardness"),
@@ -4035,6 +4145,10 @@ void enter(dt_view_t *self)
   // clean the undo list
   dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
 
+  // before any module takes focus, so the canvas is laid out with the edge
+  // strips' room from the start
+  dt_ui_flexi_panel_set_in_view(darktable.gui->ui, TRUE);
+
   /* connect to ui pipe finished signal for redraw */
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
                            _darkroom_ui_image_changed_callback);
@@ -4121,18 +4235,21 @@ void enter(dt_view_t *self)
   dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui),
                                  dev->image_storage.id, TRUE);
 
-  // get last active plugin:
+  // get last active plugin, focused only if it was left expanded: collapsing
+  // a module drops its focus, so a collapsed one must not come back focused
   const char *active_plugin = dt_conf_get_string_const("plugins/darkroom/active");
   if(active_plugin)
   {
+    const gboolean expanded = _darkroom_iop_expanded(active_plugin);
     for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = modules->data;
       if(dt_iop_module_is(module, active_plugin))
-        dt_iop_request_focus(module);
+        dt_iop_request_focus(expanded ? module : NULL);
     }
   }
   _expand_focused_instance(dev);
+  dt_iop_gui_blend_masks_panel_sync_toolbox();
 
   // image should be there now.
   dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, -1.f, 1, 0.0f, 0.0f, TRUE);
@@ -4217,6 +4334,24 @@ static inline void _clear_pipecache(dt_dev_pixelpipe_t *pipe)
 
 void leave(dt_view_t *self)
 {
+  // ask a running pipe (a full-resolution reprocess can take seconds on a
+  // mask-heavy image) to abort at its next checkpoint. First of all:
+  // dt_image_update_final_size, via dt_dev_pixelpipe_get_dimensions, waits
+  // on full.pipe->busy_mutex, which the running worker holds, before the
+  // full.pipe->mutex locks below. As in _darkroom_ui_second_window_cleanup
+  {
+    dt_develop_t *dev0 = self->data;
+    dt_dev_pixelpipe_set_shutdown(dev0->preview_pipe, DT_DEV_PIXELPIPE_STOP_NODES);
+    dt_dev_pixelpipe_set_shutdown(dev0->preview2.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
+    dt_dev_pixelpipe_set_shutdown(dev0->full.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
+  }
+
+  // flexi masks panel (the canvas position) is darkroom-only window chrome,
+  // not per-view lib content -- hide it and its edge strips explicitly, since
+  // nothing else does this when leaving the view
+  dt_ui_flexi_panel_set_collapsed(darktable.gui->ui, TRUE, FALSE, FALSE);
+  dt_ui_flexi_panel_set_in_view(darktable.gui->ui, FALSE);
+
   dt_iop_color_picker_cleanup();
   if(darktable.lib->proxy.colorpicker.picker_proxy)
     dt_iop_color_picker_reset(darktable.lib->proxy.colorpicker.picker_proxy->module, FALSE);
@@ -4542,7 +4677,15 @@ void mouse_moved(dt_view_t *self,
     else
     {
       const int32_t bs = dev->full.border_size;
-      const float dx = MIN(0, x - bs) + MAX(0, x - dev->full.width  - bs);
+      // dragging a mask handle past the edge scrolls the canvas after it. What
+      // counts as the edge is where the canvas stops being *visible*: an
+      // overlay panel standing on one side of it (the masks panel) covers a
+      // strip that the pointer can still travel over, where the drag would
+      // neither scroll nor show the handle. Both are 0 with nothing covering
+      // the canvas
+      const int32_t ol = dev->full.occlusion_left;
+      const int32_t orr = dev->full.occlusion_right;
+      const float dx = MIN(0, x - bs - ol) + MAX(0, x - dev->full.width  - bs + orr);
       const float dy = MIN(0, y - bs) + MAX(0, y - dev->full.height - bs);
       if(fabsf(dx) + fabsf(dy) > 0.5f)
         dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.f, 0, dx, dy, TRUE);

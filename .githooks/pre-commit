@@ -1,27 +1,30 @@
 #!/bin/bash
 
-# Hash using its key as a search Regex, and its value as associated
-# error message.
+# Prints the error message for a path that must not be committed without
+# --no-verify, nothing otherwise. A case statement rather than an
+# associative array: macOS ships bash 3.2, which has no declare -A.
 
-declare -A PATTERNS;
-PATTERNS['src/external/rawspeed']="use --no-verify to change rawspeed";
-PATTERNS['src/external/OpenCL']="use --no-verify to change OpenCL";
-PATTERNS['src/external/libxcf']="use --no-verify to change libxcf";
-PATTERNS['src/external/whereami']="use --no-verify to change whereami";
-PATTERNS['src/tests/integration']="use --no-verify to change integration";
+_protected_path_error()
+{
+    case "$1" in
+        src/external/rawspeed) echo "use --no-verify to change rawspeed" ;;
+        src/external/OpenCL) echo "use --no-verify to change OpenCL" ;;
+        src/external/libxcf) echo "use --no-verify to change libxcf" ;;
+        src/external/whereami) echo "use --no-verify to change whereami" ;;
+        src/tests/integration) echo "use --no-verify to change integration" ;;
+    esac
+}
 
-# Loop over staged files and check for any specific pattern listed in
-# PATTERNS keys.
+# Loop over staged files and check for any of the protected paths.
 # Filter only added (A), copied (C), modified (M) files
 
-declare -a errors
+errors=()
 
 for file in $(git diff --staged --name-only --diff-filter=ACM --no-color); do
-    for elem in ${!PATTERNS[*]} ; do
-        if [ -n "${PATTERNS[${file}]}" ]; then
-            errors+=("${PATTERNS[${file}]}")
-        fi
-    done
+    error=$(_protected_path_error "${file}")
+    if [ -n "${error}" ]; then
+        errors+=("${error}")
+    fi
 done
 
 # Print errors

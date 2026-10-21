@@ -215,6 +215,9 @@ static inline void guide_laplacians(const float *const restrict high_freq,
   const float *const restrict LF = DT_IS_ALIGNED(low_freq);
   const float *const restrict HF = DT_IS_ALIGNED(high_freq);
 
+  const uint32_t splitmix32_1337 = splitmix32(1337);
+  const uint32_t splitmix32_666 = splitmix32(666);
+
   DT_OMP_FOR()
   for(size_t row = 0; row < height; ++row)
   {
@@ -340,7 +343,10 @@ static inline void guide_laplacians(const float *const restrict high_freq,
       if((scale & LAST_SCALE) && salt && alpha > 0.f)
       {
         // Init random number generator
-        uint32_t DT_ALIGNED_ARRAY state[4] = { splitmix32(j + 1), splitmix32((j + 1) * (i + 3)), splitmix32(1337), splitmix32(666) };
+        uint32_t DT_ALIGNED_ARRAY state[4] = { splitmix32(j + 1),
+                                               splitmix32((j + 1) * (i + 3)),
+                                               splitmix32_1337,
+                                               splitmix32_666 };
         xoshiro128plus(state);
         xoshiro128plus(state);
         xoshiro128plus(state);

@@ -198,6 +198,18 @@ jobs:
           git config submodule.src/tests/integration.update none
           git submodule update
           cd -
+      # the catalog unit tests import a few raw files from the integration
+      # test images; check out only images/ of the pinned commit (~95 MB),
+      # not the whole test repository (~1 GB)
+      - name: Get the integration test images for the unit tests
+        if: matrix.target == 'build'
+        run: |
+          cd src
+          sparse_update='!f() { git sparse-checkout set --no-cone /images/ && git checkout -f -q "$1"; }; f'
+          git -c "submodule.src/tests/integration.update=${sparse_update}" \
+              submodule update --init --depth 1 --filter=blob:none src/tests/integration
+          du -sh src/tests/integration/images
+          cd -
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}";
