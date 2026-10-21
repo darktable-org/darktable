@@ -105,6 +105,7 @@ typedef struct dt_control_export_t
   dt_colorspaces_color_profile_type_t icc_type;
   gchar *icc_filename;
   dt_iop_color_intent_t icc_intent;
+  int pq_peak_nits;
   gchar *metadata_export;
 } dt_control_export_t;
 
@@ -2096,6 +2097,9 @@ static int32_t _control_export_job_run(dt_job_t *job)
   GList *t = params->index;
   double prev_time = 0;
 
+  // the peak set when the export was queued, not the setting's current value
+  dt_ioppr_set_thread_pq_peak_nits(settings->pq_peak_nits);
+
   while(t && !_job_cancelled(job))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
@@ -2148,6 +2152,7 @@ static int32_t _control_export_job_run(dt_job_t *job)
     fraction += 1.0 / total;
     _update_progress(job, fraction, &prev_time);
   }
+  dt_ioppr_set_thread_pq_peak_nits(0);
   g_list_free_full(metadata.list, g_free);
 
   if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
@@ -2747,6 +2752,7 @@ void dt_control_export(GList *imgid_list,
                        const dt_colorspaces_color_profile_type_t icc_type,
                        const gchar *icc_filename,
                        const dt_iop_color_intent_t icc_intent,
+                       const int pq_peak_nits,
                        const gchar *metadata_export)
 {
   dt_job_t *job = dt_control_job_create(&_control_export_job_run, "export");
@@ -2803,6 +2809,7 @@ void dt_control_export(GList *imgid_list,
   data->icc_type = icc_type;
   data->icc_filename = g_strdup(icc_filename);
   data->icc_intent = icc_intent;
+  data->pq_peak_nits = pq_peak_nits;
   data->metadata_export = g_strdup(metadata_export);
 
   dt_control_job_add_progress(job, _("export images"), TRUE);

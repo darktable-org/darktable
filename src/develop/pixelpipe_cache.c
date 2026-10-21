@@ -122,6 +122,8 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
   hash = dt_hash(hash, &pipe->work_profile_info, sizeof(pipe->work_profile_info));
   hash = dt_hash(hash, &pipe->output_profile_info, sizeof(pipe->output_profile_info));
   hash = dt_hash(hash, &pipe->export_profile_info, sizeof(pipe->export_profile_info));
+  // the PQ peak is a preference, so the output profile alone does not fix the headroom
+  hash = dt_hash(hash, &pipe->output_headroom, sizeof(pipe->output_headroom));
 
   // go through all modules up to position and compute a hash using the operation and params.
   GList *pieces = pipe->nodes;

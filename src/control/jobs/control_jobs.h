@@ -64,6 +64,7 @@ void dt_control_export(GList *imgid_list,
                        const dt_colorspaces_color_profile_type_t icc_type,
                        const gchar *icc_filename,
                        const dt_iop_color_intent_t icc_intent,
+                       const int pq_peak_nits,
                        const gchar *metadata_export);
 void dt_control_merge_hdr(void);
 void dt_control_import(GList *imgs, const char *datetime_override, const gboolean inplace);
