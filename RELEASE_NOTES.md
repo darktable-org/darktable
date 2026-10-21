@@ -360,6 +360,11 @@ changes (where available).
   opened: going back in the history showed masks from before the step
   that added them.
 
+- Fixed darktable hanging on exit, with its window already gone, after a
+  raw file failed to load during the session. The lock taken while
+  reading the file was not released when the read failed, so every later
+  raw open waited for it forever.
+
 - Fixed shift-click on the selected entry of the history stack, which
   did nothing instead of revealing that module in the right-hand panel.
 

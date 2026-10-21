@@ -55,6 +55,30 @@ int rawspeed_get_number_of_processor_cores()
 
 using namespace rawspeed;
 
+namespace
+{
+// rawspeed throws, and an unlock after the call is skipped when it does
+// common/exif.cc does the same for exiv2, with its Lock class
+class SCOPED_CAPABILITY _mutex_guard
+{
+public:
+  explicit _mutex_guard(dt_pthread_mutex_t *mutex) ACQUIRE(mutex)
+    : _mutex(mutex)
+  {
+    dt_pthread_mutex_lock(mutex);
+  }
+  ~_mutex_guard() RELEASE()
+  {
+    dt_pthread_mutex_unlock(_mutex);
+  }
+  _mutex_guard(const _mutex_guard &) = delete;
+  _mutex_guard &operator=(const _mutex_guard &) = delete;
+
+private:
+  dt_pthread_mutex_t *_mutex;
+};
+} // namespace
+
 static dt_imageio_retval_t dt_imageio_open_rawspeed_sraw (dt_image_t *img,
                                                           const RawImage r,
                                                           dt_mipmap_buffer_t *buf);
@@ -65,7 +89,7 @@ static void dt_rawspeed_load_meta()
   /* Load rawspeed cameras.xml meta file once */
   if(meta == NULL)
   {
-    dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+    const _mutex_guard lock(&darktable.plugin_threadsafe);
     if(meta == NULL)
     {
       char datadir[PATH_MAX] = { 0 }, camfile[PATH_MAX] = { 0 };
@@ -74,7 +98,6 @@ static void dt_rawspeed_load_meta()
       // never cleaned up (only when dt closes)
       meta = new CameraMetaData(camfile);
     }
-    dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   }
 }
 
@@ -186,9 +209,13 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
   {
     dt_rawspeed_load_meta();
 
-    dt_pthread_mutex_lock(&darktable.readFile_mutex);
-    auto [storage, storageBuf] = f.readFile();
-    dt_pthread_mutex_unlock(&darktable.readFile_mutex);
+    // scoped to the read alone: holding the guard for the whole try block
+    // would serialize decoding too
+    auto [storage, storageBuf] = [&f]()
+    {
+      const _mutex_guard lock(&darktable.readFile_mutex);
+      return f.readFile();
+    }();
 
     RawParser t(storageBuf);
     std::unique_ptr<RawDecoder> d = t.getDecoder(meta);
