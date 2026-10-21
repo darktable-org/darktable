@@ -75,7 +75,10 @@ G_BEGIN_DECLS
 #define ROUNDUPDHT(a, b) dt_opencl_dev_roundup_height(a, b)
 
 #define DT_OPENCL_DEFAULT_COMPILE_DEFAULT ("")
-#define DT_OPENCL_DEFAULT_COMPILE_OPTI ("-cl-fast-relaxed-math")
+// not -cl-fast-relaxed-math: it implies -cl-finite-math-only, which lets the
+// compiler fold the kernels' isnan()/isinf() guards to false, and it allows
+// low-precision libm substitutes (erf, pow) on some drivers for no measured gain
+#define DT_OPENCL_DEFAULT_COMPILE_OPTI ("-cl-mad-enable -cl-no-signed-zeros")
 #define DT_CLDEVICE_HEAD ("cldevice_v7_")
 
 // version for current darktable cl kernels reflected in the kernel directory
