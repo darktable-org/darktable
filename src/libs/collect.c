@@ -623,7 +623,7 @@ static void _view_popup_menu_onRemove(GSimpleAction *action,
 }
 
 static void _view_popup_menu(GtkWidget *treeview,
-                             GdkEventButton *event,
+                             GtkTreePath *path,
                              dt_lib_collect_t *d)
 {
   GActionGroup *action_group = gtk_widget_get_action_group(treeview, "collections");
@@ -652,6 +652,13 @@ static void _view_popup_menu(GtkWidget *treeview,
   // popup the menu
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(GTK_WIDGET(treeview), menu);
   g_object_unref(menu);
+  if(path)
+  {
+    GdkRectangle rect;
+    GtkTreeViewColumn *column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), 0);
+    gtk_tree_view_get_background_area(GTK_TREE_VIEW(treeview), path, column, &rect);
+    gtk_popover_set_pointing_to(GTK_POPOVER(popover_menu), &rect);
+  }
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 
@@ -837,7 +844,7 @@ static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
           || dt_modifier_is(mod_state, GDK_CONTROL_MASK)))
   {
     row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, (GdkEventButton *)event, d);
-    _view_popup_menu(treeview, (GdkEventButton *)event, d);
+    _view_popup_menu(treeview, path, d);
 
     if(path) gtk_tree_path_free(path);
     return;
