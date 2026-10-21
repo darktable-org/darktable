@@ -366,6 +366,10 @@ changes (where available).
 
 ## Bug Fixes
 
+- Fixed OpenCL fast mode letting through NaN values that kernels are
+  meant to catch, and using low-precision math functions on some
+  drivers. Fast mode now keeps only the optimizations that are safe.
+
 - Fixed drawn masks appearing too early in the history stack of an
   image that got a style or a pasted history before it was first
   opened: going back in the history showed masks from before the step
