@@ -894,7 +894,7 @@ static gboolean _camctl_update_cameras(const dt_camctl_t *c)
     // have it active while debugging
     if(!(strncmp(testcam->port, "disk:", 5)) && !(darktable.unmuted & DT_DEBUG_CAMCTL))
     {
-      g_free(testcam);
+      _camctl_unused_camera_destroy(testcam);
       continue;
     }
 
@@ -911,7 +911,7 @@ static gboolean _camctl_update_cameras(const dt_camctl_t *c)
                testcam->model, testcam->port);
       camctl->changed_camera = TRUE;
     }
-    g_free(testcam);
+    _camctl_unused_camera_destroy(testcam);
   }
 
   /* check unused_cameras being unplugged */

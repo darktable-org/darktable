@@ -118,6 +118,8 @@ typedef enum dt_opencl_extensions_t
   DT_OPENCL_ATOMIC_FLOAT32 = 2,
   DT_OPENCL_FLOAT64 = 4,
   DT_OPENCL_ATOMIC_INT64 = 8,
+  DT_OPENCL_FMA = 16,
+  DT_OPENCL_EXACT = 32,
 } dt_opencl_extensions_t;
 
 /**

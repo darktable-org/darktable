@@ -321,12 +321,16 @@ static GHashTable *_module_mask_ids(const dt_develop_t *dev)
     const dt_develop_blend_params_t *bp = ((const dt_iop_module_t *)m->data)->blend_params;
     if(bp && dt_is_valid_maskid(bp->mask_id))
       g_hash_table_add(ids, GINT_TO_POINTER(bp->mask_id));
+    if(bp && dt_is_valid_maskid(bp->blend_mask_id))
+      g_hash_table_add(ids, GINT_TO_POINTER(bp->blend_mask_id));
   }
   for(const GList *h = dev->history; h; h = g_list_next(h))
   {
     const dt_develop_blend_params_t *bp = ((const dt_dev_history_item_t *)h->data)->blend_params;
     if(bp && dt_is_valid_maskid(bp->mask_id))
       g_hash_table_add(ids, GINT_TO_POINTER(bp->mask_id));
+    if(bp && dt_is_valid_maskid(bp->blend_mask_id))
+      g_hash_table_add(ids, GINT_TO_POINTER(bp->blend_mask_id));
   }
   return ids;
 }
@@ -406,12 +410,15 @@ static gboolean _group_is_nested(GList *forms, const dt_mask_id_t id)
 // `forms` (see _invert_root). The bit is cleared only once the marker has
 // taken it, so this runs once per params/forms pair however often it is
 // called, and a mask whose group is not in `forms` keeps rendering inverted
-static void _move_polarity_to_root(GList *forms, dt_develop_blend_params_t *bp)
+static void _move_polarity_to_root(const dt_iop_module_t *module,
+                                   GList *forms,
+                                   dt_develop_blend_params_t *bp)
 {
   if(!bp || !(bp->mask_mode & DEVELOP_MASK_FLEXI)) return;
   if(!(bp->mask_combine & DEVELOP_COMBINE_MASKS_POS)) return;
-  if(!dt_is_valid_maskid(bp->mask_id) || _group_is_nested(forms, bp->mask_id)) return;
-  if(_invert_root(dt_masks_get_from_id_ext(forms, bp->mask_id)))
+  const dt_mask_id_t grid = dt_develop_blend_mask_group_id(module, bp);
+  if(!dt_is_valid_maskid(grid) || _group_is_nested(forms, grid)) return;
+  if(_invert_root(dt_masks_get_from_id_ext(forms, grid)))
     bp->mask_combine &= ~(uint32_t)DEVELOP_COMBINE_MASKS_POS;
 }
 
@@ -567,6 +574,23 @@ static void _clear_toplevel_blendif(dt_develop_blend_params_t *n)
   n->blendif = 0;
   memset(n->blendif_parameters, 0, sizeof(n->blendif_parameters));
   memset(n->blendif_boost_factors, 0, sizeof(n->blendif_boost_factors));
+}
+
+// a classic mask that renders a constant becomes a flexi mask with no group, as
+// a uniform blend migrates (dt_masks_migrate_classic_to_flexi()): the panel
+// expects every mask_mode to be DISABLED or flexi. With no form, the flexi
+// renderer fills 1, or 0 with MASKS_POS, which is cleared here, and scales it
+// by the opacity: at zero opacity for an empty mask. The group goes through
+// the setter, as a NO_MASKS module's mask_id is its own shapes
+static void _migrate_to_uniform(const dt_iop_module_t *module,
+                                dt_develop_blend_params_t *n,
+                                const gboolean opaque)
+{
+  _clear_toplevel_blendif(n);
+  n->mask_mode = DEVELOP_MASK_ENABLED | DEVELOP_MASK_FLEXI;
+  dt_develop_blend_set_mask_group_id(module, n, NO_MASKID);
+  n->mask_combine &= ~(uint32_t)DEVELOP_COMBINE_MASKS_POS;
+  if(!opaque) n->opacity = 0.0f;
 }
 
 // DEVELOP_COMBINE_INCL is not an invert of the result: the make_mask()
@@ -751,11 +775,7 @@ static void _migrate_parametric_only(dt_iop_module_t *module,
     opaque = (incl == inv);
   if(branch != DT_COND_REAL)
   {
-    _clear_toplevel_blendif(n);
-    n->mask_mode = DEVELOP_MASK_ENABLED;
-    n->mask_id = NO_MASKID;
-    n->mask_combine &= ~(uint32_t)DEVELOP_COMBINE_MASKS_POS;
-    if(!opaque) n->opacity = 0.0f;
+    _migrate_to_uniform(module, n, opaque);
     return;
   }
 
@@ -874,11 +894,7 @@ static void _migrate_drawn_and_parametric(dt_iop_module_t *module,
 
     const gboolean inv = (o->mask_combine & DEVELOP_COMBINE_INV) != 0;
     const gboolean opaque = (incl != inv);
-    _clear_toplevel_blendif(n);
-    n->mask_mode = DEVELOP_MASK_ENABLED;
-    n->mask_id = NO_MASKID;
-    n->mask_combine &= ~(uint32_t)DEVELOP_COMBINE_MASKS_POS;
-    if(!opaque) n->opacity = 0.0f;
+    _migrate_to_uniform(module, n, opaque);
     return;
   }
 
@@ -892,11 +908,7 @@ static void _migrate_drawn_and_parametric(dt_iop_module_t *module,
       // dt_iop_image_fill() replaces the whole buffer, drawn shapes included,
       // so the shapes change nothing
       const gboolean opaque = (incl != inv);
-      _clear_toplevel_blendif(n);
-      n->mask_mode = DEVELOP_MASK_ENABLED;
-      n->mask_id = NO_MASKID;
-      n->mask_combine &= ~(uint32_t)DEVELOP_COMBINE_MASKS_POS;
-      if(!opaque) n->opacity = 0.0f;
+      _migrate_to_uniform(module, n, opaque);
       return;
     }
 
@@ -976,10 +988,10 @@ static void _migrate_drawn_and_parametric(dt_iop_module_t *module,
 // picks the case in dt_develop_blend_process()'s order: raster wins over any
 // drawn or parametric bit also set, as it does there. Runs at once without a
 // history position, and from dt_masks_finish_flexi_migrations() with one
-static void _dispatch(dt_iop_module_t *module,
-                      const dt_develop_blend_params_t *const o,
-                      dt_develop_blend_params_t *n,
-                      const int history_num)
+static void _dispatch_mode(dt_iop_module_t *module,
+                           const dt_develop_blend_params_t *const o,
+                           dt_develop_blend_params_t *n,
+                           const int history_num)
 {
   if(o->mask_mode & DEVELOP_MASK_RASTER)
   {
@@ -1026,12 +1038,34 @@ static void _dispatch(dt_iop_module_t *module,
   // renderer treats a mode bit alone as ENABLED with it, so this changes
   // nothing it renders
   n->mask_mode |= DEVELOP_MASK_ENABLED;
+}
+
+static void _dispatch(dt_iop_module_t *module,
+                      const dt_develop_blend_params_t *const o,
+                      dt_develop_blend_params_t *n,
+                      const int history_num)
+{
+  if(module->flags() & IOP_FLAGS_NO_MASKS)
+  {
+    // mask_id holds the module's own shapes, never part of its mask. The mask
+    // is built with no group, and its group goes to blend_mask_id
+    // (dt_develop_blend_mask_group_id), leaving the shapes where they are
+    dt_develop_blend_params_t c = *o;
+    c.mask_id = NO_MASKID;
+    const dt_mask_id_t own_shapes = n->mask_id;
+    n->mask_id = NO_MASKID;
+    _dispatch_mode(module, &c, n, history_num);
+    n->blend_mask_id = n->mask_id;
+    n->mask_id = own_shapes;
+  }
+  else
+    _dispatch_mode(module, o, n, history_num);
 
   // the whole-mask invert onto the mask group, now that the group has its
   // marker. Only where nothing re-reads the forms afterwards: on the
   // darkroom-load path dt_masks_read_masks_history() replaces them, so
   // dt_masks_normalize_flexi_groups() does it there, per history item
-  if(history_num < 0) _move_polarity_to_root(module->dev->forms, n);
+  if(history_num < 0) _move_polarity_to_root(module, module->dev->forms, n);
 }
 
 // a migration that creates forms on the darkroom-load path, deferred (see the
@@ -1041,6 +1075,9 @@ typedef struct _pending_flexi_migration_t
   dt_iop_module_t *module;
   dt_develop_blend_params_t classic; // bp's original, pre-migration snapshot
   dt_develop_blend_params_t *bp;     // the live params to update once resolved
+  // not a migration but the forms a stored blend params blob carried
+  // (dt_masks_import_stored_forms()), to add under fresh ids
+  GList *forms;
 } _pending_flexi_migration_t;
 
 void dt_masks_migrate_classic_to_flexi(dt_iop_module_t *module,
@@ -1049,23 +1086,29 @@ void dt_masks_migrate_classic_to_flexi(dt_iop_module_t *module,
 {
   if(!module) return;
 
+  // a NO_MASKS module (retouch, spots) never renders a drawn mask: its
+  // mask_id is its own shapes (dt_blend_may_render_group)
+  if(module->flags() & IOP_FLAGS_NO_MASKS)
+    bp->mask_mode &= ~(uint32_t)DEVELOP_MASK_MASK;
+
   // no mask mode: disabled, or a uniform blend, which renders as a flexi mask
-  // with no group does. The panel relies on every mask_mode being DISABLED or
-  // flexi
+  // with no group does once the combine bits are gone: classic's uniform blend
+  // reads none of them, while the flexi renderer inverts for MASKS_POS and
+  // INV (_migrate_to_uniform). The panel relies on every mask_mode being
+  // DISABLED or flexi
   if(!(bp->mask_mode
        & (DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL | DEVELOP_MASK_RASTER)))
   {
-    if(bp->mask_mode & DEVELOP_MASK_ENABLED)
-    {
-      bp->mask_mode = DEVELOP_MASK_ENABLED | DEVELOP_MASK_FLEXI;
-      bp->mask_id = NO_MASKID;
-    }
+    if(bp->mask_mode & DEVELOP_MASK_ENABLED) _migrate_to_uniform(module, bp, TRUE);
     return;
   }
 
-  // no image to create forms for: dt_develop_blend_legacy_params_from_so(),
-  // converting a built-in preset at module registration. Such presets hold no
-  // shapes, so they stay classic
+  // no image to create forms for: a module with no dev, converting a preset at
+  // module registration (_init_presets() in imageop.c,
+  // dt_develop_blend_legacy_params_from_so()). The mask stays classic, and must
+  // be migrated once an image is there: _init_presets() leaves such a preset
+  // at its stored version, and preset apply and history read migrate a current
+  // one still classic (dt_develop_blend_migrate_classic_mask())
   if(!module->dev) return;
 
   const dt_develop_blend_params_t o = *bp;
@@ -1116,19 +1159,79 @@ static int _current_masks_history_num(const dt_develop_t *dev)
   return num;
 }
 
+// the form ids main.masks_history holds for the image, any snapshot: dev->forms
+// is not this image's yet when the history loads
+static GHashTable *_stored_form_ids(const dt_develop_t *dev)
+{
+  GHashTable *ids = g_hash_table_new(NULL, NULL);
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT DISTINCT formid FROM main.masks_history WHERE imgid = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const dt_mask_id_t formid = sqlite3_column_int(stmt, 0);
+    g_hash_table_add(ids, GINT_TO_POINTER(formid));
+  }
+  sqlite3_finalize(stmt);
+  return ids;
+}
+
+void dt_masks_import_stored_forms(dt_iop_module_t *module,
+                                  dt_develop_blend_params_t *bp,
+                                  GList *forms,
+                                  const int history_num)
+{
+  if(!forms) return;
+  if(!module || !module->dev)
+  {
+    g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+    return;
+  }
+
+  if(history_num >= 0)
+  {
+    // as a migration's new forms: written under the position
+    // dt_masks_read_masks_history() reads as current, once it is known
+    _pending_flexi_migration_t *pending = calloc(1, sizeof(_pending_flexi_migration_t));
+    pending->module = module;
+    pending->bp = bp;
+    pending->forms = forms;
+    module->dev->pending_flexi_migrations =
+      g_list_append(module->dev->pending_flexi_migrations, pending);
+    return;
+  }
+
+  dt_masks_blend_blob_remap(forms, bp, module->dev->forms, NULL);
+  module->dev->forms = g_list_concat(module->dev->forms, forms);
+}
+
 void dt_masks_finish_flexi_migrations(dt_develop_t *dev)
 {
   if(!dev->pending_flexi_migrations) return;
 
   const int history_num = _current_masks_history_num(dev);
+  GHashTable *taken_ids = NULL;
 
   for(GList *l = dev->pending_flexi_migrations; l; l = g_list_next(l))
   {
     _pending_flexi_migration_t *pending = l->data;
 
-    _dispatch(pending->module, &pending->classic, pending->bp, history_num);
+    if(pending->forms)
+    {
+      if(!taken_ids) taken_ids = _stored_form_ids(dev);
+      dt_masks_blend_blob_remap(pending->forms, pending->bp, NULL, taken_ids);
+      for(GList *f = pending->forms; f; f = g_list_next(f))
+        dt_masks_write_masks_history_item(dev->image_storage.id, history_num, f->data);
+      // dt_masks_read_masks_history() reads them back
+      g_list_free_full(pending->forms, (GDestroyNotify)dt_masks_free_form);
+    }
+    else
+      _dispatch(pending->module, &pending->classic, pending->bp, history_num);
     free(pending);
   }
+  if(taken_ids) g_hash_table_destroy(taken_ids);
 
   g_list_free(dev->pending_flexi_migrations);
   dev->pending_flexi_migrations = NULL;
@@ -1187,18 +1290,21 @@ static dt_develop_blend_params_t *_params_at(GList *history,
 // either way its marker is not this module's alone
 static gboolean _polarity_movable(dt_develop_t *dev,
                                   GList *forms,
+                                  const dt_iop_module_t *module,
                                   const dt_develop_blend_params_t *bp,
                                   const int limit)
 {
   if(!bp || !(bp->mask_mode & DEVELOP_MASK_FLEXI)) return FALSE;
-  if(!dt_is_valid_maskid(bp->mask_id)) return FALSE;
-  if(!dt_masks_get_from_id_ext(forms, bp->mask_id)) return FALSE;
-  if(_group_is_nested(forms, bp->mask_id)) return FALSE;
+  const dt_mask_id_t grid = dt_develop_blend_mask_group_id(module, bp);
+  if(!dt_is_valid_maskid(grid)) return FALSE;
+  if(!dt_masks_get_from_id_ext(forms, grid)) return FALSE;
+  if(_group_is_nested(forms, grid)) return FALSE;
   int users = 0;
   for(GList *m = dev->iop; m; m = g_list_next(m))
   {
     const dt_develop_blend_params_t *other = _params_at(dev->history, m->data, limit);
-    if(other && (other->mask_mode & DEVELOP_MASK_FLEXI) && other->mask_id == bp->mask_id)
+    if(other && (other->mask_mode & DEVELOP_MASK_FLEXI)
+       && dt_develop_blend_mask_group_id(m->data, other) == grid)
       users++;
   }
   return users == 1;
@@ -1209,12 +1315,13 @@ static gboolean _polarity_movable(dt_develop_t *dev,
 // every tree rendered with it has been inverted
 static void _invert_root_for(dt_develop_t *dev,
                              GList *forms,
+                             const dt_iop_module_t *module,
                              const dt_develop_blend_params_t *bp,
                              const int limit)
 {
   if(!bp || !(bp->mask_combine & DEVELOP_COMBINE_MASKS_POS)) return;
-  if(_polarity_movable(dev, forms, bp, limit))
-    _invert_root(dt_masks_get_from_id_ext(forms, bp->mask_id));
+  if(_polarity_movable(dev, forms, module, bp, limit))
+    _invert_root(dt_masks_get_from_id_ext(forms, dt_develop_blend_mask_group_id(module, bp)));
 }
 
 /* Move the whole-mask invert of every stored state onto its mask group (see
@@ -1247,8 +1354,8 @@ static void _move_history_polarity(dt_develop_t *dev)
   for(GList *l = dev->history; l; l = g_list_next(l)) items[k++] = l->data;
 
   for(GList *m = dev->iop; m; m = g_list_next(m))
-    _invert_root_for(dev, dev->forms, _params_at(dev->history, m->data, dev->history_end),
-                     dev->history_end);
+    _invert_root_for(dev, dev->forms, m->data,
+                     _params_at(dev->history, m->data, dev->history_end), dev->history_end);
 
   for(int i = 0; i < n; i++)
   {
@@ -1257,7 +1364,8 @@ static void _move_history_polarity(dt_develop_t *dev)
     while(next < n && !items[next]->forms) next++;
     const int limit = i < dev->history_end ? MIN(next, dev->history_end) : next;
     for(GList *m = dev->iop; m; m = g_list_next(m))
-      _invert_root_for(dev, items[i]->forms, _params_at(dev->history, m->data, limit), limit);
+      _invert_root_for(dev, items[i]->forms, m->data,
+                       _params_at(dev->history, m->data, limit), limit);
   }
 
   // clear the bit where the tree it renders with took it, so that tree was
@@ -1267,7 +1375,7 @@ static void _move_history_polarity(dt_develop_t *dev)
   {
     if(items[j]->forms) owner = items[j];
     dt_develop_blend_params_t *bp = items[j]->blend_params;
-    if(owner && _polarity_movable(dev, owner->forms, bp, j + 1))
+    if(owner && _polarity_movable(dev, owner->forms, items[j]->module, bp, j + 1))
       bp->mask_combine &= ~(uint32_t)DEVELOP_COMBINE_MASKS_POS;
   }
   g_free(items);
@@ -1289,9 +1397,10 @@ static void _normalize_history_item(const dt_develop_t *dev, dt_dev_history_item
 {
   if(!h->forms || !h->blend_params) return;
   if(!(h->blend_params->mask_mode & DEVELOP_MASK_FLEXI)) return;
-  if(!dt_is_valid_maskid(h->blend_params->mask_id)) return;
+  const dt_mask_id_t grid = dt_develop_blend_mask_group_id(h->module, h->blend_params);
+  if(!dt_is_valid_maskid(grid)) return;
 
-  dt_masks_form_t *grp = dt_masks_get_from_id_ext(h->forms, h->blend_params->mask_id);
+  dt_masks_form_t *grp = dt_masks_get_from_id_ext(h->forms, grid);
   if(!grp) return;
 
   _normalize_group(dev, &h->forms, grp);

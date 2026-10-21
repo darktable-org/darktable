@@ -373,7 +373,7 @@ void process(dt_iop_module_t *self,
     // A reminder, be very careful if you try to optimize the parallel processing loop
     // for not breaking multipass mode and clang/gcc differences.
     // See darktable file history and related problems before doing so.
-    DT_OMP_PRAGMA(parallel)
+    DT_OMP_PRAGMA(parallel num_threads(darktable.num_openmp_threads))
     {
       // direction of the CA shift in a tile
       int GRBdir[2][3];
@@ -1278,6 +1278,7 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
+  free(piece->data);
   piece->data = NULL;
 }
 

@@ -256,9 +256,6 @@ void process(dt_iop_module_t *self,
   {
     output = out;
 
-    if(noise != 0.f)
-      make_noise(output, noise, width, height);
-
     dt_gaussian_t *g = dt_gaussian_init(width, height, ch, RGBmax, RGBmin, sigma_2, 0);
     if(!g) return;
     dt_gaussian_blur_4c(g, input, output);

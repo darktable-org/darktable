@@ -695,7 +695,7 @@ static int _gradient_get_points(dt_develop_t *dev,
   const float xstart = fabsf(curvature) > 1.0f ? -sqrtf(1.0f / fabsf(curvature)) : -1.0f;
   const float xdelta = -2.0f * xstart / (count - 3);
 
-  DT_OMP_FOR(num_threads(nthreads) if(count > 100))
+  DT_OMP_FOR(if(count > 100))
   for(int i = _nb_ctrl_point(); i < count; i++)
   {
     const float xi = xstart + (i - 3) * xdelta;

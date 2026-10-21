@@ -84,9 +84,10 @@ typedef struct
 
 static bench_t B;
 
-/* The prune reads exactly five things: module->dev, the source's users table,
+/* The prune reads exactly six things: module->dev, the source's users table,
    the source's op and multi_priority (through dt_iop_module_is), the pieces in
-   pipe->nodes with their ->enabled and ->blendop_data, and dev->forms. It does
+   pipe->nodes with their ->enabled and ->blendop_data, the sink's flags()
+   (dt_develop_blend_mask_group_id), and dev->forms. It does
    not read the sink's raster_mask.sink, which another pipe's history replay
    clears. Everything else on these structs stays
    zeroed on purpose -- a field this needed but did not set would show up as a
@@ -103,6 +104,8 @@ static void _bench_init(void)
 
   B.source.so = &B.source_so;
   B.sink.so = &B.sink_so;
+  B.source.flags = flexi_fixture_flags;
+  B.sink.flags = flexi_fixture_flags;
   g_strlcpy(B.source.op, SOURCE_OP, sizeof(B.source.op));
   g_strlcpy(B.sink.op, SINK_OP, sizeof(B.sink.op));
   B.source.dev = &B.dev;

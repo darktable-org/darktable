@@ -75,6 +75,11 @@
 // the fixture's live objects, valid between flexi_build() and flexi_teardown()
 extern dt_develop_t flexi_dev;
 extern dt_iop_module_t flexi_module;
+
+/** the flags() of an ordinary blending module. A module's flags() is never
+    NULL in darktable, and dt_develop_blend_mask_group_id() reads it: give one
+    to every module a test builds */
+int flexi_fixture_flags(void);
 extern dt_iop_gui_blend_data_t flexi_bd;
 extern dt_develop_blend_params_t flexi_bp;
 

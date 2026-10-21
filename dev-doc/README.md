@@ -43,6 +43,11 @@ This guide covers building Image Operation (IOP) modules for darktable's darkroo
 | **[masks_data_model.md](masks_data_model.md)** | Flexi masks: the mask as a tree of groups, masks v7 storage, markers and operators |
 | **[flexi_masks/styling.md](flexi_masks/styling.md)** | Restyling the masks panel's icons and colors from a theme or CSS tweaks |
 
+### Library Access
+| File | Description |
+|------|-------------|
+| **[Catalog_Access.md](Catalog_Access.md)** | Reading and writing the library: where SQL goes, the shape of a catalog function, caches, tests |
+
 ### Sidecar Files
 | File | Description |
 |------|-------------|

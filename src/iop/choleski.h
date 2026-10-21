@@ -316,7 +316,7 @@ static inline gboolean pseudo_solve(float *const restrict A,
     return FALSE;
   }
 
-  DT_OMP_PRAGMA(parallel sections)
+  DT_OMP_PRAGMA(parallel sections num_threads(darktable.num_openmp_threads))
   {
     DT_OMP_PRAGMA(section)
     {

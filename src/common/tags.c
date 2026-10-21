@@ -1057,8 +1057,8 @@ GList *dt_tag_get_list_export(const dt_imgid_t imgid,
 
   if(count < 1)
     return NULL;
-  GList *sorted_tags = dt_sort_tag(taglist, 0);
-  sorted_tags = g_list_reverse(sorted_tags);
+  taglist = g_list_reverse(dt_sort_tag(taglist, 0));
+  GList *sorted_tags = taglist;
 
   // reset private if export private
   if(export_private_tags)
@@ -1983,7 +1983,7 @@ ssize_t dt_tag_export(const char *filename)
 
   g_strfreev(hierarchy);
 
-  dt_tag_free_result(&tags);
+  dt_tag_free_result(&sorted_tags);
 
   fclose(fd);
 

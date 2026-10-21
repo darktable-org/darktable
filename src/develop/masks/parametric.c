@@ -176,10 +176,12 @@ static int _parametric_get_mask_roi(const dt_iop_module_t *const module,
   // start fully opaque; make_mask multiplies the channel response into it
   for(size_t k = 0; k < npix; k++) buffer[k] = 1.0f;
 
-  // guide images come from the transient blend context (CPU pipe only)
+  // guide images come from the transient blend context. The OpenCL pipe lends
+  // its device images instead, and the form is evaluated there
   const float *const a = piece->blend_refine_guide_in;
   const float *const b = piece->blend_refine_guide_out;
-  if(!a || !b)
+  const gboolean on_device = piece->blend_refine_cl != NULL;
+  if(!on_device && (!a || !b))
   {
     dt_print(DT_DEBUG_MASKS,
              "[masks] parametric form %d: no guide image available, mask = 1",
@@ -234,8 +236,16 @@ static int _parametric_get_mask_roi(const dt_iop_module_t *const module,
   const dt_iop_roi_t *const rout =
     piece->blend_refine_roi_out ? piece->blend_refine_roi_out : roi;
 
-  dt_print(DT_DEBUG_MASKS, "[masks] parametric form %d: make_mask csp=%d blendif=0x%x",
-           form->formid, saved->blend_cst, p->blendif);
+  dt_print(DT_DEBUG_MASKS, "[masks] parametric form %d: make_mask csp=%d blendif=0x%x%s",
+           form->formid, saved->blend_cst, p->blendif, on_device ? " (OpenCL)" : "");
+
+#ifdef HAVE_OPENCL
+  if(on_device)
+  {
+    dt_develop_blendif_make_mask_cl(pc, &tmp, buffer);
+    return 1;
+  }
+#endif
 
   switch(saved->blend_cst)
   {

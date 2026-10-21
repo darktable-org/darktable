@@ -639,10 +639,10 @@ cmsHPROFILE dt_colorspaces_create_darktable_profile(const char *makermodel)
 static cmsHPROFILE _colorspaces_create_xyz_profile(void)
 {
   cmsHPROFILE hXYZ = cmsCreateXYZProfile();
+  if(hXYZ == NULL) return NULL;
+
   cmsSetPCS(hXYZ, cmsSigXYZData);
   cmsSetHeaderRenderingIntent(hXYZ, INTENT_PERCEPTUAL);
-
-  if(hXYZ == NULL) return NULL;
 
   cmsSetProfileVersion(hXYZ, 2.1);
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);

@@ -503,6 +503,8 @@ static const struct
   { "lib/masks/properties/pressure", "iop/blend/properties/brush pressure" },
   { "lib/masks/properties/shrink or grow", "iop/blend/properties/shrink or grow" },
   { "iop/blend/tools/show and edit mask elements", "iop/blend/tools/edit on canvas" },
+  // matched before unescaping: the label's "/" is saved as "@<"
+  { "iop/blend/tools/display mask and@<or color channel", "iop/blend/tools/display mask" },
   { "iop/blend/mask opacity", "iop/blend/mask brightness" },
   { "iop/blend/tools/toggle polarity of drawn mask",
     "iop/blend/masks/invert output of selected group" },
@@ -1091,6 +1093,27 @@ static void _shortcut_copy_lua(GtkWidget *widget, dt_shortcut_t *shortcut, gchar
   g_free(lua_command);
 }
 
+gchar *dt_shortcut_action_keys(dt_action_t *action,
+                               const dt_view_type_flags_t views,
+                               const gchar *separator)
+{
+  if(!action) return NULL;
+  GString *keys = NULL;
+  for(GSequenceIter *iter = g_sequence_get_begin_iter(darktable.control->shortcuts);
+      !g_sequence_iter_is_end(iter);
+      iter = g_sequence_iter_next(iter))
+  {
+    dt_shortcut_t *s = g_sequence_get(iter);
+    if(s->action != action || !(s->views & views)) continue;
+    if(keys)
+      g_string_append(keys, separator);
+    else
+      keys = g_string_new(NULL);
+    g_string_append(keys, _shortcut_description(s));
+  }
+  return keys ? g_string_free(keys, FALSE) : NULL;
+}
+
 void dt_shortcut_copy_lua(dt_action_t *action, gchar *preset_name)
 {
   GtkWidget *widget = NULL;
@@ -1139,6 +1162,61 @@ static void _tooltip_reposition(GtkWidget *widget,
     gdk_window_move(window, nx, wy);
 }
 
+#if !GTK_CHECK_VERSION(4, 0, 0)
+// GTK3 on Wayland keeps each GtkPopover in its own subsurface.
+// gtk_tooltip_position measures from that subsurface, not the main window.
+// Adjust the tooltip anchor from the pointer position when the content maps.
+typedef struct _tooltip_anchor_t
+{
+  GdkRectangle rect;
+  gint dx;
+} _tooltip_anchor_t;
+
+static _tooltip_anchor_t *_tooltip_popover_anchor(GtkWidget *widget,
+                                                  const gint x,
+                                                  const gint y)
+{
+  // the placement of gtk_tooltip_position, with the pointer where it is
+  GtkWidget *toplevel = gtk_widget_get_toplevel(widget);
+  GtkAllocation top;
+  gtk_widget_get_allocation(toplevel, &top);
+  _tooltip_anchor_t *anchor = g_new0(_tooltip_anchor_t, 1);
+  GdkRectangle *rect = &anchor->rect;
+  gint px = 0, py = 0;
+  gtk_widget_translate_coordinates(widget, toplevel, top.x, top.y, &rect->x, &rect->y);
+  gtk_widget_translate_coordinates(widget, toplevel, top.x + x, top.y + y, &px, &py);
+
+  gint cursor_size = 0;
+  g_object_get(gtk_widget_get_settings(widget),
+               "gtk-cursor-theme-size", &cursor_size, NULL);
+  if(!cursor_size)
+    cursor_size = gdk_display_get_default_cursor_size(gtk_widget_get_display(widget));
+  const gint padding = MAX(4, cursor_size - 32);
+  rect->x -= padding;
+  rect->y -= padding;
+  rect->width = gtk_widget_get_allocated_width(widget) + 2 * padding;
+  rect->height = gtk_widget_get_allocated_height(widget) + 2 * padding;
+
+  if(rect->height > 48 + 8)
+    *rect = (GdkRectangle){ px - 4, py - 4, cursor_size, cursor_size };
+  else
+  {
+    const gint distance = px - (rect->x + rect->width / 2);
+    anchor->dx = distance > 32 ? distance - 32 : distance < -32 ? distance + 32 : 0;
+  }
+  return anchor;
+}
+
+static void _tooltip_move_to_anchor(GtkWidget *content,
+                                    const _tooltip_anchor_t *anchor)
+{
+  GdkWindow *window = gtk_widget_get_window(gtk_widget_get_toplevel(content));
+  if(window)
+    gdk_window_move_to_rect(window, &anchor->rect, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH,
+                            GDK_ANCHOR_FLIP_Y | GDK_ANCHOR_SLIDE_X, anchor->dx, 0);
+}
+#endif
+
 gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
                                       gint x,
                                       gint y,
@@ -1156,6 +1234,12 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
      || darktable.bauhaus->current
      || darktable.gui->hide_tooltips)
     return FALSE;
+
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  // GTK anchors the tooltip to the widget it queried, which the code below may replace by its parent
+  GtkWidget *const queried = widget;
+  const gint queried_x = x, queried_y = y;
+#endif
 
   gchar *markup_text = NULL;
   gchar *description = NULL;
@@ -1352,6 +1436,14 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
   gtk_widget_show_all(vbox);
   gtk_tooltip_set_custom(tooltip, vbox);
   g_signal_connect(G_OBJECT(vbox), "size-allocate", G_CALLBACK(_tooltip_reposition), widget);
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  if(!keyboard_mode
+     && dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND
+     && gtk_widget_get_ancestor(queried, GTK_TYPE_POPOVER))
+    g_signal_connect_data(G_OBJECT(vbox), "map", G_CALLBACK(_tooltip_move_to_anchor),
+                          _tooltip_popover_anchor(queried, queried_x, queried_y),
+                          (GClosureNotify)g_free, 0);
+#endif
 
   return TRUE;
 }
@@ -3013,6 +3105,7 @@ static void _import_extended_clicked(GtkButton *button, gpointer user_data)
       const int lang_len = underscore ? underscore - langcode : strlen(langcode);
       gchar *localized_file = g_strdup_printf("darktable/shortcutsrc.%.*s", lang_len, langcode);
       gchar *shortcuts_file = g_build_filename(sharedir, localized_file, NULL);
+      g_free(localized_file);
       if(g_file_test(shortcuts_file, G_FILE_TEST_EXISTS))
       {
         dt_print(DT_DEBUG_PARAMS,"load localized shortcuts from %s", shortcuts_file);

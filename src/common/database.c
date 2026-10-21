@@ -27,9 +27,11 @@
 #include "common/history.h"
 #include "common/metadata.h"
 #include "common/metadata.h"
+
 #ifdef HAVE_ICU
 #include "common/sqliteicu.h"
 #endif
+
 #include "control/conf.h"
 #include "control/control.h"
 
@@ -3956,14 +3958,18 @@ static gboolean pid_is_alive(int pid)
   if(pid_is_alive)
   {
     gchar *contents;
-    gsize length;
     gchar filename[64];
     snprintf(filename, sizeof(filename), "/proc/%d/cmdline", pid);
 
-    if(g_file_get_contents("", &contents, &length, NULL))
+    if(g_file_get_contents(filename, &contents, NULL, NULL))
     {
       if(strstr(contents, "darktable") == NULL)
       {
+        // If the cmdline of the app with the pid does not contain the string
+        // "darktable," we assume that the pid recorded in the lock file has
+        // been assigned to an unrelated app (this can realistically happen,
+        // for example, after a system reboot). So the recorded pid is not
+        // the pid of the darktable instance that is alive.
         pid_is_alive = FALSE;
       }
       g_free(contents);
@@ -5463,6 +5469,7 @@ char **dt_database_snaps_to_remove(const dt_database_t *db)
     g_object_unref(dat_file);
     g_object_unref(lib_file);
     g_object_unref(lib_parent);
+    return NULL;
   }
 
   gchar *lib_basename = g_file_get_basename(lib_file);

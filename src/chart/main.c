@@ -1917,9 +1917,9 @@ int main(int argc, char *argv[])
   SetErrorMode(SEM_FAILCRITICALERRORS);
 #endif
 
-#ifdef _OPENMP
-  omp_set_num_threads(omp_get_num_procs());
-#endif
+  // the DT_OMP_FOR loops take their thread count from here, and
+  // darktable-chart never runs dt_init(), which normally sets it
+  darktable.num_openmp_threads = dt_get_num_procs();
 
   int res = 1;
   dt_lut_t *self = (dt_lut_t *)calloc(1, sizeof(dt_lut_t));

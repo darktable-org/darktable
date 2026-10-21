@@ -75,10 +75,41 @@ add_cmocka_test(test_flexi_styling
 target_compile_definitions(test_flexi_styling PRIVATE
                            DT_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
+# Presets with a classic mask, through the startup upgrade, preset apply,
+# auto-apply and history read. Starts darktable without GUI on a scratch
+# configdir, with a few integration test images imported.
+set(_flexi_tests_catalog "")
+set(DT_TEST_IMAGES "${CMAKE_SOURCE_DIR}/src/tests/integration/images")
+if(EXISTS "${DT_TEST_IMAGES}/mire1.cr2")
+  add_cmocka_test(test_flexi_presets
+                  SOURCES test_flexi_presets.c
+                  LINK_LIBRARIES lib_darktable cmocka)
+  target_compile_definitions(test_flexi_presets PRIVATE
+    DT_TEST_DATADIR="${CMAKE_BINARY_DIR}/share/darktable"
+    DT_TEST_MODULEDIR="${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/darktable"
+    DT_TEST_IMAGES="${DT_TEST_IMAGES}")
+  list(APPEND _flexi_tests_catalog test_flexi_presets)
+
+  # Presets and styles carrying the forms of a flexi mask, and the classic
+  # masks of older ones, migrated as a history row is.
+  add_cmocka_test(test_flexi_preset_masks
+                  SOURCES test_flexi_preset_masks.c ../catalog/catalog_fixture.c
+                  LINK_LIBRARIES lib_darktable cmocka)
+  target_compile_definitions(test_flexi_preset_masks PRIVATE
+    DT_TEST_DATADIR="${CMAKE_BINARY_DIR}/share/darktable"
+    DT_TEST_MODULEDIR="${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/darktable"
+    DT_TEST_IMAGES="${DT_TEST_IMAGES}")
+  target_include_directories(test_flexi_preset_masks PRIVATE
+                             ${CMAKE_SOURCE_DIR}/src/tests/unittests/catalog)
+  list(APPEND _flexi_tests_catalog test_flexi_preset_masks)
+else()
+  message(WARNING "test_flexi_presets disabled: integration test images missing (git submodule)")
+endif()
+
 foreach(_t test_flexi_model test_flexi_cache test_flexi_persistence test_flexi_dnd
            test_flexi_groups test_flexi_panel test_flexi_migrate test_flexi_compose
            test_flexi_controls test_flexi_ui_coverage test_flexi_raster_prune
-           test_flexi_styling test_probe_image)
+           test_flexi_styling test_probe_image ${_flexi_tests_catalog})
   target_include_directories(${_t} PRIVATE
                              ${CMAKE_CURRENT_SOURCE_DIR}
                              ${CMAKE_SOURCE_DIR}/src)
@@ -86,3 +117,20 @@ foreach(_t test_flexi_model test_flexi_cache test_flexi_persistence test_flexi_d
       _copy_required_library(${_t} lib_darktable)
   endif(WIN32)
 endforeach()
+
+# What a module reset does to its mask, locked or not, on real modules of a
+# headless darktable (the catalog fixture: needs the integration test images)
+set(DT_TEST_IMAGES "${CMAKE_SOURCE_DIR}/src/tests/integration/images")
+if(EXISTS "${DT_TEST_IMAGES}/mire1.cr2")
+  add_cmocka_test(test_flexi_reset
+                  SOURCES test_flexi_reset.c ../catalog/catalog_fixture.c
+                  LINK_LIBRARIES lib_darktable cmocka)
+  target_compile_definitions(test_flexi_reset PRIVATE
+    DT_TEST_DATADIR="${CMAKE_BINARY_DIR}/share/darktable"
+    DT_TEST_MODULEDIR="${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/darktable"
+    DT_TEST_IMAGES="${DT_TEST_IMAGES}")
+  target_include_directories(test_flexi_reset PRIVATE ${CMAKE_SOURCE_DIR}/src)
+  if(WIN32)
+    _copy_required_library(test_flexi_reset lib_darktable)
+  endif(WIN32)
+endif()

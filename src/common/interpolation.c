@@ -459,7 +459,7 @@ static inline void _compute_downsampling_kernel(const dt_interpolation_t *itor,
 
   /* Compute the phase difference between output pixel and its
    * input corresponding input pixel */
-  const float xin = ceil_fast(((float)xout - w) / outoinratio);
+  const float xin = ceilf(((float)xout - w) / outoinratio);
   if(first)
   {
     *first = (int)xin;
@@ -828,7 +828,7 @@ static gboolean _prepare_resampling_plan(const dt_interpolation_t *itor,
   else
   {
     // Downscale... going for worst case values memory wise
-    maxtapsapixel = ceil_fast((float)2 * (float)itor->width / scale);
+    maxtapsapixel = ceilf(2.0f * (float)itor->width / scale);
   }
 
   int nlengths = out;

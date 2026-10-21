@@ -186,6 +186,11 @@ static void _parse_group(_parser_t *ps, dt_masks_form_t *form)
   if(*ps->p++ != '}') fail_msg("expected '}' in layout string");
 }
 
+int flexi_fixture_flags(void)
+{
+  return IOP_FLAGS_SUPPORTS_BLENDING;
+}
+
 // a fresh fixture holding the mask's group form, with no points yet
 static dt_masks_form_t *_start(void)
 {
@@ -205,6 +210,7 @@ static dt_masks_form_t *_start(void)
 
   flexi_bp.mask_id = FLEXI_MASK_ID;
   flexi_bp.mask_mode = DEVELOP_MASK_ENABLED | DEVELOP_MASK_FLEXI;
+  flexi_module.flags = flexi_fixture_flags;
   flexi_module.blend_params = &flexi_bp;
   flexi_module.blend_data = &flexi_bd;
   flexi_module.dev = &flexi_dev;

@@ -159,19 +159,8 @@ static void _update_progress(dt_job_t *job, double fraction, double *prev_time)
 static void _control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t,
                                                       const int32_t filmid)
 {
-  sqlite3_stmt *stmt;
   /* get a list of images in filmroll */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id FROM main.images WHERE film_id = ?1", -1,
-                              &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
-
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
-    t->index = g_list_append(t->index, GINT_TO_POINTER(imgid));
-  }
-  sqlite3_finalize(stmt);
+  t->index = g_list_concat(t->index, dt_film_get_images(filmid));
 }
 
 static void _collection_update(double *last_update,
@@ -367,13 +356,6 @@ static int32_t _control_write_sidecar_files_job_run(dt_job_t *job)
   dt_control_job_set_progress_message(job,
              ngettext("writing sidecar file","writing %zu sidecar files",nb_imgs), nb_imgs);
 
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2
-    (dt_database_get(darktable.db),
-     "UPDATE main.images"
-     " SET write_timestamp = STRFTIME('%s', 'now')"
-     " WHERE id = ?1", -1,
-     &stmt, NULL);
   size_t count = 0;
   double prev_time = 0;
   for(GList *t = params->index ; t && !_job_cancelled(job) ; t = g_list_next(t))
@@ -393,17 +375,13 @@ static int32_t _control_write_sidecar_files_job_run(dt_job_t *job)
       {
         // put the timestamp into db. this can't be done in exif.cc
         // since that code gets called for the copy exporter, too
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-        sqlite3_step(stmt);
-        sqlite3_reset(stmt);
-        sqlite3_clear_bindings(stmt);
+        dt_image_set_write_timestamp_now(imgid);
       }
       dt_image_cache_read_release(img);
     }
     const double fraction = ++count / (double)nb_imgs;
     _update_progress(job, fraction, &prev_time);
   }
-  sqlite3_finalize(stmt);
   return 0;
 }
 
@@ -1097,36 +1075,12 @@ static char *_get_image_list(GList *l)
 
 static void _set_remove_flag(char *imgs)
 {
-  sqlite3_stmt *stmt = NULL;
-  DT_DEBUG_SQLITE3_PREPARE_V2
-    (dt_database_get(darktable.db),
-     "UPDATE main.images SET flags = (flags|?1) WHERE id IN (?2)", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, DT_IMAGE_REMOVE);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgs, -1, SQLITE_STATIC);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  dt_image_add_flags_in_list(imgs, DT_IMAGE_REMOVE);
 }
 
 static GList *_get_full_pathname(char *imgs)
 {
-  sqlite3_stmt *stmt = NULL;
-  GList *list = NULL;
-  // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2
-    (dt_database_get(darktable.db),
-     "SELECT DISTINCT folder || '" G_DIR_SEPARATOR_S "' || filename"
-     " FROM main.images i, main.film_rolls f "
-     "   ON i.film_id = f.id"
-     " WHERE i.id IN (?1)",
-     -1, &stmt, NULL);
-  // clang-format on
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, imgs, -1, SQLITE_STATIC);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    list = g_list_prepend(list, g_strdup((const gchar *)sqlite3_column_text(stmt, 0)));
-  }
-  sqlite3_finalize(stmt);
-  return g_list_reverse(list);  // list was built in reverse order, so un-reverse it
+  return dt_image_get_full_paths_in_list(imgs);
 }
 
 static int32_t _count_images_using_overlay(dt_imgid_t imgid)
@@ -1156,27 +1110,18 @@ static int32_t _control_remove_images_job_run(dt_job_t *job)
   const guint total = g_list_length(t);
   dt_control_job_set_progress_message(job, ngettext("removing %d image",
                                                     "removing %d images", total), total);
-  sqlite3_stmt *stmt = NULL;
-
   // check that we can safely remove the image
   gboolean remove_ok = TRUE;
-  DT_DEBUG_SQLITE3_PREPARE_V2
-    (dt_database_get(darktable.db),
-     "SELECT id FROM main.images WHERE id IN (?2) AND flags&?1=?1",
-     -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, DT_IMAGE_LOCAL_COPY);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgs, -1, SQLITE_STATIC);
-
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  GList *local_copies = dt_image_get_with_flags_in_list(imgs, DT_IMAGE_LOCAL_COPY);
+  for(const GList *l = local_copies; l; l = g_list_next(l))
   {
-    const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
-    if(!dt_image_safe_remove(imgid))
+    if(!dt_image_safe_remove(GPOINTER_TO_INT(l->data)))
     {
       remove_ok = FALSE;
       break;
     }
   }
-  sqlite3_finalize(stmt);
+  g_list_free(local_copies);
   g_free(imgs);
 
   if(!remove_ok)
@@ -1479,8 +1424,6 @@ static int32_t _control_delete_images_job_run(dt_job_t *job)
                                                     "deleting %d images", total)
                                          , total);
 
-  sqlite3_stmt *stmt;
-
   dt_collection_update(darktable.collection);
 
   // We need a list of files to regenerate .xmp files if there are duplicates
@@ -1488,15 +1431,6 @@ static int32_t _control_delete_images_job_run(dt_job_t *job)
 
   free(imgs);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2
-    (dt_database_get(darktable.db),
-     "SELECT COUNT(*)"
-     " FROM main.images"
-     " WHERE filename IN (SELECT filename"
-     "                    FROM main.images"
-     "                    WHERE id = ?1)"
-     "       AND film_id IN (SELECT film_id FROM main.images WHERE id = ?1)",
-     -1, &stmt, NULL);
   double prev_time = 0;
   // loop through all images to delete
   while(t)
@@ -1519,13 +1453,7 @@ static int32_t _control_delete_images_job_run(dt_job_t *job)
     char filename[PATH_MAX] = { 0 };
     dt_image_full_path(imgid, filename, sizeof(filename), NULL);
 
-    int duplicates = 0;
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-      duplicates = sqlite3_column_int(stmt, 0);
-
-    sqlite3_reset(stmt);
-    sqlite3_clear_bindings(stmt);
+    const int duplicates = dt_image_count_same_file(imgid);
 
     // remove from disk:
     if(duplicates == 1)
@@ -1613,8 +1541,6 @@ delete_next_file:
     if(delete_status == _DT_DELETE_STATUS_STOP_PROCESSING)
       break;
   }
-
-  sqlite3_finalize(stmt);
 
   while(list)
   {

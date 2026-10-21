@@ -388,6 +388,16 @@ static void _set_group_name_from_module(const dt_iop_module_t *module,
   g_free(module_label);
 }
 
+// a module's group: with `own`, the shapes an IOP_FLAGS_NO_MASKS module
+// (retouch, spots) uses itself, otherwise its blend mask. The same group for
+// every other module
+static dt_mask_id_t _module_group_id(const dt_iop_module_t *module, const gboolean own)
+{
+  return own ? module->blend_params->mask_id
+             : dt_develop_blend_mask_group_id(module, module->blend_params);
+}
+
+// a clone group is retouch's own list of shapes, never a blend mask
 static dt_masks_form_t *_group_create(dt_develop_t *dev,
                                       const dt_iop_module_t *module,
                                       const dt_masks_type_t type)
@@ -396,7 +406,10 @@ static dt_masks_form_t *_group_create(dt_develop_t *dev,
   _set_group_name_from_module(module, grp);
   _check_id(grp);
   dev->forms = g_list_append(dev->forms, grp);
-  module->blend_params->mask_id = grp->formid;
+  if(type & DT_MASKS_CLONE)
+    module->blend_params->mask_id = grp->formid;
+  else
+    dt_develop_blend_set_mask_group_id(module, module->blend_params, grp->formid);
   return grp;
 }
 
@@ -408,18 +421,20 @@ dt_masks_form_t *dt_masks_module_group_create(dt_develop_t *dev, dt_iop_module_t
 }
 
 static dt_masks_form_t *_group_from_module(const dt_develop_t *dev,
-                                           const dt_iop_module_t *module)
+                                           const dt_iop_module_t *module,
+                                           const gboolean own)
 {
-  return dt_masks_get_from_id(dev, module->blend_params->mask_id);
+  return dt_masks_get_from_id(dev, _module_group_id(module, own));
 }
 
 gboolean dt_masks_is_in_module(const dt_mask_id_t maskid, const dt_iop_module_t *module)
 {
   if(!dt_is_valid_maskid(maskid) || !module) return FALSE;
 
-  if(maskid == module->blend_params->mask_id) return TRUE;
+  const dt_mask_id_t grid = _module_group_id(module, FALSE);
+  if(maskid == grid) return TRUE;
 
-  const dt_masks_form_t *root = dt_masks_get_from_id(module->dev, module->blend_params->mask_id);
+  const dt_masks_form_t *root = dt_masks_get_from_id(module->dev, grid);
   return _group_entry_in(module->dev, root, maskid, NULL, 0) != NULL;
 }
 
@@ -497,7 +512,7 @@ dt_masks_point_group_t *dt_masks_group_insert_point(dt_develop_t *dev,
   // commits (dt_dev_add_masks_history_item)
   const gboolean flexi = !(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE));
   // is there already a masks group for this module ?
-  dt_masks_form_t *grp = _group_from_module(dev, module);
+  dt_masks_form_t *grp = _group_from_module(dev, module, !flexi);
   if(!grp)
   {
     // we create a new group
@@ -563,7 +578,8 @@ void dt_masks_group_insert_member(dt_develop_t *dev,
   {
     dev->form_gui->panel_selected_formid = form->formid;
   }
-  if(module && module->blend_data)
+  // the panel selects what joined the mask, never a retouch shape
+  if(module && module->blend_data && !(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE)))
   {
     dt_iop_gui_blend_data_t *bd = module->blend_data;
     bd->panel_selected_formid = form->formid;
@@ -596,7 +612,7 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev,
     dev->form_gui->formid = form->formid;
     dev->form_gui->panel_selected_formid = form->formid;
   }
-  if(module && module->blend_data)
+  if(module && module->blend_data && !(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE)))
   {
     dt_iop_gui_blend_data_t *bd = module->blend_data;
     bd->panel_selected_formid = form->formid;
@@ -1906,7 +1922,9 @@ static gboolean _is_module_mask(const dt_mask_id_t fid)
   for(const GList *m = dev ? dev->iop : NULL; m; m = g_list_next(m))
   {
     const dt_iop_module_t *mod = m->data;
-    if(mod->blend_params && mod->blend_params->mask_id == fid) return TRUE;
+    if(mod->blend_params
+       && (mod->blend_params->mask_id == fid || mod->blend_params->blend_mask_id == fid))
+      return TRUE;
   }
   return FALSE;
 }
@@ -1922,6 +1940,8 @@ static GHashTable *_module_masks(void)
     const dt_iop_module_t *mod = m->data;
     if(mod->blend_params && dt_is_valid_maskid(mod->blend_params->mask_id))
       g_hash_table_add(ids, GINT_TO_POINTER(mod->blend_params->mask_id));
+    if(mod->blend_params && dt_is_valid_maskid(mod->blend_params->blend_mask_id))
+      g_hash_table_add(ids, GINT_TO_POINTER(mod->blend_params->blend_mask_id));
   }
   return ids;
 }
@@ -2291,6 +2311,17 @@ dt_masks_form_t *dt_masks_get_from_id(const dt_develop_t *dev, const dt_mask_id_
   return dt_masks_get_from_id_ext(dev->forms, id);
 }
 
+gboolean dt_masks_module_mask_in_forms(dt_iop_module_t *module, GList *forms)
+{
+  return module
+    && (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+    && module->blend_params
+    && ((dt_is_valid_maskid(module->blend_params->mask_id)
+         && dt_masks_get_from_id_ext(forms, module->blend_params->mask_id) != NULL)
+        || (dt_is_valid_maskid(module->blend_params->blend_mask_id)
+            && dt_masks_get_from_id_ext(forms, module->blend_params->blend_mask_id) != NULL));
+}
+
 static inline gboolean _sane_val(const float val)
 {
   return !dt_isnan(val) && val >= 0.0f;
@@ -2350,6 +2381,198 @@ static size_t _point_size_at_version(const dt_masks_form_t *form)
   return current;
 }
 
+dt_masks_form_t *dt_masks_form_from_stored(dt_develop_t *dev,
+                                           const dt_imgid_t imgid,
+                                           const dt_mask_id_t formid,
+                                           const dt_masks_type_t type,
+                                           const char *name,
+                                           const int version,
+                                           const void *points,
+                                           const size_t points_bytes,
+                                           const int nb_points,
+                                           const void *source,
+                                           const size_t source_bytes)
+{
+  dt_masks_form_t *form = dt_masks_create(type);
+  if(!form) return NULL;
+  form->formid = formid;
+  g_strlcpy(form->name, name ? name : "", sizeof(form->name));
+  form->version = version;
+  form->points = NULL;
+  if(source && source_bytes == sizeof(float) * 2)
+  {
+    memcpy(form->source, source, sizeof(float) * 2);
+    form->source[2] = 0.0f;
+  }
+  else if(source && source_bytes == sizeof(float) * 3)
+  {
+    memcpy(form->source, source, sizeof(float) * 3);
+  }
+  else if(source && source_bytes == sizeof(float) * 4)
+  {
+    // migration: old format stored an unused scale field as source[3]; drop it
+    memcpy(form->source, source, sizeof(float) * 3);
+  }
+  else
+  {
+    memset(form->source, 0, sizeof(float) * 3);
+  }
+
+  // and now we "read" the blob
+  if(form->functions)
+  {
+    const char *const ptbuf = points;
+    const size_t point_size = form->functions->point_struct_size;
+    const size_t stored_size = _point_size_at_version(form);
+    const size_t blob_size = ptbuf ? points_bytes : 0;
+    // anything but nb_points points at the stored size is corrupt or an
+    // unknown layout, and copying out of it would read past its end. a
+    // group leaves the dropped form out like any it cannot find
+    if(nb_points < 0 || blob_size != (size_t)nb_points * stored_size)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[_dev_read_masks_history] mask %s(%i) of image %i has %zu bytes"
+               " of points, expected %d of %zu at mask version %d, dropped",
+               form->name, formid, imgid, blob_size, nb_points, stored_size,
+               form->version);
+      dt_masks_free_form(form);
+      return NULL;
+    }
+    for(int i = 0; i < nb_points; i++)
+    {
+      // zeroed: a point stored at an older version is shorter than ours,
+      // and dt_masks_legacy_params below defaults the fields added since
+      char *point = calloc(1, point_size);
+      memcpy(point, ptbuf + i*stored_size, stored_size);
+      form->points = g_list_append(form->points, point);
+    }
+
+    // the entry and producer of a pixel form's ref are read as strings,
+    // but a blob from the database or an xmp need not terminate them:
+    // force it here, the one place they enter the tree. by the functions,
+    // which sized the points, not by the type bits: a crafted type can
+    // carry a pixel form's bit along with another's
+    if(form->functions == &dt_masks_functions_object && form->points)
+    {
+      dt_dtdata_ref_t *ref = form->points->data;
+      ref->entry[sizeof(ref->entry) - 1] = '\0';
+      ref->producer[sizeof(ref->producer) - 1] = '\0';
+    }
+  }
+
+  /** For some reason we might find crazy radius or borders here so we check
+      and report via log and a control message.
+      We must never have a negative or NAN border/radius.
+      In case of such errors we set bad values to something that can be handled
+      in the module's mask interface
+  */
+  // a form with no points has nothing to check, and no point to read
+  const gboolean has_points = form->points != NULL;
+  if(has_points && (form->type & DT_MASKS_CIRCLE))
+  {
+    dt_masks_point_circle_t *ref = form->points->data;
+    const gboolean safe_radius = _sane_val(ref->radius);
+    const gboolean safe_border = _sane_val(ref->border);
+    if(!safe_radius || !safe_border)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+           "Image ID=%d has insane circle mask: radius=%.3f border=%.3f",
+           imgid, ref->radius, ref->border);
+      dt_control_log(_("Image ID=%d has insane circle mask: radius=%.3f border=%.3f"),
+        imgid, ref->radius, ref->border);
+      if(!safe_radius)  ref->radius = 0.01f;
+      if(!safe_border)  ref->border = 0.01f * ref->radius;
+    }
+  }
+  else if(has_points && (form->type & DT_MASKS_ELLIPSE))
+  {
+    dt_masks_point_ellipse_t *ref = form->points->data;
+    const gboolean safe_radius0 = _sane_val(ref->radius[0]);
+    const gboolean safe_radius1 = _sane_val(ref->radius[1]);
+    const gboolean safe_border = _sane_val(ref->border);
+    if(!safe_radius0 || !safe_radius1 || !safe_border)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+           "Image ID=%d has insane ellipse mask: radii=%.3f/%.3f, border=%.3f",
+           imgid, ref->radius[0], ref->radius[1], ref->border);
+      dt_control_log(_("Image ID=%d has insane ellipse mask: radii=%.3f/%.3f, border=%.3f"),
+        imgid, ref->radius[0], ref->radius[1], ref->border);
+      if(!safe_radius0) ref->radius[0] = 0.01f;
+      if(!safe_radius1) ref->radius[1] = 0.01f;
+      if(!safe_border)  ref->border = 0.01f * ref->radius[0];
+    }
+  }
+  else if(has_points && (form->type & DT_MASKS_PATH))
+  {
+    dt_masks_point_path_t *ref = form->points->data;
+    const gboolean safe_border0 = _sane_val(ref->border[0]);
+    const gboolean safe_border1 = _sane_val(ref->border[1]);
+    if(!safe_border0 || !safe_border1)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+        "Image ID=%d has insane path mask: borders=%.3f/%.3f",
+        imgid, ref->border[0], ref->border[1]);
+      dt_control_log(_("Image ID=%d has insane path mask: borders=%.3f/%.3f"),
+        imgid, ref->border[0], ref->border[1]);
+      if(!safe_border0)  ref->border[0] = 0.01f;
+      if(!safe_border1)  ref->border[1] = 0.01f;
+    }
+  }
+  else if(has_points && (form->type & DT_MASKS_BRUSH))
+  {
+    dt_masks_point_brush_t *ref = form->points->data;
+    const gboolean safe_border0 = _sane_val(ref->border[0]);
+    const gboolean safe_border1 = _sane_val(ref->border[1]);
+    if(!safe_border0 || !safe_border1)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+        "Image ID=%d has insane brush mask: borders=%.3f/%.3f",
+        formid, ref->border[0], ref->border[1]);
+      dt_control_log(_("Image ID=%d has insane brush mask: borders=%.3f/%.3f"),
+        imgid, ref->border[0], ref->border[1]);
+      if(!safe_border0)  ref->border[0] = 0.1f;
+      if(!safe_border1)  ref->border[1] = 0.1f;
+    }
+  }
+  // by the functions, which sized the point: with a shape's bit beside its
+  // own, a crafted type would have the parametric point read from a smaller one
+  else if(form->functions == &dt_masks_functions_parametric)
+  {
+    if(dt_masks_parametric_sanitize(form))
+      dt_print(DT_DEBUG_ALWAYS,
+               "Image ID=%d has a parametric mask with an invalid channel, reset",
+               imgid);
+  }
+
+  if(form->version != dt_masks_version())
+  {
+    // the steps before masks v3 read the image's orientation and size
+    if((form->version < 3 && !dev)
+       || dt_masks_legacy_params(dev, form, form->version, dt_masks_version()))
+    {
+      const char *fname = "";
+      if(dev)
+      {
+        fname = dev->image_storage.filename + strlen(dev->image_storage.filename);
+        while(fname > dev->image_storage.filename && *fname != '/') fname--;
+        if(fname > dev->image_storage.filename) fname++;
+      }
+
+      dt_print(DT_DEBUG_ALWAYS,
+               "[_dev_read_masks_history] %s (imgid `%i'):"
+               " mask version mismatch: history is %d, darktable is %d",
+               fname, imgid, form->version, dt_masks_version());
+      dt_control_log(_("%s: mask version mismatch: %d != %d"),
+                     fname, dt_masks_version(), form->version);
+
+      dt_masks_free_form(form);
+      return NULL;
+    }
+  }
+
+  return form;
+}
+
 void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
 {
   dt_dev_history_item_t *hist_item = NULL;
@@ -2391,179 +2614,20 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
     // db record: 0-img, 1-formid, 2-form_type, 3-name, 4-version,
     // 5-points, 6-points_count, 7-source, 8-num
 
-    // we get the values
-
     const dt_mask_id_t formid = sqlite3_column_int(stmt, 1);
     const int num = sqlite3_column_int(stmt, 8);
     const dt_masks_type_t type = sqlite3_column_int(stmt, 2);
-    dt_masks_form_t *form = dt_masks_create(type);
-    form->formid = formid;
     const char *name = (const char *)sqlite3_column_text(stmt, 3);
-    g_strlcpy(form->name, name, sizeof(form->name));
-    form->version = sqlite3_column_int(stmt, 4);
-    form->points = NULL;
+    const int version = sqlite3_column_int(stmt, 4);
+    const void *points = sqlite3_column_blob(stmt, 5);
+    const int points_bytes = sqlite3_column_bytes(stmt, 5);
     const int nb_points = sqlite3_column_int(stmt, 6);
+    const void *source = sqlite3_column_blob(stmt, 7);
     const int source_bytes = sqlite3_column_bytes(stmt, 7);
-    if(source_bytes == sizeof(float) * 2)
-    {
-      memcpy(form->source, sqlite3_column_blob(stmt, 7), sizeof(float) * 2);
-      form->source[2] = 0.0f;
-    }
-    else if(source_bytes == sizeof(float) * 3)
-    {
-      memcpy(form->source, sqlite3_column_blob(stmt, 7), sizeof(float) * 3);
-    }
-    else if(source_bytes == sizeof(float) * 4)
-    {
-      // migration: old format stored an unused scale field as source[3]; drop it
-      memcpy(form->source, sqlite3_column_blob(stmt, 7), sizeof(float) * 3);
-    }
-    else
-    {
-      memset(form->source, 0, sizeof(float) * 3);
-    }
-
-    // and now we "read" the blob
-    if(form->functions)
-    {
-      const char *const ptbuf = (char *)sqlite3_column_blob(stmt, 5);
-      const size_t point_size = form->functions->point_struct_size;
-      const size_t stored_size = _point_size_at_version(form);
-      const size_t blob_size = sqlite3_column_bytes(stmt, 5);
-      // anything but nb_points points at the stored size is corrupt or an
-      // unknown layout, and copying out of it would read past its end. a
-      // group leaves the dropped form out like any it cannot find
-      if(nb_points < 0 || blob_size != (size_t)nb_points * stored_size)
-      {
-        dt_print(DT_DEBUG_ALWAYS,
-                 "[_dev_read_masks_history] mask %s(%i) of image %i has %zu bytes"
-                 " of points, expected %d of %zu at mask version %d, dropped",
-                 form->name, formid, imgid, blob_size, nb_points, stored_size,
-                 form->version);
-        dt_masks_free_form(form);
-        continue;
-      }
-      for(int i = 0; i < nb_points; i++)
-      {
-        // zeroed: a point stored at an older version is shorter than ours,
-        // and dt_masks_legacy_params below defaults the fields added since
-        char *point = calloc(1, point_size);
-        memcpy(point, ptbuf + i*stored_size, stored_size);
-        form->points = g_list_append(form->points, point);
-      }
-
-      // the entry and producer of a pixel form's ref are read as strings,
-      // but a blob from the database or an xmp need not terminate them:
-      // force it here, the one place they enter the tree. by the functions,
-      // which sized the points, not by the type bits: a crafted type can
-      // carry a pixel form's bit along with another's
-      if(form->functions == &dt_masks_functions_object && form->points)
-      {
-        dt_dtdata_ref_t *ref = form->points->data;
-        ref->entry[sizeof(ref->entry) - 1] = '\0';
-        ref->producer[sizeof(ref->producer) - 1] = '\0';
-      }
-    }
-
-    /** For some reason we might find crazy radius or borders here so we check
-        and report via log and a control message.
-        We must never have a negative or NAN border/radius.
-        In case of such errors we set bad values to something that can be handled
-        in the module's mask interface
-    */
-    if(form->type & DT_MASKS_CIRCLE)
-    {
-      dt_masks_point_circle_t *ref = form->points->data;
-      const gboolean safe_radius = _sane_val(ref->radius);
-      const gboolean safe_border = _sane_val(ref->border);
-      if(!safe_radius || !safe_border)
-      {
-        dt_print(DT_DEBUG_ALWAYS,
-             "Image ID=%d has insane circle mask: radius=%.3f border=%.3f",
-             imgid, ref->radius, ref->border);
-        dt_control_log(_("Image ID=%d has insane circle mask: radius=%.3f border=%.3f"),
-          imgid, ref->radius, ref->border);
-        if(!safe_radius)  ref->radius = 0.01f;
-        if(!safe_border)  ref->border = 0.01f * ref->radius;
-      }
-    }
-    else if(form->type & DT_MASKS_ELLIPSE)
-    {
-      dt_masks_point_ellipse_t *ref = form->points->data;
-      const gboolean safe_radius0 = _sane_val(ref->radius[0]);
-      const gboolean safe_radius1 = _sane_val(ref->radius[1]);
-      const gboolean safe_border = _sane_val(ref->border);
-      if(!safe_radius0 || !safe_radius1 || !safe_border)
-      {
-        dt_print(DT_DEBUG_ALWAYS,
-             "Image ID=%d has insane ellipse mask: radii=%.3f/%.3f, border=%.3f",
-             imgid, ref->radius[0], ref->radius[1], ref->border);
-        dt_control_log(_("Image ID=%d has insane ellipse mask: radii=%.3f/%.3f, border=%.3f"),
-          imgid, ref->radius[0], ref->radius[1], ref->border);
-        if(!safe_radius0) ref->radius[0] = 0.01f;
-        if(!safe_radius1) ref->radius[1] = 0.01f;
-        if(!safe_border)  ref->border = 0.01f * ref->radius[0];
-      }
-    }
-    else if(form->type & DT_MASKS_PATH)
-    {
-      dt_masks_point_path_t *ref = form->points->data;
-      const gboolean safe_border0 = _sane_val(ref->border[0]);
-      const gboolean safe_border1 = _sane_val(ref->border[1]);
-      if(!safe_border0 || !safe_border1)
-      {
-        dt_print(DT_DEBUG_ALWAYS,
-          "Image ID=%d has insane path mask: borders=%.3f/%.3f",
-          imgid, ref->border[0], ref->border[1]);
-        dt_control_log(_("Image ID=%d has insane path mask: borders=%.3f/%.3f"),
-          imgid, ref->border[0], ref->border[1]);
-        if(!safe_border0)  ref->border[0] = 0.01f;
-        if(!safe_border1)  ref->border[1] = 0.01f;
-      }
-    }
-    else if(form->type & DT_MASKS_BRUSH)
-    {
-      dt_masks_point_brush_t *ref = form->points->data;
-      const gboolean safe_border0 = _sane_val(ref->border[0]);
-      const gboolean safe_border1 = _sane_val(ref->border[1]);
-      if(!safe_border0 || !safe_border1)
-      {
-        dt_print(DT_DEBUG_ALWAYS,
-          "Image ID=%d has insane brush mask: borders=%.3f/%.3f",
-          formid, ref->border[0], ref->border[1]);
-        dt_control_log(_("Image ID=%d has insane brush mask: borders=%.3f/%.3f"),
-          imgid, ref->border[0], ref->border[1]);
-        if(!safe_border0)  ref->border[0] = 0.1f;
-        if(!safe_border1)  ref->border[1] = 0.1f;
-      }
-    }
-    else if(form->type & DT_MASKS_PARAMETRIC)
-    {
-      if(dt_masks_parametric_sanitize(form))
-        dt_print(DT_DEBUG_ALWAYS,
-                 "Image ID=%d has a parametric mask with an invalid channel, reset",
-                 imgid);
-    }
-
-    if(form->version != dt_masks_version())
-    {
-      if(dt_masks_legacy_params(dev, form, form->version, dt_masks_version()))
-      {
-        const char *fname =
-          dev->image_storage.filename + strlen(dev->image_storage.filename);
-        while(fname > dev->image_storage.filename && *fname != '/') fname--;
-        if(fname > dev->image_storage.filename) fname++;
-
-        dt_print(DT_DEBUG_ALWAYS,
-                 "[_dev_read_masks_history] %s (imgid `%i'):"
-                 " mask version mismatch: history is %d, darktable is %d",
-                 fname, imgid, form->version, dt_masks_version());
-        dt_control_log(_("%s: mask version mismatch: %d != %d"),
-                       fname, dt_masks_version(), form->version);
-
-        continue;
-      }
-    }
+    dt_masks_form_t *form = dt_masks_form_from_stored
+      (dev, imgid, formid, type, name, version,
+       points, points_bytes, nb_points, source, source_bytes);
+    if(!form) continue;
 
     // if this is a new history entry let's find it
     if(num_prev != num)
@@ -2946,6 +3010,84 @@ gboolean dt_masks_events_mouse_scrolled(dt_iop_module_t *module,
   return ret;
 }
 
+// one outline per import_preview entry, in the same order: an entry without
+// one keeps an empty outline, so the index still finds its form. In preview
+// pipe coordinates, so redone whenever that pipe's output changes, as
+// dt_masks_gui_form_test_create does for the shown mask
+static void _import_preview_outlines(dt_develop_t *dev, dt_masks_form_gui_t *gui)
+{
+  g_list_free_full(gui->import_preview_points, dt_masks_form_gui_points_free);
+  gui->import_preview_points = NULL;
+  for(GList *l = gui->import_preview; l; l = g_list_next(l))
+  {
+    dt_masks_form_gui_points_t *gpt = calloc(1, sizeof(dt_masks_form_gui_points_t));
+    dt_masks_form_t *f = dt_masks_get_from_id(dev, GPOINTER_TO_INT(l->data));
+    if(gpt && f
+       && !dt_masks_get_points_border(dev, f, &gpt->points, &gpt->points_count,
+                                      &gpt->border, &gpt->border_count, 0, NULL))
+      gpt->points_count = gpt->border_count = 0;
+    gui->import_preview_points = g_list_append(gui->import_preview_points, gpt);
+  }
+  gui->import_preview_hash = dev->preview_pipe->backbuf_hash;
+}
+
+void dt_masks_set_import_preview(GList *formids)
+{
+  dt_develop_t *dev = darktable.develop;
+  dt_masks_form_gui_t *gui = dev ? dev->form_gui : NULL;
+  if(!gui || (!formids && !gui->import_preview)) return;
+
+  g_list_free(gui->import_preview);
+  gui->import_preview = NULL;
+  for(GList *l = formids; l; l = g_list_next(l))
+  {
+    const dt_masks_form_t *f = dt_masks_get_from_id(dev, GPOINTER_TO_INT(l->data));
+    if(f && f->functions && f->functions->post_expose)
+      gui->import_preview = g_list_append(gui->import_preview, l->data);
+  }
+  _import_preview_outlines(dev, gui);
+  dt_control_queue_redraw_center();
+}
+
+// each shape draws itself as a hovered panel row would have it, bold and with
+// its anchors, through a scratch gui of its own: the shapes' post_expose read
+// their outline from gui->points by index, and their highlight from the
+// selection fields, which must not point at anything (see
+// dt_masks_clear_form_gui)
+void dt_masks_import_preview_post_expose(cairo_t *cr, const float zoom_scale)
+{
+  dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+  if(!gui || !gui->import_preview) return;
+  if(gui->import_preview_hash != darktable.develop->preview_pipe->backbuf_hash)
+    _import_preview_outlines(darktable.develop, gui);
+
+  cairo_save(cr);
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+  dt_masks_form_gui_t scratch;
+  dt_masks_init_form_gui(&scratch);
+  // both lists too, so a raster shape finds its form by index (pixel_mask.c)
+  scratch.points = scratch.import_preview_points = gui->import_preview_points;
+  scratch.import_preview = gui->import_preview;
+  scratch.form_selected = TRUE;
+  scratch.point_border_selected = scratch.seg_selected = scratch.point_selected =
+    scratch.feather_selected = -1;
+  scratch.point_border_dragging = scratch.seg_dragging = scratch.feather_dragging =
+    scratch.point_dragging = -1;
+  scratch.point_edited = -1;
+
+  int pos = 0;
+  GList *p = gui->import_preview_points;
+  for(GList *l = gui->import_preview; l && p; l = g_list_next(l), p = g_list_next(p), pos++)
+  {
+    const dt_masks_form_gui_points_t *gpt = p->data;
+    dt_masks_form_t *f = dt_masks_get_from_id(darktable.develop, GPOINTER_TO_INT(l->data));
+    if(!gpt || gpt->points_count < 1 || !f || !f->functions) continue;
+    scratch.group_selected = pos;
+    f->functions->post_expose(cr, zoom_scale, &scratch, pos, g_list_length(f->points));
+  }
+  cairo_restore(cr);
+}
+
 // visualize mask from viewport
 void dt_masks_events_post_expose(const dt_iop_module_t *module,
                                  cairo_t *cr,
@@ -3151,9 +3293,11 @@ static gboolean _edit_mode_refused(const dt_iop_module_t *module)
 {
   dt_pthread_mutex_lock(&darktable.develop->history_mutex);
   const dt_develop_blend_params_t *bp = module->blend_params;
-  const gboolean refused = dt_develop_blend_mask_locked(bp)
-                           || (bp->mask_mode == DEVELOP_MASK_DISABLED
-                               && !(module->flags() & IOP_FLAGS_NO_MASKS));
+  // the canvas of a NO_MASKS module is its own shapes, which the blend
+  // mask's lock does not cover
+  const gboolean refused = !(module->flags() & IOP_FLAGS_NO_MASKS)
+                           && (dt_develop_blend_mask_locked(bp)
+                               || bp->mask_mode == DEVELOP_MASK_DISABLED);
   dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
   return refused;
 }
@@ -3194,7 +3338,9 @@ void dt_masks_set_edit_mode(dt_iop_module_t *module,
   dt_masks_change_form_gui(grp);
   darktable.develop->form_gui->edit_mode = value;
 
-  if(bd->masks_support)
+  // the panel's "edit on canvas" does not stand for a NO_MASKS module's own
+  // shapes
+  if(bd->shapes_support)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),
                                  value == DT_MASKS_EDIT_OFF ? FALSE : TRUE);
 
@@ -3283,7 +3429,7 @@ void dt_masks_set_edit_mode_forms(dt_iop_module_t *module,
   if(bd)
   {
     bd->masks_shown = value;
-    if(bd->masks_support)
+    if(bd->shapes_support)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),
                                    value == DT_MASKS_EDIT_OFF ? FALSE : TRUE);
   }
@@ -3293,7 +3439,9 @@ void dt_masks_set_edit_mode_forms(dt_iop_module_t *module,
 
 void dt_masks_group_update_name(dt_iop_module_t *module)
 {
-  dt_masks_form_t *grp = _group_from_module(darktable.develop, module);
+  dt_masks_form_t *grp = _group_from_module(darktable.develop, module, TRUE);
+  dt_masks_form_t *blend_grp = _group_from_module(darktable.develop, module, FALSE);
+  if(blend_grp && blend_grp != grp) _set_group_name_from_module(module, blend_grp);
   if(!grp)
     return;
 
@@ -3336,12 +3484,11 @@ void dt_masks_iop_use_same_as(dt_iop_module_t *module,
   if(!module || !src) return;
 
   // we get the source group
-  const dt_mask_id_t srcid = src->blend_params->mask_id;
-  dt_masks_form_t *src_grp = dt_masks_get_from_id(darktable.develop, srcid);
+  dt_masks_form_t *src_grp = _group_from_module(darktable.develop, src, FALSE);
   if(!src_grp || src_grp->type != DT_MASKS_GROUP) return;
 
   // is there already a masks group for this module ?
-  dt_masks_form_t *grp = _group_from_module(darktable.develop, module);
+  dt_masks_form_t *grp = _group_from_module(darktable.develop, module, FALSE);
   if(!grp)
   {
     grp = _group_create(darktable.develop, module, DT_MASKS_GROUP);
@@ -3415,22 +3562,29 @@ void dt_masks_form_remove(dt_iop_module_t *module,
   for(GList *iops = darktable.develop->iop; iops; iops = g_list_next(iops))
   {
     dt_iop_module_t *m = iops->data;
-    if(m->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+    if(!(m->flags() & IOP_FLAGS_SUPPORTS_BLENDING)) continue;
+    // a NO_MASKS module has two groups, its own shapes and its blend mask
+    const int ngroups = (m->flags() & IOP_FLAGS_NO_MASKS) ? 2 : 1;
+    for(int k = 0; k < ngroups; k++)
     {
+      const gboolean own = k == 0;
       // is the form the base group of the iop ?
-      if(id == m->blend_params->mask_id)
+      if(id == _module_group_id(m, own))
       {
         dt_print(DT_DEBUG_MASKS,
-                 "[masks] dt_masks_form_remove '%s': mask_id %d->NO_MASKID"
+                 "[masks] dt_masks_form_remove '%s': %s %d->NO_MASKID"
                  " (form %d permanently removed)",
-                 m->op, m->blend_params->mask_id, id);
-        m->blend_params->mask_id = NO_MASKID;
+                 m->op, own ? "mask_id" : "blend_mask_id", id, id);
+        if(own)
+          m->blend_params->mask_id = NO_MASKID;
+        else
+          dt_develop_blend_set_mask_group_id(m, m->blend_params, NO_MASKID);
         dt_masks_iop_update(m);
         dt_dev_add_history_item(darktable.develop, m, TRUE);
       }
       else
       {
-        dt_masks_form_t *iopgrp = _group_from_module(darktable.develop, m);
+        dt_masks_form_t *iopgrp = _group_from_module(darktable.develop, m, own);
         if(iopgrp && (iopgrp->type & DT_MASKS_GROUP))
         {
           gboolean ok = FALSE;
@@ -3483,7 +3637,7 @@ dt_masks_remove_target_t dt_masks_remove_shape_target(const dt_iop_module_t *mod
   if(module && module->blend_data && module->blend_params
      && !(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE)))
   {
-    const dt_mask_id_t mask_id = module->blend_params->mask_id;
+    const dt_mask_id_t mask_id = _module_group_id(module, FALSE);
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, mask_id);
     if(parentid == mask_id
        || (grp && dt_masks_group_find_node(darktable.develop->forms, grp, parentid, NULL)))
@@ -3840,7 +3994,10 @@ static int _masks_cleanup_unused(GList **_forms,
   {
     const dt_dev_history_item_t *hist = history->data;
     const dt_develop_blend_params_t *blend_params = hist->blend_params;
-    if(!blend_params || !dt_is_valid_maskid(blend_params->mask_id)) continue;
+    if(!blend_params
+       || !(dt_is_valid_maskid(blend_params->mask_id)
+            || dt_is_valid_maskid(blend_params->blend_mask_id)))
+      continue;
 
     gboolean replaced = FALSE;
     if(num < start && hist->module)
@@ -3858,7 +4015,11 @@ static int _masks_cleanup_unused(GList **_forms,
       }
     }
     if(!replaced)
+    {
+      // NO_MASKID for every module but a NO_MASKS one (blend.h)
       _cleanup_unused_recurs(forms, blend_params->mask_id, used, nbf, 0);
+      _cleanup_unused_recurs(forms, blend_params->blend_mask_id, used, nbf, 0);
+    }
   }
 
   // and we delete all unused forms

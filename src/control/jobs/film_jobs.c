@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,10 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "control/jobs/film_jobs.h"
 #include "common/darktable.h"
 #include "common/collection.h"
 #include "common/film.h"
+
 #include <stdlib.h>
 
 typedef struct dt_film_import1_t
@@ -189,7 +191,7 @@ static GList *_film_recursive_get_files(const gchar *path, gboolean recursive, G
   return *result;
 }
 
-/* check if we can find a gpx data file to be auto applied
+/* check if we can find a GPX data file to be auto applied
    to images in the just imported filmroll
 */
 static void _apply_filmroll_gpx(dt_film_t *cfr)
@@ -200,9 +202,8 @@ static void _apply_filmroll_gpx(dt_film_t *cfr)
     const gchar *dfn = NULL;
     while((dfn = g_dir_read_name(cfr->dir)) != NULL)
     {
-      /* check if we have a gpx to be auto applied to filmroll */
-      const size_t len = strlen(dfn);
-      if(strcmp(dfn + len - 4, ".gpx") == 0 || strcmp(dfn + len - 4, ".GPX") == 0)
+      // check if we have a GPX to be auto applied to filmroll
+      if(g_str_has_suffix(dfn, ".gpx") || g_str_has_suffix(dfn, ".GPX"))
       {
         gchar *gpx_file = g_build_path(G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);
         gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
@@ -384,4 +385,3 @@ static void _film_import1(dt_job_t *job, dt_film_t *film, GList *images)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

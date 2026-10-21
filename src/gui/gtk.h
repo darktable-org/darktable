@@ -485,6 +485,10 @@ void dt_ui_flexi_panel_set_collapsed(struct dt_ui_t *ui,
                                      const gboolean collapsed,
                                      const gboolean has_content,
                                      const gboolean persist);
+/** \brief whether the darkroom is the current view. While it is, and the
+    canvas position is chosen, the edge strips keep their room in the center
+    row even with nothing to show, so that focus changes do not move the image */
+void dt_ui_flexi_panel_set_in_view(struct dt_ui_t *ui, const gboolean in_view);
 gboolean dt_ui_flexi_panel_is_collapsed(struct dt_ui_t *ui);
 /** \brief which edge the panel is on now, which can differ from the stored
     preference: anything mirroring the panel's own chrome follows this */
@@ -985,10 +989,17 @@ void dt_gui_dialog_restore_size(GtkDialog *dialog,
 
 PangoFontDescription *dt_gui_get_font(void);
 
+typedef GtkWidget *(*dt_gui_popover_tooltip_factory_t)(const char *tooltip_id,
+                                                       gpointer user_data);
+
 // returns the session type at runtime
 dt_gui_session_type_t dt_gui_get_session_type(void);
 // Popover menu
 GtkWidget *dt_gui_popover_menu_from_model(GtkWidget *parent, GMenu *menu);
+GtkWidget *dt_gui_popover_menu_from_model_full(GtkWidget *parent,
+                                               GMenu *menu,
+                                               dt_gui_popover_tooltip_factory_t tooltip_factory,
+                                               gpointer tooltip_user_data);
 
 
 #if !defined(__cplusplus)

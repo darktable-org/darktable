@@ -1063,7 +1063,10 @@ static void _verify_edit(JsonObject *edit, edit_report_t *rep)
   dt_masks_migrate_classic_to_flexi(&r.module, r.module.blend_params, -1);
   rep->nesting =
     _nesting(r.dev.forms,
-             dt_masks_get_from_id_ext(r.dev.forms, r.module.blend_params->mask_id), 0);
+             dt_masks_get_from_id_ext(r.dev.forms,
+                                      dt_develop_blend_mask_group_id(&r.module,
+                                                                     r.module.blend_params)),
+             0);
 
   // --- after migration --------------------------------------------------
   float *after = dt_masks_verify_render_mask(&r, &after_img);

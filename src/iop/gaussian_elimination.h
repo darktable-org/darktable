@@ -162,7 +162,7 @@ static inline int pseudo_solve_gaussian(double *const restrict A,
   double *const restrict A_square = dt_alloc_align_double(n * n);
   double *const restrict y_square = dt_alloc_align_double(n);
 
-  DT_OMP_PRAGMA(parallel sections)
+  DT_OMP_PRAGMA(parallel sections num_threads(darktable.num_openmp_threads))
   {
     DT_OMP_PRAGMA(section)
     {

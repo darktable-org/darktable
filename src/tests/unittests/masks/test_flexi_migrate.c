@@ -199,6 +199,45 @@ static void test_uniform_enabled_becomes_flexi(void **state)
   _assert_flexi();
 }
 
+// classic's uniform blend reads none of the combine bits, while the flexi
+// renderer, with no group, fills 0 for MASKS_POS and inverts for INV: they
+// must go, or a uniform blend that happened to carry one turns into no blend
+static void test_uniform_drops_the_combine_bits(void **state)
+{
+  for(uint32_t combine = 0; combine < 8; combine++)
+  {
+    _classic(DEVELOP_MASK_ENABLED);
+    flexi_bp.mask_combine = combine;
+    const float opacity = flexi_bp.opacity;
+    _migrate();
+    assert_int_equal(flexi_bp.mask_mode, DEVELOP_MASK_ENABLED | DEVELOP_MASK_FLEXI);
+    assert_int_equal(flexi_bp.mask_id, NO_MASKID);
+    assert_false(flexi_bp.mask_combine
+                 & (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL | DEVELOP_COMBINE_MASKS_POS));
+    assert_float_equal(flexi_bp.opacity, opacity, 1e-9);
+  }
+}
+
+// what development builds of 5.7 stored for a classic mask that renders a
+// constant: a uniform blend without the flexi bit, at the current version.
+// Read again, it becomes the flexi mask with no group the migration now makes
+static void test_current_uniform_without_flexi_is_migrated(void **state)
+{
+  _classic(DEVELOP_MASK_ENABLED);
+  flexi_bp.opacity = 0.0f;
+  assert_true(dt_develop_blend_migrate_classic_mask(&flexi_module, &flexi_bp, -1));
+  assert_int_equal(flexi_bp.mask_mode, DEVELOP_MASK_ENABLED | DEVELOP_MASK_FLEXI);
+  assert_int_equal(flexi_bp.mask_id, NO_MASKID);
+  assert_float_equal(flexi_bp.opacity, 0.0f, 1e-9);
+
+  // and a flexi or disabled mask is left alone
+  const dt_develop_blend_params_t flexi = flexi_bp;
+  assert_false(dt_develop_blend_migrate_classic_mask(&flexi_module, &flexi_bp, -1));
+  assert_memory_equal(&flexi_bp, &flexi, sizeof(flexi));
+  flexi_bp.mask_mode = DEVELOP_MASK_DISABLED;
+  assert_false(dt_develop_blend_migrate_classic_mask(&flexi_module, &flexi_bp, -1));
+}
+
 // ---------------------------------------------------------------------------
 // case 2: drawn only -- zero transform
 // ---------------------------------------------------------------------------
@@ -1066,14 +1105,12 @@ static void test_every_bit_combination_lands_in_a_valid_state(void **state)
     _migrate();
 
     const uint32_t out = flexi_bp.mask_mode;
-    // Valid end states: DISABLED, ENABLED|FLEXI, or -- where a degenerate
-    // parametric collapses to a constant -- a plain uniform ENABLED blend with
-    // no form (see _migrate_parametric_only's DT_COND_CONSTANT /
-    // DT_COND_PASSTHROUGH branches). What must never survive is a classic mode
-    // bit: that would be a half-migrated edit.
+    // Valid end states: DISABLED or ENABLED|FLEXI, with no group where a
+    // degenerate parametric collapses to a constant (_migrate_to_uniform).
+    // What must never survive is a classic mode bit: that would be a
+    // half-migrated edit.
     const gboolean valid =
       (out == DEVELOP_MASK_DISABLED)
-      || (out == DEVELOP_MASK_ENABLED)
       || ((out & DEVELOP_MASK_ENABLED) && (out & DEVELOP_MASK_FLEXI));
     if(!valid)
       fail_msg("mask_mode 0x%x migrated to 0x%x, which is not a valid end state",
@@ -1201,8 +1238,8 @@ static void test_inclusive_with_partial_channels_collapses_to_a_constant(void **
     flexi_bp.blendif = _two_active_channel_bits(); // deliberately not all
     _migrate();
 
-    // a plain uniform blend: no form, no mask id, no leftover polarity
-    assert_int_equal(flexi_bp.mask_mode, DEVELOP_MASK_ENABLED);
+    // a flexi mask with no group: no form, no mask id, no leftover polarity
+    assert_int_equal(flexi_bp.mask_mode, DEVELOP_MASK_ENABLED | DEVELOP_MASK_FLEXI);
     assert_int_equal(flexi_bp.mask_id, NO_MASKID);
     assert_int_equal(_count_forms(DT_MASKS_PARAMETRIC), 0);
     assert_false(flexi_bp.mask_combine & DEVELOP_COMBINE_MASKS_POS);
@@ -1278,7 +1315,6 @@ static void test_every_combine_value_lands_in_a_valid_state(void **state)
       const uint32_t out = flexi_bp.mask_mode;
       const gboolean valid =
         (out == DEVELOP_MASK_DISABLED)
-        || (out == DEVELOP_MASK_ENABLED)
         || ((out & DEVELOP_MASK_ENABLED) && (out & DEVELOP_MASK_FLEXI));
       if(!valid)
         fail_msg("mode 0x%x combine 0x%x migrated to 0x%x, not a valid end state",
@@ -1362,6 +1398,62 @@ static void test_parametric_on_no_masks_module_stays_renderable(void **state)
   assert_true(_count_forms(DT_MASKS_PARAMETRIC) > 0);
   // ...reachable only through the group, which must therefore render
   assert_true(dt_blend_may_render_group(&flexi_module, flexi_bp.mask_mode));
+}
+
+/** mask_id of a NO_MASKS module is its own shapes (retouch's clones and heals):
+    migrating its parametric mask must leave them alone and put the mask's
+    group in blend_mask_id. Overwriting mask_id dropped every retouch shape */
+static void test_parametric_on_no_masks_module_keeps_its_own_shapes(void **state)
+{
+  _classic(DEVELOP_MASK_ENABLED | DEVELOP_MASK_CONDITIONAL);
+  flexi_module.flags = _flags_no_masks;
+  flexi_bp.blendif = _two_active_channel_bits();
+  _migrate();
+  _assert_flexi();
+
+  assert_int_equal(flexi_bp.mask_id, FLEXI_MASK_ID);
+  assert_true(dt_is_valid_maskid(flexi_bp.blend_mask_id));
+  assert_int_not_equal(flexi_bp.blend_mask_id, FLEXI_MASK_ID);
+  assert_int_equal(dt_develop_blend_mask_group_id(&flexi_module, &flexi_bp),
+                   flexi_bp.blend_mask_id);
+
+  const dt_masks_form_t *grp =
+    dt_masks_get_from_id_ext(flexi_dev.forms, flexi_bp.blend_mask_id);
+  assert_non_null(grp);
+  for(const GList *l = grp->points; l; l = g_list_next(l))
+  {
+    const dt_masks_point_group_t *pt = l->data;
+    if(dt_masks_point_is_marker(pt)) continue;
+    const dt_masks_form_t *f = dt_masks_get_from_id_ext(flexi_dev.forms, pt->formid);
+    assert_non_null(f);
+    assert_true(f->type & DT_MASKS_PARAMETRIC);
+  }
+}
+
+/** a uniform blend on a NO_MASKS module needs no group at all, and must not
+    clear the module's own shapes either */
+static void test_uniform_on_no_masks_module_keeps_its_own_shapes(void **state)
+{
+  _classic(DEVELOP_MASK_ENABLED);
+  flexi_module.flags = _flags_no_masks;
+  _migrate();
+
+  assert_int_equal(flexi_bp.mask_mode, DEVELOP_MASK_ENABLED | DEVELOP_MASK_FLEXI);
+  assert_int_equal(flexi_bp.mask_id, FLEXI_MASK_ID);
+  assert_int_equal(flexi_bp.blend_mask_id, NO_MASKID);
+}
+
+/** classic never rendered a NO_MASKS module's drawn mask: its group is the
+    module's shapes. The drawn bit is dropped, and the shapes stay out of the
+    mask */
+static void test_drawn_on_no_masks_module_is_not_a_mask(void **state)
+{
+  _classic(DEVELOP_MASK_ENABLED | DEVELOP_MASK_MASK);
+  flexi_module.flags = _flags_no_masks;
+  _migrate();
+
+  assert_int_equal(flexi_bp.mask_id, FLEXI_MASK_ID);
+  assert_false(dt_is_valid_maskid(dt_develop_blend_mask_group_id(&flexi_module, &flexi_bp)));
 }
 
 // migrating an already-migrated edit is a no-op -- the FLEXI guard at the top
@@ -2065,6 +2157,8 @@ int main(void)
   const struct CMUnitTest tests[] = {
     cmocka_unit_test_teardown(test_disabled_stays_disabled, _teardown),
     cmocka_unit_test_teardown(test_uniform_enabled_becomes_flexi, _teardown),
+    cmocka_unit_test_teardown(test_uniform_drops_the_combine_bits, _teardown),
+    cmocka_unit_test_teardown(test_current_uniform_without_flexi_is_migrated, _teardown),
     cmocka_unit_test_teardown(test_drawn_only_reuses_the_group, _teardown),
     cmocka_unit_test_teardown(test_classic_head_without_an_operator_keeps_its_group,
                               _teardown),
@@ -2112,6 +2206,10 @@ int main(void)
     cmocka_unit_test_teardown(test_no_masks_module_still_renders_a_flexi_group, _teardown),
     cmocka_unit_test_teardown(test_ordinary_module_always_renders_its_group, _teardown),
     cmocka_unit_test_teardown(test_parametric_on_no_masks_module_stays_renderable, _teardown),
+    cmocka_unit_test_teardown(test_parametric_on_no_masks_module_keeps_its_own_shapes,
+                              _teardown),
+    cmocka_unit_test_teardown(test_uniform_on_no_masks_module_keeps_its_own_shapes, _teardown),
+    cmocka_unit_test_teardown(test_drawn_on_no_masks_module_is_not_a_mask, _teardown),
     cmocka_unit_test_teardown(test_nested_union_group_joins_its_group, _teardown),
     cmocka_unit_test_teardown(test_inverted_nested_group_becomes_an_inverted_group, _teardown),
     cmocka_unit_test_teardown(test_a_sum_under_an_inverted_member_is_an_inverted_group,

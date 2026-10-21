@@ -111,13 +111,11 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   if(inv_sigma_s < 3.0) inv_sigma_s = 3.0;
   inv_sigma_s = 1.0 / inv_sigma_s;
 
-  PermutohedralLattice<3, 2> lattice(size, omp_get_max_threads());
+  PermutohedralLattice<3, 2> lattice(size, dt_get_num_threads());
 
 // Build I=log(L)
 // and splat into the lattice
-#ifdef _OPENMP
-#pragma omp parallel for shared(lattice)
-#endif
+  DT_OMP_FOR(shared(lattice))
   for(int j = 0; j < height; j++)
   {
     size_t index = (size_t)j * width;
@@ -160,9 +158,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   //
 
   const float contr = 1. / data->contrast;
-#ifdef _OPENMP
-#pragma omp parallel for
-#endif
+  DT_OMP_FOR(shared(lattice))
   for(int j = 0; j < height; j++)
   {
     size_t index = (size_t)j * width;

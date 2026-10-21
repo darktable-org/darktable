@@ -700,7 +700,8 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
         if(valid_mask
            && pipe->want_detail_mask == FALSE
            && (!feqf(bp->details, 0.0f, 1e-6)
-               || _blend_group_wants_details(dev, bp->mask_id)))
+               || _blend_group_wants_details(dev, dt_develop_blend_mask_group_id(piece->module,
+                                                                                 bp))))
         {
           // during synch_all replay the flush is deferred to a single
           // presence-gated invalidation at the end (see
@@ -808,7 +809,9 @@ void dt_dev_pixelpipe_prune_stale_raster_users(dt_dev_pixelpipe_t *pipe,
     const gboolean consumes =
       sink_piece->enabled && bp
       && ((points_back && (bp->mask_mode & DEVELOP_MASK_RASTER))
-          || _raster_form_consumes(module->dev, bp->mask_id, module));
+          || _raster_form_consumes(module->dev,
+                                   dt_develop_blend_mask_group_id(sink_piece->module, bp),
+                                   module));
     if(!consumes)
     {
       g_hash_table_iter_remove(&iter);
@@ -2012,10 +2015,11 @@ static cl_int _opencl_benchmark(dt_dev_pixelpipe_t *pipe,
 
 static void _diff_statistics(const dt_iop_module_t *self,
                              const dt_iop_roi_t *roi,
-                             const float *const dat_a,
-                             const float *const dat_b,
+                             const float *const dat_a,  // output CPU
+                             float *const dat_b,  // output OpenCL
                              const int ch,
-                             const int devid)
+                             const int devid,
+                             const gboolean visualize)
 {
   const int width = roi->width;
   const int height = roi->height;
@@ -2024,9 +2028,9 @@ static void _diff_statistics(const dt_iop_module_t *self,
   double sum = 0.0;
   double sum2 = 0.0;
   double max_abs = 0.0;
-  double max_rel = 0.0;
+  double lev = 0.0f;
 
-  DT_OMP_FOR(reduction(+ : sum, sum2) reduction(max : max_abs, max_rel))
+  DT_OMP_FOR(reduction(+ : sum, sum2, lev) reduction(max : max_abs))
   for(size_t i = 0; i < npix * ch; i+=ch)
   {
     // We don't calculate per RGB channel but define a RGB pixel as average of three
@@ -2035,34 +2039,62 @@ static void _diff_statistics(const dt_iop_module_t *self,
     const double d = a - b;
     const double ad = fabs(d);
 
+    lev += (double)max3f(&dat_b[i]) + b;
     sum += d;
     sum2 += d * d;
     if(ad > max_abs)
       max_abs = ad;
-
-    const double ref = fmax(fabs(a), fabs(b));
-    const double rel = ref > 1e-9 ? ad / ref : 0.0;
-    if(rel > max_rel)
-      max_rel = rel;
   }
 
   const double mean = sum / (double)npix;
   const double var = fmax(sum2 / (double)npix - mean * mean, 0.0);
-  const double stddev = sqrt(var);
+  const float stddev = (float)sqrt(var);
+  const float ilevel = 0.1f / (float)(lev / (double)npix);
 
+  int outrange_2 = 0;
+  int outrange_4 = 0;
+  int outliers = 0;
+  DT_OMP_FOR(reduction(+ : outrange_2, outrange_4, outliers))
+  for(size_t i = 0; i < npix * ch; i+=ch)
+  {
+    const float a = ch == 1 ? dat_a[i] : (dat_a[i] + dat_a[i+1] + dat_a[i+2]) / 3.0f;
+    const float b = ch == 1 ? dat_b[i] : (dat_b[i] + dat_b[i+1] + dat_b[i+2]) / 3.0f;
+    const float ad = fabsf(a - b);
+    outrange_2 += ad > 2.0f * stddev ? 1 : 0;
+    outrange_4 += ad > 4.0f * stddev ? 1 : 0;
+    outliers += ad > 8.0f * stddev ? 1 : 0;
+    if(visualize)
+    {
+      /** We are interested in locations with an error > 2S having a signal above "black".
+          As we bypass the data through the pipe we nomalize the dark background.
+      */
+      const gboolean relevant = stddev > 1e-10f && ad > 2.0f * stddev && b > 1e-8f;
+      const float sigerror = relevant ? MAX(0.0f, ad / stddev - 2.0f)  : 0.0f;
+      const float viserror = relevant ? 0.2f * sqrf(0.5f * sigerror) : 0.0f;
+      for(int c = 0; c < MIN(ch, 3); c++)
+      {
+        dat_b[i+c] = fminf(0.2f, dat_b[i+c] * ilevel);
+        dat_b[i+c] += viserror;
+      }
+    }
+  }
   dt_print_pipe(DT_DEBUG_ALWAYS, "OpenCL diff stats", NULL, self, devid, NULL, NULL,
-           "(%dx%d)  max_abs_diff=%.6e  max_rel_diff=%.6e  stddev=%.6e  mean_diff=%+.6e",
-           width, height, max_abs, max_rel, stddev, mean);
+           "(%4dx%4d) max=%.5e  std=%.5e  mean=%+.5e  S2:%7d %4.1f%%   S4:%7d %4.1f%%   S8:%6d %3.1f%%",
+           width, height, max_abs, stddev, mean,
+           outrange_2, 100.0f * (float)outrange_2 / (float)npix,
+           outrange_4, 100.0f * (float)outrange_4 / (float)npix,
+           outliers, 100.0f * (float)outliers / (float)npix);
 }
 
-static void _opencl_dump_diff_pipe_pfm(dt_dev_pixelpipe_t *pipe,
+static float *_opencl_dump_diff_pipe_pfm(dt_dev_pixelpipe_t *pipe,
                                        dt_iop_module_t *module,
                                        dt_dev_pixelpipe_iop_t *piece,
                                        cl_mem in,
                                        cl_mem out,
                                        const dt_iop_roi_t *roi_out,
                                        const dt_iop_roi_t *roi_in,
-                                       const int cst)
+                                       const int cst,
+                                       const gboolean visualize)
 {
   const int ch = dt_opencl_get_image_element_size(in);
   const int cho = dt_opencl_get_image_element_size(out) / sizeof(float);
@@ -2072,6 +2104,7 @@ static void _opencl_dump_diff_pipe_pfm(dt_dev_pixelpipe_t *pipe,
                             && (cho == 1 || cho == 4)           // output for 1/4 channel floats
                             && (dt_str_commasubstring(darktable.dump_diff_pipe, module->op)
                               || dt_str_commasubstring(darktable.dump_diff_pipe, "complete"));
+  float *clout = NULL;
   if(do_diffstat || do_dumpfile)
   {
     const int ow = roi_out->width;
@@ -2079,7 +2112,7 @@ static void _opencl_dump_diff_pipe_pfm(dt_dev_pixelpipe_t *pipe,
     const int iw = roi_in->width;
     const int ih = roi_in->height;
     float *clin = dt_alloc_aligned((size_t)iw * ih * ch);
-    float *clout = dt_alloc_align_float((size_t)ow * oh * cho);
+    clout = dt_alloc_align_float((size_t)ow * oh * cho);
     float *cpudata = dt_alloc_align_float((size_t)ow * oh * cho);
     if(clin && clout && cpudata)
     {
@@ -2102,17 +2135,26 @@ static void _opencl_dump_diff_pipe_pfm(dt_dev_pixelpipe_t *pipe,
             }
           }
           if(do_diffstat)
-            _diff_statistics(module, roi_out, cpudata, clout, cho, pipe->devid);
+            _diff_statistics(module, roi_out, cpudata, clout, cho, pipe->devid, visualize);
           if(do_dumpfile)
             dt_dump_pipe_diff_pfm(module->op, clout, cpudata, ow, oh, cho,
                                             dt_dev_pixelpipe_type_to_str(pipe->type));
+          if(do_diffstat && visualize && cst == IOP_CS_LAB)
+          {
+            for(size_t k = 0; k < (size_t)ow * oh * cho; k+=cho)
+            {
+              dt_aligned_pixel_t XYZ;
+              dt_linearRGB_to_XYZ(clout + k, XYZ);
+              dt_XYZ_to_Lab(XYZ, clout + k);
+            }
+          }
         }
       }
     }
     dt_free_align(cpudata);
-    dt_free_align(clout);
     dt_free_align(clin);
   }
+  return clout;
 }
 
 static inline gboolean _avoid_cl_module(const dt_dev_pixelpipe_iop_t *piece)
@@ -2838,14 +2880,27 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                           "device=%i (%s), %s",
                           pipe->devid, darktable.opencl->dev[pipe->devid].cname,
                           cl_errstr(err));
-          else if(_is_debug_pipe(pipe))
+          else if(_is_debug_pipe(pipe) && !(module->flags() & IOP_FLAGS_HIDDEN))
           {
             if(darktable.dump_pfm_pipe)
               dt_opencl_dump_pipe_pfm(module->op, pipe->devid, *cl_mem_output,
                                     FALSE, dt_dev_pixelpipe_type_to_str(pipe->type));
 
             if(darktable.dump_diff_pipe || darktable.cldiff_stats)
-              _opencl_dump_diff_pipe_pfm(pipe, module, piece, cl_mem_input, *cl_mem_output, roi_out, &roi_in, cst_out);
+            {
+              const float visualize = darktable.cldiff_stats
+                                    && dt_pipe_is_full(pipe)
+                                    && dt_iop_has_focus(module);
+              float *clout = _opencl_dump_diff_pipe_pfm(pipe, module, piece, cl_mem_input, *cl_mem_output, roi_out, &roi_in, cst_out, visualize);
+              if(visualize)
+              {
+                cl_mem dev_clout = *cl_mem_output;
+                dt_opencl_write_host_to_image(pipe->devid, clout, dev_clout, roi_out->width, roi_out->height, dt_opencl_get_image_element_size(dev_clout));
+                dt_dev_pixelpipe_invalidate_cacheline(pipe, *output, NULL);
+                piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+              }
+              dt_free_align(clout);
+            }
           }
 
           pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_GPU);

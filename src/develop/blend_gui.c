@@ -337,6 +337,24 @@ static void _resume_pending_rename(dt_iop_module_t *module);
 static void _queue_link_peers_rebuild(const dt_iop_module_t *module);
 static void _auto_expand_selected_row(dt_iop_module_t *module, const dt_mask_id_t id);
 
+// the panel's way onto the canvas. A module without shapes (retouch, spots)
+// edits its own shapes there, which nothing the panel does may switch
+static void _panel_set_edit_mode(dt_iop_module_t *module, const dt_masks_edit_mode_t value)
+{
+  const dt_iop_gui_blend_data_t *bd = module ? module->blend_data : NULL;
+  if(bd && !bd->shapes_support) return;
+  dt_masks_set_edit_mode(module, value);
+}
+
+static void _panel_set_edit_mode_forms(dt_iop_module_t *module,
+                                       GList *formids,
+                                       const dt_masks_edit_mode_t value)
+{
+  const dt_iop_gui_blend_data_t *bd = module ? module->blend_data : NULL;
+  if(bd && !bd->shapes_support) return;
+  dt_masks_set_edit_mode_forms(module, formids, value);
+}
+
 static gboolean _blendif_blend_parameter_enabled(dt_develop_blend_colorspace_t csp,
                                                  const dt_develop_blend_mode_t mode)
 {
@@ -544,17 +562,6 @@ void dt_masks_gui_reparent_into(GtkWidget *w,
 
   _refresh_request_modes(parent);
   _refresh_request_modes(cur);
-}
-
-// a fixed spacer that only separates two runs of buttons, without competing
-// for the row's slack: one icon wide, from .dt_masks_button_gap in darktable.css
-static GtkWidget *_pack_gap(GtkWidget *box)
-{
-  GtkWidget *gap = dt_gui_hbox();
-  dt_gui_add_class(gap, "dt_masks_button_gap");
-  gtk_widget_show(gap);
-  dt_gui_box_add(box, gap);
-  return gap;
 }
 
 // dt_history_item_get_name gives markup, which a plain-text label, menu or
@@ -801,7 +808,7 @@ static void _masks_import_forms(dt_iop_module_t *module,
   dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
   _queue_link_peers_rebuild(module);
   dt_masks_iop_update(module);
-  dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
+  _panel_set_edit_mode(module, DT_MASKS_EDIT_FULL);
 }
 
 static gboolean _mask_has_elements(const dt_masks_form_t *grp);
@@ -829,6 +836,20 @@ static void _masks_use_mask_of(dt_iop_module_t *module,
   dt_masks_gui_refresh_canvas_edit(module);
 }
 
+// the forms a shape pick (op, a, b) brings in, and the module they come from
+static GList *_masks_import_pick_fids(GPtrArray *mods,
+                                      const int op,
+                                      const int a,
+                                      const int b,
+                                      dt_iop_module_t **src_out)
+{
+  dt_iop_module_t *src = (mods && a >= 0 && a < (int)mods->len) ? g_ptr_array_index(mods, a) : NULL;
+  if(src_out) *src_out = src;
+  const gboolean whole = op == _IMPORT_LINK_GROUP || op == _IMPORT_COPY_GROUP;
+  if(whole && !src) return NULL;
+  return whole ? dt_masks_model_module_shapes(src) : g_list_prepend(NULL, GINT_TO_POINTER(b));
+}
+
 static void _masks_import_pick_action(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
   GtkWidget *btn = GTK_WIDGET(user_data);
@@ -852,10 +873,9 @@ static void _masks_import_pick_action(GSimpleAction *action, GVariant *parameter
     return;
   }
 
-  dt_iop_module_t *src = (mods && a >= 0 && a < (int)mods->len) ? g_ptr_array_index(mods, a) : NULL;
-  const gboolean whole = op == _IMPORT_LINK_GROUP || op == _IMPORT_COPY_GROUP;
-  if(whole && !src) return;
-  GList *fids = whole ? dt_masks_model_module_shapes(src) : g_list_prepend(NULL, GINT_TO_POINTER(b));
+  dt_iop_module_t *src = NULL;
+  GList *fids = _masks_import_pick_fids(mods, op, a, b, &src);
+  if(!fids && !src) return;
   const gboolean copy =
     op == _IMPORT_COPY_ONE || op == _IMPORT_COPY_GROUP || op == _IMPORT_COPY_PARAMETRIC;
   _masks_import_forms(module, src, fids, copy);
@@ -889,6 +909,7 @@ static void _masks_import_append(GMenu *menu,
 }
 
 #define _IMPORT_MAX_KIND_BUCKETS 16
+#define _IMPORT_RECENT 5
 
 // find (or create, appending to menu) the submenu for a given shape kind
 static GMenu *_masks_import_kind_bucket(
@@ -905,6 +926,23 @@ static GMenu *_masks_import_kind_bucket(
 
   g_menu_append_submenu(menu, _kind_name(kind, TRUE), G_MENU_MODEL(sub));
   return sub;
+}
+
+// a shape's name without the kind it starts with, as in a default name like
+// "circle #4", compared caselessly ("ai object #2" vs "AI object"). A name
+// that does not start with it is kept whole. Caller frees
+static gchar *_name_without_kind(const char *name, const char *kind)
+{
+  const glong nk = g_utf8_strlen(kind, -1);
+  if(g_utf8_strlen(name, -1) <= nk + 1) return g_strdup(name);
+  const char *rest = g_utf8_offset_to_pointer(name, nk);
+  if(*rest != ' ') return g_strdup(name);
+  gchar *head = g_utf8_casefold(name, rest - name);
+  gchar *fkind = g_utf8_casefold(kind, -1);
+  const gboolean prefixed = !g_strcmp0(head, fkind);
+  g_free(head);
+  g_free(fkind);
+  return g_strdup(prefixed ? rest + 1 : name);
 }
 
 // index of `m` in the menu's module table, adding it if new
@@ -934,8 +972,8 @@ static GList *_masks_import_candidates(dt_iop_module_t *src, dt_masks_form_t *gr
 
 // "link shapes" or "copy shapes": every shape and AI object that another
 // module's mask uses, or that no mask does, and that this module's mask does
-// not use yet, reachable by the module it comes from and by its kind. Added
-// to `menu` as one section. Returns how many there are
+// not use yet, reachable among the newest, by the module it comes from and
+// by its kind. Added to `menu` as one section each. Returns how many there are
 static int _masks_import_fill_shapes(GMenu *menu,
                                      dt_iop_module_t *module,
                                      GPtrArray *mods,
@@ -989,6 +1027,11 @@ static int _masks_import_fill_shapes(GMenu *menu,
   // every shape once, by kind, plus the ones no module uses at all
   GMenu *unused = g_menu_new();
   int n_unused = 0;
+  // the newest shapes a module uses, newest first: a form's id grows with its
+  // creation time (dt_masks_create in masks/masks.c)
+  const dt_masks_form_t *recent[_IMPORT_RECENT] = { NULL };
+  dt_iop_module_t *recent_owner[_IMPORT_RECENT] = { NULL };
+  int n_recent = 0;
   for(GList *l = darktable.develop->forms; l; l = g_list_next(l))
   {
     const dt_masks_form_t *f = l->data;
@@ -1003,11 +1046,33 @@ static int _masks_import_fill_shapes(GMenu *menu,
       n_unused++;
       n++;
     }
-    GMenu *bucket =
-      _masks_import_kind_bucket(by_type, kinds, kind_submenus, &n_kinds, _form_kind(f));
+    const guint kind = _form_kind(f);
+    GMenu *bucket = _masks_import_kind_bucket(by_type, kinds, kind_submenus, &n_kinds, kind);
     if(bucket)
-      _masks_import_append(bucket, f->name, one, _masks_import_module_index(mods, owner),
+    {
+      // the submenu already names the kind
+      gchar *short_name = _name_without_kind(f->name, _kind_name(kind, FALSE));
+      gchar *plain = owner ? _module_plain_name(owner) : NULL;
+      gchar *label = plain ? g_strdup_printf("%s (%s)", short_name, plain)
+                           : g_strdup(short_name);
+      _masks_import_append(bucket, label, one, _masks_import_module_index(mods, owner),
                            f->formid);
+      g_free(label);
+      g_free(plain);
+      g_free(short_name);
+    }
+
+    if(!owner) continue;
+    int k = MIN(n_recent, _IMPORT_RECENT - 1);
+    if(n_recent == _IMPORT_RECENT && recent[k]->formid >= f->formid) continue;
+    for(; k > 0 && recent[k - 1]->formid < f->formid; k--)
+    {
+      recent[k] = recent[k - 1];
+      recent_owner[k] = recent_owner[k - 1];
+    }
+    recent[k] = f;
+    recent_owner[k] = owner;
+    n_recent = MIN(n_recent + 1, _IMPORT_RECENT);
   }
   if(n_unused)
     g_menu_append_submenu(by_module, _("not currently used"), G_MENU_MODEL(unused));
@@ -1015,11 +1080,21 @@ static int _masks_import_fill_shapes(GMenu *menu,
 
   if(n)
   {
-    GMenu *sec = g_menu_new();
-    g_menu_append_submenu(sec, _("by source module"), G_MENU_MODEL(by_module));
-    g_menu_append_submenu(sec, _("by type"), G_MENU_MODEL(by_type));
-    g_menu_append_section(menu, NULL, G_MENU_MODEL(sec));
-    g_object_unref(sec);
+    GMenu *recent_sec = g_menu_new();
+    for(int k = 0; k < n_recent; k++)
+    {
+      gchar *plain = _module_plain_name(recent_owner[k]);
+      gchar *label = g_strdup_printf("%s (%s)", recent[k]->name, plain);
+      _masks_import_append(recent_sec, label, one,
+                           _masks_import_module_index(mods, recent_owner[k]),
+                           recent[k]->formid);
+      g_free(label);
+      g_free(plain);
+    }
+    g_menu_append_section(menu, _("recent"), G_MENU_MODEL(recent_sec));
+    g_object_unref(recent_sec);
+    g_menu_append_section(menu, _("by source module"), G_MENU_MODEL(by_module));
+    g_menu_append_section(menu, _("by type"), G_MENU_MODEL(by_type));
   }
   g_object_unref(by_module);
   g_object_unref(by_type);
@@ -1154,6 +1229,45 @@ static void _masks_import_compress_action(GSimpleAction *action, GVariant *param
   if(module && module->blend_data) dt_masks_gui_build_list(module);
 }
 
+// the pointer over a shape entry draws on the canvas what picking it would
+// bring in. `btn` is the import button, holding the menu's module table
+static void _masks_import_item_enter(GtkEventControllerMotion *controller,
+                                     const double x,
+                                     const double y,
+                                     GtkWidget *btn)
+{
+  GVariant *target = g_object_get_data(G_OBJECT(dt_gui_get_widget(controller)), "dt-popover-target");
+  if(!target || !g_variant_is_of_type(target, G_VARIANT_TYPE("(iii)"))) return;
+  int op = 0, a = -1, b = INVALID_MASKID;
+  g_variant_get(target, "(iii)", &op, &a, &b);
+  if(op == _IMPORT_ADD_MASK || op == _IMPORT_USE_MASK) return;
+  GList *fids = _masks_import_pick_fids(g_object_get_data(G_OBJECT(btn), "import_modules"),
+                                        op, a, b, NULL);
+  dt_masks_set_import_preview(fids);
+  g_list_free(fids);
+}
+
+static void _masks_import_item_leave(GtkEventControllerMotion *controller, GtkWidget *btn)
+{
+  dt_masks_set_import_preview(NULL);
+}
+
+// every entry of the popover, on every submenu page, that has a target (see
+// _popover_menu_apply_item_tooltip in gui/gtk.c)
+static void _masks_import_connect_preview(GtkWidget *w, gpointer btn)
+{
+  if(GTK_IS_MODEL_BUTTON(w) && g_object_get_data(G_OBJECT(w), "dt-popover-target"))
+    dt_gui_connect_motion(w, NULL, _masks_import_item_enter, _masks_import_item_leave,
+                          (GtkWidget *)btn);
+  else if(GTK_IS_CONTAINER(w))
+    gtk_container_forall(GTK_CONTAINER(w), _masks_import_connect_preview, btn);
+}
+
+static void _masks_import_menu_closed(GtkPopover *popover, gpointer user_data)
+{
+  dt_masks_set_import_preview(NULL);
+}
+
 // run a click gesture before the widget's own event handling: in the capture
 // phase, a press its handler claims (dt_gui_claim) reaches neither the
 // widget's own gesture (a GtkButton's "clicked" included) nor the row the
@@ -1216,8 +1330,10 @@ static void _masks_import_btn_pressed(GtkGestureSingle *gesture,
 
   GMenu *link_menu = g_menu_new();
   GMenu *copy_menu = g_menu_new();
-  const int n_shapes = _masks_import_fill_shapes(link_menu, module, mods, FALSE);
-  _masks_import_fill_shapes(copy_menu, module, mods, TRUE);
+  // a module without shapes takes no shapes from others either
+  const int n_shapes =
+    bd->shapes_support ? _masks_import_fill_shapes(link_menu, module, mods, FALSE) : 0;
+  if(n_shapes) _masks_import_fill_shapes(copy_menu, module, mods, TRUE);
   GMenu *param_menu = g_menu_new();
   const int n_param =
     bd->blendif_support ? _masks_import_fill_parametric(param_menu, module, mods) : 0;
@@ -1279,20 +1395,21 @@ static void _masks_import_btn_pressed(GtkGestureSingle *gesture,
   g_ptr_array_unref(later);
 
   darktable.gui->active_popover_menu = dt_gui_popover_menu_from_model(btn, menu);
+  _masks_import_connect_preview(darktable.gui->active_popover_menu, btn);
+  g_signal_connect(darktable.gui->active_popover_menu, "closed",
+                   G_CALLBACK(_masks_import_menu_closed), NULL);
   gtk_popover_popup(GTK_POPOVER(darktable.gui->active_popover_menu));
   g_object_unref(menu);
 }
 
-// edit on canvas and solo edit, as one run on the panel header between two
-// fixed gaps: they act on the canvas, wherever the panel is hosted. Packed
-// once, into the box the header reserved for them (see masks_header_edit_box)
+// edit on canvas and solo edit, as one run leading the panel header's
+// buttons: they act on the canvas, wherever the panel is hosted. Packed once,
+// into the box the header reserved for them (see masks_header_edit_box)
 static void _pack_header_edit_run(dt_iop_gui_blend_data_t *bd)
 {
   GtkWidget *run = bd->masks_header_edit_box;
   if(!run) return;
-  _pack_gap(run);
   dt_gui_box_add(run, bd->masks_edit, bd->soloedit_mode);
-  _pack_gap(run);
   // soloedit_mode carries no_show_all and is shown by the mask-mode update
   gtk_widget_show(bd->masks_edit);
   gtk_widget_show(run);
@@ -1423,31 +1540,106 @@ static void _props_panel_show(dt_iop_gui_blend_data_t *bd);
 static GtkWidget *_build_group_opacity_editor(dt_iop_module_t *module, const dt_mask_id_t cid);
 static GtkWidget *_build_param_boost_editor(dt_iop_module_t *module, const dt_mask_id_t formid);
 
-// the mask being off disables nothing: editing a mask control turns the mask
-// on, as editing a module's parameter turns the module on
-// (dt_dev_add_history_item's `enable` argument). A control is insensitive only
-// when it has nothing to act on, whatever the on/off state (see also
-// _update_add_target_hints and _update_refine_sensitivity). The off
-// state shows on the on/off toggle alone
-static void _masks_panel_apply_shape_sensitivity(dt_iop_gui_blend_data_t *data)
+// the mask header's controls between its on/off toggle and its expander,
+// grouped as the theme spaces them (.dt_masks_group_end): the edit run, the
+// overlay and the eye, the lock
+static GtkWidget *_masks_header_cluster_new(GtkWidget *edit_run,
+                                            GtkWidget *overlay,
+                                            GtkWidget *eye,
+                                            GtkWidget *lock)
 {
-  // "edit on canvas" and "solo edit" need shapes to put on the canvas, and a
-  // mask that is not locked (see _mask_lock_sync). Sensitivity is set on the
-  // widget itself, not on the cluster holding it, because the hamburger
-  // shares that cluster.
-  const gboolean has_drawn = _module_has_drawn_shapes(data->module);
-  const gboolean locked = dt_develop_blend_mask_locked(data->module->blend_params);
-  if(data->masks_edit) gtk_widget_set_sensitive(data->masks_edit, has_drawn && !locked);
-  // the whole edit run goes with them: with no shapes there is nothing to put
-  // on the canvas or to solo. Like every header button but the expander and
-  // the on/off toggle, it is also hidden while the mask is off
-  const gboolean enabled = data->module->blend_params->mask_mode != DEVELOP_MASK_DISABLED;
+  dt_gui_add_class(edit_run, "dt_masks_button_row");
+  dt_gui_add_class(edit_run, "dt_masks_group_end");
+  dt_gui_add_class(eye, "dt_masks_group_end");
+  GtkWidget *cluster = dt_gui_hbox(edit_run, overlay, eye, lock);
+  dt_gui_add_class(cluster, "dt_masks_button_row");
+  gtk_widget_set_valign(cluster, GTK_ALIGN_CENTER);
+  return cluster;
+}
+
+void dt_masks_gui_header_toggle_style(GtkWidget *toggle)
+{
+  // background always blends with the header's own, on or off: only the
+  // glyph shows the state
+  dt_gui_add_class(toggle, "dt_transparent_background");
+  dt_gui_add_class(toggle, "dt_masks_enable_toggle");
+  gtk_widget_set_valign(toggle, GTK_ALIGN_CENTER);
+}
+
+// the visibility and sensitivity of the buttons in the mask header, the one
+// place that decides them. In the panel below it, the mask being off disables
+// nothing: editing a mask control turns the mask on, as editing a module's
+// parameter turns the module on (dt_dev_add_history_item's `enable`
+// argument), and a control is insensitive only when it has nothing to act on
+// (see also _update_add_target_hints and _update_refine_sensitivity). The
+// header's buttons follow that where they can: "edit on canvas" and the
+// overlay switch an off mask on (_mask_switch_on), the overlay an off module
+// too, while the eye, which only compares against the mask, has nothing to
+// compare with an off one
+void dt_iop_gui_blend_mask_header_sync(dt_iop_gui_blend_data_t *data)
+{
+  if(!data || !data->module || !data->module->blend_params) return;
+  dt_iop_module_t *module = data->module;
+  const uint32_t mask_mode = module->blend_params->mask_mode;
+  const gboolean mask_on = mask_mode != DEVELOP_MASK_DISABLED;
+  const gboolean locked = dt_develop_blend_mask_locked(module->blend_params);
+  const gboolean has_drawn = _module_has_drawn_shapes(module);
+  // modules that can't be toggled on/off in the first place (see
+  // module->hide_enable_button) get no mask controls in the header either
+  const gboolean show = !module->hide_enable_button;
+
+  // the header's buttons stay put whatever the state, greyed out when they
+  // have nothing to act on, so the header never reflows under the pointer.
+  // Only a raster mask drops the edit run: it has no shapes to edit at all.
+  // The run is empty until the mask controls are built (_pack_header_edit_run).
+  // "edit on canvas" and "solo edit" (a preference for every module) need
+  // shapes and an unlocked mask (see _mask_lock_sync)
   if(data->masks_header_edit_box)
-    gtk_widget_set_visible(data->masks_header_edit_box, has_drawn && enabled);
-  // the mask overlay button (data->showmask) is deliberately NOT here: it
-  // follows the module header's own mask indicator, which shows only for an
-  // enabled mask, since an off mask renders nothing to overlay (see
-  // _blendop_masks_mode_callback)
+    gtk_widget_set_visible(data->masks_header_edit_box,
+                           show && data->masks_inited && !(mask_mode & DEVELOP_MASK_RASTER));
+  const gboolean can_edit = has_drawn && !locked;
+  if(data->masks_edit) gtk_widget_set_sensitive(data->masks_edit, can_edit);
+  if(data->soloedit_mode) gtk_widget_set_sensitive(data->soloedit_mode, can_edit);
+
+  // the overlay switches an off module and an off mask on
+  // (dt_iop_gui_blend_mask_display), the mask unless it is locked; the eye
+  // needs both on, as it compares in the center view, which does not render
+  // an off module, against a mask
+  if(data->showmask)
+  {
+    gtk_widget_set_visible(data->showmask, show);
+    gtk_widget_set_sensitive(data->showmask, mask_on || !locked);
+  }
+  if(data->suppress)
+  {
+    gtk_widget_set_visible(data->suppress, show);
+    gtk_widget_set_sensitive(data->suppress, module->enabled && mask_on);
+  }
+
+  // the lock stays live on an off mask while it is locked: an off mask keeps
+  // its lock, and this is the panel's only way to lift it
+  if(data->mask_lock_btn)
+  {
+    gtk_widget_set_visible(data->mask_lock_btn, show && data->masks_support);
+    gtk_widget_set_sensitive(data->mask_lock_btn, mask_on || locked);
+  }
+
+  // the utility lib's reset button resets the mask it hosts (gui_reset in
+  // libs/masks_flexi_host.c), which the lock forbids
+  dt_lib_module_t *host = darktable.develop->proxy.masks_flexi_host.module;
+  if(host && host->reset_button
+     && darktable.develop->proxy.masks_flexi_host.hosted_module == module)
+    gtk_widget_set_sensitive(host->reset_button, !locked);
+}
+
+void dt_iop_gui_blend_mask_reset(dt_iop_module_t *module)
+{
+  if(dt_develop_blend_mask_locked(module->blend_params))
+  {
+    dt_control_log(_("the mask is locked"));
+    return;
+  }
+  dt_masks_gui_apply_default_preset(module, TRUE);
 }
 
 // disarm every add-shape button
@@ -1461,9 +1653,11 @@ static void _masks_shapes_set_inactive(dt_iop_gui_blend_data_t *bd)
 // shapes disarmed and on-canvas editing off: nothing of the mask on canvas
 static void _masks_canvas_off(dt_iop_gui_blend_data_t *bd)
 {
+  // nothing of a module without shapes is on canvas: what is there is its own
+  if(!bd->shapes_support) return;
   _masks_shapes_set_inactive(bd);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
-  dt_masks_set_edit_mode(bd->module, DT_MASKS_EDIT_OFF);
+  _panel_set_edit_mode(bd->module, DT_MASKS_EDIT_OFF);
 }
 
 static void _blendop_masks_mode_callback(const dt_develop_mask_mode_t mask_mode,
@@ -1488,7 +1682,7 @@ static void _blendop_masks_mode_callback(const dt_develop_mask_mode_t mask_mode,
   const gboolean show_flexi = !mode_raster;
 
   _box_set_visible(data->blend_box, TRUE);
-  _masks_panel_apply_shape_sensitivity(data);
+  dt_iop_gui_blend_mask_header_sync(data);
 
   if(data->masks_blend_header)
   {
@@ -1524,10 +1718,7 @@ static void _blendop_masks_mode_callback(const dt_develop_mask_mode_t mask_mode,
      */
     if(data->module->blend_colorspace(data->module, NULL, NULL) == IOP_CS_RAW)
     {
-      data->module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->showmask), FALSE);
-      data->module->suppress_mask = FALSE;
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->suppress), FALSE);
+      dt_iop_gui_blend_mask_view_off(data->module);
 
       // disable also guided-filters on RAW based color space
       GtkWidget *const raw_off[] = { data->masks_feathering_guide_combo,
@@ -1544,6 +1735,11 @@ static void _blendop_masks_mode_callback(const dt_develop_mask_mode_t mask_mode,
   }
   else
   {
+    // an off mask has nothing to overlay or to compare against, as in
+    // dt_iop_gui_update_blending. Not for a raster mask, which also lands
+    // here while on
+    if(!mask_enabled) dt_iop_gui_blend_mask_view_off(data->module);
+
     // mask off: still shown, as described above
     _box_set_visible(data->refine_box, !mask_enabled);
   }
@@ -1837,6 +2033,116 @@ _picker_colorspace_for_channel(const dt_develop_blend_colorspace_t csp,
   return picker_cst;
 }
 
+// what the overlay looks like is gamma.c's _mask_display; the empty mask
+// that draws none is blend.c's mask_is_uniform_fallback
+const char *dt_iop_gui_blend_showmask_tooltip(void)
+{
+  return _("display mask\n"
+           "shows the image in gray, tinted yellow where this module applies:\n"
+           "the stronger the yellow, the stronger the effect. plain gray means\n"
+           "the module does not apply there.\n"
+           "an empty mask shows no overlay at all: the module applies everywhere.\n"
+           "switches the module and the mask on if they are off");
+}
+
+// switch an off module on, through its own on/off button, for a control
+// whose effect only shows with the module rendered. FALSE if it stays off
+static gboolean _module_switch_on(dt_iop_module_t *module)
+{
+  if(!module->enabled && module->off)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), TRUE);
+  return module->enabled;
+}
+
+// switch an off mask on for a header control that acts on it, as touching any
+// mask control does. FALSE, with a message, for a locked mask, which stays off
+static gboolean _mask_switch_on(dt_iop_module_t *module)
+{
+  if(module->blend_params->mask_mode != DEVELOP_MASK_DISABLED) return TRUE;
+  if(dt_develop_blend_mask_locked(module->blend_params))
+  {
+    dt_control_log(_("the mask is locked"));
+    return FALSE;
+  }
+  _blendop_mask_enable(module);
+  return TRUE;
+}
+
+// the overlay's controls show module->request_mask_display: the two toggle
+// buttons (in the mask header and module header) and any active parametric
+// channel button. Synchronized here alone, so they never disagree
+static void _mask_display_buttons_sync(dt_iop_module_t *module)
+{
+  const gboolean on = module->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE;
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  GtkWidget *const buttons[] = { bd ? bd->showmask : NULL, module->mask_indicator };
+  DT_ENTER_GUI_UPDATE();
+  for(int i = 0; i < G_N_ELEMENTS(buttons); i++)
+    if(buttons[i]) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(buttons[i]), on);
+  DT_LEAVE_GUI_UPDATE();
+
+  if(bd && bd->masks_param_channels_inner)
+  {
+    dt_pthread_mutex_lock(&bd->lock);
+    const dt_dev_pixelpipe_display_mask_t persistent =
+      bd->hover_preview_active ? bd->save_for_leave : module->request_mask_display;
+    dt_pthread_mutex_unlock(&bd->lock);
+
+    const dt_dev_pixelpipe_display_mask_t active_channel =
+      (persistent & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
+        ? (persistent & DT_DEV_PIXELPIPE_DISPLAY_ANY)
+        : DT_DEV_PIXELPIPE_DISPLAY_NONE;
+
+    const dt_iop_gui_blendif_channel_t *channels =
+      dt_develop_blendif_channels_for_csp(bd->csp);
+
+    GList *btns = gtk_container_get_children(GTK_CONTAINER(bd->masks_param_channels_inner));
+    for(GList *l = btns; l; l = l->next)
+    {
+      GtkWidget *btn = l->data;
+      const int ch = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(btn), "param-channel"));
+      const gboolean is_active =
+        channels && ch >= 0 && ch < _channel_count(channels)
+        && (channels[ch].display_channel == active_channel)
+        && (active_channel != DT_DEV_PIXELPIPE_DISPLAY_NONE);
+
+      if(is_active)
+        dt_gui_add_class(btn, "dt_masks_channel_active");
+      else
+        dt_gui_remove_class(btn, "dt_masks_channel_active");
+    }
+    g_list_free(btns);
+  }
+}
+
+void dt_iop_gui_blend_mask_display(dt_iop_module_t *module, const gboolean show)
+{
+  // the overlay of an off module or mask would show nothing: both are
+  // switched on first, unless the mask is locked, and then it stays off
+  const gboolean on = show && _module_switch_on(module) && _mask_switch_on(module);
+  module->request_mask_display &= ~(DT_DEV_PIXELPIPE_DISPLAY_MASK
+                                    | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL
+                                    | DT_DEV_PIXELPIPE_DISPLAY_ANY);
+  if(on) module->request_mask_display |= DT_DEV_PIXELPIPE_DISPLAY_MASK;
+  _mask_display_buttons_sync(module);
+  dt_iop_request_focus(module);
+  _refresh_mask_display(module);
+}
+
+void dt_iop_gui_blend_mask_view_off(dt_iop_module_t *module)
+{
+  module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+  module->suppress_mask = FALSE;
+  _mask_display_buttons_sync(module);
+  const dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(bd && bd->suppress)
+  {
+    DT_ENTER_GUI_UPDATE();
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), FALSE);
+    DT_LEAVE_GUI_UPDATE();
+  }
+}
+
 static void _blendop_blendif_showmask_clicked(
   GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, dt_iop_module_t *module)
 {
@@ -1844,61 +2150,54 @@ static void _blendop_blendif_showmask_clicked(
 
   if(dt_gui_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
 
-  GtkWidget *button = dt_gui_get_widget(gesture);
-
-  const gboolean has_mask_display =
+  // ctrl+click shows it whatever its state, a plain click toggles it
+  const gboolean showing =
     module->request_mask_display
     & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
-
-  module->request_mask_display &=
-    ~(DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL
-      | DT_DEV_PIXELPIPE_DISPLAY_ANY);
-
-  GdkModifierType state = dt_gui_current_state(gesture);
-
-  if(dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
-    module->request_mask_display |=
-      (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
-  else if(dt_modifier_is(state, GDK_SHIFT_MASK))
-    module->request_mask_display |= DT_DEV_PIXELPIPE_DISPLAY_CHANNEL;
-  else if(dt_modifier_is(state, GDK_CONTROL_MASK))
-    module->request_mask_display |= DT_DEV_PIXELPIPE_DISPLAY_MASK;
-  else
-    module->request_mask_display |=
-      (has_mask_display ? DT_DEV_PIXELPIPE_DISPLAY_NONE : DT_DEV_PIXELPIPE_DISPLAY_MASK);
-
-  gtk_toggle_button_set_active
-    (GTK_TOGGLE_BUTTON(button),
-     module->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE);
-
-  if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), TRUE);
-
-  DT_ENTER_GUI_UPDATE();
-
-  // (re)set the header mask indicator too
-  if(module->mask_indicator)
-    gtk_toggle_button_set_active
-      (GTK_TOGGLE_BUTTON(module->mask_indicator),
-       module->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE);
-
-  DT_LEAVE_GUI_UPDATE();
-
-  dt_iop_request_focus(module);
-  _refresh_mask_display(module);
+  dt_iop_gui_blend_mask_display(module,
+                                dt_modifier_is(dt_gui_current_state(gesture), GDK_CONTROL_MASK)
+                                || !showing);
 }
 
 static void _blendop_suppress_toggled(
   GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, dt_iop_module_t *module)
 {
   GtkToggleButton *button = GTK_TOGGLE_BUTTON(dt_gui_get_widget(gesture));
+
+  // it compares against the mask in the center view, where an off module or
+  // mask shows nothing to compare. Insensitive then
+  // (dt_iop_gui_blend_mask_header_sync), but a shortcut still gets here:
+  // _action_process_toggle does not check sensitivity
+  const char *why = !module->enabled
+    ? _("the module is switched off")
+    : module->blend_params->mask_mode == DEVELOP_MASK_DISABLED
+    ? _("the mask is switched off")
+    : NULL;
+  if(why)
+  {
+    if(!DT_IN_GUI_UPDATE()) dt_control_log("%s", why);
+    return;
+  }
+
   module->suppress_mask = !gtk_toggle_button_get_active(button);
   DT_GUARD_GUI_UPDATE();
 
-  if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), TRUE);
   dt_iop_request_focus(module);
 
   gtk_toggle_button_set_active(button, module->suppress_mask);
   _refresh_mask_display(module);
+}
+
+// the mask on/off toggle draws the toolbar's domino, filled when the mask is
+// on. The domino keys its fill on CPF_SPECIAL_FLAG, since the toolbar button's
+// checked state means "panel showing"; here checked means "mask on", so
+// CPF_ACTIVE carries straight over
+static void _paint_mask_enable_toggle(cairo_t *cr, const gint x, const gint y,
+                                      const gint w, const gint h, gint flags, void *data)
+{
+  if(flags & CPF_ACTIVE) flags |= CPF_SPECIAL_FLAG;
+  else flags &= ~CPF_SPECIAL_FLAG;
+  dtgtk_cairo_paint_masks_panel(cr, x, y, w, h, flags, data);
 }
 
 static void _update_mask_enable_toggle_tooltip(GtkWidget *toggle, const gboolean enabled)
@@ -1924,7 +2223,6 @@ static void _mask_lock_sync(dt_iop_module_t *module)
 
   const dt_develop_blend_params_t *bp = module->blend_params;
   const gboolean locked = dt_develop_blend_mask_locked(bp);
-  const gboolean enabled = bp->mask_mode != DEVELOP_MASK_DISABLED;
 
   DT_ENTER_GUI_UPDATE();
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->mask_lock_btn), locked);
@@ -1937,21 +2235,14 @@ static void _mask_lock_sync(dt_iop_module_t *module)
       "discarding the history still removes it"));
   gtk_widget_set_tooltip_text(bd->mask_lock_btn, lock_tip);
   g_free(lock_tip);
-  // shown with an off mask too while locked: an off mask keeps its lock, and
-  // this is the panel's only way to lift it
-  gtk_widget_set_visible(bd->mask_lock_btn,
-                         bd->masks_support && !module->hide_enable_button
-                         && (enabled || locked));
-
   if(bd->masks_box) gtk_widget_set_sensitive(GTK_WIDGET(bd->masks_box), !locked);
   if(bd->refine_box) gtk_widget_set_sensitive(GTK_WIDGET(bd->refine_box), !locked);
-  _masks_panel_apply_shape_sensitivity(bd);
-  if(bd->soloedit_mode) gtk_widget_set_sensitive(bd->soloedit_mode, !locked);
+  dt_iop_gui_blend_mask_header_sync(bd);
 
   dt_iop_add_remove_mask_lock_indicator(module, locked);
 
   if(locked && bd->masks_shown != DT_MASKS_EDIT_OFF)
-    dt_masks_set_edit_mode(module, DT_MASKS_EDIT_OFF);
+    _panel_set_edit_mode(module, DT_MASKS_EDIT_OFF);
 }
 
 void dt_iop_gui_blend_set_mask_lock(dt_iop_module_t *module, const gboolean lock)
@@ -2000,18 +2291,13 @@ static void _blendop_mask_enable(dt_iop_module_t *module)
   _update_mask_enable_toggle_tooltip(data->mask_enable_toggle, TRUE);
   _blendop_masks_mode_callback(DEVELOP_MASK_ENABLED | DEVELOP_MASK_FLEXI, data);
   dt_iop_add_remove_mask_indicator(module, TRUE);
-  gtk_widget_set_visible(data->showmask, TRUE);
   _mask_lock_sync(module);
 
   // no unfolding here: _blendop_masks_mode_callback above clears the fold
   // preference and relocates the panel, which unfolds it in any position
 
-  DT_ENTER_GUI_UPDATE();
-  if(module->mask_indicator)
-    gtk_toggle_button_set_active(
-      GTK_TOGGLE_BUTTON(module->mask_indicator),
-      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->showmask)));
-  DT_LEAVE_GUI_UPDATE();
+  // the indicator just added starts unset
+  _mask_display_buttons_sync(module);
 
   if(fresh) dt_masks_gui_apply_default_preset(module, FALSE);
 }
@@ -2029,6 +2315,8 @@ void dt_iop_gui_blend_mask_enable(dt_iop_module_t *module)
   // calls this for every mask edit, those modules' own form edits included
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   if(!bd->masks_support || !bd->masks_inited) return;
+  // a module without shapes edits its own on canvas, never its mask
+  if(!bd->shapes_support) return;
 
   // this runs inside the callback that made the edit, and switching the mask
   // on rebuilds the list, which would destroy the row and the editor that
@@ -2114,7 +2402,6 @@ static void _blendop_mask_enable_toggled(
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), FALSE);
     _update_mask_enable_toggle_tooltip(button, FALSE);
-    gtk_widget_set_visible(data->showmask, FALSE);
     _blendop_masks_mode_callback(DEVELOP_MASK_DISABLED, data);
     dt_iop_add_remove_mask_indicator(module, FALSE);
     _mask_lock_sync(module);
@@ -2132,6 +2419,8 @@ static void _blendop_masks_add_shape(GtkGestureSingle *gesture,
   GtkWidget *widget = dt_gui_get_widget(gesture);
 
   dt_iop_gui_blend_data_t *bd = self->blend_data;
+  // hidden there, but its shortcut still reaches it
+  if(!bd->shapes_support) return;
 
   const GdkModifierType state = dt_gui_current_state(gesture);
   const gboolean continuous = dt_modifier_is(state, GDK_CONTROL_MASK);
@@ -2204,12 +2493,20 @@ static void _blendop_masks_show_and_edit(GtkGestureSingle *gesture,
                                              gdouble y,
                                              dt_iop_module_t *self)
 {
+  dt_iop_gui_blend_data_t *bd = self->blend_data;
+  // a module without shapes edits its own on canvas (_panel_set_edit_mode)
+  if(!bd->shapes_support) return;
+
   darktable.develop->form_gui->creation_continuous = FALSE;
   darktable.develop->form_gui->creation_continuous_module = NULL;
 
-  dt_iop_gui_blend_data_t *bd = self->blend_data;
-
   dt_iop_request_focus(self);
+
+  // starting to edit an off mask switches it on: before the edit mode is
+  // set, which the switch does not keep
+  if(bd->masks_shown == DT_MASKS_EDIT_OFF && _module_has_drawn_shapes(self)
+     && !_mask_switch_on(self))
+    return;
 
   DT_ENTER_GUI_UPDATE();
 
@@ -2252,7 +2549,7 @@ static void _blendop_masks_show_and_edit(GtkGestureSingle *gesture,
 
   gtk_toggle_button_set_active
     (GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown != DT_MASKS_EDIT_OFF);
-  dt_masks_set_edit_mode(self, bd->masks_shown);
+  _panel_set_edit_mode(self, bd->masks_shown);
 
   _masks_shapes_set_inactive(bd);
 
@@ -2739,6 +3036,9 @@ void dt_iop_gui_blend_masks_options_popup(GtkButton *button, gpointer user_data)
   dt_iop_module_t *module = darktable.develop ? darktable.develop->gui_module : NULL;
   if(!module && darktable.develop)
     module = darktable.develop->proxy.masks_flexi_host.hosted_module;
+  // a module that cannot blend has no options of its own: offer the general
+  // ones, as with nothing focused, rather than open nothing
+  if(module && !module->blend_data) module = NULL;
   _blendif_options_callback(button, module);
 }
 
@@ -2893,6 +3193,56 @@ static gboolean _preview_on_hover_dwell_elapsed(gpointer user_data)
   bd->preview_dwell_timer = 0;
   _preview_on_hover_apply(module);
   return G_SOURCE_REMOVE;
+}
+
+// toggle a parametric channel overlay persistently on the center view.
+// If the channel is already persistently displayed, toggles it off;
+// otherwise switches to displaying this channel. Unlike hover preview,
+// this remains active until toggled off or another overlay replaces it
+static void _toggle_channel_overlay(dt_iop_module_t *module,
+                                    const dt_dev_pixelpipe_display_mask_t channel_display)
+{
+  if(!module || !module->blend_data) return;
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd->blendif_support) return;
+  if(channel_display == DT_DEV_PIXELPIPE_DISPLAY_NONE) return;
+  const dt_dev_pixelpipe_display_mask_t target =
+    DT_DEV_PIXELPIPE_DISPLAY_CHANNEL | channel_display;
+
+  dt_pthread_mutex_lock(&bd->lock);
+  const dt_dev_pixelpipe_display_mask_t persistent =
+    bd->hover_preview_active ? bd->save_for_leave : module->request_mask_display;
+  const gboolean is_current =
+    (persistent & (DT_DEV_PIXELPIPE_DISPLAY_CHANNEL | DT_DEV_PIXELPIPE_DISPLAY_ANY)) == target;
+
+  if(is_current)
+  {
+    bd->save_for_leave = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+    bd->hover_preview_active = FALSE;
+    _preview_on_hover_cancel_dwell(bd);
+    dt_pthread_mutex_unlock(&bd->lock);
+
+    module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+    _mask_display_buttons_sync(module);
+    _refresh_mask_display(module);
+  }
+  else
+  {
+    dt_pthread_mutex_unlock(&bd->lock);
+
+    if(!_module_switch_on(module) || !_mask_switch_on(module)) return;
+    dt_iop_request_focus(module);
+
+    dt_pthread_mutex_lock(&bd->lock);
+    bd->save_for_leave = target;
+    bd->hover_preview_active = FALSE;
+    _preview_on_hover_cancel_dwell(bd);
+    dt_pthread_mutex_unlock(&bd->lock);
+
+    module->request_mask_display = target;
+    _mask_display_buttons_sync(module);
+    _refresh_mask_display(module);
+  }
 }
 
 // shared by both hovered widget kinds: the parametric range sliders below and
@@ -3176,8 +3526,7 @@ const char *slider_tooltip[] =
        "drag marker to adjust\n"
        "right-click marker for precise numeric entry\n"
        "double-click to reset\n"
-       "press 'm' to toggle mask view\n"
-       "press 'a' to toggle display modes"),
+       "press 'm' to toggle mask view"),
     N_("adjustment based on unblended output of this module:\n"
        "- upper markers: full opacity (100% mask)\n"
        "- lower markers: zero opacity (0% mask)\n"
@@ -3185,8 +3534,16 @@ const char *slider_tooltip[] =
        "drag marker to adjust\n"
        "right-click marker for precise numeric entry\n"
        "double-click to reset\n"
-       "press 'm' to toggle mask view\n"
-       "press 'a' to toggle display modes") };
+       "press 'm' to toggle mask view") };
+
+// the 'a' key only means something on a channel with an alternative display
+// scale: the hue channels have none
+static gchar *_param_slider_tooltip(const int in_out, const gboolean altdisplay)
+{
+  return altdisplay ? g_strdup_printf("%s\n%s", _(slider_tooltip[in_out]),
+                                      _("press 'a' to toggle display modes"))
+                    : g_strdup(_(slider_tooltip[in_out]));
+}
 
 static void _rebuild_param_channel_buttons(dt_iop_module_t *module);
 
@@ -3287,7 +3644,8 @@ static gboolean _module_has_drawn_shapes(const dt_iop_module_t *module)
 {
   if(!module || !module->blend_params) return FALSE;
   const dt_masks_form_t *grp =
-    dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
+    dt_masks_get_from_id(darktable.develop,
+                         dt_develop_blend_mask_group_id(module, module->blend_params));
   return dt_masks_group_walk(darktable.develop->forms, grp, _is_drawn_shape, NULL);
 }
 
@@ -3295,7 +3653,8 @@ dt_masks_form_t *dt_masks_gui_module_mask_group(dt_iop_module_t *module)
 {
   if(!module || !module->blend_params) return NULL;
   dt_masks_form_t *grp =
-    dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
+    dt_masks_get_from_id(darktable.develop,
+                         dt_develop_blend_mask_group_id(module, module->blend_params));
   return (grp && (grp->type & DT_MASKS_GROUP)) ? grp : NULL;
 }
 
@@ -3726,7 +4085,10 @@ static dt_masks_form_t *_sole_held_group(dt_masks_form_t *grp, dt_masks_point_gr
   for(GList *m = darktable.develop->iop; m; m = g_list_next(m))
   {
     const dt_iop_module_t *mod = m->data;
-    if(mod->blend_params && mod->blend_params->mask_id == sub->formid) return NULL;
+    if(mod->blend_params
+       && (mod->blend_params->mask_id == sub->formid
+           || mod->blend_params->blend_mask_id == sub->formid))
+      return NULL;
   }
   int refs = 0;
   for(GList *f = darktable.develop->forms; f; f = g_list_next(f))
@@ -4381,8 +4743,11 @@ static void _target_show(GtkWidget *icon_box, GtkWidget *label, GtkWidget *icon,
 }
 
 // the row opening the selection panel: the selection's icon and name,
-// centered (see _target_show). The sections under it act on it
-static GtkWidget *_selection_row_new(GtkWidget **icon_box, GtkWidget **name_label)
+// centered (see _target_show), and on the right the button deleting it. The
+// sections under it act on it
+static GtkWidget *_selection_row_new(GtkWidget **icon_box,
+                                     GtkWidget **name_label,
+                                     GtkWidget **delete_btn)
 {
   *icon_box = dt_gui_hbox();
   gtk_widget_set_valign(*icon_box, GTK_ALIGN_CENTER);
@@ -4392,10 +4757,96 @@ static GtkWidget *_selection_row_new(GtkWidget **icon_box, GtkWidget **name_labe
   gtk_label_set_ellipsize(GTK_LABEL(*name_label), PANGO_ELLIPSIZE_MIDDLE);
   dt_gui_add_class(*name_label, "dt_masks_selection_name");
 
-  GtkWidget *row = dt_gui_hbox(*icon_box, *name_label);
-  gtk_widget_set_halign(row, GTK_ALIGN_CENTER);
+  *delete_btn = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
+  gtk_widget_set_valign(*delete_btn, GTK_ALIGN_CENTER);
+  dt_gui_add_class(*delete_btn, "dt_masks_selection_delete");
+
+  // the name centered on the whole row whatever sits beside it, as the
+  // section titles under it are (see _section_new)
+  GtkWidget *row = dt_gui_hbox();
+  gtk_box_set_center_widget(GTK_BOX(row), dt_gui_hbox(*icon_box, *name_label));
+  gtk_box_pack_end(GTK_BOX(row), *delete_btn, FALSE, FALSE, 0);
   dt_gui_add_class(row, "dt_masks_selection_row");
   return row;
+}
+
+// "delete selection" (see _register_masks_action_shortcuts), for the delete
+// button to show its keys and the tooltips of the rows and their menus to
+// name them
+static dt_action_t *_masks_delete_action = NULL;
+
+// the keys deleting the selection, as bound now in the darkroom, the one view
+// with a mask panel; NULL while none is. Caller frees
+static gchar *_delete_selection_keys(void)
+{
+  return dt_shortcut_action_keys(_masks_delete_action, DT_VIEW_DARKROOM, ", ");
+}
+
+// the line of a row's actions menu saying what else does its delete
+static gchar *_delete_also_tip(void)
+{
+  gchar *keys = _delete_selection_keys();
+  gchar *tip = keys ? g_strdup_printf(_("%s, or the delete button by the selection's name,"
+                                        " does the same"), keys)
+                    : g_strdup(_("the delete button by the selection's name does the same"));
+  g_free(keys);
+  return tip;
+}
+
+// what deleting the selection removes: the element or group the selection
+// row names (see _selection_row_update), with *group saying which.
+// INVALID_MASKID while it names the whole mask, which is the mask's own group
+// and stays (see _group_delete), a shape being drawn, or a locked mask
+static dt_mask_id_t _selection_delete_target(dt_iop_module_t *module, gboolean *group)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  *group = FALSE;
+  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
+  if(!grp || _pending_form(module) || dt_develop_blend_mask_locked(module->blend_params))
+    return INVALID_MASKID;
+  const dt_mask_id_t id = bd->masks_refine_scope_formid;
+  if(bd->masks_refine_scope_kind == REFINE_SCOPE_ELEMENT)
+    return dt_masks_gui_group_point(grp, id) ? id : INVALID_MASKID;
+  if(bd->masks_refine_scope_kind == REFINE_SCOPE_GROUP
+     && dt_masks_model_nested_group_of(grp, id))
+  {
+    *group = TRUE;
+    return id;
+  }
+  return INVALID_MASKID;
+}
+
+// the delete button's sensitivity, and a tooltip saying what it removes, or
+// why it removes nothing. The shortcut's keys follow on their own (see
+// dt_shortcut_tooltip_callback), the button being the action's widget
+static void _selection_delete_sync(dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd->masks_selection_delete_btn) return;
+  gboolean group;
+  const dt_mask_id_t id = _selection_delete_target(module, &group);
+  const char *tip;
+  if(dt_is_valid_maskid(id) && group)
+    tip = _("delete this group and every element in it");
+  else if(dt_is_valid_maskid(id))
+  {
+    // as the row's actions menu says it (see _build_shape_actions_menu)
+    const dt_masks_form_t *elem = dt_masks_get_from_id(darktable.develop, id);
+    const gboolean linked =
+      dt_masks_model_form_is_linked(elem)
+      || (_form_is_shape(elem) && _model_form_uses_in_mask(module, id) > 1);
+    tip = linked ? _("delete this element here; the other rows and modules"
+                     " it is linked with keep it")
+                 : _("delete this element from the mask");
+  }
+  else if(_pending_form(module))
+    tip = _("the shape being drawn is not in the mask yet: there is nothing to delete");
+  else
+    tip = _("the whole mask cannot be deleted: select the element or group"
+            " to delete.\nto remove everything in the mask, right-click"
+            " its header and choose \"reset mask\"");
+  gtk_widget_set_sensitive(bd->masks_selection_delete_btn, dt_is_valid_maskid(id));
+  gtk_widget_set_tooltip_text(bd->masks_selection_delete_btn, tip);
 }
 
 // the selection panel's row names what the panel holds: the shape being
@@ -4438,6 +4889,7 @@ static void _selection_row_update(dt_iop_module_t *module)
                 " properties and refinements");
   }
   _target_show(bd->masks_selection_icon_box, bd->masks_selection_name_label, icon_w, name);
+  _selection_delete_sync(module);
   // on the row, the icon included
   if(bd->masks_selection_name_label)
     gtk_widget_set_tooltip_text(gtk_widget_get_parent(bd->masks_selection_name_label), tip);
@@ -7093,6 +7545,8 @@ void dt_iop_gui_blend_masks_select_form(dt_iop_module_t *module, const dt_mask_i
   if(!module) return;
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   if(!bd || !bd->masks_list_box) return;
+  // the canvas of a module without shapes holds its own, none of the mask's
+  if(!bd->shapes_support) return;
   // a canvas with nothing selected leaves the panel's selection alone: the
   // canvas drops its own on every rebuild (dt_masks_clear_form_gui), undo's
   // included (libs/history.c _pop_undo), while the user's deselects reach the
@@ -7127,7 +7581,7 @@ void dt_iop_gui_blend_masks_hover_form(dt_iop_module_t *module, const dt_mask_id
 {
   if(!module) return;
   dt_iop_gui_blend_data_t *bd = module->blend_data;
-  if(!bd || !bd->masks_list_box) return;
+  if(!bd || !bd->masks_list_box || !bd->shapes_support) return;
   if(formid != bd->canvas_hovered_formid)
   {
     bd->canvas_hovered_formid = formid;
@@ -7168,7 +7622,7 @@ static void _refresh_mask_display(const dt_iop_module_t *module)
 void dt_iop_gui_blend_masks_clear_selection(dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = module ? module->blend_data : NULL;
-  if(!bd || !bd->masks_list_box) return;
+  if(!bd || !bd->masks_list_box || !bd->shapes_support) return;
   if(!dt_is_valid_maskid(bd->panel_selected_formid)
      && !dt_is_valid_maskid(bd->panel_selected_group_cid))
     return;
@@ -7551,7 +8005,7 @@ static void _toggle_solo_form(dt_iop_module_t *module, const dt_mask_id_t id)
   if(!grp || !dt_masks_gui_group_point(grp, id)) return;
 
   if(dt_masks_model_toggle_solo_form(module, grp, id) == DT_MASKS_SOLO_CANVAS_FULL)
-    dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
+    _panel_set_edit_mode(module, DT_MASKS_EDIT_FULL);
   dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
   _sync_hidden_to_form_visible(module);
   // solo can flip every row's hidden state at once; refresh them all in place
@@ -7601,7 +8055,7 @@ void dt_masks_gui_refresh_canvas_edit(dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   if(bd && bd->masks_shown != DT_MASKS_EDIT_OFF)
-    dt_masks_set_edit_mode(module, bd->masks_shown); // rebuilds form_visible + redraws
+    _panel_set_edit_mode(module, bd->masks_shown); // rebuilds form_visible + redraws
   else
     dt_masks_change_form_gui(NULL); // clear the overlay
   dt_control_queue_redraw_center();
@@ -9330,7 +9784,7 @@ static void _soloedit_hover_scope(dt_iop_module_t *module, const GList *hovered)
     // _soloedit_follow_selection does
     const dt_mask_id_t canvas_sel = darktable.develop->mask_form_selected_id;
     GList *ids = g_list_concat(g_list_copy(solo), g_list_copy(extra));
-    dt_masks_set_edit_mode_forms(module, ids, DT_MASKS_EDIT_FULL);
+    _panel_set_edit_mode_forms(module, ids, DT_MASKS_EDIT_FULL);
     g_list_free(ids);
     darktable.develop->mask_form_selected_id = canvas_sel;
   }
@@ -9833,8 +10287,11 @@ static void _update_add_target_hints(dt_iop_module_t *module)
       _preview_on_hover_is_on()
         ? g_strconcat(hint,
                       _("\nrest the pointer here to preview this channel"),
+                      _("\nshift+click to toggle persistent channel overlay"),
                       NULL)
-        : g_strdup(hint);
+        : g_strconcat(hint,
+                      _("\nshift+click to toggle persistent channel overlay"),
+                      NULL);
     for(GList *l =
           gtk_container_get_children(GTK_CONTAINER(bd->masks_param_channels_inner));
         l; l = g_list_delete_link(l, l))
@@ -10081,7 +10538,7 @@ static void _set_group_target(dt_iop_module_t *module, const dt_mask_id_t cid)
   // the notes a just applied preset opened all stay open until work moves on
   if(bd->panel_selected_group_cid != was_target) bd->masks_notes_all_open = FALSE;
   bd->masks_shown = DT_MASKS_EDIT_FULL;
-  dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
+  _panel_set_edit_mode(module, DT_MASKS_EDIT_FULL);
   // dt_masks_set_edit_mode(FULL) just rebuilt form_visible as the *whole*
   // group, which would silently widen an active solo-edit back to every
   // shape's outline (e.g. any group/header selection change routes through
@@ -10090,7 +10547,7 @@ static void _set_group_target(dt_iop_module_t *module, const dt_mask_id_t cid)
   if(dt_is_valid_maskid(bd->soloedit_formid))
   {
     GList *ids = _soloedit_formids(module);
-    dt_masks_set_edit_mode_forms(module, ids, DT_MASKS_EDIT_FULL);
+    _panel_set_edit_mode_forms(module, ids, DT_MASKS_EDIT_FULL);
     g_list_free(ids);
   }
   _update_row_selection(bd);
@@ -10501,7 +10958,7 @@ static void _toggle_solo_group(dt_iop_module_t *module, const dt_mask_id_t cid)
     dt_masks_model_toggle_solo_group(module, grp, (guint)cid, members);
   g_list_free(members);
   if(canvas == DT_MASKS_SOLO_CANVAS_FULL)
-    dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
+    _panel_set_edit_mode(module, DT_MASKS_EDIT_FULL);
   dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
   _sync_hidden_to_form_visible(module);
   // solo changes no row, so refresh them in place, as _toggle_solo_form does.
@@ -10639,26 +11096,41 @@ static void _group_toggle_bypass(dt_iop_module_t *module, dt_mask_id_t cid)
   _commit_structure_change(module);
 }
 
-// flip every member's own inversion bit independently (not a group-wide state
-// to set/clear): ON, OFF, ON becomes OFF, ON, OFF. A one-shot action, not a
-// persistent "group is inverted" mode -- shared by the actions menu's
+// flip every direct member's own inversion independently (not a group-wide
+// state to set/clear): ON, OFF, ON becomes OFF, ON, OFF. A one-shot action, not
+// a persistent "group is inverted" mode -- shared by the actions menu's
 // "invert all elements" entry and the "invert all elements of selected group"
-// shortcut. Not the same operation as _group_toggle_output_invert below:
+// shortcut. An element's inversion is its own INVERSE bit; a nested group's is
+// its marker's OP_INVERT, as a reference to a group carries no settings of its
+// own (see _synth_ref in masks.c) and its header's lead icon paints from the
+// marker. Not the same operation as _group_toggle_output_invert below:
 // inverting every member and folding is mathematically different from folding
 // and then inverting the result, for anything but a single-member group (see
 // DT_MASKS_STATE_OP_INVERT in masks.h).
 static void _invert_group_members(dt_iop_module_t *module, const dt_mask_id_t cid)
 {
-  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
-  GList *members = dt_masks_model_group_members(grp, cid);
-  if(!members) return;
-  for(GList *l = members; l; l = g_list_next(l))
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  dt_masks_form_t *owner = _group_of(dt_masks_gui_module_mask_group(module), cid);
+  if(!owner || !owner->points) return;
+  // the members' own list nodes, not a lookup by form id: a shape referenced
+  // twice would flip the first reference twice and the second not at all
+  for(GList *l = owner->points->next; l; l = g_list_next(l))
   {
-    dt_masks_point_group_t *pt = dt_masks_gui_group_point(grp, GPOINTER_TO_INT(l->data));
-    if(!pt) continue;
-    pt->state ^= DT_MASKS_STATE_INVERSE;
+    dt_masks_point_group_t *pt = l->data;
+    dt_masks_form_t *sub = dt_masks_get_from_id(darktable.develop, pt->formid);
+    if(sub && sub != owner && (sub->type & DT_MASKS_GROUP))
+    {
+      dt_masks_point_group_t *marker = dt_masks_group_marker(sub);
+      if(!marker) continue;
+      marker->state ^= DT_MASKS_STATE_OP_INVERT;
+      if(bd && bd->masks_list_box)
+        _apply_group_output_invert_icon(GTK_WIDGET(bd->masks_list_box),
+                                        (guint)marker->formid,
+                                        (marker->state & DT_MASKS_STATE_OP_INVERT) != 0);
+    }
+    else
+      pt->state ^= DT_MASKS_STATE_INVERSE;
   }
-  g_list_free(members);
   dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
   // inversion changes no row, only how rows look: refresh them in place, as
   // _invert_element does, rather than rebuilding with a visible flash
@@ -10806,7 +11278,7 @@ static void _group_act_empty(GSimpleAction *action, GVariant *param, gpointer u)
   // emptying the mask's own group is "reset mask": the mask starts over, with
   // the layout a new one gets
   if(cid == _mask_group_cid(module))
-    dt_masks_gui_apply_default_preset(module, TRUE);
+    dt_iop_gui_blend_mask_reset(module);
   else
     _group_reset_members(module, cid);
 }
@@ -11107,8 +11579,11 @@ static void _build_group_actions_menu(GtkWidget *anchor,
     _menu_append_tip(sec_edit, _("empty group"), "masks_group_act.empty",
                      _("remove this group's elements, keeping the group\n"
                        "with its operator, settings and name"));
-  _menu_append_tip(sec_edit, _("delete group"), "masks_group_act.delete",
-                   _("remove this group and every element in it"));
+  gchar *also = _delete_also_tip();
+  gchar *delete_tip = g_strconcat(_("remove this group and every element in it"), "\n", also, NULL);
+  _menu_append_tip(sec_edit, _("delete group"), "masks_group_act.delete", delete_tip);
+  g_free(delete_tip);
+  g_free(also);
   g_menu_append_section(menu, _("edit"), G_MENU_MODEL(sec_edit));
   g_object_unref(sec_edit);
 
@@ -11160,12 +11635,12 @@ static void _toggle_soloedit(dt_iop_module_t *module, const dt_mask_id_t id)
   if(canvas == DT_MASKS_SOLO_CANVAS_ONE)
   {
     GList *ids = _soloedit_formids(module);
-    dt_masks_set_edit_mode_forms(module, ids, DT_MASKS_EDIT_FULL);
+    _panel_set_edit_mode_forms(module, ids, DT_MASKS_EDIT_FULL);
     g_list_free(ids);
     if(had_solo) _sync_hidden_to_form_visible(module);
   }
   else
-    dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
+    _panel_set_edit_mode(module, DT_MASKS_EDIT_FULL);
   // for the solo dt_masks_model_toggle_soloedit may have cleared, whose hidden
   // bits the rows paint from. Not deferred: _refresh_all_shape_rows destroys
   // no widget (as in _toggle_solo_group)
@@ -12154,7 +12629,7 @@ static void _edit_raster_source(const dt_masks_form_t *form)
   if(sbd && dt_masks_gui_module_mask_group(src))
   {
     sbd->masks_shown = DT_MASKS_EDIT_FULL;
-    dt_masks_set_edit_mode(src, DT_MASKS_EDIT_FULL);
+    _panel_set_edit_mode(src, DT_MASKS_EDIT_FULL);
   }
 }
 
@@ -12191,7 +12666,8 @@ static gboolean _reads_raster_of(const dt_iop_module_t *m, const dt_iop_module_t
   if(bp->mask_mode & DEVELOP_MASK_RASTER)
     return dt_iop_module_is(src, bp->raster_mask_source)
            && src->multi_priority == bp->raster_mask_instance;
-  const dt_masks_form_t *grp = dt_masks_get_from_id(m->dev, bp->mask_id);
+  const dt_masks_form_t *grp =
+    dt_masks_get_from_id(m->dev, dt_develop_blend_mask_group_id(m, bp));
   return dt_masks_group_find_raster_of(m->dev->forms, grp, src, NO_MASKID, TRUE) != NULL;
 }
 
@@ -12412,10 +12888,15 @@ static void _build_shape_actions_menu(GtkWidget *anchor,
     g_menu_append_item(sec_edit, it);
     g_object_unref(it);
   }
-  _menu_append_tip(sec_edit, _("delete"), "masks_shape_act.delete",
-                   linked ? _("remove this element here; the other rows and modules"
-                              " it is linked with keep it")
-                          : _("remove this element from the mask"));
+  gchar *also = _delete_also_tip();
+  gchar *delete_tip =
+    g_strconcat(linked ? _("remove this element here; the other rows and modules"
+                           " it is linked with keep it")
+                       : _("remove this element from the mask"),
+                "\n", also, NULL);
+  _menu_append_tip(sec_edit, _("delete"), "masks_shape_act.delete", delete_tip);
+  g_free(delete_tip);
+  g_free(also);
   g_menu_append_section(menu, _("edit"), G_MENU_MODEL(sec_edit));
   g_object_unref(sec_edit);
 
@@ -12712,17 +13193,19 @@ static void _update_param_row_visibility(dt_masks_param_row_editor_t *ed)
 // its display scale when that is not the linear one
 static void _param_row_slider_set_tooltip(const dt_iop_gui_blendif_filter_t *sl,
                                           const int in_out,
+                                          const gboolean altdisplay,
                                           char range_text[4][256])
 {
   const char *which = in_out ? _("output") : _("input");
   gchar *head = sl->altmode_name ? g_strdup_printf("%s (%s)", which, sl->altmode_name)
                                  : g_strdup(which);
+  gchar *tip = _param_slider_tooltip(in_out, altdisplay);
   gchar *full_tip =
     g_strdup_printf("%s: %s  %s  %s  %s\n\n%s", head,
-                    range_text[0], range_text[1], range_text[2], range_text[3],
-                    _(slider_tooltip[in_out]));
+                    range_text[0], range_text[1], range_text[2], range_text[3], tip);
   gtk_widget_set_tooltip_text(GTK_WIDGET(sl->slider), full_tip);
   g_free(full_tip);
+  g_free(tip);
   g_free(head);
 }
 
@@ -12771,7 +13254,7 @@ static void _update_param_row_display(dt_masks_param_row_editor_t *ed)
     for(int k = 0; k < 4; k++)
       channel->scale_print(parameters[k], boost_factor, range_text[k],
                            sizeof(range_text[k]));
-    _param_row_slider_set_tooltip(sl, in_out, range_text);
+    _param_row_slider_set_tooltip(sl, in_out, channel->altdisplay != NULL, range_text);
 
     dtgtk_gradient_slider_multivalue_clear_stops(sl->slider);
     for(int k = 0; k < channel->numberstops; k++)
@@ -12882,7 +13365,8 @@ static void _param_row_slider_callback(GtkDarktableGradientSlider *slider,
 
   // keep the range tooltip in sync with a live drag too, not just the initial
   // build
-  _param_row_slider_set_tooltip(&ed->filter[in_out], in_out, range_text);
+  _param_row_slider_set_tooltip(&ed->filter[in_out], in_out,
+                                channels[p->channel].altdisplay != NULL, range_text);
 
   if(parameters[1] == 0.0f && parameters[2] == 1.0f)
     p->blendif &= ~(1 << ch);
@@ -13784,12 +14268,16 @@ static gboolean _param_row_picker_apply(dt_iop_module_t *module,
 
 // build one input-or-output slider bundle. There is no per-slider polarity
 // button: the element's own invert (the row's actions menu) stands in for it
-static void _build_param_row_filter(dt_iop_gui_blendif_filter_t *sl, const int in_out)
+static void _build_param_row_filter(dt_iop_gui_blendif_filter_t *sl,
+                                    const int in_out,
+                                    const gboolean altdisplay)
 {
   sl->slider =
     DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
   dt_gui_add_class(GTK_WIDGET(sl->slider), "dt_masks_range_slider");
-  gtk_widget_set_tooltip_text(GTK_WIDGET(sl->slider), _(slider_tooltip[in_out]));
+  gchar *tip = _param_slider_tooltip(in_out, altdisplay);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(sl->slider), tip);
+  g_free(tip);
   sl->altmode = 0;
   sl->altmode_name = NULL;
 }
@@ -13885,8 +14373,10 @@ static GtkWidget *_build_param_row_editor(dt_iop_module_t *module,
   ed->formid = form->formid;
   ed->module = module;
 
-  _build_param_row_filter(&ed->filter[0], 0);
-  _build_param_row_filter(&ed->filter[1], 1);
+  const dt_iop_gui_blendif_channel_t *channels = _param_channels(p);
+  const gboolean altdisplay = channels && channels[p->channel].altdisplay;
+  _build_param_row_filter(&ed->filter[0], 0, altdisplay);
+  _build_param_row_filter(&ed->filter[1], 1, altdisplay);
 
   for(int in_out = 0; in_out < 2; in_out++)
   {
@@ -14019,7 +14509,9 @@ static GtkWidget *_build_param_row_editor(dt_iop_module_t *module,
   gtk_grid_set_row_spacing(GTK_GRID(sliders_grid), DT_PIXEL_APPLY_DPI(2));
 
   GtkWidget *input_lbl = _make_icon_widget(_paint_param_input);
-  gtk_widget_set_tooltip_text(input_lbl, _(slider_tooltip[0]));
+  gchar *input_tip = _param_slider_tooltip(0, altdisplay);
+  gtk_widget_set_tooltip_text(input_lbl, input_tip);
+  g_free(input_tip);
   dt_gui_add_class(input_lbl, "dt_masks_channel_icon");
   gtk_grid_attach(GTK_GRID(sliders_grid), input_lbl, 0, 0, 1, 1);
   ed->input_lbl = input_lbl;
@@ -14049,7 +14541,9 @@ static GtkWidget *_build_param_row_editor(dt_iop_module_t *module,
   ed->input_slot = input_overlay;
 
   GtkWidget *output_lbl = _make_icon_widget(_paint_param_output);
-  gtk_widget_set_tooltip_text(output_lbl, _(slider_tooltip[1]));
+  gchar *output_tip = _param_slider_tooltip(1, altdisplay);
+  gtk_widget_set_tooltip_text(output_lbl, output_tip);
+  g_free(output_tip);
   dt_gui_add_class(output_lbl, "dt_masks_channel_icon");
   gtk_grid_attach(GTK_GRID(sliders_grid), output_lbl, 0, 1, 1, 1);
   ed->output_lbl = output_lbl;
@@ -14249,6 +14743,11 @@ static GtkWidget *_make_shape_row(dt_iop_module_t *module,
     g_string_append(tip, (form->type & DT_MASKS_RASTER)
                            ? _("shift+click to show/hide this raster mask's opacity slider\n")
                            : _("shift+click to show/hide its expanded controls\n"));
+  // the keys as bound when the row is built, which a rebind waits for
+  gchar *delete_keys = _delete_selection_keys();
+  if(delete_keys)
+    g_string_append_printf(tip, _("%s to delete it, once selected\n"), delete_keys);
+  g_free(delete_keys);
   g_string_append(tip, _("right-click for its actions: disable, solo, invert, compose,"
                          " rename, delete\n"));
   g_string_append(tip, _("drag to rearrange: drop it onto a group to put it inside, onto"
@@ -14371,10 +14870,13 @@ static GtkWidget *_make_shape_row(dt_iop_module_t *module,
     dt_gui_add_class(expand_toggle, "dt_masks_icon");
     dt_gui_add_class(expand_toggle, "dt_masks_expander");
     dt_gui_add_class(expand_toggle, "dt_transparent_background");
+    // the boost factor is in the row only without the subpanel
     gtk_widget_set_tooltip_text(
       expand_toggle,
-      _("show/hide this channel's expanded controls (input and output sliders,"
-        " boost factor)"));
+      props_subpanel
+        ? _("show/hide this channel's expanded controls (input and output sliders)")
+        : _("show/hide this channel's expanded controls (input and output sliders,"
+            " boost factor)"));
     g_object_set_data(G_OBJECT(expand_toggle), "formid", GINT_TO_POINTER(fid));
     g_signal_connect(G_OBJECT(expand_toggle), "toggled",
                      G_CALLBACK(_masks_param_inout_toggled), module);
@@ -14721,7 +15223,8 @@ static gboolean _masks_panel_reconcile(dt_iop_module_t *module,
   // its content
   dt_print(DT_DEBUG_MASKS,
            "[masks] panel rebuild '%s': mask_id=%d grp=%s points=%d flexi=%d",
-           module->op, module->blend_params->mask_id, grp ? "ok" : "NULL",
+           module->op, dt_develop_blend_mask_group_id(module, module->blend_params),
+           grp ? "ok" : "NULL",
            grp ? g_list_length(grp->points) : -1, flexi ? 1 : 0);
   // a flexi mask always shows a group: its own, or with no group form yet the
   // one it will have (see dt_masks_gui_module_flexi_group)
@@ -15176,6 +15679,11 @@ static void _pack_group(dt_iop_module_t *module,
     if(movable)
       g_string_append(title_tip, _("drag to rearrange: drop it onto a group to put it inside,"
                                    " onto the group's top or bottom edge to put it beside\n"));
+    gchar *delete_keys = _delete_selection_keys();
+    if(delete_keys)
+      g_string_append_printf(title_tip, _("%s to delete it and every element in it,"
+                                          " once selected\n"), delete_keys);
+    g_free(delete_keys);
     g_string_append(title_tip, _("right-click for the group's actions: disable, solo,"
                                  " invert, compose, rename, delete"));
   }
@@ -15715,12 +16223,12 @@ static void _masks_panel_pack(dt_iop_module_t *module, dt_masks_form_t *grp)
   _recompute_insert_hint(module);
 
   // with its last shape gone there is nothing left to edit on the canvas
-  _masks_panel_apply_shape_sensitivity(bd);
+  dt_iop_gui_blend_mask_header_sync(bd);
   if(bd->masks_edit && !_module_has_drawn_shapes(module)
      && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bd->masks_edit)))
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
-    dt_masks_set_edit_mode(module, DT_MASKS_EDIT_OFF);
+    _panel_set_edit_mode(module, DT_MASKS_EDIT_OFF);
   }
 
   _update_add_target_hints(module);
@@ -15908,7 +16416,44 @@ static void _element_cluster_released(GtkGestureSingle *gesture,
     _element_cluster_toggle(gesture, module);
 }
 
-// right-click deletes every member of the cluster; a primary press is left to
+static void _cluster_act_delete(GSimpleAction *action, GVariant *param, gpointer u)
+{
+  dt_iop_module_t *module = g_object_get_data(G_OBJECT(u), "module");
+  if(darktable.gui->active_popover_menu)
+    gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
+  // a copy: the rebuild the delete commits destroys the header holding the list
+  GList *members = g_list_copy(g_object_get_data(G_OBJECT(u), "hover-formids"));
+  if(module) _delete_elements(module, members);
+  g_list_free(members);
+}
+
+// the cluster's actions menu, as an element row or a group header has one
+static void _build_cluster_actions_menu(GtkWidget *anchor, dt_iop_module_t *module)
+{
+  g_object_set_data(G_OBJECT(anchor), "module", module);
+
+  GSimpleActionGroup *sag = g_simple_action_group_new();
+  const GActionEntry action_entries[] =
+  {
+    { "delete", _cluster_act_delete, NULL, NULL },
+  };
+  g_action_map_add_action_entries(G_ACTION_MAP(sag), action_entries,
+                                  G_N_ELEMENTS(action_entries), anchor);
+  gtk_widget_insert_action_group(anchor, "masks_cluster_act", G_ACTION_GROUP(sag));
+  g_object_unref(sag);
+
+  GMenu *menu = g_menu_new();
+  GMenu *sec_edit = g_menu_new();
+  _menu_append_tip(sec_edit, _("delete all"), "masks_cluster_act.delete",
+                   _("remove every element folded into this row"));
+  g_menu_append_section(menu, _("edit"), G_MENU_MODEL(sec_edit));
+  g_object_unref(sec_edit);
+
+  darktable.gui->active_popover_menu = dt_gui_popover_menu_from_model(anchor, menu);
+  g_object_unref(menu);
+}
+
+// right-click opens the cluster's actions menu; a primary press is left to
 // the drag source and to the release (see _element_cluster_released)
 static void _element_cluster_press(GtkGestureSingle *gesture,
                                    const int n_press,
@@ -15918,8 +16463,11 @@ static void _element_cluster_press(GtkGestureSingle *gesture,
 {
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_SECONDARY) return;
   dt_gui_claim(gesture);
-  GList *members = g_object_get_data(G_OBJECT(dt_gui_get_widget(gesture)), "hover-formids");
-  _delete_elements(module, members);
+  GtkWidget *w = dt_gui_get_widget(gesture);
+  _build_cluster_actions_menu(w, module);
+  GdkRectangle rect = { (int)x, (int)y, 1, 1 };
+  gtk_popover_set_pointing_to(GTK_POPOVER(darktable.gui->active_popover_menu), &rect);
+  gtk_popover_popup(GTK_POPOVER(darktable.gui->active_popover_menu));
 }
 
 // a member that is a nested group, shown as a group of its own like a
@@ -16074,7 +16622,7 @@ static void _pack_group_elements(dt_iop_module_t *module,
                                              "click to expand or collapse\n"
                                              "drag anywhere in the row to move them all"
                                              " together, like a single element\n"
-                                             "right-click to delete them all"));
+                                             "right-click for actions"));
 
     GtkWidget *rev = gtk_revealer_new();
     gtk_container_add(GTK_CONTAINER(rev), inner);
@@ -16181,13 +16729,49 @@ _add_parametric_channel(dt_iop_module_t *self, const int channel_idx, const int 
   dt_masks_gui_build_list(self);
 }
 
+static void _toggle_channel_overlay_for_button(dt_iop_module_t *module,
+                                               GtkWidget *widget,
+                                               const int ch)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd) return;
+  const dt_iop_gui_blendif_channel_t *channels =
+    dt_develop_blendif_channels_for_csp(bd->csp);
+  if(ch >= 0 && ch < _channel_count(channels))
+    _toggle_channel_overlay(module, channels[ch].display_channel);
+}
+
+// capture-phase gesture handler: shift+click toggles the channel overlay
+// persistently instead of adding a channel element
+static void _param_channel_shift_overlay_pressed(GtkGestureSingle *gesture,
+                                                 const int n_press,
+                                                 const double x,
+                                                 const double y,
+                                                 dt_iop_module_t *module)
+{
+  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
+  if(dt_modifier_is(dt_gui_current_state(gesture), GDK_SHIFT_MASK)
+     || dt_modifier_is(dt_key_modifier_state(), GDK_SHIFT_MASK))
+  {
+    dt_gui_claim(gesture);
+    GtkWidget *widget = dt_gui_get_widget(gesture);
+    const int ch = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "param-channel"));
+    _toggle_channel_overlay_for_button(module, widget, ch);
+  }
+}
+
 // one-click "add parametric" channel button (flexi row). Adds a single-channel
 // form for the button's channel, on the input sub-channel.
-static void _param_channel_clicked(GtkButton *button, gpointer user_data)
+static void _param_channel_add_clicked(GtkButton *button, gpointer user_data)
 {
   if(DT_IN_GUI_UPDATE()) return;
   dt_iop_module_t *self = user_data;
   const int ch = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "param-channel"));
+  if(dt_modifier_is(dt_key_modifier_state(), GDK_SHIFT_MASK))
+  {
+    _toggle_channel_overlay_for_button(self, GTK_WIDGET(button), ch);
+    return;
+  }
   _add_parametric_channel(self, ch, 0);
 }
 
@@ -16266,8 +16850,9 @@ static void _rebuild_param_channel_buttons(dt_iop_module_t *module)
     gtk_widget_set_tooltip_text(btn, _(ch->tooltip));
     _stash_base_tooltip(btn);
     g_object_set_data(G_OBJECT(btn), "param-channel", GINT_TO_POINTER(idx));
-    g_signal_connect(G_OBJECT(btn), "clicked", G_CALLBACK(_param_channel_clicked),
+    g_signal_connect(G_OBJECT(btn), "clicked", G_CALLBACK(_param_channel_add_clicked),
                      module);
+    _press_before_widget(dt_gui_connect_click(btn, _param_channel_shift_overlay_pressed, NULL, module));
     dt_gui_connect_motion(btn, NULL, _param_channel_button_enter_cb,
                           _param_channel_button_leave_cb, module);
     gtk_widget_show(btn);
@@ -16278,6 +16863,8 @@ static void _rebuild_param_channel_buttons(dt_iop_module_t *module)
     // call explicitly every time it is (re)created)
     dt_action_define_iop(module, "blend`shapes", ch->label, btn, &dt_action_def_button);
   }
+
+  _mask_display_buttons_sync(module);
 }
 
 // add a raster mask element referencing the given upstream source module + mask
@@ -16386,6 +16973,30 @@ static void _shortcut_invert_selected_element(dt_action_t *action)
     _invert_element(bd->module, bd->panel_selected_formid);
 }
 
+// delete what the selection row names (see _selection_delete_target): the
+// selection panel's delete button and the "delete selection" shortcut
+static void _delete_selection(dt_iop_module_t *module)
+{
+  gboolean group;
+  const dt_mask_id_t id = _selection_delete_target(module, &group);
+  if(!dt_is_valid_maskid(id)) return;
+  if(group)
+    _group_delete(module, id);
+  else
+    _delete_single_shape(module, id, NULL);
+}
+
+static void _shortcut_delete_selection(dt_action_t *action)
+{
+  dt_iop_gui_blend_data_t *bd = _shortcut_target();
+  if(bd && bd->masks_inited) _delete_selection(bd->module);
+}
+
+static void _selection_delete_clicked(GtkButton *button, dt_iop_module_t *module)
+{
+  _delete_selection(module);
+}
+
 // the header toggle has its own widget action under "blend`tools", but
 // _process_action skips a widget action whose target is invisible
 // (dt_action_widget_invisible in gui/accelerators.c), and the toggle goes with
@@ -16427,6 +17038,29 @@ static void _shortcut_toggle_preview_on_hover(dt_action_t *action)
   _preview_on_hover_set(!_preview_on_hover_is_on());
 }
 
+static void _shortcut_toggle_channel_overlay(dt_action_t *action)
+{
+  dt_iop_module_t *module = dt_dev_gui_module();
+  if(!module || !module->blend_data) return;
+
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd->blendif_support) return;
+  const dt_iop_gui_blendif_channel_t *channels =
+    dt_develop_blendif_channels_for_csp(bd->csp);
+  if(!channels) return;
+
+  for(const dt_iop_gui_blendif_channel_t *ch = channels; ch->label; ch++)
+  {
+    if(g_strcmp0(ch->label, action->label) == 0 || g_strcmp0(_(ch->label), action->label) == 0)
+    {
+      _toggle_channel_overlay(module, ch->display_channel);
+      return;
+    }
+  }
+
+  dt_toast_log(_("channel '%s' is not supported by this module"), action->label);
+}
+
 static void _shortcut_toggle_sticky_opacity(dt_action_t *action)
 {
   dt_conf_set_bool("plugins/darkroom/masks/opacity_not_sticky",
@@ -16457,14 +17091,14 @@ static void _shortcut_toggle_masks_panel(dt_action_t *action)
   dt_iop_gui_blend_masks_panel_toggle();
 }
 
-// the "blend mask" caption folds the panel like the arrow beside it. The
-// sequence is claimed so that, in the canvas panel, the header around it
-// (_flexi_header_pressed in gui/gtk.c) does not fold it a second time
-static void _masks_caption_clicked(GtkGestureSingle *gesture,
-                                   gint n_press,
-                                   gdouble x,
-                                   gdouble y,
-                                   gpointer user_data)
+// a click on the embedded mask header, outside its buttons, folds the panel
+// like the arrow. The sequence is claimed so that the module around it does
+// not act on it too
+static void _masks_header_clicked(GtkGestureSingle *gesture,
+                                  gint n_press,
+                                  gdouble x,
+                                  gdouble y,
+                                  gpointer user_data)
 {
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
   gtk_gesture_set_state(GTK_GESTURE(gesture), GTK_EVENT_SEQUENCE_CLAIMED);
@@ -16606,6 +17240,8 @@ static void _register_masks_action_shortcuts(void)
                      _shortcut_invert_selected_group_output, 0, 0);
   dt_action_register(masks, N_("invert selected element"),
                      _shortcut_invert_selected_element, 0, 0);
+  _masks_delete_action = dt_action_register(masks, N_("delete selection"),
+                                            _shortcut_delete_selection, GDK_KEY_Delete, 0);
   dt_action_register(masks, N_("solo edit the selection"),
                      _shortcut_toggle_soloedit, 0, 0);
   dt_action_register(masks, N_("change operator of selected group"),
@@ -16618,6 +17254,17 @@ static void _register_masks_action_shortcuts(void)
                      _shortcut_toggle_sticky_opacity, 0, 0);
   dt_action_register(masks, N_("auto-expand selected"),
                      _shortcut_toggle_auto_expand_selected, 0, 0);
+
+  static const char *const _param_channel_action_labels[] = {
+    N_("L"), N_("a"), N_("b"), N_("C"), N_("h"),
+    N_("g"), N_("R"), N_("G"), N_("B"), N_("H"), N_("S"),
+    N_("Jz"), N_("Cz"), N_("hz")
+  };
+
+  dt_action_t *overlay = dt_action_section(&darktable.control->actions_blend, N_("channel overlay"));
+  for(size_t i = 0; i < G_N_ELEMENTS(_param_channel_action_labels); i++)
+    dt_action_register(overlay, _param_channel_action_labels[i],
+                       _shortcut_toggle_channel_overlay, 0, 0);
 
   _register_forward_actions();
 }
@@ -16739,7 +17386,8 @@ void dt_iop_gui_init_masks(GtkWidget *blendw, dt_iop_module_t *module)
     dt_gui_box_add(bd->masks_param_channels_box, bd->masks_param_channels_inner);
     gtk_widget_show(bd->masks_param_channels_inner);
     gtk_widget_show(bd->masks_import_btn);
-    gtk_widget_show(shapes_box);
+    gtk_widget_set_no_show_all(shapes_box, TRUE);
+    gtk_widget_set_visible(shapes_box, bd->shapes_support);
 
     // the group layout presets build a whole set of groups at once, so they
     // sit apart from the runs, at the top right
@@ -16915,7 +17563,6 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->mask_enable_toggle),
                                is_mask_enabled);
   _update_mask_enable_toggle_tooltip(bd->mask_enable_toggle, is_mask_enabled);
-  _masks_panel_apply_shape_sensitivity(bd);
   if(bd->masks_blend_header)
   {
     if(is_mask_enabled)
@@ -16926,10 +17573,6 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   if(darktable.develop->proxy.masks_flexi_host.hosted_module == module)
     dt_ui_flexi_panel_set_active(darktable.gui->ui, is_mask_enabled);
 
-  const gboolean has_mask_display =
-    (module->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), has_mask_display);
-
   // the details refinement (bp->details) makes a real mask with no mask type
   // set (dt_develop_blend_process's `uniform` branch), so the show-mask and
   // suppress controls and the mask indicator count it too
@@ -16938,6 +17581,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
 
   // (un)set the mask indicator
   dt_iop_add_remove_mask_indicator(module, valid_masking);
+  _mask_display_buttons_sync(module);
   _mask_lock_sync(module);
 
   // initialization of blending modes
@@ -17087,26 +17731,14 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
      */
     if(module->blend_colorspace(module, NULL, NULL) == IOP_CS_RAW)
     {
-      module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), FALSE);
-      module->suppress_mask = FALSE;
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), FALSE);
-      // (re)set the header mask indicator too
-      if(module->mask_indicator)
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->mask_indicator), FALSE);
+      dt_iop_gui_blend_mask_view_off(module);
     }
 
     _box_set_visible(bd->refine_box, TRUE);
   }
   else
   {
-    module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), FALSE);
-    // (re)set the header mask indicator too
-    if(module->mask_indicator)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->mask_indicator), FALSE);
-    module->suppress_mask = FALSE;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), FALSE);
+    dt_iop_gui_blend_mask_view_off(module);
 
     // mask off: still shown, as the rest of the panel is
     _box_set_visible(bd->refine_box, !mask_enabled);
@@ -17133,11 +17765,11 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     const gboolean had_list = bd->masks_list_sig != DT_INVALID_HASH;
     if(mode_flexi || !has_group || !had_list) dt_masks_gui_build_list(module);
     // and nothing of an off mask belongs on canvas
-    if(!mask_enabled) dt_masks_set_edit_mode(module, DT_MASKS_EDIT_OFF);
+    if(!mask_enabled) _panel_set_edit_mode(module, DT_MASKS_EDIT_OFF);
   }
   else
   {
-    if(bd->masks_inited) dt_masks_set_edit_mode(module, DT_MASKS_EDIT_OFF);
+    if(bd->masks_inited) _panel_set_edit_mode(module, DT_MASKS_EDIT_OFF);
     _box_set_visible(bd->masks_box, FALSE);
     _box_set_visible(bd->props_panel_box, FALSE);
   }
@@ -17152,8 +17784,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   // modules that can't be toggled on/off in the first place (see
   // module->hide_enable_button) don't get a blend-mask on/off control either
   gtk_widget_set_visible(bd->mask_enable_toggle, !module->hide_enable_button);
-  gtk_widget_set_visible(bd->showmask, is_mask_enabled && !module->hide_enable_button);
-  gtk_widget_set_visible(bd->suppress, is_mask_enabled && !module->hide_enable_button);
+  dt_iop_gui_blend_mask_header_sync(bd);
 
   if(darktable.develop && darktable.develop->gui_module == module)
     dt_iop_gui_blend_masks_panel_relocate(module);
@@ -17191,6 +17822,7 @@ static void _carry_edit_to(dt_iop_module_t *module)
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   if(carried == DT_MASKS_EDIT_OFF
      || !bd->masks_support
+     || !bd->shapes_support
      || !bd->masks_edit
      || module->blend_params->mask_mode == DEVELOP_MASK_DISABLED
      || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bd->masks_edit)))
@@ -17207,7 +17839,7 @@ static void _carry_edit_to(dt_iop_module_t *module)
   DT_ENTER_GUI_UPDATE();
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
   DT_LEAVE_GUI_UPDATE();
-  dt_masks_set_edit_mode(module, carried);
+  _panel_set_edit_mode(module, carried);
 }
 
 static void _carry_mask_display_to(dt_iop_module_t *module)
@@ -17273,7 +17905,7 @@ void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
     dt_pthread_mutex_unlock(&bd->lock);
     _focus_carried_mask_display = shown & DT_DEV_PIXELPIPE_DISPLAY_MASK;
     const gboolean editing =
-      bd->masks_support && bd->masks_edit
+      bd->shapes_support && bd->masks_edit
       && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bd->masks_edit));
     if(editing)
       _focus_carried_edit = bd->masks_shown;
@@ -17352,7 +17984,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     bd->blend_modes_csp = DEVELOP_BLEND_CS_NONE;
     dt_iop_colorspace_type_t cst = module->blend_colorspace(module, NULL, NULL);
     bd->blendif_support = (cst == IOP_CS_LAB || cst == IOP_CS_RGB);
-    bd->masks_support = !(module->flags() & IOP_FLAGS_NO_MASKS);
+    bd->masks_support = TRUE;
+    bd->shapes_support = !(module->flags() & IOP_FLAGS_NO_MASKS);
 
     dt_pthread_mutex_init(&bd->lock);
 
@@ -17361,9 +17994,10 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     // embedded in the module it folds the panel body away below this header
     // and doubles as the way back (see dt_masks_gui_flexi_inline_collapse_clicked, which
     // dispatches on the position, and sets the arrow direction and tooltip
-    // to match). Hidden only in the utility-lib position, which collapses
-    // via the lib's own expander header. A plain flat arrow with its own CSS
-    // class, deliberately not styled like the on/off toggle next to it.
+    // to match). Not shown in the hosted positions, which collapse by their
+    // own means, and only holding its place on the canvas (see
+    // _masks_header_apply_side). A plain flat arrow with its
+    // own CSS class, deliberately not styled like the on/off toggle.
     bd->flexi_inline_collapse_btn =
       dtgtk_button_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);
     gtk_widget_set_name(bd->flexi_inline_collapse_btn, "masks-collapse");
@@ -17382,94 +18016,66 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     bd->mask_enable_toggle =
       dt_iop_togglebutton_new(module, "blend`masks", N_("mask enabled"), NULL,
                               G_CALLBACK(_blendop_mask_enable_toggled), FALSE, 0, 0,
-                              dtgtk_cairo_paint_switch, NULL);
+                              _paint_mask_enable_toggle, NULL);
     _update_mask_enable_toggle_tooltip(bd->mask_enable_toggle, FALSE);
-    // background always blends with the module's own background, on or off
-    // -- only the glyph itself shows state
-    dt_gui_add_class(bd->mask_enable_toggle, "dt_transparent_background");
-    dt_gui_add_class(bd->mask_enable_toggle, "dt_masks_enable_toggle");
-    gtk_widget_set_valign(bd->mask_enable_toggle, GTK_ALIGN_CENTER);
+    dt_masks_gui_header_toggle_style(bd->mask_enable_toggle);
 
-    // its own id rather than "iop-panel-label": embedded, this caption has to
-    // line up with the module's name beside it, but the two headers are not
-    // interchangeable and only the embedded position wants that metric (see
-    // "#masks-header-caption" in darktable.css)
-    GtkWidget *caption_label = dt_ui_label_new(_("blend mask"));
-    gtk_widget_set_name(caption_label, "masks-header-caption");
-    bd->masks_blend_header_label = caption_label;
-    // expands over the gap up to the buttons, so all of it is the click target
-    GtkWidget *caption_evb = dt_gui_expand(gtk_event_box_new());
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(caption_evb), FALSE);
-    gtk_container_add(GTK_CONTAINER(caption_evb), caption_label);
-    dt_gui_connect_click(caption_evb, _masks_caption_clicked, NULL, module);
-    gtk_widget_set_tooltip_text(caption_evb, _("click to show or hide the mask panel"));
-
-    // "blend mask" header, in one fixed reading order:
-    //
-    //   expander | title | <space> | lock | show_mask_overlay | <gap>
-    //   | edit on canvas | solo edit | <gap> | on/off toggle
-    //
-    // The expander (the panel-collapse arrow, embedded position only) leads;
-    // the caption follows; everything after the space closes on the right,
-    // grouped into right_cluster below. The space in the middle is simply what
-    // is left between the start-packed and end-packed halves. When docked in
-    // the separate *right* panel, the expander moves to the far right -- see
-    // _masks_header_apply_side. The blending options open on the on/off
-    // toggle's right-click.
-    GtkWidget *gbox =
-      dt_gui_hbox(bd->flexi_inline_collapse_btn, caption_evb);
+    // "blend mask" header: the on/off toggle and the expander on its two
+    // sides, the controls between them (header_cluster below) as its center
+    // widget. Laid out by _masks_header_apply_side, which places them for
+    // each position. The blending options open on the toggle's right-click
+    GtkWidget *gbox = dt_gui_hbox();
     dt_gui_add_class(gbox, "dt_section_label");
     dt_gui_add_help_link(gbox, "masks_blending");
     gtk_widget_set_name(gbox, "blending-tabs");
     // default to the embedded inset (see darktable.css's
-    // "#blending-tabs.dt_masks_embedded"); dt_iop_gui_blend_masks_panel_relocate
-    // toggles this off for the two hosted positions, which already provide
-    // their own inset
+    // "#blending-tabs.dt_masks_embedded"), which the utility position keeps
+    // too; dt_iop_gui_blend_masks_panel_relocate toggles it off on the
+    // canvas, which provides its own inset
     dt_gui_add_class(gbox, "dt_masks_embedded");
     // the blending tabs' own header; the panel can host it (see
     // dt_iop_gui_blend_masks_panel_relocate)
     bd->masks_blend_header = gbox;
 
     bd->showmask = dt_iop_togglebutton_new(
-      module, "blend`tools", N_("display mask and/or color channel"), NULL,
+      module, "blend`tools", N_("display mask"), NULL,
       G_CALLBACK(_blendop_blendif_showmask_clicked), FALSE, 0, 0,
       dtgtk_cairo_paint_showmask, NULL);
     gtk_widget_set_valign(bd->showmask, GTK_ALIGN_CENTER);
-    gtk_widget_set_tooltip_text
-      (bd->showmask,
-       _("display mask and/or color channel.\n"
-         "ctrl+click to display mask,\n"
-         "shift+click to display channel"));
+    gtk_widget_set_tooltip_text(bd->showmask, dt_iop_gui_blend_showmask_tooltip());
 
     bd->suppress = dt_iop_togglebutton_new(
       module, "blend`tools", N_("temporarily switch off blend mask"), NULL,
       G_CALLBACK(_blendop_suppress_toggled), FALSE, 0, 0, dtgtk_cairo_paint_eye_toggle, NULL);
     gtk_widget_set_valign(bd->suppress, GTK_ALIGN_CENTER);
+    // a preview: blend.c honors suppress_mask only in the full pipe of the
+    // focused module, and dt_iop_gui_blending_lose_focus clears it
     gtk_widget_set_tooltip_text(bd->suppress,
-                                _("temporarily switch off blend mask.\n"
-                                  "only for module in focus"));
+                                _("temporarily switch off the mask, to compare\n"
+                                  "the module then applies everywhere, at the blend opacity.\n"
+                                  "only the center view is affected, not exports, and the mask\n"
+                                  "switches back on when you leave the module"));
     bd->mask_lock_btn = dt_iop_togglebutton_new(
       module, "blend`masks", N_("lock mask"), NULL,
       G_CALLBACK(_mask_lock_clicked), FALSE, 0, 0,
       dtgtk_cairo_paint_mask_lock, NULL);
     gtk_widget_set_valign(bd->mask_lock_btn, GTK_ALIGN_CENTER);
-    // shown by _mask_lock_sync only, never by an ancestor's show_all
+    // shown by dt_iop_gui_blend_mask_header_sync only, never by an ancestor's
+    // show_all
     gtk_widget_set_no_show_all(bd->mask_lock_btn, TRUE);
 
-    // edit on canvas and solo edit, with a gap either side: they are built with
-    // the rest of the mask controls, and packed in by _pack_header_edit_run.
-    // Hidden until then, so a module without masks shows no stray gaps
+    // edit on canvas and solo edit: they are built with the rest of the mask
+    // controls, and packed in by _pack_header_edit_run. Hidden until then, so
+    // a module without masks shows no stray group spacing
     bd->masks_header_edit_box = dt_gui_hbox();
-    dt_gui_add_class(bd->masks_header_edit_box, "dt_masks_button_row");
     gtk_widget_set_no_show_all(bd->masks_header_edit_box, TRUE);
 
-    // right-hand cluster: lock, show_mask_overlay, edit run, on/off toggle
-    GtkWidget *right_cluster = bd->masks_right_cluster =
-      dt_gui_hbox(bd->mask_lock_btn, bd->showmask, bd->suppress,
-                  bd->masks_header_edit_box, bd->mask_enable_toggle);
-    dt_gui_add_class(right_cluster, "dt_masks_button_row");
-    gtk_widget_set_valign(right_cluster, GTK_ALIGN_CENTER);
-    gtk_box_pack_end(GTK_BOX(gbox), right_cluster, FALSE, FALSE, 0);
+    bd->masks_header_cluster =
+      _masks_header_cluster_new(bd->masks_header_edit_box, bd->showmask,
+                                bd->suppress, bd->mask_lock_btn);
+    gtk_box_set_center_widget(GTK_BOX(gbox), bd->masks_header_cluster);
+    dt_gui_box_add(gbox, bd->mask_enable_toggle);
+    gtk_box_pack_end(GTK_BOX(gbox), bd->flexi_inline_collapse_btn, FALSE, FALSE, 0);
 
     bd->blend_modes_combo = dt_bauhaus_combobox_new(module);
     dt_action_t * ac = dt_bauhaus_widget_set_label(bd->blend_modes_combo,
@@ -17687,7 +18293,17 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     // off -- it's the only way back on.
     bd->relocatable_box = GTK_BOX(dt_gui_vbox());
     dt_gui_box_add(iopw, GTK_WIDGET(bd->relocatable_box));
-    dt_gui_box_add(bd->relocatable_box, gbox);
+    // the header's home, inside an event box: a click anywhere on it but on a
+    // button folds the panel, as on a module's own header. Hosted, the header
+    // leaves it for the host's header, which does the same
+    // (_flexi_header_pressed in gui/gtk.c, the utility lib's expander)
+    bd->masks_header_home = GTK_BOX(dt_gui_vbox(gbox));
+    GtkWidget *header_evb = gtk_event_box_new();
+    gtk_event_box_set_visible_window(GTK_EVENT_BOX(header_evb), FALSE);
+    gtk_container_add(GTK_CONTAINER(header_evb), GTK_WIDGET(bd->masks_header_home));
+    dt_gui_connect_click(header_evb, _masks_header_clicked, NULL, module);
+    gtk_widget_set_tooltip_text(header_evb, _("click to show or hide the mask panel"));
+    dt_gui_box_add(bd->relocatable_box, header_evb);
     // ...and everything below the header goes into masks_panel_body, which
     // the embedded position folds as a unit, leaving the visibility of what
     // is inside alone (see its field comment). mask_panel, which the rest of
@@ -17737,7 +18353,14 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     // #blending-box, whose padding would inset them once more than the
     // refinement beside them
     bd->masks_selection_area = dt_gui_vbox(
-      _selection_row_new(&bd->masks_selection_icon_box, &bd->masks_selection_name_label));
+      _selection_row_new(&bd->masks_selection_icon_box, &bd->masks_selection_name_label,
+                         &bd->masks_selection_delete_btn));
+    g_signal_connect(G_OBJECT(bd->masks_selection_delete_btn), "clicked",
+                     G_CALLBACK(_selection_delete_clicked), module);
+    // the button is the shortcut's widget, so its tooltip lists the keys
+    // deleting the selection, as rebound
+    if(_masks_delete_action)
+      dt_action_define(_masks_delete_action, NULL, NULL, bd->masks_selection_delete_btn, NULL);
     gtk_widget_set_name(bd->masks_selection_area, "masks-selection-area");
     _add_wrapped_box(bd->masks_selection_area, bd->props_panel_box, "masks_drawn");
     // renamed from the #blending-box _add_wrapped_box gives it, whose padding

@@ -785,8 +785,10 @@ void expose(dt_view_t *self,
   */
   // Mask editing (including creation) is the only state that relaxes the pan
   // clamp to allow the viewport past the image; it is disabled while the crop
-  // overlay is active, so form_visible is NULL there.
-  const gboolean mask_editing = dev->form_visible != NULL;
+  // overlay is active, so form_visible is NULL there. The import menu's
+  // preview draws shapes in the same frame, whatever the module shows
+  const gboolean mask_editing = dev->form_visible != NULL
+    || (dev->form_gui && dev->form_gui->import_preview);
 
   float sb_zoom_x = zoom_x, sb_zoom_y = zoom_y, sb_boxw = boxw, sb_boxh = boxh;
   if(boxw > 0.95f)
@@ -1081,7 +1083,9 @@ void expose(dt_view_t *self,
   const gboolean display_masks =
     dmod && dmod->enabled && dt_dev_modulegroups_test_activated(darktable.develop);
 
-  if(dev->form_visible && display_masks)
+  // the import menu's preview shows even while this module's mask is hidden
+  if((dev->form_visible && display_masks)
+     || (dmod && dev->form_gui && dev->form_gui->import_preview))
   {
     dt_print_pipe(DT_DEBUG_EXPOSE,
         "expose masks",
@@ -1113,7 +1117,9 @@ void expose(dt_view_t *self,
     const float corr_x = CLAMP((zoom_x - zoom_x_vp) * wd, -max_corr, max_corr);
     const float corr_y = CLAMP((zoom_y - zoom_y_vp) * ht, -max_corr, max_corr);
     cairo_translate(cri, corr_x, corr_y);
-    dt_masks_events_post_expose(dmod, cri, width, height, 0.0f, 0.0f, zoom_scale);
+    dt_masks_import_preview_post_expose(cri, zoom_scale);
+    if(dev->form_visible && display_masks)
+      dt_masks_events_post_expose(dmod, cri, width, height, 0.0f, 0.0f, zoom_scale);
     cairo_restore(cri);
   }
 
@@ -1983,37 +1989,42 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w,
   dt_gui_favorite_presets_menu_show(w);
 }
 
-static void _darkroom_ui_apply_style_activate_callback(GtkMenuItem *menuitem,
-                                                       const dt_stylemenu_data_t *menu_data)
+static void _darkroom_ui_apply_style_activate_callback(GSimpleAction *action,
+                                                       GVariant *parameter,
+                                                       gpointer user_data)
 {
-  if(dt_gui_menuitem_activated_by_keyboard(GTK_WIDGET(menuitem)))
-    dt_styles_apply_to_dev(menu_data->name, darktable.develop->image_storage.id);
-}
+  const dt_stylemenu_data_t *menu_data = (dt_stylemenu_data_t *)g_variant_get_uint64(parameter);
 
-static void _darkroom_ui_apply_style_button_callback(GtkGestureSingle *gesture,
-                                                     gint n_press,
-                                                     gdouble x,
-                                                     gdouble y,
-                                                     const dt_stylemenu_data_t *menu_data)
-{
-  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
-    dt_styles_apply_to_dev(menu_data->name, darktable.develop->image_storage.id);
-  else
-    dt_shortcut_copy_lua(NULL, menu_data->name);
+  dt_styles_apply_to_dev(menu_data->name, darktable.develop->image_storage.id);
+  dtgtk_stylemenu_free_menu_data();
 }
 
 static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w,
                                                gpointer user_data)
 {
-  /* if we got any styles, lets popup menu for selection */
-  GtkMenuShell *menu =
-    dtgtk_build_style_menu_hierarchy(FALSE,
-                                     _darkroom_ui_apply_style_activate_callback,
-                                     _darkroom_ui_apply_style_button_callback,
-                                     user_data);
-  if(menu)
+  GActionGroup *action_group = gtk_widget_get_action_group(w, "styles");
+  if(action_group == NULL)
   {
-    dt_gui_menu_popup(GTK_MENU(menu), w, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
+    GActionEntry action_entries[] =
+    {
+      { "activate", _darkroom_ui_apply_style_activate_callback, "t", NULL },
+    };
+
+    action_group = G_ACTION_GROUP(g_simple_action_group_new());
+    g_action_map_add_action_entries(G_ACTION_MAP(action_group),
+                                    action_entries,
+                                    G_N_ELEMENTS(action_entries),
+                                    NULL);
+    gtk_widget_insert_action_group(w, 
+                                   "styles",
+                                   G_ACTION_GROUP(action_group));
+  }
+
+  /* if we got any styles, lets popup menu for selection */
+  GtkWidget *popover_menu = dtgtk_build_style_popover_menu(w, FALSE, user_data);
+  if(popover_menu)
+  {
+    gtk_popover_popup(GTK_POPOVER(popover_menu));
   }
   else
     dt_control_log(_("no styles have been created yet"));
@@ -4134,6 +4145,10 @@ void enter(dt_view_t *self)
   // clean the undo list
   dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
 
+  // before any module takes focus, so the canvas is laid out with the edge
+  // strips' room from the start
+  dt_ui_flexi_panel_set_in_view(darktable.gui->ui, TRUE);
+
   /* connect to ui pipe finished signal for redraw */
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
                            _darkroom_ui_image_changed_callback);
@@ -4220,15 +4235,17 @@ void enter(dt_view_t *self)
   dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui),
                                  dev->image_storage.id, TRUE);
 
-  // get last active plugin:
+  // get last active plugin, focused only if it was left expanded: collapsing
+  // a module drops its focus, so a collapsed one must not come back focused
   const char *active_plugin = dt_conf_get_string_const("plugins/darkroom/active");
   if(active_plugin)
   {
+    const gboolean expanded = _darkroom_iop_expanded(active_plugin);
     for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = modules->data;
       if(dt_iop_module_is(module, active_plugin))
-        dt_iop_request_focus(module);
+        dt_iop_request_focus(expanded ? module : NULL);
     }
   }
   _expand_focused_instance(dev);
@@ -4333,6 +4350,7 @@ void leave(dt_view_t *self)
   // not per-view lib content -- hide it and its edge strips explicitly, since
   // nothing else does this when leaving the view
   dt_ui_flexi_panel_set_collapsed(darktable.gui->ui, TRUE, FALSE, FALSE);
+  dt_ui_flexi_panel_set_in_view(darktable.gui->ui, FALSE);
 
   dt_iop_color_picker_cleanup();
   if(darktable.lib->proxy.colorpicker.picker_proxy)

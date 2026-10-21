@@ -34,6 +34,7 @@
 #include "gui/splash.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/blend.h"
+#include "develop/blend_gui_internal.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 // dt_masks_get_edit_mode: the flexi panel's edge halo stands down while
@@ -168,7 +169,9 @@ typedef struct dt_ui_t
   gboolean flexi_mask_active;      // TRUE when the hosted module's mask is actually in use
   gchar *flexi_mask_label;         // human-readable current mask type, for the hint
   gboolean flexi_panel_right;      // current side (FALSE = left, TRUE = right)
-  GtkWidget *flexi_centerrow;      // the panel's home when docked as a real column
+  gboolean flexi_has_content;      // the edge strips are live (there is a panel to reach)
+  gboolean flexi_in_view;          // the darkroom is showing, so the strips may take room
+  GtkWidget *flexi_centerrow;     // the panel's home when docked as a real column
 } dt_ui_t;
 
 /* initialize the whole left panel */
@@ -3850,7 +3853,7 @@ static void _flexi_sliver_activate(dt_ui_t *ui, const gboolean right)
 }
 
 // click the docked panel's header to fold it away, as the "blend mask" header
-// does embedded in a module (see _masks_caption_clicked in blend_gui.c). The
+// does embedded in a module (see _masks_header_clicked in blend_gui.c). The
 // buttons on the header consume their own clicks
 static void _flexi_header_pressed(GtkGestureSingle *gesture,
                                   const gint n_press,
@@ -4248,6 +4251,15 @@ static double _flexi_halo_arrow_size(GtkWidget *halo)
 
 static gboolean _flexi_sliver_draw(GtkWidget *w, cairo_t *cr, gpointer user_data)
 {
+  // kept only for its room (see _flexi_slivers_update): the canvas' own margin
+  // color, as darkroom.c paints it, so it reads as part of the canvas
+  if(!darktable.gui->ui->flexi_has_content)
+  {
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+    cairo_paint(cr);
+    return FALSE;
+  }
+
   GtkStyleContext *ctx = gtk_widget_get_style_context(w);
   const int width = gtk_widget_get_allocated_width(w);
   const int height = gtk_widget_get_allocated_height(w);
@@ -4381,6 +4393,7 @@ static void _flexi_sliver_enter(GtkEventControllerMotion *controller,
                                 GtkWidget *w)
 {
   dt_ui_t *ui = darktable.gui->ui;
+  if(!ui->flexi_has_content) return;
   _flexi_sliver_hint(ui, _flexi_sliver_is_right(ui, w));
 }
 
@@ -4396,8 +4409,9 @@ static void _flexi_sliver_pressed(GtkGestureSingle *gesture,
                                   GtkWidget *w)
 {
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
-  dt_gui_claim(gesture);
   dt_ui_t *ui = darktable.gui->ui;
+  if(!ui->flexi_has_content) return;
+  dt_gui_claim(gesture);
   const gboolean right = _flexi_sliver_is_right(ui, w);
 
   // the strip stays put once the panel is docked, so it needs something to do
@@ -4468,8 +4482,8 @@ static void _flexi_sync_header_scrollbar_pad(dt_ui_t *ui)
     GList *kids = gtk_container_get_children(GTK_CONTAINER(r->data));
 
     // the outermost visible child on that side, found from the allocations
-    // rather than from the packing order: which of the caption and the icon
-    // cluster leads mirrors with the dock (_masks_header_apply_side in
+    // rather than from the packing order: which of the toggle and the expander
+    // placeholder leads mirrors with the dock (_masks_header_apply_side in
     // develop/masks_gui_panel_host.c)
     GtkWidget *edge = NULL;
     int best = 0;
@@ -4739,9 +4753,21 @@ static void _flexi_slivers_update(dt_ui_t *ui, const gboolean show)
 {
   _flexi_halo_sync_width(ui);
 
+  ui->flexi_has_content = show;
+  // the strips are columns of centerrow, so showing or hiding them re-lays out
+  // the canvas and moves the image by a pixel. Their room is kept for as long
+  // as the canvas position is in use, whatever is focused; with no panel to
+  // reach they pass for canvas (_flexi_sliver_draw) and take no input
+  const gboolean reserve =
+    show || (ui->flexi_in_view && dt_masks_gui_panel_position() == MASKS_PANEL_POS_CANVAS);
+
   for(int i = 0; i < 2; i++)
   {
-    if(ui->flexi_sliver[i]) gtk_widget_set_visible(ui->flexi_sliver[i], show);
+    if(ui->flexi_sliver[i])
+    {
+      gtk_widget_set_visible(ui->flexi_sliver[i], reserve);
+      gtk_widget_queue_draw(ui->flexi_sliver[i]);
+    }
     // whether a halo is up is the proximity poll's business, but with no panel
     // to reach for there must be none, and no poll looking for one either
     if(!show && ui->flexi_halo[i]) gtk_widget_set_visible(ui->flexi_halo[i], FALSE);
@@ -4845,6 +4871,9 @@ void dt_ui_flexi_panel_set_side(dt_ui_t *ui, const gboolean right)
 
   // the handle moved to the other edge, so the scrollbar has to move too
   _flexi_sync_scrollbar_side(ui);
+
+  // and the header's sides with it, now rather than at the next relocate
+  dt_iop_gui_blend_masks_panel_side_changed();
 }
 
 void dt_ui_flexi_panel_set_collapsed(dt_ui_t *ui,
@@ -4906,6 +4935,13 @@ void dt_ui_flexi_panel_set_icon(dt_ui_t *ui, const gboolean active, const char *
   if(active_changed)
     for(int i = 0; i < 2; i++)
       if(ui->flexi_halo[i]) gtk_widget_queue_draw(ui->flexi_halo[i]);
+}
+
+void dt_ui_flexi_panel_set_in_view(dt_ui_t *ui, const gboolean in_view)
+{
+  if(!ui) return;
+  ui->flexi_in_view = in_view;
+  _flexi_slivers_update(ui, in_view && ui->flexi_has_content);
 }
 
 gboolean dt_ui_flexi_panel_is_collapsed(dt_ui_t *ui)
@@ -5387,6 +5423,10 @@ gboolean dt_gui_show_yes_no_dialog(const char *title,
     if(gtk_window_is_active(wins->data))
       win = wins->data;
   }
+  // asked from a popover menu, which has just closed, no window is active:
+  // without a parent the window manager places the dialog anywhere
+  if(!win && darktable.gui)
+    win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
 
   GtkWidget *dialog = gtk_message_dialog_new(win,
                                              GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -5401,6 +5441,7 @@ gboolean dt_gui_show_yes_no_dialog(const char *title,
                          NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NO);
   gtk_window_set_title(GTK_WINDOW(dialog), title);
+  if(win) gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
 
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
@@ -5581,9 +5622,16 @@ void dt_gui_load_theme(const char *theme)
 
   GError *error = NULL;
 
-  GtkStyleProvider *themes_style_provider = GTK_STYLE_PROVIDER(gtk_css_provider_new());
-  gtk_style_context_add_provider_for_screen
-    (gdk_screen_get_default(), themes_style_provider, GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
+  // one provider, reloaded in place: adding a new one per reload left the
+  // previous ones on the screen, so a theme variant switched off in
+  // preferences kept applying until restart
+  static GtkStyleProvider *themes_style_provider = NULL;
+  if(!themes_style_provider)
+  {
+    themes_style_provider = GTK_STYLE_PROVIDER(gtk_css_provider_new());
+    gtk_style_context_add_provider_for_screen
+      (gdk_screen_get_default(), themes_style_provider, GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
+  }
 
   // We load the themes in this specific order:
   //   1. The main darktable-*.css
@@ -5698,7 +5746,6 @@ void dt_gui_load_theme(const char *theme)
 
   g_free(themecss);
 
-  g_object_unref(themes_style_provider);
   _set_tooltip_css(dt_conf_get_bool("ui/hide_tooltips"));
 }
 
@@ -7750,6 +7797,12 @@ PangoFontDescription *dt_gui_get_font(void)
 }
 
 #if !GTK_CHECK_VERSION(4, 0, 0)
+typedef struct dt_popover_tooltip_context_t
+{
+  dt_gui_popover_tooltip_factory_t factory;
+  gpointer user_data;
+} dt_popover_tooltip_context_t;
+
 // the menu a GtkPopoverMenu builds from a model is a GtkStack of GtkBoxes of
 // GtkModelButtons, with no scrolling of its own, so a model with more items
 // than fit on the monitor is simply cut off. wrap each stack page in a
@@ -7876,10 +7929,84 @@ static void _popover_menu_item_buttons(GtkWidget *w, GList **out)
   }
 }
 
+static gboolean _popover_menu_query_tooltip(GtkWidget *widget,
+                                            gint x,
+                                            gint y,
+                                            gboolean keyboard_mode,
+                                            GtkTooltip *tooltip,
+                                            gpointer user_data)
+{
+  (void)x;
+  (void)y;
+  (void)keyboard_mode;
+
+  dt_popover_tooltip_context_t *ctx = (dt_popover_tooltip_context_t *)user_data;
+  const char *tooltip_id = g_object_get_data(G_OBJECT(widget), "dt-popover-tooltip-id");
+  const char *tooltip_text = g_object_get_data(G_OBJECT(widget), "dt-popover-tooltip-text");
+
+  if(ctx && ctx->factory && tooltip_id)
+  {
+    GtkWidget *custom = ctx->factory(tooltip_id, ctx->user_data);
+    if(custom)
+    {
+      gtk_tooltip_set_custom(tooltip, custom);
+      return TRUE;
+    }
+  }
+
+  if(tooltip_text)
+  {
+    gtk_tooltip_set_text(tooltip, tooltip_text);
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+static void _popover_menu_apply_item_tooltip(GtkWidget *button,
+                                             GMenuModel *model,
+                                             const int i,
+                                             dt_popover_tooltip_context_t *ctx)
+{
+  char *tooltip_id = NULL;
+  char *tip = NULL;
+
+  const gboolean has_tooltip_id = g_menu_model_get_item_attribute(model, i, "tooltip-id", "s", &tooltip_id);
+  const gboolean has_tip = g_menu_model_get_item_attribute(model, i, "tooltip", "s", &tip);
+
+  if(has_tooltip_id && ctx && ctx->factory)
+  {
+    gtk_widget_set_has_tooltip(button, TRUE);
+    g_object_set_data_full(G_OBJECT(button), "dt-popover-tooltip-id", tooltip_id, g_free);
+    tooltip_id = NULL;
+    if(has_tip)
+      g_object_set_data_full(G_OBJECT(button), "dt-popover-tooltip-text", tip, g_free);
+    else
+      g_object_set_data(G_OBJECT(button), "dt-popover-tooltip-text", NULL);
+    tip = NULL;
+    g_signal_connect(button, "query-tooltip", G_CALLBACK(_popover_menu_query_tooltip), ctx);
+  }
+  else if(has_tip)
+  {
+    gtk_widget_set_tooltip_text(button, tip);
+  }
+
+  g_free(tooltip_id);
+  g_free(tip);
+
+  // the item's action target, for a caller that reacts to the pointer over
+  // it: GTK3 keeps the item behind the button private (gtkmenusectionbox.c)
+  GVariant *target = g_menu_model_get_item_attribute_value(model, i, G_MENU_ATTRIBUTE_TARGET, NULL);
+  if(target)
+    g_object_set_data_full(G_OBJECT(button), "dt-popover-target", target,
+                           (GDestroyNotify)g_variant_unref);
+}
+
 static void _popover_menu_apply_submenu_tooltips(GMenuModel *model,
                                                  const int i,
                                                  GMenuModel *submenu,
-                                                 GtkStack *stack);
+                                                 GtkStack *stack,
+                                                 dt_popover_tooltip_context_t *ctx);
 
 // apply the "tooltip" attributes of `model` to the buttons of a submenu page,
 // matched by label: GTK3 packs a back button first on such a page, which
@@ -7887,7 +8014,10 @@ static void _popover_menu_apply_submenu_tooltips(GMenuModel *model,
 // item's label (gtkmenusectionbox.c). Callers only set the attribute on the
 // model, so a GTK4 port replaces this walk and nothing else
 // (GTK4 builds a nested popover per submenu, with no stack pages)
-static void _popover_menu_apply_page_tooltips(GMenuModel *model, GList *buttons, GtkStack *stack)
+static void _popover_menu_apply_page_tooltips(GMenuModel *model,
+                                              GList *buttons,
+                                              GtkStack *stack,
+                                              dt_popover_tooltip_context_t *ctx)
 {
   const int n_items = g_menu_model_get_n_items(model);
   for(int i = 0; i < n_items; i++)
@@ -7895,30 +8025,28 @@ static void _popover_menu_apply_page_tooltips(GMenuModel *model, GList *buttons,
     GMenuModel *section = g_menu_model_get_item_link(model, i, G_MENU_LINK_SECTION);
     if(section)
     {
-      _popover_menu_apply_page_tooltips(section, buttons, stack);
+      _popover_menu_apply_page_tooltips(section, buttons, stack, ctx);
       g_object_unref(section);
       continue;
     }
     GMenuModel *submenu = g_menu_model_get_item_link(model, i, G_MENU_LINK_SUBMENU);
     if(submenu)
     {
-      _popover_menu_apply_submenu_tooltips(model, i, submenu, stack);
+      _popover_menu_apply_submenu_tooltips(model, i, submenu, stack, ctx);
       g_object_unref(submenu);
     }
-    char *label = NULL, *tip = NULL;
-    if(g_menu_model_get_item_attribute(model, i, G_MENU_ATTRIBUTE_LABEL, "s", &label)
-       && g_menu_model_get_item_attribute(model, i, "tooltip", "s", &tip))
+    char *label = NULL;
+    if(g_menu_model_get_item_attribute(model, i, G_MENU_ATTRIBUTE_LABEL, "s", &label))
     {
       for(GList *b = buttons; b; b = b->next)
       {
         gchar *text = NULL;
         g_object_get(b->data, "text", &text, NULL);
-        if(!g_strcmp0(text, label)) gtk_widget_set_tooltip_text(GTK_WIDGET(b->data), tip);
+        if(!g_strcmp0(text, label)) _popover_menu_apply_item_tooltip(GTK_WIDGET(b->data), model, i, ctx);
         g_free(text);
       }
     }
     g_free(label);
-    g_free(tip);
   }
 }
 
@@ -7927,7 +8055,8 @@ static void _popover_menu_apply_page_tooltips(GMenuModel *model, GList *buttons,
 static void _popover_menu_apply_submenu_tooltips(GMenuModel *model,
                                                  const int i,
                                                  GMenuModel *submenu,
-                                                 GtkStack *stack)
+                                                 GtkStack *stack,
+                                                 dt_popover_tooltip_context_t *ctx)
 {
   char *label = NULL;
   if(!g_menu_model_get_item_attribute(model, i, G_MENU_ATTRIBUTE_LABEL, "s", &label)) return;
@@ -7936,12 +8065,15 @@ static void _popover_menu_apply_submenu_tooltips(GMenuModel *model,
   if(!page) return;
   GList *buttons = NULL;
   _popover_menu_item_buttons(page, &buttons);
-  _popover_menu_apply_page_tooltips(submenu, buttons, stack);
+  _popover_menu_apply_page_tooltips(submenu, buttons, stack, ctx);
   g_list_free(buttons);
 }
 
 // walk GMenuModel and apply "tooltip" attributes to corresponding GtkModelButton widgets
-static void _popover_menu_apply_tooltips(GMenuModel *model, GtkWidget *box, GtkStack *stack)
+static void _popover_menu_apply_tooltips(GMenuModel *model,
+                                         GtkWidget *box,
+                                         GtkStack *stack,
+                                         dt_popover_tooltip_context_t *ctx)
 {
   if(!model || !box) return;
   GtkWidget *target_box = box;
@@ -7970,7 +8102,7 @@ static void _popover_menu_apply_tooltips(GMenuModel *model, GtkWidget *box, GtkS
         child_iter = child_iter->next;
       if(child_iter)
       {
-        _popover_menu_apply_tooltips(section, GTK_WIDGET(child_iter->data), stack);
+        _popover_menu_apply_tooltips(section, GTK_WIDGET(child_iter->data), stack, ctx);
         child_iter = child_iter->next;
       }
       g_object_unref(section);
@@ -7981,15 +8113,10 @@ static void _popover_menu_apply_tooltips(GMenuModel *model, GtkWidget *box, GtkS
         child_iter = child_iter->next;
       if(child_iter)
       {
-        char *tip = NULL;
-        if(g_menu_model_get_item_attribute(model, i, "tooltip", "s", &tip))
-        {
-          gtk_widget_set_tooltip_text(GTK_WIDGET(child_iter->data), tip);
-          g_free(tip);
-        }
+        _popover_menu_apply_item_tooltip(GTK_WIDGET(child_iter->data), model, i, ctx);
         child_iter = child_iter->next;
       }
-      _popover_menu_apply_submenu_tooltips(model, i, submenu, stack);
+      _popover_menu_apply_submenu_tooltips(model, i, submenu, stack, ctx);
       g_object_unref(submenu);
     }
     else
@@ -7999,12 +8126,7 @@ static void _popover_menu_apply_tooltips(GMenuModel *model, GtkWidget *box, GtkS
       if(child_iter)
       {
         GtkWidget *item_widget = GTK_WIDGET(child_iter->data);
-        char *tip = NULL;
-        if(g_menu_model_get_item_attribute(model, i, "tooltip", "s", &tip))
-        {
-          gtk_widget_set_tooltip_text(item_widget, tip);
-          g_free(tip);
-        }
+        _popover_menu_apply_item_tooltip(item_widget, model, i, ctx);
         child_iter = child_iter->next;
       }
     }
@@ -8012,14 +8134,16 @@ static void _popover_menu_apply_tooltips(GMenuModel *model, GtkWidget *box, GtkS
   g_list_free(children);
 }
 
-static void _popover_menu_set_tooltips(GtkWidget *popover, GMenuModel *model)
+static void _popover_menu_set_tooltips(GtkWidget *popover,
+                                       GMenuModel *model,
+                                       dt_popover_tooltip_context_t *ctx)
 {
   GtkWidget *stack = gtk_bin_get_child(GTK_BIN(popover));
   if(!stack || !GTK_IS_STACK(stack)) return;
   GList *pages = gtk_container_get_children(GTK_CONTAINER(stack));
   if(pages)
   {
-    _popover_menu_apply_tooltips(model, GTK_WIDGET(pages->data), GTK_STACK(stack));
+    _popover_menu_apply_tooltips(model, GTK_WIDGET(pages->data), GTK_STACK(stack), ctx);
     g_list_free(pages);
   }
 }
@@ -8029,9 +8153,11 @@ static void _popover_menu_set_tooltips(GtkWidget *popover, GMenuModel *model)
 // gtkmenusectionbox.c), and a menu model has no other name to give them. Two
 // submenus with the same label then open the same page, whichever was meant.
 // A repeated label gets zero-width spaces appended: it looks the same and
-// names a page of its own. GTK4's nested popovers attach each submenu to its
-// own button, so the GTK4 port drops this
-static void _popover_menu_unique_submenu_labels(GMenuModel *model, GHashTable *seen)
+// names a page of its own. Labels on one page are made unique the same way,
+// as _popover_menu_apply_page_tooltips finds an item's button by its label.
+// GTK4's nested popovers attach each submenu to its own button, so the GTK4
+// port drops this
+static void _popover_menu_unique_labels(GMenuModel *model, GHashTable *seen, GHashTable *page)
 {
   if(!G_IS_MENU(model)) return;
   const int n_items = g_menu_model_get_n_items(model);
@@ -8040,17 +8166,18 @@ static void _popover_menu_unique_submenu_labels(GMenuModel *model, GHashTable *s
     GMenuModel *section = g_menu_model_get_item_link(model, i, G_MENU_LINK_SECTION);
     if(section)
     {
-      _popover_menu_unique_submenu_labels(section, seen);
+      _popover_menu_unique_labels(section, seen, page);
       g_object_unref(section);
       continue;
     }
     GMenuModel *submenu = g_menu_model_get_item_link(model, i, G_MENU_LINK_SUBMENU);
-    if(!submenu) continue;
     gchar *label = NULL;
     if(g_menu_model_get_item_attribute(model, i, G_MENU_ATTRIBUTE_LABEL, "s", &label))
     {
       GString *unique = g_string_new(label);
-      while(g_hash_table_contains(seen, unique->str)) g_string_append(unique, "\xe2\x80\x8b"); // U+200B
+      while(g_hash_table_contains(page, unique->str)
+            || (submenu && g_hash_table_contains(seen, unique->str)))
+        g_string_append(unique, "\xe2\x80\x8b"); // U+200B
       if(strcmp(unique->str, label))
       {
         GMenuItem *item = g_menu_item_new_from_model(model, i);
@@ -8059,30 +8186,59 @@ static void _popover_menu_unique_submenu_labels(GMenuModel *model, GHashTable *s
         g_menu_insert_item(G_MENU(model), i, item);
         g_object_unref(item);
       }
-      g_hash_table_add(seen, g_string_free(unique, FALSE));
+      g_hash_table_add(page, g_strdup(unique->str));
+      if(submenu) g_hash_table_add(seen, g_strdup(unique->str));
+      g_string_free(unique, TRUE);
       g_free(label);
     }
-    _popover_menu_unique_submenu_labels(submenu, seen);
-    g_object_unref(submenu);
+    if(submenu)
+    {
+      GHashTable *sub_page = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+      _popover_menu_unique_labels(submenu, seen, sub_page);
+      g_hash_table_destroy(sub_page);
+      g_object_unref(submenu);
+    }
   }
 }
 #endif
 
 GtkWidget *dt_gui_popover_menu_from_model(GtkWidget *parent, GMenu *menu)
 {
+  return dt_gui_popover_menu_from_model_full(parent, menu, NULL, NULL);
+}
+
+GtkWidget *dt_gui_popover_menu_from_model_full(GtkWidget *parent,
+                                               GMenu *menu,
+                                               dt_gui_popover_tooltip_factory_t tooltip_factory,
+                                               gpointer tooltip_user_data)
+{
   GtkWidget *popover_menu;
 
 #if !GTK_CHECK_VERSION(4, 0, 0)
+  dt_popover_tooltip_context_t *tooltip_ctx = NULL;
+  if(tooltip_factory)
+  {
+    tooltip_ctx = g_malloc0(sizeof(dt_popover_tooltip_context_t));
+    tooltip_ctx->factory = tooltip_factory;
+    tooltip_ctx->user_data = tooltip_user_data;
+  }
+
   GHashTable *seen = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
   // the popover's own top page
   g_hash_table_add(seen, g_strdup("main"));
-  _popover_menu_unique_submenu_labels(G_MENU_MODEL(menu), seen);
+  GHashTable *top_page = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+  _popover_menu_unique_labels(G_MENU_MODEL(menu), seen, top_page);
+  g_hash_table_destroy(top_page);
   g_hash_table_destroy(seen);
   popover_menu = gtk_popover_new_from_model(parent, G_MENU_MODEL(menu));
+  if(tooltip_ctx)
+    g_object_set_data_full(G_OBJECT(popover_menu), "dt-popover-tooltip-context", tooltip_ctx, g_free);
   _popover_menu_reveal_icons(popover_menu);
-  _popover_menu_set_tooltips(popover_menu, G_MENU_MODEL(menu));
+  _popover_menu_set_tooltips(popover_menu, G_MENU_MODEL(menu), tooltip_ctx);
   _popover_menu_make_scrollable(popover_menu, parent);
 #else
+  (void)tooltip_factory;
+  (void)tooltip_user_data;
   popover_menu = gtk_popover_menu_new_from_model_full(G_MENU_MODEL(menu),
                                                       GTK_POPOVER_MENU_NESTED);
   gtk_widget_set_parent(popover_menu, parent);

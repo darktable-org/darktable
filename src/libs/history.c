@@ -990,10 +990,13 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget,
     if(new_combine != old_combine)
       change_parts[num_parts++] = CHG_STR(%c, _("drawn mask polarity"), old_combine, new_combine);
 
-    if(hitem->blend_params->mask_id != old_blend->mask_id)
-      change_parts[num_parts++] = old_blend->mask_id == 0
+    const dt_mask_id_t old_grid = dt_develop_blend_mask_group_id(hitem->module, old_blend);
+    const dt_mask_id_t new_grid =
+      dt_develop_blend_mask_group_id(hitem->module, hitem->blend_params);
+    if(new_grid != old_grid)
+      change_parts[num_parts++] = old_grid == 0
                                 ? g_strdup_printf(_("a drawn mask was added"))
-                                : hitem->blend_params->mask_id == 0
+                                : new_grid == 0
                                 ? g_strdup_printf(_("the drawn mask was removed"))
                                 : g_strdup_printf(_("the drawn mask was changed"));
 
@@ -1253,15 +1256,9 @@ static void _lib_history_button_clicked_callback(GtkGestureSingle *gesture,
 
   if(reset) return;
 
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
-  {
-    // Exactly one history row must stay selected. Claiming the press prevents
-    // GtkToggleButton's default gesture from toggling the active row off.
-    dt_gui_claim(gesture);
-    return;
-  }
-
-  // shift-click just show the corresponding module in modulegroups
+  // shift-click just show the corresponding module in modulegroups.
+  // tested before the active-row guard below: revealing a module never changes
+  // the selection, so it must work on the selected row too
   if(dt_key_modifier_state() & GDK_SHIFT_MASK)
   {
     /* Claim the sequence, replacing the `return TRUE` of the button-press-event
@@ -1277,6 +1274,14 @@ static void _lib_history_button_clicked_callback(GtkGestureSingle *gesture,
       dt_dev_modulegroups_switch(darktable.develop, hist->module);
       dt_iop_gui_set_expanded(hist->module, TRUE, TRUE);
     }
+    return;
+  }
+
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+  {
+    // Exactly one history row must stay selected. Claiming the press prevents
+    // GtkToggleButton's default gesture from toggling the active row off.
+    dt_gui_claim(gesture);
     return;
   }
 

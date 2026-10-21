@@ -513,21 +513,7 @@ void gui_update(dt_lib_module_t *self)
     else
     {
       images = dt_act_on_get_query(FALSE);
-      sqlite3_stmt *stmt;
-      // clang-format off
-      gchar *query = g_strdup_printf("SELECT id, COUNT(id) "
-                                     "FROM main.images "
-                                     "WHERE id IN (%s)",
-                                     images);
-      // clang-format on
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-      if(sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        mouse_over_id = sqlite3_column_int(stmt, 0);
-        count = sqlite3_column_int(stmt, 1);
-      }
-      sqlite3_finalize(stmt);
-      g_free(query);
+      count = dt_image_count_in_query(images, &mouse_over_id);
 
       // Still 0 => no selection in progress
       if(count == 0)

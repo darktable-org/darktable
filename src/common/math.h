@@ -376,14 +376,10 @@ union float_int {
   int k;
 };
 
-/* __FAST_MATH__ is defined via -ffast-math compiler option,
-  for darktable this is currently used for "Release" builds and in some
-  special parts of the code.
-  For these builds we accept some precision loss for performance and in
-  addition to compiler optimizing we allow some perf optimized inline functions
-  or macros.
+/* _DARKTABLE_RELEASE allows some precision loss for performance making
+   sure this matches OpenCL fast vs normal mode to keep differences small.
 */
-#ifdef __FAST_MATH__
+#ifdef _DARKTABLE_RELEASE
 
 // a faster, vectorizable version of hypotf() when we know that there
 // won't be overflow, NaNs or infinities. Looses some precision for very small inputs
@@ -393,14 +389,14 @@ static inline float dt_fast_hypotf(const float x, const float y)
   return sqrtf(x * x + y * y);
 }
 
-#else // __FAST_MATH__
+#else
 
 static inline float dt_fast_hypotf(const float x, const float y)
 {
   return hypotf(x, y);
 }
 
-#endif // __FAST_MATH__
+#endif
 
 static inline float scharr_gradient(const float *p, const int w)
 {
@@ -460,23 +456,6 @@ static inline float fast_mexp2f(const float x)
   } k;
   k.i = k0 >= (float)0x800000u ? k0 : 0;
   return k.f;
-}
-
-/** Compute ceil value of a float
- * @remark Avoid libc ceil for now. Maybe we'll revert to libc later.
- * @param x Value to ceil
- * @return ceil value
- */
-static inline float ceil_fast(const float x)
-{
-  if(x <= 0.f)
-  {
-    return (float)(int)x;
-  }
-  else
-  {
-    return -((float)(int)-x) + 1.f;
-  }
 }
 
 static inline void dt_vector_min(dt_aligned_pixel_t min,

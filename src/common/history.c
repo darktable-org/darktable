@@ -314,6 +314,99 @@ static void _fill_used_forms(GList *forms_list,
 }
 
 // dev_src is used only to copy masks, if no mask will be copied it can be null
+// the module of dev_dest that merging mod_src replaces, NULL for a new
+// instance. *searched tells whether it was found among the modules not yet
+// used, which the merge then marks used; *missing that mod_src allows a single
+// instance and dev_dest has none
+static dt_iop_module_t *_merge_target(dt_develop_t *dev_dest,
+                                      const dt_iop_module_t *mod_src,
+                                      GList *modules_used,
+                                      const gboolean append,
+                                      gboolean *searched,
+                                      gboolean *missing)
+{
+  *searched = FALSE;
+  *missing = FALSE;
+
+  // one-instance modules always replace the existing one
+  if(mod_src->flags() & IOP_FLAGS_ONE_INSTANCE)
+  {
+    dt_iop_module_t *mod_replace =
+      dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
+    *missing = mod_replace == NULL;
+    return mod_replace;
+  }
+
+  if(append && mod_src->enabled) return NULL;
+
+  dt_iop_module_t *mod_same_name = NULL;
+  dt_iop_module_t *mod_same_prio = NULL;
+  dt_iop_module_t *mod_unused = NULL;
+  dt_iop_module_t *mod_default = NULL;
+
+  // we haven't found a module to replace check if there's a module
+  // with the same (operation, multi_name) on dev->iop
+
+  for(GList *modules_dest = dev_dest->iop;
+      modules_dest;
+      modules_dest = g_list_next(modules_dest))
+  {
+    dt_iop_module_t *mod_dest = modules_dest->data;
+
+    // look for not yet used module
+    if(strcmp(mod_src->op, mod_dest->op) == 0
+       && _search_list_iop_by_module(modules_used, mod_dest) == NULL)
+    {
+      if(strcmp(mod_src->multi_name, mod_dest->multi_name) == 0)
+      {
+        mod_same_name = mod_dest;
+      }
+      else if(!mod_dest->multi_name_hand_edited
+              && mod_src->multi_priority == mod_dest->multi_priority)
+      {
+        mod_same_prio = mod_dest;
+      }
+      else if(!mod_dest->enabled)
+      {
+        mod_unused = mod_dest;
+      }
+      else if(memcmp(mod_dest->params,
+                     mod_dest->default_params,
+                     mod_dest->params_size) == 0
+              && memcmp(mod_dest->blend_params,
+                        mod_dest->default_blendop_params,
+                        sizeof(dt_develop_blend_params_t)) == 0)
+      {
+        mod_default = mod_dest;
+      }
+    }
+  }
+
+  // now select the destination module by order of preference:
+  // - same name
+  // - not enabled
+  // - enabled but has default params
+  // - same prio
+  dt_iop_module_t *mod_dest =
+    mod_same_name ? mod_same_name
+    : (mod_unused ? mod_unused
+       : (mod_default ? mod_default
+          : (mod_same_prio ? mod_same_prio
+             : NULL)));
+
+  *searched = mod_dest != NULL;
+  return mod_dest;
+}
+
+dt_iop_module_t *dt_history_merge_target(dt_develop_t *dev_dest,
+                                         const dt_iop_module_t *mod_src,
+                                         GList *modules_used,
+                                         const gboolean append)
+{
+  gboolean searched, missing;
+  return _merge_target(dev_dest, mod_src, modules_used, append, &searched, &missing);
+}
+
 gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
                                               dt_develop_t *dev_src,
                                               dt_iop_module_t *mod_src,
@@ -324,7 +417,6 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
   gboolean module_added = TRUE;
   GList *modules_used = *_modules_used;
   dt_iop_module_t *module = NULL;
-  dt_iop_module_t *mod_replace = NULL;
 
   char modsrc_multi_name[128] = { 0 };
 
@@ -334,86 +426,19 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
   g_strlcpy(modsrc_multi_name,
             dt_iop_get_instance_name(mod_src), sizeof(modsrc_multi_name));
 
-  // one-instance modules always replace the existing one
-  if(mod_src->flags() & IOP_FLAGS_ONE_INSTANCE)
+  gboolean searched, missing;
+  dt_iop_module_t *mod_replace =
+    _merge_target(dev_dest, mod_src, modules_used, append, &searched, &missing);
+  if(missing)
   {
-    mod_replace = dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
-    if(mod_replace == NULL)
-    {
-      dt_print(DT_DEBUG_ALWAYS,
-               "[dt_history_merge_module_into_history]"
-               " can't find single instance module %s",
-               mod_src->op);
-      module_added = FALSE;
-    }
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_history_merge_module_into_history]"
+             " can't find single instance module %s",
+             mod_src->op);
+    module_added = FALSE;
   }
-
-  if(module_added
-     && mod_replace == NULL
-     && (!append || !mod_src->enabled))
-  {
-    dt_iop_module_t *mod_same_name = NULL;
-    dt_iop_module_t *mod_same_prio = NULL;
-    dt_iop_module_t *mod_unused = NULL;
-    dt_iop_module_t *mod_default = NULL;
-
-    // we haven't found a module to replace check if there's a module
-    // with the same (operation, multi_name) on dev->iop
-
-    for(GList *modules_dest = dev_dest->iop;
-        modules_dest;
-        modules_dest = g_list_next(modules_dest))
-    {
-      dt_iop_module_t *mod_dest = modules_dest->data;
-
-      // look for not yet used module
-      if(strcmp(mod_src->op, mod_dest->op) == 0
-         && _search_list_iop_by_module(modules_used, mod_dest) == NULL)
-      {
-        if(strcmp(mod_src->multi_name, mod_dest->multi_name) == 0)
-        {
-          mod_same_name = mod_dest;
-        }
-        else if(!mod_dest->multi_name_hand_edited
-                && mod_src->multi_priority == mod_dest->multi_priority)
-        {
-          mod_same_prio = mod_dest;
-        }
-        else if(!mod_dest->enabled)
-        {
-          mod_unused = mod_dest;
-        }
-        else if(memcmp(mod_dest->params,
-                       mod_dest->default_params,
-                       mod_dest->params_size) == 0
-                && memcmp(mod_dest->blend_params,
-                          mod_dest->default_blendop_params,
-                          sizeof(dt_develop_blend_params_t)) == 0)
-        {
-          mod_default = mod_dest;
-        }
-      }
-    }
-
-    // now select the destination module by order of preference:
-    // - same name
-    // - not enabled
-    // - enabled but has default params
-    // - same prio
-    dt_iop_module_t *mod_dest =
-      mod_same_name ? mod_same_name
-      : (mod_unused ? mod_unused
-         : (mod_default ? mod_default
-            : (mod_same_prio ? mod_same_prio
-               : NULL)));
-
-    if(mod_dest)
-    {
-      // we will replace this module
-      modules_used = g_list_append(modules_used, mod_dest);
-      mod_replace = mod_dest;
-    }
-  }
+  // we will replace this module
+  if(searched) modules_used = g_list_append(modules_used, mod_replace);
 
   if(module_added)
   {
@@ -468,7 +493,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
       memcpy(module->blend_params, mod_src->blend_params,
              sizeof(dt_develop_blend_params_t));
       module->blend_params->mask_id = mod_src->blend_params->mask_id;
-      dt_develop_blend_keep_locked_mask(module->blend_params, &replaced);
+      dt_develop_blend_keep_locked_mask(module, module->blend_params, &replaced);
     }
   }
 
@@ -530,21 +555,25 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     guint nbf = 0;
     int *forms_used_replace = NULL;
 
-    // a locked mask kept its own mask_id above, so the source's forms have no
-    // use here, and one sharing an id with a locked form would replace it
-    if(dev_src && !dt_develop_blend_mask_locked(module->blend_params))
+    // a locked mask kept its own group above, so the source's forms have no
+    // use here, and one sharing an id with a locked form would replace it. A
+    // NO_MASKS module's own shapes (mask_id) are not its mask, and always come
+    const gboolean locked = dt_develop_blend_mask_locked(module->blend_params);
+    if(dev_src && (mod_src->flags() & IOP_FLAGS_SUPPORTS_BLENDING))
     {
+      const gboolean own_shapes = mod_src->flags() & IOP_FLAGS_NO_MASKS;
+      const dt_mask_id_t roots[] = {
+        !locked || own_shapes ? mod_src->blend_params->mask_id : NO_MASKID,
+        !locked ? mod_src->blend_params->blend_mask_id : NO_MASKID };
       // we will copy only used forms
       // record the masks used by this module
-      if(mod_src->flags() & IOP_FLAGS_SUPPORTS_BLENDING
-         && dt_is_valid_maskid(mod_src->blend_params->mask_id))
+      if(dt_is_valid_maskid(roots[0]) || dt_is_valid_maskid(roots[1]))
       {
         nbf = g_list_length(dev_src->forms);
         forms_used_replace = calloc(nbf, sizeof(int));
-        if(forms_used_replace)
-          _fill_used_forms(dev_src->forms,
-                           mod_src->blend_params->mask_id,
-                           forms_used_replace, nbf, 0);
+        for(size_t r = 0; r < G_N_ELEMENTS(roots) && forms_used_replace; r++)
+          if(dt_is_valid_maskid(roots[r]))
+            _fill_used_forms(dev_src->forms, roots[r], forms_used_replace, nbf, 0);
 
         // now copy masks
         for(int i = 0; i < nbf && forms_used_replace && forms_used_replace[i] > 0; i++)
@@ -580,18 +609,15 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     /* only the masks variant snapshots dev_dest->forms into the item, and
        only such an item writes forms (dt_dev_write_history_ext()). `nbf`
        counts forms copied from a source image, and a style has none
-       (dev_src == NULL); yet dt_styles_apply_style_item() migrates a style's
-       blend_params (dt_masks_migrate_classic_to_flexi()), which synthesizes a
-       form for a parametric or raster mask. So the masks variant is also
+       (dev_src == NULL); yet dt_styles_apply_style_item() adds the forms a
+       style item carries to dev_dest->forms, or migrates its blend_params
+       (dt_develop_blend_params_read()), which synthesizes a form for a
+       parametric or raster mask. So the masks variant is also
        taken when the module's mask_id resolves in dev_dest->forms, or the
        mask would be lost on the next load: the destination's forms, as the
        form may have been made here */
     const gboolean module_owns_a_form =
-      (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
-      && module->blend_params
-      && dt_is_valid_maskid(module->blend_params->mask_id)
-      && dt_masks_get_from_id_ext(dev_dest->forms,
-                                  module->blend_params->mask_id) != NULL;
+      dt_masks_module_mask_in_forms(module, dev_dest->forms);
 
     if((nbf > 0 && forms_used_replace[0] > 0) || module_owns_a_form)
       dt_dev_add_masks_history_item_ext(dev_dest, module, FALSE, TRUE);
@@ -722,7 +748,7 @@ static void _locked_masks_restore(dt_develop_t *dev_dest,
                                 dest->multi_name, sizeof(dest->multi_name));
       mod->multi_name_hand_edited = dest->multi_name_hand_edited;
     }
-    dt_develop_blend_keep_locked_mask(&blend, mod->blend_params);
+    dt_develop_blend_keep_locked_mask(mod, &blend, mod->blend_params);
     // merged unlocked, so the merge copies its shapes over; locked below
     blend.mask_lock = 0;
     *mod->blend_params = blend;

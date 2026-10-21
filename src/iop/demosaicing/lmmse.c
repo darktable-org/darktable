@@ -151,7 +151,7 @@ static void lmmse_demosaic(float *const restrict out,
 
   const int num_vertical =   1 + (height - 2 * LMMSE_OVERLAP -1) / LMMSE_TILEVALID;
   const int num_horizontal = 1 + (width  - 2 * LMMSE_OVERLAP -1) / LMMSE_TILEVALID;
-  DT_OMP_PRAGMA(parallel firstprivate(width, height, out, in, scaler, revscaler, filters))
+  DT_OMP_PRAGMA(parallel num_threads(darktable.num_openmp_threads) firstprivate(width, height, out, in, scaler, revscaler, filters))
   {
     float *qix[6];
     float *buffer = dt_alloc_align_float(DT_LMMSE_TILESIZE * DT_LMMSE_TILESIZE * 6);

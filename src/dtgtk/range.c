@@ -588,6 +588,7 @@ static void _popup_date_update(GtkDarktableRangeSelect *range, GtkWidget *w)
              range->select_relative_date_r.minute, range->select_relative_date_r.second);
     gtk_entry_set_text(GTK_ENTRY(pop->selection), tx);
   }
+  g_date_time_unref(dt);
 
   // and we set its tooltip
   _range_bound bound = BOUND_MIN;

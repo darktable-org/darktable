@@ -179,9 +179,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
         {
           if(layers == 3) continue;
           float *in = (float *)in_void + (size_t)(4 * (y * d->global.width + x));
-          if((fabsf(MAX(in[0], 0.001f) / MAX(in[1], 0.001f)) > 1.01f)
-             || (fabsf(MAX(in[0], 0.001f) / MAX(in[2], 0.001f)) > 1.01f)
-             || (fabsf(MAX(in[1], 0.001f) / MAX(in[2], 0.001f)) > 1.01f))
+          if(!feqf(in[0], in[1], 0.01f) || !feqf(in[0], in[2], 0.01f) || !feqf(in[1], in[2], 0.01f))
           {
             layers = 3;
           }
