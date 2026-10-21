@@ -2068,18 +2068,51 @@ static gboolean _mask_switch_on(dt_iop_module_t *module)
   return TRUE;
 }
 
-// the overlay's two buttons, in the mask header and in the module header (the
-// mask indicator), show module->request_mask_display: set here alone, so that
-// they never disagree
+// the overlay's controls show module->request_mask_display: the two toggle
+// buttons (in the mask header and module header) and any active parametric
+// channel button. Synchronized here alone, so they never disagree
 static void _mask_display_buttons_sync(dt_iop_module_t *module)
 {
   const gboolean on = module->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE;
-  const dt_iop_gui_blend_data_t *bd = module->blend_data;
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
   GtkWidget *const buttons[] = { bd ? bd->showmask : NULL, module->mask_indicator };
   DT_ENTER_GUI_UPDATE();
   for(int i = 0; i < G_N_ELEMENTS(buttons); i++)
     if(buttons[i]) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(buttons[i]), on);
   DT_LEAVE_GUI_UPDATE();
+
+  if(bd && bd->masks_param_channels_inner)
+  {
+    dt_pthread_mutex_lock(&bd->lock);
+    const dt_dev_pixelpipe_display_mask_t persistent =
+      bd->hover_preview_active ? bd->save_for_leave : module->request_mask_display;
+    dt_pthread_mutex_unlock(&bd->lock);
+
+    const dt_dev_pixelpipe_display_mask_t active_channel =
+      (persistent & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
+        ? (persistent & DT_DEV_PIXELPIPE_DISPLAY_ANY)
+        : DT_DEV_PIXELPIPE_DISPLAY_NONE;
+
+    const dt_iop_gui_blendif_channel_t *channels =
+      dt_develop_blendif_channels_for_csp(bd->csp);
+
+    GList *btns = gtk_container_get_children(GTK_CONTAINER(bd->masks_param_channels_inner));
+    for(GList *l = btns; l; l = l->next)
+    {
+      GtkWidget *btn = l->data;
+      const int ch = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(btn), "param-channel"));
+      const gboolean is_active =
+        channels && ch >= 0 && ch < _channel_count(channels)
+        && (channels[ch].display_channel == active_channel)
+        && (active_channel != DT_DEV_PIXELPIPE_DISPLAY_NONE);
+
+      if(is_active)
+        dt_gui_add_class(btn, "dt_masks_channel_active");
+      else
+        dt_gui_remove_class(btn, "dt_masks_channel_active");
+    }
+    g_list_free(btns);
+  }
 }
 
 void dt_iop_gui_blend_mask_display(dt_iop_module_t *module, const gboolean show)
@@ -3160,6 +3193,56 @@ static gboolean _preview_on_hover_dwell_elapsed(gpointer user_data)
   bd->preview_dwell_timer = 0;
   _preview_on_hover_apply(module);
   return G_SOURCE_REMOVE;
+}
+
+// toggle a parametric channel overlay persistently on the center view.
+// If the channel is already persistently displayed, toggles it off;
+// otherwise switches to displaying this channel. Unlike hover preview,
+// this remains active until toggled off or another overlay replaces it
+static void _toggle_channel_overlay(dt_iop_module_t *module,
+                                    const dt_dev_pixelpipe_display_mask_t channel_display)
+{
+  if(!module || !module->blend_data) return;
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd->blendif_support) return;
+  if(channel_display == DT_DEV_PIXELPIPE_DISPLAY_NONE) return;
+  const dt_dev_pixelpipe_display_mask_t target =
+    DT_DEV_PIXELPIPE_DISPLAY_CHANNEL | channel_display;
+
+  dt_pthread_mutex_lock(&bd->lock);
+  const dt_dev_pixelpipe_display_mask_t persistent =
+    bd->hover_preview_active ? bd->save_for_leave : module->request_mask_display;
+  const gboolean is_current =
+    (persistent & (DT_DEV_PIXELPIPE_DISPLAY_CHANNEL | DT_DEV_PIXELPIPE_DISPLAY_ANY)) == target;
+
+  if(is_current)
+  {
+    bd->save_for_leave = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+    bd->hover_preview_active = FALSE;
+    _preview_on_hover_cancel_dwell(bd);
+    dt_pthread_mutex_unlock(&bd->lock);
+
+    module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+    _mask_display_buttons_sync(module);
+    _refresh_mask_display(module);
+  }
+  else
+  {
+    dt_pthread_mutex_unlock(&bd->lock);
+
+    if(!_module_switch_on(module) || !_mask_switch_on(module)) return;
+    dt_iop_request_focus(module);
+
+    dt_pthread_mutex_lock(&bd->lock);
+    bd->save_for_leave = target;
+    bd->hover_preview_active = FALSE;
+    _preview_on_hover_cancel_dwell(bd);
+    dt_pthread_mutex_unlock(&bd->lock);
+
+    module->request_mask_display = target;
+    _mask_display_buttons_sync(module);
+    _refresh_mask_display(module);
+  }
 }
 
 // shared by both hovered widget kinds: the parametric range sliders below and
@@ -10204,8 +10287,11 @@ static void _update_add_target_hints(dt_iop_module_t *module)
       _preview_on_hover_is_on()
         ? g_strconcat(hint,
                       _("\nrest the pointer here to preview this channel"),
+                      _("\nshift+click to toggle persistent channel overlay"),
                       NULL)
-        : g_strdup(hint);
+        : g_strconcat(hint,
+                      _("\nshift+click to toggle persistent channel overlay"),
+                      NULL);
     for(GList *l =
           gtk_container_get_children(GTK_CONTAINER(bd->masks_param_channels_inner));
         l; l = g_list_delete_link(l, l))
@@ -11010,26 +11096,41 @@ static void _group_toggle_bypass(dt_iop_module_t *module, dt_mask_id_t cid)
   _commit_structure_change(module);
 }
 
-// flip every member's own inversion bit independently (not a group-wide state
-// to set/clear): ON, OFF, ON becomes OFF, ON, OFF. A one-shot action, not a
-// persistent "group is inverted" mode -- shared by the actions menu's
+// flip every direct member's own inversion independently (not a group-wide
+// state to set/clear): ON, OFF, ON becomes OFF, ON, OFF. A one-shot action, not
+// a persistent "group is inverted" mode -- shared by the actions menu's
 // "invert all elements" entry and the "invert all elements of selected group"
-// shortcut. Not the same operation as _group_toggle_output_invert below:
+// shortcut. An element's inversion is its own INVERSE bit; a nested group's is
+// its marker's OP_INVERT, as a reference to a group carries no settings of its
+// own (see _synth_ref in masks.c) and its header's lead icon paints from the
+// marker. Not the same operation as _group_toggle_output_invert below:
 // inverting every member and folding is mathematically different from folding
 // and then inverting the result, for anything but a single-member group (see
 // DT_MASKS_STATE_OP_INVERT in masks.h).
 static void _invert_group_members(dt_iop_module_t *module, const dt_mask_id_t cid)
 {
-  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
-  GList *members = dt_masks_model_group_members(grp, cid);
-  if(!members) return;
-  for(GList *l = members; l; l = g_list_next(l))
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  dt_masks_form_t *owner = _group_of(dt_masks_gui_module_mask_group(module), cid);
+  if(!owner || !owner->points) return;
+  // the members' own list nodes, not a lookup by form id: a shape referenced
+  // twice would flip the first reference twice and the second not at all
+  for(GList *l = owner->points->next; l; l = g_list_next(l))
   {
-    dt_masks_point_group_t *pt = dt_masks_gui_group_point(grp, GPOINTER_TO_INT(l->data));
-    if(!pt) continue;
-    pt->state ^= DT_MASKS_STATE_INVERSE;
+    dt_masks_point_group_t *pt = l->data;
+    dt_masks_form_t *sub = dt_masks_get_from_id(darktable.develop, pt->formid);
+    if(sub && sub != owner && (sub->type & DT_MASKS_GROUP))
+    {
+      dt_masks_point_group_t *marker = dt_masks_group_marker(sub);
+      if(!marker) continue;
+      marker->state ^= DT_MASKS_STATE_OP_INVERT;
+      if(bd && bd->masks_list_box)
+        _apply_group_output_invert_icon(GTK_WIDGET(bd->masks_list_box),
+                                        (guint)marker->formid,
+                                        (marker->state & DT_MASKS_STATE_OP_INVERT) != 0);
+    }
+    else
+      pt->state ^= DT_MASKS_STATE_INVERSE;
   }
-  g_list_free(members);
   dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
   // inversion changes no row, only how rows look: refresh them in place, as
   // _invert_element does, rather than rebuilding with a visible flash
@@ -14769,10 +14870,13 @@ static GtkWidget *_make_shape_row(dt_iop_module_t *module,
     dt_gui_add_class(expand_toggle, "dt_masks_icon");
     dt_gui_add_class(expand_toggle, "dt_masks_expander");
     dt_gui_add_class(expand_toggle, "dt_transparent_background");
+    // the boost factor is in the row only without the subpanel
     gtk_widget_set_tooltip_text(
       expand_toggle,
-      _("show/hide this channel's expanded controls (input and output sliders,"
-        " boost factor)"));
+      props_subpanel
+        ? _("show/hide this channel's expanded controls (input and output sliders)")
+        : _("show/hide this channel's expanded controls (input and output sliders,"
+            " boost factor)"));
     g_object_set_data(G_OBJECT(expand_toggle), "formid", GINT_TO_POINTER(fid));
     g_signal_connect(G_OBJECT(expand_toggle), "toggled",
                      G_CALLBACK(_masks_param_inout_toggled), module);
@@ -16625,13 +16729,49 @@ _add_parametric_channel(dt_iop_module_t *self, const int channel_idx, const int 
   dt_masks_gui_build_list(self);
 }
 
+static void _toggle_channel_overlay_for_button(dt_iop_module_t *module,
+                                               GtkWidget *widget,
+                                               const int ch)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd) return;
+  const dt_iop_gui_blendif_channel_t *channels =
+    dt_develop_blendif_channels_for_csp(bd->csp);
+  if(ch >= 0 && ch < _channel_count(channels))
+    _toggle_channel_overlay(module, channels[ch].display_channel);
+}
+
+// capture-phase gesture handler: shift+click toggles the channel overlay
+// persistently instead of adding a channel element
+static void _param_channel_shift_overlay_pressed(GtkGestureSingle *gesture,
+                                                 const int n_press,
+                                                 const double x,
+                                                 const double y,
+                                                 dt_iop_module_t *module)
+{
+  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
+  if(dt_modifier_is(dt_gui_current_state(gesture), GDK_SHIFT_MASK)
+     || dt_modifier_is(dt_key_modifier_state(), GDK_SHIFT_MASK))
+  {
+    dt_gui_claim(gesture);
+    GtkWidget *widget = dt_gui_get_widget(gesture);
+    const int ch = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "param-channel"));
+    _toggle_channel_overlay_for_button(module, widget, ch);
+  }
+}
+
 // one-click "add parametric" channel button (flexi row). Adds a single-channel
 // form for the button's channel, on the input sub-channel.
-static void _param_channel_clicked(GtkButton *button, gpointer user_data)
+static void _param_channel_add_clicked(GtkButton *button, gpointer user_data)
 {
   if(DT_IN_GUI_UPDATE()) return;
   dt_iop_module_t *self = user_data;
   const int ch = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "param-channel"));
+  if(dt_modifier_is(dt_key_modifier_state(), GDK_SHIFT_MASK))
+  {
+    _toggle_channel_overlay_for_button(self, GTK_WIDGET(button), ch);
+    return;
+  }
   _add_parametric_channel(self, ch, 0);
 }
 
@@ -16710,8 +16850,9 @@ static void _rebuild_param_channel_buttons(dt_iop_module_t *module)
     gtk_widget_set_tooltip_text(btn, _(ch->tooltip));
     _stash_base_tooltip(btn);
     g_object_set_data(G_OBJECT(btn), "param-channel", GINT_TO_POINTER(idx));
-    g_signal_connect(G_OBJECT(btn), "clicked", G_CALLBACK(_param_channel_clicked),
+    g_signal_connect(G_OBJECT(btn), "clicked", G_CALLBACK(_param_channel_add_clicked),
                      module);
+    _press_before_widget(dt_gui_connect_click(btn, _param_channel_shift_overlay_pressed, NULL, module));
     dt_gui_connect_motion(btn, NULL, _param_channel_button_enter_cb,
                           _param_channel_button_leave_cb, module);
     gtk_widget_show(btn);
@@ -16722,6 +16863,8 @@ static void _rebuild_param_channel_buttons(dt_iop_module_t *module)
     // call explicitly every time it is (re)created)
     dt_action_define_iop(module, "blend`shapes", ch->label, btn, &dt_action_def_button);
   }
+
+  _mask_display_buttons_sync(module);
 }
 
 // add a raster mask element referencing the given upstream source module + mask
@@ -16893,6 +17036,29 @@ static void _shortcut_toggle_group_bypass(dt_action_t *action)
 static void _shortcut_toggle_preview_on_hover(dt_action_t *action)
 {
   _preview_on_hover_set(!_preview_on_hover_is_on());
+}
+
+static void _shortcut_toggle_channel_overlay(dt_action_t *action)
+{
+  dt_iop_module_t *module = dt_dev_gui_module();
+  if(!module || !module->blend_data) return;
+
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd->blendif_support) return;
+  const dt_iop_gui_blendif_channel_t *channels =
+    dt_develop_blendif_channels_for_csp(bd->csp);
+  if(!channels) return;
+
+  for(const dt_iop_gui_blendif_channel_t *ch = channels; ch->label; ch++)
+  {
+    if(g_strcmp0(ch->label, action->label) == 0 || g_strcmp0(_(ch->label), action->label) == 0)
+    {
+      _toggle_channel_overlay(module, ch->display_channel);
+      return;
+    }
+  }
+
+  dt_toast_log(_("channel '%s' is not supported by this module"), action->label);
 }
 
 static void _shortcut_toggle_sticky_opacity(dt_action_t *action)
@@ -17088,6 +17254,17 @@ static void _register_masks_action_shortcuts(void)
                      _shortcut_toggle_sticky_opacity, 0, 0);
   dt_action_register(masks, N_("auto-expand selected"),
                      _shortcut_toggle_auto_expand_selected, 0, 0);
+
+  static const char *const _param_channel_action_labels[] = {
+    N_("L"), N_("a"), N_("b"), N_("C"), N_("h"),
+    N_("g"), N_("R"), N_("G"), N_("B"), N_("H"), N_("S"),
+    N_("Jz"), N_("Cz"), N_("hz")
+  };
+
+  dt_action_t *overlay = dt_action_section(&darktable.control->actions_blend, N_("channel overlay"));
+  for(size_t i = 0; i < G_N_ELEMENTS(_param_channel_action_labels); i++)
+    dt_action_register(overlay, _param_channel_action_labels[i],
+                       _shortcut_toggle_channel_overlay, 0, 0);
 
   _register_forward_actions();
 }

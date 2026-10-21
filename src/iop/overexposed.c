@@ -305,6 +305,10 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   const int ch = piece->colors;
   cl_mem dev_tmp = NULL;
+  cl_mem dev_profile_info = NULL;
+  cl_mem dev_profile_lut = NULL;
+  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl = NULL;
+  cl_float *profile_lut_cl = NULL;
 
   const int width = roi_out->width;
   const int height = roi_out->height;
@@ -321,21 +325,21 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     goto error;
   }
 
-  if(current_profile && work_profile)
-    dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_in, dev_tmp, roi_out->width, roi_out->height,
-                                               current_profile, work_profile, self->op);
-  else
+  if(!current_profile || !work_profile)
   {
     dt_print(DT_DEBUG_ALWAYS, "[overexposed process_cl] can't create transform profile");
     dt_control_log(_("module overexposed failed in color conversion"));
     goto error;
   }
 
+  if(!dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_in, dev_tmp, roi_out->width, roi_out->height,
+                                                 current_profile, work_profile, self->op))
+  {
+    err = DT_OPENCL_PROCESS_CL;
+    goto error;
+  }
+
   const int use_work_profile = (work_profile == NULL) ? 0 : 1;
-  cl_mem dev_profile_info = NULL;
-  cl_mem dev_profile_lut = NULL;
-  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl;
-  cl_float *profile_lut_cl = NULL;
 
   err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
                                             &dev_profile_info, &dev_profile_lut);
@@ -355,6 +359,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_work_profile), CLARG(mode));
 
 error:
+  dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   dt_opencl_release_mem_object(dev_tmp);
   return err;
 }

@@ -544,6 +544,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
   size_t *infointtab = NULL;
   cl_device_type type;
+  cl_device_fp_config fp_config;
   cl_bool image_support = 0;
   cl_bool device_available = 0;
   cl_uint vendor_id = 0;
@@ -736,6 +737,12 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                                            sizeof(size_t), &cl->dev[dev].workgroup_size, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_LOCAL_MEM_SIZE,
                                            sizeof(size_t), &cl->dev[dev].local_size, NULL);
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_SINGLE_FP_CONFIG,
+                                           sizeof(cl_device_fp_config), &fp_config, NULL);
+  if(fp_config & CL_FP_FMA)
+    cl->dev[dev].extensions |= DT_OPENCL_FMA;
+  if(fp_config & CL_FP_CORRECTLY_ROUNDED_DIVIDE_SQRT)
+    cl->dev[dev].extensions |= DT_OPENCL_EXACT;
 
 #if CL_TARGET_OPENCL_VERSION >= 300
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
@@ -900,6 +907,12 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   dt_print_nts(DT_DEBUG_OPENCL,
                "   SUPPORTED DOUBLE:         %s\n",
                STR_YESNO(cl->dev[dev].extensions & DT_OPENCL_FLOAT64));
+  dt_print_nts(DT_DEBUG_OPENCL,
+               "   FLOAT32 FMA:              %s\n",
+               STR_YESNO(cl->dev[dev].extensions & DT_OPENCL_FMA));
+  dt_print_nts(DT_DEBUG_OPENCL,
+               "   EXACT FLOAT32 DIV&SQRT:   %s\n",
+               STR_YESNO(cl->dev[dev].extensions & DT_OPENCL_EXACT));
 
   /* The roundup data for width&height are mainly relevant for kernels called without locals
      as good values improve performance.

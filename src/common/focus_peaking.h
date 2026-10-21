@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2024 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -79,7 +79,14 @@ static inline void dt_focuspeaking(cairo_t *cr,
                                    uint8_t *const restrict image)
 {
   float *const restrict luma = dt_alloc_align_float((size_t)buf_width * buf_height);
+  if(!luma) return;
+
   uint8_t *const restrict focus_peaking = dt_alloc_align_uint8(buf_width * buf_height * 4);
+  if(!focus_peaking)
+  {
+    dt_free_align(luma);
+    return;
+  }
 
   const size_t npixels = (size_t)buf_height * buf_width;
   // Create a luma buffer as the euclidian norm of RGB channels
@@ -101,6 +108,13 @@ static inline void dt_focuspeaking(cairo_t *cr,
 
   // Compute the gradients magnitudes
   float *const restrict luma_ds =  dt_alloc_align_float((size_t)buf_width * buf_height);
+  if(!luma_ds)
+  {
+    dt_free_align(luma);
+    dt_free_align(focus_peaking);
+    return;
+  }
+
   DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < buf_height; ++i)
     for(size_t j = 0; j < buf_width; ++j)

@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-07 21:33+0200\n"
-"PO-Revision-Date: 2026-10-09 23:14+0200\n"
+"PO-Revision-Date: 2026-10-21 18:54+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.9\n"
+"X-Generator: Poedit 3.10\n"
 
 #: ../build/bin/conf_gen.h:156
 msgctxt "preferences"
@@ -1727,16 +1727,16 @@ msgstr ""
 "Sélectionne le flux de travail utilisé par défaut dans la chambre noire\n"
 "\n"
 "<b>Relatif à la scène (sigmoid)</b> flux de travail moderne, moins de "
-"contrôles de mappage des tons\n"
+"contrôles de mappage de tonalité\n"
 "\n"
 "<b>Relatif à la scène (filmic)</b> flux de travail moderne, plus de contrôles "
-"de mappage des tons\n"
+"de mappage de tonalité\n"
 "\n"
 "<b>Relatif à la scène (AgX)</b> flux de travail moderne, contrôle maximal du "
-"mappage des tons\n"
+"mappage de tonalité\n"
 "\n"
 "<b>Relatif à la scène (spektrafilm)</b> flux de travail moderne, le mappage "
-"des tons est effectué par un film et un tirage simulés\n"
+"de tonalité est effectué par un film et un tirage simulés\n"
 "\n"
 "<b>Relatif à l'affichage (ancien)</b> flux de travail hérité (non "
 "recommandé)\n"
@@ -4587,24 +4587,18 @@ msgstr "Prononcé"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:75
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:160
-#, fuzzy
-#| msgid "capture details"
 msgid "coarse details"
-msgstr "Détails de prise de vue"
+msgstr "Détails grossiers"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:81
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:164
-#, fuzzy
-#| msgid "medium magenta"
 msgid "medium details"
-msgstr "Magenta moyen"
+msgstr "Détails moyens"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:87
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:168
-#, fuzzy
-#| msgid "details"
 msgid "fine details"
-msgstr "Détails"
+msgstr "Détails fins"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:93
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:172
@@ -4613,11 +4607,8 @@ msgstr "Niveau des détails"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:99
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:176
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "controls"
 msgid "halo control"
-msgstr "Contrôles"
+msgstr "Contrôle du halo"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:105
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:180
@@ -4715,17 +4706,13 @@ msgstr "Netteté de capture"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:210
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:307
-#, fuzzy
-#| msgid "noise threshold"
 msgid "moire threshold"
-msgstr "Seuil de bruit"
+msgstr "Seuil du moiré"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:216
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:311
-#, fuzzy
-#| msgid "source mix"
 msgid "moire mix"
-msgstr "Mélange des sources"
+msgstr "Mélange du moiré"
 
 # au masculin
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:325
@@ -8003,15 +7990,12 @@ msgid "HLG P3"
 msgstr "P3 HLG"
 
 #: ../src/common/colorspaces.c:1838
-#, fuzzy
 msgid "DNG forward matrix"
 msgstr "Matrice de transfert DNG"
 
 #: ../src/common/colorspaces.c:1840
-#, fuzzy
-#| msgid "only embedded"
 msgid "DNG embedded look"
-msgstr "Seulement embarqué"
+msgstr "Rendu intégré DNG"
 
 #: ../src/common/cups_print.c:447
 #, c-format
@@ -8039,7 +8023,6 @@ msgid "printing `%s' on `%s'"
 msgstr "Impression de l’image « %s » sur « %s »"
 
 #: ../src/common/darktable.c:142
-#, fuzzy
 msgid ""
 "this console window is required by darktable on this version of Windows.\n"
 "on Windows 11 24H2 and later, darktable normally runs without this window.\n"
@@ -8767,11 +8750,8 @@ msgstr ""
 "sur une autre"
 
 #: ../src/common/history.c:974
-#, fuzzy
-#| msgid "the mask file path is saved with the image history"
 msgid "raster masks could not be copied to the pasted history"
-msgstr ""
-"Le chemin du fichier de masque est enregistré dans l’historique de l’image"
+msgstr "Les masques de pixellisation n'ont pas pu être copiés dans l'historique"
 
 #: ../src/common/image.c:354
 msgid "orphaned image"
@@ -8856,7 +8836,6 @@ msgstr ""
 "accessible."
 
 #: ../src/common/image.c:3028
-#, fuzzy
 msgid "cannot remove local copy: its raster masks could not be merged back"
 msgstr ""
 "Impossible de supprimer la copie locale : ses masques de pixellisation n'ont "
@@ -9100,7 +9079,6 @@ msgstr ""
 " • Plusieurs pilotes installés par carte\n"
 
 #: ../src/common/opencl.c:1304
-#, fuzzy
 msgid ""
 "couldn't get platform ID.\n"
 "check your OpenCL ICD loader (ocl-icd)"
@@ -9109,7 +9087,6 @@ msgstr ""
 "Vérifiez votre chargeur ICD OpenCL (ocl-icd)."
 
 #: ../src/common/opencl.c:1312
-#, fuzzy
 msgid ""
 "no valid OpenCL platform found.\n"
 "check your OpenCL ICD loader (ocl-icd)"
@@ -9582,7 +9559,7 @@ msgid "checking for updated sidecar files (%d%%)"
 msgstr "Vérification des fichiers XMP modifiés (%d%%)"
 
 #: ../src/control/crawler.c:771 ../src/control/crawler.c:1002
-#, fuzzy, c-format
+#, c-format
 msgid "%u updated XMP sidecar file found"
 msgid_plural "%u updated XMP sidecar files found"
 msgstr[0] "%u Fichier auxiliaire XMP mis à jour trouvé"
@@ -11332,7 +11309,6 @@ msgstr "Descendre"
 
 # "duplicate" traduit par "cloner" avec une bulle d’explication utilisant le terme de "copie virtuelle", dans le sens que l’image n’est pas physiquement dupliquée
 #: ../src/develop/imageop.c:1092
-#, fuzzy
 msgid "delete this instance"
 msgstr "Supprimer cette instance"
 
@@ -11792,21 +11768,24 @@ msgstr "Copie de « %s »"
 #, c-format
 msgid "Image ID=%d has insane circle mask: radius=%.3f border=%.3f"
 msgstr ""
+"L'image ID=%d a un masque circulaire aux paramètres extrêmes : rayon=%.3f "
+"bordure=%.3f"
 
 #: ../src/develop/masks/masks.c:1092
 #, c-format
 msgid "Image ID=%d has insane ellipse mask: radii=%.3f/%.3f, border=%.3f"
 msgstr ""
+"L'image ID=%d a un masque elliptique aberrant : rayons=%.3f/%.3f, bordure=%.3f"
 
 #: ../src/develop/masks/masks.c:1109
 #, c-format
 msgid "Image ID=%d has insane path mask: borders=%.3f/%.3f"
-msgstr ""
+msgstr "L'image ID=%d a un masque de tracé aberrant : bordures=%.3f/%.3f"
 
 #: ../src/develop/masks/masks.c:1125
 #, c-format
 msgid "Image ID=%d has insane brush mask: borders=%.3f/%.3f"
-msgstr ""
+msgstr "L'image ID=%d a un masque de pinceau aberrant : bordures=%.3f/%.3f"
 
 #: ../src/develop/masks/masks.c:1145
 #, c-format
@@ -16792,7 +16771,7 @@ msgstr " • Molette pour changer la vitesse"
 # des raccourcis lorsqu’activée
 #: ../src/gui/accelerators.c:1216
 msgid "right-click to exit mapping mode"
-msgstr " • Clic-droit pour quitter le mode enregistrement"
+msgstr " • Clic-droit pour quitter le mode mappage"
 
 #: ../src/gui/accelerators.c:1275
 msgid "ctrl+v"
@@ -17495,7 +17474,6 @@ msgid "$(JOBCODE) - job code for import"
 msgstr "$(JOBCODE) - Numéro de tâche pour l’importation"
 
 #: ../src/gui/gtkentry.c:46
-#, fuzzy
 msgid ""
 "$(CONFLICT[n]) - import filename conflict number, null string if there is no "
 "conflict, n: number of digits"
@@ -17576,14 +17554,12 @@ msgid "$(OPENCL.ACTIVATED) - whether OpenCL is activated"
 msgstr "$(OPENCL.ACTIVATED) - Activation d’OpenCL"
 
 #: ../src/gui/gtkentry.c:119
-#, fuzzy
-#| msgid "$(CATEGORY[n,category]) - subtag of level n in hierarchical tags"
 msgid ""
 "$(CATEGORY_EACH[n,category]) - level-n subtag of each matching tag, one path "
 "per tag"
 msgstr ""
-"$(CATEGORY[n,category])) - Sous-mot-clé de niveau n des mots-clés "
-"hiérarchiques"
+"$(CATEGORY_EACH[n,category]) - Sous-mot-clé de niveau n de chaque balise "
+"correspondante, un chemin par balise"
 
 #: ../src/gui/gtkentry.c:120
 msgid "$(TAGS) - tags as set in metadata settings"
@@ -18146,7 +18122,7 @@ msgstr[1] ""
 "être mis à jour."
 
 #: ../src/gui/preferences_ai.c:769
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s\n"
 "\n"
@@ -18159,12 +18135,12 @@ msgstr[0] ""
 "%s\n"
 "\n"
 "%d Le dépôt n'a pas pu être atteint ; il est donc possible qu'il y en ait "
-"davantage."
+"davantage"
 msgstr[1] ""
 "%s\n"
 "\n"
 "%d Les dépôts n'ont pas pu être atteints ; il est donc possible qu'il y en "
-"ait davantage."
+"ait davantage"
 
 #: ../src/gui/preferences_ai.c:784
 msgid "_later"
@@ -18814,10 +18790,8 @@ msgstr "Supprimer ce préréglage"
 #. * default): edit/delete are not allowed, so fall through to store/
 #. * update instead of leaving a bare separator behind the preset list.
 #: ../src/gui/presets.c:1755
-#, fuzzy
-#| msgid "store new preset.."
 msgid "store new preset..."
-msgstr "Nouveau préréglage"
+msgstr "Nouveau préréglage..."
 
 #: ../src/gui/presets.c:1762
 msgid "update preset"
@@ -19663,24 +19637,22 @@ msgid "could not create directory `%s'!"
 msgstr "Impossible de créer le dossier « %s »"
 
 #: ../src/imageio/storage/clipboard.c:256
-#, fuzzy, c-format
+#, c-format
 msgid "%d/%d exported to clipboard"
 msgid_plural "%d/%d exported to clipboard"
 msgstr[0] "%d/%d exportée vers le presse-papier"
 msgstr[1] "%d/%d exportées vers le presse-papier"
 
 #: ../src/imageio/storage/clipboard.c:405
-#, fuzzy, c-format
+#, c-format
 msgid "%d image copied to clipboard"
 msgid_plural "%d images copied to clipboard"
-msgstr[0] "Copier dans le presse-papier"
-msgstr[1] "Copier dans le presse-papier"
+msgstr[0] "%d image copiée dans le presse-papier"
+msgstr[1] "%d images copiées dans le presse-papier"
 
 #: ../src/imageio/storage/clipboard.c:410
-#, fuzzy
-#| msgid "copy to clipboard"
 msgid "could not copy to clipboard"
-msgstr "Copier dans le presse-papier"
+msgstr "Impossible de copier dans le presse-papiers"
 
 #: ../src/imageio/storage/disk.c:79 ../src/libs/export.c:1282
 msgid "file on disk"
@@ -19722,6 +19694,8 @@ msgstr "Sauter"
 #, c-format
 msgid "filename pattern `%s' expands to too many files"
 msgstr ""
+"Le motif de nom de fichier « %s » correspond à un trop grand nombre de "
+"fichiers."
 
 #: ../src/imageio/storage/disk.c:468
 #, c-format
@@ -19800,6 +19774,7 @@ msgstr "Modèle de livre LaTeX"
 msgid "enter the title of the book"
 msgstr "Entrer le titre du livre"
 
+# Qu'est-ce qu'un LATEX BOOK ?
 #: ../src/imageio/storage/latex.c:378
 #, fuzzy, c-format
 #| msgid "could not export to file `%s'!"
@@ -19976,7 +19951,7 @@ msgstr "AgX"
 
 #: ../src/iop/agx.c:50 ../src/iop/sigmoid.c:197
 msgid "tone mapping|view transform|display transform"
-msgstr "mappage tonal|transformation affichage"
+msgstr "mappage de tonalité|transformation affichage"
 
 #: ../src/iop/agx.c:56
 msgid ""
@@ -20200,7 +20175,7 @@ msgstr "Graphique"
 
 #: ../src/iop/agx.c:1957
 msgid "tone mapping curve"
-msgstr "Courbe de mappage des tonalités"
+msgstr "Courbe de mappage de tonalité"
 
 #: ../src/iop/agx.c:1970
 msgctxt "section"
@@ -21187,7 +21162,7 @@ msgstr "Non-linéaire, Lab"
 
 #: ../src/iop/bilat.c:195
 msgid "HDR local tone-mapping"
-msgstr "Mappage tonal local HDR"
+msgstr "Mappage de tonalité local HDR"
 
 #: ../src/iop/bilat.c:437
 msgid ""
@@ -22274,8 +22249,8 @@ msgid ""
 "\"measure\" simply shows how an input color is mapped by the CAT\n"
 "and can be used to sample a target."
 msgstr ""
-" • Correction – ajuste automatiquement l’illuminant pour que la couleur de "
-"l’entrée soit mappée sur la cible\n"
+" • Correction – ajuste automatiquement l’illuminant \n"
+"pour que la couleur de l’entrée soit mappée sur la cible\n"
 " • Mesure – montre simplement comment une couleur d’entrée est mappée par le "
 "CAT,\n"
 "et peut être utilisée pour échantillonner la cible"
@@ -22320,7 +22295,7 @@ msgstr "Ces coordonnés LCh sont calculés depuis les coordonnés CIE Lab 1976"
 
 #: ../src/iop/channelmixerrgb.c:4567
 msgid "the desired target color after mapping"
-msgstr "La cible recherchée après le mappage de l’exposition"
+msgstr "La cible de couleur recherchée après mappage"
 
 #: ../src/iop/channelmixerrgb.c:4594 ../src/iop/exposure.c:1369
 msgctxt "section"
@@ -23584,19 +23559,14 @@ msgid "teal & orange"
 msgstr "Teal & Orange"
 
 #: ../src/iop/colorequal.c:3807
-#, fuzzy
-#| msgid ""
-#| "double-click to reset the curve\n"
-#| "middle-click to toggle sliders visibility\n"
-#| "alt+scroll to change page"
 msgid ""
 "double-click to reset the curve\n"
 "middle-click to toggle the control sliders\n"
 "alt+scroll to change page"
 msgstr ""
-"Double-clic pour re-initialiser la courbe\n"
-"Clic-milieu pour basculer l’affichage des réglettes\n"
-"Alt+molette pour change de page"
+"Double-clic pour réinitialiser la courbe\n"
+"Clic-milieu pour basculer l’affichage des curseurs\n"
+"Alt+molette pour changer de page"
 
 #: ../src/iop/colorequal.c:3828
 msgid "shift nodes to lower or higher hue"
@@ -23611,10 +23581,8 @@ msgstr ""
 "Ctrl+clic pour sélectionner une zone"
 
 #: ../src/iop/colorequal.c:3839
-#, fuzzy
-#| msgid "color control sliders"
 msgid "control sliders"
-msgstr "Contrôle des couleurs"
+msgstr "Curseurs de contrôle"
 
 #: ../src/iop/colorequal.c:3854
 msgid "change hue hue-wise"
@@ -24454,10 +24422,8 @@ msgid "contrast & texture"
 msgstr "Contraste & texture"
 
 #: ../src/iop/contrastntexture.c:138
-#, fuzzy
-#| msgid "local contrast|texture|clarity|detail enhancement"
 msgid "local contrast|texture|clarity|detail enhancement|highlights and shadows"
-msgstr "contraste local|texture|clarté|amélioration des détails"
+msgstr "Contraste local|Texture|Clarté|Amélioration des détails"
 
 #: ../src/iop/contrastntexture.c:144
 msgid "enhance local contrast by boosting details while preserving edges"
@@ -24466,19 +24432,12 @@ msgstr ""
 "les bords"
 
 #: ../src/iop/contrastntexture.c:399
-#, fuzzy
-#| msgid "local contrast failed to allocate memory, check your RAM settings"
 msgid "contrast and texture failed to allocate memory, check your RAM settings"
 msgstr ""
 "Contraste et texture n’a pu allouer la mémoire nécessaire, vérifier les "
 "paramètres de la RAM"
 
 #: ../src/iop/contrastntexture.c:663
-#, fuzzy
-#| msgid ""
-#| "detail level adjusted by the local contrast.\n"
-#| "higher = more contrast boost in finer details\n"
-#| "lower = more contrast boost in coarser details"
 msgid ""
 "adjust the detail level used for highlights, shadows, and coarse details.\n"
 "higher = more contrast boost in finer details\n"
@@ -24486,64 +24445,68 @@ msgid ""
 "press the mask button to preview the low pass filter result used for shadows/"
 "highlights."
 msgstr ""
-"Ajuste le niveau de détail du contraste local.\n"
-" • augmenter : plus de boost du contraste des fins détails\n"
-" • diminuer: plus de boost du contraste dans les détails grossiers"
+"Ajuste le niveau de détail appliqué aux hautes lumières, aux ombres et aux "
+"détails grossiers.\n"
+"Valeur élevée = renforcement du contraste accru sur les détails fins.\n"
+"Valeur faible = renforcement du contraste accru sur les détails plus "
+"grossiers.\n"
+"Appuyez sur le bouton de masque pour prévisualiser le résultat du filtre "
+"passe-bas utilisé pour les ombres et les hautes lumières."
 
 #: ../src/iop/contrastntexture.c:668
 msgid ""
 "preview the low pass filter result used for shadows(blue)/highlights(yellow)."
 msgstr ""
+"Prévisualisez le résultat du filtre passe-bas utilisé pour les ombres (bleu) "
+"et les hautes lumières (jaune)."
 
 #: ../src/iop/contrastntexture.c:674
-#, fuzzy
 msgid "adjust highlights at the base detail level size."
-msgstr "Ajustez les hautes lumières au niveau de taille des détails de base."
+msgstr "Ajuste les hautes lumières au niveau de taille des détails de base."
 
 #: ../src/iop/contrastntexture.c:678
-#, fuzzy
 msgid "adjust shadows at the base detail level size."
-msgstr "Ajustez les ombres à la taille du niveau de détail de base."
+msgstr "Ajuste les ombres à la taille du niveau de détail de base."
 
 #: ../src/iop/contrastntexture.c:693
-#, fuzzy
 msgid ""
 "adjust coarse, low frequency content.\n"
 "press the mask button to preview the effect."
 msgstr ""
-"Ajustez les composantes basse fréquence à grande échelle.\n"
+"Ajuste les détails grossiers.\n"
 "Appuyez sur le bouton de masque pour prévisualiser l'effet."
 
 #: ../src/iop/contrastntexture.c:696
 msgid "preview the size of the coarse details to adjust."
 msgstr ""
+"Prévisualise la taille des détails grossiers pour effectuer des ajustements."
 
 #: ../src/iop/contrastntexture.c:699
-#, fuzzy
 msgid ""
 "adjust medium, frequency content between coarse and fine.\n"
 "press the mask button to preview the effect."
 msgstr ""
-"Ajustez le paramètre « Medium » pour régler la répartition des fréquences "
-"entre les détails grossiers et fins.\n"
+"Ajuste les détails moyens pour régler la répartition entre les détails "
+"grossiers et fins.\n"
 "Appuyez sur le bouton « Mask » pour prévisualiser l'effet."
 
 #: ../src/iop/contrastntexture.c:702
 msgid "preview the size of the medium details to adjust."
 msgstr ""
+"Prévisualisez la taille des détails moyens pour effectuer des ajustements."
 
 #: ../src/iop/contrastntexture.c:705
-#, fuzzy
 msgid ""
 "adjust fine, high frequency content.\n"
 "press the mask button to preview the effect."
 msgstr ""
-"Ajustez finement le contenu haute fréquence.\n"
+"Ajuste les détails fins, pour les hautes fréquences.\n"
 "Appuyez sur le bouton de masque pour prévisualiser l'effet."
 
 #: ../src/iop/contrastntexture.c:708
 msgid "preview the size of the fine details to adjust."
 msgstr ""
+"Prévisualisez la taille des détails fins pour effectuer des ajustements."
 
 #. Filter settings section
 #: ../src/iop/contrastntexture.c:711
@@ -24552,13 +24515,12 @@ msgid "filter settings"
 msgstr "Paramètres du filtre"
 
 #: ../src/iop/contrastntexture.c:718
-#, fuzzy
 msgid ""
 "adjust the halo control of the filter.\n"
 "higher = suppress halos at the expense of details around edges.\n"
 "lower = allow more halos to get more local contrast and details."
 msgstr ""
-"Ajustez le réglage de halo du filtre.\n"
+"Ajuste le réglage de halo du filtre.\n"
 "Valeur élevée : supprime les halos au détriment des détails sur les "
 "contours.\n"
 "Valeur faible : laisse apparaître davantage de halos pour obtenir plus de "
@@ -24783,15 +24745,6 @@ msgid "set effect strength by iterations"
 msgstr "Force de l’effet via les itérations"
 
 #: ../src/iop/demosaic.c:1943
-#, fuzzy
-#| msgid ""
-#| "capture sharpen radius should reflect the overall gaussian type blur\n"
-#| "of the camera sensor, possibly the anti-aliasing filter and the lens.\n"
-#| "increasing this too far will soon lead to artifacts like halos and\n"
-#| "ringing especially when used with a large 'iterations' setting.\n"
-#| "\n"
-#| "Note: a radius set to zero will be recalculated automatically the next "
-#| "run. use for presets"
 msgid ""
 "capture sharpen radius should reflect the overall gaussian type blur\n"
 "of the camera sensor, possibly the anti-aliasing filter and the lens.\n"
@@ -24799,46 +24752,32 @@ msgid ""
 "ringing especially when used with a large 'iterations' setting.\n"
 "set it to zero for presets that should enforce auto calculation"
 msgstr ""
-"Le rayon d’ajustement de la netteté devrait refléter le type de flou gaussien "
-"du capteur,\n"
-"du filtre anti-antialiasing si présent et de l’objectif.\n"
-"Trop augmenter cela apportera rapidement des artefacts comme des halos\n"
-"d’autant plus lorsque utilisé avec une augmentation de la netteté forte.\n"
-"\n"
-"Note: un rayon de zéro sera recalculé automatiquement à la prochaine "
-"exécution. utile pour les préréglages."
+"Le rayon de netteté initiale (capture sharpening) doit refléter le flou "
+"gaussien global\n"
+"induit par le capteur de l'appareil, et éventuellement par le filtre anti-"
+"antialiasing et l'objectif.\n"
+"Une valeur excessive entraînera rapidement des artefacts tels que des halos "
+"et\n"
+"des phénomènes de « ringing » (oscillations), surtout si elle est associée à "
+"un nombre d'itérations élevé.\n"
+"Réglez cette valeur sur zéro pour les préréglages devant privilégier le "
+"calcul automatique."
 
 #: ../src/iop/demosaic.c:1949
-#, fuzzy
-#| msgid ""
-#| "calculate the capture sharpen radius from available raw sensor data.\n"
-#| "for best results avoid cropping or darkroom zooming in"
 msgid "calculate the capture sharpen radius from raw sensor data"
 msgstr ""
-"Calculer le rayon de l’ajustement de netteté depuis les données du capteur.\n"
-"Pour un meilleur résultat ne pas rogner ou zoomer dans la chambre noire."
+"Calculer le rayon de l’ajustement de netteté depuis les données du capteur."
 
 #: ../src/iop/demosaic.c:1952
-#, fuzzy
-#| msgid ""
-#| "restrict capture sharpening to areas with high local contrast,\n"
-#| "increase to exclude flat areas in very dark or noisy images,\n"
-#| "decrease for well exposed and low noise images.\n"
-#| "\n"
-#| "Note: a threshold set to zero will be reset to defaults the next run. use "
-#| "for presets"
 msgid ""
 "restrict capture sharpening to areas with high local contrast,\n"
 "increase to exclude flat areas in very dark or noisy images,\n"
 "decrease for well exposed and low noise images"
 msgstr ""
-"Restreindre la netteté aux zones avec un haut contraste local,\n"
-"Augmenter pour exclure les zones uniformes dans les images sombres ou avec du "
-"bruit,\n"
-"Réduire pour les images bien exposées et dont le bruit est bas.\n"
-"\n"
-"Note: un seuil de zéro sera repositionné sur la valeur par défaut à la "
-"prochaine exécution. utile pour les préréglages."
+"Limite la netteté de capture aux zones à fort contraste local,\n"
+"augmenter pour exclure les zones uniformes dans les images très sombres ou "
+"bruitées,\n"
+"réduire pour les images bien exposées et peu bruitées"
 
 #: ../src/iop/demosaic.c:1955
 msgid "visualize sharpened areas"
@@ -24871,23 +24810,18 @@ msgstr ""
 "utilisation de la valeur par défaut."
 
 #: ../src/iop/demosaicing/capture.c:896
-#, fuzzy
 msgid "capture sharpen failed: can't allocate buffer"
 msgstr ""
 "Échec de la netteté de la capture : impossible d'allouer la mémoire tampon"
 
 #: ../src/iop/demosaicing/capture.c:1063
-#, fuzzy
-#| msgid "capture sharpen"
 msgid "OpenCL capture sharpen failed"
-msgstr "Netteté de capture"
+msgstr "OpenCL : échec de la netteté de capture"
 
 #: ../src/iop/demosaicscale.c:38
-#, fuzzy
-#| msgid "crop and rotate"
 msgctxt "modulename"
 msgid "crop and scale input"
-msgstr "Recadrer et Pivoter"
+msgstr "Recadrer et pivoter"
 
 #: ../src/iop/denoiseprofile.c:811
 msgid "wavelets: chroma only"
@@ -25714,7 +25648,7 @@ msgstr "L : \tN/A"
 
 #: ../src/iop/exposure.c:1357
 msgid "the desired target exposure after mapping"
-msgstr "La cible recherchée après le mappage de l’exposition"
+msgstr "La cible d'exposition recherchée après mappage"
 
 #: ../src/iop/filmic.c:173
 msgid "this module is deprecated. better use filmic rgb module instead."
@@ -25966,7 +25900,7 @@ msgstr "Filmique RVB"
 #: ../src/iop/filmicrgb.c:337
 msgid "tone mapping|curve|view transform|contrast|saturation|highlights"
 msgstr ""
-"mappage tonal|courbe|transformation|contraste|saturation|hautes lumières"
+"mappage de tonalité|courbe|transformation|contraste|saturation|hautes lumières"
 
 #: ../src/iop/filmicrgb.c:342
 msgid ""
@@ -26058,7 +25992,7 @@ msgid ""
 "the dark curve is the desaturation curve."
 msgstr ""
 "Utiliser les paramètres suivants pour positionner les nœuds.\n"
-"La courbe claire représente le mappage des tonalités,\n"
+"La courbe claire représente le mappage de tonalité de filmic,\n"
 "la courbe sombre représente la désaturation."
 
 #: ../src/iop/filmicrgb.c:4319
@@ -26426,7 +26360,7 @@ msgstr "Opérateur"
 
 #: ../src/iop/globaltonemap.c:641
 msgid "the global tonemap operator"
-msgstr "Opérateur de mappage global des tonalités"
+msgstr "Opérateur de mappage global de tonalité"
 
 #: ../src/iop/globaltonemap.c:644
 msgid ""
@@ -26941,7 +26875,7 @@ msgstr "D"
 
 #: ../src/iop/lens.cc:4423
 msgid "vignetting may be overcorrected"
-msgstr ""
+msgstr "Le vignetage peut être surcorrigé."
 
 #: ../src/iop/lens.cc:4424
 msgid ""
@@ -26951,6 +26885,11 @@ msgid ""
 "leave vignetting out of the corrections, or turn shading\n"
 "compensation off in the camera for future shots"
 msgstr ""
+"La compensation de l'ombrage de l'appareil a déjà corrigé le vignetage\n"
+"dans les données brutes, et Lensfun le corrige à nouveau par-dessus,\n"
+"ce qui risque d'éclaircir excessivement les coins ;\n"
+"excluez le vignetage des corrections ou désactivez la compensation\n"
+"de l'ombrage sur l'appareil pour les prochaines prises de vue."
 
 #: ../src/iop/lens.cc:4436
 msgid "camera/lens not found"
@@ -28111,7 +28050,7 @@ msgstr "Faire une optimisation basée sur des suppositions"
 
 #: ../src/iop/profile_gamma.c:650
 msgid "tone mapping method"
-msgstr "Méthode de mappage des tonalités"
+msgstr "Méthode de mappage de tonalité"
 
 #: ../src/iop/rasterfile.c:100
 msgid "external raster masks"
@@ -28150,7 +28089,7 @@ msgstr "Impossible de lire l’image raster « %s »"
 #: ../src/iop/rasterfile.c:401
 #, c-format
 msgid "mask %.8s, %d x %d"
-msgstr ""
+msgstr "Masque %.8s, %d x %d"
 
 #: ../src/iop/rasterfile.c:404
 #, c-format
@@ -28158,17 +28097,13 @@ msgid "mask %.8s"
 msgstr "Masque %.8s"
 
 #: ../src/iop/rasterfile.c:407
-#, fuzzy
-#| msgid "writing sidecar file"
-#| msgid_plural "writing %zu sidecar files"
 msgid "missing from sidecar"
-msgstr " Écrire le fichier XMP"
+msgstr "Absent du fichier XMP"
 
 #: ../src/iop/rasterfile.c:413
-#, fuzzy, c-format
-#| msgid "folders"
+#, c-format
 msgid "folder: %s"
-msgstr "Dossiers"
+msgstr "Dossier: %s"
 
 #: ../src/iop/rasterfile.c:415
 msgid "no mask imported"
@@ -28188,16 +28123,17 @@ msgstr ""
 "Le fichier sélectionné n’est pas dans le répertoire racine des masques rasters"
 
 #: ../src/iop/rasterfile.c:510
-#, fuzzy
-#| msgid "cannot create raster mask folder"
 msgid "cannot write the raster mask sidecar for this image"
-msgstr "Impossible de créer le répertoire du masque raster"
+msgstr ""
+"Impossible d'écrire le fichier auxiliaire de masque raster pour cette image."
 
 #: ../src/iop/rasterfile.c:534
 msgid ""
 "import a PNG or PFM file as a raster mask\n"
 "it is stored in the image's .dtdata sidecar and travels with the image"
 msgstr ""
+"Importer un fichier PNG ou PFM sous forme de masque raster\n"
+"il est stocké dans le fichier side-car de l'image .dtdata et voyage avec"
 
 #: ../src/iop/rasterfile.c:536
 msgid ""
@@ -28205,13 +28141,15 @@ msgid ""
 "sidecar files are disabled in preferences, so the mask is referenced by its "
 "path"
 msgstr ""
+"Sélectionnez un fichier PNG ou PFM dans le dossier racine du masque raster\n"
+"les fichiers side-car sont désactivés dans les préférences, le masque est "
+"donc référencé par son chemin"
 
 #: ../src/iop/rasterfile.c:898
-#, fuzzy
-#| msgid ""
-#| "select the RGB channels taken into account to generate the raster mask"
 msgid "select the RGB channels taken into account when a color file is imported"
-msgstr "Sélectionner le canal RGB utilisé pour la génération du masque raster"
+msgstr ""
+"Sélectionne les canaux RVB pris en compte lors de l'importation d'un fichier "
+"couleur"
 
 #: ../src/iop/rasterfile.c:911
 msgid ""
@@ -28219,6 +28157,11 @@ msgid ""
 "importing another file replaces it; masks no longer used by any\n"
 "history item are removed from the sidecar when leaving the darkroom"
 msgstr ""
+"Le masque raster utilisé par cette instance\n"
+"l'importation d'un autre fichier le remplace ; les masques qui ne sont plus "
+"utilisés par aucune\n"
+"entrée de l'historique sont supprimés du fichier auxiliaire (sidecar) lors de "
+"la sortie de la chambre noire"
 
 #. Vectorize button
 #: ../src/iop/rasterfile.c:917
@@ -28345,7 +28288,7 @@ msgstr "Lumière d’appoint"
 
 #: ../src/iop/relight.c:92 ../src/iop/zonesystem.c:106
 msgid "this module is deprecated. please use the tone equalizer module instead."
-msgstr "Ce module est déprécié, utiliser « Égaliseur de tons » à la place."
+msgstr "Ce module est déprécié, utiliser « Égaliseur de tonalité » à la place."
 
 #: ../src/iop/relight.c:249
 msgid "the fill-light in EV"
@@ -28791,7 +28734,7 @@ msgstr ""
 
 #: ../src/iop/satcurvergb.c:2211
 msgid "protect near-neutrals"
-msgstr "Protction de la gamme neutre"
+msgstr "Protection de la gamme neutre"
 
 #: ../src/iop/satcurvergb.c:2216
 msgid "center of the saturation range protected from the guided filter"
@@ -28849,9 +28792,8 @@ msgstr ""
 "en renforçant le contraste local."
 
 #: ../src/iop/shadhi.c:684 ../src/iop/splittoning.c:528
-#, fuzzy
 msgid "compress"
-msgstr "compress"
+msgstr "Compresser"
 
 #: ../src/iop/shadhi.c:691
 msgid "correct shadows"
@@ -29150,49 +29092,37 @@ msgid "this film or paper could not be loaded"
 msgstr "Ce film ou ce papier n'a pas pu être chargé"
 
 #: ../src/iop/spektrafilm.c:1861
-#, fuzzy, c-format
-#| msgid ""
-#| "developed with a different spectral table\n"
-#| "recorded: %08x    installed: %s (%08x)\n"
-#| "the matching pack can be fetched with the button below"
+#, c-format
 msgid ""
 "developed with a spectral table this data pack does not carry\n"
 "recorded: %08x    rendering with: %s\n"
 "the matching pack can be fetched with the button below"
 msgstr ""
-"Développé avec une table spectrale différente\n"
-"enregistrée : %08x    installée : %s (%08x)\n"
-"le pack correspondant peut être récupéré avec le bouton ci-dessous"
+"Développé avec une table spectrale, ce pack de données ne contient pas\n"
+"enregistré : %08x    rendu avec : %s\n"
+"le pack correspondant peut être récupéré via le bouton ci-dessous"
 
 #: ../src/iop/spektrafilm.c:1869
-#, fuzzy
-#| msgid ""
-#| "developed with a different spectral table\n"
-#| "recorded: %08x    installed: %s (%08x)\n"
-#| "the matching pack can be fetched with the button below"
 msgid ""
 "made before data packs carried an identity, and the pack it\n"
 "was made with is not installed: rendering with a later one\n"
 "the matching pack can be fetched with the button below"
 msgstr ""
-"Développé avec une table spectrale différente\n"
-"enregistrée : %08x    installée : %s (%08x)\n"
-"le pack correspondant peut être récupéré avec le bouton ci-dessous"
+"Développé avant que les packs de données ne possèdent une identité, \n"
+"et le pack utilisé pour sa création n'est pas installé : rendu avec une "
+"version ultérieure ; \n"
+"le pack correspondant peut être récupéré via le bouton ci-dessous"
 
 #: ../src/iop/spektrafilm.c:1875
-#, fuzzy, c-format
-#| msgid ""
-#| "developed with a different spectral table\n"
-#| "recorded: %08x    installed: %s (%08x)\n"
-#| "the matching pack can be fetched with the button below"
+#, c-format
 msgid ""
 "developed with data pack %08x, which is not installed\n"
 "rendering with %s\n"
 "the matching pack can be fetched with the button below"
 msgstr ""
-"Développé avec une table spectrale différente\n"
-"enregistrée : %08x    installée : %s (%08x)\n"
-"le pack correspondant peut être récupéré avec le bouton ci-dessous"
+"Développé avec le pack de données %08x, qui n'est pas installé\n"
+"rendu avec %s\n"
+"le pack correspondant peut être récupéré via le bouton ci-dessous"
 
 #: ../src/iop/spektrafilm.c:1888
 #, c-format
@@ -29261,11 +29191,10 @@ msgid "cancel"
 msgstr "Annuler"
 
 #: ../src/iop/spektrafilm.c:4247
-#, fuzzy
-#| msgid "the table this edit was developed with is not installed"
 msgid "the data pack this edit was developed with is not installed"
 msgstr ""
-"La table utilisée pour développer cette modification n'est pas installée"
+"Le pack de données avec lequel cette modification a été créée n'est pas "
+"installé."
 
 #: ../src/iop/spektrafilm.c:4248
 msgid "no data pack installed -- the module's controls appear once one is"
@@ -29283,10 +29212,8 @@ msgid "fetch the matching spectral data pack over the network"
 msgstr "Récupérer le pack de données spectrales correspondant via le réseau"
 
 #: ../src/iop/spektrafilm.c:4303
-#, fuzzy
-#| msgid "this film or paper could not be loaded"
 msgid "the data repository could not be reached"
-msgstr "Ce film ou ce papier n'a pas pu être chargé"
+msgstr "Le dépôt de données n'a pas pu être atteint."
 
 #: ../src/iop/spektrafilm.c:4320
 #, c-format
@@ -29320,12 +29247,11 @@ msgid "check for data pack updates"
 msgstr "Vérifier les mises à jour"
 
 #: ../src/iop/spektrafilm.c:4348
-#, fuzzy
 msgid ""
 "fetch the newer pack. it installs beside the one you have;\n"
 "existing edits keep rendering on the pack they were made with."
 msgstr ""
-"Récupérez le pack le plus récent ; il s'installe à côté de celui que vous "
+"Récupère le pack le plus récent ; il s'installe à côté de celui que vous "
 "possédez déjà.\n"
 "Les modifications existantes continuent d'être rendues avec le pack utilisé "
 "lors de leur création."
@@ -29756,10 +29682,8 @@ msgid "advanced"
 msgstr "Avancé"
 
 #: ../src/iop/spektrafilm.c:5818
-#, fuzzy
-#| msgid "chroma subsampling"
 msgid "spectral upsampling"
-msgstr "Sous-échantillonnage chroma"
+msgstr "Sur-échantillonnage spectral"
 
 #: ../src/iop/spektrafilm.c:5821
 msgid ""
@@ -30387,6 +30311,11 @@ msgid ""
 "off, the shadows stay where the film puts them, which is often\n"
 "short of black."
 msgstr ""
+"Définissez la tonalité la plus sombre de l'image avec le curseur \"Niveau de "
+"noir\" ci-dessous.\n"
+"\n"
+"Si désactivé, les ombres restent telles que le film les place, c'est-à-dire "
+"souvent moins noires."
 
 #: ../src/iop/spektrafilm.c:6322
 msgid ""
@@ -30780,12 +30709,12 @@ msgstr "Sélectionner une couleur"
 
 #: ../src/iop/toneequal.c:336
 msgid "tone equalizer"
-msgstr "Égaliseur de tons"
+msgstr "Égaliseur de tonalité"
 
 #: ../src/iop/toneequal.c:341
 msgid "tone curve|tone mapping|relight|background light|shadows highlights"
 msgstr ""
-"courbe de tonalités|mappage des tonalités|ré-éclairer|rallumer|lumière "
+"courbe de tonalités|mappage de tonalité|ré-éclairer|rallumer|lumière "
 "d’arrière-plan|ombres et hautes lumières"
 
 #: ../src/iop/toneequal.c:348
@@ -30847,7 +30776,8 @@ msgstr "Rééclairer : lumière de remplissage"
 #: ../src/iop/toneequal.c:1148 ../src/iop/toneequal.c:1677
 msgid "tone equalizer failed to allocate memory, check your RAM settings"
 msgstr ""
-"L’égaliseur de ton n’a pas assez de mémoire, vérifier les paramètres de la RAM"
+"L’égaliseur de tonalité n’a pas assez de mémoire, vérifier les paramètres de "
+"la RAM"
 
 #: ../src/iop/toneequal.c:2482 ../src/iop/toneequal.c:2828
 msgid "the interpolation is unstable, decrease the curve smoothing"
@@ -31080,15 +31010,15 @@ msgstr "Affiche le masque d’exposition"
 
 #: ../src/iop/tonemap.cc:68
 msgid "tone mapping"
-msgstr "Mappage des tonalités"
+msgstr "Mappeur de tonalité"
 
 #: ../src/iop/tonemap.cc:84
 msgid ""
 "this module is deprecated. please use the local contrast or tone equalizer "
 "module instead."
 msgstr ""
-"Ce module est déprécié, utiliser « Égaliseur de tons » ou « Contraste local » "
-"à la place."
+"Ce module est déprécié, utiliser « Égaliseur de tonalité » ou « Contraste "
+"local » à la place."
 
 #: ../src/iop/velvia.c:67
 msgid "velvia"
@@ -32068,16 +31998,6 @@ msgid "file format"
 msgstr "Format de fichier"
 
 #: ../src/libs/export.c:1468
-#, fuzzy
-#| msgid ""
-#| "images will be exported according to the format specified here\n"
-#| "\n"
-#| "when exporting to AVIF, EXR, JPEG XL, or XCF, selecting specific\n"
-#| "metadata is not currently possible\n"
-#| "\n"
-#| "for these formats, no metadata fields will be included\n"
-#| "unless the user selects <b>all</b> of the metadata checkboxes in\n"
-#| "the export module preferences"
 msgid ""
 "images will be exported according to the format specified here\n"
 "\n"
@@ -32088,9 +32008,9 @@ msgid ""
 "unless the user selects <b>all</b> of the metadata checkboxes in\n"
 "the export module preferences"
 msgstr ""
-"L’image sera exporté en utilisant le format spécifié ici.\n"
+"Les images seront exportées en utilisant le format spécifié ici.\n"
 "\n"
-"Lors d’un export AVIF, EXR, JPEG XL, ou XCF sélectionner des\n"
+"Lors d’un export AVIF, EXR, HEIF, JPEG XL, or XCF, sélectionner des\n"
 "métadonnées spécifiques n’est pas possible actuellement.\n"
 "\n"
 "Pour ces formats, aucune métadonnées se sera incluses sauf\n"
@@ -34466,15 +34386,16 @@ msgid "go to the full version of the %s module"
 msgstr "Aller au module complet « %s »"
 
 #: ../src/libs/modulegroups.c:1056
-#, fuzzy, c-format
-#| msgid "add widget to the quick access panel"
+#, c-format
 msgid "close `%s` before switching to quick access panel"
-msgstr "Ajouter un contrôle au module d’accès rapide"
+msgstr "Fermez « %s » avant de passer au panneau d'accès rapide."
 
 #: ../src/libs/modulegroups.c:1075
 #, c-format
 msgid "finish mask work in `%s` before switching to quick access panel"
 msgstr ""
+"Terminez le travail sur le masque dans « %s » avant de passer au panneau "
+"d'accès rapide."
 
 #: ../src/libs/modulegroups.c:1707 ../src/libs/modulegroups.c:1804
 #: ../src/libs/modulegroups.c:1841 ../src/libs/modulegroups.c:1895
@@ -34936,10 +34857,8 @@ msgid "failed to load AI %s model"
 msgstr "Impossible de charger le modèle IA « %s »"
 
 #: ../src/libs/neural_restore.c:1642
-#, fuzzy
-#| msgid "neural restore: cannot create output directory"
 msgid "neural restore: the output pattern expands to nothing"
-msgstr "Restauration neuronale : impossible de créer le répertoire de sortie"
+msgstr "Restauration neuronale : le motif de sortie s'étend jusqu'à disparaître"
 
 #: ../src/libs/neural_restore.c:1654
 msgid "neural restore: cannot create output directory"
@@ -35138,6 +35057,10 @@ msgid ""
 "$(FILE_FOLDER) = source image folder\n"
 "$(FILE.NAME) = source name without extension"
 msgstr ""
+"Emplacement où cette tâche écrit le fichier, sans l'extension ; tout ce qui "
+"suit le nom source constitue le suffixe\n"
+"$(FILE_FOLDER) = dossier de l'image source\n"
+"$(FILE.NAME) = nom source sans l'extension"
 
 #: ../src/libs/print_settings.c:61 ../src/libs/print_settings.c:3503
 msgid "print settings"
@@ -35166,7 +35089,7 @@ msgstr "Impossible d’appliquer le profil d’impression « %s » !"
 
 #: ../src/libs/print_settings.c:665
 msgid "Windows printing failed"
-msgstr ""
+msgstr "L'impression sous Windows a échoué."
 
 #: ../src/libs/print_settings.c:679
 msgid "failed to create temporary PDF for printing"
@@ -35177,17 +35100,12 @@ msgid "maximum image per page reached"
 msgstr "Nombre maximum d’image par page atteint"
 
 #: ../src/libs/print_settings.c:865
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "settings/as shot"
 msgid "no settings context"
-msgstr "Paramètres/boîtier"
+msgstr "Aucun contexte de paramètres"
 
 #: ../src/libs/print_settings.c:897
-#, fuzzy
-#| msgid "cannot open printer profile `%s'"
 msgid "could not open print ticket provider"
-msgstr "Impossible d’ouvrir le profil d’impression « %s »"
+msgstr "Impossible d'ouvrir le fournisseur de tickets d'impression."
 
 #: ../src/libs/print_settings.c:946
 msgid "could not convert printer settings to print ticket"
@@ -35209,10 +35127,8 @@ msgstr "Impossible d’imprimer tant qu’un papier n’est pas sélectionné"
 #. not fatal — dt_win_print_file can fall back to driver
 #. defaults if print_ticket_data is NULL
 #: ../src/libs/print_settings.c:1032
-#, fuzzy
-#| msgid "print with current settings"
 msgid "printing with default printer settings"
-msgstr "Imprime avec les réglages actuels"
+msgstr "Imprimer avec les réglages par défaut"
 
 #. in this case no need to release from cache what we couldn't get
 #: ../src/libs/print_settings.c:1052
@@ -35224,7 +35140,7 @@ msgstr "Impossible de récupérer l’image %d pour l’impression"
 #: ../src/libs/print_settings.c:1221
 #, c-format
 msgid "loading printer details for %s…"
-msgstr ""
+msgstr "Chargement des détails de l'imprimante pour %s…"
 
 #: ../src/libs/print_settings.c:1347
 #, c-format
@@ -35428,10 +35344,8 @@ msgid "temporary style to use while printing"
 msgstr "Style temporaire à utiliser lors de l’export"
 
 #: ../src/libs/print_settings.c:3505
-#, fuzzy
-#| msgid "print settings"
 msgid "open printer settings"
-msgstr "Paramètres d’impression"
+msgstr "Ouvrir les paramètres d’impression"
 
 #: ../src/libs/print_settings.c:3516
 msgid "print with current settings"
@@ -35661,9 +35575,9 @@ msgid "toggle last snapshot"
 msgstr "Basculer le dernier instantané"
 
 #: ../src/libs/snapshots.c:918
-#, fuzzy, c-format
+#, c-format
 msgid "all %d snapshot slots are in use"
-msgstr "Tous %d les emplacements d'instantané sont utilisés."
+msgstr "Tous les emplacements d'instantanés %d sont utilisés."
 
 #: ../src/libs/styles.c:60
 msgid ""
@@ -35966,8 +35880,6 @@ msgid "change path..."
 msgstr "Changer le chemin…"
 
 #: ../src/libs/tagging.c:2656
-#, fuzzy
-#| msgid "set as a tag"
 msgid "set as tag"
 msgstr "Défini comme mot-clé"
 

@@ -5469,6 +5469,7 @@ char **dt_database_snaps_to_remove(const dt_database_t *db)
     g_object_unref(dat_file);
     g_object_unref(lib_file);
     g_object_unref(lib_parent);
+    return NULL;
   }
 
   gchar *lib_basename = g_file_get_basename(lib_file);

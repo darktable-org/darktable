@@ -2090,12 +2090,12 @@ void tiling_callback(dt_iop_module_t *self,
     = fmaxf(fmaxf((float)piece->buf_in.width, (float)piece->buf_in.height) * roi_in->scale, 1.0f);
   const float pixel_um = d->p.film_format_mm * 1000.0f / full_long_edge;
   /* Peak simultaneous buffers, in multiples of one RGBA tile.
-     CPU: input + output (2.0) plus the three always-live temporaries -- plane
-     and corr at 3 channels each, the 1-channel blur scratch (1.75) -- for a
-     3.75 baseline. The widest stage on top of that is halation, which holds
-     two 1-channel and three 3-channel buffers at once (2.75). The coupler
-     tail adds 1.5 and grain up to 2.0 at the maximum sub-layer count, and the
-     stages run one after another, so halation sets the peak at 6.5.
+     CPU: input + output (2.0) plus plane at 3 channels and the 1-channel
+     blur scratch (1.0), a 3.0 baseline. Halation and the diffusion filter
+     each add two 1-channel and two 3-channel buffers (2.0), for 5.0. From
+     development on, corr at 3 channels is live too (3.75); the coupler tail
+     adds 1.5 and grain up to 2.0 at the maximum sub-layer count. The stages
+     run one after another, so grain sets the peak at 5.75.
      OpenCL: input + output plus five float4 buffers (plane, plane2, tmpa, acc,
      gtmp4) and two single-channel ones (plane1, gtmp1), a 7.5 baseline; the
      grain stage adds an accumulator and one buffer per sub-layer, up to 2.25.
@@ -2103,7 +2103,7 @@ void tiling_callback(dt_iop_module_t *self,
      and the CPU path answers an allocation failure with a passthrough of that
      tile -- unprocessed rectangles inside an otherwise processed frame, not a
      clean skip -- so the estimate has to be an upper bound. */
-  tiling->factor = 6.5f;
+  tiling->factor = 5.75f;
   tiling->factor_cl = 9.75f;
   tiling->maxbuf = 1.0f;
   tiling->maxbuf_cl = 1.0f;
@@ -2192,13 +2192,11 @@ void process(dt_iop_module_t *self,
   const float preview_scale = fminf(roi_in->scale, 1.0f);
 
   float *plane = dt_alloc_align_float(npix * 3);  /* raw / lograw / cmy, in place */
-  float *corr = dt_alloc_align_float(npix * 3);   /* DIR coupler correction field */
   float *scratch = dt_alloc_align_float(npix);    /* 1ch blur scratch */
-  if(!plane || !corr || !scratch)
+  if(!plane || !scratch)
   {
-    if(plane) dt_free_align(plane);
-    if(corr) dt_free_align(corr);
-    if(scratch) dt_free_align(scratch);
+    dt_free_align(plane);
+    dt_free_align(scratch);
     _passthrough(in, out, w, oh, ow, ox, oy);
     return;
   }
@@ -2233,6 +2231,18 @@ void process(dt_iop_module_t *self,
     sf_halation(plane, w, h, roi_in->x, roi_in->y, (double)pixel_um, sc_core, sc_tail, sc_w,
                 d->p.scatter_amount, d->p.scatter_scale, d->p.halation_amount,
                 d->p.halation_scale, hal_strength, hal_sigma_um);
+  }
+
+  /* DIR coupler correction field, later the grain delta and unsharp-mask
+     buffer; first needed in development, so it is not live during the
+     pre-film spatial effects above */
+  float *corr = dt_alloc_align_float(npix * 3);
+  if(!corr)
+  {
+    dt_free_align(plane);
+    dt_free_align(scratch);
+    _passthrough(in, out, w, oh, ow, ox, oy);
+    return;
   }
 
   /* 3) film development: log exposure, DIR coupler inhibition (the correction
@@ -2270,7 +2280,9 @@ void process(dt_iop_module_t *self,
           /* fma-pinned, matching spektrafilm_diffusion_accum */
           for(size_t i = 0; i < npix * 3; i++) mix[i] = fmaf(wk, tmp[i], mix[i]);
         }
-        memcpy(corr, mix, sizeof(float) * npix * 3);
+        dt_free_align(corr);
+        corr = mix;
+        mix = NULL;
       }
       else if(csigma > 0.1f)
         sf_blur_plane3_wide(corr, w, h, roi_in->x, roi_in->y, csigma, scratch); /* alloc failed: core only */
