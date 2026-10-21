@@ -14769,10 +14769,13 @@ static GtkWidget *_make_shape_row(dt_iop_module_t *module,
     dt_gui_add_class(expand_toggle, "dt_masks_icon");
     dt_gui_add_class(expand_toggle, "dt_masks_expander");
     dt_gui_add_class(expand_toggle, "dt_transparent_background");
+    // the boost factor is in the row only without the subpanel
     gtk_widget_set_tooltip_text(
       expand_toggle,
-      _("show/hide this channel's expanded controls (input and output sliders,"
-        " boost factor)"));
+      props_subpanel
+        ? _("show/hide this channel's expanded controls (input and output sliders)")
+        : _("show/hide this channel's expanded controls (input and output sliders,"
+            " boost factor)"));
     g_object_set_data(G_OBJECT(expand_toggle), "formid", GINT_TO_POINTER(fid));
     g_signal_connect(G_OBJECT(expand_toggle), "toggled",
                      G_CALLBACK(_masks_param_inout_toggled), module);
