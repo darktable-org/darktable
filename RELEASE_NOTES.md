@@ -638,6 +638,9 @@ changes (where available).
   using the date range popup, importing localized shortcuts, or
   creating and editing styles.
 
+- Fixed a possible crash while checking database snapshots for removal
+  when the folder of the data database could not be determined.
+
 ## Lua
 
 ### API Version
