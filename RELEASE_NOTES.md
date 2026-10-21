@@ -633,6 +633,11 @@ changes (where available).
   mask of filmic rgb, and possible crashes in basic adjustments, rgb
   levels and base curve when OpenCL memory allocation fails.
 
+- Fixed small memory leaks that grew while a camera was connected, and
+  when filtering collections by inverse values (such as exposure time),
+  using the date range popup, importing localized shortcuts, or
+  creating and editing styles.
+
 ## Lua
 
 ### API Version

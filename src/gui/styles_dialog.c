@@ -244,6 +244,7 @@ static void _gui_styles_new_style_response(GtkDialog *dialog,
       if(!_confirm_pixel_masks(g->imgid, result))
       {
         g_list_free(result);
+        if(!g->newname) g_free(newname);
         return;
       }
 
@@ -260,6 +261,8 @@ static void _gui_styles_new_style_response(GtkDialog *dialog,
         else
         {
          /* on RESPONSE_NO and escape key return to dialog */
+          g_list_free(result);
+          if(!g->newname) g_free(newname);
           return;
         }
       }
@@ -289,12 +292,10 @@ static void _gui_styles_new_style_response(GtkDialog *dialog,
       gtk_window_set_title(GTK_WINDOW(dlg_changename), _("unnamed style"));
       gtk_dialog_run(GTK_DIALOG(dlg_changename));
       gtk_widget_destroy(dlg_changename);
-      return;
     }
+    g_list_free(result);
+    if(!g->newname) g_free(newname);
   }
-
-  // finalize the dialog
-  g_free(g->nameorig);
 }
 
 static void _gui_styles_edit_style_response(GtkDialog *dialog,
@@ -338,6 +339,7 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog,
       {
         g_list_free(result);
         g_list_free(update);
+        if(!g->newname) g_free(newname);
         return;
       }
 
@@ -381,12 +383,11 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog,
       gtk_window_set_title(GTK_WINDOW(dlg_changename), _("unnamed style"));
       gtk_dialog_run(GTK_DIALOG(dlg_changename));
       gtk_widget_destroy(dlg_changename);
-      return;
     }
+    g_list_free(result);
+    g_list_free(update);
+    if(!g->newname) g_free(newname);
   }
-
-  // finalize the dialog
-  g_free(g->nameorig);
 }
 
 static void _gui_styles_item_toggled(GtkCellRendererToggle *cell,
@@ -871,6 +872,12 @@ static gboolean _gui_styles_dialog_run(const gboolean edit,
     else
     {
       dt_control_log(_("can't create style out of unaltered image"));
+      gtk_widget_destroy(GTK_WIDGET(dialog));
+      g_object_unref(is_active_pb);
+      g_object_unref(is_inactive_pb);
+      g_object_unref(mask);
+      g_free(sd->nameorig);
+      g_free(sd);
       return TRUE;
     }
   }
@@ -906,6 +913,8 @@ static gboolean _gui_styles_dialog_run(const gboolean edit,
   gtk_widget_destroy(GTK_WIDGET(dialog));
   g_object_unref(is_active_pb);
   g_object_unref(is_inactive_pb);
+  g_object_unref(mask);
+  g_free(sd->nameorig);
   g_free(sd);
 
   return res;
