@@ -11010,26 +11010,41 @@ static void _group_toggle_bypass(dt_iop_module_t *module, dt_mask_id_t cid)
   _commit_structure_change(module);
 }
 
-// flip every member's own inversion bit independently (not a group-wide state
-// to set/clear): ON, OFF, ON becomes OFF, ON, OFF. A one-shot action, not a
-// persistent "group is inverted" mode -- shared by the actions menu's
+// flip every direct member's own inversion independently (not a group-wide
+// state to set/clear): ON, OFF, ON becomes OFF, ON, OFF. A one-shot action, not
+// a persistent "group is inverted" mode -- shared by the actions menu's
 // "invert all elements" entry and the "invert all elements of selected group"
-// shortcut. Not the same operation as _group_toggle_output_invert below:
+// shortcut. An element's inversion is its own INVERSE bit; a nested group's is
+// its marker's OP_INVERT, as a reference to a group carries no settings of its
+// own (see _synth_ref in masks.c) and its header's lead icon paints from the
+// marker. Not the same operation as _group_toggle_output_invert below:
 // inverting every member and folding is mathematically different from folding
 // and then inverting the result, for anything but a single-member group (see
 // DT_MASKS_STATE_OP_INVERT in masks.h).
 static void _invert_group_members(dt_iop_module_t *module, const dt_mask_id_t cid)
 {
-  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
-  GList *members = dt_masks_model_group_members(grp, cid);
-  if(!members) return;
-  for(GList *l = members; l; l = g_list_next(l))
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  dt_masks_form_t *owner = _group_of(dt_masks_gui_module_mask_group(module), cid);
+  if(!owner || !owner->points) return;
+  // the members' own list nodes, not a lookup by form id: a shape referenced
+  // twice would flip the first reference twice and the second not at all
+  for(GList *l = owner->points->next; l; l = g_list_next(l))
   {
-    dt_masks_point_group_t *pt = dt_masks_gui_group_point(grp, GPOINTER_TO_INT(l->data));
-    if(!pt) continue;
-    pt->state ^= DT_MASKS_STATE_INVERSE;
+    dt_masks_point_group_t *pt = l->data;
+    dt_masks_form_t *sub = dt_masks_get_from_id(darktable.develop, pt->formid);
+    if(sub && sub != owner && (sub->type & DT_MASKS_GROUP))
+    {
+      dt_masks_point_group_t *marker = dt_masks_group_marker(sub);
+      if(!marker) continue;
+      marker->state ^= DT_MASKS_STATE_OP_INVERT;
+      if(bd && bd->masks_list_box)
+        _apply_group_output_invert_icon(GTK_WIDGET(bd->masks_list_box),
+                                        (guint)marker->formid,
+                                        (marker->state & DT_MASKS_STATE_OP_INVERT) != 0);
+    }
+    else
+      pt->state ^= DT_MASKS_STATE_INVERSE;
   }
-  g_list_free(members);
   dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
   // inversion changes no row, only how rows look: refresh them in place, as
   // _invert_element does, rather than rebuilding with a visible flash
