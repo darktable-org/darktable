@@ -641,6 +641,8 @@ changes (where available).
 - Fixed a possible crash while checking database snapshots for removal
   when the folder of the data database could not be determined.
 
+- Fixed a GPU memory leak in the OpenCL path of the clipping indicator.
+
 ## Lua
 
 ### API Version
