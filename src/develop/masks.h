@@ -621,7 +621,7 @@ typedef struct dt_masks_form_gui_t
 
   // masks panel and canvas feedback, set by blend_gui.c:
   // panel_hover_formids: shapes highlighted on the canvas because their row,
-  //   or the header of a cluster holding them, is hovered. NULL = none
+  //   or the header of a group holding them, is hovered. NULL = none
   // panel_selected_formid: the panel's selection, highlighted on the canvas
   //   while nothing is hovered
   // canvas_hover_formid: the shape under the cursor, whose row the panel

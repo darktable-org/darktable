@@ -163,10 +163,6 @@ static void _flexi_layout_apply(dt_iop_module_t *module,
   bd->panel_selected_formid = INVALID_MASKID;
   bd->panel_selected_group_cid =
     dt_is_valid_maskid(first_nested) ? first_nested : root->formid;
-  // every note opens, to show what the new layout is for (see
-  // _group_note_is_open); switches set on the old groups are gone with them
-  bd->masks_notes_all_open = TRUE;
-  if(bd->masks_note_open) g_hash_table_remove_all(bd->masks_note_open);
   dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
   dt_masks_gui_build_list(module);
   dt_masks_gui_refresh_canvas_edit(module);

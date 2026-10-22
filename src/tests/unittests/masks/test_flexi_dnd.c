@@ -18,16 +18,16 @@
 
 // The drag-and-drop paths other than element-onto-element (which lives in
 // test_flexi_model.c alongside the grouping primitives it exercises), and the
-// group operations the panel's menus make: emptying a group, and finding the
-// nested group a group's deletion takes.
+// group operations the panel's selection makes: emptying a group, and finding
+// the nested group a group's deletion takes.
 //
-// The panel offers four distinct drops, each with its own target type so they
+// The panel offers three distinct drops, each with its own target type so they
 // cannot interfere: an element onto another element, an element onto a group
-// (empty or not), a whole same-kind cluster onto either of those, and a whole
-// group moved against another group. A group's list holds its marker first,
-// then its elements, so every one of them moves points from one group's list
-// to another's: what they have to get right is where the dragged thing lands,
-// and that no group's settings or place change on the way.
+// (empty or not), and a whole group moved against another group. A group's
+// list holds its marker first, then its elements, so every one of them moves
+// points from one group's list to another's: what they have to get right is
+// where the dragged thing lands, and that no group's settings or place change
+// on the way.
 
 #include "flexi_fixture.h"
 
@@ -217,77 +217,6 @@ static void test_row_drop_from_a_sole_member_keeps_group_order(void **state)
 }
 
 // ---------------------------------------------------------------------------
-// whole-cluster drops
-// ---------------------------------------------------------------------------
-
-static GList *_ids(const int a, const int b)
-{
-  GList *l = g_list_append(NULL, GINT_TO_POINTER(a));
-  return g_list_append(l, GINT_TO_POINTER(b));
-}
-
-// every member moves together, as one contiguous block, keeping their relative
-// order
-static void test_cluster_onto_group_header(void **state)
-{
-  flexi_build("u{1,2,3,i{4}}");
-  GList *ids = _ids(2, 3);
-
-  assert_true(dt_masks_gui_cluster_move(&flexi_module, ids, FLEXI_GID(1), TRUE, FALSE));
-  g_list_free(ids);
-  assert_layout("u{1,i{4,2,3}}");
-}
-
-static void test_cluster_onto_element_row(void **state)
-{
-  flexi_build("u{1,2,3,i{4,5}}");
-  GList *ids = _ids(2, 3);
-
-  assert_true(dt_masks_gui_cluster_move(&flexi_module, ids, 4, FALSE, TRUE));
-  g_list_free(ids);
-  assert_layout("u{1,i{4,2,3,5}}");
-}
-
-static void test_cluster_onto_an_empty_group(void **state)
-{
-  flexi_build("u{1,2,3,d{}}");
-  GList *ids = _ids(2, 3);
-
-  assert_true(dt_masks_gui_cluster_move(&flexi_module, ids, FLEXI_GID(1), TRUE, FALSE));
-  g_list_free(ids);
-  assert_layout("u{1,d{2,3}}");
-}
-
-// moving out every member of a group leaves it, empty, where it was
-static void test_cluster_emptying_group_leaves_it(void **state)
-{
-  flexi_build("u{1,2,i{3,4}}");
-  GList *ids = _ids(3, 4);
-
-  assert_true(dt_masks_gui_cluster_move(&flexi_module, ids, FLEXI_GID(0), TRUE, FALSE));
-  g_list_free(ids);
-  assert_layout("u{1,2,i{},3,4}");
-}
-
-// a cluster dropped on the header of the group it is in stays where it is
-static void test_cluster_onto_its_own_group_is_a_noop(void **state)
-{
-  flexi_build("u{1,2,3,i{4}}");
-  GList *ids = _ids(2, 3);
-
-  assert_false(dt_masks_gui_cluster_move(&flexi_module, ids, FLEXI_GID(0), TRUE, FALSE));
-  g_list_free(ids);
-  assert_layout("u{1,2,3,i{4}}");
-}
-
-static void test_cluster_move_with_no_members_is_rejected(void **state)
-{
-  flexi_build("u{1,2}");
-  assert_false(dt_masks_gui_cluster_move(&flexi_module, NULL, FLEXI_GID(0), TRUE, FALSE));
-  assert_layout("u{1,2}");
-}
-
-// ---------------------------------------------------------------------------
 // emptying and deleting groups
 // ---------------------------------------------------------------------------
 
@@ -318,6 +247,23 @@ static void test_a_group_deletes_as_its_nested_group(void **state)
   assert_null(dt_masks_model_nested_group_of(grp, 2));
 }
 
+// what decides whether resetting the mask must ask first: an element at any
+// depth, not groups alone
+static void test_a_group_of_groups_holds_no_elements(void **state)
+{
+  dt_masks_form_t *grp = flexi_build("u{i{},d{u{}}}");
+  assert_false(dt_masks_model_group_has_elements(grp));
+}
+
+static void test_an_element_at_any_depth_is_held(void **state)
+{
+  dt_masks_form_t *grp = flexi_build("u{i{},d{u{3}}}");
+  assert_true(dt_masks_model_group_has_elements(grp));
+  // as seen from the nested groups too
+  assert_false(dt_masks_model_group_has_elements(dt_masks_model_nested_group_of(grp, FLEXI_GID(1))));
+  assert_true(dt_masks_model_group_has_elements(dt_masks_model_nested_group_of(grp, FLEXI_GID(2))));
+}
+
 int main(void)
 {
   const struct CMUnitTest tests[] = {
@@ -337,14 +283,10 @@ int main(void)
     cmocka_unit_test_teardown(test_moving_elements_leaves_every_group_setting, _teardown),
     cmocka_unit_test_teardown(test_moving_keeps_the_elements_own_refinement, _teardown),
     cmocka_unit_test_teardown(test_row_drop_from_a_sole_member_keeps_group_order, _teardown),
-    cmocka_unit_test_teardown(test_cluster_onto_group_header, _teardown),
-    cmocka_unit_test_teardown(test_cluster_onto_element_row, _teardown),
-    cmocka_unit_test_teardown(test_cluster_onto_an_empty_group, _teardown),
-    cmocka_unit_test_teardown(test_cluster_emptying_group_leaves_it, _teardown),
-    cmocka_unit_test_teardown(test_cluster_onto_its_own_group_is_a_noop, _teardown),
-    cmocka_unit_test_teardown(test_cluster_move_with_no_members_is_rejected, _teardown),
     cmocka_unit_test_teardown(test_emptying_a_group_keeps_it, _teardown),
     cmocka_unit_test_teardown(test_a_group_deletes_as_its_nested_group, _teardown),
+    cmocka_unit_test_teardown(test_a_group_of_groups_holds_no_elements, _teardown),
+    cmocka_unit_test_teardown(test_an_element_at_any_depth_is_held, _teardown),
   };
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

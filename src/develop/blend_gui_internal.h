@@ -123,6 +123,9 @@ gboolean dt_masks_model_hoist_sole_group(dt_masks_form_t *grp, dt_masks_refineme
 /** remove the members of group `cid`, keeping the group. Returns their ids,
     which the caller frees */
 GList *dt_masks_model_empty_group(dt_masks_form_t *grp, const dt_mask_id_t cid);
+/** does `list`, a group form, hold an element at any depth, rather than only
+    groups? A member naming no form counts too */
+gboolean dt_masks_model_group_has_elements(dt_masks_form_t *list);
 
 // what the gestures do, apart from their GTK handlers so that the tests run
 // the same code. They change the mask structure and the panel's selection,
@@ -173,12 +176,6 @@ gboolean dt_masks_model_drop_point_onto_group(dt_iop_module_t *module,
                                               const dt_mask_id_t dst);
 /** drop every member whose form is gone from dev->forms; how many went */
 int dt_masks_model_prune_dangling_members(dt_masks_form_t *grp);
-/** move a whole same-kind cluster onto an element row or a group header */
-gboolean dt_masks_gui_cluster_move(dt_iop_module_t *module,
-                                   GList *member_ids,
-                                   const dt_mask_id_t dst,
-                                   const gboolean dst_is_group,
-                                   const gboolean above);
 /** the nested group form whose marker is `cid`, or NULL: for the mask's own
     group, and for what is no group's marker */
 dt_masks_form_t *dt_masks_model_nested_group_of(dt_masks_form_t *grp, const dt_mask_id_t cid);
@@ -214,12 +211,10 @@ dt_masks_solo_canvas_t dt_masks_model_toggle_soloedit(dt_iop_module_t *module,
                                                       dt_masks_form_t *grp,
                                                       const dt_mask_id_t id);
 
-/** does an element row of this kind carry an expander chevron of its own?
-    Every element has at least its opacity slider to show. `props_subpanel` is
-    "element properties in subpanel", which leaves only a parametric row's
-    in/out chevron. */
-gboolean dt_masks_model_row_is_expandable(const dt_masks_type_t type,
-                                          const gboolean props_subpanel);
+/** does an element row carry an expander chevron of its own? Of any kind:
+    every element has at least its opacity slider to show. `props_subpanel` is
+    "element properties in subpanel", which takes all of them out of the rows. */
+gboolean dt_masks_model_row_is_expandable(const gboolean props_subpanel);
 
 /** which element "auto-expand selected" keeps open: the selection if it can be
     expanded at all, else whatever was expanded last. Resolves the form's kind
@@ -248,18 +243,24 @@ gboolean dt_masks_gui_param_channel_is_used(const dt_masks_point_parametric_t *p
                                             const dt_iop_gui_blendif_channel_t *channel,
                                             const int in_out);
 
+/** the sliders a row shows for `view`: AUTO resolves to the ranges in use (the
+    input one when neither is), the others to themselves */
+dt_masks_param_view_t dt_masks_model_param_view_resolve(const dt_masks_param_view_t view,
+                                                        const gboolean in_used,
+                                                        const gboolean out_used);
+
 /** which controls a parametric row shows */
 typedef struct dt_masks_param_vis_t
 {
   gboolean input;
   gboolean output;
   gboolean boost;
-  gboolean bypass;
   /** the full opacity slider leading the expanded controls */
   gboolean opacity;
 } dt_masks_param_vis_t;
 
-dt_masks_param_vis_t dt_masks_model_param_row_visibility(const gboolean expanded,
+dt_masks_param_vis_t dt_masks_model_param_row_visibility(const dt_masks_param_view_t view,
+                                                         const gboolean expanded,
                                                          const gboolean in_used,
                                                          const gboolean out_used,
                                                          const gboolean boost_enabled,
@@ -310,6 +311,7 @@ typedef enum dt_masks_section_t
 {
   DT_MASKS_SECTION_REFINE,
   DT_MASKS_SECTION_PROPS,
+  DT_MASKS_SECTION_HELP,
   DT_MASKS_SECTION_CONSUMERS,
   DT_MASKS_SECTION_COUNT
 } dt_masks_section_t;
@@ -412,7 +414,7 @@ void dt_masks_gui_add_presets_menu(GMenu *menu, GtkWidget *anchor, dt_iop_module
     dt_masks_point_group_t.preset_note key; NULL when the key names none. Owned
     by the preset cache: valid until the presets file is next read */
 GPtrArray *dt_masks_gui_preset_notes(const char *key);
-/** the "show preset notes" option */
+/** the "show preset help notes (beginners)" option */
 gboolean dt_masks_gui_preset_notes_shown(void);
 /** give a mask that has no group form yet the default group layout; with
     `wipe`, replace any mask with it ("reset mask") */
@@ -424,15 +426,14 @@ void dt_masks_gui_add_default_preset_box(GtkWidget *box);
 // masks_gui_toolbar.c -> blend_gui.c
 // ---------------------------------------------------------------------------
 
-/** the add-buttons toolbar: add group, shapes, parametric channels and
-    import, centered on one line when they fit and on two or three rows
-    otherwise, presets at the top right. gap is an empty widget whose width
-    spaces them */
+/** the add-buttons toolbar: add group, import, shapes and parametric channels,
+    on one line when they fit and on two or three rows otherwise. In every row
+    add group and import keep to the left edge, and the rest is against the
+    right one. gap is an empty widget whose width spaces them */
 GtkWidget *dt_masks_gui_toolbar_new(GtkWidget *group,
+                                    GtkWidget *import,
                                     GtkWidget *shapes,
                                     GtkWidget *channels,
-                                    GtkWidget *import,
-                                    GtkWidget *presets,
                                     GtkWidget *gap);
 
 // ---------------------------------------------------------------------------

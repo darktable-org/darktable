@@ -3721,6 +3721,13 @@
     <longdescription>whether the mask panel's element and group properties section is folded, for every module and target</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/masks/help_collapsed</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>collapse the help section</shortdescription>
+    <longdescription>whether the mask panel's help section is folded, for every module and target</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/masks/consumers_collapsed</name>
     <type>bool</type>
     <default>false</default>
@@ -3745,8 +3752,8 @@
     <name>plugins/darkroom/masks/show_preset_notes</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>show preset notes</shortdescription>
-    <longdescription>while enabled, a group made by a built-in group layout preset shows a short note under its header on how to use it, until it is dismissed</longdescription>
+    <shortdescription>show preset help notes (beginners)</shortdescription>
+    <longdescription>while enabled, the mask panel shows a short help note on how to use the selected group, in a collapsible help section of its own, when the group was made by a built-in group layout preset</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/default_group_preset</name>

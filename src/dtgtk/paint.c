@@ -2006,6 +2006,31 @@ void dtgtk_cairo_paint_remove(cairo_t *cr, const gint x, const gint y, const gin
   FINISH
 }
 
+void dtgtk_cairo_paint_trash(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(0.95, 1, 0, 0)
+
+  // the lid and its handle
+  cairo_move_to(cr, 0.1, 0.22);
+  cairo_line_to(cr, 0.9, 0.22);
+  cairo_move_to(cr, 0.38, 0.22);
+  cairo_line_to(cr, 0.38, 0.08);
+  cairo_line_to(cr, 0.62, 0.08);
+  cairo_line_to(cr, 0.62, 0.22);
+  // the bin, narrower at the bottom, and its two ribs
+  cairo_move_to(cr, 0.2, 0.22);
+  cairo_line_to(cr, 0.27, 0.92);
+  cairo_line_to(cr, 0.73, 0.92);
+  cairo_line_to(cr, 0.8, 0.22);
+  cairo_move_to(cr, 0.42, 0.4);
+  cairo_line_to(cr, 0.42, 0.75);
+  cairo_move_to(cr, 0.58, 0.4);
+  cairo_line_to(cr, 0.58, 0.75);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_star(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
