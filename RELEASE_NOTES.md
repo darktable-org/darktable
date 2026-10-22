@@ -364,6 +364,10 @@ changes (where available).
   `-as-flags` form emits a single line of `--flag value` pairs
   ready to splice into another invocation.
 
+- Copy & import can now also copy existing XMP sidecars, including
+  those of duplicates, so edits made elsewhere are kept. Enable it in
+  preferences > import.
+
 ## Bug Fixes
 
 - Fixed drawn masks appearing too early in the history stack of an

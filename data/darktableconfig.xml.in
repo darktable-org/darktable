@@ -1836,6 +1836,14 @@
     <longdescription>file naming pattern used for a import session</longdescription>
   </dtconfig>
 
+  <dtconfig prefs="import" section="session">
+    <name>session/copy_sidecar_files</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>copy existing sidecar files</shortdescription>
+    <longdescription>when copying images on import, also copy their XMP sidecar files so that existing edits are kept</longdescription>
+  </dtconfig>
+
   <dtconfig>
     <name>plugins/lighttable/layout</name>
     <type>int</type>
