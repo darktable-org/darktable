@@ -78,6 +78,7 @@ static void _wave_process(dt_scopes_mode_t *const self,
   const size_t num_bins = ceilf(to_bin / (float)samples_per_bin);
   d->waveform_bins = num_bins;
   const size_t num_tones = d->waveform_tones;
+  const float top = self->scopes->hdr_active ? 1.0f : 8.0f / 9.0f;
 
   // Note that, with current constants, the input buffer is from the
   // preview pixelpipe and should be <= 1440x900x4. The output buffer
@@ -99,8 +100,8 @@ static void _wave_process(dt_scopes_mode_t *const self,
       size_t tone[4] DT_ALIGNED_PIXEL;
       for_each_channel(ch, aligned(px,tone:16))
       {
-        // 1.0 is at 8/9 of the height!
-        const float v = (8.0f / 9.0f) * px[4U * (x + roi->crop_x) + ch];
+        // 1.0 is at 8/9 of the height, unless the data is an HDR signal
+        const float v = top * px[4U * (x + roi->crop_x) + ch];
         // Using ceilf brings everything <= 0 to bottom tone,
         // everything > 1.0f/(num_tones-1) to top tone.
         tone[ch] = ceilf(CLAMPS(v, 0.0f, 1.0f) * (num_tones-1));
@@ -170,8 +171,12 @@ static void _wave_draw_grid(const dt_scopes_mode_t *const self,
                             const int height)
 {
   const dt_scopes_wave_t *const d = self->data;
-  dt_draw_waveform_lines(cr, 0, 0, width, height,
-                         d->orient == DT_WAVE_ORIENT_HORI);
+  if(self->scopes->hdr_active)
+    lib_histogram_draw_hdr_grid(cr, width, height, d->orient == DT_WAVE_ORIENT_HORI,
+                                self->scopes->hdr_active);
+  else
+    dt_draw_waveform_lines(cr, 0, 0, width, height,
+                           d->orient == DT_WAVE_ORIENT_HORI);
 }
 
 static void _wave_draw_highlight(const dt_scopes_mode_t *const self,

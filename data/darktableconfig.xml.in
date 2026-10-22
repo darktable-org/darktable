@@ -3547,6 +3547,19 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/histogram/hdr_scale</name>
+    <type>
+      <enum>
+        <option>SDR</option>
+        <option>PQ</option>
+        <option>HLG</option>
+      </enum>
+    </type>
+    <default>SDR</default>
+    <shortdescription>scale for histogram, waveform and RGB parade</shortdescription>
+    <longdescription>show the histogram, waveform and RGB parade as an SDR signal, or as the PQ or HLG signal of an HDR export</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/histogram/orient</name>
     <type>
       <enum>
