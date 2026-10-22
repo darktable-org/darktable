@@ -102,7 +102,9 @@ static void _build_style_submenus(GMenu *menu,
     // earlier style in the same group, or create the item that opens it
     if(!sm)
     {
-      GMenuItem *node = g_menu_item_new(split0, NULL);
+      gchar *label_unm = dt_str_unmnemonic(split0);
+      GMenuItem *node = g_menu_item_new(label_unm, NULL);
+      g_free(label_unm);
       sm = g_menu_new();
       g_menu_item_set_submenu(node, G_MENU_MODEL(sm));
       g_menu_append_item(menu, node);
@@ -130,7 +132,9 @@ static void _build_style_submenus(GMenu *menu,
     // store all the menu_data allocs to free them on menu close
     _menu_data_list = g_list_prepend(_menu_data_list, menu_data);
 
-    GMenuItem *mi = g_menu_item_new(split0[0] ? split0 : _("none"), NULL);
+    gchar *label_unm = dt_str_unmnemonic(split0[0] ? split0 : _("none"));
+    GMenuItem *mi = g_menu_item_new(label_unm, NULL);
+    g_free(label_unm);
     g_menu_item_set_action_and_target_value(mi,
                                             "styles.activate",
                                             g_variant_new("t", (guintptr)menu_data));

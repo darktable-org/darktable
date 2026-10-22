@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/presets.h"
+#include "common/utility.h"
 #include "develop/blend.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -1659,12 +1660,14 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *favorite_presets_button)
             : g_strdup(name);
           gchar *tt = g_markup_printf_escaped("%s %s %s",
                                               iop->name(), iop->multi_name, local_name);
-          GMenuItem *mi = g_menu_item_new(tt, NULL);
+          gchar *tt_unm = dt_str_unmnemonic(tt);
+          GMenuItem *mi = g_menu_item_new(tt_unm, NULL);
           g_menu_item_set_action_and_target_value(mi,
                                                   "favorites.activate",
                                                   g_variant_new("(st)", name, (guintptr)iop));
           g_menu_append_item(menu, mi);
           g_object_unref(mi);
+          g_free(tt_unm);
           g_free(tt);
           g_free(local_name);
         }
