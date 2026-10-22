@@ -610,7 +610,8 @@ __kernel void spektrafilm_grain_add(__global float4 *dens_buf, __global const fl
    result, matching the reference (_finalize_grain: blur -> USM ->
    -= density_min). Without the floor the D/blur(D) ratio is
    ill-conditioned in the deepest shadows and shadow noise gets amplified
-   the way the reference never does. */
+   the way the reference never does. The result is bounded below by -dmin,
+   not by 0, so grain below the floor is kept rather than rectified. */
 __kernel void spektrafilm_grain_usm(__global float4 *cmy, __global const float4 *orig,
                                      const int w, const int h, const float amount,
                                      const float dmin0, const float dmin1, const float dmin2)
@@ -634,12 +635,12 @@ __kernel void spektrafilm_grain_usm(__global float4 *cmy, __global const float4 
      the next candidate for a shared portable implementation (cf. grain_exp_neg
      in spektra_core.h). */
   float4 out;
-  out.x = fmax(fma(D.x, pow(fmax(fmin(D.x / fmax(blur.x, eps), ratmax), ratmin), amount),
-                   -dmin.x), 0.0f);
-  out.y = fmax(fma(D.y, pow(fmax(fmin(D.y / fmax(blur.y, eps), ratmax), ratmin), amount),
-                   -dmin.y), 0.0f);
-  out.z = fmax(fma(D.z, pow(fmax(fmin(D.z / fmax(blur.z, eps), ratmax), ratmin), amount),
-                   -dmin.z), 0.0f);
+  out.x = fma(D.x, pow(fmax(fmin(D.x / fmax(blur.x, eps), ratmax), ratmin), amount),
+              -dmin.x);
+  out.y = fma(D.y, pow(fmax(fmin(D.y / fmax(blur.y, eps), ratmax), ratmin), amount),
+              -dmin.y);
+  out.z = fma(D.z, pow(fmax(fmin(D.z / fmax(blur.z, eps), ratmax), ratmin), amount),
+              -dmin.z);
   out.w = 0.0f;
   cmy[k] = out;
 }

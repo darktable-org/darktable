@@ -588,8 +588,13 @@ void sf_multiplicative_unsharp_mask3(float *const buf,
     const float D = fmaxf(orig[i] + d0, 0.0f);
     const float blur = fmaxf(buf[i] + d0, eps);
     const float ratio = fmaxf(fminf(D / blur, ratio_max), 1.0f / ratio_max);
-    /* fma-pinned, matching spektrafilm_grain_usm */
-    buf[i] = fmaxf(fmaf(D, powf(ratio, amount), -d0), 0.0f);
+    /* fma-pinned, matching spektrafilm_grain_usm. D >= 0 and the power term is
+       positive, so the result is bounded below by -d0: the absolute density
+       stays non-negative while the density relative to the floor may go
+       negative, as in the reference. Clamping at 0 here would rectify the grain
+       below the floor and add density wherever grain is strong relative to the
+       local density. */
+    buf[i] = fmaf(D, powf(ratio, amount), -d0);
   }
 }
 
