@@ -433,7 +433,7 @@ msgstr "Doux"
 #: ../build/bin/conf_gen.h:2149 ../build/bin/preferences_gen.h:3441
 msgctxt "preferences"
 msgid "false color"
-msgstr "Fausses couleurs"
+msgstr "Fausse couleur"
 
 #: ../build/bin/conf_gen.h:2150
 msgctxt "preferences"
@@ -901,7 +901,7 @@ msgid ""
 "<b>darker:</b> good for dimly-lit rooms"
 msgstr ""
 "L’environnement autour de la photo influence la façon dont on perçoit ses "
-"couleurs et ses tons pendant l’édition. Le gris est recommandé, car c’est la "
+"couleurs et ses tonalités pendant l’édition. Le gris est recommandé, car c’est la "
 "couleur la plus neutre : il ne guide pas ton regard dans une direction "
 "particulière.\n"
 "\n"
@@ -2958,7 +2958,7 @@ msgid ""
 "color equalizer"
 msgstr ""
 "Ajuster finement la couleur sélectionnée en ajustant la réglette « Placement "
-"des nœuds » de l’égaliseur de couleurs"
+"des nœuds » de l’égaliseur de couleur"
 
 #: ../build/bin/styles_string.h:25
 msgid "fog"
@@ -4662,7 +4662,7 @@ msgstr "Seuil des bords"
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:150
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:267
 msgid "color smoothing"
-msgstr "Lissage des couleurs"
+msgstr "Lissage de couleur"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:156
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:271
@@ -5463,7 +5463,7 @@ msgstr "Laplaciens guidés"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:261
 msgid "reconstruct color"
-msgstr "Reconstruire les couleurs"
+msgstr "Reconstruire la couleur"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:265
 msgid "2 px"
@@ -7967,7 +7967,7 @@ msgstr "Matrice de couleur du vendeur"
 
 #: ../src/common/colorspaces.c:1812
 msgid "alternate color matrix"
-msgstr "Alternative à la matrice de couleurs"
+msgstr "Alternative à la matrice de couleur"
 
 #: ../src/common/colorspaces.c:1814
 msgid "BRG (experimental)"
@@ -10532,7 +10532,7 @@ msgstr "Couleur"
 #: ../src/develop/blend_gui.c:121
 msgctxt "blendmode"
 msgid "coloradjustment"
-msgstr "Ajustement des couleurs"
+msgstr "Ajustement de couleur"
 
 #. * deprecated blend modes: make them available as legacy
 #. * history stacks might want them
@@ -11214,7 +11214,7 @@ msgid ""
 "shifts and tilts the tone curve of the blend mask to adjust its brightness\n"
 "without affecting fully transparent/fully opaque regions"
 msgstr ""
-"Décale et incline la courbe de tonalités du masque de fusion pour ajuster sa "
+"Décale et incline la courbe de tonalité du masque de fusion pour ajuster sa "
 "luminosité\n"
 "sans affecter les régions complètement transparentes ou opaques."
 
@@ -11226,7 +11226,7 @@ msgstr "Contraste du masque"
 msgid ""
 "gives the tone curve of the blend mask an s-like shape to adjust its contrast"
 msgstr ""
-"Donne à la courbe de tonalités du masque de fusion une forme en S\n"
+"Donne à la courbe de tonalité du masque de fusion une forme en S\n"
 "pour ajuster son contraste."
 
 #: ../src/develop/blend_gui.c:3694
@@ -12412,7 +12412,7 @@ msgstr "Survoler une image avec la souris et utiliser les raccourcis clavier"
 
 #: ../src/dtgtk/thumbtable.c:1417
 msgid "to apply ratings, colors, styles, etc."
-msgstr "pour appliquer notes, couleurs, styles, etc."
+msgstr "pour appliquer notes, couleur, styles, etc."
 
 #: ../src/dtgtk/thumbtable.c:1418
 msgid "make default raw development look more like your"
@@ -19561,7 +19561,7 @@ msgstr ""
 "Description de l’image pour l’encodeur :\n"
 " • Image – photo d’intérieur, portrait\n"
 " • Photo – photo d’extérieur, avec lumière naturelle\n"
-" • Graphique – image avec des couleurs uniformes (schéma, etc.)"
+" • Graphique – image avec des tonalités uniformes (schéma, etc.)"
 
 #: ../src/imageio/format/webp.c:442
 msgid "picture"
@@ -20297,7 +20297,7 @@ msgstr "Primaires"
 
 #: ../src/iop/agx.c:2278
 msgid "color primaries adjustments"
-msgstr "Ajustements des couleurs primaires"
+msgstr "Ajustements des primaires de couleur"
 
 #: ../src/iop/agx.c:2284
 msgid ""
@@ -21735,7 +21735,7 @@ msgstr "Mixeur de canaux"
 msgid ""
 "this module is deprecated. please use the color calibration module instead."
 msgstr ""
-"Ce module est déprécié, utiliser « Calibration des couleurs » à la place."
+"Ce module est déprécié, utiliser « Calibration de couleur » à la place."
 
 #: ../src/iop/channelmixer.c:132 ../src/iop/channelmixerrgb.c:236
 msgid ""
@@ -21838,7 +21838,7 @@ msgstr "N&B Kodak Tri-X 400"
 
 #: ../src/iop/channelmixerrgb.c:226
 msgid "color calibration"
-msgstr "Calibration des couleurs"
+msgstr "Calibration de couleur"
 
 #: ../src/iop/channelmixerrgb.c:231
 msgid "channel mixer|white balance|monochrome"
@@ -21890,11 +21890,11 @@ msgstr "Échanger canaux | R et B"
 
 #: ../src/iop/channelmixerrgb.c:612
 msgid "area color mapping (active)"
-msgstr "Mappage zone de couleurs (active)"
+msgstr "Mappage zone de couleur (active)"
 
 #: ../src/iop/channelmixerrgb.c:612
 msgid "area color mapping"
-msgstr "Mappage zone de couleurs"
+msgstr "Mappage zone de couleur"
 
 #: ../src/iop/channelmixerrgb.c:1897
 msgid "(daylight)"
@@ -21991,7 +21991,7 @@ msgid ""
 "this can lead to inconsistencies unless you\n"
 "use them with masks or know what you are doing."
 msgstr ""
-"Il y a deux instances ou plus du module « Calibration des couleurs »,\n"
+"Il y a deux instances ou plus du module « Calibration de couleur »,\n"
 "toutes proposant une adaptation chromatique.\n"
 "Cela peut entraîner des incohérences, sauf si elles sont utilisées\n"
 "avec des masques et en connaissance de cause."
@@ -22007,10 +22007,10 @@ msgid ""
 "set the white balance here to camera reference (D65)\n"
 "or disable chromatic adaptation in color calibration."
 msgstr ""
-"Le module de « Calibration des couleurs » est activé\n"
+"Le module de « Calibration de couleur » est activé\n"
 "et effectue déjà une adaptation chromatique.\n"
 "Positionner la balance des blancs ici sur la référence de boîtier (D65)\n"
-"ou désactiver l’adaptation chromatique du module « Calibration des couleurs »."
+"ou désactiver l’adaptation chromatique du module « Calibration de couleur »."
 
 #: ../src/iop/channelmixerrgb.c:2064
 msgid "white balance module error (<u>details</u>)"
@@ -22039,9 +22039,9 @@ msgid ""
 "or disable chromatic adaptation in color calibration."
 msgstr ""
 "Ce module ne fourni pas un point de référence d’illuminant valide entraînant\n"
-"des problèmes dans l’adaptation chromatique de « Calibration des couleurs ».\n"
+"des problèmes dans l’adaptation chromatique de « Calibration de couleur ».\n"
 "Activer ce module et le définir comme référence\n"
-"ou désactiver l’adaptation chromatique de « Calibration des couleurs »."
+"ou désactiver l’adaptation chromatique de « Calibration de couleur »."
 
 #: ../src/iop/channelmixerrgb.c:2085
 msgid ""
@@ -22061,7 +22061,7 @@ msgstr "Détection automatique de la balance des blancs terminée"
 
 #: ../src/iop/channelmixerrgb.c:2327
 msgid "channelmixerrgb works only on RGB input"
-msgstr "« Calibration des couleurs » ne marche qu’avec une entrée RVB"
+msgstr "« Calibration de couleur » ne marche qu’avec une entrée RVB"
 
 #: ../src/iop/channelmixerrgb.c:3657
 #, c-format
@@ -22142,7 +22142,7 @@ msgid ""
 "color calibration: the sum of the gray channel parameters is zero, "
 "normalization will be disabled."
 msgstr ""
-"Calibration des couleurs : la somme des paramètres du canal gris est à zéro, "
+"Calibration de couleur : la somme des paramètres du canal gris est à zéro, "
 "la normalisation va être désactivée."
 
 #. Write report in GUI
@@ -22757,7 +22757,7 @@ msgstr "Balance de couleur"
 #: ../src/iop/colorbalance.c:154
 msgid "lift gamma gain|cdl|color grading|contrast|saturation|hue"
 msgstr ""
-"lift gamma gain|cdl|étalonnage des couleurs|contraste|saturation|tonalité"
+"lift gamma gain|cdl|étalonnage de couleur|contraste|saturation|tonalité"
 
 #: ../src/iop/colorbalance.c:159
 msgid "shift colors selectively by luminance range"
@@ -22859,11 +22859,11 @@ msgstr "Ombres / tons moyens / hautes lumières"
 
 #: ../src/iop/colorbalance.c:1857 ../src/iop/colorbalance.c:1866
 msgid "color-grading mapping method"
-msgstr "Méthode d’ajustement des couleurs"
+msgstr "Méthode d’ajustement de couleur"
 
 #: ../src/iop/colorbalance.c:1861
 msgid "color control sliders"
-msgstr "Contrôle des couleurs"
+msgstr "Curseur de contrôle de couleur"
 
 #: ../src/iop/colorbalance.c:1862 ../src/libs/colorpicker.c:53
 msgid "HSL"
@@ -22880,15 +22880,15 @@ msgstr "Maître"
 
 #: ../src/iop/colorbalance.c:1879
 msgid "saturation correction before the color balance"
-msgstr "Correction de la saturation avant la balance des couleurs"
+msgstr "Correction de la saturation avant la balance de couleur"
 
 #: ../src/iop/colorbalance.c:1885
 msgid "saturation correction after the color balance"
-msgstr "Correction de la saturation après la balance des couleurs"
+msgstr "Correction de la saturation après la balance de couleur"
 
 #: ../src/iop/colorbalance.c:1890
 msgid "adjust to match a neutral tone"
-msgstr "Ajustement des tons neutres"
+msgstr "Ajustement au ton neutre"
 
 #. is set in _configure_slider_blocks
 #: ../src/iop/colorbalance.c:1901
@@ -22977,7 +22977,7 @@ msgid ""
 "offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance|"
 "saturation"
 msgstr ""
-"offset power slope|cdl|étalonnage des couleurs|contraste|chroma des hautes "
+"offset power slope|cdl|étalonnage de couleur|contraste|chroma des hautes "
 "lumières|teinte|vibrance|saturation"
 
 #: ../src/iop/colorbalancergb.c:179
@@ -23006,7 +23006,7 @@ msgstr "Couleur de base | Standard"
 
 #: ../src/iop/colorbalancergb.c:968
 msgid "colorbalance works only on RGB input"
-msgstr "La balance des couleurs ne marche qu’avec une entrée RVB"
+msgstr "La balance de couleur ne marche qu’avec une entrée RVB"
 
 #: ../src/iop/colorbalancergb.c:1454 ../src/iop/colorzones.c:2394
 #: ../src/iop/contrastntexture.c:591 ../src/iop/retouch.c:2054
@@ -23112,7 +23112,7 @@ msgstr "4 voies"
 
 #: ../src/iop/colorbalancergb.c:1914
 msgid "selective color grading"
-msgstr "Gradation sélective des couleurs"
+msgstr "Gradation sélective de couleur"
 
 #: ../src/iop/colorbalancergb.c:1916
 msgid ""
@@ -23302,11 +23302,11 @@ msgstr "Couleur 2 du damier"
 
 #: ../src/iop/colorchecker.c:119
 msgid "color look up table"
-msgstr "Table correspondance couleurs"
+msgstr "Table correspondance couleur"
 
 #: ../src/iop/colorchecker.c:124
 msgid "profile|lut|color grading"
-msgstr "profil|lut|étalonnage des couleurs"
+msgstr "profil|lut|étalonnage de couleur"
 
 #: ../src/iop/colorchecker.c:130
 msgid "perform color space corrections and apply looks"
@@ -23332,7 +23332,7 @@ msgstr "It8 tons chairs"
 
 #: ../src/iop/colorchecker.c:473
 msgid "expanded color checker"
-msgstr "Table étendue des couleurs"
+msgstr "Table étendue de couleur"
 
 #: ../src/iop/colorchecker.c:489
 msgid "Helmholtz/Kohlrausch monochrome"
@@ -23486,7 +23486,7 @@ msgstr ""
 
 #: ../src/iop/colorcorrection.c:68
 msgid "color correction"
-msgstr "Correction des couleurs"
+msgstr "Correction de couleur"
 
 #: ../src/iop/colorcorrection.c:73
 msgid "correct white balance selectively for blacks and whites"
@@ -23520,11 +23520,11 @@ msgstr "Règle la saturation globale"
 
 #: ../src/iop/colorequal.c:200 ../src/iop/colorequal.c:3749
 msgid "color equalizer"
-msgstr "Égaliseur de couleurs"
+msgstr "Égaliseur de couleur"
 
 #: ../src/iop/colorequal.c:205
 msgid "color zones|hsl"
-msgstr "zones de couleurs|hsl"
+msgstr "zones de couleur|hsl"
 
 #: ../src/iop/colorequal.c:212
 msgid ""
@@ -23681,7 +23681,7 @@ msgstr ""
 
 #: ../src/iop/colorharmonizer.c:126
 msgid "color harmonizer"
-msgstr "Harmoniseur de couleurs"
+msgstr "Harmoniseur de couleur"
 
 #: ../src/iop/colorharmonizer.c:133
 msgid "harmonize colors toward a selected palette in perceptual space"
@@ -23691,7 +23691,7 @@ msgstr ""
 
 #: ../src/iop/colorharmonizer.c:134
 msgid "creative color grading"
-msgstr "Gradation créative des couleurs"
+msgstr "Gradation créative de couleur"
 
 #: ../src/iop/colorharmonizer.c:136
 msgid "darktable UCS / JCH (perceptual)"
@@ -23998,7 +23998,7 @@ msgstr ""
 "100% = non changé. Désaturation en dessous de 100% ; saturation boostée au "
 "dessus de 100%.\n"
 "L’effet est pondéré en fonction de la proximité des pixels au nœud et "
-"respecte le paramètre « Protection des couleurs neutres »."
+"respecte le paramètre « Protection des teintes neutres »."
 
 #: ../src/iop/colorin.c:129
 msgid "input color profile"
@@ -24032,7 +24032,7 @@ msgstr ""
 #: ../src/iop/colorin.c:1591
 #, c-format
 msgid "`%s' color matrix not found!"
-msgstr "Matrice de couleurs « %s » non trouvée"
+msgstr "Matrice de couleur « %s » non trouvée"
 
 #: ../src/iop/colorin.c:1629
 msgid "input profile could not be generated!"
@@ -24124,14 +24124,14 @@ msgstr "Mélange des sources de clarté"
 
 #: ../src/iop/colormapping.c:145
 msgid "color mapping"
-msgstr "Mappage des couleurs"
+msgstr "Mappage de couleur"
 
 #: ../src/iop/colormapping.c:150
 msgid ""
 "transfer a color palette and tonal repartition\n"
 "from one image to another"
 msgstr ""
-"Transfère une palette de couleurs\n"
+"Transfère une palette de couleur\n"
 "et une répartition tonale d’une image à l’autre."
 
 #: ../src/iop/colormapping.c:1008
@@ -24170,8 +24170,8 @@ msgid ""
 "based on color dominance"
 msgstr ""
 "Mappage des groupes.\n"
-" • Faible valeur : fonction de la proximité des couleurs\n"
-" • Valeur élevée : fonction de la dominante des couleurs"
+" • Faible valeur : fonction de la proximité de couleur\n"
+" • Valeur élevée : fonction de la dominante de couleur"
 
 #: ../src/iop/colormapping.c:1032
 msgid "level of histogram equalization"
@@ -24214,7 +24214,7 @@ msgstr "Rendu (sortie)"
 msgid "rendering intent"
 msgstr ""
 "Mode de rendu.\n"
-"Définit comment les couleurs hors gamut sont reproduites,\n"
+"Définit comment la couleur hors gamut est reproduite,\n"
 "« Perceptif » est adapté à la photographie."
 
 #: ../src/iop/colorout.c:851 ../src/libs/export.c:1636
@@ -24248,7 +24248,7 @@ msgstr "Profils ICC d’export"
 
 #: ../src/iop/colorreconstruction.c:110
 msgid "color reconstruction"
-msgstr "Reconstruction des couleurs"
+msgstr "Reconstruction de couleur"
 
 #: ../src/iop/colorreconstruction.c:115
 msgid "recover clipped highlights by propagating surrounding colors"
@@ -24311,11 +24311,11 @@ msgstr "Pas de reconstruction des hautes lumières pour les images monochromes"
 
 #: ../src/iop/colortransfer.c:100
 msgid "color transfer"
-msgstr "Transfert de couleurs"
+msgstr "Transfert de couleur"
 
 #: ../src/iop/colortransfer.c:115
 msgid "this module is deprecated. better use color mapping module instead."
-msgstr "Ce module est déprécié, utiliser « Mappage des couleurs » à la place."
+msgstr "Ce module est déprécié, utiliser « Mappage de couleur » à la place."
 
 #: ../src/iop/colortransfer.c:406
 msgid ""
@@ -24325,11 +24325,11 @@ msgid ""
 msgstr ""
 "Ce module sera supprimé dans le futur, il apparaît afin que vous le "
 "désactiviez\n"
-"et utilisiez le nouveau module « Mappage des couleurs »."
+"et utilisiez le nouveau module « Mappage de couleur »."
 
 #: ../src/iop/colorzones.c:144 ../src/iop/colorzones.c:2581
 msgid "color zones"
-msgstr "Zones de couleurs"
+msgstr "Zones de couleur"
 
 #: ../src/iop/colorzones.c:150
 msgid "selectively shift hues, chroma and lightness of pixels"
@@ -24644,7 +24644,7 @@ msgstr "Impossible d’équilibrer les verts"
 #: ../src/iop/demosaic.c:1568
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
-msgstr "Matrice de couleurs « %s » non trouvée pour une image de Bayer"
+msgstr "Matrice de couleur « %s » non trouvée pour une image de Bayer"
 
 #: ../src/iop/demosaic.c:1890
 msgid ""
@@ -25836,8 +25836,7 @@ msgid ""
 "you need to manually tune the saturation when using this mode."
 msgstr ""
 "Préserve les couleurs d’origine.\n"
-"Peut produire des couleurs sur-saturées et renforcer les aberrations "
-"chromatiques,\n"
+"Peut renforcer les aberrations chromatiques,\n"
 "il est nécessaire d’ajuster manuellement la saturation dans ce mode."
 
 #: ../src/iop/filmic.c:1605 ../src/iop/filmicrgb.c:4546
@@ -26129,7 +26128,7 @@ msgstr ""
 "Décider de la meilleure stratégie de reconstruction, entre la récupération\n"
 "des hautes lumières monochromatiques et celle des hautes lumières colorées.\n"
 "0% est une moyenne équilibrée des deux. Augmenter pour avoir plus de "
-"couleurs,\n"
+"couleur,\n"
 "diminuer pour éviter les hautes lumières magentas ou hors gamut."
 
 #. Page LOOK
@@ -26176,7 +26175,7 @@ msgid ""
 "v4 is a newer desaturation method, based on spectral purity of light."
 msgstr ""
 " • V3 est la méthode de désaturation de Darktable 3.0, la même que la balance "
-"des couleurs,\n"
+"de couleur,\n"
 " • V4 est la nouvelle méthode de désaturation basée sur la pureté du spectre "
 "de la lumière."
 
@@ -26243,7 +26242,7 @@ msgid ""
 "it also helps with difficult cases of magenta highlights."
 msgstr ""
 "Nombre de passes supplémentaires de reconstruction de la chromaticité.\n"
-"Plus d’itérations impliquent plus de propagation de couleurs depuis les "
+"Plus d’itérations impliquent plus de propagation de couleur depuis les "
 "voisins.\n"
 "Cela est plus lent mais donne des hautes lumières plus neutres, et aide "
 "aussi\n"
@@ -26341,7 +26340,7 @@ msgstr "Encodage écran"
 
 #: ../src/iop/globaltonemap.c:97
 msgid "global tonemap"
-msgstr "Mappage global tonalités"
+msgstr "Mappage global tonalité"
 
 #: ../src/iop/globaltonemap.c:102
 msgid "this module is deprecated. please use the filmic rgb module instead."
@@ -26594,7 +26593,7 @@ msgid ""
 "dark background."
 msgstr ""
 "Combiner des segments tronqués proches par des opérations morphologiques.\n"
-"Cela améliore souvent la reconstruction des couleurs pour les petits segments "
+"Cela améliore souvent la reconstruction de couleur pour les petits segments "
 "avant un arrière plan sombre."
 
 #: ../src/iop/highlights.c:1385
@@ -27336,7 +27335,7 @@ msgstr "Luminosité du filtre passe-bas"
 
 #: ../src/iop/lowpass.c:581
 msgid "color saturation of lowpass filter"
-msgstr "Saturation des couleurs du filtre passe-bas"
+msgstr "Saturation de couleur du filtre passe-bas"
 
 #: ../src/iop/lowpass.c:582
 msgid "which filter to use for blurring"
@@ -27563,7 +27562,7 @@ msgstr "Filtre rouge"
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr ""
 "Glisser et défiler à la souris pour modifier\n"
-"le filtre virtuel de couleurs."
+"le filtre virtuel de couleur."
 
 #: ../src/iop/monochrome.c:580
 msgid "how much to keep highlights"
@@ -27790,7 +27789,7 @@ msgstr ""
 
 #: ../src/iop/negadoctor.c:1013
 msgid "toggle on or off the color controls"
-msgstr "Basculer les contrôles des couleurs"
+msgstr "Basculer les contrôles de couleur"
 
 #: ../src/iop/nlmeans.c:76
 msgid "astrophoto denoise"
@@ -27836,7 +27835,7 @@ msgstr ""
 # quel est le module surexposition ?
 #: ../src/iop/overexposed.c:146 ../src/iop/overexposed.c:339
 msgid "module overexposed failed in color conversion"
-msgstr "Le module sur-exposition a échoué dans la conversion des couleurs"
+msgstr "Le module sur-exposition a échoué dans la conversion de couleur"
 
 #: ../src/iop/overlay.c:170
 msgid "composite"
@@ -27948,7 +27947,7 @@ msgstr "Primaires RVB"
 
 #: ../src/iop/primaries.c:72
 msgid "adjustment of the RGB color primaries for color grading"
-msgstr "Ajustement des couleurs primaires RVB pour la graduation de couleur"
+msgstr "Ajustement des primaires de couleur RVB pour la graduation de couleur"
 
 #: ../src/iop/primaries.c:384
 msgid "shift red towards yellow or magenta"
@@ -28868,7 +28867,7 @@ msgid ""
 "tone curve with optional color preservation methods"
 msgstr ""
 "Applique une transformation d’affichage pour permettre de visualiser l’image\n"
-"sur un écran ou un papier. Utilise une courbe de tonalités douce et robuste\n"
+"sur un écran ou un papier. Utilise une courbe de tonalité douce et robuste\n"
 "avec un mode optionnel de préservation de la couleur."
 
 #: ../src/iop/sigmoid.c:258
@@ -28920,7 +28919,7 @@ msgid ""
 "primaries to use as the base for below adjustments\n"
 "'working profile' uses the profile set in 'input color profile'"
 msgstr ""
-"Couleurs primaires à utiliser comme base des ajustements ci-dessous\n"
+"Primaires à utiliser comme base des ajustements ci-dessous\n"
 "« Profil de travail » utilise le profil positionné dans le module « Profil de "
 "couleur d’entrée »"
 
@@ -30472,7 +30471,7 @@ msgstr ""
 #: ../src/iop/temperature.c:1427
 #, c-format
 msgid "`%s' color matrix not found for image"
-msgstr "Matrice de couleurs « %s » non trouvée pour l’image"
+msgstr "Matrice de couleur « %s » non trouvée pour l’image"
 
 #: ../src/iop/temperature.c:1483
 #, c-format
@@ -30637,7 +30636,7 @@ msgstr "Balance des blancs désactivée pour le boîtier"
 
 #: ../src/iop/tonecurve.c:162
 msgid "tone curve"
-msgstr "Courbe des tonalités"
+msgstr "Courbe de tonalité"
 
 #: ../src/iop/tonecurve.c:184
 msgid "alter an image’s tones using curves"
@@ -30692,15 +30691,15 @@ msgstr ""
 
 #: ../src/iop/tonecurve.c:1282
 msgid "tonecurve for L channel"
-msgstr "Courbe des tonalités pour le canal « L »"
+msgstr "Courbe de tonalité pour le canal « L »"
 
 #: ../src/iop/tonecurve.c:1283
 msgid "tonecurve for a channel"
-msgstr "Courbe des tonalités pour le canal « a »"
+msgstr "Courbe de tonalité pour le canal « a »"
 
 #: ../src/iop/tonecurve.c:1284
 msgid "tonecurve for b channel"
-msgstr "Courbe des tonalités pour le canal « b »"
+msgstr "Courbe de tonalité pour le canal « b »"
 
 #: ../src/iop/tonecurve.c:1293 ../src/iop/watermark.c:1489
 #: ../src/libs/colorpicker.c:772
@@ -30714,7 +30713,7 @@ msgstr "Égaliseur de tonalité"
 #: ../src/iop/toneequal.c:341
 msgid "tone curve|tone mapping|relight|background light|shadows highlights"
 msgstr ""
-"courbe de tonalités|mappage de tonalité|ré-éclairer|rallumer|lumière "
+"courbe de tonalité|mappage des tonalité|ré-éclairer|rallumer|lumière "
 "d’arrière-plan|ombres et hautes lumières"
 
 #: ../src/iop/toneequal.c:348
@@ -30723,7 +30722,7 @@ msgstr "Rééclaire comme si la lumière était directement sur la scène"
 
 #: ../src/iop/toneequal.c:504
 msgid "simple tone curve"
-msgstr "Simple courbe des tonalités"
+msgstr "Simple courbe de tonalité"
 
 #: ../src/iop/toneequal.c:518
 msgid "mask blending | all purposes"
@@ -30759,15 +30758,15 @@ msgstr "Compresser les ombres/hautes lumières | GF | Léger"
 
 #: ../src/iop/toneequal.c:583
 msgid "contrast tone curve | soft"
-msgstr "Courbe de contraste des tonalités | Léger"
+msgstr "Courbe de contraste de tonalité | Léger"
 
 #: ../src/iop/toneequal.c:588
 msgid "contrast tone curve | medium"
-msgstr "Courbe de contraste des tonalités | Moyen"
+msgstr "Courbe de contraste de tonalité | Moyen"
 
 #: ../src/iop/toneequal.c:593
 msgid "contrast tone curve | strong"
-msgstr "Courbe de contraste des tonalités | Fort"
+msgstr "Courbe de contraste de tonalité | Fort"
 
 #: ../src/iop/toneequal.c:616
 msgid "relight: fill-in"
@@ -31010,7 +31009,7 @@ msgstr "Affiche le masque d’exposition"
 
 #: ../src/iop/tonemap.cc:68
 msgid "tone mapping"
-msgstr "Mappeur de tonalité"
+msgstr "Mappage de tonalité"
 
 #: ../src/iop/tonemap.cc:84
 msgid ""
@@ -33757,7 +33756,7 @@ msgstr "Décaler les couleurs"
 #: ../src/libs/live_view.c:407
 msgctxt "blendmode"
 msgid "color burn"
-msgstr "Cramer les couleurs"
+msgstr "Brûler les couleurs"
 
 #: ../src/libs/live_view.c:408
 msgctxt "blendmode"
@@ -34632,7 +34631,7 @@ msgstr "Icône favoris"
 
 #: ../src/libs/modulegroups.c:3669
 msgid "tone icon"
-msgstr "Icône tonalités"
+msgstr "Icône tonalité"
 
 #: ../src/libs/modulegroups.c:3679
 msgid "grading icon"
@@ -35439,12 +35438,12 @@ msgstr "Changer l’échelle du vectorscope"
 
 #: ../src/libs/scopes/vectorscope.c:1451
 msgid "color harmonies"
-msgstr "Harmonies des couleurs"
+msgstr "Harmonies de couleur"
 
 #. FIXME: do we need this action, or is it vestigial?
 #: ../src/libs/scopes/vectorscope.c:1469
 msgid "cycle color harmonies"
-msgstr "Parcourir les harmonie des couleurs"
+msgstr "Parcourir les harmonies de couleur"
 
 #: ../src/libs/scopes/waveform.c:55
 msgid "waveform"
@@ -36888,16 +36887,16 @@ msgid ""
 "toggle color assessment conditions\n"
 "right-click for options"
 msgstr ""
-"Basculer l’évaluation des couleurs.\n"
+"Basculer l’évaluation de couleur.\n"
 "Clic-droit pour les options."
 
 #: ../src/views/darkroom.c:3318
 msgid "color assessment"
-msgstr "Évaluation des couleurs"
+msgstr "Évaluation de couleur"
 
 #: ../src/views/darkroom.c:3339 ../src/views/darkroom.c:3352
 msgid "color_assessment"
-msgstr "Évaluation des couleurs"
+msgstr "Évaluation de couleur"
 
 #: ../src/views/darkroom.c:3339
 msgid "total border width relative to screen"
@@ -36948,7 +36947,7 @@ msgstr "Sélectionner comment marquer les pixels tronqués"
 
 #: ../src/views/darkroom.c:3418
 msgid "mark with CFA color"
-msgstr "Marquer les couleurs CFA"
+msgstr "Marquer avec des couleurs CFA"
 
 #: ../src/views/darkroom.c:3418
 msgid "mark with solid color"
@@ -36956,7 +36955,7 @@ msgstr "Marquer avec une couleur unie"
 
 #: ../src/views/darkroom.c:3419
 msgid "false color"
-msgstr "Fausses couleurs"
+msgstr "Fausse couleur"
 
 #: ../src/views/darkroom.c:3424 ../src/views/darkroom.c:3495
 msgid "color scheme"
@@ -37130,11 +37129,11 @@ msgstr "Profil de l’histogramme"
 
 #: ../src/views/darkroom.c:3631
 msgid "second preview window color assessment"
-msgstr "Évaluation des couleurs pour la seconde fenêtre"
+msgstr "Évaluation de couleur pour la seconde fenêtre"
 
 #: ../src/views/darkroom.c:3634
 msgid "color assessment second preview"
-msgstr "Évaluation des couleurs pour la seconde fenêtre"
+msgstr "Évaluation de couleur pour la seconde fenêtre"
 
 #: ../src/views/darkroom.c:3682 ../src/views/lighttable.c:1559
 msgid "display ICC profiles"
@@ -37929,8 +37928,8 @@ msgstr "Actions de la souris"
 #~ msgstr ""
 #~ "Le flux de travail « Relatif à la scène » est basé sur des modules "
 #~ "linéaires et activera automatiquement\n"
-#~ "le mappeur de tonalité (nom entre parenthèse), « Calibration des "
-#~ "couleurs » et « Exposition ».\n"
+#~ "le mappeur de tonalité (nom entre parenthèse), « Calibration de "
+#~ "couleur » et « Exposition ».\n"
 #~ "Le flux de travail « Relatif à l’affichage » est basé sur des modules Lab "
 #~ "et activera automatiquement\n"
 #~ "le module « Courbe de base » et l’ancien ordre des modules."
@@ -38312,7 +38311,7 @@ msgstr "Actions de la souris"
 #~ msgstr "Suppression de la brume"
 
 #~ msgid "toggle ISO 12646 color assessment conditions"
-#~ msgstr "Basculer les conditions d’évaluation des couleurs ISO 12646"
+#~ msgstr "Basculer les conditions d’évaluation de couleur ISO 12646"
 
 #~ msgid "reduce resolution of preview image"
 #~ msgstr "Réduire la résolution de la prévisualisation"
@@ -38607,7 +38606,7 @@ msgstr "Actions de la souris"
 #~ msgstr "Images sélectionnées"
 
 #~ msgid "spot color mapping"
-#~ msgstr "Mappage des couleurs"
+#~ msgstr "Mappage de couleur"
 
 #~ msgid "spot mode"
 #~ msgstr "Mode ponctuel"
@@ -38633,7 +38632,7 @@ msgstr "Actions de la souris"
 #~ "tone equalizer needs to be after distortion modules in the pipeline – "
 #~ "disabled"
 #~ msgstr ""
-#~ "L’égaliseur de tons doit être après les modules de distorsion - désactivé"
+#~ "L’egaliseur de tonalité doit être après les modules de distorsion - désactivé"
 
 #~ msgid "red inset"
 #~ msgstr "Incrustation rouge"
@@ -38983,7 +38982,7 @@ msgstr "Actions de la souris"
 #~ "tone equalizer in/out buffer are ill-aligned, please report the bug to the "
 #~ "developers"
 #~ msgstr ""
-#~ "Les buffers entrée/sortie de l’égaliseur de ton ne sont pas correctement "
+#~ "Les buffers entrée/sortie de l’egaliseur de tonalité ne sont pas correctement "
 #~ "alignées, merci de reporter le bug aux développeurs"
 
 #, c-format
@@ -39397,7 +39396,7 @@ msgstr "Actions de la souris"
 #~ "shift+alt+scroll to change harmony width"
 #~ msgstr ""
 #~ "Histogramme.\n"
-#~ " • Molette pour tourner les guides d’harmonie des couleurs,\n"
+#~ " • Molette pour tourner les guides d’harmonie de couleur,\n"
 #~ " • Maj+molette pour tourner finement,\n"
 #~ " • Alt+molette pour changer le type d’harmonie,\n"
 #~ " • Maj+Alt+molette pour changer la largeur des harmonies."
@@ -39415,7 +39414,7 @@ msgstr "Actions de la souris"
 #~ msgstr "Zoom ajusté"
 
 #~ msgid "show color harmony guide lines"
-#~ msgstr "Afficher les guides d’harmonie des couleurs"
+#~ msgstr "Afficher les guides d’harmonie de couleur"
 
 #~ msgid "set mode to rgb parade"
 #~ msgstr "Afficher en mode parade RVB"
@@ -39458,7 +39457,7 @@ msgstr "Actions de la souris"
 #~ "Originel applique une adaptation chromatique basique en utilisant "
 #~ "uniquement le module balance des blancs\n"
 #~ "moderne utilise une combinaison des modules balance des blancs et "
-#~ "calibration des couleurs, avec une science des couleurs améliorée pour "
+#~ "calibration de couleur, avec une science des couleurs améliorée pour "
 #~ "l’adaptation chromatique"
 
 #~ msgctxt "modulegroup"
@@ -41755,7 +41754,7 @@ msgstr "Actions de la souris"
 #~ "and apply looks"
 #~ msgstr ""
 #~ "Effectuer des corrections de l’espace colorimétrique\n"
-#~ "et appliquer des ajustements couleurs"
+#~ "et appliquer des ajustements de rendu"
 
 #~ msgid "white balance applied on non-raw image"
 #~ msgstr "Balance des blancs appliquée à une image non-raw"
@@ -41768,7 +41767,7 @@ msgstr "Actions de la souris"
 #~ "Le module balance des blancs est conçu pour travailler sur des images "
 #~ "brutes.\n"
 #~ "L’utiliser sur des images non brutes peut avoir des effets inattendus.\n"
-#~ "Utilisez plutôt l’adaptation chromatique dans calibration des couleurs."
+#~ "Utilisez plutôt l’adaptation chromatique dans calibration de couleur."
 
 #~ msgid "show module groups and/or search text entry"
 #~ msgstr "Afficher les groupes de module et/ou la recherche"
@@ -42144,7 +42143,7 @@ msgstr "Actions de la souris"
 
 #~ msgctxt "accel"
 #~ msgid "color control sliders"
-#~ msgstr "Contrôle des couleurs"
+#~ msgstr "Curseurs de contrôle de couleur"
 
 #~ msgctxt "accel"
 #~ msgid "lightness"
@@ -42252,7 +42251,7 @@ msgstr "Actions de la souris"
 
 #~ msgctxt "accel"
 #~ msgid "color smoothing"
-#~ msgstr "Lissage des couleurs"
+#~ msgstr "Lissage de couleur"
 
 #~ msgctxt "accel"
 #~ msgid "match greens"
@@ -44856,7 +44855,7 @@ msgstr "Actions de la souris"
 #~ msgstr "Linéaire"
 
 #~ msgid "colorblend"
-#~ msgstr "Fusion des couleurs"
+#~ msgstr "Fusion de couleur"
 
 #~ msgctxt "accel"
 #~ msgid "blend L"
