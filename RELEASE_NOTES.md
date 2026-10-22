@@ -662,6 +662,9 @@ changes (where available).
 
 - Fixed a GPU memory leak in the OpenCL path of the clipping indicator.
 
+- Fixed an issue where the Windows installer wouldn't run without user
+  input when requested.
+
 ## Lua
 
 ### API Version

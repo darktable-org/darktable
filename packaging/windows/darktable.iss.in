@@ -378,6 +378,7 @@ var
   InstalledVersion: String;
   ErrorCode: Integer;
   IsNSIS: Boolean;
+  ShowMode: Integer;
 begin
   UninstallPath := '';
   UninstallParams := '';
@@ -419,12 +420,24 @@ begin
       Exit;
     end;
 
-    if IsNSIS then
+    ShowMode := SW_SHOW;
+
+    if IsNSIS then begin
       // Tell the NSIS uninstaller not to copy itself to a temp file and restart
       // from there, as this will break the wait for the uninstall to complete.
-      UninstallParams := '_?=' + ExtractFileDir(UninstallPath);
+      if WizardSilent then
+        UninstallParams := '/S ';
+      UninstallParams := UninstallParams + '_?=' + ExtractFileDir(UninstallPath);
+    end
+    else begin
+      if WizardSilent then
+        UninstallParams := '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART';
+    end;
 
-    Exec(UninstallPath, UninstallParams, '', SW_SHOW, ewWaitUntilTerminated, ErrorCode);
+    if WizardSilent then
+      ShowMode := SW_HIDE;
+
+    Exec(UninstallPath, UninstallParams, '', ShowMode, ewWaitUntilTerminated, ErrorCode);
 
     if (ErrorCode = 0) and IsNSIS then begin
       // The NSIS uninstaller is invoked in such a way that it cannot delete
