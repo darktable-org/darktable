@@ -18,8 +18,9 @@
 
 // The drag-and-drop paths other than element-onto-element (which lives in
 // test_flexi_model.c alongside the grouping primitives it exercises), and the
-// group operations the panel's selection makes: emptying a group, and finding
-// the nested group a group's deletion takes.
+// group operations the panel's selection makes: emptying a group, finding the
+// nested group a group's deletion takes, and building a group layout preset
+// within a group.
 //
 // The panel offers three distinct drops, each with its own target type so they
 // cannot interfere: an element onto another element, an element onto a group
@@ -247,8 +248,8 @@ static void test_a_group_deletes_as_its_nested_group(void **state)
   assert_null(dt_masks_model_nested_group_of(grp, 2));
 }
 
-// what decides whether resetting the mask must ask first: an element at any
-// depth, not groups alone
+// what decides whether resetting the mask, or replacing a group with a
+// preset, must ask first: an element at any depth, not groups alone
 static void test_a_group_of_groups_holds_no_elements(void **state)
 {
   dt_masks_form_t *grp = flexi_build("u{i{},d{u{}}}");
@@ -262,6 +263,68 @@ static void test_an_element_at_any_depth_is_held(void **state)
   // as seen from the nested groups too
   assert_false(dt_masks_model_group_has_elements(dt_masks_model_nested_group_of(grp, FLEXI_GID(1))));
   assert_true(dt_masks_model_group_has_elements(dt_masks_model_nested_group_of(grp, FLEXI_GID(2))));
+}
+
+// ---------------------------------------------------------------------------
+// group layouts built within a group
+// ---------------------------------------------------------------------------
+
+// a difference at half opacity, holding a union named "sky" at the bottom and
+// a minimum above it
+static const dt_masks_layout_node_t _layout[] = {
+  { .flexi_op = DT_MASKS_STATE_FLEXI_DIFFERENCE, .opacity = 0.5f, .parent = -1 },
+  { .flexi_op = 0, .opacity = 1.0f, .name = "sky", .parent = 0 },
+  { .flexi_op = DT_MASKS_STATE_FLEXI_MINIMUM, .opacity = 1.0f, .parent = 0 },
+};
+
+// "replace": the group, emptied, becomes the layout's own group, its settings
+// and nested groups included, and keeps its name
+static void test_a_layout_replaces_what_a_group_holds(void **state)
+{
+  dt_masks_form_t *grp = flexi_build("u{1,i{2}}");
+  _name_group(grp, FLEXI_GID(1), "kept");
+  GList *gone = dt_masks_model_empty_group(grp, FLEXI_GID(1));
+  g_list_free(gone);
+  int skipped = -1;
+  const dt_mask_id_t bottom =
+    dt_masks_model_layout_build_at(grp, dt_masks_gui_group_point(grp, FLEXI_GID(1)), _layout,
+                                   G_N_ELEMENTS(_layout), NULL, FALSE, &skipped);
+  assert_layout("u{1,d@0.5{u{},i{}}}");
+  assert_int_equal(skipped, 0);
+  assert_string_equal(dt_masks_gui_group_point(grp, FLEXI_GID(1))->name, "kept");
+  // the bottom nested group is where the next element goes
+  assert_string_equal(dt_masks_gui_group_point(grp, bottom)->name, "sky");
+}
+
+// "merge": only the nested groups go in, next to what the group holds, which
+// keeps its own operator and opacity
+static void test_a_layout_merges_into_a_group(void **state)
+{
+  dt_masks_form_t *grp = flexi_build("u{1,i{2}}");
+  dt_masks_model_layout_build_at(grp, dt_masks_gui_group_point(grp, FLEXI_GID(1)), _layout,
+                                 G_N_ELEMENTS(_layout), NULL, TRUE, NULL);
+  assert_layout("u{1,i{2,u{},i{}}}");
+}
+
+// a layout nesting deeper than a mask may go builds what fits and counts the
+// rest, rather than failing whole
+static void test_a_layout_too_deep_is_built_as_far_as_it_goes(void **state)
+{
+  dt_masks_form_t *grp = flexi_build("u{}");
+  dt_masks_layout_node_t chain[DT_MASKS_NESTING_MAX + 4];
+  const int n = G_N_ELEMENTS(chain);
+  for(int i = 0; i < n; i++)
+    chain[i] = (dt_masks_layout_node_t){ .opacity = 1.0f, .parent = i - 1 };
+  int skipped = 0;
+  dt_masks_model_layout_build_at(grp, dt_masks_gui_group_point(grp, FLEXI_GID(0)), chain, n,
+                                 NULL, FALSE, &skipped);
+  assert_true(skipped > 0);
+  char *tree = flexi_layout();
+  int built = 0;
+  for(const char *c = tree; *c; c++) built += *c == '{';
+  g_free(tree);
+  // the mask's own group, then every nested group built
+  assert_int_equal(built - 1 + skipped, n - 1);
 }
 
 int main(void)
@@ -287,6 +350,9 @@ int main(void)
     cmocka_unit_test_teardown(test_a_group_deletes_as_its_nested_group, _teardown),
     cmocka_unit_test_teardown(test_a_group_of_groups_holds_no_elements, _teardown),
     cmocka_unit_test_teardown(test_an_element_at_any_depth_is_held, _teardown),
+    cmocka_unit_test_teardown(test_a_layout_replaces_what_a_group_holds, _teardown),
+    cmocka_unit_test_teardown(test_a_layout_merges_into_a_group, _teardown),
+    cmocka_unit_test_teardown(test_a_layout_too_deep_is_built_as_far_as_it_goes, _teardown),
   };
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

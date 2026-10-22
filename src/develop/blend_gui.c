@@ -3672,15 +3672,21 @@ dt_masks_form_t *dt_masks_gui_module_mask_group(dt_iop_module_t *module)
 // first time something is written to the group, and not when the panel merely
 // shows it: only a masks history item records a new form, and a module's own
 // history item would record a mask id naming nothing. Callers commit with the
-// module, so its mask id is recorded too.
+// module, so its mask id is recorded too. Created with the default group
+// layout, which the panel shows for the group until then (see
+// dt_masks_gui_default_layout_root): whatever the first edit, it lands on
+// what was shown
 dt_masks_form_t *dt_masks_gui_module_flexi_group(dt_iop_module_t *module, dt_mask_id_t *cid)
 {
   dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
   if(!grp && module && darktable.develop)
+  {
     grp = dt_masks_module_group_create(darktable.develop, module);
+    if(grp) dt_masks_gui_default_layout_build(grp);
+  }
   if(!grp) return NULL;
-  if(cid && !dt_is_valid_maskid(*cid) && grp->points)
-    *cid = ((dt_masks_point_group_t *)grp->points->data)->formid;
+  const dt_masks_point_group_t *root = dt_masks_group_marker(grp);
+  if(cid && !dt_is_valid_maskid(*cid) && root) *cid = root->formid;
   return grp;
 }
 
@@ -4735,8 +4741,6 @@ static GtkWidget *_selection_caption_new(dt_iop_gui_blend_data_t *bd, GtkWidget 
   bd->masks_selection_delete_btn = _selection_action_new(dtgtk_cairo_paint_trash);
   bd->masks_selection_compose_btn = _selection_action_new(dtgtk_cairo_paint_wand);
   bd->masks_selection_presets_btn = _selection_action_new(dtgtk_cairo_paint_presets);
-  gtk_widget_set_tooltip_text(bd->masks_selection_presets_btn,
-                              _("group layout presets, which build a whole set of groups at once"));
   bd->masks_selection_link_btn = _selection_action_new(dtgtk_cairo_paint_link);
   // it shows only for an element with another end to go to
   gtk_widget_set_no_show_all(bd->masks_selection_link_btn, TRUE);
@@ -10252,9 +10256,27 @@ static void _new_shape_op_pressed(GtkGestureSingle *gesture,
   _build_new_group_op_menu(btn, g_object_get_data(G_OBJECT(btn), "module"));
 }
 
-// the group layout presets, which build a whole set of groups at once. They
-// live on the toolbar rather than in the panel settings because that is what
-// they are: a bulk "add group", not a preference
+// the group the group layout presets apply within: the selected group, or the
+// mask's own while the selection names the whole mask (INVALID_MASKID while
+// it has no group form yet). FALSE while the selection is an element, a shape
+// is being drawn, or the mask is locked or a raster mask
+static gboolean _presets_target(dt_iop_module_t *module, dt_mask_id_t *cid)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  *cid = INVALID_MASKID;
+  if(!bd || _pending_form(module) || dt_develop_blend_mask_locked(module->blend_params)
+     || (module->blend_params->mask_mode & DEVELOP_MASK_RASTER)
+     || bd->masks_refine_scope_kind == REFINE_SCOPE_ELEMENT)
+    return FALSE;
+  *cid = bd->masks_refine_scope_kind == REFINE_SCOPE_GROUP ? bd->masks_refine_scope_formid
+                                                           : _mask_group_cid(module);
+  return TRUE;
+}
+
+// the group layout presets, which build a set of groups at once within the
+// selected group (see _presets_target). The menu's actions read the group
+// from the button: "presets-cid", and "presets-group" naming it, NULL for the
+// whole mask
 static void _masks_presets_pressed(GtkGestureSingle *gesture,
                                    const int n_press,
                                    const double x,
@@ -10263,15 +10285,17 @@ static void _masks_presets_pressed(GtkGestureSingle *gesture,
 {
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
   if(_swallow_unregistered_modifier(gesture, 0)) return;
-  if(!module->blend_data) return;
-  if(module->blend_params->mask_mode & DEVELOP_MASK_RASTER) return;
+  dt_mask_id_t cid;
+  if(!_presets_target(module, &cid)) return;
   dt_gui_claim(gesture);
   GtkWidget *btn = dt_gui_get_widget(gesture);
-  GMenu *menu = g_menu_new();
-  dt_masks_gui_add_presets_menu(menu, btn, module);
-  darktable.gui->active_popover_menu = dt_gui_popover_menu_from_model(btn, menu);
+  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
+  const gboolean whole = !dt_is_valid_maskid(cid) || cid == _mask_group_cid(module);
+  g_object_set_data(G_OBJECT(btn), "presets-cid", GINT_TO_POINTER(cid));
+  g_object_set_data_full(G_OBJECT(btn), "presets-group",
+                         whole ? NULL : _group_label(module, grp, cid), g_free);
+  darktable.gui->active_popover_menu = dt_masks_gui_presets_popover(btn, module);
   gtk_popover_popup(GTK_POPOVER(darktable.gui->active_popover_menu));
-  g_object_unref(menu);
 }
 
 // the bits identifying a shape's kind (ignoring clone/state flags)
@@ -10341,9 +10365,7 @@ static void _group_delete(dt_iop_module_t *module, const dt_mask_id_t cid)
   _delete_single_shape(module, nested->formid, NULL);
 }
 
-// "empty group": its elements go, the group stays where it is, selected, with
-// its settings and its number
-static void _group_reset_members(dt_iop_module_t *module, const dt_mask_id_t cid)
+void dt_masks_gui_empty_group_core(dt_iop_module_t *module, const dt_mask_id_t cid)
 {
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
@@ -10353,6 +10375,15 @@ static void _group_reset_members(dt_iop_module_t *module, const dt_mask_id_t cid
   for(GList *l = fids; l; l = g_list_next(l))
     _clear_stale_formid_refs(bd, GPOINTER_TO_INT(l->data));
   g_list_free(fids);
+}
+
+// "empty group": its elements go, the group stays where it is, selected, with
+// its settings and its number
+static void _group_reset_members(dt_iop_module_t *module, const dt_mask_id_t cid)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!dt_masks_gui_module_mask_group(module)) return;
+  dt_masks_gui_empty_group_core(module, cid);
   bd->panel_selected_group_cid = cid;
   _commit_structure_change(module);
 }
@@ -10842,8 +10873,13 @@ static void _group_opacity_changed(GtkWidget *w, dt_iop_module_t *module)
 // _group_opacity_changed
 static GtkWidget *_build_group_opacity_editor(dt_iop_module_t *module, const dt_mask_id_t cid)
 {
-  const dt_masks_point_group_t *head_pt = dt_masks_gui_group_point(dt_masks_gui_module_mask_group(module), cid);
-  const float go = head_pt ? head_pt->group_opacity : 1.0f;
+  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
+  const dt_masks_point_group_t *head_pt = dt_masks_gui_group_point(grp, cid);
+  // a mask with no group form yet: its group as the default layout will make
+  // it, which _group_opacity_changed creates first
+  dt_masks_point_group_t none = { .group_opacity = 1.0f };
+  if(!grp) dt_masks_gui_default_layout_root(&none);
+  const float go = head_pt ? head_pt->group_opacity : none.group_opacity;
 
   GtkWidget *ex_op = dt_bauhaus_slider_new_with_range(
     module, _blend_masks_properties[DT_MASKS_PROPERTY_OPACITY].min,
@@ -14463,6 +14499,17 @@ dt_hash_t dt_masks_gui_list_signature(dt_iop_module_t *module)
 
   dt_hash_t sig = dt_masks_group_hash(DT_INITHASH, grp);
 
+  // a mask with no group form yet shows the default layout's own group, which
+  // the options can change
+  if(!grp)
+  {
+    dt_masks_point_group_t none = { 0 };
+    dt_masks_gui_default_layout_root(&none);
+    sig = dt_hash(sig, &none.state, sizeof(none.state));
+    sig = dt_hash(sig, &none.group_opacity, sizeof(none.group_opacity));
+    sig = dt_hash(sig, none.preset_note, strlen(none.preset_note));
+  }
+
   // dt_masks_group_hash does not fold form->name or orphan point states, but
   // the rows display them, so fold each member form's state and name in points
   // order, nested groups' members included
@@ -14798,12 +14845,23 @@ static void _help_panel_sync(dt_iop_module_t *module, const gboolean force)
   dt_iop_gui_blend_data_t *bd = module ? module->blend_data : NULL;
   if(!bd || !bd->help_panel_content) return;
 
+  // a mask with no group form yet shows the default layout's own group
   dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
-  const dt_mask_id_t cid = bd->panel_selected_group_cid;
-  const dt_masks_point_group_t *marker =
-    grp && dt_is_valid_maskid(cid) && !dt_is_valid_maskid(bd->panel_selected_formid)
-      ? dt_masks_gui_group_point(grp, cid)
-      : NULL;
+  dt_masks_point_group_t none = { 0 };
+  const dt_masks_point_group_t *marker = NULL;
+  dt_mask_id_t cid = bd->panel_selected_group_cid;
+  if(grp)
+  {
+    if(dt_is_valid_maskid(cid) && !dt_is_valid_maskid(bd->panel_selected_formid))
+      marker = dt_masks_gui_group_point(grp, cid);
+  }
+  else
+  {
+    none.formid = INVALID_MASKID;
+    dt_masks_gui_default_layout_root(&none);
+    marker = &none;
+    cid = INVALID_MASKID;
+  }
   GPtrArray *pages = marker && dt_masks_gui_preset_notes_shown()
                        ? dt_masks_gui_preset_notes(marker->preset_note)
                        : NULL;
@@ -15465,6 +15523,7 @@ static void _masks_panel_pack(dt_iop_module_t *module, dt_masks_form_t *grp)
     none.formid = INVALID_MASKID;
     none.state = DT_MASKS_STATE_GROUP_MARKER;
     none.group_opacity = 1.0f;
+    dt_masks_gui_default_layout_root(&none);
     _pack_group(module, NULL, &none, NULL, pending_form, list);
   }
 
@@ -16254,6 +16313,19 @@ static void _selection_actions_sync(dt_iop_module_t *module)
   gtk_widget_set_tooltip_text(bd->masks_selection_compose_btn, compose_tip);
   gtk_widget_set_tooltip_text(bd->masks_selection_delete_btn, delete_tip);
   g_free(group_compose_tip);
+
+  // the reasons in the order _presets_target checks them
+  dt_mask_id_t presets_cid;
+  const gboolean presets = _presets_target(module, &presets_cid);
+  gtk_widget_set_sensitive(bd->masks_selection_presets_btn, presets);
+  gtk_widget_set_tooltip_text(
+    bd->masks_selection_presets_btn,
+    presets ? _("group layout presets: apply one within this group, replacing what it"
+                " holds or added to it, or save the mask's layout as one")
+    : inactive ? inactive
+    : (module->blend_params->mask_mode & DEVELOP_MASK_RASTER)
+      ? _("group layout presets do not apply to a raster mask")
+      : _("group layout presets apply within a group: select one, or the whole mask"));
 }
 
 // the header toggle has its own widget action under "blend`tools", but

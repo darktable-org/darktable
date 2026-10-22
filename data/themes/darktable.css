@@ -4407,3 +4407,30 @@ popover.dt_masks_precise_anchor
   opacity: 0.7;
   margin-left: 0.5em;
 }
+
+/* the presets popover (see dt_masks_gui_presets_popover) is built by hand, not
+   from a menu model. A model's menu keeps its items inside the popover, which
+   is what the negative margin of popover.menu modelbutton relies on, so the
+   box gives it that room. A preset's name has a negative margin too, which would
+   otherwise run over the buttons around it */
+.dt_masks_presets_menu
+{
+  margin: 0.4em 0.8em;
+}
+
+popover.menu button.dt_masks_preset_delete
+{
+  margin-right: 0;
+}
+
+/* the name's wash stops at the buttons around it instead of running under them */
+.dt_masks_presets_menu button.dt_masks_preset_delete + modelbutton
+{
+  margin-left: 0;
+  padding-left: 0.4em;
+}
+
+.dt_masks_presets_menu modelbutton.dt_masks_preset_name
+{
+  margin-right: 0;
+}

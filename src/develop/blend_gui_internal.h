@@ -79,6 +79,9 @@ dt_masks_form_t *dt_masks_gui_module_flexi_group(dt_iop_module_t *module, dt_mas
 dt_masks_point_group_t *dt_masks_gui_group_point(dt_masks_form_t *grp, const dt_mask_id_t id);
 /** remove every shape and reset the panel's scratch state (no confirmation) */
 void dt_masks_gui_reset_mask_core(dt_iop_module_t *module);
+/** remove what group `cid` holds, elements and groups, keeping the group with
+    its settings; the panel forgets the ids it held. Does not commit */
+void dt_masks_gui_empty_group_core(dt_iop_module_t *module, dt_mask_id_t cid);
 /** destroy and rebuild the panel's row tree */
 void dt_masks_gui_build_list(dt_iop_module_t *module);
 /** re-arm on-canvas editing after the mask changed underneath it */
@@ -126,6 +129,37 @@ GList *dt_masks_model_empty_group(dt_masks_form_t *grp, const dt_mask_id_t cid);
 /** does `list`, a group form, hold an element at any depth, rather than only
     groups? A member naming no form counts too */
 gboolean dt_masks_model_group_has_elements(dt_masks_form_t *list);
+
+/** one group of a group layout, as the layout presets store it (see
+    masks_gui_presets.c). Written to the database verbatim, as one blob of
+    these, so every field is fixed-size */
+typedef struct dt_masks_layout_node_t
+{
+  // flexi operator bits (DT_MASKS_STATE_FLEXI_OP)
+  dt_masks_state_t flexi_op;
+  float opacity;
+  // same width as dt_masks_point_group_t.name, the group's marker's name.
+  // Unused for the mask's own group, which is always "whole mask"
+  char name[128];
+  // index of the holding group's node, -1 for the mask's own group
+  int32_t parent;
+} dt_masks_layout_node_t;
+
+/** set the group whose marker is `head`, in the mask `grp`, to the layout's
+    first node and nest the layout's other groups in it, each given its note
+    key from `keys` (NULL for none), without committing. Not the group's name:
+    the mask's own group has none, and a group a layout is applied within keeps
+    its own. With `keep_head`, not its settings either: only the nested groups
+    are added, a merge. Returns the bottom nested group, or INVALID_MASKID when
+    the layout nests none. *skipped, when given, counts the groups that would
+    nest deeper than DT_MASKS_NESTING_MAX */
+dt_mask_id_t dt_masks_model_layout_build_at(dt_masks_form_t *grp,
+                                            dt_masks_point_group_t *head,
+                                            const dt_masks_layout_node_t *nodes,
+                                            const int n,
+                                            const gchar *const *keys,
+                                            const gboolean keep_head,
+                                            int *skipped);
 
 // what the gestures do, apart from their GTK handlers so that the tests run
 // the same code. They change the mask structure and the panel's selection,
@@ -408,8 +442,9 @@ void dt_masks_gui_prune_stale_solo(dt_iop_module_t *module);
 // masks_gui_presets.c -> blend_gui.c
 // ---------------------------------------------------------------------------
 
-/** append the "group layout presets" section to an existing menu */
-void dt_masks_gui_add_presets_menu(GMenu *menu, GtkWidget *anchor, dt_iop_module_t *module);
+/** the popover of the selection's presets button: the group layout presets,
+    each with the buttons that apply it, and saving one. Not yet shown */
+GtkWidget *dt_masks_gui_presets_popover(GtkWidget *anchor, dt_iop_module_t *module);
 /** a preset group's note pages, untranslated, from its
     dt_masks_point_group_t.preset_note key; NULL when the key names none. Owned
     by the preset cache: valid until the presets file is next read */
@@ -419,6 +454,12 @@ gboolean dt_masks_gui_preset_notes_shown(void);
 /** give a mask that has no group form yet the default group layout; with
     `wipe`, replace any mask with it ("reset mask") */
 void dt_masks_gui_apply_default_preset(dt_iop_module_t *module, gboolean wipe);
+/** build the default group layout into `grp`, a mask's own group just
+    created, without committing (see dt_masks_gui_module_flexi_group) */
+void dt_masks_gui_default_layout_build(dt_masks_form_t *grp);
+/** set `root`, the marker standing for a mask with no group form yet, as the
+    default group layout's own group would be: its operator, opacity and note */
+void dt_masks_gui_default_layout_root(dt_masks_point_group_t *root);
 /** append the "default group layout" section to the panel options popover */
 void dt_masks_gui_add_default_preset_box(GtkWidget *box);
 
