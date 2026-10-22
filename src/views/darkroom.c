@@ -2097,6 +2097,7 @@ static gboolean _toolbar_show_popup(gpointer user_data)
 static void _full_color_assessment_callback(GtkToggleButton *checkbutton, dt_develop_t *dev)
 {
   dev->full.color_assessment = gtk_toggle_button_get_active(checkbutton);
+  dev->full.color_assessment_fit = dev->full.color_assessment;
   dt_conf_set_bool("full_window/color_assessment", dev->full.color_assessment);
   dt_dev_configure(&dev->full);
 }
@@ -2562,6 +2563,7 @@ end:
 static void _display2_color_assessment_callback(GtkToggleButton *checkbutton, dt_develop_t *dev)
 {
   dev->preview2.color_assessment = gtk_toggle_button_get_active(checkbutton);
+  dev->preview2.color_assessment_fit = dev->preview2.color_assessment;
   dt_conf_set_bool("second_window/color_assessment", dev->preview2.color_assessment);
   dt_dev_configure(&dev->preview2);
 }
