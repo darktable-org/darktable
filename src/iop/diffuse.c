@@ -1908,7 +1908,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text
     (g->threshold,
      _("luminance threshold for the mask.\n"
-       "0. disables the luminance masking and applies the module on the whole image.\n"
+       "0 disables the luminance masking and applies the module on the whole image.\n"
        "any higher value excludes pixels with luminance lower than the threshold.\n"
        "this can be used to inpaint highlights."));
 }
