@@ -11,6 +11,10 @@
 #define MyAppExeName "darktable.exe"
 #define MyAppCliExeName "darktable-cli.exe"
 
+#define MyAppExeDir "{app}\bin\"
+#define MyAppExePath MyAppExeDir + MyAppExeName
+#define MyPowerShellExe "{sys}\WindowsPowerShell\v1.0\powershell.exe"
+
 [Setup]
 ; The value of AppId uniquely identifies the application. Some users install
 ; both a darktable release and a development snapshot (as a daily driver and
@@ -112,7 +116,10 @@ UsePreviousPrivileges=no
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 ; We don't offer Quick Launch for Windows 11 (initial build number 10.0.22000) where it's not supported
-Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; OnlyBelowVersion: 10.0.22000
+Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; OnlyBelowVersion: 10.0.22000
+
+; Turn system shortcuts into PowerShell proxy launchers to provide a hidden console session below Windows 11 24H2 (10.0.26100)
+Name: "oldwinconsolefix"; Description: "(Required for Windows 10 and earlier) Open through the alternative Darktable launcher"; OnlyBelowVersion: 10.0.26100
 
 [Files]
 Source: "bin\*"; DestDir: "{app}\bin"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -130,10 +137,17 @@ Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable";
   ValueData: "Import folder into darktable"
 Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable"; \
   ValueType: string; Flags: uninsdeletekey; \
-  ValueName: "Icon"; ValueData: """{app}\bin\{#MyAppExeName}"",0"
+  ValueName: "Icon"; ValueData: """{#MyAppExePath}"",0"
+; Main shortcut
 Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable\command"; \
   ValueType: string; Flags: uninsdeletekey; \
-  ValueData: """{app}\bin\{#MyAppExeName}"" {code:GetConfigDirParam} ""%1"""
+  ValueData: """{#MyAppExePath}"" {code:GetConfigDirParam} ""%1"""; \
+  Check: not IsTaskSelected('oldwinconsolefix')
+; Alternative Launcher
+Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable\command"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueData: "{code:GetLauncherCommand|'%251'}"; \
+  Check: IsTaskSelected('oldwinconsolefix')
 
 ;
 ; Add "Import into darktable" menu item to the right-click context menu on images.
@@ -144,13 +158,20 @@ Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable"; \
   ValueData: "Import into darktable"
 Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable"; \
   ValueType: string; Flags: uninsdeletekey; \
-  ValueName: "Icon"; ValueData: """{app}\bin\{#MyAppExeName}"",0"
+  ValueName: "Icon"; ValueData: """{#MyAppExePath}"",0"
 Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable"; \
   ValueType: string; Flags: uninsdeletekey; \
   ValueName: "AppliesTo"; ValueData: "System.Kind:=picture"
+; Main shortcut
 Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable\command"; \
   ValueType: string; Flags: uninsdeletekey; \
-  ValueData: """{app}\bin\{#MyAppExeName}"" {code:GetConfigDirParam} ""%1"""
+  ValueData: """{#MyAppExePath}"" {code:GetConfigDirParam} ""%1"""; \
+  Check: not IsTaskSelected('oldwinconsolefix')
+; Alternative Launcher
+Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable\command"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueData: "{code:GetLauncherCommand|'%251'}"; \
+  Check: IsTaskSelected('oldwinconsolefix')
 
 ;
 ; To open a file from the "Open with" menu, Windows needs to know the exact command to execute.
@@ -159,9 +180,19 @@ Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable\command"; 
 ; darktable.exe as a candidate by name. Windows always resolves the actual command through
 ; this one key.
 ;
+Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\shell\open"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueName: "FriendlyAppName"; ValueData: "{#MyAppName}"
+; Main shortcut
 Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\shell\open\command"; \
-  ValueType: string; Flags: uninsdeletevalue; \
-  ValueData: """{app}\bin\{#MyAppExeName}"" {code:GetConfigDirParam} ""%1"""
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueData: """{#MyAppExePath}"" {code:GetConfigDirParam} ""%1"""; \
+  Check: not IsTaskSelected('oldwinconsolefix')
+; Alternative Launcher
+Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\shell\open\command"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueData: "{code:GetLauncherCommand|'%251'}"; \
+  Check: IsTaskSelected('oldwinconsolefix')
 
 ;
 ; The variable below will be substituted by CMake with a list of those Inno Setup
@@ -201,29 +232,61 @@ Root: HKA; Subkey: "{code:EnvironmentKey}"; \
   Flags: uninsdeletevalue
 
 [Icons]
-; start menu entry
-Name: "{group}\{code:GetShortcutName}"; \
-  Filename: "{app}\bin\{#MyAppExeName}"; \
-  Parameters: "{code:GetConfigDirParam}"
 ; uninstaller
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
+
+; Main shortcuts
+
+; start menu entry
+Name: "{group}\{code:GetShortcutName}"; \
+  Filename: "{#MyAppExePath}"; Parameters: "{code:GetConfigDirParam}"; \
+  Check: not IsTaskSelected('oldwinconsolefix')
 ; desktop shortcut
 Name: "{autodesktop}\{code:GetShortcutName}"; \
-  Filename: "{app}\bin\{#MyAppExeName}"; \
-  Parameters: "{code:GetConfigDirParam}"; Tasks: desktopicon
+  Filename: "{#MyAppExePath}"; Parameters: "{code:GetConfigDirParam}"; \
+  Check: not IsTaskSelected('oldwinconsolefix'); \
+  Tasks: desktopicon
 ; quicklaunch
-Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; \
-  Filename: "{app}\bin\{#MyAppName}"; WorkingDir: "{app}"; Tasks: quicklaunchicon
+Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{code:GetShortcutName}"; \
+  Filename: "{#MyAppExePath}"; Parameters: "{code:GetConfigDirParam}"; \
+  Check: not IsTaskSelected('oldwinconsolefix'); \
+  Tasks: quicklaunchicon
+
+; Alternative Launcher shortcuts
+
+; start menu entry
+Name: "{group}\{code:GetShortcutName}"; \
+  Filename: "{#MyPowerShellExe}"; Parameters: "{code:GetLauncherParams}"; \
+  WorkingDir: "{#MyAppExeDir}"; IconFilename: "{#MyAppExePath}"; Flags: runminimized; \
+  Check: IsTaskSelected('oldwinconsolefix')
+; desktop shortcut
+Name: "{autodesktop}\{code:GetShortcutName}"; \
+  Filename: "{#MyPowerShellExe}"; Parameters: "{code:GetLauncherParams}"; \
+  WorkingDir: "{#MyAppExeDir}"; IconFilename: "{#MyAppExePath}"; Flags: runminimized; \
+  Check: IsTaskSelected('oldwinconsolefix'); \
+  Tasks: desktopicon
+; quicklaunch
+Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{code:GetShortcutName}"; \
+  Filename: "{#MyPowerShellExe}"; Parameters: "{code:GetLauncherParams}"; \
+  WorkingDir: "{#MyAppExeDir}"; IconFilename: "{#MyAppExePath}"; Flags: runminimized; \
+  Check: IsTaskSelected('oldwinconsolefix'); \
+  Tasks: quicklaunchicon
 
 [Run]
 Filename: "https://docs.darktable.org/usermanual/development/"; \
   Description: "Open darktable user manual"; \
   Flags: postinstall shellexec runasoriginaluser skipifsilent
 
-Filename: "{app}\bin\{#MyAppExeName}"; \
+; Main shortcut
+Filename: "{#MyAppExePath}"; Parameters: "{code:GetConfigDirParam}"; \
   Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; \
-  Parameters: "{code:GetConfigDirParam}"; \
-  Flags: nowait postinstall skipifsilent
+  Flags: nowait postinstall skipifsilent; \
+  Check: not IsTaskSelected('oldwinconsolefix')
+; Alternative Launcher
+Filename: "{#MyPowerShellExe}"; Parameters: "{code:GetLauncherParams}"; WorkingDir: "{#MyAppExeDir}"; \
+  Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; \
+  Flags: nowait postinstall skipifsilent; \
+  Check: IsTaskSelected('oldwinconsolefix')
 
 [Code]
 var
@@ -344,6 +407,40 @@ begin
     if Dir <> '' then
       Result := '--configdir ' + AddQuotes(Dir);
   end;
+end;
+
+function GetLauncherParams(Args: String): String;
+var
+  ExePath: String;
+  ConfigParam: String;
+  FullArgs: String;
+  Escaped: String;
+begin
+  ExePath := ExpandConstant('{#MyAppExePath}');
+  StringChangeEx(ExePath, '''', '''''', True);
+
+  // Extra spaces break it
+  ConfigParam := GetConfigDirParam('');
+  FullArgs := '';
+  if ConfigParam <> '' then
+    FullArgs := FullArgs + ' ' + ConfigParam;
+  if Args <> '' then
+    FullArgs := FullArgs + ' ' + Args;
+  StringChangeEx(FullArgs, '''', '''''', True);
+
+  Escaped := '''' + ExePath + '''';
+  if FullArgs <> '' then
+    Escaped := Escaped + ' ' + FullArgs;
+
+  Result := '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -Command "& ' + Escaped + ' *>&1"';
+end;
+
+function GetLauncherCommand(Args: String): String;
+var
+  PSPath: String;
+begin
+  PSPath := ExpandConstant('{#MyPowerShellExe}');
+  Result := PSPath + ' ' + GetLauncherParams(Args);
 end;
 
 function EnvironmentKey(Param: String): String;
