@@ -22,6 +22,7 @@
 // their per-group notes and the default layout a mask starts with. It shares
 // only the symbols in blend_gui_internal.h with the rest of the panel.
 
+#include "common/utility.h"
 #include "develop/blend_gui_internal.h"
 
 #include "common/darktable.h"
@@ -846,15 +847,19 @@ void dt_masks_gui_add_presets_menu(GMenu *menu, GtkWidget *anchor, dt_iop_module
     for(GList *p = user_presets; p; p = g_list_next(p))
     {
       _flexi_preset_t *preset = p->data;
-      GMenuItem *item = g_menu_item_new(preset->name, NULL);
+      gchar *label_unm = dt_str_unmnemonic(preset->name);
+
+      GMenuItem *item = g_menu_item_new(label_unm, NULL);
       g_menu_item_set_action_and_target_value(item, "masks_presets.user", g_variant_new_string(preset->name));
       g_menu_append_item(sec_user, item);
       g_object_unref(item);
 
-      GMenuItem *del = g_menu_item_new(preset->name, NULL);
+      GMenuItem *del = g_menu_item_new(label_unm, NULL);
       g_menu_item_set_action_and_target_value(del, "masks_presets.delete", g_variant_new_string(preset->name));
       g_menu_append_item(sub_delete, del);
       g_object_unref(del);
+
+      g_free(label_unm);
     }
     g_menu_append_submenu(sec_user, _("delete preset"), G_MENU_MODEL(sub_delete));
     g_object_unref(sub_delete);
