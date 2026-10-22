@@ -3898,3 +3898,61 @@ interpolation_copy(read_only image2d_t dev_in,
   write_imagef(dev_out, (int2)(ocol, orow), pix);
 }
 
+
+/* Copy a region of an image into a linear buffer, one kernel per supported
+   image format. Used for reading images back to the host through a
+   host-allocated staging buffer. */
+kernel void
+readback_4f(read_only image2d_t in, global float4 *out,
+            const int ox, const int oy, const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  out[mad24(y, width, x)] = read_imagef(in, sampleri, (int2)(ox + x, oy + y));
+}
+
+kernel void
+readback_2f(read_only image2d_t in, global float2 *out,
+            const int ox, const int oy, const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  out[mad24(y, width, x)] = read_imagef(in, sampleri, (int2)(ox + x, oy + y)).xy;
+}
+
+kernel void
+readback_1f(read_only image2d_t in, global float *out,
+            const int ox, const int oy, const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  out[mad24(y, width, x)] = read_imagef(in, sampleri, (int2)(ox + x, oy + y)).x;
+}
+
+kernel void
+readback_1u16(read_only image2d_t in, global ushort *out,
+              const int ox, const int oy, const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  out[mad24(y, width, x)] = (ushort)read_imageui(in, sampleri, (int2)(ox + x, oy + y)).x;
+}
+
+kernel void
+readback_1u8(read_only image2d_t in, global uchar *out,
+             const int ox, const int oy, const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  out[mad24(y, width, x)] = (uchar)read_imageui(in, sampleri, (int2)(ox + x, oy + y)).x;
+}
