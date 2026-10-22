@@ -1,0 +1,51 @@
+name: Nikon HE codec
+
+on:
+  push:
+    branches: [master, darktable-**]
+    paths:
+      - 'src/imageio/nikon_he/**'
+      - 'src/tests/nikon_he*'
+      - '.github/workflows/nikon-he.yml'
+  pull_request:
+    paths:
+      - 'src/imageio/nikon_he/**'
+      - 'src/tests/nikon_he*'
+      - '.github/workflows/nikon-he.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  codec:
+    name: Codec tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Configure
+        run: cmake -S src/imageio/nikon_he -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --config Release --parallel 2
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure
+
+  sanitizers:
+    name: Codec sanitizers
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Configure
+        run: >-
+          cmake -S src/imageio/nikon_he -B build
+          -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++
+          -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer"
+          -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+      - name: Build
+        run: cmake --build build --parallel 2
+      - name: Test
+        run: ctest --test-dir build --output-on-failure

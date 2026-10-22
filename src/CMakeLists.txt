@@ -1226,8 +1226,9 @@ unset(LIBS)
 unset(STATIC_LIBS)
 unset(LIB_DEPS)
 
+add_subdirectory(imageio/nikon_he)
 add_library(lib_darktable_imageio_rawspeed STATIC imageio/imageio_rawspeed.cc)
-target_link_libraries(lib_darktable_imageio_rawspeed PRIVATE rawspeed)
+target_link_libraries(lib_darktable_imageio_rawspeed PRIVATE rawspeed darktable_nikon_he)
 target_link_libraries(lib_darktable PRIVATE lib_darktable_imageio_rawspeed)
 
 #
