@@ -329,6 +329,8 @@ void dtgtk_cairo_paint_masks_used(cairo_t *cr, gint x, gint y, gint w, gint h, g
     a toggle button, which sets CPF_ACTIVE to its own state, whether the panel
     shows, and shows that with its styling */
 void dtgtk_cairo_paint_masks_panel(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint a viewfinder: the focused module, whose mask the panel is showing */
+void dtgtk_cairo_paint_module_focus(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a clone tool for retouch */
 void dtgtk_cairo_paint_tool_clone(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a heal tool for retouch */

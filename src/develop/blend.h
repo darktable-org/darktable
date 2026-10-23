@@ -457,6 +457,12 @@ typedef struct dt_iop_gui_blend_data_t
   // (the two sides swap when the canvas panel is docked on the left, see
   // _masks_header_apply_side)
   GtkWidget *masks_blend_header;
+  // the row under the header naming the module whose mask the panel shows,
+  // as the header's extension (dt_masks_gui_focus_row_sync). Shown in the
+  // hosted positions alone: embedded, the module's own header says it
+  GtkWidget *masks_focus_row;
+  GtkWidget *masks_focus_module_label;
+  GtkWidget *masks_focus_instance_label;
   // edit run + show_mask_overlay + eye + lock, the header's center widget
   // between the toggle and the expander (_masks_header_cluster_new)
   GtkWidget *masks_header_cluster;

@@ -240,6 +240,7 @@ tokens of its own, which start out as the list's:
 | name | what |
 |---|---|
 | `#blending-tabs` | the "blend mask" header; `.dt_masks_embedded` inside the module, `.dt_masks_enabled` while the mask is on |
+| `#masks-focus-row` | the row under the header naming the focused module, in the utility panel and on the canvas: `.dt_masks_focus_icon`, `.dt_masks_focus_module`, `.dt_masks_focus_instance` |
 | `#masks-header-caption`, `#masks-collapse` | its caption and its collapse arrow |
 | `.dt_masks_enable_toggle` | the mask's on/off toggle |
 | `#masks-docked-panel` | the docked panel, `.dt_masks_left` or `.dt_masks_right` by its dock, `.dt_masks_floating` over the canvas, `.dt_masks_handle_hidden` with its handle narrowed |
