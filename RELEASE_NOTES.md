@@ -366,6 +366,9 @@ changes (where available).
 
 ## Bug Fixes
 
+- Fixed missing Active D-Lighting exposure compensation for Nikon
+  images shot in sRGB or Adobe RGB.
+
 - Fixed drawn masks appearing too early in the history stack of an
   image that got a style or a pasted history before it was first
   opened: going back in the history showed masks from before the step

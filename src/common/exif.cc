@@ -1647,10 +1647,9 @@ static void _check_highlight_preservation(Exiv2::ExifData &exifData,
       else if(dr == 400)
 	img->exif_highlight_preservation = 2.0f;
     }
-    else if(FIND_EXIF_TAG("Exif.Nikon3.ColorSpace"))
+    else if(FIND_EXIF_TAG("Exif.Nikon3.ColorSpace") && pos->toLong() == 4) // HLG tone mode
     {
-      if(pos->toLong() == 4)  // HLG tone mode
-	img->exif_highlight_preservation = 2.0f;
+      img->exif_highlight_preservation = 2.0f;
     }
     else if(FIND_EXIF_TAG("Exif.Nikon3.ActiveDLighting"))
     {
