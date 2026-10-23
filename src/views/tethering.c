@@ -495,7 +495,7 @@ gboolean try_enter(dt_view_t *self)
   /* verify that camera supports tethering and is available */
   if(dt_camctl_can_enter_tether_mode(darktable.camctl, NULL)) return FALSE;
 
-  dt_control_log(_("no camera with tethering support available for use..."));
+  dt_control_log(_("camera with tethering support is not connected or not mounted in the import module"));
   return TRUE;
 }
 
