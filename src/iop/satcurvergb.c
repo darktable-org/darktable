@@ -791,18 +791,18 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
   const float L_white = Y_to_dt_UCS_L_star(1.f);
 
-  if (self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && dt_iop_has_focus(self) && piece->pipe == self->dev->full.pipe)
+  if (self->dev->gui_attached && piece->pipe == self->dev->preview_pipe)
     _update_sat_histogram(self, d, inputmatrix_trans, in, npixels);
 
   // Display a grayscale preview of the normalized saturation mask.
   gboolean mask_display = FALSE;
-  if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && g)
+  if (self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && g)
   {
     dt_iop_gui_enter_critical_section(self);
     mask_display = g->mask_display;
     dt_iop_gui_leave_critical_section(self);
   }
-  if(mask_display)
+  if (mask_display)
   {
     float *const restrict mask = dt_alloc_align_float(npixels);
     if (mask)
@@ -1079,7 +1079,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   gboolean gf_active = guided_filter_active(d);
 
   gboolean want_mask = FALSE;
-  if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && g)
+  if (self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && g)
   {
     dt_iop_gui_enter_critical_section(self);
     want_mask = g->mask_display;
@@ -1118,8 +1118,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   // _update_sat_histogram() on the CPU path, which also runs before every
   // early return.
   const gboolean want_histogram =
-      self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && dt_iop_has_focus(self) && piece->pipe == self->dev->full.pipe;
-
+      self->dev->gui_attached && piece->pipe == self->dev->preview_pipe;
   if (want_histogram)
   {
     int hist_bins_host[DT_IOP_SATCURVE_HIST_RES] = {0};
