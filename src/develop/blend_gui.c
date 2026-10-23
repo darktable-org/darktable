@@ -5050,11 +5050,6 @@ gboolean dt_masks_model_row_is_expandable(const dt_masks_type_t type,
   return !props_subpanel;
 }
 
-// refresh the compact value label that follows an opacity slider after a
-// programmatic (and therefore signal-less) set; defined further below,
-// alongside the label itself.
-static void _refresh_inline_opacity_label(GtkWidget *slider);
-
 // both defined below, next to the row index they read: the rows showing one
 // form, and the refresh that pushes an edit made in one of them into the rest
 static GSList *_masks_rows_for_form(dt_iop_gui_blend_data_t *bd,
@@ -5205,13 +5200,6 @@ static void _props_row_apply(dt_iop_module_t *module,
     *last_value = dt_bauhaus_slider_get(widget);
   }
   DT_LEAVE_GUI_UPDATE();
-
-  // the set above was silent (see _refresh_inline_opacity_label): where this
-  // widget is the hidden slider behind a row header's compact opacity value,
-  // and the value it settled on is not the one the user's own gesture left it
-  // at (a clamp, or a soft-range recompute), that label has to be told by hand
-  // or it keeps reading the number from before this call.
-  _refresh_inline_opacity_label(widget);
 
   dt_control_queue_redraw_center();
 
@@ -5964,35 +5952,6 @@ static void _inline_opacity_tooltip_changed(GtkWidget *w, gpointer user_data)
   g_free(tip);
 }
 
-static void _inline_opacity_update_label(GtkWidget *label, const float val)
-{
-  GtkWidget *slider = g_object_get_data(G_OBJECT(label), "opacity-slider");
-  const float max_val = slider ? dt_bauhaus_slider_get_hard_max(slider) : 1.0f;
-  const float pct = (max_val > 1.5f) ? val : (val * 100.0f);
-  gchar *txt = g_strdup_printf("%.0f%%", pct);
-  gtk_label_set_text(GTK_LABEL(label), txt);
-  g_free(txt);
-}
-
-static void _inline_opacity_slider_changed_cb(GtkWidget *slider, gpointer user_data)
-{
-  GtkWidget *label = user_data;
-  if(GTK_IS_LABEL(label))
-    _inline_opacity_update_label(label, dt_bauhaus_slider_get(slider));
-}
-
-// copy a slider's value into its value label (_make_inline_opacity_value_widget)
-// after a set made under DT_IN_GUI_UPDATE(): bauhaus emits no "value-changed"
-// then (_slider_set_normalized), so the slider repaints but the label would
-// keep the old number
-static void _refresh_inline_opacity_label(GtkWidget *slider)
-{
-  if(!slider) return;
-  GtkWidget *label = g_object_get_data(G_OBJECT(slider), "opacity-value-label");
-  if(GTK_IS_LABEL(label))
-    _inline_opacity_update_label(label, dt_bauhaus_slider_get(slider));
-}
-
 static void _blend_opacity_slider_changed_cb(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_gui_blend_data_t *bd = user_data;
@@ -6099,139 +6058,6 @@ static void _show_bauhaus_whisker_popup(GtkWidget *slider,
   if(_bauhaus_whisker_popup_rect(anchor, center_in_anchor, &rect))
     dt_bauhaus_widget_set_popup_position(slider, &rect);
   dt_bauhaus_widget_show_popup(slider);
-}
-
-static gboolean _inline_opacity_popup_idle(gpointer user_data)
-{
-  // held by a reference: a list rebuild may have destroyed the row meanwhile,
-  // which leaves it unrealized, and its slider with it
-  GtkWidget *evbox = user_data;
-  if(!gtk_widget_get_realized(evbox)) return G_SOURCE_REMOVE;
-  GtkWidget *slider = g_object_get_data(G_OBJECT(evbox), "opacity-slider");
-  if(!slider || !GTK_IS_WIDGET(slider)) return G_SOURCE_REMOVE;
-
-  GtkAllocation alloc;
-  gtk_widget_get_allocation(evbox, &alloc);
-  _show_bauhaus_whisker_popup(slider, evbox, alloc.width / 2);
-  return G_SOURCE_REMOVE;
-}
-
-// claimed whatever the button, so the row under the value never sees a press
-// meant for it
-static void _inline_opacity_pressed(GtkGestureSingle *gesture,
-                                    const int n_press,
-                                    const double x,
-                                    const double y,
-                                    gpointer user_data)
-{
-  dt_gui_claim(gesture);
-  GtkWidget *w = dt_gui_get_widget(gesture);
-  GtkWidget *slider = g_object_get_data(G_OBJECT(w), "opacity-slider");
-  if(!slider) return;
-
-  const guint button = gtk_gesture_single_get_current_button(gesture);
-  if(button == GDK_BUTTON_SECONDARY)
-    g_idle_add_full(G_PRIORITY_DEFAULT_IDLE, _inline_opacity_popup_idle,
-                    g_object_ref(w), g_object_unref);
-  else if(n_press == 2 && button == GDK_BUTTON_PRIMARY)
-  {
-    const float max_val = dt_bauhaus_slider_get_hard_max(slider);
-    dt_bauhaus_slider_set(slider, max_val > 1.5f ? 100.0f : 1.0f);
-  }
-}
-
-// a discrete scroll (see dt_gui_connect_scroll), which also leaves a bare
-// scroll to the panel when "darkroom/ui/sidebar_scroll_default" asks for that
-static void _inline_opacity_scroll(GtkEventControllerScroll *controller,
-                                   const double dx,
-                                   const double dy,
-                                   gpointer user_data)
-{
-  GtkWidget *w = dt_gui_get_widget(controller);
-  GtkWidget *slider = g_object_get_data(G_OBJECT(w), "opacity-slider");
-  if(!slider || !gtk_widget_is_sensitive(w)) return;
-
-  const GdkModifierType state = dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
-  const gboolean is_ctrl = (state & GDK_CONTROL_MASK) != 0;
-  const gboolean is_shift = (state & GDK_SHIFT_MASK) != 0;
-
-  const float max_val = dt_bauhaus_slider_get_hard_max(slider);
-  const gboolean is_100_scale = (max_val > 1.5f);
-
-  float step = is_100_scale ? 5.0f : 0.05f;
-  if(is_ctrl)
-    step = is_100_scale ? 1.0f : 0.01f;
-  else if(is_shift)
-    step = is_100_scale ? 10.0f : 0.10f;
-
-  // whole steps, up (or left) raising the value
-  double delta = (fabs(dx) > fabs(dy)) ? -dx : -dy;
-  if(dt_conf_get_bool("masks_scroll_down_increases")) delta = -delta;
-
-  const float current = dt_bauhaus_slider_get(slider);
-  const float new_val = CLAMP(current + delta * step, 0.0f, is_100_scale ? 100.0f : 1.0f);
-  dt_bauhaus_slider_set(slider, new_val);
-}
-
-static void _inline_opacity_enter(GtkEventControllerMotion *controller,
-                                  gdouble x,
-                                  gdouble y,
-                                  gpointer user_data)
-{
-  dt_gui_cursor_set(dt_gui_get_widget(controller), "ns-resize", "mask/opacity");
-}
-
-static void _inline_opacity_leave(GtkEventControllerMotion *controller,
-                                  gpointer user_data)
-{
-  dt_gui_cursor_set(dt_gui_get_widget(controller), NULL, "mask/opacity");
-}
-
-static void _inline_opacity_realize(GtkWidget *widget, gpointer user_data)
-{
-  dt_gui_cursor_set(widget, "ns-resize", "mask/opacity");
-}
-
-static GtkWidget *_make_inline_opacity_value_widget(GtkWidget *slider,
-                                                    dt_iop_module_t *module)
-{
-  GtkWidget *evbox = gtk_event_box_new();
-  gtk_event_box_set_visible_window(GTK_EVENT_BOX(evbox), TRUE);
-  gtk_widget_add_events(evbox, GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK
-                                 | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
-
-  GtkWidget *label = gtk_label_new("");
-  gtk_label_set_width_chars(GTK_LABEL(label), 4);
-  gtk_label_set_xalign(GTK_LABEL(label), 1.0f);
-  if(slider)
-  {
-    g_object_set_data(G_OBJECT(label), "opacity-slider", slider);
-    // the reverse link, for the sets bauhaus makes silently -- see
-    // _refresh_inline_opacity_label
-    g_object_set_data(G_OBJECT(slider), "opacity-value-label", label);
-    _inline_opacity_update_label(label, dt_bauhaus_slider_get(slider));
-    g_signal_connect(G_OBJECT(slider), "value-changed",
-                     G_CALLBACK(_inline_opacity_slider_changed_cb), label);
-  }
-  gtk_container_add(GTK_CONTAINER(evbox), label);
-  dt_gui_add_class(evbox, "dt_masks_opacity_value");
-  gtk_widget_set_tooltip_text(evbox,
-                              _("opacity\n"
-                                "scroll to adjust by 5%, shift+scroll by 10%,"
-                                " ctrl+scroll by 1%\n"
-                                "right-click for precise entry\n"
-                                "double-click to reset to 100%"));
-
-  g_object_set_data(G_OBJECT(evbox), "opacity-slider", slider);
-  if(module) g_object_set_data(G_OBJECT(evbox), "module", module);
-  g_signal_connect(G_OBJECT(evbox), "realize", G_CALLBACK(_inline_opacity_realize), NULL);
-  dt_gui_connect_motion(evbox, NULL, _inline_opacity_enter, _inline_opacity_leave, NULL);
-  dt_gui_connect_click(evbox, _inline_opacity_pressed, NULL, NULL);
-  dt_gui_connect_scroll(evbox,
-                        GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
-                        _inline_opacity_scroll, NULL);
-
-  return evbox;
 }
 
 // an icon button without an icon: a column the row has nothing for, exactly
@@ -17977,16 +17803,58 @@ void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
   }
 }
 
-// the blend opacity header stands in for its slider's hidden label and value:
-// inset it by the slider's side margins, which the theme sets for every bauhaus
-// widget, so that it lines up with the slider's bar and the blend mode combobox
-static void _blend_opacity_header_follow_margins(GtkWidget *slider, GtkWidget *header)
+// bold text in the font bauhaus draws a slider's label and value in, measured
+// the way _natural_width does in bauhaus.c
+static void _bauhaus_text_size(GtkWidget *slider, const char *text, gint *w, gint *h)
 {
-  GtkBorder margin;
-  gtk_style_context_get_margin(gtk_widget_get_style_context(slider),
-                               gtk_widget_get_state_flags(slider), &margin);
-  gtk_widget_set_margin_start(header, margin.left);
-  gtk_widget_set_margin_end(header, margin.right);
+  GtkStyleContext *context = gtk_widget_get_style_context(slider);
+  PangoFontDescription *font_desc = NULL;
+  gtk_style_context_get(context, gtk_widget_get_state_flags(slider),
+                        "font", &font_desc, NULL);
+  PangoLayout *layout = gtk_widget_create_pango_layout(slider, text);
+  pango_layout_set_font_description(layout, font_desc);
+  PangoAttrList *attrs = pango_attr_list_new();
+  pango_attr_list_insert(attrs, pango_attr_font_features_new("tnum"));
+  pango_attr_list_insert(attrs, pango_attr_weight_new(PANGO_WEIGHT_BOLD));
+  pango_layout_set_attributes(layout, attrs);
+  pango_attr_list_unref(attrs);
+  pango_font_description_free(font_desc);
+  pango_layout_get_pixel_size(layout, w, h);
+  g_object_unref(layout);
+}
+
+// the low-opacity badge sits on the slider's label row, right after the label
+// text, so the slider keeps the full width. Bauhaus draws the label at the
+// widget's margin + padding and ellipsizes it to what the value leaves (see
+// _widget_draw in bauhaus.c), so the badge follows the text, and stays inside
+// that space when the text is cut
+static gboolean _blend_opacity_badge_position(GtkOverlay *overlay,
+                                              GtkWidget *badge,
+                                              GdkRectangle *position,
+                                              GtkWidget *slider)
+{
+  GtkStyleContext *context = gtk_widget_get_style_context(slider);
+  const GtkStateFlags state = gtk_widget_get_state_flags(slider);
+  GtkBorder margin, padding;
+  gtk_style_context_get_margin(context, state, &margin);
+  gtk_style_context_get_padding(context, state, &padding);
+
+  gint label_w, line_h, value_w, unused;
+  _bauhaus_text_size(slider, dt_bauhaus_widget_get_label(slider), &label_w, &line_h);
+  gchar *value = dt_bauhaus_slider_get_text(slider, dt_bauhaus_slider_get_hard_max(slider));
+  _bauhaus_text_size(slider, value, &value_w, &unused);
+  g_free(value);
+
+  const gint size = MAX(line_h * 3 / 4, 1);
+  const gint left = margin.left + padding.left;
+  const gint room = gtk_widget_get_allocated_width(slider) - left
+                    - margin.right - padding.right - value_w;
+
+  position->x = left + MIN(label_w + DT_PIXEL_APPLY_DPI(4), MAX(room - size, 0));
+  position->y = margin.top + padding.top + (line_h - size) / 2;
+  position->width = size;
+  position->height = size;
+  return TRUE;
 }
 
 void dt_iop_gui_init_blending(GtkWidget *iopw,
@@ -18148,38 +18016,20 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
                                 _("set the opacity of the blending"));
     // no quad: its unused width would make the slider narrower
     dt_bauhaus_widget_set_quad_visibility(bd->opacity_slider, FALSE);
-    dt_bauhaus_widget_hide_label(bd->opacity_slider);
     dt_gui_add_class(bd->opacity_slider, "dt_masks_blend_opacity_slider");
     module->fusion_slider = bd->opacity_slider;
 
-    GtkWidget *opacity_header = dt_gui_hbox();
-    // "blend opacity", against the mask elements' own opacity below; the
-    // slider's action keeps its name (blend > opacity), shortcuts with it
-    GtkWidget *opacity_lbl = gtk_label_new(_("blend opacity"));
-    gtk_label_set_xalign(GTK_LABEL(opacity_lbl), 0.0f);
-    dt_gui_box_add(opacity_header, dt_gui_expand(opacity_lbl));
-
     bd->blend_opacity_lowop_badge = _make_lowop_badge();
-    // a text line, not a drawer: small enough not to make the line taller
-    gtk_widget_set_size_request(bd->blend_opacity_lowop_badge, DT_PIXEL_APPLY_DPI(10),
-                                DT_PIXEL_APPLY_DPI(10));
-    GtkWidget *val_widget = _make_inline_opacity_value_widget(bd->opacity_slider, module);
-
-    GtkWidget *val_box = dt_gui_hbox();
-    dt_gui_box_add(val_box, bd->blend_opacity_lowop_badge, val_widget);
-
-    gtk_box_pack_end(GTK_BOX(opacity_header), val_box, FALSE, FALSE, 0);
-
     g_signal_connect(G_OBJECT(bd->opacity_slider), "value-changed",
                      G_CALLBACK(_blend_opacity_slider_changed_cb), bd);
 
-    GtkWidget *opacity_box = dt_gui_vbox();
-    dt_gui_add_class(opacity_box, "dt_masks_blend_opacity_box");
-    dt_gui_box_add(opacity_box, opacity_header, bd->opacity_slider);
-    g_signal_connect_object(G_OBJECT(bd->opacity_slider), "style-updated",
-                            G_CALLBACK(_blend_opacity_header_follow_margins),
-                            opacity_header, 0);
-    _blend_opacity_header_follow_margins(bd->opacity_slider, opacity_header);
+    GtkWidget *opacity_box = gtk_overlay_new();
+    gtk_container_add(GTK_CONTAINER(opacity_box), bd->opacity_slider);
+    gtk_overlay_add_overlay(GTK_OVERLAY(opacity_box), bd->blend_opacity_lowop_badge);
+    gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(opacity_box),
+                                         bd->blend_opacity_lowop_badge, TRUE);
+    g_signal_connect(G_OBJECT(opacity_box), "get-child-position",
+                     G_CALLBACK(_blend_opacity_badge_position), bd->opacity_slider);
 
     bd->masks_combine_combo = _combobox_new_from_list
       (module,
