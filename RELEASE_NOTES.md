@@ -627,6 +627,9 @@ changes (where available).
   needs a larger input area than it outputs, for example liquify in a
   zoomed-in darkroom view.
 
+- Fixed the darkroom filmstrip losing the active-image triangle after
+  that thumbnail is scrolled off screen and back.
+
 - Improved internal stability (more reproducible wavelet denoising and
   haze removal).
 
