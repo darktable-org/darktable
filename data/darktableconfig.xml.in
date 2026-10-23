@@ -3735,6 +3735,13 @@
     <longdescription>while enabled, the mask panel's edge carries a visible handle with an arrow showing which way the panel folds away; while disabled the handle is invisible, like the main panels', and still resizes the panel by dragging and hides it on a click</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/masks/show_focus_row</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show focused module under header</shortdescription>
+    <longdescription>while enabled, the mask panel hosted in the utility panel or beside the canvas shows the name of the module whose mask it holds, and its instance name, in a row under its header; the panel embedded within a module has no such row, as the module's own header names it</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/masks/show_preset_notes</name>
     <type>bool</type>
     <default>true</default>

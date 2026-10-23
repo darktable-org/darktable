@@ -3259,6 +3259,14 @@ button.dt_masks_panel_toggle:checked
   padding: 0;
 }
 
+/* open, the lib's header has no rule under it: the focus row hangs from it as
+   its extension. Folded, the row is hidden with the body, and the rule stays.
+   The class and the expander's state outrank #module-header's own rule */
+.dt_module_expanded #module-header.dt_masks_host_header
+{
+  border-bottom: none;
+}
+
 /* the mask's on/off toggle moved onto the utility lib's header, sized as in
    #blending-tabs. Not the whole header: its arrow would grow past every
    other lib's */
@@ -4382,4 +4390,70 @@ button.dt_masks_consumer_row:hover .dt_masks_link_glyph
 popover.dt_masks_precise_anchor
 {
   opacity: 0;
+}
+
+/* the focus row (#masks-focus-row, see dt_masks_gui_focus_row_sync in
+   blend_gui.c): under the "blend mask" header, in the utility panel and on
+   the canvas, naming the module whose mask the panel shows: an icon, the
+   module and, dimmer, its instance name. An extension of the header, so it
+   takes the header's ground: under the controls on the canvas, where they
+   are the header, and over them in the utility panel, where the lib's own
+   header is. On the canvas the header is a module header,
+   which the row sits in and shows through; in the utility panel the header
+   paints @plugin_bg_color itself (.dt_masks_embedded), and so does the row */
+#masks-focus-row
+{
+  padding: 0 0.8em 0.4em 0.8em;
+}
+
+/* the icon lines up with the mask toggle's glyph above, and so with the
+   content's edge below. The header takes 10px more on the side facing the
+   canvas, 4px when the handle is narrowed (see "#blending-tabs.dt_section_label"
+   above), and the row takes the same */
+#masks-docked-panel.dt_masks_left #masks-focus-row
+{
+  padding-right: 1.2em;
+}
+
+#masks-docked-panel.dt_masks_right #masks-focus-row
+{
+  padding-left: 1.2em;
+}
+
+#masks-docked-panel.dt_masks_left.dt_masks_handle_hidden #masks-focus-row
+{
+  padding-right: 0.97em;
+}
+
+#masks-docked-panel.dt_masks_right.dt_masks_handle_hidden #masks-focus-row
+{
+  padding-left: 0.97em;
+}
+
+/* the icon centered under the lib header's arrow. No padding above: the
+   header's own 0.5em bottom padding is the gap, and the row mirrors it below */
+#masks-host-content #masks-focus-row
+{
+  background-color: @plugin_bg_color;
+  padding: 0 0.6em 0.5em 0.8em;
+}
+
+.dt_masks_focus_icon
+{
+  color: @fg_color;
+  opacity: 0.7;
+}
+
+/* the gap after the icon is the name's margin: a margin on the icon, a
+   dtgtk_icon (an event box), showed no gap */
+.dt_masks_focus_module
+{
+  font-weight: bold;
+  margin-left: 0.5em;
+}
+
+.dt_masks_focus_instance
+{
+  opacity: 0.7;
+  margin-left: 0.5em;
 }

@@ -68,3 +68,13 @@
 {
   border-top-left-radius: 15px;
 }
+
+/* the focus row of the masks panel hosted in the utility panel, which hangs
+   under the lib's header (#module-header above) as its extension, so it takes
+   the header's color. darktable.css gives it the plain module ground; the
+   third id is what outranks that rule, a tie going to darktable.css */
+#left #masks-host-content #masks-focus-row,
+#right #masks-host-content #masks-focus-row
+{
+  background-color: @header_color;
+}

@@ -448,6 +448,9 @@ void dt_masks_gui_reparent_into(GtkWidget *w, GtkWidget *parent,
 /** the visibility and sensitivity of the mask header's buttons, from the
     mask's and the module's state */
 void dt_iop_gui_blend_mask_header_sync(dt_iop_gui_blend_data_t *data);
+/** the focus row under the mask header: name the module (and its instance)
+    whose mask the panel shows, and show the row when `show` */
+void dt_masks_gui_focus_row_sync(dt_iop_gui_blend_data_t *bd, const gboolean show);
 /** the classes and alignment of the mask header's on/off toggle, and of the
     utility lib's stand-in for it */
 void dt_masks_gui_header_toggle_style(GtkWidget *toggle);

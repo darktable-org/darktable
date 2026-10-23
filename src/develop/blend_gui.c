@@ -12747,6 +12747,30 @@ static void _consumers_history_changed(gpointer instance, dt_iop_module_t *modul
   _consumers_sync(module);
 }
 
+void dt_masks_gui_focus_row_sync(dt_iop_gui_blend_data_t *bd, const gboolean show)
+{
+  // `show` is whether the panel is hosted; the preference decides the rest
+  if(!bd || !bd->masks_focus_row || !GTK_IS_WIDGET(bd->masks_focus_row)) return;
+  dt_iop_module_t *module = bd->module;
+  if(show && module)
+  {
+    gtk_label_set_text(GTK_LABEL(bd->masks_focus_module_label), module->name());
+
+    // the instance name as the module's own header shows it (_iop_panel_name
+    // in imageop.c), minus the bullet
+    gchar *instance = NULL;
+    if(module->multi_name[0] && strcmp(module->multi_name, "0"))
+      instance = module->multi_name_hand_edited
+        ? g_strdup(module->multi_name)
+        : dt_util_localize_segmented_name(module->multi_name, FALSE);
+    gtk_label_set_text(GTK_LABEL(bd->masks_focus_instance_label), instance);
+    gtk_widget_set_visible(bd->masks_focus_instance_label, instance != NULL);
+    g_free(instance);
+  }
+  gtk_widget_set_visible(bd->masks_focus_row,
+                         show && dt_conf_get_bool("plugins/darkroom/masks/show_focus_row"));
+}
+
 void dt_iop_gui_blend_module_renamed(dt_iop_module_t *module)
 {
   // raster elements following this module's name show it in other panels
@@ -18304,6 +18328,34 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     dt_gui_connect_click(header_evb, _masks_header_clicked, NULL, module);
     gtk_widget_set_tooltip_text(header_evb, _("click to show or hide the mask panel"));
     dt_gui_box_add(bd->relocatable_box, header_evb);
+
+    // under the header, an extension of it, naming the module whose mask this
+    // is. It travels with the header between homes (see _masks_header_body_home
+    // in masks_gui_panel_host.c), and is shown by dt_masks_gui_focus_row_sync
+    // in the hosted positions only
+    GtkWidget *focus_icon = dtgtk_icon_new(dtgtk_cairo_paint_module_focus, 0, NULL);
+    gtk_widget_set_size_request(focus_icon, DT_PIXEL_APPLY_DPI(12), DT_PIXEL_APPLY_DPI(12));
+    gtk_widget_set_valign(focus_icon, GTK_ALIGN_CENTER);
+    dt_gui_add_class(focus_icon, "dt_masks_focus_icon");
+    bd->masks_focus_module_label = gtk_label_new(NULL);
+    gtk_label_set_ellipsize(GTK_LABEL(bd->masks_focus_module_label), PANGO_ELLIPSIZE_END);
+    dt_gui_add_class(bd->masks_focus_module_label, "dt_masks_focus_module");
+    bd->masks_focus_instance_label = gtk_label_new(NULL);
+    gtk_label_set_ellipsize(GTK_LABEL(bd->masks_focus_instance_label), PANGO_ELLIPSIZE_END);
+    gtk_label_set_xalign(GTK_LABEL(bd->masks_focus_instance_label), 0.0f);
+    dt_gui_add_class(bd->masks_focus_instance_label, "dt_masks_focus_instance");
+    gtk_widget_set_no_show_all(bd->masks_focus_instance_label, TRUE);
+    bd->masks_focus_row = dt_gui_hbox(focus_icon, bd->masks_focus_module_label,
+                                      dt_gui_expand(bd->masks_focus_instance_label));
+    gtk_widget_set_name(bd->masks_focus_row, "masks-focus-row");
+    // over the header's own "click to show or hide": the row names the module
+    gtk_widget_set_tooltip_text(bd->masks_focus_row, _("focused module"));
+    // its children shown now: the show_all on relocatable_box below skips a
+    // no_show_all row, and its own visibility is dt_masks_gui_focus_row_sync's
+    gtk_widget_show_all(bd->masks_focus_row);
+    gtk_widget_set_no_show_all(bd->masks_focus_row, TRUE);
+    gtk_widget_set_visible(bd->masks_focus_row, FALSE);
+    dt_gui_box_add(bd->masks_header_home, bd->masks_focus_row);
     // ...and everything below the header goes into masks_panel_body, which
     // the embedded position folds as a unit, leaving the visibility of what
     // is inside alone (see its field comment). mask_panel, which the rest of

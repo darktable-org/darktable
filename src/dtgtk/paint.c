@@ -1047,6 +1047,30 @@ void dtgtk_cairo_paint_masks_used(cairo_t *cr, const gint x, const gint y, const
   FINISH
 }
 
+void dtgtk_cairo_paint_module_focus(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(0.9, 1, 0, 0)
+
+  // a viewfinder: four corner brackets around a dot
+  for(int i = 0; i < 4; i++)
+  {
+    cairo_save(cr);
+    cairo_translate(cr, 0.5, 0.5);
+    cairo_rotate(cr, i * M_PI_2);
+    cairo_translate(cr, -0.5, -0.5);
+    cairo_move_to(cr, 0.08, 0.34);
+    cairo_line_to(cr, 0.08, 0.08);
+    cairo_line_to(cr, 0.34, 0.08);
+    cairo_restore(cr);
+  }
+  cairo_stroke(cr);
+
+  cairo_arc(cr, 0.5, 0.5, 0.15, 0, 2.0 * M_PI);
+  cairo_fill(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_masks_panel(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(0.9, 1, 0, 0)
