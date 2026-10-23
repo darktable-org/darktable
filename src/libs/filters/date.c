@@ -20,6 +20,7 @@
   This file contains the necessary routines to implement a filter for the filtering module
 */
 
+#include <gtk/gtk.h>
 static gchar *_date_get_db_colname(dt_lib_filtering_rule_t *rule)
 {
   switch(rule->prop)
@@ -51,6 +52,24 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
   // first, we update the graph
   gchar *colname = _date_get_db_colname(rule);
   char query[1024] = { 0 };
+  sqlite3_stmt *stmt;
+
+  // get min and max
+  // clang-format off
+  g_snprintf(query, sizeof(query),
+             "SELECT MIN(%s), MAX(%s)"
+             " FROM main.images"
+             " WHERE %s IS NOT NULL AND %s",
+             colname, colname, colname, d->last_where_ext);
+  // clang-format on
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    range->min_r = sqlite3_column_int64(stmt, 0);
+    range->max_r = sqlite3_column_int64(stmt, 1);
+  }
+  sqlite3_finalize(stmt);
+
   // clang-format off
   g_snprintf(query, sizeof(query),
              "SELECT %s AS date, COUNT(*) AS count"
@@ -60,7 +79,6 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
              colname, colname, d->last_where_ext);
   // clang-format on
   g_free(colname);
-  sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   dtgtk_range_select_reset_blocks(range);
   if(rangetop) dtgtk_range_select_reset_blocks(rangetop);
@@ -148,18 +166,48 @@ static gboolean _month_update(dt_lib_filtering_rule_t *rule)
 {
   if(!rule->w_specific) return FALSE;
 
+  dt_lib_filtering_t *d = rule->lib;
+
   rule->manual_widget_set++;
   _widgets_month_t *month = (_widgets_month_t *)rule->w_specific;
   _widgets_month_t *monthtop = (_widgets_month_t *)rule->w_specific_top;
+
+  // get all used months
+  gchar *colname = _date_get_db_colname(rule);
+  int used_months_mask = 0;
+  char query[1024] = { 0 };
+  sqlite3_stmt *stmt;
+  // clang-format off
+  g_snprintf(query, sizeof(query),
+             "SELECT CAST(strftime('%%m', %s/1000000"
+             "                     + unixepoch('0001-01-01 00:00:00'), 'unixepoch') AS INTEGER) AS month"
+             " FROM main.images"
+             " WHERE %s IS NOT NULL AND %s"
+             " GROUP BY month",
+             colname, colname, d->last_where_ext);
+  // clang-format on
+  g_free(colname);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int m = sqlite3_column_int(stmt, 0);
+    used_months_mask |= (1 << (m-1));
+  }
+  sqlite3_finalize(stmt);
 
   const int mask = _month_get_mask(rule->raw_text);
 
   for(int i = 0; i < 12; i++)
   {
-    const gboolean active = (mask & (1 << i)) != 0;
+    const gboolean valid_month = (used_months_mask & (1 << i)) != 0;
+    const gboolean active = valid_month && (mask & (1 << i)) != 0;
+    gtk_widget_set_sensitive(month->toggles[i], valid_month);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(month->toggles[i]), active);
     if(monthtop)
+    {
+      gtk_widget_set_sensitive(monthtop->toggles[i], valid_month);
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(monthtop->toggles[i]), active);
+    }
   }
 
   rule->manual_widget_set--;
