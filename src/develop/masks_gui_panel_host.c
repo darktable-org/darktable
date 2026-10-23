@@ -43,6 +43,11 @@ int dt_masks_gui_panel_position(void)
   return dt_conf_get_int("plugins/darkroom/blend/masks_panel_position");
 }
 
+gboolean dt_masks_gui_is_host_lib(const dt_lib_module_t *module)
+{
+  return darktable.develop && module == darktable.develop->proxy.masks_flexi_host.module;
+}
+
 // which edge the panel is docked against. Not part of the position choice:
 // the panel opens on whichever edge was clicked, and stays there.
 //
