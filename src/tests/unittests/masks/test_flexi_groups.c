@@ -633,7 +633,7 @@ static void test_element_refinement_follows_a_move(void **state)
   dt_masks_gui_group_point(grp, 2)->refinement.enabled = DT_MASKS_REFINE_ELEMENT;
   dt_masks_gui_group_point(grp, 2)->refinement.contrast = 0.5f;
 
-  dt_masks_model_drop_element_onto_element(&flexi_module, grp, 2, 3, TRUE);
+  dt_masks_model_drop_member_onto_member(&flexi_module, grp, 2, 3, TRUE);
 
   assert_int_equal(dt_masks_gui_group_point(grp, 2)->refinement.enabled, DT_MASKS_REFINE_ELEMENT);
   assert_float_equal(dt_masks_gui_group_point(grp, 2)->refinement.contrast, 0.5f, 1e-6);

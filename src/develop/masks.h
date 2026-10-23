@@ -621,7 +621,7 @@ typedef struct dt_masks_form_gui_t
 
   // masks panel and canvas feedback, set by blend_gui.c:
   // panel_hover_formids: shapes highlighted on the canvas because their row,
-  //   or the header of a cluster holding them, is hovered. NULL = none
+  //   or the header of a group holding them, is hovered. NULL = none
   // panel_selected_formid: the panel's selection, highlighted on the canvas
   //   while nothing is hovered
   // canvas_hover_formid: the shape under the cursor, whose row the panel
@@ -1329,7 +1329,7 @@ typedef enum dt_masks_remove_target_t
 dt_masks_remove_target_t dt_masks_remove_shape_target(const struct dt_iop_module_t *module,
                                                       const dt_masks_form_t *form,
                                                       const dt_mask_id_t parentid);
-/** add every element of `src_grp` to `grp`, keeping its operator and opacity:
+/** add every member of `src_grp` to `grp`, keeping its operator and opacity:
     shapes are shared, parametric channels copied. No history item */
 void dt_masks_group_add_members_of(dt_masks_form_t *grp, const dt_masks_form_t *src_grp);
 /** change the opacity of `form` in its parent group `parentid`, by `amount`,

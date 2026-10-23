@@ -131,7 +131,7 @@ static void test_drop_element_into_other_group(void **state)
   dt_masks_form_t *grp = flexi_build("u{1,2,i{3,4}}");
 
   // drop 1 onto 3, landing above it
-  assert_true(dt_masks_model_drop_element_onto_element(&flexi_module, grp, 1, 3, TRUE));
+  assert_true(dt_masks_model_drop_member_onto_member(&flexi_module, grp, 1, 3, TRUE));
   assert_layout("u{2,i{3,1,4}}");
 }
 
@@ -139,7 +139,7 @@ static void test_drop_element_below_target(void **state)
 {
   dt_masks_form_t *grp = flexi_build("u{1,2,i{3,4}}");
 
-  assert_true(dt_masks_model_drop_element_onto_element(&flexi_module, grp, 1, 3, FALSE));
+  assert_true(dt_masks_model_drop_member_onto_member(&flexi_module, grp, 1, 3, FALSE));
   assert_layout("u{2,i{1,3,4}}");
 }
 
@@ -148,7 +148,7 @@ static void test_drop_adopts_target_operator(void **state)
 {
   dt_masks_form_t *grp = flexi_build("u{1,2,d{3}}");
 
-  assert_true(dt_masks_model_drop_element_onto_element(&flexi_module, grp, 1, 3, TRUE));
+  assert_true(dt_masks_model_drop_member_onto_member(&flexi_module, grp, 1, 3, TRUE));
   assert_layout("u{2,d{3,1}}");
 }
 
@@ -157,12 +157,12 @@ static void test_drop_adopts_target_operator(void **state)
 static void test_drop_between_groups_never_creates_a_third(void **state)
 {
   dt_masks_form_t *grp = flexi_build("u{1,2,i{3,4}}");
-  dt_masks_model_drop_element_onto_element(&flexi_module, grp, 1, 3, TRUE);
+  dt_masks_model_drop_member_onto_member(&flexi_module, grp, 1, 3, TRUE);
   assert_layout("u{2,i{3,1,4}}");
   flexi_teardown();
 
   grp = flexi_build("u{1,2,i{3,4}}");
-  dt_masks_model_drop_element_onto_element(&flexi_module, grp, 1, 3, FALSE);
+  dt_masks_model_drop_member_onto_member(&flexi_module, grp, 1, 3, FALSE);
   assert_layout("u{2,i{1,3,4}}");
 }
 
@@ -171,7 +171,7 @@ static void test_drop_between_same_op_groups_keeps_both(void **state)
 {
   dt_masks_form_t *grp = flexi_build("u{1,2,u{3,4}}");
 
-  dt_masks_model_drop_element_onto_element(&flexi_module, grp, 1, 3, TRUE);
+  dt_masks_model_drop_member_onto_member(&flexi_module, grp, 1, 3, TRUE);
   assert_layout("u{2,u{3,1,4}}");
 }
 
@@ -180,7 +180,7 @@ static void test_drop_onto_bottom_group(void **state)
 {
   dt_masks_form_t *grp = flexi_build("u{1,2,i{3,4}}");
 
-  dt_masks_model_drop_element_onto_element(&flexi_module, grp, 3, 1, FALSE);
+  dt_masks_model_drop_member_onto_member(&flexi_module, grp, 3, 1, FALSE);
   assert_layout("u{3,1,2,i{4}}");
 }
 
@@ -189,7 +189,7 @@ static void test_drop_onto_bottom_group(void **state)
 static void test_drop_emptying_group_keeps_it(void **state)
 {
   dt_masks_form_t *grp = flexi_build("u{u{1},i{2,3}}");
-  dt_masks_model_drop_element_onto_element(&flexi_module, grp, 1, 2, TRUE);
+  dt_masks_model_drop_member_onto_member(&flexi_module, grp, 1, 2, TRUE);
   assert_layout("u{u{},i{2,1,3}}");
 }
 
@@ -349,7 +349,7 @@ static void test_drop_onto_self_is_rejected(void **state)
 {
   dt_masks_form_t *grp = flexi_build("u{1,2,i{3}}");
 
-  assert_false(dt_masks_model_drop_element_onto_element(&flexi_module, grp, 2, 2, TRUE));
+  assert_false(dt_masks_model_drop_member_onto_member(&flexi_module, grp, 2, 2, TRUE));
   assert_layout("u{1,2,i{3}}");
 }
 
@@ -357,7 +357,7 @@ static void test_drop_of_unknown_element_is_rejected(void **state)
 {
   dt_masks_form_t *grp = flexi_build("u{1,2}");
 
-  assert_false(dt_masks_model_drop_element_onto_element(&flexi_module, grp, 77, 1, TRUE));
+  assert_false(dt_masks_model_drop_member_onto_member(&flexi_module, grp, 77, 1, TRUE));
   assert_layout("u{1,2}");
 }
 
@@ -371,7 +371,7 @@ static void test_drop_keeps_element_selected_in_new_group(void **state)
 {
   dt_masks_form_t *grp = flexi_build("u{1,2,i{3,4}}");
 
-  dt_masks_model_drop_element_onto_element(&flexi_module, grp, 1, 3, TRUE);
+  dt_masks_model_drop_member_onto_member(&flexi_module, grp, 1, 3, TRUE);
   assert_int_equal(flexi_bd.panel_selected_formid, 1);
   assert_int_equal(flexi_bd.panel_selected_group_cid, dt_masks_gui_group_cid_of_form(grp, 1));
   assert_int_equal(flexi_bd.panel_selected_group_cid, FLEXI_GID(1));
@@ -1645,10 +1645,10 @@ static void test_nested_points_are_found_with_their_group(void **state)
 static void test_nested_drop_stays_in_its_list(void **state)
 {
   dt_masks_form_t *grp = _two_levels();
-  assert_true(dt_masks_model_drop_element_onto_element(&flexi_module, grp, 11, 13, TRUE));
+  assert_true(dt_masks_model_drop_member_onto_member(&flexi_module, grp, 11, 13, TRUE));
   assert_layout("u{1,2,i{3,u{12,d{13,11}}}}");
 
-  assert_true(dt_masks_model_drop_element_onto_group(&flexi_module, grp, 13, FLEXI_GID(2)));
+  assert_true(dt_masks_model_drop_member_onto_group(&flexi_module, grp, 13, FLEXI_GID(2)));
   assert_layout("u{1,2,i{3,u{12,d{11},13}}}");
 }
 
@@ -1656,16 +1656,16 @@ static void test_nested_drop_stays_in_its_list(void **state)
 static void test_nested_drop_moves_across_levels(void **state)
 {
   dt_masks_form_t *grp = _two_levels();
-  assert_true(dt_masks_model_drop_element_onto_element(&flexi_module, grp, 1, 13, TRUE));
+  assert_true(dt_masks_model_drop_member_onto_member(&flexi_module, grp, 1, 13, TRUE));
   assert_layout("u{2,i{3,u{11,12,d{13,1}}}}");
   assert_int_equal(dt_masks_gui_group_point(grp, 1)->parentid, FLEXI_SUB(3));
 
-  assert_true(dt_masks_model_drop_element_onto_group(&flexi_module, grp, 12, FLEXI_GID(0)));
+  assert_true(dt_masks_model_drop_member_onto_group(&flexi_module, grp, 12, FLEXI_GID(0)));
   assert_layout("u{2,i{3,u{11,d{13,1}}},12}");
   assert_int_equal(dt_masks_gui_group_point(grp, 12)->parentid, flexi_group()->formid);
 
-  assert_false(dt_masks_model_drop_element_onto_element(&flexi_module, grp, FLEXI_SUB(2), 11, TRUE));
-  assert_false(dt_masks_model_drop_element_onto_group(&flexi_module, grp, FLEXI_SUB(2), FLEXI_GID(3)));
+  assert_false(dt_masks_model_drop_member_onto_member(&flexi_module, grp, FLEXI_SUB(2), 11, TRUE));
+  assert_false(dt_masks_model_drop_member_onto_group(&flexi_module, grp, FLEXI_SUB(2), FLEXI_GID(3)));
   assert_layout("u{2,i{3,u{11,d{13,1}}},12}");
 }
 
@@ -1673,32 +1673,11 @@ static void test_nested_drop_moves_across_levels(void **state)
 static void test_a_nested_group_goes_deeper(void **state)
 {
   dt_masks_form_t *grp = flexi_build("u{1,2,i{3,u{11,12,d{13}}},u{14}}");
-  assert_true(dt_masks_model_drop_element_onto_group(&flexi_module, grp, FLEXI_SUB(4), FLEXI_GID(2)));
+  assert_true(dt_masks_model_drop_member_onto_group(&flexi_module, grp, FLEXI_SUB(4), FLEXI_GID(2)));
   assert_layout("u{1,2,i{3,u{11,12,d{13},u{14}}}}");
-  assert_true(dt_masks_model_drop_element_onto_element(&flexi_module, grp, FLEXI_SUB(4), 13, TRUE));
+  assert_true(dt_masks_model_drop_member_onto_member(&flexi_module, grp, FLEXI_SUB(4), 13, TRUE));
   assert_layout("u{1,2,i{3,u{11,12,d{13,u{14}}}}}");
   assert_true(dt_is_valid_maskid(dt_masks_model_nest_new_group(grp, 0, FLEXI_GID(2))));
-}
-
-// a cluster moves between nesting levels as its elements do, one by one
-static void test_a_cluster_moves_across_levels(void **state)
-{
-  dt_masks_form_t *grp = _two_levels();
-  GList *ids = g_list_append(g_list_append(NULL, GINT_TO_POINTER(11)), GINT_TO_POINTER(12));
-  assert_true(dt_masks_gui_cluster_move(&flexi_module, ids, 3, FALSE, TRUE));
-  assert_layout("u{1,2,i{3,11,12,u{d{13}}}}");
-  assert_int_equal(dt_masks_gui_group_point(grp, 11)->parentid, FLEXI_SUB(1));
-  g_list_free(ids);
-
-  ids = g_list_append(g_list_append(NULL, GINT_TO_POINTER(1)), GINT_TO_POINTER(2));
-  assert_true(dt_masks_gui_cluster_move(&flexi_module, ids, FLEXI_GID(3), TRUE, FALSE));
-  assert_layout("u{i{3,11,12,u{d{13,1,2}}}}");
-  assert_int_equal(dt_masks_gui_group_point(grp, 1)->parentid, FLEXI_SUB(3));
-
-  // onto the group it is already in: nothing to do, as for one element
-  assert_false(dt_masks_gui_cluster_move(&flexi_module, ids, FLEXI_GID(3), TRUE, FALSE));
-  assert_layout("u{i{3,11,12,u{d{13,1,2}}}}");
-  g_list_free(ids);
 }
 
 // a shape the mask holds twice, once in a nested group: a drop acts on the
@@ -1995,7 +1974,7 @@ static void test_a_group_beside_a_nested_group_joins_its_holder(void **state)
 
 // nested groups shown as groups reorder among their holder's elements, and
 // go inside another group as elements
-static void test_a_nested_group_moves_as_an_element(void **state)
+static void test_a_nested_group_moves_as_a_member(void **state)
 {
   flexi_build("u{1,2,i{3,u{11},u{12}}}");
   assert_true(dt_masks_model_move_group(&flexi_module, FLEXI_GID(2), FLEXI_GID(3), TRUE, FALSE));
@@ -2210,7 +2189,6 @@ int main(void)
     cmocka_unit_test_teardown(test_nested_drop_stays_in_its_list, _teardown_nested),
     cmocka_unit_test_teardown(test_nested_drop_moves_across_levels, _teardown_nested),
     cmocka_unit_test_teardown(test_a_nested_group_goes_deeper, _teardown_nested),
-    cmocka_unit_test_teardown(test_a_cluster_moves_across_levels, _teardown_nested),
     cmocka_unit_test_teardown(test_a_drop_acts_on_the_row_reference, _teardown_nested),
     cmocka_unit_test_teardown(test_nesting_stops_where_walks_stop, _teardown_nested),
     cmocka_unit_test_teardown(test_add_a_group_inside_a_group, _teardown_nested),
@@ -2228,7 +2206,7 @@ int main(void)
     cmocka_unit_test_teardown(test_a_nested_group_does_not_move_beside_the_mask, _teardown_nested),
     cmocka_unit_test_teardown(test_a_faded_nested_group_stays_nested, _teardown_nested),
     cmocka_unit_test_teardown(test_a_group_beside_a_nested_group_joins_its_holder, _teardown_nested),
-    cmocka_unit_test_teardown(test_a_nested_group_moves_as_an_element, _teardown_nested),
+    cmocka_unit_test_teardown(test_a_nested_group_moves_as_a_member, _teardown_nested),
     cmocka_unit_test_teardown(test_new_element_lands_in_a_nested_target, _teardown_nested),
     cmocka_unit_test_teardown(test_solo_inside_a_nested_group_keeps_the_path,
                               _teardown_nested),

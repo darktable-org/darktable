@@ -54,7 +54,7 @@
 // back. A test is then a round trip through the model:
 //
 //     flexi_build("u{1,2,i{3}}");
-//     dt_masks_model_drop_element_onto_element(mod, grp, 1, 3, TRUE);
+//     dt_masks_model_drop_member_onto_member(mod, grp, 1, 3, TRUE);
 //     assert_layout("u{2,i{3,1}}");
 
 #include "common/darktable.h"

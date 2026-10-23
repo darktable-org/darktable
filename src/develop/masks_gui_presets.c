@@ -41,7 +41,7 @@
 // a "layout" is the skeleton of a flexi mask: the mask's own group and the
 // groups nested in it, each with its flexi operator, name and opacity
 // -- nothing else: no shapes, no channel or raster elements. Captured and
-// applied as an array of _flexi_layout_node_t in pre-order, the mask's own
+// applied as an array of dt_masks_layout_node_t in pre-order, the mask's own
 // group first and every group's nested groups bottom-up after it, each naming
 // its holder by index.
 //
@@ -51,20 +51,6 @@
 // layout touches only the mask's groups
 #define FLEXI_GROUP_PRESET_OP "flexi_mask_groups"
 #define FLEXI_GROUP_PRESET_VERSION 1
-
-// one group of a layout. Written to the database verbatim, as one blob of
-// these, so every field is fixed-size
-typedef struct _flexi_layout_node_t
-{
-  // flexi operator bits (DT_MASKS_STATE_FLEXI_OP)
-  dt_masks_state_t flexi_op;
-  float opacity;
-  // same width as dt_masks_point_group_t.name, the group's marker's name.
-  // Unused for the mask's own group, which is always "whole mask"
-  char name[128];
-  // index of the holding group's node, -1 for the mask's own group
-  int32_t parent;
-} _flexi_layout_node_t;
 
 // the groups nested in `list`'s groups, as nodes under `parent`, bottom-up
 static void _flexi_layout_capture_nested(GArray *out,
@@ -82,112 +68,213 @@ static void _flexi_layout_capture_nested(GArray *out,
     // a nested group is one group: its marker heads its list
     const dt_masks_point_group_t *marker = dt_masks_group_marker(sub);
     if(!marker) continue;
-    _flexi_layout_node_t node = { .flexi_op = marker->state & DT_MASKS_STATE_FLEXI_OP,
-                                  .opacity = marker->group_opacity,
-                                  .parent = parent };
+    dt_masks_layout_node_t node = { .flexi_op = marker->state & DT_MASKS_STATE_FLEXI_OP,
+                                    .opacity = marker->group_opacity,
+                                    .parent = parent };
     dt_strlcpy_fixed_to_fixed(node.name, sizeof(node.name), marker->name, sizeof(marker->name));
     g_array_append_val(out, node);
     _flexi_layout_capture_nested(out, sub, (int32_t)out->len - 1, depth + 1);
   }
 }
 
-// the module's group skeleton, in pre-order (see _flexi_layout_node_t).
-// Caller frees the returned array
-static _flexi_layout_node_t *_flexi_layout_capture(dt_iop_module_t *module, int *n_out)
+// the group skeleton of group `cid` of the module's mask, in pre-order (see
+// dt_masks_layout_node_t): the group itself first, as the layout's own group,
+// then the groups nested in it. INVALID_MASKID, or the mask's own group, is
+// the whole mask. Caller frees the returned array
+static dt_masks_layout_node_t *_flexi_layout_capture(dt_iop_module_t *module,
+                                                     const dt_mask_id_t cid,
+                                                     int *n_out)
 {
   dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
-  GArray *out = g_array_new(FALSE, FALSE, sizeof(_flexi_layout_node_t));
+  GArray *out = g_array_new(FALSE, FALSE, sizeof(dt_masks_layout_node_t));
 
-  // a mask with no group form yet has the one group the panel shows for it
   const dt_masks_point_group_t *root = dt_masks_group_marker(grp);
-  const _flexi_layout_node_t node = {
-    .flexi_op = root ? root->state & DT_MASKS_STATE_FLEXI_OP : 0,
-    .opacity = root ? root->group_opacity : 1.0f,
+  const gboolean whole = !dt_is_valid_maskid(cid) || (root && cid == root->formid);
+  const dt_masks_form_t *list = whole ? grp : dt_masks_model_nested_group_of(grp, cid);
+  // a mask with no group form yet has the group the panel shows for it (see
+  // dt_masks_gui_default_layout_root)
+  dt_masks_point_group_t none = { .group_opacity = 1.0f };
+  if(!grp) dt_masks_gui_default_layout_root(&none);
+  const dt_masks_point_group_t *head = grp ? dt_masks_group_marker(list) : &none;
+  const dt_masks_layout_node_t node = {
+    .flexi_op = head ? head->state & DT_MASKS_STATE_FLEXI_OP : 0,
+    .opacity = head ? head->group_opacity : 1.0f,
     .parent = -1
   };
   g_array_append_val(out, node);
-  _flexi_layout_capture_nested(out, grp, 0, 1);
+  _flexi_layout_capture_nested(out, list, 0, 1);
 
   *n_out = out->len;
-  return (_flexi_layout_node_t *)g_array_free(out, FALSE);
+  return (dt_masks_layout_node_t *)g_array_free(out, FALSE);
 }
 
-// replaces the module's whole mask -- elements and groups alike -- with the
-// empty groups of the layout `nodes`, each given its note key from `keys`
-// (a built-in's; NULL for a user preset, which has no notes). Never asks for
-// confirmation itself; callers that might be discarding elements confirm
-// first (see _flexi_preset_apply_confirmed). `wipe` FALSE skips the reset, for
-// a mask with no group form yet: there is nothing to replace, and the reset
-// would also clear a whole-mask refinement, the very edit that may have just
-// switched the mask on (see _blendop_mask_enable)
-static void _flexi_layout_apply(dt_iop_module_t *module,
-                                const _flexi_layout_node_t *nodes,
-                                const int n,
-                                const gchar *const *keys,
-                                const gboolean wipe)
+// give the layout's own group, whose marker is `head`, the settings of the
+// layout's first node `node`, and its note key `key` (NULL for none)
+static void _flexi_layout_set_head(dt_masks_point_group_t *head,
+                                   const dt_masks_layout_node_t *node,
+                                   const gchar *key)
 {
-  dt_iop_gui_blend_data_t *bd = module->blend_data;
-  if(wipe) dt_masks_gui_reset_mask_core(module);
-  dt_mask_id_t root_cid = INVALID_MASKID;
-  dt_masks_form_t *grp = dt_masks_gui_module_flexi_group(module, &root_cid);
-  if(!grp || n <= 0 || nodes[0].parent != -1) return;
-  // the reset left the mask's own group, empty: the layout's first node
-  dt_masks_point_group_t *root = dt_masks_group_marker(grp);
-  if(!root) return;
-  root->state = (root->state & ~DT_MASKS_STATE_FLEXI_OP)
-                | (nodes[0].flexi_op & DT_MASKS_STATE_FLEXI_OP);
-  root->group_opacity = nodes[0].opacity;
-  dt_strlcpy_to_fixed(root->preset_note, keys ? keys[0] : "", sizeof(root->preset_note));
+  head->state = (head->state & ~DT_MASKS_STATE_FLEXI_OP)
+                | (node->flexi_op & DT_MASKS_STATE_FLEXI_OP);
+  head->group_opacity = node->opacity;
+  dt_strlcpy_to_fixed(head->preset_note, key ? key : "", sizeof(head->preset_note));
+}
+
+// `keys` are a built-in's; a user preset has no notes
+dt_mask_id_t dt_masks_model_layout_build_at(dt_masks_form_t *grp,
+                                            dt_masks_point_group_t *head,
+                                            const dt_masks_layout_node_t *nodes,
+                                            const int n,
+                                            const gchar *const *keys,
+                                            const gboolean keep_head,
+                                            int *skipped)
+{
+  if(skipped) *skipped = 0;
+  if(!head || n <= 0 || nodes[0].parent != -1) return INVALID_MASKID;
+  if(!keep_head) _flexi_layout_set_head(head, &nodes[0], keys ? keys[0] : NULL);
 
   dt_mask_id_t *cids = g_new(dt_mask_id_t, n);
-  cids[0] = root->formid;
+  cids[0] = head->formid;
   dt_mask_id_t first_nested = INVALID_MASKID;
   for(int i = 1; i < n; i++)
   {
     cids[i] = INVALID_MASKID;
     // pre-order: a holder always comes before what it holds
     const int32_t parent = nodes[i].parent;
-    if(parent < 0 || parent >= i || !dt_is_valid_maskid(cids[parent])) continue;
-    cids[i] = dt_masks_model_nest_new_group(grp, nodes[i].flexi_op, cids[parent]);
+    if(parent >= 0 && parent < i && dt_is_valid_maskid(cids[parent]))
+      cids[i] = dt_masks_model_nest_new_group(grp, nodes[i].flexi_op, cids[parent]);
     dt_masks_point_group_t *marker = dt_masks_gui_group_point(grp, cids[i]);
-    if(!marker) continue;
+    if(!marker)
+    {
+      if(skipped) (*skipped)++;
+      continue;
+    }
     marker->group_opacity = nodes[i].opacity;
     dt_strlcpy_to_fixed(marker->name, nodes[i].name, sizeof(marker->name));
     dt_strlcpy_to_fixed(marker->preset_note, keys ? keys[i] : "", sizeof(marker->preset_note));
     if(!dt_is_valid_maskid(first_nested)) first_nested = cids[i];
   }
   g_free(cids);
+  return first_nested;
+}
+
+// replaces the module's whole mask with the
+// empty groups of the layout `nodes` (see dt_masks_model_layout_build_at).
+// Never asks for confirmation itself; a caller that may be discarding elements
+// asks first (see _flexi_layout_apply_within). `wipe` FALSE skips the reset,
+// for a mask with no group form yet: there is nothing to replace, and the
+// reset would also clear a whole-mask refinement, the very edit that may have
+// just switched the mask on (see _blendop_mask_enable)
+static void _flexi_layout_apply(dt_iop_module_t *module,
+                                const dt_masks_layout_node_t *nodes,
+                                const int n,
+                                const gchar *const *keys,
+                                const gboolean wipe)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(wipe) dt_masks_gui_reset_mask_core(module);
+  // created plain, not through dt_masks_gui_module_flexi_group, which would
+  // build the default layout into it before this one
+  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
+  if(!grp && darktable.develop) grp = dt_masks_module_group_create(darktable.develop, module);
+  // the reset left the mask's own group, empty: the layout's first node
+  dt_masks_point_group_t *root = dt_masks_group_marker(grp);
+  if(!root || n <= 0 || nodes[0].parent != -1) return;
+  const dt_mask_id_t first_nested =
+    dt_masks_model_layout_build_at(grp, root, nodes, n, keys, FALSE, NULL);
 
   // start where the next element most likely goes: the bottom nested group,
   // or the mask's own group when the layout nests none
   bd->panel_selected_formid = INVALID_MASKID;
   bd->panel_selected_group_cid =
     dt_is_valid_maskid(first_nested) ? first_nested : root->formid;
-  // every note opens, to show what the new layout is for (see
-  // _group_note_is_open); switches set on the old groups are gone with them
-  bd->masks_notes_all_open = TRUE;
-  if(bd->masks_note_open) g_hash_table_remove_all(bd->masks_note_open);
   dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
   dt_masks_gui_build_list(module);
   dt_masks_gui_refresh_canvas_edit(module);
 }
 
-// is this an element an applied layout would discard? A nested group itself
-// is not: the layout replaces those anyway. A member naming no form, or its
-// own group, counts, as the layout would lose it too
-static gboolean _is_layout_content(const dt_masks_point_group_t *pt,
-                                   const dt_masks_form_t *form,
-                                   const dt_masks_form_t *owner,
-                                   void *data)
+// how a preset goes into the selected group (see _flexi_preset_row_new)
+typedef enum _flexi_preset_choice_t
 {
-  return !dt_masks_point_is_marker(pt)
-         && (!form || form == owner || !(form->type & DT_MASKS_GROUP));
-}
+  // the group drops what it holds and becomes the preset
+  _PRESET_REPLACE = 0,
+  // the preset's groups go into the group, which keeps its own settings
+  _PRESET_MERGE,
+  // the preset goes into the group whole, as a new group
+  _PRESET_ADD
+} _flexi_preset_choice_t;
 
-static gboolean _flexi_layout_has_content(dt_iop_module_t *module)
+// applies the layout `nodes` within group `cid` of the module's mask, the
+// selected group the presets button was opened for (INVALID_MASKID for a
+// mask with no group form yet), as `how` says (see _flexi_preset_choice_t).
+// Replacing keeps the group's name, and for the mask's own group is the whole
+// mask's reset (see _flexi_layout_apply); it asks first when it would discard
+// elements. The group added is named `name`. The group replaced, merged into
+// or added is selected, which also opens its note
+static void _flexi_layout_apply_within(dt_iop_module_t *module,
+                                       const dt_mask_id_t cid,
+                                       const dt_masks_layout_node_t *nodes,
+                                       const int n,
+                                       const gchar *const *keys,
+                                       const _flexi_preset_choice_t how,
+                                       const gchar *name)
 {
-  return dt_masks_group_walk(darktable.develop->forms, dt_masks_gui_module_mask_group(module),
-                             _is_layout_content, NULL);
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(n <= 0 || nodes[0].parent != -1) return;
+  dt_masks_form_t *mask = dt_masks_gui_module_mask_group(module);
+  const dt_masks_point_group_t *root = dt_masks_group_marker(mask);
+  const gboolean whole = !dt_is_valid_maskid(cid) || (root && cid == root->formid);
+  if(how == _PRESET_REPLACE
+     && dt_masks_model_group_has_elements(whole ? mask : dt_masks_model_nested_group_of(mask, cid))
+     && !dt_gui_show_yes_no_dialog(_("apply mask layout preset?"), "",
+                                   whole ? _("this replaces the group layout and removes every"
+                                             " element currently in this mask. continue?")
+                                         : _("this replaces the group's layout and removes every"
+                                             " element currently in it. continue?")))
+    return;
+  if(how == _PRESET_REPLACE && whole)
+  {
+    _flexi_layout_apply(module, nodes, n, keys, TRUE);
+    return;
+  }
+
+  // a mask with no group form yet gets one, with the default layout the
+  // panel shows for it (see dt_masks_gui_module_flexi_group)
+  dt_mask_id_t target = cid;
+  dt_masks_form_t *grp = dt_masks_gui_module_flexi_group(module, &target);
+  if(!grp) return;
+  dt_masks_point_group_t *head = NULL;
+  if(how == _PRESET_ADD)
+  {
+    head = dt_masks_gui_group_point(grp, dt_masks_model_nest_new_group(grp, nodes[0].flexi_op,
+                                                                       target));
+    if(head) dt_strlcpy_to_fixed(head->name, name, sizeof(head->name));
+  }
+  else
+  {
+    if(how == _PRESET_REPLACE) dt_masks_gui_empty_group_core(module, target);
+    head = dt_masks_gui_group_point(grp, target);
+  }
+  if(!head)
+  {
+    // the group replaced or merged into is always there; a new one may not be
+    if(how == _PRESET_ADD)
+      dt_control_log(_("this group is nested too deep to add a group to it"));
+    return;
+  }
+  int skipped = 0;
+  dt_masks_model_layout_build_at(grp, head, nodes, n, keys, how == _PRESET_MERGE, &skipped);
+  if(skipped)
+    dt_control_log(ngettext("%d group of the preset would nest too deep and was left out",
+                            "%d groups of the preset would nest too deep and were left out",
+                            skipped),
+                   skipped);
+
+  bd->panel_selected_formid = INVALID_MASKID;
+  bd->panel_selected_group_cid = head->formid;
+  dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
+  dt_masks_gui_build_list(module);
+  dt_masks_gui_refresh_canvas_edit(module);
 }
 
 // reads back every user-saved layout preset's name + node array. Caller frees
@@ -195,7 +282,7 @@ static gboolean _flexi_layout_has_content(dt_iop_module_t *module)
 typedef struct _flexi_preset_t
 {
   gchar *name;
-  _flexi_layout_node_t *nodes;
+  dt_masks_layout_node_t *nodes;
   int n;
 } _flexi_preset_t;
 
@@ -213,12 +300,12 @@ static GList *_flexi_preset_list_load(void)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, FLEXI_GROUP_PRESET_VERSION);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int n = sqlite3_column_bytes(stmt, 1) / (int)sizeof(_flexi_layout_node_t);
+    const int n = sqlite3_column_bytes(stmt, 1) / (int)sizeof(dt_masks_layout_node_t);
     if(n <= 0) continue;
     _flexi_preset_t *p = calloc(1, sizeof(_flexi_preset_t));
     p->name = g_strdup((const gchar *)sqlite3_column_text(stmt, 0));
-    p->nodes = calloc(n, sizeof(_flexi_layout_node_t));
-    memcpy(p->nodes, sqlite3_column_blob(stmt, 1), n * sizeof(_flexi_layout_node_t));
+    p->nodes = calloc(n, sizeof(dt_masks_layout_node_t));
+    memcpy(p->nodes, sqlite3_column_blob(stmt, 1), n * sizeof(dt_masks_layout_node_t));
     p->n = n;
     out = g_list_append(out, p);
   }
@@ -239,6 +326,30 @@ static void _flexi_preset_list_free(GList *presets)
   g_list_free_full(presets, _flexi_preset_free);
 }
 
+// the user presets as last read, owned here. The default layout is looked up
+// on every list signature (see _default_layout), too often to query the
+// database each time. Every change made here forgets them, and the presets
+// popover reads them afresh, for one made elsewhere
+static GList *_user_presets = NULL;
+static gboolean _user_presets_read = FALSE;
+
+static GList *_flexi_user_presets(void)
+{
+  if(!_user_presets_read)
+  {
+    _user_presets = _flexi_preset_list_load();
+    _user_presets_read = TRUE;
+  }
+  return _user_presets;
+}
+
+static void _flexi_user_presets_forget(void)
+{
+  _flexi_preset_list_free(_user_presets);
+  _user_presets = NULL;
+  _user_presets_read = FALSE;
+}
+
 // the preset called `name` in the list `presets`, or NULL
 static const _flexi_preset_t *_flexi_preset_find(GList *presets, const gchar *name)
 {
@@ -250,13 +361,13 @@ static const _flexi_preset_t *_flexi_preset_find(GList *presets, const gchar *na
 // is the layout `nodes` what a mask is anyway before it has a group form: its
 // one group, a union, at full opacity? Then applying it would only add a
 // history item
-static gboolean _flexi_layout_is_plain(const _flexi_layout_node_t *nodes, const int n)
+static gboolean _flexi_layout_is_plain(const dt_masks_layout_node_t *nodes, const int n)
 {
   return n == 1 && !nodes[0].flexi_op && nodes[0].opacity == 1.0f;
 }
 
 static void
-_flexi_preset_save_to_db(const gchar *name, const _flexi_layout_node_t *nodes, int n)
+_flexi_preset_save_to_db(const gchar *name, const dt_masks_layout_node_t *nodes, int n)
 {
   sqlite3_stmt *stmt;
   // clang-format off
@@ -274,10 +385,11 @@ _flexi_preset_save_to_db(const gchar *name, const _flexi_layout_node_t *nodes, i
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, FLEXI_GROUP_PRESET_OP, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, FLEXI_GROUP_PRESET_VERSION);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, nodes, (int)(n * sizeof(_flexi_layout_node_t)),
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, nodes, (int)(n * sizeof(dt_masks_layout_node_t)),
                              SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+  _flexi_user_presets_forget();
 }
 
 static void _flexi_preset_delete_from_db(const gchar *name)
@@ -291,23 +403,55 @@ static void _flexi_preset_delete_from_db(const gchar *name)
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, name, -1, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+  _flexi_user_presets_forget();
 }
 
-// applying a preset discards any real shapes currently in the mask (it only
-// ever restores the group skeleton) -- confirm first, same as the plain reset
-// button, whenever there is anything to lose.
-static void _flexi_preset_apply_confirmed(dt_iop_module_t *module,
-                                          const _flexi_layout_node_t *nodes,
-                                          const int n,
-                                          const gchar *const *keys)
+// what a way of applying a preset does, to the group or to the whole mask
+static const gchar *_flexi_preset_explain(const _flexi_preset_choice_t how, const gboolean group)
 {
-  if(_flexi_layout_has_content(module)
-     && !dt_gui_show_yes_no_dialog(
-       _("apply mask layout preset?"), "",
-       _("this replaces the group layout and removes every element "
-         "currently in this mask. continue?")))
-    return;
-  _flexi_layout_apply(module, nodes, n, keys, TRUE);
+  switch(how)
+  {
+    case _PRESET_REPLACE:
+      return group ? _("the group drops every member it holds and becomes the"
+                       " preset, keeping its name")
+                   : _("the mask starts over as the preset, every member in it"
+                       " removed");
+    case _PRESET_MERGE:
+      return group ? _("the preset's groups go into the group, next to what it holds; the"
+                       " group keeps its own operator and opacity")
+                   : _("the preset's groups go into the mask, next to what it holds; the"
+                       " mask keeps its own operator and opacity");
+    default:
+      return group ? _("the preset goes into the group whole, as a new group next to what"
+                       " it holds")
+                   : _("the preset goes into the mask whole, as a new group next to what"
+                       " it holds");
+  }
+}
+
+// the tooltip of a way of applying a preset: its name and what it does
+static gchar *_flexi_preset_how_tip(const _flexi_preset_choice_t how, const gboolean group)
+{
+  const gchar *title = how == _PRESET_REPLACE ? _("replace")
+                       : how == _PRESET_MERGE ? _("merge")
+                                              : _("add as subgroup");
+  return g_strdup_printf("%s\n%s", title, _flexi_preset_explain(how, group));
+}
+
+// the way the preset is applied is picked in the presets popover, by the button
+// clicked. The group it goes into is the one the presets button was opened for
+// (see _masks_presets_pressed in blend_gui.c)
+static void _flexi_preset_apply_picked(GtkWidget *anchor,
+                                       const dt_masks_layout_node_t *nodes,
+                                       const int n,
+                                       const gchar *const *keys,
+                                       const gchar *name,
+                                       const _flexi_preset_choice_t how)
+{
+  dt_iop_module_t *module = g_object_get_data(G_OBJECT(anchor), "module");
+  if(!module) return;
+  const dt_mask_id_t cid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(anchor), "presets-cid"));
+  _flexi_layout_apply_within(module, cid, nodes, n, keys, how, name);
 }
 
 
@@ -359,7 +503,7 @@ typedef struct _flexi_builtin_t
   gchar *id;          // stable, the note keys and the default preset refer to it
   gchar *name;        // untranslated
   gchar *description; // untranslated, may be NULL
-  GArray *nodes;      // _flexi_layout_node_t, pre-order (see there); names untranslated
+  GArray *nodes;      // dt_masks_layout_node_t, pre-order (see there); names untranslated
   GPtrArray *keys;    // note key per node, whether the file has notes for it or not
 } _flexi_builtin_t;
 
@@ -476,7 +620,7 @@ static gboolean _flexi_builtin_parse_group(_flexi_builtin_t *b,
   GPtrArray *pages = g_ptr_array_new_with_free_func(g_free);
   gchar *key = NULL;
 
-  _flexi_layout_node_t node = { .opacity = 1.0f, .parent = parent };
+  dt_masks_layout_node_t node = { .opacity = 1.0f, .parent = parent };
   const _flexi_group_src_t *src = _flexi_chain_find(chain, nc, "operator");
   const gchar *op = src ? _json_string(src->obj, "operator") : NULL;
   gboolean known = !op;
@@ -647,7 +791,7 @@ static GPtrArray *_flexi_builtins_get(void)
     b->id = g_strdup(id);
     b->name = g_strdup(name);
     b->description = g_strdup(_json_string(p, "description"));
-    b->nodes = g_array_new(FALSE, TRUE, sizeof(_flexi_layout_node_t));
+    b->nodes = g_array_new(FALSE, TRUE, sizeof(dt_masks_layout_node_t));
     b->keys = g_ptr_array_new_with_free_func(g_free);
     // a preset's notes only count if all of it parses
     GHashTable *notes = g_hash_table_new_full(g_str_hash, g_str_equal, g_free,
@@ -701,10 +845,10 @@ gboolean dt_masks_gui_preset_notes_shown(void)
 
 // a built-in, as the node array the apply path takes, its group names
 // translated. Caller frees
-static _flexi_layout_node_t *_flexi_builtin_nodes(const _flexi_builtin_t *b)
+static dt_masks_layout_node_t *_flexi_builtin_nodes(const _flexi_builtin_t *b)
 {
-  _flexi_layout_node_t *nodes = g_new(_flexi_layout_node_t, b->nodes->len);
-  memcpy(nodes, b->nodes->data, b->nodes->len * sizeof(_flexi_layout_node_t));
+  dt_masks_layout_node_t *nodes = g_new(dt_masks_layout_node_t, b->nodes->len);
+  memcpy(nodes, b->nodes->data, b->nodes->len * sizeof(dt_masks_layout_node_t));
   for(guint i = 0; i < b->nodes->len; i++)
   {
     // gettext hands back its argument when there is no translation, and
@@ -715,31 +859,27 @@ static _flexi_layout_node_t *_flexi_builtin_nodes(const _flexi_builtin_t *b)
   return nodes;
 }
 
-static void _flexi_builtin_apply(dt_iop_module_t *module, const _flexi_builtin_t *b)
-{
-  _flexi_layout_node_t *nodes = _flexi_builtin_nodes(b);
-  _flexi_preset_apply_confirmed(module, nodes, b->nodes->len, (const gchar **)b->keys->pdata);
-  g_free(nodes);
-}
-
 // the same for a built-in, which also has to come without notes
 static gboolean _flexi_builtin_is_plain(const _flexi_builtin_t *b)
 {
-  return _flexi_layout_is_plain((const _flexi_layout_node_t *)b->nodes->data, b->nodes->len)
+  return _flexi_layout_is_plain((const dt_masks_layout_node_t *)b->nodes->data, b->nodes->len)
          && !dt_masks_gui_preset_notes(g_ptr_array_index(b->keys, 0));
 }
 
-static void _flexi_preset_save_action(GSimpleAction *action,
-                                      GVariant *parameter,
-                                      gpointer user_data)
+static void _flexi_preset_save_clicked(GtkWidget *button, gpointer user_data)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+  dt_iop_module_t *module = g_object_get_data(G_OBJECT(user_data), "module");
   if(darktable.gui->active_popover_menu)
     gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
+  if(!module) return;
+  // read before the dialog, which runs a nested main loop without being modal:
+  // the presets button can be opened for another group while it waits
+  const dt_mask_id_t cid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(user_data), "presets-cid"));
   char *name = dt_gui_show_standalone_string_dialog(
     _("save mask layout preset"),
     _("enter a name for this preset\n"
-      "(only the group layout is saved, not the shapes/channels inside it):"),
+      "(only the layout of the selected group and the groups in it is saved,\n"
+      "not the shapes/channels inside them):"),
     _("preset name"), _("cancel"), _("save"));
   if(!name) return;
   gboolean reserved = FALSE;
@@ -754,125 +894,279 @@ static void _flexi_preset_save_action(GSimpleAction *action,
   else
   {
     int n = 0;
-    _flexi_layout_node_t *nodes = _flexi_layout_capture(module, &n);
+    dt_masks_layout_node_t *nodes = _flexi_layout_capture(module, cid, &n);
     if(n > 0) _flexi_preset_save_to_db(name, nodes, n);
     free(nodes);
   }
   g_free(name);
 }
 
-static void _flexi_preset_builtin_action(GSimpleAction *action,
-                                         GVariant *parameter,
-                                         gpointer user_data)
+// a row of the presets popover: a preset and the ways to apply it
+typedef struct _flexi_preset_row_t
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  const gchar *id = g_variant_get_string(parameter, NULL);
-  if(darktable.gui->active_popover_menu)
-    gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
-  const _flexi_builtin_t *b = _flexi_builtin_by_id(id);
-  if(b) _flexi_builtin_apply(module, b);
+  GtkWidget *anchor; // the presets button, see _flexi_preset_apply_picked
+  gchar *id;         // a built-in's id, or a user preset's name
+  gboolean builtin;
+} _flexi_preset_row_t;
+
+static void _flexi_preset_row_free(gpointer data)
+{
+  _flexi_preset_row_t *row = data;
+  g_free(row->id);
+  g_free(row);
 }
 
-static void _flexi_preset_user_action(GSimpleAction *action,
-                                      GVariant *parameter,
-                                      gpointer user_data)
+static void _flexi_preset_popdown(void)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  const gchar *name = g_variant_get_string(parameter, NULL);
   if(darktable.gui->active_popover_menu)
     gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
-  GList *user_presets = _flexi_preset_list_load();
-  const _flexi_preset_t *preset = _flexi_preset_find(user_presets, name);
-  if(preset) _flexi_preset_apply_confirmed(module, preset->nodes, preset->n, NULL);
-  _flexi_preset_list_free(user_presets);
 }
 
-static void _flexi_preset_delete_action(GSimpleAction *action,
-                                        GVariant *parameter,
-                                        gpointer user_data)
+static void _flexi_preset_option_clicked(GtkWidget *button, gpointer data)
 {
-  const gchar *name = g_variant_get_string(parameter, NULL);
-  if(darktable.gui->active_popover_menu)
-    gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
-  if(name && dt_gui_show_yes_no_dialog(_("delete preset?"), "",
-                                       _("do you really want to delete the mask layout "
-                                         "preset `%s'?"),
-                                       name))
+  const _flexi_preset_row_t *row = data;
+  const _flexi_preset_choice_t how =
+    GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "how"));
+  _flexi_preset_popdown();
+  if(row->builtin)
   {
-    _flexi_preset_delete_from_db(name);
+    const _flexi_builtin_t *b = _flexi_builtin_by_id(row->id);
+    if(!b) return;
+    dt_masks_layout_node_t *nodes = _flexi_builtin_nodes(b);
+    _flexi_preset_apply_picked(row->anchor, nodes, b->nodes->len,
+                               (const gchar **)b->keys->pdata, _(b->name), how);
+    g_free(nodes);
+    return;
+  }
+  const _flexi_preset_t *preset = _flexi_preset_find(_flexi_user_presets(), row->id);
+  if(preset)
+    _flexi_preset_apply_picked(row->anchor, preset->nodes, preset->n, NULL, preset->name, how);
+}
+
+static void _flexi_preset_delete_clicked(GtkWidget *button, gpointer data)
+{
+  const _flexi_preset_row_t *row = data;
+  _flexi_preset_popdown();
+  if(dt_gui_show_yes_no_dialog(_("delete preset?"), "",
+                               _("do you really want to delete the mask layout "
+                                 "preset `%s'?"),
+                               row->id))
+    _flexi_preset_delete_from_db(row->id);
+}
+
+// an icon button of a preset's row. One that does not apply to the preset
+// keeps its room, invisible and inert, so that the buttons of a kind line up
+// down the rows
+static GtkWidget *_flexi_preset_row_button(GtkWidget *box,
+                                           DTGTKCairoPaintIconFunc paint,
+                                           const gchar *tip,
+                                           GCallback callback,
+                                           gpointer row)
+{
+  GtkWidget *button = dtgtk_button_new(paint, 0, NULL);
+  if(tip)
+  {
+    gtk_widget_set_tooltip_text(button, tip);
+    g_signal_connect(button, "clicked", G_CALLBACK(callback), row);
+  }
+  else
+  {
+    gtk_widget_set_opacity(button, 0.0);
+    gtk_widget_set_sensitive(button, FALSE);
+    gtk_widget_set_can_focus(button, FALSE);
+  }
+  gtk_box_pack_start(GTK_BOX(box), button, FALSE, FALSE, 0);
+  return button;
+}
+
+// the groups of a layout as a tree, one line per group: its operator, its name
+// when it has one and its opacity when below full. The first line is the
+// layout's own group, the rest hang from it. The nested groups of a group are
+// listed top first, as the panel does, which is the reverse of their order in
+// the nodes. `prefix` is what the lines below this group start with
+static void _flexi_layout_outline_add(GString *out,
+                                      const dt_masks_layout_node_t *nodes,
+                                      const int n,
+                                      const int i,
+                                      const gchar *prefix)
+{
+  const dt_masks_flexi_op_t *op = &dt_masks_flexi_ops[0];
+  for(int k = 1; k < DT_MASKS_FLEXI_OPS_COUNT; k++)
+    if(nodes[i].flexi_op & dt_masks_flexi_ops[k].bit) op = &dt_masks_flexi_ops[k];
+  g_string_append(out, _(op->short_name));
+  if(nodes[i].parent >= 0 && nodes[i].name[0])
+    g_string_append_printf(out, " (%s)", nodes[i].name);
+  if(nodes[i].opacity < 1.0f)
+    g_string_append_printf(out, ", %d%%", (int)roundf(nodes[i].opacity * 100.0f));
+
+  int last = -1;
+  for(int j = n - 1; j > i; j--)
+    if(nodes[j].parent == i) last = j;
+  for(int j = n - 1; j > i; j--)
+  {
+    if(nodes[j].parent != i) continue;
+    // the last group listed closes the branch
+    const gboolean closes = j == last;
+    g_string_append_printf(out, "\n%s%s", prefix, closes ? "\u2514\u2500 " : "\u251c\u2500 ");
+    gchar *below = g_strdup_printf("%s%s", prefix, closes ? "   " : "\u2502  ");
+    _flexi_layout_outline_add(out, nodes, n, j, below);
+    g_free(below);
   }
 }
 
-// appends a "presets" section (group-layout presets) directly to `menu` --
-// the menu of the toolbar's presets button (see _masks_presets_pressed)
-void dt_masks_gui_add_presets_menu(GMenu *menu, GtkWidget *anchor, dt_iop_module_t *module)
+// a user preset's delete button (a built-in cannot be deleted, and has none),
+// then the preset's name, which adds it as a subgroup (the way that loses
+// nothing), then a button per way of applying it, with its own icon: replace,
+// merge and add as subgroup. A preset with no groups inside (`n` <= 1) has
+// nothing to merge
+static GtkWidget *_flexi_preset_row_new(GtkWidget *anchor,
+                                        const gchar *id,
+                                        const gboolean builtin,
+                                        const gchar *label,
+                                        const gchar *description,
+                                        const dt_masks_layout_node_t *nodes,
+                                        const int n)
 {
-  GActionGroup *action_group = gtk_widget_get_action_group(anchor, "masks_presets");
-  if(action_group == NULL)
+  _flexi_preset_row_t *row = g_new0(_flexi_preset_row_t, 1);
+  row->anchor = anchor;
+  row->id = g_strdup(id);
+  row->builtin = builtin;
+  const gboolean group = g_object_get_data(G_OBJECT(anchor), "presets-group") != NULL;
+
+  GtkWidget *box = dt_gui_hbox();
+  if(!builtin)
   {
-    GActionEntry action_entries[] =
-    {
-      { "builtin", _flexi_preset_builtin_action, "s", NULL },
-      { "user",    _flexi_preset_user_action,    "s", NULL },
-      { "delete",  _flexi_preset_delete_action,  "s", NULL },
-      { "save",    _flexi_preset_save_action,    NULL, NULL },
-    };
-    action_group = G_ACTION_GROUP(g_simple_action_group_new());
-    g_action_map_add_action_entries(G_ACTION_MAP(action_group), action_entries,
-                                    G_N_ELEMENTS(action_entries), module);
-    gtk_widget_insert_action_group(anchor, "masks_presets", action_group);
-    g_object_unref(action_group);
+    GtkWidget *del = _flexi_preset_row_button(box, dtgtk_cairo_paint_remove,
+                                              _("delete this preset"),
+                                              G_CALLBACK(_flexi_preset_delete_clicked), row);
+    dt_gui_add_class(del, "dt_masks_preset_delete");
   }
 
-  GMenu *sec_builtins = g_menu_new();
+  GtkWidget *name = gtk_model_button_new();
+  // a model button reads an underscore of its text as a mnemonic
+  gchar *label_unm = dt_str_unmnemonic(label);
+  g_object_set(name, "text", label_unm, NULL);
+  g_free(label_unm);
+  gtk_widget_set_hexpand(name, TRUE);
+  dt_gui_add_class(name, "dt_masks_preset_name");
+  g_object_set_data(G_OBJECT(name), "how", GINT_TO_POINTER(_PRESET_ADD));
+  g_signal_connect(name, "clicked", G_CALLBACK(_flexi_preset_option_clicked), row);
+  GString *layout = g_string_new(NULL);
+  _flexi_layout_outline_add(layout, nodes, n, 0, "");
+  gchar *name_tip = description
+    ? g_strdup_printf("%s\n\n%s\n%s", description, _("group layout:"), layout->str)
+    : g_strdup_printf("%s\n%s", _("group layout:"), layout->str);
+  gtk_widget_set_tooltip_text(name, name_tip);
+  g_string_free(layout, TRUE);
+  g_free(name_tip);
+  gtk_box_pack_start(GTK_BOX(box), name, TRUE, TRUE, 0);
+
+  const struct
+  {
+    _flexi_preset_choice_t how;
+    DTGTKCairoPaintIconFunc paint;
+    gboolean shown;
+  } ways[] = { { _PRESET_REPLACE, dtgtk_cairo_paint_refresh, TRUE },
+               { _PRESET_MERGE, dtgtk_cairo_paint_union, n > 1 },
+               { _PRESET_ADD, dtgtk_cairo_paint_square_plus, TRUE } };
+  for(size_t i = 0; i < G_N_ELEMENTS(ways); i++)
+  {
+    gchar *tip = ways[i].shown ? _flexi_preset_how_tip(ways[i].how, group) : NULL;
+    GtkWidget *button = _flexi_preset_row_button(box, ways[i].paint, tip,
+                                                 G_CALLBACK(_flexi_preset_option_clicked), row);
+    g_object_set_data(G_OBJECT(button), "how", GINT_TO_POINTER(ways[i].how));
+    g_free(tip);
+  }
+  g_object_set_data_full(G_OBJECT(box), "row", row, _flexi_preset_row_free);
+  return box;
+}
+
+// a section title between two rules, as the context menus draw theirs (a
+// GMenu section label; its widgets are styled by popover.menu in darktable.css)
+static GtkWidget *_flexi_preset_section_label(const gchar *text)
+{
+  GtkWidget *label = gtk_label_new(text);
+  gtk_style_context_add_class(gtk_widget_get_style_context(label), "separator");
+  GtkWidget *box = dt_gui_hbox();
+  gtk_box_pack_start(GTK_BOX(box), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
+  return box;
+}
+
+static void _flexi_preset_popover_destroyed(GtkWidget *popover, gpointer anchor)
+{
+  if(darktable.gui && darktable.gui->active_popover_menu == popover)
+    darktable.gui->active_popover_menu = NULL;
+  g_object_set_data(G_OBJECT(anchor), "presets-popover", NULL);
+}
+
+// the popover of the selection's presets button: the group-layout presets,
+// each with the buttons that apply it (see _flexi_preset_row_new), and saving
+// the selected group's layout as a preset. The buttons act on the group the
+// presets button was opened for, which it holds (see _masks_presets_pressed in
+// blend_gui.c)
+GtkWidget *dt_masks_gui_presets_popover(GtkWidget *anchor, dt_iop_module_t *module)
+{
+  g_object_set_data(G_OBJECT(anchor), "module", module);
+  // the previous one is closed, as no click can reach the button before it is
+  GtkWidget *old = g_object_get_data(G_OBJECT(anchor), "presets-popover");
+  if(old) gtk_widget_destroy(old);
+
+  GtkWidget *popover = gtk_popover_new(anchor);
+  // the look of the context menus (see popover.menu in darktable.css)
+  gtk_style_context_add_class(gtk_widget_get_style_context(popover), "menu");
+  g_object_set_data(G_OBJECT(anchor), "presets-popover", popover);
+  g_signal_connect(popover, "destroy", G_CALLBACK(_flexi_preset_popover_destroyed), anchor);
+
+  GtkWidget *box = dt_gui_vbox(_flexi_preset_section_label(_("built-in presets")));
+  dt_gui_add_class(box, "dt_masks_presets_menu");
   GPtrArray *builtins = _flexi_builtins_get();
   for(guint i = 0; i < builtins->len; i++)
   {
     const _flexi_builtin_t *b = g_ptr_array_index(builtins, i);
-    GMenuItem *item = g_menu_item_new(_(b->name), NULL);
-    g_menu_item_set_action_and_target_value(item, "masks_presets.builtin",
-                                            g_variant_new_string(b->id));
-    if(b->description) g_menu_item_set_attribute(item, "tooltip", "s", _(b->description));
-    g_menu_append_item(sec_builtins, item);
-    g_object_unref(item);
+    dt_gui_box_add(box, _flexi_preset_row_new(anchor, b->id, TRUE, _(b->name),
+                                              b->description ? _(b->description) : NULL,
+                                              (const dt_masks_layout_node_t *)b->nodes->data,
+                                              b->nodes->len));
   }
-  g_menu_append_section(menu, _("group layout presets"), G_MENU_MODEL(sec_builtins));
-  g_object_unref(sec_builtins);
 
-  GList *user_presets = _flexi_preset_list_load();
-  if(user_presets)
+  // read afresh, for presets changed elsewhere
+  _flexi_user_presets_forget();
+  GList *user_presets = _flexi_user_presets();
+  if(user_presets) dt_gui_box_add(box, _flexi_preset_section_label(_("user defined presets")));
+  for(GList *p = user_presets; p; p = g_list_next(p))
   {
-    GMenu *sec_user = g_menu_new();
-    GMenu *sub_delete = g_menu_new();
-    for(GList *p = user_presets; p; p = g_list_next(p))
-    {
-      _flexi_preset_t *preset = p->data;
-      gchar *label_unm = dt_str_unmnemonic(preset->name);
-
-      GMenuItem *item = g_menu_item_new(label_unm, NULL);
-      g_menu_item_set_action_and_target_value(item, "masks_presets.user", g_variant_new_string(preset->name));
-      g_menu_append_item(sec_user, item);
-      g_object_unref(item);
-
-      GMenuItem *del = g_menu_item_new(label_unm, NULL);
-      g_menu_item_set_action_and_target_value(del, "masks_presets.delete", g_variant_new_string(preset->name));
-      g_menu_append_item(sub_delete, del);
-      g_object_unref(del);
-
-      g_free(label_unm);
-    }
-    g_menu_append_submenu(sec_user, _("delete preset"), G_MENU_MODEL(sub_delete));
-    g_object_unref(sub_delete);
-
-    g_menu_append_section(menu, NULL, G_MENU_MODEL(sec_user));
-    g_object_unref(sec_user);
-    _flexi_preset_list_free(user_presets);
+    const _flexi_preset_t *preset = p->data;
+    dt_gui_box_add(box, _flexi_preset_row_new(anchor, preset->name, FALSE, preset->name,
+                                              NULL, preset->nodes, preset->n));
   }
 
-  GMenu *sec_save = g_menu_new();
-  g_menu_append(sec_save, _("save current layout as preset..."), "masks_presets.save");
-  g_menu_append_section(menu, NULL, G_MENU_MODEL(sec_save));
-  g_object_unref(sec_save);
+  GtkWidget *save = gtk_model_button_new();
+  g_object_set(save, "text",
+               g_object_get_data(G_OBJECT(anchor), "presets-group")
+                 ? _("save this group's layout as preset...")
+                 : _("save the whole mask's layout as preset..."),
+               NULL);
+  g_signal_connect(save, "clicked", G_CALLBACK(_flexi_preset_save_clicked), anchor);
+  dt_gui_box_add(box, _flexi_preset_section_label(_("create new")), save);
+
+  // the rows of many user presets, or a short window, must scroll rather than
+  // clip: as the stock menus' pages do (see the popover wrapping in gui/gtk.c),
+  // the budget is the toplevel, which a popover cannot leave
+  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER,
+                                 GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_propagate_natural_height(GTK_SCROLLED_WINDOW(scroll), TRUE);
+  gtk_scrolled_window_set_propagate_natural_width(GTK_SCROLLED_WINDOW(scroll), TRUE);
+  GtkAllocation toplevel;
+  gtk_widget_get_allocation(gtk_widget_get_toplevel(anchor), &toplevel);
+  if(toplevel.height > 1)
+    gtk_scrolled_window_set_max_content_height(GTK_SCROLLED_WINDOW(scroll), toplevel.height);
+  gtk_container_add(GTK_CONTAINER(scroll), box);
+  gtk_container_add(GTK_CONTAINER(popover), scroll);
+  gtk_widget_show_all(scroll);
+  return popover;
 }
 
 // ---- default preset ---------------------------------------------------------
@@ -880,45 +1174,85 @@ void dt_masks_gui_add_presets_menu(GMenu *menu, GtkWidget *anchor, dt_iop_module
 // behind FLEXI_USER_PRESET_PREFIX
 #define FLEXI_DEFAULT_PRESET_CONF "plugins/darkroom/masks/default_group_preset"
 
+// the default layout as nodes, with its note keys (a built-in's, owned by the
+// preset cache; NULL for a user preset) and whether it is plain. NULL when the
+// default names no preset. Caller frees the nodes
+static dt_masks_layout_node_t *_default_layout(int *n,
+                                               const gchar *const **keys,
+                                               gboolean *plain)
+{
+  dt_masks_layout_node_t *nodes = NULL;
+  *n = 0;
+  *keys = NULL;
+  *plain = TRUE;
+  gchar *def = dt_conf_get_string(FLEXI_DEFAULT_PRESET_CONF);
+  if(g_str_has_prefix(def, FLEXI_USER_PRESET_PREFIX))
+  {
+    const gchar *name = def + strlen(FLEXI_USER_PRESET_PREFIX);
+    const _flexi_preset_t *preset = _flexi_preset_find(_flexi_user_presets(), name);
+    if(preset)
+    {
+      nodes = g_new(dt_masks_layout_node_t, preset->n);
+      memcpy(nodes, preset->nodes, preset->n * sizeof(dt_masks_layout_node_t));
+      *n = preset->n;
+      *plain = _flexi_layout_is_plain(preset->nodes, preset->n);
+    }
+  }
+  else
+  {
+    const _flexi_builtin_t *b = _flexi_builtin_by_id(def);
+    if(b)
+    {
+      nodes = _flexi_builtin_nodes(b);
+      *n = b->nodes->len;
+      *keys = (const gchar *const *)b->keys->pdata;
+      *plain = _flexi_builtin_is_plain(b);
+    }
+  }
+  g_free(def);
+  return nodes;
+}
+
 void dt_masks_gui_apply_default_preset(dt_iop_module_t *module, const gboolean wipe)
 {
   if(!wipe && dt_masks_gui_module_mask_group(module)) return;
   // starting a mask, a plain layout is skipped: it is what the mask is anyway
   // before it has a group form, and applying it would only add a history item
-  gboolean applied = FALSE;
-  gchar *def = dt_conf_get_string(FLEXI_DEFAULT_PRESET_CONF);
-  if(g_str_has_prefix(def, FLEXI_USER_PRESET_PREFIX))
-  {
-    const gchar *name = def + strlen(FLEXI_USER_PRESET_PREFIX);
-    GList *user_presets = _flexi_preset_list_load();
-    const _flexi_preset_t *preset = _flexi_preset_find(user_presets, name);
-    if(preset && (wipe || !_flexi_layout_is_plain(preset->nodes, preset->n)))
-    {
-      _flexi_layout_apply(module, preset->nodes, preset->n, NULL, wipe);
-      applied = TRUE;
-    }
-    _flexi_preset_list_free(user_presets);
-  }
-  else
-  {
-    const _flexi_builtin_t *b = _flexi_builtin_by_id(def);
-    if(b && (wipe || !_flexi_builtin_is_plain(b)))
-    {
-      _flexi_layout_node_t *nodes = _flexi_builtin_nodes(b);
-      _flexi_layout_apply(module, nodes, b->nodes->len, (const gchar **)b->keys->pdata,
-                          wipe);
-      g_free(nodes);
-      applied = TRUE;
-    }
-  }
-  g_free(def);
+  int n;
+  const gchar *const *keys;
+  gboolean is_plain;
+  dt_masks_layout_node_t *nodes = _default_layout(&n, &keys, &is_plain);
+  const gboolean applied = nodes && (wipe || !is_plain);
+  if(applied) _flexi_layout_apply(module, nodes, n, keys, wipe);
+  g_free(nodes);
 
   // a default that names no preset any more resets to the plain layout
   if(!applied && wipe)
   {
-    const _flexi_layout_node_t plain = { .opacity = 1.0f, .parent = -1 };
+    const dt_masks_layout_node_t plain = { .opacity = 1.0f, .parent = -1 };
     _flexi_layout_apply(module, &plain, 1, NULL, TRUE);
   }
+}
+
+void dt_masks_gui_default_layout_build(dt_masks_form_t *grp)
+{
+  int n;
+  const gchar *const *keys;
+  gboolean is_plain;
+  dt_masks_layout_node_t *nodes = _default_layout(&n, &keys, &is_plain);
+  if(nodes && !is_plain)
+    dt_masks_model_layout_build_at(grp, dt_masks_group_marker(grp), nodes, n, keys, FALSE, NULL);
+  g_free(nodes);
+}
+
+void dt_masks_gui_default_layout_root(dt_masks_point_group_t *root)
+{
+  int n;
+  const gchar *const *keys;
+  gboolean is_plain;
+  dt_masks_layout_node_t *nodes = _default_layout(&n, &keys, &is_plain);
+  if(nodes && n > 0) _flexi_layout_set_head(root, &nodes[0], keys ? keys[0] : NULL);
+  g_free(nodes);
 }
 
 static void _masks_default_preset_toggled(GtkToggleButton *radio, gpointer user_data)

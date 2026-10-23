@@ -497,7 +497,6 @@ static GList *_build_channel_forms(dt_iop_module_t *module,
     while(channels[nch].label) nch++;
 
   int active_ch[DEVELOP_BLENDIF_SIZE];
-  gboolean active_out[DEVELOP_BLENDIF_SIZE];
   int n_active = 0;
   for(int ch = 0; ch < nch && n_active < DEVELOP_BLENDIF_SIZE; ch++)
   {
@@ -508,7 +507,6 @@ static GList *_build_channel_forms(dt_iop_module_t *module,
     if(in_active || out_active)
     {
       active_ch[n_active] = ch;
-      active_out[n_active] = out_active;
       n_active++;
     }
   }
@@ -528,7 +526,6 @@ static GList *_build_channel_forms(dt_iop_module_t *module,
            DEVELOP_BLENDIF_SIZE * sizeof(float));
     p->colorspace = (uint32_t)blend_cst;
     p->channel = (uint32_t)active_ch[i];
-    p->in_out = active_out[i] ? 1u : 0u;
     form->points = g_list_append(form->points, p);
     dt_masks_assign_unique_name(module->dev, form);
     out = g_list_append(out, form);

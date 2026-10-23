@@ -11,9 +11,9 @@ converted to this model when an edit is loaded, by `masks/migrate_legacy.c`.
 
 A module's mask is a tree of groups. Each group folds its members in list
 order with one operator, then applies its own refinement, inversion and
-opacity. A member is a drawn shape, a parametric channel, a raster mask
-reference, an AI object or another group. Every kind of member yields a 0-1
-value per pixel and combines the same way.
+opacity. A member is an element (a drawn shape, a parametric channel, a
+raster mask reference or an AI object) or another group. Every kind of member
+yields a 0-1 value per pixel and combines the same way.
 
 ## Storage
 
@@ -113,16 +113,24 @@ guaranteed to be zero.
 
 ## The tree
 
+Three words name the parts of the tree, in the code, the panel and the
+documentation alike: an **element** is a leaf, a **group** holds other
+parts, and a **member** is either one, as seen from the group that holds it.
+The mask's own group is a group but no group's member. "Shape" names one
+kind of element, a drawn one.
+
+- **Element.** A leaf: a drawn shape, a parametric channel, a raster mask
+  reference or an AI object. It is never a group.
 - **Group.** A `DT_MASKS_GROUP` form whose point list starts with a
   **marker**. The marker refers to no form: its `formid` is an id of its
   own, from the same id space as the forms, so it can never be mistaken
   for one. It holds the group's settings once: operator, inversion, bypass,
   opacity, refinement, name and preset note. The points after it are the
   members.
-- **Member.** A point that refers to a form. It carries the member's own
-  opacity, inversion (`INVERSE`), element refinement, `HIDDEN` and
-  `DISABLE`. A member that refers to a group carries no settings of its
-  own: that group's marker holds them.
+- **Member.** A point that refers to a form, an element or a group. It
+  carries the member's own opacity, inversion (`INVERSE`), element
+  refinement, `HIDDEN` and `DISABLE`. A member that refers to a group
+  carries no settings of its own: that group's marker holds them.
 - **Nesting.** A walk follows groups nested in groups at most
   `DT_MASKS_NESTING_MAX` (8) deep, which is also how deep the panel lets
   groups nest.

@@ -16,21 +16,21 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// the flexi masks panel's toolbar: the add buttons and a presets button, on
-// one line when the panel is wide enough, and on two or three rows otherwise.
+// the flexi masks panel's toolbar: the add buttons, on one line when the
+// panel is wide enough, and on two or three rows otherwise.
 //
-//   one line:   [ group | shapes | channels | import ] gap [presets]
-//   two rows:   [ group | shapes ] gap [presets]
-//               [ channels | import ]
-//   three rows: [ shapes ] gap [presets]
-//               [ channels ]
-//               [ group | import ]
+//   one line:   [ group import      shapes channels ]
+//   two rows:   [ group import           shapes     ]
+//               [                       channels    ]
+//   three rows: [ group import                      ]
+//               [                        shapes     ]
+//               [                       channels    ]
 //
-// Each row is centered on the full width, the first pushed left only as far
-// as it must be to clear the presets button, which keeps to the right edge.
-// The third arrangement is what lets the panel fit the narrowest side panel:
-// the shape and channel runs are the widest things in it, so the two buttons
-// that would otherwise lengthen them go to a row of their own.
+// In every row the group and import buttons are at the left edge, and what is
+// right of them is against the right one, so that the last button of each row
+// is in the same column. The third arrangement is what lets the panel fit the
+// narrowest side panel: the shape and channel runs are the widest things in
+// it, so they go to rows of their own.
 //
 // a height-for-width container, not a box rearranged from "size-allocate":
 // the row count is decided in GTK's measure and allocate passes, so nothing
@@ -41,10 +41,9 @@
 typedef enum
 {
   _TB_GROUP = 0,
+  _TB_IMPORT,
   _TB_SHAPES,
   _TB_CHANNELS,
-  _TB_IMPORT,
-  _TB_PRESETS,
   _TB_GAP, // never drawn, only measured: its CSS width is the spacing
   _TB_N
 } _tb_slot_t;
@@ -65,14 +64,14 @@ G_DEFINE_TYPE(DtMasksToolbar, _masks_toolbar, GTK_TYPE_CONTAINER)
 #define _TB(w) ((DtMasksToolbar *)(w))
 
 // the arrangements, widest first. Each row lists its slots left to right, -1
-// terminated; the presets button closes the first row
+// terminated
 #define _TB_ROWS 3
 #define _TB_LAYOUTS 3
 static const int _tb_layouts[_TB_LAYOUTS][_TB_ROWS][_TB_N] =
 {
-  { { _TB_GROUP, _TB_SHAPES, _TB_CHANNELS, _TB_IMPORT, -1 }, { -1 }, { -1 } },
-  { { _TB_GROUP, _TB_SHAPES, -1 }, { _TB_CHANNELS, _TB_IMPORT, -1 }, { -1 } },
-  { { _TB_SHAPES, -1 }, { _TB_CHANNELS, -1 }, { _TB_GROUP, _TB_IMPORT, -1 } },
+  { { _TB_GROUP, _TB_IMPORT, _TB_SHAPES, _TB_CHANNELS, -1 }, { -1 }, { -1 } },
+  { { _TB_GROUP, _TB_IMPORT, _TB_SHAPES, -1 }, { _TB_CHANNELS, -1 }, { -1 } },
+  { { _TB_GROUP, _TB_IMPORT, -1 }, { _TB_SHAPES, -1 }, { _TB_CHANNELS, -1 } },
 };
 
 // natural size of a slot, zero when it is empty or hidden
@@ -93,27 +92,38 @@ static void _tb_measure(DtMasksToolbar *tb, _tb_sizes_t *s)
   }
 }
 
+// add group and import keep to the left edge of their row, and the rest is a
+// run right of them (see _tb_size_allocate)
+static gboolean _tb_is_edge(const int slot)
+{
+  return slot == _TB_GROUP || slot == _TB_IMPORT;
+}
+
 // the width of a row's run of slots, with a gap between each two shown ones
+// of it
 static int _tb_run_width(const _tb_sizes_t *s, const int *row)
 {
   int w = 0;
   for(int k = 0; row[k] >= 0; k++)
-    if(s->w[row[k]]) w += (w ? s->w[_TB_GAP] : 0) + s->w[row[k]];
+    if(s->w[row[k]] && !_tb_is_edge(row[k])) w += (w ? s->w[_TB_GAP] : 0) + s->w[row[k]];
   return w;
 }
 
-// the width a row needs, the presets button included on the first
+// what a row needs: its run and the edge buttons, with no gap kept between
+// them, so that a row fits whenever its buttons do
 static int _tb_row_width(const _tb_sizes_t *s, const int layout, const int r)
 {
-  const int run = _tb_run_width(s, _tb_layouts[layout][r]);
-  if(r) return run;
-  return run + (run && s->w[_TB_PRESETS] ? s->w[_TB_GAP] : 0) + s->w[_TB_PRESETS];
+  const int *row = _tb_layouts[layout][r];
+  int w = _tb_run_width(s, row);
+  for(int k = 0; row[k] >= 0; k++)
+    if(_tb_is_edge(row[k])) w += s->w[row[k]];
+  return w;
 }
 
 static int _tb_row_height(const _tb_sizes_t *s, const int layout, const int r)
 {
   const int *row = _tb_layouts[layout][r];
-  int h = r ? 0 : s->h[_TB_PRESETS];
+  int h = 0;
   for(int k = 0; row[k] >= 0; k++) h = MAX(h, s->h[row[k]]);
   return h;
 }
@@ -194,12 +204,6 @@ static void _tb_place(GtkWidget *c,
   gtk_widget_size_allocate(c, &ca);
 }
 
-// a run of width w, centered on the full width but kept clear of `limit`
-static int _tb_center(const int width, const int w, const int limit)
-{
-  return MAX(0, MIN((width - w) / 2, limit - w));
-}
-
 static void _tb_size_allocate(GtkWidget *widget, GtkAllocation *a)
 {
   DtMasksToolbar *tb = _TB(widget);
@@ -210,30 +214,41 @@ static void _tb_size_allocate(GtkWidget *widget, GtkAllocation *a)
   const gboolean rtl = gtk_widget_get_direction(widget) == GTK_TEXT_DIR_RTL;
   const int W = a->width;
   const int gap = s.w[_TB_GAP];
-  const int wp = s.w[_TB_PRESETS];
   const int layout = _tb_pick_layout(&s, W);
 
-  int y = 0, gap_x = 0;
+  int y = 0;
   for(int r = 0; r < _TB_ROWS; r++)
   {
     const int *row = _tb_layouts[layout][r];
     const int h = _tb_row_height(&s, layout, r);
+
+    // the edge buttons from the left, the rest a run right of them
+    int middle[_TB_N], n_middle = 0;
+    int lo = 0;
     const int run = _tb_run_width(&s, row);
-    const int limit = !r && wp ? W - wp - gap : W;
-    int x = _tb_center(W, run, limit);
     for(int k = 0; row[k] >= 0; k++)
     {
-      if(!s.w[row[k]]) continue;
-      _tb_place(tb->child[row[k]], a, rtl, x, y, s.w[row[k]], h);
-      x += s.w[row[k]] + gap;
-      if(!r) gap_x = x - gap;
+      const int slot = row[k];
+      if(!s.w[slot]) continue;
+      if(!_tb_is_edge(slot))
+        middle[n_middle++] = slot;
+      else
+      {
+        _tb_place(tb->child[slot], a, rtl, lo, y, s.w[slot], h);
+        lo += s.w[slot];
+      }
     }
-    if(!r) _tb_place(tb->child[_TB_PRESETS], a, rtl, W - wp, y, wp, h);
+    // against the right edge, unless the edge buttons are in the way
+    int x = MAX(lo, W - run);
+    for(int k = 0; k < n_middle; k++)
+    {
+      _tb_place(tb->child[middle[k]], a, rtl, x, y, s.w[middle[k]], h);
+      x += s.w[middle[k]] + gap;
+    }
     y += h;
   }
   // every visible child gets an allocation; the gap's is just empty space
-  _tb_place(tb->child[_TB_GAP], a, rtl, MIN(gap_x, MAX(0, W - gap)), 0, gap,
-            _tb_row_height(&s, layout, 0));
+  _tb_place(tb->child[_TB_GAP], a, rtl, 0, 0, gap, _tb_row_height(&s, layout, 0));
 }
 
 static void _tb_forall(GtkContainer *container,
@@ -292,14 +307,15 @@ static void _masks_toolbar_init(DtMasksToolbar *tb)
 }
 
 GtkWidget *dt_masks_gui_toolbar_new(GtkWidget *group,
+                                    GtkWidget *import,
                                     GtkWidget *shapes,
                                     GtkWidget *channels,
-                                    GtkWidget *import,
-                                    GtkWidget *presets,
                                     GtkWidget *gap)
 {
   DtMasksToolbar *tb = g_object_new(_masks_toolbar_get_type(), NULL);
-  GtkWidget *children[_TB_N] = { group, shapes, channels, import, presets, gap };
+  GtkWidget *children[_TB_N] = { [_TB_GROUP] = group, [_TB_IMPORT] = import,
+                                 [_TB_SHAPES] = shapes, [_TB_CHANNELS] = channels,
+                                 [_TB_GAP] = gap };
   for(int i = 0; i < _TB_N; i++)
   {
     tb->child[i] = children[i];
