@@ -2965,6 +2965,9 @@ popover#log-history-popover label
 @define-color mask_selected      @mask_selected_top;
 @define-color mask_hover_top     shade(@plugin_bg_color, 1.5);
 @define-color mask_hover         @mask_hover_top;
+/* what a ctrl+shift+click would delete, while ctrl+shift is held over the list */
+@define-color mask_delete_top    mix(@mask_hover_top, rgb(200, 60, 50), 0.55);
+@define-color mask_delete        @mask_delete_top;
 /* the ground of the controls under an open header, in every state */
 @define-color mask_card          @mask_rest;
 /* the glyph on every row's lead icon. A lead has no plate of its own, so its
@@ -3613,6 +3616,16 @@ button.dt_masks_enable_toggle:checked
   background-color: transparent;
   background-image: linear-gradient(to bottom, @mask_hover_top, @mask_hover);
   outline-color: @mask_hover;
+}
+
+/* ctrl+shift held over the list (see _armed_watch): the hovered header takes the delete
+   shade, and the rail of a group, which follows the header's outline-color,
+   shows the members that go with it */
+.dt_masks_deleting .dt_masks_header.dt_masks_hovered
+{
+  background-color: transparent;
+  background-image: linear-gradient(to bottom, @mask_delete_top, @mask_delete);
+  outline-color: @mask_delete;
 }
 
 /* the group a drop would land in (see _drop_group_of) lights its header up

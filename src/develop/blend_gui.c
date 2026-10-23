@@ -9650,6 +9650,98 @@ static gboolean _crossing_ignored(GtkEventControllerMotion *controller, const gb
   return ignore || !darktable.develop || !darktable.develop->form_gui;
 }
 
+// holding ctrl+shift over the list arms the ctrl+shift+click delete (see
+// _row_click_press):
+// the pointer turns into a trash bin and the hovered header, with the rail of its
+// members, into the delete shade, so what a click removes is seen before it
+// goes. GTK sends nothing when a modifier alone changes, so a timer watches it,
+// but only while the pointer is over the list
+static GtkWidget *_armed_list = NULL; // weak: a rebuilt list takes its timer along
+static guint _armed_timer = 0;
+
+#if !GTK_CHECK_VERSION(4, 0, 0)
+static GdkCursor *_delete_cursor(GtkWidget *w)
+{
+  static GdkCursor *cursor = NULL;
+  if(cursor) return cursor;
+  const int size = 24, scale = gtk_widget_get_scale_factor(w);
+  cairo_surface_t *surface =
+    cairo_image_surface_create(CAIRO_FORMAT_ARGB32, size * scale, size * scale);
+  cairo_surface_set_device_scale(surface, scale, scale);
+  cairo_t *cr = cairo_create(surface);
+  // the delete button's trash bin, light over a dark halo to read on any theme
+  // the eight offsets around the middle in dark, then the middle in light
+  for(int k = 0; k < 9; k++)
+  {
+    const int m = k < 4 ? k : k + 1; // 4 is the middle of the 3x3 block
+    const int light = k == 8;
+    const int at = light ? 4 : m;
+    cairo_set_source_rgb(cr, light, light, light);
+    dtgtk_cairo_paint_trash(cr, 2 + at % 3 - 1, 2 + at / 3 - 1, size - 4, size - 4, 0, NULL);
+  }
+  cairo_destroy(cr);
+  cursor = gdk_cursor_new_from_surface(gtk_widget_get_display(w), surface,
+                                       size / 2.0, size / 2.0);
+  cairo_surface_destroy(surface);
+  return cursor;
+}
+#endif
+
+static void _delete_armed_set(GtkWidget *list, const gboolean on)
+{
+  if(on)
+    dt_gui_add_class(list, "dt_masks_deleting");
+  else
+    dt_gui_remove_class(list, "dt_masks_deleting");
+  // the list's own window, under which every row inherits the cursor
+  GtkWidget *area = gtk_widget_get_parent(list);
+#if GTK_CHECK_VERSION(4, 0, 0)
+  dt_gui_cursor_set(area, on ? "not-allowed" : NULL, "mask/delete");
+#else
+  dt_gui_cursor_apply(area, on ? _delete_cursor(area) : NULL);
+#endif
+}
+
+static gboolean _armed_poll(gpointer data)
+{
+  GtkWidget *list = _armed_list;
+  dt_iop_module_t *module = list ? g_object_get_data(G_OBJECT(list), "module") : NULL;
+  if(!module)
+  {
+    _armed_timer = 0;
+    return G_SOURCE_REMOVE;
+  }
+  const gboolean on = !dt_develop_blend_mask_locked(module->blend_params)
+                      && dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  if(on != _has_class(list, "dt_masks_deleting")) _delete_armed_set(list, on);
+  return G_SOURCE_CONTINUE;
+}
+
+static void _armed_watch(dt_iop_module_t *module, const gboolean on)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  GtkWidget *list = bd && bd->masks_list_box ? GTK_WIDGET(bd->masks_list_box) : NULL;
+  if(on && list)
+  {
+    if(_armed_list != list)
+    {
+      if(_armed_list) g_object_remove_weak_pointer(G_OBJECT(_armed_list), (gpointer *)&_armed_list);
+      _armed_list = list;
+      g_object_add_weak_pointer(G_OBJECT(_armed_list), (gpointer *)&_armed_list);
+    }
+    if(!_armed_timer) _armed_timer = g_timeout_add(80, _armed_poll, NULL);
+    return;
+  }
+  if(_armed_timer) g_source_remove(_armed_timer);
+  _armed_timer = 0;
+  if(_armed_list)
+  {
+    if(_has_class(_armed_list, "dt_masks_deleting")) _delete_armed_set(_armed_list, FALSE);
+    g_object_remove_weak_pointer(G_OBJECT(_armed_list), (gpointer *)&_armed_list);
+    _armed_list = NULL;
+  }
+}
+
 // a row takes the hover when the pointer enters it, and keeps it until the
 // pointer enters another row or leaves the list (_list_leave): the gaps
 // between rows, and the room to the left of a group's members, are nothing
@@ -9663,6 +9755,7 @@ static void _row_enter(GtkEventControllerMotion *controller,
   // the wash is what the pointer expects to see immediately; the canvas, which
   // redraws every shape of the mask, follows when it can. While the list is
   // scrolling neither happens: the rows going past are not being pointed at
+  _armed_watch(module, TRUE);
   GtkWidget *w = dt_gui_get_widget(controller);
   if(!_hover_list_scrolling(g_get_monotonic_time()))
     _row_hover_wash(module->blend_data, _row_widget_for_hover(w));
@@ -9673,6 +9766,7 @@ static void _row_enter(GtkEventControllerMotion *controller,
 static void _list_leave(GtkEventControllerMotion *controller, dt_iop_module_t *module)
 {
   if(_crossing_ignored(controller, FALSE)) return;
+  _armed_watch(module, FALSE);
   if(!_hover_list_scrolling(g_get_monotonic_time()))
     _row_hover_wash(module->blend_data, NULL);
   _row_hover_schedule(module, NULL);
@@ -16311,7 +16405,14 @@ static void _selection_actions_sync(dt_iop_module_t *module)
   gtk_widget_set_sensitive(bd->masks_selection_compose_btn, composable);
   gtk_widget_set_sensitive(bd->masks_selection_delete_btn, any);
   gtk_widget_set_tooltip_text(bd->masks_selection_compose_btn, compose_tip);
-  gtk_widget_set_tooltip_text(bd->masks_selection_delete_btn, delete_tip);
+  // the quicker way, which a click on this button would not teach
+  gchar *delete_full =
+    delete_tip && any
+      ? g_strconcat(delete_tip, "\n",
+                    _("hold down ctrl+shift and click on row headers to delete items"), NULL)
+      : NULL;
+  gtk_widget_set_tooltip_text(bd->masks_selection_delete_btn, delete_full ? delete_full : delete_tip);
+  g_free(delete_full);
   g_free(group_compose_tip);
 
   // the reasons in the order _presets_target checks them
@@ -16754,6 +16855,7 @@ void dt_iop_gui_init_masks(GtkWidget *blendw, dt_iop_module_t *module)
     // per-shape composition list (the groups), populated by dt_masks_gui_build_list()
     // whenever the module is in flexi-mask mode.
     bd->masks_list_box = GTK_BOX(dt_gui_vbox());
+    g_object_set_data(G_OBJECT(bd->masks_list_box), "module", module);
     gtk_widget_set_no_show_all(GTK_WIDGET(bd->masks_list_box), TRUE);
     // unique id for the panel's own top-level list container, alongside the
     // existing "dt_masks_list" class every nested list box in the panel shares
