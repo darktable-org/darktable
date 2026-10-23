@@ -939,7 +939,7 @@ static int rt_masks_get_transform_to_destination(dt_iop_module_t *self,
                                     form->source, dx, dy, distort_mode);
   }
 
-  if (angle)
+  if(angle)
     *angle = form->source[2];
 
   return res;

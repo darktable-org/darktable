@@ -1970,9 +1970,8 @@ void gui_changed(dt_iop_module_t *self,
 
   // unconditionally update visibilities / redraw the curve, required to support updates
   // when called from gui_update
-  if (g) {
+  if(g)
     _update_redraw_dynamic_gui(self, g, p);
-  }
 }
 
 static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
@@ -2313,7 +2312,7 @@ static void _primaries_popupmenu_callback(GtkWidget *button,
   g_menu_append(menu, _("blender-like"), "agx-primaries.activate::blender");
   g_menu_append(menu, _("smooth"), "agx-primaries.activate::smooth");
   g_menu_append(menu, _("unmodified"), "agx-primaries.activate::unmodified");
-  
+
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(button, menu);
   g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
