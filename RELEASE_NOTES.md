@@ -665,6 +665,10 @@ changes (where available).
 - Fixed an issue where the Windows installer wouldn't run without user
   input when requested.
 
+- Fixed the filmic rgb graphs cutting off the curve when target white
+  is above 100% for HDR output: the look and mapping views now scale
+  their y axis to fit the curve and mark 100% display.
+
 ## Lua
 
 ### API Version
