@@ -2989,9 +2989,6 @@ popover#log-history-popover label
 @define-color mask_text_implied  @fg_color;
 @define-color mask_text_selected @fg_color;
 @define-color mask_text_hover    @fg_color;
-/* the compact value beside the module's own blend opacity slider */
-@define-color mask_text_value       alpha(shade(@fg_color, 0.85), 0.85);
-@define-color mask_text_value_hover @bauhaus_fg_hover;
 /* labels and values of the sliders in the list: as bright as the same
    properties in the selection panel below (mask_selection_text_control) */
 @define-color mask_text_control       @bauhaus_fg;
@@ -3418,22 +3415,6 @@ button.dt_masks_enable_toggle:checked
 }
 
 /* ---- blend mode and opacity ------------------------------------------- */
-
-.dt_masks_blend_opacity_box
-{
-  margin-top: 2px;
-  margin-bottom: 2px;
-}
-
-/* right under its header, which spaces the box (above). The side margins
-   are left to the theme's .dt_bauhaus, as for the blend mode combobox, and
-   the header follows them (see _blend_opacity_header_follow_margins) */
-.dt_bauhaus.dt_masks_blend_opacity_slider
-{
-  margin-top: 0;
-  margin-bottom: 0;
-  padding: 0;
-}
 
 /* docked, blend mode and blend opacity start a little in from the cards'
    edge, as nothing leads them here */
@@ -4215,20 +4196,6 @@ button.dt_masks_channel_eye
 .dt_masks_badge.dt_masks_no_effect
 {
   color: @mask_badge_no_effect;
-}
-
-/* the interactive opacity value in a header */
-.dt_masks_opacity_value
-{
-  margin: 0 1px;
-  padding: 1px 3px;
-  color: @mask_text_value;
-}
-
-.dt_masks_opacity_value:hover
-{
-  color: @mask_text_value_hover;
-  background-color: alpha(@fg_color, 0.05);
 }
 
 /* ---- the selection panel ---------------------------------------------- */
