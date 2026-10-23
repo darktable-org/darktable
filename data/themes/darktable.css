@@ -2973,7 +2973,7 @@ popover#log-history-popover label
 /* the glyph on every row's lead icon. A lead has no plate of its own, so its
    glyph sits on the header and must read on every header shade */
 @define-color mask_lead_fg          @fg_color;
-/* the warning badge's glyph, in the color label hues: an element or group
+/* the warning badge's glyph, in the color label hues: a member
    that does next to nothing, or a group holding one, and
    (mask_badge_no_effect) one that does nothing at all, or holds such a one;
    its edge (mask_badge_outline) keeps it readable on every header shade */
@@ -3509,10 +3509,10 @@ button.dt_masks_enable_toggle:checked
 
 /* ---- rows and headers ------------------------------------------------- */
 
-/* every element row (.dt_masks_row) holds a header line and whatever it
-   opens onto: its controls' card, or a nested group. Every header line,
-   element or group, is a .dt_masks_header, and says which it is:
-   .dt_masks_element_header or .dt_masks_group_header. Its states go on the
+/* every row (.dt_masks_row) holds a header line and whatever it opens onto:
+   its controls' card, or a nested group. Every header line is a
+   .dt_masks_header, and says which it is: .dt_masks_row_header (a member
+   shown as a row) or .dt_masks_group_header (a group's own). Its states go on the
    header itself:
    .dt_masks_selected, .dt_masks_implied (it holds the selection),
    .dt_masks_hovered, .dt_masks_soloed (a group's), .dt_masks_linked (an
@@ -3527,7 +3527,7 @@ button.dt_masks_enable_toggle:checked
   margin-top: 4px;
 }
 
-/* an element row paints nothing itself but its solo wash: its header line
+/* a row paints nothing itself but its solo wash: its header line
    carries the frame and shading a group's header does */
 .dt_masks_row
 {
@@ -3559,13 +3559,13 @@ button.dt_masks_enable_toggle:checked
   border-color: alpha(@fg_color, 0.5);
 }
 
-/* every element and group header rests at one shade a step lighter than the
+/* every member header rests at one shade a step lighter than the
    list, whatever its depth, so the list reads as the darker ground behind
    them, and only brightens when selected, implied or hovered. outline-color
    is never drawn: it is the color of the rail hanging from the header (see
-   .dt_masks_group_elements and _masks_rail_draw), set beside the background
+   .dt_masks_group_members and _masks_rail_draw), set beside the background
    in every state so the two cannot disagree */
-.dt_masks_element_header,
+.dt_masks_row_header,
 .dt_masks_group_header
 {
   background-color: @mask_rest;
@@ -3610,7 +3610,7 @@ button.dt_masks_enable_toggle:checked
 /* hover, from the list or from the canvas (canvas <-> list sync, and over a
    row's docked controls, see _row_crossing). A gradient starting brighter
    than the selection's, so a hovered header is always the brightest */
-.dt_masks_element_header.dt_masks_hovered,
+.dt_masks_row_header.dt_masks_hovered,
 .dt_masks_group_header.dt_masks_hovered
 {
   background-color: transparent;
@@ -3629,7 +3629,7 @@ button.dt_masks_enable_toggle:checked
 }
 
 /* the group a drop would land in (see _drop_group_of) lights its header up
-   like a hovered one, so where the element goes is read off the group as
+   like a hovered one, so where the member goes is read off the group as
    well as off the insertion line */
 .dt_masks_group_header.dt_masks_drop_target
 {
@@ -3695,13 +3695,13 @@ button.dt_masks_enable_toggle:checked
   border-bottom: 2px solid transparent;
 }
 
-/* while its elements show, the block's content stops short of its bottom edge
-   by the line's width, or its last element would paint over the line below
-   the group, which would then read as the line below that element. The
-   header's own top margin keeps the top edge clear. A group with no elements
+/* while its members show, the block's content stops short of its bottom edge
+   by the line's width, or its last member would paint over the line below
+   the group, which would then read as the line below that member. The
+   header's own top margin keeps the top edge clear. A group with no members
    showing keeps no room: its line is drawn on its header (see
    _drop_line_paint_widget), so it is as far from the next row as any
-   element is */
+   member is */
 .dt_masks_group_block > box
 {
   margin-bottom: 0;
@@ -3717,8 +3717,8 @@ button.dt_masks_enable_toggle:checked
   background-color: alpha(@fg_color, 0.20);
 }
 
-/* the insertion line where a dragged element or group would land
-   (.dt_masks_drop_above, .dt_masks_drop_below). Beside an element it goes on
+/* the insertion line where a dragged member would land
+   (.dt_masks_drop_above, .dt_masks_drop_below). Beside a member row it goes on
    the part showing at that edge, its header or its bottom-most part (see
    _drop_line_paint_widget): an inset shadow, drawn
    over that part's background and reserving no space. A group block draws
@@ -3752,7 +3752,7 @@ button.dt_masks_enable_toggle:checked
    and the two read as one piece. No background of its own, at any
    depth or in any state: a group is told apart by its header and rail
    alone */
-.dt_masks_group_elements
+.dt_masks_group_members
 {
   /* the rail, drawn in code (_masks_rail_draw) so it can stop at the last
      member and tick across to each member's header, like a tree view. Its
@@ -3777,8 +3777,8 @@ button.dt_masks_enable_toggle:checked
    member's tick): drop the rail's room, so the card runs flush under the
    whole header (see .dt_masks_card_only below). Scoped under .dt_masks_list
    so it outranks a tweak setting the rail's width on
-   .dt_masks_list .dt_masks_group_elements */
-.dt_masks_list .dt_masks_group_elements.dt_masks_card_only
+   .dt_masks_list .dt_masks_group_members */
+.dt_masks_list .dt_masks_group_members.dt_masks_card_only
 {
   border-left-width: 0;
 }
@@ -3786,7 +3786,7 @@ button.dt_masks_enable_toggle:checked
 /* ---- cards: the controls under an open header ------------------------- */
 
 /* every card (.dt_masks_card) sits on the card ground with no frame, right
-   under its header, so an open element or group reads as one block. Which card it is: .dt_masks_param_card (a parametric row's sliders),
+   under its header, so an open member reads as one block. Which card it is: .dt_masks_param_card (a parametric row's sliders),
    .dt_masks_props_card (a row's properties), .dt_masks_group_card (a group's
    opacity) and .dt_masks_note (a preset group's note, in the notes section) */
 .dt_masks_card
@@ -3839,7 +3839,7 @@ button.dt_masks_enable_toggle:checked
 
 /* with no rail beside it, the card is inset by the rail's width more to keep
    the 8px */
-.dt_masks_list .dt_masks_group_elements.dt_masks_card_only > .dt_masks_group_card
+.dt_masks_list .dt_masks_group_members.dt_masks_card_only > .dt_masks_group_card
 {
   padding-left: 8px;
 }
@@ -4007,11 +4007,11 @@ button.dt_masks_bypass:checked
        .dt_masks_blank     a column the row has no icon for
        .dt_masks_channel_picker  that picker, beside its slider rather
                            than in the drawer
-     .dt_masks_badge       the warning, ending the name: an element or group
+     .dt_masks_badge       the warning, ending the name: a member
                            doing nothing or next to nothing, or a group
                            holding one; .dt_masks_no_effect when the first
                            reason is nothing
-   Whose icon it is comes from the header: .dt_masks_element_header or
+   Whose icon it is comes from the header: .dt_masks_row_header or
    .dt_masks_group_header.
 
    Every icon is an icon button sized by the theme like any other
@@ -4298,7 +4298,7 @@ button.dt_masks_selection_action:disabled
   color: @disabled_fg_color;
 }
 
-/* the properties section holds one element's or group's card, or a pending
+/* the properties section holds one member's card, or a pending
    shape's creation controls, as the refinements' section holds its sliders:
    no rail and no inset, since no row header sits above them there */
 .dt_masks_props_panel .dt_masks_props_card,

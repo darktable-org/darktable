@@ -79,7 +79,7 @@ dt_masks_form_t *dt_masks_gui_module_flexi_group(dt_iop_module_t *module, dt_mas
 dt_masks_point_group_t *dt_masks_gui_group_point(dt_masks_form_t *grp, const dt_mask_id_t id);
 /** remove every shape and reset the panel's scratch state (no confirmation) */
 void dt_masks_gui_reset_mask_core(dt_iop_module_t *module);
-/** remove what group `cid` holds, elements and groups, keeping the group with
+/** remove what group `cid` holds, keeping the group with
     its settings; the panel forgets the ids it held. Does not commit */
 void dt_masks_gui_empty_group_core(dt_iop_module_t *module, dt_mask_id_t cid);
 /** destroy and rebuild the panel's row tree */
@@ -109,7 +109,7 @@ dt_mask_id_t dt_masks_gui_group_cid_of_form(dt_masks_form_t *grp, const dt_mask_
 dt_mask_id_t dt_masks_model_nest_new_group(dt_masks_form_t *grp,
                                            const dt_masks_state_t flexi_op,
                                            const dt_mask_id_t cid);
-/** "compose": put the element or group of point `pt` (a member, or a group's
+/** "compose": put the member of point `pt` (or a group's
     marker) into a new group folding with `flexi_op`, where it was, on top of
     it a new empty group to fill. The mask's own group cannot move, so its
     members and settings go into a new group instead, and it keeps nothing
@@ -164,14 +164,14 @@ dt_mask_id_t dt_masks_model_layout_build_at(dt_masks_form_t *grp,
 // what the gestures do, apart from their GTK handlers so that the tests run
 // the same code. They change the mask structure and the panel's selection,
 // not history, the pipe or the widgets: the handler commits (see
-// dt_masks_model_drop_element_onto_element in blend_gui.c)
+// dt_masks_model_drop_member_onto_member in blend_gui.c)
 
-/** move element `src` into `dst`'s group, landing above or below it */
-gboolean dt_masks_model_drop_element_onto_element(dt_iop_module_t *module,
-                                                  dt_masks_form_t *grp,
-                                                  const dt_mask_id_t src,
-                                                  const dt_mask_id_t dst,
-                                                  const gboolean above);
+/** move member `src` into `dst`'s group, landing above or below it */
+gboolean dt_masks_model_drop_member_onto_member(dt_iop_module_t *module,
+                                                dt_masks_form_t *grp,
+                                                const dt_mask_id_t src,
+                                                const dt_mask_id_t dst,
+                                                const gboolean above);
 /** the same for the references `sp` and `dp` themselves, where the mask holds
     either shape twice and the form id alone names the first reference */
 gboolean dt_masks_model_drop_point_onto_point(dt_iop_module_t *module,
@@ -197,12 +197,12 @@ dt_masks_panel_sel_t dt_masks_model_click_element(const dt_iop_gui_blend_data_t 
 dt_masks_panel_sel_t dt_masks_model_click_group(const dt_iop_gui_blend_data_t *bd,
                                                 const dt_mask_id_t cid);
 
-/** move element `src` into the group `dst` is in (`dst` a member or the
+/** move member `src` into the group `dst` is in (`dst` a member or the
     group's marker), landing on top of it */
-gboolean dt_masks_model_drop_element_onto_group(dt_iop_module_t *module,
-                                                dt_masks_form_t *grp,
-                                                const dt_mask_id_t src,
-                                                const dt_mask_id_t dst);
+gboolean dt_masks_model_drop_member_onto_group(dt_iop_module_t *module,
+                                               dt_masks_form_t *grp,
+                                               const dt_mask_id_t src,
+                                               const dt_mask_id_t dst);
 /** the same for the reference `sp` itself (see dt_masks_model_drop_point_onto_point) */
 gboolean dt_masks_model_drop_point_onto_group(dt_iop_module_t *module,
                                               dt_masks_form_t *grp,
@@ -247,7 +247,7 @@ dt_masks_solo_canvas_t dt_masks_model_toggle_soloedit(dt_iop_module_t *module,
 
 /** does an element row carry an expander chevron of its own? Of any kind:
     every element has at least its opacity slider to show. `props_subpanel` is
-    "element properties in subpanel", which takes all of them out of the rows. */
+    "member properties in subpanel", which takes all of them out of the rows. */
 gboolean dt_masks_model_row_is_expandable(const gboolean props_subpanel);
 
 /** which element "auto-expand selected" keeps open: the selection if it can be
@@ -322,7 +322,7 @@ gboolean dt_masks_model_pin_should_expand_iop(const gboolean is_expanded,
 /** the shape solo-edit mode should be isolating, given the panel's selection,
     or INVALID_MASKID if the mode must stand down */
 dt_mask_id_t dt_masks_model_soloedit_target(dt_iop_gui_blend_data_t *bd);
-/** what the "element properties in subpanel" section shows, and whose */
+/** what the "member properties in subpanel" section shows, and whose */
 typedef struct dt_masks_props_target_t
 {
   /** the selected element, or else the selected group; INVALID_MASKID when
@@ -415,7 +415,7 @@ gboolean dt_masks_model_form_is_linked(const dt_masks_form_t *form);
 /** point the refinement scope at what the panel selection names: the
     element, its group, a staged group, or the whole mask */
 void dt_masks_model_refine_scope_from_selection(dt_iop_module_t *module);
-/** forget a refinement scope whose element or group left the mask, with the
+/** forget a refinement scope whose member left the mask, with the
     selections naming it. TRUE when the scope must be derived again */
 gboolean dt_masks_model_refine_scope_prune(dt_iop_module_t *module);
 /** everything the element list is built from; an unchanged one skips the rebuild */

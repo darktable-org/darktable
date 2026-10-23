@@ -138,7 +138,7 @@ static void test_moving_a_shape_between_groups_invalidates(void **state)
 {
   dt_masks_form_t *grp = flexi_build("u{1,2,i{3,4}}");
   assert_invalidates("moving a shape to another group", ({
-    dt_masks_model_drop_element_onto_element(&flexi_module, grp, 1, 3, TRUE);
+    dt_masks_model_drop_member_onto_member(&flexi_module, grp, 1, 3, TRUE);
   }));
 }
 

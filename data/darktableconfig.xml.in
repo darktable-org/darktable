@@ -3690,7 +3690,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>solo edit the selected mask element</shortdescription>
-    <longdescription>while enabled, only the selected element's nodes and handles are editable on canvas; the other elements still contribute to the mask</longdescription>
+    <longdescription>while enabled, only the selected element's nodes and handles are editable on canvas; the other members still contribute to the mask</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/auto_expand_selected</name>
@@ -3703,8 +3703,8 @@
     <name>plugins/darkroom/masks/properties_subpanel</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>element properties in subpanel</shortdescription>
-    <longdescription>while enabled, the properties of the selected element or group are shown in a collapsible section of their own between the mask list and the refinements instead of in the list, and so are the creation controls of a shape being drawn: a shape's geometry, a parametric element's boost factor, and the opacity of anything</longdescription>
+    <shortdescription>member properties in subpanel</shortdescription>
+    <longdescription>while enabled, the properties of the selected member are shown in a collapsible section of their own between the mask list and the refinements instead of in the list, and so are the creation controls of a shape being drawn: a shape's geometry, a parametric element's boost factor, and the opacity of anything</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/refinements_collapsed</name>
@@ -3718,7 +3718,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>collapse the properties section</shortdescription>
-    <longdescription>whether the mask panel's element and group properties section is folded, for every module and target</longdescription>
+    <longdescription>whether the mask panel's member properties section is folded, for every module and target</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/help_collapsed</name>

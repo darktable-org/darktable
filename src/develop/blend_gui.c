@@ -2730,8 +2730,8 @@ static gboolean _auto_expand_selected(void)
   return dt_conf_get_bool("plugins/darkroom/masks/auto_expand_selected");
 }
 
-// "element properties in subpanel" (same menu): the selected element's or
-// group's properties leave the list for a collapsible section of their own
+// "member properties in subpanel" (same menu): the selected member's
+// properties leave the list for a collapsible section of their own
 // (see _props_panel_sync)
 static gboolean _props_subpanel(void)
 {
@@ -2851,7 +2851,7 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
     autoexpand, _("auto-expand selected"),
     _("when enabled, whatever you select is the one thing\n"
       "expanded, and whatever was expanded before collapses:\n"
-      "selecting a group shows its elements, selecting an element\n"
+      "selecting a group shows its members, selecting an element\n"
       "shows its controls and its group.\n"
       "selecting something with nothing to expand leaves what is\n"
       "open as it is.\n"
@@ -2860,8 +2860,8 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
     _auto_expand_selected(), _masks_auto_expand_selected_toggled)
 
   _MASKS_OPT_CHECK(
-    props_subpanel, _("element properties in subpanel"),
-    _("when enabled, the properties of the selected element or group\n"
+    props_subpanel, _("member properties in subpanel"),
+    _("when enabled, the properties of the selected member\n"
       "are shown in a collapsible section of their own, between the\n"
       "mask list and the refinements, instead of expanding in the list.\n"
       "enabled by default."),
@@ -4781,7 +4781,7 @@ static gchar *_delete_selection_keys(void)
   return dt_shortcut_action_keys(_masks_delete_action, DT_VIEW_DARKROOM, ", ");
 }
 
-// what the selection row's buttons act on: the element or group it names,
+// what the selection row's buttons act on: the member it names,
 // with *group saying which, or the mask's own group while it names the whole
 // mask. FALSE while they act on nothing: a shape being drawn, a locked mask
 static gboolean _selection_target(dt_iop_module_t *module, dt_mask_id_t *id, gboolean *group)
@@ -4836,7 +4836,7 @@ static void _selection_row_update(dt_iop_module_t *module)
             ? _("the element hovered on the canvas, or else the selected group: the"
                 " sections below show and change its properties and refinements")
             : _("the element hovered on the canvas, or else the whole mask while no"
-                " element or group is selected: the sections below show and change its"
+                " member is selected: the sections below show and change its"
                 " properties and refinements");
   }
   if(bd->masks_selection_name_label)
@@ -5001,7 +5001,7 @@ static GtkWidget *_forward_target(GtkWidget *w, const int key, const dt_mask_id_
 //
 // Every element has at least its opacity to show, as a slider leading its
 // expanded controls (a header never shows opacity), and a parametric row's
-// chevron also reveals its boost factor. "element properties in subpanel" moves
+// chevron also reveals its boost factor. "member properties in subpanel" moves
 // all of that to its own section, leaving nothing to expand. Groups never come
 // through here: their chevron reveals their members, not properties (see
 // _group_expand_toggled).
@@ -5558,7 +5558,7 @@ static GtkWidget *_build_props_row_editor(dt_iop_module_t *module,
   return box;
 }
 
-// ---- "element properties in subpanel" --------------------------------------
+// ---- "member properties in subpanel" --------------------------------------
 
 // does this parametric channel have a boost factor? Not every channel does
 static gboolean _param_form_has_boost(const dt_masks_form_t *f)
@@ -5768,7 +5768,7 @@ static void _group_expand_toggled(GtkToggleButton *btn, gpointer user_data)
   const dt_mask_id_t cid = _widget_id(GTK_WIDGET(btn), "props-key");
   const gboolean active = gtk_toggle_button_get_active(btn);
   _remember_expanded(bd, cid, active);
-  _show_expanded_box(GTK_WIDGET(btn), "elem-box", active);
+  _show_expanded_box(GTK_WIDGET(btn), "members-box", active);
 
   if(_group_expand_enforcing) return;
   // a real click on the chevron selects the group, never deselects it, as an
@@ -5809,7 +5809,7 @@ static void _subgroup_expand_toggled(GtkToggleButton *btn, gpointer user_data)
   if(!bd) return;
   const gboolean active = gtk_toggle_button_get_active(btn);
   _remember_expanded(bd, _widget_id(GTK_WIDGET(btn), "props-key"), active);
-  _show_expanded_box(GTK_WIDGET(btn), "elem-box", active);
+  _show_expanded_box(GTK_WIDGET(btn), "members-box", active);
 }
 
 // which element "auto-expand selected" keeps open at build time: the
@@ -6551,7 +6551,7 @@ static dt_masks_param_row_editor_t *_param_row_editor(dt_iop_gui_blend_data_t *b
 #define DND_TARGET_ROW "dt-mask-row"
 #define DND_TARGET_GROUP "dt-mask-group"
 
-// an element dragged by its handle or its name, which carry its form id
+// a member dragged by its handle or its name, which carry its form id
 static const GtkTargetEntry _mask_row_dnd[] = { { (gchar *)DND_TARGET_ROW,
                                                   GTK_TARGET_SAME_APP, 0 } };
 
@@ -6848,7 +6848,7 @@ static void _refresh_all_shape_rows(dt_iop_module_t *module)
 typedef struct _badge_held_t
 {
   gboolean noop; // an element that does nothing at all
-  gboolean low;  // an element or a group under MASK_LOW_OPACITY_WARN
+  gboolean low;  // a member under MASK_LOW_OPACITY_WARN
 } _badge_held_t;
 
 // a group header's badge, or a nested group row's, by the group's marker id
@@ -6886,7 +6886,7 @@ static gchar *_group_badge_tip(const float opacity, const _badge_held_t *held)
   if(held->low)
   {
     if(tip->len) g_string_append_c(tip, '\n');
-    g_string_append_printf(tip, _("this group contains at least one element or group\n"
+    g_string_append_printf(tip, _("this group contains at least one member\n"
                                   "with opacity below %.0f%%"),
                            MASK_LOW_OPACITY_WARN * 100.0f);
   }
@@ -7546,7 +7546,7 @@ static void _paint_in_and_out(cairo_t *cr,
 const dt_masks_flexi_op_t dt_masks_flexi_ops[DT_MASKS_FLEXI_OPS_COUNT] = {
   { 0, dtgtk_cairo_paint_masks_maximum,
     N_("maximum (union)"), N_("maximum"),
-    N_("everything any element covers: where elements overlap, the stronger one wins"),
+    N_("everything any member covers: where members overlap, the stronger one wins"),
     "max(a, b)" },
   { DT_MASKS_STATE_FLEXI_SCREEN, dtgtk_cairo_paint_masks_screen,
     N_("screen (smooth union)"), N_("screen"),
@@ -7555,25 +7555,25 @@ const dt_masks_flexi_op_t dt_masks_flexi_ops[DT_MASKS_FLEXI_OPS_COUNT] = {
     "a + b - ab" },
   { DT_MASKS_STATE_FLEXI_SUM, dtgtk_cairo_paint_masks_sum,
     N_("sum (additive union)"), N_("sum"),
-    N_("like maximum (union), but opacities add up where elements overlap, "
+    N_("like maximum (union), but opacities add up where members overlap, "
        "clipped at full opacity"),
     "min(1, a + b)" },
   { DT_MASKS_STATE_FLEXI_MINIMUM, dtgtk_cairo_paint_masks_minimum,
     N_("minimum (intersection)"), N_("minimum"),
-    N_("only the area every element covers: the weaker one wins"),
+    N_("only the area every member covers: the weaker one wins"),
     "min(a, b)" },
   { DT_MASKS_STATE_FLEXI_PRODUCT, dtgtk_cairo_paint_masks_product,
     N_("product (smooth intersection)"), N_("product"),
     N_("like minimum (intersection), but feathered edges fade together smoothly: "
-       "strong only where every element is"),
+       "strong only where every member is"),
     "a * b" },
   { DT_MASKS_STATE_FLEXI_DIFFERENCE, dtgtk_cairo_paint_masks_difference,
     N_("difference"), N_("difference"),
-    N_("the bottom element, minus every element above it"),
+    N_("the bottom member, minus every member above it"),
     "a * (1 - b)" },
   { DT_MASKS_STATE_FLEXI_EXCLUSION, dtgtk_cairo_paint_masks_exclusion,
     N_("exclusion"), N_("exclusion"),
-    N_("areas covered by an odd number of elements: where two overlap they cancel, "
+    N_("areas covered by an odd number of members: where two overlap they cancel, "
        "a third brings the area back"),
     "max(a * (1 - b), b * (1 - a))" },
 };
@@ -7682,7 +7682,7 @@ static GMenuItem *_flexi_op_gmenu_item(const int i, const char *action, const in
                                         NULL, action, target);
   gchar *tip = g_strdup_printf("%s\n\n%s\n%s", _(dt_masks_flexi_ops[i].tooltip),
                                dt_masks_flexi_ops[i].formula,
-                               _("a: the elements below, b: the next element up"));
+                               _("a: the members below, b: the next member up"));
   g_menu_item_set_attribute(it, "tooltip", "s", tip);
   g_free(tip);
   return it;
@@ -7894,7 +7894,7 @@ static void _toggle_element_disable(dt_iop_module_t *module, const dt_mask_id_t 
   dt_masks_gui_refresh_canvas_edit(module);
 }
 
-// the core of "reset mask": remove every element and group but the mask's
+// the core of "reset mask": remove every member but the mask's
 // own, left empty. No confirmation and no rebuild: the callers (the reset
 // button, a group-layout preset) add those
 void dt_masks_gui_reset_mask_core(dt_iop_module_t *module)
@@ -7905,7 +7905,7 @@ void dt_masks_gui_reset_mask_core(dt_iop_module_t *module)
   {
     dt_masks_clear_form_gui(darktable.develop);
     // the points go, the group form stays, starting over with a marker of its
-    // own: removing its elements through dt_masks_form_remove would delete it
+    // own: removing its members through dt_masks_form_remove would delete it
     // with its last one, and the module's mask with it (see
     // _detach_group_members). Detached before the marker is made: picking its
     // id walks every group's points in forms, this one's included
@@ -7923,7 +7923,7 @@ void dt_masks_gui_reset_mask_core(dt_iop_module_t *module)
   bd->panel_selected_formid = INVALID_MASKID;
   _masks_clear_solo_state(bd);
 
-  // element and group refinements went with their points; the whole-mask one
+  // member refinements went with their points; the whole-mask one
   // is in blend_params, and would stay applied with nothing in the panel
   // showing it
   if(_refine_global_is_set(module))
@@ -7960,11 +7960,11 @@ static void _masks_row_drag_get(GtkWidget *w,
                          sizeof(id));
 }
 
-// the selection a moved element leaves: the element, inside its new group. A
+// the selection a moved member leaves: the member, inside its new group. A
 // parametric channel selects no group, as a click on it does not
-static void _select_moved_element(dt_iop_module_t *module,
-                                  dt_masks_form_t *grp,
-                                  const dt_mask_id_t src)
+static void _select_moved_member(dt_iop_module_t *module,
+                                 dt_masks_form_t *grp,
+                                 const dt_mask_id_t src)
 {
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   bd->panel_selected_formid = src;
@@ -7974,16 +7974,16 @@ static void _select_moved_element(dt_iop_module_t *module,
                                    : INVALID_MASKID;
 }
 
-// the model half of the element-onto-element drop, apart from the GTK handler
+// the model half of the member-onto-member drop, apart from the GTK handler
 // so that the model tests (src/tests/unittests/masks/test_flexi_model.c) run
 // the same code. Changes grp->points and the panel's selection, not history,
 // the pipe or the widgets: the caller commits. `above` means the shape shows
 // above the target, later in the bottom-up list. TRUE if anything moved
-gboolean dt_masks_model_drop_element_onto_element(dt_iop_module_t *module,
-                                                  dt_masks_form_t *grp,
-                                                  const dt_mask_id_t src,
-                                                  const dt_mask_id_t dst,
-                                                  const gboolean above)
+gboolean dt_masks_model_drop_member_onto_member(dt_iop_module_t *module,
+                                                dt_masks_form_t *grp,
+                                                const dt_mask_id_t src,
+                                                const dt_mask_id_t dst,
+                                                const gboolean above)
 {
   if(!grp || src == dst) return FALSE;
   return dt_masks_model_drop_point_onto_point(module, grp, dt_masks_gui_group_point(grp, src),
@@ -8001,7 +8001,7 @@ gboolean dt_masks_model_drop_point_onto_point(dt_iop_module_t *module,
   dt_masks_form_t *sowner = NULL, *downer = NULL;
   GList *s = _point_node_at(grp, sp, &sowner);
   GList *d = _point_node_at(grp, dp, &downer);
-  // elements both: a group is dropped onto through its header. Across nesting
+  // members both: a group is dropped onto through its header. Across nesting
   // levels, only where it may go (see _may_move_into)
   if(!s || !d || dt_masks_point_is_marker(s->data) || dt_masks_point_is_marker(d->data)
      || !_may_move_into(grp, sowner, downer, src))
@@ -8013,9 +8013,9 @@ gboolean dt_masks_model_drop_point_onto_point(dt_iop_module_t *module,
   sowner->points = g_list_delete_link(sowner->points, s);
   _insert_point_after(downer, above ? d : d->prev, spt);
 
-  // a moved element should stay selected at the end of the drag -- otherwise
+  // a moved member should stay selected at the end of the drag -- otherwise
   // it lands in its new spot with no visible indication of what just moved
-  _select_moved_element(module, grp, src);
+  _select_moved_member(module, grp, src);
   return TRUE;
 }
 
@@ -8071,17 +8071,17 @@ static const GtkTargetEntry _mask_hdr_dnd[] = {
 // (see _drop_target_at). The line the motion handler draws and the move the
 // receive handler makes both come from here, so the two cannot disagree:
 //
-// - an element: an element row (tagged "drop-item"), header line and body.
+// - a member: its row (tagged "drop-item"), header line and body.
 //   Its top half lands above it, its bottom half below. Rows display
 //   bottom-up, so above is later in the list
-// - a list: a group's elements box (tagged "drop-list-owner"). Its elements
+// - a list: a group's members box (tagged "drop-list-owner"). Its members
 //   are targets of their own, so what is left to hit are the gaps between
-//   them, which land above the element under the gap. Above its first element
+//   them, which land above the member under the gap. Above its first member
 //   or below its last, the list's owner decides
 // - a group: its block, title included (see _drop_on_group)
 typedef struct dt_masks_drop_t
 {
-  GtkWidget *frame; // the element or group it lands beside, or the group it goes in
+  GtkWidget *frame; // the member it lands beside, or the group it goes in
   gboolean inside;  // inside the group `frame`, on top of it
   gboolean above;   // beside `frame`: above it, else below
 } dt_masks_drop_t;
@@ -8095,7 +8095,7 @@ static GtkWidget *_drop_item_of(GtkWidget *f)
 }
 
 // the drop frame list child `c` stands for, or NULL for a child that is no
-// element (a group's opacity slider, the row of a shape being drawn)
+// member (a group's opacity slider, the row of a shape being drawn)
 static GtkWidget *_drop_frame_of_item(GtkWidget *c)
 {
   GtkWidget *f = g_object_get_data(G_OBJECT(c), "drop-frame");
@@ -8103,7 +8103,7 @@ static GtkWidget *_drop_frame_of_item(GtkWidget *c)
   return g_object_get_data(G_OBJECT(c), "drop-item") ? c : NULL;
 }
 
-// the elements of `list` in `in`'s coordinates: its first (top) and last
+// the members of `list` in `in`'s coordinates: its first (top) and last
 // (bottom) one with their edges, and the topmost one reaching below `y`, the
 // one under a gap at `y`. FALSE when it shows none
 typedef struct dt_masks_drop_list_t
@@ -8125,7 +8125,7 @@ static gboolean _drop_list_items(GtkWidget *list,
     GtkWidget *c = k->data;
     GtkWidget *f = _drop_frame_of_item(c);
     gint cx = 0, cy = 0;
-    // mapped, not visible: a collapsed group's elements stay visible in a
+    // mapped, not visible: a collapsed group's members stay visible in a
     // hidden box, at stale positions
     if(!f || !gtk_widget_get_mapped(c) || !gtk_widget_translate_coordinates(c, in, 0, 0, &cx, &cy))
       continue;
@@ -8141,7 +8141,7 @@ static gboolean _drop_list_items(GtkWidget *list,
 // how high the bands along the top and bottom edge of group block `f` are,
 // which land beside it, with its title's offset in *ty; 0 for a group with
 // nothing beside it. A nested group shown as its group sits among its holder's
-// elements
+// members
 static int _group_drop_edge(GtkWidget *f, gint *ty)
 {
   GtkWidget *title = g_object_get_data(G_OBJECT(f), "drop-title");
@@ -8155,9 +8155,9 @@ static int _group_drop_edge(GtkWidget *f, gint *ty)
 
 // a group's block. The top edge of its title lands above the group, its bottom
 // edge below it: a band as high as half the title, or a third of the block
-// when the block is no more than its title. Below its last element it lands
+// when the block is no more than its title. Below its last member it lands
 // there, at the bottom of the group. Everything else lands inside it, on top,
-// right where its top element shows.
+// right where its top member shows.
 //
 // A group with nothing beside it (the mask's own, the group of a nested group
 // shown as an element row) takes the edges inside too, as does any drop with
@@ -8201,9 +8201,9 @@ static dt_masks_drop_t _drop_at(GtkWidget *w, const int y)
   return _drop_at(owner, oy);
 }
 
-// the slot between two elements is both "below the upper one" and "above the
+// the slot between two members is both "below the upper one" and "above the
 // lower one", drawn as the lower one's top edge so that it shows as one line,
-// not two a few pixels apart. Only the slot below a list's last element is on
+// not two a few pixels apart. Only the slot below a list's last member is on
 // its bottom edge. Found by on-screen geometry: the list packs from the end,
 // so its children's order does not say where they show
 static void _drop_line(const dt_masks_drop_t d, GtkWidget **w, gboolean *above)
@@ -8251,7 +8251,7 @@ static void _masks_group_drag_get(GtkWidget *w,
                          sizeof(id));
 }
 
-// select the group a drag moved, as an element drop selects its element
+// select the group a drag moved, as a member drop selects its member
 // (dt_masks_model_drop_point_onto_point): it shows what moved, and the next
 // "add group" goes by the selection
 static void _select_moved_group(dt_iop_module_t *module, const dt_mask_id_t cid)
@@ -8292,13 +8292,13 @@ static gboolean _drop_group_inside(dt_iop_module_t *module,
   return ok;
 }
 
-// the model half of the element-onto-group-header drop, split as
-// dt_masks_model_drop_element_onto_element is: the element joins the group,
+// the model half of the member-onto-group-header drop, split as
+// dt_masks_model_drop_member_onto_member is: the member joins the group,
 // on top
-gboolean dt_masks_model_drop_element_onto_group(dt_iop_module_t *module,
-                                                dt_masks_form_t *grp,
-                                                const dt_mask_id_t src,
-                                                const dt_mask_id_t dst)
+gboolean dt_masks_model_drop_member_onto_group(dt_iop_module_t *module,
+                                               dt_masks_form_t *grp,
+                                               const dt_mask_id_t src,
+                                               const dt_mask_id_t dst)
 {
   if(!grp || src == dst) return FALSE;
   return dt_masks_model_drop_point_onto_group(module, grp, dt_masks_gui_group_point(grp, src), dst);
@@ -8314,7 +8314,7 @@ gboolean dt_masks_model_drop_point_onto_group(dt_iop_module_t *module,
   dt_masks_form_t *sowner = NULL;
   GList *s = _point_node_at(grp, sp, &sowner);
   dt_masks_form_t *downer = _group_of(grp, dst);
-  // as for a drop onto an element
+  // as for a drop onto a member
   if(!s || dt_masks_point_is_marker(s->data) || !downer || !_may_move_into(grp, sowner, downer, src))
     return FALSE;
   // already in that group: nothing to do
@@ -8324,15 +8324,15 @@ gboolean dt_masks_model_drop_point_onto_group(dt_iop_module_t *module,
   sowner->points = g_list_delete_link(sowner->points, s);
   _insert_point_after(downer, g_list_last(downer->points), spt);
 
-  // a moved element should stay selected at the end of the drag
-  _select_moved_element(module, grp, src);
+  // a moved member should stay selected at the end of the drag
+  _select_moved_member(module, grp, src);
   return TRUE;
 }
 
-// drop what `sel` carries beside the reference `dp`, above or below it: an
-// element, or a group dragged by its header, which moves as the
+// drop what `sel` carries beside the reference `dp`, above or below it: a
+// member, or a group dragged by its header, which moves as the
 // nested group it is in its holder's list. Every drop that lands beside
-// something, an element or a group, goes through here
+// something goes through here
 static gboolean _drop_beside(dt_iop_module_t *module,
                              GdkDragContext *ctx,
                              GtkSelectionData *sel,
@@ -8471,7 +8471,7 @@ static void _set_row_expanded(dt_iop_module_t *module,
   // a props chevron carries the editor box it drives, a nested group row's
   // the box of its group; a parametric row's chevron carries neither
   if(g_object_get_data(G_OBJECT(toggle), "props-editor-box")
-     || g_object_get_data(G_OBJECT(toggle), "elem-box"))
+     || g_object_get_data(G_OBJECT(toggle), "members-box"))
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle), expanded);
     return;
@@ -8495,7 +8495,7 @@ static void _set_row_expanded(dt_iop_module_t *module,
 // this enforces it in place.
 //
 // `id` is only a candidate: one with nothing to expand (a group, an element
-// while "element properties in subpanel" is on, no selection) leaves the open
+// while "member properties in subpanel" is on, no selection) leaves the open
 // element open rather than shifting the panel for nothing
 static void _auto_expand_selected_row(dt_iop_module_t *module, const dt_mask_id_t id)
 {
@@ -8507,7 +8507,7 @@ static void _auto_expand_selected_row(dt_iop_module_t *module, const dt_mask_id_
   // `id` has nothing to expand -- leave the last-expanded element alone. A
   // nested group's chevron shows its group, not properties: collapsing it for
   // the next selection could fold that selection away (see _reveal_nesting)
-  if(!toggle || g_object_get_data(G_OBJECT(toggle), "elem-box")) return;
+  if(!toggle || g_object_get_data(G_OBJECT(toggle), "members-box")) return;
 
   if(bd->masks_last_expanded_elem == id
      && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle)))
@@ -8973,7 +8973,7 @@ static gpointer _find_tagged_with(GtkWidget *w, const char *key, gpointer value,
   return found;
 }
 
-// start renaming element or group `id` in its row of the list
+// start renaming member `id` in its row of the list
 static void _rename_in_list(dt_iop_module_t *module, const dt_mask_id_t id, const gboolean group)
 {
   dt_iop_gui_blend_data_t *bd = module->blend_data;
@@ -9259,7 +9259,7 @@ static void _toggle_expand_widget(GtkWidget *src)
 // and it shows its members' headers alone: its opacity slider and the
 // editors (tagged "drag-hide" where they are built) stay hidden. What a drag
 // opened stays open while it lasts, so passing over it again moves nothing,
-// and folds again once it ends, but for where the element landed (see
+// and folds again once it ends, but for where the member landed (see
 // _masks_drag_restore)
 #define MASKS_SPRING_DELAY_MS 600
 
@@ -9267,7 +9267,7 @@ static struct
 {
   gboolean active;       // a drag of the list's own is in progress
   gboolean dropped;      // and it landed, see _drop_received
-  dt_mask_id_t formid;   // the element row it drags, or INVALID_MASKID
+  dt_mask_id_t formid;   // the member row it drags, or INVALID_MASKID
   gdouble start_x, start_y; // the pointer, in root coordinates, when it began
   GtkWidget *candidate;  // the folded group it rests on (weak)
   guint timer;           // opens the candidate once the rest is long enough
@@ -10106,12 +10106,12 @@ gboolean dt_masks_model_move_group(dt_iop_module_t *module,
   // group, which has no holder, never moves
   dt_masks_form_t *src = dt_masks_model_nested_group_of(grp, src_cid);
   if(!src) return FALSE;
-  if(inside) return dt_masks_model_drop_element_onto_group(module, grp, src->formid, dst_cid);
+  if(inside) return dt_masks_model_drop_member_onto_group(module, grp, src->formid, dst_cid);
   // beside a group is among its holder's members, and nothing is beside the
   // mask's own group
   dt_masks_form_t *beside = dt_masks_model_nested_group_of(grp, dst_cid);
   return beside
-         && dt_masks_model_drop_element_onto_element(module, grp, src->formid, beside->formid, above);
+         && dt_masks_model_drop_member_onto_member(module, grp, src->formid, beside->formid, above);
 }
 
 // highest number currently held by a live group of flexi operator `mode`
@@ -10447,7 +10447,7 @@ int dt_masks_model_prune_dangling_members(dt_masks_form_t *grp)
   return n;
 }
 
-// "delete group": the group goes, and its elements with it, as the member its
+// "delete group": the group goes, and its members with it, as the member its
 // holder has for it. The mask's own group stays: the mask is that group
 static void _group_delete(dt_iop_module_t *module, const dt_mask_id_t cid)
 {
@@ -10471,7 +10471,7 @@ void dt_masks_gui_empty_group_core(dt_iop_module_t *module, const dt_mask_id_t c
   g_list_free(fids);
 }
 
-// "empty group": its elements go, the group stays where it is, selected, with
+// "empty group": its members go, the group stays where it is, selected, with
 // its settings and its number
 static void _group_reset_members(dt_iop_module_t *module, const dt_mask_id_t cid)
 {
@@ -10601,7 +10601,7 @@ static void _group_header_press(GtkGestureSingle *gesture,
 // here anyway (see _group_drag_begin) takes the select-only branch instead: it
 // selects the group if it wasn't already selected, but never deselects it --
 // only a click on the title itself toggles selection off (see _select_group).
-// Shift+click shows or hides the group's elements, as on an element row.
+// Shift+click shows or hides the group's members, as on an element row.
 // Connected as "released" alone, as an element row's release is (see
 // _row_click_release)
 static void _group_header_release(GtkGestureSingle *gesture,
@@ -10871,7 +10871,7 @@ static void _group_toggle_bypass(dt_iop_module_t *module, dt_mask_id_t cid)
 // flip every direct member's own inversion independently (not a group-wide
 // state to set/clear): ON, OFF, ON becomes OFF, ON, OFF. A one-shot action, not
 // a persistent "group is inverted" mode -- shared by the group header's
-// invert button (shift+click) and the "invert all elements of selected group"
+// invert button (shift+click) and the "invert all members of selected group"
 // shortcut. An element's inversion is its own INVERSE bit; a nested group's is
 // its marker's OP_INVERT, as a reference to a group carries no settings of its
 // own (see _synth_ref in masks.c) and its header's lead icon paints from the
@@ -10933,7 +10933,7 @@ static void _group_opacity_update_tooltip(GtkWidget *slider, const float value)
 {
   gchar *tip = g_strdup_printf(_("opacity: %.0f%%\n"
                                  "applied on top of -- not instead of -- each "
-                                 "element's own opacity, the two multiply together"),
+                                 "member's own opacity, the two multiply together"),
                                value * 100.0f);
   gtk_widget_set_tooltip_text(slider, tip);
   g_free(tip);
@@ -10956,7 +10956,7 @@ static void _group_opacity_changed(GtkWidget *w, dt_iop_module_t *module)
   dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
   dt_control_queue_redraw_center();
   // an opacity change can push this group -- or, since it scales every
-  // member's own effective opacity too, any of its elements -- across the
+  // member's own effective opacity too, any of its members -- across the
   // low-opacity threshold; refresh every badge in the panel, not just this
   // group's own (mirrors _props_row_apply's own call for the same reason).
   _refresh_lowop_badges(module);
@@ -11011,7 +11011,7 @@ static dt_iop_module_t *_group_act_target(gpointer u, dt_mask_id_t *cid)
   return g_object_get_data(G_OBJECT(anchor), "module");
 }
 
-// "compose": the element or group of `pt` goes into a new group folding with
+// "compose": the member of `pt` goes into a new group folding with
 // `flexi_op`, under a new empty group, which is selected so the next shape
 // drawn lands in it
 static void _compose(dt_iop_module_t *module,
@@ -11179,7 +11179,7 @@ dt_masks_solo_canvas_t dt_masks_model_toggle_soloedit(dt_iop_module_t *module,
   return DT_MASKS_SOLO_CANVAS_ONE;
 }
 
-// solo-edit a single element or group: only its outlines/handles are editable
+// solo-edit a single member: only its outlines/handles are editable
 // on the canvas, while the full mask still computes so every shape's effect is
 // still visible in the mask overlay. Toggling off restores editing of the whole
 // mask. Driven by the solo edit mode following the selection (see
@@ -11239,7 +11239,7 @@ static void _clear_drop_classes(GtkWidget *f)
 }
 
 // the one drop indicator shown while a drag hovers the list: the insertion line
-// where the element would land, drawn across the width it would have there,
+// where the member would land, drawn across the width it would have there,
 // and the group it would land in, lit up. Either widget may be destroyed by a
 // rebuild under it
 static struct
@@ -11263,16 +11263,16 @@ static void _drop_indicator_track(GtkWidget **slot, GtkWidget *w)
 static GtkWidget *_mask_row_header(GtkWidget *w);
 
 // the widget an insertion line along an edge of drop frame `frame` is painted
-// on. A group block paints its own edges (see .dt_masks_group_block). An
-// element paints nothing itself, and the parts it holds would cover a line
+// on. A group block paints its own edges (see .dt_masks_group_block). A
+// member row paints nothing itself, and the parts it holds would cover a line
 // drawn on it, so the line goes on the part showing at that edge: its header
 // at the top, its bottom-most part at the bottom (an open editor's card), as
-// wide as the element
+// wide as the member
 static GtkWidget *_drop_line_paint_widget(GtkWidget *frame, const gboolean above)
 {
-  // a group with no elements showing keeps no room under its header for the
+  // a group with no members showing keeps no room under its header for the
   // line (see .dt_masks_group_block), so the line goes on the header, as it
-  // does for an element
+  // does for a member row
   if(!above && _has_class(frame, "dt_masks_group_block"))
   {
     GtkWidget *inner = gtk_bin_get_child(GTK_BIN(frame));
@@ -11325,7 +11325,7 @@ static void _drop_indicator_show(GtkWidget *frame, const gboolean above, GtkWidg
 }
 
 // the group block a drop lands in: the group itself for a drop inside it, else
-// the one holding the list its frame is an element of. NULL when the frame is
+// the one holding the list its frame is a member of. NULL when the frame is
 // in no group's list
 static GtkWidget *_drop_group_of(const dt_masks_drop_t d)
 {
@@ -11399,7 +11399,7 @@ static void _masks_drag_rest_on(dt_iop_module_t *module, GtkWidget *list, GtkWid
 }
 
 // end the drag's own state: fold back what it opened, but for where the
-// element landed: its group `landed` and every group holding that one (NULL
+// member landed: its group `landed` and every group holding that one (NULL
 // for a drag that did not land). Then show again what it hid
 static void _masks_drag_restore(dt_iop_module_t *module, GtkWidget *landed)
 {
@@ -11487,8 +11487,8 @@ static GtkWidget *_drop_target_at(GtkWidget *w, const int x, const int y, int *t
 // where a drop at (x, y) on the list lands; no frame when it lands nowhere.
 //
 // The band along a group's bottom edge (see _drop_on_group) lands below the
-// group even over the group's own last element, which otherwise covers it:
-// without that, the last element of a group could not be moved out below it.
+// group even over the group's own last member, which otherwise covers it:
+// without that, the last member of a group could not be moved out below it.
 // The innermost group whose band holds the pointer is the one it lands below
 static dt_masks_drop_t _drop_on_list(GtkWidget *list, const int x, const int y)
 {
@@ -11547,7 +11547,7 @@ static gboolean _drop_motion(
     _drop_indicator_set(NULL, NULL, NULL);
   else if(d.inside)
   {
-    // it lands on top, so the line is on its top element's top edge, and an
+    // it lands on top, so the line is on its top member's top edge, and an
     // empty or folded group is only lit up
     dt_masks_drop_list_t l;
     const gboolean any =
@@ -12018,7 +12018,7 @@ static GtkWidget *_make_pending_shape_row(dt_iop_module_t *module, dt_masks_form
                    _forward_target(smoothing, _FORWARD_BRUSH_SMOOTHING, INVALID_MASKID));
   }
 
-  // with "element properties in subpanel" the row keeps only its header, in the
+  // with "member properties in subpanel" the row keeps only its header, in the
   // group the shape lands in, and the controls go to the subpanel, which the
   // rebuild building this row fills right after (see _props_panel_sync)
   if(_props_subpanel())
@@ -12103,8 +12103,8 @@ static void _invert_element(dt_iop_module_t *module, const dt_mask_id_t id)
 }
 
 // the header's invert buttons: click inverts the element, or the group's
-// output; shift+click on a group flips each of its elements instead, as the
-// "invert all elements" shortcut does
+// output; shift+click on a group flips each of its members instead, as the
+// "invert all members" shortcut does
 static void _invert_element_pressed(GtkGestureSingle *gesture,
                                     const int n_press,
                                     const double x,
@@ -12352,10 +12352,10 @@ static DTGTKCairoPaintIconFunc _kind_icon_paint(const guint kind)
   }
 }
 
-static void _pack_group_elements(dt_iop_module_t *module,
-                                 dt_masks_form_t *grp,
-                                 GtkWidget *container,
-                                 GList *fids);
+static void _pack_group_members(dt_iop_module_t *module,
+                                dt_masks_form_t *grp,
+                                GtkWidget *container,
+                                GList *fids);
 static void _pack_subgroup(dt_iop_module_t *module, dt_masks_form_t *sub, GtkWidget *box);
 static gboolean _nested_as_group(const dt_masks_point_group_t *pt, const dt_masks_form_t *form);
 
@@ -12560,7 +12560,7 @@ dt_masks_param_view_t dt_masks_model_param_view_resolve(const dt_masks_param_vie
 //
 // A parametric row's opacity follows the rule every other element row's
 // does: a full slider leading the expanded controls, so only once the row is
-// expanded. `props_subpanel` is "element properties in subpanel", which takes
+// expanded. `props_subpanel` is "member properties in subpanel", which takes
 // the boost factor and that opacity slider out of the row and into its own
 // section.
 dt_masks_param_vis_t dt_masks_model_param_row_visibility(const dt_masks_param_view_t view,
@@ -14158,7 +14158,7 @@ static void _subgroup_body_release(GtkGestureSingle *gesture,
 
 // an element row's header line squares off onto its editor's rail while any
 // of its editors shows (.dt_masks_open in darktable.css), as a group's header
-// does onto its elements' rail (see _sync_group_open)
+// does onto its members' rail (see _sync_group_open)
 static void _sync_element_open(GtkWidget *editor, GParamSpec *pspec, gpointer row_vbox)
 {
   static const char *const keys[] = { "param-editor-box", "props-editor-box",
@@ -14209,7 +14209,7 @@ static GtkWidget *_make_shape_row(dt_iop_module_t *module,
   // the header line alone, which an open row shades like a group's header
   // (see _sync_element_open)
   dt_gui_add_class(row, "dt_masks_header");
-  dt_gui_add_class(row, "dt_masks_element_header");
+  dt_gui_add_class(row, "dt_masks_row_header");
   // one tooltip for the row's three plain click surfaces, which share their
   // handlers (_row_click_press, _row_click_release), built from the gestures
   // this row offers. Freed after the last of them (row_evbox)
@@ -14304,7 +14304,7 @@ static GtkWidget *_make_shape_row(dt_iop_module_t *module,
   // chevron the row header shows, which shift+click on the lead handle or the
   // title also drives (see _row_click_release, and _auto_expand_selected_row).
   // NULL for a row with nothing to expand: a shape or raster mask while
-  // "element properties in subpanel" is on
+  // "member properties in subpanel" is on
   GtkWidget *expand_toggle = NULL;
   // a nested group, shown under its row (see _pack_subgroup)
   GtkWidget *subgroup_box = NULL;
@@ -14314,7 +14314,7 @@ static GtkWidget *_make_shape_row(dt_iop_module_t *module,
     // to the shape's; its chevron shows its group instead of properties
     subgroup_box = dt_gui_vbox();
     dt_gui_add_class(subgroup_box, "dt_masks_list");
-    dt_gui_add_class(subgroup_box, "dt_masks_group_elements");
+    dt_gui_add_class(subgroup_box, "dt_masks_group_members");
     // with the subpanel, its opacity slider is there while it is selected
     if(!props_subpanel)
     {
@@ -14344,9 +14344,9 @@ static GtkWidget *_make_shape_row(dt_iop_module_t *module,
     dt_gui_add_class(expand_toggle, "dt_masks_icon");
     dt_gui_add_class(expand_toggle, "dt_masks_expander");
     gtk_widget_set_valign(expand_toggle, GTK_ALIGN_CENTER);
-    gtk_widget_set_tooltip_text(expand_toggle, _("show/hide this group's groups"));
+    gtk_widget_set_tooltip_text(expand_toggle, _("show/hide this group's members"));
     g_object_set_data(G_OBJECT(expand_toggle), "props-key", GINT_TO_POINTER(fid));
-    g_object_set_data(G_OBJECT(expand_toggle), "elem-box", subgroup_box);
+    g_object_set_data(G_OBJECT(expand_toggle), "members-box", subgroup_box);
     g_signal_connect(G_OBJECT(expand_toggle), "toggled",
                      G_CALLBACK(_subgroup_expand_toggled), module);
   }
@@ -14395,7 +14395,7 @@ static GtkWidget *_make_shape_row(dt_iop_module_t *module,
     // opacity leads the expanded controls, then everything else this shape
     // has (size, hardness, feather, rotation, curvature, compression, cleanup,
     // smoothing, refine-mask-boundary).
-    // "element properties in subpanel" shows them there instead, for the
+    // "member properties in subpanel" shows them there instead, for the
     // selected shape (see _props_panel_sync), so the row has nothing to expand
     if(expandable)
     {
@@ -14530,8 +14530,8 @@ static GtkWidget *_make_shape_row(dt_iop_module_t *module,
     dt_gui_box_add(row_vbox, props_evbox);
   }
 
-  // indented under the row by the rail every group's elements have (see
-  // .dt_masks_group_elements in darktable.css). Its groups are selected, dropped
+  // indented under the row by the rail every group's members have (see
+  // .dt_masks_group_members in darktable.css). Its groups are selected, dropped
   // onto and dimmed through their own headers, as the top list's are
   if(subgroup_box)
   {
@@ -14737,16 +14737,16 @@ static gboolean _masks_panel_reconcile(dt_iop_module_t *module,
 }
 
 // a group header squares its bottom-left corner onto the rail below it while
-// its elements show (.dt_masks_open in darktable.css). Every route that
+// its members show (.dt_masks_open in darktable.css). Every route that
 // opens or closes a group shows or hides its element box, so following that
-// box covers them all. The box holding the header and the elements follows
-// too, since the room it keeps under the elements is only needed while they
+// box covers them all. The box holding the header and the members follows
+// too, since the room it keeps under the members is only needed while they
 // show (see .dt_masks_group_block)
-static void _sync_group_open(GtkWidget *elem_box, GParamSpec *pspec, gpointer hdr)
+static void _sync_group_open(GtkWidget *members_box, GParamSpec *pspec, gpointer hdr)
 {
-  GList *kids = gtk_container_get_children(GTK_CONTAINER(elem_box));
-  GtkWidget *inner = gtk_widget_get_parent(elem_box);
-  if(gtk_widget_get_visible(elem_box) && kids)
+  GList *kids = gtk_container_get_children(GTK_CONTAINER(members_box));
+  GtkWidget *inner = gtk_widget_get_parent(members_box);
+  if(gtk_widget_get_visible(members_box) && kids)
   {
     dt_gui_add_class(GTK_WIDGET(hdr), "dt_masks_open");
     if(inner) dt_gui_add_class(inner, "dt_masks_open");
@@ -14974,7 +14974,7 @@ static void _help_panel_sync(dt_iop_module_t *module, const gboolean force)
   _help_panel_show(bd);
 }
 
-// one group of the panel: its header, and its element rows nested under it.
+// one group of the panel: its header, and its member rows nested under it.
 // `grp` is the group's form, NULL for a mask with no group form yet, `marker`
 // holds the group's settings, and its members start at `first`
 static void _pack_group(dt_iop_module_t *module,
@@ -15058,15 +15058,15 @@ static void _pack_group(dt_iop_module_t *module,
   _press_before_widget(dt_gui_connect_click(group_visibility, _visibility_group_pressed, NULL,
                                             module));
   // invert: the group's output, or the whole mask's; shift+click flips each
-  // of its elements instead
+  // of its members instead
   GtkWidget *group_invert = _make_invert_button();
   g_object_set_data(G_OBJECT(group_invert), "group-key", GUINT_TO_POINTER(cid));
   _set_invert_state(group_invert, group_inverted);
   gtk_widget_set_tooltip_text(group_invert,
                               is_root ? _("invert the whole mask\n"
-                                          "shift+click: flip the invert of each element on its own")
+                                          "shift+click: flip the invert of each member on its own")
                                       : _("invert what this group gives\n"
-                                          "shift+click: flip the invert of each element on its own"));
+                                          "shift+click: flip the invert of each member on its own"));
   _press_before_widget(dt_gui_connect_click(group_invert, _invert_group_pressed, NULL, module));
   // low-opacity warning for the whole group (blank by default, activated in place by
   // _refresh_lowop_badges, which also sets its initial state at the end of
@@ -15112,12 +15112,12 @@ static void _pack_group(dt_iop_module_t *module,
   if(is_root)
   {
     g_ptr_array_add(tip_lines,
-                    g_strdup(_("the whole mask: every element and group is inside it\n"
+                    g_strdup(_("the whole mask: every member is inside it\n"
                                "click to select it: the refinements then act on the"
                                " whole mask\n"
                                "ctrl+shift+click to reset the mask")));
     if(!empty)
-      g_ptr_array_add(tip_lines, g_strdup(_("shift+click to show/hide its elements")));
+      g_ptr_array_add(tip_lines, g_strdup(_("shift+click to show/hide its members")));
     if(delete_keys)
       g_ptr_array_add(tip_lines,
                       g_strdup_printf(_("%s to reset the mask, once selected"), delete_keys));
@@ -15131,15 +15131,15 @@ static void _pack_group(dt_iop_module_t *module,
                                           " the whole mask\n"
                                           "ctrl+click to rename")));
     if(!empty)
-      g_ptr_array_add(tip_lines, g_strdup(_("shift+click to show/hide its elements")));
-    g_ptr_array_add(tip_lines, g_strdup(_("ctrl+shift+click to delete it and every element"
+      g_ptr_array_add(tip_lines, g_strdup(_("shift+click to show/hide its members")));
+    g_ptr_array_add(tip_lines, g_strdup(_("ctrl+shift+click to delete it and every member"
                                           " in it")));
     if(movable)
       g_ptr_array_add(tip_lines, g_strdup(_("drag to rearrange: drop it onto a group to put it"
                                             " inside, onto the group's top or bottom edge to"
                                             " put it beside")));
     if(delete_keys)
-      g_ptr_array_add(tip_lines, g_strdup_printf(_("%s to delete it and every element in it,"
+      g_ptr_array_add(tip_lines, g_strdup_printf(_("%s to delete it and every member in it,"
                                                    " once selected"),
                                                  delete_keys));
   }
@@ -15149,24 +15149,24 @@ static void _pack_group(dt_iop_module_t *module,
   gtk_widget_set_tooltip_text(labevt, title_tip);
   g_free(title_tip);
   g_ptr_array_free(tip_lines, TRUE);
-  // the group's operator: how it folds its own elements, from the bottom one
+  // the group's operator: how it folds its own members, from the bottom one
   // up (dev-doc/masks_data_model.md)
   gchar *ghandle_tip = g_strdup_printf(
     is_root && group_bypassed ? _("mask operator: %s (disabled)\n"
-                                  "the mask keeps its elements, but contributes nothing\n"
+                                  "the mask keeps its members, but contributes nothing\n"
                                   "click the eye to switch it back on\n"
                                   "click to change the operator")
     : is_root ? _("mask operator: %s\n"
-                  "how the mask combines its elements and groups, from the bottom"
+                  "how the mask combines its members, from the bottom"
                   " one up\n"
                   "click to change the operator")
     : group_bypassed ? _("group operator: %s (disabled)\n"
-                       "this group keeps its elements and its place, but contributes"
+                       "this group keeps its members and its place, but contributes"
                        " nothing to the mask\n"
                        "click the eye to switch it back on\n"
                        "click to change the operator")
                    : _("group operator: %s\n"
-                       "how this group combines its elements, from the bottom one up\n"
+                       "how this group combines its members, from the bottom one up\n"
                        "click to change the operator"),
     _flexi_op_name(group_flexi_op));
   GtkWidget *ghandle_btn = NULL;
@@ -15221,7 +15221,7 @@ static void _pack_group(dt_iop_module_t *module,
     dt_gui_add_class(group_expand_toggle, "dt_masks_icon");
     dt_gui_add_class(group_expand_toggle, "dt_masks_expander");
     gtk_widget_set_tooltip_text(group_expand_toggle,
-                                _("show/hide this group's elements"));
+                                _("show/hide this group's members"));
     g_object_set_data(G_OBJECT(group_expand_toggle), "props-key", GUINT_TO_POINTER(cid));
     g_signal_connect(G_OBJECT(group_expand_toggle), "toggled",
                      G_CALLBACK(_group_expand_toggled), module);
@@ -15234,7 +15234,7 @@ static void _pack_group(dt_iop_module_t *module,
   {
     group_expander = dtgtk_togglebutton_new(_paint_param_inout, 0, NULL);
     gtk_widget_set_sensitive(group_expander, FALSE);
-    gtk_widget_set_tooltip_text(group_expander, _("this group has no elements to show"));
+    gtk_widget_set_tooltip_text(group_expander, _("this group has no members to show"));
   }
 
   _pack_row_header(hdr, ghandle, labevt, group_invert, group_visibility, group_expander);
@@ -15282,7 +15282,7 @@ static void _pack_group(dt_iop_module_t *module,
   g_object_set_data(G_OBJECT(hdr_evbox), "lowop-badge", group_lowop_badge);
   // press/release are connected by _make_group_header_evbox above
 
-  // the header and this group's elements as one block, the element rows
+  // the header and this group's members as one block, the element rows
   // nested under the header and rendered bottom-up. It is an event box, so a click on
   // the group's body outside its rows (padding, indent, gaps) selects the
   // group; children with their own windows still take their clicks first
@@ -15316,7 +15316,7 @@ static void _pack_group(dt_iop_module_t *module,
     g_object_set_data(G_OBJECT(hdr_evbox), "group-bypassed", GINT_TO_POINTER(1));
 
   // a drop is placed against the group's block, title included (see
-  // _drop_on_group), wherever its elements and the gaps between them are not
+  // _drop_on_group), wherever its members and the gaps between them are not
   // under the pointer
   g_object_set_data_full(G_OBJECT(group_block), "group-formids", g_list_copy(formids),
                          (GDestroyNotify)g_list_free);
@@ -15340,64 +15340,64 @@ static void _pack_group(dt_iop_module_t *module,
   if(_group_header_is_selection(hdr_evbox, _explicit_group_cid(bd)))
     dt_gui_add_class(hdr, "dt_masks_selected");
 
-  GtkWidget *elem_box = dt_gui_vbox();
-  // indent/inset entirely via CSS (.dt_masks_group_elements in
+  GtkWidget *members_box = dt_gui_vbox();
+  // indent/inset entirely via CSS (.dt_masks_group_members in
   // darktable.css), not hardcoded here
-  dt_gui_add_class(elem_box, "dt_masks_list");
-  dt_gui_add_class(elem_box, "dt_masks_group_elements");
-  gtk_widget_set_visible(elem_box, empty || group_expanded);
+  dt_gui_add_class(members_box, "dt_masks_list");
+  dt_gui_add_class(members_box, "dt_masks_group_members");
+  gtk_widget_set_visible(members_box, empty || group_expanded);
   if(group_expand_toggle)
-    g_object_set_data(G_OBJECT(group_expand_toggle), "elem-box", elem_box);
+    g_object_set_data(G_OBJECT(group_expand_toggle), "members-box", members_box);
 
   const gboolean list_slider = !_props_subpanel();
   // the group's opacity, a labeled slider leading its expanded contents, or
   // in the properties subpanel while the group is selected. Packed first
   // so it stays above the member rows (packed from the bottom, see
-  // _pack_group_elements) and the pending row
+  // _pack_group_members) and the pending row
   if(list_slider)
   {
     GtkWidget *slider_box = _build_group_opacity_editor(module, cid);
     g_object_set_data(G_OBJECT(slider_box), "drag-hide", GINT_TO_POINTER(1));
-    dt_gui_box_add(elem_box, slider_box);
+    dt_gui_box_add(members_box, slider_box);
   }
   // the card hangs straight off the header as one block, so the header
   // squares its bottom edge onto it (.dt_masks_has_card)
   if(list_slider) dt_gui_add_class(hdr, "dt_masks_has_card");
 
-  _pack_group_elements(module, grp, elem_box, g_list_reverse(g_list_copy(formids)));
-  // the gaps between its elements are placed against them (see _drop_at)
-  g_object_set_data(G_OBJECT(elem_box), "drop-list-owner", group_block);
-  g_object_set_data(G_OBJECT(group_block), "drop-list", elem_box);
-  _set_drop_target(elem_box);
+  _pack_group_members(module, grp, members_box, g_list_reverse(g_list_copy(formids)));
+  // the gaps between its members are placed against them (see _drop_at)
+  g_object_set_data(G_OBJECT(members_box), "drop-list-owner", group_block);
+  g_object_set_data(G_OBJECT(group_block), "drop-list", members_box);
+  _set_drop_target(members_box);
 
   // if a shape is currently being drawn and this group is where it would land
   // (see _recompute_insert_hint), show its disposable placeholder row at the
-  // top of this group's elements -- exactly where the real row lands once it
+  // top of this group's members -- exactly where the real row lands once it
   // commits (a new element is inserted above the group's current top member).
   if(pending_form
      && (!grp
          || (bd->insert_active
              && dt_masks_gui_group_cid_of_form(grp, bd->insert_after_fid) == (dt_mask_id_t)cid)))
-    dt_gui_box_add(elem_box, _make_pending_shape_row(module, pending_form));
+    dt_gui_box_add(members_box, _make_pending_shape_row(module, pending_form));
 
   // a childless box would still open a gap under the header with its
   // padding: hidden, by its children rather than `empty`, which counts only
   // members. Only ever hides; no_show_all, or the show_all in
   // _masks_panel_pack shows it again
   {
-    GList *kids = gtk_container_get_children(GTK_CONTAINER(elem_box));
+    GList *kids = gtk_container_get_children(GTK_CONTAINER(members_box));
     if(!kids)
     {
-      gtk_widget_set_no_show_all(elem_box, TRUE);
-      gtk_widget_set_visible(elem_box, FALSE);
+      gtk_widget_set_no_show_all(members_box, TRUE);
+      gtk_widget_set_visible(members_box, FALSE);
     }
     g_list_free(kids);
   }
 
-  dt_gui_box_add(block_inner, elem_box);
-  // disconnected with hdr, which the block destroys together with elem_box
-  g_signal_connect_object(elem_box, "notify::visible", G_CALLBACK(_sync_group_open), hdr, 0);
-  _sync_group_open(elem_box, NULL, hdr);
+  dt_gui_box_add(block_inner, members_box);
+  // disconnected with hdr, which the block destroys together with members_box
+  g_signal_connect_object(members_box, "notify::visible", G_CALLBACK(_sync_group_open), hdr, 0);
+  _sync_group_open(members_box, NULL, hdr);
 
   gtk_box_pack_end(GTK_BOX(container), group_block, FALSE, FALSE, 0);
 
@@ -15430,8 +15430,8 @@ static void _pack_subgroup(dt_iop_module_t *module, dt_masks_form_t *sub, GtkWid
   depth--;
 }
 
-// the header line of a row or group packed into a group's elements box: the
-// first element or group header below `w`. NULL for something with no
+// the header line of a row or group packed into a group's members box: the
+// first member header below `w`. NULL for something with no
 // header line (the group opacity slider)
 static GtkWidget *_mask_row_header(GtkWidget *w)
 {
@@ -15550,7 +15550,7 @@ static gboolean _masks_rail_draw(GtkWidget *box, cairo_t *cr, gpointer user_data
   return FALSE;
 }
 
-// hook every group's elements box up to its drawn rail (_masks_rail_draw),
+// hook every group's members box up to its drawn rail (_masks_rail_draw),
 // paired with the header it hangs from: the header sits before the box in the
 // same parent, so the first header below that parent is it. Done over the
 // finished tree rather than while packing, because a group reaches the list
@@ -15558,7 +15558,7 @@ static gboolean _masks_rail_draw(GtkWidget *box, cairo_t *cr, gpointer user_data
 // a nested one, _make_shape_row for a subgroup row)
 static void _hook_mask_rails(GtkWidget *w)
 {
-  if(_has_class(w, "dt_masks_group_elements")
+  if(_has_class(w, "dt_masks_group_members")
      && !g_object_get_data(G_OBJECT(w), "rail-drawn"))
   {
     // a box holding the opacity slider alone draws no rail (the rail runs to
@@ -15605,7 +15605,7 @@ static void _masks_panel_pack(dt_iop_module_t *module, dt_masks_form_t *grp)
 
   DT_ENTER_GUI_UPDATE();
 
-  // the mask's own group, its header with its element rows nested under it.
+  // the mask's own group, its header with its member rows nested under it.
   // A nested group's block sits among them the same way (see _pack_subgroup)
   if(grp && grp->points)
     _pack_group(module, grp, grp->points->data, grp->points->next, pending_form, list);
@@ -15832,10 +15832,10 @@ static gboolean _nested_as_group(const dt_masks_point_group_t *pt, const dt_mask
 // or a nested group's. `fids` is the group's member ids bottom-up
 // (consumed/freed here). One row each, packed with pack_end so that the bottom
 // member sits at the bottom
-static void _pack_group_elements(dt_iop_module_t *module,
-                                 dt_masks_form_t *grp,
-                                 GtkWidget *container,
-                                 GList *fids)
+static void _pack_group_members(dt_iop_module_t *module,
+                                dt_masks_form_t *grp,
+                                GtkWidget *container,
+                                GList *fids)
 {
   if(!grp || !fids)
   {
@@ -16168,7 +16168,7 @@ static void _shortcut_invert_selected_element(dt_action_t *action)
     _invert_element(bd->module, bd->panel_selected_formid);
 }
 
-// delete the element or group `id`: the selection panel's delete button, the
+// delete the member `id`: the selection panel's delete button, the
 // "delete selection" shortcut and a ctrl+shift+click on a row or header, which all
 // come here. `pt` is the member point of an element row that asked, NULL for
 // the first reference. While the target is the whole mask, that is its own
@@ -16187,7 +16187,7 @@ static void _delete_target(dt_iop_module_t *module,
   {
     if(!dt_masks_model_group_has_elements(dt_masks_gui_module_mask_group(module))
        || dt_gui_show_yes_no_dialog(_("reset the mask?"), "",
-                                    _("this removes every element and group from this"
+                                    _("this removes every member from this"
                                       " module's mask, starting over from the default"
                                       " group layout. continue?")))
       dt_iop_gui_blend_mask_reset(module);
@@ -16378,9 +16378,9 @@ static void _selection_actions_sync(dt_iop_module_t *module)
                  : NULL;
     compose_tip = composable ? group_compose_tip
                              : _("nothing to compose: this group cannot be restructured");
-    delete_tip = whole ? _("reset the mask: remove every element and group,\n"
+    delete_tip = whole ? _("reset the mask: remove every member,\n"
                            "starting over from the default group layout")
-                       : _("delete this group and every element in it\n"
+                       : _("delete this group and every member in it\n"
                            "shift+click: empty it, keeping the group with its settings and name");
   }
 
@@ -16674,7 +16674,7 @@ static void _register_masks_action_shortcuts(void)
                      _shortcut_toggle_masks_panel, 0, 0);
   dt_action_register(masks, N_("add group in selected group"),
                      _shortcut_add_group_in_selected, 0, 0);
-  dt_action_register(masks, N_("invert all elements of selected group"),
+  dt_action_register(masks, N_("invert all members of selected group"),
                      _shortcut_invert_selected_group, 0, 0);
   dt_action_register(masks, N_("invert output of selected group"),
                      _shortcut_invert_selected_group_output, 0, 0);
@@ -16755,7 +16755,7 @@ void dt_iop_gui_init_masks(GtkWidget *blendw, dt_iop_module_t *module)
       (bd->soloedit_mode,
        _("solo edit the selection\n"
          "while enabled, only the selected shape, or the shapes of the selected\n"
-         "group, are shown and editable on canvas; the other elements still\n"
+         "group, are shown and editable on canvas; the other members still\n"
          "contribute to the mask"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->soloedit_mode),
                                  _soloedit_mode_is_on());
@@ -17576,7 +17576,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     dt_action_t * ac = dt_bauhaus_widget_set_label(bd->blend_modes_combo,
                                                    N_("blend"),
                                                    N_("mode"));
-    // shown as "blend mode", against the mask elements' own modes and
+    // shown as "blend mode", against the mask members' own modes and
     // operators; the action keeps its name (blend > mode), shortcuts with it
     dt_bauhaus_widget_set_label_text(bd->blend_modes_combo, _("blend mode"));
     dt_bauhaus_combobox_add_introspection(bd->blend_modes_combo, ac,
@@ -17718,7 +17718,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     // reset or disable, which is what says there are no refinements
     bd->masks_refine_section_label = dt_ui_section_label_new(_("refinements"));
     gtk_widget_set_tooltip_text(bd->masks_refine_section_label,
-                                _("refines the selected element or group, or the whole"
+                                _("refines the selected member, or the whole"
                                   " mask if nothing is selected\n"
                                   "click to expand or collapse"));
     _stash_base_tooltip(bd->masks_refine_section_label);
@@ -17831,13 +17831,13 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     dt_gui_box_add(mask_panel, box);
     dt_iop_gui_init_masks(mask_panel, module);
 
-    // "element properties in subpanel": a collapsible like the refinements',
+    // "member properties in subpanel": a collapsible like the refinements',
     // its content following the selection (see _props_panel_sync), packed
     // above them below. Built always, shown only while the option is on (see
     // _props_panel_show)
     GtkWidget *props_label = dt_ui_section_label_new(_("properties"));
     gtk_widget_set_tooltip_text(
-      props_label, _("the properties of the selected element or group, or the creation"
+      props_label, _("the properties of the selected member, or the creation"
                      " controls of a shape being drawn\n"
                      "click to expand or collapse"));
     bd->props_panel_content = dt_gui_vbox();

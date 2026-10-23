@@ -30,13 +30,13 @@ stock section rules. Start a rule for it with
 
 ## Rows and headers
 
-Every element row is a `.dt_masks_row`: its header line and whatever it
+Every row is a `.dt_masks_row`: its header line and whatever it
 opens onto. Every header line is a `.dt_masks_header`, plus its kind:
 
 | class | header |
 |---|---|
-| `.dt_masks_element_header` | an element's row: shapes, parametric channels, raster masks and nested groups alike |
-| `.dt_masks_group_header` | a group's; the mask's own group, at the top of the list, adds `.dt_masks_root` |
+| `.dt_masks_row_header` | a member shown as a row: an element (a shape, a parametric channel, a raster mask, an AI object), or a nested group that carries settings of its own |
+| `.dt_masks_group_header` | a group's own; the mask's own group, at the top of the list, adds `.dt_masks_root` |
 
 A header's state is a class on the header itself:
 
@@ -45,7 +45,7 @@ A header's state is a class on the header itself:
 | `.dt_masks_selected` | it is the selection |
 | `.dt_masks_implied` | it holds the selection |
 | `.dt_masks_hovered` | under the pointer, in the list or on the canvas |
-| `.dt_masks_soloed` | a soloed group's header; a soloed element's row carries it instead |
+| `.dt_masks_soloed` | a soloed group's header; a soloed row carries it instead |
 | `.dt_masks_open` | its controls or members show; a group's adds `.dt_masks_has_card` when its card hangs from it |
 | `.dt_masks_drop_target` | a group a drag would drop into |
 | `.dt_masks_pending` | on a row: a shape still being drawn on the canvas, not yet added |
@@ -81,7 +81,7 @@ covers both.
 | class | part |
 |---|---|
 | `.dt_masks_group_block` | a group: its header and its members |
-| `.dt_masks_group_elements` | a group's members, with the rail on its left edge |
+| `.dt_masks_group_members` | a group's members, with the rail on its left edge |
 | `.dt_masks_card` | the controls under an open header, on the card ground |
 | `.dt_masks_param_card` | a parametric row's sliders |
 | `.dt_masks_props_card` | a row's properties |
@@ -98,11 +98,11 @@ Each part has one class, on the widget that paints it.
 | `.dt_masks_lead_select` | the box around a group's lead and its caret: the lead opens the group's operator menu, so the box is framed and a shade lighter than the header. The channel icon of a parametric row's controls is one too: it opens the choice of input slider, output slider or both |
 | `.dt_masks_drawer` | the box holding the icons on the right |
 | `.dt_masks_icon` | every icon in the drawer, and a parametric channel's pickers |
-| `.dt_masks_expander` | rightmost: shows or hides the row's controls or the group's elements |
+| `.dt_masks_expander` | rightmost: shows or hides the row's controls or the group's members |
 | `.dt_masks_eye` | second from the right: click to disable, shift+click to solo |
 | `.dt_masks_picker` | a parametric channel's picker, at the right end of each of its sliders: click sets the slider's range from an area, ctrl+click picks a GUI color (point), ctrl+shift+click the same (area) |
-| `.dt_masks_invert` | third from the right on every element and group header: inverts the element, or the group's output (shift+click: each of its elements instead) |
-| `.dt_masks_badge` | at the end of the name, hidden while there is nothing to warn of so that it takes room only when it shows: an element or group that does nothing or next to nothing (opacity under 10%), or a group holding one at any depth; its tooltip says which. It is not in the drawer |
+| `.dt_masks_invert` | third from the right on every header: inverts the element, or the group's output (shift+click: each of its members instead) |
+| `.dt_masks_badge` | at the end of the name, hidden while there is nothing to warn of so that it takes room only when it shows: a member that does nothing or next to nothing (opacity under 10%), or a group holding one at any depth; its tooltip says which. It is not in the drawer |
 | `.dt_masks_channel_picker` | the same button's place: over the right end of its slider, under the header's expander, not in the drawer |
 
 Each icon's state is a class or a GTK state on the icon itself, so a state
@@ -111,8 +111,8 @@ rule is the part's class plus one more.
 | part | state | when |
 |---|---|---|
 | `.dt_masks_lead` | `.dt_masks_channel` | a parametric row: the lead is the channel's code, not a glyph |
-| `.dt_masks_eye` | `.dt_masks_soloed` | the element or group is soloed |
-| `.dt_masks_eye` | `.dt_masks_disabled` | the element or group is disabled |
+| `.dt_masks_eye` | `.dt_masks_soloed` | the member is soloed |
+| `.dt_masks_eye` | `.dt_masks_disabled` | the member is disabled |
 | `.dt_masks_invert` | `.dt_masks_inverted` | the element or the group's output is inverted |
 | `.dt_masks_expander` | `:checked` | open |
 | `.dt_masks_expander` | `:disabled` | an empty group's, with nothing to open |
@@ -127,7 +127,7 @@ Whose icon it is comes from the header it sits in:
 /* only a group's */
 #masks-panel .dt_masks_group_header .dt_masks_invert.dt_masks_inverted { ... }
 /* only an element's */
-#masks-panel .dt_masks_element_header .dt_masks_invert.dt_masks_inverted { ... }
+#masks-panel .dt_masks_row_header .dt_masks_invert.dt_masks_inverted { ... }
 ```
 
 ### Sizes

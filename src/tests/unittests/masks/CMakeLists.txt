@@ -17,7 +17,7 @@ add_cmocka_test(test_flexi_persistence
                 SOURCES test_flexi_persistence.c flexi_fixture.c
                 LINK_LIBRARIES lib_darktable cmocka)
 
-# The drag-and-drop paths other than element-onto-element.
+# The drag-and-drop paths other than member-onto-member.
 add_cmocka_test(test_flexi_dnd
                 SOURCES test_flexi_dnd.c flexi_fixture.c
                 LINK_LIBRARIES lib_darktable cmocka)

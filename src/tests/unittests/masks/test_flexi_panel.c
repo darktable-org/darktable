@@ -259,7 +259,7 @@ static void test_parametric_opacity_slider_ignores_the_channel_state(void **stat
         assert_true(dt_masks_model_param_row_visibility(AUTO, TRUE, in_used, out_used, boost, FALSE).opacity);
 }
 
-// "element properties in subpanel" moves the boost factor and that opacity
+// "member properties in subpanel" moves the boost factor and that opacity
 // slider out of the row and into its own section; the channel's sliders stay
 // in the row
 static void test_subpanel_takes_boost_and_opacity_out_of_the_row(void **state)
@@ -467,7 +467,7 @@ static void test_every_element_row_is_expandable(void **state)
   assert_true(dt_masks_model_row_is_expandable(FALSE));
 }
 
-// "element properties in subpanel" moves every element's properties to their
+// "member properties in subpanel" moves every element's properties to their
 // own section, a parametric row's opacity and boost factor included, so no row
 // has anything left to expand
 static void test_subpanel_leaves_no_chevrons(void **state)

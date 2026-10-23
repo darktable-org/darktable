@@ -14,15 +14,15 @@ the rules a new control follows to stay consistent with the rest of darktable.
 
 ## Rows and headers
 
-The handle, the name and the background of an element row, and a group's
+The handle, the name and the background of a row, and a group's
 header and block.
 
 | click | does |
 |---|---|
 | plain | select; again to deselect |
 | ctrl | rename |
-| shift | show or hide the row's controls, or the group's elements |
-| ctrl+shift | delete the element, or the group and every element in it; on the mask's own group, reset the mask |
+| shift | show or hide the row's controls, or the group's members |
+| ctrl+shift | delete the element, or the group and every member in it; on the mask's own group, reset the mask |
 
 Delete acts on the press, with the selection untouched: on macOS a click
 without movement ends as a drag that did not move, which delivers no release
@@ -34,9 +34,9 @@ first (`_armed_watch`).
 
 | part | plain | shift | other modifiers |
 |---|---|---|---|
-| eye, element or group | disable | solo (not on the whole mask) | nothing |
+| eye, member | disable | solo (not on the whole mask) | nothing |
 | invert, element | invert | nothing | nothing |
-| invert, group | invert its output | invert each of its elements | nothing |
+| invert, group | invert its output | invert each of its members | nothing |
 | group operator icon | operator menu | nothing | ctrl+shift deletes the group |
 | chevron | show or hide | nothing | nothing |
 | channel button | add the channel | toggle its persistent overlay | nothing |

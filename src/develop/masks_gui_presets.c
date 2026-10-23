@@ -158,7 +158,7 @@ dt_mask_id_t dt_masks_model_layout_build_at(dt_masks_form_t *grp,
   return first_nested;
 }
 
-// replaces the module's whole mask -- elements and groups alike -- with the
+// replaces the module's whole mask with the
 // empty groups of the layout `nodes` (see dt_masks_model_layout_build_at).
 // Never asks for confirmation itself; a caller that may be discarding elements
 // asks first (see _flexi_layout_apply_within). `wipe` FALSE skips the reset,
@@ -412,9 +412,9 @@ static const gchar *_flexi_preset_explain(const _flexi_preset_choice_t how, cons
   switch(how)
   {
     case _PRESET_REPLACE:
-      return group ? _("the group drops every element and group it holds and becomes the"
+      return group ? _("the group drops every member it holds and becomes the"
                        " preset, keeping its name")
-                   : _("the mask starts over as the preset, every element and group in it"
+                   : _("the mask starts over as the preset, every member in it"
                        " removed");
     case _PRESET_MERGE:
       return group ? _("the preset's groups go into the group, next to what it holds; the"

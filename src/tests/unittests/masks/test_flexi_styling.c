@@ -37,9 +37,9 @@ static const char *_parts[] =
 {
   "dt_masks_lead", "dt_masks_drawer", "dt_masks_icon", "dt_masks_expander", "dt_masks_eye",
   "dt_masks_picker", "dt_masks_invert", "dt_masks_badge",
-  "dt_masks_channel_picker", "dt_masks_row", "dt_masks_header", "dt_masks_element_header",
+  "dt_masks_channel_picker", "dt_masks_row", "dt_masks_header", "dt_masks_row_header",
   "dt_masks_group_header", "dt_masks_row_name",
-  "dt_masks_group_block", "dt_masks_group_elements", "dt_masks_card", "dt_masks_param_card",
+  "dt_masks_group_block", "dt_masks_group_members", "dt_masks_card", "dt_masks_param_card",
   "dt_masks_props_card", "dt_masks_group_card", "dt_masks_note",
 };
 static const char *_states[] =

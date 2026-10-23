@@ -507,8 +507,8 @@ typedef struct dt_iop_gui_blend_data_t
   // _pack_header_edit_run). Whole-mask canvas controls, so on the header
   // wherever the panel is hosted, never on the mask's own group
   GtkWidget *masks_header_edit_box;
-  // the mask list: each group's header, its element rows indented under it
-  // (_pack_group_elements), reorderable by drag and drop
+  // the mask list: each group's header, its member rows indented under it
+  // (_pack_group_members), reorderable by drag and drop
   GtkBox *masks_list_box;
   // masks_list_box on its ground. Not the list box itself: dt_masks_gui_build_list
   // wipes that
@@ -629,11 +629,11 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_refine_bypass_btn;
   GtkWidget *masks_refine_toggle_btn;
   GtkBox *masks_refine_sliders_box;
-  // "element properties in subpanel": the selected element's or group's
+  // "member properties in subpanel": the selected member's
   // properties, or the creation controls of a shape being drawn, in a
   // collapsible of their own above the refinements (see _props_panel_sync).
   // props_panel_box is the wrapped section, props_panel_content the box the
-  // editor goes in, props_panel_formid the element or group
+  // editor goes in, props_panel_formid the member
   // (props_panel_is_group) it holds the editor of, and pending_props_box the
   // creation controls a pending row built for it
   GtkBox *props_panel_box;
