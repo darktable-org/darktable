@@ -217,6 +217,8 @@
 #include "gui/accelerators.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
+#include "imageio/imageio_staging.h"
+#include <glib/gstdio.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -555,14 +557,16 @@ static inline float _linear_to_srgb(const float v)
 
 // stamp the finished DNG as already denoised. after the writer, which
 // merges the source exif blob in and would overwrite an earlier stamp
-static void _mark_neural_restore_output(const char *path)
+static gboolean _mark_neural_restore_output(const char *path)
 {
-  if(!dt_conf_get_bool(CONF_MARK_OUTPUT)) return;
-
+  if(!dt_conf_get_bool(CONF_MARK_OUTPUT)) return TRUE;
   if(!dt_exif_xmp_write_neural_restore(path, "raw-denoise"))
+  {
     dt_print(DT_DEBUG_AI,
-             "[neural_restore] could not mark %s as denoised; an "
-             "auto-applied denoise preset may run on it", path);
+             "[neural_restore] could not mark %s as denoised", path);
+    return FALSE;
+  }
+  return TRUE;
 }
 
 // pull the camera's embedded JPEG preview from the source raw, to embed
@@ -1407,8 +1411,8 @@ static int _process_raw_denoise_bayer(dt_neural_job_t *j,
   g_free(jpeg_buf);
   g_free(exif_blob);
   g_free(cfa_out);
+  if(res == 0 && !_mark_neural_restore_output(out_filename)) res = 1;
   if(res != 0) g_unlink(out_filename);
-  if(res == 0) _mark_neural_restore_output(out_filename);
   return res;
 }
 
@@ -1460,12 +1464,12 @@ static int _process_raw_denoise_linear(dt_neural_job_t *j,
   g_free(jpeg_buf);
   g_free(exif_blob);
   dt_free_align(rgb);
+  if(res == 0 && !_mark_neural_restore_output(out_filename)) res = 1;
   if(res != 0) g_unlink(out_filename);
-  if(res == 0) _mark_neural_restore_output(out_filename);
   return res;
 }
 
-static int _process_raw_denoise_one(dt_neural_job_t *j,
+static int _process_raw_denoise_into(dt_neural_job_t *j,
                                     const dt_imgid_t imgid,
                                     const char *out_filename,
                                     const char *src_path)
@@ -1545,6 +1549,53 @@ static int _process_raw_denoise_one(dt_neural_job_t *j,
     default:
       return 1;
   }
+}
+
+static gboolean _raw_denoise_copy_canceled(gpointer data)
+{
+  return dt_control_job_get_state((dt_job_t *)data) == DT_JOB_STATE_CANCELLED;
+}
+
+static gboolean _publish_raw_denoise_dng(const char *staged_path,
+                                         const char *filename,
+                                         dt_job_t *job,
+                                         GError **error)
+{
+  return _imageio_publish_staged_file(staged_path, filename, FALSE,
+                                      _raw_denoise_copy_canceled, job, error);
+}
+
+static int _process_raw_denoise_one(dt_neural_job_t *j,
+                                     const dt_imgid_t imgid,
+                                     const char *out_filename,
+                                     const char *src_path)
+{
+  GError *error = NULL;
+  char *directory = g_dir_make_tmp("darktable-neural-XXXXXX", &error);
+  int res = 1;
+  if(directory)
+  {
+    char *staged_path = g_build_filename(directory, "restored.dng", NULL);
+    res = _process_raw_denoise_into(j, imgid, staged_path, src_path);
+    if(res == 0)
+    {
+      dt_control_job_set_progress_message(j->control_job, _("saving restored image..."));
+      if(!_publish_raw_denoise_dng(staged_path, out_filename, j->control_job, &error))
+        res = 1;
+    }
+    g_unlink(staged_path);
+    g_rmdir(directory);
+    g_free(staged_path);
+    g_free(directory);
+  }
+  if(error)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[neural_restore] cannot save %s: %s",
+             out_filename, error->message);
+    dt_control_log(_("raw denoise: cannot save restored image"));
+    g_error_free(error);
+  }
+  return res;
 }
 
 static int32_t _process_job_run(dt_job_t *job)
