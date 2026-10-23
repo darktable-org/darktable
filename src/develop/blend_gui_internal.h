@@ -466,6 +466,9 @@ void dt_masks_gui_flexi_release(dt_iop_module_t *module);
 void dt_masks_gui_flexi_inline_collapse_clicked(GtkWidget *w, gpointer user_data);
 // the position preference (MASKS_PANEL_POS_*)
 int dt_masks_gui_panel_position(void);
+// the lib hosting the panel in the utility position: it is shown or hidden by
+// the position preference alone, so the modules list must not offer it
+gboolean dt_masks_gui_is_host_lib(const struct dt_lib_module_t *module);
 // which edge the canvas-side panel is docked against, and where pinning it
 // records that -- not part of the position choice (see MASKS_PANEL_POS_CANVAS)
 gboolean dt_masks_gui_panel_side_right(void);
