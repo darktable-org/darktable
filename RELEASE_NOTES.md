@@ -665,6 +665,10 @@ changes (where available).
 - Fixed an issue where the Windows installer wouldn't run without user
   input when requested.
 
+- Fixed the right-hand panel jumping when switching tabs in modules
+  taller than the panel, such as AgX or spektrafilm: clicking a tab
+  scrolled the panel until the tab row was at the top.
+
 ## Lua
 
 ### API Version

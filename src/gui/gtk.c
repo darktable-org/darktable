@@ -6037,6 +6037,10 @@ GtkNotebook *dt_ui_notebook_new(dt_action_def_t *def)
   }
 
   gtk_drag_dest_unset(GTK_WIDGET(_current_notebook));
+  // a tab click grabs focus for the notebook, and the side panel viewport
+  // clamps its scroll position to the focused widget; for a notebook taller
+  // than the panel that scrolls the tabs to the top of the panel
+  gtk_widget_set_can_focus(GTK_WIDGET(_current_notebook), FALSE);
   return _current_notebook;
 }
 
