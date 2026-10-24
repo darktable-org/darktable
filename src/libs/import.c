@@ -19,6 +19,7 @@
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
+#include "common/film.h"
 #include "common/exif.h"
 #include "common/metadata.h"
 #include "common/datetime.h"
@@ -65,6 +66,7 @@ static void _do_select_none(dt_lib_module_t* self);
 static uint32_t _do_select_new(dt_lib_module_t* self);
 static void _update_places_list(dt_lib_module_t* self);
 static gboolean _update_files_list(dt_lib_module_t* self);
+static gchar *_get_last_directory(void);
 static void _update_folders_list(dt_lib_module_t* self);
 static void _update_images_number(dt_lib_module_t* self,
                                   const guint nb_sel);
@@ -1031,7 +1033,7 @@ static gboolean _update_files_list(dt_lib_module_t *self)
   else
 #endif
   {
-    char *folder = dt_conf_get_path("ui_last/import_last_directory");
+    char *folder = _get_last_directory();
     if(folder[0])
       _import_set_file_list_start(folder, self);
     g_free(folder);
@@ -1126,6 +1128,103 @@ static gboolean _find_iter_folder(GtkTreeModel *model,
   return found;
 }
 
+// ui_last/import_last_directory, reset to its default when it is not a folder, as
+// dt_conf_get_path() does. dt_conf_get_path() is not used as it tests the folder
+// without a timeout. a folder that does not respond in time is returned unchanged
+static gchar *_get_last_directory(void)
+{
+  const char *name = "ui_last/import_last_directory";
+  gchar *folder = dt_conf_get_string(name);
+  if(!folder[0]) return folder;
+
+  const char *folders[] = { folder };
+  gboolean available = FALSE;
+  gboolean responded = FALSE;
+  dt_film_folders_available(folders, 1, &available, &responded);
+  if(responded && !available)
+  {
+    g_free(folder);
+    dt_conf_set_path(name, dt_confgen_get(name, DT_DEFAULT));
+    folder = dt_conf_get_string(name);
+  }
+  return folder;
+}
+
+// list the visible and readable subfolders of folder as GFileInfo, has_entries tells
+// whether folder has any entry at all. the folder and each candidate subfolder are
+// checked with dt_film_folders_available() before they are accessed, as a stat on an
+// unresponsive mount blocks indefinitely. the enumeration requests only attributes
+// glib takes from readdir, so the entries themselves are not stat'ed.
+// returns NULL if the folder is unavailable
+static GPtrArray *_get_subfolders(const char *folder,
+                                  gboolean *has_entries)
+{
+  *has_entries = FALSE;
+
+  gboolean available = FALSE;
+  dt_film_folders_available(&folder, 1, &available, NULL);
+  if(!available)
+  {
+    dt_control_log(_("folder `%s' is currently unavailable"), folder);
+    return NULL;
+  }
+
+  GFile *gfolder = g_file_new_for_path(folder);
+  GFileEnumerator *dir_files = g_file_enumerate_children(gfolder,
+                                  G_FILE_ATTRIBUTE_STANDARD_NAME ","
+                                  G_FILE_ATTRIBUTE_STANDARD_TYPE,
+                                  G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, NULL, NULL);
+  if(!dir_files)
+  {
+    g_object_unref(gfolder);
+    return NULL;
+  }
+
+  GPtrArray *candidates = g_ptr_array_new_with_free_func(g_free);
+  GFileInfo *info;
+  while((info = g_file_enumerator_next_file(dir_files, NULL, NULL)))
+  {
+    const char *filename = g_file_info_get_name(info);
+    const GFileType filetype = g_file_info_get_file_type(info);
+    // symbolic links are candidates as their target is only known after following them
+    if(filename && filename[0] != '.'
+       && (filetype == G_FILE_TYPE_DIRECTORY || filetype == G_FILE_TYPE_SYMBOLIC_LINK))
+      g_ptr_array_add(candidates, g_build_filename(folder, filename, NULL));
+    *has_entries = TRUE;
+    g_object_unref(info);
+  }
+  g_file_enumerator_close(dir_files, NULL, NULL);
+  g_object_unref(dir_files);
+  g_object_unref(gfolder);
+
+  gboolean *subavailable = g_new0(gboolean, candidates->len);
+  dt_film_folders_available((const char *const *)candidates->pdata, candidates->len,
+                            subavailable, NULL);
+
+  GPtrArray *subfolders = g_ptr_array_new_with_free_func(g_object_unref);
+  for(guint k = 0; k < candidates->len; k++)
+  {
+    if(!subavailable[k]) continue;
+    GFile *gsub = g_file_new_for_path(g_ptr_array_index(candidates, k));
+    GFileInfo *subinfo = g_file_query_info(gsub,
+                                           G_FILE_ATTRIBUTE_STANDARD_NAME ","
+                                           G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
+                                           G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN ","
+                                           G_FILE_ATTRIBUTE_ACCESS_CAN_READ,
+                                           G_FILE_QUERY_INFO_NONE, NULL, NULL);
+    g_object_unref(gsub);
+    if(subinfo
+       && !g_file_info_get_attribute_boolean(subinfo, G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN)
+       && g_file_info_get_attribute_boolean(subinfo, G_FILE_ATTRIBUTE_ACCESS_CAN_READ))
+      g_ptr_array_add(subfolders, subinfo);
+    else if(subinfo)
+      g_object_unref(subinfo);
+  }
+  g_free(subavailable);
+  g_ptr_array_free(candidates, TRUE);
+  return subfolders;
+}
+
 static void _get_folders_list(GtkTreeStore *store,
                               GtkTreeIter *parent,
                               const gchar *folder,
@@ -1137,15 +1236,8 @@ static void _get_folders_list(GtkTreeStore *store,
   // each time a new folder is added, it is set as not expanded and
   // assigned a fake child when expanded, the children are added and
   // the fake child is reused
-  GError *error = NULL;
-  GFile *gfolder = g_file_new_for_path(folder);
-  GFileEnumerator *dir_files = g_file_enumerate_children(gfolder,
-                                  G_FILE_ATTRIBUTE_STANDARD_NAME ","
-                                  G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
-                                  G_FILE_ATTRIBUTE_STANDARD_TYPE ","
-                                  G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN ","
-                                  G_FILE_ATTRIBUTE_ACCESS_CAN_READ,
-                                  G_FILE_QUERY_INFO_NONE, NULL, &error);
+  gboolean has_entries = FALSE;
+  GPtrArray *subfolders = _get_subfolders(folder, &has_entries);
 
   gboolean expanded = FALSE;
   GtkTreeIter iter;
@@ -1167,21 +1259,14 @@ static void _get_folders_list(GtkTreeStore *store,
     parent2 = *parent;
     gtk_tree_model_get(GTK_TREE_MODEL(store), &parent2, DT_FOLDER_EXPANDED, &expanded, -1);
   }
-  GFileInfo *info = NULL;
   gint i = 0;
-  if(dir_files)
+  if(subfolders)
   {
-    while((info = g_file_enumerator_next_file(dir_files, NULL, &error)))
+    for(guint k = 0; k < subfolders->len; k++)
     {
+      GFileInfo *info = g_ptr_array_index(subfolders, k);
       const char *filename = g_file_info_get_name(info);
-      if(!filename)
-        continue;
-      const gboolean ishidden =
-        g_file_info_get_attribute_boolean(info, G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN);
-      const gboolean canread =
-        g_file_info_get_attribute_boolean(info, G_FILE_ATTRIBUTE_ACCESS_CAN_READ);
-      const GFileType filetype = g_file_info_get_file_type(info);
-      if(filetype == G_FILE_TYPE_DIRECTORY && !ishidden && canread)
+      if(filename)
       {
         gchar *fullname = g_build_filename(folder, filename, NULL);
         if(!expanded)
@@ -1209,7 +1294,6 @@ static void _get_folders_list(GtkTreeStore *store,
           if(!_find_iter_folder(GTK_TREE_MODEL(store), &iter, fullname))
           {
             g_free(fullname);
-            g_object_unref(info);
             break;
           }
         }
@@ -1218,11 +1302,10 @@ static void _get_folders_list(GtkTreeStore *store,
         g_free(fullname);
         i++;
       }
-      gtk_tree_store_set(store, &parent2, DT_FOLDER_EXPANDED, TRUE, -1);
-      g_object_unref(info);
     }
-    g_file_enumerator_close(dir_files, NULL, NULL);
-    g_object_unref(dir_files);
+    if(has_entries)
+      gtk_tree_store_set(store, &parent2, DT_FOLDER_EXPANDED, TRUE, -1);
+    g_ptr_array_free(subfolders, TRUE);
   }
   if(!i)
   {
@@ -1684,7 +1767,7 @@ static void _update_folders_list(dt_lib_module_t* self)
   gtk_tree_view_set_model(d->from.folderview, NULL);
   gtk_tree_store_clear(GTK_TREE_STORE(model));
   const char *last_place = dt_conf_get_string_const("ui_last/import_last_place");
-  char *folder = dt_conf_get_path("ui_last/import_last_directory");
+  char *folder = _get_last_directory();
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
                                        GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
                                        GTK_SORT_ASCENDING);
@@ -2238,7 +2321,7 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
     GList *paths = gtk_tree_selection_get_selected_rows(selection, &model);
     char *folder = (d->import_case == DT_IMPORT_CAMERA)
       ? g_strdup("")
-      : dt_conf_get_path("ui_last/import_last_directory");
+      : _get_last_directory();
 
     for(GList *path = paths; path; path = g_list_next(path))
     {
