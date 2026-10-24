@@ -479,6 +479,11 @@ changes (where available).
 - Fixed the feather of a drawn path being lost when the shape was
   resized with the scroll wheel.
 
+- Fixed resizing a path mask with the scroll wheel or the "shrink or
+  grow" slider bending its curves into straight chords and giving it a
+  different set of nodes at every step. Its nodes now follow the
+  outline as it grows or shrinks.
+
 - Fixed numeric error in the framing module (borders) causing the
   frame line to be off-center for certain border sizes.
 
