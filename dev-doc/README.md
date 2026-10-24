@@ -49,6 +49,11 @@ This guide covers building Image Operation (IOP) modules for darktable's darkroo
 |------|-------------|
 | **[Catalog_Access.md](Catalog_Access.md)** | Reading and writing the library: where SQL goes, the shape of a catalog function, caches, tests |
 
+### Raw Input
+| File | Description |
+|------|-------------|
+| **[Nikon_Z5II.md](Nikon_Z5II.md)** | Native High Efficiency NEF decoding, codec provenance, calibration and regression samples |
+
 ### Sidecar Files
 | File | Description |
 |------|-------------|

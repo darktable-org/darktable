@@ -40,6 +40,7 @@
 #include "common/tags.h"
 #include "develop/imageop.h"
 #include "imageio/imageio_common.h"
+#include "imageio/imageio_nikon_he.h"
 #include "imageio/imageio_rawspeed.h"
 #include <stdint.h>
 
@@ -222,6 +223,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
 
     if(!d.get()) return DT_IMAGEIO_UNSUPPORTED_FORMAT;
 
+    d = dt_imageio_nikon_he_decoder(std::move(d), storageBuf);
     d->failOnUnknown = true;
     d->checkSupport(meta);
     d->decodeRaw();
