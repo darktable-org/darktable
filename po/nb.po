@@ -381,12 +381,12 @@ msgstr "hardhet (absolutt)"
 #: ../build/bin/conf_gen.h:2066
 msgctxt "preferences"
 msgid "opacity (relative)"
-msgstr "gjennomsiktighet (relativ)"
+msgstr "opasitet (relativ)"
 
 #: ../build/bin/conf_gen.h:2067
 msgctxt "preferences"
 msgid "opacity (absolute)"
-msgstr "gjennomsiktighet (absolutt)"
+msgstr "opasitet (absolutt)"
 
 #: ../build/bin/conf_gen.h:2068
 msgctxt "preferences"
@@ -1521,7 +1521,7 @@ msgid ""
 "by default scrolling up increases these parameters"
 msgstr ""
 "når du bruker musehjulet for å endre maskeparametre, rull ned for å øke "
-"maskestørrelse, uttoningsbredde, tetthet, penselhardhet og kurvatur på "
+"maskestørrelse, uttoningsbredde, opasitet, penselhardhet og kurvatur på "
 "gradient\n"
 "som standard vil rulling opp øke disse parametrene"
 
@@ -10983,10 +10983,8 @@ msgid "how the blend mask panel behaves"
 msgstr "vis og rediger maskeelementer"
 
 #: ../src/develop/blend_gui.c:2534 ../src/develop/blend_gui.c:16617
-#, fuzzy
-#| msgid "mask opacity"
 msgid "sticky opacity"
-msgstr "masketetthet"
+msgstr "beholde opasitet"
 
 #: ../src/develop/blend_gui.c:2535
 msgid ""
@@ -10995,10 +10993,10 @@ msgid ""
 "over to every shape you add afterwards.\n"
 "when disabled, a new shape always starts at 100% opacity."
 msgstr ""
-"når aktivert (standard) får en ny figur den tettheten\n"
-"som sist ble brukt av en figur, så justering av tettheten\n"
+"når aktivert (standard) får en ny figur den opasiteten\n"
+"som sist ble brukt av en figur, så justering av opasiteten\n"
 "en gang blir med til alle figurer du legger til etterpå.\n"
-"når deaktivert starter en ny figur alltid på 100% tetthet."
+"når deaktivert starter en ny figur alltid på 100% opasitet."
 
 #: ../src/develop/blend_gui.c:2543 ../src/develop/blend_gui.c:16619
 #, fuzzy
@@ -11088,10 +11086,19 @@ msgid ""
 "the image.\n"
 "when disabled, every pick waits for an area dragged on the image."
 msgstr ""
+"når aktivert (standard) tar fargevelgeren for et parametrisk element\n"
+"utgangspunkt i området som ble brukt ved siste valg i modulen, og\n"
+"definerer umiddelbart et område basert på dette: velg et område for én\n"
+"kanal, og klikk deretter på fargevelgeren for neste kanal for å angi dens\n"
+"område ut fra det samme utgangspunktet.\n"
+"dra over bildet for å velge et annet område.\n"
+"det første valget i en modul krever fortsatt at du drar over et område\n"
+"på bildet.\n"
+"når deaktivert venter hvert valg på at et område blir dratt på bildet."
 
 #: ../src/develop/blend_gui.c:2588 ../src/develop/blend_gui.c:16615
 msgid "preview channel under cursor"
-msgstr ""
+msgstr "forhåndsvis kanalen under muspekeren"
 
 #: ../src/develop/blend_gui.c:2589
 msgid ""
@@ -11103,6 +11110,13 @@ msgid ""
 "the buttons on the way elsewhere costs nothing.\n"
 "disabled by default."
 msgstr ""
+"når aktivert vil det å holde pekeren over en av knappene for å\n"
+"legge til parametriske elementer vise den aktuelle kanalen i\n"
+"midtvisningen, så du kan se hvordan en kanal ser ut før du legger\n"
+"til et element for den.\n"
+"forhåndsvisningen starter først etter en kort pause, slik at det ikke skjer\n"
+"noe om du fører pekeren over knappene på vei til et annet sted.\n"
+"deaktivert som standard."
 
 #: ../src/develop/blend_gui.c:2605
 #, fuzzy
@@ -11120,6 +11134,12 @@ msgid ""
 "its note on or off without selecting the group.\n"
 "when disabled, no notes are shown."
 msgstr ""
+"når aktivert (standard) vil en gruppe laget av et innebygget gruppe-\n"
+"oppsett ha en merknad om hvordan den skal brukes under overskriften.\n"
+"alle notater er åpne når forhåndsinnstillingen brukes; etter det vises det\n"
+"bare for den valgte gruppen. infoikonet ved siden av gruppenavnet slår\n"
+"gruppens notat av og på uten å velge gruppen.\n"
+"når deaktivert vises ingen notater."
 
 #: ../src/develop/blend_gui.c:2673
 #, fuzzy
@@ -11139,7 +11159,7 @@ msgstr "L"
 
 #: ../src/develop/blend_gui.c:3032
 msgid "add a parametric element selecting by lightness (L)"
-msgstr ""
+msgstr "legg til et parametrisk element ved å velge basert på lyshet (L)"
 
 #: ../src/develop/blend_gui.c:3037 ../src/iop/tonecurve.c:1283
 msgid "a"
@@ -11147,7 +11167,7 @@ msgstr "a"
 
 #: ../src/develop/blend_gui.c:3037
 msgid "add a parametric element selecting by green/red (a)"
-msgstr ""
+msgstr "legg til et parametrisk element ved å velge basert på grønt/rødt (a)"
 
 #: ../src/develop/blend_gui.c:3041
 msgid "green/red"
@@ -11159,7 +11179,7 @@ msgstr "b"
 
 #: ../src/develop/blend_gui.c:3042
 msgid "add a parametric element selecting by blue/yellow (b)"
-msgstr ""
+msgstr "legg til et parametrisk element ved å velge basert på blått/gult (b)"
 
 #: ../src/develop/blend_gui.c:3046
 msgid "blue/yellow"
@@ -11171,7 +11191,7 @@ msgstr "C"
 
 #: ../src/develop/blend_gui.c:3047
 msgid "add a parametric element selecting by saturation (C)"
-msgstr ""
+msgstr "legg til et parametrisk element ved å velge basert på kroma (C)"
 
 #: ../src/develop/blend_gui.c:3053
 msgid "h"
@@ -11179,7 +11199,7 @@ msgstr "h"
 
 #: ../src/develop/blend_gui.c:3053
 msgid "add a parametric element selecting by hue (h)"
-msgstr ""
+msgstr "legg til et parametrisk element ved å velge basert på fargetone (h)"
 
 #: ../src/develop/blend_gui.c:3061 ../src/develop/blend_gui.c:3109
 msgid "g"
@@ -11187,7 +11207,7 @@ msgstr "g"
 
 #: ../src/develop/blend_gui.c:3061 ../src/develop/blend_gui.c:3109
 msgid "add a parametric element selecting by gray (g)"
-msgstr ""
+msgstr "legg til et parametrisk element ved å velge basert på gråtone (g)"
 
 #: ../src/develop/blend_gui.c:3067 ../src/develop/blend_gui.c:3115
 #: ../src/iop/channelmixerrgb.c:4630 ../src/iop/denoiseprofile.c:3624
@@ -11198,7 +11218,7 @@ msgstr "R"
 
 #: ../src/develop/blend_gui.c:3067 ../src/develop/blend_gui.c:3115
 msgid "add a parametric element selecting by red (R)"
-msgstr ""
+msgstr "legg til et parametrisk element ved å velge basert på rødt (R)"
 
 #: ../src/develop/blend_gui.c:3073 ../src/develop/blend_gui.c:3121
 #: ../src/iop/channelmixerrgb.c:4631 ../src/iop/denoiseprofile.c:3625
@@ -11209,7 +11229,7 @@ msgstr "G"
 
 #: ../src/develop/blend_gui.c:3073 ../src/develop/blend_gui.c:3121
 msgid "add a parametric element selecting by green (G)"
-msgstr ""
+msgstr "legg til et parametrisk element ved å velge basert på grønt (G)"
 
 #: ../src/develop/blend_gui.c:3079 ../src/develop/blend_gui.c:3127
 #: ../src/iop/channelmixerrgb.c:4632 ../src/iop/denoiseprofile.c:3626
@@ -11220,7 +11240,7 @@ msgstr "B"
 
 #: ../src/develop/blend_gui.c:3079 ../src/develop/blend_gui.c:3127
 msgid "add a parametric element selecting by blue (B)"
-msgstr ""
+msgstr "legg til et parametrisk element ved å velge basert på blått (B)"
 
 #: ../src/develop/blend_gui.c:3085
 msgid "H"
@@ -11228,7 +11248,7 @@ msgstr "H"
 
 #: ../src/develop/blend_gui.c:3085
 msgid "add a parametric element selecting by hue (H)"
-msgstr ""
+msgstr "legg til et parametrisk element ved å velge basert på fargetone (H)"
 
 #: ../src/develop/blend_gui.c:3092
 msgid "S"
@@ -11236,11 +11256,11 @@ msgstr "S"
 
 #: ../src/develop/blend_gui.c:3092
 msgid "add a parametric element selecting by chroma (S)"
-msgstr ""
+msgstr "legg til et parametrisk element ved å velge basert på fargemetning (S)"
 
 #: ../src/develop/blend_gui.c:3099
 msgid "add a parametric element selecting by luminance (L)"
-msgstr ""
+msgstr "legg til et parametrisk element ved å velge basert på luminans (L)"
 
 #: ../src/develop/blend_gui.c:3133
 msgid "Jz"
@@ -11248,7 +11268,7 @@ msgstr "Jz"
 
 #: ../src/develop/blend_gui.c:3133
 msgid "add a parametric element selecting by luminance (Jz)"
-msgstr ""
+msgstr "legg til et parametrisk element ved å velge basert på luminans (Jz)"
 
 #: ../src/develop/blend_gui.c:3140
 msgid "Cz"
@@ -11256,7 +11276,7 @@ msgstr "Cz"
 
 #: ../src/develop/blend_gui.c:3140
 msgid "add a parametric element selecting by chroma (Cz)"
-msgstr ""
+msgstr "legg til et parametrisk element ved å velge basert på kroma (Cz)"
 
 #: ../src/develop/blend_gui.c:3147
 msgid "hz"
@@ -11264,7 +11284,7 @@ msgstr "hz"
 
 #: ../src/develop/blend_gui.c:3147
 msgid "add a parametric element selecting by hue (hz)"
-msgstr ""
+msgstr "legg til et parametrisk element ved å velge basert på fargetone (hz)"
 
 #: ../src/develop/blend_gui.c:3172
 msgid ""
@@ -11279,6 +11299,16 @@ msgid ""
 "press 'm' to toggle mask view\n"
 "press 'a' to toggle display modes"
 msgstr ""
+"justering basert på bildet som denne modulen mottar:\n"
+"- øvre markører: full opasitet (199% maske)\n"
+"- nedre markører: null opasitet (0% maske)\n"
+"- mellom øvre/nedre markører: opasitetsovergang\n"
+"\n"
+"dra markør for å justere\n"
+"høyreklikk markør for å oppgi en presis tallverdi\n"
+"dobbeltklikk for å nullstille\n"
+"trykk 'm' for å bytte maskevisning\n"
+"trykk 'a' for å bytte visningsmodi"
 
 #: ../src/develop/blend_gui.c:3181
 msgid ""
@@ -11293,6 +11323,16 @@ msgid ""
 "press 'm' to toggle mask view\n"
 "press 'a' to toggle display modes"
 msgstr ""
+"justering basert på ublandet utdata fra denne modulen:\n"
+"- øvre markører: full opasitet (199% maske)\n"
+"- nedre markører: null opasitet (0% maske)\n"
+"- mellom øvre/nedre markører: opasitetsovergang\n"
+"\n"
+"dra markør for å justere\n"
+"høyreklikk markør for å oppgi en presis tallverdi\n"
+"dobbeltklikk for å nullstille\n"
+"trykk 'm' for å bytte maskevisning\n"
+"trykk 'a' for å bytte visningsmodi"
 
 #: ../src/develop/blend_gui.c:3603
 #, c-format
@@ -11316,18 +11356,23 @@ msgstr "ny sortering"
 #: ../src/develop/blend_gui.c:4424
 msgid "the shape being drawn: the sections below show its creation controls"
 msgstr ""
+"figuren som tegnes: avsnittene nedenfor viser kontrollene for å opprette den"
 
 #: ../src/develop/blend_gui.c:4431
 msgid ""
 "the element hovered on the canvas, or else the selected one: the sections "
 "below show and change its properties and refinements"
 msgstr ""
+"elementet du holder musen over på lerretet, eller det valgte: avsnittene "
+"under viser og endrer dets egenskaper og forbedringer"
 
 #: ../src/develop/blend_gui.c:4434
 msgid ""
 "the element hovered on the canvas, or else the selected group: the sections "
 "below show and change its properties and refinements"
 msgstr ""
+"elementet du holder musen over på lerretet, eller den valgte gruppen: "
+"avsnittene under viser og endrer dets egenskaper og forbedringer"
 
 #: ../src/develop/blend_gui.c:4436
 msgid ""
@@ -11335,17 +11380,20 @@ msgid ""
 "group is selected: the sections below show and change its properties and "
 "refinements"
 msgstr ""
+"elementet du holder musen over på lerretet, eller hele masken når ikke noe "
+"element eller gruppe er valgt: avsnittene under viser og endrer dets "
+"egenskaper og forbedringer"
 
 #. Add opacity/scale sliders to table
 #: ../src/develop/blend_gui.c:4527 ../src/develop/blend_gui.c:10732
 #: ../src/develop/blend_gui.c:17515 ../src/iop/overlay.c:1500
 #: ../src/iop/watermark.c:1499
 msgid "opacity"
-msgstr "tetthet"
+msgstr "opasitet"
 
 #: ../src/develop/blend_gui.c:4528
 msgid "how strongly this element counts in the mask"
-msgstr ""
+msgstr "hvor mye dette elementet teller i masken"
 
 #: ../src/develop/blend_gui.c:4529 ../src/iop/bloom.c:381
 #: ../src/iop/soften.c:371 ../src/libs/camera.c:617
@@ -11362,7 +11410,7 @@ msgstr "styrke på skarphetsøkning"
 msgid ""
 "how much of the brush stroke's width is at full opacity\n"
 "before it starts to fade out"
-msgstr ""
+msgstr "hvor mye av penselstrøkets bredde som har full opasitet"
 
 #: ../src/develop/blend_gui.c:4534
 #, fuzzy
@@ -11375,6 +11423,8 @@ msgid ""
 "width of the soft edge around the shape, over which\n"
 "it fades from full opacity to none"
 msgstr ""
+"bredden på den myke kanten rundt figuren, hvor det\n"
+"går fra full opasitet til ingen"
 
 #: ../src/develop/blend_gui.c:4538
 #, fuzzy
@@ -11384,7 +11434,7 @@ msgstr "vannmerkets rotasjon"
 
 #: ../src/develop/blend_gui.c:4540
 msgid "how much the gradient's line bends: 0 is straight"
-msgstr ""
+msgstr "hvor mye gradientens linje bøyes: 0 er rett"
 
 #. compression
 #. Compression method combo box
@@ -11401,6 +11451,8 @@ msgid ""
 "width of the gradient's transition from full opacity\n"
 "to none: lower makes it sharper"
 msgstr ""
+"bredden på gradientens overgang fra full opasitet\n"
+"til ingen: lavere verdi gjør den skarpere"
 
 #: ../src/develop/blend_gui.c:4544
 msgid "cleanup"
@@ -11411,12 +11463,16 @@ msgid ""
 "discards small, stray outline fragments below this size\n"
 "(in traced pixels)"
 msgstr ""
+"forkaster små, forvillede fragmenter under denne størrelsen\n"
+"(i opptegnede piksler)"
 
 #: ../src/develop/blend_gui.c:4548
 msgid ""
 "how closely the traced outline follows the AI selection's\n"
 "raw edge: higher gives smoother, more rounded corners"
 msgstr ""
+"hvor tett den opptegnede følger den rå kanten i\n"
+"KI-utvalget: høyere gir jevnere, mer avrundede hjørner"
 
 #: ../src/develop/blend_gui.c:4550
 msgid "refine mask boundary"
@@ -11427,6 +11483,8 @@ msgid ""
 "snap the mask boundary to nearby image edges on each click, which recovers "
 "notches the model missed and costs a few hundred ms"
 msgstr ""
+"fest maskens yttergrense til nærliggende kanter i bildet ved hvert klikk, som "
+"gjenoppretter hakk som modellen overså og som koster noen hundre ms"
 
 #: ../src/develop/blend_gui.c:4555
 #, fuzzy
@@ -11440,6 +11498,9 @@ msgid ""
 "storing it as pixels in the image's sidecar.\n"
 "always on when sidecar writing is set to \"never\""
 msgstr ""
+"tegn opp objektet i baner som kan redigeres node for node, i stedet for å "
+"lagre det som piksler i bildets sidefil.\n"
+"alltid på når skriving til sidefil er satt til \"aldri\""
 
 #: ../src/develop/blend_gui.c:4835
 msgid "shrink amount too large: the path would disappear"
@@ -11461,6 +11522,8 @@ msgstr "blande"
 #: ../src/develop/blend_gui.c:5082
 msgid "double-click to undo the edits made since the properties were shown"
 msgstr ""
+"dobbeltklikk for å omgjøre redigeringene som er gjort siden egenskapene ble "
+"vist"
 
 #: ../src/develop/blend_gui.c:5083
 #, fuzzy
@@ -11484,6 +11547,10 @@ msgid ""
 "0 restores the outline it grew or shrank from. a size, feather\n"
 "or rotation edit makes the current outline the new 0"
 msgstr ""
+"øk (positiv) eller krymp (negativ) denne banens omriss\n"
+"0 gjenoppretter omrisset den ble økt eller krympet fra. en endring\n"
+"av størrelse, uttoning eller rotasjon gjør det nåværende omrisset \n"
+"til det nye 0"
 
 #: ../src/develop/blend_gui.c:5127
 #, fuzzy
@@ -11500,7 +11567,7 @@ msgstr ""
 #: ../src/develop/masks/masks.c:3532
 #, c-format
 msgid "opacity: %.0f%%"
-msgstr "tetthet: %.0f%%"
+msgstr "opasitet: %.0f%%"
 
 #: ../src/develop/blend_gui.c:5767
 msgid ""
@@ -11509,12 +11576,18 @@ msgid ""
 "right-click for precise entry\n"
 "double-click to reset to 100%"
 msgstr ""
+"opasitet\n"
+"rull for å justere med 5%, shift+rull med 10%, ctrl+rull med 1%\n"
+"høyreklikk for presis tallverdi\n"
+"dobbeltklikk for å stille tilbake til 100%"
 
 #: ../src/develop/blend_gui.c:6375
 msgid ""
 "disabled: adds nothing to the mask\n"
 "click to enable"
 msgstr ""
+"deaktivert: legger ikke noe til masken\n"
+"klikk for å aktivere"
 
 #: ../src/develop/blend_gui.c:6378
 msgid ""
@@ -11522,36 +11595,43 @@ msgid ""
 "click to disable\n"
 "shift+click to clear solo"
 msgstr ""
+"solo: bare denne brukes\n"
+"klikk for å deaktivere\n"
+"shift+klikk for å fjerne solo"
 
 #: ../src/develop/blend_gui.c:6381
 msgid ""
 "click to disable: add nothing to the mask\n"
 "shift+click to solo: use only this"
 msgstr ""
+"klikk for å deaktivere: ikke legg noe til masken\n"
+"shift+klikk for solo: bruk bare denne"
 
 #: ../src/develop/blend_gui.c:6515
 msgid "opacity 0%: this module has no effect on the image"
-msgstr ""
+msgstr "opasitet 0%: denne modulen har ingen effekt på bildet"
 
 #: ../src/develop/blend_gui.c:6516
 #, c-format
 msgid "opacity %.0f%%: this module has very little effect on the image"
-msgstr ""
+msgstr "opasitet %.0f%%: denne modulen har veldig liten effekt på bildet"
 
 #: ../src/develop/blend_gui.c:6661
 msgid "this group contains at least one element that has no effect"
-msgstr ""
+msgstr "denne gruppen inneholder minst ett element som ikke har noen effekt"
 
 #: ../src/develop/blend_gui.c:6666
 msgid ""
 "opacity 0%: this group is fully transparent and\n"
 "contributes nothing to the mask"
 msgstr ""
+"opasitet 0%: denne gruppen er helt transparent og\n"
+"bidrar ikke til masken"
 
 #: ../src/develop/blend_gui.c:6669
 #, c-format
 msgid "opacity %.0f%%: this group has very little effect on the mask"
-msgstr ""
+msgstr "opasitet %.0f%%: denne gruppen har veldig liten effekt på masken"
 
 #: ../src/develop/blend_gui.c:6676
 #, c-format
@@ -11559,6 +11639,8 @@ msgid ""
 "this group contains at least one element or group\n"
 "with opacity below %.0f%%"
 msgstr ""
+"denne gruppen inneholder minst ett element eller en gruppe\n"
+"med opasitet under %.0f%%"
 
 #: ../src/develop/blend_gui.c:6698
 msgid ""
@@ -11567,27 +11649,35 @@ msgid ""
 "element selects nothing.\n"
 "restore the source module, or remove this element"
 msgstr ""
+"denne rastermasken har ingen maske å lese: modulen den kom fra\n"
+"er slått av, har ikke lenger noen maske eller er slettet,\n"
+"så dette elementet velger ikke noe.\n"
+"gjenopprett kildemodulen eller fjern dette elementet"
 
 #: ../src/develop/blend_gui.c:6703
 msgid ""
 "this channel's range still covers its whole span, so it does\n"
 "not restrict the mask yet: narrow the range to have an effect"
 msgstr ""
+"denne kanalens rekkevidde dekker fortsatt hele spennet, så den\n"
+"begrenser ikke masken ennå: begrens rekkevidden for å få en effekt"
 
 #: ../src/develop/blend_gui.c:6708
 msgid ""
 "opacity 0%: this element is fully transparent and\n"
 "contributes nothing to the mask"
 msgstr ""
+"opasitet 0%: dette elementet er helt transparent og\n"
+"bidrar ikke til masken"
 
 #: ../src/develop/blend_gui.c:6710
 #, c-format
 msgid "opacity %.0f%%: this element has very little effect on the mask"
-msgstr ""
+msgstr "opasitet %.0f%%: dette elementet har veldig liten effekt på masken"
 
 #: ../src/develop/blend_gui.c:7290
 msgid "maximum (union)"
-msgstr ""
+msgstr "maksimum (union)"
 
 #: ../src/develop/blend_gui.c:7290
 #, fuzzy
@@ -11599,6 +11689,7 @@ msgstr "maksimum delta E"
 msgid ""
 "everything any element covers: where elements overlap, the stronger one wins"
 msgstr ""
+"alt som et element dekker: der elementer overlapper vinner det sterkeste"
 
 #: ../src/develop/blend_gui.c:7294
 #, fuzzy
@@ -11618,10 +11709,11 @@ msgid ""
 "like maximum (union), but overlapping feathered edges merge smoothly, without "
 "a seam"
 msgstr ""
+"som maksimum (union), men uttonede kanter som overlapper blandes sømløst"
 
 #: ../src/develop/blend_gui.c:7299
 msgid "sum (additive union)"
-msgstr ""
+msgstr "sum (additiv union)"
 
 #: ../src/develop/blend_gui.c:7299
 #, fuzzy
@@ -11634,36 +11726,36 @@ msgid ""
 "like maximum (union), but opacities add up where elements overlap, clipped at "
 "full opacity"
 msgstr ""
+"som maksimum (union), men opasiteter legges sammen der elementer overlapper, "
+"og klipper ved full opasitet"
 
 #: ../src/develop/blend_gui.c:7304
-#, fuzzy
-#| msgid "mode: intersection"
 msgid "minimum (intersection)"
-msgstr "modus: skjæring"
+msgstr "minimum (overlapping)"
 
 #: ../src/develop/blend_gui.c:7304
 msgid "minimum"
-msgstr ""
+msgstr "minimum"
 
 #: ../src/develop/blend_gui.c:7305
 msgid "only the area every element covers: the weaker one wins"
-msgstr ""
+msgstr "bare det området alle elementer dekker: det svakeste vinner"
 
 #: ../src/develop/blend_gui.c:7308
-#, fuzzy
-#| msgid "mode: intersection"
 msgid "product (smooth intersection)"
-msgstr "modus: skjæring"
+msgstr "produkt (jevn overlapping)"
 
 #: ../src/develop/blend_gui.c:7308
 msgid "product"
-msgstr ""
+msgstr "produkt"
 
 #: ../src/develop/blend_gui.c:7309
 msgid ""
 "like minimum (intersection), but feathered edges fade together smoothly: "
 "strong only where every element is"
 msgstr ""
+"som minimum (overlapping), men uttonede kanter blandes jevnt sammen: sterk "
+"bare der alle elementer er"
 
 #: ../src/develop/blend_gui.c:7313
 #, fuzzy
@@ -11674,7 +11766,7 @@ msgstr "forskjell"
 
 #: ../src/develop/blend_gui.c:7314
 msgid "the bottom element, minus every element above it"
-msgstr ""
+msgstr "det nederste elementet minus alle elementer over det"
 
 #: ../src/develop/blend_gui.c:7317
 #, fuzzy
@@ -11688,6 +11780,8 @@ msgid ""
 "areas covered by an odd number of elements: where two overlap they cancel, a "
 "third brings the area back"
 msgstr ""
+"områder dekket av et odde antall elementer: der hvor to overlapper "
+"kansellerer de hverandre, et tredje bringer området tilbake"
 
 #. _update_add_target_hints appends where the group goes
 #: ../src/develop/blend_gui.c:7388
@@ -12365,10 +12459,8 @@ msgid ""
 msgstr ""
 
 #: ../src/develop/blend_gui.c:14401
-#, fuzzy
-#| msgid "selected file not within raster masks root folder"
 msgid "show/hide this raster mask's opacity slider"
-msgstr "den valgte filen er ikke i rastermaskenes grunnmappe"
+msgstr "vis/skjul denne rastermaskens opasitetsglider"
 
 #: ../src/develop/blend_gui.c:14414
 msgid "show/hide this object's opacity slider"
@@ -12825,15 +12917,13 @@ msgstr "juster vippepunktet som brukes av noen blandingsoperasjoner"
 
 #: ../src/develop/blend_gui.c:17518
 msgid "set the opacity of the blending"
-msgstr "angi tetthet for blandingen"
+msgstr "angi opasitet for blandingen"
 
 #. "blend opacity", against the mask elements' own opacity below; the
 #. slider's action keeps its name (blend > opacity), shortcuts with it
 #: ../src/develop/blend_gui.c:17528
-#, fuzzy
-#| msgid "blend operation"
 msgid "blend opacity"
-msgstr "blandingsoperasjon"
+msgstr "blandingsopasitet"
 
 #: ../src/develop/blend_gui.c:17556 ../src/libs/history.c:975
 msgid "combine masks"
@@ -13343,7 +13433,7 @@ msgstr "[PENSEL] endre hardhet"
 
 #: ../src/develop/masks/brush.c:3371
 msgid "[BRUSH] change opacity"
-msgstr "[PENSEL] endre gjennomsiktighet"
+msgstr "[PENSEL] endre opasitet"
 
 #: ../src/develop/masks/brush.c:3383
 #, c-format
@@ -13357,7 +13447,7 @@ msgid ""
 "<b>opacity</b>: ctrl+scroll (%d%%), <b>rotate</b>: ctrl+drag"
 msgstr ""
 "<b>størrelse</b>: rull, <b>hardhet</b>: shift+rull\n"
-"<b>tetthet</b>: ctrl+rull (%d%%), <b>roter</b>: ctrl+dra"
+"<b>opasitet</b>: ctrl+rull (%d%%), <b>roter</b>: ctrl+dra"
 
 #: ../src/develop/masks/brush.c:3404 ../src/develop/masks/brush.c:3419
 #: ../src/develop/masks/path.c:5409
@@ -13405,7 +13495,7 @@ msgstr "[CIRCLE] endre uttoningsbredde"
 
 #: ../src/develop/masks/circle.c:1378
 msgid "[CIRCLE] change opacity"
-msgstr "[CIRCLE] endre tetthet"
+msgstr "[CIRCLE] endre opasitet"
 
 #: ../src/develop/masks/circle.c:1391
 #, c-format
@@ -13413,16 +13503,13 @@ msgid "circle #%d"
 msgstr "sirkel nr%d"
 
 #: ../src/develop/masks/circle.c:1402
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
-#| "<b>opacity</b>: ctrl+scroll (%d%%)"
+#, c-format
 msgid ""
 "<b>size</b>: scroll, <b>fade-out border</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>størrelse</b>: rull, <b>uttoningsbredde</b>: shift+rull\n"
-"<b>tetthet</b>: ctrl+rull (%d%%)"
+"<b>opasitet</b>: ctrl+rull (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:454 ../src/develop/masks/ellipse.c:512
 #, c-format
@@ -13455,7 +13542,7 @@ msgstr "[ELLIPSE] roter figur"
 
 #: ../src/develop/masks/ellipse.c:2006
 msgid "[ELLIPSE] change opacity"
-msgstr "[ELLIPSE] endre tetthet"
+msgstr "[ELLIPSE] endre opasitet"
 
 #: ../src/develop/masks/ellipse.c:2009
 msgid "[ELLIPSE] switch feathering mode"
@@ -13475,34 +13562,27 @@ msgid "ellipse #%d"
 msgstr "ellipse #%d"
 
 #: ../src/develop/masks/ellipse.c:2061
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
-#| "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
+#, c-format
 msgid ""
 "<b>size</b>: scroll, <b>fade-out border</b>: shift+scroll\n"
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>størrelse</b>: rull, <b>uttoningsbredde</b>: shift+rull\n"
-"<b>rotasjon</b>: ctrl+shift+rull, <b>tetthet</b>: ctrl+rull (%d%%)"
+"<b>rotasjon</b>: ctrl+shift+rull, <b>opasitet</b>: ctrl+rull (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:2066
 msgid "<b>rotate</b>: ctrl+drag"
 msgstr "<b>roter</b>: ctrl+dra"
 
 #: ../src/develop/masks/ellipse.c:2076
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>feather mode</b>: alt+click, <b>rotate</b>: ctrl+drag,<b>size</b>: "
-#| "scroll\n"
-#| "<b>feather size</b>: shift+scroll <b>opacity</b>: ctrl+scroll (%d%%)"
+#, c-format
 msgid ""
 "<b>feather mode</b>: alt+click, <b>rotate</b>: ctrl+drag,<b>size</b>: scroll\n"
 "<b>fade-out border</b>: shift+scroll <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>uttoningsmodus</b>: alt+klikk, <b>roter</b>: ctrl+dra\n"
-"<b>størrelse</b>: rull, <b>uttoningsbredde</b>: shift+rull, <b>tetthet</b>: "
-"ctrl+rull (%d%%)"
+"<b>uttoningsmodus</b>: alt+klikk, <b>roter</b>: ctrl+dra, <b>størrelse</b>: "
+"rull\n"
+"<b>uttoningsbredde</b>: shift+rull, <b>opasitet</b>: ctrl+rull (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:2083
 msgid "<b>rotate both</b>: shift+ctrl+drag"
@@ -13540,7 +13620,7 @@ msgstr "[GRADIENT] endre kompresjon"
 
 #: ../src/develop/masks/gradient.c:1395
 msgid "[GRADIENT] change opacity"
-msgstr "[GRADIENT] endre tetthet"
+msgstr "[GRADIENT] endre opasitet"
 
 #: ../src/develop/masks/gradient.c:1408
 #, c-format
@@ -13554,7 +13634,7 @@ msgid ""
 "<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>kurvatur</b>: rull, <b>kompresjon</b>: shift+rull\n"
-"<b>rotasjon</b>: click+dra, <b>tetthet</b>: ctrl+rull (%d%%)"
+"<b>rotasjon</b>: click+dra, <b>opasitet</b>: ctrl+rull (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1424
 #, c-format
@@ -13563,7 +13643,7 @@ msgid ""
 "<b>rotate</b>: ctrl+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>kurvatur</b>: rull, <b>kompresjon</b>: shift+rull\n"
-"<b>roter</b>: ctrl+dra, <b>tetthet</b>: ctrl+rull (%d%%)"
+"<b>roter</b>: ctrl+dra, <b>opasitet</b>: ctrl+rull (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1427
 msgid "<b>rotate</b>: drag"
@@ -13697,16 +13777,10 @@ msgstr "[OBJECT] endre opprensing"
 
 #: ../src/develop/masks/object.c:2197 ../src/develop/masks/object.c:2445
 msgid "[OBJECT] change opacity"
-msgstr "OBJECT] endre tetthet"
+msgstr "OBJECT] endre opasitet"
 
 #: ../src/develop/masks/object.c:2218
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
-#| "ctrl+shift+click, <b>apply</b>: right-click, <b>apply+save raster</b>: "
-#| "shift+right-click\n"
-#| "<b>smoothing</b>: scroll (%3.2f), <b>cleanup</b>: shift+scroll (%d), "
-#| "<b>opacity</b>: ctrl+scroll (%d%%)"
+#, c-format
 msgid ""
 "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
 "ctrl+shift+click, <b>apply as paths</b>: right-click\n"
@@ -13714,53 +13788,36 @@ msgid ""
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>legg til</b>: klikk, <b>trekk fra</b>: shift+klikk, <b>fjern</b>: "
-"ctrl+shift+klikk, <b>bruk</b>: høyreklikk, <b>bruk+lagre raster</b>: "
-"shift+høyreklikk\n"
+"ctrl+shift+klikk, <b>bruk som baner</b>: høyreklikk\n"
 "<b>utjevning</b>: rull (%3.2f), <b>opprensing</b>: shift+rull (%d), "
-"<b>tetthet</b>: ctrl+rull (%d%%)"
+"<b>opasitet</b>: ctrl+rull (%d%%)"
 
 #: ../src/develop/masks/object.c:2229
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
-#| "ctrl+shift+click, <b>apply</b>: right-click, <b>apply+save raster</b>: "
-#| "shift+right-click\n"
-#| "<b>smoothing</b>: scroll (%3.2f), <b>cleanup</b>: shift+scroll (%d), "
-#| "<b>opacity</b>: ctrl+scroll (%d%%)"
+#, c-format
 msgid ""
 "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
 "ctrl+shift+click, <b>apply</b>: right-click, <b>cancel</b>: esc\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>legg til</b>: klikk, <b>trekk fra</b>: shift+klikk, <b>fjern</b>: "
-"ctrl+shift+klikk, <b>bruk</b>: høyreklikk, <b>bruk+lagre raster</b>: "
-"shift+høyreklikk\n"
-"<b>utjevning</b>: rull (%3.2f), <b>opprensing</b>: shift+rull (%d), "
-"<b>tetthet</b>: ctrl+rull (%d%%)"
+"ctrl+shift+klikk, <b>bruk</b>: høyreklikk, <b>avbryt</b>: esc\n"
+"<b>opasitet</b>: ctrl+rull (%d%%)"
 
 #: ../src/develop/masks/object.c:2237
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
-#| "ctrl+shift+click, <b>apply</b>: right-click, <b>apply+save raster</b>: "
-#| "shift+right-click\n"
-#| "<b>smoothing</b>: scroll (%3.2f), <b>cleanup</b>: shift+scroll (%d), "
-#| "<b>opacity</b>: ctrl+scroll (%d%%)"
+#, c-format
 msgid ""
 "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
 "ctrl+shift+click, <b>apply</b>: right-click\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>legg til</b>: klikk, <b>trekk fra</b>: shift+klikk, <b>fjern</b>: "
-"ctrl+shift+klikk, <b>bruk</b>: høyreklikk, <b>bruk+lagre raster</b>: "
-"shift+høyreklikk\n"
-"<b>utjevning</b>: rull (%3.2f), <b>opprensing</b>: shift+rull (%d), "
-"<b>tetthet</b>: ctrl+rull (%d%%)"
+"ctrl+shift+klikk, <b>bruk</b>: høyreklikk\n"
+"<b>opasitet</b>: ctrl+rull (%d%%)"
 
 #: ../src/develop/masks/object.c:2245
 #, c-format
 msgid "<b>select</b>: click on object, <b>opacity</b>: ctrl+scroll (%d%%)"
-msgstr "<b>velg</b>: klikk på objekt, <b>tetthet</b>: ctrl+rull (%d%%)"
+msgstr "<b>velg</b>: klikk på objekt, <b>opasitet</b>: ctrl+rull (%d%%)"
 
 #: ../src/develop/masks/object.c:2365
 msgid ""
@@ -13837,7 +13894,7 @@ msgstr "[PATH] endre størrelse på uttoning"
 
 #: ../src/develop/masks/path.c:5346
 msgid "[PATH] change opacity"
-msgstr "[PATH] endre tetthet"
+msgstr "[PATH] endre opasitet"
 
 #: ../src/develop/masks/path.c:5358
 #, c-format
@@ -13885,18 +13942,14 @@ msgstr ""
 "<b>fjern bane</b>: høyreklikk"
 
 #: ../src/develop/masks/path.c:5402
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>grow/shrink</b>: scroll, <b>resize</b>: ctrl+shift+scroll\n"
-#| "<b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%), "
-#| "<b>rotate</b>: ctrl+drag"
+#, c-format
 msgid ""
 "<b>grow/shrink</b>: scroll, <b>resize</b>: ctrl+shift+scroll\n"
 "<b>fade-out border</b>: shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%), "
 "<b>rotate</b>: ctrl+drag"
 msgstr ""
 "<b>utvid/krymp</b>: rull, <b>skaler</b>: ctrl+shift+rull\n"
-"<b>uttoningsbredde</b>: shift+rull, <b>tetthet</b>: ctrl+rull (%d%%), "
+"<b>uttoningsbredde</b>: shift+rull, <b>opasitet</b>: ctrl+rull (%d%%), "
 "<b>roter</b>: ctrl+dra"
 
 #. worded for any export pipe: neural restore uses them too
@@ -13911,16 +13964,14 @@ msgid "the mask of '%s' is missing, click its icon to regenerate it"
 msgstr ""
 
 #: ../src/develop/masks/pixel_mask.c:1095
-#, fuzzy, c-format
-#| msgid "<b>select</b>: click on object, <b>opacity</b>: ctrl+scroll (%d%%)"
+#, c-format
 msgid "<b>edit</b>: click, <b>opacity</b>: ctrl+scroll (%d%%)"
-msgstr "<b>velg</b>: klikk på objekt, <b>tetthet</b>: ctrl+rull (%d%%)"
+msgstr "<b>rediger</b>: klikk, <b>opasitet</b>: ctrl+rull (%d%%)"
 
 #: ../src/develop/masks/pixel_mask.c:1102
-#, fuzzy, c-format
-#| msgid "<b>select</b>: click on object, <b>opacity</b>: ctrl+scroll (%d%%)"
+#, c-format
 msgid "<b>opacity</b>: ctrl+scroll (%d%%)"
-msgstr "<b>velg</b>: klikk på objekt, <b>tetthet</b>: ctrl+rull (%d%%)"
+msgstr "<b>opasitet</b>: ctrl+rull (%d%%)"
 
 #: ../src/develop/pixelpipe_hb.c:635
 msgid "enabled as required"
@@ -25540,7 +25591,7 @@ msgstr ""
 "den primære nøkkelfargen i harmonien — den første noden som alle andre "
 "utledes fra.\n"
 "\n"
-"dra glideren eller bruk fargeplukkeren (pipetten) for å plukke en dominant "
+"dra glideren eller bruk fargevelgeren (pipetten) for å plukke en dominant "
 "farge direkte\n"
 "fra bildet. de gjenstående harmoninodene beregnes automatisk fra denne "
 "fargetonen\n"
@@ -25565,7 +25616,7 @@ msgid ""
 msgstr ""
 "fargetonen til denne harmoninoden (0°–360°).\n"
 "bare aktiv i 'egendefinert' harmonimodus.\n"
-"bruk fargeplukkeren for å plukke den ønskede fargetonen fra bildet."
+"bruk fargevelgeren for å plukke den ønskede fargetonen fra bildet."
 
 #: ../src/iop/colorharmonizer.c:1588
 msgid "vectorscope two-way sync"
@@ -29577,7 +29628,7 @@ msgstr "justering"
 #. Let's add some tooltips and hook up some signals...
 #: ../src/iop/overlay.c:1562
 msgid "the opacity of the overlay"
-msgstr "overleggets gjennomsiktighet"
+msgstr "overleggets opasitet"
 
 #: ../src/iop/overlay.c:1563
 msgid "the scale of the overlay"
@@ -30150,11 +30201,11 @@ msgstr "utstrekning for den valgte typen uskarphet"
 
 #: ../src/iop/retouch.c:2673 ../src/libs/history.c:973
 msgid "mask opacity"
-msgstr "masketetthet"
+msgstr "maskeopasitet"
 
 #: ../src/iop/retouch.c:2676
 msgid "set the opacity on the selected shape"
-msgstr "angi gjennomsiktighet for valgt figur"
+msgstr "angi opasitet for valgt figur"
 
 #: ../src/iop/retouch.c:2682
 msgctxt "section"
@@ -32780,7 +32831,7 @@ msgstr "vannmerkedimensjoner som skal skaleres"
 #. Let's add some tooltips and hook up some signals...
 #: ../src/iop/watermark.c:1560
 msgid "the opacity of the watermark"
-msgstr "vannmerkets gjennomsiktighet"
+msgstr "vannmerkets opasitet"
 
 #: ../src/iop/watermark.c:1561
 msgid "the scale of the watermark"
@@ -38563,11 +38614,11 @@ msgstr "reduser penselens hardhet"
 #. brush opacity +/-
 #: ../src/views/darkroom.c:3916
 msgid "increase brush opacity"
-msgstr "øk penseltetthet"
+msgstr "øk penselens opasitet"
 
 #: ../src/views/darkroom.c:3918
 msgid "decrease brush opacity"
-msgstr "reduser penselens tetthet"
+msgstr "reduser penselens opasitet"
 
 #. undo/redo
 #: ../src/views/darkroom.c:3922 ../src/views/lighttable.c:1645
