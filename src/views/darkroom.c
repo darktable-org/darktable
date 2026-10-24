@@ -2635,8 +2635,8 @@ static void _preference_changed(gpointer instance,
     if(module->header)
       dt_iop_add_remove_mask_indicator
         (module,
-         (module->blend_params->mask_mode != DEVELOP_MASK_DISABLED) &&
-         (module->blend_params->mask_mode != DEVELOP_MASK_ENABLED));
+         (module->blend_params->mask_mode & ~DEVELOP_MASK_ENABLED)
+         || module->blend_params->details != 0.0f);
   }
 }
 
