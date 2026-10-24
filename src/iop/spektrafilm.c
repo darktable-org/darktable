@@ -126,18 +126,6 @@ DT_MODULE_INTROSPECTION(3, dt_iop_spektrafilm_params_t)
 #define SF_FIRST_PUBLISHED_LUT_NAME "hanatos2025"
 
 
-#define SF_GRAIN_BLUR_MIN 0.05f
-/* Upstream's GrainParams.blur_dye_clouds_um (params_schema.py): a SECOND,
- * per-sub-layer blur applied to the raw particle draw INSIDE the particle
- * sampler itself (layer_particle_model in grain.py), before the main
- * clump blur above ever runs -- sigma = SF_GRAIN_DYE_BLUR_UM *
- * sqrt(od_particle), where od_particle = dmax/npart is that sub-layer's
- * own per-particle optical density. Passed through verbatim (no
- * pixel_um conversion anywhere in the reference's own call chain,
- * despite the "_um" name) -- ported as literally as upstream computes it,
- * naming included. No variance restoration afterward either, same as the main
- * clump blur. */
-#define SF_GRAIN_DYE_BLUR_UM 2.0f
 /* Push/pull processing is really two things happening together: shooting
  * at an effective ISO different from box speed (already modeled via
  * exposure_ev), plus extended/reduced development time, which increases
@@ -660,7 +648,7 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_develop_corr = dt_opencl_create_kernel(program, "spektrafilm_develop_corr");
   gd->kernel_develop = dt_opencl_create_kernel(program, "spektrafilm_develop");
   gd->kernel_grain_gen_raw_sl = dt_opencl_create_kernel(program, "spektrafilm_grain_gen_raw_sl");
-  gd->kernel_grain_accumulate_1c = dt_opencl_create_kernel(program, "spektrafilm_grain_accumulate_1c");
+  gd->kernel_grain_accumulate_1c = dt_opencl_create_kernel(program, "accumulate_1c");
   gd->kernel_grain_finalize_channel
       = dt_opencl_create_kernel(program, "spektrafilm_grain_finalize_channel");
   gd->kernel_grain_add = dt_opencl_create_kernel(program, "spektrafilm_grain_add");
@@ -2309,7 +2297,7 @@ void process(dt_iop_module_t *self,
        against the fixed SF_GRAIN_REF_UM reference scale (it depends on
        curve/coupler state baked in at build time, not just resolution);
        rescale it live to the real pixel_um here. */
-    const float npart_scale = (pixel_um * pixel_um) / (SF_GRAIN_REF_UM * SF_GRAIN_REF_UM);
+    const float npart_scale = sf_grain_npart_scale(pixel_um);
     /* grain_blur_base/SF_GRAIN_DYE_BLUR_UM/grain_usm_sigma are fixed
        pixel radii, validated against upstream at whatever single
        resolution each of its own renders happens to use -- upstream has
@@ -2353,10 +2341,9 @@ void process(dt_iop_module_t *self,
     for(int c = 0; c < 3; c++)
       for(int sl = 0; sl < nsub; sl++)
       {
-        const float npart_c = (float)layers.layer_npart[sl][c] * npart_scale;
-        const float od_particle = (float)layers.layer_dmax[sl][c] / fmaxf(npart_c, 1e-6f);
-        dye_sigma[c][sl] = SF_GRAIN_DYE_BLUR_UM * d->p.grain_dye_cloud
-                           * sqrtf(fmaxf(od_particle, 0.0f)) * preview_scale;
+        dye_sigma[c][sl] = sf_grain_dye_sigma((float)layers.layer_dmax[sl][c],
+                                              (float)layers.layer_npart[sl][c] * npart_scale,
+                                              d->p.grain_dye_cloud, preview_scale);
       }
 
     float *raw[SF_GRAIN_MAX_SUBLAYERS] = { 0 };
@@ -2895,27 +2882,6 @@ int process_cl(dt_iop_module_t *self,
    fallback above SF_GAUSS_EXACT_MAX_SIGMA -- scatter's core/tail sigmas are
    normally small (sub-few-px), but the fallback is here for whatever a user's
    scatter_scale slider can push them to. */
-/* Exact-kernel-only single-channel blur, the GPU twin of sf_blur_plane1():
-   that function passes exact_only=1 unconditionally, so its call sites must
-   NOT fall back to the recursive approximation at large sigma the way
-   SF_GAUSS_BLUR1_L below does. Used by the grain dye-cloud blur. */
-#define SF_GAUSS_BLUR1_EXACT(buf, _sg) do { \
-    if(err == CL_SUCCESS) \
-    { \
-      float _kw[2 * SF_GAUSS_MAX_RADIUS + 1]; \
-      const int _kr = dt_gaussian_kernel_1d((_sg), _kw, SF_GAUSS_MAX_RADIUS); \
-      err = dt_opencl_write_buffer_to_device(devid, _kw, gauss_w, 0, \
-                                             sizeof(float) * (2 * _kr + 1), TRUE); \
-      if(err == CL_SUCCESS) \
-        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_row_1c, w, h, \
-                                               CLARG(buf), CLARG(gtmp1), CLARG(w), CLARG(h), \
-                                               CLARG(gauss_w), CLARG(_kr)); \
-      if(err == CL_SUCCESS) \
-        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_col_1c, w, h, \
-                                               CLARG(gtmp1), CLARG(buf), CLARG(w), CLARG(h), \
-                                               CLARG(gauss_w), CLARG(_kr)); \
-    } \
-  } while(0)
 #define SF_GAUSS_BLUR1_L(buf, _sg) do { \
     if(err == CL_SUCCESS) \
     { \
@@ -3295,7 +3261,7 @@ int process_cl(dt_iop_module_t *self,
       /* layer_npart (uploaded above) is precomputed at sf_sim_build time
          against the fixed SF_GRAIN_REF_UM reference scale; rescale it live
          to the real pixel_um here. */
-      const float npart_scale = (pixel_um * pixel_um) / (SF_GRAIN_REF_UM * SF_GRAIN_REF_UM);
+      const float npart_scale = sf_grain_npart_scale(pixel_um);
       /* Upstream's per-sub-layer dye-cloud blur (layer_particle_model's
          blur_particle, grain.py): sigma depends only on that sub-layer's
          own per-particle optical density (dmax/npart), which is constant
@@ -3305,10 +3271,9 @@ int process_cl(dt_iop_module_t *self,
       for(int c = 0; c < 3; c++)
         for(int sl = 0; sl < nsub; sl++)
         {
-          const float npart_c = g->grain_layer_npart[sl][c] * npart_scale;
-          const float od_particle = g->grain_layer_dmax[sl][c] / fmaxf(npart_c, 1e-6f);
-          dye_sigma[c][sl] = SF_GRAIN_DYE_BLUR_UM * d->p.grain_dye_cloud
-                           * sqrtf(fmaxf(od_particle, 0.0f)) * preview_scale;
+          dye_sigma[c][sl] = sf_grain_dye_sigma(g->grain_layer_dmax[sl][c],
+                                                g->grain_layer_npart[sl][c] * npart_scale,
+                                                d->p.grain_dye_cloud, preview_scale);
         }
 
       cl_mem raw_buf[SF_GRAIN_MAX_SUBLAYERS] = { NULL };
@@ -3339,8 +3304,10 @@ int process_cl(dt_iop_module_t *self,
                 CLARG(d->grain_cl_dmin), CLARG(d->grain_cl_total), CLARG(d->grain_cl_curve));
             if(err == CL_SUCCESS && dye_sigma[channel_idx][sl] > 1e-6f)
               /* exact-only: the CPU twin is sf_blur_plane1(), which never takes
-                 the recursive path (see SF_GAUSS_BLUR1_EXACT) */
-              SF_GAUSS_BLUR1_EXACT(raw_buf[sl], dye_sigma[channel_idx][sl]);
+                 the recursive path */
+              err = sf_blur_plane1_cl(devid, gd->kernel_gauss_row_1c, gd->kernel_gauss_col_1c,
+                                      raw_buf[sl], gtmp1, gauss_w, w, h,
+                                      dye_sigma[channel_idx][sl]);
           }
           for(int sl = 0; sl < nsub && err == CL_SUCCESS; sl++)
           {

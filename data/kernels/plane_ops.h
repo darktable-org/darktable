@@ -16,14 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* separable gaussian over a single-channel plane, as OpenCL kernels.
+/* single-channel plane kernels shared by spektrafilm.cl and filmgrain.cl.
  *
- * The device counterpart of sf_blur_plane1 in common/spektra_core.c, and
- * written to match it exactly: the weights are the dt_gaussian_kernel_1d
- * table the host convolves with, uploaded by the caller, and the loop uses
- * the same clamp-to-edge and the same accumulation order as
- * _sf_gauss_convolve_1d, so a module using both agrees bit-for-bit across
- * its CPU and GPU paths
+ * gauss_row_1c / gauss_col_1c are the device counterpart of sf_blur_plane1
+ * in common/spektra_core.c, dispatched by sf_blur_plane1_cl, and written to
+ * match it exactly: the weights are the dt_gaussian_kernel_1d table the host
+ * convolves with, and the loop uses the same clamp-to-edge and the same
+ * accumulation order as _sf_gauss_convolve_1d, so a module using both agrees
+ * bit-for-bit across its CPU and GPU paths
  */
 
 #pragma once
@@ -64,4 +64,18 @@ __kernel void gauss_col_1c(__global const float *src,
     acc = fma(weights[k + radius], src[(size_t)yy * w + x], acc);
   }
   dst[(size_t)y * w + x] = acc;
+}
+
+/* running sum of planes: reset stores src directly, which saves a separate
+   zero fill */
+__kernel void accumulate_1c(__global float *acc,
+                            __global const float *src,
+                            const int w,
+                            const int h,
+                            const int reset)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  const size_t k = (size_t)y * w + x;
+  acc[k] = reset ? src[k] : acc[k] + src[k];
 }

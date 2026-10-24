@@ -1198,3 +1198,29 @@ void sf_diffusion_filter(float *const raw,
   dt_free_align(plane1);
   dt_free_align(trans);
 }
+
+#ifdef HAVE_OPENCL
+cl_int sf_blur_plane1_cl(const int devid,
+                         const int kernel_row,
+                         const int kernel_col,
+                         cl_mem buf,
+                         cl_mem tmp,
+                         cl_mem weights,
+                         const int w,
+                         const int h,
+                         const float sigma)
+{
+  if(sigma < 1e-6f) return CL_SUCCESS;
+  float kw[2 * SF_GAUSS_MAX_RADIUS + 1];
+  const int radius = dt_gaussian_kernel_1d(sigma, kw, SF_GAUSS_MAX_RADIUS);
+  cl_int err = dt_opencl_write_buffer_to_device(devid, kw, weights, 0,
+                                                sizeof(float) * (2 * radius + 1), TRUE);
+  if(err == CL_SUCCESS)
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_row, w, h, CLARG(buf), CLARG(tmp),
+                                           CLARG(w), CLARG(h), CLARG(weights), CLARG(radius));
+  if(err == CL_SUCCESS)
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_col, w, h, CLARG(tmp), CLARG(buf),
+                                           CLARG(w), CLARG(h), CLARG(weights), CLARG(radius));
+  return err;
+}
+#endif

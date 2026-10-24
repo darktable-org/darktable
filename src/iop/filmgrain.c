@@ -45,7 +45,7 @@
 #include "common/iop_profile.h"
 #include "common/math.h"
 #include "common/opencl.h"
-/* sf_blur_plane1 is the host twin of blur_plane.h's gauss kernels, and
+/* sf_blur_plane1 is the host twin of plane_ops.h's gauss kernels, and
    spektra_core.h also brings in data/kernels/grain.h. Because grain.h is
    compiled here, this file carries SPEKTRA_FP_CONTRACT_FLAGS in
    src/iop/CMakeLists.txt */
@@ -134,10 +134,6 @@ DT_MODULE_INTROSPECTION(1, dt_iop_filmgrain_params_t)
    clustered crystals. Constants match spektrafilm's. The clump blur is a
    fixed pixel sigma: physical scaling lives in the crystal count */
 #define FILMGRAIN_BLUR_FACTOR 0.8f
-#define FILMGRAIN_BLUR_MIN 0.05f
-/* dye cloud reference spread in um, scaled per sub-layer by the square root
-   of that sub-layer's per-crystal optical density */
-#define FILMGRAIN_DYE_BLUR_UM 2.0f
 
 /* the strength slider is shared with the simplex method. This gain makes
    a slider position give the same luminance grain at middle gray in both
@@ -731,7 +727,7 @@ static void _spektra_scales(const dt_iop_filmgrain_data_t *const d,
   const float long_edge
       = fmaxf(fmaxf((float)piece->buf_in.width, (float)piece->buf_in.height) * roi_scale, 1.0f);
   const float pixel_um = FILMGRAIN_REF_MM * 1000.0f / long_edge;
-  s->npart_scale = pixel_um * pixel_um / (SF_GRAIN_REF_UM * SF_GRAIN_REF_UM);
+  s->npart_scale = sf_grain_npart_scale(pixel_um);
 
   /* the pixel-sized blurs shrink with the view when zoomed out, as in
      spektrafilm, so a downscaled render matches a downscaled full-size one
@@ -741,11 +737,12 @@ static void _spektra_scales(const dt_iop_filmgrain_data_t *const d,
   int dye_reach = 0;
   for(int sl = 0; sl < FILMGRAIN_SUBLAYERS; sl++)
   {
-    const float od = d->em.dmax[sl] / fmaxf(d->em.npart[sl] * s->npart_scale, 1e-6f);
-    s->dye_sigma[sl] = _blur_sigma(FILMGRAIN_DYE_BLUR_UM * sqrtf(fmaxf(od, 0.0f)) * preview_scale);
+    s->dye_sigma[sl] = _blur_sigma(sf_grain_dye_sigma(d->em.dmax[sl],
+                                                      d->em.npart[sl] * s->npart_scale,
+                                                      1.0f, preview_scale));
     dye_reach = MAX(dye_reach, _blur_reach(s->dye_sigma[sl]));
   }
-  s->clump_sigma = _blur_sigma(FILMGRAIN_BLUR_FACTOR * fmaxf(d->p.grain_blur, FILMGRAIN_BLUR_MIN)
+  s->clump_sigma = _blur_sigma(FILMGRAIN_BLUR_FACTOR * fmaxf(d->p.grain_blur, SF_GRAIN_BLUR_MIN)
                                * preview_scale);
   s->usm_sigma = d->p.grain_usm_amount > 0.0f
                      ? _blur_sigma(d->p.grain_usm_sigma * preview_scale)
@@ -1007,37 +1004,6 @@ void process(dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-/* one separable gaussian over a single-channel device buffer, the twin of
-   sf_blur_plane1: the same dt_gaussian_kernel_1d weights, clamp-to-edge and
-   accumulation order. `tmp` takes the row pass; the column pass writes back
-   into `buf` */
-static cl_int _blur_cl(const int devid,
-                       const dt_iop_filmgrain_global_data_t *const gd,
-                       cl_mem buf,
-                       cl_mem tmp,
-                       const int w,
-                       const int h,
-                       const float sigma)
-{
-  if(sigma < 1e-6f) return CL_SUCCESS;
-
-  float weights[2 * SF_GAUSS_MAX_RADIUS + 1];
-  const int radius = dt_gaussian_kernel_1d(sigma, weights, SF_GAUSS_MAX_RADIUS);
-
-  cl_mem dev_w = dt_opencl_copy_host_to_device_constant(
-      devid, sizeof(float) * (size_t)(2 * radius + 1), weights);
-  if(!dev_w) return DT_OPENCL_SYSMEM_ALLOCATION;
-
-  cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_row_1c, w, h,
-      CLARG(buf), CLARG(tmp), CLARG(w), CLARG(h), CLARG(dev_w), CLARG(radius));
-  if(err == CL_SUCCESS)
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_col_1c, w, h,
-        CLARG(tmp), CLARG(buf), CLARG(w), CLARG(h), CLARG(dev_w), CLARG(radius));
-
-  dt_opencl_release_mem_object(dev_w);
-  return err;
-}
-
 int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
@@ -1089,7 +1055,9 @@ int process_cl(dt_iop_module_t *self,
   cl_mem dev = dt_opencl_alloc_device_buffer(devid, sizeof(float) * npix);
   cl_mem tmp = dt_opencl_alloc_device_buffer(devid, sizeof(float) * npix);
   cl_mem blurred = dt_opencl_alloc_device_buffer(devid, sizeof(float) * npix);
-  gboolean ok = tone_lut && dens && dev && tmp && blurred;
+  cl_mem gauss_w
+      = dt_opencl_alloc_device_buffer(devid, sizeof(float) * (2 * SF_GAUSS_MAX_RADIUS + 1));
+  gboolean ok = tone_lut && dens && dev && tmp && blurred && gauss_w;
   for(int c = 0; c < FILMGRAIN_DYE_LAYERS; c++)
   {
     acc[c] = dt_opencl_alloc_device_buffer(devid, sizeof(float) * npix);
@@ -1117,7 +1085,8 @@ int process_cl(dt_iop_module_t *self,
           CLARG(d->em.dmax[sl]), CLARG(npart), CLARG(d->em.unif), CLARG(salt));
       if(err != CL_SUCCESS) goto cleanup;
 
-      err = _blur_cl(devid, gd, dev, tmp, w, h, sc.dye_sigma[sl]);
+      err = sf_blur_plane1_cl(devid, gd->kernel_gauss_row_1c, gd->kernel_gauss_col_1c,
+                            dev, tmp, gauss_w, w, h, sc.dye_sigma[sl]);
       if(err != CL_SUCCESS) goto cleanup;
 
       const int reset = sl == 0;
@@ -1126,7 +1095,8 @@ int process_cl(dt_iop_module_t *self,
       if(err != CL_SUCCESS) goto cleanup;
     }
 
-    err = _blur_cl(devid, gd, acc[c], tmp, w, h, sc.clump_sigma);
+    err = sf_blur_plane1_cl(devid, gd->kernel_gauss_row_1c, gd->kernel_gauss_col_1c,
+                            acc[c], tmp, gauss_w, w, h, sc.clump_sigma);
     if(err != CL_SUCCESS) goto cleanup;
 
     if(sc.usm_sigma > 0.0f)
@@ -1134,7 +1104,8 @@ int process_cl(dt_iop_module_t *self,
       err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, acc[c], blurred, 0, 0,
                                                     sizeof(float) * npix);
       if(err != CL_SUCCESS) goto cleanup;
-      err = _blur_cl(devid, gd, blurred, tmp, w, h, sc.usm_sigma);
+      err = sf_blur_plane1_cl(devid, gd->kernel_gauss_row_1c, gd->kernel_gauss_col_1c,
+                            blurred, tmp, gauss_w, w, h, sc.usm_sigma);
       if(err != CL_SUCCESS) goto cleanup;
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_recover, w, h,
           CLARG(acc[c]), CLARG(blurred), CLARG(w), CLARG(h), CLARG(d->p.grain_usm_amount));
@@ -1158,6 +1129,7 @@ cleanup:
   dt_opencl_release_mem_object(dev);
   dt_opencl_release_mem_object(tmp);
   dt_opencl_release_mem_object(blurred);
+  dt_opencl_release_mem_object(gauss_w);
   return err;
 }
 #endif
@@ -1171,7 +1143,7 @@ void init_global(dt_iop_module_so_t *self)
   self->data = gd;
   gd->kernel_density = dt_opencl_create_kernel(program, "filmgrain_to_density");
   gd->kernel_deviation = dt_opencl_create_kernel(program, "filmgrain_deviation");
-  gd->kernel_accumulate = dt_opencl_create_kernel(program, "filmgrain_accumulate");
+  gd->kernel_accumulate = dt_opencl_create_kernel(program, "accumulate_1c");
   gd->kernel_recover = dt_opencl_create_kernel(program, "filmgrain_recover");
   gd->kernel_apply = dt_opencl_create_kernel(program, "filmgrain_apply");
   gd->kernel_gauss_row_1c = dt_opencl_create_kernel(program, "gauss_row_1c");

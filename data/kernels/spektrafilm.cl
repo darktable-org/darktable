@@ -70,9 +70,9 @@
    to compile as OpenCL without it. */
 #define GRAIN_CL 1
 #include "grain.h"
-/* gauss_row_1c / gauss_col_1c: the separable single-channel gaussian this
-   file and filmgrain.cl both dispatch, from one source */
-#include "blur_plane.h"
+/* gauss_row_1c / gauss_col_1c and accumulate_1c: the single-channel plane
+   kernels this file and filmgrain.cl both dispatch, from one source */
+#include "plane_ops.h"
 
 #define SF_NLE 256
 #define SF_LOG_EPS 1e-10f
@@ -538,20 +538,6 @@ __kernel void spektrafilm_grain_gen_raw_sl(__global const float4 *dens, __global
                                   (uint)(seed_ch + sl_idx * 10), salt);
   raw_out[k] = grain_layer_particle(d_abs, layer_dmax[idx], layer_npart[idx] * npart_scale,
                                  unif_ch, seed);
-}
-
-/* Sums sub-layer buffers (each already dye-cloud-blurred by the host) into
-   a single accumulator, one sub-layer at a time: reset=1 initializes the
-   accumulator with the first sub-layer instead of requiring a separate
-   zero-fill dispatch, reset=0 adds subsequent ones. */
-__kernel void spektrafilm_grain_accumulate_1c(__global float *acc, __global const float *src,
-                                              const int w, const int h, const int reset)
-{
-  const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= w || y >= h) return;
-  const size_t k = (size_t)y * w + x;
-  if(reset) acc[k] = src[k];
-  else acc[k] += src[k];
 }
 
 /* Subtracts the density floor and the original clean density from the

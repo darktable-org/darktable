@@ -1044,7 +1044,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                                                      "bilinear.h",
                                                      "hdr-transfer.h",
                                                      "filmgrain.h",
-                                                     "blur_plane.h" };
+                                                     "plane_ops.h" };
 
   char *includemd5[DT_OPENCL_MAX_INCLUDES] = { NULL };
   _opencl_md5sum(clincludes, includemd5);

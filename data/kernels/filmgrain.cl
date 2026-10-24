@@ -19,7 +19,7 @@
 /* device side of the film grain module's spektrafilm method. The host path
    in src/iop/filmgrain.c is the reference and these kernels reproduce it
    bit-for-bit: the per-pixel math comes from filmgrain.h and grain.h, which
-   both sides compile, and the gaussian from blur_plane.h, which matches
+   both sides compile, and the gaussian from plane_ops.h, which matches
    sf_blur_plane1.
 
    The pixelpipe hands a module its input and output as image2d objects, so
@@ -38,7 +38,7 @@
 #define GRAIN_CL 1
 #include "grain.h"
 #include "filmgrain.h"
-#include "blur_plane.h"
+#include "plane_ops.h"
 
 /* film density of each color channel of the input, into a float4 buffer
    (xyz = R, G, B densities). Done once, ahead of the nine sub-layer draws
@@ -89,21 +89,6 @@ kernel void filmgrain_deviation(global const float4 *dens,
   const uint seed = grain_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y),
                                      (uint)(channel + sublayer * 10), salt);
   dev[k] = filmgrain_sublayer_deviation(density, share, dmin, dmax, npart, unif, seed);
-}
-
-/* running sum of sub-layer deviations. reset stores the first sub-layer
-   directly, which saves a separate zero fill */
-kernel void filmgrain_accumulate(global float *acc,
-                                 global const float *src,
-                                 const int w,
-                                 const int h,
-                                 const int reset)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if(x >= w || y >= h) return;
-  const size_t k = (size_t)y * w + x;
-  acc[k] = reset ? src[k] : acc[k] + src[k];
 }
 
 /* acutance recovery after the clump blur: g + amount * (g - blur(g)).
