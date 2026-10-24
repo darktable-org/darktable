@@ -2302,6 +2302,7 @@ void process(dt_iop_module_t *self,
   {
     float *gbuf = corr; /* corr is free now — reuse as the grain delta buffer */
     const int roi_x = roi_in->x, roi_y = roi_in->y;
+    const uint32_t salt = grain_hash((uint32_t)piece->pipe->image.id);
     const float amount = d->p.grain_amount;
     const int mono = sf_sim_film_bw(sim); /* B&W: achromatic grain */
     /* sf_grain_delta_ml's layer_npart is precomputed at sf_sim_build time
@@ -2381,7 +2382,7 @@ void process(dt_iop_module_t *self,
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                          \
     shared(plane, raw, layers) firstprivate(w, npix, roi_x, roi_y, mono, channel_idx, seed_ch,   \
-                                            unif_ch, npart_scale, nsub) schedule(static) num_threads(darktable.num_openmp_threads)
+                                            unif_ch, npart_scale, nsub, salt) schedule(static) num_threads(darktable.num_openmp_threads)
 #endif
         for(size_t k = 0; k < npix; k++)
         {
@@ -2391,7 +2392,7 @@ void process(dt_iop_module_t *self,
                                      : plane[k * 3 + channel_idx];
           float samp[SF_GRAIN_MAX_SUBLAYERS];
           sf_grain_raw_samples_ml(&layers, density, channel_idx, seed_ch, (uint32_t)(x + roi_x),
-                                  (uint32_t)(y + roi_y), unif_ch, npart_scale, samp);
+                                  (uint32_t)(y + roi_y), unif_ch, npart_scale, salt, samp);
           for(int sl = 0; sl < nsub; sl++) raw[sl][k] = samp[sl];
         }
         /* dye-cloud blur: each sub-layer independently, no variance
@@ -2524,7 +2525,8 @@ void process(dt_iop_module_t *self,
                      corr, scratch);
   if(!d->p.scan_film && d->p.glare_percent > 0.0f)
     sf_glare(plane, w, h, d->p.glare_percent, SF_GLARE_ROUGHNESS,
-             SF_GLARE_BLUR_PX * preview_scale, roi_in->x, roi_in->y, scratch);
+             SF_GLARE_BLUR_PX * preview_scale, roi_in->x, roi_in->y,
+             grain_hash((uint32_t)piece->pipe->image.id), scratch);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(plane) firstprivate(out, in, w, ow, oh, ox, oy)      \
@@ -3237,6 +3239,7 @@ int process_cl(dt_iop_module_t *self,
   if(d->p.grain_on && d->p.grain_amount > 0.0f)
   {
     const int roi_x = roi_in->x, roi_y = roi_in->y;
+    const uint32_t salt = grain_hash((uint32_t)piece->pipe->image.id);
     const float amount = d->p.grain_amount;
     const int mono = g->film_bw; /* B&W: achromatic grain */
     /* see the matching comment on the CPU path (process()) for the full
@@ -3332,7 +3335,7 @@ int process_cl(dt_iop_module_t *self,
                 devid, gd->kernel_grain_gen_raw_sl, w, h, CLARG(plane2), CLARG(raw_buf[sl]),
                 CLARG(w), CLARG(h), CLARG(roi_x), CLARG(roi_y), CLARG(mono), CLARG(channel_idx),
                 CLARG(seed_ch), CLARG(sl), CLARG(nle), CLARG(maxsub), CLARG(unif_ch),
-                CLARG(npart_scale), CLARG(d->grain_cl_dmax), CLARG(d->grain_cl_npart),
+                CLARG(npart_scale), CLARG(salt), CLARG(d->grain_cl_dmax), CLARG(d->grain_cl_npart),
                 CLARG(d->grain_cl_dmin), CLARG(d->grain_cl_total), CLARG(d->grain_cl_curve));
             if(err == CL_SUCCESS && dye_sigma[channel_idx][sl] > 1e-6f)
               /* exact-only: the CPU twin is sf_blur_plane1(), which never takes
@@ -3496,9 +3499,10 @@ int process_cl(dt_iop_module_t *self,
     const float sigma2 = logf(1.0f + SF_GLARE_ROUGHNESS * SF_GLARE_ROUGHNESS);
     const float gs = sqrtf(sigma2), gbias = -0.5f * sigma2;
     const int roi_x = roi_in->x, roi_y = roi_in->y;
+    const uint32_t salt = grain_hash((uint32_t)piece->pipe->image.id);
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_glare_gen, w, h, CLARG(tmpa),
                                            CLARG(w), CLARG(h), CLARG(roi_x), CLARG(roi_y),
-                                           CLARG(gmean), CLARG(gs), CLARG(gbias));
+                                           CLARG(gmean), CLARG(gs), CLARG(gbias), CLARG(salt));
     SF_CL_STEP("glare gen");
     SF_GAUSS_BLUR4(tmpa, SF_GLARE_BLUR_PX * preview_scale, "glare blur");
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_glare_add, w, h, CLARG(plane),

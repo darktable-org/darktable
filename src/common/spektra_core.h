@@ -127,7 +127,7 @@ void sf_unsharp_mask3(float *buf,
 /* Viewing-glare veil ([gl] add_glare): adds a blurred lognormal field of mean
    percent/100 (relative std `roughness`) to all three channels. `field` is a
    w*h scratch buffer; roi_x/roi_y are absolute image coordinates so the veil
-   is stable under pan and zoom. */
+   is stable under pan and zoom; salt is the per-image grain seed salt. */
 void sf_glare(float *rgb,
               int w,
               int h,
@@ -136,6 +136,7 @@ void sf_glare(float *rgb,
               float blur,
               int roi_x,
               int roi_y,
+              uint32_t salt,
               float *field);
 
 void sf_multiplicative_unsharp_mask3(float *buf,
