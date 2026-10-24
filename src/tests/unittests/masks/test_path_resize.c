@@ -438,6 +438,21 @@ static void test_revisiting_an_offset_restores_it(void **state)
   _free_form(form);
 }
 
+// a shape cached under one setting is not handed back under another
+static void test_changing_a_setting_is_not_answered_from_the_cache(void **state)
+{
+  dt_masks_form_t *form = _ellipse_path(500, 500, 8);
+  assert_true(form->functions->resize(form, 40, FALSE));
+  const guint smooth = g_list_length(form->points);
+  assert_true(form->functions->resize(form, 80, FALSE));
+
+  dt_conf_set_string("masks/path_resize_curve_smoothing", "sharp");
+  assert_true(form->functions->resize(form, 40, FALSE));
+  assert_true(g_list_length(form->points) > smooth);
+  dt_conf_set_string("masks/path_resize_curve_smoothing", "smooth");
+  _free_form(form);
+}
+
 // moving a path keeps what it has grown or shrunk: 0 restores its original
 // outline where it now is, and an offset it was at returns as it was
 static void test_moving_a_path_keeps_its_original_outline(void **state)
@@ -547,6 +562,7 @@ int main(void)
     cmocka_unit_test(test_scrolling_a_large_path_is_steady),
     cmocka_unit_test(test_scrolling_a_large_sparse_path_is_steady),
     cmocka_unit_test(test_revisiting_an_offset_restores_it),
+    cmocka_unit_test(test_changing_a_setting_is_not_answered_from_the_cache),
     cmocka_unit_test(test_moving_a_path_keeps_its_original_outline),
     cmocka_unit_test(test_an_ai_mask_follows_its_offset),
   };

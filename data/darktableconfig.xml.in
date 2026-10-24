@@ -1667,21 +1667,21 @@
     <shortdescription>smoothing of brush strokes</shortdescription>
     <longdescription>sets level for smoothing of brush strokes.\nstronger smoothing leads to less nodes and easier editing but with lower control of accuracy.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="masking">
+  <dtconfig>
     <name>masks_scroll_down_increases</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>scroll down to increase mask parameters</shortdescription>
     <longdescription>when using the mouse scroll wheel to change mask parameters, scroll down to increase the mask size, feather size, opacity, brush hardness and gradient curvature\nby default scrolling up increases these parameters</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="masking">
+  <dtconfig>
     <name>masks/path_resize_amount</name>
-    <type>int</type>
+    <type min="1" max="200">int</type>
     <default>2</default>
-    <shortdescription>path mask resize step amount</shortdescription>
-    <longdescription>amount to grow or shrink a path mask per scroll wheel tick when resizing. the unit is set by the 'path mask resize unit' preference.</longdescription>
+    <shortdescription>step size</shortdescription>
+    <longdescription>amount to grow or shrink a path mask per scroll wheel tick when resizing. the unit is the one of the 'shrink or grow' slider's px/% toggle.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="masking">
+  <dtconfig>
     <name>masks/path_resize_unit</name>
     <type>
       <enum>
@@ -1693,21 +1693,20 @@
     <shortdescription>unit for path mask resize step amount</shortdescription>
     <longdescription>unit for the path mask resize step: 'pixels' uses image pixels, '% of path size' uses a percentage of the path's largest bounding box dimension.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="masking">
+  <dtconfig>
     <name>masks/path_resize_resolution</name>
     <type>
       <enum>
         <option>512</option>
         <option>1024</option>
         <option>2048</option>
-        <option>4096</option>
       </enum>
     </type>
     <default>2048</default>
     <shortdescription>path mask resize tracing resolution</shortdescription>
     <longdescription>internal raster resolution (in pixels on the longest side) used when re-vectorizing a resized path mask. higher values preserve more detail and nodes at the cost of speed.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="masking">
+  <dtconfig>
     <name>masks/path_resize_curve_smoothing</name>
     <type>
       <enum>
@@ -4400,7 +4399,7 @@
     <shortdescription>show right-side buttons in processing module headers</shortdescription>
     <longdescription>when the mouse is not over a module, the multi-instance, reset and preset buttons can be hidden:\n - 'always': always show all buttons,\n - 'active': only show the buttons when the mouse is over the module,\n - 'dim': buttons are dimmed when mouse is away,\n - 'auto': hide the buttons when the panel is narrow,\n - 'fade': fade out all buttons when panel narrows,\n - 'fit': hide all the buttons if the module name doesn't fit,\n - 'smooth': fade out all buttons in one header simultaneously,\n - 'glide': gradually hide individual buttons as needed</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="masking">
+  <dtconfig>
     <name>darkroom/ui/show_mask_indicator</name>
     <type>bool</type>
     <default>true</default>

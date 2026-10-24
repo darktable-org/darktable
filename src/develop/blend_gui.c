@@ -2812,6 +2812,28 @@ static void _masks_preview_on_hover_toggled(GtkToggleButton *mi,
   _preview_on_hover_set(gtk_toggle_button_get_active(mi));
 }
 
+static void _masks_scroll_down_toggled(GtkToggleButton *mi,
+                                       dt_iop_module_t *module)
+{
+  dt_conf_set_bool("masks_scroll_down_increases", gtk_toggle_button_get_active(mi));
+}
+
+static void _masks_show_indicator_toggled(GtkToggleButton *mi,
+                                          dt_iop_module_t *module)
+{
+  dt_conf_set_bool("darkroom/ui/show_mask_indicator", gtk_toggle_button_get_active(mi));
+  if(!darktable.develop) return;
+  // the headers are built once, so each one is told, as when the preferences
+  // dialog closes (views/darkroom.c)
+  for(const GList *l = darktable.develop->iop; l; l = g_list_next(l))
+  {
+    dt_iop_module_t *m = l->data;
+    if(m->header && m->blend_params)
+      dt_iop_add_remove_mask_indicator(
+        m, (m->blend_params->mask_mode & ~DEVELOP_MASK_ENABLED) || m->blend_params->details != 0.0f);
+  }
+}
+
 // appends the "interface options" and "parametric element options" sections
 // to `box`: toggles for how the blend mask panel behaves that don't fit the
 // position or colorspace sections. Check buttons under a dt_section_label,
@@ -2876,6 +2898,22 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
       "and still resizes the panel by dragging and hides it on a click."),
     dt_conf_get_bool("plugins/darkroom/masks/show_panel_handle"),
     _masks_show_panel_handle_toggled)
+
+  _MASKS_OPT_CHECK(
+    scrolldown, _("scroll down to increase mask parameters"),
+    _("when using the mouse scroll wheel to change mask parameters,\n"
+      "scroll down to increase the mask size, feather size, opacity,\n"
+      "brush hardness and gradient curvature.\n"
+      "when disabled (default), scrolling up increases these parameters."),
+    dt_conf_get_bool("masks_scroll_down_increases"),
+    _masks_scroll_down_toggled)
+
+  _MASKS_OPT_CHECK(
+    indicator, _("show mask indicator in module headers"),
+    _("when enabled (default), an icon is shown in the header of\n"
+      "any processing module that has a mask applied."),
+    dt_conf_get_bool("darkroom/ui/show_mask_indicator"),
+    _masks_show_indicator_toggled)
 
   dt_masks_gui_pref_section(box, _("parametric element options"),
                             _("how parametric elements are picked and previewed"));
@@ -5186,38 +5224,11 @@ static void _props_row_apply(dt_iop_module_t *module,
   }
 }
 
-// the quad of the shrink or grow slider's unit toggle: always "%", drawn
-// brighter by bauhaus while active; the slider's value format names the unit
-static void _props_paint_resize_unit(cairo_t *cr,
-                                     const gint x,
-                                     const gint y,
-                                     const gint w,
-                                     const gint h,
-                                     const gint flags,
-                                     void *data)
+// the unit of the shrink or grow slider, set in its settings popover and
+// shared with the canvas's scroll-to-resize (path.c, group.c)
+static gboolean _props_resize_pct(void)
 {
-  const char *txt = "%";
-  cairo_save(cr);
-
-  const double side = MIN(w, h);
-  const double fx = x + (w - side) / 2.0;
-  const double fy = y + (h - side) / 2.0;
-
-  PangoLayout *layout = pango_cairo_create_layout(cr);
-  if(darktable.bauhaus->pango_font_desc)
-    pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
-  pango_layout_set_text(layout, txt, -1);
-  int tw = 0, th = 0;
-  pango_layout_get_pixel_size(layout, &tw, &th);
-
-  const double pad = DT_PIXEL_APPLY_DPI(1.0);
-  const double avail = side - 2.0 * pad;
-  const double scale = (tw > 0 && th > 0) ? fmin(avail / tw, avail / th) : 1.0;
-  cairo_translate(cr, fx + (side - tw * scale) / 2.0, fy + (side - th * scale) / 2.0);
-  cairo_scale(cr, scale, scale);
-  pango_cairo_show_layout(cr, layout);
-  g_object_unref(layout);
-  cairo_restore(cr);
+  return !g_strcmp0(dt_conf_get_string_const("masks/path_resize_unit"), "% of path size");
 }
 
 // resize the row's shape to the slider's offset and commit one history item
@@ -5229,7 +5240,7 @@ static void _props_resize_commit(dt_masks_props_row_editor_t *ed)
   if(!form || !gui || !form->functions || !form->functions->resize) return;
 
   const int amount = (int)roundf(dt_bauhaus_slider_get(ed->resize_widget));
-  const gboolean pct = dt_bauhaus_widget_get_quad_active(ed->resize_widget);
+  const gboolean pct = _props_resize_pct();
 
   if(!form->functions->resize(form, amount, pct) && amount < 0)
     dt_control_log(_("shrink amount too large: the path would disappear"));
@@ -5277,19 +5288,144 @@ static void _props_resize_amount_changed(GtkWidget *w, dt_masks_props_row_editor
 // the unit as the slider's value suffix ("5 px", "5 %")
 static void _props_resize_sync_unit(dt_masks_props_row_editor_t *ed)
 {
-  const gboolean pct = dt_bauhaus_widget_get_quad_active(ed->resize_widget);
-  dt_bauhaus_slider_set_format(ed->resize_widget, pct ? " %" : " px");
+  dt_bauhaus_slider_set_format(ed->resize_widget, _props_resize_pct() ? " %" : " px");
 }
 
-// the unit toggle lives in the slider's quad; bauhaus flips the active flag
-// before emitting "quad-pressed", so the new state is read directly. The unit
-// preference is shared with the canvas's scroll-to-resize (path.c, group.c)
-static void _props_resize_unit_quad(GtkWidget *w, dt_masks_props_row_editor_t *ed)
+// the items of a popover choosing the string a config key holds: one radio
+// model button per value, the one matching the key's current value marked.
+// `changed` runs after a pick
+typedef struct _conf_choice_t
 {
-  const gboolean pct = dt_bauhaus_widget_get_quad_active(w);
-  dt_conf_set_string("masks/path_resize_unit", pct ? "% of path size" : "pixels");
-  _props_resize_sync_unit(ed);
-  _props_resize_schedule_commit(ed);
+  const char *key, *value;
+  void (*changed)(gpointer data);
+  gpointer data;
+} _conf_choice_t;
+
+static void _masks_conf_item_clicked(GtkButton *item, gpointer user_data)
+{
+  const _conf_choice_t *c = g_object_get_data(G_OBJECT(item), "dt-conf-choice");
+  dt_conf_set_string(c->key, c->value);
+
+  // the items of the same key, in the box this one is in: the marked one moves
+  GtkWidget *box = gtk_widget_get_parent(GTK_WIDGET(item));
+  GList *kids = gtk_container_get_children(GTK_CONTAINER(box));
+  for(const GList *k = kids; k; k = g_list_next(k))
+  {
+    const _conf_choice_t *o = g_object_get_data(G_OBJECT(k->data), "dt-conf-choice");
+    if(o && o->key == c->key) g_object_set(k->data, "active", k->data == (gpointer)item, NULL);
+  }
+  g_list_free(kids);
+
+  if(c->changed) c->changed(c->data);
+}
+
+static void _masks_conf_items(GtkWidget *box,
+                              const char *key,
+                              const char *const *values,
+                              const char *const *labels,
+                              const int n,
+                              void (*changed)(gpointer data),
+                              gpointer data)
+{
+  const char *current = dt_conf_get_string_const(key);
+  for(int i = 0; i < n; i++)
+  {
+    GtkWidget *item = gtk_model_button_new();
+    g_object_set(item, "text", labels[i], "role", GTK_BUTTON_ROLE_RADIO,
+                 "active", !g_strcmp0(current, values[i]), NULL);
+    _conf_choice_t *c = g_new0(_conf_choice_t, 1);
+    c->key = key;
+    c->value = values[i];
+    c->changed = changed;
+    c->data = data;
+    g_object_set_data_full(G_OBJECT(item), "dt-conf-choice", c, g_free);
+    g_signal_connect(G_OBJECT(item), "clicked", G_CALLBACK(_masks_conf_item_clicked), NULL);
+    dt_gui_box_add(box, item);
+  }
+}
+
+// what the settings popover keeps of the row it was opened from: the row's
+// slider shows the unit, so a pick of the unit has to reach it, and the row
+// can be rebuilt (and freed) while the popover is open
+typedef struct _resize_popover_t
+{
+  GtkWidget *row;
+} _resize_popover_t;
+
+static void _resize_popover_free(gpointer data)
+{
+  _resize_popover_t *ctx = data;
+  if(ctx->row) g_object_remove_weak_pointer(G_OBJECT(ctx->row), (gpointer *)&ctx->row);
+  g_free(ctx);
+}
+
+static void _props_resize_update(dt_masks_props_row_editor_t *ed);
+
+// the slider shows the offset in the new unit; the path itself stays as it is
+static void _props_resize_unit_changed(gpointer data)
+{
+  const _resize_popover_t *ctx = data;
+  GtkWidget *box = ctx->row ? gtk_widget_get_parent(ctx->row) : NULL;
+  dt_masks_props_row_editor_t *ed = box ? g_object_get_data(G_OBJECT(box), "props-editor") : NULL;
+  if(ed) _props_resize_update(ed);
+}
+
+// the settings of the shrink or grow of a path, in a popover on the gear
+// quad of its slider, laid out as the group layout presets' popover is. They
+// apply from the next resize on (path.c drops the shapes it kept for the old
+// ones)
+static void _props_resize_settings_clicked(GtkWidget *slider, dt_masks_props_row_editor_t *ed)
+{
+  GtkWidget *pop = gtk_popover_new(slider);
+  gtk_style_context_add_class(gtk_widget_get_style_context(pop), "menu");
+  g_signal_connect(G_OBJECT(pop), "closed", G_CALLBACK(_masks_options_popover_closed), NULL);
+
+  _resize_popover_t *ctx = g_new0(_resize_popover_t, 1);
+  ctx->row = ed->resize_widget;
+  g_object_add_weak_pointer(G_OBJECT(ctx->row), (gpointer *)&ctx->row);
+  g_object_set_data_full(G_OBJECT(pop), "resize-popover", ctx, _resize_popover_free);
+
+  GtkWidget *box = dt_gui_vbox(dt_masks_gui_menu_section(_("shrink or grow settings")));
+  dt_gui_add_class(box, "dt_masks_settings_menu");
+  gtk_container_add(GTK_CONTAINER(pop), box);
+
+  GtkWidget *grid = gtk_grid_new();
+  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(8));
+  dt_gui_preferences_int(GTK_GRID(grid), "masks/path_resize_amount", 0, 0);
+  gtk_widget_set_hexpand(gtk_grid_get_child_at(GTK_GRID(grid), 0, 0), TRUE);
+  dt_gui_add_class(grid, "dt_masks_settings_row");
+  dt_gui_box_add(box, grid);
+
+  GtkWidget *section = dt_masks_gui_menu_section(_("unit"));
+  gtk_widget_set_tooltip_text(
+    section, _("the unit of the step and of the slider: image pixels, or a percentage\n"
+               "of the largest dimension of the path as it is before it is resized"));
+  dt_gui_box_add(box, section);
+  const char *const units[] = { "pixels", "% of path size" };
+  const char *const unit_labels[] = { _("pixels"), _("% of path size") };
+  _masks_conf_items(box, "masks/path_resize_unit", units, unit_labels, 2,
+                    _props_resize_unit_changed, ctx);
+
+  section = dt_masks_gui_menu_section(_("tracing resolution"));
+  gtk_widget_set_tooltip_text(
+    section, _("size of the raster a path is traced on, in pixels along its longest side.\n"
+               "higher values follow the outline of a large path more closely but are slower.\n"
+               "a small path is never traced finer than the image it is on."));
+  dt_gui_box_add(box, section);
+  const char *const res[] = { "512", "1024", "2048" };
+  _masks_conf_items(box, "masks/path_resize_resolution", res, res, 3, NULL, NULL);
+
+  section = dt_masks_gui_menu_section(_("curve smoothing"));
+  gtk_widget_set_tooltip_text(
+    section, _("'smooth' follows the resized outline with few nodes and round curves.\n"
+               "'sharp' traces it as a polygon, which takes many more nodes."));
+  dt_gui_box_add(box, section);
+  const char *const smooth[] = { "smooth", "sharp" };
+  const char *const smooth_labels[] = { _("smooth"), _("sharp") };
+  _masks_conf_items(box, "masks/path_resize_curve_smoothing", smooth, smooth_labels, 2, NULL, NULL);
+
+  gtk_widget_show_all(box);
+  gtk_popover_popup(GTK_POPOVER(pop));
 }
 
 // show the shrink or grow slider for a path only, at the offset the path has
@@ -5304,7 +5440,8 @@ static void _props_resize_update(dt_masks_props_row_editor_t *ed)
 
   if(is_path)
   {
-    const gboolean pct = dt_bauhaus_widget_get_quad_active(ed->resize_widget);
+    const gboolean pct = _props_resize_pct();
+    _props_resize_sync_unit(ed);
     float amount = 0.0f;
     form->functions->resize_get(form, pct, &amount);
 
@@ -5518,18 +5655,11 @@ static GtkWidget *_build_props_row_editor(dt_iop_module_t *module,
                      G_CALLBACK(_props_resize_amount_changed), ed);
     dt_gui_add_class(w, "dt_masks_props_slider");
 
-    // unit (px / %) toggle in the slider's quad -- kept visible, unlike the
-    // other properties sliders above, since it is this control's own setting
-    dt_bauhaus_widget_set_quad_paint(w, _props_paint_resize_unit, 0, NULL);
-    dt_bauhaus_widget_set_quad_toggle(w, TRUE);
-    {
-      const char *unit = dt_conf_get_string_const("masks/path_resize_unit");
-      dt_bauhaus_widget_set_quad_active(w, !g_strcmp0(unit, "% of path size"));
-    }
-    dt_bauhaus_widget_set_quad_tooltip(
-      w, _("shrink/grow unit: image pixels (px) or % of path size\nclick to toggle"));
-    g_signal_connect(G_OBJECT(w), "quad-pressed", G_CALLBACK(_props_resize_unit_quad),
-                     ed);
+    // the gear in the slider's quad opens the settings of the grow and shrink,
+    // the unit among them
+    dt_bauhaus_widget_set_quad_paint(w, dtgtk_cairo_paint_preferences, 0, NULL);
+    dt_bauhaus_widget_set_quad_tooltip(w, _("shrink or grow settings"));
+    g_signal_connect(G_OBJECT(w), "quad-pressed", G_CALLBACK(_props_resize_settings_clicked), ed);
 
     ed->resize_widget = _forward_target(w, _FORWARD_SHRINK_GROW, formid);
     _props_resize_sync_unit(ed);

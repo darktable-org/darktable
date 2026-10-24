@@ -42,6 +42,7 @@ typedef struct
   GList *baseline;     // deep copy of the original points (offset 0); owns its data
   GHashTable *results; // key: quantized signed offset px → GList* (deep copy)
   float offset_px;     // signed offset currently applied to the baseline
+  guint settings;      // the tracing settings the cached results were made with
 } _resize_state_t;
 
 // Cache key quantization: 1/16 image-pixel buckets (offsets are integer px or a
@@ -2073,6 +2074,15 @@ void dt_masks_path_resize_follow_move(const dt_mask_id_t formid, const float dx,
     _translate_points(shape, dx, dy);
 }
 
+// The settings a morph depends on, so that a cached result made under others is
+// not handed back after the user changed them.
+static guint _resize_settings(void)
+{
+  guint h = g_str_hash(dt_conf_get_string_const("masks/path_resize_resolution"));
+  h = h * 31 + g_str_hash(dt_conf_get_string_const("masks/path_resize_curve_smoothing"));
+  return h;
+}
+
 // Fetch (lazily creating) the resize state for a form, capturing the current
 // points as the baseline on first use. Callers must only invoke this while
 // form->points still holds the un-resized shape (true on the first resize after
@@ -2089,6 +2099,7 @@ static _resize_state_t *_resize_state_get(dt_masks_form_t *form)
     st->baseline = _copy_points(form->points);
     st->results = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, _resize_result_free);
     st->offset_px = 0.0f;
+    st->settings = _resize_settings();
     g_hash_table_insert(_resize_states, GINT_TO_POINTER(form->formid), st);
   }
   return st;
@@ -3237,6 +3248,13 @@ _path_resize_apply(dt_masks_form_t *form, _resize_state_t *st, const float offse
   const dt_masks_point_path_t *disp = form->points ? form->points->data : NULL;
   const float old_fx = disp ? disp->corner[0] : 0.0f;
   const float old_fy = disp ? disp->corner[1] : 0.0f;
+
+  const guint settings = _resize_settings();
+  if(settings != st->settings)
+  {
+    g_hash_table_remove_all(st->results);
+    st->settings = settings;
+  }
 
   const int key = (int)lroundf(offset_px * RESIZE_KEY_Q);
   const GList *src =
