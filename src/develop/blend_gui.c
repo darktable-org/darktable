@@ -5510,8 +5510,10 @@ static GtkWidget *_build_props_row_editor(dt_iop_module_t *module,
     dt_bauhaus_slider_set_format(w, "");
     gtk_widget_set_tooltip_text(
       w, _("grow (positive) or shrink (negative) this path's outline\n"
-           "0 restores the outline it grew or shrank from. a size, feather\n"
-           "or rotation edit makes the current outline the new 0"));
+           "0 restores the outline it grew or shrank from, which a move keeps.\n"
+           "a size, feather, rotation or node edit makes the current outline\n"
+           "the new 0\n"
+           "double-click to reset to 0"));
     g_signal_connect(G_OBJECT(w), "value-changed",
                      G_CALLBACK(_props_resize_amount_changed), ed);
     dt_gui_add_class(w, "dt_masks_props_slider");

@@ -660,6 +660,9 @@ extern const dt_masks_functions_t dt_masks_functions_gradient;
 extern const dt_masks_functions_t dt_masks_functions_group;
 extern const dt_masks_functions_t dt_masks_functions_parametric;
 extern const dt_masks_functions_t dt_masks_functions_raster;
+/** a path was moved by (dx, dy), in normalized coordinates: what it keeps for
+    its shrink or grow moves with it */
+void dt_masks_path_resize_follow_move(const dt_mask_id_t formid, const float dx, const float dy);
 /** the darkroom module a raster form reads its mask from, or NULL when it is
     gone. Resolved by operation and instance, as the form stores them */
 struct dt_iop_module_t *dt_masks_raster_source(const dt_masks_form_t *form);

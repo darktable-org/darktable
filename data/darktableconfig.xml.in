@@ -1712,13 +1712,12 @@
     <type>
       <enum>
         <option>sharp</option>
-        <option>balanced</option>
         <option>smooth</option>
       </enum>
     </type>
-    <default>balanced</default>
+    <default>smooth</default>
     <shortdescription>path mask resize curve smoothing</shortdescription>
-    <longdescription>controls how corners are handled when re-vectorizing a resized path mask. 'sharp' preserves more nodes and corners; 'smooth' produces fewer, rounder control points.</longdescription>
+    <longdescription>controls how a resized path mask is re-vectorized. 'smooth' follows the resized outline with few nodes and round curves; 'sharp' traces it as a polygon, which takes many more nodes.</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">
     <name>darkroom/mouse/middle_button_cycle_zoom_to_200_percent</name>
