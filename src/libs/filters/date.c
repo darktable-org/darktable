@@ -20,7 +20,10 @@
   This file contains the necessary routines to implement a filter for the filtering module
 */
 
+#include <glib-2.0/glib.h>
 #include <gtk/gtk.h>
+#include "common/filter.h"
+
 static gchar *_date_get_db_colname(dt_lib_filtering_rule_t *rule)
 {
   switch(rule->prop)
@@ -51,45 +54,24 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
   rule->manual_widget_set++;
   // first, we update the graph
   gchar *colname = _date_get_db_colname(rule);
-  char query[1024] = { 0 };
-  sqlite3_stmt *stmt;
 
   // get min and max
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-             "SELECT MIN(%s), MAX(%s)"
-             " FROM main.images"
-             " WHERE %s IS NOT NULL AND %s",
-             colname, colname, colname, d->last_where_ext);
-  // clang-format on
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    range->min_r = sqlite3_column_int64(stmt, 0);
-    range->max_r = sqlite3_column_int64(stmt, 1);
-  }
-  sqlite3_finalize(stmt);
+  dt_filter_daterange_t *daterange = dt_filter_get_daterange(colname, d->last_where_ext);
+  range->min_r = daterange->min_r;
+  range->max_r = daterange->max_r;
+  dt_filter_daterange_free(daterange);
 
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-             "SELECT %s AS date, COUNT(*) AS count"
-             " FROM main.images AS mi"
-             " WHERE %s IS NOT NULL AND %s"
-             " GROUP BY date",
-             colname, colname, d->last_where_ext);
-  // clang-format on
-  g_free(colname);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   dtgtk_range_select_reset_blocks(range);
   if(rangetop) dtgtk_range_select_reset_blocks(rangetop);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+
+  GList *counts = dt_filter_get_date_counts(colname, d->last_where_ext);
+  for(GList *iter = counts; iter; iter = g_list_next(iter))
   {
-    const int count = sqlite3_column_int(stmt, 1);
-    const int64_t dt = sqlite3_column_int64(stmt, 0);
-    dtgtk_range_select_add_block(range, dt, count);
-    if(rangetop) dtgtk_range_select_add_block(rangetop, dt, count);
+    dt_filter_date_count_t *count = iter->data;
+    dtgtk_range_select_add_block(range, count->dt, count->count);
+    if(rangetop) dtgtk_range_select_add_block(rangetop, count->dt, count->count);
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(counts, dt_filter_date_count_free);
 
   // and setup the selection
   dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
@@ -174,27 +156,7 @@ static gboolean _month_update(dt_lib_filtering_rule_t *rule)
 
   // get all used months
   gchar *colname = _date_get_db_colname(rule);
-  int used_months_mask = 0;
-  char query[1024] = { 0 };
-  sqlite3_stmt *stmt;
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-             "SELECT CAST(strftime('%%m', %s/1000000"
-             "                     + unixepoch('0001-01-01 00:00:00'), 'unixepoch') AS INTEGER) AS month"
-             " FROM main.images"
-             " WHERE %s IS NOT NULL AND %s"
-             " GROUP BY month",
-             colname, colname, d->last_where_ext);
-  // clang-format on
-  g_free(colname);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const int m = sqlite3_column_int(stmt, 0);
-    used_months_mask |= (1 << (m-1));
-  }
-  sqlite3_finalize(stmt);
-
+  int used_months_mask = dt_filter_get_used_months_mask(colname, d->last_where_ext);
   const int mask = _month_get_mask(rule->raw_text);
 
   for(int i = 0; i < 12; i++)
@@ -272,23 +234,11 @@ static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
 
   gchar *colname = _date_get_db_colname(rule);
-  char query[1024] = { 0 };
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-             "SELECT MIN(%s), MAX(%s)"
-             " FROM main.images"
-             " WHERE %s IS NOT NULL",
-             colname, colname, colname);
-  // clang-format on
-  g_free(colname);
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    range->min_r = sqlite3_column_int64(stmt, 0);
-    range->max_r = sqlite3_column_int64(stmt, 1);
-  }
-  sqlite3_finalize(stmt);
+
+  dt_filter_daterange_t *daterange = dt_filter_get_daterange(colname, NULL);
+  range->min_r = daterange->min_r;
+  range->max_r = daterange->max_r;
+  dt_filter_daterange_free(daterange);
 
   _range_widget_add_to_rule(rule, special, top);
 }
