@@ -325,3 +325,52 @@ int sf_gauss_iir_passes(float sigma,
    resolution — see the grain blur in spektrafilm.c/.cl and
    _max_halo_sigma's ROI padding, all of which must agree. */
 #define SF_GRAIN_REF_UM 10.0f
+
+/* floor of the grain blur slider's factor: the clump blur never vanishes,
+   since without it the grain is per-pixel white noise */
+#define SF_GRAIN_BLUR_MIN 0.05f
+
+/* reference spread of the dye clouds, upstream's
+   GrainParams.blur_dye_clouds_um (params_schema.py). Each sub-layer's raw
+   particle draw is blurred by this times the square root of its
+   per-particle optical density, before the clump blur; upstream uses the
+   value as a pixel sigma despite the unit in its name, and so does this
+   port */
+#define SF_GRAIN_DYE_BLUR_UM 2.0f
+
+/* crystal-count factor from the SF_GRAIN_REF_UM reference pixel to a pixel
+   of pixel_um */
+static inline float sf_grain_npart_scale(const float pixel_um)
+{
+  return (pixel_um * pixel_um) / (SF_GRAIN_REF_UM * SF_GRAIN_REF_UM);
+}
+
+/* dye-cloud blur sigma, px, of a sub-layer with density dmax over npart
+   crystals per pixel (already scaled to the rendered pixel). cloud scales
+   the reference spread and preview_scale shrinks it with a zoomed-out view */
+static inline float sf_grain_dye_sigma(const float dmax,
+                                       const float npart,
+                                       const float cloud,
+                                       const float preview_scale)
+{
+  const float od_particle = dmax / fmaxf(npart, 1e-6f);
+  return SF_GRAIN_DYE_BLUR_UM * cloud * sqrtf(fmaxf(od_particle, 0.0f)) * preview_scale;
+}
+
+#ifdef HAVE_OPENCL
+#include "common/opencl.h"
+/* device twin of sf_blur_plane1: one exact separable gaussian over a w*h
+   float buffer, run by the caller's gauss_row_1c / gauss_col_1c kernels
+   from data/kernels/plane_ops.h, and skipped below the same sigma.
+   `tmp` takes the row pass and the column pass writes back into `buf`;
+   `weights` holds at least 2 * SF_GAUSS_MAX_RADIUS + 1 floats */
+cl_int sf_blur_plane1_cl(int devid,
+                         int kernel_row,
+                         int kernel_col,
+                         cl_mem buf,
+                         cl_mem tmp,
+                         cl_mem weights,
+                         int w,
+                         int h,
+                         float sigma);
+#endif

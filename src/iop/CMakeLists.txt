@@ -105,6 +105,12 @@ if(SPEKTRA_FP_CONTRACT_FLAGS)
   target_compile_options(spektrafilm PRIVATE ${SPEKTRA_FP_CONTRACT_FLAGS})
 endif()
 add_iop(grain "grain.c")
+add_iop(filmgrain "filmgrain.c")
+# filmgrain.c compiles data/kernels/grain.h and filmgrain.h, whose grain
+# draw must match the OpenCL kernel bit-for-bit
+if(SPEKTRA_FP_CONTRACT_FLAGS)
+  target_compile_options(filmgrain PRIVATE ${SPEKTRA_FP_CONTRACT_FLAGS})
+endif()
 add_iop(clahe "clahe.c")
 add_iop(bilateral "bilateral.cc")
 add_iop(profile_gamma "profile_gamma.c")
