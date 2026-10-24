@@ -801,6 +801,13 @@ changes (where available).
 - Fixed PPG demosaic with an edge threshold giving different pixels
   along the image edges with OpenCL than on the CPU.
 
+- Fixed darktable hanging at startup, when opening an image in the
+  darkroom, or when browsing folders in the import dialog, while
+  folders were on an unreachable network share. Folders that do not
+  respond within a timeout, set in preferences > storage > film roll
+  folders, are marked unavailable, and are checked again when one of
+  their images is opened.
+
 ## Lua
 
 ### API Version
