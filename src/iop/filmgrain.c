@@ -198,6 +198,11 @@ typedef struct dt_iop_filmgrain_gui_data_t
   /* tone graph state, GUI thread only */
   int active_node;   // node under the pointer or being dragged, -1 for none
   gboolean dragging;
+  gboolean pointer_in; // pointer over the plot, which shows the reach circle
+  float pointer_x;
+  float drag_ev;     // center of the dragged bump, EV
+  float drag_y;      // pointer height at the start of the drag
+  float drag_curve[FILMGRAIN_TONE_NODES]; // curve at the start of the drag
   float graph_x, graph_y, graph_w, graph_h; // plot rectangle from the last draw
 } dt_iop_filmgrain_gui_data_t;
 
@@ -1227,6 +1232,12 @@ void cleanup_pipe(dt_iop_module_t *self,
    gradient, EV labels and axis title under it */
 #define FILMGRAIN_GRAPH_HEIGHT 200
 
+/* reach of a graph drag, in EV: the standard deviation of the gaussian that
+   weights each node's share of the move, and the radius of the circle drawn
+   around the pointer. 1 EV is the radius tone equalizer shows at its
+   default curve smoothing */
+#define FILMGRAIN_GRAPH_REACH_EV 1.0f
+
 static inline float _node_ev(const int node)
 {
   return FILMGRAIN_TONE_EV_FIRST + (float)node;
@@ -1239,17 +1250,18 @@ static inline float _graph_x_of_ev(const dt_iop_filmgrain_gui_data_t *const g,
   return g->graph_x + (ev - FILMGRAIN_TONE_EV_FIRST) / span * g->graph_w;
 }
 
+static inline float _graph_ev_of_x(const dt_iop_filmgrain_gui_data_t *const g,
+                                   const float x)
+{
+  const float span = (float)(FILMGRAIN_TONE_NODES - 1);
+  return FILMGRAIN_TONE_EV_FIRST
+         + CLAMPF((x - g->graph_x) / g->graph_w, 0.0f, 1.0f) * span;
+}
+
 static inline float _graph_y_of_value(const dt_iop_filmgrain_gui_data_t *const g,
                                       const float value)
 {
   return g->graph_y + (1.0f - value / FILMGRAIN_GRAPH_MAX) * g->graph_h;
-}
-
-static inline float _graph_value_of_y(const dt_iop_filmgrain_gui_data_t *const g,
-                                      const float y)
-{
-  return CLAMPF((1.0f - (y - g->graph_y) / g->graph_h) * FILMGRAIN_GRAPH_MAX,
-                0.0f, FILMGRAIN_GRAPH_MAX);
 }
 
 /* the node whose column the pointer is in, or -1 outside the plot. Each
@@ -1433,6 +1445,23 @@ static void _graph_paint(dt_iop_filmgrain_gui_data_t *const g,
     cairo_fill(cr);
   }
 
+  // reach circle, on the curve at the center of the drag or the pointer
+  if(g->dragging || g->pointer_in)
+  {
+    const float ev = g->dragging ? g->drag_ev : _graph_ev_of_x(g, g->pointer_x);
+    const float px_per_ev = g->graph_w / (float)(FILMGRAIN_TONE_NODES - 1);
+    cairo_save(cr);
+    cairo_rectangle(cr, gx0, gy0, g->graph_w, g->graph_h);
+    cairo_clip(cr);
+    cairo_new_sub_path(cr);
+    cairo_arc(cr, _graph_x_of_ev(g, ev), _graph_y_of_value(g, _tone_eval(p->tone_curve, m, ev)),
+              FILMGRAIN_GRAPH_REACH_EV * px_per_ev, 0.0, 2.0 * M_PI);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
+    set_color(cr, darktable.bauhaus->graph_fg);
+    cairo_stroke(cr);
+    cairo_restore(cr);
+  }
+
   char text[64];
   set_color(cr, darktable.bauhaus->graph_fg);
 
@@ -1545,6 +1574,33 @@ static void _graph_set_node(dt_iop_module_t *self,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+/* move the nodes around drag_ev by the pointer's vertical travel since the
+   press, each weighted by a gaussian of its distance in EV, the way tone
+   equalizer's graph does. Every node starts from its value at the press, so
+   the whole-percent snapping does not accumulate over the motion events */
+static void _graph_drag_to(dt_iop_module_t *self,
+                           const float y)
+{
+  dt_iop_filmgrain_gui_data_t *g = self->gui_data;
+  dt_iop_filmgrain_params_t *p = self->params;
+  const float delta = (g->drag_y - y) / g->graph_h * FILMGRAIN_GRAPH_MAX;
+  const float denom = 2.0f * FILMGRAIN_GRAPH_REACH_EV * FILMGRAIN_GRAPH_REACH_EV;
+  gboolean changed = FALSE;
+  for(int k = 0; k < FILMGRAIN_TONE_NODES; k++)
+  {
+    const float d = _node_ev(k) - g->drag_ev;
+    const float value = g->drag_curve[k] + expf(-d * d / denom) * delta;
+    const float v = CLAMPF(roundf(value * 100.0f) / 100.0f, 0.0f, FILMGRAIN_GRAPH_MAX);
+    if(p->tone_curve[k] == v) continue;
+    p->tone_curve[k] = v;
+    _node_slider_sync(g, p, k);
+    changed = TRUE;
+  }
+  if(!changed) return;
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 static void _area_motion(GtkEventControllerMotion *controller,
                          gdouble x,
                          gdouble y,
@@ -1553,18 +1609,17 @@ static void _area_motion(GtkEventControllerMotion *controller,
   DT_GUARD_GUI_UPDATE();
   dt_iop_filmgrain_gui_data_t *g = self->gui_data;
 
-  if(g->dragging && g->active_node >= 0)
+  if(g->dragging)
   {
-    _graph_set_node(self, g->active_node, _graph_value_of_y(g, y));
+    _graph_drag_to(self, y);
     return;
   }
 
   const int node = _graph_node_at(g, x, y);
-  if(node != g->active_node)
-  {
-    g->active_node = node;
-    gtk_widget_queue_draw(GTK_WIDGET(g->area));
-  }
+  g->active_node = node;
+  g->pointer_in = node >= 0;
+  g->pointer_x = x;
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 static void _area_leave(GtkEventControllerMotion *controller,
@@ -1573,6 +1628,7 @@ static void _area_leave(GtkEventControllerMotion *controller,
   dt_iop_filmgrain_gui_data_t *g = self->gui_data;
   if(g->dragging) return;
   g->active_node = -1;
+  g->pointer_in = FALSE;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
@@ -1609,10 +1665,13 @@ static void _area_press(GtkGestureSingle *gesture,
   }
   else if(button == GDK_BUTTON_PRIMARY)
   {
-    /* the node follows the pointer's height once it moves, so a click
-       alone never changes the curve */
+    /* the curve follows the pointer's height once it moves, so a click
+       alone never changes it */
     g->active_node = node;
     g->dragging = TRUE;
+    g->drag_ev = _graph_ev_of_x(g, x);
+    g->drag_y = y;
+    memcpy(g->drag_curve, p->tone_curve, sizeof(g->drag_curve));
   }
 }
 
@@ -1626,6 +1685,8 @@ static void _area_release(GtkGestureSingle *gesture,
   if(!g->dragging) return;
   g->dragging = FALSE;
   g->active_node = _graph_node_at(g, x, y);
+  g->pointer_in = g->active_node >= 0;
+  g->pointer_x = x;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
@@ -1731,6 +1792,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_filmgrain_gui_data_t *g = self->gui_data;
   g->active_node = -1;
   g->dragging = FALSE;
+  g->pointer_in = FALSE;
   dt_gui_update_collapsible_section(&g->node_sliders);
   dt_gui_update_collapsible_section(&g->texture);
   gui_changed(self, NULL, NULL);
@@ -1838,7 +1900,8 @@ void gui_init(dt_iop_module_t *self)
     _("how much grain each tone gets, from the shadows on the left to the\n"
       "highlights on the right. 100% leaves the grain as it is.\n"
       "\n"
-      "drag a node up or down to change it, or scroll over it for fine steps.\n"
+      "drag up or down to move the curve; nodes inside the circle follow\n"
+      "the most. scroll over a node to change only that one in fine steps.\n"
       "right-click a node to reset it, double-click to reset the curve"));
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_area_draw), self);
   dt_gui_connect_click(g->area, _area_press, _area_release, self);
