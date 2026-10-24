@@ -253,6 +253,8 @@ void dt_control_cleanup(const gboolean withgui);
 
 // call this to quit dt
 void dt_control_quit(void);
+/* Apply pending quit and relaunch the process after cleanup. */
+void dt_control_restart(void);
 
 /** get threadsafe running state. */
 gboolean dt_control_running(void);

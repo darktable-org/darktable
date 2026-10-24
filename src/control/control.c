@@ -442,6 +442,12 @@ void dt_control_quit()
   }
 }
 
+void dt_control_restart(void)
+{
+  darktable.restart = TRUE;
+  dt_control_quit();
+}
+
 void dt_control_shutdown()
 {
   dt_control_t *s = darktable.control;

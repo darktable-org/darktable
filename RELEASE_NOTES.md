@@ -177,6 +177,11 @@ changes (where available).
 - Added a "copy to clipboard" export storage, which places the
   exported images on the system clipboard.
 
+- Clicking on the darktable logo opens a workspace menu to switch
+  libraries or create a new workspace (blank by default + optional
+  copy). Switching or creating relaunches darktable into the
+  chosen workspace.
+
 - The lens correction module now warns when it applies Lensfun
   vignetting correction to a Panasonic RW2 or Olympus ORF file shot
   with the camera's shading compensation on, which can overcorrect the
