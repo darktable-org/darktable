@@ -588,8 +588,13 @@ void sf_multiplicative_unsharp_mask3(float *const buf,
     const float D = fmaxf(orig[i] + d0, 0.0f);
     const float blur = fmaxf(buf[i] + d0, eps);
     const float ratio = fmaxf(fminf(D / blur, ratio_max), 1.0f / ratio_max);
-    /* fma-pinned, matching spektrafilm_grain_usm */
-    buf[i] = fmaxf(fmaf(D, powf(ratio, amount), -d0), 0.0f);
+    /* fma-pinned, matching spektrafilm_grain_usm. D >= 0 and the power term is
+       positive, so the result is bounded below by -d0: the absolute density
+       stays non-negative while the density relative to the floor may go
+       negative, as in the reference. Clamping at 0 here would rectify the grain
+       below the floor and add density wherever grain is strong relative to the
+       local density. */
+    buf[i] = fmaf(D, powf(ratio, amount), -d0);
   }
 }
 
@@ -637,6 +642,7 @@ void sf_glare(float *const rgb,
               const float blur,
               const int roi_x,
               const int roi_y,
+              const uint32_t salt,
               float *const field)
 {
   const float mean = percent * 0.01f;
@@ -648,7 +654,7 @@ void sf_glare(float *const rgb,
   for(int y = 0; y < h; y++)
     for(int x = 0; x < w; x++)
     {
-      const uint32_t seed = grain_pixel_seed((uint32_t)(x + roi_x), (uint32_t)(y + roi_y), 0x5eedu);
+      const uint32_t seed = grain_pixel_seed((uint32_t)(x + roi_x), (uint32_t)(y + roi_y), 0x5eedu, salt);
       field[(size_t)y * w + x] = mean * expf(fmaf(s, grain_normal(seed), bias));
     }
   float *const trans = dt_alloc_align_float((size_t)w * h);

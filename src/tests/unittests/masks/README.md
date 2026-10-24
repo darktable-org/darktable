@@ -15,7 +15,7 @@ ctest --test-dir build-test -R flexi --output-on-failure
 | `test_flexi_model` | grouping and partitioning, element drag-and-drop, the selection state machine, marking classic runs as groups, solo/mute primitives |
 | `test_flexi_cache` | which edits must — and must not — invalidate the pixelpipe's mask cache |
 | `test_flexi_persistence` | mask blob version migration, i.e. carrying already-saved edits forward |
-| `test_flexi_dnd` | the drop paths other than element-onto-element: group headers, empty groups, clusters, deleting and emptying groups |
+| `test_flexi_dnd` | the drop paths other than member-onto-member: group headers, empty groups, clusters, deleting and emptying groups |
 | `test_flexi_groups` | the solo family's mutual exclusivity, group numbering, refinement scope |
 | `test_flexi_panel` | what the panel shows: the no-op badge, adaptive parametric rows, preferences |
 | `test_flexi_migrate` | the classic → flexi migration case table (structure, not pixels) |
@@ -52,7 +52,7 @@ A gesture handler is split in two:
   widget rebuild;
 - **the model function** performs the gesture, and is what the tests call.
 
-`_masks_row_drag_received` and `dt_masks_model_drop_element_onto_element` in
+`_masks_row_drag_received` and `dt_masks_model_drop_member_onto_member` in
 `blend_gui.c` are the worked example. The handler owns nothing but decode and
 commit, so the tests and the real panel run *identical* logic — there is no
 second implementation to drift.
@@ -76,7 +76,7 @@ group or an element.
 
 ```c
 dt_masks_form_t *grp = flexi_build("u{1,2,i{3,4}}");
-dt_masks_model_drop_element_onto_element(&flexi_module, grp, 1, 3, TRUE);
+dt_masks_model_drop_member_onto_member(&flexi_module, grp, 1, 3, TRUE);
 assert_layout("u{2,i{3,1,4}}");
 ```
 

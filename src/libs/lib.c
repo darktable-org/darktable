@@ -1041,7 +1041,7 @@ static void _lib_plugin_arrow_button_press_cb(GtkGestureSingle *gesture,
   else if(button == GDK_BUTTON_SECONDARY)
   {
     if(gtk_widget_get_sensitive(module->presets_button))
-      _presets_popup_callback(NULL, module);
+      _presets_popup_callback(module->presets_button, module);
 
     return;
   }

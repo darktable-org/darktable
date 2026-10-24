@@ -3302,7 +3302,7 @@ static void _add_remove_modules_at_widget(dt_action_t *action,
   for(const GList *iter = darktable.lib->plugins; iter; iter = iter->next)
   {
     dt_lib_module_t *module = iter->data;
-    if(!module->name) continue;
+    if(!module->name || dt_masks_gui_is_host_lib(module)) continue;
     const dt_view_type_flags_t mv = module->views(module);
     if((mv & cv || mv & (mv - 1) || mv & DT_VIEW_MULTI) // either current view or supports more than one view
        && module->expandable(module))
@@ -5221,6 +5221,27 @@ static void _yes_no_button_handler(GtkButton *button, const gpointer data)
   g_main_loop_quit(result->loop);
 }
 
+// enter in the entry answers yes, escape answers no
+static void _string_dialog_activate(GtkEntry *entry, const gpointer data)
+{
+  result_t *result = (result_t *)data;
+  if(result->button_yes) gtk_button_clicked(GTK_BUTTON(result->button_yes));
+}
+
+static gboolean _string_dialog_key_pressed(GtkEventControllerKey *controller,
+                                           const guint keyval,
+                                           const guint keycode,
+                                           const GdkModifierType state,
+                                           result_t *result)
+{
+  if(keyval != GDK_KEY_Escape) return FALSE;
+  if(result->button_no)
+    gtk_button_clicked(GTK_BUTTON(result->button_no));
+  else
+    gtk_widget_destroy(result->window);
+  return TRUE;
+}
+
 gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
                                               const char *markup,
                                               const char *no_text,
@@ -5395,7 +5416,17 @@ char *dt_gui_show_standalone_string_dialog(const char *title,
     gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
   }
 
+  g_signal_connect(entry, "activate", G_CALLBACK(_string_dialog_activate), &result);
+  // on the window and in the capture phase, not on the entry: escape has to
+  // cancel whichever of the entry and the buttons has the focus
+  gtk_event_controller_set_propagation_phase(
+    dt_gui_connect_key(window, _string_dialog_key_pressed, &result), GTK_PHASE_CAPTURE);
+
   gtk_widget_show_all(window);
+  // what the dialog asks for is typed first. The window is presented too: opened
+  // from a popover that is closing, it is not given the keyboard focus otherwise
+  gtk_window_present(GTK_WINDOW(window));
+  gtk_widget_grab_focus(entry);
   g_main_loop_run(loop);
   g_main_loop_unref(loop);
 
@@ -6037,6 +6068,10 @@ GtkNotebook *dt_ui_notebook_new(dt_action_def_t *def)
   }
 
   gtk_drag_dest_unset(GTK_WIDGET(_current_notebook));
+  // a tab click grabs focus for the notebook, and the side panel viewport
+  // clamps its scroll position to the focused widget; for a notebook taller
+  // than the panel that scrolls the tabs to the top of the panel
+  gtk_widget_set_can_focus(GTK_WIDGET(_current_notebook), FALSE);
   return _current_notebook;
 }
 

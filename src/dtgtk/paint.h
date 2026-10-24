@@ -137,6 +137,8 @@ void dtgtk_cairo_paint_local_copy(cairo_t *cr, gint x, gint y, gint w, gint h, g
 void dtgtk_cairo_paint_reject(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint the remove icon */
 void dtgtk_cairo_paint_remove(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint a trash bin icon */
+void dtgtk_cairo_paint_trash(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a rating icon on thumbs */
 void dtgtk_cairo_paint_star(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint an icon for unrating star on thumbs */
@@ -329,6 +331,8 @@ void dtgtk_cairo_paint_masks_used(cairo_t *cr, gint x, gint y, gint w, gint h, g
     a toggle button, which sets CPF_ACTIVE to its own state, whether the panel
     shows, and shows that with its styling */
 void dtgtk_cairo_paint_masks_panel(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint a viewfinder: the focused module, whose mask the panel is showing */
+void dtgtk_cairo_paint_module_focus(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a clone tool for retouch */
 void dtgtk_cairo_paint_tool_clone(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a heal tool for retouch */

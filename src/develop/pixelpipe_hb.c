@@ -318,6 +318,7 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->input_profile_info = NULL;
   pipe->output_profile_info = NULL;
   pipe->export_profile_info = NULL;
+  pipe->output_headroom = 1.0f;
   pipe->runs = 0;
   pipe->bcache_data = NULL;
   pipe->bcache_size = 0;
@@ -568,7 +569,7 @@ static gboolean _wants_details(const dt_masks_point_group_t *pt,
   return pt->refinement.enabled && !feqf(pt->refinement.details, 0.0f, 1e-6);
 }
 
-// does an element or group of the mask refine with a detail threshold? It
+// does a member of the mask refine with a detail threshold? It
 // needs the detail buffer even when bp->details is 0
 static gboolean _blend_group_wants_details(dt_develop_t *dev,
                                            const dt_mask_id_t mask_id)

@@ -212,8 +212,11 @@ typedef struct dt_colorspaces_t
 
   dt_colorspaces_color_mode_t mode;
 
+  // run these through dt_colorspaces_transform_to_display(), which needs the
+  // matching hdr transfer
   cmsHTRANSFORM transform_srgb_to_display, transform_adobe_rgb_to_display;
   cmsHTRANSFORM transform_srgb_to_display2, transform_adobe_rgb_to_display2;
+  int display_hdr_transfer, display2_hdr_transfer;
 
 } dt_colorspaces_t;
 
@@ -419,6 +422,15 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
 void dt_colorspaces_update_display_transforms();
 /** same for display2 */
 void dt_colorspaces_update_display2_transforms();
+/** 8-bit RGBA to the screen's BGRA through one of the transforms above */
+void dt_colorspaces_transform_to_display(cmsHTRANSFORM xform,
+                                         const int hdr,
+                                         const uint8_t *const in,
+                                         uint8_t *const out,
+                                         const int width,
+                                         const int height,
+                                         const size_t in_stride,
+                                         const size_t out_stride);
 
 /** Calculate CAM->XYZ, XYZ->CAM matrices **/
 gboolean dt_colorspaces_conversion_matrices_xyz(const float adobe_XYZ_to_CAM[4][3],

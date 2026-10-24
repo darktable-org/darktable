@@ -23,7 +23,8 @@
 // position does not use it: that is a grid column of src/gui/gtk.c
 // (dt_ui_flexi_panel_*).
 //
-// The lib stays visible to dt_lib_is_visible: view.c builds the expander
+// The lib stays visible to dt_lib_is_visible (and is not in the modules list,
+// see dt_masks_gui_is_host_lib): view.c builds the expander
 // (dt_lib_gui_get_expander) only for libs visible when the view is entered,
 // so a hidden lib could not take the panel until the next view change. In
 // the other positions self->expander is hidden with gtk_widget_hide()
@@ -51,6 +52,16 @@ typedef struct dt_lib_masks_flexi_host_t
 } dt_lib_masks_flexi_host_t;
 
 static void _reconfigure(dt_lib_module_t *self);
+
+// the modules list no longer offers this lib, but a hidden state stored from
+// when it did would still keep view.c from building its expander
+static gboolean _is_stale_visible_key(const gpointer key,
+                                      const gpointer value,
+                                      const gpointer suffix)
+{
+  return g_str_has_prefix(key, "plugins/darkroom/")
+         && g_str_has_suffix(key, (const char *)suffix);
+}
 
 const char *name(dt_lib_module_t *self)
 {
@@ -170,6 +181,10 @@ void gui_init(dt_lib_module_t *self)
   darktable.develop->proxy.masks_flexi_host.idle_toggle = d->idle_toggle;
   darktable.develop->proxy.masks_flexi_host.hosted_module = NULL;
   darktable.develop->proxy.masks_flexi_host.reconfigure = _reconfigure;
+
+  gchar *visible_suffix = g_strdup_printf("/%s_visible", self->plugin_name);
+  g_hash_table_foreach_remove(darktable.conf->table, _is_stale_visible_key, visible_suffix);
+  g_free(visible_suffix);
 
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _history_change_callback);
 

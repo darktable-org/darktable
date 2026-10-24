@@ -237,6 +237,9 @@ typedef struct dt_dev_pixelpipe_t
   struct dt_iop_order_iccprofile_info_t *output_profile_info;
   /** used only as a cache-identity tag to invalidate the cache **/
   struct dt_iop_order_iccprofile_info_t *export_profile_info;
+  /** peak luminance of the output relative to the 203 nit reference white,
+      1.0 for SDR; set with the output profile, read by tone mappers **/
+  float output_headroom;
 
   // instances of pixelpipe, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;

@@ -27,6 +27,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/signal.h"
+#include "develop/develop.h"
 #include "dtgtk/button.h"
 #include "dtgtk/stylemenu.h"
 #include "gui/accelerators.h"
@@ -34,6 +35,7 @@
 #include "imageio/imageio_module.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#include "views/view.h"
 
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
@@ -42,7 +44,7 @@
 
 #include <glib.h>
 
-DT_MODULE(8)
+DT_MODULE(9)
 
 typedef enum dt_export_batch_cols_t
 {
@@ -64,7 +66,7 @@ typedef struct dt_lib_export_t
   GtkWidget *storage, *format;
   int format_lut[128];
   uint32_t max_allowed_width , max_allowed_height;
-  GtkWidget *upscale, *profile, *intent, *style, *style_mode;
+  GtkWidget *upscale, *profile, *pq_peak, *intent, *style, *style_mode;
   dt_gui_collapsible_section_t cs;
   GtkWidget *batch_treeview;
   GtkButton *export_button, *batch_export_button;
@@ -419,13 +421,14 @@ static void _export_with_current_settings(dt_lib_module_t *self)
     dt_conf_get_int(CONFIG_PREFIX "icctype");
   gchar *icc_filename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
   const dt_iop_color_intent_t icc_intent = dt_conf_get_int(CONFIG_PREFIX "iccintent");
+  const int pq_peak_nits = dt_conf_get_int(CONFIG_PREFIX "pq_peak_nits");
 
   GList *list = dt_act_on_get_images(TRUE, TRUE, TRUE);
   dt_control_export(list, max_width, max_height, format_index, storage_index,
                     high_quality, upscale, scaledimension,
                     is_scaling, scale_factor,
                     export_masks, style, style_append,
-                    icc_type, icc_filename, icc_intent,
+                    icc_type, icc_filename, icc_intent, pq_peak_nits,
                     d->metadata_export);
 
   g_free(icc_filename);
@@ -442,6 +445,8 @@ static void _export_with_preset(const gchar *preset_name, dt_lib_module_t *self)
   // get current settings from the GUI
   int params_size;
   void *params = get_params(self, &params_size);
+  // not in params when the current profile cannot be PQ
+  const int pq_peak_nits = dt_conf_get_int(CONFIG_PREFIX "pq_peak_nits");
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -472,6 +477,7 @@ static void _export_with_preset(const gchar *preset_name, dt_lib_module_t *self)
 
   // restore previous settings
   set_params(self, params, params_size);
+  dt_bauhaus_slider_set(d->pq_peak, pq_peak_nits);
 }
 
 static void _export_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
@@ -735,6 +741,9 @@ void gui_reset(dt_lib_module_t *self)
                           dt_confgen_get_int(CONFIG_PREFIX "iccintent",
                                              DT_DEFAULT) + 1);
 
+  dt_bauhaus_slider_set(d->pq_peak, dt_confgen_get_int(CONFIG_PREFIX "pq_peak_nits",
+                                                       DT_DEFAULT));
+
   // iccprofile
   const int icctype = dt_confgen_get_int(CONFIG_PREFIX "icctype", DT_DEFAULT);
   gchar *iccfilename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
@@ -982,7 +991,18 @@ static void _storage_changed(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_gui_queue_update(self);
 }
 
-static void _profile_changed(GtkWidget *widget, dt_lib_export_t *d)
+// the PQ peak only matters when the export may be PQ
+static gboolean _export_may_be_pq(const dt_colorspaces_color_profile_type_t icctype)
+{
+  return icctype == DT_COLORSPACE_NONE || dt_colorspaces_hdr_transfer(icctype) == DT_HDR_PQ;
+}
+
+static void _update_pq_peak_visibility(dt_lib_export_t *d)
+{
+  gtk_widget_set_visible(d->pq_peak, _export_may_be_pq(dt_conf_get_int(CONFIG_PREFIX "icctype")));
+}
+
+static void _set_profile_conf(GtkWidget *widget)
 {
   int pos = dt_bauhaus_combobox_get(widget);
   if(pos > 0)
@@ -1006,6 +1026,21 @@ static void _profile_changed(GtkWidget *widget, dt_lib_export_t *d)
   }
   dt_conf_set_int(CONFIG_PREFIX "icctype", DT_COLORSPACE_NONE);
   dt_conf_set_string(CONFIG_PREFIX "iccprofile", "");
+}
+
+static void _profile_changed(GtkWidget *widget, dt_lib_export_t *d)
+{
+  _set_profile_conf(widget);
+  _update_pq_peak_visibility(d);
+}
+
+static void _pq_peak_changed(GtkWidget *widget, dt_lib_export_t *d)
+{
+  dt_conf_set_int(CONFIG_PREFIX "pq_peak_nits", (int)roundf(dt_bauhaus_slider_get(widget)));
+  // colorout reads the peak when it commits, and a darkroom on a PQ
+  // display renders with it too
+  if(dt_view_get_current() == DT_VIEW_DARKROOM)
+    dt_dev_reprocess_all(darktable.develop);
 }
 
 static void _dimensions_type_changed(GtkWidget *widget,
@@ -1617,6 +1652,20 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_markup(d->profile, tooltip);
   g_free(tooltip);
 
+  //  Add PQ peak slider
+
+  d->pq_peak = dt_bauhaus_slider_new_action(DT_ACTION(self), 203.f, 10000.f, 1.f,
+                                            dt_confgen_get_int(CONFIG_PREFIX "pq_peak_nits",
+                                                               DT_DEFAULT), 0);
+  dt_bauhaus_widget_set_label(d->pq_peak, NULL, N_("PQ peak"));
+  dt_bauhaus_slider_set_log_curve(d->pq_peak);
+  dt_bauhaus_slider_set_format(d->pq_peak, _(" nits"));
+  dt_bauhaus_slider_set(d->pq_peak, dt_conf_get_int(CONFIG_PREFIX "pq_peak_nits"));
+  gtk_widget_set_tooltip_text(d->pq_peak,
+                              _("the brightest highlight of a PQ (HDR) export, in nits.\n"
+                                "tone mappers that follow the output map their white to it.\n"
+                                "HLG exports always peak at 1000 nits."));
+
   //  Add intent combo
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL
@@ -1683,6 +1732,8 @@ void gui_init(dt_lib_module_t *self)
   //  Set callback signals
   g_signal_connect(G_OBJECT(d->profile), "value-changed",
                    G_CALLBACK(_profile_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->pq_peak), "value-changed",
+                   G_CALLBACK(_pq_peak_changed), (gpointer)d);
 
   // Export button
   d->export_button = GTK_BUTTON(dt_action_button_new
@@ -1699,7 +1750,7 @@ void gui_init(dt_lib_module_t *self)
      dt_ui_section_label_new(C_("section", "global options")),
      d->dimensions_type, d->px_size, d->print_size, d->scale, d->size_in_px,
      d->upscale, d->high_quality, d->export_masks,
-     d->profile, d->intent,
+     d->profile, d->pq_peak, d->intent,
      style_box, d->style_mode,
      d->export_button);
 
@@ -1791,6 +1842,7 @@ void gui_init(dt_lib_module_t *self)
   }
 
   g_free(iccfilename);
+  _update_pq_peak_visibility(d);
 
   // style
   // set it to none if the var is not set or the style doesn't exist anymore
@@ -1891,9 +1943,10 @@ void init_presets(dt_lib_module_t *self)
       // extract the interesting parts from the blob
       const char *buf = (const char *)op_params;
 
-      // skip 9*int32_t: max_width, max_height, upscale, high_quality,
-      // export_masks, iccintent, icctype, dimensions_type, print_dpi
-      buf += 9 * sizeof(int32_t);
+      // skip 10*int32_t: max_width, max_height, upscale, high_quality,
+      // export_masks, iccintent, icctype, dimensions_type, print_dpi,
+      // pq_peak_nits
+      buf += 10 * sizeof(int32_t);
       // skip scale string
       buf += strlen(buf) + 1;
       // skip metadata presets string
@@ -2305,6 +2358,37 @@ void *legacy_params(dt_lib_module_t *self,
     *new_version = 8;
     return new_params;
   }
+  else if(old_version == 8)
+  {
+    // add pq_peak_nits
+
+    // format of v8:
+    //  - 9 x int32_t (max_width, max_height, upscale, high_quality,
+    //                 export_masks, iccintent, icctype, dimensions_type, print_dpi)
+    //  - old rest
+    // format of v9:
+    //  - 10 x int32_t (max_width, max_height, upscale, high_quality,
+    //                  export_masks, iccintent, icctype, dimensions_type, print_dpi,
+    //                  pq_peak_nits)
+    //  - old rest
+
+    if(old_params_size < sizeof(int32_t) * 9) return NULL;
+
+    // 0: applying the preset leaves the PQ peak as it is, as before
+    const int32_t pq_peak_nits = 0;
+
+    const size_t new_params_size = old_params_size + sizeof(int32_t);
+    void *new_params = calloc(1, new_params_size);
+
+    memcpy(new_params, old_params, sizeof(int32_t) * 9);
+    memcpy((uint8_t *)new_params + sizeof(int32_t) * 9, &pq_peak_nits, sizeof(int32_t));
+    memcpy((uint8_t *)new_params + sizeof(int32_t) * 10,
+           (uint8_t *)old_params + sizeof(int32_t) * 9,
+           old_params_size - sizeof(int32_t) * 9);
+    *new_size = new_params_size;
+    *new_version = 9;
+    return new_params;
+  }
 
   return NULL;
 }
@@ -2349,6 +2433,10 @@ void *get_params(dt_lib_module_t *self, int *size)
   const int32_t upscale = dt_conf_get_bool(CONFIG_PREFIX "upscale") ? 1 : 0;
   const int32_t dimensions_type = dt_conf_get_int(CONFIG_PREFIX "dimensions_type");
   const int32_t print_dpi = dt_conf_get_int(CONFIG_PREFIX "print_dpi");
+  // 0 when the export cannot be PQ, so that applying the preset does not
+  // change a PQ peak that is hidden and unused for its profile
+  const int32_t pq_peak_nits =
+    _export_may_be_pq(icctype) ? dt_conf_get_int(CONFIG_PREFIX "pq_peak_nits") : 0;
   gchar *scale = dt_conf_get_string(CONFIG_PREFIX "resizing_factor");
   const int32_t high_quality =
     dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing") ? 1 : 0;
@@ -2382,7 +2470,7 @@ void *get_params(dt_lib_module_t *self, int *size)
           + 4 * sizeof(int32_t)
           + fsize
           + ssize
-          + 9 * sizeof(int32_t)
+          + 10 * sizeof(int32_t)
           + strlen(scale) + 1
           + strlen(iccfilename) + 1
           + strlen(metadata_export) + 1;
@@ -2408,6 +2496,8 @@ void *get_params(dt_lib_module_t *self, int *size)
   memcpy(params + pos, &dimensions_type, sizeof(int32_t));
   pos += sizeof(int32_t);
   memcpy(params + pos, &print_dpi, sizeof(int32_t));
+  pos += sizeof(int32_t);
+  memcpy(params + pos, &pq_peak_nits, sizeof(int32_t));
   pos += sizeof(int32_t);
   memcpy(params + pos, scale, strlen(scale) + 1);
   pos += strlen(scale) + 1;
@@ -2476,6 +2566,8 @@ int set_params(dt_lib_module_t *self,
   buf += sizeof(int32_t);
   const int print_dpi = *(const int *)buf;
   buf += sizeof(int32_t);
+  const int pq_peak_nits = *(const int *)buf;
+  buf += sizeof(int32_t);
   const char *scale = buf;
   buf += strlen(scale) + 1;
   const char *metadata_export = buf;
@@ -2534,7 +2626,7 @@ int set_params(dt_lib_module_t *self,
         + 4 * sizeof(int32_t)
         + fsize
         + ssize
-        + 9 * sizeof(int32_t)
+        + 10 * sizeof(int32_t)
         + strlen(scale) + 1
         + strlen(metadata_export) + 1
         + strlen(iccfilename) + 1)
@@ -2559,6 +2651,7 @@ int set_params(dt_lib_module_t *self,
   dt_bauhaus_combobox_set(d->high_quality, high_quality ? 1 : 0);
   dt_bauhaus_combobox_set(d->export_masks, export_masks ? 1 : 0);
   dt_bauhaus_combobox_set(d->dimensions_type, dimensions_type);
+  if(pq_peak_nits > 0) dt_bauhaus_slider_set(d->pq_peak, pq_peak_nits);
   _size_update_display(d);
 
   // propagate to modules

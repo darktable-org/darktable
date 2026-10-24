@@ -2685,6 +2685,13 @@
     <longdescription>this is slower than the default.</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/export/pq_peak_nits</name>
+    <type min="203" max="10000">int</type>
+    <default>1000</default>
+    <shortdescription>PQ peak luminance</shortdescription>
+    <longdescription>the brightest highlight a PQ (HDR) output should reach, in nits. tone mappers that follow the output map their white to this peak. HLG output always peaks at 1000 nits and SDR output at the 203 nit reference white.</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/export/high_quality_processing</name>
     <type>bool</type>
     <default>false</default>
@@ -3683,7 +3690,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>solo edit the selected mask element</shortdescription>
-    <longdescription>while enabled, only the selected element's nodes and handles are editable on canvas; the other elements still contribute to the mask</longdescription>
+    <longdescription>while enabled, only the selected element's nodes and handles are editable on canvas; the other members still contribute to the mask</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/auto_expand_selected</name>
@@ -3696,8 +3703,8 @@
     <name>plugins/darkroom/masks/properties_subpanel</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>element properties in subpanel</shortdescription>
-    <longdescription>while enabled, the properties of the selected element or group are shown in a collapsible section of their own between the mask list and the refinements instead of in the list, and so are the creation controls of a shape being drawn: a shape's geometry, a parametric element's boost factor, and the opacity of anything</longdescription>
+    <shortdescription>member properties in subpanel</shortdescription>
+    <longdescription>while enabled, the properties of the selected member are shown in a collapsible section of their own between the mask list and the refinements instead of in the list, and so are the creation controls of a shape being drawn: a shape's geometry, a parametric element's boost factor, and the opacity of anything</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/refinements_collapsed</name>
@@ -3711,7 +3718,14 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>collapse the properties section</shortdescription>
-    <longdescription>whether the mask panel's element and group properties section is folded, for every module and target</longdescription>
+    <longdescription>whether the mask panel's member properties section is folded, for every module and target</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/help_collapsed</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>collapse the help section</shortdescription>
+    <longdescription>whether the mask panel's help section is folded, for every module and target</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/consumers_collapsed</name>
@@ -3728,11 +3742,18 @@
     <longdescription>while enabled, the mask panel's edge carries a visible handle with an arrow showing which way the panel folds away; while disabled the handle is invisible, like the main panels', and still resizes the panel by dragging and hides it on a click</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/masks/show_focus_row</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show focused module under header</shortdescription>
+    <longdescription>while enabled, the mask panel hosted in the utility panel or beside the canvas shows the name of the module whose mask it holds, and its instance name, in a row under its header; the panel embedded within a module has no such row, as the module's own header names it</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/masks/show_preset_notes</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>show preset notes</shortdescription>
-    <longdescription>while enabled, a group made by a built-in group layout preset shows a short note under its header on how to use it, until it is dismissed</longdescription>
+    <shortdescription>show preset help notes (beginners)</shortdescription>
+    <longdescription>while enabled, the mask panel shows a short help note on how to use the selected group, in a collapsible help section of its own, when the group was made by a built-in group layout preset</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/default_group_preset</name>

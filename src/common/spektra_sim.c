@@ -5321,7 +5321,8 @@ void sf_grain_delta_ml(const sf_grain_layers_t *layers,
                        int mono,
                        const float dmin_c[3],
                        const float unif_c[3],
-                       float npart_scale)
+                       float npart_scale,
+                       uint32_t salt)
 {
   const int nsub = layers->n;
   const int nle = SF_NLE;
@@ -5338,7 +5339,7 @@ void sf_grain_delta_ml(const sf_grain_layers_t *layers,
       const float d_abs = raw + (float)layers->layer_dmin[sl][1];
       total_abs += grain_layer_particle(d_abs, (float)layers->layer_dmax[sl][1],
                                      (float)layers->layer_npart[sl][1] * npart_scale,
-                                     unif_c[1], grain_pixel_seed(xi, yi, (uint32_t)(sl * 10)));
+                                     unif_c[1], grain_pixel_seed(xi, yi, (uint32_t)(sl * 10), salt));
     }
     const float g = total_abs - dmin_c[1];
     const float d = (g - dm) * amount;
@@ -5356,7 +5357,7 @@ void sf_grain_delta_ml(const sf_grain_layers_t *layers,
       const float d_abs = raw + (float)layers->layer_dmin[sl][c];
       total_abs += grain_layer_particle(d_abs, (float)layers->layer_dmax[sl][c],
                                      (float)layers->layer_npart[sl][c] * npart_scale,
-                                     unif_c[c], grain_pixel_seed(xi, yi, (uint32_t)(c + sl * 10)));
+                                     unif_c[c], grain_pixel_seed(xi, yi, (uint32_t)(c + sl * 10), salt));
     }
     const float g = total_abs - dmin_c[c];
     out_delta[c] = (g - dens[c]) * amount;
@@ -5386,6 +5387,7 @@ void sf_grain_raw_samples_ml(const sf_grain_layers_t *layers,
                              uint32_t yi,
                              float unif_c,
                              float npart_scale,
+                             uint32_t salt,
                              float *raw_out)
 {
   const int nsub = layers->n;
@@ -5400,6 +5402,6 @@ void sf_grain_raw_samples_ml(const sf_grain_layers_t *layers,
     const float d_abs = raw + (float)layers->layer_dmin[sl][channel_idx];
     raw_out[sl] = grain_layer_particle(d_abs, (float)layers->layer_dmax[sl][channel_idx],
                                     (float)layers->layer_npart[sl][channel_idx] * npart_scale,
-                                    unif_c, grain_pixel_seed(xi, yi, (uint32_t)(seed_ch + sl * 10)));
+                                    unif_c, grain_pixel_seed(xi, yi, (uint32_t)(seed_ch + sl * 10), salt));
   }
 }

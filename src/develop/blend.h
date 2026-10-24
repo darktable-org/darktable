@@ -246,12 +246,48 @@ typedef struct dt_masks_point_parametric_t
   uint32_t colorspace;                         // dt_develop_blend_colorspace_t the form was made in
   // the form edits one blendif channel, `channel`, an index into its
   // colorspace's channel table. Input and output ranges of the channel both
-  // refine the mask, as in classic blendif; `in_out` only says whether the
-  // output range is shown
+  // refine the mask, as in classic blendif; `in_out` only says which of the
+  // two sliders the row shows
   uint32_t channel;                            // index into the colorspace's channel table
-  uint32_t in_out;                             // GUI only: 1 = show the output range too
+  uint32_t in_out;                             // GUI only: see dt_masks_param_*
   uint32_t disabled;                           // bit 0: input range off, bit 1: output range off
 } dt_masks_point_parametric_t;
+
+/** which sliders a parametric row shows (bits 1-2 of in_out). AUTO, what
+    every row held before the choice existed, shows the ranges in use, and
+    the input one when neither is */
+typedef enum dt_masks_param_view_t
+{
+  DT_MASKS_PARAM_VIEW_AUTO = 0,
+  DT_MASKS_PARAM_VIEW_INPUT,
+  DT_MASKS_PARAM_VIEW_OUTPUT,
+  DT_MASKS_PARAM_VIEW_BOTH,
+} dt_masks_param_view_t;
+
+/** bit 0 of in_out: the row shows its extra controls (opacity, boost factor) */
+#define DT_MASKS_PARAM_EXPANDED 1u
+
+static inline dt_masks_param_view_t dt_masks_param_get_view(const dt_masks_point_parametric_t *p)
+{
+  return (dt_masks_param_view_t)((p->in_out >> 1) & 3u);
+}
+
+static inline void dt_masks_param_set_view(dt_masks_point_parametric_t *p,
+                                           const dt_masks_param_view_t view)
+{
+  p->in_out = (p->in_out & DT_MASKS_PARAM_EXPANDED) | ((uint32_t)view << 1);
+}
+
+static inline gboolean dt_masks_param_is_expanded(const dt_masks_point_parametric_t *p)
+{
+  return (p->in_out & DT_MASKS_PARAM_EXPANDED) != 0;
+}
+
+static inline void dt_masks_param_set_expanded(dt_masks_point_parametric_t *p,
+                                               const gboolean expanded)
+{
+  p->in_out = (p->in_out & ~DT_MASKS_PARAM_EXPANDED) | (expanded ? DT_MASKS_PARAM_EXPANDED : 0u);
+}
 
 /** point struct for a DT_MASKS_RASTER form: a reference to another module's
     raster mask, by that module's operation and instance and the mask's id
@@ -418,7 +454,8 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *details_slider;
 
   // opens the menu that links or copies elements of other modules' masks, or
-  // adds or uses another module's whole mask (_masks_import_btn_pressed)
+  // adds or uses another module's whole mask (_masks_import_btn_pressed). In
+  // masks_toolbar
   GtkWidget *masks_import_btn;
   GtkWidget *masks_shapes[DEVELOP_MASKS_NB_SHAPES];
   int masks_type[DEVELOP_MASKS_NB_SHAPES];
@@ -441,13 +478,13 @@ typedef struct dt_iop_gui_blend_data_t
   // selected so that the next shape drawn joins it (_stage_new_group)
   GtkWidget *masks_new_op;
   GtkWidget *masks_new_op_box;
-  // the toolbar of every "add to the mask" action, above masks_list_box:
-  // add group, the shapes, the parametric channels and import, plus the group
-  // layout presets at the top right. It wraps onto two or three rows when the
-  // panel is narrow. A height-for-width container (masks_gui_toolbar.c) lays
-  // it out in GTK's own measure and allocate passes: do not move widgets
-  // between rows by hand, which races GTK's layout. Every button is inserted
-  // once (the channel buttons once the colorspace is known)
+  // the toolbar of every "add to the mask" action, in the selection panel:
+  // add group, import, the shapes and the parametric channels. It wraps onto
+  // two or three rows when the panel is narrow. A height-for-width container
+  // (masks_gui_toolbar.c) lays it out in GTK's own measure and allocate
+  // passes: do not move widgets between rows by hand, which races GTK's
+  // layout. Every button is inserted once (the channel buttons once the
+  // colorspace is known)
   GtkWidget *masks_toolbar;
   // the "blend mask" section header. Reading order:
   //
@@ -457,6 +494,12 @@ typedef struct dt_iop_gui_blend_data_t
   // (the two sides swap when the canvas panel is docked on the left, see
   // _masks_header_apply_side)
   GtkWidget *masks_blend_header;
+  // the row under the header naming the module whose mask the panel shows,
+  // as the header's extension (dt_masks_gui_focus_row_sync). Shown in the
+  // hosted positions alone: embedded, the module's own header says it
+  GtkWidget *masks_focus_row;
+  GtkWidget *masks_focus_module_label;
+  GtkWidget *masks_focus_instance_label;
   // edit run + show_mask_overlay + eye + lock, the header's center widget
   // between the toggle and the expander (_masks_header_cluster_new)
   GtkWidget *masks_header_cluster;
@@ -464,12 +507,15 @@ typedef struct dt_iop_gui_blend_data_t
   // _pack_header_edit_run). Whole-mask canvas controls, so on the header
   // wherever the panel is hosted, never on the mask's own group
   GtkWidget *masks_header_edit_box;
-  // the mask list: each group's header, its element rows indented under it
-  // (_pack_group_elements), reorderable by drag and drop
+  // the mask list: each group's header, its member rows indented under it
+  // (_pack_group_members), reorderable by drag and drop
   GtkBox *masks_list_box;
-  // masks_toolbar and masks_list_box on one ground, so the add buttons read as
-  // part of the list. Not the list box itself: dt_masks_gui_build_list wipes that
+  // masks_list_box on its ground. Not the list box itself: dt_masks_gui_build_list
+  // wipes that
   GtkWidget *masks_list_area;
+  // the list's title, a child of the panel body above masks_box, shown and
+  // hidden with it (see _masks_box_set_visible)
+  GtkWidget *masks_list_caption;
   // formid -> its row (the "mask-row" row_vbox), so that hover sync, selection
   // and row refreshes need no walk of the widget tree on every pointer motion.
   // Filled by _make_shape_row, emptied by dt_masks_gui_build_list; the widget
@@ -489,29 +535,29 @@ typedef struct dt_iop_gui_blend_data_t
   float pending_ai_cleanup_last;
   // the area the module's parametric pickers last set a range from: with
   // "reuse the last picked area" on, arming any of them samples it again
-  // (see _param_row_master_picker_pressed). param_pick_box_set is FALSE until
+  // (see _param_row_picker_pressed). param_pick_box_set is FALSE until
   // the first pick
   dt_pickerbox_t param_pick_box;
   gboolean param_pick_box_set;
   // the selected row's element; INVALID = none
   dt_mask_id_t panel_selected_formid;
+  // the member point of the element row last pressed, which names the row a
+  // selection was made on when the mask holds that shape twice. Only ever
+  // compared, never followed, until found in the mask (see _selected_point)
+  const dt_masks_point_group_t *panel_pressed_point;
   // the selected group, by its marker's id: where the next shape drawn lands
   // and what the refinement acts on. With no other group selected the mask's
   // own is (_select_mask_group_if_none), so it is never INVALID while the mask
   // has a group
   dt_mask_id_t panel_selected_group_cid;
-  // the element under the cursor on the canvas. The selection panel shows it in place
-  // of the selection, which it leaves alone; INVALID = none
+  // the element under the cursor on the canvas. The selection panel shows it
+  // in place of the selection, which it leaves alone; INVALID = none
   dt_mask_id_t canvas_hovered_formid;
   // where dt_masks_group_insert_point puts the next element, while
   // insert_active: after the point insert_after_fid, the group's top member,
   // or its marker for an empty group
   gboolean insert_active;
   dt_mask_id_t insert_after_fid;
-  // cluster key -> expanded (gboolean), for the clusters of adjacent shapes
-  // of one kind within a group, a purely visual grouping, across list
-  // rebuilds. Created on first use
-  GHashTable *masks_cluster_expanded;
   // the soloed element, the others hidden; INVALID when none. Solo alone sets
   // DT_MASKS_STATE_HIDDEN, so ending it clears every hidden bit
   dt_mask_id_t solo_formid;
@@ -565,14 +611,17 @@ typedef struct dt_iop_gui_blend_data_t
   // its idle source, for dt_iop_gui_cleanup_blending to remove: run after the
   // module is gone, it would touch destroyed widgets. 0 when none
   guint masks_rebuild_idle_id;
-  // the selection panel under the list: the selection's icon and name
-  // (masks_selection_icon_box, masks_selection_name_label, see
-  // _refine_update_header) with the button deleting it on their right, then
-  // the properties and the refinement, which act on it
+  // the selection panel under the list: its caption, naming the selection
+  // (masks_selection_name_label, see _selection_row_update) with the group
+  // delete and compose on the left, the link and the group layout presets on
+  // the right (see _selection_actions_sync), then the toolbar of add buttons,
+  // then the properties and the refinement, which act on it too
   GtkWidget *masks_selection_area;
-  GtkWidget *masks_selection_icon_box;
   GtkWidget *masks_selection_name_label;
+  GtkWidget *masks_selection_link_btn;
+  GtkWidget *masks_selection_compose_btn;
   GtkWidget *masks_selection_delete_btn;
+  GtkWidget *masks_selection_presets_btn;
   // the refinement section's title; its tooltip says why the section is
   // inactive, when it is (see _update_refine_sensitivity)
   GtkWidget *masks_refine_section_label;
@@ -580,11 +629,11 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_refine_bypass_btn;
   GtkWidget *masks_refine_toggle_btn;
   GtkBox *masks_refine_sliders_box;
-  // "element properties in subpanel": the selected element's or group's
+  // "member properties in subpanel": the selected member's
   // properties, or the creation controls of a shape being drawn, in a
   // collapsible of their own above the refinements (see _props_panel_sync).
   // props_panel_box is the wrapped section, props_panel_content the box the
-  // editor goes in, props_panel_formid the element or group
+  // editor goes in, props_panel_formid the member
   // (props_panel_is_group) it holds the editor of, and pending_props_box the
   // creation controls a pending row built for it
   GtkBox *props_panel_box;
@@ -594,6 +643,17 @@ typedef struct dt_iop_gui_blend_data_t
   dt_mask_id_t props_panel_formid;
   gboolean props_panel_is_group;
   GtkWidget *pending_props_box;
+  // the help section: the preset note of the selected group or of the whole
+  // mask, in a collapsible of its own above the properties (see
+  // _help_panel_sync). help_panel_box is the wrapped section,
+  // help_panel_content the box the note goes in, and help_panel_cid the group
+  // it holds the note of, while help_panel_filled
+  GtkBox *help_panel_box;
+  GtkWidget *help_panel_expander;
+  GtkWidget *help_panel_content;
+  GtkWidget *help_panel_toggle_btn;
+  dt_mask_id_t help_panel_cid;
+  gboolean help_panel_filled;
   // "mask consumers": the modules downstream reading this module's raster
   // mask, one row each, in a collapsible below the refinements (see
   // _consumers_sync). consumers_sig hashes the rows shown, so an unchanged
@@ -613,15 +673,8 @@ typedef struct dt_iop_gui_blend_data_t
   // Created on first use
   GHashTable *masks_props_expanded;
   // group cid -> the page its preset note shows (see _make_group_note), so a
-  // list rebuild keeps it. Created on first use
+  // rebuild of the note keeps it. Created on first use
   GHashTable *masks_note_page;
-  // group cid -> its preset note switched on (1) or off (2) with the info
-  // icon by its name; wins over masks_notes_all_open and the selection (see
-  // _group_note_is_open). Created on first use
-  GHashTable *masks_note_open;
-  // a preset was just applied: every note is open until another group is
-  // selected
-  gboolean masks_notes_all_open;
   // group cid -> its displayed number (see _group_ordinal_any)
   GHashTable *group_ordinals;
 
@@ -916,9 +969,9 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module);
 // select the row of the shape selected on the canvas. Does nothing without a
 // mask list
 void dt_iop_gui_blend_masks_select_form(dt_iop_module_t *module, dt_mask_id_t formid);
-// highlight the row of the shape hovered on the canvas, or its cluster's
-// header while the cluster is folded, and show the shape in the selected
-// element's panel in place of the selection. INVALID_MASKID clears both
+// highlight the row of the shape hovered on the canvas, or its group's header
+// while the group is folded, and show the shape in the selection panel in
+// place of the selection. INVALID_MASKID clears both
 void dt_iop_gui_blend_masks_hover_form(dt_iop_module_t *module, dt_mask_id_t formid);
 // a click on empty canvas: nothing is selected in the panel any more
 void dt_iop_gui_blend_masks_clear_selection(dt_iop_module_t *module);
