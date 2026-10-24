@@ -31,6 +31,7 @@
 #include "develop/imageop.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
+#include "imageio/imageio_staging.h"
 
 #ifdef HAVE_OPENEXR
 #include "imageio/imageio_exr.h"
@@ -987,6 +988,121 @@ void dt_imageio_to_fractional(const float in,
   }
 }
 
+static gboolean _write_export_file(const dt_imgid_t imgid,
+                                    const char *filename,
+                                    dt_imageio_module_format_t *format,
+                                    dt_imageio_module_data_t *format_params,
+                                    const void *outbuf,
+                                    const dt_colorspaces_color_profile_type_t icc_type,
+                                    const char *icc_filename,
+                                    const gboolean sRGB,
+                                    const gboolean ignore_exif,
+                                    const gboolean copy_metadata,
+                                    const gboolean export_masks,
+                                    const int num,
+                                    const int total,
+                                    dt_export_metadata_t *metadata,
+                                    dt_develop_t *dev,
+                                    dt_dev_pixelpipe_t *pipe,
+                                    const gboolean stage_output)
+{
+  gboolean res = TRUE;
+  GError *error = NULL;
+  char *directory = NULL;
+  char *staged_path = NULL;
+  const char *write_filename = filename;
+  if(stage_output)
+  {
+    directory = g_dir_make_tmp("darktable-export-XXXXXX", &error);
+    if(!directory) goto cleanup;
+    char *basename = g_path_get_basename(filename);
+    staged_path = g_build_filename(directory, basename, NULL);
+    g_free(basename);
+    write_filename = staged_path;
+  }
+
+  // Check if all the metadata export flags are set for AVIF/EXR/HEIF/JPEG XL/XCF (opt-in)
+  //
+  // TODO: this is a workaround as these formats do not support fine
+  // grained metadata control through dt_exif_xmp_attach_export()
+  // below due to lack of exiv2 write support
+  //
+  // Note: that this is done only when we do not ignore_exif, so we have a proper filename
+  //       otherwise the export is done in a memory buffer.
+  gboolean md_flags_set = TRUE;
+  if(!ignore_exif
+     && (!strcmp(format->mime(NULL), "image/avif")
+         || !strcmp(format->mime(NULL), "image/heif")
+         || !strcmp(format->mime(NULL), "image/x-exr")
+         || !strcmp(format->mime(NULL), "image/jxl")
+         || !strcmp(format->mime(NULL), "image/x-xcf")))
+  {
+    const int32_t meta_all =
+      DT_META_EXIF | DT_META_METADATA | DT_META_GEOTAG | DT_META_TAG
+      | DT_META_HIERARCHICAL_TAG | DT_META_DT_HISTORY | DT_META_PRIVATE_TAG
+      | DT_META_SYNONYMS_TAG | DT_META_OMIT_HIERARCHY;
+    md_flags_set = metadata ? (metadata->flags & meta_all) == meta_all : FALSE;
+  }
+
+  if(!ignore_exif && md_flags_set)
+  {
+    uint8_t *exif_profile = NULL; // Exif data should be 65536 bytes
+                                  // max, but if original size is
+                                  // close to that, adding new tags
+                                  // could make it go over that... so
+                                  // let it be and see what happens
+                                  // when we write the image
+    char pathname[PATH_MAX] = { 0 };
+    gboolean from_cache = TRUE;
+    dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
+
+    // last param is dng mode, it's false here
+    const int length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB,
+                                         format_params->width, format_params->height, FALSE);
+
+    res = (format->write_image(format_params, write_filename, outbuf, icc_type,
+                              icc_filename, exif_profile, length, imgid,
+                              num, total, pipe, export_masks)) != 0;
+
+    free(exif_profile);
+  }
+  else
+  {
+    res = (format->write_image(format_params, write_filename, outbuf, icc_type,
+                              icc_filename, NULL, 0, imgid, num, total,
+                              pipe, export_masks)) != 0;
+  }
+
+  if(res)
+    goto cleanup;
+
+  /* now write xmp into that container, if possible */
+  if(copy_metadata
+     && (format->flags(format_params) & FORMAT_FLAGS_SUPPORT_XMP))
+  {
+    dt_exif_xmp_attach_export(imgid, write_filename, metadata, dev, pipe);
+    // no need to cancel the export if this fail
+  }
+
+  if(stage_output)
+    res = !_imageio_publish_staged_file(staged_path, filename, TRUE,
+                                        NULL, NULL, &error);
+
+cleanup:
+  if(staged_path) g_unlink(staged_path);
+  if(directory) g_rmdir(directory);
+  g_free(staged_path);
+  g_free(directory);
+  if(error)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[imageio_export] cannot save %s: %s",
+             filename, error->message);
+    dt_control_log(_("could not export to file `%s'!"), filename);
+    g_error_free(error);
+  }
+  return res;
+}
+
 gboolean dt_imageio_export(const dt_imgid_t imgid,
                            const char *filename,
                            dt_imageio_module_format_t *format,
@@ -1464,68 +1580,15 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   format_params->width = processed_width;
   format_params->height = processed_height;
 
-  // Check if all the metadata export flags are set for AVIF/EXR/HEIF/JPEG XL/XCF (opt-in)
-  //
-  // TODO: this is a workaround as these formats do not support fine
-  // grained metadata control through dt_exif_xmp_attach_export()
-  // below due to lack of exiv2 write support
-  //
-  // Note: that this is done only when we do not ignore_exif, so we have a proper filename
-  //       otherwise the export is done in a memory buffer.
-  gboolean md_flags_set = TRUE;
-  if(!ignore_exif
-     && (!strcmp(format->mime(NULL), "image/avif")
-         || !strcmp(format->mime(NULL), "image/heif")
-         || !strcmp(format->mime(NULL), "image/x-exr")
-         || !strcmp(format->mime(NULL), "image/jxl")
-         || !strcmp(format->mime(NULL), "image/x-xcf")))
-  {
-    const int32_t meta_all =
-      DT_META_EXIF | DT_META_METADATA | DT_META_GEOTAG | DT_META_TAG
-      | DT_META_HIERARCHICAL_TAG | DT_META_DT_HISTORY | DT_META_PRIVATE_TAG
-      | DT_META_SYNONYMS_TAG | DT_META_OMIT_HIERARCHY;
-    md_flags_set = metadata ? (metadata->flags & meta_all) == meta_all : FALSE;
-  }
-
-  if(!ignore_exif && md_flags_set)
-  {
-    uint8_t *exif_profile = NULL; // Exif data should be 65536 bytes
-                                  // max, but if original size is
-                                  // close to that, adding new tags
-                                  // could make it go over that... so
-                                  // let it be and see what happens
-                                  // when we write the image
-    char pathname[PATH_MAX] = { 0 };
-    gboolean from_cache = TRUE;
-    dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
-
-    // last param is dng mode, it's false here
-    const int length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB,
-                                         processed_width, processed_height, FALSE);
-
-    res = (format->write_image(format_params, filename, outbuf, icc_type,
-                              icc_filename, exif_profile, length, imgid,
-                              num, total, &pipe, export_masks)) != 0;
-
-    free(exif_profile);
-  }
-  else
-  {
-    res = (format->write_image(format_params, filename, outbuf, icc_type,
-                              icc_filename, NULL, 0, imgid, num, total,
-                              &pipe, export_masks)) != 0;
-  }
-
-  if(res)
-    goto error;
-
-  /* now write xmp into that container, if possible */
-  if(copy_metadata
-     && (format->flags(format_params) & FORMAT_FLAGS_SUPPORT_XMP))
-  {
-    dt_exif_xmp_attach_export(imgid, filename, metadata, &dev, &pipe);
-    // no need to cancel the export if this fail
-  }
+  // publish before the Lua callback and export signal see the final path
+  const gboolean stage_output = !thumbnail_export && !ignore_exif
+    && storage && !strcmp(storage->plugin_name, "disk")
+    && !(format->flags(format_params) & FORMAT_FLAGS_NO_TMPFILE);
+  res = _write_export_file(imgid, filename, format, format_params, outbuf,
+                            icc_type, icc_filename, sRGB, ignore_exif,
+                            copy_metadata, export_masks, num, total,
+                            metadata, &dev, &pipe, stage_output);
+  if(res) goto error;
 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
