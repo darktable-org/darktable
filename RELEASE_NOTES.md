@@ -307,6 +307,14 @@ changes (where available).
   If one of these new input profiles is selected, the pipe gets its
   data corrected according to DNG specs matching the intended look.
 
+- Improved support for DNGs from smartphones:
+  - The default exposure includes the 'BaselineExposure' of the DNG.
+  - The DNG input profiles interpolate the forward matrix and the
+    'ProfileHueSatMapData' tables for the as-shot white balance.
+  - A single DNG gain map for all photosites is now supported.
+  - Profiled denoise falls back to the 'NoiseProfile' of the DNG when
+    no measured profile is available.
+
 - The highlights module will be disabled automatically when a raw
   image with a clean history is opended in darkroom the first time
   and the opposed algorithm did not find clipped photosites.

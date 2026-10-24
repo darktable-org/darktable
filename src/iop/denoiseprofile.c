@@ -2727,6 +2727,17 @@ void reload_defaults(dt_iop_module_t *self)
     // get matching profiles:
     if(g->profiles)
       g_list_free_full(g->profiles, dt_noiseprofile_free);
+
+    // the automatic entry may be the DNG profile; keep the generic one selectable
+    if(self->dev->image_storage.has_dng_noise_profile)
+    {
+      dt_noiseprofile_t *generic = malloc(sizeof(dt_noiseprofile_t));
+      *generic = dt_noiseprofile_generic;
+      generic->name = g_strdup(_(dt_noiseprofile_generic.name));
+      generic->maker = g_strdup(dt_noiseprofile_generic.maker);
+      generic->model = g_strdup(dt_noiseprofile_generic.model);
+      profiles = g_list_append(profiles, generic);
+    }
     g->profiles = profiles;
     g->interpolated = interpolated;
 
@@ -2842,12 +2853,14 @@ static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t 
     iso >>= shift;
   }
   dt_noiseprofile_t *last = NULL;
+  gboolean found = FALSE;
   for(GList *iter = profiles; iter; iter = g_list_next(iter))
   {
     dt_noiseprofile_t *current = iter->data;
     if(current->iso == iso)
     {
       interpolated = *current;
+      found = TRUE;
       if(autodetected != NULL)
       {
         *autodetected = TRUE;
@@ -2869,6 +2882,7 @@ static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t 
     {
       interpolated.iso = iso;
       dt_noiseprofile_interpolate(last, current, &interpolated);
+      found = TRUE;
       if(autodetected != NULL)
       {
         *autodetected = TRUE;
@@ -2888,6 +2902,23 @@ static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t 
     }
     last = current;
   }
+
+  // without a measured profile for this ISO use the one the DNG carries
+  const dt_image_t *img = &self->dev->image_storage;
+  if(!found && img->has_dng_noise_profile)
+  {
+    interpolated.iso = exif_iso;
+    for(int c = 0; c < 3; c++)
+    {
+      interpolated.a[c] = img->dng_noise_a[c];
+      interpolated.b[c] = img->dng_noise_b[c];
+    }
+    if(autodetected != NULL)
+      *autodetected = TRUE;
+    if(name != NULL)
+      g_strlcpy(name, _("DNG noise profile"), namelen);
+  }
+
   if(profiles_allocated)
   {
     g_list_free_full(profiles, dt_noiseprofile_free);
