@@ -197,6 +197,14 @@ changes (where available).
 - Pressing ESC or clicking on the dialog X icon (top-right) now exits
   Darktable instead of launching the previous workspace.
 
+- The settings of the path mask "shrink or grow" (the step per scroll
+  tick, the unit, the tracing resolution and the curve smoothing) are
+  now in a popover opened by a gear on the slider, which no longer has
+  a unit toggle. The options for the scroll direction of mask
+  parameters and for the mask indicator in module headers moved from
+  the preferences dialog to the masks panel's options popover, and the
+  masking section of the preferences dialog is gone.
+
 ## Performance Improvements
 
 - The lighttable timeline no longer slows down quadratically with the
@@ -478,6 +486,11 @@ changes (where available).
 
 - Fixed the feather of a drawn path being lost when the shape was
   resized with the scroll wheel.
+
+- Fixed resizing a path mask with the scroll wheel or the "shrink or
+  grow" slider bending its curves into straight chords and giving it a
+  different set of nodes at every step. Its nodes now follow the
+  outline as it grows or shrinks.
 
 - Fixed numeric error in the framing module (borders) causing the
   frame line to be off-center for certain border sizes.

@@ -67,6 +67,12 @@ add_cmocka_test(test_probe_image
                 SOURCES test_probe_image.c
                 LINK_LIBRARIES lib_darktable cmocka)
 
+# Path grow/shrink (rasterize, offset, re-vectorize): the resized outline is the
+# requested distance from the original and does not jump between scroll steps.
+add_cmocka_test(test_path_resize
+                SOURCES test_path_resize.c flexi_fixture.c
+                LINK_LIBRARIES lib_darktable cmocka)
+
 # The styling contract (dev-doc/flexi_masks/styling.md): the classes a theme
 # or the CSS tweaks can target. Reads the sources as text, no GTK.
 add_cmocka_test(test_flexi_styling

@@ -1094,6 +1094,11 @@ static GtkWidget *_flexi_preset_section_label(const gchar *text)
   return box;
 }
 
+GtkWidget *dt_masks_gui_menu_section(const gchar *text)
+{
+  return _flexi_preset_section_label(text);
+}
+
 static void _flexi_preset_popover_destroyed(GtkWidget *popover, gpointer anchor)
 {
   if(darktable.gui && darktable.gui->active_popover_menu == popover)
