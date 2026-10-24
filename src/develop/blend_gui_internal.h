@@ -442,6 +442,9 @@ void dt_masks_gui_prune_stale_solo(dt_iop_module_t *module);
 // masks_gui_presets.c -> blend_gui.c
 // ---------------------------------------------------------------------------
 
+/** a section title between two rules, as the presets popover and the context
+    menus draw theirs, for a popover of the menu look */
+GtkWidget *dt_masks_gui_menu_section(const gchar *text);
 /** the popover of the selection's presets button: the group layout presets,
     each with the buttons that apply it, and saving one. Not yet shown */
 GtkWidget *dt_masks_gui_presets_popover(GtkWidget *anchor, dt_iop_module_t *module);
