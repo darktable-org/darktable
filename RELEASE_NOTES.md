@@ -672,6 +672,13 @@ changes (where available).
   taller than the panel, such as AgX or spektrafilm: clicking a tab
   scrolled the panel until the tab row was at the top.
 
+- Fixed darktable hanging at startup, when opening an image in the
+  darkroom, or when browsing folders in the import dialog, while
+  folders were on an unreachable network share. Folders that do not
+  respond within a timeout, set in preferences > storage > film roll
+  folders, are marked unavailable, and are checked again when one of
+  their images is opened.
+
 ## Lua
 
 ### API Version

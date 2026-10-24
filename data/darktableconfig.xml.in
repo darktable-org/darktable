@@ -27,6 +27,7 @@
   <dttab name="storage" title="storage">
     <section name="database" title="database"/>
     <section name="XMP" title="XMP sidecar files"/>
+    <section name="folders" title="film roll folders"/>
   </dttab>
   <dttab name="misc" title="miscellaneous">
     <section name="interface" title="interface"/>
@@ -402,6 +403,13 @@
     <default>10</default>
     <shortdescription>auto-save interval</shortdescription>
     <longdescription>automatically save history while developing using the given interval (in seconds); set to zero to disable auto-saving. auto-saving might be disabled on slow drives.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="storage" section="folders">
+    <name>storage/folder_check_timeout</name>
+    <type min="100" max="60000">int</type>
+    <default>2000</default>
+    <shortdescription>folder availability timeout</shortdescription>
+    <longdescription>time (in milliseconds) to wait for film roll folders to respond when checking their availability. folders that do not respond in time, e.g. on an unreachable network share, are marked as unavailable.</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="tags">
     <name>omit_tag_hierarchy</name>

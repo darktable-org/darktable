@@ -78,7 +78,16 @@ void dt_film_remove_empty();
 /** gets all image ids in film. the returned GList has to be freed with g_list_free(). */
 GList *dt_film_get_image_ids(const dt_filmid_t filmid);
 // initialize film folder status
+/** check folders for availability, waiting at most storage/folder_check_timeout for all
+    of them; a folder that does not respond in time is reported as unavailable.
+    responded, if not NULL, tells for each folder whether its check completed in time */
+void dt_film_folders_available(const char *const *folders, const int count,
+                               gboolean *available, gboolean *responded);
 void dt_film_set_folder_status();
+/** availability of the film roll folder as determined by dt_film_set_folder_status() */
+gboolean dt_film_is_folder_available(const dt_filmid_t id);
+/** check the film roll folder again, waiting at most storage/folder_check_timeout, and store the result */
+gboolean dt_film_check_folder_available(const dt_filmid_t id);
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
