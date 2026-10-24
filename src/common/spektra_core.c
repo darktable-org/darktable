@@ -642,6 +642,7 @@ void sf_glare(float *const rgb,
               const float blur,
               const int roi_x,
               const int roi_y,
+              const uint32_t salt,
               float *const field)
 {
   const float mean = percent * 0.01f;
@@ -653,7 +654,7 @@ void sf_glare(float *const rgb,
   for(int y = 0; y < h; y++)
     for(int x = 0; x < w; x++)
     {
-      const uint32_t seed = grain_pixel_seed((uint32_t)(x + roi_x), (uint32_t)(y + roi_y), 0x5eedu);
+      const uint32_t seed = grain_pixel_seed((uint32_t)(x + roi_x), (uint32_t)(y + roi_y), 0x5eedu, salt);
       field[(size_t)y * w + x] = mean * expf(fmaf(s, grain_normal(seed), bias));
     }
   float *const trans = dt_alloc_align_float((size_t)w * h);

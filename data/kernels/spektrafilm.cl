@@ -513,6 +513,7 @@ __kernel void spektrafilm_grain_gen_raw_sl(__global const float4 *dens, __global
                                            const int channel_idx, const int seed_ch,
                                            const int sl_idx, const int nle, const int max_sub,
                                            const float unif_ch, const float npart_scale,
+                                           const uint salt,
                                            __global const float *layer_dmax,
                                            __global const float *layer_npart,
                                            __global const float *layer_dmin,
@@ -531,7 +532,7 @@ __kernel void spektrafilm_grain_gen_raw_sl(__global const float4 *dens, __global
   const float raw = sf_cl_grain_curve_sample(layer_curve + idx, nle, lstride, pos);
   const float d_abs = raw + layer_dmin[idx];
   const uint seed = grain_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y),
-                                  (uint)(seed_ch + sl_idx * 10));
+                                  (uint)(seed_ch + sl_idx * 10), salt);
   raw_out[k] = grain_layer_particle(d_abs, layer_dmax[idx], layer_npart[idx] * npart_scale,
                                  unif_ch, seed);
 }
@@ -833,15 +834,16 @@ __kernel void spektrafilm_scan_usm(__global float4 *rgb, __global const float4 *
 }
 
 /* Viewing-glare field: lognormal of linear-space mean `mean` and shape (s, bias)
-   precomputed host-side, keyed on absolute image coordinates so the veil is
-   stable under pan and zoom (sf_glare). Blurred by the caller, then added. */
+   precomputed host-side, keyed on absolute image coordinates and the per-image
+   salt so the veil is stable under pan and zoom (sf_glare). Blurred by the
+   caller, then added. */
 __kernel void spektrafilm_glare_gen(__global float4 *field, const int w, const int h,
                                     const int roi_x, const int roi_y, const float mean,
-                                    const float s, const float bias)
+                                    const float s, const float bias, const uint salt)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
-  const uint seed = grain_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y), 0x5eedu);
+  const uint seed = grain_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y), 0x5eedu, salt);
   const float g = mean * exp(fma(s, grain_normal(seed), bias));
   field[(size_t)y * w + x] = (float4)(g, g, g, 0.0f);
 }

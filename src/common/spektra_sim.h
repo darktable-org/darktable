@@ -390,7 +390,8 @@ void sf_grain_delta_ml(const sf_grain_layers_t *layers,
                        int mono,
                        const float dmin_c[3],
                        const float unif_c[3],
-                       float npart_scale);
+                       float npart_scale,
+                       uint32_t salt);
 /* Same per-sub-layer sampling as sf_grain_delta_ml, but returns each
  * sub-layer's raw (un-combined, pre-dmin-subtraction) sample into
  * raw_out[0..layers->n-1] instead, so the caller can dye-cloud-blur each
@@ -406,6 +407,7 @@ void sf_grain_raw_samples_ml(const sf_grain_layers_t *layers,
                              uint32_t yi,
                              float unif_c,
                              float npart_scale,
+                             uint32_t salt,
                              float *raw_out);
 /* SF_GRAIN_MAX_SUBLAYERS is defined earlier in this header, next to SF_NLE
    (both are needed by sf_sim_gpu_t above, which comes before this point). */
