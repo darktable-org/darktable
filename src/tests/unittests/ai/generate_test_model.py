@@ -67,6 +67,27 @@ def main():
            "test-multiply-dynamic", "Test Multiply Dynamic",
            [1, 3, "H", "W"])
 
+    # rank-0 int64 scalar round trip (wire protocol rank 0 support);
+    # lives inside the test-multiply package so discovery counts stay put
+    _build_scalar(os.path.join(base, "test-multiply"))
+
+
+def _build_scalar(out_dir):
+    """Rank-0 int64 scalar round trip: y = x + x, x an int64 scalar."""
+    os.makedirs(out_dir, exist_ok=True)
+    X = helper.make_tensor_value_info("x", TensorProto.INT64, [])
+    Y = helper.make_tensor_value_info("y", TensorProto.INT64, [])
+    add_node = helper.make_node("Add", ["x", "x"], ["y"])
+    graph = helper.make_graph([add_node], "test_scalar", [X], [Y])
+    model = helper.make_model(
+        graph, opset_imports=[helper.make_opsetid("", 13)]
+    )
+    # Force IR version 8 for compatibility with ONNX Runtime 1.x
+    model.ir_version = 8
+    onnx.checker.check_model(model)
+    onnx.save(model, os.path.join(out_dir, "scalar.onnx"))
+    print(f"Generated scalar.onnx in {out_dir}")
+
 
 if __name__ == "__main__":
     main()

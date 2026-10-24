@@ -3,7 +3,8 @@ add_cmocka_test(test_ai_backend
                 LINK_LIBRARIES darktable_ai cmocka::cmocka)
 
 target_compile_definitions(test_ai_backend PRIVATE
-  TEST_MODEL_DIR="${CMAKE_CURRENT_SOURCE_DIR}/models")
+  TEST_MODEL_DIR="${CMAKE_CURRENT_SOURCE_DIR}/models"
+  SRCDIR="${CMAKE_SOURCE_DIR}")
 
 # the backend always scans $XDG_DATA_HOME/darktable/models on top of the
 # search paths it is given, so point it at an empty directory -- otherwise

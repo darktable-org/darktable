@@ -17,6 +17,7 @@
 */
 
 #include "backend.h"
+#include "backend_remote.h"
 #include "common/darktable.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -61,6 +62,10 @@ struct dt_ai_context_t
   // TRUE when any output has symbolic/dynamic shape dims.
   // in that case dt_ai_run() lets ORT allocate outputs and copies back
   gboolean dynamic_outputs;
+
+  // non-NULL when this context is a remote worker connection; session
+  // and the local ORT fields above are then unused
+  dt_ai_remote_model_t *remote;
 };
 
 // minimum ORT API we accept. v18 = ORT 1.18, required for ROCm 6.0
@@ -2353,8 +2358,26 @@ int dt_ai_probe_provider(dt_ai_provider_t provider)
 
 // ONNX Model Loading
 
-// load ONNX model from model_dir/model_file with dimension overrides.
-// if model_file is NULL, defaults to "model.onnx".
+// remote worker load: open the protocol-v1 connection, take the model
+// metadata from the load response and wrap it in a context. returns
+// NULL on any failure — the caller never retries locally
+dt_ai_context_t *
+dt_ai_onnx_remote_load(const char *model_id, const char *model_file,
+                       const gboolean cpu,
+                       dt_ai_opt_level_t opt_level,
+                       const dt_ai_dim_override_t *dim_overrides,
+                       int n_overrides)
+{
+  dt_ai_remote_model_t *m = dt_ai_remote_connect_load(model_id, model_file,
+                                                      cpu, opt_level,
+                                                      dim_overrides,
+                                                      n_overrides);
+  if(!m) return NULL;
+  dt_ai_context_t *ctx = g_new0(dt_ai_context_t, 1);
+  ctx->remote = m;
+  return ctx;
+}
+
 dt_ai_context_t *
 dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
                     dt_ai_provider_t provider, dt_ai_opt_level_t opt_level,
@@ -2714,7 +2737,11 @@ int dt_ai_run(
   dt_ai_tensor_t *outputs,
   int num_outputs)
 {
-  if(!ctx || !ctx->session)
+  if(!ctx)
+    return -1;
+  if(ctx->remote)
+    return dt_ai_remote_run(ctx->remote, inputs, num_inputs, outputs, num_outputs);
+  if(!ctx->session)
     return -1;
   if(num_inputs != ctx->input_count || num_outputs != ctx->output_count)
   {
@@ -3090,16 +3117,21 @@ cleanup:
 
 int dt_ai_get_input_count(dt_ai_context_t *ctx)
 {
+  if(ctx && ctx->remote) return ctx->remote->n_inputs;
   return ctx ? (int)ctx->input_count : 0;
 }
 
 int dt_ai_get_output_count(dt_ai_context_t *ctx)
 {
+  if(ctx && ctx->remote) return ctx->remote->n_outputs;
   return ctx ? (int)ctx->output_count : 0;
 }
 
 const char *dt_ai_get_input_name(dt_ai_context_t *ctx, int index)
 {
+  if(ctx && ctx->remote)
+    return (index >= 0 && index < ctx->remote->n_inputs)
+               ? ctx->remote->inputs[index].name : NULL;
   if(!ctx || index < 0 || (size_t)index >= ctx->input_count)
     return NULL;
   return ctx->input_names[index];
@@ -3107,6 +3139,9 @@ const char *dt_ai_get_input_name(dt_ai_context_t *ctx, int index)
 
 dt_ai_dtype_t dt_ai_get_input_type(dt_ai_context_t *ctx, int index)
 {
+  if(ctx && ctx->remote)
+    return (index >= 0 && index < ctx->remote->n_inputs)
+               ? ctx->remote->inputs[index].type : DT_AI_FLOAT;
   if(!ctx || index < 0 || (size_t)index >= ctx->input_count)
     return DT_AI_FLOAT;
   return ctx->input_types[index];
@@ -3114,6 +3149,9 @@ dt_ai_dtype_t dt_ai_get_input_type(dt_ai_context_t *ctx, int index)
 
 const char *dt_ai_get_output_name(dt_ai_context_t *ctx, int index)
 {
+  if(ctx && ctx->remote)
+    return (index >= 0 && index < ctx->remote->n_outputs)
+               ? ctx->remote->outputs[index].name : NULL;
   if(!ctx || index < 0 || (size_t)index >= ctx->output_count)
     return NULL;
   return ctx->output_names[index];
@@ -3121,6 +3159,9 @@ const char *dt_ai_get_output_name(dt_ai_context_t *ctx, int index)
 
 dt_ai_dtype_t dt_ai_get_output_type(dt_ai_context_t *ctx, int index)
 {
+  if(ctx && ctx->remote)
+    return (index >= 0 && index < ctx->remote->n_outputs)
+               ? ctx->remote->outputs[index].type : DT_AI_FLOAT;
   if(!ctx || index < 0 || (size_t)index >= ctx->output_count)
     return DT_AI_FLOAT;
   return ctx->output_types[index];
@@ -3129,6 +3170,15 @@ dt_ai_dtype_t dt_ai_get_output_type(dt_ai_context_t *ctx, int index)
 int dt_ai_get_output_shape(dt_ai_context_t *ctx, int index,
                            int64_t *shape, int max_dims)
 {
+  if(ctx && ctx->remote)
+  {
+    if(!shape || max_dims <= 0 || index < 0 || index >= ctx->remote->n_outputs)
+      return -1;
+    const dt_ai_remote_io_t *io = &ctx->remote->outputs[index];
+    memcpy(shape, io->shape, (size_t)MIN(io->ndim, max_dims) * sizeof(int64_t));
+    return io->ndim;
+  }
+
   if(!ctx || !ctx->session || index < 0 || (size_t)index >= ctx->output_count
      || !shape || max_dims <= 0)
     return -1;
@@ -3181,35 +3231,39 @@ int dt_ai_get_output_shape(dt_ai_context_t *ctx, int index,
 
 void dt_ai_unload_model(dt_ai_context_t *ctx)
 {
-  if(ctx)
+  if(!ctx) return;
+  if(ctx->remote)
   {
-    if(ctx->session)
-      g_ort.api->ReleaseSession(ctx->session);
-    // note: OrtEnv is a shared singleton (g_ort.env), not per-context
-    if(ctx->memory_info)
-      g_ort.api->ReleaseMemoryInfo(ctx->memory_info);
-
-    // release IO names using the allocator that created them
-    if(ctx->allocator)
-    {
-      for(size_t i = 0; i < ctx->input_count; i++)
-      {
-        if(ctx->input_names[i])
-          ctx->allocator->Free(ctx->allocator, ctx->input_names[i]);
-      }
-      for(size_t i = 0; i < ctx->output_count; i++)
-      {
-        if(ctx->output_names[i])
-          ctx->allocator->Free(ctx->allocator, ctx->output_names[i]);
-      }
-    }
-
-    g_free(ctx->input_names);
-    g_free(ctx->output_names);
-    g_free(ctx->input_types);
-    g_free(ctx->output_types);
+    dt_ai_remote_free(ctx->remote);
     g_free(ctx);
+    return;
   }
+  if(ctx->session)
+    g_ort.api->ReleaseSession(ctx->session);
+  // note: OrtEnv is a shared singleton (g_ort.env), not per-context
+  if(ctx->memory_info)
+    g_ort.api->ReleaseMemoryInfo(ctx->memory_info);
+
+  // release IO names using the allocator that created them
+  if(ctx->allocator)
+  {
+    for(size_t i = 0; i < ctx->input_count; i++)
+    {
+      if(ctx->input_names[i])
+        ctx->allocator->Free(ctx->allocator, ctx->input_names[i]);
+    }
+    for(size_t i = 0; i < ctx->output_count; i++)
+    {
+      if(ctx->output_names[i])
+        ctx->allocator->Free(ctx->allocator, ctx->output_names[i]);
+    }
+  }
+
+  g_free(ctx->input_names);
+  g_free(ctx->output_names);
+  g_free(ctx->input_types);
+  g_free(ctx->output_types);
+  g_free(ctx);
 }
 
 // clang-format off
