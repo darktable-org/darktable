@@ -383,6 +383,13 @@ changes (where available).
 - Lightroom import now sets the working profile to linear ProPhoto
   RGB, the space Lightroom works in, instead of linear Rec709 RGB.
 
+- Lightroom import adds its exposure and blacks adjustments to
+  darktable's default exposure instead of replacing it. In the
+  scene-referred workflow, images with a Lightroom exposure adjustment
+  were imported without the default exposure boost and exposure bias
+  compensation, so a small positive adjustment rendered darker than
+  none at all.
+
 ## Bug Fixes
 
 - Fixed missing Active D-Lighting exposure compensation for Nikon
