@@ -85,10 +85,22 @@ typedef struct dt_iop_flip_params_t
   dt_image_orientation_t orientation;
 } dt_iop_flip_params_t;
 
-#define LRDT_EXPOSURE_VERSION 2
+#define LRDT_EXPOSURE_VERSION 7
+typedef enum dt_iop_exposure_mode_t
+{
+  EXPOSURE_MODE_MANUAL = 0,
+  EXPOSURE_MODE_DEFLICKER = 1
+} dt_iop_exposure_mode_t;
+
 typedef struct dt_iop_exposure_params_t
 {
-  float black, exposure, gain;
+  dt_iop_exposure_mode_t mode;
+  float black;
+  float exposure;
+  float deflicker_percentile;
+  float deflicker_target_level;
+  gboolean compensate_exposure_bias;
+  gboolean compensate_hilite_pres;
 } dt_iop_exposure_params_t;
 
 #define LRDT_GRAIN_VERSION 1
@@ -1421,7 +1433,22 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
 
   if(dev != NULL && data.has_exposure)
   {
-    dt_add_hist(imgid, "exposure", (dt_iop_params_t *)&data.pe, sizeof(dt_iop_exposure_params_t), imported,
+    // Lightroom's adjustments are relative to its default rendering, so add
+    // them to the module's defaults for this image, which in the
+    // scene-referred workflow hold the baseline boost and bias compensation
+    dt_iop_exposure_params_t pe = { .mode = EXPOSURE_MODE_MANUAL,
+                                    .deflicker_percentile = 50.0f,
+                                    .deflicker_target_level = -4.0f,
+                                    .compensate_hilite_pres = TRUE };
+    const dt_iop_module_t *exposure =
+      dt_iop_get_module_by_op_priority(dev->iop, "exposure", 0);
+    if(exposure && exposure->params_size == sizeof(pe))
+      memcpy(&pe, exposure->default_params, sizeof(pe));
+
+    pe.exposure += data.pe.exposure;
+    pe.black += data.pe.black;
+
+    dt_add_hist(imgid, "exposure", (dt_iop_params_t *)&pe, sizeof(dt_iop_exposure_params_t), imported,
                 sizeof(imported), LRDT_EXPOSURE_VERSION, &n_import);
     refresh_needed = TRUE;
   }
