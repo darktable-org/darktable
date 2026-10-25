@@ -222,12 +222,20 @@ typedef struct dt_iop_splittoning_params_t
   float compress; // Compress range
 } dt_iop_splittoning_params_t;
 
-#define LRDT_BILAT_VERSION 1
+#define LRDT_BILAT_VERSION 3
+typedef enum dt_iop_bilat_mode_t
+{
+  s_mode_bilateral = 0,
+  s_mode_local_laplacian = 1
+} dt_iop_bilat_mode_t;
+
 typedef struct dt_iop_bilat_params_t
 {
+  dt_iop_bilat_mode_t mode;
   float sigma_r;
   float sigma_s;
   float detail;
+  float midtone;
 } dt_iop_bilat_params_t;
 
 
@@ -1633,8 +1641,12 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
 
   if(dev != NULL && data.has_bilat)
   {
-    data.pbl.sigma_r = 100.0;
-    data.pbl.sigma_s = 100.0;
+    // shadows and highlights at 100% leave all but the midtone local
+    // contrast alone, which is what Lightroom's clarity changes
+    data.pbl.mode = s_mode_local_laplacian;
+    data.pbl.sigma_r = 1.0f;
+    data.pbl.sigma_s = 1.0f;
+    data.pbl.midtone = 0.5f;
 
     dt_add_hist(imgid, "bilat", (dt_iop_params_t *)&data.pbl, sizeof(dt_iop_bilat_params_t), imported,
                 sizeof(imported), LRDT_BILAT_VERSION, &n_import);
