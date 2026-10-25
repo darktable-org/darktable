@@ -78,7 +78,7 @@
 #define SF_M_IN 0        /* 9: work RGB -> XYZ(film ref), CAT16 included */
 #define SF_M_OUT 9       /* 9: XYZ(view) -> work RGB, CAT02 included */
 #define SF_M_COUPLERS 18 /* 9: DIR coupler matrix, amount-scaled */
-#define SF_M_RGB2XYZ 27  /* 9: output RGB -> XYZ (plain, for OkLab) */
+#define SF_M_RGB2XYZ 27  /* 9: output RGB -> D65 XYZ, for OkLab */
 #define SF_M_XYZ2RGB 36  /* 9 */
 #define SF_M_OK1 45      /* 9: OkLab M1 */
 #define SF_M_OK2 54      /* 9: OkLab M2 */

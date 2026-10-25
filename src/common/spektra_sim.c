@@ -236,6 +236,11 @@ static const double SF_M_CAT16[9] = { 0.401288, 0.650173, -0.051461, -0.250268, 
 /* CAT02 cone matrix — colour.XYZ_to_RGB default, used by the scanning side */
 static const double SF_M_CAT02[9] = { 0.7328, 0.4286, -0.1624, -0.7036, 1.6975,
                                       0.0061, 0.0030,  0.0136, 0.9834 };
+/* Bradford cone matrix, the adaptation ICC matrix profiles use to reach the D50
+   PCS: adapting back with it recovers a D65-native space's own RGB -> XYZ */
+static const double SF_M_BRADFORD[9] = { 0.8951, 0.2664, -0.1614, -0.7502, 1.7135,
+                                         0.0367, 0.0389, -0.0685, 1.0296 };
+static const double SF_D65_WHITE_XY[2] = { 0.3127, 0.3290 };
 
 /* OkLab matrices (Ottosson 2020), as used by colour-science */
 static const double SF_OKLAB_M1[9]
@@ -4687,8 +4692,19 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
   }
 
   /* ----- output gamut compression ----------------------------------------- */
-  memcpy(s->out_rgb2xyz, p->output_rgb_to_xyz, sizeof(s->out_rgb2xyz));
-  memcpy(s->out_xyz2rgb, p->output_xyz_to_rgb, sizeof(s->out_xyz2rgb));
+  /* OkLab is defined on D65-relative XYZ, and the reference converts the output
+     RGB with the output space's own white. The output matrices here map to XYZ
+     relative to output_white_xy (D50 for darktable's pipeline), where a neutral
+     reads as a chroma of about 0.046 and is pulled off gray by the knee as
+     C_max collapses towards white. Adapting that white to D65 first puts
+     neutrals on the OkLab achromatic axis. */
+  {
+    double cat[9], cat_inv[9];
+    cat_matrix(cat, SF_M_BRADFORD, p->output_white_xy, SF_D65_WHITE_XY);
+    mat3_inv(cat_inv, cat);
+    mat3_mul(s->out_rgb2xyz, cat, p->output_rgb_to_xyz);
+    mat3_mul(s->out_xyz2rgb, p->output_xyz_to_rgb, cat_inv);
+  }
   mat3_inv(s->oklab_m1inv, SF_OKLAB_M1);
   mat3_inv(s->oklab_m2inv, SF_OKLAB_M2);
   cp9f(s->out_rgb2xyz_f, s->out_rgb2xyz);
