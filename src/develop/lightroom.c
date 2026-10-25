@@ -164,7 +164,7 @@ typedef struct dt_iop_spots_params_t
   spot_t spot[MAX_SPOTS];
 } dt_iop_spots_params_t;
 
-#define LRDT_TONECURVE_VERSION 3
+#define LRDT_TONECURVE_VERSION 5
 #define DT_IOP_TONECURVE_MAXNODES 20
 typedef enum tonecurve_channel_t
 {
@@ -188,7 +188,12 @@ typedef struct dt_iop_tonecurve_params_t
   int tonecurve_type[3];
   int tonecurve_autoscale_ab;
   int tonecurve_preset;
+  int tonecurve_unbound_ab;
+  int preserve_colors;
 } dt_iop_tonecurve_params_t;
+
+#define LRDT_TONECURVE_AUTOMATIC_RGB 3
+#define LRDT_RGB_NORM_AVERAGE 3
 
 #define LRDT_COLORZONES_VERSION 2
 #define DT_IOP_COLORZONES_BANDS 8
@@ -364,6 +369,19 @@ static float lr2dt_clarity(const float value)
   lr2dt_t lr2dt_clarity_table[] = { { -100, -.650 }, { 0, 0 }, { 100, .650 } };
 
   return get_interpolate(lr2dt_clarity_table, value);
+}
+
+// a curve with fewer than two nodes, or with every node on the diagonal,
+// leaves the image unchanged
+static gboolean _tonecurve_is_identity(const dt_iop_tonecurve_params_t *p)
+{
+  if(p->tonecurve_nodes[ch_L] < 2) return TRUE;
+
+  for(int k = 0; k < p->tonecurve_nodes[ch_L]; k++)
+    if(fabsf(p->tonecurve[ch_L][k].x - p->tonecurve[ch_L][k].y) > 1e-4f)
+      return FALSE;
+
+  return TRUE;
 }
 
 static void dt_add_hist(const dt_imgid_t imgid, const char *operation, const dt_iop_params_t *params, const int params_size, char *imported,
@@ -1528,8 +1546,10 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     data.ptc.tonecurve_type[ch_L] = CUBIC_SPLINE;
     data.ptc.tonecurve_type[ch_a] = CUBIC_SPLINE;
     data.ptc.tonecurve_type[ch_b] = CUBIC_SPLINE;
-    data.ptc.tonecurve_autoscale_ab = 1;
+    data.ptc.tonecurve_autoscale_ab = LRDT_TONECURVE_AUTOMATIC_RGB;
     data.ptc.tonecurve_preset = 0;
+    data.ptc.tonecurve_unbound_ab = 1;
+    data.ptc.preserve_colors = LRDT_RGB_NORM_AVERAGE;
 
     float linear_ab[7] = { 0.0, 0.08, 0.3, 0.5, 0.7, 0.92, 1.0 };
 
@@ -1580,9 +1600,13 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
         data.ptc.tonecurve[ch_L][4].y = data.ptc.tonecurve[ch_L][3].y;
     }
 
-    dt_add_hist(imgid, "tonecurve", (dt_iop_params_t *)&data.ptc, sizeof(dt_iop_tonecurve_params_t), imported,
-                sizeof(imported), LRDT_TONECURVE_VERSION, &n_import);
-    refresh_needed = TRUE;
+    if(!_tonecurve_is_identity(&data.ptc))
+    {
+      dt_add_hist(imgid, "tonecurve", (dt_iop_params_t *)&data.ptc,
+                  sizeof(dt_iop_tonecurve_params_t), imported, sizeof(imported),
+                  LRDT_TONECURVE_VERSION, &n_import);
+      refresh_needed = TRUE;
+    }
   }
 
   if(dev != NULL && data.has_colorzones)
