@@ -1692,6 +1692,8 @@ void reload_defaults(dt_iop_module_t *self)
     dt_bauhaus_slider_set_default(g->scale_b, dcoeffs[2]);
     dt_bauhaus_slider_set_default(g->scale_y, dcoeffs[3]);
 
+    dt_bauhaus_toggle_set_default(g->check_late_correction, d->late_correction);
+
     for_four_channels(k)
       g->mod_coeff[k] = dcoeffs[k];
 
