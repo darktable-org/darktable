@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.4.2\n"
-"X-Poedit-Bookmarks: 1933,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
+"X-Poedit-Bookmarks: 2165,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: ../build/bin/conf_gen.h:156
 msgctxt "preferences"
@@ -2817,7 +2817,7 @@ msgid ""
 "change the operator to some type of <b>union</b> to mask the pixels selected "
 "by <b>any</b> channel"
 msgstr ""
-"endre operatør til en type av <b>union</b> for å maskere pikslene valgt av "
+"endre operasjon til en type av <b>union</b> for å maskere pikslene valgt av "
 "<b>hvilken som helst</b> kanal"
 
 #: ../build/bin/masks_group_presets_strings.h:12
@@ -2825,34 +2825,24 @@ msgid "draw shapes or add AI objects here to mask an area"
 msgstr "tegn figurer eller legg til KI-objekter her for å maskere et område"
 
 #: ../build/bin/masks_group_presets_strings.h:13
-#, fuzzy
-#| msgid "drawn mask"
 msgid "drawn (classic)"
-msgstr "tegnet maske"
+msgstr "tegnet (klassisk)"
 
 #: ../build/bin/masks_group_presets_strings.h:14
-#, fuzzy
-#| msgid "drawn + parametric mask"
 msgid "drawn + parametric (classic)"
-msgstr "tegnet + parametrisk maske"
+msgstr "tegnet + parametrisk (klassisk)"
 
 #: ../build/bin/masks_group_presets_strings.h:15
-#, fuzzy
-#| msgid "drawn + parametric mask"
 msgid "drawn + parametric"
-msgstr "tegnet + parametrisk maske"
+msgstr "tegnet + parametrisk"
 
 #: ../build/bin/masks_group_presets_strings.h:16
-#, fuzzy
-#| msgid "drawn + parametric mask"
 msgid "drawn + parametric, minus an area (advanced)"
-msgstr "tegnet + parametrisk maske"
+msgstr "tegnet + parametrisk minus et område (avansert)"
 
 #: ../build/bin/masks_group_presets_strings.h:17
-#, fuzzy
-#| msgid "drawn mask"
 msgid "drawn"
-msgstr "tegnet maske"
+msgstr "tegnet"
 
 #: ../build/bin/masks_group_presets_strings.h:18
 msgid ""
@@ -2881,17 +2871,13 @@ msgstr ""
 "brukte maksimum (union)"
 
 #: ../build/bin/masks_group_presets_strings.h:21
-#, fuzzy
-#| msgid "parametric mask"
 msgid "parametric (classic)"
-msgstr "parametrisk maske"
+msgstr "parametrisk (klassisk)"
 
 #: ../build/bin/masks_group_presets_strings.h:22
 #: ../src/develop/blend_gui.c:13480 ../src/develop/masks/parametric.c:51
-#, fuzzy
-#| msgid "parametric mask"
 msgid "parametric"
-msgstr "parametrisk maske"
+msgstr "parametrisk"
 
 #: ../build/bin/masks_group_presets_strings.h:23
 msgid ""
@@ -7691,19 +7677,19 @@ msgstr "grå"
 
 #: ../src/common/color_vocabulary.c:92
 msgid "Chinese"
-msgstr "kinesisk"
+msgstr "Kinesisk"
 
 #: ../src/common/color_vocabulary.c:93
 msgid "Thai"
-msgstr "thai"
+msgstr "Thai"
 
 #: ../src/common/color_vocabulary.c:94
 msgid "Kurdish"
-msgstr "kurdisk"
+msgstr "Kurdisk"
 
 #: ../src/common/color_vocabulary.c:95
 msgid "Caucasian"
-msgstr "kaukasisk"
+msgstr "Kaukasisk"
 
 #: ../src/common/color_vocabulary.c:96
 msgid "African-American"
@@ -7711,7 +7697,7 @@ msgstr "afrikansk-amerikansk"
 
 #: ../src/common/color_vocabulary.c:97
 msgid "Mexican"
-msgstr "meksikansk"
+msgstr "Meksikansk"
 
 #: ../src/common/color_vocabulary.c:100 ../src/common/color_vocabulary.c:105
 #: ../src/common/color_vocabulary.c:110 ../src/common/color_vocabulary.c:115
@@ -10671,10 +10657,8 @@ msgid "drawn & parametric mask"
 msgstr "tegnet & parametrisk maske"
 
 #: ../src/develop/blend_gui.c:172 ../src/develop/masks_gui_panel_host.c:89
-#, fuzzy
-#| msgid "blend mask"
 msgid "flexi mask"
-msgstr "blandingsmodus"
+msgstr "fleksimaske"
 
 #: ../src/develop/blend_gui.c:177
 msgid "exclusive"
@@ -10709,10 +10693,8 @@ msgid "input after blur"
 msgstr "inngående etter uskarphet"
 
 #: ../src/develop/blend_gui.c:818
-#, fuzzy
-#| msgid "raster mask"
 msgid "replace the mask?"
-msgstr "rastermaske"
+msgstr "erstatt masken?"
 
 #: ../src/develop/blend_gui.c:819
 #, c-format
@@ -10724,56 +10706,36 @@ msgstr ""
 "%s i stedet"
 
 #: ../src/develop/blend_gui.c:964
-#, fuzzy
-#| msgid "shapes"
 msgid "all shapes"
-msgstr "figurer"
+msgstr "alle figurer"
 
 #: ../src/develop/blend_gui.c:1013
-#, fuzzy
-#| msgid "currently invisible"
 msgid "not currently used"
-msgstr "for øyeblikket usynlig"
+msgstr "for øyeblikket ikke i bruk"
 
 #: ../src/develop/blend_gui.c:1019
-#, fuzzy
-#| msgid "cycle modules"
 msgid "by source module"
-msgstr "bla gjennom moduler"
+msgstr "etter kildemodul"
 
 #: ../src/develop/blend_gui.c:1020
-#, fuzzy
-#| msgid "blur type"
 msgid "by type"
-msgstr "type uskarphet"
+msgstr "etter type"
 
 #: ../src/develop/blend_gui.c:1071
-#, fuzzy
-#| msgid "blend colorspace"
 msgid "other blend colorspace"
-msgstr "fargerom for blanding"
+msgstr "annet fargerom for blanding"
 
 #: ../src/develop/blend_gui.c:1114
-#, fuzzy
-#| msgid "process selected images"
 msgid "processed later in the pipe"
-msgstr "behandle valgte bilder"
+msgstr "behandlet senere i kjeden"
 
 #: ../src/develop/blend_gui.c:1128
-#, fuzzy
-#| msgid "%d tags removed"
 msgid "unused shapes removed"
-msgstr "%d nøkkelord fjernet"
+msgstr "ubrukte figurer fjernet"
 
 #: ../src/develop/blend_gui.c:1143
-#, fuzzy
-#| msgid ""
-#| "compress history stack of\n"
-#| "all selected images"
 msgid "compress history and clean up unused shapes?"
-msgstr ""
-"komprimer redigeringshistorikken til\n"
-"alle valgte bilder"
+msgstr "komprimer redigeringshistorikken og rens opp ubrukte figurer?"
 
 #: ../src/develop/blend_gui.c:1144
 msgid ""
@@ -10793,73 +10755,48 @@ msgid "history compressed and unused shapes removed"
 msgstr "historikk komprimert og ubrukte figurer fjernet"
 
 #: ../src/develop/blend_gui.c:1229
-#, fuzzy
-#| msgid "shapes"
 msgid "link shapes"
-msgstr "figurer"
+msgstr "koble figurer"
 
 #: ../src/develop/blend_gui.c:1230
 msgid "shared: editing one changes it everywhere"
 msgstr "delt: endring av en endrer den overalt"
 
 #: ../src/develop/blend_gui.c:1238
-#, fuzzy
-#| msgid "copy images"
 msgid "copy shapes"
-msgstr "kopier bilder"
+msgstr "kopier figurer"
 
 #: ../src/develop/blend_gui.c:1240
-#, fuzzy
-#| msgid "per channel"
 msgid "copy parametric channel"
-msgstr "pr kanal"
+msgstr "kopier parametrisk kanal"
 
 #: ../src/develop/blend_gui.c:1241
-#, fuzzy
-#| msgid "RGB, independent channels"
 msgid "independent copies"
-msgstr "RGB, uavhengige kanaler"
+msgstr "uavhengige kopier"
 
 #: ../src/develop/blend_gui.c:1255
-#, fuzzy
-#| msgid "raster mask id"
 msgid "add the mask of"
-msgstr "rastermaske id"
+msgstr "legg til masken fra"
 
 #: ../src/develop/blend_gui.c:1256
-#, fuzzy
-#| msgid "select raster mask file"
 msgid "use the mask of"
-msgstr "velg rastermaskefil"
+msgstr "bruk masken fra"
 
 #: ../src/develop/blend_gui.c:1257
-#, fuzzy
-#| msgid "all installed models are up to date"
 msgid "another module's whole mask, kept up to date"
-msgstr "alle installerte modeller er oppdatert"
+msgstr "en annen modul sin maske, holdt oppdatert"
 
 #: ../src/develop/blend_gui.c:1265
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "on import"
 msgid "nothing to import"
-msgstr "ved import"
+msgstr "ingenting å importere"
 
 #: ../src/develop/blend_gui.c:1268
-#, fuzzy
-#| msgid "delete unused shapes"
 msgid "clean up unused shapes"
 msgstr "slett ubrukte figurer"
 
 #: ../src/develop/blend_gui.c:1269
-#, fuzzy
-#| msgid ""
-#| "compress history stack of\n"
-#| "all selected images"
 msgid "compress history and clean up unused shapes"
-msgstr ""
-"komprimer redigeringshistorikken til\n"
-"alle valgte bilder"
+msgstr "komprimer redigeringshistorikken og rens opp ubrukte figurer"
 
 #: ../src/develop/blend_gui.c:1781 ../src/develop/blend_gui.c:12717
 #: ../src/develop/imageop.c:3574
@@ -10882,10 +10819,9 @@ msgid "%s slider: linear scale"
 msgstr "%s glider: lineær skala"
 
 #: ../src/develop/blend_gui.c:1804
-#, fuzzy
 #| msgid "long"
 msgid "log"
-msgstr "lang"
+msgstr "log"
 
 #: ../src/develop/blend_gui.c:1911
 msgid ""
@@ -10927,10 +10863,8 @@ msgstr ""
 "den fjernes hvis historikken forkastes"
 
 #: ../src/develop/blend_gui.c:2104
-#, fuzzy
-#| msgid "the drawn mask was removed"
 msgid "the mask is locked"
-msgstr "den tegnede masken ble fjernet"
+msgstr "masken er låst"
 
 #: ../src/develop/blend_gui.c:2155 ../src/develop/masks/object.c:2358
 msgid "AI model is not available. Check preferences > AI"
@@ -10970,17 +10904,12 @@ msgstr[1] ""
 "endre blandingsfargerommet og fjerne den?"
 
 #: ../src/develop/blend_gui.c:2530
-#, fuzzy
-#| msgctxt "section"
-#| msgid "storage options"
 msgid "interface options"
-msgstr "lagringsinnstillinger"
+msgstr "grensesnittinnstillinger"
 
 #: ../src/develop/blend_gui.c:2531
-#, fuzzy
-#| msgid "show and edit mask elements"
 msgid "how the blend mask panel behaves"
-msgstr "vis og rediger maskeelementer"
+msgstr "hvordan panelet for blandingsmaske oppfører seg"
 
 #: ../src/develop/blend_gui.c:2534 ../src/develop/blend_gui.c:16617
 msgid "sticky opacity"
@@ -10999,10 +10928,8 @@ msgstr ""
 "når deaktivert starter en ny figur alltid på 100% opasitet."
 
 #: ../src/develop/blend_gui.c:2543 ../src/develop/blend_gui.c:16619
-#, fuzzy
-#| msgid "delete selected"
 msgid "auto-expand selected"
-msgstr "slett valgte"
+msgstr "utvid valgte automatisk"
 
 #: ../src/develop/blend_gui.c:2544
 msgid ""
@@ -11025,10 +10952,8 @@ msgstr ""
 "for hånd med vinkelen på høyre ende av raden."
 
 #: ../src/develop/blend_gui.c:2555
-#, fuzzy
-#| msgid "delete this instance"
 msgid "element properties in subpanel"
-msgstr "slett denne forekomsten"
+msgstr "elementegenskaper i underpanel"
 
 #: ../src/develop/blend_gui.c:2556
 msgid ""
@@ -11062,10 +10987,8 @@ msgstr ""
 "og det kan skjules med et klikk."
 
 #: ../src/develop/blend_gui.c:2572
-#, fuzzy
-#| msgid "parametric mask"
 msgid "parametric element options"
-msgstr "parametrisk maske"
+msgstr "alternativer for parametrisk element"
 
 #: ../src/develop/blend_gui.c:2573
 msgid "how parametric elements are picked and previewed"
@@ -11119,11 +11042,8 @@ msgstr ""
 "deaktivert som standard."
 
 #: ../src/develop/blend_gui.c:2605
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "show preset menu"
 msgid "show preset notes"
-msgstr "vis forhåndsinnstillings-meny"
+msgstr "vis notater for forhåndsinnstilling"
 
 #: ../src/develop/blend_gui.c:2606
 msgid ""
@@ -11142,10 +11062,8 @@ msgstr ""
 "når deaktivert vises ingen notater."
 
 #: ../src/develop/blend_gui.c:2673
-#, fuzzy
-#| msgid "reset blend mask settings"
 msgid "blend mask panel settings"
-msgstr "nullstill innstillinger for blandingsmaske"
+msgstr "innstillinger for panelet for blandingsmaske"
 
 #: ../src/develop/blend_gui.c:2684
 #: ../src/external/lua-scripts/official/enfuse.lua:166
@@ -11341,17 +11259,14 @@ msgstr "gruppe #%d"
 
 #: ../src/develop/blend_gui.c:4362 ../src/develop/blend_gui.c:9713
 #: ../src/develop/blend_gui.c:15080
-#, fuzzy
-#| msgid "blend mask"
 msgid "whole mask"
-msgstr "blandingsmodus"
+msgstr "hel maske"
 
 #. as the pending row names it (see _make_pending_shape_row)
 #: ../src/develop/blend_gui.c:4423 ../src/develop/blend_gui.c:11774
-#, fuzzy, c-format
-#| msgid "new sort"
+#, c-format
 msgid "new %s"
-msgstr "ny sortering"
+msgstr "ny %s"
 
 #: ../src/develop/blend_gui.c:4424
 msgid "the shape being drawn: the sections below show its creation controls"
@@ -11401,10 +11316,8 @@ msgid "size"
 msgstr "størrelse"
 
 #: ../src/develop/blend_gui.c:4530
-#, fuzzy
-#| msgid "strength of the sharpen"
 msgid "size of the shape"
-msgstr "styrke på skarphetsøkning"
+msgstr "figurens størrelse"
 
 #: ../src/develop/blend_gui.c:4532
 msgid ""
@@ -11413,10 +11326,8 @@ msgid ""
 msgstr "hvor mye av penselstrøkets bredde som har full opasitet"
 
 #: ../src/develop/blend_gui.c:4534
-#, fuzzy
-#| msgid "expanded module border"
 msgid "fade-out border"
-msgstr "innramming for utvidete moduler"
+msgstr "uttoning"
 
 #: ../src/develop/blend_gui.c:4535
 msgid ""
@@ -11427,10 +11338,8 @@ msgstr ""
 "går fra full opasitet til ingen"
 
 #: ../src/develop/blend_gui.c:4538
-#, fuzzy
-#| msgid "the rotation of the watermark"
 msgid "rotation of the shape"
-msgstr "vannmerkets rotasjon"
+msgstr "figurens rotasjon"
 
 #: ../src/develop/blend_gui.c:4540
 msgid "how much the gradient's line bends: 0 is straight"
@@ -11487,10 +11396,8 @@ msgstr ""
 "gjenoppretter hakk som modellen overså og som koster noen hundre ms"
 
 #: ../src/develop/blend_gui.c:4555
-#, fuzzy
-#| msgid "apply metadata"
 msgid "apply as paths"
-msgstr "legg til metadata"
+msgstr "bruk som baner"
 
 #: ../src/develop/blend_gui.c:4556
 msgid ""
@@ -11526,16 +11433,12 @@ msgstr ""
 "vist"
 
 #: ../src/develop/blend_gui.c:5083
-#, fuzzy
-#| msgid "double-click to reset to `%s'"
 msgid "double-click to reset to 100%"
-msgstr "dobbeltklikk for å gå tilbake til `%s'"
+msgstr "dobbeltklikk for å gå tilbake til 100%"
 
 #: ../src/develop/blend_gui.c:5084
-#, fuzzy
-#| msgid "double-click to reset to `%s'"
 msgid "double-click to reset to 0"
-msgstr "dobbeltklikk for å gå tilbake til `%s'"
+msgstr "dobbeltklikk for å gå tilbake til 0"
 
 #: ../src/develop/blend_gui.c:5107 ../src/develop/blend_gui.c:16574
 msgid "shrink or grow"
@@ -11553,15 +11456,12 @@ msgstr ""
 "til det nye 0"
 
 #: ../src/develop/blend_gui.c:5127
-#, fuzzy
-#| msgid ""
-#| "shrink/grow unit: image pixels (px) or % of path size — click to toggle"
 msgid ""
 "shrink/grow unit: image pixels (px) or % of path size\n"
 "click to toggle"
 msgstr ""
-"enhet for krymp/øk: bildepiksler (px) eller % av banestørrelse — klikk for å "
-"bytte"
+"enhet for krymp/øk: bildepiksler (px) eller % av banestørrelse\n"
+"klikk for å bytte"
 
 #: ../src/develop/blend_gui.c:5510 ../src/develop/masks/masks.c:2936
 #: ../src/develop/masks/masks.c:3532
@@ -11680,10 +11580,8 @@ msgid "maximum (union)"
 msgstr "maksimum (union)"
 
 #: ../src/develop/blend_gui.c:7290
-#, fuzzy
-#| msgid "maximum delta E"
 msgid "maximum"
-msgstr "maksimum delta E"
+msgstr "maksimum"
 
 #: ../src/develop/blend_gui.c:7291
 msgid ""
@@ -11692,15 +11590,10 @@ msgstr ""
 "alt som et element dekker: der elementer overlapper vinner det sterkeste"
 
 #: ../src/develop/blend_gui.c:7294
-#, fuzzy
-#| msgid "curve smoothing"
 msgid "screen (smooth union)"
-msgstr "kurveutjevning"
+msgstr "skjerm (jevn union)"
 
 #: ../src/develop/blend_gui.c:7294
-#, fuzzy
-#| msgctxt "blendmode"
-#| msgid "screen"
 msgid "screen"
 msgstr "skjerm"
 
@@ -11716,10 +11609,8 @@ msgid "sum (additive union)"
 msgstr "sum (additiv union)"
 
 #: ../src/develop/blend_gui.c:7299
-#, fuzzy
-#| msgid "sum RGB"
 msgid "sum"
-msgstr "sum RGB"
+msgstr "sum"
 
 #: ../src/develop/blend_gui.c:7300
 msgid ""
@@ -11758,9 +11649,6 @@ msgstr ""
 "bare der alle elementer er"
 
 #: ../src/develop/blend_gui.c:7313
-#, fuzzy
-#| msgctxt "blendmode"
-#| msgid "difference"
 msgid "difference"
 msgstr "forskjell"
 
@@ -11769,9 +11657,6 @@ msgid "the bottom element, minus every element above it"
 msgstr "det nederste elementet minus alle elementer over det"
 
 #: ../src/develop/blend_gui.c:7317
-#, fuzzy
-#| msgctxt "blendmode"
-#| msgid "exclusion"
 msgid "exclusion"
 msgstr "utelukkelse"
 
@@ -11789,15 +11674,19 @@ msgid ""
 "add a new, empty group\n"
 "click to pick its operator"
 msgstr ""
+"legg til en ny, tom gruppe\n"
+"klikk for å velge operasjon for den"
 
 #: ../src/develop/blend_gui.c:7427
 msgid "a: the elements below, b: the next element up"
-msgstr ""
+msgstr "a: elementene under, b: neste element opp"
 
 #: ../src/develop/blend_gui.c:7802
 #, c-format
 msgid "a group cannot go inside itself, and groups nest at most %d deep"
 msgstr ""
+"en gruppe kan ikke gå inn i seg selv, og grupper kan nøstes maksimalt %d "
+"nivåer dypt"
 
 #: ../src/develop/blend_gui.c:8637
 #, c-format
@@ -11808,6 +11697,11 @@ msgid ""
 "inversion and refinements\n"
 "click to select it"
 msgstr ""
+"brukt %d ganger i denne masken\n"
+"denne figuren er delt: endring av den endrer alle radene\n"
+"den forekommer i, mens hver rad beholder sin egen opasitet,\n"
+"inversjon og finjusteringer\n"
+"klikk for å velge den"
 
 #: ../src/develop/blend_gui.c:8647
 #, c-format
@@ -11819,6 +11713,12 @@ msgid ""
 "right-click the row and pick \"unlink\" to give this module\n"
 "its own copy"
 msgstr ""
+"koblet med %s\n"
+"dette KI-objektet er delt: endring av det endrer det i\n"
+"alle modulene det er koblet med, mens dets opasitet,\n"
+"inversjon og finjusteringer forblir separate\n"
+"høyreklikk raden og velg \"koble fra\" for å gi denne modulen\n"
+"sin egen kopi"
 
 #: ../src/develop/blend_gui.c:8653
 #, c-format
@@ -11830,24 +11730,29 @@ msgid ""
 "right-click the row and pick \"unlink\" to give this module\n"
 "its own copy"
 msgstr ""
+"koblet med %s\n"
+"denne figuren er delt: endring av den endrer den i\n"
+"alle modulene den er koblet med, mens dens opasitet,\n"
+"inversjon og finjusteringer forblir separate\n"
+"høyreklikk raden og velg \"koble fra\" for å gi denne modulen\n"
+"sin egen kopi"
 
 #: ../src/develop/blend_gui.c:8664
-#, fuzzy, c-format
-#| msgid ""
-#| "%s\n"
-#| "ctrl+click to %s"
+#, c-format
 msgid ""
 "%s\n"
 "click to go to it in %s"
 msgstr ""
 "%s\n"
-"ctrl+klikk for å %s"
+"klikk for å gå til den i %s"
 
 #: ../src/develop/blend_gui.c:9793
 msgid ""
 "\n"
 "(disabled for this target: the eye on the left enables it again)"
 msgstr ""
+"\n"
+"(deaktivert for dette målet: øyet til venstre aktiverer det igjen)"
 
 #: ../src/develop/blend_gui.c:9795
 msgid ""
@@ -11855,26 +11760,34 @@ msgid ""
 "(the target is empty, so there is nothing to refine: deselect it to refine "
 "the whole mask)"
 msgstr ""
+"\n"
+"(målet er tomt, så det er ikke noe å finjustere: velg det bort for å "
+"finjustere hele masken)"
 
 #: ../src/develop/blend_gui.c:9823
-#, fuzzy, c-format
-#| msgid "paste metadata to the selected images"
+#, c-format
 msgid ""
 "\n"
 "(added to the selected group, %s)"
-msgstr "lim inn metadata for de valgte bildene"
+msgstr ""
+"\n"
+")lagt til i den valgte gruppen, %s)"
 
 #: ../src/develop/blend_gui.c:9824
 msgid ""
 "\n"
 "(added to the whole mask)"
 msgstr ""
+"\n"
+"(lagt til hele masken)"
 
 #: ../src/develop/blend_gui.c:9835
 msgid ""
 "\n"
 "rest the pointer here to preview this channel"
 msgstr ""
+"\n"
+"plasser pekeren her for å forhåndsvise denne kanalen"
 
 #: ../src/develop/blend_gui.c:9849
 #, c-format
@@ -11882,12 +11795,16 @@ msgid ""
 "\n"
 "(nested in %s)"
 msgstr ""
+"\n"
+"(nøstet i %s)"
 
 #: ../src/develop/blend_gui.c:9850
 msgid ""
 "\n"
 "(nested in the whole mask)"
 msgstr ""
+"\n"
+"(nøstet i hele masken)"
 
 #: ../src/develop/blend_gui.c:9858 ../src/develop/blend_gui.c:16637
 msgid ""
@@ -11895,10 +11812,13 @@ msgid ""
 "channels, or add or use another module's whole mask\n"
 "(click to pick)"
 msgstr ""
+"koble eller kopier figurer fra andre moduler, kopier deres parametriske\n"
+"kanaler eller legg til og bruk en annen moduls hele maske\n"
+"(klikk for å velge)"
 
 #: ../src/develop/blend_gui.c:10044 ../src/develop/blend_gui.c:10836
 msgid "this group is nested as deep as groups go"
-msgstr ""
+msgstr "denne gruppen er nøstet så dypt som grupper kan gå"
 
 #: ../src/develop/blend_gui.c:10690
 #, c-format
@@ -11907,22 +11827,21 @@ msgid ""
 "applied on top of -- not instead of -- each element's own opacity, the two "
 "multiply together"
 msgstr ""
+"opasitet: %.0f%%\n"
+"brukt i tillegg til -- ikke i stedet for -- hvert elements egen opasitet, de "
+"to multipliseres sammen"
 
 #: ../src/develop/blend_gui.c:10921
 msgid "nothing to simplify: groups with a name of their own are kept"
-msgstr ""
+msgstr "ikke noe å forenkle: grupper med sine egne navn beholdes"
 
 #: ../src/develop/blend_gui.c:10922
-#, fuzzy
-#| msgid "nothing to save"
 msgid "nothing to simplify"
-msgstr "ingenting å lagre"
+msgstr "ingenting å forenkle"
 
 #: ../src/develop/blend_gui.c:10969
-#, fuzzy
-#| msgid "composite"
 msgid "compose"
-msgstr "kompositt"
+msgstr "komponer"
 
 #: ../src/develop/blend_gui.c:10971
 msgid ""
@@ -11931,12 +11850,14 @@ msgid ""
 "it goes into a new group of the chosen operator,\n"
 "with an empty group on top to draw into"
 msgstr ""
+"bruk dette som en byggestein for en større maske, for eksempel\n"
+"å trekke fra den eller la den overlappe med noe annet:\n"
+"det inngår i en ny gruppe med den valgte operasjonen,\n"
+"med en tom gruppe over som du kan tegne i"
 
 #: ../src/develop/blend_gui.c:11062 ../src/develop/blend_gui.c:12384
-#, fuzzy
-#| msgid "disabled"
 msgid "disable"
-msgstr "av"
+msgstr "deaktiver"
 
 #: ../src/develop/blend_gui.c:11063
 msgid ""
@@ -11944,10 +11865,13 @@ msgid ""
 "and keeps its elements and settings for when it is back on\n"
 "clicking the eye on its header does the same"
 msgstr ""
+"slå denne gruppen av: den bidrar ikke til masken,\n"
+"og den beholder elementene og innstillingene til den slås på\n"
+"å klikke på øyet på overskriften gjør det samme"
 
 #: ../src/develop/blend_gui.c:11066 ../src/develop/blend_gui.c:12388
 msgid "solo"
-msgstr ""
+msgstr "solo"
 
 #: ../src/develop/blend_gui.c:11067
 msgid ""
@@ -11955,18 +11879,17 @@ msgid ""
 "shift+clicking the eye on its header does the same\n"
 "choose this entry again to go back"
 msgstr ""
+"bruk bare denne gruppen, for å se hva den bidrar med\n"
+"shift+klikk på øyet på overskriften gjør det samme\n"
+"velg dette igjen for å gå tilbake"
 
 #: ../src/develop/blend_gui.c:11070 ../src/develop/blend_gui.c:12392
-#, fuzzy
-#| msgid "visible"
 msgid "visibility"
-msgstr "synlig"
+msgstr "synlighet"
 
 #: ../src/develop/blend_gui.c:11075
-#, fuzzy
-#| msgid "8-bit output"
 msgid "invert output"
-msgstr "8-bits utgående"
+msgstr "inverter utdata"
 
 #: ../src/develop/blend_gui.c:11076
 msgid ""
@@ -11974,24 +11897,25 @@ msgid ""
 "stays on until chosen again\n"
 "alt+clicking its operator icon does the same"
 msgstr ""
+"inverter hva gruppen gir, etter at elementene dens er kombinert.\n"
+"forblir på til den velges igjen\n"
+"alt+klikk på operasjonsikonet gjør det samme"
 
 #: ../src/develop/blend_gui.c:11079
-#, fuzzy
-#| msgid "flat small segments"
 msgid "invert all elements"
-msgstr "flate små segmenter"
+msgstr "inverter alle elementer"
 
 #: ../src/develop/blend_gui.c:11080
 msgid ""
 "flip the invert of each element on its own, before they\n"
 "are combined: a different mask from inverting the output"
 msgstr ""
+"inverter hvert element for seg, før de kombineres:\n"
+"en annen maske enn å invertere sluttresultatet"
 
 #: ../src/develop/blend_gui.c:11084
-#, fuzzy
-#| msgid "simple"
 msgid "simplify"
-msgstr "enkel"
+msgstr "forenkle"
 
 #: ../src/develop/blend_gui.c:11086
 msgid ""
@@ -12000,12 +11924,14 @@ msgid ""
 "and groups using the operator of the group holding them.\n"
 "a group with a name of its own is kept, even when empty"
 msgstr ""
+"fjern gruppene inni denne som ikke endrer noe:\n"
+"tomme grupper, grupper med ett enkelt element,\n"
+"og grupper som bruker operasjonen til gruppen de er i.\n"
+"en gruppe med sitt eget navn beholdes, også når den er tom"
 
 #: ../src/develop/blend_gui.c:11092 ../src/develop/blend_gui.c:12400
-#, fuzzy
-#| msgid "Lua options"
 msgid "mask operations"
-msgstr "Lua-alternativer"
+msgstr "maskeoperasjoner"
 
 #: ../src/develop/blend_gui.c:11097 ../src/develop/blend_gui.c:12404
 #: ../src/develop/imageop.c:1097 ../src/develop/imageop.c:4785
@@ -12018,30 +11944,32 @@ msgid ""
 "give this group a name of its own\n"
 "ctrl+click on the group header does the same"
 msgstr ""
+"gi denne gruppen et eget navn\n"
+"tilsvarer ctrl+klikk på gruppeoverskriften"
 
 #: ../src/develop/blend_gui.c:11103
-#, fuzzy
-#| msgid "raster mask"
 msgid "reset mask"
-msgstr "rastermaske"
+msgstr "nullstill maske"
 
 #: ../src/develop/blend_gui.c:11104
 msgid ""
 "remove every element and group from the mask,\n"
 "starting over from the default group layout"
 msgstr ""
+"fjern alle elementer og grupper fra masken,\n"
+"begynn på nytt fra standard gruppeoppsett"
 
 #: ../src/develop/blend_gui.c:11107
-#, fuzzy
-#| msgid "delete group"
 msgid "empty group"
-msgstr "slett gruppe"
+msgstr "tom gruppe"
 
 #: ../src/develop/blend_gui.c:11108
 msgid ""
 "remove this group's elements, keeping the group\n"
 "with its operator, settings and name"
 msgstr ""
+"fjern denne gruppens elementer og behold gruppen\n"
+"med sin operasjon, innstillinger og navn"
 
 #: ../src/develop/blend_gui.c:11110
 msgid "delete group"
@@ -12049,7 +11977,7 @@ msgstr "slett gruppe"
 
 #: ../src/develop/blend_gui.c:11111
 msgid "remove this group and every element in it"
-msgstr ""
+msgstr "fjern denne gruppen og alle elementene i den"
 
 #: ../src/develop/blend_gui.c:11112 ../src/develop/blend_gui.c:12419
 #: ../src/gui/accelerators.c:131 ../src/gui/accelerators.c:182
@@ -12061,64 +11989,84 @@ msgstr "rediger"
 msgid ""
 "this shape has not been added yet -- finish drawing it on canvas to add it"
 msgstr ""
+"denne figuren har ikke blitt lagt til ennå -- fullfør tegningen på lerretet "
+"for å legge den til"
 
 #: ../src/develop/blend_gui.c:11818
 msgid "opacity of the next shape, before it is placed"
-msgstr ""
+msgstr "opasitet for den neste figuren, før den er plassert"
 
 #: ../src/develop/blend_gui.c:11829
 msgid "fade-out border the next node placed on this path will start with"
-msgstr ""
+msgstr "uttoning den neste noden du plasserer i denne banen vil starte med"
 
 #: ../src/develop/blend_gui.c:11836
 msgid ""
 "radius of the next circle, before it is placed --\n"
 "same as scrolling on canvas"
 msgstr ""
+"radius for den neste sirkelen, før den plasseres --\n"
+"tilsvarer rulling på lerretet"
 
 #: ../src/develop/blend_gui.c:11841
 msgid ""
 "fade-out border of the next circle, before it is placed --\n"
 "same as shift+scrolling on canvas"
 msgstr ""
+"uttoning for den neste sirkelen, før den plasseres --\n"
+"tilsvarer shift+rull på lerretet"
 
 #: ../src/develop/blend_gui.c:11852
 msgid ""
 "size of the next ellipse, before it is placed --\n"
 "same as scrolling on canvas"
 msgstr ""
+"størrelse på neste ellipse, før den er plassert --\n"
+"tilsvarer rulling på lerretet"
 
 #: ../src/develop/blend_gui.c:11857
 msgid ""
 "fade-out border of the next ellipse, before it is placed --\n"
 "same as shift+scrolling on canvas"
 msgstr ""
+"uttoningen på den neste ellipsen, før den er plassert --\n"
+"tilsvarer shift+rulling på lerretet"
 
 #: ../src/develop/blend_gui.c:11862
 msgid ""
 "rotation of the next ellipse, before it is placed --\n"
 "same as ctrl+shift+scrolling on canvas"
 msgstr ""
+"rotasjonen til den neste ellipsen, før den er plassert --\n"
+"tilsvarer ctrl+shift+rulling på lerretet"
 
 #: ../src/develop/blend_gui.c:11873
 msgid ""
 "compression of the next gradient, before it is placed --\n"
 "same as shift+scrolling on canvas"
 msgstr ""
+"kompresjonen til den neste gradienten, før den er plassert --\n"
+"tilsvarer shift+rulling på lerretet"
 
 #: ../src/develop/blend_gui.c:11882
 msgid ""
 "curvature of the next gradient, before it is placed --\n"
 "same as scrolling on canvas"
 msgstr ""
+"bøyingen av den neste gradienten, før den er plassert --\n"
+"tilsvarer rulling på lerretet"
 
 #: ../src/develop/blend_gui.c:11891
 msgid "width of the next brush stroke -- same as scrolling on canvas"
 msgstr ""
+"bredde på det neste penselstrøket --\n"
+"tilsvarer rulling på lerretet"
 
 #: ../src/develop/blend_gui.c:11896
 msgid "hardness of the next brush stroke -- same as shift+scrolling on canvas"
 msgstr ""
+"hardheten til det neste penselstrøket --\n"
+"tilsvarer shift+rulling på lerretet"
 
 #: ../src/develop/blend_gui.c:11925
 msgid ""
@@ -12127,6 +12075,10 @@ msgid ""
 "higher: a looser fit with smoother, more rounded corners.\n"
 "same as scrolling on the canvas while drawing"
 msgstr ""
+"hvor tett den opptegnede konturen følger KI-utvalgets rå kant.\n"
+"lavere: en tettere, mer vinklet tilpasning til utvalget.\n"
+"høyere: en løsere tilpasning med jevnere, mer avrundede hjørner.\n"
+"tilsvarer rulling på lerretet mens du tegner"
 
 #: ../src/develop/blend_gui.c:11950
 msgid ""
@@ -12135,21 +12087,25 @@ msgid ""
 "genuinely small parts of the selection.\n"
 "same as shift+scrolling on the canvas while drawing"
 msgstr ""
+"forkaster små, forvillede fragmenter under denne størrelsen\n"
+"(i opptegnede piksler).\n"
+"høyere: fjerner små øyer/hull, med risiko for å fjerne små, ekte deler\n"
+"av utvalget.\n"
+"tilsvarer shift+rulling på lerretet mens du tegner"
 
 #: ../src/develop/blend_gui.c:11985
 msgid "pressure"
 msgstr "trykk"
 
 #: ../src/develop/blend_gui.c:12174
-#, fuzzy, c-format
-#| msgid "show and edit shapes on the current scale"
+#, c-format
 msgid "focus %s and edit its mask on the canvas"
-msgstr "vis og rediger figurer på nåværende skala"
+msgstr "fokuser %s og rediger masken dens på lerretet"
 
 #: ../src/develop/blend_gui.c:12243
 #, c-format
 msgid "focus %s and show its mask panel"
-msgstr ""
+msgstr "fokuser på %s og vis maskepanelet dens"
 
 #: ../src/develop/blend_gui.c:12385
 msgid ""
@@ -12157,6 +12113,9 @@ msgid ""
 "and keeps its settings for when it is back on\n"
 "clicking the eye on its row does the same"
 msgstr ""
+"slår dette elementet av: det bidrar ikke til masken,\n"
+"og beholder innstillingene til det slås på igjen\n"
+"klikk på øyet på raden gjør det samme"
 
 #: ../src/develop/blend_gui.c:12389
 msgid ""
@@ -12164,6 +12123,9 @@ msgid ""
 "shift+clicking the eye on its row does the same\n"
 "choose this entry again to go back"
 msgstr ""
+"bruk bare dette elementet, for å se hva det bidrar med\n"
+"shift+klikk på øyet på raden gjør det samme\n"
+"velg dette igjen for å gå tilbake"
 
 #: ../src/develop/blend_gui.c:12396 ../src/iop/invert.c:120
 msgid "invert"
@@ -12174,22 +12136,28 @@ msgid ""
 "invert this element: it selects what it left out\n"
 "alt+clicking its icon does the same"
 msgstr ""
+"inverter dette elementet: det velger det som er utelatt\n"
+"alt+klikk på ikonet dets gjør det samme"
 
 #: ../src/develop/blend_gui.c:12405
 msgid ""
 "give this element a name of its own\n"
 "ctrl+click on the row does the same"
 msgstr ""
+"gi dette elementet et eget navn\n"
+"ctrl+klikk på raden gjør det samme"
 
 #: ../src/develop/blend_gui.c:12408
 msgid "unlink"
-msgstr ""
+msgstr "koble fra"
 
 #: ../src/develop/blend_gui.c:12410
 msgid ""
 "give this row its own copy, so editing it no longer changes the other rows "
 "and modules it is linked with"
 msgstr ""
+"gi denne raden sin egen kopi, så endring av den ikke lenger ender de andre "
+"radene og modulene den er koblet med"
 
 #. delete button label and tooltip will be updated based on trash pref
 #: ../src/develop/blend_gui.c:12415 ../src/develop/imageop.c:4784
@@ -12201,92 +12169,64 @@ msgstr "slett"
 msgid ""
 "remove this element here; the other rows and modules it is linked with keep it"
 msgstr ""
+"fjern dette elementet her; de andre radene og modulene det er koblet med "
+"beholder det"
 
 #: ../src/develop/blend_gui.c:12418
-#, fuzzy
-#| msgid "remove the selected models from disk"
 msgid "remove this element from the mask"
-msgstr "fjern valgte modeller fra disk"
+msgstr "fjern dette elementet fra masken"
 
 #: ../src/develop/blend_gui.c:12432
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "circle"
 msgid "circles"
-msgstr "sirkel"
+msgstr "sirkler"
 
 #: ../src/develop/blend_gui.c:12432
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "circle"
 msgid "circle"
 msgstr "sirkel"
 
 #: ../src/develop/blend_gui.c:12433
-#, fuzzy
-#| msgid "add ellipse"
 msgid "ellipses"
-msgstr "legg til ellipse"
+msgstr "ellipser"
 
 #: ../src/develop/blend_gui.c:12433
-#, fuzzy
-#| msgid "add ellipse"
 msgid "ellipse"
-msgstr "legg til ellipse"
+msgstr "ellipse"
 
 #: ../src/develop/blend_gui.c:12434
-#, fuzzy
-#| msgid "path"
 msgid "paths"
-msgstr "bane"
+msgstr "baner"
 
 #: ../src/develop/blend_gui.c:12435
-#, fuzzy
-#| msgid "add gradient"
 msgid "gradients"
-msgstr "legg til gradient"
+msgstr "gradienter"
 
 #: ../src/develop/blend_gui.c:12435
-#, fuzzy
-#| msgid "add gradient"
 msgid "gradient"
-msgstr "legg til gradient"
+msgstr "gradient"
 
 #: ../src/develop/blend_gui.c:12436
-#, fuzzy
-#| msgid "add brush"
 msgid "brushes"
-msgstr "legg til pensel"
+msgstr "pensler"
 
 #: ../src/develop/blend_gui.c:12436
-#, fuzzy
-#| msgid "add brush"
 msgid "brush"
-msgstr "legg til pensel"
+msgstr "pensel"
 
 #: ../src/develop/blend_gui.c:12437
-#, fuzzy
-#| msgid "parametric mask"
 msgid "parametric masks"
-msgstr "parametrisk maske"
+msgstr "parametriske masker"
 
 #: ../src/develop/blend_gui.c:12438
-#, fuzzy
-#| msgid "raster mask"
 msgid "raster masks"
-msgstr "rastermaske"
+msgstr "rastermasker"
 
 #: ../src/develop/blend_gui.c:12439
-#, fuzzy
-#| msgid "add AI object"
 msgid "AI objects"
-msgstr "legg til KI-objekt"
+msgstr "KI-objekt"
 
 #: ../src/develop/blend_gui.c:12439
-#, fuzzy
-#| msgid "add AI object"
 msgid "AI object"
-msgstr "legg til KI-objekt"
+msgstr "KI-objekt"
 
 #: ../src/develop/blend_gui.c:12440 ../src/iop/liquify.c:3672
 #: ../src/iop/liquify.c:3678 ../src/iop/liquify.c:3684 ../src/iop/retouch.c:2446
@@ -12332,37 +12272,34 @@ msgstr ""
 "øk for å kunne matche verdier over 100%"
 
 #: ../src/develop/blend_gui.c:13487
-#, fuzzy, c-format
-#| msgid "output icc profile '%s' missing"
+#, c-format
 msgid "output picker of %s armed"
-msgstr "utgående ICC-profil '%s' mangler"
+msgstr "utgående velger av %s armert"
 
 #: ../src/develop/blend_gui.c:13488
 #, c-format
 msgid "input picker of %s armed"
-msgstr ""
+msgstr "inndatavelgeren til %s er armert"
 
 #: ../src/develop/blend_gui.c:13491
 #, c-format
 msgid "output picker of %s unarmed"
-msgstr ""
+msgstr "utdatavelgeren til %s er uarmert"
 
 #: ../src/develop/blend_gui.c:13492
 #, c-format
 msgid "input picker of %s unarmed"
-msgstr ""
+msgstr "inndatavelgeren til %s er uarmert"
 
 #: ../src/develop/blend_gui.c:13498
-#, fuzzy, c-format
-#| msgid "color picker"
+#, c-format
 msgid "color picker of %s armed"
-msgstr "fargevelger"
+msgstr "fargevelger til %s er armert"
 
 #: ../src/develop/blend_gui.c:13500
-#, fuzzy, c-format
-#| msgid "color picker"
+#, c-format
 msgid "color picker of %s unarmed"
-msgstr "fargevelger"
+msgstr "fargevelger til %s er uarmert"
 
 #: ../src/develop/blend_gui.c:13956
 msgid ""
@@ -12371,92 +12308,82 @@ msgid ""
 "ctrl+click: pick GUI color, shown on the sliders (point)\n"
 "ctrl+right-click: pick GUI color (area)"
 msgstr ""
+"klikk: sett inndataområdet fra et område valgt på bildet\n"
+"shift+klikk: sett utdataområdet på samme måte\n"
+"ctrl+klikk: velg GUI-farge, vises på gliderne (punkt)\n"
+"ctrl+høyreklikk: velg GUI-farge (område)"
 
 #: ../src/develop/blend_gui.c:14033
 msgid "temporarily disable this input channel"
-msgstr ""
+msgstr "midlertidig deaktiver denne inngangskanalen"
 
 #: ../src/develop/blend_gui.c:14063
-#, fuzzy
-#| msgid "temporarily switch off shapes"
 msgid "temporarily disable this output channel"
-msgstr "skjul masker midlertidig"
+msgstr "deaktiver denne utdatakanalen midlertidig"
 
 #: ../src/develop/blend_gui.c:14236
 msgid "a group inside this group, shown below this row\n"
-msgstr ""
+msgstr "en gruppe inni denne gruppen, vist under denne raden\n"
 
 #: ../src/develop/blend_gui.c:14237
-#, fuzzy
-#| msgid ""
-#| "click to select\n"
-#| "ctrl+click to select multiple values"
 msgid "click to select, click again to deselect\n"
-msgstr ""
-"klikk for å velge\n"
-"ctrl+klikk for å velge flere verdier"
+msgstr "klikk for å velge, klikk igjen for å velge bort\n"
 
 #: ../src/develop/blend_gui.c:14241
-#, fuzzy
-#| msgid "click to limit browsing to the selection."
 msgid "click its icon on the canvas to refine the selection\n"
-msgstr "klikk for å begrense blaing til utvalget."
+msgstr "klikk på ikonet på lerretet for å finjustere utvalget\n"
 
 #: ../src/develop/blend_gui.c:14242
-#, fuzzy
-#| msgid ""
-#| "%s\n"
-#| "ctrl+click to %s"
 msgid "ctrl+click to rename\n"
-msgstr ""
-"%s\n"
-"ctrl+klikk for å %s"
+msgstr "ctrl+klikk for å gi nytt navn\n"
 
 #: ../src/develop/blend_gui.c:14245
-#, fuzzy
-#| msgid "right-click to show/hide modules"
 msgid "shift+click to show/hide the group\n"
-msgstr "høyreklikk for å vise/skjule moduler"
+msgstr "shift+klikk for å vise/skjule gruppen\n"
 
 #: ../src/develop/blend_gui.c:14247
 msgid "shift+click to show/hide this channel's expanded controls\n"
-msgstr ""
+msgstr "shift+klikk for å vise/skjule denne kanalens utvidete kontroller\n"
 
 #: ../src/develop/blend_gui.c:14250
 msgid "shift+click to show/hide this raster mask's opacity slider\n"
-msgstr ""
+msgstr "shift+klikk for å vise/skjule denne rastermaskens opasitetsglider\n"
 
 #: ../src/develop/blend_gui.c:14251
-#, fuzzy
-#| msgid "right-click to show/hide modules"
 msgid "shift+click to show/hide its expanded controls\n"
-msgstr "høyreklikk for å vise/skjule moduler"
+msgstr "shift+klikk for å vise/skjule dens utvidede kontroller\n"
 
 #: ../src/develop/blend_gui.c:14252
 msgid ""
 "right-click for its actions: disable, solo, invert, compose, rename, delete\n"
 msgstr ""
+"høyreklikk for handlingene dens: deaktiver, solo, inverter, komponer, endre "
+"navn, slett\n"
 
 #: ../src/develop/blend_gui.c:14254
 msgid ""
 "drag to rearrange: drop it onto a group to put it inside, onto the group's "
 "top or bottom edge to put it beside"
 msgstr ""
+"dra for å omarrangere: slipp den på en gruppe for å legge den inni, på "
+"gruppens øvre eller nedre kant for å legge den ved siden av"
 
 #. the handle alone inverts on alt+click (_row_click_press)
 #: ../src/develop/blend_gui.c:14258
 msgid "alt+click this icon to invert it"
-msgstr ""
+msgstr "alt+klikk dette ikonet for å invertere den"
 
 #: ../src/develop/blend_gui.c:14358
 msgid "show/hide this group's groups"
-msgstr ""
+msgstr "vis/skjul denne gruppens grupper"
 
 #: ../src/develop/blend_gui.c:14376
 msgid ""
 "show/hide this channel's expanded controls (input and output sliders, boost "
 "factor)"
 msgstr ""
+"vis/skjul denne kanalens utvidede kontroller (inngangs- og utgangsglidere, "
+"forsterkningsfaktor)"
 
 #: ../src/develop/blend_gui.c:14401
 msgid "show/hide this raster mask's opacity slider"
@@ -12464,68 +12391,71 @@ msgstr "vis/skjul denne rastermaskens opasitetsglider"
 
 #: ../src/develop/blend_gui.c:14414
 msgid "show/hide this object's opacity slider"
-msgstr ""
+msgstr "vis/skjul dette objektets opasitetsglider"
 
 #: ../src/develop/blend_gui.c:14415
 msgid "show/hide this shape's expanded controls (size, hardness, etc.)"
-msgstr ""
+msgstr "vis/skjul denne figurens utvidede kontroller (størrelse, hardhet osv)"
 
 #: ../src/develop/blend_gui.c:14837
-#, fuzzy
-#| msgid "previous"
 msgid "previous page"
-msgstr "forrige"
+msgstr "forrige side"
 
 #: ../src/develop/blend_gui.c:14837
-#, fuzzy
-#| msgid "go to next image"
 msgid "next page"
-msgstr "hopp til neste bilde"
+msgstr "neste side"
 
 #: ../src/develop/blend_gui.c:14992
-#, fuzzy, c-format
-#| msgid "page %d of %d"
+#, c-format
 msgid "page %u of %u"
-msgstr "side %d av %d"
+msgstr "side %u av %u"
 
 #: ../src/develop/blend_gui.c:15127
 msgid "show or hide how to use this group"
-msgstr ""
+msgstr "vis eller skjul hvordan du bruker denne gruppen"
 
 #: ../src/develop/blend_gui.c:15163
 msgid ""
 "the whole mask: every element and group is inside it\n"
 "click to select it: the refinements then act on the whole mask\n"
 msgstr ""
+"hele masken: hvert element og gruppe er inni den\n"
+"klikk for å velge den: finjusteringene påvirker hele masken\n"
 
 #: ../src/develop/blend_gui.c:15166
-#, fuzzy
-#| msgid "right-click to exit mapping mode"
 msgid "right-click for the mask's actions"
-msgstr "høyreklikk for å forlate tilordningsmodus"
+msgstr "høyreklikk for maskens handlinger"
 
 #: ../src/develop/blend_gui.c:15171
 msgid ""
 "empty group: select it, then draw a shape, or drop one here, to fill it\n"
 msgstr ""
+"tom gruppe: velg den, tegn deretter en figur eller slipp en her for å fylle "
+"den\n"
 
 #: ../src/develop/blend_gui.c:15173
 msgid ""
 "click to select this group, click again to select the whole mask\n"
 "ctrl+click to rename\n"
 msgstr ""
+"klikk for å velge denne gruppen, klikk igjen for å velge hele masken\n"
+"ctrl+klikk for å gi nytt navn\n"
 
 #: ../src/develop/blend_gui.c:15177
 msgid ""
 "drag to rearrange: drop it onto a group to put it inside, onto the group's "
 "top or bottom edge to put it beside\n"
 msgstr ""
+"dra for å omarrangere: slipp den på en gruppe for å legge den inni, på "
+"gruppens øvre eller nedre kant for å legge den ved siden av\n"
 
 #: ../src/develop/blend_gui.c:15179
 msgid ""
 "right-click for the group's actions: disable, solo, invert, compose, rename, "
 "delete"
 msgstr ""
+"høyreklikk for gruppens handlinger: deaktiver, solo, inverter, komponer, "
+"endre navn, slett"
 
 #: ../src/develop/blend_gui.c:15187
 #, c-format
@@ -12535,6 +12465,10 @@ msgid ""
 "click the eye to switch it back on\n"
 "click to change the operator"
 msgstr ""
+"maskeoperasjon: %s (deaktivert)\n"
+"masken beholder elementene sine, men bidra ikke\n"
+"klikk øyet for å så den på igjen\n"
+"klikk for å endre operasjon"
 
 #: ../src/develop/blend_gui.c:15191
 #, c-format
@@ -12543,6 +12477,10 @@ msgid ""
 "how the mask combines its elements and groups, from the bottom one up\n"
 "click to change the operator"
 msgstr ""
+"maskeoperasjon: %s\n"
+"hvordan masken kombinerer elementene og gruppene sine, fra den nederste og "
+"opp\n"
+"klikk for å endre operasjon"
 
 #: ../src/develop/blend_gui.c:15195
 #, c-format
@@ -12553,6 +12491,11 @@ msgid ""
 "click the eye to switch it back on\n"
 "click to change the operator"
 msgstr ""
+"gruppeoperasjon: %s (deaktivert)\n"
+"denne gruppen beholder elementene og plasseringen sin, men bidrar ikke til "
+"masken\n"
+"klikk øyet for å slå den på igjen\n"
+"klikk for å endre operasjon"
 
 #: ../src/develop/blend_gui.c:15200
 #, c-format
@@ -12561,28 +12504,25 @@ msgid ""
 "how this group combines its elements, from the bottom one up\n"
 "click to change the operator"
 msgstr ""
+"gruppeoperasjon: %s\n"
+"hvordan gruppen kombinerer elementene sine, fra den nederste og opp\n"
+"klikk for å endre operasjon"
 
 #: ../src/develop/blend_gui.c:15207
-#, fuzzy
-#| msgid "shift+click to set the tool as default"
 msgid "alt+click to invert the mask's output"
-msgstr "shift+klikk for å sette verktøyet som standard"
+msgstr "alt+klikk for å invertere maskens utdata"
 
 #: ../src/develop/blend_gui.c:15208
-#, fuzzy
-#| msgid "shift+click to set the tool as default"
 msgid "alt+click to invert the group's output"
-msgstr "shift+klikk for å sette verktøyet som standard"
+msgstr "alt+klikk for å invertere gruppens utdata"
 
 #: ../src/develop/blend_gui.c:15276
-#, fuzzy
-#| msgid "show/hide thumbnails"
 msgid "show/hide this group's elements"
-msgstr "vis/skjul småbilder"
+msgstr "vis/skjul denne gruppens elementer"
 
 #: ../src/develop/blend_gui.c:15289
 msgid "this group has no elements to show"
-msgstr ""
+msgstr "denne gruppen har ingen elementer å vise"
 
 #: ../src/develop/blend_gui.c:16072
 msgid ""
@@ -12591,16 +12531,18 @@ msgid ""
 "drag anywhere in the row to move them all together, like a single element\n"
 "right-click to delete them all"
 msgstr ""
+"elementer av en type, ved siden av hverandre, foldet sammen til en rad\n"
+"klikk for å utvide eller skjule\n"
+"dra hvor som helst på raden for å flytte alle sammen, som et enkelt element\n"
+"høyreklikk for å slette alle"
 
 #: ../src/develop/blend_gui.c:16142
-#, fuzzy
-#| msgid "this module does not work with monochrome RAW files"
 msgid "this module does not support parametric masks"
-msgstr "denne modulen virker ikke med monokrome RAW-filer"
+msgstr "denne modulen støtter ikke parametriske masker"
 
 #: ../src/develop/blend_gui.c:16532
 msgid "nothing selected in the mask panel has this control"
-msgstr ""
+msgstr "ikke noe som er valgt i maskepanelet har denne kontrollen"
 
 #. "element properties in subpanel": a collapsible like the refinements',
 #. its content following the selection (see _props_panel_sync), packed
@@ -12613,16 +12555,12 @@ msgid "properties"
 msgstr "egenskaper"
 
 #: ../src/develop/blend_gui.c:16575
-#, fuzzy
-#| msgid "pressure"
 msgid "brush pressure"
-msgstr "trykk"
+msgstr "penseltrykk"
 
 #: ../src/develop/blend_gui.c:16576
-#, fuzzy
-#| msgid "smoothing"
 msgid "brush smoothing"
-msgstr "jevning"
+msgstr "jevning av pensel"
 
 #: ../src/develop/blend_gui.c:16578 ../src/develop/blend_gui.c:16579
 #: ../src/iop/borders.c:1057 ../src/iop/borders.c:1071
@@ -12648,51 +12586,36 @@ msgid "masks"
 msgstr "masker"
 
 #: ../src/develop/blend_gui.c:16599
-#, fuzzy
-#| msgid "show quick access panel"
 msgid "show/hide mask panel"
-msgstr "vis hurtigtilgangspanel"
+msgstr "vis/skjul maskepanel"
 
 #: ../src/develop/blend_gui.c:16601
-#, fuzzy
-#| msgid "add module to the group"
 msgid "add group in selected group"
-msgstr "legg modul til gruppen"
+msgstr "legg til gruppe i valgt gruppe"
 
 #: ../src/develop/blend_gui.c:16603
-#, fuzzy
-#| msgid "show all history modules in active group"
 msgid "invert all elements of selected group"
-msgstr "vis alle historikkmoduler i den aktive gruppen"
+msgstr "inverter alle elementer i den valgte gruppen"
 
 #: ../src/develop/blend_gui.c:16605
-#, fuzzy
-#| msgid "%d image out of %d selected"
-#| msgid_plural "%d images out of %d selected"
 msgid "invert output of selected group"
-msgstr "%d bilde av %d valgt"
+msgstr "inverter resultatet av valgt gruppe"
 
 #: ../src/develop/blend_gui.c:16607
-#, fuzzy
-#| msgid "invert selection"
 msgid "invert selected element"
-msgstr "omvendt valg"
+msgstr "inverter det valgte elementet"
 
 #: ../src/develop/blend_gui.c:16609 ../src/develop/blend_gui.c:16664
-#, fuzzy
-#| msgid "on the selection:"
 msgid "solo edit the selection"
-msgstr "på valget:"
+msgstr "solorediger utvalget"
 
 #: ../src/develop/blend_gui.c:16611
-#, fuzzy
-#| msgid "create collection of selected duplicates"
 msgid "change operator of selected group"
-msgstr "opprett en samling av valgte duplikater"
+msgstr "endre operasjon for valgt gruppe"
 
 #: ../src/develop/blend_gui.c:16613
 msgid "disable/enable selected group"
-msgstr ""
+msgstr "deaktiver/aktiver valgt gruppe"
 
 #: ../src/develop/blend_gui.c:16669
 msgid ""
@@ -12701,28 +12624,29 @@ msgid ""
 "group, are shown and editable on canvas; the other elements still\n"
 "contribute to the mask"
 msgstr ""
+"solorediger utvalget\n"
+"når aktivert blir bare den valgte figuren eller figurene i den valgte "
+"gruppen\n"
+"vist og er redigerbare på lerretet; de andre elementene bidrar fortsatt\n"
+"til masken"
 
 #: ../src/develop/blend_gui.c:16680
-#, fuzzy
-#| msgid "edit location"
 msgid "edit on canvas"
-msgstr "rediger sted"
+msgstr "rediger på lerretet"
 
 #: ../src/develop/blend_gui.c:16681
-#, fuzzy
-#| msgid "show and edit in restricted mode (no moving/resizing of shapes)"
 msgid "edit on canvas in restricted mode (no moving or resizing of shapes)"
 msgstr ""
-"vis og rediger i begrenset modus (ingen flytting/størrelsesendring av figurer)"
+"rediger på lerretet i begrenset modus (ingen flytting/størrelsesendring av "
+"figurer)"
 
 #: ../src/develop/blend_gui.c:16686
-#, fuzzy
-#| msgid "show and edit in restricted mode (no moving/resizing of shapes)"
 msgid ""
 "edit drawn mask elements on canvas\n"
 "ctrl+click for restricted mode (no moving or resizing of shapes)"
 msgstr ""
-"vis og rediger i begrenset modus (ingen flytting/størrelsesendring av figurer)"
+"rediger tegnet maske på lerretet\n"
+"ctrl+klikk for begrenset modus (ingen flytting/størrelsesendring av figurer)"
 
 #: ../src/develop/blend_gui.c:16697 ../src/iop/retouch.c:2452
 #: ../src/iop/spots.c:881
@@ -12777,6 +12701,8 @@ msgstr "legg til KI-objekt"
 #: ../src/develop/blend_gui.c:16747
 msgid "group layout presets, which build a whole set of groups at once"
 msgstr ""
+"forhåndsinnstillinger for gruppeoppsett, som bygger et helt sett grupper på "
+"en gang"
 
 #: ../src/develop/blend_gui.c:16952
 msgid "normal & difference"
@@ -12818,10 +12744,8 @@ msgid "unknown blend mode '%d' in module '%s'"
 msgstr "ukjent blandingsmodus '%d' i modulen '%s'"
 
 #: ../src/develop/blend_gui.c:17383
-#, fuzzy
-#| msgid "enabled"
 msgid "mask enabled"
-msgstr "aktivert"
+msgstr "maske aktivert"
 
 #. its own id rather than "iop-panel-label": embedded, this caption has to
 #. line up with the module's name beside it, but the two headers are not
@@ -12838,22 +12762,14 @@ msgid "blend mask"
 msgstr "blandingsmodus"
 
 #: ../src/develop/blend_gui.c:17405
-#, fuzzy
-#| msgid "click to show red channel"
 msgid "click to show or hide the mask panel"
-msgstr "klikk for å vise rød kanal"
+msgstr "klikk for å vise eller skjule maskepanelet"
 
 #: ../src/develop/blend_gui.c:17434
 msgid "display mask and/or color channel"
 msgstr "vis maske og/eller fargekanal"
 
 #: ../src/develop/blend_gui.c:17440
-#, fuzzy
-#| msgid ""
-#| "display mask and/or color channel.\n"
-#| "ctrl+click to display mask,\n"
-#| "shift+click to display channel.\n"
-#| "hover over parametric mask slider to select channel for display"
 msgid ""
 "display mask and/or color channel.\n"
 "ctrl+click to display mask,\n"
@@ -12861,9 +12777,7 @@ msgid ""
 msgstr ""
 "vis maske og/eller fargekanal\n"
 " ctrl+klikk for å vise maske,\n"
-"shift+klikk for å vise kanal.\n"
-"hold musepekeren over den parametriske maskens glider for å velge kanalen som "
-"skal vises"
+"shift+klikk for å vise kanal"
 
 #: ../src/develop/blend_gui.c:17445
 msgid "temporarily switch off blend mask"
@@ -12878,10 +12792,8 @@ msgstr ""
 "gjelder bare modulen som er i bruk"
 
 #: ../src/develop/blend_gui.c:17452
-#, fuzzy
-#| msgid "blend mask"
 msgid "lock mask"
-msgstr "blandingsmodus"
+msgstr "lås maske"
 
 #. shown as "blend mode", against the mask elements' own modes and
 #. operators; the action keeps its name (blend > mode), shortcuts with it
@@ -13015,10 +12927,8 @@ msgstr ""
 #. either side of its title. Both go insensitive while there is nothing to
 #. reset or disable, which is what says there are no refinements
 #: ../src/develop/blend_gui.c:17636
-#, fuzzy
-#| msgid "mask refinement"
 msgid "refinements"
-msgstr "forbedring av maske"
+msgstr "finjusteringer"
 
 #: ../src/develop/blend_gui.c:17638
 msgid ""
@@ -13026,24 +12936,25 @@ msgid ""
 "selected\n"
 "click to expand or collapse"
 msgstr ""
+"finjusterer det valgte elementet eller gruppen, eller hele masken hvis ikke "
+"noe er valgt\n"
+"klikk for å utvide eller skjule"
 
 #: ../src/develop/blend_gui.c:17653
-#, fuzzy
-#| msgid "edges refinement/feathering"
 msgid "toggle refinements section"
-msgstr "kantforbedring/uttoning"
+msgstr "slå av/på finjusteringsseksjon"
 
 #: ../src/develop/blend_gui.c:17659
-#, fuzzy
-#| msgid "reset the settings of the shortcut?"
 msgid "reset the refinement of the current target"
-msgstr "nullstille snarveiens innstillinger?"
+msgstr "nullstill finjusteringen av det nåværende målet"
 
 #: ../src/develop/blend_gui.c:17671
 msgid ""
 "disable the refinement of this target, keeping its settings\n"
 "click again to enable it"
 msgstr ""
+"deaktiver finjustering av dette målet, behold innstillingene\n"
+"klikk igjen for å aktivere det"
 
 #: ../src/develop/blend_gui.c:17717
 msgid ""
@@ -13051,20 +12962,19 @@ msgid ""
 "a shape being drawn\n"
 "click to expand or collapse"
 msgstr ""
+"egenskapene til det valgte elementet eller gruppen, eller kontrollene for "
+"opprettelse av en figur som tegnes\n"
+"klikk for å utvide eller skjule"
 
 #: ../src/develop/blend_gui.c:17725
-#, fuzzy
-#| msgid "style preview settings"
 msgid "toggle properties section"
-msgstr "innstillinger for forhåndsvisning av stiler"
+msgstr "slå av/på egenskapsseksjon"
 
 #. "mask consumers": the modules reading this one's raster mask, shown only
 #. while there are any (see _consumers_sync)
 #: ../src/develop/blend_gui.c:17752
-#, fuzzy
-#| msgid "mask contrast"
 msgid "mask consumers"
-msgstr "maskekontrast"
+msgstr "maskeforbrukere"
 
 #: ../src/develop/blend_gui.c:17754
 msgid ""
@@ -13072,12 +12982,13 @@ msgid ""
 "mask. click one of them to go to its mask panel\n"
 "click here to expand or collapse"
 msgstr ""
+"modulene lengre ned i kjeden som bruker denne modulens maske som en "
+"rastermaske. klikk en av dem for å gå til maskepanelet dens\n"
+"klikk her for å utvide eller skjule"
 
 #: ../src/develop/blend_gui.c:17761
-#, fuzzy
-#| msgid "toggle mask visualization"
 msgid "toggle mask consumers section"
-msgstr "maskevisualisering av/på"
+msgstr "seksjon for maskeforbrukere av/på"
 
 #: ../src/develop/develop.c:488
 msgid "unpin image"
@@ -13171,71 +13082,63 @@ msgstr "'%s' har en introspeksjonsfeil"
 
 #: ../src/develop/imageop.c:3382
 msgid "this module has a mask with 0 elements (uniform mask)"
-msgstr ""
+msgstr "denne modulen har en maske med 0 elementer (uniform maske)"
 
 #: ../src/develop/imageop.c:3387
-#, fuzzy, c-format
-#| msgid "add circle"
+#, c-format
 msgid "%d circle"
 msgid_plural "%d circles"
-msgstr[0] "legg til sirkel"
-msgstr[1] "legg til sirkel"
+msgstr[0] "%d sirkel"
+msgstr[1] "%d sirkler"
 
 #: ../src/develop/imageop.c:3388
-#, fuzzy, c-format
-#| msgid "add ellipse"
+#, c-format
 msgid "%d ellipse"
 msgid_plural "%d ellipses"
-msgstr[0] "legg til ellipse"
-msgstr[1] "legg til ellipse"
+msgstr[0] "%d ellipse"
+msgstr[1] "%d ellipser"
 
 #: ../src/develop/imageop.c:3389
-#, fuzzy, c-format
-#| msgid "add path"
+#, c-format
 msgid "%d path"
 msgid_plural "%d paths"
-msgstr[0] "legg til bane"
-msgstr[1] "legg til bane"
+msgstr[0] "%d bane"
+msgstr[1] "%d baner"
 
 #: ../src/develop/imageop.c:3390
-#, fuzzy, c-format
-#| msgid "add gradient"
+#, c-format
 msgid "%d gradient"
 msgid_plural "%d gradients"
-msgstr[0] "legg til gradient"
-msgstr[1] "legg til gradient"
+msgstr[0] "%d gradient"
+msgstr[1] "%d gradienter"
 
 #: ../src/develop/imageop.c:3391
-#, fuzzy, c-format
-#| msgid "add brush"
+#, c-format
 msgid "%d brush"
 msgid_plural "%d brushes"
-msgstr[0] "legg til pensel"
-msgstr[1] "legg til pensel"
+msgstr[0] "%d pensel"
+msgstr[1] "%d pensler"
 
 #: ../src/develop/imageop.c:3392
-#, fuzzy, c-format
-#| msgid "add AI object"
+#, c-format
 msgid "%d AI object"
 msgid_plural "%d AI objects"
-msgstr[0] "legg til KI-objekt"
-msgstr[1] "legg til KI-objekt"
+msgstr[0] "%d KI-objekt"
+msgstr[1] "%d KI-objekter"
 
 #: ../src/develop/imageop.c:3394
-#, fuzzy, c-format
-#| msgid "raster mask"
+#, c-format
 msgid "%d raster mask"
 msgid_plural "%d raster masks"
-msgstr[0] "rastermaske"
-msgstr[1] "rastermaske"
+msgstr[0] "%d rastermaske"
+msgstr[1] "%d rastermasker"
 
 #: ../src/develop/imageop.c:3407
-#, fuzzy, c-format
-#| msgid "this module has a `%s'"
+#, c-format
 msgid "this module has a mask with %d element (%s)"
 msgid_plural "this module has a mask with %d elements (%s)"
-msgstr[0] "denne modulen har en `%s'"
-msgstr[1] "denne modulen har en `%s'"
+msgstr[0] "denne modulen har en maske med %d element (%s)"
+msgstr[1] "denne modulen har en maske med %d elementer (%s)"
 
 #: ../src/develop/imageop.c:3425
 #, c-format
@@ -13251,6 +13154,8 @@ msgid ""
 "mask locked\n"
 "click to unlock"
 msgstr ""
+"maske låst\n"
+"klikk for å låse opp"
 
 #: ../src/develop/imageop.c:3574
 msgid "purpose"
@@ -13478,18 +13383,15 @@ msgstr "<b>størrelse</b>: rull"
 #: ../src/develop/masks/circle.c:136 ../src/develop/masks/circle.c:180
 #: ../src/develop/masks/ellipse.c:468 ../src/develop/masks/ellipse.c:528
 #: ../src/develop/masks/path.c:3055
-#, fuzzy, c-format
-#| msgid "hardness: %3.2f%%"
+#, c-format
 msgid "fade-out border: %3.2f%%"
-msgstr "hardhet: %3.2f%%"
+msgstr "uttoning: %3.2f%%"
 
 #: ../src/develop/masks/circle.c:1374
 msgid "[CIRCLE] change size"
 msgstr "[CIRCLE] endre størrelse"
 
 #: ../src/develop/masks/circle.c:1376
-#, fuzzy
-#| msgid "[CIRCLE] change feather size"
 msgid "[CIRCLE] change fade-out border"
 msgstr "[CIRCLE] endre uttoningsbredde"
 
@@ -13519,22 +13421,20 @@ msgstr "rotering: %3.f°"
 #: ../src/develop/masks/ellipse.c:875
 #, c-format
 msgid "fade-out border: proportional, %3.2f%% of the radius"
-msgstr ""
+msgstr "uttoning: proporsjonal, %3.2f%% av radien"
 
 #: ../src/develop/masks/ellipse.c:878
 #, c-format
 msgid "fade-out border: fixed width, %3.2f%% of the image"
-msgstr ""
+msgstr "uttoning; fast bredde, %3.2f%% av bildet"
 
 #: ../src/develop/masks/ellipse.c:1998
 msgid "[ELLIPSE] change size"
 msgstr "[ELLIPSE] endre størrelse"
 
 #: ../src/develop/masks/ellipse.c:2000
-#, fuzzy
-#| msgid "[ELLIPSE] change feather size"
 msgid "[ELLIPSE] change fade-out border"
-msgstr "[CIRCLE] endre uttoningsbredde"
+msgstr "[ELLIPSE] endre uttoningsbredde"
 
 #: ../src/develop/masks/ellipse.c:2003
 msgid "[ELLIPSE] rotate shape"
@@ -13695,7 +13595,7 @@ msgstr "masker kan ikke inneholde seg selv"
 #: ../src/develop/masks/object.c:1130 ../src/develop/masks/object.c:1236
 #: ../src/develop/masks/object.c:1615
 msgid "could not store the object, it is discarded"
-msgstr ""
+msgstr "kunne ikke lagre objektet, det blir forkastet"
 
 #: ../src/develop/masks/object.c:1154 ../src/develop/masks/object.c:1698
 msgid "no mask extracted from AI segmentation"
@@ -13721,21 +13621,21 @@ msgstr "opprensking: %d"
 
 #: ../src/develop/masks/object.c:1559
 msgid "the object was removed, the edit is discarded"
-msgstr ""
+msgstr "objektet ble fjernet, redigeringen er forkastet"
 
 #: ../src/develop/masks/object.c:1572
 msgid "could not store the object in the sidecar, it is not changed"
-msgstr ""
+msgstr "kunne ikke lagre objektet i sidefilen, det er ikke endret"
 
 #: ../src/develop/masks/object.c:1614
 msgid "could not store the object in the sidecar, it is saved as paths"
-msgstr ""
+msgstr "kunne ikke lagre objektet i sidefilen, det er lagret som baner"
 
 #. the stored mask exists but could not be read yet: refining without it
 #. and committing would replace the pixels still on disk
 #: ../src/develop/masks/object.c:1750 ../src/develop/masks/object.c:1761
 msgid "the image is not ready yet, click again"
-msgstr ""
+msgstr "bildet er ikke klart ennå, klikk igjen"
 
 #. keep the message visible while the thread is working
 #: ../src/develop/masks/object.c:1922 ../src/develop/masks/object.c:1959
@@ -13824,18 +13724,17 @@ msgid ""
 "editing a stored object needs XMP files: see preferences > storage > create "
 "XMP files"
 msgstr ""
+"redigering av et lagret objekt krever XMP-filer: se innstillinger > lagring > "
+"opprett XMP-filer"
 
 #: ../src/develop/masks/object.c:2444
-#, fuzzy
-#| msgid "[OBJECT] change cleanup"
 msgid "[OBJECT] edit shape"
-msgstr "[OBJECT] endre opprensing"
+msgstr "[OBJECT] rediger figur"
 
 #: ../src/develop/masks/object.c:2451
-#, fuzzy, c-format
-#| msgid "object #%d"
+#, c-format
 msgid "ai object #%d"
-msgstr "objekt nr %d"
+msgstr "KI-objekt nr %d"
 
 #: ../src/develop/masks/path.c:2934
 #, c-format
@@ -13887,8 +13786,6 @@ msgid "[PATH] resize"
 msgstr "[PATH] endre størrelse"
 
 #: ../src/develop/masks/path.c:5344
-#, fuzzy
-#| msgid "[PATH] change feather size"
 msgid "[PATH] change fade-out border"
 msgstr "[PATH] endre størrelse på uttoning"
 
@@ -13956,12 +13853,12 @@ msgstr ""
 #: ../src/develop/masks/pixel_mask.c:462
 #, c-format
 msgid "%s: the mask of '%s' is missing and was left out"
-msgstr ""
+msgstr "%s: masken til '%s' mangler og ble utelatt"
 
 #: ../src/develop/masks/pixel_mask.c:467
 #, c-format
 msgid "the mask of '%s' is missing, click its icon to regenerate it"
-msgstr ""
+msgstr "masken til '%s' mangler, klikk ikonet dens for å regenerere den"
 
 #: ../src/develop/masks/pixel_mask.c:1095
 #, c-format
@@ -19294,15 +19191,13 @@ msgstr "vis/skjul moduler"
 
 #: ../src/gui/gtk.c:3628
 msgid "cannot expand panel: minimum visible canvas size reached"
-msgstr ""
+msgstr "kan ikke utvide panel: minimum synlige lerretsstørrelse er nådd"
 
 #. the gesture is invisible, so the header has to say it is there. The buttons
 #. sitting in the header keep their own tooltips over their own area.
 #: ../src/gui/gtk.c:4116
-#, fuzzy
-#| msgid "click to hide blue channel"
 msgid "click to hide the mask panel"
-msgstr "klikk for å skjule blå kanal"
+msgstr "klikk for å skjule maskepanelet"
 
 #. it does two jobs, and only one of them is guessable from the resize cursor
 #: ../src/gui/gtk.c:4177
@@ -19310,34 +19205,33 @@ msgid ""
 "drag to resize the mask panel\n"
 "click to hide it"
 msgstr ""
+"dra for å endre størrelse på maskepanelet\n"
+"klikk for å skjule det"
 
 #. the panel is out on the other edge, and this click brings it across
 #: ../src/gui/gtk.c:4363
 #, c-format
 msgid "%s: blend mask panel - click to move it here"
-msgstr ""
+msgstr "%s: panel for blandingsmaske - klikk for å flytte det hit"
 
 #: ../src/gui/gtk.c:4365
 #, c-format
 msgid "%s: blend mask panel - click to hide"
-msgstr ""
+msgstr "%s: panel for blandingsmaske - klikk for å skjule"
 
 #: ../src/gui/gtk.c:4367
 #, c-format
 msgid "%s: blend mask - %s, click to show the panel here"
-msgstr ""
+msgstr "%s: blandingsmaske - %s, klikk for å vise panelet her"
 
 #: ../src/gui/gtk.c:4369
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "active"
 msgid "active"
 msgstr "aktiv"
 
 #: ../src/gui/gtk.c:4372
 #, c-format
 msgid "%s: blend mask - off, click to show the panel here"
-msgstr ""
+msgstr "%s: blandingsmaske - av, klikk for å vise panelet her"
 
 #. ask the user if darktable.org may be accessed
 #: ../src/gui/gtk.c:5480
@@ -26243,16 +26137,16 @@ msgstr ""
 msgid ""
 "preview the low pass filter result used for shadows(blue)/highlights(yellow)."
 msgstr ""
-"Forhåndsvis resultatet av lavpassfilteret som brukes for skygger (blått) / "
+"forhåndsvis resultatet av lavpassfilteret som brukes for skygger (blått) / "
 "høylys (gult)."
 
 #: ../src/iop/contrastntexture.c:674
 msgid "adjust highlights at the base detail level size."
-msgstr "Juster høylysene ved størrelsen for grunnleggende detaljnivå."
+msgstr "juster høylysene ved størrelsen for grunnleggende detaljnivå."
 
 #: ../src/iop/contrastntexture.c:678
 msgid "adjust shadows at the base detail level size."
-msgstr "Juster skyggene ved størrelsen for grunnleggende detaljnivå."
+msgstr "juster skyggene ved størrelsen for grunnleggende detaljnivå."
 
 #: ../src/iop/contrastntexture.c:693
 msgid ""
@@ -28111,7 +28005,7 @@ msgstr ""
 
 #: ../src/iop/globaltonemap.c:640 ../src/libs/filters/colors.c:313
 msgid "operator"
-msgstr "operatør"
+msgstr "operasjon"
 
 #: ../src/iop/globaltonemap.c:641
 msgid "the global tonemap operator"
@@ -31438,7 +31332,6 @@ msgstr ""
 "ble beregnet til; 0 bruker papirets egen standardverdi."
 
 #: ../src/iop/spektrafilm.c:6056
-#, fuzzy
 msgid ""
 "gamma of the paper's red-forming layer alone, on top of the\n"
 "overall print gamma.\n"
@@ -38540,13 +38433,11 @@ msgstr ""
 
 #: ../src/views/darkroom.c:3830
 msgid "show/hide the blend mask panel of the focused module"
-msgstr ""
+msgstr "vis/skjul panelet for blandingsmaske for den fokuserte modulen"
 
 #: ../src/views/darkroom.c:3832
-#, fuzzy
-#| msgid "blend mask"
 msgid "blend mask panel"
-msgstr "blandingsmodus"
+msgstr "panel for blandingsmaske"
 
 #. Fullscreen preview key
 #: ../src/views/darkroom.c:3855
@@ -39035,10 +38926,8 @@ msgid "mouse actions"
 msgstr "musehandlinger"
 
 #: ../src/develop/masks_gui_panel_host.c:82
-#, fuzzy
-#| msgid "no mask used"
 msgid "no mask"
-msgstr "ingen maske benyttet"
+msgstr "ingen maske"
 
 #. the panel always belongs to one module, so with no module focused there is
 #. nothing for it to show: say that, rather than leaving a button that looks
@@ -39048,16 +38937,12 @@ msgstr "ingen maske benyttet"
 #. branches below say so, or the blending options stay undiscoverable exactly
 #. when the button looks least worth clicking
 #: ../src/develop/masks_gui_panel_host.c:222
-#, fuzzy
-#| msgid "right-click to exit mapping mode"
 msgid "right-click for the blending options"
-msgstr "høyreklikk for å forlate tilordningsmodus"
+msgstr "høyreklikk for blandingsalternativer"
 
 #: ../src/develop/masks_gui_panel_host.c:228
-#, fuzzy
-#| msgid "set the focused module border color"
 msgid "unavailable: the focused module does not support masks"
-msgstr "velg farge på den fokuserte modulens kantlinje"
+msgstr "utilgjengelig: den fokuserte modulen støtter ikke masker"
 
 #: ../src/develop/masks_gui_panel_host.c:229
 msgid ""
@@ -39065,6 +38950,9 @@ msgid ""
 "no module is focused.\n"
 "click a module's header to focus it"
 msgstr ""
+"utilgjengelig: panelet for blandingsmaske viser masken til den fokuserte "
+"modulen, og ingen modul er fokusert.\n"
+"klikk en moduls overskrift for å fokusere den"
 
 #: ../src/develop/masks_gui_panel_host.c:239
 #, c-format
@@ -39073,142 +38961,129 @@ msgid ""
 "mask: %s\n"
 "%s"
 msgstr ""
+"%s panelet for blandingsmaske for den fokuserte\n"
+"modulmasken: %s\n"
+"%s"
 
 #: ../src/develop/masks_gui_panel_host.c:297
-#, fuzzy
-#| msgid "show and edit mask elements"
 msgid "show the blend mask panel"
-msgstr "vis og rediger maskeelementer"
+msgstr "vis panelet for blandingsmasker"
 
 #: ../src/develop/masks_gui_panel_host.c:298
-#, fuzzy
-#| msgid "reset blend mask settings"
 msgid "hide the blend mask panel"
-msgstr "nullstill innstillinger for blandingsmaske"
+msgstr "skjul panelet for blandingsmaske"
 
 #: ../src/develop/masks_gui_panel_host.c:766
-#, fuzzy
-#| msgid "%d image of %d in current collection is selected"
-#| msgid_plural "%d images of %d in current collection are selected"
 msgid "disabled because no module is selected"
-msgstr "%d bilde av %d i inneværende samling er valgt"
+msgstr "deaktivert fordi ingen modul er valgt"
 
 #: ../src/develop/masks_gui_panel_host.c:1078
-#, fuzzy
-#| msgid "click to show green channel"
 msgid "click to show or hide the blend mask panel"
-msgstr "klikk for å vise grønn kanal"
+msgstr "klikk for å vise eller skjule panelet for blandingsmaske"
 
 #: ../src/develop/masks_gui_panel_host.c:1236
-#, fuzzy
-#| msgid "reset blend mask settings"
 msgid "blend mask panel position"
-msgstr "nullstill innstillinger for blandingsmaske"
+msgstr "posisjon for panelet for blandingsmaske"
 
 #: ../src/develop/masks_gui_panel_host.c:1237
 msgid ""
 "where the blend mask panel (groups, elements,\n"
 "refinements) is shown. a change applies at once"
 msgstr ""
+"hvor panelet for blandingsmaske (grupper, elementer,\n"
+"finjusteringer) vises. en endring brukes umiddelbart"
 
 #: ../src/develop/masks_gui_panel_host.c:1245
 msgid "embedded within each module (default)"
-msgstr ""
+msgstr "innebygd i hver modul (standard)"
 
 #: ../src/develop/masks_gui_panel_host.c:1246
-#, fuzzy
-#| msgid "utility module"
 msgid "utility module, left panel"
-msgstr "verktøymodul"
+msgstr "verktøymodul, venstre panel"
 
 #. one entry, not one per side: it opens on the edge the user last opened
 #. it on
 #: ../src/develop/masks_gui_panel_host.c:1249
 msgid "separate panel, beside the canvas"
-msgstr ""
+msgstr "separat panel, ved siden av lerretet"
 
 #: ../src/develop/masks_gui_presets.c:305
 msgid "apply mask layout preset?"
-msgstr ""
+msgstr "bruk forhåndsinnstilling for maskeoppsett?"
 
 #: ../src/develop/masks_gui_presets.c:306
 msgid ""
 "this replaces the group layout and removes every element currently in this "
 "mask. continue?"
 msgstr ""
+"dette erstatter gruppeoppsettet og fjerner alle elementer som nå er i denne "
+"masken. fortsette?"
 
 #: ../src/develop/masks_gui_presets.c:739
 msgid "save mask layout preset"
-msgstr ""
+msgstr "lagre forhåndsinnstilling for maskeoppsett"
 
 #: ../src/develop/masks_gui_presets.c:740
 msgid ""
 "enter a name for this preset\n"
 "(only the group layout is saved, not the shapes/channels inside it):"
 msgstr ""
+"oppgi et navn for denne forhåndsinnstillingen\n"
+"(bare gruppeoppsettet lagres, ikke figurene/kanalene i det):"
 
 #: ../src/develop/masks_gui_presets.c:742
-#, fuzzy
-#| msgid "new preset name:"
 msgid "preset name"
-msgstr "nytt navn på forhåndsinnstilling:"
+msgstr "navn på forhåndsinnstilling"
 
 #: ../src/develop/masks_gui_presets.c:742
 msgid "save"
 msgstr "lagre"
 
 #: ../src/develop/masks_gui_presets.c:750
-#, fuzzy
-#| msgid "please give preset a name"
 msgid "please give the preset a name"
 msgstr "angi et navn for forhåndsinnstillingen"
 
 #: ../src/develop/masks_gui_presets.c:752
 #, c-format
 msgid "`%s' is a reserved preset name, please pick another one"
-msgstr ""
+msgstr "`%s' er et reservert forhåndsinnstillingsnavn, vennligst velg et annet"
 
 #: ../src/develop/masks_gui_presets.c:797
-#, fuzzy, c-format
-#| msgid "do you really want to delete the preset `%s'?"
+#, c-format
 msgid "do you really want to delete the mask layout preset `%s'?"
-msgstr "vil du virkelig slette forhåndsinnstillingen `%s'?"
+msgstr "vil du virkelig slette forhåndsinnstillingen for maskeoppsett `%s'?"
 
 #: ../src/develop/masks_gui_presets.c:838
-#, fuzzy
-#| msgid "update preset"
 msgid "group layout presets"
-msgstr "oppdater forhåndsinnstilling"
+msgstr "forhåndsinnstillinger for gruppeoppsett"
 
 #: ../src/develop/masks_gui_presets.c:859
-#, fuzzy
-#| msgid "delete preset?"
 msgid "delete preset"
-msgstr "slette forhåndsinnstilling?"
+msgstr "slett forhåndsinnstilling"
 
 #: ../src/develop/masks_gui_presets.c:868
-#, fuzzy
-#| msgid "exit current layout"
 msgid "save current layout as preset..."
-msgstr "avslutt nåværende visning"
+msgstr "lagre nåværende oppsett som en forhåndsinnstilling…"
 
 #: ../src/develop/masks_gui_presets.c:944
-#, fuzzy
-#| msgid "clear layout"
 msgid "default group layout"
-msgstr "tøm layout"
+msgstr "standard gruppeoppsett"
 
 #: ../src/develop/masks_gui_presets.c:945
 msgid ""
 "the group layout preset a module's mask starts with\n"
 "when it is switched on for the first time"
 msgstr ""
+"forhåndsinnstillingen for gruppeoppsett som en moduls maske starter med\n"
+"når den slås på for første gang"
 
 #: ../src/libs/masks_flexi_host.c:59
 msgid ""
 "blend mask panel of the focused module\n"
 "(right-click the mask on/off toggle for its options)"
 msgstr ""
+"den fokuserte modulens panel for blandingsmaske\n"
+"(høyreklikk maskens av/på-knapp for alternativer)"
 
 #~ msgid " (zoom)"
 #~ msgstr " (zoom)"
