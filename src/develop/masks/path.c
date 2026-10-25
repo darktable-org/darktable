@@ -3445,6 +3445,8 @@ static int _path_events_mouse_scrolled(dt_iop_module_t *module,
         // legacy resize: scale all nodes towards/away from the centroid
         if(!_path_resize_centroid(form, up))
           return 1;
+        // the scaled outline is the new baseline for shrink/grow
+        _resize_state_invalidate(form->formid);
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
@@ -4022,6 +4024,8 @@ static int _path_events_button_released(dt_iop_module_t *module,
     gui->form_rotating = FALSE;
     gui->rotate_about_source = FALSE;
     gui->scrollx = gui->scrolly = 0.0f;
+    // the shape changed, so the shrink/grow baseline is stale
+    _resize_state_invalidate(form->formid);
 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
     dt_masks_gui_form_create(form, gui, index, module);
