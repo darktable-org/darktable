@@ -2794,6 +2794,10 @@ static void _masks_props_subpanel_toggled(GtkToggleButton *mi,
 {
   dt_conf_set_bool("plugins/darkroom/masks/properties_subpanel",
                    gtk_toggle_button_get_active(mi));
+  GtkWidget *autoexpand = g_object_get_data(G_OBJECT(mi), "dt-autoexpand-check");
+  if(autoexpand)
+    gtk_widget_set_visible(autoexpand,
+                           dt_masks_gui_pref_auto_expand_applies(gtk_toggle_button_get_active(mi)));
   // the rebuild refills the subpanel, and shows or hides it (see _props_panel_sync)
   _masks_rebuild_for_option(module);
 }
@@ -2803,15 +2807,6 @@ static void _masks_preset_notes_toggled(GtkToggleButton *mi, dt_iop_module_t *mo
   dt_conf_set_bool("plugins/darkroom/masks/show_preset_notes",
                    gtk_toggle_button_get_active(mi));
   _masks_rebuild_for_option(module);
-}
-
-static void _masks_show_panel_handle_toggled(GtkToggleButton *mi,
-                                             dt_iop_module_t *module)
-{
-  dt_conf_set_bool("plugins/darkroom/masks/show_panel_handle",
-                   gtk_toggle_button_get_active(mi));
-  // the handle is built once, at view init, so it has to be told
-  dt_ui_flexi_panel_update_handle(darktable.gui->ui);
 }
 
 static void _masks_preview_on_hover_toggled(GtkToggleButton *mi,
@@ -2842,11 +2837,11 @@ static void _masks_show_indicator_toggled(GtkToggleButton *mi,
   }
 }
 
-// appends the "interface options" and "parametric element options" sections
-// to `box`: toggles for how the blend mask panel behaves that don't fit the
-// position or colorspace sections. Check buttons under a dt_section_label,
-// the way the other toolbar preference popovers are laid out (see
-// global_toolbox.c's overlay settings).
+// the panel options popover's sections for the mask panel: toggles for how it
+// behaves that don't fit the colorspace section. Check buttons under a
+// dt_section_label, the way the other toolbar preference popovers are laid out
+// (see global_toolbox.c's overlay settings). A check that only applies under
+// another is shown with it
 #define _MASKS_OPT_CHECK(var, label, tip, active, cb)                             \
   GtkWidget *var = gtk_check_button_new_with_label(label);                        \
   gtk_widget_set_tooltip_text(var, tip);                                          \
@@ -2868,17 +2863,37 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
   dt_masks_gui_pref_section(box, _("interface options"),
                             _("how the blend mask panel behaves"));
 
-  _MASKS_OPT_CHECK(
-    sticky, _("sticky opacity"),
-    _("when enabled (default), a new shape starts at the opacity\n"
-      "last used by any shape, so adjusting opacity once carries\n"
-      "over to every shape you add afterwards.\n"
-      "when disabled, a new shape always starts at 100% opacity."),
-    !dt_conf_get_bool("plugins/darkroom/masks/opacity_not_sticky"),
-    _masks_opacity_sticky_toggled)
+  // the position choice, with the options that depend on it
+  dt_masks_gui_add_panel_position_box(box, module);
+
+  dt_masks_gui_add_default_preset_box(box);
 
   _MASKS_OPT_CHECK(
-    autoexpand, _("auto-expand selected"),
+    notes, _("show preset help notes (beginners)"),
+    _("when enabled (default), a group made by a built-in group layout\n"
+      "preset carries a help note on how to use it, shown in the help\n"
+      "section while the group, or an element in it, is selected.\n"
+      "when disabled, no help notes are shown."),
+    dt_masks_gui_preset_notes_shown(), _masks_preset_notes_toggled)
+
+  _MASKS_OPT_CHECK(
+    indicator, _("show mask indicator in module headers"),
+    _("when enabled (default), an icon is shown in the header of\n"
+      "any processing module that has a mask applied."),
+    dt_conf_get_bool("darkroom/ui/show_mask_indicator"),
+    _masks_show_indicator_toggled)
+
+  _MASKS_OPT_CHECK(
+    props_subpanel, _("show member properties in a subpanel"),
+    _("when enabled, the properties of the selected member\n"
+      "are shown in a collapsible section of their own, between the\n"
+      "mask list and the refinements, instead of expanding in the list.\n"
+      "enabled by default."),
+    _props_subpanel(), _masks_props_subpanel_toggled)
+
+  // shown with the properties in the list (_masks_props_subpanel_toggled)
+  _MASKS_OPT_CHECK(
+    autoexpand, _("auto-expand selected member"),
     _("when enabled, whatever you select is the one thing\n"
       "expanded, and whatever was expanded before collapses:\n"
       "selecting a group shows its members, selecting an element\n"
@@ -2888,40 +2903,21 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
       "when disabled (default), everything is expanded and collapsed\n"
       "by hand, with the chevron at the right end of the row."),
     _auto_expand_selected(), _masks_auto_expand_selected_toggled)
+  gtk_widget_set_no_show_all(autoexpand, TRUE);
+  gtk_widget_set_visible(autoexpand, dt_masks_gui_pref_auto_expand_applies(_props_subpanel()));
+  g_object_set_data(G_OBJECT(props_subpanel), "dt-autoexpand-check", autoexpand);
+
+  dt_masks_gui_pref_section(box, _("shape element options"),
+                            _("how new shapes start"));
 
   _MASKS_OPT_CHECK(
-    props_subpanel, _("member properties in subpanel"),
-    _("when enabled, the properties of the selected member\n"
-      "are shown in a collapsible section of their own, between the\n"
-      "mask list and the refinements, instead of expanding in the list.\n"
-      "enabled by default."),
-    _props_subpanel(), _masks_props_subpanel_toggled)
-
-  _MASKS_OPT_CHECK(
-    showhandle, _("show the mask panel's resize handle"),
-    _("when enabled (default), the edge of the mask panel floating\n"
-      "over the canvas carries a visible handle with an arrow showing\n"
-      "which way the panel folds away.\n"
-      "when disabled, the handle is invisible, like the main panels',\n"
-      "and still resizes the panel by dragging and hides it on a click."),
-    dt_conf_get_bool("plugins/darkroom/masks/show_panel_handle"),
-    _masks_show_panel_handle_toggled)
-
-  _MASKS_OPT_CHECK(
-    scrolldown, _("scroll down to increase mask parameters"),
-    _("when using the mouse scroll wheel to change mask parameters,\n"
-      "scroll down to increase the mask size, feather size, opacity,\n"
-      "brush hardness and gradient curvature.\n"
-      "when disabled (default), scrolling up increases these parameters."),
-    dt_conf_get_bool("masks_scroll_down_increases"),
-    _masks_scroll_down_toggled)
-
-  _MASKS_OPT_CHECK(
-    indicator, _("show mask indicator in module headers"),
-    _("when enabled (default), an icon is shown in the header of\n"
-      "any processing module that has a mask applied."),
-    dt_conf_get_bool("darkroom/ui/show_mask_indicator"),
-    _masks_show_indicator_toggled)
+    sticky, _("remember last shape's opacity"),
+    _("when enabled (default), a new shape starts at the opacity\n"
+      "last used by any shape, so adjusting opacity once carries\n"
+      "over to every shape you add afterwards.\n"
+      "when disabled, a new shape always starts at 100% opacity."),
+    !dt_conf_get_bool("plugins/darkroom/masks/opacity_not_sticky"),
+    _masks_opacity_sticky_toggled)
 
   dt_masks_gui_pref_section(box, _("parametric element options"),
                             _("how parametric elements are picked and previewed"));
@@ -2949,46 +2945,34 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
       "disabled by default."),
     _preview_on_hover_is_on(),
     _masks_preview_on_hover_toggled)
-}
 
-// the preset notes switch, closing the "default group layout" section that
-// dt_masks_gui_add_default_preset_box (masks_gui_presets.c) opens
-static void _add_masks_preset_notes_check(GtkWidget *box, dt_iop_module_t *module)
-{
+  dt_masks_gui_pref_section(box, _("editing options"), NULL);
+
   _MASKS_OPT_CHECK(
-    notes, _("show preset help notes (beginners)"),
-    _("when enabled (default), a group made by a built-in group layout\n"
-      "preset carries a help note on how to use it, shown in the help\n"
-      "section while the group, or an element in it, is selected.\n"
-      "when disabled, no help notes are shown."),
-    dt_masks_gui_preset_notes_shown(), _masks_preset_notes_toggled)
+    scrolldown, _("scroll down to increase mask parameters"),
+    _("when using the mouse scroll wheel to change mask parameters,\n"
+      "scroll down to increase the mask size, feather size, opacity,\n"
+      "brush hardness and gradient curvature.\n"
+      "when disabled (default), scrolling up increases these parameters."),
+    dt_conf_get_bool("masks_scroll_down_increases"),
+    _masks_scroll_down_toggled)
 }
 #undef _MASKS_OPT_CHECK
 
-// a radio in `box`, grouped with `group` (NULL starts a new group), carrying
-// `data` under `key` for the toggled handler to read back
-static GtkWidget *_masks_pref_radio(GtkWidget *box,
-                                    GtkWidget *group,
-                                    const gchar *label,
-                                    const gchar *key,
-                                    const int data,
-                                    const gboolean active)
+GtkWidget *dt_masks_gui_pref_combo(GtkWidget *box, const gchar *label, const gchar *tip)
 {
-  GtkWidget *rb = gtk_radio_button_new_with_label_from_widget(
-    group ? GTK_RADIO_BUTTON(group) : NULL, label);
-  g_object_set_data(G_OBJECT(rb), key, GINT_TO_POINTER(data));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb), active);
-  dt_gui_box_add(box, rb);
-  return rb;
+  GtkWidget *combo = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label_text(combo, label);
+  if(tip) gtk_widget_set_tooltip_text(combo, tip);
+  dt_gui_box_add(box, combo);
+  return combo;
 }
 
-static void _blendif_colorspace_radio_toggled(GtkToggleButton *rb,
-                                              dt_iop_module_t *module)
+static void _blendif_colorspace_changed(GtkWidget *combo, dt_iop_module_t *module)
 {
   DT_GUARD_GUI_UPDATE();
-  if(!gtk_toggle_button_get_active(rb)) return;
   const dt_develop_blend_colorspace_t cst =
-    GPOINTER_TO_INT(g_object_get_data(G_OBJECT(rb), "dt-blend-cst"));
+    GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(combo));
   if(_blendif_change_blend_colorspace(module, cst))
     gtk_widget_queue_draw(module->widget);
 }
@@ -3009,7 +2993,7 @@ static void _masks_options_popover_closed(GtkPopover *pop, gpointer user_data)
 
 // the blend mask panel's settings, as a popover of sections like the darkroom
 // toolbar's other preference popovers (guides, global toolbox): a
-// dt_section_label per section, radios for exclusive choices, check buttons
+// dt_section_label per section, combo boxes for exclusive choices, check buttons
 // for toggles. With no module focused, only the panel-wide settings show
 static void _blendif_options_callback(GtkButton *button,
                                       dt_iop_module_t *module)
@@ -3022,8 +3006,6 @@ static void _blendif_options_callback(GtkButton *button,
   GtkWidget *box = dt_gui_vbox();
   gtk_container_add(GTK_CONTAINER(pop), box);
 
-  dt_masks_gui_pref_section(box, _("blend mask panel settings"), NULL);
-
   // the blend colorspace, where the module supports parametric masks; the
   // popover also opens on masks-only modules, for the other sections
   const dt_develop_blend_colorspace_t module_cst =
@@ -3033,50 +3015,39 @@ static void _blendif_options_callback(GtkButton *button,
          || module_cst == DEVELOP_BLEND_CS_RGB_SCENE))
   {
     const dt_develop_blend_colorspace_t module_blend_cst = module->blend_params->blend_cst;
-    dt_masks_gui_pref_section(box, _("blend colorspace"), NULL);
+    dt_masks_gui_pref_section(box, _("instance settings"), NULL);
 
     // every entry here stays live even when the mask holds parametric elements
     // that cannot survive the switch: _blendif_change_blend_colorspace asks
     // about those and deletes them on a yes.
+    GtkWidget *combo = dt_masks_gui_pref_combo(
+      box, _("blend colorspace"),
+      _("the colorspace the mask is blended in.\n"
+        "parametric elements are tied to it"));
     DT_ENTER_GUI_UPDATE();
-    GtkWidget *g = _masks_pref_radio(box, NULL, _("default"), "dt-blend-cst",
-                                     DEVELOP_BLEND_CS_NONE,
-                                     module_blend_cst == DEVELOP_BLEND_CS_NONE);
-    GtkWidget *radios[4] = { g, NULL, NULL, NULL };
-    int n = 1;
+    dt_bauhaus_combobox_add_full(combo, _("default"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT,
+                                 GINT_TO_POINTER(DEVELOP_BLEND_CS_NONE), NULL, TRUE);
     // only offer Lab blending on a Lab module, to avoid using it at the wrong
     // place (it should not be active for RGB modules before colorin/after colorout)
     if(module_cst == DEVELOP_BLEND_CS_LAB)
-      radios[n++] = _masks_pref_radio(box, g, _("Lab"), "dt-blend-cst",
-                                      DEVELOP_BLEND_CS_LAB,
-                                      module_blend_cst == DEVELOP_BLEND_CS_LAB);
-    radios[n++] = _masks_pref_radio(box, g, _("RGB (display)"), "dt-blend-cst",
-                                    DEVELOP_BLEND_CS_RGB_DISPLAY,
-                                    module_blend_cst == DEVELOP_BLEND_CS_RGB_DISPLAY);
-    radios[n++] = _masks_pref_radio(box, g, _("RGB (scene)"), "dt-blend-cst",
-                                    DEVELOP_BLEND_CS_RGB_SCENE,
-                                    module_blend_cst == DEVELOP_BLEND_CS_RGB_SCENE);
+      dt_bauhaus_combobox_add_full(combo, _("Lab"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT,
+                                   GINT_TO_POINTER(DEVELOP_BLEND_CS_LAB), NULL, TRUE);
+    dt_bauhaus_combobox_add_full(combo, _("RGB (display)"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT,
+                                 GINT_TO_POINTER(DEVELOP_BLEND_CS_RGB_DISPLAY), NULL, TRUE);
+    dt_bauhaus_combobox_add_full(combo, _("RGB (scene)"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT,
+                                 GINT_TO_POINTER(DEVELOP_BLEND_CS_RGB_SCENE), NULL, TRUE);
+    dt_bauhaus_combobox_set_from_value(combo, module_blend_cst);
     DT_LEAVE_GUI_UPDATE();
     // the blend colorspace belongs to the mask: parametric elements are tied
     // to it (see _blendif_change_blend_colorspace)
-    const gboolean locked = dt_develop_blend_mask_locked(module->blend_params);
-    // connected only after the initial states are set, so building the popover
+    gtk_widget_set_sensitive(combo, !dt_develop_blend_mask_locked(module->blend_params));
+    // connected only after the initial state is set, so building the popover
     // does not look like the user picking a colorspace
-    for(int i = 0; i < n; i++)
-    {
-      g_signal_connect(G_OBJECT(radios[i]), "toggled",
-                       G_CALLBACK(_blendif_colorspace_radio_toggled), module);
-      gtk_widget_set_sensitive(radios[i], !locked);
-    }
+    g_signal_connect(G_OBJECT(combo), "value-changed",
+                     G_CALLBACK(_blendif_colorspace_changed), module);
   }
 
-  if(!bd || bd->masks_support)
-  {
-    dt_masks_gui_add_panel_position_box(box, module);
-    _add_masks_panel_options_box(box, module);
-    dt_masks_gui_add_default_preset_box(box);
-    _add_masks_preset_notes_check(box, module);
-  }
+  if(!bd || bd->masks_support) _add_masks_panel_options_box(box, module);
 
   gtk_widget_show_all(box);
   gtk_popover_popup(GTK_POPOVER(pop));

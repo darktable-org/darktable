@@ -29,6 +29,7 @@
 
 #include "develop/blend_gui_internal.h"
 
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "control/conf.h"
 #include "develop/develop.h"
@@ -1101,21 +1102,39 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
 
 // ---- position preference ---------------------------------------------------
 
-static void _masks_panel_position_activate(GtkToggleButton *mi, dt_iop_module_t *module)
+gboolean dt_masks_gui_pref_handle_applies(const int position)
 {
-  // a real GtkRadioButton group, which fires "toggled" on both the item losing
-  // the selection and the one gaining it -- only act on the latter
-  DT_GUARD_GUI_UPDATE();
-  if(!gtk_toggle_button_get_active(mi)) return;
+  return position == MASKS_PANEL_POS_CANVAS;
+}
 
-  const int pos = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(mi), "dt-panel-pos"));
+gboolean dt_masks_gui_pref_focus_row_applies(const int position)
+{
+  return position != MASKS_PANEL_POS_EMBEDDED;
+}
+
+// expanding in the list is what auto-expand steers: it has nothing to do while
+// the properties are in the subpanel
+gboolean dt_masks_gui_pref_auto_expand_applies(const gboolean props_subpanel)
+{
+  return !props_subpanel;
+}
+
+static void _masks_panel_position_activate(GtkWidget *combo, dt_iop_module_t *module)
+{
+  DT_GUARD_GUI_UPDATE();
+
+  const int pos = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(combo));
   dt_conf_set_int("plugins/darkroom/blend/masks_panel_position", pos);
 
   // the focus row's option is for the hosted positions: the popover stays
   // open while the position changes
   GtkWidget *row_check =
-    g_object_get_data(G_OBJECT(gtk_widget_get_parent(GTK_WIDGET(mi))), "dt-focus-row-check");
-  if(row_check) gtk_widget_set_visible(row_check, pos != MASKS_PANEL_POS_EMBEDDED);
+    g_object_get_data(G_OBJECT(gtk_widget_get_parent(combo)), "dt-focus-row-check");
+  if(row_check) gtk_widget_set_visible(row_check, dt_masks_gui_pref_focus_row_applies(pos));
+  // and the resize handle belongs to the canvas panel alone
+  GtkWidget *handle_check =
+    g_object_get_data(G_OBJECT(gtk_widget_get_parent(combo)), "dt-handle-check");
+  if(handle_check) gtk_widget_set_visible(handle_check, dt_masks_gui_pref_handle_applies(pos));
 
   // update the utility-mode host lib's own visibility for the new position
   _masks_flexi_host_reconfigure();
@@ -1177,20 +1196,24 @@ static void _masks_focus_row_toggled(GtkToggleButton *mi, dt_iop_module_t *modul
   if(module) dt_iop_gui_blend_masks_panel_relocate(module);
 }
 
-// appends a "blend mask panel position" section to `box` -- radios under a
-// section label, so the current choice is visible at a glance
+static void _masks_show_panel_handle_toggled(GtkToggleButton *mi, dt_iop_module_t *module)
+{
+  dt_conf_set_bool("plugins/darkroom/masks/show_panel_handle",
+                   gtk_toggle_button_get_active(mi));
+  // the handle is built once, at view init, so it has to be told
+  dt_ui_flexi_panel_update_handle(darktable.gui->ui);
+}
+
+// appends the panel position combo box to `box`, with the options that only
+// apply to some positions under it
 void dt_masks_gui_add_panel_position_box(GtkWidget *box, dt_iop_module_t *module)
 {
-  dt_masks_gui_pref_section(box, _("blend mask panel position"),
-                            _("where the blend mask panel (groups, elements,\n"
-                              "refinements) is shown. a change applies at once"));
-
   static const struct
   {
     int pos;
     const char *label;
   } items[] = {
-    { MASKS_PANEL_POS_EMBEDDED, N_("embedded within each module (default)") },
+    { MASKS_PANEL_POS_EMBEDDED, N_("embedded within each module") },
     { MASKS_PANEL_POS_UTILITY, N_("utility module, left panel") },
     // one entry, not one per side: it opens on the edge the user last opened
     // it on
@@ -1198,26 +1221,40 @@ void dt_masks_gui_add_panel_position_box(GtkWidget *box, dt_iop_module_t *module
   };
 
   const int cur_pos = dt_masks_gui_panel_position();
-  GtkWidget *group = NULL;
-  GtkWidget *radios[G_N_ELEMENTS(items)];
+  GtkWidget *combo = dt_masks_gui_pref_combo(
+    box, _("panel position"),
+    _("where the blend mask panel (groups, elements,\n"
+      "refinements) is shown. a change applies at once"));
 
-  // states first, handlers after: setting the active radio while building would
+  // state first, handler after: setting the active entry while building would
   // otherwise read as the user choosing a position and relocate the panel
   DT_ENTER_GUI_UPDATE();
   for(size_t i = 0; i < G_N_ELEMENTS(items); i++)
-  {
-    radios[i] = gtk_radio_button_new_with_label_from_widget(
-      group ? GTK_RADIO_BUTTON(group) : NULL, _(items[i].label));
-    if(!group) group = radios[i];
-    g_object_set_data(G_OBJECT(radios[i]), "dt-panel-pos", GINT_TO_POINTER(items[i].pos));
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radios[i]), items[i].pos == cur_pos);
-    dt_gui_box_add(box, radios[i]);
-  }
+    dt_bauhaus_combobox_add_full(combo, _(items[i].label), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT,
+                                 GINT_TO_POINTER(items[i].pos), NULL, TRUE);
+  dt_bauhaus_combobox_set_from_value(combo, cur_pos);
   DT_LEAVE_GUI_UPDATE();
 
-  // under the radios, for the positions that have a row to show: it comes and
-  // goes with the choice above (_masks_panel_position_activate). no_show_all,
-  // so the popover's show_all leaves that to the position
+  // the canvas panel's handle. Like the next one, it comes and goes with that choice
+  // (_masks_panel_position_activate), and is no_show_all so the popover's
+  // show_all leaves that to the position
+  GtkWidget *handle_check = gtk_check_button_new_with_label(_("show the resize handle"));
+  gtk_widget_set_tooltip_text(handle_check,
+                              _("when enabled (default), the edge of the mask panel floating\n"
+                                "over the canvas carries a visible handle with an arrow showing\n"
+                                "which way the panel folds away.\n"
+                                "when disabled, the handle is invisible, like the main panels',\n"
+                                "and still resizes the panel by dragging and hides it on a click."));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(handle_check),
+                               dt_conf_get_bool("plugins/darkroom/masks/show_panel_handle"));
+  g_signal_connect(G_OBJECT(handle_check), "toggled",
+                   G_CALLBACK(_masks_show_panel_handle_toggled), module);
+  gtk_widget_set_no_show_all(handle_check, TRUE);
+  gtk_widget_set_visible(handle_check, dt_masks_gui_pref_handle_applies(cur_pos));
+  dt_gui_box_add(box, handle_check);
+  g_object_set_data(G_OBJECT(box), "dt-handle-check", handle_check);
+
+  // for the positions that have a row to show
   GtkWidget *row_check = gtk_check_button_new_with_label(_("show focused module under header"));
   gtk_widget_set_tooltip_text(row_check,
                               _("when enabled (default), a row under the panel's header\n"
@@ -1227,13 +1264,12 @@ void dt_masks_gui_add_panel_position_box(GtkWidget *box, dt_iop_module_t *module
                                dt_conf_get_bool("plugins/darkroom/masks/show_focus_row"));
   g_signal_connect(G_OBJECT(row_check), "toggled", G_CALLBACK(_masks_focus_row_toggled), module);
   gtk_widget_set_no_show_all(row_check, TRUE);
-  gtk_widget_set_visible(row_check, cur_pos != MASKS_PANEL_POS_EMBEDDED);
+  gtk_widget_set_visible(row_check, dt_masks_gui_pref_focus_row_applies(cur_pos));
   dt_gui_box_add(box, row_check);
   g_object_set_data(G_OBJECT(box), "dt-focus-row-check", row_check);
 
-  for(size_t i = 0; i < G_N_ELEMENTS(items); i++)
-    g_signal_connect(G_OBJECT(radios[i]), "toggled",
-                     G_CALLBACK(_masks_panel_position_activate), module);
+  g_signal_connect(G_OBJECT(combo), "value-changed",
+                   G_CALLBACK(_masks_panel_position_activate), module);
 }
 
 // clang-format off

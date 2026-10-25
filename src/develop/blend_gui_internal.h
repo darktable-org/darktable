@@ -565,7 +565,7 @@ void dt_masks_gui_default_layout_build(dt_masks_form_t *grp);
 /** set `root`, the marker standing for a mask with no group form yet, as the
     default group layout's own group would be: its operator, opacity and note */
 void dt_masks_gui_default_layout_root(dt_masks_point_group_t *root);
-/** append the "default group layout" section to the panel options popover */
+/** append the default group layout choice to the panel options popover */
 void dt_masks_gui_add_default_preset_box(GtkWidget *box);
 
 // ---------------------------------------------------------------------------
@@ -588,6 +588,10 @@ GtkWidget *dt_masks_gui_toolbar_new(GtkWidget *group,
 
 /** a section title in the panel options popover; `tip` may be NULL */
 void dt_masks_gui_pref_section(GtkWidget *box, const gchar *title, const gchar *tip);
+/** a combo box in the panel options popover, for an exclusive choice, with its
+    `label` on the left; the caller adds the entries and connects
+    "value-changed" once the initial one is set */
+GtkWidget *dt_masks_gui_pref_combo(GtkWidget *box, const gchar *label, const gchar *tip);
 /** re-home a widget into a new parent (no-op if already there), keeping its
     shown state */
 void dt_masks_gui_reparent_into(GtkWidget *w, GtkWidget *parent,
@@ -622,7 +626,15 @@ gboolean dt_masks_gui_is_host_lib(const struct dt_lib_module_t *module);
 // which edge the canvas-side panel is docked against, and where pinning it
 // records that -- not part of the position choice (see MASKS_PANEL_POS_CANVAS)
 gboolean dt_masks_gui_panel_side_right(void);
-/** append the "blend mask panel position" section to an existing menu */
+/** which of the panel options popover's dependent checks apply: the canvas
+    panel's resize handle under the position choice, the focus row under it
+    (a hosted position's), and auto-expand under the properties subpanel's
+    choice. The popover builds and updates them from these alone */
+gboolean dt_masks_gui_pref_handle_applies(int position);
+gboolean dt_masks_gui_pref_focus_row_applies(int position);
+gboolean dt_masks_gui_pref_auto_expand_applies(gboolean props_subpanel);
+/** append the panel position choice, and the options that depend on it, to the
+    panel options popover */
 void dt_masks_gui_add_panel_position_box(GtkWidget *box, dt_iop_module_t *module);
 
 G_END_DECLS

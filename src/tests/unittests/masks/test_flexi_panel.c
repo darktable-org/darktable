@@ -456,6 +456,41 @@ static void test_expander_option_defaults(void **state)
 }
 
 // ---------------------------------------------------------------------------
+// the panel options popover's dependent checks
+// ---------------------------------------------------------------------------
+
+// the resize handle is the canvas panel's alone; the focus row is for both
+// hosted positions, and an embedded panel has neither. The popover builds
+// these from the stored position and updates them on a change, from the same
+// functions, so this table is both
+static void test_position_options_follow_the_position(void **state)
+{
+  assert_false(dt_masks_gui_pref_handle_applies(MASKS_PANEL_POS_EMBEDDED));
+  assert_false(dt_masks_gui_pref_handle_applies(MASKS_PANEL_POS_UTILITY));
+  assert_true(dt_masks_gui_pref_handle_applies(MASKS_PANEL_POS_CANVAS));
+
+  assert_false(dt_masks_gui_pref_focus_row_applies(MASKS_PANEL_POS_EMBEDDED));
+  assert_true(dt_masks_gui_pref_focus_row_applies(MASKS_PANEL_POS_UTILITY));
+  assert_true(dt_masks_gui_pref_focus_row_applies(MASKS_PANEL_POS_CANVAS));
+}
+
+// a position the focus row's host does not exist for must not carry the handle
+static void test_handle_implies_focus_row(void **state)
+{
+  for(int pos = MASKS_PANEL_POS_EMBEDDED; pos <= MASKS_PANEL_POS_CANVAS; pos++)
+    if(dt_masks_gui_pref_handle_applies(pos))
+      assert_true(dt_masks_gui_pref_focus_row_applies(pos));
+}
+
+// auto-expand steers rows expanding in the list: it shows only with the
+// properties there, not in the subpanel
+static void test_auto_expand_applies_without_the_subpanel(void **state)
+{
+  assert_true(dt_masks_gui_pref_auto_expand_applies(FALSE));
+  assert_false(dt_masks_gui_pref_auto_expand_applies(TRUE));
+}
+
+// ---------------------------------------------------------------------------
 // which element rows carry an expander chevron
 // ---------------------------------------------------------------------------
 
@@ -773,6 +808,9 @@ int main(void)
                                     _conf_setup, _conf_teardown),
     cmocka_unit_test_setup_teardown(test_expander_option_defaults,
                                     _conf_setup, _conf_teardown),
+    cmocka_unit_test(test_position_options_follow_the_position),
+    cmocka_unit_test(test_handle_implies_focus_row),
+    cmocka_unit_test(test_auto_expand_applies_without_the_subpanel),
     cmocka_unit_test_teardown(test_every_element_row_is_expandable, _teardown),
     cmocka_unit_test_teardown(test_subpanel_leaves_no_chevrons, _teardown),
     cmocka_unit_test_setup_teardown(test_sections_start_expanded,

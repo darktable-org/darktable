@@ -4417,9 +4417,10 @@ popover.dt_masks_precise_anchor
 }
 
 /* the icon lines up with the mask toggle's glyph above, and so with the
-   content's edge below. The header takes 10px more on the side facing the
-   canvas, 4px when the handle is narrowed (see "#blending-tabs.dt_section_label"
-   above), and the row takes the same */
+   content's edge below. The header takes 10px on the side facing the canvas,
+   4px when the handle is narrowed (see "#blending-tabs.dt_section_label"
+   above), and the row's padding in em has to move by the same 6px: a
+   fraction of an em would not, it shifts with the font size */
 #masks-docked-panel.dt_masks_left #masks-focus-row
 {
   padding-right: 1.2em;
@@ -4432,12 +4433,12 @@ popover.dt_masks_precise_anchor
 
 #masks-docked-panel.dt_masks_left.dt_masks_handle_hidden #masks-focus-row
 {
-  padding-right: 0.97em;
+  padding-right: calc(1.2em - 6px);
 }
 
 #masks-docked-panel.dt_masks_right.dt_masks_handle_hidden #masks-focus-row
 {
-  padding-left: 0.97em;
+  padding-left: calc(1.2em - 6px);
 }
 
 /* the icon centered under the lib header's arrow. No padding above: the
