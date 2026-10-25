@@ -738,9 +738,9 @@ __kernel void spektrafilm_print_develop(__global const float4 *loge, __global fl
    OkLCh (mode 1) / ACES RGC (mode 2) gamut compression. Runs on the OUTPUT
    grid, cropping (ox, oy) from the full-ROI plane and taking alpha from the
    input image (spektra_sim: sf_sim_scan). */
-/* Scans the full padded ROI into a buffer: the scanner optics
-   and the glare veil run after this on the scanned
-   RGB, and they need the padding. spektrafilm_crop_out does the crop. */
+/* Scans the full padded ROI into a buffer: the scanner optics run after this
+   on the scanned RGB, and they need the padding. spektrafilm_crop_out does the
+   crop. `glare` holds the viewing-glare field in .x when glare_on. */
 __kernel void spektrafilm_scan(__global const float4 *cmy, __global float4 *rgb_out,
                                const int w, const int h,
                                __global const float *lut, __global const float *sx,
@@ -753,7 +753,9 @@ __kernel void spektrafilm_scan(__global const float4 *cmy, __global float4 *rgb_
                                const int cmax_nh, const int compress_mode,
                                const float out_luminance_boost,
                                const float out_scale,
-                               const int bw_on, const float bw_m, const float bw_q)
+                               const int bw_on, const float bw_m, const float bw_q,
+                               __global const float4 *glare, const int glare_on,
+                               const float glare_x, const float glare_y, const float glare_z)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
@@ -772,6 +774,11 @@ __kernel void spektrafilm_scan(__global const float4 *cmy, __global float4 *rgb_
   {
     const float yc = grain_clampf(fma(bw_m, xyz.y, bw_q), 0.0f, 1.0f);
     xyz *= yc / (xyz.y + 1e-10f);
+  }
+  if(glare_on) /* viewing glare veil in XYZ, mirroring sf_sim_scan() */
+  {
+    const float gv = glare[k].x;
+    xyz = (float3)(fma(gv, glare_x, xyz.x), fma(gv, glare_y, xyz.y), fma(gv, glare_z, xyz.z));
   }
   float3 rgb = sf_mat3(mats + SF_M_OUT, xyz);
 
@@ -837,8 +844,8 @@ __kernel void spektrafilm_scan_usm(__global float4 *rgb, __global const float4 *
 
 /* Viewing-glare field: lognormal of linear-space mean `mean` and shape (s, bias)
    precomputed host-side, keyed on absolute image coordinates and the per-image
-   salt so the veil is stable under pan and zoom (sf_glare). Blurred by the
-   caller, then added. */
+   salt so the veil is stable under pan and zoom (sf_glare_field). Blurred by
+   the caller, then added in spektrafilm_scan. */
 __kernel void spektrafilm_glare_gen(__global float4 *field, const int w, const int h,
                                     const int roi_x, const int roi_y, const float mean,
                                     const float s, const float bias, const uint salt)
@@ -848,16 +855,6 @@ __kernel void spektrafilm_glare_gen(__global float4 *field, const int w, const i
   const uint seed = grain_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y), 0x5eedu, salt);
   const float g = mean * exp(fma(s, grain_normal(seed), bias));
   field[(size_t)y * w + x] = (float4)(g, g, g, 0.0f);
-}
-
-__kernel void spektrafilm_glare_add(__global float4 *rgb, __global const float4 *field,
-                                    const int w, const int h)
-{
-  const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= w || y >= h) return;
-  const size_t k = (size_t)y * w + x;
-  const float4 v = rgb[k], g = field[k];
-  rgb[k] = (float4)(v.x + g.x, v.y + g.y, v.z + g.z, v.w);
 }
 
 /* passthrough crop when no sim is available */

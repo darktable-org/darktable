@@ -295,6 +295,7 @@ typedef struct sf_sim_gpu_t
   float m_out[9]; /* XYZ(view illuminant) -> output RGB, CAT02 included */
   int scan_bw_on;   /* scanner black/white point (positive film scans) */
   float scan_bw_m, scan_bw_q;
+  float glare_xyz[3]; /* viewing illuminant XYZ, Y = 1: the glare veil's colour */
   /* Langmuir couplers (dev/0.4+ packs; flags 0 on 0.3.x = linear) */
   int film_bw; /* B&W stock: achromatic (channel-coupled) grain */
   float coupler_diff_um, coupler_tail_um, coupler_tail_w;
@@ -700,9 +701,12 @@ void sf_sim_print_develop(const sf_sim_t *sim,
                           int nch_out);
 
 /* cmy density (print, or film when scan_film) -> linear output RGB,
- * gamut compressed per params->output_compress */
+ * gamut compressed per params->output_compress. glare, when not NULL, is a
+ * per-pixel veil (one float per pixel, see sf_glare_field) added as the viewing
+ * illuminant in XYZ before the output matrix */
 void sf_sim_scan(const sf_sim_t *sim,
                  const float *cmy,
+                 const float *glare,
                  float *rgb_out,
                  size_t npix,
                  int nch_in,

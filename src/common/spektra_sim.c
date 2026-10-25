@@ -479,6 +479,7 @@ struct sf_sim_t
   double cmfs[SF_NWL][3];
   double xyz_norm;
   double illum_view_xyz[3];
+  float glare_xyz_f[3]; /* illum_view_xyz in float, for the glare veil */
   double scan_lo[3], scan_hi[3];
   double m_out[9]; /* XYZ (viewing illum) -> linear output RGB (CAT02) */
   float m_out_f[9]; /* float mirror, so the scan fast path (sf_sim_scan) runs
@@ -3354,7 +3355,7 @@ static float _probe_lightness_run(const sf_sim_t *tmp_sim,
     sf_sim_print_develop(tmp_sim, cmy, cmy, 1, 3, 3);
   }
   float rgb_out[3];
-  sf_sim_scan(tmp_sim, cmy, rgb_out, 1, 3, 3);
+  sf_sim_scan(tmp_sim, cmy, NULL, rgb_out, 1, 3, 3);
 
   const double rgb_d[3] = { rgb_out[0], rgb_out[1], rgb_out[2] };
   double xyz[3], lab[3];
@@ -4380,6 +4381,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
       s->illum_view_xyz[c] = 0.0;
       for(int l = 0; l < SF_NWL; l++) s->illum_view_xyz[c] += illu_view[l] * pack->cmfs[l][c];
       s->illum_view_xyz[c] /= s->xyz_norm;
+      s->glare_xyz_f[c] = (float)s->illum_view_xyz[c];
     }
     /* scan table range */
     if(s->has_print)
@@ -4926,6 +4928,7 @@ void sf_sim_print_develop(const sf_sim_t *sim,
 
 void sf_sim_scan(const sf_sim_t *sim,
                  const float *cmy,
+                 const float *glare,
                  float *rgb_out,
                  size_t npix,
                  int nch_in,
@@ -4985,6 +4988,13 @@ void sf_sim_scan(const sf_sim_t *sim,
       yc = yc < 0.0f ? 0.0f : (yc > 1.0f ? 1.0f : yc);
       const float sc = yc / (y + 1e-10f);
       for(int m = 0; m < 3; m++) xyz[m] *= sc;
+    }
+    /* [gl] add_glare: the veil is the viewing illuminant (Y = 1) scaled by the
+       glare field, added in XYZ before the output matrix and the compressor */
+    if(glare)
+    {
+      const float gv = glare[px];
+      for(int m = 0; m < 3; m++) xyz[m] = fmaf(gv, sim->glare_xyz_f[m], xyz[m]);
     }
     mat3_mulv_f(rgb, sim->m_out_f, xyz);
     if(sim->out_compress == SF_OUTPUT_COMPRESS_OKLCH)
@@ -5046,6 +5056,7 @@ sf_sim_gpu_t *sf_sim_gpu_export(const sf_sim_t *s)
   cp9f(g->m_in, s->m_in);
   g->ev_scale = (float)s->ev_scale;
   g->raw_scale = (float)s->raw_scale;
+  for(int c = 0; c < 3; c++) g->glare_xyz[c] = s->glare_xyz_f[c];
   g->tc_n = s->tc_n;
   g->tc_lut = dup_f(s->tc_lut, (size_t)s->tc_n * s->tc_n * 3);
 

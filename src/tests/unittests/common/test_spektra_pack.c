@@ -294,7 +294,7 @@ static void _render(const sf_sim_t *sim,
     sf_sim_print_expose(sim, work, work, npix, 3, 3);
     sf_sim_print_develop(sim, work, work, npix, 3, 3);
   }
-  sf_sim_scan(sim, work, rgb_out, npix, 3, 3);
+  sf_sim_scan(sim, work, NULL, rgb_out, npix, 3, 3);
 
   free(work);
   free(corr);
