@@ -396,6 +396,10 @@ changes (where available).
   Clarity is imported with the local laplacian filter of the local
   contrast module instead of the older bilateral grid.
 
+- Lightroom import applies spot removals with the retouch module,
+  cloning or healing as each spot did in Lightroom, instead of the
+  deprecated spot removal module.
+
 ## Bug Fixes
 
 - Fixed missing Active D-Lighting exposure compensation for Nikon
