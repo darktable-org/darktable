@@ -45,15 +45,39 @@
 // 2. add LRDT_<iop_name>_VERSION with corresponding module version
 // 3. use this version to pass in dt_add_hist()
 
-#define LRDT_CLIPPING_VERSION 5
-typedef struct dt_iop_clipping_params_t
+#define LRDT_CROP_VERSION 3
+typedef struct dt_iop_crop_params_t
 {
-  float angle, cx, cy, cw, ch, k_h, k_v;
-  float kxa, kya, kxb, kyb, kxc, kyc, kxd, kyd;
-  int k_type, k_sym;
-  int k_apply, crop_auto;
+  float cx, cy, cw, ch;
   int ratio_n, ratio_d;
-} dt_iop_clipping_params_t;
+} dt_iop_crop_params_t;
+
+#define LRDT_ASHIFT_VERSION 5
+#define LRDT_ASHIFT_MAX_SAVED_LINES 50
+typedef enum dt_iop_ashift_mode_t
+{
+  ASHIFT_MODE_GENERIC = 0,
+  ASHIFT_MODE_SPECIFIC = 1
+} dt_iop_ashift_mode_t;
+
+typedef enum dt_iop_ashift_crop_t
+{
+  ASHIFT_CROP_OFF = 0,
+  ASHIFT_CROP_LARGEST = 1,
+  ASHIFT_CROP_ASPECT = 2
+} dt_iop_ashift_crop_t;
+
+typedef struct dt_iop_ashift_params_t
+{
+  float rotation, lensshift_v, lensshift_h, shear;
+  float f_length, crop_factor, orthocorr, aspect;
+  dt_iop_ashift_mode_t mode;
+  dt_iop_ashift_crop_t cropmode;
+  float cl, cr, ct, cb;
+  float last_drawn_lines[LRDT_ASHIFT_MAX_SAVED_LINES * 4];
+  int last_drawn_lines_count;
+  float last_quad_lines[8];
+} dt_iop_ashift_params_t;
 
 #define LRDT_FLIP_VERSION 2
 typedef struct dt_iop_flip_params_t
@@ -381,7 +405,8 @@ typedef enum lr_curve_kind_t
 
 typedef struct lr_data_t
 {
-  dt_iop_clipping_params_t pc;
+  dt_iop_crop_params_t pcr;
+  dt_iop_ashift_params_t pas;
   gboolean has_crop;
 
   dt_iop_flip_params_t pf;
@@ -480,15 +505,15 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
   if(value)
   {
     if(!xmlStrcmp(name, (const xmlChar *)"CropTop"))
-      data->pc.cy = g_ascii_strtod((char *)value, NULL);
+      data->pcr.cy = g_ascii_strtod((char *)value, NULL);
     else if(!xmlStrcmp(name, (const xmlChar *)"CropRight"))
-      data->pc.cw = g_ascii_strtod((char *)value, NULL);
+      data->pcr.cw = g_ascii_strtod((char *)value, NULL);
     else if(!xmlStrcmp(name, (const xmlChar *)"CropLeft"))
-      data->pc.cx = g_ascii_strtod((char *)value, NULL);
+      data->pcr.cx = g_ascii_strtod((char *)value, NULL);
     else if(!xmlStrcmp(name, (const xmlChar *)"CropBottom"))
-      data->pc.ch = g_ascii_strtod((char *)value, NULL);
+      data->pcr.ch = g_ascii_strtod((char *)value, NULL);
     else if(!xmlStrcmp(name, (const xmlChar *)"CropAngle"))
-      data->pc.angle = -g_ascii_strtod((char *)value, NULL);
+      data->pas.rotation = g_ascii_strtod((char *)value, NULL);
     else if(!xmlStrcmp(name, (const xmlChar *)"ImageWidth"))
       data->iwidth = atoi((char *)value);
     else if(!xmlStrcmp(name, (const xmlChar *)"ImageLength"))
@@ -1316,26 +1341,34 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     double new_width, new_height;
     dt_image_orientation_t orientation = dt_image_orientation_to_flip_bits(data.orientation);
 
-    data.pc.k_sym = 0;
-    data.pc.k_apply = 0;
-    data.pc.crop_auto = 0;  // Cannot use crop-auto=1 (the default at clipping GUI), as it does not allow to cover all cropping cases.
-    data.pc.ratio_n = data.pc.ratio_d = -2;
-    data.pc.k_h = data.pc.k_v = 0;
-    data.pc.k_type = 0;
-    data.pc.kxa = data.pc.kxd = 0.2f;
-    data.pc.kxc = data.pc.kxb = 0.8f;
-    data.pc.kya = data.pc.kyb = 0.2f;
-    data.pc.kyc = data.pc.kyd = 0.8f;
+    // ashift runs before flip in the pipe, so it rotates in sensor
+    // orientation, the same space Lightroom's CropAngle is expressed in
+    if(data.pas.rotation != 0.0f)
+    {
+      data.pas.f_length = 28.0f;
+      data.pas.crop_factor = 1.0f;
+      data.pas.orthocorr = 100.0f;
+      data.pas.aspect = 1.0f;
+      data.pas.mode = ASHIFT_MODE_GENERIC;
+      data.pas.cropmode = ASHIFT_CROP_OFF; // the crop module below does the cropping
+      data.pas.cl = data.pas.ct = 0.0f;
+      data.pas.cr = data.pas.cb = 1.0f;
+
+      dt_add_hist(imgid, "ashift", (dt_iop_params_t *)&data.pas, sizeof(dt_iop_ashift_params_t), imported,
+                  sizeof(imported), LRDT_ASHIFT_VERSION, &n_import);
+    }
+
+    data.pcr.ratio_n = data.pcr.ratio_d = 0; // freehand
 
     // Convert image in image-centered coordinate system, [-image_size / 2; + image_size / 2]
-    cx = (data.pc.cx - 0.5f) * data.iwidth;
-    cw = (data.pc.cw - 0.5f) * data.iwidth;
-    cy = (data.pc.cy - 0.5f) * data.iheight;
-    ch = (data.pc.ch - 0.5f) * data.iheight;
+    cx = (data.pcr.cx - 0.5f) * data.iwidth;
+    cw = (data.pcr.cw - 0.5f) * data.iwidth;
+    cy = (data.pcr.cy - 0.5f) * data.iheight;
+    ch = (data.pcr.ch - 0.5f) * data.iheight;
 
     // Rotate the cropped zone according to rotation angle
     // All rotations done using center of the image
-    rangle = deg2rad(data.pc.angle);
+    rangle = deg2rad(-data.pas.rotation);
     rotate_xy(&cx, &cy, -rangle);
     rotate_xy(&cw, &ch, -rangle);
 
@@ -1345,33 +1378,26 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     new_height = rotate_y(+data.iwidth, +data.iheight, -fabs(rangle));
 
     // apply new size & convert image back in initial coordinate system [0.0 ; +1.0]
-    data.pc.cx = round5((cx / new_width)  + 0.5f);
-    data.pc.cw = round5((cw / new_width)  + 0.5f);
-    data.pc.cy = round5((cy / new_height) + 0.5f);
-    data.pc.ch = round5((ch / new_height) + 0.5f);
+    data.pcr.cx = round5((cx / new_width)  + 0.5f);
+    data.pcr.cw = round5((cw / new_width)  + 0.5f);
+    data.pcr.cy = round5((cy / new_height) + 0.5f);
+    data.pcr.ch = round5((ch / new_height) + 0.5f);
 
     // adjust crop data according to the orientation - Must be done after rotation
     if(orientation & ORIENTATION_FLIP_X)
-      flip(&data.pc.cx, &data.pc.cw);
+      flip(&data.pcr.cx, &data.pcr.cw);
     if(orientation & ORIENTATION_FLIP_Y)
-      flip(&data.pc.cy, &data.pc.ch);
+      flip(&data.pcr.cy, &data.pcr.ch);
     if(orientation & ORIENTATION_SWAP_XY)
     {
-      swap(&data.pc.cx, &data.pc.cy);
-      swap(&data.pc.cw, &data.pc.ch);
+      swap(&data.pcr.cx, &data.pcr.cy);
+      swap(&data.pcr.cw, &data.pcr.ch);
     }
 
-    // Invert angle when orientation is flipped
-    if(orientation == ORIENTATION_FLIP_HORIZONTALLY
-    || orientation == ORIENTATION_FLIP_VERTICALLY
-    || orientation == ORIENTATION_TRANSPOSE
-    || orientation == ORIENTATION_TRANSVERSE)
-      data.pc.angle = -data.pc.angle;
+    data.fratio = (data.pcr.cw - data.pcr.cx) / (data.pcr.ch - data.pcr.cy);
 
-    data.fratio = (data.pc.cw - data.pc.cx) / (data.pc.ch - data.pc.cy);
-
-    dt_add_hist(imgid, "clipping", (dt_iop_params_t *)&data.pc, sizeof(dt_iop_clipping_params_t), imported,
-                sizeof(imported), LRDT_CLIPPING_VERSION, &n_import);
+    dt_add_hist(imgid, "crop", (dt_iop_params_t *)&data.pcr, sizeof(dt_iop_crop_params_t), imported,
+                sizeof(imported), LRDT_CROP_VERSION, &n_import);
     refresh_needed = TRUE;
   }
 
