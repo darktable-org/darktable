@@ -1642,10 +1642,10 @@ void sf_sim_params_defaults(sf_sim_params_t *p)
   p->scan_black_level = 0.01;
   p->scan_white_level = 0.98;
   p->couplers_amount = 1.0;
-  /* generic negative-film gammas ([st] params_builder); overwritten from the
-   * pack's per-film digested defaults in sf_sim_build() */
-  const double gs[3] = { 0.336, 0.319, 0.273 };
-  const double gr[2] = { 0.353, 0.302 }, gg[2] = { 0.154, 0.353 }, gb[2] = { 0.168, 0.226 };
+  /* DirCouplersParams schema defaults ([st] params_schema); overwritten from
+   * the pack's per-film digested defaults in sf_sim_build() */
+  const double gs[3] = { 0.341, 0.324, 0.273 };
+  const double gr[2] = { 0.355, 0.305 }, gg[2] = { 0.154, 0.358 }, gb[2] = { 0.171, 0.225 };
   memcpy(p->gamma_samelayer, gs, sizeof(gs));
   memcpy(p->gamma_inter_r_gb, gr, sizeof(gr));
   memcpy(p->gamma_inter_g_rb, gg, sizeof(gg));
@@ -3636,16 +3636,16 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     s->halation_sigma_um = sigma3[0];
   }
 
-  /* neutral enlarger filters from the release database */
+  /* neutral enlarger filters from the release database. A film, paper and
+     illuminant combination the database does not list prints with C0 M50 Y50
+     ([st] params_builder._DEFAULT_NEUTRAL_PRINT_FILTERS) */
   if(s->has_print && p->neutral_from_db)
   {
-    double cmy[3];
-    if(sf_pack_neutral_filters(pack, print->stock, p->enlarger_illuminant, film->stock, cmy))
-    {
-      p->c_filter_neutral = cmy[0];
-      p->m_filter_neutral = cmy[1];
-      p->y_filter_neutral = cmy[2];
-    }
+    double cmy[3] = { 0.0, 50.0, 50.0 };
+    sf_pack_neutral_filters(pack, print->stock, p->enlarger_illuminant, film->stock, cmy);
+    p->c_filter_neutral = cmy[0];
+    p->m_filter_neutral = cmy[1];
+    p->y_filter_neutral = cmy[2];
   }
 
   /* ----- filming: input matrix and tc_lut ------------------------------- */
