@@ -50,6 +50,7 @@ FILE(GLOB SOURCE_FILES
   "common/exif.cc"
   "common/file_location.c"
   "common/film.c"
+  "common/filter.c"
   "common/gaussian.c"
   "common/gimp.c"
   "common/gpx.c"

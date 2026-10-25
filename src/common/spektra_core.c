@@ -619,34 +619,26 @@ void sf_unsharp_mask3(float *const buf,
   for(size_t i = 0; i < nn; i++) buf[i] = fmaf(amount, orig[i] - buf[i], orig[i]);
 }
 
-/* Viewing glare ([gl] add_glare): a faint veil of the viewing illuminant, drawn
-   as a lognormal field of mean `percent`/100 and relative standard deviation
-   `roughness`, blurred by `blur` pixels.
-
-   The reference adds `glare_amount * illuminant_xyz` in XYZ before the output
-   matrix. That illuminant is normalized to Y = 1 and the matrix adapts it to the
-   output white, so it lands on RGB (1, 1, 1) exactly and can be added as one
-   scalar to all three channels after the matrix. It lands after the output gamut
-   compression: at the default 0.03% the difference is far
-   below a code value, and this keeps the whole spatial stage on one side of
-   sf_sim_scan.
+/* Viewing glare field ([gl] compute_random_glare_amount): a lognormal field of
+   linear-space mean `percent`/100 and relative standard deviation `roughness`,
+   blurred by `blur` pixels. sf_sim_scan adds it in XYZ, scaled by the viewing
+   illuminant, before the output matrix and the gamut compression, as
+   add_glare does.
 
    Lognormal with linear-space mean m and std s: sigma2 = ln(1 + (s/m)^2),
    mu = ln(m) - sigma2/2, so with s/m = roughness the shape parameter does not
    depend on the amount at all. */
-void sf_glare(float *const rgb,
-              const int w,
-              const int h,
-              const float percent,
-              const float roughness,
-              const float blur,
-              const int roi_x,
-              const int roi_y,
-              const uint32_t salt,
-              float *const field)
+void sf_glare_field(float *const field,
+                    const int w,
+                    const int h,
+                    const float percent,
+                    const float roughness,
+                    const float blur,
+                    const int roi_x,
+                    const int roi_y,
+                    const uint32_t salt)
 {
   const float mean = percent * 0.01f;
-  if(mean <= 0.0f) return;
   const float sigma2 = logf(1.0f + roughness * roughness);
   const float s = sqrtf(sigma2), bias = -0.5f * sigma2;
 
@@ -660,16 +652,6 @@ void sf_glare(float *const rgb,
   float *const trans = dt_alloc_align_float((size_t)w * h);
   sf_blur_plane1(field, w, h, blur, NULL, trans);
   dt_free_align(trans);
-
-  const size_t npix = (size_t)w * h;
-  DT_OMP_FOR()
-  for(size_t i = 0; i < npix; i++)
-  {
-    const float g = field[i];
-    rgb[i * 3 + 0] += g;
-    rgb[i * 3 + 1] += g;
-    rgb[i * 3 + 2] += g;
-  }
 }
 
 /* Blur packed buffer with per-channel sigma. `trans` is a w*h intermediate. */

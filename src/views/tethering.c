@@ -492,11 +492,12 @@ void expose(dt_view_t *self,
 
 gboolean try_enter(dt_view_t *self)
 {
-  /* verify that camera supports tethering and is available */
-  if(dt_camctl_can_enter_tether_mode(darktable.camctl, NULL)) return FALSE;
+  // verify that camera supports tethering and is available
+  if(dt_camctl_can_enter_tether_mode(darktable.camctl, NULL))
+    return FALSE; // returned value treated as error flag, FALSE = no error
 
-  dt_control_log(_("no camera with tethering support available for use..."));
-  return TRUE;
+  dt_control_log(_("camera with tethering support is not connected or not mounted in the import module"));
+  return TRUE; // raise error flag
 }
 
 static void _capture_mipmaps_updated_signal_callback(gpointer instance,

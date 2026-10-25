@@ -20,6 +20,7 @@ ctest --test-dir build-test -R flexi --output-on-failure
 | `test_flexi_panel` | what the panel shows: the no-op badge, adaptive parametric rows, preferences |
 | `test_flexi_migrate` | the classic → flexi migration case table (structure, not pixels) |
 | `test_flexi_compose` | the mask operators themselves: what union/intersection/… compute, and the algebraic properties the design relies on |
+| `test_flexi_raster_hover` | what hovering a raster element's row paints on the canvas: the area its source's mask covers, and nothing when the pipe is busy or the source is off |
 
 ## Why these are unit tests and not simulated GTK
 

@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 // neural restore — lighttable module for AI-based image restoration
 //
 // overview
@@ -217,6 +218,7 @@
 #include "gui/accelerators.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -339,7 +341,7 @@ typedef struct dt_lib_neural_restore_t
   // X-Trans / linear) so re-picking a new crop on the same image skips
   // the slow load + demosaic; freed on imgid or sensor-type change.
   dt_imgid_t preview_raw_imgid;
-  // imgid we last showed the "pre-demosaiced" warning for, so the
+  // imgid we last showed the "already demosaiced" warning for, so the
   // toast doesn't fire every patch-click move during preview
   dt_imgid_t preview_linear_warned_imgid;
   dt_restore_sensor_class_t preview_raw_sensor_class;
@@ -419,7 +421,7 @@ typedef struct dt_neural_job_t
   char *icc_filename;  // only used when icc_type == DT_COLORSPACE_FILE
   // when TRUE, wide-gamut pixels pass through unchanged on denoise
   gboolean preserve_wide_gamut;
-  // raw denoise only: TRUE after we've toasted the "pre-demosaiced"
+  // raw denoise only: TRUE after we've toasted the "already demosaiced"
   // caveat for any LINEAR image in this batch; avoids one warning
   // per file when the user kicks off a multi-image job
   gboolean linear_warned;
@@ -1537,7 +1539,7 @@ static int _process_raw_denoise_one(dt_neural_job_t *j,
       if(!j->linear_warned && !(flags & DT_IMAGE_4BAYER))
       {
         j->linear_warned = TRUE;
-        dt_control_log(_("raw denoise: this image is already pre-demosaiced "
+        dt_control_log(_("raw denoise: this image is already demosaiced "
                          "(sRaw / computational raw); results may be limited"));
       }
       return _process_raw_denoise_linear(j, imgid, out_filename,
@@ -2915,7 +2917,7 @@ static gpointer _preview_thread_raw(gpointer data)
      && d->preview_linear_warned_imgid != pd->imgid)
   {
     d->preview_linear_warned_imgid = pd->imgid;
-    dt_control_log(_("raw denoise: this image is already pre-demosaiced "
+    dt_control_log(_("raw denoise: this image is already demosaiced "
                      "(sRaw / computational raw); results may be limited"));
   }
 

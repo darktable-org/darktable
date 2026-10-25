@@ -482,15 +482,33 @@ static void _raster_forget_missing(const dt_imgid_t imgid, const char *entry)
   }
 }
 
-// the hovered icon's mask, tinted over the preview. one icon is hovered at a
-// time, so one surface, rebuilt when the entry or the preview changes. gui
+// the hovered element's mask, tinted over the preview, kept under the key the
+// caller names it by and the preview it was made for. one is hovered at a
+// time, so one surface, rebuilt when the key or the preview changes. gui
 // thread only
 static struct
 {
-  char entry[DT_DTDATA_ENTRY_LEN];
+  char key[DT_DTDATA_ENTRY_LEN];
   dt_hash_t hash;
   cairo_surface_t *surface;
 } _hover;
+
+cairo_surface_t *dt_masks_pixel_hover_get(const char *key, const dt_hash_t hash)
+{
+  return _hover.surface && _hover.hash == hash && !strcmp(_hover.key, key)
+    ? _hover.surface : NULL;
+}
+
+cairo_surface_t *dt_masks_pixel_hover_keep(const char *key,
+                                           const dt_hash_t hash,
+                                           cairo_surface_t *surface)
+{
+  if(_hover.surface) cairo_surface_destroy(_hover.surface);
+  _hover.surface = surface;
+  _hover.hash = hash;
+  g_strlcpy(_hover.key, key, sizeof(_hover.key));
+  return surface;
+}
 
 void dt_masks_pixel_cache_cleanup(void)
 {
@@ -516,7 +534,7 @@ void dt_masks_pixel_cache_cleanup(void)
 // the index is clamped after the cast: dt_masks_pixel_store can pass a NaN
 // (ashift.c:1074), (int)NaN is INT_MIN, and -ffast-math may fold away a
 // float range check, while clamping the int holds whatever comparisons do
-static inline float _bilinear(const float *const restrict m,
+float dt_masks_pixel_bilinear(const float *const restrict m,
                               const int mw,
                               const int mh,
                               const float x,
@@ -554,7 +572,7 @@ static inline float _sample(const uint8_t *const restrict m,
   const float n = 1.0f / 255.0f;
   const float q[4] = { m[(size_t)y0 * mw + x0] * n, m[(size_t)y0 * mw + x1] * n,
                        m[(size_t)y1 * mw + x0] * n, m[(size_t)y1 * mw + x1] * n };
-  return _bilinear(q, 2, 2, x - x0, y - y0);
+  return dt_masks_pixel_bilinear(q, 2, 2, x - x0, y - y0);
 }
 
 int dt_masks_pixel_get_mask_roi(const dt_iop_module_t *const module,
@@ -683,13 +701,11 @@ void dt_masks_pixel_duplicate_points(dt_develop_t *const dev,
 #define RASTER_ICON_RADIUS 10.0f // unscaled pixels
 // the tint of a mask over the image, premultiplied red at this alpha
 #define RASTER_OVERLAY_ALPHA 80.0f
-// preview pixels per overlay pixel
-#define RASTER_OVERLAY_STEP 2.0f
 
 // the form drawn at index in the visible group: gui->points follows the
 // group's direct members in order (dt_masks_gui_form_test_create). the
 // import menu's preview draws its own list (dt_masks_import_preview_post_expose)
-static dt_masks_form_t *_raster_form_at(const dt_masks_form_gui_t *gui, const int index)
+dt_masks_form_t *dt_masks_pixel_form_at(const dt_masks_form_gui_t *gui, const int index)
 {
   if(gui->import_preview_points && gui->points == gui->import_preview_points)
     return dt_masks_get_from_id(darktable.develop,
@@ -979,15 +995,15 @@ static cairo_surface_t *_raster_overlay(const dt_imgid_t imgid,
                                         const dt_dtdata_ref_t *ref)
 {
   const dt_hash_t hash = darktable.develop->preview_pipe->backbuf_hash;
-  if(_hover.surface && _hover.hash == hash && !strcmp(_hover.entry, ref->entry))
-    return _hover.surface;
+  cairo_surface_t *kept = dt_masks_pixel_hover_get(ref->entry, hash);
+  if(kept) return kept;
 
   dt_masks_pixel_cache_t *c = dt_masks_pixel_get(imgid, ref, NULL);
   if(!c) return NULL;
   float wd, ht;
   dt_masks_get_image_size(&wd, &ht, NULL, NULL);
-  const int ow = MAX(1, (int)ceilf(wd / RASTER_OVERLAY_STEP));
-  const int oh = MAX(1, (int)ceilf(ht / RASTER_OVERLAY_STEP));
+  const int ow = MAX(1, (int)ceilf(wd / DT_MASKS_OVERLAY_STEP));
+  const int oh = MAX(1, (int)ceilf(ht / DT_MASKS_OVERLAY_STEP));
   float *val = dt_alloc_align_float((size_t)ow * oh);
   cairo_surface_t *surface =
     val && _to_preview(c, ow, oh, val)
@@ -996,11 +1012,19 @@ static cairo_surface_t *_raster_overlay(const dt_imgid_t imgid,
   dt_masks_pixel_release(c);
   if(!surface) return NULL;
 
-  if(_hover.surface) cairo_surface_destroy(_hover.surface);
-  _hover.surface = surface;
-  _hover.hash = hash;
-  g_strlcpy(_hover.entry, ref->entry, sizeof(_hover.entry));
-  return surface;
+  return dt_masks_pixel_hover_keep(ref->entry, hash, surface);
+}
+
+void dt_masks_pixel_paint_overlay(cairo_t *cr, cairo_surface_t *overlay)
+{
+  float wd, ht;
+  dt_masks_get_image_size(&wd, &ht, NULL, NULL);
+  cairo_save(cr);
+  cairo_scale(cr, wd / cairo_image_surface_get_width(overlay),
+              ht / cairo_image_surface_get_height(overlay));
+  cairo_set_source_surface(cr, overlay, 0, 0);
+  cairo_paint(cr);
+  cairo_restore(cr);
 }
 
 void dt_masks_pixel_post_expose(const dt_masks_pixel_type_t *type,
@@ -1014,7 +1038,7 @@ void dt_masks_pixel_post_expose(const dt_masks_pixel_type_t *type,
   const dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
   if(!gpt || gpt->points_count < 1) return;
 
-  const dt_masks_form_t *form = _raster_form_at(gui, index);
+  const dt_masks_form_t *form = dt_masks_pixel_form_at(gui, index);
   // over the icon, the only part that selects (dt_masks_pixel_get_distance)
   const gboolean hovered = gui->group_selected == index && gui->form_selected;
   const dt_dtdata_ref_t *ref = form ? dt_masks_pixel_ref(form) : NULL;
@@ -1027,17 +1051,7 @@ void dt_masks_pixel_post_expose(const dt_masks_pixel_type_t *type,
   if(hovered && ref && !missing)
   {
     cairo_surface_t *overlay = _raster_overlay(imgid, ref);
-    if(overlay)
-    {
-      float wd, ht;
-      dt_masks_get_image_size(&wd, &ht, NULL, NULL);
-      cairo_save(cr);
-      cairo_scale(cr, wd / cairo_image_surface_get_width(overlay),
-                  ht / cairo_image_surface_get_height(overlay));
-      cairo_set_source_surface(cr, overlay, 0, 0);
-      cairo_paint(cr);
-      cairo_restore(cr);
-    }
+    if(overlay) dt_masks_pixel_paint_overlay(cr, overlay);
   }
 
   const float x = gpt->points[0], y = gpt->points[1];
@@ -1416,12 +1430,13 @@ gboolean dt_masks_pixel_store(const float *mask,
         : 0.0f;
     else
       // the inverse of dt_masks_pixel_grid_to_preview, less half a pixel as
-      // _bilinear takes an index. clamped as _sample reads it back, so the
-      // outer half pixel, and the strip a rounded-down render missed, read
-      // the edge
-      out[k] = _bilinear(mask, mask_w, mask_h,
-                         CLAMPF((px - b[0]) / a[0] - 0.5f, 0.0f, mask_w - 1.0f),
-                         CLAMPF((py - b[1]) / a[1] - 0.5f, 0.0f, mask_h - 1.0f));
+      // dt_masks_pixel_bilinear takes an index. clamped as _sample reads it
+      // back, so the outer half pixel, and the strip a rounded-down render
+      // missed, read the edge
+      out[k] = dt_masks_pixel_bilinear(
+        mask, mask_w, mask_h,
+        CLAMPF((px - b[0]) / a[0] - 0.5f, 0.0f, mask_w - 1.0f),
+        CLAMPF((py - b[1]) / a[1] - 0.5f, 0.0f, mask_h - 1.0f));
   }
   dt_masks_pixel_release(oc);
   dt_free_align(pts);

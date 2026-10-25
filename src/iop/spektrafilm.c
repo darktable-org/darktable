@@ -311,7 +311,7 @@ typedef struct dt_iop_spektrafilm_params_t
   float scan_usm_sigma;     // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 0.7 $DESCRIPTION: "scanner sharpness"
   float scan_usm_amount;    // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.7 $DESCRIPTION: "scanner sharpen strength"
   /* Off by default. Glare is a viewing-condition simulation, not a film
-     property, and it is the last thing in the chain: leaving it on lifts the
+     property, added in the scan as the viewing light: leaving it on lifts the
      black point of every render, which hides the real per-paper black points
      while you are still judging them. The reference defaults it on because it
      renders finished images; this is an editing tool. Note that this is NOT
@@ -617,7 +617,7 @@ typedef struct dt_iop_spektrafilm_global_data_t
   int kernel_grain_gen_raw_sl, kernel_grain_accumulate_1c, kernel_grain_finalize_channel,
       kernel_grain_add, kernel_grain_usm;
   int kernel_print_expose, kernel_print_develop, kernel_scan, kernel_passthrough;
-  int kernel_crop_out, kernel_scan_usm, kernel_glare_gen, kernel_glare_add;
+  int kernel_crop_out, kernel_scan_usm, kernel_glare_gen;
   int kernel_scatter_combine, kernel_accum, kernel_channel_extract, kernel_channel_accum, kernel_halation_apply;
   int kernel_gauss_row_4c, kernel_gauss_col_4c, kernel_gauss_row_1c, kernel_gauss_col_1c;
   int kernel_yvv_row_4c, kernel_yvv_col_4c, kernel_yvv_row_1c, kernel_yvv_col_1c;
@@ -671,7 +671,6 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_crop_out = dt_opencl_create_kernel(program, "spektrafilm_crop_out");
   gd->kernel_scan_usm = dt_opencl_create_kernel(program, "spektrafilm_scan_usm");
   gd->kernel_glare_gen = dt_opencl_create_kernel(program, "spektrafilm_glare_gen");
-  gd->kernel_glare_add = dt_opencl_create_kernel(program, "spektrafilm_glare_add");
   gd->kernel_passthrough = dt_opencl_create_kernel(program, "spektrafilm_passthrough");
   gd->kernel_scatter_combine = dt_opencl_create_kernel(program, "spektrafilm_scatter_combine");
   gd->kernel_accum = dt_opencl_create_kernel(program, "spektrafilm_accum");
@@ -716,7 +715,6 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_crop_out);
     dt_opencl_free_kernel(gd->kernel_scan_usm);
     dt_opencl_free_kernel(gd->kernel_glare_gen);
-    dt_opencl_free_kernel(gd->kernel_glare_add);
     dt_opencl_free_kernel(gd->kernel_passthrough);
     dt_opencl_free_kernel(gd->kernel_scatter_combine);
     dt_opencl_free_kernel(gd->kernel_accum);
@@ -2155,6 +2153,16 @@ static void _passthrough(const float *in,
     }
 }
 
+/* Per-image salt for the grain and glare seeds, derived from the EXIF
+   capture date and time: duplicates of an image share the same pattern, and
+   it stays the same across re-imports and machines, while images taken at
+   different times get different patterns. */
+static uint32_t _grain_salt(const dt_dev_pixelpipe_iop_t *piece)
+{
+  const uint64_t t = (uint64_t)piece->pipe->image.exif_datetime_taken;
+  return grain_hash(grain_hash((uint32_t)t) ^ (uint32_t)(t >> 32));
+}
+
 void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
@@ -2248,7 +2256,7 @@ void process(dt_iop_module_t *self,
   /* 3) film development: log exposure, DIR coupler inhibition (the correction
         field diffuses in the emulsion: gaussian, sigma 20 um as in the
         reference), density curves */
-  sf_sim_lograw(plane, npix, 3);
+  sf_sim_lograw(sim, plane, npix, 3);
   const int couplers = (d->p.couplers_amount > 0.0f);
   if(couplers)
   {
@@ -2302,7 +2310,7 @@ void process(dt_iop_module_t *self,
   {
     float *gbuf = corr; /* corr is free now — reuse as the grain delta buffer */
     const int roi_x = roi_in->x, roi_y = roi_in->y;
-    const uint32_t salt = grain_hash((uint32_t)piece->pipe->image.id);
+    const uint32_t salt = _grain_salt(piece);
     const float amount = d->p.grain_amount;
     const int mono = sf_sim_film_bw(sim); /* B&W: achromatic grain */
     /* sf_grain_delta_ml's layer_npart is precomputed at sf_sim_build time
@@ -2510,23 +2518,25 @@ void process(dt_iop_module_t *self,
     sf_sim_print_develop(sim, plane, plane, npix, 3, 3);
   }
 
-  /* 6) scanning: viewing light through the print/film -> XYZ -> work RGB with
-        OkLCh gamut compression. Write RGBA + carried alpha, then crop. */
-  sf_sim_scan(sim, plane, plane, npix, 3, 3);
+  /* 6) scanning: viewing light through the print/film -> XYZ, plus the viewing
+        glare veil in XYZ ([gl] add_glare, skipped when the film itself is
+        scanned), -> work RGB with OkLCh gamut compression. `scratch` carries
+        the glare field into the scan and is free again afterwards. */
+  const gboolean glare = !d->p.scan_film && d->p.glare_percent > 0.0f;
+  if(glare)
+    sf_glare_field(scratch, w, h, d->p.glare_percent, SF_GLARE_ROUGHNESS,
+                   SF_GLARE_BLUR_PX * preview_scale, roi_in->x, roi_in->y,
+                   _grain_salt(piece));
+  sf_sim_scan(sim, plane, glare ? scratch : NULL, plane, npix, 3, 3);
 
-  /* 6b) scanner optics + viewing glare, on the scanned RGB over the full padded
-         ROI so the crop below never sees an edge artifact ([sc] ScannerParams
-         lens_blur / unsharp_mask, [gl] add_glare -- the reference skips glare
-         when the film itself is scanned, not printed). */
+  /* 6b) scanner optics on the scanned RGB over the full padded ROI so the crop
+         below never sees an edge artifact ([sc] ScannerParams lens_blur /
+         unsharp_mask). */
   if(d->p.scan_blur > 0.0f)
     sf_blur_plane3(plane, w, h, d->p.scan_blur * preview_scale, scratch);
   if(d->p.scan_usm_sigma > 0.0f && d->p.scan_usm_amount > 0.0f)
     sf_unsharp_mask3(plane, w, h, d->p.scan_usm_sigma * preview_scale, d->p.scan_usm_amount,
                      corr, scratch);
-  if(!d->p.scan_film && d->p.glare_percent > 0.0f)
-    sf_glare(plane, w, h, d->p.glare_percent, SF_GLARE_ROUGHNESS,
-             SF_GLARE_BLUR_PX * preview_scale, roi_in->x, roi_in->y,
-             grain_hash((uint32_t)piece->pipe->image.id), scratch);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(plane) firstprivate(out, in, w, ow, oh, ox, oy)      \
@@ -3151,7 +3161,7 @@ int process_cl(dt_iop_module_t *self,
 
   /* ---- 3) film development ------------------------------------------------ */
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_lograw, w, h, CLARG(plane), CLARG(w),
-                                         CLARG(h));
+                                         CLARG(h), CLARG(g->raw_scale));
   SF_CL_STEP("lograw");
 
   const int use_corr = g->couplers_active;
@@ -3239,7 +3249,7 @@ int process_cl(dt_iop_module_t *self,
   if(d->p.grain_on && d->p.grain_amount > 0.0f)
   {
     const int roi_x = roi_in->x, roi_y = roi_in->y;
-    const uint32_t salt = grain_hash((uint32_t)piece->pipe->image.id);
+    const uint32_t salt = _grain_salt(piece);
     const float amount = d->p.grain_amount;
     const int mono = g->film_bw; /* B&W: achromatic grain */
     /* see the matching comment on the CPU path (process()) for the full
@@ -3461,6 +3471,22 @@ int process_cl(dt_iop_module_t *self,
   }
 
   /* ---- 6) scan over the full padded ROI into `plane` (free since print) ---- */
+  /* viewing glare field into tmpa, added in XYZ inside the scan (mirrors
+     process()); tmpa is free since development */
+  const int glare_on = !d->p.scan_film && d->p.glare_percent > 0.0f;
+  if(glare_on)
+  {
+    const float gmean = d->p.glare_percent * 0.01f;
+    const float sigma2 = logf(1.0f + SF_GLARE_ROUGHNESS * SF_GLARE_ROUGHNESS);
+    const float gs = sqrtf(sigma2), gbias = -0.5f * sigma2;
+    const int roi_x = roi_in->x, roi_y = roi_in->y;
+    const uint32_t salt = _grain_salt(piece);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_glare_gen, w, h, CLARG(tmpa),
+                                           CLARG(w), CLARG(h), CLARG(roi_x), CLARG(roi_y),
+                                           CLARG(gmean), CLARG(gs), CLARG(gbias), CLARG(salt));
+    SF_CL_STEP("glare gen");
+    SF_GAUSS_BLUR4(tmpa, SF_GLARE_BLUR_PX * preview_scale, "glare blur");
+  }
   err = dt_opencl_enqueue_kernel_2d_args(
       devid, gd->kernel_scan, w, h, CLARG(plane2), CLARG(plane), CLARG(w), CLARG(h),
       CLARG(sl_cl), CLARG(sx_cl), CLARG(sy_cl),
@@ -3470,10 +3496,11 @@ int process_cl(dt_iop_module_t *self,
       CLARG(g->cmax_nl), CLARG(g->cmax_nh),
       CLARG(g->out_compress), CLARG(g->out_luminance_boost), CLARG(g->out_scale),
       CLARG(g->scan_bw_on), CLARG(g->scan_bw_m),
-      CLARG(g->scan_bw_q));
+      CLARG(g->scan_bw_q), CLARG(tmpa), CLARG(glare_on), CLARG(g->glare_xyz[0]),
+      CLARG(g->glare_xyz[1]), CLARG(g->glare_xyz[2]));
   SF_CL_STEP("scan");
 
-  /* ---- 6b) scanner optics + viewing glare (mirrors process()) -------------- */
+  /* ---- 6b) scanner optics (mirrors process()) ------------------------------ */
   if(d->p.scan_blur > 0.0f)
   {
     /* CPU twin is sf_blur_plane3(); mirror its SF_GAUSS_MIN_SIGMA cut */
@@ -3492,22 +3519,6 @@ int process_cl(dt_iop_module_t *self,
                                            CLARG(acc), CLARG(w), CLARG(h),
                                            CLARG(d->p.scan_usm_amount));
     SF_CL_STEP("scanner USM");
-  }
-  if(!d->p.scan_film && d->p.glare_percent > 0.0f)
-  {
-    const float gmean = d->p.glare_percent * 0.01f;
-    const float sigma2 = logf(1.0f + SF_GLARE_ROUGHNESS * SF_GLARE_ROUGHNESS);
-    const float gs = sqrtf(sigma2), gbias = -0.5f * sigma2;
-    const int roi_x = roi_in->x, roi_y = roi_in->y;
-    const uint32_t salt = grain_hash((uint32_t)piece->pipe->image.id);
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_glare_gen, w, h, CLARG(tmpa),
-                                           CLARG(w), CLARG(h), CLARG(roi_x), CLARG(roi_y),
-                                           CLARG(gmean), CLARG(gs), CLARG(gbias), CLARG(salt));
-    SF_CL_STEP("glare gen");
-    SF_GAUSS_BLUR4(tmpa, SF_GLARE_BLUR_PX * preview_scale, "glare blur");
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_glare_add, w, h, CLARG(plane),
-                                           CLARG(tmpa), CLARG(w), CLARG(h));
-    SF_CL_STEP("glare add");
   }
 
   /* ---- 7) crop the roi_out window into dev_out ----------------------------- */

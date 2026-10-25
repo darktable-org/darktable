@@ -286,7 +286,7 @@ static void _render(const sf_sim_t *sim,
   assert_non_null(corr);
 
   sf_sim_expose(sim, rgb_in, work, npix, 3, 3);
-  sf_sim_lograw(work, npix, 3);
+  sf_sim_lograw(sim, work, npix, 3);
   sf_sim_develop_corr(sim, work, corr, npix, 3);
   sf_sim_develop(sim, work, corr, work, npix, 3, 3);
   if(sim->has_print)
@@ -294,7 +294,7 @@ static void _render(const sf_sim_t *sim,
     sf_sim_print_expose(sim, work, work, npix, 3, 3);
     sf_sim_print_develop(sim, work, work, npix, 3, 3);
   }
-  sf_sim_scan(sim, work, rgb_out, npix, 3, 3);
+  sf_sim_scan(sim, work, NULL, rgb_out, npix, 3, 3);
 
   free(work);
   free(corr);

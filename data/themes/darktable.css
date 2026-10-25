@@ -4421,14 +4421,24 @@ popover.dt_masks_precise_anchor
   margin-left: 0.5em;
 }
 
-/* the presets popover (see dt_masks_gui_presets_popover) is built by hand, not
-   from a menu model. A model's menu keeps its items inside the popover, which
-   is what the negative margin of popover.menu modelbutton relies on, so the
-   box gives it that room. A preset's name has a negative margin too, which would
-   otherwise run over the buttons around it */
-.dt_masks_presets_menu
+/* the presets popover (see dt_masks_gui_presets_popover) and the shrink or grow
+   settings (.dt_masks_settings_menu, see _props_resize_settings_clicked) are
+   built by hand, not from a menu model. A model's menu keeps its items inside
+   the popover, which is what the negative margin of popover.menu modelbutton
+   relies on, so the box gives it that room. A preset's name has a negative
+   margin too, which would otherwise run over the buttons around it */
+.dt_masks_presets_menu,
+.dt_masks_settings_menu
 {
   margin: 0.4em 0.8em;
+}
+
+/* a row of controls among the settings' items lines up with their text and
+   their marks: an item pads its text 1.5em from the popover's edge, and the
+   box is 0.8em in */
+.dt_masks_settings_row
+{
+  margin: 0.1em 0.7em;
 }
 
 popover.menu button.dt_masks_preset_delete
