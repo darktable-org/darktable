@@ -21,6 +21,7 @@
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "develop/pixelpipe.h"
+#include "develop/pixelpipe_hb.h"
 
 #include <float.h>
 
@@ -39,7 +40,11 @@
  * reload with no GUI. A module can hold several raster elements, each naming
  * another source. The classic blend_params.raster_mask_* fields are not used:
  * nothing writes them for a raster form, so module->raster_mask.sink.source is
- * not this form's source. */
+ * not this form's source.
+ *
+ * It has no shape to draw. Hovering its row in the panel while the masks are
+ * shown on the canvas tints the area its mask covers, read from the preview
+ * pipe's copy in the source's piece. */
 
 static void _raster_set_form_name(dt_masks_form_t *const form, const size_t nb)
 {
@@ -54,19 +59,146 @@ static GSList *_raster_setup_mouse_actions(const dt_masks_form_t *const form)
   return NULL;
 }
 
-/* A raster form has no geometry, but the group's event and draw dispatchers
- * (group.c) call some of these entries on every member without a NULL check,
- * so they are no-op stubs, as in parametric.c. get_distance never makes it the
- * closest form, so it is never picked on the canvas. */
+/* The preview frame as a w x h grid of points carried back to the output of
+ * `source`, in the pipe's unscaled distortion space, which is where its mask
+ * lives. NULL when the pipe's modules cannot be walked or memory is short */
+static float *_preview_grid_in_source(dt_develop_t *const dev,
+                                      const dt_iop_module_t *const source,
+                                      const int w,
+                                      const int h)
+{
+  float wd, ht;
+  dt_masks_get_image_size(&wd, &ht, NULL, NULL);
+  const size_t n = (size_t)w * h;
+  float *points = dt_alloc_align_float(2 * n);
+  if(!points) return NULL;
 
+  DT_OMP_FOR(collapse(2))
+  for(int y = 0; y < h; y++)
+    for(int x = 0; x < w; x++)
+    {
+      const size_t k = (size_t)y * w + x;
+      points[k * 2] = (x + 0.5f) * wd / w;
+      points[k * 2 + 1] = (y + 0.5f) * ht / h;
+    }
+  if(!dt_dev_distort_backtransform_plus(dev, dev->preview_pipe, source->iop_order,
+                                        DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, n))
+  {
+    dt_free_align(points);
+    return NULL;
+  }
+  return points;
+}
+
+/* The source's mask resampled into out, a w x h grid over the preview frame,
+ * 0 outside the mask. FALSE when the preview pipe has no mask of it to show:
+ * it is busy, or the source is off or stores none.
+ *
+ * The pipe frees and replaces its pieces' buffers under busy_mutex, so the
+ * pixels are read under it, with a trylock as dt_preview_data_is_fresh() does
+ * (preview_data.c): a busy pipe draws nothing this frame rather than make the
+ * gui wait. The grid is carried back first, so that the lock covers the read
+ * only and not the transform, which waits on history_mutex */
+static gboolean _source_mask_on_preview(const dt_masks_form_t *const form,
+                                        const int w,
+                                        const int h,
+                                        float *const out)
+{
+  dt_develop_t *dev = darktable.develop;
+  dt_dev_pixelpipe_t *pipe = dev->preview_pipe;
+  dt_iop_module_t *source = dt_masks_raster_source(form);
+  if(!source) return FALSE;
+
+  float *points = _preview_grid_in_source(dev, source, w, h);
+  if(!points) return FALSE;
+
+  if(dt_pthread_mutex_trylock(&pipe->busy_mutex))
+  {
+    dt_print(DT_DEBUG_MASKS, "[masks] raster %d: preview pipe busy, no tint", form->formid);
+    dt_free_align(points);
+    return FALSE;
+  }
+
+  gboolean ok = FALSE;
+  const dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(dev, pipe, source);
+  const dt_masks_point_raster_t *const ref = form->points->data;
+  const float *const mask =
+    piece && !dt_masks_raster_is_unresolved(source, piece, form)
+    ? g_hash_table_lookup(piece->raster_masks, GINT_TO_POINTER(ref->id)) : NULL;
+  if(mask && piece->processed_roi_out.width > 0 && piece->processed_roi_out.height > 0)
+  {
+    // the mask is at the roi's scale, the grid in unscaled space
+    const dt_iop_roi_t *const roi = &piece->processed_roi_out;
+    DT_OMP_FOR()
+    for(size_t k = 0; k < (size_t)w * h; k++)
+    {
+      const float x = points[k * 2] * roi->scale - roi->x - 0.5f;
+      const float y = points[k * 2 + 1] * roi->scale - roi->y - 0.5f;
+      // off the mask by more than the pixel its edge interpolates with reads
+      // 0, within it the edge pixel; a NaN fails the test
+      out[k] = x > -1.0f && x < roi->width && y > -1.0f && y < roi->height
+        ? dt_masks_pixel_bilinear(mask, roi->width, roi->height,
+                                  CLAMPF(x, 0.0f, roi->width - 1.0f),
+                                  CLAMPF(y, 0.0f, roi->height - 1.0f))
+        : 0.0f;
+    }
+    ok = TRUE;
+  }
+  dt_pthread_mutex_unlock(&pipe->busy_mutex);
+  dt_free_align(points);
+  return ok;
+}
+
+// the tint of a raster element's mask over the preview, or NULL while there is
+// none to show. Kept for the preview it was made for, so a row hovered through
+// many redraws costs one build
+static cairo_surface_t *_raster_tint(const dt_masks_form_t *const form)
+{
+  const dt_hash_t hash = darktable.develop->preview_pipe->backbuf_hash;
+  char key[DT_DTDATA_ENTRY_LEN];
+  g_snprintf(key, sizeof(key), "raster-%d", form->formid);
+  cairo_surface_t *kept = dt_masks_pixel_hover_get(key, hash);
+  if(kept) return kept;
+
+  float wd, ht;
+  dt_masks_get_image_size(&wd, &ht, NULL, NULL);
+  const int w = MAX(1, (int)ceilf(wd / DT_MASKS_OVERLAY_STEP));
+  const int h = MAX(1, (int)ceilf(ht / DT_MASKS_OVERLAY_STEP));
+  const double start = dt_get_debug_wtime();
+  float *mask = dt_alloc_align_float((size_t)w * h);
+  cairo_surface_t *tint =
+    mask && _source_mask_on_preview(form, w, h, mask)
+    ? dt_masks_pixel_tint(mask, w, h, TRUE, 0.0f) : NULL;
+  dt_free_align(mask);
+  if(!tint) return NULL;
+
+  dt_print(DT_DEBUG_PERF, "[masks] raster tint %dx%d: %.2f ms",
+           w, h, 1000.0 * (dt_get_debug_wtime() - start));
+  return dt_masks_pixel_hover_keep(key, hash, tint);
+}
+
+// the group calls this for every member, with the row hovered in the panel
+// posing as the selected one and form_selected set, the same pose a canvas
+// hover has. A raster form is never picked on the canvas, so that is the only
+// time it draws
 static void _raster_post_expose(cairo_t *const cr,
                                 const float zoom_scale,
                                 dt_masks_form_gui_t *const gui,
-                                const int nb,
-                                const int index)
+                                const int index,
+                                const int num_points)
 {
-  // nothing to draw
+  if(!gui || gui->group_selected != index || !gui->form_selected) return;
+  const dt_masks_form_t *form = dt_masks_pixel_form_at(gui, index);
+  if(!form || !(form->type & DT_MASKS_RASTER)) return;
+
+  cairo_surface_t *tint = _raster_tint(form);
+  if(tint) dt_masks_pixel_paint_overlay(cr, tint);
 }
+
+/* A raster form has no geometry, but the group's event and draw dispatchers
+ * (group.c) call some of these entries on every member without a NULL check,
+ * so the rest are no-op stubs, as in parametric.c. get_distance never makes it
+ * the closest form, so it is never picked on the canvas. */
 
 static void _raster_get_distance(const float x,
                                  const float y,

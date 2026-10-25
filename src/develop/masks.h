@@ -722,6 +722,26 @@ void dt_masks_pixel_release(dt_masks_pixel_cache_t *c);
 gboolean dt_masks_pixel_readable(const dt_imgid_t imgid,
                                  const dt_dtdata_ref_t *ref,
                                  gboolean *transient);
+// preview pixels per pixel of the overlay tint
+#define DT_MASKS_OVERLAY_STEP 2.0f
+// the tint of the hovered element, kept for the preview it was made for. get
+// returns NULL unless it was kept under this key and hash; keep takes the
+// surface and returns it
+cairo_surface_t *dt_masks_pixel_hover_get(const char *key, const dt_hash_t hash);
+cairo_surface_t *dt_masks_pixel_hover_keep(const char *key,
+                                           const dt_hash_t hash,
+                                           cairo_surface_t *surface);
+// a tint surface painted over the whole preview frame, whatever its own size
+void dt_masks_pixel_paint_overlay(cairo_t *cr, cairo_surface_t *overlay);
+// the form drawn at index of the visible group (or of the import menu's
+// preview), or NULL
+dt_masks_form_t *dt_masks_pixel_form_at(const dt_masks_form_gui_t *gui, const int index);
+// bilinear read of m (mw x mh) at pixel coordinates x in [0, mw - 1], y in [0, mh - 1]
+float dt_masks_pixel_bilinear(const float *m,
+                              const int mw,
+                              const int mh,
+                              const float x,
+                              const float y);
 // a mask as the red overlay tint: in proportion, or full above threshold
 cairo_surface_t *dt_masks_pixel_tint(const float *const mask,
                                      const int w,
