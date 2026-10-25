@@ -376,6 +376,10 @@ changes (where available).
   `-as-flags` form emits a single line of `--flag value` pairs
   ready to splice into another invocation.
 
+- Lightroom import now applies a crop with the crop module, and its
+  straightening angle with the rotate and perspective module, instead
+  of the deprecated crop and rotate module.
+
 ## Bug Fixes
 
 - Fixed missing Active D-Lighting exposure compensation for Nikon
