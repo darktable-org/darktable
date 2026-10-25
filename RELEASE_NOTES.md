@@ -137,6 +137,10 @@ changes (where available).
   When "edit shapes on canvas" is enabled, the node editing area is
   extended beyond the image borders to allow editing of these nodes.
 
+- Raster masks now show up on the canvas. When "edit shapes on canvas"
+  is enabled, hovering a raster mask in the masks panel tints the area
+  of the image that it covers.
+
 - In color assessment mode, when the image is zoomed in show a
   dashed line on the sides of the white border where the image
   extends beyond the current view (horizontally or vertically).
