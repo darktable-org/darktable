@@ -2956,11 +2956,11 @@ popover#log-history-popover label
 
    The panel's shades, one per state. Each header and the rail hanging from
    it take the same one, so a theme or a CSS tweak retints the whole panel by
-   redefining these. A selected or hovered header is a gradient from the _top
-   shade down to the plain one, and its rail takes the plain one: that is the
-   edge they meet */
+   redefining these. A selected header is a gradient from the _top shade down
+   to the plain one, and its rail takes the plain one: that is the edge they
+   meet */
 @define-color mask_rest          shade(@plugin_bg_color, 0.97);
-@define-color mask_implied       shade(@plugin_bg_color, 1.15);
+@define-color mask_selected_element_group shade(@plugin_bg_color, 1.15);
 @define-color mask_selected_top  shade(@plugin_bg_color, 1.33);
 @define-color mask_selected      @mask_selected_top;
 @define-color mask_hover_top     shade(@plugin_bg_color, 1.5);
@@ -2968,6 +2968,13 @@ popover#log-history-popover label
 /* what a ctrl+shift+click would delete, while ctrl+shift is held over the list */
 @define-color mask_delete_top    mix(@mask_hover_top, rgb(200, 60, 50), 0.55);
 @define-color mask_delete        @mask_delete_top;
+/* shift+click picks members together (see _pick_toggle): the one a click would
+   pick, while shift is held over the list, tints toward mask_accent, the theme's
+   accent color when one is set (chunk-colored-accent.css), green otherwise. A
+   picked header is a selected one */
+@define-color mask_accent        @accent_green;
+@define-color mask_pick_top      mix(@mask_hover_top, @mask_accent, 0.35);
+@define-color mask_pick          @mask_pick_top;
 /* the ground of the controls under an open header, in every state */
 @define-color mask_card          @mask_rest;
 /* the glyph on every row's lead icon. A lead has no plate of its own, so its
@@ -2985,8 +2992,11 @@ popover#log-history-popover label
 @define-color mask_list_bg       shade(@plugin_bg_color, 0.75);
 /* header names, one per header state as for the shades above */
 @define-color mask_text_rest     @fg_color;
-@define-color mask_text_implied  @fg_color;
+@define-color mask_text_selected_element_group @fg_color;
 @define-color mask_text_selected @fg_color;
+/* the frame of a selected or picked header: the theme's accent color when one
+   is set (chunk-colored-accent.css), the color of its name otherwise */
+@define-color mask_selected_frame @mask_text_selected;
 @define-color mask_text_hover    @fg_color;
 /* labels and values of the sliders in the list: as bright as the same
    properties in the selection panel below (mask_selection_text_control) */
@@ -3514,8 +3524,8 @@ button.dt_masks_enable_toggle:checked
    .dt_masks_header, and says which it is: .dt_masks_row_header (a member
    shown as a row) or .dt_masks_group_header (a group's own). Its states go on the
    header itself:
-   .dt_masks_selected, .dt_masks_implied (it holds the selection),
-   .dt_masks_hovered, .dt_masks_soloed (a group's), .dt_masks_linked (an
+   .dt_masks_selected, .dt_masks_selected_element_group (it holds the selected
+   element), .dt_masks_hovered, .dt_masks_soloed (a group's), .dt_masks_linked (an
    element's, a shape shown in more than one place), .dt_masks_open and
    .dt_masks_drop_target (a group a drag would drop into).
 
@@ -3561,10 +3571,10 @@ button.dt_masks_enable_toggle:checked
 
 /* every member header rests at one shade a step lighter than the
    list, whatever its depth, so the list reads as the darker ground behind
-   them, and only brightens when selected, implied or hovered. outline-color
-   is never drawn: it is the color of the rail hanging from the header (see
-   .dt_masks_group_members and _masks_rail_draw), set beside the background
-   in every state so the two cannot disagree */
+   them, and only brightens when selected or when it holds the selected
+   element. outline-color is never drawn: it is the color of the rail hanging
+   from the header (see .dt_masks_group_members and _masks_rail_draw), set
+   beside the background in every state so the two cannot disagree */
 .dt_masks_row_header,
 .dt_masks_group_header
 {
@@ -3579,22 +3589,33 @@ button.dt_masks_enable_toggle:checked
 }
 
 /* the states, at equal specificity, so their order decides between two of
-   them on one header: implied, then selected (the mask's own group is
-   selected by default and implied whenever it holds the selection), then a
-   group's solo wash, then hover over all of them, then a drop target */
-.dt_masks_header.dt_masks_implied
+   them on one header: the group of the selected element, then selected (the
+   mask's own group is selected by default and is that group whenever it holds
+   the selected element), then a group's solo wash, then hover, then a drop
+   target */
+.dt_masks_header.dt_masks_selected_element_group
 {
-  background-color: @mask_implied;
-  outline-color: @mask_implied;
+  background-color: @mask_selected_element_group;
+  outline-color: @mask_selected_element_group;
 }
 
 /* the rail takes the shade the gradient ends on, since that is the edge it
    meets */
-.dt_masks_header.dt_masks_selected
+.dt_masks_header.dt_masks_selected,
+.dt_masks_header.dt_masks_picked,
+.dt_masks_header.dt_masks_selected_held
 {
   background-color: transparent;
   background-image: linear-gradient(to bottom, @mask_selected_top, @mask_selected);
+  border-color: @mask_selected_frame;
   outline-color: @mask_selected;
+}
+
+/* what a selected or picked group holds is selected with it, and is not
+   framed: the frame says what was selected */
+.dt_masks_header.dt_masks_selected_held
+{
+  border-color: transparent;
 }
 
 /* persistent solo wash: driven by state (bd->solo_formid, solo_group_key)
@@ -3608,14 +3629,12 @@ button.dt_masks_enable_toggle:checked
 }
 
 /* hover, from the list or from the canvas (canvas <-> list sync, and over a
-   row's docked controls, see _row_crossing). A gradient starting brighter
-   than the selection's, so a hovered header is always the brightest */
+   row's docked controls, see _row_crossing): a right border alone, in the
+   frame's color, so the header keeps the shade of its state */
 .dt_masks_row_header.dt_masks_hovered,
 .dt_masks_group_header.dt_masks_hovered
 {
-  background-color: transparent;
-  background-image: linear-gradient(to bottom, @mask_hover_top, @mask_hover);
-  outline-color: @mask_hover;
+  border-right-color: @mask_selected_frame;
 }
 
 /* ctrl+shift held over the list (see _armed_watch): the hovered header takes the delete
@@ -3626,6 +3645,15 @@ button.dt_masks_enable_toggle:checked
   background-color: transparent;
   background-image: linear-gradient(to bottom, @mask_delete_top, @mask_delete);
   outline-color: @mask_delete;
+}
+
+/* shift held over the list (see _armed_watch): the hovered header takes the
+   pick shade */
+.dt_masks_picking .dt_masks_header.dt_masks_hovered
+{
+  background-color: transparent;
+  background-image: linear-gradient(to bottom, @mask_pick_top, @mask_pick);
+  outline-color: @mask_pick;
 }
 
 /* the group a drop would land in (see _drop_group_of) lights its header up
@@ -3653,14 +3681,18 @@ button.dt_masks_enable_toggle:checked
   color: @mask_text_rest;
 }
 
-.dt_masks_list .dt_masks_header.dt_masks_implied .dt_masks_row_name,
-.dt_masks_list .dt_masks_header.dt_masks_implied .dt_masks_row_name label
+.dt_masks_list .dt_masks_header.dt_masks_selected_element_group .dt_masks_row_name,
+.dt_masks_list .dt_masks_header.dt_masks_selected_element_group .dt_masks_row_name label
 {
-  color: @mask_text_implied;
+  color: @mask_text_selected_element_group;
 }
 
 .dt_masks_list .dt_masks_header.dt_masks_selected .dt_masks_row_name,
-.dt_masks_list .dt_masks_header.dt_masks_selected .dt_masks_row_name label
+.dt_masks_list .dt_masks_header.dt_masks_selected .dt_masks_row_name label,
+.dt_masks_list .dt_masks_header.dt_masks_picked .dt_masks_row_name,
+.dt_masks_list .dt_masks_header.dt_masks_picked .dt_masks_row_name label,
+.dt_masks_list .dt_masks_header.dt_masks_selected_held .dt_masks_row_name,
+.dt_masks_list .dt_masks_header.dt_masks_selected_held .dt_masks_row_name label
 {
   color: @mask_text_selected;
 }
@@ -4203,7 +4235,8 @@ button.dt_masks_channel_picker
    ones (#collapse-block, #collapsible,
    .dt_section_label:not(#blending-box)), and do it by the id, never by a
    tie */
-#masks-selection-area
+#masks-selection-area,
+#masks-multi-area
 {
   padding: 4px;
 }
@@ -4221,7 +4254,8 @@ button.dt_masks_channel_picker
    (.dt_module_btn), end in the same columns as a section header's.
    The stock section title's padding and margin, which it also is, are
    overridden */
-#masks-selection-area .dt_section_label.dt_masks_selection_caption
+#masks-selection-area .dt_section_label.dt_masks_selection_caption,
+#masks-multi-area .dt_section_label.dt_masks_selection_caption
 {
   padding: 0.07em 2px 0.07em 6px;
   margin: 0;
@@ -4250,6 +4284,19 @@ button.dt_masks_selection_action
   background-color: transparent;
   border: none;
   color: @button_fg;
+}
+
+/* the multiple selection panel's actions, under its caption: a button for each,
+   on the width of the panel, its label at the start */
+.dt_masks_multi_actions
+{
+  padding: 4px 6px;
+}
+
+button.dt_masks_multi_action
+{
+  padding: 4px 6px;
+  margin-bottom: 4px;
 }
 
 /* dimmed where they do not apply to what the row names */

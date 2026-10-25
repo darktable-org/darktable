@@ -26,7 +26,8 @@ file:
 The selection panel under the list is the exception: its theme rules carry
 its own id, `#masks-selection-area`, which they need to outrank darktable's
 stock section rules. Start a rule for it with
-`#masks-panel #masks-selection-area`.
+`#masks-panel #masks-selection-area`. The multiple selection panel that stands
+in for it (see below) is `#masks-multi-area`, and follows the same rule.
 
 ## Rows and headers
 
@@ -43,8 +44,10 @@ A header's state is a class on the header itself:
 | state | when |
 |---|---|
 | `.dt_masks_selected` | it is the selection |
-| `.dt_masks_implied` | it holds the selection |
-| `.dt_masks_hovered` | under the pointer, in the list or on the canvas |
+| `.dt_masks_selected_element_group` | it holds the selected element: only that group, not the ones above it |
+| `.dt_masks_hovered` | under the pointer, in the list or on the canvas: a right border in `mask_selected_frame`, the header keeps its shade |
+| `.dt_masks_picked` | picked with others by shift+click, see the multiple selection below. The theme styles it as `.dt_masks_selected` |
+| `.dt_masks_selected_held` | selected because the group holding it is selected or picked. The theme shades it as `.dt_masks_selected`, unframed |
 | `.dt_masks_soloed` | a soloed group's header; a soloed row carries it instead |
 | `.dt_masks_open` | its controls or members show; a group's adds `.dt_masks_has_card` when its card hangs from it |
 | `.dt_masks_drop_target` | a group a drag would drop into |
@@ -52,8 +55,11 @@ A header's state is a class on the header itself:
 | `.dt_masks_linked` | on an element's header: a shape linked with other modules or shown more than once in this mask. The theme gives it a dashed frame, since its link button is in the selection panel |
 
 The theme's state rules all have the same specificity, so their order in the
-file decides between two states on one header: implied, selected, soloed,
-hovered, drop target. A tweak naming the state wins over all of them:
+file decides between two states on one header: group of the selected element,
+selected, soloed, drop target. The shades of the modifiers held over the list
+(`.dt_masks_picking` for shift, `.dt_masks_deleting` for ctrl+shift, both on
+the list) apply to the hovered header, and outrank those. A tweak naming the
+state wins over all of them:
 
 ```css
 #masks-panel .dt_masks_header.dt_masks_selected
@@ -191,15 +197,15 @@ stylesheet, so a redefinition replaces the token everywhere it is used.
 | token | used for |
 |---|---|
 | `mask_rest` | the headers at rest |
-| `mask_implied` | the header of a group holding the selection |
+| `mask_selected_element_group` | the header of the group holding the selected element |
 | `mask_selected_top`, `mask_selected` | a selected header, top and bottom of its gradient |
-| `mask_hover_top`, `mask_hover` | a hovered header, top and bottom of its gradient |
+| `mask_hover_top`, `mask_hover` | the group a drop would land in, top and bottom of its gradient, and the base of the pick and delete shades |
 | `mask_card` | the ground of a row's open controls |
 | `mask_list_bg` | the ground of the whole list |
 | `mask_lead_fg` | the glyph of a lead icon |
 | `mask_badge`, `mask_badge_no_effect` | the warning badge (amber), and the same with `.dt_masks_no_effect` (red) |
 | `mask_badge_outline` | the warning badge's edge, as its `outline-color` |
-| `mask_text_rest`, `mask_text_implied`, `mask_text_selected`, `mask_text_hover` | header names, per header state |
+| `mask_text_rest`, `mask_text_selected_element_group`, `mask_text_selected`, `mask_text_hover` | header names, per header state |
 | `mask_text_control`, `mask_text_control_hover` | labels and values of the sliders in the list |
 
 ```css
@@ -229,6 +235,20 @@ of its own:
 |---|---|
 | `mask_selection_text` | the section titles |
 | `mask_selection_text_control`, `mask_selection_text_control_hover` | labels and values of the sliders |
+
+## The multiple selection
+
+Shift+click on rows and headers picks them together. From two on,
+`#masks-multi-area` takes the selection panel's place: the same caption
+(`.dt_masks_selection_caption`), counting what is picked, and under it
+`.dt_masks_multi_actions`: a `button.dt_masks_multi_action` each for delete, move
+and group together. Picked headers carry
+`.dt_masks_picked`, which the theme styles as a selected header. While shift is
+held over the list with a member selected or picked, the hovered header takes
+`mask_pick_top` and `mask_pick`, which tint toward `mask_accent`, the theme's
+accent color when one is set and green otherwise. A selected or picked header
+is framed in `mask_selected_frame`, the accent color when one is set and the
+color of its name otherwise, but for what is selected with its group.
 
 ## The panel's homes
 

@@ -331,10 +331,10 @@ static int _group_events_mouse_moved(dt_iop_module_t *module,
 }
 
 // does the panel list `ids` name this shape, or the group holding it? The
-// panel's hover (gui->panel_hover_formids: a row or a cluster header) and its
+// panel's hover (gui->panel_hover_formids: a row or a cluster header), its
 // solo highlight (gui->solo_formids, which stays whatever the pointer does)
-// are such lists. `parentid` makes the row of a group highlight all of its
-// members
+// and its multiple selection (gui->picked_formids, likewise) are such lists.
+// `parentid` makes the row of a group highlight all of its members
 static gboolean _panel_lists(const GList *ids,
                              const dt_mask_id_t formid,
                              const dt_mask_id_t parentid)
@@ -384,7 +384,8 @@ void dt_group_events_post_expose(cairo_t *cr,
         eff = pos;
         bold = TRUE;
       }
-      else if(_panel_lists(gui->solo_formids, fpt->formid, fpt->parentid))
+      else if(_panel_lists(gui->solo_formids, fpt->formid, fpt->parentid)
+              || _panel_lists(gui->picked_formids, fpt->formid, fpt->parentid))
         eff = pos;
       else if(!any_list_hover && base_sel < 0
               && dt_is_valid_maskid(gui->panel_selected_formid)

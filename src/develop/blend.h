@@ -579,6 +579,9 @@ typedef struct dt_iop_gui_blend_data_t
   // the next release on a row or group header does nothing: an alt+click on
   // a handle, or a group drag ending in a release. Cleared on a plain press
   gboolean masks_skip_group_select_release;
+  // the press on a group header that is being released picked it: its release
+  // does nothing, whatever it finds held by then. Cleared on every press
+  gboolean masks_pick_press;
   // set while _auto_expand_selected_row toggles row expanders itself: toggling
   // an expander selects its row, which would re-enter it without end. Not
   // DT_ENTER_GUI_UPDATE, which makes _props_row_toggled skip the update the
@@ -622,6 +625,29 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_selection_compose_btn;
   GtkWidget *masks_selection_delete_btn;
   GtkWidget *masks_selection_presets_btn;
+  // the members picked together with shift+click (see _pick_toggle): ids as
+  // the rows carry them, an element's form id or a group's cid, in the order
+  // they were picked. NULL unless two or more are picked, which
+  // dt_masks_model_pick_toggle keeps true; then the "multiple selection"
+  // panel (masks_multi_area, see _multi_panel_sync) stands in for the
+  // selection panel above. Touched on the GUI thread only
+  GList *masks_picked;
+  // what the bulk actions took away from the picks (see _picks_undo_t), newest
+  // first: an undo that brings back the mask as it was before one brings the
+  // picks back with it. masks_picks_undo_check asks the next list build to
+  // look, as the forms were just reloaded; masks_model_hash is the mask as the
+  // last build found it, while there are records
+  GList *masks_undo_picks;
+  gboolean masks_picks_undo_check;
+  dt_hash_t masks_model_hash;
+  // where the last press on a row or header landed, in the widget's own
+  // coordinates, to tell a click from a drag attempt (_picks_drag_attempt)
+  double masks_press_x, masks_press_y;
+  GtkWidget *masks_multi_area;
+  GtkWidget *masks_multi_label;
+  GtkWidget *masks_multi_delete_btn;
+  GtkWidget *masks_multi_move_btn;
+  GtkWidget *masks_multi_group_btn;
   // the refinement section's title; its tooltip says why the section is
   // inactive, when it is (see _update_refine_sensitivity)
   GtkWidget *masks_refine_section_label;

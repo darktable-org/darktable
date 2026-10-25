@@ -333,6 +333,13 @@ enum _channel_indexes
 static gboolean _module_has_drawn_shapes(const dt_iop_module_t *module);
 static void _blendop_mask_enable(dt_iop_module_t *module);
 static void _queue_masks_list_rebuild(dt_iop_module_t *module);
+// the row buttons on a picked row act on every pick (see _picks_toggle_flag):
+// they return FALSE when the row is not one, and the caller acts on it alone
+static gboolean _picks_toggle_flag(dt_iop_module_t *module,
+                                   const dt_mask_id_t row_id,
+                                   const dt_masks_pick_flag_t flag);
+static gboolean _picks_set_op(dt_iop_module_t *module, const dt_mask_id_t cid, const dt_masks_state_t flexi_op);
+static gboolean _nested_as_group(const dt_masks_point_group_t *pt, const dt_masks_form_t *form);
 static void _resume_pending_rename(dt_iop_module_t *module);
 static void _queue_link_peers_rebuild(const dt_iop_module_t *module);
 static void _auto_expand_selected_row(dt_iop_module_t *module, const dt_mask_id_t id);
@@ -1275,7 +1282,7 @@ static gboolean _swallow_unregistered_modifier(GtkGestureSingle *gesture,
 }
 
 // the modifiers a click on a row or a group header gives a meaning: ctrl
-// renames, shift shows or hides what it holds, both delete it. Any other
+// renames, shift picks it with the others, both delete it. Any other
 // combination does nothing
 #define MASKS_CLICK_MODS (GDK_CONTROL_MASK | GDK_SHIFT_MASK)
 
@@ -1520,6 +1527,7 @@ static void _refine_section_refresh(dt_iop_module_t *module);
 static void _update_add_target_hints(dt_iop_module_t *module);
 static void _update_refine_sensitivity(dt_iop_module_t *module);
 static void _set_group_target(dt_iop_module_t *module, const dt_mask_id_t cid);
+static void _picks_drop(dt_iop_module_t *module);
 static void _set_form_target(dt_iop_module_t *module, const dt_mask_id_t id);
 static void _element_chevron_clicked(dt_iop_module_t *module,
                                      const dt_mask_id_t id,
@@ -4126,6 +4134,389 @@ dt_mask_id_t dt_masks_model_compose(dt_masks_form_t *grp,
   return _add_empty_on_top(wrap);
 }
 
+// the cids of the groups that hold the list `owner`, and those above them, up
+// to the mask's own group, which has none. Free the list
+static GList *_holder_cids(dt_masks_form_t *grp, dt_masks_form_t *owner)
+{
+  GList *cids = NULL;
+  for(int depth = 0; owner && owner != grp && depth <= DT_MASKS_NESTING_MAX; depth++)
+  {
+    const dt_masks_point_group_t *marker = owner->points ? owner->points->data : NULL;
+    if(marker) cids = g_list_prepend(cids, GINT_TO_POINTER(marker->formid));
+    dt_masks_form_t *up = NULL;
+    if(!_point_node_owner(grp, owner->formid, &up)) break;
+    owner = up;
+  }
+  return cids;
+}
+
+// does a group in `picked` (by its cid) hold `owner`, the list a picked member
+// is in? Then the member goes with the group, and is not a pick of its own
+static gboolean _held_by_picked_group(dt_masks_form_t *grp,
+                                      dt_masks_form_t *owner,
+                                      const GList *picked)
+{
+  GList *cids = _holder_cids(grp, owner);
+  gboolean held = FALSE;
+  for(const GList *c = cids; c && !held; c = g_list_next(c))
+    held = g_list_find((GList *)picked, c->data) != NULL;
+  g_list_free(cids);
+  return held;
+}
+
+// the point that holds the group of cid `cid` in its holder's list, or NULL
+// for the mask's own group, which no list holds
+static dt_masks_point_group_t *_group_reference(dt_masks_form_t *grp, const dt_mask_id_t cid)
+{
+  const dt_masks_form_t *sub = dt_masks_model_nested_group_of(grp, cid);
+  return sub ? dt_masks_gui_group_point(grp, sub->formid) : NULL;
+}
+
+// the group whose list holds pick `id`, an element or a group (by its cid)
+static dt_masks_form_t *_pick_holder(dt_masks_form_t *grp, const dt_mask_id_t id)
+{
+  dt_masks_point_group_t *pt = dt_masks_gui_group_point(grp, id);
+  if(pt && dt_masks_point_is_marker(pt)) pt = _group_reference(grp, id);
+  dt_masks_form_t *owner = NULL;
+  return pt && _point_node_at(grp, pt, &owner) ? owner : NULL;
+}
+
+// is the pick `id` held by another pick, a group that is picked? Then it goes
+// where that group goes
+static gboolean _pick_is_held(dt_masks_form_t *grp, const GList *picked, const dt_mask_id_t id)
+{
+  return _held_by_picked_group(grp, _pick_holder(grp, id), picked);
+}
+
+GList *dt_masks_model_picked_points(dt_masks_form_t *grp, const GList *picked)
+{
+  GList *out = NULL;
+  if(!grp || !picked) return NULL;
+  GList *pts = _mask_points(grp);
+  for(GList *l = pts; l; l = g_list_next(l))
+  {
+    dt_masks_point_group_t *pt = l->data;
+    if(!g_list_find((GList *)picked, GINT_TO_POINTER(pt->formid))) continue;
+    // a group is picked by its cid, and moves and goes as the member its
+    // holder has for it. The mask's own group has no holder, and is no pick
+    if(dt_masks_point_is_marker(pt)) pt = _group_reference(grp, pt->formid);
+    dt_masks_form_t *owner = NULL;
+    if(!pt || !_point_node_at(grp, pt, &owner) || _held_by_picked_group(grp, owner, picked)
+       || g_list_find(out, pt))
+      continue;
+    out = g_list_prepend(out, pt);
+  }
+  g_list_free(pts);
+  return g_list_reverse(out);
+}
+
+dt_mask_id_t dt_masks_model_group_points(dt_masks_form_t *grp,
+                                         const GList *pts,
+                                         const dt_masks_state_t flexi_op)
+{
+  if(!grp || !pts) return INVALID_MASKID;
+  dt_masks_form_t *owner = NULL;
+  if(!_point_node_at(grp, pts->data, &owner) || !(owner->type & DT_MASKS_GROUP))
+    return INVALID_MASKID;
+  // all in the list of one group, where grouping them is no move across groups
+  int below = 1;
+  for(const GList *l = pts; l; l = g_list_next(l))
+  {
+    const dt_masks_point_group_t *pt = l->data;
+    dt_masks_form_t *o = NULL;
+    GList *n = _point_node_at(grp, pt, &o);
+    if(!n || o != owner || dt_masks_point_is_marker(pt)) return INVALID_MASKID;
+    below = MAX(below, _form_nesting(dt_masks_get_from_id(darktable.develop, pt->formid), 0));
+  }
+  if(_list_depth(grp, owner) + 1 + below > DT_MASKS_NESTING_MAX) return INVALID_MASKID;
+
+  // the picks in the order the list holds them, which they keep in the group
+  GList *order = NULL;
+  for(GList *l = owner->points->next; l; l = g_list_next(l))
+    if(g_list_find((GList *)pts, l->data)) order = g_list_prepend(order, l);
+  order = g_list_reverse(order);
+  dt_masks_form_t *wrap = order ? _new_empty_nested_group(flexi_op) : NULL;
+  if(!wrap)
+  {
+    g_list_free(order);
+    return INVALID_MASKID;
+  }
+  // in the place of the topmost, so what lies above it stays above
+  _add_nested_ref(owner, g_list_last(order)->data, wrap);
+  for(const GList *o = order; o; o = g_list_next(o))
+  {
+    GList *node = o->data;
+    owner->points = g_list_remove_link(owner->points, node);
+    ((dt_masks_point_group_t *)node->data)->parentid = wrap->formid;
+    wrap->points = g_list_concat(wrap->points, node);
+  }
+  g_list_free(order);
+  return ((dt_masks_point_group_t *)wrap->points->data)->formid;
+}
+
+dt_mask_id_t dt_masks_model_pick_id(const dt_mask_id_t fid)
+{
+  const dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, fid);
+  const dt_masks_point_group_t *marker =
+    form && (form->type & DT_MASKS_GROUP) ? dt_masks_group_marker(form) : NULL;
+  return marker ? marker->formid : fid;
+}
+
+// the pick ids of all that is below the group `sub`, at any depth: its
+// elements by form id and its groups by cid. Prepended to `ids`
+static GList *_picks_below(const dt_masks_form_t *sub, GList *ids, const int depth)
+{
+  if(depth > DT_MASKS_NESTING_MAX) return ids;
+  for(const GList *l = sub->points ? sub->points->next : NULL; l; l = g_list_next(l))
+  {
+    const dt_masks_point_group_t *pt = l->data;
+    const dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, pt->formid);
+    ids = g_list_prepend(ids, GINT_TO_POINTER(dt_masks_model_pick_id(pt->formid)));
+    if(form && (form->type & DT_MASKS_GROUP)) ids = _picks_below(form, ids, depth + 1);
+  }
+  return ids;
+}
+
+// the pick ids below the group of cid `cid`, or NULL if it is no group of the mask
+static GList *_picks_below_cid(dt_masks_form_t *grp, const dt_mask_id_t cid)
+{
+  const dt_masks_point_group_t *pt = dt_masks_gui_group_point(grp, cid);
+  const dt_masks_form_t *sub = pt && dt_masks_point_is_marker(pt)
+                                 ? dt_masks_model_nested_group_of(grp, cid)
+                                 : NULL;
+  return sub ? _picks_below(sub, NULL, 0) : NULL;
+}
+
+static void _picks_join(GList **picked, const dt_mask_id_t id)
+{
+  if(!g_list_find(*picked, GINT_TO_POINTER(id))) *picked = g_list_append(*picked, GINT_TO_POINTER(id));
+}
+
+// a group is picked whole: with it go all that it holds
+static void _picks_add(dt_masks_form_t *grp, GList **picked, const dt_mask_id_t id)
+{
+  _picks_join(picked, id);
+  GList *below = g_list_reverse(_picks_below_cid(grp, id));
+  for(const GList *b = below; b; b = g_list_next(b)) _picks_join(picked, GPOINTER_TO_INT(b->data));
+  g_list_free(below);
+}
+
+// taking a group off takes all that it holds off, and taking anything off
+// leaves the groups that hold it not picked whole
+static void _picks_remove(dt_masks_form_t *grp, GList **picked, const dt_mask_id_t id)
+{
+  GList *gone = _picks_below_cid(grp, id);
+  gone = g_list_prepend(gone, GINT_TO_POINTER(id));
+  gone = g_list_concat(gone, _holder_cids(grp, _pick_holder(grp, id)));
+  for(const GList *g = gone; g; g = g_list_next(g))
+    *picked = g_list_remove(*picked, g->data);
+  g_list_free(gone);
+}
+
+dt_mask_id_t dt_masks_model_pick_anchor(dt_masks_form_t *grp,
+                                        const dt_mask_id_t selected_formid,
+                                        const dt_mask_id_t selected_cid)
+{
+  const dt_masks_point_group_t *root = grp ? dt_masks_group_marker(grp) : NULL;
+  const dt_mask_id_t sel = dt_is_valid_maskid(selected_formid) ? dt_masks_model_pick_id(selected_formid)
+                                                              : selected_cid;
+  return root && dt_is_valid_maskid(sel) && sel != root->formid && dt_masks_gui_group_point(grp, sel)
+           ? sel
+           : INVALID_MASKID;
+}
+
+dt_masks_pick_result_t dt_masks_model_pick_toggle(dt_masks_form_t *grp,
+                                                  GList **picked,
+                                                  const dt_mask_id_t selected_formid,
+                                                  const dt_mask_id_t selected_cid,
+                                                  const dt_mask_id_t fid)
+{
+  const dt_masks_pick_result_t ignored = { DT_MASKS_PICK_IGNORED, INVALID_MASKID };
+  const dt_masks_point_group_t *root = grp ? dt_masks_group_marker(grp) : NULL;
+  const dt_mask_id_t id = dt_is_valid_maskid(fid) ? dt_masks_model_pick_id(fid) : INVALID_MASKID;
+  if(!root || !dt_is_valid_maskid(id) || id == root->formid || !dt_masks_gui_group_point(grp, id))
+    return ignored;
+
+  if(g_list_find(*picked, GINT_TO_POINTER(id)))
+    _picks_remove(grp, picked, id);
+  else if(*picked)
+    _picks_add(grp, picked, id);
+  else
+  {
+    const dt_mask_id_t anchor = dt_masks_model_pick_anchor(grp, selected_formid, selected_cid);
+    if(!dt_is_valid_maskid(anchor) || anchor == id)
+    {
+      // nothing to join: it is a plain click, which on what is selected
+      // unselects it
+      dt_masks_pick_result_t alone = { DT_MASKS_PICK_SELECT, id };
+      if(anchor == id)
+      {
+        alone.outcome = DT_MASKS_PICK_CLICK;
+        alone.id = fid;
+      }
+      return alone;
+    }
+    // the selection is picked whole, and then the click picks or takes off as
+    // it would any other: on a member of a selected group it takes that off,
+    // the group with it, and leaves the group's other members picked
+    _picks_add(grp, picked, anchor);
+    if(g_list_find(*picked, GINT_TO_POINTER(id)))
+      _picks_remove(grp, picked, id);
+    else
+      _picks_add(grp, picked, id);
+  }
+
+  if(*picked && !(*picked)->next)
+  {
+    const dt_masks_pick_result_t left = { DT_MASKS_PICK_SELECT, GPOINTER_TO_INT((*picked)->data) };
+    g_list_free(*picked);
+    *picked = NULL;
+    return left;
+  }
+  const dt_masks_pick_result_t changed = { DT_MASKS_PICK_CHANGED, INVALID_MASKID };
+  return changed;
+}
+
+void dt_masks_model_picks_prune(dt_masks_form_t *grp, GList **picked)
+{
+  for(GList *l = *picked; l;)
+  {
+    GList *next = g_list_next(l);
+    if(!grp || !dt_masks_gui_group_point(grp, GPOINTER_TO_INT(l->data)))
+      *picked = g_list_delete_link(*picked, l);
+    l = next;
+  }
+  // a group that gained a member since is not picked whole any more. Taking
+  // it off can do the same to the group above it, so go on until none is
+  for(gboolean again = TRUE; again;)
+  {
+    again = FALSE;
+    for(GList *l = *picked; l && !again; l = g_list_next(l))
+    {
+      const dt_mask_id_t id = GPOINTER_TO_INT(l->data);
+      if(!dt_masks_point_is_marker(dt_masks_gui_group_point(grp, id))) continue;
+      GList *below = _picks_below_cid(grp, id);
+      gboolean whole = dt_masks_model_nested_group_of(grp, id) != NULL;
+      for(const GList *b = below; b && whole; b = g_list_next(b))
+        whole = g_list_find(*picked, b->data) != NULL;
+      g_list_free(below);
+      if(!whole)
+      {
+        *picked = g_list_delete_link(*picked, l);
+        again = TRUE;
+      }
+    }
+  }
+  if(*picked && !(*picked)->next)
+  {
+    g_list_free(*picked);
+    *picked = NULL;
+  }
+}
+
+GList *dt_masks_model_picks_canvas_ids(dt_masks_form_t *grp, const GList *picked)
+{
+  GList *ids = NULL;
+  for(const GList *l = picked; l && grp; l = g_list_next(l))
+  {
+    const dt_mask_id_t id = GPOINTER_TO_INT(l->data);
+    const dt_masks_point_group_t *pt = dt_masks_gui_group_point(grp, id);
+    if(pt && !dt_masks_point_is_marker(pt)) ids = g_list_prepend(ids, GINT_TO_POINTER(id));
+  }
+  return ids;
+}
+
+GList *dt_masks_model_move_targets(dt_masks_form_t *grp, const GList *pts)
+{
+  GList *targets = NULL;
+  GList *all = _mask_points(grp);
+  for(const GList *l = all; l; l = g_list_next(l))
+  {
+    const dt_masks_point_group_t *marker = l->data;
+    dt_masks_form_t *dest = dt_masks_point_is_marker(marker) ? _group_of(grp, marker->formid) : NULL;
+    if(!dest) continue;
+    gboolean may = TRUE, moves = FALSE;
+    for(const GList *p = pts; p && may; p = g_list_next(p))
+    {
+      const dt_masks_point_group_t *pt = p->data;
+      dt_masks_form_t *from = NULL;
+      may = _point_node_at(grp, pt, &from) && _may_move_into(grp, from, dest, pt->formid);
+      moves |= may && from != dest;
+    }
+    if(may && moves) targets = g_list_prepend(targets, GINT_TO_POINTER(marker->formid));
+  }
+  g_list_free(all);
+  return g_list_reverse(targets);
+}
+
+// the point whose flags the buttons of the row or header of pick `id` act on:
+// a group's marker, or the reference of a group shown as a row (see
+// _nested_as_group), as for a single click there. *as_group says which
+static dt_masks_point_group_t *_pick_flags_point(dt_masks_form_t *grp,
+                                                 const dt_mask_id_t id,
+                                                 gboolean *as_group)
+{
+  dt_masks_point_group_t *pt = dt_masks_gui_group_point(grp, id);
+  *as_group = FALSE;
+  if(!pt || !dt_masks_point_is_marker(pt)) return pt;
+  const dt_masks_form_t *sub = dt_masks_model_nested_group_of(grp, id);
+  dt_masks_point_group_t *ref = _group_reference(grp, id);
+  if(ref && !_nested_as_group(ref, sub)) return ref;
+  *as_group = TRUE;
+  return pt;
+}
+
+static dt_masks_state_t _pick_flag_bit(const dt_masks_pick_flag_t flag, const gboolean as_group)
+{
+  return flag == DT_MASKS_PICK_FLAG_INVERT
+           ? (as_group ? DT_MASKS_STATE_OP_INVERT : DT_MASKS_STATE_INVERSE)
+           : (as_group ? DT_MASKS_STATE_OP_BYPASS : DT_MASKS_STATE_DISABLE);
+}
+
+gboolean dt_masks_model_picks_toggle_flag(dt_masks_form_t *grp,
+                                          const GList *picked,
+                                          const dt_mask_id_t clicked,
+                                          const dt_masks_pick_flag_t flag,
+                                          gboolean *groups)
+{
+  *groups = FALSE;
+  gboolean as_group = FALSE;
+  const dt_masks_point_group_t *pt =
+    g_list_find((GList *)picked, GINT_TO_POINTER(clicked)) && !_pick_is_held(grp, picked, clicked)
+      ? _pick_flags_point(grp, clicked, &as_group)
+      : NULL;
+  if(!pt) return FALSE;
+  const gboolean on = !(pt->state & _pick_flag_bit(flag, as_group));
+  for(const GList *l = picked; l; l = g_list_next(l))
+  {
+    const dt_mask_id_t id = GPOINTER_TO_INT(l->data);
+    dt_masks_point_group_t *other = _pick_is_held(grp, picked, id) ? NULL
+                                                                   : _pick_flags_point(grp, id, &as_group);
+    if(!other) continue;
+    const dt_masks_state_t bit = _pick_flag_bit(flag, as_group);
+    other->state = on ? (other->state | bit) : (other->state & ~bit);
+    *groups |= as_group;
+  }
+  return TRUE;
+}
+
+gboolean dt_masks_model_picks_set_op(dt_masks_form_t *grp,
+                                     const GList *picked,
+                                     const dt_mask_id_t clicked,
+                                     const dt_masks_state_t flexi_op)
+{
+  if(!g_list_find((GList *)picked, GINT_TO_POINTER(clicked)) || _pick_is_held(grp, picked, clicked))
+    return FALSE;
+  for(const GList *l = picked; l; l = g_list_next(l))
+  {
+    const dt_mask_id_t id = GPOINTER_TO_INT(l->data);
+    dt_masks_point_group_t *marker = dt_masks_gui_group_point(grp, id);
+    if(marker && dt_masks_point_is_marker(marker) && !_pick_is_held(grp, picked, id))
+      marker->state = (marker->state & ~DT_MASKS_STATE_FLEXI_OP) | (flexi_op & DT_MASKS_STATE_FLEXI_OP);
+  }
+  return TRUE;
+}
+
 // the one member of the mask's own group, when that is a plain nested group
 // nothing else holds, or NULL
 static dt_masks_form_t *_sole_held_group(dt_masks_form_t *grp, dt_masks_point_group_t **ref)
@@ -6330,25 +6721,82 @@ static void _sync_hidden_to_form_visible(dt_iop_module_t *module)
 }
 
 // the mask list's rows and headers carry a tag (object data such as "mask-row"
-// or "mask-header") and sit nested in expanders and boxes at varying depths:
-// these two walk the subtree under `w`, `w` excluded, to reach them.
-// _foreach_tagged calls `fn` on each tagged widget and does not look inside it
+// or "mask-header") and sit nested in expanders and boxes at varying depths.
+// One walk of the subtree under `w`, `w` excluded, reaches them all: `fn` is
+// called on each widget, and says whether to look inside it, to go on without,
+// or to stop the walk, which is then reported
+typedef enum _walk_t
+{
+  WALK_INTO,
+  WALK_PAST,
+  WALK_STOP
+} _walk_t;
+
+static gboolean _walk_widgets(GtkWidget *w, _walk_t (*fn)(GtkWidget *child, gpointer data), gpointer data)
+{
+  if(!GTK_IS_CONTAINER(w)) return FALSE;
+  gboolean stopped = FALSE;
+  GList *kids = gtk_container_get_children(GTK_CONTAINER(w));
+  for(GList *c = kids; c && !stopped; c = g_list_next(c))
+  {
+    const _walk_t step = fn(c->data, data);
+    stopped = step == WALK_STOP || (step == WALK_INTO && _walk_widgets(c->data, fn, data));
+  }
+  g_list_free(kids);
+  return stopped;
+}
+
+typedef struct _tagged_walk_t
+{
+  const char *tag;
+  void (*fn)(GtkWidget *tagged, gpointer data);
+  gpointer data;
+  gboolean look_inside; // into what is tagged too
+} _tagged_walk_t;
+
+static _walk_t _tagged_walk_step(GtkWidget *w, gpointer data)
+{
+  const _tagged_walk_t *t = data;
+  if(!g_object_get_data(G_OBJECT(w), t->tag)) return WALK_INTO;
+  t->fn(w, t->data);
+  return t->look_inside ? WALK_INTO : WALK_PAST;
+}
+
+// `fn` on each tagged widget, and not inside it
 static void _foreach_tagged(GtkWidget *w,
                             const char *tag,
                             void (*fn)(GtkWidget *tagged, gpointer data),
                             gpointer data)
 {
-  if(!GTK_IS_CONTAINER(w)) return;
-  GList *kids = gtk_container_get_children(GTK_CONTAINER(w));
-  for(GList *c = kids; c; c = g_list_next(c))
-  {
-    GtkWidget *child = c->data;
-    if(g_object_get_data(G_OBJECT(child), tag))
-      fn(child, data);
-    else
-      _foreach_tagged(child, tag, fn, data);
-  }
-  g_list_free(kids);
+  _tagged_walk_t t = { tag, fn, data, FALSE };
+  _walk_widgets(w, _tagged_walk_step, &t);
+}
+
+// as _foreach_tagged, but it looks inside what is tagged too: a nested group's
+// row holds the rows of its members
+static void _foreach_tagged_deep(GtkWidget *w,
+                                 const char *tag,
+                                 void (*fn)(GtkWidget *tagged, gpointer data),
+                                 gpointer data)
+{
+  _tagged_walk_t t = { tag, fn, data, TRUE };
+  _walk_widgets(w, _tagged_walk_step, &t);
+}
+
+typedef struct _tagged_find_t
+{
+  const char *tag;
+  gboolean (*match)(GtkWidget *tagged, gconstpointer data);
+  gconstpointer data;
+  GtkWidget *found;
+} _tagged_find_t;
+
+static _walk_t _tagged_find_step(GtkWidget *w, gpointer data)
+{
+  _tagged_find_t *t = data;
+  if(!g_object_get_data(G_OBJECT(w), t->tag) || !t->match(w, t->data)) return WALK_INTO;
+  t->found = w;
+  return WALK_STOP;
 }
 
 // the first tagged widget `match` accepts, or NULL
@@ -6357,19 +6805,9 @@ static GtkWidget *_find_tagged(GtkWidget *w,
                                gboolean (*match)(GtkWidget *tagged, gconstpointer data),
                                gconstpointer data)
 {
-  if(!GTK_IS_CONTAINER(w)) return NULL;
-  GtkWidget *found = NULL;
-  GList *kids = gtk_container_get_children(GTK_CONTAINER(w));
-  for(GList *c = kids; c && !found; c = g_list_next(c))
-  {
-    GtkWidget *child = c->data;
-    if(g_object_get_data(G_OBJECT(child), tag) && match(child, data))
-      found = child;
-    else
-      found = _find_tagged(child, tag, match, data);
-  }
-  g_list_free(kids);
-  return found;
+  _tagged_find_t t = { tag, match, data, NULL };
+  _walk_widgets(w, _tagged_find_step, &t);
+  return t.found;
 }
 
 // a group header's cid (see the header build in dt_masks_gui_build_list)
@@ -6448,66 +6886,63 @@ static void _apply_group_selection(GtkWidget *w, const dt_mask_id_t sel)
   _foreach_tagged(w, "mask-header", _paint_group_selection, GINT_TO_POINTER(sel));
 }
 
-// everything holding the selected row or group header is selected by
-// implication, up to the list `list`: the groups (their blocks carry
-// "group-key") and the rows of nested groups (tagged "mask-row"). Shaded apart from the selection itself
-static void _paint_ancestors_selected(GtkWidget *w, GtkWidget *list)
+// the group holding the selected element is selected by implication: it is
+// where a new member would end up. Only that one, not the groups above it. It
+// is the nearest block carrying "group-key", with its header, and the row of
+// the member that holds it when it is shown as a nested group's row (tagged
+// "mask-row", with the group's pick id). Marked apart from the selection itself
+static void _paint_parent_selected(GtkWidget *w, GtkWidget *list)
 {
   for(GtkWidget *p = gtk_widget_get_parent(w); p && p != list; p = gtk_widget_get_parent(p))
   {
-    if(g_object_get_data(G_OBJECT(p), "mask-row"))
-      dt_gui_add_class(_row_header_line(p), "dt_masks_implied");
-    else if(g_object_get_data(G_OBJECT(p), "group-key"))
+    if(!g_object_get_data(G_OBJECT(p), "group-key")) continue;
+    const dt_mask_id_t cid = _widget_id(p, "group-key");
+    GtkWidget *header = _find_tagged(p, "mask-header", _header_has_cid, GINT_TO_POINTER(cid));
+    if(header) _paint_group_header(header, "dt_masks_selected_element_group", TRUE);
+    for(GtkWidget *q = gtk_widget_get_parent(p); q && q != list; q = gtk_widget_get_parent(q))
     {
-      GtkWidget *header = _find_tagged(p, "mask-header", _header_has_cid,
-                                       g_object_get_data(G_OBJECT(p), "group-key"));
-      if(header)
-        _paint_group_header(header, "dt_masks_implied", TRUE);
+      if(g_object_get_data(G_OBJECT(q), "group-key")) break;
+      if(g_object_get_data(G_OBJECT(q), "mask-row"))
+      {
+        if(dt_masks_model_pick_id(_widget_id(q, "formid")) == cid)
+          dt_gui_add_class(_row_header_line(q), "dt_masks_selected_element_group");
+        break;
+      }
     }
+    return;
   }
 }
 
-static void _clear_row_implied(GtkWidget *row, gpointer data)
+static void _clear_row_element_group(GtkWidget *row, gpointer data)
 {
-  dt_gui_remove_class(_row_header_line(row), "dt_masks_implied");
+  dt_gui_remove_class(_row_header_line(row), "dt_masks_selected_element_group");
 }
 
-static void _clear_header_implied(GtkWidget *header, gpointer data)
+static void _clear_header_element_group(GtkWidget *header, gpointer data)
 {
-  _paint_group_header(header, "dt_masks_implied", FALSE);
+  _paint_group_header(header, "dt_masks_selected_element_group", FALSE);
 }
 
-typedef struct _ancestor_walk_t
+typedef struct _parent_walk_t
 {
   GtkWidget *list;
-  dt_mask_id_t formid, cid;
-} _ancestor_walk_t;
+  dt_mask_id_t formid;
+} _parent_walk_t;
 
-static void _paint_row_ancestors(GtkWidget *row, gpointer data)
+static void _paint_row_parent(GtkWidget *row, gpointer data)
 {
-  const _ancestor_walk_t *a = data;
-  if(_widget_id(row, "formid") == a->formid) _paint_ancestors_selected(row, a->list);
+  const _parent_walk_t *a = data;
+  if(_widget_id(row, "formid") == a->formid) _paint_parent_selected(row, a->list);
 }
 
-static void _paint_header_ancestors(GtkWidget *header, gpointer data)
+// the group holding the element `formid` that is selected. A selected group
+// has none
+static void _apply_parent_selection(GtkWidget *list, const dt_mask_id_t formid)
 {
-  const _ancestor_walk_t *a = data;
-  if(_header_cid(header) == a->cid) _paint_ancestors_selected(header, a->list);
-}
-
-// the ancestors of what is explicitly selected: element `formid`, or else
-// group `cid`
-static void _apply_ancestor_selection(GtkWidget *list,
-                                      const dt_mask_id_t formid,
-                                      const dt_mask_id_t cid)
-{
-  _foreach_tagged(list, "mask-row", _clear_row_implied, NULL);
-  _foreach_tagged(list, "mask-header", _clear_header_implied, NULL);
-  _ancestor_walk_t a = { list, formid, cid };
-  if(dt_is_valid_maskid(formid))
-    _foreach_tagged(list, "mask-row", _paint_row_ancestors, &a);
-  else if(dt_is_valid_maskid(cid))
-    _foreach_tagged(list, "mask-header", _paint_header_ancestors, &a);
+  _foreach_tagged_deep(list, "mask-row", _clear_row_element_group, NULL);
+  _foreach_tagged_deep(list, "mask-header", _clear_header_element_group, NULL);
+  _parent_walk_t a = { list, formid };
+  if(dt_is_valid_maskid(formid)) _foreach_tagged_deep(list, "mask-row", _paint_row_parent, &a);
 }
 
 // what is explicitly selected: the element, or else its group. With an
@@ -7400,6 +7835,61 @@ static void _soloedit_mode_toggled(GtkGestureSingle *gesture,
   _soloedit_mode_toggle();
 }
 
+typedef struct _paint_ids_t
+{
+  const GList *ids;
+  const char *cls;
+} _paint_ids_t;
+
+static void _paint_ids_row(GtkWidget *row, gpointer data)
+{
+  const _paint_ids_t *p = data;
+  const dt_mask_id_t id = dt_masks_model_pick_id(_widget_id(row, "formid"));
+  const gboolean on = g_list_find((GList *)p->ids, GINT_TO_POINTER(id)) != NULL;
+  (on ? dt_gui_add_class : dt_gui_remove_class)(_row_header_line(row), p->cls);
+}
+
+static void _paint_ids_header(GtkWidget *header, gpointer data)
+{
+  const _paint_ids_t *p = data;
+  const dt_mask_id_t cid = _header_cid(header);
+  _paint_group_header(header, p->cls,
+                      dt_is_valid_maskid(cid) && g_list_find((GList *)p->ids, GINT_TO_POINTER(cid)));
+}
+
+// give the rows and group headers under `w` the class `cls` if their id (an
+// element's form id, a group's cid) is in `ids`, and take it off if not. Held
+// ones, selected because the group holding them is, look selected but are not
+// framed; picked ones are the picks
+static void _paint_ids_in(GtkWidget *w, const GList *ids, const char *cls)
+{
+  _paint_ids_t p = { ids, cls };
+  _foreach_tagged_deep(w, "mask-row", _paint_ids_row, &p);
+  _foreach_tagged_deep(w, "mask-header", _paint_ids_header, &p);
+}
+
+// what is held by what is selected: a selected group holds all it holds, a
+// picked one the same, and what is picked is held when a picked group holds it.
+// The mask's own group is selected when nothing is, and holds nothing in that
+// sense. Free the list
+static GList *_selection_held(dt_iop_gui_blend_data_t *bd)
+{
+  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(bd->module);
+  GList *held = NULL;
+  if(bd->masks_picked)
+  {
+    for(const GList *l = bd->masks_picked; l; l = g_list_next(l))
+      if(_pick_is_held(grp, bd->masks_picked, GPOINTER_TO_INT(l->data))) held = g_list_prepend(held, l->data);
+  }
+  else
+  {
+    const dt_mask_id_t cid = _explicit_group_cid(bd);
+    const dt_masks_point_group_t *root = grp ? dt_masks_group_marker(grp) : NULL;
+    if(root && dt_is_valid_maskid(cid) && cid != root->formid) held = _picks_below_cid(grp, cid);
+  }
+  return held;
+}
+
 // lightweight: update only the selected-row border on the existing rows, without
 // rebuilding the list (so it is safe to call from a button-press handler, where a
 // full rebuild would destroy the row mid-press and break drag-and-drop). Also
@@ -7411,13 +7901,19 @@ static void _update_row_selection(dt_iop_gui_blend_data_t *bd)
   if(!bd || !bd->masks_list_box) return;
   // every route that clears the group selection ends here
   _select_mask_group_if_none(bd);
+  // while members are picked they are what is selected, and what the panel
+  // had selected is one of them or not selected any more: it is not shown
+  const gboolean multi = bd->masks_picked != NULL;
+  const dt_mask_id_t shown_formid = multi ? INVALID_MASKID : bd->panel_selected_formid;
   // every group's element rows are nested inside masks_list_box (under their header)
-  _apply_row_selection(GTK_WIDGET(bd->masks_list_box), bd->panel_selected_formid);
-  _apply_group_selection(GTK_WIDGET(bd->masks_list_box), _explicit_group_cid(bd));
-  _apply_ancestor_selection(GTK_WIDGET(bd->masks_list_box), bd->panel_selected_formid,
-                            bd->panel_selected_group_cid);
+  _apply_row_selection(GTK_WIDGET(bd->masks_list_box), shown_formid);
+  _apply_group_selection(GTK_WIDGET(bd->masks_list_box), multi ? INVALID_MASKID : _explicit_group_cid(bd));
+  _apply_parent_selection(GTK_WIDGET(bd->masks_list_box), shown_formid);
+  GList *held = _selection_held(bd);
+  _paint_ids_in(GTK_WIDGET(bd->masks_list_box), held, "dt_masks_selected_held");
+  g_list_free(held);
   if(darktable.develop && darktable.develop->form_gui)
-    darktable.develop->form_gui->panel_selected_formid = bd->panel_selected_formid;
+    darktable.develop->form_gui->panel_selected_formid = shown_formid;
   _flexi_new_op_follow_selection(bd);
   _flexi_refine_follow_selection(bd);
   _soloedit_follow_selection(bd);
@@ -7467,6 +7963,7 @@ void dt_iop_gui_blend_masks_select_form(dt_iop_module_t *module, const dt_mask_i
   // panel on their own (an empty-canvas click, dt_iop_gui_blend_masks_clear_selection;
   // a delete, _clear_stale_formid_refs)
   if(!dt_is_valid_maskid(formid) || bd->panel_selected_formid == formid) return;
+  _picks_drop(module);
   bd->panel_selected_formid = formid;
 
   // mirror the group the shape belongs to, same as a list click (_select_form),
@@ -7544,6 +8041,7 @@ void dt_iop_gui_blend_masks_clear_selection(dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = module ? module->blend_data : NULL;
   if(!bd || !bd->masks_list_box || !bd->shapes_support) return;
+  _picks_drop(module);
   if(!dt_is_valid_maskid(bd->panel_selected_formid)
      && !dt_is_valid_maskid(bd->panel_selected_group_cid))
     return;
@@ -7987,7 +8485,10 @@ static void _visibility_form_pressed(GtkGestureSingle *gesture,
   GtkWidget *w = dt_gui_get_widget(gesture);
   const dt_mask_id_t id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "formid"));
   if(!dt_modifier_is(dt_gui_current_state(gesture), GDK_SHIFT_MASK))
-    _toggle_element_disable(module, id);
+  {
+    if(!_picks_toggle_flag(module, id, DT_MASKS_PICK_FLAG_DISABLE))
+      _toggle_element_disable(module, id);
+  }
   else if(_visibility_status_get(w) != MASK_VISIBILITY_DISABLED)
     _toggle_solo_form(module, id);
 }
@@ -8481,6 +8982,18 @@ gboolean dt_masks_model_drop_point_onto_group(dt_iop_module_t *module,
   return TRUE;
 }
 
+int dt_masks_model_move_points(dt_iop_module_t *module,
+                               dt_masks_form_t *grp,
+                               const GList *pts,
+                               const dt_mask_id_t dst)
+{
+  int moved = 0;
+  // in list order, each on top of the last, so they keep their order
+  for(const GList *l = pts; l; l = g_list_next(l))
+    if(dt_masks_model_drop_point_onto_group(module, grp, l->data, dst)) moved++;
+  return moved;
+}
+
 // drop what `sel` carries beside the reference `dp`, above or below it: a
 // member, or a group dragged by its header, which moves as the
 // nested group it is in its holder's list. Every drop that lands beside
@@ -8796,6 +9309,7 @@ static void _set_form_target_ext(dt_iop_module_t *module,
 {
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
+  _picks_drop(module);
   _set_group_target(module, dt_masks_gui_group_cid_of_form(grp, id));
   bd->panel_selected_formid = id;
   if(dt_is_valid_maskid(id))
@@ -8812,10 +9326,10 @@ static void _set_form_target(dt_iop_module_t *module, const dt_mask_id_t id)
   _set_form_target_ext(module, id, TRUE);
 }
 
-// a real click on an element row's chevron, props or parametric in/out alike
-// (shift+click on the row drives the same chevron). It also selects the row,
-// but that selection must not run auto-expand: the option would re-open a row
-// the click just collapsed, before the handler got to act on it.
+// a real click on an element row's chevron, props or parametric in/out alike.
+// It also selects the row, but that selection must not run auto-expand: the
+// option would re-open a row the click just collapsed, before the handler got
+// to act on it.
 static void _element_chevron_clicked(dt_iop_module_t *module,
                                      const dt_mask_id_t id,
                                      const gboolean expanded)
@@ -9270,19 +9784,19 @@ static dt_masks_form_t *_point_owner_form(dt_masks_form_t *grp,
   return NULL;
 }
 
-// delete a single shape from the module's mask group: shared by the selection
-// panel's delete button, a nested group's delete, and
-// dt_iop_gui_blend_delete_element (the canvas's delete).
+// take a single shape out of the module's mask group, leaving the history item
+// and the rebuild to the caller: _delete_single_shape commits one removal, the
+// multiple selection's delete (_multi_delete) one for all of them.
 // `pt` is the member point to remove, as the row that asked holds it; NULL
-// takes the first reference to `id`
-static void _delete_single_shape(dt_iop_module_t *module,
-                                 const dt_mask_id_t id,
-                                 dt_masks_point_group_t *pt)
+// takes the first reference to `id`. FALSE if there was nothing to remove
+static gboolean _remove_member(dt_iop_module_t *module,
+                               const dt_mask_id_t id,
+                               dt_masks_point_group_t *pt)
 {
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
   dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, id);
-  if(!grp || !form) return;
+  if(!grp || !form) return FALSE;
   // deferred, so it sees the group after the removal
   _queue_link_peers_rebuild(module);
   _clear_stale_formid_refs(bd, id);
@@ -9305,12 +9819,683 @@ static void _delete_single_shape(dt_iop_module_t *module,
     g_list_free(one);
   }
   dt_print(DT_DEBUG_MASKS, "[masks] form %d deleted from panel", id);
-  _commit_structure_change(module);
+  return TRUE;
+}
+
+// delete a single shape from the module's mask group: shared by the selection
+// panel's delete button, a nested group's delete, and
+// dt_iop_gui_blend_delete_element (the canvas's delete)
+static void _delete_single_shape(dt_iop_module_t *module,
+                                 const dt_mask_id_t id,
+                                 dt_masks_point_group_t *pt)
+{
+  if(_remove_member(module, id, pt)) _commit_structure_change(module);
 }
 
 void dt_iop_gui_blend_delete_element(dt_iop_module_t *module, const dt_mask_id_t id)
 {
   if(module && module->blend_data) _delete_single_shape(module, id, NULL);
+}
+
+// ===========================================================================
+// the multiple selection
+//
+// shift+click on a row or a group header picks it with the others (see
+// _row_click_press, _group_header_press), and again takes it off. From two
+// picks on, the selection panel gives way to the multiple selection panel
+// (masks_multi_area), whose buttons act on all of them: delete, move into
+// another group and group together in a new one. The picks are
+// bd->masks_picked, ids as the rows carry them (see dt_masks_model_pick_id),
+// which survive the list's rebuilds and are pruned there. What the actions
+// act on is dt_masks_model_picked_points: a group is picked whole, with all it
+// holds, and goes as one: what it holds is not acted on a second time.
+//
+// All of it runs on the GUI thread. The pipes snapshot dev->forms under
+// dev->history_mutex, so the edits of the mask's lists and points hold it, and
+// the history item that records them is added after, which takes it itself
+
+static gchar *_group_label(dt_iop_module_t *module, dt_masks_form_t *grp, const dt_mask_id_t cid);
+static void _append_tooltip_hint(GtkWidget *w, const char *hint);
+
+// nothing selected in the panel, as after what was selected has been moved
+// or deleted. The mask's own group is selected then (see _select_mask_group_if_none)
+static void _selection_forget(dt_iop_gui_blend_data_t *bd)
+{
+  bd->panel_selected_formid = INVALID_MASKID;
+  bd->panel_selected_group_cid = INVALID_MASKID;
+}
+
+// the member points all in the list of one group, where grouping them moves
+// them nowhere else
+static gboolean _points_share_list(dt_masks_form_t *grp, const GList *pts)
+{
+  const dt_masks_form_t *first = NULL;
+  for(const GList *l = pts; l; l = g_list_next(l))
+  {
+    dt_masks_form_t *owner = NULL;
+    if(!_point_node_at(grp, l->data, &owner)) return FALSE;
+    if(first && owner != first) return FALSE;
+    first = owner;
+  }
+  return first != NULL;
+}
+
+// the group button of the multiple selection panel: "wrap in group" while the
+// picks come down to one group or element, "group together" with more
+static void _multi_action_relabel(GtkWidget *btn, const gboolean wraps)
+{
+  gtk_label_set_text(GTK_LABEL(g_object_get_data(G_OBJECT(btn), "multi-label")),
+                     wraps ? _("wrap in group...") : _("group together..."));
+  gchar *tip = g_strdup(wraps ? _("put the selected item in a new group, where it is")
+                              : _("put the selected items together in a new group, where the"
+                                  " topmost of them is. they must all be in the same group"));
+  gtk_widget_set_tooltip_text(btn, tip);
+  _stash_base_tooltip(btn);
+  g_free(tip);
+}
+
+// show the multiple selection panel instead of the selection panel while there
+// are picks, naming how many and enabling what the picks allow
+static void _multi_panel_sync(dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd->masks_multi_area || !bd->masks_selection_area) return;
+  const gboolean multi = bd->masks_picked != NULL;
+  gtk_widget_set_visible(bd->masks_selection_area, !multi);
+  gtk_widget_set_visible(bd->masks_multi_area, multi);
+  if(!multi) return;
+
+  // the count is of the picks, though the actions act on fewer when a group is
+  // picked: they act on the group, which holds the rest
+  const int picks = g_list_length(bd->masks_picked);
+  gchar *text = g_strdup_printf(ngettext("%d item selected", "%d items selected", picks), picks);
+  gtk_label_set_text(GTK_LABEL(bd->masks_multi_label), text);
+  g_free(text);
+
+  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
+  GList *pts = dt_masks_model_picked_points(grp, bd->masks_picked);
+  const gboolean together = _points_share_list(grp, pts);
+  gtk_widget_set_sensitive(bd->masks_multi_delete_btn, pts != NULL);
+  gtk_widget_set_sensitive(bd->masks_multi_move_btn, pts != NULL);
+  gtk_widget_set_sensitive(bd->masks_multi_group_btn, together);
+  // one thing to act on, a group picked whole: it is put in a group, not
+  // grouped together with anything
+  _multi_action_relabel(bd->masks_multi_group_btn, pts && !pts->next);
+  _append_tooltip_hint(bd->masks_multi_group_btn,
+                       together || !pts
+                         ? ""
+                         : _("\nunavailable: the selected items are not all in the same group"));
+  g_list_free(pts);
+}
+
+// replace the canvas's highlight of the multiple selection with `ids`, which
+// it takes
+static void _picks_canvas_set(GList *ids)
+{
+  dt_masks_form_gui_t *gui = darktable.develop ? darktable.develop->form_gui : NULL;
+  if(!gui)
+  {
+    g_list_free(ids);
+    return;
+  }
+  g_list_free(gui->picked_formids);
+  gui->picked_formids = ids;
+  dt_control_queue_redraw_center();
+}
+
+static _walk_t _picks_lock_drag_one(GtkWidget *w, gpointer data)
+{
+  const gboolean locked = GPOINTER_TO_INT(data);
+  GtkTargetList *targets = gtk_drag_source_get_target_list(w);
+  GtkTargetList *saved = g_object_get_data(G_OBJECT(w), "picks-dnd-targets");
+  if(locked && targets)
+  {
+    g_object_set_data_full(G_OBJECT(w), "picks-dnd-targets", gtk_target_list_ref(targets),
+                           (GDestroyNotify)gtk_target_list_unref);
+    gtk_drag_source_unset(w);
+  }
+  else if(!locked && saved)
+  {
+    gtk_drag_source_set(w, GDK_BUTTON1_MASK, NULL, 0, GDK_ACTION_MOVE);
+    gtk_drag_source_set_target_list(w, saved);
+    g_object_set_data(G_OBJECT(w), "picks-dnd-targets", NULL);
+  }
+  return WALK_INTO;
+}
+
+// no drag while several members are picked: a drag moves one row, and would
+// leave the picks looking as if they moved with it. The rows and headers that
+// are drag sources give theirs up, keeping their targets for when the picks
+// end (the targets differ by what a source drags, so they are not rebuilt)
+static void _picks_lock_drag(GtkWidget *w, const gboolean locked)
+{
+  _walk_widgets(w, _picks_lock_drag_one, GINT_TO_POINTER(locked));
+}
+
+// show the picks, after they changed: the rows, the canvas, the panel and
+// what a drag may do
+static void _picks_apply(dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(bd->masks_list_box)
+  {
+    _paint_ids_in(GTK_WIDGET(bd->masks_list_box), bd->masks_picked, "dt_masks_picked");
+    _picks_lock_drag(GTK_WIDGET(bd->masks_list_box), bd->masks_picked != NULL);
+  }
+  _picks_canvas_set(
+    dt_masks_model_picks_canvas_ids(dt_masks_gui_module_mask_group(module), bd->masks_picked));
+  // the selection is shown, or not, as the picks are there or not
+  _update_row_selection(bd);
+  _multi_panel_sync(module);
+  // the panels swapped places: the selection area wraps its toolbar
+  if(bd->masks_selection_area) _refresh_request_modes(bd->masks_selection_area);
+}
+
+// forget the picks, as a click that selects one thing does, or an action
+// that consumed them
+static void _picks_drop(dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd || !bd->masks_picked) return;
+  g_list_free(bd->masks_picked);
+  bd->masks_picked = NULL;
+  _picks_apply(module);
+}
+
+// after a list rebuild: the picks that are still in the mask stay, painted on
+// the new rows
+static void _picks_prune(dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd->masks_picked) return;
+  dt_masks_model_picks_prune(dt_masks_gui_module_mask_group(module), &bd->masks_picked);
+  _picks_apply(module);
+}
+
+// a bulk action consumes the picks, and undoing it brings the mask back as it
+// was but not the picks. So each remembers them against the mask before and
+// after it, by hash, and a list build after the forms were reloaded (undo, redo,
+// a jump in the history) that finds the mask as it was before one puts them
+// back. Not part of the history itself: the picks are the panel's, and the
+// history's records are not
+typedef struct _picks_undo_t
+{
+  dt_hash_t before, after;
+  GList *picks;
+} _picks_undo_t;
+
+#define PICKS_UNDO_MAX 16
+
+static void _picks_undo_free(gpointer data)
+{
+  _picks_undo_t *u = data;
+  g_list_free(u->picks);
+  g_free(u);
+}
+
+// the ids of the mask and their nesting, in order. dt_masks_group_hash is of
+// what the mask renders, and a move that changes nothing in the pixels leaves
+// it as it was
+static dt_hash_t _mask_structure_hash(dt_hash_t hash, dt_masks_form_t *grp, const int depth)
+{
+  if(!grp || depth > DT_MASKS_NESTING_MAX) return hash;
+  hash = dt_hash(hash, &depth, sizeof(depth));
+  for(const GList *l = grp->points; l; l = g_list_next(l))
+  {
+    const dt_masks_point_group_t *pt = l->data;
+    hash = dt_hash(hash, &pt->formid, sizeof(pt->formid));
+    hash = dt_hash(hash, &pt->state, sizeof(pt->state));
+    if(dt_masks_point_is_marker(pt)) continue;
+    dt_masks_form_t *f = dt_masks_get_from_id(darktable.develop, pt->formid);
+    if(f && f != grp && (f->type & DT_MASKS_GROUP))
+      hash = _mask_structure_hash(hash, f, depth + 1);
+  }
+  return hash;
+}
+
+static dt_hash_t _mask_model_hash_of(dt_masks_form_t *grp)
+{
+  return _mask_structure_hash(dt_masks_group_hash(DT_INITHASH, grp), grp, 0);
+}
+
+static dt_hash_t _mask_model_hash(dt_iop_module_t *module)
+{
+  return _mask_model_hash_of(dt_masks_gui_module_mask_group(module));
+}
+
+// call before a bulk action takes the picks. NULL where there are none
+static _picks_undo_t *_picks_undo_begin(dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd->masks_picked) return NULL;
+  _picks_undo_t *u = g_new0(_picks_undo_t, 1);
+  u->before = _mask_model_hash(module);
+  u->picks = g_list_copy(bd->masks_picked);
+  return u;
+}
+
+// call when the action is over, `done` if it changed the mask and committed it:
+// the record is kept then
+static void _picks_undo_end(dt_iop_module_t *module, _picks_undo_t *u, const gboolean done)
+{
+  if(!u) return;
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  u->after = _mask_model_hash(module);
+  if(!done || u->before == u->after)
+  {
+    _picks_undo_free(u);
+    return;
+  }
+  bd->masks_model_hash = u->after;
+  bd->masks_undo_picks = g_list_prepend(bd->masks_undo_picks, u);
+  GList *over = g_list_nth(bd->masks_undo_picks, PICKS_UNDO_MAX);
+  if(over)
+  {
+    if(over->prev) over->prev->next = NULL;
+    g_list_free_full(over, _picks_undo_free);
+  }
+}
+
+// the list is being built for the mask that hashes to `hash` (DT_INVALID_HASH
+// for no mask). If the forms were reloaded, and that is the mask a bulk action
+// found, from the one it left, the action was undone: its picks come back. Not
+// for any other reload, which finds the same mask as often as not
+static void _picks_undo_seen(dt_iop_module_t *module, const dt_hash_t hash)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  // a reload resets the module's blend parameters before it replays the
+  // history, and a build between the two sees no mask: it keeps the check
+  if(hash == DT_INVALID_HASH) return;
+  const dt_hash_t from = bd->masks_model_hash;
+  bd->masks_model_hash = hash;
+  if(!bd->masks_picks_undo_check) return;
+  bd->masks_picks_undo_check = FALSE;
+  for(const GList *l = bd->masks_undo_picks; l; l = g_list_next(l))
+  {
+    const _picks_undo_t *u = l->data;
+    if(u->before != hash || u->after != from) continue;
+    g_list_free(bd->masks_picked);
+    bd->masks_picked = g_list_copy(u->picks);
+    // what the panel selected is one of them, or was gone when they were
+    _selection_forget(bd);
+    return;
+  }
+}
+
+// select the member `id` alone, an element's form id or a group's cid, as a
+// click on it does. For a press: nothing may move under the pointer
+static void _select_member_alone(dt_iop_module_t *module, const dt_mask_id_t id)
+{
+  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
+  const dt_masks_point_group_t *pt = grp ? dt_masks_gui_group_point(grp, id) : NULL;
+  if(!pt)
+    return;
+  else if(dt_masks_point_is_marker(pt))
+    _set_group_target(module, id);
+  else
+    _set_form_target_ext(module, id, FALSE);
+}
+
+// shift+click on the row or header of form `fid` (see
+// dt_masks_model_pick_toggle for what it does)
+static void _pick_toggle(dt_iop_module_t *module, const dt_mask_id_t fid)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  const dt_masks_pick_result_t r =
+    dt_masks_model_pick_toggle(dt_masks_gui_module_mask_group(module), &bd->masks_picked,
+                               bd->panel_selected_formid, bd->panel_selected_group_cid, fid);
+  switch(r.outcome)
+  {
+    case DT_MASKS_PICK_IGNORED:
+      break;
+    case DT_MASKS_PICK_CHANGED:
+      // the last picks gone: what the panel selected before them is not
+      // selected any more either
+      if(!bd->masks_picked) _selection_forget(bd);
+      _picks_apply(module);
+      break;
+    case DT_MASKS_PICK_CLICK:
+      _select_form(module, r.id);
+      break;
+    case DT_MASKS_PICK_SELECT:
+      // the picks may have ended with this: show it before selecting
+      _picks_apply(module);
+      _select_member_alone(module, r.id);
+      break;
+  }
+}
+
+// shift+click on a row or header: pick it, and nothing else, whatever the
+// release does (see _row_click_press). A locked mask picks nothing. Like a
+// plain click, it focuses the module, which the claim of the press kept from
+// reaching the module's body
+static void _pick_pressed(dt_iop_module_t *module, const dt_mask_id_t fid)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  bd->masks_skip_group_select_release = TRUE;
+  if(dt_develop_blend_mask_locked(module->blend_params)) return;
+  dt_iop_request_focus(module);
+  _pick_toggle(module, fid);
+}
+
+// delete every pick, in one history item: each goes as it does from the
+// selection panel (see _remove_member), a group with its members
+static void _multi_delete(dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
+  if(!grp || dt_develop_blend_mask_locked(module->blend_params)) return;
+  GList *pts = dt_masks_model_picked_points(grp, bd->masks_picked);
+  _picks_undo_t *undo = _picks_undo_begin(module);
+  gboolean any = FALSE;
+  dt_pthread_mutex_lock(&darktable.develop->history_mutex);
+  for(const GList *l = pts; l; l = g_list_next(l))
+  {
+    dt_masks_point_group_t *pt = l->data;
+    any |= _remove_member(module, pt->formid, pt);
+  }
+  dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
+  g_list_free(pts);
+  _selection_forget(bd);
+  _picks_drop(module);
+  if(any) _commit_structure_change(module);
+  _picks_undo_end(module, undo, any);
+}
+
+static void _multi_delete_clicked(GtkButton *button, dt_iop_module_t *module)
+{
+  _multi_delete(module);
+}
+
+// the menu of the groups the picks move into: each as its header names it,
+// under its depth in the tree, with the icon of how it combines its members
+static GMenu *_multi_move_menu(dt_iop_module_t *module, dt_masks_form_t *grp, const GList *pts)
+{
+  GMenu *menu = g_menu_new();
+  GList *targets = dt_masks_model_move_targets(grp, pts);
+  for(const GList *l = targets; l; l = g_list_next(l))
+  {
+    const dt_mask_id_t cid = GPOINTER_TO_INT(l->data);
+    const dt_masks_point_group_t *marker = dt_masks_gui_group_point(grp, cid);
+    gchar *name = _group_label(module, grp, cid);
+    gchar *label = g_strdup_printf("%*s%s", 2 * _list_depth(grp, _group_of(grp, cid)), "", name);
+    GMenuItem *item = g_menu_item_new(label, NULL);
+    g_menu_item_set_action_and_target_value(item, "masks_multi_act.move", g_variant_new_int32(cid));
+    GdkPixbuf *icon = _op_pixbuf(_flexi_op_paint(marker->state));
+    if(icon)
+    {
+      g_menu_item_set_icon(item, G_ICON(icon));
+      g_object_unref(icon);
+    }
+    g_menu_item_set_attribute(item, "tooltip", "s", _flexi_op_name(marker->state));
+    g_menu_append_item(menu, item);
+    g_object_unref(item);
+    g_free(label);
+    g_free(name);
+  }
+  g_list_free(targets);
+  return menu;
+}
+
+// show `menu` under `button`, whose items name the action of `entry` in the
+// multiple selection's group of actions. Takes the menu
+static void _multi_popup(GtkButton *button,
+                         dt_iop_module_t *module,
+                         const GActionEntry *entry,
+                         GMenu *menu)
+{
+  GtkWidget *anchor = GTK_WIDGET(button);
+  g_object_set_data(G_OBJECT(anchor), "module", module);
+  GSimpleActionGroup *actions = g_simple_action_group_new();
+  g_action_map_add_action_entries(G_ACTION_MAP(actions), entry, 1, anchor);
+  gtk_widget_insert_action_group(anchor, "masks_multi_act", G_ACTION_GROUP(actions));
+  g_object_unref(actions);
+  darktable.gui->active_popover_menu = dt_gui_popover_menu_from_model(anchor, menu);
+  g_object_unref(menu);
+  gtk_popover_popup(GTK_POPOVER(darktable.gui->active_popover_menu));
+}
+
+// the module and mask a menu item of the multiple selection acts on, whose
+// menu `anchor` opened (see _multi_popup). FALSE if they are gone
+static gboolean _multi_act_begin(gpointer anchor, dt_iop_module_t **module, dt_masks_form_t **grp)
+{
+  if(darktable.gui->active_popover_menu)
+    gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
+  *module = g_object_get_data(G_OBJECT(anchor), "module");
+  *grp = *module ? dt_masks_gui_module_mask_group(*module) : NULL;
+  return *grp != NULL;
+}
+
+static void _multi_act_move(GSimpleAction *action, GVariant *param, gpointer anchor)
+{
+  dt_iop_module_t *module;
+  dt_masks_form_t *grp;
+  if(!_multi_act_begin(anchor, &module, &grp)) return;
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  GList *pts = dt_masks_model_picked_points(grp, bd->masks_picked);
+  _picks_undo_t *undo = _picks_undo_begin(module);
+  dt_pthread_mutex_lock(&darktable.develop->history_mutex);
+  const int moved = dt_masks_model_move_points(module, grp, pts, g_variant_get_int32(param));
+  dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
+  g_list_free(pts);
+  if(!moved)
+  {
+    _picks_undo_end(module, undo, FALSE);
+    return;
+  }
+  // the moves select what they moved, one at a time: the picks are the selection
+  _selection_forget(bd);
+  _commit_structure_change(module);
+  _picks_undo_end(module, undo, TRUE);
+}
+
+static void _multi_move_clicked(GtkButton *button, dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
+  if(!grp || dt_develop_blend_mask_locked(module->blend_params)) return;
+  GList *pts = dt_masks_model_picked_points(grp, bd->masks_picked);
+  GMenu *targets = _multi_move_menu(module, grp, pts);
+  g_list_free(pts);
+  if(!g_menu_model_get_n_items(G_MENU_MODEL(targets)))
+  {
+    g_object_unref(targets);
+    dt_control_log(_("the selection has nowhere else to go"));
+    return;
+  }
+  GMenu *menu = g_menu_new();
+  g_menu_append_section(menu, _("move into"), G_MENU_MODEL(targets));
+  g_object_unref(targets);
+  const GActionEntry entry = { "move", _multi_act_move, "i", NULL };
+  _multi_popup(button, module, &entry, menu);
+}
+
+// "wrap in group" and "group together": the member points `pts`, all in the
+// list of one group, go into a new group of `flexi_op` where the topmost is.
+// The new group is the selection, as compose leaves its empty one
+static void _wrap_points(dt_iop_module_t *module, GList *pts, const dt_masks_state_t flexi_op)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
+  dt_masks_clear_form_gui(darktable.develop);
+  _picks_undo_t *undo = _picks_undo_begin(module);
+  dt_pthread_mutex_lock(&darktable.develop->history_mutex);
+  const dt_mask_id_t cid = dt_masks_model_group_points(grp, pts, flexi_op);
+  dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
+  if(!dt_is_valid_maskid(cid))
+  {
+    _picks_undo_end(module, undo, FALSE);
+    dt_control_log(_("this group is nested as deep as groups go"));
+    return;
+  }
+  _selection_forget(bd);
+  bd->panel_selected_group_cid = cid;
+  _picks_drop(module);
+  _flexi_refine_follow_selection(bd);
+  dt_print(DT_DEBUG_MASKS, "[masks] grouped the selection in group %d", cid);
+  _commit_structure_change(module);
+  _picks_undo_end(module, undo, TRUE);
+}
+
+static void _multi_act_group(GSimpleAction *action, GVariant *param, gpointer anchor)
+{
+  dt_iop_module_t *module;
+  dt_masks_form_t *grp;
+  if(!_multi_act_begin(anchor, &module, &grp)) return;
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  GList *pts = dt_masks_model_picked_points(grp, bd->masks_picked);
+  _wrap_points(module, pts, (dt_masks_state_t)g_variant_get_int32(param));
+  g_list_free(pts);
+}
+
+// the operator of the new group is a choice that changes the mask, as it is
+// for compose
+static void _multi_group_clicked(GtkButton *button, dt_iop_module_t *module)
+{
+  if(dt_develop_blend_mask_locked(module->blend_params)) return;
+  GMenu *ops = _flexi_op_menu_model("masks_multi_act.group", -1);
+  GMenu *menu = g_menu_new();
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  GList *pts = dt_masks_model_picked_points(dt_masks_gui_module_mask_group(module), bd->masks_picked);
+  g_menu_append_section(menu,
+                        pts && !pts->next ? _("wrap in a new group of")
+                                          : _("group together in a new group of"),
+                        G_MENU_MODEL(ops));
+  g_list_free(pts);
+  g_object_unref(ops);
+  const GActionEntry entry = { "group", _multi_act_group, "i", NULL };
+  _multi_popup(button, module, &entry, menu);
+}
+
+// the eye and the invert button of a picked row or header act on every pick,
+// which all take the state the click gives that one, so that they end alike
+// whatever each was (see dt_masks_model_picks_toggle_flag). FALSE if the row
+// is not picked, for the caller to act on it alone
+static gboolean _picks_toggle_flag(dt_iop_module_t *module,
+                                   const dt_mask_id_t row_id,
+                                   const dt_masks_pick_flag_t flag)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  gboolean groups;
+  dt_pthread_mutex_lock(&darktable.develop->history_mutex);
+  const gboolean done =
+    dt_masks_model_picks_toggle_flag(dt_masks_gui_module_mask_group(module), bd->masks_picked,
+                                     dt_masks_model_pick_id(row_id), flag, &groups);
+  dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
+  if(!done) return FALSE;
+  if(groups)
+  {
+    // a group's rows change shape: the list is rebuilt
+    _commit_structure_change(module);
+    return TRUE;
+  }
+  // elements alone: their rows change in place, as for a single click
+  dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
+  if(flag == DT_MASKS_PICK_FLAG_DISABLE) _sync_hidden_to_form_visible(module);
+  _refresh_all_shape_rows(module);
+  _refresh_lowop_badges(module);
+  if(flag == DT_MASKS_PICK_FLAG_DISABLE) dt_masks_gui_refresh_canvas_edit(module);
+  return TRUE;
+}
+
+// the operator chooser of a picked group sets the operator of every picked
+// group. FALSE if the group is not picked, for the caller to act on it alone
+static gboolean _picks_set_op(dt_iop_module_t *module,
+                              const dt_mask_id_t cid,
+                              const dt_masks_state_t flexi_op)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  dt_pthread_mutex_lock(&darktable.develop->history_mutex);
+  const gboolean done = dt_masks_model_picks_set_op(dt_masks_gui_module_mask_group(module),
+                                                    bd->masks_picked, cid, flexi_op);
+  dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
+  if(!done) return FALSE;
+  dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
+  dt_masks_gui_build_list(module);
+  return TRUE;
+}
+
+// a labeled button of the multiple selection panel
+static GtkWidget *_multi_action_new(DTGTKCairoPaintIconFunc paint,
+                                    const int flags,
+                                    const char *label,
+                                    const char *tooltip)
+{
+  GtkWidget *icon = dtgtk_icon_new(paint, flags, NULL);
+  gtk_widget_set_size_request(icon, DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
+  GtkWidget *text = gtk_label_new(label);
+  GtkWidget *content = dt_gui_hbox(icon, text);
+  gtk_box_set_spacing(GTK_BOX(content), DT_PIXEL_APPLY_DPI(6));
+  gtk_widget_set_halign(content, GTK_ALIGN_START);
+  GtkWidget *btn = gtk_button_new();
+  gtk_container_add(GTK_CONTAINER(btn), content);
+  gtk_widget_set_tooltip_text(btn, tooltip);
+  g_object_set_data(G_OBJECT(btn), "multi-label", text);
+  dt_gui_add_class(btn, "dt_masks_multi_action");
+  _button_allow_modifiers(btn, 0);
+  return btn;
+}
+
+// the multiple selection panel (see _multi_panel_sync): a caption in the
+// selection panel's, counting what is selected, and under it the actions on
+// all of it, as labeled buttons. Built once, shown while two or more members
+// are picked
+static GtkWidget *_multi_area_new(dt_iop_gui_blend_data_t *bd, dt_iop_module_t *module)
+{
+  bd->masks_multi_delete_btn =
+    _multi_action_new(dtgtk_cairo_paint_trash, 0, _("delete"),
+                      _("delete the selected items, and the members of the groups among them"));
+  bd->masks_multi_move_btn =
+    _multi_action_new(dtgtk_cairo_paint_line_arrow, CPF_DIRECTION_RIGHT, _("move into..."),
+                      _("move the selected items into another group, on top of it"));
+  bd->masks_multi_group_btn =
+    _multi_action_new(dtgtk_cairo_paint_grouping, 0, _("group together..."),
+                      _("put the selected items together in a new group, where the topmost of"
+                        " them is. they must all be in the same group"));
+  _stash_base_tooltip(bd->masks_multi_group_btn);
+  g_signal_connect(G_OBJECT(bd->masks_multi_delete_btn), "clicked",
+                   G_CALLBACK(_multi_delete_clicked), module);
+  g_signal_connect(G_OBJECT(bd->masks_multi_move_btn), "clicked",
+                   G_CALLBACK(_multi_move_clicked), module);
+  g_signal_connect(G_OBJECT(bd->masks_multi_group_btn), "clicked",
+                   G_CALLBACK(_multi_group_clicked), module);
+
+  bd->masks_multi_label = gtk_label_new(NULL);
+  gtk_label_set_ellipsize(GTK_LABEL(bd->masks_multi_label), PANGO_ELLIPSIZE_MIDDLE);
+  GtkWidget *caption = dt_gui_hbox();
+  dt_gui_add_class(caption, "dt_section_label");
+  dt_gui_add_class(caption, "dt_masks_selection_caption");
+  gtk_box_set_center_widget(GTK_BOX(caption), bd->masks_multi_label);
+
+  GtkWidget *actions = dt_gui_vbox(bd->masks_multi_delete_btn, bd->masks_multi_move_btn,
+                                   bd->masks_multi_group_btn);
+  dt_gui_add_class(actions, "dt_masks_multi_actions");
+  GtkWidget *area = dt_gui_vbox(caption, actions);
+  gtk_widget_set_name(area, "masks-multi-area");
+  gtk_widget_show_all(area);
+  return area;
+}
+
+// a press on a row or header, to be told from a drag attempt at its release
+static void _press_remember(dt_iop_gui_blend_data_t *bd, const double x, const double y)
+{
+  bd->masks_press_x = x;
+  bd->masks_press_y = y;
+}
+
+// a click that moved as far as a drag does, while several members are picked:
+// drag and drop is off then (see _picks_lock_drag), and what the pointer did
+// is nothing, not the click it would otherwise be, which would end the
+// multiple selection. Says why
+static gboolean _picks_drag_attempt(dt_iop_gui_blend_data_t *bd, const double x, const double y)
+{
+  if(!bd->masks_picked) return FALSE;
+  gint threshold = 8;
+  g_object_get(gtk_settings_get_default(), "gtk-dnd-drag-threshold", &threshold, NULL);
+  if(fabs(x - bd->masks_press_x) <= threshold && fabs(y - bd->masks_press_y) <= threshold)
+    return FALSE;
+  dt_toast_log(_("drag and drop is off while several items are selected"));
+  return TRUE;
 }
 
 // the member point of the element row `w` is part of, the innermost one (see
@@ -9330,7 +10515,7 @@ static const dt_masks_point_group_t *_row_point_of(GtkWidget *w)
 // click does the same on any of them. Each carries the "formid",
 // "handle-widget" and "name-evbox" tags (_make_shape_row):
 //  * ctrl+click:         rename
-//  * shift+click:        toggle this element's properties/expanded view
+//  * shift+click:        pick the element with the others (see _pick_toggle)
 //  * ctrl+shift+click:   delete the element
 //  * plain click/release: select (toggles off if already selected)
 // any other modifier does nothing
@@ -9351,6 +10536,7 @@ static void _row_click_press(GtkGestureSingle *gesture,
   GtkWidget *w = dt_gui_get_widget(gesture);
   const dt_mask_id_t id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "formid"));
   dt_iop_gui_blend_data_t *bd = module->blend_data;
+  _press_remember(bd, x, y);
   const guint button = gtk_gesture_single_get_current_button(gesture);
   // a fresh press always starts a new interaction -- clear any stale flag a
   // previous press's drag-begin set but whose release never arrived to
@@ -9384,23 +10570,18 @@ static void _row_click_press(GtkGestureSingle *gesture,
     _delete_target(module, id, FALSE, _pressed_point(module, id), FALSE);
     return;
   }
+  // shift+click picks the element, as delete acts: on the press, and the
+  // release must not select either (see _pick_pressed)
+  if(button == GDK_BUTTON_PRIMARY && dt_modifier_is(dt_gui_current_state(gesture), GDK_SHIFT_MASK))
+  {
+    _pick_pressed(module, id);
+    return;
+  }
   // selection happens on release (a release is not delivered when a drag
   // started, so dragging never also selects, see _row_click_release). A
   // primary click focuses the module, as one on the module's body does: the
   // claim keeps the press from reaching the body
   if(button == GDK_BUTTON_PRIMARY) dt_iop_request_focus(module);
-}
-
-// shift+click on any of a row's non-specific click surfaces toggles its
-// expander, by driving the chevron the row's handle was tagged with at build
-// time (see _make_shape_row / the group header block's "expand-toggle" data).
-// No-op if untagged
-static void _toggle_expand_widget(GtkWidget *src)
-{
-  GtkWidget *btn = g_object_get_data(G_OBJECT(src), "expand-toggle");
-  if(!btn) return;
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn),
-                               !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn)));
 }
 
 // dragging a row or a group of the list leaves the list as it is:
@@ -9480,9 +10661,9 @@ static void _row_drag_begin(GtkWidget *w, GdkDragContext *dc, dt_iop_module_t *m
   _masks_drag_begin(module, GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "formid")));
 }
 
-// matching release for _row_click_press's plain-click case. ctrl+click and
-// ctrl+shift+click are handled entirely on press and must not also do anything
-// here. Connected as "released" alone, never through dt_gui_connect_click(),
+// matching release for _row_click_press's plain-click case. ctrl+click,
+// shift+click and ctrl+shift+click are handled entirely on press and must not
+// also do anything here. Connected as "released" alone, never through dt_gui_connect_click(),
 // which would also turn the cancel a starting drag causes into a release
 static void _row_click_release(GtkGestureSingle *gesture,
                                const int n_press,
@@ -9492,12 +10673,14 @@ static void _row_click_release(GtkGestureSingle *gesture,
 {
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
   const GdkModifierType state = dt_gui_current_state(gesture);
-  // ctrl and ctrl+shift acted on press, any other modifier does nothing
+  // ctrl, shift and ctrl+shift acted on press, any other modifier does nothing
   if(dt_modifier_is(state, GDK_CONTROL_MASK)
+     || dt_modifier_is(state, GDK_SHIFT_MASK)
      || dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)
      || _modifier_unregistered(gesture, MASKS_CLICK_MODS))
     return;
   dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(_picks_drag_attempt(bd, x, y)) return;
   if(bd->masks_skip_group_select_release)
   {
     bd->masks_skip_group_select_release = FALSE;
@@ -9505,8 +10688,7 @@ static void _row_click_release(GtkGestureSingle *gesture,
   }
   // _row_drag_begin already selected this row for this same press -- see its
   // own comment. Consume the flag and stop, so this release cannot also
-  // toggle the selection it just set (or run the shift-click branch a second
-  // time for a gesture drag-begin already resolved).
+  // toggle the selection it just set.
   if(bd->masks_row_click_handled)
   {
     bd->masks_row_click_handled = FALSE;
@@ -9514,12 +10696,6 @@ static void _row_click_release(GtkGestureSingle *gesture,
   }
   GtkWidget *w = dt_gui_get_widget(gesture);
   const dt_mask_id_t id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "formid"));
-  if(dt_modifier_is(state, GDK_SHIFT_MASK))
-  {
-    if(bd->panel_selected_formid != id) _set_form_target_ext(module, id, FALSE);
-    _toggle_expand_widget(g_object_get_data(G_OBJECT(w), "handle-widget"));
-    return;
-  }
   _select_form(module, id);
 }
 
@@ -9803,11 +10979,21 @@ static gboolean _crossing_ignored(GtkEventControllerMotion *controller, const gb
 }
 
 // holding ctrl+shift over the list arms the ctrl+shift+click delete (see
-// _row_click_press):
-// the pointer turns into a trash bin and the hovered header, with the rail of its
-// members, into the delete shade, so what a click removes is seen before it
-// goes. GTK sends nothing when a modifier alone changes, so a timer watches it,
-// but only while the pointer is over the list
+// _row_click_press): the pointer turns into a trash bin and the hovered header,
+// with the rail of its members, into the delete shade, so what a click removes
+// is seen before it goes. Holding shift alone arms the shift+click pick the
+// same way (see _pick_toggle), with the plus pointer (a minus over what is
+// selected already) and the pick shade. GTK
+// sends nothing when a modifier alone changes, so a timer watches it, but only
+// while the pointer is over the list
+typedef enum _armed_t
+{
+  ARMED_NONE = 0,
+  ARMED_DELETE,
+  ARMED_PICK,
+  ARMED_UNPICK, // a pick over what is picked: it takes it off
+} _armed_t;
+
 static GtkWidget *_armed_list = NULL; // weak: a rebuilt list takes its timer along
 static guint _armed_timer = 0;
 
@@ -9839,19 +11025,125 @@ static GdkCursor *_delete_cursor(GtkWidget *w)
 }
 #endif
 
-static void _delete_armed_set(GtkWidget *list, const gboolean on)
+#if !GTK_CHECK_VERSION(4, 0, 0)
+// the pointer of a pick: an arrow with a plus for a pick that adds, a minus for
+// one that takes off, which no stock pointer has
+static GdkCursor *_pick_cursor(GtkWidget *w, const gboolean adds)
 {
-  if(on)
+  static GdkCursor *cursors[2] = { NULL, NULL };
+  GdkCursor **cursor = &cursors[adds ? 1 : 0];
+  if(*cursor) return *cursor;
+  const int size = 24, scale = gtk_widget_get_scale_factor(w);
+  cairo_surface_t *surface =
+    cairo_image_surface_create(CAIRO_FORMAT_ARGB32, size * scale, size * scale);
+  cairo_surface_set_device_scale(surface, scale, scale);
+  cairo_t *cr = cairo_create(surface);
+  cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
+  cairo_move_to(cr, 1.5, 1.5);
+  cairo_line_to(cr, 1.5, 16.5);
+  cairo_line_to(cr, 5.5, 12.5);
+  cairo_line_to(cr, 8.5, 19.5);
+  cairo_line_to(cr, 11, 18.5);
+  cairo_line_to(cr, 8, 11.5);
+  cairo_line_to(cr, 13.5, 11.5);
+  cairo_close_path(cr);
+  cairo_set_source_rgb(cr, 1, 1, 1);
+  cairo_fill_preserve(cr);
+  cairo_set_source_rgb(cr, 0, 0, 0);
+  cairo_set_line_width(cr, 1.2);
+  cairo_stroke(cr);
+  // the badge: the sign on a disc
+  cairo_arc(cr, 18, 17, 5.5, 0, 2 * G_PI);
+  cairo_set_source_rgb(cr, 1, 1, 1);
+  cairo_fill_preserve(cr);
+  cairo_set_source_rgb(cr, 0, 0, 0);
+  cairo_stroke(cr);
+  cairo_set_line_width(cr, 2);
+  cairo_move_to(cr, 15, 17);
+  cairo_line_to(cr, 21, 17);
+  if(adds)
+  {
+    cairo_move_to(cr, 18, 14);
+    cairo_line_to(cr, 18, 20);
+  }
+  cairo_stroke(cr);
+  cairo_destroy(cr);
+  *cursor = gdk_cursor_new_from_surface(gtk_widget_get_display(w), surface, 1.5, 1.5);
+  cairo_surface_destroy(surface);
+  return *cursor;
+}
+#endif
+
+static _armed_t _armed_current(GtkWidget *list)
+{
+  return _has_class(list, "dt_masks_deleting")     ? ARMED_DELETE
+         : _has_class(list, "dt_masks_unpicking") ? ARMED_UNPICK
+         : _has_class(list, "dt_masks_picking")   ? ARMED_PICK
+                                                  : ARMED_NONE;
+}
+
+static void _armed_set(GtkWidget *list, const _armed_t mode)
+{
+  if(mode == ARMED_DELETE)
     dt_gui_add_class(list, "dt_masks_deleting");
   else
     dt_gui_remove_class(list, "dt_masks_deleting");
+  // taking off is picking, for the shade
+  if(mode == ARMED_PICK || mode == ARMED_UNPICK)
+    dt_gui_add_class(list, "dt_masks_picking");
+  else
+    dt_gui_remove_class(list, "dt_masks_picking");
+  if(mode == ARMED_UNPICK)
+    dt_gui_add_class(list, "dt_masks_unpicking");
+  else
+    dt_gui_remove_class(list, "dt_masks_unpicking");
   // the list's own window, under which every row inherits the cursor
   GtkWidget *area = gtk_widget_get_parent(list);
 #if GTK_CHECK_VERSION(4, 0, 0)
-  dt_gui_cursor_set(area, on ? "not-allowed" : NULL, "mask/delete");
+  dt_gui_cursor_set(area,
+                    mode == ARMED_PICK       ? "copy"
+                    : mode == ARMED_UNPICK   ? "zoom-out"
+                    : mode == ARMED_DELETE   ? "not-allowed"
+                                             : NULL,
+                    "mask/armed");
 #else
-  dt_gui_cursor_apply(area, on ? _delete_cursor(area) : NULL);
+  dt_gui_cursor_apply(area,
+                      mode == ARMED_PICK       ? _pick_cursor(area, TRUE)
+                      : mode == ARMED_UNPICK   ? _pick_cursor(area, FALSE)
+                      : mode == ARMED_DELETE   ? _delete_cursor(area)
+                                               : NULL);
 #endif
+}
+
+// what the modifiers held now arm over this module's list. A pick is not armed
+// while a name is typed, where shift only makes capitals, nor while there is
+// nothing for it to join
+static _armed_t _armed_mode(dt_iop_module_t *module)
+{
+  if(dt_develop_blend_mask_locked(module->blend_params)) return ARMED_NONE;
+  const GdkModifierType state = dt_key_modifier_state();
+  if(dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)) return ARMED_DELETE;
+  if(!dt_modifier_is(state, GDK_SHIFT_MASK)) return ARMED_NONE;
+  // a pick joins the picks, or a member that is selected: with the whole mask
+  // selected, shift+click is a plain click
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd || !bd->masks_list_box) return ARMED_NONE;
+  if(!bd->masks_picked
+     && !dt_is_valid_maskid(dt_masks_model_pick_anchor(dt_masks_gui_module_mask_group(module),
+                                                       bd->panel_selected_formid,
+                                                       bd->panel_selected_group_cid)))
+    return ARMED_NONE;
+  // only a name typed in the list: an entry anywhere else has nothing to do
+  // with the list
+  GtkWidget *focus = gtk_window_get_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+  if(GTK_IS_ENTRY(focus) && gtk_widget_is_ancestor(focus, GTK_WIDGET(bd->masks_list_box)))
+    return ARMED_NONE;
+  // over what is picked, or selected, which a click takes off
+  const gboolean over_picked =
+    _hover_washed_row
+    && (_has_class(_hover_washed_row, "dt_masks_picked") || _has_class(_hover_washed_row, "dt_masks_selected")
+        || _has_class(_hover_washed_row, "dt_masks_selected_held"));
+  return over_picked ? ARMED_UNPICK : ARMED_PICK;
 }
 
 static gboolean _armed_poll(gpointer data)
@@ -9863,9 +11155,8 @@ static gboolean _armed_poll(gpointer data)
     _armed_timer = 0;
     return G_SOURCE_REMOVE;
   }
-  const gboolean on = !dt_develop_blend_mask_locked(module->blend_params)
-                      && dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  if(on != _has_class(list, "dt_masks_deleting")) _delete_armed_set(list, on);
+  const _armed_t mode = _armed_mode(module);
+  if(mode != _armed_current(list)) _armed_set(list, mode);
   return G_SOURCE_CONTINUE;
 }
 
@@ -9888,7 +11179,7 @@ static void _armed_watch(dt_iop_module_t *module, const gboolean on)
   _armed_timer = 0;
   if(_armed_list)
   {
-    if(_has_class(_armed_list, "dt_masks_deleting")) _delete_armed_set(_armed_list, FALSE);
+    if(_armed_current(_armed_list) != ARMED_NONE) _armed_set(_armed_list, ARMED_NONE);
     g_object_remove_weak_pointer(G_OBJECT(_armed_list), (gpointer *)&_armed_list);
     _armed_list = NULL;
   }
@@ -9910,7 +11201,13 @@ static void _row_enter(GtkEventControllerMotion *controller,
   _armed_watch(module, TRUE);
   GtkWidget *w = dt_gui_get_widget(controller);
   if(!_hover_list_scrolling(g_get_monotonic_time()))
+  {
     _row_hover_wash(module->blend_data, _row_widget_for_hover(w));
+    // the pointer over what is picked takes off: no waiting for the timer
+    GtkWidget *list = _armed_list;
+    const _armed_t mode = list ? _armed_mode(module) : ARMED_NONE;
+    if(list && mode != _armed_current(list)) _armed_set(list, mode);
+  }
   _row_hover_schedule(module, w);
 }
 
@@ -10046,6 +11343,7 @@ void dt_iop_gui_blend_forms_reloaded(dt_iop_module_t *module)
     module->blend_params && (module->blend_params->mask_mode & DEVELOP_MASK_FLEXI);
   if(had_content || flexi)
   {
+    bd->masks_picks_undo_check = bd->masks_undo_picks != NULL;
     bd->masks_list_sig = DT_INVALID_HASH;
     if(bd->masks_list_box) _queue_masks_list_rebuild(module);
   }
@@ -10421,6 +11719,7 @@ _select_group(dt_iop_module_t *module, const dt_mask_id_t cid)
 static void _set_group_target(dt_iop_module_t *module, const dt_mask_id_t cid)
 {
   dt_iop_gui_blend_data_t *bd = module->blend_data;
+  _picks_drop(module);
   bd->panel_selected_formid = INVALID_MASKID;
   bd->panel_selected_group_cid = cid;
   _select_mask_group_if_none(bd);
@@ -10717,6 +12016,8 @@ static void _group_header_press(GtkGestureSingle *gesture,
   // highlight shows what it acts on
   GtkWidget *w = dt_gui_get_widget(gesture);
   dt_iop_gui_blend_data_t *bd = module->blend_data;
+  _press_remember(bd, x, y);
+  bd->masks_pick_press = FALSE;
   const dt_mask_id_t cid =
     (dt_mask_id_t)GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(w), "group-key"));
   const guint button = gtk_gesture_single_get_current_button(gesture);
@@ -10745,6 +12046,15 @@ static void _group_header_press(GtkGestureSingle *gesture,
     dt_gui_claim(gesture);
     bd->masks_skip_group_select_release = TRUE;
     _delete_target(module, cid, TRUE, NULL, FALSE);
+    return;
+  }
+  // shift+click picks the group, as on an element row (see _row_click_press)
+  if(button == GDK_BUTTON_PRIMARY
+     && dt_modifier_is(dt_gui_current_state(gesture), GDK_SHIFT_MASK))
+  {
+    dt_gui_claim(gesture);
+    bd->masks_pick_press = TRUE;
+    _pick_pressed(module, cid);
   }
 }
 
@@ -10753,9 +12063,9 @@ static void _group_header_press(GtkGestureSingle *gesture,
 // here anyway (see _group_drag_begin) takes the select-only branch instead: it
 // selects the group if it wasn't already selected, but never deselects it --
 // only a click on the title itself toggles selection off (see _select_group).
-// Shift+click shows or hides the group's members, as on an element row.
-// Connected as "released" alone, as an element row's release is (see
-// _row_click_release)
+// A group picked on press (_group_header_press, as an element row is) is left
+// as it is, even if shift is up by now. Connected as "released" alone, as an
+// element row's release is (see _row_click_release)
 static void _group_header_release(GtkGestureSingle *gesture,
                                   const int n_press,
                                   const double x,
@@ -10763,33 +12073,31 @@ static void _group_header_release(GtkGestureSingle *gesture,
                                   dt_iop_module_t *module)
 {
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(bd->masks_pick_press)
+  {
+    bd->masks_pick_press = FALSE;
+    return;
+  }
   // ctrl+click renames on press (_group_header_press), as in
   // _row_click_release: selecting here can queue a rebuild, which would
   // destroy the rename entry before anything is typed. ctrl+shift+click
-  // deleted the group on press, and any other modifier does nothing
+  // deleted the group on press, shift+click picked it, and any other modifier
+  // does nothing
   const GdkModifierType state = dt_gui_current_state(gesture);
   if(dt_modifier_is(state, GDK_CONTROL_MASK)
+     || dt_modifier_is(state, GDK_SHIFT_MASK)
      || dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)
      || _modifier_unregistered(gesture, MASKS_CLICK_MODS))
     return;
-  dt_iop_gui_blend_data_t *bd = module->blend_data;
   const dt_mask_id_t cid =
     (dt_mask_id_t)GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(dt_gui_get_widget(gesture)),
                                                      "group-key"));
+  if(_picks_drag_attempt(bd, x, y)) return;
   if(bd->masks_skip_group_select_release)
   {
     bd->masks_skip_group_select_release = FALSE;
     if(bd->panel_selected_group_cid != cid) _set_group_target(module, cid);
-    return;
-  }
-  if(dt_modifier_is(state, GDK_SHIFT_MASK))
-  {
-    // the header and the block carry the chevron, an empty group has none
-    GtkWidget *toggle =
-      g_object_get_data(G_OBJECT(dt_gui_get_widget(gesture)), "group-expand-toggle");
-    if(toggle)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle),
-                                   !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle)));
     return;
   }
   _select_group(module, cid);
@@ -10901,7 +12209,10 @@ static void _visibility_group_pressed(GtkGestureSingle *gesture,
   GtkWidget *w = dt_gui_get_widget(gesture);
   const dt_mask_id_t cid = _header_cid(w);
   if(!dt_modifier_is(dt_gui_current_state(gesture), GDK_SHIFT_MASK))
-    _group_toggle_bypass(module, cid);
+  {
+    if(!_picks_toggle_flag(module, cid, DT_MASKS_PICK_FLAG_DISABLE))
+      _group_toggle_bypass(module, cid);
+  }
   else if(!g_object_get_data(G_OBJECT(w), "visibility-no-solo")
           && _visibility_status_get(w) != MASK_VISIBILITY_DISABLED)
     _toggle_solo_group(module, cid);
@@ -10944,7 +12255,7 @@ static void _flexi_op_action(GSimpleAction *action, GVariant *parameter, gpointe
   const dt_masks_state_t flexi_op = (dt_masks_state_t)g_variant_get_int32(parameter);
   if(darktable.gui->active_popover_menu)
     gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
-  if(module) _flexi_op_apply(module, cid, flexi_op);
+  if(module && !_picks_set_op(module, cid, flexi_op)) _flexi_op_apply(module, cid, flexi_op);
 }
 
 // build and show the flexi operator chooser (every dt_masks_flexi_ops
@@ -11153,16 +12464,6 @@ static GtkWidget *_build_group_opacity_editor(dt_iop_module_t *module, const dt_
   return ex_op_box;
 }
 
-// the group a compose-menu item acts on, and its module
-static dt_iop_module_t *_group_act_target(gpointer u, dt_mask_id_t *cid)
-{
-  GtkWidget *anchor = GTK_WIDGET(u);
-  *cid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(anchor), "group_act_cid"));
-  if(darktable.gui->active_popover_menu)
-    gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
-  return g_object_get_data(G_OBJECT(anchor), "module");
-}
-
 // "compose": the member of `pt` goes into a new group folding with
 // `flexi_op`, under a new empty group, which is selected so the next shape
 // drawn lands in it
@@ -11276,31 +12577,6 @@ static void _simplify(dt_iop_module_t *module, const dt_mask_id_t cid)
   // a hoist moved a refinement into the whole mask's, which may be on screen
   _flexi_refine_follow_selection(bd);
   _commit_structure_change(module);
-}
-
-static void _group_act_compose(GSimpleAction *action, GVariant *param, gpointer u)
-{
-  dt_mask_id_t cid;
-  dt_iop_module_t *module = _group_act_target(u, &cid);
-  if(module)
-    _compose(module, dt_masks_gui_group_point(dt_masks_gui_module_mask_group(module), cid),
-             (dt_masks_state_t)g_variant_get_int32(param));
-}
-
-// the "compose" menu: every operator but `current`, whose group composing
-// would only add one more member to. `keep_current` offers it anyway, for a
-// member past the base of a group folding in order: `a - (b - c)` is no
-// `a - b - c`. Under a caption, or the operators read as the chooser of a
-// group's own
-static GMenu *_compose_menu(const char *action,
-                            const dt_masks_state_t current,
-                            const gboolean keep_current)
-{
-  GMenu *ops = _flexi_op_menu_model(action, keep_current ? -1 : (int)(current & DT_MASKS_STATE_FLEXI_OP));
-  GMenu *menu = g_menu_new();
-  g_menu_append_section(menu, _("compose in a new group of"), G_MENU_MODEL(ops));
-  g_object_unref(ops);
-  return menu;
 }
 
 // the state half of the solo-edit toggle, the third of the mutually
@@ -12268,7 +13544,8 @@ static void _invert_element_pressed(GtkGestureSingle *gesture,
   dt_gui_claim(gesture);
   const dt_mask_id_t id =
     GPOINTER_TO_INT(g_object_get_data(G_OBJECT(dt_gui_get_widget(gesture)), "formid"));
-  _invert_element(module, id);
+  if(!_picks_toggle_flag(module, id, DT_MASKS_PICK_FLAG_INVERT))
+    _invert_element(module, id);
 }
 
 static void _invert_group_pressed(GtkGestureSingle *gesture,
@@ -12284,18 +13561,8 @@ static void _invert_group_pressed(GtkGestureSingle *gesture,
     GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(dt_gui_get_widget(gesture)), "group-key"));
   if(dt_modifier_is(dt_gui_current_state(gesture), GDK_SHIFT_MASK))
     _invert_group_members(module, cid);
-  else
+  else if(!_picks_toggle_flag(module, cid, DT_MASKS_PICK_FLAG_INVERT))
     _group_toggle_output_invert(module, cid);
-}
-
-// the element a shape compose-menu item acts on, and its module
-static dt_iop_module_t *_shape_act_target(gpointer u, dt_mask_id_t *id)
-{
-  GtkWidget *anchor = GTK_WIDGET(u);
-  *id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(anchor), "shape_act_id"));
-  if(darktable.gui->active_popover_menu)
-    gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
-  return g_object_get_data(G_OBJECT(anchor), "module");
 }
 
 // a raster element's mask is edited where it is made: its source module gets
@@ -12434,38 +13701,6 @@ void dt_iop_gui_blend_module_renamed(dt_iop_module_t *module)
 {
   // raster elements following this module's name show it in other panels
   if(module && darktable.develop) _queue_link_peers_rebuild(module);
-}
-
-// the member point a shape compose menu acts on: the row's own, where it has one
-static const dt_masks_point_group_t *_shape_act_point(GtkWidget *anchor,
-                                                      dt_iop_module_t *module,
-                                                      const dt_mask_id_t id)
-{
-  const dt_masks_point_group_t *pt = g_object_get_data(G_OBJECT(anchor), "shape_act_point");
-  return pt ? pt : dt_masks_gui_group_point(dt_masks_gui_module_mask_group(module), id);
-}
-
-static void _shape_act_compose(GSimpleAction *action, GVariant *param, gpointer u)
-{
-  dt_mask_id_t id;
-  dt_iop_module_t *module = _shape_act_target(u, &id);
-  if(module)
-    _compose(module, _shape_act_point(GTK_WIDGET(u), module, id),
-             (dt_masks_state_t)g_variant_get_int32(param));
-}
-
-// the "compose" submenu of member `pt`, or NULL where it cannot be composed
-static GMenu *_shape_compose_menu(dt_masks_form_t *grp, const dt_masks_point_group_t *pt)
-{
-  dt_masks_form_t *owner = NULL;
-  GList *node = pt ? _point_node_at(grp, pt, &owner) : NULL;
-  if(!node || !(owner->type & DT_MASKS_GROUP)) return NULL;
-  const int flexi_op = ((dt_masks_point_group_t *)owner->points->data)->state & DT_MASKS_STATE_FLEXI_OP;
-  // composing the base with its group's operator adds a member, as it does
-  // anywhere in a group whose members fold in any order
-  const gboolean ordered =
-    flexi_op & (DT_MASKS_STATE_FLEXI_DIFFERENCE | DT_MASKS_STATE_FLEXI_EXCLUSION);
-  return _compose_menu("masks_shape_act.compose", flexi_op, ordered && owner->points->next != node);
 }
 
 // human-readable name for a shape kind (the _form_kind bit), singular or plural.
@@ -14268,8 +15503,7 @@ static void _wire_element_click_surface(GtkWidget *w,
                                         GtkWidget *name_evbox)
 {
   // _row_click_press/_release read all three off `w`: the id to act on, the
-  // handle, whose expander a shift+click toggles, and the name ctrl+click
-  // rename swaps an entry in for. Neither uses the event's coordinates, so it
+  // handle, and the name ctrl+click rename swaps an entry in for. Neither uses the event's coordinates, so it
   // does not matter that these surfaces have different origins.
   g_object_set_data(G_OBJECT(w), "formid", GINT_TO_POINTER(fid));
   g_object_set_data(G_OBJECT(w), "handle-widget", handle);
@@ -14375,15 +15609,7 @@ static GtkWidget *_make_shape_row(dt_iop_module_t *module,
     g_string_append(tip, _("click its icon on the canvas to refine the selection\n"));
   g_string_append(tip, _("ctrl+click to rename\n"));
   g_string_append(tip, _("ctrl+shift+click to delete it\n"));
-  // what shift+click toggles: the chevron this row gets below, if any
-  if(is_subgroup)
-    g_string_append(tip, _("shift+click to show/hide the group\n"));
-  else if(form->type & DT_MASKS_PARAMETRIC)
-    g_string_append(tip, _("shift+click to show/hide this channel's expanded controls\n"));
-  else if(expandable)
-    g_string_append(tip, (form->type & DT_MASKS_RASTER)
-                           ? _("shift+click to show/hide this raster mask's opacity slider\n")
-                           : _("shift+click to show/hide its expanded controls\n"));
+  g_string_append(tip, _("shift+click to select it with others\n"));
   // the keys as bound when the row is built, which a rebind waits for
   gchar *delete_keys = _delete_selection_keys();
   if(delete_keys)
@@ -14453,8 +15679,7 @@ static GtkWidget *_make_shape_row(dt_iop_module_t *module,
   // _make_props_row_toggle)
   GtkWidget *props_editor_box = NULL;
   // the row's own expander, whichever widget that is for this row kind: the
-  // chevron the row header shows, which shift+click on the lead handle or the
-  // title also drives (see _row_click_release, and _auto_expand_selected_row).
+  // chevron the row header shows (see _auto_expand_selected_row).
   // NULL for a row with nothing to expand: a shape or raster mask while
   // "member properties in subpanel" is on
   GtkWidget *expand_toggle = NULL;
@@ -14558,12 +15783,6 @@ static GtkWidget *_make_shape_row(dt_iop_module_t *module,
       expand_toggle =
         _make_props_row_toggle(module, fid, FALSE, props_tip, &props_editor_box);
     }
-  }
-
-  if(expand_toggle)
-  {
-    g_object_set_data(G_OBJECT(handle), "expand-toggle", expand_toggle);
-    g_object_set_data(G_OBJECT(evbox), "expand-toggle", expand_toggle);
   }
 
   // visibility: disabled, soloed or neither, set by _update_shape_row_state
@@ -15268,8 +16487,6 @@ static void _pack_group(dt_iop_module_t *module,
                                "click to select it: the refinements then act on the"
                                " whole mask\n"
                                "ctrl+shift+click to reset the mask")));
-    if(!empty)
-      g_ptr_array_add(tip_lines, g_strdup(_("shift+click to show/hide its members")));
     if(delete_keys)
       g_ptr_array_add(tip_lines,
                       g_strdup_printf(_("%s to reset the mask, once selected"), delete_keys));
@@ -15282,8 +16499,7 @@ static void _pack_group(dt_iop_module_t *module,
     g_ptr_array_add(tip_lines, g_strdup(_("click to select this group, click again to select"
                                           " the whole mask\n"
                                           "ctrl+click to rename")));
-    if(!empty)
-      g_ptr_array_add(tip_lines, g_strdup(_("shift+click to show/hide its members")));
+    g_ptr_array_add(tip_lines, g_strdup(_("shift+click to select it with others")));
     g_ptr_array_add(tip_lines, g_strdup(_("ctrl+shift+click to delete it and every member"
                                           " in it")));
     if(movable)
@@ -15473,7 +16689,7 @@ static void _pack_group(dt_iop_module_t *module,
   g_object_set_data_full(G_OBJECT(group_block), "group-formids", g_list_copy(formids),
                          (GDestroyNotify)g_list_free);
   g_object_set_data(G_OBJECT(group_block), "group-expand-toggle", group_expand_toggle);
-  // the header's shift+click drives it too (see _group_header_release)
+  // the header carries it too, for _find_group_expand_toggle
   g_object_set_data(G_OBJECT(hdr_evbox), "group-expand-toggle", group_expand_toggle);
   _set_drop_target(group_block);
 
@@ -15487,8 +16703,8 @@ static void _pack_group(dt_iop_module_t *module,
   g_signal_connect(block_gesture, "released", G_CALLBACK(_group_block_release), module);
 
   // highlight the group's header row when its group is the selected one (see
-  // _paint_group_selection). Held by a selected element, it is selected by
-  // implication instead (see _apply_ancestor_selection)
+  // _paint_group_selection). Holding the selected element marks it as that
+  // element's group instead (see _apply_parent_selection)
   if(_group_header_is_selection(hdr_evbox, _explicit_group_cid(bd)))
     dt_gui_add_class(hdr, "dt_masks_selected");
 
@@ -15603,7 +16819,7 @@ static GtkWidget *_mask_row_header(GtkWidget *w)
 // box's border-left-width, whose border is transparent and so only reserves
 // the room. The color is the group HEADER's outline-color, which GTK computes
 // but never draws with no outline-style: the header's own state rules
-// (selected, implied, hover) set it beside its background, so the rail follows
+// (selected, selected element group, hover) set it beside its background, so the rail follows
 // its header in every state, hover included, which no selector on the box
 // could do since hover is a class on the header, a sibling. `user_data` is
 // that header (see _hook_mask_rails)
@@ -15813,8 +17029,8 @@ static void _masks_panel_pack(dt_iop_module_t *module, dt_masks_form_t *grp)
   // after every row is registered in bd->masks_row_map
   _refresh_lowop_badges(module);
   // the rows paint their own selection as they are built, not what holds them
-  _apply_ancestor_selection(GTK_WIDGET(bd->masks_list_box), bd->panel_selected_formid,
-                            bd->panel_selected_group_cid);
+  _apply_parent_selection(GTK_WIDGET(bd->masks_list_box),
+                          bd->masks_picked ? INVALID_MASKID : bd->panel_selected_formid);
   // the data the rows were rebuilt from changed, and so may the shape's editor
   _props_panel_sync(module, TRUE);
 }
@@ -15931,17 +17147,23 @@ void dt_masks_gui_build_list(dt_iop_module_t *module)
   dt_pthread_mutex_lock(&darktable.develop->history_mutex);
   dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
   const gboolean flexi = !(module->blend_params->mask_mode & DEVELOP_MASK_RASTER);
+  const dt_hash_t model_hash = bd->masks_undo_picks && grp
+                               ? _mask_model_hash_of(grp)
+                               : DT_INVALID_HASH;
   dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
+  if(bd->masks_undo_picks) _picks_undo_seen(module, model_hash);
 
   if(!_masks_panel_reconcile(module, grp, flexi))
   {
     gtk_widget_set_visible(GTK_WIDGET(bd->masks_list_box), FALSE);
+    _picks_drop(module);
     _recompute_insert_hint(module);
     _props_panel_sync(module, TRUE);
     return;
   }
 
   _masks_panel_pack(module, grp);
+  _picks_prune(module);
 
   // the rows can change the list between constant size and height-for-width
   // (the empty mask's wrapping hint), and the ancestors it shares with the
@@ -16280,12 +17502,40 @@ static dt_iop_gui_blend_data_t *_shortcut_target(void)
   return module ? module->blend_data : NULL;
 }
 
-// the group selected in the focused module's panel, INVALID_MASKID for none
+// the group selected in the focused module's panel, INVALID_MASKID for none.
+// While members are picked the panel's selection is hidden, and is not what
+// the shortcuts of a selection are for: they act on the picks (see
+// _shortcut_picks_flag) or not at all
 static dt_mask_id_t _shortcut_selected_group(void)
 {
   const dt_iop_gui_blend_data_t *bd = _shortcut_target();
-  return bd && dt_masks_gui_module_mask_group(bd->module) ? bd->panel_selected_group_cid
-                                                          : INVALID_MASKID;
+  return bd && !bd->masks_picked && dt_masks_gui_module_mask_group(bd->module)
+           ? bd->panel_selected_group_cid
+           : INVALID_MASKID;
+}
+
+// the first pick that no picked group holds, which a shortcut acts as if it had
+// clicked the row of: it gives the state all the picks take. With `groups` a
+// picked group alone. INVALID_MASKID for none
+static dt_mask_id_t _shortcut_first_pick(const dt_iop_gui_blend_data_t *bd, const gboolean groups)
+{
+  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(bd->module);
+  for(const GList *l = bd->masks_picked; grp && l; l = g_list_next(l))
+  {
+    const dt_mask_id_t id = GPOINTER_TO_INT(l->data);
+    const dt_masks_point_group_t *pt = dt_masks_gui_group_point(grp, id);
+    if(!_pick_is_held(grp, bd->masks_picked, id) && (!groups || (pt && dt_masks_point_is_marker(pt))))
+      return id;
+  }
+  return INVALID_MASKID;
+}
+
+// the eye or the invert of the picks, as a click on that of the first of them
+static void _shortcut_picks_flag(const dt_iop_gui_blend_data_t *bd, const dt_masks_pick_flag_t flag)
+{
+  const dt_mask_id_t id = _shortcut_first_pick(bd, FALSE);
+  if(dt_is_valid_maskid(id) && !dt_develop_blend_mask_locked(bd->module->blend_params))
+    _picks_toggle_flag(bd->module, id, flag);
 }
 
 // opens the "+" button's operator chooser, from the button when it is on
@@ -16293,7 +17543,7 @@ static dt_mask_id_t _shortcut_selected_group(void)
 static void _shortcut_add_group_in_selected(dt_action_t *action)
 {
   dt_iop_gui_blend_data_t *bd = _shortcut_target();
-  if(!bd || !bd->masks_inited) return;
+  if(!bd || !bd->masks_inited || bd->masks_picked) return;
   GtkWidget *anchor = bd->masks_new_op && gtk_widget_get_mapped(bd->masks_new_op)
                         ? bd->masks_new_op
                         : bd->masks_list_box ? GTK_WIDGET(bd->masks_list_box)
@@ -16309,14 +17559,24 @@ static void _shortcut_invert_selected_group(dt_action_t *action)
 
 static void _shortcut_invert_selected_group_output(dt_action_t *action)
 {
-  const dt_mask_id_t cid = _shortcut_selected_group();
-  if(dt_is_valid_maskid(cid)) _group_toggle_output_invert(dt_dev_gui_module(), cid);
+  const dt_iop_gui_blend_data_t *bd = _shortcut_target();
+  if(bd && bd->masks_picked)
+    _shortcut_picks_flag(bd, DT_MASKS_PICK_FLAG_INVERT);
+  else
+  {
+    const dt_mask_id_t cid = _shortcut_selected_group();
+    if(dt_is_valid_maskid(cid)) _group_toggle_output_invert(dt_dev_gui_module(), cid);
+  }
 }
 
 static void _shortcut_invert_selected_element(dt_action_t *action)
 {
   dt_iop_gui_blend_data_t *bd = _shortcut_target();
-  if(bd && dt_is_valid_maskid(bd->panel_selected_formid))
+  if(!bd) return;
+  // every pick, as the invert button of one of them does
+  if(bd->masks_picked)
+    _shortcut_picks_flag(bd, DT_MASKS_PICK_FLAG_INVERT);
+  else if(dt_is_valid_maskid(bd->panel_selected_formid))
     _invert_element(bd->module, bd->panel_selected_formid);
 }
 
@@ -16363,7 +17623,12 @@ static void _delete_selection(dt_iop_module_t *module, const gboolean empty)
 static void _shortcut_delete_selection(dt_action_t *action)
 {
   dt_iop_gui_blend_data_t *bd = _shortcut_target();
-  if(bd && bd->masks_inited) _delete_selection(bd->module, FALSE);
+  if(!bd || !bd->masks_inited) return;
+  // the selection panel is not on screen while several members are picked
+  if(bd->masks_picked)
+    _multi_delete(bd->module);
+  else
+    _delete_selection(bd->module, FALSE);
 }
 
 // the selection row's buttons take shift+click (see _button_allow_modifiers)
@@ -16377,49 +17642,204 @@ static void _selection_delete_clicked(GtkButton *button, dt_iop_module_t *module
   _delete_selection(module, _shift_clicked());
 }
 
-// the "compose" menu, opened from the button; a group's shift+click simplifies
-// it instead
+// the point the selection row acts on: the element's own member point, or the
+// group's marker
+static const dt_masks_point_group_t *_selection_point(dt_iop_module_t *module,
+                                                      const dt_mask_id_t id,
+                                                      const gboolean group)
+{
+  const dt_masks_point_group_t *pt = group ? NULL : _selected_point(module, id);
+  return pt ? pt : dt_masks_gui_group_point(dt_masks_gui_module_mask_group(module), id);
+}
+
+// can the selection `pt` (an element, or a group by its marker) be wrapped or
+// composed, and if so which operator `*skip` its new group must not have: the
+// one a group composing would only add one more member to (or -1 for none).
+// A member past the base of a group folding in order is offered all, as
+// `a - (b - c)` is no `a - b - c`
+static gboolean _restructure_skip(dt_iop_module_t *module,
+                                  const dt_masks_point_group_t *pt,
+                                  const dt_mask_id_t id,
+                                  const gboolean group,
+                                  int *skip)
+{
+  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
+  if(group)
+  {
+    *skip = pt ? (int)(pt->state & DT_MASKS_STATE_FLEXI_OP) : 0;
+    return _restructurable_group(module, id) != NULL;
+  }
+  dt_masks_form_t *owner = NULL;
+  GList *node = pt ? _point_node_at(grp, pt, &owner) : NULL;
+  if(!node || !(owner->type & DT_MASKS_GROUP)) return FALSE;
+  const int flexi_op = ((dt_masks_point_group_t *)owner->points->data)->state & DT_MASKS_STATE_FLEXI_OP;
+  // composing the base with its group's operator adds a member, as it does
+  // anywhere in a group whose members fold in any order
+  const gboolean ordered =
+    flexi_op & (DT_MASKS_STATE_FLEXI_DIFFERENCE | DT_MASKS_STATE_FLEXI_EXCLUSION);
+  *skip = ordered && owner->points->next != node ? -1 : flexi_op;
+  return TRUE;
+}
+
+// the selection and its module, as the menu of the wand button left them for
+// its items, which close the menu
+static dt_iop_module_t *_selection_act_target(gpointer anchor,
+                                              dt_mask_id_t *id,
+                                              gboolean *group,
+                                              const dt_masks_point_group_t **pt)
+{
+  if(darktable.gui->active_popover_menu)
+    gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
+  *id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(anchor), "sel_act_id"));
+  *group = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(anchor), "sel_act_group"));
+  *pt = g_object_get_data(G_OBJECT(anchor), "sel_act_point");
+  return g_object_get_data(G_OBJECT(anchor), "module");
+}
+
+static void _selection_act_wrap(GSimpleAction *action, GVariant *param, gpointer anchor)
+{
+  dt_mask_id_t id;
+  gboolean group;
+  const dt_masks_point_group_t *pt;
+  dt_iop_module_t *module = _selection_act_target(anchor, &id, &group, &pt);
+  dt_masks_form_t *grp = module ? dt_masks_gui_module_mask_group(module) : NULL;
+  // a group is a member of its holder through its reference
+  if(group && pt) pt = _group_reference(grp, pt->formid);
+  if(!pt) return;
+  GList *pts = g_list_append(NULL, (gpointer)pt);
+  _wrap_points(module, pts, (dt_masks_state_t)g_variant_get_int32(param));
+  g_list_free(pts);
+}
+
+static void _selection_act_compose(GSimpleAction *action, GVariant *param, gpointer anchor)
+{
+  dt_mask_id_t id;
+  gboolean group;
+  const dt_masks_point_group_t *pt;
+  dt_iop_module_t *module = _selection_act_target(anchor, &id, &group, &pt);
+  if(module) _compose(module, pt, (dt_masks_state_t)g_variant_get_int32(param));
+}
+
+static void _selection_act_simplify(GSimpleAction *action, GVariant *param, gpointer anchor)
+{
+  dt_mask_id_t id;
+  gboolean group;
+  const dt_masks_point_group_t *pt;
+  dt_iop_module_t *module = _selection_act_target(anchor, &id, &group, &pt);
+  if(module && group) _simplify(module, id);
+}
+
+// a submenu of the operators `action` may be given, under a caption, or they
+// read as the chooser of a group's own
+static void _selection_menu_ops(GMenu *menu,
+                                const char *label,
+                                const char *tooltip,
+                                const char *caption,
+                                const char *action,
+                                const int skip)
+{
+  GMenu *ops = _flexi_op_menu_model(action, skip);
+  GMenu *sub = g_menu_new();
+  g_menu_append_section(sub, caption, G_MENU_MODEL(ops));
+  GMenuItem *it = g_menu_item_new_submenu(label, G_MENU_MODEL(sub));
+  g_menu_item_set_attribute(it, "tooltip", "s", tooltip);
+  g_menu_append_item(menu, it);
+  g_object_unref(it);
+  g_object_unref(ops);
+  g_object_unref(sub);
+}
+
+// the menu of the wand button, under a caption: wrap the selection in a new
+// group, compose it (into a new group, under an empty one to fill) or, for a
+// group, simplify it. The mask's own group is wrapped by no one, as nothing
+// holds it
+static GMenu *_selection_menu(const gboolean wrappable, const gboolean group, const int skip)
+{
+  GMenu *items = g_menu_new();
+  if(wrappable)
+    _selection_menu_ops(items, _("wrap in group"),
+                        _("put the selection in a new group of the chosen operator,\n"
+                          "where it is, to combine it with what you add to that group"),
+                        _("wrap in a new group of"), "masks_selection_act.wrap", skip);
+  _selection_menu_ops(items, _("compose"),
+                      _("use the selection as a building block for a larger mask, for\n"
+                        "example to subtract from it or to intersect it with something\n"
+                        "else: it goes into a new group of the chosen operator, with an\n"
+                        "empty group on top to draw into"),
+                      _("compose in a new group of"), "masks_selection_act.compose", skip);
+  GMenuItem *simplify = g_menu_item_new(_("simplify"), "masks_selection_act.simplify");
+  g_menu_item_set_attribute(simplify, "tooltip", "s",
+                            group ? _("remove the groups inside this one that change nothing;\n"
+                                      "groups with a name of their own are kept")
+                                  : _("only a group can be simplified"));
+  g_menu_append_item(items, simplify);
+  g_object_unref(simplify);
+  GMenu *menu = g_menu_new();
+  g_menu_append_section(menu, _("restructure"), G_MENU_MODEL(items));
+  g_object_unref(items);
+  return menu;
+}
+
+// the wand button opens the menu
 static void _selection_compose_clicked(GtkButton *button, dt_iop_module_t *module)
 {
   dt_mask_id_t id;
   gboolean group;
   if(!_selection_target(module, &id, &group)) return;
-  if(group && _shift_clicked())
-  {
-    _simplify(module, id);
-    return;
-  }
-  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
-  const dt_masks_point_group_t *pt = group ? NULL : _selected_point(module, id);
-  if(!pt) pt = dt_masks_gui_group_point(grp, id);
+  const dt_masks_point_group_t *pt = _selection_point(module, id, group);
+  int skip = -1;
+  if(!_restructure_skip(module, pt, id, group, &skip)) return;
+  const gboolean whole = group && id == _mask_group_cid(module);
+
   GtkWidget *anchor = GTK_WIDGET(button);
-  GMenu *menu;
-  // the data and action groups the menus' own handlers read their target from
-  // (see _shape_act_target, _group_act_target)
+  // the target and the action group the items read it from, as they run
+  // after the selection could have changed in the panel
   g_object_set_data(G_OBJECT(anchor), "module", module);
+  g_object_set_data(G_OBJECT(anchor), "sel_act_id", GINT_TO_POINTER(id));
+  g_object_set_data(G_OBJECT(anchor), "sel_act_group", GINT_TO_POINTER(group));
+  g_object_set_data(G_OBJECT(anchor), "sel_act_point", (gpointer)pt);
   GSimpleActionGroup *sag = g_simple_action_group_new();
-  if(group)
-  {
-    g_object_set_data(G_OBJECT(anchor), "group_act_cid", GINT_TO_POINTER(id));
-    const GActionEntry entries[] = { { "compose", _group_act_compose, "i", NULL } };
-    g_action_map_add_action_entries(G_ACTION_MAP(sag), entries, G_N_ELEMENTS(entries), anchor);
-    gtk_widget_insert_action_group(anchor, "masks_group_act", G_ACTION_GROUP(sag));
-    menu = _compose_menu("masks_group_act.compose", pt ? pt->state : 0, FALSE);
-  }
-  else
-  {
-    g_object_set_data(G_OBJECT(anchor), "shape_act_id", GINT_TO_POINTER(id));
-    g_object_set_data(G_OBJECT(anchor), "shape_act_point", (gpointer)pt);
-    const GActionEntry entries[] = { { "compose", _shape_act_compose, "i", NULL } };
-    g_action_map_add_action_entries(G_ACTION_MAP(sag), entries, G_N_ELEMENTS(entries), anchor);
-    gtk_widget_insert_action_group(anchor, "masks_shape_act", G_ACTION_GROUP(sag));
-    menu = _shape_compose_menu(grp, pt);
-  }
+  const GActionEntry entries[] = { { "wrap", _selection_act_wrap, "i", NULL },
+                                   { "compose", _selection_act_compose, "i", NULL },
+                                   { "simplify", _selection_act_simplify, NULL, NULL } };
+  g_action_map_add_action_entries(G_ACTION_MAP(sag), entries, G_N_ELEMENTS(entries), anchor);
+  GAction *simplify = g_action_map_lookup_action(G_ACTION_MAP(sag), "simplify");
+  g_simple_action_set_enabled(G_SIMPLE_ACTION(simplify), group);
+  gtk_widget_insert_action_group(anchor, "masks_selection_act", G_ACTION_GROUP(sag));
   g_object_unref(sag);
-  if(!menu) return;
+
+  GMenu *menu = _selection_menu(!whole, group, skip);
   darktable.gui->active_popover_menu = dt_gui_popover_menu_from_model(anchor, menu);
   g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(darktable.gui->active_popover_menu));
+}
+
+// "move selection into group": the multiple selection's "move into..." menu,
+// from the button, which is on screen while several members are picked
+static void _shortcut_move_selection(dt_action_t *action)
+{
+  dt_iop_gui_blend_data_t *bd = _shortcut_target();
+  if(!bd || !bd->masks_inited || !bd->masks_picked
+     || !gtk_widget_get_mapped(bd->masks_multi_move_btn))
+    return;
+  _multi_move_clicked(GTK_BUTTON(bd->masks_multi_move_btn), bd->module);
+}
+
+// "group selection": the picks' "group together..." menu, or with none the
+// selection panel's wand menu, which wraps the selection in a group among
+// other things
+static void _shortcut_group_selection(dt_action_t *action)
+{
+  dt_iop_gui_blend_data_t *bd = _shortcut_target();
+  if(!bd || !bd->masks_inited) return;
+  if(bd->masks_picked)
+  {
+    if(gtk_widget_get_mapped(bd->masks_multi_group_btn))
+      _multi_group_clicked(GTK_BUTTON(bd->masks_multi_group_btn), bd->module);
+  }
+  else if(gtk_widget_get_mapped(bd->masks_selection_compose_btn)
+          && gtk_widget_get_sensitive(bd->masks_selection_compose_btn))
+    _selection_compose_clicked(GTK_BUTTON(bd->masks_selection_compose_btn), bd->module);
 }
 
 // rename the selection, in its row of the list. The mask's own group has no
@@ -16488,10 +17908,7 @@ static void _selection_actions_sync(dt_iop_module_t *module)
   dt_mask_id_t id;
   gboolean group;
   const gboolean any = _selection_target(module, &id, &group);
-  dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
-  const dt_masks_point_group_t *pt = NULL;
-  if(any && !group) pt = _selected_point(module, id);
-  if(any && !pt) pt = dt_masks_gui_group_point(grp, id);
+  const dt_masks_point_group_t *pt = any ? _selection_point(module, id, group) : NULL;
   const gboolean whole = group && id == _mask_group_cid(module);
 
   // why nothing is acted on, while it is not: a shape being drawn, a locked mask
@@ -16499,41 +17916,28 @@ static void _selection_actions_sync(dt_iop_module_t *module)
                          : dt_develop_blend_mask_locked(module->blend_params)
                            ? _("the mask is locked")
                            : NULL;
-  const char *compose_what = _("use this as a building block for a larger mask, for example\n"
-                               "to subtract from it or to intersect it with something else:\n"
-                               "it goes into a new group of the chosen operator,\n"
-                               "with an empty group on top to draw into");
-  gboolean composable = FALSE;
+  int skip = -1;
+  const gboolean composable = any && _restructure_skip(module, pt, id, group, &skip);
   const char *compose_tip = NULL, *delete_tip = NULL;
-  gchar *group_compose_tip = NULL;
   if(!any)
     compose_tip = delete_tip = inactive;
-  else if(!group)
-  {
-    GMenu *menu = _shape_compose_menu(grp, pt);
-    composable = menu != NULL;
-    if(menu) g_object_unref(menu);
-    compose_tip = composable ? compose_what : _("this element cannot be composed where it is");
-    delete_tip = _element_is_linked(module, dt_masks_get_from_id(darktable.develop, id))
-                   ? _("delete this element here; the other rows and modules it is linked"
-                       " with keep it")
-                   : _("delete this element from the mask");
-  }
   else
   {
-    composable = _restructurable_group(module, id) != NULL;
-    group_compose_tip =
-      composable ? g_strconcat(compose_what, "\n",
-                               _("shift+click: simplify, removing the groups inside that"
-                                 " change nothing"),
-                               NULL)
-                 : NULL;
-    compose_tip = composable ? group_compose_tip
-                             : _("nothing to compose: this group cannot be restructured");
-    delete_tip = whole ? _("reset the mask: remove every member,\n"
-                           "starting over from the default group layout")
-                       : _("delete this group and every member in it\n"
-                           "shift+click: empty it, keeping the group with its settings and name");
+    compose_tip =
+      composable ? _("restructure the selection: wrap it in a new group, compose it\n"
+                     "into a larger mask or, for a group, simplify it")
+      : group    ? _("nothing to restructure: this group cannot be restructured")
+                 : _("this element cannot be restructured where it is");
+    if(group)
+      delete_tip = whole ? _("reset the mask: remove every member,\n"
+                             "starting over from the default group layout")
+                         : _("delete this group and every member in it\n"
+                             "shift+click: empty it, keeping the group with its settings and name");
+    else
+      delete_tip = _element_is_linked(module, dt_masks_get_from_id(darktable.develop, id))
+                     ? _("delete this element here; the other rows and modules it is linked"
+                         " with keep it")
+                     : _("delete this element from the mask");
   }
 
   // the other end of a raster mask or a linked shape, the tooltip naming it
@@ -16565,7 +17969,6 @@ static void _selection_actions_sync(dt_iop_module_t *module)
       : NULL;
   gtk_widget_set_tooltip_text(bd->masks_selection_delete_btn, delete_full ? delete_full : delete_tip);
   g_free(delete_full);
-  g_free(group_compose_tip);
 
   // the reasons in the order _presets_target checks them
   dt_mask_id_t presets_cid;
@@ -16591,14 +17994,17 @@ static void _selection_actions_sync(dt_iop_module_t *module)
 static void _shortcut_toggle_soloedit(dt_action_t *action)
 {
   dt_iop_gui_blend_data_t *bd = _shortcut_target();
-  if(bd && bd->soloedit_mode) _soloedit_mode_toggle();
+  if(bd && bd->soloedit_mode && !bd->masks_picked) _soloedit_mode_toggle();
 }
 
+// the operator of the picked groups, as the chooser of the first of them sets it
 static void _shortcut_change_group_mode(dt_action_t *action)
 {
-  const dt_mask_id_t cid = _shortcut_selected_group();
-  if(!dt_is_valid_maskid(cid)) return;
   dt_iop_gui_blend_data_t *bd = _shortcut_target();
+  if(!bd) return;
+  const dt_mask_id_t cid = bd->masks_picked ? _shortcut_first_pick(bd, TRUE)
+                                            : _shortcut_selected_group();
+  if(!dt_is_valid_maskid(cid)) return;
   GtkWidget *anchor = bd->masks_list_box ? GTK_WIDGET(bd->masks_list_box) : bd->module->widget;
   _build_flexi_op_menu(anchor, bd->module, cid);
 }
@@ -16609,6 +18015,12 @@ static void _shortcut_change_group_mode(dt_action_t *action)
 // judging an edit.
 static void _shortcut_toggle_group_bypass(dt_action_t *action)
 {
+  const dt_iop_gui_blend_data_t *bd = _shortcut_target();
+  if(bd && bd->masks_picked)
+  {
+    _shortcut_picks_flag(bd, DT_MASKS_PICK_FLAG_DISABLE);
+    return;
+  }
   const dt_mask_id_t cid = _shortcut_selected_group();
   if(dt_is_valid_maskid(cid)) _group_toggle_bypass(dt_dev_gui_module(), cid);
 }
@@ -16834,6 +18246,10 @@ static void _register_masks_action_shortcuts(void)
                      _shortcut_invert_selected_element, 0, 0);
   _masks_delete_action = dt_action_register(masks, N_("delete selection"),
                                             _shortcut_delete_selection, GDK_KEY_Delete, 0);
+  dt_action_register(masks, N_("move selection into group"),
+                     _shortcut_move_selection, 0, 0);
+  dt_action_register(masks, N_("group selection"),
+                     _shortcut_group_selection, 0, 0);
   dt_action_register(masks, N_("solo edit the selection"),
                      _shortcut_toggle_soloedit, 0, 0);
   dt_action_register(masks, N_("change operator of selected group"),
@@ -17086,6 +18502,11 @@ void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
   if(bd->masks_refine_bypassed) g_hash_table_destroy(bd->masks_refine_bypassed);
   if(bd->masks_row_map) g_hash_table_destroy(bd->masks_row_map);
   if(bd->group_ordinals) g_hash_table_destroy(bd->group_ordinals);
+  if(bd->masks_picked) _picks_canvas_set(NULL);
+  g_list_free(bd->masks_picked);
+  bd->masks_picked = NULL;
+  g_list_free_full(bd->masks_undo_picks, _picks_undo_free);
+  bd->masks_undo_picks = NULL;
   dt_pthread_mutex_unlock(&bd->lock);
   dt_pthread_mutex_destroy(&bd->lock);
 
@@ -17527,6 +18948,10 @@ void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
     {
       dt_masks_gui_flexi_release(module);
     }
+
+    // the picks are of the panel that has the focus: the canvas shows one
+    // module's at a time
+    if(bd->masks_support) _picks_drop(module);
 
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), FALSE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), FALSE);
@@ -18043,7 +19468,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     }
     dt_gui_connect_click(name_box, _selection_name_pressed, NULL, module);
     _button_allow_modifiers(bd->masks_selection_link_btn, GDK_SHIFT_MASK);
-    _button_allow_modifiers(bd->masks_selection_compose_btn, GDK_SHIFT_MASK);
+    _button_allow_modifiers(bd->masks_selection_compose_btn, 0);
     _button_allow_modifiers(bd->masks_selection_delete_btn, GDK_SHIFT_MASK);
     g_signal_connect(G_OBJECT(bd->masks_selection_link_btn), "clicked",
                      G_CALLBACK(_selection_link_clicked), module);
@@ -18065,7 +19490,11 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     // would inset the properties once more than the refinement beside them
     gtk_widget_set_name(GTK_WIDGET(bd->props_panel_box), "masks-props-section");
     dt_gui_box_add(bd->masks_selection_area, bd->masks_refine_expander);
-    bd->refine_box = GTK_BOX(dt_gui_vbox(bd->masks_selection_area));
+    // the multiple selection panel stands in for the selection panel while
+    // several members are picked (see _multi_panel_sync), in the same box so
+    // that locking the mask disables it too
+    bd->masks_multi_area = _multi_area_new(bd, module);
+    bd->refine_box = GTK_BOX(dt_gui_vbox(bd->masks_selection_area, bd->masks_multi_area));
     _add_wrapped_box(mask_panel, bd->refine_box, "masks_refinement");
 
     // "mask consumers": the modules reading this one's raster mask, shown only
@@ -18098,6 +19527,11 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     // children are shown once, then it is set no_show_all
     gtk_widget_show_all(GTK_WIDGET(bd->masks_panel_body));
     gtk_widget_set_no_show_all(GTK_WIDGET(bd->masks_panel_body), TRUE);
+    // the two selection panels take turns (see _multi_panel_sync): neither is
+    // shown by a later show_all of what holds them
+    gtk_widget_hide(bd->masks_multi_area);
+    gtk_widget_set_no_show_all(bd->masks_multi_area, TRUE);
+    gtk_widget_set_no_show_all(bd->masks_selection_area, TRUE);
 
     // the same for relocatable_box, whose visibility is focus: only the
     // focused module shows its panel, through

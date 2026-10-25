@@ -45,8 +45,9 @@ static const char *_parts[] =
 static const char *_states[] =
 {
   "dt_masks_inverted", "dt_masks_channel", "dt_masks_soloed", "dt_masks_disabled",
-  "dt_masks_no_effect", "dt_masks_selected", "dt_masks_implied", "dt_masks_hovered",
+  "dt_masks_no_effect", "dt_masks_selected", "dt_masks_selected_element_group", "dt_masks_hovered",
   "dt_masks_drop_target", "dt_masks_root", "dt_masks_pending", "dt_masks_linked",
+  "dt_masks_picked", "dt_masks_selected_held",
 };
 static const char *_hooks[] =
 {
