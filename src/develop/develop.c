@@ -160,6 +160,8 @@ void dt_dev_init(dt_develop_t *dev,
 
   dev->full.color_assessment = dt_conf_get_bool("full_window/color_assessment");
   dev->preview2.color_assessment = dt_conf_get_bool("second_window/color_assessment");
+  dev->full.color_assessment_fit = dev->full.color_assessment;
+  dev->preview2.color_assessment_fit = dev->preview2.color_assessment;
 
   dev->constrain_zoom = dt_conf_get_bool("darkroom/ui/constrain_zoom");
 
@@ -437,6 +439,7 @@ static dt_develop_t *_alloc_pinned_dev(dt_develop_t *main_dev)
   pinned_dev->preview2.dpi_factor       = main_dev->preview2.dpi_factor;
   pinned_dev->preview2.ppd              = main_dev->preview2.ppd;
   pinned_dev->preview2.color_assessment = main_dev->preview2.color_assessment;
+  pinned_dev->preview2.color_assessment_fit = main_dev->preview2.color_assessment_fit;
   pinned_dev->preview2.zoom             = main_dev->preview2.zoom;
   pinned_dev->preview2.closeup          = main_dev->preview2.closeup;
   pinned_dev->preview2.zoom_x           = main_dev->preview2.zoom_x;
@@ -1048,6 +1051,19 @@ void dt_dev_reload_image(dt_develop_t *dev,
   dt_dev_invalidate(dev); // only invalidate image, preview will follow once it's loaded.
 }
 
+static int32_t _dev_border_size(const dt_dev_viewport_t *port,
+                                const gboolean color_assessment)
+{
+  if(color_assessment)
+    return (int32_t)(dt_conf_get_float("darkroom/ui/color_assessment_total_border_width")
+                     * MIN(port->orig_width, port->orig_height));
+  else if(port == &darktable.develop->full)
+    // Reset border size from config
+    return DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  else
+    return 0;
+}
+
 float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
                             const dt_dev_zoom_t zoom,
                             const int closeup_factor,
@@ -1076,6 +1092,19 @@ float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
       break;
     default: // DT_ZOOM_FREE
       zoom_scale = port->zoom_scale;
+      if(port->color_assessment && port->color_assessment_fit)
+      {
+        // zoomed out beyond fit of the viewport without the assessment
+        // border: shrink to fit inside the border but leave
+        // port->zoom_scale alone, so leaving the mode restores it.
+        // Zooming in assessment mode disarms this, or every step up from
+        // fit would be shrunk back
+        const int32_t tb = _dev_border_size(port, FALSE);
+        const float fit = fminf((float)(port->orig_width - 2*tb) / procw,
+                                (float)(port->orig_height - 2*tb) / proch);
+        if(zoom_scale <= fit)
+          zoom_scale = fminf(zoom_scale, fminf(w, h));
+      }
       break;
   }
 
@@ -1137,17 +1166,7 @@ void dt_dev_load_image(dt_develop_t *dev,
 
 void dt_dev_configure(dt_dev_viewport_t *port)
 {
-  int32_t tb = 0;
-  if(port->color_assessment)
-  {
-    tb = (int32_t)(dt_conf_get_float("darkroom/ui/color_assessment_total_border_width")
-                   * MIN(port->orig_width, port->orig_height));
-  }
-  else if(port == &darktable.develop->full)
-  {
-    // Reset border size from config
-    tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
-  }
+  const int32_t tb = _dev_border_size(port, port->color_assessment);
 
   port->border_size = tb;
   // fixed border on every side. Not reduced by occlusion_left/right, so that
@@ -3486,6 +3505,8 @@ static void _dev_zoom_move(dt_dev_viewport_t *port,
   {
     const float ppd = port->ppd;
     const gboolean low_ppd = (ppd == 1);
+    // full preview and its restore are not zooms by the user
+    const gboolean user_zoom = zoom != DT_ZOOM_FULL_PREVIEW && zoom != DT_ZOOM_RESTORE;
 
     if(zoom == DT_ZOOM_1 && closeup == -1)
       closeup = port->zoom != DT_ZOOM_1 || port->closeup ? 0 : 1;
@@ -3581,6 +3602,10 @@ static void _dev_zoom_move(dt_dev_viewport_t *port,
                               &tscalemin, &tscalemax);
       scale = CLAMP(scale * ppd, tscalemin, tscalemax) / ppd;
     }
+
+    // the new scale was derived from the visible one, so it must not be
+    // shrunk again
+    if(user_zoom) port->color_assessment_fit = FALSE;
 
     port->closeup = closeup;
     port->zoom_scale = scale;
