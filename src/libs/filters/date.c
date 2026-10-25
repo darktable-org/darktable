@@ -20,6 +20,10 @@
   This file contains the necessary routines to implement a filter for the filtering module
 */
 
+#include <glib-2.0/glib.h>
+#include <gtk/gtk.h>
+#include "common/filter.h"
+
 static gchar *_date_get_db_colname(dt_lib_filtering_rule_t *rule)
 {
   switch(rule->prop)
@@ -50,28 +54,24 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
   rule->manual_widget_set++;
   // first, we update the graph
   gchar *colname = _date_get_db_colname(rule);
-  char query[1024] = { 0 };
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-             "SELECT %s AS date, COUNT(*) AS count"
-             " FROM main.images AS mi"
-             " WHERE %s IS NOT NULL AND %s"
-             " GROUP BY date",
-             colname, colname, d->last_where_ext);
-  // clang-format on
-  g_free(colname);
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+
+  // get min and max
+  dt_filter_daterange_t *daterange = dt_filter_get_daterange(colname, d->last_where_ext);
+  range->min_r = daterange->min_r;
+  range->max_r = daterange->max_r;
+  dt_filter_daterange_free(daterange);
+
   dtgtk_range_select_reset_blocks(range);
   if(rangetop) dtgtk_range_select_reset_blocks(rangetop);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+
+  GList *counts = dt_filter_get_date_counts(colname, d->last_where_ext);
+  for(GList *iter = counts; iter; iter = g_list_next(iter))
   {
-    const int count = sqlite3_column_int(stmt, 1);
-    const int64_t dt = sqlite3_column_int64(stmt, 0);
-    dtgtk_range_select_add_block(range, dt, count);
-    if(rangetop) dtgtk_range_select_add_block(rangetop, dt, count);
+    dt_filter_date_count_t *count = iter->data;
+    dtgtk_range_select_add_block(range, count->dt, count->count);
+    if(rangetop) dtgtk_range_select_add_block(rangetop, count->dt, count->count);
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(counts, dt_filter_date_count_free);
 
   // and setup the selection
   dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
@@ -148,18 +148,28 @@ static gboolean _month_update(dt_lib_filtering_rule_t *rule)
 {
   if(!rule->w_specific) return FALSE;
 
+  dt_lib_filtering_t *d = rule->lib;
+
   rule->manual_widget_set++;
   _widgets_month_t *month = (_widgets_month_t *)rule->w_specific;
   _widgets_month_t *monthtop = (_widgets_month_t *)rule->w_specific_top;
 
+  // get all used months
+  gchar *colname = _date_get_db_colname(rule);
+  int used_months_mask = dt_filter_get_used_months_mask(colname, d->last_where_ext);
   const int mask = _month_get_mask(rule->raw_text);
 
   for(int i = 0; i < 12; i++)
   {
-    const gboolean active = (mask & (1 << i)) != 0;
+    const gboolean valid_month = (used_months_mask & (1 << i)) != 0;
+    const gboolean active = valid_month && (mask & (1 << i)) != 0;
+    gtk_widget_set_sensitive(month->toggles[i], valid_month);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(month->toggles[i]), active);
     if(monthtop)
+    {
+      gtk_widget_set_sensitive(monthtop->toggles[i], valid_month);
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(monthtop->toggles[i]), active);
+    }
   }
 
   rule->manual_widget_set--;
@@ -224,23 +234,11 @@ static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
 
   gchar *colname = _date_get_db_colname(rule);
-  char query[1024] = { 0 };
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-             "SELECT MIN(%s), MAX(%s)"
-             " FROM main.images"
-             " WHERE %s IS NOT NULL",
-             colname, colname, colname);
-  // clang-format on
-  g_free(colname);
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    range->min_r = sqlite3_column_int64(stmt, 0);
-    range->max_r = sqlite3_column_int64(stmt, 1);
-  }
-  sqlite3_finalize(stmt);
+
+  dt_filter_daterange_t *daterange = dt_filter_get_daterange(colname, NULL);
+  range->min_r = daterange->min_r;
+  range->max_r = daterange->max_r;
+  dt_filter_daterange_free(daterange);
 
   _range_widget_add_to_rule(rule, special, top);
 }
