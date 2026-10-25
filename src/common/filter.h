@@ -22,30 +22,33 @@
 
 G_BEGIN_DECLS
 
-typedef struct dt_filter_daterange_t
+typedef struct dt_filter_range_t
 {
   double min_r;
   double max_r;
-} dt_filter_daterange_t;
+} dt_filter_range_t;
 
-void dt_filter_daterange_free(gpointer data);
+void dt_filter_range_free(gpointer data);
 
-typedef struct dt_filter_date_count_t
+typedef struct dt_filter_range_count_t
 {
-  int64_t dt;
+  double value_r;
   int count;
-} dt_filter_date_count_t;
+} dt_filter_range_count_t;
 
-void dt_filter_date_count_free(gpointer data);
+void dt_filter_range_count_free(gpointer data);
 
-/** get the date range; free with dt_filter_daterange_free() */
-dt_filter_daterange_t* dt_filter_get_daterange(const gchar *colname, const gchar *where_ext);
 
-/** get the count of images per date */
-GList *dt_filter_get_date_counts(const gchar* colname, const gchar *where_ext);
+/** get the range; free with dt_filter_range_free() */
+dt_filter_range_t* dt_filter_get_range(const gchar *colname, const gchar *where_ext);
+
+/** get the count of images per group */
+GList *dt_filter_get_range_counts(const gchar* colname, const gchar *where_ext);
+
 
 /** get the mask of used months */
 int dt_filter_get_used_months_mask(const gchar *colname, const gchar *where_ext);
+
 
 G_END_DECLS
 

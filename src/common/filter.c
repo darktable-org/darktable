@@ -21,20 +21,20 @@
 #include "common/debug.h"
 #include <glib-2.0/glib.h>
 
-void dt_filter_daterange_free(gpointer data)
+void dt_filter_range_free(gpointer data)
 {
   g_free(data);
 }
 
-void dt_filter_date_count_free(gpointer data)
+void dt_filter_range_count_free(gpointer data)
 {
   g_free(data);
 }
 
-dt_filter_daterange_t* dt_filter_get_daterange(const gchar *colname,
-                                               const gchar *where_ext)
+dt_filter_range_t* dt_filter_get_range(const gchar *colname,
+                                       const gchar *where_ext)
 {
-  dt_filter_daterange_t *range = g_malloc0(sizeof(dt_filter_daterange_t));
+  dt_filter_range_t *range = g_malloc0(sizeof(dt_filter_range_t));
 
   // clang-format off
   gchar *query = g_strdup_printf("SELECT MIN(%s), MAX(%s)"
@@ -50,33 +50,35 @@ dt_filter_daterange_t* dt_filter_get_daterange(const gchar *colname,
   g_free(query);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    range->min_r = sqlite3_column_int64(stmt, 0);
-    range->max_r = sqlite3_column_int64(stmt, 1);
+    range->min_r = sqlite3_column_double(stmt, 0);
+    range->max_r = sqlite3_column_double(stmt, 1);
   }
   sqlite3_finalize(stmt);
 
   return range;
 }
 
-GList *dt_filter_get_date_counts(const gchar* colname, const gchar *where_ext)
+GList *dt_filter_get_range_counts(const gchar* colname,
+                                  const gchar *where_ext)
 {
   GList *counts = NULL;
 
   // clang-format off
-  gchar *query = g_strdup_printf("SELECT %s AS date, COUNT(*) AS count"
+  gchar *query = g_strdup_printf("SELECT %s AS val, COUNT(*) AS count"
                                  " FROM main.images AS mi"
                                  " WHERE %s IS NOT NULL AND %s"
-                                 " GROUP BY date",
+                                 " GROUP BY val",
                                  colname, colname, where_ext);
   // clang-format on
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  g_free(query);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int64_t dt = sqlite3_column_int64(stmt, 0);
+    const double value_r = sqlite3_column_double(stmt, 0);
     const int count = sqlite3_column_int(stmt, 1);
-    dt_filter_date_count_t *entry = g_malloc0(sizeof(dt_filter_date_count_t));
-    entry->dt = dt;
+    dt_filter_range_count_t *entry = g_malloc0(sizeof(dt_filter_range_count_t));
+    entry->value_r = value_r;
     entry->count = count;
     counts = g_list_prepend(counts, entry);
   }
@@ -85,7 +87,8 @@ GList *dt_filter_get_date_counts(const gchar* colname, const gchar *where_ext)
   return counts;
 }
 
-int dt_filter_get_used_months_mask(const gchar *colname, const gchar *where_ext)
+int dt_filter_get_used_months_mask(const gchar *colname,
+                                   const gchar *where_ext)
 {
   int used_months_mask = 0;
 
@@ -100,6 +103,7 @@ int dt_filter_get_used_months_mask(const gchar *colname, const gchar *where_ext)
   // clang-format on
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  g_free(query);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int m = sqlite3_column_int(stmt, 0);
