@@ -365,16 +365,18 @@ __kernel void spektrafilm_expose(__read_only image2d_t in, __global float4 *plan
   plane[(size_t)y * w + x] = (float4)(raw.x, raw.y, raw.z, px.w);
 }
 
-/* stage 3a: linear raw -> log exposure (in place) */
-__kernel void spektrafilm_lograw(__global float4 *plane, const int w, const int h)
+/* stage 3a: linear raw -> log exposure (in place), after the positive scan's
+   black/white exposure correction (sf_sim_lograw) */
+__kernel void spektrafilm_lograw(__global float4 *plane, const int w, const int h,
+                                 const float raw_scale)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
   float4 p = plane[k];
-  p.x = sf_log10f(fmax(p.x, 0.0f) + SF_LOG_EPS);
-  p.y = sf_log10f(fmax(p.y, 0.0f) + SF_LOG_EPS);
-  p.z = sf_log10f(fmax(p.z, 0.0f) + SF_LOG_EPS);
+  p.x = sf_log10f(fmax(p.x * raw_scale, 0.0f) + SF_LOG_EPS);
+  p.y = sf_log10f(fmax(p.y * raw_scale, 0.0f) + SF_LOG_EPS);
+  p.z = sf_log10f(fmax(p.z * raw_scale, 0.0f) + SF_LOG_EPS);
   plane[k] = p;
 }
 

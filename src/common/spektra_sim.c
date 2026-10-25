@@ -356,6 +356,11 @@ struct sf_sim_t
   float m_in_f[9];   /* float copy for fast per-pixel path */
   float ev_scale_f;
   double ev_scale;
+  /* [cr] black_white_filming_exposure_correction: the exposure factor a
+     positive scan's black/white fit asks of the film, applied to the raw after
+     the pre-film spatial effects, as filming.expose does; 1 otherwise */
+  double raw_scale;
+  float raw_scale_f;
   int tc_n;
   double *tc_lut;    /* tc_n*tc_n*3 raw CMY exposure (double) */
   float *tc_lut_f;   /* float copy — halves cache footprint, enables fast path */
@@ -3338,7 +3343,7 @@ static float _probe_lightness_run(const sf_sim_t *tmp_sim,
 {
   float raw[3];
   sf_sim_expose(tmp_sim, rgb_in, raw, 1, 3, 3);
-  sf_sim_lograw(raw, 1, 3);
+  sf_sim_lograw(tmp_sim, raw, 1, 3);
   float corr[3] = { 0.0f, 0.0f, 0.0f };
   if(tmp_sim->couplers_active) sf_sim_develop_corr(tmp_sim, raw, corr, 1, 3);
   float cmy[3];
@@ -3733,6 +3738,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     mat3_mul(s->m_in, cat, p->input_rgb_to_xyz);
   }
   s->ev_scale = pow(2.0, p->exposure_comp_ev);
+  s->raw_scale = 1.0;
 
   /* [su] compute_tc_lut: spectra × (sensitivity × window / norm) for an
      irradiance table; relight × sensitivity, neutral-normalized, for a
@@ -3928,10 +3934,8 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
         }
       free(old);
     }
-    /* float copies for the fast per-pixel expose path. ev_scale is NOT copied
-       here: the scan-film exposure correction below still divides it, and a
-       copy taken now would be the value from before that. It is taken once at
-       the end of the build instead, where nothing can change it again. */
+    /* float copies for the fast per-pixel expose path. ev_scale is copied
+       once at the end of the build, together with raw_scale. */
     for(int c = 0; c < 9; c++) s->m_in_f[c] = (float)s->m_in[c];
     s->tc_lut_f = malloc((size_t)n * n * 3 * sizeof(float));
     if(s->tc_lut_f)
@@ -4604,17 +4608,14 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
       const double le_mid = -interp_ascending(-(density_midgray - dmin_av), curve_av,
                                               film->log_exposure, SF_NLE);
       const double exposure_correction = pow(10.0, le_mid_c - le_mid);
-      s->ev_scale /= exposure_correction; /* raw *= 1/correction */
+      s->raw_scale = 1.0 / exposure_correction;
     }
   }
 
-  /* Every write to ev_scale has happened by here -- the base exposure
-     compensation, and for a scan-film positive the midgray correction above.
-     The per-pixel expose path reads this float copy, so taking it any earlier
-     applies the correction on one path and not the other: sf_sim_gpu_export()
-     converts from the double, so the GPU applied it while the CPU used a stale
-     copy, and the same edit came out brighter without OpenCL. */
+  /* the per-pixel paths read these float copies and sf_sim_gpu_export()
+     converts from the doubles, so both are taken after their last write */
   s->ev_scale_f = (float)s->ev_scale;
+  s->raw_scale_f = (float)s->raw_scale;
 
   /* ----- runtime 3D tables ------------------------------------------------ */
   if(s->lut_steps >= 2)
@@ -4764,10 +4765,12 @@ void sf_sim_expose(const sf_sim_t *sim,
   }
 }
 
-void sf_sim_lograw(float *raw,
+void sf_sim_lograw(const sf_sim_t *sim,
+                   float *raw,
                    size_t npix,
                    int nch)
 {
+  const float k = sim->raw_scale_f;
 #ifdef _OPENMP
 #pragma omp parallel for num_threads(darktable.num_openmp_threads) schedule(static)
 #endif
@@ -4775,7 +4778,7 @@ void sf_sim_lograw(float *raw,
   {
     float *v = raw + px * nch;
     for(int c = 0; c < 3; c++)
-      v[c] = SF_LOG10F(fmaxf(v[c], 0.0f) + SF_LOG_EPS);
+      v[c] = SF_LOG10F(fmaxf(v[c] * k, 0.0f) + SF_LOG_EPS);
   }
 }
 
@@ -5042,6 +5045,7 @@ sf_sim_gpu_t *sf_sim_gpu_export(const sf_sim_t *s)
 
   cp9f(g->m_in, s->m_in);
   g->ev_scale = (float)s->ev_scale;
+  g->raw_scale = (float)s->raw_scale;
   g->tc_n = s->tc_n;
   g->tc_lut = dup_f(s->tc_lut, (size_t)s->tc_n * s->tc_n * 3);
 

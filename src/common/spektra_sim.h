@@ -255,6 +255,7 @@ typedef struct sf_sim_gpu_t
   /* expose: work RGB -> film raw exposure */
   float m_in[9];
   float ev_scale;
+  float raw_scale; /* applied with the log, after the pre-film spatial effects */
   int tc_n;
   float *tc_lut; /* tc_n * tc_n * 3 */
   /* film develop */
@@ -657,8 +658,10 @@ void sf_sim_expose(const sf_sim_t *sim,
                    int nch_in,
                    int nch_out);
 
-/* raw -> log10(max(raw,0) + 1e-10), in place */
-void sf_sim_lograw(float *raw,
+/* raw -> log10(max(raw * raw_scale, 0) + 1e-10), in place. raw_scale is the
+ * positive scan's black/white exposure correction, 1 otherwise */
+void sf_sim_lograw(const sf_sim_t *sim,
+                   float *raw,
                    size_t npix,
                    int nch);
 

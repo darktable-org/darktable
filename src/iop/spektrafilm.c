@@ -2258,7 +2258,7 @@ void process(dt_iop_module_t *self,
   /* 3) film development: log exposure, DIR coupler inhibition (the correction
         field diffuses in the emulsion: gaussian, sigma 20 um as in the
         reference), density curves */
-  sf_sim_lograw(plane, npix, 3);
+  sf_sim_lograw(sim, plane, npix, 3);
   const int couplers = (d->p.couplers_amount > 0.0f);
   if(couplers)
   {
@@ -3161,7 +3161,7 @@ int process_cl(dt_iop_module_t *self,
 
   /* ---- 3) film development ------------------------------------------------ */
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_lograw, w, h, CLARG(plane), CLARG(w),
-                                         CLARG(h));
+                                         CLARG(h), CLARG(g->raw_scale));
   SF_CL_STEP("lograw");
 
   const int use_corr = g->couplers_active;
