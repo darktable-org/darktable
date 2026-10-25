@@ -27,6 +27,7 @@
 #include "common/tags.h"
 #include "common/metadata.h"
 #include "control/control.h"
+#include "develop/masks.h"
 
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
@@ -146,23 +147,58 @@ typedef struct dt_iop_vignette_params_t
   int dithering; // if and how to perform dithering
 } dt_iop_vignette_params_t;
 
-#define LRDT_SPOTS_VERSION 1
-#define MAX_SPOTS 32
+#define LRDT_RETOUCH_VERSION 3
+#define RETOUCH_NO_FORMS 300
 
-typedef struct spot_t
+typedef enum dt_iop_retouch_fill_modes_t
 {
-  // position of the spot
-  float x, y;
-  // position to clone from
-  float xc, yc;
-  float radius;
-} spot_t;
+  DT_IOP_RETOUCH_FILL_ERASE = 0,
+  DT_IOP_RETOUCH_FILL_COLOR = 1
+} dt_iop_retouch_fill_modes_t;
 
-typedef struct dt_iop_spots_params_t
+typedef enum dt_iop_retouch_blur_types_t
 {
-  int num_spots;
-  spot_t spot[MAX_SPOTS];
-} dt_iop_spots_params_t;
+  DT_IOP_RETOUCH_BLUR_GAUSSIAN = 0,
+  DT_IOP_RETOUCH_BLUR_BILATERAL = 1
+} dt_iop_retouch_blur_types_t;
+
+typedef enum dt_iop_retouch_algo_type_t
+{
+  DT_IOP_RETOUCH_NONE = 0,
+  DT_IOP_RETOUCH_CLONE = 1,
+  DT_IOP_RETOUCH_HEAL = 2,
+  DT_IOP_RETOUCH_BLUR = 3,
+  DT_IOP_RETOUCH_FILL = 4
+} dt_iop_retouch_algo_type_t;
+
+typedef struct dt_iop_retouch_form_data_t
+{
+  dt_mask_id_t formid;
+  int scale;
+  dt_iop_retouch_algo_type_t algorithm;
+  dt_iop_retouch_blur_types_t blur_type;
+  float blur_radius;
+  dt_iop_retouch_fill_modes_t fill_mode;
+  float fill_color[3];
+  float fill_brightness;
+  int distort_mode;
+} dt_iop_retouch_form_data_t;
+
+typedef struct dt_iop_retouch_params_t
+{
+  dt_iop_retouch_form_data_t rt_forms[RETOUCH_NO_FORMS];
+  dt_iop_retouch_algo_type_t algorithm;
+  int num_scales;
+  int curr_scale;
+  int merge_from_scale;
+  float preview_levels[3];
+  dt_iop_retouch_blur_types_t blur_type;
+  float blur_radius;
+  dt_iop_retouch_fill_modes_t fill_mode;
+  float fill_color[3];
+  float fill_brightness;
+  int max_heal_iter;
+} dt_iop_retouch_params_t;
 
 #define LRDT_TONECURVE_VERSION 5
 #define DT_IOP_TONECURVE_MAXNODES 20
@@ -392,11 +428,13 @@ static gboolean _tonecurve_is_identity(const dt_iop_tonecurve_params_t *p)
   return TRUE;
 }
 
-static void dt_add_hist(const dt_imgid_t imgid, const char *operation, const dt_iop_params_t *params, const int params_size, char *imported,
-                        const size_t imported_len, const int version, int *import_count)
+// returns the history num of the new entry, for masks that belong to it
+static int32_t _add_hist_with_mask(const dt_imgid_t imgid, const char *operation, const dt_iop_params_t *params,
+                                   const int params_size, char *imported, const size_t imported_len,
+                                   const int version, int *import_count, const dt_mask_id_t mask_id)
 {
   int32_t num = 0;
-  const dt_lr_develop_blend_params_t blend_params = { 0 };
+  const dt_lr_develop_blend_params_t blend_params = { .mask_id = mask_id };
 
   //  get current num if any
   sqlite3_stmt *stmt;
@@ -435,6 +473,14 @@ static void dt_add_hist(const dt_imgid_t imgid, const char *operation, const dt_
   if(imported[0]) g_strlcat(imported, ", ", imported_len);
   g_strlcat(imported, dt_iop_get_localized_name(operation), imported_len);
   (*import_count)++;
+
+  return num;
+}
+
+static void dt_add_hist(const dt_imgid_t imgid, const char *operation, const dt_iop_params_t *params, const int params_size, char *imported,
+                        const size_t imported_len, const int version, int *import_count)
+{
+  _add_hist_with_mask(imgid, operation, params, params_size, imported, imported_len, version, import_count, 0);
 }
 
 #define MAX_PTS 20
@@ -446,6 +492,24 @@ typedef enum lr_curve_kind_t
   strong_contrast = 2,
   custom = 3
 } lr_curve_kind_t;
+
+// a spot removal shape, normalized to Lightroom's view of the raw: a circle
+// or, with dabs, a brush stroke
+typedef struct lr_spot_t
+{
+  // the center, or the first dab
+  float x, y;
+  float radius;
+  // position x, y clones from
+  float xc, yc;
+  gboolean clone;
+  float opacity;
+  // the share of the radius the edge fades over, 0 to 1
+  float feather;
+  // n_dabs pairs of x, y; NULL for a circle
+  float *dabs;
+  int n_dabs;
+} lr_spot_t;
 
 typedef struct lr_data_t
 {
@@ -465,8 +529,9 @@ typedef struct lr_data_t
   dt_iop_grain_params_t pg;
   gboolean has_grain;
 
-  dt_iop_spots_params_t ps;
-  gboolean has_spots;
+  lr_spot_t spots[RETOUCH_NO_FORMS];
+  int n_spots;
+  gboolean has_retouch_areas;
 
   dt_iop_tonecurve_params_t ptc;
   int ptc_value[4];
@@ -518,7 +583,7 @@ static gboolean _read_float(const char **startptr, const char *key, float *value
   return iter != *startptr;
 }
 
-static gboolean _skip_key_value_pair(const char **startptr, const char *key)
+static gboolean _read_word(const char **startptr, const char *key, const char **word)
 {
   const char *iter = *startptr;
   while(*iter == ' ') iter++;
@@ -529,6 +594,7 @@ static gboolean _skip_key_value_pair(const char **startptr, const char *key)
   if(*iter++ != '=')
     return FALSE;
   while(*iter == ' ') iter++;
+  *word = iter;
   while((*iter >= 'a' && *iter <= 'z') || (*iter >= 'A' && *iter <= 'Z')) iter++;
   *startptr = iter;
   return TRUE;
@@ -536,7 +602,174 @@ static gboolean _skip_key_value_pair(const char **startptr, const char *key)
 
 static gboolean _skip_comma(const char **startptr)
 {
-  return *(*startptr)++ == ',';
+  if(**startptr != ',')
+    return FALSE;
+  (*startptr)++;
+  return TRUE;
+}
+
+// helpers for the nested RDF of RetouchAreas, where a property can be an
+// attribute or a child element, and a list item its own resource or the
+// parent of an rdf:Description
+static xmlNodePtr _rdf_child(const xmlNodePtr node, const char *name)
+{
+  for(xmlNodePtr child = node ? node->children : NULL; child; child = child->next)
+    if(child->type == XML_ELEMENT_NODE && !xmlStrcmp(child->name, (const xmlChar *)name))
+      return child;
+  return NULL;
+}
+
+static xmlNodePtr _rdf_resource(const xmlNodePtr li)
+{
+  const xmlNodePtr desc = _rdf_child(li, "Description");
+  return desc ? desc : li;
+}
+
+// the first rdf:li of the rdf:Seq in node
+static xmlNodePtr _rdf_seq_first(const xmlNodePtr node)
+{
+  return _rdf_child(_rdf_child(node, "Seq"), "li");
+}
+
+static xmlNodePtr _rdf_seq_next(const xmlNodePtr li)
+{
+  for(xmlNodePtr next = li->next; next; next = next->next)
+    if(next->type == XML_ELEMENT_NODE && !xmlStrcmp(next->name, (const xmlChar *)"li"))
+      return next;
+  return NULL;
+}
+
+static xmlChar *_rdf_prop(const xmlDocPtr doc, const xmlNodePtr node, const char *name)
+{
+  xmlChar *value = xmlGetProp(node, (const xmlChar *)name);
+  if(value) return value;
+  const xmlNodePtr child = _rdf_child(node, name);
+  return child ? xmlNodeListGetString(doc, child->children, 1) : NULL;
+}
+
+static float _rdf_prop_float(const xmlDocPtr doc, const xmlNodePtr node, const char *name, const float fallback)
+{
+  xmlChar *value = _rdf_prop(doc, node, name);
+  const float f = value ? g_ascii_strtod((const char *)value, NULL) : fallback;
+  xmlFree(value);
+  return f;
+}
+
+static gboolean _rdf_prop_is(const xmlDocPtr doc, const xmlNodePtr node, const char *name, const char *expected)
+{
+  xmlChar *value = _rdf_prop(doc, node, name);
+  const gboolean is = value && !xmlStrcmp(value, (const xmlChar *)expected);
+  xmlFree(value);
+  return is;
+}
+
+// dabs are "d x y", one per list item
+static float *_read_dabs(const xmlDocPtr doc, const xmlNodePtr mask, int *n_dabs)
+{
+  GArray *dabs = g_array_new(FALSE, FALSE, sizeof(float));
+  for(xmlNodePtr li = _rdf_seq_first(_rdf_child(mask, "Dabs")); li; li = _rdf_seq_next(li))
+  {
+    xmlChar *cvalue = xmlNodeListGetString(doc, li->children, 1);
+    if(!cvalue) continue;
+
+    const char *iter = (const char *)cvalue;
+    while(*iter == ' ' || g_ascii_isalpha(*iter)) iter++;
+    char *end = NULL;
+    float xy[2];
+    xy[0] = g_ascii_strtod(iter, &end);
+    const gboolean has_x = end != iter;
+    iter = end;
+    xy[1] = g_ascii_strtod(iter, &end);
+    // a dab on top of the previous one adds nothing to a stroke
+    if(has_x && end != iter
+       && (dabs->len == 0
+           || xy[0] != g_array_index(dabs, float, dabs->len - 2)
+           || xy[1] != g_array_index(dabs, float, dabs->len - 1)))
+      g_array_append_vals(dabs, xy, 2);
+    xmlFree(cvalue);
+  }
+  *n_dabs = dabs->len / 2;
+  return (float *)g_array_free(dabs, *n_dabs == 0);
+}
+
+static void _free_spots(lr_data_t *data)
+{
+  for(int k = 0; k < data->n_spots; k++)
+    g_free(data->spots[k].dabs);
+  data->n_spots = 0;
+}
+
+// one area per spot, each with one or more masks: circles are Mask/Ellipse,
+// brushed spots Mask/Paint
+static void _read_retouch_area(const xmlDocPtr doc, const xmlNodePtr li, lr_data_t *data)
+{
+  const xmlNodePtr area = _rdf_resource(li);
+  // the remove tool, heal_patchmatch, fills from a patch only Lightroom
+  // has, in an .acr sidecar, and records no source
+  const gboolean clone = _rdf_prop_is(doc, area, "SpotType", "clone");
+  if(!clone && !_rdf_prop_is(doc, area, "SpotType", "heal")) return;
+
+  // the source position of the first mask's center or first dab, whose y
+  // Lightroom calls OffsetY
+  const float sx = _rdf_prop_float(doc, area, "SourceX", NAN);
+  const float sy = _rdf_prop_float(doc, area, "OffsetY", NAN);
+  if(isnan(sx) || isnan(sy)) return;
+
+  const float opacity = CLAMP(_rdf_prop_float(doc, area, "Opacity", 1.0f), 0.0f, 1.0f);
+  const float feather = CLAMP(_rdf_prop_float(doc, area, "Feather", 0.0f), 0.0f, 1.0f);
+  float dx = NAN, dy = NAN;
+
+  for(xmlNodePtr mli = _rdf_seq_first(_rdf_child(area, "Masks"));
+      mli && data->n_spots < RETOUCH_NO_FORMS;
+      mli = _rdf_seq_next(mli))
+  {
+    const xmlNodePtr mask = _rdf_resource(mli);
+    // erasing strokes, which take away from the spot, are left out
+    if(_rdf_prop_is(doc, mask, "MaskActive", "false")
+       || _rdf_prop_is(doc, mask, "MaskInverted", "true")
+       || _rdf_prop_float(doc, mask, "MaskValue", 1.0f) <= 0.0f)
+      continue;
+
+    lr_spot_t s = { .clone = clone, .opacity = opacity, .feather = feather };
+    if(_rdf_prop_is(doc, mask, "What", "Mask/Ellipse"))
+    {
+      s.x = _rdf_prop_float(doc, mask, "X", NAN);
+      s.y = _rdf_prop_float(doc, mask, "Y", NAN);
+      // the spot tool only draws circles
+      s.radius = _rdf_prop_float(doc, mask, "SizeX", NAN);
+    }
+    else if(_rdf_prop_is(doc, mask, "What", "Mask/Paint"))
+    {
+      s.radius = _rdf_prop_float(doc, mask, "Radius", NAN);
+      s.dabs = _read_dabs(doc, mask, &s.n_dabs);
+      if(s.n_dabs == 0) continue;
+      s.x = s.dabs[0];
+      s.y = s.dabs[1];
+      // a single dab is a circle
+      if(s.n_dabs == 1)
+      {
+        g_clear_pointer(&s.dabs, g_free);
+        s.n_dabs = 0;
+      }
+    }
+    else
+      continue;
+
+    if(isnan(s.x) || isnan(s.y) || !(s.radius > 0.0f))
+    {
+      g_free(s.dabs);
+      continue;
+    }
+
+    if(isnan(dx))
+    {
+      dx = sx - s.x;
+      dy = sy - s.y;
+    }
+    s.xc = s.x + dx;
+    s.yc = s.y + dy;
+    data->spots[data->n_spots++] = s;
+  }
 }
 
 /* lrop handle the Lr operation and convert it as a dt iop */
@@ -981,42 +1214,53 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
     }
     if(tag_change) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
   }
-  else if(dev != NULL && !xmlStrcmp(name, (const xmlChar *)"RetouchInfo"))
+  else if(dev != NULL && !xmlStrcmp(name, (const xmlChar *)"RetouchAreas"))
   {
-    xmlNodePtr riNode = node;
-
-    while(riNode)
+    // RetouchAreas has every spot, so it replaces any read from RetouchInfo
+    _free_spots(data);
+    data->has_retouch_areas = TRUE;
+    for(xmlNodePtr li = node; li; li = _rdf_seq_next(li))
+      if(!xmlStrcmp(li->name, (const xmlChar *)"li"))
+        _read_retouch_area(doc, li, data);
+  }
+  else if(dev != NULL && !data->has_retouch_areas && !xmlStrcmp(name, (const xmlChar *)"RetouchInfo"))
+  {
+    // RetouchInfo lists only the circular spots: Lightroom versions that
+    // write RetouchAreas list the brushed ones there alone
+    for(xmlNodePtr riNode = node; riNode && data->n_spots < RETOUCH_NO_FORMS; riNode = riNode->next)
     {
-      if(!xmlStrcmp(riNode->name, (const xmlChar *)"li"))
+      if(xmlStrcmp(riNode->name, (const xmlChar *)"li")) continue;
+
+      xmlChar *cvalue = xmlNodeListGetString(doc, riNode->xmlChildrenNode, 1);
+      if(!cvalue) continue;
+
+      lr_spot_t *s = &data->spots[data->n_spots];
+      const char *startptr = (const char *)cvalue;
+      const char *word = NULL;
+      if(_read_float(&startptr, "centerX", &s->x)
+         && _skip_comma(&startptr)
+         && _read_float(&startptr, "centerY", &s->y)
+         && _skip_comma(&startptr)
+         && _read_float(&startptr, "radius", &s->radius)
+         && _skip_comma(&startptr)
+         && _read_word(&startptr, "sourceState", &word)
+         && _skip_comma(&startptr)
+         && _read_float(&startptr, "sourceX", &s->xc)
+         && _skip_comma(&startptr)
+         && _read_float(&startptr, "sourceY", &s->yc)
+         && !isnan(s->x) && !isnan(s->y) && s->radius > 0.0f)
       {
-        xmlChar *cvalue = xmlNodeListGetString(doc, riNode->xmlChildrenNode, 1);
-        spot_t *p = &data->ps.spot[data->ps.num_spots];
-        float x, y, radius, xc, yc;
-        const char *startptr = (const char *)cvalue;
-        if(_read_float(&startptr, "centerX", &x) &&
-           _skip_comma(&startptr) &&
-           _read_float(&startptr, "centerY", &y) &&
-           _skip_comma(&startptr) &&
-           _read_float(&startptr, "radius", &radius) &&
-           _skip_comma(&startptr) &&
-           _skip_key_value_pair(&startptr, "sourceState") &&
-           _skip_comma(&startptr) &&
-           _read_float(&startptr, "sourceX", &xc) &&
-           _skip_comma(&startptr) &&
-           _read_float(&startptr, "sourceY", &yc))
-        {
-          p->x = x;
-          p->y = y;
-          p->radius = radius;
-          p->xc = xc;
-          p->yc = yc;
-          data->ps.num_spots++;
-          data->has_spots = TRUE;
-        }
-        xmlFree(cvalue);
+        // without a spotType, heal, Lightroom's default tool
+        s->clone = _skip_comma(&startptr)
+                   && _read_word(&startptr, "spotType", &word)
+                   && g_str_has_prefix(word, "clone");
+        s->opacity = 1.0f;
+        s->feather = 0.0f;
+        s->dabs = NULL;
+        s->n_dabs = 0;
+        data->n_spots++;
       }
-      if(data->ps.num_spots == MAX_SPOTS) break;
-      riNode = riNode->next;
+      xmlFree(cvalue);
     }
   }
   else if(dev != NULL && !xmlStrcmp(name, (const xmlChar *)"ToneCurvePV2012"))
@@ -1101,6 +1345,7 @@ static int _has_list(const char *name)
   return !strcmp(name, "subject")
     || !strcmp(name, "hierarchicalSubject")
     || !strcmp(name, "RetouchInfo")
+    || !strcmp(name, "RetouchAreas")
     || !strcmp(name, "ToneCurvePV2012")
     || !strcmp(name, "title")
     || !strcmp(name, "description")
@@ -1177,6 +1422,127 @@ static inline void rotate_xy(double *cx, double *cy, const double rangle)
 static inline float round5(const double x)
 {
   return round(x * 100000.f) / 100000.f;
+}
+
+// Lightroom normalizes to the raw as cropped by rawspeed and masks to the
+// whole sensor. Both are in sensor orientation
+static void _lr_to_mask(const dt_image_t *img, const float x, const float y, float out[2])
+{
+  out[0] = (x * (img->width - img->crop_x - img->crop_right) + img->crop_x) / img->width;
+  out[1] = (y * (img->height - img->crop_y - img->crop_bottom) + img->crop_y) / img->height;
+}
+
+static dt_masks_form_t *_spot_to_brush(const dt_image_t *img, const lr_spot_t *s, const float border,
+                                        const float hardness)
+{
+  dt_masks_form_t *form = dt_masks_create(DT_MASKS_BRUSH | DT_MASKS_CLONE);
+  float *pts = g_new(float, 2 * s->n_dabs);
+  for(int i = 0; i < s->n_dabs; i++)
+    _lr_to_mask(img, s->dabs[2 * i], s->dabs[2 * i + 1], pts + 2 * i);
+
+  // the control points of a catmull-rom spline through the dabs, as
+  // _brush_init_ctrl_points() in brush.c sets them for a drawn stroke
+  const int last = s->n_dabs - 1;
+  for(int i = 0; i <= last; i++)
+  {
+    dt_masks_point_brush_t *p = calloc(1, sizeof(dt_masks_point_brush_t));
+    for(int c = 0; c < 2; c++)
+    {
+      const float prev = i > 0 ? pts[2 * (i - 1) + c] : 2.0f * pts[c] - pts[2 + c];
+      const float next = i < last ? pts[2 * (i + 1) + c] : 2.0f * pts[2 * last + c] - pts[2 * (last - 1) + c];
+      p->corner[c] = pts[2 * i + c];
+      p->ctrl1[c] = p->corner[c] - (next - prev) / 6.0f;
+      p->ctrl2[c] = p->corner[c] + (next - prev) / 6.0f;
+      p->border[c] = border;
+    }
+    p->density = 1.0f;
+    p->hardness = hardness;
+    p->state = DT_MASKS_POINT_STATE_NORMAL;
+    form->points = g_list_append(form->points, p);
+  }
+  g_free(pts);
+  return form;
+}
+
+// retouch takes its shapes from the masks history, not from its params: a
+// clone group of one circle or brush per spot, recorded under the retouch
+// history num
+static void _add_retouch_hist(const dt_develop_t *dev, const dt_imgid_t imgid, const lr_data_t *data,
+                              char *imported, const size_t imported_len, int *import_count)
+{
+  const dt_image_t *img = &dev->image_storage;
+  const float cw = img->width - img->crop_x - img->crop_right;
+  const float ch = img->height - img->crop_y - img->crop_bottom;
+  if(cw <= 0.0f || ch <= 0.0f) return;
+  // a Lightroom spot radius is relative to the long side, a circle radius or
+  // brush border to the short side of the whole sensor
+  const float rscale = MAX(cw, ch) / MIN(img->width, img->height);
+
+  dt_iop_retouch_params_t pr = { .algorithm = DT_IOP_RETOUCH_HEAL,
+                                 .preview_levels = { -3.0f, 0.0f, 3.0f },
+                                 .blur_radius = 10.0f,
+                                 .max_heal_iter = 2000 };
+  const dt_iop_module_t *retouch = dt_iop_get_module_by_op_priority(dev->iop, "retouch", 0);
+  if(retouch && retouch->params_size == sizeof(pr))
+    memcpy(&pr, retouch->default_params, sizeof(pr));
+
+  dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP | DT_MASKS_CLONE);
+  snprintf(grp->name, sizeof(grp->name), _("group `%s'"), dt_iop_get_localized_name("retouch"));
+  GList *forms = NULL;
+  int n_circles = 0, n_brushes = 0;
+
+  for(int k = 0; k < data->n_spots; k++)
+  {
+    const lr_spot_t *s = &data->spots[k];
+    const float radius = s->radius * rscale;
+    // Lightroom feathers inside the radius and darktable outside it, over
+    // a band that measured about half the feather wide
+    const float soft = s->feather / 2.0f;
+    dt_masks_form_t *form;
+    if(s->dabs)
+    {
+      // a brush clones from relative to its first point, as a stroke does
+      // from its first dab
+      form = _spot_to_brush(img, s, radius, 1.0f - soft);
+      form->functions->set_form_name(form, ++n_brushes);
+    }
+    else
+    {
+      form = dt_masks_create(DT_MASKS_CIRCLE | DT_MASKS_CLONE);
+      form->functions->set_form_name(form, ++n_circles);
+      dt_masks_point_circle_t *circle = calloc(1, sizeof(dt_masks_point_circle_t));
+      _lr_to_mask(img, s->x, s->y, circle->center);
+      circle->radius = radius * (1.0f - soft);
+      circle->border = radius * soft;
+      form->points = g_list_append(NULL, circle);
+    }
+    _lr_to_mask(img, s->xc, s->yc, form->source);
+    forms = g_list_append(forms, form);
+
+    // as dt_masks_group_insert_point() adds a retouch shape, but with the
+    // spot's opacity rather than the preference for new shapes
+    dt_masks_point_group_t *grpt = calloc(1, sizeof(dt_masks_point_group_t));
+    grpt->formid = form->formid;
+    grpt->parentid = grp->formid;
+    grpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
+    grpt->opacity = s->opacity;
+    grpt->group_opacity = 1.0f;
+    grp->points = g_list_append(grp->points, grpt);
+
+    pr.rt_forms[k] = (dt_iop_retouch_form_data_t){ .formid = form->formid,
+                                                   .algorithm = s->clone ? DT_IOP_RETOUCH_CLONE
+                                                                         : DT_IOP_RETOUCH_HEAL,
+                                                   .blur_radius = pr.blur_radius,
+                                                   .distort_mode = 2 };
+  }
+  forms = g_list_append(forms, grp);
+
+  const int32_t num = _add_hist_with_mask(imgid, "retouch", (dt_iop_params_t *)&pr, sizeof(pr), imported,
+                                          imported_len, LRDT_RETOUCH_VERSION, import_count, grp->formid);
+  for(GList *l = forms; l; l = g_list_next(l))
+    dt_masks_write_masks_history_item(imgid, num, l->data);
+
+  g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
 }
 
 gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto)
@@ -1294,7 +1660,6 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   data.has_exposure = FALSE;
   data.has_vignette = FALSE;
   data.has_grain = FALSE;
-  data.has_spots = FALSE;
   data.curve_kind = linear;
   data.n_pts = 0;
   data.has_colorzones = FALSE;
@@ -1524,22 +1889,9 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     refresh_needed = TRUE;
   }
 
-  if(dev != NULL && data.has_spots)
+  if(dev != NULL && data.n_spots > 0)
   {
-    // Check for orientation, rotate when in portrait mode
-    if(data.orientation > 4)
-      for(int k = 0; k < data.ps.num_spots; k++)
-      {
-        float tmp = data.ps.spot[k].y;
-        data.ps.spot[k].y = 1.0 - data.ps.spot[k].x;
-        data.ps.spot[k].x = tmp;
-        tmp = data.ps.spot[k].yc;
-        data.ps.spot[k].yc = 1.0 - data.ps.spot[k].xc;
-        data.ps.spot[k].xc = tmp;
-      }
-
-    dt_add_hist(imgid, "spots", (dt_iop_params_t *)&data.ps, sizeof(dt_iop_spots_params_t), imported,
-                sizeof(imported), LRDT_SPOTS_VERSION, &n_import);
+    _add_retouch_hist(dev, imgid, &data, imported, sizeof(imported), &n_import);
     refresh_needed = TRUE;
   }
 
@@ -1708,6 +2060,8 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
       DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
     }
   }
+
+  _free_spots(&data);
   return TRUE;
 }
 
