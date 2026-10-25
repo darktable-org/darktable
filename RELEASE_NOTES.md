@@ -692,6 +692,8 @@ changes (where available).
   taller than the panel, such as AgX or spektrafilm: clicking a tab
   scrolled the panel until the tab row was at the top.
 
+- Fixed AI raw denoise making Bayer images brighter than the original.
+
 ## Lua
 
 ### API Version
