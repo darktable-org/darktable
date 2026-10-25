@@ -118,6 +118,108 @@ dt_mask_id_t dt_masks_model_nest_new_group(dt_masks_form_t *grp,
 dt_mask_id_t dt_masks_model_compose(dt_masks_form_t *grp,
                                     const dt_masks_point_group_t *pt,
                                     const dt_masks_state_t flexi_op);
+/** the member points the ids `picked` stand for (an element's form id, a
+    group's cid), bottom-up as the mask holds them: a group as the member its
+    holder has for it, and nothing a picked group holds, which goes with it.
+    The mask's own group is no pick. Free the list, not the points */
+GList *dt_masks_model_picked_points(dt_masks_form_t *grp, const GList *picked);
+/** "group together": the member points `pts`, all in the list of one group,
+    go into a new group folding with `flexi_op`, which takes the place of the
+    topmost of them, and they keep their order in it. Returns the new group's
+    id, or INVALID_MASKID where they are not in one list or groups may not
+    nest any deeper */
+dt_mask_id_t dt_masks_model_group_points(dt_masks_form_t *grp,
+                                         const GList *pts,
+                                         const dt_masks_state_t flexi_op);
+/** the member points `pts`, in list order, each dropped onto group `dst` as
+    dt_masks_model_drop_point_onto_group does. Returns how many moved */
+int dt_masks_model_move_points(dt_iop_module_t *module,
+                               dt_masks_form_t *grp,
+                               const GList *pts,
+                               const dt_mask_id_t dst);
+
+/** the multiple selection: members of the mask picked together by
+    shift+click, kept as a list of ids as the rows carry them, an element's
+    form id or a group's cid. The list is NULL or holds two or more: one pick
+    is no multiple selection. A group is picked whole: when its cid is picked,
+    so is everything it holds, at any depth. The functions below keep both
+    invariants */
+
+/** the id a pick of the row of form `fid` is kept under: the cid of a group,
+    which its header carries, where its row names the group by its form id;
+    `fid` itself for an element */
+dt_mask_id_t dt_masks_model_pick_id(const dt_mask_id_t fid);
+
+/** what a shift+click did, for the caller to show */
+typedef enum dt_masks_pick_outcome_t
+{
+  DT_MASKS_PICK_IGNORED, // not a member of the mask, or its own group: nothing
+  DT_MASKS_PICK_CHANGED, // the picks changed: now NULL or two or more
+  DT_MASKS_PICK_CLICK,   // nothing to join: a plain click on the member `id`
+  DT_MASKS_PICK_SELECT,  // the picks are gone: select the member `id` alone
+} dt_masks_pick_outcome_t;
+
+typedef struct dt_masks_pick_result_t
+{
+  dt_masks_pick_outcome_t outcome;
+  dt_mask_id_t id; // the row's form id for CLICK, a pick id for SELECT
+} dt_masks_pick_result_t;
+
+/** the member a first shift+click joins, if the panel selects one: the element
+    `selected_formid`, else the group `selected_cid`, as a pick id. INVALID_MASKID
+    where the mask's own group is what is selected, which is nothing in it */
+dt_mask_id_t dt_masks_model_pick_anchor(dt_masks_form_t *grp,
+                                        const dt_mask_id_t selected_formid,
+                                        const dt_mask_id_t selected_cid);
+
+/** shift+click on the row or header of `fid`: pick it, or take it off if it is
+    picked. With no picks yet it joins the panel's selection (see
+    dt_masks_model_pick_anchor), which makes two, or else is a plain click. A group
+    is picked and taken off with all it holds. Taking off what a picked group
+    holds also takes the group off, as it is not whole then. The mask's own
+    group is never a pick. `*picked` is updated */
+dt_masks_pick_result_t dt_masks_model_pick_toggle(dt_masks_form_t *grp,
+                                                  GList **picked,
+                                                  const dt_mask_id_t selected_formid,
+                                                  const dt_mask_id_t selected_cid,
+                                                  const dt_mask_id_t fid);
+/** drop the picks that are not in the mask any more, and the groups that are
+    not picked whole any more, as after one gained a member; and all of them if
+    fewer than two remain */
+void dt_masks_model_picks_prune(dt_masks_form_t *grp, GList **picked);
+/** the form ids the canvas highlights for the picks: each picked element,
+    which are the members of the picked groups too. Free the list */
+GList *dt_masks_model_picks_canvas_ids(dt_masks_form_t *grp, const GList *picked);
+/** the groups, by cid, that every one of the member points `pts` may be moved
+    into, and where they are not all already: the mask's own group included,
+    top-down as the mask holds them. Free the list */
+GList *dt_masks_model_move_targets(dt_masks_form_t *grp, const GList *pts);
+
+/** the flags the buttons of a row act on */
+typedef enum dt_masks_pick_flag_t
+{
+  DT_MASKS_PICK_FLAG_DISABLE, // the eye: a member's disable, a group's bypass
+  DT_MASKS_PICK_FLAG_INVERT,  // the invert button: a member's, a group's output
+} dt_masks_pick_flag_t;
+
+/** the button `flag` of the row or header of the pick `clicked` was clicked:
+    every pick takes the state the click gives that one, but for what a picked
+    group holds, which the group's state covers. FALSE, and nothing done, if
+    `clicked` is not picked, or is held by a picked group: it is acted on alone.
+    `*groups` is set if a group was among the picks, whose rows change shape
+    and not only state */
+gboolean dt_masks_model_picks_toggle_flag(dt_masks_form_t *grp,
+                                          const GList *picked,
+                                          const dt_mask_id_t clicked,
+                                          const dt_masks_pick_flag_t flag,
+                                          gboolean *groups);
+/** the group `clicked` has its operator set to `flexi_op`: so does every
+    picked group, but for those held by a picked group. FALSE, and nothing
+    done, if `clicked` is not picked, or is held by a picked group */
+gboolean dt_masks_model_picks_set_op(dt_masks_form_t *grp,
+                                     const GList *picked,
+                                     const dt_mask_id_t clicked,
+                                     const dt_masks_state_t flexi_op);
 /** the reverse for the mask's own group: when it applies nothing and holds
     one plain nested group, that group's members and settings become its own.
     `whole` is the module's refinement, which takes the group's. FALSE where

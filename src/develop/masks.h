@@ -629,10 +629,14 @@ typedef struct dt_masks_form_gui_t
   // solo_formids: shapes soloed or solo-edited in the panel, highlighted
   //   whatever is hovered (_sync_solo_canvas_highlight in blend_gui.c).
   //   NULL = none
+  // picked_formids: shapes of the panel's multiple selection, highlighted as
+  //   the selection is, whatever is hovered (_picks_sync_canvas in
+  //   blend_gui.c). NULL = none
   GList *panel_hover_formids;
   dt_mask_id_t panel_selected_formid;
   dt_mask_id_t canvas_hover_formid;
   GList *solo_formids;
+  GList *picked_formids;
   // import_preview: the shapes the import menu entry under the pointer would
   //   bring in, drawn on the canvas whether a mask is shown or not, with their
   //   outlines (dt_masks_form_gui_points_t) in import_preview_points, computed

@@ -54,3 +54,8 @@
   color: @active_module_icon_fg;
   opacity: 1;
 }
+
+/* the masks panel: a selected member is framed in the accent, and the member a
+   shift+click would pick is tinted with it */
+@define-color mask_accent         @active_module_icon_fg;
+@define-color mask_selected_frame @active_module_icon_fg;
