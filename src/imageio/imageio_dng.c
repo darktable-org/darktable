@@ -505,9 +505,9 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
 
   // embed source EXIF (datetime, ISO, shutter, etc.)
   // dt_exif_write_blob takes a non-const pointer; we don't modify it
-  if(res == 0 && exif_blob && exif_len > 0)
-    dt_exif_write_blob((uint8_t *)exif_blob, (uint32_t)exif_len,
-                       filename, 0);
+  if(res == 0 && exif_blob && exif_len > 0
+     && !dt_exif_write_blob((uint8_t *)exif_blob, (uint32_t)exif_len, filename, 0))
+    res = 1;
 
   if(res != 0)
     g_unlink(filename);
@@ -663,9 +663,9 @@ int dt_imageio_dng_write_linear(const char *filename,
   TIFFClose(tif);
   g_free(thumb_jpeg);
 
-  if(res == 0 && exif_blob && exif_len > 0)
-    dt_exif_write_blob((uint8_t *)exif_blob, (uint32_t)exif_len,
-                       filename, 0);
+  if(res == 0 && exif_blob && exif_len > 0
+     && !dt_exif_write_blob((uint8_t *)exif_blob, (uint32_t)exif_len, filename, 0))
+    res = 1;
 
   if(res != 0)
     g_unlink(filename);

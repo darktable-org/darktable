@@ -211,6 +211,9 @@ changes (where available).
 
 ## Performance Improvements
 
+- Reduced delays when exporting images and saving neural restore's raw
+  denoise output to network storage.
+
 - The lighttable timeline no longer slows down quadratically with the
   number of collected images: with a 100,000-image collection it took
   about 15 minutes to draw, now a few seconds.
