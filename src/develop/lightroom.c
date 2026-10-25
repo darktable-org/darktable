@@ -415,6 +415,61 @@ static float lr2dt_clarity(const float value)
   return get_interpolate(lr2dt_clarity_table, value);
 }
 
+// Lightroom's parametric tone curve, following RawTherapee's model of it
+// (DCT_Parametric in rtengine/diagonalcurves.cc), which has the same four
+// regions and three splits. A region value of 0 leaves its region alone
+static double _param_lower(const double x)
+{
+  return (2.0 - x) * x * x * x;
+}
+
+static double _param_upper(const double x)
+{
+  return x * (2.0 + (x - 2.0) * x * x);
+}
+
+// bends the lower half of [0, 1] by sh and the upper half by hl, both in
+// [0, 1] with 0.5 for no change
+static double _param_bend(const double x, const double sh, const double hl)
+{
+  const double t = (1.0 - sh) * (1.0 - hl) * _param_lower(x) + sh * hl * _param_upper(x);
+  if(x <= 0.5)
+    return t + (1.0 - sh) * hl * _param_lower(2.0 * x) * 0.5
+             + sh * (1.0 - hl) * _param_upper(2.0 * x) * 0.5;
+  return t + (1.0 - sh) * hl * (0.5 + _param_upper(2.0 * x - 1.0) * 0.5)
+           + sh * (1.0 - hl) * (0.5 + _param_lower(2.0 * x - 1.0) * 0.5);
+}
+
+// value[] is shadows, darks, lights, highlights in [-100, 100]
+static float _lr_parametric_curve(const float x, const float split[3], const int value[4])
+{
+  if(x <= 0.0f) return 0.0f;
+
+  const double s1 = CLAMP(split[0], 0.001, 0.99);
+  const double s2 = CLAMP(split[1], 0.001, 0.99);
+  const double s3 = CLAMP(split[2], 0.001, 0.99);
+  const double shadows = (value[0] + 100.0) / 200.0;
+  const double darks = (value[1] + 100.0) / 200.0;
+  const double lights = (value[2] + 100.0) / 200.0;
+  const double highlights = (value[3] + 100.0) / 200.0;
+
+  // gamma that moves the midtone split to 0.5, where darks and lights meet
+  const double mc = -log(2.0) / log(s2);
+  const double mid = pow(_param_bend(0.5, darks, lights), 1.0 / mc);
+  const double base = pow(_param_bend(pow(x, mc), darks, lights), 1.0 / mc);
+
+  if(x < s2)
+  {
+    const double sc = -log(2.0) / log(s1 / s2);
+    return mid * pow(_param_bend(pow(base / mid, sc), shadows, 0.5), 1.0 / sc);
+  }
+
+  const double hc = -log(2.0) / log((s3 - s2) / (1.0 - s2));
+  const double ht = pow((base - mid) / (1.0 - mid), hc);
+  if(ht < 1e-6) return base;
+  return mid + (1.0 - mid) * pow(_param_bend(ht, 0.5, highlights), 1.0 / hc);
+}
+
 // a curve with fewer than two nodes, or with every node on the diagonal,
 // leaves the image unchanged
 static gboolean _tonecurve_is_identity(const dt_iop_tonecurve_params_t *p)
@@ -485,14 +540,6 @@ static void dt_add_hist(const dt_imgid_t imgid, const char *operation, const dt_
 
 #define MAX_PTS 20
 
-typedef enum lr_curve_kind_t
-{
-  linear = 0,
-  medium_contrast = 1,
-  strong_contrast = 2,
-  custom = 3
-} lr_curve_kind_t;
-
 // a spot removal shape, normalized to Lightroom's view of the raw: a circle
 // or, with dabs, a brush stroke
 typedef struct lr_spot_t
@@ -536,7 +583,6 @@ typedef struct lr_data_t
   dt_iop_tonecurve_params_t ptc;
   int ptc_value[4];
   float ptc_split[3];
-  lr_curve_kind_t curve_kind;
   int curve_pts[MAX_PTS][2];
   int n_pts;
 
@@ -898,17 +944,6 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
     else if(!xmlStrcmp(name, (const xmlChar *)"ParametricHighlightSplit"))
     {
       data->ptc_split[2] = g_ascii_strtod((char *)value, NULL) / 100.0;
-    }
-    else if(!xmlStrcmp(name, (const xmlChar *)"ToneCurveName2012"))
-    {
-      if(!xmlStrcmp(value, (const xmlChar *)"Linear"))
-        data->curve_kind = linear;
-      else if(!xmlStrcmp(value, (const xmlChar *)"Medium Contrast"))
-        data->curve_kind = medium_contrast;
-      else if(!xmlStrcmp(value, (const xmlChar *)"Strong Contrast"))
-        data->curve_kind = strong_contrast;
-      else if(!xmlStrcmp(value, (const xmlChar *)"Custom"))
-        data->curve_kind = custom;
     }
     else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentRed"))
     {
@@ -1660,8 +1695,11 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   data.has_exposure = FALSE;
   data.has_vignette = FALSE;
   data.has_grain = FALSE;
-  data.curve_kind = linear;
   data.n_pts = 0;
+  // Lightroom's defaults, which it leaves out of the XMP
+  data.ptc_split[0] = 0.25f;
+  data.ptc_split[1] = 0.50f;
+  data.ptc_split[2] = 0.75f;
   data.has_colorzones = FALSE;
   data.has_splittoning = FALSE;
   data.has_bilat = FALSE;
@@ -1895,12 +1933,9 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     refresh_needed = TRUE;
   }
 
-  if(dev != NULL &&
-     (data.curve_kind != linear
-      || data.ptc_value[0] != 0 || data.ptc_value[1] != 0 || data.ptc_value[2] != 0 || data.ptc_value[3] != 0))
+  if(dev != NULL && (data.n_pts >= 2 || data.ptc_value[0] != 0 || data.ptc_value[1] != 0
+                     || data.ptc_value[2] != 0 || data.ptc_value[3] != 0))
   {
-    const int total_pts = (data.curve_kind == custom) ? data.n_pts : 6;
-    data.ptc.tonecurve_nodes[ch_L] = total_pts;
     data.ptc.tonecurve_nodes[ch_a] = 7;
     data.ptc.tonecurve_nodes[ch_b] = 7;
     data.ptc.tonecurve_type[ch_L] = CUBIC_SPLINE;
@@ -1919,45 +1954,44 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     for(int k = 0; k < 7; k++) data.ptc.tonecurve[ch_b][k].x = linear_ab[k];
     for(int k = 0; k < 7; k++) data.ptc.tonecurve[ch_b][k].y = linear_ab[k];
 
-    // Set the base tonecurve
-
-    if(data.curve_kind == linear)
+    // Lightroom writes the point curve for its presets too, Linear included
+    float px[MAX_PTS] = { 0.0f, 1.0f };
+    float py[MAX_PTS] = { 0.0f, 1.0f };
+    // a single point is no curve, so keep the identity rather than half of it
+    const int n_pts = data.n_pts >= 2 ? data.n_pts : 2;
+    for(int k = 0; data.n_pts >= 2 && k < n_pts; k++)
     {
-      data.ptc.tonecurve[ch_L][0].x = 0.0;
-      data.ptc.tonecurve[ch_L][0].y = 0.0;
-      data.ptc.tonecurve[ch_L][1].x = data.ptc_split[0] / 2.0;
-      data.ptc.tonecurve[ch_L][1].y = data.ptc_split[0] / 2.0;
-      data.ptc.tonecurve[ch_L][2].x = data.ptc_split[1] - (data.ptc_split[1] - data.ptc_split[0]) / 2.0;
-      data.ptc.tonecurve[ch_L][2].y = data.ptc_split[1] - (data.ptc_split[1] - data.ptc_split[0]) / 2.0;
-      data.ptc.tonecurve[ch_L][3].x = data.ptc_split[1] + (data.ptc_split[2] - data.ptc_split[1]) / 2.0;
-      data.ptc.tonecurve[ch_L][3].y = data.ptc_split[1] + (data.ptc_split[2] - data.ptc_split[1]) / 2.0;
-      data.ptc.tonecurve[ch_L][4].x = data.ptc_split[2] + (1.0 - data.ptc_split[2]) / 2.0;
-      data.ptc.tonecurve[ch_L][4].y = data.ptc_split[2] + (1.0 - data.ptc_split[2]) / 2.0;
-      data.ptc.tonecurve[ch_L][5].x = 1.0;
-      data.ptc.tonecurve[ch_L][5].y = 1.0;
+      px[k] = data.curve_pts[k][0] / 255.0f;
+      py[k] = data.curve_pts[k][1] / 255.0f;
+    }
+
+    const gboolean parametric = data.ptc_value[0] != 0 || data.ptc_value[1] != 0
+                                || data.ptc_value[2] != 0 || data.ptc_value[3] != 0;
+
+    if(!parametric)
+    {
+      data.ptc.tonecurve_nodes[ch_L] = n_pts;
+      for(int k = 0; k < n_pts; k++)
+      {
+        data.ptc.tonecurve[ch_L][k].x = px[k];
+        data.ptc.tonecurve[ch_L][k].y = py[k];
+      }
     }
     else
     {
-      for(int k = 0; k < total_pts; k++)
+      // Lightroom applies the point curve on top of the parametric one;
+      // sample the two together, as no handful of nodes follows both
+      float *tangents = interpolate_set(n_pts, px, py, CUBIC_SPLINE);
+      data.ptc.tonecurve_nodes[ch_L] = DT_IOP_TONECURVE_MAXNODES;
+      for(int k = 0; k < DT_IOP_TONECURVE_MAXNODES; k++)
       {
-        data.ptc.tonecurve[ch_L][k].x = data.curve_pts[k][0] / 255.0;
-        data.ptc.tonecurve[ch_L][k].y = data.curve_pts[k][1] / 255.0;
+        const float x = (float)k / (DT_IOP_TONECURVE_MAXNODES - 1);
+        const float y = _lr_parametric_curve(x, data.ptc_split, data.ptc_value);
+        data.ptc.tonecurve[ch_L][k].x = x;
+        data.ptc.tonecurve[ch_L][k].y
+            = tangents ? CLAMP(interpolate_val(n_pts, px, y, py, tangents, CUBIC_SPLINE), 0.0f, 1.0f) : y;
       }
-    }
-
-    if(data.curve_kind != custom)
-    {
-      // set shadows/darks/lights/highlight adjustments
-
-      data.ptc.tonecurve[ch_L][1].y += data.ptc.tonecurve[ch_L][1].y * ((float)data.ptc_value[0] / 100.0);
-      data.ptc.tonecurve[ch_L][2].y += data.ptc.tonecurve[ch_L][2].y * ((float)data.ptc_value[1] / 100.0);
-      data.ptc.tonecurve[ch_L][3].y += data.ptc.tonecurve[ch_L][3].y * ((float)data.ptc_value[2] / 100.0);
-      data.ptc.tonecurve[ch_L][4].y += data.ptc.tonecurve[ch_L][4].y * ((float)data.ptc_value[3] / 100.0);
-
-      if(data.ptc.tonecurve[ch_L][1].y > data.ptc.tonecurve[ch_L][2].y)
-        data.ptc.tonecurve[ch_L][1].y = data.ptc.tonecurve[ch_L][2].y;
-      if(data.ptc.tonecurve[ch_L][3].y > data.ptc.tonecurve[ch_L][4].y)
-        data.ptc.tonecurve[ch_L][4].y = data.ptc.tonecurve[ch_L][3].y;
+      free(tangents);
     }
 
     if(!_tonecurve_is_identity(&data.ptc))
