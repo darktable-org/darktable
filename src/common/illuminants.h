@@ -440,7 +440,25 @@ static inline gboolean _wb_coeffs_invalid(const dt_aligned_pixel_t wb_coeffs, co
   return FALSE;
 }
 
-// returns FALSE if failed; TRUE if successful
+// a small multiplier puts the illuminant near a camera primary, which can lie
+// outside the spectral locus: x, y or z, or a CAT16 cone response, becomes
+// zero or negative, and the adaptation would then divide by zero or flip the
+// sign of a channel. CAT16 is the adaptation color calibration forces for the
+// illuminants derived from multipliers (_check_if_close_to_daylight())
+static inline gboolean _is_usable_illuminant_xy(const float x, const float y)
+{
+  const float z = 1.f - x - y;
+  // written as a positive test, so that NaN fails too
+  if(!(x > 0.f && y > 0.f && z > 0.f)) return FALSE;
+
+  dt_aligned_pixel_t XYZ = { 0.f }, LMS = { 0.f };
+  illuminant_xy_to_XYZ(x, y, XYZ);
+  convert_XYZ_to_CAT16_LMS(XYZ, LMS);
+  return LMS[0] > 0.f && LMS[1] > 0.f && LMS[2] > 0.f;
+}
+
+// returns FALSE if failed; TRUE if successful. chroma_x and chroma_y are
+// written only on success: some callers ignore the result and keep using them
 static gboolean find_illuminant_xy_from_wb_coeffs(const dt_image_t *img, const dt_aligned_pixel_t wb_coeffs,
                                             float *chroma_x, float *chroma_y)
 {
@@ -454,8 +472,12 @@ static gboolean find_illuminant_xy_from_wb_coeffs(const dt_image_t *img, const d
     return FALSE;
   }
 
-  WB_coeffs_to_illuminant_xy(CAM_to_XYZ, wb_coeffs, chroma_x, chroma_y);
+  float x, y;
+  WB_coeffs_to_illuminant_xy(CAM_to_XYZ, wb_coeffs, &x, &y);
+  if(!_is_usable_illuminant_xy(x, y)) return FALSE;
 
+  *chroma_x = x;
+  *chroma_y = y;
   return TRUE;
 }
 
