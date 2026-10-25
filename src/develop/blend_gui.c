@@ -5203,9 +5203,19 @@ static void _props_row_apply(dt_iop_module_t *module,
     }
     if(dt_isnan(min)) min = _blend_masks_properties[prop].min;
     if(dt_isnan(max)) max = _blend_masks_properties[prop].max;
-    dt_bauhaus_slider_set_soft_range(widget, min, max);
+    // the value first: setting a soft bound re-applies the slider's current
+    // value, which widens the range to include it, so a typed value below
+    // the new bound would leave the range reaching down to it
     dt_bauhaus_slider_set(widget, sum / count);
+    dt_bauhaus_slider_set_soft_range(widget, min, max);
     *last_value = dt_bauhaus_slider_get(widget);
+
+    // the edit asked for less than the shape can take (typed in, since a
+    // drag stops at the soft bound)
+    if(_blend_masks_properties[prop].relative && value < old_value
+       && value < min * 0.999f)
+      dt_toast_log(_("the value of %s cannot be lower than %.2f%%"),
+                   _(_blend_masks_properties[prop].name), min * 100.0f);
   }
   DT_LEAVE_GUI_UPDATE();
 
