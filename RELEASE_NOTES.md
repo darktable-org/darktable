@@ -380,6 +380,9 @@ changes (where available).
   straightening angle with the rotate and perspective module, instead
   of the deprecated crop and rotate module.
 
+- Lightroom import now sets the working profile to linear ProPhoto
+  RGB, the space Lightroom works in, instead of linear Rec709 RGB.
+
 ## Bug Fixes
 
 - Fixed missing Active D-Lighting exposure compensation for Nikon
