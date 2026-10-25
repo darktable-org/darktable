@@ -390,6 +390,12 @@ changes (where available).
   compensation, so a small positive adjustment rendered darker than
   none at all.
 
+- Lightroom import creates tone curves in RGB mode with color
+  preservation, as darktable's tone curve module now defaults to, and
+  no longer enables the module for a curve that changes nothing.
+  Clarity is imported with the local laplacian filter of the local
+  contrast module instead of the older bilateral grid.
+
 ## Bug Fixes
 
 - Fixed missing Active D-Lighting exposure compensation for Nikon
