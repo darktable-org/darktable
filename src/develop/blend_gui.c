@@ -5090,10 +5090,20 @@ static void _props_row_apply(dt_iop_module_t *module,
     return;
   }
 
-  const float value = is_bool
-                        ? (float)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))
-                        : dt_bauhaus_slider_get(widget);
-  const float old_value = *last_value;
+  float value = is_bool
+                  ? (float)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))
+                  : dt_bauhaus_slider_get(widget);
+  float old_value = *last_value;
+
+  // a relative slider reaches down to 0 (see _build_props_row_editor), which
+  // modify_property reads as "no ratio" and ignores: typing 0 would change
+  // nothing. Land on the property's floor instead; both values, so that the
+  // neutral refresh of an untouched slider stays neutral
+  if(_blend_masks_properties[prop].relative)
+  {
+    value = fmaxf(value, _blend_masks_properties[prop].min);
+    old_value = fmaxf(old_value, _blend_masks_properties[prop].min);
+  }
 
   int count = 0;
   float sum = 0;
@@ -5193,9 +5203,19 @@ static void _props_row_apply(dt_iop_module_t *module,
     }
     if(dt_isnan(min)) min = _blend_masks_properties[prop].min;
     if(dt_isnan(max)) max = _blend_masks_properties[prop].max;
-    dt_bauhaus_slider_set_soft_range(widget, min, max);
+    // the value first: setting a soft bound re-applies the slider's current
+    // value, which widens the range to include it, so a typed value below
+    // the new bound would leave the range reaching down to it
     dt_bauhaus_slider_set(widget, sum / count);
+    dt_bauhaus_slider_set_soft_range(widget, min, max);
     *last_value = dt_bauhaus_slider_get(widget);
+
+    // the edit asked for less than the shape can take (typed in, since a
+    // drag stops at the soft bound)
+    if(_blend_masks_properties[prop].relative && value < old_value
+       && value < min * 0.999f)
+      dt_toast_log(_("the value of %s cannot be lower than %.2f%%"),
+                   _(_blend_masks_properties[prop].name), min * 100.0f);
   }
   DT_LEAVE_GUI_UPDATE();
 
