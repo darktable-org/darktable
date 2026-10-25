@@ -761,6 +761,12 @@ changes (where available).
 - Fixed stale color temperature and illuminant color in color calibration
   after white balance changes when using "as shot in camera".
 
+- Fixed input color profile and highlight reconstruction (opposed and
+  segmentation modes) still applying part of the white balance
+  correction when the white balance module, set to "as shot to
+  reference", was switched off on a raw image. Edits made that way
+  render with different colors.
+
 ## Lua
 
 ### API Version
