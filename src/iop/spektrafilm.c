@@ -2155,6 +2155,16 @@ static void _passthrough(const float *in,
     }
 }
 
+/* Per-image salt for the grain and glare seeds, derived from the EXIF
+   capture date and time: duplicates of an image share the same pattern, and
+   it stays the same across re-imports and machines, while images taken at
+   different times get different patterns. */
+static uint32_t _grain_salt(const dt_dev_pixelpipe_iop_t *piece)
+{
+  const uint64_t t = (uint64_t)piece->pipe->image.exif_datetime_taken;
+  return grain_hash(grain_hash((uint32_t)t) ^ (uint32_t)(t >> 32));
+}
+
 void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
@@ -2302,7 +2312,7 @@ void process(dt_iop_module_t *self,
   {
     float *gbuf = corr; /* corr is free now — reuse as the grain delta buffer */
     const int roi_x = roi_in->x, roi_y = roi_in->y;
-    const uint32_t salt = grain_hash((uint32_t)piece->pipe->image.id);
+    const uint32_t salt = _grain_salt(piece);
     const float amount = d->p.grain_amount;
     const int mono = sf_sim_film_bw(sim); /* B&W: achromatic grain */
     /* sf_grain_delta_ml's layer_npart is precomputed at sf_sim_build time
@@ -2526,7 +2536,7 @@ void process(dt_iop_module_t *self,
   if(!d->p.scan_film && d->p.glare_percent > 0.0f)
     sf_glare(plane, w, h, d->p.glare_percent, SF_GLARE_ROUGHNESS,
              SF_GLARE_BLUR_PX * preview_scale, roi_in->x, roi_in->y,
-             grain_hash((uint32_t)piece->pipe->image.id), scratch);
+             _grain_salt(piece), scratch);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(plane) firstprivate(out, in, w, ow, oh, ox, oy)      \
@@ -3239,7 +3249,7 @@ int process_cl(dt_iop_module_t *self,
   if(d->p.grain_on && d->p.grain_amount > 0.0f)
   {
     const int roi_x = roi_in->x, roi_y = roi_in->y;
-    const uint32_t salt = grain_hash((uint32_t)piece->pipe->image.id);
+    const uint32_t salt = _grain_salt(piece);
     const float amount = d->p.grain_amount;
     const int mono = g->film_bw; /* B&W: achromatic grain */
     /* see the matching comment on the CPU path (process()) for the full
@@ -3499,7 +3509,7 @@ int process_cl(dt_iop_module_t *self,
     const float sigma2 = logf(1.0f + SF_GLARE_ROUGHNESS * SF_GLARE_ROUGHNESS);
     const float gs = sqrtf(sigma2), gbias = -0.5f * sigma2;
     const int roi_x = roi_in->x, roi_y = roi_in->y;
-    const uint32_t salt = grain_hash((uint32_t)piece->pipe->image.id);
+    const uint32_t salt = _grain_salt(piece);
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_glare_gen, w, h, CLARG(tmpa),
                                            CLARG(w), CLARG(h), CLARG(roi_x), CLARG(roi_y),
                                            CLARG(gmean), CLARG(gs), CLARG(gbias), CLARG(salt));
