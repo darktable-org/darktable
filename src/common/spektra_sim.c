@@ -1353,6 +1353,17 @@ bool sf_pack_film_defaults(const sf_pack_t *pack,
 /* profile loading                                                          */
 /* ------------------------------------------------------------------------ */
 
+static void eval_cdfs_channel(double *out,
+                              const double *le,
+                              int nle,
+                              const double *centers,
+                              const double *amps,
+                              const double *sigmas,
+                              const double *alphas,
+                              int sept,
+                              int n_layers,
+                              int positive);
+
 void sf_profile_free(sf_profile_t *p)
 {
   if(!p) return;
@@ -1591,6 +1602,20 @@ sf_profile_t *sf_profile_load(const char *path,
             p->curves_model.sigmas[ch][l] = s2[idx];
             p->curves_model.alphas[ch][l] = al[idx];
           }
+        /* [dc] refresh_density_curves_from_model: the model is the source of
+           truth, sampled onto the profile's own log-exposure grid. The stored
+           curves are the measured data the model was fitted to and differ from
+           it by up to a few thousandths of density, so every consumer reads the
+           model's curves, as the reference runtime does. */
+        const int positive = p->type && strcmp(p->type, "positive") == 0;
+        for(int ch = 0; ch < 3; ch++)
+        {
+          double column[SF_NLE];
+          eval_cdfs_channel(column, p->log_exposure, SF_NLE, p->curves_model.centers[ch],
+                            p->curves_model.amplitudes[ch], p->curves_model.sigmas[ch],
+                            p->curves_model.alphas[ch], p->curves_model.sept, nl, positive);
+          for(int i = 0; i < SF_NLE; i++) p->density_curves[i][ch] = column[i];
+        }
       }
       else
         p->curves_model.n_layers = 0; /* malformed data: don't leave partial state */
@@ -2554,12 +2579,11 @@ static void _sf_build_grain_layers(sf_sim_t *s,
 
   if(nl <= 1)
   {
-    /* trivial one-sublayer case: reuse the plain total curve already
-       computed above (s->curves_norm) verbatim, so behavior for any stock
-       whose own curve fit is single-layer (or has no fit / no per-stock
-       particle_scale_sublayers at all) is byte-for-byte identical to the
-       pre-existing single-layer path -- this is not an approximate
-       fallback, it's what upstream's own model reduces to in this case. */
+    /* one-sublayer case: the single layer is the normalized total curve
+       (s->curves_norm), which is what grain.py's apply_grain substitutes for
+       density_curves_layers when the model has no sub-layers. The particle
+       area comes from the same _coarsest_area_from_curves peak as the
+       multi-sublayer case, with a share of 1. */
     s->grain_particle_scale[0] = 1.0;
     for(int c = 0; c < 3; c++)
     {
@@ -2573,11 +2597,16 @@ static void _sf_build_grain_layers(sf_sim_t *s,
       }
       s->grain_layer_dmin[0][c] = density_min[c];
       s->grain_layer_dmax[0][c] = mx + density_min[c];
-      const double d_ref_c = 1.0 + density_min[c];
+      double peak = 0.0;
+      for(int i = 0; i < SF_NLE; i++)
+      {
+        const double d_abs = s->curves_norm[i][c] + density_min[c];
+        const double v = d_abs * (s->grain_layer_dmax[0][c] - uniformity[c] * d_abs);
+        if(v > peak) peak = v;
+      }
       const double sig = rms[c] / 1000.0;
-      const double denom = fmax(d_ref_c * (s->grain_layer_dmax[0][c] - uniformity[c] * d_ref_c), 1e-6);
-      const double a_grain = sig * sig * A48 / denom;
-      s->grain_layer_npart[0][c] = pix_ref / fmax(a_grain, 1e-4);
+      const double a_grain = sig * sig * A48 / fmax(peak, 1e-9);
+      s->grain_layer_npart[0][c] = pix_ref / fmax(a_grain, 1e-9);
     }
     return;
   }
@@ -2707,12 +2736,12 @@ static void _sf_build_grain_layers(sf_sim_t *s,
       s->grain_layer_dmin[l][c] = layer_dmin[l][c];
       for(int i = 0; i < SF_NLE; i++) s->grain_layer_curve[i][l][c] = (float)layer_curve[i][l][c];
     }
+    /* the axis the per-pixel density is located on: grain.py's
+       interp_density_cmy_layers_channel reads the NORMALIZED total curve
+       (develop's density_curves - nanmin) against the raw per-layer curves.
+       curves_norm is that sum of the layers less its minimum. */
     for(int i = 0; i < SF_NLE; i++)
-    {
-      double t = 0.0;
-      for(int l = 0; l < nl; l++) t += layer_curve[i][l][c];
-      s->grain_layer_curve_total[i][c] = (float)t;
-    }
+      s->grain_layer_curve_total[i][c] = (float)s->curves_norm[i][c];
   }
   for(int l = nl; l < SF_GRAIN_MAX_SUBLAYERS; l++) s->grain_particle_scale[l] = 0.0;
   for(int l = 0; l < nl; l++) s->grain_particle_scale[l] = particle_scale[l];
@@ -3454,6 +3483,7 @@ static void expose_pixel_f(const float m_in[9],
  * (the _rgb_to_film_raw defaults), independent of the io input space. */
 static void midgray_density_spectral(const sf_sim_t *s,
                                      const sf_profile_t *film,
+                                     const double (*film_curves)[3],
                                      const double film_ref_xy[2],
                                      double gray,
                                      double ds[SF_NWL])
@@ -3470,9 +3500,8 @@ static void midgray_density_spectral(const sf_sim_t *s,
   for(int c = 0; c < 3; c++)
   {
     const double lograw = log10(raw[c] + SF_LOG_EPS);
-    /* develop_simple: UNNORMALIZED stock curves */
-    cmy[c] = interp_curve_uniform(lograw, s->le0, s->le_step,
-                                  film->density_curves, c);
+    /* develop_simple: UNNORMALIZED stock curves, after the chemistry morph */
+    cmy[c] = interp_curve_uniform(lograw, s->le0, s->le_step, film_curves, c);
   }
   for(int l = 0; l < SF_NWL; l++)
   {
@@ -3914,51 +3943,39 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
   s->le0 = film->log_exposure[0];
   s->le_step = (film->log_exposure[SF_NLE - 1] - film->log_exposure[0]) / (SF_NLE - 1);
   s->inv_le_step = (float)(1.0 / s->le_step);
+  /* [st] the film's absolute density curves after the chemistry morph, the
+     array the reference's film.data.density_curves holds once the pipeline has
+     baked the morph in. Every later consumer of the film curves reads this:
+     the print balance midgray, the enlarger and scan table ranges and the
+     black/white references. */
+  double film_curves[SF_NLE][3];
   if(p->film_morph_active && film->curves_model.n_layers > 0)
   {
-    double curves_tmp[SF_NLE][3];
-    build_film_curves(curves_tmp, s->film_curve_layers, film, p);
-    for(int c = 0; c < 3; c++)
-    {
-      double mn = INFINITY, mx = -INFINITY;
-      for(int i = 0; i < SF_NLE; i++)
-      {
-        const double v = curves_tmp[i][c];
-        if(v < mn) mn = v;
-        if(v > mx) mx = v;
-      }
-      for(int i = 0; i < SF_NLE; i++)
-      {
-        const double v = curves_tmp[i][c] - mn;
-        s->curves_norm[i][c] = v;
-        s->curves_norm_f[i][c] = (float)v;
-      }
-      s->film_dmax[c] = mx - mn;
-      s->film_dmin[c] = mn;
-    }
+    build_film_curves(film_curves, s->film_curve_layers, film, p);
     s->film_morph_applied = true;
   }
   else
   {
-    for(int c = 0; c < 3; c++)
-    {
-      double mn = INFINITY, mx = -INFINITY;
-      for(int i = 0; i < SF_NLE; i++)
-      {
-        const double v = film->density_curves[i][c];
-        if(v < mn) mn = v;
-        if(v > mx) mx = v;
-      }
-      for(int i = 0; i < SF_NLE; i++)
-      {
-        const double v = film->density_curves[i][c] - mn;
-        s->curves_norm[i][c] = v;
-        s->curves_norm_f[i][c] = (float)v;
-      }
-      s->film_dmax[c] = mx - mn;
-      s->film_dmin[c] = mn;
-    }
+    memcpy(film_curves, film->density_curves, sizeof(film_curves));
     s->film_morph_applied = false;
+  }
+  for(int c = 0; c < 3; c++)
+  {
+    double mn = INFINITY, mx = -INFINITY;
+    for(int i = 0; i < SF_NLE; i++)
+    {
+      const double v = film_curves[i][c];
+      if(v < mn) mn = v;
+      if(v > mx) mx = v;
+    }
+    for(int i = 0; i < SF_NLE; i++)
+    {
+      const double v = film_curves[i][c] - mn;
+      s->curves_norm[i][c] = v;
+      s->curves_norm_f[i][c] = (float)v;
+    }
+    s->film_dmax[c] = mx - mn;
+    s->film_dmin[c] = mn;
   }
   /* [cp] per-film grain catalogue data (film_render_defaults[stock].grain);
      falls back to spektrafilm's original single fixed profile when the pack
@@ -4291,12 +4308,14 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     s->midgray_factor = 1.0;
     {
       double ds_mid[SF_NWL], ds_comp[SF_NWL];
-      midgray_density_spectral(s, film, film_ref_xy, SF_MIDGRAY, ds_mid);
+      midgray_density_spectral(s, film, (const double (*)[3])film_curves, film_ref_xy, SF_MIDGRAY,
+                               ds_mid);
       const double f_mid = exposure_factor(s, ds_mid);
       double f_comp = 1.0;
       if(p->print_exposure_compensation)
       {
-        midgray_density_spectral(s, film, film_ref_xy, SF_MIDGRAY * s->ev_scale, ds_comp);
+        midgray_density_spectral(s, film, (const double (*)[3])film_curves, film_ref_xy,
+                                 SF_MIDGRAY * s->ev_scale, ds_comp);
         f_comp = exposure_factor(s, ds_comp);
       }
       if(p->print_exposure_compensation && !p->normalize_print_exposure)
@@ -4324,7 +4343,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     {
       double mx = -INFINITY;
       for(int i = 0; i < SF_NLE; i++)
-        if(film->density_curves[i][c] > mx) mx = film->density_curves[i][c];
+        if(film_curves[i][c] > mx) mx = film_curves[i][c];
       s->enl_lo[c] = -p->grain_density_min[c];
       s->enl_hi[c] = mx;
       s->enl_inv_range[c] = (float)(1.0 / (mx + p->grain_density_min[c]));
@@ -4384,7 +4403,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
       {
         double mx = -INFINITY;
         for(int i = 0; i < SF_NLE; i++)
-          if(film->density_curves[i][c] > mx) mx = film->density_curves[i][c];
+          if(film_curves[i][c] > mx) mx = film_curves[i][c];
         s->scan_hi[c] = mx;
       }
     for(int c = 0; c < 3; c++)
@@ -4441,7 +4460,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
       double mx = -INFINITY;
       for(int i = 0; i < SF_NLE; i++)
       {
-        const double v = film->density_curves[i][c];
+        const double v = film_curves[i][c];
         if(isfinite(v) && v > mx) mx = v;
       }
       cmy_film_white[c] = mx;
@@ -4529,7 +4548,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
       double mx = -INFINITY;
       for(int i = 0; i < SF_NLE; i++)
       {
-        const double v = film->density_curves[i][c];
+        const double v = film_curves[i][c];
         if(isfinite(v) && v > mx) mx = v;
       }
       cmy_black[c] = mx;
@@ -4571,9 +4590,9 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
         double sum = 0.0;
         int nc = 0;
         for(int c = 0; c < 3; c++)
-          if(isfinite(film->density_curves[i][c]))
+          if(isfinite(film_curves[i][c]))
           {
-            sum += film->density_curves[i][c];
+            sum += film_curves[i][c];
             nc++;
           }
         curve_av[i] = nc ? sum / nc : 0.0;
