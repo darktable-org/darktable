@@ -401,11 +401,19 @@ static float lr2dt_grain_frequency(const float value)
   return get_interpolate(lr2dt_grain_table, value) / 53.3;
 }
 
+// darktable's split toning measures lightness on linear display-referred
+// RGB, Lightroom's balance a perceptual one; a positive balance favors the
+// highlights, which moves the crossover down. The exponent was fitted to
+// Lightroom's renders
 static float lr2dt_splittoning_balance(const float value)
 {
-  lr2dt_t lr2dt_splittoning_table[] = { { -100, 100 }, { 0, 0 }, { 100, 0 } };
+  return powf(CLAMP(0.5f - value / 200.0f, 0.0f, 1.0f), 1.5f);
+}
 
-  return get_interpolate(lr2dt_splittoning_table, value);
+// at equal saturation darktable tones more strongly than Lightroom
+static float lr2dt_splittoning_saturation(const float value)
+{
+  return 0.7f * value / 100.0f;
 }
 
 static float lr2dt_clarity(const float value)
@@ -1093,25 +1101,25 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
     {
       const int v = atoi((char *)value);
       if(v != 0) data->has_splittoning = TRUE;
-      data->pst.shadow_hue = (float)v / 255.0;
+      data->pst.shadow_hue = (float)v / 360.0;
     }
     else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningShadowSaturation"))
     {
       const int v = atoi((char *)value);
       if(v != 0) data->has_splittoning = TRUE;
-      data->pst.shadow_saturation = (float)v / 100.0;
+      data->pst.shadow_saturation = lr2dt_splittoning_saturation(v);
     }
     else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningHighlightHue"))
     {
       const int v = atoi((char *)value);
       if(v != 0) data->has_splittoning = TRUE;
-      data->pst.highlight_hue = (float)v / 255.0;
+      data->pst.highlight_hue = (float)v / 360.0;
     }
     else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningHighlightSaturation"))
     {
       const int v = atoi((char *)value);
       if(v != 0) data->has_splittoning = TRUE;
-      data->pst.highlight_saturation = (float)v / 100.0;
+      data->pst.highlight_saturation = lr2dt_splittoning_saturation(v);
     }
     else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningBalance"))
     {
@@ -1702,6 +1710,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   data.ptc_split[2] = 0.75f;
   data.has_colorzones = FALSE;
   data.has_splittoning = FALSE;
+  data.pst.balance = lr2dt_splittoning_balance(0.0f);
   data.has_bilat = FALSE;
   data.has_tags = FALSE;
   data.rating = 0;
@@ -2018,7 +2027,8 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
 
   if(dev != NULL && data.has_splittoning)
   {
-    data.pst.compress = 50.0;
+    // Lightroom leaves no untoned band between shadows and highlights
+    data.pst.compress = 0.0;
 
     dt_add_hist(imgid, "splittoning", (dt_iop_params_t *)&data.pst, sizeof(dt_iop_splittoning_params_t), imported,
                 sizeof(imported), LRDT_SPLITTONING_VERSION, &n_import);
