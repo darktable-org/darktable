@@ -5090,10 +5090,20 @@ static void _props_row_apply(dt_iop_module_t *module,
     return;
   }
 
-  const float value = is_bool
-                        ? (float)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))
-                        : dt_bauhaus_slider_get(widget);
-  const float old_value = *last_value;
+  float value = is_bool
+                  ? (float)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))
+                  : dt_bauhaus_slider_get(widget);
+  float old_value = *last_value;
+
+  // a relative slider reaches down to 0 (see _build_props_row_editor), which
+  // modify_property reads as "no ratio" and ignores: typing 0 would change
+  // nothing. Land on the property's floor instead; both values, so that the
+  // neutral refresh of an untouched slider stays neutral
+  if(_blend_masks_properties[prop].relative)
+  {
+    value = fmaxf(value, _blend_masks_properties[prop].min);
+    old_value = fmaxf(old_value, _blend_masks_properties[prop].min);
+  }
 
   int count = 0;
   float sum = 0;
