@@ -58,21 +58,12 @@ dt_filter_range_t* dt_filter_get_range(const gchar *colname,
   return range;
 }
 
-GList *dt_filter_get_range_counts(const gchar* colname,
-                                  const gchar *where_ext)
+static GList *_get_counts_for_query(const gchar *query)
 {
   GList *counts = NULL;
 
-  // clang-format off
-  gchar *query = g_strdup_printf("SELECT %s AS val, COUNT(*) AS count"
-                                 " FROM main.images AS mi"
-                                 " WHERE %s IS NOT NULL AND %s"
-                                 " GROUP BY val",
-                                 colname, colname, where_ext);
-  // clang-format on
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  g_free(query);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const double value_r = sqlite3_column_double(stmt, 0);
@@ -83,6 +74,53 @@ GList *dt_filter_get_range_counts(const gchar* colname,
     counts = g_list_prepend(counts, entry);
   }
   sqlite3_finalize(stmt);
+
+  return counts;
+}
+
+GList *dt_filter_get_range_counts(const gchar* colname,
+                                  const gchar *where_ext)
+{
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT %s AS val, COUNT(*) AS count"
+                                 " FROM main.images AS mi"
+                                 " WHERE %s IS NOT NULL AND %s"
+                                 " GROUP BY val",
+                                 colname, colname, where_ext);
+  // clang-format on
+  
+  GList *counts = _get_counts_for_query(query);
+  g_free(query);
+
+  return counts;
+}
+
+GList *dt_filter_get_duplicate_counts(const gchar *where_ext)
+{
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT CASE "
+                                 "         WHEN dups.min_version = version THEN 0"
+                                 "         ELSE 1"
+                                 "       END AS orig"
+                                 "     , COUNT(*) AS count"
+                                 " FROM main.images AS mi"
+                                 " JOIN ("
+                                 "   SELECT film_id AS f_id"
+                                 "        , filename"
+                                 "        , MIN(version) AS min_version"
+                                 "   FROM main.images"
+                                 "   GROUP BY f_id"
+                                 "          , filename"
+                                 "   HAVING COUNT(*) > 1"
+                                 " ) dups ON mi.film_id = dups.f_id AND mi.filename = dups.filename"
+                                 " WHERE %s"
+                                 " GROUP BY orig"
+                                 " ORDER BY orig ASC",
+                                 where_ext);
+  // clang-format on
+  
+  GList *counts = _get_counts_for_query(query);
+  g_free(query);
 
   return counts;
 }

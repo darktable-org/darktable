@@ -45,6 +45,8 @@ dt_filter_range_t* dt_filter_get_range(const gchar *colname, const gchar *where_
 /** get the count of images per group */
 GList *dt_filter_get_range_counts(const gchar* colname, const gchar *where_ext);
 
+/** get the duplicate counts */
+GList *dt_filter_get_duplicate_counts(const gchar *where_ext);
 
 /** get the mask of used months */
 int dt_filter_get_used_months_mask(const gchar *colname, const gchar *where_ext);

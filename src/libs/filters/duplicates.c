@@ -20,6 +20,8 @@
   This file contains the necessary routines to implement a filter for the filtering module
 */
 
+#include "common/filter.h"
+
 typedef struct _widgets_duplicates_t
 {
   dt_lib_filtering_rule_t *rule;
@@ -95,47 +97,23 @@ static gboolean _duplicates_update(dt_lib_filtering_rule_t *rule)
 
   rule->manual_widget_set++;
   _widgets_duplicates_t *duplicates = (_widgets_duplicates_t *)rule->w_specific;
-  char query[1024] = { 0 };
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-                   "SELECT CASE "
-                   "         WHEN dups.min_version = version THEN 0"
-                   "         ELSE 1"
-                   "       END AS orig"
-                   "     , COUNT(*) AS count"
-                   " FROM main.images AS mi"
-                   " JOIN ("
-                   "   SELECT film_id AS f_id"
-                   "        , filename"
-                   "        , MIN(version) AS min_version"
-                   "   FROM main.images"
-                   "   GROUP BY f_id"
-                   "          , filename"
-                   "   HAVING COUNT(*) > 1"
-                   " ) dups ON mi.film_id = dups.f_id AND mi.filename = dups.filename"
-                   " WHERE %s"
-                   " GROUP BY orig"
-                   " ORDER BY orig ASC",
-                   rule->lib->last_where_ext);
-  // clang-format on
-  int counts[2] = { 0 };
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+
+  int dup_counts[2] = { 0 };
+  GList *counts = dt_filter_get_duplicate_counts(rule->lib->last_where_ext);
+  for(GList *iter = counts; iter; iter = g_list_next(iter))
   {
-    const int i = sqlite3_column_int(stmt, 0);
-    const int count = sqlite3_column_int(stmt, 1);
-    counts[i] = count;
+    dt_filter_range_count_t *count = iter->data;
+    dup_counts[(int)count->value_r] = count->count;
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(counts, dt_filter_range_count_free);
 
   // 0 = originals only
   // 1 = duplicates only
-  counts[0] += counts[1]; // counter for originals + all duplicates
+  dup_counts[0] += dup_counts[1]; // counter for originals + all duplicates
 
   for(int i = 0; i < 2; i++)
   {
-    gchar *item = g_strdup_printf("%s (%d)", _(_duplicates_names[i + 1]), counts[i]);
+    gchar *item = g_strdup_printf("%s (%d)", _(_duplicates_names[i + 1]), dup_counts[i]);
     dt_bauhaus_combobox_set_entry_label(duplicates->combo, i + 1, item);
     g_free(item);
   }
