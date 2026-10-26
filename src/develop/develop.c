@@ -2564,9 +2564,18 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     dt_print(DT_DEBUG_PARAMS,
              "[dt_dev_read_history_ext] temporary history merged with image history");
 
-    //  first time we are loading the image, try to import lightroom .xmp if any
-    if(dev->full.pipe && dev->full.pipe->loading && first_run)
-      dt_lightroom_import(dev->image_storage.id, dev, TRUE);
+    //  if no foreign XMP has been applied and we are loading the image for the
+    //  first time, try to import lightroom .xmp if any.
+    if (dev->full.pipe && dev->full.pipe->loading)
+    {
+      dt_image_t *image = dt_image_cache_get(imgid, 'w');
+      if (!(image->flags & DT_IMAGE_FOREIGN_XMP_APPLIED))
+      {
+        dt_lightroom_import(dev->image_storage.id, dev, TRUE);
+        image->flags |= DT_IMAGE_FOREIGN_XMP_APPLIED;
+      }
+      dt_image_cache_write_release(image, DT_IMAGE_CACHE_RELAXED);
+    }
 
     // if a snapshot move all auto-presets into the history_snapshot table
 
