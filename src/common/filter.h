@@ -38,6 +38,14 @@ typedef struct dt_filter_range_count_t
 
 void dt_filter_range_count_free(gpointer data);
 
+typedef struct dt_filter_int_count_t
+{
+  int val;
+  int count;
+} dt_filter_int_count_t;
+
+void dt_filter_int_count_free(gpointer data);
+
 typedef struct dt_filter_name_count_t
 {
   gchar *name;

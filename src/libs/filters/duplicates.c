@@ -102,10 +102,10 @@ static gboolean _duplicates_update(dt_lib_filtering_rule_t *rule)
   GList *counts = dt_filter_get_duplicate_counts(rule->lib->last_where_ext);
   for(GList *iter = counts; iter; iter = g_list_next(iter))
   {
-    dt_filter_range_count_t *count = iter->data;
-    dup_counts[(int)count->value_r] = count->count;
+    dt_filter_int_count_t *count = iter->data;
+    dup_counts[count->val] = count->count;
   }
-  g_list_free_full(counts, dt_filter_range_count_free);
+  g_list_free_full(counts, dt_filter_int_count_free);
 
   // 0 = originals only
   // 1 = duplicates only

@@ -31,6 +31,11 @@ void dt_filter_range_count_free(gpointer data)
   g_free(data);
 }
 
+void dt_filter_int_count_free(gpointer data)
+{
+  g_free(data);
+}
+
 void dt_filter_name_count_free(gpointer data)
 {
   dt_filter_name_count_t *d = data;
@@ -74,7 +79,7 @@ dt_filter_range_t* dt_filter_get_range(const gchar *colname,
   return range;
 }
 
-static GList *_get_counts_for_query(const gchar *query)
+static GList *_get_range_counts_for_query(const gchar *query)
 {
   GList *counts = NULL;
 
@@ -94,6 +99,47 @@ static GList *_get_counts_for_query(const gchar *query)
   return counts;
 }
 
+static GList *_get_int_counts_for_query(const gchar *query)
+{
+  GList *counts = NULL;
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const double val= sqlite3_column_double(stmt, 0);
+    const int count = sqlite3_column_int(stmt, 1);
+    dt_filter_int_count_t *entry = g_malloc0(sizeof(dt_filter_int_count_t));
+    entry->val= val;
+    entry->count = count;
+    counts = g_list_prepend(counts, entry);
+  }
+  sqlite3_finalize(stmt);
+
+  return counts;
+}
+
+static GList *_get_name_counts_for_query(const gchar *query)
+{
+  GList *counts = NULL;
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *name = (const char *)sqlite3_column_text(stmt, 0);
+    if(name == NULL) continue; // safeguard against degenerated db entries
+    const int count = sqlite3_column_int(stmt, 1);
+    dt_filter_name_count_t *entry = g_malloc0(sizeof(dt_filter_name_count_t));
+    entry->name = g_strdup(name);
+    entry->count = count;
+    counts = g_list_prepend(counts, entry);
+  }
+  sqlite3_finalize(stmt);
+
+  return counts;
+}
+
 GList *dt_filter_get_range_counts(const gchar* colname,
                                   const gchar *where_ext)
 {
@@ -105,7 +151,7 @@ GList *dt_filter_get_range_counts(const gchar* colname,
                                  colname, colname, where_ext);
   // clang-format on
   
-  GList *counts = _get_counts_for_query(query);
+  GList *counts = _get_range_counts_for_query(query);
   g_free(query);
 
   return counts;
@@ -121,8 +167,6 @@ GList *dt_filter_get_range_counts(const gchar* colname,
 
 GList *dt_filter_get_filename_counts(const gchar *where_ext)
 {
-  GList *counts = NULL;
-
   // clang-format off
   gchar *query = g_strdup_printf("SELECT rtrim(rtrim(filename, replace(filename, '.', '')), '.') AS fn, COUNT(*) AS count"
                                  " FROM main.images AS mi"
@@ -132,20 +176,8 @@ GList *dt_filter_get_filename_counts(const gchar *where_ext)
                                  where_ext);
   // clang-format on
 
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  GList *counts = _get_name_counts_for_query(query);
   g_free(query);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const char *name = (const char *)sqlite3_column_text(stmt, 0);
-    if(name == NULL) continue; // safeguard against degenerated db entries
-    const int count = sqlite3_column_int(stmt, 1);
-    dt_filter_name_count_t *entry = g_malloc0(sizeof(dt_filter_name_count_t));
-    entry->name = g_strdup(name);
-    entry->count = count;
-    counts = g_list_prepend(counts, entry);
-  }
-  sqlite3_finalize(stmt);
 
   return counts;
 }
@@ -201,7 +233,7 @@ GList *dt_filter_get_history_counts(const gchar *where_ext)
                                  where_ext);
   // clang-format on
   
-  GList *counts = _get_counts_for_query(query);
+  GList *counts = _get_int_counts_for_query(query);
   g_free(query);
 
   return counts;
@@ -231,7 +263,7 @@ GList *dt_filter_get_duplicate_counts(const gchar *where_ext)
                                  where_ext);
   // clang-format on
   
-  GList *counts = _get_counts_for_query(query);
+  GList *counts = _get_int_counts_for_query(query);
   g_free(query);
 
   return counts;
