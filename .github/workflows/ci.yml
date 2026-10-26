@@ -67,7 +67,9 @@ jobs:
         btype:
           - Release
         target:
-          - skiptest
+          - build
+        name_suffix:
+          - _tests
         generator:
           - Ninja
         eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
@@ -76,9 +78,10 @@ jobs:
           - distro: "ubuntu:26.04"
             btype: Debug
             compiler: { compiler: GNU16, CC: gcc-16, CXX: g++-16, packages: gcc-16 g++-16 }
-            target: skiptest
+            target: build
             generator: Ninja
             eco: -DDONT_USE_INTERNAL_LIBRAW=OFF
+            name_suffix: _tests
           # The other entries use the skiptest target, which never configures
           # BUILD_TESTING and so never even compiles the unit tests. This one
           # builds them and runs ctest.
@@ -346,7 +349,7 @@ jobs:
 
   macOS:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
-    name: macOS_${{ matrix.build.os }}_${{ matrix.compiler.compiler }}_${{ matrix.build.xcode }}_${{ matrix.btype }}
+    name: macOS_${{ matrix.build.os }}_${{ matrix.compiler.compiler }}_${{ matrix.build.xcode }}_${{ matrix.btype }}${{ matrix.name_suffix }}
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true
@@ -357,7 +360,9 @@ jobs:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
         target:
-          - skiptest
+          - build
+        name_suffix:
+          - _tests
         generator:
           - Ninja
         eco: [-DDONT_USE_INTERNAL_LIBRAW=ON -DUSE_GRAPHICSMAGICK=OFF -DUSE_IMAGEMAGICK=ON]
@@ -399,6 +404,17 @@ jobs:
           # disables HDR bracket auto-alignment silently at configure time, so
           # check the formula really is installed.
           brew list --versions opencv
+      # check out only images/ of the pinned commit (~95 MB),
+      # not the whole test repository (~1 GB)
+      - name: Get the integration test images for the unit tests
+        if: matrix.target == 'build'
+        run: |
+          cd src
+          sparse_update='!f() { git sparse-checkout set --no-cone /images/ && git checkout -f -q "$1"; }; f'
+          git -c "submodule.src/tests/integration.update=${sparse_update}" \
+              submodule update --init --depth 1 --filter=blob:none src/tests/integration
+          du -sh src/tests/integration/images
+          cd -
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}";
