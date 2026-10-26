@@ -362,6 +362,8 @@ __kernel void spektrafilm_expose(__read_only image2d_t in, __global float4 *plan
   /* (raw * b) * ev, the association sf_sim_expose() uses: expose_pixel_f
      scales by b and the caller then by ev_scale */
   raw = (raw * bb) * ev_scale;
+  /* no negative exposure into the pre-film blurs, see process() */
+  raw = fmax(raw, 0.0f);
   plane[(size_t)y * w + x] = (float4)(raw.x, raw.y, raw.z, px.w);
 }
 
