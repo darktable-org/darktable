@@ -725,6 +725,12 @@ changes (where available).
   gaussian and poissonian noise, on macOS OpenCL: the kernels read
   vector lanes they had not set.
 
+- Fixed Lightroom imports of parametric tone curves, which washed out
+  the highlights, of split toning, which used the wrong hues and toned
+  the highlights across nearly the whole image but never the shadows,
+  and of post-crop vignetting, which was far weaker than in Lightroom
+  and only started near the frame's edge.
+
 ## Lua
 
 ### API Version
