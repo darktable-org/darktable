@@ -321,6 +321,24 @@ GList *dt_filter_get_module_order_counts(const gchar *where_ext)
   return counts;
 }
 
+GList *dt_filter_get_rating_range_counts(const gchar *where_ext)
+{
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT CASE WHEN (flags & 8) == 8 THEN -1 ELSE (flags & 7) END AS rating,"
+                                 " COUNT(*) AS count"
+                                 " FROM main.images AS mi"
+                                 " WHERE %s"
+                                 " GROUP BY rating"
+                                 " ORDER BY rating",
+                                  where_ext);
+  // clang-format on
+  
+  GList *counts = _get_int_counts_for_query(query);
+  g_free(query);
+
+  return counts;
+}
+
 int dt_filter_get_used_months_mask(const gchar *colname,
                                    const gchar *where_ext)
 {

@@ -88,6 +88,9 @@ GList *dt_filter_get_local_copy_counts(const gchar *where_ext);
 /** get the module order counts */
 GList *dt_filter_get_module_order_counts(const gchar *where_ext);
 
+/** get the rating range counts */
+GList *dt_filter_get_rating_range_counts(const gchar *where_ext);
+
 /** get the mask of used months */
 int dt_filter_get_used_months_mask(const gchar *colname, const gchar *where_ext);
 
