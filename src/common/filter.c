@@ -339,6 +339,134 @@ GList *dt_filter_get_rating_range_counts(const gchar *where_ext)
   return counts;
 }
 
+GList *dt_filter_get_camera_counts(const gchar *where_ext)
+{
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT TRIM(cm.maker || ' ' || cm.model) AS camera, COUNT(*) AS count"
+                                 " FROM main.images AS mi, main.cameras AS cm"
+                                 " WHERE mi.camera_id = cm.id AND %s"
+                                 " GROUP BY camera"
+                                 " ORDER BY camera",
+                                  where_ext);
+  // clang-format on
+  
+  GList *counts = _get_name_counts_for_query(query);
+  g_free(query);
+
+  return counts;
+}
+
+GList *dt_filter_get_lens_counts(const gchar *where_ext)
+{
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT CASE LOWER(TRIM(ln.name))"
+                                 "         WHEN 'n/a' THEN ''"
+                                 "         ELSE ln.name"
+                                 "       END AS lens, COUNT(*) AS count"
+                                 " FROM main.images AS mi, main.lens AS ln"
+                                 " WHERE mi.lens_id = ln.id AND %s"
+                                 " GROUP BY lens"
+                                 " ORDER BY lens",
+                                  where_ext);
+  // clang-format on
+  
+  GList *counts = _get_name_counts_for_query(query);
+  g_free(query);
+
+  return counts;
+}
+
+GList *dt_filter_get_image_dimension_counts(const gchar *where_ext)
+{
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT mi.width || 'x' || mi.height AS dim, COUNT(*) AS count"
+                                 " FROM main.images AS mi"
+                                 " WHERE %s"
+                                 " GROUP BY dim"
+                                 " ORDER BY dim",
+                                  where_ext);
+  // clang-format on
+  
+  GList *counts = _get_name_counts_for_query(query);
+  g_free(query);
+
+  return counts;
+}
+
+static gchar *_get_query_for_table(const char *table, const char *where_ext)
+{
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT t.name"
+                                 "     , COUNT(*) AS count"
+                                 " FROM main.images AS mi"
+                                 " JOIN main.%s AS t"
+                                 " WHERE mi.%s_id = t.id AND %s"
+                                 " GROUP BY name"
+                                 " ORDER BY name",
+                                 table, table, where_ext);
+  // clang-format on
+
+  return query;
+}
+
+GList *dt_filter_get_white_balance_counts(const gchar *where_ext)
+{
+  gchar *query = _get_query_for_table("whitebalance", where_ext);
+  
+  GList *counts = _get_name_counts_for_query(query);
+  g_free(query);
+
+  return counts;
+}
+
+GList *dt_filter_get_flash_counts(const gchar *where_ext)
+{
+  gchar *query = _get_query_for_table("flash", where_ext);
+  
+  GList *counts = _get_name_counts_for_query(query);
+  g_free(query);
+
+  return counts;
+}
+
+GList *dt_filter_get_exposure_program_counts(const gchar *where_ext)
+{
+  gchar *query = _get_query_for_table("exposure_program", where_ext);
+  
+  GList *counts = _get_name_counts_for_query(query);
+  g_free(query);
+
+  return counts;
+}
+
+GList *dt_filter_get_metering_mode_counts(const gchar *where_ext)
+{
+  gchar *query = _get_query_for_table("metering_mode", where_ext);
+  
+  GList *counts = _get_name_counts_for_query(query);
+  g_free(query);
+
+  return counts;
+}
+
+GList *dt_filter_get_group_id_counts(const gchar *where_ext)
+{
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT mi.group_id, COUNT(*) AS count"
+                                 " FROM main.images AS mi"
+                                 " WHERE %s"
+                                 " GROUP BY group_id"
+                                 " HAVING COUNT(*) > 1"
+                                 " ORDER BY group_id",
+                                 where_ext);
+  // clang-format on
+  
+  GList *counts = _get_name_counts_for_query(query);
+  g_free(query);
+
+  return counts;
+}
+
 int dt_filter_get_used_months_mask(const gchar *colname,
                                    const gchar *where_ext)
 {

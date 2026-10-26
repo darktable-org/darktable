@@ -91,6 +91,30 @@ GList *dt_filter_get_module_order_counts(const gchar *where_ext);
 /** get the rating range counts */
 GList *dt_filter_get_rating_range_counts(const gchar *where_ext);
 
+/** get the camera counts */
+GList *dt_filter_get_camera_counts(const gchar *where_ext);
+
+/** get the lens counts */
+GList *dt_filter_get_lens_counts(const gchar *where_ext);
+
+/** get the image dimension counts */
+GList *dt_filter_get_image_dimension_counts(const gchar *where_ext);
+
+/** get the white balance counts */
+GList *dt_filter_get_white_balance_counts(const gchar *where_ext);
+
+/** get the flash counts */
+GList *dt_filter_get_flash_counts(const gchar *where_ext);
+
+/** get the exposure program counts */
+GList *dt_filter_get_exposure_program_counts(const gchar *where_ext);
+
+/** get the metering mode counts */
+GList *dt_filter_get_metering_mode_counts(const gchar *where_ext);
+
+/** get the group_id counts */
+GList *dt_filter_get_group_id_counts(const gchar *where_ext);
+
 /** get the mask of used months */
 int dt_filter_get_used_months_mask(const gchar *colname, const gchar *where_ext);
 
