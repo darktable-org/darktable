@@ -68,6 +68,9 @@ GList *dt_filter_get_filename_counts(const gchar *where_ext);
 /** get the count of images per extension */
 GList *dt_filter_get_extension_counts(const gchar *where_ext);
 
+/** get the history type counts */
+GList *dt_filter_get_history_counts(const gchar *where_ext);
+
 /** get the duplicate counts */
 GList *dt_filter_get_duplicate_counts(const gchar *where_ext);
 

@@ -183,6 +183,30 @@ GList *dt_filter_get_extension_counts(const gchar *where_ext)
   return counts;
 }
 
+GList *dt_filter_get_history_counts(const gchar *where_ext)
+{
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT CASE"
+                                 "       WHEN basic_hash == current_hash THEN 0"
+                                 "       WHEN auto_hash == current_hash THEN 1"
+                                 "       WHEN current_hash IS NOT NULL THEN 2"
+                                 "       ELSE 0"
+                                 "     END as altered, COUNT(*) AS count"
+                                 " FROM main.images AS mi"
+                                 " LEFT JOIN (SELECT DISTINCT imgid, basic_hash, auto_hash, current_hash"
+                                 "            FROM main.history_hash) ON id = imgid"
+                                 " WHERE %s"
+                                 " GROUP BY altered"
+                                 " ORDER BY altered ASC",
+                                 where_ext);
+  // clang-format on
+  
+  GList *counts = _get_counts_for_query(query);
+  g_free(query);
+
+  return counts;
+}
+
 GList *dt_filter_get_duplicate_counts(const gchar *where_ext)
 {
   // clang-format off
