@@ -352,6 +352,10 @@ static void test_sticky_opacity_preference_roundtrips(void **state)
 // functions, so this table is both
 static void test_position_options_follow_the_position(void **state)
 {
+  assert_false(dt_masks_gui_pref_always_on_applies(MASKS_PANEL_POS_EMBEDDED));
+  assert_false(dt_masks_gui_pref_always_on_applies(MASKS_PANEL_POS_UTILITY));
+  assert_true(dt_masks_gui_pref_always_on_applies(MASKS_PANEL_POS_CANVAS));
+
   assert_false(dt_masks_gui_pref_handle_applies(MASKS_PANEL_POS_EMBEDDED));
   assert_false(dt_masks_gui_pref_handle_applies(MASKS_PANEL_POS_UTILITY));
   assert_true(dt_masks_gui_pref_handle_applies(MASKS_PANEL_POS_CANVAS));
@@ -497,14 +501,14 @@ static void test_pinned_panel_side_outranks_the_default(void **state)
 static void test_panel_state_collapsed_module_shows_corner_icon(void **state)
 {
   const dt_masks_panel_state_t s_on =
-    dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, TRUE, TRUE, FALSE, TRUE, FALSE);
+    dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, TRUE, TRUE, FALSE, TRUE, FALSE, FALSE);
   assert_true(s_on.want_hosted);
   assert_true(s_on.panel_collapsed);
   assert_true(s_on.corner_icon_visible);
   assert_true(s_on.corner_icon_active);
 
   const dt_masks_panel_state_t s_off =
-    dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, TRUE, TRUE, FALSE, FALSE, FALSE);
+    dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE);
   assert_true(s_off.want_hosted);
   assert_true(s_off.panel_collapsed);
   assert_true(s_off.corner_icon_visible);
@@ -517,13 +521,13 @@ static void test_panel_state_collapsed_module_shows_corner_icon(void **state)
 static void test_panel_state_expanded_module_respects_pref(void **state)
 {
   const dt_masks_panel_state_t s_exp =
-    dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, TRUE, TRUE, TRUE, TRUE, FALSE);
+    dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE);
   assert_true(s_exp.want_hosted);
   assert_false(s_exp.panel_collapsed);
   assert_false(s_exp.corner_icon_visible);
 
   const dt_masks_panel_state_t s_col =
-    dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, TRUE, TRUE, TRUE, TRUE, TRUE);
+    dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE);
   assert_true(s_col.want_hosted);
   assert_true(s_col.panel_collapsed);
   assert_true(s_col.corner_icon_visible);
@@ -536,7 +540,7 @@ static void test_panel_state_expanded_module_respects_pref(void **state)
 static void test_panel_state_mask_disabled_does_not_collapse(void **state)
 {
   const dt_masks_panel_state_t s =
-    dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, TRUE, TRUE, TRUE, FALSE, FALSE);
+    dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE);
   assert_true(s.want_hosted);
   assert_false(s.panel_collapsed);
   assert_false(s.corner_icon_visible);
@@ -544,7 +548,7 @@ static void test_panel_state_mask_disabled_does_not_collapse(void **state)
 
   // and with the panel folded by preference, the icon is back, still inactive
   const dt_masks_panel_state_t s_folded =
-    dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, TRUE, TRUE, TRUE, FALSE, TRUE);
+    dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, TRUE, TRUE, TRUE, FALSE, TRUE, FALSE);
   assert_true(s_folded.panel_collapsed);
   assert_true(s_folded.corner_icon_visible);
   assert_false(s_folded.corner_icon_active);
@@ -556,13 +560,13 @@ static void test_panel_state_mask_disabled_does_not_collapse(void **state)
 static void test_panel_state_unsupported_or_unfocused_hides_all(void **state)
 {
   const dt_masks_panel_state_t s_no_mask =
-    dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, TRUE, FALSE, TRUE, FALSE, FALSE);
+    dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, TRUE, FALSE, TRUE, FALSE, FALSE, FALSE);
   assert_false(s_no_mask.want_hosted);
   assert_true(s_no_mask.panel_collapsed);
   assert_false(s_no_mask.corner_icon_visible);
 
   const dt_masks_panel_state_t s_unfocused =
-    dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, FALSE, TRUE, TRUE, TRUE, FALSE);
+    dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE);
   assert_false(s_unfocused.want_hosted);
   assert_true(s_unfocused.panel_collapsed);
   assert_false(s_unfocused.corner_icon_visible);
@@ -581,21 +585,21 @@ static void test_panel_state_utility_position_follows_pref(void **state)
 {
   // focused & expanded module in utility position: open when pref is open
   const dt_masks_panel_state_t s_open =
-    dt_masks_model_panel_state(MASKS_PANEL_POS_UTILITY, TRUE, TRUE, TRUE, TRUE, FALSE);
+    dt_masks_model_panel_state(MASKS_PANEL_POS_UTILITY, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE);
   assert_true(s_open.want_hosted);
   assert_false(s_open.panel_collapsed);
   assert_false(s_open.corner_icon_visible);
 
   // focused & collapsed IOP module in utility position: stays open when pref is open
   const dt_masks_panel_state_t s_iop_col =
-    dt_masks_model_panel_state(MASKS_PANEL_POS_UTILITY, TRUE, TRUE, FALSE, TRUE, FALSE);
+    dt_masks_model_panel_state(MASKS_PANEL_POS_UTILITY, TRUE, TRUE, FALSE, TRUE, FALSE, FALSE);
   assert_true(s_iop_col.want_hosted);
   assert_false(s_iop_col.panel_collapsed);
   assert_false(s_iop_col.corner_icon_visible);
 
   // user collapsed the utility expander: collapsed
   const dt_masks_panel_state_t s_user_col =
-    dt_masks_model_panel_state(MASKS_PANEL_POS_UTILITY, TRUE, TRUE, TRUE, TRUE, TRUE);
+    dt_masks_model_panel_state(MASKS_PANEL_POS_UTILITY, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE);
   assert_true(s_user_col.want_hosted);
   assert_true(s_user_col.panel_collapsed);
   assert_false(s_user_col.corner_icon_visible);
@@ -605,13 +609,143 @@ static void test_panel_state_utility_position_follows_pref(void **state)
 static void test_panel_state_no_separate_panel_for_utility_or_embedded(void **state)
 {
   const dt_masks_panel_state_t s_util =
-    dt_masks_model_panel_state(MASKS_PANEL_POS_UTILITY, TRUE, TRUE, TRUE, TRUE, FALSE);
+    dt_masks_model_panel_state(MASKS_PANEL_POS_UTILITY, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE);
   assert_false(s_util.corner_icon_visible);
 
   const dt_masks_panel_state_t s_emb =
-    dt_masks_model_panel_state(MASKS_PANEL_POS_EMBEDDED, TRUE, TRUE, TRUE, TRUE, FALSE);
+    dt_masks_model_panel_state(MASKS_PANEL_POS_EMBEDDED, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE);
   assert_false(s_emb.want_hosted);
   assert_false(s_emb.corner_icon_visible);
+}
+
+// an always-on panel is on screen whatever is focused, collapsed or maskless, and
+// only the user's fold takes it away. What it hosts is still the focused
+// module's, so only a focused, masking-capable one is hosted
+static void test_panel_state_always_on_follows_the_fold_alone(void **state)
+{
+  for(int focused = 0; focused <= 1; focused++)
+    for(int masking = 0; masking <= 1; masking++)
+      for(int expanded = 0; expanded <= 1; expanded++)
+        for(int active = 0; active <= 1; active++)
+        {
+          const dt_masks_panel_state_t open =
+            dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, focused, masking, expanded,
+                                       active, FALSE, TRUE);
+          assert_false(open.panel_collapsed);
+          assert_false(open.corner_icon_visible);
+          assert_int_equal(open.want_hosted, focused && masking);
+          assert_int_equal(open.corner_icon_active, focused && masking && active);
+
+          const dt_masks_panel_state_t folded =
+            dt_masks_model_panel_state(MASKS_PANEL_POS_CANVAS, focused, masking, expanded,
+                                       active, TRUE, TRUE);
+          assert_true(folded.panel_collapsed);
+          assert_true(folded.corner_icon_visible);
+          assert_int_equal(folded.want_hosted, focused && masking);
+        }
+}
+
+// and the other two positions do not have the choice
+static void test_panel_state_always_on_is_the_canvas_positions_alone(void **state)
+{
+  for(int pos = MASKS_PANEL_POS_EMBEDDED; pos <= MASKS_PANEL_POS_UTILITY; pos++)
+    for(int pref = 0; pref <= 1; pref++)
+    {
+      const dt_masks_panel_state_t plain =
+        dt_masks_model_panel_state(pos, TRUE, TRUE, FALSE, TRUE, pref, FALSE);
+      const dt_masks_panel_state_t always_on =
+        dt_masks_model_panel_state(pos, TRUE, TRUE, FALSE, TRUE, pref, TRUE);
+      assert_int_equal(plain.want_hosted, always_on.want_hosted);
+      assert_int_equal(plain.panel_collapsed, always_on.panel_collapsed);
+      assert_int_equal(plain.corner_icon_visible, always_on.corner_icon_visible);
+    }
+}
+
+// the canvas position and the preference together
+static void test_panel_always_on_needs_the_canvas_position(void **state)
+{
+  dt_conf_set_bool("plugins/darkroom/masks/always_on_panel", TRUE);
+  dt_conf_set_int("plugins/darkroom/blend/masks_panel_position", MASKS_PANEL_POS_CANVAS);
+  assert_true(dt_masks_gui_panel_always_on());
+
+  dt_conf_set_int("plugins/darkroom/blend/masks_panel_position", MASKS_PANEL_POS_UTILITY);
+  assert_false(dt_masks_gui_panel_always_on());
+  dt_conf_set_int("plugins/darkroom/blend/masks_panel_position", MASKS_PANEL_POS_EMBEDDED);
+  assert_false(dt_masks_gui_panel_always_on());
+
+  dt_conf_set_int("plugins/darkroom/blend/masks_panel_position", MASKS_PANEL_POS_CANVAS);
+  dt_conf_set_bool("plugins/darkroom/masks/always_on_panel", FALSE);
+  assert_false(dt_masks_gui_panel_always_on());
+}
+
+// the canvas panel as a floating overlay is not tied to its side panel or to
+// the view: only the fold takes it away, whichever way the panel got there
+static void test_canvas_panel_floating_ignores_the_side_panel(void **state)
+{
+  for(int user = 0; user <= 1; user++)
+    for(int in_view = 0; in_view <= 1; in_view++)
+      for(int side = 0; side <= 1; side++)
+        for(int keep = 0; keep <= 1; keep++)
+        {
+          assert_false(dt_masks_model_canvas_panel_hidden(FALSE, user, FALSE, in_view, side, keep));
+          assert_true(dt_masks_model_canvas_panel_hidden(TRUE, user, FALSE, in_view, side, keep));
+        }
+}
+
+// an always-on panel is part of the side panel it is docked next to, and of the
+// darkroom; the fold, or the user opening it, overrides
+static void test_canvas_panel_always_on_follows_its_side_panel(void **state)
+{
+  assert_false(dt_masks_model_canvas_panel_hidden(FALSE, FALSE, TRUE, TRUE, TRUE, FALSE));
+  assert_true(dt_masks_model_canvas_panel_hidden(FALSE, FALSE, TRUE, TRUE, FALSE, FALSE));
+  assert_true(dt_masks_model_canvas_panel_hidden(FALSE, FALSE, TRUE, FALSE, TRUE, FALSE));
+  // opened from its strip beside a hidden side panel
+  assert_false(dt_masks_model_canvas_panel_hidden(FALSE, TRUE, TRUE, TRUE, FALSE, FALSE));
+  // the fold wins over everything
+  for(int user = 0; user <= 1; user++)
+    for(int side = 0; side <= 1; side++)
+      assert_true(dt_masks_model_canvas_panel_hidden(TRUE, user, TRUE, TRUE, side, TRUE));
+}
+
+// pressing the collapse-all key twice is a round trip: the panel is hidden
+// with every other panel, then comes back as it was, whether its side panel was
+// shown, or hidden with the panel opened from its strip, or hidden with the
+// panel hidden along with it
+static void test_tab_twice_restores_the_panel(void **state)
+{
+  for(int always_on = 0; always_on <= 1; always_on++)
+    for(int folded = 0; folded <= 1; folded++)
+      for(int side_before = 0; side_before <= 1; side_before++)
+        for(int opened = 0; opened <= 1; opened++)
+        {
+          // opening from the strip while its side is shown is no different from
+          // the side showing it; only an open panel beside a hidden side is new
+          const gboolean user = opened && !side_before;
+          const gboolean hidden_before =
+            dt_masks_model_canvas_panel_hidden(folded, user, always_on, TRUE, side_before, FALSE);
+
+          // first press: every panel away, the side panel included
+          const gboolean hidden_during =
+            dt_masks_model_canvas_panel_hidden(folded, FALSE, always_on, TRUE, FALSE, FALSE);
+          assert_true(hidden_during || !always_on);
+
+          // second press: the side panel is back as it was, then the panel is
+          // given its state from before the first
+          const gboolean keep =
+            dt_masks_model_tab_keeps_panel(always_on, TRUE, !hidden_before);
+          const gboolean hidden_after =
+            dt_masks_model_canvas_panel_hidden(folded, FALSE, always_on, TRUE, side_before, keep);
+          assert_int_equal(hidden_after, hidden_before);
+        }
+}
+
+// nothing to give back out of the darkroom, or to a floating panel
+static void test_tab_keeps_only_the_always_on_panel_in_view(void **state)
+{
+  assert_true(dt_masks_model_tab_keeps_panel(TRUE, TRUE, TRUE));
+  assert_false(dt_masks_model_tab_keeps_panel(TRUE, TRUE, FALSE));
+  assert_false(dt_masks_model_tab_keeps_panel(TRUE, FALSE, TRUE));
+  assert_false(dt_masks_model_tab_keeps_panel(FALSE, TRUE, TRUE));
 }
 
 static void test_param_channel_tooltips(void **state)
@@ -677,6 +811,14 @@ int main(void)
     cmocka_unit_test_teardown(test_panel_state_unsupported_or_unfocused_hides_all, _teardown),
     cmocka_unit_test_teardown(test_panel_state_utility_position_follows_pref, _teardown),
     cmocka_unit_test_teardown(test_panel_state_no_separate_panel_for_utility_or_embedded, _teardown),
+    cmocka_unit_test_teardown(test_panel_state_always_on_follows_the_fold_alone, _teardown),
+    cmocka_unit_test_teardown(test_panel_state_always_on_is_the_canvas_positions_alone, _teardown),
+    cmocka_unit_test(test_canvas_panel_floating_ignores_the_side_panel),
+    cmocka_unit_test(test_canvas_panel_always_on_follows_its_side_panel),
+    cmocka_unit_test(test_tab_twice_restores_the_panel),
+    cmocka_unit_test(test_tab_keeps_only_the_always_on_panel_in_view),
+    cmocka_unit_test_setup_teardown(test_panel_always_on_needs_the_canvas_position,
+                                    _conf_setup, _conf_teardown),
     cmocka_unit_test_teardown(test_pinning_collapsed_module_expands_iop, _teardown),
     cmocka_unit_test_teardown(test_param_channel_tooltips, _teardown),
   };

@@ -1075,6 +1075,10 @@ void dt_iop_gui_blend_masks_panel_toggle(void);
 void dt_iop_gui_blend_masks_panel_show(void);
 // the canvas panel changed sides: lay its header out for the new one
 void dt_iop_gui_blend_masks_panel_side_changed(void);
+// the always-on canvas panel has no module to show (nothing focused, or no
+// masking in the focused one): keep it on screen as the user left it, saying so.
+// Does nothing while a module is hosted, or when the panel is not always-on
+void dt_iop_gui_blend_masks_panel_idle_sync(void);
 // the tooltip of both buttons that display the mask: the overlay in the mask
 // header and the indicator in the module header
 const char *dt_iop_gui_blend_showmask_tooltip(void);

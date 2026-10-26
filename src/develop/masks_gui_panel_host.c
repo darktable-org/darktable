@@ -44,6 +44,12 @@ int dt_masks_gui_panel_position(void)
   return dt_conf_get_int("plugins/darkroom/blend/masks_panel_position");
 }
 
+gboolean dt_masks_gui_panel_always_on(void)
+{
+  return dt_masks_gui_panel_position() == MASKS_PANEL_POS_CANVAS
+         && dt_conf_get_bool("plugins/darkroom/masks/always_on_panel");
+}
+
 gboolean dt_masks_gui_is_host_lib(const dt_lib_module_t *module)
 {
   return darktable.develop && module == darktable.develop->proxy.masks_flexi_host.module;
@@ -117,9 +123,12 @@ static gboolean _masks_panel_collapsed_pref(void)
 // again on the next module with a mask. A fold or unfold by the user clears it
 static const dt_iop_module_t *_no_mask_fold = NULL;
 
+// an always-on panel is folded by the user alone: a module with its mask off does
+// not fold it
 static gboolean _masks_panel_collapsed_for(const dt_iop_module_t *module)
 {
-  return _masks_panel_collapsed_pref() || (module && module == _no_mask_fold);
+  return _masks_panel_collapsed_pref()
+         || (module && module == _no_mask_fold && !dt_masks_gui_panel_always_on());
 }
 
 void dt_masks_gui_panel_set_collapsed_pref(const gboolean collapsed)
@@ -220,7 +229,8 @@ void dt_iop_gui_blend_masks_panel_sync_toolbox(void)
   const dt_masks_panel_state_t state =
     dt_masks_model_panel_state(dt_masks_gui_panel_position(), usable, usable,
                                module ? module->expanded : FALSE, mask_active,
-                               _masks_panel_collapsed_for(module));
+                               _masks_panel_collapsed_for(module),
+                               dt_masks_gui_panel_always_on());
   const gboolean showing = usable && !state.panel_collapsed;
 
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(btn), dtgtk_cairo_paint_masks_panel,
@@ -628,18 +638,46 @@ void dt_iop_gui_blend_masks_panel_release(dt_iop_module_t *module)
   _masks_flexi_release_full(module, FALSE);
 }
 
+gboolean dt_masks_model_canvas_panel_hidden(const gboolean folded,
+                                            const gboolean user_action,
+                                            const gboolean always_on,
+                                            const gboolean in_view,
+                                            const gboolean side_visible,
+                                            const gboolean keep_shown)
+{
+  if(folded) return TRUE;
+  if(user_action || !always_on || keep_shown) return FALSE;
+  return !in_view || !side_visible;
+}
+
+gboolean dt_masks_model_tab_keeps_panel(const gboolean always_on,
+                                        const gboolean in_view,
+                                        const gboolean shown_before_tab)
+{
+  return always_on && in_view && shown_before_tab;
+}
+
 dt_masks_panel_state_t dt_masks_model_panel_state(const int pos,
                                                   const gboolean is_focused,
                                                   const gboolean has_masking,
                                                   const gboolean is_expanded,
                                                   const gboolean mask_active,
-                                                  const gboolean panel_pref_collapsed)
+                                                  const gboolean panel_pref_collapsed,
+                                                  const gboolean always_on)
 {
   dt_masks_panel_state_t s;
   s.want_hosted = (pos == MASKS_PANEL_POS_CANVAS
                    || pos == MASKS_PANEL_POS_UTILITY) && is_focused && has_masking;
 
-  if(pos == MASKS_PANEL_POS_CANVAS)
+  if(pos == MASKS_PANEL_POS_CANVAS && always_on)
+  {
+    // on screen whatever is focused, collapsed or without a mask: only the
+    // user folds it. What it shows is the focused module's, when there is one
+    s.panel_collapsed = panel_pref_collapsed;
+    s.corner_icon_visible = panel_pref_collapsed;
+    s.corner_icon_active = s.want_hosted && mask_active;
+  }
+  else if(pos == MASKS_PANEL_POS_CANVAS)
   {
     if(!is_focused || !has_masking)
     {
@@ -766,6 +804,21 @@ void dt_masks_gui_utility_header_unhosted(dt_lib_module_t *host)
 // another one is taking focus, in which case the panel is passed straight on
 // to whatever dev->gui_module now names. FALSE on teardown, where there is no
 // successor to hand it to (see dt_iop_gui_blend_masks_panel_release).
+// no module's mask is in the panel (nothing is focused, or the focused module
+// has no masking): an always-on panel stays, and says so, any other hides with
+// its edge strips
+static void _masks_panel_show_nothing(void)
+{
+  if(dt_masks_gui_panel_always_on())
+  {
+    dt_iop_gui_blend_masks_panel_idle_sync();
+    return;
+  }
+  dt_ui_flexi_panel_set_idle(darktable.gui->ui, NULL);
+  dt_ui_flexi_panel_set_icon(darktable.gui->ui, FALSE, NULL);
+  dt_ui_flexi_panel_set_collapsed(darktable.gui->ui, TRUE, FALSE, FALSE);
+}
+
 static void _masks_flexi_release_full(dt_iop_module_t *module, const gboolean handoff)
 {
   if(!module || !module->blend_data) return;
@@ -834,9 +887,12 @@ static void _masks_flexi_release_full(dt_iop_module_t *module, const gboolean ha
           next->blend_params && next->blend_params->mask_mode != DEVELOP_MASK_DISABLED;
         // the fold relocate is about to give `next`, so the panel does not
         // open for it in between
+        const gboolean always_on = dt_masks_gui_panel_always_on();
         const dt_masks_panel_state_t state =
           dt_masks_model_panel_state(pos, TRUE, TRUE, next->expanded, next_mask_active,
-                                     _masks_panel_collapsed_pref() || !next_mask_active);
+                                     _masks_panel_collapsed_pref()
+                                       || (!always_on && !next_mask_active),
+                                     always_on);
         dt_ui_flexi_panel_set_icon(darktable.gui->ui, state.corner_icon_active,
                                    _mask_mode_label(next->blend_params ? next->blend_params->mask_mode : 0));
         dt_ui_flexi_panel_set_collapsed(darktable.gui->ui,
@@ -850,12 +906,7 @@ static void _masks_flexi_release_full(dt_iop_module_t *module, const gboolean ha
       }
     }
     else
-    {
-      // nothing is focused, or the focused module has no masking: hide the
-      // panel and its edge strips
-      dt_ui_flexi_panel_set_icon(darktable.gui->ui, FALSE, NULL);
-      dt_ui_flexi_panel_set_collapsed(darktable.gui->ui, TRUE, FALSE, FALSE);
-    }
+      _masks_panel_show_nothing();
   }
 }
 
@@ -932,7 +983,8 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
 
   const dt_masks_panel_state_t state =
     dt_masks_model_panel_state(pos, is_focused, has_masking, module->expanded,
-                               mask_active, _masks_panel_collapsed_for(module));
+                               mask_active, _masks_panel_collapsed_for(module),
+                               dt_masks_gui_panel_always_on());
 
   GtkWidget *target = NULL;
   if(state.want_hosted && pos == MASKS_PANEL_POS_UTILITY)
@@ -992,6 +1044,7 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
   if(pos == MASKS_PANEL_POS_CANVAS)
   {
     dt_ui_flexi_panel_set_active(darktable.gui->ui, mask_active);
+    dt_ui_flexi_panel_set_idle(darktable.gui->ui, NULL);
     GtkWidget *hdr_target = dt_ui_flexi_panel_header(darktable.gui->ui);
     GtkWidget *cnt_target = dt_ui_flexi_panel_content(darktable.gui->ui);
     if(hdr_target && bd->masks_blend_header)
@@ -1112,9 +1165,33 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
   dt_iop_gui_blend_masks_panel_sync_toolbox();
 }
 
+// the always-on panel with no module to show: nothing is focused, or the focused
+// module has no masking. It stays on screen, as folded as the user left it,
+// and says why it is empty
+void dt_iop_gui_blend_masks_panel_idle_sync(void)
+{
+  if(!darktable.develop || darktable.develop->proxy.masks_flexi_host.hosted_module
+     || !dt_masks_gui_panel_always_on())
+    return;
+
+  struct dt_ui_t *ui = darktable.gui->ui;
+  dt_ui_flexi_panel_set_active(ui, FALSE);
+  dt_ui_flexi_panel_set_icon(ui, FALSE, NULL);
+  dt_ui_flexi_panel_set_idle(ui, dt_dev_gui_module()
+                                   ? _("the focused module does not support masks")
+                                   : _("no module is focused:\n"
+                                       "click a module's header to focus it"));
+  dt_ui_flexi_panel_set_collapsed(ui, _masks_panel_collapsed_pref(), TRUE, FALSE);
+}
+
 // ---- position preference ---------------------------------------------------
 
 gboolean dt_masks_gui_pref_handle_applies(const int position)
+{
+  return position == MASKS_PANEL_POS_CANVAS;
+}
+
+gboolean dt_masks_gui_pref_always_on_applies(const int position)
 {
   return position == MASKS_PANEL_POS_CANVAS;
 }
@@ -1124,6 +1201,18 @@ gboolean dt_masks_gui_pref_focus_row_applies(const int position)
   return position != MASKS_PANEL_POS_EMBEDDED;
 }
 
+// the popover's checks that depend on the position: each is kept on the box
+// under its key, and shown while its predicate holds
+static const struct
+{
+  const char *key;
+  gboolean (*applies)(int position);
+} _position_checks[] = {
+  { "dt-focus-row-check", dt_masks_gui_pref_focus_row_applies },
+  { "dt-always-on-check", dt_masks_gui_pref_always_on_applies },
+  { "dt-handle-check", dt_masks_gui_pref_handle_applies },
+};
+
 static void _masks_panel_position_activate(GtkWidget *combo, dt_iop_module_t *module)
 {
   DT_GUARD_GUI_UPDATE();
@@ -1131,18 +1220,21 @@ static void _masks_panel_position_activate(GtkWidget *combo, dt_iop_module_t *mo
   const int pos = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(combo));
   dt_conf_set_int("plugins/darkroom/blend/masks_panel_position", pos);
 
-  // the focus row's option is for the hosted positions: the popover stays
-  // open while the position changes
-  GtkWidget *row_check =
-    g_object_get_data(G_OBJECT(gtk_widget_get_parent(combo)), "dt-focus-row-check");
-  if(row_check) gtk_widget_set_visible(row_check, dt_masks_gui_pref_focus_row_applies(pos));
-  // and the resize handle belongs to the canvas panel alone
-  GtkWidget *handle_check =
-    g_object_get_data(G_OBJECT(gtk_widget_get_parent(combo)), "dt-handle-check");
-  if(handle_check) gtk_widget_set_visible(handle_check, dt_masks_gui_pref_handle_applies(pos));
+  // the options that depend on the position follow it: the popover stays open
+  // while it changes
+  for(size_t i = 0; i < G_N_ELEMENTS(_position_checks); i++)
+  {
+    GtkWidget *check =
+      g_object_get_data(G_OBJECT(gtk_widget_get_parent(combo)), _position_checks[i].key);
+    if(check) gtk_widget_set_visible(check, _position_checks[i].applies(pos));
+  }
 
   // update the utility-mode host lib's own visibility for the new position
   _masks_flexi_host_reconfigure();
+
+  // always on is the canvas position's alone: the panel is a column there, and
+  // an overlay when it comes back from another position
+  dt_ui_flexi_panel_update_layout(darktable.gui->ui);
 
   // leaving the canvas position: hide the canvas panel, not just empty it.
   // dt_iop_gui_blend_masks_panel_relocate()'s release keeps its visibility
@@ -1189,8 +1281,11 @@ static void _masks_panel_position_activate(GtkWidget *combo, dt_iop_module_t *mo
     // the relocate above folded a module without a mask again, and the two
     // forced unfolds that follow it do not store anything to clear that
     _no_mask_fold = NULL;
-    dt_iop_gui_blend_masks_panel_sync_toolbox();
   }
+  // with no module's mask to host (nothing is focused), an always-on panel
+  // still shows, and says why it is empty, as _masks_always_on_toggled does
+  if(!darktable.develop->proxy.masks_flexi_host.hosted_module) _masks_panel_show_nothing();
+  dt_iop_gui_blend_masks_panel_sync_toolbox();
 }
 
 static void _masks_focus_row_toggled(GtkToggleButton *mi, dt_iop_module_t *module)
@@ -1201,12 +1296,44 @@ static void _masks_focus_row_toggled(GtkToggleButton *mi, dt_iop_module_t *modul
   if(module) dt_iop_gui_blend_masks_panel_relocate(module);
 }
 
+static void _masks_always_on_toggled(GtkToggleButton *mi, dt_iop_module_t *module)
+{
+  dt_conf_set_bool("plugins/darkroom/masks/always_on_panel", gtk_toggle_button_get_active(mi));
+  // the panel changes from an overlay to a column or back, and what it shows
+  // follows the fold alone (or the focused module's mask) from here
+  dt_ui_flexi_panel_update_layout(darktable.gui->ui);
+  if(module) dt_iop_gui_blend_masks_panel_relocate(module);
+  // with no module's mask in the panel, it was up for nothing in particular, or
+  // it has just become so
+  if(!darktable.develop->proxy.masks_flexi_host.hosted_module) _masks_panel_show_nothing();
+  dt_iop_gui_blend_masks_panel_sync_toolbox();
+}
+
 static void _masks_show_panel_handle_toggled(GtkToggleButton *mi, dt_iop_module_t *module)
 {
   dt_conf_set_bool("plugins/darkroom/masks/show_panel_handle",
                    gtk_toggle_button_get_active(mi));
   // the handle is built once, at view init, so it has to be told
   dt_ui_flexi_panel_update_handle(darktable.gui->ui);
+}
+
+// a check in `box` for a boolean preference, shown or not as the position says.
+// Its handler is connected by the caller, after the state is set
+static GtkWidget *_masks_position_check(GtkWidget *box,
+                                        const char *key,
+                                        const char *label,
+                                        const char *tip,
+                                        const char *conf,
+                                        const gboolean visible)
+{
+  GtkWidget *check = gtk_check_button_new_with_label(label);
+  gtk_widget_set_tooltip_text(check, tip);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check), dt_conf_get_bool(conf));
+  gtk_widget_set_no_show_all(check, TRUE);
+  gtk_widget_set_visible(check, visible);
+  dt_gui_box_add(box, check);
+  g_object_set_data(G_OBJECT(box), key, check);
+  return check;
 }
 
 // appends the panel position combo box to `box`, with the options that only
@@ -1240,38 +1367,38 @@ void dt_masks_gui_add_panel_position_box(GtkWidget *box, dt_iop_module_t *module
   dt_bauhaus_combobox_set_from_value(combo, cur_pos);
   DT_LEAVE_GUI_UPDATE();
 
-  // the canvas panel's handle. Like the next one, it comes and goes with that choice
-  // (_masks_panel_position_activate), and is no_show_all so the popover's
+  // the options that depend on the position. They come and go with it
+  // (_masks_panel_position_activate), and are no_show_all so the popover's
   // show_all leaves that to the position
-  GtkWidget *handle_check = gtk_check_button_new_with_label(_("show the resize handle"));
-  gtk_widget_set_tooltip_text(handle_check,
-                              _("when enabled (default), the edge of the mask panel floating\n"
-                                "over the canvas carries a visible handle with an arrow showing\n"
-                                "which way the panel folds away.\n"
-                                "when disabled, the handle is invisible, like the main panels',\n"
-                                "and still resizes the panel by dragging and hides it on a click."));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(handle_check),
-                               dt_conf_get_bool("plugins/darkroom/masks/show_panel_handle"));
+  GtkWidget *always_on_check = _masks_position_check(
+    box, "dt-always-on-check", _("always-on panel"),
+    _("when enabled, the mask panel stays open for every module,\n"
+      "with a mask or without, until you fold it away yourself,\n"
+      "and takes its room from the canvas instead of floating over it.\n"
+      "hiding the left or right panel it is docked next to hides it too"),
+    "plugins/darkroom/masks/always_on_panel", dt_masks_gui_pref_always_on_applies(cur_pos));
+  g_signal_connect(G_OBJECT(always_on_check), "toggled",
+                   G_CALLBACK(_masks_always_on_toggled), module);
+
+  GtkWidget *handle_check = _masks_position_check(
+    box, "dt-handle-check", _("show the resize handle"),
+    _("when enabled (default), the edge of the mask panel floating\n"
+      "over the canvas carries a visible handle with an arrow showing\n"
+      "which way the panel folds away.\n"
+      "when disabled, the handle is invisible, like the main panels',\n"
+      "and still resizes the panel by dragging and hides it on a click."),
+    "plugins/darkroom/masks/show_panel_handle", dt_masks_gui_pref_handle_applies(cur_pos));
   g_signal_connect(G_OBJECT(handle_check), "toggled",
                    G_CALLBACK(_masks_show_panel_handle_toggled), module);
-  gtk_widget_set_no_show_all(handle_check, TRUE);
-  gtk_widget_set_visible(handle_check, dt_masks_gui_pref_handle_applies(cur_pos));
-  dt_gui_box_add(box, handle_check);
-  g_object_set_data(G_OBJECT(box), "dt-handle-check", handle_check);
 
   // for the positions that have a row to show
-  GtkWidget *row_check = gtk_check_button_new_with_label(_("show focused module under header"));
-  gtk_widget_set_tooltip_text(row_check,
-                              _("when enabled (default), a row under the panel's header\n"
-                                "names the module whose mask the panel shows, and its\n"
-                                "instance name, if it has one"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(row_check),
-                               dt_conf_get_bool("plugins/darkroom/masks/show_focus_row"));
+  GtkWidget *row_check = _masks_position_check(
+    box, "dt-focus-row-check", _("show focused module under header"),
+    _("when enabled (default), a row under the panel's header\n"
+      "names the module whose mask the panel shows, and its\n"
+      "instance name, if it has one"),
+    "plugins/darkroom/masks/show_focus_row", dt_masks_gui_pref_focus_row_applies(cur_pos));
   g_signal_connect(G_OBJECT(row_check), "toggled", G_CALLBACK(_masks_focus_row_toggled), module);
-  gtk_widget_set_no_show_all(row_check, TRUE);
-  gtk_widget_set_visible(row_check, dt_masks_gui_pref_focus_row_applies(cur_pos));
-  dt_gui_box_add(box, row_check);
-  g_object_set_data(G_OBJECT(box), "dt-focus-row-check", row_check);
 
   g_signal_connect(G_OBJECT(combo), "value-changed",
                    G_CALLBACK(_masks_panel_position_activate), module);

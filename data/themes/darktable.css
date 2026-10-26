@@ -4407,6 +4407,14 @@ popover.dt_masks_precise_anchor
   padding-left: calc(1.2em - 6px);
 }
 
+/* what the always-on panel says with no module to show: dimmed, as an
+   explanation and not a control */
+#masks-docked-panel .dt_masks_idle
+{
+  padding: 0.8em 1.2em;
+  opacity: 0.7;
+}
+
 /* the icon centered under the lib header's arrow. No padding above: the
    header's own 0.5em bottom padding is the gap, and the row mirrors it below */
 #masks-host-content #masks-focus-row

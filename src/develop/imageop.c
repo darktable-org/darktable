@@ -2992,6 +2992,9 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
   // update guides button state
   dt_guides_update_button_state();
+  // the always-on mask panel, if no module's mask is in it, says why: no relocate
+  // comes for a module without a blending GUI, or for focus leaving one
+  dt_iop_gui_blend_masks_panel_idle_sync();
   dt_iop_gui_blend_masks_panel_sync_toolbox();
 
   dt_control_change_cursor("default");

@@ -404,7 +404,25 @@ dt_masks_panel_state_t dt_masks_model_panel_state(const int pos,
                                                   const gboolean has_masking,
                                                   const gboolean is_expanded,
                                                   const gboolean mask_active,
-                                                  const gboolean panel_pref_collapsed);
+                                                  const gboolean panel_pref_collapsed,
+                                                  const gboolean always_on);
+
+/** whether the canvas panel is taken off the screen. The user's fold always
+    does it. An always-on panel is also part of the side panel it is docked
+    next to, and of the darkroom: it goes with them unless the user opened it
+    themselves (user_action) or a collapse-all is being undone (keep_shown) */
+gboolean dt_masks_model_canvas_panel_hidden(gboolean folded,
+                                            gboolean user_action,
+                                            gboolean always_on,
+                                            gboolean in_view,
+                                            gboolean side_visible,
+                                            gboolean keep_shown);
+/** undoing a collapse-all gives back an always-on panel that was on screen
+    before it, whatever its side panel's state: the key press takes everything
+    away and the next one restores what was there */
+gboolean dt_masks_model_tab_keeps_panel(gboolean always_on,
+                                        gboolean in_view,
+                                        gboolean shown_before_tab);
 
 gboolean dt_masks_model_pin_should_expand_iop(const gboolean is_expanded,
                                               const gboolean is_collapsed);
@@ -618,6 +636,9 @@ void dt_masks_gui_flexi_release(dt_iop_module_t *module);
 void dt_masks_gui_flexi_inline_collapse_clicked(GtkWidget *w, gpointer user_data);
 // the position preference (MASKS_PANEL_POS_*)
 int dt_masks_gui_panel_position(void);
+// the canvas panel is always-on: always on screen unless the user folds it, in a
+// column of its own beside the canvas. Only the canvas position has the choice
+gboolean dt_masks_gui_panel_always_on(void);
 // the lib hosting the panel in the utility position: it is shown or hidden by
 // the position preference alone, so the modules list must not offer it
 gboolean dt_masks_gui_is_host_lib(const struct dt_lib_module_t *module);
@@ -625,8 +646,10 @@ gboolean dt_masks_gui_is_host_lib(const struct dt_lib_module_t *module);
 // records that -- not part of the position choice (see MASKS_PANEL_POS_CANVAS)
 gboolean dt_masks_gui_panel_side_right(void);
 /** which of the panel options popover's dependent checks apply: the canvas
-    panel's resize handle under the position choice, the focus row under it
+    panel's always-on choice and resize handle under the position choice, the
+    focus row under it
     (a hosted position's). The popover builds and updates them from these alone */
+gboolean dt_masks_gui_pref_always_on_applies(int position);
 gboolean dt_masks_gui_pref_handle_applies(int position);
 gboolean dt_masks_gui_pref_focus_row_applies(int position);
 /** append the panel position choice, and the options that depend on it, to the
