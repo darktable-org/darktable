@@ -31,6 +31,22 @@ void dt_filter_range_count_free(gpointer data)
   g_free(data);
 }
 
+void dt_filter_name_count_free(gpointer data)
+{
+  dt_filter_name_count_t *d = data;
+
+  g_free(d->name);
+  g_free(d);
+}
+
+void dt_filter_ext_flag_count_free(gpointer data)
+{
+  dt_filter_ext_flag_count_t *d = data;
+
+  g_free(d->name);
+  g_free(d);
+}
+
 dt_filter_range_t* dt_filter_get_range(const gchar *colname,
                                        const gchar *where_ext)
 {
@@ -91,6 +107,78 @@ GList *dt_filter_get_range_counts(const gchar* colname,
   
   GList *counts = _get_counts_for_query(query);
   g_free(query);
+
+  return counts;
+}
+
+// how do we separate filename and extension directly in sqlite :
+// starting example : 'nice.bird.cr2'
+// replace(filename, '.', '') => nicebirdcr2 (remove all the point)
+// rtrim(filename, replace(filename, '.', '')) => nice.bird. (remove ending chars presents in 'nice.bird.cr2' and
+// 'nicebirdcr2') rtrim(rtrim(filename, replace(filename, '.', '')), '.') => nice.bird (remove ending '.')
+// replace(filename, rtrim(filename, replace(filename, '.', '')), '.') => .cr2 (replace the filename part by a
+// '.')
+
+GList *dt_filter_get_filename_counts(const gchar *where_ext)
+{
+  GList *counts = NULL;
+
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT rtrim(rtrim(filename, replace(filename, '.', '')), '.') AS fn, COUNT(*) AS count"
+                                 " FROM main.images AS mi"
+                                 " WHERE %s"
+                                 " GROUP BY fn"
+                                 " ORDER BY filename",
+                                 where_ext);
+  // clang-format on
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  g_free(query);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *name = (const char *)sqlite3_column_text(stmt, 0);
+    if(name == NULL) continue; // safeguard against degenerated db entries
+    const int count = sqlite3_column_int(stmt, 1);
+    dt_filter_name_count_t *entry = g_malloc0(sizeof(dt_filter_name_count_t));
+    entry->name = g_strdup(name);
+    entry->count = count;
+    counts = g_list_prepend(counts, entry);
+  }
+  sqlite3_finalize(stmt);
+
+  return counts;
+}
+
+GList *dt_filter_get_extension_counts(const gchar *where_ext)
+{
+  GList *counts = NULL;
+
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT upper(replace(filename, rtrim(filename, replace(filename, '.', '')), '.')) AS ext, COUNT(*) AS count, flags"
+                                 " FROM main.images AS mi"
+                                 " WHERE %s"
+                                 " GROUP BY ext"
+                                 " ORDER BY ext",
+                                 where_ext);
+  // clang-format on
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  g_free(query);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *name = (const char *)sqlite3_column_text(stmt, 0);
+    if(name == NULL) continue; // safeguard against degenerated db entries
+    const int count = sqlite3_column_int(stmt, 1);
+    const int flags = sqlite3_column_int(stmt, 2);
+    dt_filter_ext_flag_count_t *entry = g_malloc0(sizeof(dt_filter_name_count_t));
+    entry->name = g_strdup(name);
+    entry->count = count;
+    entry->flags = flags;
+    counts = g_list_prepend(counts, entry);
+  }
+  sqlite3_finalize(stmt);
 
   return counts;
 }

@@ -38,12 +38,35 @@ typedef struct dt_filter_range_count_t
 
 void dt_filter_range_count_free(gpointer data);
 
+typedef struct dt_filter_name_count_t
+{
+  gchar *name;
+  int count;
+} dt_filter_name_count_t;
+
+void dt_filter_name_count_free(gpointer data);
+
+typedef struct dt_filter_ext_flag_count_t
+{
+  gchar *name;
+  int count;
+  int flags;
+} dt_filter_ext_flag_count_t;
+
+void dt_filter_ext_flag_count_free(gpointer data);
+
 
 /** get the range; free with dt_filter_range_free() */
 dt_filter_range_t* dt_filter_get_range(const gchar *colname, const gchar *where_ext);
 
 /** get the count of images per group */
 GList *dt_filter_get_range_counts(const gchar* colname, const gchar *where_ext);
+
+/** get the count of images per filename */
+GList *dt_filter_get_filename_counts(const gchar *where_ext);
+
+/** get the count of images per extension */
+GList *dt_filter_get_extension_counts(const gchar *where_ext);
 
 /** get the duplicate counts */
 GList *dt_filter_get_duplicate_counts(const gchar *where_ext);
