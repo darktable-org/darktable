@@ -374,18 +374,30 @@ static float lr2dt_blacks(const float value)
   return get_interpolate(lr2dt_blacks_table, value);
 }
 
+// the vignette mappings below were fitted to Lightroom's renders, with
+// darktable's vignette applied to the same image. Lightroom's amount darkens
+// by a fraction of gamma-encoded values, darktable's brightness of linear ones
 static float lr2dt_vignette_gain(const float value)
 {
-  lr2dt_t lr2dt_vignette_table[] = { { -100, -1 }, { -50, -0.7 }, { 0, 0 }, { 50, 0.5 }, { 100, 1 } };
-
-  return get_interpolate(lr2dt_vignette_table, value);
+  // beyond Lightroom's range the power would be of a negative number
+  const float amount = CLAMP(value, -100.0f, 100.0f);
+  return amount < 0.0f ? powf(1.0f + amount / 100.0f, 2.5f) - 1.0f : 0.74f * amount / 100.0f;
 }
 
-static float lr2dt_vignette_midpoint(const float value)
+// the width of the falloff, and where its middle lies at midpoint 50, both
+// in percent of the long side's half
+static float lr2dt_vignette_falloff(const float feather)
 {
-  lr2dt_t lr2dt_vignette_table[] = { { 0, 74 }, { 4, 75 }, { 25, 85 }, { 50, 100 }, { 100, 100 } };
+  lr2dt_t lr2dt_vignette_table[] = { { 0, 5 }, { 50, 75.5 }, { 100, 82 } };
 
-  return get_interpolate(lr2dt_vignette_table, value);
+  return get_interpolate(lr2dt_vignette_table, feather);
+}
+
+static float lr2dt_vignette_center(const float feather)
+{
+  lr2dt_t lr2dt_vignette_table[] = { { 0, 99.5 }, { 50, 92.2 }, { 100, 106.9 } };
+
+  return get_interpolate(lr2dt_vignette_table, feather);
 }
 
 static float lr2dt_grain_amount(const float value)
@@ -618,6 +630,7 @@ typedef struct lr_data_t
 
   float fratio;                // factor ratio image
   float crop_roundness;        // from lightroom
+  float vignette_midpoint, vignette_feather;
   int iwidth, iheight;         // image width / height
   dt_exif_image_orientation_t orientation;
 } lr_data_t;
@@ -892,7 +905,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
     else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteMidpoint"))
     {
       const int v = atoi((char *)value);
-      data->pv.scale = lr2dt_vignette_midpoint((float)v);
+      data->vignette_midpoint = CLAMP(v, 0, 100);
     }
     else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteStyle"))
     {
@@ -905,7 +918,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
     else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteFeather"))
     {
       const int v = atoi((char *)value);
-      if(v != 0) data->pv.falloff_scale = (float)v;
+      data->vignette_feather = CLAMP(v, 0, 100);
     }
     else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteRoundness"))
     {
@@ -1725,6 +1738,8 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   data.has_colorlabel = FALSE;
   data.fratio = NAN;                // factor ratio image
   data.crop_roundness = NAN;        // from lightroom
+  data.vignette_midpoint = 50.0f;   // Lightroom's defaults
+  data.vignette_feather = 50.0f;
   data.iwidth = 0;
   data.iheight = 0;                 // image width / height
   data.orientation = EXIF_ORIENTATION_NONE;
@@ -1910,6 +1925,10 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     data.pv.center.x = 0.0;
     data.pv.center.y = 0.0;
     data.pv.shape = 1.0;
+    data.pv.falloff_scale = lr2dt_vignette_falloff(data.vignette_feather);
+    // each step of the midpoint moves the falloff out by 0.576%
+    data.pv.scale = lr2dt_vignette_center(data.vignette_feather)
+                    + 0.576f * (data.vignette_midpoint - 50.0f) - data.pv.falloff_scale / 2.0f;
 
     // defensive code, should not happen, but just in case future Lr version
     // has not ImageWidth/ImageLength XML tag.
