@@ -82,6 +82,9 @@ GList *dt_filter_get_history_counts(const gchar *where_ext);
 /** get the duplicate counts */
 GList *dt_filter_get_duplicate_counts(const gchar *where_ext);
 
+/** get the local copy counts */
+GList *dt_filter_get_local_copy_counts(const gchar *where_ext);
+
 /** get the mask of used months */
 int dt_filter_get_used_months_mask(const gchar *colname, const gchar *where_ext);
 

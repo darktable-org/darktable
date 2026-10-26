@@ -95,32 +95,19 @@ static gboolean _local_copy_update(dt_lib_filtering_rule_t *rule)
 
   rule->manual_widget_set++;
   _widgets_local_copy_t *local_copy = (_widgets_local_copy_t *)rule->w_specific;
-  char query[1024] = { 0 };
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-                   "SELECT CASE "
-                   "         WHEN (flags & %d) THEN 0"
-                   "         ELSE 1"
-                   "       END as lcp, COUNT(*) AS count"
-                   " FROM main.images AS mi "
-                   " WHERE %s"
-                   " GROUP BY lcp ORDER BY lcp ASC",
-                   DT_IMAGE_LOCAL_COPY, rule->lib->last_where_ext);
-  // clang-format on
-  int counts[2] = { 0 };
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  int local_copy_counts[2] = { 0 };
+
+  GList *counts = dt_filter_get_local_copy_counts(rule->lib->last_where_ext);
+  for(GList *iter = counts; iter; iter = g_list_next(iter))
   {
-    const int i = sqlite3_column_int(stmt, 0);
-    const int count = sqlite3_column_int(stmt, 1);
-    counts[i] = count;
+    dt_filter_int_count_t *count = iter->data;
+    local_copy_counts[count->val] = count->count;
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(counts, dt_filter_int_count_free);
 
   for(int i = 0; i < 2; i++)
   {
-    gchar *item = g_strdup_printf("%s (%d)", _(_local_copy_names[i + 1]), counts[i]);
+    gchar *item = g_strdup_printf("%s (%d)", _(_local_copy_names[i + 1]), local_copy_counts[i]);
     dt_bauhaus_combobox_set_entry_label(local_copy->combo, i + 1, item);
     g_free(item);
   }

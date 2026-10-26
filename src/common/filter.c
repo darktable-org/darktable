@@ -18,6 +18,7 @@
 
 #include "common/filter.h"
 #include "common/utility.h"
+#include "common/image.h"
 #include "common/debug.h"
 #include <glib-2.0/glib.h>
 
@@ -261,6 +262,25 @@ GList *dt_filter_get_duplicate_counts(const gchar *where_ext)
                                  " GROUP BY orig"
                                  " ORDER BY orig ASC",
                                  where_ext);
+  // clang-format on
+  
+  GList *counts = _get_int_counts_for_query(query);
+  g_free(query);
+
+  return counts;
+}
+
+GList *dt_filter_get_local_copy_counts(const gchar *where_ext)
+{
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT CASE"
+                                 "         WHEN (flags & %d) THEN 0"
+                                 "         ELSE 1"
+                                 "       END as lcp, COUNT(*) AS count"
+                                 " FROM main.images AS mi "
+                                 " WHERE %s"
+                                 " GROUP BY lcp ORDER BY lcp ASC",
+                                 DT_IMAGE_LOCAL_COPY, where_ext);
   // clang-format on
   
   GList *counts = _get_int_counts_for_query(query);
