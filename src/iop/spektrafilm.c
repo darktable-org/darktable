@@ -2212,6 +2212,14 @@ void process(dt_iop_module_t *self,
   /* 1) camera exposure: work RGB -> spectral upsampling -> film raw exposure
         (includes the film-exposure EV) */
   sf_sim_expose(sim, in, plane, npix, 4, 3);
+  /* negative exposure is not light: the pre-film blurs below would spread it
+     as a dark halo over its neighbours, so a single outlier from upstream
+     becomes a black disc the size of the diffusion or halation kernel.
+     Development floors exposure at 0 per pixel anyway (sf_sim_lograw), so
+     pixels no blur reaches are unchanged. Twin of the clamp in
+     spektrafilm_expose. */
+  DT_OMP_FOR()
+  for(size_t k = 0; k < npix * 3; k++) plane[k] = fmaxf(plane[k], 0.0f);
 
   /* 2) pre-film spatial effects on LINEAR exposure, spektrafilm's order:
         highlight boost -> diffusion filter -> halation */
