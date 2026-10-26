@@ -67,7 +67,9 @@ jobs:
         btype:
           - Release
         target:
-          - skiptest
+          - build
+        name_suffix:
+          - _tests
         generator:
           - Ninja
         eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
@@ -76,9 +78,10 @@ jobs:
           - distro: "ubuntu:26.04"
             btype: Debug
             compiler: { compiler: GNU16, CC: gcc-16, CXX: g++-16, packages: gcc-16 g++-16 }
-            target: skiptest
+            target: build
             generator: Ninja
             eco: -DDONT_USE_INTERNAL_LIBRAW=OFF
+            name_suffix: _tests
           # The other entries use the skiptest target, which never configures
           # BUILD_TESTING and so never even compiles the unit tests. This one
           # builds them and runs ctest.
