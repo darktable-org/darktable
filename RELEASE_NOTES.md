@@ -405,6 +405,9 @@ changes (where available).
 
 ## Bug Fixes
 
+- Fixed Lightroom develop import which was not done. Only the tags,
+  color labels, stars where imported.
+
 - Fixed missing Active D-Lighting exposure compensation for Nikon
   images shot in sRGB or Adobe RGB.
 
