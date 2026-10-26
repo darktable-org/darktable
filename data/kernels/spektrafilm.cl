@@ -339,6 +339,16 @@ static float sf_cmax_lookup(__global const float *table, const int nl, const int
 /* per-pixel stage kernels                                                  */
 /* ======================================================================== */
 
+/* spektra_sim desaturate_negative_f: negative channels pulled to zero along
+   the line to the channel average */
+static inline float3 sf_desaturate_negative(const float3 i)
+{
+  const float avg = fmax((i.x + i.y + i.z) / 3.0f, 0.0f);
+  const float mn = fmin(fmin(i.x, i.y), i.z);
+  const float sat = mn < 0.0f ? -avg / (mn - avg) : 1.0f;
+  return (float3)(fma(sat, i.x - avg, avg), fma(sat, i.y - avg, avg), fma(sat, i.z - avg, avg));
+}
+
 /* stage 1: input image -> linear film raw exposure (spektra_sim: sf_sim_expose) */
 __kernel void spektrafilm_expose(__read_only image2d_t in, __global float4 *plane,
                                  const int w, const int h, __constant float *mats,
@@ -348,7 +358,8 @@ __kernel void spektrafilm_expose(__read_only image2d_t in, __global float4 *plan
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   float4 px = readpixel(in, x, y);
-  float3 xyz = sf_mat3(mats + SF_M_IN, (float3)(px.x, px.y, px.z));
+  const float3 rgb = sf_desaturate_negative((float3)(px.x, px.y, px.z));
+  float3 xyz = sf_mat3(mats + SF_M_IN, rgb);
   const float b = xyz.x + xyz.y + xyz.z;
   const float inv = 1.0f / fmax(b, 1e-10f);
   const float xx = xyz.x * inv, yy = xyz.y * inv;

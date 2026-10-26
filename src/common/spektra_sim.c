@@ -3457,14 +3457,32 @@ static void expose_pixel(const double m_in[9],
   for(int c = 0; c < 3; c++) raw[c] *= bb;
 }
 
+/* Pulls a pixel with a negative channel toward its channel average until the
+   lowest channel reaches zero, keeping the average (sigmoid's
+   _desaturate_negative_values). A pixel whose average is not positive becomes
+   zero. Without this, X+Y+Z <= 0 scales the LUT exposure to zero and the film
+   reads it as unexposed, and a positive sum with an out-of-triangle
+   chromaticity lands on whichever tc edge the clamps pick. Mirrored by
+   sf_desaturate_negative in spektrafilm.cl. */
+static inline void desaturate_negative_f(const float in[3],
+                                         float out[3])
+{
+  const float avg = fmaxf((in[0] + in[1] + in[2]) / 3.0f, 0.0f);
+  const float mn = fminf(fminf(in[0], in[1]), in[2]);
+  const float sat = mn < 0.0f ? -avg / (mn - avg) : 1.0f;
+  for(int c = 0; c < 3; c++) out[c] = fmaf(sat, in[c] - avg, avg);
+}
+
 /* Float per-pixel expose using float LUT/input. The linear color matrix
    product is the same as expose_pixel but stored/operated in float. */
 static void expose_pixel_f(const float m_in[9],
                            const float *tc_lut,
                            int tc_n,
-                           const float rgb[3],
+                           const float rgb_in[3],
                            float raw[3])
 {
+  float rgb[3];
+  desaturate_negative_f(rgb_in, rgb);
   float xyz[3];
   /* fma-pinned, matching sf_mat3 in spektrafilm.cl -- see mat3_mulv_f */
   for(int i = 0; i < 3; i++)
