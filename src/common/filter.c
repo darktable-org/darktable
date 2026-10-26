@@ -19,6 +19,7 @@
 #include "common/filter.h"
 #include "common/utility.h"
 #include "common/image.h"
+#include "common/iop_order.h"
 #include "common/debug.h"
 #include <glib-2.0/glib.h>
 
@@ -285,6 +286,37 @@ GList *dt_filter_get_local_copy_counts(const gchar *where_ext)
   
   GList *counts = _get_int_counts_for_query(query);
   g_free(query);
+
+  return counts;
+}
+
+GList *dt_filter_get_module_order_counts(const gchar *where_ext)
+{
+  GList *counts = NULL;
+
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT mo.version, COUNT(*) "
+                                 " FROM main.images as mi"
+                                 " LEFT JOIN (SELECT imgid, version FROM main.module_order) AS mo"
+                                 " ON mo.imgid = mi.id"
+                                 " WHERE %s"
+                                 " GROUP BY mo.version",
+                                 where_ext);
+  // clang-format on
+  
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  g_free(query);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int v = (sqlite3_column_bytes(stmt, 0) == 0) ? DT_IOP_ORDER_LAST : sqlite3_column_int(stmt, 0);
+    const int count = sqlite3_column_int(stmt, 1);
+    dt_filter_int_count_t *entry = g_malloc0(sizeof(dt_filter_int_count_t));
+    entry->val = v;
+    entry->count = count;
+    counts = g_list_prepend(counts, entry);
+  }
+  sqlite3_finalize(stmt);
 
   return counts;
 }
