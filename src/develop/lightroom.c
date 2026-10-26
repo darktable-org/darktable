@@ -42,16 +42,17 @@
 // the legacy circuitry will be called to convert the parameters.
 //
 // to add a new iop:
-// 1. copy the struct
+// 1. copy the struct, with _v<version> added to its name and to the names of
+//    the structs it contains, as legacy_params() does in the modules
 // 2. add LRDT_<iop_name>_VERSION with corresponding module version
 // 3. use this version to pass in dt_add_hist()
 
 #define LRDT_CROP_VERSION 3
-typedef struct dt_iop_crop_params_t
+typedef struct dt_iop_crop_params_v3_t
 {
   float cx, cy, cw, ch;
   int ratio_n, ratio_d;
-} dt_iop_crop_params_t;
+} dt_iop_crop_params_v3_t;
 
 #define LRDT_ASHIFT_VERSION 5
 #define LRDT_ASHIFT_MAX_SAVED_LINES 50
@@ -68,7 +69,7 @@ typedef enum dt_iop_ashift_crop_t
   ASHIFT_CROP_ASPECT = 2
 } dt_iop_ashift_crop_t;
 
-typedef struct dt_iop_ashift_params_t
+typedef struct dt_iop_ashift_params_v5_t
 {
   float rotation, lensshift_v, lensshift_h, shear;
   float f_length, crop_factor, orthocorr, aspect;
@@ -78,13 +79,13 @@ typedef struct dt_iop_ashift_params_t
   float last_drawn_lines[LRDT_ASHIFT_MAX_SAVED_LINES * 4];
   int last_drawn_lines_count;
   float last_quad_lines[8];
-} dt_iop_ashift_params_t;
+} dt_iop_ashift_params_v5_t;
 
 #define LRDT_FLIP_VERSION 2
-typedef struct dt_iop_flip_params_t
+typedef struct dt_iop_flip_params_v2_t
 {
   dt_image_orientation_t orientation;
-} dt_iop_flip_params_t;
+} dt_iop_flip_params_v2_t;
 
 #define LRDT_EXPOSURE_VERSION 7
 typedef enum dt_iop_exposure_mode_t
@@ -93,7 +94,7 @@ typedef enum dt_iop_exposure_mode_t
   EXPOSURE_MODE_DEFLICKER = 1
 } dt_iop_exposure_mode_t;
 
-typedef struct dt_iop_exposure_params_t
+typedef struct dt_iop_exposure_params_v7_t
 {
   dt_iop_exposure_mode_t mode;
   float black;
@@ -102,7 +103,7 @@ typedef struct dt_iop_exposure_params_t
   float deflicker_target_level;
   gboolean compensate_exposure_bias;
   gboolean compensate_hilite_pres;
-} dt_iop_exposure_params_t;
+} dt_iop_exposure_params_v7_t;
 
 #define LRDT_GRAIN_VERSION 1
 typedef enum _dt_iop_grain_channel_t
@@ -113,12 +114,12 @@ typedef enum _dt_iop_grain_channel_t
   DT_GRAIN_CHANNEL_RGB
 } _dt_iop_grain_channel_t;
 
-typedef struct dt_iop_grain_params_t
+typedef struct dt_iop_grain_params_v1_t
 {
   _dt_iop_grain_channel_t channel;
   float scale;
   float strength;
-} dt_iop_grain_params_t;
+} dt_iop_grain_params_v1_t;
 
 typedef enum dt_iop_dither_t
 {
@@ -127,25 +128,25 @@ typedef enum dt_iop_dither_t
   DITHER_16BIT = 2
 } dt_iop_dither_t;
 
-typedef struct dt_iop_fvector_2d_t
+typedef struct dt_iop_vignette_vector_2d_v3_t
 {
   float x;
   float y;
-} dt_iop_vector_2d_t;
+} dt_iop_vignette_vector_2d_v3_t;
 
 #define LRDT_VIGNETTE_VERSION 3
-typedef struct dt_iop_vignette_params_t
+typedef struct dt_iop_vignette_params_v3_t
 {
   float scale;               // 0 - 100 Inner radius, percent of largest image dimension
   float falloff_scale;       // 0 - 100 Radius for falloff -- outer radius = inner radius + falloff_scale
   float brightness;          // -1 - 1 Strength of brightness reduction
   float saturation;          // -1 - 1 Strength of saturation reduction
-  dt_iop_vector_2d_t center; // Center of vignette
+  dt_iop_vignette_vector_2d_v3_t center; // Center of vignette
   gboolean autoratio;        //
   float whratio;             // 0-1 = width/height ratio, 1-2 = height/width ratio + 1
   float shape;
   int dithering; // if and how to perform dithering
-} dt_iop_vignette_params_t;
+} dt_iop_vignette_params_v3_t;
 
 #define LRDT_RETOUCH_VERSION 3
 #define RETOUCH_NO_FORMS 300
@@ -171,7 +172,7 @@ typedef enum dt_iop_retouch_algo_type_t
   DT_IOP_RETOUCH_FILL = 4
 } dt_iop_retouch_algo_type_t;
 
-typedef struct dt_iop_retouch_form_data_t
+typedef struct dt_iop_retouch_form_data_v3_t
 {
   dt_mask_id_t formid;
   int scale;
@@ -182,11 +183,11 @@ typedef struct dt_iop_retouch_form_data_t
   float fill_color[3];
   float fill_brightness;
   int distort_mode;
-} dt_iop_retouch_form_data_t;
+} dt_iop_retouch_form_data_v3_t;
 
-typedef struct dt_iop_retouch_params_t
+typedef struct dt_iop_retouch_params_v3_t
 {
-  dt_iop_retouch_form_data_t rt_forms[RETOUCH_NO_FORMS];
+  dt_iop_retouch_form_data_v3_t rt_forms[RETOUCH_NO_FORMS];
   dt_iop_retouch_algo_type_t algorithm;
   int num_scales;
   int curr_scale;
@@ -198,7 +199,7 @@ typedef struct dt_iop_retouch_params_t
   float fill_color[3];
   float fill_brightness;
   int max_heal_iter;
-} dt_iop_retouch_params_t;
+} dt_iop_retouch_params_v3_t;
 
 #define LRDT_TONECURVE_VERSION 5
 #define DT_IOP_TONECURVE_MAXNODES 20
@@ -210,15 +211,15 @@ typedef enum tonecurve_channel_t
   ch_max = 3
 } tonecurve_channel_t;
 
-typedef struct dt_iop_tonecurve_node_t
+typedef struct dt_iop_tonecurve_node_v5_t
 {
   float x;
   float y;
-} dt_iop_tonecurve_node_t;
+} dt_iop_tonecurve_node_v5_t;
 
-typedef struct dt_iop_tonecurve_params_t
+typedef struct dt_iop_tonecurve_params_v5_t
 {
-  dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES]; // three curves (L, a, b) with max number
+  dt_iop_tonecurve_node_v5_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES]; // three curves (L, a, b) with max number
                                                                    // of nodes
   int tonecurve_nodes[3];
   int tonecurve_type[3];
@@ -226,7 +227,7 @@ typedef struct dt_iop_tonecurve_params_t
   int tonecurve_preset;
   int tonecurve_unbound_ab;
   int preserve_colors;
-} dt_iop_tonecurve_params_t;
+} dt_iop_tonecurve_params_v5_t;
 
 #define LRDT_TONECURVE_AUTOMATIC_RGB 3
 #define LRDT_RGB_NORM_AVERAGE 3
@@ -241,14 +242,14 @@ typedef enum dt_iop_colorzones_channel_t
   DT_IOP_COLORZONES_h = 2
 } dt_iop_colorzones_channel_t;
 
-typedef struct dt_iop_colorzones_params_t
+typedef struct dt_iop_colorzones_params_v2_t
 {
   int32_t channel;
   float equalizer_x[3][DT_IOP_COLORZONES_BANDS], equalizer_y[3][DT_IOP_COLORZONES_BANDS];
-} dt_iop_colorzones_params_t;
+} dt_iop_colorzones_params_v2_t;
 
 #define LRDT_SPLITTONING_VERSION 1
-typedef struct dt_iop_splittoning_params_t
+typedef struct dt_iop_splittoning_params_v1_t
 {
   float shadow_hue;
   float shadow_saturation;
@@ -256,7 +257,7 @@ typedef struct dt_iop_splittoning_params_t
   float highlight_saturation;
   float balance;  // center luminance of gradient
   float compress; // Compress range
-} dt_iop_splittoning_params_t;
+} dt_iop_splittoning_params_v1_t;
 
 #define LRDT_BILAT_VERSION 3
 typedef enum dt_iop_bilat_mode_t
@@ -265,14 +266,14 @@ typedef enum dt_iop_bilat_mode_t
   s_mode_local_laplacian = 1
 } dt_iop_bilat_mode_t;
 
-typedef struct dt_iop_bilat_params_t
+typedef struct dt_iop_bilat_params_v3_t
 {
   dt_iop_bilat_mode_t mode;
   float sigma_r;
   float sigma_s;
   float detail;
   float midtone;
-} dt_iop_bilat_params_t;
+} dt_iop_bilat_params_v3_t;
 
 
 #define LRDT_COLORIN_VERSION 7
@@ -281,7 +282,7 @@ typedef enum dt_iop_color_normalize_t
   DT_NORMALIZE_OFF = 0
 } dt_iop_color_normalize_t;
 
-typedef struct dt_iop_colorin_params_t
+typedef struct dt_iop_colorin_params_v7_t
 {
   dt_colorspaces_color_profile_type_t type;
   char filename[DT_IOP_COLOR_ICC_LEN];
@@ -290,7 +291,7 @@ typedef struct dt_iop_colorin_params_t
   gboolean blue_mapping;
   dt_colorspaces_color_profile_type_t type_work;
   char filename_work[DT_IOP_COLOR_ICC_LEN];
-} dt_iop_colorin_params_t;
+} dt_iop_colorin_params_v7_t;
 
 //
 // end of iop structs
@@ -303,7 +304,7 @@ typedef struct dt_iop_colorin_params_t
 #define LRDT_BLEND_VERSION 4
 #define DEVELOP_BLENDIF_SIZE 16
 
-typedef struct dt_lr_develop_blend_params_t
+typedef struct dt_lr_develop_blend_params_v4_t
 {
   /** blending mode */
   uint32_t mode;
@@ -317,7 +318,7 @@ typedef struct dt_lr_develop_blend_params_t
   float radius;
   /** blendif parameters */
   float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
-} dt_lr_develop_blend_params_t;
+} dt_lr_develop_blend_params_v4_t;
 
 //
 // end of blend_params
@@ -480,7 +481,7 @@ static float _lr_parametric_curve(const float x, const float split[3], const int
 
 // a curve with fewer than two nodes, or with every node on the diagonal,
 // leaves the image unchanged
-static gboolean _tonecurve_is_identity(const dt_iop_tonecurve_params_t *p)
+static gboolean _tonecurve_is_identity(const dt_iop_tonecurve_params_v5_t *p)
 {
   if(p->tonecurve_nodes[ch_L] < 2) return TRUE;
 
@@ -497,7 +498,7 @@ static int32_t _add_hist_with_mask(const dt_imgid_t imgid, const char *operation
                                    const int version, int *import_count, const dt_mask_id_t mask_id)
 {
   int32_t num = 0;
-  const dt_lr_develop_blend_params_t blend_params = { .mask_id = mask_id };
+  const dt_lr_develop_blend_params_v4_t blend_params = { .mask_id = mask_id };
 
   //  get current num if any
   sqlite3_stmt *stmt;
@@ -524,7 +525,7 @@ static int32_t _add_hist_with_mask(const dt_imgid_t imgid, const char *operation
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, operation, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, params, params_size, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, &blend_params, sizeof(dt_lr_develop_blend_params_t), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, &blend_params, sizeof(dt_lr_develop_blend_params_v4_t), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, LRDT_BLEND_VERSION);
 
   sqlite3_step(stmt);
@@ -568,39 +569,39 @@ typedef struct lr_spot_t
 
 typedef struct lr_data_t
 {
-  dt_iop_crop_params_t pcr;
-  dt_iop_ashift_params_t pas;
+  dt_iop_crop_params_v3_t pcr;
+  dt_iop_ashift_params_v5_t pas;
   gboolean has_crop;
 
-  dt_iop_flip_params_t pf;
+  dt_iop_flip_params_v2_t pf;
   gboolean has_flip;
 
-  dt_iop_exposure_params_t pe;
+  dt_iop_exposure_params_v7_t pe;
   gboolean has_exposure;
 
-  dt_iop_vignette_params_t pv;
+  dt_iop_vignette_params_v3_t pv;
   gboolean has_vignette;
 
-  dt_iop_grain_params_t pg;
+  dt_iop_grain_params_v1_t pg;
   gboolean has_grain;
 
   lr_spot_t spots[RETOUCH_NO_FORMS];
   int n_spots;
   gboolean has_retouch_areas;
 
-  dt_iop_tonecurve_params_t ptc;
+  dt_iop_tonecurve_params_v5_t ptc;
   int ptc_value[4];
   float ptc_split[3];
   int curve_pts[MAX_PTS][2];
   int n_pts;
 
-  dt_iop_colorzones_params_t pcz;
+  dt_iop_colorzones_params_v2_t pcz;
   gboolean has_colorzones;
 
-  dt_iop_splittoning_params_t pst;
+  dt_iop_splittoning_params_v1_t pst;
   gboolean has_splittoning;
 
-  dt_iop_bilat_params_t pbl;
+  dt_iop_bilat_params_v3_t pbl;
   gboolean has_bilat;
 
   gboolean has_tags;
@@ -1521,7 +1522,7 @@ static void _add_retouch_hist(const dt_develop_t *dev, const dt_imgid_t imgid, c
   // brush border to the short side of the whole sensor
   const float rscale = MAX(cw, ch) / MIN(img->width, img->height);
 
-  dt_iop_retouch_params_t pr = { .algorithm = DT_IOP_RETOUCH_HEAL,
+  dt_iop_retouch_params_v3_t pr = { .algorithm = DT_IOP_RETOUCH_HEAL,
                                  .preview_levels = { -3.0f, 0.0f, 3.0f },
                                  .blur_radius = 10.0f,
                                  .max_heal_iter = 2000 };
@@ -1572,7 +1573,7 @@ static void _add_retouch_hist(const dt_develop_t *dev, const dt_imgid_t imgid, c
     grpt->group_opacity = 1.0f;
     grp->points = g_list_append(grp->points, grpt);
 
-    pr.rt_forms[k] = (dt_iop_retouch_form_data_t){ .formid = form->formid,
+    pr.rt_forms[k] = (dt_iop_retouch_form_data_v3_t){ .formid = form->formid,
                                                    .algorithm = s->clone ? DT_IOP_RETOUCH_CLONE
                                                                          : DT_IOP_RETOUCH_HEAL,
                                                    .blur_radius = pr.blur_radius,
@@ -1783,12 +1784,12 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   if(dev != NULL && is_lr && dt_image_is_raw(&dev->image_storage))
   {
     // the standard color matrix is Adobe's, and Lightroom works in linear ProPhoto RGB
-    const dt_iop_colorin_params_t pci = { .type = DT_COLORSPACE_STANDARD_MATRIX,
+    const dt_iop_colorin_params_v7_t pci = { .type = DT_COLORSPACE_STANDARD_MATRIX,
                                           .intent = DT_INTENT_PERCEPTUAL,
                                           .normalize = DT_NORMALIZE_OFF,
                                           .type_work = DT_COLORSPACE_PROPHOTO_RGB };
 
-    dt_add_hist(imgid, "colorin", (dt_iop_params_t *)&pci, sizeof(dt_iop_colorin_params_t), imported,
+    dt_add_hist(imgid, "colorin", (dt_iop_params_t *)&pci, sizeof(dt_iop_colorin_params_v7_t), imported,
                 sizeof(imported), LRDT_COLORIN_VERSION, &n_import);
     refresh_needed = TRUE;
   }
@@ -1813,7 +1814,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
       data.pas.cl = data.pas.ct = 0.0f;
       data.pas.cr = data.pas.cb = 1.0f;
 
-      dt_add_hist(imgid, "ashift", (dt_iop_params_t *)&data.pas, sizeof(dt_iop_ashift_params_t), imported,
+      dt_add_hist(imgid, "ashift", (dt_iop_params_t *)&data.pas, sizeof(dt_iop_ashift_params_v5_t), imported,
                   sizeof(imported), LRDT_ASHIFT_VERSION, &n_import);
     }
 
@@ -1855,7 +1856,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
 
     data.fratio = (data.pcr.cw - data.pcr.cx) / (data.pcr.ch - data.pcr.cy);
 
-    dt_add_hist(imgid, "crop", (dt_iop_params_t *)&data.pcr, sizeof(dt_iop_crop_params_t), imported,
+    dt_add_hist(imgid, "crop", (dt_iop_params_t *)&data.pcr, sizeof(dt_iop_crop_params_v3_t), imported,
                 sizeof(imported), LRDT_CROP_VERSION, &n_import);
     refresh_needed = TRUE;
   }
@@ -1864,7 +1865,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   {
     data.pf.orientation = dt_image_orientation_to_flip_bits(data.orientation);
 
-    dt_add_hist(imgid, "flip", (dt_iop_params_t *)&data.pf, sizeof(dt_iop_flip_params_t), imported,
+    dt_add_hist(imgid, "flip", (dt_iop_params_t *)&data.pf, sizeof(dt_iop_flip_params_v2_t), imported,
                 sizeof(imported), LRDT_FLIP_VERSION, &n_import);
     refresh_needed = TRUE;
   }
@@ -1874,7 +1875,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     // Lightroom's adjustments are relative to its default rendering, so add
     // them to the module's defaults for this image, which in the
     // scene-referred workflow hold the baseline boost and bias compensation
-    dt_iop_exposure_params_t pe = { .mode = EXPOSURE_MODE_MANUAL,
+    dt_iop_exposure_params_v7_t pe = { .mode = EXPOSURE_MODE_MANUAL,
                                     .deflicker_percentile = 50.0f,
                                     .deflicker_target_level = -4.0f,
                                     .compensate_hilite_pres = TRUE };
@@ -1886,7 +1887,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     pe.exposure += data.pe.exposure;
     pe.black += data.pe.black;
 
-    dt_add_hist(imgid, "exposure", (dt_iop_params_t *)&pe, sizeof(dt_iop_exposure_params_t), imported,
+    dt_add_hist(imgid, "exposure", (dt_iop_params_t *)&pe, sizeof(dt_iop_exposure_params_v7_t), imported,
                 sizeof(imported), LRDT_EXPOSURE_VERSION, &n_import);
     refresh_needed = TRUE;
   }
@@ -1895,7 +1896,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   {
     data.pg.channel = 0;
 
-    dt_add_hist(imgid, "grain", (dt_iop_params_t *)&data.pg, sizeof(dt_iop_grain_params_t), imported,
+    dt_add_hist(imgid, "grain", (dt_iop_params_t *)&data.pg, sizeof(dt_iop_grain_params_v1_t), imported,
                 sizeof(imported), LRDT_GRAIN_VERSION, &n_import);
     refresh_needed = TRUE;
   }
@@ -1931,7 +1932,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
       data.pv.whratio = newratio;
     }
 
-    dt_add_hist(imgid, "vignette", (dt_iop_params_t *)&data.pv, sizeof(dt_iop_vignette_params_t), imported,
+    dt_add_hist(imgid, "vignette", (dt_iop_params_t *)&data.pv, sizeof(dt_iop_vignette_params_v3_t), imported,
                 sizeof(imported), LRDT_VIGNETTE_VERSION, &n_import);
     refresh_needed = TRUE;
   }
@@ -2006,7 +2007,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     if(!_tonecurve_is_identity(&data.ptc))
     {
       dt_add_hist(imgid, "tonecurve", (dt_iop_params_t *)&data.ptc,
-                  sizeof(dt_iop_tonecurve_params_t), imported, sizeof(imported),
+                  sizeof(dt_iop_tonecurve_params_v5_t), imported, sizeof(imported),
                   LRDT_TONECURVE_VERSION, &n_import);
       refresh_needed = TRUE;
     }
@@ -2020,7 +2021,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
       for(int k = 0; k < 8; k++)
         data.pcz.equalizer_x[i][k] = k / (DT_IOP_COLORZONES_BANDS - 1.0);
 
-    dt_add_hist(imgid, "colorzones", (dt_iop_params_t *)&data.pcz, sizeof(dt_iop_colorzones_params_t), imported,
+    dt_add_hist(imgid, "colorzones", (dt_iop_params_t *)&data.pcz, sizeof(dt_iop_colorzones_params_v2_t), imported,
                 sizeof(imported), LRDT_COLORZONES_VERSION, &n_import);
     refresh_needed = TRUE;
   }
@@ -2030,7 +2031,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     // Lightroom leaves no untoned band between shadows and highlights
     data.pst.compress = 0.0;
 
-    dt_add_hist(imgid, "splittoning", (dt_iop_params_t *)&data.pst, sizeof(dt_iop_splittoning_params_t), imported,
+    dt_add_hist(imgid, "splittoning", (dt_iop_params_t *)&data.pst, sizeof(dt_iop_splittoning_params_v1_t), imported,
                 sizeof(imported), LRDT_SPLITTONING_VERSION, &n_import);
     refresh_needed = TRUE;
   }
@@ -2044,7 +2045,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     data.pbl.sigma_s = 1.0f;
     data.pbl.midtone = 0.5f;
 
-    dt_add_hist(imgid, "bilat", (dt_iop_params_t *)&data.pbl, sizeof(dt_iop_bilat_params_t), imported,
+    dt_add_hist(imgid, "bilat", (dt_iop_params_t *)&data.pbl, sizeof(dt_iop_bilat_params_v3_t), imported,
                 sizeof(imported), LRDT_BILAT_VERSION, &n_import);
     refresh_needed = TRUE;
   }
