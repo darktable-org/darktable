@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/color_picker.h"
 #include "common/hdr-transfer.h"
+#include "common/iop_profile.h"
 #include "gui/accelerators.h"
 #include "scopes.h"
 #include "scopes/vectorscope.h"
@@ -519,6 +520,24 @@ static void _hdr_scale_update_button(const dt_scopes_t *const s)
                                     0, 0, NULL, NULL, (gpointer)s);
 }
 
+// the transfer last handed to the preview pipe
+static int _pipe_hdr_transfer = DT_HDR_NONE;
+
+// the preview pipe is tone mapped for the headroom of the HDR scale shown,
+// so returns TRUE when that changed and the preview has to be reprocessed
+static gboolean _hdr_scale_set_pipe(const dt_scopes_t *const s)
+{
+  const dt_scopes_hdr_scale_t hdr =
+    _hdr_scale_available(s) ? s->hdr_scale : DT_SCOPES_HDR_NONE;
+  const int transfer = hdr == DT_SCOPES_HDR_PQ ? DT_HDR_PQ
+                     : hdr == DT_SCOPES_HDR_HLG ? DT_HDR_HLG_REC2020
+                     : DT_HDR_NONE;
+  if(transfer == _pipe_hdr_transfer) return FALSE;
+  _pipe_hdr_transfer = transfer;
+  dt_ioppr_set_scopes_hdr_transfer(transfer);
+  return TRUE;
+}
+
 static void _hdr_scale_toggle(GtkWidget *button,
                               dt_scopes_t *s)
 {
@@ -531,7 +550,10 @@ static void _hdr_scale_toggle(GtkWidget *button,
                      _hdr_scale_names[s->hdr_scale]);
   _hdr_scale_update_button(s);
   dt_scopes_refresh(s);
-  dt_scopes_reprocess();
+  if(_hdr_scale_set_pipe(s) && dt_view_get_current() == DT_VIEW_DARKROOM)
+    dt_dev_reprocess_preview(darktable.develop, 0);
+  else
+    dt_scopes_reprocess();
 }
 
 static void _mode_toggle(GtkWidget *button, dt_scopes_t *s)
@@ -580,7 +602,9 @@ static void _mode_toggle(GtkWidget *button, dt_scopes_t *s)
   dt_scopes_refresh(s);
   // FIXME: does this comparison of update_counter need to be protected within a
   // mutex?
-  if(s->update_counter != s->cur_mode->update_counter)
+  if(_hdr_scale_set_pipe(s) && dt_view_get_current() == DT_VIEW_DARKROOM)
+    dt_dev_reprocess_preview(darktable.develop, 0);
+  else if(s->update_counter != s->cur_mode->update_counter)
     dt_scopes_reprocess();
 }
 
@@ -1035,6 +1059,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_valign(s->hdr_button, GTK_ALIGN_START);
   g_signal_connect(G_OBJECT(s->hdr_button), "toggled", G_CALLBACK(_hdr_scale_toggle), s);
   _hdr_scale_update_button(s);
+  _hdr_scale_set_pipe(s);
   dt_gui_box_add(s->button_box_right, s->hdr_button);
 
   // RGB channels are always rightmost
@@ -1099,6 +1124,8 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_scopes_t *s = self->data;
 
+  _pipe_hdr_transfer = DT_HDR_NONE;
+  dt_ioppr_set_scopes_hdr_transfer(DT_HDR_NONE);
   for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
     dt_scopes_call(&s->modes[i], gui_cleanup);
   dt_pthread_mutex_destroy(&s->lock);
