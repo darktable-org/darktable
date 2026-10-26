@@ -102,30 +102,29 @@ static void _transform(const dt_dev_pixelpipe_iop_t *const piece, float *p)
   }
 }
 
-static void _precalculate_scale(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+static void _backtransform(const dt_dev_pixelpipe_iop_t *const piece, float *p)
 {
-  // Since the scaling is calculated by modify_roi_in use that to get them
-  // This doesn't seem strictly needed but since clipping.c also does it we try
-  // and avoid breaking any assumptions elsewhere in the code
-  dt_iop_roi_t roi_out, roi_in;
-  roi_out.width = piece->buf_in.width;
-  roi_out.height = piece->buf_in.height;
-  self->modify_roi_in(self, piece, &roi_out, &roi_in);
+  dt_iop_scalepixels_data_t *d = piece->data;
+
+  if(d->pixel_aspect_ratio < 1.0f)
+  {
+    p[1] *= d->pixel_aspect_ratio;
+  }
+  else
+  {
+    p[0] /= d->pixel_aspect_ratio;
+  }
 }
 
+// map like modify_roi_out(): d->x_scale and d->y_scale are relative
+// to the upscaled input requested by modify_roi_in()
 gboolean distort_transform(dt_iop_module_t *self,
                            dt_dev_pixelpipe_iop_t *piece,
                            float *points,
                            size_t points_count)
 {
-  _precalculate_scale(self, piece);
-  dt_iop_scalepixels_data_t *d = piece->data;
-
   for(size_t i = 0; i < points_count * 2; i += 2)
-  {
-    points[i] /= d->x_scale;
-    points[i+1] /= d->y_scale;
-  }
+    _transform(piece, points + i);
 
   return TRUE;
 }
@@ -135,14 +134,8 @@ gboolean distort_backtransform(dt_iop_module_t *self,
                                float *points,
                                size_t points_count)
 {
-  _precalculate_scale(self, piece);
-  dt_iop_scalepixels_data_t *d = piece->data;
-
   for(size_t i = 0; i < points_count * 2; i += 2)
-  {
-    points[i] *= d->x_scale;
-    points[i+1] *= d->y_scale;
-  }
+    _backtransform(piece, points + i);
 
   return TRUE;
 }
@@ -161,7 +154,7 @@ void distort_mask(dt_iop_module_t *self,
 
   // Compute scale factors locally from the actual roi_in/roi_out to ensure
   // consistency, rather than relying on d->x_scale/d->y_scale which may have
-  // been overwritten by _precalculate_scale() with different ROI dimensions.
+  // been overwritten by modify_roi_in() with different ROI dimensions.
   const float x_scale = (roi_in->width * 1.0f) / (roi_out->width * 1.0f);
   const float y_scale = (roi_in->height * 1.0f) / (roi_out->height * 1.0f);
 
@@ -229,7 +222,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   // Compute scale factors locally from the actual roi_in/roi_out to ensure
   // consistency, rather than relying on d->x_scale/d->y_scale which may have
-  // been overwritten by _precalculate_scale() with different ROI dimensions.
+  // been overwritten by modify_roi_in() with different ROI dimensions.
   const float x_scale = (roi_in->width * 1.0f) / (roi_out->width * 1.0f);
   const float y_scale = (roi_in->height * 1.0f) / (roi_out->height * 1.0f);
 

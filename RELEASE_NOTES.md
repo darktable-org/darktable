@@ -692,6 +692,10 @@ changes (where available).
   taller than the panel, such as AgX or spektrafilm: clicking a tab
   scrolled the panel until the tab row was at the top.
 
+- Fixed retouch shapes and drawn masks landing in the wrong place when
+  the scale pixels module was enabled: they were shrunk toward the
+  top-left corner of the image instead of being stretched with it.
+
 ## Lua
 
 ### API Version
