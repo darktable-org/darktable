@@ -696,6 +696,11 @@ changes (where available).
   the scale pixels module was enabled: they were shrunk toward the
   top-left corner of the image instead of being stretched with it.
 
+- Fixed black output from filmic rgb's v1 and v3 color science, when
+  no work profile is used for the luminance, and wrong alpha from its
+  gaussian and poissonian noise, on macOS OpenCL: the kernels read
+  vector lanes they had not set.
+
 ## Lua
 
 ### API Version

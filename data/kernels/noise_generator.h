@@ -77,7 +77,7 @@ static inline float4 gaussian_noise_simd(const float4 mu, const float4 sigma, ui
   // flip needs to be flipped every next iteration
   // reference : https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
 
-  float4 u1, u2;
+  float4 u1 = 0.f, u2 = 0.f;
 
   u1.x = xoshiro128plus(state);
   u1.y = xoshiro128plus(state);
@@ -102,7 +102,7 @@ static inline float4 gaussian_noise_simd(const float4 mu, const float4 sigma, ui
 static inline float4 poisson_noise_simd(const float4 mu, const float4 sigma, uint state[4])
 {
   // create poissonian noise - It's just gaussian noise with Anscombe transform applied
-  float4 u1, u2;
+  float4 u1 = 0.f, u2 = 0.f;
 
   // we need to generate the random numbers in this order to match CPU path.
   u1.x = xoshiro128plus(state);
