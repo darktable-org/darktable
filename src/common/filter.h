@@ -22,30 +22,102 @@
 
 G_BEGIN_DECLS
 
-typedef struct dt_filter_daterange_t
+typedef struct dt_filter_range_t
 {
   double min_r;
   double max_r;
-} dt_filter_daterange_t;
+} dt_filter_range_t;
 
-void dt_filter_daterange_free(gpointer data);
+void dt_filter_range_free(gpointer data);
 
-typedef struct dt_filter_date_count_t
+typedef struct dt_filter_range_count_t
 {
-  int64_t dt;
+  double value_r;
   int count;
-} dt_filter_date_count_t;
+} dt_filter_range_count_t;
 
-void dt_filter_date_count_free(gpointer data);
+void dt_filter_range_count_free(gpointer data);
 
-/** get the date range; free with dt_filter_daterange_free() */
-dt_filter_daterange_t* dt_filter_get_daterange(const gchar *colname, const gchar *where_ext);
+typedef struct dt_filter_int_count_t
+{
+  int val;
+  int count;
+} dt_filter_int_count_t;
 
-/** get the count of images per date */
-GList *dt_filter_get_date_counts(const gchar* colname, const gchar *where_ext);
+void dt_filter_int_count_free(gpointer data);
+
+typedef struct dt_filter_name_count_t
+{
+  gchar *name;
+  int count;
+} dt_filter_name_count_t;
+
+void dt_filter_name_count_free(gpointer data);
+
+typedef struct dt_filter_ext_flag_count_t
+{
+  gchar *name;
+  int count;
+  int flags;
+} dt_filter_ext_flag_count_t;
+
+void dt_filter_ext_flag_count_free(gpointer data);
+
+
+/** get the range; free with dt_filter_range_free() */
+dt_filter_range_t* dt_filter_get_range(const gchar *colname, const gchar *where_ext);
+
+/** get the count of images per group */
+GList *dt_filter_get_range_counts(const gchar* colname, const gchar *where_ext);
+
+/** get the count of images per filename */
+GList *dt_filter_get_filename_counts(const gchar *where_ext);
+
+/** get the count of images per extension */
+GList *dt_filter_get_extension_counts(const gchar *where_ext);
+
+/** get the history type counts */
+GList *dt_filter_get_history_counts(const gchar *where_ext);
+
+/** get the duplicate counts */
+GList *dt_filter_get_duplicate_counts(const gchar *where_ext);
+
+/** get the local copy counts */
+GList *dt_filter_get_local_copy_counts(const gchar *where_ext);
+
+/** get the module order counts */
+GList *dt_filter_get_module_order_counts(const gchar *where_ext);
+
+/** get the rating range counts */
+GList *dt_filter_get_rating_range_counts(const gchar *where_ext);
+
+/** get the camera counts */
+GList *dt_filter_get_camera_counts(const gchar *where_ext);
+
+/** get the lens counts */
+GList *dt_filter_get_lens_counts(const gchar *where_ext);
+
+/** get the image dimension counts */
+GList *dt_filter_get_image_dimension_counts(const gchar *where_ext);
+
+/** get the white balance counts */
+GList *dt_filter_get_white_balance_counts(const gchar *where_ext);
+
+/** get the flash counts */
+GList *dt_filter_get_flash_counts(const gchar *where_ext);
+
+/** get the exposure program counts */
+GList *dt_filter_get_exposure_program_counts(const gchar *where_ext);
+
+/** get the metering mode counts */
+GList *dt_filter_get_metering_mode_counts(const gchar *where_ext);
+
+/** get the group_id counts */
+GList *dt_filter_get_group_id_counts(const gchar *where_ext);
 
 /** get the mask of used months */
 int dt_filter_get_used_months_mask(const gchar *colname, const gchar *where_ext);
+
 
 G_END_DECLS
 
