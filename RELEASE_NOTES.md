@@ -474,9 +474,9 @@ changes (where available).
 
 - Fixed refinements to forwarded raster masks being ignored along
   the OpenCL path.
-  
-- Windows installer: Added an option to enable/disable including 
-  darktable in the explorers context menu. 
+
+- Windows installer: Added an option to enable/disable including
+  darktable in the explorers context menu.
 
 - Compute JzAzBz's Az and Bz without cancellation so that results
   computed by the CPU and OpenCL paths do not diverge.
@@ -698,7 +698,6 @@ changes (where available).
 - Fixed retouch shapes and drawn masks landing in the wrong place when
   the scale pixels module was enabled: they were shrunk toward the
   top-left corner of the image instead of being stretched with it.
-  
 
 - Fixed black output from filmic rgb's v1 and v3 color science, when
   no work profile is used for the luminance, and wrong alpha from its
