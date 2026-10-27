@@ -704,6 +704,10 @@ changes (where available).
   gaussian and poissonian noise, on macOS OpenCL: the kernels read
   vector lanes they had not set.
 
+- Fixed the vignetting module using a linear falloff instead of
+  its smooth one on the CPU when dithering is off, so that CPU and
+  OpenCL now give the same result.
+
 ## Lua
 
 ### API Version
