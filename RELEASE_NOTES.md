@@ -119,6 +119,11 @@ changes (where available).
 
 ## UI/UX Improvements
 
+- Negative mask feathering radii now fade inward from the mask boundary,
+  following image edges using the selected input or output guide, for
+  individual elements, groups, and the whole mask. Feathering does not
+  extend the mask entering this step; mask blur can still extend coverage.
+
 - The code has received a large set of changes in preparation of the
   Gtk4 migration.
   - The code for handling popover menus has been changed.
