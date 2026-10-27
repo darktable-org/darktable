@@ -704,6 +704,10 @@ changes (where available).
   gaussian and poissonian noise, on macOS OpenCL: the kernels read
   vector lanes they had not set.
 
+- Fixed color calibration's saturation sliders having a different
+  effect with OpenCL than on the CPU when the "version 1 (2020)"
+  saturation algorithm is selected.
+
 ## Lua
 
 ### API Version
