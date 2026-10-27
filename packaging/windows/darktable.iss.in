@@ -112,7 +112,12 @@ UsePreviousPrivileges=no
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 ; We don't offer Quick Launch for Windows 11 (initial build number 10.0.22000) where it's not supported
-Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; OnlyBelowVersion: 10.0.22000
+Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; OnlyBelowVersion: 10.0.22000
+
+; Let users opt out of the right-click context menu entries added in [Registry]
+; below. Checked by default, matching the previous unconditional behavior. Kept
+; in its own group so it does not split the "Additional shortcuts:" group above.
+Name: "contextmenu"; Description: "Add darktable to the right-click context menu for folders and images"; GroupDescription: "Context menu integration:"
 
 [Files]
 Source: "bin\*"; DestDir: "{app}\bin"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -127,13 +132,13 @@ Source: "LICENSE";  DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignorevers
 ;
 Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable"; \
   ValueType: string; Flags: uninsdeletekey; \
-  ValueData: "Import folder into darktable"
+  ValueData: "Import folder into darktable"; Tasks: contextmenu
 Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable"; \
   ValueType: string; Flags: uninsdeletekey; \
-  ValueName: "Icon"; ValueData: """{app}\bin\{#MyAppExeName}"",0"
+  ValueName: "Icon"; ValueData: """{app}\bin\{#MyAppExeName}"",0"; Tasks: contextmenu
 Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable\command"; \
   ValueType: string; Flags: uninsdeletekey; \
-  ValueData: """{app}\bin\{#MyAppExeName}"" {code:GetConfigDirParam} ""%1"""
+  ValueData: """{app}\bin\{#MyAppExeName}"" {code:GetConfigDirParam} ""%1"""; Tasks: contextmenu
 
 ;
 ; Add "Import into darktable" menu item to the right-click context menu on images.
@@ -141,16 +146,16 @@ Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable\c
 ;
 Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable"; \
   ValueType: string; Flags: uninsdeletekey; \
-  ValueData: "Import into darktable"
+  ValueData: "Import into darktable"; Tasks: contextmenu
 Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable"; \
   ValueType: string; Flags: uninsdeletekey; \
-  ValueName: "Icon"; ValueData: """{app}\bin\{#MyAppExeName}"",0"
+  ValueName: "Icon"; ValueData: """{app}\bin\{#MyAppExeName}"",0"; Tasks: contextmenu
 Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable"; \
   ValueType: string; Flags: uninsdeletekey; \
-  ValueName: "AppliesTo"; ValueData: "System.Kind:=picture"
+  ValueName: "AppliesTo"; ValueData: "System.Kind:=picture"; Tasks: contextmenu
 Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable\command"; \
   ValueType: string; Flags: uninsdeletekey; \
-  ValueData: """{app}\bin\{#MyAppExeName}"" {code:GetConfigDirParam} ""%1"""
+  ValueData: """{app}\bin\{#MyAppExeName}"" {code:GetConfigDirParam} ""%1"""; Tasks: contextmenu
 
 ;
 ; To open a file from the "Open with" menu, Windows needs to know the exact command to execute.
