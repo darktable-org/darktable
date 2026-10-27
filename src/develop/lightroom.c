@@ -355,14 +355,16 @@ char *dt_get_lightroom_xmp(const dt_imgid_t imgid)
   return NULL;
 }
 
-static float get_interpolate(lr2dt_t lr2dt_table[], const float value)
+static float get_interpolate(const lr2dt_t lr2dt_table[], const size_t n, const float value)
 {
-  int k = 0;
+  // Lightroom's values stay inside the tables; others are held at the ends
+  const float v = CLAMP(value, lr2dt_table[0].lr, lr2dt_table[n - 1].lr);
+  size_t k = 0;
 
-  while(lr2dt_table[k + 1].lr < value) k++;
+  while(k < n - 2 && lr2dt_table[k + 1].lr < v) k++;
 
   return lr2dt_table[k].dt
-         + ((value - lr2dt_table[k].lr) / (lr2dt_table[k + 1].lr - lr2dt_table[k].lr))
+         + ((v - lr2dt_table[k].lr) / (lr2dt_table[k + 1].lr - lr2dt_table[k].lr))
            * (lr2dt_table[k + 1].dt - lr2dt_table[k].dt);
 }
 
@@ -371,7 +373,7 @@ static float lr2dt_blacks(const float value)
   lr2dt_t lr2dt_blacks_table[]
       = { { -100, 0.020 }, { -50, 0.005 }, { 0, 0 }, { 50, -0.005 }, { 100, -0.010 } };
 
-  return get_interpolate(lr2dt_blacks_table, value);
+  return get_interpolate(lr2dt_blacks_table, G_N_ELEMENTS(lr2dt_blacks_table), value);
 }
 
 // the vignette mappings below were fitted to Lightroom's renders, with
@@ -390,28 +392,28 @@ static float lr2dt_vignette_falloff(const float feather)
 {
   lr2dt_t lr2dt_vignette_table[] = { { 0, 5 }, { 50, 75.5 }, { 100, 82 } };
 
-  return get_interpolate(lr2dt_vignette_table, feather);
+  return get_interpolate(lr2dt_vignette_table, G_N_ELEMENTS(lr2dt_vignette_table), feather);
 }
 
 static float lr2dt_vignette_center(const float feather)
 {
   lr2dt_t lr2dt_vignette_table[] = { { 0, 99.5 }, { 50, 92.2 }, { 100, 106.9 } };
 
-  return get_interpolate(lr2dt_vignette_table, feather);
+  return get_interpolate(lr2dt_vignette_table, G_N_ELEMENTS(lr2dt_vignette_table), feather);
 }
 
 static float lr2dt_grain_amount(const float value)
 {
   lr2dt_t lr2dt_grain_table[] = { { 0, 0 }, { 25, 20 }, { 50, 40 }, { 100, 80 } };
 
-  return get_interpolate(lr2dt_grain_table, value);
+  return get_interpolate(lr2dt_grain_table, G_N_ELEMENTS(lr2dt_grain_table), value);
 }
 
 static float lr2dt_grain_frequency(const float value)
 {
   lr2dt_t lr2dt_grain_table[] = { { 0, 100 }, { 50, 100 }, { 75, 400 }, { 100, 800 } };
 
-  return get_interpolate(lr2dt_grain_table, value) / 53.3;
+  return get_interpolate(lr2dt_grain_table, G_N_ELEMENTS(lr2dt_grain_table), value) / 53.3;
 }
 
 // darktable's split toning measures lightness on linear display-referred
@@ -433,7 +435,7 @@ static float lr2dt_clarity(const float value)
 {
   lr2dt_t lr2dt_clarity_table[] = { { -100, -.650 }, { 0, 0 }, { 100, .650 } };
 
-  return get_interpolate(lr2dt_clarity_table, value);
+  return get_interpolate(lr2dt_clarity_table, G_N_ELEMENTS(lr2dt_clarity_table), value);
 }
 
 // Lightroom's parametric tone curve, following RawTherapee's model of it
