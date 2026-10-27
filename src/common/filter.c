@@ -61,7 +61,7 @@ dt_filter_range_t* dt_filter_get_range(const gchar *colname,
 
   // clang-format off
   gchar *query = g_strdup_printf("SELECT MIN(%s), MAX(%s)"
-                                 " FROM main.images"
+                                 " FROM main.images AS mi"
                                  " WHERE %s IS NOT NULL",
                                  colname, colname, colname);
   if(where_ext != NULL)
@@ -476,7 +476,7 @@ int dt_filter_get_used_months_mask(const gchar *colname,
   gchar *query = g_strdup_printf(
       "SELECT CAST(strftime('%%m', %s/1000000"
       "                     + unixepoch('0001-01-01 00:00:00'), 'unixepoch') AS INTEGER) AS month"
-      " FROM main.images"
+      " FROM main.images AS mi"
       " WHERE %s IS NOT NULL AND %s"
       " GROUP BY month",
        colname, colname, where_ext);
