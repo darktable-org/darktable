@@ -701,6 +701,11 @@ changes (where available).
   gaussian and poissonian noise, on macOS OpenCL: the kernels read
   vector lanes they had not set.
 
+- Fixed the macOS app loading GTK input method modules, and with them
+  a second copy of GTK, from Homebrew when Homebrew's GTK is installed,
+  instead of the copies bundled in the app. Without Homebrew, the
+  modules were not found at all.
+
 ## Lua
 
 ### API Version
