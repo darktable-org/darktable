@@ -333,6 +333,20 @@ static void _flexi_preset_list_free(GList *presets)
 static GList *_user_presets = NULL;
 static gboolean _user_presets_read = FALSE;
 
+// the resolved default layout's first node and note key, cached to avoid
+// re-parsing on every signature. _cached_default_head is FALSE when the default
+// names no preset, which leaves a caller's group untouched
+static dt_masks_layout_node_t _cached_default_node;
+static gchar _cached_default_key[64];
+static gboolean _cached_default_head = FALSE;
+static gboolean _cached_default_root_valid = FALSE;
+static gchar *_cached_default_preset = NULL;
+
+static void _default_layout_cache_invalidate(void)
+{
+  _cached_default_root_valid = FALSE;
+}
+
 static GList *_flexi_user_presets(void)
 {
   if(!_user_presets_read)
@@ -345,6 +359,7 @@ static GList *_flexi_user_presets(void)
 
 static void _flexi_user_presets_forget(void)
 {
+  _default_layout_cache_invalidate();
   _flexi_preset_list_free(_user_presets);
   _user_presets = NULL;
   _user_presets_read = FALSE;
@@ -745,6 +760,7 @@ static GPtrArray *_flexi_builtins_get(void)
   if(_builtins.presets) g_ptr_array_free(_builtins.presets, TRUE);
   if(_builtins.notes) g_hash_table_destroy(_builtins.notes);
   g_free(_builtins.path);
+  _default_layout_cache_invalidate();
   _builtins.presets = g_ptr_array_new_with_free_func(_flexi_builtin_free);
   _builtins.notes = g_hash_table_new_full(g_str_hash, g_str_equal, g_free,
                                           (GDestroyNotify)g_ptr_array_unref);
@@ -1252,18 +1268,41 @@ void dt_masks_gui_default_layout_build(dt_masks_form_t *grp)
 
 void dt_masks_gui_default_layout_root(dt_masks_point_group_t *root)
 {
-  int n;
-  const gchar *const *keys;
-  gboolean is_plain;
-  dt_masks_layout_node_t *nodes = _default_layout(&n, &keys, &is_plain);
-  if(nodes && n > 0) _flexi_layout_set_head(root, &nodes[0], keys ? keys[0] : NULL);
-  g_free(nodes);
+  if(!root) return;
+  gchar *def = dt_conf_get_string(FLEXI_DEFAULT_PRESET_CONF);
+  if(!_cached_default_root_valid || g_strcmp0(def, _cached_default_preset) != 0)
+  {
+    g_free(_cached_default_preset);
+    _cached_default_preset = def;
+    int n;
+    const gchar *const *keys;
+    gboolean is_plain;
+    dt_masks_layout_node_t *nodes = _default_layout(&n, &keys, &is_plain);
+    _cached_default_head = nodes && n > 0;
+    if(_cached_default_head)
+    {
+      _cached_default_node = nodes[0];
+      dt_strlcpy_to_fixed(_cached_default_key, keys && keys[0] ? keys[0] : "",
+                          sizeof(_cached_default_key));
+    }
+    g_free(nodes);
+    _cached_default_root_valid = TRUE;
+  }
+  else
+  {
+    g_free(def);
+  }
+  // patch the caller's group rather than replacing it: its formid and marker
+  // bit are its own, and so are all its fields when the default names no preset
+  if(_cached_default_head)
+    _flexi_layout_set_head(root, &_cached_default_node, _cached_default_key);
 }
 
 static void _masks_default_preset_toggled(GtkToggleButton *radio, gpointer user_data)
 {
   DT_GUARD_GUI_UPDATE();
   if(!gtk_toggle_button_get_active(radio)) return;
+  _default_layout_cache_invalidate();
   dt_conf_set_string(FLEXI_DEFAULT_PRESET_CONF, g_object_get_data(G_OBJECT(radio), "preset"));
 }
 
