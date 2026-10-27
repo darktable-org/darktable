@@ -1437,8 +1437,9 @@ static void _handle_xpath(const dt_develop_t *dev, xmlDoc *doc, const dt_imgid_t
             }
           else
             {
-              const xmlChar *value = xmlNodeListGetString(doc, node->children, 1);
+              xmlChar *value = xmlNodeListGetString(doc, node->children, 1);
               _lrop(dev, doc, imgid, node->name, value, NULL, data);
+              xmlFree(value);
             }
         }
 
@@ -1650,6 +1651,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   {
     if(!iauto) dt_control_log(_("`%s' is not a Lightroom XMP!"), pathname);
     g_free(pathname);
+    xmlFreeDoc(doc);
     return FALSE;
   }
 
