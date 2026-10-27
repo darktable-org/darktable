@@ -10021,10 +10021,11 @@ void dt_iop_gui_blend_forms_reloaded(dt_iop_module_t *module)
   // a reload reaches every module, but only one showing the list has one to
   // rebuild. Rebuilding them all on each undo is slow, and disturbs the right
   // panel's scroll position
-  const gboolean had_content = bd->masks_list_sig != DT_INVALID_HASH;
-  const gboolean flexi =
-    module->blend_params && (module->blend_params->mask_mode & DEVELOP_MASK_FLEXI);
-  if(had_content || flexi)
+  const gboolean showing =
+    darktable.develop
+    && (darktable.develop->proxy.masks_flexi_host.hosted_module == module
+        || (darktable.develop->gui_module == module && module->expanded));
+  if(showing)
   {
     bd->masks_list_sig = DT_INVALID_HASH;
     if(bd->masks_list_box) _queue_masks_list_rebuild(module);
@@ -15913,7 +15914,12 @@ void dt_masks_gui_build_list(dt_iop_module_t *module)
   const gboolean flexi = !(module->blend_params->mask_mode & DEVELOP_MASK_RASTER);
   dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
 
-  if(!_masks_panel_reconcile(module, grp, flexi))
+  const gboolean settled = _masks_panel_reconcile(module, grp, flexi);
+  // reconciling can change what the signature folds (a selection falling back
+  // to the mask's own group), so the one taken before it never matches the
+  // next request and the identical tree would be built a second time
+  bd->masks_list_sig = dt_masks_gui_list_signature(module);
+  if(!settled)
   {
     gtk_widget_set_visible(GTK_WIDGET(bd->masks_list_box), FALSE);
     _recompute_insert_hint(module);
@@ -17341,13 +17347,10 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     _props_panel_show(bd);
     // (re)build the per-shape composition list for this module's group -- only
     // for a live mask; with the mask off the list keeps what it last held
-    // unless the group was deleted or emptied, or it was never built. An off
-    // mask shows the groups switching it on would show, so the toggle never
-    // changes the structure the panel displays
-    dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
-    const gboolean has_group = grp && grp->points;
+    // unless it was never built. An off mask shows the groups switching it on
+    // would show, so the toggle never changes the structure the panel displays
     const gboolean had_list = bd->masks_list_sig != DT_INVALID_HASH;
-    if(mode_flexi || !has_group || !had_list) dt_masks_gui_build_list(module);
+    if(mode_flexi || !had_list) dt_masks_gui_build_list(module);
     // and nothing of an off mask belongs on canvas
     if(!mask_enabled) _panel_set_edit_mode(module, DT_MASKS_EDIT_OFF);
   }

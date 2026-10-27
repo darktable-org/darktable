@@ -958,6 +958,7 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
       if(focus_changed)
         _masks_embedded_apply_collapsed(module, _masks_panel_collapsed_for(module));
       dt_gui_add_class(bd->masks_blend_header, "dt_masks_embedded");
+      dt_masks_gui_build_list(module);
       dt_iop_gui_blend_masks_panel_sync_toolbox();
       return;
     }
@@ -1091,6 +1092,7 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
   // :checked, so it simply loses it. (_blendop_mask_enable_toggled branches on
   // mask_mode rather than on the button for the same reason.)
   _sync_mask_enable_toggle(bd);
+  dt_masks_gui_build_list(module);
 
   // focus moved, or the hosted module's masking changed: the toolbox button
   // reports both ("is there a panel to show" and "is it showing")
