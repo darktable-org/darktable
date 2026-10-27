@@ -731,6 +731,11 @@ changes (where available).
   and of post-crop vignetting, which was far weaker than in Lightroom
   and only started near the frame's edge.
 
+- Fixed the shape of post-crop vignetting imported from Lightroom on
+  portrait images, straightened crops and wide frames. Portrait images
+  got a landscape vignette that darkened their top and bottom but not
+  their sides.
+
 ## Lua
 
 ### API Version
