@@ -630,7 +630,7 @@ typedef struct lr_data_t
   int color;
   gboolean has_colorlabel;
 
-  float fratio;                // factor ratio image
+  float fratio;                // width/height of the cropped frame, upright
   float crop_roundness;        // from lightroom
   float vignette_midpoint, vignette_feather;
   int iwidth, iheight;         // image width / height
@@ -1740,7 +1740,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   data.has_gps = FALSE;
   data.color = 0;
   data.has_colorlabel = FALSE;
-  data.fratio = NAN;                // factor ratio image
+  data.fratio = NAN;                // until the crop sets it
   data.crop_roundness = NAN;        // from lightroom
   data.vignette_midpoint = 50.0f;   // Lightroom's defaults
   data.vignette_feather = 50.0f;
@@ -1851,6 +1851,10 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     rotate_xy(&cx, &cy, -rangle);
     rotate_xy(&cw, &ch, -rangle);
 
+    // the corners are now those of the frame, which the vignette sees upright
+    data.fratio = (cw - cx) / (ch - cy);
+    if(orientation & ORIENTATION_SWAP_XY) data.fratio = 1.0f / data.fratio;
+
     // Calculate the new overall image size (black zone included) after rotation
     // rangle is limited to -45°;+45° by LR
     new_width  = rotate_x(+data.iwidth, -data.iheight, -fabs(rangle));
@@ -1872,8 +1876,6 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
       swap(&data.pcr.cx, &data.pcr.cy);
       swap(&data.pcr.cw, &data.pcr.ch);
     }
-
-    data.fratio = (data.pcr.cw - data.pcr.cx) / (data.pcr.ch - data.pcr.cy);
 
     dt_add_hist(imgid, "crop", (dt_iop_params_t *)&data.pcr, sizeof(dt_iop_crop_params_v3_t), imported,
                 sizeof(imported), LRDT_CROP_VERSION, &n_import);
@@ -1922,8 +1924,6 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
 
   if(dev != NULL && data.has_vignette)
   {
-    const float base_ratio = 1.325 / 1.5;
-
     data.pv.autoratio = FALSE;
     data.pv.dithering = DITHER_8BIT;
     data.pv.center.x = 0.0;
@@ -1934,14 +1934,21 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     data.pv.scale = lr2dt_vignette_center(data.vignette_feather)
                     + 0.576f * (data.vignette_midpoint - 50.0f) - data.pv.falloff_scale / 2.0f;
 
-    // defensive code, should not happen, but just in case future Lr version
-    // has not ImageWidth/ImageLength XML tag.
-    if(data.iwidth == 0 || data.iheight == 0)
-      data.pv.whratio = base_ratio;
-    else
-      data.pv.whratio = base_ratio * ((float)data.iwidth / (float)data.iheight);
-
-    if(data.has_crop) data.pv.whratio = data.pv.whratio * data.fratio;
+    // the vignette runs after crop and flip, so it takes the shape of the
+    // cropped frame, upright. Without ImageWidth/ImageLength, which only
+    // a future Lightroom might leave out, there is no shape to follow
+    float frame_ratio = 1.0f;
+    if(data.has_crop && isfinite(data.fratio) && data.fratio > 0.0f)
+      frame_ratio = data.fratio;
+    else if(data.iwidth > 0 && data.iheight > 0)
+    {
+      frame_ratio = (float)data.iwidth / (float)data.iheight;
+      if(dt_image_orientation_to_flip_bits(data.orientation) & ORIENTATION_SWAP_XY)
+        frame_ratio = 1.0f / frame_ratio;
+    }
+    // the module takes a width/height ratio r up to 1 as is, and above 1 as
+    // 2 - 1/r; either way its scale is along the frame's long side
+    data.pv.whratio = frame_ratio <= 1.0f ? frame_ratio : 2.0f - 1.0f / frame_ratio;
 
     //  Adjust scale and ratio based on the roundness. On Lightroom changing
     //  the roundness change the width and the height of the vignette.
