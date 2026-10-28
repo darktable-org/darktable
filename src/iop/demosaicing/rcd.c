@@ -260,7 +260,7 @@ static void rcd_demosaic(float *const restrict out,
             const float VH_Neighbourhood_Value = 0.25f * (VH_Dir[indx - w1 - 1] + VH_Dir[indx - w1 + 1] + VH_Dir[indx + w1 - 1] + VH_Dir[indx + w1 + 1]);
             const float VH_Disc = (fabsf(0.5f - VH_Central_Value) < fabsf(0.5f - VH_Neighbourhood_Value)) ? VH_Neighbourhood_Value : VH_Central_Value;
 
-            rgb[1][indx] = interpolatef(CLIP(VH_Disc), H_Est, V_Est);
+            rgb[1][indx] = mixf(V_Est, H_Est, CLIP(VH_Disc));
           }
         }
 
@@ -314,7 +314,7 @@ static void rcd_demosaic(float *const restrict out,
             const float Q_Est = (NE_Grad * SW_Est + SW_Grad * NE_Est) / (NE_Grad + SW_Grad);
 
             // R@B and B@R interpolation
-            rgb[c][indx] = rgb[1][indx] + interpolatef(CLIP(PQ_Disc), Q_Est, P_Est);
+            rgb[c][indx] = rgb[1][indx] + mixf(P_Est, Q_Est, CLIP(PQ_Disc));
           }
         }
 
@@ -360,7 +360,7 @@ static void rcd_demosaic(float *const restrict out,
               const float H_Est = (E_Grad * W_Est + W_Grad * E_Est) / (E_Grad + W_Grad);
 
               // R@G and B@G interpolation
-              rgb[c][indx] = rgb1 + interpolatef(CLIP(VH_Disc), H_Est, V_Est);
+              rgb[c][indx] = rgb1 + mixf(V_Est, H_Est, CLIP(VH_Disc));
             }
           }
         }
