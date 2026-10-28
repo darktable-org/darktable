@@ -153,7 +153,6 @@ typedef struct dt_iop_highlights_global_data_t
   int kernel_highlights_opposed;
   int kernel_highlights_initmask;
   int kernel_highlights_dilatemask;
-  int kernel_highlights_chroma;
 
   int kernel_highlights_false_color;
 
@@ -1134,7 +1133,6 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_highlights_opposed = dt_opencl_create_kernel(program, "highlights_opposed");
   gd->kernel_highlights_initmask = dt_opencl_create_kernel(program, "highlights_initmask");
   gd->kernel_highlights_dilatemask = dt_opencl_create_kernel(program, "highlights_dilatemask");
-  gd->kernel_highlights_chroma = dt_opencl_create_kernel(program, "highlights_chroma");
   gd->kernel_highlights_false_color = dt_opencl_create_kernel(program, "highlights_false_color");
 
   const int wavelets = 35; // bspline.cl, from programs.conf
@@ -1158,7 +1156,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_highlights_opposed);
   dt_opencl_free_kernel(gd->kernel_highlights_initmask);
   dt_opencl_free_kernel(gd->kernel_highlights_dilatemask);
-  dt_opencl_free_kernel(gd->kernel_highlights_chroma);
   dt_opencl_free_kernel(gd->kernel_highlights_false_color);
 
   dt_opencl_free_kernel(gd->kernel_filmic_bspline_vertical);

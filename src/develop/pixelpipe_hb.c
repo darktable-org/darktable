@@ -2891,7 +2891,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
             if(darktable.dump_diff_pipe || darktable.cldiff_stats)
             {
-              const float visualize = darktable.cldiff_stats
+              const gboolean visualize = darktable.cldiff_stats
                                     && dt_pipe_is_full(pipe)
                                     && dt_iop_has_focus(module);
               float *clout = _opencl_dump_diff_pipe_pfm(pipe, module, piece, cl_mem_input, *cl_mem_output, roi_out, &roi_in, cst_out, visualize);
