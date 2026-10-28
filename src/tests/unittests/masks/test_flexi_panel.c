@@ -147,36 +147,34 @@ static void test_a_shape_is_never_a_noop(void **state)
 #define OUTPUT DT_MASKS_PARAM_VIEW_OUTPUT
 #define BOTH DT_MASKS_PARAM_VIEW_BOTH
 
-// the sliders are the channel icon's choice, whether the row is expanded or
-// not, and whatever the user has touched
+// the sliders are the channel icon's choice, whatever the user has touched
 static void test_chosen_view_decides_the_sliders(void **state)
 {
-  for(int expanded = 0; expanded < 2; expanded++)
-    for(int in_used = 0; in_used < 2; in_used++)
-      for(int out_used = 0; out_used < 2; out_used++)
-      {
-        const dt_masks_param_vis_t i =
-          dt_masks_model_param_row_visibility(INPUT, expanded, in_used, out_used, FALSE, FALSE);
-        assert_true(i.input);
-        assert_false(i.output);
-        const dt_masks_param_vis_t o =
-          dt_masks_model_param_row_visibility(OUTPUT, expanded, in_used, out_used, FALSE, FALSE);
-        assert_false(o.input);
-        assert_true(o.output);
-        const dt_masks_param_vis_t b =
-          dt_masks_model_param_row_visibility(BOTH, expanded, in_used, out_used, FALSE, FALSE);
-        assert_true(b.input);
-        assert_true(b.output);
-      }
+  for(int in_used = 0; in_used < 2; in_used++)
+    for(int out_used = 0; out_used < 2; out_used++)
+    {
+      const dt_masks_param_vis_t i =
+        dt_masks_model_param_row_visibility(INPUT, in_used, out_used, FALSE, FALSE);
+      assert_true(i.input);
+      assert_false(i.output);
+      const dt_masks_param_vis_t o =
+        dt_masks_model_param_row_visibility(OUTPUT, in_used, out_used, FALSE, FALSE);
+      assert_false(o.input);
+      assert_true(o.output);
+      const dt_masks_param_vis_t b =
+        dt_masks_model_param_row_visibility(BOTH, in_used, out_used, FALSE, FALSE);
+      assert_true(b.input);
+      assert_true(b.output);
+    }
 }
 
-// the boost-factor slider only exists for channels that have one
-static void test_boost_slider_follows_the_channel(void **state)
+// the boost factor shows under the sliders when asked to, and nowhere else,
+// and only for a channel that has one
+static void test_boost_shows_only_with_the_sliders(void **state)
 {
-  assert_true(dt_masks_model_param_row_visibility(AUTO, TRUE, TRUE, TRUE, TRUE, FALSE).boost);
-  assert_false(dt_masks_model_param_row_visibility(AUTO, TRUE, TRUE, TRUE, FALSE, FALSE).boost);
-  // never on a collapsed row, whatever the channel supports
-  assert_false(dt_masks_model_param_row_visibility(AUTO, FALSE, TRUE, TRUE, TRUE, FALSE).boost);
+  assert_true(dt_masks_model_param_row_visibility(AUTO, TRUE, TRUE, TRUE, TRUE).boost);
+  assert_false(dt_masks_model_param_row_visibility(AUTO, TRUE, TRUE, TRUE, FALSE).boost);
+  assert_false(dt_masks_model_param_row_visibility(AUTO, TRUE, TRUE, FALSE, TRUE).boost);
 }
 
 // with nothing chosen, a row adapts: an untouched channel shows only the input
@@ -184,7 +182,7 @@ static void test_boost_slider_follows_the_channel(void **state)
 static void test_automatic_untouched_row_shows_input_only(void **state)
 {
   const dt_masks_param_vis_t v =
-    dt_masks_model_param_row_visibility(AUTO, FALSE, FALSE, FALSE, FALSE, FALSE);
+    dt_masks_model_param_row_visibility(AUTO, FALSE, FALSE, FALSE, FALSE);
   assert_true(v.input);
   assert_false(v.output);
 }
@@ -192,7 +190,7 @@ static void test_automatic_untouched_row_shows_input_only(void **state)
 static void test_automatic_row_with_only_output_used(void **state)
 {
   const dt_masks_param_vis_t v =
-    dt_masks_model_param_row_visibility(AUTO, FALSE, FALSE, TRUE, FALSE, FALSE);
+    dt_masks_model_param_row_visibility(AUTO, FALSE, TRUE, FALSE, FALSE);
   assert_false(v.input);
   assert_true(v.output);
 }
@@ -200,7 +198,7 @@ static void test_automatic_row_with_only_output_used(void **state)
 static void test_automatic_row_with_both_used_shows_both(void **state)
 {
   const dt_masks_param_vis_t v =
-    dt_masks_model_param_row_visibility(AUTO, FALSE, TRUE, TRUE, FALSE, FALSE);
+    dt_masks_model_param_row_visibility(AUTO, TRUE, TRUE, FALSE, FALSE);
   assert_true(v.input);
   assert_true(v.output);
 }
@@ -208,7 +206,7 @@ static void test_automatic_row_with_both_used_shows_both(void **state)
 static void test_automatic_row_with_only_input_used(void **state)
 {
   const dt_masks_param_vis_t v =
-    dt_masks_model_param_row_visibility(AUTO, FALSE, TRUE, FALSE, FALSE, FALSE);
+    dt_masks_model_param_row_visibility(AUTO, TRUE, FALSE, FALSE, FALSE);
   assert_true(v.input);
   assert_false(v.output);
 }
@@ -224,57 +222,73 @@ static void test_view_resolve(void **state)
   assert_int_equal(dt_masks_model_param_view_resolve(OUTPUT, TRUE, FALSE), OUTPUT);
 }
 
-// the view and the expanded bit share the field, and neither moves the other
-static void test_view_and_expanded_share_in_out(void **state)
+// the swatch shows the colors the element selects: normally the one stretch
+// where the range has opacity, inverted the two outside it, with an empty one
+// left out
+static void test_swatch_span(void **state)
 {
-  dt_masks_point_parametric_t p = { 0 };
+  const float r[4] = { 0.2f, 0.3f, 0.6f, 0.8f };
+  dt_masks_swatch_span_t span = dt_masks_model_param_swatch_span(r, FALSE);
+  assert_int_equal(span.n, 1);
+  assert_float_equal(span.from[0], 0.2f, 1e-6);
+  assert_float_equal(span.to[0], 0.8f, 1e-6);
+
+  span = dt_masks_model_param_swatch_span(r, TRUE);
+  assert_int_equal(span.n, 2);
+  assert_float_equal(span.from[0], 0.0f, 1e-6);
+  assert_float_equal(span.to[0], 0.3f, 1e-6);
+  assert_float_equal(span.from[1], 0.6f, 1e-6);
+  assert_float_equal(span.to[1], 1.0f, 1e-6);
+
+  // markers at the ends: nothing lies outside them on that side
+  const float left[4] = { 0.0f, 0.0f, 0.5f, 0.7f };
+  span = dt_masks_model_param_swatch_span(left, TRUE);
+  assert_int_equal(span.n, 1);
+  assert_float_equal(span.from[0], 0.5f, 1e-6);
+  assert_float_equal(span.to[0], 1.0f, 1e-6);
+
+  // a channel at its full range, inverted, selects nothing
+  const float full[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+  assert_int_equal(dt_masks_model_param_swatch_span(full, TRUE).n, 0);
+  assert_int_equal(dt_masks_model_param_swatch_span(full, FALSE).n, 1);
+}
+
+// the edges of the range fade as its markers say, and inverted it is what is
+// left
+static void test_swatch_alpha(void **state)
+{
+  const float r[4] = { 0.2f, 0.4f, 0.6f, 0.8f };
+  assert_float_equal(dt_masks_model_param_swatch_alpha(r, FALSE, 0.1f), 0.0f, 1e-6);
+  assert_float_equal(dt_masks_model_param_swatch_alpha(r, FALSE, 0.3f), 0.5f, 1e-6);
+  assert_float_equal(dt_masks_model_param_swatch_alpha(r, FALSE, 0.5f), 1.0f, 1e-6);
+  assert_float_equal(dt_masks_model_param_swatch_alpha(r, FALSE, 0.7f), 0.5f, 1e-6);
+  assert_float_equal(dt_masks_model_param_swatch_alpha(r, FALSE, 0.9f), 0.0f, 1e-6);
+  assert_float_equal(dt_masks_model_param_swatch_alpha(r, TRUE, 0.1f), 1.0f, 1e-6);
+  assert_float_equal(dt_masks_model_param_swatch_alpha(r, TRUE, 0.3f), 0.5f, 1e-6);
+  assert_float_equal(dt_masks_model_param_swatch_alpha(r, TRUE, 0.5f), 0.0f, 1e-6);
+
+  // a hard edge, with no fade to divide by
+  const float hard[4] = { 0.3f, 0.3f, 0.7f, 0.7f };
+  assert_float_equal(dt_masks_model_param_swatch_alpha(hard, FALSE, 0.29f), 0.0f, 1e-6);
+  assert_float_equal(dt_masks_model_param_swatch_alpha(hard, FALSE, 0.31f), 1.0f, 1e-6);
+  assert_float_equal(dt_masks_model_param_swatch_alpha(hard, FALSE, 0.69f), 1.0f, 1e-6);
+  assert_float_equal(dt_masks_model_param_swatch_alpha(hard, FALSE, 0.71f), 0.0f, 1e-6);
+}
+
+// the view and the boost bit share the field, and neither moves the other. The
+// bit a row's expansion used to be is left as found
+static void test_view_and_boost_share_in_out(void **state)
+{
+  dt_masks_point_parametric_t p = { .in_out = DT_MASKS_PARAM_EXPANDED };
   dt_masks_param_set_view(&p, OUTPUT);
-  dt_masks_param_set_expanded(&p, TRUE);
+  dt_masks_param_set_boost_with_sliders(&p, TRUE);
   assert_int_equal(dt_masks_param_get_view(&p), OUTPUT);
-  assert_true(dt_masks_param_is_expanded(&p));
+  assert_true(dt_masks_param_boost_with_sliders(&p));
   dt_masks_param_set_view(&p, BOTH);
-  assert_true(dt_masks_param_is_expanded(&p));
-  dt_masks_param_set_expanded(&p, FALSE);
+  assert_true(dt_masks_param_boost_with_sliders(&p));
+  dt_masks_param_set_boost_with_sliders(&p, FALSE);
   assert_int_equal(dt_masks_param_get_view(&p), BOTH);
-  assert_false(dt_masks_param_is_expanded(&p));
-}
-
-// a parametric row is an element row like any other: its expanded controls
-// lead with a full opacity slider. Its chevron *is* its expander, so the
-// slider appears exactly when that row is expanded -- never on a collapsed row.
-static void test_parametric_opacity_slider_needs_expanded(void **state)
-{
-  assert_true(dt_masks_model_param_row_visibility(AUTO, TRUE, FALSE, FALSE, FALSE, FALSE).opacity);
-  assert_false(dt_masks_model_param_row_visibility(AUTO, FALSE, FALSE, FALSE, FALSE, FALSE).opacity);
-}
-
-// and it does not depend on anything about the channel itself -- which
-// sub-ranges are used, or whether the channel has a boost factor, decide which
-// *channel* sliders show, never whether opacity does
-static void test_parametric_opacity_slider_ignores_the_channel_state(void **state)
-{
-  for(int in_used = 0; in_used < 2; in_used++)
-    for(int out_used = 0; out_used < 2; out_used++)
-      for(int boost = 0; boost < 2; boost++)
-        assert_true(dt_masks_model_param_row_visibility(AUTO, TRUE, in_used, out_used, boost, FALSE).opacity);
-}
-
-// "member properties in subpanel" moves the boost factor and that opacity
-// slider out of the row and into its own section; the channel's sliders stay
-// in the row
-static void test_subpanel_takes_boost_and_opacity_out_of_the_row(void **state)
-{
-  const dt_masks_param_vis_t v =
-    dt_masks_model_param_row_visibility(BOTH, TRUE, TRUE, TRUE, TRUE, TRUE);
-  assert_true(v.input);
-  assert_true(v.output);
-  assert_false(v.boost);
-  assert_false(v.opacity);
-  // collapsed, the row shows what it always does
-  const dt_masks_param_vis_t c =
-    dt_masks_model_param_row_visibility(BOTH, FALSE, TRUE, TRUE, TRUE, TRUE);
-  assert_true(c.input);
-  assert_true(c.output);
+  assert_true(p.in_out & DT_MASKS_PARAM_EXPANDED);
 }
 
 #undef AUTO
@@ -283,97 +297,9 @@ static void test_subpanel_takes_boost_and_opacity_out_of_the_row(void **state)
 #undef BOTH
 
 // ---------------------------------------------------------------------------
-// what "auto-expand selected" keeps open
+// the "is this sub-range used" predicate
 // ---------------------------------------------------------------------------
 
-// selection is the anchor whenever there is one, at both levels -- selecting
-// an element sets the group half too (see _set_form_target), so picking an
-// element anchors its group as well as itself. A shape row only has an
-// expander with the properties in the list.
-static void test_auto_expand_anchors_on_the_selection(void **state)
-{
-  dt_conf_set_bool("plugins/darkroom/masks/properties_subpanel", FALSE);
-  flexi_build("u{1,2,i{3}}");
-  flexi_bd.panel_selected_formid = 2;
-  flexi_bd.panel_selected_group_cid = 1;
-  flexi_bd.masks_last_expanded_elem = 3;
-  flexi_bd.masks_last_expanded_group = 3;
-
-  assert_int_equal(dt_masks_model_auto_expand_anchor(&flexi_bd), 2);
-  assert_int_equal(dt_masks_model_auto_expand_group_anchor(&flexi_bd), 1);
-}
-
-// with nothing selected it falls back to whatever was open last, rather than
-// collapsing the panel down to bare headers
-static void test_auto_expand_falls_back_to_the_last_expanded(void **state)
-{
-  flexi_build("u{1,2,i{3}}");
-  flexi_bd.panel_selected_formid = INVALID_MASKID;
-  flexi_bd.panel_selected_group_cid = INVALID_MASKID;
-  flexi_bd.masks_last_expanded_elem = 2;
-  flexi_bd.masks_last_expanded_group = 1;
-
-  assert_int_equal(dt_masks_model_auto_expand_anchor(&flexi_bd), 2);
-  assert_int_equal(dt_masks_model_auto_expand_group_anchor(&flexi_bd), 1);
-}
-
-// with the properties in the list, a raster mask expands to its opacity
-// slider, so selecting one makes it the anchor like any other element. Its
-// *group* anchors on its own, never consulting the element's kind.
-static void test_auto_expand_anchors_on_a_raster_mask(void **state)
-{
-  dt_conf_set_bool("plugins/darkroom/masks/properties_subpanel", FALSE);
-  flexi_build("u{1,2}");
-  dt_masks_form_t *f = dt_masks_get_from_id(&flexi_dev, 2);
-  const dt_masks_type_t saved = f->type;
-  f->type = DT_MASKS_RASTER;
-
-  flexi_bd.panel_selected_formid = 2;
-  flexi_bd.panel_selected_group_cid = 1;
-  flexi_bd.masks_last_expanded_elem = 1;
-  flexi_bd.masks_last_expanded_group = INVALID_MASKID;
-
-  dt_conf_set_bool("plugins/darkroom/masks/auto_expand_selected", TRUE);
-  assert_int_equal(dt_masks_model_auto_expand_anchor(&flexi_bd), 2);
-
-  // the group half never consults the element's kind
-  assert_int_equal(dt_masks_model_auto_expand_group_anchor(&flexi_bd), 1);
-
-  f->type = saved;
-}
-
-// with the properties subpanel a shape row has nothing to expand either, so
-// selecting it leaves the open element open too
-static void test_auto_expand_ignores_a_shape_with_the_subpanel(void **state)
-{
-  flexi_build("u{1,2}");
-  flexi_bd.panel_selected_formid = 2;
-  flexi_bd.panel_selected_group_cid = 1;
-  flexi_bd.masks_last_expanded_elem = 1;
-
-  dt_conf_set_bool("plugins/darkroom/masks/auto_expand_selected", TRUE);
-  dt_conf_set_bool("plugins/darkroom/masks/properties_subpanel", FALSE);
-  assert_int_equal(dt_masks_model_auto_expand_anchor(&flexi_bd), 2);
-  dt_conf_set_bool("plugins/darkroom/masks/properties_subpanel", TRUE);
-  assert_int_equal(dt_masks_model_auto_expand_anchor(&flexi_bd), 1);
-}
-
-// nothing selected and nothing remembered: no anchor, which is what tells the
-// panel to fall back to each group's own remembered expanded state rather than
-// open exactly one group
-static void test_auto_expand_has_no_anchor_when_nothing_is_known(void **state)
-{
-  flexi_build("u{1,2}");
-  flexi_bd.panel_selected_formid = INVALID_MASKID;
-  flexi_bd.panel_selected_group_cid = INVALID_MASKID;
-  flexi_bd.masks_last_expanded_elem = INVALID_MASKID;
-  flexi_bd.masks_last_expanded_group = INVALID_MASKID;
-
-  assert_false(dt_is_valid_maskid(dt_masks_model_auto_expand_anchor(&flexi_bd)));
-  assert_false(dt_is_valid_maskid(dt_masks_model_auto_expand_group_anchor(&flexi_bd)));
-}
-
-// the "is this sub-range used" predicate the rule above consumes
 static void test_channel_used_detects_a_touched_range(void **state)
 {
   dt_masks_form_t *f = _make_parametric();
@@ -437,24 +363,6 @@ static void test_sticky_opacity_preference_roundtrips(void **state)
   assert_float_equal(dt_conf_get_float("plugins/darkroom/masks/opacity"), 1.0f, 1e-6);
 }
 
-static void test_auto_expand_preference_roundtrips(void **state)
-{
-  dt_conf_set_bool("plugins/darkroom/masks/auto_expand_selected", TRUE);
-  assert_true(dt_conf_get_bool("plugins/darkroom/masks/auto_expand_selected"));
-  dt_conf_set_bool("plugins/darkroom/masks/auto_expand_selected", FALSE);
-  assert_false(dt_conf_get_bool("plugins/darkroom/masks/auto_expand_selected"));
-}
-
-// the expander option ships off: a click on a row only selects it, and rows
-// open and close by their chevron alone. It comes from darktableconfig.xml via
-// conf_gen.h, so an unset key must already read that way -- the panel never
-// writes it until the user touches it.
-static void test_expander_option_defaults(void **state)
-{
-  dt_conf_remove_key("plugins/darkroom/masks/auto_expand_selected");
-  assert_false(dt_conf_get_bool("plugins/darkroom/masks/auto_expand_selected"));
-}
-
 // ---------------------------------------------------------------------------
 // the panel options popover's dependent checks
 // ---------------------------------------------------------------------------
@@ -482,47 +390,18 @@ static void test_handle_implies_focus_row(void **state)
       assert_true(dt_masks_gui_pref_focus_row_applies(pos));
 }
 
-// auto-expand steers rows expanding in the list: it shows only with the
-// properties there, not in the subpanel
-static void test_auto_expand_applies_without_the_subpanel(void **state)
-{
-  assert_true(dt_masks_gui_pref_auto_expand_applies(FALSE));
-  assert_false(dt_masks_gui_pref_auto_expand_applies(TRUE));
-}
-
-// ---------------------------------------------------------------------------
-// which element rows carry an expander chevron
-// ---------------------------------------------------------------------------
-
-// every element row has an expander, whatever its kind: its opacity slider at
-// least, which no header shows, then a drawn shape's size/hardness/..., and a
-// parametric element's boost factor
-static void test_every_element_row_is_expandable(void **state)
-{
-  assert_true(dt_masks_model_row_is_expandable(FALSE));
-}
-
-// "member properties in subpanel" moves every element's properties to their
-// own section, a parametric row's opacity and boost factor included, so no row
-// has anything left to expand
-static void test_subpanel_leaves_no_chevrons(void **state)
-{
-  assert_false(dt_masks_model_row_is_expandable(TRUE));
-}
-
 // ---------------------------------------------------------------------------
 // section fold states
 // ---------------------------------------------------------------------------
 
 // nothing saved yet: every section starts unfolded, from the defaults in
-// darktableconfig.xml
+// darktableconfig.xml. The controls section's state is its member's (below)
 static void test_sections_start_expanded(void **state)
 {
   for(dt_masks_section_t s = 0; s < DT_MASKS_SECTION_COUNT; s++)
-  {
-    assert_true(dt_masks_model_section_expanded(s, FALSE));
-    assert_true(dt_masks_model_section_expanded(s, TRUE));
-  }
+    if(s != DT_MASKS_SECTION_CONTROLS) assert_true(dt_masks_model_section_expanded(s));
+  for(dt_masks_controls_kind_t k = 0; k < DT_MASKS_CONTROLS_COUNT; k++)
+    assert_true(dt_masks_model_controls_expanded(k, FALSE));
 }
 
 // each section keeps its own state: folding one leaves the others alone
@@ -530,12 +409,14 @@ static void test_sections_fold_independently(void **state)
 {
   for(dt_masks_section_t folded = 0; folded < DT_MASKS_SECTION_COUNT; folded++)
   {
+    if(folded == DT_MASKS_SECTION_CONTROLS) continue;
     dt_masks_model_section_save(folded, FALSE);
     for(dt_masks_section_t s = 0; s < DT_MASKS_SECTION_COUNT; s++)
-      assert_int_equal(dt_masks_model_section_expanded(s, FALSE), s != folded);
+      if(s != DT_MASKS_SECTION_CONTROLS)
+        assert_int_equal(dt_masks_model_section_expanded(s), s != folded);
     dt_masks_model_section_save(folded, TRUE);
     for(dt_masks_section_t s = 0; s < DT_MASKS_SECTION_COUNT; s++)
-      assert_true(dt_masks_model_section_expanded(s, FALSE));
+      if(s != DT_MASKS_SECTION_CONTROLS) assert_true(dt_masks_model_section_expanded(s));
   }
 }
 
@@ -544,36 +425,42 @@ static void test_sections_fold_independently(void **state)
 static void test_section_state_is_one_config_key_each(void **state)
 {
   dt_masks_model_section_save(DT_MASKS_SECTION_REFINE, FALSE);
-  dt_masks_model_section_save(DT_MASKS_SECTION_PROPS, FALSE);
   dt_masks_model_section_save(DT_MASKS_SECTION_HELP, FALSE);
   dt_masks_model_section_save(DT_MASKS_SECTION_CONSUMERS, FALSE);
   assert_true(dt_conf_get_bool("plugins/darkroom/masks/refinements_collapsed"));
-  assert_true(dt_conf_get_bool("plugins/darkroom/masks/properties_collapsed"));
   assert_true(dt_conf_get_bool("plugins/darkroom/masks/help_collapsed"));
   assert_true(dt_conf_get_bool("plugins/darkroom/masks/consumers_collapsed"));
 
   dt_conf_set_bool("plugins/darkroom/masks/consumers_collapsed", FALSE);
-  assert_true(dt_masks_model_section_expanded(DT_MASKS_SECTION_CONSUMERS, FALSE));
+  assert_true(dt_masks_model_section_expanded(DT_MASKS_SECTION_CONSUMERS));
 }
 
-// drawing a shape opens its creation controls in a folded properties
-// section, and does not save that: once the drawing ends, the section folds
-// back
-static void test_drawing_opens_the_properties_without_saving(void **state)
+// the controls subpanel keeps a state per kind of member: folding it for one
+// leaves the other alone
+static void test_controls_fold_per_member_kind(void **state)
 {
-  dt_masks_model_section_save(DT_MASKS_SECTION_PROPS, FALSE);
-  assert_true(dt_masks_model_section_expanded(DT_MASKS_SECTION_PROPS, TRUE));
-  assert_false(dt_masks_model_section_expanded(DT_MASKS_SECTION_PROPS, FALSE));
-  assert_true(dt_conf_get_bool("plugins/darkroom/masks/properties_collapsed"));
+  dt_masks_model_controls_save(DT_MASKS_CONTROLS_PARAMETRIC, FALSE);
+  assert_false(dt_masks_model_controls_expanded(DT_MASKS_CONTROLS_PARAMETRIC, FALSE));
+  assert_true(dt_masks_model_controls_expanded(DT_MASKS_CONTROLS_SHAPE, FALSE));
+  assert_true(dt_conf_get_bool("plugins/darkroom/masks/parametric_controls_collapsed"));
+  assert_false(dt_conf_get_bool("plugins/darkroom/masks/shape_controls_collapsed"));
+  dt_masks_model_controls_save(DT_MASKS_CONTROLS_PARAMETRIC, TRUE);
+
+  dt_masks_model_controls_save(DT_MASKS_CONTROLS_SHAPE, FALSE);
+  assert_false(dt_masks_model_controls_expanded(DT_MASKS_CONTROLS_SHAPE, FALSE));
+  assert_true(dt_masks_model_controls_expanded(DT_MASKS_CONTROLS_PARAMETRIC, FALSE));
+  dt_masks_model_controls_save(DT_MASKS_CONTROLS_SHAPE, TRUE);
 }
 
-// drawing concerns the properties section only
-static void test_drawing_leaves_the_other_sections_folded(void **state)
+// drawing a shape opens its creation controls in a folded controls subpanel,
+// and does not save that: once the drawing ends, the subpanel folds back
+static void test_drawing_opens_the_controls_without_saving(void **state)
 {
-  dt_masks_model_section_save(DT_MASKS_SECTION_REFINE, FALSE);
-  dt_masks_model_section_save(DT_MASKS_SECTION_CONSUMERS, FALSE);
-  assert_false(dt_masks_model_section_expanded(DT_MASKS_SECTION_REFINE, TRUE));
-  assert_false(dt_masks_model_section_expanded(DT_MASKS_SECTION_CONSUMERS, TRUE));
+  dt_masks_model_controls_save(DT_MASKS_CONTROLS_SHAPE, FALSE);
+  assert_true(dt_masks_model_controls_expanded(DT_MASKS_CONTROLS_SHAPE, TRUE));
+  assert_false(dt_masks_model_controls_expanded(DT_MASKS_CONTROLS_SHAPE, FALSE));
+  assert_true(dt_conf_get_bool("plugins/darkroom/masks/shape_controls_collapsed"));
+  dt_masks_model_controls_save(DT_MASKS_CONTROLS_SHAPE, TRUE);
 }
 
 // the mask panel position drives where the panel is hosted; the values the
@@ -777,51 +664,30 @@ int main(void)
     cmocka_unit_test_teardown(test_negative_polarity_is_never_a_noop, _teardown),
     cmocka_unit_test_teardown(test_a_shape_is_never_a_noop, _teardown),
     cmocka_unit_test_teardown(test_chosen_view_decides_the_sliders, _teardown),
-    cmocka_unit_test_teardown(test_boost_slider_follows_the_channel, _teardown),
+    cmocka_unit_test_teardown(test_boost_shows_only_with_the_sliders, _teardown),
     cmocka_unit_test_teardown(test_automatic_untouched_row_shows_input_only, _teardown),
     cmocka_unit_test_teardown(test_automatic_row_with_only_output_used, _teardown),
     cmocka_unit_test_teardown(test_automatic_row_with_both_used_shows_both, _teardown),
     cmocka_unit_test_teardown(test_automatic_row_with_only_input_used, _teardown),
     cmocka_unit_test_teardown(test_view_resolve, _teardown),
-    cmocka_unit_test_teardown(test_view_and_expanded_share_in_out, _teardown),
-    cmocka_unit_test_teardown(test_parametric_opacity_slider_ignores_the_channel_state,
-                              _teardown),
-    cmocka_unit_test_teardown(test_subpanel_takes_boost_and_opacity_out_of_the_row,
-                              _teardown),
-    cmocka_unit_test_teardown(test_parametric_opacity_slider_needs_expanded,
-                              _teardown),
-    cmocka_unit_test_setup_teardown(test_auto_expand_anchors_on_the_selection,
-                                    _conf_setup, _conf_teardown),
-    cmocka_unit_test_setup_teardown(test_auto_expand_falls_back_to_the_last_expanded,
-                                    _conf_setup, _conf_teardown),
-    cmocka_unit_test_setup_teardown(test_auto_expand_anchors_on_a_raster_mask,
-                                    _conf_setup, _conf_teardown),
-    cmocka_unit_test_setup_teardown(test_auto_expand_ignores_a_shape_with_the_subpanel,
-                                    _conf_setup, _conf_teardown),
-    cmocka_unit_test_setup_teardown(test_auto_expand_has_no_anchor_when_nothing_is_known,
-                                    _conf_setup, _conf_teardown),
+    cmocka_unit_test_teardown(test_swatch_span, _teardown),
+    cmocka_unit_test_teardown(test_swatch_alpha, _teardown),
+    cmocka_unit_test_teardown(test_view_and_boost_share_in_out, _teardown),
     cmocka_unit_test_teardown(test_channel_used_detects_a_touched_range, _teardown),
     cmocka_unit_test_teardown(test_channel_used_honors_the_active_bit, _teardown),
     cmocka_unit_test_setup_teardown(test_sticky_opacity_preference_roundtrips,
                                     _conf_setup, _conf_teardown),
-    cmocka_unit_test_setup_teardown(test_auto_expand_preference_roundtrips,
-                                    _conf_setup, _conf_teardown),
-    cmocka_unit_test_setup_teardown(test_expander_option_defaults,
-                                    _conf_setup, _conf_teardown),
     cmocka_unit_test(test_position_options_follow_the_position),
     cmocka_unit_test(test_handle_implies_focus_row),
-    cmocka_unit_test(test_auto_expand_applies_without_the_subpanel),
-    cmocka_unit_test_teardown(test_every_element_row_is_expandable, _teardown),
-    cmocka_unit_test_teardown(test_subpanel_leaves_no_chevrons, _teardown),
     cmocka_unit_test_setup_teardown(test_sections_start_expanded,
                                     _conf_setup, _conf_teardown),
     cmocka_unit_test_setup_teardown(test_sections_fold_independently,
                                     _conf_setup, _conf_teardown),
     cmocka_unit_test_setup_teardown(test_section_state_is_one_config_key_each,
                                     _conf_setup, _conf_teardown),
-    cmocka_unit_test_setup_teardown(test_drawing_opens_the_properties_without_saving,
+    cmocka_unit_test_setup_teardown(test_controls_fold_per_member_kind,
                                     _conf_setup, _conf_teardown),
-    cmocka_unit_test_setup_teardown(test_drawing_leaves_the_other_sections_folded,
+    cmocka_unit_test_setup_teardown(test_drawing_opens_the_controls_without_saving,
                                     _conf_setup, _conf_teardown),
     cmocka_unit_test_setup_teardown(test_panel_position_preference_roundtrips,
                                     _conf_setup, _conf_teardown),

@@ -49,10 +49,10 @@ A header's state is a class on the header itself:
 | `.dt_masks_picked` | picked with others by shift+click, see the multiple selection below. The theme styles it as `.dt_masks_selected` |
 | `.dt_masks_selected_held` | selected because the group holding it is selected or picked. The theme shades it as `.dt_masks_selected`, unframed |
 | `.dt_masks_soloed` | a soloed group's header; a soloed row carries it instead |
-| `.dt_masks_open` | its controls or members show; a group's adds `.dt_masks_has_card` when its card hangs from it |
+| `.dt_masks_open` | its members show |
 | `.dt_masks_drop_target` | a group a drag would drop into |
 | `.dt_masks_pending` | on a row: a shape still being drawn on the canvas, not yet added |
-| `.dt_masks_linked` | on an element's header: a shape linked with other modules or shown more than once in this mask. The theme gives it a dashed frame, since its link button is in the selection panel |
+| `.dt_masks_linked` | on an element's header: a shape linked with other modules or shown more than once in this mask. The theme gives it a dashed frame, since its link button is at the end of the header |
 
 The theme's state rules all have the same specificity, so their order in the
 file decides between two states on one header: group of the selected element,
@@ -70,9 +70,9 @@ state wins over all of them:
 }
 ```
 
-The default theme draws no rounded corners and leaves `.dt_masks_open` and
-`.dt_masks_has_card` unstyled: they are there for a theme that rounds headers
-and cards, to square off the edges where a header meets its card or rail.
+The default theme draws no rounded corners and leaves `.dt_masks_open`
+unstyled: it is there for a theme that rounds headers, to square off the edge
+where a header meets its rail.
 
 A header's `outline-color` is never drawn as an outline: it is the color of
 the rail hanging from it, down the left edge of a group's members. Set it
@@ -82,17 +82,13 @@ The name is `.dt_masks_row_name`, on the label of an element and on the box
 around the label of a group: `.dt_masks_row_name, .dt_masks_row_name label`
 covers both.
 
-## Groups and cards
+## Groups and notes
 
 | class | part |
 |---|---|
 | `.dt_masks_group_block` | a group: its header and its members |
 | `.dt_masks_group_members` | a group's members, with the rail on its left edge |
-| `.dt_masks_card` | the controls under an open header, on the card ground |
-| `.dt_masks_param_card` | a parametric row's sliders |
-| `.dt_masks_props_card` | a row's properties |
-| `.dt_masks_group_card` | a group's opacity slider |
-| `.dt_masks_note` | a preset group's note, in the selection panel's help section (`.dt_masks_help_panel`), above the properties |
+| `.dt_masks_note` | a preset group's note, in the selection panel's help section (`.dt_masks_help_panel`), above the controls |
 
 ## Header icons
 
@@ -104,12 +100,13 @@ Each part has one class, on the widget that paints it.
 | `.dt_masks_lead_select` | the box around a group's lead and its caret: the lead opens the group's operator menu, so the box is framed and a shade lighter than the header. The channel icon of a parametric row's controls is one too: it opens the choice of input slider, output slider or both |
 | `.dt_masks_drawer` | the box holding the icons on the right |
 | `.dt_masks_icon` | every icon in the drawer, and a parametric channel's pickers |
-| `.dt_masks_expander` | rightmost: shows or hides the row's controls or the group's members |
+| `.dt_masks_expander` | rightmost on a group: shows or hides the group's members. Only groups expand |
+| `.dt_masks_link` | rightmost on a raster mask or a linked shape: goes to the module the mask comes from, or to the next module using the shape (shift+click: gives this module its own copy) |
 | `.dt_masks_eye` | second from the right: click to disable, shift+click to solo |
 | `.dt_masks_picker` | a parametric channel's picker, at the right end of each of its sliders: click sets the slider's range from an area, ctrl+click picks a GUI color (point), ctrl+shift+click the same (area) |
 | `.dt_masks_invert` | third from the right on every header: inverts the element, or the group's output (shift+click: each of its members instead) |
 | `.dt_masks_badge` | at the end of the name, hidden while there is nothing to warn of so that it takes room only when it shows: a member that does nothing or next to nothing (opacity under 10%), or a group holding one at any depth; its tooltip says which. It is not in the drawer |
-| `.dt_masks_channel_picker` | the same button's place: over the right end of its slider, under the header's expander, not in the drawer |
+| `.dt_masks_channel_picker` | the same button's place: over the right end of its slider, under the header's rightmost icon, not in the drawer |
 
 Each icon's state is a class or a GTK state on the icon itself, so a state
 rule is the part's class plus one more.
@@ -120,7 +117,7 @@ rule is the part's class plus one more.
 | `.dt_masks_eye` | `.dt_masks_soloed` | the member is soloed |
 | `.dt_masks_eye` | `.dt_masks_disabled` | the member is disabled |
 | `.dt_masks_invert` | `.dt_masks_inverted` | the element or the group's output is inverted |
-| `.dt_masks_expander` | `:checked` | open |
+| `.dt_masks_expander` | `:checked` | open (collapsed, the theme gives it the plate of an on button) |
 | `.dt_masks_expander` | `:disabled` | an empty group's, with nothing to open |
 | `.dt_masks_badge` | `.dt_masks_no_effect` | its first reason is that something does nothing at all (a channel still covering its whole range, a raster mask with nothing to read), rather than little |
 | any button | `:hover` | under the pointer |
@@ -196,16 +193,18 @@ stylesheet, so a redefinition replaces the token everywhere it is used.
 
 | token | used for |
 |---|---|
-| `mask_rest` | the headers at rest |
+| `mask_rest` | a member's header at rest |
+| `mask_group_rest`, `mask_group_rail` | a group's header at rest, and the rail hanging from it |
 | `mask_selected_element_group` | the header of the group holding the selected element |
-| `mask_selected_top`, `mask_selected` | a selected header, top and bottom of its gradient |
-| `mask_hover_top`, `mask_hover` | the group a drop would land in, top and bottom of its gradient, and the base of the pick and delete shades |
-| `mask_card` | the ground of a row's open controls |
+| `mask_selected_top`, `mask_selected` | a selected header, top and bottom of its gradient (flat by default) |
+| `mask_selected_frame` | the frame of a selected or picked header |
+| `mask_hover_top`, `mask_hover` | the group a drop would land in, top and bottom of its gradient, and the base of the delete shade |
+| `mask_pick_top`, `mask_pick` | the header a shift+click would pick |
 | `mask_list_bg` | the ground of the whole list |
 | `mask_lead_fg` | the glyph of a lead icon |
 | `mask_badge`, `mask_badge_no_effect` | the warning badge (amber), and the same with `.dt_masks_no_effect` (red) |
 | `mask_badge_outline` | the warning badge's edge, as its `outline-color` |
-| `mask_text_rest`, `mask_text_selected_element_group`, `mask_text_selected`, `mask_text_hover` | header names, per header state |
+| `mask_text_rest`, `mask_text_member`, `mask_text_selected_element_group`, `mask_text_selected`, `mask_text_held`, `mask_text_hover` | header names, per header state |
 | `mask_text_control`, `mask_text_control_hover` | labels and values of the sliders in the list |
 
 ```css
@@ -225,7 +224,7 @@ its left, the link to the element's other end and the group layout presets on
 its right. Then the toolbar of add buttons (`.dt_masks_selection_row`,
 `.dt_masks_toolbar_add`): add group and import on its left, the shapes and
 channels beside them. Then its help (`#masks-help-section`, shown only for a
-group with a preset's note), properties and refinement, each a header
+group with a preset's note), controls and refinement, each a header
 (`.dt_masks_selection_section`, plus
 `.dt_masks_open` while open) over a card (`.dt_masks_selection_card`), styled as
 any module's expander is, and sitting on the panel's own ground. It has tokens
@@ -245,10 +244,9 @@ Shift+click on rows and headers picks them together. From two on,
 and group together. Picked headers carry
 `.dt_masks_picked`, which the theme styles as a selected header. While shift is
 held over the list with a member selected or picked, the hovered header takes
-`mask_pick_top` and `mask_pick`, which tint toward `mask_accent`, the theme's
-accent color when one is set and green otherwise. A selected or picked header
+`mask_pick_top` and `mask_pick`, a step brighter than a selected header. A selected or picked header
 is framed in `mask_selected_frame`, the accent color when one is set and the
-color of its name otherwise, but for what is selected with its group.
+color of its text otherwise, but for what is selected with its group.
 
 ## The panel's homes
 

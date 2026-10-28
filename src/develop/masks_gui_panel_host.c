@@ -322,7 +322,7 @@ static void _masks_embedded_apply_collapsed(dt_iop_module_t *module,
 
 // the header's layout:
 //
-//   toggle <space> edit solo | overlay eye | lock <space> expander
+//   toggle <space> edit solo parametric | overlay eye | lock <space> expander
 //
 // with no name in it: the focus row under it names the module, in the
 // hosted positions (dt_masks_gui_focus_row_sync; embedded, the module's own
@@ -375,6 +375,13 @@ static void _masks_header_apply_side(dt_iop_gui_blend_data_t *bd,
   const gboolean show_pin = dt_masks_gui_panel_position() == MASKS_PANEL_POS_EMBEDDED;
   gtk_widget_set_visible(pin, show_pin || on_canvas);
   gtk_widget_set_child_visible(pin, !on_canvas);
+  // held with no width of its own: it is there for the scrollbar inset that
+  // goes on its margin, and a full-size blank would make the header lopsided
+  // and set the least the panel can be narrowed to
+  if(on_canvas)
+    dt_gui_add_class(pin, "dt_masks_placeholder");
+  else
+    dt_gui_remove_class(pin, "dt_masks_placeholder");
   gtk_widget_show(toggle);
 }
 
@@ -1110,13 +1117,6 @@ gboolean dt_masks_gui_pref_handle_applies(const int position)
 gboolean dt_masks_gui_pref_focus_row_applies(const int position)
 {
   return position != MASKS_PANEL_POS_EMBEDDED;
-}
-
-// expanding in the list is what auto-expand steers: it has nothing to do while
-// the properties are in the subpanel
-gboolean dt_masks_gui_pref_auto_expand_applies(const gboolean props_subpanel)
-{
-  return !props_subpanel;
 }
 
 static void _masks_panel_position_activate(GtkWidget *combo, dt_iop_module_t *module)

@@ -39,8 +39,7 @@ static const char *_parts[] =
   "dt_masks_picker", "dt_masks_invert", "dt_masks_badge",
   "dt_masks_channel_picker", "dt_masks_row", "dt_masks_header", "dt_masks_row_header",
   "dt_masks_group_header", "dt_masks_row_name",
-  "dt_masks_group_block", "dt_masks_group_members", "dt_masks_card", "dt_masks_param_card",
-  "dt_masks_props_card", "dt_masks_group_card", "dt_masks_note",
+  "dt_masks_group_block", "dt_masks_group_members", "dt_masks_note",
 };
 static const char *_states[] =
 {
@@ -51,7 +50,7 @@ static const char *_states[] =
 };
 static const char *_hooks[] =
 {
-  "dt_masks_open", "dt_masks_has_card",
+  "dt_masks_open",
 };
 
 static gchar *_read(const char *rel)
