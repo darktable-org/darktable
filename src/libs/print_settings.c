@@ -3514,8 +3514,9 @@ void gui_init(dt_lib_module_t *self)
 #endif
 
   // Print button
-
-  GtkWidget *button = dt_action_button_new(self, N_("print"),
+  // We use context here because it is an action button, and translators might
+  // translate "print" as a verb, whereas elsewhere in the UI it is a noun.
+  GtkWidget *button = dt_action_button_new(self, NC_("actionbutton", "print"),
                                            _print_button_clicked, self,
                                            _("print with current settings"),
                                            GDK_KEY_p, GDK_CONTROL_MASK);
