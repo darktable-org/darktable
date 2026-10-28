@@ -27,6 +27,7 @@
 #include "common/tags.h"
 #include "common/metadata.h"
 #include "control/control.h"
+#include "develop/masks.h"
 
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
@@ -41,31 +42,68 @@
 // the legacy circuitry will be called to convert the parameters.
 //
 // to add a new iop:
-// 1. copy the struct
+// 1. copy the struct, with _v<version> added to its name and to the names of
+//    the structs it contains, as legacy_params() does in the modules
 // 2. add LRDT_<iop_name>_VERSION with corresponding module version
 // 3. use this version to pass in dt_add_hist()
 
-#define LRDT_CLIPPING_VERSION 5
-typedef struct dt_iop_clipping_params_t
+#define LRDT_CROP_VERSION 3
+typedef struct dt_iop_crop_params_v3_t
 {
-  float angle, cx, cy, cw, ch, k_h, k_v;
-  float kxa, kya, kxb, kyb, kxc, kyc, kxd, kyd;
-  int k_type, k_sym;
-  int k_apply, crop_auto;
+  float cx, cy, cw, ch;
   int ratio_n, ratio_d;
-} dt_iop_clipping_params_t;
+} dt_iop_crop_params_v3_t;
+
+#define LRDT_ASHIFT_VERSION 5
+#define LRDT_ASHIFT_MAX_SAVED_LINES 50
+typedef enum dt_iop_ashift_mode_t
+{
+  ASHIFT_MODE_GENERIC = 0,
+  ASHIFT_MODE_SPECIFIC = 1
+} dt_iop_ashift_mode_t;
+
+typedef enum dt_iop_ashift_crop_t
+{
+  ASHIFT_CROP_OFF = 0,
+  ASHIFT_CROP_LARGEST = 1,
+  ASHIFT_CROP_ASPECT = 2
+} dt_iop_ashift_crop_t;
+
+typedef struct dt_iop_ashift_params_v5_t
+{
+  float rotation, lensshift_v, lensshift_h, shear;
+  float f_length, crop_factor, orthocorr, aspect;
+  dt_iop_ashift_mode_t mode;
+  dt_iop_ashift_crop_t cropmode;
+  float cl, cr, ct, cb;
+  float last_drawn_lines[LRDT_ASHIFT_MAX_SAVED_LINES * 4];
+  int last_drawn_lines_count;
+  float last_quad_lines[8];
+} dt_iop_ashift_params_v5_t;
 
 #define LRDT_FLIP_VERSION 2
-typedef struct dt_iop_flip_params_t
+typedef struct dt_iop_flip_params_v2_t
 {
   dt_image_orientation_t orientation;
-} dt_iop_flip_params_t;
+} dt_iop_flip_params_v2_t;
 
-#define LRDT_EXPOSURE_VERSION 2
-typedef struct dt_iop_exposure_params_t
+#define LRDT_EXPOSURE_VERSION 7
+typedef enum dt_iop_exposure_mode_t
 {
-  float black, exposure, gain;
-} dt_iop_exposure_params_t;
+  EXPOSURE_MODE_MANUAL = 0,
+  EXPOSURE_MODE_DEFLICKER = 1
+} dt_iop_exposure_mode_t;
+
+typedef struct dt_iop_exposure_params_v7_t
+{
+  dt_iop_exposure_mode_t mode;
+  float black;
+  float exposure;
+  float deflicker_percentile;
+  float deflicker_target_level;
+  gboolean compensate_exposure_bias;
+  gboolean compensate_hilite_pres;
+} dt_iop_exposure_params_v7_t;
 
 #define LRDT_GRAIN_VERSION 1
 typedef enum _dt_iop_grain_channel_t
@@ -76,12 +114,12 @@ typedef enum _dt_iop_grain_channel_t
   DT_GRAIN_CHANNEL_RGB
 } _dt_iop_grain_channel_t;
 
-typedef struct dt_iop_grain_params_t
+typedef struct dt_iop_grain_params_v1_t
 {
   _dt_iop_grain_channel_t channel;
   float scale;
   float strength;
-} dt_iop_grain_params_t;
+} dt_iop_grain_params_v1_t;
 
 typedef enum dt_iop_dither_t
 {
@@ -90,45 +128,80 @@ typedef enum dt_iop_dither_t
   DITHER_16BIT = 2
 } dt_iop_dither_t;
 
-typedef struct dt_iop_fvector_2d_t
+typedef struct dt_iop_vignette_vector_2d_v3_t
 {
   float x;
   float y;
-} dt_iop_vector_2d_t;
+} dt_iop_vignette_vector_2d_v3_t;
 
 #define LRDT_VIGNETTE_VERSION 3
-typedef struct dt_iop_vignette_params_t
+typedef struct dt_iop_vignette_params_v3_t
 {
   float scale;               // 0 - 100 Inner radius, percent of largest image dimension
   float falloff_scale;       // 0 - 100 Radius for falloff -- outer radius = inner radius + falloff_scale
   float brightness;          // -1 - 1 Strength of brightness reduction
   float saturation;          // -1 - 1 Strength of saturation reduction
-  dt_iop_vector_2d_t center; // Center of vignette
+  dt_iop_vignette_vector_2d_v3_t center; // Center of vignette
   gboolean autoratio;        //
   float whratio;             // 0-1 = width/height ratio, 1-2 = height/width ratio + 1
   float shape;
   int dithering; // if and how to perform dithering
-} dt_iop_vignette_params_t;
+} dt_iop_vignette_params_v3_t;
 
-#define LRDT_SPOTS_VERSION 1
-#define MAX_SPOTS 32
+#define LRDT_RETOUCH_VERSION 3
+#define RETOUCH_NO_FORMS 300
 
-typedef struct spot_t
+typedef enum dt_iop_retouch_fill_modes_t
 {
-  // position of the spot
-  float x, y;
-  // position to clone from
-  float xc, yc;
-  float radius;
-} spot_t;
+  DT_IOP_RETOUCH_FILL_ERASE = 0,
+  DT_IOP_RETOUCH_FILL_COLOR = 1
+} dt_iop_retouch_fill_modes_t;
 
-typedef struct dt_iop_spots_params_t
+typedef enum dt_iop_retouch_blur_types_t
 {
-  int num_spots;
-  spot_t spot[MAX_SPOTS];
-} dt_iop_spots_params_t;
+  DT_IOP_RETOUCH_BLUR_GAUSSIAN = 0,
+  DT_IOP_RETOUCH_BLUR_BILATERAL = 1
+} dt_iop_retouch_blur_types_t;
 
-#define LRDT_TONECURVE_VERSION 3
+typedef enum dt_iop_retouch_algo_type_t
+{
+  DT_IOP_RETOUCH_NONE = 0,
+  DT_IOP_RETOUCH_CLONE = 1,
+  DT_IOP_RETOUCH_HEAL = 2,
+  DT_IOP_RETOUCH_BLUR = 3,
+  DT_IOP_RETOUCH_FILL = 4
+} dt_iop_retouch_algo_type_t;
+
+typedef struct dt_iop_retouch_form_data_v3_t
+{
+  dt_mask_id_t formid;
+  int scale;
+  dt_iop_retouch_algo_type_t algorithm;
+  dt_iop_retouch_blur_types_t blur_type;
+  float blur_radius;
+  dt_iop_retouch_fill_modes_t fill_mode;
+  float fill_color[3];
+  float fill_brightness;
+  int distort_mode;
+} dt_iop_retouch_form_data_v3_t;
+
+typedef struct dt_iop_retouch_params_v3_t
+{
+  dt_iop_retouch_form_data_v3_t rt_forms[RETOUCH_NO_FORMS];
+  dt_iop_retouch_algo_type_t algorithm;
+  int num_scales;
+  int curr_scale;
+  int merge_from_scale;
+  float preview_levels[3];
+  dt_iop_retouch_blur_types_t blur_type;
+  float blur_radius;
+  dt_iop_retouch_fill_modes_t fill_mode;
+  float fill_color[3];
+  float fill_brightness;
+  int max_heal_iter;
+} dt_iop_retouch_params_v3_t;
+
+#define LRDT_TONECURVE_VERSION 5
 #define DT_IOP_TONECURVE_MAXNODES 20
 typedef enum tonecurve_channel_t
 {
@@ -138,21 +211,26 @@ typedef enum tonecurve_channel_t
   ch_max = 3
 } tonecurve_channel_t;
 
-typedef struct dt_iop_tonecurve_node_t
+typedef struct dt_iop_tonecurve_node_v5_t
 {
   float x;
   float y;
-} dt_iop_tonecurve_node_t;
+} dt_iop_tonecurve_node_v5_t;
 
-typedef struct dt_iop_tonecurve_params_t
+typedef struct dt_iop_tonecurve_params_v5_t
 {
-  dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES]; // three curves (L, a, b) with max number
+  dt_iop_tonecurve_node_v5_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES]; // three curves (L, a, b) with max number
                                                                    // of nodes
   int tonecurve_nodes[3];
   int tonecurve_type[3];
   int tonecurve_autoscale_ab;
   int tonecurve_preset;
-} dt_iop_tonecurve_params_t;
+  int tonecurve_unbound_ab;
+  int preserve_colors;
+} dt_iop_tonecurve_params_v5_t;
+
+#define LRDT_TONECURVE_AUTOMATIC_RGB 3
+#define LRDT_RGB_NORM_AVERAGE 3
 
 #define LRDT_COLORZONES_VERSION 2
 #define DT_IOP_COLORZONES_BANDS 8
@@ -164,14 +242,14 @@ typedef enum dt_iop_colorzones_channel_t
   DT_IOP_COLORZONES_h = 2
 } dt_iop_colorzones_channel_t;
 
-typedef struct dt_iop_colorzones_params_t
+typedef struct dt_iop_colorzones_params_v2_t
 {
   int32_t channel;
   float equalizer_x[3][DT_IOP_COLORZONES_BANDS], equalizer_y[3][DT_IOP_COLORZONES_BANDS];
-} dt_iop_colorzones_params_t;
+} dt_iop_colorzones_params_v2_t;
 
 #define LRDT_SPLITTONING_VERSION 1
-typedef struct dt_iop_splittoning_params_t
+typedef struct dt_iop_splittoning_params_v1_t
 {
   float shadow_hue;
   float shadow_saturation;
@@ -179,27 +257,41 @@ typedef struct dt_iop_splittoning_params_t
   float highlight_saturation;
   float balance;  // center luminance of gradient
   float compress; // Compress range
-} dt_iop_splittoning_params_t;
+} dt_iop_splittoning_params_v1_t;
 
-#define LRDT_BILAT_VERSION 1
-typedef struct dt_iop_bilat_params_t
+#define LRDT_BILAT_VERSION 3
+typedef enum dt_iop_bilat_mode_t
 {
+  s_mode_bilateral = 0,
+  s_mode_local_laplacian = 1
+} dt_iop_bilat_mode_t;
+
+typedef struct dt_iop_bilat_params_v3_t
+{
+  dt_iop_bilat_mode_t mode;
   float sigma_r;
   float sigma_s;
   float detail;
-} dt_iop_bilat_params_t;
+  float midtone;
+} dt_iop_bilat_params_v3_t;
 
 
-#define LRDT_COLORIN_VERSION 1
-#define DT_IOP_COLOR_ICC_LEN_V1 100
-
-typedef struct dt_iop_colorin_params_v1_t
+#define LRDT_COLORIN_VERSION 7
+typedef enum dt_iop_color_normalize_t
 {
-  char iccprofile[DT_IOP_COLOR_ICC_LEN_V1];
-  dt_iop_color_intent_t intent;
-} dt_iop_colorin_params_v1_t;
+  DT_NORMALIZE_OFF = 0
+} dt_iop_color_normalize_t;
 
-#undef DT_IOP_COLOR_ICC_LEN_V1
+typedef struct dt_iop_colorin_params_v7_t
+{
+  dt_colorspaces_color_profile_type_t type;
+  char filename[DT_IOP_COLOR_ICC_LEN];
+  dt_iop_color_intent_t intent;
+  dt_iop_color_normalize_t normalize;
+  gboolean blue_mapping;
+  dt_colorspaces_color_profile_type_t type_work;
+  char filename_work[DT_IOP_COLOR_ICC_LEN];
+} dt_iop_colorin_params_v7_t;
 
 //
 // end of iop structs
@@ -212,7 +304,7 @@ typedef struct dt_iop_colorin_params_v1_t
 #define LRDT_BLEND_VERSION 4
 #define DEVELOP_BLENDIF_SIZE 16
 
-typedef struct dt_lr_develop_blend_params_t
+typedef struct dt_lr_develop_blend_params_v4_t
 {
   /** blending mode */
   uint32_t mode;
@@ -226,7 +318,7 @@ typedef struct dt_lr_develop_blend_params_t
   float radius;
   /** blendif parameters */
   float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
-} dt_lr_develop_blend_params_t;
+} dt_lr_develop_blend_params_v4_t;
 
 //
 // end of blend_params
@@ -263,14 +355,16 @@ char *dt_get_lightroom_xmp(const dt_imgid_t imgid)
   return NULL;
 }
 
-static float get_interpolate(lr2dt_t lr2dt_table[], const float value)
+static float get_interpolate(const lr2dt_t lr2dt_table[], const size_t n, const float value)
 {
-  int k = 0;
+  // Lightroom's values stay inside the tables; others are held at the ends
+  const float v = CLAMP(value, lr2dt_table[0].lr, lr2dt_table[n - 1].lr);
+  size_t k = 0;
 
-  while(lr2dt_table[k + 1].lr < value) k++;
+  while(k < n - 2 && lr2dt_table[k + 1].lr < v) k++;
 
   return lr2dt_table[k].dt
-         + ((value - lr2dt_table[k].lr) / (lr2dt_table[k + 1].lr - lr2dt_table[k].lr))
+         + ((v - lr2dt_table[k].lr) / (lr2dt_table[k + 1].lr - lr2dt_table[k].lr))
            * (lr2dt_table[k + 1].dt - lr2dt_table[k].dt);
 }
 
@@ -279,56 +373,146 @@ static float lr2dt_blacks(const float value)
   lr2dt_t lr2dt_blacks_table[]
       = { { -100, 0.020 }, { -50, 0.005 }, { 0, 0 }, { 50, -0.005 }, { 100, -0.010 } };
 
-  return get_interpolate(lr2dt_blacks_table, value);
+  return get_interpolate(lr2dt_blacks_table, G_N_ELEMENTS(lr2dt_blacks_table), value);
 }
 
+// the vignette mappings below were fitted to Lightroom's renders, with
+// darktable's vignette applied to the same image. Lightroom's amount darkens
+// by a fraction of gamma-encoded values, darktable's brightness of linear ones
 static float lr2dt_vignette_gain(const float value)
 {
-  lr2dt_t lr2dt_vignette_table[] = { { -100, -1 }, { -50, -0.7 }, { 0, 0 }, { 50, 0.5 }, { 100, 1 } };
-
-  return get_interpolate(lr2dt_vignette_table, value);
+  // beyond Lightroom's range the power would be of a negative number
+  const float amount = CLAMP(value, -100.0f, 100.0f);
+  return amount < 0.0f ? powf(1.0f + amount / 100.0f, 2.5f) - 1.0f : 0.74f * amount / 100.0f;
 }
 
-static float lr2dt_vignette_midpoint(const float value)
+// the width of the falloff, and where its middle lies at midpoint 50, both
+// in percent of the long side's half
+static float lr2dt_vignette_falloff(const float feather)
 {
-  lr2dt_t lr2dt_vignette_table[] = { { 0, 74 }, { 4, 75 }, { 25, 85 }, { 50, 100 }, { 100, 100 } };
+  lr2dt_t lr2dt_vignette_table[] = { { 0, 5 }, { 50, 75.5 }, { 100, 82 } };
 
-  return get_interpolate(lr2dt_vignette_table, value);
+  return get_interpolate(lr2dt_vignette_table, G_N_ELEMENTS(lr2dt_vignette_table), feather);
+}
+
+static float lr2dt_vignette_center(const float feather)
+{
+  lr2dt_t lr2dt_vignette_table[] = { { 0, 99.5 }, { 50, 92.2 }, { 100, 106.9 } };
+
+  return get_interpolate(lr2dt_vignette_table, G_N_ELEMENTS(lr2dt_vignette_table), feather);
 }
 
 static float lr2dt_grain_amount(const float value)
 {
   lr2dt_t lr2dt_grain_table[] = { { 0, 0 }, { 25, 20 }, { 50, 40 }, { 100, 80 } };
 
-  return get_interpolate(lr2dt_grain_table, value);
+  return get_interpolate(lr2dt_grain_table, G_N_ELEMENTS(lr2dt_grain_table), value);
 }
 
 static float lr2dt_grain_frequency(const float value)
 {
   lr2dt_t lr2dt_grain_table[] = { { 0, 100 }, { 50, 100 }, { 75, 400 }, { 100, 800 } };
 
-  return get_interpolate(lr2dt_grain_table, value) / 53.3;
+  return get_interpolate(lr2dt_grain_table, G_N_ELEMENTS(lr2dt_grain_table), value) / 53.3;
 }
 
+// darktable's split toning measures lightness on linear display-referred
+// RGB, Lightroom's balance a perceptual one; a positive balance favors the
+// highlights, which moves the crossover down. The exponent was fitted to
+// Lightroom's renders
 static float lr2dt_splittoning_balance(const float value)
 {
-  lr2dt_t lr2dt_splittoning_table[] = { { -100, 100 }, { 0, 0 }, { 100, 0 } };
+  return powf(CLAMP(0.5f - value / 200.0f, 0.0f, 1.0f), 1.5f);
+}
 
-  return get_interpolate(lr2dt_splittoning_table, value);
+// at equal saturation darktable tones more strongly than Lightroom
+static float lr2dt_splittoning_saturation(const float value)
+{
+  return 0.7f * value / 100.0f;
 }
 
 static float lr2dt_clarity(const float value)
 {
   lr2dt_t lr2dt_clarity_table[] = { { -100, -.650 }, { 0, 0 }, { 100, .650 } };
 
-  return get_interpolate(lr2dt_clarity_table, value);
+  return get_interpolate(lr2dt_clarity_table, G_N_ELEMENTS(lr2dt_clarity_table), value);
 }
 
-static void dt_add_hist(const dt_imgid_t imgid, const char *operation, const dt_iop_params_t *params, const int params_size, char *imported,
-                        const size_t imported_len, const int version, int *import_count)
+// Lightroom's parametric tone curve, following RawTherapee's model of it
+// (DCT_Parametric in rtengine/diagonalcurves.cc), which has the same four
+// regions and three splits. A region value of 0 leaves its region alone
+static double _param_lower(const double x)
+{
+  return (2.0 - x) * x * x * x;
+}
+
+static double _param_upper(const double x)
+{
+  return x * (2.0 + (x - 2.0) * x * x);
+}
+
+// bends the lower half of [0, 1] by sh and the upper half by hl, both in
+// [0, 1] with 0.5 for no change
+static double _param_bend(const double x, const double sh, const double hl)
+{
+  const double t = (1.0 - sh) * (1.0 - hl) * _param_lower(x) + sh * hl * _param_upper(x);
+  if(x <= 0.5)
+    return t + (1.0 - sh) * hl * _param_lower(2.0 * x) * 0.5
+             + sh * (1.0 - hl) * _param_upper(2.0 * x) * 0.5;
+  return t + (1.0 - sh) * hl * (0.5 + _param_upper(2.0 * x - 1.0) * 0.5)
+           + sh * (1.0 - hl) * (0.5 + _param_lower(2.0 * x - 1.0) * 0.5);
+}
+
+// value[] is shadows, darks, lights, highlights in [-100, 100]
+static float _lr_parametric_curve(const float x, const float split[3], const int value[4])
+{
+  if(x <= 0.0f) return 0.0f;
+
+  const double s1 = CLAMP(split[0], 0.001, 0.99);
+  const double s2 = CLAMP(split[1], 0.001, 0.99);
+  const double s3 = CLAMP(split[2], 0.001, 0.99);
+  const double shadows = (value[0] + 100.0) / 200.0;
+  const double darks = (value[1] + 100.0) / 200.0;
+  const double lights = (value[2] + 100.0) / 200.0;
+  const double highlights = (value[3] + 100.0) / 200.0;
+
+  // gamma that moves the midtone split to 0.5, where darks and lights meet
+  const double mc = -log(2.0) / log(s2);
+  const double mid = pow(_param_bend(0.5, darks, lights), 1.0 / mc);
+  const double base = pow(_param_bend(pow(x, mc), darks, lights), 1.0 / mc);
+
+  if(x < s2)
+  {
+    const double sc = -log(2.0) / log(s1 / s2);
+    return mid * pow(_param_bend(pow(base / mid, sc), shadows, 0.5), 1.0 / sc);
+  }
+
+  const double hc = -log(2.0) / log((s3 - s2) / (1.0 - s2));
+  const double ht = pow((base - mid) / (1.0 - mid), hc);
+  if(ht < 1e-6) return base;
+  return mid + (1.0 - mid) * pow(_param_bend(ht, 0.5, highlights), 1.0 / hc);
+}
+
+// a curve with fewer than two nodes, or with every node on the diagonal,
+// leaves the image unchanged
+static gboolean _tonecurve_is_identity(const dt_iop_tonecurve_params_v5_t *p)
+{
+  if(p->tonecurve_nodes[ch_L] < 2) return TRUE;
+
+  for(int k = 0; k < p->tonecurve_nodes[ch_L]; k++)
+    if(fabsf(p->tonecurve[ch_L][k].x - p->tonecurve[ch_L][k].y) > 1e-4f)
+      return FALSE;
+
+  return TRUE;
+}
+
+// returns the history num of the new entry, for masks that belong to it
+static int32_t _add_hist_with_mask(const dt_imgid_t imgid, const char *operation, const dt_iop_params_t *params,
+                                   const int params_size, char *imported, const size_t imported_len,
+                                   const int version, int *import_count, const dt_mask_id_t mask_id)
 {
   int32_t num = 0;
-  const dt_lr_develop_blend_params_t blend_params = { 0 };
+  const dt_lr_develop_blend_params_v4_t blend_params = { .mask_id = mask_id };
 
   //  get current num if any
   sqlite3_stmt *stmt;
@@ -347,7 +531,7 @@ static void dt_add_hist(const dt_imgid_t imgid, const char *operation, const dt_
                               "INSERT INTO main.history"
                               "  (imgid, num, module, operation, op_params, enabled,"
                               "   blendop_params, blendop_version, multi_priority, multi_name)"
-                              " VALUES (?1, ?2, ?3, ?4, ?5, 1, ?6, ?7, 0, ' ')",
+                              " VALUES (?1, ?2, ?3, ?4, ?5, 1, ?6, ?7, 0, 'lr import')",
                               -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -355,7 +539,7 @@ static void dt_add_hist(const dt_imgid_t imgid, const char *operation, const dt_
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, operation, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, params, params_size, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, &blend_params, sizeof(dt_lr_develop_blend_params_t), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, &blend_params, sizeof(dt_lr_develop_blend_params_v4_t), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, LRDT_BLEND_VERSION);
 
   sqlite3_step(stmt);
@@ -367,52 +551,71 @@ static void dt_add_hist(const dt_imgid_t imgid, const char *operation, const dt_
   if(imported[0]) g_strlcat(imported, ", ", imported_len);
   g_strlcat(imported, dt_iop_get_localized_name(operation), imported_len);
   (*import_count)++;
+
+  return num;
+}
+
+static void dt_add_hist(const dt_imgid_t imgid, const char *operation, const dt_iop_params_t *params, const int params_size, char *imported,
+                        const size_t imported_len, const int version, int *import_count)
+{
+  _add_hist_with_mask(imgid, operation, params, params_size, imported, imported_len, version, import_count, 0);
 }
 
 #define MAX_PTS 20
 
-typedef enum lr_curve_kind_t
+// a spot removal shape, normalized to Lightroom's view of the raw: a circle
+// or, with dabs, a brush stroke
+typedef struct lr_spot_t
 {
-  linear = 0,
-  medium_contrast = 1,
-  strong_contrast = 2,
-  custom = 3
-} lr_curve_kind_t;
+  // the center, or the first dab
+  float x, y;
+  float radius;
+  // position x, y clones from
+  float xc, yc;
+  gboolean clone;
+  float opacity;
+  // the share of the radius the edge fades over, 0 to 1
+  float feather;
+  // n_dabs pairs of x, y; NULL for a circle
+  float *dabs;
+  int n_dabs;
+} lr_spot_t;
 
 typedef struct lr_data_t
 {
-  dt_iop_clipping_params_t pc;
+  dt_iop_crop_params_v3_t pcr;
+  dt_iop_ashift_params_v5_t pas;
   gboolean has_crop;
 
-  dt_iop_flip_params_t pf;
+  dt_iop_flip_params_v2_t pf;
   gboolean has_flip;
 
-  dt_iop_exposure_params_t pe;
+  dt_iop_exposure_params_v7_t pe;
   gboolean has_exposure;
 
-  dt_iop_vignette_params_t pv;
+  dt_iop_vignette_params_v3_t pv;
   gboolean has_vignette;
 
-  dt_iop_grain_params_t pg;
+  dt_iop_grain_params_v1_t pg;
   gboolean has_grain;
 
-  dt_iop_spots_params_t ps;
-  gboolean has_spots;
+  lr_spot_t spots[RETOUCH_NO_FORMS];
+  int n_spots;
+  gboolean has_retouch_areas;
 
-  dt_iop_tonecurve_params_t ptc;
+  dt_iop_tonecurve_params_v5_t ptc;
   int ptc_value[4];
   float ptc_split[3];
-  lr_curve_kind_t curve_kind;
   int curve_pts[MAX_PTS][2];
   int n_pts;
 
-  dt_iop_colorzones_params_t pcz;
+  dt_iop_colorzones_params_v2_t pcz;
   gboolean has_colorzones;
 
-  dt_iop_splittoning_params_t pst;
+  dt_iop_splittoning_params_v1_t pst;
   gboolean has_splittoning;
 
-  dt_iop_bilat_params_t pbl;
+  dt_iop_bilat_params_v3_t pbl;
   gboolean has_bilat;
 
   gboolean has_tags;
@@ -427,8 +630,9 @@ typedef struct lr_data_t
   int color;
   gboolean has_colorlabel;
 
-  float fratio;                // factor ratio image
+  float fratio;                // width/height of the cropped frame, upright
   float crop_roundness;        // from lightroom
+  float vignette_midpoint, vignette_feather;
   int iwidth, iheight;         // image width / height
   dt_exif_image_orientation_t orientation;
 } lr_data_t;
@@ -449,7 +653,7 @@ static gboolean _read_float(const char **startptr, const char *key, float *value
   return iter != *startptr;
 }
 
-static gboolean _skip_key_value_pair(const char **startptr, const char *key)
+static gboolean _read_word(const char **startptr, const char *key, const char **word)
 {
   const char *iter = *startptr;
   while(*iter == ' ') iter++;
@@ -460,6 +664,7 @@ static gboolean _skip_key_value_pair(const char **startptr, const char *key)
   if(*iter++ != '=')
     return FALSE;
   while(*iter == ' ') iter++;
+  *word = iter;
   while((*iter >= 'a' && *iter <= 'z') || (*iter >= 'A' && *iter <= 'Z')) iter++;
   *startptr = iter;
   return TRUE;
@@ -467,7 +672,174 @@ static gboolean _skip_key_value_pair(const char **startptr, const char *key)
 
 static gboolean _skip_comma(const char **startptr)
 {
-  return *(*startptr)++ == ',';
+  if(**startptr != ',')
+    return FALSE;
+  (*startptr)++;
+  return TRUE;
+}
+
+// helpers for the nested RDF of RetouchAreas, where a property can be an
+// attribute or a child element, and a list item its own resource or the
+// parent of an rdf:Description
+static xmlNodePtr _rdf_child(const xmlNodePtr node, const char *name)
+{
+  for(xmlNodePtr child = node ? node->children : NULL; child; child = child->next)
+    if(child->type == XML_ELEMENT_NODE && !xmlStrcmp(child->name, (const xmlChar *)name))
+      return child;
+  return NULL;
+}
+
+static xmlNodePtr _rdf_resource(const xmlNodePtr li)
+{
+  const xmlNodePtr desc = _rdf_child(li, "Description");
+  return desc ? desc : li;
+}
+
+// the first rdf:li of the rdf:Seq in node
+static xmlNodePtr _rdf_seq_first(const xmlNodePtr node)
+{
+  return _rdf_child(_rdf_child(node, "Seq"), "li");
+}
+
+static xmlNodePtr _rdf_seq_next(const xmlNodePtr li)
+{
+  for(xmlNodePtr next = li->next; next; next = next->next)
+    if(next->type == XML_ELEMENT_NODE && !xmlStrcmp(next->name, (const xmlChar *)"li"))
+      return next;
+  return NULL;
+}
+
+static xmlChar *_rdf_prop(const xmlDocPtr doc, const xmlNodePtr node, const char *name)
+{
+  xmlChar *value = xmlGetProp(node, (const xmlChar *)name);
+  if(value) return value;
+  const xmlNodePtr child = _rdf_child(node, name);
+  return child ? xmlNodeListGetString(doc, child->children, 1) : NULL;
+}
+
+static float _rdf_prop_float(const xmlDocPtr doc, const xmlNodePtr node, const char *name, const float fallback)
+{
+  xmlChar *value = _rdf_prop(doc, node, name);
+  const float f = value ? g_ascii_strtod((const char *)value, NULL) : fallback;
+  xmlFree(value);
+  return f;
+}
+
+static gboolean _rdf_prop_is(const xmlDocPtr doc, const xmlNodePtr node, const char *name, const char *expected)
+{
+  xmlChar *value = _rdf_prop(doc, node, name);
+  const gboolean is = value && !xmlStrcmp(value, (const xmlChar *)expected);
+  xmlFree(value);
+  return is;
+}
+
+// dabs are "d x y", one per list item
+static float *_read_dabs(const xmlDocPtr doc, const xmlNodePtr mask, int *n_dabs)
+{
+  GArray *dabs = g_array_new(FALSE, FALSE, sizeof(float));
+  for(xmlNodePtr li = _rdf_seq_first(_rdf_child(mask, "Dabs")); li; li = _rdf_seq_next(li))
+  {
+    xmlChar *cvalue = xmlNodeListGetString(doc, li->children, 1);
+    if(!cvalue) continue;
+
+    const char *iter = (const char *)cvalue;
+    while(*iter == ' ' || g_ascii_isalpha(*iter)) iter++;
+    char *end = NULL;
+    float xy[2];
+    xy[0] = g_ascii_strtod(iter, &end);
+    const gboolean has_x = end != iter;
+    iter = end;
+    xy[1] = g_ascii_strtod(iter, &end);
+    // a dab on top of the previous one adds nothing to a stroke
+    if(has_x && end != iter
+       && (dabs->len == 0
+           || xy[0] != g_array_index(dabs, float, dabs->len - 2)
+           || xy[1] != g_array_index(dabs, float, dabs->len - 1)))
+      g_array_append_vals(dabs, xy, 2);
+    xmlFree(cvalue);
+  }
+  *n_dabs = dabs->len / 2;
+  return (float *)g_array_free(dabs, *n_dabs == 0);
+}
+
+static void _free_spots(lr_data_t *data)
+{
+  for(int k = 0; k < data->n_spots; k++)
+    g_free(data->spots[k].dabs);
+  data->n_spots = 0;
+}
+
+// one area per spot, each with one or more masks: circles are Mask/Ellipse,
+// brushed spots Mask/Paint
+static void _read_retouch_area(const xmlDocPtr doc, const xmlNodePtr li, lr_data_t *data)
+{
+  const xmlNodePtr area = _rdf_resource(li);
+  // the remove tool, heal_patchmatch, fills from a patch only Lightroom
+  // has, in an .acr sidecar, and records no source
+  const gboolean clone = _rdf_prop_is(doc, area, "SpotType", "clone");
+  if(!clone && !_rdf_prop_is(doc, area, "SpotType", "heal")) return;
+
+  // the source position of the first mask's center or first dab, whose y
+  // Lightroom calls OffsetY
+  const float sx = _rdf_prop_float(doc, area, "SourceX", NAN);
+  const float sy = _rdf_prop_float(doc, area, "OffsetY", NAN);
+  if(isnan(sx) || isnan(sy)) return;
+
+  const float opacity = CLAMP(_rdf_prop_float(doc, area, "Opacity", 1.0f), 0.0f, 1.0f);
+  const float feather = CLAMP(_rdf_prop_float(doc, area, "Feather", 0.0f), 0.0f, 1.0f);
+  float dx = NAN, dy = NAN;
+
+  for(xmlNodePtr mli = _rdf_seq_first(_rdf_child(area, "Masks"));
+      mli && data->n_spots < RETOUCH_NO_FORMS;
+      mli = _rdf_seq_next(mli))
+  {
+    const xmlNodePtr mask = _rdf_resource(mli);
+    // erasing strokes, which take away from the spot, are left out
+    if(_rdf_prop_is(doc, mask, "MaskActive", "false")
+       || _rdf_prop_is(doc, mask, "MaskInverted", "true")
+       || _rdf_prop_float(doc, mask, "MaskValue", 1.0f) <= 0.0f)
+      continue;
+
+    lr_spot_t s = { .clone = clone, .opacity = opacity, .feather = feather };
+    if(_rdf_prop_is(doc, mask, "What", "Mask/Ellipse"))
+    {
+      s.x = _rdf_prop_float(doc, mask, "X", NAN);
+      s.y = _rdf_prop_float(doc, mask, "Y", NAN);
+      // the spot tool only draws circles
+      s.radius = _rdf_prop_float(doc, mask, "SizeX", NAN);
+    }
+    else if(_rdf_prop_is(doc, mask, "What", "Mask/Paint"))
+    {
+      s.radius = _rdf_prop_float(doc, mask, "Radius", NAN);
+      s.dabs = _read_dabs(doc, mask, &s.n_dabs);
+      if(s.n_dabs == 0) continue;
+      s.x = s.dabs[0];
+      s.y = s.dabs[1];
+      // a single dab is a circle
+      if(s.n_dabs == 1)
+      {
+        g_clear_pointer(&s.dabs, g_free);
+        s.n_dabs = 0;
+      }
+    }
+    else
+      continue;
+
+    if(isnan(s.x) || isnan(s.y) || !(s.radius > 0.0f))
+    {
+      g_free(s.dabs);
+      continue;
+    }
+
+    if(isnan(dx))
+    {
+      dx = sx - s.x;
+      dy = sy - s.y;
+    }
+    s.xc = s.x + dx;
+    s.yc = s.y + dy;
+    data->spots[data->n_spots++] = s;
+  }
 }
 
 /* lrop handle the Lr operation and convert it as a dt iop */
@@ -480,15 +852,15 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
   if(value)
   {
     if(!xmlStrcmp(name, (const xmlChar *)"CropTop"))
-      data->pc.cy = g_ascii_strtod((char *)value, NULL);
+      data->pcr.cy = g_ascii_strtod((char *)value, NULL);
     else if(!xmlStrcmp(name, (const xmlChar *)"CropRight"))
-      data->pc.cw = g_ascii_strtod((char *)value, NULL);
+      data->pcr.cw = g_ascii_strtod((char *)value, NULL);
     else if(!xmlStrcmp(name, (const xmlChar *)"CropLeft"))
-      data->pc.cx = g_ascii_strtod((char *)value, NULL);
+      data->pcr.cx = g_ascii_strtod((char *)value, NULL);
     else if(!xmlStrcmp(name, (const xmlChar *)"CropBottom"))
-      data->pc.ch = g_ascii_strtod((char *)value, NULL);
+      data->pcr.ch = g_ascii_strtod((char *)value, NULL);
     else if(!xmlStrcmp(name, (const xmlChar *)"CropAngle"))
-      data->pc.angle = -g_ascii_strtod((char *)value, NULL);
+      data->pas.rotation = g_ascii_strtod((char *)value, NULL);
     else if(!xmlStrcmp(name, (const xmlChar *)"ImageWidth"))
       data->iwidth = atoi((char *)value);
     else if(!xmlStrcmp(name, (const xmlChar *)"ImageLength"))
@@ -535,7 +907,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
     else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteMidpoint"))
     {
       const int v = atoi((char *)value);
-      data->pv.scale = lr2dt_vignette_midpoint((float)v);
+      data->vignette_midpoint = CLAMP(v, 0, 100);
     }
     else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteStyle"))
     {
@@ -548,7 +920,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
     else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteFeather"))
     {
       const int v = atoi((char *)value);
-      if(v != 0) data->pv.falloff_scale = (float)v;
+      data->vignette_feather = CLAMP(v, 0, 100);
     }
     else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteRoundness"))
     {
@@ -596,17 +968,6 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
     else if(!xmlStrcmp(name, (const xmlChar *)"ParametricHighlightSplit"))
     {
       data->ptc_split[2] = g_ascii_strtod((char *)value, NULL) / 100.0;
-    }
-    else if(!xmlStrcmp(name, (const xmlChar *)"ToneCurveName2012"))
-    {
-      if(!xmlStrcmp(value, (const xmlChar *)"Linear"))
-        data->curve_kind = linear;
-      else if(!xmlStrcmp(value, (const xmlChar *)"Medium Contrast"))
-        data->curve_kind = medium_contrast;
-      else if(!xmlStrcmp(value, (const xmlChar *)"Strong Contrast"))
-        data->curve_kind = strong_contrast;
-      else if(!xmlStrcmp(value, (const xmlChar *)"Custom"))
-        data->curve_kind = custom;
     }
     else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentRed"))
     {
@@ -756,25 +1117,25 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
     {
       const int v = atoi((char *)value);
       if(v != 0) data->has_splittoning = TRUE;
-      data->pst.shadow_hue = (float)v / 255.0;
+      data->pst.shadow_hue = (float)v / 360.0;
     }
     else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningShadowSaturation"))
     {
       const int v = atoi((char *)value);
       if(v != 0) data->has_splittoning = TRUE;
-      data->pst.shadow_saturation = (float)v / 100.0;
+      data->pst.shadow_saturation = lr2dt_splittoning_saturation(v);
     }
     else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningHighlightHue"))
     {
       const int v = atoi((char *)value);
       if(v != 0) data->has_splittoning = TRUE;
-      data->pst.highlight_hue = (float)v / 255.0;
+      data->pst.highlight_hue = (float)v / 360.0;
     }
     else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningHighlightSaturation"))
     {
       const int v = atoi((char *)value);
       if(v != 0) data->has_splittoning = TRUE;
-      data->pst.highlight_saturation = (float)v / 100.0;
+      data->pst.highlight_saturation = lr2dt_splittoning_saturation(v);
     }
     else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningBalance"))
     {
@@ -912,42 +1273,53 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
     }
     if(tag_change) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
   }
-  else if(dev != NULL && !xmlStrcmp(name, (const xmlChar *)"RetouchInfo"))
+  else if(dev != NULL && !xmlStrcmp(name, (const xmlChar *)"RetouchAreas"))
   {
-    xmlNodePtr riNode = node;
-
-    while(riNode)
+    // RetouchAreas has every spot, so it replaces any read from RetouchInfo
+    _free_spots(data);
+    data->has_retouch_areas = TRUE;
+    for(xmlNodePtr li = node; li; li = _rdf_seq_next(li))
+      if(!xmlStrcmp(li->name, (const xmlChar *)"li"))
+        _read_retouch_area(doc, li, data);
+  }
+  else if(dev != NULL && !data->has_retouch_areas && !xmlStrcmp(name, (const xmlChar *)"RetouchInfo"))
+  {
+    // RetouchInfo lists only the circular spots: Lightroom versions that
+    // write RetouchAreas list the brushed ones there alone
+    for(xmlNodePtr riNode = node; riNode && data->n_spots < RETOUCH_NO_FORMS; riNode = riNode->next)
     {
-      if(!xmlStrcmp(riNode->name, (const xmlChar *)"li"))
+      if(xmlStrcmp(riNode->name, (const xmlChar *)"li")) continue;
+
+      xmlChar *cvalue = xmlNodeListGetString(doc, riNode->xmlChildrenNode, 1);
+      if(!cvalue) continue;
+
+      lr_spot_t *s = &data->spots[data->n_spots];
+      const char *startptr = (const char *)cvalue;
+      const char *word = NULL;
+      if(_read_float(&startptr, "centerX", &s->x)
+         && _skip_comma(&startptr)
+         && _read_float(&startptr, "centerY", &s->y)
+         && _skip_comma(&startptr)
+         && _read_float(&startptr, "radius", &s->radius)
+         && _skip_comma(&startptr)
+         && _read_word(&startptr, "sourceState", &word)
+         && _skip_comma(&startptr)
+         && _read_float(&startptr, "sourceX", &s->xc)
+         && _skip_comma(&startptr)
+         && _read_float(&startptr, "sourceY", &s->yc)
+         && !isnan(s->x) && !isnan(s->y) && s->radius > 0.0f)
       {
-        xmlChar *cvalue = xmlNodeListGetString(doc, riNode->xmlChildrenNode, 1);
-        spot_t *p = &data->ps.spot[data->ps.num_spots];
-        float x, y, radius, xc, yc;
-        const char *startptr = (const char *)cvalue;
-        if(_read_float(&startptr, "centerX", &x) &&
-           _skip_comma(&startptr) &&
-           _read_float(&startptr, "centerY", &y) &&
-           _skip_comma(&startptr) &&
-           _read_float(&startptr, "radius", &radius) &&
-           _skip_comma(&startptr) &&
-           _skip_key_value_pair(&startptr, "sourceState") &&
-           _skip_comma(&startptr) &&
-           _read_float(&startptr, "sourceX", &xc) &&
-           _skip_comma(&startptr) &&
-           _read_float(&startptr, "sourceY", &yc))
-        {
-          p->x = x;
-          p->y = y;
-          p->radius = radius;
-          p->xc = xc;
-          p->yc = yc;
-          data->ps.num_spots++;
-          data->has_spots = TRUE;
-        }
-        xmlFree(cvalue);
+        // without a spotType, heal, Lightroom's default tool
+        s->clone = _skip_comma(&startptr)
+                   && _read_word(&startptr, "spotType", &word)
+                   && g_str_has_prefix(word, "clone");
+        s->opacity = 1.0f;
+        s->feather = 0.0f;
+        s->dabs = NULL;
+        s->n_dabs = 0;
+        data->n_spots++;
       }
-      if(data->ps.num_spots == MAX_SPOTS) break;
-      riNode = riNode->next;
+      xmlFree(cvalue);
     }
   }
   else if(dev != NULL && !xmlStrcmp(name, (const xmlChar *)"ToneCurvePV2012"))
@@ -1032,6 +1404,7 @@ static int _has_list(const char *name)
   return !strcmp(name, "subject")
     || !strcmp(name, "hierarchicalSubject")
     || !strcmp(name, "RetouchInfo")
+    || !strcmp(name, "RetouchAreas")
     || !strcmp(name, "ToneCurvePV2012")
     || !strcmp(name, "title")
     || !strcmp(name, "description")
@@ -1064,8 +1437,9 @@ static void _handle_xpath(const dt_develop_t *dev, xmlDoc *doc, const dt_imgid_t
             }
           else
             {
-              const xmlChar *value = xmlNodeListGetString(doc, node->children, 1);
+              xmlChar *value = xmlNodeListGetString(doc, node->children, 1);
               _lrop(dev, doc, imgid, node->name, value, NULL, data);
+              xmlFree(value);
             }
         }
 
@@ -1108,6 +1482,127 @@ static inline void rotate_xy(double *cx, double *cy, const double rangle)
 static inline float round5(const double x)
 {
   return round(x * 100000.f) / 100000.f;
+}
+
+// Lightroom normalizes to the raw as cropped by rawspeed and masks to the
+// whole sensor. Both are in sensor orientation
+static void _lr_to_mask(const dt_image_t *img, const float x, const float y, float out[2])
+{
+  out[0] = (x * (img->width - img->crop_x - img->crop_right) + img->crop_x) / img->width;
+  out[1] = (y * (img->height - img->crop_y - img->crop_bottom) + img->crop_y) / img->height;
+}
+
+static dt_masks_form_t *_spot_to_brush(const dt_image_t *img, const lr_spot_t *s, const float border,
+                                        const float hardness)
+{
+  dt_masks_form_t *form = dt_masks_create(DT_MASKS_BRUSH | DT_MASKS_CLONE);
+  float *pts = g_new(float, 2 * s->n_dabs);
+  for(int i = 0; i < s->n_dabs; i++)
+    _lr_to_mask(img, s->dabs[2 * i], s->dabs[2 * i + 1], pts + 2 * i);
+
+  // the control points of a catmull-rom spline through the dabs, as
+  // _brush_init_ctrl_points() in brush.c sets them for a drawn stroke
+  const int last = s->n_dabs - 1;
+  for(int i = 0; i <= last; i++)
+  {
+    dt_masks_point_brush_t *p = calloc(1, sizeof(dt_masks_point_brush_t));
+    for(int c = 0; c < 2; c++)
+    {
+      const float prev = i > 0 ? pts[2 * (i - 1) + c] : 2.0f * pts[c] - pts[2 + c];
+      const float next = i < last ? pts[2 * (i + 1) + c] : 2.0f * pts[2 * last + c] - pts[2 * (last - 1) + c];
+      p->corner[c] = pts[2 * i + c];
+      p->ctrl1[c] = p->corner[c] - (next - prev) / 6.0f;
+      p->ctrl2[c] = p->corner[c] + (next - prev) / 6.0f;
+      p->border[c] = border;
+    }
+    p->density = 1.0f;
+    p->hardness = hardness;
+    p->state = DT_MASKS_POINT_STATE_NORMAL;
+    form->points = g_list_append(form->points, p);
+  }
+  g_free(pts);
+  return form;
+}
+
+// retouch takes its shapes from the masks history, not from its params: a
+// clone group of one circle or brush per spot, recorded under the retouch
+// history num
+static void _add_retouch_hist(const dt_develop_t *dev, const dt_imgid_t imgid, const lr_data_t *data,
+                              char *imported, const size_t imported_len, int *import_count)
+{
+  const dt_image_t *img = &dev->image_storage;
+  const float cw = img->width - img->crop_x - img->crop_right;
+  const float ch = img->height - img->crop_y - img->crop_bottom;
+  if(cw <= 0.0f || ch <= 0.0f) return;
+  // a Lightroom spot radius is relative to the long side, a circle radius or
+  // brush border to the short side of the whole sensor
+  const float rscale = MAX(cw, ch) / MIN(img->width, img->height);
+
+  dt_iop_retouch_params_v3_t pr = { .algorithm = DT_IOP_RETOUCH_HEAL,
+                                 .preview_levels = { -3.0f, 0.0f, 3.0f },
+                                 .blur_radius = 10.0f,
+                                 .max_heal_iter = 2000 };
+  const dt_iop_module_t *retouch = dt_iop_get_module_by_op_priority(dev->iop, "retouch", 0);
+  if(retouch && retouch->params_size == sizeof(pr))
+    memcpy(&pr, retouch->default_params, sizeof(pr));
+
+  dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP | DT_MASKS_CLONE);
+  snprintf(grp->name, sizeof(grp->name), _("group `%s'"), dt_iop_get_localized_name("retouch"));
+  GList *forms = NULL;
+  int n_circles = 0, n_brushes = 0;
+
+  for(int k = 0; k < data->n_spots; k++)
+  {
+    const lr_spot_t *s = &data->spots[k];
+    const float radius = s->radius * rscale;
+    // Lightroom feathers inside the radius and darktable outside it, over
+    // a band that measured about half the feather wide
+    const float soft = s->feather / 2.0f;
+    dt_masks_form_t *form;
+    if(s->dabs)
+    {
+      // a brush clones from relative to its first point, as a stroke does
+      // from its first dab
+      form = _spot_to_brush(img, s, radius, 1.0f - soft);
+      form->functions->set_form_name(form, ++n_brushes);
+    }
+    else
+    {
+      form = dt_masks_create(DT_MASKS_CIRCLE | DT_MASKS_CLONE);
+      form->functions->set_form_name(form, ++n_circles);
+      dt_masks_point_circle_t *circle = calloc(1, sizeof(dt_masks_point_circle_t));
+      _lr_to_mask(img, s->x, s->y, circle->center);
+      circle->radius = radius * (1.0f - soft);
+      circle->border = radius * soft;
+      form->points = g_list_append(NULL, circle);
+    }
+    _lr_to_mask(img, s->xc, s->yc, form->source);
+    forms = g_list_append(forms, form);
+
+    // as dt_masks_group_insert_point() adds a retouch shape, but with the
+    // spot's opacity rather than the preference for new shapes
+    dt_masks_point_group_t *grpt = calloc(1, sizeof(dt_masks_point_group_t));
+    grpt->formid = form->formid;
+    grpt->parentid = grp->formid;
+    grpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
+    grpt->opacity = s->opacity;
+    grpt->group_opacity = 1.0f;
+    grp->points = g_list_append(grp->points, grpt);
+
+    pr.rt_forms[k] = (dt_iop_retouch_form_data_v3_t){ .formid = form->formid,
+                                                   .algorithm = s->clone ? DT_IOP_RETOUCH_CLONE
+                                                                         : DT_IOP_RETOUCH_HEAL,
+                                                   .blur_radius = pr.blur_radius,
+                                                   .distort_mode = 2 };
+  }
+  forms = g_list_append(forms, grp);
+
+  const int32_t num = _add_hist_with_mask(imgid, "retouch", (dt_iop_params_t *)&pr, sizeof(pr), imported,
+                                          imported_len, LRDT_RETOUCH_VERSION, import_count, grp->formid);
+  for(GList *l = forms; l; l = g_list_next(l))
+    dt_masks_write_masks_history_item(imgid, num, l->data);
+
+  g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
 }
 
 gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto)
@@ -1156,6 +1651,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   {
     if(!iauto) dt_control_log(_("`%s' is not a Lightroom XMP!"), pathname);
     g_free(pathname);
+    xmlFreeDoc(doc);
     return FALSE;
   }
 
@@ -1225,11 +1721,14 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   data.has_exposure = FALSE;
   data.has_vignette = FALSE;
   data.has_grain = FALSE;
-  data.has_spots = FALSE;
-  data.curve_kind = linear;
   data.n_pts = 0;
+  // Lightroom's defaults, which it leaves out of the XMP
+  data.ptc_split[0] = 0.25f;
+  data.ptc_split[1] = 0.50f;
+  data.ptc_split[2] = 0.75f;
   data.has_colorzones = FALSE;
   data.has_splittoning = FALSE;
+  data.pst.balance = lr2dt_splittoning_balance(0.0f);
   data.has_bilat = FALSE;
   data.has_tags = FALSE;
   data.rating = 0;
@@ -1241,8 +1740,10 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   data.has_gps = FALSE;
   data.color = 0;
   data.has_colorlabel = FALSE;
-  data.fratio = NAN;                // factor ratio image
+  data.fratio = NAN;                // until the crop sets it
   data.crop_roundness = NAN;        // from lightroom
+  data.vignette_midpoint = 50.0f;   // Lightroom's defaults
+  data.vignette_feather = 50.0f;
   data.iwidth = 0;
   data.iheight = 0;                 // image width / height
   data.orientation = EXIF_ORIENTATION_NONE;
@@ -1301,10 +1802,13 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
 
   if(dev != NULL && is_lr && dt_image_is_raw(&dev->image_storage))
   {
-    // set colorin to cmatrix which is the default from Adobe (so closer to what Lightroom does)
-    dt_iop_colorin_params_v1_t pci = (dt_iop_colorin_params_v1_t){ "cmatrix", DT_INTENT_PERCEPTUAL };
+    // the standard color matrix is Adobe's, and Lightroom works in linear ProPhoto RGB
+    const dt_iop_colorin_params_v7_t pci = { .type = DT_COLORSPACE_STANDARD_MATRIX,
+                                          .intent = DT_INTENT_PERCEPTUAL,
+                                          .normalize = DT_NORMALIZE_OFF,
+                                          .type_work = DT_COLORSPACE_PROPHOTO_RGB };
 
-    dt_add_hist(imgid, "colorin", (dt_iop_params_t *)&pci, sizeof(dt_iop_colorin_params_v1_t), imported,
+    dt_add_hist(imgid, "colorin", (dt_iop_params_t *)&pci, sizeof(dt_iop_colorin_params_v7_t), imported,
                 sizeof(imported), LRDT_COLORIN_VERSION, &n_import);
     refresh_needed = TRUE;
   }
@@ -1316,28 +1820,40 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     double new_width, new_height;
     dt_image_orientation_t orientation = dt_image_orientation_to_flip_bits(data.orientation);
 
-    data.pc.k_sym = 0;
-    data.pc.k_apply = 0;
-    data.pc.crop_auto = 0;  // Cannot use crop-auto=1 (the default at clipping GUI), as it does not allow to cover all cropping cases.
-    data.pc.ratio_n = data.pc.ratio_d = -2;
-    data.pc.k_h = data.pc.k_v = 0;
-    data.pc.k_type = 0;
-    data.pc.kxa = data.pc.kxd = 0.2f;
-    data.pc.kxc = data.pc.kxb = 0.8f;
-    data.pc.kya = data.pc.kyb = 0.2f;
-    data.pc.kyc = data.pc.kyd = 0.8f;
+    // ashift runs before flip in the pipe, so it rotates in sensor
+    // orientation, the same space Lightroom's CropAngle is expressed in
+    if(data.pas.rotation != 0.0f)
+    {
+      data.pas.f_length = 28.0f;
+      data.pas.crop_factor = 1.0f;
+      data.pas.orthocorr = 100.0f;
+      data.pas.aspect = 1.0f;
+      data.pas.mode = ASHIFT_MODE_GENERIC;
+      data.pas.cropmode = ASHIFT_CROP_OFF; // the crop module below does the cropping
+      data.pas.cl = data.pas.ct = 0.0f;
+      data.pas.cr = data.pas.cb = 1.0f;
+
+      dt_add_hist(imgid, "ashift", (dt_iop_params_t *)&data.pas, sizeof(dt_iop_ashift_params_v5_t), imported,
+                  sizeof(imported), LRDT_ASHIFT_VERSION, &n_import);
+    }
+
+    data.pcr.ratio_n = data.pcr.ratio_d = 0; // freehand
 
     // Convert image in image-centered coordinate system, [-image_size / 2; + image_size / 2]
-    cx = (data.pc.cx - 0.5f) * data.iwidth;
-    cw = (data.pc.cw - 0.5f) * data.iwidth;
-    cy = (data.pc.cy - 0.5f) * data.iheight;
-    ch = (data.pc.ch - 0.5f) * data.iheight;
+    cx = (data.pcr.cx - 0.5f) * data.iwidth;
+    cw = (data.pcr.cw - 0.5f) * data.iwidth;
+    cy = (data.pcr.cy - 0.5f) * data.iheight;
+    ch = (data.pcr.ch - 0.5f) * data.iheight;
 
     // Rotate the cropped zone according to rotation angle
     // All rotations done using center of the image
-    rangle = deg2rad(data.pc.angle);
+    rangle = deg2rad(-data.pas.rotation);
     rotate_xy(&cx, &cy, -rangle);
     rotate_xy(&cw, &ch, -rangle);
+
+    // the corners are now those of the frame, which the vignette sees upright
+    data.fratio = (cw - cx) / (ch - cy);
+    if(orientation & ORIENTATION_SWAP_XY) data.fratio = 1.0f / data.fratio;
 
     // Calculate the new overall image size (black zone included) after rotation
     // rangle is limited to -45°;+45° by LR
@@ -1345,33 +1861,24 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     new_height = rotate_y(+data.iwidth, +data.iheight, -fabs(rangle));
 
     // apply new size & convert image back in initial coordinate system [0.0 ; +1.0]
-    data.pc.cx = round5((cx / new_width)  + 0.5f);
-    data.pc.cw = round5((cw / new_width)  + 0.5f);
-    data.pc.cy = round5((cy / new_height) + 0.5f);
-    data.pc.ch = round5((ch / new_height) + 0.5f);
+    data.pcr.cx = round5((cx / new_width)  + 0.5f);
+    data.pcr.cw = round5((cw / new_width)  + 0.5f);
+    data.pcr.cy = round5((cy / new_height) + 0.5f);
+    data.pcr.ch = round5((ch / new_height) + 0.5f);
 
     // adjust crop data according to the orientation - Must be done after rotation
     if(orientation & ORIENTATION_FLIP_X)
-      flip(&data.pc.cx, &data.pc.cw);
+      flip(&data.pcr.cx, &data.pcr.cw);
     if(orientation & ORIENTATION_FLIP_Y)
-      flip(&data.pc.cy, &data.pc.ch);
+      flip(&data.pcr.cy, &data.pcr.ch);
     if(orientation & ORIENTATION_SWAP_XY)
     {
-      swap(&data.pc.cx, &data.pc.cy);
-      swap(&data.pc.cw, &data.pc.ch);
+      swap(&data.pcr.cx, &data.pcr.cy);
+      swap(&data.pcr.cw, &data.pcr.ch);
     }
 
-    // Invert angle when orientation is flipped
-    if(orientation == ORIENTATION_FLIP_HORIZONTALLY
-    || orientation == ORIENTATION_FLIP_VERTICALLY
-    || orientation == ORIENTATION_TRANSPOSE
-    || orientation == ORIENTATION_TRANSVERSE)
-      data.pc.angle = -data.pc.angle;
-
-    data.fratio = (data.pc.cw - data.pc.cx) / (data.pc.ch - data.pc.cy);
-
-    dt_add_hist(imgid, "clipping", (dt_iop_params_t *)&data.pc, sizeof(dt_iop_clipping_params_t), imported,
-                sizeof(imported), LRDT_CLIPPING_VERSION, &n_import);
+    dt_add_hist(imgid, "crop", (dt_iop_params_t *)&data.pcr, sizeof(dt_iop_crop_params_v3_t), imported,
+                sizeof(imported), LRDT_CROP_VERSION, &n_import);
     refresh_needed = TRUE;
   }
 
@@ -1379,14 +1886,29 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   {
     data.pf.orientation = dt_image_orientation_to_flip_bits(data.orientation);
 
-    dt_add_hist(imgid, "flip", (dt_iop_params_t *)&data.pf, sizeof(dt_iop_flip_params_t), imported,
+    dt_add_hist(imgid, "flip", (dt_iop_params_t *)&data.pf, sizeof(dt_iop_flip_params_v2_t), imported,
                 sizeof(imported), LRDT_FLIP_VERSION, &n_import);
     refresh_needed = TRUE;
   }
 
   if(dev != NULL && data.has_exposure)
   {
-    dt_add_hist(imgid, "exposure", (dt_iop_params_t *)&data.pe, sizeof(dt_iop_exposure_params_t), imported,
+    // Lightroom's adjustments are relative to its default rendering, so add
+    // them to the module's defaults for this image, which in the
+    // scene-referred workflow hold the baseline boost and bias compensation
+    dt_iop_exposure_params_v7_t pe = { .mode = EXPOSURE_MODE_MANUAL,
+                                    .deflicker_percentile = 50.0f,
+                                    .deflicker_target_level = -4.0f,
+                                    .compensate_hilite_pres = TRUE };
+    const dt_iop_module_t *exposure =
+      dt_iop_get_module_by_op_priority(dev->iop, "exposure", 0);
+    if(exposure && exposure->params_size == sizeof(pe))
+      memcpy(&pe, exposure->default_params, sizeof(pe));
+
+    pe.exposure += data.pe.exposure;
+    pe.black += data.pe.black;
+
+    dt_add_hist(imgid, "exposure", (dt_iop_params_t *)&pe, sizeof(dt_iop_exposure_params_v7_t), imported,
                 sizeof(imported), LRDT_EXPOSURE_VERSION, &n_import);
     refresh_needed = TRUE;
   }
@@ -1395,29 +1917,38 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   {
     data.pg.channel = 0;
 
-    dt_add_hist(imgid, "grain", (dt_iop_params_t *)&data.pg, sizeof(dt_iop_grain_params_t), imported,
+    dt_add_hist(imgid, "grain", (dt_iop_params_t *)&data.pg, sizeof(dt_iop_grain_params_v1_t), imported,
                 sizeof(imported), LRDT_GRAIN_VERSION, &n_import);
     refresh_needed = TRUE;
   }
 
   if(dev != NULL && data.has_vignette)
   {
-    const float base_ratio = 1.325 / 1.5;
-
     data.pv.autoratio = FALSE;
     data.pv.dithering = DITHER_8BIT;
     data.pv.center.x = 0.0;
     data.pv.center.y = 0.0;
     data.pv.shape = 1.0;
+    data.pv.falloff_scale = lr2dt_vignette_falloff(data.vignette_feather);
+    // each step of the midpoint moves the falloff out by 0.576%
+    data.pv.scale = lr2dt_vignette_center(data.vignette_feather)
+                    + 0.576f * (data.vignette_midpoint - 50.0f) - data.pv.falloff_scale / 2.0f;
 
-    // defensive code, should not happen, but just in case future Lr version
-    // has not ImageWidth/ImageLength XML tag.
-    if(data.iwidth == 0 || data.iheight == 0)
-      data.pv.whratio = base_ratio;
-    else
-      data.pv.whratio = base_ratio * ((float)data.iwidth / (float)data.iheight);
-
-    if(data.has_crop) data.pv.whratio = data.pv.whratio * data.fratio;
+    // the vignette runs after crop and flip, so it takes the shape of the
+    // cropped frame, upright. Without ImageWidth/ImageLength, which only
+    // a future Lightroom might leave out, there is no shape to follow
+    float frame_ratio = 1.0f;
+    if(data.has_crop && isfinite(data.fratio) && data.fratio > 0.0f)
+      frame_ratio = data.fratio;
+    else if(data.iwidth > 0 && data.iheight > 0)
+    {
+      frame_ratio = (float)data.iwidth / (float)data.iheight;
+      if(dt_image_orientation_to_flip_bits(data.orientation) & ORIENTATION_SWAP_XY)
+        frame_ratio = 1.0f / frame_ratio;
+    }
+    // the module takes a width/height ratio r up to 1 as is, and above 1 as
+    // 2 - 1/r; either way its scale is along the frame's long side
+    data.pv.whratio = frame_ratio <= 1.0f ? frame_ratio : 2.0f - 1.0f / frame_ratio;
 
     //  Adjust scale and ratio based on the roundness. On Lightroom changing
     //  the roundness change the width and the height of the vignette.
@@ -1431,43 +1962,29 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
       data.pv.whratio = newratio;
     }
 
-    dt_add_hist(imgid, "vignette", (dt_iop_params_t *)&data.pv, sizeof(dt_iop_vignette_params_t), imported,
+    dt_add_hist(imgid, "vignette", (dt_iop_params_t *)&data.pv, sizeof(dt_iop_vignette_params_v3_t), imported,
                 sizeof(imported), LRDT_VIGNETTE_VERSION, &n_import);
     refresh_needed = TRUE;
   }
 
-  if(dev != NULL && data.has_spots)
+  if(dev != NULL && data.n_spots > 0)
   {
-    // Check for orientation, rotate when in portrait mode
-    if(data.orientation > 4)
-      for(int k = 0; k < data.ps.num_spots; k++)
-      {
-        float tmp = data.ps.spot[k].y;
-        data.ps.spot[k].y = 1.0 - data.ps.spot[k].x;
-        data.ps.spot[k].x = tmp;
-        tmp = data.ps.spot[k].yc;
-        data.ps.spot[k].yc = 1.0 - data.ps.spot[k].xc;
-        data.ps.spot[k].xc = tmp;
-      }
-
-    dt_add_hist(imgid, "spots", (dt_iop_params_t *)&data.ps, sizeof(dt_iop_spots_params_t), imported,
-                sizeof(imported), LRDT_SPOTS_VERSION, &n_import);
+    _add_retouch_hist(dev, imgid, &data, imported, sizeof(imported), &n_import);
     refresh_needed = TRUE;
   }
 
-  if(dev != NULL &&
-     (data.curve_kind != linear
-      || data.ptc_value[0] != 0 || data.ptc_value[1] != 0 || data.ptc_value[2] != 0 || data.ptc_value[3] != 0))
+  if(dev != NULL && (data.n_pts >= 2 || data.ptc_value[0] != 0 || data.ptc_value[1] != 0
+                     || data.ptc_value[2] != 0 || data.ptc_value[3] != 0))
   {
-    const int total_pts = (data.curve_kind == custom) ? data.n_pts : 6;
-    data.ptc.tonecurve_nodes[ch_L] = total_pts;
     data.ptc.tonecurve_nodes[ch_a] = 7;
     data.ptc.tonecurve_nodes[ch_b] = 7;
     data.ptc.tonecurve_type[ch_L] = CUBIC_SPLINE;
     data.ptc.tonecurve_type[ch_a] = CUBIC_SPLINE;
     data.ptc.tonecurve_type[ch_b] = CUBIC_SPLINE;
-    data.ptc.tonecurve_autoscale_ab = 1;
+    data.ptc.tonecurve_autoscale_ab = LRDT_TONECURVE_AUTOMATIC_RGB;
     data.ptc.tonecurve_preset = 0;
+    data.ptc.tonecurve_unbound_ab = 1;
+    data.ptc.preserve_colors = LRDT_RGB_NORM_AVERAGE;
 
     float linear_ab[7] = { 0.0, 0.08, 0.3, 0.5, 0.7, 0.92, 1.0 };
 
@@ -1477,50 +1994,53 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     for(int k = 0; k < 7; k++) data.ptc.tonecurve[ch_b][k].x = linear_ab[k];
     for(int k = 0; k < 7; k++) data.ptc.tonecurve[ch_b][k].y = linear_ab[k];
 
-    // Set the base tonecurve
-
-    if(data.curve_kind == linear)
+    // Lightroom writes the point curve for its presets too, Linear included
+    float px[MAX_PTS] = { 0.0f, 1.0f };
+    float py[MAX_PTS] = { 0.0f, 1.0f };
+    // a single point is no curve, so keep the identity rather than half of it
+    const int n_pts = data.n_pts >= 2 ? data.n_pts : 2;
+    for(int k = 0; data.n_pts >= 2 && k < n_pts; k++)
     {
-      data.ptc.tonecurve[ch_L][0].x = 0.0;
-      data.ptc.tonecurve[ch_L][0].y = 0.0;
-      data.ptc.tonecurve[ch_L][1].x = data.ptc_split[0] / 2.0;
-      data.ptc.tonecurve[ch_L][1].y = data.ptc_split[0] / 2.0;
-      data.ptc.tonecurve[ch_L][2].x = data.ptc_split[1] - (data.ptc_split[1] - data.ptc_split[0]) / 2.0;
-      data.ptc.tonecurve[ch_L][2].y = data.ptc_split[1] - (data.ptc_split[1] - data.ptc_split[0]) / 2.0;
-      data.ptc.tonecurve[ch_L][3].x = data.ptc_split[1] + (data.ptc_split[2] - data.ptc_split[1]) / 2.0;
-      data.ptc.tonecurve[ch_L][3].y = data.ptc_split[1] + (data.ptc_split[2] - data.ptc_split[1]) / 2.0;
-      data.ptc.tonecurve[ch_L][4].x = data.ptc_split[2] + (1.0 - data.ptc_split[2]) / 2.0;
-      data.ptc.tonecurve[ch_L][4].y = data.ptc_split[2] + (1.0 - data.ptc_split[2]) / 2.0;
-      data.ptc.tonecurve[ch_L][5].x = 1.0;
-      data.ptc.tonecurve[ch_L][5].y = 1.0;
+      px[k] = data.curve_pts[k][0] / 255.0f;
+      py[k] = data.curve_pts[k][1] / 255.0f;
+    }
+
+    const gboolean parametric = data.ptc_value[0] != 0 || data.ptc_value[1] != 0
+                                || data.ptc_value[2] != 0 || data.ptc_value[3] != 0;
+
+    if(!parametric)
+    {
+      data.ptc.tonecurve_nodes[ch_L] = n_pts;
+      for(int k = 0; k < n_pts; k++)
+      {
+        data.ptc.tonecurve[ch_L][k].x = px[k];
+        data.ptc.tonecurve[ch_L][k].y = py[k];
+      }
     }
     else
     {
-      for(int k = 0; k < total_pts; k++)
+      // Lightroom applies the point curve on top of the parametric one;
+      // sample the two together, as no handful of nodes follows both
+      float *tangents = interpolate_set(n_pts, px, py, CUBIC_SPLINE);
+      data.ptc.tonecurve_nodes[ch_L] = DT_IOP_TONECURVE_MAXNODES;
+      for(int k = 0; k < DT_IOP_TONECURVE_MAXNODES; k++)
       {
-        data.ptc.tonecurve[ch_L][k].x = data.curve_pts[k][0] / 255.0;
-        data.ptc.tonecurve[ch_L][k].y = data.curve_pts[k][1] / 255.0;
+        const float x = (float)k / (DT_IOP_TONECURVE_MAXNODES - 1);
+        const float y = _lr_parametric_curve(x, data.ptc_split, data.ptc_value);
+        data.ptc.tonecurve[ch_L][k].x = x;
+        data.ptc.tonecurve[ch_L][k].y
+            = tangents ? CLAMP(interpolate_val(n_pts, px, y, py, tangents, CUBIC_SPLINE), 0.0f, 1.0f) : y;
       }
+      free(tangents);
     }
 
-    if(data.curve_kind != custom)
+    if(!_tonecurve_is_identity(&data.ptc))
     {
-      // set shadows/darks/lights/highlight adjustments
-
-      data.ptc.tonecurve[ch_L][1].y += data.ptc.tonecurve[ch_L][1].y * ((float)data.ptc_value[0] / 100.0);
-      data.ptc.tonecurve[ch_L][2].y += data.ptc.tonecurve[ch_L][2].y * ((float)data.ptc_value[1] / 100.0);
-      data.ptc.tonecurve[ch_L][3].y += data.ptc.tonecurve[ch_L][3].y * ((float)data.ptc_value[2] / 100.0);
-      data.ptc.tonecurve[ch_L][4].y += data.ptc.tonecurve[ch_L][4].y * ((float)data.ptc_value[3] / 100.0);
-
-      if(data.ptc.tonecurve[ch_L][1].y > data.ptc.tonecurve[ch_L][2].y)
-        data.ptc.tonecurve[ch_L][1].y = data.ptc.tonecurve[ch_L][2].y;
-      if(data.ptc.tonecurve[ch_L][3].y > data.ptc.tonecurve[ch_L][4].y)
-        data.ptc.tonecurve[ch_L][4].y = data.ptc.tonecurve[ch_L][3].y;
+      dt_add_hist(imgid, "tonecurve", (dt_iop_params_t *)&data.ptc,
+                  sizeof(dt_iop_tonecurve_params_v5_t), imported, sizeof(imported),
+                  LRDT_TONECURVE_VERSION, &n_import);
+      refresh_needed = TRUE;
     }
-
-    dt_add_hist(imgid, "tonecurve", (dt_iop_params_t *)&data.ptc, sizeof(dt_iop_tonecurve_params_t), imported,
-                sizeof(imported), LRDT_TONECURVE_VERSION, &n_import);
-    refresh_needed = TRUE;
   }
 
   if(dev != NULL && data.has_colorzones)
@@ -1531,26 +2051,31 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
       for(int k = 0; k < 8; k++)
         data.pcz.equalizer_x[i][k] = k / (DT_IOP_COLORZONES_BANDS - 1.0);
 
-    dt_add_hist(imgid, "colorzones", (dt_iop_params_t *)&data.pcz, sizeof(dt_iop_colorzones_params_t), imported,
+    dt_add_hist(imgid, "colorzones", (dt_iop_params_t *)&data.pcz, sizeof(dt_iop_colorzones_params_v2_t), imported,
                 sizeof(imported), LRDT_COLORZONES_VERSION, &n_import);
     refresh_needed = TRUE;
   }
 
   if(dev != NULL && data.has_splittoning)
   {
-    data.pst.compress = 50.0;
+    // Lightroom leaves no untoned band between shadows and highlights
+    data.pst.compress = 0.0;
 
-    dt_add_hist(imgid, "splittoning", (dt_iop_params_t *)&data.pst, sizeof(dt_iop_splittoning_params_t), imported,
+    dt_add_hist(imgid, "splittoning", (dt_iop_params_t *)&data.pst, sizeof(dt_iop_splittoning_params_v1_t), imported,
                 sizeof(imported), LRDT_SPLITTONING_VERSION, &n_import);
     refresh_needed = TRUE;
   }
 
   if(dev != NULL && data.has_bilat)
   {
-    data.pbl.sigma_r = 100.0;
-    data.pbl.sigma_s = 100.0;
+    // shadows and highlights at 100% leave all but the midtone local
+    // contrast alone, which is what Lightroom's clarity changes
+    data.pbl.mode = s_mode_local_laplacian;
+    data.pbl.sigma_r = 1.0f;
+    data.pbl.sigma_s = 1.0f;
+    data.pbl.midtone = 0.5f;
 
-    dt_add_hist(imgid, "bilat", (dt_iop_params_t *)&data.pbl, sizeof(dt_iop_bilat_params_t), imported,
+    dt_add_hist(imgid, "bilat", (dt_iop_params_t *)&data.pbl, sizeof(dt_iop_bilat_params_v3_t), imported,
                 sizeof(imported), LRDT_BILAT_VERSION, &n_import);
     refresh_needed = TRUE;
   }
@@ -1610,6 +2135,8 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
       DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
     }
   }
+
+  _free_spots(&data);
   return TRUE;
 }
 

@@ -376,6 +376,33 @@ changes (where available).
   `-as-flags` form emits a single line of `--flag value` pairs
   ready to splice into another invocation.
 
+- Lightroom import now applies a crop with the crop module, and its
+  straightening angle with the rotate and perspective module, instead
+  of the deprecated crop and rotate module.
+
+- Lightroom import now sets the working profile to linear ProPhoto
+  RGB, the space Lightroom works in, instead of linear Rec709 RGB.
+
+- Lightroom import adds its exposure and blacks adjustments to
+  darktable's default exposure instead of replacing it. In the
+  scene-referred workflow, images with a Lightroom exposure adjustment
+  were imported without the default exposure boost and exposure bias
+  compensation, so a small positive adjustment rendered darker than
+  none at all.
+
+- Lightroom import creates tone curves in RGB mode with color
+  preservation, as darktable's tone curve module now defaults to, and
+  no longer enables the module for a curve that changes nothing.
+  Clarity is imported with the local laplacian filter of the local
+  contrast module instead of the older bilateral grid.
+
+- Lightroom import applies spot removals with the retouch module,
+  cloning or healing as each spot did in Lightroom, instead of the
+  deprecated spot removal module.
+
+- History items created by the Lightroom import are labeled "lr import"
+  instead of having an empty label.
+
 ## Bug Fixes
 
 - Fixed missing Active D-Lighting exposure compensation for Nikon
@@ -703,6 +730,17 @@ changes (where available).
   no work profile is used for the luminance, and wrong alpha from its
   gaussian and poissonian noise, on macOS OpenCL: the kernels read
   vector lanes they had not set.
+
+- Fixed Lightroom imports of parametric tone curves, which washed out
+  the highlights, of split toning, which used the wrong hues and toned
+  the highlights across nearly the whole image but never the shadows,
+  and of post-crop vignetting, which was far weaker than in Lightroom
+  and only started near the frame's edge.
+
+- Fixed the shape of post-crop vignetting imported from Lightroom on
+  portrait images, straightened crops and wide frames. Portrait images
+  got a landscape vignette that darkened their top and bottom but not
+  their sides.
 
 ## Lua
 
