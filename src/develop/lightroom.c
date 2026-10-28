@@ -531,7 +531,7 @@ static int32_t _add_hist_with_mask(const dt_imgid_t imgid, const char *operation
                               "INSERT INTO main.history"
                               "  (imgid, num, module, operation, op_params, enabled,"
                               "   blendop_params, blendop_version, multi_priority, multi_name)"
-                              " VALUES (?1, ?2, ?3, ?4, ?5, 1, ?6, ?7, 0, ' ')",
+                              " VALUES (?1, ?2, ?3, ?4, ?5, 1, ?6, ?7, 0, 'lr import')",
                               -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
