@@ -758,6 +758,12 @@ changes (where available).
   instead of the copies bundled in the app. Without Homebrew, the
   modules were not found at all.
 
+- Fixed diffuse or sharpen giving a different result on the CPU than
+  with OpenCL whenever an anisotropy was set: the CPU path computed the
+  diffusion weights with a coarse approximation of the exponential.
+  Edits using anisotropy may now look slightly different when exported
+  without OpenCL.
+
 ## Lua
 
 ### API Version
