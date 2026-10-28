@@ -441,24 +441,12 @@ static void test_click_element_selects_element_and_its_group(void **state)
   assert_int_equal(flexi_bd.panel_selected_group_cid, FLEXI_GID(1));
 }
 
-// deselecting an element leaves its GROUP selected, so getting back to the
-// group is not a second click
-static void test_click_selected_element_falls_back_to_its_group(void **state)
+// deselecting an element selects the whole mask, not its group
+static void test_click_selected_element_falls_back_to_the_whole_mask(void **state)
 {
   flexi_build("u{1,2,i{3,4}}");
   _click_element(4);
   _click_element(4);
-  assert_int_equal(flexi_bd.panel_selected_formid, INVALID_MASKID);
-  assert_int_equal(flexi_bd.panel_selected_group_cid, FLEXI_GID(1));
-}
-
-// ...and one more click on that group then selects the whole mask
-static void test_element_then_group_reaches_the_whole_mask(void **state)
-{
-  flexi_build("u{1,2,i{3,4}}");
-  _click_element(4);
-  _click_element(4);          // -> its group
-  _click_group(FLEXI_GID(1)); // -> the whole mask
   assert_int_equal(flexi_bd.panel_selected_formid, INVALID_MASKID);
   assert_int_equal(flexi_bd.panel_selected_group_cid, FLEXI_GID(0));
 }
@@ -1920,12 +1908,18 @@ static void test_pick_toggle_joins_the_selection(void **state)
   dt_masks_form_t *grp = flexi_build("u{1,2,i{3,4},5}");
   GList *picked = NULL;
 
-  // the mask's own group is selected by default: nothing to join, so it is a
-  // plain selection of the row, and a click on what is selected unselects it
+  // the mask's own group is selected by default, and picking in it is picking
+  // all that it holds but the row: it is a selected group like any other
   dt_masks_pick_result_t r = dt_masks_model_pick_toggle(grp, &picked, INVALID_MASKID, FLEXI_GID(0), 1);
-  assert_int_equal(r.outcome, DT_MASKS_PICK_SELECT);
-  assert_int_equal(r.id, 1);
-  assert_null(picked);
+  assert_int_equal(r.outcome, DT_MASKS_PICK_CHANGED);
+  assert_int_equal(g_list_length(picked), 5);
+  assert_null(g_list_find(picked, GINT_TO_POINTER(1)));
+  assert_null(g_list_find(picked, GINT_TO_POINTER(FLEXI_GID(0))));
+  assert_non_null(g_list_find(picked, GINT_TO_POINTER(FLEXI_GID(1))));
+  g_list_free(picked);
+  picked = NULL;
+
+  // a click on what is selected unselects it
   r = dt_masks_model_pick_toggle(grp, &picked, 1, FLEXI_GID(0), 1);
   assert_int_equal(r.outcome, DT_MASKS_PICK_CLICK);
   assert_int_equal(r.id, 1);
@@ -2038,6 +2032,26 @@ static void test_pick_toggle_names_a_group_by_its_cid(void **state)
   r = dt_masks_model_pick_toggle(grp, &picked, 5, FLEXI_GID(0), 99);
   assert_int_equal(r.outcome, DT_MASKS_PICK_IGNORED);
   assert_null(picked);
+}
+
+static void test_pick_toggle_in_the_whole_mask_takes_a_member_off(void **state)
+{
+  dt_masks_form_t *grp = flexi_build("u{1,i{3},5}");
+  GList *picked = NULL;
+
+  // from the mask's own group, an element of a nested one: the group that holds
+  // it is not whole any more, and so is not picked
+  dt_masks_pick_result_t r = dt_masks_model_pick_toggle(grp, &picked, INVALID_MASKID, FLEXI_GID(0), 3);
+  assert_int_equal(r.outcome, DT_MASKS_PICK_CHANGED);
+  assert_int_equal(g_list_length(picked), 2);
+  assert_non_null(g_list_find(picked, GINT_TO_POINTER(1)));
+  assert_non_null(g_list_find(picked, GINT_TO_POINTER(5)));
+
+  // and the mask is no pick, with picks or without
+  r = dt_masks_model_pick_toggle(grp, &picked, INVALID_MASKID, FLEXI_GID(0), FLEXI_GID(0));
+  assert_int_equal(r.outcome, DT_MASKS_PICK_IGNORED);
+  assert_int_equal(g_list_length(picked), 2);
+  g_list_free(picked);
 }
 
 static void test_picks_prune_what_the_mask_lost(void **state)
@@ -2477,8 +2491,7 @@ int main(void)
     cmocka_unit_test_teardown(test_click_selected_group_selects_the_whole_mask, _teardown),
     cmocka_unit_test_teardown(test_click_mask_group_again_keeps_it_selected, _teardown),
     cmocka_unit_test_teardown(test_click_element_selects_element_and_its_group, _teardown),
-    cmocka_unit_test_teardown(test_click_selected_element_falls_back_to_its_group, _teardown),
-    cmocka_unit_test_teardown(test_element_then_group_reaches_the_whole_mask, _teardown),
+    cmocka_unit_test_teardown(test_click_selected_element_falls_back_to_the_whole_mask, _teardown),
     cmocka_unit_test_teardown(test_click_group_of_selected_element_selects_the_group, _teardown),
     cmocka_unit_test_teardown(test_click_other_element_switches_directly, _teardown),
     cmocka_unit_test_teardown(test_click_other_group_switches_directly, _teardown),
@@ -2558,6 +2571,7 @@ int main(void)
     cmocka_unit_test(test_pick_toggle_picks_a_group_whole),
     cmocka_unit_test(test_pick_toggle_takes_a_group_off_whole),
     cmocka_unit_test(test_pick_toggle_can_leave_no_picks),
+    cmocka_unit_test(test_pick_toggle_in_the_whole_mask_takes_a_member_off),
     cmocka_unit_test(test_pick_toggle_names_a_group_by_its_cid),
     cmocka_unit_test(test_picks_prune_what_the_mask_lost),
     cmocka_unit_test(test_picks_prune_a_group_no_longer_whole),

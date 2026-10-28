@@ -253,9 +253,10 @@ typedef struct dt_masks_point_parametric_t
   uint32_t disabled;                           // bit 0: input range off, bit 1: output range off
 } dt_masks_point_parametric_t;
 
-/** which sliders a parametric row shows (bits 1-2 of in_out). AUTO, what
-    every row held before the choice existed, shows the ranges in use, and
-    the input one when neither is */
+/** which sliders a parametric row shows (bits 1-2 of in_out): the input one
+    always, and the output one with BOTH. AUTO, what every row held before the
+    choice existed, shows the output one when its range is in use; OUTPUT, once
+    a choice of its own, now shows both */
 typedef enum dt_masks_param_view_t
 {
   DT_MASKS_PARAM_VIEW_AUTO = 0,
@@ -503,11 +504,10 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_toolbar;
   // the "blend mask" section header. Reading order:
   //
-  //   toggle | <space> | edit run | show_mask_overlay | eye | lock
-  //   | <space> | expander
+  //   toggle | <space> | show_mask_overlay | eye | edit run | lock | expander
   //
-  // (the two sides swap when the canvas panel is docked on the left, see
-  // _masks_header_apply_side)
+  // (the expander moves to the start when the canvas panel is docked on the
+  // left, see _masks_header_apply_side)
   GtkWidget *masks_blend_header;
   // the row under the header naming the module whose mask the panel shows,
   // as the header's extension (dt_masks_gui_focus_row_sync). Shown in the
@@ -515,8 +515,8 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_focus_row;
   GtkWidget *masks_focus_module_label;
   GtkWidget *masks_focus_instance_label;
-  // edit run + show_mask_overlay + eye + lock, the header's center widget
-  // between the toggle and the expander (_masks_header_cluster_new)
+  // show_mask_overlay + eye + edit run + lock, right-aligned ahead of the
+  // expander (_masks_header_cluster_new)
   GtkWidget *masks_header_cluster;
   // the edit run on the panel header: edit on canvas and solo edit (see
   // _pack_header_edit_run). Whole-mask canvas controls, so on the header
@@ -676,6 +676,10 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *controls_param_slot;
   GtkWidget *controls_param_ctl_slot;
   dt_mask_id_t controls_param_formid;
+  // the toggle at the left of the controls header, for that element's
+  // channel: its output slider, and its boost factor with the sliders if it
+  // has one. Shown only while the element is there
+  GtkWidget *controls_output_btn;
   // the kind of member the controls subpanel is for, and whether it has
   // anything to show: with nothing besides the opacity it stays folded and
   // insensitive (see _controls_panel_show)

@@ -147,79 +147,58 @@ static void test_a_shape_is_never_a_noop(void **state)
 #define OUTPUT DT_MASKS_PARAM_VIEW_OUTPUT
 #define BOTH DT_MASKS_PARAM_VIEW_BOTH
 
-// the sliders are the channel icon's choice, whatever the user has touched
+// the input slider is always there, and the output one is the toggle's choice,
+// whatever the user has touched. A row that held the output alone shows both
 static void test_chosen_view_decides_the_sliders(void **state)
 {
-  for(int in_used = 0; in_used < 2; in_used++)
-    for(int out_used = 0; out_used < 2; out_used++)
-    {
-      const dt_masks_param_vis_t i =
-        dt_masks_model_param_row_visibility(INPUT, in_used, out_used, FALSE, FALSE);
-      assert_true(i.input);
-      assert_false(i.output);
-      const dt_masks_param_vis_t o =
-        dt_masks_model_param_row_visibility(OUTPUT, in_used, out_used, FALSE, FALSE);
-      assert_false(o.input);
-      assert_true(o.output);
-      const dt_masks_param_vis_t b =
-        dt_masks_model_param_row_visibility(BOTH, in_used, out_used, FALSE, FALSE);
-      assert_true(b.input);
-      assert_true(b.output);
-    }
+  for(int out_used = 0; out_used < 2; out_used++)
+  {
+    const dt_masks_param_vis_t i =
+      dt_masks_model_param_row_visibility(INPUT, out_used, FALSE, FALSE);
+    assert_true(i.input);
+    assert_false(i.output);
+    const dt_masks_param_vis_t o =
+      dt_masks_model_param_row_visibility(OUTPUT, out_used, FALSE, FALSE);
+    assert_true(o.input);
+    assert_true(o.output);
+    const dt_masks_param_vis_t b =
+      dt_masks_model_param_row_visibility(BOTH, out_used, FALSE, FALSE);
+    assert_true(b.input);
+    assert_true(b.output);
+  }
 }
 
 // the boost factor shows under the sliders when asked to, and nowhere else,
 // and only for a channel that has one
 static void test_boost_shows_only_with_the_sliders(void **state)
 {
-  assert_true(dt_masks_model_param_row_visibility(AUTO, TRUE, TRUE, TRUE, TRUE).boost);
-  assert_false(dt_masks_model_param_row_visibility(AUTO, TRUE, TRUE, TRUE, FALSE).boost);
-  assert_false(dt_masks_model_param_row_visibility(AUTO, TRUE, TRUE, FALSE, TRUE).boost);
+  assert_true(dt_masks_model_param_row_visibility(AUTO, TRUE, TRUE, TRUE).boost);
+  assert_false(dt_masks_model_param_row_visibility(AUTO, TRUE, TRUE, FALSE).boost);
+  assert_false(dt_masks_model_param_row_visibility(AUTO, TRUE, FALSE, TRUE).boost);
 }
 
-// with nothing chosen, a row adapts: an untouched channel shows only the input
-// slider, rather than a second slider that says nothing
-static void test_automatic_untouched_row_shows_input_only(void **state)
+// with nothing chosen, a row adapts: it shows the output slider only once its
+// range is in use, rather than a second slider that says nothing
+static void test_automatic_row_follows_the_output_range(void **state)
 {
-  const dt_masks_param_vis_t v =
-    dt_masks_model_param_row_visibility(AUTO, FALSE, FALSE, FALSE, FALSE);
-  assert_true(v.input);
-  assert_false(v.output);
-}
-
-static void test_automatic_row_with_only_output_used(void **state)
-{
-  const dt_masks_param_vis_t v =
-    dt_masks_model_param_row_visibility(AUTO, FALSE, TRUE, FALSE, FALSE);
-  assert_false(v.input);
-  assert_true(v.output);
-}
-
-static void test_automatic_row_with_both_used_shows_both(void **state)
-{
-  const dt_masks_param_vis_t v =
-    dt_masks_model_param_row_visibility(AUTO, TRUE, TRUE, FALSE, FALSE);
-  assert_true(v.input);
-  assert_true(v.output);
-}
-
-static void test_automatic_row_with_only_input_used(void **state)
-{
-  const dt_masks_param_vis_t v =
-    dt_masks_model_param_row_visibility(AUTO, TRUE, FALSE, FALSE, FALSE);
-  assert_true(v.input);
-  assert_false(v.output);
+  const dt_masks_param_vis_t unused =
+    dt_masks_model_param_row_visibility(AUTO, FALSE, FALSE, FALSE);
+  assert_true(unused.input);
+  assert_false(unused.output);
+  const dt_masks_param_vis_t used =
+    dt_masks_model_param_row_visibility(AUTO, TRUE, FALSE, FALSE);
+  assert_true(used.input);
+  assert_true(used.output);
 }
 
 // the automatic choice resolves to the sliders it shows, and a chosen one to
-// itself, which is what the channel icon draws
+// itself, but for the output alone, which is both
 static void test_view_resolve(void **state)
 {
-  assert_int_equal(dt_masks_model_param_view_resolve(AUTO, FALSE, FALSE), INPUT);
-  assert_int_equal(dt_masks_model_param_view_resolve(AUTO, TRUE, FALSE), INPUT);
-  assert_int_equal(dt_masks_model_param_view_resolve(AUTO, FALSE, TRUE), OUTPUT);
-  assert_int_equal(dt_masks_model_param_view_resolve(AUTO, TRUE, TRUE), BOTH);
-  assert_int_equal(dt_masks_model_param_view_resolve(OUTPUT, TRUE, FALSE), OUTPUT);
+  assert_int_equal(dt_masks_model_param_view_resolve(AUTO, FALSE), INPUT);
+  assert_int_equal(dt_masks_model_param_view_resolve(AUTO, TRUE), BOTH);
+  assert_int_equal(dt_masks_model_param_view_resolve(OUTPUT, FALSE), BOTH);
+  assert_int_equal(dt_masks_model_param_view_resolve(INPUT, TRUE), INPUT);
 }
 
 // the swatch shows the colors the element selects: normally the one stretch
@@ -665,10 +644,7 @@ int main(void)
     cmocka_unit_test_teardown(test_a_shape_is_never_a_noop, _teardown),
     cmocka_unit_test_teardown(test_chosen_view_decides_the_sliders, _teardown),
     cmocka_unit_test_teardown(test_boost_shows_only_with_the_sliders, _teardown),
-    cmocka_unit_test_teardown(test_automatic_untouched_row_shows_input_only, _teardown),
-    cmocka_unit_test_teardown(test_automatic_row_with_only_output_used, _teardown),
-    cmocka_unit_test_teardown(test_automatic_row_with_both_used_shows_both, _teardown),
-    cmocka_unit_test_teardown(test_automatic_row_with_only_input_used, _teardown),
+    cmocka_unit_test_teardown(test_automatic_row_follows_the_output_range, _teardown),
     cmocka_unit_test_teardown(test_view_resolve, _teardown),
     cmocka_unit_test_teardown(test_swatch_span, _teardown),
     cmocka_unit_test_teardown(test_swatch_alpha, _teardown),

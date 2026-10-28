@@ -322,17 +322,17 @@ static void _masks_embedded_apply_collapsed(dt_iop_module_t *module,
 
 // the header's layout:
 //
-//   toggle <space> edit solo parametric | overlay eye | lock <space> expander
+//   toggle <space> overlay eye edit solo lock expander
 //
 // with no name in it: the focus row under it names the module, in the
 // hosted positions (dt_masks_gui_focus_row_sync; embedded, the module's own
-// header does). The controls (masks_header_cluster) are the header's center
-// widget, centered on its whole width whatever its sides hold. Embedded, the
-// on/off toggle sits under the module's own on/off button and the expander
-// under its presets menu. In the utility position the header leads the lib's
-// body as embedded, without the two: the toggle moves onto the lib's own
-// header, where its presets menu would be (see view_enter in
-// libs/masks_flexi_host.c), and the lib's expander folds the panel.
+// header does). The controls (masks_header_cluster) are right-aligned, ahead
+// of the expander. Embedded, the on/off toggle sits under the module's own
+// on/off button and the expander under its presets menu. In the utility
+// position the header leads the lib's body as embedded, without the two: the
+// toggle moves onto the lib's own header, where its presets menu would be
+// (see view_enter in libs/masks_flexi_host.c), and the lib's expander folds
+// the panel.
 // There is no preferences button: the blending options open on a right-click
 // of the on/off toggle (see _blendop_mask_enable_toggled), the way guide
 // settings hang off the guides icon. The expander is embedded-only: the
@@ -340,8 +340,8 @@ static void _masks_embedded_apply_collapsed(dt_iop_module_t *module,
 // the canvas the panel is opened and closed from the darkroom toolbar button,
 // which is a bigger and more findable target than an icon on a floating panel.
 // There the expander stays as a placeholder, `on_canvas`: laid out but not
-// drawn, on the panel's outer edge (`expander_start`, docked left, swaps the
-// two sides). That edge is where the panel insets the header by its
+// drawn, on the panel's outer edge (`expander_start`, docked left, moves it
+// to the start). That edge is where the panel insets the header by its
 // scrollbar's width, once that is known (_flexi_sync_header_scrollbar_pad in
 // gui/gtk.c), and the placeholder takes the inset, so nothing visible shifts
 static void _masks_header_apply_side(dt_iop_gui_blend_data_t *bd,
@@ -354,16 +354,21 @@ static void _masks_header_apply_side(dt_iop_gui_blend_data_t *bd,
   if(!pin || !toggle || !header) return;
   if(!GTK_IS_WIDGET(pin) || !GTK_IS_WIDGET(toggle) || !GTK_IS_BOX(header)) return;
 
-  // the toggle (back from the utility lib's header, if it was there) and the
-  // expander on opposite sides, each outermost on its own.
-  // Each side by its pack type, since a box with a center widget lays its
-  // start children out only up to it; first in the list is outermost
+  // the toggle (back from the utility lib's header, if it was there) at the
+  // start and the controls at the end, the expander outermost on its side.
+  // Each side by its pack type, since the start children and the end children
+  // are laid out from opposite edges; first in the list is outermost
+  GtkWidget *controls = bd->masks_header_cluster;
   dt_masks_gui_reparent_into(toggle, header, FALSE, FALSE);
   dt_masks_gui_reparent_into(pin, header, FALSE, FALSE);
-  gtk_container_child_set(GTK_CONTAINER(header), toggle,
-                          "pack-type", expander_start ? GTK_PACK_END : GTK_PACK_START, NULL);
+  gtk_container_child_set(GTK_CONTAINER(header), toggle, "pack-type", GTK_PACK_START, NULL);
   gtk_container_child_set(GTK_CONTAINER(header), pin,
                           "pack-type", expander_start ? GTK_PACK_START : GTK_PACK_END, NULL);
+  if(controls)
+  {
+    gtk_container_child_set(GTK_CONTAINER(header), controls, "pack-type", GTK_PACK_END, NULL);
+    gtk_box_reorder_child(GTK_BOX(header), controls, 0);
+  }
   gtk_box_reorder_child(GTK_BOX(header), toggle, 0);
   gtk_box_reorder_child(GTK_BOX(header), pin, 0);
   dt_gui_remove_class(pin, expander_start ? "dt_masks_right" : "dt_masks_left");

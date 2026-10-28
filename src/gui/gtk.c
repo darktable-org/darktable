@@ -4482,9 +4482,9 @@ static void _flexi_sync_header_scrollbar_pad(dt_ui_t *ui)
     GList *kids = gtk_container_get_children(GTK_CONTAINER(r->data));
 
     // the outermost visible child on that side, found from the allocations
-    // rather than from the packing order: which of the toggle and the expander
-    // placeholder leads mirrors with the dock (_masks_header_apply_side in
-    // develop/masks_gui_panel_host.c)
+    // rather than from the packing order: the expander placeholder is at the
+    // start when docked left, at the end when docked right
+    // (_masks_header_apply_side in develop/masks_gui_panel_host.c)
     GtkWidget *edge = NULL;
     int best = 0;
     for(GList *k = kids; k; k = g_list_next(k))

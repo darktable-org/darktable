@@ -166,8 +166,9 @@ typedef struct dt_masks_pick_result_t
 } dt_masks_pick_result_t;
 
 /** the member a first shift+click joins, if the panel selects one: the element
-    `selected_formid`, else the group `selected_cid`, as a pick id. INVALID_MASKID
-    where the mask's own group is what is selected, which is nothing in it */
+    `selected_formid`, else the group `selected_cid`, as a pick id. The mask's
+    own group is one, when it is what is selected: the pick is then everything
+    in the mask but what is clicked. INVALID_MASKID where nothing is */
 dt_mask_id_t dt_masks_model_pick_anchor(dt_masks_form_t *grp,
                                         const dt_mask_id_t selected_formid,
                                         const dt_mask_id_t selected_cid);
@@ -352,10 +353,10 @@ gboolean dt_masks_gui_param_channel_is_used(const dt_masks_point_parametric_t *p
                                             const dt_iop_gui_blendif_channel_t *channel,
                                             const int in_out);
 
-/** the sliders a row shows for `view`: AUTO resolves to the ranges in use (the
-    input one when neither is), the others to themselves */
+/** the sliders a row shows for `view`: AUTO resolves to both when the output
+    range is in use, else to the input one; the input one stays so, and the
+    output one, once a choice of its own, is both */
 dt_masks_param_view_t dt_masks_model_param_view_resolve(const dt_masks_param_view_t view,
-                                                        const gboolean in_used,
                                                         const gboolean out_used);
 
 /** what a parametric row's swatch shows of one channel's range, `r` its four
@@ -385,7 +386,6 @@ typedef struct dt_masks_param_vis_t
 } dt_masks_param_vis_t;
 
 dt_masks_param_vis_t dt_masks_model_param_row_visibility(const dt_masks_param_view_t view,
-                                                         const gboolean in_used,
                                                          const gboolean out_used,
                                                          const gboolean boost_enabled,
                                                          const gboolean boost_with_sliders);
