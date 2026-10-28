@@ -749,6 +749,10 @@ changes (where available).
   got a landscape vignette that darkened their top and bottom but not
   their sides.
 
+- Fixed color calibration's saturation sliders having a different
+  effect with OpenCL than on the CPU when the "version 1 (2020)"
+  saturation algorithm is selected.
+
 ## Lua
 
 ### API Version

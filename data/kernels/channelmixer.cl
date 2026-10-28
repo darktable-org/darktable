@@ -128,7 +128,7 @@ static inline float4 luma_chroma(const float4 input, const float4 saturation, co
     float coeff_ratio = 0.f;
 
     if(version == CHANNELMIXERRGB_V_1)
-      coeff_ratio = dot((1.f - output), saturation);
+      coeff_ratio = dot((1.f - output) * (1.f - output), saturation);
     else
       coeff_ratio = dot(output, saturation) / 3.f;
 
