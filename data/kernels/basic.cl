@@ -346,7 +346,7 @@ static float _calc_refavg(read_only image2d_t in,
                           global const float *correction)
 {
   float mean[3] = { 0.0f, 0.0f, 0.0f };
-  float cnt[3]  = { 0.0f, 0.0f, 0.0f };
+  int cnt[3]  = { 0, 0, 0 };
 
   for(int dy = max(0, row - 1); dy < min(maxrow - 1, row + 2); dy++)
   {
@@ -355,12 +355,12 @@ static float _calc_refavg(read_only image2d_t in,
       const float val = fmax(0.0f, Areadsingle(in, dx, dy));
       const int c = fcol(dy, dx, filters, xtrans);
       mean[c] += val;
-      cnt[c] += 1.0f;
+      cnt[c] += 1;
     }
   }
 
   for(int c = 0; c < 3; c++)
-    mean[c] = (cnt[c] > 0.0f) ? cbrt((correction[c] * mean[c]) / cnt[c]) : 0.0f;
+    mean[c] = cnt[c] > 0 ? cbrt((correction[c] * mean[c]) / (float)cnt[c]) : 0.0f;
 
   float croot_refavg[3] = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
   int color = fcol(row, col, filters, xtrans);
@@ -396,7 +396,7 @@ kernel void highlights_initmask(read_only image2d_t in,
       if(y < iheight && x < iwidth)
       {
         int color = fcol(y, x, filters, xtrans);
-        float val = readsingle(in, x, y);
+        float val = Areadsingle(in, x, y);
         mbuff[color] += (val >= clips[color]) ? 1 : 0;
       }
     }
@@ -443,48 +443,6 @@ kernel void highlights_dilatemask(global char *in,
   out[mx] =         safe ? _mask_dilated(in + mx, mwidth)           : in[mx];
   out[mx+msize] =   safe ? _mask_dilated(in + mx + msize, mwidth)   : in[mx + msize];
   out[mx+2*msize] = safe ? _mask_dilated(in + mx + 2*msize, mwidth) : in[mx + 2*msize];
-}
-
-kernel void highlights_chroma(read_only image2d_t in,
-                              global char *mask,
-                              global float *accu,
-                              const int width,
-                              const int height,
-                              const int msize,
-                              const int mwidth,
-                              const unsigned int filters,
-                              global const unsigned char (*const xtrans)[6],
-                              global const float *clips,
-                              global const float *correction)
-{
-  const int row = get_global_id(0);
-  if(row >= height) return;
-
-  float sum[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-  float cnt[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-
-  float clipped = 0.0f;
-  for(int col = 0; col < width; col++)
-  {
-    const int idx = mad24(row, width, col);
-    const int color = fcol(row, col, filters, xtrans);
-    const float inval = Areadsingle(in, col, row);
-    const int px = color * msize + mad24(row/3, mwidth, col/3);
-    if(mask[px] && (inval > 0.2f*clips[color]) && (inval < clips[color]))
-    {
-      const float ref = _calc_refavg(in, xtrans, filters, row, col, height, width, correction);
-      sum[color] += inval - ref;
-      cnt[color] += 1.0f;
-    }
-    if(mask[px]) clipped += 1.0f;
-  }
-
-  for(int c = 0; c < 3; c++)
-  {
-    accu[row*8 + 2*c] = sum[c];
-    accu[row*8 + 2*c +1] = cnt[c];
-  }
-  accu[row*8 + 6] = clipped;
 }
 
 kernel void highlights_opposed(read_only image2d_t in,
