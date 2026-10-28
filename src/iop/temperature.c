@@ -2202,25 +2202,22 @@ void gui_init(dt_iop_module_t *self)
     (g->scale_tint,
      _("color tint of the image, from magenta (value < 1) to green (value > 1)"));
 
-  g->check_late_correction = dt_bauhaus_toggle_from_params(self, "late_correction");
-  g_object_ref(g->check_late_correction); // prevent destruction
-  GtkWidget *temp_parent = gtk_widget_get_parent(g->check_late_correction);
-  if(temp_parent)
-    gtk_container_remove(GTK_CONTAINER(temp_parent), g->check_late_correction);
+  // the _from_params helper appends to self->widget, so it has to be
+  // box_enabled while the checkbox is created
+  GtkWidget *box_enabled = dt_gui_vbox(g->buttonbar);
+  self->widget = box_enabled;
 
+  g->check_late_correction = dt_bauhaus_toggle_from_params(self, "late_correction");
   gtk_widget_set_tooltip_text(g->check_late_correction,
       _("ensures the white balance coefficients are treated as a reference for the color calibration module.\n"
         "keep this checked for non-reference white balance in the modern scene-referred workflow."));
 
-  GtkWidget *box_enabled = dt_gui_vbox(g->buttonbar,
-                                       g->check_late_correction,
-                                       g->presets,
-                                       g->finetune,
-                                       temp_label_box,
-                                       g->scale_k,
-                                       g->scale_tint);
-
-  g_object_unref(g->check_late_correction);
+  dt_gui_box_add(box_enabled,
+                 g->presets,
+                 g->finetune,
+                 temp_label_box,
+                 g->scale_k,
+                 g->scale_tint);
 
   dt_gui_new_collapsible_section
     (&g->cs,
