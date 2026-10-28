@@ -2147,6 +2147,57 @@ static void _set_trouble_messages(dt_iop_module_t *self)
   }
 }
 
+// The illuminants derived from pipe->wb are computed per run, into the
+// caller's variable. pipe->wb can change without a new commit_params()
+// (only temperature is recommitted when its history item changes), so a
+// result kept in the piece data would make later runs depend on earlier ones.
+static void _get_pipe_illuminant(const dt_iop_module_t *self,
+                                 const dt_dev_pixelpipe_t *pipe,
+                                 const dt_iop_channelmixer_rbg_data_t *d,
+                                 dt_aligned_pixel_t illuminant)
+{
+  float x = 0.f;
+  float y = 0.f;
+  gboolean from_pipe_wb = FALSE;
+
+  if(d->illuminant_type == DT_ILLUMINANT_CAMERA)
+  {
+    // The camera illuminant is a behaviour rather than a preset of
+    // values: it uses whatever is in the RAW EXIF. But it depends on
+    // what temperature.c is doing and needs to be updated
+    // accordingly, to give a consistent result.  We initialise the
+    // CAT defaults using the temperature coeffs at startup, but if
+    // temperature is changed later, we get no notification of the
+    // change here, so we can't update the defaults.  So we need to
+    // re-run the detection at runtime…
+    dt_aligned_pixel_t correction_ratios;
+    _get_d65_correction_ratios(self, &pipe->wb, correction_ratios);
+    from_pipe_wb = find_illuminant_xy_from_as_shot_coeffs(&(self->dev->image_storage),
+                                                          correction_ratios, &x, &y);
+  }
+  else if(d->illuminant_type == DT_ILLUMINANT_FROM_WB)
+  {
+    _illuminant_xy_from_wb_or_D50(self, &pipe->wb, &x, &y);
+    from_pipe_wb = TRUE;
+  }
+
+  if(from_pipe_wb)
+  {
+    // Convert illuminant from xyY to XYZ
+    dt_aligned_pixel_t XYZ;
+    illuminant_xy_to_XYZ(x, y, XYZ);
+
+    // Convert illuminant from XYZ to Bradford modified LMS
+    convert_any_XYZ_to_LMS(XYZ, illuminant, d->adaptation);
+    illuminant[3] = 0.f;
+  }
+  else
+  {
+    // for a failed camera lookup, commit_params() set it from the saved p->x/p->y
+    copy_pixel(illuminant, d->illuminant);
+  }
+}
+
 void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const restrict ivoid,
@@ -2234,47 +2285,8 @@ void process(dt_iop_module_t *self,
 #endif
   }
 
-  if(data->illuminant_type == DT_ILLUMINANT_CAMERA)
-  {
-    // The camera illuminant is a behaviour rather than a preset of
-    // values: it uses whatever is in the RAW EXIF. But it depends on
-    // what temperature.c is doing and needs to be updated
-    // accordingly, to give a consistent result.  We initialise the
-    // CAT defaults using the temperature coeffs at startup, but if
-    // temperature is changed later, we get no notification of the
-    // change here, so we can't update the defaults.  So we need to
-    // re-run the detection at runtime…
-    float x, y;
-    dt_aligned_pixel_t correction_ratios;
-    _get_d65_correction_ratios(self, &pipe->wb, correction_ratios);
-
-    if(find_illuminant_xy_from_as_shot_coeffs(&(self->dev->image_storage), correction_ratios, &x, &y))
-    {
-      // Convert illuminant from xyY to XYZ
-      dt_aligned_pixel_t XYZ;
-      illuminant_xy_to_XYZ(x, y, XYZ);
-
-      // Convert illuminant from XYZ to Bradford modified LMS
-      convert_any_XYZ_to_LMS(XYZ, data->illuminant, data->adaptation);
-      data->illuminant[3] = 0.f;
-    }
-  }
-  else if(data->illuminant_type == DT_ILLUMINANT_FROM_WB)
-  {
-    // Same logic as above (we depend on the coefficients from white balance,
-    // which don't come from the EXIF this time).
-    float x, y;
-
-    _illuminant_xy_from_wb_or_D50(self, &pipe->wb, &x, &y);
-
-    // Convert illuminant from xyY to XYZ
-    dt_aligned_pixel_t XYZ;
-    illuminant_xy_to_XYZ(x, y, XYZ);
-
-    // Convert illuminant from XYZ to Bradford modified LMS
-    convert_any_XYZ_to_LMS(XYZ, data->illuminant, data->adaptation);
-    data->illuminant[3] = 0.f;
-  }
+  dt_aligned_pixel_t illuminant;
+  _get_pipe_illuminant(self, pipe, data, illuminant);
 
   // force loop unswitching in a controlled way
   switch(data->adaptation)
@@ -2283,7 +2295,7 @@ void process(dt_iop_module_t *self,
     {
       _loop_switch(in, out, roi_out->width, roi_out->height, ch,
                    XYZ_to_RGB, RGB_to_XYZ, data->MIX,
-                   data->illuminant, data->saturation, data->lightness, data->grey,
+                   illuminant, data->saturation, data->lightness, data->grey,
                    data->p, data->gamut, data->clip, data->apply_grey,
                    DT_ADAPTATION_FULL_BRADFORD, data->version);
       break;
@@ -2292,7 +2304,7 @@ void process(dt_iop_module_t *self,
     {
       _loop_switch(in, out, roi_out->width, roi_out->height, ch,
                    XYZ_to_RGB, RGB_to_XYZ, data->MIX,
-                   data->illuminant, data->saturation, data->lightness, data->grey,
+                   illuminant, data->saturation, data->lightness, data->grey,
                    data->p, data->gamut, data->clip, data->apply_grey,
                    DT_ADAPTATION_LINEAR_BRADFORD, data->version);
       break;
@@ -2301,7 +2313,7 @@ void process(dt_iop_module_t *self,
     {
       _loop_switch(in, out, roi_out->width, roi_out->height, ch,
                    XYZ_to_RGB, RGB_to_XYZ, data->MIX,
-                   data->illuminant, data->saturation, data->lightness, data->grey,
+                   illuminant, data->saturation, data->lightness, data->grey,
                    data->p, data->gamut, data->clip, data->apply_grey,
                    DT_ADAPTATION_CAT16, data->version);
       break;
@@ -2310,7 +2322,7 @@ void process(dt_iop_module_t *self,
     {
       _loop_switch(in, out, roi_out->width, roi_out->height, ch,
                    XYZ_to_RGB, RGB_to_XYZ, data->MIX,
-                   data->illuminant, data->saturation, data->lightness, data->grey,
+                   illuminant, data->saturation, data->lightness, data->grey,
                    data->p, data->gamut, data->clip, data->apply_grey,
                    DT_ADAPTATION_XYZ, data->version);
       break;
@@ -2319,7 +2331,7 @@ void process(dt_iop_module_t *self,
     {
       _loop_switch(in, out, roi_out->width, roi_out->height, ch,
                    XYZ_to_RGB, RGB_to_XYZ, data->MIX,
-                   data->illuminant, data->saturation, data->lightness, data->grey,
+                   illuminant, data->saturation, data->lightness, data->grey,
                    data->p, data->gamut, data->clip, data->apply_grey,
                    DT_ADAPTATION_RGB, data->version);
       break;
@@ -2358,47 +2370,8 @@ int process_cl(dt_iop_module_t *self,
   if(dt_pipe_is_preview(pipe))
     _declare_cat_on_pipe(self, FALSE);
 
-  if(d->illuminant_type == DT_ILLUMINANT_CAMERA)
-  {
-    // The camera illuminant is a behaviour rather than a preset of
-    // values: it uses whatever is in the RAW EXIF. But it depends on
-    // what temperature.c is doing and needs to be updated
-    // accordingly, to give a consistent result.  We initialise the
-    // CAT defaults using the temperature coeffs at startup, but if
-    // temperature is changed later, we get no notification of the
-    // change here, so we can't update the defaults.  So we need to
-    // re-run the detection at runtime…
-    float x, y;
-    dt_aligned_pixel_t correction_ratios;
-    _get_d65_correction_ratios(self, &pipe->wb, correction_ratios);
-
-    if(find_illuminant_xy_from_as_shot_coeffs(&(self->dev->image_storage), correction_ratios, &x, &y))
-    {
-      // Convert illuminant from xyY to XYZ
-      dt_aligned_pixel_t XYZ;
-      illuminant_xy_to_XYZ(x, y, XYZ);
-
-      // Convert illuminant from XYZ to Bradford modified LMS
-      convert_any_XYZ_to_LMS(XYZ, d->illuminant, d->adaptation);
-      d->illuminant[3] = 0.f;
-    }
-  }
-  else if(d->illuminant_type == DT_ILLUMINANT_FROM_WB)
-  {
-    // Same logic as above (we depend on the coefficients from white balance,
-    // which don't come from the EXIF this time).
-    float x, y;
-
-    _illuminant_xy_from_wb_or_D50(self, &pipe->wb, &x, &y);
-
-    // Convert illuminant from xyY to XYZ
-    dt_aligned_pixel_t XYZ;
-    illuminant_xy_to_XYZ(x, y, XYZ);
-
-    // Convert illuminant from XYZ to Bradford modified LMS
-    convert_any_XYZ_to_LMS(XYZ, d->illuminant, d->adaptation);
-    d->illuminant[3] = 0.f;
-  }
+  dt_aligned_pixel_t illuminant;
+  _get_pipe_illuminant(self, pipe, d, illuminant);
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
@@ -2459,7 +2432,7 @@ int process_cl(dt_iop_module_t *self,
           CLARG(dev_in), CLARG(dev_out),
           CLARG(width), CLARG(height),
           CLARG(input_matrix_cl), CLARG(output_matrix_cl),
-          CLARG(MIX_cl), CLARG(d->illuminant), CLARG(d->saturation),
+          CLARG(MIX_cl), CLARG(illuminant), CLARG(d->saturation),
           CLARG(d->lightness), CLARG(d->grey),
           CLARG(d->p), CLARG(d->gamut), CLARG(d->clip), CLARG(d->apply_grey),
           CLARG(d->version));
@@ -3206,10 +3179,13 @@ void commit_params(dt_iop_module_t *self,
   // find x y coordinates of illuminant for CIE 1931 2° observer
   float x = p->x;
   float y = p->y;
-  _get_corrected_illuminant_xy(self, &pipe->wb, p, &x, &y);
+  // the camera illuminant keeps the saved p->x/p->y here: it is the fallback
+  // for when _get_pipe_illuminant() fails to look it up from pipe->wb
+  if(p->illuminant != DT_ILLUMINANT_CAMERA)
+    _get_corrected_illuminant_xy(self, &pipe->wb, p, &x, &y);
 
-  // if illuminant is from camera or user WB coefficients, x and y are set on-the-fly at
-  // commit time, so we need to set adaptation too
+  // if illuminant is from camera or user WB coefficients, x and y are set on-the-fly,
+  // so we need to set adaptation too
   if(p->illuminant == DT_ILLUMINANT_CAMERA || p->illuminant == DT_ILLUMINANT_FROM_WB)
     _check_if_close_to_daylight(x, y, NULL, NULL, &(d->adaptation));
   d->illuminant_type = p->illuminant;
