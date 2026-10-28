@@ -400,6 +400,9 @@ changes (where available).
   cloning or healing as each spot did in Lightroom, instead of the
   deprecated spot removal module.
 
+- History items created by the Lightroom import are labeled "lr import"
+  instead of having an empty label.
+
 ## Bug Fixes
 
 - Fixed missing Active D-Lighting exposure compensation for Nikon
