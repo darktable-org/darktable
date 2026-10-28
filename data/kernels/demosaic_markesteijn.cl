@@ -369,18 +369,17 @@ markesteijn_recalculate_green(global float *rgb_0, global float *rgb_1, global f
   // we only work on non-green pixels
   if(f == GREEN) return;
 
+  const int pix = 2* mad24(y, width, x);
   // receive min/max of this pixel
-  const float gmin = (gminmax + 2 * mad24(y, width, x))[0];
-  const float gmax = (gminmax + 2 * mad24(y, width, x))[1];
+  const float gmin = (gminmax + pix)[0];
+  const float gmax = (gminmax + pix)[1];
 
   global const char2 *const hex = allhex[y % 3][x % 3];
-
-  const int glidx = 4 * mad24(y, width, x);
 
   for(int d = 3; d < 6; d++)
   {
     const int id = (d - 2) ^ (!((y - sgreen.y) % 3) ? 1 : 0);
-    global float *rfx = rgb[id] + glidx;
+    global float *rfx = rgb[id] + 2*pix;
     const float val = (rfx - 2 * hexidx4(hex[d], width))[1]
                        + 2.0f * (rfx + hexidx4(hex[d], width))[1]
                        - (rfx - 2 * hexidx4(hex[d], width))[f]
