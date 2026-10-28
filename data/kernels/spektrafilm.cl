@@ -883,8 +883,8 @@ __kernel void spektrafilm_passthrough(__read_only image2d_t in, __write_only ima
 /* Young-van Vliet order-3 recursive Gaussian, one work-item per line. Same
    coefficients and same edge-replicated seeding as sf_gauss_yvv_coeffs /
    _sf_gauss_iir_1d on the CPU, so both paths deliver the identical blur above
-   SF_GAUSS_EXACT_MAX_SIGMA. Launch with global size (h, 1) for rows and
-   (w, 1) for columns. */
+   SF_GAUSS_EXACT_MAX_SIGMA. Columns launch with global size (w, 1); rows are
+   tiled, see spektrafilm_yvv_row_4c. */
 /* Incremental form and explicit fma(), in the same nesting as
    _sf_gauss_iir_1d() in spektra_core.c -- see the comment there:
    v = w1 + (B*(x - w1) + B2*(w2 - w1) + B3*(w3 - w1)), which uses
@@ -893,30 +893,66 @@ __kernel void spektrafilm_passthrough(__read_only image2d_t in, __write_only ima
    the result back in, so one differing rounding between host and device
    becomes a different filter rather than a one-ulp difference; FP_CONTRACT
    pragmas do not settle this on either side, an explicit fma does. */
+/* Rows: one work-group of tw x th items (its local size) covers th rows. The
+   rows are walked in chunks of YVV_CHUNK columns; each chunk is loaded and
+   stored by the whole group in contiguous segments through `tile`, local
+   memory of th * YVV_TILE_PITCH elements, and item 0 of each row runs the
+   serial recursion over the chunk in local memory. Launch with global size
+   (tw, h rounded up to th). */
+#define YVV_CHUNK 64
+#define YVV_TILE_PITCH (YVV_CHUNK + 1)
+
 __kernel void spektrafilm_yvv_row_4c(__global const float4 *src, __global float4 *dst,
                                      const int w, const int h, const float B, const float B2,
-                                     const float B3)
+                                     const float B3, __local float4 *tile)
 {
-  /* One work-item per line. The launch asks for a second global dimension of
-     1, but dt_opencl_enqueue_kernel_2d_args rounds every dimension up to the
-     device's preferred multiple, so this is entered by a whole row of items
-     per line -- all of which would otherwise run the same serial recursion
-     over the same addresses and race. Only item 0 may proceed. */
-  const int row = get_global_id(0);
-  if(row >= h || get_global_id(1) != 0) return;
-  __global const float4 *s = src + (size_t)row * w;
-  __global float4 *d = dst + (size_t)row * w;
-  float4 w1 = s[0], w2 = s[0], w3 = s[0];
-  for(int j = 0; j < w; j++)
+  const int tw = get_local_size(0);
+  const int lx = get_local_id(0);
+  const int ly = get_local_id(1);
+  const int row = get_global_id(1);
+  const int valid = row < h;
+  __global const float4 *s = src + (size_t)min(row, h - 1) * w;
+  __global float4 *d = dst + (size_t)min(row, h - 1) * w;
+  __local float4 *t = tile + ly * YVV_TILE_PITCH;
+  const int last = ((w - 1) / YVV_CHUNK) * YVV_CHUNK;
+
+  float4 w1 = s[0], w2 = w1, w3 = w1;
+  for(int c0 = 0; c0 < w; c0 += YVV_CHUNK)
   {
-    const float4 v = w1 + fma(B, s[j] - w1, fma(B2, w2 - w1, B3 * (w3 - w1)));
-    d[j] = v; w3 = w2; w2 = w1; w1 = v;
+    const int n = min(YVV_CHUNK, w - c0);
+    for(int j = lx; valid && j < n; j += tw) t[j] = s[c0 + j];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if(valid && lx == 0)
+    {
+      for(int j = 0; j < n; j++)
+      {
+        const float4 v = w1 + fma(B, t[j] - w1, fma(B2, w2 - w1, B3 * (w3 - w1)));
+        t[j] = v; w3 = w2; w2 = w1; w1 = v;
+      }
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+    for(int j = lx; valid && j < n; j += tw) d[c0 + j] = t[j];
+    barrier(CLK_LOCAL_MEM_FENCE);
   }
-  float4 v1 = d[w - 1], v2 = v1, v3 = v1;
-  for(int j = w - 1; j >= 0; j--)
+
+  /* w1 holds d[w - 1] */
+  float4 v1 = w1, v2 = v1, v3 = v1;
+  for(int c0 = last; c0 >= 0; c0 -= YVV_CHUNK)
   {
-    const float4 v = v1 + fma(B, d[j] - v1, fma(B2, v2 - v1, B3 * (v3 - v1)));
-    d[j] = v; v3 = v2; v2 = v1; v1 = v;
+    const int n = min(YVV_CHUNK, w - c0);
+    for(int j = lx; valid && j < n; j += tw) t[j] = d[c0 + j];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if(valid && lx == 0)
+    {
+      for(int j = n - 1; j >= 0; j--)
+      {
+        const float4 v = v1 + fma(B, t[j] - v1, fma(B2, v2 - v1, B3 * (v3 - v1)));
+        t[j] = v; v3 = v2; v2 = v1; v1 = v;
+      }
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+    for(int j = lx; valid && j < n; j += tw) d[c0 + j] = t[j];
+    barrier(CLK_LOCAL_MEM_FENCE);
   }
 }
 
@@ -949,28 +985,55 @@ __kernel void spektrafilm_yvv_col_4c(__global const float4 *src, __global float4
 
 __kernel void spektrafilm_yvv_row_1c(__global const float *src, __global float *dst,
                                      const int w, const int h, const float B, const float B2,
-                                     const float B3)
+                                     const float B3, __local float *tile)
 {
-  /* One work-item per line. The launch asks for a second global dimension of
-     1, but dt_opencl_enqueue_kernel_2d_args rounds every dimension up to the
-     device's preferred multiple, so this is entered by a whole row of items
-     per line -- all of which would otherwise run the same serial recursion
-     over the same addresses and race. Only item 0 may proceed. */
-  const int row = get_global_id(0);
-  if(row >= h || get_global_id(1) != 0) return;
-  __global const float *s = src + (size_t)row * w;
-  __global float *d = dst + (size_t)row * w;
-  float w1 = s[0], w2 = s[0], w3 = s[0];
-  for(int j = 0; j < w; j++)
+  const int tw = get_local_size(0);
+  const int lx = get_local_id(0);
+  const int ly = get_local_id(1);
+  const int row = get_global_id(1);
+  const int valid = row < h;
+  __global const float *s = src + (size_t)min(row, h - 1) * w;
+  __global float *d = dst + (size_t)min(row, h - 1) * w;
+  __local float *t = tile + ly * YVV_TILE_PITCH;
+  const int last = ((w - 1) / YVV_CHUNK) * YVV_CHUNK;
+
+  float w1 = s[0], w2 = w1, w3 = w1;
+  for(int c0 = 0; c0 < w; c0 += YVV_CHUNK)
   {
-    const float v = w1 + fma(B, s[j] - w1, fma(B2, w2 - w1, B3 * (w3 - w1)));
-    d[j] = v; w3 = w2; w2 = w1; w1 = v;
+    const int n = min(YVV_CHUNK, w - c0);
+    for(int j = lx; valid && j < n; j += tw) t[j] = s[c0 + j];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if(valid && lx == 0)
+    {
+      for(int j = 0; j < n; j++)
+      {
+        const float v = w1 + fma(B, t[j] - w1, fma(B2, w2 - w1, B3 * (w3 - w1)));
+        t[j] = v; w3 = w2; w2 = w1; w1 = v;
+      }
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+    for(int j = lx; valid && j < n; j += tw) d[c0 + j] = t[j];
+    barrier(CLK_LOCAL_MEM_FENCE);
   }
-  float v1 = d[w - 1], v2 = v1, v3 = v1;
-  for(int j = w - 1; j >= 0; j--)
+
+  /* w1 holds d[w - 1] */
+  float v1 = w1, v2 = v1, v3 = v1;
+  for(int c0 = last; c0 >= 0; c0 -= YVV_CHUNK)
   {
-    const float v = v1 + fma(B, d[j] - v1, fma(B2, v2 - v1, B3 * (v3 - v1)));
-    d[j] = v; v3 = v2; v2 = v1; v1 = v;
+    const int n = min(YVV_CHUNK, w - c0);
+    for(int j = lx; valid && j < n; j += tw) t[j] = d[c0 + j];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if(valid && lx == 0)
+    {
+      for(int j = n - 1; j >= 0; j--)
+      {
+        const float v = v1 + fma(B, t[j] - v1, fma(B2, v2 - v1, B3 * (v3 - v1)));
+        t[j] = v; v3 = v2; v2 = v1; v1 = v;
+      }
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+    for(int j = lx; valid && j < n; j += tw) d[c0 + j] = t[j];
+    barrier(CLK_LOCAL_MEM_FENCE);
   }
 }
 

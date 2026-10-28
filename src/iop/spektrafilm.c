@@ -2591,12 +2591,25 @@ static cl_int _sf_yvv_blur_cl(const int devid,
   sf_gauss_yvv_coeffs(pass_sigma, b);
   const int krow = (ch == 4) ? gd->kernel_yvv_row_4c : gd->kernel_yvv_row_1c;
   const int kcol = (ch == 4) ? gd->kernel_yvv_col_4c : gd->kernel_yvv_col_1c;
+  /* the row kernels work on tiles of sizex x sizey items, up to 8 x 16, and
+     keep sizey rows of YVV_TILE_PITCH (65) elements in local memory */
+  dt_opencl_local_buffer_t locopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 65, .xfactor = 0,
+                                  .yoffset = 0, .yfactor = 1,
+                                  .cellsize = ch * sizeof(float), .overhead = 0,
+                                  .sizex = 8, .sizey = 16 };
+  if(dt_opencl_local_buffer_opt(devid, krow, &locopt) != CL_SUCCESS)
+    return DT_OPENCL_DEFAULT_ERROR;
+  const size_t row_sizes[2] = { locopt.sizex, ROUNDUP(h, locopt.sizey) };
+  const size_t row_local[2] = { locopt.sizex, locopt.sizey };
+  const size_t tile_bytes = (size_t)locopt.sizey * 65 * ch * sizeof(float);
   cl_int e = CL_SUCCESS;
   for(int pass = 0; pass < passes && e == CL_SUCCESS; pass++)
   {
-    e = dt_opencl_enqueue_kernel_2d_args(devid, krow, h, 1, CLARG(buf), CLARG(tmp),
-                                         CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[2]),
-                                         CLARG(b[3]));
+    e = dt_opencl_enqueue_kernel_2d_local_args(devid, krow, row_sizes, row_local,
+                                               CLARG(buf), CLARG(tmp),
+                                               CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[2]),
+                                               CLARG(b[3]), CLLOCAL(tile_bytes));
     if(e == CL_SUCCESS)
       e = dt_opencl_enqueue_kernel_2d_args(devid, kcol, w, 1, CLARG(tmp), CLARG(buf),
                                            CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[2]),
