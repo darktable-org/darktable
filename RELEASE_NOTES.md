@@ -734,6 +734,10 @@ changes (where available).
   gaussian and poissonian noise, on macOS OpenCL: the kernels read
   vector lanes they had not set.
 
+- Fixed the vignetting module using a linear falloff instead of
+  its smooth one on the CPU when dithering is off, so that CPU and
+  OpenCL now give the same result.
+
 - Fixed Lightroom imports of parametric tone curves, which washed out
   the highlights, of split toning, which used the wrong hues and toned
   the highlights across nearly the whole image but never the shadows,
