@@ -1253,16 +1253,27 @@ void gui_update(dt_iop_module_t *self)
 
   gboolean found = FALSE;
   const dt_dev_chroma_t *chr = &self->dev->chroma;
+  // a saved "camera reference" stays one, even if its coefficients (pasted,
+  // or from a preset or style) differ from this image's reference: relabeling
+  // it would enable its stored late_correction (_wb_from_params())
+  if(p->preset == DT_IOP_TEMP_D65)
+  {
+    dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65);
+    found = TRUE;
+  }
+
   // is this a "as shot" white balance?
-  if(dt_dev_equal_chroma((const float *)p, chr->as_shot))
+  else if(dt_dev_equal_chroma((const float *)p, chr->as_shot))
   {
     dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_AS_SHOT);
     p->preset = DT_IOP_TEMP_AS_SHOT;
     found = TRUE;
   }
 
-  // is this a "D65 white balance"?
-  else if(dt_dev_equal_chroma((const float *)p, chr->wb.D65coeffs))
+  // is this a "D65 white balance"? Only legacy params have no saved mode;
+  // a saved camera preset or user WB that equals the reference stays as it is
+  else if(p->preset == DT_IOP_TEMP_UNKNOWN
+          && dt_dev_equal_chroma((const float *)p, chr->wb.D65coeffs))
   {
     dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65);
     p->preset = DT_IOP_TEMP_D65;
