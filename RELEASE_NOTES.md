@@ -407,6 +407,10 @@ changes (where available).
 - Fixed the feather of paths created by vectorizing a raster mask or an
   AI object, which could not be changed from the mask manager.
 
+- Fixed a dark fringe along the right and bottom edges of images
+  pixelated by the censorize module, whose last column and row were
+  left unpainted.
+
 - Fixed HEIF export compilation with libheif versions older than 1.15.0,
   and with versions older than 1.16.0 when libsharpyuv is available.
 
