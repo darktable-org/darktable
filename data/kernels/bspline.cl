@@ -55,6 +55,41 @@ kernel void blur_2D_Bspline_vertical(read_only image2d_t in,
 }
 
 
+// blur_2D_Bspline_vertical followed by wavelets_detail_level in one pass:
+// LF is the vertical blur of `in`, HF = detail - LF
+kernel void blur_2D_Bspline_vertical_detail(read_only image2d_t in,
+                                            read_only image2d_t detail,
+                                            write_only image2d_t LF,
+                                            write_only image2d_t HF,
+                                            const int width,
+                                            const int height,
+                                            const int mult)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float4 filter[FSIZE] = { (float4)1.0f / 16.0f,
+                                 (float4)4.0f / 16.0f,
+                                 (float4)6.0f / 16.0f,
+                                 (float4)4.0f / 16.0f,
+                                 (float4)1.0f / 16.0f };
+
+  float4 accumulator = (float4)0.f;
+
+  #pragma unroll
+  for(int jj = 0; jj < FSIZE; ++jj)
+  {
+    const int yy = mult * (jj - FSTART) + y;
+    accumulator += filter[jj] * Areadpixel(in, x, clamp(yy, 0, height - 1));
+  }
+
+  const float4 lf = fmax(accumulator, 0.f);
+  write_imagef(LF, (int2)(x, y), lf);
+  write_imagef(HF, (int2)(x, y), Areadpixel(detail, x, y) - lf);
+}
+
+
 kernel void blur_2D_Bspline_horizontal(read_only image2d_t in, write_only image2d_t out,
                                        const int width, const int height, const int mult)
 {
