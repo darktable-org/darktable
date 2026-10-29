@@ -240,6 +240,12 @@ changes (where available).
   paths is much faster, as the mask overlay is no longer redrawn on
   every mouse move and long outlines are drawn with far fewer points.
 
+- Lens correction with lensfun is faster on the OpenCL path: lensfun
+  is now asked for its corrections on a coarse grid instead of for
+  every pixel, so the CPU no longer computes and uploads hundreds of
+  megabytes on each run. The correction is also more precise on x86,
+  where it could be up to 0.3 px off.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
