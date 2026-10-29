@@ -441,6 +441,10 @@ changes (where available).
   pixelated by the censorize module, whose last column and row were
   left unpainted.
 
+- Fixed color reconstruction giving different colors with OpenCL than
+  without it: the OpenCL grid only counted one pixel of each run of
+  neighbors, and zooming in past 100% changed its spatial extent.
+
 - Fixed HEIF export compilation with libheif versions older than 1.15.0,
   and with versions older than 1.16.0 when libsharpyuv is available.
 
