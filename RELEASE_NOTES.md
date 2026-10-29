@@ -758,6 +758,9 @@ changes (where available).
   instead of the copies bundled in the app. Without Homebrew, the
   modules were not found at all.
 
+- Fixed the wrong raster mask being applied when three or more external
+  raster masks were used in one edit.
+
 ## Lua
 
 ### API Version
