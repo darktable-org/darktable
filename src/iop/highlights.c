@@ -682,7 +682,7 @@ int process_cl(dt_iop_module_t *self,
   {
     const dt_dev_chroma_t *chr = &self->dev->chroma;
     dt_aligned_pixel_t clips = { clipper, clipper, clipper, clipper};
-    if(pipe->dsc.temperature.enabled && chr->late_correction)
+    if(chr->late_correction)
     {
       clips[0] *= chr->as_shot[0] / chr->D65coeffs[0];
       clips[1] *= chr->as_shot[1] / chr->D65coeffs[1];
@@ -761,7 +761,7 @@ static void process_clip(dt_iop_module_t *self,
     const uint8_t(*const xtrans)[6] = piece->xtrans;
     const dt_dev_chroma_t *chr = &self->dev->chroma;
     dt_aligned_pixel_t clips = { clip, clip, clip, clip};
-    if(piece->pipe->dsc.temperature.enabled && chr->late_correction)
+    if(chr->late_correction)
     {
       clips[0] *= chr->as_shot[0] / chr->D65coeffs[0];
       clips[1] *= chr->as_shot[1] / chr->D65coeffs[1];
