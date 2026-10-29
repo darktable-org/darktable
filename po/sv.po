@@ -3272,22 +3272,22 @@ msgstr "kontrast"
 #: ../build/lib/darktable/plugins/introspection_agx.c:322
 #: ../build/lib/darktable/plugins/introspection_agx.c:565
 msgid "toe start"
-msgstr "start fot"
+msgstr "fotens start"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:328
 #: ../build/lib/darktable/plugins/introspection_agx.c:569
 msgid "shoulder start"
-msgstr "start axel"
+msgstr "skuldrans start"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:334
 #: ../build/lib/darktable/plugins/introspection_agx.c:573
 msgid "toe power"
-msgstr "styrka fot"
+msgstr "fotens styrka"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:340
 #: ../build/lib/darktable/plugins/introspection_agx.c:577
 msgid "shoulder power"
-msgstr "styrka axel"
+msgstr "skuldrans styrka"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:346
 #: ../build/lib/darktable/plugins/introspection_agx.c:581
@@ -22306,7 +22306,7 @@ msgid ""
 "\n"
 "open the 'show curve' section to see the effects of the above settings."
 msgstr ""
-"styrka axel kan inte tillämpas eftersom kurvan har förlorat sin 'S'-form\n"
+"skuldrans styrka kan inte tillämpas eftersom kurvan har förlorat sin 'S'-form\n"
 "p.g.a. de aktuella inställningarna för vit relativ exponering, kontrast och "
 "vridpunkt.\n"
 "för att återaktivera, gör något av följande:\n"
@@ -22340,7 +22340,7 @@ msgid ""
 "\n"
 "open the 'show curve' section to see the effects of the above settings."
 msgstr ""
-"styrka fot kan inte tillämpas eftersom kurvan har förlorat sin 'S'-form\n"
+"fotens styrka kan inte tillämpas eftersom kurvan har förlorat sin 'S'-form\n"
 "p.g.a. de aktuella inställningarna för vit relativ exponering, kontrast och "
 "vridpunkt.\n"
 "för att återaktivera, gör något av följande:\n"
@@ -22444,7 +22444,7 @@ msgid ""
 msgstr ""
 "justerar gamma automatiskt, försöker säkerställa\n"
 "att kurvan behåller S-formen (givet kontrasten är\n"
-"tillräckligt hög), så att fot- och axel-kontroller är effektiva."
+"tillräckligt hög), så att fot- och skuldrakontroller är effektiva."
 
 #: ../src/iop/agx.c:2208
 msgid ""
@@ -22458,7 +22458,7 @@ msgstr ""
 "längs kurvans y-axel.\n"
 "omedelbar kontrast runt mellanpunkten påverkas inte,\n"
 "men skuggor och högdagrar görs; du kan behöva motverka\n"
-"med reglage för kontrast eller kontroller för fot / axel."
+"med reglage för kontrast eller kontroller för fot / skuldra."
 
 #: ../src/iop/agx.c:2219
 msgctxt "section"
