@@ -403,6 +403,10 @@ changes (where available).
 - History items created by the Lightroom import are labeled "lr import"
   instead of having an empty label.
 
+- Copy & import can now also copy existing XMP sidecars, including
+  those of duplicates, so edits made elsewhere are kept. Enable it in
+  preferences > import.
+
 ## Bug Fixes
 
 - Fixed Lightroom develop import which was not done. Only the tags,
