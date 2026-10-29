@@ -2882,7 +2882,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                           pipe->devid, darktable.opencl->dev[pipe->devid].cname,
                           cl_errstr(err));
           else if(_is_debug_pipe(pipe)
-              && !(module->flags() & IOP_FLAGS_HIDDEN)
+              && !((module->flags() & IOP_FLAGS_HIDDEN) && (darktable.unmuted & DT_DEBUG_VERBOSE) == 0)
               && piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
           {
             if(darktable.dump_pfm_pipe)
@@ -4098,7 +4098,7 @@ float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
     }
     else
     {
-      dt_print_pipe(DT_DEBUG_VERBOSE,
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
                     "source raster mask",
                     piece->pipe,
                     source_piece->module,
