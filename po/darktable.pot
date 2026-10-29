@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-27 17:49+0100\n"
+"POT-Creation-Date: 2026-10-29 08:28+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2305,7 +2305,7 @@ msgid ""
 msgstr ""
 
 #. tags
-#: ../build/bin/preferences_gen.h:4854 ../src/develop/lightroom.c:1561
+#: ../build/bin/preferences_gen.h:4854 ../src/develop/lightroom.c:2086
 #: ../src/gui/import_metadata.c:515 ../src/libs/export_metadata.c:197
 #: ../src/libs/image.c:611 ../src/libs/metadata_view.c:178
 msgid "tags"
@@ -2503,8 +2503,8 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:161
 #: ../src/common/collection.c:1487 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:384 ../src/develop/blend_gui.c:3489
-#: ../src/develop/blend_gui.c:3537 ../src/develop/lightroom.c:881
-#: ../src/gui/gtk.c:6173 ../src/gui/preferences.c:517
+#: ../src/develop/blend_gui.c:3537 ../src/develop/lightroom.c:1242
+#: ../src/gui/gtk.c:6174 ../src/gui/preferences.c:517
 #: ../src/gui/preferences.c:542 ../src/gui/preferences.c:565
 #: ../src/iop/bilateral.cc:381 ../src/iop/channelmixer.c:611
 #: ../src/iop/channelmixer.c:631 ../src/iop/channelmixerrgb.c:4636
@@ -2627,8 +2627,8 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:159
 #: ../src/common/collection.c:1485 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:383 ../src/develop/blend_gui.c:3483
-#: ../src/develop/blend_gui.c:3531 ../src/develop/lightroom.c:879
-#: ../src/gui/gtk.c:6172 ../src/gui/guides.c:856 ../src/gui/preferences.c:516
+#: ../src/develop/blend_gui.c:3531 ../src/develop/lightroom.c:1240
+#: ../src/gui/gtk.c:6173 ../src/gui/guides.c:856 ../src/gui/preferences.c:516
 #: ../src/gui/preferences.c:541 ../src/gui/preferences.c:564
 #: ../src/iop/bilateral.cc:376 ../src/iop/channelmixer.c:610
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixerrgb.c:4635
@@ -2701,8 +2701,8 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:160
 #: ../src/common/collection.c:1481 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:381 ../src/develop/blend_gui.c:3477
-#: ../src/develop/blend_gui.c:3525 ../src/develop/lightroom.c:875
-#: ../src/gui/gtk.c:6171 ../src/gui/guides.c:855 ../src/iop/bilateral.cc:371
+#: ../src/develop/blend_gui.c:3525 ../src/develop/lightroom.c:1236
+#: ../src/gui/gtk.c:6172 ../src/gui/guides.c:855 ../src/iop/bilateral.cc:371
 #: ../src/iop/channelmixer.c:609 ../src/iop/channelmixer.c:619
 #: ../src/iop/channelmixerrgb.c:4634 ../src/iop/colorequal.c:3738
 #: ../src/iop/colorzones.c:2502 ../src/iop/temperature.c:1977
@@ -2739,7 +2739,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:515
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:547
 #: ../src/common/collection.c:1483 ../src/common/colorlabels.c:382
-#: ../src/develop/lightroom.c:877 ../src/gui/guides.c:857
+#: ../src/develop/lightroom.c:1238 ../src/gui/guides.c:857
 #: ../src/gui/preferences.c:518 ../src/gui/preferences.c:543
 #: ../src/gui/preferences.c:566 ../src/iop/colorequal.c:3740
 #: ../src/iop/colorzones.c:2504 ../src/iop/temperature.c:1967
@@ -2784,7 +2784,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:643 ../src/iop/channelmixerrgb.c:4642
 #: ../src/iop/colisa.c:272 ../src/iop/colorequal.c:3890
-#: ../src/iop/lowpass.c:575 ../src/iop/soften.c:379 ../src/iop/vignette.c:1044
+#: ../src/iop/lowpass.c:575 ../src/iop/soften.c:379 ../src/iop/vignette.c:1047
 #: ../src/libs/history.c:982
 msgid "brightness"
 msgstr ""
@@ -2805,7 +2805,7 @@ msgstr ""
 #: ../src/iop/colorharmonizer.c:1679 ../src/iop/colorize.c:357
 #: ../src/iop/lowpass.c:576 ../src/iop/satcurvergb.c:2126
 #: ../src/iop/soften.c:375 ../src/iop/velvia.c:72 ../src/iop/vibrance.c:69
-#: ../src/iop/vignette.c:1045
+#: ../src/iop/vignette.c:1048
 msgid "saturation"
 msgstr ""
 
@@ -3188,7 +3188,7 @@ msgstr ""
 #: ../src/iop/clipping.c:2112 ../src/iop/retouch.c:500
 #: ../src/libs/collect.c:2388 ../src/libs/colorpicker.c:53
 #: ../src/libs/export.c:108 ../src/libs/export.c:1203
-#: ../src/libs/filters/module_order.c:158 ../src/libs/live_view.c:370
+#: ../src/libs/filters/module_order.c:164 ../src/libs/live_view.c:370
 #: ../src/libs/print_settings.c:1579 ../src/libs/print_settings.c:1597
 #: ../src/libs/scopes/vectorscope.c:62
 msgid "none"
@@ -3344,7 +3344,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:220
 #: ../src/common/collection.c:631 ../src/gui/preferences.c:1142
-#: ../src/gui/presets.c:735 ../src/libs/filters/misc.c:434
+#: ../src/gui/presets.c:735 ../src/libs/filters/misc.c:363
 #: ../src/libs/metadata_view.c:153
 msgid "lens"
 msgstr ""
@@ -3427,7 +3427,7 @@ msgstr ""
 #: ../src/imageio/format/avif.c:1053 ../src/imageio/format/heif.c:767
 #: ../src/imageio/format/jpeg.c:597 ../src/iop/ashift.c:6217
 #: ../src/iop/basicadj.c:653 ../src/iop/flip.c:448 ../src/iop/levels.c:648
-#: ../src/iop/rgblevels.c:1068 ../src/iop/spektrafilm.c:3906
+#: ../src/iop/rgblevels.c:1068 ../src/iop/spektrafilm.c:3928
 msgid "auto"
 msgstr ""
 
@@ -3651,7 +3651,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:514
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:256
-#: ../src/common/iop_order.c:56 ../src/iop/spektrafilm.c:568
+#: ../src/common/iop_order.c:56 ../src/iop/spektrafilm.c:569
 msgid "custom"
 msgstr ""
 
@@ -4728,7 +4728,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:86
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:145
 #: ../build/lib/darktable/plugins/introspection_retouch.c:458
-#: ../src/gui/presets.c:62 ../src/iop/spektrafilm.c:5202
+#: ../src/gui/presets.c:62 ../src/iop/spektrafilm.c:5224
 #: ../src/iop/watermark.c:1483 ../src/libs/colorpicker.c:397
 #: ../src/libs/image.c:654 ../src/libs/modulegroups.c:2572
 msgid "color"
@@ -5296,7 +5296,7 @@ msgstr ""
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
 #: ../src/dtgtk/range.c:1796 ../src/gui/accelerators.c:2902
-#: ../src/gui/accelerators.c:2974 ../src/gui/gtk.c:2280 ../src/gui/gtk.c:6170
+#: ../src/gui/accelerators.c:2974 ../src/gui/gtk.c:2280 ../src/gui/gtk.c:6171
 #: ../src/imageio/format/pdf.c:662 ../src/iop/denoiseprofile.c:3625
 #: ../src/iop/rawdenoise.c:866 ../src/libs/collect.c:4097
 #: ../src/libs/filtering.c:1571 ../src/libs/filters/colors.c:210
@@ -5459,7 +5459,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:84
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:199
-#: ../src/iop/spektrafilm.c:5725
+#: ../src/iop/spektrafilm.c:5747
 msgid "film stock"
 msgstr ""
 
@@ -5954,7 +5954,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:574
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1017
-msgid "enable halation"
+msgid "enable halation and scatter"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:580
@@ -6139,7 +6139,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:796
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1165
-msgid "scanner sharpness"
+msgid "scanner sharpen radius"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:802
@@ -6379,7 +6379,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_vignette.c:146
 #: ../build/lib/darktable/plugins/introspection_vignette.c:237
 #: ../src/develop/blend_gui.c:5140 ../src/develop/blend_gui.c:13720
-#: ../src/iop/vignette.c:1051
+#: ../src/iop/vignette.c:1054
 msgid "shape"
 msgstr ""
 
@@ -6531,7 +6531,7 @@ msgstr ""
 #: ../src/bauhaus/bauhaus.c:4667 ../src/gui/accelerators.c:140
 #: ../src/gui/accelerators.c:154 ../src/gui/accelerators.c:167
 #: ../src/gui/accelerators.c:436 ../src/gui/color_picker_proxy.c:416
-#: ../src/libs/filters/rating_range.c:272 ../src/libs/modulegroups.c:3252
+#: ../src/libs/filters/rating_range.c:259 ../src/libs/modulegroups.c:3252
 #: ../src/libs/tagging.c:3617 ../src/views/darkroom.c:3467
 #: ../src/views/darkroom.c:3535 ../src/views/darkroom.c:3815
 msgid "toggle"
@@ -6974,7 +6974,7 @@ msgstr ""
 msgid "folder"
 msgstr ""
 
-#: ../src/common/collection.c:609 ../src/libs/filters/misc.c:427
+#: ../src/common/collection.c:609 ../src/libs/filters/misc.c:356
 msgid "camera"
 msgstr ""
 
@@ -7013,12 +7013,12 @@ msgstr ""
 
 #: ../src/common/collection.c:627 ../src/libs/collect.c:4320
 #: ../src/libs/filtering.c:2347 ../src/libs/filtering.c:2367
-#: ../src/libs/filters/history.c:153 ../src/libs/history.c:102
+#: ../src/libs/filters/history.c:135 ../src/libs/history.c:102
 msgid "history"
 msgstr ""
 
 #: ../src/common/collection.c:629 ../src/common/colorlabels.c:389
-#: ../src/develop/lightroom.c:1595 ../src/dtgtk/thumbnail.c:1590
+#: ../src/develop/lightroom.c:2120 ../src/dtgtk/thumbnail.c:1590
 #: ../src/libs/filtering.c:63 ../src/libs/filters/colors.c:350
 #: ../src/libs/filters/colors.c:368 ../src/libs/tools/colorlabels.c:138
 msgid "color label"
@@ -7039,11 +7039,11 @@ msgid "aperture"
 msgstr ""
 
 #: ../src/common/collection.c:645 ../src/libs/filtering.c:52
-#: ../src/libs/filters/filename.c:368 ../src/libs/metadata_view.c:140
+#: ../src/libs/filters/filename.c:333 ../src/libs/metadata_view.c:140
 msgid "filename"
 msgstr ""
 
-#: ../src/common/collection.c:647 ../src/develop/lightroom.c:1586
+#: ../src/common/collection.c:647 ../src/develop/lightroom.c:2111
 #: ../src/libs/geotagging.c:147
 msgid "geotagging"
 msgstr ""
@@ -7052,16 +7052,16 @@ msgstr ""
 msgid "group"
 msgstr ""
 
-#: ../src/common/collection.c:651 ../src/libs/filters/duplicates.c:157
+#: ../src/common/collection.c:651 ../src/libs/filters/duplicates.c:135
 msgid "duplicates"
 msgstr ""
 
-#: ../src/common/collection.c:653 ../src/libs/filters/misc.c:476
+#: ../src/common/collection.c:653 ../src/libs/filters/misc.c:405
 msgid "image dimensions"
 msgstr ""
 
 #: ../src/common/collection.c:655 ../src/dtgtk/thumbnail.c:1602
-#: ../src/libs/filters/local_copy.c:142 ../src/libs/metadata_view.c:143
+#: ../src/libs/filters/local_copy.c:129 ../src/libs/metadata_view.c:143
 #: ../src/libs/metadata_view.c:383
 msgid "local copy"
 msgstr ""
@@ -7072,7 +7072,7 @@ msgstr ""
 
 #: ../src/common/collection.c:659 ../src/gui/hist_dialog.c:351
 #: ../src/gui/styles_dialog.c:781 ../src/gui/styles_dialog.c:828
-#: ../src/libs/filters/module_order.c:161 ../src/libs/ioporder.c:38
+#: ../src/libs/filters/module_order.c:167 ../src/libs/ioporder.c:38
 msgid "module order"
 msgstr ""
 
@@ -7081,7 +7081,7 @@ msgid "range rating"
 msgstr ""
 
 #: ../src/common/collection.c:663 ../src/common/ratings.c:403
-#: ../src/develop/lightroom.c:1570 ../src/libs/filtering.c:62
+#: ../src/develop/lightroom.c:2095 ../src/libs/filtering.c:62
 #: ../src/libs/tools/ratings.c:71
 msgid "rating"
 msgstr ""
@@ -7090,22 +7090,22 @@ msgstr ""
 msgid "search"
 msgstr ""
 
-#: ../src/common/collection.c:667 ../src/libs/filters/misc.c:441
+#: ../src/common/collection.c:667 ../src/libs/filters/misc.c:370
 #: ../src/libs/metadata_view.c:158
 msgid "white balance"
 msgstr ""
 
 #: ../src/common/collection.c:669 ../src/common/wb_presets.c:83
-#: ../src/libs/filters/misc.c:448 ../src/libs/metadata_view.c:159
+#: ../src/libs/filters/misc.c:377 ../src/libs/metadata_view.c:159
 msgid "flash"
 msgstr ""
 
-#: ../src/common/collection.c:671 ../src/libs/filters/misc.c:455
+#: ../src/common/collection.c:671 ../src/libs/filters/misc.c:384
 #: ../src/libs/metadata_view.c:157
 msgid "exposure program"
 msgstr ""
 
-#: ../src/common/collection.c:673 ../src/libs/filters/misc.c:462
+#: ../src/common/collection.c:673 ../src/libs/filters/misc.c:391
 #: ../src/libs/metadata_view.c:160
 msgid "metering mode"
 msgstr ""
@@ -7148,11 +7148,11 @@ msgid "copied locally"
 msgstr ""
 
 #. duplicates
-#: ../src/common/collection.c:1584 ../src/libs/filters/duplicates.c:38
+#: ../src/common/collection.c:1584 ../src/libs/filters/duplicates.c:40
 msgid "images with duplicates"
 msgstr ""
 
-#: ../src/common/collection.c:1600 ../src/libs/filters/duplicates.c:38
+#: ../src/common/collection.c:1600 ../src/libs/filters/duplicates.c:40
 msgid "duplicates only"
 msgstr ""
 
@@ -7161,8 +7161,8 @@ msgstr ""
 #: ../src/common/collection.c:1795 ../src/common/collection.c:1822
 #: ../src/common/collection.c:1848 ../src/common/collection.c:1874
 #: ../src/common/collection.c:2785 ../src/libs/collect.c:2580
-#: ../src/libs/collect.c:2581 ../src/libs/filters/misc.c:224
-#: ../src/libs/filters/misc.c:226
+#: ../src/libs/collect.c:2581 ../src/libs/filters/misc.c:153
+#: ../src/libs/filters/misc.c:155
 msgid "unnamed"
 msgstr ""
 
@@ -8321,7 +8321,7 @@ msgstr ""
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr ""
 
-#: ../src/common/image.h:230 ../src/common/ratings.c:363
+#: ../src/common/image.h:232 ../src/common/ratings.c:363
 #: ../src/imageio/format/avif.c:120 ../src/libs/collect.c:1784
 #: ../src/libs/collect.c:2563 ../src/libs/history.c:861
 #: ../src/libs/modulegroups.c:3182 ../src/libs/snapshots.c:964
@@ -8329,71 +8329,71 @@ msgid "unknown"
 msgstr ""
 
 #. EMPTY_FIELD
-#: ../src/common/image.h:231 ../src/imageio/format/tiff.c:811
+#: ../src/common/image.h:233 ../src/imageio/format/tiff.c:811
 msgid "TIFF"
 msgstr ""
 
-#: ../src/common/image.h:232 ../src/imageio/format/png.c:718
+#: ../src/common/image.h:234 ../src/imageio/format/png.c:718
 msgid "PNG"
 msgstr ""
 
-#: ../src/common/image.h:233
+#: ../src/common/image.h:235
 msgid "JPEG 2000"
 msgstr ""
 
-#: ../src/common/image.h:234
+#: ../src/common/image.h:236
 msgid "JPEG"
 msgstr ""
 
-#: ../src/common/image.h:235
+#: ../src/common/image.h:237
 msgid "EXR"
 msgstr ""
 
-#: ../src/common/image.h:236
+#: ../src/common/image.h:238
 msgid "RGBE"
 msgstr ""
 
-#: ../src/common/image.h:237 ../src/imageio/format/pfm.c:120
+#: ../src/common/image.h:239 ../src/imageio/format/pfm.c:120
 msgid "PFM"
 msgstr ""
 
-#: ../src/common/image.h:238
+#: ../src/common/image.h:240
 msgid "GraphicsMagick"
 msgstr ""
 
-#: ../src/common/image.h:239
+#: ../src/common/image.h:241
 msgid "RawSpeed"
 msgstr ""
 
-#: ../src/common/image.h:240
+#: ../src/common/image.h:242
 msgid "Netpbm"
 msgstr ""
 
-#: ../src/common/image.h:241 ../src/imageio/format/avif.c:887
+#: ../src/common/image.h:243 ../src/imageio/format/avif.c:887
 msgid "AVIF"
 msgstr ""
 
-#: ../src/common/image.h:242
+#: ../src/common/image.h:244
 msgid "ImageMagick"
 msgstr ""
 
-#: ../src/common/image.h:243 ../src/imageio/format/heif.c:635
+#: ../src/common/image.h:245 ../src/imageio/format/heif.c:635
 msgid "HEIF"
 msgstr ""
 
-#: ../src/common/image.h:244
+#: ../src/common/image.h:246
 msgid "LibRaw"
 msgstr ""
 
-#: ../src/common/image.h:245 ../src/imageio/format/webp.c:384
+#: ../src/common/image.h:247 ../src/imageio/format/webp.c:384
 msgid "WebP"
 msgstr ""
 
-#: ../src/common/image.h:246 ../src/imageio/format/jxl.c:525
+#: ../src/common/image.h:248 ../src/imageio/format/jxl.c:525
 msgid "JPEG XL"
 msgstr ""
 
-#: ../src/common/image.h:247
+#: ../src/common/image.h:249
 msgid "QOI"
 msgstr ""
 
@@ -8548,7 +8548,7 @@ msgid "building OpenCL program %s for %s"
 msgstr ""
 
 #: ../src/common/pdf.h:89 ../src/iop/lens.cc:4209
-#: ../src/libs/filters/focal.c:74 ../src/libs/print_settings.c:96
+#: ../src/libs/filters/focal.c:70 ../src/libs/print_settings.c:96
 msgid "mm"
 msgstr ""
 
@@ -8653,23 +8653,23 @@ msgstr ""
 msgid "zero"
 msgstr ""
 
-#: ../src/common/ratings.c:394 ../src/libs/filters/rating_range.c:281
+#: ../src/common/ratings.c:394 ../src/libs/filters/rating_range.c:268
 msgid "one"
 msgstr ""
 
-#: ../src/common/ratings.c:395 ../src/libs/filters/rating_range.c:282
+#: ../src/common/ratings.c:395 ../src/libs/filters/rating_range.c:269
 msgid "two"
 msgstr ""
 
-#: ../src/common/ratings.c:396 ../src/libs/filters/rating_range.c:283
+#: ../src/common/ratings.c:396 ../src/libs/filters/rating_range.c:270
 msgid "three"
 msgstr ""
 
-#: ../src/common/ratings.c:397 ../src/libs/filters/rating_range.c:284
+#: ../src/common/ratings.c:397 ../src/libs/filters/rating_range.c:271
 msgid "four"
 msgstr ""
 
-#: ../src/common/ratings.c:398 ../src/libs/filters/rating_range.c:285
+#: ../src/common/ratings.c:398 ../src/libs/filters/rating_range.c:272
 msgid "five"
 msgstr ""
 
@@ -11322,8 +11322,8 @@ msgstr ""
 #: ../src/iop/graduatednd.c:1032 ../src/iop/negadoctor.c:1004
 #: ../src/iop/profile_gamma.c:624 ../src/iop/profile_gamma.c:630
 #: ../src/iop/relight.c:248 ../src/iop/soften.c:380
-#: ../src/iop/spektrafilm.c:5792 ../src/iop/spektrafilm.c:6054
-#: ../src/iop/spektrafilm.c:6358 ../src/iop/spektrafilm.c:6374
+#: ../src/iop/spektrafilm.c:5815 ../src/iop/spektrafilm.c:6080
+#: ../src/iop/spektrafilm.c:6399 ../src/iop/spektrafilm.c:6415
 #: ../src/iop/toneequal.c:3793 ../src/iop/toneequal.c:3796
 #: ../src/iop/toneequal.c:3799 ../src/iop/toneequal.c:3802
 #: ../src/iop/toneequal.c:3805 ../src/iop/toneequal.c:3808
@@ -12138,17 +12138,17 @@ msgid ""
 "history or a slow drive being used"
 msgstr ""
 
-#: ../src/develop/develop.c:2843
+#: ../src/develop/develop.c:2852
 #, c-format
 msgid "%s: module `%s' has unknown version %d, using default parameters"
 msgstr ""
 
-#: ../src/develop/develop.c:2865
+#: ../src/develop/develop.c:2874
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr ""
 
-#: ../src/develop/develop.c:4016
+#: ../src/develop/develop.c:4025
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr ""
 
@@ -12331,7 +12331,7 @@ msgstr ""
 #: ../src/develop/imageop.c:4819
 #: ../src/external/lua-scripts/tools/executable_manager.lua:222
 #: ../src/gui/accelerators.c:134 ../src/gui/accelerators.c:148
-#: ../src/gui/gtk.c:5999 ../src/gui/gtk.c:6054 ../src/gui/hist_dialog.c:273
+#: ../src/gui/gtk.c:6000 ../src/gui/gtk.c:6055 ../src/gui/hist_dialog.c:273
 #: ../src/gui/styles_dialog.c:664 ../src/gui/styles_dialog.c:686
 #: ../src/iop/atrous.c:1593 ../src/libs/lib.c:1743
 #: ../src/libs/modulegroups.c:4490
@@ -12385,17 +12385,22 @@ msgstr ""
 msgid "interpolation method"
 msgstr ""
 
-#: ../src/develop/lightroom.c:1125
+#: ../src/develop/lightroom.c:1550 ../src/develop/masks/masks.c:387
+#, c-format
+msgid "group `%s'"
+msgstr ""
+
+#: ../src/develop/lightroom.c:1620
 msgid "cannot find Lightroom XMP!"
 msgstr ""
 
-#: ../src/develop/lightroom.c:1157 ../src/develop/lightroom.c:1179
-#: ../src/develop/lightroom.c:1199
+#: ../src/develop/lightroom.c:1652 ../src/develop/lightroom.c:1675
+#: ../src/develop/lightroom.c:1695
 #, c-format
 msgid "`%s' is not a Lightroom XMP!"
 msgstr ""
 
-#: ../src/develop/lightroom.c:1601
+#: ../src/develop/lightroom.c:2126
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -12634,11 +12639,6 @@ msgstr ""
 
 #: ../src/develop/masks/masks.c:189
 msgid "[SHAPE] remove shape"
-msgstr ""
-
-#: ../src/develop/masks/masks.c:387
-#, c-format
-msgid "group `%s'"
 msgstr ""
 
 #: ../src/develop/masks/masks.c:635
@@ -13107,8 +13107,8 @@ msgstr ""
 msgid "preset name"
 msgstr ""
 
-#: ../src/develop/masks_gui_presets.c:883 ../src/iop/spektrafilm.c:4323
-#: ../src/iop/spektrafilm.c:4434 ../src/libs/metadata.c:1097
+#: ../src/develop/masks_gui_presets.c:883 ../src/iop/spektrafilm.c:4345
+#: ../src/iop/spektrafilm.c:4456 ../src/libs/metadata.c:1097
 msgid "cancel"
 msgstr ""
 
@@ -13203,11 +13203,11 @@ msgid ""
 "please report on GitHub"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:2424
+#: ../src/develop/pixelpipe_hb.c:2447
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:3683
+#: ../src/develop/pixelpipe_hb.c:3706
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -13219,7 +13219,7 @@ msgid ""
 "  - too small headroom settings while using 'use all device memory'."
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:4032
+#: ../src/develop/pixelpipe_hb.c:4055
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -13336,7 +13336,7 @@ msgid "min"
 msgstr ""
 
 #: ../src/dtgtk/range.c:661 ../src/dtgtk/range.c:1813 ../src/dtgtk/range.c:1864
-#: ../src/libs/colorpicker.c:55 ../src/libs/filters/rating_range.c:286
+#: ../src/libs/colorpicker.c:55 ../src/libs/filters/rating_range.c:273
 msgid "max"
 msgstr ""
 
@@ -17235,7 +17235,7 @@ msgstr ""
 #: ../src/iop/clipping.c:2091 ../src/iop/colorbalancergb.c:1822
 #: ../src/iop/colorequal.c:3797 ../src/iop/filmicrgb.c:4372
 #: ../src/iop/negadoctor.c:837 ../src/iop/satcurvergb.c:2136
-#: ../src/iop/spektrafilm.c:5778 ../src/iop/toneequal.c:3786
+#: ../src/iop/spektrafilm.c:5801 ../src/iop/toneequal.c:3786
 #: ../src/libs/image.c:486 ../src/libs/neural_restore.c:4512
 #: ../src/views/lighttable.c:1615
 msgid "page"
@@ -17477,13 +17477,13 @@ msgid "popup"
 msgstr ""
 
 #: ../src/gui/accelerators.c:146 ../src/gui/accelerators.c:179
-#: ../src/gui/gtk.c:6052 ../src/libs/modulegroups.c:3252
+#: ../src/gui/gtk.c:6053 ../src/libs/modulegroups.c:3252
 #: ../src/views/lighttable.c:1038
 msgid "next"
 msgstr ""
 
 #: ../src/gui/accelerators.c:147 ../src/gui/accelerators.c:178
-#: ../src/gui/gtk.c:6053 ../src/libs/modulegroups.c:3252
+#: ../src/gui/gtk.c:6054 ../src/libs/modulegroups.c:3252
 #: ../src/views/lighttable.c:1039
 msgid "previous"
 msgstr ""
@@ -17512,7 +17512,7 @@ msgstr ""
 msgid "right-on"
 msgstr ""
 
-#: ../src/gui/accelerators.c:171 ../src/gui/gtk.c:6051
+#: ../src/gui/accelerators.c:171 ../src/gui/gtk.c:6052
 msgid "activate"
 msgstr ""
 
@@ -18234,7 +18234,7 @@ msgstr ""
 
 #. ---- tab 2: print ----
 #. Print button
-#: ../src/gui/gtk.c:2265 ../src/iop/spektrafilm.c:6047
+#: ../src/gui/gtk.c:2265 ../src/iop/spektrafilm.c:6073
 #: ../src/libs/print_settings.c:3518
 msgid "print"
 msgstr ""
@@ -18294,8 +18294,8 @@ msgstr ""
 msgid "toggle focus peaking"
 msgstr ""
 
-#: ../src/gui/gtk.c:2696 ../src/gui/gtk.c:6177 ../src/gui/gtk.c:6182
-#: ../src/gui/gtk.c:6187 ../src/gui/gtk.c:6192
+#: ../src/gui/gtk.c:2696 ../src/gui/gtk.c:6178 ../src/gui/gtk.c:6183
+#: ../src/gui/gtk.c:6188 ../src/gui/gtk.c:6193
 msgid "tabs"
 msgstr ""
 
@@ -18385,23 +18385,11 @@ msgstr ""
 msgid "there is no help available for this element"
 msgstr ""
 
-#. font name can only use period as decimal separator
-#. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:5620 ../src/libs/metadata_view.c:831
-#, c-format
-msgid "%.1f"
-msgstr ""
-
-#: ../src/gui/gtk.c:5622
-#, c-format
-msgid "Sans %s"
-msgstr ""
-
-#: ../src/gui/gtk.c:6046
+#: ../src/gui/gtk.c:6047
 msgid "does not contain pages"
 msgstr ""
 
-#: ../src/gui/gtk.c:6312 ../src/gui/gtk.c:6383
+#: ../src/gui/gtk.c:6313 ../src/gui/gtk.c:6384
 #, c-format
 msgid "never show more than %d lines"
 msgstr ""
@@ -19405,7 +19393,7 @@ msgid "HDR"
 msgstr ""
 
 #: ../src/gui/presets.c:62 ../src/iop/monochrome.c:78
-#: ../src/iop/spektrafilm.c:5203 ../src/libs/image.c:650
+#: ../src/iop/spektrafilm.c:5225 ../src/libs/image.c:650
 #: ../src/libs/metadata_view.c:386
 msgid "monochrome"
 msgstr ""
@@ -19592,7 +19580,7 @@ msgid "maximum focal length"
 msgstr ""
 
 #. raw/hdr/ldr/mono/color
-#: ../src/gui/presets.c:808 ../src/iop/spektrafilm.c:5743
+#: ../src/gui/presets.c:808 ../src/iop/spektrafilm.c:5765
 msgid "format"
 msgstr ""
 
@@ -20738,7 +20726,7 @@ msgstr ""
 #: ../src/iop/satcurvergb.c:192 ../src/iop/satcurvergb.c:193
 #: ../src/iop/satcurvergb.c:194 ../src/iop/scalepixels.c:86
 #: ../src/iop/scalepixels.c:88 ../src/iop/sigmoid.c:226
-#: ../src/iop/spektrafilm.c:775 ../src/iop/splittoning.c:104
+#: ../src/iop/spektrafilm.c:776 ../src/iop/splittoning.c:104
 #: ../src/iop/splittoning.c:106 ../src/iop/spots.c:69 ../src/iop/spots.c:71
 #: ../src/iop/toneequal.c:350 ../src/iop/velvia.c:97 ../src/iop/velvia.c:99
 msgid "linear, RGB, scene-referred"
@@ -20750,7 +20738,7 @@ msgstr ""
 #: ../src/iop/graduatednd.c:145 ../src/iop/negadoctor.c:144
 #: ../src/iop/profile_gamma.c:101 ../src/iop/rgbcurve.c:145
 #: ../src/iop/rgblevels.c:125 ../src/iop/sigmoid.c:227
-#: ../src/iop/spektrafilm.c:775 ../src/iop/vignette.c:118
+#: ../src/iop/spektrafilm.c:776 ../src/iop/vignette.c:118
 #: ../src/iop/watermark.c:470
 msgid "non-linear, RGB"
 msgstr ""
@@ -21149,7 +21137,7 @@ msgstr ""
 
 #: ../src/iop/agx.c:2866 ../src/iop/channelmixerrgb.c:398
 #: ../src/iop/exposure.c:335 ../src/iop/filmicrgb.c:3225
-#: ../src/iop/sigmoid.c:257 ../src/iop/spektrafilm.c:4714
+#: ../src/iop/sigmoid.c:257 ../src/iop/spektrafilm.c:4736
 msgid "scene-referred default"
 msgstr ""
 
@@ -21635,7 +21623,7 @@ msgstr ""
 #: ../src/iop/basecurve.c:375 ../src/iop/dither.c:117 ../src/iop/dither.c:119
 #: ../src/iop/filmicrgb.c:348 ../src/iop/graduatednd.c:146
 #: ../src/iop/negadoctor.c:145 ../src/iop/profile_gamma.c:102
-#: ../src/iop/rgblevels.c:126 ../src/iop/spektrafilm.c:776
+#: ../src/iop/rgblevels.c:126 ../src/iop/spektrafilm.c:777
 #: ../src/iop/vignette.c:117 ../src/iop/vignette.c:119
 #: ../src/iop/watermark.c:469 ../src/iop/watermark.c:471
 msgid "non-linear, RGB, display-referred"
@@ -21703,7 +21691,7 @@ msgstr ""
 #: ../src/iop/grain.c:401 ../src/iop/highpass.c:76 ../src/iop/levels.c:140
 #: ../src/iop/liquify.c:296 ../src/iop/lowlight.c:90 ../src/iop/lowpass.c:103
 #: ../src/iop/monochrome.c:102 ../src/iop/soften.c:98
-#: ../src/iop/spektrafilm.c:775 ../src/iop/splittoning.c:103
+#: ../src/iop/spektrafilm.c:776 ../src/iop/splittoning.c:103
 #: ../src/iop/velvia.c:96 ../src/iop/vibrance.c:94 ../src/iop/vignette.c:116
 #: ../src/iop/watermark.c:468
 msgid "creative"
@@ -26250,7 +26238,7 @@ msgid "[%s on line] change hardness"
 msgstr ""
 
 #. ---- tab 3: grain ----
-#: ../src/iop/grain.c:395 ../src/iop/spektrafilm.c:6189
+#: ../src/iop/grain.c:395 ../src/iop/spektrafilm.c:6225
 msgid "grain"
 msgstr ""
 
@@ -26625,7 +26613,7 @@ msgstr ""
 
 #. scale
 #. upscale page: scale factor selector
-#: ../src/iop/lens.cc:4665 ../src/iop/overlay.c:1511 ../src/iop/vignette.c:1042
+#: ../src/iop/lens.cc:4665 ../src/iop/overlay.c:1511 ../src/iop/vignette.c:1045
 #: ../src/iop/watermark.c:1512 ../src/libs/export.c:1598
 #: ../src/libs/neural_restore.c:4561
 msgid "scale"
@@ -28482,77 +28470,77 @@ msgstr ""
 msgid "the mix of effect"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:559
+#: ../src/iop/spektrafilm.c:560
 msgctxt "section"
 msgid "still"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:563
+#: ../src/iop/spektrafilm.c:564
 msgctxt "section"
 msgid "cine"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:567
+#: ../src/iop/spektrafilm.c:568
 msgctxt "section"
 msgid "custom"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:761
+#: ../src/iop/spektrafilm.c:762
 msgid "spektrafilm"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:766
+#: ../src/iop/spektrafilm.c:767
 msgid "film simulation|analog|spectral|grain|halation|print"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:773
+#: ../src/iop/spektrafilm.c:774
 msgid ""
 "simulates the physical process of developing and printing analog film,\n"
 "using spectral emulsion and paper data from the spektrafilm project"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:1664
+#: ../src/iop/spektrafilm.c:1665
 msgid ""
 "this data pack was made for a newer version of darktable\n"
 "update darktable to use it"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:1667
+#: ../src/iop/spektrafilm.c:1668
 msgid ""
 "this data pack is too old for this version of darktable\n"
 "use the download button to fetch a current one"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:1669
+#: ../src/iop/spektrafilm.c:1670
 msgid ""
 "the data pack could not be read\n"
 "it may have downloaded incompletely -- use the download button to fetch it "
 "again"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:1700
+#: ../src/iop/spektrafilm.c:1701
 msgid ""
 "no data pack installed\n"
 "use the download button in the module to fetch one"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:1715
+#: ../src/iop/spektrafilm.c:1716
 msgid ""
 "the installed data pack contains no film stocks\n"
 "it may have downloaded incompletely -- try fetching it again"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:1742
+#: ../src/iop/spektrafilm.c:1743
 msgid ""
 "the installed data pack contains no print papers\n"
 "it may have downloaded incompletely -- try fetching it again"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:1783
+#: ../src/iop/spektrafilm.c:1784
 msgid "this film or paper could not be loaded"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:1866
+#: ../src/iop/spektrafilm.c:1867
 #, c-format
 msgid ""
 "developed with a spectral table this data pack does not carry\n"
@@ -28560,14 +28548,14 @@ msgid ""
 "the matching pack can be fetched with the button below"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:1874
+#: ../src/iop/spektrafilm.c:1875
 msgid ""
 "made before data packs carried an identity, and the pack it\n"
 "was made with is not installed: rendering with a later one\n"
 "the matching pack can be fetched with the button below"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:1880
+#: ../src/iop/spektrafilm.c:1881
 #, c-format
 msgid ""
 "developed with data pack %08x, which is not installed\n"
@@ -28575,7 +28563,7 @@ msgid ""
 "the matching pack can be fetched with the button below"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:1893
+#: ../src/iop/spektrafilm.c:1894
 #, c-format
 msgid ""
 "developed with a different spectral table\n"
@@ -28583,197 +28571,197 @@ msgid ""
 "the matching pack can be fetched with the button below"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:3892
+#: ../src/iop/spektrafilm.c:3914
 msgid "print paper. not used: the film is being scanned directly."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:3897
+#: ../src/iop/spektrafilm.c:3919
 #, c-format
 msgid "auto (%s)"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:3899
+#: ../src/iop/spektrafilm.c:3921
 #, c-format
 msgid ""
 "print paper. \"auto\" follows the film stock's own target print,\n"
 "currently %s. picking a paper pins it until you select auto again."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:3907
+#: ../src/iop/spektrafilm.c:3929
 msgid "print paper. \"auto\" follows the film stock's own target print."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4013
+#: ../src/iop/spektrafilm.c:4035
 #, c-format
 msgid ""
 "development time, in minutes. snaps to the nearest time %s is\n"
 "characterised at: %s min. 0 uses the stock's own default (%.3g min)."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4020
+#: ../src/iop/spektrafilm.c:4042
 msgid ""
 "development time. this stock is characterised at a single\n"
 "development, so there is nothing to choose.\n"
 "\n"
-"single-emulsion B&W stocks are the ones that carry a family:\n"
+"the stocks that carry a family of times are Double-X and print film 2302:\n"
 "Double-X at 4/5/6.5/9/12 min, print film 2302 at 2/3.5/5/7/9 min."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4391
+#: ../src/iop/spektrafilm.c:4413
 msgid "the data pack this edit was developed with is not installed"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4392
+#: ../src/iop/spektrafilm.c:4414
 msgid "no data pack installed -- the module's controls appear once one is"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4405 ../src/iop/spektrafilm.c:4469
-#: ../src/iop/spektrafilm.c:5697
+#: ../src/iop/spektrafilm.c:4427 ../src/iop/spektrafilm.c:4491
+#: ../src/iop/spektrafilm.c:5719
 msgid "download data pack"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4407
+#: ../src/iop/spektrafilm.c:4429
 msgid "fetch the matching spectral data pack over the network"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4447
+#: ../src/iop/spektrafilm.c:4469
 msgid "the data repository could not be reached"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4464
+#: ../src/iop/spektrafilm.c:4486
 #, c-format
 msgid "download data pack %s"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4465
+#: ../src/iop/spektrafilm.c:4487
 #, c-format
 msgid "data pack %s is available"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4470
+#: ../src/iop/spektrafilm.c:4492
 msgid "a newer data pack is available"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4475
+#: ../src/iop/spektrafilm.c:4497
 #, c-format
 msgid "data pack %s installed"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4477
+#: ../src/iop/spektrafilm.c:4499
 msgid "data pack installed"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4484
+#: ../src/iop/spektrafilm.c:4506
 msgid "the installed data packs are up to date"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4488 ../src/iop/spektrafilm.c:6021
+#: ../src/iop/spektrafilm.c:4510 ../src/iop/spektrafilm.c:6047
 msgid "check for data pack updates"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4492
+#: ../src/iop/spektrafilm.c:4514
 msgid ""
 "fetch the newer pack. it installs beside the one you have;\n"
 "existing edits keep rendering on the pack they were made with."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4494
+#: ../src/iop/spektrafilm.c:4516
 msgid "ask the data repository whether a newer pack is published"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4598
+#: ../src/iop/spektrafilm.c:4620
 msgid "cannot render"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4600
+#: ../src/iop/spektrafilm.c:4622
 msgid "data mismatch"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4755
+#: ../src/iop/spektrafilm.c:4777
 msgid "look|crisp black and white"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4782
+#: ../src/iop/spektrafilm.c:4804
 msgid "film|black and white"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4815
+#: ../src/iop/spektrafilm.c:4837
 msgid "look|split-toned"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4846
+#: ../src/iop/spektrafilm.c:4868
 msgid "look|bleach bypass"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4865
+#: ../src/iop/spektrafilm.c:4887
 msgid "film|cinema"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4904
+#: ../src/iop/spektrafilm.c:4926
 msgid "look|kino 250D"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4920
+#: ../src/iop/spektrafilm.c:4942
 msgid "film|classic"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4940
+#: ../src/iop/spektrafilm.c:4962
 msgid "film|contrast"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4957
+#: ../src/iop/spektrafilm.c:4979
 msgid "film|neutral"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:4995
+#: ../src/iop/spektrafilm.c:5017
 msgid "film|soft pastel"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5017
+#: ../src/iop/spektrafilm.c:5039
 msgid "film|warm"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5038
+#: ../src/iop/spektrafilm.c:5060
 msgid "film|portrait"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5055
+#: ../src/iop/spektrafilm.c:5077
 msgid "film|portrait contrast"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5083
+#: ../src/iop/spektrafilm.c:5105
 msgid "look|vivid"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5111
+#: ../src/iop/spektrafilm.c:5133
 msgid "look|skodachrome"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5142
+#: ../src/iop/spektrafilm.c:5164
 msgid "look|foliage"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5178
+#: ../src/iop/spektrafilm.c:5200
 msgid "look|glow"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5196
+#: ../src/iop/spektrafilm.c:5218
 msgid "negative color"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5197
+#: ../src/iop/spektrafilm.c:5219
 msgid "negative monochrome"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5198
+#: ../src/iop/spektrafilm.c:5220
 msgid "positive color"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5199
+#: ../src/iop/spektrafilm.c:5221
 msgid "positive monochrome"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5225
+#: ../src/iop/spektrafilm.c:5247
 msgid "(no profiles found)"
 msgstr ""
 
@@ -28789,38 +28777,38 @@ msgstr ""
 #. "none (scan the film)" (data -2) is scan_film: the pipeline treats "no
 #. print stage" and "scan the film" as one state, so it belongs in the same
 #. control. Both data values stay clear of the list positions used below.
-#: ../src/iop/spektrafilm.c:5242
+#: ../src/iop/spektrafilm.c:5264
 msgid "none (scan the film)"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5247
+#: ../src/iop/spektrafilm.c:5269
 msgid "auto (follow film stock)"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5266
+#: ../src/iop/spektrafilm.c:5288
 msgid "(none)"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5622 ../src/iop/spektrafilm.c:5653
+#: ../src/iop/spektrafilm.c:5644 ../src/iop/spektrafilm.c:5675
 msgid "reset only this section"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5726
+#: ../src/iop/spektrafilm.c:5748
 msgid "film emulsion (spektrafilm filming profile)"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5732
+#: ../src/iop/spektrafilm.c:5754
 msgid ""
 "print paper. \"none\" views the developed film directly, with no\n"
 "print stage, which is the natural mode for positive and reversal\n"
 "stocks; \"auto\" uses the paper named in the film stock's profile."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5735
+#: ../src/iop/spektrafilm.c:5757
 msgid "print paper"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5745
+#: ../src/iop/spektrafilm.c:5767
 msgid ""
 "common film/sensor gate presets; picking one sets the frame long\n"
 "edge slider below (pick \"custom\" to dial in an exact value). the\n"
@@ -28828,86 +28816,87 @@ msgid ""
 "long edge (36mm). both describe the same format."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5758
+#: ../src/iop/spektrafilm.c:5780
 msgid " mm"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5763
+#: ../src/iop/spektrafilm.c:5785
 msgid ""
 "physical frame size, long edge. sets the scale that grain, scatter,\n"
-"halation and diffusion are all computed at, so a smaller format\n"
-"shows every one of them proportionally larger for the same\n"
-"print size."
+"halation, diffusion and the coupler spread are all computed at, so\n"
+"a smaller format shows every one of them proportionally larger for\n"
+"the same print size."
 msgstr ""
 
 #. ---- tab 1: film (exposure + development) ----
-#: ../src/iop/spektrafilm.c:5782
+#: ../src/iop/spektrafilm.c:5805
 msgid "film"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5784 ../src/iop/spektrafilm.c:6051
+#: ../src/iop/spektrafilm.c:5807 ../src/iop/spektrafilm.c:6077
 msgctxt "section"
 msgid "exposure"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5794
+#: ../src/iop/spektrafilm.c:5817
 msgid ""
 "film exposure compensation; with auto print exposure enabled, print\n"
 "exposure follows automatically so this has no net brightness effect\n"
-"(except on positive/reversal film, which has no print stage)."
+"(except when the film is scanned directly, with no print stage)."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5800
+#: ../src/iop/spektrafilm.c:5824
 msgid " stops"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5803
+#: ../src/iop/spektrafilm.c:5827
 msgid ""
 "push (positive) or pull (negative) processing: shoot at an effective\n"
 "ISO different from box speed, then under- or over-develop to\n"
 "compensate. combines an exposure shift with a derived contrast\n"
 "increase/decrease (approximate: the exact relationship depends on\n"
 "the specific film/developer combination, which isn't modeled here).\n"
-"Stacks with the granular gamma controls below for\n"
+"stacks with the granular gamma controls below for\n"
 "further fine-tuning."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5811 ../src/iop/spektrafilm.c:6069
+#: ../src/iop/spektrafilm.c:5835 ../src/iop/spektrafilm.c:6099
 msgctxt "section"
 msgid "chemistry"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5814 ../src/iop/spektrafilm.c:6072
+#: ../src/iop/spektrafilm.c:5838 ../src/iop/spektrafilm.c:6102
 msgid " min"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5818
+#: ../src/iop/spektrafilm.c:5842
 msgid ""
 "development time. snaps to the nearest time the stock was\n"
 "characterised at; 0 uses the stock's own default."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5825
+#: ../src/iop/spektrafilm.c:5849
 msgid ""
 "overall development contrast (morphs the film's density curves).\n"
 "extended or reduced development time, as in push/pull processing;\n"
 "1.0 = normal development."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5833
+#: ../src/iop/spektrafilm.c:5857
 msgid ""
 "contrast of the fastest (most light-sensitive) emulsion sub-layer\n"
 "only, independent of the slow layer, since push/pull processing\n"
 "doesn't always affect every sub-layer equally."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5841
+#: ../src/iop/spektrafilm.c:5865
 msgid "contrast of the mid and slow emulsion sub-layers"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5846
+#: ../src/iop/spektrafilm.c:5870
 msgid ""
-"local developer depletion in dense (highly-exposed) areas: blends\n"
+"developer depletion in dense (highly-exposed) areas, modelled as a\n"
+"change to the density curve rather than a spatial effect: blends\n"
 "the highlight shoulder toward a self-limiting rolloff without\n"
 "shifting midgray (0 = off)."
 msgstr ""
@@ -28915,47 +28904,47 @@ msgstr ""
 #. One mechanism, six controls, and the two spread values read as sharpening
 #. rather than as colour -- enough of a group, and enough of a surprise, to
 #. want a heading naming it.
-#: ../src/iop/spektrafilm.c:5853
+#: ../src/iop/spektrafilm.c:5878
 msgctxt "section"
 msgid "DIR couplers"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5857
+#: ../src/iop/spektrafilm.c:5882
 msgid ""
 "overall coupler strength: inter-layer inhibition drives saturation\n"
 "and edge effects (1.0 = film-accurate, 0 = off)."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5863
+#: ../src/iop/spektrafilm.c:5888
 msgid ""
 "how strongly a layer inhibits its own development. raising it\n"
 "flattens contrast within each channel."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5869
+#: ../src/iop/spektrafilm.c:5894
 msgid ""
 "how strongly each layer inhibits the other two. this is the part\n"
 "that produces the saturation couplers are known for; at 0 the\n"
 "channels develop independently."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5876 ../src/iop/spektrafilm.c:5889
+#: ../src/iop/spektrafilm.c:5901 ../src/iop/spektrafilm.c:5914
 msgid " µm"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5879
+#: ../src/iop/spektrafilm.c:5904
 msgid ""
 "how far the released inhibitor spreads through the emulsion.\n"
 "\n"
 "this is what turns the couplers into an edge effect: a wide spread\n"
 "lets a bright area hold back development well beyond its own edge,\n"
 "which reads as added clarity or sharpening. shorten it for a softer,\n"
-"more purely tonal coupler response; 5-20 um is the useful range.\n"
+"more purely tonal coupler response.\n"
 "\n"
-"re-seeded from the film stock's own value whenever you change film."
+"resetting returns it to the loaded film stock's own value."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5892
+#: ../src/iop/spektrafilm.c:5917
 msgid ""
 "length of the long, faint tail on the spread above, which carries\n"
 "the inhibitor much further at low weight.\n"
@@ -28964,7 +28953,7 @@ msgid ""
 "weight to 0 to drop it entirely."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5900
+#: ../src/iop/spektrafilm.c:5925
 msgid ""
 "the share of the inhibitor that travels in the long tail. 0 removes the tail."
 msgstr ""
@@ -28972,12 +28961,12 @@ msgstr ""
 #. The diffusion filter sits in front of the taking lens, so it belongs with
 #. the rest of the film stage rather than on a tab of its own.
 #. the enlarger-side diffusion filter, alongside the rest of the print stage
-#: ../src/iop/spektrafilm.c:5905 ../src/iop/spektrafilm.c:6149
+#: ../src/iop/spektrafilm.c:5930 ../src/iop/spektrafilm.c:6180
 msgctxt "section"
 msgid "diffusion"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5917
+#: ../src/iop/spektrafilm.c:5942
 msgid ""
 "diffusion filter type: black pro-mist (concentrated, punchy halo,\n"
 "deep blacks) / glimmerglass (tight, subtle, sharp-preserving) /\n"
@@ -28985,25 +28974,26 @@ msgid ""
 "slow-decaying veil)."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5932
+#: ../src/iop/spektrafilm.c:5957
 msgid ""
 "how much light is diverted into the diffusion halo (0 = off).\n"
 "\n"
 "these filters are sold in stops: 1/8 = 0.125, 1/4 = 0.25, 1/2 = 0.5,\n"
 "then 1 and 2. scrolling and the arrow keys move an eighth at a time.\n"
 "\n"
-"the halo is added on top of the unfiltered image, so raising this\n"
-"lifts shadows and lowers contrast as well as glowing the highlights."
+"the diverted light is taken from the direct image and spread into\n"
+"the halo, so raising this lifts shadows and lowers contrast as well\n"
+"as glowing the highlights."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5943
+#: ../src/iop/spektrafilm.c:5969
 msgid ""
 "scales the radius of the diffusion halo. the amount of light is\n"
 "unchanged; it is spread further from each highlight. use diffusion\n"
 "strength to change the amount."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5949
+#: ../src/iop/spektrafilm.c:5975
 msgid ""
 "diffusion halo warmth: >0 warm outer halo, <0 cool (added on top of\n"
 "the selected filter's own warmth bias)."
@@ -29011,16 +29001,16 @@ msgstr ""
 
 #. The knobs to reach for last: the adaptation switches change how faithful
 #. the model is, not what the look is.
-#: ../src/iop/spektrafilm.c:5956
+#: ../src/iop/spektrafilm.c:5982
 msgctxt "section"
 msgid "advanced"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5962
+#: ../src/iop/spektrafilm.c:5988
 msgid "spectral upsampling"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5965
+#: ../src/iop/spektrafilm.c:5991
 msgid ""
 "how a pixel's color is turned into the spectrum the film is exposed\n"
 "to.\n"
@@ -29029,7 +29019,7 @@ msgid ""
 "is just one, it is used and there is nothing to choose."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5978
+#: ../src/iop/spektrafilm.c:6004
 msgid ""
 "first half of the film's sensitivity adaptation: a spectral bandpass\n"
 "applied to the stock's own sensitivities, rolling off the UV and IR\n"
@@ -29038,7 +29028,7 @@ msgid ""
 "effect on stocks whose profile carries no bandpass."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5988
+#: ../src/iop/spektrafilm.c:6014
 msgid ""
 "second half of the film's sensitivity adaptation: a per-color\n"
 "exposure correction of up to two stops, zero at the film's own white\n"
@@ -29047,7 +29037,7 @@ msgid ""
 "carries no surface (the monochrome films and every print paper)."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:5997
+#: ../src/iop/spektrafilm.c:6023
 msgid ""
 "pull what the output profile cannot hold back inside it, along\n"
 "curves that leave everything already inside untouched. this is two\n"
@@ -29068,11 +29058,14 @@ msgid ""
 "separation between them and can shift their hue."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6055
-msgid "print brightness (enlarger exposure)"
+#: ../src/iop/spektrafilm.c:6083
+msgid ""
+"enlarger exposure. more exposure prints denser, so positive values\n"
+"darken the print. with auto print exposure on, this offsets the\n"
+"automatic exposure rather than replacing it."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6060
+#: ../src/iop/spektrafilm.c:6090
 msgid ""
 "automatically compensate print exposure for film exposure changes,\n"
 "as a real printer would print to a fixed density; disable for film\n"
@@ -29080,20 +29073,20 @@ msgid ""
 "exposure time."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6067
+#: ../src/iop/spektrafilm.c:6097
 msgid "print contrast (morphs the paper's density curves)"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6076
+#: ../src/iop/spektrafilm.c:6106
 msgid ""
 "print development time. snaps to the nearest time the paper was\n"
 "characterised at; 0 uses its own default."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6083
+#: ../src/iop/spektrafilm.c:6113
 msgid ""
-"gamma of the paper's red-forming layer alone, on top of the\n"
-"overall print gamma.\n"
+"gamma of the paper's red-sensitive (cyan-forming) layer alone, on\n"
+"top of the overall print gamma.\n"
 "\n"
 "splitting gamma per channel grades out crossover -- a negative\n"
 "whose layers developed to different gammas, which filtration\n"
@@ -29101,96 +29094,100 @@ msgid ""
 "shifts shadows one way and highlights the other."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6094
+#: ../src/iop/spektrafilm.c:6124
 msgid ""
-"gamma of the paper's green-forming layer alone, on top of the\n"
-"overall print gamma."
+"gamma of the paper's green-sensitive (magenta-forming) layer\n"
+"alone, on top of the overall print gamma."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6100
+#: ../src/iop/spektrafilm.c:6130
 msgid ""
-"gamma of the paper's blue-forming layer alone, on top of the\n"
-"overall print gamma."
+"gamma of the paper's blue-sensitive (yellow-forming) layer alone,\n"
+"on top of the overall print gamma."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6103
+#: ../src/iop/spektrafilm.c:6133
 msgctxt "section"
 msgid "filtration"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6106 ../src/iop/spektrafilm.c:6111
-#: ../src/iop/spektrafilm.c:6133 ../src/iop/spektrafilm.c:6141
+#: ../src/iop/spektrafilm.c:6136 ../src/iop/spektrafilm.c:6141
+#: ../src/iop/spektrafilm.c:6164 ../src/iop/spektrafilm.c:6172
 msgid " CC"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6108
+#: ../src/iop/spektrafilm.c:6138
 msgid "magenta enlarger filtration, Kodak CC units from neutral"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6113
+#: ../src/iop/spektrafilm.c:6143
 msgid "yellow enlarger filtration, Kodak CC units from neutral"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6117
+#: ../src/iop/spektrafilm.c:6147
 msgctxt "section"
 msgid "preflash"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6128
+#: ../src/iop/spektrafilm.c:6158
 msgid ""
 "preflash exposure: a brief, uniform pre-exposure of the print\n"
 "through the film's base density, before the main print exposure.\n"
-"lifts shadows and reduces contrast (0 = off)."
+"adds density where the main exposure is weakest, so it tones the\n"
+"print's highlights and reduces contrast (0 = off)."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6135
+#: ../src/iop/spektrafilm.c:6166
 msgid ""
 "magenta filtration for the preflash exposure only, Kodak CC units\n"
 "from neutral, independent of the main enlarger filtration above."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6143
+#: ../src/iop/spektrafilm.c:6174
 msgid ""
 "yellow filtration for the preflash exposure only, Kodak CC units\n"
 "from neutral, independent of the main enlarger filtration above."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6160
+#: ../src/iop/spektrafilm.c:6191
 msgid "print diffusion filter type (same presets as the film-stage filter)"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6167
+#: ../src/iop/spektrafilm.c:6198
 msgid ""
 "how much light is diverted into the print diffusion halo (0 = off).\n"
 "\n"
 "these filters are sold in stops: 1/8 = 0.125, 1/4 = 0.25, 1/2 = 0.5,\n"
 "then 1 and 2. scrolling and the arrow keys move an eighth at a time.\n"
 "\n"
-"acts at the enlarger, so it blooms the printed image."
+"acts at the enlarger, on the light passing through the negative, so\n"
+"it spreads the print's dark areas into its lighter ones."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6177
+#: ../src/iop/spektrafilm.c:6209
 msgid ""
 "scales the radius of the print diffusion halo. the amount of light\n"
-"is unchanged; it is spread further from each highlight. use print\n"
+"is unchanged; it is spread further from each bright area of the\n"
+"enlarger light, which are the print's dark areas. use print\n"
 "diffusion strength to change the amount."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6183
+#: ../src/iop/spektrafilm.c:6216
 msgid ""
-"print diffusion halo warmth: >0 warm outer halo, <0 cool (added on\n"
-"top of the selected filter's own warmth bias)."
+"print diffusion halo warmth, on the enlarger light: >0 adds red to\n"
+"the outer halo, which prints as cyan, <0 adds blue, which prints as\n"
+"yellow (added on top of the selected filter's own warmth bias)."
 msgstr ""
 
 #. Split as the reference groups these, "pixel statistics" and "texture": the
 #. first describes the emulsion and rebuilds the crystals, the second only
 #. changes how those crystals are drawn at the output size.
-#: ../src/iop/spektrafilm.c:6196
+#: ../src/iop/spektrafilm.c:6232
 msgctxt "section"
 msgid "emulsion"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6202
+#: ../src/iop/spektrafilm.c:6238
 msgid ""
 "how coarse the film's crystals are, relative to this stock's own\n"
 "measured granularity. 1.0 is the datasheet figure.\n"
@@ -29198,11 +29195,10 @@ msgid ""
 "this is the physical size control: the particles grow, there are\n"
 "fewer of them, and the grain becomes stronger as well as coarser,\n"
 "the same way a faster film differs from a slower one. it rebuilds\n"
-"the emulsion, so unlike grain strength it behaves the same on\n"
-"negative and slide film."
+"the emulsion, where grain strength only scales the drawn result."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6215
+#: ../src/iop/spektrafilm.c:6250
 msgid ""
 "how far the grain is allowed to move each pixel. it scales the drawn\n"
 "result; the emulsion is unchanged. 1.0 is film-accurate, 0 is off.\n"
@@ -29213,7 +29209,7 @@ msgid ""
 "control for coarser grain."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6227
+#: ../src/iop/spektrafilm.c:6262
 msgid ""
 "how evenly the crystals are distributed, relative to the stock's own\n"
 "figure. raising it bends the noise toward a bell: grain that peaks\n"
@@ -29221,39 +29217,40 @@ msgid ""
 "it lets grain keep growing all the way into the densest areas."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6235
+#: ../src/iop/spektrafilm.c:6270
 msgid ""
 "a real emulsion layers coarse crystals over finer ones. this scales\n"
-"the finer sub-layers against the coarsest, which stays fixed. lower\n"
-"makes the fine layers finer still, so the coarse layer dominates; at\n"
-"0 only the coarsest layer is left. no effect on single-layer stocks."
+"the finer sub-layers against the coarsest. the stock's overall\n"
+"granularity is held, so lower values make the fine layers finer and\n"
+"the coarse layer coarser, letting it dominate; at 0 only the\n"
+"coarsest layer carries grain. no effect on single-layer stocks."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6246
+#: ../src/iop/spektrafilm.c:6282
 msgid ""
-"the density each crystal sits at even where the film received no\n"
-"light, which is why grain does not disappear entirely in clear\n"
-"areas. scales the loaded stock's own measured floor, which is per\n"
-"channel, so the balance between channels is kept. typical stocks\n"
-"measure between 0.03 and 0.06, cine stocks considerably higher."
+"scales the density each crystal sits at even where the film received\n"
+"no light, which is why grain does not disappear entirely in clear\n"
+"areas. 1.0 is the loaded stock's own measured floor, 2.0 twice it.\n"
+"the floor is per channel, so the balance between channels is kept."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6252
+#: ../src/iop/spektrafilm.c:6287
 msgctxt "section"
 msgid "texture"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6258
+#: ../src/iop/spektrafilm.c:6293
 msgid ""
-"blur applied to the grain after it is drawn, in pixels. this softens\n"
-"the grain. the crystals themselves are unchanged.\n"
+"scales the blur applied to the grained density, 1.0 being the\n"
+"reference radius of 0.89 pixels. it softens the grain and the image\n"
+"detail under it alike; the crystals themselves are unchanged.\n"
 "\n"
 "raise it at high magnification, where one crystal covers several\n"
 "pixels; lower it for small output. use granularity to make grain\n"
 "genuinely coarser."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6268
+#: ../src/iop/spektrafilm.c:6304
 msgid ""
 "each developed crystal leaves a small cloud of dye. this scales how\n"
 "far that cloud spreads, measured on the film itself, so it only\n"
@@ -29261,14 +29258,14 @@ msgid ""
 "than a pixel."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6277
+#: ../src/iop/spektrafilm.c:6313
 msgid ""
 "radius of the recovery sharpening, in pixels. 0 switches it off. a\n"
 "broad radius puts the crispness back in the mid detail range, which\n"
 "keeps the sampling grid from showing through."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6285
+#: ../src/iop/spektrafilm.c:6321
 msgid ""
 "strength of the recovery sharpening, restoring what the grain blur\n"
 "softened. it moves density around without adding any, so it is not a\n"
@@ -29277,19 +29274,25 @@ msgid ""
 msgstr ""
 
 #. ---- tab 4: halation ----
-#: ../src/iop/spektrafilm.c:6291
+#: ../src/iop/spektrafilm.c:6327
 msgid "halation"
+msgstr ""
+
+#: ../src/iop/spektrafilm.c:6331
+msgid ""
+"switches the in-emulsion scatter on and off together with halation.\n"
+"the highlight boost is not affected."
 msgstr ""
 
 #. Two distinct effects share this tab: scatter is the spread inside the
 #. emulsion, halation the bounce off the film base behind it. A heading each,
 #. so the four sliders do not read as one group.
-#: ../src/iop/spektrafilm.c:6298
+#: ../src/iop/spektrafilm.c:6338
 msgctxt "section"
 msgid "scatter"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6302
+#: ../src/iop/spektrafilm.c:6342
 msgid ""
 "fraction of light that scatters inside the emulsion, before the\n"
 "halation bounce. 1.0 is film-accurate and is also the maximum. it\n"
@@ -29300,7 +29303,7 @@ msgid ""
 "sharper result than the film itself would give."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6324
+#: ../src/iop/spektrafilm.c:6364
 msgid ""
 "scales the in-emulsion scatter radius. 1.0 is film-accurate: the\n"
 "radius the film model itself works at, and not normally something\n"
@@ -29311,53 +29314,54 @@ msgid ""
 "four times wider blur everywhere."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6336
+#: ../src/iop/spektrafilm.c:6376
 msgctxt "section"
 msgid "halation"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6341
+#: ../src/iop/spektrafilm.c:6381
 msgid "halation strength. 1.0 is film-accurate."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6345
+#: ../src/iop/spektrafilm.c:6385
 msgid "halation size: scales the glow radius (1.0 = film-accurate)"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6348
+#: ../src/iop/spektrafilm.c:6388
 msgctxt "section"
 msgid "highlight boost"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6352
+#: ../src/iop/spektrafilm.c:6392
 msgid ""
-"reconstructs clipped highlights before any light spreads, so they\n"
-"bloom through the film diffusion filter, scatter and halation.\n"
+"boosts the highlights above the protect threshold before any light\n"
+"spreads, so they bloom through the film diffusion filter, scatter\n"
+"and halation.\n"
 "it is not part of halation: the halation toggle does not switch it\n"
 "off. set highlight boost to 0 to disable it."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6360
+#: ../src/iop/spektrafilm.c:6401
 msgid ""
-"highlight boost: reconstructs clipped highlights so they bloom into\n"
-"halation/diffusion (0 = off).\n"
+"highlight boost: brightens the highlights above the protect threshold\n"
+"so they bloom into halation/diffusion (0 = off).\n"
 "\n"
 "runs on its own, independent of the halation toggle."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6369
+#: ../src/iop/spektrafilm.c:6410
 msgid ""
-"widens or narrows the band of tones the highlight boost acts on.\n"
-"lower confines it to the brightest clipped highlights, higher pulls\n"
-"more of the upper midtones into the bloom."
+"shapes how sharply the boost rises above the protect threshold.\n"
+"lower confines it to the brightest highlights, higher spreads it\n"
+"more evenly over everything above the threshold."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6376
+#: ../src/iop/spektrafilm.c:6417
 msgid "protect tones below this many stops over mid-grey from the boost"
 msgstr ""
 
 #. ---- tab 5: scanner ----
-#: ../src/iop/spektrafilm.c:6380
+#: ../src/iop/spektrafilm.c:6421
 msgid "scanner"
 msgstr ""
 
@@ -29365,12 +29369,12 @@ msgstr ""
 #. stage, immediately before the OkLCh gamut compressor -- the last thing the
 #. module does. A position at the top would imply an input control, and its
 #. picker reads the processed image.
-#: ../src/iop/spektrafilm.c:6386
+#: ../src/iop/spektrafilm.c:6427
 msgctxt "section"
 msgid "output"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6391
+#: ../src/iop/spektrafilm.c:6432
 msgid ""
 "brightens the image, with most of the effect in the midtones and\n"
 "the highlights rolling off above them. it works before the gamut\n"
@@ -29383,13 +29387,13 @@ msgid ""
 "processed image."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6402
+#: ../src/iop/spektrafilm.c:6443
 msgid ""
 "pick brightest tone in the selected area and set the boost so it\n"
-"lands just past the compressor's knee."
+"lands high in the compressor's rolloff, just short of white."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6409
+#: ../src/iop/spektrafilm.c:6451
 msgid ""
 "scales the finished picture, after the gamut compressor.\n"
 "\n"
@@ -29403,55 +29407,55 @@ msgid ""
 "past white for the rest of the pipeline to handle."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6421
+#: ../src/iop/spektrafilm.c:6463
 msgid ""
 "pick brightest tone in the selected area and scale it to just below white."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6424
+#: ../src/iop/spektrafilm.c:6466
 msgctxt "section"
 msgid "sharpness"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6428
+#: ../src/iop/spektrafilm.c:6470
 msgid "scanner lens softness, in pixels (0 = off)"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6432
+#: ../src/iop/spektrafilm.c:6474
 msgid "scanner sharpening radius, in pixels"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6436
+#: ../src/iop/spektrafilm.c:6478
 msgid ""
 "scanner sharpening strength (0 = off). 0.7 is what a scan of the\n"
 "film normally gets; leave at 0 if you prefer to sharpen downstream."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6441
+#: ../src/iop/spektrafilm.c:6483
 msgctxt "section"
 msgid "glare"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6445
+#: ../src/iop/spektrafilm.c:6487
 msgid ""
 "viewing glare: a faint veil of the viewing light reflected off the\n"
 "print surface, in percent. lifts the deepest blacks slightly. not\n"
 "applied when scanning the film directly."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6451
+#: ../src/iop/spektrafilm.c:6493
 msgctxt "section"
 msgid "black and white point"
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6458
+#: ../src/iop/spektrafilm.c:6500
 msgid ""
 "set the darkest tone of the image with black level below.\n"
 "off, the shadows stay where the film puts them, which is often\n"
 "short of black."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6466
+#: ../src/iop/spektrafilm.c:6508
 msgid ""
 "lift or crush the shadows.\n"
 "\n"
@@ -29459,13 +29463,13 @@ msgid ""
 "image; below 0 the deepest shadows are crushed together."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6475
+#: ../src/iop/spektrafilm.c:6517
 msgid ""
 "set the lightest tone of the image with white level below.\n"
 "off, the highlights stay where the film puts them."
 msgstr ""
 
-#: ../src/iop/spektrafilm.c:6482
+#: ../src/iop/spektrafilm.c:6524
 msgid ""
 "brightness of the lightest tone.\n"
 "\n"
@@ -30094,44 +30098,44 @@ msgstr ""
 msgid "simulate a lens fall-off close to edges"
 msgstr ""
 
-#: ../src/iop/vignette.c:1009
+#: ../src/iop/vignette.c:1012
 msgid "lomo"
 msgstr ""
 
-#: ../src/iop/vignette.c:1047
+#: ../src/iop/vignette.c:1050
 msgctxt "section"
 msgid "position / form"
 msgstr ""
 
-#: ../src/iop/vignette.c:1054
+#: ../src/iop/vignette.c:1057
 msgid "dithering"
 msgstr ""
 
-#: ../src/iop/vignette.c:1066
+#: ../src/iop/vignette.c:1069
 msgid "the radii scale of vignette for start of fall-off"
 msgstr ""
 
-#: ../src/iop/vignette.c:1068
+#: ../src/iop/vignette.c:1071
 msgid "the radii scale of vignette for end of fall-off"
 msgstr ""
 
-#: ../src/iop/vignette.c:1069
+#: ../src/iop/vignette.c:1072
 msgid "strength of effect on brightness"
 msgstr ""
 
-#: ../src/iop/vignette.c:1070
+#: ../src/iop/vignette.c:1073
 msgid "strength of effect on saturation"
 msgstr ""
 
-#: ../src/iop/vignette.c:1071
+#: ../src/iop/vignette.c:1074
 msgid "horizontal offset of center of the effect"
 msgstr ""
 
-#: ../src/iop/vignette.c:1072
+#: ../src/iop/vignette.c:1075
 msgid "vertical offset of center of the effect"
 msgstr ""
 
-#: ../src/iop/vignette.c:1075
+#: ../src/iop/vignette.c:1078
 msgid ""
 "shape factor\n"
 "0 produces a rectangle\n"
@@ -30139,29 +30143,29 @@ msgid ""
 "2 produces a diamond"
 msgstr ""
 
-#: ../src/iop/vignette.c:1079
+#: ../src/iop/vignette.c:1082
 msgid "enable to have the ratio automatically follow the image size"
 msgstr ""
 
-#: ../src/iop/vignette.c:1080
+#: ../src/iop/vignette.c:1083
 msgid "width-to-height ratio"
 msgstr ""
 
-#: ../src/iop/vignette.c:1082
+#: ../src/iop/vignette.c:1085
 msgid "add some level of random noise to prevent banding"
-msgstr ""
-
-#: ../src/iop/vignette.c:1090
-#, c-format
-msgid "[%s on node] change vignette/feather size"
 msgstr ""
 
 #: ../src/iop/vignette.c:1093
 #, c-format
-msgid "[%s on node] change vignette/feather size keeping ratio"
+msgid "[%s on node] change vignette/feather size"
 msgstr ""
 
 #: ../src/iop/vignette.c:1096
+#, c-format
+msgid "[%s on node] change vignette/feather size keeping ratio"
+msgstr ""
+
+#: ../src/iop/vignette.c:1099
 #, c-format
 msgid "[%s on center] move vignette"
 msgstr ""
@@ -30425,16 +30429,16 @@ msgstr ""
 msgid "uncategorized"
 msgstr ""
 
-#: ../src/libs/collect.c:2535 ../src/libs/filters/rating_range.c:120
-#: ../src/libs/filters/rating_range.c:146
-#: ../src/libs/filters/rating_range.c:151
-#: ../src/libs/filters/rating_range.c:279
+#: ../src/libs/collect.c:2535 ../src/libs/filters/rating_range.c:107
+#: ../src/libs/filters/rating_range.c:133
+#: ../src/libs/filters/rating_range.c:138
+#: ../src/libs/filters/rating_range.c:266
 msgid "rejected"
 msgstr ""
 
-#: ../src/libs/collect.c:2538 ../src/libs/filters/rating_range.c:122
-#: ../src/libs/filters/rating_range.c:146
-#: ../src/libs/filters/rating_range.c:280
+#: ../src/libs/collect.c:2538 ../src/libs/filters/rating_range.c:109
+#: ../src/libs/filters/rating_range.c:133
+#: ../src/libs/filters/rating_range.c:267
 msgid "not rated"
 msgstr ""
 
@@ -31480,10 +31484,10 @@ msgstr ""
 
 #. create the filter combobox
 #: ../src/libs/filters/colors.c:349 ../src/libs/filters/colors.c:367
-#: ../src/libs/filters/duplicates.c:157 ../src/libs/filters/history.c:153
-#: ../src/libs/filters/local_copy.c:142 ../src/libs/filters/module_order.c:161
+#: ../src/libs/filters/duplicates.c:135 ../src/libs/filters/history.c:135
+#: ../src/libs/filters/local_copy.c:129 ../src/libs/filters/module_order.c:167
 #: ../src/libs/filters/rating.c:198 ../src/libs/filters/rating.c:209
-#: ../src/libs/filters/rating_range.c:333
+#: ../src/libs/filters/rating_range.c:320
 msgid "rules"
 msgstr ""
 
@@ -31501,19 +31505,19 @@ msgid ""
 msgstr ""
 
 #. predefined selections
-#: ../src/libs/filters/duplicates.c:38 ../src/libs/filters/history.c:38
-#: ../src/libs/filters/local_copy.c:38 ../src/libs/filters/module_order.c:155
-#: ../src/libs/filters/rating_range.c:59 ../src/libs/filters/rating_range.c:83
-#: ../src/libs/filters/rating_range.c:131 ../src/libs/filters/ratio.c:70
+#: ../src/libs/filters/duplicates.c:40 ../src/libs/filters/history.c:38
+#: ../src/libs/filters/local_copy.c:38 ../src/libs/filters/module_order.c:161
+#: ../src/libs/filters/rating_range.c:46 ../src/libs/filters/rating_range.c:70
+#: ../src/libs/filters/rating_range.c:118 ../src/libs/filters/ratio.c:70
 #: ../src/libs/filters/ratio.c:83
 msgid "all images"
 msgstr ""
 
-#: ../src/libs/filters/duplicates.c:157
+#: ../src/libs/filters/duplicates.c:135
 msgid "duplicates state filter"
 msgstr ""
 
-#: ../src/libs/filters/filename.c:369
+#: ../src/libs/filters/filename.c:334
 msgid ""
 "enter filename to search.\n"
 "multiple values can be separated by ','\n"
@@ -31521,11 +31525,11 @@ msgid ""
 "right-click to get existing filenames"
 msgstr ""
 
-#: ../src/libs/filters/filename.c:381
+#: ../src/libs/filters/filename.c:346
 msgid "extension"
 msgstr ""
 
-#: ../src/libs/filters/filename.c:382
+#: ../src/libs/filters/filename.c:347
 msgid ""
 "enter extension to search with starting dot\n"
 "multiple values can be separated by ','\n"
@@ -31534,28 +31538,28 @@ msgid ""
 "right-click to get existing extensions"
 msgstr ""
 
-#: ../src/libs/filters/filename.c:409
+#: ../src/libs/filters/filename.c:374
 msgid ""
 "click to select filename\n"
 "ctrl+click to select multiple values"
 msgstr ""
 
-#: ../src/libs/filters/filename.c:435
+#: ../src/libs/filters/filename.c:400
 msgid ""
 "click to select extension\n"
 "ctrl+click to select multiple values"
 msgstr ""
 
 #. the button to close the popup
-#: ../src/libs/filters/filename.c:457 ../src/libs/filters/misc.c:536
+#: ../src/libs/filters/filename.c:422 ../src/libs/filters/misc.c:465
 msgid "ok"
 msgstr ""
 
-#: ../src/libs/filters/history.c:153
+#: ../src/libs/filters/history.c:135
 msgid "filter on history state"
 msgstr ""
 
-#: ../src/libs/filters/local_copy.c:142
+#: ../src/libs/filters/local_copy.c:129
 msgid "local copied state filter"
 msgstr ""
 
@@ -31563,35 +31567,35 @@ msgstr ""
 msgid "no camera defined"
 msgstr ""
 
-#: ../src/libs/filters/misc.c:92
+#: ../src/libs/filters/misc.c:93
 msgid "no lens defined"
 msgstr ""
 
-#: ../src/libs/filters/misc.c:96
+#: ../src/libs/filters/misc.c:98
 msgid "no group id defined"
 msgstr ""
 
-#: ../src/libs/filters/misc.c:101
+#: ../src/libs/filters/misc.c:103
 msgid "no white balance defined"
 msgstr ""
 
-#: ../src/libs/filters/misc.c:106
+#: ../src/libs/filters/misc.c:108
 msgid "no flash defined"
 msgstr ""
 
-#: ../src/libs/filters/misc.c:111
+#: ../src/libs/filters/misc.c:113
 msgid "no exposure program defined"
 msgstr ""
 
-#: ../src/libs/filters/misc.c:116
+#: ../src/libs/filters/misc.c:118
 msgid "no metering mode defined"
 msgstr ""
 
-#: ../src/libs/filters/misc.c:120
+#: ../src/libs/filters/misc.c:123
 msgid "no image dimensions defined"
 msgstr ""
 
-#: ../src/libs/filters/misc.c:428
+#: ../src/libs/filters/misc.c:357
 msgid ""
 "enter camera to search.\n"
 "multiple values can be separated by ','\n"
@@ -31599,7 +31603,7 @@ msgid ""
 "right-click to get existing cameras"
 msgstr ""
 
-#: ../src/libs/filters/misc.c:435
+#: ../src/libs/filters/misc.c:364
 msgid ""
 "enter lens to search.\n"
 "multiple values can be separated by ','\n"
@@ -31607,7 +31611,7 @@ msgid ""
 "right-click to get existing lenses"
 msgstr ""
 
-#: ../src/libs/filters/misc.c:442
+#: ../src/libs/filters/misc.c:371
 msgid ""
 "enter white balance to search.\n"
 "multiple values can be separated by ','\n"
@@ -31615,7 +31619,7 @@ msgid ""
 "right-click to get existing white balances"
 msgstr ""
 
-#: ../src/libs/filters/misc.c:449
+#: ../src/libs/filters/misc.c:378
 msgid ""
 "enter flash to search.\n"
 "multiple values can be separated by ','\n"
@@ -31623,7 +31627,7 @@ msgid ""
 "right-click to get existing flashes"
 msgstr ""
 
-#: ../src/libs/filters/misc.c:456
+#: ../src/libs/filters/misc.c:385
 msgid ""
 "enter exposure program to search.\n"
 "multiple values can be separated by ','\n"
@@ -31631,7 +31635,7 @@ msgid ""
 "right-click to get existing exposure programs"
 msgstr ""
 
-#: ../src/libs/filters/misc.c:463
+#: ../src/libs/filters/misc.c:392
 msgid ""
 "enter metering mode to search.\n"
 "multiple values can be separated by ','\n"
@@ -31639,11 +31643,11 @@ msgid ""
 "right-click to get existing metering modes"
 msgstr ""
 
-#: ../src/libs/filters/misc.c:469 ../src/libs/metadata_view.c:139
+#: ../src/libs/filters/misc.c:398 ../src/libs/metadata_view.c:139
 msgid "group id"
 msgstr ""
 
-#: ../src/libs/filters/misc.c:470
+#: ../src/libs/filters/misc.c:399
 msgid ""
 "enter group id to search.\n"
 "multiple values can be separated by ','\n"
@@ -31651,7 +31655,7 @@ msgid ""
 "right-click to get existing group ids"
 msgstr ""
 
-#: ../src/libs/filters/misc.c:477
+#: ../src/libs/filters/misc.c:406
 msgid ""
 "enter the image dimensions to search.\n"
 "use the format widthxheight, i.e.\n"
@@ -31663,13 +31667,13 @@ msgid ""
 "right-click to get existing image dimensions"
 msgstr ""
 
-#: ../src/libs/filters/misc.c:516
+#: ../src/libs/filters/misc.c:445
 msgid ""
 "click to select\n"
 "ctrl+click to select multiple values"
 msgstr ""
 
-#: ../src/libs/filters/module_order.c:161
+#: ../src/libs/filters/module_order.c:167
 msgid "filter images based on their module order"
 msgstr ""
 
@@ -31690,33 +31694,33 @@ msgstr ""
 msgid "unstarred only"
 msgstr ""
 
-#: ../src/libs/filters/rating.c:211 ../src/libs/filters/rating_range.c:65
-#: ../src/libs/filters/rating_range.c:89
+#: ../src/libs/filters/rating.c:211 ../src/libs/filters/rating_range.c:52
+#: ../src/libs/filters/rating_range.c:76
 msgid "rejected only"
 msgstr ""
 
-#: ../src/libs/filters/rating.c:211 ../src/libs/filters/rating_range.c:62
-#: ../src/libs/filters/rating_range.c:86 ../src/libs/filters/rating_range.c:158
+#: ../src/libs/filters/rating.c:211 ../src/libs/filters/rating_range.c:49
+#: ../src/libs/filters/rating_range.c:73 ../src/libs/filters/rating_range.c:145
 msgid "all except rejected"
 msgstr ""
 
-#: ../src/libs/filters/rating_range.c:67 ../src/libs/filters/rating_range.c:91
+#: ../src/libs/filters/rating_range.c:54 ../src/libs/filters/rating_range.c:78
 msgid "not rated only"
 msgstr ""
 
-#: ../src/libs/filters/rating_range.c:273
+#: ../src/libs/filters/rating_range.c:260
 msgid "better"
 msgstr ""
 
-#: ../src/libs/filters/rating_range.c:274
+#: ../src/libs/filters/rating_range.c:261
 msgid "worse"
 msgstr ""
 
-#: ../src/libs/filters/rating_range.c:275
+#: ../src/libs/filters/rating_range.c:262
 msgid "cap"
 msgstr ""
 
-#: ../src/libs/filters/rating_range.c:290
+#: ../src/libs/filters/rating_range.c:277
 msgid "rating filter"
 msgstr ""
 
@@ -32892,6 +32896,11 @@ msgstr ""
 #: ../src/libs/metadata_view.c:823
 #, c-format
 msgid "%.1f mm"
+msgstr ""
+
+#: ../src/libs/metadata_view.c:831
+#, c-format
+msgid "%.1f"
 msgstr ""
 
 #: ../src/libs/metadata_view.c:847
