@@ -768,13 +768,12 @@ changes (where available).
 
 - Fixed the wrong raster mask being applied when three or more external
   raster masks were used in one edit.
-=======
+
 - Fixed diffuse or sharpen giving a different result on the CPU than
   with OpenCL whenever an anisotropy was set: the CPU path computed the
   diffusion weights with a coarse approximation of the exponential.
   Edits using anisotropy may now look slightly different when exported
   without OpenCL.
->>>>>>> 59c427dabee1113ae05e989f32def0170198cee4
 
 ## Lua
 
