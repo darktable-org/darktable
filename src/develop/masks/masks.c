@@ -2807,7 +2807,7 @@ gboolean dt_masks_events_mouse_moved(dt_iop_module_t *module,
 */
   const gboolean skipped = (module && !module->enabled);
 
-  dt_print(DT_DEBUG_VERBOSE,
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
     "[dt_masks_events_mouse_moved] %s %s",
     module ? module->so->op : "mask manager",
     skipped ? "skipped" : "");
