@@ -2149,11 +2149,41 @@ float interpolation_compute_single(read_only image2d_t in,
 #undef MAX_KERNEL_REQ
 #undef MAX_HALF_FILTER_WIDTH
 
+/* lens plugin: the lensfun values of pixel (x, y), interpolated bilinearly
+   from a grid of every step-th pixel, gwidth points to a row and stride floats
+   to a point. This is the OpenCL version of _lens_grid_row() in
+   src/iop/lens.cc */
+static inline float _lens_grid_lerp(const float a, const float b, const float t)
+{
+  // mixf() of the CPU path, except that a weight of zero skips b: a grid of
+  // step 1 can hold non-finite values, which must not leak into the
+  // neighboring pixels
+  return t > 0.0f ? fma(t, b - a, a) : a;
+}
+
+static inline void _lens_grid_sample(global const float *grid, const int x, const int y,
+                                     const int step, const int gwidth, const int stride,
+                                     const int count, float *out)
+{
+  const int i = x / step;
+  const int j = y / step;
+  const float tx = (float)(x - i * step) / (float)step;
+  const float ty = (float)(y - j * step) / (float)step;
+  global const float *p00 = grid + (j * gwidth + i) * stride;
+  global const float *p01 = p00 + gwidth * stride;
+  for(int n = 0; n < count; n++)
+  {
+    const float left = _lens_grid_lerp(p00[n], p01[n], ty);
+    const float right = _lens_grid_lerp(p00[stride + n], p01[stride + n], ty);
+    out[n] = _lens_grid_lerp(left, right, tx);
+  }
+}
+
 /* kernels for the lens plugin: bilinear interpolation */
 kernel void
 lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi,
-               const int do_nan_checks)
+               const int do_nan_checks, const int step, const int gwidth)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -2163,8 +2193,8 @@ lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const i
   float4 pixel;
 
   float rx, ry;
-  const int piwidth = 2*3*width;
-  global float *ppi = pi + mad24(y, piwidth, 2*3*x);
+  float ppi[6];
+  _lens_grid_sample(pi, x, y, step, gwidth, 6, 6, ppi);
 
   if(do_nan_checks)
   {
@@ -2256,7 +2286,9 @@ lens_distort_bicubic (read_only image2d_t in,
                       const int roi_in_x,
                       const int roi_in_y,
                       global float *pi,
-                      const int do_nan_checks)
+                      const int do_nan_checks,
+                      const int step,
+                      const int gwidth)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -2271,8 +2303,8 @@ lens_distort_bicubic (read_only image2d_t in,
   int tx, ty;
   float sum, weight;
   float2 sum2;
-  const int piwidth = 2*3*width;
-  global float *ppi = pi + mad24(y, piwidth, 2*3*x);
+  float ppi[6];
+  _lens_grid_sample(pi, x, y, step, gwidth, 6, 6, ppi);
 
   if(do_nan_checks)
   {
@@ -2370,7 +2402,9 @@ lens_distort_lanczos2 (read_only image2d_t in,
                        const int roi_in_x,
                        const int roi_in_y,
                        global float *pi,
-                       const int do_nan_checks)
+                       const int do_nan_checks,
+                       const int step,
+                       const int gwidth)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -2385,8 +2419,8 @@ lens_distort_lanczos2 (read_only image2d_t in,
   int tx, ty;
   float sum, weight;
   float2 sum2;
-  const int piwidth = 2*3*width;
-  global float *ppi = pi + mad24(y, piwidth, 2*3*x);
+  float ppi[6];
+  _lens_grid_sample(pi, x, y, step, gwidth, 6, 6, ppi);
 
   if(do_nan_checks)
   {
@@ -2479,7 +2513,7 @@ lens_distort_lanczos2 (read_only image2d_t in,
 kernel void
 lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                       const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi,
-                      const int do_nan_checks)
+                      const int do_nan_checks, const int step, const int gwidth)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -2494,8 +2528,8 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
   int tx, ty;
   float sum, weight;
   float2 sum2;
-  const int piwidth = 2*3*width;
-  global float *ppi = pi + mad24(y, piwidth, 2*3*x);
+  float ppi[6];
+  _lens_grid_sample(pi, x, y, step, gwidth, 6, 6, ppi);
 
   if(do_nan_checks)
   {
@@ -2967,7 +3001,9 @@ lens_vignette (read_only image2d_t in,
                write_only image2d_t out,
                const int width,
                const int height,
-               global float4 *pi)
+               global float *pi,
+               const int step,
+               const int gwidth)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -2975,9 +3011,10 @@ lens_vignette (read_only image2d_t in,
   if(x >= width || y >= height) return;
 
   float4 pixel = Areadpixel(in, x, y);
-  float4 scale = 2.0f * pi[mad24(y, width, x)];
+  float scale[3];
+  _lens_grid_sample(pi, x, y, step, gwidth, 4, 3, scale);
 
-  pixel.xyz *= scale.xyz;
+  pixel.xyz *= (float3)(scale[0], scale[1], scale[2]);
 
   write_imagef (out, (int2)(x, y), pixel);
 }
