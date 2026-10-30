@@ -775,6 +775,11 @@ changes (where available).
   Edits using anisotropy may now look slightly different when exported
   without OpenCL.
 
+- Fixed the non-local means modes of denoise (profiled) and astrophoto
+  denoise giving a different result with OpenCL than on the CPU: the
+  OpenCL path gave the horizontal neighbors twice their weight. Edits
+  using them may look slightly different when exported with OpenCL.
+
 ## Lua
 
 ### API Version
