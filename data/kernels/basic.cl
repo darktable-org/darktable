@@ -2197,9 +2197,10 @@ float interpolation_compute_single(read_only image2d_t in,
    src/iop/lens.cc */
 static inline float _lens_grid_lerp(const float a, const float b, const float t)
 {
-  // a weight of zero skips b: a grid of step 1 can hold non-finite values,
-  // which must not leak into the neighboring pixels
-  return t > 0.0f ? a + t * (b - a) : a;
+  // mixf() of the CPU path, except that a weight of zero skips b: a grid of
+  // step 1 can hold non-finite values, which must not leak into the
+  // neighboring pixels
+  return t > 0.0f ? fma(t, b - a, a) : a;
 }
 
 static inline void _lens_grid_sample(global const float *grid, const int x, const int y,

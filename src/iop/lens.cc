@@ -1101,17 +1101,12 @@ static float _get_autoscale_lf(dt_iop_module_t *self,
   return scale;
 }
 
-// lensfun is asked for its coordinates and vignetting factors only on a grid
-// of every step-th pixel, and the pixels in between are interpolated
-// bilinearly. Per pixel, lensfun was most of the OpenCL path's cost: the CPU
-// computed 6 floats per pixel, which were then uploaded. A grid is accepted
-// when the interpolation at sampled cell centers stays within the tolerance
-// of lensfun's own values; otherwise the step is halved, down to 1, which
-// asks lensfun for every pixel as before.
-// Each grid point is a single-pixel lensfun call. Whole rows go through
-// lensfun's row loop instead, which accumulates x in float, and on x86 through
-// its SSE PTLens code with an approximate square root: up to ~0.3 px off.
-// Only step 1 uses them.
+// lensfun is asked only at every step-th pixel, and the pixels in between
+// are interpolated bilinearly, on the CPU and in OpenCL alike. This removes
+// the per-pixel lensfun work and upload of the OpenCL path, and the up to
+// ~0.3 px error of lensfun's row calls on x86. The step is halved while the
+// interpolation misses lensfun's own values at sampled cell centers by more
+// than the tolerance.
 #define LENS_GRID_STEP 8
 #define LENS_GRID_TOL_COORD 0.01f
 #define LENS_GRID_TOL_VIG 1e-4f
@@ -1266,14 +1261,6 @@ static gboolean _lens_grid_build(const lfModifier *modifier,
   return FALSE;
 }
 
-// unlike the OpenCL version, this needs no guard against non-finite
-// neighbors: a grid of step > 1 holds only finite values, see
-// _lens_grid_build(), and step 1 isn't interpolated
-static inline float _lens_grid_lerp(const float a, const float b, const float t)
-{
-  return a + t * (b - a);
-}
-
 // row y of the grid, relative to its origin, interpolated to width pixels of
 // stride floats. This is the C version of _lens_grid_sample() in
 // data/kernels/basic.cl, and computes the same values.
@@ -1306,13 +1293,13 @@ static inline void _lens_grid_row(const dt_iop_lens_grid_t *grid,
     float left[6], right[6];
     for(int n = 0; n < stride; n++)
     {
-      left[n] = _lens_grid_lerp(g0[i * stride + n], g1[i * stride + n], ty);
-      right[n] = _lens_grid_lerp(g0[(i + 1) * stride + n], g1[(i + 1) * stride + n], ty);
+      left[n] = mixf(g0[i * stride + n], g1[i * stride + n], ty);
+      right[n] = mixf(g0[(i + 1) * stride + n], g1[(i + 1) * stride + n], ty);
     }
     const int n_x = MIN(step, width - x0);
     float *out = row + (size_t)x0 * stride;
     for(int k = 0; k < n_x; k++, out += stride)
-      for(int n = 0; n < stride; n++) out[n] = _lens_grid_lerp(left[n], right[n], tx[k]);
+      for(int n = 0; n < stride; n++) out[n] = mixf(left[n], right[n], tx[k]);
   }
 }
 
@@ -1362,7 +1349,7 @@ static const dt_iop_lens_grid_cache_t *_lens_grids(dt_iop_lens_data_t *d,
 
   _lens_grid_cache_free(d);
 
-  const double start = dt_get_wtime();
+  const double start = dt_get_debug_wtime();
   c = (dt_iop_lens_grid_cache_t *)calloc(1, sizeof(dt_iop_lens_grid_cache_t));
   if(!c) return NULL;
   c->params_hash = d->params_hash;
@@ -1396,7 +1383,7 @@ static const dt_iop_lens_grid_cache_t *_lens_grids(dt_iop_lens_data_t *d,
   }
 
   dt_print(DT_DEBUG_PERF, "[lens] lensfun grid step %d, vignetting step %d took %.3f secs",
-           c->coords.step, c->vig.step, dt_get_wtime() - start);
+           c->coords.step, c->vig.step, dt_get_debug_wtime() - start);
   return c;
 }
 
