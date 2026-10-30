@@ -2078,9 +2078,11 @@ float compute_upsampling_taps(const int itor_mode,
   const int f = (int)floor(tt) - itor_width + 1;
   const float t = tt - (float)f;
 
+  // itor_mode is the dt_interpolation_type: lanczos2 and lanczos3 share the
+  // lanczos taps and differ only in width, as in src/common/interpolation.c
   if(itor_mode == 1)
     return maketaps_bicubic(taps, 2*itor_width, (float)itor_width, t, -1.0f);
-  else if(itor_mode == 2)
+  else if(itor_mode == 2 || itor_mode == 3)
     return maketaps_lanczos(taps, 2*itor_width, (float)itor_width, t, -1.0f);
   else
     return maketaps_bilinear(taps, 2*itor_width, (float)itor_width, t, -1.0f);
