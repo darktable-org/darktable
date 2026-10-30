@@ -17,6 +17,7 @@
 */
 
 #include "backend.h"
+#include "backend_remote.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "control/conf.h"
@@ -474,6 +475,12 @@ dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
                     const dt_ai_dim_override_t *dim_overrides, int n_overrides,
                     uint32_t ep_flags);
 
+extern dt_ai_context_t *
+dt_ai_onnx_remote_load(const char *model_id, const char *model_file,
+                       gboolean cpu, dt_ai_opt_level_t opt_level,
+                       const dt_ai_dim_override_t *dim_overrides,
+                       int n_overrides);
+
 static gboolean _provider_cpu_only(const dt_ai_model_info_t *info,
                                    const char *model_file,
                                    dt_ai_provider_t configured);
@@ -490,6 +497,26 @@ _resolve_ort_optimization(const dt_ai_model_info_t *info,
                           dt_ai_provider_t provider);
 
 static const char *_opt_level_to_string(dt_ai_opt_level_t level);
+
+// TRUE when a remote load must run the worker's CPU execution provider:
+// an explicit CPU request, or CONFIGURED resolving to CPU in conf. AUTO
+// lets the worker pick its accelerator (its cpu_only metadata still
+// applies); a concrete GPU EP request maps to cpu:false because the
+// wire protocol carries only the CPU bit (the worker's --gpu-provider
+// chooses CUDA vs CoreML at startup)
+static gboolean _remote_prefers_cpu(const dt_ai_provider_t provider)
+{
+  if(provider == DT_AI_PROVIDER_CPU) return TRUE;
+  if(provider == DT_AI_PROVIDER_CONFIGURED)
+  {
+    char *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
+    const gboolean cpu
+      = dt_ai_provider_from_string(prov_str) == DT_AI_PROVIDER_CPU;
+    g_free(prov_str);
+    return cpu;
+  }
+  return FALSE;
+}
 
 // model loading with backend dispatch
 
@@ -519,6 +546,17 @@ dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
              "[darktable_ai] AI subsystem is disabled");
     return NULL;
   }
+
+  // remote inference: DT_AI_REMOTE routes EVERY load to the loopback
+  // worker, including explicit CPU requests — the CPU preference is
+  // forwarded so the worker runs its CPU execution provider (e.g. the
+  // segmentation decoder). a configured remote that fails here fails
+  // the load — never a silent local fallback — so provider resolution,
+  // the local model registry and local ORT setup are all skipped
+  if(dt_ai_remote_enabled())
+    return dt_ai_onnx_remote_load(model_id, model_file,
+                                  _remote_prefers_cpu(provider), opt_level,
+                                  dim_overrides, n_overrides);
 
   // resolve CONFIGURED/AUTO to a concrete EP and apply the model's
   // cpu_only safety constraint in one place. ep_flags is owned by the

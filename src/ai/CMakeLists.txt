@@ -2,8 +2,10 @@ cmake_minimum_required(VERSION 3.18)
 
 add_library(darktable_ai STATIC
   backend.h
+  backend_remote.h
   backend_common.c
   backend_onnx.c
+  backend_remote.c
 )
 
 # Find ONNX Runtime (auto-downloads if not present)
