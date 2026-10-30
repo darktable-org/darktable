@@ -105,6 +105,7 @@ jobs:
       TARGET: ${{ matrix.target }}
       DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
       DEBIAN_FRONTEND: noninteractive
+      NIKON_Z5II_SAMPLE_DIR: ${{ github.workspace }}/nikon-samples
     steps:
       - name: Select fallback Ubuntu mirror if requested
         if: startsWith(github.ref_name, 'azure-')
@@ -213,6 +214,9 @@ jobs:
               submodule update --init --depth 1 --filter=blob:none src/tests/integration
           du -sh src/tests/integration/images
           cd -
+      - name: Get verified Nikon Z5II samples
+        if: matrix.target == 'build'
+        run: python3 src/src/tests/download_nikon_z5ii_samples.py "${NIKON_Z5II_SAMPLE_DIR}"
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}";
