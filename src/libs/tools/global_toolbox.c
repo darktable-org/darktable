@@ -20,6 +20,7 @@
 
 #include "common/collection.h"
 #include "common/darktable.h"
+#include "common/file_location.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
@@ -28,6 +29,7 @@
 #include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/preferences.h"
+#include "gui/workspace.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 
@@ -39,7 +41,7 @@ DT_MODULE(1)
 
 typedef struct dt_lib_tool_preferences_t
 {
-  GtkWidget *preferences_button, *grouping_button, *overlays_button, *help_button, *keymap_button;
+  GtkWidget *preferences_button, *grouping_button, *overlays_button, *help_button, *keymap_button, *workspace_button;
   GtkWidget *over_popup, *thumbnails_box, *culling_box;
   GtkWidget *over_label, *over_r0, *over_r1, *over_r2, *over_r3, *over_r4, *over_r5, *over_r6, *over_timeout,
       *over_tt;
@@ -383,6 +385,225 @@ static void _main_icons_register_size(GtkWidget *widget, GdkRectangle *allocatio
   darktable.gui->icon_size = width;
 }
 
+static gboolean _workspace_restart_idle(gpointer data)
+{
+  (void)data;
+  dt_control_restart();
+  return G_SOURCE_REMOVE;
+}
+
+static void _workspace_switch(const char *key)
+{
+  const char *label = (!key || !strcmp(key, "default")) ? "" : key;
+
+  const char *current = dt_conf_get_string_const("workspace/label");
+  if(!current) current = "";
+  if(!strcmp(label, current)) return;
+
+  dt_workspace_apply(label);
+  char datadir[PATH_MAX] = { 0 };
+  dt_loc_get_user_config_dir(datadir, sizeof(datadir));
+  dt_workspace_request_relaunch_skip_picker(datadir);
+  g_idle_add(_workspace_restart_idle, NULL);
+}
+
+static void _workspace_copy_toggled(GtkToggleButton *check, GtkWidget *combo)
+{
+  gtk_widget_set_sensitive(combo, gtk_toggle_button_get_active(check));
+}
+
+static void _workspace_create_activated(void)
+{
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  GtkWidget *dialog =
+    gtk_dialog_new_with_buttons(_("create new workspace"), GTK_WINDOW(win),
+                                GTK_DIALOG_DESTROY_WITH_PARENT,
+                                _("_cancel"), GTK_RESPONSE_CANCEL,
+                                _("_create"), GTK_RESPONSE_ACCEPT,
+                                NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+  gtk_window_set_default_size(GTK_WINDOW(dialog),
+                              DT_PIXEL_APPLY_DPI(400), -1);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
+
+  GtkWidget *entry = gtk_entry_new();
+  gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
+  gtk_entry_set_placeholder_text(GTK_ENTRY(entry), _("workspace name"));
+
+  GtkWidget *copy_check =
+    gtk_check_button_new_with_label(_("copy settings from existing workspace"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(copy_check), FALSE);
+
+  GtkWidget *combo = gtk_combo_box_text_new();
+  char datadir[PATH_MAX] = { 0 };
+  dt_loc_get_user_config_dir(datadir, sizeof(datadir));
+  GList *labels = dt_workspace_list(datadir);
+  const char *current = dt_conf_get_string_const("workspace/label");
+  if(!current) current = "";
+  int active = 0;
+  int idx = 0;
+  for(GList *l = labels; l; l = g_list_next(l))
+  {
+    const char *canon = (const char *)l->data;
+    if(!g_strcmp0(canon, "memory")) continue;
+    const char *name = !*canon ? _("default") : canon;
+    const char *id = !*canon ? "default" : canon;
+    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(combo), id, name);
+    if((!*canon && !*current) || !g_strcmp0(canon, current))
+      active = idx;
+    idx++;
+  }
+  g_list_free_full(labels, g_free);
+  if(idx) gtk_combo_box_set_active(GTK_COMBO_BOX(combo), active);
+  gtk_widget_set_sensitive(combo, FALSE);
+  g_signal_connect(copy_check, "toggled",
+                   G_CALLBACK(_workspace_copy_toggled), combo);
+  dt_gui_dialog_add(GTK_DIALOG(dialog),
+                    dt_gui_hbox(gtk_label_new(_("name:")),
+                                dt_gui_expand(entry)));
+  dt_gui_dialog_add(GTK_DIALOG(dialog), copy_check);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), combo);
+  gtk_widget_show_all(dialog);
+
+  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+  {
+    const char *text = gtk_entry_get_text(GTK_ENTRY(entry));
+    gchar *label = g_strdup(text ? text : "");
+    g_strstrip(label);
+
+    const char *copy_from = NULL;
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(copy_check)))
+    {
+      copy_from = gtk_combo_box_get_active_id(GTK_COMBO_BOX(combo));
+      if(copy_from && !strcmp(copy_from, "default")) copy_from = "";
+    }
+
+    if(!*label)
+      dt_control_log(_("enter a workspace name"));
+    else if(g_ascii_strcasecmp(label, "default") == 0
+            || g_ascii_strcasecmp(label, "memory") == 0
+            || strcmp(label, _("default")) == 0
+            || strcmp(label, _("memory")) == 0)
+      dt_control_log(_("the names \"default\" and \"memory\" are reserved"));
+    else if(!dt_workspace_new(datadir, label, copy_from))
+      dt_control_log(_("could not create workspace \"%s\""), label);
+    else
+    {
+      dt_workspace_request_relaunch_skip_picker(datadir);
+      g_idle_add(_workspace_restart_idle, NULL);
+    }
+    g_free(label);
+  }
+
+  gtk_widget_destroy(dialog);
+}
+
+static void _workspace_row_clicked(GtkWidget *button, gpointer user_data)
+{
+  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)))
+    return;
+
+  char *key = g_strdup(user_data);
+  GtkWidget *pop = gtk_widget_get_ancestor(button, GTK_TYPE_POPOVER);
+  if(pop) gtk_widget_hide(pop);
+  _workspace_switch(key);
+  g_free(key);
+}
+
+static void _workspace_create_clicked(GtkWidget *widget, gpointer user_data)
+{
+  (void)user_data;
+  GtkWidget *pop = gtk_widget_get_ancestor(widget, GTK_TYPE_POPOVER);
+  if(pop) gtk_widget_hide(pop);
+  _workspace_create_activated();
+}
+
+static void _workspace_menu_show(GtkWidget *anchor)
+{
+  char datadir[PATH_MAX] = { 0 };
+  dt_loc_get_user_config_dir(datadir, sizeof(datadir));
+  GList *labels = dt_workspace_list(datadir);
+
+  const char *current = dt_conf_get_string_const("workspace/label");
+  if(!current) current = "";
+  const char *current_key = !*current ? "default" : current;
+
+  GtkWidget *pop = gtk_popover_new(anchor);
+  g_signal_connect(pop, "closed", G_CALLBACK(gtk_widget_destroy), NULL);
+  g_object_set(G_OBJECT(pop), "transitions-enabled", FALSE, NULL);
+
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+  GtkWidget *title = gtk_label_new(_("workspaces"));
+  dt_gui_add_class(title, "dt_section_label");
+  gtk_box_pack_start(GTK_BOX(vbox), title, TRUE, TRUE, 0);
+
+  GtkWidget *group = NULL;
+  GSList *rows = NULL;
+  for(GList *l = labels; l; l = g_list_next(l))
+  {
+    const char *canon = (const char *)l->data;
+    const char *name = !*canon ? _("default")
+                       : !g_strcmp0(canon, "memory") ? _("memory")
+                       : canon;
+    const char *key = !*canon ? "default" : canon;
+
+    GtkWidget *row = group
+      ? gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(group), name)
+      : gtk_radio_button_new_with_label(NULL, name);
+    if(!group) group = row;
+
+    if(!strcmp(key, current_key))
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(row), TRUE);
+
+    g_object_set_data_full(G_OBJECT(row), "key", g_strdup(key), g_free);
+    rows = g_slist_prepend(rows, row);
+    gtk_box_pack_start(GTK_BOX(vbox), row, TRUE, TRUE, 0);
+  }
+  g_list_free_full(labels, g_free);
+
+  for(GSList *r = rows; r; r = g_slist_next(r))
+    g_signal_connect(r->data, "clicked", G_CALLBACK(_workspace_row_clicked),
+                     g_object_get_data(G_OBJECT(r->data), "key"));
+  g_slist_free(rows);
+
+  GtkWidget *actions = gtk_label_new(_("actions"));
+  dt_gui_add_class(actions, "dt_section_label");
+  gtk_box_pack_start(GTK_BOX(vbox), actions, TRUE, TRUE, 0);
+
+  GtkWidget *create = gtk_button_new_with_label(_("create new workspace"));
+  gtk_widget_set_name(create, "dt-workspace-create");
+  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(create)), GTK_ALIGN_START);
+  g_signal_connect(create, "clicked", G_CALLBACK(_workspace_create_clicked), NULL);
+  gtk_box_pack_start(GTK_BOX(vbox), create, TRUE, TRUE, 0);
+
+  gtk_container_add(GTK_CONTAINER(pop), vbox);
+  gtk_widget_show_all(vbox);
+  gtk_popover_popup(GTK_POPOVER(pop));
+}
+
+static void _workspace_button_update_visibility(dt_lib_module_t *self)
+{
+  dt_lib_tool_preferences_t *d = self->data;
+  gtk_widget_set_visible(d->workspace_button,
+                         dt_conf_get_bool("database/multiple_workspace"));
+}
+
+static void _workspace_preference_changed(gpointer instance, dt_lib_module_t *self)
+{
+  (void)instance;
+  _workspace_button_update_visibility(self);
+}
+
+static void _lib_workspace_button_clicked(GtkWidget *widget, gpointer user_data)
+{
+  (void)user_data;
+  if(!dt_conf_get_bool("database/multiple_workspace")) return;
+  _workspace_menu_show(widget);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -525,6 +746,18 @@ void gui_init(dt_lib_module_t *self)
   // the rest of these is added in reverse order as they are always put at the end of the container.
   // that's done so that buttons added via Lua will come first.
 
+  /* create the workspace button */
+  d->workspace_button = dtgtk_button_new_full(dtgtk_cairo_paint_workspace, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("select a workspace"),
+        .action = &darktable.control->actions_global,
+        .action_label = N_("workspace"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_lib_workspace_button_clicked),
+      });
+  gtk_widget_set_no_show_all(d->workspace_button, TRUE);
+  _workspace_button_update_visibility(self);
+
   /* create the preference button */
   d->preferences_button = dtgtk_button_new_full(dtgtk_cairo_paint_preferences, 0, NULL,
       &(dtgtk_button_config_t){
@@ -540,7 +773,9 @@ void gui_init(dt_lib_module_t *self)
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_ACTIVATE, GDK_KEY_comma, GDK_CONTROL_MASK);
 
   self->widget = dt_gui_hbox(d->grouping_button, d->overlays_button,
-                             d->help_button, d->keymap_button, d->preferences_button);
+                             d->help_button, d->keymap_button, d->workspace_button, d->preferences_button);
+
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, _workspace_preference_changed);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
