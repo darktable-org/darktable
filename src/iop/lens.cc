@@ -1162,6 +1162,7 @@ static gboolean _lens_grid_build(const lfModifier *modifier,
   const int count = vig ? 3 : 6;
   const float tol = vig ? LENS_GRID_TOL_VIG : LENS_GRID_TOL_COORD;
 
+  float prev_err = INFINITY;
   for(int step = LENS_GRID_STEP; step >= 1; step /= 2)
   {
     // one more point than needed in each direction, so that the last
@@ -1249,6 +1250,12 @@ static gboolean _lens_grid_build(const lfModifier *modifier,
       if(err > tol)
       {
         dt_free_align(data);
+        // halving the step quarters the error of a smooth field. When it
+        // doesn't even halve, the error is noise in lensfun's own values,
+        // as from its iterative solution in reverse mode, and smaller
+        // steps won't get under the tolerance either
+        if(err > 0.5f * prev_err) step = 2;
+        prev_err = err;
         continue;
       }
     }
