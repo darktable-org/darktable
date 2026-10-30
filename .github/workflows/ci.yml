@@ -213,6 +213,17 @@ jobs:
               submodule update --init --depth 1 --filter=blob:none src/tests/integration
           du -sh src/tests/integration/images
           cd -
+      # test_spektra_pack needs a spektrafilm data pack, which darktable does
+      # not ship; SPEKTRA_PACK_DIR points the suite at the published ones.
+      # $GITHUB_WORKSPACE, not the github.workspace expression: inside a
+      # container job the expression is the host path, while the variable is
+      # the path the container sees
+      - name: Get the spektrafilm data packs for the unit tests
+        if: matrix.target == 'build'
+        run: |
+          git clone --depth 1 https://github.com/darktable-org/darktable-spektrafilm.git \
+              "$GITHUB_WORKSPACE/spektrafilm"
+          echo "SPEKTRA_PACK_DIR=$GITHUB_WORKSPACE/spektrafilm/packs" >> "$GITHUB_ENV"
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}";
@@ -415,6 +426,17 @@ jobs:
               submodule update --init --depth 1 --filter=blob:none src/tests/integration
           du -sh src/tests/integration/images
           cd -
+      # test_spektra_pack needs a spektrafilm data pack, which darktable does
+      # not ship; SPEKTRA_PACK_DIR points the suite at the published ones.
+      # $GITHUB_WORKSPACE, not the github.workspace expression: inside a
+      # container job the expression is the host path, while the variable is
+      # the path the container sees
+      - name: Get the spektrafilm data packs for the unit tests
+        if: matrix.target == 'build'
+        run: |
+          git clone --depth 1 https://github.com/darktable-org/darktable-spektrafilm.git \
+              "$GITHUB_WORKSPACE/spektrafilm"
+          echo "SPEKTRA_PACK_DIR=$GITHUB_WORKSPACE/spektrafilm/packs" >> "$GITHUB_ENV"
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}";
