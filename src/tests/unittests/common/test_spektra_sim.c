@@ -235,17 +235,34 @@ static void test_aces_leaves_the_max_channel_alone(void **state)
   assert_double_close(rgb[0], 2.0, E);
 }
 
+/* The shipped output knee, stated here on its own: threshold 0, limit 1,
+   power 6. A channel at achromatic distance d = (max - v) / max comes back as
+   max * (1 - d / (1 + d^6)^(1/6)). */
+static double _aces_expected(double max,
+                             double v)
+{
+  const double d = (max - v) / max;
+  return max * (1.0 - d / pow(1.0 + pow(d, 6.0), 1.0 / 6.0));
+}
+
 static void test_aces_pulls_negatives_back_inside(void **state)
 {
-  TR_STEP("out-of-gamut negatives come back non-negative, and by a real margin");
+  TR_STEP("out-of-gamut negatives land where the knee puts them, inside the gamut");
+  /* the closed form above is for these parameters; changing them is a change
+     to the look, and this is where it has to be acknowledged */
+  assert_double_close(SF_OUT_KNEE_T, 0.0, 0.0);
+  assert_double_close(SF_OUT_KNEE_L, 1.0, 0.0);
+  assert_double_close(SF_OUT_KNEE_P, 6.0, 0.0);
+
   float rgb[3] = { 1.5f, -0.1f, -0.05f };
   compress_rgb_aces_f(rgb);
+  TR_DEBUG("out=(%e,%e,%e)", (double)rgb[0], (double)rgb[1], (double)rgb[2]);
   assert_double_close(rgb[0], 1.5, E);
-  assert_true(rgb[1] >= 0.0f);
-  assert_true(rgb[2] >= 0.0f);
-  /* not merely clipped to a hair above zero: the knee lands them well inside */
-  assert_true(rgb[1] < 0.2f * 1.5f);
-  assert_true(rgb[2] < 0.2f * 1.5f);
+  /* about 0.1241 and 0.1427: well inside, neither clipped to 0 nor left
+     negative. Float arithmetic against the double closed form, hence 1e-6 */
+  assert_double_close(rgb[1], _aces_expected(1.5, -0.1), 1e-6);
+  assert_double_close(rgb[2], _aces_expected(1.5, -0.05), 1e-6);
+  assert_true(rgb[1] > 0.1f && rgb[2] > 0.1f);
 }
 
 static void test_aces_compresses_stronger_excursions_harder(void **state)
@@ -256,6 +273,8 @@ static void test_aces_compresses_stronger_excursions_harder(void **state)
   compress_rgb_aces_f(mild);
   compress_rgb_aces_f(hard);
   TR_DEBUG("mild=%e hard=%e", (double)mild[1], (double)hard[1]);
+  assert_true(mild[1] >= 0.0f && mild[2] >= 0.0f);
+  assert_true(hard[1] >= 0.0f && hard[2] >= 0.0f);
   assert_true(hard[1] < mild[1]);
   assert_true(hard[2] < mild[2]);
 }
