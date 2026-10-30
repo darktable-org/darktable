@@ -596,6 +596,120 @@ static void test_couplers_correction_scales_with_density(void **state)
   free(sim);
 }
 
+static void test_couplers_positive_stock_inverts_the_silver(void **state)
+{
+  /* A reversal stock's dye density falls where silver is developed, so the
+     silver that releases inhibitor is dmax less the curve's density. */
+  TR_STEP("a positive stock releases inhibitor from dmax less its density");
+  const double dmax[3] = { 2.4, 2.2, 2.0 };
+  sf_sim_t *sim = _sim_linear_ramp(dmax);
+  sim->film_positive = 1;
+  for(int c = 0; c < 3; c++) sim->couplers_M[c][c] = 0.5;
+
+  const float lograw[3] = { -1.0f, -1.2f, -1.4f };
+  float corr[3];
+  sf_sim_develop_corr(sim, lograw, corr, 1, 3);
+  for(int c = 0; c < 3; c++)
+  {
+    const double expected = (dmax[c] - _ramp_density(lograw[c], dmax[c])) * 0.5;
+    TR_DEBUG("channel %d corr=%e expected=%e", c, corr[c], expected);
+    assert_double_close(corr[c], expected, 1e-5);
+  }
+  free(sim);
+}
+
+static void test_couplers_donor_langmuir_saturates_the_silver(void **state)
+{
+  /* donor side: silver s releases s * (K + Dref) / (K + s), which is s itself
+     at s = Dref, more below it and less above it */
+  TR_STEP("the donor Langmuir term rescales silver around its reference density");
+  const double dmax[3] = { 2.4, 2.2, 2.0 };
+  sf_sim_t *sim = _sim_linear_ramp(dmax);
+  sim->couplers_donor_lm = 1;
+  for(int c = 0; c < 3; c++)
+  {
+    sim->couplers_M[c][c] = 0.5;
+    sim->couplers_donor_K[c] = 0.5;
+    sim->couplers_donor_Dref[c] = 0.99; /* the green channel's silver below */
+  }
+
+  const float lograw[3] = { -1.0f, -1.2f, -1.4f }; /* silver 1.2, 0.99, 0.8 */
+  float corr[3];
+  sf_sim_develop_corr(sim, lograw, corr, 1, 3);
+  for(int c = 0; c < 3; c++)
+  {
+    const double silver = _ramp_density(lograw[c], dmax[c]);
+    const double expected = silver * (0.5 + 0.99) / (0.5 + silver) * 0.5;
+    TR_DEBUG("channel %d corr=%e expected=%e", c, corr[c], expected);
+    assert_double_close(corr[c], expected, 1e-5);
+  }
+  assert_double_close(corr[1], 0.99 * 0.5, 1e-5);
+  assert_true(corr[0] < 1.2 * 0.5);
+  assert_true(corr[2] > 0.8 * 0.5);
+  free(sim);
+}
+
+/* The correction is consumed by sf_sim_develop(): it is subtracted from the
+   log exposure, and the result is read off the pre-coupler curves. With the
+   couplers off, the correction is ignored and the normalized curves are read.
+   The two tables are made to differ here so the test sees which one is read. */
+static void test_couplers_correction_shifts_the_developed_density(void **state)
+{
+  TR_STEP("develop subtracts the correction from exposure on the pre-coupler curves");
+  const double dmax[3] = { 2.4, 2.2, 2.0 };
+  sf_sim_t *sim = _sim_linear_ramp(dmax);
+  for(int i = 0; i < SF_NLE; i++)
+    for(int c = 0; c < 3; c++) sim->curves_before_f[i][c] = 0.5f * sim->curves_norm_f[i][c];
+
+  const float lograw[3] = { -1.0f, -1.2f, -1.4f };
+  const float corr[3] = { 0.2f, 0.1f, 0.0f };
+  float cmy[3];
+  sf_sim_develop(sim, lograw, corr, cmy, 1, 3, 3);
+  for(int c = 0; c < 3; c++)
+  {
+    const double expected = 0.5 * _ramp_density(lograw[c] - corr[c], dmax[c]);
+    TR_DEBUG("channel %d cmy=%e expected=%e", c, cmy[c], expected);
+    assert_double_close(cmy[c], expected, 1e-5);
+  }
+
+  sim->couplers_active = 0;
+  sf_sim_develop(sim, lograw, corr, cmy, 1, 3, 3);
+  for(int c = 0; c < 3; c++)
+    assert_double_close(cmy[c], _ramp_density(lograw[c], dmax[c]), 1e-5);
+  free(sim);
+}
+
+static void test_couplers_receiver_langmuir_saturates_the_inhibitor(void **state)
+{
+  /* receiver side: an arriving inhibitor c acts as c * (Kr + cref) / (Kr + c) */
+  TR_STEP("the receiver Langmuir term rescales the inhibitor that arrives");
+  const double dmax[3] = { 2.4, 2.2, 2.0 };
+  sf_sim_t *sim = _sim_linear_ramp(dmax);
+  for(int i = 0; i < SF_NLE; i++)
+    for(int c = 0; c < 3; c++) sim->curves_before_f[i][c] = sim->curves_norm_f[i][c];
+  sim->couplers_recv_lm = 1;
+  for(int c = 0; c < 3; c++)
+  {
+    sim->couplers_recv_Kr[c] = 0.5;
+    sim->couplers_recv_cref[c] = 0.3;
+  }
+
+  const float lograw[3] = { -1.0f, -1.2f, -1.4f };
+  const float corr[3] = { 0.2f, 0.3f, 0.4f };
+  float cmy[3];
+  sf_sim_develop(sim, lograw, corr, cmy, 1, 3, 3);
+  for(int c = 0; c < 3; c++)
+  {
+    const double eff = corr[c] * (0.5 + 0.3) / (0.5 + corr[c]);
+    const double expected = _ramp_density(lograw[c] - eff, dmax[c]);
+    TR_DEBUG("channel %d cmy=%e expected=%e", c, cmy[c], expected);
+    assert_double_close(cmy[c], expected, 1e-5);
+  }
+  /* at c = cref the term is the identity */
+  assert_double_close(cmy[1], _ramp_density(lograw[1] - 0.3, dmax[1]), 1e-5);
+  free(sim);
+}
+
 /*
  * TEST FUNCTIONS: spectral upsampling table declarations
  */
@@ -750,6 +864,10 @@ int main(int argc,
     cmocka_unit_test(test_couplers_diagonal_matrix_keeps_channels_independent),
     cmocka_unit_test(test_couplers_interlayer_crosses_channels),
     cmocka_unit_test(test_couplers_correction_scales_with_density),
+    cmocka_unit_test(test_couplers_positive_stock_inverts_the_silver),
+    cmocka_unit_test(test_couplers_donor_langmuir_saturates_the_silver),
+    cmocka_unit_test(test_couplers_correction_shifts_the_developed_density),
+    cmocka_unit_test(test_couplers_receiver_langmuir_saturates_the_inhibitor),
     cmocka_unit_test(test_peek_tables_reads_a_format_3_declaration),
     cmocka_unit_test(test_peek_tables_reads_a_format_2_pack),
   };
