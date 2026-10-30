@@ -1110,6 +1110,8 @@ static float _get_autoscale_lf(dt_iop_module_t *self,
 #define LENS_GRID_STEP 8
 #define LENS_GRID_TOL_COORD 0.01f
 #define LENS_GRID_TOL_VIG 1e-4f
+// the largest error accepted when it is noise in lensfun's own values
+#define LENS_GRID_NOISE_COORD 0.05f
 
 // lensfun's values for n pixels of a row, stride floats each
 static inline void _lens_grid_eval(const lfModifier *modifier,
@@ -1156,6 +1158,7 @@ static gboolean _lens_grid_build(const lfModifier *modifier,
   const int stride = vig ? 4 : 6;
   const int count = vig ? 3 : 6;
   const float tol = vig ? LENS_GRID_TOL_VIG : LENS_GRID_TOL_COORD;
+  const float noise_max = vig ? LENS_GRID_TOL_VIG : LENS_GRID_NOISE_COORD;
 
   float prev_err = INFINITY;
   for(int step = LENS_GRID_STEP; step >= 1; step /= 2)
@@ -1242,14 +1245,15 @@ static gboolean _lens_grid_build(const lfModifier *modifier,
             err = isfinite(e) ? fmaxf(err, e) : INFINITY;
           }
         }
-      if(err > tol)
+      // halving the step quarters the error of a smooth field. When it
+      // doesn't even halve, the error is noise in lensfun's own values, as
+      // from its iterative solution in reverse mode. Its per-pixel values
+      // carry the same noise, so the grid is kept unless the noise is large.
+      const gboolean noise = err > 0.5f * prev_err;
+      if(err > tol && !(noise && err <= noise_max))
       {
         dt_free_align(data);
-        // halving the step quarters the error of a smooth field. When it
-        // doesn't even halve, the error is noise in lensfun's own values,
-        // as from its iterative solution in reverse mode, and smaller
-        // steps won't get under the tolerance either
-        if(err > 0.5f * prev_err) step = 2;
+        if(noise) step = 2;
         prev_err = err;
         continue;
       }
