@@ -429,9 +429,11 @@ typedef struct dt_iop_gui_blend_data_t
   // utility position, the lib)
   GtkBox *masks_header_home;
   // everything in relocatable_box below the header, folded away in the
-  // embedded position while the header stays as the way back. Only this
-  // wrapper is hidden, so its children keep their own visibility
+  // embedded position while the header stays as the way back. The fold is
+  // masks_panel_reveal, which slides it as a module's expander does; the
+  // children keep their own visibility
   GtkBox *masks_panel_body;
+  GtkWidget *masks_panel_reveal;
   GtkBox *masks_box;
 
   GtkWidget *showmask;
@@ -1067,6 +1069,9 @@ void dt_masks_gui_panel_set_collapsed_pref(const gboolean collapsed);
 void dt_iop_gui_blend_masks_panel_host_expanded(const gboolean expanded);
 // moves the masks panel to its host and updates the header labels and tooltips
 void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module);
+// the module is not focused: in the embedded position, an expanded one shows
+// the header of its masks panel alone; any other does not show the panel
+void dt_iop_gui_blend_masks_panel_peek(dt_iop_module_t *module);
 // show or hide the focused module's masks panel, wherever it is. The panel's
 // arrow, the shortcut and the toolbar button all come here, so they cannot
 // drift apart. Does nothing unless the focused module has a masks panel
@@ -1094,6 +1099,8 @@ void dt_iop_gui_blend_mask_reset(dt_iop_module_t *module);
 // fold the panel away for the focused module if it has lost its mask, as when
 // it takes focus without one: the mask coming back (an undo) shows it again
 void dt_iop_gui_blend_masks_panel_fold_unmasked(void);
+// fold the embedded panel of the module, without storing the fold
+void dt_iop_gui_blend_masks_panel_fold_embedded(dt_iop_module_t *module);
 // show the panel's state on the darkroom toolbar button: pressed while the
 // panel shows, insensitive when the focused module has no masks panel
 void dt_iop_gui_blend_masks_panel_sync_toolbox(void);
