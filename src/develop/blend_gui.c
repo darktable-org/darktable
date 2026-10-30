@@ -6471,6 +6471,18 @@ static gboolean _bauhaus_whisker_popup_rect(GtkWidget *anchor,
   GdkMonitor *mon =
     gdk_display_get_monitor_at_window(gdk_window_get_display(top_gdk), top_gdk);
   if(mon) gdk_monitor_get_workarea(mon, &g.workarea);
+  // the anchor's coordinates are the window's own plus its origin, and the
+  // work area is in desktop coordinates. Wayland reports a toplevel's origin
+  // as 0,0 wherever it is, so on a monitor that does not start there the two
+  // are in different spaces and the popup lands off the window (or on another
+  // monitor). The window's own rectangle is then the room there is
+  if(!mon
+     || top_x < g.workarea.x || top_x >= g.workarea.x + g.workarea.width
+     || top_y < g.workarea.y || top_y >= g.workarea.y + g.workarea.height)
+  {
+    g.workarea = (GdkRectangle){ top_x, top_y, gtk_widget_get_allocated_width(toplevel),
+                                 gtk_widget_get_allocated_height(toplevel) };
+  }
 
   g.panel_x = g.workarea.x;
   g.panel_w = g.workarea.width;
@@ -14460,12 +14472,19 @@ static void _param_row_slider_precise_hover_preview(GtkWidget *bauhaus_slider,
   g_object_set_data(G_OBJECT(slider), "precise-hover-settle", GUINT_TO_POINTER(handle));
 }
 
+static void _param_row_slider_precise_popup_hidden(GtkWidget *bauhaus_popup_window,
+                                                   GtkWidget *popover);
+
 // destroy the closed popover and clear the object data that
 // _param_row_slider_precise_pressed reads (which node has a popover open), so
 // that no stale pointer is read. On Escape, a click outside, or the embedded
 // slider's popup closing (_param_row_slider_precise_popup_hidden)
 static void _param_row_slider_precise_closed(GtkPopover *popover, GtkWidget *slider)
 {
+  // the shared bauhaus popup window outlives this popover: drop its "hide"
+  // handler (see _param_row_slider_precise_open_idle) before the popover goes
+  g_signal_handlers_disconnect_by_func(darktable.bauhaus->popup.window,
+                                       _param_row_slider_precise_popup_hidden, popover);
   // a preview not yet settled was never committed: put the markers back
   // where the popup found them. What has settled stays committed
   if(_param_row_slider_precise_cancel_settle(slider))
@@ -14503,7 +14522,9 @@ static void _param_row_slider_precise_popup_hidden(GtkWidget *bauhaus_popup_wind
 static gboolean _param_row_slider_precise_open_idle(gpointer user_data)
 {
   GtkWidget *bauhaus_slider = user_data;
-  if(!GTK_IS_WIDGET(bauhaus_slider)) return G_SOURCE_REMOVE;
+  // held by a reference: a popover closed meanwhile has destroyed the box
+  // holding the slider, leaving it without a parent
+  if(!gtk_widget_get_parent(bauhaus_slider)) return G_SOURCE_REMOVE;
   GtkWidget *popover =
     g_object_get_data(G_OBJECT(bauhaus_slider), "precise-anchor-popover");
   GtkWidget *slider =
@@ -14514,9 +14535,11 @@ static gboolean _param_row_slider_precise_open_idle(gpointer user_data)
     _show_bauhaus_whisker_popup(bauhaus_slider, slider, marker_x);
   else
     dt_bauhaus_widget_show_popup(bauhaus_slider);
+  // tied to the popover, so that one destroyed without "closed" (its row torn
+  // down) takes the handler with it
   if(popover)
-    g_signal_connect(G_OBJECT(darktable.bauhaus->popup.window), "hide",
-                     G_CALLBACK(_param_row_slider_precise_popup_hidden), popover);
+    g_signal_connect_object(G_OBJECT(darktable.bauhaus->popup.window), "hide",
+                            G_CALLBACK(_param_row_slider_precise_popup_hidden), popover, 0);
   return G_SOURCE_REMOVE;
 }
 
