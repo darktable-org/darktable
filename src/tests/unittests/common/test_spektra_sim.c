@@ -447,6 +447,43 @@ static void test_morph_gamma_scales_centers_and_sigmas(void **state)
   }
 }
 
+static void test_morph_gammas_follow_layer_speed(void **state)
+{
+  /* Layer speed is by centre, not by position in the arrays: the lowest
+     centre is the fast layer and takes gamma * gamma_fast, the middle and the
+     highest take gamma * gamma_slow (upstream gives the mid layer the slow
+     factor). Centres deliberately out of order, and fast and slow factors
+     deliberately different, so a swapped assignment or a skipped sort fails. */
+  TR_STEP("the fast layer takes the fast factor, mid and slow the slow one");
+  const double centers_in[3] = { -1.0, -1.2, -1.1 }; /* slow, fast, mid */
+  const double sigmas_in[3] = { 0.26, 0.30, 0.28 };
+  const double gamma = 1.1, gamma_fast = 1.3, gamma_slow = 0.9;
+  double centers[3], sigmas[3], gmix[3];
+  _sf_morph_channel(centers_in, sigmas_in, NULL, 0, 3, 0, gamma, gamma_fast, gamma_slow, 0.0,
+                    AMPS, centers, sigmas, gmix);
+  const double g[3] = { gamma * gamma_slow, gamma * gamma_fast, gamma * gamma_slow };
+  for(int l = 0; l < 3; l++)
+  {
+    TR_DEBUG("layer %d center %e -> %e", l, centers_in[l], centers[l]);
+    assert_double_close(centers[l], centers_in[l] / g[l], E);
+    assert_double_close(sigmas[l], sigmas_in[l] / g[l], E);
+  }
+}
+
+static void test_morph_sigma_has_a_floor(void **state)
+{
+  TR_STEP("a steepening gamma never narrows a layer below the sigma floor");
+  const double sigmas_in[3] = { 0.06, 0.28, 0.26 };
+  double centers[3], sigmas[3], gmix[3];
+  _sf_morph_channel(CENTERS, sigmas_in, NULL, 0, 3, 0, 2.0, 1.0, 1.0, 0.0, AMPS, centers, sigmas,
+                    gmix);
+  assert_double_close(sigmas[0], SF_SIGMA_FLOOR, E); /* 0.03 unfloored */
+  assert_double_close(sigmas[1], 0.14, E);
+  assert_double_close(sigmas[2], 0.13, E);
+  /* the floor holds the width only; the centre still moves */
+  assert_double_close(centers[0], CENTERS[0] / 2.0, E);
+}
+
 /*
  * TEST FUNCTIONS: DIR couplers
  * (upstream tests/test_couplers.py::TestDirCouplers)
@@ -706,6 +743,8 @@ int main(int argc,
     cmocka_unit_test(test_developer_exhaustion_preserves_midgray),
     cmocka_unit_test(test_zero_exhaustion_leaves_the_curve_alone),
     cmocka_unit_test(test_morph_gamma_scales_centers_and_sigmas),
+    cmocka_unit_test(test_morph_gammas_follow_layer_speed),
+    cmocka_unit_test(test_morph_sigma_has_a_floor),
     cmocka_unit_test(test_couplers_inactive_gives_no_correction),
     cmocka_unit_test(test_couplers_zero_density_gives_no_correction),
     cmocka_unit_test(test_couplers_diagonal_matrix_keeps_channels_independent),
