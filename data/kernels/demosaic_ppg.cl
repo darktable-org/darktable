@@ -299,6 +299,13 @@ pre_median(read_only image2d_t in,
 
   const int c = FC(y, x, filters);
 
+  // as on the CPU, the red and blue pixels and the 3 pixel border stay unfiltered
+  if(!(c & 1) || x < 3 || y < 3 || x >= width - 3 || y >= height - 3)
+  {
+    write_imagef(out, (int2)(x, y), buffer[0]);
+    return;
+  }
+
   float med[9];
 
   int cnt = 0;
@@ -321,7 +328,7 @@ pre_median(read_only image2d_t in,
     for(int ii = i + 1; ii < 9; ii++)
       if(med[i] > med[ii]) SWAP(med[i], med[ii]);
 
-  float color = (c & 1) ? (cnt == 1 ? med[4] - 64.0f : med[(cnt - 1) / 2]) : buffer[0];
+  const float color = cnt == 1 ? med[4] - 64.0f : med[(cnt - 1) / 2];
 
   write_imagef (out, (int2)(x, y), color);
 }
