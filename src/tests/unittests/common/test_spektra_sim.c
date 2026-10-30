@@ -27,13 +27,10 @@
  * What they cover is the pure math, plus the per-pixel entry points fed from a
  * hand-built sf_sim_t. Not covered is anything that needs a loaded profile --
  * the spectral upsampling tables, the enlarger's neutral filters, the grain
- * sublayer build. That is a matter of scope, not availability: the
- * current pack ships with darktable under data/spektrafilm/, and only edits
- * pinned to an older one fetch anything at runtime, so a fixture is there for
- * the taking. But a test built on it reads real profile data off disk, which
+ * sublayer build. A test built on those reads real profile data off disk, which
  * makes it an integration test with a data dependency and not a unit test.
- * Those live next door, in test_spektra_pack.c, which CMake points at the
- * shipped pack and which skips itself when there is none on disk.
+ * Those live next door, in test_spektra_pack.c, which reads a pack from the
+ * directory it is configured with and skips itself when it is given none.
  *
  * Including the .c, not the .h is what the module tests already do (see
  * ../iop/test_filmicrgb.c): most of the algorithms are file-static helpers, and

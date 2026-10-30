@@ -25,14 +25,22 @@
  * tests/test_profiles.py, tests/test_enlarger_filters.py and
  * tests/test_pipeline_smoke.py -- and each test names the one it came from.
  *
- * The pack is found at SPEKTRA_PACK_DIR, handed over by CMake (see
- * CMakeLists.txt in this directory), either as a directory holding pack.json
- * directly or as one holding a single versioned subdirectory that does. Only
- * edits pinned to an older pack fetch anything at runtime, so the current pack
- * being on disk is the normal case -- but when it is not there, every test
- * here skips. A missing pack means this build cannot answer
- * the question, which is not the same as the engine being wrong, and a build
- * that goes red for the wrong reason is a build people learn to ignore.
+ * darktable does not ship a data pack. The suite reads one from the
+ * SPEKTRA_PACK_DIR environment variable, or else from the directory CMake
+ * hands over as SPEKTRA_PACK_DIR (the SPEKTRA_TEST_PACK_DIR cache variable, see
+ * CMakeLists.txt in this directory). Either names a directory holding pack.json
+ * directly or one holding versioned subdirectories that do, of which the newest
+ * is used -- the layout of the packs/ directory in
+ * darktable-org/darktable-spektrafilm. A directory that is named but yields no
+ * loadable pack is a fault in the setup that asked for the suite, and
+ * test_pack_loads_and_identifies_itself reports it.
+ *
+ * With neither set, the suite uses the pack darktable itself would: the one
+ * installed by hand in <user data>/darktable/spektrafilm, else one the module
+ * downloaded into its packs/ subdirectory. With none of those on disk this
+ * build cannot answer the question, which is not the same as the engine being
+ * wrong: the suite runs nothing and exits with SPEKTRA_SKIP_RC, which CMake
+ * tells ctest to report as skipped rather than passed.
  *
  * The tolerances are deliberately loose. What is being pinned down is that the
  * pipeline stays finite, bounded, ordered and reproducible on real data, not
@@ -91,7 +99,8 @@ typedef struct fixture_t
 {
   sf_pack_t *pack;
   sf_profile_t *film, *print;
-  char pack_dir[PATH_MAX];
+  char root[PATH_MAX];     /* the directory the suite was pointed at, "" for none */
+  char pack_dir[PATH_MAX]; /* the pack resolved under it, "" for none */
 } fixture_t;
 
 /* No pack on disk, no verdict to give -- so every test starts with this. It
@@ -119,14 +128,17 @@ typedef struct fixture_t
  * FIXTURE
  */
 
-/* SPEKTRA_PACK_DIR itself when it holds pack.json, else its one subdirectory
-   that does. Written this way so the tests need not know which spektrafilm
-   release is currently shipped, and so they keep working if the layout is
-   flattened later. Returns false when there is no pack to be had. */
-static gboolean _resolve_pack_dir(char *dst,
+/* the exit status ctest is told means "skipped" (SKIP_RETURN_CODE) */
+#define SPEKTRA_SKIP_RC 77
+
+/* `root` itself when it holds pack.json, else the subdirectory holding one
+   whose name sorts last as a version ("0.10.0" after "0.9.1"), so the tests
+   need not know which spektrafilm release is current and a directory carrying
+   several releases tests the newest. Returns false when there is no pack. */
+static gboolean _resolve_pack_dir(const char *root,
+                                  char *dst,
                                   size_t dstsz)
 {
-  const char *root = SPEKTRA_PACK_DIR;
   if(!root || !root[0]) return FALSE;
 
   char *direct = g_build_filename(root, "pack.json", NULL);
@@ -140,22 +152,73 @@ static gboolean _resolve_pack_dir(char *dst,
 
   GDir *gd = g_dir_open(root, 0, NULL);
   if(!gd) return FALSE;
-  gboolean found = FALSE;
+  char *best = NULL, *best_key = NULL;
   const char *fn;
   while((fn = g_dir_read_name(gd)))
   {
     char *sub = g_build_filename(root, fn, "pack.json", NULL);
     if(g_file_test(sub, G_FILE_TEST_IS_REGULAR))
     {
-      char *dir = g_build_filename(root, fn, NULL);
-      g_strlcpy(dst, dir, dstsz);
-      g_free(dir);
-      found = TRUE;
+      char *key = g_utf8_collate_key_for_filename(fn, -1);
+      if(!best_key || strcmp(key, best_key) > 0)
+      {
+        g_free(best);
+        g_free(best_key);
+        best = g_strdup(fn);
+        best_key = key;
+      }
+      else
+        g_free(key);
     }
     g_free(sub);
-    if(found) break;
   }
   g_dir_close(gd);
+
+  if(best)
+  {
+    char *dir = g_build_filename(root, best, NULL);
+    g_strlcpy(dst, dir, dstsz);
+    g_free(dir);
+  }
+  g_free(best);
+  g_free(best_key);
+  return best != NULL;
+}
+
+/* The directory the suite is pointed at, written to `dst`: the
+   SPEKTRA_PACK_DIR environment variable when set and non-empty, else the
+   compile-time SPEKTRA_PACK_DIR, else whichever of darktable's own pack
+   locations holds a pack. Returns false when none was named and none of
+   darktable's holds one; `dst` is then empty. */
+static gboolean _choose_pack_root(char *dst,
+                                  size_t dstsz)
+{
+  dst[0] = '\0';
+  const char *env = g_getenv("SPEKTRA_PACK_DIR");
+  if(env && env[0])
+  {
+    g_strlcpy(dst, env, dstsz);
+    return TRUE;
+  }
+  if(SPEKTRA_PACK_DIR[0])
+  {
+    g_strlcpy(dst, SPEKTRA_PACK_DIR, dstsz);
+    return TRUE;
+  }
+
+  char *hand = g_build_filename(g_get_user_data_dir(), "darktable", "spektrafilm", NULL);
+  char *fetched = g_build_filename(hand, "packs", NULL);
+  const char *candidates[2] = { hand, fetched };
+  char probe[PATH_MAX];
+  gboolean found = FALSE;
+  for(int i = 0; i < 2 && !found; i++)
+    if(_resolve_pack_dir(candidates[i], probe, sizeof probe))
+    {
+      g_strlcpy(dst, candidates[i], dstsz);
+      found = TRUE;
+    }
+  g_free(fetched);
+  g_free(hand);
   return found;
 }
 
@@ -220,10 +283,11 @@ static int group_setup(void **state)
   if(!f) return -1;
   *state = f;
 
-  if(!_resolve_pack_dir(f->pack_dir, sizeof f->pack_dir))
+  _choose_pack_root(f->root, sizeof f->root);
+  if(!_resolve_pack_dir(f->root, f->pack_dir, sizeof f->pack_dir))
   {
-    TR_NOTE("no data pack under \"%s\" -- every test in this suite will skip", SPEKTRA_PACK_DIR);
-    return 0;
+    TR_NOTE("no data pack under \"%s\"", f->root);
+    return 0; /* the first test reports it; the rest skip */
   }
   TR_NOTE("data pack: %s", f->pack_dir);
 
@@ -344,10 +408,12 @@ static void _assert_valid_output(const float *rgb,
 static void test_pack_loads_and_identifies_itself(void **state)
 {
   fixture_t *f = *state;
-  if(!f || !f->pack_dir[0]) skip();
-  TR_STEP("the shipped pack loads and names its version and spectral table");
-  /* deliberately not REQUIRE_PACK: a pack that is present but will not load is
-     the one failure this suite must report, not skip past */
+  if(!f || !f->root[0]) skip();
+  TR_STEP("the configured pack loads and names its version and spectral table");
+  /* deliberately not REQUIRE_PACK: a configured directory with no pack in it,
+     or a pack that will not load, is the one failure this suite must report,
+     not skip past */
+  assert_true(f->pack_dir[0] != '\0');
   assert_non_null(f->pack);
   assert_non_null(sf_pack_version(f->pack));
   assert_non_null(sf_pack_lut_id(f->pack));
@@ -846,6 +912,13 @@ static void test_every_table_renders_valid_output(void **state)
 int main(int argc,
          char *argv[])
 {
+  char root[PATH_MAX];
+  if(!_choose_pack_root(root, sizeof root))
+  {
+    printf("no spektrafilm data pack configured or installed -- skipping\n");
+    return SPEKTRA_SKIP_RC;
+  }
+
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_pack_loads_and_identifies_itself),
     cmocka_unit_test(test_pack_ships_both_a_film_and_a_paper),
