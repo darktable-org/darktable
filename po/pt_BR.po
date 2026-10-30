@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 19:45-0300\n"
-"PO-Revision-Date: 2026-10-29 20:06-0300\n"
+"POT-Creation-Date: 2026-10-30 09:39-0300\n"
+"PO-Revision-Date: 2026-10-30 09:38-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -864,12 +864,16 @@ msgstr "deslizar"
 msgid ""
 "<b>maximum (union)</b> keeps the stronger shape, as a classic drawn mask did"
 msgstr ""
+"<b>máximo (união)</b> mantém a forma mais forte, como fazia a máscara "
+"desenhada clássica"
 
 #: ../build/bin/masks_group_presets_strings.h:4
 msgid ""
 "<b>product (smooth intersection)</b> lets their soft edges fade together; "
 "<b>minimum (intersection)</b> keeps the weaker of the two"
 msgstr ""
+"<b>produto (interseção suave)</b> deixa as bordas suaves mesclarem juntas; \n"
+"<b>mínimo (interseção)/b> mantém a mais fraca das duas"
 
 #: ../build/bin/masks_group_presets_strings.h:5
 msgid ""
@@ -895,16 +899,20 @@ msgid ""
 "a drawn + parametric mask, with the elements added above it subtracted\n"
 "from it"
 msgstr ""
+"uma máscara desenhada + paramétrica, com os elementos que forem adicionados "
+"sobre ela sendo subtraídos dela"
 
 #: ../build/bin/masks_group_presets_strings.h:9
 msgid ""
 "add parametric channels here to select the area to mask, e.g. by color or "
 "brightness"
 msgstr ""
+"adicione canais paramétricos aqui para selecionar a área a mascarar, p.ex. "
+"por cor ou brilho"
 
 #: ../build/bin/masks_group_presets_strings.h:10
 msgid "alternatively, <b>invert</b> the output of the <b>drawn</b> group"
-msgstr ""
+msgstr "alternativamente, <b>inverter</b> a saída do grupo <b>desenhada</b>"
 
 #: ../build/bin/masks_group_presets_strings.h:11
 msgid ""
@@ -914,7 +922,7 @@ msgstr ""
 
 #: ../build/bin/masks_group_presets_strings.h:12
 msgid "draw shapes or add AI objects here to mask an area"
-msgstr ""
+msgstr "desenhe formas ou adicione objetos de IA aqui para mascarar uma área"
 
 #: ../build/bin/masks_group_presets_strings.h:13
 msgid "drawn (classic)"
@@ -929,9 +937,8 @@ msgid "drawn + parametric"
 msgstr "desenhada + paramétrica"
 
 #: ../build/bin/masks_group_presets_strings.h:16
-#, fuzzy
 msgid "drawn + parametric, minus an area (advanced)"
-msgstr "máscara desenhada + paramétrica"
+msgstr "desenhada + paramétrica, menos uma área (avançado)"
 
 #: ../build/bin/masks_group_presets_strings.h:17
 msgid "drawn"
@@ -942,6 +949,8 @@ msgid ""
 "mask an area with <b>parametric</b> channels, and refine the selection with "
 "<b>drawn</b> shapes"
 msgstr ""
+"mascarar uma área com canais <b>paramétricos</b>, e refinar a seleção com "
+"formas <b>desenhadas</b>"
 
 #: ../build/bin/masks_group_presets_strings.h:19
 msgid ""
@@ -9130,6 +9139,8 @@ msgid ""
 "couldn't get platform ID.\n"
 "check your OpenCL ICD loader (ocl-icd)"
 msgstr ""
+"não foi possível obter o ID da plataforma.\n"
+"verifique seu carregador OpenCL ICD (ocl-icd)"
 
 #: ../src/common/opencl.c:1326
 msgid ""
@@ -10731,12 +10742,11 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:1208
 msgid "history compressed and unused shapes removed"
-msgstr ""
+msgstr "histórico comprimido e formas não usadas removidas"
 
 #: ../src/develop/blend_gui.c:1371
-#, fuzzy
 msgid "link shapes"
-msgstr "formas"
+msgstr "vincular formas"
 
 #: ../src/develop/blend_gui.c:1372
 msgid "shared: editing one changes it everywhere"
@@ -10823,6 +10833,9 @@ msgid ""
 "click to disable\n"
 "right-click for blending options"
 msgstr ""
+"máscara habilitada\n"
+"clique para desabilitar\n"
+"clique-direito para opções de mesclagem"
 
 #: ../src/develop/blend_gui.c:2226
 msgid ""
@@ -10830,14 +10843,17 @@ msgid ""
 "click to enable\n"
 "right-click for blending options"
 msgstr ""
+"máscara desabilitada\n"
+"clique para habilitar\n"
+"clique-direito para opções de mesclagem"
 
 #: ../src/develop/blend_gui.c:2247
 msgid "mask locked: click to unlock"
-msgstr ""
+msgstr "máscara bloqueada: clique para desbloquear"
 
 #: ../src/develop/blend_gui.c:2247
 msgid "mask unlocked: click to lock"
-msgstr ""
+msgstr "máscara desbloqueada: clique para bloquear"
 
 #: ../src/develop/blend_gui.c:2248
 msgid ""
@@ -10896,9 +10912,8 @@ msgid ""
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2881 ../src/develop/blend_gui.c:18269
-#, fuzzy
 msgid "auto-expand selected"
-msgstr "deletar selecionados"
+msgstr "auto-expandir os selecionados"
 
 #: ../src/develop/blend_gui.c:2882
 msgid ""
