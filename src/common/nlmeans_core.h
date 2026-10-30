@@ -43,6 +43,9 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
                      const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                      const dt_nlmeans_param_t *const params);
 
+// width of the mirrored border that every search offset and patch fits into
+int nlmeans_border(const dt_nlmeans_param_t *const params);
+
 #ifdef HAVE_OPENCL
 int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
                        cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *const roi_in);
