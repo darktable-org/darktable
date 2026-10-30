@@ -14277,6 +14277,26 @@ static gboolean _param_row_picker_active(const dt_masks_param_row_editor_t *ed)
   return FALSE;
 }
 
+// whether the masks list is built from the forms as they are: true when its
+// signature matches the one they hash to now
+static gboolean _param_row_list_sig_current(dt_iop_module_t *module)
+{
+  const dt_iop_gui_blend_data_t *bd = module->blend_data;
+  return bd && bd->masks_list_sig != DT_INVALID_HASH
+         && bd->masks_list_sig == dt_masks_gui_list_signature(module);
+}
+
+// a parametric row shows its own edits in place, so a list that was current
+// before the edit is current after it: the signature takes the edited values,
+// and a rebuild requested while the edit commits (the module header update
+// relocating the panel) finds nothing changed and keeps the row, and the
+// slider being dragged in it
+static void _param_row_list_sig_follow(dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(bd) bd->masks_list_sig = dt_masks_gui_list_signature(module);
+}
+
 static void _param_row_slider_callback(GtkDarktableGradientSlider *slider,
                                        dt_masks_param_row_editor_t *ed)
 {
@@ -14286,6 +14306,7 @@ static void _param_row_slider_callback(GtkDarktableGradientSlider *slider,
   dt_develop_blendif_channels_t ch;
   dt_masks_point_parametric_t *p = _param_slider_target(ed, slider, &channels, &in_out, &ch);
   if(!p) return;
+  const gboolean list_current = _param_row_list_sig_current(ed->module);
 
   // a manual drag on this row's own slider means the user is done with
   // whatever range this row's picker last set -- turn the picker off so it
@@ -14321,6 +14342,7 @@ static void _param_row_slider_callback(GtkDarktableGradientSlider *slider,
   // the history item may rebuild the list, freeing ed with its row
   dt_iop_module_t *module = ed->module;
   const dt_mask_id_t formid = ed->formid;
+  if(list_current) _param_row_list_sig_follow(module);
   _param_form_commit(module, formid);
   ed = _param_row_editor(module->blend_data, formid);
   if(ed) _update_param_row_visibility(ed);
@@ -14338,6 +14360,7 @@ static void _param_row_slider_reset_callback(GtkDarktableGradientSlider *slider,
   dt_develop_blendif_channels_t ch;
   dt_masks_point_parametric_t *p = _param_slider_target(ed, slider, &channels, &in_out, &ch);
   if(!p) return;
+  const gboolean list_current = _param_row_list_sig_current(ed->module);
 
   // reset always clears polarity back to "not inverted" for this channel; the
   // element's own invert (see _invert_element) is what actually flips it
@@ -14356,6 +14379,7 @@ static void _param_row_slider_reset_callback(GtkDarktableGradientSlider *slider,
   // the history item may rebuild the list, freeing ed with its row
   dt_iop_module_t *module = ed->module;
   const dt_mask_id_t formid = ed->formid;
+  if(list_current) _param_row_list_sig_follow(module);
   _param_form_commit(module, formid);
   ed = _param_row_editor(module->blend_data, formid);
   if(ed) _update_param_row_display(ed);
