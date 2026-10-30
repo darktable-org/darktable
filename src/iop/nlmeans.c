@@ -265,8 +265,10 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const size_t bwidth = ROUNDUP(width, hblocksize);
   const size_t bheight = ROUNDUP(height, vblocksize);
 
+  // each pass also adds the mirrored offset -q, so the row j = 0 stops at
+  // i = 0: its right half is the mirror of its left half
   for(int j = -K; j <= 0; j++)
-    for(int i = -K; i <= K; i++)
+    for(int i = -K; i <= (j < 0 ? K : 0); i++)
     {
       const int q[2] = { i, j };
 
