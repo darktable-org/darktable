@@ -792,6 +792,9 @@ changes (where available).
   results in a band along the edges. Edits using them may look
   slightly different near the edges.
 
+- Fixed PPG demosaic with an edge threshold giving different pixels
+  along the image edges with OpenCL than on the CPU.
+
 ## Lua
 
 ### API Version
