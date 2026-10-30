@@ -244,7 +244,7 @@ changes (where available).
   is now asked for its corrections on a coarse grid instead of for
   every pixel, so the CPU no longer computes and uploads hundreds of
   megabytes on each run. The correction is also more precise on x86,
-  where it could be up to 0.3 px off.
+  where it could be up to 0.3 px off, or 0.6 px when distorting.
 
 ## Other Changes
 
