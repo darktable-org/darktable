@@ -583,8 +583,9 @@ static void _remove_in(const char *dir,
 
 /* pack_format 3: the declaration decides which files are tables and which one
    is the default, the headers decide their identity. The default comes first
-   whatever its position in the declaration, and an entry naming a path
-   outside the pack is not a table */
+   whatever its position in the declaration, and an entry whose file names a
+   path rather than a bare file name is not a table. The table it names exists
+   and is valid, so only the path check can be what rejects it */
 static void test_peek_tables_reads_a_format_3_declaration(void **state)
 {
   (void)state;
@@ -599,12 +600,16 @@ static void test_peek_tables_reads_a_format_3_declaration(void **state)
               " { \"identifier\": \"second\", \"kind\": \"reflectance\","
               "   \"scene_illuminant\": \"D65\", \"file\": \"second.f32\","
               "   \"default\": true },"
-              " { \"identifier\": \"escape\", \"kind\": \"irradiance\","
-              "   \"file\": \"../first.f32\" } ] }");
+              " { \"identifier\": \"nested\", \"kind\": \"irradiance\","
+              "   \"file\": \"sub/third.f32\" } ] }");
   char *first = g_build_filename(dir, "first.f32", NULL);
   char *second = g_build_filename(dir, "second.f32", NULL);
+  char *subdir = g_build_filename(dir, "sub", NULL);
+  char *third = g_build_filename(subdir, "third.f32", NULL);
   _write_table_header(first, 0x11111111u, "first_id");
   _write_table_header(second, 0x22222222u, "second_id");
+  assert_int_equal(g_mkdir(subdir, 0700), 0);
+  _write_table_header(third, 0x33333333u, "third_id");
 
   sf_table_info_t info[SF_MAX_TABLES];
   const int n = sf_pack_peek_tables(dir, info, SF_MAX_TABLES);
@@ -617,10 +622,14 @@ static void test_peek_tables_reads_a_format_3_declaration(void **state)
   assert_int_equal(info[1].lut_hash, 0x11111111u);
   assert_int_equal(info[1].kind, SF_LUT_IRRADIANCE);
 
+  g_remove(third);
+  g_rmdir(subdir);
   g_remove(first);
   g_remove(second);
   _remove_in(dir, "pack.json");
   g_rmdir(dir);
+  g_free(third);
+  g_free(subdir);
   g_free(first);
   g_free(second);
   g_free(dir);
