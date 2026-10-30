@@ -253,7 +253,7 @@ static int _set_grad_from_points(
   int iter = 0;
   do
   {
-    v = (v1 + v2) / 2.0;
+    v = (v1 + v2) / 2.0f;
     sinv = sinf(v), cosv = cosf(v);
     r = pts[1] * cosv - pts[0] * sinv + pts[2] * sinv - pts[3] * cosv;
 
@@ -349,7 +349,7 @@ static int _set_points_from_grad(
     }
     else
     {
-      pts[0] = pts[2] = wp * (1.0 - offset / 100.0f);
+      pts[0] = pts[2] = wp * (1.0f - offset / 100.0f);
       pts[1] = hp * 0.1f;
       pts[3] = hp * 0.9f;
     }
@@ -388,10 +388,10 @@ static int _set_points_from_grad(
     }
 
     // we want extremities not to be on image border
-    xx2 -= (xx2 - xx1) * 0.1;
-    xx1 += (xx2 - xx1) * 0.1;
-    yy2 -= (yy2 - yy1) * 0.1;
-    yy1 += (yy2 - yy1) * 0.1;
+    xx2 -= (xx2 - xx1) * 0.1f;
+    xx1 += (xx2 - xx1) * 0.1f;
+    yy2 -= (yy2 - yy1) * 0.1f;
+    yy1 += (yy2 - yy1) * 0.1f;
 
     if(rotation < 90.0f && rotation > -90.0f)
     {
@@ -446,7 +446,7 @@ static int _set_points_from_grad(
 static inline void _update_saturation_slider_end_color(GtkWidget *slider, const float hue)
 {
   dt_aligned_pixel_t rgb;
-  hsl2rgb(rgb, hue, 1.0, 0.5);
+  hsl2rgb(rgb, hue, 1.0f, 0.5f);
   dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
 }
 
@@ -760,8 +760,8 @@ void process(dt_iop_module_t *self,
     return;	// input buffer has been copied to output unchanged and the trouble flag set
 
   const dt_iop_graduatednd_data_t *const data = (const dt_iop_graduatednd_data_t *const)piece->data;
-  const int ix = (roi_in->x);
-  const int iy = (roi_in->y);
+  const int ix = roi_in->x;
+  const int iy = roi_in->y;
   const float iw = piece->buf_in.width * roi_out->scale;
   const float ih = piece->buf_in.height * roi_out->scale;
   const float hw = iw / 2.0f;
@@ -797,19 +797,17 @@ void process(dt_iop_module_t *self,
       const float *const restrict in = (float *)ivoid + k;
       float *const restrict out = (float *)ovoid + k;
 
-      float length = (length_base - (iy + y) * cosv_hh_inv) * filter_hardness;
-      const dt_aligned_pixel_t counts = { 0.0f, 1.0f, 2.0f, 3.0f };
+      const float row_length = (length_base - (iy + y) * cosv_hh_inv) * filter_hardness;
 
       // process pixels four at a time so that the compiler can
       // vectorize the density computation
       for(int x = 0; x+3 < width; x += 4)
       {
         dt_aligned_pixel_t curr_density;
-        dt_aligned_pixel_t lengths;
         for_four_channels(i)
         {
-          lengths[i] = length + counts[i] * length_inc;
-          curr_density[i] = _compute_density(density, lengths[i]);
+          const float length = row_length + (float)(x + i) * length_inc;
+          curr_density[i] = _compute_density(density, length);
         }
         for(int i = 0; i < 4; i++)
         {
@@ -821,11 +819,11 @@ void process(dt_iop_module_t *self,
           // use streaming writes to eliminate the memory reads from loading cache lines
           copy_pixel_nontemporal(out + 4*(x+i), res);
         }
-        length += 4 * length_inc;
       }
       // handle the left-over pixels
       for(int x = width & ~3; x < width; x++)
       {
+        const float length = row_length + (float)x * length_inc;
         const float curr_density = _compute_density(density, length);
         dt_aligned_pixel_t res;	// the compiler will optimize this into a register
         for_each_channel(l, aligned(in : 16))
@@ -834,7 +832,6 @@ void process(dt_iop_module_t *self,
         }
         // use streaming writes to eliminate the memory reads from loading cache lines
         copy_pixel_nontemporal(out + 4*x, res);
-        length += length_inc;
       }
     }
     // ensure that the nontemporal writes have finished before continuing
@@ -848,19 +845,17 @@ void process(dt_iop_module_t *self,
       const size_t k = (size_t)4 * width * y;
       const float *const restrict in = (float *)ivoid + k;
       float *const restrict out = (float *)ovoid + k;
-      float length = (length_base - (iy + y) * cosv_hh_inv) * filter_hardness;
-      const dt_aligned_pixel_t counts = { 0.0f, 1.0f, 2.0f, 3.0f };
+      const float row_length = (length_base - (iy + y) * cosv_hh_inv) * filter_hardness;
 
       // process pixels four at a time so that the compiler can
       // vectorize the density computation
       for(int x = 0; x+3 < width; x += 4)
       {
         dt_aligned_pixel_t curr_density;
-        dt_aligned_pixel_t lengths;
         for_four_channels(i)
         {
-          lengths[i] = -(length + counts[i] * length_inc);
-          curr_density[i] = _compute_density(-density, lengths[i]);
+          const float length = row_length + (float)(x + i) * length_inc;
+          curr_density[i] = _compute_density(-density, -length);
         }
         for(int i = 0; i < 4; i++)
         {
@@ -872,11 +867,11 @@ void process(dt_iop_module_t *self,
           // use streaming writes to eliminate the memory reads from loading cache lines
           copy_pixel_nontemporal(out + 4*(x+i), res);
         }
-        length += 4*length_inc;
       }
       // handle the left-over pixels
       for(int x = width & ~3; x < width; x++)
       {
+        const float length = row_length + (float)x * length_inc;
         const float curr_density = _compute_density(-density, -length);
         dt_aligned_pixel_t res;	// the compiler will optimize this into a register
         for_each_channel(l, aligned(in : 16))
@@ -885,7 +880,6 @@ void process(dt_iop_module_t *self,
         }
         // use streaming writes to eliminate the memory reads from loading cache lines
         copy_pixel_nontemporal(out + 4*x, res);
-        length += length_inc;
       }
     }
     // ensure that the nontemporal writes have finished before continuing
@@ -911,8 +905,8 @@ int process_cl(dt_iop_module_t *self,
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  const int ix = (roi_in->x);
-  const int iy = (roi_in->y);
+  const int ix = roi_in->x;
+  const int iy = roi_in->y;
   const float iw = piece->buf_in.width * roi_out->scale;
   const float ih = piece->buf_in.height * roi_out->scale;
   const float hw = iw / 2.0f;
@@ -929,7 +923,7 @@ int process_cl(dt_iop_module_t *self,
   const float filter_hardness = (1.0f / filter_radie)
                                 / (1.0f - (0.5f + (data->hardness / 100.0f) * 0.9f / 2.0f)) * 0.5f;
 
-  const float length_base = (sinv * (-1.0 + ix * hw_inv) - cosv * (-1.0f + iy * hh_inv) - 1.0f + offset)
+  const float length_base = (sinv * (-1.0f + ix * hw_inv) - cosv * (-1.0f + iy * hh_inv) - 1.0f + offset)
                             * filter_hardness;
   const float length_inc_y = -cosv * hh_inv * filter_hardness;
   const float length_inc_x = sinv * hw_inv * filter_hardness;
@@ -989,7 +983,7 @@ void commit_params(dt_iop_module_t *self,
   d->rotation = p->rotation;
   d->offset = p->offset;
 
-  hsl2rgb(d->color, p->hue, p->saturation, 0.5);
+  hsl2rgb(d->color, p->hue, p->saturation, 0.5f);
   d->color[3] = 0.0f;
 
   if(d->density < 0)
