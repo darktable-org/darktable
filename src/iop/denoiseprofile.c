@@ -2095,9 +2095,11 @@ static int process_nlmeans_cl(dt_iop_module_t *self,
   size_t sizesl[2];
   size_t local[2];
 
+  // each pass also adds the mirrored offset -q, so the row kj_index = 0
+  // stops at ki_index = 0: its right half is the mirror of its left half
   for(int kj_index = -K; kj_index <= 0; kj_index++)
   {
-    for(int ki_index = -K; ki_index <= K; ki_index++)
+    for(int ki_index = -K; ki_index <= (kj_index < 0 ? K : 0); ki_index++)
     {
       // This formula is made for:
       // - ensuring that j = kj_index and i = ki_index when d->scattering is 0
