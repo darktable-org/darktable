@@ -581,6 +581,10 @@ changes (where available).
   being missing from the image's XMP sidecar while the library kept
   them.
 
+- Fixed tethered additional properties: user-added entries can be removed
+  or replaced (same label), the O property picker works more than once,
+  and unloadable saved properties show as deletable unavailable stubs.
+
 - Fixed an unexpected image change in AgX when disabling 'keep the pivot
   on the diagonal' after using 'read exposure from metadata and exposure
   module'.
