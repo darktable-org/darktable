@@ -764,7 +764,7 @@ border_interpolate(read_only image2d_t in, write_only image2d_t out, const int w
   if(x >= width || y >= height) return;
   if(x >= 3 && x < width-3 && y >= 3 && y < height-3) return;
 
-  float4 o;
+  float4 o = (float4)(0.0f);
   float sum[4] = { 0.0f };
   int count[4] = { 0 };
 
