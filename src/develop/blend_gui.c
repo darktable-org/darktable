@@ -14318,11 +14318,15 @@ static void _param_row_slider_callback(GtkDarktableGradientSlider *slider,
   else
     p->blendif |= (1 << ch);
 
-  _param_form_commit(ed->module, ed->formid);
-  _update_param_row_visibility(ed);
+  // the history item may rebuild the list, freeing ed with its row
+  dt_iop_module_t *module = ed->module;
+  const dt_mask_id_t formid = ed->formid;
+  _param_form_commit(module, formid);
+  ed = _param_row_editor(module->blend_data, formid);
+  if(ed) _update_param_row_visibility(ed);
   // a drag can take the range to or from the full span, which does nothing:
   // refresh the badges in place, as an opacity drag does
-  _refresh_lowop_badges(ed->module);
+  _refresh_lowop_badges(module);
 }
 
 static void _param_row_slider_reset_callback(GtkDarktableGradientSlider *slider,
@@ -14340,11 +14344,6 @@ static void _param_row_slider_reset_callback(GtkDarktableGradientSlider *slider,
   p->blendif &= ~(1 << (16 + ch));
   p->disabled &= ~(1u << in_out);
 
-  _param_form_commit(ed->module, ed->formid);
-  _update_param_row_display(ed);
-  // a reset routinely lands this element's range back at the no-op full
-  // span -- see the matching comment on _param_row_slider_callback above
-  _refresh_lowop_badges(ed->module);
   // the row's pickers are deferred (DT_COLOR_PICKER_DEFERRED_AREA) and resume
   // from the box they last sampled; after a reset the next pick waits for a
   // new box instead
@@ -14353,6 +14352,16 @@ static void _param_row_slider_reset_callback(GtkDarktableGradientSlider *slider,
     dt_iop_color_picker_forget(ed->colorpicker_set_values[i]);
     dt_iop_color_picker_forget(ed->colorpicker[i]);
   }
+
+  // the history item may rebuild the list, freeing ed with its row
+  dt_iop_module_t *module = ed->module;
+  const dt_mask_id_t formid = ed->formid;
+  _param_form_commit(module, formid);
+  ed = _param_row_editor(module->blend_data, formid);
+  if(ed) _update_param_row_display(ed);
+  // a reset routinely lands this element's range back at the no-op full
+  // span -- see the matching comment on _param_row_slider_callback above
+  _refresh_lowop_badges(module);
 }
 
 // a range slider (see _build_param_row_filter) has no equivalent of a bauhaus
