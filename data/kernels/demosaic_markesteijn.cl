@@ -19,7 +19,6 @@
 #include "common.h"
 
 #define HOMOGENITY_EPS 1e-10f
-#define SOLITARY_EPS 1e-12f
 
 // directions along the both axes and both diagonals
 constant const char2 dir[4] = { (char2)(1, 0), (char2)(0, 1), (char2)(1, 1), (char2)(-1, 1) };
@@ -119,7 +118,7 @@ markesteijn_green_minmax(global float *rgb, global float *gminmax, const int wid
 
   // get min/max of *this* pixel
   float gmin = FLT_MAX;
-  float gmax = FLT_MIN;
+  float gmax = 0.0f;
   global const char2 *const hex = allhex[y % 3][x % 3];
   for(int c = 0; c < 6; c++)
   {
@@ -338,7 +337,7 @@ markesteijn_solitary_green(global float *rgb, global float *aux, const int width
   color[3] = diff;
 
   if((d > 1) && (d & 1))
-    for(int c = 0; c < 2; c++) color[c * 2] = (ocolor[3] + SOLITARY_EPS < diff) ? ocolor[c * 2] : color[c * 2];
+    for(int c = 0; c < 2; c++) color[c * 2] = (ocolor[3] < diff) ? ocolor[c * 2] : color[c * 2];
 
   if((d < 2) || (d & 1))
     for(int c = 0; c < 2; c++) rgb[c * 2] = color[c * 2] / 2.0f;
@@ -369,25 +368,24 @@ markesteijn_recalculate_green(global float *rgb_0, global float *rgb_1, global f
   // we only work on non-green pixels
   if(f == GREEN) return;
 
+  const int pix = 2* mad24(y, width, x);
   // receive min/max of this pixel
-  const float gmin = (gminmax + 2 * mad24(y, width, x))[0];
-  const float gmax = (gminmax + 2 * mad24(y, width, x))[1];
+  const float gmin = (gminmax + pix)[0];
+  const float gmax = (gminmax + pix)[1];
 
   global const char2 *const hex = allhex[y % 3][x % 3];
-
-  const int glidx = 4 * mad24(y, width, x);
 
   for(int d = 3; d < 6; d++)
   {
     const int id = (d - 2) ^ (!((y - sgreen.y) % 3) ? 1 : 0);
-    global float *rfx = rgb[id] + glidx;
+    global float *rfx = rgb[id] + 2*pix;
     const float val = (rfx - 2 * hexidx4(hex[d], width))[1]
                        + 2.0f * (rfx + hexidx4(hex[d], width))[1]
                        - (rfx - 2 * hexidx4(hex[d], width))[f]
                        - 2.0f * (rfx + hexidx4(hex[d], width))[f]
                        + 3.0f * (rfx)[f];
 
-    rfx[1] = clamp(val / 3.0f, gmin, gmax);
+    rfx[1] = clamp(fp32_div(val, 3.0f), gmin, gmax);
   }
 }
 

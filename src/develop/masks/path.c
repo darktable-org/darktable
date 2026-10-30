@@ -42,6 +42,7 @@ typedef struct
   GList *baseline;     // deep copy of the original points (offset 0); owns its data
   GHashTable *results; // key: quantized signed offset px → GList* (deep copy)
   float offset_px;     // signed offset currently applied to the baseline
+  guint settings;      // the tracing settings the cached results were made with
 } _resize_state_t;
 
 // Cache key quantization: 1/16 image-pixel buckets (offsets are integer px or a
@@ -553,48 +554,6 @@ static void _path_catmull_to_bezier(const float x1,
   *by1 = (-y1 + 6 * y2 + y3) / 6;
   *bx2 = (x2 + 6 * x3 - x4) / 6;
   *by2 = (y2 + 6 * y3 - y4) / 6;
-}
-
-// Clamp a Bezier handle so it doesn't extend past the chord length of its edge.
-// This prevents visual loops when two nodes are very close but their Catmull-Rom
-// handles (derived from far neighbors) are much longer than the chord.
-static void
-_clamp_bezier_handle(float *hx, float *hy, const float px, const float py, const float cl2)
-{
-  const float dx = *hx - px, dy = *hy - py;
-  const float hl2 = sqf(dx) + sqf(dy);
-  if(hl2 > cl2 && hl2 > 1e-18f)
-  {
-    const float s = sqrtf(cl2 / hl2);
-    *hx = px + dx * s;
-    *hy = py + dy * s;
-  }
-}
-
-// Clamp all auto-computed Bezier handles to their edge's chord length.
-// Only call this after re-vectorization (potrace output), where Catmull-Rom
-// handles derived from densely-packed nodes can exceed the chord and cause
-// visible self-intersecting loops. Do NOT call it unconditionally from
-// _path_init_ctrl_points — that would silently alter carefully hand-crafted
-// masks whose intentional curvature exceeds the chord.
-static void _path_clamp_ctrl_points(dt_masks_form_t *form)
-{
-  const guint nb = g_list_length(form->points);
-  if(nb < 2)
-    return;
-  const GList *l = form->points;
-  for(guint k = 0; k < nb; k++)
-  {
-    dt_masks_point_path_t *cur = l->data;
-    const GList *next_l = g_list_next_wraparound(l, form->points);
-    dt_masks_point_path_t *next = next_l->data;
-    const float cx = next->corner[0] - cur->corner[0];
-    const float cy = next->corner[1] - cur->corner[1];
-    const float cl2 = sqf(cx) + sqf(cy);
-    _clamp_bezier_handle(&cur->ctrl2[0], &cur->ctrl2[1], cur->corner[0], cur->corner[1], cl2);
-    _clamp_bezier_handle(&next->ctrl1[0], &next->ctrl1[1], next->corner[0], next->corner[1], cl2);
-    l = g_list_next(l);
-  }
 }
 
 /** initialise all control points to eventually match a catmull-rom
@@ -2074,12 +2033,54 @@ static void _resize_state_free(gpointer data)
 }
 
 // Drop the resize baseline + result cache for a form. Called whenever the shape
-// is changed by something other than a resize (node edits, deletion), so the
-// next resize re-captures a fresh baseline from the edited shape.
+// is changed by something other than a resize or a move (node edits, deletion),
+// so the next resize re-captures a fresh baseline from the edited shape.
 static void _resize_state_invalidate(const dt_mask_id_t formid)
 {
   if(_resize_states)
     g_hash_table_remove(_resize_states, GINT_TO_POINTER(formid));
+}
+
+static void _translate_points(const GList *points, const float dx, const float dy)
+{
+  for(const GList *l = points; l; l = g_list_next(l))
+  {
+    dt_masks_point_path_t *pt = l->data;
+    pt->corner[0] += dx;
+    pt->corner[1] += dy;
+    pt->ctrl1[0] += dx;
+    pt->ctrl1[1] += dy;
+    pt->ctrl2[0] += dx;
+    pt->ctrl2[1] += dy;
+  }
+}
+
+// A move of the whole path carries its baseline and the shapes kept for it
+// along, so it keeps the offset it has and going back to 0 restores the
+// original outline where the path now is. Dropping them instead would make the
+// moved outline the new 0, and with it any click on the shape that releases
+// without moving.
+void dt_masks_path_resize_follow_move(const dt_mask_id_t formid, const float dx, const float dy)
+{
+  _resize_state_t *st =
+    _resize_states ? g_hash_table_lookup(_resize_states, GINT_TO_POINTER(formid)) : NULL;
+  if(!st) return;
+
+  _translate_points(st->baseline, dx, dy);
+  GHashTableIter it;
+  gpointer shape;
+  g_hash_table_iter_init(&it, st->results);
+  while(g_hash_table_iter_next(&it, NULL, &shape))
+    _translate_points(shape, dx, dy);
+}
+
+// The settings a morph depends on, so that a cached result made under others is
+// not handed back after the user changed them.
+static guint _resize_settings(void)
+{
+  guint h = g_str_hash(dt_conf_get_string_const("masks/path_resize_resolution"));
+  h = h * 31 + g_str_hash(dt_conf_get_string_const("masks/path_resize_curve_smoothing"));
+  return h;
 }
 
 // Fetch (lazily creating) the resize state for a form, capturing the current
@@ -2098,6 +2099,7 @@ static _resize_state_t *_resize_state_get(dt_masks_form_t *form)
     st->baseline = _copy_points(form->points);
     st->results = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, _resize_result_free);
     st->offset_px = 0.0f;
+    st->settings = _resize_settings();
     g_hash_table_insert(_resize_states, GINT_TO_POINTER(form->formid), st);
   }
   return st;
@@ -2175,36 +2177,46 @@ static void _edt_compute(const int *seeds, int *dist2, const int rw, const int r
 
   // ── Phase 1: per-column vertical distances (squared) ──────────────────────
   // dist2[y*rw+x] ← (min vertical distance from (x,y) to any seed in column x)^2
+  // Walking one column at a time strides a whole row of memory per step, which
+  // dominates the transform. Instead a thread takes a band of columns and runs
+  // down it row by row, carrying the distance of each column of the band, so
+  // every access is to a few contiguous cache lines.
+  enum { BAND = 64 };
   DT_OMP_FOR()
-  for(int x = 0; x < rw; x++)
+  for(int x0 = 0; x0 < rw; x0 += BAND)
   {
+    const int x1 = MIN(rw, x0 + BAND);
+    int d[BAND];
+
     // forward scan: distance to nearest seed above
-    int d = INF;
+    for(int x = x0; x < x1; x++)
+      d[x - x0] = INF;
     for(int y = 0; y < rh; y++)
-    {
-      if(seeds[y * rw + x])
-        d = 0;
-      else if(d < INF)
-        d++;
-      dist2[y * rw + x] = d;
-    }
-    // backward scan: update with distance to nearest seed below
-    d = INF;
-    for(int y = rh - 1; y >= 0; y--)
-    {
-      if(seeds[y * rw + x])
-        d = 0;
-      else if(d < INF)
-        d++;
-      if(d < dist2[y * rw + x])
-        dist2[y * rw + x] = d;
-    }
+      for(int x = x0; x < x1; x++)
+      {
+        int *c = &d[x - x0];
+        if(seeds[(size_t)y * rw + x])
+          *c = 0;
+        else if(*c < INF)
+          (*c)++;
+        dist2[(size_t)y * rw + x] = *c;
+      }
+
+    // backward scan: update with the distance to nearest seed below, and
     // square the vertical distances
-    for(int y = 0; y < rh; y++)
-    {
-      const int v = dist2[y * rw + x];
-      dist2[y * rw + x] = (v < INF) ? v * v : INF * INF;
-    }
+    for(int x = x0; x < x1; x++)
+      d[x - x0] = INF;
+    for(int y = rh - 1; y >= 0; y--)
+      for(int x = x0; x < x1; x++)
+      {
+        int *c = &d[x - x0];
+        if(seeds[(size_t)y * rw + x])
+          *c = 0;
+        else if(*c < INF)
+          (*c)++;
+        const int v = MIN(*c, dist2[(size_t)y * rw + x]);
+        dist2[(size_t)y * rw + x] = (v < INF) ? v * v : INF * INF;
+      }
   }
 
   // ── Phase 2: per-row parabola envelope → full 2D squared distances ────────
@@ -2524,153 +2536,371 @@ _path_morph_edt(const float *mask, const int rw, const int rh, const float r_flo
   return morphed;
 }
 
-// Squared distance from point p to the infinite line through a and b.
-static double _point_line_dist2(const double px,
-                                const double py,
-                                const double ax,
-                                const double ay,
-                                const double bx,
-                                const double by)
+typedef struct _v2_t
 {
-  const double dx = bx - ax, dy = by - ay;
-  const double len2 = dx * dx + dy * dy;
-  if(len2 < 1e-12)
-  {
-    const double ex = px - ax, ey = py - ay;
-    return ex * ex + ey * ey;
-  }
-  const double cross = (px - ax) * dy - (py - ay) * dx;
-  return (cross * cross) / len2;
+  double x, y;
+} _v2_t;
+
+static inline _v2_t _v2_sub(const _v2_t a, const _v2_t b)
+{
+  return (_v2_t){ a.x - b.x, a.y - b.y };
 }
 
-// Ramer–Douglas–Peucker on the open polyline xs/ys[lo..hi]: keep the point
-// farthest from the lo–hi chord if it exceeds the tolerance, then recurse.
-static void _rdp(
-  const double *xs, const double *ys, const int lo, const int hi, const double eps2, gboolean *keep)
+static inline double _v2_dot(const _v2_t a, const _v2_t b)
 {
-  if(hi <= lo + 1)
-    return;
-
-  double maxd = 0.0;
-  int idx = -1;
-  for(int i = lo + 1; i < hi; i++)
-  {
-    const double d = _point_line_dist2(xs[i], ys[i], xs[lo], ys[lo], xs[hi], ys[hi]);
-    if(d > maxd)
-    {
-      maxd = d;
-      idx = i;
-    }
-  }
-
-  if(maxd > eps2 && idx > lo)
-  {
-    keep[idx] = TRUE;
-    _rdp(xs, ys, lo, idx, eps2, keep);
-    _rdp(xs, ys, idx, hi, eps2, keep);
-  }
+  return a.x * b.x + a.y * b.y;
 }
 
-// Thin a dense closed potrace boundary down to the nodes that actually carry the
-// shape, dropping points within `eps_px` of their neighbours' chord. Reuses the
-// surviving node structs (keeping their potrace bezier handles) and frees the
-// rest. Distances are measured on the corner positions only.
-static GList *_path_simplify_rdp(GList *points, const double eps_px)
+static inline double _v2_len(const _v2_t a)
 {
-  const int n = g_list_length(points);
-  if(n < 5 || eps_px <= 0.0)
-    return points; // nothing worth simplifying
+  return sqrt(_v2_dot(a, a));
+}
 
-  // gather coords; slot [n] wraps back to node 0 to close the loop
-  double *xs = malloc((size_t)(n + 1) * sizeof(double));
-  double *ys = malloc((size_t)(n + 1) * sizeof(double));
-  dt_masks_point_path_t **arr = malloc((size_t)n * sizeof(*arr));
-  gboolean *keep = calloc((size_t)(n + 1), sizeof(gboolean));
-  if(!xs || !ys || !arr || !keep)
+static inline _v2_t _v2_unit(const _v2_t a)
+{
+  const double l = _v2_len(a);
+  return l > 1e-12 ? (_v2_t){ a.x / l, a.y / l } : (_v2_t){ 0.0, 0.0 };
+}
+
+// Squared distance from p to the segment a-b.
+static double _v2_seg_dist2(const _v2_t p, const _v2_t a, const _v2_t b)
+{
+  const _v2_t ab = _v2_sub(b, a), ap = _v2_sub(p, a);
+  const double l2 = _v2_dot(ab, ab);
+  const double t = l2 > 0.0 ? CLAMP(_v2_dot(ap, ab) / l2, 0.0, 1.0) : 0.0;
+  const _v2_t d = { ap.x - t * ab.x, ap.y - t * ab.y };
+  return _v2_dot(d, d);
+}
+
+static inline _v2_t _q_at(const GArray *q, const int i)
+{
+  const int n = (int)q->len;
+  return g_array_index(q, _v2_t, ((i % n) + n) % n);
+}
+
+// Sample the closed bezier outline of a re-vectorized form (in raster pixels)
+// one pixel apart along its length. Potrace's handles make the speed along a
+// segment very uneven, so the curve is first sampled finely and then resampled
+// by arclength: the windows below count samples and expect them evenly spaced.
+static GArray *_path_flatten(const GList *points)
+{
+  GArray *fine = g_array_new(FALSE, FALSE, sizeof(_v2_t));
+  for(const GList *l = points; l; l = g_list_next(l))
   {
-    free(xs);
-    free(ys);
-    free(arr);
-    free(keep);
-    return points;
-  }
-
-  int i = 0;
-  for(GList *l = points; l; l = g_list_next(l), i++)
-  {
-    dt_masks_point_path_t *p = l->data;
-    arr[i] = p;
-    xs[i] = p->corner[0];
-    ys[i] = p->corner[1];
-  }
-  xs[n] = xs[0];
-  ys[n] = ys[0];
-
-  // Anchor the closed loop on node 0 and the node farthest from it, then run
-  // RDP on each of the two arcs between the anchors.
-  keep[0] = TRUE;
-  int far_idx = 0;
-  double far_d = -1.0;
-  for(int k = 1; k < n; k++)
-  {
-    const double dx = xs[k] - xs[0], dy = ys[k] - ys[0];
-    const double d = dx * dx + dy * dy;
-    if(d > far_d)
-    {
-      far_d = d;
-      far_idx = k;
-    }
-  }
-  keep[far_idx] = TRUE;
-
-  const double eps2 = eps_px * eps_px;
-  _rdp(xs, ys, 0, far_idx, eps2, keep);
-  _rdp(xs, ys, far_idx, n, eps2, keep);
-
-  int kept = 0;
-  for(int k = 0; k < n; k++)
-    if(keep[k])
-      kept++;
-
-  GList *out;
-  if(kept >= 4)
-  {
-    out = NULL;
+    const dt_masks_point_path_t *a = l->data;
+    const dt_masks_point_path_t *b = g_list_next_wraparound(l, points)->data;
+    const _v2_t p0 = { a->corner[0], a->corner[1] }, p1 = { a->ctrl2[0], a->ctrl2[1] };
+    const _v2_t p2 = { b->ctrl1[0], b->ctrl1[1] }, p3 = { b->corner[0], b->corner[1] };
+    const double len = _v2_len(_v2_sub(p1, p0)) + _v2_len(_v2_sub(p2, p1)) + _v2_len(_v2_sub(p3, p2));
+    const int n = CLAMP((int)ceil(4.0 * len), 4, 16384);
     for(int k = 0; k < n; k++)
     {
-      if(keep[k])
-        out = g_list_prepend(out, arr[k]);
-      else
-        free(arr[k]);
+      const double t = (double)k / n, u = 1.0 - t;
+      const double w0 = u * u * u, w1 = 3.0 * u * u * t, w2 = 3.0 * u * t * t, w3 = t * t * t;
+      const _v2_t p = { w0 * p0.x + w1 * p1.x + w2 * p2.x + w3 * p3.x,
+                        w0 * p0.y + w1 * p1.y + w2 * p2.y + w3 * p3.y };
+      g_array_append_val(fine, p);
     }
-    out = g_list_reverse(out);
-    g_list_free(points); // link nodes only; data is reused or freed above
+  }
 
-    dt_print(DT_DEBUG_MASKS, "[masks path] simplify: %d → %d pts (eps=%.1fpx)", n, kept, eps_px);
+  GArray *q = g_array_new(FALSE, FALSE, sizeof(_v2_t));
+  const int nf = (int)fine->len;
+  double next = 0.0, walked = 0.0;
+  for(int i = 0; i < nf; i++)
+  {
+    const _v2_t a = _q_at(fine, i), b = _q_at(fine, i + 1);
+    const double seg = _v2_len(_v2_sub(b, a));
+    while(next <= walked + seg && seg > 0.0)
+    {
+      const double t = (next - walked) / seg;
+      const _v2_t p = { a.x + t * (b.x - a.x), a.y + t * (b.y - a.y) };
+      g_array_append_val(q, p);
+      next += 1.0;
+    }
+    walked += seg;
+  }
+  g_array_free(fine, TRUE);
+  return q;
+}
+
+static double _outline_area2(const GArray *q)
+{
+  double a = 0.0;
+  for(int i = 0; i < (int)q->len; i++)
+  {
+    const _v2_t p = _q_at(q, i), n = _q_at(q, i + 1);
+    a += p.x * n.y - n.x * p.y;
+  }
+  return a;
+}
+
+static void _outline_reverse(GArray *q)
+{
+  for(guint i = 0, j = q->len - 1; i < j; i++, j--)
+  {
+    const _v2_t t = g_array_index(q, _v2_t, i);
+    g_array_index(q, _v2_t, i) = g_array_index(q, _v2_t, j);
+    g_array_index(q, _v2_t, j) = t;
+  }
+}
+
+// Directions the outline arrives at and leaves sample k along, measured over a
+// pixel or two: the outline is a smooth potrace curve, not the staircase of the
+// raster, and a longer window would tilt the tangent where a straight edge
+// meets an arc. They are one
+// direction at a smooth node; at a sharp corner they differ, which is what
+// keeps the corner when the handles are fitted.
+static void _outline_tangents(const GArray *q, const int k, _v2_t *tin, _v2_t *tout)
+{
+  const double window = 1.5;
+  const int maxsteps = (int)q->len / 4;
+  int back = k, fwd = k;
+  double acc = 0.0;
+  for(int s = 0; s < maxsteps && acc < window; s++, back--)
+    acc += _v2_len(_v2_sub(_q_at(q, back), _q_at(q, back - 1)));
+  acc = 0.0;
+  for(int s = 0; s < maxsteps && acc < window; s++, fwd++)
+    acc += _v2_len(_v2_sub(_q_at(q, fwd + 1), _q_at(q, fwd)));
+
+  const _v2_t here = _q_at(q, k);
+  const _v2_t vin = _v2_unit(_v2_sub(here, _q_at(q, back)));
+  const _v2_t vout = _v2_unit(_v2_sub(_q_at(q, fwd), here));
+  if(_v2_dot(vin, vout) < 0.82) // more than ~35 degrees: a corner
+  {
+    *tin = vin;
+    *tout = vout;
   }
   else
   {
-    out = points; // simplification was too aggressive — keep the original
+    *tin = *tout = _v2_unit(_v2_sub(_q_at(q, fwd), _q_at(q, back)));
   }
-
-  free(xs);
-  free(ys);
-  free(arr);
-  free(keep);
-  return out;
 }
 
-// Re-vectorize a binary mask back into path points via potrace, picking the
-// largest true outer ('+') boundary and thinning it with `eps_px`-tolerance RDP.
-// Coords are normalized to [0,1] and `mean_border` is stamped on every node;
-// handles are left invalid so the caller regenerates smooth Catmull-Rom ones.
+// Fit one cubic to the samples q[i0..i0+m], leaving q[i0] along `t0` and
+// arriving at q[i0+m] along `t1`, by least squares on the two handle lengths
+// (Schneider), refining the sample parameters a few times by Newton steps.
+// Returns the largest distance of a sample from the fitted curve and where it
+// is, as an offset in 1..m-1 from i0.
+static double _fit_span(const GArray *q,
+                        const int i0,
+                        const int m,
+                        const _v2_t t0,
+                        const _v2_t t1,
+                        double *h0,
+                        double *h1,
+                        int *worst)
+{
+  const _v2_t p0 = _q_at(q, i0), p3 = _q_at(q, i0 + m);
+  const double chord = _v2_len(_v2_sub(p3, p0));
+  double *u = g_malloc((size_t)(m + 1) * sizeof(double));
+  u[0] = 0.0;
+  for(int k = 1; k <= m; k++)
+    u[k] = u[k - 1] + _v2_len(_v2_sub(_q_at(q, i0 + k), _q_at(q, i0 + k - 1)));
+  const double total = u[m] > 0.0 ? u[m] : 1.0;
+  for(int k = 0; k <= m; k++)
+    u[k] /= total;
+
+  double a1 = chord / 3.0, a2 = chord / 3.0;
+  _v2_t c1 = p0, c2 = p3;
+  for(int pass = 0; pass < 4; pass++)
+  {
+    double c00 = 0.0, c01 = 0.0, c11 = 0.0, x0 = 0.0, x1 = 0.0;
+    for(int k = 0; k <= m; k++)
+    {
+      const double t = u[k], v = 1.0 - t;
+      const double b0 = v * v * v, b1 = 3.0 * v * v * t, b2 = 3.0 * v * t * t, b3 = t * t * t;
+      const _v2_t e1 = { t0.x * b1, t0.y * b1 }, e2 = { -t1.x * b2, -t1.y * b2 };
+      const _v2_t qk = _q_at(q, i0 + k);
+      const _v2_t r = { qk.x - (b0 + b1) * p0.x - (b2 + b3) * p3.x,
+                        qk.y - (b0 + b1) * p0.y - (b2 + b3) * p3.y };
+      c00 += _v2_dot(e1, e1);
+      c01 += _v2_dot(e1, e2);
+      c11 += _v2_dot(e2, e2);
+      x0 += _v2_dot(e1, r);
+      x1 += _v2_dot(e2, r);
+    }
+    const double det = c00 * c11 - c01 * c01;
+    a1 = a2 = chord / 3.0;
+    if(fabs(det) > 1e-12)
+    {
+      const double s1 = (x0 * c11 - x1 * c01) / det, s2 = (c00 * x1 - c01 * x0) / det;
+      // a handle that comes out negative or tiny would fold the curve back
+      if(s1 > 1e-3 * chord && s2 > 1e-3 * chord)
+      {
+        a1 = fmin(s1, chord);
+        a2 = fmin(s2, chord);
+      }
+    }
+    c1 = (_v2_t){ p0.x + a1 * t0.x, p0.y + a1 * t0.y };
+    c2 = (_v2_t){ p3.x - a2 * t1.x, p3.y - a2 * t1.y };
+
+    // Newton step on each sample's parameter, towards the curve's closest point
+    for(int k = 1; k < m; k++)
+    {
+      const double t = u[k], v = 1.0 - t;
+      const double b0 = v * v * v, b1 = 3.0 * v * v * t, b2 = 3.0 * v * t * t, b3 = t * t * t;
+      const _v2_t pt = { b0 * p0.x + b1 * c1.x + b2 * c2.x + b3 * p3.x,
+                         b0 * p0.y + b1 * c1.y + b2 * c2.y + b3 * p3.y };
+      const _v2_t d1 = { 3.0 * (v * v * (c1.x - p0.x) + 2.0 * v * t * (c2.x - c1.x) + t * t * (p3.x - c2.x)),
+                         3.0 * (v * v * (c1.y - p0.y) + 2.0 * v * t * (c2.y - c1.y) + t * t * (p3.y - c2.y)) };
+      const _v2_t d2 = { 6.0 * (v * (c2.x - 2.0 * c1.x + p0.x) + t * (p3.x - 2.0 * c2.x + c1.x)),
+                         6.0 * (v * (c2.y - 2.0 * c1.y + p0.y) + t * (p3.y - 2.0 * c2.y + c1.y)) };
+      const _v2_t diff = _v2_sub(pt, _q_at(q, i0 + k));
+      const double den = _v2_dot(d1, d1) + _v2_dot(diff, d2);
+      if(fabs(den) > 1e-12)
+        u[k] = CLAMP(t - _v2_dot(diff, d1) / den, u[k - 1], 1.0);
+    }
+  }
+  *h0 = a1;
+  *h1 = a2;
+
+  // distance of the samples to the fitted curve, itself sampled finely
+  enum { NB = 32 };
+  _v2_t bz[NB + 1];
+  for(int j = 0; j <= NB; j++)
+  {
+    const double t = (double)j / NB, v = 1.0 - t;
+    const double b0 = v * v * v, b1 = 3.0 * v * v * t, b2 = 3.0 * v * t * t, b3 = t * t * t;
+    bz[j] = (_v2_t){ b0 * p0.x + b1 * c1.x + b2 * c2.x + b3 * p3.x,
+                     b0 * p0.y + b1 * c1.y + b2 * c2.y + b3 * p3.y };
+  }
+  double worst2 = 0.0;
+  *worst = m / 2;
+  for(int k = 1; k < m; k++)
+  {
+    const _v2_t qk = _q_at(q, i0 + k);
+    double d2 = 1e30;
+    for(int j = 0; j < NB; j++)
+      d2 = fmin(d2, _v2_seg_dist2(qk, bz[j], bz[j + 1]));
+    if(d2 > worst2)
+    {
+      worst2 = d2;
+      *worst = k;
+    }
+  }
+  g_free(u);
+  return sqrt(worst2);
+}
+
+// Signed turn of the outline at sample k, between the way in and the way out
+// `w` samples away.
+static double _outline_bend(const GArray *q, const int k, const int w)
+{
+  const _v2_t a = _v2_sub(_q_at(q, k), _q_at(q, k - w)), b = _v2_sub(_q_at(q, k + w), _q_at(q, k));
+  return atan2(a.x * b.y - a.y * b.x, _v2_dot(a, b));
+}
+
+// The sample of q[i0..i0+m] (as an offset from i0) where the outline's bend
+// changes the most, e.g. where a straight edge runs into the arc of a rounded
+// corner, or 0 if it changes nowhere to speak of. A cubic cannot follow an arc
+// and a line at once, and splitting there is what lets each side fit on its own.
+// The change is judged against the span's own sharpest bend, so that it is found
+// as well on the wide arc of a large offset as on the tight one of a small one.
+static int _outline_break(const GArray *q, const int i0, const int m)
+{
+  const int w = 3;
+  if(m < 4 * w + 2)
+    return 0;
+
+  double peak = 0.0;
+  for(int k = w; k <= m - w; k++)
+    peak = fmax(peak, fabs(_outline_bend(q, i0 + k, w)));
+  if(peak < 0.004) // rad: the outline is straight, there is nothing to find
+    return 0;
+
+  double best = 0.3 * peak;
+  int at = 0;
+  for(int k = 2 * w; k <= m - 2 * w; k++)
+  {
+    const double jump = fabs(_outline_bend(q, i0 + k + w, w) - _outline_bend(q, i0 + k - w, w));
+    if(jump > best)
+    {
+      best = jump;
+      at = k;
+    }
+  }
+  return at;
+}
+
+// One fitted cubic of the outline: from sample `start` to `end`, leaving along
+// `t0` with handle length `h0` and arriving along `t1` with handle length `h1`.
+typedef struct _span_t
+{
+  int start, end;
+  _v2_t t0, t1;
+  double h0, h1;
+} _span_t;
+
+// Append to `spans` the cubics that follow the outline q[i0..i0+m] to within
+// `tol` pixels, splitting it wherever one cubic is not enough. Splitting is what
+// lets a few original nodes follow a shape that the offset has deformed, without
+// every re-trace choosing its own node set.
+static void _fit_split(const GArray *q,
+                       const int i0,
+                       const int m,
+                       const double tol,
+                       const int depth,
+                       GArray *spans)
+{
+  _span_t sp = { .start = i0 % (int)q->len, .end = (i0 + m) % (int)q->len };
+  _v2_t unused;
+  _outline_tangents(q, i0, &unused, &sp.t0);
+  _outline_tangents(q, i0 + m, &sp.t1, &unused);
+  int worst;
+  double err = _fit_span(q, i0, m, sp.t0, sp.t1, &sp.h0, &sp.h1, &worst);
+
+  if(err > tol)
+  {
+    // a nearly straight run can miss only because its end tangents are tilted by
+    // the curve that ends it. Aiming them along the chord is then a kink too
+    // small to see, and the run fits.
+    const _v2_t chord = _v2_unit(_v2_sub(_q_at(q, i0 + m), _q_at(q, i0)));
+    if(_v2_dot(chord, sp.t0) > 0.9986 && _v2_dot(chord, sp.t1) > 0.9986) // 3 degrees
+    {
+      _span_t alt = sp;
+      alt.t0 = alt.t1 = chord;
+      int w;
+      if(_fit_span(q, i0, m, alt.t0, alt.t1, &alt.h0, &alt.h1, &w) <= tol)
+      {
+        g_array_append_val(spans, alt);
+        return;
+      }
+    }
+  }
+
+  if(err > tol && m >= 8)
+  {
+    // the worst sample or the sharpest change of bend is where a cubic gives up,
+    // but on a jagged run that can peel off a sliver at a time: after a few
+    // tries halve the run, which always ends
+    const int brk = depth < 8 ? _outline_break(q, i0, m) : 0;
+    const int k = depth >= 8 ? m / 2 : brk ? brk : CLAMP(worst, 2, m - 2);
+    _fit_split(q, i0, k, tol, depth + 1, spans);
+    _fit_split(q, i0 + k, m - k, tol, depth + 1, spans);
+  }
+  else
+  {
+    g_array_append_val(spans, sp);
+  }
+}
+
+// Re-vectorize a binary mask back into path points via potrace, anchored on the
+// nodes of the shape it was made from. Potrace picks whatever nodes suit each
+// raster, so tracing every offset alone gives a node set that changes from one
+// step to the next. Instead the traced outline is only used as a curve: each
+// original node moves to where it lands on it (the point nearest to the node
+// pushed `offset_px` along its outward normal), and the handles are fitted to
+// the outline between them, with extra nodes only where a cubic cannot follow it.
+// Coordinates are normalized to [0,1] and `mean_border` is stamped on every node.
 // Returns a newly-owned points list (caller frees), or NULL if no usable
 // boundary was produced. Does not free `morphed`.
 static GList *_path_revectorize(float *morphed,
                                 const _path_canvas_t *c,
                                 const double alphamax,
-                                const double eps_px,
-                                const float mean_border)
+                                const double tol_px,
+                                const float mean_border,
+                                const GList *anchors,
+                                const double offset_px)
 {
   const int rw = c->rw, rh = c->rh;
   // out_signs runs parallel to new_forms: '+' for outer boundaries, '-' for
@@ -2709,33 +2939,175 @@ static GList *_path_revectorize(float *morphed,
            g_list_length(new_forms),
            best_n);
 
-  // Thin the dense potrace boundary while coords are still in raster pixels
-  // (so the tolerance is intuitively in pixels). The kept nodes retain potrace's
-  // bezier handles — crucially, sharp corners keep their zero-length handles, so
-  // the resized shape preserves the original's corners instead of rounding them.
-  best->points = _path_simplify_rdp(best->points, eps_px);
+  // the traced outline, in raster pixels, running the way the anchors do
+  GArray *q = _path_flatten(best->points);
+  g_list_free_full(new_forms, (GDestroyNotify)dt_masks_free_form);
 
-  // ras2forms (image=NULL) returns raw pixel coords [0..rw]×[0..rh] on the
-  // shape-anchored canvas; map them back through the canvas origin/scale into
-  // normalized mask coords. Results outside [0,1] are legitimate: that is a
-  // shape which has grown past the image border.
-  const float ux = 1.0f / (c->scale * c->iw), uy = 1.0f / (c->scale * c->ih);
-  const float nx0 = c->x0 / c->iw, ny0 = c->y0 / c->ih;
-  for(GList *pl = best->points; pl; pl = g_list_next(pl))
+  const int nq = (int)q->len;
+  if(nq < 12)
   {
-    dt_masks_point_path_t *pt = pl->data;
-    pt->corner[0] = pt->corner[0] * ux + nx0;
-    pt->corner[1] = pt->corner[1] * uy + ny0;
-    pt->ctrl1[0] = pt->ctrl1[0] * ux + nx0;
-    pt->ctrl1[1] = pt->ctrl1[1] * uy + ny0;
-    pt->ctrl2[0] = pt->ctrl2[0] * ux + nx0;
-    pt->ctrl2[1] = pt->ctrl2[1] * uy + ny0;
-    pt->border[0] = pt->border[1] = mean_border;
+    g_array_free(q, TRUE);
+    return NULL;
+  }
+  const int na = (int)g_list_length((GList *)anchors);
+  GArray *at = g_array_new(FALSE, FALSE, sizeof(_v2_t)); // anchors, raster px
+  for(const GList *l = anchors; l; l = g_list_next(l))
+  {
+    const dt_masks_point_path_t *pt = l->data;
+    const _v2_t p = { _canvas_x(c, pt->corner[0]), _canvas_y(c, pt->corner[1]) };
+    g_array_append_val(at, p);
+  }
+  const double area = _outline_area2(at);
+  if(area * _outline_area2(q) < 0.0)
+    _outline_reverse(q);
+
+  // where each anchor lands: the outline sample nearest its offset position
+  int *land = g_malloc((size_t)na * sizeof(int));
+  int ai = 0;
+  for(const GList *l = anchors; l; l = g_list_next(l), ai++)
+  {
+    const dt_masks_point_path_t *pt = l->data;
+    const _v2_t p = g_array_index(at, _v2_t, ai);
+    // outward normal: the tangent turned away from the side the area lies on
+    _v2_t tan = { pt->ctrl2[0] * c->iw - pt->ctrl1[0] * c->iw,
+                  pt->ctrl2[1] * c->ih - pt->ctrl1[1] * c->ih };
+    if(_v2_len(tan) < 1e-9)
+    {
+      const dt_masks_point_path_t *nx = g_list_next_wraparound(l, anchors)->data;
+      const dt_masks_point_path_t *pv = g_list_prev_wraparound(l)->data;
+      tan = (_v2_t){ (nx->corner[0] - pv->corner[0]) * c->iw, (nx->corner[1] - pv->corner[1]) * c->ih };
+    }
+    tan = _v2_unit(tan);
+    const double sgn = area >= 0.0 ? 1.0 : -1.0;
+    const _v2_t target = { p.x + sgn * offset_px * tan.y, p.y - sgn * offset_px * tan.x };
+    double best_d2 = 1e30;
+    land[ai] = 0;
+    for(int k = 0; k < nq; k++)
+    {
+      const _v2_t d = _v2_sub(_q_at(q, k), target);
+      const double d2 = _v2_dot(d, d);
+      if(d2 < best_d2)
+      {
+        best_d2 = d2;
+        land[ai] = k;
+      }
+    }
   }
 
-  GList *points = best->points;
-  best->points = NULL; // detach so it survives the free below
-  g_list_free_full(new_forms, (GDestroyNotify)dt_masks_free_form);
+  // keep the anchors that still come in order along the outline, so a part the
+  // offset has squeezed out simply loses its nodes. A jagged outline scatters
+  // the landings, and a single one that lands far ahead must not cost every
+  // node behind it: follow the landings as a walk around the outline and keep
+  // the longest run of them that keeps advancing
+  GArray *keep = g_array_new(FALSE, FALSE, sizeof(int));
+  {
+    long *pos = g_malloc((size_t)na * sizeof(long));
+    int *tail = g_malloc((size_t)na * sizeof(int)); // tail[l]: end of the best run of length l+1
+    int *prev = g_malloc((size_t)na * sizeof(int));
+    int runs = 0;
+    for(int i = 0; i < na; i++)
+    {
+      int d = i ? (land[i] - land[i - 1]) % nq : 0;
+      if(d < 0)
+        d += nq;
+      if(d > nq / 2)
+        d -= nq;
+      pos[i] = i ? pos[i - 1] + d : 0;
+
+      int lo = 0, hi = runs;
+      while(lo < hi)
+      {
+        const int mid = (lo + hi) / 2;
+        if(pos[tail[mid]] < pos[i])
+          lo = mid + 1;
+        else
+          hi = mid;
+      }
+      prev[i] = lo ? tail[lo - 1] : -1;
+      tail[lo] = i;
+      if(lo == runs)
+        runs++;
+    }
+
+    int *run = g_malloc((size_t)(runs > 0 ? runs : 1) * sizeof(int));
+    int n = 0;
+    for(int i = runs ? tail[runs - 1] : -1; i >= 0; i = prev[i])
+      run[n++] = i;
+    // from the start of the run, one lap at most and no two nodes on one sample
+    long first = 0, last = 0;
+    for(int j = n - 1; j >= 0; j--)
+    {
+      const long here = pos[run[j]];
+      if(j == n - 1)
+        first = last = here;
+      else if(here > last + 1 && here - first < nq - 2)
+        last = here;
+      else
+        continue;
+      g_array_append_val(keep, land[run[j]]);
+    }
+    g_free(run);
+    g_free(prev);
+    g_free(tail);
+    g_free(pos);
+  }
+  g_free(land);
+  g_array_free(at, TRUE);
+  if(keep->len < 3)
+  {
+    // everything collapsed onto itself: spread a few nodes over the outline
+    g_array_set_size(keep, 0);
+    for(int i = 0; i < 4; i++)
+    {
+      const int k = (i * nq / 4) % nq;
+      g_array_append_val(keep, k);
+    }
+  }
+
+  // fit the cubics, adding the nodes they need
+  GArray *spans = g_array_new(FALSE, FALSE, sizeof(_span_t));
+  for(int j = 0; j < (int)keep->len; j++)
+  {
+    const int i0 = g_array_index(keep, int, j);
+    const int i1 = g_array_index(keep, int, (j + 1) % keep->len);
+    const int m = ((i1 - i0) % nq + nq) % nq;
+    if(m > 0)
+      _fit_split(q, i0, m, tol_px, 0, spans);
+  }
+  g_array_free(keep, TRUE);
+
+  // each span starts at a node and ends where the next one starts: the node
+  // takes its outgoing handle from the span it opens, its incoming one from the
+  // span it closes
+  const int nn = (int)spans->len;
+  GList *points = NULL;
+  if(nn >= 3)
+  {
+    const float ux = 1.0f / (c->scale * c->iw), uy = 1.0f / (c->scale * c->ih);
+    const float nx0 = c->x0 / c->iw, ny0 = c->y0 / c->ih;
+    for(int j = 0; j < nn; j++)
+    {
+      const _span_t *out = &g_array_index(spans, _span_t, j);
+      const _span_t *in = &g_array_index(spans, _span_t, (j + nn - 1) % nn);
+      const _v2_t here = _q_at(q, out->start);
+      const _v2_t c1 = { here.x - in->h1 * in->t1.x, here.y - in->h1 * in->t1.y };
+      const _v2_t c2 = { here.x + out->h0 * out->t0.x, here.y + out->h0 * out->t0.y };
+
+      dt_masks_point_path_t *pt = calloc(1, sizeof(dt_masks_point_path_t));
+      pt->corner[0] = here.x * ux + nx0;
+      pt->corner[1] = here.y * uy + ny0;
+      pt->ctrl1[0] = c1.x * ux + nx0;
+      pt->ctrl1[1] = c1.y * uy + ny0;
+      pt->ctrl2[0] = c2.x * ux + nx0;
+      pt->ctrl2[1] = c2.y * uy + ny0;
+      pt->border[0] = pt->border[1] = mean_border;
+      pt->state = DT_MASKS_POINT_STATE_USER;
+      points = g_list_prepend(points, pt);
+    }
+    points = g_list_reverse(points);
+  }
+  g_array_free(spans, TRUE);
+  g_array_free(q, TRUE);
   return points;
 }
 
@@ -2793,7 +3165,10 @@ static gboolean _path_morph_core(dt_masks_form_t *form, const float offset_img_p
   const char *res_str = dt_conf_get_string_const("masks/path_resize_resolution");
   const int res_pref = res_str ? atoi(res_str) : 0;
   const int trace_res = (res_pref > 0) ? res_pref : 2048;
-  const float rscale = (float)trace_res / fmaxf(cw_img, ch_img);
+  // the canvas is anchored on the shape, so a small shape would be blown up to
+  // the full resolution; past two raster pixels per image pixel that only costs
+  // time, the outline cannot get more exact than the image it is drawn on
+  const float rscale = fminf((float)trace_res / fmaxf(cw_img, ch_img), 2.0f);
 
   const _path_canvas_t canvas = { .rw = MAX(1, (int)(cw_img * rscale + 0.5f)),
                                   .rh = MAX(1, (int)(ch_img * rscale + 0.5f)),
@@ -2819,19 +3194,20 @@ static gboolean _path_morph_core(dt_masks_form_t *form, const float offset_img_p
   // New nodes inherit the original mean feather.
   const float mean_border = _path_mean_border(form);
 
-  // Curve smoothing controls how hard we simplify the re-vectorized boundary.
-  // The RDP tolerance is a geometric error expressed in *image* pixels, so it
+  // Curve smoothing sets how far the fitted outline may stray from the traced
+  // one. The tolerance is a geometric error expressed in *image* pixels, so it
   // means the same regardless of the internal tracing resolution; it is then
-  // converted to raster pixels for the simplifier. Keeping it small (~a couple
-  // of image pixels) lets the resized outline track the original closely.
+  // converted to raster pixels for the fit.
   const char *smoothing = dt_conf_get_string_const("masks/path_resize_curve_smoothing");
-  const double alphamax = !g_strcmp0(smoothing, "sharp")    ? 0.0
-                          : !g_strcmp0(smoothing, "smooth") ? 1.3
-                                                            : 1.0; // balanced
-  const double eps_img = !g_strcmp0(smoothing, "sharp")    ? 1.0
-                         : !g_strcmp0(smoothing, "smooth") ? 4.0
-                                                           : 2.0; // balanced
-  const double eps_px = eps_img * rscale;
+  const gboolean sharp = !g_strcmp0(smoothing, "sharp");
+  const double alphamax = sharp ? 0.0 : 1.3;
+  const double tol_img = sharp ? 0.5 : 2.0;
+  // The traced outline itself wanders by about a raster pixel (potrace fits it
+  // to within 0.8 of one, on top of the staircase it started from). A tolerance
+  // inside that wobble would make the nodes depend on it, and on a large path,
+  // traced coarsely, they would appear and vanish from one step to the next.
+  // "sharp" asks for the opposite, so it keeps its tolerance
+  const double tol_px = sharp ? tol_img * rscale : fmax(tol_img * rscale, 3.0);
 
   // rasterize → EDT inset/outset → re-vectorize
   float *mask = _path_rasterize(form, &canvas);
@@ -2843,7 +3219,13 @@ static gboolean _path_morph_core(dt_masks_form_t *form, const float offset_img_p
   if(!morphed)
     return FALSE;
 
-  GList *new_points = _path_revectorize(morphed, &canvas, alphamax, eps_px, mean_border);
+  GList *new_points = _path_revectorize(morphed,
+                                        &canvas,
+                                        alphamax,
+                                        tol_px,
+                                        mean_border,
+                                        form->points,
+                                        up ? r_float : -r_float);
   dt_free_align(morphed);
   if(!new_points)
     return FALSE;
@@ -2851,11 +3233,6 @@ static gboolean _path_morph_core(dt_masks_form_t *form, const float offset_img_p
   g_list_free_full(form->points, free);
   form->points = new_points;
 
-  _path_init_ctrl_points(form);
-  // Potrace nodes can be packed tightly, making Catmull-Rom handles longer
-  // than the edge chord and producing self-intersecting splines. Clamp here,
-  // after re-vectorization only, so hand-crafted masks are never affected.
-  _path_clamp_ctrl_points(form);
   return TRUE;
 }
 
@@ -2871,6 +3248,13 @@ _path_resize_apply(dt_masks_form_t *form, _resize_state_t *st, const float offse
   const dt_masks_point_path_t *disp = form->points ? form->points->data : NULL;
   const float old_fx = disp ? disp->corner[0] : 0.0f;
   const float old_fy = disp ? disp->corner[1] : 0.0f;
+
+  const guint settings = _resize_settings();
+  if(settings != st->settings)
+  {
+    g_hash_table_remove_all(st->results);
+    st->settings = settings;
+  }
 
   const int key = (int)lroundf(offset_px * RESIZE_KEY_Q);
   const GList *src =
@@ -3061,6 +3445,8 @@ static int _path_events_mouse_scrolled(dt_iop_module_t *module,
         // legacy resize: scale all nodes towards/away from the centroid
         if(!_path_resize_centroid(form, up))
           return 1;
+        // the scaled outline is the new baseline for shrink/grow
+        _resize_state_invalidate(form->formid);
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
@@ -3625,7 +4011,6 @@ static int _path_events_button_released(dt_iop_module_t *module,
     // corner) right on mouse-up.
     gui->form_dragging = FALSE;
 
-    _resize_state_invalidate(form->formid);
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
@@ -3639,6 +4024,8 @@ static int _path_events_button_released(dt_iop_module_t *module,
     gui->form_rotating = FALSE;
     gui->rotate_about_source = FALSE;
     gui->scrollx = gui->scrolly = 0.0f;
+    // the shape changed, so the shrink/grow baseline is stale
+    _resize_state_invalidate(form->formid);
 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
     dt_masks_gui_form_create(form, gui, index, module);
@@ -3921,6 +4308,7 @@ static int _path_events_mouse_moved(dt_iop_module_t *module,
         point->ctrl2[0] += dx;
         point->ctrl2[1] += dy;
       }
+      dt_masks_path_resize_follow_move(form->formid, dx, dy);
     }
     else
     {

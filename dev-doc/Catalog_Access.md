@@ -47,6 +47,7 @@ Each domain has its file in `src/common/`, and its functions go there:
 | presets | `presets.c` | `data.presets` |
 | history | `history.c` | `main.history`, `main.masks_history`, `main.history_hash` |
 | collection, selection | `collection.c`, `selection.c` | `memory.collected_images`, `main.selected_images` |
+| collection filters | `filter.c` | `main.images` |
 
 The schema itself, its migrations and maintenance stay in
 `common/database.c`; they are not catalog functions.

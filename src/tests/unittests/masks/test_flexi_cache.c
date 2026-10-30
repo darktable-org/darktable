@@ -138,7 +138,7 @@ static void test_moving_a_shape_between_groups_invalidates(void **state)
 {
   dt_masks_form_t *grp = flexi_build("u{1,2,i{3,4}}");
   assert_invalidates("moving a shape to another group", ({
-    dt_masks_model_drop_element_onto_element(&flexi_module, grp, 1, 3, TRUE);
+    dt_masks_model_drop_member_onto_member(&flexi_module, grp, 1, 3, TRUE);
   }));
 }
 
@@ -331,26 +331,6 @@ static void test_selection_does_not_invalidate(void **state)
   }));
 }
 
-// expanding or collapsing a same-kind cluster is a purely visual sub-grouping
-// of a group's rows -- it does not change the group, let alone the mask
-static void test_collapse_expand_does_not_invalidate(void **state)
-{
-  flexi_build("u{1,2,3,i{4}}");
-  flexi_bd.masks_cluster_expanded = g_hash_table_new(g_direct_hash, g_direct_equal);
-
-  assert_preserves("collapsing a cluster",
-                   g_hash_table_insert(flexi_bd.masks_cluster_expanded,
-                                       GINT_TO_POINTER(1),
-                                       GINT_TO_POINTER(FALSE)));
-  assert_preserves("expanding it again",
-                   g_hash_table_insert(flexi_bd.masks_cluster_expanded,
-                                       GINT_TO_POINTER(1),
-                                       GINT_TO_POINTER(TRUE)));
-
-  g_hash_table_destroy(flexi_bd.masks_cluster_expanded);
-  flexi_bd.masks_cluster_expanded = NULL;
-}
-
 // solo bookkeeping in blend_data mirrors the HIDDEN bits it sets; the bits are
 // the rendering input (and do invalidate, above), the bookkeeping is not
 static void test_solo_bookkeeping_alone_does_not_invalidate(void **state)
@@ -398,7 +378,6 @@ int main(void)
     cmocka_unit_test_teardown(test_renaming_a_group_does_not_invalidate, _teardown),
     cmocka_unit_test_teardown(test_solo_edit_does_not_invalidate, _teardown),
     cmocka_unit_test_teardown(test_selection_does_not_invalidate, _teardown),
-    cmocka_unit_test_teardown(test_collapse_expand_does_not_invalidate, _teardown),
     cmocka_unit_test_teardown(test_solo_bookkeeping_alone_does_not_invalidate, _teardown),
     cmocka_unit_test_teardown(test_edit_mode_does_not_invalidate, _teardown),
   };

@@ -1667,21 +1667,21 @@
     <shortdescription>smoothing of brush strokes</shortdescription>
     <longdescription>sets level for smoothing of brush strokes.\nstronger smoothing leads to less nodes and easier editing but with lower control of accuracy.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="masking">
+  <dtconfig>
     <name>masks_scroll_down_increases</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>scroll down to increase mask parameters</shortdescription>
     <longdescription>when using the mouse scroll wheel to change mask parameters, scroll down to increase the mask size, feather size, opacity, brush hardness and gradient curvature\nby default scrolling up increases these parameters</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="masking">
+  <dtconfig>
     <name>masks/path_resize_amount</name>
-    <type>int</type>
+    <type min="1" max="200">int</type>
     <default>2</default>
-    <shortdescription>path mask resize step amount</shortdescription>
-    <longdescription>amount to grow or shrink a path mask per scroll wheel tick when resizing. the unit is set by the 'path mask resize unit' preference.</longdescription>
+    <shortdescription>step size</shortdescription>
+    <longdescription>amount to grow or shrink a path mask per scroll wheel tick when resizing. the unit is the one of the 'shrink or grow' slider's px/% toggle.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="masking">
+  <dtconfig>
     <name>masks/path_resize_unit</name>
     <type>
       <enum>
@@ -1693,32 +1693,30 @@
     <shortdescription>unit for path mask resize step amount</shortdescription>
     <longdescription>unit for the path mask resize step: 'pixels' uses image pixels, '% of path size' uses a percentage of the path's largest bounding box dimension.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="masking">
+  <dtconfig>
     <name>masks/path_resize_resolution</name>
     <type>
       <enum>
         <option>512</option>
         <option>1024</option>
         <option>2048</option>
-        <option>4096</option>
       </enum>
     </type>
     <default>2048</default>
     <shortdescription>path mask resize tracing resolution</shortdescription>
     <longdescription>internal raster resolution (in pixels on the longest side) used when re-vectorizing a resized path mask. higher values preserve more detail and nodes at the cost of speed.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="masking">
+  <dtconfig>
     <name>masks/path_resize_curve_smoothing</name>
     <type>
       <enum>
         <option>sharp</option>
-        <option>balanced</option>
         <option>smooth</option>
       </enum>
     </type>
-    <default>balanced</default>
+    <default>smooth</default>
     <shortdescription>path mask resize curve smoothing</shortdescription>
-    <longdescription>controls how corners are handled when re-vectorizing a resized path mask. 'sharp' preserves more nodes and corners; 'smooth' produces fewer, rounder control points.</longdescription>
+    <longdescription>controls how a resized path mask is re-vectorized. 'smooth' follows the resized outline with few nodes and round curves; 'sharp' traces it as a polygon, which takes many more nodes.</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">
     <name>darkroom/mouse/middle_button_cycle_zoom_to_200_percent</name>
@@ -2683,6 +2681,13 @@
     <default>false</default>
     <shortdescription>always use LittleCMS 2 to apply output color profile</shortdescription>
     <longdescription>this is slower than the default.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/export/pq_peak_nits</name>
+    <type min="203" max="10000">int</type>
+    <default>1000</default>
+    <shortdescription>PQ peak luminance</shortdescription>
+    <longdescription>the brightest highlight a PQ (HDR) output should reach, in nits. tone mappers that follow the output map their white to this peak. HLG output always peaks at 1000 nits and SDR output at the 203 nit reference white.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/high_quality_processing</name>
@@ -3683,7 +3688,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>solo edit the selected mask element</shortdescription>
-    <longdescription>while enabled, only the selected element's nodes and handles are editable on canvas; the other elements still contribute to the mask</longdescription>
+    <longdescription>while enabled, only the selected element's nodes and handles are editable on canvas; the other members still contribute to the mask</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/auto_expand_selected</name>
@@ -3696,8 +3701,8 @@
     <name>plugins/darkroom/masks/properties_subpanel</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>element properties in subpanel</shortdescription>
-    <longdescription>while enabled, the properties of the selected element or group are shown in a collapsible section of their own between the mask list and the refinements instead of in the list, and so are the creation controls of a shape being drawn: a shape's geometry, a parametric element's boost factor, and the opacity of anything</longdescription>
+    <shortdescription>member properties in subpanel</shortdescription>
+    <longdescription>while enabled, the properties of the selected member are shown in a collapsible section of their own between the mask list and the refinements instead of in the list, and so are the creation controls of a shape being drawn: a shape's geometry, a parametric element's boost factor, and the opacity of anything</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/refinements_collapsed</name>
@@ -3711,7 +3716,14 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>collapse the properties section</shortdescription>
-    <longdescription>whether the mask panel's element and group properties section is folded, for every module and target</longdescription>
+    <longdescription>whether the mask panel's member properties section is folded, for every module and target</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/help_collapsed</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>collapse the help section</shortdescription>
+    <longdescription>whether the mask panel's help section is folded, for every module and target</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/consumers_collapsed</name>
@@ -3728,11 +3740,18 @@
     <longdescription>while enabled, the mask panel's edge carries a visible handle with an arrow showing which way the panel folds away; while disabled the handle is invisible, like the main panels', and still resizes the panel by dragging and hides it on a click</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/masks/show_focus_row</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show focused module under header</shortdescription>
+    <longdescription>while enabled, the mask panel hosted in the utility panel or beside the canvas shows the name of the module whose mask it holds, and its instance name, in a row under its header; the panel embedded within a module has no such row, as the module's own header names it</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/masks/show_preset_notes</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>show preset notes</shortdescription>
-    <longdescription>while enabled, a group made by a built-in group layout preset shows a short note under its header on how to use it, until it is dismissed</longdescription>
+    <shortdescription>show preset help notes (beginners)</shortdescription>
+    <longdescription>while enabled, the mask panel shows a short help note on how to use the selected group, in a collapsible help section of its own, when the group was made by a built-in group layout preset</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/default_group_preset</name>
@@ -4380,7 +4399,7 @@
     <shortdescription>show right-side buttons in processing module headers</shortdescription>
     <longdescription>when the mouse is not over a module, the multi-instance, reset and preset buttons can be hidden:\n - 'always': always show all buttons,\n - 'active': only show the buttons when the mouse is over the module,\n - 'dim': buttons are dimmed when mouse is away,\n - 'auto': hide the buttons when the panel is narrow,\n - 'fade': fade out all buttons when panel narrows,\n - 'fit': hide all the buttons if the module name doesn't fit,\n - 'smooth': fade out all buttons in one header simultaneously,\n - 'glide': gradually hide individual buttons as needed</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="masking">
+  <dtconfig>
     <name>darkroom/ui/show_mask_indicator</name>
     <type>bool</type>
     <default>true</default>

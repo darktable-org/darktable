@@ -46,3 +46,16 @@
 {
   color: @active_module_icon_fg;
 }
+
+/* the masks panel's focus row: its icon takes the accent, as the on/off toggle
+   above does. An id outranks the plain class darktable.css styles it with */
+#masks-focus-row .dt_masks_focus_icon
+{
+  color: @active_module_icon_fg;
+  opacity: 1;
+}
+
+/* the masks panel: a selected member is framed in the accent, and the member a
+   shift+click would pick is tinted with it */
+@define-color mask_accent         @active_module_icon_fg;
+@define-color mask_selected_frame @active_module_icon_fg;

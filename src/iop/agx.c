@@ -38,7 +38,7 @@
 #include <pango/pangocairo.h>
 #include <stdlib.h>
 
-DT_MODULE_INTROSPECTION(7, dt_iop_agx_params_t)
+DT_MODULE_INTROSPECTION(8, dt_iop_agx_params_t)
 
 const char *name()
 {
@@ -152,6 +152,10 @@ typedef struct dt_iop_agx_params_t
 
   // v5
   gboolean completely_reverse_primaries; // $DEFAULT: FALSE $DESCRIPTION: "reverse all"
+
+  // v8
+  gboolean target_white_from_output; // $DEFAULT: TRUE $DESCRIPTION: "follow output peak"
+  float hdr_purity;                  // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.5f $DESCRIPTION: "HDR purity"
 } dt_iop_agx_params_t;
 
 typedef struct dt_iop_basic_curve_controls_t
@@ -168,7 +172,12 @@ typedef struct dt_iop_agx_gui_data_t
   GtkNotebook *notebook;
   GtkWidget *auto_gamma;
   GtkWidget *curve_gamma;
+  GtkWidget *target_white_from_output;
+  GtkWidget *hdr_purity;
   GtkDrawingArea *graph_drawing_area;
+
+  // the darkroom full pipe's headroom, see _ui_pipe_finished()
+  float output_headroom;
 
   dt_gui_collapsible_section_t look_section;
   dt_gui_collapsible_section_t graph_section;
@@ -200,6 +209,19 @@ typedef struct dt_iop_agx_gui_data_t
   GtkWidget *post_curve_primaries_controls_vbox;
   GtkWidget *set_post_curve_primaries_from_pre_button;
 } dt_iop_agx_gui_data_t;
+
+// HDR output, see _set_hdr_params()
+typedef struct hdr_params_t
+{
+  gboolean enabled;
+  float headroom;
+  float purity;
+  float log_min;
+  float pivot_x;
+  float pivot_y;
+  float toe_scale;
+  float shoulder_scale;
+} hdr_params_t;
 
 typedef struct tone_mapping_params_t
 {
@@ -249,6 +271,8 @@ typedef struct tone_mapping_params_t
   float look_original_hue_mix_ratio;
   gboolean look_tuned;
   gboolean restore_hue;
+
+  hdr_params_t hdr;
 } tone_mapping_params_t;
 
 typedef struct primaries_params_t
@@ -269,6 +293,8 @@ typedef struct dt_iop_agx_data_t
 {
   tone_mapping_params_t tone_mapping_params;
   primaries_params_t primaries_params;
+  // to rebuild the curve for the output headroom, only known at process time
+  dt_iop_agx_params_t params;
 } dt_iop_agx_data_t;
 
 static void _set_scene_referred_default_params(dt_iop_agx_params_t *p);
@@ -290,6 +316,21 @@ int legacy_params(dt_iop_module_t *self,
     *new_params = np;
     *new_params_size = sizeof(dt_iop_agx_params_t);
     *new_version = self->so->version(); // SPECIAL CASE: jump directly to latest version
+
+    return 0;
+  }
+
+  if(old_version == 7)
+  {
+    dt_iop_agx_params_t *np = calloc(1, sizeof(dt_iop_agx_params_t));
+    memcpy(np, old_params, offsetof(dt_iop_agx_params_t, target_white_from_output));
+    // existing edits keep their white at the reference white and do not
+    // follow the output's peak, so that they render as before
+    np->target_white_from_output = FALSE;
+    np->hdr_purity = 0.5f;
+    *new_params = np;
+    *new_params_size = sizeof(dt_iop_agx_params_t);
+    *new_version = 8;
 
     return 0;
   }
@@ -541,12 +582,15 @@ static inline float _line(const float x,
   // the actual 'rise' the curve needs to cover.
   const float actual_rise = fmaxf(_epsilon, limit_y - transition_y);
 
-  const float transformed_projected_rise = powf(projected_rise, -power);
-  const float transformed_actual_rise = powf(actual_rise, -power);
+  // in double: when the pivot reaches target white, the rise is clamped to
+  // _epsilon and powf() overflows to inf for powers above about 6.4, which
+  // gives a zero scale and NaN in _scaled_sigmoid()
+  const double transformed_projected_rise = pow(projected_rise, -power);
+  const double transformed_actual_rise = pow(actual_rise, -power);
 
-  const float base = fmaxf(_epsilon, transformed_actual_rise - transformed_projected_rise);
+  const double base = fmax(_epsilon, transformed_actual_rise - transformed_projected_rise);
 
-  const float scale_value = powf(base, -1.f / power);
+  const float scale_value = pow(base, -1.0 / power);
 
   // avoid 'explosions'
   return fminf(1e9f, scale_value);
@@ -839,7 +883,8 @@ static inline float _calculate_slope_gamma_compensation(const float gamma,
 
 static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_params_t *p)
 {
-  tone_mapping_params_t tone_mapping_params;
+  tone_mapping_params_t tone_mapping_params = { 0 };
+  tone_mapping_params.hdr.headroom = 1.f;
 
   // look
   tone_mapping_params.look_lift = p->look_lift;
@@ -960,6 +1005,53 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
   return tone_mapping_params;
 }
 
+// Blender's AgX HDR (AgXHLG.py in github.com/EaryChow/AgX_LUT_Gen) darkens
+// the linear curve output with a second sigmoid in log2 space: 20 EV below
+// the pivot up to 1.0, the peak, maps to [0, 1]. It moves the pivot output
+// down by the headroom, so the pivot keeps its SDR brightness, with slope 1
+// and power 3 below it and power 1 above it
+static void _set_hdr_params(hdr_params_t *hdr,
+                            const dt_iop_agx_params_t *p,
+                            const float headroom)
+{
+  const float pivot = CLAMPF(p->curve_pivot_y_linear_output, _epsilon, 0.99f);
+
+  hdr->enabled = TRUE;
+  hdr->headroom = headroom;
+  hdr->purity = p->hdr_purity;
+  hdr->log_min = log2f(pivot) - 20.f;
+  hdr->pivot_x = 1.f - log2f(pivot) / hdr->log_min;
+  hdr->pivot_y = 1.f - log2f(pivot / headroom) / hdr->log_min;
+  hdr->toe_scale = -_scale(1.f, 1.f, 1.f - hdr->pivot_x, 1.f - hdr->pivot_y, 1.f, 3.f);
+  // _scale() cannot give the negative scale of a convex segment: with
+  // power 1 the shoulder is the hyperbola through the pivot and (1, 1)
+  const float dx = 1.f - hdr->pivot_x;
+  const float dy = 1.f - hdr->pivot_y;
+  hdr->shoulder_scale = -dx * dy / (dy - dx);
+}
+
+// when following the output, the curve's output, target white included,
+// is relative to the output's peak, and HDR output gets a harder shoulder
+// and _agx_hdr(), as in Blender's AgX HDR. SDR output is unchanged
+static tone_mapping_params_t _pipe_tone_mapping_params(const dt_iop_agx_params_t *p,
+                                                       const float headroom)
+{
+  if(!p->target_white_from_output)
+    return _calculate_tone_mapping_params(p);
+
+  const float hdr_headroom = fmaxf(1.f, headroom);
+  dt_iop_agx_params_t pipe_p = *p;
+  // capped at the slider's maximum: well above it, powf() in _sigmoid()
+  // overflows, e.g. for a high pivot target and the highest PQ peaks
+  pipe_p.curve_shoulder_power = fminf(pipe_p.curve_shoulder_power
+                                      * powf(hdr_headroom, log10f(2.f)), 10.f);
+
+  tone_mapping_params_t tone_mapping_params = _calculate_tone_mapping_params(&pipe_p);
+  if(hdr_headroom > 1.f)
+    _set_hdr_params(&tone_mapping_params.hdr, &pipe_p, hdr_headroom);
+  return tone_mapping_params;
+}
+
 static primaries_params_t _get_primaries_params(const dt_iop_agx_params_t *p)
 {
   primaries_params_t primaries_params;
@@ -1057,6 +1149,43 @@ static void _adjust_relative_exposure_from_exposure_params(dt_iop_module_t *self
   _update_pivot_x(old_black_ev, old_white_ev, self, p);
 }
 
+// x is linear, relative to the peak
+static inline float _hdr_darken(const float x,
+                                const hdr_params_t *hdr)
+{
+  const float log_x = CLIP(1.f - log2f(fmaxf(x, 1e-12f)) / hdr->log_min);
+  const float u = log_x - hdr->pivot_x;
+  const float log_y =
+    u < 0.f
+    ? _scaled_sigmoid(log_x, hdr->toe_scale, 1.f, 3.f,
+                      hdr->pivot_x, hdr->pivot_y)
+    : hdr->pivot_y
+      + hdr->shoulder_scale * u / (hdr->shoulder_scale + u);
+  return x > 0.f ? exp2f(hdr->log_min * (1.f - log_y)) : 0.f;
+}
+
+static inline void _agx_hdr(dt_aligned_pixel_t pixel_in_out,
+                            const hdr_params_t *hdr)
+{
+  dt_aligned_pixel_t hsv_before = { 0.f };
+  dt_aligned_pixel_t hsv_after = { 0.f };
+  dt_aligned_pixel_t darkened = { 0.f };
+
+  dt_RGB_2_HSV(pixel_in_out, hsv_before);
+  for_three_channels(k, aligned(pixel_in_out, darkened : 16))
+    darkened[k] = _hdr_darken(pixel_in_out[k], hdr);
+  dt_RGB_2_HSV(darkened, hsv_after);
+
+  // keep part of the hue and saturation shift of the per-channel darkening
+  hsv_after[0] = _lerp_hue(hsv_before[0], hsv_after[0], 1.f - hdr->purity);
+  hsv_after[1] = hsv_before[1] + hdr->purity * (hsv_after[1] - hsv_before[1]);
+  dt_HSV_2_RGB(hsv_after, darkened);
+
+  // back to 1.0 = reference white
+  for_three_channels(k, aligned(pixel_in_out, darkened : 16))
+    pixel_in_out[k] = hdr->headroom * darkened[k];
+}
+
 static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
                               const tone_mapping_params_t *params,
                               const dt_colormatrix_t rendering_to_xyz_transposed)
@@ -1084,6 +1213,9 @@ static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
     transformed_pixel[k] = powf(fmaxf(0.f, transformed_pixel[k]), params->curve_gamma);
   }
 
+  if(params->hdr.enabled)
+    _agx_hdr(transformed_pixel, &params->hdr);
+
   // get post-curve chroma angle
   if(params->restore_hue)
   {
@@ -1101,6 +1233,16 @@ static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
   {
     copy_pixel(rgb_in_out, transformed_pixel);
   }
+}
+
+// the curve, plus the darkening of HDR output, gamma-encoded and relative to the peak
+static float _rendered_curve(const float x,
+                             const tone_mapping_params_t *params)
+{
+  const float y = _apply_curve(x, params);
+  return params->hdr.enabled
+    ? powf(_hdr_darken(powf(y, params->curve_gamma), &params->hdr), 1.f / params->curve_gamma)
+    : y;
 }
 
 static void _apply_auto_black_exposure(const dt_iop_module_t *self)
@@ -1188,6 +1330,8 @@ static void _apply_auto_pivot_xy(dt_iop_module_t *self, const dt_iop_order_iccpr
   const float range = p->range_white_relative_ev - p->range_black_relative_ev;
   const float picked_pivot_x = (picked_ev - p->range_black_relative_ev) / range;
 
+  // the SDR curve, also with HDR output: pivot target output is an SDR
+  // value, and the pick must not depend on the display it was made on
   const tone_mapping_params_t tone_mapping_params =
      _calculate_tone_mapping_params(p);
 
@@ -1378,6 +1522,9 @@ void process(dt_iop_module_t *self,
   rendering_profile.nonlinearlut = FALSE; // no LUT for this linear transform
 
   const gboolean base_working_same_profile = pipe_work_profile == base_profile;
+  const tone_mapping_params_t tone_mapping_params = d->params.target_white_from_output
+    ? _pipe_tone_mapping_params(&d->params, piece->pipe->output_headroom)
+    : d->tone_mapping_params;
 
   DT_OMP_FOR()
   for(size_t k = 0; k < 4 * n_pixels; k += 4)
@@ -1409,7 +1556,7 @@ void process(dt_iop_module_t *self,
     dt_apply_transposed_color_matrix(base_rgb, base_to_rendering_transposed, rendering_rgb);
 
     // Apply the tone mapping curve and look adjustments
-    _agx_tone_mapping(rendering_rgb, &d->tone_mapping_params,
+    _agx_tone_mapping(rendering_rgb, &tone_mapping_params,
                       rendering_profile.matrix_in_transposed);
 
     // Convert from internal rendering space back to pipe working space
@@ -1427,7 +1574,9 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
   const dt_iop_agx_params_t *p = self->params;
   dt_iop_agx_gui_data_t *g = self->gui_data;
 
-  const tone_mapping_params_t tone_mapping_params = _calculate_tone_mapping_params(p);
+  // draw the curve the center view renders
+  const tone_mapping_params_t tone_mapping_params =
+    _pipe_tone_mapping_params(p, g->output_headroom);
 
   gtk_widget_get_allocation(widget, &g->allocation);
   g->allocation.height -= DT_RESIZE_HANDLE_SIZE;
@@ -1530,7 +1679,8 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
     cairo_identity_matrix(cr);                  // Reset transformations for text
     set_color(cr, darktable.bauhaus->graph_fg); // Use standard text color
 
-    snprintf(text, sizeof(text), "%.0f%%", 100.0f * y_linear); // Format the linear value
+    // the top of the graph is the peak, so HDR output labels it above 100%
+    snprintf(text, sizeof(text), "%.0f%%", 100.0f * y_linear * tone_mapping_params.hdr.headroom);
     pango_layout_set_text(layout, text, -1);
     pango_layout_get_pixel_extents(layout, &g->ink, NULL);
 
@@ -1614,11 +1764,11 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
   const int steps = 200;
 
   // draw the main curve
-  cairo_move_to(cr, 0, _apply_curve(0, &tone_mapping_params) * graph_height);
+  cairo_move_to(cr, 0, _rendered_curve(0, &tone_mapping_params) * graph_height);
   for(int k = 1; k <= steps; k++)
   {
     const float x_norm = (float)k / steps;
-    const float y_norm = _apply_curve(x_norm, &tone_mapping_params);
+    const float y_norm = _rendered_curve(x_norm, &tone_mapping_params);
     cairo_line_to(cr, x_norm * graph_width, y_norm * graph_height);
   }
   cairo_stroke(cr);
@@ -1628,11 +1778,11 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
   {
     cairo_set_source_rgb(cr, 0.75, .5, 0.);
     const int toe_end_step = ceilf(tone_mapping_params.toe_transition_x * steps);
-    cairo_move_to(cr, 0, _apply_curve(0, &tone_mapping_params) * graph_height);
+    cairo_move_to(cr, 0, _rendered_curve(0, &tone_mapping_params) * graph_height);
     for(int k = 1; k <= toe_end_step; k++)
     {
       const float x_norm = (float)k / steps;
-      const float y_norm = _apply_curve(x_norm, &tone_mapping_params);
+      const float y_norm = _rendered_curve(x_norm, &tone_mapping_params);
       cairo_line_to(cr, x_norm * graph_width, y_norm * graph_height);
     }
     cairo_stroke(cr);
@@ -1643,18 +1793,18 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
     cairo_set_source_rgb(cr, 0.75, .5, 0.);
     const int shoulder_start_step = floorf(tone_mapping_params.shoulder_transition_x * steps);
     float x_norm = (float)shoulder_start_step / steps;
-    float y_norm = _apply_curve(x_norm, &tone_mapping_params);
+    float y_norm = _rendered_curve(x_norm, &tone_mapping_params);
     cairo_move_to(cr, x_norm * graph_width, y_norm * graph_height);
     for(int k = shoulder_start_step + 1; k <= steps; k++)
     {
       x_norm = (float)k / steps;
-      y_norm = _apply_curve(x_norm, &tone_mapping_params);
+      y_norm = _rendered_curve(x_norm, &tone_mapping_params);
       cairo_line_to(cr, x_norm * graph_width, y_norm * graph_height);
     }
     cairo_stroke(cr);
   }
 
-  // draw the toe start, shoulder start, pivot
+  // draw the toe start, shoulder start, pivot, on the curve as rendered
   cairo_save(cr);
   // restore line width and color for points
   cairo_set_line_width(cr, line_width);
@@ -1666,21 +1816,24 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
   cairo_clip(cr);
 
   const float x_toe_graph = tone_mapping_params.toe_transition_x * graph_width;
-  const float y_toe_graph = tone_mapping_params.toe_transition_y * graph_height;
+  const float y_toe_graph =
+    _rendered_curve(tone_mapping_params.toe_transition_x, &tone_mapping_params) * graph_height;
   set_color(cr, darktable.bauhaus->graph_fg_active);
   cairo_arc(cr, x_toe_graph, y_toe_graph, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
   cairo_fill(cr);
   cairo_stroke(cr);
 
   const float x_shoulder_graph = tone_mapping_params.shoulder_transition_x * graph_width;
-  const float y_shoulder_graph = tone_mapping_params.shoulder_transition_y * graph_height;
+  const float y_shoulder_graph =
+    _rendered_curve(tone_mapping_params.shoulder_transition_x, &tone_mapping_params) * graph_height;
   set_color(cr, darktable.bauhaus->graph_fg_active);
   cairo_arc(cr, x_shoulder_graph, y_shoulder_graph, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
   cairo_fill(cr);
   cairo_stroke(cr);
 
   const float x_pivot_graph = tone_mapping_params.pivot_x * graph_width;
-  const float y_pivot_graph = tone_mapping_params.pivot_y * graph_height;
+  const float y_pivot_graph =
+    _rendered_curve(tone_mapping_params.pivot_x, &tone_mapping_params) * graph_height;
   set_color(cr, darktable.bauhaus->graph_fg_active);
   cairo_arc(cr, x_pivot_graph, y_pivot_graph, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
   cairo_fill(cr);
@@ -1732,7 +1885,8 @@ static void _update_curve_warnings(dt_iop_module_t *self)
   if(!g) return;
 
   const gboolean warnings_enabled = dt_conf_get_bool("plugins/darkroom/agx/enable_curve_warnings");
-  const tone_mapping_params_t params = _calculate_tone_mapping_params(p);
+  const tone_mapping_params_t params =
+    _pipe_tone_mapping_params(p, g->output_headroom);
 
   dt_bauhaus_widget_set_quad_paint(g->basic_curve_controls.curve_toe_power,
                                     params.need_convex_toe && warnings_enabled
@@ -1747,6 +1901,9 @@ static void _update_redraw_dynamic_gui(dt_iop_module_t* const self,
                                        const dt_iop_agx_params_t* const p)
 {
   gtk_widget_set_visible(g->curve_gamma, !p->auto_gamma);
+  // only edits made before HDR output existed have it off
+  gtk_widget_set_visible(g->target_white_from_output, !p->target_white_from_output);
+  gtk_widget_set_visible(g->hdr_purity, p->target_white_from_output);
   gtk_widget_set_visible(g->primaries_controls_vbox, !p->disable_primaries_adjustments);
   const gboolean post_curve_primaries_available = !p->completely_reverse_primaries && !p->disable_primaries_adjustments;
   gtk_widget_set_visible(g->post_curve_primaries_controls_vbox, post_curve_primaries_available);
@@ -1813,9 +1970,8 @@ void gui_changed(dt_iop_module_t *self,
 
   // unconditionally update visibilities / redraw the curve, required to support updates
   // when called from gui_update
-  if (g) {
+  if(g)
     _update_redraw_dynamic_gui(self, g, p);
-  }
 }
 
 static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
@@ -2000,7 +2156,24 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
-  gtk_widget_set_tooltip_text(slider, _("max linear output power"));
+  gtk_widget_set_tooltip_text(slider, _("max linear output power, relative to the peak of the output"));
+
+  g->target_white_from_output =
+    dt_bauhaus_toggle_from_params(section, "target_white_from_output");
+  gtk_widget_set_tooltip_text
+    (g->target_white_from_output,
+     _("this edit predates HDR output and keeps its white at the 203 nit\n"
+       "reference white. turn on to extend the highlights to the peak of\n"
+       "an HDR output (1000 nits for HLG, the PQ peak set in export),\n"
+       "as in Blender's AgX HDR. SDR output does not change"));
+
+  g->hdr_purity = dt_bauhaus_slider_from_params(section, "hdr_purity");
+  dt_bauhaus_slider_set_format(g->hdr_purity, "%");
+  dt_bauhaus_slider_set_digits(g->hdr_purity, 0);
+  dt_bauhaus_slider_set_factor(g->hdr_purity, 100.f);
+  gtk_widget_set_tooltip_text(g->hdr_purity,
+                              _("for HDR output, how much of the extra saturation and hue shift\n"
+                                "from extending the highlights to the peak is kept"));
 
   // Toe length
   slider = dt_bauhaus_slider_from_params(section, "curve_linear_ratio_below_pivot");
@@ -2139,7 +2312,7 @@ static void _primaries_popupmenu_callback(GtkWidget *button,
   g_menu_append(menu, _("blender-like"), "agx-primaries.activate::blender");
   g_menu_append(menu, _("smooth"), "agx-primaries.activate::smooth");
   g_menu_append(menu, _("unmodified"), "agx-primaries.activate::unmodified");
-  
+
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(button, menu);
   g_object_unref(menu);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
@@ -2475,9 +2648,33 @@ static void _notebook_page_changed(GtkNotebook *notebook,
   }
 }
 
+// a new display profile or PQ peak changes the curve of the darkroom view
+static void _ui_pipe_finished(gpointer instance,
+                              dt_iop_module_t *self)
+{
+  dt_iop_agx_gui_data_t *g = self->gui_data;
+  dt_dev_pixelpipe_t *pipe = self->dev->full.pipe;
+  if(!g || !pipe) return;
+
+  // read on every finished run, cache hits included, since AgX's
+  // process() does not run then. colorout sets the headroom while
+  // synching under busy_mutex; a pipe that is busy again will signal
+  // once more, and a blocking lock could deadlock against process()
+  if(dt_pthread_mutex_trylock(&pipe->busy_mutex)) return;
+  const float headroom = pipe->output_headroom;
+  dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+  if(headroom == g->output_headroom) return;
+
+  g->output_headroom = headroom;
+  _update_curve_warnings(self);
+  gtk_widget_queue_draw(GTK_WIDGET(g->graph_drawing_area));
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_agx_gui_data_t *g = IOP_GUI_ALLOC(agx);
+  g->output_headroom = 1.f;
 
   static dt_action_def_t notebook_def = {};
   g->notebook = dt_ui_notebook_new(&notebook_def);
@@ -2509,10 +2706,14 @@ void gui_init(dt_iop_module_t *self)
   // Finally, add the remaining sections to the settings page
   _add_look_box(settings_section, g);
   _create_primaries_page(self, g);
+
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _ui_pipe_finished);
 }
 
 static void _set_default_curve_and_look_params(dt_iop_agx_params_t *p)
 {
+  p->target_white_from_output = TRUE;
+  p->hdr_purity = 0.5f;
   p->look_slope = 1.f;
   p->look_brightness = 1.f;
   p->look_lift = 0.f;
@@ -2729,6 +2930,7 @@ void commit_params(dt_iop_module_t *self,
   // Calculate curve parameters once
   processing_params->tone_mapping_params = _calculate_tone_mapping_params(p);
   processing_params->primaries_params = _get_primaries_params(p);
+  processing_params->params = *p;
 }
 
 void reload_defaults(dt_iop_module_t *self)
@@ -2843,11 +3045,14 @@ int process_cl(dt_iop_module_t *self,
   }
 
   const int base_working_same_profile = pipe_work_profile == base_profile;
+  const tone_mapping_params_t tone_mapping_params = d->params.target_white_from_output
+    ? _pipe_tone_mapping_params(&d->params, piece->pipe->output_headroom)
+    : d->tone_mapping_params;
 
   err = dt_opencl_enqueue_kernel_2d_args(
     devid, gd->kernel_agx, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
-    CLARG(d->tone_mapping_params),
+    CLARG(tone_mapping_params),
     CLARG(dev_pipe_to_base),
     CLARG(dev_base_to_rendering),
     CLARG(dev_rendering_to_pipe),

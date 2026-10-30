@@ -164,16 +164,18 @@ GRAIN_INLINE float grain_normal(uint32_t s)
   return (u - 2.0f) * 1.7320508f; /* sqrt(3) */
 }
 
-/* grain_pixel_seed: combine pixel coordinates and a channel/sub-layer index into one
-   seed for the grain hash. The three large primes are Teschner et al.'s published
-   spatial-hash constants; XOR-mixing distinct primes per axis keeps neighbouring
-   pixels and channels from sharing a seed (which would correlate their grain).
-   Uses ABSOLUTE image coordinates so grain is stable while panning. */
+/* grain_pixel_seed: combine pixel coordinates, a channel/sub-layer index and a
+   per-image salt into one seed for the grain hash. The three large primes are
+   Teschner et al.'s published spatial-hash constants; XOR-mixing distinct primes
+   per axis keeps neighbouring pixels and channels from sharing a seed (which would
+   correlate their grain). Uses ABSOLUTE image coordinates so grain is stable while
+   panning; the salt (grain_hash of the image id) gives each image its own pattern. */
 GRAIN_INLINE uint32_t grain_pixel_seed(uint32_t xi,
                                       uint32_t yi,
-                                      uint32_t chan)
+                                      uint32_t chan,
+                                      uint32_t salt)
 {
-  return xi * 73856093u ^ yi * 19349663u ^ chan * 83492791u;
+  return (xi * 73856093u ^ yi * 19349663u ^ chan * 83492791u) ^ salt;
 }
 
 /* grain_poisson: one Poisson(lam) draw from a stateless seed.

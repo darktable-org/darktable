@@ -40,6 +40,7 @@ typedef struct dt_gpx_t
   /* the list of track records parsed */
   GList *trkpts;
   GList *trksegs;
+  GPtrArray *timeidx;
 
   /* currently parsed track point */
   dt_gpx_track_point_t *current_track_point;
@@ -109,6 +110,9 @@ dt_gpx_t *dt_gpx_new(const gchar *filename)
 
   gpx->trkpts = g_list_sort(gpx->trkpts, _sort_track);
   gpx->trksegs = g_list_sort(gpx->trksegs, _sort_segment);
+  gpx->timeidx = g_ptr_array_sized_new(g_list_length(gpx->trkpts));
+  for(GList *item = gpx->trkpts; item; item = g_list_next(item))
+    g_ptr_array_add(gpx->timeidx, item);
 
   return gpx;
 
@@ -145,6 +149,7 @@ void dt_gpx_destroy(dt_gpx_t *gpx)
 {
   g_assert(gpx != NULL);
 
+  g_ptr_array_free(gpx->timeidx, TRUE);
   if(gpx->trkpts) g_list_free_full(gpx->trkpts, (GDestroyNotify)_track_pts_free);
   if(gpx->trksegs) g_list_free_full(gpx->trksegs, (GDestroyNotify)_track_seg_free);
 
@@ -156,9 +161,25 @@ gboolean dt_gpx_get_location(const dt_gpx_t *gpx, GDateTime *timestamp, dt_image
   g_assert(gpx != NULL);
 
   /* verify that we got at least 2 trackpoints */
-  if(g_list_shorter_than(gpx->trkpts,2)) return FALSE;
+  if(gpx->timeidx->len < 2) return FALSE;
 
-  for(GList *item = gpx->trkpts; item; item = g_list_next(item))
+  // use a lower bound to preserve the ordering of matches with duplicate timestamps
+  guint left = 0;
+  guint right = gpx->timeidx->len;
+  while(left < right)
+  {
+    const guint mid = left + (right - left) / 2;
+    const GList *item = g_ptr_array_index(gpx->timeidx, mid);
+    const dt_gpx_track_point_t *point = item->data;
+    if(g_date_time_compare(point->time, timestamp) < 0)
+      left = mid + 1;
+    else
+      right = mid;
+  }
+
+  // the binary search selects the matching interval, so this loop should run only once
+  for(GList *item = g_ptr_array_index(gpx->timeidx, left ? left - 1 : 0);
+      item; item = g_list_next(item))
   {
     const dt_gpx_track_point_t *tp = item->data;
 

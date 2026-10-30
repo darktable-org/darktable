@@ -1894,7 +1894,7 @@ static void _init_module_so(void *m)
     if(module->gui_init
        && !dt_iop_load_module_by_so(module_instance, module, NULL))
     {
-      dt_print(DT_DEBUG_VERBOSE,
+      dt_print(DT_DEBUG_PIPE | DT_DEBUG_PARAMS | DT_DEBUG_VERBOSE,
                "loading processing module : %s",
                module_instance->op);
       char *msg = g_strdup_printf(_("%s: %s"),
@@ -2481,7 +2481,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
 
   if(all_ok)
   {
-    dt_print(DT_DEBUG_VERBOSE,
+    dt_print(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
              "[iop_validate_params] `%s' validated data for type \"%s\"%s%s%s",
              name, field->header.type_name,
              *field->header.name ? ", field: " : "",
@@ -2566,7 +2566,7 @@ void dt_iop_commit_params(dt_iop_module_t *module,
   {
     phash = dt_hash(DT_INITHASH, &module->so->op, strlen(module->so->op));
     phash = dt_hash(phash, &module->instance, sizeof(int32_t));
-    phash = dt_hash(phash, module->params, module->params_size);
+    phash = dt_hash(phash, params, module->params_size);
 
     if(is_blending)
     {

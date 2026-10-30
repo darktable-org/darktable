@@ -21,6 +21,19 @@
 
 #define _epsilon 1E-6f
 
+// Must match hdr_params_t in C code
+typedef struct dt_iop_agx_hdr_params_t
+{
+  int enabled;
+  float headroom;
+  float purity;
+  float log_min;
+  float pivot_x;
+  float pivot_y;
+  float toe_scale;
+  float shoulder_scale;
+} dt_iop_agx_hdr_params_t;
+
 // Must match tone_mapping_params_t in C code
 typedef struct dt_iop_agx_tone_mapping_params_t
 {
@@ -55,6 +68,7 @@ typedef struct dt_iop_agx_tone_mapping_params_t
   float look_original_hue_mix_ratio;
   int look_tuned;
   int restore_hue;
+  dt_iop_agx_hdr_params_t hdr;
 } dt_iop_agx_tone_mapping_params_t;
 
 static inline void _agx_compress_into_gamut(float4 *pixel)
@@ -175,6 +189,36 @@ static inline float _agx_lerp_hue(const float original_hue, const float processe
     return mixed_hue - floor(mixed_hue);
 }
 
+// see _hdr_darken() in agx.c
+static inline float _agx_hdr_darken(const float x, const dt_iop_agx_hdr_params_t *hdr)
+{
+    const float log_x = clamp(1.0f - dtcl_log2(fmax(x, 1e-12f)) / hdr->log_min, 0.0f, 1.0f);
+    const float u = log_x - hdr->pivot_x;
+    const float log_y = u < 0.0f
+        ? _agx_scaled_sigmoid(log_x, hdr->toe_scale, 1.0f, 3.0f, hdr->pivot_x, hdr->pivot_y)
+        : hdr->pivot_y + hdr->shoulder_scale * u / (hdr->shoulder_scale + u);
+    return x > 0.0f ? dtcl_exp2(hdr->log_min * (1.0f - log_y)) : 0.0f;
+}
+
+// see _agx_hdr() in agx.c
+static inline void _agx_hdr(float4 *pixel, const dt_iop_agx_hdr_params_t *hdr)
+{
+    const float4 hsv_before = RGB_2_HSV(*pixel);
+    float4 darkened = *pixel;
+    darkened.x = _agx_hdr_darken(pixel->x, hdr);
+    darkened.y = _agx_hdr_darken(pixel->y, hdr);
+    darkened.z = _agx_hdr_darken(pixel->z, hdr);
+    float4 hsv_after = RGB_2_HSV(darkened);
+
+    hsv_after.x = _agx_lerp_hue(hsv_before.x, hsv_after.x, 1.0f - hdr->purity);
+    hsv_after.y = hsv_before.y + hdr->purity * (hsv_after.y - hsv_before.y);
+    darkened = HSV_2_RGB(hsv_after);
+
+    pixel->x = hdr->headroom * darkened.x;
+    pixel->y = hdr->headroom * darkened.y;
+    pixel->z = hdr->headroom * darkened.z;
+}
+
 static inline void _agx_tone_mapping(float4 *rgb_in_out, const dt_iop_agx_tone_mapping_params_t *params, constant float *rendering_to_xyz)
 {
     float4 hsv_pixel = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
@@ -198,6 +242,11 @@ static inline void _agx_tone_mapping(float4 *rgb_in_out, const dt_iop_agx_tone_m
     transformed_pixel.x = dtcl_pow(fmax(0.0f, transformed_pixel.x), params->curve_gamma);
     transformed_pixel.y = dtcl_pow(fmax(0.0f, transformed_pixel.y), params->curve_gamma);
     transformed_pixel.z = dtcl_pow(fmax(0.0f, transformed_pixel.z), params->curve_gamma);
+
+    if(params->hdr.enabled)
+    {
+        _agx_hdr(&transformed_pixel, &params->hdr);
+    }
 
     if(params->restore_hue)
     {

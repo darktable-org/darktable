@@ -137,12 +137,11 @@ static inline float sqrf(const float a)
   return a * a;
 }
 
-// taken from rt code: calculate a * b + (1 - a) * c
-static inline float interpolatef(const float a,
-                                 const float b,
-                                 const float c)
+static inline float mixf(const float x,
+                         const float y,
+                         const float a)
 {
-  return a * (b - c) + c;
+  return DT_FMA(y - x, a, x);
 }
 
 // Kahan summation algorithm

@@ -1183,6 +1183,66 @@ static dt_colorspaces_color_profile_t *_create_profile
   return prof;
 }
 
+// the pipe encodes PQ and HLG with 1.0 at reference white (dt_hdr_encode()),
+// which no ICC shaper can express: the built-in PQ profile puts 1.0 at
+// 10000 nits and has no OOTF for HLG. so for those screens the thumbnail
+// transforms stop at linear light, and dt_colorspaces_transform_to_display()
+// does the encoding
+static cmsHTRANSFORM _create_display_transform(cmsHPROFILE from,
+                                               cmsHPROFILE display_profile,
+                                               const int hdr,
+                                               const dt_iop_color_intent_t intent)
+{
+  if(!hdr)
+    return cmsCreateTransform(from, TYPE_RGBA_8, display_profile, TYPE_BGRA_8,
+                              intent, 0);
+
+  cmsHPROFILE linear = dt_colorspaces_linearize_profile(display_profile);
+  if(!linear) return NULL;
+  cmsHTRANSFORM xform = cmsCreateTransform(from, TYPE_RGBA_8, linear, TYPE_RGBA_FLT,
+                                           intent, 0);
+  dt_colorspaces_cleanup_profile(linear);
+  return xform;
+}
+
+void dt_colorspaces_transform_to_display(cmsHTRANSFORM xform,
+                                         const int hdr,
+                                         const uint8_t *const in,
+                                         uint8_t *const out,
+                                         const int width,
+                                         const int height,
+                                         const size_t in_stride,
+                                         const size_t out_stride)
+{
+  if(!hdr)
+  {
+    DT_OMP_FOR()
+    for(int y = 0; y < height; y++)
+      cmsDoTransform(xform, in + y * in_stride, out + y * out_stride, width);
+    return;
+  }
+
+  size_t padded_size = 0;
+  float *scratchlines = dt_alloc_perthread_float(4 * width, &padded_size);
+  if(!scratchlines) return;
+  DT_OMP_FOR()
+  for(int y = 0; y < height; y++)
+  {
+    float *const line = dt_get_perthread(scratchlines, padded_size);
+    cmsDoTransform(xform, in + y * in_stride, line, width);
+    uint8_t *const o = out + y * out_stride;
+    for(int x = 0; x < width; x++)
+    {
+      float *const px = line + 4 * x;
+      dt_hdr_encode(px, hdr);
+      // cairo wants BGRA
+      for(int c = 0; c < 3; c++)
+        o[4 * x + 2 - c] = (uint8_t)(CLAMPF(px[c], 0.0f, 1.0f) * 255.0f + 0.5f);
+    }
+  }
+  dt_free_align(scratchlines);
+}
+
 // this function is basically thread safe, at least when not called on
 // the global darktable.color_profiles
 static void _update_display_transforms(dt_colorspaces_t *self)
@@ -1193,6 +1253,7 @@ static void _update_display_transforms(dt_colorspaces_t *self)
   if(self->transform_adobe_rgb_to_display)
     cmsDeleteTransform(self->transform_adobe_rgb_to_display);
   self->transform_adobe_rgb_to_display = NULL;
+  self->display_hdr_transfer = DT_HDR_NONE;
 
   const dt_colorspaces_color_profile_t *display_dt_profile =
     _get_profile(self,
@@ -1202,24 +1263,21 @@ static void _update_display_transforms(dt_colorspaces_t *self)
   if(!display_dt_profile) return;
   cmsHPROFILE display_profile = display_dt_profile->profile;
   if(!display_profile) return;
+  self->display_hdr_transfer = dt_colorspaces_hdr_transfer(display_dt_profile->type);
 
   self->transform_srgb_to_display =
-    cmsCreateTransform(_get_profile(self, DT_COLORSPACE_SRGB, "",
-                                    DT_PROFILE_DIRECTION_DISPLAY)->profile,
-                       TYPE_RGBA_8,
-                       display_profile,
-                       TYPE_BGRA_8,
-                       self->display_intent,
-                       0);
+    _create_display_transform(_get_profile(self, DT_COLORSPACE_SRGB, "",
+                                           DT_PROFILE_DIRECTION_DISPLAY)->profile,
+                              display_profile,
+                              self->display_hdr_transfer,
+                              self->display_intent);
 
   self->transform_adobe_rgb_to_display =
-    cmsCreateTransform(_get_profile(self, DT_COLORSPACE_ADOBERGB, "",
-                                    DT_PROFILE_DIRECTION_DISPLAY)->profile,
-                       TYPE_RGBA_8,
-                       display_profile,
-                       TYPE_BGRA_8,
-                       self->display_intent,
-                       0);
+    _create_display_transform(_get_profile(self, DT_COLORSPACE_ADOBERGB, "",
+                                           DT_PROFILE_DIRECTION_DISPLAY)->profile,
+                              display_profile,
+                              self->display_hdr_transfer,
+                              self->display_intent);
 }
 
 static void _update_display2_transforms(dt_colorspaces_t *self)
@@ -1231,6 +1289,7 @@ static void _update_display2_transforms(dt_colorspaces_t *self)
   if(self->transform_adobe_rgb_to_display2)
     cmsDeleteTransform(self->transform_adobe_rgb_to_display2);
   self->transform_adobe_rgb_to_display2 = NULL;
+  self->display2_hdr_transfer = DT_HDR_NONE;
 
   const dt_colorspaces_color_profile_t *display2_dt_profile
       = _get_profile(self,
@@ -1243,24 +1302,21 @@ static void _update_display2_transforms(dt_colorspaces_t *self)
   cmsHPROFILE display2_profile = display2_dt_profile->profile;
   if(!display2_profile)
     return;
+  self->display2_hdr_transfer = dt_colorspaces_hdr_transfer(display2_dt_profile->type);
 
   self->transform_srgb_to_display2
-      = cmsCreateTransform(_get_profile(self, DT_COLORSPACE_SRGB, "",
-                                        DT_PROFILE_DIRECTION_DISPLAY2)->profile,
-                           TYPE_RGBA_8,
-                           display2_profile,
-                           TYPE_BGRA_8,
-                           self->display2_intent,
-                           0);
+      = _create_display_transform(_get_profile(self, DT_COLORSPACE_SRGB, "",
+                                               DT_PROFILE_DIRECTION_DISPLAY2)->profile,
+                                  display2_profile,
+                                  self->display2_hdr_transfer,
+                                  self->display2_intent);
 
   self->transform_adobe_rgb_to_display2
-      = cmsCreateTransform(_get_profile(self, DT_COLORSPACE_ADOBERGB, "",
-                                        DT_PROFILE_DIRECTION_DISPLAY2)->profile,
-                           TYPE_RGBA_8,
-                           display2_profile,
-                           TYPE_BGRA_8,
-                           self->display2_intent,
-                           0);
+      = _create_display_transform(_get_profile(self, DT_COLORSPACE_ADOBERGB, "",
+                                               DT_PROFILE_DIRECTION_DISPLAY2)->profile,
+                                  display2_profile,
+                                  self->display2_hdr_transfer,
+                                  self->display2_intent);
 }
 
 // update cached transforms for color management of thumbnails

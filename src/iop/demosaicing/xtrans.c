@@ -25,7 +25,6 @@
 #define PAD_G_RECALC 6
 
 #define HOMOGENITY_EPS 1e-10f
-#define SOLITARY_EPS 1e-12f
 
 /** Lookup for allhex[], making sure that row/col aren't negative **/
 static inline const short *_hexmap(const int row,
@@ -341,7 +340,7 @@ static void xtrans_markesteijn_interpolate(float *out,
               if((d < 2) || (d & 1))
               { // output for passes 0, 1, 3, 5
                 // for 0, 1 just use hori/vert, for 3, 5 use best of x/y dir
-                const int d_out = d - ((d > 1) && (diff[d-1] + SOLITARY_EPS < diff[d]));
+                const int d_out = d - ((d > 1) && (diff[d-1] < diff[d]));
                 rfx[0][0] = color[0][d_out] / 2.f;
                 rfx[0][2] = color[1][d_out] / 2.f;
                 rfx += TS * TS;
@@ -383,7 +382,12 @@ static void xtrans_markesteijn_interpolate(float *out,
                   {
                     const float g = 3.f * rfx[0][1] - 2.f * rfx[hex[d]][1] - rfx[hex[d + 1]][1];
                     for(int c = 0; c < 4; c += 2)
-                      rfx[0][c] = (g + 2.f * rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 3.f;
+                      /** depending on compiler flags `/ 3.0f` is less precise than `*(1.0f / 3.0f)`
+                          and thus different from OpenCL code. These subtle differences ~1ulp
+                          lead to flipping the solitary-green and homogeneity decisions leading to
+                          incorrect output / OpenCL vs CPU differences.
+                      */
+                      rfx[0][c] = (g + 2.f * rfx[hex[d]][c] + rfx[hex[d + 1]][c]) * (1.0f / 3.0f);
                   }
                   else
                   {
@@ -1370,7 +1374,7 @@ static void xtrans_fdc_interpolate(float *out,
                   float g = 3.f * rfx[0][1] - 2.f * rfx[hex[d]][1] - rfx[hex[d + 1]][1];
                   for(int c = 0; c < 4; c += 2)
                   {
-                    rfx[0][c] = (g + 2.f * rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 3.f;
+                    rfx[0][c] = (g + 2.f * rfx[hex[d]][c] + rfx[hex[d + 1]][c]) * (1.0f / 3.0f);
                     redblue[d][c] = rfx[0][c];
                   }
                 }

@@ -603,8 +603,8 @@ static void _apply_prefilter(const size_t npixels,
     // we avoid chroma blurring into achromatic areas by interpolating
     // input UV vs corrected UV
     const float satweight = _get_satweight(saturation[k] - sat_shift);
-    UV[2 * k + 0] = interpolatef(satweight, cv[0], uv[0]);
-    UV[2 * k + 1] = interpolatef(satweight, cv[1], uv[1]);
+    UV[2 * k + 0] = mixf(uv[0], cv[0], satweight);
+    UV[2 * k + 1] = mixf(uv[1], cv[1], satweight);
   }
 }
 

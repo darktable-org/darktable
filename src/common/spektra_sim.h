@@ -255,6 +255,7 @@ typedef struct sf_sim_gpu_t
   /* expose: work RGB -> film raw exposure */
   float m_in[9];
   float ev_scale;
+  float raw_scale; /* applied with the log, after the pre-film spatial effects */
   int tc_n;
   float *tc_lut; /* tc_n * tc_n * 3 */
   /* film develop */
@@ -294,6 +295,7 @@ typedef struct sf_sim_gpu_t
   float m_out[9]; /* XYZ(view illuminant) -> output RGB, CAT02 included */
   int scan_bw_on;   /* scanner black/white point (positive film scans) */
   float scan_bw_m, scan_bw_q;
+  float glare_xyz[3]; /* viewing illuminant XYZ, Y = 1: the glare veil's colour */
   /* Langmuir couplers (dev/0.4+ packs; flags 0 on 0.3.x = linear) */
   int film_bw; /* B&W stock: achromatic (channel-coupled) grain */
   float coupler_diff_um, coupler_tail_um, coupler_tail_w;
@@ -390,7 +392,8 @@ void sf_grain_delta_ml(const sf_grain_layers_t *layers,
                        int mono,
                        const float dmin_c[3],
                        const float unif_c[3],
-                       float npart_scale);
+                       float npart_scale,
+                       uint32_t salt);
 /* Same per-sub-layer sampling as sf_grain_delta_ml, but returns each
  * sub-layer's raw (un-combined, pre-dmin-subtraction) sample into
  * raw_out[0..layers->n-1] instead, so the caller can dye-cloud-blur each
@@ -406,6 +409,7 @@ void sf_grain_raw_samples_ml(const sf_grain_layers_t *layers,
                              uint32_t yi,
                              float unif_c,
                              float npart_scale,
+                             uint32_t salt,
                              float *raw_out);
 /* SF_GRAIN_MAX_SUBLAYERS is defined earlier in this header, next to SF_NLE
    (both are needed by sf_sim_gpu_t above, which comes before this point). */
@@ -655,8 +659,10 @@ void sf_sim_expose(const sf_sim_t *sim,
                    int nch_in,
                    int nch_out);
 
-/* raw -> log10(max(raw,0) + 1e-10), in place */
-void sf_sim_lograw(float *raw,
+/* raw -> log10(max(raw * raw_scale, 0) + 1e-10), in place. raw_scale is the
+ * positive scan's black/white exposure correction, 1 otherwise */
+void sf_sim_lograw(const sf_sim_t *sim,
+                   float *raw,
                    size_t npix,
                    int nch);
 
@@ -695,9 +701,12 @@ void sf_sim_print_develop(const sf_sim_t *sim,
                           int nch_out);
 
 /* cmy density (print, or film when scan_film) -> linear output RGB,
- * gamut compressed per params->output_compress */
+ * gamut compressed per params->output_compress. glare, when not NULL, is a
+ * per-pixel veil (one float per pixel, see sf_glare_field) added as the viewing
+ * illuminant in XYZ before the output matrix */
 void sf_sim_scan(const sf_sim_t *sim,
                  const float *cmy,
+                 const float *glare,
                  float *rgb_out,
                  size_t npix,
                  int nch_in,

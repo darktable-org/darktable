@@ -100,37 +100,19 @@ static gboolean _history_update(dt_lib_filtering_rule_t *rule)
 
   rule->manual_widget_set++;
   _widgets_history_t *history = (_widgets_history_t *)rule->w_specific;
-  char query[1024] = { 0 };
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-                   "SELECT CASE"
-                   "       WHEN basic_hash == current_hash THEN 0"
-                   "       WHEN auto_hash == current_hash THEN 1"
-                   "       WHEN current_hash IS NOT NULL THEN 2"
-                   "       ELSE 0"
-                   "     END as altered, COUNT(*) AS count"
-                   " FROM main.images AS mi"
-                   " LEFT JOIN (SELECT DISTINCT imgid, basic_hash, auto_hash, current_hash"
-                   "            FROM main.history_hash) ON id = imgid"
-                   " WHERE %s"
-                   " GROUP BY altered"
-                   " ORDER BY altered ASC",
-                   rule->lib->last_where_ext);
-  // clang-format on
-  int counts[3] = { 0 };
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  int hist_counts[3] = { 0 };
+
+  GList *counts = dt_filter_get_history_counts(rule->lib->last_where_ext);
+  for(GList *iter = counts; iter; iter = g_list_next(iter))
   {
-    const int i = sqlite3_column_int(stmt, 0);
-    const int count = sqlite3_column_int(stmt, 1);
-    counts[i] = count;
+    dt_filter_int_count_t *count = iter->data;
+    hist_counts[count->val] = count->count;
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(counts, dt_filter_int_count_free);
 
   for(int i = 0; i < 3; i++)
   {
-    gchar *item = g_strdup_printf("%s (%d)", _(_history_names[i + 1]), counts[i]);
+    gchar *item = g_strdup_printf("%s (%d)", _(_history_names[i + 1]), hist_counts[i]);
 
     dt_bauhaus_combobox_set_entry_label(history->combo, i + 1, item);
     g_free(item);

@@ -101,7 +101,7 @@ vng_lin_interpolate(read_only image2d_t in,
     for(int c = 0; c < colors; c++)
     {
       if(c != f && count[c] != 0)
-        o[c] = sum[c] / count[c];
+        o[c] = fp32_div(sum[c], (float)count[c]);
       else
         o[c] = fmax(0.0f, readsingle(in, x, y));
     }
@@ -124,7 +124,7 @@ vng_lin_interpolate(read_only image2d_t in,
     // for each interpolated color, load it into the pixel
     for(int i = 0; i < colors - 1; i++, ip += 2)
     {
-      o[ip[0]] = sum[ip[0]] / ip[1];
+      o[ip[0]] = fp32_div(sum[ip[0]], (float)ip[1]);
     }
     o[ip[0]] = buffer[0];
   }
@@ -298,7 +298,7 @@ vng_interpolate(read_only image2d_t in,
   for(int c = 0; c < colors; c++)
   {
     float tot = buffer[color];
-    if(c != color) tot += (sum[c] - sum[color]) / num;
+    if(c != color) tot += fp32_div(sum[c] - sum[color], (float)num);
     o[c] = tot;
   }
 

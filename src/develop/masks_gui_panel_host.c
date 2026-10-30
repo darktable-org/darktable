@@ -43,6 +43,11 @@ int dt_masks_gui_panel_position(void)
   return dt_conf_get_int("plugins/darkroom/blend/masks_panel_position");
 }
 
+gboolean dt_masks_gui_is_host_lib(const dt_lib_module_t *module)
+{
+  return darktable.develop && module == darktable.develop->proxy.masks_flexi_host.module;
+}
+
 // which edge the panel is docked against. Not part of the position choice:
 // the panel opens on whichever edge was clicked, and stays there.
 //
@@ -318,8 +323,9 @@ static void _masks_embedded_apply_collapsed(dt_iop_module_t *module,
 //
 //   toggle <space> edit solo | overlay eye | lock <space> expander
 //
-// with no name: which module is focused is the UI's to show, not the
-// panel's. The controls (masks_header_cluster) are the header's center
+// with no name in it: the focus row under it names the module, in the
+// hosted positions (dt_masks_gui_focus_row_sync; embedded, the module's own
+// header does). The controls (masks_header_cluster) are the header's center
 // widget, centered on its whole width whatever its sides hold. Embedded, the
 // on/off toggle sits under the module's own on/off button and the expander
 // under its presets menu. In the utility position the header leads the lib's
@@ -678,24 +684,29 @@ gboolean dt_masks_model_pin_should_expand_iop(const gboolean is_expanded,
 }
 
 // put the panel's header and body back into bd->relocatable_box, in that
-// order: the header into its own home there (masks_header_home), the body
-// after it
+// order: the header into its own home there (masks_header_home), the focus
+// row after it, the body after that
 static void _masks_header_body_home(dt_iop_gui_blend_data_t *bd)
 {
-  GtkWidget *const parts[2] = { bd->masks_blend_header, GTK_WIDGET(bd->masks_panel_body) };
-  GtkWidget *const homes[2] = { GTK_WIDGET(bd->masks_header_home),
-                                GTK_WIDGET(bd->relocatable_box) };
-  for(int i = 0; i < 2; i++)
+  GtkWidget *const parts[3] = { bd->masks_blend_header, GTK_WIDGET(bd->masks_panel_body),
+                                bd->masks_focus_row };
+  GtkWidget *const homes[3] = { GTK_WIDGET(bd->masks_header_home),
+                                GTK_WIDGET(bd->relocatable_box),
+                                GTK_WIDGET(bd->masks_header_home) };
+  // the focus row is the header's second child, the body the box's second
+  const int at[3] = { 0, 1, 1 };
+  for(int i = 0; i < 3; i++)
     if(parts[i] && GTK_IS_WIDGET(parts[i]) && homes[i]
        && gtk_widget_get_parent(parts[i]) != homes[i])
     {
       dt_masks_gui_reparent_into(parts[i], homes[i], FALSE, FALSE);
-      gtk_box_reorder_child(GTK_BOX(homes[i]), parts[i], i);
+      gtk_box_reorder_child(GTK_BOX(homes[i]), parts[i], at[i]);
 
       // on the canvas, the header's outermost child is inset by the panel's
       // scrollbar width (_flexi_sync_header_scrollbar_pad in gui/gtk.c), which
-      // nothing clears when the header leaves: it would stay pushed in
-      if(parts[i] == bd->masks_blend_header)
+      // nothing clears when the header leaves: it would stay pushed in. The
+      // focus row is a row of that header too
+      if(parts[i] == bd->masks_blend_header || parts[i] == bd->masks_focus_row)
       {
         GList *kids = gtk_container_get_children(GTK_CONTAINER(parts[i]));
         for(GList *k = kids; k; k = g_list_next(k))
@@ -759,6 +770,7 @@ static void _masks_flexi_release_full(dt_iop_module_t *module, const gboolean ha
   _masks_header_body_home(bd);
   if(bd->masks_blend_header && GTK_IS_WIDGET(bd->masks_blend_header))
     gtk_widget_set_visible(bd->masks_blend_header, TRUE);
+  dt_masks_gui_focus_row_sync(bd, FALSE);
 
   if(bd->iopw && GTK_IS_WIDGET(bd->iopw))
   {
@@ -933,6 +945,8 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
       _masks_header_body_home(bd);
       if(bd->masks_blend_header && GTK_IS_WIDGET(bd->masks_blend_header))
         gtk_widget_set_visible(bd->masks_blend_header, TRUE);
+      // the module's own header names it
+      dt_masks_gui_focus_row_sync(bd, FALSE);
 
       if(bd->iopw && GTK_IS_WIDGET(bd->iopw))
       {
@@ -944,6 +958,7 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
       if(focus_changed)
         _masks_embedded_apply_collapsed(module, _masks_panel_collapsed_for(module));
       dt_gui_add_class(bd->masks_blend_header, "dt_masks_embedded");
+      dt_masks_gui_build_list(module);
       dt_iop_gui_blend_masks_panel_sync_toolbox();
       return;
     }
@@ -971,6 +986,9 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
       dt_masks_gui_reparent_into(bd->masks_blend_header, hdr_target, FALSE, FALSE);
       gtk_widget_show(bd->masks_blend_header);
     }
+    // the row follows the header onto the panel's sticky one, under it
+    if(hdr_target && bd->masks_focus_row)
+      dt_masks_gui_reparent_into(bd->masks_focus_row, hdr_target, FALSE, FALSE);
     if(cnt_target && bd->masks_panel_body)
     {
       dt_masks_gui_reparent_into(GTK_WIDGET(bd->masks_panel_body), cnt_target, FALSE, FALSE);
@@ -991,6 +1009,8 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
     gtk_widget_set_visible(GTK_WIDGET(bd->masks_panel_body), TRUE);
   _masks_flexi_host_reconfigure();
 
+  dt_masks_gui_focus_row_sync(bd, TRUE);
+
   if(pos == MASKS_PANEL_POS_UTILITY)
   {
     // the panel's header leads the lib's body as it leads the module's
@@ -1005,6 +1025,10 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
     gtk_widget_show(bd->mask_enable_toggle);
     gtk_widget_set_visible(bd->masks_blend_header, TRUE);
     dt_gui_add_class(bd->masks_blend_header, "dt_masks_embedded");
+    // the lib's own header is the header here, so the focus row goes right
+    // under it, above the panel header's controls (the canvas has them as its
+    // header, and the row below). _masks_header_body_home puts it back
+    gtk_box_reorder_child(GTK_BOX(bd->masks_header_home), bd->masks_focus_row, 0);
     // again, now that the lib hosts the mask: its reset button
     dt_iop_gui_blend_mask_header_sync(bd);
 
@@ -1068,6 +1092,7 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
   // :checked, so it simply loses it. (_blendop_mask_enable_toggled branches on
   // mask_mode rather than on the button for the same reason.)
   _sync_mask_enable_toggle(bd);
+  dt_masks_gui_build_list(module);
 
   // focus moved, or the hosted module's masking changed: the toolbox button
   // reports both ("is there a panel to show" and "is it showing")
@@ -1085,6 +1110,12 @@ static void _masks_panel_position_activate(GtkToggleButton *mi, dt_iop_module_t 
 
   const int pos = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(mi), "dt-panel-pos"));
   dt_conf_set_int("plugins/darkroom/blend/masks_panel_position", pos);
+
+  // the focus row's option is for the hosted positions: the popover stays
+  // open while the position changes
+  GtkWidget *row_check =
+    g_object_get_data(G_OBJECT(gtk_widget_get_parent(GTK_WIDGET(mi))), "dt-focus-row-check");
+  if(row_check) gtk_widget_set_visible(row_check, pos != MASKS_PANEL_POS_EMBEDDED);
 
   // update the utility-mode host lib's own visibility for the new position
   _masks_flexi_host_reconfigure();
@@ -1138,6 +1169,14 @@ static void _masks_panel_position_activate(GtkToggleButton *mi, dt_iop_module_t 
   }
 }
 
+static void _masks_focus_row_toggled(GtkToggleButton *mi, dt_iop_module_t *module)
+{
+  dt_conf_set_bool("plugins/darkroom/masks/show_focus_row",
+                   gtk_toggle_button_get_active(mi));
+  // shows or hides the row, with the rest of the panel's placement
+  if(module) dt_iop_gui_blend_masks_panel_relocate(module);
+}
+
 // appends a "blend mask panel position" section to `box` -- radios under a
 // section label, so the current choice is visible at a glance
 void dt_masks_gui_add_panel_position_box(GtkWidget *box, dt_iop_module_t *module)
@@ -1175,6 +1214,22 @@ void dt_masks_gui_add_panel_position_box(GtkWidget *box, dt_iop_module_t *module
     dt_gui_box_add(box, radios[i]);
   }
   DT_LEAVE_GUI_UPDATE();
+
+  // under the radios, for the positions that have a row to show: it comes and
+  // goes with the choice above (_masks_panel_position_activate). no_show_all,
+  // so the popover's show_all leaves that to the position
+  GtkWidget *row_check = gtk_check_button_new_with_label(_("show focused module under header"));
+  gtk_widget_set_tooltip_text(row_check,
+                              _("when enabled (default), a row under the panel's header\n"
+                                "names the module whose mask the panel shows, and its\n"
+                                "instance name, if it has one"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(row_check),
+                               dt_conf_get_bool("plugins/darkroom/masks/show_focus_row"));
+  g_signal_connect(G_OBJECT(row_check), "toggled", G_CALLBACK(_masks_focus_row_toggled), module);
+  gtk_widget_set_no_show_all(row_check, TRUE);
+  gtk_widget_set_visible(row_check, cur_pos != MASKS_PANEL_POS_EMBEDDED);
+  dt_gui_box_add(box, row_check);
+  g_object_set_data(G_OBJECT(box), "dt-focus-row-check", row_check);
 
   for(size_t i = 0; i < G_N_ELEMENTS(items); i++)
     g_signal_connect(G_OBJECT(radios[i]), "toggled",

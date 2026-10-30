@@ -214,7 +214,7 @@ static inline float get_weighted_hue_shift(const float px_hue,
 static inline float wrap_hue(float h)
 {
   h = fmodf(h, 1.0f);
-  if (h < 0.0f) h += 1.0f;
+  if(h < 0.0f) h += 1.0f;
   return h;
 }
 

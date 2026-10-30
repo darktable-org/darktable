@@ -1207,7 +1207,7 @@ static inline void Yrg_to_Ych(const dt_aligned_pixel_t Yrg, dt_aligned_pixel_t Y
   // -> grading RGB conversion.
   const float r = Yrg[1] - 0.21902143f;
   const float g = Yrg[2] - 0.54371398f;
-  const float c = dt_fast_hypotf(g, r);
+  const float c = hypotf(g, r);
   const float cos_h = c != 0.f ? r / c : 1.f;
   const float sin_h = c != 0.f ? g / c : 0.f;
   Ych[0] = Y;

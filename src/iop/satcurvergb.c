@@ -229,7 +229,7 @@ static inline void protect_center_width_to_from_to(const float center,
   const float half = MAX(width, 0.f) * 0.5f;
   *from = CLAMP(center - half, 0.f, 0.5f);
   *to = CLAMP(center + half, 0.f, 0.5f);
-  if (*to < *from)
+  if(*to < *from)
     *to = *from;
 }
 
@@ -281,11 +281,11 @@ static inline float satcurve_lookup_gamut(const float *const gamut_lut, const fl
 
 static inline float satcurve_soft_clip(const float x, const float knee, const float maximum)
 {
-  if (x <= knee)
+  if(x <= knee)
     return x;
 
   const float range = maximum - knee;
-  if (range <= 0.f)
+  if(range <= 0.f)
     return maximum;
 
   return knee + range * (1.f - expf(-(x - knee) / range));
@@ -307,11 +307,11 @@ static inline float clip_jz_chroma(const float Jz, const float Cz, const float c
   dt_apply_transposed_color_matrix(izab, AI_trans, lms);
 
   float max_c = Cz;
-  if (lms[0] < 0.f)
+  if(lms[0] < 0.f)
     max_c = MIN(max_c, -Iz / (AI_trans[1][0] * ch + AI_trans[2][0] * sh));
-  if (lms[1] < 0.f)
+  if(lms[1] < 0.f)
     max_c = MIN(max_c, -Iz / (AI_trans[1][1] * ch + AI_trans[2][1] * sh));
-  if (lms[2] < 0.f)
+  if(lms[2] < 0.f)
     max_c = MIN(max_c, -Iz / (AI_trans[1][2] * ch + AI_trans[2][2] * sh));
 
   return MAX(max_c, 0.f);
@@ -334,7 +334,7 @@ static inline float pixel_s_in_norm_jzazbz(const float *const restrict rgb_in,
   const float gamut = MAX(satcurve_lookup_gamut(gamut_lut, h), FLT_MIN);
   const float s_in = Jz > 0.f ? Cz / Jz : 0.f;
 
-  if (h_out)
+  if(h_out)
     *h_out = h;
   return s_in / gamut;
 }
@@ -375,7 +375,7 @@ static inline float pixel_s_in_norm_ucs(const float *const restrict rgb_in,
 
   const float gamut_s = satcurve_ucs_gamut_saturation(JCH[0], JCH[2], L_white, gamut_lut);
 
-  if (h_out)
+  if(h_out)
     *h_out = JCH[2];
 
   const float saturation = HCB[2] > 0.f ? HCB[1] / HCB[2] : 0.f;
@@ -389,7 +389,7 @@ static inline float pixel_s_in_norm(const dt_iop_satcurve_formula_t formula,
                                     const float L_white,
                                     float *const restrict h_out)
 {
-  if (formula == DT_IOP_SATCURVE_DTUCS)
+  if(formula == DT_IOP_SATCURVE_DTUCS)
     return pixel_s_in_norm_ucs(rgb_in, inputmatrix_trans, gamut_lut, L_white, h_out);
 
   return pixel_s_in_norm_jzazbz(rgb_in, inputmatrix_trans, gamut_lut, h_out);
@@ -453,12 +453,12 @@ static inline float protection_weight(const float s_raw,
 static void _commit_sat_histogram(dt_iop_module_t *self, const int *const bins)
 {
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
-  if (!g)
+  if(!g)
     return;
 
   float local_hist[DT_IOP_SATCURVE_HIST_RES];
   float max_val = 0.f;
-  for (int i = 0; i < DT_IOP_SATCURVE_HIST_RES; i++)
+  for(int i = 0; i < DT_IOP_SATCURVE_HIST_RES; i++)
   {
     local_hist[i] = log1pf((float)bins[i]);
     max_val = MAX(max_val, local_hist[i]);
@@ -479,14 +479,14 @@ static void _update_sat_histogram(dt_iop_module_t *self,
                                   const size_t npixels)
 {
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
-  if (!g)
+  if(!g)
     return;
 
   int local_hist[DT_IOP_SATCURVE_HIST_RES] = {0};
   const float L_white = Y_to_dt_UCS_L_star(1.f);
 
   DT_OMP_FOR(reduction(+ : local_hist[:DT_IOP_SATCURVE_HIST_RES]))
-  for (size_t k = 0; k < npixels; k++)
+  for(size_t k = 0; k < npixels; k++)
   {
     const float s_in_norm = pixel_s_in_norm(d->formula, in + 4 * k, inputmatrix_trans, d->gamut_lut, L_white, NULL);
     const int bin = CLAMP((int)(s_in_norm * (DT_IOP_SATCURVE_HIST_RES - 1)),
@@ -598,7 +598,7 @@ static inline void prepare_scalar_mask(const dt_iop_satcurve_data_t *d,
                                        const size_t npixels)
 {
   DT_OMP_FOR()
-  for (size_t k = 0; k < npixels; k++)
+  for(size_t k = 0; k < npixels; k++)
   {
     mask[k] = pixel_s_in_norm(d->formula, in + 4 * k, inputmatrix_trans,
                               d->gamut_lut, L_white, NULL);
@@ -615,7 +615,7 @@ static inline void visualize_mask_preview(const float *const restrict in,
                                           const size_t npixels)
 {
   DT_OMP_FOR()
-  for (size_t k = 0; k < npixels; k++)
+  for(size_t k = 0; k < npixels; k++)
   {
     // white at t = 0, magenta {0.5, 0.0, 0.5} at t = 1
     const float t = sqrtf(CLAMP(mask[k], 0.f, 1.f));
@@ -648,7 +648,7 @@ static inline void prepare_guided_filter_control(const dt_iop_satcurve_data_t *d
 {
   const size_t npixels = (size_t)width * height;
   float *const restrict guide = dt_alloc_align_float(npixels * 3);
-  if (!guide)
+  if(!guide)
   {
     memcpy(filtered, raw, npixels * sizeof(float));
     memset(noise_confidence, 0, npixels * sizeof(float));
@@ -656,14 +656,14 @@ static inline void prepare_guided_filter_control(const dt_iop_satcurve_data_t *d
   }
 
   DT_OMP_FOR()
-  for (size_t k = 0; k < npixels; k++)
+  for(size_t k = 0; k < npixels; k++)
   {
     dt_aligned_pixel_t rgb, xyz;
     copy_pixel(rgb, in + 4 * k);
     dt_vector_clipneg(rgb);
     dt_apply_transposed_color_matrix(rgb, inputmatrix_trans, xyz);
 
-    if (d->formula == DT_IOP_SATCURVE_JZAZBZ)
+    if(d->formula == DT_IOP_SATCURVE_JZAZBZ)
     {
       dt_aligned_pixel_t jab;
       dt_XYZ_2_JzAzBz(xyz, jab);
@@ -686,24 +686,24 @@ static inline void prepare_guided_filter_control(const dt_iop_satcurve_data_t *d
                 MAX(0.01f, d->gf_feathering * 0.01f), 1.0f, 0.0f, 1.0f);
 
   DT_OMP_FOR()
-  for (int row = 0; row < height; row++)
+  for(int row = 0; row < height; row++)
   {
-    for (int col = 0; col < width; col++)
+    for(int col = 0; col < width; col++)
     {
       const size_t k = (size_t)row * width + col;
       float residual_energy = 0.0f;
       float edge_energy = 0.0f;
       int count = 0;
-      for (int dy = -1; dy <= 1; dy++)
+      for(int dy = -1; dy <= 1; dy++)
       {
-        for (int dx = -1; dx <= 1; dx++)
+        for(int dx = -1; dx <= 1; dx++)
         {
           const int r = CLAMP(row + dy, 0, height - 1);
           const int c = CLAMP(col + dx, 0, width - 1);
           const size_t n = (size_t)r * width + c;
           const float residual = raw[n] - filtered[n];
           residual_energy += residual * residual;
-          for (int channel = 0; channel < 3; channel++)
+          for(int channel = 0; channel < 3; channel++)
           {
             const float delta = guide[3 * n + channel] - guide[3 * k + channel];
             edge_energy += delta * delta;
@@ -733,7 +733,7 @@ static inline void apply_guided_filter_control(const float *const restrict raw,
                                                const size_t npixels)
 {
   DT_OMP_FOR()
-  for (size_t k = 0; k < npixels; k++)
+  for(size_t k = 0; k < npixels; k++)
   {
     const float weight = protection_weight(raw[k], protect_from, protect_to,
                                            confidence[k], noise_protection);
@@ -752,7 +752,7 @@ static gboolean alloc_scratch_floats(const size_t npixels, float **a, float **b,
   *b = dt_alloc_align_float(npixels);
   *c = dt_alloc_align_float(npixels);
 
-  if (*a && *b && *c)
+  if(*a && *b && *c)
     return TRUE;
 
   dt_free_align(*a);
@@ -770,7 +770,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
 
   const dt_iop_order_iccprofile_info_t *work_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
-  if (!work_profile || piece->colors != 4)
+  if(!work_profile || piece->colors != 4)
   {
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
     return;
@@ -791,7 +791,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
   const float L_white = Y_to_dt_UCS_L_star(1.f);
 
-  if (self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && dt_iop_has_focus(self) && piece->pipe == self->dev->full.pipe)
+  if(self->dev->gui_attached && piece->pipe == self->dev->preview_pipe)
     _update_sat_histogram(self, d, inputmatrix_trans, in, npixels);
 
   // Display a grayscale preview of the normalized saturation mask.
@@ -805,15 +805,15 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   if(mask_display)
   {
     float *const restrict mask = dt_alloc_align_float(npixels);
-    if (mask)
+    if(mask)
     {
       prepare_scalar_mask(d, inputmatrix_trans, L_white, in, mask, npixels);
 
       // Show final coordinate fed into curve.
-      if (guided_filter_active(d))
+      if(guided_filter_active(d))
       {
         float *filtered, *confidence, *control;
-        if (alloc_scratch_floats(npixels, &filtered, &confidence, &control))
+        if(alloc_scratch_floats(npixels, &filtered, &confidence, &control))
         {
           prepare_guided_filter_control(d, inputmatrix_trans, L_white, in, mask, filtered, confidence,
                                         roi_out->width, roi_out->height,
@@ -839,7 +839,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const gboolean neutral_sat = channel_is_neutral(&d->channel[DT_IOP_SATCURVE_CHANNEL_SATURATION]);
   const gboolean neutral_bri = channel_is_neutral(&d->channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE]);
 
-  if (neutral_sat && neutral_bri)
+  if(neutral_sat && neutral_bri)
   {
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
     return;
@@ -850,9 +850,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   float *noise_confidence = NULL;
   float *raw_mask = NULL;
 
-  if (guided_filter_active(d))
+  if(guided_filter_active(d))
   {
-    if (alloc_scratch_floats(npixels, &raw_mask, &filtered_mask, &noise_confidence))
+    if(alloc_scratch_floats(npixels, &raw_mask, &filtered_mask, &noise_confidence))
     {
       prepare_scalar_mask(d, inputmatrix_trans, L_white, in, raw_mask, npixels);
       prepare_guided_filter_control(d, inputmatrix_trans, L_white, in, raw_mask, filtered_mask,
@@ -866,7 +866,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   }
 
   DT_OMP_FOR()
-  for (size_t k = 0; k < npixels; k++)
+  for(size_t k = 0; k < npixels; k++)
   {
     dt_aligned_pixel_t rgb, xyz, pixout;
     copy_pixel(rgb, in + 4 * k);
@@ -876,7 +876,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     // Guided filtering supplies same protected coordinate to both curves.
     float s_in_sat, s_in_bri;
     float noise_conf = 0.0f;
-    if (filtered_mask)
+    if(filtered_mask)
     {
       // noise_protection is deliberately NOT passed here (0.0f): the noise
       // damping still acts on sat_factor/bri_factor inside
@@ -893,7 +893,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       s_in_sat = s_in_bri = pixel_s_in_norm(d->formula, in + 4 * k, inputmatrix_trans, d->gamut_lut, L_white, NULL);
     }
 
-    if (d->formula == DT_IOP_SATCURVE_DTUCS)
+    if(d->formula == DT_IOP_SATCURVE_DTUCS)
       apply_sat_and_brilliance_ucs(d, xyz, L_white, s_in_sat, s_in_bri, noise_conf);
     else
       apply_sat_and_brilliance_jzazbz(d, xyz, s_in_sat, s_in_bri, noise_conf);
@@ -930,7 +930,7 @@ void tiling_callback(dt_iop_module_t *self,
   tiling->overlap = 0;
   tiling->align = 1;
 
-  if (!gf_active)
+  if(!gf_active)
     return;
 
   // Four scalar full-resolution buffers plus one three-channel perceptual
@@ -962,7 +962,7 @@ static gboolean alloc_gf_scratch_cl(const int devid, const int width, const int 
   *noise_confidence_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
   *mask_control_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
 
-  if (*mask_scalar_cl && *mask_filtered_cl && *guide_cl && *noise_confidence_cl && *mask_control_cl)
+  if(*mask_scalar_cl && *mask_filtered_cl && *guide_cl && *noise_confidence_cl && *mask_control_cl)
     return TRUE;
 
   dt_control_log(_("saturation curve: guided filter failed to allocate memory, "
@@ -1000,21 +1000,21 @@ static cl_int run_gf_pipeline_cl(const int devid,
       CLARG(width), CLARG(height),
       CLARG(input_matrix_cl), CLARG(gamut_lut_cl),
       CLARG(d->formula), CLARG(L_white));
-  if (err != CL_SUCCESS)
+  if(err != CL_SUCCESS)
     return err;
 
   err = dt_opencl_enqueue_kernel_2d_args(
       devid, gd->kernel_satcurve_perceptual_guide, width, height,
       CLARG(dev_in), CLARG(guide_cl), CLARG(width), CLARG(height),
       CLARG(input_matrix_cl), CLARG(L_white));
-  if (err != CL_SUCCESS)
+  if(err != CL_SUCCESS)
     return err;
 
   err = guided_filter_cl(devid, guide_cl, mask_scalar_cl, mask_filtered_cl,
                          width, height, 3,
                          MAX(1, (int)d->gf_radius),
                          MAX(0.01f, d->gf_feathering * 0.01f), 1.0f, 0.0f, 1.0f);
-  if (err != CL_SUCCESS)
+  if(err != CL_SUCCESS)
     return err;
 
   return dt_opencl_enqueue_kernel_2d_args(
@@ -1043,7 +1043,7 @@ static gboolean prepare_gf_mask_cl(const int devid,
                                    cl_mem *mask_control_cl,
                                    cl_int *err)
 {
-  if (!alloc_gf_scratch_cl(devid, width, height, mask_scalar_cl, mask_filtered_cl,
+  if(!alloc_gf_scratch_cl(devid, width, height, mask_scalar_cl, mask_filtered_cl,
                            guide_cl, noise_confidence_cl, mask_control_cl))
     return FALSE;
 
@@ -1062,12 +1062,12 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const dt_iop_satcurve_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
-  if (piece->colors != 4)
+  if(piece->colors != 4)
     return err;
 
   const dt_iop_order_iccprofile_info_t *const work_profile =
       dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
-  if (work_profile == NULL)
+  if(work_profile == NULL)
     return err;
 
   const int devid = piece->pipe->devid;
@@ -1106,7 +1106,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
   gamut_lut_cl = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->gamut_lut);
 
-  if (input_matrix_cl == NULL || gamut_lut_cl == NULL)
+  if(input_matrix_cl == NULL || gamut_lut_cl == NULL)
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto error;
@@ -1118,15 +1118,14 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   // _update_sat_histogram() on the CPU path, which also runs before every
   // early return.
   const gboolean want_histogram =
-      self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && dt_iop_has_focus(self) && piece->pipe == self->dev->full.pipe;
-
-  if (want_histogram)
+      self->dev->gui_attached && piece->pipe == self->dev->preview_pipe;
+  if(want_histogram)
   {
     int hist_bins_host[DT_IOP_SATCURVE_HIST_RES] = {0};
     const size_t hist_bins_size = sizeof(int) * DT_IOP_SATCURVE_HIST_RES;
 
     hist_bins_cl = dt_opencl_alloc_device_buffer(devid, hist_bins_size);
-    if (hist_bins_cl && dt_opencl_write_buffer_to_device(devid, hist_bins_host, hist_bins_cl, 0,
+    if(hist_bins_cl && dt_opencl_write_buffer_to_device(devid, hist_bins_host, hist_bins_cl, 0,
                                                          hist_bins_size, TRUE) == CL_SUCCESS)
     {
       const cl_int hist_err = dt_opencl_enqueue_kernel_2d_args(
@@ -1136,7 +1135,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
           CLARG(d->formula), CLARG(L_white),
           CLARG(hist_bins_cl));
 
-      if (hist_err == CL_SUCCESS && dt_opencl_read_buffer_from_device(devid, hist_bins_host, hist_bins_cl, 0,
+      if(hist_err == CL_SUCCESS && dt_opencl_read_buffer_from_device(devid, hist_bins_host, hist_bins_cl, 0,
                                                                       hist_bins_size, TRUE) == CL_SUCCESS)
         _commit_sat_histogram(self, hist_bins_host);
     }
@@ -1146,23 +1145,23 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   }
 
   // Mask preview mode mirrors CPU final coordinate.
-  if (want_mask)
+  if(want_mask)
   {
-    if (gf_active)
+    if(gf_active)
     {
       cl_int gf_err = CL_SUCCESS;
-      if (!prepare_gf_mask_cl(devid, gd, d, dev_in, input_matrix_cl, gamut_lut_cl, L_white,
+      if(!prepare_gf_mask_cl(devid, gd, d, dev_in, input_matrix_cl, gamut_lut_cl, L_white,
                               width, height, &mask_scalar_cl, &mask_filtered_cl, &guide_cl,
                               &noise_confidence_cl, &mask_control_cl, &gf_err))
         gf_active = FALSE;
-      else if (gf_err != CL_SUCCESS)
+      else if(gf_err != CL_SUCCESS)
       {
         err = gf_err;
         goto error;
       }
     }
 
-    if (!gf_active)
+    if(!gf_active)
     {
       err = dt_opencl_enqueue_kernel_2d_args(
           devid, gd->kernel_satcurve_mask, width, height,
@@ -1182,14 +1181,14 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
           CLARG(d->gf_protect_from), CLARG(d->gf_protect_to), CLARG(mask_noise_protection));
     }
 
-    if (err == CL_SUCCESS)
+    if(err == CL_SUCCESS)
       piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     goto error;
   }
 
   const gboolean neutral_sat = channel_is_neutral(&d->channel[DT_IOP_SATCURVE_CHANNEL_SATURATION]);
   const gboolean neutral_bri = channel_is_neutral(&d->channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE]);
-  if (neutral_sat && neutral_bri)
+  if(neutral_sat && neutral_bri)
   {
     err = dt_opencl_enqueue_copy_image(piece->pipe->devid, dev_in, dev_out,
                                        (size_t[]){0, 0, 0},
@@ -1206,21 +1205,21 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       devid, DT_IOP_SATCURVE_RES * sizeof(float),
       d->channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE].lut);
 
-  if (output_matrix_cl == NULL || sat_lut_cl == NULL || bri_lut_cl == NULL)
+  if(output_matrix_cl == NULL || sat_lut_cl == NULL || bri_lut_cl == NULL)
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto error;
   }
 
   // 1. Prepare filtered saturation mask if guided filter is enabled
-  if (gf_active)
+  if(gf_active)
   {
     cl_int gf_err = CL_SUCCESS;
-    if (!prepare_gf_mask_cl(devid, gd, d, dev_in, input_matrix_cl, gamut_lut_cl, L_white,
+    if(!prepare_gf_mask_cl(devid, gd, d, dev_in, input_matrix_cl, gamut_lut_cl, L_white,
                             width, height, &mask_scalar_cl, &mask_filtered_cl, &guide_cl,
                             &noise_confidence_cl, &mask_control_cl, &gf_err))
       gf_active = FALSE;
-    else if (gf_err != CL_SUCCESS)
+    else if(gf_err != CL_SUCCESS)
     {
       err = gf_err;
       goto error;
@@ -1291,7 +1290,7 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 {
   dt_iop_satcurve_data_t *d = dt_calloc_align_type(dt_iop_satcurve_data_t, 1);
 
-  for (int ch = 0; ch < DT_IOP_SATCURVE_CHANNELS; ch++)
+  for(int ch = 0; ch < DT_IOP_SATCURVE_CHANNELS; ch++)
   {
     d->channel[ch].lut = dt_alloc_align_float(DT_IOP_SATCURVE_RES);
     d->channel[ch].curve = dt_draw_curve_new(0.f, 1.f, MONOTONE_HERMITE);
@@ -1308,12 +1307,12 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_satcurve_data_t *d = piece->data;
-  if (!d)
+  if(!d)
     return;
 
-  for (int ch = 0; ch < DT_IOP_SATCURVE_CHANNELS; ch++)
+  for(int ch = 0; ch < DT_IOP_SATCURVE_CHANNELS; ch++)
   {
-    if (d->channel[ch].curve)
+    if(d->channel[ch].curve)
       dt_draw_curve_destroy(d->channel[ch].curve);
     dt_free_align(d->channel[ch].lut);
   }
@@ -1335,9 +1334,9 @@ static void build_jzazbz_gamut_lut(dt_iop_satcurve_data_t *d,
   float *sampler = dt_calloc_align_float(LUT_ELEM);
 
   DT_OMP_FOR(reduction(max : sampler[:LUT_ELEM]) collapse(3))
-  for (int r = 0; r < DT_IOP_SATCURVE_GAMUT_STEPS; r++)
-    for (int g = 0; g < DT_IOP_SATCURVE_GAMUT_STEPS; g++)
-      for (int b = 0; b < DT_IOP_SATCURVE_GAMUT_STEPS; b++)
+  for(int r = 0; r < DT_IOP_SATCURVE_GAMUT_STEPS; r++)
+    for(int g = 0; g < DT_IOP_SATCURVE_GAMUT_STEPS; g++)
+      for(int b = 0; b < DT_IOP_SATCURVE_GAMUT_STEPS; b++)
       {
         const dt_aligned_pixel_t rgb = {
             r / (float)(DT_IOP_SATCURVE_GAMUT_STEPS - 1),
@@ -1355,7 +1354,7 @@ static void build_jzazbz_gamut_lut(dt_iop_satcurve_data_t *d,
         sampler[index] = MAX(sampler[index], sat);
       }
 
-  for (size_t i = 2; i < LUT_ELEM - 2; i++)
+  for(size_t i = 2; i < LUT_ELEM - 2; i++)
     d->gamut_lut[i] = (sampler[i - 2] + sampler[i - 1] + sampler[i] + sampler[i + 1] + sampler[i + 2]) / 5.f;
   d->gamut_lut[0] = (sampler[LUT_ELEM - 2] + sampler[LUT_ELEM - 1] + sampler[0] + sampler[1] + sampler[2]) / 5.f;
   d->gamut_lut[1] = (sampler[LUT_ELEM - 1] + sampler[0] + sampler[1] + sampler[2] + sampler[3]) / 5.f;
@@ -1368,7 +1367,7 @@ static void build_jzazbz_gamut_lut(dt_iop_satcurve_data_t *d,
 static void build_gamut_lut(dt_iop_satcurve_data_t *d,
                             const dt_iop_order_iccprofile_info_t *work_profile)
 {
-  if (d->formula == DT_IOP_SATCURVE_DTUCS)
+  if(d->formula == DT_IOP_SATCURVE_DTUCS)
   {
     dt_colormatrix_t inputmatrix = {{0.0f}};
     dt_colormatrix_mul(inputmatrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
@@ -1395,20 +1394,20 @@ static void _sync_curve_and_calc_values(dt_draw_curve_t **curve,
                                         float *const restrict out_values,
                                         const int res)
 {
-  if (*curve_type != src->curve_type || *curve_num_nodes != src->curve_num_nodes)
+  if(*curve_type != src->curve_type || *curve_num_nodes != src->curve_num_nodes)
   {
-    if (*curve)
+    if(*curve)
       dt_draw_curve_destroy(*curve);
     *curve = dt_draw_curve_new(0.f, 1.f, src->curve_type);
     *curve_type = src->curve_type;
     *curve_num_nodes = src->curve_num_nodes;
 
-    for (int i = 0; i < src->curve_num_nodes; i++)
+    for(int i = 0; i < src->curve_num_nodes; i++)
       dt_draw_curve_add_point(*curve, src->curve[i].x, src->curve[i].y);
   }
   else
   {
-    for (int i = 0; i < src->curve_num_nodes; i++)
+    for(int i = 0; i < src->curve_num_nodes; i++)
       dt_draw_curve_set_point(*curve, i, src->curve[i].x, src->curve[i].y);
   }
 
@@ -1428,13 +1427,13 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_satcurve_data_t *d = piece->data;
   const dt_iop_satcurve_params_t *p = (const dt_iop_satcurve_params_t *)p1;
 
-  if (d->formula != p->formula)
+  if(d->formula != p->formula)
   {
     d->formula = p->formula;
     d->lut_inited = FALSE;
   }
 
-  for (int ch = 0; ch < DT_IOP_SATCURVE_CHANNELS; ch++)
+  for(int ch = 0; ch < DT_IOP_SATCURVE_CHANNELS; ch++)
     sync_channel_curve(&d->channel[ch], &p->channel[ch]);
 
   d->use_guided_filter = p->use_guided_filter;
@@ -1447,7 +1446,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   const dt_iop_order_iccprofile_info_t *work_profile =
       dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
 
-  if (work_profile && (!d->lut_inited || work_profile != d->work_profile))
+  if(work_profile && (!d->lut_inited || work_profile != d->work_profile))
   {
     build_gamut_lut(d, work_profile);
     d->work_profile = work_profile;
@@ -1496,17 +1495,17 @@ void init_presets(dt_iop_module_so_t *self)
 
 static inline int add_node_to_channel(dt_iop_satcurve_channel_params_t *c, const float x, const float y)
 {
-  if (c->curve_num_nodes >= DT_IOP_SATCURVE_MAXNODES)
+  if(c->curve_num_nodes >= DT_IOP_SATCURVE_MAXNODES)
     return -1;
 
   int at = 0;
-  while (at < c->curve_num_nodes && c->curve[at].x < x)
+  while(at < c->curve_num_nodes && c->curve[at].x < x)
     at++;
 
-  if ((at && x - c->curve[at - 1].x < DT_IOP_SATCURVE_MIN_X_DISTANCE) || (at < c->curve_num_nodes && c->curve[at].x - x < DT_IOP_SATCURVE_MIN_X_DISTANCE))
+  if((at && x - c->curve[at - 1].x < DT_IOP_SATCURVE_MIN_X_DISTANCE) || (at < c->curve_num_nodes && c->curve[at].x - x < DT_IOP_SATCURVE_MIN_X_DISTANCE))
     return -1;
 
-  for (int i = c->curve_num_nodes; i > at; i--)
+  for(int i = c->curve_num_nodes; i > at; i--)
     c->curve[i] = c->curve[i - 1];
   c->curve[at] = (dt_iop_satcurve_node_t){x, y};
   c->curve_num_nodes++;
@@ -1530,7 +1529,7 @@ static void _draw_sat_histogram(cairo_t *cr, dt_iop_satcurve_gui_data_t *g, cons
   cairo_set_source_rgba(cr, .8, .8, .8, .30);
   cairo_move_to(cr, 0, h);
 
-  for (int i = 0; i < DT_IOP_SATCURVE_HIST_RES; i++)
+  for(int i = 0; i < DT_IOP_SATCURVE_HIST_RES; i++)
   {
     const float x = w * i / (float)(DT_IOP_SATCURVE_HIST_RES - 1);
     const float y = h * (1.f - g->histogram[i] / hist_max);
@@ -1548,9 +1547,9 @@ static void _draw_sat_histogram(cairo_t *cr, dt_iop_satcurve_gui_data_t *g, cons
 static void _draw_sat_picker(cairo_t *cr, dt_iop_module_t *self, const int w, const int h)
 {
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
-  if (!g->picker_valid)
+  if(!g->picker_valid)
     return;
-  if (self->request_color_pick != DT_REQUEST_COLORPICK_MODULE)
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE)
     return;
 
   const float x_mean = CLAMP(g->picked_s, 0.f, 1.f) * w;
@@ -1585,7 +1584,7 @@ static void _draw_channel_curve(cairo_t *cr,
   cairo_set_source_rgba(cr, r, g, b, active ? .95 : .50);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(active ? 2.0 : 1.2));
   cairo_move_to(cr, 0, h * (1.f - gc->draw_ys[0]));
-  for (int i = 1; i < DT_IOP_SATCURVE_RES; i++)
+  for(int i = 1; i < DT_IOP_SATCURVE_RES; i++)
   {
     const float x = w * i / (float)(DT_IOP_SATCURVE_RES - 1);
     const float y = h * (1.f - gc->draw_ys[i]);
@@ -1593,10 +1592,10 @@ static void _draw_channel_curve(cairo_t *cr,
   }
   cairo_stroke(cr);
 
-  if (active)
+  if(active)
   {
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
-    for (int i = 0; i < cp->curve_num_nodes; i++)
+    for(int i = 0; i < cp->curve_num_nodes; i++)
     {
       const float px = w * cp->curve[i].x;
       const float py = h * (1.f - cp->curve[i].y);
@@ -1632,7 +1631,7 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   cairo_save(cr);
   cairo_translate(cr, gx0, gy0);
 
-  for (int ch = 0; ch < DT_IOP_SATCURVE_CHANNELS; ch++)
+  for(int ch = 0; ch < DT_IOP_SATCURVE_CHANNELS; ch++)
     _sync_gui_curve(&g->channel[ch], &p->channel[ch]);
 
   _draw_sat_histogram(cr, g, (int)gw, (int)gh);
@@ -1640,13 +1639,13 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 
   cairo_set_source_rgba(cr, 1, 1, 1, .08);
   cairo_set_line_width(cr, 1.0);
-  for (int i = 0; i <= 4; i++)
+  for(int i = 0; i <= 4; i++)
   {
     const float y = gh * i / 4.f;
     cairo_move_to(cr, 0, y);
     cairo_line_to(cr, gw, y);
   }
-  for (int i = 0; i <= 4; i++)
+  for(int i = 0; i <= 4; i++)
   {
     const float x = gw * i / 4.f;
     cairo_move_to(cr, x, 0);
@@ -1697,12 +1696,12 @@ static inline int _node_hit_at(const dt_iop_satcurve_channel_params_t *cp,
 {
   int nearest = -1;
   float best = DT_IOP_SATCURVE_NODE_GRAB_SQ;
-  for (int i = 0; i < cp->curve_num_nodes; i++)
+  for(int i = 0; i < cp->curve_num_nodes; i++)
   {
     const float dx = x - cp->curve[i].x;
     const float dy = y - cp->curve[i].y;
     const float d2 = dx * dx + dy * dy;
-    if (d2 < best)
+    if(d2 < best)
     {
       best = d2;
       nearest = i;
@@ -1720,7 +1719,7 @@ static void area_button_press(GtkGestureSingle *gesture,
   DT_GUARD_GUI_UPDATE();
 
   const int button = gtk_gesture_single_get_current_button(gesture);
-  if (button != GDK_BUTTON_PRIMARY && button != GDK_BUTTON_SECONDARY)
+  if(button != GDK_BUTTON_PRIMARY && button != GDK_BUTTON_SECONDARY)
     return;
 
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
@@ -1734,7 +1733,7 @@ static void area_button_press(GtkGestureSingle *gesture,
   // keep the existing resize-handle guard: pointer-position based, so it
   // still applies regardless of whether the handle strip's own gesture
   // claims the event first.
-  if (y >= a.height - DT_RESIZE_HANDLE_SIZE)
+  if(y >= a.height - DT_RESIZE_HANDLE_SIZE)
     return;
 
   float gx0, gy0, w, h;
@@ -1745,10 +1744,10 @@ static void area_button_press(GtkGestureSingle *gesture,
 
   int hit = _node_hit_at(cp, nx, ny);
 
-  if (button == GDK_BUTTON_PRIMARY)
+  if(button == GDK_BUTTON_PRIMARY)
   {
     // a double-click resets the curve of the active channel
-    if (n_press >= 2)
+    if(n_press >= 2)
     {
       reset_channel_curve(cp);
       g->selected = -1;
@@ -1757,7 +1756,7 @@ static void area_button_press(GtkGestureSingle *gesture,
     }
     else
     {
-      if (hit < 0 && cp->curve_num_nodes < DT_IOP_SATCURVE_MAXNODES)
+      if(hit < 0 && cp->curve_num_nodes < DT_IOP_SATCURVE_MAXNODES)
         hit = add_node_to_channel(cp, nx, CLAMP(dt_draw_curve_calc_value(gc->curve, nx), 0.f, 1.f));
 
       g->selected = hit;
@@ -1767,15 +1766,15 @@ static void area_button_press(GtkGestureSingle *gesture,
   }
 
   // right-click: reset the node to neutral, or delete it (Ctrl keeps it)
-  if (hit >= 0)
+  if(hit >= 0)
   {
-    if (dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK) || cp->curve_num_nodes <= 2)
+    if(dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK) || cp->curve_num_nodes <= 2)
     {
       cp->curve[hit].y = .5f;
     }
     else
     {
-      for (int i = hit; i < cp->curve_num_nodes - 1; i++)
+      for(int i = hit; i < cp->curve_num_nodes - 1; i++)
         cp->curve[i] = cp->curve[i + 1];
       cp->curve_num_nodes--;
     }
@@ -1794,7 +1793,7 @@ static void area_button_release(GtkGestureSingle *gesture,
   DT_GUARD_GUI_UPDATE();
 
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
-  if (g->dragging)
+  if(g->dragging)
   {
     g->dragging = FALSE;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1809,7 +1808,7 @@ static void area_scroll_notify(GtkEventControllerScroll *controller, gdouble dx,
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
   dt_iop_satcurve_channel_params_t *cp = get_active_channel_params(self);
 
-  if (g->selected < 0 || dy == 0.0)
+  if(g->selected < 0 || dy == 0.0)
     return;
 
   const float step = 0.02f * (dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK) ? 5.0f : 1.0f);
@@ -1836,14 +1835,14 @@ static void area_motion_notify(GtkEventControllerMotion *controller, gdouble x, 
   _get_graph_geometry(&a, &gx0, &gy0, &w, &h);
 
   // Dragging a node that was grabbed by a button press.
-  if (g->dragging && g->selected >= 0)
+  if(g->dragging && g->selected >= 0)
   {
     const float nx = CLAMP((x - gx0) / w, 0.f, 1.f);
     const int n = g->selected;
 
-    if (n == 0)
+    if(n == 0)
       cp->curve[n].x = 0.f;
-    else if (n == cp->curve_num_nodes - 1)
+    else if(n == cp->curve_num_nodes - 1)
       cp->curve[n].x = 1.f;
     else
       cp->curve[n].x = CLAMP(nx,
@@ -1863,18 +1862,18 @@ static void area_motion_notify(GtkEventControllerMotion *controller, gdouble x, 
   const gboolean inside = x >= gx0 && x <= gx0 + w && y >= gy0 && y <= gy0 + h;
 
   int hit = -1;
-  if (inside)
+  if(inside)
   {
     const float nx = (x - gx0) / w;
     const float ny = 1.f - (y - gy0) / h;
     hit = _node_hit_at(cp, nx, ny);
   }
 
-  if (hit != g->selected)
+  if(hit != g->selected)
   {
     g->selected = hit;
     gtk_widget_queue_draw(widget);
-    if (g->selected >= 0)
+    if(g->selected >= 0)
       gtk_widget_grab_focus(widget);
   }
 }
@@ -1884,22 +1883,22 @@ static const float *_get_gamut_lut_for_picker(dt_iop_module_t *self)
   static float unity_gamut_lut[LUT_ELEM];
   static gboolean unity_inited = FALSE;
 
-  if (!unity_inited)
+  if(!unity_inited)
   {
-    for (int i = 0; i < LUT_ELEM; i++)
+    for(int i = 0; i < LUT_ELEM; i++)
       unity_gamut_lut[i] = 1.f;
     unity_inited = TRUE;
   }
 
-  for (GList *nodes = self->dev->full.pipe ? self->dev->full.pipe->nodes : NULL;
+  for(GList *nodes = self->dev->full.pipe ? self->dev->full.pipe->nodes : NULL;
        nodes;
        nodes = g_list_next(nodes))
   {
     dt_dev_pixelpipe_iop_t *piece = nodes->data;
-    if (piece->module == self && piece->data)
+    if(piece->module == self && piece->data)
     {
       const dt_iop_satcurve_data_t *d = piece->data;
-      if (d->lut_inited && d->gamut_lut)
+      if(d->lut_inited && d->gamut_lut)
         return d->gamut_lut;
     }
   }
@@ -1910,12 +1909,12 @@ static const float *_get_gamut_lut_for_picker(dt_iop_module_t *self)
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *widget, dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
-  if (!g)
+  if(!g)
     return;
 
   const dt_iop_order_iccprofile_info_t *work_profile =
       dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
-  if (!work_profile)
+  if(!work_profile)
     return;
 
   dt_colormatrix_t inputmatrix = {{0.0f}};
@@ -1947,12 +1946,12 @@ static void show_saturation_mask_callback(GtkToggleButton *button, dt_iop_module
   DT_GUARD_GUI_UPDATE();
 
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
-  if (!g)
+  if(!g)
     return;
 
   dt_iop_request_focus(self);
 
-  if (self->request_mask_display)
+  if(self->request_mask_display)
   {
     dt_control_log(_("cannot display saturation masks while the blending mask is displayed"));
     gtk_toggle_button_set_active(button, FALSE);
@@ -1961,7 +1960,7 @@ static void show_saturation_mask_callback(GtkToggleButton *button, dt_iop_module
   }
 
   g->mask_display = gtk_toggle_button_get_active(button);
-  if (g->mask_display && !self->enabled)
+  if(g->mask_display && !self->enabled)
   {
     self->enabled = TRUE;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1973,15 +1972,15 @@ static void show_saturation_mask_callback(GtkToggleButton *button, dt_iop_module
 void gui_focus(dt_iop_module_t *self, gboolean in)
 {
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
-  if (!in)
+  if(!in)
   {
     dt_iop_color_picker_reset(self, FALSE);
 
     // Reset the mask preview when leaving the module.
-    if (g && g->mask_display)
+    if(g && g->mask_display)
     {
       g->mask_display = FALSE;
-      if (g->show_saturation_mask)
+      if(g->show_saturation_mask)
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_saturation_mask), FALSE);
     }
   }
@@ -1995,7 +1994,7 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
   DT_GUARD_GUI_UPDATE();
 
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
-  if (!g)
+  if(!g)
     return;
 
   g->active_channel = (page_num == 1)
@@ -2025,16 +2024,16 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *widget, void *previous)
 {
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
   dt_iop_satcurve_params_t *p = self->params;
-  if (!g)
+  if(!g)
     return;
 
   // g->formula is a _from_params widget: the framework already commits
   // the history item internally after this callback returns (Path A).
   // No manual dt_dev_add_history_item() needed here.
-  if (!widget || widget == g->formula)
+  if(!widget || widget == g->formula)
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
 
-  if (!widget || widget == g->use_guided_filter || widget == g->formula)
+  if(!widget || widget == g->use_guided_filter || widget == g->formula)
   {
     const gboolean guided_filter_available = p->formula == DT_IOP_SATCURVE_DTUCS;
     gtk_widget_set_sensitive(g->use_guided_filter, guided_filter_available);
@@ -2050,15 +2049,15 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
   const dt_iop_satcurve_params_t *p = self->params;
-  if (!g)
+  if(!g)
     return;
 
-  if (g->formula)
+  if(g->formula)
     dt_bauhaus_combobox_set(g->formula, p->formula);
 
   dt_bauhaus_toggle_set(g->use_guided_filter, p->use_guided_filter);
 
-  if (g->notebook)
+  if(g->notebook)
     gtk_notebook_set_current_page(GTK_NOTEBOOK(g->notebook),
                                   g->active_channel == DT_IOP_SATCURVE_CHANNEL_BRILLIANCE ? 1 : 0);
 
@@ -2067,7 +2066,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->gf_protect_center, center);
   dt_bauhaus_slider_set(g->gf_protect_width, width);
 
-  if (g->area)
+  if(g->area)
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
 
   gui_changed(self, NULL, NULL);
@@ -2076,11 +2075,11 @@ void gui_update(dt_iop_module_t *self)
 void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
-  if (!g)
+  if(!g)
     return;
 
-  for (int ch = 0; ch < DT_IOP_SATCURVE_CHANNELS; ch++)
-    if (g->channel[ch].curve)
+  for(int ch = 0; ch < DT_IOP_SATCURVE_CHANNELS; ch++)
+    if(g->channel[ch].curve)
       dt_draw_curve_destroy(g->channel[ch].curve);
 
   dt_pthread_mutex_destroy(&g->histogram_lock);
@@ -2096,13 +2095,13 @@ void gui_init(dt_iop_module_t *self)
   g->active_channel = DT_IOP_SATCURVE_CHANNEL_SATURATION;
   g->mask_display = FALSE;
 
-  for (int ch = 0; ch < DT_IOP_SATCURVE_CHANNELS; ch++)
+  for(int ch = 0; ch < DT_IOP_SATCURVE_CHANNELS; ch++)
   {
     g->channel[ch].curve_type = p->channel[ch].curve_type;
     g->channel[ch].curve_num_nodes = p->channel[ch].curve_num_nodes;
     g->channel[ch].curve = dt_draw_curve_new(0.f, 1.f, p->channel[ch].curve_type);
 
-    for (int i = 0; i < p->channel[ch].curve_num_nodes; i++)
+    for(int i = 0; i < p->channel[ch].curve_num_nodes; i++)
       dt_draw_curve_add_point(g->channel[ch].curve,
                               p->channel[ch].curve[i].x,
                               p->channel[ch].curve[i].y);

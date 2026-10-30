@@ -773,15 +773,15 @@ border_interpolate(read_only image2d_t in, write_only image2d_t out, const int w
     if(j>=0 && i>=0 && j<height && i<width)
     {
       const int f = FC(j,i,filters);
-      sum[f] += readsingle(in, i, j);
+      sum[f] += Areadsingle(in, i, j);
       count[f]++;
     }
   }
 
-  const float i = fmax(0.0f, readsingle(in, x, y));
-  o.x = count[0] > 0 ? sum[0]/count[0] : i;
-  o.y = count[1]+count[3] > 0 ? (sum[1]+sum[3])/(count[1]+count[3]) : i;
-  o.z = count[2] > 0 ? sum[2]/count[2] : i;
+  const float i = fmax(0.0f, Areadsingle(in, x, y));
+  o.x = count[0] > 0 ? fp32_div(sum[0], (float)count[0]) : i;
+  o.y = count[1]+count[3] > 0 ? fp32_div(sum[1]+sum[3], (float)(count[1]+count[3])) : i;
+  o.z = count[2] > 0 ? fp32_div(sum[2], (float)count[2]) : i;
 
   const int f = FC(y,x,filters);
 

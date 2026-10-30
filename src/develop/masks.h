@@ -621,7 +621,7 @@ typedef struct dt_masks_form_gui_t
 
   // masks panel and canvas feedback, set by blend_gui.c:
   // panel_hover_formids: shapes highlighted on the canvas because their row,
-  //   or the header of a cluster holding them, is hovered. NULL = none
+  //   or the header of a group holding them, is hovered. NULL = none
   // panel_selected_formid: the panel's selection, highlighted on the canvas
   //   while nothing is hovered
   // canvas_hover_formid: the shape under the cursor, whose row the panel
@@ -629,10 +629,14 @@ typedef struct dt_masks_form_gui_t
   // solo_formids: shapes soloed or solo-edited in the panel, highlighted
   //   whatever is hovered (_sync_solo_canvas_highlight in blend_gui.c).
   //   NULL = none
+  // picked_formids: shapes of the panel's multiple selection, highlighted as
+  //   the selection is, whatever is hovered (_picks_sync_canvas in
+  //   blend_gui.c). NULL = none
   GList *panel_hover_formids;
   dt_mask_id_t panel_selected_formid;
   dt_mask_id_t canvas_hover_formid;
   GList *solo_formids;
+  GList *picked_formids;
   // import_preview: the shapes the import menu entry under the pointer would
   //   bring in, drawn on the canvas whether a mask is shown or not, with their
   //   outlines (dt_masks_form_gui_points_t) in import_preview_points, computed
@@ -660,6 +664,9 @@ extern const dt_masks_functions_t dt_masks_functions_gradient;
 extern const dt_masks_functions_t dt_masks_functions_group;
 extern const dt_masks_functions_t dt_masks_functions_parametric;
 extern const dt_masks_functions_t dt_masks_functions_raster;
+/** a path was moved by (dx, dy), in normalized coordinates: what it keeps for
+    its shrink or grow moves with it */
+void dt_masks_path_resize_follow_move(const dt_mask_id_t formid, const float dx, const float dy);
 /** the darkroom module a raster form reads its mask from, or NULL when it is
     gone. Resolved by operation and instance, as the form stores them */
 struct dt_iop_module_t *dt_masks_raster_source(const dt_masks_form_t *form);
@@ -719,6 +726,26 @@ void dt_masks_pixel_release(dt_masks_pixel_cache_t *c);
 gboolean dt_masks_pixel_readable(const dt_imgid_t imgid,
                                  const dt_dtdata_ref_t *ref,
                                  gboolean *transient);
+// preview pixels per pixel of the overlay tint
+#define DT_MASKS_OVERLAY_STEP 2.0f
+// the tint of the hovered element, kept for the preview it was made for. get
+// returns NULL unless it was kept under this key and hash; keep takes the
+// surface and returns it
+cairo_surface_t *dt_masks_pixel_hover_get(const char *key, const dt_hash_t hash);
+cairo_surface_t *dt_masks_pixel_hover_keep(const char *key,
+                                           const dt_hash_t hash,
+                                           cairo_surface_t *surface);
+// a tint surface painted over the whole preview frame, whatever its own size
+void dt_masks_pixel_paint_overlay(cairo_t *cr, cairo_surface_t *overlay);
+// the form drawn at index of the visible group (or of the import menu's
+// preview), or NULL
+dt_masks_form_t *dt_masks_pixel_form_at(const dt_masks_form_gui_t *gui, const int index);
+// bilinear read of m (mw x mh) at pixel coordinates x in [0, mw - 1], y in [0, mh - 1]
+float dt_masks_pixel_bilinear(const float *m,
+                              const int mw,
+                              const int mh,
+                              const float x,
+                              const float y);
 // a mask as the red overlay tint: in proportion, or full above threshold
 cairo_surface_t *dt_masks_pixel_tint(const float *const mask,
                                      const int w,
@@ -1329,7 +1356,7 @@ typedef enum dt_masks_remove_target_t
 dt_masks_remove_target_t dt_masks_remove_shape_target(const struct dt_iop_module_t *module,
                                                       const dt_masks_form_t *form,
                                                       const dt_mask_id_t parentid);
-/** add every element of `src_grp` to `grp`, keeping its operator and opacity:
+/** add every member of `src_grp` to `grp`, keeping its operator and opacity:
     shapes are shared, parametric channels copied. No history item */
 void dt_masks_group_add_members_of(dt_masks_form_t *grp, const dt_masks_form_t *src_grp);
 /** change the opacity of `form` in its parent group `parentid`, by `amount`,

@@ -1047,6 +1047,30 @@ void dtgtk_cairo_paint_masks_used(cairo_t *cr, const gint x, const gint y, const
   FINISH
 }
 
+void dtgtk_cairo_paint_module_focus(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(0.9, 1, 0, 0)
+
+  // a viewfinder: four corner brackets around a dot
+  for(int i = 0; i < 4; i++)
+  {
+    cairo_save(cr);
+    cairo_translate(cr, 0.5, 0.5);
+    cairo_rotate(cr, i * M_PI_2);
+    cairo_translate(cr, -0.5, -0.5);
+    cairo_move_to(cr, 0.08, 0.34);
+    cairo_line_to(cr, 0.08, 0.08);
+    cairo_line_to(cr, 0.34, 0.08);
+    cairo_restore(cr);
+  }
+  cairo_stroke(cr);
+
+  cairo_arc(cr, 0.5, 0.5, 0.15, 0, 2.0 * M_PI);
+  cairo_fill(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_masks_panel(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(0.9, 1, 0, 0)
@@ -1977,6 +2001,31 @@ void dtgtk_cairo_paint_remove(cairo_t *cr, const gint x, const gint y, const gin
   cairo_line_to(cr, 0.3, 0.7);
   cairo_move_to(cr, 0.3, 0.3);
   cairo_line_to(cr, 0.7, 0.7);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_trash(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(0.95, 1, 0, 0)
+
+  // the lid and its handle
+  cairo_move_to(cr, 0.1, 0.22);
+  cairo_line_to(cr, 0.9, 0.22);
+  cairo_move_to(cr, 0.38, 0.22);
+  cairo_line_to(cr, 0.38, 0.08);
+  cairo_line_to(cr, 0.62, 0.08);
+  cairo_line_to(cr, 0.62, 0.22);
+  // the bin, narrower at the bottom, and its two ribs
+  cairo_move_to(cr, 0.2, 0.22);
+  cairo_line_to(cr, 0.27, 0.92);
+  cairo_line_to(cr, 0.73, 0.92);
+  cairo_line_to(cr, 0.8, 0.22);
+  cairo_move_to(cr, 0.42, 0.4);
+  cairo_line_to(cr, 0.42, 0.75);
+  cairo_move_to(cr, 0.58, 0.4);
+  cairo_line_to(cr, 0.58, 0.75);
   cairo_stroke(cr);
 
   FINISH

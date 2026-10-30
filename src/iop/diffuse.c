@@ -1073,10 +1073,14 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
         }
 
         // elements of c2 need to be expf(mag*anistropy), but we
-        // haven't applied the expf() yet.  Do that now.
+        // haven't applied the expf() yet.  Do that now. Not with
+        // dt_vector_exp(): it is off by more than 10% below -1, and the
+        // error accumulates over the iterations
         for(size_t k = 0; k < 4; k++)
         {
-          dt_vector_exp(c2[k], c2[k]);
+          for_four_channels(c)
+            c2[k][c] *= 1.44269504f; // exp(x) = 2^(x / ln(2))
+          dt_vector_exp2(c2[k], c2[k]);
         }
 
         dt_aligned_pixel_t kern_first[9], kern_second[9], kern_third[9], kern_fourth[9];
@@ -1908,7 +1912,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text
     (g->threshold,
      _("luminance threshold for the mask.\n"
-       "0. disables the luminance masking and applies the module on the whole image.\n"
+       "0 disables the luminance masking and applies the module on the whole image.\n"
        "any higher value excludes pixels with luminance lower than the threshold.\n"
        "this can be used to inpaint highlights."));
 }

@@ -851,7 +851,7 @@ static void dt_lib_init_module(void *m)
   // do not init accelerators if there is no gui
   if(darktable.gui)
   {
-    dt_print(DT_DEBUG_VERBOSE, "loading utility module : %s",
+    dt_print(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "loading utility module : %s",
              module->plugin_name);
     char *msg = g_strdup_printf(_("%s: %s"),
                                 _("loading utility modules"),
@@ -1041,7 +1041,7 @@ static void _lib_plugin_arrow_button_press_cb(GtkGestureSingle *gesture,
   else if(button == GDK_BUTTON_SECONDARY)
   {
     if(gtk_widget_get_sensitive(module->presets_button))
-      _presets_popup_callback(NULL, module);
+      _presets_popup_callback(module->presets_button, module);
 
     return;
   }

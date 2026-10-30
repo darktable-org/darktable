@@ -137,6 +137,10 @@ changes (where available).
   When "edit shapes on canvas" is enabled, the node editing area is
   extended beyond the image borders to allow editing of these nodes.
 
+- Raster masks now show up on the canvas. When "edit shapes on canvas"
+  is enabled, hovering a raster mask in the masks panel tints the area
+  of the image that it covers.
+
 - In color assessment mode, when the image is zoomed in show a
   dashed line on the sides of the white border where the image
   extends beyond the current view (horizontally or vertically).
@@ -197,6 +201,14 @@ changes (where available).
 - Pressing ESC or clicking on the dialog X icon (top-right) now exits
   Darktable instead of launching the previous workspace.
 
+- The settings of the path mask "shrink or grow" (the step per scroll
+  tick, the unit, the tracing resolution and the curve smoothing) are
+  now in a popover opened by a gear on the slider, which no longer has
+  a unit toggle. The options for the scroll direction of mask
+  parameters and for the mask indicator in module headers moved from
+  the preferences dialog to the masks panel's options popover, and the
+  masking section of the preferences dialog is gone.
+
 ## Performance Improvements
 
 - The lighttable timeline no longer slows down quadratically with the
@@ -229,6 +241,17 @@ changes (where available).
   every mouse move and long outlines are drawn with far fewer points.
 
 ## Other Changes
+
+- AgX and sigmoid now adapt to HDR output, so one edit exports to
+  SDR, HLG and PQ alike. HLG output peaks at 1000 nits, and PQ output
+  at the new "PQ peak" setting of the export module, 1000 nits by
+  default, which export presets store and darktable-cli sets with
+  `--pq-peak`. With AgX, shadows and midtones keep their SDR brightness
+  and highlights extend to the peak, following Blender's AgX HDR, with
+  a new "HDR purity" slider for the highlights' saturation. Sigmoid
+  scales its target white to the peak, up to 1600% (3248 nits). SDR
+  output is unchanged. Existing edits render as before, and a "follow
+  output peak" toggle in each module opts them in.
 
 - PNG exports using a PQ output color profile now include content
   light level metadata (MaxCLL and MaxFALL) for HDR tone mapping.
@@ -353,12 +376,53 @@ changes (where available).
   `-as-flags` form emits a single line of `--flag value` pairs
   ready to splice into another invocation.
 
+- Lightroom import now applies a crop with the crop module, and its
+  straightening angle with the rotate and perspective module, instead
+  of the deprecated crop and rotate module.
+
+- Lightroom import now sets the working profile to linear ProPhoto
+  RGB, the space Lightroom works in, instead of linear Rec709 RGB.
+
+- Lightroom import adds its exposure and blacks adjustments to
+  darktable's default exposure instead of replacing it. In the
+  scene-referred workflow, images with a Lightroom exposure adjustment
+  were imported without the default exposure boost and exposure bias
+  compensation, so a small positive adjustment rendered darker than
+  none at all.
+
+- Lightroom import creates tone curves in RGB mode with color
+  preservation, as darktable's tone curve module now defaults to, and
+  no longer enables the module for a curve that changes nothing.
+  Clarity is imported with the local laplacian filter of the local
+  contrast module instead of the older bilateral grid.
+
+- Lightroom import applies spot removals with the retouch module,
+  cloning or healing as each spot did in Lightroom, instead of the
+  deprecated spot removal module.
+
+- History items created by the Lightroom import are labeled "lr import"
+  instead of having an empty label.
+
 ## Bug Fixes
+
+- Fixed Lightroom develop import which was not done. Only the tags,
+  color labels, stars where imported.
+
+- Fixed missing Active D-Lighting exposure compensation for Nikon
+  images shot in sRGB or Adobe RGB.
 
 - Fixed drawn masks appearing too early in the history stack of an
   image that got a style or a pasted history before it was first
   opened: going back in the history showed masks from before the step
   that added them.
+
+- Fixed darktable hanging on exit, with its window already gone, after a
+  raw file failed to load during the session. The lock taken while
+  reading the file was not released when the read failed, so every later
+  raw open waited for it forever.
+
+- Fixed AgX rendering everything above the pivot black when pivot
+  target output was 100% and shoulder power was 7 or more.
 
 - Fixed shift-click on the selected entry of the history stack, which
   did nothing instead of revealing that module in the right-hand panel.
@@ -372,6 +436,14 @@ changes (where available).
 
 - Fixed the feather of paths created by vectorizing a raster mask or an
   AI object, which could not be changed from the mask manager.
+
+- Fixed a dark fringe along the right and bottom edges of images
+  pixelated by the censorize module, whose last column and row were
+  left unpainted.
+
+- Fixed color reconstruction giving different colors with OpenCL than
+  without it: the OpenCL grid only counted one pixel of each run of
+  neighbors, and zooming in past 100% changed its spatial extent.
 
 - Fixed HEIF export compilation with libheif versions older than 1.15.0,
   and with versions older than 1.16.0 when libsharpyuv is available.
@@ -441,6 +513,9 @@ changes (where available).
 - Fixed refinements to forwarded raster masks being ignored along
   the OpenCL path.
 
+- Windows installer: Added an option to enable/disable including
+  darktable in the explorers context menu.
+
 - Compute JzAzBz's Az and Bz without cancellation so that results
   computed by the CPU and OpenCL paths do not diverge.
 
@@ -456,6 +531,11 @@ changes (where available).
 
 - Fixed the feather of a drawn path being lost when the shape was
   resized with the scroll wheel.
+
+- Fixed resizing a path mask with the scroll wheel or the "shrink or
+  grow" slider bending its curves into straight chords and giving it a
+  different set of nodes at every step. Its nodes now follow the
+  outline as it grows or shrinks.
 
 - Fixed numeric error in the framing module (borders) causing the
   frame line to be off-center for certain border sizes.
@@ -629,6 +709,9 @@ changes (where available).
 
 - Fixed month collection filter layout issues.
 
+- Fixed capture time based collection filters using the whole time range
+  of the library, instead of the range of the current active collection.
+
 - Fixed GPU memory leaks while displaying the highlight reconstruction
   mask of filmic rgb, and possible crashes in basic adjustments, rgb
   levels and base curve when OpenCL memory allocation fails.
@@ -642,6 +725,55 @@ changes (where available).
   when the folder of the data database could not be determined.
 
 - Fixed a GPU memory leak in the OpenCL path of the clipping indicator.
+
+- Fixed an issue where the Windows installer wouldn't run without user
+  input when requested.
+
+- Fixed the right-hand panel jumping when switching tabs in modules
+  taller than the panel, such as AgX or spektrafilm: clicking a tab
+  scrolled the panel until the tab row was at the top.
+
+- Fixed retouch shapes and drawn masks landing in the wrong place when
+  the scale pixels module was enabled: they were shrunk toward the
+  top-left corner of the image instead of being stretched with it.
+
+- Fixed black output from filmic rgb's v1 and v3 color science, when
+  no work profile is used for the luminance, and wrong alpha from its
+  gaussian and poissonian noise, on macOS OpenCL: the kernels read
+  vector lanes they had not set.
+
+- Fixed the vignetting module using a linear falloff instead of
+  its smooth one on the CPU when dithering is off, so that CPU and
+  OpenCL now give the same result.
+
+- Fixed Lightroom imports of parametric tone curves, which washed out
+  the highlights, of split toning, which used the wrong hues and toned
+  the highlights across nearly the whole image but never the shadows,
+  and of post-crop vignetting, which was far weaker than in Lightroom
+  and only started near the frame's edge.
+
+- Fixed the shape of post-crop vignetting imported from Lightroom on
+  portrait images, straightened crops and wide frames. Portrait images
+  got a landscape vignette that darkened their top and bottom but not
+  their sides.
+
+- Fixed color calibration's saturation sliders having a different
+  effect with OpenCL than on the CPU when the "version 1 (2020)"
+  saturation algorithm is selected.
+
+- Fixed the macOS app loading GTK input method modules, and with them
+  a second copy of GTK, from Homebrew when Homebrew's GTK is installed,
+  instead of the copies bundled in the app. Without Homebrew, the
+  modules were not found at all.
+
+- Fixed the wrong raster mask being applied when three or more external
+  raster masks were used in one edit.
+
+- Fixed diffuse or sharpen giving a different result on the CPU than
+  with OpenCL whenever an anisotropy was set: the CPU path computed the
+  diffusion weights with a coarse approximation of the exponential.
+  Edits using anisotropy may now look slightly different when exported
+  without OpenCL.
 
 ## Lua
 

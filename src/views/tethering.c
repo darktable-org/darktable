@@ -258,9 +258,10 @@ static void _expose_tethered_mode(dt_view_t *self,
         const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, pw);
         pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
         // FIXME: if liveview image is tagged and we can read its colorspace, use that
-        cmsDoTransformLineStride(darktable.color_profiles->transform_srgb_to_display,
-                                 p_buf, tmp_i, pw, ph, pw * 4,
-                                 stride, 0, 0);
+        dt_colorspaces_transform_to_display(darktable.color_profiles->transform_srgb_to_display,
+                                            darktable.color_profiles->display_hdr_transfer,
+                                            p_buf, tmp_i, pw, ph, (size_t)pw * 4,
+                                            stride);
         pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
         cairo_surface_t *source
@@ -491,11 +492,12 @@ void expose(dt_view_t *self,
 
 gboolean try_enter(dt_view_t *self)
 {
-  /* verify that camera supports tethering and is available */
-  if(dt_camctl_can_enter_tether_mode(darktable.camctl, NULL)) return FALSE;
+  // verify that camera supports tethering and is available
+  if(dt_camctl_can_enter_tether_mode(darktable.camctl, NULL))
+    return FALSE; // returned value treated as error flag, FALSE = no error
 
-  dt_control_log(_("no camera with tethering support available for use..."));
-  return TRUE;
+  dt_control_log(_("camera with tethering support is not connected or not mounted in the import module"));
+  return TRUE; // raise error flag
 }
 
 static void _capture_mipmaps_updated_signal_callback(gpointer instance,

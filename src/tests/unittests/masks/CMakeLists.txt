@@ -17,7 +17,7 @@ add_cmocka_test(test_flexi_persistence
                 SOURCES test_flexi_persistence.c flexi_fixture.c
                 LINK_LIBRARIES lib_darktable cmocka)
 
-# The drag-and-drop paths other than element-onto-element.
+# The drag-and-drop paths other than member-onto-member.
 add_cmocka_test(test_flexi_dnd
                 SOURCES test_flexi_dnd.c flexi_fixture.c
                 LINK_LIBRARIES lib_darktable cmocka)
@@ -61,10 +61,23 @@ add_cmocka_test(test_flexi_raster_prune
                 SOURCES test_flexi_raster_prune.c flexi_fixture.c
                 LINK_LIBRARIES lib_darktable cmocka)
 
+# What hovering a raster element's row paints on the canvas: the area its
+# source's mask covers, and nothing otherwise. See the file header for the
+# two ways it goes quietly wrong.
+add_cmocka_test(test_flexi_raster_hover
+                SOURCES test_flexi_raster_hover.c flexi_fixture.c
+                LINK_LIBRARIES lib_darktable cmocka)
+
 # Is the synthetic probe image actually adequate to replay harvested masks
 # against? Measured per channel, not assumed -- see the file header.
 add_cmocka_test(test_probe_image
                 SOURCES test_probe_image.c
+                LINK_LIBRARIES lib_darktable cmocka)
+
+# Path grow/shrink (rasterize, offset, re-vectorize): the resized outline is the
+# requested distance from the original and does not jump between scroll steps.
+add_cmocka_test(test_path_resize
+                SOURCES test_path_resize.c flexi_fixture.c
                 LINK_LIBRARIES lib_darktable cmocka)
 
 # The styling contract (dev-doc/flexi_masks/styling.md): the classes a theme
@@ -109,6 +122,7 @@ endif()
 foreach(_t test_flexi_model test_flexi_cache test_flexi_persistence test_flexi_dnd
            test_flexi_groups test_flexi_panel test_flexi_migrate test_flexi_compose
            test_flexi_controls test_flexi_ui_coverage test_flexi_raster_prune
+           test_flexi_raster_hover
            test_flexi_styling test_probe_image ${_flexi_tests_catalog})
   target_include_directories(${_t} PRIVATE
                              ${CMAKE_CURRENT_SOURCE_DIR}
