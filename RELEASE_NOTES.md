@@ -786,6 +786,12 @@ changes (where available).
   OpenCL path gave the horizontal neighbors twice their weight. Edits
   using them may look slightly different when exported with OpenCL.
 
+- The non-local means modes of denoise (profiled) and astrophoto
+  denoise now treat the image edges the same way on the CPU and with
+  OpenCL, by mirroring the image. Before, the two gave different
+  results in a band along the edges. Edits using them may look
+  slightly different near the edges.
+
 ## Lua
 
 ### API Version
