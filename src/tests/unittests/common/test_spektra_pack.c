@@ -77,8 +77,8 @@
 #define SPEKTRA_PACK_DIR ""
 #endif
 
-/* See test_spektra_sim.c: cmocka's assert_float_equal() collapses everything to
-   float, and from 1.1.2 on it shadows the fallback in ../util/assert.h. */
+/* See test_spektra_sim.c: a double comparison, which cmocka itself does not
+   offer on every version the build accepts. */
 #ifndef assert_double_close
 #define assert_double_close(a, b, epsilon) \
   assert_true(fabs((double)(a) - (double)(b)) <= (double)(epsilon))
@@ -504,7 +504,6 @@ static void test_film_target_print_resolves_to_a_paper(void **state)
 {
   fixture_t *f = *state;
   REQUIRE_FILM(f);
-  if(!f->film) skip();
   TR_STEP("a film's target print names a paper the pack actually ships");
   const char *target = sf_profile_target_print(f->film);
   if(!target || !target[0]) skip(); /* positive stocks name none */
@@ -604,10 +603,15 @@ static void test_neutral_filters_are_calibrated_for_the_shipped_pair(void **stat
 {
   fixture_t *f = *state;
   REQUIRE_FILM(f);
-  if(!f->film || !f->print) skip();
+  if(!f->print) skip();
   TR_STEP("the pack knows the neutral filtration for its own film/paper pair");
+  /* the enlarger the engine defaults to, so the pairing checked is the one a
+     default render looks up */
+  sf_sim_params_t p;
+  sf_sim_params_defaults(&p);
   double cmy[3] = { -1.0, -1.0, -1.0 };
-  const gboolean have = sf_pack_neutral_filters(f->pack, sf_profile_stock(f->print), "TH-KG3",
+  const gboolean have = sf_pack_neutral_filters(f->pack, sf_profile_stock(f->print),
+                                                p.enlarger_illuminant,
                                                 sf_profile_stock(f->film), cmy);
   if(!have) skip(); /* not every pairing is calibrated */
   TR_DEBUG("cmy = %.1f %.1f %.1f", cmy[0], cmy[1], cmy[2]);
@@ -791,10 +795,10 @@ static void _cfg_lut_quality(sf_sim_params_t *p)
 
 /* upstream tests/test_lut_mode.py: the tabulated path is an approximation of
    the exact spectral one and has to stay close to it. A 33-step table on the
-   0.3.3 pack lands within 6e-4 of exact across a colour ramp; the bound below
-   leaves an order of magnitude of headroom for other stocks and other
-   platforms' rounding, because what would be a regression is the two paths
-   diverging visibly, not the interpolation error moving in its last digits. */
+   0.3.4 pack lands within 1e-5 of exact across a colour ramp; the bound below
+   leaves well over an order of magnitude of headroom for other stocks and
+   other platforms' rounding, because what would be a regression is the two
+   paths diverging, not the interpolation error moving in its last digits. */
 static void test_lut_path_tracks_exact_spectral(void **state)
 {
   fixture_t *f = *state;
@@ -824,7 +828,7 @@ static void test_lut_path_tracks_exact_spectral(void **state)
   for(int i = 0; i < N * 3; i++)
   {
     TR_DEBUG("exact=%e lut=%e", exact[i], lut[i]);
-    assert_double_close(lut[i], exact[i], 0.005);
+    assert_double_close(lut[i], exact[i], 5e-4);
   }
 }
 
@@ -845,13 +849,17 @@ static void test_table_lookup_finds_each_table_and_refuses_others(void **state)
   assert_int_equal(sf_pack_table_by_hash(f->pack, 0u), 0);
   assert_int_equal(sf_pack_table_hash(f->pack, 0), sf_pack_lut_hash(f->pack));
 
+  for(int i = 0; i < n; i++)
+    assert_int_equal(sf_pack_table_by_hash(f->pack, sf_pack_table_hash(f->pack, i)), i);
+
+  /* a non-zero hash none of the tables carries */
   uint32_t unknown = 0xdeadbeefu;
   for(int i = 0; i < n; i++)
-  {
-    const uint32_t h = sf_pack_table_hash(f->pack, i);
-    assert_int_equal(sf_pack_table_by_hash(f->pack, h), i);
-    if(h == unknown) unknown++;
-  }
+    if(sf_pack_table_hash(f->pack, i) == unknown)
+    {
+      unknown++;
+      i = -1;
+    }
   assert_int_equal(sf_pack_table_by_hash(f->pack, unknown), -1);
 
   sf_sim_params_t p;

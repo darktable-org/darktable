@@ -3319,10 +3319,7 @@ static void compress_rgb_oklch_f(const sf_sim_t *s,
 
 /* [gc] compress_rgb_aces_rgc -- per-channel knee on achromatic distance, in
    float, matching spektrafilm.cl's compress_mode == 2 branch (same 1e-12f
-   achromatic guard). Replaces the double compress_rgb_aces for the same
-   reason as compress_rgb_oklch_f above. test_spektra_sim.c called the double
-   version directly and is repointed here, so the tests now exercise the code
-   that actually ships. */
+   achromatic guard). */
 static void compress_rgb_aces_f(float rgb[3])
 {
   const float ach = fmaxf(rgb[0], fmaxf(rgb[1], rgb[2]));

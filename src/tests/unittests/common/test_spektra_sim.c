@@ -69,13 +69,11 @@
    untouched achromatic max, so E holds for those too. */
 #define E 1e-9
 
-/* Compare in double, whatever cmocka happens to be installed.
-   cmocka's own assert_double_close() casts both operands AND the epsilon to
-   float, so from 1.1.2 on -- where its macro shadows the fallback in
-   ../util/assert.h -- an epsilon of 1e-9 sits below the float resolution of
-   values around 1 and the comparison stops meaning anything. Its
-   assert_double_equal() would be the right tool, but 1.1.0 is the minimum the
-   build accepts and has neither macro, so neither can be relied on. */
+/* Compare in double, whatever cmocka happens to be installed. cmocka's
+   assert_float_equal() casts both operands and the epsilon to float, where an
+   epsilon of 1e-9 sits below the resolution of values around 1, and its
+   assert_double_equal() is missing from 1.1.0, the minimum the build accepts.
+   cmocka defines no assert_double_close(), so this one is always in effect. */
 #ifndef assert_double_close
 #define assert_double_close(a, b, epsilon) \
   assert_true(fabs((double)(a) - (double)(b)) <= (double)(epsilon))
