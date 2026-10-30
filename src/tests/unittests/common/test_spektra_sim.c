@@ -358,15 +358,65 @@ static void test_density_curve_is_monotonic(void **state)
 
 static void test_density_curve_is_near_zero_at_low_exposure(void **state)
 {
-  TR_STEP("density vanishes far below the toe");
-  enum { N = 200 };
+  /* Measured from the curve, not from a fixed exposure far off the grid: four
+     widths below the fastest layer's centre the Gaussian layers have all but
+     vanished, and the septic ones, whose support ends SF_SEPT_K / 2 widths
+     out, are exactly zero. */
+  TR_STEP("density vanishes four layer widths below the toe");
+  double le[1] = { CENTERS[0] - 4.0 * SIGMAS[0] };
+  double density[1];
+  eval_cdfs_channel(density, le, 1, CENTERS, AMPS, SIGMAS, NULL, 0, 3, 0);
+  TR_DEBUG("gaussian: le=%e d=%e", le[0], density[0]);
+  assert_true(density[0] >= 0.0 && density[0] < 1e-4);
+  eval_cdfs_channel(density, le, 1, CENTERS, AMPS, SIGMAS, NULL, 1, 3, 0);
+  TR_DEBUG("septic: le=%e d=%e", le[0], density[0]);
+  assert_double_close(density[0], 0.0, 0.0);
+}
+
+static void test_skewed_density_curve_is_monotonic(void **state)
+{
+  TR_STEP("a skewed septic curve still never falls as exposure rises");
+  enum { N = 400 };
+  const double alphas[3] = { 0.6, -0.4, 1.0 };
   double le[N], density[N];
-  for(int i = 0; i < N; i++) le[i] = -6.0 + 8.0 * (double)i / (double)(N - 1);
-  for(int sept = 0; sept < 2; sept++)
-  {
-    eval_cdfs_channel(density, le, N, CENTERS, AMPS, SIGMAS, NULL, sept, 3, 0);
-    for(int i = 0; i < 5; i++) assert_true(density[i] < 0.01);
-  }
+  for(int i = 0; i < N; i++) le[i] = -3.0 + 5.0 * (double)i / (double)(N - 1);
+  eval_cdfs_channel(density, le, N, CENTERS, AMPS, SIGMAS, alphas, 1, 3, 0);
+  for(int i = 1; i < N; i++) assert_true(density[i] - density[i - 1] >= -E);
+}
+
+static void test_skew_keeps_the_layer_median_on_its_centre(void **state)
+{
+  /* the warp vanishes at u = 0.5, so every layer still crosses half its
+     amplitude exactly at its centre whatever the skew */
+  TR_STEP("skew moves the tails, never the half-density point");
+  const double alpha[] = { -1.0, -0.3, 0.0, 0.5, 1.0 };
+  for(size_t i = 0; i < sizeof(alpha) / sizeof(alpha[0]); i++)
+    assert_double_close(sept_cdf(0.0, alpha[i]), 0.5, E);
+}
+
+static void test_exhausted_density_curve_is_monotonic(void **state)
+{
+  /* the film-side curves are built from the Gumbel-blended layers, which
+     eval_cdfs_channel() does not evaluate */
+  TR_STEP("a curve blended toward the exhaustion shoulder stays monotonic");
+  const double gmix[3] = { 0.35, 0.35, 0.35 };
+  for(int positive = 0; positive < 2; positive++)
+    for(int sept = 0; sept < 2; sept++)
+    {
+      double previous = _sf_channel_density_at(-3.0, CENTERS, AMPS, SIGMAS, NULL, sept, 3, gmix,
+                                               positive);
+      for(int i = 1; i < 400; i++)
+      {
+        const double x = -3.0 + 5.0 * (double)i / 399.0;
+        const double d = _sf_channel_density_at(x, CENTERS, AMPS, SIGMAS, NULL, sept, 3, gmix,
+                                                positive);
+        if(positive)
+          assert_true(d - previous <= E);
+        else
+          assert_true(d - previous >= -E);
+        previous = d;
+      }
+    }
 }
 
 static void test_density_curve_is_inverted_for_positive_stock(void **state)
@@ -410,9 +460,22 @@ static void test_developer_exhaustion_preserves_midgray(void **state)
     TR_DEBUG("positive=%d D(0) %e -> %e", positive, d_base, d_exh);
     assert_double_close(d_exh, d_base, E);
 
-    /* and it did something: the blend is on, and the centres actually moved */
+    /* and it did something: the blend is on, the centres actually moved, and
+       the curve away from midgray has a different shape */
     for(int l = 0; l < 3; l++) assert_double_close(g_exh[l], 0.35, E);
     assert_true(fabs(c_exh[0] - c_base[0]) > E);
+    double max_diff = 0.0;
+    for(int i = 0; i <= 100; i++)
+    {
+      const double x = -3.0 + 4.0 * (double)i / 100.0;
+      const double db
+          = _sf_channel_density_at(x, c_base, AMPS, s_base, NULL, 0, 3, g_base, positive);
+      const double de
+          = _sf_channel_density_at(x, c_exh, AMPS, s_exh, NULL, 0, 3, g_exh, positive);
+      max_diff = fmax(max_diff, fabs(de - db));
+    }
+    TR_DEBUG("positive=%d largest density change %e", positive, max_diff);
+    assert_true(max_diff > 1e-3);
   }
 }
 
@@ -854,6 +917,9 @@ int main(int argc,
     cmocka_unit_test(test_density_curve_is_monotonic),
     cmocka_unit_test(test_density_curve_is_near_zero_at_low_exposure),
     cmocka_unit_test(test_density_curve_is_inverted_for_positive_stock),
+    cmocka_unit_test(test_skewed_density_curve_is_monotonic),
+    cmocka_unit_test(test_skew_keeps_the_layer_median_on_its_centre),
+    cmocka_unit_test(test_exhausted_density_curve_is_monotonic),
     cmocka_unit_test(test_developer_exhaustion_preserves_midgray),
     cmocka_unit_test(test_zero_exhaustion_leaves_the_curve_alone),
     cmocka_unit_test(test_morph_gamma_scales_centers_and_sigmas),
