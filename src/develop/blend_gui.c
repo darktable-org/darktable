@@ -2407,7 +2407,8 @@ static void _blendop_mask_enable_toggled(
   // focusing a module opens its panel; switching the mask off from a folded
   // one is not a reach for its controls
   const gboolean was_folded =
-    !data->masks_panel_body || !gtk_widget_get_visible(GTK_WIDGET(data->masks_panel_body));
+    !data->masks_panel_reveal
+    || !gtk_revealer_get_reveal_child(GTK_REVEALER(data->masks_panel_reveal));
 
   dt_iop_request_focus(module);
 
@@ -19386,7 +19387,14 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     // the one name to start a CSS tweak with (dev-doc/flexi_masks/styling.md)
     gtk_widget_set_name(GTK_WIDGET(bd->masks_panel_body), "masks-panel");
     dt_gui_box_add(bd->relocatable_box, GTK_WIDGET(bd->masks_panel_body));
-    GtkWidget *mask_panel = GTK_WIDGET(bd->masks_panel_body);
+    // revealed, so that the hosted positions need nothing: the embedded one
+    // folds it with a transition (_masks_embedded_apply_collapsed)
+    bd->masks_panel_reveal = gtk_revealer_new();
+    gtk_revealer_set_transition_duration(GTK_REVEALER(bd->masks_panel_reveal), 0);
+    gtk_revealer_set_reveal_child(GTK_REVEALER(bd->masks_panel_reveal), TRUE);
+    dt_gui_box_add(bd->masks_panel_body, bd->masks_panel_reveal);
+    GtkWidget *mask_panel = dt_gui_vbox();
+    gtk_container_add(GTK_CONTAINER(bd->masks_panel_reveal), mask_panel);
 
     GtkWidget *box = dt_gui_vbox();
     bd->blend_box = GTK_BOX(dt_gui_vbox(
@@ -19543,9 +19551,9 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
 
     gtk_widget_set_name(GTK_WIDGET(iopw), "blending-wrapper");
 
-    // masks_panel_body's visibility is the embedded fold, which the module
-    // expander's show_all (dt_iop_gui_set_expander) must not reset: its
-    // children are shown once, then it is set no_show_all
+    // the embedded fold is masks_panel_reveal, not a visibility, so the module
+    // expander's show_all (dt_iop_gui_set_expander) cannot reset it; the
+    // children are shown once, then the body is set no_show_all
     gtk_widget_show_all(GTK_WIDGET(bd->masks_panel_body));
     gtk_widget_set_no_show_all(GTK_WIDGET(bd->masks_panel_body), TRUE);
     // the two selection panels take turns (see _multi_panel_sync): neither is

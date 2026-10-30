@@ -429,9 +429,11 @@ typedef struct dt_iop_gui_blend_data_t
   // utility position, the lib)
   GtkBox *masks_header_home;
   // everything in relocatable_box below the header, folded away in the
-  // embedded position while the header stays as the way back. Only this
-  // wrapper is hidden, so its children keep their own visibility
+  // embedded position while the header stays as the way back. The fold is
+  // masks_panel_reveal, which slides it as a module's expander does; the
+  // children keep their own visibility
   GtkBox *masks_panel_body;
+  GtkWidget *masks_panel_reveal;
   GtkBox *masks_box;
 
   GtkWidget *showmask;

@@ -141,20 +141,26 @@ void dt_masks_gui_panel_set_collapsed_pref(const gboolean collapsed)
   dt_conf_set_bool("plugins/darkroom/blend/masks_panel_collapsed", collapsed);
 }
 
-void dt_iop_gui_blend_masks_panel_toggle(void)
+static void _inline_collapse_toggle(dt_iop_module_t *module, const gboolean locate);
+
+static void _panel_toggle(const gboolean locate)
 {
   dt_iop_module_t *module = dt_dev_gui_module();
   if(!module || !module->blend_data) return;
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   if(!bd->masks_support || !bd->masks_inited) return;
-  // the click handler ignores its widget argument and dispatches on the
-  // position itself, utility included
-  dt_masks_gui_flexi_inline_collapse_clicked(NULL, module);
+  // dispatches on the position itself, utility included
+  _inline_collapse_toggle(module, locate);
+}
+
+void dt_iop_gui_blend_masks_panel_toggle(void)
+{
+  _panel_toggle(TRUE);
 }
 
 void dt_iop_gui_blend_masks_panel_show(void)
 {
-  if(_masks_panel_collapsed_pref()) dt_iop_gui_blend_masks_panel_toggle();
+  if(_masks_panel_collapsed_pref()) _panel_toggle(FALSE);
 }
 
 void dt_iop_gui_blend_masks_panel_fold_unmasked(void)
@@ -322,9 +328,16 @@ static void _masks_embedded_apply_collapsed(dt_iop_module_t *module,
                                             const gboolean collapsed)
 {
   dt_iop_gui_blend_data_t *bd = module->blend_data;
-  if(!bd || !bd->masks_panel_body || !bd->flexi_inline_collapse_btn) return;
+  if(!bd || !bd->masks_panel_reveal || !bd->flexi_inline_collapse_btn) return;
 
-  gtk_widget_set_visible(GTK_WIDGET(bd->masks_panel_body), !collapsed);
+  // slid like a module's expander. A change while the panel is not on screen
+  // is immediate, as the revealer does for an unmapped widget
+  GtkRevealer *reveal = GTK_REVEALER(bd->masks_panel_reveal);
+  if(gtk_revealer_get_reveal_child(reveal) == collapsed)
+  {
+    gtk_revealer_set_transition_duration(reveal, dt_conf_get_int("darkroom/ui/transition_duration"));
+    gtk_revealer_set_reveal_child(reveal, !collapsed);
+  }
   dtgtk_button_set_paint(DTGTK_BUTTON(bd->flexi_inline_collapse_btn),
                          dtgtk_cairo_paint_solid_arrow,
                          collapsed ? CPF_DIRECTION_LEFT : CPF_DIRECTION_DOWN, NULL);
@@ -476,15 +489,117 @@ static gboolean _scroll_widget_into_view_idle(gpointer user_data)
   return G_SOURCE_REMOVE;
 }
 
+// keep a widget where it is on screen while the layout around it moves. The
+// panel of the module that had focus folds, and one above the widget takes the
+// view with it, so the click would land the user somewhere else. The view is
+// put back after each layout of the transition, and let go of when it is over
+typedef struct _anchor_t
+{
+  GtkWidget *widget;
+  GdkFrameClock *clock;
+  gulong handler;
+  guint timeout;
+  double offset; // from the top of the viewport
+} _anchor_t;
+
+static _anchor_t *_anchor = NULL;
+
+static gboolean _anchor_viewport(GtkWidget *widget, GtkAdjustment **adj, GtkWidget **content)
+{
+  GtkWidget *sw = gtk_widget_get_ancestor(widget, GTK_TYPE_SCROLLED_WINDOW);
+  if(!sw) return FALSE;
+  *adj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
+  GtkWidget *child = gtk_bin_get_child(GTK_BIN(sw));
+  if(child && GTK_IS_VIEWPORT(child)) child = gtk_bin_get_child(GTK_BIN(child));
+  *content = child;
+  return *adj && child;
+}
+
+static void _anchor_stop(void)
+{
+  _anchor_t *a = _anchor;
+  if(!a) return;
+  _anchor = NULL;
+  if(a->handler) g_signal_handler_disconnect(a->clock, a->handler);
+  if(a->timeout) g_source_remove(a->timeout);
+  g_object_unref(a->clock);
+  g_object_unref(a->widget);
+  g_free(a);
+}
+
+static void _anchor_layout(GdkFrameClock *clock, gpointer user_data)
+{
+  _anchor_t *a = user_data;
+  GtkAdjustment *adj;
+  GtkWidget *content;
+  if(!gtk_widget_get_realized(a->widget) || !_anchor_viewport(a->widget, &adj, &content))
+    return;
+
+  gint wx = 0, wy = 0;
+  if(!gtk_widget_translate_coordinates(a->widget, content, 0, 0, &wx, &wy)) return;
+
+  const double lower = gtk_adjustment_get_lower(adj);
+  const double upper = gtk_adjustment_get_upper(adj) - gtk_adjustment_get_page_size(adj);
+  const double want = CLAMP(wy - a->offset, lower, MAX(lower, upper));
+  if(fabs(want - gtk_adjustment_get_value(adj)) >= 1.0)
+    gtk_adjustment_set_value(adj, want);
+}
+
+static gboolean _anchor_timeout(gpointer user_data)
+{
+  _anchor_t *a = user_data;
+  a->timeout = 0;
+  _anchor_stop();
+  return G_SOURCE_REMOVE;
+}
+
+static void _anchor_start(GtkWidget *widget)
+{
+  _anchor_stop();
+  GtkAdjustment *adj;
+  GtkWidget *content;
+  GdkFrameClock *clock = widget ? gtk_widget_get_frame_clock(widget) : NULL;
+  // not on screen: nothing to hold in place
+  if(!clock || !gtk_widget_get_mapped(widget) || !_anchor_viewport(widget, &adj, &content))
+    return;
+
+  gint wx = 0, wy = 0;
+  if(!gtk_widget_translate_coordinates(widget, content, 0, 0, &wx, &wy)) return;
+
+  _anchor_t *a = g_new0(_anchor_t, 1);
+  a->widget = g_object_ref(widget);
+  a->clock = g_object_ref(clock);
+  a->offset = wy - gtk_adjustment_get_value(adj);
+  // after the toolkit's own layout of the frame, so the widget is where the
+  // frame will draw it
+  a->handler = g_signal_connect_after(clock, "layout", G_CALLBACK(_anchor_layout), a);
+  a->timeout = g_timeout_add(dt_conf_get_int("darkroom/ui/transition_duration") + 80,
+                             _anchor_timeout, a);
+  _anchor = a;
+}
+
 static void _scroll_into_view_later(GtkWidget *widget)
 {
   g_idle_add_full(G_PRIORITY_DEFAULT_IDLE, _scroll_widget_into_view_idle,
                   g_object_ref(widget), g_object_unref);
 }
 
-void dt_masks_gui_flexi_inline_collapse_clicked(GtkWidget *w, gpointer user_data)
+// once the panel has finished sliding open, or its size is not yet the one to
+// scroll to
+static void _scroll_into_view_after_transition(GtkWidget *widget)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+  g_timeout_add_full(G_PRIORITY_DEFAULT_IDLE,
+                     dt_conf_get_int("darkroom/ui/transition_duration") + 30,
+                     _scroll_widget_into_view_idle,
+                     g_object_ref(widget), g_object_unref);
+}
+
+// `locate`: scroll the embedded panel into view, for a toggle from outside
+// the module (the toolbar button, the shortcut), where finding the panel is
+// the point. From the module's own arrow or header it is already under the
+// pointer, and the view must stay where it is
+static void _inline_collapse_toggle(dt_iop_module_t *module, const gboolean locate)
+{
   const int pos = dt_masks_gui_panel_position();
 
   if(pos == MASKS_PANEL_POS_CANVAS)
@@ -540,17 +655,22 @@ void dt_masks_gui_flexi_inline_collapse_clicked(GtkWidget *w, gpointer user_data
   // already-folded panel and the user has to click twice to open it.
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   const gboolean collapsed =
-    bd && bd->masks_panel_body && gtk_widget_get_visible(GTK_WIDGET(bd->masks_panel_body));
+    bd && bd->masks_panel_reveal && gtk_revealer_get_reveal_child(GTK_REVEALER(bd->masks_panel_reveal));
   dt_masks_gui_panel_set_collapsed_pref(collapsed);
   _masks_embedded_apply_collapsed(module, collapsed);
   dt_iop_gui_blend_masks_panel_collapsed(collapsed);
   dt_iop_gui_blend_masks_panel_sync_toolbox();
-  if(!collapsed && bd && bd->masks_blend_header)
+  if(locate && !collapsed && bd && bd->masks_blend_header)
   {
     g_object_set_data(G_OBJECT(bd->masks_blend_header), "scroll-extra-child",
                       bd->masks_panel_body);
-    _scroll_into_view_later(bd->masks_blend_header);
+    _scroll_into_view_after_transition(bd->masks_blend_header);
   }
+}
+
+void dt_masks_gui_flexi_inline_collapse_clicked(GtkWidget *w, gpointer user_data)
+{
+  _inline_collapse_toggle((dt_iop_module_t *)user_data, FALSE);
 }
 
 // the utility lib's expander was toggled by the user, which is what its own
@@ -1044,6 +1164,10 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
   {
     if(pos == MASKS_PANEL_POS_EMBEDDED && is_focused && has_masking)
     {
+      // the panel of the module that had focus folds (it is already folding,
+      // from its lose_focus), which can move this header: hold it. Nothing has
+      // been laid out since, so the header is still where the user clicked
+      if(focus_changed) _anchor_start(bd->masks_blend_header);
       if(prev && prev != module) dt_masks_gui_flexi_release(prev);
       darktable.develop->proxy.masks_flexi_host.hosted_module = module;
 
@@ -1112,8 +1236,11 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
   // hosted: the host itself folds (the canvas panel to its edge strips, the
   // utility lib to its header), so the body is never folded here: undo any
   // embedded fold the box carries over
-  if(bd->masks_panel_body)
-    gtk_widget_set_visible(GTK_WIDGET(bd->masks_panel_body), TRUE);
+  if(bd->masks_panel_reveal)
+  {
+    gtk_revealer_set_transition_duration(GTK_REVEALER(bd->masks_panel_reveal), 0);
+    gtk_revealer_set_reveal_child(GTK_REVEALER(bd->masks_panel_reveal), TRUE);
+  }
   _masks_flexi_host_reconfigure();
 
   dt_masks_gui_focus_row_sync(bd, TRUE);
