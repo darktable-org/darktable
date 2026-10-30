@@ -775,6 +775,9 @@ changes (where available).
   Edits using anisotropy may now look slightly different when exported
   without OpenCL.
 
+- Fixed PPG demosaic with an edge threshold giving different pixels
+  along the image edges with OpenCL than on the CPU.
+
 ## Lua
 
 ### API Version
