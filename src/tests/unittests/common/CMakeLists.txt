@@ -24,6 +24,10 @@ add_cmocka_test(test_history_strings
                 SOURCES test_history_strings.c
                 LINK_LIBRARIES lib_darktable cmocka)
 
+add_cmocka_test(test_image_paths
+                SOURCES test_image_paths.c
+                LINK_LIBRARIES lib_darktable cmocka)
+
 target_compile_definitions(test_spektra_pack PRIVATE
   SPEKTRA_PACK_DIR="${CMAKE_SOURCE_DIR}/data/spektrafilm")
 
@@ -39,5 +43,6 @@ if(WIN32)
     _copy_required_library(test_draw_curve lib_darktable)
     _copy_required_library(test_fixed_strings lib_darktable)
     _copy_required_library(test_history_strings lib_darktable)
+    _copy_required_library(test_image_paths lib_darktable)
     _copy_required_library(test_dtdata lib_darktable)
 endif(WIN32)
