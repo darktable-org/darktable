@@ -206,6 +206,30 @@ static void test_knee_is_continuous_at_threshold(void **state)
   assert_double_close(above, below, 1e-6);
 }
 
+static void test_knee_float_matches_double(void **state)
+{
+  /* reinhard_knee_f() is the knee the scan stage ships and spektrafilm.cl
+     mirrors; the tests above exercise the double one. Both parameter sets:
+     upstream's, and the shipped output knee with threshold 0. */
+  TR_STEP("the float knee tracks the double one, for both parameter sets");
+  const double params[2][3] = { { KNEE_T, KNEE_L, KNEE_P },
+                                { SF_OUT_KNEE_T, SF_OUT_KNEE_L, SF_OUT_KNEE_P } };
+  for(int k = 0; k < 2; k++)
+  {
+    float previous = -1.0f;
+    for(int i = 0; i <= 400; i++)
+    {
+      const double d = 4.0 * (double)i / 400.0;
+      const double ref = reinhard_knee(d, params[k][0], params[k][1], params[k][2]);
+      const float out = reinhard_knee_f((float)d, (float)params[k][0], (float)params[k][1],
+                                        (float)params[k][2]);
+      assert_double_close(out, ref, 1e-6);
+      assert_true(out >= previous); /* and stays monotonic in float */
+      previous = out;
+    }
+  }
+}
+
 /*
  * TEST FUNCTIONS: output gamut compression, ACES RGC
  * (upstream tests/test_gamut_compression.py::TestCompressRgbAcesRgc)
@@ -905,6 +929,7 @@ int main(int argc,
     cmocka_unit_test(test_knee_above_threshold_compresses),
     cmocka_unit_test(test_knee_asymptotes_at_limit),
     cmocka_unit_test(test_knee_is_continuous_at_threshold),
+    cmocka_unit_test(test_knee_float_matches_double),
     cmocka_unit_test(test_aces_neutral_is_unchanged),
     cmocka_unit_test(test_aces_black_is_identity),
     cmocka_unit_test(test_aces_leaves_the_max_channel_alone),
