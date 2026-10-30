@@ -43,6 +43,11 @@ typedef struct dt_lib_camera_property_t
   GtkWidget *values;
   // Show property OSD
   GtkDarktableToggleButton *osd;
+  GtkWidget *remove;
+  GtkWidget *hbox;
+  gboolean user_defined;
+  struct dt_lib_camera_t *lib;
+  guint remove_source;
 } dt_lib_camera_property_t;
 
 typedef struct dt_lib_camera_t
@@ -123,6 +128,7 @@ static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib,
       int i = 0;
       const char *current_value = dt_camctl_camera_get_property(darktable.camctl, NULL, propertyname);
       dt_lib_camera_property_t *prop = calloc(1, sizeof(dt_lib_camera_property_t));
+      prop->lib = lib;
       prop->name = strdup(label);
       prop->property_name = strdup(propertyname);
       prop->values = dt_bauhaus_combobox_new(NULL);
@@ -154,13 +160,54 @@ static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib,
   return NULL;
 }
 
+static dt_lib_camera_property_t *_lib_property_add_stub(dt_lib_camera_t *lib,
+                                                        const gchar *label,
+                                                        const gchar *propertyname)
+{
+  dt_lib_camera_property_t *prop = calloc(1, sizeof(dt_lib_camera_property_t));
+  prop->lib = lib;
+  prop->user_defined = TRUE;
+  prop->name = strdup(label);
+  prop->property_name = strdup(propertyname ? propertyname : "");
+
+  prop->values = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(prop->values, NULL, label);
+  g_object_ref_sink(prop->values);
+  dt_bauhaus_combobox_add(prop->values, _("unavailable"));
+  dt_bauhaus_combobox_set(prop->values, 0);
+  gtk_widget_set_sensitive(prop->values, FALSE);
+  /* no value-changed handler - must not touch the camera */
+
+  lib->gui.properties = g_list_append(lib->gui.properties, prop);
+  return prop;
+}
+
 static void _lib_property_free(gpointer data)
 {
-  dt_lib_camera_property_t * prop = (dt_lib_camera_property_t *)data;
-  g_object_unref(prop->osd);
-  g_object_unref(prop->values);
+  dt_lib_camera_property_t *prop = (dt_lib_camera_property_t *)data;
+  if(prop->remove_source)
+  {
+    g_source_remove(prop->remove_source);
+    prop->remove_source = 0;
+  }
+  if(prop->osd) g_object_unref(prop->osd);
+  if(prop->values) g_object_unref(prop->values);
+  if(prop->remove) g_object_unref(prop->remove);
   free(prop->name);
   free(prop->property_name);
+  free(prop);
+}
+
+static dt_lib_camera_property_t *_find_user_property_by_label(dt_lib_camera_t *lib,
+                                                              const char *label)
+{
+  for(GList *l = lib->gui.properties; l; l = g_list_next(l))
+  {
+    dt_lib_camera_property_t *prop = l->data;
+    if(prop->user_defined && g_strcmp0(prop->name, label) == 0)
+      return prop;
+  }
+  return NULL;
 }
 
 static gint _compare_property_by_name(gconstpointer a, gconstpointer b)
@@ -276,21 +323,84 @@ static void _show_property_popupmenu_clicked(GtkWidget *widget, gpointer user_da
   }
   dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
 
-  // popup the menu
+  // properties_menu is owned until view_leave
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(widget, lib->gui.properties_menu);
-  g_object_unref(lib->gui.properties_menu);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
+}
+
+static void _property_conf_key(char *key, size_t key_size, const char *label)
+{
+  g_strlcpy(key, "plugins/capture/tethering/properties/", key_size);
+  g_strlcat(key, label, key_size);
+  for(char *p = key + strlen("plugins/capture/tethering/properties/"); *p; p++)
+    if(*p == ' ') *p = '_';
+}
+
+static void _lib_property_remove(dt_lib_camera_property_t *prop, const gboolean remove_conf)
+{
+  dt_lib_camera_t *lib = prop->lib;
+
+  if(!prop->user_defined) return;
+
+  if(remove_conf)
+  {
+    char key[256];
+    _property_conf_key(key, sizeof(key), prop->name);
+    dt_conf_remove_key(key);
+  }
+
+  int top = 0;
+  gtk_container_child_get(GTK_CONTAINER(lib->gui.main_grid), prop->hbox,
+                          "top-attach", &top, NULL);
+  gtk_grid_remove_row(lib->gui.main_grid, top);
+  lib->gui.prop_end--;
+  lib->gui.rows--;
+
+  lib->gui.properties = g_list_remove(lib->gui.properties, prop);
+  _lib_property_free(prop);
+}
+
+static gboolean _lib_property_remove_idle(gpointer user_data)
+{
+  dt_lib_camera_property_t *prop = (dt_lib_camera_property_t *)user_data;
+  prop->remove_source = 0;
+  _lib_property_remove(prop, TRUE);
+  return G_SOURCE_REMOVE;
+}
+
+static void _remove_property_clicked(GtkWidget *widget, gpointer user_data)
+{
+  dt_lib_camera_property_t *prop = (dt_lib_camera_property_t *)user_data;
+
+  if(prop->remove_source) return;
+
+  prop->remove_source = g_idle_add(_lib_property_remove_idle, prop);
 }
 
 static void _lib_property_add_to_gui(dt_lib_camera_property_t *prop, dt_lib_camera_t *lib)
 {
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
+  prop->hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5));
+  gtk_box_pack_start(GTK_BOX(prop->hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+  if(prop->osd)
+  {
+    gtk_box_pack_start(GTK_BOX(prop->hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
+    g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
+  }
+
+  if(prop->user_defined)
+  {
+    prop->remove = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
+    dt_gui_add_class(prop->remove, "dt_transparent_background");
+    g_object_ref_sink(prop->remove);
+    gtk_widget_set_tooltip_text(prop->remove, _("remove this property"));
+    gtk_box_pack_start(GTK_BOX(prop->hbox), prop->remove, FALSE, FALSE, 0);
+    g_signal_connect(G_OBJECT(prop->remove), "clicked",
+                     G_CALLBACK(_remove_property_clicked), prop);
+  }
+
   gtk_grid_insert_row(lib->gui.main_grid, lib->gui.prop_end); // make space for the new row
-  gtk_grid_attach(lib->gui.main_grid, GTK_WIDGET(hbox), 0, lib->gui.prop_end, 2, 1);
-  g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
-  gtk_widget_show_all(GTK_WIDGET(hbox));
+  gtk_grid_attach(lib->gui.main_grid, prop->hbox, 0, lib->gui.prop_end, 2, 1);
+  gtk_widget_show_all(GTK_WIDGET(prop->hbox));
   lib->gui.rows++;
   lib->gui.prop_end++;
 }
@@ -298,33 +408,42 @@ static void _lib_property_add_to_gui(dt_lib_camera_property_t *prop, dt_lib_came
 static void _add_property_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
-  const gchar *label = gtk_entry_get_text(GTK_ENTRY(lib->gui.plabel));
-  const gchar *property = gtk_entry_get_text(GTK_ENTRY(lib->gui.pname));
+  gchar *label = g_strstrip(g_strdup(gtk_entry_get_text(GTK_ENTRY(lib->gui.plabel))));
+  gchar *property = g_strstrip(g_strdup(gtk_entry_get_text(GTK_ENTRY(lib->gui.pname))));
 
-  // Let's try to add property
-  if(label && property)
+  if(label[0] == '\0' || property[0] == '\0')
   {
-    dt_lib_camera_property_t *prop = NULL;
-
-    if((prop = _lib_property_add_new(lib, label, property)) != NULL)
-    {
-      _lib_property_add_to_gui(prop, lib);
-
-      gchar key[256] = { "plugins/capture/tethering/properties/" };
-      g_strlcat(key, label, sizeof(key));
-      gchar *p = key;
-      const char *end = key + strlen(key);
-      while(p++ < end)
-        if(*p == ' ') *p = '_';
-      dt_conf_set_string(key, property);
-
-      // Clear entries
-      gtk_entry_set_text(GTK_ENTRY(lib->gui.plabel), "");
-      gtk_entry_set_text(GTK_ENTRY(lib->gui.pname), "");
-    }
+    g_free(label);
+    g_free(property);
+    return;
   }
-}
 
+  dt_lib_camera_property_t *prop = _lib_property_add_new(lib, label, property);
+  if(prop == NULL)
+  {
+    dt_control_log(_("cannot add camera property '%s'"), property);
+    g_free(label);
+    g_free(property);
+    return;
+  }
+
+  dt_lib_camera_property_t *existing = _find_user_property_by_label(lib, label);
+  if(existing && existing != prop)
+    _lib_property_remove(existing, FALSE);
+
+  prop->user_defined = TRUE;
+  _lib_property_add_to_gui(prop, lib);
+
+  char key[256];
+  _property_conf_key(key, sizeof(key), label);
+  dt_conf_set_string(key, property);
+
+  gtk_entry_set_text(GTK_ENTRY(lib->gui.plabel), "");
+  gtk_entry_set_text(GTK_ENTRY(lib->gui.pname), "");
+
+  g_free(label);
+  g_free(property);
+}
 
 static void _toggle_capture_mode_clicked(GtkWidget *widget, gpointer user_data)
 {
@@ -395,7 +514,7 @@ static void _expose_info_bar(dt_lib_module_t *self,
   for(GList *l = lib->gui.properties; l; l = g_list_next(l))
   {
     dt_lib_camera_property_t *prop = l->data;
-    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prop->osd)))
+    if(prop->osd && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prop->osd)))
     {
       g_strlcat(center, "      ", sizeof(center));
       g_strlcat(center, prop->name, sizeof(center));
@@ -636,7 +755,15 @@ void view_enter(struct dt_lib_module_t *self,
         if(*p == '_') *p = ' ';
 
       if((prop = _lib_property_add_new(lib, entry->key, entry->value)) != NULL)
+      {
+        prop->user_defined = TRUE;
         _lib_property_add_to_gui(prop, lib);
+      }
+      else
+      {
+        prop = _lib_property_add_stub(lib, entry->key, entry->value);
+        _lib_property_add_to_gui(prop, lib);
+      }
     }
     g_slist_free_full(options, dt_conf_string_entry_free);
   }
@@ -662,8 +789,7 @@ void view_leave(struct dt_lib_module_t *self,
   // Remove listener from camera control
   dt_camctl_tether_mode(darktable.camctl, NULL, FALSE);
   dt_camctl_unregister_listener(darktable.camctl, lib->data.listener);
-  gtk_widget_destroy(GTK_WIDGET(lib->gui.properties_menu));
-  lib->gui.properties_menu = NULL;
+  g_clear_object(&lib->gui.properties_menu);
 
   // Remove all properties
   while(lib->gui.prop_end > lib->gui.prop_start +1) {
