@@ -143,8 +143,9 @@ typedef struct dt_ui_t
 
   /* flexi masks panel, the canvas position of masks_panel_position (see
      dt_ui_flexi_panel_*): an overlay on the canvas, put on either side by its
-     halign (dt_ui_flexi_panel_set_side) */
-  GtkWidget *flexi_panel_overlay;  // outer box (body + resize handle), an overlay on the canvas
+     halign (dt_ui_flexi_panel_set_side), or a column of centerrow when always
+     on (dt_masks_gui_panel_always_on) */
+  GtkWidget *flexi_panel_overlay;  // outer box (body + resize handle), an overlay on the canvas or a column beside it
   GtkWidget *flexi_panel_body;     // vertical box: header + scroll (flexi_content)
   GtkWidget *flexi_frame;          // #iop-expander: header + content row, styled like a module
   GtkWidget *flexi_header;         // where blend_gui.c reparents flexi masks header into (sticky above scroll)
@@ -172,6 +173,10 @@ typedef struct dt_ui_t
   gboolean flexi_has_content;      // the edge strips are live (there is a panel to reach)
   gboolean flexi_in_view;          // the darkroom is showing, so the strips may take room
   GtkWidget *flexi_centerrow;     // the panel's home when docked as a real column
+  gboolean flexi_column;           // always-on: the panel is a column of centerrow, not an overlay
+  GtkWidget *flexi_idle;           // always-on: what the panel says with no module to show
+  gboolean flexi_shown_before_tab; // the panel was on screen when collapse-all took the panels away
+  gboolean flexi_keep_shown;       // collapse-all is being undone: the side panel does not hide the panel
 } dt_ui_t;
 
 /* initialize the whole left panel */
@@ -180,6 +185,8 @@ static void _ui_init_panel_left(struct dt_ui_t *ui, GtkWidget *container);
 static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container);
 /* initialize the flexi masks panel (the canvas position) */
 static void _ui_init_panel_flexi(dt_ui_t *ui, GtkWidget *container);
+static void _flexi_follow_side_panel(const dt_ui_t *ui, const dt_ui_panel_t p);
+static void _flexi_restore_after_tab(const dt_ui_t *ui);
 /* the collapsed flexi panel's edge tabs, defined below the panel itself but
    built by it (see the "flexi masks panel" section) */
 static GtkWidget *_flexi_build_sliver(dt_ui_t *ui, const gboolean right);
@@ -2789,9 +2796,11 @@ void dt_ui_toggle_panels_visibility(const struct dt_ui_t *ui)
 
     dt_conf_set_bool("collapse_help_shown", TRUE);
     dt_conf_set_int(key, 1);
+    ((dt_ui_t *)ui)->flexi_shown_before_tab = !dt_ui_flexi_panel_is_collapsed((dt_ui_t *)ui);
   }
 
   dt_ui_restore_panels(ui);
+  if(state) _flexi_restore_after_tab(ui);
   g_free(key);
 }
 
@@ -2865,6 +2874,14 @@ void dt_ui_restore_panels(const dt_ui_t *ui)
     /* restore the visible state of panels */
     for(int k = 0; k < DT_UI_PANEL_SIZE; k++)
     {
+      // the mask panel's own fold decides if it shows (dt_ui_flexi_panel_set_collapsed),
+      // not a stored flag: any panel shown after a collapse-all records all the
+      // others as hidden, which would keep its content hidden from then on
+      if(k == DT_UI_PANEL_FLEXI)
+      {
+        dt_ui_panel_show(ui, k, TRUE, FALSE);
+        continue;
+      }
       key = _panels_get_panel_path(k, "_visible");
       if(dt_conf_key_exists(key))
         dt_ui_panel_show(ui, k, dt_conf_get_bool(key), FALSE);
@@ -3025,6 +3042,8 @@ void dt_ui_panel_show(const dt_ui_t *ui,
     gtk_widget_hide(ui->panels[p]);
     if(over_panel) gtk_widget_hide(over_panel);
   }
+
+  if(p == DT_UI_PANEL_LEFT || p == DT_UI_PANEL_RIGHT) _flexi_follow_side_panel(ui, p);
 
   // force redraw of the border (to be sure the arrow in the right direction)
   if(p == DT_UI_PANEL_TOP || p == DT_UI_PANEL_CENTER_TOP)
@@ -3578,6 +3597,16 @@ static void _panel_handle_cursor_leave(GtkEventControllerMotion *controller,
   _panel_handle_cursor_set(dt_gui_get_widget(controller), FALSE);
 }
 
+// the room an always-on mask panel takes from the center, 0 while it is an overlay
+// or out of sight
+static int _flexi_column_width(const dt_ui_t *ui)
+{
+  if(!ui->flexi_column || !ui->flexi_panel_overlay
+     || !gtk_widget_get_visible(ui->flexi_panel_overlay))
+    return 0;
+  return gtk_widget_get_allocated_width(ui->flexi_panel_overlay);
+}
+
 static void _panel_set_side_panel_width(GtkWidget *widget, const dt_ui_panel_t panel, const gdouble delta_x)
 {
   // get the width of the application window
@@ -3601,7 +3630,7 @@ static void _panel_set_side_panel_width(GtkWidget *widget, const dt_ui_panel_t p
   // not a column beside it (see the flexi masks panel section below), so it
   // takes no width from the center and must not be arbitrated against the two
   // that do -- counting it would shrink the budget for a column that does not
-  // exist.
+  // exist. Always on it does exist, and _flexi_column_width counts it below
   const dt_ui_panel_t side_panels[] = { DT_UI_PANEL_LEFT, DT_UI_PANEL_RIGHT };
   for(size_t i = 0; i < G_N_ELEMENTS(side_panels); i++)
   {
@@ -3610,6 +3639,8 @@ static void _panel_set_side_panel_width(GtkWidget *widget, const dt_ui_panel_t p
     if(p && gtk_widget_get_visible(p))
       used_w += gtk_widget_get_allocated_width(p);
   }
+
+  if(panel != DT_UI_PANEL_FLEXI) used_w += _flexi_column_width(darktable.gui->ui);
 
   const gboolean canvas_constrained = (app_window_w - used_w < max_w);
   if(canvas_constrained)
@@ -3770,7 +3801,11 @@ static void _ui_init_panel_right(dt_ui_t *ui,
 // time the panel opens. For the same reason it is not one of
 // _panel_set_side_panel_width's side_panels[]: it takes no width from the
 // center. Only the two 1px hairlines (ui->flexi_sliver) are columns in
-// centerrow, marking the edge as live
+// centerrow, marking the edge as live.
+//
+// Always on (dt_masks_gui_panel_always_on), it is a column too: always on screen
+// until the user folds it, so its room is the canvas's to give up once and not
+// to lose on every focus change (dt_ui_flexi_panel_update_layout)
 
 // centerrow's left-to-right order: the hairlines bracket the canvas, which
 // falls into place between them by elimination.
@@ -3778,6 +3813,11 @@ static void _flexi_dock_reorder(dt_ui_t *ui)
 {
   if(!ui->flexi_centerrow) return;
   GtkBox *row = GTK_BOX(ui->flexi_centerrow);
+
+  // an always-on panel is a column too, between its hairline and the canvas: put
+  // at its end first, so that the hairline goes outside it
+  if(ui->flexi_column && ui->flexi_panel_overlay)
+    gtk_box_reorder_child(row, ui->flexi_panel_overlay, ui->flexi_panel_right ? -1 : 0);
 
   if(ui->flexi_sliver[0]) gtk_box_reorder_child(row, ui->flexi_sliver[0], 0);
   if(ui->flexi_sliver[1]) gtk_box_reorder_child(row, ui->flexi_sliver[1], -1);
@@ -4153,6 +4193,17 @@ static void _ui_init_panel_flexi(dt_ui_t *ui,
 
   ui->flexi_content = dt_gui_vbox();
   gtk_container_add(GTK_CONTAINER(scroll), ui->flexi_content);
+
+  // what an always-on panel says with no module to show (dt_ui_flexi_panel_set_idle).
+  // In the header, so that the empty panel keeps a header to carry the frame's
+  // rounded corner (a header with nothing in it has no height, and the body's
+  // square corner shows instead). Hidden whenever a mask is in the panel
+  ui->flexi_idle = gtk_label_new(NULL);
+  gtk_label_set_line_wrap(GTK_LABEL(ui->flexi_idle), TRUE);
+  gtk_label_set_xalign(GTK_LABEL(ui->flexi_idle), 0.0f);
+  dt_gui_add_class(ui->flexi_idle, "dt_masks_idle");
+  gtk_widget_set_no_show_all(ui->flexi_idle, TRUE);
+  dt_gui_box_add(ui->flexi_header, ui->flexi_idle);
 #if GTK_CHECK_VERSION(4, 0, 0)
   /* GTK4 panel-scroll gating, see _panel_center_scroll */
   {
@@ -4199,11 +4250,12 @@ static void _ui_init_panel_flexi(dt_ui_t *ui,
   ui->flexi_panel_right = FALSE;
   _flexi_sync_scrollbar_side(ui);
   ui->flexi_centerrow = container;
-  // an overlay on the canvas, never a column in centerrow: showing and hiding
-  // it must not re-lay out the center row, or the image would resize every time
-  // the panel appeared. It paints its own background for the same reason -- the
-  // panel is transparent by design and there is no grid background to show
-  // through out here, only the photo (see "#masks-docked-panel.dt_masks_floating").
+  // an overlay on the canvas, a column in centerrow only when always on
+  // (dt_ui_flexi_panel_update_layout): showing and hiding it must not re-lay
+  // out the center row, or the image would resize every time the panel
+  // appeared. It paints its own background for the same reason -- the panel is
+  // transparent by design and there is no grid background to show through out
+  // here, only the photo (see "#masks-docked-panel.dt_masks_floating").
   if(ui->flexi_panel_body) dt_gui_add_class(ui->flexi_panel_body, "dt_masks_floating");
   _flexi_apply_side_classes(ui);
   gtk_widget_set_halign(over, GTK_ALIGN_START);
@@ -4482,9 +4534,9 @@ static void _flexi_sync_header_scrollbar_pad(dt_ui_t *ui)
     GList *kids = gtk_container_get_children(GTK_CONTAINER(r->data));
 
     // the outermost visible child on that side, found from the allocations
-    // rather than from the packing order: which of the toggle and the expander
-    // placeholder leads mirrors with the dock (_masks_header_apply_side in
-    // develop/masks_gui_panel_host.c)
+    // rather than from the packing order: the expander placeholder is at the
+    // start when docked left, at the end when docked right
+    // (_masks_header_apply_side in develop/masks_gui_panel_host.c)
     GtkWidget *edge = NULL;
     int best = 0;
     for(GList *k = kids; k; k = g_list_next(k))
@@ -4699,6 +4751,14 @@ static void _flexi_report_occlusion(dt_ui_t *ui)
 {
   if(!darktable.develop) return;
 
+  // an always-on panel has its own column: the canvas is laid out beside it and
+  // nothing is hidden under it
+  if(ui->flexi_column)
+  {
+    dt_dev_set_occlusion(&darktable.develop->full, 0, 0);
+    return;
+  }
+
   int32_t w = 0;
   GtkWidget *over = ui->flexi_panel_overlay;
   if(over && gtk_widget_get_visible(over))
@@ -4719,6 +4779,41 @@ static void _flexi_report_occlusion(dt_ui_t *ui)
 static void _flexi_overlay_size_allocate(GtkWidget *w, GdkRectangle *a, gpointer d)
 {
   _flexi_report_occlusion(darktable.gui->ui);
+}
+
+// always-on (dt_masks_gui_panel_always_on): the panel is a column of the center row
+// and takes its room from the canvas, instead of an overlay floating over it.
+// Moved here and not rebuilt, so what it hosts stays where it is
+void dt_ui_flexi_panel_update_layout(dt_ui_t *ui)
+{
+  if(!ui || !ui->flexi_panel_overlay || !ui->flexi_centerrow) return;
+  const gboolean column = dt_masks_gui_panel_always_on();
+  if(column == ui->flexi_column) return;
+
+  GtkWidget *over = ui->flexi_panel_overlay;
+  GtkWidget *base = dt_ui_center_base(ui);
+  g_object_ref(over);
+  if(column)
+  {
+    gtk_container_remove(GTK_CONTAINER(base), over);
+    gtk_box_pack_start(GTK_BOX(ui->flexi_centerrow), over, FALSE, FALSE, 0);
+    gtk_widget_set_halign(over, GTK_ALIGN_FILL);
+    // the panel inside expands, and a GtkBox honors a child's computed expand
+    // as well as its packing flag: unpinned, the column would be given half of
+    // the free width, with its content at the width it is sized to and the
+    // rest empty. Set explicitly, the column's own value wins over the child's
+    gtk_widget_set_hexpand(over, FALSE);
+  }
+  else
+  {
+    gtk_container_remove(GTK_CONTAINER(ui->flexi_centerrow), over);
+    gtk_overlay_add_overlay(GTK_OVERLAY(base), over);
+    gtk_widget_set_halign(over, ui->flexi_panel_right ? GTK_ALIGN_END : GTK_ALIGN_START);
+  }
+  g_object_unref(over);
+  ui->flexi_column = column;
+  _flexi_dock_reorder(ui);
+  _flexi_report_occlusion(ui);
 }
 
 // the header's inset is set once the allocation is over, not during it: a
@@ -4851,10 +4946,14 @@ void dt_ui_flexi_panel_set_side(dt_ui_t *ui, const gboolean right)
   if(!ui->flexi_panel_overlay || ui->flexi_panel_right == right) return;
   ui->flexi_panel_right = right;
 
-  // the panel is always an overlay child of the canvas, so its side is purely
-  // its halign there -- nothing is re-laid out and the image never moves
-  gtk_widget_set_halign(ui->flexi_panel_overlay,
-                        right ? GTK_ALIGN_END : GTK_ALIGN_START);
+  // an overlay child of the canvas, its side is purely its halign there --
+  // nothing is re-laid out and the image never moves. Always on, it is a column
+  // and changes ends
+  if(ui->flexi_column)
+    _flexi_dock_reorder(ui);
+  else
+    gtk_widget_set_halign(ui->flexi_panel_overlay,
+                          right ? GTK_ALIGN_END : GTK_ALIGN_START);
 
   if(ui->flexi_handle && ui->flexi_content_row)
     // the handle is a column of the content row, so moving it to the other edge
@@ -4876,12 +4975,61 @@ void dt_ui_flexi_panel_set_side(dt_ui_t *ui, const gboolean right)
   dt_iop_gui_blend_masks_panel_side_changed();
 }
 
+// the side panel the mask panel is docked next to
+static dt_ui_panel_t _flexi_side_panel(const dt_ui_t *ui)
+{
+  return ui->flexi_panel_right ? DT_UI_PANEL_RIGHT : DT_UI_PANEL_LEFT;
+}
+
+// show or hide the panel as the user's fold and its surroundings say, without
+// touching the fold
+static void _flexi_reapply_fold(dt_ui_t *ui)
+{
+  dt_ui_flexi_panel_set_collapsed(ui, dt_conf_get_bool("plugins/darkroom/blend/masks_panel_collapsed"),
+                                  ui->flexi_has_content, FALSE);
+}
+
+// that side panel was just shown or hidden: the always-on panel goes or comes back
+// with it, to the fold the user left it in
+static void _flexi_follow_side_panel(const dt_ui_t *ui, const dt_ui_panel_t p)
+{
+  if(!ui->flexi_panel_overlay || !ui->flexi_in_view || !dt_masks_gui_panel_always_on()) return;
+  if(_flexi_side_panel(ui) != p) return;
+  _flexi_reapply_fold((dt_ui_t *)ui);
+}
+
+// the second collapse-all key press gives back the state from before the first,
+// also a panel the user had opened from its strip beside a hidden side panel,
+// which the side panel following alone would leave hidden
+static void _flexi_restore_after_tab(const dt_ui_t *ui)
+{
+  dt_ui_t *u = (dt_ui_t *)ui;
+  const gboolean was_shown = u->flexi_shown_before_tab;
+  u->flexi_shown_before_tab = FALSE;
+  if(!u->flexi_panel_overlay
+     || !dt_masks_model_tab_keeps_panel(dt_masks_gui_panel_always_on(), u->flexi_in_view,
+                                        was_shown))
+    return;
+  u->flexi_keep_shown = TRUE;
+  _flexi_reapply_fold(u);
+  u->flexi_keep_shown = FALSE;
+}
+
+void dt_ui_flexi_panel_set_idle(dt_ui_t *ui, const char *text)
+{
+  if(!ui || !ui->flexi_idle) return;
+  if(text) gtk_label_set_text(GTK_LABEL(ui->flexi_idle), text);
+  gtk_widget_set_visible(ui->flexi_idle, text != NULL);
+}
+
 void dt_ui_flexi_panel_set_collapsed(dt_ui_t *ui,
                                      const gboolean collapsed,
                                      const gboolean has_content,
                                      const gboolean persist)
 {
   if(!ui->flexi_panel_overlay) return;
+
+  dt_ui_flexi_panel_update_layout(ui);
 
   const gboolean was_collapsed = dt_ui_flexi_panel_is_collapsed(ui);
 
@@ -4897,8 +5045,21 @@ void dt_ui_flexi_panel_set_collapsed(dt_ui_t *ui,
       dt_conf_set_bool("plugins/darkroom/blend/masks_panel_side_right",
                        ui->flexi_panel_right);
   }
-  if(!collapsed) _ui_init_flexi_panel_size(ui->panels[DT_UI_PANEL_FLEXI]);
-  gtk_widget_set_visible(ui->flexi_panel_overlay, !collapsed);
+  // an always-on panel is part of the side it is docked on. The stored fold is not
+  // touched: only an action of the user (persist) shows it while that side is
+  // away, and the panel is back with the side
+  const gboolean hide
+    = dt_masks_model_canvas_panel_hidden(collapsed, persist, dt_masks_gui_panel_always_on(),
+                                         ui->flexi_in_view,
+                                         dt_ui_panel_visible(ui, _flexi_side_panel(ui)),
+                                         ui->flexi_keep_shown);
+  if(!hide)
+  {
+    _ui_init_flexi_panel_size(ui->panels[DT_UI_PANEL_FLEXI]);
+    // collapse-all hides the content too: opening the panel has to bring it back
+    gtk_widget_show(ui->panels[DT_UI_PANEL_FLEXI]);
+  }
+  gtk_widget_set_visible(ui->flexi_panel_overlay, !hide);
   _flexi_report_occlusion(ui);
 
   // has_content alone, not "collapsed && has_content": the edge strip is the
@@ -4910,7 +5071,7 @@ void dt_ui_flexi_panel_set_collapsed(dt_ui_t *ui,
   // puts back the editing mode that collapsing interrupted. Only on a real
   // transition: the same-state re-applications (see dt_masks_gui_flexi_release)
   // are not the user putting the panel away or bringing it back.
-  if(collapsed != was_collapsed) dt_iop_gui_blend_masks_panel_collapsed(collapsed);
+  if(hide != was_collapsed) dt_iop_gui_blend_masks_panel_collapsed(hide);
 
   // the canvas position's folds all land here (the edge strip, the header, the
   // grip, the toolbar button, the position radios), so this is where the

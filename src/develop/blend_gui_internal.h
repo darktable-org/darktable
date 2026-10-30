@@ -166,8 +166,9 @@ typedef struct dt_masks_pick_result_t
 } dt_masks_pick_result_t;
 
 /** the member a first shift+click joins, if the panel selects one: the element
-    `selected_formid`, else the group `selected_cid`, as a pick id. INVALID_MASKID
-    where the mask's own group is what is selected, which is nothing in it */
+    `selected_formid`, else the group `selected_cid`, as a pick id. The mask's
+    own group is one, when it is what is selected: the pick is then everything
+    in the mask but what is clicked. INVALID_MASKID where nothing is */
 dt_mask_id_t dt_masks_model_pick_anchor(dt_masks_form_t *grp,
                                         const dt_mask_id_t selected_formid,
                                         const dt_mask_id_t selected_cid);
@@ -347,60 +348,47 @@ dt_masks_solo_canvas_t dt_masks_model_toggle_soloedit(dt_iop_module_t *module,
                                                       dt_masks_form_t *grp,
                                                       const dt_mask_id_t id);
 
-/** does an element row carry an expander chevron of its own? Of any kind:
-    every element has at least its opacity slider to show. `props_subpanel` is
-    "member properties in subpanel", which takes all of them out of the rows. */
-gboolean dt_masks_model_row_is_expandable(const gboolean props_subpanel);
-
-/** which element "auto-expand selected" keeps open: the selection if it can be
-    expanded at all, else whatever was expanded last. Resolves the form's kind
-    through darktable.develop. */
-dt_mask_id_t dt_masks_model_auto_expand_anchor(const dt_iop_gui_blend_data_t *bd);
-
-/** what a real click on an element row's chevron does to "auto-expand
-    selected": the row to collapse (INVALID_MASKID for none) and the element
-    the option considers open afterwards. */
-typedef struct dt_masks_chevron_click_t
-{
-  dt_mask_id_t collapse;
-  dt_mask_id_t last_expanded;
-} dt_masks_chevron_click_t;
-
-dt_masks_chevron_click_t dt_masks_model_element_chevron_click(const dt_iop_gui_blend_data_t *bd,
-                                                              const dt_mask_id_t id,
-                                                              const gboolean expanded,
-                                                              const gboolean auto_expand);
-/** the same, one level up: which group it keeps open. Every group can be
-    expanded, so this needs no kind test. */
-dt_mask_id_t dt_masks_model_auto_expand_group_anchor(const dt_iop_gui_blend_data_t *bd);
-
 /** has the user touched this channel's input (0) / output (1) sub-range? */
 gboolean dt_masks_gui_param_channel_is_used(const dt_masks_point_parametric_t *p,
                                             const dt_iop_gui_blendif_channel_t *channel,
                                             const int in_out);
 
-/** the sliders a row shows for `view`: AUTO resolves to the ranges in use (the
-    input one when neither is), the others to themselves */
+/** the sliders a row shows for `view`: AUTO resolves to both when the output
+    range is in use, else to the input one; the input one stays so, and the
+    output one, once a choice of its own, is both */
 dt_masks_param_view_t dt_masks_model_param_view_resolve(const dt_masks_param_view_t view,
-                                                        const gboolean in_used,
                                                         const gboolean out_used);
 
+/** what a parametric row's swatch shows of one channel's range, `r` its four
+    markers in [0, 1] (zero opacity, full opacity, full opacity, zero opacity).
+    The swatch is the colors the element selects, not the whole range: the span
+    below, laid end to end across its width. Normal, that is the one stretch
+    where the range has any opacity, [r0, r3]; inverted, the two outside it,
+    [0, r1] and [r2, 1], of which an empty one is left out. */
+typedef struct dt_masks_swatch_span_t
+{
+  int n;
+  float from[2];
+  float to[2];
+} dt_masks_swatch_span_t;
+
+dt_masks_swatch_span_t dt_masks_model_param_swatch_span(const float r[4], gboolean inverted);
+/** how much of the channel value `v` the element selects: the range's opacity
+    there, or what is left of it inverted. The edges of the range fade, as the
+    markers say */
+float dt_masks_model_param_swatch_alpha(const float r[4], gboolean inverted, float v);
 /** which controls a parametric row shows */
 typedef struct dt_masks_param_vis_t
 {
   gboolean input;
   gboolean output;
   gboolean boost;
-  /** the full opacity slider leading the expanded controls */
-  gboolean opacity;
 } dt_masks_param_vis_t;
 
 dt_masks_param_vis_t dt_masks_model_param_row_visibility(const dt_masks_param_view_t view,
-                                                         const gboolean expanded,
-                                                         const gboolean in_used,
                                                          const gboolean out_used,
                                                          const gboolean boost_enabled,
-                                                         const gboolean props_subpanel);
+                                                         const gboolean boost_with_sliders);
 
 /** state transition decisions for the mask panel and corner icon */
 typedef struct dt_masks_panel_state_t
@@ -416,7 +404,25 @@ dt_masks_panel_state_t dt_masks_model_panel_state(const int pos,
                                                   const gboolean has_masking,
                                                   const gboolean is_expanded,
                                                   const gboolean mask_active,
-                                                  const gboolean panel_pref_collapsed);
+                                                  const gboolean panel_pref_collapsed,
+                                                  const gboolean always_on);
+
+/** whether the canvas panel is taken off the screen. The user's fold always
+    does it. An always-on panel is also part of the side panel it is docked
+    next to, and of the darkroom: it goes with them unless the user opened it
+    themselves (user_action) or a collapse-all is being undone (keep_shown) */
+gboolean dt_masks_model_canvas_panel_hidden(gboolean folded,
+                                            gboolean user_action,
+                                            gboolean always_on,
+                                            gboolean in_view,
+                                            gboolean side_visible,
+                                            gboolean keep_shown);
+/** undoing a collapse-all gives back an always-on panel that was on screen
+    before it, whatever its side panel's state: the key press takes everything
+    away and the next one restores what was there */
+gboolean dt_masks_model_tab_keeps_panel(gboolean always_on,
+                                        gboolean in_view,
+                                        gboolean shown_before_tab);
 
 gboolean dt_masks_model_pin_should_expand_iop(const gboolean is_expanded,
                                               const gboolean is_collapsed);
@@ -424,40 +430,50 @@ gboolean dt_masks_model_pin_should_expand_iop(const gboolean is_expanded,
 /** the shape solo-edit mode should be isolating, given the panel's selection,
     or INVALID_MASKID if the mode must stand down */
 dt_mask_id_t dt_masks_model_soloedit_target(dt_iop_gui_blend_data_t *bd);
-/** what the "member properties in subpanel" section shows, and whose */
-typedef struct dt_masks_props_target_t
+/** whose controls are shown, and what they are */
+typedef struct dt_masks_controls_target_t
 {
   /** the selected element, or else the selected group; INVALID_MASKID when
-      it has nothing to show there */
+      it has nothing to show */
   dt_mask_id_t id;
   gboolean is_group;
   /** a drawn shape's size, feather and the rest */
   gboolean shape;
-  /** a full opacity slider: always, for anything selected */
+  /** a parametric element's sliders and opacity */
+  gboolean param;
+  /** there are controls to show: a full opacity slider at least, for anything
+      selected */
   gboolean opacity;
-  /** a parametric channel's boost factor, for a channel that has one */
-  gboolean boost;
-} dt_masks_props_target_t;
+} dt_masks_controls_target_t;
 
-dt_masks_props_target_t dt_masks_model_props_panel_target(const dt_iop_gui_blend_data_t *bd);
+dt_masks_controls_target_t dt_masks_model_controls_target(const dt_iop_gui_blend_data_t *bd,
+                                                          const gboolean hover);
 
 /** the collapsible sections of the mask panel below the list. Each keeps one
     folded state, the same for every module and target */
 typedef enum dt_masks_section_t
 {
   DT_MASKS_SECTION_REFINE,
-  DT_MASKS_SECTION_PROPS,
+  DT_MASKS_SECTION_CONTROLS,
   DT_MASKS_SECTION_HELP,
   DT_MASKS_SECTION_CONSUMERS,
   DT_MASKS_SECTION_COUNT
 } dt_masks_section_t;
 
-/** whether a section shows unfolded: its saved state, except that the
-    properties section opens while it holds the creation controls of a shape
-    being drawn, without that being saved */
-gboolean dt_masks_model_section_expanded(const dt_masks_section_t section, const gboolean drawing);
+/** whether a section shows unfolded: its saved state. Not for the controls
+    section, whose state depends on the member (see
+    dt_masks_model_controls_expanded) */
+gboolean dt_masks_model_section_expanded(const dt_masks_section_t section);
 /** save a section's folded state, as a click on its toggle does */
 void dt_masks_model_section_save(const dt_masks_section_t section, const gboolean expanded);
+
+/** whether the controls subpanel shows unfolded for a kind of member: its
+    saved state, except that it opens while it holds the creation controls of a
+    shape being drawn, without that being saved. Each kind has a state of its
+    own, the same for every module and target */
+gboolean dt_masks_model_controls_expanded(const dt_masks_controls_kind_t kind, const gboolean drawing);
+/** save the folded state of a kind of member, as a click on the subpanel's toggle does */
+void dt_masks_model_controls_save(const dt_masks_controls_kind_t kind, const gboolean expanded);
 
 /** geometry for dt_masks_model_whisker_popup_rect, all in root (screen) coordinates */
 typedef struct dt_masks_whisker_geom_t
@@ -565,7 +581,7 @@ void dt_masks_gui_default_layout_build(dt_masks_form_t *grp);
 /** set `root`, the marker standing for a mask with no group form yet, as the
     default group layout's own group would be: its operator, opacity and note */
 void dt_masks_gui_default_layout_root(dt_masks_point_group_t *root);
-/** append the "default group layout" section to the panel options popover */
+/** append the default group layout choice to the panel options popover */
 void dt_masks_gui_add_default_preset_box(GtkWidget *box);
 
 // ---------------------------------------------------------------------------
@@ -588,6 +604,10 @@ GtkWidget *dt_masks_gui_toolbar_new(GtkWidget *group,
 
 /** a section title in the panel options popover; `tip` may be NULL */
 void dt_masks_gui_pref_section(GtkWidget *box, const gchar *title, const gchar *tip);
+/** a combo box in the panel options popover, for an exclusive choice, with its
+    `label` on the left; the caller adds the entries and connects
+    "value-changed" once the initial one is set */
+GtkWidget *dt_masks_gui_pref_combo(GtkWidget *box, const gchar *label, const gchar *tip);
 /** re-home a widget into a new parent (no-op if already there), keeping its
     shown state */
 void dt_masks_gui_reparent_into(GtkWidget *w, GtkWidget *parent,
@@ -616,13 +636,24 @@ void dt_masks_gui_flexi_release(dt_iop_module_t *module);
 void dt_masks_gui_flexi_inline_collapse_clicked(GtkWidget *w, gpointer user_data);
 // the position preference (MASKS_PANEL_POS_*)
 int dt_masks_gui_panel_position(void);
+// the canvas panel is always-on: always on screen unless the user folds it, in a
+// column of its own beside the canvas. Only the canvas position has the choice
+gboolean dt_masks_gui_panel_always_on(void);
 // the lib hosting the panel in the utility position: it is shown or hidden by
 // the position preference alone, so the modules list must not offer it
 gboolean dt_masks_gui_is_host_lib(const struct dt_lib_module_t *module);
 // which edge the canvas-side panel is docked against, and where pinning it
 // records that -- not part of the position choice (see MASKS_PANEL_POS_CANVAS)
 gboolean dt_masks_gui_panel_side_right(void);
-/** append the "blend mask panel position" section to an existing menu */
+/** which of the panel options popover's dependent checks apply: the canvas
+    panel's always-on choice and resize handle under the position choice, the
+    focus row under it
+    (a hosted position's). The popover builds and updates them from these alone */
+gboolean dt_masks_gui_pref_always_on_applies(int position);
+gboolean dt_masks_gui_pref_handle_applies(int position);
+gboolean dt_masks_gui_pref_focus_row_applies(int position);
+/** append the panel position choice, and the options that depend on it, to the
+    panel options popover */
 void dt_masks_gui_add_panel_position_box(GtkWidget *box, dt_iop_module_t *module);
 
 G_END_DECLS

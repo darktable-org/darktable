@@ -17,7 +17,7 @@ ctest --test-dir build-test -R flexi --output-on-failure
 | `test_flexi_persistence` | mask blob version migration, i.e. carrying already-saved edits forward |
 | `test_flexi_dnd` | the drop paths other than member-onto-member: group headers, empty groups, clusters, deleting and emptying groups |
 | `test_flexi_groups` | the solo family's mutual exclusivity, group numbering, refinement scope |
-| `test_flexi_panel` | what the panel shows: the no-op badge, adaptive parametric rows, preferences |
+| `test_flexi_panel` | what the panel shows: the no-op badge, adaptive parametric rows, preferences, which dependent checks the options popover shows, the always-on canvas panel's state and what the collapse-all key gives back |
 | `test_flexi_migrate` | the classic → flexi migration case table (structure, not pixels) |
 | `test_flexi_compose` | the mask operators themselves: what union/intersection/… compute, and the algebraic properties the design relies on |
 | `test_flexi_raster_hover` | what hovering a raster element's row paints on the canvas: the area its source's mask covers, and nothing when the pipe is busy or the source is off |
@@ -234,30 +234,28 @@ widget tree and real event delivery:
   Check: with a group holding a drawn shape and a parametric element, "invert
   all elements" must flip the shape's handle icon *and* the parametric row's
   slider markers, exactly as inverting either one on its own does.
-- **the expander option** (hamburger → options). Only the rules behind it are
-  covered here (`dt_masks_model_row_is_expandable`, the anchor pair, and the conf
-  default); which widget ends up where needs a real tree. Check, with a group
-  holding a drawn shape, a parametric element and a raster mask:
-  - *auto-expand selected* on — clicking each of the three in turn expands it
-    and collapses the previously expanded one. Expanding a parametric element
-    this way must not add a history item: the undo stack must not grow while
-    merely clicking through the list. With two or more groups, clicking a group
-    header opens that group's members and closes the other's, and selecting an
-    element opens both its group and itself. A group's own chevron still wins
-    over the option: collapsing the open group by its chevron must leave it
-    collapsed, even though that same click also selects the group
-    (`masks_group_collapse_click`).
-  - opacity is never in a header: each expanded panel leads with a full slider
-    — shapes, parametric elements, raster masks and groups alike.
-- **header icons.** Every header keeps the same columns, counted from the
-  right: expander, visibility eye, then a group's notes toggle, a parametric
-  row's picker or the link of a linked shape or raster mask, then the
-  low-opacity badge. The first three share one framed drawer, always three
-  icons wide; a column a row does not use stays blank inside it, so the icons
-  of every row line up. Check: click the eye (disable, and back), shift+click it (solo, and
-  back), on an element and on a group; the eye, its tooltip and the actions
-  menu's "disable"/"solo" entries must agree, and shift+click must do nothing
-  on a disabled element or an empty group, where the menu offers no solo.
+- **the controls of the selected member.** Only the rules behind them are
+  covered here (`dt_masks_model_controls_target`, which controls a parametric
+  row shows, the folded state kept per kind of member); which widget ends up
+  where needs a real tree. Check, with a group holding a drawn shape, a
+  parametric element and a raster mask: selecting each puts its opacity in the
+  selection panel, and a shape's other controls or a parametric element's
+  ranges in the controls subpanel, which stays folded and insensitive for a
+  raster mask. The toggle at the left of the controls header shows a parametric
+  element's output slider, and its boost factor when the channel has one (hz has
+  none; its tooltip says so). Selecting a parametric element must not add a
+  history item. Only a group expands, with the chevron ahead of its handle.
+- **header icons.** Every row header keeps the same columns, counted from the
+  right: the visibility eye, invert, then the link of a linked shape or raster
+  mask, or a group's operator. Eye and invert are blank where a row has no icon,
+  so the icons of every row line up; the group's chevron is not a column. Check:
+  click the eye (disable, and back), shift+click it (solo, and back), on an
+  element and on a group; the eye, its tooltip and the actions menu's
+  "disable"/"solo" entries must agree, and shift+click must do nothing on a
+  disabled element or an empty group, where the menu offers no solo. The mask
+  header's icons (overlay, eye, edit on canvas, solo edit, lock) are
+  right-aligned, as big and as far apart as the rows' icons, docked and in the
+  utility panel over their columns.
 
 - **hover highlight across an interaction.** Hovering a row highlights its shape
   on the canvas; the highlight must survive the interaction, not just the

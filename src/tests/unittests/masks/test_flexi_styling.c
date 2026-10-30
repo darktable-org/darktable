@@ -39,19 +39,18 @@ static const char *_parts[] =
   "dt_masks_picker", "dt_masks_invert", "dt_masks_badge",
   "dt_masks_channel_picker", "dt_masks_row", "dt_masks_header", "dt_masks_row_header",
   "dt_masks_group_header", "dt_masks_row_name",
-  "dt_masks_group_block", "dt_masks_group_members", "dt_masks_card", "dt_masks_param_card",
-  "dt_masks_props_card", "dt_masks_group_card", "dt_masks_note",
+  "dt_masks_group_block", "dt_masks_group_members", "dt_masks_note", "dt_masks_frame",
 };
 static const char *_states[] =
 {
   "dt_masks_inverted", "dt_masks_channel", "dt_masks_soloed", "dt_masks_disabled",
   "dt_masks_no_effect", "dt_masks_selected", "dt_masks_selected_element_group", "dt_masks_hovered",
   "dt_masks_drop_target", "dt_masks_root", "dt_masks_pending", "dt_masks_linked",
-  "dt_masks_picked", "dt_masks_selected_held",
+  "dt_masks_picked",
 };
 static const char *_hooks[] =
 {
-  "dt_masks_open", "dt_masks_has_card",
+  "dt_masks_open", "dt_masks_selected_held",
 };
 
 static gchar *_read(const char *rel)
