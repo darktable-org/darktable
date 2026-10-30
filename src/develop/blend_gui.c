@@ -2404,6 +2404,11 @@ static void _blendop_mask_enable_toggled(
 
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
+  // focusing a module opens its panel; switching the mask off from a folded
+  // one is not a reach for its controls
+  const gboolean was_folded =
+    !data->masks_panel_body || !gtk_widget_get_visible(GTK_WIDGET(data->masks_panel_body));
+
   dt_iop_request_focus(module);
 
   // switching it on or off is a change to the mask like any other
@@ -2427,6 +2432,7 @@ static void _blendop_mask_enable_toggled(
     _blendop_masks_mode_callback(DEVELOP_MASK_DISABLED, data);
     dt_iop_add_remove_mask_indicator(module, FALSE);
     _mask_lock_sync(module);
+    if(was_folded) dt_iop_gui_blend_masks_panel_fold_embedded(module);
   }
 
   dt_control_hinter_message("");
@@ -7779,6 +7785,8 @@ static void _soloedit_mode_toggled(GtkGestureSingle *gesture,
                                    dt_iop_module_t *module)
 {
   DT_GUARD_GUI_UPDATE();
+  // from the header of a module that is expanded but not focused
+  dt_iop_request_focus(module);
   _soloedit_mode_toggle();
 }
 
@@ -18792,6 +18800,8 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
 
   if(darktable.develop && darktable.develop->gui_module == module)
     dt_iop_gui_blend_masks_panel_relocate(module);
+  else
+    dt_iop_gui_blend_masks_panel_peek(module);
 
   DT_LEAVE_GUI_UPDATE();
 }

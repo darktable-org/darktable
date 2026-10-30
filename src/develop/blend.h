@@ -1067,6 +1067,9 @@ void dt_masks_gui_panel_set_collapsed_pref(const gboolean collapsed);
 void dt_iop_gui_blend_masks_panel_host_expanded(const gboolean expanded);
 // moves the masks panel to its host and updates the header labels and tooltips
 void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module);
+// the module is not focused: in the embedded position, an expanded one shows
+// the header of its masks panel alone; any other does not show the panel
+void dt_iop_gui_blend_masks_panel_peek(dt_iop_module_t *module);
 // show or hide the focused module's masks panel, wherever it is. The panel's
 // arrow, the shortcut and the toolbar button all come here, so they cannot
 // drift apart. Does nothing unless the focused module has a masks panel
@@ -1094,6 +1097,8 @@ void dt_iop_gui_blend_mask_reset(dt_iop_module_t *module);
 // fold the panel away for the focused module if it has lost its mask, as when
 // it takes focus without one: the mask coming back (an undo) shows it again
 void dt_iop_gui_blend_masks_panel_fold_unmasked(void);
+// fold the embedded panel of the module, without storing the fold
+void dt_iop_gui_blend_masks_panel_fold_embedded(dt_iop_module_t *module);
 // show the panel's state on the darkroom toolbar button: pressed while the
 // panel shows, insensitive when the focused module has no masks panel
 void dt_iop_gui_blend_masks_panel_sync_toolbox(void);

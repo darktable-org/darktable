@@ -3040,6 +3040,9 @@ static void _gui_set_single_expanded(dt_iop_module_t *module, gboolean expanded)
     }
   }
 
+  // a module folded without being focused loses its header too
+  dt_iop_gui_blend_masks_panel_peek(module);
+
   char var[1024];
   snprintf(var, sizeof(var), "plugins/darkroom/%s/expanded", module->op);
   dt_conf_set_bool(var, expanded);
@@ -3088,6 +3091,7 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module)
   const gboolean expanded = module->expanded;
 
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), expanded);
+  dt_iop_gui_blend_masks_panel_peek(module);
 }
 
 static void _iop_plugin_body_pressed(GtkGestureSingle *gesture,

@@ -123,6 +123,10 @@ static gboolean _masks_panel_collapsed_pref(void)
 // again on the next module with a mask. A fold or unfold by the user clears it
 static const dt_iop_module_t *_no_mask_fold = NULL;
 
+// the module being focused by a click on its panel's header or arrow: it
+// takes focus with its panel open, mask or no mask
+static const dt_iop_module_t *_open_on_focus = NULL;
+
 // an always-on panel is folded by the user alone: a module with its mask off does
 // not fold it
 static gboolean _masks_panel_collapsed_for(const dt_iop_module_t *module)
@@ -330,6 +334,17 @@ static void _masks_embedded_apply_collapsed(dt_iop_module_t *module,
                                 : _("hide the blend mask panel"));
 }
 
+void dt_iop_gui_blend_masks_panel_fold_embedded(dt_iop_module_t *module)
+{
+  if(!module || dt_masks_gui_panel_position() != MASKS_PANEL_POS_EMBEDDED) return;
+  // the panel's own fold, as for a module that took focus with its mask off:
+  // not stored, so the next module with a mask follows the preference again
+  _no_mask_fold = module;
+  _masks_embedded_apply_collapsed(module, TRUE);
+  dt_iop_gui_blend_masks_panel_collapsed(TRUE);
+  dt_iop_gui_blend_masks_panel_sync_toolbox();
+}
+
 // the header's layout:
 //
 //   toggle <space> overlay eye edit solo lock expander
@@ -505,6 +520,17 @@ void dt_masks_gui_flexi_inline_collapse_clicked(GtkWidget *w, gpointer user_data
       if(!exp && host->expander)
         _scroll_into_view_later(host->expander);
     }
+    return;
+  }
+
+  // embedded, and the module is only showing its header: the click is the
+  // module reaching for its panel, so focus it, with the panel open
+  if(module && module != darktable.develop->gui_module)
+  {
+    dt_masks_gui_panel_set_collapsed_pref(FALSE);
+    _open_on_focus = module;
+    dt_iop_request_focus(module);
+    _open_on_focus = NULL;
     return;
   }
 
@@ -826,7 +852,12 @@ static void _masks_flexi_release_full(dt_iop_module_t *module, const gboolean ha
   if(!bd->relocatable_box || !GTK_IS_WIDGET(bd->relocatable_box)) return;
 
   const gboolean is_focused = darktable.develop && darktable.develop->gui_module == module;
-  const gboolean show = is_focused && module->expanded;
+  const gboolean embedded =
+    dt_masks_gui_panel_position() == MASKS_PANEL_POS_EMBEDDED;
+  // embedded, an expanded module that is not focused keeps its header, so that
+  // it does not look as if it had lost its mask; the rest waits for focus
+  const gboolean peek = embedded && !is_focused && module->expanded && bd->masks_support;
+  const gboolean show = (is_focused && module->expanded) || peek;
 
   const gboolean was_hosted =
     darktable.develop->proxy.masks_flexi_host.hosted_module == module;
@@ -848,10 +879,8 @@ static void _masks_flexi_release_full(dt_iop_module_t *module, const gboolean ha
   // body away in place; when the box only landed here because this module lost
   // focus, its real home is a host and the arrow has nothing to act on (both
   // decided by _masks_header_apply_side)
-  const gboolean embedded =
-    dt_masks_gui_panel_position() == MASKS_PANEL_POS_EMBEDDED;
   _masks_header_apply_side(bd, FALSE, FALSE);
-  _masks_embedded_apply_collapsed(module, embedded && (!module->expanded || _masks_panel_collapsed_pref()));
+  _masks_embedded_apply_collapsed(module, peek || (embedded && (!module->expanded || _masks_panel_collapsed_pref())));
   // back in the module's own content -- restore the embedded inset (see
   // darktable.css's "#blending-tabs.dt_masks_embedded")
   dt_gui_add_class(bd->masks_blend_header, "dt_masks_embedded");
@@ -913,6 +942,18 @@ static void _masks_flexi_release_full(dt_iop_module_t *module, const gboolean ha
 void dt_masks_gui_flexi_release(dt_iop_module_t *module)
 {
   _masks_flexi_release_full(module, TRUE);
+}
+
+void dt_iop_gui_blend_masks_panel_peek(dt_iop_module_t *module)
+{
+  if(!module || !module->blend_data || !darktable.develop) return;
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd->relocatable_box || !bd->masks_support) return;
+  // the focused module's panel is relocate's
+  if(darktable.develop->gui_module == module) return;
+
+  _masks_flexi_release_full(module, FALSE);
+  _sync_mask_enable_toggle(bd);
 }
 
 // guarantee the host shows exactly one module's panel.
@@ -977,7 +1018,7 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
   // previous one. Decided when the module takes focus and not after: the panel
   // must not fold away from under the user switching the mask off
   if(is_focused && focus_changed)
-    _no_mask_fold = mask_active ? NULL : module;
+    _no_mask_fold = (mask_active || module == _open_on_focus) ? NULL : module;
   else if(mask_active && _no_mask_fold == module)
     _no_mask_fold = NULL;
 
@@ -1278,6 +1319,10 @@ static void _masks_panel_position_activate(GtkWidget *combo, dt_iop_module_t *mo
         dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), TRUE);
       break;
     }
+    // the other expanded modules show their header in the embedded position
+    // only
+    for(GList *m = darktable.develop->iop; m; m = g_list_next(m))
+      dt_iop_gui_blend_masks_panel_peek((dt_iop_module_t *)m->data);
     // the relocate above folded a module without a mask again, and the two
     // forced unfolds that follow it do not store anything to clear that
     _no_mask_fold = NULL;
