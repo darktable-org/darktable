@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-30 23:22+0100\n"
-"PO-Revision-Date: 2026-10-30 23:37+0100\n"
+"POT-Creation-Date: 2026-10-31 09:03+0100\n"
+"PO-Revision-Date: 2026-10-31 09:05+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -407,6 +407,20 @@ msgstr "Moyen"
 msgctxt "preferences"
 msgid "high"
 msgstr "Haut"
+
+#: ../build/bin/conf_gen.h:2082
+msgid "smoothing of brush strokes"
+msgstr "Lissage du pinceau"
+
+#: ../build/bin/conf_gen.h:2083
+msgid ""
+"sets level for smoothing of brush strokes.\n"
+"stronger smoothing leads to less nodes and easier editing but with lower "
+"control of accuracy."
+msgstr ""
+"Définit le niveau de lissage des coups de pinceau.\n"
+"Un lissage plus fort entraîne moins de nœuds et une édition plus facile, mais "
+"avec un contrôle moins précis."
 
 #: ../build/bin/conf_gen.h:2108
 msgctxt "preferences"
@@ -989,7 +1003,7 @@ msgid "parametric (classic)"
 msgstr "Masque paramétrique (classique)"
 
 #: ../build/bin/masks_group_presets_strings.h:22
-#: ../src/develop/blend_gui.c:14810 ../src/develop/masks/parametric.c:51
+#: ../src/develop/blend_gui.c:14819 ../src/develop/masks/parametric.c:51
 msgid "parametric"
 msgstr "Masque paramétrique"
 
@@ -2957,8 +2971,8 @@ msgstr "Automne"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:559
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:161
 #: ../src/common/collection.c:1487 ../src/common/color_vocabulary.c:324
-#: ../src/common/colorlabels.c:384 ../src/develop/blend_gui.c:3398
-#: ../src/develop/blend_gui.c:3446 ../src/develop/lightroom.c:1242
+#: ../src/common/colorlabels.c:384 ../src/develop/blend_gui.c:3405
+#: ../src/develop/blend_gui.c:3453 ../src/develop/lightroom.c:1242
 #: ../src/gui/gtk.c:6335 ../src/gui/preferences.c:517
 #: ../src/gui/preferences.c:542 ../src/gui/preferences.c:565
 #: ../src/iop/bilateral.cc:381 ../src/iop/channelmixer.c:611
@@ -3087,8 +3101,8 @@ msgstr "Générique"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:551
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:159
 #: ../src/common/collection.c:1485 ../src/common/color_vocabulary.c:277
-#: ../src/common/colorlabels.c:383 ../src/develop/blend_gui.c:3392
-#: ../src/develop/blend_gui.c:3440 ../src/develop/lightroom.c:1240
+#: ../src/common/colorlabels.c:383 ../src/develop/blend_gui.c:3399
+#: ../src/develop/blend_gui.c:3447 ../src/develop/lightroom.c:1240
 #: ../src/gui/gtk.c:6334 ../src/gui/guides.c:856 ../src/gui/preferences.c:516
 #: ../src/gui/preferences.c:541 ../src/gui/preferences.c:564
 #: ../src/iop/bilateral.cc:376 ../src/iop/channelmixer.c:610
@@ -3165,8 +3179,8 @@ msgstr "Violet"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:539
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:160
 #: ../src/common/collection.c:1481 ../src/common/color_vocabulary.c:232
-#: ../src/common/colorlabels.c:381 ../src/develop/blend_gui.c:3386
-#: ../src/develop/blend_gui.c:3434 ../src/develop/lightroom.c:1236
+#: ../src/common/colorlabels.c:381 ../src/develop/blend_gui.c:3393
+#: ../src/develop/blend_gui.c:3441 ../src/develop/lightroom.c:1236
 #: ../src/gui/gtk.c:6333 ../src/gui/guides.c:855 ../src/iop/bilateral.cc:371
 #: ../src/iop/channelmixer.c:609 ../src/iop/channelmixer.c:619
 #: ../src/iop/channelmixerrgb.c:4634 ../src/iop/colorequal.c:3738
@@ -3263,7 +3277,7 @@ msgstr "Luminosité"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:79
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:138
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:146
-#: ../src/develop/blend_gui.c:3366 ../src/iop/basicadj.c:647
+#: ../src/develop/blend_gui.c:3373 ../src/iop/basicadj.c:647
 #: ../src/iop/channelmixer.c:607 ../src/iop/colisa.c:273
 #: ../src/iop/colorbalance.c:1956 ../src/iop/colorbalancergb.c:1868
 #: ../src/iop/colorchecker.c:1610 ../src/iop/colorcontrast.c:77
@@ -3590,7 +3604,7 @@ msgstr "Spécifique"
 #: ../build/lib/darktable/plugins/introspection_highlights.c:280
 #: ../build/lib/darktable/plugins/introspection_vignette.c:264
 #: ../src/bauhaus/bauhaus.c:4606 ../src/develop/blend_gui.c:166
-#: ../src/develop/blend_gui.c:191 ../src/develop/masks_gui_panel_host.c:272
+#: ../src/develop/blend_gui.c:191 ../src/develop/masks_gui_panel_host.c:282
 #: ../src/external/lua-scripts/official/auto_straighten.lua:141
 #: ../src/gui/accelerators.c:156 ../src/gui/accelerators.c:166
 #: ../src/gui/accelerators.c:312 ../src/gui/color_picker_proxy.c:379
@@ -3673,7 +3687,7 @@ msgstr "Sans"
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:252
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:154
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:271
-#: ../src/develop/blend_gui.c:3419 ../src/develop/blend_gui.c:3453
+#: ../src/develop/blend_gui.c:3426 ../src/develop/blend_gui.c:3460
 msgid "luminance"
 msgstr "Luminance"
 
@@ -3785,7 +3799,7 @@ msgstr "Linéarité"
 #: ../build/lib/darktable/plugins/introspection_overlay.c:256
 #: ../build/lib/darktable/plugins/introspection_watermark.c:136
 #: ../build/lib/darktable/plugins/introspection_watermark.c:265
-#: ../src/develop/blend_gui.c:5376 ../src/iop/ashift.c:6041
+#: ../src/develop/blend_gui.c:5383 ../src/iop/ashift.c:6041
 msgid "rotation"
 msgstr "Rotation"
 
@@ -3796,7 +3810,7 @@ msgstr "Direction"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:125
 #: ../build/lib/darktable/plugins/introspection_blurs.c:202
-#: ../src/develop/blend_gui.c:5378
+#: ../src/develop/blend_gui.c:5385
 msgid "curvature"
 msgstr "Courbure"
 
@@ -4309,7 +4323,7 @@ msgstr "Lift, gamma, gain (sRVB)"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:489
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:501
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:256
-#: ../src/develop/blend_gui.c:3412 ../src/develop/blend_gui.c:3460
+#: ../src/develop/blend_gui.c:3419 ../src/develop/blend_gui.c:3467
 #: ../src/iop/atrous.c:1782 ../src/iop/channelmixerrgb.c:4502
 #: ../src/iop/channelmixerrgb.c:4590 ../src/iop/colorbalancergb.c:1844
 #: ../src/iop/colorzones.c:2649 ../src/iop/denoiseprofile.c:3645
@@ -4333,8 +4347,8 @@ msgstr "Chroma"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:73
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:134
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
-#: ../src/develop/blend_gui.c:3371 ../src/develop/blend_gui.c:3405
-#: ../src/develop/blend_gui.c:3467 ../src/iop/channelmixer.c:606
+#: ../src/develop/blend_gui.c:3378 ../src/develop/blend_gui.c:3412
+#: ../src/develop/blend_gui.c:3474 ../src/iop/channelmixer.c:606
 #: ../src/iop/channelmixerrgb.c:4496 ../src/iop/channelmixerrgb.c:4583
 #: ../src/iop/colorbalance.c:1940 ../src/iop/colorequal.c:3854
 #: ../src/iop/colorize.c:344 ../src/iop/colorreconstruction.c:1225
@@ -4558,7 +4572,7 @@ msgstr "Nœud de saturation"
 
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:150
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:233
-#: ../src/develop/blend_gui.c:5386 ../src/develop/blend_gui.c:13261
+#: ../src/develop/blend_gui.c:5393 ../src/develop/blend_gui.c:13270
 msgid "smoothing"
 msgstr "Lissage"
 
@@ -4684,7 +4698,7 @@ msgid "process mode"
 msgstr "Mode"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
-#: ../src/develop/blend_gui.c:3350 ../src/iop/channelmixer.c:608
+#: ../src/develop/blend_gui.c:3357 ../src/iop/channelmixer.c:608
 #: ../src/iop/channelmixerrgb.c:4575 ../src/iop/colorchecker.c:1575
 #: ../src/iop/colorize.c:363 ../src/iop/colorzones.c:2648
 #: ../src/iop/exposure.c:1362
@@ -4692,7 +4706,7 @@ msgid "lightness"
 msgstr "Clarté"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:267
-#: ../src/develop/blend_gui.c:5873 ../src/iop/agx.c:2313 ../src/iop/agx.c:2882
+#: ../src/develop/blend_gui.c:5880 ../src/iop/agx.c:2313 ../src/iop/agx.c:2882
 #: ../src/iop/atrous.c:1372 ../src/iop/atrous.c:1376
 #: ../src/iop/denoiseprofile.c:3453 ../src/iop/rawdenoise.c:732
 #: ../src/iop/sigmoid.c:315
@@ -5287,7 +5301,7 @@ msgstr "Luminance du blanc cible"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:472
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:69
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:140
-#: ../src/develop/blend_gui.c:5370
+#: ../src/develop/blend_gui.c:5377
 msgid "hardness"
 msgstr "Dureté"
 
@@ -5687,7 +5701,7 @@ msgstr "Corrections"
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:219
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:51
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:118
-#: ../src/develop/blend_gui.c:19134 ../src/iop/bilat.c:434
+#: ../src/develop/blend_gui.c:19145 ../src/iop/bilat.c:434
 #: ../src/iop/colorbalance.c:1856 ../src/iop/denoiseprofile.c:3714
 #: ../src/iop/exposure.c:1297 ../src/iop/levels.c:691
 #: ../src/iop/profile_gamma.c:649 ../src/libs/export.c:1700
@@ -6846,7 +6860,7 @@ msgstr "Largeur/hauteur"
 
 #: ../build/lib/darktable/plugins/introspection_vignette.c:146
 #: ../build/lib/darktable/plugins/introspection_vignette.c:237
-#: ../src/develop/blend_gui.c:5141 ../src/develop/blend_gui.c:13530
+#: ../src/develop/blend_gui.c:5148 ../src/develop/blend_gui.c:13539
 #: ../src/iop/vignette.c:1054
 msgid "shape"
 msgstr "Forme"
@@ -6968,7 +6982,7 @@ msgid "not that many buttons"
 msgstr "Pas tant de boutons"
 
 #: ../src/bauhaus/bauhaus.c:4606 ../src/develop/blend_gui.c:192
-#: ../src/develop/masks_gui_panel_host.c:272 ../src/gui/accelerators.c:155
+#: ../src/develop/masks_gui_panel_host.c:282 ../src/gui/accelerators.c:155
 #: ../src/gui/accelerators.c:165 ../src/gui/accelerators.c:312
 #: ../src/gui/color_picker_proxy.c:379 ../src/imageio/format/avif.c:1000
 #: ../src/libs/live_view.c:426
@@ -7700,8 +7714,8 @@ msgid_plural "<b>%d</b> images selected of <b>%d</b>"
 msgstr[0] "<b>%d</b> image sélectionnée parmi <b>%d</b>"
 msgstr[1] "<b>%d</b> images sélectionnées parmi <b>%d</b>"
 
-#: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:3380
-#: ../src/develop/blend_gui.c:3428 ../src/gui/guides.c:854
+#: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:3387
+#: ../src/develop/blend_gui.c:3435 ../src/gui/guides.c:854
 #: ../src/iop/channelmixerrgb.c:4645 ../src/iop/levels.c:678
 #: ../src/iop/rgblevels.c:955 ../src/iop/rgblevels.c:1065
 msgid "gray"
@@ -8047,7 +8061,7 @@ msgid "linear XYZ"
 msgstr "XYZ linéaire"
 
 #: ../src/common/colorspaces.c:1661 ../src/common/colorspaces.c:1871
-#: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2971
+#: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2978
 #: ../src/libs/colorpicker.c:53 ../src/libs/colorpicker.c:370
 msgid "Lab"
 msgstr "Lab"
@@ -9790,7 +9804,7 @@ msgstr "%ij %02dh %02dm %02ds"
 msgid "XMP"
 msgstr "XMP"
 
-#: ../src/control/crawler.c:1504 ../src/develop/blend_gui.c:13524
+#: ../src/control/crawler.c:1504 ../src/develop/blend_gui.c:13533
 #: ../src/imageio/storage/disk.c:277 ../src/imageio/storage/gallery.c:209
 #: ../src/imageio/storage/latex.c:187 ../src/imageio/storage/latex.c:201
 msgid "path"
@@ -10692,7 +10706,7 @@ msgctxt "blendoperation"
 msgid "reverse"
 msgstr "Inverser"
 
-#: ../src/develop/blend_gui.c:153 ../src/develop/blend_gui.c:2966
+#: ../src/develop/blend_gui.c:153 ../src/develop/blend_gui.c:2973
 #: ../src/gui/preferences_ai.c:2788 ../src/gui/workspace.c:51
 #: ../src/gui/workspace.c:666 ../src/imageio/format/webp.c:442
 #: ../src/libs/styles.c:1034 ../src/libs/tools/global_toolbox.c:451
@@ -10704,11 +10718,11 @@ msgstr "Défaut"
 msgid "RAW"
 msgstr "RAW"
 
-#: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2973
+#: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2980
 msgid "RGB (display)"
 msgstr "RVB (affichage)"
 
-#: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:2975
+#: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:2982
 msgid "RGB (scene)"
 msgstr "RVB (scène)"
 
@@ -10720,7 +10734,7 @@ msgstr "Uniforme"
 msgid "drawn mask"
 msgstr "Masque dessiné"
 
-#: ../src/develop/blend_gui.c:169 ../src/develop/blend_gui.c:13527
+#: ../src/develop/blend_gui.c:169 ../src/develop/blend_gui.c:13536
 #: ../src/develop/masks_gui_panel_host.c:97
 msgid "parametric mask"
 msgstr "Masque paramétrique"
@@ -10730,8 +10744,8 @@ msgstr "Masque paramétrique"
 #. it "raster mask #N"
 #. the prefix must match _form_type_prefix and _kind_name in blend_gui.c,
 #. which strip it from the name the row shows
-#: ../src/develop/blend_gui.c:170 ../src/develop/blend_gui.c:13528
-#: ../src/develop/blend_gui.c:17492 ../src/develop/masks/raster.c:53
+#: ../src/develop/blend_gui.c:170 ../src/develop/blend_gui.c:13537
+#: ../src/develop/blend_gui.c:17501 ../src/develop/masks/raster.c:53
 #: ../src/develop/masks_gui_panel_host.c:100
 msgid "raster mask"
 msgstr "Masque raster"
@@ -10868,17 +10882,17 @@ msgid "compress history and clean up unused shapes"
 msgstr "Compresser l’historique et nettoyer les formes inutilisées"
 
 #: ../src/develop/blend_gui.c:1660 ../src/develop/blend_gui.c:2086
-#: ../src/develop/blend_gui.c:2414 ../src/develop/blend_gui.c:17928
+#: ../src/develop/blend_gui.c:2420 ../src/develop/blend_gui.c:17937
 msgid "the mask is locked"
 msgstr "Le masque est verrouillé"
 
-#: ../src/develop/blend_gui.c:1999 ../src/develop/blend_gui.c:14044
-#: ../src/develop/imageop.c:3604
+#: ../src/develop/blend_gui.c:1999 ../src/develop/blend_gui.c:14053
+#: ../src/develop/imageop.c:3608
 msgid "output"
 msgstr "Sortie"
 
-#: ../src/develop/blend_gui.c:1999 ../src/develop/blend_gui.c:14044
-#: ../src/develop/imageop.c:3604
+#: ../src/develop/blend_gui.c:1999 ../src/develop/blend_gui.c:14053
+#: ../src/develop/imageop.c:3608
 msgid "input"
 msgstr "Entrée"
 
@@ -10963,17 +10977,17 @@ msgstr ""
 "les styles ou les paramètres de module collés.\n"
 "La suppression de l’historique le supprime tout de même."
 
-#: ../src/develop/blend_gui.c:2468 ../src/develop/masks/object.c:2358
+#: ../src/develop/blend_gui.c:2475 ../src/develop/masks/object.c:2358
 msgid "AI model is not available. Check preferences > AI"
 msgstr "Le modèle IA n'est pas disponible. Vérifier Préférences > IA"
 
-#: ../src/develop/blend_gui.c:2649
+#: ../src/develop/blend_gui.c:2656
 msgid "remove parametric element?"
 msgid_plural "remove parametric elements?"
 msgstr[0] "Supprimer un élément paramétrique ?"
 msgstr[1] "Supprimer des éléments paramétriques ?"
 
-#: ../src/develop/blend_gui.c:2651
+#: ../src/develop/blend_gui.c:2658
 #, c-format
 msgid ""
 "this mask has %d parametric element. it stores the channels of the colorspace "
@@ -10999,20 +11013,20 @@ msgstr[1] ""
 "un autre espace colorimétrique, il ne peut donc pas être transféré.\n"
 "Changer l'espace colorimétrique de la fusion et le supprimer ?"
 
-#: ../src/develop/blend_gui.c:2825
+#: ../src/develop/blend_gui.c:2832
 msgid "interface options"
 msgstr "Options de l’interface"
 
 # infinitifs requis "Montrer et éditer"
-#: ../src/develop/blend_gui.c:2826
+#: ../src/develop/blend_gui.c:2833
 msgid "how the blend mask panel behaves"
 msgstr "Comportement du panneau de masque de fusion"
 
-#: ../src/develop/blend_gui.c:2834
+#: ../src/develop/blend_gui.c:2841
 msgid "show preset help notes (beginners)"
 msgstr "Afficher les notes d’aide des préréglages (débutants)"
 
-#: ../src/develop/blend_gui.c:2835
+#: ../src/develop/blend_gui.c:2842
 msgid ""
 "when enabled (default), a group made by a built-in group layout\n"
 "preset carries a help note on how to use it, shown in the help\n"
@@ -11025,11 +11039,11 @@ msgstr ""
 "sélectionné. \n"
 "Lorsqu’elle est désactivée, aucune note d’aide n’est affichée."
 
-#: ../src/develop/blend_gui.c:2842
+#: ../src/develop/blend_gui.c:2849
 msgid "show mask indicator in module headers"
 msgstr "Afficher la présence de masques dans l’entête des modules"
 
-#: ../src/develop/blend_gui.c:2843
+#: ../src/develop/blend_gui.c:2850
 msgid ""
 "when enabled (default), an icon is shown in the header of\n"
 "any processing module that has a mask applied."
@@ -11037,19 +11051,19 @@ msgstr ""
 "Lorsque cette option est activée (par défaut), une icône apparaît \n"
 "dans l’en-tête de chaque module de traitement auquel un masque est appliqué."
 
-#: ../src/develop/blend_gui.c:2848
+#: ../src/develop/blend_gui.c:2855
 msgid "shape element options"
 msgstr "Options de éléments de forme"
 
-#: ../src/develop/blend_gui.c:2849
+#: ../src/develop/blend_gui.c:2856
 msgid "how new shapes start"
 msgstr "Comment les nouvelles formes sont créées"
 
-#: ../src/develop/blend_gui.c:2852
+#: ../src/develop/blend_gui.c:2859
 msgid "remember last shape's opacity"
 msgstr "Se souvenir de l'opacité de la dernière forme"
 
-#: ../src/develop/blend_gui.c:2853
+#: ../src/develop/blend_gui.c:2860
 msgid ""
 "when enabled (default), a new shape starts at the opacity\n"
 "last used by any shape, so adjusting opacity once carries\n"
@@ -11063,19 +11077,19 @@ msgstr ""
 "Lorsqu’elle est désactivée, chaque nouvelle forme commence avec une opacité "
 "de 100 %."
 
-#: ../src/develop/blend_gui.c:2860
+#: ../src/develop/blend_gui.c:2867
 msgid "parametric element options"
 msgstr "Options des éléments paramétriques"
 
-#: ../src/develop/blend_gui.c:2861
+#: ../src/develop/blend_gui.c:2868
 msgid "how parametric elements are picked and previewed"
 msgstr "comment les éléments paramétriques sont sélectionnés et prévisualisés"
 
-#: ../src/develop/blend_gui.c:2864
+#: ../src/develop/blend_gui.c:2871
 msgid "reuse the last picked area"
 msgstr "Réutiliser la dernière zone échantillonnée"
 
-#: ../src/develop/blend_gui.c:2865
+#: ../src/develop/blend_gui.c:2872
 msgid ""
 "when enabled (default), a parametric element's color picker\n"
 "starts from the area the module's last pick used, and sets the\n"
@@ -11099,11 +11113,11 @@ msgstr ""
 "Lorsque l’option est désactivée, chaque échantillonnage attend une zone "
 "tracée sur l’image."
 
-#: ../src/develop/blend_gui.c:2876 ../src/develop/blend_gui.c:18239
+#: ../src/develop/blend_gui.c:2883 ../src/develop/blend_gui.c:18248
 msgid "preview channel under cursor"
 msgstr "Prévisualiser le canal sous le curseur"
 
-#: ../src/develop/blend_gui.c:2877
+#: ../src/develop/blend_gui.c:2884
 msgid ""
 "when enabled, resting the pointer on one of the\n"
 "add-parametric-element buttons displays that channel in the\n"
@@ -11121,15 +11135,15 @@ msgstr ""
 "passage du curseur. \n"
 "Désactivée par défaut."
 
-#: ../src/develop/blend_gui.c:2887
+#: ../src/develop/blend_gui.c:2894
 msgid "editing options"
 msgstr "Options d’édition"
 
-#: ../src/develop/blend_gui.c:2890
+#: ../src/develop/blend_gui.c:2897
 msgid "scroll down to increase mask parameters"
 msgstr "Molette vers le bas pour augmenter les attributs des masques"
 
-#: ../src/develop/blend_gui.c:2891
+#: ../src/develop/blend_gui.c:2898
 msgid ""
 "when using the mouse scroll wheel to change mask parameters,\n"
 "scroll down to increase the mask size, feather size, opacity,\n"
@@ -11145,16 +11159,16 @@ msgstr ""
 "Lorsque cette option est désactivée (par défaut), le défilement vers le haut "
 "augmente ces paramètres."
 
-#: ../src/develop/blend_gui.c:2956
+#: ../src/develop/blend_gui.c:2963
 msgid "instance settings"
 msgstr "Paramètres de l’instance"
 
-#: ../src/develop/blend_gui.c:2962
+#: ../src/develop/blend_gui.c:2969
 #: ../src/external/lua-scripts/official/enfuse.lua:166
 msgid "blend colorspace"
 msgstr "Espace de couleur de fusion"
 
-#: ../src/develop/blend_gui.c:2963
+#: ../src/develop/blend_gui.c:2970
 msgid ""
 "the colorspace the mask is blended in.\n"
 "parametric elements are tied to it"
@@ -11162,152 +11176,152 @@ msgstr ""
 "L'espace colorimétrique dans lequel le masque est fusionné.\n"
 "Les éléments paramétriques y sont liés"
 
-#: ../src/develop/blend_gui.c:3346 ../src/develop/blend_gui.c:3413
-#: ../src/develop/blend_gui.c:18245 ../src/iop/tonecurve.c:1282
+#: ../src/develop/blend_gui.c:3353 ../src/develop/blend_gui.c:3420
+#: ../src/develop/blend_gui.c:18254 ../src/iop/tonecurve.c:1282
 msgid "L"
 msgstr "L"
 
 # Vérifier clarté = L en français
-#: ../src/develop/blend_gui.c:3346
+#: ../src/develop/blend_gui.c:3353
 msgid "add a parametric element selecting by lightness (L)"
 msgstr "Ajouter un élément paramétrique selon la clarté (L)"
 
 # Probablement Lab, mis en minuscule
-#: ../src/develop/blend_gui.c:3351 ../src/develop/blend_gui.c:18245
+#: ../src/develop/blend_gui.c:3358 ../src/develop/blend_gui.c:18254
 #: ../src/iop/tonecurve.c:1283
 msgid "a"
 msgstr "a"
 
-#: ../src/develop/blend_gui.c:3351
+#: ../src/develop/blend_gui.c:3358
 msgid "add a parametric element selecting by green/red (a)"
 msgstr "Ajouter un élément paramétrique selon le vert/rouge (a)"
 
-#: ../src/develop/blend_gui.c:3355
+#: ../src/develop/blend_gui.c:3362
 msgid "green/red"
 msgstr "Vert/rouge"
 
 # Probablement Lab, mis en minuscule
-#: ../src/develop/blend_gui.c:3356 ../src/develop/blend_gui.c:18245
+#: ../src/develop/blend_gui.c:3363 ../src/develop/blend_gui.c:18254
 #: ../src/iop/tonecurve.c:1284
 msgid "b"
 msgstr "b"
 
-#: ../src/develop/blend_gui.c:3356
+#: ../src/develop/blend_gui.c:3363
 msgid "add a parametric element selecting by blue/yellow (b)"
 msgstr "Ajouter un élément paramétrique selon le bleu/jaune (b)"
 
-#: ../src/develop/blend_gui.c:3360
+#: ../src/develop/blend_gui.c:3367
 msgid "blue/yellow"
 msgstr "Bleu/jaune"
 
-#: ../src/develop/blend_gui.c:3361 ../src/develop/blend_gui.c:18245
+#: ../src/develop/blend_gui.c:3368 ../src/develop/blend_gui.c:18254
 msgid "C"
 msgstr "C"
 
 # Vérifier saturation = C en français
-#: ../src/develop/blend_gui.c:3361
+#: ../src/develop/blend_gui.c:3368
 msgid "add a parametric element selecting by saturation (C)"
 msgstr "Ajouter un élément paramétrique selon la saturation (C)"
 
-#: ../src/develop/blend_gui.c:3367 ../src/develop/blend_gui.c:18245
+#: ../src/develop/blend_gui.c:3374 ../src/develop/blend_gui.c:18254
 msgid "h"
 msgstr "H"
 
-#: ../src/develop/blend_gui.c:3367
+#: ../src/develop/blend_gui.c:3374
 msgid "add a parametric element selecting by hue (h)"
 msgstr "Ajouter un élément paramétrique selon la teinte (h)"
 
-#: ../src/develop/blend_gui.c:3375 ../src/develop/blend_gui.c:3423
-#: ../src/develop/blend_gui.c:18246
+#: ../src/develop/blend_gui.c:3382 ../src/develop/blend_gui.c:3430
+#: ../src/develop/blend_gui.c:18255
 msgid "g"
 msgstr "G"
 
-#: ../src/develop/blend_gui.c:3375 ../src/develop/blend_gui.c:3423
+#: ../src/develop/blend_gui.c:3382 ../src/develop/blend_gui.c:3430
 msgid "add a parametric element selecting by gray (g)"
 msgstr "Ajouter un élément paramétrique selon le gris (G)"
 
-#: ../src/develop/blend_gui.c:3381 ../src/develop/blend_gui.c:3429
-#: ../src/develop/blend_gui.c:18246 ../src/iop/channelmixerrgb.c:4634
+#: ../src/develop/blend_gui.c:3388 ../src/develop/blend_gui.c:3436
+#: ../src/develop/blend_gui.c:18255 ../src/iop/channelmixerrgb.c:4634
 #: ../src/iop/denoiseprofile.c:3637 ../src/iop/rawdenoise.c:867
 #: ../src/iop/rgbcurve.c:1488 ../src/iop/rgblevels.c:1031
 #: ../src/libs/filters/colors.c:190
 msgid "R"
 msgstr "R"
 
-#: ../src/develop/blend_gui.c:3381 ../src/develop/blend_gui.c:3429
+#: ../src/develop/blend_gui.c:3388 ../src/develop/blend_gui.c:3436
 msgid "add a parametric element selecting by red (R)"
 msgstr "Ajouter un élément paramétrique selon le rouge (R)"
 
-#: ../src/develop/blend_gui.c:3387 ../src/develop/blend_gui.c:3435
-#: ../src/develop/blend_gui.c:18246 ../src/iop/channelmixerrgb.c:4635
+#: ../src/develop/blend_gui.c:3394 ../src/develop/blend_gui.c:3442
+#: ../src/develop/blend_gui.c:18255 ../src/iop/channelmixerrgb.c:4635
 #: ../src/iop/denoiseprofile.c:3638 ../src/iop/rawdenoise.c:868
 #: ../src/iop/rgbcurve.c:1489 ../src/iop/rgblevels.c:1032
 #: ../src/libs/filters/colors.c:196
 msgid "G"
 msgstr "V"
 
-#: ../src/develop/blend_gui.c:3387 ../src/develop/blend_gui.c:3435
+#: ../src/develop/blend_gui.c:3394 ../src/develop/blend_gui.c:3442
 msgid "add a parametric element selecting by green (G)"
 msgstr "Ajouter un élément paramétrique selon le vert (V)"
 
-#: ../src/develop/blend_gui.c:3393 ../src/develop/blend_gui.c:3441
-#: ../src/develop/blend_gui.c:18246 ../src/iop/channelmixerrgb.c:4636
+#: ../src/develop/blend_gui.c:3400 ../src/develop/blend_gui.c:3448
+#: ../src/develop/blend_gui.c:18255 ../src/iop/channelmixerrgb.c:4636
 #: ../src/iop/denoiseprofile.c:3639 ../src/iop/rawdenoise.c:869
 #: ../src/iop/rgbcurve.c:1490 ../src/iop/rgblevels.c:1033
 #: ../src/libs/filters/colors.c:199
 msgid "B"
 msgstr "B"
 
-#: ../src/develop/blend_gui.c:3393 ../src/develop/blend_gui.c:3441
+#: ../src/develop/blend_gui.c:3400 ../src/develop/blend_gui.c:3448
 msgid "add a parametric element selecting by blue (B)"
 msgstr "Ajouter un élément paramétrique selon le bleu (B)"
 
-#: ../src/develop/blend_gui.c:3399 ../src/develop/blend_gui.c:18246
+#: ../src/develop/blend_gui.c:3406 ../src/develop/blend_gui.c:18255
 msgid "H"
 msgstr "H"
 
-#: ../src/develop/blend_gui.c:3399
+#: ../src/develop/blend_gui.c:3406
 msgid "add a parametric element selecting by hue (H)"
 msgstr "Ajouter un élément paramétrique selon la teinte (H)"
 
-#: ../src/develop/blend_gui.c:3406 ../src/develop/blend_gui.c:18246
+#: ../src/develop/blend_gui.c:3413 ../src/develop/blend_gui.c:18255
 msgid "S"
 msgstr "S"
 
-#: ../src/develop/blend_gui.c:3406
+#: ../src/develop/blend_gui.c:3413
 msgid "add a parametric element selecting by chroma (S)"
 msgstr "Ajouter un élément paramétrique selon la chroma (C)"
 
 # Vérifier luminance = L en français
-#: ../src/develop/blend_gui.c:3413
+#: ../src/develop/blend_gui.c:3420
 msgid "add a parametric element selecting by luminance (L)"
 msgstr "Ajouter un élément paramétrique selon la luminance (L)"
 
-#: ../src/develop/blend_gui.c:3447 ../src/develop/blend_gui.c:18247
+#: ../src/develop/blend_gui.c:3454 ../src/develop/blend_gui.c:18256
 msgid "Jz"
 msgstr "Jz"
 
-#: ../src/develop/blend_gui.c:3447
+#: ../src/develop/blend_gui.c:3454
 msgid "add a parametric element selecting by luminance (Jz)"
 msgstr "Ajouter un élément paramétrique selon la luminance (Jz)"
 
-#: ../src/develop/blend_gui.c:3454 ../src/develop/blend_gui.c:18247
+#: ../src/develop/blend_gui.c:3461 ../src/develop/blend_gui.c:18256
 msgid "Cz"
 msgstr "Cz"
 
-#: ../src/develop/blend_gui.c:3454
+#: ../src/develop/blend_gui.c:3461
 msgid "add a parametric element selecting by chroma (Cz)"
 msgstr "Ajouter un élément paramétrique selon la chroma (Cz)"
 
-#: ../src/develop/blend_gui.c:3461 ../src/develop/blend_gui.c:18247
+#: ../src/develop/blend_gui.c:3468 ../src/develop/blend_gui.c:18256
 msgid "hz"
 msgstr "Hz"
 
-#: ../src/develop/blend_gui.c:3461
+#: ../src/develop/blend_gui.c:3468
 msgid "add a parametric element selecting by hue (hz)"
 msgstr "Ajouter un élément paramétrique selon la teinte (Hz)"
 
-#: ../src/develop/blend_gui.c:3486
+#: ../src/develop/blend_gui.c:3493
 msgid ""
 "adjustment based on input image received by this module:\n"
 "- upper markers: full opacity (100% mask)\n"
@@ -11329,7 +11343,7 @@ msgstr ""
 "Double-clic pour réinitialiser\n"
 "Appuyer sur « m » pour afficher ou masquer le masque"
 
-#: ../src/develop/blend_gui.c:3494
+#: ../src/develop/blend_gui.c:3501
 msgid ""
 "adjustment based on unblended output of this module:\n"
 "- upper markers: full opacity (100% mask)\n"
@@ -11351,33 +11365,33 @@ msgstr ""
 "Double-clic pour réinitialiser\n"
 "Appuyer sur « m » pour afficher ou masquer le masque"
 
-#: ../src/develop/blend_gui.c:3508
+#: ../src/develop/blend_gui.c:3515
 msgid "press 'a' to toggle display modes"
 msgstr "Appuyer sur « a » pour basculer entre les modes d’affichage"
 
-#: ../src/develop/blend_gui.c:3941
+#: ../src/develop/blend_gui.c:3948
 #, c-format
 msgid "group #%d"
 msgstr "Groupe #%d"
 
-#: ../src/develop/blend_gui.c:5153 ../src/develop/blend_gui.c:11185
-#: ../src/develop/blend_gui.c:16393
+#: ../src/develop/blend_gui.c:5160 ../src/develop/blend_gui.c:11194
+#: ../src/develop/blend_gui.c:16402
 msgid "whole mask"
 msgstr "Masque entier"
 
 #. as the pending row names it (see _make_pending_shape_row)
-#: ../src/develop/blend_gui.c:5250 ../src/develop/blend_gui.c:13051
+#: ../src/develop/blend_gui.c:5257 ../src/develop/blend_gui.c:13060
 #, c-format
 msgid "new %s"
 msgstr "Nouveau %s"
 
-#: ../src/develop/blend_gui.c:5251
+#: ../src/develop/blend_gui.c:5258
 msgid "the shape being drawn: the sections below show its creation controls"
 msgstr ""
 "Forme en cours de tracé : les sections ci-dessous affichent ses commandes de "
 "création"
 
-#: ../src/develop/blend_gui.c:5258
+#: ../src/develop/blend_gui.c:5265
 msgid ""
 "the element hovered on the canvas, or else the selected one: the sections "
 "below show and change its controls and refinements"
@@ -11385,7 +11399,7 @@ msgstr ""
 "Élément survolé sur la zone d’image, ou élément sélectionné : \n"
 "les sections ci-dessous affichent et modifient ses propriétés et son affinage"
 
-#: ../src/develop/blend_gui.c:5261
+#: ../src/develop/blend_gui.c:5268
 msgid ""
 "the element hovered on the canvas, or else the selected group: the sections "
 "below show and change its controls and refinements"
@@ -11393,7 +11407,7 @@ msgstr ""
 "Élément survolé sur la zone d’image, ou groupe sélectionné : les sections ci-"
 "dessous affichent et modifient ses propriétés et ses améliorations"
 
-#: ../src/develop/blend_gui.c:5263
+#: ../src/develop/blend_gui.c:5270
 msgid ""
 "the element hovered on the canvas, or else the whole mask while no member is "
 "selected: the sections below show and change its controls and refinements"
@@ -11403,26 +11417,26 @@ msgstr ""
 "les sections ci-dessous affichent et modifient ses propriétés et son affinage"
 
 #. Add opacity/scale sliders to table
-#: ../src/develop/blend_gui.c:5366 ../src/develop/blend_gui.c:12270
-#: ../src/develop/blend_gui.c:19173 ../src/iop/overlay.c:1500
+#: ../src/develop/blend_gui.c:5373 ../src/develop/blend_gui.c:12279
+#: ../src/develop/blend_gui.c:19184 ../src/iop/overlay.c:1500
 #: ../src/iop/watermark.c:1501
 msgid "opacity"
 msgstr "Opacité"
 
-#: ../src/develop/blend_gui.c:5367
+#: ../src/develop/blend_gui.c:5374
 msgid "how strongly this element counts in the mask"
 msgstr "Poids de cet élément dans le masque"
 
-#: ../src/develop/blend_gui.c:5368 ../src/iop/bloom.c:381
+#: ../src/develop/blend_gui.c:5375 ../src/iop/bloom.c:381
 #: ../src/iop/soften.c:371 ../src/libs/camera.c:621
 msgid "size"
 msgstr "Taille"
 
-#: ../src/develop/blend_gui.c:5369
+#: ../src/develop/blend_gui.c:5376
 msgid "size of the shape"
 msgstr "Taille de la forme"
 
-#: ../src/develop/blend_gui.c:5371
+#: ../src/develop/blend_gui.c:5378
 msgid ""
 "how much of the brush stroke's width is at full opacity\n"
 "before it starts to fade out"
@@ -11430,11 +11444,11 @@ msgstr ""
 "Partie de la largeur du trait de pinceau conservée à opacité maximale avant "
 "le début de l’atténuation"
 
-#: ../src/develop/blend_gui.c:5373
+#: ../src/develop/blend_gui.c:5380
 msgid "fade-out border"
 msgstr "Bordure d’adoucissement"
 
-#: ../src/develop/blend_gui.c:5374
+#: ../src/develop/blend_gui.c:5381
 msgid ""
 "width of the soft edge around the shape, over which\n"
 "it fades from full opacity to none"
@@ -11442,17 +11456,17 @@ msgstr ""
 "Largeur du bord adouci autour de la forme, sur lequel l’opacité passe "
 "progressivement de 100 % à 0 %"
 
-#: ../src/develop/blend_gui.c:5377
+#: ../src/develop/blend_gui.c:5384
 msgid "rotation of the shape"
 msgstr "Rotation de la forme"
 
-#: ../src/develop/blend_gui.c:5379
+#: ../src/develop/blend_gui.c:5386
 msgid "how much the gradient's line bends: 0 is straight"
 msgstr "Courbure de la ligne du dégradé : 0 correspond à une ligne droite"
 
 #. compression
 #. Compression method combo box
-#: ../src/develop/blend_gui.c:5380 ../src/imageio/format/avif.c:1008
+#: ../src/develop/blend_gui.c:5387 ../src/imageio/format/avif.c:1008
 #: ../src/imageio/format/exr.cc:631 ../src/imageio/format/heif.c:727
 #: ../src/imageio/format/pdf.c:693 ../src/imageio/format/png.c:770
 #: ../src/imageio/format/tiff.c:898 ../src/imageio/format/webp.c:416
@@ -11460,7 +11474,7 @@ msgstr "Courbure de la ligne du dégradé : 0 correspond à une ligne droite"
 msgid "compression"
 msgstr "Compression"
 
-#: ../src/develop/blend_gui.c:5381
+#: ../src/develop/blend_gui.c:5388
 msgid ""
 "width of the gradient's transition from full opacity\n"
 "to none: lower makes it sharper"
@@ -11468,11 +11482,11 @@ msgstr ""
 "Largeur de la transition du dégradé entre l’opacité maximale et nulle : une "
 "valeur plus faible donne une transition plus nette"
 
-#: ../src/develop/blend_gui.c:5383
+#: ../src/develop/blend_gui.c:5390
 msgid "cleanup"
 msgstr "Nettoyer"
 
-#: ../src/develop/blend_gui.c:5384
+#: ../src/develop/blend_gui.c:5391
 msgid ""
 "discards small, stray outline fragments below this size\n"
 "(in traced pixels)"
@@ -11480,7 +11494,7 @@ msgstr ""
 "Supprime les petits fragments isolés du contour dont la taille est inférieure "
 "à cette valeur (en pixels tracés)"
 
-#: ../src/develop/blend_gui.c:5387
+#: ../src/develop/blend_gui.c:5394
 msgid ""
 "how closely the traced outline follows the AI selection's\n"
 "raw edge: higher gives smoother, more rounded corners"
@@ -11488,11 +11502,11 @@ msgstr ""
 "Fidélité du contour tracé au bord brut de la sélection IA : une valeur élevée "
 "produit des coins plus lisses et arrondis"
 
-#: ../src/develop/blend_gui.c:5389
+#: ../src/develop/blend_gui.c:5396
 msgid "refine mask boundary"
 msgstr "Affiner les bords du masque"
 
-#: ../src/develop/blend_gui.c:5390
+#: ../src/develop/blend_gui.c:5397
 msgid ""
 "snap the mask boundary to nearby image edges on each click, which recovers "
 "notches the model missed and costs a few hundred ms"
@@ -11501,11 +11515,11 @@ msgstr ""
 "permet de retrouver les encoches manquées par le modèle, au prix de quelques "
 "centaines de millisecondes."
 
-#: ../src/develop/blend_gui.c:5394
+#: ../src/develop/blend_gui.c:5401
 msgid "apply as paths"
 msgstr "Appliquer sous forme de chemins"
 
-#: ../src/develop/blend_gui.c:5395
+#: ../src/develop/blend_gui.c:5402
 msgid ""
 "trace the object into paths that can be edited node by node, instead of "
 "storing it as pixels in the image's sidecar.\n"
@@ -11515,24 +11529,24 @@ msgstr ""
 "stocker ses pixels dans le fichier annexe de l’image. Toujours activé lorsque "
 "l’écriture des fichiers annexes est réglée sur « jamais »."
 
-#: ../src/develop/blend_gui.c:5655
+#: ../src/develop/blend_gui.c:5662
 #, c-format
 msgid "the value of %s cannot be lower than %.2f%%"
 msgstr "La valeur de %s ne peut pas être inférieure à %.2f%%"
 
-#: ../src/develop/blend_gui.c:5694
+#: ../src/develop/blend_gui.c:5701
 msgid "shrink amount too large: the path would disappear"
 msgstr "Réduction trop importante : le chemin disparaîtrait"
 
-#: ../src/develop/blend_gui.c:5837 ../src/develop/blend_gui.c:6082
+#: ../src/develop/blend_gui.c:5844 ../src/develop/blend_gui.c:6089
 msgid "shrink or grow settings"
 msgstr "Paramètres de réduction ou d’agrandissement"
 
-#: ../src/develop/blend_gui.c:5848
+#: ../src/develop/blend_gui.c:5855
 msgid "unit"
 msgstr "Unité"
 
-#: ../src/develop/blend_gui.c:5850
+#: ../src/develop/blend_gui.c:5857
 msgid ""
 "the unit of the step and of the slider: image pixels, or a percentage\n"
 "of the largest dimension of the path as it is before it is resized"
@@ -11540,19 +11554,19 @@ msgstr ""
 "Unité du pas et du curseur : pixels de l’image ou pourcentage \n"
 "de la plus grande dimension du chemin avant redimensionnement"
 
-#: ../src/develop/blend_gui.c:5854
+#: ../src/develop/blend_gui.c:5861
 msgid "pixels"
 msgstr "Pixels"
 
-#: ../src/develop/blend_gui.c:5854
+#: ../src/develop/blend_gui.c:5861
 msgid "% of path size"
 msgstr "% de la taille du chemin"
 
-#: ../src/develop/blend_gui.c:5858
+#: ../src/develop/blend_gui.c:5865
 msgid "tracing resolution"
 msgstr "Résolution du tracé"
 
-#: ../src/develop/blend_gui.c:5860
+#: ../src/develop/blend_gui.c:5867
 msgid ""
 "size of the raster a path is traced on, in pixels along its longest side.\n"
 "higher values follow the outline of a large path more closely but are "
@@ -11566,11 +11580,11 @@ msgstr ""
 "Un petit chemin n’est jamais tracé avec une résolution supérieure à celle de "
 "l’image."
 
-#: ../src/develop/blend_gui.c:5867 ../src/iop/toneequal.c:3855
+#: ../src/develop/blend_gui.c:5874 ../src/iop/toneequal.c:3855
 msgid "curve smoothing"
 msgstr "Lissage de la courbe"
 
-#: ../src/develop/blend_gui.c:5869
+#: ../src/develop/blend_gui.c:5876
 msgid ""
 "'smooth' follows the resized outline with few nodes and round curves.\n"
 "'sharp' traces it as a polygon, which takes many more nodes."
@@ -11579,42 +11593,42 @@ msgstr ""
 "arrondies. \n"
 "« Anguleux » le trace sous forme de polygone, avec beaucoup plus de nœuds."
 
-#: ../src/develop/blend_gui.c:5873
+#: ../src/develop/blend_gui.c:5880
 msgid "sharp"
 msgstr "Anguleux"
 
-#: ../src/develop/blend_gui.c:6031 ../src/develop/blend_gui.c:6066
-#: ../src/develop/blend_gui.c:12270 ../src/develop/blend_gui.c:12986
-#: ../src/develop/blend_gui.c:13190 ../src/develop/blend_gui.c:13214
-#: ../src/develop/blend_gui.c:13255 ../src/develop/blend_gui.c:13261
-#: ../src/develop/blend_gui.c:15256 ../src/develop/blend_gui.c:15276
-#: ../src/develop/blend_gui.c:18520 ../src/develop/blend_gui.c:19133
-#: ../src/develop/blend_gui.c:19163 ../src/develop/blend_gui.c:19173
-#: ../src/develop/blend_gui.c:19205 ../src/develop/blend_gui.c:19230
-#: ../src/develop/blend_gui.c:19240 ../src/develop/blend_gui.c:19249
-#: ../src/develop/blend_gui.c:19261
+#: ../src/develop/blend_gui.c:6038 ../src/develop/blend_gui.c:6073
+#: ../src/develop/blend_gui.c:12279 ../src/develop/blend_gui.c:12995
+#: ../src/develop/blend_gui.c:13199 ../src/develop/blend_gui.c:13223
+#: ../src/develop/blend_gui.c:13264 ../src/develop/blend_gui.c:13270
+#: ../src/develop/blend_gui.c:15265 ../src/develop/blend_gui.c:15285
+#: ../src/develop/blend_gui.c:18529 ../src/develop/blend_gui.c:19144
+#: ../src/develop/blend_gui.c:19174 ../src/develop/blend_gui.c:19184
+#: ../src/develop/blend_gui.c:19216 ../src/develop/blend_gui.c:19241
+#: ../src/develop/blend_gui.c:19251 ../src/develop/blend_gui.c:19260
+#: ../src/develop/blend_gui.c:19272
 msgid "blend"
 msgstr "Fusion"
 
-#: ../src/develop/blend_gui.c:6041
+#: ../src/develop/blend_gui.c:6048
 msgid "double-click to undo the edits made since the controls were shown"
 msgstr ""
 "Double-cliquer pour annuler les modifications effectuées depuis l’affichage "
 "des propriétés"
 
-#: ../src/develop/blend_gui.c:6042
+#: ../src/develop/blend_gui.c:6049
 msgid "double-click to reset to 100%"
 msgstr "Double-clic pour réinitialiser à 100 %"
 
-#: ../src/develop/blend_gui.c:6043
+#: ../src/develop/blend_gui.c:6050
 msgid "double-click to reset to 0"
 msgstr "Double-clic pour réinitialiser à 0"
 
-#: ../src/develop/blend_gui.c:6066 ../src/develop/blend_gui.c:18192
+#: ../src/develop/blend_gui.c:6073 ../src/develop/blend_gui.c:18201
 msgid "shrink or grow"
 msgstr "Réduction ou agrandissement"
 
-#: ../src/develop/blend_gui.c:6070
+#: ../src/develop/blend_gui.c:6077
 msgid ""
 "grow (positive) or shrink (negative) this path's outline\n"
 "0 restores the outline it grew or shrank from, which a move keeps.\n"
@@ -11628,13 +11642,13 @@ msgstr ""
 "contour actuel comme nouvelle référence 0.\n"
 "Double-clic pour réinitialiser à 0."
 
-#: ../src/develop/blend_gui.c:6391 ../src/develop/masks/masks.c:3000
+#: ../src/develop/blend_gui.c:6398 ../src/develop/masks/masks.c:3000
 #: ../src/develop/masks/masks.c:3686
 #, c-format
 msgid "opacity: %.0f%%"
 msgstr "Opacité : %.0f%%"
 
-#: ../src/develop/blend_gui.c:7121
+#: ../src/develop/blend_gui.c:7128
 msgid ""
 "disabled: adds nothing to the mask\n"
 "click to enable"
@@ -11642,7 +11656,7 @@ msgstr ""
 "Désactivé : n’ajoute rien au masque\n"
 "Cliquer pour activer"
 
-#: ../src/develop/blend_gui.c:7124
+#: ../src/develop/blend_gui.c:7131
 msgid ""
 "soloed: only this is used\n"
 "click to disable\n"
@@ -11652,11 +11666,11 @@ msgstr ""
 "Cliquer pour désactiver\n"
 "Maj+clic pour désactiver \"isolé\""
 
-#: ../src/develop/blend_gui.c:7127
+#: ../src/develop/blend_gui.c:7134
 msgid "click to disable: add nothing to the mask"
 msgstr "Cliquer pour désactiver : n’ajoute rien au masque"
 
-#: ../src/develop/blend_gui.c:7128
+#: ../src/develop/blend_gui.c:7135
 msgid ""
 "click to disable: add nothing to the mask\n"
 "shift+click to solo: use only this"
@@ -11664,20 +11678,20 @@ msgstr ""
 "Cliquer pour désactiver : n’ajoute rien au masque\n"
 "Maj+clic pour isoler : n’utiliser que cet élément"
 
-#: ../src/develop/blend_gui.c:7275
+#: ../src/develop/blend_gui.c:7282
 msgid "opacity 0%: this module has no effect on the image"
 msgstr "Opacité à 0 % : ce module n’a aucun effet sur l’image"
 
-#: ../src/develop/blend_gui.c:7276
+#: ../src/develop/blend_gui.c:7283
 #, c-format
 msgid "opacity %.0f%%: this module has very little effect on the image"
 msgstr "Opacité à %.0f%% : ce module a très peu d’effet sur l’image"
 
-#: ../src/develop/blend_gui.c:7407
+#: ../src/develop/blend_gui.c:7414
 msgid "this group contains at least one element that has no effect"
 msgstr "Ce groupe contient au moins un élément sans effet"
 
-#: ../src/develop/blend_gui.c:7412
+#: ../src/develop/blend_gui.c:7419
 msgid ""
 "opacity 0%: this group is fully transparent and\n"
 "contributes nothing to the mask"
@@ -11685,12 +11699,12 @@ msgstr ""
 "Opacité à 0 % : ce groupe est entièrement transparent et ne contribue pas au "
 "masque"
 
-#: ../src/develop/blend_gui.c:7415
+#: ../src/develop/blend_gui.c:7422
 #, c-format
 msgid "opacity %.0f%%: this group has very little effect on the mask"
 msgstr "Opacité à %.0f%% : ce groupe a très peu d’effet sur le masque"
 
-#: ../src/develop/blend_gui.c:7422
+#: ../src/develop/blend_gui.c:7429
 #, c-format
 msgid ""
 "this group contains at least one member\n"
@@ -11698,7 +11712,7 @@ msgid ""
 msgstr ""
 "Ce groupe contient au moins un membre dont l’opacité est inférieure à %.0f%%"
 
-#: ../src/develop/blend_gui.c:7444
+#: ../src/develop/blend_gui.c:7451
 msgid ""
 "this raster mask has no mask to read: the module it came from\n"
 "is switched off, no longer carries a mask, or is gone, so this\n"
@@ -11711,7 +11725,7 @@ msgstr ""
 "rien. \n"
 "Rétablissez le module source ou supprimez cet élément."
 
-#: ../src/develop/blend_gui.c:7449
+#: ../src/develop/blend_gui.c:7456
 msgid ""
 "this channel's range still covers its whole span, so it does\n"
 "not restrict the mask yet: narrow the range to have an effect"
@@ -11720,7 +11734,7 @@ msgstr ""
 "le masque. \n"
 "Réduisez la plage pour obtenir un effet."
 
-#: ../src/develop/blend_gui.c:7454
+#: ../src/develop/blend_gui.c:7461
 msgid ""
 "opacity 0%: this element is fully transparent and\n"
 "contributes nothing to the mask"
@@ -11728,34 +11742,34 @@ msgstr ""
 "Opacité à 0 % : cet élément est entièrement transparent et ne contribue pas "
 "au masque"
 
-#: ../src/develop/blend_gui.c:7456
+#: ../src/develop/blend_gui.c:7463
 #, c-format
 msgid "opacity %.0f%%: this element has very little effect on the mask"
 msgstr "Opacité à %.0f%% : cet élément a très peu d’effet sur le masque"
 
-#: ../src/develop/blend_gui.c:8129
+#: ../src/develop/blend_gui.c:8138
 msgid "maximum (union)"
 msgstr "Maximum (union)"
 
-#: ../src/develop/blend_gui.c:8129
+#: ../src/develop/blend_gui.c:8138
 msgid "maximum"
 msgstr "Maximum"
 
-#: ../src/develop/blend_gui.c:8130
+#: ../src/develop/blend_gui.c:8139
 msgid ""
 "everything any member covers: where members overlap, the stronger one wins"
 msgstr ""
 "Tout ce qu'un membre couvre ; en cas de chevauchement, le plus fort l’emporte"
 
-#: ../src/develop/blend_gui.c:8133
+#: ../src/develop/blend_gui.c:8142
 msgid "screen (smooth union)"
 msgstr "Écran (union douce)"
 
-#: ../src/develop/blend_gui.c:8133
+#: ../src/develop/blend_gui.c:8142
 msgid "screen"
 msgstr "Écran"
 
-#: ../src/develop/blend_gui.c:8134
+#: ../src/develop/blend_gui.c:8143
 msgid ""
 "like maximum (union), but overlapping feathered edges merge smoothly, without "
 "a seam"
@@ -11763,15 +11777,15 @@ msgstr ""
 "Comme le mode maximum (union), mais les bords adoucis qui se chevauchent "
 "fusionnent en douceur, sans couture"
 
-#: ../src/develop/blend_gui.c:8138
+#: ../src/develop/blend_gui.c:8147
 msgid "sum (additive union)"
 msgstr "Somme (union additive)"
 
-#: ../src/develop/blend_gui.c:8138
+#: ../src/develop/blend_gui.c:8147
 msgid "sum"
 msgstr "Somme"
 
-#: ../src/develop/blend_gui.c:8139
+#: ../src/develop/blend_gui.c:8148
 msgid ""
 "like maximum (union), but opacities add up where members overlap, clipped at "
 "full opacity"
@@ -11779,28 +11793,28 @@ msgstr ""
 "Comme le mode maximum (union), mais les opacités s’additionnent dans les "
 "zones de chevauchement, jusqu’à 100 %"
 
-#: ../src/develop/blend_gui.c:8143
+#: ../src/develop/blend_gui.c:8152
 msgid "minimum (intersection)"
 msgstr "Minimum (intersection)"
 
-#: ../src/develop/blend_gui.c:8143
+#: ../src/develop/blend_gui.c:8152
 msgid "minimum"
 msgstr "Minimum"
 
-#: ../src/develop/blend_gui.c:8144
+#: ../src/develop/blend_gui.c:8153
 msgid "only the area every member covers: the weaker one wins"
 msgstr ""
 "Uniquement la zone couverte par tous les membres ; le plus faible l’emporte"
 
-#: ../src/develop/blend_gui.c:8147
+#: ../src/develop/blend_gui.c:8156
 msgid "product (smooth intersection)"
 msgstr "Produit (intersection douce)"
 
-#: ../src/develop/blend_gui.c:8147
+#: ../src/develop/blend_gui.c:8156
 msgid "product"
 msgstr "Produit"
 
-#: ../src/develop/blend_gui.c:8148
+#: ../src/develop/blend_gui.c:8157
 msgid ""
 "like minimum (intersection), but feathered edges fade together smoothly: "
 "strong only where every member is"
@@ -11808,19 +11822,19 @@ msgstr ""
 "Comme le mode minimum (intersection), mais les bords adoucis fusionnent en "
 "douceur : l’effet est fort uniquement là où tous les membres se trouvent"
 
-#: ../src/develop/blend_gui.c:8152
+#: ../src/develop/blend_gui.c:8161
 msgid "difference"
 msgstr "Différence"
 
-#: ../src/develop/blend_gui.c:8153
+#: ../src/develop/blend_gui.c:8162
 msgid "the bottom member, minus every member above it"
 msgstr "Le membre du bas, moins tous les membres situés au-dessus"
 
-#: ../src/develop/blend_gui.c:8156
+#: ../src/develop/blend_gui.c:8165
 msgid "exclusion"
 msgstr "Exclusion"
 
-#: ../src/develop/blend_gui.c:8157
+#: ../src/develop/blend_gui.c:8166
 msgid ""
 "areas covered by an odd number of members: where two overlap they cancel, a "
 "third brings the area back"
@@ -11829,7 +11843,7 @@ msgstr ""
 "deux zones qui se chevauchent s’annulent, une troisième rétablit la zone"
 
 #. _update_add_target_hints appends where the group goes
-#: ../src/develop/blend_gui.c:8227
+#: ../src/develop/blend_gui.c:8236
 msgid ""
 "add a new, empty group\n"
 "click to pick its operator"
@@ -11837,20 +11851,20 @@ msgstr ""
 "Ajouter un groupe vide\n"
 "Cliquer pour choisir son opérateur"
 
-#: ../src/develop/blend_gui.c:8266
+#: ../src/develop/blend_gui.c:8275
 msgid "a: the members below, b: the next member up"
 msgstr ""
 "a : les membres en dessous ; \n"
 "b : le membre immédiatement au-dessus"
 
-#: ../src/develop/blend_gui.c:8634
+#: ../src/develop/blend_gui.c:8643
 #, c-format
 msgid "a group cannot go inside itself, and groups nest at most %d deep"
 msgstr ""
 "Un groupe ne peut pas se contenir lui-même et l’imbrication est limitée à %d "
 "niveaux"
 
-#: ../src/develop/blend_gui.c:9258
+#: ../src/develop/blend_gui.c:9267
 #, c-format
 msgid ""
 "used %d times in this mask\n"
@@ -11866,7 +11880,7 @@ msgstr ""
 "améliorations.\n"
 "Cliquer pour sélectionner"
 
-#: ../src/develop/blend_gui.c:9268
+#: ../src/develop/blend_gui.c:9277
 #, c-format
 msgid ""
 "linked with %s\n"
@@ -11881,7 +11895,7 @@ msgstr ""
 "Son opacité, son inversion et ses améliorations restent indépendants.\n"
 "Maj+clic pour créer une copie propre à ce module"
 
-#: ../src/develop/blend_gui.c:9273
+#: ../src/develop/blend_gui.c:9282
 #, c-format
 msgid ""
 "linked with %s\n"
@@ -11896,7 +11910,7 @@ msgstr ""
 "Son opacité, son inversion et ses améliorations restent indépendants.\n"
 "Maj+clic pour créer une copie propre à ce module"
 
-#: ../src/develop/blend_gui.c:9283
+#: ../src/develop/blend_gui.c:9292
 #, c-format
 msgid ""
 "%s\n"
@@ -11905,20 +11919,20 @@ msgstr ""
 "%s\n"
 "Cliquer pour y accéder dans %s"
 
-#: ../src/develop/blend_gui.c:9669
+#: ../src/develop/blend_gui.c:9678
 msgid "wrap in group..."
 msgstr "Placer dans un groupe…"
 
-#: ../src/develop/blend_gui.c:9669 ../src/develop/blend_gui.c:10246
+#: ../src/develop/blend_gui.c:9678 ../src/develop/blend_gui.c:10255
 msgid "group together..."
 msgstr "Regrouper…"
 
-#: ../src/develop/blend_gui.c:9670
+#: ../src/develop/blend_gui.c:9679
 msgid "put the selected item in a new group, where it is"
 msgstr ""
 "Placer l’élément sélectionné dans un nouveau groupe, à son emplacement actuel"
 
-#: ../src/develop/blend_gui.c:9671 ../src/develop/blend_gui.c:10247
+#: ../src/develop/blend_gui.c:9680 ../src/develop/blend_gui.c:10256
 msgid ""
 "put the selected items together in a new group, where the topmost of them is. "
 "they must all be in the same group"
@@ -11927,14 +11941,14 @@ msgstr ""
 "du plus haut. \n"
 "Ils doivent tous appartenir au même groupe."
 
-#: ../src/develop/blend_gui.c:9692
+#: ../src/develop/blend_gui.c:9701
 #, c-format
 msgid "%d item selected"
 msgid_plural "%d items selected"
 msgstr[0] "%d élément sélectionné"
 msgstr[1] "%d éléments sélectionnés"
 
-#: ../src/develop/blend_gui.c:9708
+#: ../src/develop/blend_gui.c:9717
 msgid ""
 "\n"
 "unavailable: the selected items are not all in the same group"
@@ -11943,56 +11957,56 @@ msgstr ""
 "Indisponible : les éléments sélectionnés n’appartiennent pas tous au même "
 "groupe"
 
-#: ../src/develop/blend_gui.c:10097
+#: ../src/develop/blend_gui.c:10106
 msgid "the selection has nowhere else to go"
 msgstr "La sélection ne peut pas être déplacée ailleurs"
 
-#: ../src/develop/blend_gui.c:10101
+#: ../src/develop/blend_gui.c:10110
 msgid "move into"
 msgstr "Déplacer dans"
 
-#: ../src/develop/blend_gui.c:10122 ../src/develop/blend_gui.c:11519
-#: ../src/develop/blend_gui.c:12306
+#: ../src/develop/blend_gui.c:10131 ../src/develop/blend_gui.c:11528
+#: ../src/develop/blend_gui.c:12315
 msgid "this group is nested as deep as groups go"
 msgstr "Ce groupe est imbriqué à la profondeur maximale"
 
-#: ../src/develop/blend_gui.c:10155 ../src/develop/blend_gui.c:17774
+#: ../src/develop/blend_gui.c:10164 ../src/develop/blend_gui.c:17783
 msgid "wrap in a new group of"
 msgstr "Placer dans un nouveau groupe de"
 
-#: ../src/develop/blend_gui.c:10156
+#: ../src/develop/blend_gui.c:10165
 msgid "group together in a new group of"
 msgstr "Regrouper dans un nouveau groupe de "
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/blend_gui.c:10240 ../src/develop/imageop.c:4815
+#: ../src/develop/blend_gui.c:10249 ../src/develop/imageop.c:4819
 #: ../src/gui/accelerators.c:181 ../src/libs/image.c:294 ../src/libs/image.c:509
 msgid "delete"
 msgstr "Supprimer"
 
-#: ../src/develop/blend_gui.c:10241
+#: ../src/develop/blend_gui.c:10250
 msgid "delete the selected items, and the members of the groups among them"
 msgstr ""
 "Supprimer les éléments sélectionnés ainsi que les membres des groupes qu’ils "
 "contiennent"
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/blend_gui.c:10243
+#: ../src/develop/blend_gui.c:10252
 msgid "move into..."
 msgstr "Déplacer vers…"
 
-#: ../src/develop/blend_gui.c:10244
+#: ../src/develop/blend_gui.c:10253
 msgid "move the selected items into another group, on top of it"
 msgstr ""
 "Déplacer les éléments sélectionnés dans un autre groupe, au-dessus de son "
 "contenu"
 
-#: ../src/develop/blend_gui.c:10291
+#: ../src/develop/blend_gui.c:10300
 msgid "drag and drop is off while several items are selected"
 msgstr ""
 "Le glisser-déposer est désactivé lorsque plusieurs éléments sont sélectionnés"
 
-#: ../src/develop/blend_gui.c:11265
+#: ../src/develop/blend_gui.c:11274
 msgid ""
 "\n"
 "(disabled for this target: the eye on the left enables it again)"
@@ -12000,7 +12014,7 @@ msgstr ""
 "\n"
 "(Désactivé pour cette cible : cliquez sur l’œil à gauche pour le réactiver)"
 
-#: ../src/develop/blend_gui.c:11267
+#: ../src/develop/blend_gui.c:11276
 msgid ""
 "\n"
 "(the target is empty, so there is nothing to refine: deselect it to refine "
@@ -12010,7 +12024,7 @@ msgstr ""
 "(La cible est vide et ne peut donc pas être affinée : désélectionnez la pour "
 "affiner le masque entier)"
 
-#: ../src/develop/blend_gui.c:11295
+#: ../src/develop/blend_gui.c:11304
 #, c-format
 msgid ""
 "\n"
@@ -12019,7 +12033,7 @@ msgstr ""
 "\n"
 "(ajouté au groupe sélectionné : %s)"
 
-#: ../src/develop/blend_gui.c:11296
+#: ../src/develop/blend_gui.c:11305
 msgid ""
 "\n"
 "(added to the whole mask)"
@@ -12027,7 +12041,7 @@ msgstr ""
 "\n"
 "(Ajouté au masque entier)"
 
-#: ../src/develop/blend_gui.c:11307
+#: ../src/develop/blend_gui.c:11316
 msgid ""
 "\n"
 "rest the pointer here to preview this channel"
@@ -12035,7 +12049,7 @@ msgstr ""
 "\n"
 "Laissez le pointeur ici pour prévisualiser ce canal"
 
-#: ../src/develop/blend_gui.c:11308 ../src/develop/blend_gui.c:11311
+#: ../src/develop/blend_gui.c:11317 ../src/develop/blend_gui.c:11320
 msgid ""
 "\n"
 "shift+click to toggle persistent channel overlay"
@@ -12043,7 +12057,7 @@ msgstr ""
 "\n"
 "Maj+clic pour activer ou désactiver la superposition persistante du canal"
 
-#: ../src/develop/blend_gui.c:11324
+#: ../src/develop/blend_gui.c:11333
 #, c-format
 msgid ""
 "\n"
@@ -12052,7 +12066,7 @@ msgstr ""
 "\n"
 "(Imbriqué dans %s)"
 
-#: ../src/develop/blend_gui.c:11325
+#: ../src/develop/blend_gui.c:11334
 msgid ""
 "\n"
 "(nested in the whole mask)"
@@ -12060,7 +12074,7 @@ msgstr ""
 "\n"
 "(Imbriqué dans le masque entier)"
 
-#: ../src/develop/blend_gui.c:11333 ../src/develop/blend_gui.c:18270
+#: ../src/develop/blend_gui.c:11342 ../src/develop/blend_gui.c:18279
 msgid ""
 "link or copy shapes from other modules, copy their parametric\n"
 "channels, or add or use another module's whole mask\n"
@@ -12071,11 +12085,11 @@ msgstr ""
 "ou ajouter/utiliser le masque entier d’un autre module\n"
 "(cliquer pour choisir)"
 
-#: ../src/develop/blend_gui.c:12119
+#: ../src/develop/blend_gui.c:12128
 msgid "select group operator"
 msgstr "Sélectionner l’opérateur du groupe"
 
-#: ../src/develop/blend_gui.c:12223
+#: ../src/develop/blend_gui.c:12232
 #, c-format
 msgid ""
 "opacity: %.0f%%\n"
@@ -12086,31 +12100,31 @@ msgstr ""
 "Appliquée en plus de l’opacité propre à chaque membre, et non à sa place : "
 "les deux valeurs se multiplient."
 
-#: ../src/develop/blend_gui.c:12391
+#: ../src/develop/blend_gui.c:12400
 msgid "nothing to simplify: groups with a name of their own are kept"
 msgstr ""
 "Rien à simplifier : les groupes qui possèdent leur propre nom sont conservés"
 
-#: ../src/develop/blend_gui.c:12392
+#: ../src/develop/blend_gui.c:12401
 msgid "nothing to simplify"
 msgstr "Rien à simplifier"
 
-#: ../src/develop/blend_gui.c:13049 ../src/develop/blend_gui.c:13060
+#: ../src/develop/blend_gui.c:13058 ../src/develop/blend_gui.c:13069
 msgid ""
 "this shape has not been added yet -- finish drawing it on canvas to add it"
 msgstr ""
 "Cette forme n’a pas encore été ajoutée : terminez son tracé sur la zone "
 "d’image pour l’ajouter"
 
-#: ../src/develop/blend_gui.c:13088
+#: ../src/develop/blend_gui.c:13097
 msgid "opacity of the next shape, before it is placed"
 msgstr "Opacité de la prochaine forme avant son placement"
 
-#: ../src/develop/blend_gui.c:13099
+#: ../src/develop/blend_gui.c:13108
 msgid "fade-out border the next node placed on this path will start with"
 msgstr "Adoucissement initial du prochain nœud placé sur ce chemin"
 
-#: ../src/develop/blend_gui.c:13106
+#: ../src/develop/blend_gui.c:13115
 msgid ""
 "radius of the next circle, before it is placed --\n"
 "same as scrolling on canvas"
@@ -12118,7 +12132,7 @@ msgstr ""
 "Rayon du prochain cercle avant son placement — comme avec la molette sur "
 "l’image"
 
-#: ../src/develop/blend_gui.c:13111
+#: ../src/develop/blend_gui.c:13120
 msgid ""
 "fade-out border of the next circle, before it is placed --\n"
 "same as shift+scrolling on canvas"
@@ -12126,7 +12140,7 @@ msgstr ""
 "Adoucissement du prochain cercle avant son placement — comme avec Maj+molette "
 "sur l’image"
 
-#: ../src/develop/blend_gui.c:13122
+#: ../src/develop/blend_gui.c:13131
 msgid ""
 "size of the next ellipse, before it is placed --\n"
 "same as scrolling on canvas"
@@ -12134,7 +12148,7 @@ msgstr ""
 "Taille de la prochaine ellipse avant son placement — comme avec la molette "
 "sur l’image"
 
-#: ../src/develop/blend_gui.c:13127
+#: ../src/develop/blend_gui.c:13136
 msgid ""
 "fade-out border of the next ellipse, before it is placed --\n"
 "same as shift+scrolling on canvas"
@@ -12142,7 +12156,7 @@ msgstr ""
 "Adoucissement de la prochaine ellipse avant son placement — comme avec "
 "Maj+molette sur l’image"
 
-#: ../src/develop/blend_gui.c:13132
+#: ../src/develop/blend_gui.c:13141
 msgid ""
 "rotation of the next ellipse, before it is placed --\n"
 "same as ctrl+shift+scrolling on canvas"
@@ -12150,7 +12164,7 @@ msgstr ""
 "Rotation de la prochaine ellipse avant son placement — comme avec "
 "Ctrl+Maj+molette sur l’image"
 
-#: ../src/develop/blend_gui.c:13143
+#: ../src/develop/blend_gui.c:13152
 msgid ""
 "compression of the next gradient, before it is placed --\n"
 "same as shift+scrolling on canvas"
@@ -12158,7 +12172,7 @@ msgstr ""
 "Compression du prochain dégradé avant son placement — comme avec Maj+molette "
 "sur l’image"
 
-#: ../src/develop/blend_gui.c:13152
+#: ../src/develop/blend_gui.c:13161
 msgid ""
 "curvature of the next gradient, before it is placed --\n"
 "same as scrolling on canvas"
@@ -12166,17 +12180,17 @@ msgstr ""
 "Courbure du prochain dégradé avant son placement — comme avec la molette sur "
 "l’image"
 
-#: ../src/develop/blend_gui.c:13161
+#: ../src/develop/blend_gui.c:13170
 msgid "width of the next brush stroke -- same as scrolling on canvas"
 msgstr ""
 "Largeur du prochain trait de pinceau — comme avec la molette sur l’image"
 
-#: ../src/develop/blend_gui.c:13166
+#: ../src/develop/blend_gui.c:13175
 msgid "hardness of the next brush stroke -- same as shift+scrolling on canvas"
 msgstr ""
 "Dureté du prochain trait de pinceau — comme avec Maj+molette sur l’image"
 
-#: ../src/develop/blend_gui.c:13195
+#: ../src/develop/blend_gui.c:13204
 msgid ""
 "how closely the traced outline follows the AI selection's raw edge.\n"
 "lower: a tighter, more angular fit to the selection.\n"
@@ -12187,7 +12201,7 @@ msgstr ""
 "contour plus serré et anguleux. Valeur élevée : contour plus lâche, aux coins "
 "plus arrondis. Comme avec la molette sur l’image pendant le tracé."
 
-#: ../src/develop/blend_gui.c:13220
+#: ../src/develop/blend_gui.c:13229
 msgid ""
 "discards small, stray outline fragments below this size (in traced pixels).\n"
 "higher: removes more small islands/holes, at the risk of dropping\n"
@@ -12199,75 +12213,75 @@ msgstr ""
 "peut aussi éliminer de petites parties réelles de la sélection. Comme avec "
 "Maj+molette sur l’image pendant le tracé."
 
-#: ../src/develop/blend_gui.c:13255
+#: ../src/develop/blend_gui.c:13264
 msgid "pressure"
 msgstr "Pression"
 
-#: ../src/develop/blend_gui.c:13454
+#: ../src/develop/blend_gui.c:13463
 #, c-format
 msgid "focus %s and show its mask panel"
 msgstr "Activer %s et afficher son panneau de masque"
 
-#: ../src/develop/blend_gui.c:13522
+#: ../src/develop/blend_gui.c:13531
 msgid "circles"
 msgstr "Cercles"
 
-#: ../src/develop/blend_gui.c:13522
+#: ../src/develop/blend_gui.c:13531
 msgid "circle"
 msgstr "Cercle"
 
-#: ../src/develop/blend_gui.c:13523
+#: ../src/develop/blend_gui.c:13532
 msgid "ellipses"
 msgstr "Ellipses"
 
-#: ../src/develop/blend_gui.c:13523
+#: ../src/develop/blend_gui.c:13532
 msgid "ellipse"
 msgstr "Ellipse"
 
-#: ../src/develop/blend_gui.c:13524
+#: ../src/develop/blend_gui.c:13533
 msgid "paths"
 msgstr "Chemins"
 
-#: ../src/develop/blend_gui.c:13525
+#: ../src/develop/blend_gui.c:13534
 msgid "gradients"
 msgstr "Dégradés"
 
-#: ../src/develop/blend_gui.c:13525
+#: ../src/develop/blend_gui.c:13534
 msgid "gradient"
 msgstr "Dégradé"
 
-#: ../src/develop/blend_gui.c:13526
+#: ../src/develop/blend_gui.c:13535
 msgid "brushes"
 msgstr "Pinceaux"
 
-#: ../src/develop/blend_gui.c:13526
+#: ../src/develop/blend_gui.c:13535
 msgid "brush"
 msgstr "Pinceau"
 
-#: ../src/develop/blend_gui.c:13527
+#: ../src/develop/blend_gui.c:13536
 msgid "parametric masks"
 msgstr "Masques paramétriques"
 
-#: ../src/develop/blend_gui.c:13528
+#: ../src/develop/blend_gui.c:13537
 msgid "raster masks"
 msgstr "Masques raster"
 
-#: ../src/develop/blend_gui.c:13529
+#: ../src/develop/blend_gui.c:13538
 msgid "AI objects"
 msgstr "Objets IA"
 
-#: ../src/develop/blend_gui.c:13529
+#: ../src/develop/blend_gui.c:13538
 msgid "AI object"
 msgstr "Objet IA"
 
-#: ../src/develop/blend_gui.c:13530 ../src/iop/liquify.c:3672
+#: ../src/develop/blend_gui.c:13539 ../src/iop/liquify.c:3672
 #: ../src/iop/liquify.c:3678 ../src/iop/liquify.c:3684 ../src/iop/retouch.c:2446
 #: ../src/iop/retouch.c:2452 ../src/iop/retouch.c:2457 ../src/iop/retouch.c:2462
 #: ../src/iop/spots.c:880 ../src/iop/spots.c:885 ../src/iop/spots.c:890
 msgid "shapes"
 msgstr "Formes"
 
-#: ../src/develop/blend_gui.c:13981
+#: ../src/develop/blend_gui.c:13990
 msgid ""
 "show the output slider and the boost factor\n"
 "the input slider is always shown"
@@ -12275,7 +12289,7 @@ msgstr ""
 "Afficher le curseur de sortie et le facteur de renforcement\n"
 "Le curseur d'entrée est toujours affiché"
 
-#: ../src/develop/blend_gui.c:13982
+#: ../src/develop/blend_gui.c:13991
 msgid ""
 "show the output slider\n"
 "the input slider is always shown"
@@ -12283,44 +12297,44 @@ msgstr ""
 "Afficher le curseur de sortie\n"
 "Le curseur d'entrée est toujours affiché"
 
-#: ../src/develop/blend_gui.c:14051
+#: ../src/develop/blend_gui.c:14060
 msgid ""
 "switched off: this range does not refine the mask.\n"
 "edit it to switch it back on"
 msgstr ""
 "Désactivé : cette plage n’affine pas le masque. Modifiez-la pour la réactiver."
 
-#: ../src/develop/blend_gui.c:14816
+#: ../src/develop/blend_gui.c:14825
 #, c-format
 msgid "output picker of %s armed"
 msgstr "Pipette de sortie de %s activée"
 
-#: ../src/develop/blend_gui.c:14817
+#: ../src/develop/blend_gui.c:14826
 #, c-format
 msgid "input picker of %s armed"
 msgstr "Pipette d’entrée de %s activée"
 
-#: ../src/develop/blend_gui.c:14820
+#: ../src/develop/blend_gui.c:14829
 #, c-format
 msgid "output picker of %s unarmed"
 msgstr "Pipette de sortie de %s désactivée"
 
-#: ../src/develop/blend_gui.c:14821
+#: ../src/develop/blend_gui.c:14830
 #, c-format
 msgid "input picker of %s unarmed"
 msgstr "Pipette d’entrée de %s désactivée"
 
-#: ../src/develop/blend_gui.c:14827
+#: ../src/develop/blend_gui.c:14836
 #, c-format
 msgid "color picker of %s armed"
 msgstr "Pipette de couleur de %s activée"
 
-#: ../src/develop/blend_gui.c:14829
+#: ../src/develop/blend_gui.c:14838
 #, c-format
 msgid "color picker of %s unarmed"
 msgstr "Pipette de couleur de %s désactivée"
 
-#: ../src/develop/blend_gui.c:15200
+#: ../src/develop/blend_gui.c:15209
 msgid ""
 "click: set the output range from an area picked on the image\n"
 "ctrl+click: pick GUI color, shown on the sliders (point)\n"
@@ -12331,7 +12345,7 @@ msgstr ""
 "Ctrl+clic : échantillonner une couleur de l’interface (point)\n"
 "Ctrl+Maj+clic : échantillonner une couleur de l’interface (zone)"
 
-#: ../src/develop/blend_gui.c:15203
+#: ../src/develop/blend_gui.c:15212
 msgid ""
 "click: set the input range from an area picked on the image\n"
 "ctrl+click: pick GUI color, shown on the sliders (point)\n"
@@ -12342,7 +12356,7 @@ msgstr ""
 "Ctrl+clic : échantillonner une couleur de l’interface (point)\n"
 "Ctrl+Maj+clic : échantillonner une couleur de l’interface (zone)"
 
-#: ../src/develop/blend_gui.c:15255 ../src/develop/blend_gui.c:19164
+#: ../src/develop/blend_gui.c:15264 ../src/develop/blend_gui.c:19175
 #: ../src/iop/agx.c:1988 ../src/iop/agx.c:2225 ../src/iop/agx.c:2234
 #: ../src/iop/basicadj.c:623 ../src/iop/colorbalancergb.c:2062
 #: ../src/iop/colorequal.c:3919 ../src/iop/exposure.c:1262
@@ -12364,11 +12378,11 @@ msgstr ""
 msgid " EV"
 msgstr " IL"
 
-#: ../src/develop/blend_gui.c:15256 ../src/develop/blend_gui.c:18195
+#: ../src/develop/blend_gui.c:15265 ../src/develop/blend_gui.c:18204
 msgid "boost factor"
 msgstr "Facteur de renforcement"
 
-#: ../src/develop/blend_gui.c:15263
+#: ../src/develop/blend_gui.c:15272
 msgid ""
 "adjust the channel boost factor.\n"
 "increase to allow matching values over 100%"
@@ -12376,49 +12390,49 @@ msgstr ""
 "Ajuste le facteur de renforcement du masque.\n"
 "Augmenter pour permettre des valeurs supérieures à 100%"
 
-#: ../src/develop/blend_gui.c:15311
+#: ../src/develop/blend_gui.c:15320
 msgid "output slider"
 msgstr "Réglette de sortie"
 
-#: ../src/develop/blend_gui.c:15311
+#: ../src/develop/blend_gui.c:15320
 msgid "input slider"
 msgstr "Réglette d’entrée"
 
-#: ../src/develop/blend_gui.c:15587
+#: ../src/develop/blend_gui.c:15596
 #, c-format
 msgid "focus %s and edit its mask on the canvas"
 msgstr "Activer %s et modifier son masque sur l’image"
 
-#: ../src/develop/blend_gui.c:15639
+#: ../src/develop/blend_gui.c:15648
 msgid "a group inside this group, shown below this row\n"
 msgstr "Un groupe imbriqué dans ce groupe, affiché sous cette ligne\n"
 
-#: ../src/develop/blend_gui.c:15640
+#: ../src/develop/blend_gui.c:15649
 msgid "click to select, click again to deselect\n"
 msgstr "Cliquer pour sélectionner ; cliquer à nouveau pour désélectionner\n"
 
-#: ../src/develop/blend_gui.c:15644
+#: ../src/develop/blend_gui.c:15653
 msgid "click its icon on the canvas to refine the selection\n"
 msgstr "Cliquer sur son icône dans l’image pour affiner la sélection\n"
 
-#: ../src/develop/blend_gui.c:15645
+#: ../src/develop/blend_gui.c:15654
 msgid "ctrl+click to rename\n"
 msgstr "Ctrl+clic pour renommer\n"
 
-#: ../src/develop/blend_gui.c:15646
+#: ../src/develop/blend_gui.c:15655
 msgid "ctrl+shift+click to delete it\n"
 msgstr "Ctrl+Maj+clic pour le supprimer\n"
 
-#: ../src/develop/blend_gui.c:15647
+#: ../src/develop/blend_gui.c:15656
 msgid "shift+click to select it with others\n"
 msgstr "Maj+clic pour le sélectionner avec d’autres\n"
 
-#: ../src/develop/blend_gui.c:15651
+#: ../src/develop/blend_gui.c:15660
 #, c-format
 msgid "%s to delete it, once selected\n"
 msgstr "%s pour le supprimer une fois sélectionné\n"
 
-#: ../src/develop/blend_gui.c:15653 ../src/develop/blend_gui.c:16492
+#: ../src/develop/blend_gui.c:15662 ../src/develop/blend_gui.c:16501
 msgid ""
 "drag to rearrange: drop it onto a group to put it inside, onto the group's "
 "top or bottom edge to put it beside"
@@ -12426,28 +12440,28 @@ msgstr ""
 "Faire glisser pour réorganiser : déposer sur un groupe pour l’y placer, ou "
 "sur son bord supérieur ou inférieur pour le placer à côté"
 
-#: ../src/develop/blend_gui.c:15747 ../src/develop/blend_gui.c:16566
+#: ../src/develop/blend_gui.c:15756 ../src/develop/blend_gui.c:16575
 msgid "show/hide this group's members"
 msgstr "Afficher/masquer les membres de ce groupe"
 
-#: ../src/develop/blend_gui.c:15780
+#: ../src/develop/blend_gui.c:15789
 msgid "invert this element: it selects what it left out"
 msgstr "Inverser cet élément : il sélectionne ce qu’il excluait"
 
-#: ../src/develop/blend_gui.c:16187
+#: ../src/develop/blend_gui.c:16196
 msgid "previous page"
 msgstr "Page précédente"
 
-#: ../src/develop/blend_gui.c:16187
+#: ../src/develop/blend_gui.c:16196
 msgid "next page"
 msgstr "Page suivante"
 
-#: ../src/develop/blend_gui.c:16253
+#: ../src/develop/blend_gui.c:16262
 #, c-format
 msgid "page %u of %u"
 msgstr "Page %u sur %u"
 
-#: ../src/develop/blend_gui.c:16423
+#: ../src/develop/blend_gui.c:16432
 msgid ""
 "invert the whole mask\n"
 "shift+click: flip the invert of each member on its own"
@@ -12455,7 +12469,7 @@ msgstr ""
 "Inverser le masque entier\n"
 "Maj+clic : inverser séparément chaque membre"
 
-#: ../src/develop/blend_gui.c:16425
+#: ../src/develop/blend_gui.c:16434
 msgid ""
 "invert what this group gives\n"
 "shift+click: flip the invert of each member on its own"
@@ -12463,7 +12477,7 @@ msgstr ""
 "Inverser le résultat de ce groupe\n"
 "Maj+clic : inverser séparément chaque membre"
 
-#: ../src/develop/blend_gui.c:16472
+#: ../src/develop/blend_gui.c:16481
 msgid ""
 "the whole mask: every member is inside it\n"
 "click to select it: the refinements then act on the whole mask\n"
@@ -12474,18 +12488,18 @@ msgstr ""
 "entier\n"
 "Ctrl+Maj+clic pour réinitialiser le masque"
 
-#: ../src/develop/blend_gui.c:16478
+#: ../src/develop/blend_gui.c:16487
 #, c-format
 msgid "%s to reset the mask, once selected"
 msgstr "%s pour réinitialiser le masque une fois sélectionné"
 
-#: ../src/develop/blend_gui.c:16483
+#: ../src/develop/blend_gui.c:16492
 msgid "empty group: select it, then draw a shape, or drop one here, to fill it"
 msgstr ""
 "Groupe vide : sélectionnez-le, puis dessinez une forme ou déposez-en une ici "
 "pour le remplir"
 
-#: ../src/develop/blend_gui.c:16485
+#: ../src/develop/blend_gui.c:16494
 msgid ""
 "click to select this group, click again to select the whole mask\n"
 "ctrl+click to rename"
@@ -12494,20 +12508,20 @@ msgstr ""
 "masque entier\n"
 "Ctrl+clic pour le renommer"
 
-#: ../src/develop/blend_gui.c:16488
+#: ../src/develop/blend_gui.c:16497
 msgid "shift+click to select it with others"
 msgstr "Maj+clic pour le sélectionner avec d’autres"
 
-#: ../src/develop/blend_gui.c:16489
+#: ../src/develop/blend_gui.c:16498
 msgid "ctrl+shift+click to delete it and every member in it"
 msgstr "Ctrl+Maj+clic pour le supprimer avec tous ses membres"
 
-#: ../src/develop/blend_gui.c:16496
+#: ../src/develop/blend_gui.c:16505
 #, c-format
 msgid "%s to delete it and every member in it, once selected"
 msgstr "%s pour le supprimer avec tous ses membres, une fois sélectionné"
 
-#: ../src/develop/blend_gui.c:16509
+#: ../src/develop/blend_gui.c:16518
 #, c-format
 msgid ""
 "mask operator: %s (disabled)\n"
@@ -12520,7 +12534,7 @@ msgstr ""
 "Cliquer sur l’œil pour le réactiver.\n"
 "Cliquer pour changer d’opérateur."
 
-#: ../src/develop/blend_gui.c:16513
+#: ../src/develop/blend_gui.c:16522
 #, c-format
 msgid ""
 "mask operator: %s\n"
@@ -12531,7 +12545,7 @@ msgstr ""
 "Définit comment le masque combine ses membres, du bas vers le haut.\n"
 "Cliquer pour changer d’opérateur."
 
-#: ../src/develop/blend_gui.c:16517
+#: ../src/develop/blend_gui.c:16526
 #, c-format
 msgid ""
 "group operator: %s (disabled)\n"
@@ -12545,7 +12559,7 @@ msgstr ""
 "Cliquer sur l’œil pour le réactiver.\n"
 "Cliquer pour changer d’opérateur."
 
-#: ../src/develop/blend_gui.c:16522
+#: ../src/develop/blend_gui.c:16531
 #, c-format
 msgid ""
 "group operator: %s\n"
@@ -12556,19 +12570,19 @@ msgstr ""
 "Définit comment le groupe combine ses membres, du bas vers le haut.\n"
 "Cliquer pour changer d’opérateur."
 
-#: ../src/develop/blend_gui.c:16581
+#: ../src/develop/blend_gui.c:16590
 msgid "this group has no members to show"
 msgstr "Ce groupe ne contient aucun membre à afficher"
 
-#: ../src/develop/blend_gui.c:17268
+#: ../src/develop/blend_gui.c:17277
 msgid "this module does not support parametric masks"
 msgstr "Ce module ne prend pas en charge les masques paramétriques"
 
-#: ../src/develop/blend_gui.c:17612
+#: ../src/develop/blend_gui.c:17621
 msgid "reset the mask?"
 msgstr "Réinitialiser le masque ?"
 
-#: ../src/develop/blend_gui.c:17613
+#: ../src/develop/blend_gui.c:17622
 msgid ""
 "this removes every member from this module's mask, starting over from the "
 "default group layout. continue?"
@@ -12576,11 +12590,11 @@ msgstr ""
 "Cette opération supprime tous les membres du masque de ce module \n"
 "et rétablit la disposition de groupe par défaut. Continuer ?"
 
-#: ../src/develop/blend_gui.c:17771
+#: ../src/develop/blend_gui.c:17780
 msgid "wrap in group"
 msgstr "Placer dans un groupe"
 
-#: ../src/develop/blend_gui.c:17772
+#: ../src/develop/blend_gui.c:17781
 msgid ""
 "put the selection in a new group of the chosen operator,\n"
 "where it is, to combine it with what you add to that group"
@@ -12589,11 +12603,11 @@ msgstr ""
 "son emplacement actuel, pour la combiner aux éléments que vous ajouterez à ce "
 "groupe"
 
-#: ../src/develop/blend_gui.c:17775
+#: ../src/develop/blend_gui.c:17784
 msgid "compose"
 msgstr "Composer"
 
-#: ../src/develop/blend_gui.c:17776
+#: ../src/develop/blend_gui.c:17785
 msgid ""
 "use the selection as a building block for a larger mask, for\n"
 "example to subtract from it or to intersect it with something\n"
@@ -12605,15 +12619,15 @@ msgstr ""
 "elle est placée dans un nouveau groupe utilisant l’opérateur choisi, \n"
 "avec un groupe vide au-dessus pour dessiner."
 
-#: ../src/develop/blend_gui.c:17780
+#: ../src/develop/blend_gui.c:17789
 msgid "compose in a new group of"
 msgstr "Composer dans un nouveau groupe de"
 
-#: ../src/develop/blend_gui.c:17781
+#: ../src/develop/blend_gui.c:17790
 msgid "simplify"
 msgstr "Simplifier"
 
-#: ../src/develop/blend_gui.c:17783
+#: ../src/develop/blend_gui.c:17792
 msgid ""
 "remove the groups inside this one that change nothing;\n"
 "groups with a name of their own are kept"
@@ -12621,20 +12635,20 @@ msgstr ""
 "Supprimer les groupes imbriqués qui ne changent rien ; les groupes ayant leur "
 "propre nom sont conservés"
 
-#: ../src/develop/blend_gui.c:17785
+#: ../src/develop/blend_gui.c:17794
 msgid "only a group can be simplified"
 msgstr "Un seul groupe peut être simplifié"
 
-#: ../src/develop/blend_gui.c:17789
+#: ../src/develop/blend_gui.c:17798
 msgid "restructure"
 msgstr "Restructurer"
 
 #. why nothing is acted on, while it is not: a shape being drawn, a locked mask
-#: ../src/develop/blend_gui.c:17926
+#: ../src/develop/blend_gui.c:17935
 msgid "the shape being drawn is not in the mask yet"
 msgstr "La forme en cours de tracé ne fait pas encore partie du masque"
 
-#: ../src/develop/blend_gui.c:17938
+#: ../src/develop/blend_gui.c:17947
 msgid ""
 "restructure the selection: wrap it in a new group, compose it\n"
 "into a larger mask or, for a group, simplify it"
@@ -12644,15 +12658,15 @@ msgstr ""
 "la combiner à un masque plus large \n"
 "ou, s’il s’agit d’un groupe, la simplifier"
 
-#: ../src/develop/blend_gui.c:17940
+#: ../src/develop/blend_gui.c:17949
 msgid "nothing to restructure: this group cannot be restructured"
 msgstr "Rien à restructurer : ce groupe ne peut pas être restructuré"
 
-#: ../src/develop/blend_gui.c:17941
+#: ../src/develop/blend_gui.c:17950
 msgid "this element cannot be restructured where it is"
 msgstr "Cet élément ne peut pas être restructuré à cet emplacement"
 
-#: ../src/develop/blend_gui.c:17943
+#: ../src/develop/blend_gui.c:17952
 msgid ""
 "reset the mask: remove every member,\n"
 "starting over from the default group layout"
@@ -12660,7 +12674,7 @@ msgstr ""
 "Réinitialiser le masque : supprimer tous ses membres \n"
 "et rétablir la disposition de groupe par défaut"
 
-#: ../src/develop/blend_gui.c:17945
+#: ../src/develop/blend_gui.c:17954
 msgid ""
 "delete this group and every member in it\n"
 "shift+click: empty it, keeping the group with its settings and name"
@@ -12668,24 +12682,24 @@ msgstr ""
 "Supprimer ce groupe et tous ses membres\n"
 "Maj+clic : le vider tout en conservant le groupe, ses paramètres et son nom"
 
-#: ../src/develop/blend_gui.c:17949
+#: ../src/develop/blend_gui.c:17958
 msgid ""
 "delete this element here; the other rows and modules it is linked with keep it"
 msgstr ""
 "Supprimer cet élément ici ; les autres lignes et modules auxquels il est lié "
 "le conservent"
 
-#: ../src/develop/blend_gui.c:17951
+#: ../src/develop/blend_gui.c:17960
 msgid "delete this element from the mask"
 msgstr "Supprimer cet élément du masque"
 
-#: ../src/develop/blend_gui.c:17961
+#: ../src/develop/blend_gui.c:17970
 msgid "hold down ctrl+shift and click on row headers to delete items"
 msgstr ""
 "Maintenir Ctrl+Maj et cliquer sur les en-têtes de ligne \n"
 "pour supprimer des éléments"
 
-#: ../src/develop/blend_gui.c:17972
+#: ../src/develop/blend_gui.c:17981
 msgid ""
 "group layout presets: apply one within this group, replacing what it holds or "
 "added to it, or save the mask's layout as one"
@@ -12694,24 +12708,24 @@ msgstr ""
 "appliquer un préréglage à ce groupe en remplaçant son contenu, \n"
 "ou enregistrer la disposition du masque comme préréglage"
 
-#: ../src/develop/blend_gui.c:17976
+#: ../src/develop/blend_gui.c:17985
 msgid "group layout presets do not apply to a raster mask"
 msgstr ""
 "Les préréglages de disposition des groupes ne s’appliquent pas aux masques "
 "raster"
 
-#: ../src/develop/blend_gui.c:17977
+#: ../src/develop/blend_gui.c:17986
 msgid "group layout presets apply within a group: select one, or the whole mask"
 msgstr ""
 "Les préréglages de disposition s’appliquent à l’intérieur d’un groupe : "
 "sélectionnez un groupe ou le masque entier"
 
-#: ../src/develop/blend_gui.c:18050
+#: ../src/develop/blend_gui.c:18059
 #, c-format
 msgid "channel '%s' is not supported by this module"
 msgstr "Le canal « %s » n’est pas pris en charge par ce module"
 
-#: ../src/develop/blend_gui.c:18143
+#: ../src/develop/blend_gui.c:18152
 msgid "nothing selected in the mask panel has this control"
 msgstr ""
 "Aucun élément sélectionné dans le panneau des masques ne possède cette "
@@ -12721,21 +12735,21 @@ msgstr ""
 #. refinements', its content following the selection (see
 #. _controls_panel_sync), packed above them below. Built always, shown only
 #. while the controls are in it (see _controls_panel_show)
-#: ../src/develop/blend_gui.c:18190 ../src/develop/blend_gui.c:18192
-#: ../src/develop/blend_gui.c:18193 ../src/develop/blend_gui.c:18194
-#: ../src/develop/blend_gui.c:19395
+#: ../src/develop/blend_gui.c:18199 ../src/develop/blend_gui.c:18201
+#: ../src/develop/blend_gui.c:18202 ../src/develop/blend_gui.c:18203
+#: ../src/develop/blend_gui.c:19413
 msgid "controls"
 msgstr "Contrôles"
 
-#: ../src/develop/blend_gui.c:18193
+#: ../src/develop/blend_gui.c:18202
 msgid "brush pressure"
 msgstr "Pression du pinceau"
 
-#: ../src/develop/blend_gui.c:18194
+#: ../src/develop/blend_gui.c:18203
 msgid "brush smoothing"
 msgstr "Lissage du pinceau"
 
-#: ../src/develop/blend_gui.c:18196 ../src/develop/blend_gui.c:18197
+#: ../src/develop/blend_gui.c:18205 ../src/develop/blend_gui.c:18206
 #: ../src/iop/borders.c:1057 ../src/iop/borders.c:1071
 #: ../src/iop/colorzones.c:2664 ../src/iop/colorzones.c:2679
 #: ../src/iop/negadoctor.c:850 ../src/iop/negadoctor.c:912
@@ -12744,73 +12758,73 @@ msgstr "Lissage du pinceau"
 msgid "pickers"
 msgstr "Pipettes"
 
-#: ../src/develop/blend_gui.c:18196 ../src/iop/colorzones.c:2664
+#: ../src/develop/blend_gui.c:18205 ../src/iop/colorzones.c:2664
 #: ../src/iop/rgbcurve.c:1502
 msgid "show color"
 msgstr "Montrer couleur"
 
-#: ../src/develop/blend_gui.c:18197
+#: ../src/develop/blend_gui.c:18206
 msgid "set range"
 msgstr "Définit l’étendu"
 
 #. Page masks
-#: ../src/develop/blend_gui.c:18215 ../src/iop/colorbalancergb.c:2003
+#: ../src/develop/blend_gui.c:18224 ../src/iop/colorbalancergb.c:2003
 msgid "masks"
 msgstr "Masques"
 
-#: ../src/develop/blend_gui.c:18217
+#: ../src/develop/blend_gui.c:18226
 msgid "show/hide mask panel"
 msgstr "Afficher/masquer le panneau des masques"
 
-#: ../src/develop/blend_gui.c:18219
+#: ../src/develop/blend_gui.c:18228
 msgid "add group in selected group"
 msgstr "Ajouter un groupe au groupe sélectionné"
 
-#: ../src/develop/blend_gui.c:18221
+#: ../src/develop/blend_gui.c:18230
 msgid "invert all members of selected group"
 msgstr "Inverser tous les membres du groupe sélectionné"
 
-#: ../src/develop/blend_gui.c:18223
+#: ../src/develop/blend_gui.c:18232
 msgid "invert output of selected group"
 msgstr "Inverser la sortie du groupe sélectionné"
 
-#: ../src/develop/blend_gui.c:18225
+#: ../src/develop/blend_gui.c:18234
 msgid "invert selected element"
 msgstr "Inverser l’élément sélectionné"
 
-#: ../src/develop/blend_gui.c:18227
+#: ../src/develop/blend_gui.c:18236
 msgid "delete selection"
 msgstr "Supprimer la sélection"
 
-#: ../src/develop/blend_gui.c:18229
+#: ../src/develop/blend_gui.c:18238
 msgid "move selection into group"
 msgstr "Déplacer la sélection dans un groupe"
 
-#: ../src/develop/blend_gui.c:18231
+#: ../src/develop/blend_gui.c:18240
 msgid "group selection"
 msgstr "Grouper la sélection"
 
-#: ../src/develop/blend_gui.c:18233 ../src/develop/blend_gui.c:18297
+#: ../src/develop/blend_gui.c:18242 ../src/develop/blend_gui.c:18306
 msgid "solo edit the selection"
 msgstr "Modifier uniquement la sélection"
 
-#: ../src/develop/blend_gui.c:18235
+#: ../src/develop/blend_gui.c:18244
 msgid "change operator of selected group"
 msgstr "Changer l’opérateur du groupe sélectionné"
 
-#: ../src/develop/blend_gui.c:18237
+#: ../src/develop/blend_gui.c:18246
 msgid "disable/enable selected group"
 msgstr "Activer/désactiver le groupe sélectionné"
 
-#: ../src/develop/blend_gui.c:18241
+#: ../src/develop/blend_gui.c:18250
 msgid "sticky opacity"
 msgstr "Opacité persistante"
 
-#: ../src/develop/blend_gui.c:18250
+#: ../src/develop/blend_gui.c:18259
 msgid "channel overlay"
 msgstr "Superposition du canal"
 
-#: ../src/develop/blend_gui.c:18302
+#: ../src/develop/blend_gui.c:18311
 msgid ""
 "solo edit the selection\n"
 "while enabled, only the selected shape, or the shapes of the selected\n"
@@ -12822,19 +12836,19 @@ msgstr ""
 "du groupe sélectionné sont affichées et modifiables sur l’image ; \n"
 "les autres membres continuent de contribuer au masque."
 
-#: ../src/develop/blend_gui.c:18313
+#: ../src/develop/blend_gui.c:18322
 msgid "edit on canvas"
 msgstr "Modifier sur l’image"
 
 # infinitifs requis "Montrer et éditer"
-#: ../src/develop/blend_gui.c:18314
+#: ../src/develop/blend_gui.c:18323
 msgid "edit on canvas in restricted mode (no moving or resizing of shapes)"
 msgstr ""
 "Modifier sur l’image en mode restreint (sans déplacer ni redimensionner les "
 "formes)"
 
 # infinitifs requis "Montrer et éditer"
-#: ../src/develop/blend_gui.c:18319
+#: ../src/develop/blend_gui.c:18328
 msgid ""
 "edit drawn mask elements on canvas\n"
 "ctrl+click for restricted mode (no moving or resizing of shapes)"
@@ -12842,108 +12856,108 @@ msgstr ""
 "Modifier les éléments du masque dessiné sur l’image\n"
 "Ctrl+clic pour le mode restreint (sans déplacer ni redimensionner les formes)"
 
-#: ../src/develop/blend_gui.c:18330 ../src/iop/retouch.c:2452
+#: ../src/develop/blend_gui.c:18339 ../src/iop/retouch.c:2452
 #: ../src/iop/spots.c:881
 msgid "add path"
 msgstr "Ajouter un chemin"
 
-#: ../src/develop/blend_gui.c:18330 ../src/iop/retouch.c:2452
+#: ../src/develop/blend_gui.c:18339 ../src/iop/retouch.c:2452
 #: ../src/iop/spots.c:881
 msgid "add multiple paths"
 msgstr "Ajouter plusieurs chemins"
 
-#: ../src/develop/blend_gui.c:18331 ../src/iop/retouch.c:2447
+#: ../src/develop/blend_gui.c:18340 ../src/iop/retouch.c:2447
 msgid "add brush"
 msgstr "Ajouter une forme au pinceau"
 
-#: ../src/develop/blend_gui.c:18331 ../src/iop/retouch.c:2447
+#: ../src/develop/blend_gui.c:18340 ../src/iop/retouch.c:2447
 msgid "add multiple brush strokes"
 msgstr "Ajouter plusieurs coups de pinceau"
 
-#: ../src/develop/blend_gui.c:18333 ../src/iop/retouch.c:2462
+#: ../src/develop/blend_gui.c:18342 ../src/iop/retouch.c:2462
 #: ../src/iop/spots.c:891
 msgid "add circle"
 msgstr "Ajouter un cercle"
 
-#: ../src/develop/blend_gui.c:18333 ../src/iop/retouch.c:2462
+#: ../src/develop/blend_gui.c:18342 ../src/iop/retouch.c:2462
 #: ../src/iop/spots.c:891
 msgid "add multiple circles"
 msgstr "Ajouter plusieurs cercles"
 
-#: ../src/develop/blend_gui.c:18335 ../src/iop/retouch.c:2457
+#: ../src/develop/blend_gui.c:18344 ../src/iop/retouch.c:2457
 #: ../src/iop/spots.c:886
 msgid "add ellipse"
 msgstr "Ajouter une ellipse"
 
-#: ../src/develop/blend_gui.c:18335 ../src/iop/retouch.c:2457
+#: ../src/develop/blend_gui.c:18344 ../src/iop/retouch.c:2457
 #: ../src/iop/spots.c:886
 msgid "add multiple ellipses"
 msgstr "Ajouter plusieurs ellipses"
 
-#: ../src/develop/blend_gui.c:18337
+#: ../src/develop/blend_gui.c:18346
 msgid "add gradient"
 msgstr "Ajouter un dégradé"
 
-#: ../src/develop/blend_gui.c:18337
+#: ../src/develop/blend_gui.c:18346
 msgid "add multiple gradients"
 msgstr "Ajouter plusieurs dégradés"
 
-#: ../src/develop/blend_gui.c:18340
+#: ../src/develop/blend_gui.c:18349
 msgid "add AI object"
 msgstr "Ajouter objet IA"
 
-#: ../src/develop/blend_gui.c:18602
+#: ../src/develop/blend_gui.c:18611
 msgid "normal & difference"
 msgstr "Normaux & différences"
 
-#: ../src/develop/blend_gui.c:18607
+#: ../src/develop/blend_gui.c:18616
 msgid "lighten"
 msgstr "Éclaircir"
 
-#: ../src/develop/blend_gui.c:18614
+#: ../src/develop/blend_gui.c:18623
 msgid "darken"
 msgstr "Assombrir"
 
-#: ../src/develop/blend_gui.c:18621
+#: ../src/develop/blend_gui.c:18630
 msgid "contrast enhancing"
 msgstr "Renforcement du contraste"
 
-#: ../src/develop/blend_gui.c:18628 ../src/develop/blend_gui.c:18651
+#: ../src/develop/blend_gui.c:18637 ../src/develop/blend_gui.c:18660
 msgid "color channel"
 msgstr "Mode canal de couleur"
 
-#: ../src/develop/blend_gui.c:18639 ../src/develop/blend_gui.c:18654
+#: ../src/develop/blend_gui.c:18648 ../src/develop/blend_gui.c:18663
 msgid "chromaticity & lightness"
 msgstr "Chrominance & luminance"
 
-#: ../src/develop/blend_gui.c:18646
+#: ../src/develop/blend_gui.c:18655
 msgid "normal & arithmetic"
 msgstr "Normaux & arithmétiques"
 
 #. add deprecated blend mode
-#: ../src/develop/blend_gui.c:18666
+#: ../src/develop/blend_gui.c:18675
 msgid "deprecated"
 msgstr "Déprécié"
 
 #. should never happen: unknown blend mode
-#: ../src/develop/blend_gui.c:18670
+#: ../src/develop/blend_gui.c:18679
 #, c-format
 msgid "unknown blend mode '%d' in module '%s'"
 msgstr "Mode de fusion « %d » non reconnu dans le module « %s »"
 
-#: ../src/develop/blend_gui.c:19068
+#: ../src/develop/blend_gui.c:19079
 msgid "mask enabled"
 msgstr "Masque activé"
 
-#: ../src/develop/blend_gui.c:19092
+#: ../src/develop/blend_gui.c:19103
 msgid "display mask"
 msgstr "Afficher le masque"
 
-#: ../src/develop/blend_gui.c:19099
+#: ../src/develop/blend_gui.c:19110
 msgid "temporarily switch off blend mask"
 msgstr "Désactiver temporairement le masque de fusion"
 
-#: ../src/develop/blend_gui.c:19105
+#: ../src/develop/blend_gui.c:19116
 msgid ""
 "temporarily switch off the mask, to compare\n"
 "the module then applies everywhere, at the blend opacity.\n"
@@ -12955,25 +12969,25 @@ msgstr ""
 "Seule la vue centrale est affectée, pas les exportations. \n"
 "Le masque est réactivé lorsque vous quittez le module."
 
-#: ../src/develop/blend_gui.c:19110
+#: ../src/develop/blend_gui.c:19121
 msgid "lock mask"
 msgstr "Verrouiller le masque"
 
 #. shown as "blend mode", against the mask members' own modes and
 #. operators; the action keeps its name (blend > mode), shortcuts with it
-#: ../src/develop/blend_gui.c:19137 ../src/libs/history.c:973
+#: ../src/develop/blend_gui.c:19148 ../src/libs/history.c:973
 msgid "blend mode"
 msgstr "Mode de fusion"
 
-#: ../src/develop/blend_gui.c:19140
+#: ../src/develop/blend_gui.c:19151
 msgid "choose blending mode"
 msgstr "Choisir le mode de fusion"
 
-#: ../src/develop/blend_gui.c:19149
+#: ../src/develop/blend_gui.c:19160
 msgid "toggle blend order"
 msgstr "Inverser l’ordre de fusion"
 
-#: ../src/develop/blend_gui.c:19156
+#: ../src/develop/blend_gui.c:19167
 msgid ""
 "toggle the blending order between the input and the output of the module,\n"
 "by default the output will be blended on top of the input,\n"
@@ -12984,34 +12998,34 @@ msgstr ""
 "l’ordre peut être inversé en cliquant sur l’icône\n"
 "(entrée au-dessus de la sortie)."
 
-#: ../src/develop/blend_gui.c:19163
+#: ../src/develop/blend_gui.c:19174
 msgid "fulcrum"
 msgstr "Pivot"
 
-#: ../src/develop/blend_gui.c:19167
+#: ../src/develop/blend_gui.c:19178
 msgid "adjust the fulcrum used by some blending operations"
 msgstr "Ajuste le pivot utilisé par quelques opérations de fusion"
 
-#: ../src/develop/blend_gui.c:19176
+#: ../src/develop/blend_gui.c:19187
 msgid "set the opacity of the blending"
 msgstr "Fixer l’opacité de la fusion"
 
-#: ../src/develop/blend_gui.c:19196 ../src/libs/history.c:980
+#: ../src/develop/blend_gui.c:19207 ../src/libs/history.c:980
 msgid "combine masks"
 msgstr "Combinaison des masques"
 
-#: ../src/develop/blend_gui.c:19198
+#: ../src/develop/blend_gui.c:19209
 msgid ""
 "how to combine individual drawn mask and different channels of parametric mask"
 msgstr ""
 "Comment combiner le masque dessiné et les différents canaux du masque "
 "paramétrique"
 
-#: ../src/develop/blend_gui.c:19205
+#: ../src/develop/blend_gui.c:19216
 msgid "details threshold"
 msgstr "Seuil des détails"
 
-#: ../src/develop/blend_gui.c:19209
+#: ../src/develop/blend_gui.c:19220
 msgid ""
 "adjust the threshold for the details mask (using raw data),\n"
 "positive values select areas with strong details,\n"
@@ -13021,11 +13035,11 @@ msgstr ""
 " • Les valeurs positives sélectionnent les zones avec des détails importants\n"
 " • Les valeurs négatives sélectionnent les zone plates, sans détail"
 
-#: ../src/develop/blend_gui.c:19221 ../src/libs/history.c:983
+#: ../src/develop/blend_gui.c:19232 ../src/libs/history.c:983
 msgid "feathering guide"
 msgstr "Guide de raffinement"
 
-#: ../src/develop/blend_gui.c:19222
+#: ../src/develop/blend_gui.c:19233
 msgid ""
 "choose to guide mask by input or output image and\n"
 "choose to apply feathering before or after mask blur"
@@ -13033,11 +13047,11 @@ msgstr ""
 "Permet de guider le masque depuis l’image d’entrée ou de sortie\n"
 "et de choisir d’appliquer le raffinement avant ou après le flou."
 
-#: ../src/develop/blend_gui.c:19230 ../src/libs/history.c:982
+#: ../src/develop/blend_gui.c:19241 ../src/libs/history.c:982
 msgid "feathering radius"
 msgstr "Rayon du raffinement"
 
-#: ../src/develop/blend_gui.c:19231 ../src/develop/blend_gui.c:19241
+#: ../src/develop/blend_gui.c:19242 ../src/develop/blend_gui.c:19252
 #: ../src/iop/colorbalancergb.c:2084 ../src/iop/colorequal.c:3934
 #: ../src/iop/colorequal.c:3961 ../src/iop/demosaic.c:1942
 #: ../src/iop/demosaic.c:1959 ../src/iop/diffuse.c:1805
@@ -13045,23 +13059,23 @@ msgstr "Rayon du raffinement"
 msgid " px"
 msgstr " px"
 
-#: ../src/develop/blend_gui.c:19233
+#: ../src/develop/blend_gui.c:19244
 msgid "spatial radius of feathering"
 msgstr "Extension spatiale du raffinement"
 
-#: ../src/develop/blend_gui.c:19240
+#: ../src/develop/blend_gui.c:19251
 msgid "blurring radius"
 msgstr "Rayon du flou"
 
-#: ../src/develop/blend_gui.c:19243
+#: ../src/develop/blend_gui.c:19254
 msgid "radius for gaussian blur of blend mask"
 msgstr "Rayon du flou gaussien du masque de fusion"
 
-#: ../src/develop/blend_gui.c:19250
+#: ../src/develop/blend_gui.c:19261
 msgid "mask brightness"
 msgstr "Masque de luminosité"
 
-#: ../src/develop/blend_gui.c:19254
+#: ../src/develop/blend_gui.c:19265
 msgid ""
 "shifts and tilts the tone curve of the blend mask to adjust its brightness\n"
 "without affecting fully transparent/fully opaque regions"
@@ -13070,11 +13084,11 @@ msgstr ""
 "luminosité\n"
 "sans affecter les régions complètement transparentes ou opaques."
 
-#: ../src/develop/blend_gui.c:19261 ../src/libs/history.c:986
+#: ../src/develop/blend_gui.c:19272 ../src/libs/history.c:986
 msgid "mask contrast"
 msgstr "Contraste du masque"
 
-#: ../src/develop/blend_gui.c:19265
+#: ../src/develop/blend_gui.c:19276
 msgid ""
 "gives the tone curve of the blend mask an s-like shape to adjust its contrast"
 msgstr ""
@@ -13086,11 +13100,11 @@ msgstr ""
 #. the reset button by the arrow, so that the bar is about as heavy on
 #. either side of its title. Both go insensitive while there is nothing to
 #. reset or disable, which is what says there are no refinements
-#: ../src/develop/blend_gui.c:19276
+#: ../src/develop/blend_gui.c:19287
 msgid "refinements"
 msgstr "Améliorations"
 
-#: ../src/develop/blend_gui.c:19278
+#: ../src/develop/blend_gui.c:19289
 msgid ""
 "refines the selected member, or the whole mask if nothing is selected\n"
 "click to expand or collapse"
@@ -13099,15 +13113,15 @@ msgstr ""
 "sélectionnée\n"
 "Cliquer pour développer ou réduire"
 
-#: ../src/develop/blend_gui.c:19293
+#: ../src/develop/blend_gui.c:19304
 msgid "toggle refinements section"
 msgstr "Afficher/masquer la section des améliorations"
 
-#: ../src/develop/blend_gui.c:19299
+#: ../src/develop/blend_gui.c:19310
 msgid "reset the refinement of the current target"
 msgstr "Réinitialiser l'amélioration de la cible actuelle"
 
-#: ../src/develop/blend_gui.c:19312
+#: ../src/develop/blend_gui.c:19323
 msgid ""
 "disable the refinement of this target, keeping its settings\n"
 "click again to enable it"
@@ -13115,16 +13129,16 @@ msgstr ""
 "Désactiver l’amélioration de cette cible en conservant ses paramètres\n"
 "Cliquer à nouveau pour le réactiver"
 
-#: ../src/develop/blend_gui.c:19341
+#: ../src/develop/blend_gui.c:19352
 msgid "click to show or hide the mask panel"
 msgstr "Cliquer pour afficher/masquer le panneau des masques"
 
 #. over the header's own "click to show or hide": the row names the module
-#: ../src/develop/blend_gui.c:19364
+#: ../src/develop/blend_gui.c:19375
 msgid "focused module"
 msgstr "Module actif"
 
-#: ../src/develop/blend_gui.c:19397
+#: ../src/develop/blend_gui.c:19415
 msgid ""
 "the controls of the selected member, or the creation controls of a shape "
 "being drawn\n"
@@ -13134,18 +13148,18 @@ msgstr ""
 "cours de tracé\n"
 "Cliquer pour développer ou réduire"
 
-#: ../src/develop/blend_gui.c:19415
+#: ../src/develop/blend_gui.c:19433
 msgid "toggle controls section"
 msgstr "Afficher la section des contrôles"
 
 #. the help section: the note of the group new elements go to, a
 #. collapsible above the controls, filled by _help_panel_sync from a
 #. preset group's note and shown only while it has one
-#: ../src/develop/blend_gui.c:19440 ../src/libs/tools/global_toolbox.c:714
+#: ../src/develop/blend_gui.c:19458 ../src/libs/tools/global_toolbox.c:714
 msgid "help"
 msgstr "Aide"
 
-#: ../src/develop/blend_gui.c:19442
+#: ../src/develop/blend_gui.c:19460
 msgid ""
 "how to use the selected group, from the group layout preset it was made from\n"
 "the help notes can be disabled in the mask panel options, with\n"
@@ -13159,17 +13173,17 @@ msgstr ""
 "avec « Afficher les notes d’aide des préréglages (débutants) ».\n"
 "Cliquer pour développer ou réduire"
 
-#: ../src/develop/blend_gui.c:19452
+#: ../src/develop/blend_gui.c:19470
 msgid "toggle help section"
 msgstr "Afficher/masquer la section d’aide"
 
 #. "mask consumers": the modules reading this one's raster mask, shown only
 #. while there are any (see _consumers_sync)
-#: ../src/develop/blend_gui.c:19513
+#: ../src/develop/blend_gui.c:19531
 msgid "mask consumers"
 msgstr "Modules utilisant ce masque"
 
-#: ../src/develop/blend_gui.c:19515
+#: ../src/develop/blend_gui.c:19533
 msgid ""
 "the modules further down the pipe that use this module's mask as a raster "
 "mask. click one of them to go to its mask panel\n"
@@ -13180,7 +13194,7 @@ msgstr ""
 "de masque.\n"
 "Cliquer ici pour développer ou réduire"
 
-#: ../src/develop/blend_gui.c:19522
+#: ../src/develop/blend_gui.c:19540
 msgid "toggle mask consumers section"
 msgstr "Afficher/masquer la section des modules utilisant ce masque"
 
@@ -13248,11 +13262,11 @@ msgid "duplicate instance"
 msgstr "Cloner l’instance"
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:1094 ../src/develop/imageop.c:4812
+#: ../src/develop/imageop.c:1094 ../src/develop/imageop.c:4816
 msgid "move up"
 msgstr "Monter"
 
-#: ../src/develop/imageop.c:1095 ../src/develop/imageop.c:4813
+#: ../src/develop/imageop.c:1095 ../src/develop/imageop.c:4817
 msgid "move down"
 msgstr "Descendre"
 
@@ -13261,17 +13275,17 @@ msgstr "Descendre"
 msgid "delete this instance"
 msgstr "Supprimer cette instance"
 
-#: ../src/develop/imageop.c:1099 ../src/develop/imageop.c:4816
+#: ../src/develop/imageop.c:1099 ../src/develop/imageop.c:4820
 #: ../src/libs/modulegroups.c:4408
 msgid "rename"
 msgstr "Renommer"
 
-#: ../src/develop/imageop.c:1303 ../src/develop/imageop.c:3648
+#: ../src/develop/imageop.c:1303 ../src/develop/imageop.c:3652
 #, c-format
 msgid "'%s' is switched on"
 msgstr "« %s » est activé"
 
-#: ../src/develop/imageop.c:1303 ../src/develop/imageop.c:3648
+#: ../src/develop/imageop.c:1303 ../src/develop/imageop.c:3652
 #, c-format
 msgid "'%s' is switched off"
 msgstr "« %s » est désactivé"
@@ -13286,72 +13300,72 @@ msgstr "%s : %s"
 msgid "'%s' has an introspection error"
 msgstr "« %s » a une erreur d’introspection"
 
-#: ../src/develop/imageop.c:3417
+#: ../src/develop/imageop.c:3421
 msgid "this module has a mask with 0 elements (uniform mask)"
 msgstr "Ce module possède un masque à 0 élément (masque uniforme)"
 
-#: ../src/develop/imageop.c:3422
+#: ../src/develop/imageop.c:3426
 #, c-format
 msgid "%d circle"
 msgid_plural "%d circles"
 msgstr[0] "%d cercle"
 msgstr[1] "%d cercles"
 
-#: ../src/develop/imageop.c:3423
+#: ../src/develop/imageop.c:3427
 #, c-format
 msgid "%d ellipse"
 msgid_plural "%d ellipses"
 msgstr[0] "%d ellipse"
 msgstr[1] "%d ellipses"
 
-#: ../src/develop/imageop.c:3424
+#: ../src/develop/imageop.c:3428
 #, c-format
 msgid "%d path"
 msgid_plural "%d paths"
 msgstr[0] "%d chemin"
 msgstr[1] "%d chemins"
 
-#: ../src/develop/imageop.c:3425
+#: ../src/develop/imageop.c:3429
 #, c-format
 msgid "%d gradient"
 msgid_plural "%d gradients"
 msgstr[0] "%d dégradé"
 msgstr[1] "%d dégradés"
 
-#: ../src/develop/imageop.c:3426
+#: ../src/develop/imageop.c:3430
 #, c-format
 msgid "%d brush"
 msgid_plural "%d brushes"
 msgstr[0] "%d pinceau"
 msgstr[1] "%d pinceaux"
 
-#: ../src/develop/imageop.c:3427
+#: ../src/develop/imageop.c:3431
 #, c-format
 msgid "%d AI object"
 msgid_plural "%d AI objects"
 msgstr[0] "%d objet IA"
 msgstr[1] "%d objets IA"
 
-#: ../src/develop/imageop.c:3429
+#: ../src/develop/imageop.c:3433
 #, c-format
 msgid "%d raster mask"
 msgid_plural "%d raster masks"
 msgstr[0] "%d masque raster"
 msgstr[1] "%d masques raster"
 
-#: ../src/develop/imageop.c:3442
+#: ../src/develop/imageop.c:3446
 #, c-format
 msgid "this module has a mask with %d element (%s)"
 msgid_plural "this module has a mask with %d elements (%s)"
 msgstr[0] "Ce module possède un masque contenant %d élément (%s)"
 msgstr[1] "Ce module possède un masque contenant %d éléments (%s)"
 
-#: ../src/develop/imageop.c:3460
+#: ../src/develop/imageop.c:3464
 #, c-format
 msgid "taken from module %s"
 msgstr "Récupéré depuis le module « %s »"
 
-#: ../src/develop/imageop.c:3551
+#: ../src/develop/imageop.c:3555
 msgid ""
 "mask locked\n"
 "click to unlock"
@@ -13359,16 +13373,16 @@ msgstr ""
 "Masque verrouillé\n"
 "Cliquer pour déverrouiller"
 
-#: ../src/develop/imageop.c:3604
+#: ../src/develop/imageop.c:3608
 msgid "purpose"
 msgstr "Objectif"
 
 #. process button
-#: ../src/develop/imageop.c:3604 ../src/libs/neural_restore.c:4603
+#: ../src/develop/imageop.c:3608 ../src/libs/neural_restore.c:4603
 msgid "process"
 msgstr "Traitement"
 
-#: ../src/develop/imageop.c:3671
+#: ../src/develop/imageop.c:3675
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -13376,7 +13390,7 @@ msgstr ""
 "Réinitialiser les paramètres,\n"
 "Ctrl+clic pour réappliquer les préréglages automatiques."
 
-#: ../src/develop/imageop.c:3901
+#: ../src/develop/imageop.c:3905
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -13384,7 +13398,7 @@ msgstr ""
 "Instances multiples,\n"
 "clic-droit pour créer une nouvelle instance."
 
-#: ../src/develop/imageop.c:3915
+#: ../src/develop/imageop.c:3919
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -13392,15 +13406,15 @@ msgstr ""
 "Préréglages,\n"
 "clic-droit pour appliquer sur une nouvelle instance."
 
-#: ../src/develop/imageop.c:4109 ../src/develop/imageop.c:4131
+#: ../src/develop/imageop.c:4113 ../src/develop/imageop.c:4135
 msgid "ERROR"
 msgstr "ERREUR"
 
-#: ../src/develop/imageop.c:4659
+#: ../src/develop/imageop.c:4663
 msgid "unsupported input"
 msgstr "Entrée non supportée"
 
-#: ../src/develop/imageop.c:4660
+#: ../src/develop/imageop.c:4664
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -13411,25 +13425,25 @@ msgstr ""
 "dans le pipeline où le format de données\n"
 "ne satisfait pas ses prérequis."
 
-#: ../src/develop/imageop.c:4811 ../src/develop/imageop.c:4821
-#: ../src/develop/masks_gui_panel_host.c:272 ../src/gui/accelerators.c:177
+#: ../src/develop/imageop.c:4815 ../src/develop/imageop.c:4825
+#: ../src/develop/masks_gui_panel_host.c:282 ../src/gui/accelerators.c:177
 #: ../src/libs/lib.c:1742 ../src/views/darkroom.c:3380
 msgid "show"
 msgstr "Afficher"
 
-#: ../src/develop/imageop.c:4814 ../src/libs/modulegroups.c:3890
+#: ../src/develop/imageop.c:4818 ../src/libs/modulegroups.c:3890
 #: ../src/libs/modulegroups.c:4021 ../src/libs/modulegroups.c:4412
 #: ../src/libs/tagging.c:3775
 msgid "new"
 msgstr "Nouveau"
 
 # "duplicate" traduit par "cloner" avec une bulle d’explication utilisant le terme de "copie virtuelle", dans le sens que l’image n’est pas physiquement dupliquée
-#: ../src/develop/imageop.c:4817 ../src/libs/duplicate.c:481
+#: ../src/develop/imageop.c:4821 ../src/libs/duplicate.c:481
 #: ../src/libs/image.c:530 ../src/libs/modulegroups.c:4404
 msgid "duplicate"
 msgstr "Cloner"
 
-#: ../src/develop/imageop.c:4822
+#: ../src/develop/imageop.c:4826
 #: ../src/external/lua-scripts/tools/executable_manager.lua:222
 #: ../src/gui/accelerators.c:134 ../src/gui/accelerators.c:148
 #: ../src/gui/gtk.c:6161 ../src/gui/gtk.c:6216 ../src/gui/hist_dialog.c:273
@@ -13439,25 +13453,25 @@ msgstr "Cloner"
 msgid "reset"
 msgstr "Réinitialiser"
 
-#: ../src/develop/imageop.c:4823 ../src/gui/preferences.c:1226
+#: ../src/develop/imageop.c:4827 ../src/gui/preferences.c:1226
 #: ../src/libs/lib.c:1744
 msgid "presets"
 msgstr "Préréglages"
 
 #. global <focused> shortcuts
-#: ../src/develop/imageop.c:4824 ../src/views/darkroom.c:3379
+#: ../src/develop/imageop.c:4828 ../src/views/darkroom.c:3379
 msgid "enable"
 msgstr "Activer"
 
-#: ../src/develop/imageop.c:4825 ../src/gui/accelerators.c:193
+#: ../src/develop/imageop.c:4829 ../src/gui/accelerators.c:193
 msgid "focus"
 msgstr "Focus"
 
-#: ../src/develop/imageop.c:4826 ../src/gui/accelerators.c:3305
+#: ../src/develop/imageop.c:4830 ../src/gui/accelerators.c:3305
 msgid "instance"
 msgstr "Instance"
 
-#: ../src/develop/imageop.c:4846
+#: ../src/develop/imageop.c:4850
 msgid "processing module"
 msgstr "Module de traitement"
 
@@ -14091,7 +14105,7 @@ msgstr "<b>Opacité</b> : Ctrl+molette (%d%%)"
 msgid "no mask"
 msgstr "Aucun masque"
 
-#: ../src/develop/masks_gui_panel_host.c:171
+#: ../src/develop/masks_gui_panel_host.c:181
 msgid ""
 "unavailable: the blend mask panel shows the mask of the focused module, and "
 "no module is focused.\n"
@@ -14110,16 +14124,16 @@ msgstr ""
 #. button's own state is (see _masks_panel_quickbutton_right_click): both
 #. branches below say so, or the blending options stay undiscoverable exactly
 #. when the button looks least worth clicking
-#: ../src/develop/masks_gui_panel_host.c:256
+#: ../src/develop/masks_gui_panel_host.c:266
 msgid "right-click for the blending options"
 msgstr "Clic droit pour afficher les options de fusion"
 
-#: ../src/develop/masks_gui_panel_host.c:262
-#: ../src/develop/masks_gui_panel_host.c:787
+#: ../src/develop/masks_gui_panel_host.c:272
+#: ../src/develop/masks_gui_panel_host.c:933
 msgid "unavailable: the focused module does not support masks"
 msgstr "Indisponible : le module actif ne prend pas en charge les masques"
 
-#: ../src/develop/masks_gui_panel_host.c:271
+#: ../src/develop/masks_gui_panel_host.c:281
 #, c-format
 msgid ""
 "%s the blend mask panel of the focused module\n"
@@ -14130,31 +14144,31 @@ msgstr ""
 "Masque : %s\n"
 "%s"
 
-#: ../src/develop/masks_gui_panel_host.c:272 ../src/libs/tagging.c:3628
+#: ../src/develop/masks_gui_panel_host.c:282 ../src/libs/tagging.c:3628
 msgid "hide"
 msgstr "Cacher"
 
-#: ../src/develop/masks_gui_panel_host.c:329
+#: ../src/develop/masks_gui_panel_host.c:346
 msgid "show the blend mask panel"
 msgstr "Afficher le panneau de masque de fusion"
 
-#: ../src/develop/masks_gui_panel_host.c:330
+#: ../src/develop/masks_gui_panel_host.c:347
 msgid "hide the blend mask panel"
 msgstr "Masquer le panneau de masque de fusion"
 
-#: ../src/develop/masks_gui_panel_host.c:793 ../src/libs/lib.c:1339
+#: ../src/develop/masks_gui_panel_host.c:939 ../src/libs/lib.c:1339
 msgid "show module"
 msgstr "Afficher le module"
 
-#: ../src/develop/masks_gui_panel_host.c:795
+#: ../src/develop/masks_gui_panel_host.c:941
 msgid "reset mask"
 msgstr "Réinitialiser le masque"
 
-#: ../src/develop/masks_gui_panel_host.c:1181
+#: ../src/develop/masks_gui_panel_host.c:1349
 msgid "the focused module does not support masks"
 msgstr "Le module actif ne prend pas en charge les masques"
 
-#: ../src/develop/masks_gui_panel_host.c:1182
+#: ../src/develop/masks_gui_panel_host.c:1350
 msgid ""
 "no module is focused:\n"
 "click a module's header to focus it"
@@ -14162,25 +14176,25 @@ msgstr ""
 "Aucun module n'est activé :\n"
 "cliquez sur l'en-tête d'un module pour le cibler"
 
-#: ../src/develop/masks_gui_panel_host.c:1348
+#: ../src/develop/masks_gui_panel_host.c:1520
 msgid "embedded within each module"
 msgstr "Intégré à chaque module"
 
-#: ../src/develop/masks_gui_panel_host.c:1349
+#: ../src/develop/masks_gui_panel_host.c:1521
 msgid "utility module, left panel"
 msgstr "Module utilitaire, panneau de gauche"
 
 #. one entry, not one per side: it opens on the edge the user last opened
 #. it on
-#: ../src/develop/masks_gui_panel_host.c:1352
+#: ../src/develop/masks_gui_panel_host.c:1524
 msgid "separate panel, beside the canvas"
 msgstr "Panneau séparé, à côté de la zone d’image"
 
-#: ../src/develop/masks_gui_panel_host.c:1357
+#: ../src/develop/masks_gui_panel_host.c:1529
 msgid "panel position"
 msgstr "Position du panneau"
 
-#: ../src/develop/masks_gui_panel_host.c:1358
+#: ../src/develop/masks_gui_panel_host.c:1530
 msgid ""
 "where the blend mask panel (groups, elements,\n"
 "refinements) is shown. a change applies at once"
@@ -14188,11 +14202,11 @@ msgstr ""
 "Emplacement d’affichage du panneau de masque (groupes, éléments et "
 "améliorations). Les modifications sont appliquées immédiatement."
 
-#: ../src/develop/masks_gui_panel_host.c:1374
+#: ../src/develop/masks_gui_panel_host.c:1546
 msgid "always-on panel"
 msgstr "Module toujours activé"
 
-#: ../src/develop/masks_gui_panel_host.c:1375
+#: ../src/develop/masks_gui_panel_host.c:1547
 msgid ""
 "when enabled, the mask panel stays open for every module,\n"
 "with a mask or without, until you fold it away yourself,\n"
@@ -14204,11 +14218,11 @@ msgstr ""
 "et il prend sa place dans le canevas au lieu de flotter au-dessus de lui.\n"
 "masquer le panneau gauche ou droit auquel il est ancré le masque aussi"
 
-#: ../src/develop/masks_gui_panel_host.c:1384
+#: ../src/develop/masks_gui_panel_host.c:1556
 msgid "show the resize handle"
 msgstr "Afficher la poignée de redimensionnement"
 
-#: ../src/develop/masks_gui_panel_host.c:1385
+#: ../src/develop/masks_gui_panel_host.c:1557
 msgid ""
 "when enabled (default), the edge of the mask panel floating\n"
 "over the canvas carries a visible handle with an arrow showing\n"
@@ -14225,11 +14239,11 @@ msgstr ""
 "le panneau peut toujours être redimensionné par glissement et masqué par un "
 "clic."
 
-#: ../src/develop/masks_gui_panel_host.c:1396
+#: ../src/develop/masks_gui_panel_host.c:1568
 msgid "show focused module under header"
 msgstr "Afficher le module actif sous l’en-tête"
 
-#: ../src/develop/masks_gui_panel_host.c:1397
+#: ../src/develop/masks_gui_panel_host.c:1569
 msgid ""
 "when enabled (default), a row under the panel's header\n"
 "names the module whose mask the panel shows, and its\n"
@@ -41560,14 +41574,6 @@ msgstr "Actions de la souris"
 #~ "l’attribut ou multipliée avec la valeur prédéfinie."
 
 #~ msgid ""
-#~ "smoothing of brush strokes\n"
-#~ "stronger smoothing leads to fewer nodes and easier editing but with lower "
-#~ "control of accuracy."
-#~ msgstr ""
-#~ "Définit le niveau de lissage du pinceau. Un lissage plus fort crée\n"
-#~ "moins de nœuds et sera plus facile à éditer, mais sera moins précis."
-
-#~ msgid ""
 #~ "set strength of rebuilding in regions with all photosites clipped.\n"
 #~ "the mask buttons shows the effect that is added to already reconstructed "
 #~ "data."
@@ -41760,9 +41766,6 @@ msgstr "Actions de la souris"
 
 #~ msgid "pen pressure control for brush masks"
 #~ msgstr "Contrôle de la pression du pinceau dans les masques"
-
-#~ msgid "smoothing of brush strokes"
-#~ msgstr "Lissage du pinceau"
 
 #~ msgid "[dual demosaic_cl] internal problem"
 #~ msgstr "[double dématriçage Opencl] problème interne"
