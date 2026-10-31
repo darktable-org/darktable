@@ -21,6 +21,7 @@
 #include "libs/collect.h"
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
+#include "common/collection_navigation.h"
 #include "common/darktable.h"
 #include "common/datetime.h"
 #include "common/debug.h"
@@ -104,6 +105,7 @@ typedef struct dt_lib_collect_t
   gboolean inited;
 
   GtkWidget *history_box;
+  GtkWidget *back, *forward;
 
   GSimpleActionGroup *action_group;
 } dt_lib_collect_t;
@@ -3068,6 +3070,15 @@ static gboolean _fixup_stale_selection(dt_lib_collect_t *d)
     return FALSE;
   }
 
+  // a restored rule may have changed property before the combobox refreshes
+  char itemname[200];
+  snprintf(itemname, sizeof(itemname), "plugins/lighttable/collect/item%1d", active);
+  if(property != dt_conf_get_int(itemname))
+  {
+    g_free(text);
+    return FALSE;
+  }
+
   gchar *folder = _folder_plain_path(text);
   gboolean changed = FALSE;
 
@@ -3492,6 +3503,32 @@ static void _menuitem_mode_change(GSimpleAction *action,
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_NEW_QUERY,
                              DT_COLLECTION_PROP_UNDEF, NULL);
+}
+
+static void _navigation_update(dt_lib_collect_t *d)
+{
+  gtk_widget_set_sensitive(d->back, dt_collection_navigation_available(-1));
+  gtk_widget_set_sensitive(d->forward, dt_collection_navigation_available(1));
+}
+
+static void _navigation_changed(gpointer instance,
+                                 const dt_collection_change_t query_change,
+                                 const dt_collection_properties_t changed_property,
+                                 gpointer imgs, const int next, gpointer self)
+{
+  _navigation_update(((dt_lib_module_t *)self)->data);
+}
+
+static void _navigation_back(GtkWidget *widget, gpointer user_data)
+{
+  dt_collection_navigation_go(-1);
+  _navigation_update(((dt_lib_module_t *)user_data)->data);
+}
+
+static void _navigation_forward(GtkWidget *widget, gpointer user_data)
+{
+  dt_collection_navigation_go(1);
+  _navigation_update(((dt_lib_module_t *)user_data)->data);
 }
 
 static void collection_updated(gpointer instance,
@@ -4315,6 +4352,18 @@ void gui_init(dt_lib_module_t *self)
                                            DT_LIB_COLLECT_COL_VISIBLE);
   g_object_unref(treemodel);
 
+  d->back = dt_action_button_new(self, N_("back"),
+                                 G_CALLBACK(_navigation_back), self,
+                                 _("go back to the previous collection"),
+                                 GDK_KEY_Left, GDK_MOD1_MASK);
+  d->forward = dt_action_button_new(self, N_("forward"),
+                                    G_CALLBACK(_navigation_forward), self,
+                                    _("go forward to the next collection"),
+                                    GDK_KEY_Right, GDK_MOD1_MASK);
+  dt_gui_box_add(self->widget, dt_gui_hbox(d->back, d->forward));
+  dt_collection_navigation_record_current();
+  _navigation_update(d);
+
   // the bottom buttons for the rules
   GtkWidget *btn = dt_action_button_new(self,
                                         N_("history"),
@@ -4364,6 +4413,7 @@ void gui_init(dt_lib_module_t *self)
                                DT_COLLECTION_PROP_MODULE, NULL);
 
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, collection_updated);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _navigation_changed);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_FILMROLLS_CHANGED, filmrolls_updated);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, preferences_changed);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_FILMROLLS_IMPORTED, filmrolls_imported);

@@ -119,6 +119,10 @@ changes (where available).
 
 ## UI/UX Improvements
 
+- Added back and forward navigation in collections, with Alt+Left and
+  Alt+Right shortcuts. Navigation remembers collection rules and thumbnail
+  scroll positions for up to 32 visits during the current session.
+
 - The code has received a large set of changes in preparation of the
   Gtk4 migration.
   - The code for handling popover menus has been changed.
