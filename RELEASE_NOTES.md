@@ -119,6 +119,9 @@ changes (where available).
 
 ## UI/UX Improvements
 
+- Added a "copy original file paths" action for selected images, which
+  copies each original file path to the clipboard once, one per line.
+
 - The code has received a large set of changes in preparation of the
   Gtk4 migration.
   - The code for handling popover menus has been changed.
