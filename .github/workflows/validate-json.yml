@@ -1,0 +1,44 @@
+name: Validate noise profiles and WB presets JSON files
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+        - "!**"
+        - "data/noiseprofiles.json"
+        - "data/wb_presets.json"
+  pull_request:
+    branches:
+      - master
+    paths:
+        - "!**"
+        - "data/noiseprofiles.json"
+        - "data/wb_presets.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  json-verify:
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
+    name: Validate the JSON files for correctness
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: false
+          path: src
+          fetch-depth: 1
+
+      - name: Run check-jsonschema validation
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install python3-check-jsonschema
+          cd src/data
+          for jsonfile in noiseprofiles.json wb_presets.json; do
+            echo "Checking $jsonfile"
+            check-jsonschema --schemafile `basename -s .json $jsonfile`.schema $jsonfile
+            test $? -eq 0 || exit 1
+          done
