@@ -801,6 +801,10 @@ changes (where available).
 - Fixed PPG demosaic with an edge threshold giving different pixels
   along the image edges with OpenCL than on the CPU.
 
+- Fixed the filmic rgb graphs cutting off the curve when target white
+  is above 100% for HDR output: the look and mapping views now scale
+  their y axis to fit the curve and mark 100% display.
+
 ## Lua
 
 ### API Version
