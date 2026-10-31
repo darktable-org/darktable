@@ -1663,7 +1663,7 @@ static inline float calcBlendFactor(float val, float threshold)
     // sigmoid function
     // result is in ]0;1] range
     // inflexion point is at (x, y) (threshold, 0.5)
-    return 1.0f / (1.0f + dt_fast_expf(16.0f - (16.0f / threshold) * val));
+    return 1.0f / (1.0f + dt_fast_expf(16.0f - threshold * val));
 }
 
 __kernel void calc_Y0_mask(global float *mask,
@@ -1678,7 +1678,7 @@ __kernel void calc_Y0_mask(global float *mask,
   const int idx = mad24(row, w, col);
 
   const float4 pt = wb * fmax(0.0f, Areadpixel(in, col, row));
-  mask[idx] = dtcl_sqrt((pt.x + pt.y + pt.z) / 3.0f);
+  mask[idx] = dtcl_sqrt(fp32_div(pt.x + pt.y + pt.z, 3.0f));
 }
 
 __kernel void calc_scharr_mask(global float *in, global float *out, const int w, const int height)
