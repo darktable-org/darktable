@@ -1231,7 +1231,7 @@ gchar *dt_str_unmnemonic(const char *string)
 gboolean dt_str_commasubstring(const char *list,
                                const char *search)
 {
-  if(search == NULL)
+  if(list == NULL || search == NULL)
     return FALSE;
 
   gchar *nlist = g_strdup(list);
