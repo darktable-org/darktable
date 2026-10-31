@@ -801,6 +801,10 @@ changes (where available).
 - Fixed PPG demosaic with an edge threshold giving different pixels
   along the image edges with OpenCL than on the CPU.
 
+- Fixed occasional magenta pixels on the CPU in red areas blended with
+  the chromaticity, hue, color or HSV blend modes in display RGB, where
+  OpenCL gave the right color.
+
 ## Lua
 
 ### API Version

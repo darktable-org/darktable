@@ -623,8 +623,10 @@ static inline float _dt_RGB_2_Hue(const dt_aligned_pixel_t RGB, const float max,
 
   hue /= 6.0f;
 
-  // restrict to [0, 1), handling hue < 0 and hue >= 1
-  return hue - floorf(hue);
+  // restrict to [0, 1), handling hue < 0 and hue >= 1. A hue just below 0
+  // rounds to 1.0f, which _dt_Hue_2_RGB() would take as a seventh sector
+  const float h = hue - floorf(hue);
+  return h < 1.0f ? h : 0.0f;
 }
 
 DT_OMP_DECLARE_SIMD(aligned(RGB: 16))
