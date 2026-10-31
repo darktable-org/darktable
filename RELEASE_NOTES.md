@@ -804,6 +804,10 @@ changes (where available).
 - Fixed PPG demosaic with an edge threshold giving different pixels
   along the image edges with OpenCL than on the CPU.
 
+- Fixed the RGB curve and tone curve modules giving brighter or darker
+  tones with OpenCL than on the CPU above a curve's last node, when that
+  node is left of the right edge.
+
 - Fixed occasional magenta pixels on the CPU in red areas blended with
   the chromaticity, hue, color or HSV blend modes in display RGB, where
   OpenCL gave the right color.

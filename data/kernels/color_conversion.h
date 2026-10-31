@@ -93,6 +93,25 @@ static inline float lookup_unbounded(read_only image2d_t lut, const float x, con
   else return x;
 }
 
+// lookup_unbounded() for curves whose CPU path switches to the
+// extrapolation at the curve's last node, 1 / a[0], as rgbcurve and
+// tonecurve do. lookup_unbounded() switches at 1, which reads the table
+// between a last node left of 1 and 1, where it is flat.
+static inline float lookup_unbounded_last_node(read_only image2d_t lut, const float x, constant const float *const a)
+{
+  if(a[0] >= 0.0f)
+  {
+    if(x < 1.0f / a[0])
+    {
+      const int xi = clamp((int)(x * 0x10000ul), 0, 0xffff);
+      const int2 p = (int2)((xi & 0xff), (xi >> 8));
+      return read_imagef(lut, sampleri, p).x;
+    }
+    else return a[1] * dtcl_pow(x*a[0], a[2]);
+  }
+  else return x;
+}
+
 static inline float4 apply_trc_in(const float4 rgb_in,
                                   constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
                                   read_only image2d_t lut)
