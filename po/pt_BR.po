@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-30 22:41-0300\n"
-"PO-Revision-Date: 2026-10-30 22:47-0300\n"
+"POT-Creation-Date: 2026-10-31 08:03-0300\n"
+"PO-Revision-Date: 2026-10-31 08:03-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -404,6 +404,20 @@ msgstr "média"
 msgctxt "preferences"
 msgid "high"
 msgstr "alta"
+
+#: ../build/bin/conf_gen.h:2082
+msgid "smoothing of brush strokes"
+msgstr "suavização de pinceladas"
+
+#: ../build/bin/conf_gen.h:2083
+msgid ""
+"sets level for smoothing of brush strokes.\n"
+"stronger smoothing leads to less nodes and easier editing but with lower "
+"control of accuracy."
+msgstr ""
+"determina o nível de suavização de pinceladas\n"
+"suavização mais forte leva a menos nós e edição mais fácil mas com menor "
+"controle de acurácia."
 
 #: ../build/bin/conf_gen.h:2108
 msgctxt "preferences"
@@ -880,12 +894,16 @@ msgid ""
 "<b>screen (smooth union)</b>, used here, lets the feathered edges of "
 "overlapping shapes blend smoothly"
 msgstr ""
+"<b>tela (união suave)</b>, usaa aqui, deixa as bordas enevoadas das formas "
+"que se sobrepõem mesclarem-se suavemente"
 
 #: ../build/bin/masks_group_presets_strings.h:6
 msgid ""
 "<b>screen</b> and <b>product</b>, the smooth variants, make smoother "
 "transitions between feathered areas"
 msgstr ""
+"<b>tela</b> e <b>produto</b>, as variantes suaves, fazem transições mais "
+"suaves entre áreas enevoadas"
 
 #: ../build/bin/masks_group_presets_strings.h:7
 msgid ""
@@ -1763,7 +1781,6 @@ msgid "auto-apply pixel workflow defaults"
 msgstr "auto-aplicar padrões do fluxo de trabalho"
 
 #: ../build/bin/preferences_gen.h:3616
-#, fuzzy
 msgid ""
 "selects which workflow will be used by default in the darkroom\n"
 "\n"
@@ -1790,6 +1807,9 @@ msgstr ""
 "\n"
 "<b>relativo à cena (AgX)</b> fluxo moderno, máximo controle de mapeamento de "
 "tons\n"
+"\n"
+"<b>relativo à cena (spektrafilm)</b> fluxo moderno, o mapeamento de tons é "
+"feito por filme simulado\n"
 "\n"
 "<b>relativo à exibição (legado)</b> fluxo legado (não recomendado)\n"
 "\n"
@@ -4623,9 +4643,8 @@ msgstr "forte"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:75
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:160
-#, fuzzy
 msgid "coarse details"
-msgstr "detalhes da captura da foto"
+msgstr "detalhes grossos"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:81
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:164
@@ -4645,9 +4664,8 @@ msgstr "nível de detalhes"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:99
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:176
-#, fuzzy
 msgid "halo control"
-msgstr "controle da câmera"
+msgstr "controle halo"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:105
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:180
@@ -6625,7 +6643,7 @@ msgstr "preto percentil"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1248
 msgid "glimmerglass"
-msgstr ""
+msgstr "glimmerglass"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1249
 msgid "pro-mist"
@@ -7057,7 +7075,7 @@ msgstr "nota: arquivo de entrada ou diretório '%s' não existe, ignorando\n"
 #: ../src/cli/main.c:401
 #, c-format
 msgid "empty in-memory library is useless for darktable cli export\n"
-msgstr ""
+msgstr "biblioteca em-memória vazia é inútil para exportação cli darktable\n"
 
 #: ../src/cli/main.c:414
 #, c-format
@@ -8894,6 +8912,8 @@ msgstr ""
 #: ../src/common/image.c:3400
 msgid "cannot remove local copy: its raster masks could not be merged back"
 msgstr ""
+"não é possível remover cópia local: sua máscara raster não pode ser mesclada "
+"de volta"
 
 #: ../src/common/image.c:3569
 #, c-format
@@ -9140,6 +9160,8 @@ msgid ""
 "no valid OpenCL platform found.\n"
 "check your OpenCL ICD loader (ocl-icd)"
 msgstr ""
+"nenhuma plataforma OpenCL foi encontrada.\n"
+"verifique seu carregador OpenCL ICD (ocl-icd)"
 
 #: ../src/common/opencl.c:1417
 msgid "no devices found for unknown platform"
@@ -9519,6 +9541,8 @@ msgstr "balanço de branco automático"
 #: ../src/common/wb_presets.c:305
 msgid "error in WB presets file, continuing without presets"
 msgstr ""
+"erro no arquivo de pré-definição de balanço de branco, continuando sem as "
+"pré-definições"
 
 #: ../src/control/control.c:67 ../src/gui/accelerators.c:164
 #: ../src/views/darkroom.c:2915
@@ -10946,7 +10970,7 @@ msgstr "opções do elemento pramétrico"
 
 #: ../src/develop/blend_gui.c:2868
 msgid "how parametric elements are picked and previewed"
-msgstr ""
+msgstr "como elementos paramétricos são selecionados e pré-visualizados"
 
 #: ../src/develop/blend_gui.c:2871
 msgid "reuse the last picked area"
@@ -11014,6 +11038,8 @@ msgid ""
 "the colorspace the mask is blended in.\n"
 "parametric elements are tied to it"
 msgstr ""
+"o espaço de cores no qual a máscara é mesclada.\n"
+"os elementos paramétricos são vinculados a ele"
 
 #: ../src/develop/blend_gui.c:3353 ../src/develop/blend_gui.c:3420
 #: ../src/develop/blend_gui.c:18254 ../src/iop/tonecurve.c:1282
@@ -11022,7 +11048,7 @@ msgstr "L"
 
 #: ../src/develop/blend_gui.c:3353
 msgid "add a parametric element selecting by lightness (L)"
-msgstr ""
+msgstr "adicionar um elemento paramétrico selecionado por luminosidade (L)"
 
 #: ../src/develop/blend_gui.c:3358 ../src/develop/blend_gui.c:18254
 #: ../src/iop/tonecurve.c:1283
@@ -11031,7 +11057,7 @@ msgstr "a"
 
 #: ../src/develop/blend_gui.c:3358
 msgid "add a parametric element selecting by green/red (a)"
-msgstr ""
+msgstr "adicionar um elemento paramétrico selecionado por verde/vermelho (a)"
 
 #: ../src/develop/blend_gui.c:3362
 msgid "green/red"
@@ -11044,7 +11070,7 @@ msgstr "b"
 
 #: ../src/develop/blend_gui.c:3363
 msgid "add a parametric element selecting by blue/yellow (b)"
-msgstr ""
+msgstr "adicionar um elemento paramétrico selecionado por azul/amarelo (b)"
 
 #: ../src/develop/blend_gui.c:3367
 msgid "blue/yellow"
@@ -11056,7 +11082,7 @@ msgstr "C"
 
 #: ../src/develop/blend_gui.c:3368
 msgid "add a parametric element selecting by saturation (C)"
-msgstr ""
+msgstr "adicionar um elemento paramétrico selecionado por saturação (C)"
 
 #: ../src/develop/blend_gui.c:3374 ../src/develop/blend_gui.c:18254
 msgid "h"
@@ -11064,7 +11090,7 @@ msgstr "h"
 
 #: ../src/develop/blend_gui.c:3374
 msgid "add a parametric element selecting by hue (h)"
-msgstr ""
+msgstr "adicionar um elemento paramétrico selecionado por matiz (h)"
 
 #: ../src/develop/blend_gui.c:3382 ../src/develop/blend_gui.c:3430
 #: ../src/develop/blend_gui.c:18255
@@ -11073,7 +11099,7 @@ msgstr "g"
 
 #: ../src/develop/blend_gui.c:3382 ../src/develop/blend_gui.c:3430
 msgid "add a parametric element selecting by gray (g)"
-msgstr ""
+msgstr "adicionar um elemento paramétrico selecionado por cinza (g)"
 
 #: ../src/develop/blend_gui.c:3388 ../src/develop/blend_gui.c:3436
 #: ../src/develop/blend_gui.c:18255 ../src/iop/channelmixerrgb.c:4634
@@ -11085,7 +11111,7 @@ msgstr "R"
 
 #: ../src/develop/blend_gui.c:3388 ../src/develop/blend_gui.c:3436
 msgid "add a parametric element selecting by red (R)"
-msgstr ""
+msgstr "adicionar um elemento paramétrico selecionado por vermelho (R)"
 
 #: ../src/develop/blend_gui.c:3394 ../src/develop/blend_gui.c:3442
 #: ../src/develop/blend_gui.c:18255 ../src/iop/channelmixerrgb.c:4635
@@ -11097,7 +11123,7 @@ msgstr "G"
 
 #: ../src/develop/blend_gui.c:3394 ../src/develop/blend_gui.c:3442
 msgid "add a parametric element selecting by green (G)"
-msgstr ""
+msgstr "adicionar um elemento paramétrico selecionado por verde (G)"
 
 #: ../src/develop/blend_gui.c:3400 ../src/develop/blend_gui.c:3448
 #: ../src/develop/blend_gui.c:18255 ../src/iop/channelmixerrgb.c:4636
@@ -11109,7 +11135,7 @@ msgstr "B"
 
 #: ../src/develop/blend_gui.c:3400 ../src/develop/blend_gui.c:3448
 msgid "add a parametric element selecting by blue (B)"
-msgstr ""
+msgstr "adicionar um elemento paramétrico selecionado por  azul (B)"
 
 #: ../src/develop/blend_gui.c:3406 ../src/develop/blend_gui.c:18255
 msgid "H"
@@ -11117,7 +11143,7 @@ msgstr "H"
 
 #: ../src/develop/blend_gui.c:3406
 msgid "add a parametric element selecting by hue (H)"
-msgstr ""
+msgstr "adicionar um elemento paramétrico selecionado por matiz (H)"
 
 #: ../src/develop/blend_gui.c:3413 ../src/develop/blend_gui.c:18255
 msgid "S"
@@ -11125,11 +11151,11 @@ msgstr "S"
 
 #: ../src/develop/blend_gui.c:3413
 msgid "add a parametric element selecting by chroma (S)"
-msgstr ""
+msgstr "adicionar um elemento paramétrico selecionado por croma (S)"
 
 #: ../src/develop/blend_gui.c:3420
 msgid "add a parametric element selecting by luminance (L)"
-msgstr ""
+msgstr "adicionar um elemento paramétrico selecionado por luminância (L)"
 
 #: ../src/develop/blend_gui.c:3454 ../src/develop/blend_gui.c:18256
 msgid "Jz"
@@ -11137,7 +11163,7 @@ msgstr "Jz"
 
 #: ../src/develop/blend_gui.c:3454
 msgid "add a parametric element selecting by luminance (Jz)"
-msgstr ""
+msgstr "adicionar um elemento paramétrico selecionado por luminância (Jz)"
 
 #: ../src/develop/blend_gui.c:3461 ../src/develop/blend_gui.c:18256
 msgid "Cz"
@@ -11145,7 +11171,7 @@ msgstr "Cz"
 
 #: ../src/develop/blend_gui.c:3461
 msgid "add a parametric element selecting by chroma (Cz)"
-msgstr ""
+msgstr "adicionar um elemento paramétrico selecionado por croma (Cz)"
 
 #: ../src/develop/blend_gui.c:3468 ../src/develop/blend_gui.c:18256
 msgid "hz"
@@ -11153,7 +11179,7 @@ msgstr "hz"
 
 #: ../src/develop/blend_gui.c:3468
 msgid "add a parametric element selecting by hue (hz)"
-msgstr ""
+msgstr "adicionar um elemento paramétrico selecionado por matiz (hz)"
 
 #: ../src/develop/blend_gui.c:3493
 msgid ""
@@ -11183,7 +11209,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:3515
 msgid "press 'a' to toggle display modes"
-msgstr ""
+msgstr "pressione 'a' para alternar modos de display"
 
 #: ../src/develop/blend_gui.c:3948
 #, c-format
