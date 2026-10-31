@@ -75,6 +75,7 @@ static inline dt_develop_blend_colorspace_t _blend_default_module_blend_colorspa
       case IOP_CS_LAB:
       case IOP_CS_LCH:
         return DEVELOP_BLEND_CS_LAB;
+      case IOP_CS_XYZ:
       case IOP_CS_RGB:
         return is_scene_referred
           ? DEVELOP_BLEND_CS_RGB_SCENE

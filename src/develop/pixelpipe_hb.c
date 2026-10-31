@@ -1209,7 +1209,7 @@ static void _pixelpipe_picker(dt_iop_module_t *module,
                     : "",
                   box[0], box[1], box[2], box[3]);
 
-    dt_color_picker_helper(dsc, pixel, roi, box,
+    dt_color_picker_helper(module, dsc, pixel, roi, box,
                            darktable.lib->proxy.colorpicker.primary_sample->denoise,
                            pick, image_cst,
                            dt_iop_color_picker_get_active_cst(module),
@@ -1321,7 +1321,7 @@ static void _pixelpipe_picker_cl(const int devid,
 
   lib_colorpicker_stats pick;
 
-  dt_color_picker_helper(dsc, pixel, &roi_copy, box,
+  dt_color_picker_helper(module, dsc, pixel, &roi_copy, box,
                          darktable.lib->proxy.colorpicker.primary_sample->denoise,
                          pick, image_cst,
                          dt_iop_color_picker_get_active_cst(module),
@@ -1380,7 +1380,7 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
                       : "",
                     box[0], box[1], box[2], box[3]);
 
-      dt_color_picker_helper(dsc, input, roi_in, box, sample->denoise,
+      dt_color_picker_helper(module, dsc, input, roi_in, box, sample->denoise,
                              sample->display,
                              IOP_CS_RGB, IOP_CS_RGB, display_profile);
 

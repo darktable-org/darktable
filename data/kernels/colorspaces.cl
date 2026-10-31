@@ -67,6 +67,81 @@ colorspaces_transform_rgb_matrix_to_lab(read_only image2d_t in,
 }
 
 kernel void
+colorspaces_transform_xyz_to_rgb_matrix(read_only image2d_t in,
+                                        write_only image2d_t out,
+                                        const int width,
+                                        const int height,
+                                        constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                        read_only image2d_t lut)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = Areadpixel(in, x, y);
+  pixel = matrix_product(pixel, profile_info->matrix_out);
+
+  if(profile_info->nonlinearlut || profile_info->hdr_transfer)
+    pixel = apply_trc_out(pixel, profile_info, lut);
+
+  write_imagef(out, (int2)(x, y), pixel);
+}
+
+kernel void
+colorspaces_transform_rgb_matrix_to_xyz(read_only image2d_t in,
+                                        write_only image2d_t out,
+                                        const int width,
+                                        const int height,
+                                        constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                        read_only image2d_t lut)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = Areadpixel(in, x, y);
+
+  if(profile_info->nonlinearlut || profile_info->hdr_transfer)
+    pixel = apply_trc_in(pixel, profile_info, lut);
+
+  pixel = matrix_product(pixel, profile_info->matrix_in);
+
+  write_imagef(out, (int2)(x, y), pixel);
+}
+
+kernel void
+colorspaces_transform_xyz_to_lab(read_only image2d_t in,
+                                  write_only image2d_t out,
+                                  const int width,
+                                  const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  float4 pixel = Areadpixel(in, x, y);
+  pixel.xyz = XYZ_to_Lab(pixel).xyz;
+  write_imagef(out, (int2)(x, y), pixel);
+}
+
+kernel void
+colorspaces_transform_lab_to_xyz(read_only image2d_t in,
+                                  write_only image2d_t out,
+                                  const int width,
+                                  const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  float4 pixel = Areadpixel(in, x, y);
+  pixel.xyz = Lab_to_XYZ(pixel).xyz;
+  write_imagef(out, (int2)(x, y), pixel);
+}
+
+kernel void
 colorspaces_transform_rgb_matrix_to_rgb(read_only image2d_t in,
                                         write_only image2d_t out,
                                         const int width,

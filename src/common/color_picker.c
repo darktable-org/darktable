@@ -21,6 +21,7 @@
 #include "common/darktable.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/iop_profile.h"
+#include "common/imagebuf.h"
 #include "develop/format.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -453,7 +454,8 @@ gboolean dt_color_picker_box(dt_iop_module_t *module,
   return (box[2] - box[0] < 1) || (box[3] - box[1] < 1);
 }
 
-void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
+void dt_color_picker_helper(dt_iop_module_t *module,
+                            const dt_iop_buffer_dsc_t *dsc,
                             const float *const pixel,
                             const dt_iop_roi_t *roi,
                             const int *const box,
@@ -502,36 +504,75 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
     }
 
     // 4-channel raw images are monochrome, can be read as RGB
-    const dt_iop_colorspace_type_t effective_cst =
+    dt_iop_colorspace_type_t effective_cst =
       image_cst == IOP_CS_RAW ? IOP_CS_RGB : image_cst;
+
+    float *converted = NULL;
+    dt_iop_roi_t sample_roi = *roi;
+    int sample_box[4] = { box[0], box[1], box[2], box[3] };
+    if((effective_cst == IOP_CS_XYZ || picker_cst == IOP_CS_XYZ)
+       && picker_cst != IOP_CS_NONE && picker_cst != effective_cst)
+    {
+      const dt_iop_colorspace_type_t target = picker_cst == IOP_CS_LCH ? IOP_CS_LAB
+        : (picker_cst == IOP_CS_HSL || picker_cst == IOP_CS_JZCZHZ) ? IOP_CS_RGB
+        : picker_cst;
+      const int width = box[2] - box[0];
+      const int height = box[3] - box[1];
+      converted = dt_alloc_align_float((size_t)4 * width * height);
+      if(!converted)
+      {
+        dt_free_align(denoised);
+        return;
+      }
+
+      // convert individual pixels before reducing statistics, only inside the picked area
+      for(int y = 0; y < height; y++)
+        dt_iop_image_copy(converted + (size_t)4 * y * width,
+                           source + (size_t)4 * ((y + box[1]) * roi->width + box[0]),
+                           (size_t)4 * width);
+      dt_ioppr_transform_image_colorspace(module, converted, converted, width, height,
+                                          effective_cst, target, &effective_cst, profile);
+      if(effective_cst != target)
+      {
+        dt_free_align(converted);
+        dt_free_align(denoised);
+        return;
+      }
+      source = converted;
+      sample_roi.width = width;
+      sample_roi.height = height;
+      sample_box[0] = sample_box[1] = 0;
+      sample_box[2] = width;
+      sample_box[3] = height;
+    }
 
     if(effective_cst == IOP_CS_LAB && picker_cst == IOP_CS_LCH)
     {
       // blending for Lab modules (e.g. color zones and tone curve)
-      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_lch, 10);
+      _color_picker_work_4ch(source, &sample_roi, sample_box, pick, NULL, _color_picker_lch, 10);
     }
     else if(effective_cst == IOP_CS_RGB && picker_cst == IOP_CS_HSL)
     {
       // display-referred blending for RGB modules
-      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_hsl, 10);
+      _color_picker_work_4ch(source, &sample_roi, sample_box, pick, NULL, _color_picker_hsl, 10);
     }
     else if(effective_cst == IOP_CS_RGB && picker_cst == IOP_CS_JZCZHZ)
     {
       // scene-referred blending for RGB modules
       if(profile && !dt_is_valid_colormatrix(profile->matrix_in[0][0]))
-        _color_picker_nomat(source, roi, box, pick, profile);
+        _color_picker_nomat(source, &sample_roi, sample_box, pick, profile);
       else
-        _color_picker_work_4ch(source, roi, box, pick, profile, _color_picker_jzczhz, 10);
+        _color_picker_work_4ch(source, &sample_roi, sample_box, pick, profile, _color_picker_jzczhz, 10);
     }
     else if(effective_cst == picker_cst)
     {
       // most iop pickers and the global picker
-      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 100);
+      _color_picker_work_4ch(source, &sample_roi, sample_box, pick, NULL, _color_picker_rgb_or_lab, 100);
     }
     else if(picker_cst == IOP_CS_NONE)
     {
       // temperature IOP when correcting non-RAW
-      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 100);
+      _color_picker_work_4ch(source, &sample_roi, sample_box, pick, NULL, _color_picker_rgb_or_lab, 100);
     }
     else
     {
@@ -539,9 +580,10 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
       dt_print(DT_DEBUG_ALWAYS,
                "[colorpicker] unknown colorspace conversion from %s to %s",
                dt_iop_colorspace_to_name(image_cst), dt_iop_colorspace_to_name(picker_cst));
-      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 100);
+      _color_picker_work_4ch(source, &sample_roi, sample_box, pick, NULL, _color_picker_rgb_or_lab, 100);
     }
 
+    dt_free_align(converted);
     dt_free_align(denoised);
   }
   else if(dsc->channels == 1u && dsc->filters != 0u && dsc->filters != 9u)

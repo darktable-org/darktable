@@ -170,6 +170,9 @@ void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *pr
 gchar *dt_ioppr_get_location_tooltip(const char *subdir, const char *for_name);
 
 /** transforms image from cst_from to cst_to colorspace using profile_info */
+/** convert RGB, D50 Lab, or D50 XYZ (reference white Y = 1), preserving alpha
+ * RGB conversions use profile_info; XYZ/Lab conversions also work without it
+ */
 void dt_ioppr_transform_image_colorspace
   (struct dt_iop_module_t *self,
    const float *const image_in,
@@ -196,6 +199,10 @@ typedef struct dt_colorspaces_cl_global_t
   int kernel_colorspaces_transform_lab_to_rgb_matrix;
   int kernel_colorspaces_transform_rgb_matrix_to_lab;
   int kernel_colorspaces_transform_rgb_matrix_to_rgb;
+  int kernel_colorspaces_transform_rgb_matrix_to_xyz;
+  int kernel_colorspaces_transform_xyz_to_rgb_matrix;
+  int kernel_colorspaces_transform_xyz_to_lab;
+  int kernel_colorspaces_transform_lab_to_xyz;
   int kernel_colorspaces_gamma;
 } dt_colorspaces_cl_global_t;
 

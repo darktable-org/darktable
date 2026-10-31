@@ -236,6 +236,12 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
                      _bin_rgb, profile_info);
       break;
 
+    case IOP_CS_XYZ:
+      histogram_stats->ch = 3u;
+      _hist_worker(histogram_params, histogram_stats, pixel, histogram,
+                   _bin_rgb, profile_info);
+      break;
+
     case IOP_CS_LAB:
       histogram_stats->ch = 3u;
       if(cst_to != IOP_CS_LCH)
