@@ -1472,6 +1472,23 @@ void dtgtk_cairo_paint_logarithmic_scale(cairo_t *cr, const gint x, const gint y
   FINISH
 }
 
+void dtgtk_cairo_paint_hdr_scale(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  // reference white
+  cairo_move_to(cr, 0.0, 0.55);
+  cairo_line_to(cr, 1.0, 0.55);
+  cairo_stroke(cr);
+
+  // tone curve with highlights going past it
+  cairo_move_to(cr, 0.0, 1.0);
+  cairo_curve_to(cr, 0.45, 1.0, 0.6, 0.55, 1.0, 0.0);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_waveform_overlaid(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)

@@ -19,6 +19,8 @@
 
 #include "common/darktable.h"
 #include "common/color_picker.h"
+#include "common/hdr-transfer.h"
+#include "common/iop_profile.h"
 #include "gui/accelerators.h"
 #include "scopes.h"
 #include "scopes/vectorscope.h"
@@ -76,6 +78,16 @@ gboolean expandable(dt_lib_module_t *self)
 int position(const dt_lib_module_t *self)
 {
   return 1000;
+}
+
+// stored in conf, so not translated
+static const gchar *_hdr_scale_names[DT_SCOPES_HDR_N] = { "SDR", "PQ", "HLG" };
+
+static gboolean _hdr_scale_available(const dt_scopes_t *const s)
+{
+  return s->cur_mode == &s->modes[DT_SCOPES_MODE_WAVEFORM]
+    || s->cur_mode == &s->modes[DT_SCOPES_MODE_PARADE]
+    || s->cur_mode == &s->modes[DT_SCOPES_MODE_HISTOGRAM];
 }
 
 static void _scope_process
@@ -178,12 +190,27 @@ static void _scope_process
     dt_ioppr_add_profile_info_to_list(darktable.develop,
       DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC);
 
-  const dt_iop_order_iccprofile_info_t *profile_info_out = !profile_info_to ? fallback : profile_info_to;
+  // an HDR scale shows what a PQ or HLG Rec2020 export would encode, so
+  // it ignores the histogram profile; the vectorscope (and so split) keeps it
+  const dt_scopes_hdr_scale_t hdr =
+    _hdr_scale_available(s) ? s->hdr_scale : DT_SCOPES_HDR_NONE;
+
+  const dt_iop_order_iccprofile_info_t *profile_info_out =
+    !profile_info_to || hdr ? fallback : profile_info_to;
 
   dt_ioppr_transform_image_colorspace_rgb(input, img_display, width, height,
                                             profile_info_from, profile_info_out,
                                             "final histogram");
+  if(hdr)
+  {
+    const int transfer = hdr == DT_SCOPES_HDR_PQ ? DT_HDR_PQ : DT_HDR_HLG_REC2020;
+    DT_OMP_FOR()
+    for(size_t k = 0; k < (size_t)4 * width * height; k += 4)
+      dt_hdr_encode(img_display + k, transfer);
+  }
+
   dt_pthread_mutex_lock(&s->lock);
+  s->hdr_active = hdr;
 
   s->update_counter++;
   // if using a non-rgb profile_info_out as in cmyk softproofing we pass
@@ -211,6 +238,68 @@ void lib_histogram_draw_bkgd(const dt_scopes_mode_t *const self,
   set_color(cr, darktable.bauhaus->graph_bg);
   cairo_fill(cr);
   cairo_restore(cr);
+}
+
+void lib_histogram_draw_hdr_grid(cairo_t *cr,
+                                 const int width,
+                                 const int height,
+                                 const gboolean values_on_y,
+                                 const dt_scopes_hdr_scale_t scale)
+{
+  // PQ is labeled in nits, as on HDR grading scopes. HLG is relative to
+  // the display peak, so it is labeled in percent of signal; BT.2408 puts
+  // reference white at 203 nits in PQ and at 75% signal in HLG
+  static const float pq_nits[] = { 1.f, 10.f, 100.f, DT_HDR_REFERENCE_WHITE_NITS,
+                                   1000.f, 4000.f };
+  static const float hlg_signal[] = { 0.25f, 0.5f, 0.75f };
+  const gboolean pq = scale == DT_SCOPES_HDR_PQ;
+  const int num = pq ? sizeof(pq_nits) / sizeof(pq_nits[0])
+                     : sizeof(hlg_signal) / sizeof(hlg_signal[0]);
+  const double dashes = 4.0;
+
+  PangoFontDescription *desc = dt_gui_get_font();
+  pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(9) * PANGO_SCALE);
+  PangoLayout *layout = pango_cairo_create_layout(cr);
+  pango_layout_set_font_description(layout, desc);
+
+  cairo_save(cr);
+  const double wd = cairo_get_line_width(cr);
+  for(int k = 0; k < num; k++)
+  {
+    const float pos = pq ? dt_hdr_pq_encode(pq_nits[k] / DT_HDR_REFERENCE_WHITE_NITS)
+                         : hlg_signal[k];
+    const gboolean white = pq ? pq_nits[k] == DT_HDR_REFERENCE_WHITE_NITS
+                              : hlg_signal[k] == 0.75f;
+    cairo_set_dash(cr, &dashes, white, 0);
+    cairo_set_line_width(cr, white ? wd * 3 : wd);
+    if(values_on_y)
+      dt_draw_line(cr, 0, (1.f - pos) * height, width, (1.f - pos) * height);
+    else
+      dt_draw_line(cr, pos * width, 0, pos * width, height);
+    cairo_stroke(cr);
+
+    char text[16];
+    if(pq)
+      snprintf(text, sizeof(text), "%.0f", pq_nits[k]);
+    else
+      snprintf(text, sizeof(text), "%.0f%%", 100.f * hlg_signal[k]);
+    PangoRectangle ink;
+    pango_layout_set_text(layout, text, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    const int pad = DT_PIXEL_APPLY_DPI(2);
+    cairo_save(cr);
+    set_color(cr, darktable.bauhaus->graph_fg);
+    if(values_on_y)
+      cairo_move_to(cr, pad - ink.x, (1.f - pos) * height - ink.height - ink.y - pad);
+    else
+      cairo_move_to(cr, pos * width + pad - ink.x, pad - ink.y);
+    pango_cairo_show_layout(cr, layout);
+    cairo_restore(cr);
+  }
+  cairo_restore(cr);
+
+  pango_font_description_free(desc);
+  g_object_unref(layout);
 }
 
 // FIXME: have different drawable for each scope in a stack --
@@ -412,6 +501,61 @@ static void _drawable_leave(GtkEventControllerMotion *controller,
   }
 }
 
+static void _hdr_scale_update_button(const dt_scopes_t *const s)
+{
+  static const char *tips[DT_SCOPES_HDR_N] =
+    { N_("SDR scale\nclick for an HDR scale showing a PQ signal,\n"
+         "from 0 to 10000 nits with 203 nits as reference white"),
+      N_("HDR scale: PQ signal, from 0 to 10000 nits\n"
+         "click for an HDR scale showing an HLG signal"),
+      N_("HDR scale: HLG signal, in percent of the display peak,\n"
+         "with reference white at 75 percent\nclick for the SDR scale") };
+  gtk_widget_set_tooltip_text(s->hdr_button, _(tips[s->hdr_scale]));
+  // the button is shown pressed while an HDR scale is on
+  g_signal_handlers_block_matched(s->hdr_button, G_SIGNAL_MATCH_DATA,
+                                  0, 0, NULL, NULL, (gpointer)s);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->hdr_button),
+                               s->hdr_scale != DT_SCOPES_HDR_NONE);
+  g_signal_handlers_unblock_matched(s->hdr_button, G_SIGNAL_MATCH_DATA,
+                                    0, 0, NULL, NULL, (gpointer)s);
+}
+
+// the transfer last handed to the preview pipe
+static int _pipe_hdr_transfer = DT_HDR_NONE;
+
+// the preview pipe is tone mapped for the headroom of the HDR scale shown,
+// so returns TRUE when that changed and the preview has to be reprocessed
+static gboolean _hdr_scale_set_pipe(const dt_scopes_t *const s)
+{
+  const dt_scopes_hdr_scale_t hdr =
+    _hdr_scale_available(s) ? s->hdr_scale : DT_SCOPES_HDR_NONE;
+  const int transfer = hdr == DT_SCOPES_HDR_PQ ? DT_HDR_PQ
+                     : hdr == DT_SCOPES_HDR_HLG ? DT_HDR_HLG_REC2020
+                     : DT_HDR_NONE;
+  if(transfer == _pipe_hdr_transfer) return FALSE;
+  _pipe_hdr_transfer = transfer;
+  dt_ioppr_set_scopes_hdr_transfer(transfer);
+  return TRUE;
+}
+
+static void _hdr_scale_toggle(GtkWidget *button,
+                              dt_scopes_t *s)
+{
+  dt_pthread_mutex_lock(&s->lock);
+  s->hdr_scale = (s->hdr_scale + 1) % DT_SCOPES_HDR_N;
+  // the data on hand was binned for the other scale, so don't draw it
+  s->update_counter++;
+  dt_pthread_mutex_unlock(&s->lock);
+  dt_conf_set_string("plugins/darkroom/histogram/hdr_scale",
+                     _hdr_scale_names[s->hdr_scale]);
+  _hdr_scale_update_button(s);
+  dt_scopes_refresh(s);
+  if(_hdr_scale_set_pipe(s) && dt_view_get_current() == DT_VIEW_DARKROOM)
+    dt_dev_reprocess_preview(darktable.develop, 0);
+  else
+    dt_scopes_reprocess();
+}
+
 static void _mode_toggle(GtkWidget *button, dt_scopes_t *s)
 {
   // create radio-button-like behavior for choosing scope modes with a
@@ -450,6 +594,7 @@ static void _mode_toggle(GtkWidget *button, dt_scopes_t *s)
   dt_scopes_call(prior_mode, mode_leave);
   gtk_widget_set_visible(s->button_box_rgb,
                          dt_scopes_func_exists(s->cur_mode, draw_scope_channels));
+  gtk_widget_set_visible(s->hdr_button, _hdr_scale_available(s));
   dt_scopes_call(s->cur_mode, update_buttons);
   dt_scopes_call(s->cur_mode, mode_enter);
 
@@ -457,7 +602,9 @@ static void _mode_toggle(GtkWidget *button, dt_scopes_t *s)
   dt_scopes_refresh(s);
   // FIXME: does this comparison of update_counter need to be protected within a
   // mutex?
-  if(s->update_counter != s->cur_mode->update_counter)
+  if(_hdr_scale_set_pipe(s) && dt_view_get_current() == DT_VIEW_DARKROOM)
+    dt_dev_reprocess_preview(darktable.develop, 0);
+  else if(s->update_counter != s->cur_mode->update_counter)
     dt_scopes_reprocess();
 }
 
@@ -595,6 +742,7 @@ static void _eventbox_enter_notify_callback(GtkEventControllerMotion *controller
   dt_scopes_call(s->cur_mode, mode_enter);
   gtk_widget_set_visible(s->button_box_rgb,
                          dt_scopes_func_exists(s->cur_mode, draw_scope_channels));
+  gtk_widget_set_visible(s->hdr_button, _hdr_scale_available(s));
   gtk_widget_show(s->button_box_left);
   gtk_widget_show(s->button_box_right);
 }
@@ -748,6 +896,11 @@ void gui_init(dt_lib_module_t *self)
     = dt_conf_get_bool("plugins/darkroom/histogram/show_green");
   s->channels[DT_SCOPES_RGB_BLUE]
     = dt_conf_get_bool("plugins/darkroom/histogram/show_blue");
+  const char *hdr_str = dt_conf_get_string_const("plugins/darkroom/histogram/hdr_scale");
+  s->hdr_scale = DT_SCOPES_HDR_NONE;
+  for(dt_scopes_hdr_scale_t i = 0; i < DT_SCOPES_HDR_N; i++)
+    if(g_strcmp0(hdr_str, _hdr_scale_names[i]) == 0)
+      s->hdr_scale = i;
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
@@ -897,6 +1050,18 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(btn), "toggled", G_CALLBACK(_channel_toggle), s);
     s->channel_buttons[i] = btn;
   }
+  s->hdr_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_hdr_scale, CPF_NONE, NULL,
+    &(dtgtk_button_config_t){
+      .action = dark,
+      .action_label = N_("switch HDR scale"),
+      .action_def = &dt_action_def_button,
+    });
+  gtk_widget_set_valign(s->hdr_button, GTK_ALIGN_START);
+  g_signal_connect(G_OBJECT(s->hdr_button), "toggled", G_CALLBACK(_hdr_scale_toggle), s);
+  _hdr_scale_update_button(s);
+  _hdr_scale_set_pipe(s);
+  dt_gui_box_add(s->button_box_right, s->hdr_button);
+
   // RGB channels are always rightmost
   dt_gui_box_add(s->button_box_right, s->button_box_rgb);
 
@@ -959,6 +1124,8 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_scopes_t *s = self->data;
 
+  _pipe_hdr_transfer = DT_HDR_NONE;
+  dt_ioppr_set_scopes_hdr_transfer(DT_HDR_NONE);
   for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
     dt_scopes_call(&s->modes[i], gui_cleanup);
   dt_pthread_mutex_destroy(&s->lock);

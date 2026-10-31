@@ -238,6 +238,8 @@ void dtgtk_cairo_paint_split_waveform_vectorscope(cairo_t *cr, gint x, gint y, g
 void dtgtk_cairo_paint_linear_scale(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint logarithmic scale icon */
 void dtgtk_cairo_paint_logarithmic_scale(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint HDR scale icon */
+void dtgtk_cairo_paint_hdr_scale(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint waveform overlaid icon */
 void dtgtk_cairo_paint_waveform_overlaid(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint RGB parade icon */
