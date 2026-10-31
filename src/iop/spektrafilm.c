@@ -6070,7 +6070,7 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_box_add(self->widget, g->update_box);
 
   /* ---- tab 2: print ---- */
-  self->widget = dt_ui_notebook_page(g->notebook, N_("print"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, NC_("darkroomTerm", "print"), NULL);
 
   GtkWidget *print_page = self->widget;
 
