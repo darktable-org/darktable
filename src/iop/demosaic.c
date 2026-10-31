@@ -706,6 +706,19 @@ void process(dt_iop_module_t *self,
   const gboolean is_bayer = !is_4bayer && !is_xtrans && filters != 0;
   const gboolean true_monochrome = dt_image_is_mono_sraw(img);
 
+  // "as shot to reference" must correct the white balance in the camera's
+  // channels. For 4bayer images these exist only until they are mixed into
+  // RGB here, so the correction is folded into the matrix and colorin skips it
+  double CAM_to_RGB[3][4] = { { 0.0 } };
+  if(is_4bayer)
+  {
+    const dt_dev_chroma_t *chr = &self->dev->chroma;
+    for(int c = 0; c < 3; c++)
+      for(int k = 0; k < 4; k++)
+        CAM_to_RGB[c][k] = d->CAM_to_RGB[c][k]
+          * (chr->late_correction ? chr->D65coeffs[k] / chr->as_shot[k] : 1.0);
+  }
+
   const int demosaicing_method = d->demosaicing_method;
   int method = demosaicing_method & ~DT_DEMOSAIC_DUAL;
   const int width = roi_in->width;
@@ -950,8 +963,8 @@ void process(dt_iop_module_t *self,
           vng_interpolate(t_out, t_in, width, t_rows, filters, xtrans, FALSE);
           if(is_4bayer)
           {
-            dt_colorspaces_cygm_to_rgb(t_out, width * t_rows, d->CAM_to_RGB);
-            dt_colorspaces_cygm_to_rgb(pipe->dsc.processed_maximum, 1, d->CAM_to_RGB);
+            dt_colorspaces_cygm_to_rgb(t_out, width * t_rows, CAM_to_RGB);
+            dt_colorspaces_cygm_to_rgb(pipe->dsc.processed_maximum, 1, CAM_to_RGB);
           }
         }
         else if(method == DT_IOP_DEMOSAIC_RCD)
