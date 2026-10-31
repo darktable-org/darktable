@@ -1231,8 +1231,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
 
   if(dt_key_modifier_state() & (GDK_BUTTON1_MASK|GDK_BUTTON2_MASK|GDK_BUTTON3_MASK
                                |GDK_SHIFT_MASK|GDK_CONTROL_MASK|GDK_MOD1_MASK)
-     || darktable.bauhaus->current
-     || darktable.gui->hide_tooltips)
+     || darktable.bauhaus->current)
     return FALSE;
 
 #if !GTK_CHECK_VERSION(4, 0, 0)
@@ -1250,6 +1249,30 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
 
   gchar *original_markup = dt_bauhaus_widget_get_tooltip_markup(widget, x, y);
   const gchar *widget_name = gtk_widget_get_name(widget);
+
+  gboolean hidden = darktable.gui->hide_tooltips;
+  if ( (!strcmp(widget_name, "thumb-main")
+       || !strcmp(widget_name, "thumb-altered")
+       || !strcmp(widget_name, "thumb-tags")
+       || !strcmp(widget_name, "thumb-group-audio")
+       || !strcmp(widget_name, "GtkTreeView"))
+       && (darktable.gui->show_thumbs_tips))
+  {
+    hidden = 0;
+  }
+  const char *css = hidden ? "tooltip { opacity: 0; background: transparent; }" : "";
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gtk_css_provider_load_from_data(darktable.gui->tooltip_css_provider, css, -1);
+#else
+  GError *error = NULL;
+  if(!gtk_css_provider_load_from_data(darktable.gui->tooltip_css_provider,
+                                      css, -1, &error))
+  {
+    dt_print(DT_DEBUG_ALWAYS, "%s: error parsing tooltip CSS: %s",
+             G_STRFUNC, error->message);
+    g_clear_error(&error);
+  }
+#endif
 
   if(!strcmp(widget_name, "actions_view") || !strcmp(widget_name, "shortcuts_view"))
   {

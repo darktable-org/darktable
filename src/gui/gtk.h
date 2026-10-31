@@ -127,6 +127,7 @@ typedef struct dt_gui_gtk_t
   GdkRGBA colors[DT_GUI_COLOR_LAST];
 
   int32_t hide_tooltips;
+  int32_t show_thumbs_tips;
   GtkCssProvider *tooltip_css_provider;
 
   gboolean grouping;
