@@ -179,6 +179,14 @@ typedef struct dt_opencl_device_t
   // fraction of system memory allowed for a device in percent
   float unified_fraction;
 
+  // on unified memory devices, read images back to the host through a
+  // CL_MEM_ALLOC_HOST_PTR staging buffer written by a kernel instead of
+  // clEnqueueReadImage. the buffer is kept while the device is locked
+  // by a pixelpipe and released on unlock.
+  gboolean staged_readback;
+  cl_mem readback_buffer;
+  size_t readback_size;
+
   // in OpenCL processing round width/height of global work groups to
   // a multiple of these values.  reasonable values are powers of
   // 2. this parameter can have high impact on OpenCL performance.
@@ -275,6 +283,13 @@ typedef struct dt_opencl_t
 
   // global kernels for guided filter.
   struct dt_guided_filter_cl_global_t *guided_filter;
+
+  // kernels copying an image region into a linear buffer, per image format.
+  int kernel_readback_4f;
+  int kernel_readback_2f;
+  int kernel_readback_1f;
+  int kernel_readback_1u16;
+  int kernel_readback_1u8;
 
   // saved kernel info for deferred initialisation
   int program_saved[DT_OPENCL_MAX_KERNELS];

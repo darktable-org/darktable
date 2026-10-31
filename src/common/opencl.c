@@ -356,11 +356,12 @@ static void _opencl_write_device_config(const int devid)
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
   g_snprintf(key, sizeof(key), "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
-  g_snprintf(dat, sizeof(dat), "events:%s asyncmode:%s device:%s unifraction: %.3f",
+  g_snprintf(dat, sizeof(dat), "events:%s asyncmode:%s device:%s unifraction: %.3f readback:%s",
     cl->dev[devid].use_events ? "on" : "off",
     cl->dev[devid].asyncmode ? "on" : "off",
     cl->dev[devid].disabled ? "off" : "on",
-    cl->dev[devid].unified_fraction);
+    cl->dev[devid].unified_fraction,
+    cl->dev[devid].staged_readback ? "staged" : "direct");
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
@@ -420,14 +421,18 @@ static gboolean _opencl_read_device_config(const int devid)
     char events[100];
     char asyncmode[100];
     char disabled[100];
+    char readback[100];
     float unified_fraction;
-    sscanf(dat, "%s %s %s %s %f",
-           events, asyncmode, disabled, dummy, &unified_fraction);
+    const int fields = sscanf(dat, "%s %s %s %s %f %99s",
+                              events, asyncmode, disabled, dummy, &unified_fraction, readback);
 
     cldid->use_events = g_strcmp0(events, "events:on") == 0;
     cldid->asyncmode = g_strcmp0(asyncmode, "asyncmode:on") == 0;
     cldid->disabled = g_strcmp0(disabled, "device:off") == 0;
     cldid->unified_fraction = unified_fraction;
+    // configs without the readback field keep the per-platform default
+    if(fields >= 6)
+      cldid->staged_readback = g_strcmp0(readback, "readback:staged") == 0;
   }
 
   // do some safety housekeeping
@@ -512,6 +517,9 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   // setting sane/conservative defaults at first
   cl->dev[dev].unified_fraction = 0.25f;
   cl->dev[dev].unified_memory = FALSE;
+  cl->dev[dev].staged_readback = FALSE;
+  cl->dev[dev].readback_buffer = NULL;
+  cl->dev[dev].readback_size = 0;
   cl->dev[dev].clroundup_wd = 16;
   cl->dev[dev].clroundup_ht = 16;
   cl->dev[dev].use_events = TRUE;
@@ -662,6 +670,11 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].fullname = strdup(fullname);
   cl->dev[dev].cname = strdup(cname);
   cl->dev[dev].vendor_id = vendor_id;
+
+  // rusticl reads images and buffers back to the host at a small fraction
+  // of memory bandwidth while a kernel-written CL_MEM_ALLOC_HOST_PTR buffer
+  // maps at memcpy speed, so staged readback is the default there.
+  cl->dev[dev].staged_readback = is_mesa && strstr(platform_name, "rusticl") != NULL;
 
   const gboolean newdevice = _opencl_read_device_config(dev);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -899,6 +912,9 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
   dt_print_nts(DT_DEBUG_OPENCL,
                "   ASYNC PIXELPIPE:          %s\n", STR_YESNO(cl->dev[dev].asyncmode));
+  dt_print_nts(DT_DEBUG_OPENCL,
+               "   STAGED READBACK:          %s\n",
+               STR_YESNO(cl->dev[dev].staged_readback && cl->dev[dev].unified_memory));
   dt_print_nts(DT_DEBUG_OPENCL,
                "   SUPPORTED ATOMICS:        %s%s%s\n",
                cl->dev[dev].extensions & DT_OPENCL_ATOMIC_INT32 ? "INT32 " : "",
@@ -1175,6 +1191,13 @@ end:
 static void _cleanup_cl_device_context(dt_opencl_t *cl, const int i)
 {
   dt_pthread_mutex_destroy(&cl->dev[i].lock);
+
+  if(cl->dev[i].readback_buffer)
+  {
+    dt_opencl_release_mem_object(cl->dev[i].readback_buffer);
+    cl->dev[i].readback_buffer = NULL;
+    cl->dev[i].readback_size = 0;
+  }
 
   for(int k = 0; k < DT_OPENCL_MAX_KERNELS; k++)
   {
@@ -1586,6 +1609,13 @@ finally:
     cl->colorspaces = dt_colorspaces_init_cl_global();
     cl->guided_filter = dt_guided_filter_init_cl_global();
 
+    const int program = 2; // basic.cl, from programs.conf
+    cl->kernel_readback_4f = dt_opencl_create_kernel(program, "readback_4f");
+    cl->kernel_readback_2f = dt_opencl_create_kernel(program, "readback_2f");
+    cl->kernel_readback_1f = dt_opencl_create_kernel(program, "readback_1f");
+    cl->kernel_readback_1u16 = dt_opencl_create_kernel(program, "readback_1u16");
+    cl->kernel_readback_1u8 = dt_opencl_create_kernel(program, "readback_1u8");
+
     char checksum[64];
     snprintf(checksum, sizeof(checksum), "%u", cl->crc);
     const char *oldchecksum = dt_conf_get_string_const("opencl_checksum");
@@ -1640,6 +1670,11 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
     dt_colorspaces_free_cl_global(cl->colorspaces);
     dt_guided_filter_free_cl_global(cl->guided_filter);
     dt_local_laplacian_free_cl_global(cl->local_laplacian);
+    dt_opencl_free_kernel(cl->kernel_readback_4f);
+    dt_opencl_free_kernel(cl->kernel_readback_2f);
+    dt_opencl_free_kernel(cl->kernel_readback_1f);
+    dt_opencl_free_kernel(cl->kernel_readback_1u16);
+    dt_opencl_free_kernel(cl->kernel_readback_1u8);
     for(int i = 0; i < cl->num_devs; i++)
     {
       _cleanup_cl_device_context(cl, i);
@@ -2123,7 +2158,16 @@ void dt_opencl_unlock_device(const int devid)
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited) return;
   if(devid > DT_DEVICE_CPU && devid < cl->num_devs)
-    dt_pthread_mutex_BAD_unlock(&cl->dev[devid].lock);
+  {
+    dt_opencl_device_t *dev = &cl->dev[devid];
+    if(dev->readback_buffer)
+    {
+      dt_opencl_release_mem_object(dev->readback_buffer);
+      dev->readback_buffer = NULL;
+      dev->readback_size = 0;
+    }
+    dt_pthread_mutex_BAD_unlock(&dev->lock);
+  }
 }
 
 static FILE *_fopen_stat(const char *filename, struct stat *st)
@@ -2907,6 +2951,111 @@ int dt_opencl_enqueue_kernel_1d_args_internal(const int dev,
   return dt_opencl_enqueue_kernel_ndim_with_local(dev, kernel, sizes, NULL, 1);
 }
 
+// regions smaller than this are read with clEnqueueReadImage directly
+#define DT_OPENCL_STAGED_READBACK_MIN (64 * 1024)
+
+// returns the readback kernel matching the image format and sets the
+// bytes per pixel, or returns -1 for formats without a readback kernel
+static int _opencl_readback_kernel(cl_mem image,
+                                   size_t *bpp)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  cl_image_format fmt;
+  if((cl->dlocl->symbols->dt_clGetImageInfo)(image, CL_IMAGE_FORMAT,
+                                             sizeof(fmt), &fmt, NULL) != CL_SUCCESS)
+    return -1;
+
+  const cl_channel_order order = fmt.image_channel_order;
+  const cl_channel_type type = fmt.image_channel_data_type;
+
+  if(type == CL_FLOAT && order == CL_RGBA)
+  {
+    *bpp = 4 * sizeof(float);
+    return cl->kernel_readback_4f;
+  }
+  if(type == CL_FLOAT && order == CL_RG)
+  {
+    *bpp = 2 * sizeof(float);
+    return cl->kernel_readback_2f;
+  }
+  if(type == CL_FLOAT && order == CL_R)
+  {
+    *bpp = sizeof(float);
+    return cl->kernel_readback_1f;
+  }
+  if(type == CL_UNSIGNED_INT16 && order == CL_R)
+  {
+    *bpp = sizeof(uint16_t);
+    return cl->kernel_readback_1u16;
+  }
+  if(type == CL_UNSIGNED_INT8 && order == CL_R)
+  {
+    *bpp = sizeof(uint8_t);
+    return cl->kernel_readback_1u8;
+  }
+  return -1;
+}
+
+// reads an image region to host memory by copying it with a kernel into
+// a CL_MEM_ALLOC_HOST_PTR buffer and mapping that buffer. the read is
+// always blocking. returns FALSE without touching host memory if the
+// staged path is disabled or not applicable, the caller then falls back
+// to clEnqueueReadImage.
+static gboolean _opencl_staged_read_image(const int devid,
+                                          void *host,
+                                          cl_mem image,
+                                          const size_t *org,
+                                          const size_t *reg,
+                                          const size_t rowpitch)
+{
+  dt_opencl_device_t *dev = &darktable.opencl->dev[devid];
+  if(!dev->staged_readback || !dev->unified_memory)
+    return FALSE;
+
+  size_t bpp = 0;
+  const int kernel = _opencl_readback_kernel(image, &bpp);
+  if(kernel < 0)
+    return FALSE;
+
+  const size_t linesize = reg[0] * bpp;
+  const size_t size = linesize * reg[1];
+  if(size < DT_OPENCL_STAGED_READBACK_MIN)
+    return FALSE;
+
+  if(dev->readback_size < size)
+  {
+    dt_opencl_release_mem_object(dev->readback_buffer);
+    dev->readback_size = 0;
+    dev->readback_buffer =
+      dt_opencl_alloc_device_buffer_with_flags(devid, size,
+                                               CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR);
+    if(!dev->readback_buffer)
+      return FALSE;
+    dev->readback_size = size;
+  }
+
+  const cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, reg[0], reg[1],
+                                                      CLARG(image), CLARG(dev->readback_buffer),
+                                                      CLARGINT((int)org[0]), CLARGINT((int)org[1]),
+                                                      CLARGINT((int)reg[0]), CLARGINT((int)reg[1]));
+  if(err != CL_SUCCESS)
+    return FALSE;
+
+  const char *src = dt_opencl_map_buffer(devid, dev->readback_buffer, TRUE, CL_MAP_READ, 0, size);
+  if(!src)
+    return FALSE;
+
+  const size_t pitch = rowpitch ? rowpitch : linesize;
+  if(pitch == linesize)
+    memcpy(host, src, size);
+  else
+    for(size_t y = 0; y < reg[1]; y++)
+      memcpy((char *)host + y * pitch, src + y * linesize, linesize);
+
+  dt_opencl_unmap_mem_object(devid, dev->readback_buffer, (void *)src);
+  return TRUE;
+}
+
 int dt_opencl_copy_image_to_host(const int devid,
                                   void *host,
                                   cl_mem image,
@@ -2936,6 +3085,14 @@ int dt_opencl_read_host_from_image_raw(const int devid,
 
   const size_t org[3] = { origin ? origin[0] : 0, origin ? origin[1] : 0, 0 };
   const size_t reg[3] = { region[0], region[1], 1 };
+
+  if(_opencl_staged_read_image(devid, host, image, org, reg, rowpitch))
+  {
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[dt_opencl_read_host_from_image_raw] staged read of image from device '%s' id=%d",
+             darktable.opencl->dev[devid].fullname, devid);
+    return CL_SUCCESS;
+  }
 
   cl_event *eventp = _opencl_events_get_slot(devid, "[Read Image (from device to host)]");
 
