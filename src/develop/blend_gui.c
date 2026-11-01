@@ -2915,13 +2915,12 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
 
   _MASKS_OPT_CHECK(
     hover, _("preview channel under cursor"),
-    _("when enabled, resting the pointer on one of the\n"
+    _("when enabled (default), resting the pointer on one of the\n"
       "add-parametric-element buttons displays that channel in the\n"
       "center view, so you can see what a channel looks like before\n"
       "adding an element for it.\n"
       "the preview only starts after a short pause, so passing over\n"
-      "the buttons on the way elsewhere costs nothing.\n"
-      "disabled by default."),
+      "the buttons on the way elsewhere costs nothing."),
     BLEND_PREVIEW_ON_HOVER_CONF, _preview_on_hover_is_on(),
     _masks_preview_on_hover_toggled)
 

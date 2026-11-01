@@ -3671,7 +3671,7 @@
   <dtconfig>
     <name>plugins/darkroom/blend/preview_channel_on_hover</name>
     <type>bool</type>
-    <default>false</default>
+    <default>true</default>
     <shortdescription>preview the channel under the cursor</shortdescription>
     <longdescription>while enabled, resting the pointer on one of the add-parametric-element buttons displays that channel in the center view; the preview only starts after a short pause, so passing over the buttons costs nothing</longdescription>
   </dtconfig>
