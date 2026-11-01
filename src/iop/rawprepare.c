@@ -771,10 +771,14 @@ void commit_params(dt_iop_module_t *self,
   else
     d->apply_gainmaps = FALSE;
 
-  if(g && g->white_trouble && !white_invalid)
+  if(self->dev->gui_attached && g && !white_invalid)
   {
-    dt_iop_clear_module_trouble_message(self);
+    dt_iop_gui_enter_critical_section(self);
+    const gboolean had_trouble = g->white_trouble;
     g->white_trouble = FALSE;
+    dt_iop_gui_leave_critical_section(self);
+    if(had_trouble)
+      dt_iop_clear_module_trouble_message(self);
   }
 
   if(_image_set_rawcrops(self, pipe->image.id, d->left, d->right, d->top, d->bottom))
@@ -795,7 +799,12 @@ void commit_params(dt_iop_module_t *self,
        _("the white point is not above the black level.\n"
          "the maximum value is used instead, set a correct white point."),
        "white point not above black level, using maximum");
-    if(g) g->white_trouble = TRUE;
+    if(self->dev->gui_attached && g)
+    {
+      dt_iop_gui_enter_critical_section(self);
+      g->white_trouble = TRUE;
+      dt_iop_gui_leave_critical_section(self);
+    }
   }
 }
 
