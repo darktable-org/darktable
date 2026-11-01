@@ -603,6 +603,14 @@ changes (where available).
 
 - Fixed camera mutex locks before the mutexes are initialized.
 
+- Fixed tether mode leaving its event and live-view threads running after
+  leaving the view or tearing down a camera, and used full gphoto teardown
+  when a mounted camera disappeared so the device is released cleanly.
+
+- Fixed tether mode treating transient PTP Device Busy errors as a lost
+  camera connection (common when enabling live view), and stopped
+  echoing camera-driven property updates back to the camera.
+
 - Fixed metadata tag Xmp.xmpMM.PreservedFileName not written on camera
   import.
 
