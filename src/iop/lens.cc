@@ -3819,26 +3819,24 @@ static char *_lens_sanitize(const char *orig_lens)
 
 // Viltrox writes "Viltrox AF 16/1.8 Z" in EXIF. Lensfun reads a bare "a/b" as
 // aperture/focal, the Zeiss "2/25" form, so it looks for f/16 at 1.8mm and
-// finds nothing. Spell it out only when the first number is the larger one
-static void _lens_expand_focal_aperture(char *lens, const size_t size)
+// finds nothing. Returns the spelled out name when the first number is the
+// larger one and the name states no focal length yet ("25mm 1/0.95"), else NULL
+static gchar *_lens_expand_focal_aperture(const char *lens)
 {
-  char *slash = strchr(lens, '/');
-  if(!slash || !g_ascii_isdigit(slash[1])) return;
+  const char *slash = strchr(lens, '/');
+  if(!slash || !g_ascii_isdigit(slash[1]) || strstr(lens, "mm")) return NULL;
 
   const char *space = g_strrstr_len(lens, slash - lens, " ");
   const char *first = space ? space + 1 : lens;
-  if(!g_ascii_isdigit(*first)) return;
+  if(!g_ascii_isdigit(*first)) return NULL;
 
   char *first_end, *second_end;
   const double focal = g_ascii_strtod(first, &first_end);
   const double aperture = g_ascii_strtod(slash + 1, &second_end);
   if(first_end != slash || (*second_end && *second_end != ' ') || focal <= aperture)
-    return;
+    return NULL;
 
-  *slash = '\0';
-  gchar *expanded = g_strdup_printf("%smm f/%s", lens, slash + 1);
-  g_strlcpy(lens, expanded, size);
-  g_free(expanded);
+  return g_strdup_printf("%.*smm f/%s", (int)(slash - lens), lens, slash + 1);
 }
 
 void reload_defaults(dt_iop_module_t *self)
@@ -3853,7 +3851,6 @@ void reload_defaults(dt_iop_module_t *self)
   new_lens = _lens_sanitize(img->exif_lens);
   dt_strlcpy_to_fixed(d->lens, new_lens, sizeof(d->lens));
   free(new_lens);
-  _lens_expand_focal_aperture(d->lens, sizeof(d->lens));
   dt_strlcpy_to_fixed(d->camera, img->exif_model, sizeof(d->camera));
   d->crop = img->exif_crop;
   d->aperture = img->exif_aperture;
@@ -3896,6 +3893,18 @@ void reload_defaults(dt_iop_module_t *self)
       const lfLens **lens = gd->db->FindLenses(cam[0], NULL, d->lens, 0);
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
+      gchar *expanded = lens ? NULL : _lens_expand_focal_aperture(d->lens);
+      if(expanded)
+      {
+        dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+        lens = gd->db->FindLenses(cam[0], NULL, expanded, 0);
+        dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+
+        // without a profile, keep the name the file reported
+        if(lens) dt_strlcpy_to_fixed(d->lens, expanded, sizeof(d->lens));
+        g_free(expanded);
+      }
+
       if(!lens && islower(cam[0]->Mount[0]))
       {
         /*
@@ -3903,7 +3912,7 @@ void reload_defaults(dt_iop_module_t *self)
          * (reasons: lens is "(65535)" or lens is correct lens name,
          *  but LF have it as "fixed lens")
          *
-         * Let's unset lens name and re-run lens queryCa
+         * Let's unset lens name and re-run lens query
          */
         dt_strlcpy_to_fixed(d->lens, "", sizeof(d->lens));
 

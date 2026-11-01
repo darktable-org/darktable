@@ -814,7 +814,8 @@ changes (where available).
 
 - Fixed the lens correction module not finding the Lensfun profile of
   lenses that report their name as focal length/aperture, such as
-  "Viltrox AF 16/1.8 Z".
+  "Viltrox AF 16/1.8 Z". Images with an untouched lens module pick up the
+  correction when reopened or exported, which can shift their geometry.
 
 ## Lua
 
