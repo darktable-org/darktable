@@ -298,8 +298,8 @@ static inline int illuminant_to_xy(const dt_illuminant_t illuminant,           /
       // Model valid for T in [1667 ; 25000] K
       CCT_to_xy_blackbody(t, &x, &y);
       if(y != 0.f && x != 0.f) break;
-      // else t is out of bounds -> use custom/original values
-      return FALSE;
+      // else t is out of bounds -> use the camera illuminant (next case):
+      // existing edits can hold such a t, and they render with it
     }
     case DT_ILLUMINANT_CAMERA:
     {
@@ -442,9 +442,10 @@ static inline gboolean _wb_coeffs_invalid(const dt_aligned_pixel_t wb_coeffs, co
 
 // a small multiplier puts the illuminant near a camera primary, which can lie
 // outside the spectral locus: x, y or z, or a CAT16 cone response, becomes
-// zero or negative, and the adaptation would then divide by zero or flip the
-// sign of a channel. CAT16 is the adaptation color calibration forces for the
-// illuminants derived from multipliers (_check_if_close_to_daylight())
+// zero or negative, and CAT16 would then divide by zero or flip the sign of a
+// channel. CAT16 is the adaptation color calibration forces for the illuminants
+// derived from multipliers (_check_if_close_to_daylight()). The D and BB fallback
+// in illuminant_to_xy() gets here too, with whatever adaptation the edit stored
 static inline gboolean _is_usable_illuminant_xy(const float x, const float y)
 {
   const float z = 1.f - x - y;
