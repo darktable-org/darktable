@@ -27,13 +27,10 @@
  * What they cover is the pure math, plus the per-pixel entry points fed from a
  * hand-built sf_sim_t. Not covered is anything that needs a loaded profile --
  * the spectral upsampling tables, the enlarger's neutral filters, the grain
- * sublayer build. That is a matter of scope, not availability: the
- * current pack ships with darktable under data/spektrafilm/, and only edits
- * pinned to an older one fetch anything at runtime, so a fixture is there for
- * the taking. But a test built on it reads real profile data off disk, which
+ * sublayer build. A test built on those reads real profile data off disk, which
  * makes it an integration test with a data dependency and not a unit test.
- * Those live next door, in test_spektra_pack.c, which CMake points at the
- * shipped pack and which skips itself when there is none on disk.
+ * Those live next door, in test_spektra_pack.c, which reads a pack from the
+ * directory it is configured with and skips itself when it is given none.
  *
  * Including the .c, not the .h is what the module tests already do (see
  * ../iop/test_filmicrgb.c): most of the algorithms are file-static helpers, and
@@ -72,13 +69,11 @@
    untouched achromatic max, so E holds for those too. */
 #define E 1e-9
 
-/* Compare in double, whatever cmocka happens to be installed.
-   cmocka's own assert_double_close() casts both operands AND the epsilon to
-   float, so from 1.1.2 on -- where its macro shadows the fallback in
-   ../util/assert.h -- an epsilon of 1e-9 sits below the float resolution of
-   values around 1 and the comparison stops meaning anything. Its
-   assert_double_equal() would be the right tool, but 1.1.0 is the minimum the
-   build accepts and has neither macro, so neither can be relied on. */
+/* Compare in double, whatever cmocka happens to be installed. cmocka's
+   assert_float_equal() casts both operands and the epsilon to float, where an
+   epsilon of 1e-9 sits below the resolution of values around 1, and its
+   assert_double_equal() is missing from 1.1.0, the minimum the build accepts.
+   cmocka defines no assert_double_close(), so this one is always in effect. */
 #ifndef assert_double_close
 #define assert_double_close(a, b, epsilon) \
   assert_true(fabs((double)(a) - (double)(b)) <= (double)(epsilon))
@@ -209,6 +204,30 @@ static void test_knee_is_continuous_at_threshold(void **state)
   assert_double_close(above, below, 1e-6);
 }
 
+static void test_knee_float_matches_double(void **state)
+{
+  /* reinhard_knee_f() is the knee the scan stage ships and spektrafilm.cl
+     mirrors; the tests above exercise the double one. Both parameter sets:
+     upstream's, and the shipped output knee with threshold 0. */
+  TR_STEP("the float knee tracks the double one, for both parameter sets");
+  const double params[2][3] = { { KNEE_T, KNEE_L, KNEE_P },
+                                { SF_OUT_KNEE_T, SF_OUT_KNEE_L, SF_OUT_KNEE_P } };
+  for(int k = 0; k < 2; k++)
+  {
+    float previous = -1.0f;
+    for(int i = 0; i <= 400; i++)
+    {
+      const double d = 4.0 * (double)i / 400.0;
+      const double ref = reinhard_knee(d, params[k][0], params[k][1], params[k][2]);
+      const float out = reinhard_knee_f((float)d, (float)params[k][0], (float)params[k][1],
+                                        (float)params[k][2]);
+      assert_double_close(out, ref, 1e-6);
+      assert_true(out >= previous); /* and stays monotonic in float */
+      previous = out;
+    }
+  }
+}
+
 /*
  * TEST FUNCTIONS: output gamut compression, ACES RGC
  * (upstream tests/test_gamut_compression.py::TestCompressRgbAcesRgc)
@@ -238,17 +257,34 @@ static void test_aces_leaves_the_max_channel_alone(void **state)
   assert_double_close(rgb[0], 2.0, E);
 }
 
+/* The shipped output knee, stated here on its own: threshold 0, limit 1,
+   power 6. A channel at achromatic distance d = (max - v) / max comes back as
+   max * (1 - d / (1 + d^6)^(1/6)). */
+static double _aces_expected(double max,
+                             double v)
+{
+  const double d = (max - v) / max;
+  return max * (1.0 - d / pow(1.0 + pow(d, 6.0), 1.0 / 6.0));
+}
+
 static void test_aces_pulls_negatives_back_inside(void **state)
 {
-  TR_STEP("out-of-gamut negatives come back non-negative, and by a real margin");
+  TR_STEP("out-of-gamut negatives land where the knee puts them, inside the gamut");
+  /* the closed form above is for these parameters; changing them is a change
+     to the look, and this is where it has to be acknowledged */
+  assert_double_close(SF_OUT_KNEE_T, 0.0, 0.0);
+  assert_double_close(SF_OUT_KNEE_L, 1.0, 0.0);
+  assert_double_close(SF_OUT_KNEE_P, 6.0, 0.0);
+
   float rgb[3] = { 1.5f, -0.1f, -0.05f };
   compress_rgb_aces_f(rgb);
+  TR_DEBUG("out=(%e,%e,%e)", (double)rgb[0], (double)rgb[1], (double)rgb[2]);
   assert_double_close(rgb[0], 1.5, E);
-  assert_true(rgb[1] >= 0.0f);
-  assert_true(rgb[2] >= 0.0f);
-  /* not merely clipped to a hair above zero: the knee lands them well inside */
-  assert_true(rgb[1] < 0.2f * 1.5f);
-  assert_true(rgb[2] < 0.2f * 1.5f);
+  /* about 0.1241 and 0.1427: well inside, neither clipped to 0 nor left
+     negative. Float arithmetic against the double closed form, hence 1e-6 */
+  assert_double_close(rgb[1], _aces_expected(1.5, -0.1), 1e-6);
+  assert_double_close(rgb[2], _aces_expected(1.5, -0.05), 1e-6);
+  assert_true(rgb[1] > 0.1f && rgb[2] > 0.1f);
 }
 
 static void test_aces_compresses_stronger_excursions_harder(void **state)
@@ -259,6 +295,8 @@ static void test_aces_compresses_stronger_excursions_harder(void **state)
   compress_rgb_aces_f(mild);
   compress_rgb_aces_f(hard);
   TR_DEBUG("mild=%e hard=%e", (double)mild[1], (double)hard[1]);
+  assert_true(mild[1] >= 0.0f && mild[2] >= 0.0f);
+  assert_true(hard[1] >= 0.0f && hard[2] >= 0.0f);
   assert_true(hard[1] < mild[1]);
   assert_true(hard[2] < mild[2]);
 }
@@ -342,15 +380,65 @@ static void test_density_curve_is_monotonic(void **state)
 
 static void test_density_curve_is_near_zero_at_low_exposure(void **state)
 {
-  TR_STEP("density vanishes far below the toe");
-  enum { N = 200 };
+  /* Measured from the curve, not from a fixed exposure far off the grid: four
+     widths below the fastest layer's centre the Gaussian layers have all but
+     vanished, and the septic ones, whose support ends SF_SEPT_K / 2 widths
+     out, are exactly zero. */
+  TR_STEP("density vanishes four layer widths below the toe");
+  double le[1] = { CENTERS[0] - 4.0 * SIGMAS[0] };
+  double density[1];
+  eval_cdfs_channel(density, le, 1, CENTERS, AMPS, SIGMAS, NULL, 0, 3, 0);
+  TR_DEBUG("gaussian: le=%e d=%e", le[0], density[0]);
+  assert_true(density[0] >= 0.0 && density[0] < 1e-4);
+  eval_cdfs_channel(density, le, 1, CENTERS, AMPS, SIGMAS, NULL, 1, 3, 0);
+  TR_DEBUG("septic: le=%e d=%e", le[0], density[0]);
+  assert_double_close(density[0], 0.0, 0.0);
+}
+
+static void test_skewed_density_curve_is_monotonic(void **state)
+{
+  TR_STEP("a skewed septic curve still never falls as exposure rises");
+  enum { N = 400 };
+  const double alphas[3] = { 0.6, -0.4, 1.0 };
   double le[N], density[N];
-  for(int i = 0; i < N; i++) le[i] = -6.0 + 8.0 * (double)i / (double)(N - 1);
-  for(int sept = 0; sept < 2; sept++)
-  {
-    eval_cdfs_channel(density, le, N, CENTERS, AMPS, SIGMAS, NULL, sept, 3, 0);
-    for(int i = 0; i < 5; i++) assert_true(density[i] < 0.01);
-  }
+  for(int i = 0; i < N; i++) le[i] = -3.0 + 5.0 * (double)i / (double)(N - 1);
+  eval_cdfs_channel(density, le, N, CENTERS, AMPS, SIGMAS, alphas, 1, 3, 0);
+  for(int i = 1; i < N; i++) assert_true(density[i] - density[i - 1] >= -E);
+}
+
+static void test_skew_keeps_the_layer_median_on_its_centre(void **state)
+{
+  /* the warp vanishes at u = 0.5, so every layer still crosses half its
+     amplitude exactly at its centre whatever the skew */
+  TR_STEP("skew moves the tails, never the half-density point");
+  const double alpha[] = { -1.0, -0.3, 0.0, 0.5, 1.0 };
+  for(size_t i = 0; i < sizeof(alpha) / sizeof(alpha[0]); i++)
+    assert_double_close(sept_cdf(0.0, alpha[i]), 0.5, E);
+}
+
+static void test_exhausted_density_curve_is_monotonic(void **state)
+{
+  /* the film-side curves are built from the Gumbel-blended layers, which
+     eval_cdfs_channel() does not evaluate */
+  TR_STEP("a curve blended toward the exhaustion shoulder stays monotonic");
+  const double gmix[3] = { 0.35, 0.35, 0.35 };
+  for(int positive = 0; positive < 2; positive++)
+    for(int sept = 0; sept < 2; sept++)
+    {
+      double previous = _sf_channel_density_at(-3.0, CENTERS, AMPS, SIGMAS, NULL, sept, 3, gmix,
+                                               positive);
+      for(int i = 1; i < 400; i++)
+      {
+        const double x = -3.0 + 5.0 * (double)i / 399.0;
+        const double d = _sf_channel_density_at(x, CENTERS, AMPS, SIGMAS, NULL, sept, 3, gmix,
+                                                positive);
+        if(positive)
+          assert_true(d - previous <= E);
+        else
+          assert_true(d - previous >= -E);
+        previous = d;
+      }
+    }
 }
 
 static void test_density_curve_is_inverted_for_positive_stock(void **state)
@@ -394,9 +482,22 @@ static void test_developer_exhaustion_preserves_midgray(void **state)
     TR_DEBUG("positive=%d D(0) %e -> %e", positive, d_base, d_exh);
     assert_double_close(d_exh, d_base, E);
 
-    /* and it did something: the blend is on, and the centres actually moved */
+    /* and it did something: the blend is on, the centres actually moved, and
+       the curve away from midgray has a different shape */
     for(int l = 0; l < 3; l++) assert_double_close(g_exh[l], 0.35, E);
     assert_true(fabs(c_exh[0] - c_base[0]) > E);
+    double max_diff = 0.0;
+    for(int i = 0; i <= 100; i++)
+    {
+      const double x = -3.0 + 4.0 * (double)i / 100.0;
+      const double db
+          = _sf_channel_density_at(x, c_base, AMPS, s_base, NULL, 0, 3, g_base, positive);
+      const double de
+          = _sf_channel_density_at(x, c_exh, AMPS, s_exh, NULL, 0, 3, g_exh, positive);
+      max_diff = fmax(max_diff, fabs(de - db));
+    }
+    TR_DEBUG("positive=%d largest density change %e", positive, max_diff);
+    assert_true(max_diff > 1e-3);
   }
 }
 
@@ -429,6 +530,43 @@ static void test_morph_gamma_scales_centers_and_sigmas(void **state)
     assert_double_close(centers[l], CENTERS[l] / gamma, E);
     assert_double_close(sigmas[l], SIGMAS[l] / gamma, E);
   }
+}
+
+static void test_morph_gammas_follow_layer_speed(void **state)
+{
+  /* Layer speed is by centre, not by position in the arrays: the lowest
+     centre is the fast layer and takes gamma * gamma_fast, the middle and the
+     highest take gamma * gamma_slow (upstream gives the mid layer the slow
+     factor). Centres deliberately out of order, and fast and slow factors
+     deliberately different, so a swapped assignment or a skipped sort fails. */
+  TR_STEP("the fast layer takes the fast factor, mid and slow the slow one");
+  const double centers_in[3] = { -1.0, -1.2, -1.1 }; /* slow, fast, mid */
+  const double sigmas_in[3] = { 0.26, 0.30, 0.28 };
+  const double gamma = 1.1, gamma_fast = 1.3, gamma_slow = 0.9;
+  double centers[3], sigmas[3], gmix[3];
+  _sf_morph_channel(centers_in, sigmas_in, NULL, 0, 3, 0, gamma, gamma_fast, gamma_slow, 0.0,
+                    AMPS, centers, sigmas, gmix);
+  const double g[3] = { gamma * gamma_slow, gamma * gamma_fast, gamma * gamma_slow };
+  for(int l = 0; l < 3; l++)
+  {
+    TR_DEBUG("layer %d center %e -> %e", l, centers_in[l], centers[l]);
+    assert_double_close(centers[l], centers_in[l] / g[l], E);
+    assert_double_close(sigmas[l], sigmas_in[l] / g[l], E);
+  }
+}
+
+static void test_morph_sigma_has_a_floor(void **state)
+{
+  TR_STEP("a steepening gamma never narrows a layer below the sigma floor");
+  const double sigmas_in[3] = { 0.06, 0.28, 0.26 };
+  double centers[3], sigmas[3], gmix[3];
+  _sf_morph_channel(CENTERS, sigmas_in, NULL, 0, 3, 0, 2.0, 1.0, 1.0, 0.0, AMPS, centers, sigmas,
+                    gmix);
+  assert_double_close(sigmas[0], SF_SIGMA_FLOOR, E); /* 0.03 unfloored */
+  assert_double_close(sigmas[1], 0.14, E);
+  assert_double_close(sigmas[2], 0.13, E);
+  /* the floor holds the width only; the centre still moves */
+  assert_double_close(centers[0], CENTERS[0] / 2.0, E);
 }
 
 /*
@@ -543,6 +681,120 @@ static void test_couplers_correction_scales_with_density(void **state)
   free(sim);
 }
 
+static void test_couplers_positive_stock_inverts_the_silver(void **state)
+{
+  /* A reversal stock's dye density falls where silver is developed, so the
+     silver that releases inhibitor is dmax less the curve's density. */
+  TR_STEP("a positive stock releases inhibitor from dmax less its density");
+  const double dmax[3] = { 2.4, 2.2, 2.0 };
+  sf_sim_t *sim = _sim_linear_ramp(dmax);
+  sim->film_positive = 1;
+  for(int c = 0; c < 3; c++) sim->couplers_M[c][c] = 0.5;
+
+  const float lograw[3] = { -1.0f, -1.2f, -1.4f };
+  float corr[3];
+  sf_sim_develop_corr(sim, lograw, corr, 1, 3);
+  for(int c = 0; c < 3; c++)
+  {
+    const double expected = (dmax[c] - _ramp_density(lograw[c], dmax[c])) * 0.5;
+    TR_DEBUG("channel %d corr=%e expected=%e", c, corr[c], expected);
+    assert_double_close(corr[c], expected, 1e-5);
+  }
+  free(sim);
+}
+
+static void test_couplers_donor_langmuir_saturates_the_silver(void **state)
+{
+  /* donor side: silver s releases s * (K + Dref) / (K + s), which is s itself
+     at s = Dref, more below it and less above it */
+  TR_STEP("the donor Langmuir term rescales silver around its reference density");
+  const double dmax[3] = { 2.4, 2.2, 2.0 };
+  sf_sim_t *sim = _sim_linear_ramp(dmax);
+  sim->couplers_donor_lm = 1;
+  for(int c = 0; c < 3; c++)
+  {
+    sim->couplers_M[c][c] = 0.5;
+    sim->couplers_donor_K[c] = 0.5;
+    sim->couplers_donor_Dref[c] = 0.99; /* the green channel's silver below */
+  }
+
+  const float lograw[3] = { -1.0f, -1.2f, -1.4f }; /* silver 1.2, 0.99, 0.8 */
+  float corr[3];
+  sf_sim_develop_corr(sim, lograw, corr, 1, 3);
+  for(int c = 0; c < 3; c++)
+  {
+    const double silver = _ramp_density(lograw[c], dmax[c]);
+    const double expected = silver * (0.5 + 0.99) / (0.5 + silver) * 0.5;
+    TR_DEBUG("channel %d corr=%e expected=%e", c, corr[c], expected);
+    assert_double_close(corr[c], expected, 1e-5);
+  }
+  assert_double_close(corr[1], 0.99 * 0.5, 1e-5);
+  assert_true(corr[0] < 1.2 * 0.5);
+  assert_true(corr[2] > 0.8 * 0.5);
+  free(sim);
+}
+
+/* The correction is consumed by sf_sim_develop(): it is subtracted from the
+   log exposure, and the result is read off the pre-coupler curves. With the
+   couplers off, the correction is ignored and the normalized curves are read.
+   The two tables are made to differ here so the test sees which one is read. */
+static void test_couplers_correction_shifts_the_developed_density(void **state)
+{
+  TR_STEP("develop subtracts the correction from exposure on the pre-coupler curves");
+  const double dmax[3] = { 2.4, 2.2, 2.0 };
+  sf_sim_t *sim = _sim_linear_ramp(dmax);
+  for(int i = 0; i < SF_NLE; i++)
+    for(int c = 0; c < 3; c++) sim->curves_before_f[i][c] = 0.5f * sim->curves_norm_f[i][c];
+
+  const float lograw[3] = { -1.0f, -1.2f, -1.4f };
+  const float corr[3] = { 0.2f, 0.1f, 0.0f };
+  float cmy[3];
+  sf_sim_develop(sim, lograw, corr, cmy, 1, 3, 3);
+  for(int c = 0; c < 3; c++)
+  {
+    const double expected = 0.5 * _ramp_density(lograw[c] - corr[c], dmax[c]);
+    TR_DEBUG("channel %d cmy=%e expected=%e", c, cmy[c], expected);
+    assert_double_close(cmy[c], expected, 1e-5);
+  }
+
+  sim->couplers_active = 0;
+  sf_sim_develop(sim, lograw, corr, cmy, 1, 3, 3);
+  for(int c = 0; c < 3; c++)
+    assert_double_close(cmy[c], _ramp_density(lograw[c], dmax[c]), 1e-5);
+  free(sim);
+}
+
+static void test_couplers_receiver_langmuir_saturates_the_inhibitor(void **state)
+{
+  /* receiver side: an arriving inhibitor c acts as c * (Kr + cref) / (Kr + c) */
+  TR_STEP("the receiver Langmuir term rescales the inhibitor that arrives");
+  const double dmax[3] = { 2.4, 2.2, 2.0 };
+  sf_sim_t *sim = _sim_linear_ramp(dmax);
+  for(int i = 0; i < SF_NLE; i++)
+    for(int c = 0; c < 3; c++) sim->curves_before_f[i][c] = sim->curves_norm_f[i][c];
+  sim->couplers_recv_lm = 1;
+  for(int c = 0; c < 3; c++)
+  {
+    sim->couplers_recv_Kr[c] = 0.5;
+    sim->couplers_recv_cref[c] = 0.3;
+  }
+
+  const float lograw[3] = { -1.0f, -1.2f, -1.4f };
+  const float corr[3] = { 0.2f, 0.3f, 0.4f };
+  float cmy[3];
+  sf_sim_develop(sim, lograw, corr, cmy, 1, 3, 3);
+  for(int c = 0; c < 3; c++)
+  {
+    const double eff = corr[c] * (0.5 + 0.3) / (0.5 + corr[c]);
+    const double expected = _ramp_density(lograw[c] - eff, dmax[c]);
+    TR_DEBUG("channel %d cmy=%e expected=%e", c, cmy[c], expected);
+    assert_double_close(cmy[c], expected, 1e-5);
+  }
+  /* at c = cref the term is the identity */
+  assert_double_close(cmy[1], _ramp_density(lograw[1] - 0.3, dmax[1]), 1e-5);
+  free(sim);
+}
+
 /*
  * TEST FUNCTIONS: spectral upsampling table declarations
  */
@@ -586,8 +838,9 @@ static void _remove_in(const char *dir,
 
 /* pack_format 3: the declaration decides which files are tables and which one
    is the default, the headers decide their identity. The default comes first
-   whatever its position in the declaration, and an entry naming a path
-   outside the pack is not a table */
+   whatever its position in the declaration, and an entry whose file names a
+   path rather than a bare file name is not a table. The table it names exists
+   and is valid, so only the path check can be what rejects it */
 static void test_peek_tables_reads_a_format_3_declaration(void **state)
 {
   (void)state;
@@ -602,12 +855,16 @@ static void test_peek_tables_reads_a_format_3_declaration(void **state)
               " { \"identifier\": \"second\", \"kind\": \"reflectance\","
               "   \"scene_illuminant\": \"D65\", \"file\": \"second.f32\","
               "   \"default\": true },"
-              " { \"identifier\": \"escape\", \"kind\": \"irradiance\","
-              "   \"file\": \"../first.f32\" } ] }");
+              " { \"identifier\": \"nested\", \"kind\": \"irradiance\","
+              "   \"file\": \"sub/third.f32\" } ] }");
   char *first = g_build_filename(dir, "first.f32", NULL);
   char *second = g_build_filename(dir, "second.f32", NULL);
+  char *subdir = g_build_filename(dir, "sub", NULL);
+  char *third = g_build_filename(subdir, "third.f32", NULL);
   _write_table_header(first, 0x11111111u, "first_id");
   _write_table_header(second, 0x22222222u, "second_id");
+  assert_int_equal(g_mkdir(subdir, 0700), 0);
+  _write_table_header(third, 0x33333333u, "third_id");
 
   sf_table_info_t info[SF_MAX_TABLES];
   const int n = sf_pack_peek_tables(dir, info, SF_MAX_TABLES);
@@ -620,10 +877,14 @@ static void test_peek_tables_reads_a_format_3_declaration(void **state)
   assert_int_equal(info[1].lut_hash, 0x11111111u);
   assert_int_equal(info[1].kind, SF_LUT_IRRADIANCE);
 
+  g_remove(third);
+  g_rmdir(subdir);
   g_remove(first);
   g_remove(second);
   _remove_in(dir, "pack.json");
   g_rmdir(dir);
+  g_free(third);
+  g_free(subdir);
   g_free(first);
   g_free(second);
   g_free(dir);
@@ -666,6 +927,7 @@ int main(int argc,
     cmocka_unit_test(test_knee_above_threshold_compresses),
     cmocka_unit_test(test_knee_asymptotes_at_limit),
     cmocka_unit_test(test_knee_is_continuous_at_threshold),
+    cmocka_unit_test(test_knee_float_matches_double),
     cmocka_unit_test(test_aces_neutral_is_unchanged),
     cmocka_unit_test(test_aces_black_is_identity),
     cmocka_unit_test(test_aces_leaves_the_max_channel_alone),
@@ -678,14 +940,23 @@ int main(int argc,
     cmocka_unit_test(test_density_curve_is_monotonic),
     cmocka_unit_test(test_density_curve_is_near_zero_at_low_exposure),
     cmocka_unit_test(test_density_curve_is_inverted_for_positive_stock),
+    cmocka_unit_test(test_skewed_density_curve_is_monotonic),
+    cmocka_unit_test(test_skew_keeps_the_layer_median_on_its_centre),
+    cmocka_unit_test(test_exhausted_density_curve_is_monotonic),
     cmocka_unit_test(test_developer_exhaustion_preserves_midgray),
     cmocka_unit_test(test_zero_exhaustion_leaves_the_curve_alone),
     cmocka_unit_test(test_morph_gamma_scales_centers_and_sigmas),
+    cmocka_unit_test(test_morph_gammas_follow_layer_speed),
+    cmocka_unit_test(test_morph_sigma_has_a_floor),
     cmocka_unit_test(test_couplers_inactive_gives_no_correction),
     cmocka_unit_test(test_couplers_zero_density_gives_no_correction),
     cmocka_unit_test(test_couplers_diagonal_matrix_keeps_channels_independent),
     cmocka_unit_test(test_couplers_interlayer_crosses_channels),
     cmocka_unit_test(test_couplers_correction_scales_with_density),
+    cmocka_unit_test(test_couplers_positive_stock_inverts_the_silver),
+    cmocka_unit_test(test_couplers_donor_langmuir_saturates_the_silver),
+    cmocka_unit_test(test_couplers_correction_shifts_the_developed_density),
+    cmocka_unit_test(test_couplers_receiver_langmuir_saturates_the_inhibitor),
     cmocka_unit_test(test_peek_tables_reads_a_format_3_declaration),
     cmocka_unit_test(test_peek_tables_reads_a_format_2_pack),
   };

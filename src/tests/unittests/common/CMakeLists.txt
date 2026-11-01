@@ -2,12 +2,18 @@ add_cmocka_test(test_spektra_sim
                 SOURCES test_spektra_sim.c
                 LINK_LIBRARIES lib_darktable cmocka)
 
-# The pack-backed half of the coverage. SPEKTRA_PACK_DIR names the data pack
-# darktable ships, either as the directory holding pack.json or as one holding a
-# single versioned subdirectory that does -- the suite resolves both, so it does
-# not have to be taught the current spektrafilm release. With no pack there,
-# every test in it skips: a build machine that cannot answer the question should
-# not report the engine as broken.
+# The pack-backed half of the coverage. darktable does not ship a data pack:
+# users install one by hand or the module downloads it from
+# darktable-org/darktable-spektrafilm. SPEKTRA_TEST_PACK_DIR names a checkout of
+# one, either as the directory holding pack.json or as one holding versioned
+# subdirectories that do (the newest is used), so a clone of that repository's
+# packs/ directory works as is. The SPEKTRA_PACK_DIR environment variable
+# overrides it at run time, and a directory that is set but holds no loadable
+# pack fails the suite. With neither set, the suite uses the pack darktable
+# itself would find in the user data directory, and with none there it exits
+# with 77, which ctest reports as skipped.
+set(SPEKTRA_TEST_PACK_DIR "" CACHE PATH
+    "spektrafilm data pack for test_spektra_pack (empty: darktable's own)")
 add_cmocka_test(test_spektra_pack
                 SOURCES test_spektra_pack.c
                 LINK_LIBRARIES lib_darktable cmocka)
@@ -25,7 +31,8 @@ add_cmocka_test(test_history_strings
                 LINK_LIBRARIES lib_darktable cmocka)
 
 target_compile_definitions(test_spektra_pack PRIVATE
-  SPEKTRA_PACK_DIR="${CMAKE_SOURCE_DIR}/data/spektrafilm")
+  SPEKTRA_PACK_DIR="${SPEKTRA_TEST_PACK_DIR}")
+set_tests_properties(test_spektra_pack PROPERTIES SKIP_RETURN_CODE 77)
 
 # the .dtdata sidecar container, on temp files: no database needed
 add_cmocka_test(test_dtdata

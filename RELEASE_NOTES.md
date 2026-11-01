@@ -181,6 +181,12 @@ changes (where available).
 - Added a "copy to clipboard" export storage, which places the
   exported images on the system clipboard.
 
+- A workspace button in the top toolbar, between the keyboard shortcuts
+  button and the preferences button, opens a menu to switch workspaces
+  or create a new workspace (blank by default + optional copy). Workspace
+  button only appears when "allow for multiple workspaces" is enabled.
+  Switching or creating relaunches darktable into the chosen workspace.
+
 - The lens correction module now warns when it applies Lensfun
   vignetting correction to a Panasonic RW2 or Olympus ORF file shot
   with the camera's shading compensation on, which can overcorrect the
@@ -239,6 +245,12 @@ changes (where available).
 - Hovering over and dragging nodes of long drawn brush strokes and
   paths is much faster, as the mask overlay is no longer redrawn on
   every mouse move and long outlines are drawn with far fewer points.
+
+- Lens correction with lensfun is faster on the OpenCL path: lensfun
+  is now asked for its corrections on a coarse grid instead of for
+  every pixel, so the CPU no longer computes and uploads hundreds of
+  megabytes on each run. The correction is also more precise on x86,
+  where it could be up to 0.3 px off, or 0.6 px when distorting.
 
 ## Other Changes
 
@@ -376,7 +388,37 @@ changes (where available).
   `-as-flags` form emits a single line of `--flag value` pairs
   ready to splice into another invocation.
 
+- Lightroom import now applies a crop with the crop module, and its
+  straightening angle with the rotate and perspective module, instead
+  of the deprecated crop and rotate module.
+
+- Lightroom import now sets the working profile to linear ProPhoto
+  RGB, the space Lightroom works in, instead of linear Rec709 RGB.
+
+- Lightroom import adds its exposure and blacks adjustments to
+  darktable's default exposure instead of replacing it. In the
+  scene-referred workflow, images with a Lightroom exposure adjustment
+  were imported without the default exposure boost and exposure bias
+  compensation, so a small positive adjustment rendered darker than
+  none at all.
+
+- Lightroom import creates tone curves in RGB mode with color
+  preservation, as darktable's tone curve module now defaults to, and
+  no longer enables the module for a curve that changes nothing.
+  Clarity is imported with the local laplacian filter of the local
+  contrast module instead of the older bilateral grid.
+
+- Lightroom import applies spot removals with the retouch module,
+  cloning or healing as each spot did in Lightroom, instead of the
+  deprecated spot removal module.
+
+- History items created by the Lightroom import are labeled "lr import"
+  instead of having an empty label.
+
 ## Bug Fixes
+
+- Fixed Lightroom develop import which was not done. Only the tags,
+  color labels, stars where imported.
 
 - Fixed missing Active D-Lighting exposure compensation for Nikon
   images shot in sRGB or Adobe RGB.
@@ -406,6 +448,14 @@ changes (where available).
 
 - Fixed the feather of paths created by vectorizing a raster mask or an
   AI object, which could not be changed from the mask manager.
+
+- Fixed a dark fringe along the right and bottom edges of images
+  pixelated by the censorize module, whose last column and row were
+  left unpainted.
+
+- Fixed color reconstruction giving different colors with OpenCL than
+  without it: the OpenCL grid only counted one pixel of each run of
+  neighbors, and zooming in past 100% changed its spatial extent.
 
 - Fixed HEIF export compilation with libheif versions older than 1.15.0,
   and with versions older than 1.16.0 when libsharpyuv is available.
@@ -474,6 +524,9 @@ changes (where available).
 
 - Fixed refinements to forwarded raster masks being ignored along
   the OpenCL path.
+
+- Windows installer: Added an option to enable/disable including
+  darktable in the explorers context menu.
 
 - Compute JzAzBz's Az and Bz without cancellation so that results
   computed by the CPU and OpenCL paths do not diverge.
@@ -644,6 +697,9 @@ changes (where available).
   needs a larger input area than it outputs, for example liquify in a
   zoomed-in darkroom view.
 
+- Fixed the darkroom filmstrip losing the active-image triangle after
+  that thumbnail is scrolled off screen and back.
+
 - Improved internal stability (more reproducible wavelet denoising and
   haze removal).
 
@@ -700,6 +756,61 @@ changes (where available).
   no work profile is used for the luminance, and wrong alpha from its
   gaussian and poissonian noise, on macOS OpenCL: the kernels read
   vector lanes they had not set.
+
+- Fixed the vignetting module using a linear falloff instead of
+  its smooth one on the CPU when dithering is off, so that CPU and
+  OpenCL now give the same result.
+
+- Fixed Lightroom imports of parametric tone curves, which washed out
+  the highlights, of split toning, which used the wrong hues and toned
+  the highlights across nearly the whole image but never the shadows,
+  and of post-crop vignetting, which was far weaker than in Lightroom
+  and only started near the frame's edge.
+
+- Fixed the shape of post-crop vignetting imported from Lightroom on
+  portrait images, straightened crops and wide frames. Portrait images
+  got a landscape vignette that darkened their top and bottom but not
+  their sides.
+
+- Fixed color calibration's saturation sliders having a different
+  effect with OpenCL than on the CPU when the "version 1 (2020)"
+  saturation algorithm is selected.
+
+- Fixed the macOS app loading GTK input method modules, and with them
+  a second copy of GTK, from Homebrew when Homebrew's GTK is installed,
+  instead of the copies bundled in the app. Without Homebrew, the
+  modules were not found at all.
+
+- Fixed the wrong raster mask being applied when three or more external
+  raster masks were used in one edit.
+
+- Fixed diffuse or sharpen giving a different result on the CPU than
+  with OpenCL whenever an anisotropy was set: the CPU path computed the
+  diffusion weights with a coarse approximation of the exponential.
+  Edits using anisotropy may now look slightly different when exported
+  without OpenCL.
+
+- Fixed the non-local means modes of denoise (profiled) and astrophoto
+  denoise giving a different result with OpenCL than on the CPU: the
+  OpenCL path gave the horizontal neighbors twice their weight. Edits
+  using them may look slightly different when exported with OpenCL.
+
+- The non-local means modes of denoise (profiled) and astrophoto
+  denoise now treat the image edges the same way on the CPU and with
+  OpenCL, by mirroring the image. Before, the two gave different
+  results in a band along the edges. Edits using them may look
+  slightly different near the edges.
+
+- Fixed PPG demosaic with an edge threshold giving different pixels
+  along the image edges with OpenCL than on the CPU.
+
+- Fixed the RGB curve and tone curve modules giving brighter or darker
+  tones with OpenCL than on the CPU above a curve's last node, when that
+  node is left of the right edge.
+
+- Fixed occasional magenta pixels on the CPU in red areas blended with
+  the chromaticity, hue, color or HSV blend modes in display RGB, where
+  OpenCL gave the right color.
 
 ## Lua
 

@@ -36,17 +36,17 @@ rgbcurve(read_only image2d_t in, write_only image2d_t out, const int width, cons
 
   if(autoscale == 1) // DT_S_SCALE_MANUAL_RGB
   {
-    pixel.x = lookup_unbounded(table_r, pixel.x, coeffs_r);
-    pixel.y = lookup_unbounded(table_g, pixel.y, coeffs_g);
-    pixel.z = lookup_unbounded(table_b, pixel.z, coeffs_b);
+    pixel.x = lookup_unbounded_last_node(table_r, pixel.x, coeffs_r);
+    pixel.y = lookup_unbounded_last_node(table_g, pixel.y, coeffs_g);
+    pixel.z = lookup_unbounded_last_node(table_b, pixel.z, coeffs_b);
   }
   else if(autoscale == 0) // DT_S_SCALE_AUTOMATIC_RGB
   {
     if (preserve_colors == DT_RGB_NORM_NONE)
     {
-      pixel.x = lookup_unbounded(table_r, pixel.x, coeffs_r);
-      pixel.y = lookup_unbounded(table_r, pixel.y, coeffs_r);
-      pixel.z = lookup_unbounded(table_r, pixel.z, coeffs_r);
+      pixel.x = lookup_unbounded_last_node(table_r, pixel.x, coeffs_r);
+      pixel.y = lookup_unbounded_last_node(table_r, pixel.y, coeffs_r);
+      pixel.z = lookup_unbounded_last_node(table_r, pixel.z, coeffs_r);
     }
     else
     {
@@ -54,7 +54,7 @@ rgbcurve(read_only image2d_t in, write_only image2d_t out, const int width, cons
       const float lum = dt_rgb_norm(pixel, preserve_colors, use_work_profile, profile_info, lut);
       if(lum > 0.f)
       {
-        const float curve_lum = lookup_unbounded(table_r, lum, coeffs_r);
+        const float curve_lum = lookup_unbounded_last_node(table_r, lum, coeffs_r);
         ratio = curve_lum / lum;
       }
       pixel.xyz *= ratio;

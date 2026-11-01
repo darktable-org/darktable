@@ -16,6 +16,27 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/* Canonical labels: "" (default), "memory", or a named workspace.
+ * Translated UI strings like _("default") are also accepted by apply. */
+
+/* GList of gchar* labels; always starts with "" then "memory", then
+ * discovered names sorted. Free with g_list_free_full(list, g_free). */
+GList *dt_workspace_list(const char *datadir);
+
+/* Set database + workspace/label conf for label. */
+void dt_workspace_apply(const char *label);
+
+/* Create a named workspace (not default/memory). Returns FALSE if reserved
+ * or already exists. copy_from NULL = blank rc; "" = seed from default;
+ * otherwise seed from that workspace (sanitized). Then applies conf like
+ * dt_workspace_apply(). */
+gboolean dt_workspace_new(const char *datadir,
+                          const char *label,
+                          const char *copy_from);
+
+/* Touch one-shot marker so next start skips the workspace picker. */
+void dt_workspace_request_relaunch_skip_picker(const char *datadir);
+
 /* returns TRUE if a workspace is active/created and FALSE otherwise */
 gboolean dt_workspace_create(const char *datadir);
 

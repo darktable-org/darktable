@@ -20,6 +20,7 @@
   This file contains the necessary routines to implement a filter for the filtering module
 */
 
+#include "common/filter.h"
 #include "common/utility.h"
 
 static gboolean _iso_update(dt_lib_filtering_rule_t *rule)
@@ -33,29 +34,24 @@ static gboolean _iso_update(dt_lib_filtering_rule_t *rule)
   GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(specialtop->range_select) : NULL;
 
   rule->manual_widget_set++;
-  // first, we update the graph
-  char query[1024] = { 0 };
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-             "SELECT ROUND(iso,0), COUNT(*) AS count"
-             " FROM main.images AS mi"
-             " WHERE %s"
-             " GROUP BY ROUND(iso, 0)",
-             d->last_where_ext);
-  // clang-format on
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  dtgtk_range_select_reset_blocks(range);
-  if(rangetop) dtgtk_range_select_reset_blocks(rangetop);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const double val = sqlite3_column_double(stmt, 0);
-    const int count = sqlite3_column_int(stmt, 1);
+  const gchar *colname = "iso";
 
-    dtgtk_range_select_add_block(range, val, count);
-    if(rangetop) dtgtk_range_select_add_block(rangetop, val, count);
+  // first, we update the graph
+
+  // get min and max
+  dt_filter_range_t *isorange = dt_filter_get_range(colname, d->last_where_ext);
+  range->min_r = isorange->min_r;
+  range->max_r = isorange->max_r;
+  dt_filter_range_free(isorange);
+
+  GList *counts = dt_filter_get_range_counts(colname, d->last_where_ext);
+  for(GList *iter = counts; iter; iter = g_list_next(iter))
+  {
+    dt_filter_range_count_t *count = iter->data;
+    dtgtk_range_select_add_block(range, count->value_r, count->count);
+    if(rangetop) dtgtk_range_select_add_block(rangetop, count->value_r, count->count);
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(counts, dt_filter_range_count_free);
 
   // and setup the selection
   dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
@@ -110,24 +106,10 @@ static void _iso_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
   dtgtk_range_select_set_band_func(range, _iso_value_from_band_func, _iso_value_to_band_func);
   range->print = _iso_print_func;
 
-  char query[1024] = { 0 };
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-             "SELECT MIN(iso), MAX(iso)"
-             " FROM main.images");
-  // clang-format on
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  double min = 50;
-  double max = 12800;
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    min = sqlite3_column_double(stmt, 0);
-    max = sqlite3_column_double(stmt, 1);
-  }
-  sqlite3_finalize(stmt);
-  range->min_r = floor(min);
-  range->max_r = floor(max) + 1;
+  dt_filter_range_t *isorange = dt_filter_get_range("iso", NULL);
+  range->min_r = floor(isorange->min_r);
+  range->max_r = floor(isorange->max_r) + 1;
+  dt_filter_range_free(isorange);
 
   _range_widget_add_to_rule(rule, special, top);
 }

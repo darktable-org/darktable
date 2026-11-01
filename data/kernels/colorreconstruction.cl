@@ -153,7 +153,7 @@ colorreconstruction_splat(
     }
     else
     {
-      tmp = accum[li];
+      tmp += accum[li];
     }
   }
 

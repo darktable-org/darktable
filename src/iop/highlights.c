@@ -153,7 +153,6 @@ typedef struct dt_iop_highlights_global_data_t
   int kernel_highlights_opposed;
   int kernel_highlights_initmask;
   int kernel_highlights_dilatemask;
-  int kernel_highlights_chroma;
 
   int kernel_highlights_false_color;
 
@@ -682,7 +681,7 @@ int process_cl(dt_iop_module_t *self,
   {
     const dt_dev_chroma_t *chr = &self->dev->chroma;
     dt_aligned_pixel_t clips = { clipper, clipper, clipper, clipper};
-    if(pipe->dsc.temperature.enabled && chr->late_correction)
+    if(chr->late_correction)
     {
       clips[0] *= chr->as_shot[0] / chr->D65coeffs[0];
       clips[1] *= chr->as_shot[1] / chr->D65coeffs[1];
@@ -761,7 +760,7 @@ static void process_clip(dt_iop_module_t *self,
     const uint8_t(*const xtrans)[6] = piece->xtrans;
     const dt_dev_chroma_t *chr = &self->dev->chroma;
     dt_aligned_pixel_t clips = { clip, clip, clip, clip};
-    if(piece->pipe->dsc.temperature.enabled && chr->late_correction)
+    if(chr->late_correction)
     {
       clips[0] *= chr->as_shot[0] / chr->D65coeffs[0];
       clips[1] *= chr->as_shot[1] / chr->D65coeffs[1];
@@ -1134,7 +1133,6 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_highlights_opposed = dt_opencl_create_kernel(program, "highlights_opposed");
   gd->kernel_highlights_initmask = dt_opencl_create_kernel(program, "highlights_initmask");
   gd->kernel_highlights_dilatemask = dt_opencl_create_kernel(program, "highlights_dilatemask");
-  gd->kernel_highlights_chroma = dt_opencl_create_kernel(program, "highlights_chroma");
   gd->kernel_highlights_false_color = dt_opencl_create_kernel(program, "highlights_false_color");
 
   const int wavelets = 35; // bspline.cl, from programs.conf
@@ -1158,7 +1156,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_highlights_opposed);
   dt_opencl_free_kernel(gd->kernel_highlights_initmask);
   dt_opencl_free_kernel(gd->kernel_highlights_dilatemask);
-  dt_opencl_free_kernel(gd->kernel_highlights_chroma);
   dt_opencl_free_kernel(gd->kernel_highlights_false_color);
 
   dt_opencl_free_kernel(gd->kernel_filmic_bspline_vertical);

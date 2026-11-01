@@ -1420,7 +1420,8 @@ static inline float _sample_cfa_same_color(const float *mosaic, int w, int h,
 // color-c photosites of a row sit on one column parity (R/B occupy alternate
 // rows; green every row, flipping parity).  Taking that parity from the 2x2 cell
 // and stepping by 2 visits exactly the same taps with no per-tap _fcol() test --
-// bit-for-bit identical to the general sampler, at ~1/3 the inner iterations.
+// the same sum as the general sampler, at ~1/3 the inner iterations (equal to
+// within an ulp or so: -ffast-math lets the compiler fuse the two differently).
 static inline float _sample_bayer_same_color(const float *mosaic, int w, int h,
                                              std::uint32_t filters, int c, double sx, double sy)
 {

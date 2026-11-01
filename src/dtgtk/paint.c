@@ -2965,6 +2965,36 @@ void dtgtk_cairo_paint_zoom(cairo_t *cr, const gint x, const gint y, const gint 
   FINISH
 }
 
+static void _workspace_card(cairo_t *cr, double x, double y, double s)
+{
+  const double r = 0.1;
+  cairo_new_sub_path(cr);
+  cairo_arc(cr, x + s - r, y + r,     r, -M_PI_2, 0.0);
+  cairo_arc(cr, x + s - r, y + s - r, r, 0.0, M_PI_2);
+  cairo_arc(cr, x + r,     y + s - r, r, M_PI_2, M_PI);
+  cairo_arc(cr, x + r,     y + r,     r, M_PI, 1.5 * M_PI);
+  cairo_close_path(cr);
+}
+
+void dtgtk_cairo_paint_workspace(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  cairo_save(cr);
+  cairo_rectangle(cr, 0.0, 0.0, 1.0, 1.0);
+  _workspace_card(cr, 0.34, 0.34, 0.64);
+  cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+  cairo_clip(cr);
+  _workspace_card(cr, 0.02, 0.02, 0.64);
+  cairo_stroke(cr);
+  cairo_restore(cr);
+
+  _workspace_card(cr, 0.34, 0.34, 0.64);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_multiinstance(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)

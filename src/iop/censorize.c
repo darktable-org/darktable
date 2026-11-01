@@ -238,9 +238,14 @@ void process(dt_iop_module_t *self,
             RGB[c] += pix_in[c] / 5.f;
         }
 
-        // paint the big pixel with solid color == average
-        for(size_t jj = tl.y; jj < br.y; jj++)
-          for(size_t ii = tl.x; ii < br.x; ii++)
+        // paint the big pixel with solid color == average. Each big pixel
+        // stops short of its bottom right corner, which the next one
+        // paints, except at the image border: there the last big pixel
+        // that has any width covers the last column or row too
+        const size_t end_x = (br.x == width - 1 && tl.x < br.x) ? width : br.x;
+        const size_t end_y = (br.y == height - 1 && tl.y < br.y) ? height : br.y;
+        for(size_t jj = tl.y; jj < end_y; jj++)
+          for(size_t ii = tl.x; ii < end_x; ii++)
           {
             float *const restrict pix_out = DT_IS_ALIGNED_PIXEL(output + (jj * width + ii) * 4);
             for_four_channels(c)

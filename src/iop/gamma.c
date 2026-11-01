@@ -255,7 +255,7 @@ static void _mask_display(const float *const restrict in,
   DT_OMP_FOR_SIMD(aligned(in, out: 64) aligned(mask_color: 16))
   for(size_t j = 0; j < buffsize; j+= 4)
   {
-    const float gray = interpolatef(mix, in[j + 3], 0.3f * in[j + 0] + 0.59f * in[j + 1] + 0.11f * in[j + 2]);
+    const float gray = mixf(0.3f * in[j + 0] + 0.59f * in[j + 1] + 0.11f * in[j + 2], in[j + 3], mix);
     const dt_aligned_pixel_t pixel = { gray, gray, gray, gray };
     _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
   }

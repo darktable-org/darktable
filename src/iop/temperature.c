@@ -525,7 +525,7 @@ static inline void _publish_chroma(dt_dev_pixelpipe_iop_t *piece)
       d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
     chr->wb_coeffs[k] = d->coeffs[k];
   }
-  chr->late_correction = (d->preset == DT_IOP_TEMP_D65_LATE);
+  chr->late_correction = d->preset == DT_IOP_TEMP_D65_LATE && piece->enabled;
 }
 
 void process(dt_iop_module_t *self,
@@ -720,7 +720,7 @@ void commit_params(dt_iop_module_t *self,
      If piece is disabled we always clear the trouble message and
      make sure chroma does know there is no temperature module.
   */
-  chr->late_correction = p->preset == DT_IOP_TEMP_D65_LATE;
+  chr->late_correction = p->preset == DT_IOP_TEMP_D65_LATE && piece->enabled;
   chr->temperature = piece->enabled ? self : NULL;
   if(dt_pipe_is_preview(pipe) && !piece->enabled)
     dt_iop_clear_module_trouble_message(self);
@@ -1149,7 +1149,7 @@ static void _update_preset(dt_iop_module_t *self, int mode)
   dt_dev_chroma_t *chr = &self->dev->chroma;
 
   p->preset = mode;
-  chr->late_correction = mode == DT_IOP_TEMP_D65_LATE;
+  chr->late_correction = mode == DT_IOP_TEMP_D65_LATE && self->enabled;
 }
 
 void gui_update(dt_iop_module_t *self)

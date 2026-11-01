@@ -76,7 +76,7 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece,
       {
         const size_t oidx = idx * 4;
         for(int c = 0; c < 3; c++)
-          high_data[oidx + c] = interpolatef(mask[idx], high_data[oidx + c], vng_image[oidx + c]);
+          high_data[oidx + c] = mixf(vng_image[oidx + c], high_data[oidx + c], mask[idx]);
         high_data[oidx + 3] = 0.0f;
       }
       dt_free_align(vng_image);

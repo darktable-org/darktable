@@ -4249,6 +4249,8 @@ void enter(dt_view_t *self)
     }
   }
   _expand_focused_instance(dev);
+  // an always-on mask panel is up from the start, even with no module focused
+  dt_iop_gui_blend_masks_panel_idle_sync();
   dt_iop_gui_blend_masks_panel_sync_toolbox();
 
   // image should be there now.

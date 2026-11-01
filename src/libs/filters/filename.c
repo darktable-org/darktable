@@ -93,7 +93,6 @@ static void _filename_tree_update(_widgets_filename_t *filename)
 {
   dt_lib_filtering_t *d = filename->rule->lib;
 
-  char query[1024] = { 0 };
   int nb_raw = 0;
   int nb_not_raw = 0;
   int nb_ldr = 0;
@@ -104,67 +103,33 @@ static void _filename_tree_update(_widgets_filename_t *filename)
   GtkTreeModel *ext_model = gtk_tree_view_get_model(GTK_TREE_VIEW(filename->ext_tree));
   gtk_list_store_clear(GTK_LIST_STORE(ext_model));
 
-  // how do we separate filename and extension directly in sqlite :
-  // starting example : 'nice.bird.cr2'
-  // replace(filename, '.', '') => nicebirdcr2 (remove all the point)
-  // rtrim(filename, replace(filename, '.', '')) => nice.bird. (remove ending chars presents in 'nice.bird.cr2' and
-  // 'nicebirdcr2') rtrim(rtrim(filename, replace(filename, '.', '')), '.') => nice.bird (remove ending '.')
-  // replace(filename, rtrim(filename, replace(filename, '.', '')), '.') => .cr2 (replace the filename part by a
-  // '.')
-
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-             "SELECT rtrim(rtrim(filename, replace(filename, '.', '')), '.') AS fn, COUNT(*) AS count"
-             " FROM main.images AS mi"
-             " WHERE %s"
-             " GROUP BY fn"
-             " ORDER BY filename",
-             d->last_where_ext);
-  // clang-format on
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  GList *counts = dt_filter_get_filename_counts(d->last_where_ext);
+  for(GList *iter = counts; iter; iter = g_list_next(iter))
   {
-    const char *name = (const char *)sqlite3_column_text(stmt, 0);
-    if(name == NULL) continue; // safeguard against degenerated db entries
-    const int count = sqlite3_column_int(stmt, 1);
-
+    dt_filter_name_count_t *count = iter->data;
     gtk_list_store_insert_with_values(GTK_LIST_STORE(name_model), NULL, -1,
-                       TREE_COL_TEXT, name, TREE_COL_TOOLTIP, name,
-                       TREE_COL_PATH, name, TREE_COL_COUNT, count, -1);
+                       TREE_COL_TEXT, count->name, TREE_COL_TOOLTIP, count->name,
+                       TREE_COL_PATH, count->name, TREE_COL_COUNT, count->count, -1);
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(counts, dt_filter_name_count_free);
 
 
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-             "SELECT upper(replace(filename, rtrim(filename, replace(filename, '.', '')), '.')) AS ext, COUNT(*) AS count, flags"
-             " FROM main.images AS mi"
-             " WHERE %s"
-             " GROUP BY ext"
-             " ORDER BY ext",
-             d->last_where_ext);
-  // clang-format on
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  counts = dt_filter_get_extension_counts(d->last_where_ext);
+  for(GList *iter = counts; iter; iter = g_list_next(iter))
   {
-    const char *name = (const char *)sqlite3_column_text(stmt, 0);
-    if(name == NULL) continue; // safeguard against degenerated db entries
-    const int count = sqlite3_column_int(stmt, 1);
-    const int flags = sqlite3_column_int(stmt, 2);
-
+    dt_filter_ext_flag_count_t *count = iter->data;
     gtk_list_store_insert_with_values(GTK_LIST_STORE(ext_model), NULL, -1,
-                       TREE_COL_TEXT, name, TREE_COL_TOOLTIP, name,
-                       TREE_COL_PATH, name, TREE_COL_COUNT, count, -1);
+                       TREE_COL_TEXT, count->name, TREE_COL_TOOLTIP, count->name,
+                       TREE_COL_PATH, count->name, TREE_COL_COUNT, count->count, -1);
 
-    if(flags & DT_IMAGE_RAW)
-      nb_raw += count;
+    if(count->flags & DT_IMAGE_RAW)
+      nb_raw += count->count;
     else
-      nb_not_raw += count;
-    if(flags & DT_IMAGE_LDR) nb_ldr += count;
-    if(flags & DT_IMAGE_HDR) nb_hdr += count;
+      nb_not_raw += count->count;
+    if(count->flags & DT_IMAGE_LDR) nb_ldr += count->count;
+    if(count->flags & DT_IMAGE_HDR) nb_hdr += count->count;
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(counts, dt_filter_ext_flag_count_free);
 
   // and we insert the predefined extensions
   gtk_list_store_insert_with_values(GTK_LIST_STORE(ext_model), NULL, 0,

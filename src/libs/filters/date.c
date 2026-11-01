@@ -56,22 +56,22 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
   gchar *colname = _date_get_db_colname(rule);
 
   // get min and max
-  dt_filter_daterange_t *daterange = dt_filter_get_daterange(colname, d->last_where_ext);
+  dt_filter_range_t *daterange = dt_filter_get_range(colname, d->last_where_ext);
   range->min_r = daterange->min_r;
   range->max_r = daterange->max_r;
-  dt_filter_daterange_free(daterange);
+  dt_filter_range_free(daterange);
 
   dtgtk_range_select_reset_blocks(range);
   if(rangetop) dtgtk_range_select_reset_blocks(rangetop);
 
-  GList *counts = dt_filter_get_date_counts(colname, d->last_where_ext);
+  GList *counts = dt_filter_get_range_counts(colname, d->last_where_ext);
   for(GList *iter = counts; iter; iter = g_list_next(iter))
   {
-    dt_filter_date_count_t *count = iter->data;
-    dtgtk_range_select_add_block(range, count->dt, count->count);
-    if(rangetop) dtgtk_range_select_add_block(rangetop, count->dt, count->count);
+    dt_filter_range_count_t *count = iter->data;
+    dtgtk_range_select_add_block(range, count->value_r, count->count);
+    if(rangetop) dtgtk_range_select_add_block(rangetop, count->value_r, count->count);
   }
-  g_list_free_full(counts, dt_filter_date_count_free);
+  g_list_free_full(counts, dt_filter_range_count_free);
 
   // and setup the selection
   dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
@@ -235,10 +235,10 @@ static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection
 
   gchar *colname = _date_get_db_colname(rule);
 
-  dt_filter_daterange_t *daterange = dt_filter_get_daterange(colname, NULL);
+  dt_filter_range_t *daterange = dt_filter_get_range(colname, NULL);
   range->min_r = daterange->min_r;
   range->max_r = daterange->max_r;
-  dt_filter_daterange_free(daterange);
+  dt_filter_range_free(daterange);
 
   _range_widget_add_to_rule(rule, special, top);
 }

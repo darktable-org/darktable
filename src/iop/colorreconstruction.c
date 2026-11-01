@@ -1007,7 +1007,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dt_iop_colorreconstruct_global_data_t *gd = self->global_data;
   dt_iop_colorreconstruct_gui_data_t *g = self->gui_data;
 
-  const float scale = piece->iscale / roi_in->scale;
+  const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const float sigma_r = fmax(d->range, 0.1f); // does not depend on scale
   const float sigma_s = fmax(d->spatial, 1.0f) / scale;
   const float hue = hue_conversion(d->hue); // convert to LCH hue which better fits to Lab colorspace

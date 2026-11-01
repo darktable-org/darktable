@@ -35,12 +35,14 @@ a member is selected or picked, shows the plus pointer (a minus over what is
 selected already) and shades the row (or group header) under it
 (`_armed_watch`); a click adds it to the picks, or takes it off. The first pick
 joins the selected member, so a selection and one shift+click make two. With
-the mask's own group selected, which is no member, nothing is armed and
-shift+click is a plain click. From two picks on, the selection panel gives way
-to the multiple selection panel, which deletes, moves (into a group chosen from
-a menu) or groups the picks together (they must all be in the same group; when
-they come down to one thing, the button reads "wrap in group"). A plain click
-on a row selects only that row. The mask's own group cannot be picked.
+the mask's own group selected, which is a group like any other, shift+click on
+anything in it picks everything else in the mask. While shift is held, and while
+there are picks, the frame of a selected group takes in all it holds. From two
+picks on, the selection panel gives way to the multiple selection panel, which
+deletes, moves (into a group chosen from a menu) or groups the picks together
+(they must all be in the same group; when they come down to one thing, the
+button reads "wrap in group"). A plain click
+on a row selects only that row. The mask's own group cannot be picked itself.
 
 A group is selected whole: selecting it selects everything it holds, at any
 depth, and taking off one of those takes the group off too, as it is no longer
@@ -70,7 +72,7 @@ by the hash of the mask before and after, not in the history).
 | channel button | add the channel | toggle its persistent overlay | nothing |
 | selection panel: delete | delete | empty the group, keeping it | nothing |
 | selection panel: wand | open the menu: wrap in group, compose, simplify (groups only) | nothing | nothing |
-| selection panel: link | go to the other end | give this module its own copy | nothing |
+| link, raster mask or linked shape | go to the other end | give this module its own copy | nothing |
 
 The parametric pickers list their own modifiers in their tooltips.
 

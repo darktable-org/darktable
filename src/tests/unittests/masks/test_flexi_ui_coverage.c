@@ -200,7 +200,7 @@ static void test_exempt_bits_are_not_quietly_swept(void **state)
 }
 
 /* the non-state fields the panel writes: per-shape opacity
-   (_props_row_apply), group opacity (_group_opacity_changed) and refinement
+   (_controls_row_apply), group opacity (_group_opacity_changed) and refinement
    (_refine_commit_nonglobal). `name` is absent: the renderer never reads it */
 static void test_every_panel_written_field_is_swept(void **state)
 {

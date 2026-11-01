@@ -1053,10 +1053,9 @@ filmic_mask_clipped_pixels(read_only image2d_t in,
   const float argument = -pix_max * normalize + feathering;
   const float weight = clipf(1.0f / ( 1.0f + dtcl_exp2(argument)));
 
-  /** according to CL specs such writing to buffer is not safe (workgroups)
-      and we should better do atomic_inc(clipped)
-  */
-  if(4.f > argument) *clipped += 1;
+  // process_cl() reconstructs only above 9 clipped pixels, and a plain
+  // increment from concurrent work items loses most of the counts
+  if(4.f > argument) atomic_inc(clipped);
   write_imagef(out, (int2)(x, y), weight);
 }
 

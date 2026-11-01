@@ -2001,6 +2001,8 @@ dialog .sidebar :hover,
 menuitem:hover,
 notebook tab:hover,
 radiobutton:hover label,
+#dt-workspace-create:hover,
+#dt-workspace-create:hover label,
 treeview:not(#lutname) *:hover:not(check),
 #dt-range-date-popup .text-button:hover,
 #lens-module .text-button:hover,
@@ -2072,6 +2074,17 @@ menuitem check:hover,
 treeview check:hover
 {
   color: @bauhaus_fg_hover;
+}
+
+/* workspace menu: action row without button chrome; hover shares radiobutton rule */
+#dt-workspace-create
+{
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  padding: 0;
+  min-height: 0;
+  box-shadow: none;
 }
 
 entry:hover
@@ -2954,29 +2967,27 @@ popover#log-history-popover label
    theme: its grounds and shades from the module background
    (@plugin_bg_color), its text from the theme's text and slider colors.
 
-   The panel's shades, one per state. Each header and the rail hanging from
-   it take the same one, so a theme or a CSS tweak retints the whole panel by
-   redefining these. A selected header is a gradient from the _top shade down
-   to the plain one, and its rail takes the plain one: that is the edge they
-   meet */
-@define-color mask_rest          shade(@plugin_bg_color, 0.97);
+   The panel's shades, one per state, so a theme or a CSS tweak retints the
+   whole panel by redefining these. A selected header is a gradient from the
+   _top shade down to the plain one (the same shade, flat, by default). Every
+   rail takes the shade of a group's header at rest, in every state.
+
+   The ground of the whole list, "whole mask" header and rails included, and
+   the shades, as steps of it: a member's header, which blends into it at
+   rest, and a group's header, brighter than the ground so it stands out
+   against it */
+@define-color mask_list_bg       shade(@bg_color, 1.05);
+@define-color mask_rest          @mask_list_bg;
+@define-color mask_group_rest    shade(@mask_list_bg, 1.2);
 @define-color mask_selected_element_group shade(@plugin_bg_color, 1.15);
-@define-color mask_selected_top  shade(@plugin_bg_color, 1.33);
+@define-color mask_selected_top  shade(@mask_list_bg, 1.4);
 @define-color mask_selected      @mask_selected_top;
 @define-color mask_hover_top     shade(@plugin_bg_color, 1.5);
 @define-color mask_hover         @mask_hover_top;
 /* what a ctrl+shift+click would delete, while ctrl+shift is held over the list */
 @define-color mask_delete_top    mix(@mask_hover_top, rgb(200, 60, 50), 0.55);
 @define-color mask_delete        @mask_delete_top;
-/* shift+click picks members together (see _pick_toggle): the one a click would
-   pick, while shift is held over the list, tints toward mask_accent, the theme's
-   accent color when one is set (chunk-colored-accent.css), green otherwise. A
-   picked header is a selected one */
-@define-color mask_accent        @accent_green;
-@define-color mask_pick_top      mix(@mask_hover_top, @mask_accent, 0.35);
-@define-color mask_pick          @mask_pick_top;
 /* the ground of the controls under an open header, in every state */
-@define-color mask_card          @mask_rest;
 /* the glyph on every row's lead icon. A lead has no plate of its own, so its
    glyph sits on the header and must read on every header shade */
 @define-color mask_lead_fg          @fg_color;
@@ -2987,23 +2998,23 @@ popover#log-history-popover label
 @define-color mask_badge           @colorlabel_yellow;
 @define-color mask_badge_no_effect @colorlabel_red;
 @define-color mask_badge_outline   alpha(@grey_00, 0.6);
-/* the ground of the whole list, "whole mask" header and rails included:
-   darker than the headers and cards, so they stand out against it */
-@define-color mask_list_bg       shade(@plugin_bg_color, 0.75);
-/* header names, one per header state as for the shades above */
+/* header names, one per header state as for the shades above; a member's
+   (not a group's) is a little dimmer at rest */
 @define-color mask_text_rest     @fg_color;
+@define-color mask_text_member   shade(@fg_color, 0.88);
 @define-color mask_text_selected_element_group @fg_color;
-@define-color mask_text_selected @fg_color;
+@define-color mask_text_selected shade(@fg_color, 1.2);
+@define-color mask_text_held     @fg_color;
 /* the frame of a selected or picked header: the theme's accent color when one
-   is set (chunk-colored-accent.css), the color of its name otherwise */
-@define-color mask_selected_frame @mask_text_selected;
+   is set (chunk-colored-accent.css), the color of its text otherwise */
+@define-color mask_selected_frame @fg_color;
 @define-color mask_text_hover    @fg_color;
 /* labels and values of the sliders in the list: as bright as the same
-   properties in the selection panel below (mask_selection_text_control) */
+   controls in the selection panel below (mask_selection_text_control) */
 @define-color mask_text_control       @bauhaus_fg;
 @define-color mask_text_control_hover @bauhaus_fg_hover;
 /* the selection panel under the list: a caption naming the selection, the
-   buttons acting on it, then its help, properties and refinement */
+   buttons acting on it, then its help, controls and refinement */
 @define-color mask_selection_text               @fg_color;
 @define-color mask_selection_text_control       @mask_text_control;
 @define-color mask_selection_text_control_hover @mask_text_control_hover;
@@ -3361,13 +3372,15 @@ button.dt_masks_panel_toggle:checked
   background-color: alpha(@fg_color, 0.22);
 }
 
-/* embedded, the collapse arrow is the leading icon of a module header row
+/* embedded, the collapse arrow is the last icon of a module header row
    and reads like one: no fill of its own (a plate shows against the disabled
    header but not against the lighter mask-enabled one), and the same box as
-   the buttons around it */
+   the buttons beside it */
 #blending-tabs.dt_masks_embedded #masks-collapse
 {
   background-color: transparent;
+  min-width: 1.15em;
+  min-height: 1.15em;
   margin: 0.07em;
   padding: 1px;
 }
@@ -3377,36 +3390,45 @@ button.dt_masks_panel_toggle:checked
   background-color: alpha(@fg_color, 0.18);
 }
 
+/* on the canvas the arrow is only a placeholder that carries the scrollbar's
+   inset (see _masks_header_apply_side), and takes no room of its own */
+#blending-tabs #masks-collapse.dt_masks_placeholder
+{
+  min-width: 0;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 0;
+  border: none;
+}
+
 /* the mask's on/off toggle. The header itself says nothing about the
    mask's state: that is this toggle's job alone, the way a module header
    leaves "is this module on" to its power button. The .dt_masks_enabled
-   class on the header is left for a theme that wants to say it twice. It
-   draws the toolbar button's domino, so it dims as .dt_masks_empty does */
+   class on the header is left for a theme that wants to say it twice. Plain
+   off and on, with no plate: its glyph is filled and lit while on (see
+   _paint_mask_enable_toggle), which is its state. A plate shows only when
+   hovered */
 button.dt_masks_enable_toggle
 {
   background-color: transparent;
   border: none;
-  opacity: 0.45;
   color: @button_fg;
-}
-
-button.dt_masks_enable_toggle:hover
-{
-  opacity: 0.75;
 }
 
 button.dt_masks_enable_toggle:checked
 {
-  opacity: 1.0;
   color: @field_active_fg;
 }
 
-/* the rows of buttons in the header and the toolbar: no margin of their
-   own, so the spacing between runs is the theme's alone (the toolbar's
-   .dt_masks_button_gap, the header's .dt_masks_group_end) */
-.dt_masks_button_row > *
+button.dt_masks_enable_toggle:hover
 {
-  margin-right: 0px;
+  background-color: alpha(@fg_color, 0.4);
+  color: shade(@fg_color, 1.15);
+}
+
+button.dt_masks_enable_toggle:checked:hover
+{
+  color: @field_active_fg;
 }
 
 /* fixed separator between two runs of buttons in the toolbar: one icon
@@ -3417,13 +3439,14 @@ button.dt_masks_enable_toggle:checked
   min-width: 4px;
 }
 
-/* the space between the header's three groups of buttons: editing (edit
-   on canvas, solo edit), viewing (overlay, eye) and the lock. The first two
-   end in .dt_masks_group_end. Qualified past ".dt_masks_button_row > *",
-   which zeroes the margin */
-#blending-tabs .dt_masks_group_end
+/* docked and in the utility panel, the header's controls end a little short of
+   the edge: the last over the rows' visibility column (docked) or the lib
+   header's toggle (utility), the one before over the next column in. Inside a
+   module there is no such column to meet, and the arrow closes the header */
+#masks-docked-panel #blending-tabs .dt_masks_header_controls,
+#masks-host-content #blending-tabs .dt_masks_header_controls
 {
-  margin-right: 0.7em;
+  margin-right: 5px;
 }
 
 /* ---- blend mode and opacity ------------------------------------------- */
@@ -3442,6 +3465,20 @@ button.dt_masks_enable_toggle:checked
   margin-right: 0.3em;
 }
 
+/* the blend order icon ends the blend mode row, and is pulled in to share the
+   column of the icons below it. Embedded in the module or in the utilities
+   panel, its stock position is nearly there; docked, the list's ground is
+   padded in, so it needs more */
+.dt_masks_blend_order
+{
+  margin-right: 0.15em;
+}
+
+#masks-docked-panel .dt_masks_blend_order
+{
+  margin-right: 0.55em;
+}
+
 /* ---- the list's ground and toolbar ------------------------------------ */
 
 /* one ground under the toolbar, the mask's group, its header and every
@@ -3449,22 +3486,13 @@ button.dt_masks_enable_toggle:checked
 #masks-list-area
 {
   background-color: @mask_list_bg;
-  padding: 4px;
+  border-radius: 0;
+  padding: 0 4px;
 }
 
-/* the list's title, a child of the panel body: inset as the selection's is
-   (a wrapped box's padding, then the area's 4px), so the two titles line up.
-   The docked panel's wrapped boxes are padded 2px, not 0.65em */
-.dt_masks_list_caption
+#masks-list-box
 {
-  margin-left: 0.98em;
-  margin-right: 0.98em;
-}
-
-#masks-docked-panel .dt_masks_list_caption
-{
-  margin-left: 6px;
-  margin-right: 6px;
+  background-color: transparent;
 }
 
 /* the toolbar's add buttons, spaced as the button rows; its rows, when it
@@ -3487,16 +3515,27 @@ button.dt_masks_enable_toggle:checked
 .dt_masks_channel_add:hover,
 .dt_masks_channel_add:active
 {
+  /* the size and spacing of the shape buttons above (.dt_module_btn: 1.15em
+     and a 0.07em margin, with a 1px padding where this has the 1px border),
+     so the two rows keep their buttons in the same columns. The row is the
+     widest of the narrowest toolbar layout (see masks_gui_toolbar.c) */
+  min-width: 1.15em;
+  min-height: 1.15em;
+  margin: 0.07em;
+  padding: 0;
   border: 1px solid transparent;
-  /* the border's width, given back: the row is the widest of the narrowest
-     toolbar layout, so each pixel here is a pixel the panel cannot narrow by
-     (see masks_gui_toolbar.c) */
-  margin-left: -1px;
-  margin-right: -1px;
   outline-style: none;
   outline-width: 0;
   background-color: transparent;
   box-shadow: none;
+}
+
+/* the label's own margin and size floor (".text-button label") would add to
+   the button's, making the frame larger than the shape buttons' */
+.dt_masks_channel_add label
+{
+  margin: 0;
+  min-height: 0;
 }
 
 /* persistent channel overlay toggled on: framed with a border and subtle tint */
@@ -3529,12 +3568,12 @@ button.dt_masks_enable_toggle:checked
    element's, a shape shown in more than one place), .dt_masks_open and
    .dt_masks_drop_target (a group a drag would drop into).
 
-   The top margin is the one gap between a row or header and whatever is
-   above it: a row, its group's header, or the end of a rail */
+   Rows and headers touch: there is no gap between a row or header and
+   whatever is above it */
 .dt_masks_row,
 .dt_masks_group_header
 {
-  margin-top: 4px;
+  margin-top: 0;
 }
 
 /* a row paints nothing itself but its solo wash: its header line
@@ -3557,12 +3596,17 @@ button.dt_masks_enable_toggle:checked
    frame around every selected header */
 .dt_masks_header
 {
-  border: 2px solid transparent;
+  border: 1px solid transparent;
+  padding: 2px 0 2px 2px;
   background-origin: border-box;
+  /* never drawn as an outline: it is the color of the rail hanging from the
+     header (see .dt_masks_group_members and _masks_rail_draw), the same in
+     every state */
+  outline-color: @mask_group_rest;
 }
 
-/* a linked shape (see .dt_masks_linked) has a dashed frame: its link button
-   is in the selection panel, so the header itself says it is shared */
+/* a linked shape (see .dt_masks_linked) has a dashed frame as well as the
+   link in its drawer, so the header itself says it is shared */
 .dt_masks_header.dt_masks_linked
 {
   border-style: dashed;
@@ -3572,14 +3616,15 @@ button.dt_masks_enable_toggle:checked
 /* every member header rests at one shade a step lighter than the
    list, whatever its depth, so the list reads as the darker ground behind
    them, and only brightens when selected or when it holds the selected
-   element. outline-color is never drawn: it is the color of the rail hanging
-   from the header (see .dt_masks_group_members and _masks_rail_draw), set
-   beside the background in every state so the two cannot disagree */
-.dt_masks_row_header,
-.dt_masks_group_header
+   element */
+.dt_masks_row_header
 {
   background-color: @mask_rest;
-  outline-color: @mask_rest;
+}
+
+.dt_masks_group_header
+{
+  background-color: @mask_group_rest;
 }
 
 /* the list's first header: the list's padding is its gap from the top */
@@ -3596,27 +3641,17 @@ button.dt_masks_enable_toggle:checked
 .dt_masks_header.dt_masks_selected_element_group
 {
   background-color: @mask_selected_element_group;
-  outline-color: @mask_selected_element_group;
 }
 
-/* the rail takes the shade the gradient ends on, since that is the edge it
-   meets */
 .dt_masks_header.dt_masks_selected,
-.dt_masks_header.dt_masks_picked,
-.dt_masks_header.dt_masks_selected_held
+.dt_masks_header.dt_masks_picked
 {
   background-color: transparent;
   background-image: linear-gradient(to bottom, @mask_selected_top, @mask_selected);
-  border-color: @mask_selected_frame;
-  outline-color: @mask_selected;
 }
 
-/* what a selected or picked group holds is selected with it, and is not
-   framed: the frame says what was selected */
-.dt_masks_header.dt_masks_selected_held
-{
-  border-color: transparent;
-}
+/* what is selected or picked is framed by the panel, over the whole list (see
+   .dt_masks_frame): the headers have no frame of their own */
 
 /* persistent solo wash: driven by state (bd->solo_formid, solo_group_key)
    rather than the pointer, so it survives hovering elsewhere in the panel
@@ -3625,35 +3660,26 @@ button.dt_masks_enable_toggle:checked
 .dt_masks_header.dt_masks_soloed,
 .dt_masks_row.dt_masks_soloed
 {
-  background-color: alpha(@fg_color, 0.14);
+  background-color: alpha(@fg_color, 0.15);
 }
 
 /* hover, from the list or from the canvas (canvas <-> list sync, and over a
-   row's docked controls, see _row_crossing): a right border alone, in the
-   frame's color, so the header keeps the shade of its state */
+   row's docked controls, see _row_crossing): a bar along the right edge in
+   the frame's color, so the header keeps the shade of its state. An inset
+   shadow, 3px wide: a selected header's frame is drawn over the 1px at the
+   edge, and a bar of 1px would be lost in it */
 .dt_masks_row_header.dt_masks_hovered,
 .dt_masks_group_header.dt_masks_hovered
 {
-  border-right-color: @mask_selected_frame;
+  box-shadow: inset -3px 0 @mask_selected_frame;
 }
 
 /* ctrl+shift held over the list (see _armed_watch): the hovered header takes the delete
-   shade, and the rail of a group, which follows the header's outline-color,
-   shows the members that go with it */
+   shade */
 .dt_masks_deleting .dt_masks_header.dt_masks_hovered
 {
   background-color: transparent;
   background-image: linear-gradient(to bottom, @mask_delete_top, @mask_delete);
-  outline-color: @mask_delete;
-}
-
-/* shift held over the list (see _armed_watch): the hovered header takes the
-   pick shade */
-.dt_masks_picking .dt_masks_header.dt_masks_hovered
-{
-  background-color: transparent;
-  background-image: linear-gradient(to bottom, @mask_pick_top, @mask_pick);
-  outline-color: @mask_pick;
 }
 
 /* the group a drop would land in (see _drop_group_of) lights its header up
@@ -3663,7 +3689,6 @@ button.dt_masks_enable_toggle:checked
 {
   background-color: transparent;
   background-image: linear-gradient(to bottom, @mask_hover_top, @mask_hover);
-  outline-color: @mask_hover;
 }
 
 /* a row's or group's name: a little room after the lead icon. A group's
@@ -3681,6 +3706,16 @@ button.dt_masks_enable_toggle:checked
   color: @mask_text_rest;
 }
 
+/* a member's name, a little smaller, dimmer and further from the lead icon
+   than a group's. Three classes, so every state below outranks it */
+.dt_masks_list .dt_masks_row_header .dt_masks_row_name,
+.dt_masks_list .dt_masks_row_header .dt_masks_row_name label
+{
+  color: @mask_text_member;
+  font-size: 11px;
+  padding-left: 6px;
+}
+
 .dt_masks_list .dt_masks_header.dt_masks_selected_element_group .dt_masks_row_name,
 .dt_masks_list .dt_masks_header.dt_masks_selected_element_group .dt_masks_row_name label
 {
@@ -3690,11 +3725,15 @@ button.dt_masks_enable_toggle:checked
 .dt_masks_list .dt_masks_header.dt_masks_selected .dt_masks_row_name,
 .dt_masks_list .dt_masks_header.dt_masks_selected .dt_masks_row_name label,
 .dt_masks_list .dt_masks_header.dt_masks_picked .dt_masks_row_name,
-.dt_masks_list .dt_masks_header.dt_masks_picked .dt_masks_row_name label,
+.dt_masks_list .dt_masks_header.dt_masks_picked .dt_masks_row_name label
+{
+  color: @mask_text_selected;
+}
+
 .dt_masks_list .dt_masks_header.dt_masks_selected_held .dt_masks_row_name,
 .dt_masks_list .dt_masks_header.dt_masks_selected_held .dt_masks_row_name label
 {
-  color: @mask_text_selected;
+  color: @mask_text_held;
 }
 
 .dt_masks_list .dt_masks_header.dt_masks_hovered .dt_masks_row_name,
@@ -3716,47 +3755,36 @@ button.dt_masks_enable_toggle:checked
 /* ---- groups ----------------------------------------------------------- */
 
 /* each group, header and members, is one block, set apart from its
-   neighbors by its header's top margin and shade alone. Its transparent
-   borders are the insertion line's, reserved up front so showing it only
-   colors an existing edge. The block is an event box, which reserves no room
-   for them: the line overlaps the gap instead */
-.dt_masks_group_block
-{
-  margin-top: 0;
-  border-top: 2px solid transparent;
-  border-bottom: 2px solid transparent;
-}
-
-/* while its members show, the block's content stops short of its bottom edge
-   by the line's width, or its last member would paint over the line below
-   the group, which would then read as the line below that member. The
-   header's own top margin keeps the top edge clear. A group with no members
-   showing keeps no room: its line is drawn on its header (see
-   _drop_line_paint_widget), so it is as far from the next row as any
-   member is */
-.dt_masks_group_block > box
-{
-  margin-bottom: 0;
-}
-
-.dt_masks_group_block > box.dt_masks_open
-{
-  margin-bottom: 2px;
-}
-
+   neighbors by its header's shade alone. The group a drag would drop into is
+   shaded as a whole */
 .dt_masks_group_block.dt_masks_drop_target
 {
   background-color: alpha(@fg_color, 0.20);
 }
 
+/* the frame of a header that is selected or picked. While shift is held over
+   the list, or with picks made, a group's frame takes in what the group holds
+   too, to show whether a click lands inside the group or outside it. The panel
+   draws it over the list, after everything in it, from this class's border (its
+   width, color and corners), margin (how far it is inset, so that two adjacent
+   frames do not touch) and box-shadow (none here; a theme can give the frame a
+   glow with one). The background must stay none: it would be painted over the
+   list */
+.dt_masks_frame
+{
+  background: none;
+  border: 1px solid @mask_selected_frame;
+  margin: 1px;
+  box-shadow: none;
+}
+
 /* the insertion line where a dragged member would land
-   (.dt_masks_drop_above, .dt_masks_drop_below). Beside a member row it goes on
-   the part showing at that edge, its header or its bottom-most part (see
-   _drop_line_paint_widget): an inset shadow, drawn
-   over that part's background and reserving no space. A group block draws
-   it in the border it reserves, spanning the whole group. The gap between
-   two groups is one slot with two names; _drop_line draws both on the lower
-   group's top edge, so only one line ever lights up for a gap */
+   (.dt_masks_drop_above, .dt_masks_drop_below): an inset shadow, drawn over
+   the background of the part showing at that edge and reserving no space (see
+   _drop_line_paint_widget). That part is a header at the top, and at the bottom
+   the last part of the member or group the line goes under. The gap between
+   two members is one slot with two names; _drop_line draws both on the lower
+   one's top edge, so only one line ever lights up for a gap */
 .dt_masks_list .dt_masks_drop_above
 {
   box-shadow: inset 0 2px @fg_color;
@@ -3767,29 +3795,18 @@ button.dt_masks_enable_toggle:checked
   box-shadow: inset 0 -2px @fg_color;
 }
 
-.dt_masks_list .dt_masks_group_block.dt_masks_drop_above
-{
-  box-shadow: none;
-  border-top-color: @fg_color;
-}
-
-.dt_masks_list .dt_masks_group_block.dt_masks_drop_below
-{
-  box-shadow: none;
-  border-bottom-color: @fg_color;
-}
-
 /* a group's members sit under its header with a rail down its left edge, in
-   the header's own color: the header's bottom-left corner meets the rail,
-   and the two read as one piece. No background of its own, at any
-   depth or in any state: a group is told apart by its header and rail
-   alone */
+   the color of a group's header at rest: the header's bottom-left corner
+   meets the rail at rest, and the two read as one piece. No background of its
+   own, at any depth or in any state: a group is told apart by its header and
+   rail alone */
 .dt_masks_group_members
 {
   /* the rail, drawn in code (_masks_rail_draw) so it can stop at the last
      member and tick across to each member's header, like a tree view. Its
      width is this border's: the border itself stays transparent and only
-     reserves the room. Its color is the header's outline-color. Every rail is
+     reserves the room. Its color is the header's outline-color, which is the same
+     in every state (see .dt_masks_header). Every rail is
      2px: thickness is not a signal here, color is */
   border-left: 2px solid transparent;
   /* the outer radius of the rounded elbow where the rail turns into its last
@@ -3803,77 +3820,6 @@ button.dt_masks_enable_toggle:checked
   /* no extra space after the last member: the rail's elbow already shows
      where the group ends */
   padding-bottom: 0;
-}
-
-/* a group holding its card alone draws no rail (the rail runs to the last
-   member's tick): drop the rail's room, so the card runs flush under the
-   whole header (see .dt_masks_card_only below). Scoped under .dt_masks_list
-   so it outranks a tweak setting the rail's width on
-   .dt_masks_list .dt_masks_group_members */
-.dt_masks_list .dt_masks_group_members.dt_masks_card_only
-{
-  border-left-width: 0;
-}
-
-/* ---- cards: the controls under an open header ------------------------- */
-
-/* every card (.dt_masks_card) sits on the card ground with no frame, right
-   under its header, so an open member reads as one block. Which card it is: .dt_masks_param_card (a parametric row's sliders),
-   .dt_masks_props_card (a row's properties), .dt_masks_group_card (a group's
-   opacity) and .dt_masks_note (a preset group's note, in the notes section) */
-.dt_masks_card
-{
-  background-color: @mask_card;
-}
-
-/* an element's cards: the controls inset from the header's left edge, the
-   card's right edge flush with the header's, so the per-channel pickers
-   line up under the header's expander */
-.dt_masks_param_card,
-.dt_masks_props_card
-{
-  margin-left: 0;
-  padding-left: 8px;
-}
-
-/* room above and below the channel sliders, so their handles do not butt
-   against the header and the card's bottom edge */
-.dt_masks_param_card
-{
-  padding-top: 3px;
-  padding-bottom: 3px;
-  margin-right: 0;
-}
-
-/* no right inset: the card runs out to the header's right edge, and the
-   sliders stop short by their own margin */
-.dt_masks_props_card
-{
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-right: 0;
-}
-
-/* a group's own controls, its opacity slider. They are
-   the group's, not members, so they hang off the header as one block with it
-   and the rail, flush left against the rail rather than indented like the
-   members: the negative margin takes back the members' indent. This holds
-   on a nested group's row too, where the box also carries
-   .dt_masks_props_card (declared earlier, so this wins the tie) */
-.dt_masks_group_card
-{
-  margin-top: 0;
-  margin-left: -8px;
-  /* with the 2px rail, the same 8px inset from the header's left edge as an
-     element's card */
-  padding: 0 0 0 6px;
-}
-
-/* with no rail beside it, the card is inset by the rail's width more to keep
-   the 8px */
-.dt_masks_list .dt_masks_group_members.dt_masks_card_only > .dt_masks_group_card
-{
-  padding-left: 8px;
 }
 
 /* the pages are Pango markup. The UI's usual "Roboto Light" and the like
@@ -3950,8 +3896,6 @@ button.dt_masks_enable_toggle:checked
 
 /* every slider in the list ends its bar about where the picker column
    starts (.dt_masks_picker_slot, see _param_slider_fit_picker) */
-.dt_masks_list .dt_masks_props_card .dt_bauhaus,
-.dt_masks_list .dt_masks_group_card .dt_bauhaus,
 .dt_masks_list .dt_masks_boost_box .dt_bauhaus,
 .dt_masks_list .dt_masks_opacity_box .dt_bauhaus
 {
@@ -3964,7 +3908,7 @@ button.dt_masks_enable_toggle:checked
    not read as separate gray boxes. The id is #bauhaus-slider's own, needed
    to outrank its rule */
 #bauhaus-slider.dt_masks_boost_slider,
-#bauhaus-slider.dt_masks_props_slider
+#bauhaus-slider.dt_masks_controls_slider
 {
   background-color: transparent;
 }
@@ -3982,15 +3926,6 @@ button.dt_masks_enable_toggle:checked
 .dt_masks_range_slider gslider-bar
 {
   min-height: 1.2em;
-}
-
-/* channel icons ("input" / "output") on a parametric row's card */
-.dt_masks_channel_icon
-{
-  min-width: 14px;
-  min-height: 14px;
-  margin: 0;
-  padding: 0;
 }
 
 /* a refinement's bypass toggle (.dt_masks_bypass): lit while bypassed */
@@ -4028,15 +3963,20 @@ button.dt_masks_bypass:checked
 
 /* the styling contract (dev-doc/flexi_masks/styling.md). One class per part,
    on the widget that paints it, and one class per state on that same widget:
-     .dt_masks_lead        a row's or a group's lead icon
+     .dt_masks_lead        an element's lead icon
                            states: a parametric row's: .dt_masks_channel
      .dt_masks_drawer      the box holding the icons on the right
      .dt_masks_icon        every icon in it, and a parametric channel's picker:
-       .dt_masks_expander  :checked when open, :disabled on an empty group
+       .dt_masks_expander  :checked when open (plated when not),
+                           :disabled on an empty group
+       .dt_masks_operator  a group's operator, in the link's place
        .dt_masks_eye       .dt_masks_soloed, .dt_masks_disabled
        .dt_masks_picker    a parametric channel slider's picker
+       .dt_masks_options   the toggle of the controls header, for a parametric
+                           channel's output slider and boost factor
+     .dt_masks_slider_icon the icon naming a parametric element's slider
        .dt_masks_invert    .dt_masks_inverted
-       .dt_masks_blank     a column the row has no icon for
+       .dt_masks_blank     an invert or visibility column the row has no icon for
        .dt_masks_channel_picker  that picker, beside its slider rather
                            than in the drawer
      .dt_masks_badge       the warning, ending the name: a member
@@ -4056,21 +3996,12 @@ button.dt_masks_bypass:checked
   padding: 0;
 }
 
-/* a lead has no plate either, pressed or not. An element's is drawn in code
-   (_drag_handle_draw), inset by this padding. A group's is a button, kept
-   off the generic hover rule by .dt_no_hover (set in code), which would
-   otherwise outrank these */
-.dt_masks_lead,
-button.dt_masks_lead,
-button.dt_masks_lead:active
+/* a lead has no plate either. It is drawn in code (_drag_handle_draw), inset
+   by this padding */
+.dt_masks_lead
 {
   background-color: transparent;
   color: @mask_lead_fg;
-}
-
-.dt_masks_lead,
-button.dt_masks_lead
-{
   padding: 2px;
   margin: 0;
   min-width: 0;
@@ -4078,18 +4009,13 @@ button.dt_masks_lead
   border: none;
 }
 
-/* the box around a group's lead button adds nothing of its own */
-.dt_masks_lead_box
-{
-  padding: 0;
-  margin: 0;
-}
-
-/* a parametric row's lead is its channel code, not a glyph: a smaller font
-   fits two letters in a square sized for one */
+/* a parametric row's lead is its channel code, not a glyph. The font is the
+   one of the toolbox's channel buttons (.dt_masks_channel_add), so the same
+   code reads at the same size in both; two letters still fit the square
+   sized for one glyph */
 .dt_masks_lead.dt_masks_channel
 {
-  font-size: 85%;
+  font-size: 100%;
   padding: 0;
 }
 
@@ -4098,77 +4024,73 @@ button.dt_masks_lead
   color: inherit;
 }
 
-/* a group's lead is a select (an icon and a caret, drawn in code) that
-   changes the group's operator: framed, and a shade lighter than the header,
-   to say so, which an element's lead is not */
-.dt_masks_lead_select
-{
-  border-radius: 3px;
-  background-color: alpha(@mask_lead_fg, 0.12);
-  box-shadow: inset 0 0 0 1px alpha(@mask_lead_fg, 0.4);
-  color: @mask_lead_fg;
-}
-
-.dt_masks_lead_select:hover
-{
-  background-color: alpha(@mask_lead_fg, 0.22);
-  box-shadow: inset 0 0 0 1px @mask_lead_fg;
-}
-
-/* the drawer's icons have no box of their own: the drawer frames them. In
-   every state, hover included: the glyph's color is the feedback */
+/* the drawer's icons are buttons as any in darktable: plain at rest, never
+   dimmed (only :disabled dims one). Hovered, the plate and the glyph light up;
+   on (armed, soloed, hidden or inverted), the glyph is lit and the plate is
+   lighter than at rest, but less than hovered's. The plates are a share of the
+   text color, so they show on any ground */
 button.dt_masks_expander,
+button.dt_masks_link,
+button.dt_masks_operator,
 button.dt_masks_eye,
 button.dt_masks_picker,
-button.dt_masks_invert,
-button.dt_masks_expander:hover,
-button.dt_masks_eye:hover,
-button.dt_masks_picker:hover,
-button.dt_masks_invert:hover
-{
-  background-color: transparent;
-}
-
-/* dimmed through the glyph's color, not opacity, which would also fade any
-   plate a theme gives the drawer; full color while hovered */
-button.dt_masks_expander,
-button.dt_masks_eye,
-button.dt_masks_picker,
+button.dt_masks_options,
 button.dt_masks_invert
 {
-  color: alpha(@button_fg, 0.6);
-}
-
-button.dt_masks_expander:hover,
-button.dt_masks_eye:hover,
-button.dt_masks_picker:hover,
-button.dt_masks_invert:hover
-{
+  background-color: transparent;
   color: @button_fg;
 }
 
-/* lit while open, armed or on, hovered or not */
-button.dt_masks_expander:checked
-{
-  color: @field_active_fg;
-}
-
-button.dt_masks_picker:checked
-{
-  color: @mask_lead_fg;
-}
-
+button.dt_masks_picker:checked,
+button.dt_masks_options:checked,
 button.dt_masks_eye.dt_masks_soloed,
 button.dt_masks_eye.dt_masks_disabled,
 button.dt_masks_invert.dt_masks_inverted
 {
+  background-color: alpha(@fg_color, 0.12);
   color: @field_active_fg;
 }
 
-/* an empty group's: there is nothing to expand */
+button.dt_masks_expander:hover,
+button.dt_masks_link:hover,
+button.dt_masks_operator:hover,
+button.dt_masks_eye:hover,
+button.dt_masks_picker:hover,
+button.dt_masks_options:hover,
+button.dt_masks_invert:hover
+{
+  background-color: alpha(@fg_color, 0.24);
+  color: shade(@fg_color, 1.15);
+}
+
+button.dt_masks_picker:checked:hover,
+button.dt_masks_options:checked:hover,
+button.dt_masks_eye.dt_masks_soloed:hover,
+button.dt_masks_eye.dt_masks_disabled:hover,
+button.dt_masks_invert.dt_masks_inverted:hover
+{
+  color: @field_active_fg;
+}
+
+/* a collapsed expander has the plate of an on button, so that a group not
+   showing its contents is plain to see. Open, it is plain. Not an empty
+   group's, which has nothing to show */
+button.dt_masks_expander:not(:checked):not(:disabled)
+{
+  background-color: alpha(@fg_color, 0.12);
+}
+
+button.dt_masks_expander:not(:checked):not(:disabled):hover
+{
+  background-color: alpha(@fg_color, 0.24);
+}
+
+/* an empty group's expander: there is nothing to expand. Dimmed from the text
+   color, not @disabled_fg_color, which is about the selected row's plate */
 button.dt_masks_expander:disabled
 {
-  color: alpha(@button_fg, 0.25);
+  background-color: transparent;
+  color: alpha(@fg_color, 0.4);
 }
 
 /* the icon inset of the module's sub-panel headers (.dt_section_expander),
@@ -4179,16 +4101,26 @@ button.dt_masks_icon #button-canvas
   margin: 12px;
 }
 
-/* every column as wide as its glyph, 0.874em (the 1.15em button height less
-   the two 12% insets), and the glyph's inset kept top and bottom only, where
-   it sizes the glyph. The columns are as far apart as a module header's
-   icons are, 1.15em and the 0.07em margin each side: a 0.208em margin makes
-   up the width the side insets give those. The rightmost glyph ends where a
-   sub-panel header's expander does (see .dt_masks_selection_section) */
+/* every icon is a 1.15em square, so its plate is, and the glyph's inset is
+   kept top and bottom only, where it sizes the glyph. The columns are as far
+   apart as a module header's icons are, the 0.07em margin each side. The
+   rightmost glyph ends where a sub-panel header's expander does (see
+   .dt_masks_selection_section) */
 button.dt_masks_icon
 {
-  min-width: 0.874em;
-  margin: 0.07em 0.208em;
+  min-width: 1.15em;
+  min-height: 1.15em;
+  margin: 0.07em;
+}
+
+/* a column the row has no icon for takes room and nothing else: no plate,
+   whatever the pointer or a press does to it */
+button.dt_masks_blank,
+button.dt_masks_blank:hover,
+button.dt_masks_blank:active
+{
+  background-color: transparent;
+  border-color: transparent;
 }
 
 button.dt_masks_icon #button-canvas
@@ -4197,13 +4129,60 @@ button.dt_masks_icon #button-canvas
 }
 
 /* a parametric channel slider's picker, directly below the header's
-   expander: the same distance from the right edge */
+   rightmost icon: the same distance from the right edge */
 button.dt_masks_channel_picker
 {
-  min-width: 18px;
+  min-width: 1.15em;
   min-height: 1.15em;
-  margin: 0.07em 0.208em;
+  margin: 0.07em;
   padding: 1px;
+}
+
+/* the icon before a parametric element's slider: a label, in the text color of
+   the buttons, with no plate */
+.dt_masks_slider_icon
+{
+  color: @button_fg;
+  margin: 0 2px 0 0;
+}
+
+/* a parametric row's swatch, the colors its element selects, behind its name:
+   edged like the row's buttons, and as high as their place. A row showing both
+   ranges has two strips, one above the other (the upper one is
+   .dt_masks_param_swatch, the lower also .dt_masks_param_swatch_lower),
+   sharing that height. Their own columns are drawn by the swatch itself (see
+   _param_swatch_draw) */
+.dt_masks_param_swatch
+{
+  min-width: 2.2em;
+  min-height: 0.5em;
+  margin: 0.07em 0.15em;
+  border: 1px solid alpha(@button_fg, 0.3);
+  border-radius: 3px;
+}
+
+/* the space between the two strips: this margin and the upper one's bottom
+   margin */
+.dt_masks_param_swatch_lower
+{
+  margin-top: 0.14em;
+}
+
+/* the name over the swatch, in the theme's text color with an outline of its ground
+   color, so that it reads on any of the colors under it. The box itself is
+   clear, so that the swatch shows */
+.dt_masks_row_overlay,
+.dt_masks_row_overlay box
+{
+  background-color: transparent;
+  background-image: none;
+}
+
+.dt_masks_row_overlay label
+{
+  text-shadow: -1px -1px 0 @bg_color, 1px -1px 0 @bg_color,
+               -1px 1px 0 @bg_color, 1px 1px 0 @bg_color,
+               0 0 3px @bg_color;
 }
 
 /* the warning badge: a plain triangle in its color, edged in outline-color;
@@ -4287,10 +4266,10 @@ button.dt_masks_selection_action
 }
 
 /* the multiple selection panel's actions, under its caption: a button for each,
-   on the width of the panel, its label at the start */
+   as wide as the caption, its label at the start */
 .dt_masks_multi_actions
 {
-  padding: 4px 6px;
+  padding: 4px 0;
 }
 
 button.dt_masks_multi_action
@@ -4345,31 +4324,23 @@ button.dt_masks_selection_action:disabled
   color: @disabled_fg_color;
 }
 
-/* the properties section holds one member's card, or a pending
-   shape's creation controls, as the refinements' section holds its sliders:
-   no rail and no inset, since no row header sits above them there */
-.dt_masks_props_panel .dt_masks_props_card,
-.dt_masks_props_panel .dt_masks_boost_box,
-.dt_masks_props_panel .dt_masks_group_card
+/* the boost and opacity sliders' spacing is for the list, where they sit
+   around the channel sliders; in the panels they sit flush */
+.dt_masks_controls_panel .dt_masks_boost_box,
+.dt_masks_controls_panel .dt_masks_opacity_box
 {
-  border-width: 0;
-  padding: 0;
   margin: 0;
-  background-color: transparent;
 }
 
-/* the notes section holds one preset group's note, as the properties section
-   holds one card: no rail and no inset, since no row header sits above it */
-.dt_masks_help_panel .dt_masks_note
+/* in the selection panel itself, the controls run out to the same edges as
+   the sections' below (the subpanels), with no inset of their own */
+.dt_masks_controls_plain
 {
-  border-width: 0;
-  padding: 0;
-  margin: 0;
-  background-color: transparent;
+  padding: 4px 0 0 0;
 }
 
 /* a "mask consumers" row reads as a list entry, not a button, until
-   hovered; the chain in it brightens with the row, whichever part of it is
+   hovered; the chain in it lights up with the row, whichever part of it is
    hovered */
 button.dt_masks_consumer_row
 {
@@ -4379,18 +4350,17 @@ button.dt_masks_consumer_row
 
 button.dt_masks_consumer_row:hover
 {
-  background-color: alpha(@button_hover_bg, 0.5);
+  background-color: alpha(@fg_color, 0.24);
 }
 
 .dt_masks_link_glyph
 {
   color: @button_fg;
-  opacity: 0.6;
 }
 
 button.dt_masks_consumer_row:hover .dt_masks_link_glyph
 {
-  opacity: 1.0;
+  color: shade(@fg_color, 1.15);
 }
 
 /* a parametric channel's precise-value popup (see
@@ -4417,12 +4387,22 @@ popover.dt_masks_precise_anchor
 }
 
 /* the icon lines up with the mask toggle's glyph above, and so with the
-   content's edge below. The header takes 10px more on the side facing the
-   canvas, 4px when the handle is narrowed (see "#blending-tabs.dt_section_label"
-   above), and the row takes the same */
+   content's edge below. The header takes 10px on the side facing the canvas,
+   4px when the handle is narrowed (see "#blending-tabs.dt_section_label"
+   above), and the row's padding in em has to move by the same 6px: a
+   fraction of an em would not, it shifts with the font size */
 #masks-docked-panel.dt_masks_left #masks-focus-row
 {
   padding-right: 1.2em;
+}
+
+/* docked on the left, the icon is on the outer side, where the header is
+   padded by 2px and not by 10px: the same alignment needs 8px less than the
+   1.2em of the right dock (the scrollbar's inset is the same for both, in
+   code) */
+#masks-docked-panel.dt_masks_left #masks-focus-row
+{
+  padding-left: calc(1.2em - 8px);
 }
 
 #masks-docked-panel.dt_masks_right #masks-focus-row
@@ -4432,12 +4412,20 @@ popover.dt_masks_precise_anchor
 
 #masks-docked-panel.dt_masks_left.dt_masks_handle_hidden #masks-focus-row
 {
-  padding-right: 0.97em;
+  padding-right: calc(1.2em - 6px);
 }
 
 #masks-docked-panel.dt_masks_right.dt_masks_handle_hidden #masks-focus-row
 {
-  padding-left: 0.97em;
+  padding-left: calc(1.2em - 6px);
+}
+
+/* what the always-on panel says with no module to show: dimmed, as an
+   explanation and not a control */
+#masks-docked-panel .dt_masks_idle
+{
+  padding: 0.8em 1.2em;
+  opacity: 0.7;
 }
 
 /* the icon centered under the lib header's arrow. No padding above: the
@@ -4469,7 +4457,7 @@ popover.dt_masks_precise_anchor
 }
 
 /* the presets popover (see dt_masks_gui_presets_popover) and the shrink or grow
-   settings (.dt_masks_settings_menu, see _props_resize_settings_clicked) are
+   settings (.dt_masks_settings_menu, see _controls_resize_settings_clicked) are
    built by hand, not from a menu model. A model's menu keeps its items inside
    the popover, which is what the negative margin of popover.menu modelbutton
    relies on, so the box gives it that room. A preset's name has a negative

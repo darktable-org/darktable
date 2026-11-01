@@ -205,6 +205,41 @@ typedef struct dt_iop_lens_global_data_t
   lfDatabase *db;
 } dt_iop_lens_global_data_t;
 
+// lensfun values on a grid of every step-th pixel: gwidth x gheight points,
+// stride floats to a point. A step of 0 means no grid.
+typedef struct dt_iop_lens_grid_t
+{
+  float *data;
+  int step;
+  int stride;
+  // the pixel of the first point
+  int x0;
+  int y0;
+  int gwidth;
+  int gheight;
+} dt_iop_lens_grid_t;
+
+// the grids of the last run, kept while the pipe area and the committed
+// params stay the same. They are not dropped in commit_params(): a history
+// change that adds an item recommits every module (synch_all in
+// pixelpipe_hb.c), first with its defaults, so the params hash is compared
+// at the next run instead.
+typedef struct dt_iop_lens_grid_cache_t
+{
+  dt_hash_t params_hash;
+  dt_iop_roi_t roi_in;
+  dt_iop_roi_t roi_out;
+  float orig_w;
+  float orig_h;
+  int lf_mask;
+  gboolean pass_mode;
+  int modflags;
+  // whether a grid of step 1 has its data
+  gboolean buffer;
+  dt_iop_lens_grid_t coords;
+  dt_iop_lens_grid_t vig;
+} dt_iop_lens_grid_cache_t;
+
 typedef struct dt_iop_lens_data_t
 {
   int method;
@@ -243,6 +278,9 @@ typedef struct dt_iop_lens_data_t
   float reserved[2];
   float vigspline[VIGSPLINES];
   dt_hash_t vighash;
+  dt_iop_lens_grid_cache_t *grid_cache;
+  // the committed params, which the grids are valid for
+  dt_hash_t params_hash;
 } dt_iop_lens_data_t;
 
 
@@ -1063,6 +1101,296 @@ static float _get_autoscale_lf(dt_iop_module_t *self,
   return scale;
 }
 
+// lensfun is asked only at every step-th pixel, and the pixels in between
+// are interpolated bilinearly, on the CPU and in OpenCL alike. This removes
+// the per-pixel lensfun work and upload of the OpenCL path, and the up to
+// ~0.3 px error of lensfun's row calls on x86. The step is halved while the
+// interpolation misses lensfun's own values at sampled cell centers by more
+// than the tolerance.
+#define LENS_GRID_STEP 8
+#define LENS_GRID_TOL_COORD 0.01f
+#define LENS_GRID_TOL_VIG 1e-4f
+// the largest error accepted when it is noise in lensfun's own values
+#define LENS_GRID_NOISE_COORD 0.05f
+
+// lensfun's values for n pixels of a row, stride floats each
+static inline void _lens_grid_eval(const lfModifier *modifier,
+                                   const gboolean vig,
+                                   const int x,
+                                   const int y,
+                                   const int n,
+                                   float *out)
+{
+  if(vig)
+  {
+    // lensfun only multiplies its factors into pixels, so get them from
+    // pixels of 0.5, which keeps them exact
+    for(int k = 0; k < 4 * n; k++) out[k] = 0.5f;
+    modifier->ApplyColorModification(out, x, y, n, 1, LF_CR_4(RED, GREEN, BLUE, UNKNOWN), 4 * n);
+    for(int k = 0; k < 4 * n; k++) out[k] *= 2.0f;
+  }
+  else
+    modifier->ApplySubpixelGeometryDistortion(x, y, n, 1, out);
+}
+
+static inline gboolean _lens_coords_finite(const lfModifier *modifier,
+                                           const int x,
+                                           const int y)
+{
+  float p[6];
+  _lens_grid_eval(modifier, FALSE, x, y, 1, p);
+  gboolean finite = TRUE;
+  for(int n = 0; n < 6; n++) finite = finite && isfinite(p[n]);
+  return finite;
+}
+
+// with buffer FALSE, a grid of step 1 gets no data, and _lens_grid_row()
+// asks lensfun for each row instead
+static gboolean _lens_grid_build(const lfModifier *modifier,
+                                 const gboolean vig,
+                                 const gboolean buffer,
+                                 const int x0,
+                                 const int y0,
+                                 const int width,
+                                 const int height,
+                                 dt_iop_lens_grid_t *grid)
+{
+  const int stride = vig ? 4 : 6;
+  const int count = vig ? 3 : 6;
+  const float tol = vig ? LENS_GRID_TOL_VIG : LENS_GRID_TOL_COORD;
+  const float noise_max = vig ? LENS_GRID_TOL_VIG : LENS_GRID_NOISE_COORD;
+
+  float prev_err = INFINITY;
+  for(int step = LENS_GRID_STEP; step >= 1; step /= 2)
+  {
+    // one more point than needed in each direction, so that the last
+    // pixels interpolate rather than extrapolate. An even row length keeps
+    // the rows 16-byte aligned, which lensfun's SSE code requires.
+    const int gw = ((width - 1) / step + 3) & ~1;
+    const int gh = (height - 1) / step + 2;
+
+    grid->step = step;
+    grid->stride = stride;
+    grid->x0 = x0;
+    grid->y0 = y0;
+    grid->gwidth = gw;
+    grid->gheight = gh;
+    grid->data = NULL;
+    if(step == 1 && !buffer) return TRUE;
+
+    // where lensfun can't map a pixel, it's usually at the edge of the
+    // image, so check the edge before filling the whole grid
+    if(step > 1 && !vig)
+    {
+      const int x1 = x0 + (gw - 1) * step;
+      const int y1 = y0 + (gh - 1) * step;
+      gboolean edge_finite = TRUE;
+      for(int i = 0; i < gw && edge_finite; i++)
+        edge_finite = _lens_coords_finite(modifier, x0 + i * step, y0)
+                      && _lens_coords_finite(modifier, x0 + i * step, y1);
+      for(int j = 0; j < gh && edge_finite; j++)
+        edge_finite = _lens_coords_finite(modifier, x0, y0 + j * step)
+                      && _lens_coords_finite(modifier, x1, y0 + j * step);
+      if(!edge_finite)
+      {
+        step = 2;
+        continue;
+      }
+    }
+
+    float *data = dt_alloc_align_float((size_t)gw * gh * stride);
+    if(!data) return FALSE;
+
+    int finite = 1;
+    DT_OMP_FOR(reduction(&&: finite))
+    for(int j = 0; j < gh; j++)
+    {
+      float *row = data + (size_t)j * gw * stride;
+      if(step == 1)
+        _lens_grid_eval(modifier, vig, x0, y0 + j, gw, row);
+      else
+        for(int i = 0; i < gw; i++)
+        {
+          float *p = row + (size_t)i * stride;
+          _lens_grid_eval(modifier, vig, x0 + i * step, y0 + j * step, 1, p);
+          for(int n = 0; n < count; n++) finite = finite && isfinite(p[n]);
+        }
+    }
+
+    // non-finite coordinates mark pixels lensfun can't map, and
+    // interpolating would spread them over whole cells
+    if(step > 1 && !finite)
+    {
+      dt_free_align(data);
+      step = 2;
+      continue;
+    }
+
+    if(step > 1)
+    {
+      float err = 0.0f;
+      DT_OMP_FOR(reduction(max: err))
+      for(int j = 0; j < gh - 1; j += 4)
+        for(int i = 0; i < gw - 1; i += 4)
+        {
+          float exact[6];
+          _lens_grid_eval(modifier, vig, x0 + i * step + step / 2,
+                          y0 + j * step + step / 2, 1, exact);
+          const float *p00 = data + ((size_t)j * gw + i) * stride;
+          const float *p01 = p00 + (size_t)gw * stride;
+          for(int n = 0; n < count; n++)
+          {
+            const float mid = 0.25f * (p00[n] + p00[stride + n] + p01[n] + p01[stride + n]);
+            const float e = fabsf(mid - exact[n]);
+            err = isfinite(e) ? fmaxf(err, e) : INFINITY;
+          }
+        }
+      // halving the step quarters the error of a smooth field. When it
+      // doesn't even halve, the error is noise in lensfun's own values, as
+      // from its iterative solution in reverse mode. Its per-pixel values
+      // carry the same noise, so the grid is kept unless the noise is large.
+      const gboolean noise = err > 0.5f * prev_err;
+      if(err > tol && !(noise && err <= noise_max))
+      {
+        dt_free_align(data);
+        if(noise) step = 2;
+        prev_err = err;
+        continue;
+      }
+    }
+
+    grid->data = data;
+    return TRUE;
+  }
+  return FALSE;
+}
+
+// row y of the grid, relative to its origin, interpolated to width pixels of
+// stride floats. This is the C version of _lens_grid_sample() in
+// data/kernels/basic.cl, and computes the same values.
+static inline void _lens_grid_row(const dt_iop_lens_grid_t *grid,
+                                  const lfModifier *modifier,
+                                  const int y,
+                                  const int width,
+                                  float *row)
+{
+  const int step = grid->step;
+  const int stride = grid->stride;
+  if(!grid->data)
+  {
+    _lens_grid_eval(modifier, stride == 4, grid->x0, grid->y0 + y, width, row);
+    return;
+  }
+  if(step == 1)
+  {
+    memcpy(row, grid->data + (size_t)y * grid->gwidth * stride, sizeof(float) * width * stride);
+    return;
+  }
+  const int j = y / step;
+  const float ty = (float)(y - j * step) / (float)step;
+  const float *g0 = grid->data + (size_t)j * grid->gwidth * stride;
+  const float *g1 = g0 + (size_t)grid->gwidth * stride;
+  float tx[LENS_GRID_STEP];
+  for(int k = 0; k < step; k++) tx[k] = (float)k / (float)step;
+  for(int x0 = 0, i = 0; x0 < width; x0 += step, i++)
+  {
+    float left[6], right[6];
+    for(int n = 0; n < stride; n++)
+    {
+      left[n] = mixf(g0[i * stride + n], g1[i * stride + n], ty);
+      right[n] = mixf(g0[(i + 1) * stride + n], g1[(i + 1) * stride + n], ty);
+    }
+    const int n_x = MIN(step, width - x0);
+    float *out = row + (size_t)x0 * stride;
+    for(int k = 0; k < n_x; k++, out += stride)
+      for(int n = 0; n < stride; n++) out[n] = mixf(left[n], right[n], tx[k]);
+  }
+}
+
+static void _lens_grid_cache_free(dt_iop_lens_data_t *d)
+{
+  dt_iop_lens_grid_cache_t *c = d->grid_cache;
+  if(!c) return;
+  dt_free_align(c->coords.data);
+  dt_free_align(c->vig.data);
+  free(c);
+  d->grid_cache = NULL;
+}
+
+// the per-pixel buffers of step 1 are too large to keep between runs
+static void _lens_grid_cache_release(dt_iop_lens_data_t *d)
+{
+  const dt_iop_lens_grid_cache_t *c = d->grid_cache;
+  if(c && ((c->coords.data && c->coords.step == 1) || (c->vig.data && c->vig.step == 1)))
+    _lens_grid_cache_free(d);
+}
+
+// the grids for this run of the CPU path (buffer FALSE) or the OpenCL path
+// (buffer TRUE), from the cache when nothing they depend on changed. NULL
+// when out of memory.
+static const dt_iop_lens_grid_cache_t *_lens_grids(dt_iop_lens_data_t *d,
+                                                   const lfModifier *modifier,
+                                                   const int modflags,
+                                                   const dt_iop_roi_t *const roi_in,
+                                                   const dt_iop_roi_t *const roi_out,
+                                                   const float orig_w,
+                                                   const float orig_h,
+                                                   const int used_lf_mask,
+                                                   const gboolean pass_mode,
+                                                   const gboolean buffer)
+{
+  dt_iop_lens_grid_cache_t *c = d->grid_cache;
+  if(c
+     && c->params_hash == d->params_hash
+     && !memcmp(&c->roi_in, roi_in, sizeof(dt_iop_roi_t))
+     && !memcmp(&c->roi_out, roi_out, sizeof(dt_iop_roi_t))
+     && c->orig_w == orig_w && c->orig_h == orig_h
+     && c->lf_mask == used_lf_mask
+     && c->pass_mode == pass_mode
+     && c->modflags == modflags
+     && (c->buffer || !buffer))
+    return c;
+
+  _lens_grid_cache_free(d);
+
+  const double start = dt_get_debug_wtime();
+  c = (dt_iop_lens_grid_cache_t *)calloc(1, sizeof(dt_iop_lens_grid_cache_t));
+  if(!c) return NULL;
+  c->params_hash = d->params_hash;
+  c->roi_in = *roi_in;
+  c->roi_out = *roi_out;
+  c->orig_w = orig_w;
+  c->orig_h = orig_h;
+  c->lf_mask = used_lf_mask;
+  c->pass_mode = pass_mode;
+  c->modflags = modflags;
+  c->buffer = buffer;
+  d->grid_cache = c;
+
+  gboolean ok = TRUE;
+  if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
+    ok = _lens_grid_build(modifier, FALSE, buffer, roi_out->x, roi_out->y,
+                          roi_out->width, roi_out->height, &c->coords);
+  // the vignetting correction comes after the distortion in reverse
+  // mode and before it otherwise
+  if(ok && !pass_mode && (modflags & LF_MODIFY_VIGNETTING))
+  {
+    const dt_iop_roi_t *vroi = d->inverse ? roi_out : roi_in;
+    ok = _lens_grid_build(modifier, TRUE, buffer, vroi->x, vroi->y,
+                          vroi->width, vroi->height, &c->vig);
+  }
+
+  if(!ok)
+  {
+    _lens_grid_cache_free(d);
+    return NULL;
+  }
+
+  dt_print(DT_DEBUG_PERF, "[lens] lensfun grid step %d, vignetting step %d took %.3f secs",
+           c->coords.step, c->vig.step, dt_get_debug_wtime() - start);
+  return c;
+}
+
 static void _process_lf(dt_iop_module_t *self,
                         dt_dev_pixelpipe_iop_t *piece,
                         const void *const ivoid,
@@ -1070,15 +1398,11 @@ static void _process_lf(dt_iop_module_t *self,
                         const dt_iop_roi_t *const roi_in,
                         const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_lens_data_t *const d = (dt_iop_lens_data_t *)piece->data;
+  dt_iop_lens_data_t *const d = (dt_iop_lens_data_t *)piece->data;
 
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
   const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;
-
-  const unsigned int pixelformat = ch == 3
-    ? LF_CR_3(RED, GREEN, BLUE)
-    : LF_CR_4(RED, GREEN, BLUE, UNKNOWN);
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f)
   {
@@ -1106,6 +1430,17 @@ static void _process_lf(dt_iop_module_t *self,
 
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
+  const dt_iop_lens_grid_cache_t *const grids =
+    _lens_grids(d, modifier, modflags, roi_in, roi_out,
+                orig_w, orig_h, used_lf_mask, pass_mode, FALSE);
+  if(!grids)
+  {
+    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid,
+                              roi_out->width, roi_out->height, ch);
+    delete modifier;
+    return;
+  }
+
   const dt_interpolation_t *const interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   if(d->inverse)
@@ -1122,12 +1457,11 @@ static void _process_lf(dt_iop_module_t *self,
       size_t padded_bufsize;
       float *const buf = dt_alloc_perthread_float(bufsize, &padded_bufsize);
 
-      DT_OMP_FOR(dt_omp_sharedconst(buf) shared(modifier))
+      DT_OMP_FOR(dt_omp_sharedconst(buf) shared(grids, modifier))
       for(int y = 0; y < roi_out->height; y++)
       {
         float *bufptr = (float*)dt_get_perthread(buf, padded_bufsize);
-        modifier->ApplySubpixelGeometryDistortion(roi_out->x, roi_out->y + y,
-                                                  roi_out->width, 1, bufptr);
+        _lens_grid_row(&grids->coords, modifier, y, roi_out->width, bufptr);
 
         // reverse transform the global coords from lf to our buffer
         float *out = ((float *)ovoid) + (size_t)y * roi_out->width * ch;
@@ -1186,18 +1520,23 @@ static void _process_lf(dt_iop_module_t *self,
                                 roi_out->width, roi_out->height, ch);
     }
 
-    if(!pass_mode && (modflags & LF_MODIFY_VIGNETTING))
+    if(grids->vig.step)
     {
-      DT_OMP_FOR(shared(modifier))
+      const size_t vigsize = (size_t)roi_out->width * 4;
+      size_t padded_vigsize;
+      float *const vig = dt_alloc_perthread_float(vigsize, &padded_vigsize);
+
+      DT_OMP_FOR(dt_omp_sharedconst(vig) shared(grids, modifier))
       for(int y = 0; y < roi_out->height; y++)
       {
         /* Colour correction: vignetting */
-        // actually this way row stride does not matter.
+        float *vigptr = (float*)dt_get_perthread(vig, padded_vigsize);
+        _lens_grid_row(&grids->vig, modifier, y, roi_out->width, vigptr);
         float *out = ((float *)ovoid) + (size_t)y * roi_out->width * ch;
-        modifier->ApplyColorModification(out, roi_out->x, roi_out->y + y,
-                                         roi_out->width, 1,
-                                         pixelformat, ch * roi_out->width);
+        for(int x = 0; x < roi_out->width; x++, out += ch, vigptr += 4)
+          for(int c = 0; c < 3; c++) out[c] *= vigptr[c];
       }
+      dt_free_align(vig);
     }
   }
   else // correct distortions:
@@ -1208,18 +1547,23 @@ static void _process_lf(dt_iop_module_t *self,
     void *buf = dt_alloc_aligned(bufsize);
     memcpy(buf, ivoid, bufsize);
 
-    if(!pass_mode && (modflags & LF_MODIFY_VIGNETTING))
+    if(grids->vig.step)
     {
-      DT_OMP_FOR(shared(buf, modifier))
+      const size_t vigsize = (size_t)roi_in->width * 4;
+      size_t padded_vigsize;
+      float *const vig = dt_alloc_perthread_float(vigsize, &padded_vigsize);
+
+      DT_OMP_FOR(dt_omp_sharedconst(vig) shared(buf, grids, modifier))
       for(int y = 0; y < roi_in->height; y++)
       {
         /* Colour correction: vignetting */
-        // actually this way row stride does not matter.
+        float *vigptr = (float*)dt_get_perthread(vig, padded_vigsize);
+        _lens_grid_row(&grids->vig, modifier, y, roi_in->width, vigptr);
         float *bufptr = ((float *)buf) + (size_t)ch * roi_in->width * y;
-        modifier->ApplyColorModification(bufptr, roi_in->x, roi_in->y + y,
-                                         roi_in->width, 1,
-                                         pixelformat, ch * roi_in->width);
+        for(int x = 0; x < roi_in->width; x++, bufptr += ch, vigptr += 4)
+          for(int c = 0; c < 3; c++) bufptr[c] *= vigptr[c];
       }
+      dt_free_align(vig);
     }
 
     if(modflags & (LF_MODIFY_TCA
@@ -1232,14 +1576,11 @@ static void _process_lf(dt_iop_module_t *self,
       size_t padded_buf2size;
       float *const buf2 = dt_alloc_perthread_float(buf2size, &padded_buf2size);
 
-      DT_OMP_FOR(dt_omp_sharedconst(buf2) shared(buf, modifier))
+      DT_OMP_FOR(dt_omp_sharedconst(buf2) shared(buf, grids, modifier))
       for(int y = 0; y < roi_out->height; y++)
       {
         float *buf2ptr = (float*)dt_get_perthread(buf2, padded_buf2size);
-        modifier->ApplySubpixelGeometryDistortion(roi_out->x,
-                                                  roi_out->y + y,
-                                                  roi_out->width,
-                                                  1, buf2ptr);
+        _lens_grid_row(&grids->coords, modifier, y, roi_out->width, buf2ptr);
         // reverse transform the global coords from lf to our buffer
         float *out = ((float *)ovoid) + (size_t)y * roi_out->width * ch;
         for(int x = 0; x < roi_out->width; x++, buf2ptr += 6, out += ch)
@@ -1297,6 +1638,7 @@ static void _process_lf(dt_iop_module_t *self,
     }
     dt_free_align(buf);
   }
+  _lens_grid_cache_release(d);
   delete modifier;
 }
 
@@ -1316,12 +1658,14 @@ static int _process_cl_lf(dt_iop_module_t *self,
     ? LF_MODIFY_ALL & ~LF_MODIFY_TCA
     : LF_MODIFY_ALL;
 
-  cl_mem dev_tmpbuf = NULL;
+  cl_mem dev_coords = NULL;
+  cl_mem dev_vig = NULL;
   cl_mem dev_tmp = NULL;
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
-  float *tmpbuf = NULL;
   lfModifier *modifier = NULL;
+  const dt_iop_lens_grid_cache_t *grids = NULL;
+  int coord_step = 0, coord_gwidth = 0, vig_step = 0, vig_gwidth = 0;
 
   const int devid = piece->pipe->devid;
   const int iwidth = roi_in->width;
@@ -1332,17 +1676,6 @@ static int _process_cl_lf(dt_iop_module_t *self,
   const int roi_in_y = roi_in->y;
   const int width = MAX(iwidth, owidth);
   const int height = MAX(iheight, oheight);
-  const int ch = piece->colors;
-  const int tmpbufwidth = owidth * 2 * 3;
-  const size_t tmpbufsize = (size_t)tmpbufwidth * oheight * sizeof(float);
-  const size_t tmpbuflen = d->inverse
-    ? (size_t)oheight * owidth * 2 * 3 * sizeof(float)
-    : MAX((size_t)oheight * owidth * 2 * 3,
-          (size_t)iheight * iwidth * ch) * sizeof(float);
-
-  const unsigned int pixelformat = ch == 3
-    ? LF_CR_3(RED, GREEN, BLUE)
-    : LF_CR_4(RED, GREEN, BLUE, UNKNOWN);
 
   const float orig_w = roi_in->scale * piece->buf_in.width;
   const float orig_h = roi_in->scale * piece->buf_in.height;
@@ -1379,48 +1712,49 @@ static int _process_cl_lf(dt_iop_module_t *self,
       return DT_OPENCL_PROCESS_CL;
   }
 
-  tmpbuf = (float *)dt_alloc_aligned(tmpbuflen);
-  if(tmpbuf == NULL) goto error;
-
   dev_tmp = (cl_mem)dt_opencl_alloc_device(devid, width, height,
                                            sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
-
-  dev_tmpbuf = (cl_mem)dt_opencl_alloc_device_buffer(devid, tmpbuflen);
-  if(dev_tmpbuf == NULL) goto error;
 
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   modifier = _get_modifier(&modflags, orig_w, orig_h, d, used_lf_mask, FALSE);
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
+  grids = _lens_grids(d, modifier, modflags, roi_in, roi_out,
+                      orig_w, orig_h, used_lf_mask, pass_mode, TRUE);
+  if(!grids) goto error;
+  coord_step = grids->coords.step;
+  coord_gwidth = grids->coords.gwidth;
+  vig_step = grids->vig.step;
+  vig_gwidth = grids->vig.gwidth;
+
+  if(grids->coords.data)
+  {
+    dev_coords = (cl_mem)dt_opencl_copy_host_to_device_constant
+      (devid, sizeof(float) * 6 * grids->coords.gwidth * grids->coords.gheight,
+       grids->coords.data);
+    if(dev_coords == NULL) goto error;
+  }
+  if(grids->vig.data)
+  {
+    dev_vig = (cl_mem)dt_opencl_copy_host_to_device_constant
+      (devid, sizeof(float) * 4 * grids->vig.gwidth * grids->vig.gheight,
+       grids->vig.data);
+    if(dev_vig == NULL) goto error;
+  }
+
   if(d->inverse)
   {
     // reverse direction (useful for renderings)
-    if(modflags & (LF_MODIFY_TCA
-                   | LF_MODIFY_DISTORTION
-                   | LF_MODIFY_GEOMETRY
-                   | LF_MODIFY_SCALE))
+    if(dev_coords)
     {
-      DT_OMP_FOR(dt_omp_sharedconst(raw_monochrome) shared(tmpbuf, d, modifier))
-      for(int y = 0; y < roi_out->height; y++)
-      {
-        float *pi = tmpbuf + (size_t)y * tmpbufwidth;
-        modifier->ApplySubpixelGeometryDistortion(roi_out->x,
-                                                  roi_out->y + y,
-                                                  roi_out->width, 1, pi);
-      }
-
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf,
-                                             dev_tmpbuf, 0,
-                                             tmpbufsize, TRUE);
-      if(err != CL_SUCCESS) goto error;
-
       err = dt_opencl_enqueue_kernel_2d_args(devid, ldkernel, owidth, oheight,
          CLARG(dev_in), CLARG(dev_tmp),
          CLARG(owidth), CLARG(oheight),
          CLARG(iwidth), CLARG(iheight),
          CLARG(roi_in_x), CLARG(roi_in_y),
-         CLARG(dev_tmpbuf), CLARG((d->do_nan_checks)));
+         CLARG(dev_coords), CLARG((d->do_nan_checks)),
+         CLARG(coord_step), CLARG(coord_gwidth));
       if(err != CL_SUCCESS) goto error;
     }
     else
@@ -1430,33 +1764,15 @@ static int _process_cl_lf(dt_iop_module_t *self,
       if(err != CL_SUCCESS) goto error;
     }
 
-    if(!pass_mode && (modflags & LF_MODIFY_VIGNETTING))
+    if(dev_vig)
     {
-      DT_OMP_FOR(shared(tmpbuf, modifier, d))
-      for(int y = 0; y < roi_out->height; y++)
-      {
-        /* Colour correction: vignetting */
-        // actually this way row stride does not matter.
-        float *buf = tmpbuf + (size_t)y * ch * roi_out->width;
-        for(int k = 0; k < ch * roi_out->width; k++)
-          buf[k] = 0.5f;
-        modifier->ApplyColorModification(buf, roi_out->x, roi_out->y + y,
-                                         roi_out->width, 1,
-                                         pixelformat, ch * roi_out->width);
-      }
-
-      const size_t bsize =
-        (size_t)ch * roi_out->width * roi_out->height * sizeof(float);
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, bsize, TRUE);
-      if(err != CL_SUCCESS) goto error;
-
       err = dt_opencl_enqueue_kernel_2d_args
         (devid,
          gd->kernel_lens_vignette,
          owidth, oheight,
          CLARG(dev_tmp), CLARG(dev_out),
          CLARG(owidth), CLARG(oheight),
-         CLARG(dev_tmpbuf));
+         CLARG(dev_vig), CLARG(vig_step), CLARG(vig_gwidth));
       if(err != CL_SUCCESS) goto error;
     }
     else
@@ -1469,35 +1785,14 @@ static int _process_cl_lf(dt_iop_module_t *self,
 
   else // correct distortions:
   {
-    if(!pass_mode && (modflags & LF_MODIFY_VIGNETTING))
+    if(dev_vig)
     {
-      DT_OMP_FOR(shared(tmpbuf, modifier, d))
-      for(int y = 0; y < roi_in->height; y++)
-      {
-        /* Colour correction: vignetting */
-        // actually this way row stride does not matter.
-        float *buf = tmpbuf + (size_t)y * ch * roi_in->width;
-        for(int k = 0; k < ch * roi_in->width; k++) buf[k] = 0.5f;
-        modifier->ApplyColorModification(buf,
-                                         roi_in->x,
-                                         roi_in->y + y,
-                                         roi_in->width, 1,
-                                         pixelformat,
-                                         ch * roi_in->width);
-      }
-
-      const size_t bsize =
-        (size_t)ch * roi_in->width * roi_in->height * sizeof(float);
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf,
-                                             dev_tmpbuf, 0, bsize, TRUE);
-      if(err != CL_SUCCESS) goto error;
-
       err = dt_opencl_enqueue_kernel_2d_args
         (devid,
          gd->kernel_lens_vignette, iwidth, iheight,
          CLARG(dev_in), CLARG(dev_tmp),
          CLARG(iwidth), CLARG(iheight),
-         CLARG(dev_tmpbuf));
+         CLARG(dev_vig), CLARG(vig_step), CLARG(vig_gwidth));
       if(err != CL_SUCCESS) goto error;
     }
     else
@@ -1507,32 +1802,16 @@ static int _process_cl_lf(dt_iop_module_t *self,
       if(err != CL_SUCCESS) goto error;
     }
 
-    if(modflags & (LF_MODIFY_TCA
-                   | LF_MODIFY_DISTORTION
-                   | LF_MODIFY_GEOMETRY
-                   | LF_MODIFY_SCALE))
+    if(dev_coords)
     {
-      DT_OMP_FOR(dt_omp_sharedconst(raw_monochrome) shared(tmpbuf, d, modifier))
-      for(int y = 0; y < roi_out->height; y++)
-      {
-        float *pi = tmpbuf + (size_t)y * tmpbufwidth;
-        modifier->ApplySubpixelGeometryDistortion(roi_out->x,
-                                                  roi_out->y + y,
-                                                  roi_out->width, 1, pi);
-      }
-
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf,
-                                             dev_tmpbuf, 0,
-                                             tmpbufsize, TRUE);
-      if(err != CL_SUCCESS) goto error;
-
       err = dt_opencl_enqueue_kernel_2d_args
         (devid, ldkernel, owidth, oheight,
          CLARG(dev_tmp), CLARG(dev_out),
          CLARG(owidth), CLARG(oheight),
          CLARG(iwidth), CLARG(iheight),
          CLARG(roi_in_x), CLARG(roi_in_y),
-         CLARG(dev_tmpbuf), CLARG((d->do_nan_checks)));
+         CLARG(dev_coords), CLARG((d->do_nan_checks)),
+         CLARG(coord_step), CLARG(coord_gwidth));
     }
     else
     {
@@ -1543,8 +1822,9 @@ static int _process_cl_lf(dt_iop_module_t *self,
 
 error:
   dt_opencl_release_mem_object(dev_tmp);
-  dt_opencl_release_mem_object(dev_tmpbuf);
-  dt_free_align(tmpbuf);
+  dt_opencl_release_mem_object(dev_coords);
+  dt_opencl_release_mem_object(dev_vig);
+  _lens_grid_cache_release(d);
   if(modifier != NULL) delete modifier;
   return err;
 }
@@ -1685,17 +1965,26 @@ static void _distort_mask_lf(dt_iop_module_t *self,
 
   const dt_interpolation_t *const interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
+  // the same coordinates as the image, see _lens_grid_build()
+  dt_iop_lens_grid_t grid = { NULL, 0, 0, 0, 0, 0, 0 };
+  if(!_lens_grid_build(modifier, FALSE, FALSE, roi_out->x, roi_out->y,
+                       roi_out->width, roi_out->height, &grid))
+  {
+    dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, 1);
+    delete modifier;
+    return;
+  }
+
   // acquire temp memory for distorted pixel coords
   const size_t bufsize = (size_t)roi_out->width * 2 * 3;
   size_t padded_bufsize;
   float *const buf = dt_alloc_perthread_float(bufsize, &padded_bufsize);
 
-  DT_OMP_FOR(dt_omp_sharedconst(buf) shared(modifier))
+  DT_OMP_FOR(dt_omp_sharedconst(buf) shared(grid, modifier))
   for(int y = 0; y < roi_out->height; y++)
   {
     float *bufptr = (float*)dt_get_perthread(buf, padded_bufsize);
-    modifier->ApplySubpixelGeometryDistortion(roi_out->x, roi_out->y + y,
-                                              roi_out->width, 1, bufptr);
+    _lens_grid_row(&grid, modifier, y, roi_out->width, bufptr);
 
     // reverse transform the global coords from lf to our buffer
     float *_out = out + (size_t)y * roi_out->width;
@@ -1716,6 +2005,7 @@ static void _distort_mask_lf(dt_iop_module_t *self,
     }
   }
   dt_free_align(buf);
+  dt_free_align(grid.data);
   delete modifier;
 }
 
@@ -3365,6 +3655,9 @@ void commit_params(dt_iop_module_t *self,
   if(dt_image_is_monochrome(&self->dev->image_storage))
     d->modify_flags &= ~DT_IOP_LENS_MODIFY_FLAG_TCA;
 
+  d->params_hash = dt_hash(DT_INITHASH, p, sizeof(dt_iop_lens_params_t));
+  d->params_hash = dt_hash(d->params_hash, &d->modify_flags, sizeof(d->modify_flags));
+
   d->v_strength = p->v_strength;
   d->v_radius = p->v_radius;
   d->v_steepness = p->v_steepness;
@@ -3401,6 +3694,7 @@ void cleanup_pipe(dt_iop_module_t *self,
     delete d->lens;
     d->lens = NULL;
   }
+  _lens_grid_cache_free(d);
 
   free(piece->data);
   piece->data = NULL;

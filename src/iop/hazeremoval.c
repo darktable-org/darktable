@@ -677,7 +677,7 @@ void process(dt_iop_module_t *self,
   // finally, calculate the haze-free image, minimum allowed value for transition map
   const float t_min = CLAMP(expf(-distance * distance_max), 1.0f / 1024.0f, 1.0f);
 
-  dt_print_pipe(DT_DEBUG_VERBOSE,
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
       "ambient data", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out,
       "tmin=%.4f distance_max=%.4f A0=%.4f %.4f %.4f", t_min, distance_max, A0[0], A0[1], A0[2]);
 
@@ -966,7 +966,7 @@ int process_cl(dt_iop_module_t *self,
   // finally, calculate the haze-free image
   const float t_min = CLAMP(expf(-distance * distance_max), 1.0f / 1024.0f, 1.0f);
 
-  dt_print_pipe(DT_DEBUG_VERBOSE,
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
       "ambient data", piece->pipe, self, devid, roi_in, roi_out,
       "tmin=%.4f distance_max=%.4f A0=%.4f %.4f %.4f", t_min, distance_max, A0[0], A0[1], A0[2]);
 

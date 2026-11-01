@@ -799,12 +799,15 @@ void process(dt_iop_module_t *self,
           weight = 1.0f;
         else if(weight <= 0.0f)
           weight = 0.0f;
-        else if(dither != 0.0f)
+        else
         {
-          // only bother computing the random number if dithering is enabled
           weight = 0.5f - cosf(M_PI_F * weight) / 2.0f;
-          encrypt_tea(tea_state);
-          dith = dither * tpdf(tea_state[0]);
+          // only bother computing the random number if dithering is enabled
+          if(dither != 0.0f)
+          {
+            encrypt_tea(tea_state);
+            dith = dither * tpdf(tea_state[0]);
+          }
         }
       }
 

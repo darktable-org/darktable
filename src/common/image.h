@@ -104,6 +104,8 @@ typedef enum
   // produced by neural restore raw denoise; derived at import from
   // Xmp.darktable.neural_restore in the file
   DT_IMAGE_AI_DENOISED = 1 << 21,
+  // set when Lr import has been applied to this image.
+  DT_IMAGE_FOREIGN_XMP_APPLIED = 1 << 22,
 } dt_image_flags_t;
 
 typedef enum dt_image_colorspace_t

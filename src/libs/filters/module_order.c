@@ -33,7 +33,10 @@ typedef enum _module_order_type_t
   _MORDER_CUSTOM,
   _MORDER_LEGACY,
   _MORDER_V30,
-  _MORDER_V30_JPG
+  _MORDER_V30_JPG,
+  _MORDER_V50,
+  _MORDER_V50_JPG,
+  _MORDER_NONE
 } _module_order_type_t;
 
 static char **_module_order_names = NULL;
@@ -67,6 +70,12 @@ static void _module_order_decode(const gchar *txt, int *val)
     *val = _MORDER_V30;
   else if(!g_strcmp0(txt, "$3"))
     *val = _MORDER_V30_JPG;
+  else if(!g_strcmp0(txt, "$4"))
+    *val = _MORDER_V50;
+  else if(!g_strcmp0(txt, "$5"))
+    *val = _MORDER_V50_JPG;
+  else if(!g_strcmp0(txt, "$6"))
+    *val = _MORDER_NONE;
   else
     *val = _MORDER_ALL;
 }
@@ -91,6 +100,15 @@ static void _module_order_changed(GtkWidget *widget, gpointer user_data)
     case _MORDER_V30_JPG:
       _rule_set_raw_text(module_order->rule, "$3", TRUE);
       break;
+    case _MORDER_V50:
+      _rule_set_raw_text(module_order->rule, "$4", TRUE);
+      break;
+    case _MORDER_V50_JPG:
+      _rule_set_raw_text(module_order->rule, "$5", TRUE);
+      break;
+    case _MORDER_NONE:
+      _rule_set_raw_text(module_order->rule, "$6", TRUE);
+      break;
     case _MORDER_ALL:
       _rule_set_raw_text(module_order->rule, "", TRUE);
       break;
@@ -106,31 +124,19 @@ static gboolean _module_order_update(dt_lib_filtering_rule_t *rule)
 
   rule->manual_widget_set++;
   _widgets_module_order_t *module_order = (_widgets_module_order_t *)rule->w_specific;
-  char query[1024] = { 0 };
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-                   "SELECT mo.version, COUNT(*) "
-                   " FROM main.images as mi"
-                   " LEFT JOIN (SELECT imgid, version FROM main.module_order) AS mo"
-                   " ON mo.imgid = mi.id"
-                   " WHERE %s"
-                   " GROUP BY mo.version",
-                   rule->lib->last_where_ext);
-  // clang-format on
-  int counts[DT_IOP_ORDER_LAST + 1] = { 0 };
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  int mo_counts[DT_IOP_ORDER_LAST + 1] = { 0 };
+
+  GList *counts = dt_filter_get_module_order_counts(rule->lib->last_where_ext);
+  for(GList *iter = counts; iter; iter = g_list_next(iter))
   {
-    const int count = sqlite3_column_int(stmt, 1);
-    const int v = (sqlite3_column_bytes(stmt, 0) == 0) ? DT_IOP_ORDER_LAST : sqlite3_column_int(stmt, 0);
-    counts[v] = count;
+    dt_filter_int_count_t *count = iter->data;
+    mo_counts[count->val] = count->count;
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(counts, dt_filter_int_count_free);
 
   for(int i = 0; i < DT_IOP_ORDER_LAST + 1; i++)
   {
-    gchar *item = g_strdup_printf("%s (%d)", _(_module_order_names[i + 1]), counts[i]);
+    gchar *item = g_strdup_printf("%s (%d)", _(_module_order_names[i + 1]), mo_counts[i]);
     dt_bauhaus_combobox_set_entry_label(module_order->combo, i + 1, item);
     g_free(item);
   }
@@ -148,7 +154,7 @@ static void _module_order_widget_init(dt_lib_filtering_rule_t *rule, const dt_co
   _widgets_module_order_t *module_order = g_malloc0(sizeof(_widgets_module_order_t));
   module_order->rule = rule;
 
-  // is the table with all the order names is NULL, fill it
+  // if the table with all the order names is NULL, fill it
   if(!_module_order_names)
   {
     _module_order_names = g_malloc0_n(DT_IOP_ORDER_LAST + 3, sizeof(char *));

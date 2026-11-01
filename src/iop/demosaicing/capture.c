@@ -880,7 +880,7 @@ static void _capture_sharpen(dt_iop_module_t *self,
   {
     if(blendmask[k] > 0.0f)
     {
-      const float luminance_new = interpolatef(CLIP(blendmask[k]), tmp1[k], luminance[k]);
+      const float luminance_new = mixf(luminance[k], tmp1[k], CLIP(blendmask[k]));
       const float factor = luminance_new / MAX(luminance[k], CAPTURE_YMIN);
       for_each_channel(c) out[k*4 + c] *= factor;
     }

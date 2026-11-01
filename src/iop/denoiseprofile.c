@@ -870,7 +870,7 @@ void tiling_callback(dt_iop_module_t *self,
     const int K_scattered = ceilf(d->scattering
                                   * (K * K * K + 7.0 * K * sqrt(K)) / 6.0) + K;
 
-    tiling->factor = 2.0f + 0.25f; // in + out + tmp
+    tiling->factor = 4.0f + 0.25f; // in + out + tmp + mirror-extended in and out
     // in + out + (2 + NUM_BUCKETS * 0.25) tmp:
     tiling->factor_cl = 4.0f + 0.25f * NUM_BUCKETS;
     tiling->maxbuf = 1.0f;
@@ -2046,12 +2046,21 @@ static int process_nlmeans_cl(dt_iop_module_t *self,
 
 #else // old&current code
 
+  // the patch distances are computed over the image extended by mirroring, as on the CPU
+  const dt_nlmeans_param_t border_params = { .scattering = scattering,
+                                             .scale = scale,
+                                             .patch_radius = P,
+                                             .search_radius = K };
+  const int border = nlmeans_border(&border_params);
+  const int pwidth = width + 2 * border;
+  const int pheight = height + 2 * border;
+
   cl_mem buckets[NUM_BUCKETS] = { NULL };
 
   unsigned int state = 0;
   for(int k = 0; k < NUM_BUCKETS; k++)
   {
-    buckets[k] = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
+    buckets[k] = dt_opencl_alloc_device_buffer(devid, sizeof(float) * pwidth * pheight);
     if(buckets[k] == NULL) goto error;
   }
 
@@ -2090,14 +2099,16 @@ static int process_nlmeans_cl(dt_iop_module_t *self,
   err = dt_opencl_fill_buffer(devid, dev_U2, (size_t)width * height, 4, 0.0f);
   if(err != CL_SUCCESS) goto error;
 
-  const size_t bwidth = ROUNDUP(width, hblocksize);
-  const size_t bheight = ROUNDUP(height, vblocksize);
+  const size_t bwidth = ROUNDUP(pwidth, hblocksize);
+  const size_t bheight = ROUNDUP(pheight, vblocksize);
   size_t sizesl[2];
   size_t local[2];
 
+  // each pass also adds the mirrored offset -q, so the row kj_index = 0
+  // stops at ki_index = 0: its right half is the mirror of its left half
   for(int kj_index = -K; kj_index <= 0; kj_index++)
   {
-    for(int ki_index = -K; ki_index <= K; ki_index++)
+    for(int ki_index = -K; ki_index <= (kj_index < 0 ? K : 0); ki_index++)
     {
       // This formula is made for:
       // - ensuring that j = kj_index and i = ki_index when d->scattering is 0
@@ -2115,29 +2126,29 @@ static int process_nlmeans_cl(dt_iop_module_t *self,
       int q[2] = { i, j };
 
       cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_denoiseprofile_dist, width, height,
-                CLARG(dev_tmp), CLARG(dev_U4), CLARG(width), CLARG(height), CLARG(q));
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_denoiseprofile_dist, pwidth, pheight,
+                CLARG(dev_tmp), CLARG(dev_U4), CLARG(width), CLARG(height), CLARG(q), CLARG(border));
       if(err != CL_SUCCESS) goto error;
 
       sizesl[0] = bwidth;
-      sizesl[1] = ROUNDUPDHT(height, devid);
+      sizesl[1] = ROUNDUPDHT(pheight, devid);
       local[0] = hblocksize;
       local[1] = 1;
       cl_mem dev_U4_t = buckets[bucket_next(&state, NUM_BUCKETS)];
       err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_denoiseprofile_horiz, sizesl, local,
                 CLARG(dev_U4), CLARG(dev_U4_t),
-                CLARG(width), CLARG(height), CLARG(q), CLARG(P),
+                CLARG(pwidth), CLARG(pheight), CLARG(q), CLARG(P),
                 CLLOCAL(sizeof(float) * (hblocksize + 2 * P)));
       if(err != CL_SUCCESS) goto error;
 
-      sizesl[0] = ROUNDUPDWD(width, devid);
+      sizesl[0] = ROUNDUPDWD(pwidth, devid);
       sizesl[1] = bheight;
       local[0] = 1;
       local[1] = vblocksize;
       cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
       err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_denoiseprofile_vert, sizesl, local,
               CLARG(dev_U4_t), CLARG(dev_U4_tt),
-              CLARG(width), CLARG(height),
+              CLARG(pwidth), CLARG(pheight),
               CLARG(q), CLARG(P), CLARG(norm),
               CLLOCAL(sizeof(float) * (vblocksize + 2 * P)),
               CLARG(central_pixel_weight), CLARG(dev_U4));
@@ -2145,7 +2156,7 @@ static int process_nlmeans_cl(dt_iop_module_t *self,
 
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_denoiseprofile_accu, width, height,
                           CLARG(dev_tmp), CLARG(dev_U2), CLARG(dev_U4_tt),
-                          CLARG(width), CLARG(height), CLARG(q));
+                          CLARG(width), CLARG(height), CLARG(q), CLARG(border));
       if(err != CL_SUCCESS) goto error;
       dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
     }

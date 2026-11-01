@@ -390,8 +390,9 @@ typedef enum dt_ui_panel_t
   DT_UI_PANEL_RIGHT,
   /* bottom panel */
   DT_UI_PANEL_BOTTOM,
-  /* flexi masks panel: an overlay on the canvas, for the canvas position of
-     masks_panel_position (see dt_ui_flexi_panel_* below) */
+  /* flexi masks panel: an overlay on the canvas (a column beside it when
+     always on), for the canvas position of masks_panel_position (see
+     dt_ui_flexi_panel_* below) */
   DT_UI_PANEL_FLEXI,
 
   DT_UI_PANEL_SIZE
@@ -490,6 +491,13 @@ void dt_ui_flexi_panel_set_collapsed(struct dt_ui_t *ui,
     row even with nothing to show, so that focus changes do not move the image */
 void dt_ui_flexi_panel_set_in_view(struct dt_ui_t *ui, const gboolean in_view);
 gboolean dt_ui_flexi_panel_is_collapsed(struct dt_ui_t *ui);
+/** \brief re-read whether the panel is always-on (dt_masks_gui_panel_always_on) and
+    move it to match: a column beside the canvas, taking its room, or an
+    overlay on it */
+void dt_ui_flexi_panel_update_layout(struct dt_ui_t *ui);
+/** \brief what an always-on panel says while it has no module to show, or NULL to
+    take that down because a module's mask is in the panel */
+void dt_ui_flexi_panel_set_idle(struct dt_ui_t *ui, const char *text);
 /** \brief which edge the panel is on now, which can differ from the stored
     preference: anything mirroring the panel's own chrome follows this */
 gboolean dt_ui_flexi_panel_is_right(struct dt_ui_t *ui);

@@ -867,6 +867,22 @@ static void _widget_enter(GtkEventControllerMotion *controller,
   _widget_leave(NULL, widget);
 }
 
+static void _widget_destroy(GtkWidget *widget)
+{
+  // the shared popup reads bh->current each time it draws: left open on a
+  // widget that is going away, it draws from freed memory (garbage label, then
+  // a crash). The edit is over, so a pending combobox change is not emitted
+  dt_bauhaus_t *bh = darktable.bauhaus;
+  if(bh && bh->current == DT_BAUHAUS_WIDGET(widget))
+  {
+    bh->change_active = FALSE;
+    _popup_hide();
+  }
+
+  GtkWidgetClass *parent = GTK_WIDGET_CLASS(dt_bh_parent_class);
+  if(parent->destroy) parent->destroy(widget);
+}
+
 static void _widget_finalize(GObject *widget)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
@@ -4231,6 +4247,7 @@ static void dt_bh_class_init(DtBauhausWidgetClass *class)
                      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
+  widget_class->destroy = _widget_destroy;
   widget_class->draw = _widget_draw;
   // widget_class->snapshot = _widget_snapshot;
   widget_class->key_press_event = _widget_key_press;

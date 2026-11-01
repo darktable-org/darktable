@@ -33,28 +33,24 @@ static gboolean _exposure_bias_update(dt_lib_filtering_rule_t *rule)
   GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(specialtop->range_select) : NULL;
 
   rule->manual_widget_set++;
+  const gchar *colname = "ROUND(exposure_bias,2)";
+
   // first, we update the graph
-  char query[1024] = { 0 };
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-             "SELECT ROUND(exposure_bias,2), COUNT(*) AS count"
-             " FROM main.images AS mi"
-             " WHERE %s"
-             " GROUP BY ROUND(exposure_bias,2)",
-             d->last_where_ext);
-  // clang-format on
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  dtgtk_range_select_reset_blocks(range);
-  if(rangetop) dtgtk_range_select_reset_blocks(rangetop);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+
+  // get min and max
+  dt_filter_range_t *biasrange = dt_filter_get_range(colname, d->last_where_ext);
+  range->min_r = biasrange->min_r;
+  range->max_r = biasrange->max_r;
+  dt_filter_range_free(biasrange);
+
+  GList *counts = dt_filter_get_range_counts(colname, d->last_where_ext);
+  for(GList *iter = counts; iter; iter = g_list_next(iter))
   {
-    const double val = sqlite3_column_double(stmt, 0);
-    const int count = sqlite3_column_int(stmt, 1);
-    dtgtk_range_select_add_block(range, val, count);
-    if(rangetop) dtgtk_range_select_add_block(rangetop, val, count);
+    dt_filter_range_count_t *count = iter->data;
+    dtgtk_range_select_add_block(range, count->value_r, count->count);
+    if(rangetop) dtgtk_range_select_add_block(rangetop, count->value_r, count->count);
   }
-  sqlite3_finalize(stmt);
+  g_list_free_full(counts, dt_filter_range_count_free);
 
   // and setup the selection
   dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
@@ -94,24 +90,10 @@ static void _exposure_bias_widget_init(dt_lib_filtering_rule_t *rule,
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
   range->print = _exposure_bias_print_func;
 
-  char query[1024] = { 0 };
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-             "SELECT MIN(exposure_bias), MAX(exposure_bias)"
-             " FROM main.images");
-  // clang-format on
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  double min = -5.0;
-  double max = 5.0;
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    min = sqlite3_column_double(stmt, 0);
-    max = sqlite3_column_double(stmt, 1);
-  }
-  sqlite3_finalize(stmt);
-  range->min_r = floor(min * 100.0) / 100.0;
-  range->max_r = (floor(max * 100.0) + 1.0) / 100.0;
+  dt_filter_range_t *biasrange = dt_filter_get_range("exposure_bias", NULL);
+  range->min_r = floor(biasrange->min_r);
+  range->max_r = floor(biasrange->max_r) + 1;
+  dt_filter_range_free(biasrange);
 
   _range_widget_add_to_rule(rule, special, top);
 }

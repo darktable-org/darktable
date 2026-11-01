@@ -2406,6 +2406,8 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
   // is safe when overlays are off -- it refreshes the rating and returns
   // early -- only the on-screen overlay icons are gated on the overlay mode.
   _image_get_infos(thumb);
+  // reused widgets keep the previous image's active flag.
+  _dt_active_images_callback(NULL, thumb);
   if(thumb->over != DT_THUMBNAIL_OVERLAYS_NONE)
     _thumb_update_icons(thumb);
 

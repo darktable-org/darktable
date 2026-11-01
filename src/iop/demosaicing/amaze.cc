@@ -834,7 +834,7 @@ void amaze_demosaic(const float *const in,
                 = fabsf(0.5f - hvwt[indx >> 1]) < fabsf(0.5f - hvwtalt) ? hvwtalt : hvwt[indx >> 1];
             // a better result was obtained from the neighbours
 
-            Dgrb[0][indx >> 1] = interpolatef(hvwt[indx >> 1], vcd[indx], hcd[indx]); // evaluate colour differences
+            Dgrb[0][indx >> 1] = mixf(hcd[indx], vcd[indx], hvwt[indx >> 1]); // evaluate colour differences
 
             rgbgreen[indx] = cfa[indx] + Dgrb[0][indx >> 1]; // evaluate G (finally!)
 
