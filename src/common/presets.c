@@ -383,6 +383,17 @@ gboolean dt_presets_blend_params_match(const dt_develop_blend_params_t *bp,
   return !memcmp(bp, &stored, sizeof(stored));
 }
 
+gboolean dt_presets_module_blend_match(const dt_iop_module_t *module,
+                                       const void *blob,
+                                       const int size)
+{
+  if(!dt_presets_blend_params_match(module->blend_params, blob, size)) return FALSE;
+  if(size <= 0 || !blob || !dt_masks_blend_blob_has_tail(size)) return TRUE;
+  return dt_masks_blend_blob_forms_match(module->blend_params,
+                                         module->dev ? module->dev->forms : NULL,
+                                         blob, size);
+}
+
 gchar *dt_get_active_preset_name(dt_iop_module_t *module,
                                  gboolean *writeprotect)
 {
@@ -420,7 +431,7 @@ gchar *dt_get_active_preset_name(dt_iop_module_t *module,
         || ((op_params_size > 0
              && !memcmp(module->params, op_params,
                         MIN(op_params_size, module->params_size)))))
-       && dt_presets_blend_params_match(module->blend_params, blendop_params, bl_params_size)
+       && dt_presets_module_blend_match(module, blendop_params, bl_params_size)
        && module->enabled == enabled)
     {
       name = g_strdup((char *)sqlite3_column_text(stmt, 0));

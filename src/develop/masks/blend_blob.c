@@ -351,6 +351,69 @@ void dt_masks_blend_blob_remap(GList *forms,
   g_hash_table_destroy(map);
 }
 
+// ids renumbered in the order they are met, so that two trees of the same
+// shape encode alike whatever ids their images gave them
+static dt_mask_id_t _canon_id(GHashTable *map, const dt_mask_id_t id)
+{
+  if(!dt_is_valid_maskid(id)) return id;
+  gpointer found = g_hash_table_lookup(map, GINT_TO_POINTER(id));
+  if(found) return GPOINTER_TO_INT(found);
+  const dt_mask_id_t canon = 1000 + g_hash_table_size(map);
+  g_hash_table_insert(map, GINT_TO_POINTER(id), GINT_TO_POINTER(canon));
+  return canon;
+}
+
+static void *_encode_canonical(const dt_develop_blend_params_t *bp_in,
+                               GList *forms,
+                               size_t *size)
+{
+  dt_develop_blend_params_t bp = *bp_in;
+  GList *tree = dt_masks_tree_forms(forms, bp.mask_id);
+  GList *copies = NULL;
+  GHashTable *map = g_hash_table_new(NULL, NULL);
+  bp.mask_id = _canon_id(map, bp.mask_id);
+  for(GList *l = tree; l; l = g_list_next(l))
+  {
+    dt_masks_form_t *form = dt_masks_dup_masks_form(l->data);
+    form->formid = _canon_id(map, form->formid);
+    if(form->type & DT_MASKS_GROUP)
+      for(GList *p = form->points; p; p = g_list_next(p))
+      {
+        dt_masks_point_group_t *pt = p->data;
+        pt->formid = _canon_id(map, pt->formid);
+        pt->parentid = _canon_id(map, pt->parentid);
+      }
+    copies = g_list_append(copies, form);
+  }
+  g_list_free(tree);
+  g_hash_table_destroy(map);
+
+  void *blob = dt_masks_blend_blob_encode(&bp, copies, size);
+  g_list_free_full(copies, (GDestroyNotify)dt_masks_free_form);
+  return blob;
+}
+
+gboolean dt_masks_blend_blob_forms_match(const dt_develop_blend_params_t *bp,
+                                         GList *forms,
+                                         const void *blob,
+                                         const size_t size)
+{
+  dt_develop_blend_params_t stored_bp;
+  GList *stored_forms = NULL;
+  if(!dt_masks_blend_blob_decode(blob, size, &stored_bp, &stored_forms)) return FALSE;
+
+  size_t stored_size = 0;
+  size_t size_now = 0;
+  void *stored = _encode_canonical(&stored_bp, stored_forms, &stored_size);
+  void *now = _encode_canonical(bp, forms, &size_now);
+  const gboolean same = stored_size == size_now && !memcmp(stored, now, stored_size);
+
+  g_free(stored);
+  g_free(now);
+  g_list_free_full(stored_forms, (GDestroyNotify)dt_masks_free_form);
+  return same;
+}
+
 GList *dt_masks_read_forms_at(const dt_imgid_t imgid, const int num)
 {
   GList *forms = NULL;
