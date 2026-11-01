@@ -27,6 +27,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
+#include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
@@ -639,6 +640,26 @@ cleanup:
   return err;
 }
 #endif
+
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
+                     struct dt_develop_tiling_t *tiling)
+{
+  // grain does not allow tiling: process() offsets the noise by a hash
+  // modulo the roi width, so tiles would not line up. This only decides
+  // whether the OpenCL path fits: input and output, plus the noise
+  // coordinates of _noise_coords() (up to 21 samples) and the LUT
+  tiling->factor = 2.0f;
+  tiling->factor_cl = 2.0f;
+  tiling->maxbuf = 1.0f;
+  tiling->maxbuf_cl = 1.0f;
+  tiling->overhead = sizeof(float) * 6 * (roi_out->width + roi_out->height + 2 * 21)
+                     + sizeof(float) * GRAIN_LUT_SIZE * GRAIN_LUT_SIZE;
+  tiling->overlap = 0;
+  tiling->align = 1;
+}
 
 void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
