@@ -240,7 +240,7 @@ jobs:
             python-jsonschema:p
             curl:p
             drmingw:p
-            gcc-libs:p
+            cc-libs:p
             gettext:p
             gmic:p
             graphicsmagick:p
