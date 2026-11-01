@@ -529,11 +529,10 @@ kernel void highlights_initmask_linear(read_only image2d_t in,
   {
     for(int x = icol; x < colend; x++)
     {
-      // the CPU code tests the red channel against all three clip values
-      const float val = readpixel(in, x, y).x;
-      mbuff[0] |= val >= clips.x;
-      mbuff[1] |= val >= clips.y;
-      mbuff[2] |= val >= clips.z;
+      const float4 val = readpixel(in, x, y);
+      mbuff[0] |= val.x >= clips.x;
+      mbuff[1] |= val.y >= clips.y;
+      mbuff[2] |= val.z >= clips.z;
     }
   }
 
