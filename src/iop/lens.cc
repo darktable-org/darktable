@@ -3817,6 +3817,28 @@ static char *_lens_sanitize(const char *orig_lens)
   }
 }
 
+// Viltrox writes "Viltrox AF 16/1.8 Z" in EXIF. Lensfun reads a bare "a/b" as
+// aperture/focal, the Zeiss "2/25" form, so it looks for f/16 at 1.8mm and
+// finds nothing. Returns the spelled out name when the first number is the
+// larger one and the name states no focal length yet ("25mm 1/0.95"), else NULL
+static gchar *_lens_expand_focal_aperture(const char *lens)
+{
+  const char *slash = strchr(lens, '/');
+  if(!slash || !g_ascii_isdigit(slash[1]) || strstr(lens, "mm")) return NULL;
+
+  const char *space = g_strrstr_len(lens, slash - lens, " ");
+  const char *first = space ? space + 1 : lens;
+  if(!g_ascii_isdigit(*first)) return NULL;
+
+  char *first_end, *second_end;
+  const double focal = g_ascii_strtod(first, &first_end);
+  const double aperture = g_ascii_strtod(slash + 1, &second_end);
+  if(first_end != slash || (*second_end && *second_end != ' ') || focal <= aperture)
+    return NULL;
+
+  return g_strdup_printf("%.*smm f/%s", (int)(slash - lens), lens, slash + 1);
+}
+
 void reload_defaults(dt_iop_module_t *self)
 {
   char *new_lens;
@@ -3870,6 +3892,18 @@ void reload_defaults(dt_iop_module_t *self)
       dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
       const lfLens **lens = gd->db->FindLenses(cam[0], NULL, d->lens, 0);
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+
+      gchar *expanded = lens ? NULL : _lens_expand_focal_aperture(d->lens);
+      if(expanded)
+      {
+        dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+        lens = gd->db->FindLenses(cam[0], NULL, expanded, 0);
+        dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+
+        // without a profile, keep the name the file reported
+        if(lens) dt_strlcpy_to_fixed(d->lens, expanded, sizeof(d->lens));
+        g_free(expanded);
+      }
 
       if(!lens && islower(cam[0]->Mount[0]))
       {
