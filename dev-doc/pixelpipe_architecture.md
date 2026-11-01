@@ -56,6 +56,19 @@ Key members:
         -   If not cached, it calls `process()` (or `process_cl` for OpenCL).
         -   Stores the result in the cache if appropriate.
 
+### Input color profile output
+
+The input color profile module (`colorin`) version 8 outputs the selected
+working RGB profile for new settings. Matrix profiles combine the input-to-XYZ
+and XYZ-to-working-RGB matrices; ICC fallback transforms target the working
+profile directly. Gamut clipping still happens in the selected clipping gamut.
+DNG hue/saturation maps operate in ProPhoto RGB before returning working RGB.
+
+Settings migrated from versions 1–7 set the internal `output_rgb` flag to false
+and retain the original Lab output and processing paths. Query the committed
+piece's `output_colorspace()` rather than assuming colorin always outputs Lab.
+Lab modules downstream continue to use the pipeline's normal conversions.
+
 ## Pipeline Caching
 
 Darktable employs a sophisticated caching mechanism to avoid redundant processing. This is implemented in `src/develop/pixelpipe_cache.c`.
