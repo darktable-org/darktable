@@ -136,6 +136,15 @@ void dt_interpolation_resample_roi(const dt_interpolation_t *itor, float *out,
                                    const dt_iop_roi_t *const roi_out,
                                    const float *const in, const dt_iop_roi_t *const roi_in);
 
+/** As dt_interpolation_resample_roi(), for a tile of a larger resampling:
+ *  the roi offsets place the tile in the full input and output image, and
+ *  the tile is sampled where the full image is, also when roi_out->x is not
+ *  exactly roi_in->x * scale.
+ */
+void dt_interpolation_resample_tile(const dt_interpolation_t *itor, float *out,
+                                    const dt_iop_roi_t *const roi_out,
+                                    const float *const in, const dt_iop_roi_t *const roi_in);
+
 #ifdef HAVE_OPENCL
 typedef struct dt_interpolation_cl_global_t
 {
@@ -177,6 +186,10 @@ int dt_interpolation_resample_cl(const dt_interpolation_t *itor, int devid, cl_m
 int dt_interpolation_resample_roi_cl(const dt_interpolation_t *itor, int devid, cl_mem dev_out,
                                      const dt_iop_roi_t *const roi_out, cl_mem dev_in,
                                      const dt_iop_roi_t *const roi_in);
+
+int dt_interpolation_resample_tile_cl(const dt_interpolation_t *itor, int devid, cl_mem dev_out,
+                                      const dt_iop_roi_t *const roi_out, cl_mem dev_in,
+                                      const dt_iop_roi_t *const roi_in);
 #endif
 
 void dt_interpolation_resample_mask(const dt_interpolation_t *itor,

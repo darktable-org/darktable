@@ -426,6 +426,10 @@ changes (where available).
 
 ## Bug Fixes
 
+- Upscaled exports no longer show shifted bands where they were
+  processed in tiles, and the upscale now runs on OpenCL when it fits
+  the device.
+
 - Fixed Lightroom develop import which was not done. Only the tags,
   color labels, stars where imported.
 

@@ -2670,8 +2670,14 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
       dt_opencl_image_fits_device(pipe->devid, roi_in.width, roi_in.height,
                                   in_bpp, bpp, untiled_factor_cl, tiling.overhead, tiling.overlap);
 
+    // the fitter only sees roi_in; an upscaled roi_out can exceed the device's
+    // maximum image size although its input fits
+    const gboolean out_fits =
+         roi_out->width <= darktable.opencl->dev[pipe->devid].max_image_width
+      && roi_out->height <= darktable.opencl->dev[pipe->devid].max_image_height;
+
     const gboolean may_tile = _piece_may_tile(piece);
-    const gboolean no_tiling = fitter == DT_OPENCL_NO_TILING;
+    const gboolean no_tiling = fitter == DT_OPENCL_NO_TILING && out_fits;
     const gboolean fast_tiling = fitter == DT_OPENCL_FAST_TILING
         && !memcmp(&roi_in, roi_out, sizeof(roi_in))
         && !(module->flags() & (IOP_FLAGS_WRITE_RASTER | IOP_FLAGS_WRITE_DETAILS))
