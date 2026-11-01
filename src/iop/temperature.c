@@ -85,6 +85,7 @@ typedef struct dt_iop_temperature_gui_data_t
   GtkWidget *btn_d65;
   GtkWidget *temp_label;
   GtkWidget *check_late_correction;
+  GtkWidget *label_locked;
   int preset_cnt;
   int preset_num[54];
   double mod_coeff[4];
@@ -574,9 +575,10 @@ static void _wb_from_params(const dt_iop_temperature_params_t *p,
     wb->coeffs[k] = applied ? pcoeffs[k] : 1.0f;
     wb->D65coeffs[k] = D65coeffs[k];
   }
+  wb->camera_reference = applied && p->preset == DT_IOP_TEMP_D65;
   // no late correction in 'camera reference' mode; if not applied,
   // nothing for a later module to finish
-  wb->late_correction = applied && p->preset != DT_IOP_TEMP_D65 && p->late_correction;
+  wb->late_correction = applied && !wb->camera_reference && p->late_correction;
 }
 
 void process(dt_iop_module_t *self,
@@ -1194,6 +1196,32 @@ static inline const char *_preset_to_str(const int preset)
   }
 }
 
+// while channelmixerrgb adapts from its own illuminant, the multipliers set here
+// don't decide the colors, so only the modes that need no adjusting stay available.
+// "user modified" is one of them: a loaded preset can use it for the coefficients
+// of the 'caveats' workaround
+static void _update_controls_lock(dt_iop_module_t *self)
+{
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
+
+  const gboolean locked = dt_dev_cat_overrides_wb(self->dev);
+
+  GtkWidget *const controls[] = { g->scale_k, g->scale_tint,
+                                  g->scale_r, g->scale_g, g->scale_b, g->scale_y,
+                                  g->finetune, g->colorpicker };
+  for(size_t i = 0; i < G_N_ELEMENTS(controls); i++)
+    gtk_widget_set_sensitive(controls[i], !locked);
+
+  dt_bauhaus_combobox_entry_set_sensitive(g->presets, DT_IOP_TEMP_SPOT, !locked);
+  // the first entry after the standard ones is the camera name, which
+  // _generate_preset_combo() adds as a section: it must stay insensitive
+  for(int pos = DT_IOP_NUM_OF_STD_TEMP_PRESETS + 1; pos < g->preset_cnt; pos++)
+    dt_bauhaus_combobox_entry_set_sensitive(g->presets, pos, !locked);
+  gtk_widget_queue_draw(g->presets);
+
+  gtk_widget_set_visible(g->label_locked, locked);
+}
+
 static void _update_preset(dt_iop_module_t *self, int mode)
 {
   dt_iop_temperature_params_t *p = self->params;
@@ -1201,8 +1229,13 @@ static void _update_preset(dt_iop_module_t *self, int mode)
 
   const gboolean is_current_reference = p->preset == DT_IOP_TEMP_D65;
   const gboolean is_new_mode_manual = mode != DT_IOP_TEMP_D65;
+  const gboolean is_new_mode_from_camera = mode == DT_IOP_TEMP_AS_SHOT
+                                           || mode >= DT_IOP_NUM_OF_STD_TEMP_PRESETS;
 
-  if(is_current_reference && is_new_mode_manual)
+  // user modified and from image area keep the flag: it is ignored in camera
+  // reference (_wb_from_params()), so a visit there must not lose the unticked
+  // flag of the 'caveats' workaround
+  if(is_current_reference && is_new_mode_from_camera)
   {
     p->late_correction = dt_dev_cat_is_active(self->dev);
   }
@@ -1215,6 +1248,8 @@ static void _update_preset(dt_iop_module_t *self, int mode)
     gtk_widget_set_visible(g->check_late_correction, is_new_mode_manual);
 
     dt_bauhaus_toggle_set(g->check_late_correction, p->late_correction);
+
+    _update_controls_lock(self);
   }
 }
 
@@ -2121,6 +2156,16 @@ static void _gui_wb_proxy(const dt_iop_module_t *self, dt_dev_wb_t *wb)
   _wb_from_params(p, self->enabled, self->hide_enable_button, self->dev->chroma.wb.D65coeffs, wb);
 }
 
+// channelmixerrgb doesn't report changes: every change of its params runs the
+// preview pipe, and so do instances added, removed or switched off
+static void _preview_pipe_finished(gpointer instance, dt_iop_module_t *self)
+{
+  if(dt_dev_cat_overrides_wb(self->dev))
+    dt_iop_color_picker_reset(self, FALSE);
+
+  _update_controls_lock(self);
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = IOP_GUI_ALLOC(temperature);
@@ -2223,7 +2268,17 @@ void gui_init(dt_iop_module_t *self)
       _("ensures the white balance coefficients are treated as a reference for the color calibration module.\n"
         "keep this checked for non-reference white balance in the modern scene-referred workflow."));
 
+  g->label_locked = gtk_label_new(_("the white balance is controlled in the color calibration module"));
+  gtk_widget_set_halign(g->label_locked, GTK_ALIGN_START);
+  gtk_label_set_xalign(GTK_LABEL(g->label_locked), 0.0f);
+  // gtk_label_set_line_wrap() is GTK 3 only, the property exists in both
+  g_object_set(g->label_locked, "wrap", TRUE, NULL);
+  gtk_widget_set_tooltip_text(g->label_locked,
+      _("to use these controls, select the illuminant 'as set in white balance module' in color calibration,\n"
+        "or turn chromatic adaptation off there"));
+
   dt_gui_box_add(box_enabled,
+                 g->label_locked,
                  g->presets,
                  g->finetune,
                  temp_label_box,
@@ -2262,6 +2317,7 @@ void gui_init(dt_iop_module_t *self)
 
   // update the gui when the preferences changed (i.e. colored sliders stuff)
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, _preference_changed);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _preview_pipe_finished);
 
   // start building top level widget
   self->widget = gtk_stack_new();

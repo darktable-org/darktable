@@ -184,6 +184,15 @@ typedef struct dt_dev_chroma_t
   dt_dev_wb_t wb;
 } dt_dev_chroma_t;
 
+// where a channelmixerrgb instance gets the illuminant for chromatic adaptation.
+// ordered: the maximum over all instances describes the whole pipe
+typedef enum dt_dev_cat_source_t
+{
+  DT_DEV_CAT_NONE = 0,       // this instance does no CAT
+  DT_DEV_CAT_OWN_ILLUMINANT, // an illuminant set in channelmixerrgb
+  DT_DEV_CAT_FROM_WB         // DT_ILLUMINANT_FROM_WB
+} dt_dev_cat_source_t;
+
 typedef struct dt_develop_t
 {
   gboolean gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be
@@ -278,10 +287,10 @@ typedef struct dt_develop_t
     // exposure iop hooks, used by histogram dragging functions
     dt_dev_proxy_exposure_t exposure;
 
-    // channelmixerrgb reports whether it is actually applying CAT;
-    // temperature asks through dt_dev_cat_is_active()
+    // channelmixerrgb reports where an instance gets its illuminant from;
+    // temperature asks through dt_dev_cat_is_active() and dt_dev_cat_overrides_wb()
     // thread contract: must only be called from the GTK main thread
-    gboolean (*cat_is_active)(struct dt_iop_module_t *cat);
+    dt_dev_cat_source_t (*cat_source)(struct dt_iop_module_t *cat);
 
     // temperature reports the WB that its commit_params() would publish for its
     // current params; color calibration's GUI asks through dt_dev_get_gui_wb()
@@ -583,6 +592,11 @@ void dt_dev_exposure_handle_event(int n_press, gdouble delta,
 /** TRUE if a live color calibration instance is actually applying CAT.
     GTK main thread only: the accessor reads params. */
 gboolean dt_dev_cat_is_active(dt_develop_t *dev);
+
+/** TRUE if a live color calibration instance is applying CAT and none of them
+    uses the illuminant from white balance, so white balance's multipliers don't
+    decide the colors. GTK main thread only: the accessor reads params. */
+gboolean dt_dev_cat_overrides_wb(dt_develop_t *dev);
 
 /** the WB that temperature's current params give, as its commit_params()
     would publish it; dev->chroma.wb if no temperature instance answers.

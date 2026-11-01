@@ -149,17 +149,44 @@ These functions read `pipe->wb`, all in the pipe thread:
 
 ## White balance asks color calibration through a proxy
 
-When the user switches white balance from the camera reference mode to another mode,
-`_update_preset()` (`temperature.c`) sets `p->late_correction` to the result of
-`dt_dev_cat_is_active()` (`develop.c`). The answer becomes part of white balance's params, and
-so of the history.
+White balance asks color calibration two questions:
 
-`dt_dev_cat_is_active()` calls `dev->proxy.cat_is_active` for each `channelmixerrgb` instance
-in `dev->iop` that is in the pipe (`iop_order != INT_MAX`), and returns `TRUE` if one of them
-answers `TRUE`. Color calibration's `gui_init()` sets that pointer to `_cat_proxy_is_active()`.
-That function reads the instance's current params and returns `TRUE` when the instance is
-enabled, its illuminant is not `DT_ILLUMINANT_PIPE`, its adaptation is not
-`DT_ADAPTATION_RGB`, and the image is not monochrome (`_applies_cat()`).
+- When the user switches from camera reference to "as shot" or a camera preset, `_update_preset()`
+  (`temperature.c`) sets `p->late_correction` to the result of `dt_dev_cat_is_active()`
+  (`develop.c`). The answer becomes part of white balance's params, and so of the history.
+  Switching to "user modified" or "from image area" keeps the stored flag, as camera reference
+  ignores it (`_wb_from_params()`) and the D65-screen workaround needs it off.
+- `_update_controls_lock()` (`temperature.c`) calls `dt_dev_cat_overrides_wb()` to decide whether
+  to disable the controls that choose multipliers. This changes no params.
+
+Both functions (`develop.c`) use `_cat_source()`. It calls `dev->proxy.cat_source` for each
+`channelmixerrgb` instance in `dev->iop` that is in the pipe (`iop_order != INT_MAX`), and
+returns the maximum of the answers. The values of `dt_dev_cat_source_t` are ordered for this:
+
+| Value | Instance | Maximum over all instances means |
+|---|---|---|
+| `DT_DEV_CAT_NONE` | does no CAT | no instance does CAT |
+| `DT_DEV_CAT_OWN_ILLUMINANT` | does CAT with an illuminant set in color calibration | CAT, and white balance's multipliers do not set the colors |
+| `DT_DEV_CAT_FROM_WB` | does CAT with `DT_ILLUMINANT_FROM_WB` | at least one instance follows white balance |
+
+`dt_dev_cat_is_active()` tests for "not `NONE`", and `dt_dev_cat_overrides_wb()` for
+`OWN_ILLUMINANT`. Masks play no part, and neither does `dev->chroma.adaptation`, which holds one
+instance and skips masked ones. So swapping the illuminants of two masked instances changes
+neither answer.
+
+Color calibration's `gui_init()` sets the pointer to `_cat_proxy_source()`. That function reads
+the instance's current params. An instance does CAT when `_applies_cat()` is true: it is enabled,
+its illuminant is not `DT_ILLUMINANT_PIPE`, the image is not monochrome, and its adaptation is
+not `DT_ADAPTATION_RGB`. The illuminants derived from multipliers count whatever adaptation the
+params hold, because `commit_params()` forces CAT16 for them.
+
+Color calibration does not notify white balance. White balance calls `_update_controls_lock()`
+from `_update_preset()`, which its own GUI paths all reach, and on
+`DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED`. Every change in color calibration, including adding,
+removing or switching off an instance, runs the preview pipe. The handler does not call
+`gui_update()`, which would reset the color picker. It cancels an active picker while the
+controls are locked. The signal does not fire if the pipe aborts, for example on an image
+change, but `gui_update()` then runs anyway.
 
 The proxy has three limits:
 
@@ -192,7 +219,7 @@ that pointer to `_gui_wb_proxy()`, which passes the instance's current params,
 the next commit writes into `pipe->wb`. The GTK thread owns the params, so the GUI sees an edit
 before any pipe commits it.
 
-This proxy has the same three limits as `cat_is_active`. Call it from the GTK main thread
+This proxy has the same three limits as `cat_source`. Call it from the GTK main thread
 only. Only `darktable.develop` gets the pointer. Nothing clears the pointer, so
 `dt_dev_get_gui_wb()` asks only an instance that it finds in `dev->iop`. If no instance
 answers, the helper copies `dev->chroma.wb`. For a `NULL` dev, it returns neutral values.
@@ -220,9 +247,10 @@ last commit or its last processing run computed.
 In both cases, processing replaces that illuminant. Only two illuminants depend on white
 balance, `DT_ILLUMINANT_CAMERA` and `DT_ILLUMINANT_FROM_WB` (`_get_corrected_illuminant_xy()` in
 `channelmixerrgb.c`). `channelmixerrgb.process()` and `process_cl()` look up both again from
-`pipe->wb` and write the result into `piece->data`. Processing starts only after all of the
-pipe's commits are done, so the lookup sees white balance's final `pipe->wb`. The one exception
-is a failed `DT_ILLUMINANT_CAMERA` lookup, which writes nothing. [A failed as-shot lookup keeps
+`pipe->wb` into a local variable (`_get_pipe_illuminant()`), and leave `piece->data` as it is.
+Processing starts only after all of the pipe's commits are done, so the lookup sees white
+balance's final `pipe->wb`. The one exception is a failed `DT_ILLUMINANT_CAMERA` lookup, which
+uses the illuminant from `piece->data`. [A failed as-shot lookup keeps
 the saved illuminant](#a-failed-as-shot-lookup-keeps-the-saved-illuminant) explains why that is
 safe.
 
@@ -230,8 +258,21 @@ safe.
 
 Every `DT_ILLUMINANT_FROM_WB` lookup goes through `_illuminant_xy_from_wb_or_D50()`
 (`channelmixerrgb.c`). `commit_params()`, `process()`, `process_cl()`, and the GUI call it. If
-`find_illuminant_xy_from_wb_coeffs()` fails, the helper returns D50. D50 is the pipe's own
-illuminant, so chromatic adaptation then leaves the image unchanged.
+the lookup fails, the helper returns D50. D50 is the pipe's own illuminant, so chromatic
+adaptation then leaves the image unchanged.
+
+The helper calls `find_illuminant_xy_from_wb_coeffs()` when `late_correction` or
+`camera_reference` is set. Otherwise it calls `_illuminant_xy_from_unprepared_wb()`, which uses the
+as-shot lookup with the ratios `D65coeffs[] / coeffs[]`. White balance's multipliers then stay in the data and take
+the place of the reference multipliers, as in the D65-screen workaround. They say nothing about
+the scene, and using them as the illuminant would adapt from the calibration screen. A new
+scene-referred edit reaches this case when an auto-applied workaround preset meets the default
+illuminant. This is the calculation of `DT_ILLUMINANT_CAMERA`, with two differences that keep the
+illuminant continuous and the failed lookup as described here. `_get_d65_correction_ratios()`
+returns ratios of 1 when all multipliers are at most 1 (`changed_chroma`), which would make the
+illuminant depend on their scale, and it accepts a zero multiplier, which fails here. The test
+uses the mode, not `_dev_is_D65_chroma()`: multipliers that only happen to equal the reference
+must not jump in color away from their neighbors.
 
 The lookup fails when the image has no usable camera matrix, or when one of the first three
 values in `pipe->wb.coeffs[]` is zero or is not a normal float (`_wb_coeffs_invalid()` in
@@ -307,6 +348,13 @@ It keeps the previous image's `wb.D65coeffs[]`, `as_shot[]`, and `wb.late_correc
    illuminant from `img->wb_coeffs` (`dev->image_storage.wb_coeffs`). These are the current
    image's as-shot coefficients, read from the raw file.
 
+In the scene-referred workflow, `reload_defaults()` then selects `DT_ILLUMINANT_FROM_WB` if a
+lookup with identity ratios succeeds. That lookup does not use `dev->chroma.wb`, which an
+interactive reset of the module, without `dt_dev_reset_chroma()`, finds holding the edit's
+values. `p->x` and `p->y` keep the values computed above. The other workflows keep
+`DT_ILLUMINANT_CAMERA` and the snap to daylight or black body in
+`_check_if_close_to_daylight()`.
+
 So the reset of `wb.coeffs[]` is what ties color calibration's default illuminant to the
 current image. The default depends only on the image's own raw coefficients, never on what
 `dev->chroma` held for the previous image.
@@ -356,7 +404,7 @@ would let later modules read the previous image's `pipe->wb`.
 
 | Symbol | File | Role |
 |---|---|---|
-| `dt_dev_wb_t` | format.h | Holds `coeffs[]`, `D65coeffs[]`, and `late_correction`; the type of `dev->chroma.wb` and `pipe->wb` |
+| `dt_dev_wb_t` | format.h | Holds `coeffs[]`, `D65coeffs[]`, `late_correction`, and `camera_reference`; the type of `dev->chroma.wb` and `pipe->wb` |
 | `dt_dev_reset_chroma` | develop.c | Clears trouble messages, `adaptation`, and `temperature`; sets `wb.coeffs[]` to `1.0` |
 | `dt_dev_init_chroma` | develop.c | Resets, then sets `wb` and `as_shot[]` to neutral; runs when the dev is created and cleaned up |
 | `dt_dev_wb_set_neutral` | develop.c | Sets a `dt_dev_wb_t` to neutral; also used when a pipe is created (`pixelpipe_hb.c`) |
@@ -365,10 +413,14 @@ would let later modules read the previous image's `pipe->wb`.
 | `_wb_from_params` | temperature.c | Computes the `dt_dev_wb_t` that white balance applies with the given params; used by `commit_params()` and `_gui_wb_proxy()` |
 | `_gui_wb_proxy` | temperature.c | The proxy that white balance's `gui_init()` registers; returns `_wb_from_params()` for the instance's current params |
 | `dt_dev_get_gui_wb` | develop.c | GUI: asks the white balance instance in `dev->iop`, through `dev->proxy.gui_wb`; copies `dev->chroma.wb` if no instance answers |
-| `_update_preset` | temperature.c | GUI: when the user leaves camera reference, sets `p->late_correction` from `dt_dev_cat_is_active()` |
-| `dt_dev_cat_is_active` | develop.c | GUI: asks each color calibration instance in `dev->iop`, through `dev->proxy.cat_is_active`, whether it applies chromatic adaptation |
-| `_cat_proxy_is_active` | channelmixerrgb.c | The proxy that color calibration's `gui_init()` registers; returns `_applies_cat()` |
-| `channelmixerrgb.reload_defaults` | channelmixerrgb.c | Computes the default illuminant from `img->wb_coeffs` |
+| `_update_preset` | temperature.c | GUI: when the user leaves camera reference for "as shot" or a camera preset, sets `p->late_correction` from `dt_dev_cat_is_active()`; calls `_update_controls_lock()` |
+| `_update_controls_lock` | temperature.c | GUI: disables the controls that choose multipliers while `dt_dev_cat_overrides_wb()` is true, and shows the message |
+| `dt_dev_cat_source_t` | develop.h | Where a color calibration instance gets its illuminant; ordered, so that the maximum describes the pipe |
+| `dt_dev_cat_is_active` | develop.c | GUI: true if a color calibration instance in `dev->iop` applies chromatic adaptation |
+| `dt_dev_cat_overrides_wb` | develop.c | GUI: true if an instance applies chromatic adaptation and none uses `DT_ILLUMINANT_FROM_WB` |
+| `_cat_proxy_source` | channelmixerrgb.c | The proxy that color calibration's `gui_init()` registers; returns the instance's `dt_dev_cat_source_t` |
+| `_applies_cat` | channelmixerrgb.c | True if the instance applies chromatic adaptation, matching what `commit_params()` does |
+| `channelmixerrgb.reload_defaults` | channelmixerrgb.c | Computes the default illuminant from `img->wb_coeffs`; selects `DT_ILLUMINANT_FROM_WB` in the scene-referred workflow |
 | `channelmixerrgb.commit_params` | channelmixerrgb.c | Reads `pipe->wb` to build the chromatic adaptation matrix |
 | `_get_corrected_illuminant_xy` | channelmixerrgb.c | Illuminant xy for the params' illuminant; uses the given `dt_dev_wb_t` for `DT_ILLUMINANT_CAMERA` and `DT_ILLUMINANT_FROM_WB` |
 | `_declare_cat_on_pipe` | channelmixerrgb.c | Registers the instance that does chromatic adaptation in `dev->chroma.adaptation` (GUI only) |
@@ -376,7 +428,8 @@ would let later modules read the previous image's `pipe->wb`.
 | `_dev_is_D65_chroma` | channelmixerrgb.c | True when `late_correction` is set or `coeffs[]` equals `D65coeffs[]` |
 | `find_illuminant_xy_from_as_shot_coeffs` | illuminants.h | Default illuminant xy from `img->wb_coeffs` |
 | `find_illuminant_xy_from_wb_coeffs` | illuminants.h | Illuminant xy from white balance coefficients (the `DT_ILLUMINANT_FROM_WB` illuminant) |
-| `_illuminant_xy_from_wb_or_D50` | channelmixerrgb.c | Illuminant xy from `find_illuminant_xy_from_wb_coeffs()`, or D50 if that fails; used by every `DT_ILLUMINANT_FROM_WB` lookup |
+| `_illuminant_xy_from_wb_or_D50` | channelmixerrgb.c | Illuminant xy from `find_illuminant_xy_from_wb_coeffs()` with late correction or in camera reference mode, otherwise from `_illuminant_xy_from_unprepared_wb()`, or D50 if that fails; used by every `DT_ILLUMINANT_FROM_WB` lookup |
+| `_illuminant_xy_from_unprepared_wb` | channelmixerrgb.c | Illuminant xy from the as-shot coefficients, rescaled for multipliers that take the place of the camera reference |
 
 ## See also
 

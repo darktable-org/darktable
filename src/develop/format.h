@@ -34,6 +34,7 @@ typedef struct dt_dev_wb_t
   // an image constant, but kept here so processing code never reads dev->chroma
   double D65coeffs[4];        // read from exif data or "best guess"
   gboolean late_correction;
+  gboolean camera_reference;  // temperature is in its 'camera reference' mode
 } dt_dev_wb_t;
 
 typedef enum dt_iop_buffer_type_t {

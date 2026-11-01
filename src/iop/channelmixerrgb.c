@@ -645,13 +645,41 @@ static gboolean _get_d65_correction_ratios(const dt_iop_module_t *self,
   return FALSE;
 }
 
+// without late correction, temperature's multipliers stay in the data and take
+// the place of the camera reference, as coefficients measured on a D65 screen do
+// (the 'caveats' workaround in find_illuminant_xy_from_as_shot_coeffs()). They say
+// nothing about the scene, but the as-shot coefficients do, once rescaled for them.
+// _get_d65_correction_ratios() doesn't suit: its changed_chroma gate would make the
+// illuminant depend on the scale of the multipliers
+static gboolean _illuminant_xy_from_unprepared_wb(const dt_image_t *img,
+                                                  const dt_dev_wb_t *wb,
+                                                  float *x, float *y)
+{
+  if(_wb_coeffs_invalid(wb->coeffs, 3))
+    return FALSE;
+
+  dt_aligned_pixel_t correction_ratios = { 1.f, 1.f, 1.f, 1.f };
+  for(int k = 0; k < 3; k++)
+    correction_ratios[k] = wb->D65coeffs[k] / wb->coeffs[k];
+
+  return find_illuminant_xy_from_as_shot_coeffs(img, correction_ratios, x, y);
+}
+
 // returns FALSE if the lookup failed; x and y are then D50, so callers never
 // keep an illuminant from an earlier white balance setting
 static gboolean _illuminant_xy_from_wb_or_D50(const dt_iop_module_t *self,
                                               const dt_dev_wb_t *wb,
                                               float *x, float *y)
 {
-  if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), wb->coeffs, x, y))
+  const dt_image_t *img = &(self->dev->image_storage);
+
+  // tests the mode: _dev_is_D65_chroma() would also accept unprepared multipliers
+  // that happen to equal the reference, a jump in color from their neighbors
+  const gboolean found = wb->late_correction || wb->camera_reference
+    ? find_illuminant_xy_from_wb_coeffs(img, wb->coeffs, x, y)
+    : _illuminant_xy_from_unprepared_wb(img, wb, x, y);
+
+  if(found)
     return TRUE;
 
   *x = D50xyY.x;
@@ -2023,13 +2051,19 @@ static gboolean _applies_cat(const dt_iop_module_t *self)
 
   const dt_iop_channelmixer_rgb_params_t *p = self->params;
 
-  return !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB)
+  // commit_params() forces CAT16 for these, whatever adaptation the params hold
+  const gboolean forced_cat = p->illuminant == DT_ILLUMINANT_CAMERA
+                              || p->illuminant == DT_ILLUMINANT_FROM_WB;
+
+  return !(p->illuminant == DT_ILLUMINANT_PIPE
+           || (p->adaptation == DT_ADAPTATION_RGB && !forced_cat))
          && !dt_image_is_monochrome(&self->dev->image_storage);
 }
 
 static void _set_trouble_messages(dt_iop_module_t *self)
 {
   const dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
+  const dt_iop_channelmixer_rgb_params_t *p = self->params;
   const dt_develop_t *dev = self->dev;
   const dt_dev_chroma_t *chr = &dev->chroma;
 
@@ -2043,17 +2077,64 @@ static void _set_trouble_messages(dt_iop_module_t *self)
   dt_print(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "trouble message for %s%s : temp=%p adapt=%p",
     self->op, dt_iop_get_instance_id(self), temperature, adaptation);
 
+  dt_dev_wb_t wb;
+  dt_dev_get_gui_wb(self->dev, &wb);
+
+  const gboolean wb_unprepared = temperature
+                            && temperature->enabled
+                            && !wb.camera_reference
+                            && !_dev_is_D65_chroma(&wb);
+
+  // comes before the returns below, which depend on the one instance in
+  // chr->adaptation: a masked instance never gets there (_declare_cat_on_pipe())
+  if(wb_unprepared
+     && _applies_cat(self)
+     && p->illuminant == DT_ILLUMINANT_FROM_WB)
+  {
+    // temperature has one message, which the registered instance sets, as below.
+    // Only if every instance is masked does no other instance warn there
+    if(adaptation == self || !adaptation)
+      dt_iop_set_module_trouble_message(temperature,
+          _("not prepared for color calibration's illuminant (<u>details</u>)"),
+          _("color calibration's 'as set in white balance module' illuminant\n"
+            "only follows this module if 'prepare data for color calibration'\n"
+            "is ticked. otherwise, it gives the same result as its\n"
+            "'as shot in camera' illuminant.\n"
+            "if these coefficients were measured on a D65 screen to\n"
+            "replace the camera reference, select another illuminant\n"
+            "in color calibration"),
+          NULL);
+
+    dt_iop_set_module_trouble_message(self,
+        _("white balance is not prepared for this illuminant (<u>details</u>)"),
+        _("this illuminant only follows white balance if 'prepare data\n"
+          "for color calibration' is ticked there. otherwise, it gives\n"
+          "the same result as the 'as shot in camera' illuminant.\n"
+          "if white balance's coefficients were measured on a D65\n"
+          "screen to replace the camera reference, select another\n"
+          "illuminant here"),
+        NULL);
+    return;
+  }
+
   // in temperature module we make sure this is only presented if temperature is enabled
   if(!temperature)
   {
     if(adaptation)
       dt_iop_clear_module_trouble_message(adaptation);
+    dt_iop_clear_module_trouble_message(self);
     return;
   }
 
   if(!adaptation)
   {
-    dt_iop_clear_module_trouble_message(temperature);
+    // a masked instance may have set temperature's message above, and this
+    // instance's call can come after it
+    const gboolean any_instance_follows_wb = dt_dev_cat_is_active(self->dev)
+                                             && !dt_dev_cat_overrides_wb(self->dev);
+
+    if(!wb_unprepared || !any_instance_follows_wb)
+      dt_iop_clear_module_trouble_message(temperature);
     dt_iop_clear_module_trouble_message(self);
     return;
   }
@@ -2062,9 +2143,6 @@ static void _set_trouble_messages(dt_iop_module_t *self)
 
   const gboolean temperature_enabled = temperature->enabled;
   const gboolean adaptation_enabled = adaptation->enabled;
-
-  dt_dev_wb_t wb;
-  dt_dev_get_gui_wb(self->dev, &wb);
 
   // this instance does CAT while WB uses an incompatible setup (neither camera reference
   // D65, nor another mode with late_correction)
@@ -2076,7 +2154,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
   // another channelmixerrgb instance is doing CAT
   // earlier in the pipe, and we don't use masking here
   const gboolean double_cat = valid
-                            && adaptation_enabled
+                            && _applies_cat(adaptation)
                             && temperature_enabled
                             && adaptation != self
                             && !g->is_blending;
@@ -2106,16 +2184,22 @@ static void _set_trouble_messages(dt_iop_module_t *self)
         _("white balance applied twice (<u>details</u>)"),
         _("the color calibration module is enabled and already provides\n"
           "chromatic adaptation.\n"
-          "set the white balance here to camera reference (D65)\n"
-          "or disable chromatic adaptation in color calibration."),
+          "tick 'prepare data for color calibration' here,\n"
+          "set the white balance to camera reference (D65)\n"
+          "or disable chromatic adaptation in color calibration.\n"
+          "ignore this if the coefficients were measured on a D65 screen\n"
+          "to replace the camera reference"),
         NULL);
 
     dt_iop_set_module_trouble_message(self,
         _("white balance module error (<u>details</u>)"),
         _("the white balance module is not using the camera\n"
           "reference illuminant, which will cause issues here\n"
-          "with chromatic adaptation. either set it to reference\n"
-          "or disable chromatic adaptation here."),
+          "with chromatic adaptation. tick 'prepare data for\n"
+          "color calibration' there, set it to reference\n"
+          "or disable chromatic adaptation here.\n"
+          "ignore this if its coefficients were measured on a D65\n"
+          "screen to replace the camera reference"),
         NULL);
     return;
   }
@@ -2141,10 +2225,8 @@ static void _set_trouble_messages(dt_iop_module_t *self)
   }
 
   if(adaptation == self)
-  {
     dt_iop_clear_module_trouble_message(temperature);
-    dt_iop_clear_module_trouble_message(self);
-  }
+  dt_iop_clear_module_trouble_message(self);
 }
 
 // The illuminants derived from pipe->wb are computed per run, into the
@@ -3995,8 +4077,21 @@ void reload_defaults(dt_iop_module_t *self)
     {
       if(find_illuminant_xy_from_as_shot_coeffs(img, correction_ratios, &(d->x), &(d->y)))
         d->illuminant = DT_ILLUMINANT_CAMERA;
-      _check_if_close_to_daylight(d->x, d->y,
-                                  &(d->temperature), &(d->illuminant), &(d->adaptation));
+
+      // the white balance read above may be another edit's, so it must not decide
+      // this: ask only about the image. x and y stay as computed: they are the
+      // saved values that gui_changed() replaces when the user changes the illuminant
+      const dt_aligned_pixel_t no_correction = { 1.f, 1.f, 1.f, 1.f };
+      float as_shot_x, as_shot_y;
+      const gboolean follow_wb =
+        dt_is_scene_referred()
+        && find_illuminant_xy_from_as_shot_coeffs(img, no_correction, &as_shot_x, &as_shot_y);
+
+      if(follow_wb)
+        d->illuminant = DT_ILLUMINANT_FROM_WB;
+
+      _check_if_close_to_daylight(d->x, d->y, &(d->temperature),
+                                  follow_wb ? NULL : &(d->illuminant), &(d->adaptation));
     }
   }
 
@@ -4536,14 +4631,16 @@ static void _dt_active_images_callback(gpointer instance,
   g->checker_ready = FALSE;
 }
 
-// TRUE if this instance is applying chromatic adaptation. reads params, so
-// GTK main thread only
-static gboolean _cat_proxy_is_active(dt_iop_module_t *self)
+// reads params, so GTK main thread only
+static dt_dev_cat_source_t _cat_proxy_source(dt_iop_module_t *self)
 {
-  if(!self || !self->dev)
-    return FALSE;
+  if(!self || !self->dev || !_applies_cat(self))
+    return DT_DEV_CAT_NONE;
 
-  return _applies_cat(self);
+  const dt_iop_channelmixer_rgb_params_t *p = self->params;
+
+  return p->illuminant == DT_ILLUMINANT_FROM_WB ? DT_DEV_CAT_FROM_WB
+                                                : DT_DEV_CAT_OWN_ILLUMINANT;
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -4881,7 +4978,7 @@ void gui_init(dt_iop_module_t *self)
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
                             _dt_active_images_callback, g);
 
-  darktable.develop->proxy.cat_is_active = _cat_proxy_is_active;
+  darktable.develop->proxy.cat_source = _cat_proxy_source;
 }
 
 void gui_cleanup(dt_iop_module_t *self)
