@@ -233,6 +233,10 @@ changes (where available).
 
 ## Performance Improvements
 
+- New edits convert the input color profile directly to the working RGB
+  profile, avoiding an unnecessary round trip through Lab. Existing edits
+  keep their previous color processing.
+
 - The lighttable timeline no longer slows down quadratically with the
   number of collected images: with a 100,000-image collection it took
   about 15 minutes to draw, now a few seconds.
