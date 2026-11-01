@@ -87,6 +87,47 @@ static int mobile_lens_checks(dt_mobile_session *session)
 
   fprintf(stderr, "lens controls: original Lensfun distortion, vignette and TCA\n");
   LENS_SET("method", 1);
+  /* The updated official database must be usable through the same profile
+   * actions as the Android picker, not merely present as packaged XML. */
+  const char *gopro_cameras[] = { "Hero10 black", "Hero11 Black" };
+  const char *gopro_lenses[] = { "HERO10 Black & compatibles", "HERO11 Black & compatibles" };
+  for(size_t index = 0; index < sizeof(gopro_cameras) / sizeof(gopro_cameras[0]); index++)
+  {
+    ENGINE_OK(dt_mobile_modules(session, &metadata));
+    const int available = module_has(metadata, "lens", gopro_cameras[index]);
+    dt_mobile_free_buffer(metadata); metadata = NULL;
+    /* Desktop adapter CI may use the distribution's older calibration data.
+     * The pinned-mobile-database validation explicitly requires both pairs. */
+    CHECK(available || !getenv("DT_MOBILE_TEST_REQUIRE_UPDATED_LENSFUN"));
+    if(!available)
+    {
+      fprintf(stderr, "lens controls: %s absent from host database\n", gopro_cameras[index]);
+      continue;
+    }
+    fprintf(stderr, "lens controls: updated database %s\n", gopro_cameras[index]);
+    LENS_TEXT("lens.camera_profile", gopro_cameras[index]);
+    LENS_TEXT("lens.profile", gopro_lenses[index]);
+    ENGINE_OK(dt_mobile_modules(session, &metadata));
+    CHECK(module_has(metadata, "lens", "\"cameraMatched\":true"));
+    CHECK(module_has(metadata, "lens", "\"lensMatched\":true"));
+    CHECK(module_has(metadata, "lens", "\"status\":\"ready\""));
+    CHECK(module_has(metadata, "lens", "\"supportedFlags\":4"));
+    CHECK(parameter_equals(metadata, "lens", "focal", 2.7f));
+    dt_mobile_free_buffer(metadata); metadata = NULL;
+    ENGINE_OK(dt_mobile_undo(session)); edits--;
+    ENGINE_OK(dt_mobile_undo(session)); edits--;
+  }
+  /* Compatible fixed-lens profiles need not share the body's model name.
+   * This relation is explicitly present in the pinned database's mounts. */
+  LENS_TEXT("lens.camera_profile", "HERO5 Black");
+  LENS_TEXT("lens.profile", "HERO4 black");
+  ENGINE_OK(dt_mobile_modules(session, &metadata));
+  CHECK(module_has(metadata, "lens", "\"cameraMatched\":true"));
+  CHECK(module_has(metadata, "lens", "\"camera\":\"HERO5 Black\""));
+  CHECK(module_has(metadata, "lens", "\"lens\":\"HERO4 black\""));
+  dt_mobile_free_buffer(metadata); metadata = NULL;
+  ENGINE_OK(dt_mobile_undo(session)); edits--;
+  ENGINE_OK(dt_mobile_undo(session)); edits--;
   LENS_TEXT("lens.camera_profile", "Canon EOS 5D Mark II");
   LENS_TEXT("lens.profile", "Canon EF 24-105mm f/4L IS USM");
   ENGINE_OK(dt_mobile_modules(session, &metadata));
@@ -122,10 +163,14 @@ static int mobile_lens_checks(dt_mobile_session *session)
   dt_mobile_free_buffer(baseline); baseline = NULL;
 
   fprintf(stderr, "lens controls: unknown body retains crop and real correction\n");
-  LENS_TEXT("camera", "Unknown camera body without a Lensfun match");
+  LENS_TEXT("camera", "HERO12 Black");
   ENGINE_OK(dt_mobile_modules(session, &baseline));
   CHECK(module_has(baseline, "lens", "\"cameraMatched\":false"));
   CHECK(module_has(baseline, "lens", "\"lensMatched\":true"));
+  CHECK(module_has(baseline, "lens", "\"status\":\"unverified_camera\""));
+  CHECK(module_has(baseline, "lens", "\"camera\":\"\""));
+  CHECK(module_has(baseline, "lens", "\"requestedCamera\":\"HERO12 Black\""));
+  CHECK(module_has(baseline, "lens", "\"lenses\":[]"));
   CHECK(parameter_equals(baseline, "lens", "crop", 1));
   LENS_SET("modify_flags", 4);
   ENGINE_OK(dt_mobile_render_preview(session, 96, 96, &changed, &other_width, &other_height));
@@ -137,6 +182,8 @@ static int mobile_lens_checks(dt_mobile_session *session)
   CHECK(!strcmp(baseline, metadata));
   dt_mobile_free_buffer(metadata); metadata = NULL;
   ENGINE_OK(dt_mobile_history(session, &history));
+  CHECK(dt_mobile_set_text_parameter(session, "lens", "lens.profile", "Canon EF 24-105mm f/4L IS USM")
+    == DT_MOBILE_ERROR_INVALID_ARGUMENT);
   CHECK(dt_mobile_set_text_parameter(session, "lens", "lens.profile", "Not a real calibrated lens")
     == DT_MOBILE_ERROR_INVALID_ARGUMENT);
   CHECK(dt_mobile_set_text_parameter(session, "lens", "lens.camera_profile", "Not a real camera")

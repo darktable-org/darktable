@@ -7,6 +7,7 @@ import org.example.darktableandroid.nativecore.ModuleTextParameter
 import org.example.darktableandroid.nativecore.ParameterChoice
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -64,6 +65,21 @@ class LensCorrectionModelTest {
         val missingDatabase = lensCorrectionControls(info(database = false), all, emptyList())
         assertTrue(missingDatabase.shooting.isEmpty())
         assertTrue(missingDatabase.correction.isEmpty())
+    }
+
+    @Test fun unmatchedCameraCannotEnableLensSelectionOrClaimAnOlderLensAsItsCalibration() {
+        val legacy = info().copy(cameraMatched = false, lensMatched = true, camera = "HERO12 Black",
+            lens = "HERO4", imageCamera = "HERO12 Black")
+        val text = listOf(ModuleTextParameter("camera", "camera model", legacy.camera, 127),
+            ModuleTextParameter("lens", "lens model", legacy.lens, 127))
+        val controls = lensCorrectionControls(legacy, all, text)
+        assertTrue(controls.correction.isEmpty())
+        assertTrue(controls.shooting.isEmpty())
+        assertEquals(listOf("lens.autodetect"), controls.actions.map { it.name })
+        assertNull(controls.lensProfile)
+        assertEquals("lens.camera_profile", controls.cameraProfile?.name)
+        assertTrue(controls.manualVignette.any { it.name == "v_strength" })
+        assertTrue("scale" in controls.names && "lens" in controls.textNames)
     }
 
     @Test fun tcaOverrideHasToBeExplicitAndCanAddManualTcaWithoutACalibration() {

@@ -3,6 +3,10 @@
   <string name="lens_camera_profile">Camera profile</string>
   <string name="lens_profile">Lens profile</string>
   <string name="lens_profile_unselected">No profile selected</string>
+  <string name="lens_camera_profile_unmatched">No matching camera profile</string>
+  <string name="lens_profile_requires_camera">Choose a matching camera profile first</string>
+  <string name="lens_profile_names_hint">Camera profiles describe the body. Lens profiles contain optical calibration and can have a different name, such as fixed lens.</string>
+  <string name="lens_unverified_stored_lens">Stored lens setting: %1$s. It has not been verified for this camera.</string>
   <string name="lens_profile_search">Search profiles</string>
   <string name="lens_profile_no_matches">No matching profiles.</string>
   <string name="lens_profile_none">No compatible profiles are listed. Check the camera selection or use manual vignetting.</string>
@@ -12,6 +16,8 @@
   <string name="lens_status_ready">Lens correction settings are ready.</string>
   <string name="lens_status_missing_database">The Lensfun profile database is missing from this runtime. Manual vignetting is still available.</string>
   <string name="lens_status_missing_lens">No matching lens profile. Select the correct camera and lens profile, or use manual vignetting.</string>
+  <string name="lens_status_missing_camera">The camera name in the photo is not a matched Lensfun camera profile. Compatible lens selection requires a matching camera profile.</string>
+  <string name="lens_status_unverified_camera">The stored lens setting is unverified for this camera and may still affect the preview. Use image lens defaults to reset it.</string>
   <string name="lens_status_missing_settings">Complete the shooting settings required by this lens profile.</string>
   <string name="lens_status_no_calibration">The image data or selected profile provides no effective calibration at these settings.</string>
   <string name="lens_distortion">distortion</string>

@@ -10,6 +10,15 @@ typedef int (*mobile_lens_text_function)(dt_iop_module_t *, const char *, const 
 typedef char *(*mobile_lens_metadata_function)(dt_iop_module_t *);
 typedef int (*mobile_lens_choice_function)(dt_iop_module_t *, const char *, int);
 
+static int prepare_mobile_lens_parameters(dt_iop_module_t *module)
+{
+  if(!module || strcmp(module->op, "lens") || !module->module) return 0;
+  typedef int (*prepare_function)(dt_iop_module_t *);
+  prepare_function prepare = NULL;
+  g_module_symbol(module->module, "dt_iop_mobile_lens_prepare", (gpointer *)&prepare);
+  return prepare ? prepare(module) : 0;
+}
+
 static void append_mobile_lens_parameters(dt_iop_module_t *module, parameter_json *description)
 {
   if(!module || strcmp(module->op, "lens") || !module->module) return;

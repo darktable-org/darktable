@@ -104,6 +104,45 @@ class LensCorrectionEditorTest {
         compose.onNodeWithContentDescription(context.getString(R.string.lens_profile)).assertIsDisplayed()
     }
 
+    @Test fun unmatchedHero12ExifIsNotPresentedAsASelectedCameraProfileOrHero4Calibration() {
+        val info = info().copy(status = "ready", message = "Profile found", cameraMatched = false,
+            lensMatched = true, camera = "HERO12 Black", lens = "HERO4", imageCamera = "HERO12 Black",
+            lenses = listOf(LensProfileChoice("HERO4", "GoPro · HERO4")))
+        val edits = mutableListOf<Pair<String, String>>()
+        compose.setContent { MaterialTheme {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                LensCorrectionEditor(info, controls(info), true, { _, _ -> }, { name, value -> edits += name to value })
+            }
+        } }
+        compose.onNodeWithText("Profile found").assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.lens_status_unverified_camera)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.lens_image_camera, "HERO12 Black")).assertIsDisplayed()
+        compose.onNodeWithText("HERO12 Black").assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.lens_camera_profile_unmatched)).assertIsDisplayed()
+        compose.onNodeWithContentDescription(context.getString(R.string.lens_profile)).performScrollTo().assertIsNotEnabled()
+        compose.onNodeWithText("GoPro · HERO4").assertDoesNotExist()
+        compose.onNodeWithText("Available corrections:", substring = true).assertDoesNotExist()
+        compose.onNodeWithText("Lens image scale").assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.lens_unverified_stored_lens, "HERO4"))
+            .performScrollTo().assertIsDisplayed()
+        compose.onNodeWithContentDescription(context.getString(R.string.parameter_slider_description, "Vignette strength"))
+            .performScrollTo().assertIsDisplayed()
+        compose.runOnIdle { assertTrue(edits.isEmpty()) }
+    }
+
+    @Test fun aCompatibleFixedLensCanHaveADifferentNameFromItsCameraProfile() {
+        val info = info().copy(camera = "Supported fixed camera", lens = "fixed lens",
+            cameras = listOf(LensProfileChoice("Supported fixed camera", "GoPro · supported camera")),
+            lenses = listOf(LensProfileChoice("fixed lens", "GoPro · fixed lens")))
+        compose.setContent { MaterialTheme {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                LensCorrectionEditor(info, controls(info), true, { _, _ -> }, { _, _ -> })
+            }
+        } }
+        compose.onNodeWithText("GoPro · supported camera").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("GoPro · fixed lens").performScrollTo().assertIsDisplayed()
+    }
+
     @Test fun busyStateDisablesProfileSelectionDetectionAndParameterChanges() {
         val info = info()
         var edits = 0

@@ -3645,6 +3645,8 @@ void cleanup_global(dt_iop_module_so_t *self)
  * gui_update before editing; setting has_been_set on an uninitialized history
  * blob otherwise freezes missing EXIF/profile values into every later commit.
  * No replacement correction algorithm is used here. */
+static void _mobile_lens_normalize_auto(dt_iop_module_t *self, dt_iop_lens_params_t *p);
+
 static dt_iop_lens_params_t _mobile_lens_effective(dt_iop_module_t *self)
 {
   dt_iop_lens_params_t p = *(dt_iop_lens_params_t *)self->params;
@@ -3653,6 +3655,8 @@ static dt_iop_lens_params_t _mobile_lens_effective(dt_iop_module_t *self)
     const dt_iop_lens_method_t method = p.method;
     p = *(dt_iop_lens_params_t *)self->default_params;
     p.method = _get_method(self, method);
+    p.has_been_set = FALSE;
+    _mobile_lens_normalize_auto(self, &p);
   }
   return p;
 }
@@ -3673,6 +3677,27 @@ static const lfCamera *_mobile_lens_camera(lfDatabase *db, const dt_iop_lens_par
     lf_free(matches);
   }
   return camera;
+}
+
+static void _mobile_lens_normalize_auto(dt_iop_module_t *self, dt_iop_lens_params_t *p)
+{
+  if(p->has_been_set || p->method != DT_IOP_LENS_METHOD_LENSFUN) return;
+  dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+  const gboolean matched = _mobile_lens_camera(_mobile_lens_db(self), p) != NULL;
+  dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+  // EXIF may contain a generic/older lens name. Without a known body, that
+  // string must not automatically select an unrelated database calibration.
+  if(!matched) p->lens[0] = '\0';
+}
+
+G_MODULE_EXPORT int dt_iop_mobile_lens_prepare(dt_iop_module_t *self)
+{
+  if(!self || !self->params || !self->default_params || !self->dev) return 0;
+  if(((const dt_iop_lens_params_t *)self->params)->has_been_set) return 0;
+  dt_iop_lens_params_t p = _mobile_lens_effective(self);
+  p.has_been_set = TRUE;
+  memcpy(self->params, &p, sizeof(p));
+  return 1;
 }
 
 static const lfLens *_mobile_lens_profile(lfDatabase *db, const lfCamera *camera,
@@ -3889,7 +3914,12 @@ G_MODULE_EXPORT int dt_iop_mobile_lens_set_number(dt_iop_module_t *self, const c
     }
     if(value < minimum || value > maximum) return -1;
     if(kind == 1 && !dt_iop_mobile_lens_choice_allowed(self, name, (int)value)) return -1;
-    if(!strcmp(name, "lens.autodetect")) p = *(dt_iop_lens_params_t *)self->default_params;
+    if(!strcmp(name, "lens.autodetect"))
+    {
+      p = *(dt_iop_lens_params_t *)self->default_params;
+      p.has_been_set = FALSE;
+      _mobile_lens_normalize_auto(self, &p);
+    }
     else if(!strcmp(name, "lens.autoscale"))
     {
       dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -3899,7 +3929,16 @@ G_MODULE_EXPORT int dt_iop_mobile_lens_set_number(dt_iop_module_t *self, const c
       if(!isfinite(scale) || scale < .1f || scale > 2) return -1;
       p.scale = scale;
     }
-    else if(!strcmp(name, "method")) p.method = (dt_iop_lens_method_t)(int)value;
+    else if(!strcmp(name, "method"))
+    {
+      if(p.method != value && value == DT_IOP_LENS_METHOD_LENSFUN)
+      {
+        p.method = DT_IOP_LENS_METHOD_LENSFUN;
+        p.has_been_set = FALSE;
+        _mobile_lens_normalize_auto(self, &p);
+      }
+      else p.method = (dt_iop_lens_method_t)(int)value;
+    }
     else if(!strcmp(name, "modify_flags")) p.modify_flags = (dt_iop_lens_modflag_t)(int)value;
     else if(!strcmp(name, "inverse")) p.inverse = (dt_iop_lens_mode_t)(int)value;
     else if(!strcmp(name, "target_geom")) p.target_geom = (dt_iop_lens_lenstype_t)(int)value;
@@ -3941,6 +3980,11 @@ G_MODULE_EXPORT int dt_iop_mobile_lens_set_text(dt_iop_module_t *self, const cha
   {
     g_strlcpy(p.lens, value, sizeof(p.lens));
     const lfCamera *body = _mobile_lens_camera(db, &p);
+    // The normal profile picker is a camera-compatible selector. An unknown
+    // EXIF model must not unlock every lens in the database. The legacy text
+    // API still preserves explicit advanced/manual settings in old histories.
+    if(canonical && !body)
+    { dt_pthread_mutex_unlock(&darktable.plugin_threadsafe); return -1; }
     const lfLens *match = _mobile_lens_profile(db, body, &p);
     if(canonical && (!match || strcmp(match->Model, value)))
     { dt_pthread_mutex_unlock(&darktable.plugin_threadsafe); return -1; }
@@ -4002,15 +4046,20 @@ G_MODULE_EXPORT char *dt_iop_mobile_lens_metadata(dt_iop_module_t *self)
   const int supported = _mobile_lens_supported(self, &p, camera, lens);
   const char *status = p.method == DT_IOP_LENS_METHOD_ONLYVIGNETTE ? "manual"
     : p.method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA ? (supported ? "ready" : "no_calibration")
-    : !database ? "missing_database" : !lens ? "missing_lens" : !ready ? "missing_settings"
+    : !database ? "missing_database" : !camera ? (lens ? "unverified_camera" : "missing_camera")
+    : !lens ? "missing_lens" : !ready ? "missing_settings"
     : supported ? "ready" : "no_calibration";
   GString *json = g_string_new("{\"status\":"); _mobile_lens_json_string(json, status);
   g_string_append_printf(json, ",\"method\":%d,\"embeddedAvailable\":%s,\"databaseAvailable\":%s,"
     "\"cameraMatched\":%s,\"lensMatched\":%s,\"supportedFlags\":%d,\"camera\":",
     p.method, embedded ? "true" : "false", database ? "true" : "false",
     camera ? "true" : "false", lens ? "true" : "false", supported);
-  _mobile_lens_json_string(json, camera ? camera->Model : p.camera);
-  g_string_append(json, ",\"lens\":"); _mobile_lens_json_string(json, lens ? lens->Model : p.lens);
+  // These are verified database selections; source EXIF/requested strings are
+  // diagnostics, not evidence that a calibration exists for that camera.
+  _mobile_lens_json_string(json, camera ? camera->Model : "");
+  g_string_append(json, ",\"lens\":"); _mobile_lens_json_string(json, lens ? lens->Model : "");
+  g_string_append(json, ",\"requestedCamera\":"); _mobile_lens_json_string(json, p.camera);
+  g_string_append(json, ",\"requestedLens\":"); _mobile_lens_json_string(json, p.lens);
   g_string_append(json, ",\"imageCamera\":"); _mobile_lens_json_string(json, self->dev->image_storage.exif_model);
   g_string_append(json, ",\"imageLens\":"); _mobile_lens_json_string(json, self->dev->image_storage.exif_lens);
   g_string_append(json, ",\"cameras\":[");
@@ -4023,7 +4072,7 @@ G_MODULE_EXPORT char *dt_iop_mobile_lens_metadata(dt_iop_module_t *self)
   g_string_append(json, "],\"lenses\":["); first = TRUE;
   const lfLens **compatible = self->enabled && p.method == DT_IOP_LENS_METHOD_LENSFUN && db && camera
     ? db->FindLenses(camera, NULL, NULL, 0) : NULL;
-  const lfLens *const *catalog = camera ? compatible : lenses;
+  const lfLens *const *catalog = compatible;
   if(self->enabled && p.method == DT_IOP_LENS_METHOD_LENSFUN && catalog)
     for(unsigned index = 0; catalog[index]; index++)
       _mobile_lens_catalog_item(json, catalog[index]->Model, lf_mlstr_get(catalog[index]->Maker), seen, &first);

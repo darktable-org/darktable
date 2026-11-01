@@ -47,19 +47,19 @@ internal fun lensCorrectionControls(
         0 -> if(info.embeddedAvailable) fields("modify_flags", "scale_md", "cor_dist_ft") +
             (if(supported and 2 != 0) fields("cor_vig_ft") else emptyList()) +
             (if(supported and 1 != 0) fields("cor_ca_r_ft", "cor_ca_b_ft") else emptyList()) else emptyList()
-        1 -> if(info.databaseAvailable && info.lensMatched) fields("modify_flags", "inverse", "target_geom", "scale", "tca_override") +
+        1 -> if(info.databaseAvailable && info.cameraMatched && info.lensMatched) fields("modify_flags", "inverse", "target_geom", "scale", "tca_override") +
             (if(parameters.singleOrNull { it.name == "tca_override" }?.value == 1.0)
                 fields("tca_r", "tca_b") else emptyList()) else emptyList()
         else -> emptyList()
     }
     return LensCorrectionControls(method,
-        fields("lens.autodetect") + if(info.method == 1 && info.databaseAvailable && info.lensMatched)
+        fields("lens.autodetect") + if(info.method == 1 && info.databaseAvailable && info.cameraMatched && info.lensMatched)
             fields("lens.autoscale") else emptyList(),
-        if(info.method == 1 && info.databaseAvailable) fields("focal", "aperture", "distance", "crop") else emptyList(),
+        if(info.method == 1 && info.databaseAvailable && info.cameraMatched) fields("focal", "aperture", "distance", "crop") else emptyList(),
         correction, fields("v_strength") + if(parameters.singleOrNull { it.name == "v_strength" }?.value?.let { it > 0.0 } == true)
             fields("v_radius", "v_steepness") else emptyList(),
         profileControl("lens.camera_profile", "camera", info.camera),
-        profileControl("lens.profile", "lens", info.lens),
+        if(info.cameraMatched) profileControl("lens.profile", "lens", info.lens) else null,
         parameters.map { it.name }.filterTo(linkedSetOf()) { it in lensFieldNames },
         textParameters.map { it.name }.filterTo(linkedSetOf()) { it in lensTextNames })
 }

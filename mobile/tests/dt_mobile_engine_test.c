@@ -100,6 +100,7 @@ static int parameter_equals(const char *json, const char *operation, const char 
 #include "dt_mobile_text_controls_checks.h"
 #include "dt_mobile_mask_controls_checks.h"
 #include "dt_mobile_lens_checks.h"
+#include "dt_mobile_lens_auto_checks.h"
 #include "dt_mobile_path_mask_checks.h"
 #include "dt_mobile_parametric_checks.h"
 #include "dt_mobile_crop_geometry_checks.h"
@@ -414,6 +415,7 @@ int main(int argc, char **argv)
   CHECK(dt_mobile_configure_runtime(temporary_root, module_directory, temporary_root)
         == DT_MOBILE_ERROR_IO);
   ENGINE_OK(dt_mobile_open(argv[1], &session));
+  CHECK(mobile_lens_auto_checks());
   CHECK(dt_mobile_headless_masks_fixture());
   CHECK(instance_priority_range_fixture());
   ENGINE_OK(dt_mobile_history(session, &curve_json));

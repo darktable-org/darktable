@@ -58,6 +58,7 @@ static gchar *runtime_module_directory;
 static gchar *runtime_temp_root;
 static void sync_temperature_chroma(dt_develop_t *dev);
 static void sync_mobile_overlay_dependencies(dt_develop_t *dev);
+static int prepare_mobile_lens_parameters(dt_iop_module_t *module);
 
 /* History replay may visit several former raster sources for one consumer.
  * Rebuild the ephemeral user/sink tables from the final restored parameters,
@@ -392,6 +393,17 @@ dt_mobile_status dt_mobile_engine_open(const char *path, dt_mobile_engine **out,
   const gboolean decoded = engine->develop.image_storage.load_status == DT_IMAGEIO_OK;
   if(decoded && engine->preview_cancel)
   {
+    gboolean prepared_lens = FALSE;
+    for(GList *item = engine->develop.iop; item; item = item->next)
+    {
+      dt_iop_module_t *module = item->data;
+      if(module->enabled && prepare_mobile_lens_parameters(module))
+      {
+        dt_dev_add_history_item_ext(&engine->develop, module, FALSE, TRUE);
+        prepared_lens = TRUE;
+      }
+    }
+    if(prepared_lens) dt_dev_write_history(&engine->develop);
     sync_temperature_chroma(&engine->develop);
     record_history_state(engine);
   }
@@ -1468,6 +1480,7 @@ dt_mobile_status dt_mobile_engine_modules(dt_mobile_engine *engine, char **json,
 
 static void save_module(dt_mobile_engine *engine, dt_iop_module_t *module, gboolean enable)
 {
+  prepare_mobile_lens_parameters(module);
   /* no_image=TRUE avoids touching GTK viewports in this headless develop. */
   dt_dev_add_history_item_ext(&engine->develop, module, enable, TRUE);
   sync_temperature_chroma(&engine->develop);
@@ -2013,6 +2026,7 @@ dt_mobile_status dt_mobile_engine_set_parameter(dt_mobile_engine *engine, const 
     {
       /* Forms must be captured in native history before session snapshots;
        * a regular parameter history item would omit their deep copy. */
+      prepare_mobile_lens_parameters(module);
       dt_dev_add_masks_history_item_ext(&engine->develop, module, TRUE, TRUE);
       sync_temperature_chroma(&engine->develop);
       dt_dev_write_history(&engine->develop);

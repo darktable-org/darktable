@@ -18,7 +18,10 @@ algorithm. There is no upstream NEON path to enable in this release.
 
 The original GLib dependency, library, generated public header and pkg-config
 interface are retained. CLI, helper scripts, Python and documentation are not
-built by the default Android package. The XML calibration database remains
+built by the default Android package. A host-only Python converter updates the
+XML calibration database from a separately pinned official revision, keeping
+the 0.3.4-compatible schema. See [DATABASE.md](DATABASE.md) for the database
+source pin, conversion, calibration checks and licenses. The XML database is
 installed under `share/lensfun/version_1`. Android must unpack that data to
 app storage. The existing desktop lens module retries loading
 `../lensfun/version_1` relative to its configured data directory, so the mobile
@@ -46,7 +49,9 @@ disabled. NDK 27.2.12479018 compiled the same library as PIC for ARM64/API 26;
 all 13 archive objects were checked as AArch64. The consumer linked the complete
 archive with `--whole-archive` and `--no-undefined`, exported its probe function,
 and depended only on `libc++_shared.so`, `libc.so`, `libm.so` and `libdl.so`.
-All 55 installed calibration XML files matched the upstream source bytes.
+That original library validation used all 55 XML files from the v0.3.4 source
+unchanged. The current overlay instead installs the 56 officially converted
+XML files described in [DATABASE.md](DATABASE.md).
 
 That Android link used an isolated validation build of the real GLib 2.84.2
 core, with its exact gvdb revision, libffi 3.5.1, and GNU libintl 0.23.1. The

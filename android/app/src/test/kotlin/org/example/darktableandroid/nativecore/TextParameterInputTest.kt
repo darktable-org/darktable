@@ -13,7 +13,7 @@ class TextParameterInputTest {
     private fun lensModule() = EditorModule("lens@7", "Lens correction", true, true, emptyList(),
         textParameters = listOf(ModuleTextParameter("camera", "Camera", "", 12),
             ModuleTextParameter("lens", "Lens", "", 10)),
-        lensCorrection = LensCorrection("missing_lens", null, 1, false, true, false, false, 0, "", "",
+        lensCorrection = LensCorrection("missing_lens", null, 1, false, true, true, false, 0, "Camera Model", "",
             listOf(LensProfileChoice("Camera Model", "Camera Model")),
             listOf(LensProfileChoice("Lens Model", "Lens Model"), LensProfileChoice("Too Long Lens Model", "Too Long Lens Model"))))
 
@@ -34,6 +34,14 @@ class TextParameterInputTest {
         assertNull(module.copy(lensCorrection = module.lensCorrection!!.copy(method = 2))
             .textParameterForWrite("lens.profile", "Lens Model"))
         assertEquals("camera", module.textParameterForWrite("camera", "Manual")?.name)
+    }
+
+    @Test fun anUnmatchedExifCameraCannotSelectFromAnOlderUnfilteredLensCatalog() {
+        val module = lensModule().let { it.copy(lensCorrection = it.lensCorrection!!.copy(
+            cameraMatched = false, camera = "HERO12 Black", status = "ready")) }
+        assertNull(module.textParameterForWrite("lens.profile", "Lens Model"))
+        // Finding a real camera profile remains possible without changing lens settings.
+        assertEquals("lens.camera_profile", module.textParameterForWrite("lens.camera_profile", "Camera Model")?.name)
     }
 
     @Test fun utf8PayloadLimitCountsMultibyteCharactersAndEmoji() {

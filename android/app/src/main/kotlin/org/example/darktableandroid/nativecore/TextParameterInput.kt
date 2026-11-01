@@ -31,6 +31,7 @@ internal fun EditorModule.textParameterForWrite(name: String, value: String): Mo
     }
     if(operation.substringBefore('@') != "lens") return null
     val info = lensCorrection?.takeIf { it.method == 1 && it.databaseAvailable } ?: return null
+    if(legacy == "lens" && !info.cameraMatched) return null
     val choices = if(legacy == "camera") info.cameras else info.lenses
     if(choices.none { it.value == value }) return null
     return (textParameters.singleOrNull { it.name == name }

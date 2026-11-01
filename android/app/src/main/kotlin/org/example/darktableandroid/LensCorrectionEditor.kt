@@ -45,26 +45,39 @@ internal fun LensCorrectionEditor(
         controls.method?.let { parameter ->
             ParameterControl(parameter, editable) { onParameter(parameter.name, it) }
         }
-        Text(info.message ?: lensStatusMessage(info.status),
+        val unmatchedCamera = info.method == 1 && info.databaseAvailable && !info.cameraMatched
+        Text(when {
+            unmatchedCamera && info.lensMatched -> lensStatusMessage("unverified_camera")
+            unmatchedCamera -> stringResource(R.string.lens_status_missing_camera)
+            else -> info.message ?: lensStatusMessage(info.status)
+        },
             style = MaterialTheme.typography.bodySmall,
-            color = if((info.method == 1 && !info.lensMatched) || (info.method == 0 && !info.embeddedAvailable))
+            color = if((info.method == 1 && (!info.cameraMatched || !info.lensMatched)) || (info.method == 0 && !info.embeddedAvailable))
                 MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
         controls.actions.filter { it.name == "lens.autodetect" }.forEach { parameter ->
             ParameterControl(parameter, editable) { onParameter(parameter.name, it) }
         }
         if(info.method == 1) {
-            if(info.imageCamera.isNotBlank() && (!info.cameraMatched || info.imageCamera != info.camera))
+            if(info.imageCamera.isNotBlank())
                 Text(stringResource(R.string.lens_image_camera, info.imageCamera), style = MaterialTheme.typography.bodySmall)
-            if(info.imageLens.isNotBlank() && (!info.lensMatched || info.imageLens != info.lens))
+            if(info.imageLens.isNotBlank())
                 Text(stringResource(R.string.lens_image_lens, info.imageLens), style = MaterialTheme.typography.bodySmall)
             LensProfilePicker(stringResource(R.string.lens_camera_profile), info.camera, info.cameras,
-                controls.cameraProfile, editable) { name, value -> onTextParameter(name, value) }
-            LensProfilePicker(stringResource(R.string.lens_profile), info.lens, info.lenses,
-                controls.lensProfile, editable) { name, value -> onTextParameter(name, value) }
+                controls.cameraProfile, editable, info.cameraMatched,
+                stringResource(R.string.lens_camera_profile_unmatched)) { name, value -> onTextParameter(name, value) }
+            LensProfilePicker(stringResource(R.string.lens_profile), info.lens,
+                if(info.cameraMatched) info.lenses else emptyList(),
+                controls.lensProfile, editable && info.cameraMatched, info.cameraMatched && info.lensMatched,
+                stringResource(if(info.cameraMatched) R.string.lens_profile_unselected else R.string.lens_profile_requires_camera)
+            ) { name, value -> onTextParameter(name, value) }
+            Text(stringResource(R.string.lens_profile_names_hint), style = MaterialTheme.typography.bodySmall)
+            if(unmatchedCamera && info.lens.isNotBlank())
+                Text(stringResource(R.string.lens_unverified_stored_lens, info.lens),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
             if(info.databaseAvailable && (info.cameras.isEmpty() || info.lenses.isEmpty()) && editable)
                 Text(stringResource(R.string.lens_profile_none), style = MaterialTheme.typography.bodySmall)
         }
-        if(info.method != 2) {
+        if(info.method != 2 && (info.method != 1 || info.cameraMatched)) {
             val capabilities = listOf(4 to R.string.lens_distortion, 1 to R.string.lens_tca, 2 to R.string.lens_vignetting)
                 .filter { info.supportedFlags and it.first != 0 }.map { stringResource(it.second) }
             if(capabilities.isNotEmpty()) Text(stringResource(R.string.lens_available_corrections,
@@ -100,6 +113,7 @@ private fun lensStatusMessage(status: String): String = when(status) {
     "ready" -> stringResource(R.string.lens_status_ready)
     "missing_database" -> stringResource(R.string.lens_status_missing_database)
     "missing_lens" -> stringResource(R.string.lens_status_missing_lens)
+    "unverified_camera" -> stringResource(R.string.lens_status_unverified_camera)
     "missing_settings" -> stringResource(R.string.lens_status_missing_settings)
     "no_calibration" -> stringResource(R.string.lens_status_no_calibration)
     else -> status.replace('_', ' ').replaceFirstChar { it.uppercase() }
@@ -120,6 +134,8 @@ private fun LensProfilePicker(
     choices: List<LensProfileChoice>,
     control: ModuleTextParameter?,
     editable: Boolean,
+    matched: Boolean,
+    placeholder: String,
     onSelect: (String, String) -> Unit,
 ) {
     var open by remember { mutableStateOf(false) }
@@ -129,9 +145,8 @@ private fun LensProfilePicker(
         Text(title, style = MaterialTheme.typography.labelLarge)
         OutlinedButton(onClick = { query = ""; open = true }, enabled = editable && allowed.isNotEmpty(),
             modifier = Modifier.fillMaxWidth().semantics { contentDescription = title }) {
-            Text(choices.firstOrNull { it.value == current }?.label ?: current.ifBlank {
-                stringResource(R.string.lens_profile_unselected)
-            })
+            Text(if(matched) choices.firstOrNull { it.value == current }?.label ?: current.ifBlank { placeholder }
+                else placeholder)
         }
     }
     if(open) AlertDialog(onDismissRequest = { open = false },

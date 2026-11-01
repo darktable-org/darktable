@@ -14,11 +14,11 @@ are not counts of independently rendered Android controls.
 The current validation includes:
 
 - The coordinated Android check passed production and instrumentation Kotlin
-  compilation, 107 JVM tests in 25 classes (zero failures or skips), and
+  compilation, 109 JVM tests in 25 classes (zero failures or skips), and
   `lintDevDebug`. Additional instrumentation-source checks remain separate from
   actually running those component tests on Android.
 - The final expanded source passed all seven host native CTest cases in
-  327.61 seconds, including the original-engine regression in 327.51 seconds.
+  149.85 seconds, including the original-engine regression in 149.79 seconds.
   Its RGB fixture traversed 1,195
   advertised ordinary parameters, including live-instance and blending fields;
   this runtime count is distinct from the source-policy field counts. The run
@@ -73,9 +73,24 @@ guards the processing crop-factor fallback; invalid profile selections and
 numeric settings leave metadata and history unchanged. Separate production
 classifier fixtures distinguish identity, CA-only, geometric, vignette,
 tangential-only and invalid DNG coefficient data. These are not HERO12 RAW
-rendering evidence. The four new lens component tests compile; profile-action
-aliases and native buffer limits are covered by JVM tests. See
+rendering evidence. Profile-action aliases and native buffer limits are
+covered by JVM tests. See
 [lens correction and HERO12 scope](LENS_CORRECTION.md).
+
+The updated official Lensfun database was converted with the pinned upstream
+converter and lxml 6.0.2, then loaded by the original 0.3.4 library: 56 XML
+files, 1,059 cameras and 1,578 lenses. The final native run explicitly required
+that database with `DT_MOBILE_TEST_REQUIRE_UPDATED_LENSFUN=1`; canonical mobile
+profile actions found both HERO10 and HERO11 pairs and their distortion
+capabilities. Desktop adapter runs using older distribution data report those
+optional pairs as absent. The automatic-default fixture separately verifies
+that unknown HERO12 EXIF cannot select HERO4, read-only metadata leaves stored
+parameters unchanged, and reset/method changes cannot revive that automatic
+selection. Explicit legacy settings remain unverified and preserve their
+existing behavior. All 37 offline database/staging tests passed. The six lens
+component tests compile, including the screenshot regression; they have not
+been executed on Android. A complete Android rebuild of the updated dependency
+overlay remains CI validation.
 
 These checks do not establish execution of the new Compose instrumentation
 tests on Android, complete physical-device picker/edit/export behavior, every

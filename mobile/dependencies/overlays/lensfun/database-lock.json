@@ -1,0 +1,16 @@
+{
+  "repository": "https://github.com/lensfun/lensfun",
+  "revision": "bc5615d6278cb5fb75dd53e74015367453d5591d",
+  "archive_sha512": "9b9414ba30a2049e81c63ba19872a062d458ebdb23f91e97521128aa6d14991c4c3c7a3ca141f60b74d89168ab1c3c11514e2d4e05711d5768d832d5ce03c7d9",
+  "timestamp": 1793180205,
+  "converter": "tools/update_database/xml_converter.py",
+  "converter_sha256": "fbbb97d2c465473f5fa3082fa24f8d94efb14d60c38728bf332731be20c18f87",
+  "database_version": 1,
+  "lxml_version": "6.0.2",
+  "required_cameras": [
+    { "maker": "GoPro", "model": "Hero10 black" },
+    { "maker": "GoPro", "model": "Hero11 Black" }
+  ],
+  "database_license": "CC-BY-SA-3.0",
+  "converter_license": "public domain; upstream README.md LICENSE section"
+}
