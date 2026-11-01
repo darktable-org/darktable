@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="workspace_tab_adjustments">Light / Color</string>
+  <string name="workspace_tab_detail">Detail / Repair</string>
+  <string name="workspace_tab_geometry">Geometry / Effects</string>
+  <string name="workspace_tab_settings">Settings</string>
+  <string name="workspace_choose_tool">Choose editing tool</string>
+  <string name="workspace_no_tools">No matching tools</string>
+  <string name="workspace_tool_toggle">Enable %1$s</string>
+  <string name="workspace_enabled">On</string>
+  <string name="workspace_disabled">Off</string>
+  <string name="workspace_disabled_hint">Turn on to adjust. Settings are kept when off.</string>
+  <string name="workspace_close_search">Close tool search</string>
+  <string name="workspace_choose_photo">Choose a photo to start</string>
+  <string name="workspace_layout_hint">Your photo stays above the tools. Use the bottom tabs to browse adjustments, detail and geometry; each tab remembers its last tool.</string>
+  <string name="workspace_license_title">License</string>
+  <string name="workspace_upstream">darktable source and licenses</string>
+  <string name="workspace_runtime_ready">Photo processing engine is ready.</string>
+  <string name="workspace_runtime_missing">An engine-enabled build is needed to open and edit photos.</string>
+</resources>

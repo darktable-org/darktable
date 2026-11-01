@@ -14,7 +14,7 @@ are not counts of independently rendered Android controls.
 The current validation includes:
 
 - The coordinated Android check passed production and instrumentation Kotlin
-  compilation, 86 JVM tests in 22 classes (zero failures or skips), and
+  compilation, 92 JVM tests in 23 classes (zero failures or skips), and
   `lintDevDebug`. Additional instrumentation-source checks remain separate from
   actually running those component tests on Android.
 - The final expanded source passed all seven host native CTest cases in
@@ -54,6 +54,14 @@ supported shape families. Crop geometry checks use preceding pixel-aspect and
 orientation edits to distinguish the crop input ROI from its processed output.
 Android JVM tests separately cover threshold bounds/graphs, mask address and
 node selection, crop aspect fitting and optional native dimension metadata.
+
+The fixed workspace layout adds six JVM category/selection checks and ten
+`EditorWorkspaceTest` component tests. The component sources compile with the
+production editor and cover the split panes, explicit power switch, stable
+instance selection, scrolling, Settings/license access, busy actions, saved tab
+restoration and offscreen history/draft restoration. They use bitmap/callback
+fixtures and have not been executed on an Android device in this validation.
+The layout revision does not change the native processing code.
 
 These checks do not establish execution of the new Compose instrumentation
 tests on Android, complete physical-device picker/edit/export behavior, every

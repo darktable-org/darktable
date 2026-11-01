@@ -61,10 +61,15 @@ private fun CurveEditor(
     curve: ModuleCurve, editable: Boolean, visible: Boolean,
     onApply: (Int, List<CurvePoint>) -> Unit,
 ) {
-    var nodes by rememberSaveable(curve.nodes, curve.interpolation, stateSaver = CurveNodesSaver) {
-        mutableStateOf(curve.nodes)
+    // A tool can be absent while Undo changes its native snapshot. Include
+    // that snapshot in the saved draft's identity, while retaining point and
+    // channel selection outside it.
+    var nodes by key(curve.nodes, curve.interpolation) {
+        rememberSaveable(stateSaver = CurveNodesSaver) { mutableStateOf(curve.nodes) }
     }
-    var interpolation by rememberSaveable(curve.nodes, curve.interpolation) { mutableIntStateOf(curve.interpolation) }
+    var interpolation by key(curve.nodes, curve.interpolation) {
+        rememberSaveable { mutableIntStateOf(curve.interpolation) }
+    }
     var selection by rememberSaveable { mutableIntStateOf(0) }
     if(!visible) return
     val selected = selection.coerceIn(0, nodes.lastIndex)

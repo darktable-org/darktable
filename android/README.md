@@ -3,13 +3,20 @@
 
 Open this `android/` directory in Android Studio. Install Android SDK 35, NDK 27.2.12479018, and CMake 3.22.1. Build `devDebug` or run `./gradlew :app:assembleDevDebug`; install with `adb install -r app/build/outputs/apk/dev/debug/app-dev-debug.apk`.
 
-The Android UI opens one document directly into the editor, with no image
-browser. The tools panel now provides native sliders and precise input, enum
+The Android UI opens one document directly into a fixed split editor: preview
+above, tool controls below, with four persistent bottom tabs and no app-title
+bar or dismissible tools sheet. The three editing tabs group light/color,
+detail/repair and geometry/effects; Settings contains the license information.
+Selecting a tool does not enable it: its separate power switch controls whether
+its edits apply. Each category remembers its tool, and each tool keeps its scroll
+position. See [editor UX](EDITOR_UX.md) for the interaction rules.
+
+The tools panel provides native sliders and precise input, enum
 menus, switches, text fields, document import and action buttons. Tool search
 matches module names and parameter labels; editing a value commits the original
 module/history and requests an original-engine preview. A completed slider drag
 creates one edit. Image-specific parameter resets and tool settings resets use
-native defaults. Progress and cancellation remain visible inside the sheet.
+native defaults. Progress and cancellation remain visible beside the preview.
 
 The source policies cover 511 reviewed scalar fields and up to 440 fixed-array
 components across 81 modules. Actual controls depend on sensor type, active

@@ -1,0 +1,58 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+# Fixed editing workspace
+
+The preview and editing controls share the available screen equally above the
+bottom navigation. The preview stays visible while parameters scroll. There is
+no app-title bar, drawer, tools sheet, drag handle or swipe-to-dismiss gesture.
+While the keyboard is open, the preview temporarily uses one quarter of the
+remaining content height so the focused parameter still has room. Dismissing
+the keyboard returns the equal split.
+
+```text
+┌──────────────────────────────────┐
+│          Photo preview           │
+│                                  │
+│       Open  Undo  Redo  Export    │
+├──────────────────────────────────┤
+│ Selected tool ▾    Power  Search  │
+│                                  │
+│       Scrollable parameters      │
+│                                  │
+├──────────────────────────────────┤
+│Light/Color Detail Geometry Settings│
+└──────────────────────────────────┘
+```
+
+| Bottom tab | Tools and content |
+| --- | --- |
+| Light / Color | Exposure, white balance, tone curves, color grading and color transforms |
+| Detail / Repair | Noise reduction, sharpening, optical detail correction, masks and repair tools |
+| Geometry / Effects | Crop, perspective, lens geometry, framing, overlays, grain and finishing effects |
+| Settings / Licenses | Runtime availability, project information and license notices; available without an image |
+
+Each editing tab presents a compact tool selector and a separate power switch
+above the parameter scroller. The selector searches tool and parameter labels
+and can narrow the list to enabled tools. Only the selected tool's controls are
+shown, so users do not scroll through dozens of expanded cards. Native instances
+keep their complete identities when selected.
+
+Selecting a tab or tool changes the visible controls without creating a native
+edit or enabling a tool. The power switch explicitly enables/disables the
+selected tool. Disabled tools remain inspectable; their parameter controls stay
+disabled until enabled. Mandatory native modules keep their original power
+restrictions. Switching a tool off retains its settings for later use.
+
+Each category remembers its selected tool for the current image session. Each
+tool's parameter scroll position is retained while moving between tabs. History
+restoration resolves selections against the live native module list so a retired
+instance is never edited through a stale selector. A newly opened image starts
+with its own selection state.
+
+Open, Undo, Redo and Export remain in the preview action row. Opening/exporting
+uses Android's document picker. Native work retains the last preview where one
+is available, shows its progress and Cancel, and disables edit actions until the
+operation completes. Settings and license information remain reachable.
+
+Coordinate diagrams, precise parameter controls and native processing behavior
+are unchanged by this layout. The diagrams remain separate from the processed
+photo; this workspace change does not add photo-aligned mask/crop gestures.
