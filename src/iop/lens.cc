@@ -3817,6 +3817,30 @@ static char *_lens_sanitize(const char *orig_lens)
   }
 }
 
+// Viltrox writes "Viltrox AF 16/1.8 Z" in EXIF. Lensfun reads a bare "a/b" as
+// aperture/focal, the Zeiss "2/25" form, so it looks for f/16 at 1.8mm and
+// finds nothing. Spell it out only when the first number is the larger one
+static void _lens_expand_focal_aperture(char *lens, const size_t size)
+{
+  char *slash = strchr(lens, '/');
+  if(!slash || !g_ascii_isdigit(slash[1])) return;
+
+  const char *space = g_strrstr_len(lens, slash - lens, " ");
+  const char *first = space ? space + 1 : lens;
+  if(!g_ascii_isdigit(*first)) return;
+
+  char *first_end, *second_end;
+  const double focal = g_ascii_strtod(first, &first_end);
+  const double aperture = g_ascii_strtod(slash + 1, &second_end);
+  if(first_end != slash || (*second_end && *second_end != ' ') || focal <= aperture)
+    return;
+
+  *slash = '\0';
+  gchar *expanded = g_strdup_printf("%smm f/%s", lens, slash + 1);
+  g_strlcpy(lens, expanded, size);
+  g_free(expanded);
+}
+
 void reload_defaults(dt_iop_module_t *self)
 {
   char *new_lens;
@@ -3829,6 +3853,7 @@ void reload_defaults(dt_iop_module_t *self)
   new_lens = _lens_sanitize(img->exif_lens);
   dt_strlcpy_to_fixed(d->lens, new_lens, sizeof(d->lens));
   free(new_lens);
+  _lens_expand_focal_aperture(d->lens, sizeof(d->lens));
   dt_strlcpy_to_fixed(d->camera, img->exif_model, sizeof(d->camera));
   d->crop = img->exif_crop;
   d->aperture = img->exif_aperture;
@@ -3878,7 +3903,7 @@ void reload_defaults(dt_iop_module_t *self)
          * (reasons: lens is "(65535)" or lens is correct lens name,
          *  but LF have it as "fixed lens")
          *
-         * Let's unset lens name and re-run lens query
+         * Let's unset lens name and re-run lens queryCa
          */
         dt_strlcpy_to_fixed(d->lens, "", sizeof(d->lens));
 

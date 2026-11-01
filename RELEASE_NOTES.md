@@ -812,6 +812,10 @@ changes (where available).
   the chromaticity, hue, color or HSV blend modes in display RGB, where
   OpenCL gave the right color.
 
+- Fixed the lens correction module not finding the Lensfun profile of
+  lenses that report their name as focal length/aperture, such as
+  "Viltrox AF 16/1.8 Z".
+
 ## Lua
 
 ### API Version
