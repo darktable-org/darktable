@@ -238,6 +238,14 @@ internal fun ModuleControls(
             else if(!module.hasEditableControls)
                 Text(stringResource(R.string.no_numeric_parameters), style = MaterialTheme.typography.bodySmall)
             if(!showHeader || expanded) {
+                val controlWords = controlSearchWords(module, controlQuery)
+                val visibleParameters = module.parameters.filter { matchesControlSearch(controlWords, it.name, it.label) }
+                val visibleText = module.textParameters.filter { matchesControlSearch(controlWords, it.name, it.label) }
+                val correction = module.lensCorrection
+                val lensControls = correction?.let { lensCorrectionControls(it, module.parameters, module.textParameters) }
+                if(lensControls != null) LensCorrectionEditor(correction, lensControls, editable,
+                    { name, value -> onParameter(module.operation, name, value) },
+                    { name, value -> onTextParameter(module.operation, name, value) })
                 module.crop?.let { crop ->
                     key(crop) { CropEditor(crop, editable) { bounds -> onCrop(module.operation, bounds) } }
                 }
@@ -255,9 +263,9 @@ internal fun ModuleControls(
                 if(module.curves.isNotEmpty()) ModuleCurves(module.curves, editable) { channel, interpolation, nodes ->
                     onCurve(module.operation, channel, interpolation, nodes)
                 }
-                val controlWords = controlSearchWords(module, controlQuery)
-                val visibleParameters = module.parameters.filter { matchesControlSearch(controlWords, it.name, it.label) }
-                val adjustments = visibleParameters.filterNot { it.name.startsWith("blend.") || it.name.startsWith("mask.") }
+                val adjustments = visibleParameters.filterNot {
+                    it.name.startsWith("blend.") || it.name.startsWith("mask.") || it.name in lensControls?.names.orEmpty()
+                }
                 val parametric = parametricMaskControls(module.parameters).let { controls ->
                     controls.copy(
                         global = controls.global.filter { matchesControlSearch(controlWords, it.name, it.label) },
@@ -279,7 +287,7 @@ internal fun ModuleControls(
                         }
                     }
                 }
-                module.textParameters.filter { matchesControlSearch(controlWords, it.name, it.label) }.forEach { parameter ->
+                visibleText.filterNot { it.name in lensControls?.textNames.orEmpty() }.forEach { parameter ->
                     key(parameter.name) {
                         if(parameter.isFile) FileParameterControl(parameter, editable, sessionId) { uri, expectedSessionId ->
                             onFileParameter(module.operation, parameter.name, uri, expectedSessionId)

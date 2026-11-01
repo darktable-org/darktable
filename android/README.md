@@ -39,8 +39,14 @@ coordinates, Bézier handles and brush feather/hardness/density controls, up to
 64 nodes per form. Subsequent group members support the original five
 combination operations. Spots supports clone paths; retouch supports paths and
 brushes. Applied coordinate diagrams remain separate from the processed photo.
-Watermark text/font/template and camera/lens identifiers use
-bounded native text fields. System document selection imports external raster
+Lens correction has a dedicated mode-aware editor with camera/lens profile
+selection, shooting settings, actual source/profile capability reporting and
+manual vignette controls. It resolves original image defaults before edits and
+retains a valid crop factor when a camera body has no database match. HERO12
+Black has no bundled profile; embedded TCA/shading data does not establish
+fisheye correction. See [lens correction](LENS_CORRECTION.md) for usage and exact
+limits. Watermark text/font/template uses bounded native text fields.
+System document selection imports external raster
 PFM/PNG masks, Cube/3DL/Hald-PNG LUTs and PNG/JPEG/TIFF overlay images into retained
 session assets. The original readers and processing code handle those files;
 overlay selection also updates its original image ID and dependency state. The
@@ -95,8 +101,10 @@ white-balance initialization. These checks are necessary startup conditions;
 they do not establish a complete runtime. Package the matching installation's
 data, including styles and watermarks, any supplied `color/in` and `color/out`
 profiles, and the data required by enabled optional features such as OpenCL
-kernels or AI models. Lensfun calibration data uses a separate runtime layout
-and must also be integrated before claiming lens correction parity.
+kernels or AI models. Lensfun calibration data uses the separate sibling
+`lensfun/version_1/` directory, retained and verified by the complete runtime
+staging route. The lens editor reports a missing database separately from a
+missing camera/lens calibration; neither condition implies complete lens parity.
 
 The existing Gradle asset task only supplies three flat camera/noise/white-balance
 database files. It does not produce this runtime tree, so an engine-enabled build

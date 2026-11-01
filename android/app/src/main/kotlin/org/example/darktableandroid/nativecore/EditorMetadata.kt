@@ -40,6 +40,7 @@ data class EditorModule(
     val canCreateInstance: Boolean = false,
     val canReset: Boolean = false,
     val textParameters: List<ModuleTextParameter> = emptyList(),
+    val lensCorrection: LensCorrection? = null,
 )
 data class ModuleCrop(
     val bounds: CropRect, val minSize: Float, val freehand: Boolean,
@@ -113,6 +114,7 @@ internal fun parseModules(json: String): List<EditorModule> = JSONArray(json).le
             (0 until textParameters.length()).mapNotNull { textIndex ->
                 textParameters.optJSONObject(textIndex)?.readTextParameter()
             }.distinctBy { it.name },
+            module.optJSONObject("lensCorrection")?.readLensCorrection(),
         )
     }
 }

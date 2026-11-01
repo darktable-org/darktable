@@ -695,6 +695,7 @@ static void append_parameter(dt_iop_module_t *module, const dt_introspection_fie
 }
 
 #include "dt_mobile_blending_controls.h"
+#include "dt_mobile_lens_controls.h"
 #include "dt_mobile_text_controls.h"
 #include "dt_mobile_zone_controls.h"
 #include "dt_mobile_mask_controls.h"
@@ -1440,8 +1441,9 @@ dt_mobile_status dt_mobile_engine_modules(dt_mobile_engine *engine, char **json,
                            module->hide_enable_button ? "false" : "true",
                            can_create_instance(engine, module) ? "true" : "false");
     parameter_json fields = { description, TRUE };
-    if(module->have_introspection && module->get_introspection())
+    if(strcmp(module->op, "lens") && module->have_introspection && module->get_introspection())
       visit_fields(module, module->get_introspection()->field, 0, "", 0, append_parameter, &fields);
+    append_mobile_lens_parameters(module, &fields);
     append_mobile_blending_parameters(module, &fields);
     append_mobile_zone_parameters(module, &fields);
     append_mobile_mask_parameters(module, &fields);
@@ -1452,6 +1454,7 @@ dt_mobile_status dt_mobile_engine_modules(dt_mobile_engine *engine, char **json,
     append_rgb_curve_options(module, description);
     append_whitebalance(module, description);
     append_crop(engine, module, description);
+    append_mobile_lens_correction(module, description);
     append_mobile_text_parameters(module, description);
     g_string_append_printf(description, ",\"canReset\":%s",
       module->default_params && module->params && module->params_size > 0 ? "true" : "false");
@@ -1932,15 +1935,6 @@ static void update_parameter(dt_iop_module_t *module, const dt_introspection_fie
       if(value == field->Enum.values[k].value) present = TRUE;
     if(!present) return;
   }
-  if(!strcmp(module->op, "lens"))
-  {
-    const dt_introspection_field_t *set = module->get_f ? module->get_f("has_been_set") : NULL;
-    if(!set || set->header.type != DT_INTROSPECTION_TYPE_BOOL || set->header.size != sizeof(gboolean)
-       || set->header.offset > (size_t)module->params_size
-       || set->header.size > (size_t)module->params_size - set->header.offset) return;
-    const gboolean modified = TRUE;
-    memcpy((char *)module->params + set->header.offset, &modified, sizeof(modified));
-  }
 #define WRITE_NUMBER(tag, ctype) \
   case DT_INTROSPECTION_TYPE_##tag: *(ctype *)destination = (ctype)value; break
   switch(field->header.type)
@@ -2045,6 +2039,16 @@ dt_mobile_status dt_mobile_engine_set_parameter(dt_mobile_engine *engine, const 
     end_operation(engine);
     return status;
   }
+  const int lens_update = module ? update_mobile_lens_parameter(module, parameter, value) : 0;
+  if(lens_update)
+  {
+    if(lens_update < 0)
+      status = engine_fail(error, error_size, DT_MOBILE_ERROR_INVALID_ARGUMENT,
+                           "this lens correction is unavailable or its settings are invalid");
+    else save_module(engine, module, TRUE);
+    end_operation(engine);
+    return status;
+  }
   parameter_update update = { parameter, value, FALSE, FALSE };
   if(module && module->have_introspection && module->get_introspection())
     visit_fields(module, module->get_introspection()->field, 0, "", 0, update_parameter, &update);
@@ -2064,7 +2068,8 @@ dt_mobile_status dt_mobile_engine_set_text_parameter(dt_mobile_engine *engine, c
   dt_mobile_status status = begin_operation(engine, error, error_size);
   if(status != DT_MOBILE_OK) return status;
   dt_iop_module_t *module = find_module(engine, identifier);
-  const int updated = module ? update_mobile_text_parameter(module, parameter, value) : 0;
+  int updated = module ? update_mobile_lens_text_parameter(module, parameter, value) : 0;
+  if(!updated && module) updated = update_mobile_text_parameter(module, parameter, value);
   if(!updated)
     status = engine_fail(error, error_size, DT_MOBILE_ERROR_UNSUPPORTED, "unknown module or text parameter");
   else if(updated < 0)

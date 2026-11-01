@@ -32,7 +32,7 @@ bounds and coupled checks.
 | Exposure and tone mapping | Exposure/black/compensation; basic adjustments; tone equalizer EV bands and masking settings; filmic/filmic RGB, AgX, sigmoid, tone/global-tone mapping, local contrast, shadows/highlights, relight and input gamma controls |
 | Color grading and calibration | RGB/legacy color balance, channel mixers, color equalizer hue sectors, color harmonizer nodes, active color-checker target Lab patches, monochrome filter coordinates, color correction/contrast, colorize, split toning, vibrance, velvia, low-light and negative inversion controls |
 | Detail and denoising | Profiled denoise settings and fixed bands, diffuse/sharpen, wavelet equalizers, RAW denoise, non-local/bilateral denoise, sharpen radius/amount/threshold, high/low pass, blur, soften, bloom, grain, chromatic-aberration correction, defringe, haze removal and censorize controls |
-| Sensor and optics | RAW black/white levels, source-compatible demosaicing/highlight methods, hot-pixel controls, lens method/corrections/manual vignette and camera/lens identifiers, pixel aspect ratio and input/output intent/gamut settings |
+| Sensor and optics | RAW black/white levels, source-compatible demosaicing/highlight methods, hot-pixel controls, mode-aware lens correction with calibrated camera/lens selection, shooting settings, source capability/status and manual vignette, pixel aspect ratio and input/output intent/gamut settings |
 | Geometry and framing | Crop bounds batch, native-input-aware aspect presets and orientation drafts, perspective rotation/shift/shear/lens-model parameters, legacy crop rotation, image orientation, canvas expansion, borders and frame colors |
 | Finishing and external assets | Vignette/graduated-filter settings, watermark text/font/template and placement, 3D LUT import/settings, external raster mask import/channel selection; overlay image import and placement/settings |
 
@@ -65,6 +65,7 @@ selected mode; exposing a stored setting does not make every mode use it.
 | Levels and fixed bands | Ordered black/middle/white components, channel vectors and frequency-band sliders with native bounds | Full desktop graph/picker presentation |
 | Zone system | Native zone-count reset, ordered output boundaries and automatic-position switches | Desktop strip dragging/pickers |
 | White balance | Image settings, active gain channels and calibrated Kelvin/tint pairs | Full camera preset/tuning browser and spot picker |
+| Lens correction | Original image-default initialization, matched camera/lens catalog selection, focal/aperture/distance/crop settings, native autoscale and source-aware correction/manual-vignette controls | Calibration absent from the installed database, unsupported embedded opcodes and unverified camera-specific geometry |
 | Crop/perspective | Atomic crop bounds/reset; aspect presets fitted to the original crop input ROI, portrait/free drafts; perspective scalar transforms | Uncropped-photo touch overlay and automatic line fitting |
 | Blending | Original opacity, supported modes/reverse/fulcrum, preceding raster-source selection/inversion; input/output parametric channels with four ordered thresholds, polarity, boost/reset and mask refinement | Live channel histograms, automatic sampling and further desktop graph gestures |
 | Drawn masks | Add/delete native circle, ellipse, gradient, closed Bézier path and brush forms; node/handle/feather controls, brush hardness/density, opacity/inversion and five native group operations | Freehand stroke capture, direct canvas manipulation and full mask-manager workflows |
@@ -98,6 +99,16 @@ Orientation and preset selection remain drafts until the complete bounds are
 applied atomically. Manual edge edits return to free mode. Ratios are not
 estimated from the already-cropped preview.
 
+Lens correction resolves image-specific native defaults before marking parameters
+as edited and retains a valid crop factor when a body is unmatched. Its profile
+selector and numeric controls follow the selected method and actual source or
+Lensfun modifier capabilities. Embedded CA-only DNG warps are not reported as
+fisheye geometry, and RAW GainMaps are distinct from lens-vignette controls.
+The bundled database has no HERO12 Black profile, and no older GoPro profile is
+substituted automatically. Manual vignette remains independent of a profile;
+camera-specific geometry still needs appropriate calibration and source-file
+verification. See [lens correction](../android/LENS_CORRECTION.md).
+
 File imports validate the original buffer layouts, UTF-8 byte limits, readable
 regular paths and supported extensions before changing the complete native tuple.
 Raster imports update path and basename together. Overlay imports use the
@@ -120,7 +131,7 @@ tool instead of exposing private acquisition flags or cluster counts.
 Automatic picker operations and GUI-maintained parameter transformations are not
 all covered by independent scalar writes. Examples include exposure deflicker
 metering, filmic automatic hardness/range helpers, AgX range/pivot assistance,
-full noise/lens/camera preset selection and source-patch acquisition. The native
+full noise/white-balance preset selection and source-patch acquisition. The native
 manual parameter controls remain available; unported automatic controls are not
 represented by buttons which merely store an otherwise unused value.
 

@@ -14,15 +14,17 @@ are not counts of independently rendered Android controls.
 The current validation includes:
 
 - The coordinated Android check passed production and instrumentation Kotlin
-  compilation, 92 JVM tests in 23 classes (zero failures or skips), and
+  compilation, 107 JVM tests in 25 classes (zero failures or skips), and
   `lintDevDebug`. Additional instrumentation-source checks remain separate from
   actually running those component tests on Android.
 - The final expanded source passed all seven host native CTest cases in
-  161.26 seconds, including the original-engine regression in 161.16 seconds.
-  Its RGB fixture traversed 1,207
+  327.61 seconds, including the original-engine regression in 327.51 seconds.
+  Its RGB fixture traversed 1,195
   advertised ordinary parameters, including live-instance and blending fields;
   this runtime count is distinct from the source-policy field counts. The run
   includes minimum-node and invalid-topology checks for paths and brushes.
+  The lower advertised count reflects hiding inactive lens-method controls;
+  lens shooting settings and catalogs are advertised when applicable.
 - The preceding `9e749eeb6e` snapshot also passed production JNI compilation with the pinned
   AArch64/API 26 NDK, plus a host
   JNI test using the original engine: four Unicode round trips and five invalid
@@ -62,6 +64,18 @@ instance selection, scrolling, Settings/license access, busy actions, saved tab
 restoration and offscreen history/draft restoration. They use bitmap/callback
 fixtures and have not been executed on an Android device in this validation.
 The layout revision does not change the native processing code.
+
+The lens regression uses the installed Canon EOS 5D Mark II / EF 24–105mm f/4L
+IS USM calibration with the original RGB pixelpipe. Distortion, vignetting and
+TCA each change actual pixels, Undo restores the baseline, and manual vignette
+has exact Undo/Redo checks. A deliberately unmatched body with a valid lens
+guards the processing crop-factor fallback; invalid profile selections and
+numeric settings leave metadata and history unchanged. Separate production
+classifier fixtures distinguish identity, CA-only, geometric, vignette,
+tangential-only and invalid DNG coefficient data. These are not HERO12 RAW
+rendering evidence. The four new lens component tests compile; profile-action
+aliases and native buffer limits are covered by JVM tests. See
+[lens correction and HERO12 scope](LENS_CORRECTION.md).
 
 These checks do not establish execution of the new Compose instrumentation
 tests on Android, complete physical-device picker/edit/export behavior, every

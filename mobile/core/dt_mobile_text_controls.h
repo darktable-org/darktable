@@ -84,19 +84,9 @@ static int update_mobile_text_parameter(dt_iop_module_t *module, const char *par
   if(!strcmp(module->op, "watermark") && !strcmp(parameter, "filename")
      && (!length || strchr(value, '/') || strchr(value, '\\') || !strcmp(value, ".") || !strcmp(value, "..")))
     return -1;
-  void *has_been_set = NULL;
-  if(!strcmp(module->op, "lens"))
-  {
-    const dt_introspection_field_t *flag = module->get_f("has_been_set");
-    if(!flag || flag->header.type != DT_INTROSPECTION_TYPE_BOOL
-       || flag->header.size != sizeof(gboolean) || flag->header.offset > (size_t)module->params_size
-       || flag->header.size > (size_t)module->params_size - flag->header.offset) return -1;
-    has_been_set = (char *)module->params + flag->header.offset;
-  }
   char *destination = (char *)module->params + f->header.offset;
   memset(destination, 0, f->header.size);
   memcpy(destination, value, length);
-  if(has_been_set) *(gboolean *)has_been_set = TRUE;
   return 1;
 }
 

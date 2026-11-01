@@ -38,6 +38,7 @@ import org.example.darktableandroid.nativecore.instanceSource
 import org.example.darktableandroid.nativecore.retainModuleSelection
 import org.example.darktableandroid.nativecore.previewArgbPixels
 import org.example.darktableandroid.nativecore.accepts
+import org.example.darktableandroid.nativecore.textParameterForWrite
 import org.example.darktableandroid.storage.UriCache
 import org.example.darktableandroid.storage.ToolAssetCache
 
@@ -160,7 +161,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun setTextParameter(operation: String, parameter: String, value: String) {
         val current = mutableState.value as? EditorState.Ready ?: return
         val control = current.modules.singleOrNull { it.operation == operation }
-            ?.textParameters?.singleOrNull { it.name == parameter } ?: return
+            ?.textParameterForWrite(parameter, value) ?: return
         if(control.accepts(value)) edit { NativeCore.setTextParameter(it, operation, parameter, value) }
     }
 
