@@ -161,6 +161,7 @@ static void _dispatch_camera_property_value_changed(const dt_camctl_t *c,
 
 /** Helper function to destroy a dt_camera_t object */
 static void _camctl_camera_destroy(dt_camera_t *cam);
+static void _camctl_stop_camera_threads(dt_camctl_t *camctl, dt_camera_t *camera);
 
 static int logid = 0;
 
@@ -290,6 +291,50 @@ static gpointer _camera_get_job(const dt_camctl_t *c,
   return job;
 }
 
+
+static gboolean _camera_jobqueue_pending(const dt_camera_t *camera)
+{
+  dt_camera_t *cam = (dt_camera_t *)camera;
+  dt_pthread_mutex_lock(&cam->jobqueue_lock);
+  const gboolean pending = cam->jobqueue != NULL;
+  dt_pthread_mutex_unlock(&cam->jobqueue_lock);
+  return pending;
+}
+
+static void _camctl_camera_free_job(gpointer job)
+{
+  _camctl_camera_job_t *j = job;
+  if(!j) return;
+  switch(j->type)
+  {
+    case _JOB_TYPE_SET_PROPERTY_STRING:
+    {
+      _camctl_camera_set_property_string_job_t *spj = job;
+      g_free(spj->name);
+      g_free(spj->value);
+      break;
+    }
+    case _JOB_TYPE_SET_PROPERTY_TOGGLE:
+    case _JOB_TYPE_SET_PROPERTY_CHOICE:
+    case _JOB_TYPE_SET_PROPERTY_INT:
+    case _JOB_TYPE_SET_PROPERTY_FLOAT:
+      g_free(((_camctl_camera_set_property_toggle_job_t *)job)->name);
+      break;
+    default:
+    break; /* EXECUTE_CAPTURE / EXECUTE_LIVE_VIEW are type-only */
+  }
+  g_free(j);
+}
+
+static void _camctl_camera_drain_jobqueue(dt_camera_t *cam)
+{
+  if(!cam) return;
+  dt_pthread_mutex_lock(&cam->jobqueue_lock);
+  for(GList *iter = cam->jobqueue; iter; iter = g_list_delete_link(iter, iter))
+    _camctl_camera_free_job(iter->data);
+  cam->jobqueue = NULL;
+  dt_pthread_mutex_unlock(&cam->jobqueue_lock);
+}
 
 static void _camera_process_job(const dt_camctl_t *c,
                                 const dt_camera_t *camera,
@@ -735,11 +780,11 @@ static void _camctl_camera_destroy_struct(dt_camera_t *cam)
   }
   g_free(cam->model);
   g_free(cam->port);
+  _camctl_camera_drain_jobqueue(cam);
   dt_pthread_mutex_destroy(&cam->jobqueue_lock);
   dt_pthread_mutex_destroy(&cam->config_lock);
   dt_pthread_mutex_destroy(&cam->live_view_buffer_mutex);
   dt_pthread_mutex_destroy(&cam->live_view_synch);
-  // TODO: cam->jobqueue
   g_free(cam);
 }
 
@@ -1033,7 +1078,12 @@ static gboolean _camctl_update_cameras(const dt_camctl_t *c)
                  cam->model, cam->port);
         dt_control_log(_("camera `%s' on port `%s' disconnected while mounted"),
                        cam->model, cam->port);
-        _camctl_camera_destroy_struct(oldcam);
+        _camctl_stop_camera_threads(camctl, oldcam);
+        if(camctl->active_camera == oldcam)
+          camctl->active_camera = NULL;
+        if(camctl->wanted_camera == oldcam)
+          camctl->wanted_camera = NULL;
+        _camctl_camera_destroy(oldcam);
         camctl->changed_camera = TRUE;
       }
       else if((cam->ptperror) || (cam->unmount))
@@ -1050,6 +1100,11 @@ static gboolean _camctl_update_cameras(const dt_camctl_t *c)
 
         dt_camera_t *oldcam = (dt_camera_t *)citem->data;
         camctl->cameras = citem = g_list_delete_link(c->cameras, citem);
+        _camctl_stop_camera_threads(camctl, oldcam);
+        if(camctl->active_camera == oldcam)
+          camctl->active_camera = NULL;
+        if(camctl->wanted_camera == oldcam)
+          camctl->wanted_camera = NULL;
         _camctl_camera_destroy(oldcam);
         camctl->changed_camera = TRUE;
       }
@@ -1105,10 +1160,10 @@ static void *_camera_event_thread(void *data)
   dt_print(DT_DEBUG_CAMCTL,
            "[camera_control] starting camera event thread of context %p", data);
 
-  while(camera->is_tethering)
+  while(camera->is_tethering || _camera_jobqueue_pending(camera))
   {
-    // Poll event from camera
-    _camera_poll_events(camctl, camera);
+    if(camera->is_tethering)
+      _camera_poll_events(camctl, camera);
 
     // Let's check if there are jobs in queue to process
     gpointer job;
@@ -1606,6 +1661,25 @@ int dt_camctl_can_enter_tether_mode(const dt_camctl_t *c,
   return 0;
 }
 
+static void _camctl_stop_camera_threads(dt_camctl_t *camctl, dt_camera_t *camera)
+{
+  if(!camctl || !camera) return;
+
+  if(camera->is_live_viewing)
+    dt_camctl_camera_stop_live_view(camctl);
+
+  if(camera->is_tethering)
+    camera->is_tethering = FALSE;
+
+  if(camctl->camera_event_thread_running)
+  {
+    dt_pthread_join(camctl->camera_event_thread);
+    camctl->camera_event_thread_running = FALSE;
+  }
+
+  _camctl_camera_drain_jobqueue(camera);
+}
+
 void dt_camctl_tether_mode(const dt_camctl_t *c,
                            const dt_camera_t *cam,
                            gboolean enable)
@@ -1627,22 +1701,32 @@ void dt_camctl_tether_mode(const dt_camctl_t *c,
     dt_camctl_t *camctl = (dt_camctl_t *)c;
     dt_camera_t *camera = (dt_camera_t *)cam;
 
-    if(enable && !camera->is_tethering)
+    if(enable)
     {
+      if(camera->is_tethering)
+        return;
+
       _camctl_lock(c, cam);
       // Start up camera event polling thread
       dt_print(DT_DEBUG_CAMCTL, "[camera_control] enabling tether mode");
       camctl->active_camera = camera;
       camera->is_tethering = TRUE;
-      dt_pthread_create(&camctl->camera_event_thread, &_camera_event_thread, (void *)c);
+      if(dt_pthread_create(&camctl->camera_event_thread,
+                           &_camera_event_thread, (void *)c))
+      {
+        dt_print(DT_DEBUG_CAMCTL,
+                 "[camera_control] failed to create camera event thread");
+        camera->is_tethering = FALSE;
+        _camctl_unlock(c);
+        return;
+      }
+      camctl->camera_event_thread_running = TRUE;
     }
-    else
+    else if(camera->is_tethering || camctl->camera_event_thread_running)
     {
-      camera->is_live_viewing = FALSE;
-      camera->is_tethering = FALSE;
       dt_print(DT_DEBUG_CAMCTL, "[camera_control] disabling tether mode");
+      _camctl_stop_camera_threads(camctl, camera);
       _camctl_unlock(c);
-      // Wait for tether thread with join??
     }
   }
   else
