@@ -193,6 +193,36 @@ dt_mobile_status dt_mobile_tone_equalizer_adjust(dt_mobile_session *s, const cha
   return fail(s, DT_MOBILE_ERROR_UNSUPPORTED, "this build does not contain the darktable engine");
 #endif
 }
+dt_mobile_status dt_mobile_tone_equalizer_output(dt_mobile_session *s, const char *module,
+                                                 double exposure, double *output_exposure)
+{
+  if(output_exposure) *output_exposure = NAN;
+  if(!s || !module || !module[0] || !output_exposure || !isfinite(exposure))
+    return DT_MOBILE_ERROR_INVALID_ARGUMENT;
+  if(atomic_load(&s->cancelled)) return fail(s, DT_MOBILE_ERROR_CANCELLED, "operation cancelled");
+#ifdef DT_MOBILE_HAS_DARKTABLE_ENGINE
+  return dt_mobile_engine_tone_equalizer_output(s->engine, module, exposure, output_exposure,
+                                                s->error, sizeof(s->error));
+#else
+  return fail(s, DT_MOBILE_ERROR_UNSUPPORTED, "this build does not contain the darktable engine");
+#endif
+}
+dt_mobile_status dt_mobile_tone_equalizer_set_target(dt_mobile_session *s, const char *module,
+                                                     double exposure, double target, uint64_t gesture,
+                                                     double *output_exposure)
+{
+  if(output_exposure) *output_exposure = NAN;
+  if(!s || !module || !module[0] || !output_exposure || !gesture || !isfinite(exposure)
+     || !isfinite(target) || target < exposure - 2 || target > exposure + 2)
+    return DT_MOBILE_ERROR_INVALID_ARGUMENT;
+  if(atomic_load(&s->cancelled)) return fail(s, DT_MOBILE_ERROR_CANCELLED, "operation cancelled");
+#ifdef DT_MOBILE_HAS_DARKTABLE_ENGINE
+  return dt_mobile_engine_tone_equalizer_set_target(s->engine, module, exposure, target, gesture,
+                                                    output_exposure, s->error, sizeof(s->error));
+#else
+  return fail(s, DT_MOBILE_ERROR_UNSUPPORTED, "this build does not contain the darktable engine");
+#endif
+}
 dt_mobile_status dt_mobile_new_instance(dt_mobile_session *s, const char *module, char **new_identifier)
 {
   if(new_identifier) *new_identifier = NULL;

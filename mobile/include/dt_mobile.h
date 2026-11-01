@@ -71,6 +71,20 @@ dt_mobile_status dt_mobile_tone_equalizer_sample(dt_mobile_session *session,
 dt_mobile_status dt_mobile_tone_equalizer_adjust(dt_mobile_session *session,
                                                  const char *module, double exposure,
                                                  double offset);
+/* Read-only selected output: original mask input EV plus the actual current
+ * quantized processing-curve correction. The mask input is preserved for
+ * subsequent edits; requested offsets are never substituted for this value. */
+dt_mobile_status dt_mobile_tone_equalizer_output(dt_mobile_session *session,
+                                                 const char *module, double exposure,
+                                                 double *output_exposure);
+/* Set a selected output target in [input EV-2,input EV+2] using the original
+ * smooth solver, atomically. Returns the achieved output, including at limits.
+ * Positive gesture IDs group consecutive updates of the same instance into
+ * one undo step. Another edit or Undo/Redo ends that grouping. */
+dt_mobile_status dt_mobile_tone_equalizer_set_target(dt_mobile_session *session,
+                                                     const char *module, double exposure,
+                                                     double target, uint64_t gesture,
+                                                     double *output_exposure);
 /* UTF-8 for advertised text/file controls. maxBytes excludes the terminating
  * NUL. file.import selects the original coupled filename/image fields in one
  * history step. Overlong/malformed values are rejected, never truncated. */

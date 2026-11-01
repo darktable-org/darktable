@@ -14,11 +14,11 @@ are not counts of independently rendered Android controls.
 The current validation includes:
 
 - The coordinated Android check passed production and instrumentation Kotlin
-  compilation, 113 JVM tests in 26 classes (zero failures or skips), and
+  compilation, 122 JVM tests in 27 classes (zero failures or skips), and
   `lintDevDebug`. Additional instrumentation-source checks remain separate from
   actually running those component tests on Android.
 - The final expanded source passed all seven host native CTest cases in
-  261.09 seconds, including the original-engine regression in 261.02 seconds.
+  287.68 seconds, including the original-engine regression in 287.62 seconds.
   Its RGB fixture traversed 1,195
   advertised ordinary parameters, including live-instance and blending fields;
   this runtime count is distinct from the source-policy field counts. The run
@@ -92,13 +92,15 @@ component tests compile, including the screenshot regression; they have not
 been executed on Android. The preceding `8f1cf85e4b` snapshot passed both the
 complete engine-APK workflow and Android CI with the updated dependency overlay.
 
-Tone equalizer's [photo-selected adjustment](TONE_EQUALIZER_TOUCH.md) adds four
-JVM model tests and seven compiled Compose component tests. The original-engine
+Tone equalizer's [photo-selected adjustment](TONE_EQUALIZER_TOUCH.md) adds five
+JVM geometry/target model tests, eight target-queue tests and ten compiled
+Compose component tests. The original-engine
 regression samples the actual filtered mask without changing metadata/history,
 rejects invalid/off selections, changes multiple exposure bands in one history
 step, checks actual pixels and exact Undo/Redo, and isolates additional module
-instances. Changing its mask exposure changes the sample, while changing only
-its nine gains leaves that sample stable. An oriented image with a crop after
+instances. Changing its mask exposure changes the input sample, while changing
+only its nine gains leaves that input stable and changes the selected output.
+An oriented image with a crop after
 tone equalizer checks the mapped point against its uncropped reference at the
 same mask resolution; the deliberately wrong direct coordinate differs.
 
@@ -106,9 +108,26 @@ The current production JNI bridge compiled with NDK 27.2 for AArch64/API 26 and
 linked against the host engine with no undefined symbols. A real host JVM
 `-Xint` probe changed all nine gains through the grouped action, added exactly
 one history step, verified changed pixels and exact metadata/pixel Undo/Redo,
-and rejected 17 invalid/no-preview/disabled/wrong-module calls without state
+and rejected 24 invalid/no-preview/disabled/wrong-module/target calls without state
 changes. The RGB source hash remained unchanged. This verifies JNI and native
 behavior, not execution of the new Android touch component on a device.
+
+The live-adjustment regression additionally reproduces input samples at
+`+4`, `+8` and `-12 EV`, outside the processor's `[-8,0] EV` interpolation
+domain. Adjustments now target the same boundary bands that processing uses.
+Selected output queries evaluate the actual quantized LUT, rather than adding
+the requested offset to the unchanged input sample. A real mask boosted by
+8 EV changed both the reported output and actual preview pixels. The JNI run's
+8.269397 EV input changed from output 8.268071 to 8.368225 EV after a 0.1 EV
+target increase; separate +8/-12 targets were reached within 0.002 EV.
+Consecutive live targets share one gesture history snapshot, while a new
+gesture, another edit or Undo ends the grouping. Exact target Undo/Redo,
+unreachable limits and invalid inputs are covered. The JVM queue tests cover
+latest-target coalescing during in-flight work, duplicate finish events and
+stale selection/completion rejection. Compose sources cover immediate fine
+buttons, streamed slider targets, preserved gestures across preview updates and
+Selected tone feedback/rejection. These component sources compile; no Android
+device or emulator was available for their execution.
 
 These checks do not establish execution of the new Compose instrumentation
 tests on Android, complete physical-device picker/edit/export behavior, every

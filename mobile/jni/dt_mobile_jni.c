@@ -267,6 +267,35 @@ JNIEXPORT void JNICALL Java_org_example_darktableandroid_nativecore_NativeCore_a
   (*env)->ReleaseStringUTFChars(env, module, operation);
   throw_status(env, session, status);
 }
+JNIEXPORT jdouble JNICALL Java_org_example_darktableandroid_nativecore_NativeCore_toneEqualizerOutput(JNIEnv *env, jobject self,
+    jlong handle, jstring module, jdouble exposure)
+{
+  (void)self;
+  if(!handle || !module) { throw_io(env, "an image and tone equalizer module are required"); return 0; }
+  const char *operation = (*env)->GetStringUTFChars(env, module, NULL);
+  if(!operation) return 0;
+  dt_mobile_session *session = (dt_mobile_session *)(intptr_t)handle;
+  double output = 0;
+  const dt_mobile_status status = dt_mobile_tone_equalizer_output(session, operation, exposure, &output);
+  (*env)->ReleaseStringUTFChars(env, module, operation);
+  throw_status(env, session, status);
+  return status == DT_MOBILE_OK ? output : 0;
+}
+JNIEXPORT jdouble JNICALL Java_org_example_darktableandroid_nativecore_NativeCore_setToneEqualizerTarget(JNIEnv *env, jobject self,
+    jlong handle, jstring module, jdouble exposure, jdouble target, jlong gesture)
+{
+  (void)self;
+  if(!handle || !module || gesture < 0) { throw_io(env, "an image, tone equalizer module and valid gesture are required"); return 0; }
+  const char *operation = (*env)->GetStringUTFChars(env, module, NULL);
+  if(!operation) return 0;
+  dt_mobile_session *session = (dt_mobile_session *)(intptr_t)handle;
+  double output = 0;
+  const dt_mobile_status status = dt_mobile_tone_equalizer_set_target(session, operation, exposure, target,
+                                                                    (uint64_t)gesture, &output);
+  (*env)->ReleaseStringUTFChars(env, module, operation);
+  throw_status(env, session, status);
+  return status == DT_MOBILE_OK ? output : 0;
+}
 JNIEXPORT void JNICALL Java_org_example_darktableandroid_nativecore_NativeCore_setModuleEnabled(JNIEnv *env, jobject self, jlong handle, jstring module, jboolean enabled)
 {
   (void)self;

@@ -144,6 +144,23 @@ dt_mobile_status dt_mobile_engine_tone_equalizer_adjust(dt_mobile_engine *engine
   return DT_MOBILE_ERROR_UNSUPPORTED;
 }
 
+dt_mobile_status dt_mobile_engine_tone_equalizer_output(dt_mobile_engine *engine, const char *module,
+                                                       double exposure, double *output_exposure,
+                                                       char *error, size_t size)
+{
+  (void)engine; (void)module; (void)exposure; (void)output_exposure; (void)error; (void)size;
+  return DT_MOBILE_ERROR_UNSUPPORTED;
+}
+
+dt_mobile_status dt_mobile_engine_tone_equalizer_set_target(dt_mobile_engine *engine, const char *module,
+                                                           double exposure, double target, uint64_t gesture,
+                                                           double *output_exposure, char *error, size_t size)
+{
+  (void)engine; (void)module; (void)exposure; (void)target; (void)gesture;
+  (void)output_exposure; (void)error; (void)size;
+  return DT_MOBILE_ERROR_UNSUPPORTED;
+}
+
 dt_mobile_status dt_mobile_engine_set_enabled(dt_mobile_engine *engine, const char *module, int enabled,
                                              char *error, size_t size)
 {

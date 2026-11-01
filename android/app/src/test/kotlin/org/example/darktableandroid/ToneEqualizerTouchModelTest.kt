@@ -35,12 +35,22 @@ class ToneEqualizerTouchModelTest {
         assertNull(bounds.pointAt(-1f, 100f))
     }
 
-    @Test fun adjustmentDraftIsFiniteBoundedAndStableForFineSteps() {
-        assertNull(toneEqualizerDraftOffset(Double.NaN))
-        assertNull(toneEqualizerDraftOffset(Double.POSITIVE_INFINITY))
-        assertEquals(2.0, toneEqualizerDraftOffset(3.0)!!, 0.0)
-        assertEquals(-2.0, toneEqualizerDraftOffset(-3.0)!!, 0.0)
-        assertEquals(.3, toneEqualizerDraftOffset(.1 + .1 + .1)!!, 0.0)
-        assertEquals(-.15, toneEqualizerDraftOffset(-.151)!!, 0.0)
+    @Test fun targetExposureIsFiniteAndBoundedAroundTheImmutableInputTone() {
+        assertNull(toneEqualizerTargetExposure(-4.2, Double.NaN))
+        assertNull(toneEqualizerTargetExposure(Double.NaN, 0.0))
+        assertNull(toneEqualizerTargetExposure(-4.2, Double.POSITIVE_INFINITY))
+        assertEquals(-2.2, toneEqualizerTargetExposure(-4.2, 3.0)!!, 0.0)
+        assertEquals(-6.2, toneEqualizerTargetExposure(-4.2, -7.0)!!, 0.0)
+        // Fine buttons preserve an actual native value's fractional EV.
+        assertEquals(-4.0337, toneEqualizerTargetExposure(-4.2, -4.1337 + .1)!!, 1e-12)
+    }
+
+    @Test fun sliderRoundingUsesCorrectionCoordinatesAndCannotCrossNativeBounds() {
+        val input = .26939696073532104
+        assertEquals(input + .3, toneEqualizerSliderTarget(input, input + .1 + .1 + .1)!!, 1e-12)
+        assertEquals(input - .15, toneEqualizerSliderTarget(input, input - .151)!!, 1e-12)
+        assertEquals(input + 2, toneEqualizerSliderTarget(input, input + 3)!!, 0.0)
+        assertEquals(input - 2, toneEqualizerSliderTarget(input, input - 3)!!, 0.0)
+        assertNull(toneEqualizerSliderTarget(input, Double.NaN))
     }
 }

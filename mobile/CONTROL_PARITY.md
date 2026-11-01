@@ -37,11 +37,12 @@ bounds and coupled checks.
 | Finishing and external assets | Vignette/graduated-filter settings, watermark text/font/template and placement, 3D LUT import/settings, external raster mask import/channel selection; overlay image import and placement/settings |
 
 Continuous controls provide sliders and precise input. Native enums and reviewed
-integer menu values use choice menus; booleans use switches. Dragging submits one
-native operation on release. Reset uses original image-specific defaults, and a
+integer menu values use choice menus; booleans use switches. Ordinary dragging
+submits one native operation on release. Reset uses original image-specific defaults, and a
 tool-level settings reset preserves its enabled state, masks and blending.
 Dependent crop and white-balance values use an atomic Apply operation. Tone
-equalizer's photo-selected adjustment also updates its nine bands in one Apply.
+equalizer's photo-selected slider updates during dragging, coalesces pending
+targets and retains one Undo step per gesture.
 
 The engine intersects introspection bounds with reviewed domains and validates
 storage types, exact enum membership and cross-field constraints before history
@@ -62,7 +63,7 @@ selected mode; exposing a stored setting does not make every mode use it.
 
 | Feature | Available interaction | Further desktop interaction |
 | --- | --- | --- |
-| Tone equalizer | Photo-point sampling of the original filtered mask; exposure draft slider and fine buttons; original smooth nine-band update in one Apply/Undo step | Full desktop graph/picker presentation and mask overlay |
+| Tone equalizer | Photo-point sampling of the original filtered mask; live output-exposure slider and fine buttons; actual selected-tone feedback and smooth nine-band updates with one Undo step per gesture | Full desktop graph/picker presentation and mask overlay |
 | Base/RGB/Lab tone/color-zone curves | Native samples and interpolation, drag/numeric nodes, add/remove, native channel defaults; RGB linked/independent options | Further module-specific automatic sampling and graph gestures |
 | Levels and fixed bands | Ordered black/middle/white components, channel vectors and frequency-band sliders with native bounds | Full desktop graph/picker presentation |
 | Zone system | Native zone-count reset, ordered output boundaries and automatic-position switches | Desktop strip dragging/pickers |

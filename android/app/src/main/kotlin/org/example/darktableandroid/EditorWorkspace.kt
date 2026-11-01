@@ -86,7 +86,7 @@ internal fun EditorWorkspace(
     onRefreshPreview: () -> Unit = {},
     toneSample: ToneEqualizerSample? = null,
     onToneSample: (String, Float, Float) -> Unit = { _, _, _ -> },
-    onToneAdjust: (ToneEqualizerSample, Double) -> Unit = { _, _ -> },
+    onToneAdjust: (ToneEqualizerSample, Double, Long, Boolean) -> Unit = { _, _, _, _ -> },
     moduleContent: @Composable (EditorModule, String) -> Unit,
 ) {
     val ready = when(state) {
@@ -95,6 +95,7 @@ internal fun EditorWorkspace(
         else -> null
     }
     val busy = state is EditorState.Working
+    val toneUpdating = state is EditorState.Working && state.stage == EditorState.Stage.TONE_ADJUSTING
     val keyboardVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
     val keyboard = LocalSoftwareKeyboardController.current
     val focus = LocalFocusManager.current
@@ -112,7 +113,9 @@ internal fun EditorWorkspace(
     val currentSample = toneSample?.takeIf { sample ->
         ready != null && sample.sessionId == ready.sessionId && sample.module == toneModule?.operation &&
             sample.preview === ready.preview && sample.x.isFinite() && sample.y.isFinite() &&
-            sample.x in 0f..1f && sample.y in 0f..1f && sample.exposure.isFinite()
+            sample.x >= 0f && sample.x < 1f && sample.y >= 0f && sample.y < 1f &&
+            sample.exposure.isFinite() && sample.selectedExposure.isFinite() &&
+            (sample.pendingExposure == null || sample.pendingExposure.isFinite())
     }
     val selectedSample = currentSample?.takeIf { sample -> tonePoint?.let { it.x == sample.x && it.y == sample.y } == true }
     fun sampleTone(point: ToneEqualizerPoint) {
@@ -159,10 +162,10 @@ internal fun EditorWorkspace(
                 else workspaceState.SaveableStateProvider("image-${ready.sessionId}") {
                     WorkspaceTools(ready, tab, busy, onSelectModule, onEnabled, { selected ->
                         if(selected.operation == toneModule?.operation) {
-                            ToneEqualizerTouchEditor(!busy && toneAvailable, toneActive, selectedSample,
+                            ToneEqualizerTouchEditor((!busy || toneUpdating) && toneAvailable, toneActive, selectedSample,
                                 onImageMode = { active -> toneImageMode = active; tonePoint = null },
                                 onSelectCentre = { sampleTone(ToneEqualizerPoint(.5f, .5f)) },
-                                onAdjust = onToneAdjust)
+                                onAdjust = onToneAdjust, selectionEnabled = !busy && toneAvailable)
                             HorizontalDivider()
                         }
                     }, moduleContent)
@@ -208,9 +211,10 @@ private fun WorkspacePreview(
                 Row(Modifier.fillMaxWidth().padding(start = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(stringResource(state.stage.workspaceLabelResource()), Modifier.weight(1f),
                         style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    TextButton(onClick = onCancel, enabled = state.stage != EditorState.Stage.CANCELLING) {
-                        Text(stringResource(R.string.cancel))
-                    }
+                    if(state.stage != EditorState.Stage.TONE_ADJUSTING)
+                        TextButton(onClick = onCancel, enabled = state.stage != EditorState.Stage.CANCELLING) {
+                            Text(stringResource(R.string.cancel))
+                        }
                 }
             }
         } else if(ready != null && !ready.previewCurrent) {
@@ -463,6 +467,7 @@ private fun EditorState.Stage.workspaceLabelResource(): Int = when(this) {
     EditorState.Stage.DECODING -> R.string.stage_decoding
     EditorState.Stage.RENDERING -> R.string.stage_rendering
     EditorState.Stage.EDITING -> R.string.stage_editing
+    EditorState.Stage.TONE_ADJUSTING -> R.string.tone_touch_updating
     EditorState.Stage.SAMPLING -> R.string.tone_touch_sampling
     EditorState.Stage.EXPORTING -> R.string.stage_exporting
     EditorState.Stage.CANCELLING -> R.string.stage_cancelling

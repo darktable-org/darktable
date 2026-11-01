@@ -60,6 +60,14 @@ static void test_arguments(void)
   CHECK(isnan(sample));
   CHECK(dt_mobile_tone_equalizer_sample(NULL, "toneequal", .5, .5, NULL) == DT_MOBILE_ERROR_INVALID_ARGUMENT);
   CHECK(dt_mobile_tone_equalizer_adjust(NULL, "toneequal", -4, .25) == DT_MOBILE_ERROR_INVALID_ARGUMENT);
+  sample = 0;
+  CHECK(dt_mobile_tone_equalizer_output(NULL, "toneequal", -4, &sample) == DT_MOBILE_ERROR_INVALID_ARGUMENT);
+  CHECK(isnan(sample));
+  CHECK(dt_mobile_tone_equalizer_output(NULL, "toneequal", -4, NULL) == DT_MOBILE_ERROR_INVALID_ARGUMENT);
+  sample = 0;
+  CHECK(dt_mobile_tone_equalizer_set_target(NULL, "toneequal", -4, -3.9, 1, &sample) == DT_MOBILE_ERROR_INVALID_ARGUMENT);
+  CHECK(isnan(sample));
+  CHECK(dt_mobile_tone_equalizer_set_target(NULL, "toneequal", -4, -3.9, 1, NULL) == DT_MOBILE_ERROR_INVALID_ARGUMENT);
   CHECK(dt_mobile_set_enabled(NULL, "exposure", 1) == DT_MOBILE_ERROR_INVALID_ARGUMENT);
   const dt_mobile_curve_point curve[] = { { 0.0f, 0.0f }, { 1.0f, 1.0f } };
   CHECK(dt_mobile_set_curve(NULL, "basecurve", 0, 0, curve, 2) == DT_MOBILE_ERROR_INVALID_ARGUMENT);

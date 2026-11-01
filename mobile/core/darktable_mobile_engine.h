@@ -53,6 +53,13 @@ dt_mobile_status dt_mobile_engine_tone_equalizer_sample(dt_mobile_engine *engine
 dt_mobile_status dt_mobile_engine_tone_equalizer_adjust(dt_mobile_engine *engine, const char *module,
                                                         double exposure, double offset,
                                                         char *error, size_t error_size);
+dt_mobile_status dt_mobile_engine_tone_equalizer_output(dt_mobile_engine *engine, const char *module,
+                                                        double exposure, double *output_exposure,
+                                                        char *error, size_t error_size);
+dt_mobile_status dt_mobile_engine_tone_equalizer_set_target(dt_mobile_engine *engine, const char *module,
+                                                            double exposure, double target, uint64_t gesture,
+                                                            double *output_exposure,
+                                                            char *error, size_t error_size);
 dt_mobile_status dt_mobile_engine_render(dt_mobile_engine *engine, int max_width, int max_height,
                                         uint8_t **pixels, int *width, int *height,
                                         char *error, size_t error_size);

@@ -16,9 +16,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -33,77 +35,159 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
-/** Touch and draft callbacks only; original-pixelpipe behavior is a native test. */
+/** Touch callbacks and native feedback only; pixelpipe behavior is a native test. */
 class ToneEqualizerTouchEditorTest {
     @get:Rule val compose = createComposeRule()
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
     private fun sample() = ToneEqualizerSample(41L, "toneequal@3",
-        Bitmap.createBitmap(32, 24, Bitmap.Config.ARGB_8888), .25f, .75f, -4.2)
+        Bitmap.createBitmap(32, 24, Bitmap.Config.ARGB_8888), .25f, .75f, -4.2, selectionId = 9)
+    private data class Request(val sample: ToneEqualizerSample, val target: Double, val gesture: Long, val finished: Boolean)
+    private fun sliderDescription() = context.getString(R.string.parameter_slider_description,
+        context.getString(R.string.tone_touch_adjustment))
 
-    @Test fun fineAdjustmentsRemainDraftsUntilOneExplicitApply() {
+    @Test fun quickFineButtonsApplyImmediatelyAndAccumulateWithoutWaitingForAFrame() {
         val sample = sample()
-        val edits = mutableListOf<Pair<ToneEqualizerSample, Double>>()
+        val edits = mutableListOf<Request>()
         compose.setContent { MaterialTheme {
             Column(Modifier.verticalScroll(rememberScrollState())) {
-                ToneEqualizerTouchEditor(true, true, sample, {}, {}, { selected, offset -> edits += selected to offset })
+                ToneEqualizerTouchEditor(true, true, sample, {}, {},
+                    { selected, target, gesture, finished -> edits += Request(selected, target, gesture, finished) })
             }
         } }
         compose.onNodeWithTag("tone_equalizer_brighter").performScrollTo().performClick().performClick()
-        compose.runOnIdle { assertTrue(edits.isEmpty()) }
-        compose.onNodeWithTag("tone_equalizer_apply").performScrollTo().performClick()
         compose.runOnIdle {
-            assertEquals(1, edits.size)
-            assertTrue(edits.single().first === sample)
-            assertEquals(.2, edits.single().second, 0.0)
+            assertEquals(2, edits.size)
+            assertEquals(-4.1, edits[0].target, 1e-12)
+            assertEquals(-4.0, edits[1].target, 1e-12)
+            assertTrue(edits.all { it.sample === sample && it.finished && it.gesture > 0 })
+            assertTrue(edits[0].gesture != edits[1].gesture)
+        }
+        compose.onNodeWithTag("tone_equalizer_apply").assertDoesNotExist()
+        compose.onNodeWithTag("tone_equalizer_cancel_draft").assertDoesNotExist()
+        compose.onNodeWithText("Adjustment:", substring = true).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.tone_touch_sample, -4.0)).assertIsDisplayed()
+    }
+
+    @Test fun sliderStreamsAbsoluteTargetsAndFinishesOneGestureWithoutApply() {
+        val edits = mutableListOf<Request>()
+        compose.setContent { MaterialTheme {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                ToneEqualizerTouchEditor(true, true, sample(), {}, {},
+                    { selected, target, gesture, finished -> edits += Request(selected, target, gesture, finished) })
+            }
+        } }
+        compose.onNodeWithContentDescription(sliderDescription()).performScrollTo().performTouchInput {
+            down(center)
+            moveTo(center + Offset(width * .1f, 0f))
+            moveTo(center + Offset(width * .2f, 0f))
+            up()
+        }
+        compose.runOnIdle {
+            val moves = edits.filterNot { it.finished }
+            assertTrue(moves.size >= 2)
+            assertTrue(moves.map { it.target }.distinct().size >= 2)
+            assertTrue(edits.map { it.gesture }.distinct().size == 1)
+            assertTrue(edits.last().finished)
+            assertEquals(moves.last().target, edits.last().target, 0.0)
         }
     }
 
-    @Test fun cancelDraftDoesNotEditTheImage() {
-        var edits = 0
+    @Test fun aNativePreviewUpdateCannotResetAnActiveSliderGesture() {
+        var sample by mutableStateOf(sample())
+        val edits = mutableListOf<Request>()
         compose.setContent { MaterialTheme {
             Column(Modifier.verticalScroll(rememberScrollState())) {
-                ToneEqualizerTouchEditor(true, true, sample(), {}, {}, { _, _ -> edits++ })
+                ToneEqualizerTouchEditor(true, true, sample, {}, {},
+                    { selected, target, gesture, finished -> edits += Request(selected, target, gesture, finished) })
             }
         } }
-        compose.onNodeWithTag("tone_equalizer_darker").performScrollTo().performClick()
-        compose.onNodeWithTag("tone_equalizer_cancel_draft").performScrollTo().performClick()
-        compose.onNodeWithTag("tone_equalizer_apply").assertIsNotEnabled()
-        compose.runOnIdle { assertEquals(0, edits) }
+        compose.onNodeWithContentDescription(sliderDescription()).performScrollTo().performTouchInput {
+            down(center)
+            moveTo(center + Offset(width * .15f, 0f))
+        }
+        var beforeFeedback = 0.0
+        compose.runOnIdle {
+            beforeFeedback = edits.last().target
+            sample = sample.copy(preview = Bitmap.createBitmap(32, 24, Bitmap.Config.ARGB_8888),
+                selectedExposure = -4.15, pendingExposure = -4.1, feedbackRevision = 1)
+        }
+        compose.onNodeWithText(context.getString(R.string.tone_touch_sample, beforeFeedback)).assertIsDisplayed()
+        compose.onNodeWithContentDescription(sliderDescription()).performTouchInput {
+            moveTo(center + Offset(width * .25f, 0f))
+            up()
+        }
+        compose.runOnIdle {
+            assertTrue(edits.map { it.gesture }.distinct().size == 1)
+            assertTrue(edits.last().finished)
+            assertTrue(edits.last().target > beforeFeedback)
+        }
+    }
+
+    @Test fun selectedToneFollowsPendingThenActualNativeOutput() {
+        var sample by mutableStateOf(sample())
+        compose.setContent { MaterialTheme {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                ToneEqualizerTouchEditor(true, true, sample, {}, {}, { _, _, _, _ -> })
+            }
+        } }
+        compose.onNodeWithTag("tone_equalizer_brighter").performScrollTo().performClick()
+        compose.runOnIdle { sample = sample.copy(pendingExposure = -4.1, feedbackRevision = 1) }
+        compose.onNodeWithText(context.getString(R.string.tone_touch_sample, -4.1)).assertIsDisplayed()
+        compose.runOnIdle { sample = sample.copy(selectedExposure = -4.13, pendingExposure = null, feedbackRevision = 2) }
+        compose.onNodeWithText(context.getString(R.string.tone_touch_sample, -4.13)).assertIsDisplayed()
+    }
+
+    @Test fun rejectedFeedbackRollsBackEvenWhenPendingFrameWasConflated() {
+        var sample by mutableStateOf(sample())
+        compose.setContent { MaterialTheme {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                ToneEqualizerTouchEditor(true, true, sample, {}, {}, { _, _, _, _ -> })
+            }
+        } }
+        compose.onNodeWithTag("tone_equalizer_brighter").performScrollTo().performClick()
+        compose.onNodeWithText(context.getString(R.string.tone_touch_sample, -4.1)).assertIsDisplayed()
+        compose.runOnIdle { sample = sample.copy(feedbackRevision = 1) }
+        compose.onNodeWithText(context.getString(R.string.tone_touch_sample, -4.2)).assertIsDisplayed()
     }
 
     @Test fun selectingCentreWorksWithoutPreciseTouchAndRequiresASampleBeforeAdjustment() {
         var centres = 0
         compose.setContent { MaterialTheme {
-            ToneEqualizerTouchEditor(true, true, null, {}, { centres++ }, { _, _ -> })
+            ToneEqualizerTouchEditor(true, true, null, {}, { centres++ }, { _, _, _, _ -> })
         } }
         compose.onNodeWithText(context.getString(R.string.tone_touch_choose_point)).assertIsDisplayed()
-        compose.onNodeWithTag("tone_equalizer_apply").assertDoesNotExist()
+        compose.onNodeWithTag("tone_equalizer_brighter").assertDoesNotExist()
         compose.onNodeWithTag("tone_equalizer_select_centre").performClick()
         compose.runOnIdle { assertEquals(1, centres) }
     }
 
-    @Test fun busyStateDisablesSamplingAndAdjustmentActions() {
+    @Test fun unrelatedBusyStateDisablesSamplingAndAdjustmentActions() {
         compose.setContent { MaterialTheme {
             Column(Modifier.verticalScroll(rememberScrollState())) {
-                ToneEqualizerTouchEditor(false, true, sample(), {}, {}, { _, _ -> })
+                ToneEqualizerTouchEditor(false, true, sample(), {}, {}, { _, _, _, _ -> })
             }
         } }
         listOf("tone_equalizer_image_mode", "tone_equalizer_select_centre", "tone_equalizer_brighter",
-            "tone_equalizer_darker", "tone_equalizer_apply").forEach { tag ->
+            "tone_equalizer_darker").forEach { tag ->
             compose.onNodeWithTag(tag).performScrollTo().assertIsNotEnabled()
         }
+        compose.onNodeWithContentDescription(sliderDescription()).performScrollTo().assertIsNotEnabled()
     }
 
-    @Test fun aNewNativeSampleResetsTheAdjustmentDraft() {
-        var sample by mutableStateOf(sample())
+    @Test fun toneUpdatesKeepAdjustmentsEnabledWhileSelectionControlsAreLocked() {
+        val edits = mutableListOf<Request>()
         compose.setContent { MaterialTheme {
             Column(Modifier.verticalScroll(rememberScrollState())) {
-                ToneEqualizerTouchEditor(true, true, sample, {}, {}, { _, _ -> })
+                ToneEqualizerTouchEditor(true, true, sample().copy(pendingExposure = -4.1), {}, {},
+                    { selected, target, gesture, finished -> edits += Request(selected, target, gesture, finished) },
+                    selectionEnabled = false)
             }
         } }
+        compose.onNodeWithTag("tone_equalizer_image_mode").assertIsNotEnabled()
+        compose.onNodeWithTag("tone_equalizer_select_centre").assertIsNotEnabled()
+        compose.onNodeWithContentDescription(sliderDescription()).performScrollTo().assertIsEnabled()
         compose.onNodeWithTag("tone_equalizer_brighter").performScrollTo().performClick()
-        compose.runOnIdle { sample = sample.copy(preview = Bitmap.createBitmap(32, 24, Bitmap.Config.ARGB_8888)) }
-        compose.onNodeWithTag("tone_equalizer_apply").performScrollTo().assertIsNotEnabled()
+        compose.runOnIdle { assertEquals(-4.0, edits.single().target, 1e-12) }
     }
 
     @Test fun letterboxTapsAndDragsDoNotSampleThePhoto() {

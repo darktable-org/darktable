@@ -11,17 +11,20 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
@@ -41,6 +44,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import kotlin.math.min
 import kotlin.math.round
+import java.util.concurrent.atomic.AtomicLong
 
 /** A sample belongs to the exact native preview and module instance that produced it. */
 data class ToneEqualizerSample(
@@ -50,6 +54,10 @@ data class ToneEqualizerSample(
     val x: Float,
     val y: Float,
     val exposure: Double,
+    val selectionId: Long = 0,
+    val selectedExposure: Double = exposure,
+    val pendingExposure: Double? = null,
+    val feedbackRevision: Long = 0,
 )
 
 internal data class ToneEqualizerPoint(val x: Float, val y: Float)
@@ -72,10 +80,19 @@ internal fun fittedPreviewBounds(width: Float, height: Float, imageWidth: Int, i
     return PreviewImageBounds((width - fittedWidth) / 2f, (height - fittedHeight) / 2f, fittedWidth, fittedHeight)
 }
 
-internal fun toneEqualizerDraftOffset(value: Double): Double? =
-    value.takeIf { it.isFinite() }?.let { round(it.coerceIn(-2.0, 2.0) * 100.0) / 100.0 }
+internal fun toneEqualizerTargetExposure(inputExposure: Double, value: Double): Double? =
+    value.takeIf { inputExposure.isFinite() && it.isFinite() }
+        ?.coerceIn(inputExposure - 2.0, inputExposure + 2.0)
 
-/** A tap selects tone, while adjustment stays below the photo and commits once. */
+internal fun toneEqualizerSliderTarget(inputExposure: Double, value: Double): Double? =
+    toneEqualizerTargetExposure(inputExposure, value)?.let { bounded ->
+        toneEqualizerTargetExposure(inputExposure,
+            inputExposure + round((bounded - inputExposure) * 100.0) / 100.0)
+    }
+
+private val toneGestureIds = AtomicLong()
+
+/** Select a tone once, then adjust its output exposure directly. */
 @Composable
 internal fun ToneEqualizerTouchEditor(
     enabled: Boolean,
@@ -83,17 +100,61 @@ internal fun ToneEqualizerTouchEditor(
     sample: ToneEqualizerSample?,
     onImageMode: (Boolean) -> Unit,
     onSelectCentre: () -> Unit,
-    onAdjust: (ToneEqualizerSample, Double) -> Unit,
+    onAdjust: (ToneEqualizerSample, Double, Long, Boolean) -> Unit,
+    selectionEnabled: Boolean = enabled,
 ) {
-    var draft by remember(sample, imageMode) { mutableDoubleStateOf(0.0) }
+    // Preview and native feedback can change repeatedly during one drag. The
+    // selection lease, rather than a transient sample/bitmap, owns its gesture.
+    val lease = Triple(sample?.sessionId, sample?.module, sample?.selectionId)
+    var target by remember(lease, imageMode) {
+        mutableDoubleStateOf(sample?.let { it.pendingExposure ?: it.selectedExposure } ?: 0.0)
+    }
+    var dragging by remember(lease, imageMode) { mutableStateOf(false) }
+    var gestureId by remember(lease, imageMode) { mutableLongStateOf(0L) }
+    val adjust by rememberUpdatedState(onAdjust)
+    LaunchedEffect(lease, imageMode, sample?.pendingExposure, sample?.selectedExposure,
+        sample?.feedbackRevision, dragging) {
+        if(!dragging && sample != null) {
+            toneEqualizerTargetExposure(sample.exposure, sample.pendingExposure ?: sample.selectedExposure)
+                ?.let { target = it }
+        }
+    }
+    DisposableEffect(lease, imageMode) {
+        val selected = sample
+        onDispose {
+            // A cancelled pointer gesture still closes its one native history
+            // group. The ViewModel rejects a lease that has since been revoked.
+            if(selected != null && gestureId > 0) adjust(selected, target, gestureId, true)
+        }
+    }
+    fun moveTone(selected: ToneEqualizerSample, value: Double) {
+        if(!enabled) return
+        val next = toneEqualizerSliderTarget(selected.exposure, value) ?: return
+        if(gestureId == 0L) gestureId = toneGestureIds.incrementAndGet()
+        dragging = true
+        target = next
+        adjust(selected, next, gestureId, false)
+    }
+    fun finishTone(selected: ToneEqualizerSample) {
+        if(gestureId > 0) adjust(selected, target, gestureId, true)
+        gestureId = 0L
+        dragging = false
+    }
+    fun stepTone(selected: ToneEqualizerSample, offset: Double) {
+        if(!enabled || dragging) return
+        val next = toneEqualizerTargetExposure(selected.exposure, target + offset) ?: return
+        if(next == target) return
+        target = next
+        adjust(selected, next, toneGestureIds.incrementAndGet(), true)
+    }
     Column(Modifier.fillMaxWidth().testTag("tone_equalizer_touch_editor"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(stringResource(R.string.tone_touch_title), style = MaterialTheme.typography.titleSmall)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically) {
-            FilterChip(selected = imageMode, onClick = { onImageMode(!imageMode) }, enabled = enabled,
+            FilterChip(selected = imageMode, onClick = { onImageMode(!imageMode) }, enabled = selectionEnabled,
                 label = { Text(stringResource(R.string.tone_touch_mode)) },
                 modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("tone_equalizer_image_mode"))
-            if(imageMode) TextButton(onClick = onSelectCentre, enabled = enabled,
+            if(imageMode) TextButton(onClick = onSelectCentre, enabled = selectionEnabled,
                 modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("tone_equalizer_select_centre")) {
                 Text(stringResource(R.string.tone_touch_centre))
             }
@@ -101,32 +162,19 @@ internal fun ToneEqualizerTouchEditor(
         if(imageMode) {
             Text(stringResource(R.string.tone_touch_hint), style = MaterialTheme.typography.bodySmall)
             if(sample != null) {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text(stringResource(R.string.tone_touch_sample, sample.exposure),
-                            modifier = Modifier.testTag("tone_equalizer_sample"), style = MaterialTheme.typography.labelLarge)
-                        Text(stringResource(R.string.tone_touch_offset, draft), style = MaterialTheme.typography.labelLarge)
-                    }
-                    TextButton(onClick = { draft = 0.0 }, enabled = enabled && draft != 0.0,
-                        modifier = Modifier.heightIn(min = 48.dp).testTag("tone_equalizer_cancel_draft")) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                }
-                ParameterSlider(stringResource(R.string.tone_touch_adjustment), draft, -2.0, 2.0, enabled,
-                    onValue = { toneEqualizerDraftOffset(it)?.let { value -> draft = value } })
+                Text(stringResource(R.string.tone_touch_sample, target),
+                    modifier = Modifier.testTag("tone_equalizer_sample"), style = MaterialTheme.typography.labelLarge)
+                ParameterSlider(stringResource(R.string.tone_touch_adjustment), target,
+                    sample.exposure - 2.0, sample.exposure + 2.0, enabled,
+                    onValue = { moveTone(sample, it) }, onFinished = { finishTone(sample) })
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = { draft = toneEqualizerDraftOffset(draft - .1) ?: draft },
-                        enabled = enabled && draft > -2.0,
+                    OutlinedButton(onClick = { stepTone(sample, -.1) },
+                        enabled = enabled && !dragging && target > sample.exposure - 2.0,
                         modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("tone_equalizer_darker")) {
                         Text(stringResource(R.string.tone_touch_darker))
                     }
-                    Button(onClick = { if(enabled && draft != 0.0) onAdjust(sample, draft) },
-                        enabled = enabled && draft != 0.0,
-                        modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("tone_equalizer_apply")) {
-                        Text(stringResource(R.string.apply))
-                    }
-                    OutlinedButton(onClick = { draft = toneEqualizerDraftOffset(draft + .1) ?: draft },
-                        enabled = enabled && draft < 2.0,
+                    OutlinedButton(onClick = { stepTone(sample, .1) },
+                        enabled = enabled && !dragging && target < sample.exposure + 2.0,
                         modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("tone_equalizer_brighter")) {
                         Text(stringResource(R.string.tone_touch_brighter))
                     }

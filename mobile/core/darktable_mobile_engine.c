@@ -48,6 +48,9 @@ struct dt_mobile_engine { dt_imgid_t image_id; dt_develop_t develop; atomic_bool
   GBytes *crop_geometry_key;
   GHashTable *crop_input_sizes;
   int preview_max_width, preview_max_height;
+  uint64_t tone_gesture;
+  dt_iop_module_t *tone_gesture_module;
+  guint tone_gesture_position;
 };
 static pthread_mutex_t runtime_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t engine_work_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -153,8 +156,16 @@ static void reclaim_retired_instances(dt_mobile_engine *engine)
   g_hash_table_unref(reachable);
 }
 
+static void clear_tone_gesture(dt_mobile_engine *engine)
+{
+  engine->tone_gesture = 0;
+  engine->tone_gesture_module = NULL;
+  engine->tone_gesture_position = 0;
+}
+
 static void record_history_state(dt_mobile_engine *engine)
 {
+  clear_tone_gesture(engine);
   mobile_history_state *state = capture_history_state(&engine->develop);
   if(!engine->history_states)
     engine->history_states = g_ptr_array_new_with_free_func(free_history_state);
@@ -1490,6 +1501,34 @@ static void save_module(dt_mobile_engine *engine, dt_iop_module_t *module, gbool
   record_history_state(engine);
 }
 
+/* A live slider gesture can deliver several fully rendered frames. Keep the
+ * original native history/database current on each frame, but replace only
+ * this gesture's latest adapter snapshot so one Undo restores its start. */
+static void save_tone_target(dt_mobile_engine *engine, dt_iop_module_t *module, uint64_t gesture)
+{
+  const gboolean replace = engine->tone_gesture == gesture
+    && engine->tone_gesture_module == module
+    && engine->tone_gesture_position == engine->history_position
+    && engine->history_position > 0
+    && engine->history_position + 1 == engine->history_states->len;
+  dt_dev_add_history_item_ext(&engine->develop, module, FALSE, TRUE);
+  sync_temperature_chroma(&engine->develop);
+  sync_mobile_overlay_dependencies(&engine->develop);
+  dt_dev_write_history(&engine->develop);
+  if(replace)
+  {
+    mobile_history_state *state = capture_history_state(&engine->develop);
+    mobile_history_state *previous = g_ptr_array_index(engine->history_states, engine->history_position);
+    g_ptr_array_index(engine->history_states, engine->history_position) = state;
+    free_history_state(previous);
+    reclaim_retired_instances(engine);
+  }
+  else record_history_state(engine);
+  engine->tone_gesture = gesture;
+  engine->tone_gesture_module = module;
+  engine->tone_gesture_position = engine->history_position;
+}
+
 dt_mobile_status dt_mobile_engine_new_instance(dt_mobile_engine *engine, const char *identifier,
                                                char **new_identifier, char *error, size_t error_size)
 {
@@ -1586,6 +1625,7 @@ static dt_mobile_status move_history(dt_mobile_engine *engine, int direction,
 {
   dt_mobile_status status = begin_operation(engine, error, error_size);
   if(status != DT_MOBILE_OK) return status;
+  clear_tone_gesture(engine);
   const guint length = engine->history_states->len - 1;
   if((direction < 0 && !engine->history_position)
      || (direction > 0 && engine->history_position >= length))
@@ -2166,6 +2206,56 @@ dt_mobile_status dt_mobile_engine_tone_equalizer_adjust(dt_mobile_engine *engine
       status = engine_fail(error, error_size, DT_MOBILE_ERROR_INVALID_ARGUMENT,
                            "the tone adjustment is out of range or its interpolation is unstable");
     else if(changed) save_module(engine, module, FALSE);
+  }
+  end_operation(engine);
+  return status;
+}
+
+dt_mobile_status dt_mobile_engine_tone_equalizer_output(dt_mobile_engine *engine, const char *identifier,
+                                                        double exposure, double *output_exposure,
+                                                        char *error, size_t error_size)
+{
+  *output_exposure = NAN;
+  dt_mobile_status status = begin_operation(engine, error, error_size);
+  if(status != DT_MOBILE_OK) return status;
+  dt_iop_module_t *module = find_module(engine, identifier);
+  typedef int (*output_function)(dt_iop_module_t *, double, double *);
+  output_function output = NULL;
+  if(!module || strcmp(module->op, "toneequal") || !module->enabled || !module->module
+     || !g_module_symbol(module->module, "dt_iop_mobile_toneequal_output", (gpointer *)&output))
+    status = engine_fail(error, error_size, DT_MOBILE_ERROR_INVALID_ARGUMENT,
+                         "select an enabled tone equalizer instance before reading its output");
+  else if(output(module, exposure, output_exposure) < 0)
+    status = engine_fail(error, error_size, DT_MOBILE_ERROR_INVALID_ARGUMENT,
+                         "the tone output cannot be evaluated for these settings");
+  end_operation(engine);
+  return status;
+}
+
+dt_mobile_status dt_mobile_engine_tone_equalizer_set_target(dt_mobile_engine *engine, const char *identifier,
+                                                            double exposure, double target, uint64_t gesture,
+                                                            double *output_exposure,
+                                                            char *error, size_t error_size)
+{
+  *output_exposure = NAN;
+  dt_mobile_status status = begin_operation(engine, error, error_size);
+  if(status != DT_MOBILE_OK) return status;
+  dt_iop_module_t *module = find_module(engine, identifier);
+  typedef int (*target_function)(dt_iop_module_t *, double, double, double *);
+  target_function set_target = NULL;
+  if(!module || strcmp(module->op, "toneequal") || !module->enabled || !module->module
+     || !g_module_symbol(module->module, "dt_iop_mobile_toneequal_set_target", (gpointer *)&set_target))
+    status = engine_fail(error, error_size, DT_MOBILE_ERROR_INVALID_ARGUMENT,
+                         "select an enabled tone equalizer instance before adjusting a tone");
+  else
+  {
+    if(engine->tone_gesture != gesture || engine->tone_gesture_module != module)
+      clear_tone_gesture(engine);
+    const int changed = set_target(module, exposure, target, output_exposure);
+    if(changed < 0)
+      status = engine_fail(error, error_size, DT_MOBILE_ERROR_INVALID_ARGUMENT,
+                           "the tone target is out of range or its interpolation is unstable");
+    else if(changed) save_tone_target(engine, module, gesture);
   }
   end_operation(engine);
   return status;

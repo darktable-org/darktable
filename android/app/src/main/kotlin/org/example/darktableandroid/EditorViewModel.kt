@@ -58,7 +58,7 @@ sealed interface EditorState {
         val previewCurrent: Boolean = true,
     ) : EditorState
     data class Failed(val source: Uri?, val message: String) : EditorState
-    enum class Stage { COPYING, DECODING, RENDERING, SAMPLING, EDITING, EXPORTING, CANCELLING }
+    enum class Stage { COPYING, DECODING, RENDERING, SAMPLING, TONE_ADJUSTING, EDITING, EXPORTING, CANCELLING }
 }
 
 data class RuntimeAvailability(val checking: Boolean = true, val available: Boolean = false, val message: String? = null)
@@ -75,6 +75,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private var session: NativeSession? = null
     private var pendingSource: Uri? = null
     private val generation = AtomicLong(UUID.randomUUID().mostSignificantBits and Long.MAX_VALUE)
+    private val toneSelections = AtomicLong()
+    private val toneTargets = ToneAdjustmentQueue()
+    private var toneWorker: Job? = null
 
     init {
         engineScope.launch {
@@ -99,6 +102,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun open(uri: Uri) {
         if(mutableRuntime.value.checking) { pendingSource = uri; return }
         if(!mutableRuntime.value.available) return
+        toneTargets.clear()
         val request = generation.incrementAndGet()
         val previousWork = work
         val previousSession = session
@@ -164,15 +168,23 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             current.modules.singleOrNull { it.operation == operation }?.enabled != true) return
         val active = session ?: return
         val request = generation.get()
+        toneTargets.clear()
         mutableState.value = EditorState.Working(EditorState.Stage.SAMPLING, current.copy(toneSample = null))
         work = engineScope.launch {
             try {
-                val exposure = withContext(nativeDispatcher) {
-                    NativeCore.sampleToneEqualizer(active.handle(), operation, x.toDouble(), y.toDouble())
+                val (exposure, output) = withContext(nativeDispatcher) {
+                    val handle = active.handle()
+                    val input = NativeCore.sampleToneEqualizer(handle, operation, x.toDouble(), y.toDouble())
+                    input to NativeCore.toneEqualizerOutput(handle, operation, input)
                 }
-                check(exposure.isFinite()) { "The selected area has no usable tone exposure" }
-                if(request == generation.get()) mutableState.value = current.copy(notice = null,
-                    toneSample = ToneEqualizerSample(current.sessionId, operation, current.preview, x, y, exposure))
+                check(exposure.isFinite() && output.isFinite()) { "The selected area has no usable tone exposure" }
+                if(request == generation.get()) {
+                    val selection = toneSelections.incrementAndGet()
+                    toneTargets.reset(selection)
+                    mutableState.value = current.copy(notice = null,
+                        toneSample = ToneEqualizerSample(current.sessionId, operation, current.preview, x, y, exposure,
+                            selectionId = selection, selectedExposure = output))
+                }
             } catch(_: CancellationException) {
             } catch(failure: Throwable) {
                 if(request == generation.get()) mutableState.value = current.copy(toneSample = null, notice = errorMessage(failure))
@@ -180,16 +192,80 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun adjustToneEqualizer(sample: ToneEqualizerSample, offset: Double) {
-        val current = mutableState.value as? EditorState.Ready ?: return
-        if(!current.previewCurrent || current.toneSample !== sample || sample.sessionId != current.sessionId || sample.preview !== current.preview ||
+    private fun toneReady(): EditorState.Ready? = when(val current = mutableState.value) {
+        is EditorState.Ready -> current
+        is EditorState.Working -> current.previous.takeIf { current.stage == EditorState.Stage.TONE_ADJUSTING }
+        else -> null
+    }
+
+    fun adjustToneEqualizer(sample: ToneEqualizerSample, target: Double, gesture: Long, finished: Boolean) {
+        val current = toneReady() ?: return
+        val selected = current.toneSample ?: return
+        // The selection survives its own preview updates. Other image/tool/mask
+        // changes revoke it, so an old gesture cannot affect another selection.
+        if(!current.previewCurrent || selected.selectionId != sample.selectionId || sample.sessionId != current.sessionId ||
             current.selectedModule != sample.module || sample.module.substringBefore('@') != "toneequal" ||
+            selected.module != sample.module || selected.exposure != sample.exposure ||
             current.modules.singleOrNull { it.operation == sample.module }?.enabled != true ||
-            !sample.exposure.isFinite() || !offset.isFinite() || offset == 0.0 || offset !in -2.0..2.0) return
-        editWithSelection(retainToneSample = sample) { handle ->
-            NativeCore.adjustToneEqualizer(handle, sample.module, sample.exposure, offset)
-            null
+            !sample.exposure.isFinite() || !target.isFinite() || target < sample.exposure - 2 || target > sample.exposure + 2 ||
+            gesture <= 0) return
+        val active = session ?: return
+        if(!toneTargets.offer(selected.selectionId, target, gesture, finished)) return
+        mutableState.value = EditorState.Working(EditorState.Stage.TONE_ADJUSTING,
+            current.copy(toneSample = selected.copy(pendingExposure = toneTargets.pendingTarget), notice = null))
+        if(toneWorker?.isActive == true) return
+        val requestGeneration = generation.get()
+        val worker = engineScope.launch {
+            while(requestGeneration == generation.get()) {
+                val request = toneTargets.take() ?: break
+                val before = toneReady() ?: break
+                val point = before.toneSample?.takeIf { it.selectionId == request.selectionId } ?: break
+                var changed = false
+                try {
+                    val updated = withContext(nativeDispatcher) {
+                        val handle = active.handle()
+                        val output = NativeCore.setToneEqualizerTarget(handle, point.module, point.exposure,
+                            request.target, request.gestureId)
+                        changed = true
+                        check(output.isFinite()) { "The tone adjustment produced an invalid exposure" }
+                        val modules = parseModules(NativeCore.listModules(handle))
+                        val preview = render(handle)
+                        before.copy(preview = preview, previewCurrent = true, modules = modules,
+                            history = parseEditHistory(NativeCore.history(handle)), notice = null,
+                            toneSample = point.copy(preview = preview, selectedExposure = output,
+                                pendingExposure = null, feedbackRevision = request.sequence))
+                    }
+                    if(requestGeneration != generation.get()) break
+                    if(!toneTargets.complete(request)) break
+                    val ready = updated.copy(toneSample = updated.toneSample?.copy(pendingExposure = toneTargets.pendingTarget))
+                    mutableState.value = if(toneTargets.hasPending)
+                        EditorState.Working(EditorState.Stage.TONE_ADJUSTING, ready) else ready
+                } catch(_: CancellationException) {
+                    break
+                } catch(failure: Throwable) {
+                    if(requestGeneration == generation.get()) {
+                        toneTargets.clear()
+                        val recovered = withContext(nativeDispatcher) {
+                            runCatching {
+                                val handle = active.handle()
+                                val modules = parseModules(NativeCore.listModules(handle))
+                                val output = NativeCore.toneEqualizerOutput(handle, point.module, point.exposure)
+                                before.copy(modules = modules, history = parseEditHistory(NativeCore.history(handle)),
+                                    previewCurrent = before.previewCurrent && !changed,
+                                    toneSample = point.takeUnless { changed }?.copy(selectedExposure = output,
+                                        pendingExposure = null, feedbackRevision = request.sequence))
+                            }.getOrElse { before.copy(history = null, toneSample = null,
+                                previewCurrent = before.previewCurrent && !changed) }
+                        }
+                        recovered.toneSample?.let { toneTargets.reset(it.selectionId) }
+                        mutableState.value = recovered.copy(notice = errorMessage(failure))
+                    }
+                    break
+                }
+            }
         }
+        toneWorker = worker
+        work = worker
     }
 
     fun setModuleEnabled(operation: String, enabled: Boolean) {
@@ -224,6 +300,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val current = mutableState.value as? EditorState.Ready ?: return
         val selected = retainModuleSelection(current.modules, operation)
         if(operation != null && selected == null) return
+        if(selected != current.selectedModule) toneTargets.clear()
         mutableState.value = current.copy(selectedModule = selected,
             toneSample = current.toneSample.takeIf { selected == current.selectedModule })
     }
@@ -282,10 +359,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     private fun edit(change: (Long) -> Unit) = editWithSelection { handle -> change(handle); null }
 
-    private fun editWithSelection(retainToneSample: ToneEqualizerSample? = null, changesNativeState: Boolean = true,
+    private fun editWithSelection(changesNativeState: Boolean = true,
                                   change: (Long) -> String?) {
         val current = mutableState.value as? EditorState.Ready ?: return
         val currentSession = session ?: return
+        toneTargets.clear()
         val request = generation.get()
         mutableState.value = EditorState.Working(EditorState.Stage.EDITING, current)
         work = engineScope.launch {
@@ -298,10 +376,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     changed = changesNativeState
                     val modules = parseModules(NativeCore.listModules(handle))
                     val preview = render(handle)
-                    // The grouped tone action changes only its nine gains; its
-                    // input luminance mask and image coordinates are unchanged.
                     current.copy(preview = preview, previewCurrent = true, modules = modules,
-                        toneSample = retainToneSample?.copy(preview = preview),
+                        toneSample = null,
                         history = parseEditHistory(NativeCore.history(handle)), notice = null,
                         selectedModule = retainModuleSelection(modules, preferredSelection ?: current.selectedModule))
                 }
@@ -322,7 +398,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                         }.getOrElse { current.copy(history = null, toneSample = current.toneSample.takeUnless { changed },
                             previewCurrent = current.previewCurrent && !changed) }
                     }
-                    if(request == generation.get()) mutableState.value = recovered.copy(notice = errorMessage(failure))
+                    if(request == generation.get()) {
+                        recovered.toneSample?.let { toneTargets.reset(it.selectionId) }
+                        mutableState.value = recovered.copy(notice = errorMessage(failure))
+                    }
                 }
             }
         }
@@ -408,6 +487,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun cancel(showState: Boolean = true) {
         pendingSource = null
+        toneTargets.clear()
         val request = generation.incrementAndGet()
         val previousWork = work
         val previousSession = session
