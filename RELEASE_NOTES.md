@@ -255,6 +255,9 @@ changes (where available).
 
 - Grain now runs on OpenCL.
 
+- Rotate pixels, which straightens the sensor layout of Fujifilm
+  SuperCCD raws, now runs on OpenCL.
+
 - Hovering over and dragging nodes of long drawn brush strokes and
   paths is much faster, as the mask overlay is no longer redrawn on
   every mouse move and long outlines are drawn with far fewer points.
