@@ -47,6 +47,7 @@ struct dt_mobile_engine { dt_imgid_t image_id; dt_develop_t develop; atomic_bool
   GHashTable *instance_priorities;
   GBytes *crop_geometry_key;
   GHashTable *crop_input_sizes;
+  int preview_max_width, preview_max_height;
 };
 static pthread_mutex_t runtime_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t engine_work_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -2114,6 +2115,62 @@ dt_mobile_status dt_mobile_engine_set_enabled(dt_mobile_engine *engine, const ch
   return status;
 }
 
+dt_mobile_status dt_mobile_engine_tone_equalizer_sample(dt_mobile_engine *engine, const char *identifier,
+                                                        double x, double y, double *exposure,
+                                                        char *error, size_t error_size)
+{
+  *exposure = NAN;
+  dt_mobile_status status = begin_operation(engine, error, error_size);
+  if(status != DT_MOBILE_OK) return status;
+  dt_iop_module_t *module = find_module(engine, identifier);
+  if(!module || strcmp(module->op, "toneequal") || !module->enabled)
+    status = engine_fail(error, error_size, DT_MOBILE_ERROR_INVALID_ARGUMENT,
+                         "select an enabled tone equalizer instance before sampling");
+  else if(engine->preview_max_width < 1 || engine->preview_max_height < 1)
+    status = engine_fail(error, error_size, DT_MOBILE_ERROR_INVALID_ARGUMENT,
+                         "render a preview before selecting a tone");
+  else
+  {
+    dt_imageio_toneequal_sample_t sample = { .multi_priority = module->multi_priority, .x = x, .y = y };
+    const gboolean failed = dt_imageio_toneequal_sample(engine->image_id,
+                                                        engine->preview_max_width, engine->preview_max_height,
+                                                        &sample, engine->preview_cancel);
+    if(atomic_load(&engine->cancelled))
+      status = engine_fail(error, error_size, DT_MOBILE_ERROR_CANCELLED, "operation cancelled");
+    else if(failed)
+      status = engine_fail(error, error_size, DT_MOBILE_ERROR_PROCESSING,
+                           "the selected point has no usable tone exposure; select another image point");
+    else *exposure = sample.exposure;
+  }
+  end_operation(engine);
+  return status;
+}
+
+dt_mobile_status dt_mobile_engine_tone_equalizer_adjust(dt_mobile_engine *engine, const char *identifier,
+                                                        double exposure, double offset,
+                                                        char *error, size_t error_size)
+{
+  dt_mobile_status status = begin_operation(engine, error, error_size);
+  if(status != DT_MOBILE_OK) return status;
+  dt_iop_module_t *module = find_module(engine, identifier);
+  typedef int (*adjust_function)(dt_iop_module_t *, double, double);
+  adjust_function adjust = NULL;
+  if(!module || strcmp(module->op, "toneequal") || !module->enabled || !module->module
+     || !g_module_symbol(module->module, "dt_iop_mobile_toneequal_adjust", (gpointer *)&adjust))
+    status = engine_fail(error, error_size, DT_MOBILE_ERROR_INVALID_ARGUMENT,
+                         "select an enabled tone equalizer instance before adjusting a tone");
+  else
+  {
+    const int changed = adjust(module, exposure, offset);
+    if(changed < 0)
+      status = engine_fail(error, error_size, DT_MOBILE_ERROR_INVALID_ARGUMENT,
+                           "the tone adjustment is out of range or its interpolation is unstable");
+    else if(changed) save_module(engine, module, FALSE);
+  }
+  end_operation(engine);
+  return status;
+}
+
 dt_mobile_status dt_mobile_engine_export_formats(dt_mobile_engine *engine, char **json,
                                                 char *error, size_t error_size)
 {
@@ -2196,6 +2253,8 @@ dt_mobile_status dt_mobile_engine_render(dt_mobile_engine *engine, int mw, int m
   pthread_mutex_unlock(&engine_work_lock);
   if(atomic_load(&engine->cancelled)) { free(*pixels); *pixels = NULL; pthread_mutex_unlock(&engine->operation_lock); return engine_fail(error, error_size, DT_MOBILE_ERROR_CANCELLED, "operation cancelled"); }
   *width = (int)w; *height = (int)h;
+  engine->preview_max_width = mw;
+  engine->preview_max_height = mh;
   pthread_mutex_unlock(&engine->operation_lock);
   return DT_MOBILE_OK;
 }

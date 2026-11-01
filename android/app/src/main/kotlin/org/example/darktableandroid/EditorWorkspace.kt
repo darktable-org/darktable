@@ -46,6 +46,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
@@ -82,6 +83,10 @@ internal fun EditorWorkspace(
     onRetry: (Uri) -> Unit,
     onSelectModule: (String) -> Unit,
     onEnabled: (String, Boolean) -> Unit,
+    onRefreshPreview: () -> Unit = {},
+    toneSample: ToneEqualizerSample? = null,
+    onToneSample: (String, Float, Float) -> Unit = { _, _, _ -> },
+    onToneAdjust: (ToneEqualizerSample, Double) -> Unit = { _, _ -> },
     moduleContent: @Composable (EditorModule, String) -> Unit,
 ) {
     val ready = when(state) {
@@ -97,6 +102,33 @@ internal fun EditorWorkspace(
     var workspaceSession by rememberSaveable { mutableStateOf<Long?>(null) }
     var tabName by rememberSaveable { mutableStateOf(WorkspaceTab.ADJUSTMENTS.name) }
     val tab = WorkspaceTab.entries.firstOrNull { it.name == tabName } ?: WorkspaceTab.ADJUSTMENTS
+    val toneModule = ready?.modules?.singleOrNull {
+        it.operation == ready.selectedModule && it.operation.substringBefore('@') == "toneequal"
+    }
+    var toneImageMode by rememberSaveable(ready?.sessionId, ready?.selectedModule, tabName) { mutableStateOf(false) }
+    var tonePoint by remember(ready?.sessionId, ready?.selectedModule) { mutableStateOf<ToneEqualizerPoint?>(null) }
+    val toneAvailable = tab == WorkspaceTab.ADJUSTMENTS && toneModule?.enabled == true && ready?.previewCurrent == true
+    val toneActive = toneAvailable && toneImageMode
+    val currentSample = toneSample?.takeIf { sample ->
+        ready != null && sample.sessionId == ready.sessionId && sample.module == toneModule?.operation &&
+            sample.preview === ready.preview && sample.x.isFinite() && sample.y.isFinite() &&
+            sample.x in 0f..1f && sample.y in 0f..1f && sample.exposure.isFinite()
+    }
+    val selectedSample = currentSample?.takeIf { sample -> tonePoint?.let { it.x == sample.x && it.y == sample.y } == true }
+    fun sampleTone(point: ToneEqualizerPoint) {
+        if(toneActive && !busy && toneModule != null) {
+            tonePoint = point
+            onToneSample(toneModule.operation, point.x, point.y)
+        }
+    }
+    LaunchedEffect(toneAvailable) {
+        if(!toneAvailable) { toneImageMode = false; tonePoint = null }
+    }
+    LaunchedEffect(ready?.preview) {
+        // A tone-only adjustment may return the same selection bound to a new
+        // preview. Other edits invalidate its image geometry and input mask.
+        if(currentSample == null) tonePoint = null
+    }
     LaunchedEffect(ready?.sessionId) {
         if(ready != null && workspaceSession != ready.sessionId) {
             workspaceSession = ready.sessionId
@@ -118,14 +150,22 @@ internal fun EditorWorkspace(
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             WorkspacePreview(state, runtime, ready, busy, onOpen, onExport, onUndo, onRedo,
-                onCancel, onRetry, Modifier.fillMaxWidth().weight(if(keyboardVisible) .25f else 1f)
-                    .testTag("editor_preview_pane"))
+                onCancel, onRetry, onRefreshPreview, Modifier.fillMaxWidth().weight(if(keyboardVisible) .25f else 1f)
+                    .testTag("editor_preview_pane"), toneActive, tonePoint, ::sampleTone)
             HorizontalDivider()
             Box(Modifier.fillMaxWidth().weight(if(keyboardVisible) .75f else 1f).testTag("editor_tools_pane")) {
                 if(tab == WorkspaceTab.SETTINGS) WorkspaceAppInfo(runtime)
                 else if(ready == null) WorkspaceEmptyTools(state, runtime, onOpen)
                 else workspaceState.SaveableStateProvider("image-${ready.sessionId}") {
-                    WorkspaceTools(ready, tab, busy, onSelectModule, onEnabled, moduleContent)
+                    WorkspaceTools(ready, tab, busy, onSelectModule, onEnabled, { selected ->
+                        if(selected.operation == toneModule?.operation) {
+                            ToneEqualizerTouchEditor(!busy && toneAvailable, toneActive, selectedSample,
+                                onImageMode = { active -> toneImageMode = active; tonePoint = null },
+                                onSelectCentre = { sampleTone(ToneEqualizerPoint(.5f, .5f)) },
+                                onAdjust = onToneAdjust)
+                            HorizontalDivider()
+                        }
+                    }, moduleContent)
                 }
             }
         }
@@ -136,12 +176,18 @@ internal fun EditorWorkspace(
 private fun WorkspacePreview(
     state: EditorState, runtime: RuntimeAvailability, ready: EditorState.Ready?, busy: Boolean,
     onOpen: () -> Unit, onExport: () -> Unit, onUndo: () -> Unit, onRedo: () -> Unit,
-    onCancel: () -> Unit, onRetry: (Uri) -> Unit, modifier: Modifier,
+    onCancel: () -> Unit, onRetry: (Uri) -> Unit, onRefreshPreview: () -> Unit, modifier: Modifier,
+    toneActive: Boolean,
+    tonePoint: ToneEqualizerPoint?,
+    onTonePoint: (ToneEqualizerPoint) -> Unit,
 ) {
     Box(modifier.background(MaterialTheme.colorScheme.surfaceVariant)) {
         ready?.let {
-            Image(it.preview.asImageBitmap(), stringResource(R.string.preview_description),
-                Modifier.fillMaxSize().padding(horizontal = 8.dp).padding(bottom = 48.dp), contentScale = ContentScale.Fit)
+            Box(Modifier.fillMaxSize().padding(horizontal = 8.dp).padding(bottom = 48.dp)) {
+                Image(it.preview.asImageBitmap(), stringResource(R.string.preview_description),
+                    Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
+                if(toneActive) ToneEqualizerPhotoTarget(it.preview.width, it.preview.height, !busy, tonePoint, onTonePoint)
+            }
         }
         if(ready == null) Column(Modifier.align(Alignment.Center).padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -164,6 +210,21 @@ private fun WorkspacePreview(
                         style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     TextButton(onClick = onCancel, enabled = state.stage != EditorState.Stage.CANCELLING) {
                         Text(stringResource(R.string.cancel))
+                    }
+                }
+            }
+        } else if(ready != null && !ready.previewCurrent) {
+            Surface(Modifier.align(Alignment.TopCenter).fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f)) {
+                Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
+                    Text(stringResource(R.string.tone_touch_stale_preview), style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error)
+                    ready.notice?.let { notice ->
+                        Text(notice, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    }
+                    TextButton(onClick = onRefreshPreview, enabled = !busy,
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("editor_retry_preview")) {
+                        Text(stringResource(R.string.tone_touch_retry_preview))
                     }
                 }
             }
@@ -201,6 +262,7 @@ private fun WorkspaceAction(icon: Int, label: Int, tag: String, enabled: Boolean
 private fun WorkspaceTools(
     ready: EditorState.Ready, tab: WorkspaceTab, busy: Boolean,
     onSelectModule: (String) -> Unit, onEnabled: (String, Boolean) -> Unit,
+    beforeControls: @Composable (EditorModule) -> Unit,
     moduleContent: @Composable (EditorModule, String) -> Unit,
 ) {
     var adjustOperation by rememberSaveable { mutableStateOf("") }
@@ -340,6 +402,7 @@ private fun WorkspaceTools(
         } else savedControls.SaveableStateProvider(selected.operation) {
             Column(Modifier.fillMaxSize().testTag("editor_parameter_scroll")
                 .verticalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 8.dp)) {
+                beforeControls(selected)
                 moduleContent(selected, query)
                 Spacer(Modifier.height(12.dp))
             }
@@ -400,6 +463,7 @@ private fun EditorState.Stage.workspaceLabelResource(): Int = when(this) {
     EditorState.Stage.DECODING -> R.string.stage_decoding
     EditorState.Stage.RENDERING -> R.string.stage_rendering
     EditorState.Stage.EDITING -> R.string.stage_editing
+    EditorState.Stage.SAMPLING -> R.string.tone_touch_sampling
     EditorState.Stage.EXPORTING -> R.string.stage_exporting
     EditorState.Stage.CANCELLING -> R.string.stage_cancelling
 }

@@ -87,6 +87,7 @@
 #include "common/extra_optimizations.h"
 
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -118,6 +119,7 @@
 #include "gui/color_picker_proxy.h"
 #include "iop/iop_api.h"
 #include "iop/choleski.h"
+#include "imageio/imageio_common.h"
 #include "common/iop_group.h"
 
 #ifdef _OPENMP
@@ -737,6 +739,38 @@ static float _luminance_from_module_buffer(const dt_iop_module_t *self)
                                    b_y);
 }
 
+/* Headless previews have no GTK luminance cache. Sample the same freshly
+ * filtered mask while it still belongs to the original processor. Full-size
+ * point transforms account for every geometric module after this instance;
+ * ROI scale/origin then locate that point in the actual processed mask. */
+static void _mobile_toneequal_sample(dt_iop_module_t *self,
+                                      dt_dev_pixelpipe_iop_t *piece,
+                                      const float *luminance,
+                                      const dt_iop_roi_t *roi)
+{
+  dt_imageio_toneequal_sample_t *sample = piece->pipe->toneequal_sample;
+  if(!sample || self->multi_priority != sample->multi_priority
+     || sample->output_scale <= 0) return;
+  /* A downstream OpenCL failure can restart the same pipe on the CPU. Always
+   * replace the earlier pass, including invalidating an unusable final point. */
+  sample->found = FALSE;
+  sample->exposure = NAN;
+  float point[2] = { sample->x * sample->output_width / sample->output_scale,
+                     sample->y * sample->output_height / sample->output_scale };
+  if(!dt_dev_distort_backtransform_plus(self->dev, piece->pipe, self->iop_order,
+                                         DT_DEV_TRANSFORM_DIR_FORW_EXCL, point, 1)) return;
+  const float x = point[0] * roi->scale - roi->x;
+  const float y = point[1] * roi->scale - roi->y;
+  if(!isfinite(x) || !isfinite(y) || x < 0 || y < 0 || x >= roi->width || y >= roi->height) return;
+  const float value = get_luminance_from_buffer(luminance, roi->width, roi->height,
+                                                (size_t)x, (size_t)y);
+  if(isfinite(value) && value > 0)
+  {
+    sample->exposure = log2f(value);
+    sample->found = isfinite(sample->exposure);
+  }
+}
+
 /***
  * Exposure compensation computation
  *
@@ -1145,6 +1179,8 @@ void toneeq_process(dt_iop_module_t *self,
     // no caching path : compute no matter what
     compute_luminance_mask(in, luminance, width, height, d);
   }
+
+  _mobile_toneequal_sample(self, piece, luminance, roi_in);
 
   // Display output
   if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe))
@@ -2169,6 +2205,37 @@ static inline gboolean set_new_params_interactive(const float control_exposure,
   }
 
   return commit;
+}
+
+/* Run the desktop's grouped on-image edit without constructing GTK widgets.
+ * All solver work and validation use a private copy; callers create exactly
+ * one history item after this complete nine-channel change succeeds. */
+G_MODULE_EXPORT int dt_iop_mobile_toneequal_adjust(dt_iop_module_t *self,
+                                                   const double exposure,
+                                                   const double offset)
+{
+  if(!self || !self->params || !self->enabled || !isfinite(exposure)
+     || fabs(exposure) > FLT_MAX || !isfinite(offset) || offset < -2 || offset > 2) return -1;
+  if(offset == 0) return 0;
+  dt_iop_toneequalizer_params_t next = *(const dt_iop_toneequalizer_params_t *)self->params;
+  if(!isfinite(next.smoothing) || next.smoothing <= 0) return -1;
+  dt_iop_toneequalizer_gui_data_t state = { 0 };
+  state.sigma = next.smoothing;
+  get_channels_factors(state.temp_user_params, &next);
+  for(int index = 0; index < CHANNELS; index++)
+    if(!isfinite(state.temp_user_params[index]) || state.temp_user_params[index] < .25f
+       || state.temp_user_params[index] > 4) return -1;
+  build_interpolation_matrix(state.interpolation_matrix, state.sigma);
+  state.user_param_valid = TRUE;
+  if(!set_new_params_interactive((float)exposure, (float)offset,
+                                  state.sigma * state.sigma / 2.0f, &state, &next)) return -1;
+  float gains[CHANNELS] DT_ALIGNED_ARRAY;
+  get_channels_gains(gains, &next);
+  for(int index = 0; index < CHANNELS; index++)
+    if(!isfinite(gains[index]) || gains[index] < -2 || gains[index] > 2) return -1;
+  if(!memcmp(self->params, &next, sizeof(next))) return 0;
+  memcpy(self->params, &next, sizeof(next));
+  return 1;
 }
 
 

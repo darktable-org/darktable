@@ -167,6 +167,25 @@ gboolean dt_imageio_preview_to_memory(const dt_imgid_t imgid,
                                       uint32_t *height,
                                       dt_imageio_preview_cancel_t *cancel);
 
+/* A synchronous sample of the selected toneequal instance's real filtered
+ * input mask at normalized final-preview coordinates. No display RGB is used.
+ * The request is scoped to the cancellation context's one original pipeline. */
+typedef struct dt_imageio_toneequal_sample_t
+{
+  int multi_priority;
+  double x, y;
+  double exposure;
+  gboolean found;
+  float output_scale;
+  int output_width, output_height;
+} dt_imageio_toneequal_sample_t;
+
+gboolean dt_imageio_toneequal_sample(const dt_imgid_t imgid,
+                                      const size_t max_width,
+                                      const size_t max_height,
+                                      dt_imageio_toneequal_sample_t *sample,
+                                      dt_imageio_preview_cancel_t *cancel);
+
 // general, efficient buffer flipping function using memcopies
 void dt_imageio_flip_buffers(char *out,
                              const char *in,

@@ -164,6 +164,35 @@ dt_mobile_status dt_mobile_set_text_parameter(dt_mobile_session *s, const char *
   return fail(s, DT_MOBILE_ERROR_UNSUPPORTED, "this build does not contain the darktable engine");
 #endif
 }
+dt_mobile_status dt_mobile_tone_equalizer_sample(dt_mobile_session *s, const char *module,
+                                                 double x, double y, double *exposure)
+{
+  if(exposure) *exposure = NAN;
+  if(!s || !module || !module[0] || !exposure || !isfinite(x) || !isfinite(y)
+     || x < 0 || x >= 1 || y < 0 || y >= 1)
+    return DT_MOBILE_ERROR_INVALID_ARGUMENT;
+  if(atomic_load(&s->cancelled)) return fail(s, DT_MOBILE_ERROR_CANCELLED, "operation cancelled");
+#ifdef DT_MOBILE_HAS_DARKTABLE_ENGINE
+  return dt_mobile_engine_tone_equalizer_sample(s->engine, module, x, y, exposure,
+                                                s->error, sizeof(s->error));
+#else
+  return fail(s, DT_MOBILE_ERROR_UNSUPPORTED, "this build does not contain the darktable engine");
+#endif
+}
+dt_mobile_status dt_mobile_tone_equalizer_adjust(dt_mobile_session *s, const char *module,
+                                                 double exposure, double offset)
+{
+  if(!s || !module || !module[0] || !isfinite(exposure) || !isfinite(offset)
+     || offset < -2 || offset > 2)
+    return DT_MOBILE_ERROR_INVALID_ARGUMENT;
+  if(atomic_load(&s->cancelled)) return fail(s, DT_MOBILE_ERROR_CANCELLED, "operation cancelled");
+#ifdef DT_MOBILE_HAS_DARKTABLE_ENGINE
+  return dt_mobile_engine_tone_equalizer_adjust(s->engine, module, exposure, offset,
+                                                s->error, sizeof(s->error));
+#else
+  return fail(s, DT_MOBILE_ERROR_UNSUPPORTED, "this build does not contain the darktable engine");
+#endif
+}
 dt_mobile_status dt_mobile_new_instance(dt_mobile_session *s, const char *module, char **new_identifier)
 {
   if(new_identifier) *new_identifier = NULL;

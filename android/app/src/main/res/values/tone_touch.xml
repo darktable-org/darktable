@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="tone_touch_title">Adjust a tone from the photo</string>
+  <string name="tone_touch_mode">Adjust on photo</string>
+  <string name="tone_touch_hint">Tap a part of the photo, then adjust its brightness below. Areas with a similar brightness change together.</string>
+  <string name="tone_touch_centre">Select photo centre</string>
+  <string name="tone_touch_choose_point">Choose a point in the photo to sample its tone.</string>
+  <string name="tone_touch_sample">Selected tone: %1$.2f EV</string>
+  <string name="tone_touch_offset">Adjustment: %1$+.2f EV</string>
+  <string name="tone_touch_adjustment">Selected tone brightness</string>
+  <string name="tone_touch_darker">−0.1 EV</string>
+  <string name="tone_touch_brighter">+0.1 EV</string>
+  <string name="tone_touch_target">Select a tone in the photo</string>
+  <string name="tone_touch_sampling">Sampling tone…</string>
+  <string name="tone_touch_stale_preview">Preview is out of date. Refresh it before selecting a tone.</string>
+  <string name="tone_touch_retry_preview">Retry preview</string>
+</resources>

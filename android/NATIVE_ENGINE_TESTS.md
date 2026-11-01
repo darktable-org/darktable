@@ -6,7 +6,7 @@
 The current editor exposes the reviewed scalar and fixed-array parameters,
 curves, blending and parametric masks, native path/brush forms and node editors,
 retouch/spot forms, liquify point warps, native-input-aware crop aspect drafts,
-text fields and file imports described in
+photo-selected tone equalizer adjustments, text fields and file imports described in
 [control coverage](../mobile/CONTROL_PARITY.md). Runtime metadata depends on
 the image, module instances and native capabilities; source-policy field counts
 are not counts of independently rendered Android controls.
@@ -14,11 +14,11 @@ are not counts of independently rendered Android controls.
 The current validation includes:
 
 - The coordinated Android check passed production and instrumentation Kotlin
-  compilation, 109 JVM tests in 25 classes (zero failures or skips), and
+  compilation, 113 JVM tests in 26 classes (zero failures or skips), and
   `lintDevDebug`. Additional instrumentation-source checks remain separate from
   actually running those component tests on Android.
 - The final expanded source passed all seven host native CTest cases in
-  149.85 seconds, including the original-engine regression in 149.79 seconds.
+  261.09 seconds, including the original-engine regression in 261.02 seconds.
   Its RGB fixture traversed 1,195
   advertised ordinary parameters, including live-instance and blending fields;
   this runtime count is distinct from the source-policy field counts. The run
@@ -89,8 +89,26 @@ parameters unchanged, and reset/method changes cannot revive that automatic
 selection. Explicit legacy settings remain unverified and preserve their
 existing behavior. All 37 offline database/staging tests passed. The six lens
 component tests compile, including the screenshot regression; they have not
-been executed on Android. A complete Android rebuild of the updated dependency
-overlay remains CI validation.
+been executed on Android. The preceding `8f1cf85e4b` snapshot passed both the
+complete engine-APK workflow and Android CI with the updated dependency overlay.
+
+Tone equalizer's [photo-selected adjustment](TONE_EQUALIZER_TOUCH.md) adds four
+JVM model tests and seven compiled Compose component tests. The original-engine
+regression samples the actual filtered mask without changing metadata/history,
+rejects invalid/off selections, changes multiple exposure bands in one history
+step, checks actual pixels and exact Undo/Redo, and isolates additional module
+instances. Changing its mask exposure changes the sample, while changing only
+its nine gains leaves that sample stable. An oriented image with a crop after
+tone equalizer checks the mapped point against its uncropped reference at the
+same mask resolution; the deliberately wrong direct coordinate differs.
+
+The current production JNI bridge compiled with NDK 27.2 for AArch64/API 26 and
+linked against the host engine with no undefined symbols. A real host JVM
+`-Xint` probe changed all nine gains through the grouped action, added exactly
+one history step, verified changed pixels and exact metadata/pixel Undo/Redo,
+and rejected 17 invalid/no-preview/disabled/wrong-module calls without state
+changes. The RGB source hash remained unchanged. This verifies JNI and native
+behavior, not execution of the new Android touch component on a device.
 
 These checks do not establish execution of the new Compose instrumentation
 tests on Android, complete physical-device picker/edit/export behavior, every

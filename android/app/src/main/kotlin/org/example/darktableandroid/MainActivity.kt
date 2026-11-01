@@ -142,6 +142,12 @@ private fun MobileRawApp(sourceIntent: SourceIntent?, onSourceSelected: (Uri, In
             onUndo = editor::undo, onRedo = editor::redo, onCancel = editor::cancel,
             onRetry = editor::open, onSelectModule = editor::selectModule,
             onEnabled = editor::setModuleEnabled,
+            toneSample = ready?.toneSample,
+            onToneSample = { operation, x, y -> ready?.let {
+                editor.sampleToneEqualizer(operation, x, y, it.sessionId, it.preview)
+            } },
+            onToneAdjust = editor::adjustToneEqualizer,
+            onRefreshPreview = editor::refreshPreview,
         ) { module, query ->
             ModuleControls(module, !busy && module.enabled, true,
                 editor::selectModule, editor::newInstance, editor::setModuleEnabled, editor::setParameter,

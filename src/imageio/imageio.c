@@ -58,6 +58,7 @@ struct dt_imageio_preview_cancel_t
   GMutex mutex;
   dt_dev_pixelpipe_t *pipe;
   gboolean cancelled;
+  dt_imageio_toneequal_sample_t *toneequal_sample;
 };
 
 #ifdef HAVE_LIBAVIF
@@ -1129,6 +1130,7 @@ static gboolean _imageio_export_with_flags(const dt_imgid_t imgid,
   {
     g_mutex_lock(&cancel->mutex);
     cancel->pipe = &pipe;
+    pipe.toneequal_sample = cancel->toneequal_sample;
     if(cancel->cancelled)
       dt_atomic_set_int(&pipe.shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
     g_mutex_unlock(&cancel->mutex);
@@ -1333,6 +1335,12 @@ static gboolean _imageio_export_with_flags(const dt_imgid_t imgid,
 
   const int processed_width = floor(scale * pipe.processed_width);
   const int processed_height = floor(scale * pipe.processed_height);
+  if(pipe.toneequal_sample)
+  {
+    pipe.toneequal_sample->output_scale = scale;
+    pipe.toneequal_sample->output_width = processed_width;
+    pipe.toneequal_sample->output_height = processed_height;
+  }
   if(scale == max_possible_scale && !thumbnail_export)
     dt_control_log(_("export reduced to %dx%d because of memory restrictions"),
             processed_width, processed_height);
@@ -1965,6 +1973,34 @@ gboolean dt_imageio_preview_to_memory(const dt_imgid_t imgid,
   *width = dat.width;
   *height = dat.height;
   return FALSE;
+}
+
+gboolean dt_imageio_toneequal_sample(const dt_imgid_t imgid,
+                                      const size_t max_width,
+                                      const size_t max_height,
+                                      dt_imageio_toneequal_sample_t *sample,
+                                      dt_imageio_preview_cancel_t *cancel)
+{
+  if(!sample || !cancel) return TRUE;
+  sample->found = FALSE;
+  sample->exposure = NAN;
+  g_mutex_lock(&cancel->mutex);
+  if(cancel->pipe || cancel->toneequal_sample)
+  {
+    g_mutex_unlock(&cancel->mutex);
+    return TRUE;
+  }
+  cancel->toneequal_sample = sample;
+  g_mutex_unlock(&cancel->mutex);
+  uint8_t *pixels = NULL;
+  uint32_t width = 0, height = 0;
+  const gboolean failed = dt_imageio_preview_to_memory(imgid, max_width, max_height,
+                                                       &pixels, &width, &height, cancel);
+  free(pixels);
+  g_mutex_lock(&cancel->mutex);
+  cancel->toneequal_sample = NULL;
+  g_mutex_unlock(&cancel->mutex);
+  return failed || !sample->found || !isfinite(sample->exposure);
 }
 
 // clang-format off

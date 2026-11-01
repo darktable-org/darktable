@@ -56,6 +56,21 @@ dt_mobile_status dt_mobile_new_instance(dt_mobile_session *session, const char *
                                         char **new_identifier);
 dt_mobile_status dt_mobile_set_parameter(dt_mobile_session *session, const char *module,
                                           const char *parameter, double value);
+/* Read the selected Tone equalizer instance's actual filtered input mask.
+ * x/y are normalized final-preview image coordinates in [0,1), excluding any
+ * UI letterboxing. A successful preview and an enabled instance are required;
+ * sampling uses the most recent successful preview's resolution and does not
+ * modify module settings or history. Returns log2 mask luminance in EV. */
+dt_mobile_status dt_mobile_tone_equalizer_sample(dt_mobile_session *session,
+                                                 const char *module, double x, double y,
+                                                 double *exposure);
+/* Original desktop on-image smooth adjustment, applied to all nine tone gains
+ * as one atomic undo step. exposure must be a finite sample from this instance
+ * and unchanged input/mask/geometry state; offset is finite in [-2,2] EV.
+ * The instance must already be enabled. Other settings remain unchanged. */
+dt_mobile_status dt_mobile_tone_equalizer_adjust(dt_mobile_session *session,
+                                                 const char *module, double exposure,
+                                                 double offset);
 /* UTF-8 for advertised text/file controls. maxBytes excludes the terminating
  * NUL. file.import selects the original coupled filename/image fields in one
  * history step. Overlong/malformed values are rejected, never truncated. */

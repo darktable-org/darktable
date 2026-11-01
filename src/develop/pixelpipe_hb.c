@@ -315,6 +315,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->runs = 0;
   pipe->bcache_data = NULL;
   pipe->bcache_hash = DT_INVALID_HASH;
+  pipe->toneequal_sample = NULL;
   memset(pipe->mask_distort_buf, 0, sizeof(pipe->mask_distort_buf));
   memset(pipe->mask_distort_buf_size, 0, sizeof(pipe->mask_distort_buf_size));
   return dt_dev_pixelpipe_cache_init(pipe, entries, size, memlimit);

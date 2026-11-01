@@ -262,6 +262,9 @@ typedef struct dt_dev_pixelpipe_t
   // reusable ping-pong buffers for mask distortion walks
   float *mask_distort_buf[2];
   size_t mask_distort_buf_size[2];
+  /* Optional caller-owned, synchronous on-image tone sample. Never retained
+   * outside this pipeline; ordinary desktop/export pipes leave it NULL. */
+  struct dt_imageio_toneequal_sample_t *toneequal_sample;
 } dt_dev_pixelpipe_t;
 
 struct dt_develop_t;
