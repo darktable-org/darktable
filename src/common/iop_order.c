@@ -143,6 +143,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {43.0f }, "colorzones", 0},
   { {44.0f }, "lowlight", 0},
   { {45.0f }, "monochrome", 0},
+  { { 45.2f }, "filmgrain", 0 },    // scene-referred grain, ahead of the tone mapper
   { {45.3f }, "sigmoid", 0},
   { {45.5f }, "agx", 0},
   { {46.0f }, "filmic", 0},
@@ -259,6 +260,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {41.7f }, "satcurvergb", 0},     // scene-referred saturation adjustment
   { {42.0f }, "rgbcurve", 0},        // really versatile way to edit colour in scene-referred and display-referred workflow
   { {43.0f }, "rgblevels", 0},       // same
+  { { 43.5f }, "filmgrain", 0 },    // scene-referred grain, ahead of every tone mapper
   { {44.0f }, "basecurve", 0},       // conversion from scene-referred to display referred, reverse-engineered
                                   //    on camera JPEG default look
   { {45.0f }, "filmic", 0},          // same, but different (parametric) approach
@@ -382,6 +384,7 @@ const dt_iop_order_entry_t v50_order[] = {
   { {41.7f }, "satcurvergb", 0},     // scene-referred saturation adjustment
   { {42.0f }, "rgbcurve", 0},        // really versatile way to edit colour in scene-referred and display-referred workflow
   { {43.0f }, "rgblevels", 0},       // same
+  { { 43.5f }, "filmgrain", 0 },    // scene-referred grain, ahead of every tone mapper
   { {44.0f }, "basecurve", 0},       // conversion from scene-referred to display referred, reverse-engineered
                                   //    on camera JPEG default look
   { {45.0f }, "filmic", 0},          // same, but different (parametric) approach
@@ -506,6 +509,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 42.0f }, "rgbcurve", 0 },      // really versatile way to edit colour in scene-referred and display-referred
                                      // workflow
   { { 43.0f }, "rgblevels", 0 },     // same
+  { { 43.5f }, "filmgrain", 0 },    // scene-referred grain, ahead of every tone mapper
   { { 44.0f }, "basecurve", 0 },     // conversion from scene-referred to display referred, reverse-engineered
                                      //    on camera JPEG default look
   { { 45.0f }, "filmic", 0 },        // same, but different (parametric) approach
@@ -632,6 +636,7 @@ const dt_iop_order_entry_t v50_jpg_order[] = {
   { { 42.0f }, "rgbcurve", 0 },      // really versatile way to edit colour in scene-referred and display-referred
                                      // workflow
   { { 43.0f }, "rgblevels", 0 },     // same
+  { { 43.5f }, "filmgrain", 0 },    // scene-referred grain, ahead of every tone mapper
   { { 44.0f }, "basecurve", 0 },     // conversion from scene-referred to display referred, reverse-engineered
                                      //    on camera JPEG default look
   { { 45.0f }, "filmic", 0 },        // same, but different (parametric) approach
@@ -767,6 +772,7 @@ void dt_ioppr_migrate_legacy_iop_order_list(GList *iop_order_list)
   _insert_before_after(iop_order_list, "highlights", "rasterfile", TRUE);
   _insert_before_after(iop_order_list, "demosaic", "demosaicscale", FALSE);
   _insert_before_after(iop_order_list, "colorbalance", "colorharmonizer", TRUE);
+  _insert_before_after(iop_order_list, "sigmoid", "filmgrain", TRUE);
 }
 
 static dt_iop_order_t _ioppr_get_default_iop_order_version(const dt_imgid_t imgid)
