@@ -1339,7 +1339,7 @@ void dt_masks_gui_add_default_preset_box(GtkWidget *box)
 {
   gchar *current = dt_conf_get_string(FLEXI_DEFAULT_PRESET_CONF);
   GtkWidget *combo = dt_masks_gui_pref_combo(box, _("default layout for new masks"),
-                                             _DEFAULT_PRESET_TIP);
+                                             _DEFAULT_PRESET_TIP, FLEXI_DEFAULT_PRESET_CONF);
 
   // state first, handler after, as the panel position combo box does
   DT_ENTER_GUI_UPDATE();

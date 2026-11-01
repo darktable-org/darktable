@@ -2730,9 +2730,9 @@ static gboolean _blendif_change_blend_colorspace(dt_iop_module_t *module,
 static void _masks_opacity_sticky_toggled(GtkToggleButton *mi, dt_iop_module_t *module)
 {
   // the checkbox reads "sticky" (on = remember last opacity for new shapes),
-  // the conf key is stored inverted (absent/FALSE = sticky, the default) so
-  // it needs no preferences.xml entry -- see _new_shape_default_opacity in
-  // masks.c, which is the actual place this is consumed.
+  // the conf key is stored inverted (FALSE = sticky, the default) -- see
+  // _new_shape_default_opacity in masks.c, which is the actual place this is
+  // consumed.
   const gboolean not_sticky = !gtk_toggle_button_get_active(mi);
   dt_conf_set_bool("plugins/darkroom/masks/opacity_not_sticky", not_sticky);
   if(not_sticky) dt_conf_set_float("plugins/darkroom/masks/opacity", 1.0f);
@@ -2740,6 +2740,7 @@ static void _masks_opacity_sticky_toggled(GtkToggleButton *mi, dt_iop_module_t *
 
 // the channel-preview mode, defined further down with the rest of the hover
 // machinery; the panel options menu is built up here
+#define BLEND_PREVIEW_ON_HOVER_CONF "plugins/darkroom/blend/preview_channel_on_hover"
 static gboolean _preview_on_hover_is_on(void);
 static void _preview_on_hover_set(const gboolean on);
 
@@ -2811,12 +2812,42 @@ static void _masks_show_indicator_toggled(GtkToggleButton *mi,
 // dt_section_label, the way the other toolbar preference popovers are laid out
 // (see global_toolbox.c's overlay settings). A check that only applies under
 // another is shown with it
-#define _MASKS_OPT_CHECK(var, label, tip, active, cb)                             \
+#define _MASKS_OPT_CHECK(var, label, tip, conf, active, cb)                       \
   GtkWidget *var = gtk_check_button_new_with_label(label);                        \
   gtk_widget_set_tooltip_text(var, tip);                                          \
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(var), active);                   \
   g_signal_connect(G_OBJECT(var), "toggled", G_CALLBACK(cb), module);             \
-  dt_gui_box_add(box, var);
+  dt_masks_gui_pref_add(box, var, conf);
+
+// the mark preferences_ai.c puts beside a setting that is not at its default;
+// the conf key is kept on the mark, which the widget's change refreshes
+static void _pref_mark_update(GtkWidget *mark)
+{
+  const gboolean modified = !dt_conf_is_default(g_object_get_data(G_OBJECT(mark), "dt-conf"));
+  gtk_label_set_text(GTK_LABEL(mark), modified ? "\xe2\x97\x8f" : "");
+  gtk_widget_set_tooltip_text(mark, modified ? _("this setting has been modified") : NULL);
+}
+
+// after the widget's own handlers, which are the ones that store the setting
+static void _pref_mark_changed(GtkWidget *widget, GtkWidget *mark)
+{
+  _pref_mark_update(mark);
+}
+
+GtkWidget *dt_masks_gui_pref_add(GtkWidget *box, GtkWidget *widget, const gchar *conf)
+{
+  GtkWidget *mark = gtk_label_new("");
+  gtk_widget_set_name(mark, "preference_non_default");
+  g_object_set_data_full(G_OBJECT(mark), "dt-conf", g_strdup(conf), g_free);
+  _pref_mark_update(mark);
+  g_signal_connect_after(G_OBJECT(widget),
+                         GTK_IS_TOGGLE_BUTTON(widget) ? "toggled" : "value-changed",
+                         G_CALLBACK(_pref_mark_changed), mark);
+
+  GtkWidget *row = dt_gui_hbox(dt_gui_expand(widget), mark);
+  dt_gui_box_add(box, row);
+  return row;
+}
 
 void dt_masks_gui_pref_section(GtkWidget *box, const gchar *title, const gchar *tip)
 {
@@ -2843,13 +2874,14 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
       "preset carries a help note on how to use it, shown in the help\n"
       "section while the group, or an element in it, is selected.\n"
       "when disabled, no help notes are shown."),
+    "plugins/darkroom/masks/show_preset_notes",
     dt_masks_gui_preset_notes_shown(), _masks_preset_notes_toggled)
 
   _MASKS_OPT_CHECK(
     indicator, _("show mask indicator in module headers"),
     _("when enabled (default), an icon is shown in the header of\n"
       "any processing module that has a mask applied."),
-    dt_conf_get_bool("darkroom/ui/show_mask_indicator"),
+    "darkroom/ui/show_mask_indicator", dt_conf_get_bool("darkroom/ui/show_mask_indicator"),
     _masks_show_indicator_toggled)
 
   dt_masks_gui_pref_section(box, _("shape element options"),
@@ -2861,6 +2893,7 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
       "last used by any shape, so adjusting opacity once carries\n"
       "over to every shape you add afterwards.\n"
       "when disabled, a new shape always starts at 100% opacity."),
+    "plugins/darkroom/masks/opacity_not_sticky",
     !dt_conf_get_bool("plugins/darkroom/masks/opacity_not_sticky"),
     _masks_opacity_sticky_toggled)
 
@@ -2877,6 +2910,7 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
       "the first pick in a module still waits for an area dragged on\n"
       "the image.\n"
       "when disabled, every pick waits for an area dragged on the image."),
+    "plugins/darkroom/masks/parametric_picker_reuse_area",
     _param_picker_reuses_area(), _masks_picker_reuse_area_toggled)
 
   _MASKS_OPT_CHECK(
@@ -2888,7 +2922,7 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
       "the preview only starts after a short pause, so passing over\n"
       "the buttons on the way elsewhere costs nothing.\n"
       "disabled by default."),
-    _preview_on_hover_is_on(),
+    BLEND_PREVIEW_ON_HOVER_CONF, _preview_on_hover_is_on(),
     _masks_preview_on_hover_toggled)
 
   dt_masks_gui_pref_section(box, _("editing options"), NULL);
@@ -2899,17 +2933,23 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
       "scroll down to increase the mask size, feather size, opacity,\n"
       "brush hardness and gradient curvature.\n"
       "when disabled (default), scrolling up increases these parameters."),
-    dt_conf_get_bool("masks_scroll_down_increases"),
+    "masks_scroll_down_increases", dt_conf_get_bool("masks_scroll_down_increases"),
     _masks_scroll_down_toggled)
 }
 #undef _MASKS_OPT_CHECK
 
-GtkWidget *dt_masks_gui_pref_combo(GtkWidget *box, const gchar *label, const gchar *tip)
+GtkWidget *dt_masks_gui_pref_combo(GtkWidget *box,
+                                   const gchar *label,
+                                   const gchar *tip,
+                                   const gchar *conf)
 {
   GtkWidget *combo = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label_text(combo, label);
   if(tip) gtk_widget_set_tooltip_text(combo, tip);
-  dt_gui_box_add(box, combo);
+  if(conf)
+    dt_masks_gui_pref_add(box, combo, conf);
+  else
+    dt_gui_box_add(box, combo);
   return combo;
 }
 
@@ -2968,7 +3008,8 @@ static void _blendif_options_callback(GtkButton *button,
     GtkWidget *combo = dt_masks_gui_pref_combo(
       box, _("blend colorspace"),
       _("the colorspace the mask is blended in.\n"
-        "parametric elements are tied to it"));
+        "parametric elements are tied to it"),
+      NULL);
     DT_ENTER_GUI_UPDATE();
     dt_bauhaus_combobox_add_full(combo, _("default"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT,
                                  GINT_TO_POINTER(DEVELOP_BLEND_CS_NONE), NULL, TRUE);
@@ -3090,7 +3131,6 @@ static void _blendop_blendif_channel_mask_view_toggle
 // global (one working mode, not a per-module setting) so it survives moving
 // between modules; it lives in the panel options menu, and
 // _shortcut_toggle_preview_on_hover makes it bindable.
-#define BLEND_PREVIEW_ON_HOVER_CONF "plugins/darkroom/blend/preview_channel_on_hover"
 
 // how long the pointer rests on a button before the preview starts: each
 // preview reprocesses the pipeline, so sweeping across the buttons must not

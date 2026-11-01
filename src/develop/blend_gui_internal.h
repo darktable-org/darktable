@@ -606,8 +606,18 @@ GtkWidget *dt_masks_gui_toolbar_new(GtkWidget *group,
 void dt_masks_gui_pref_section(GtkWidget *box, const gchar *title, const gchar *tip);
 /** a combo box in the panel options popover, for an exclusive choice, with its
     `label` on the left; the caller adds the entries and connects
-    "value-changed" once the initial one is set */
-GtkWidget *dt_masks_gui_pref_combo(GtkWidget *box, const gchar *label, const gchar *tip);
+    "value-changed" once the initial one is set. `conf` is the setting it
+    edits, marked when it is not at its default (see dt_masks_gui_pref_add);
+    NULL for a choice that is not a preference */
+GtkWidget *dt_masks_gui_pref_combo(GtkWidget *box,
+                                   const gchar *label,
+                                   const gchar *tip,
+                                   const gchar *conf);
+/** add a preference's widget (a check button or a combo box) to the panel
+    options popover in a row, followed by a mark that shows while the conf key
+    `conf` is not at its default. Returns the row, which is what to show or
+    hide for the option as a whole */
+GtkWidget *dt_masks_gui_pref_add(GtkWidget *box, GtkWidget *widget, const gchar *conf);
 /** re-home a widget into a new parent (no-op if already there), keeping its
     shown state */
 void dt_masks_gui_reparent_into(GtkWidget *w, GtkWidget *parent,

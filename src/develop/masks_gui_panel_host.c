@@ -1369,8 +1369,8 @@ gboolean dt_masks_gui_pref_focus_row_applies(const int position)
   return position != MASKS_PANEL_POS_EMBEDDED;
 }
 
-// the popover's checks that depend on the position: each is kept on the box
-// under its key, and shown while its predicate holds
+// the popover's checks that depend on the position: each one's row is kept on
+// the box under its key, and shown while its predicate holds
 static const struct
 {
   const char *key;
@@ -1392,9 +1392,10 @@ static void _masks_panel_position_activate(GtkWidget *combo, dt_iop_module_t *mo
   // while it changes
   for(size_t i = 0; i < G_N_ELEMENTS(_position_checks); i++)
   {
-    GtkWidget *check =
-      g_object_get_data(G_OBJECT(gtk_widget_get_parent(combo)), _position_checks[i].key);
-    if(check) gtk_widget_set_visible(check, _position_checks[i].applies(pos));
+    // the combo and the checks sit in rows of `box`
+    GtkWidget *row = g_object_get_data(
+      G_OBJECT(gtk_widget_get_parent(gtk_widget_get_parent(combo))), _position_checks[i].key);
+    if(row) gtk_widget_set_visible(row, _position_checks[i].applies(pos));
   }
 
   // update the utility-mode host lib's own visibility for the new position
@@ -1489,8 +1490,8 @@ static void _masks_show_panel_handle_toggled(GtkToggleButton *mi, dt_iop_module_
   dt_ui_flexi_panel_update_handle(darktable.gui->ui);
 }
 
-// a check in `box` for a boolean preference, shown or not as the position says.
-// Its handler is connected by the caller, after the state is set
+// a check in a row of `box` for a boolean preference, shown or not as the
+// position says. Its handler is connected by the caller, after the state is set
 static GtkWidget *_masks_position_check(GtkWidget *box,
                                         const char *key,
                                         const char *label,
@@ -1501,10 +1502,12 @@ static GtkWidget *_masks_position_check(GtkWidget *box,
   GtkWidget *check = gtk_check_button_new_with_label(label);
   gtk_widget_set_tooltip_text(check, tip);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check), dt_conf_get_bool(conf));
-  gtk_widget_set_no_show_all(check, TRUE);
-  gtk_widget_set_visible(check, visible);
-  dt_gui_box_add(box, check);
-  g_object_set_data(G_OBJECT(box), key, check);
+  GtkWidget *row = dt_masks_gui_pref_add(box, check, conf);
+  // the row is no_show_all, so what is in it is shown here
+  gtk_widget_show_all(row);
+  gtk_widget_set_no_show_all(row, TRUE);
+  gtk_widget_set_visible(row, visible);
+  g_object_set_data(G_OBJECT(box), key, row);
   return check;
 }
 
@@ -1528,7 +1531,8 @@ void dt_masks_gui_add_panel_position_box(GtkWidget *box, dt_iop_module_t *module
   GtkWidget *combo = dt_masks_gui_pref_combo(
     box, _("panel position"),
     _("where the blend mask panel (groups, elements,\n"
-      "refinements) is shown. a change applies at once"));
+      "refinements) is shown. a change applies at once"),
+    "plugins/darkroom/blend/masks_panel_position");
 
   // state first, handler after: setting the active entry while building would
   // otherwise read as the user choosing a position and relocate the panel

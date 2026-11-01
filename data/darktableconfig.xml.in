@@ -3760,6 +3760,20 @@
     <longdescription>the group layout preset a module's mask starts with when it is switched on for the first time: the id of a built-in preset in masks_group_presets.json, or user: followed by the name of a saved one</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/masks/opacity_not_sticky</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>start new shapes at full opacity</shortdescription>
+    <longdescription>while enabled, a new mask shape always starts at 100% opacity; while disabled, it starts at the opacity last used by any shape</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/blend/masks_panel_position</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>mask panel position</shortdescription>
+    <longdescription>where the blend mask panel is shown: 0 embedded within each module, 1 as a utility module in the left panel, 2 as a separate panel beside the canvas</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/masks/opacity</name>
     <type>float</type>
     <default>1.0</default>
