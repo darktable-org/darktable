@@ -480,6 +480,8 @@ static void _edit_preset_response(GtkDialog *dialog,
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
+    dt_gui_store_last_preset(name);
+
     if(g->callback) ((void (*)(dt_gui_presets_edit_dialog_t *))g->callback)(g);
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_PRESETS_CHANGED,
                             g_strdup(g->operation));
