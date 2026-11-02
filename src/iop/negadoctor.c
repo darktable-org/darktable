@@ -309,9 +309,11 @@ static inline void _process_pixel(const dt_aligned_pixel_t pix_in,
     dt_vector_powf(print_linear, gamma, print_gamma); // note : this is always > 0
     dt_aligned_pixel_t e_to_gamma;
     dt_aligned_pixel_t clipped_gamma;
+    // exp(x) = 2^(x / ln(2)). Not dt_vector_exp(): it is off by more than
+    // 10% below -1, and the OpenCL kernel uses the real exp()
     for_each_channel(c)
-      clipped_gamma[c] = -(print_gamma[c] - soft_clip[c]) / soft_clip_comp[c];
-    dt_vector_exp(clipped_gamma, e_to_gamma);
+      clipped_gamma[c] = -(print_gamma[c] - soft_clip[c]) / soft_clip_comp[c] * 1.44269504f;
+    dt_vector_exp2(clipped_gamma, e_to_gamma);
     for_each_channel(c)
     {
       // Compress highlights. from https://lists.gnu.org/archive/html/openexr-devel/2005-03/msg00009.html

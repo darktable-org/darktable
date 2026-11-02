@@ -833,6 +833,12 @@ changes (where available).
   wrong with OpenCL. The gain maps of other raw files are now also
   applied the same way with OpenCL as on the CPU.
 
+- Fixed the contrast equalizer with an edge sharpness set, and the
+  soft clip of negadoctor, giving a different result on the CPU than
+  with OpenCL: the CPU path used a coarse approximation of the
+  exponential. Edits using them may now look slightly different when
+  exported without OpenCL.
+
 ## Lua
 
 ### API Version
