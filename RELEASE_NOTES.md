@@ -265,6 +265,11 @@ changes (where available).
   megabytes on each run. The correction is also more precise on x86,
   where it could be up to 0.3 px off, or 0.6 px when distorting.
 
+- The details threshold of masks is faster on the OpenCL path, in the
+  darkroom and in exports, when the only distorting modules before the
+  blended one are demosaic and orientation: the details mask now stays
+  on the GPU instead of being distorted on the CPU and uploaded again.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
