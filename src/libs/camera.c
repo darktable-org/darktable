@@ -254,7 +254,7 @@ static void _camera_property_accessibility_changed(const dt_camera_t *camera,
 
 static gboolean _bailout_of_tethering(gpointer user_data)
 {
-  // Consider all error types as failure and bailout of tethering mode
+  /* Idle callback from CAMERA_CONNECTION_BROKEN only. */
   dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
   dt_camctl_tether_mode(darktable.camctl, NULL, FALSE);
   dt_camctl_unregister_listener(darktable.camctl, lib->data.listener);
@@ -270,6 +270,9 @@ static void _camera_error_callback(const dt_camera_t *camera,
                                    dt_camera_error_t error,
                                    void *user_data)
 {
+  if(error != CAMERA_CONNECTION_BROKEN)
+    return;
+
   dt_control_log(_("connection with camera lost, exiting tethering mode"));
   g_idle_add(_bailout_of_tethering, user_data);
 }
