@@ -792,7 +792,7 @@ static void apply_auto_exposure(dt_iop_module_t *self)
   {
     RGB[c] = -log10f(p->Dmin[c] / fmaxf(self->picked_color_min[c], THRESHOLD));
     RGB[c] *= p->wb_high[c] / p->D_max;
-    RGB[c] += p->wb_low[c] * p->offset;
+    RGB[c] += p->wb_low[c] * p->offset * p->wb_high[c];
     RGB[c] = 0.96f / (1.0f - fast_exp10f(RGB[c]) + p->black); // actually, remap in [0; 0.96] for safety
   }
   p->exposure = v_minf(RGB);
