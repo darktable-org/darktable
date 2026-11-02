@@ -4033,13 +4033,13 @@ static void _development_widget_update(GtkWidget *w,
     char tip[320];
     snprintf(tip, sizeof tip,
              _("development time, in minutes. snaps to the nearest time %s is\n"
-               "characterised at: %s min. 0 uses the stock's own default (%.3g min)."),
+               "characterized at: %s min. 0 uses the stock's own default (%.3g min)."),
              e->name, times, (double)_development_default(e));
     gtk_widget_set_tooltip_text(w, tip);
   }
   else
     gtk_widget_set_tooltip_text(w,
-                                _("development time. this stock is characterised at a "
+                                _("development time. this stock is characterized at a "
                                   "single\n"
                                   "development, so there is nothing to choose.\n"
                                   "\n"
@@ -5840,7 +5840,7 @@ void gui_init(dt_iop_module_t *self)
      the slider out for stocks characterised at a single development */
   gtk_widget_set_tooltip_text(g->development_min,
                               _("development time. snaps to the nearest time the stock was\n"
-                                "characterised at; 0 uses the stock's own default."));
+                                "characterized at; 0 uses the stock's own default."));
 
   g->film_gamma_factor = dt_bauhaus_slider_from_params(self, "film_gamma_factor");
   dt_bauhaus_slider_set_soft_range(g->film_gamma_factor, 0.25f, 2.0f);
@@ -6004,7 +6004,7 @@ void gui_init(dt_iop_module_t *self)
       _("first half of the film's sensitivity adaptation: a spectral bandpass\n"
         "applied to the stock's own sensitivities, rolling off the UV and IR\n"
         "ends of each channel while preserving white balance. on by default,\n"
-        "and best left on: it is part of how the stock is characterised. no\n"
+        "and best left on: it is part of how the stock is characterized. no\n"
         "effect on stocks whose profile carries no bandpass."));
 
   g->adaptation_surface = dt_bauhaus_toggle_from_params(self, "adaptation_surface");
@@ -6105,7 +6105,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->print_development_min,
                               _("print development time. snaps to the nearest time the "
                                 "paper was\n"
-                                "characterised at; 0 uses its own default."));
+                                "characterized at; 0 uses its own default."));
 
   g->print_gamma_r = dt_bauhaus_slider_from_params(self, "print_gamma_r");
   gtk_widget_set_tooltip_text(
