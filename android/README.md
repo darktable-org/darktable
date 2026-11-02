@@ -13,7 +13,9 @@ position. See [editor UX](EDITOR_UX.md) for the interaction rules.
 
 The tools panel provides native sliders and precise input, enum
 menus, switches, text fields, document import and action buttons. Tool search
-matches module names and parameter labels; editing a value commits the original
+matches module names and parameter labels across all editing tabs. Tap a search
+result to open that tool and its category without changing its power state.
+Editing a value commits the original
 module/history and requests an original-engine preview. A completed slider drag
 creates one edit. Image-specific parameter resets and tool settings resets use
 native defaults. Progress and cancellation remain visible beside the preview.

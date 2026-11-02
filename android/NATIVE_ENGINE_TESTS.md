@@ -66,6 +66,12 @@ restoration and offscreen history/draft restoration. They use bitmap/callback
 fixtures and have not been executed on an Android device in this validation.
 The layout revision does not change the native processing code.
 
+Tool-search navigation adds six compiled `WorkspaceToolSearchTest` component
+cases. They cover explicit cross-category result selection, complete controls
+after selection, query/filter changes without automatic selection, exact
+disabled-instance identities, no-match cancellation and busy-state rejection.
+These bitmap/callback tests have not been executed on Android in this validation.
+
 The lens regression uses the installed Canon EOS 5D Mark II / EF 24–105mm f/4L
 IS USM calibration with the original RGB pixelpipe. Distortion, vignetting and
 TCA each change actual pixels, Undo restores the baseline, and manual vignette

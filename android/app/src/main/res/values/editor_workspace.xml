@@ -11,6 +11,8 @@
   <string name="workspace_disabled">Off</string>
   <string name="workspace_disabled_hint">Turn on to adjust. Settings are kept when off.</string>
   <string name="workspace_close_search">Close tool search</string>
+  <string name="workspace_search_results">%1$d results · All tabs</string>
+  <string name="workspace_search_result_detail">%1$s · %2$s</string>
   <string name="workspace_choose_photo">Choose a photo to start</string>
   <string name="workspace_layout_hint">Your photo stays above the tools. Use the bottom tabs to browse adjustments, detail and geometry; each tab remembers its last tool.</string>
   <string name="workspace_license_title">License</string>

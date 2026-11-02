@@ -31,10 +31,18 @@ the keyboard returns the equal split.
 | Settings / Licenses | Runtime availability, project information and license notices; available without an image |
 
 Each editing tab presents a compact tool selector and a separate power switch
-above the parameter scroller. The selector searches tool and parameter labels
-and can narrow the list to enabled tools. Only the selected tool's controls are
-shown, so users do not scroll through dozens of expanded cards. Native instances
-keep their complete identities when selected.
+above the parameter scroller. Only the selected tool's controls are shown, so
+users do not scroll through dozens of expanded cards. Native instances keep
+their complete identities when selected.
+
+Search replaces the parameter area with a scrollable result list across all
+editing tabs. It matches tool names, native identities and parameter labels;
+the Enabled filter narrows results without changing the selected tool. Each
+result shows its category, native identity and On/Off state. Typing does not
+select a result or create an edit. Tap a result to switch to its category and
+exact instance, close search and show all of that tool's controls. Disabled
+tools stay off until their power switch is explicitly used. Close or Back
+cancels search and restores the current tool without changing it.
 
 Selecting a tab or tool changes the visible controls without creating a native
 edit or enabling a tool. The power switch explicitly enables/disables the

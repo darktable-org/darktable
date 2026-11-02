@@ -2,8 +2,10 @@
 package org.example.darktableandroid
 
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +20,8 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -32,6 +36,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -53,6 +58,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalDensity
@@ -204,7 +211,8 @@ internal fun EditorWorkspace(
                 if(tab == WorkspaceTab.SETTINGS) WorkspaceAppInfo(runtime)
                 else if(ready == null) WorkspaceEmptyTools(state, runtime, onOpen)
                 else workspaceState.SaveableStateProvider("image-${ready.sessionId}") {
-                    WorkspaceTools(ready, tab, busy, onSelectModule, onEnabled, { selected ->
+                    WorkspaceTools(ready, tab, busy, onSelectModule, onEnabled,
+                        onSelectTab = { tabName = it.name }, beforeControls = { selected ->
                         if(selected.operation == toneModule?.operation) {
                             ToneEqualizerTouchEditor((!busy || toneUpdating) && toneAvailable, toneActive, selectedSample,
                                 onImageMode = { active ->
@@ -230,7 +238,7 @@ internal fun EditorWorkspace(
                                 onSource = { maskSource = it })
                             HorizontalDivider()
                         }
-                    }, moduleContent)
+                    }, moduleContent = moduleContent)
                 }
             }
         }
@@ -334,50 +342,16 @@ private fun WorkspaceAction(icon: Int, label: Int, tag: String, enabled: Boolean
 private fun WorkspaceTools(
     ready: EditorState.Ready, tab: WorkspaceTab, busy: Boolean,
     onSelectModule: (String) -> Unit, onEnabled: (String, Boolean) -> Unit,
+    onSelectTab: (WorkspaceTab) -> Unit,
     beforeControls: @Composable (EditorModule) -> Unit,
     moduleContent: @Composable (EditorModule, String) -> Unit,
 ) {
     var adjustOperation by rememberSaveable { mutableStateOf("") }
     var detailOperation by rememberSaveable { mutableStateOf("") }
     var geometryOperation by rememberSaveable { mutableStateOf("") }
-    var adjustQuery by rememberSaveable { mutableStateOf("") }
-    var detailQuery by rememberSaveable { mutableStateOf("") }
-    var geometryQuery by rememberSaveable { mutableStateOf("") }
+    var query by rememberSaveable { mutableStateOf("") }
     var searchVisible by rememberSaveable { mutableStateOf(false) }
-    var adjustEnabledOnly by rememberSaveable { mutableStateOf(false) }
-    var detailEnabledOnly by rememberSaveable { mutableStateOf(false) }
-    var geometryEnabledOnly by rememberSaveable { mutableStateOf(false) }
-    val enabledOnly = when(tab) {
-        WorkspaceTab.ADJUSTMENTS -> adjustEnabledOnly
-        WorkspaceTab.DETAIL -> detailEnabledOnly
-        WorkspaceTab.GEOMETRY -> geometryEnabledOnly
-        WorkspaceTab.SETTINGS -> false
-    }
-    fun updateEnabledOnly(value: Boolean) {
-        when(tab) {
-            WorkspaceTab.ADJUSTMENTS -> adjustEnabledOnly = value
-            WorkspaceTab.DETAIL -> detailEnabledOnly = value
-            WorkspaceTab.GEOMETRY -> geometryEnabledOnly = value
-            WorkspaceTab.SETTINGS -> Unit
-        }
-    }
-    val query = when(tab) {
-        WorkspaceTab.ADJUSTMENTS -> adjustQuery
-        WorkspaceTab.DETAIL -> detailQuery
-        WorkspaceTab.GEOMETRY -> geometryQuery
-        WorkspaceTab.SETTINGS -> ""
-    }
-    // Queries belong to categories. Returning to one with an active query must
-    // reveal that filter even if search was closed in another category.
-    val showSearch = searchVisible || query.isNotEmpty() || enabledOnly
-    fun updateQuery(value: String) {
-        when(tab) {
-            WorkspaceTab.ADJUSTMENTS -> adjustQuery = value
-            WorkspaceTab.DETAIL -> detailQuery = value
-            WorkspaceTab.GEOMETRY -> geometryQuery = value
-            WorkspaceTab.SETTINGS -> Unit
-        }
-    }
+    var enabledOnly by rememberSaveable { mutableStateOf(false) }
     fun rememberOperation(operation: String) {
         when(workspaceTabForOperation(operation)) {
             WorkspaceTab.ADJUSTMENTS -> adjustOperation = operation
@@ -393,13 +367,28 @@ private fun WorkspaceTools(
         WorkspaceTab.SETTINGS -> ""
     }
     val currentInCategory = ready.selectedModule?.takeIf { workspaceTabForOperation(it) == tab }
-    val shown = ready.modules.workspaceModules(tab, query, enabledOnly)
+    // Search is navigation, not an edit or a filter on the selected tool. Keep
+    // normal category selection independent from the query until a result is tapped.
+    val shown = ready.modules.workspaceModules(tab)
     val selected = shown.preferredWorkspaceModule(tab, currentInCategory ?: remembered)
     LaunchedEffect(ready.selectedModule) { ready.selectedModule?.let(::rememberOperation) }
     LaunchedEffect(selected?.operation, busy) {
         if(!busy && selected != null && selected.operation != ready.selectedModule) onSelectModule(selected.operation)
     }
     val keyboard = LocalSoftwareKeyboardController.current
+    val focus = LocalFocusManager.current
+    val searchFocus = remember { FocusRequester() }
+    fun closeSearch() {
+        searchVisible = false
+        query = ""
+        enabledOnly = false
+        focus.clearFocus()
+        keyboard?.hide()
+    }
+    BackHandler(enabled = searchVisible) { closeSearch() }
+    LaunchedEffect(searchVisible) {
+        if(searchVisible) searchFocus.requestFocus()
+    }
     val savedControls = rememberSaveableStateHolder()
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth().padding(start = 12.dp, end = 4.dp, top = 6.dp),
@@ -422,7 +411,7 @@ private fun WorkspaceTools(
                                 FontWeight.SemiBold else FontWeight.Normal)
                         }, enabled = !busy, onClick = {
                             expanded = false
-                            keyboard?.hide()
+                            closeSearch()
                             rememberOperation(module.operation)
                             onSelectModule(module.operation)
                         }, trailingIcon = {
@@ -443,41 +432,70 @@ private fun WorkspaceTools(
                     })
             }
             IconButton(onClick = {
-                if(showSearch) {
-                    searchVisible = false
-                    updateQuery("")
-                    updateEnabledOnly(false)
-                    keyboard?.hide()
-                } else searchVisible = true
-            }) {
-                Icon(painterResource(if(showSearch) R.drawable.workspace_ic_close else R.drawable.workspace_ic_search),
-                    stringResource(if(showSearch) R.string.workspace_close_search else R.string.tools_search))
+                if(searchVisible) closeSearch() else searchVisible = true
+            }, modifier = Modifier.testTag("editor_tool_search_button")) {
+                Icon(painterResource(if(searchVisible) R.drawable.workspace_ic_close else R.drawable.workspace_ic_search),
+                    stringResource(if(searchVisible) R.string.workspace_close_search else R.string.tools_search))
             }
         }
-        if(showSearch) Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+        if(searchVisible) Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(value = query, onValueChange = ::updateQuery,
-                modifier = Modifier.weight(1f), singleLine = true,
+            OutlinedTextField(value = query, onValueChange = { query = it },
+                modifier = Modifier.weight(1f).focusRequester(searchFocus).testTag("editor_tool_search_input"), singleLine = true,
                 label = { Text(stringResource(R.string.tools_search)) },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { keyboard?.hide() }))
-            FilterChip(selected = enabledOnly, onClick = { updateEnabledOnly(!enabledOnly) },
+            FilterChip(selected = enabledOnly, onClick = { enabledOnly = !enabledOnly },
+                modifier = Modifier.testTag("editor_tool_search_enabled"),
                 label = { Text(stringResource(R.string.tools_enabled)) })
         }
-        selected?.takeIf { !it.enabled }?.let {
+        if(!searchVisible) selected?.takeIf { !it.enabled }?.let {
             Text(stringResource(R.string.workspace_disabled_hint), Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                 style = MaterialTheme.typography.bodySmall)
         }
         HorizontalDivider(Modifier.padding(top = 4.dp))
-        if(selected == null) {
+        if(searchVisible) {
+            WorkspaceToolSearchResults(filterEditingTools(ready.modules, query, enabledOnly), busy) { module ->
+                closeSearch()
+                rememberOperation(module.operation)
+                onSelectTab(module.workspaceTab())
+                onSelectModule(module.operation)
+            }
+        } else if(selected == null) {
             Text(stringResource(R.string.tools_no_matches), Modifier.padding(16.dp), style = MaterialTheme.typography.bodyMedium)
         } else savedControls.SaveableStateProvider(selected.operation) {
             Column(Modifier.fillMaxSize().testTag("editor_parameter_scroll")
                 .verticalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 8.dp)) {
                 beforeControls(selected)
-                moduleContent(selected, query)
+                moduleContent(selected, "")
                 Spacer(Modifier.height(12.dp))
             }
+        }
+    }
+}
+
+@Composable
+private fun WorkspaceToolSearchResults(results: List<EditorModule>, busy: Boolean, onSelect: (EditorModule) -> Unit) {
+    Text(stringResource(R.string.workspace_search_results, results.size),
+        Modifier.padding(horizontal = 12.dp, vertical = 6.dp).testTag("editor_tool_search_count"),
+        style = MaterialTheme.typography.labelMedium)
+    if(results.isEmpty()) {
+        Text(stringResource(R.string.tools_no_matches), Modifier.padding(16.dp), style = MaterialTheme.typography.bodyMedium)
+    } else LazyColumn(Modifier.fillMaxSize().testTag("editor_tool_search_results")) {
+        items(results, key = { it.operation }) { module ->
+            ListItem(modifier = Modifier.fillMaxWidth()
+                .testTag("editor_tool_search_result_${module.operation}")
+                .clickable(enabled = !busy) { onSelect(module) },
+                headlineContent = { Text(module.name) },
+                supportingContent = {
+                    Text(stringResource(R.string.workspace_search_result_detail,
+                        stringResource(module.workspaceTab().labelResource()), module.operation))
+                },
+                trailingContent = {
+                    Text(stringResource(if(module.enabled) R.string.workspace_enabled else R.string.workspace_disabled),
+                        style = MaterialTheme.typography.labelSmall)
+                })
+            HorizontalDivider()
         }
     }
 }
