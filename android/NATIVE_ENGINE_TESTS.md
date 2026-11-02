@@ -6,7 +6,8 @@
 The current editor exposes the reviewed scalar and fixed-array parameters,
 curves, blending and parametric masks, native path/brush forms and node editors,
 retouch/spot forms, liquify point warps, native-input-aware crop aspect drafts,
-photo-selected tone equalizer adjustments, text fields and file imports described in
+photo-selected tone equalizer adjustments, mask placement, camera white-balance
+presets, coupled AgX/Filmic controls, text fields and file imports described in
 [control coverage](../mobile/CONTROL_PARITY.md). Runtime metadata depends on
 the image, module instances and native capabilities; source-policy field counts
 are not counts of independently rendered Android controls.
@@ -14,17 +15,17 @@ are not counts of independently rendered Android controls.
 The current validation includes:
 
 - The coordinated Android check passed production and instrumentation Kotlin
-  compilation, 122 JVM tests in 27 classes (zero failures or skips), and
+  compilation, 133 JVM tests in 29 classes (zero failures or skips), and
   `lintDevDebug`. Additional instrumentation-source checks remain separate from
   actually running those component tests on Android.
 - The final expanded source passed all seven host native CTest cases in
-  287.68 seconds, including the original-engine regression in 287.62 seconds.
-  Its RGB fixture traversed 1,195
+  238.13 seconds, including the original-engine regression in 237.87 seconds.
+  Its RGB fixture traversed 1,197
   advertised ordinary parameters, including live-instance and blending fields;
   this runtime count is distinct from the source-policy field counts. The run
   includes minimum-node and invalid-topology checks for paths and brushes.
-  The lower advertised count reflects hiding inactive lens-method controls;
-  lens shooting settings and catalogs are advertised when applicable.
+  Inactive lens-method controls and automatic-mode manual gamma/hardness are
+  hidden; dedicated controls and camera catalogs appear when applicable.
 - The preceding `9e749eeb6e` snapshot also passed production JNI compilation with the pinned
   AArch64/API 26 NDK, plus a host
   JNI test using the original engine: four Unicode round trips and five invalid
@@ -104,7 +105,7 @@ An oriented image with a crop after
 tone equalizer checks the mapped point against its uncropped reference at the
 same mask resolution; the deliberately wrong direct coordinate differs.
 
-The current production JNI bridge compiled with NDK 27.2 for AArch64/API 26 and
+The preceding live-tone production JNI bridge compiled with NDK 27.2 for AArch64/API 26 and
 linked against the host engine with no undefined symbols. A real host JVM
 `-Xint` probe changed all nine gains through the grouped action, added exactly
 one history step, verified changed pixels and exact metadata/pixel Undo/Redo,
@@ -128,6 +129,31 @@ stale selection/completion rejection. Compose sources cover immediate fine
 buttons, streamed slider targets, preserved gestures across preview updates and
 Selected tone feedback/rejection. These component sources compile; no Android
 device or emulator was available for their execution.
+
+The [additional controls](ADVANCED_CONTROLS.md) add six WB preset metadata JVM
+tests, five mask projection JVM tests, and fourteen compiled Compose component
+tests. Original temperature-plugin fixtures verify real catalog grouping and
+interpolation, four-channel exact entries and rejected interpolation gaps,
+inactive-channel preservation and calibrated gains above the manual limit.
+LDR/monochrome/unmatched fixtures omit unrelated catalogs. These are catalog
+and parameter fixtures, not a new camera-specific RAW rendering result.
+
+AgX/Filmic tests compare original primaries, range/pivot, grey-point and
+automatic hardness/gamma behavior, including atomic invalid-value rejection
+and automatic-mode visibility. Real RGB renders check native action and range
+changes, exact history and pixel Undo/Redo. Photo-mask tests cover atomic centre
+and clone-source placement, crop/orientation, fractional pixel aspect ratio,
+perspective and off-image rejection, inactive lens geometry, exact history and
+pixel restoration, and omitted rotated path/brush source handles. The pixel
+aspect callbacks now use the same committed input/output ratios as processing,
+instead of the previous swapped-axis resampling-ROI calculation.
+
+The three new JNI methods compiled for AArch64/API 26 and linked against the
+host engine with no undefined symbols. A real host JVM probe verified LDR
+preset rejection, read-only mask projections, changed pixels after placement,
+one history item for both axes, and exact metadata/projection/pixel Undo/Redo.
+All 25 invalid requests rejected without mutation and the PNG source hash
+remained unchanged. These compiled component tests have not run on Android.
 
 These checks do not establish execution of the new Compose instrumentation
 tests on Android, complete physical-device picker/edit/export behavior, every

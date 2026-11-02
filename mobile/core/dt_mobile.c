@@ -223,6 +223,40 @@ dt_mobile_status dt_mobile_tone_equalizer_set_target(dt_mobile_session *s, const
   return fail(s, DT_MOBILE_ERROR_UNSUPPORTED, "this build does not contain the darktable engine");
 #endif
 }
+dt_mobile_status dt_mobile_set_whitebalance_preset(dt_mobile_session *s, const char *module, int preset, int tuning)
+{
+  if(!s || !module || !module[0] || preset < 6) return DT_MOBILE_ERROR_INVALID_ARGUMENT;
+  if(atomic_load(&s->cancelled)) return fail(s, DT_MOBILE_ERROR_CANCELLED, "operation cancelled");
+#ifdef DT_MOBILE_HAS_DARKTABLE_ENGINE
+  return dt_mobile_engine_set_whitebalance_preset(s->engine, module, preset, tuning, s->error, sizeof(s->error));
+#else
+  return fail(s, DT_MOBILE_ERROR_UNSUPPORTED, "this build does not contain the darktable engine");
+#endif
+}
+dt_mobile_status dt_mobile_mask_photo_points(dt_mobile_session *s, const char *module, char **json)
+{
+  if(json) *json = NULL;
+  if(!s || !module || !module[0] || !json) return DT_MOBILE_ERROR_INVALID_ARGUMENT;
+  if(atomic_load(&s->cancelled)) return fail(s, DT_MOBILE_ERROR_CANCELLED, "operation cancelled");
+#ifdef DT_MOBILE_HAS_DARKTABLE_ENGINE
+  return dt_mobile_engine_mask_photo_points(s->engine, module, json, s->error, sizeof(s->error));
+#else
+  return fail(s, DT_MOBILE_ERROR_UNSUPPORTED, "this build does not contain the darktable engine");
+#endif
+}
+dt_mobile_status dt_mobile_mask_place_photo(dt_mobile_session *s, const char *module,
+                                            int form_id, int source, double x, double y)
+{
+  if(!s || !module || !module[0] || form_id <= 0 || (source != 0 && source != 1)
+     || !isfinite(x) || !isfinite(y) || x < 0 || x >= 1 || y < 0 || y >= 1)
+    return DT_MOBILE_ERROR_INVALID_ARGUMENT;
+  if(atomic_load(&s->cancelled)) return fail(s, DT_MOBILE_ERROR_CANCELLED, "operation cancelled");
+#ifdef DT_MOBILE_HAS_DARKTABLE_ENGINE
+  return dt_mobile_engine_mask_place_photo(s->engine, module, form_id, source, x, y, s->error, sizeof(s->error));
+#else
+  return fail(s, DT_MOBILE_ERROR_UNSUPPORTED, "this build does not contain the darktable engine");
+#endif
+}
 dt_mobile_status dt_mobile_new_instance(dt_mobile_session *s, const char *module, char **new_identifier)
 {
   if(new_identifier) *new_identifier = NULL;

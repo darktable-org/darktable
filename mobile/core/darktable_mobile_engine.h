@@ -42,6 +42,15 @@ dt_mobile_status dt_mobile_engine_set_whitebalance_temperature(dt_mobile_engine 
 dt_mobile_status dt_mobile_engine_set_whitebalance_setting(dt_mobile_engine *engine,
                                                          const char *module, int setting,
                                                          char *error, size_t error_size);
+dt_mobile_status dt_mobile_engine_set_whitebalance_preset(dt_mobile_engine *engine,
+                                                         const char *module, int preset, int tuning,
+                                                         char *error, size_t error_size);
+dt_mobile_status dt_mobile_engine_mask_photo_points(dt_mobile_engine *engine,
+                                                    const char *module, char **json,
+                                                    char *error, size_t error_size);
+dt_mobile_status dt_mobile_engine_mask_place_photo(dt_mobile_engine *engine,
+                                                   const char *module, int form_id, int source,
+                                                   double x, double y, char *error, size_t error_size);
 dt_mobile_status dt_mobile_engine_set_crop(dt_mobile_engine *engine, const char *module,
                                           float left, float top, float right, float bottom,
                                           char *error, size_t error_size);

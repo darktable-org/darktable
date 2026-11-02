@@ -76,6 +76,12 @@ static void test_arguments(void)
   CHECK(dt_mobile_set_whitebalance_gains(NULL, "temperature", whitebalance, 3) == DT_MOBILE_ERROR_INVALID_ARGUMENT);
   CHECK(dt_mobile_set_whitebalance_temperature(NULL, "temperature", 6500.0, 1.0) == DT_MOBILE_ERROR_INVALID_ARGUMENT);
   CHECK(dt_mobile_set_whitebalance_setting(NULL, "temperature", 0) == DT_MOBILE_ERROR_INVALID_ARGUMENT);
+  CHECK(dt_mobile_set_whitebalance_preset(NULL, "temperature", 6, 0) == DT_MOBILE_ERROR_INVALID_ARGUMENT);
+  json = (char *)1;
+  CHECK(dt_mobile_mask_photo_points(NULL, "exposure", &json) == DT_MOBILE_ERROR_INVALID_ARGUMENT);
+  CHECK(json == NULL);
+  CHECK(dt_mobile_mask_photo_points(NULL, "exposure", NULL) == DT_MOBILE_ERROR_INVALID_ARGUMENT);
+  CHECK(dt_mobile_mask_place_photo(NULL, "exposure", 1, 0, .5, .5) == DT_MOBILE_ERROR_INVALID_ARGUMENT);
   CHECK(dt_mobile_set_crop(NULL, "crop", 0.0f, 0.0f, 1.0f, 1.0f) == DT_MOBILE_ERROR_INVALID_ARGUMENT);
   const int params = 1;
   CHECK(dt_mobile_set_module_params(NULL, "exposure", &params, sizeof(params)) == DT_MOBILE_ERROR_INVALID_ARGUMENT);

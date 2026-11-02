@@ -39,6 +39,8 @@ import org.example.darktableandroid.nativecore.retainModuleSelection
 import org.example.darktableandroid.nativecore.previewArgbPixels
 import org.example.darktableandroid.nativecore.accepts
 import org.example.darktableandroid.nativecore.textParameterForWrite
+import org.example.darktableandroid.nativecore.MaskPhotoPoints
+import org.example.darktableandroid.nativecore.parseMaskPhotoPoints
 import org.example.darktableandroid.storage.UriCache
 import org.example.darktableandroid.storage.ToolAssetCache
 
@@ -56,9 +58,10 @@ sealed interface EditorState {
         val selectedModule: String? = null,
         val toneSample: ToneEqualizerSample? = null,
         val previewCurrent: Boolean = true,
+        val maskPhotoSelection: MaskPhotoSelection? = null,
     ) : EditorState
     data class Failed(val source: Uri?, val message: String) : EditorState
-    enum class Stage { COPYING, DECODING, RENDERING, SAMPLING, TONE_ADJUSTING, EDITING, EXPORTING, CANCELLING }
+    enum class Stage { COPYING, DECODING, RENDERING, SAMPLING, MASK_LOADING, TONE_ADJUSTING, EDITING, EXPORTING, CANCELLING }
 }
 
 data class RuntimeAvailability(val checking: Boolean = true, val available: Boolean = false, val message: String? = null)
@@ -169,7 +172,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val active = session ?: return
         val request = generation.get()
         toneTargets.clear()
-        mutableState.value = EditorState.Working(EditorState.Stage.SAMPLING, current.copy(toneSample = null))
+        mutableState.value = EditorState.Working(EditorState.Stage.SAMPLING,
+            current.copy(toneSample = null, maskPhotoSelection = null))
         work = engineScope.launch {
             try {
                 val (exposure, output) = withContext(nativeDispatcher) {
@@ -181,7 +185,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 if(request == generation.get()) {
                     val selection = toneSelections.incrementAndGet()
                     toneTargets.reset(selection)
-                    mutableState.value = current.copy(notice = null,
+                    mutableState.value = current.copy(notice = null, maskPhotoSelection = null,
                         toneSample = ToneEqualizerSample(current.sessionId, operation, current.preview, x, y, exposure,
                             selectionId = selection, selectedExposure = output))
                 }
@@ -272,6 +276,49 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         edit { NativeCore.setModuleEnabled(it, operation, enabled) }
     }
 
+    fun loadMaskPhoto(operation: String, expectedSessionId: Long, expectedPreview: Bitmap) {
+        val current = mutableState.value as? EditorState.Ready ?: return
+        if(!current.previewCurrent || current.sessionId != expectedSessionId || current.preview !== expectedPreview ||
+            current.selectedModule != operation || current.modules.singleOrNull { it.operation == operation }?.enabled != true) return
+        val active = session ?: return
+        val request = generation.get()
+        toneTargets.clear()
+        mutableState.value = EditorState.Working(EditorState.Stage.MASK_LOADING,
+            current.copy(toneSample = null, maskPhotoSelection = null))
+        work = engineScope.launch {
+            try {
+                val points = withContext(nativeDispatcher) {
+                    checkNotNull(parseMaskPhotoPoints(NativeCore.maskPhotoPoints(active.handle(), operation))) {
+                        "The native mask positions are invalid"
+                    }
+                }
+                if(request == generation.get()) mutableState.value = current.copy(toneSample = null, notice = null,
+                    maskPhotoSelection = MaskPhotoSelection(current.sessionId, operation, current.preview, points))
+            } catch(_: CancellationException) {
+            } catch(failure: Throwable) {
+                if(request == generation.get()) mutableState.value = current.copy(toneSample = null,
+                    maskPhotoSelection = MaskPhotoSelection(current.sessionId, operation, current.preview, MaskPhotoPoints(emptyList())),
+                    notice = errorMessage(failure))
+            }
+        }
+    }
+
+    fun placeMaskPhoto(target: MaskPhotoTarget, x: Float, y: Float) {
+        val current = mutableState.value as? EditorState.Ready ?: return
+        val selection = current.maskPhotoSelection ?: return
+        if(!current.previewCurrent || target.sessionId != current.sessionId || target.preview !== current.preview ||
+            target.module != current.selectedModule || selection.module != target.module ||
+            selection.sessionId != target.sessionId || selection.preview !== target.preview ||
+            !x.isFinite() || !y.isFinite() || x < 0f || x >= 1f || y < 0f || y >= 1f ||
+            current.modules.singleOrNull { it.operation == target.module }?.enabled != true) return
+        val form = selection.points.forms.singleOrNull { it.id == target.formId } ?: return
+        if((if(target.source) form.source else form.center) == null) return
+        editWithSelection(retainMaskPhotoModule = target.module) { handle ->
+            NativeCore.placeMaskPhoto(handle, target.module, target.formId, target.source, x.toDouble(), y.toDouble())
+            null
+        }
+    }
+
     fun setTextParameter(operation: String, parameter: String, value: String) {
         val current = mutableState.value as? EditorState.Ready ?: return
         val control = current.modules.singleOrNull { it.operation == operation }
@@ -302,6 +349,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         if(operation != null && selected == null) return
         if(selected != current.selectedModule) toneTargets.clear()
         mutableState.value = current.copy(selectedModule = selected,
+            maskPhotoSelection = current.maskPhotoSelection.takeIf { selected == current.selectedModule },
             toneSample = current.toneSample.takeIf { selected == current.selectedModule })
     }
 
@@ -339,6 +387,12 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         if(balance.acceptsSetting(setting)) edit { NativeCore.setWhiteBalanceSetting(it, operation, setting) }
     }
 
+    fun setWhiteBalancePreset(operation: String, preset: Int, tuning: Int) {
+        val current = mutableState.value as? EditorState.Ready ?: return
+        val balance = current.modules.singleOrNull { it.operation == operation }?.whiteBalance ?: return
+        if(balance.acceptsPreset(preset, tuning)) edit { NativeCore.setWhiteBalancePreset(it, operation, preset, tuning) }
+    }
+
     fun setWhiteBalanceTemperature(operation: String, kelvin: Double, tint: Double) {
         val current = mutableState.value as? EditorState.Ready ?: return
         val temperature = current.modules.firstOrNull { it.operation == operation }?.whiteBalance?.temperature ?: return
@@ -359,7 +413,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     private fun edit(change: (Long) -> Unit) = editWithSelection { handle -> change(handle); null }
 
-    private fun editWithSelection(changesNativeState: Boolean = true,
+    private fun editWithSelection(changesNativeState: Boolean = true, retainMaskPhotoModule: String? = null,
                                   change: (Long) -> String?) {
         val current = mutableState.value as? EditorState.Ready ?: return
         val currentSession = session ?: return
@@ -376,8 +430,15 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     changed = changesNativeState
                     val modules = parseModules(NativeCore.listModules(handle))
                     val preview = render(handle)
+                    val maskSelection = retainMaskPhotoModule?.let { operation ->
+                        runCatching {
+                            parseMaskPhotoPoints(NativeCore.maskPhotoPoints(handle, operation))?.let { points ->
+                                MaskPhotoSelection(current.sessionId, operation, preview, points)
+                            }
+                        }.getOrNull()
+                    }
                     current.copy(preview = preview, previewCurrent = true, modules = modules,
-                        toneSample = null,
+                        toneSample = null, maskPhotoSelection = maskSelection,
                         history = parseEditHistory(NativeCore.history(handle)), notice = null,
                         selectedModule = retainModuleSelection(modules, preferredSelection ?: current.selectedModule))
                 }
@@ -392,10 +453,12 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                             val handle = currentSession.handle()
                             val modules = parseModules(NativeCore.listModules(handle))
                             current.copy(modules = modules, history = parseEditHistory(NativeCore.history(handle)),
+                                maskPhotoSelection = current.maskPhotoSelection.takeUnless { changed },
                                 toneSample = current.toneSample.takeUnless { changed },
                                 previewCurrent = current.previewCurrent && !changed,
                                 selectedModule = retainModuleSelection(modules, preferredSelection ?: current.selectedModule))
                         }.getOrElse { current.copy(history = null, toneSample = current.toneSample.takeUnless { changed },
+                            maskPhotoSelection = current.maskPhotoSelection.takeUnless { changed },
                             previewCurrent = current.previewCurrent && !changed) }
                     }
                     if(request == generation.get()) {

@@ -64,15 +64,16 @@ selected mode; exposing a stored setting does not make every mode use it.
 | Feature | Available interaction | Further desktop interaction |
 | --- | --- | --- |
 | Tone equalizer | Photo-point sampling of the original filtered mask; live output-exposure slider and fine buttons; actual selected-tone feedback and smooth nine-band updates with one Undo step per gesture | Full desktop graph/picker presentation and mask overlay |
+| AgX / Filmic RGB | Original range/pivot and automatic gamma/hardness coupling; AgX exposure-range read, native primaries presets and reverse pre-mapping action; manual gamma/hardness shown only in manual mode | Image-area automatic level/range/pivot pickers |
 | Base/RGB/Lab tone/color-zone curves | Native samples and interpolation, drag/numeric nodes, add/remove, native channel defaults; RGB linked/independent options | Further module-specific automatic sampling and graph gestures |
 | Levels and fixed bands | Ordered black/middle/white components, channel vectors and frequency-band sliders with native bounds | Full desktop graph/picker presentation |
 | Zone system | Native zone-count reset, ordered output boundaries and automatic-position switches | Desktop strip dragging/pickers |
-| White balance | Image settings, active gain channels and calibrated Kelvin/tint pairs | Full camera preset/tuning browser and spot picker |
+| White balance | Image settings, active gain channels, calibrated Kelvin/tint, camera-specific preset browser and valid integer tuning choices | Photo spot picker and unsupported camera calibrations |
 | Lens correction | Original image-default initialization, matched camera/lens catalog selection, focal/aperture/distance/crop settings, native autoscale and source-aware correction/manual-vignette controls | Calibration absent from the installed database, unsupported embedded opcodes and unverified camera-specific geometry |
 | Crop/perspective | Atomic crop bounds/reset; aspect presets fitted to the original crop input ROI, portrait/free drafts; perspective scalar transforms | Uncropped-photo touch overlay and automatic line fitting |
 | Blending | Original opacity, supported modes/reverse/fulcrum, preceding raster-source selection/inversion; input/output parametric channels with four ordered thresholds, polarity, boost/reset and mask refinement | Live channel histograms, automatic sampling and further desktop graph gestures |
-| Drawn masks | Add/delete native circle, ellipse, gradient, closed Bézier path and brush forms; node/handle/feather controls, brush hardness/density, opacity/inversion and five native group operations | Freehand stroke capture, direct canvas manipulation and full mask-manager workflows |
-| Spots/retouch | Native clone/repair shapes and paths, retouch brushes, source coordinates, per-form algorithm/blur/fill controls, wavelet selectors and settings reset | Complete desktop repair canvas, freehand gestures and scale-copy workflow |
+| Drawn masks | Native shape/node/feather controls and group operations; photo-aligned placement of circle/ellipse/gradient centres through the original geometry pipeline | Freehand stroke capture, outline resize/rotation and full mask-manager workflows |
+| Spots/retouch | Native clone/repair shapes and paths, brushes, per-form controls and wavelet settings; photo-aligned clone-source placement where the anchor is supported | Rotated path/brush source handles, complete repair canvas, freehand gestures and scale-copy workflow |
 | Liquify | Native standalone warp nodes, position/radius/strength/hardness/type and add/delete | Linked strokes, line/curve paths and the full interactive mesh canvas |
 | External files | System document import into retained session assets; native raster PFM/PNG, LUT Cube/3DL/Hald-PNG and overlay PNG/JPEG/TIFF inputs | Optional compressed LUT formats, wider overlay-format verification and complete installed asset browsers |
 | Instances/history/export | Default instances, independent parameters, session undo/redo and installed native export options | Copy/delete/reorder instances, styles/presets and complete optional codec parity |
@@ -95,6 +96,13 @@ member initializes the group. Spots supports clone paths, while retouch supports
 both paths and brushes. The diagram shows applied input-space coordinates and
 handles separately from the processed photo; it is not a photo-aligned touch
 canvas or a rasterized feather preview.
+
+The separate **Place masks on photo** mode projects supported native centres
+and clone-source anchors through all active geometry, then maps a photo tap
+back to the original image. Both coordinates change in one native mask history
+step. Projection is tied to the exact image, selected module, form and preview;
+ordinary edits and history changes invalidate it. See
+[advanced controls](../android/ADVANCED_CONTROLS.md) for scope and validation.
 
 Crop aspect presets fit a draft rectangle using the original pipeline's input
 dimensions for that crop instance, including preceding geometry changes.
@@ -132,13 +140,15 @@ tool instead of exposing private acquisition flags or cluster counts.
 ## Remaining scope and verification
 
 Automatic picker operations and GUI-maintained parameter transformations are not
-all covered by independent scalar writes. Examples include exposure deflicker
-metering, filmic automatic hardness/range helpers, AgX range/pivot assistance,
-full noise/white-balance preset selection and source-patch acquisition. The native
+all covered by independent scalar writes. Remaining examples include image-area
+filmic/AgX level and pivot pickers, white-balance spot sampling, full noise
+preset selection and source-patch acquisition. Filmic hardness/range coupling,
+AgX native actions and camera white-balance presets now use dedicated native
+operations. The native
 manual parameter controls remain available; unported automatic controls are not
 represented by buttons which merely store an otherwise unused value.
 
-Freehand mask stroke capture, direct photo-canvas editing, live channel
+Freehand mask stroke capture, outline editing on the photo, live channel
 histograms, automatic pickers, linked liquify strokes and the advanced workflows
 listed above remain. Overlay selection uses its original import/dependency
 operations; exact tested formats and history/pixel results belong to the

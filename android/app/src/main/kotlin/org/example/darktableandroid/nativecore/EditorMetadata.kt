@@ -179,7 +179,8 @@ private fun JSONObject.readWhiteBalance(): WhiteBalance? = try {
         getString("settingLabel"), List(settings.length()) { index ->
             val choice = settings.getJSONObject(index)
             WhiteBalanceSetting(choice.curveOptionInt("id"), choice.getString("label"))
-        }, optJSONObject("temperature")?.readWhiteBalanceTemperature())
+        }, optJSONObject("temperature")?.readWhiteBalanceTemperature(),
+        optJSONObject("cameraPresets")?.readWhiteBalanceCameraPresets())
 } catch(_: org.json.JSONException) {
     null
 } catch(_: IllegalArgumentException) {
@@ -190,6 +191,28 @@ private fun JSONObject.readWhiteBalanceTemperature(): WhiteBalanceTemperature? =
     checkedWhiteBalanceTemperature(getDouble("kelvin"), getDouble("tint"), getDouble("minKelvin"),
         getDouble("maxKelvin"), getDouble("minTint"), getDouble("maxTint"))
 } catch(_: org.json.JSONException) {
+    null
+}
+
+private fun JSONObject.readWhiteBalanceCameraPresets(): WhiteBalanceCameraPresets? = try {
+    val presets = getJSONArray("presets")
+    require(presets.length() in 1..50)
+    fun selected(name: String): Int? = if(isNull(name)) null else curveOptionInt(name)
+    checkedWhiteBalanceCameraPresets(getString("camera"), List(presets.length()) { index ->
+        val preset = presets.getJSONObject(index)
+        val tuning = preset.getJSONArray("tuning")
+        require(tuning.length() in 1..4096)
+        WhiteBalancePreset(preset.curveOptionInt("id"), preset.getString("label"),
+            List(tuning.length()) { tuningIndex ->
+                val value = (tuning.get(tuningIndex) as? Number)?.toDouble()
+                    ?: throw IllegalArgumentException("Expected a tuning integer")
+                require(value.isFinite() && value == value.toInt().toDouble())
+                value.toInt()
+            }, preset.curveOptionInt("defaultTuning"))
+    }, selected("selectedPreset"), selected("selectedTuning"))
+} catch(_: org.json.JSONException) {
+    null
+} catch(_: IllegalArgumentException) {
     null
 }
 

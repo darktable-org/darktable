@@ -69,6 +69,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.example.darktableandroid.nativecore.EditorModule
+import org.example.darktableandroid.nativecore.MaskPhotoPoint
 
 /** A persistent editor: parameter scrolling has no dismiss or navigation gesture. */
 @Composable
@@ -87,6 +88,9 @@ internal fun EditorWorkspace(
     toneSample: ToneEqualizerSample? = null,
     onToneSample: (String, Float, Float) -> Unit = { _, _, _ -> },
     onToneAdjust: (ToneEqualizerSample, Double, Long, Boolean) -> Unit = { _, _, _, _ -> },
+    maskPhotoSelection: MaskPhotoSelection? = null,
+    onLoadMaskPhoto: (String) -> Unit = {},
+    onPlaceMaskPhoto: (MaskPhotoTarget, Float, Float) -> Unit = { _, _, _ -> },
     moduleContent: @Composable (EditorModule, String) -> Unit,
 ) {
     val ready = when(state) {
@@ -108,6 +112,27 @@ internal fun EditorWorkspace(
     }
     var toneImageMode by rememberSaveable(ready?.sessionId, ready?.selectedModule, tabName) { mutableStateOf(false) }
     var tonePoint by remember(ready?.sessionId, ready?.selectedModule) { mutableStateOf<ToneEqualizerPoint?>(null) }
+    val maskModule = ready?.modules?.singleOrNull { module ->
+        module.operation == ready.selectedModule && module.parameters.any { maskControlAddress(it.name) != null }
+    }
+    var maskImageMode by rememberSaveable(ready?.sessionId, ready?.selectedModule, tabName) { mutableStateOf(false) }
+    var maskFormId by rememberSaveable(ready?.sessionId, ready?.selectedModule, tabName) { mutableStateOf<Int?>(null) }
+    var maskSource by rememberSaveable(ready?.sessionId, ready?.selectedModule, tabName) { mutableStateOf(false) }
+    var maskLoaded by remember(ready?.sessionId, ready?.selectedModule, tabName) { mutableStateOf(false) }
+    val maskAvailable = maskModule?.enabled == true && ready?.previewCurrent == true &&
+        workspaceTabForOperation(maskModule.operation) == tab
+    val currentMaskSelection = maskPhotoSelection?.takeIf { selection ->
+        ready != null && selection.sessionId == ready.sessionId && selection.module == maskModule?.operation &&
+            selection.preview === ready.preview
+    }
+    val maskForms = currentMaskSelection?.points?.forms.orEmpty()
+    val maskForm = maskForms.singleOrNull { it.id == maskFormId } ?: maskForms.firstOrNull()
+    val maskUsesSource = maskForm?.let { it.center == null || (maskSource && it.source != null) } ?: false
+    val maskActive = maskAvailable && maskImageMode
+    val maskTarget = if(maskActive && currentMaskSelection != null && maskForm != null)
+        MaskPhotoTarget(currentMaskSelection.sessionId, currentMaskSelection.module, currentMaskSelection.preview,
+            maskForm.id, maskUsesSource) else null
+    val maskPoint = maskForm?.let { if(maskUsesSource) it.source else it.center }
     val toneAvailable = tab == WorkspaceTab.ADJUSTMENTS && toneModule?.enabled == true && ready?.previewCurrent == true
     val toneActive = toneAvailable && toneImageMode
     val currentSample = toneSample?.takeIf { sample ->
@@ -126,6 +151,24 @@ internal fun EditorWorkspace(
     }
     LaunchedEffect(toneAvailable) {
         if(!toneAvailable) { toneImageMode = false; tonePoint = null }
+    }
+    LaunchedEffect(maskAvailable, maskImageMode, currentMaskSelection, busy) {
+        if(!maskAvailable || !maskImageMode) {
+            maskImageMode = false
+            maskLoaded = false
+            maskFormId = null
+            maskSource = false
+        } else if(currentMaskSelection != null) {
+            maskLoaded = true
+            maskFormId = maskForm?.id
+            maskSource = maskUsesSource
+        } else if(maskLoaded && !busy) {
+            // Generic edits, Undo and image changes revoke the projection lease.
+            maskImageMode = false
+            maskLoaded = false
+            maskFormId = null
+            maskSource = false
+        }
     }
     LaunchedEffect(ready?.preview) {
         // A tone-only adjustment may return the same selection bound to a new
@@ -154,7 +197,8 @@ internal fun EditorWorkspace(
         Column(Modifier.fillMaxSize().padding(padding)) {
             WorkspacePreview(state, runtime, ready, busy, onOpen, onExport, onUndo, onRedo,
                 onCancel, onRetry, onRefreshPreview, Modifier.fillMaxWidth().weight(if(keyboardVisible) .25f else 1f)
-                    .testTag("editor_preview_pane"), toneActive, tonePoint, ::sampleTone)
+                    .testTag("editor_preview_pane"), toneActive, tonePoint, ::sampleTone,
+                maskActive, maskTarget, maskPoint, onPlaceMaskPhoto)
             HorizontalDivider()
             Box(Modifier.fillMaxWidth().weight(if(keyboardVisible) .75f else 1f).testTag("editor_tools_pane")) {
                 if(tab == WorkspaceTab.SETTINGS) WorkspaceAppInfo(runtime)
@@ -163,9 +207,27 @@ internal fun EditorWorkspace(
                     WorkspaceTools(ready, tab, busy, onSelectModule, onEnabled, { selected ->
                         if(selected.operation == toneModule?.operation) {
                             ToneEqualizerTouchEditor((!busy || toneUpdating) && toneAvailable, toneActive, selectedSample,
-                                onImageMode = { active -> toneImageMode = active; tonePoint = null },
+                                onImageMode = { active ->
+                                    toneImageMode = active; tonePoint = null
+                                    if(active) { maskImageMode = false; maskLoaded = false }
+                                },
                                 onSelectCentre = { sampleTone(ToneEqualizerPoint(.5f, .5f)) },
                                 onAdjust = onToneAdjust, selectionEnabled = !busy && toneAvailable)
+                            HorizontalDivider()
+                        }
+                        if(selected.operation == maskModule?.operation) {
+                            MaskPhotoEditor(!busy && maskAvailable, maskActive, currentMaskSelection?.points,
+                                maskForm?.id, maskUsesSource, onImageMode = { active ->
+                                    maskImageMode = active
+                                    maskLoaded = false
+                                    maskFormId = null
+                                    maskSource = false
+                                    if(active) {
+                                        toneImageMode = false; tonePoint = null
+                                        onLoadMaskPhoto(selected.operation)
+                                    }
+                                }, onForm = { id -> maskFormId = id; maskSource = false },
+                                onSource = { maskSource = it })
                             HorizontalDivider()
                         }
                     }, moduleContent)
@@ -183,6 +245,10 @@ private fun WorkspacePreview(
     toneActive: Boolean,
     tonePoint: ToneEqualizerPoint?,
     onTonePoint: (ToneEqualizerPoint) -> Unit,
+    maskActive: Boolean,
+    maskTarget: MaskPhotoTarget?,
+    maskPoint: MaskPhotoPoint?,
+    onPlaceMaskPhoto: (MaskPhotoTarget, Float, Float) -> Unit,
 ) {
     Box(modifier.background(MaterialTheme.colorScheme.surfaceVariant)) {
         ready?.let {
@@ -190,6 +256,8 @@ private fun WorkspacePreview(
                 Image(it.preview.asImageBitmap(), stringResource(R.string.preview_description),
                     Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
                 if(toneActive) ToneEqualizerPhotoTarget(it.preview.width, it.preview.height, !busy, tonePoint, onTonePoint)
+                if(maskActive) MaskPhotoTargetOverlay(it.preview.width, it.preview.height, !busy,
+                    maskTarget, maskPoint, onPlaceMaskPhoto)
             }
         }
         if(ready == null) Column(Modifier.align(Alignment.Center).padding(24.dp),
@@ -468,6 +536,7 @@ private fun EditorState.Stage.workspaceLabelResource(): Int = when(this) {
     EditorState.Stage.RENDERING -> R.string.stage_rendering
     EditorState.Stage.EDITING -> R.string.stage_editing
     EditorState.Stage.TONE_ADJUSTING -> R.string.tone_touch_updating
+    EditorState.Stage.MASK_LOADING -> R.string.mask_photo_preparing
     EditorState.Stage.SAMPLING -> R.string.tone_touch_sampling
     EditorState.Stage.EXPORTING -> R.string.stage_exporting
     EditorState.Stage.CANCELLING -> R.string.stage_cancelling

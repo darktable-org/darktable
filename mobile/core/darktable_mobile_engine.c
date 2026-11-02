@@ -63,6 +63,7 @@ static gchar *runtime_temp_root;
 static void sync_temperature_chroma(dt_develop_t *dev);
 static void sync_mobile_overlay_dependencies(dt_develop_t *dev);
 static int prepare_mobile_lens_parameters(dt_iop_module_t *module);
+static gboolean mobile_editor_parameter_visible(dt_iop_module_t *module, const char *name);
 
 /* History replay may visit several former raster sources for one consumer.
  * Rebuild the ephemeral user/sink tables from the final restored parameters,
@@ -627,7 +628,8 @@ static void append_parameter(dt_iop_module_t *module, const dt_introspection_fie
 {
   if(!dt_mobile_extended_parameter_applicable(module)
      || !dt_mobile_parameter_allowed(module->op, path, field->header.type)
-     || !dt_mobile_array_parameter_visible(module, path)) return;
+     || !dt_mobile_array_parameter_visible(module, path)
+     || !mobile_editor_parameter_visible(module, path)) return;
   parameter_json *description = data;
   long double value, minimum, maximum;
   const char *type;
@@ -724,6 +726,9 @@ static void append_parameter(dt_iop_module_t *module, const dt_introspection_fie
 #include "dt_mobile_zone_controls.h"
 #include "dt_mobile_mask_controls.h"
 #include "dt_mobile_liquify_controls.h"
+#include "dt_mobile_editor_actions.h"
+#include "dt_mobile_wb_presets.h"
+#include "dt_mobile_mask_photo.h"
 
 enum { MOBILE_CURVE_CHANNELS = 3, MOBILE_CURVE_MAX_NODES = 20, MOBILE_CURVE_SAMPLES = 256 };
 static const float mobile_curve_min_spacing = 1e-6f;
@@ -1374,6 +1379,7 @@ static void append_whitebalance(dt_iop_module_t *module, GString *json)
   }
   g_string_append_c(json, ']');
   append_whitebalance_temperature(module, &layout, gains, json);
+  append_mobile_wb_presets(module, json);
   g_string_append_c(json, '}');
 }
 
@@ -1468,6 +1474,7 @@ dt_mobile_status dt_mobile_engine_modules(dt_mobile_engine *engine, char **json,
     if(strcmp(module->op, "lens") && module->have_introspection && module->get_introspection())
       visit_fields(module, module->get_introspection()->field, 0, "", 0, append_parameter, &fields);
     append_mobile_lens_parameters(module, &fields);
+    append_mobile_editor_actions(module, &fields);
     append_mobile_blending_parameters(module, &fields);
     append_mobile_zone_parameters(module, &fields);
     append_mobile_mask_parameters(module, &fields);
@@ -2104,6 +2111,16 @@ dt_mobile_status dt_mobile_engine_set_parameter(dt_mobile_engine *engine, const 
     end_operation(engine);
     return status;
   }
+  const int editor_update = module ? update_mobile_editor_parameter(module, parameter, value) : 0;
+  if(editor_update)
+  {
+    if(editor_update < 0)
+      status = engine_fail(error, error_size, DT_MOBILE_ERROR_INVALID_ARGUMENT,
+                           "this editor action or coupled parameter is unavailable or invalid");
+    else save_module(engine, module, TRUE);
+    end_operation(engine);
+    return status;
+  }
   parameter_update update = { parameter, value, FALSE, FALSE };
   if(module && module->have_introspection && module->get_introspection())
     visit_fields(module, module->get_introspection()->field, 0, "", 0, update_parameter, &update);
@@ -2130,6 +2147,67 @@ dt_mobile_status dt_mobile_engine_set_text_parameter(dt_mobile_engine *engine, c
   else if(updated < 0)
     status = engine_fail(error, error_size, DT_MOBILE_ERROR_INVALID_ARGUMENT, "text exceeds the native field or has invalid contents");
   else save_module(engine, module, TRUE);
+  end_operation(engine);
+  return status;
+}
+
+dt_mobile_status dt_mobile_engine_set_whitebalance_preset(dt_mobile_engine *engine, const char *identifier,
+                                                         int preset, int tuning, char *error, size_t error_size)
+{
+  dt_mobile_status status = begin_operation(engine, error, error_size);
+  if(status != DT_MOBILE_OK) return status;
+  dt_iop_module_t *module = find_module(engine, identifier);
+  mobile_whitebalance_layout layout;
+  if(!whitebalance_layout(module, &layout) || !whitebalance_available(module)
+     || dt_image_is_ldr(&module->dev->image_storage))
+    status = engine_fail(error, error_size, DT_MOBILE_ERROR_UNSUPPORTED,
+                         "this image has no camera white-balance presets");
+  else if(set_mobile_whitebalance_preset(module, preset, tuning) < 0)
+    status = engine_fail(error, error_size, DT_MOBILE_ERROR_INVALID_ARGUMENT,
+                         "this camera white-balance preset or tuning is unavailable");
+  else save_module(engine, module, TRUE);
+  end_operation(engine);
+  return status;
+}
+
+dt_mobile_status dt_mobile_engine_mask_photo_points(dt_mobile_engine *engine, const char *identifier,
+                                                    char **json, char *error, size_t error_size)
+{
+  *json = NULL;
+  dt_mobile_status status = begin_operation(engine, error, error_size);
+  if(status != DT_MOBILE_OK) return status;
+  dt_iop_module_t *module = find_module(engine, identifier);
+  if(!module || !module->enabled || !mobile_masks_available(module))
+    status = engine_fail(error, error_size, DT_MOBILE_ERROR_INVALID_ARGUMENT,
+                         "select an enabled mask-capable tool before placing a mask");
+  else status = mobile_mask_photo_points(engine, module, json, error, error_size);
+  end_operation(engine);
+  return status;
+}
+
+dt_mobile_status dt_mobile_engine_mask_place_photo(dt_mobile_engine *engine, const char *identifier,
+                                                   int form_id, int source, double x, double y,
+                                                   char *error, size_t error_size)
+{
+  dt_mobile_status status = begin_operation(engine, error, error_size);
+  if(status != DT_MOBILE_OK) return status;
+  dt_iop_module_t *module = find_module(engine, identifier);
+  if(!module || !module->enabled || !mobile_masks_available(module))
+    status = engine_fail(error, error_size, DT_MOBILE_ERROR_INVALID_ARGUMENT,
+                         "select an enabled mask-capable tool before placing a mask");
+  else
+  {
+    status = mobile_mask_place_photo(engine, module, form_id, source, x, y, error, error_size);
+    if(status == DT_MOBILE_OK)
+    {
+      prepare_mobile_lens_parameters(module);
+      dt_dev_add_masks_history_item_ext(&engine->develop, module, FALSE, TRUE);
+      sync_temperature_chroma(&engine->develop);
+      sync_mobile_overlay_dependencies(&engine->develop);
+      dt_dev_write_history(&engine->develop);
+      record_history_state(engine);
+    }
+  }
   end_operation(engine);
   return status;
 }

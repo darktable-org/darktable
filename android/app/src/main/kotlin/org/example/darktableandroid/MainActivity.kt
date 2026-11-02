@@ -148,6 +148,11 @@ private fun MobileRawApp(sourceIntent: SourceIntent?, onSourceSelected: (Uri, In
             } },
             onToneAdjust = editor::adjustToneEqualizer,
             onRefreshPreview = editor::refreshPreview,
+            maskPhotoSelection = ready?.maskPhotoSelection,
+            onLoadMaskPhoto = { operation -> ready?.let {
+                editor.loadMaskPhoto(operation, it.sessionId, it.preview)
+            } },
+            onPlaceMaskPhoto = editor::placeMaskPhoto,
         ) { module, query ->
             ModuleControls(module, !busy && module.enabled, true,
                 editor::selectModule, editor::newInstance, editor::setModuleEnabled, editor::setParameter,
@@ -155,7 +160,7 @@ private fun MobileRawApp(sourceIntent: SourceIntent?, onSourceSelected: (Uri, In
                 editor::setWhiteBalanceGains, editor::setWhiteBalanceSetting, editor::setWhiteBalanceTemperature,
                 editor::setTextParameter, controlQuery = query,
                 onFileParameter = editor::importToolFile, sessionId = ready?.sessionId ?: -1L,
-                showHeader = false)
+                showHeader = false, onWhiteBalancePreset = editor::setWhiteBalancePreset)
         }
         if(exportSettings && ready != null && selectedFormat != null) ExportDialog(
             formats = ready.exportFormats,
@@ -212,6 +217,7 @@ internal fun ModuleControls(
     onFileParameter: (String, String, Uri, Long) -> Unit = { _, _, _, _ -> },
     sessionId: Long = -1L,
     showHeader: Boolean = true,
+    onWhiteBalancePreset: (String, Int, Int) -> Unit = { _, _, _ -> },
 ) {
     var expanded by rememberSaveable(module.operation) { mutableStateOf(false) }
     LaunchedEffect(selected) { if(selected) expanded = true }
@@ -264,7 +270,8 @@ internal fun ModuleControls(
                     key(balance) { WhiteBalanceEditor(balance, editable,
                         { gains -> onWhiteBalanceGains(module.operation, gains) },
                         { setting -> onWhiteBalanceSetting(module.operation, setting) },
-                        { kelvin, tint -> onWhiteBalanceTemperature(module.operation, kelvin, tint) }) }
+                        { kelvin, tint -> onWhiteBalanceTemperature(module.operation, kelvin, tint) },
+                        { preset, tuning -> onWhiteBalancePreset(module.operation, preset, tuning) }) }
                 }
                 if(module.curves.isNotEmpty()) ModuleCurves(module.curves, editable) { channel, interpolation, nodes ->
                     onCurve(module.operation, channel, interpolation, nodes)

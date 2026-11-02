@@ -136,6 +136,19 @@ dt_mobile_status dt_mobile_set_whitebalance_temperature(dt_mobile_session *sessi
  * only settings advertised for the current image can be selected. */
 dt_mobile_status dt_mobile_set_whitebalance_setting(dt_mobile_session *session,
                                                    const char *module, int setting);
+/* Camera-specific native preset/tuning pair advertised in whiteBalance.
+ * Applies original calibrated coefficients atomically as one history step. */
+dt_mobile_status dt_mobile_set_whitebalance_preset(dt_mobile_session *session,
+                                                  const char *module, int preset, int tuning);
+/* Project supported native mask handles into the last preview's image space.
+ * JSON belongs to the caller; projection does not change history. */
+dt_mobile_status dt_mobile_mask_photo_points(dt_mobile_session *session,
+                                              const char *module, char **json);
+/* Place a native form's centre (source=0) or clone source (source=1) at a
+ * normalized final-preview point in [0,1). Both coordinates commit together. */
+dt_mobile_status dt_mobile_mask_place_photo(dt_mobile_session *session,
+                                             const char *module, int form_id, int source,
+                                             double x, double y);
 /* Atomic freehand crop in the upstream crop module's normalized coordinate
  * space. Coordinates are finite and within [0,1]; right >= left+0.01f and
  * bottom >= top+0.01f use float addition, matching the desktop minimum edges.

@@ -7,6 +7,28 @@
 #include <stdlib.h>
 #include <string.h>
 
+dt_mobile_status dt_mobile_engine_set_whitebalance_preset(dt_mobile_engine *engine, const char *module,
+    int preset, int tuning, char *error, size_t size)
+{
+  (void)engine; (void)module; (void)preset; (void)tuning;
+  snprintf(error, size, "camera presets require the original engine");
+  return DT_MOBILE_ERROR_UNSUPPORTED;
+}
+dt_mobile_status dt_mobile_engine_mask_photo_points(dt_mobile_engine *engine, const char *module,
+    char **json, char *error, size_t size)
+{
+  (void)engine; (void)module; *json = NULL;
+  snprintf(error, size, "mask photo points require the original engine");
+  return DT_MOBILE_ERROR_UNSUPPORTED;
+}
+dt_mobile_status dt_mobile_engine_mask_place_photo(dt_mobile_engine *engine, const char *module,
+    int form_id, int source, double x, double y, char *error, size_t size)
+{
+  (void)engine; (void)module; (void)form_id; (void)source; (void)x; (void)y;
+  snprintf(error, size, "mask photo placement requires the original engine");
+  return DT_MOBILE_ERROR_UNSUPPORTED;
+}
+
 struct dt_mobile_engine { unsigned marker; };
 struct dt_mobile_mock_observations dt_mobile_mock;
 static enum dt_mobile_mock_call failure_operation = DT_MOCK_CALL_COUNT;

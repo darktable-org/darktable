@@ -340,6 +340,48 @@ JNIEXPORT void JNICALL Java_org_example_darktableandroid_nativecore_NativeCore_s
   (*env)->ReleaseStringUTFChars(env, module, operation);
   throw_status(env, session, status);
 }
+JNIEXPORT void JNICALL Java_org_example_darktableandroid_nativecore_NativeCore_setWhiteBalancePreset(JNIEnv *env, jobject self,
+    jlong handle, jstring module, jint preset, jint tuning)
+{
+  (void)self;
+  if(!handle || !module) { throw_io(env, "an image and white-balance module are required"); return; }
+  const char *operation = (*env)->GetStringUTFChars(env, module, NULL);
+  if(!operation) return;
+  dt_mobile_session *session = (dt_mobile_session *)(intptr_t)handle;
+  const dt_mobile_status status = dt_mobile_set_whitebalance_preset(session, operation, preset, tuning);
+  (*env)->ReleaseStringUTFChars(env, module, operation);
+  throw_status(env, session, status);
+}
+JNIEXPORT jstring JNICALL Java_org_example_darktableandroid_nativecore_NativeCore_maskPhotoPoints(JNIEnv *env, jobject self,
+    jlong handle, jstring module)
+{
+  (void)self;
+  if(!handle || !module) { throw_io(env, "an image and mask module are required"); return NULL; }
+  const char *operation = (*env)->GetStringUTFChars(env, module, NULL);
+  if(!operation) return NULL;
+  dt_mobile_session *session = (dt_mobile_session *)(intptr_t)handle;
+  char *json = NULL;
+  const dt_mobile_status status = dt_mobile_mask_photo_points(session, operation, &json);
+  (*env)->ReleaseStringUTFChars(env, module, operation);
+  if(status != DT_MOBILE_OK)
+  { dt_mobile_free_buffer(json); throw_status(env, session, status); return NULL; }
+  if(!json) { throw_io(env, "native mask projection is missing"); return NULL; }
+  jstring result = new_utf8_string(env, json);
+  dt_mobile_free_buffer(json);
+  return result;
+}
+JNIEXPORT void JNICALL Java_org_example_darktableandroid_nativecore_NativeCore_placeMaskPhoto(JNIEnv *env, jobject self,
+    jlong handle, jstring module, jint form_id, jboolean source, jdouble x, jdouble y)
+{
+  (void)self;
+  if(!handle || !module) { throw_io(env, "an image and mask module are required"); return; }
+  const char *operation = (*env)->GetStringUTFChars(env, module, NULL);
+  if(!operation) return;
+  dt_mobile_session *session = (dt_mobile_session *)(intptr_t)handle;
+  const dt_mobile_status status = dt_mobile_mask_place_photo(session, operation, form_id, source ? 1 : 0, x, y);
+  (*env)->ReleaseStringUTFChars(env, module, operation);
+  throw_status(env, session, status);
+}
 JNIEXPORT void JNICALL Java_org_example_darktableandroid_nativecore_NativeCore_setWhiteBalanceGains(JNIEnv *env, jobject self,
     jlong handle, jstring module, jfloatArray gains)
 {

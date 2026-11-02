@@ -102,9 +102,12 @@ static int parameter_equals(const char *json, const char *operation, const char 
 #include "dt_mobile_lens_checks.h"
 #include "dt_mobile_lens_auto_checks.h"
 #include "dt_mobile_tone_equalizer_checks.h"
+#include "dt_mobile_editor_actions_checks.h"
+#include "dt_mobile_wb_presets_checks.h"
 #include "dt_mobile_path_mask_checks.h"
 #include "dt_mobile_parametric_checks.h"
 #include "dt_mobile_crop_geometry_checks.h"
+#include "dt_mobile_mask_photo_checks.h"
 #include "dt_mobile_file_controls_checks.h"
 #include "dt_mobile_array_checks.h"
 #include "dt_mobile_extended_controls_checks.h"
@@ -551,6 +554,7 @@ int main(int argc, char **argv)
    * both use the upstream spline implementation. */
   CHECK(rgb_curve_options_checks(session));
   CHECK(wb_checks(session));
+  CHECK(mobile_wb_presets_checks(session));
   CHECK(module_has(modules, "basecurve", "\"curves\":[{\"channel\":0"));
   CHECK(module_has(modules, "rgbcurve", "\"curves\":[{\"channel\":0"));
   CHECK(!module_has(modules, "basecurve", "\"channel\":1"));
@@ -682,6 +686,8 @@ int main(int argc, char **argv)
   CHECK(mobile_mask_controls_checks(session));
   CHECK(mobile_lens_checks(session));
   CHECK(mobile_tone_equalizer_checks(session));
+  CHECK(mobile_editor_actions_checks(session));
+  CHECK(mobile_mask_photo_checks(session));
   CHECK(mobile_path_mask_checks(session));
   CHECK(mobile_array_checks(session));
   CHECK(mobile_extended_controls_checks(session));

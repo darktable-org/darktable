@@ -17,6 +17,7 @@
 */
 
 #include <assert.h>
+#include <gmodule.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -611,6 +612,15 @@ static float _get_highlight_bias(const dt_iop_module_t *self)
 }
 
 
+static float _effective_exposure_from_params(const dt_iop_module_t *self,
+                                             const dt_iop_exposure_params_t *p)
+{
+  float exposure = p->exposure;
+  if(p->compensate_exposure_bias) exposure -= _get_exposure_bias(self);
+  if(p->compensate_hilite_pres) exposure += _get_highlight_bias(self);
+  return exposure;
+}
+
 void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
@@ -620,20 +630,9 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_exposure_data_t *d = piece->data;
 
   d->params.black = p->black;
-  d->params.exposure = p->exposure;
+  d->params.exposure = _effective_exposure_from_params(self, p);
   d->params.deflicker_percentile = p->deflicker_percentile;
   d->params.deflicker_target_level = p->deflicker_target_level;
-
-  // If exposure bias compensation has been required, add it on top of
-  // user exposure correction
-  if(p->compensate_exposure_bias)
-    d->params.exposure -= _get_exposure_bias(self);
-
-  // If highlight preservation compensation has been required, add it on top of
-  // the previous compensation values
-//  d->params.compensate_hilite_pres = p->compensate_hilite_pres;
-  if(p->compensate_hilite_pres)
-    d->params.exposure += _get_highlight_bias(self);
 
   d->deflicker = 0;
 
@@ -825,7 +824,21 @@ static float _exposure_proxy_get_black(dt_iop_module_t *self)
 static float _exposure_proxy_get_effective_exposure(dt_iop_module_t *self)
 {
   const dt_iop_exposure_gui_data_t* const g = self->gui_data;
-  return g->effective_exposure;
+  return g ? g->effective_exposure : _effective_exposure_from_params(self, self->params);
+}
+
+/* Use the same effective-exposure proxy without creating a desktop GUI or
+ * consulting the global darkroom view. The caller selects its develop's
+ * enabled exposure instance. */
+G_MODULE_EXPORT int dt_iop_mobile_exposure_get_effective_exposure(dt_iop_module_t *self,
+                                                                float *exposure)
+{
+  if(!self || !self->params || self->params_size != sizeof(dt_iop_exposure_params_t)
+     || !self->dev || !self->enabled || !exposure) return 0;
+  const float effective = _exposure_proxy_get_effective_exposure(self);
+  if(!isfinite(effective)) return 0;
+  *exposure = effective;
+  return 1;
 }
 
 static void _exposure_proxy_handle_event(int n_press,

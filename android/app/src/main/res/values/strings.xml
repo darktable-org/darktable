@@ -25,7 +25,7 @@
   <string name="module_blending">Blending</string>
   <string name="module_drawn_masks">Drawn masks</string>
   <string name="module_repair_shapes">Repair shapes</string>
-  <string name="mask_geometry_hint">Mask positions and sizes use 0–1 coordinates in the tool’s input image. Apply updates the processed preview.</string>
+  <string name="mask_geometry_hint">Numeric mask positions use 0–1 coordinates in the original image. Place masks on photo accounts for the current crop and geometry.</string>
   <string name="mask_diagram_description">Applied %1$s coordinates: x %2$s, y %3$s.</string>
   <string name="mask_diagram_source">Clone source: x %1$s, y %2$s.</string>
   <string name="mask_diagram_hint">Applied coordinates on a square input-space grid. Outlined source markers show clone origins. Gradient lines mark the anchor and direction.</string>
@@ -99,6 +99,12 @@
   <string name="white_balance_gain_range">Custom coefficients: %1$s–%2$s. Applying them selects user-defined white balance.</string>
   <string name="white_balance_apply_gains">Apply coefficients</string>
   <string name="white_balance_apply_setting">Apply white balance</string>
+  <string name="white_balance_camera_presets">Camera presets</string>
+  <string name="white_balance_camera_preset">Camera preset</string>
+  <string name="white_balance_current_preset">Applied camera preset: %1$s; fine-tune: %2$d</string>
+  <string name="white_balance_fine_tune">Fine-tune</string>
+  <string name="white_balance_tuning_value">Fine-tune: %1$d</string>
+  <string name="white_balance_apply_preset">Apply camera preset</string>
   <string name="white_balance_temperature">Temperature and tint</string>
   <string name="white_balance_kelvin">Temperature (K)</string>
   <string name="white_balance_tint">Tint</string>
