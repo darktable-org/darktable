@@ -79,7 +79,7 @@ G_BEGIN_DECLS
 #define DT_CLDEVICE_HEAD ("cldevice_v7_")
 
 // version for current darktable cl kernels reflected in the kernel directory
-#define DT_OPENCL_KERNELS 7
+#define DT_OPENCL_KERNELS 8
 
 typedef enum dt_opencl_memory_t
 {

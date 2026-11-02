@@ -2718,20 +2718,20 @@ ashift_bilinear(read_only image2d_t in, write_only image2d_t out, const int widt
   // convert output pixel coordinates to original image coordinates
   pout[0] = roi_out.x + x + clip.x;
   pout[1] = roi_out.y + y + clip.y;
-  pout[0] /= out_scale;
-  pout[1] /= out_scale;
+  pout[0] = fp32_div(pout[0], out_scale);
+  pout[1] = fp32_div(pout[1], out_scale);
   pout[2] = 1.0f;
 
   // apply homograph
   for(int i = 0; i < 3; i++)
   {
     pin[i] = 0.0f;
-    for(int j = 0; j < 3; j++) pin[i] += homograph[3 * i + j] * pout[j];
+    for(int j = 0; j < 3; j++) pin[i] = fma(homograph[3 * i + j], pout[j], pin[i]);
   }
 
   // convert to input pixel coordinates
-  pin[0] /= pin[2];
-  pin[1] /= pin[2];
+  pin[0] = fp32_div(pin[0], pin[2]);
+  pin[1] = fp32_div(pin[1], pin[2]);
   pin[0] *= in_scale;
   pin[1] *= in_scale;
   pin[0] -= roi_in.x;
@@ -2789,20 +2789,20 @@ ashift_bicubic (read_only image2d_t in,
   // convert output pixel coordinates to original image coordinates
   pout[0] = roi_out.x + x + clip.x;
   pout[1] = roi_out.y + y + clip.y;
-  pout[0] /= out_scale;
-  pout[1] /= out_scale;
+  pout[0] = fp32_div(pout[0], out_scale);
+  pout[1] = fp32_div(pout[1], out_scale);
   pout[2] = 1.0f;
 
   // apply homograph
   for(int i = 0; i < 3; i++)
   {
     pin[i] = 0.0f;
-    for(int j = 0; j < 3; j++) pin[i] += homograph[3 * i + j] * pout[j];
+    for(int j = 0; j < 3; j++) pin[i] = fma(homograph[3 * i + j], pout[j], pin[i]);
   }
 
   // convert to input pixel coordinates
-  pin[0] /= pin[2];
-  pin[1] /= pin[2];
+  pin[0] = fp32_div(pin[0], pin[2]);
+  pin[1] = fp32_div(pin[1], pin[2]);
   pin[0] *= in_scale;
   pin[1] *= in_scale;
   pin[0] -= roi_in.x;
@@ -2815,7 +2815,6 @@ ashift_bicubic (read_only image2d_t in,
   int ty = floor(ry);
 
   float4 pixel = (float4)0.0f;
-  float weight = 0.0f;
   for(int jj = 1 - kwidth; jj <= kwidth; jj++)
     for(int ii= 1 - kwidth; ii <= kwidth; ii++)
   {
@@ -2827,11 +2826,10 @@ ashift_bicubic (read_only image2d_t in,
     float w = wx * wy;
 
     pixel += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)) * (float4)w;
-    weight += w;
   }
 
   pixel = (tx >= -1 && ty >= -1 && tx < iwidth && ty < iheight)
-          ? pixel/weight
+          ? pixel
           : (float4)0.0f;
 
   write_ipixel(out, (int2)(x, y), pixel);
@@ -2865,20 +2863,20 @@ ashift_lanczos2(read_only image2d_t in,
   // convert output pixel coordinates to original image coordinates
   pout[0] = roi_out.x + x + clip.x;
   pout[1] = roi_out.y + y + clip.y;
-  pout[0] /= out_scale;
-  pout[1] /= out_scale;
+  pout[0] = fp32_div(pout[0], out_scale);
+  pout[1] = fp32_div(pout[1], out_scale);
   pout[2] = 1.0f;
 
   // apply homograph
   for(int i = 0; i < 3; i++)
   {
     pin[i] = 0.0f;
-    for(int j = 0; j < 3; j++) pin[i] += homograph[3 * i + j] * pout[j];
+    for(int j = 0; j < 3; j++) pin[i] = fma(homograph[3 * i + j], pout[j], pin[i]);
   }
 
   // convert to input pixel coordinates
-  pin[0] /= pin[2];
-  pin[1] /= pin[2];
+  pin[0] = fp32_div(pin[0], pin[2]);
+  pin[1] = fp32_div(pin[1], pin[2]);
   pin[0] *= in_scale;
   pin[1] *= in_scale;
   pin[0] -= roi_in.x;
@@ -2941,20 +2939,20 @@ ashift_lanczos3(read_only image2d_t in,
   // convert output pixel coordinates to original image coordinates
   pout[0] = roi_out.x + x + clip.x;
   pout[1] = roi_out.y + y + clip.y;
-  pout[0] /= out_scale;
-  pout[1] /= out_scale;
+  pout[0] = fp32_div(pout[0], out_scale);
+  pout[1] = fp32_div(pout[1], out_scale);
   pout[2] = 1.0f;
 
   // apply homograph
   for(int i = 0; i < 3; i++)
   {
     pin[i] = 0.0f;
-    for(int j = 0; j < 3; j++) pin[i] += homograph[3 * i + j] * pout[j];
+    for(int j = 0; j < 3; j++) pin[i] = fma(homograph[3 * i + j], pout[j], pin[i]);
   }
 
   // convert to input pixel coordinates
-  pin[0] /= pin[2];
-  pin[1] /= pin[2];
+  pin[0] = fp32_div(pin[0], pin[2]);
+  pin[1] = fp32_div(pin[1], pin[2]);
   pin[0] *= in_scale;
   pin[1] *= in_scale;
   pin[0] -= roi_in.x;
@@ -3041,11 +3039,13 @@ kernel void md_vignette(read_only image2d_t in,
   const float cx = ((float)(roix + x) - w2);
   const float cy = ((float)(roiy + y) - h2);
   const float4 spline =
-    _interpolate_linear_spline(knots_vig, vig, knots, r * dt_fast_hypot(cx, cy));
+    _interpolate_linear_spline(knots_vig, vig, knots, r * hypot(cx, cy));
 
   float4 pixel  = Areadpixel(in, x, y);
   float mask = pixel.w;
-  pixel /= fmax(1e-4, spline);
+  pixel.x = fp32_div(pixel.x, fmax(1e-4f, spline.x));
+  pixel.y = fp32_div(pixel.y, fmax(1e-4f, spline.y));
+  pixel.z = fp32_div(pixel.z, fmax(1e-4f, spline.z));
   pixel.w = mask;
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -3131,8 +3131,9 @@ kernel void md_lens_correction(read_only image2d_t in,
   const int y = get_global_id(1);
   if(x >= owidth || y >= oheight) return;
 
-  const float cx = ((float)(roox + x) - w2) / scale;
-  const float cy = ((float)(rooy + y) - h2) / scale;
+  const float iscale = fp32_div(1.0f, scale);
+  const float cx = ((float)(roox + x) - w2) * iscale;
+  const float cy = ((float)(rooy + y) - h2) * iscale;
   const float radius = r * dt_fast_hypot(cx, cy);
   const float limw = (float)iwidth - 1.0f;
   const float limh = (float)iheight - 1.0f;
