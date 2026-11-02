@@ -1188,6 +1188,7 @@ dt_interpolation_cl_global_t *dt_interpolation_init_cl_global()
   const int program = 2; // basic.cl, from programs.conf
   g->kernel_interpolation_resample = dt_opencl_create_kernel(program, "interpolation_resample");
   g->kernel_copy_resample = dt_opencl_create_kernel(program, "interpolation_copy");
+  g->kernel_mask_clip = dt_opencl_create_kernel(program, "mask_clip");
   return g;
 }
 
@@ -1197,6 +1198,7 @@ void dt_interpolation_free_cl_global(dt_interpolation_cl_global_t *g)
   // destroy kernels
   dt_opencl_free_kernel(g->kernel_interpolation_resample);
   dt_opencl_free_kernel(g->kernel_copy_resample);
+  dt_opencl_free_kernel(g->kernel_mask_clip);
   free(g);
 }
 
@@ -1435,6 +1437,47 @@ int dt_interpolation_resample_roi_cl(const dt_interpolation_t *itor,
   iroi.x = iroi.y = 0;
 
   return dt_interpolation_resample_cl(itor, devid, dev_out, &oroi, dev_in, &iroi);
+}
+
+int dt_interpolation_resample_mask_cl(const dt_interpolation_t *itor,
+                                      const int devid,
+                                      cl_mem dev_out,
+                                      const dt_iop_roi_t *const roi_out,
+                                      cl_mem dev_in,
+                                      const dt_iop_roi_t *const roi_in)
+{
+  // the 1:1 copy of dt_interpolation_resample_mask() is not clipped
+  if(roi_out->scale == 1.0f)
+    return dt_interpolation_resample_cl(itor, devid, dev_out, roi_out, dev_in, roi_in);
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+  cl_mem tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_int err = tmp ? CL_SUCCESS : CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  if(err == CL_SUCCESS)
+    err = dt_interpolation_resample_cl(itor, devid, tmp, roi_out, dev_in, roi_in);
+  if(err == CL_SUCCESS)
+    err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->interpolation->kernel_mask_clip,
+                                           width, height,
+                                           CLARG(tmp), CLARG(dev_out), CLARG(width), CLARG(height));
+  dt_opencl_release_mem_object(tmp);
+  return err;
+}
+
+int dt_interpolation_resample_roi_mask_cl(const dt_interpolation_t *itor,
+                                          const int devid,
+                                          cl_mem dev_out,
+                                          const dt_iop_roi_t *const roi_out,
+                                          cl_mem dev_in,
+                                          const dt_iop_roi_t *const roi_in)
+{
+  dt_iop_roi_t oroi = *roi_out;
+  oroi.x = oroi.y = 0;
+
+  dt_iop_roi_t iroi = *roi_in;
+  iroi.x = iroi.y = 0;
+
+  return dt_interpolation_resample_mask_cl(itor, devid, dev_out, &oroi, dev_in, &iroi);
 }
 
 int dt_interpolation_resample_tile_cl(const dt_interpolation_t *itor,

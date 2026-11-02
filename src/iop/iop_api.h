@@ -310,6 +310,18 @@ OPTIONAL(void, distort_mask, struct dt_iop_module_t *self,
                              float *const out,
                              const struct dt_iop_roi_t *const roi_in,
                              const struct dt_iop_roi_t *const roi_out);
+#ifdef HAVE_OPENCL
+/** the OpenCL equivalent of distort_mask(), on 1-channel images. Returns a
+ *  CL error code. The details mask stays on the device only when every
+ *  module with a distort_mask() between the mask source and the target
+ *  has this as well. */
+OPTIONAL(int, distort_mask_cl, struct dt_iop_module_t *self,
+                               struct dt_dev_pixelpipe_iop_t *piece,
+                               cl_mem dev_in,
+                               cl_mem dev_out,
+                               const struct dt_iop_roi_t *const roi_in,
+                               const struct dt_iop_roi_t *const roi_out);
+#endif
 
 // introspection related callbacks, will be auto-implemented if
 // DT_MODULE_INTROSPECTION() is used,

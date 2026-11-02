@@ -18,6 +18,7 @@
 
 #include <stdarg.h>
 #include "common/imagebuf.h"
+#include "common/interpolation.h"
 
 static size_t parallel_imgop_minimum = 500000;
 static size_t parallel_imgop_maxthreads = 4;
@@ -240,6 +241,33 @@ void dt_iop_copy_image_roi(float *const __restrict__ out,
     }
   }
 }
+
+#ifdef HAVE_OPENCL
+int dt_iop_copy_image_roi_cl(const int devid,
+                             cl_mem out,
+                             cl_mem in,
+                             const dt_iop_roi_t *const roi_in,
+                             const dt_iop_roi_t *const roi_out)
+{
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  // like dt_iop_copy_image_roi(), equal sizes copy the whole image whatever the offsets
+  if(roi_in->width == width && roi_in->height == height)
+  {
+    const size_t region[2] = { width, height };
+    return dt_opencl_enqueue_copy_image(devid, in, out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
+  }
+
+  const int dx = roi_out->x - roi_in->x;
+  const int dy = roi_out->y - roi_in->y;
+  return dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->interpolation->kernel_copy_resample,
+                                          width, height,
+                                          CLARG(in), CLARG(out), CLARG(width), CLARG(height),
+                                          CLARG(roi_in->width), CLARG(roi_in->height),
+                                          CLARG(dx), CLARG(dy));
+}
+#endif
 
 void dt_iop_image_scaled_copy(float *const restrict buf,
                               const float *const restrict src,

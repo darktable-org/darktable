@@ -1706,3 +1706,21 @@ __kernel void calc_detail_blend(global float *in, global float *out, const int w
   const float blend = clipf(calcBlendFactor(in[idx], threshold));
   out[idx] = detail ? blend : 1.0f - blend;
 }
+
+// a blend mask refined with the detail mask, as at the end of
+// _refine_with_detail_mask() in src/develop/blend.c
+__kernel void
+blendop_detail_multiply(read_only image2d_t mask_in,
+                        read_only image2d_t detail,
+                        write_only image2d_t mask_out,
+                        const int width,
+                        const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float m = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
+  const float t = clipf(read_imagef(detail, sampleri, (int2)(x, y)).x);
+  write_imagef(mask_out, (int2)(x, y), m * t);
+}

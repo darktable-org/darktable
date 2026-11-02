@@ -532,6 +532,12 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
                                   const struct dt_iop_module_t *target_module,
                                   const dt_hash_t src_hash);
 
+#ifdef HAVE_OPENCL
+cl_mem dt_dev_distort_detail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
+                                     cl_mem src,
+                                     const struct dt_iop_module_t *target_module);
+#endif
+
 dt_hash_t dt_dev_pixelpipe_piece_hash(dt_dev_pixelpipe_iop_t *piece,
                                       const dt_iop_roi_t *roi,
                                       const gboolean include);

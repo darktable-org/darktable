@@ -106,6 +106,15 @@ void dt_iop_copy_image_roi(float *const __restrict__ out,
                            const dt_iop_roi_t *const __restrict__ roi_in,
                            const dt_iop_roi_t *const __restrict__ roi_out);
 
+#ifdef HAVE_OPENCL
+// the OpenCL equivalent of dt_iop_copy_image_roi(), for images on device devid
+int dt_iop_copy_image_roi_cl(const int devid,
+                             cl_mem out,
+                             cl_mem in,
+                             const dt_iop_roi_t *const roi_in,
+                             const dt_iop_roi_t *const roi_out);
+#endif
+
 // Copy one image buffer to another, multiplying each element by the
 // specified scale factor
 void dt_iop_image_scaled_copy(float *const __restrict__ buf,

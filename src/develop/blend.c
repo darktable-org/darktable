@@ -1393,22 +1393,31 @@ void dt_develop_blend_process(dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-static void _refine_with_detail_mask_cl(dt_iop_module_t *self,
-                                        dt_dev_pixelpipe_iop_t *piece,
-                                        float *mask,
-                                        const dt_iop_roi_t *roi_in,
-                                        const dt_iop_roi_t *roi_out,
-                                        const float level,
-                                        const int devid)
+// refines the host mask with the details threshold and writes the result to
+// the device image dev_dst. The thresholded mask is distorted on the device
+// when every module on the way has distort_mask_cl(), otherwise on the host
+static cl_int _refine_with_detail_mask_cl(dt_iop_module_t *self,
+                                          dt_dev_pixelpipe_iop_t *piece,
+                                          float *mask,
+                                          cl_mem dev_dst,
+                                          const dt_iop_roi_t *roi_in,
+                                          const dt_iop_roi_t *roi_out,
+                                          const float level,
+                                          const int devid)
 {
-  if(feqf(level, 0.0f, 1e-6f)) return;
+  const int owidth = roi_out->width;
+  const int oheight = roi_out->height;
+  if(feqf(level, 0.0f, 1e-6f))
+    return dt_opencl_write_host_to_image(devid, mask, dev_dst, owidth, oheight, sizeof(float));
 
   const gboolean detail = (level > 0.0f);
   const float threshold = _detail_mask_threshold(level, detail);
   float *lum = NULL;
-  cl_mem tmp = NULL;
   cl_mem blur = NULL;
   cl_mem out = NULL;
+  cl_mem lum_img = NULL;
+  cl_mem warp_img = NULL;
+  cl_mem mask_img = NULL;
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   dt_dev_pixelpipe_t *p = piece->pipe;
@@ -1416,15 +1425,14 @@ static void _refine_with_detail_mask_cl(dt_iop_module_t *self,
   {
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
        "no detail data available", piece->pipe, self, devid, roi_in, roi_out);
-    return;
+    return dt_opencl_write_host_to_image(devid, mask, dev_dst, owidth, oheight, sizeof(float));
   }
   const int iwidth  = p->scharr.roi.width;
   const int iheight = p->scharr.roi.height;
 
-  lum = dt_alloc_align_float((size_t)iwidth * iheight);
   out = dt_opencl_alloc_device_buffer(devid, sizeof(float) * iwidth * iheight);
   blur = dt_opencl_alloc_device_buffer(devid, sizeof(float) * iwidth * iheight);
-  if((lum == NULL) || (out == NULL) || (blur == NULL))
+  if((out == NULL) || (blur == NULL))
     goto error;
 
   err = dt_opencl_write_buffer_to_device(devid, p->scharr.data, out, 0, sizeof(float) * iwidth * iheight, TRUE);
@@ -1437,19 +1445,58 @@ static void _refine_with_detail_mask_cl(dt_iop_module_t *self,
   err = dt_gaussian_fast_blur_cl_buffer(devid, blur, out, iwidth, iheight, 2.0f, 1, 0.0f, 1.0f);
   if(err != CL_SUCCESS) goto error;
 
+  dt_opencl_release_mem_object(blur);
+  blur = NULL;
+
+  // here we have the slightly blurred full detail mask available, try to
+  // distort it on the device
+  lum_img = dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float));
+  if(lum_img)
+  {
+    const size_t region[2] = { iwidth, iheight };
+    if(dt_opencl_enqueue_copy_buffer_to_image(devid, out, lum_img, 0, CLIMG_ORIGIN, region)
+       == CL_SUCCESS)
+      warp_img = dt_dev_distort_detail_mask_cl(piece, lum_img, self);
+    dt_opencl_release_mem_object(lum_img);
+    lum_img = NULL;
+  }
+
+  if(warp_img)
+  {
+    dt_opencl_release_mem_object(out);
+    out = NULL;
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+       "refine with detail mask CL", piece->pipe, self, devid, roi_in, roi_out);
+
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    mask_img = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
+    if(mask_img == NULL) goto error;
+    err = dt_opencl_write_host_to_image(devid, mask, mask_img, owidth, oheight, sizeof(float));
+    if(err != CL_SUCCESS) goto error;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_blendop_detail_multiply,
+            owidth, oheight,
+            CLARG(mask_img), CLARG(warp_img), CLARG(dev_dst), CLARG(owidth), CLARG(oheight));
+    if(err != CL_SUCCESS) goto error;
+
+    dt_opencl_release_mem_object(mask_img);
+    dt_opencl_release_mem_object(warp_img);
+    return CL_SUCCESS;
+  }
+
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  lum = dt_alloc_align_float((size_t)iwidth * iheight);
+  if(lum == NULL) goto error;
+
   err = dt_opencl_read_buffer_from_device(devid, lum, out, 0, sizeof(float) * iwidth * iheight, TRUE);
   if(err != CL_SUCCESS) goto error;
 
-  dt_opencl_release_mem_object(blur);
   dt_opencl_release_mem_object(out);
   out = NULL;
-  blur = NULL;
 
   // src_hash encodes what the thresholded mask depends on (scharr data + slider value),
   // so the distortion cache is invalidated when the details slider changes.
   const dt_hash_t src_hash = dt_hash(p->scharr.hash, &level, sizeof(level));
 
-  // here we have the slightly blurred full detail mask available
   float *warp_mask = dt_dev_distort_detail_mask(piece, lum, self, src_hash);
   dt_free_align(lum);
   lum = NULL;
@@ -1461,13 +1508,13 @@ static void _refine_with_detail_mask_cl(dt_iop_module_t *self,
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
        "refine with detail mask", piece->pipe, self, devid, roi_in, roi_out);
 
-  const size_t msize = (size_t)roi_out->width * roi_out->height;
+  const size_t msize = (size_t)owidth * oheight;
   DT_OMP_FOR_SIMD(aligned(mask, warp_mask : 64))
   for(size_t idx = 0; idx < msize; idx++)
     mask[idx] = mask[idx] * CLIP(warp_mask[idx]);
 
   dt_free_align(warp_mask);
-  return;
+  return dt_opencl_write_host_to_image(devid, mask, dev_dst, owidth, oheight, sizeof(float));
 
   error:
   dt_control_log(_("detail mask CL blending problem"));
@@ -1475,10 +1522,13 @@ static void _refine_with_detail_mask_cl(dt_iop_module_t *self,
        "refine with detail_mask",
         piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "OpenCL error: %s", cl_errstr(err));
 
-  dt_opencl_release_mem_object(tmp);
   dt_opencl_release_mem_object(blur);
   dt_opencl_release_mem_object(out);
+  dt_opencl_release_mem_object(mask_img);
+  dt_opencl_release_mem_object(warp_img);
   dt_free_align(lum);
+  // blend with the unrefined mask, as before
+  return dt_opencl_write_host_to_image(devid, mask, dev_dst, owidth, oheight, sizeof(float));
 }
 
 void dt_develop_blendif_make_mask_cl(dt_dev_pixelpipe_iop_t *piece,
@@ -1756,8 +1806,8 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     if(!suppress_mask && !global_refine_bypass && d->details != 0.0f)
     {
       dt_iop_image_fill(mask, opacity, owidth, oheight, 1);
-      _refine_with_detail_mask_cl(self, piece, mask, roi_in, roi_out, d->details, devid);
-      err = dt_opencl_write_host_to_image(devid, mask, dev_mask, owidth, oheight, sizeof(float));
+      err = _refine_with_detail_mask_cl(self, piece, mask, dev_mask, roi_in, roi_out,
+                                        d->details, devid);
       if(err != CL_SUCCESS) goto error;
     }
     else
@@ -1800,16 +1850,15 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
         dt_iop_image_scaled_copy(mask, raster_mask, opacity, owidth, oheight, 1);
       }
       if(free_mask) dt_free_align(raster_mask);
-      _refine_with_detail_mask_cl(self, piece, mask, roi_in, roi_out,
-                                global_refine_bypass ? 0.0f : d->details, devid);
+      err = _refine_with_detail_mask_cl(self, piece, mask, dev_mask, roi_in, roi_out,
+                                        global_refine_bypass ? 0.0f : d->details, devid);
     }
     else
     {
       // fallback if no raster mask is applied
       dt_iop_image_fill(mask, 0.0f, owidth, oheight, 1); //mask[k] = value;
+      err = dt_opencl_write_host_to_image(devid, mask, dev_mask, owidth, oheight, sizeof(float));
     }
-
-    err = dt_opencl_write_host_to_image(devid, mask, dev_mask, owidth, oheight, sizeof(float));
     if(err != CL_SUCCESS) goto error;
   }
   else
@@ -1930,10 +1979,8 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     }
     else
     {
-      _refine_with_detail_mask_cl(self, piece, mask, roi_in, roi_out,
-                                  global_refine_bypass ? 0.0f : d->details, devid);
-
-      err = dt_opencl_write_host_to_image(devid, mask, dev_mask_2, owidth, oheight, sizeof(float));
+      err = _refine_with_detail_mask_cl(self, piece, mask, dev_mask_2, roi_in, roi_out,
+                                        global_refine_bypass ? 0.0f : d->details, devid);
       if(err != CL_SUCCESS) goto error;
 
       // FIXME: still required? It worked around stale reads of dev_in on
@@ -2220,6 +2267,8 @@ dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void)
     dt_opencl_create_kernel(program, "calc_scharr_mask");
   b->kernel_calc_blend =
     dt_opencl_create_kernel(program, "calc_detail_blend");
+  b->kernel_blendop_detail_multiply =
+    dt_opencl_create_kernel(program, "blendop_detail_multiply");
 
   return b;
 #else
@@ -2247,6 +2296,7 @@ void dt_develop_blend_free_cl_global(dt_blendop_cl_global_t *b)
   dt_opencl_free_kernel(b->kernel_calc_Y0_mask);
   dt_opencl_free_kernel(b->kernel_calc_scharr_mask);
   dt_opencl_free_kernel(b->kernel_calc_blend);
+  dt_opencl_free_kernel(b->kernel_blendop_detail_multiply);
   free(b);
 #endif
 }

@@ -150,6 +150,7 @@ typedef struct dt_interpolation_cl_global_t
 {
   int kernel_interpolation_resample;
   int kernel_copy_resample;
+  int kernel_mask_clip;
 } dt_interpolation_cl_global_t;
 
 dt_interpolation_cl_global_t *dt_interpolation_init_cl_global(void);
@@ -190,6 +191,15 @@ int dt_interpolation_resample_roi_cl(const dt_interpolation_t *itor, int devid, 
 int dt_interpolation_resample_tile_cl(const dt_interpolation_t *itor, int devid, cl_mem dev_out,
                                       const dt_iop_roi_t *const roi_out, cl_mem dev_in,
                                       const dt_iop_roi_t *const roi_in);
+
+/** the OpenCL equivalent of dt_interpolation_resample_mask(), on 1-channel images */
+int dt_interpolation_resample_mask_cl(const dt_interpolation_t *itor, int devid, cl_mem dev_out,
+                                      const dt_iop_roi_t *const roi_out, cl_mem dev_in,
+                                      const dt_iop_roi_t *const roi_in);
+
+int dt_interpolation_resample_roi_mask_cl(const dt_interpolation_t *itor, int devid, cl_mem dev_out,
+                                          const dt_iop_roi_t *const roi_out, cl_mem dev_in,
+                                          const dt_iop_roi_t *const roi_in);
 #endif
 
 void dt_interpolation_resample_mask(const dt_interpolation_t *itor,

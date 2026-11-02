@@ -4421,6 +4421,28 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
 }
 #endif
 
+// the module whose output the details mask was computed from
+static GList *_detail_mask_source(dt_dev_pixelpipe_t *pipe)
+{
+  const gboolean raw_img = dt_image_is_raw(&pipe->image) || dt_image_is_mono_sraw(&pipe->image);
+
+  // find the source module (demosaic or rawprepare)
+  for(GList *iter = pipe->nodes; iter; iter = g_list_next(iter))
+  {
+    const dt_dev_pixelpipe_iop_t *candidate = iter->data;
+
+    if(dt_iop_module_is(candidate->module, "demosaic")
+       && candidate->enabled
+       && raw_img)
+      return iter;
+    if(dt_iop_module_is(candidate->module, "rawprepare")
+       && candidate->enabled
+       && !raw_img)
+      return iter;
+  }
+  return NULL;
+}
+
 // this expects a mask prepared by rawprepare or demosaic and distorts it
 // through all pipeline modules until target
 float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
@@ -4431,29 +4453,7 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
   if(!src) return NULL;
 
   dt_dev_pixelpipe_t *pipe = piece->pipe;
-  const gboolean raw_img = dt_image_is_raw(&pipe->image) || dt_image_is_mono_sraw(&pipe->image);
-
-  // find the source module (demosaic or rawprepare)
-  GList *source_iter = NULL;
-  for(GList *iter = pipe->nodes; iter; iter = g_list_next(iter))
-  {
-    const dt_dev_pixelpipe_iop_t *candidate = iter->data;
-
-    if(dt_iop_module_is(candidate->module, "demosaic")
-       && candidate->enabled
-       && raw_img)
-    {
-      source_iter = iter;
-      break;
-    }
-    if(dt_iop_module_is(candidate->module, "rawprepare")
-       && candidate->enabled
-       && !raw_img)
-    {
-      source_iter = iter;
-      break;
-    }
-  }
+  GList *source_iter = _detail_mask_source(pipe);
   if(!source_iter)
     return NULL;
 
@@ -4584,6 +4584,110 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
 failure:
   return NULL;
 }
+
+#ifdef HAVE_OPENCL
+// the device version of dt_dev_distort_detail_mask(), for a 1-channel image
+// src on the pipe's device. Returns a new image owned by the caller, or NULL
+// if any module on the way can only distort the mask on the host.
+cl_mem dt_dev_distort_detail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
+                                     cl_mem src,
+                                     const dt_iop_module_t *target_module)
+{
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  const int devid = pipe->devid;
+  GList *source_iter = _detail_mask_source(pipe);
+  if(!source_iter || !src) return NULL;
+
+  // all or nothing: check every module before running anything
+  GList *target_iter = NULL;
+  for(GList *iter = source_iter; iter; iter = g_list_next(iter))
+  {
+    const dt_dev_pixelpipe_iop_t *it_piece = iter->data;
+    if(!_skip_piece_on_tags(it_piece)
+       && it_piece->module->distort_mask && !_empty_finalscale(it_piece)
+       && !it_piece->module->distort_mask_cl)
+    {
+      dt_print_pipe(DT_DEBUG_MASKS | DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+                    "distort detail mask CL", pipe, it_piece->module, devid,
+                    NULL, NULL, "no distort_mask_cl(), distorting on the host");
+      return NULL;
+    }
+    if(it_piece->module == target_module)
+    {
+      target_iter = iter;
+      break;
+    }
+  }
+  if(!target_iter) return NULL;
+
+  cl_mem mask = src;
+  const dt_iop_roi_t *final_roi = &pipe->scharr.roi;
+  for(GList *iter = source_iter; iter; iter = g_list_next(iter))
+  {
+    dt_dev_pixelpipe_iop_t *it_piece = iter->data;
+    if(!_skip_piece_on_tags(it_piece))
+    {
+      if(it_piece->module->distort_mask && !_empty_finalscale(it_piece))
+      {
+        const dt_iop_roi_t *roi = &it_piece->processed_roi_in;
+        const dt_iop_roi_t *roo = &it_piece->processed_roi_out;
+        cl_mem out = dt_opencl_alloc_device(devid, roo->width, roo->height, sizeof(float));
+
+        dt_print_pipe(DT_DEBUG_MASKS | DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+                      "distort detail mask CL", pipe, it_piece->module, devid, roi, roo);
+
+        if(!out
+           || it_piece->module->distort_mask_cl(it_piece->module, it_piece, mask, out, roi, roo)
+              != CL_SUCCESS)
+        {
+          dt_opencl_release_mem_object(out);
+          goto failure;
+        }
+        if(mask != src) dt_opencl_release_mem_object(mask);
+        mask = out;
+        final_roi = roo;
+      }
+      else
+      {
+        _distort_piece_roi(it_piece);
+      }
+    }
+    if(iter == target_iter) break;
+  }
+
+  const gboolean correct = piece->processed_roi_out.width == final_roi->width
+                           && piece->processed_roi_out.height == final_roi->height;
+
+  dt_print_pipe(DT_DEBUG_MASKS | DT_DEBUG_PIPE,
+                correct ? "got detail mask CL" : "DETAIL SIZE MISMATCH",
+                pipe, target_module, devid, NULL, NULL,
+                "from (%ix%i) distorted to (%ix%i)",
+                pipe->scharr.roi.width, pipe->scharr.roi.height,
+                final_roi->width, final_roi->height);
+
+  if(!correct) goto failure;
+
+  // the caller owns the result and releases src itself, so an undistorted
+  // mask can't be handed back as it is
+  if(mask == src)
+  {
+    cl_mem copy = dt_opencl_alloc_device(devid, final_roi->width, final_roi->height,
+                                         sizeof(float));
+    const size_t region[2] = { final_roi->width, final_roi->height };
+    if(copy
+       && dt_opencl_enqueue_copy_image(devid, src, copy, CLIMG_ORIGIN, CLIMG_ORIGIN, region)
+          == CL_SUCCESS)
+      return copy;
+    dt_opencl_release_mem_object(copy);
+    return NULL;
+  }
+  return mask;
+
+failure:
+  if(mask != src) dt_opencl_release_mem_object(mask);
+  return NULL;
+}
+#endif
 
 dt_hash_t dt_dev_pixelpipe_piece_hash(dt_dev_pixelpipe_iop_t *piece,
                                       const dt_iop_roi_t *roi,

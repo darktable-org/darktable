@@ -113,6 +113,18 @@ void distort_mask(dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
+int distort_mask_cl(dt_iop_module_t *self,
+                    dt_dev_pixelpipe_iop_t *piece,
+                    cl_mem dev_in,
+                    cl_mem dev_out,
+                    const dt_iop_roi_t *const roi_in,
+                    const dt_iop_roi_t *const roi_out)
+{
+  const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  return dt_interpolation_resample_mask_cl(itor, piece->pipe->devid, dev_out, roi_out,
+                                           dev_in, roi_in);
+}
+
 int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,

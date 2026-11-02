@@ -3979,3 +3979,17 @@ interpolation_copy(read_only image2d_t dev_in,
   write_imagef(dev_out, (int2)(ocol, orow), pix);
 }
 
+// masks never want under- or overshoots from resampling, as in
+// dt_interpolation_resample_mask()
+__kernel void
+mask_clip(read_only image2d_t in,
+          write_only image2d_t out,
+          const int width,
+          const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  write_imagef(out, (int2)(x, y), clipf(read_imagef(in, sampleri, (int2)(x, y)).x));
+}

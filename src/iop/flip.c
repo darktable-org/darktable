@@ -389,6 +389,17 @@ int process_cl(dt_iop_module_t *self,
     CLARG(width), CLARG(height), CLARG(roi_out->width), CLARG(roi_out->height),
     CLARG(data->orientation));
 }
+
+int distort_mask_cl(dt_iop_module_t *self,
+                    dt_dev_pixelpipe_iop_t *piece,
+                    cl_mem dev_in,
+                    cl_mem dev_out,
+                    const dt_iop_roi_t *const roi_in,
+                    const dt_iop_roi_t *const roi_out)
+{
+  // the flip kernel reads and writes images, whatever their channel count
+  return process_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
+}
 #endif
 
 void init_global(dt_iop_module_so_t *self)
