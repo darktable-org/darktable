@@ -105,8 +105,14 @@ int position(const dt_lib_module_t *self)
 static void property_changed_callback(GtkComboBox *cb, gpointer data)
 {
   dt_lib_camera_property_t *prop = (dt_lib_camera_property_t *)data;
+  const char *new_value = dt_bauhaus_combobox_get_text(prop->values);
+  const char *current = dt_camctl_camera_get_property(darktable.camctl, NULL,
+                                                      prop->property_name);
+  if(new_value && current && g_strcmp0(new_value, current) == 0)
+    return;
+
   dt_camctl_camera_set_property_string(darktable.camctl, NULL, prop->property_name,
-                                       dt_bauhaus_combobox_get_text(prop->values));
+                                       new_value);
 }
 
 // Add a new property of camera to the GUI
@@ -176,12 +182,18 @@ static void _camera_property_value_changed(const dt_camera_t *camera,
                                            void *data)
 {
   dt_lib_camera_t *lib = (dt_lib_camera_t *)data;
-  // Find the property in lib->data.properties, update value
   GList *citem;
   if((citem = g_list_find_custom(lib->gui.properties, name, _compare_property_by_name)) != NULL)
   {
     dt_lib_camera_property_t *prop = citem->data;
+    /* Camera-driven update must not re-queue a set to the camera. */
+    g_signal_handlers_block_matched(prop->values, G_SIGNAL_MATCH_FUNC,
+                                    0, 0, NULL,
+                                    G_CALLBACK(property_changed_callback), NULL);
     dt_bauhaus_combobox_set_from_text(prop->values, value);
+    g_signal_handlers_unblock_matched(prop->values, G_SIGNAL_MATCH_FUNC,
+                                      0, 0, NULL,
+                                      G_CALLBACK(property_changed_callback), NULL);
   }
 }
 
