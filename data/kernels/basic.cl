@@ -3979,3 +3979,70 @@ interpolation_copy(read_only image2d_t dev_in,
   write_imagef(dev_out, (int2)(ocol, orow), pix);
 }
 
+
+// process() of src/iop/hotpixels.c: each work item writes its own sensel,
+// either copied or replaced by the largest of its four like-colored
+// neighbors. mode 0 is Bayer, with the neighbors 2 sensels away; 1 is a
+// monochrome sensor, with the direct neighbors; 2 is X-Trans, with the
+// neighbors from offsets[(row % 6) * 6 + col % 6], as (x, y) pairs
+kernel void
+hotpixels(read_only image2d_t in,
+          write_only image2d_t out,
+          const int width,
+          const int height,
+          const float threshold,
+          const float multiplier,
+          const int min_neighbours,
+          const int mode,
+          global const int4 *offsets,
+          global unsigned int *fixed)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float pixel = Areadsingle(in, x, y);
+  float o = pixel;
+  const int margin = mode == 1 ? 1 : 2;
+  if(pixel > threshold && x >= margin && y >= margin && x < width - margin && y < height - margin)
+  {
+    int2 n[4];
+    if(mode == 2)
+    {
+      const int k = (y % 6) * 6 + x % 6;
+      const int4 a = offsets[2 * k];
+      const int4 b = offsets[2 * k + 1];
+      n[0] = a.xy;
+      n[1] = a.zw;
+      n[2] = b.xy;
+      n[3] = b.zw;
+    }
+    else
+    {
+      const int s = mode == 1 ? 1 : 2;
+      n[0] = (int2)(-s, 0);
+      n[1] = (int2)(0, -s);
+      n[2] = (int2)(s, 0);
+      n[3] = (int2)(0, s);
+    }
+
+    const float mid = pixel * multiplier;
+    int count = 0;
+    float maxin = 0.0f;
+    for(int i = 0; i < 4; i++)
+    {
+      const float other = Areadsingle(in, x + n[i].x, y + n[i].y);
+      if(mid > other)
+      {
+        count++;
+        maxin = fmax(maxin, other);
+      }
+    }
+    if(count >= min_neighbours)
+    {
+      o = maxin;
+      atomic_inc(fixed);
+    }
+  }
+  write_imagef(out, (int2)(x, y), o);
+}
