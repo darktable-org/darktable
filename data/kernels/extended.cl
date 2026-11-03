@@ -304,6 +304,31 @@ tpdf(unsigned int urandom)
 }
 
 
+// random dither of the dither module, with the noise of each pixel seeded by
+// its position as in _process_random()
+__kernel void
+dither_random(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+              const float dither)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  unsigned int tea_state[2] = { mad24(y, width, x), 0 };
+  encrypt_tea(tea_state);
+  const float dith = dither * tpdf(tea_state[0]);
+
+  // CLIP() of the CPU code, which also maps NaN to 0
+  const float4 v = readpixel(in, x, y) + dith;
+  const float4 pixel = (float4)(v.x >= 0.0f ? fmin(v.x, 1.0f) : 0.0f,
+                                v.y >= 0.0f ? fmin(v.y, 1.0f) : 0.0f,
+                                v.z >= 0.0f ? fmin(v.z, 1.0f) : 0.0f,
+                                v.w >= 0.0f ? fmin(v.w, 1.0f) : 0.0f);
+  write_imagef(out, (int2)(x, y), pixel);
+}
+
+
 __kernel void
 vignette (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
           const float2 scale, const float2 roi_center_scaled, const float2 expt,

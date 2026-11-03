@@ -299,6 +299,8 @@ changes (where available).
 - Haze removal no longer copies the whole image back from the OpenCL
   device to estimate the ambient light.
 
+- The dither module's random mode can now run on the OpenCL device.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
@@ -881,6 +883,10 @@ changes (where available).
   SuperCCD raws, using the scaling interpolator instead of the warp
   interpolator set in the preferences, as the other rotating and
   distorting modules do.
+
+- Fixed random dither giving a slightly different noise pattern
+  depending on the number of CPU threads. Its noise pattern changed,
+  so exports using it differ in the noise but not in its strength.
 
 ## Lua
 
