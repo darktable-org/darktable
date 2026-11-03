@@ -265,6 +265,9 @@ changes (where available).
   megabytes on each run. The correction is also more precise on x86,
   where it could be up to 0.3 px off, or 0.6 px when distorting.
 
+- The hot pixels module can now run on the OpenCL device, so a raw
+  no longer goes back to the CPU and up again around it.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
