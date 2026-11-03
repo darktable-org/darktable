@@ -144,14 +144,24 @@ static void _set_module_preset_label(dt_lib_module_t *module,
   g_free(preset_label_text);
 }
 
+static void _free_module_info(gpointer user_data)
+{
+  dt_lib_module_info_t *minfo = (dt_lib_module_info_t *)user_data;
+  g_free(minfo->plugin_name);
+  free(minfo->params);
+  free(minfo);
+}
+
 static void _edit_preset(const char *name_in,
                          dt_lib_module_info_t *minfo)
 {
+  dt_lib_module_info_t *minfo2 = _get_module_info_for_module(minfo->module);
+
   // get the original name of the preset
   gchar *name = NULL;
   if(name_in == NULL)
   {
-    name = dt_lib_get_active_preset_name(minfo);
+    name = dt_lib_get_active_preset_name(minfo2);
     if(name == NULL) return;
   }
   else
@@ -168,8 +178,8 @@ static void _edit_preset(const char *name_in,
                               -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, minfo->plugin_name, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo->version);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, minfo2->plugin_name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo2->version);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     rowid = sqlite3_column_int(stmt, 0);
@@ -182,15 +192,8 @@ static void _edit_preset(const char *name_in,
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   dt_gui_presets_show_edit_dialog
     (name, rowid, NULL, NULL, TRUE, TRUE, FALSE, GTK_WINDOW(window));
-}
 
-
-static void _free_module_info(gpointer user_data)
-{
-  dt_lib_module_info_t *minfo = (dt_lib_module_info_t *)user_data;
-  g_free(minfo->plugin_name);
-  free(minfo->params);
-  free(minfo);
+  _free_module_info(minfo2);
 }
 
 static void _menuitem_update_preset(GSimpleAction *action,
@@ -217,7 +220,7 @@ static void _menuitem_update_preset(GSimpleAction *action,
                                 -1, &stmt, NULL);
     // clang-format on
 
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, minfo->plugin_name, -1,
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, minfo2->plugin_name, -1,
                                SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minfo2->version);
     DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, minfo2->params, minfo2->params_size,
@@ -237,8 +240,9 @@ static void _menuitem_new_preset(GSimpleAction *action,
                                  gpointer user_data)
 {
   dt_lib_module_info_t *minfo = (dt_lib_module_info_t *)user_data;
+  dt_lib_module_info_t *minfo2 = _get_module_info_for_module(minfo->module);
 
-  dt_lib_presets_remove(_("new preset"), minfo->plugin_name, minfo->version);
+  dt_lib_presets_remove(_("new preset"), minfo2->plugin_name, minfo2->version);
 
   // add new preset
   sqlite3_stmt *stmt;
@@ -256,17 +260,19 @@ static void _menuitem_new_preset(GSimpleAction *action,
       -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, _("new preset"), -1, SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, minfo->plugin_name, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo->version);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, minfo->params, minfo->params_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, minfo2->plugin_name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo2->version);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, minfo2->params, minfo2->params_size, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   // create a shortcut for the new entry
 
-  dt_action_define_preset(&minfo->module->actions, _("new preset"));
+  dt_action_define_preset(&minfo2->module->actions, _("new preset"));
 
   // then show edit dialog
-  _edit_preset(_("new preset"), minfo);
+  _edit_preset(_("new preset"), minfo2);
+
+  _free_module_info(minfo2);
 }
 
 static void _menuitem_edit_preset(GSimpleAction *action,
@@ -297,7 +303,7 @@ static void _menuitem_delete_preset(GSimpleAction *action,
   dt_lib_module_info_t *minfo = (dt_lib_module_info_t *)user_data;
   dt_lib_module_info_t *minfo2 = _get_module_info_for_module(minfo->module);
 
-  gchar *name = dt_lib_get_active_preset_name(minfo);
+  gchar *name = dt_lib_get_active_preset_name(minfo2);
   if(name == NULL) return;
 
   if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")

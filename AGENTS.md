@@ -298,10 +298,11 @@ Keep both in sync, or explain why not.
 
 - One logical change per PR. A PR that fixes a bug *and* adds a feature *and*
   reformats a file cannot be reviewed or reverted cleanly
-- Say in the description what you ran, and what you did not
+- Say in the description what you ran, and what you did not, keep it short. 
 - Disclose that the change was written with AI assistance
 - New user-visible strings need `_()`; new preferences need an entry in
   `data/darktableconfig.xml.in`
+- Use the [PR template](https://github.com/darktable-org/darktable/blob/master/.github/pull_request_template.md)
 
 ### Release notes
 

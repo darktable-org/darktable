@@ -480,6 +480,8 @@ static void _edit_preset_response(GtkDialog *dialog,
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
+    dt_gui_store_last_preset(name);
+
     if(g->callback) ((void (*)(dt_gui_presets_edit_dialog_t *))g->callback)(g);
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_PRESETS_CHANGED,
                             g_strdup(g->operation));
@@ -1975,7 +1977,7 @@ static gboolean _iop_is_active(sqlite3_stmt *stmt, gpointer data, gboolean *writ
                   MIN(module->params_size, module->params_size)))
       || (op_params_size > 0
           && !memcmp(module->params, op_params, MIN(op_params_size, module->params_size))))
-     && dt_presets_blend_params_match(module->blend_params, blendop_params, bl_params_size)
+     && dt_presets_module_blend_match(module, blendop_params, bl_params_size)
      && (module->enabled && enabled))
   {
     *writeprotect = sqlite3_column_int(stmt, 2);

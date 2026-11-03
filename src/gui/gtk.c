@@ -2269,7 +2269,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                      GDK_KEY_m, 0);
   dt_action_register(ac, N_("slideshow"), _gui_switch_view_key_accel_callback,
                      GDK_KEY_s, 0);
-  dt_action_register(ac, N_("print"), _gui_switch_view_key_accel_callback,
+  dt_action_register(ac, NC_("view", "print"), _gui_switch_view_key_accel_callback,
                      GDK_KEY_p, 0);
 
   // register actions for applying styles via shortcuts

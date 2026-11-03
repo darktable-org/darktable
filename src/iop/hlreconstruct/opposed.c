@@ -144,7 +144,7 @@ static void _process_linear_opposed(dt_iop_module_t *self,
           const size_t mdx = _raw_to_cmap(mwidth, mheight, row, col);
           for_three_channels(c)
           {
-            if((input[idx] >= clips[c]) && (mask[c*msize + mdx] == 0))
+            if((input[idx+c] >= clips[c]) && (mask[c*msize + mdx] == 0))
             {
               mask[c * msize + mdx] |= 1;
               anyclipped |= TRUE;
@@ -658,6 +658,162 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
   dt_opencl_release_mem_object(dev_correction);
   dt_free_align(mask);
   dt_free_align(indata);
+  return err;
+}
+#endif
+
+#ifdef HAVE_OPENCL
+// _process_linear_opposed() into dev_out, which has the size of roi_in
+static cl_int _process_linear_opposed_cl(dt_iop_module_t *self,
+                                         dt_dev_pixelpipe_iop_t *piece,
+                                         cl_mem dev_in,
+                                         cl_mem dev_out,
+                                         const dt_iop_roi_t *const roi_in)
+{
+  dt_iop_highlights_data_t *d = piece->data;
+  const dt_iop_highlights_global_data_t *gd = self->global_data;
+  dt_iop_highlights_gui_data_t *g = self->gui_data;
+  const int devid = piece->pipe->devid;
+
+  const float clipval = highlights_clip_magics[DT_IOP_HIGHLIGHTS_OPPOSED] * d->clip;
+  const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
+  const gboolean wbon = dsc->temperature.enabled;
+  const dt_aligned_pixel_t icoeffs = { wbon ? dsc->temperature.coeffs[0] : 1.0f,
+                                       wbon ? dsc->temperature.coeffs[1] : 1.0f,
+                                       wbon ? dsc->temperature.coeffs[2] : 1.0f,
+                                       1.0f };
+  const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2], 1.0f };
+
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const int mwidth  = width / 3;
+  const int mheight = height / 3;
+  const int msize = mwidth * mheight;
+
+  dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
+  const dt_hash_t opphash = _opposed_hash(piece);
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
+
+  gboolean is_hashed = FALSE;
+  gboolean unclipped = FALSE;
+  if(self->dev->gui_attached && g)
+  {
+    dt_iop_gui_enter_critical_section(self);
+    is_hashed = opphash == g->opphash;
+    unclipped = !g->oppclipped;
+    if(is_hashed)
+    {
+      for_three_channels(c)
+        chrominance[c] = g->oppchroma[c];
+    }
+    dt_iop_gui_leave_critical_section(self);
+  }
+
+  if(is_hashed && unclipped)
+  {
+    const size_t region[2] = { width, height };
+    return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
+  }
+
+  cl_int err = CL_SUCCESS;
+  cl_mem dev_inmask = NULL;
+  cl_mem dev_outmask = NULL;
+  char *omask = NULL;
+  float *input = NULL;
+
+  if(!is_hashed)
+  {
+    const size_t mbufsize = 3 * (size_t)msize;
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    dev_inmask = dt_opencl_alloc_device_buffer(devid, mbufsize);
+    dev_outmask = dt_opencl_alloc_device_buffer(devid, mbufsize);
+    if(!dev_inmask || !dev_outmask) goto error;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_initmask_linear, mwidth, mheight,
+            CLARG(dev_in), CLARG(dev_inmask),
+            CLARG(msize), CLARG(mwidth), CLARG(mheight), CLARG(width), CLARG(height),
+            CLARG(clips));
+    if(err != CL_SUCCESS) goto error;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_dilatemask, mwidth, mheight,
+            CLARG(dev_inmask), CLARG(dev_outmask),
+            CLARG(msize), CLARG(mwidth), CLARG(mheight));
+    if(err != CL_SUCCESS) goto error;
+
+    err = DT_OPENCL_SYSMEM_ALLOCATION;
+    omask = dt_alloc_aligned(mbufsize);
+    if(!omask) goto error;
+    err = dt_opencl_read_buffer_from_device(devid, omask, dev_outmask, 0, mbufsize, TRUE);
+    if(err != CL_SUCCESS) goto error;
+
+    // the dilation keeps an empty mask empty
+    gboolean anyclipped = FALSE;
+    for(size_t k = 0; k < mbufsize && !anyclipped; k++)
+      anyclipped = omask[k] != 0;
+
+    if(anyclipped)
+    {
+      err = DT_OPENCL_SYSMEM_ALLOCATION;
+      input = dt_alloc_align_float((size_t)width * height * 4);
+      if(!input) goto error;
+      err = dt_opencl_copy_image_to_host(devid, input, dev_in, width, height, 4 * sizeof(float));
+      if(err != CL_SUCCESS) goto error;
+
+      double sums[3] = { 0.0, 0.0, 0.0 };
+      int cnts[3] = { 0, 0, 0 };
+
+      DT_OMP_FOR(reduction(+ : sums, cnts))
+      for(size_t row = 3; row < height - 3; row++)
+      {
+        for(size_t col = 3; col < width - 3; col++)
+        {
+          const size_t idx = (row * width + col) * 4;
+          for_three_channels(c)
+          {
+            const float inval = input[idx+c];
+            if((inval > 0.2f * clips[c]) && (inval < clips[c]) && (omask[c * msize + _raw_to_cmap(mwidth, mheight, row, col)]))
+            {
+              sums[c] += (double)(inval - _calc_linear_refavg(&input[idx], c));
+              cnts[c] += 1;
+            }
+          }
+        }
+      }
+      for_three_channels(c)
+        chrominance[c] = cnts[c] > 30 ? (float)(sums[c] / (double)cnts[c]) : 0.0f;
+
+      if(self->dev->gui_attached && g && fullpipe)
+      {
+        dt_iop_gui_enter_critical_section(self);
+        for_three_channels(c)
+          g->oppchroma[c] = chrominance[c];
+        g->opphash = opphash;
+        g->oppclipped = anyclipped;
+        g->oppresult = TRUE;
+        dt_iop_gui_leave_critical_section(self);
+      }
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+          "opposed chroma", piece->pipe, self, devid, roi_in, NULL,
+          "RGB %3.4f %3.4f %3.4f clipped=%s",
+          chrominance[0], chrominance[1], chrominance[2],
+          STR_YESNO(anyclipped));
+    }
+  }
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_opposed_linear, width, height,
+          CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+          CLARG(clips), CLARG(chrominance));
+
+error:
+  if(err != CL_SUCCESS)
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
+          "linear opposed processing failed", piece->pipe, self, devid, NULL, NULL,
+          "error=%s", cl_errstr(err));
+
+  dt_opencl_release_mem_object(dev_inmask);
+  dt_opencl_release_mem_object(dev_outmask);
+  dt_free_align(omask);
+  dt_free_align(input);
   return err;
 }
 #endif

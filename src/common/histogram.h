@@ -48,6 +48,30 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
                          const gboolean compensate_middle_grey,
                          const dt_iop_order_iccprofile_info_t *const profile_info);
 
+#ifdef HAVE_OPENCL
+typedef struct dt_histogram_cl_global_t
+{
+  int kernel_histogram_collect;
+} dt_histogram_cl_global_t;
+
+dt_histogram_cl_global_t *dt_histogram_init_cl_global(void);
+void dt_histogram_free_cl_global(dt_histogram_cl_global_t *g);
+
+// dt_histogram_helper() for an image on the OpenCL device: the bins are
+// counted there, and only they are read back. Returns FALSE for a raw
+// histogram or when the device fails, and the caller then counts on the host.
+gboolean dt_histogram_helper_cl(const int devid,
+                                dt_dev_histogram_collection_params_t *histogram_params,
+                                dt_dev_histogram_stats_t *histogram_stats,
+                                const dt_iop_colorspace_type_t cst,
+                                const dt_iop_colorspace_type_t cst_to,
+                                cl_mem img,
+                                uint32_t **histogram,
+                                uint32_t *histogram_max,
+                                const gboolean compensate_middle_grey,
+                                const dt_iop_order_iccprofile_info_t *const profile_info);
+#endif
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

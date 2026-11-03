@@ -79,7 +79,7 @@ G_BEGIN_DECLS
 #define DT_CLDEVICE_HEAD ("cldevice_v7_")
 
 // version for current darktable cl kernels reflected in the kernel directory
-#define DT_OPENCL_KERNELS 7
+#define DT_OPENCL_KERNELS 8
 
 typedef enum dt_opencl_memory_t
 {
@@ -267,6 +267,9 @@ typedef struct dt_opencl_t
   // global kernels for dwt filter.
   struct dt_dwt_cl_global_t *dwt;
 
+  // global kernels for the color picker statistics.
+  struct dt_color_picker_cl_global_t *color_picker;
+
   // global kernels for heal filter.
   struct dt_heal_cl_global_t *heal;
 
@@ -275,6 +278,9 @@ typedef struct dt_opencl_t
 
   // global kernels for guided filter.
   struct dt_guided_filter_cl_global_t *guided_filter;
+
+  // global kernels for module histograms.
+  struct dt_histogram_cl_global_t *histogram;
 
   // saved kernel info for deferred initialisation
   int program_saved[DT_OPENCL_MAX_KERNELS];
