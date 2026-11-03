@@ -10,7 +10,7 @@ if hash check-jsonschema 2>/dev/null; then
   check-jsonschema --schemafile $scriptdir/../data/noiseprofiles.schema $scriptdir/../data/noiseprofiles.json
 elif hash jsonschema 2>/dev/null; then
   echo "jsonschema found and will be used"
-  jsonschema -i $scriptdir/../data/noiseprofiles.schema $scriptdir/../data/noiseprofiles.json 2>/dev/null
+  PYTHONWARNINGS=ignore::DeprecationWarning jsonschema -i $scriptdir/../data/noiseprofiles.json $scriptdir/../data/noiseprofiles.schema
 else
   echo "None of the JSON validation packages are installed."
   echo "Install the package containing the 'check-jsonschema' or 'jsonschema' command,"
@@ -20,6 +20,6 @@ fi
 
 EXITCODE=$?
 
-test $? -eq 0 && echo "validation OK" || echo "validation FAILED"
+test $EXITCODE -eq 0 && echo "validation OK" || echo "validation FAILED"
 
 exit $EXITCODE
