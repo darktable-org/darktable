@@ -265,6 +265,8 @@ changes (where available).
   megabytes on each run. The correction is also more precise on x86,
   where it could be up to 0.3 px off, or 0.6 px when distorting.
 
+- The dither module's random mode can now run on the OpenCL device.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
@@ -842,6 +844,10 @@ changes (where available).
   with OpenCL: the CPU path used a coarse approximation of the
   exponential. Edits using them may now look slightly different when
   exported without OpenCL.
+
+- Fixed random dither giving a slightly different noise pattern
+  depending on the number of CPU threads. Its noise pattern changed,
+  so exports using it differ in the noise but not in its strength.
 
 ## Lua
 
