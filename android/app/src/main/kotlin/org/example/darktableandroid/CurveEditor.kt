@@ -95,7 +95,7 @@ private fun CurveEditor(
             style = MaterialTheme.typography.bodySmall)
         if(!curve.editable) Text(stringResource(R.string.curve_read_only), style = MaterialTheme.typography.bodySmall)
         Box {
-            OutlinedButton(onClick = { interpolationMenu = true }, enabled = editable) {
+            OutlinedButton(shape = MaterialTheme.shapes.small, onClick = { interpolationMenu = true }, enabled = editable) {
                 Text(interpolationNames[interpolation])
             }
             DropdownMenu(expanded = interpolationMenu, onDismissRequest = { interpolationMenu = false }) {
@@ -143,7 +143,9 @@ private fun CurveEditor(
             },
                 enabled = editable) { Text(stringResource(R.string.curve_reset)) }
         }
-        Button(onClick = { onApply(interpolation, nodes.toList()) }, enabled = editable && changed &&
+        Button(shape = MaterialTheme.shapes.small,
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer), onClick = { onApply(interpolation, nodes.toList()) }, enabled = editable && changed &&
             numericNodes == nodes && validCurveNodes(nodes, curve.maxNodes, curve.minSpacing)) {
             Text(stringResource(R.string.curve_apply))
         }

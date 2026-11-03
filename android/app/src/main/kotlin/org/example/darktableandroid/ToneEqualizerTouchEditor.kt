@@ -168,12 +168,12 @@ internal fun ToneEqualizerTouchEditor(
                     sample.exposure - 2.0, sample.exposure + 2.0, enabled,
                     onValue = { moveTone(sample, it) }, onFinished = { finishTone(sample) })
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = { stepTone(sample, -.1) },
+                    OutlinedButton(shape = MaterialTheme.shapes.small, onClick = { stepTone(sample, -.1) },
                         enabled = enabled && !dragging && target > sample.exposure - 2.0,
                         modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("tone_equalizer_darker")) {
                         Text(stringResource(R.string.tone_touch_darker))
                     }
-                    OutlinedButton(onClick = { stepTone(sample, .1) },
+                    OutlinedButton(shape = MaterialTheme.shapes.small, onClick = { stepTone(sample, .1) },
                         enabled = enabled && !dragging && target < sample.exposure + 2.0,
                         modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("tone_equalizer_brighter")) {
                         Text(stringResource(R.string.tone_touch_brighter))

@@ -179,7 +179,7 @@ private fun <T> ExportChoices(label: String, value: T, choices: List<Pair<T, Str
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(label, style = MaterialTheme.typography.labelLarge)
         Box {
-            OutlinedButton(onClick = { expanded = true }, enabled = enabled) {
+            OutlinedButton(shape = MaterialTheme.shapes.small, onClick = { expanded = true }, enabled = enabled) {
                 Text(choices.firstOrNull { it.first == value }?.second.orEmpty())
             }
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {

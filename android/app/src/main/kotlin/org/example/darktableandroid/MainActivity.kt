@@ -135,7 +135,7 @@ private fun MobileRawApp(sourceIntent: SourceIntent?, onSourceSelected: (Uri, In
         }
         pendingSessionId = -1L
     }
-    MaterialTheme {
+    DarktableTheme {
         EditorWorkspace(state, runtime,
             onOpen = { picker.launch(arrayOf("*/*")) },
             onExport = { exportSettings = true },
@@ -335,7 +335,8 @@ internal fun ModuleControls(
                 if(module.canReset) {
                     HorizontalDivider()
                     val description = stringResource(R.string.module_reset_description, module.name)
-                    OutlinedButton(onClick = { onParameter(module.operation, "module.reset", 1.0) }, enabled = editable,
+                    OutlinedButton(shape = MaterialTheme.shapes.small,
+                        onClick = { onParameter(module.operation, "module.reset", 1.0) }, enabled = editable,
                         modifier = Modifier.semantics { contentDescription = description }) {
                         Text(stringResource(R.string.module_reset))
                     }
@@ -356,7 +357,10 @@ internal fun ModuleControls(
 internal fun ParameterControl(parameter: ModuleParameter, editable: Boolean, onValue: (Double) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         when {
-            parameter.type == "action" -> Button(onClick = { onValue(1.0) }, enabled = editable) {
+            parameter.type == "action" -> Button(shape = MaterialTheme.shapes.small,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer),
+                onClick = { onValue(1.0) }, enabled = editable) {
                 Text(parameter.label)
             }
             parameter.type == "bool" || parameter.type == "boolean" -> Row(verticalAlignment = Alignment.CenterVertically) {
@@ -368,7 +372,7 @@ internal fun ParameterControl(parameter: ModuleParameter, editable: Boolean, onV
                 var expanded by remember { mutableStateOf(false) }
                 Text(parameter.label, style = MaterialTheme.typography.labelLarge)
                 Box {
-                    OutlinedButton(onClick = { expanded = true }, enabled = editable,
+                    OutlinedButton(shape = MaterialTheme.shapes.small, onClick = { expanded = true }, enabled = editable,
                         modifier = Modifier.semantics { contentDescription = parameter.label }) {
                         Text(parameter.choices.firstOrNull { it.value == parameter.value }?.label ?: parameter.value.toString())
                     }

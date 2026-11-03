@@ -3,6 +3,8 @@ package org.example.darktableandroid
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -23,6 +25,8 @@ internal fun ParameterSlider(label: String, value: Double?, minimum: Double, max
     val fraction = ((current - minimum) / (maximum - minimum)).toFloat().coerceIn(0f, 1f)
     val description = stringResource(R.string.parameter_slider_description, label)
     Slider(value = fraction, valueRange = 0f..1f,
+        colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary,
+            activeTrackColor = MaterialTheme.colorScheme.primaryContainer),
         onValueChange = { position ->
             // Use the exact range endpoint rather than accumulating arithmetic error.
             onValue(when {

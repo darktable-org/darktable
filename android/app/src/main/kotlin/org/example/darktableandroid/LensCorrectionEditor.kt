@@ -143,7 +143,7 @@ private fun LensProfilePicker(
     val allowed = remember(choices, control) { choices.filter { control?.accepts(it.value) == true } }
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(title, style = MaterialTheme.typography.labelLarge)
-        OutlinedButton(onClick = { query = ""; open = true }, enabled = editable && allowed.isNotEmpty(),
+        OutlinedButton(shape = MaterialTheme.shapes.small, onClick = { query = ""; open = true }, enabled = editable && allowed.isNotEmpty(),
             modifier = Modifier.fillMaxWidth().semantics { contentDescription = title }) {
             Text(if(matched) choices.firstOrNull { it.value == current }?.label ?: current.ifBlank { placeholder }
                 else placeholder)

@@ -1,2 +1,17 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<resources><style name="Theme.MobileRawEditor" parent="android:style/Theme.Material.Light.NoActionBar"><item name="android:fontFamily">sans</item><item name="android:colorAccent">#6750A4</item></style></resources>
+<resources>
+  <style name="Theme.MobileRawEditor" parent="android:style/Theme.Material.NoActionBar">
+    <item name="android:fontFamily">sans</item>
+    <item name="android:windowBackground">#6A6A6A</item>
+    <item name="android:colorBackground">#6A6A6A</item>
+    <item name="android:colorAccent">#FFFFFF</item>
+    <item name="android:colorControlNormal">#F1F1F1</item>
+    <item name="android:colorControlActivated">#FFFFFF</item>
+    <item name="android:colorControlHighlight">#33FFFFFF</item>
+    <item name="android:textColorPrimary">#FFFFFF</item>
+    <item name="android:textColorSecondary">#F1F1F1</item>
+    <item name="android:statusBarColor">#6A6A6A</item>
+    <item name="android:navigationBarColor">#6A6A6A</item>
+    <item name="android:windowLightStatusBar">false</item>
+  </style>
+</resources>

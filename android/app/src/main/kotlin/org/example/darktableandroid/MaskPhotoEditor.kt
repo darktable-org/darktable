@@ -82,7 +82,7 @@ internal fun MaskPhotoEditor(
             else {
                 Box(Modifier.fillMaxWidth()) {
                     val description = stringResource(R.string.mask_photo_choose_form)
-                    OutlinedButton(onClick = { expanded = true }, enabled = enabled,
+                    OutlinedButton(shape = MaterialTheme.shapes.small, onClick = { expanded = true }, enabled = enabled,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("mask_photo_form_picker")
                             .semantics { contentDescription = description }) {
                         Text(form?.label ?: description)

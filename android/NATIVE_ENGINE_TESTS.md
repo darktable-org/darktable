@@ -15,7 +15,7 @@ are not counts of independently rendered Android controls.
 The current validation includes:
 
 - The coordinated Android check passed production and instrumentation Kotlin
-  compilation, Debug and Release each passed 138 JVM tests in 30 classes
+  compilation, Debug and Release each passed 141 JVM tests in 31 classes
   (zero failures, errors or skips), plus `lintDevDebug` and `lintDevRelease`.
   Additional instrumentation-source checks remain separate from
   actually running those component tests on Android.
@@ -94,6 +94,18 @@ android/gradlew -p android :app:testDevDebugUnitTest \
 android/gradlew -p android :app:testDevReleaseUnitTest \
   --tests org.example.darktableandroid.WorkspaceTabNavigationTest
 ```
+
+Three `DarktableThemeTest` host cases passed in Debug and Release. They render the production workspace and module
+controls under the previous Material tokens and the desktop-grey theme. They
+compare measured bounds, touch/semantic actions and typography, and exercise
+search, exact disabled-tool selection, Settings restoration, toolbar actions,
+numeric Apply, boolean and power callbacks. Native-graphics view captures also
+check the neutral `#777777` photo surround and produce PNG previews under
+`android/app/build/reports/theme-preview/`. The example JPEG/bitmap is a UI
+fixture, not native RAW rendering evidence. The Material-token comparison uses
+the same current workspace, not a screenshot of a previous APK. Neither these
+host captures nor the platform colour changes establish physical-device
+system-bar or document-picker execution.
 
 The lens regression uses the installed Canon EOS 5D Mark II / EF 24–105mm f/4L
 IS USM calibration with the original RGB pixelpipe. Distortion, vignetting and

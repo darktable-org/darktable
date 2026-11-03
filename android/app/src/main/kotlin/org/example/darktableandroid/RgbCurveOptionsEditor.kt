@@ -34,7 +34,7 @@ private fun CurveOptionPicker(label: String, value: Int, choices: List<CurveOpti
     Column {
         Text(label, style = MaterialTheme.typography.labelLarge)
         Box {
-            OutlinedButton(onClick = { expanded = true }, enabled = editable) {
+            OutlinedButton(shape = MaterialTheme.shapes.small, onClick = { expanded = true }, enabled = editable) {
                 Text(choices.firstOrNull { it.value == value }?.label.orEmpty())
             }
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {

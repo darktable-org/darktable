@@ -35,7 +35,7 @@ internal fun FileParameterControl(
         Text(basename.ifEmpty { stringResource(R.string.tool_file_empty) }, style = MaterialTheme.typography.bodySmall)
         Text(stringResource(R.string.tool_file_formats, parameter.extensions.joinToString(", ") { it.uppercase(java.util.Locale.ROOT) }),
             style = MaterialTheme.typography.bodySmall)
-        OutlinedButton(onClick = {
+        OutlinedButton(shape = MaterialTheme.shapes.small, onClick = {
             pendingSessionId = sessionId
             // Android providers use inconsistent MIME types for LUT/PFM files;
             // the importer checks the advertised extensions and actual contents.

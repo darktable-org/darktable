@@ -8,6 +8,18 @@ While the keyboard is open, the preview temporarily uses one quarter of the
 remaining content height so the focused parameter still has room. Dismissing
 the keyboard returns the equal split.
 
+The visual theme follows the desktop default `darktable-elegant-grey`: neutral
+grey panels, a `#777777` photo surround, grey/white controls and small 3dp
+corners. Selection uses grey/white emphasis in the existing indicators. Colour
+roles are explicit and tonal surface tint is disabled, so the photo is not
+surrounded by Material's default purple. Error indications retain their semantic
+colour, and applied/draft curves keep different brightness levels.
+
+This changes drawing only. Typography, line heights, density, padding, element
+sizes, touch targets, pane proportions and navigation callbacks remain the same.
+Android system-bar and starting-window colours follow the same neutral palette;
+window insets and edge-to-edge behaviour are not changed.
+
 ```text
 ┌──────────────────────────────────┐
 │          Photo preview           │

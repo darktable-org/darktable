@@ -85,7 +85,7 @@ private fun MaskChoice(items: List<Pair<Int, String>>, selected: Int, descriptio
     val label = items.firstOrNull { it.first == selected }?.second ?: items.first().second
     var expanded by rememberSaveable { mutableStateOf(false) }
     if(items.size == 1) Text(label, style = MaterialTheme.typography.labelLarge) else Box {
-        OutlinedButton(onClick = { expanded = true }, modifier = Modifier.semantics { if(description != null) contentDescription = description }) {
+        OutlinedButton(shape = MaterialTheme.shapes.small, onClick = { expanded = true }, modifier = Modifier.semantics { if(description != null) contentDescription = description }) {
             Text(label)
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {

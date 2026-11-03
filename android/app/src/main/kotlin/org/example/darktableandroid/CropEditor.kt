@@ -106,7 +106,9 @@ internal fun CropEditor(crop: ModuleCrop, editable: Boolean, onApply: (CropRect)
             TextButton(onClick = { manualEdit { left = "0.0"; top = "0.0"; right = "1.0"; bottom = "1.0" } }, enabled = editable) {
                 Text(stringResource(R.string.crop_reset))
             }
-            Button(onClick = { draft?.let(onApply) }, enabled = editable && draft != null && changed) {
+            Button(shape = MaterialTheme.shapes.small,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer), onClick = { draft?.let(onApply) }, enabled = editable && draft != null && changed) {
                 Text(stringResource(R.string.crop_apply))
             }
         }
@@ -122,7 +124,7 @@ private fun CropAspectControls(selected: String, portrait: Boolean, editable: Bo
     val title = stringResource(R.string.crop_aspect_title)
     Text(title, style = MaterialTheme.typography.labelLarge)
     Box {
-        OutlinedButton(onClick = { expanded = true }, enabled = editable,
+        OutlinedButton(shape = MaterialTheme.shapes.small, onClick = { expanded = true }, enabled = editable,
             modifier = Modifier.semantics { contentDescription = title }) {
             Text(when(selected) { "free" -> free; "input" -> input; else -> selected })
         }

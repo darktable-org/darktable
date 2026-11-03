@@ -49,7 +49,7 @@ internal fun WhiteBalanceEditor(balance: WhiteBalance, editable: Boolean,
         Text(stringResource(R.string.white_balance_current, currentLabel), style = MaterialTheme.typography.bodySmall)
         if(balance.settings.isNotEmpty()) {
             Box {
-                OutlinedButton(onClick = { expanded = true }, enabled = editable) {
+                OutlinedButton(shape = MaterialTheme.shapes.small, onClick = { expanded = true }, enabled = editable) {
                     Text(balance.settings.firstOrNull { it.id == setting }?.label.orEmpty())
                 }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -115,7 +115,7 @@ private fun WhiteBalanceCameraPresetEditor(catalog: WhiteBalanceCameraPresets, e
             style = MaterialTheme.typography.bodySmall)
     }
     Box {
-        OutlinedButton(onClick = { expanded = true }, enabled = editable,
+        OutlinedButton(shape = MaterialTheme.shapes.small, onClick = { expanded = true }, enabled = editable,
             modifier = Modifier.semantics { contentDescription = presetDescription }) {
             Text(preset.label)
         }

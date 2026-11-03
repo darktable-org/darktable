@@ -28,6 +28,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -40,6 +41,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -190,7 +192,8 @@ internal fun EditorWorkspace(
         }
     }
     Scaffold(modifier = Modifier.fillMaxSize().imePadding(), bottomBar = {
-        NavigationBar {
+        NavigationBar(containerColor = DarktableColors.Toolbar, tonalElevation = 0.dp) {
+            val selectedColor = MaterialTheme.colorScheme.onSurface
             WorkspaceTab.entries.forEach { item ->
                 NavigationBarItem(selected = tab == item, onClick = {
                     focus.clearFocus()
@@ -198,6 +201,11 @@ internal fun EditorWorkspace(
                     toolSearchVisible = false
                     tabName = item.name
                 },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = selectedColor, selectedTextColor = selectedColor,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        indicatorColor = DarktableColors.Selection),
                     icon = { Icon(painterResource(item.iconResource()), null) },
                     label = { Text(stringResource(item.labelResource()), maxLines = 2, overflow = TextOverflow.Ellipsis) })
             }
@@ -209,7 +217,8 @@ internal fun EditorWorkspace(
                     .testTag("editor_preview_pane"), toneActive, tonePoint, ::sampleTone,
                 maskActive, maskTarget, maskPoint, onPlaceMaskPhoto)
             HorizontalDivider()
-            Box(Modifier.fillMaxWidth().weight(if(keyboardVisible) .75f else 1f).testTag("editor_tools_pane")) {
+            Box(Modifier.fillMaxWidth().weight(if(keyboardVisible) .75f else 1f)
+                .background(DarktableColors.Panel).testTag("editor_tools_pane")) {
                 if(tab == WorkspaceTab.SETTINGS) WorkspaceAppInfo(runtime)
                 else if(ready == null) WorkspaceEmptyTools(state, runtime, onOpen)
                 else workspaceState.SaveableStateProvider("image-${ready.sessionId}") {
@@ -261,7 +270,7 @@ private fun WorkspacePreview(
     maskPoint: MaskPhotoPoint?,
     onPlaceMaskPhoto: (MaskPhotoTarget, Float, Float) -> Unit,
 ) {
-    Box(modifier.background(MaterialTheme.colorScheme.surfaceVariant)) {
+    Box(modifier.background(DarktableColors.Preview)) {
         ready?.let {
             Box(Modifier.fillMaxSize().padding(horizontal = 8.dp).padding(bottom = 48.dp)) {
                 Image(it.preview.asImageBitmap(), stringResource(R.string.preview_description),
@@ -318,7 +327,7 @@ private fun WorkspacePreview(
                     maxLines = 3, overflow = TextOverflow.Ellipsis)
             }
         }
-        Surface(Modifier.align(Alignment.BottomCenter).fillMaxWidth(), tonalElevation = 2.dp) {
+        Surface(Modifier.align(Alignment.BottomCenter).fillMaxWidth(), color = DarktableColors.Toolbar, tonalElevation = 0.dp) {
             Row(Modifier.height(48.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically) {
                 WorkspaceAction(R.drawable.workspace_ic_open, R.string.open_photo, "editor_open",
@@ -400,12 +409,14 @@ private fun WorkspaceTools(
     }
     val savedControls = rememberSaveableStateHolder()
     Column(Modifier.fillMaxSize()) {
-        Row(Modifier.fillMaxWidth().padding(start = 12.dp, end = 4.dp, top = 6.dp),
+        Row(Modifier.fillMaxWidth().background(DarktableColors.Toolbar)
+            .padding(start = 12.dp, end = 4.dp, top = 6.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             var expanded by rememberSaveable(tab) { mutableStateOf(false) }
             Box(Modifier.weight(1f)) {
                 val chooseDescription = stringResource(R.string.workspace_choose_tool)
-                OutlinedButton(onClick = { expanded = true }, enabled = !busy && shown.isNotEmpty(),
+                OutlinedButton(shape = MaterialTheme.shapes.small,
+                    onClick = { expanded = true }, enabled = !busy && shown.isNotEmpty(),
                     modifier = Modifier.fillMaxWidth().testTag("editor_tool_picker")
                         .semantics { contentDescription = chooseDescription }) {
                     Text(selected?.name ?: stringResource(R.string.workspace_no_tools), Modifier.weight(1f),
@@ -515,7 +526,10 @@ private fun WorkspaceEmptyTools(state: EditorState, runtime: RuntimeAvailability
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(stringResource(R.string.workspace_choose_photo), style = MaterialTheme.typography.titleMedium)
         Text(stringResource(R.string.workspace_layout_hint), style = MaterialTheme.typography.bodyMedium)
-        Button(onClick = onOpen, enabled = runtime.available && state !is EditorState.Working) {
+        Button(shape = MaterialTheme.shapes.small,
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer),
+            onClick = onOpen, enabled = runtime.available && state !is EditorState.Working) {
             Text(stringResource(R.string.open_photo))
         }
     }

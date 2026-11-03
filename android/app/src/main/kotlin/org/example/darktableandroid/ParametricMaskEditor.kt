@@ -65,7 +65,7 @@ internal fun ParametricMaskEditor(
             var expanded by remember { mutableStateOf(false) }
             val channelDescription = stringResource(R.string.parametric_channel_selector)
             Box {
-                OutlinedButton(onClick = { expanded = true }, modifier = Modifier.semantics {
+                OutlinedButton(shape = MaterialTheme.shapes.small, onClick = { expanded = true }, modifier = Modifier.semantics {
                     contentDescription = channelDescription
                 }) { Text(active.label) }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
