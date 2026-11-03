@@ -427,7 +427,8 @@ static gboolean _style_item_attach_mask(const int styleid,
        && blendop_version == dt_develop_blend_version())
     {
       const dt_iop_module_so_t *so = dt_iop_get_module_so(operation);
-      if(so && (so->flags() & IOP_FLAGS_NO_MASKS))
+      if(so && (so->flags() & IOP_FLAGS_NO_MASKS)
+         && (!strcmp(operation, "retouch") || !strcmp(operation, "spots")))
       {
         memcpy(&bp, blendop_params, sizeof(bp));
         owns_shapes = dt_is_valid_maskid(bp.mask_id);
@@ -927,26 +928,6 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
       g_strlcpy(module->multi_name, style_item->multi_name, sizeof(module->multi_name));
       module->multi_name_hand_edited = style_item->multi_name_hand_edited;
 
-      // as dt_dev_read_history_ext() reads a history row: the forms of the
-      // mask go into dev->forms, which dt_history_merge_module_into_history()
-      // then records with the item. Not onto a locked mask, which the merge
-      // keeps: the style's must leave no form behind
-      const dt_iop_module_t *target =
-        dt_history_merge_target(dev, module, *modules_used, append);
-      const gboolean blend_failed = dt_develop_blend_params_read(module, style_item->blendop_params,
-                                      style_item->blendop_params_size,
-                                      style_item->blendop_version,
-                                      module->blend_params, -1,
-                                      target && dt_develop_blend_mask_locked(target->blend_params),
-                                      NULL);
-      if(blend_failed)
-      {
-        // an own-shape style cannot be applied without the forms its params reference
-        if(module->flags() & IOP_FLAGS_NO_MASKS) do_merge = FALSE;
-        memcpy(module->blend_params, module->default_blendop_params,
-               sizeof(dt_develop_blend_params_t));
-      }
-
       gboolean autoinit = FALSE;
 
       if(style_item->params_size != 0
@@ -1014,6 +995,29 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
         }
         else
           memcpy(module->params, style_item->params, style_item->params_size);
+      }
+
+      if(do_merge)
+      {
+        // as dt_dev_read_history_ext() reads a history row: the forms of the
+        // mask go into dev->forms, which dt_history_merge_module_into_history()
+        // then records with the item. Not onto a locked mask, which the merge
+        // keeps: the style's must leave no form behind
+        const dt_iop_module_t *target =
+          dt_history_merge_target(dev, module, *modules_used, append);
+        const gboolean blend_failed = dt_develop_blend_params_read(module, style_item->blendop_params,
+                                        style_item->blendop_params_size,
+                                        style_item->blendop_version,
+                                        module->blend_params, -1,
+                                        target && dt_develop_blend_mask_locked(target->blend_params),
+                                        NULL);
+        if(blend_failed)
+        {
+          // an own-shape style cannot be applied without the forms its params reference
+          if(module->flags() & IOP_FLAGS_NO_MASKS) do_merge = FALSE;
+          memcpy(module->blend_params, module->default_blendop_params,
+                 sizeof(dt_develop_blend_params_t));
+        }
       }
 
       if(do_merge)

@@ -368,6 +368,39 @@ static int _flags_no_masks(void)
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_NO_MASKS;
 }
 
+static dt_introspection_field_t *_owned_field(const char *name)
+{
+  static dt_introspection_field_t id, item, array;
+  static dt_introspection_field_t *fields[] = { &id };
+  id.header.name = "formid";
+  id.header.field_name = "formid";
+  id.header.type = DT_INTROSPECTION_TYPE_INT;
+  id.header.size = sizeof(dt_mask_id_t);
+  id.header.offset = 0;
+  item.header.type = DT_INTROSPECTION_TYPE_STRUCT;
+  item.header.size = sizeof(dt_mask_id_t);
+  item.header.offset = 0;
+  item.Struct.entries = 1;
+  item.Struct.fields = fields;
+  array.header.type = DT_INTROSPECTION_TYPE_ARRAY;
+  array.header.offset = 0;
+  array.Array.field = &item;
+  if(!strcmp(name, "rt_forms"))
+  {
+    array.header.size = 300 * sizeof(dt_mask_id_t);
+    array.Array.count = 300;
+    return &array;
+  }
+  if(!strcmp(name, "clone_id"))
+  {
+    item.header.type = DT_INTROSPECTION_TYPE_INT;
+    array.header.size = 64 * sizeof(dt_mask_id_t);
+    array.Array.count = 64;
+    return &array;
+  }
+  return NULL;
+}
+
 // a NO_MASKS module's mask_id is its own shapes, which go with its params:
 // a locked blend mask keeps its group, blend_mask_id, and not the shapes
 static void test_locked_mask_of_no_masks_module_leaves_own_shapes(void **state)
@@ -388,10 +421,8 @@ static void test_locked_mask_of_no_masks_module_leaves_own_shapes(void **state)
   assert_int_equal(incoming.blend_mask_id, 8);
 }
 
-// Module-owned retouch/spots shapes use the same mask-tree blob as flexi masks,
-// but their blend mask_mode intentionally has no FLEXI bit. The reader must
-// restore these shapes without changing ids referenced from module op_params,
-// and reject a second import rather than sharing ids across module instances.
+// module-owned shapes keep their blend mode, but every style application
+// needs a separate tree and matching module parameter references
 static void test_owned_style_shapes_roundtrip_and_collision(void **state)
 {
   // Mask decoding reconstructs circles using UI configuration defaults.
@@ -413,6 +444,8 @@ static void test_owned_style_shapes_roundtrip_and_collision(void **state)
   pt->radius = 0.01f;
   pt->border = 0.005f;
   circle->points = g_list_append(NULL, pt);
+  dt_masks_form_t *second = dt_masks_dup_masks_form(circle);
+  second->formid = circle->formid + 1;
 
   dt_masks_point_group_t *member = calloc(1, sizeof(*member));
   member->formid = circle->formid;
@@ -421,9 +454,14 @@ static void test_owned_style_shapes_roundtrip_and_collision(void **state)
   member->opacity = 1.0f;
   member->group_opacity = 1.0f;
   group->points = g_list_append(NULL, member);
+  dt_masks_point_group_t *other = calloc(1, sizeof(*other));
+  *other = *member;
+  other->formid = second->formid;
+  group->points = g_list_append(group->points, other);
 
   GList *forms = g_list_append(NULL, group);
   forms = g_list_append(forms, circle);
+  forms = g_list_append(forms, second);
   dt_develop_blend_params_t bp = { 0 };
   bp.mask_id = group->formid;
   bp.mask_mode = DEVELOP_MASK_ENABLED;
@@ -438,24 +476,136 @@ static void test_owned_style_shapes_roundtrip_and_collision(void **state)
   GList *decoded = NULL;
   assert_true(dt_masks_blend_blob_decode(blob, length, &restored, &decoded));
   assert_memory_equal(&bp, &restored, sizeof(bp));
-  assert_int_equal(g_list_length(decoded), 2);
+  assert_int_equal(g_list_length(decoded), 3);
   assert_int_equal(((dt_masks_form_t *)decoded->data)->formid, group->formid);
   assert_int_equal(((dt_masks_form_t *)decoded->next->data)->formid, circle->formid);
   g_list_free_full(decoded, (GDestroyNotify)dt_masks_free_form);
 
   dt_develop_t dev = { 0 };
+  dt_masks_form_t *existing = dt_masks_dup_masks_form(circle);
+  ((dt_masks_point_circle_t *)existing->points->data)->center[0] = 0.8f;
+  dev.forms = g_list_append(NULL, existing);
   dt_iop_module_t module = { 0 };
+  dt_iop_module_so_t retouch_so = { 0 };
+  g_strlcpy(retouch_so.op, "retouch", sizeof(retouch_so.op));
+  module.so = &retouch_so;
   module.flags = _flags_no_masks;
   module.dev = &dev;
   g_strlcpy(module.op, "retouch", sizeof(module.op));
+  module.get_f = _owned_field;
+  module.params_size = 300 * sizeof(dt_mask_id_t);
+  module.params = calloc(1, module.params_size);
+  const dt_introspection_field_t *array = module.get_f("rt_forms");
+  assert_non_null(array);
+  dt_mask_id_t *ref = (dt_mask_id_t *)((uint8_t *)module.params + array->header.offset);
+  *ref = circle->formid;
   assert_false(dt_develop_blend_params_read(&module, blob, length,
                                           dt_develop_blend_version(), &restored,
                                           -1, FALSE, NULL));
-  assert_int_equal(g_list_length(dev.forms), 2);
-  assert_true(dt_develop_blend_params_read(&module, blob, length,
+  assert_int_equal(g_list_length(dev.forms), 4);
+  const dt_mask_id_t first_group = restored.mask_id;
+  const dt_mask_id_t first_circle = *ref;
+  assert_ptr_equal(dt_masks_get_from_id_ext(dev.forms, circle->formid), existing);
+  assert_ptr_equal(dt_masks_get_from_id_ext(dev.forms, first_group), g_list_nth_data(dev.forms, 1));
+  assert_ptr_equal(dt_masks_get_from_id_ext(dev.forms, first_circle), g_list_nth_data(dev.forms, 2));
+  const dt_masks_form_t *first_group_form = g_list_nth_data(dev.forms, 1);
+  assert_int_equal(g_list_length(first_group_form->points), 2);
+  assert_int_equal(((dt_masks_point_group_t *)first_group_form->points->next->data)->formid,
+                   ((dt_masks_form_t *)g_list_nth_data(dev.forms, 3))->formid);
+  assert_int_not_equal(first_group, group->formid);
+  assert_int_not_equal(first_circle, circle->formid);
+
+  dt_develop_blend_params_t saved = restored;
+  saved.mask_mode |= DEVELOP_MASK_FLEXI;
+  size_t saved_length = 0;
+  void *saved_blob = dt_masks_blend_blob_encode(&saved, dev.forms, &saved_length);
+  memcpy(saved_blob, &restored, sizeof(restored));
+  GList *reopened = NULL;
+  assert_true(dt_masks_blend_blob_decode(saved_blob, saved_length, &saved, &reopened));
+  assert_int_equal(saved.mask_id, first_group);
+  assert_int_equal(((dt_masks_form_t *)reopened->next->data)->formid, first_circle);
+  g_free(saved_blob);
+  dt_develop_t reopened_dev = { 0 };
+  reopened_dev.forms = reopened;
+  dt_iop_module_t reopened_module = module;
+  reopened_module.dev = &reopened_dev;
+  reopened_module.params = calloc(1, module.params_size);
+  dt_mask_id_t *reopened_ref = (dt_mask_id_t *)((uint8_t *)reopened_module.params + array->header.offset);
+  *reopened_ref = circle->formid;
+  assert_false(dt_develop_blend_params_read(&reopened_module, blob, length,
+                                          dt_develop_blend_version(), &saved,
+                                          -1, FALSE, NULL));
+  assert_int_equal(g_list_length(reopened_dev.forms), 6);
+  assert_int_not_equal(saved.mask_id, first_group);
+  assert_int_not_equal(*reopened_ref, first_circle);
+  free(reopened_module.params);
+  g_list_free_full(reopened_dev.forms, (GDestroyNotify)dt_masks_free_form);
+
+  *ref = circle->formid;
+  assert_false(dt_develop_blend_params_read(&module, blob, length,
+                                          dt_develop_blend_version(), &restored,
+                                          -1, FALSE, NULL));
+  assert_int_equal(g_list_length(dev.forms), 7);
+  assert_int_not_equal(restored.mask_id, first_group);
+  assert_int_not_equal(*ref, first_circle);
+  assert_ptr_equal(dt_masks_get_from_id_ext(dev.forms, first_group), g_list_nth_data(dev.forms, 1));
+
+  dt_iop_module_t second_instance = module;
+  second_instance.multi_priority = 1;
+  second_instance.params = calloc(1, module.params_size);
+  dt_mask_id_t *second_ref = (dt_mask_id_t *)((uint8_t *)second_instance.params + array->header.offset);
+  *second_ref = circle->formid;
+  assert_false(dt_develop_blend_params_read(&second_instance, blob, length,
+                                          dt_develop_blend_version(), &restored,
+                                          -1, FALSE, NULL));
+  assert_int_equal(g_list_length(dev.forms), 10);
+  assert_int_not_equal(*second_ref, *ref);
+  free(second_instance.params);
+
+  dt_iop_module_t spots = { 0 };
+  dt_iop_module_so_t spots_so = { 0 };
+  g_strlcpy(spots_so.op, "spots", sizeof(spots_so.op));
+  spots.so = &spots_so;
+  spots.flags = _flags_no_masks;
+  spots.dev = &dev;
+  g_strlcpy(spots.op, "spots", sizeof(spots.op));
+  spots.get_f = _owned_field;
+  spots.params_size = 64 * sizeof(dt_mask_id_t);
+  spots.params = calloc(1, spots.params_size);
+  array = spots.get_f("clone_id");
+  assert_non_null(array);
+  dt_mask_id_t *clone_id = (dt_mask_id_t *)((uint8_t *)spots.params + array->header.offset);
+  *clone_id = circle->formid;
+  assert_false(dt_develop_blend_params_read(&spots, blob, length,
+                                          dt_develop_blend_version(), &restored,
+                                          -1, FALSE, NULL));
+  assert_int_equal(g_list_length(dev.forms), 13);
+  assert_int_not_equal(*clone_id, first_circle);
+  assert_ptr_equal(dt_masks_get_from_id_ext(dev.forms, *clone_id), g_list_nth_data(dev.forms, 11));
+  *clone_id = second->formid + 100;
+  assert_true(dt_develop_blend_params_read(&spots, blob, length,
                                          dt_develop_blend_version(), &restored,
                                          -1, FALSE, NULL));
-  assert_int_equal(g_list_length(dev.forms), 2);
+  assert_int_equal(g_list_length(dev.forms), 13);
+  assert_int_equal(*clone_id, second->formid + 100);
+  *clone_id = circle->formid;
+  assert_false(dt_develop_blend_params_read(&spots, blob, length,
+                                          dt_develop_blend_version(), &restored,
+                                          -1, TRUE, NULL));
+  assert_int_equal(g_list_length(dev.forms), 16);
+  assert_non_null(dt_masks_get_from_id_ext(dev.forms, *clone_id));
+
+  dt_iop_module_t other_module = module;
+  dt_iop_module_so_t other_so = { 0 };
+  g_strlcpy(other_so.op, "other", sizeof(other_so.op));
+  other_module.so = &other_so;
+  assert_true(dt_develop_blend_params_read(&other_module, blob, length,
+                                         dt_develop_blend_version(), &restored,
+                                         -1, FALSE, NULL));
+  assert_int_equal(g_list_length(dev.forms), 16);
+
+  free(spots.params);
+  free(module.params);
 
   g_list_free_full(dev.forms, (GDestroyNotify)dt_masks_free_form);
   g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);

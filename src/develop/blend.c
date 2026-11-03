@@ -3028,6 +3028,75 @@ gboolean dt_develop_blend_legacy_params_ext(dt_iop_module_t *module,
   return FALSE;
 }
 
+static gboolean _remap_owned_params(dt_iop_module_t *module, GHashTable *ids)
+{
+  if(!module->get_f || !module->params) return FALSE;
+  // only these modules store shape ids in op_params; introspection supplies
+  // the current offsets without treating every NO_MASKS module alike
+  const char *array_name = NULL;
+  const char *id_name = NULL;
+  if(dt_iop_module_is(module, "retouch"))
+  {
+    array_name = "rt_forms";
+    id_name = "formid";
+  }
+  else if(dt_iop_module_is(module, "spots"))
+    array_name = "clone_id";
+  else
+    return FALSE;
+
+  const dt_introspection_field_t *array = module->get_f(array_name);
+  if(!array || array->header.type != DT_INTROSPECTION_TYPE_ARRAY
+     || !array->Array.field) return FALSE;
+  const dt_introspection_field_t *element = array->Array.field;
+  size_t offset = 0;
+  if(id_name)
+  {
+    if(element->header.type != DT_INTROSPECTION_TYPE_STRUCT) return FALSE;
+    gboolean found = FALSE;
+    for(size_t i = 0; i < element->Struct.entries; i++)
+    {
+      const dt_introspection_field_t *field = element->Struct.fields[i];
+      if(field->header.field_name && !strcmp(field->header.field_name, id_name)
+         && field->header.type == DT_INTROSPECTION_TYPE_INT
+         && field->header.size == sizeof(dt_mask_id_t))
+      {
+        if(field->header.offset < element->header.offset) return FALSE;
+        offset = field->header.offset - element->header.offset;
+        found = TRUE;
+        break;
+      }
+    }
+    if(!found) return FALSE;
+  }
+  else if(element->header.type != DT_INTROSPECTION_TYPE_INT
+          || element->header.size != sizeof(dt_mask_id_t))
+    return FALSE;
+
+  if(!element->header.size || array->header.offset > module->params_size
+     || array->header.size > module->params_size - array->header.offset
+     || element->header.size < offset + sizeof(dt_mask_id_t)
+     || array->Array.count > array->header.size / element->header.size)
+    return FALSE;
+
+  for(size_t i = 0; i < array->Array.count; i++)
+  {
+    dt_mask_id_t *id = (dt_mask_id_t *)((uint8_t *)module->params + array->header.offset
+                                   + i * element->header.size + offset);
+    if(dt_is_valid_maskid(*id)
+       && !g_hash_table_contains(ids, GINT_TO_POINTER(*id)))
+      return FALSE;
+  }
+  for(size_t i = 0; i < array->Array.count; i++)
+  {
+    dt_mask_id_t *id = (dt_mask_id_t *)((uint8_t *)module->params + array->header.offset
+                                   + i * element->header.size + offset);
+    if(dt_is_valid_maskid(*id))
+      *id = GPOINTER_TO_INT(g_hash_table_lookup(ids, GINT_TO_POINTER(*id)));
+  }
+  return TRUE;
+}
+
 gboolean dt_develop_blend_params_read(dt_iop_module_t *module,
                                       const void *const blob,
                                       const int length,
@@ -3065,28 +3134,42 @@ gboolean dt_develop_blend_params_read(dt_iop_module_t *module,
       forms = NULL;
       failed = TRUE;
     }
-    if(forms && ignore_mask)
+    // a locked blend mask keeps its own tree, but retouch/spots shapes still
+    // belong to the incoming module parameters and must be imported
+    if(forms && ignore_mask && !(module && (module->flags() & IOP_FLAGS_NO_MASKS)))
       g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
     else if(forms && module && (module->flags() & IOP_FLAGS_NO_MASKS))
     {
-      // the module's op_params refer to original form ids, so renumbering
-      // through dt_masks_import_stored_forms() would break retouch/spots
-      // refuse id collisions rather than replacing unrelated image masks
-      gboolean collision = !dev || history_num >= 0;
-      for(GList *l = forms; l && !collision; l = g_list_next(l))
+      if(!dev || history_num >= 0 || (!dt_iop_module_is(module, "retouch")
+                                   && !dt_iop_module_is(module, "spots")))
       {
-        dt_masks_form_t *f = l->data;
-        collision = dt_masks_get_from_id_ext(dev->forms, f->formid) != NULL;
-      }
-      if(collision)
-      {
-        dt_print(DT_DEBUG_ALWAYS, "[blend] '%s': own shapes in style collide with existing forms",
-                 module->op);
         g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
         failed = TRUE;
       }
       else
-        dev->forms = g_list_concat(dev->forms, forms);
+      {
+        GHashTable *ids = g_hash_table_new(NULL, NULL);
+        GList *original = NULL;
+        for(GList *l = forms; l; l = g_list_next(l))
+          original = g_list_prepend(original,
+                                    GINT_TO_POINTER(((dt_masks_form_t *)l->data)->formid));
+        original = g_list_reverse(original);
+        dt_masks_blend_blob_remap(forms, bp, dev->forms, NULL);
+        for(GList *a = original, *b = forms; a && b; a = a->next, b = b->next)
+          g_hash_table_insert(ids, a->data,
+                              GINT_TO_POINTER(((dt_masks_form_t *)b->data)->formid));
+        // module params refer to the same tree as mask_id; never import
+        // forms if their module-specific references cannot be updated
+        if(_remap_owned_params(module, ids))
+          dev->forms = g_list_concat(dev->forms, forms);
+        else
+        {
+          g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+          failed = TRUE;
+        }
+        g_list_free(original);
+        g_hash_table_destroy(ids);
+      }
     }
     else if(forms)
       dt_masks_import_stored_forms(module, bp, forms, history_num);

@@ -324,7 +324,12 @@ static dt_mask_id_t _map_id(GHashTable *map, GList *taken, GHashTable *taken_ids
     return GPOINTER_TO_INT(found);
   // dt_masks_new_marker_id() also avoids the marker ids in `taken`
   dt_mask_id_t id = dt_masks_new_marker_id(taken);
-  while(_id_in_use(taken, taken_ids, map, id)) id = dt_masks_new_marker_id(taken);
+  while(_id_in_use(taken, taken_ids, map, id))
+  {
+    // new_marker_id only sees `taken`, so asking it again can return an id
+    // already assigned by this import or present only in taken_ids
+    id = id == G_MAXINT ? 1 : id + 1;
+  }
   g_hash_table_insert(map, GINT_TO_POINTER(old), GINT_TO_POINTER(id));
   if(taken_ids) g_hash_table_add(taken_ids, GINT_TO_POINTER(id));
   return id;
