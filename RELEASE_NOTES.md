@@ -329,6 +329,16 @@ changes (where available).
   NVIDIA and macOS drivers, which speeds up every step where the
   pipeline moves the image from the CPU to the GPU.
 
+- On systems with several OpenCL devices, a discrete GPU is now used
+  by default ahead of an integrated one. On an Intel Mac with a Radeon
+  Pro 5500M an export used to run on the integrated GPU at about 2.5 s;
+  it now runs on the Radeon at about 0.4 s.
+
+- PoCL has its own entry in the OpenCL platform preferences and is the
+  only platform still allowed to run OpenCL on the CPU. Other CPU
+  OpenCL devices, like the one macOS provides, are no longer used:
+  macOS' one produced wrong exports.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
