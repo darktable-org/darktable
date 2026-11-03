@@ -72,6 +72,11 @@ with its own selection state.
 The visible target is reconciled with the active selection after delayed state
 updates and after native work finishes, so image operations follow the current
 editing tab as well as the parameter panel.
+An editing-tab click resolves and forwards that tab's remembered native tool ID
+in the same event. The workspace owns these selections; its selector, parameter
+panel and photo helpers share the resolved tool. Each tool has a separate
+composition identity within its saved-state scope, so switching tools rebuilds
+their control trees while retaining saved drafts and scroll positions.
 
 Open, Undo, Redo and Export remain in the preview action row. Opening/exporting
 uses Android's document picker. Native work retains the last preview where one

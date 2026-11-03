@@ -52,6 +52,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -116,20 +117,62 @@ internal fun EditorWorkspace(
     var workspaceSession by rememberSaveable { mutableStateOf<Long?>(null) }
     var tabName by rememberSaveable { mutableStateOf(WorkspaceTab.ADJUSTMENTS.name) }
     var toolSearchVisible by rememberSaveable(ready?.sessionId) { mutableStateOf(false) }
+    var adjustOperation by rememberSaveable(ready?.sessionId) { mutableStateOf("") }
+    var detailOperation by rememberSaveable(ready?.sessionId) { mutableStateOf("") }
+    var geometryOperation by rememberSaveable(ready?.sessionId) { mutableStateOf("") }
     val tab = WorkspaceTab.entries.firstOrNull { it.name == tabName } ?: WorkspaceTab.ADJUSTMENTS
-    val toneModule = ready?.modules?.singleOrNull {
-        it.operation == ready.selectedModule && it.operation.substringBefore('@') == "toneequal"
+    fun rememberedOperation(category: WorkspaceTab): String = when(category) {
+        WorkspaceTab.ADJUSTMENTS -> adjustOperation
+        WorkspaceTab.DETAIL -> detailOperation
+        WorkspaceTab.GEOMETRY -> geometryOperation
+        WorkspaceTab.SETTINGS -> ""
     }
+    fun rememberOperation(operation: String) {
+        when(workspaceTabForOperation(operation)) {
+            WorkspaceTab.ADJUSTMENTS -> adjustOperation = operation
+            WorkspaceTab.DETAIL -> detailOperation = operation
+            WorkspaceTab.GEOMETRY -> geometryOperation = operation
+            WorkspaceTab.SETTINGS -> Unit
+        }
+    }
+    val currentInCategory = ready?.selectedModule?.takeIf { workspaceTabForOperation(it) == tab }
+    val selectedTool = ready?.modules?.preferredWorkspaceModule(tab, currentInCategory ?: rememberedOperation(tab))
+    fun selectTool(operation: String) {
+        if(ready?.modules?.any { it.operation == operation } != true) return
+        rememberOperation(operation)
+        if(!busy) onSelectModule(operation)
+    }
+    fun selectTab(category: WorkspaceTab) {
+        selectedTool?.let { rememberOperation(it.operation) }
+        focus.clearFocus()
+        keyboard?.hide()
+        toolSearchVisible = false
+        tabName = category.name
+        ready?.modules?.preferredWorkspaceModule(category, rememberedOperation(category))?.let { target ->
+            rememberOperation(target.operation)
+            // Forward every navigation intent. The collected Ready snapshot may
+            // still describe an earlier selection when tabs are tapped rapidly.
+            if(!busy) onSelectModule(target.operation)
+        }
+    }
+    LaunchedEffect(ready?.sessionId, ready?.selectedModule) {
+        ready?.selectedModule?.let(::rememberOperation)
+    }
+    // Reconcile delayed native publications and navigation requested while busy.
+    LaunchedEffect(ready?.sessionId, tab, selectedTool?.operation, ready?.selectedModule, busy) {
+        if(!busy && selectedTool != null && selectedTool.operation != ready?.selectedModule)
+            onSelectModule(selectedTool.operation)
+    }
+    val toneModule = selectedTool?.takeIf { it.operation.substringBefore('@') == "toneequal" }
     var toneImageMode by rememberSaveable(ready?.sessionId, ready?.selectedModule, tabName) { mutableStateOf(false) }
     var tonePoint by remember(ready?.sessionId, ready?.selectedModule) { mutableStateOf<ToneEqualizerPoint?>(null) }
-    val maskModule = ready?.modules?.singleOrNull { module ->
-        module.operation == ready.selectedModule && module.parameters.any { maskControlAddress(it.name) != null }
-    }
+    val maskModule = selectedTool?.takeIf { module -> module.parameters.any { maskControlAddress(it.name) != null } }
     var maskImageMode by rememberSaveable(ready?.sessionId, ready?.selectedModule, tabName) { mutableStateOf(false) }
     var maskFormId by rememberSaveable(ready?.sessionId, ready?.selectedModule, tabName) { mutableStateOf<Int?>(null) }
     var maskSource by rememberSaveable(ready?.sessionId, ready?.selectedModule, tabName) { mutableStateOf(false) }
     var maskLoaded by remember(ready?.sessionId, ready?.selectedModule, tabName) { mutableStateOf(false) }
     val maskAvailable = maskModule?.enabled == true && ready?.previewCurrent == true &&
+        ready.selectedModule == maskModule.operation &&
         workspaceTabForOperation(maskModule.operation) == tab
     val currentMaskSelection = maskPhotoSelection?.takeIf { selection ->
         ready != null && selection.sessionId == ready.sessionId && selection.module == maskModule?.operation &&
@@ -143,7 +186,8 @@ internal fun EditorWorkspace(
         MaskPhotoTarget(currentMaskSelection.sessionId, currentMaskSelection.module, currentMaskSelection.preview,
             maskForm.id, maskUsesSource) else null
     val maskPoint = maskForm?.let { if(maskUsesSource) it.source else it.center }
-    val toneAvailable = tab == WorkspaceTab.ADJUSTMENTS && toneModule?.enabled == true && ready?.previewCurrent == true
+    val toneAvailable = tab == WorkspaceTab.ADJUSTMENTS && toneModule?.enabled == true && ready?.previewCurrent == true &&
+        ready.selectedModule == toneModule.operation
     val toneActive = toneAvailable && toneImageMode
     val currentSample = toneSample?.takeIf { sample ->
         ready != null && sample.sessionId == ready.sessionId && sample.module == toneModule?.operation &&
@@ -195,12 +239,7 @@ internal fun EditorWorkspace(
         NavigationBar(containerColor = DarktableColors.Toolbar, tonalElevation = 0.dp) {
             val selectedColor = MaterialTheme.colorScheme.onSurface
             WorkspaceTab.entries.forEach { item ->
-                NavigationBarItem(selected = tab == item, onClick = {
-                    focus.clearFocus()
-                    keyboard?.hide()
-                    toolSearchVisible = false
-                    tabName = item.name
-                },
+                NavigationBarItem(selected = tab == item, onClick = { selectTab(item) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = selectedColor, selectedTextColor = selectedColor,
                         unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -222,7 +261,7 @@ internal fun EditorWorkspace(
                 if(tab == WorkspaceTab.SETTINGS) WorkspaceAppInfo(runtime)
                 else if(ready == null) WorkspaceEmptyTools(state, runtime, onOpen)
                 else workspaceState.SaveableStateProvider("image-${ready.sessionId}") {
-                    WorkspaceTools(ready, tab, busy, onSelectModule, onEnabled,
+                    WorkspaceTools(ready, tab, busy, selectedTool, ::selectTool, onEnabled,
                         searchVisible = toolSearchVisible, onSearchVisible = { toolSearchVisible = it },
                         onSelectTab = { tabName = it.name }, beforeControls = { selected ->
                         if(selected.operation == toneModule?.operation) {
@@ -353,42 +392,18 @@ private fun WorkspaceAction(icon: Int, label: Int, tag: String, enabled: Boolean
 @Composable
 private fun WorkspaceTools(
     ready: EditorState.Ready, tab: WorkspaceTab, busy: Boolean,
+    selected: EditorModule?,
     onSelectModule: (String) -> Unit, onEnabled: (String, Boolean) -> Unit,
     searchVisible: Boolean, onSearchVisible: (Boolean) -> Unit,
     onSelectTab: (WorkspaceTab) -> Unit,
     beforeControls: @Composable (EditorModule) -> Unit,
     moduleContent: @Composable (EditorModule, String) -> Unit,
 ) {
-    var adjustOperation by rememberSaveable { mutableStateOf("") }
-    var detailOperation by rememberSaveable { mutableStateOf("") }
-    var geometryOperation by rememberSaveable { mutableStateOf("") }
     var query by rememberSaveable { mutableStateOf("") }
     var enabledOnly by rememberSaveable { mutableStateOf(false) }
-    fun rememberOperation(operation: String) {
-        when(workspaceTabForOperation(operation)) {
-            WorkspaceTab.ADJUSTMENTS -> adjustOperation = operation
-            WorkspaceTab.DETAIL -> detailOperation = operation
-            WorkspaceTab.GEOMETRY -> geometryOperation = operation
-            WorkspaceTab.SETTINGS -> Unit
-        }
-    }
-    val remembered = when(tab) {
-        WorkspaceTab.ADJUSTMENTS -> adjustOperation
-        WorkspaceTab.DETAIL -> detailOperation
-        WorkspaceTab.GEOMETRY -> geometryOperation
-        WorkspaceTab.SETTINGS -> ""
-    }
-    val currentInCategory = ready.selectedModule?.takeIf { workspaceTabForOperation(it) == tab }
     // Search is navigation, not an edit or a filter on the selected tool. Keep
     // normal category selection independent from the query until a result is tapped.
     val shown = ready.modules.workspaceModules(tab)
-    val selected = shown.preferredWorkspaceModule(tab, currentInCategory ?: remembered)
-    LaunchedEffect(ready.selectedModule) { ready.selectedModule?.let(::rememberOperation) }
-    // StateFlow may publish a previous tab's selection after navigation. Recheck
-    // the actual selection even when this tab's visible target hasn't changed.
-    LaunchedEffect(ready.sessionId, tab, selected?.operation, ready.selectedModule, busy) {
-        if(!busy && selected != null && selected.operation != ready.selectedModule) onSelectModule(selected.operation)
-    }
     val keyboard = LocalSoftwareKeyboardController.current
     val focus = LocalFocusManager.current
     val searchFocus = remember { FocusRequester() }
@@ -432,7 +447,6 @@ private fun WorkspaceTools(
                         }, enabled = !busy, onClick = {
                             expanded = false
                             closeSearch()
-                            rememberOperation(module.operation)
                             onSelectModule(module.operation)
                         }, trailingIcon = {
                             Text(stringResource(if(module.enabled) R.string.workspace_enabled else R.string.workspace_disabled),
@@ -477,18 +491,21 @@ private fun WorkspaceTools(
         if(searchVisible) {
             WorkspaceToolSearchResults(filterEditingTools(ready.modules, query, enabledOnly), busy) { module ->
                 closeSearch()
-                rememberOperation(module.operation)
                 onSelectTab(module.workspaceTab())
                 onSelectModule(module.operation)
             }
         } else if(selected == null) {
             Text(stringResource(R.string.tools_no_matches), Modifier.padding(16.dp), style = MaterialTheme.typography.bodyMedium)
         } else savedControls.SaveableStateProvider(selected.operation) {
-            Column(Modifier.fillMaxSize().testTag("editor_parameter_scroll")
-                .verticalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 8.dp)) {
-                beforeControls(selected)
-                moduleContent(selected, "")
-                Spacer(Modifier.height(12.dp))
+            // Save drafts by native identity, but recreate the tool's composition
+            // and rendering nodes instead of reusing another tool's subtree.
+            key(ready.sessionId, selected.operation) {
+                Column(Modifier.fillMaxSize().testTag("editor_parameter_scroll")
+                    .verticalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 8.dp)) {
+                    beforeControls(selected)
+                    moduleContent(selected, "")
+                    Spacer(Modifier.height(12.dp))
+                }
             }
         }
     }

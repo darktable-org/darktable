@@ -15,7 +15,7 @@ are not counts of independently rendered Android controls.
 The current validation includes:
 
 - The coordinated Android check passed production and instrumentation Kotlin
-  compilation, Debug and Release each passed 141 JVM tests in 31 classes
+  compilation, Debug and Release each passed 147 JVM tests in 32 classes
   (zero failures, errors or skips), plus `lintDevDebug` and `lintDevRelease`.
   Additional instrumentation-source checks remain separate from
   actually running those component tests on Android.
@@ -94,6 +94,19 @@ android/gradlew -p android :app:testDevDebugUnitTest \
 android/gradlew -p android :app:testDevReleaseUnitTest \
   --tests org.example.darktableandroid.WorkspaceTabNavigationTest
 ```
+
+Six `WorkspaceTabPairsTest` cases passed in Debug and Release. They use the
+production `ModuleControls`, with physical
+pointer taps across all six directed pairs of the three editing tabs. It covers
+Exposure and mandatory Orientation (`flip`) before and after Detail / Repair,
+including EV and rotation callbacks, non-default instances, white balance and
+lens controls, and saved crop drafts/scroll with an offscreen native refresh.
+The click-event assertion requires the remembered target to become active before
+recomposition. On the preceding `6bab601832` workspace, that assertion failed
+with `flip` still active after the Light / Color click. The other eventual-render
+checks passed in the host runtime; this baseline does not reproduce the device's
+persistent stale-render symptom. The new explicit tool composition key also
+prevents cross-tool node reuse; physical-device rendering remains unverified.
 
 Three `DarktableThemeTest` host cases passed in Debug and Release. They render the production workspace and module
 controls under the previous Material tokens and the desktop-grey theme. They
