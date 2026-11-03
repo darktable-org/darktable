@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-02 22:30+0100\n"
-"PO-Revision-Date: 2026-11-02 22:34+0100\n"
+"PO-Revision-Date: 2026-11-03 18:02+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -38083,7 +38083,7 @@ msgstr "Filtrer les styles"
 
 #: ../src/libs/styles.c:891 ../src/libs/styles.c:892
 msgid "hide preview"
-msgstr "Cacher aperçu"
+msgstr "Cacher l’aperçu"
 
 #: ../src/libs/styles.c:899
 msgid "hide preview of style on tooltip"
