@@ -2697,6 +2697,16 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         && !(dt_pipe_is_preview(pipe) && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL))
         && !_avoid_cl_module(piece);
 
+    /* At 100% zoom and above demosaicscale only cuts the visible window out of the
+       full demosaiced image. If that image comes from the host cache, the device
+       path would upload all of it for a crop, which costs far more than cropping
+       on the host and uploading the small result for the next module. */
+    if(possible_cl
+       && cl_mem_input == NULL
+       && roi_out->scale >= 1.0f
+       && dt_iop_module_is(module, "demosaicscale"))
+      possible_cl = FALSE;
+
     /* A colorspace conversion of the input is done before the module runs, into a second
        image that replaces the original, so one extra full-size buffer is live while it
        happens. Reserve it in the untiled decision only: if the module has to tile, the
