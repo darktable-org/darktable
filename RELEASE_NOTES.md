@@ -265,6 +265,10 @@ changes (where available).
   megabytes on each run. The correction is also more precise on x86,
   where it could be up to 0.3 px off, or 0.6 px when distorting.
 
+- Highlight reconstruction's inpaint opposed method no longer copies
+  the whole raw back from the OpenCL device to measure the color of
+  the clipped areas.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
