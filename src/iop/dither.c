@@ -587,20 +587,19 @@ static void _process_random(
 
   const float dither = powf(2.0f, data->random.damping / 10.0f);
 
-  unsigned int *const tea_states = alloc_tea_states(dt_get_num_threads());
-
   DT_OMP_FOR()
   for(int j = 0; j < height; j++)
   {
-    unsigned int *const tea_state = get_tea_state(tea_states,dt_get_thread_num());
     const size_t k = (size_t)4 * width * j;
     const float *const in = (const float *)ivoid + k;
     float *const out = (float *)ovoid + k;
-    tea_state[0] = j * height; /* + dt_get_thread_num() -- do not include, makes results unreproducible */
     for(int i = 0; i < width; i++)
     {
+      // seeded per pixel: the state that each thread carried from row to row
+      // made the noise depend on the number of threads
+      unsigned int tea_state[2] = { (unsigned int)(j * width + i), 0 };
       encrypt_tea(tea_state);
-      float dith = dither * tpdf(tea_state[0]);
+      const float dith = dither * tpdf(tea_state[0]);
 
       for_each_channel(c,aligned(in,out:64))
       {
@@ -608,7 +607,6 @@ static void _process_random(
       }
     }
   }
-  free_tea_states(tea_states);
 }
 
 static void _process_posterize(
