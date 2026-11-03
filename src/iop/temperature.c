@@ -1233,7 +1233,7 @@ static void _update_preset(dt_iop_module_t *self, int mode)
                                            || mode >= DT_IOP_NUM_OF_STD_TEMP_PRESETS;
 
   // user modified and from image area keep the flag: it is ignored in camera
-  // reference (_wb_from_params()), so a visit there must not lose the unticked
+  // reference (_wb_from_params()), so a visit there must not lose the unchecked
   // flag of the 'caveats' workaround
   if(is_current_reference && is_new_mode_from_camera)
   {
@@ -2276,7 +2276,7 @@ void gui_init(dt_iop_module_t *self)
   // gtk_label_set_line_wrap() is GTK 3 only, the property exists in both
   g_object_set(g->label_locked, "wrap", TRUE, NULL);
   gtk_widget_set_tooltip_text(g->label_locked,
-      _("to use these controls, select the illuminant 'as set in white balance module' in color calibration,\n"
+      _("to use these controls, select the illuminant 'from the white balance module' in color calibration,\n"
         "or turn chromatic adaptation off there"));
 
   dt_gui_box_add(box_enabled,

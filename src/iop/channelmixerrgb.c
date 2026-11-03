@@ -2090,9 +2090,9 @@ static void _set_trouble_messages(dt_iop_module_t *self)
     if(adaptation == self || !adaptation)
       dt_iop_set_module_trouble_message(temperature,
           _("not prepared for color calibration's illuminant (<u>details</u>)"),
-          _("color calibration's 'as set in white balance module' illuminant\n"
+          _("color calibration's 'from the white balance module' illuminant\n"
             "only follows this module if 'prepare data for color calibration'\n"
-            "is ticked. otherwise, it gives the same result as its\n"
+            "is checked. otherwise, it gives the same result as its\n"
             "'as shot in camera' illuminant.\n"
             "if these coefficients were measured on a D65 screen to\n"
             "replace the camera reference, select another illuminant\n"
@@ -2102,7 +2102,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
     dt_iop_set_module_trouble_message(self,
         _("white balance is not prepared for this illuminant (<u>details</u>)"),
         _("this illuminant only follows white balance if 'prepare data\n"
-          "for color calibration' is ticked there. otherwise, it gives\n"
+          "for color calibration' is checked there. otherwise, it gives\n"
           "the same result as the 'as shot in camera' illuminant.\n"
           "if white balance's coefficients were measured on a D65\n"
           "screen to replace the camera reference, select another\n"
@@ -2178,7 +2178,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
         _("white balance applied twice (<u>details</u>)"),
         _("the color calibration module is enabled and already provides\n"
           "chromatic adaptation.\n"
-          "tick 'prepare data for color calibration' here,\n"
+          "check 'prepare data for color calibration' here,\n"
           "set the white balance to camera reference (D65)\n"
           "or disable chromatic adaptation in color calibration.\n"
           "ignore this if the coefficients were measured on a D65 screen\n"
@@ -2189,7 +2189,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
         _("white balance module error (<u>details</u>)"),
         _("the white balance module is not using the camera\n"
           "reference illuminant, which will cause issues here\n"
-          "with chromatic adaptation. tick 'prepare data for\n"
+          "with chromatic adaptation. check 'prepare data for\n"
           "color calibration' there, set it to reference\n"
           "or disable chromatic adaptation here.\n"
           "ignore this if its coefficients were measured on a D65\n"
@@ -4186,7 +4186,7 @@ void gui_changed(dt_iop_module_t *self,
       }
       if(*prev_illuminant == DT_ILLUMINANT_FROM_WB)
       {
-        // If illuminant was previously "as set in white balance module",
+        // If illuminant was previously "from the white balance module",
         // (x, y) were computed at runtime from the WB module's coefficients
         // and p->x, p->y may hold stale values. Recompute them now so
         // the new illuminant mode starts from the correct chromaticity.

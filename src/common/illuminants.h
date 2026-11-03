@@ -34,7 +34,7 @@ typedef enum dt_illuminant_t
   DT_ILLUMINANT_BB              = 6, // $DESCRIPTION: "Planckian (black body)" general black body radiator - not CIE standard
   DT_ILLUMINANT_CUSTOM          = 7, // $DESCRIPTION: "custom" input x and y directly - bypass search
   DT_ILLUMINANT_CAMERA          = 10,// $DESCRIPTION: "as shot in camera" read RAW EXIF for WB
-  DT_ILLUMINANT_FROM_WB         = 11,// $DESCRIPTION: "as set in white balance module" read coefficients from the white balance module
+  DT_ILLUMINANT_FROM_WB         = 11,// $DESCRIPTION: "from the white balance module" read coefficients from the white balance module
   DT_ILLUMINANT_LAST,
   DT_ILLUMINANT_DETECT_SURFACES = 8,
   DT_ILLUMINANT_DETECT_EDGES    = 9,
