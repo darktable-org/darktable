@@ -263,8 +263,11 @@ void process(dt_iop_module_t *self,
       const size_t index = j * width;
       for(size_t i = 0; i < width; i++)
       {
-        float pos[5] = { i * sigma[0],
-                         j * sigma[1],
+        // image coordinates rather than roi ones: the lattice is not
+        // translation invariant, so tiles and zoomed views would otherwise
+        // each get a different blur
+        float pos[5] = { (float)(roi_in->x + (int)i) * sigma[0],
+                         (float)(roi_in->y + (int)j) * sigma[1],
                          in[0] * sigma[2],
                          in[1] * sigma[3],
                          in[2] * sigma[4] };
