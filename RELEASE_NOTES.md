@@ -282,6 +282,9 @@ changes (where available).
 - Module color pickers now compute their statistics on the OpenCL
   device instead of copying the picked area back to the CPU.
 
+- The raw chromatic aberrations module can now run on the OpenCL
+  device.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
