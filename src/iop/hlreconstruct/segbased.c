@@ -477,13 +477,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   const dt_dev_wb_t *wb = &pipe->wb;
   const gboolean late = wb->late_correction;
   dt_aligned_pixel_t correction;
-  for_four_channels(k)
-  {
-    if(late && wb->coeffs[k] > 1e-6f)
-      correction[k] = wb->D65coeffs[k] / wb->coeffs[k];
-    else
-      correction[k] = 1.0f;
-  }
+  dt_dev_wb_get_rgb_correction(wb, late, correction);
   const dt_aligned_pixel_t cube_coeffs = { cbrtf(clips[0] * correction[0]),
                                            cbrtf(clips[1] * correction[1]),
                                            cbrtf(clips[2] * correction[2]),

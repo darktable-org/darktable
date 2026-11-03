@@ -405,6 +405,7 @@ would let later modules read the previous image's `pipe->wb`.
 | Symbol | File | Role |
 |---|---|---|
 | `dt_dev_wb_t` | format.h | Holds `coeffs[]`, `D65coeffs[]`, `late_correction`, and `camera_reference`; the type of `dev->chroma.wb` and `pipe->wb` |
+| `dt_dev_wb_get_rgb_correction` | format.h | `D65coeffs[] / coeffs[]` for channels 0 to 2, or 1 where correction is off or `coeffs[k]` is at most 1e-6; channel 3 is always 1 |
 | `dt_dev_reset_chroma` | develop.c | Clears trouble messages, `adaptation`, and `temperature`; sets `wb.coeffs[]` to `1.0` |
 | `dt_dev_init_chroma` | develop.c | Resets, then sets `wb` and `as_shot[]` to neutral; runs when the dev is created and cleaned up |
 | `dt_dev_wb_set_neutral` | develop.c | Sets a `dt_dev_wb_t` to neutral; also used when a pipe is created (`pixelpipe_hb.c`) |

@@ -634,13 +634,7 @@ static gboolean _get_d65_correction_ratios(const dt_iop_module_t *self,
   // WB adaptation ratio
   if(valid_chroma && changed_chroma)
   {
-    for_four_channels(k)
-    {
-      if(wb->coeffs[k] > 1e-6f)
-        out_correction_ratios[k] = wb->D65coeffs[k] / wb->coeffs[k];
-      else
-        out_correction_ratios[k] = 1.0f;
-    }
+    dt_dev_wb_get_rgb_correction(wb, TRUE, out_correction_ratios);
   }
   return FALSE;
 }

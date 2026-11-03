@@ -37,6 +37,22 @@ typedef struct dt_dev_wb_t
   gboolean camera_reference;  // temperature is in its 'camera reference' mode
 } dt_dev_wb_t;
 
+// the ratios that take data balanced with coeffs to D65coeffs. channel 3 stays
+// neutral: on 3-color images its multipliers can be non-finite, and colorin's
+// OpenCL kernels would write the result to alpha. no caller uses a 4th ratio
+// as color: demosaic turns 4-color raws into RGB before colorin, and
+// highlights clips them (highlights.c:1056)
+static inline void dt_dev_wb_get_rgb_correction(const dt_dev_wb_t *wb,
+                                                const gboolean apply,
+                                                dt_aligned_pixel_t correction)
+{
+  for_three_channels(k)
+    correction[k] = apply && wb->coeffs[k] > 1e-6f
+      ? wb->D65coeffs[k] / wb->coeffs[k]
+      : 1.0f;
+  correction[3] = 1.0f;
+}
+
 typedef enum dt_iop_buffer_type_t {
   TYPE_UNKNOWN,
   TYPE_FLOAT,
