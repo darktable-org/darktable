@@ -276,6 +276,9 @@ changes (where available).
   device instead of copying the image back to the CPU for each
   healed shape.
 
+- The hot pixels module can now run on the OpenCL device, so a raw
+  no longer goes back to the CPU and up again around it.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
