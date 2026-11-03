@@ -942,6 +942,8 @@ changes (where available).
   OpenCL path gave the horizontal neighbors twice their weight. Edits
   using them may look slightly different when exported with OpenCL.
 
+- Fixed tethered bracket capture progress using the wrong image total.
+
 - The non-local means modes of denoise (profiled) and astrophoto
   denoise now treat the image edges the same way on the CPU and with
   OpenCL, by mirroring the image. Before, the two gave different
