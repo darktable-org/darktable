@@ -25,6 +25,7 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
+#include "develop/tiling.h"
 #include "develop/openmp_maths.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/accelerators.h"
@@ -478,6 +479,17 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 }
 
 #ifdef HAVE_OPENCL
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
+                     dt_develop_tiling_t *tiling)
+{
+  default_tiling_callback(self, piece, roi_in, roi_out, tiling);
+  // process_cl() adds three quarter-size planes for the Bayer wavelets
+  tiling->factor_cl += 0.75f;
+}
+
 int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
