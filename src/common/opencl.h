@@ -176,6 +176,9 @@ typedef struct dt_opencl_device_t
   // keep track of devices using unified memory so we can adopt
   // runtime code
   gboolean unified_memory;
+  // position in the driver's device list, before dt_opencl_init()
+  // renumbers the devices; keys the saved headroom
+  int driver_id;
   // fraction of system memory allowed for a device in percent
   float unified_fraction;
 
