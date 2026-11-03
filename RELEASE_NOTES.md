@@ -290,6 +290,9 @@ changes (where available).
   curve, tone curve and color zones) now count it on the OpenCL device
   instead of copying the image back to the CPU.
 
+- The raw chromatic aberrations module can now run on the OpenCL
+  device.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
