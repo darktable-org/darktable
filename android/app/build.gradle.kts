@@ -11,6 +11,7 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.testing.Test
 import org.gradle.api.provider.Property
 import org.gradle.process.ExecOperations
 import java.io.File
@@ -275,6 +276,7 @@ android {
     // upstream root graph also configures desktop-only dependencies.
     if(prebuiltStage == null) externalNativeBuild { cmake { path = file("../../mobile/CMakeLists.txt"); version = "3.22.1" } }
     buildFeatures { compose = true; buildConfig = true }
+    testOptions { unitTests.isIncludeAndroidResources = true }
     packaging {
         jniLibs {
             // The prebuilt manifest records exact, previously verified bytes.
@@ -341,6 +343,23 @@ tasks.configureEach {
 
 kotlin { jvmToolchain(17) }
 
+// Resolve the host test SDK through Gradle, rather than Robolectric's separate
+// downloader and user-home lock. Keep this SDK 35/i7 pin aligned with
+// Robolectric 4.14.1 and WorkspaceTabNavigationTest's @Config.
+val robolectricSdk by configurations.creating {
+    isCanBeConsumed = false
+    isTransitive = false
+}
+val prepareRobolectricSdk = tasks.register<Sync>("prepareRobolectricSdk") {
+    from(robolectricSdk)
+    into(layout.buildDirectory.dir("robolectric-sdk"))
+}
+tasks.withType<Test>().configureEach {
+    dependsOn(prepareRobolectricSdk)
+    systemProperty("robolectric.offline", "true")
+    systemProperty("robolectric.dependency.dir", layout.buildDirectory.dir("robolectric-sdk").get().asFile.absolutePath)
+}
+
 dependencies {
     // Final APK verification pins the original ARM64 native path library bytes.
     implementation("androidx.graphics:graphics-path") { version { strictly("1.0.1") } }
@@ -354,6 +373,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")
+    testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation(platform("androidx.compose:compose-bom:2025.04.01"))
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    robolectricSdk("org.robolectric:android-all-instrumented:15-robolectric-12650502-i7")
     androidTestImplementation("androidx.test:runner:1.6.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2025.04.01"))

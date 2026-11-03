@@ -113,6 +113,7 @@ internal fun EditorWorkspace(
     val workspaceState = rememberSaveableStateHolder()
     var workspaceSession by rememberSaveable { mutableStateOf<Long?>(null) }
     var tabName by rememberSaveable { mutableStateOf(WorkspaceTab.ADJUSTMENTS.name) }
+    var toolSearchVisible by rememberSaveable(ready?.sessionId) { mutableStateOf(false) }
     val tab = WorkspaceTab.entries.firstOrNull { it.name == tabName } ?: WorkspaceTab.ADJUSTMENTS
     val toneModule = ready?.modules?.singleOrNull {
         it.operation == ready.selectedModule && it.operation.substringBefore('@') == "toneequal"
@@ -194,6 +195,7 @@ internal fun EditorWorkspace(
                 NavigationBarItem(selected = tab == item, onClick = {
                     focus.clearFocus()
                     keyboard?.hide()
+                    toolSearchVisible = false
                     tabName = item.name
                 },
                     icon = { Icon(painterResource(item.iconResource()), null) },
@@ -212,6 +214,7 @@ internal fun EditorWorkspace(
                 else if(ready == null) WorkspaceEmptyTools(state, runtime, onOpen)
                 else workspaceState.SaveableStateProvider("image-${ready.sessionId}") {
                     WorkspaceTools(ready, tab, busy, onSelectModule, onEnabled,
+                        searchVisible = toolSearchVisible, onSearchVisible = { toolSearchVisible = it },
                         onSelectTab = { tabName = it.name }, beforeControls = { selected ->
                         if(selected.operation == toneModule?.operation) {
                             ToneEqualizerTouchEditor((!busy || toneUpdating) && toneAvailable, toneActive, selectedSample,
@@ -342,6 +345,7 @@ private fun WorkspaceAction(icon: Int, label: Int, tag: String, enabled: Boolean
 private fun WorkspaceTools(
     ready: EditorState.Ready, tab: WorkspaceTab, busy: Boolean,
     onSelectModule: (String) -> Unit, onEnabled: (String, Boolean) -> Unit,
+    searchVisible: Boolean, onSearchVisible: (Boolean) -> Unit,
     onSelectTab: (WorkspaceTab) -> Unit,
     beforeControls: @Composable (EditorModule) -> Unit,
     moduleContent: @Composable (EditorModule, String) -> Unit,
@@ -350,7 +354,6 @@ private fun WorkspaceTools(
     var detailOperation by rememberSaveable { mutableStateOf("") }
     var geometryOperation by rememberSaveable { mutableStateOf("") }
     var query by rememberSaveable { mutableStateOf("") }
-    var searchVisible by rememberSaveable { mutableStateOf(false) }
     var enabledOnly by rememberSaveable { mutableStateOf(false) }
     fun rememberOperation(operation: String) {
         when(workspaceTabForOperation(operation)) {
@@ -372,14 +375,16 @@ private fun WorkspaceTools(
     val shown = ready.modules.workspaceModules(tab)
     val selected = shown.preferredWorkspaceModule(tab, currentInCategory ?: remembered)
     LaunchedEffect(ready.selectedModule) { ready.selectedModule?.let(::rememberOperation) }
-    LaunchedEffect(selected?.operation, busy) {
+    // StateFlow may publish a previous tab's selection after navigation. Recheck
+    // the actual selection even when this tab's visible target hasn't changed.
+    LaunchedEffect(ready.sessionId, tab, selected?.operation, ready.selectedModule, busy) {
         if(!busy && selected != null && selected.operation != ready.selectedModule) onSelectModule(selected.operation)
     }
     val keyboard = LocalSoftwareKeyboardController.current
     val focus = LocalFocusManager.current
     val searchFocus = remember { FocusRequester() }
     fun closeSearch() {
-        searchVisible = false
+        onSearchVisible(false)
         query = ""
         enabledOnly = false
         focus.clearFocus()
@@ -388,6 +393,10 @@ private fun WorkspaceTools(
     BackHandler(enabled = searchVisible) { closeSearch() }
     LaunchedEffect(searchVisible) {
         if(searchVisible) searchFocus.requestFocus()
+        else {
+            query = ""
+            enabledOnly = false
+        }
     }
     val savedControls = rememberSaveableStateHolder()
     Column(Modifier.fillMaxSize()) {
@@ -432,7 +441,7 @@ private fun WorkspaceTools(
                     })
             }
             IconButton(onClick = {
-                if(searchVisible) closeSearch() else searchVisible = true
+                if(searchVisible) closeSearch() else onSearchVisible(true)
             }, modifier = Modifier.testTag("editor_tool_search_button")) {
                 Icon(painterResource(if(searchVisible) R.drawable.workspace_ic_close else R.drawable.workspace_ic_search),
                     stringResource(if(searchVisible) R.string.workspace_close_search else R.string.tools_search))

@@ -43,6 +43,8 @@ select a result or create an edit. Tap a result to switch to its category and
 exact instance, close search and show all of that tool's controls. Disabled
 tools stay off until their power switch is explicitly used. Close or Back
 cancels search and restores the current tool without changing it.
+Choosing a bottom editing tab also closes search and opens that tab's remembered
+tool. Results from the previous search do not cover the destination controls.
 
 Selecting a tab or tool changes the visible controls without creating a native
 edit or enabling a tool. The power switch explicitly enables/disables the
@@ -55,6 +57,9 @@ tool's parameter scroll position is retained while moving between tabs. History
 restoration resolves selections against the live native module list so a retired
 instance is never edited through a stale selector. A newly opened image starts
 with its own selection state.
+The visible target is reconciled with the active selection after delayed state
+updates and after native work finishes, so image operations follow the current
+editing tab as well as the parameter panel.
 
 Open, Undo, Redo and Export remain in the preview action row. Opening/exporting
 uses Android's document picker. Native work retains the last preview where one

@@ -15,8 +15,9 @@ are not counts of independently rendered Android controls.
 The current validation includes:
 
 - The coordinated Android check passed production and instrumentation Kotlin
-  compilation, 133 JVM tests in 29 classes (zero failures or skips), and
-  `lintDevDebug`. Additional instrumentation-source checks remain separate from
+  compilation, Debug and Release each passed 138 JVM tests in 30 classes
+  (zero failures, errors or skips), plus `lintDevDebug` and `lintDevRelease`.
+  Additional instrumentation-source checks remain separate from
   actually running those component tests on Android.
 - The final expanded source passed all seven host native CTest cases in
   238.13 seconds, including the original-engine regression in 237.87 seconds.
@@ -71,6 +72,28 @@ cases. They cover explicit cross-category result selection, complete controls
 after selection, query/filter changes without automatic selection, exact
 disabled-instance identities, no-match cancellation and busy-state rejection.
 These bitmap/callback tests have not been executed on Android in this validation.
+
+Five `WorkspaceTabNavigationTest` cases execute the production Compose workspace
+on a host Robolectric 4.14.1 / Android SDK 35 runtime with native graphics and
+compiled app resources. They cover delayed previous-tab selection, closing
+search on tab navigation, exact disabled-instance restoration, deferring active
+selection while an edit is running, and returning from Settings. This is host
+UI execution using bitmap/callback fixtures, not physical-device or native
+image-engine validation. Both Debug and Release passed all five cases without adding
+a test Activity to the application manifest. Gradle prepares the pinned host SDK
+under the build directory; Robolectric uses it offline instead of maintaining
+a second downloader and lock in the user's home directory.
+Re-running the two targeted cases against the preceding `5acf686182` workspace
+reproduced both failures: search stayed over the destination controls, and a late
+crop selection stayed active after returning to Light / Color. The fixed
+workspace passed all five host navigation cases.
+
+```sh
+android/gradlew -p android :app:testDevDebugUnitTest \
+  --tests org.example.darktableandroid.WorkspaceTabNavigationTest
+android/gradlew -p android :app:testDevReleaseUnitTest \
+  --tests org.example.darktableandroid.WorkspaceTabNavigationTest
+```
 
 The lens regression uses the installed Canon EOS 5D Mark II / EF 24–105mm f/4L
 IS USM calibration with the original RGB pixelpipe. Distortion, vignetting and
