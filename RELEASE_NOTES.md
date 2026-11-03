@@ -265,6 +265,9 @@ changes (where available).
   megabytes on each run. The correction is also more precise on x86,
   where it could be up to 0.3 px off, or 0.6 px when distorting.
 
+- Module color pickers now compute their statistics on the OpenCL
+  device instead of copying the picked area back to the CPU.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
