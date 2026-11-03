@@ -67,6 +67,15 @@ typedef struct dt_iop_bilateral_data_t
   float sigma[5];
 } dt_iop_bilateral_data_t;
 
+typedef struct dt_iop_bilateral_global_data_t
+{
+  int kernel_insert;
+  int kernel_splat;
+  int kernel_blur;
+  int kernel_slice;
+  int kernel_direct;
+} dt_iop_bilateral_global_data_t;
+
 const char *name()
 {
   return _("surface blur");
@@ -297,6 +306,200 @@ void process(dt_iop_module_t *self,
   }
 }
 
+#ifdef HAVE_OPENCL
+// the lattice on the device, see data/kernels/permutohedral.cl. sigma holds
+// the inverted sigmas, as process() has them for the lattice.
+static cl_int _lattice_cl(const dt_iop_bilateral_global_data_t *gd,
+                          const int devid,
+                          cl_mem dev_in,
+                          cl_mem dev_out,
+                          const int width,
+                          const int height,
+                          const int x0,
+                          const int y0,
+                          const float sigma[5])
+{
+  const size_t npixels = (size_t)width * height;
+  const size_t grid_points =
+    (height*sigma[0]) * (width*sigma[1]) * sigma[2] * sigma[3] * sigma[4];
+
+  // the scale factors of the PermutohedralLattice constructor, computed the
+  // same way so the vertices match the CPU's
+  float prm[12];
+  for(int i = 0; i < 5; i++)
+  {
+    prm[i] = sigma[i];
+    prm[5 + i] = 1.0f / (sqrtf((float)(i + 1) * (i + 2)));
+    prm[5 + i] *= (5 + 1) * sqrtf(2.0 / 3);
+  }
+  // the roi origin, for the image coordinates process() uses
+  prm[10] = x0;
+  prm[11] = y0;
+
+  // the CPU's estimate of the vertex count, which it uses to size its
+  // tables. A run that needs more entries starts again with the count it
+  // found.
+  size_t max_entries = PermutohedralLattice<5, 4>::estimatedHashEntries(grid_points, npixels);
+  const int row_width = 4096;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  for(int attempt = 0; attempt < 3; attempt++)
+  {
+    const size_t capacity = 2 * max_entries;
+    if(capacity > UINT32_MAX || max_entries == 0) return DT_OPENCL_PROCESS_CL;
+    const uint32_t cap = capacity;
+    const uint32_t max_e = max_entries;
+
+    cl_mem slots = (cl_mem)dt_opencl_alloc_device_buffer(devid, 2 * sizeof(uint32_t) * capacity);
+    cl_mem keys = (cl_mem)dt_opencl_alloc_device_buffer(devid, 3 * sizeof(uint32_t) * max_entries);
+    cl_mem counters = (cl_mem)dt_opencl_alloc_device_buffer(devid, 4 * sizeof(uint32_t));
+    cl_mem params = (cl_mem)dt_opencl_copy_host_to_device_constant(devid, sizeof(prm), prm);
+    cl_mem values[2] = { NULL, NULL };
+    gboolean overflow = FALSE;
+    uint32_t cnt[4] = { 0 };
+    err = DT_OPENCL_DEFAULT_ERROR;
+    if(!slots || !keys || !counters || !params) goto cleanup;
+
+    err = dt_opencl_fill_buffer(devid, slots, 2 * capacity, 1, 0.0f);
+    if(err == CL_SUCCESS)
+      err = dt_opencl_write_buffer_to_device(devid, cnt, counters, 0, sizeof(cnt), TRUE);
+
+    // more rounds only for vertices that lost their slot to another vertex
+    // with the same fingerprint
+    for(uint32_t round = 1; err == CL_SUCCESS && round < 8; round++)
+    {
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_insert, width, height,
+              CLARG(dev_in), CLARG(slots), CLARG(keys), CLARG(counters), CLARG(params),
+              CLARG(width), CLARG(height), CLARG(cap), CLARG(max_e), CLARG(round));
+      if(err == CL_SUCCESS)
+        err = dt_opencl_read_buffer_from_device(devid, cnt, counters, 0, sizeof(cnt), TRUE);
+      if(err != CL_SUCCESS) break;
+      if(cnt[1])
+      {
+        // too many vertices for the estimate: size the next attempt by the count
+        overflow = TRUE;
+        max_entries = (size_t)cnt[0] + cnt[0] / 8 + 1024;
+        break;
+      }
+      const uint32_t entries = cnt[0];
+
+      for(int k = 0; k < 2; k++)
+      {
+        dt_opencl_release_mem_object(values[k]);
+        values[k] = (cl_mem)dt_opencl_alloc_device_buffer(devid, 4 * sizeof(float) * entries);
+      }
+      err = DT_OPENCL_DEFAULT_ERROR;
+      if(!values[0] || !values[1]) break;
+      err = dt_opencl_fill_buffer(devid, values[0], entries, 4, 0.0f);
+
+      if(err == CL_SUCCESS)
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_splat, width, height,
+                CLARG(dev_in), CLARG(slots), CLARG(keys), CLARG(counters), CLARG(values[0]),
+                CLARG(params), CLARG(width), CLARG(height), CLARG(cap), CLARG(entries));
+
+      const int rows = (entries + row_width - 1) / row_width;
+      int src = 0;
+      for(int j = 0; err == CL_SUCCESS && j <= 5; j++)
+      {
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_blur, row_width, rows,
+                CLARG(slots), CLARG(keys), CLARG(values[src]), CLARG(values[1 - src]),
+                CLARG(cap), CLARG(entries), CLARG(row_width), CLARG(j));
+        src = 1 - src;
+      }
+
+      if(err == CL_SUCCESS)
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_slice, width, height,
+                CLARG(dev_in), CLARG(dev_out), CLARG(slots), CLARG(keys), CLARG(values[src]),
+                CLARG(params), CLARG(width), CLARG(height), CLARG(cap), CLARG(entries));
+
+      if(err == CL_SUCCESS)
+        err = dt_opencl_read_buffer_from_device(devid, cnt, counters, 0, sizeof(cnt), TRUE);
+      if(err != CL_SUCCESS || cnt[2] == 0) break;
+
+      dt_print(DT_DEBUG_OPENCL, "[bilateral] %u vertices lost their slot, inserting again", cnt[2]);
+      // the next round starts with no missing vertices
+      cnt[2] = 0;
+      err = dt_opencl_write_buffer_to_device(devid, cnt, counters, 0, sizeof(cnt), TRUE);
+      if(round == 7) err = DT_OPENCL_PROCESS_CL;
+    }
+
+cleanup:
+    dt_opencl_release_mem_object(values[0]);
+    dt_opencl_release_mem_object(values[1]);
+    dt_opencl_release_mem_object(params);
+    dt_opencl_release_mem_object(counters);
+    dt_opencl_release_mem_object(keys);
+    dt_opencl_release_mem_object(slots);
+    if(!overflow) break;
+    dt_print(DT_DEBUG_OPENCL, "[bilateral] lattice outgrew its estimate, retrying with %zu entries",
+             max_entries);
+    err = DT_OPENCL_PROCESS_CL;
+  }
+  return err;
+}
+
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_bilateral_global_data_t *gd = (dt_iop_bilateral_global_data_t *)self->global_data;
+  if(piece->colors != 4) return DT_OPENCL_PROCESS_CL;
+  if(roi_in->width != roi_out->width || roi_in->height != roi_out->height) return DT_OPENCL_PROCESS_CL;
+
+  const int devid = piece->pipe->devid;
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+  if((size_t)width * height > INT_MAX) return DT_OPENCL_PROCESS_CL;
+
+  dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;
+  float sigma[5];
+  _compute_sigmas(sigma, data, roi_in->scale, piece->iscale);
+
+  // the branches of process()
+  size_t origin[] = { 0, 0, 0 };
+  size_t region[] = { (size_t)width, (size_t)height, 1 };
+  if(fmaxf(sigma[0], sigma[1]) < 0.1f)
+    return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+
+  const int prad = (int)(3.0f * fmaxf(sigma[0], sigma[1]) + 1.0f);
+  const int rad = MIN(prad, MIN(roi_out->width, roi_out->height) - 2 * prad);
+  const gboolean thumb = dt_pipe_is_thumb(piece->pipe);
+  if(rad < 1 || (rad <= MAX_DIRECT_STAMP_RADIUS && thumb))
+    return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+
+  if(rad <= MAX_DIRECT_STAMP_RADIUS)
+  {
+    const int wd = 2 * rad + 1;
+    float mat[(2 * MAX_DIRECT_STAMP_RADIUS + 1) * (2 * MAX_DIRECT_STAMP_RADIUS + 1)];
+    float *m = mat + rad * wd + rad;
+    float weight = 0.0f;
+    for(int l = -rad; l <= rad; l++)
+      for(int k = -rad; k <= rad; k++)
+        weight += m[l * wd + k] = expf(-(l * l + k * k) / (2.f * sigma[0] * sigma[0]));
+    for(int l = -rad; l <= rad; l++)
+      for(int k = -rad; k <= rad; k++)
+        m[l * wd + k] /= weight;
+    const dt_aligned_pixel_t isig2col = { 1.0f / (2.0f * sigma[2] * sigma[2]),
+                                          1.0f / (2.0f * sigma[3] * sigma[3]),
+                                          1.0f / (2.0f * sigma[4] * sigma[4]),
+                                          0.0f };
+    cl_mem dev_m = (cl_mem)dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * wd * wd, mat);
+    cl_int err = DT_OPENCL_DEFAULT_ERROR;
+    if(dev_m)
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_direct, width, height,
+              CLARG(dev_in), CLARG(dev_out), CLARG(dev_m), CLARG(width), CLARG(height),
+              CLARG(rad), CLARG(isig2col));
+    dt_opencl_release_mem_object(dev_m);
+    return err;
+  }
+
+  for(int k = 0; k < 5; k++) sigma[k] = 1.0f / sigma[k];
+  return _lattice_cl(gd, devid, dev_in, dev_out, width, height, roi_in->x, roi_in->y, sigma);
+}
+#endif
+
 void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
@@ -352,6 +555,11 @@ void tiling_callback(dt_iop_module_t *self,
     size_t hash_bytes = PermutohedralLattice<5, 4>::estimatedBytes(grid_points, npixels);
     tiling->factor += (hash_bytes / (16.0f*npixels));
 
+    // the OpenCL lattice: two slot words per estimated entry and twice as
+    // many slots, three key words and two float4 values per entry
+    const size_t entries = PermutohedralLattice<5, 4>::estimatedHashEntries(grid_points, npixels);
+    tiling->factor_cl = 2.0f + (entries * (2 * 8 + 12 + 32)) / (16.0f * npixels);
+
     dt_print(DT_DEBUG_MEMORY,
              "[bilateral tiling requirements] "
              "tiling factor=%f, npixels=%lu, estimated hashbytes=%lu",
@@ -361,6 +569,31 @@ void tiling_callback(dt_iop_module_t *self,
   tiling->overlap = rad;
   tiling->align = 1;
   tiling->maxbuf = 1.0f;
+}
+
+void init_global(dt_iop_module_so_t *self)
+{
+  const int program = 50; // permutohedral.cl, from programs.conf
+  dt_iop_bilateral_global_data_t *gd =
+    (dt_iop_bilateral_global_data_t *)malloc(sizeof(dt_iop_bilateral_global_data_t));
+  self->data = gd;
+  gd->kernel_insert = dt_opencl_create_kernel(program, "permutohedral_insert");
+  gd->kernel_splat = dt_opencl_create_kernel(program, "permutohedral_splat");
+  gd->kernel_blur = dt_opencl_create_kernel(program, "permutohedral_blur");
+  gd->kernel_slice = dt_opencl_create_kernel(program, "permutohedral_slice");
+  gd->kernel_direct = dt_opencl_create_kernel(program, "bilateral_direct");
+}
+
+void cleanup_global(dt_iop_module_so_t *self)
+{
+  dt_iop_bilateral_global_data_t *gd = (dt_iop_bilateral_global_data_t *)self->data;
+  dt_opencl_free_kernel(gd->kernel_insert);
+  dt_opencl_free_kernel(gd->kernel_splat);
+  dt_opencl_free_kernel(gd->kernel_blur);
+  dt_opencl_free_kernel(gd->kernel_slice);
+  dt_opencl_free_kernel(gd->kernel_direct);
+  free(self->data);
+  self->data = NULL;
 }
 
 void gui_init(dt_iop_module_t *self)
