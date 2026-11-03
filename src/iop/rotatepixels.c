@@ -220,7 +220,7 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
   const float y = sqrtf(2.0f * T * T),
               x = sqrtf(2.0f * ((float)roi_in->width - T) * ((float)roi_in->width - T));
 
-  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
   const float IW = (float)interpolation->width * scale;
 
   roi_out->width = y - IW;
@@ -254,7 +254,7 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
     adjust_aabb(o, aabb_in);
   }
 
-  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
   const float IW = (float)interpolation->width * scale;
 
   const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
@@ -284,7 +284,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   assert(ch == 4);
 
-  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   DT_OMP_FOR()
   // (slow) point-by-point transformation.

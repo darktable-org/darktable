@@ -871,6 +871,11 @@ changes (where available).
   exponential. Edits using them may now look slightly different when
   exported without OpenCL.
 
+- Fixed rotate pixels, which straightens the sensor layout of Fujifilm
+  SuperCCD raws, using the scaling interpolator instead of the warp
+  interpolator set in the preferences, as the other rotating and
+  distorting modules do.
+
 ## Lua
 
 ### API Version
