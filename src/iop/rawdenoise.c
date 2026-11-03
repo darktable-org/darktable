@@ -30,6 +30,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/opencl.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -85,6 +86,11 @@ typedef struct dt_iop_rawdenoise_data_t
 
 typedef struct dt_iop_rawdenoise_global_data_t
 {
+  int kernel_rawdenoise_extract;
+  int kernel_rawdenoise_scatter;
+  int kernel_rawdenoise_clear;
+  int kernel_rawdenoise_dwt_vert;
+  int kernel_rawdenoise_dwt_horiz;
 } dt_iop_rawdenoise_global_data_t;
 
 int legacy_params(dt_iop_module_t *self,
@@ -469,6 +475,111 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     else
       wavelet_denoise_xtrans(ivoid, ovoid, roi_in, d, xtrans);
   }
+}
+
+#ifdef HAVE_OPENCL
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_rawdenoise_data_t *const d = piece->data;
+  const dt_iop_rawdenoise_global_data_t *const gd = self->global_data;
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  if(!(d->threshold > 0.0f))
+  {
+    const size_t region[2] = { width, height };
+    return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
+  }
+
+  // the X-Trans planes are built sequentially, see wavelet_denoise_xtrans()
+  const uint32_t filters = piece->filters;
+  if(filters == 9u) return DT_OPENCL_PROCESS_CL;
+
+  const int maxhalfwidth = width / 2 + (width & 1);
+  const int maxhalfheight = height / 2 + (height & 1);
+  const size_t size = (size_t)maxhalfwidth * maxhalfheight * sizeof(float);
+
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_mem dev_fimg = dt_opencl_alloc_device_buffer(devid, size);
+  cl_mem dev_interm = dt_opencl_alloc_device_buffer(devid, size);
+  cl_mem dev_accum = dt_opencl_alloc_device_buffer(devid, size);
+  if(!dev_fimg || !dev_interm || !dev_accum) goto error;
+
+  for(int c = 0; c < 4; c++) /* denoise R,G1,B,G3 individually */
+  {
+    const int color = FC(c % 2, c / 2, filters);
+    float noise[DT_IOP_RAWDENOISE_BANDS];
+    compute_channel_noise(noise, color, d);
+
+    // as in wavelet_denoise()
+    const int halfwidth = width / 2 + (width & (~(c >> 1)) & 1);
+    const int halfheight = height / 2 + (height & (~c) & 1);
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rawdenoise_extract, halfwidth, halfheight,
+            CLARG(dev_in), CLARG(dev_fimg), CLARG(c), CLARG(halfwidth), CLARG(halfheight));
+    if(err != CL_SUCCESS) goto error;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rawdenoise_clear, halfwidth, halfheight,
+            CLARG(dev_accum), CLARG(halfwidth), CLARG(halfheight));
+    if(err != CL_SUCCESS) goto error;
+
+    for(int lev = 0; lev < DT_IOP_RAWDENOISE_BANDS; lev++)
+    {
+      const int last = lev + 1 == DT_IOP_RAWDENOISE_BANDS;
+      const int vscale = MIN(1 << lev, halfheight - 1);
+      const int hscale = MIN(1 << lev, halfwidth - 1);
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rawdenoise_dwt_vert, halfwidth, halfheight,
+              CLARG(dev_fimg), CLARG(dev_interm), CLARG(halfwidth), CLARG(halfheight), CLARG(vscale));
+      if(err != CL_SUCCESS) goto error;
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rawdenoise_dwt_horiz, halfwidth, halfheight,
+              CLARG(dev_interm), CLARG(dev_fimg), CLARG(dev_accum),
+              CLARG(halfwidth), CLARG(halfheight), CLARG(hscale), CLARG(noise[lev]), CLARG(last));
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rawdenoise_scatter, halfwidth, halfheight,
+            CLARG(dev_fimg), CLARG(dev_out), CLARG(c), CLARG(halfwidth), CLARG(halfheight));
+    if(err != CL_SUCCESS) goto error;
+  }
+
+error:
+  dt_opencl_release_mem_object(dev_fimg);
+  dt_opencl_release_mem_object(dev_interm);
+  dt_opencl_release_mem_object(dev_accum);
+  return err;
+}
+#endif
+
+void init_global(dt_iop_module_so_t *self)
+{
+  const int program = 20; // dwt.cl, from programs.conf
+  dt_iop_rawdenoise_global_data_t *gd = malloc(sizeof(dt_iop_rawdenoise_global_data_t));
+  self->data = gd;
+  gd->kernel_rawdenoise_extract = dt_opencl_create_kernel(program, "rawdenoise_extract");
+  gd->kernel_rawdenoise_scatter = dt_opencl_create_kernel(program, "rawdenoise_scatter");
+  gd->kernel_rawdenoise_clear = dt_opencl_create_kernel(program, "rawdenoise_clear");
+  gd->kernel_rawdenoise_dwt_vert = dt_opencl_create_kernel(program, "rawdenoise_dwt_vert");
+  gd->kernel_rawdenoise_dwt_horiz = dt_opencl_create_kernel(program, "rawdenoise_dwt_horiz");
+}
+
+void cleanup_global(dt_iop_module_so_t *self)
+{
+  dt_iop_rawdenoise_global_data_t *gd = self->data;
+  if(gd)
+  {
+    dt_opencl_free_kernel(gd->kernel_rawdenoise_extract);
+    dt_opencl_free_kernel(gd->kernel_rawdenoise_scatter);
+    dt_opencl_free_kernel(gd->kernel_rawdenoise_clear);
+    dt_opencl_free_kernel(gd->kernel_rawdenoise_dwt_vert);
+    dt_opencl_free_kernel(gd->kernel_rawdenoise_dwt_horiz);
+  }
+  free(self->data);
+  self->data = NULL;
 }
 
 void init(dt_iop_module_t *self)
