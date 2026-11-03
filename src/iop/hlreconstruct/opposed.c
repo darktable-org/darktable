@@ -463,6 +463,65 @@ static float *_process_opposed(dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
+// work-group layout for highlights_chroma_sums(_linear): cellsize covers the
+// two local float4 buffers
+static cl_int _chroma_sums_layout_cl(const int devid,
+                                     const int kernel,
+                                     const int width,
+                                     const int height,
+                                     size_t sizes[2],
+                                     size_t local[2],
+                                     size_t *groups)
+{
+  dt_opencl_local_buffer_t locopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = 8 * sizeof(float), .overhead = 0,
+                                  .sizex = 1 << 4, .sizey = 1 << 4 };
+  const cl_int err = dt_opencl_local_buffer_opt(devid, kernel, &locopt);
+  if(err != CL_SUCCESS) return err;
+
+  local[0] = locopt.sizex;
+  local[1] = locopt.sizey;
+  sizes[0] = ROUNDUP(width, locopt.sizex);
+  sizes[1] = ROUNDUP(height, locopt.sizey);
+  *groups = (sizes[0] / local[0]) * (sizes[1] / local[1]);
+  return CL_SUCCESS;
+}
+
+// adds up the per work-group sums in double, as the CPU code does, so only
+// the small group buffer is read back instead of the whole image
+static cl_int _chroma_sums_collect_cl(const int devid,
+                                      cl_mem dev_accu,
+                                      const size_t groups,
+                                      double sums[3],
+                                      int cnts[3],
+                                      gboolean *anyclipped)
+{
+  float *accu = dt_alloc_align_float(8 * groups);
+  if(!accu) return DT_OPENCL_SYSMEM_ALLOCATION;
+
+  const cl_int err = dt_opencl_read_buffer_from_device(devid, accu, dev_accu, 0,
+                                                       sizeof(float) * 8 * groups, TRUE);
+  if(err == CL_SUCCESS)
+  {
+    double clipped = 0.0;
+    for(size_t k = 0; k < groups; k++)
+    {
+      for_three_channels(c)
+      {
+        sums[c] += accu[8*k + c];
+        cnts[c] += (int)accu[8*k + 4 + c];
+      }
+      clipped += accu[8*k + 7];
+    }
+    *anyclipped = clipped > 0.0;
+  }
+  dt_free_align(accu);
+  return err;
+}
+#endif
+
+#ifdef HAVE_OPENCL
 static cl_int process_opposed_cl(dt_iop_module_t *self,
                                  dt_dev_pixelpipe_iop_t *piece,
                                  cl_mem dev_in,
@@ -493,7 +552,6 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
                                     late ? (float)(chr->D65coeffs[2] / chr->as_shot[2]) : 1.0f,
                                     1.0f };
 
-  const dt_aligned_pixel_t lo_clips = { 0.2f * clips[0], 0.2f * clips[1], 0.2f * clips[2], 1.0f };
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem dev_chrominance = NULL;
   cl_mem dev_xtrans = NULL;
@@ -501,8 +559,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
   cl_mem dev_inmask = NULL;
   cl_mem dev_outmask = NULL;
   cl_mem dev_correction = NULL;
-  char *mask = NULL;
-  float *indata = NULL;
+  cl_mem dev_accu = NULL;
 
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
 
@@ -571,42 +628,30 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
 
     dt_opencl_release_mem_object(dev_inmask);
     dev_inmask = NULL;
-    err = DT_OPENCL_SYSMEM_ALLOCATION;
-    mask = dt_alloc_aligned(mbufsize);
-    indata = dt_alloc_align_float(iwidth * iheight);
-    if(!mask || !indata) goto error;
 
-    err = dt_opencl_copy_image_to_host(devid, indata, dev_in, iwidth, iheight, sizeof(float));
-    if(err != CL_SUCCESS) goto error;
-    err = dt_opencl_read_buffer_from_device(devid, mask, dev_outmask, 0, mbufsize, TRUE);
+    size_t sizes[2], local[2], groups;
+    err = _chroma_sums_layout_cl(devid, gd->kernel_highlights_chroma_sums, iwidth, iheight,
+                                 sizes, local, &groups);
     if(err != CL_SUCCESS) goto error;
 
-    const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->xtrans;
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    dev_accu = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 8 * groups);
+    if(dev_accu == NULL) goto error;
+
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_highlights_chroma_sums, sizes, local,
+            CLARG(dev_in), CLARG(dev_outmask),
+            CLARG(msize), CLARG(mwidth), CLARG(mheight), CLARG(iwidth), CLARG(iheight),
+            CLARG(filters), CLARG(dev_xtrans), CLARG(dev_clips), CLARG(dev_correction),
+            CLARG(dev_accu),
+            CLLOCAL(sizeof(float) * 4 * local[0] * local[1]),
+            CLLOCAL(sizeof(float) * 4 * local[0] * local[1]));
+    if(err != CL_SUCCESS) goto error;
 
     double sums[3] = { 0.0, 0.0, 0.0 };
     int cnts[3] = { 0, 0, 0 };
     gboolean anyclipped = FALSE;
-
-    DT_OMP_FOR(reduction(+ : sums, cnts) reduction( | : anyclipped) collapse(2))
-    for(size_t row = 0; row < iheight; row++)
-    {
-      for(size_t col = 0; col < iwidth; col++)
-      {
-        const size_t idx = row * iwidth + col;
-        const int color = fcol(row, col, filters, xtrans);
-        const float inval = indata[idx];
-
-        /* we only use the unclipped photosites very close the true clipped data to calculate the chrominance offset */
-        if((inval < clips[color])
-            && (inval > lo_clips[color])
-            && (mask[color * msize + _raw_to_cmap(mwidth, mheight, row, col)]))
-        {
-          sums[color] += (double)(inval - _calc_refavg(indata, xtrans, filters, row, col, roi_in, correction, TRUE));
-          cnts[color] += 1;
-        }
-        anyclipped |= inval >= clips[color];
-      }
-    }
+    err = _chroma_sums_collect_cl(devid, dev_accu, groups, sums, cnts, &anyclipped);
+    if(err != CL_SUCCESS) goto error;
 
     for_three_channels(c)
       chrominance[c] = cnts[c] > 100 ? (float)(sums[c] / (double)cnts[c]) : 0.0f;
@@ -656,8 +701,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
   dt_opencl_release_mem_object(dev_inmask);
   dt_opencl_release_mem_object(dev_outmask);
   dt_opencl_release_mem_object(dev_correction);
-  dt_free_align(mask);
-  dt_free_align(indata);
+  dt_opencl_release_mem_object(dev_accu);
   return err;
 }
 #endif
@@ -718,8 +762,7 @@ static cl_int _process_linear_opposed_cl(dt_iop_module_t *self,
   cl_int err = CL_SUCCESS;
   cl_mem dev_inmask = NULL;
   cl_mem dev_outmask = NULL;
-  char *omask = NULL;
-  float *input = NULL;
+  cl_mem dev_accu = NULL;
 
   if(!is_hashed)
   {
@@ -740,45 +783,31 @@ static cl_int _process_linear_opposed_cl(dt_iop_module_t *self,
             CLARG(msize), CLARG(mwidth), CLARG(mheight));
     if(err != CL_SUCCESS) goto error;
 
-    err = DT_OPENCL_SYSMEM_ALLOCATION;
-    omask = dt_alloc_aligned(mbufsize);
-    if(!omask) goto error;
-    err = dt_opencl_read_buffer_from_device(devid, omask, dev_outmask, 0, mbufsize, TRUE);
+    size_t sizes[2], local[2], groups;
+    err = _chroma_sums_layout_cl(devid, gd->kernel_highlights_chroma_sums_linear, width, height,
+                                 sizes, local, &groups);
     if(err != CL_SUCCESS) goto error;
 
-    // the dilation keeps an empty mask empty
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    dev_accu = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 8 * groups);
+    if(dev_accu == NULL) goto error;
+
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_highlights_chroma_sums_linear, sizes, local,
+            CLARG(dev_in), CLARG(dev_outmask),
+            CLARG(msize), CLARG(mwidth), CLARG(mheight), CLARG(width), CLARG(height),
+            CLARG(clips), CLARG(dev_accu),
+            CLLOCAL(sizeof(float) * 4 * local[0] * local[1]),
+            CLLOCAL(sizeof(float) * 4 * local[0] * local[1]));
+    if(err != CL_SUCCESS) goto error;
+
+    double sums[3] = { 0.0, 0.0, 0.0 };
+    int cnts[3] = { 0, 0, 0 };
     gboolean anyclipped = FALSE;
-    for(size_t k = 0; k < mbufsize && !anyclipped; k++)
-      anyclipped = omask[k] != 0;
+    err = _chroma_sums_collect_cl(devid, dev_accu, groups, sums, cnts, &anyclipped);
+    if(err != CL_SUCCESS) goto error;
 
     if(anyclipped)
     {
-      err = DT_OPENCL_SYSMEM_ALLOCATION;
-      input = dt_alloc_align_float((size_t)width * height * 4);
-      if(!input) goto error;
-      err = dt_opencl_copy_image_to_host(devid, input, dev_in, width, height, 4 * sizeof(float));
-      if(err != CL_SUCCESS) goto error;
-
-      double sums[3] = { 0.0, 0.0, 0.0 };
-      int cnts[3] = { 0, 0, 0 };
-
-      DT_OMP_FOR(reduction(+ : sums, cnts))
-      for(size_t row = 3; row < height - 3; row++)
-      {
-        for(size_t col = 3; col < width - 3; col++)
-        {
-          const size_t idx = (row * width + col) * 4;
-          for_three_channels(c)
-          {
-            const float inval = input[idx+c];
-            if((inval > 0.2f * clips[c]) && (inval < clips[c]) && (omask[c * msize + _raw_to_cmap(mwidth, mheight, row, col)]))
-            {
-              sums[c] += (double)(inval - _calc_linear_refavg(&input[idx], c));
-              cnts[c] += 1;
-            }
-          }
-        }
-      }
       for_three_channels(c)
         chrominance[c] = cnts[c] > 30 ? (float)(sums[c] / (double)cnts[c]) : 0.0f;
 
@@ -812,8 +841,7 @@ error:
 
   dt_opencl_release_mem_object(dev_inmask);
   dt_opencl_release_mem_object(dev_outmask);
-  dt_free_align(omask);
-  dt_free_align(input);
+  dt_opencl_release_mem_object(dev_accu);
   return err;
 }
 #endif

@@ -459,6 +459,78 @@ kernel void highlights_dilatemask(global char *in,
   out[mx+2*msize] = safe ? _mask_dilated(in + mx + 2*msize, mwidth) : in[mx + 2*msize];
 }
 
+// sums the reduced work-group buffers so that the first entry of each holds
+// the work group's total; the local size is a power of two
+static void _chroma_sums_reduce(local float4 *sums, local float4 *cnts, global float4 *accu)
+{
+  const int l = mad24((int)get_local_id(1), (int)get_local_size(0), (int)get_local_id(0));
+  const int lsz = mul24((int)get_local_size(0), (int)get_local_size(1));
+  barrier(CLK_LOCAL_MEM_FENCE);
+  for(int offset = lsz / 2; offset > 0; offset = offset / 2)
+  {
+    if(l < offset)
+    {
+      sums[l] += sums[l + offset];
+      cnts[l] += cnts[l + offset];
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+  }
+
+  if(l == 0)
+  {
+    const int m = mad24((int)get_group_id(1), (int)get_num_groups(0), (int)get_group_id(0));
+    accu[2*m] = sums[0];
+    accu[2*m+1] = cnts[0];
+  }
+}
+
+static float4 _channel_value(const int color, const float val)
+{
+  return (float4)(color == 0 ? val : 0.0f, color == 1 ? val : 0.0f, color == 2 ? val : 0.0f, 0.0f);
+}
+
+// per work group: the chrominance sums and counts of the unclipped photosites
+// next to clipped ones, and in .w of the counts the number of clipped ones.
+// The host adds up the groups in double, see process_opposed_cl()
+kernel void highlights_chroma_sums(read_only image2d_t in,
+                                   global const char *mask,
+                                   const int msize,
+                                   const int mwidth,
+                                   const int mheight,
+                                   const int iwidth,
+                                   const int iheight,
+                                   const unsigned int filters,
+                                   global const unsigned char (*const xtrans)[6],
+                                   global const float *clips,
+                                   global const float *correction,
+                                   global float4 *accu,
+                                   local float4 *sums,
+                                   local float4 *cnts)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int l = mad24((int)get_local_id(1), (int)get_local_size(0), (int)get_local_id(0));
+
+  float4 sum = (float4)0.0f;
+  float4 cnt = (float4)0.0f;
+  if(x < iwidth && y < iheight)
+  {
+    const int color = fcol(y, x, filters, xtrans);
+    const float inval = Areadsingle(in, x, y);
+    const int mdx = mad24(clamp(y / 3, 0, mheight - 1), mwidth, clamp(x / 3, 0, mwidth - 1));
+    if(inval < clips[color] && inval > 0.2f * clips[color] && mask[color * msize + mdx])
+    {
+      const float ref = _calc_refavg(in, xtrans, filters, y, x, iheight, iwidth, correction);
+      sum = _channel_value(color, inval - ref);
+      cnt = _channel_value(color, 1.0f);
+    }
+    cnt.w = inval >= clips[color] ? 1.0f : 0.0f;
+  }
+  sums[l] = sum;
+  cnts[l] = cnt;
+  _chroma_sums_reduce(sums, cnts, accu);
+}
+
 kernel void highlights_opposed(read_only image2d_t in,
                                write_only image2d_t out,
                                const int owidth,
@@ -539,6 +611,48 @@ kernel void highlights_initmask_linear(read_only image2d_t in,
   const int mdx = mad24(mrow, mwidth, mcol);
   for(int c = 0; c < 3; c++)
     inmask[c*msize + mdx] = mbuff[c] ? 1 : 0;
+}
+
+// as highlights_chroma_sums for linear raws, see _process_linear_opposed()
+kernel void highlights_chroma_sums_linear(read_only image2d_t in,
+                                          global const char *mask,
+                                          const int msize,
+                                          const int mwidth,
+                                          const int mheight,
+                                          const int width,
+                                          const int height,
+                                          const float4 clips,
+                                          global float4 *accu,
+                                          local float4 *sums,
+                                          local float4 *cnts)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int l = mad24((int)get_local_id(1), (int)get_local_size(0), (int)get_local_id(0));
+
+  float4 sum = (float4)0.0f;
+  float4 cnt = (float4)0.0f;
+  if(x < width && y < height)
+  {
+    const float4 pixel = readpixel(in, x, y);
+    const float clip[3] = { clips.x, clips.y, clips.z };
+    const float inval[3] = { pixel.x, pixel.y, pixel.z };
+    const int mdx = mad24(clamp(y / 3, 0, mheight - 1), mwidth, clamp(x / 3, 0, mwidth - 1));
+    // the CPU code leaves out a 3 pixel border
+    const bool inner = x >= 3 && y >= 3 && x < width - 3 && y < height - 3;
+    for(int c = 0; c < 3; c++)
+    {
+      if(inner && inval[c] > 0.2f * clip[c] && inval[c] < clip[c] && mask[c * msize + mdx])
+      {
+        sum += _channel_value(c, inval[c] - _calc_linear_refavg(pixel, c));
+        cnt += _channel_value(c, 1.0f);
+      }
+      cnt.w += inval[c] >= clip[c] ? 1.0f : 0.0f;
+    }
+  }
+  sums[l] = sum;
+  cnts[l] = cnt;
+  _chroma_sums_reduce(sums, cnts, accu);
 }
 
 kernel void highlights_opposed_linear(read_only image2d_t in,
