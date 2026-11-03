@@ -279,6 +279,9 @@ changes (where available).
 - The hot pixels module can now run on the OpenCL device, so a raw
   no longer goes back to the CPU and up again around it.
 
+- Module color pickers now compute their statistics on the OpenCL
+  device instead of copying the picked area back to the CPU.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
