@@ -1750,6 +1750,84 @@ interpolation_func_lanczos(float width, float t)
 #endif
 
 
+// the taps of _maketaps_bilinear(), _maketaps_bicubic() and _maketaps_lanczos()
+// in src/common/interpolation.c, by the dt_interpolation_type of the interpolator
+static inline float _interpolation_tap(const int type, const float width, const float t)
+{
+  if(type == 0) return 1.0f - fabs(t);
+  if(type == 1)
+  {
+    const float ta = fabs(t);
+    return ta <= 1.0f ? 0.5f * (ta * (3.0f * ta * ta - 5.0f * ta) + 2.0f)
+                      : 0.5f * (ta * (-ta * ta + 5.0f * ta - 8.0f) + 4.0f);
+  }
+  return interpolation_func_lanczos(width, t);
+}
+
+// rotate pixels: one output pixel by dt_interpolation_compute_pixel4c() at the
+// back transformed position, with mirrored borders and zero outside the image
+kernel void
+rotatepixels(read_only image2d_t in,
+             write_only image2d_t out,
+             const int width,
+             const int height,
+             const int in_width,
+             const int in_height,
+             const int2 roi_out,
+             const int2 roi_in,
+             const float4 m,
+             const float2 center,
+             const int itype,
+             const int iwidth)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float pix = roi_out.x + x;
+  const float piy = roi_out.y + y;
+  const float px = pix * m.x + piy * m.y + center.x - roi_in.x;
+  const float py = pix * m.z + piy * m.w + center.y - roi_in.y;
+
+  const int ix = (int)floor(px);
+  const int iy = (int)floor(py);
+
+  if(ix < -1 || iy < -1 || ix >= in_width || iy >= in_height)
+  {
+    write_imagef(out, (int2)(x, y), (float4)0.0f);
+    return;
+  }
+
+  const int fx = ix - iwidth + 1;
+  const int fy = iy - iwidth + 1;
+  const float tx = px - (float)fx;
+  const float ty = py - (float)fy;
+
+  float kh[6], kv[6];
+  float normh = 0.0f, normv = 0.0f;
+  for(int k = 0; k < 2 * iwidth; k++)
+  {
+    kh[k] = _interpolation_tap(itype, iwidth, tx - k);
+    kv[k] = _interpolation_tap(itype, iwidth, ty - k);
+    normh += kh[k];
+    normv += kv[k];
+  }
+  // the CPU kernels report a norm of 1 for bilinear and bicubic
+  if(itype < 2) normh = normv = 1.0f;
+
+  float4 pixel = (float4)0.0f;
+  for(int i = 0; i < 2 * iwidth; i++)
+  {
+    const int yy = clip_mirror(fy + i, in_height - 1);
+    float4 h = (float4)0.0f;
+    for(int j = 0; j < 2 * iwidth; j++)
+      h += kh[j] * readpixel(in, clip_mirror(fx + j, in_width - 1), yy);
+    pixel += kv[i] * h;
+  }
+
+  write_imagef(out, (int2)(x, y), pixel * (1.0f / (normh * normv)));
+}
+
 /* kernel for clip&rotate: bilinear interpolation */
 __kernel void
 clip_rotate_bilinear(read_only image2d_t in, write_only image2d_t out, const int width, const int height,

@@ -19,6 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
 #include "common/math.h"
+#include "common/opencl.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
@@ -44,6 +45,11 @@ typedef struct dt_iop_rotatepixels_data_t
   uint32_t rx, ry; // rotation center
   float m[4];      // rotation matrix
 } dt_iop_rotatepixels_data_t;
+
+typedef struct dt_iop_rotatepixels_global_data_t
+{
+  int kernel_rotatepixels;
+} dt_iop_rotatepixels_global_data_t;
 
 dt_iop_rotatepixels_gui_data_t dummy;
 
@@ -308,6 +314,54 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
                                        roi_in->height, ch_width);
     }
   }
+}
+
+#ifdef HAVE_OPENCL
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_rotatepixels_data_t *d = piece->data;
+  const dt_iop_rotatepixels_global_data_t *gd = self->global_data;
+  const int devid = piece->pipe->devid;
+
+  const float scale = roi_in->scale / piece->iscale;
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+
+  // backtransform() as one matrix and offset
+  const float m[4] = { d->m[0], -d->m[1], -d->m[2], d->m[3] };
+  const float center[2] = { d->rx * scale, d->ry * scale };
+  const int roo[2] = { roi_out->x, roi_out->y };
+  const int roi[2] = { roi_in->x, roi_in->y };
+  const int itype = interpolation->id;
+  const int iwidth = interpolation->width;
+
+  return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rotatepixels, roi_out->width, roi_out->height,
+                                          CLARG(dev_in), CLARG(dev_out),
+                                          CLARG(roi_out->width), CLARG(roi_out->height),
+                                          CLARG(roi_in->width), CLARG(roi_in->height),
+                                          CLARG(roo), CLARG(roi), CLARG(m), CLARG(center),
+                                          CLARG(itype), CLARG(iwidth));
+}
+#endif
+
+void init_global(dt_iop_module_so_t *self)
+{
+  const int program = 2; // basic.cl, from programs.conf
+  dt_iop_rotatepixels_global_data_t *gd = malloc(sizeof(dt_iop_rotatepixels_global_data_t));
+  self->data = gd;
+  gd->kernel_rotatepixels = dt_opencl_create_kernel(program, "rotatepixels");
+}
+
+void cleanup_global(dt_iop_module_so_t *self)
+{
+  dt_iop_rotatepixels_global_data_t *gd = self->data;
+  dt_opencl_free_kernel(gd->kernel_rotatepixels);
+  free(self->data);
+  self->data = NULL;
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
