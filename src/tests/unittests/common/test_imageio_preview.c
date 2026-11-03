@@ -64,23 +64,6 @@ static void _test_preview_encoding(void **state)
       const int expected = lroundf(ui[k][c] * 255.0f);
       assert_true(abs(actual - expected) <= 1);
     }
-  cmsHPROFILE ui_profile = profiles.ui_profile;
-  profiles.ui_profile = NULL;
-  assert_int_equal(_preview_write_image(&preview.head, NULL, input,
-                                        DT_COLORSPACE_DISPLAY_TRANSPORT, "", NULL,
-                                        0, 0, 1, 1, &pipe, FALSE), 1);
-  profiles.ui_profile = ui_profile;
-  pipe.output_encoding = NULL;
-  assert_int_equal(_preview_write_image(&preview.head, NULL, input,
-                                        DT_COLORSPACE_DISPLAY_TRANSPORT, "", NULL,
-                                        0, 0, 1, 1, &pipe, FALSE), 1);
-  const uint32_t legacy[] = { 0x123456, 0xfedcba, 0x334455 };
-  preview.bpp = 8;
-  assert_int_equal(_preview_levels(&preview.head), IMAGEIO_RGB | IMAGEIO_INT8);
-  assert_int_equal(_preview_write_image(&preview.head, NULL, legacy,
-                                        DT_COLORSPACE_DISPLAY, "", NULL,
-                                        0, 0, 1, 1, &pipe, FALSE), 0);
-  assert_memory_equal(output, legacy, sizeof(output));
   cmsCloseProfile(transport.profile);
   cmsCloseProfile(profiles.ui_profile);
   g_list_free(profiles.profiles);

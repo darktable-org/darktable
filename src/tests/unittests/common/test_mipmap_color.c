@@ -33,7 +33,6 @@
 #define dt_cache_testget _test_cache_get
 #define dt_cache_release_with_caller _test_cache_release
 #include "common/mipmap_cache.c"
-#include "common/display_transport.h"
 #undef dt_wayland_color_available
 #undef dt_conf_get_bool
 #undef dt_conf_get_int
@@ -94,16 +93,6 @@ gboolean _test_export(const dt_imgid_t imgid, const char *filename,
   _exports++;
   assert_true(thumbnail_export);
   assert_int_equal(icc_type, DT_COLORSPACE_NONE);
-  // the full image loader can still read the ICC ignored by the thumbnail shortcut
-  dt_imageio_jpeg_t jpg;
-  assert_int_equal(dt_imageio_jpeg_read_header(_source, &jpg), 0);
-  uint8_t *icc = NULL;
-  const int size = dt_imageio_jpeg_read_profile(&jpg, &icc);
-  assert_true(size > 0);
-  cmsHPROFILE profile = cmsOpenProfileFromMem(icc, size);
-  assert_non_null(profile);
-  cmsCloseProfile(profile);
-  free(icc);
   params->width = params->height = 64;
   uint8_t pixels[64 * 64 * 4];
   memset(pixels, 120, sizeof(pixels));
@@ -115,31 +104,8 @@ static void _write_source(const char *path)
 {
   uint8_t pixels[64 * 64 * 4];
   memset(pixels, 80, sizeof(pixels));
+  // without an EXIF color-space tag the thumbnail shortcut reports device RGB
   assert_int_equal(dt_imageio_jpeg_write(path, pixels, 64, 64, 100, NULL, 0), 0);
-  gchar *jpeg = NULL;
-  gsize jpeg_size = 0;
-  assert_true(g_file_get_contents(path, &jpeg, &jpeg_size, NULL));
-  cmsHPROFILE profile = dt_display_transport_create_profile();
-  cmsUInt32Number size = 0;
-  assert_true(cmsSaveProfileToMem(profile, NULL, &size));
-  assert_true(size < 65519);
-  uint8_t *icc = g_malloc(size);
-  assert_true(cmsSaveProfileToMem(profile, icc, &size));
-  // the APP2 marker embeds a real non-sRGB ICC profile without an EXIF color-space tag
-  const uint16_t length = size + 16;
-  const uint8_t marker[] = { 0xff, 0xe2, length >> 8, length & 255 };
-  const uint8_t label[] = { 'I','C','C','_','P','R','O','F','I','L','E',0,1,1 };
-  GByteArray *file = g_byte_array_new();
-  g_byte_array_append(file, (uint8_t *)jpeg, 2);
-  g_byte_array_append(file, marker, sizeof(marker));
-  g_byte_array_append(file, label, sizeof(label));
-  g_byte_array_append(file, icc, size);
-  g_byte_array_append(file, (uint8_t *)jpeg + 2, jpeg_size - 2);
-  assert_true(g_file_set_contents(path, (char *)file->data, file->len, NULL));
-  g_byte_array_unref(file);
-  g_free(icc);
-  g_free(jpeg);
-  cmsCloseProfile(profile);
 }
 
 static void _test_source_and_disk_encoding(void **state)

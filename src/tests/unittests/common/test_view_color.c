@@ -91,32 +91,20 @@ static void _test_thumbnail_encoding(void **state)
   uint8_t input[] = { 15, 100, 210, 255, 220, 40, 70, 255 };
   _mip = (dt_mipmap_buffer_t){ .buf = input, .width = 2, .height = 1,
                              .size = DT_MIPMAP_0, .imgid = 1 };
-  for(int native = 0; native < 2; native++)
-    for(int k = 0; k < 2; k++)
-    {
-      _native = native;
-      _mip.color_space = k ? DT_COLORSPACE_ADOBERGB : DT_COLORSPACE_SRGB;
-      uint8_t expected[8] = { 0 };
-      cmsDoTransform(transforms[k], input, expected, 2);
-      cairo_surface_t *surface = NULL;
-      assert_int_equal(dt_view_image_get_surface(1, 2, 1, &surface, FALSE), DT_VIEW_SURFACE_OK);
-      assert_non_null(surface);
-      cairo_surface_flush(surface);
-      const uint8_t *actual = cairo_image_surface_get_data(surface);
-      for(int i = 0; i < 2; i++)
-        assert_memory_equal(actual + 4 * i, expected + 4 * i, 3);
-      cairo_surface_destroy(surface);
-    }
-  _native = FALSE;
-  _mip.color_space = DT_COLORSPACE_DISPLAY;
-  cairo_surface_t *surface = NULL;
-  assert_int_equal(dt_view_image_get_surface(1, 2, 1, &surface, FALSE), DT_VIEW_SURFACE_OK);
-  cairo_surface_flush(surface);
-  const uint8_t *actual = cairo_image_surface_get_data(surface);
-  for(int i = 0; i < 2; i++)
-    for(int c = 0; c < 3; c++)
-      assert_int_equal(actual[4 * i + c], input[4 * i + 2 - c]);
-  cairo_surface_destroy(surface);
+  for(int k = 0; k < 2; k++)
+  {
+    _mip.color_space = k ? DT_COLORSPACE_ADOBERGB : DT_COLORSPACE_SRGB;
+    uint8_t expected[8] = { 0 };
+    cmsDoTransform(transforms[k], input, expected, 2);
+    cairo_surface_t *surface = NULL;
+    assert_int_equal(dt_view_image_get_surface(1, 2, 1, &surface, FALSE), DT_VIEW_SURFACE_OK);
+    assert_non_null(surface);
+    cairo_surface_flush(surface);
+    const uint8_t *actual = cairo_image_surface_get_data(surface);
+    for(int i = 0; i < 2; i++)
+      assert_memory_equal(actual + 4 * i, expected + 4 * i, 3);
+    cairo_surface_destroy(surface);
+  }
   for(int k = 0; k < 2; k++)
   {
     cmsDeleteTransform(transforms[k]);

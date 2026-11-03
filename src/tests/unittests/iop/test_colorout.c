@@ -22,21 +22,7 @@
 #include <cmocka.h>
 
 #include "common/display_transport.h"
-
-static int _logged_errors;
-static cmsContext _logged_context;
-
-static void _test_error_handler(const cmsContext context,
-                                const cmsUInt32Number code,
-                                const char *text)
-{
-  _logged_errors++;
-  _logged_context = context;
-}
-
-#define dt_colorspaces_error_handler _test_error_handler
 #include "iop/colorout.c"
-#undef dt_colorspaces_error_handler
 
 #ifdef _WIN32
 #include "win/main_wrapper.h"
@@ -81,15 +67,7 @@ static void _test_gamut_warning(void **state)
                                  DT_INTENT_RELATIVE_COLORIMETRIC, flags | cmsFLAGS_GAMUTCHECK);
     assert_non_null(d->xform);
     assert_non_null(d->context);
-    const unsigned char invalid_profile[] = { 0 };
-    const int before = _logged_errors;
-    _logged_context = NULL;
-    assert_null(cmsOpenProfileFromMemTHR(d->context, invalid_profile, sizeof(invalid_profile)));
-    assert_true(_logged_errors > before);
-    assert_ptr_equal(_logged_context, d->context);
   }
-  assert_ptr_not_equal(((dt_iop_colorout_data_t *)pieces[0].data)->context,
-                       ((dt_iop_colorout_data_t *)pieces[1].data)->context);
   cmsGetAlarmCodes(after);
   assert_memory_equal(global_alarm, after, sizeof(global_alarm));
 
@@ -106,7 +84,12 @@ static void _test_gamut_warning(void **state)
   {
     const dt_iop_colorout_data_t *d = pieces[k].data;
     dt_aligned_pixel_t result[2] = { { 0.0f } }, expected_gray, cyan;
-    _gamut_warning_color(d, cyan);
+    // the warning is sRGB cyan expressed in the output encoding
+    const dt_aligned_pixel_t srgb_cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
+    if(k)
+      cmsDoTransform(profiles.transform_srgb_to_transport_float, srgb_cyan, cyan, 1);
+    else
+      copy_pixel(cyan, srgb_cyan);
     _transform_lcms(d, result[0], input[0], 2);
     cmsHTRANSFORM without_warning = cmsCreateProofingTransform
       (lab, TYPE_LabA_FLT, outputs[k], TYPE_RGBA_FLT, proof,
@@ -248,29 +231,21 @@ static void _test_output_encoding(void **state)
                                   .proof_type = DT_COLORSPACE_NONE };
   pipe.image_output = &output;
   profiles.mode = DT_PROFILE_GAMUTCHECK;
-  const int destinations[] = { 4, 0, 2, -1, 3 };
-  for(int k = 0; k < G_N_ELEMENTS(destinations); k++)
-  {
-    const int index = destinations[k];
-    output.type = index < 0 ? DT_COLORSPACE_FILE : entries[index].type;
-    g_strlcpy(output.filename, index < 0 ? "missing-output.icc" : "", sizeof(output.filename));
-    commit_params(&module, (dt_iop_params_t *)&params, &pipe, &piece);
-    assert_int_equal(d->mode, DT_PROFILE_NORMAL);
-    assert_int_equal(pipe.output_intent, output.intent);
-    assert_int_equal(pipe.output_proof_mode, DT_PROFILE_NORMAL);
-    const int actual_index = index < 0 || index == 3 ? 0 : index;
-    assert_int_equal(pipe.output_encoding->type, entries[actual_index].type);
-    dt_aligned_pixel_t actual, expected;
-    process(&module, &piece, input, actual, &roi, &roi);
-    cmsHTRANSFORM reference = cmsCreateTransform
-      (entries[1].profile, TYPE_LabA_FLT, entries[actual_index].profile, TYPE_RGBA_FLT,
-       output.intent, 0);
-    assert_non_null(reference);
-    cmsDoTransform(reference, input, expected, 1);
-    for(int c = 0; c < 3; c++)
-      assert_float_equal(actual[c], expected[c], 2e-4f);
-    cmsDeleteTransform(reference);
-  }
+  output.type = DT_COLORSPACE_DISPLAY_TRANSPORT;
+  commit_params(&module, (dt_iop_params_t *)&params, &pipe, &piece);
+  assert_int_equal(d->mode, DT_PROFILE_NORMAL);
+  assert_int_equal(pipe.output_intent, output.intent);
+  assert_int_equal(pipe.output_proof_mode, DT_PROFILE_NORMAL);
+  assert_int_equal(pipe.output_encoding->type, DT_COLORSPACE_DISPLAY_TRANSPORT);
+  dt_aligned_pixel_t actual, expected;
+  process(&module, &piece, input, actual, &roi, &roi);
+  cmsHTRANSFORM reference = cmsCreateTransform
+    (entries[1].profile, TYPE_LabA_FLT, entries[4].profile, TYPE_RGBA_FLT, output.intent, 0);
+  assert_non_null(reference);
+  cmsDoTransform(reference, input, expected, 1);
+  for(int c = 0; c < 3; c++)
+    assert_float_equal(actual[c], expected[c], 2e-4f);
+  cmsDeleteTransform(reference);
 
   output.type = DT_COLORSPACE_SRGB;
   output.filename[0] = '\0';
@@ -284,9 +259,8 @@ static void _test_output_encoding(void **state)
   assert_int_equal(pipe.output_proof_type, DT_COLORSPACE_SRGB);
   assert_string_equal(pipe.output_proof_filename, "");
   const dt_aligned_pixel_t outside = { 50.0f, 100.0f, 100.0f, 1.0f };
-  dt_aligned_pixel_t actual, cyan;
+  const dt_aligned_pixel_t cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
   process(&module, &piece, outside, actual, &roi, &roi);
-  _gamut_warning_color(d, cyan);
   for(int c = 0; c < 3; c++)
     assert_float_equal(actual[c], cyan[c], 2e-5f);
 

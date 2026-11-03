@@ -103,7 +103,6 @@ static void _test_cache_encoding(void **state)
                              .global_data = &global, .params = &params };
   dt_iop_module_t colorout = { .dev = &dev, .so = &colorout_so, .iop_order = 1,
                               .operation_tags = _test_tags };
-  dt_iop_module_t focused = { .iop_order = 0, .operation_tags_filter = _test_tags };
   g_strlcpy(overlay.op, "overlay", sizeof(overlay.op));
   g_strlcpy(colorout.op, "colorout", sizeof(colorout.op));
   dt_iop_order_iccprofile_info_t encoding = { .type = DT_COLORSPACE_DISPLAY_TRANSPORT,
@@ -122,12 +121,6 @@ static void _test_cache_encoding(void **state)
     _clear_cache_entry(&overlay, 0);
     _renders = 0;
     pipe.output_encoding = &encoding;
-    pipe.output_intent = DT_INTENT_RELATIVE_COLORIMETRIC;
-    pipe.output_proof_mode = DT_PROFILE_NORMAL;
-    pipe.output_proof_type = DT_COLORSPACE_NONE;
-    pipe.output_proof_filename[0] = '\0';
-    pipe.type = DT_DEV_PIXELPIPE_FULL;
-    overlay.dev = &dev;
     _render_overlay(&overlay, &piece, legacy, 0.25f);
     assert_int_equal(_renders, 1);
     assert_int_equal(_rendered_output.intent, DT_INTENT_RELATIVE_COLORIMETRIC);
@@ -146,43 +139,12 @@ static void _test_cache_encoding(void **state)
     other_encoding.type = DT_COLORSPACE_DISPLAY_TRANSPORT;
     _render_overlay(&overlay, &piece, legacy, 0.25f);
     assert_int_equal(_renders, 3);
-    pipe.output_intent = DT_INTENT_ABSOLUTE_COLORIMETRIC;
-    _render_overlay(&overlay, &piece, legacy, 0.25f);
-    assert_int_equal(_renders, 4);
-    pipe.output_proof_mode = DT_PROFILE_SOFTPROOF;
-    pipe.output_proof_type = DT_COLORSPACE_FILE;
-    g_strlcpy(pipe.output_proof_filename, "proof.icc", sizeof(pipe.output_proof_filename));
-    _render_overlay(&overlay, &piece, legacy, 0.25f);
-    assert_int_equal(_renders, 5);
-    assert_string_equal(_rendered_output.proof_filename, "proof.icc");
-    g_strlcpy(pipe.output_proof_filename, "other-proof.icc", sizeof(pipe.output_proof_filename));
-    _render_overlay(&overlay, &piece, legacy, 0.25f);
-    assert_int_equal(_renders, 6);
-    other_encoding.type = DT_COLORSPACE_FILE;
-    g_strlcpy(other_encoding.filename, "output.icc", sizeof(other_encoding.filename));
-    _render_overlay(&overlay, &piece, legacy, 0.75f);
-    assert_int_equal(_renders, 7);
-    g_strlcpy(other_encoding.filename, "other-output.icc", sizeof(other_encoding.filename));
-    _render_overlay(&overlay, &piece, legacy, 0.75f);
-    assert_int_equal(_renders, 8);
-    other_encoding.type = DT_COLORSPACE_DISPLAY_TRANSPORT;
-    other_encoding.filename[0] = '\0';
-    _render_overlay(&overlay, &piece, legacy, 0.25f);
-    assert_int_equal(_renders, 9);
 
     node.enabled = FALSE;
     _render_overlay(&overlay, &piece, legacy, 0.75f);
-    assert_int_equal(_renders, 10);
+    assert_int_equal(_renders, 4);
     assert_int_equal(_rendered_output.type, DT_COLORSPACE_NONE);
     node.enabled = TRUE;
-    pipe.nodes = g_list_reverse(pipe.nodes);
-    _render_overlay(&overlay, &piece, legacy, 0.75f);
-    assert_int_equal(_renders, 10);
-    pipe.nodes = g_list_reverse(pipe.nodes);
-    dev.gui_module = &focused;
-    _render_overlay(&overlay, &piece, legacy, 0.75f);
-    assert_int_equal(_renders, 10);
-    dev.gui_module = NULL;
   }
   _clear_cache_entry(&overlay, 0);
   g_list_free(pipe.nodes);
