@@ -843,6 +843,11 @@ changes (where available).
   exponential. Edits using them may now look slightly different when
   exported without OpenCL.
 
+- Fixed "select only new" in the copy & import dialog selecting every
+  image on a memory card on Windows after daylight saving time started
+  or ended, because the card's file times had moved by one hour since
+  the earlier imports.
+
 ## Lua
 
 ### API Version

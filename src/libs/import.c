@@ -703,6 +703,26 @@ static void _import_active(dt_lib_module_t *self,
                                       GTK_RESPONSE_ACCEPT, active);
 }
 
+// copy & import stores the original filename and local modification time
+// as the image id (control/jobs/control_jobs.c:3091). Windows converts the
+// local times of FAT and exFAT cards with the current UTC offset, so once
+// daylight saving time starts or ends every file reads one hour off
+static gboolean _already_imported_by_id(const char *filename,
+                                        const time_t datetime)
+{
+  gchar *basename = g_path_get_basename(filename);
+  const time_t candidates[] = { datetime, datetime - 3600, datetime + 3600 };
+  gboolean found = FALSE;
+  for(size_t i = 0; i < G_N_ELEMENTS(candidates) && !found; i++)
+  {
+    char dtid[DT_DATETIME_EXIF_LENGTH];
+    dt_datetime_unix_to_exif(dtid, sizeof(dtid), &candidates[i]);
+    found = dt_metadata_already_imported(basename, dtid);
+  }
+  g_free(basename);
+  return found;
+}
+
 static void _import_add_file_callback(GObject *direnum,
                                       GAsyncResult *result,
                                       gpointer user_data)
@@ -853,11 +873,7 @@ static void _import_add_file_callback(GObject *direnum,
           }
           else
           {
-            gchar *basename = g_path_get_basename(filename);
-            char dtid[DT_DATETIME_EXIF_LENGTH];
-            dt_datetime_unix_to_exif(dtid, sizeof(dtid), &datetime);
-            already_imported = dt_metadata_already_imported(basename, dtid);
-            g_free(basename);
+            already_imported = _already_imported_by_id(filename, datetime);
           }
 
           GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
