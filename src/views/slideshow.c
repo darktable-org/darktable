@@ -584,15 +584,18 @@ void expose(dt_view_t *self,
   else if(dt_is_valid_imgid(imgid) && imgid != d->id_preview_displayed)
   {
     // get a small preview. dt_view_image_get_surface() only takes a cached
-    // mipmap, so wait for one first
+    // mipmap, so wait for the one it picks for this size (view.c:794)
+    const int pw = MAX(1, width / 8);
+    const int ph = MAX(1, height / 8);
     dt_mipmap_buffer_t buf;
-    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(width / 8, height / 8);
+    const dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(pw * darktable.gui->ppd,
+                                                                    ph * darktable.gui->ppd);
     dt_mipmap_cache_get(&buf, imgid, mip, DT_MIPMAP_BLOCKING, 'r');
     dt_mipmap_cache_release(&buf);
 
     // the surface is color-managed like lighttable thumbnails
     cairo_surface_t *surface = NULL;
-    dt_view_image_get_surface(imgid, MAX(1, width / 8), MAX(1, height / 8), &surface, FALSE);
+    dt_view_image_get_surface(imgid, pw, ph, &surface, FALSE);
     if(surface && cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS)
     {
       const int w = cairo_image_surface_get_width(surface);
