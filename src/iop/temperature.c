@@ -1824,14 +1824,16 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_temperature_gui_data_t *g = self->gui_data;
   dt_iop_temperature_params_t *p = self->params;
 
+  // the checkbox changes no multipliers: it must neither replace the remembered
+  // "user modified" ones nor switch to that mode
+  if(w == g->check_late_correction) return;
+
   _temp_array_from_params(g->mod_coeff, p);
 
   _mul2temp(self, p, &g->mod_temp, &g->mod_tint);
 
-  if(w != g->check_late_correction) {
-    dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_USER);
-    _update_preset(self, DT_IOP_TEMP_USER);
-  }
+  dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_USER);
+  _update_preset(self, DT_IOP_TEMP_USER);
 }
 
 static void _btn_toggled(GtkGestureSingle *gesture,
