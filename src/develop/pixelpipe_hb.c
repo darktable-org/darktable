@@ -1121,24 +1121,6 @@ static void _histogram_collect_cl(const int devid,
                                   float *buffer,
                                   const size_t bufsize)
 {
-  float *tmpbuf = NULL;
-  float *pixel = NULL;
-
-  // if buffer is supplied and if size fits let's use it
-  if(buffer && bufsize >= (size_t)roi->width * roi->height * 4 * sizeof(float))
-    pixel = buffer;
-  else
-    pixel = tmpbuf = dt_alloc_align_float((size_t)4 * roi->width * roi->height);
-
-  if(!pixel) return;
-
-  if(_copy_image_to_host_err(devid, pixel, img, roi->width, roi->height, sizeof(float) * 4, "histogramm collect")
-    != CL_SUCCESS)
-  {
-    dt_free_align(tmpbuf);
-    return;
-  }
-
   dt_dev_histogram_collection_params_t histogram_params = piece->histogram_params;
 
   dt_histogram_roi_t histogram_roi;
@@ -1160,12 +1142,39 @@ static void _histogram_collect_cl(const int devid,
 
   const dt_iop_colorspace_type_t cst =
     piece->module->input_colorspace(piece->module, piece->pipe, piece);
+  const dt_iop_order_iccprofile_info_t *const profile_info =
+    dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+
+  // count on the device, so that only the bins are read back
+  if(dt_histogram_helper_cl(devid, &histogram_params, &piece->histogram_stats,
+                            cst, piece->module->histogram_cst,
+                            img, histogram, histogram_max,
+                            piece->module->histogram_middle_grey, profile_info))
+    return;
+
+  float *tmpbuf = NULL;
+  float *pixel = NULL;
+
+  // if buffer is supplied and if size fits let's use it
+  if(buffer && bufsize >= (size_t)roi->width * roi->height * 4 * sizeof(float))
+    pixel = buffer;
+  else
+    pixel = tmpbuf = dt_alloc_align_float((size_t)4 * roi->width * roi->height);
+
+  if(!pixel) return;
+
+  if(_copy_image_to_host_err(devid, pixel, img, roi->width, roi->height, sizeof(float) * 4, "histogramm collect")
+    != CL_SUCCESS)
+  {
+    dt_free_align(tmpbuf);
+    return;
+  }
 
   dt_histogram_helper(&histogram_params, &piece->histogram_stats,
                       cst, piece->module->histogram_cst,
                       pixel, histogram, histogram_max,
                       piece->module->histogram_middle_grey,
-                      dt_ioppr_get_pipe_work_profile_info(piece->pipe));
+                      profile_info);
 
   dt_free_align(tmpbuf);
 }

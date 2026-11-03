@@ -4197,3 +4197,90 @@ hotpixels(read_only image2d_t in,
   }
   write_imagef(out, (int2)(x, y), o);
 }
+
+
+// the module histograms of dt_histogram_helper() in src/common/histogram.c,
+// counted on the device so that only the bins are read back. bins holds 4
+// counts per bin as on the CPU and must be zeroed by the caller. With
+// use_local each work group counts into lhist (3 * bins_count) first and
+// adds that to bins; without, for bin counts too large for local memory,
+// every pixel goes to bins directly.
+#define DT_HISTOGRAM_RGB 0
+#define DT_HISTOGRAM_RGB_COMPENSATED 1
+#define DT_HISTOGRAM_LAB 2
+#define DT_HISTOGRAM_LCH 3
+
+// dt_ioppr_compensate_middle_grey(): the lightness of a gray of value x
+static inline float _histogram_compensate(const float x,
+                                          constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                          read_only image2d_t lut)
+{
+  const float4 xyz = rgb_matrix_to_xyz((float4)(x, x, x, 0.0f), profile_info, profile_info->matrix_in, lut);
+  return XYZ_to_Lab(xyz).x * 0.01f;
+}
+
+kernel void
+histogram_collect(read_only image2d_t in,
+                  const int x0,
+                  const int y0,
+                  const int x1,
+                  const int y1,
+                  const int bins_count,
+                  const int mode,
+                  const int use_local,
+                  constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                  read_only image2d_t lut,
+                  global unsigned int *bins,
+                  local unsigned int *lhist)
+{
+  const int x = x0 + get_global_id(0);
+  const int y = y0 + get_global_id(1);
+  const int l = mad24((int)get_local_id(1), (int)get_local_size(0), (int)get_local_id(0));
+  const int lsz = mul24((int)get_local_size(0), (int)get_local_size(1));
+
+  if(use_local)
+  {
+    for(int i = l; i < 3 * bins_count; i += lsz) lhist[i] = 0;
+    barrier(CLK_LOCAL_MEM_FENCE);
+  }
+
+  if(x < x1 && y < y1)
+  {
+    const float4 p = read_imagef(in, sampleri, (int2)(x, y));
+    const float max_bin = bins_count - 1;
+    float4 b;
+    if(mode == DT_HISTOGRAM_RGB)
+      b = max_bin * p;
+    else if(mode == DT_HISTOGRAM_RGB_COMPENSATED)
+      b = max_bin * (float4)(_histogram_compensate(p.x, profile_info, lut),
+                             _histogram_compensate(p.y, profile_info, lut),
+                             _histogram_compensate(p.z, profile_info, lut), 0.0f);
+    else if(mode == DT_HISTOGRAM_LAB)
+      b = (float4)(max_bin / 100.0f, max_bin / 256.0f, max_bin / 256.0f, 0.0f)
+          * (p + (float4)(0.0f, 128.0f, 128.0f, 0.0f));
+    else
+      b = (float4)(max_bin / 100.0f, max_bin / (128.0f * M_SQRT2_F), max_bin, 0.0f) * Lab_2_LCH(p);
+
+    const int4 bin = convert_int4(clamp(b, 0.0f, max_bin));
+    if(use_local)
+    {
+      atomic_inc(&lhist[bin.x]);
+      atomic_inc(&lhist[bins_count + bin.y]);
+      atomic_inc(&lhist[2 * bins_count + bin.z]);
+    }
+    else
+    {
+      atomic_inc(&bins[4 * bin.x]);
+      atomic_inc(&bins[4 * bin.y + 1]);
+      atomic_inc(&bins[4 * bin.z + 2]);
+    }
+  }
+  if(!use_local) return;
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  for(int i = l; i < 3 * bins_count; i += lsz)
+  {
+    const unsigned int count = lhist[i];
+    if(count) atomic_add(&bins[4 * (i % bins_count) + i / bins_count], count);
+  }
+}
