@@ -296,6 +296,9 @@ changes (where available).
 - The raw chromatic aberrations module can now run on the OpenCL
   device.
 
+- Haze removal no longer copies the whole image back from the OpenCL
+  device to estimate the ambient light.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
