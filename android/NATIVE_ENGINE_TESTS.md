@@ -15,7 +15,7 @@ are not counts of independently rendered Android controls.
 The current validation includes:
 
 - The coordinated Android check passed production and instrumentation Kotlin
-  compilation, Debug and Release each passed 147 JVM tests in 32 classes
+  compilation, Debug and Release each passed 159 JVM tests in 34 classes
   (zero failures, errors or skips), plus `lintDevDebug` and `lintDevRelease`.
   Additional instrumentation-source checks remain separate from
   actually running those component tests on Android.
@@ -107,6 +107,16 @@ with `flip` still active after the Light / Color click. The other eventual-rende
 checks passed in the host runtime; this baseline does not reproduce the device's
 persistent stale-render symptom. The new explicit tool composition key also
 prevents cross-tool node reuse; physical-device rendering remains unverified.
+
+Eight `IncomingPhotoIntentTest` and four `ManifestShareIntentTest` host cases
+passed in Debug and Release and cover single-file Android sharing. The actual merged MainActivity manifest is
+resolved for GPR/image MIME types, opaque generic-binary document URIs and a
+wildcard sender, with no synthetic share target registered. Existing RAW
+View/Edit matching remains covered. Parser checks exercise stream precedence,
+ClipData/data fallbacks, unchanged grant flags, malformed extras and rejection
+of missing, multi-file or unsupported-URI payloads. These do not launch the native
+engine, transfer real provider grants, execute an OEM file manager/share sheet,
+or establish a new GPR decode result.
 
 Three `DarktableThemeTest` host cases passed in Debug and Release. They render the production workspace and module
 controls under the previous Material tokens and the desktop-grey theme. They

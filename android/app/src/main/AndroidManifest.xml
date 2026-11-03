@@ -3,6 +3,17 @@
   <application android:allowBackup="true" android:label="@string/app_name" android:theme="@style/Theme.MobileRawEditor">
     <activity android:name=".MainActivity" android:exported="true">
       <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+      <!-- Shared documents arrive in EXTRA_STREAM/ClipData, often under opaque
+           content URIs. Extension/path filters cannot match those payloads. -->
+      <intent-filter>
+        <action android:name="android.intent.action.SEND"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <data android:mimeType="image/*"/>
+        <data android:mimeType="application/octet-stream"/>
+        <data android:mimeType="application/x-gopro-gpr"/>
+        <data android:mimeType="application/x-gpr"/>
+        <data android:mimeType="application/gpr"/>
+      </intent-filter>
       <intent-filter>
         <action android:name="android.intent.action.VIEW"/><action android:name="android.intent.action.EDIT"/>
         <category android:name="android.intent.category.DEFAULT"/><category android:name="android.intent.category.BROWSABLE"/>

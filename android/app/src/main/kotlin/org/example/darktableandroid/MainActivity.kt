@@ -64,8 +64,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun acceptSourceIntent(intent: Intent) {
-        if(intent.action != Intent.ACTION_VIEW && intent.action != Intent.ACTION_EDIT) return
-        val uri = intent.data ?: return
+        val uri = sourceUriFromIntent(intent) ?: return
         acceptSource(uri, intent.flags)
     }
 

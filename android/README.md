@@ -11,6 +11,15 @@ Selecting a tool does not enable it: its separate power switch controls whether
 its edits apply. Each category remembers its tool, and each tool keeps its scroll
 position. See [editor UX](EDITOR_UX.md) for the interaction rules.
 
+An engine-enabled build also opens a single photo shared from Android's file
+manager. Share a GPR file and choose this editor; image MIME types and generic
+`application/octet-stream` shares are registered, including GoPro application
+MIME aliases. The incoming document can use `EXTRA_STREAM`, a single-item
+`ClipData`, or the sender's data URI. Original read-grant flags reach the existing
+content-URI cache/import flow, which copies the source privately before native
+processing. The share URI does not need a visible `.gpr` suffix. Multi-file shares
+are not advertised by this single-image editor.
+
 The tools panel provides native sliders and precise input, enum
 menus, switches, text fields, document import and action buttons. Tool search
 matches module names and parameter labels across all editing tabs. Tap a search
