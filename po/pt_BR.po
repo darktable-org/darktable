@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-03 09:15-0300\n"
-"PO-Revision-Date: 2026-11-03 09:15-0300\n"
+"POT-Creation-Date: 2026-11-03 16:08-0300\n"
+"PO-Revision-Date: 2026-11-03 16:07-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1005,6 +1005,8 @@ msgid ""
 "start by selecting the <b>parametric</b> group and adding channels to it, "
 "then move on to the <b>drawn</b> group"
 msgstr ""
+"comece selecionado o grupo <b>paramétrico</b> e adicionandi canais a ele, "
+"depois vá para o grupo <b>desenhado</b>"
 
 #: ../build/bin/masks_group_presets_strings.h:25
 msgid "subtract unwanted spill from a drawn + parametric mask"
@@ -2897,7 +2899,7 @@ msgstr "outono"
 #: ../src/develop/blend_gui.c:3453 ../src/develop/lightroom.c:1242
 #: ../src/gui/gtk.c:6335 ../src/gui/preferences.c:517
 #: ../src/gui/preferences.c:542 ../src/gui/preferences.c:565
-#: ../src/iop/bilateral.cc:381 ../src/iop/channelmixer.c:611
+#: ../src/iop/bilateral.cc:617 ../src/iop/channelmixer.c:611
 #: ../src/iop/channelmixer.c:631 ../src/iop/channelmixerrgb.c:4636
 #: ../src/iop/colorequal.c:3743 ../src/iop/colorzones.c:2507
 #: ../src/iop/temperature.c:1981 ../src/iop/temperature.c:2166
@@ -3028,7 +3030,7 @@ msgstr "genérico"
 #: ../src/develop/blend_gui.c:3447 ../src/develop/lightroom.c:1240
 #: ../src/gui/gtk.c:6334 ../src/gui/guides.c:856 ../src/gui/preferences.c:516
 #: ../src/gui/preferences.c:541 ../src/gui/preferences.c:564
-#: ../src/iop/bilateral.cc:376 ../src/iop/channelmixer.c:610
+#: ../src/iop/bilateral.cc:612 ../src/iop/channelmixer.c:610
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixerrgb.c:4635
 #: ../src/iop/colorequal.c:3741 ../src/iop/colorzones.c:2505
 #: ../src/iop/temperature.c:1961 ../src/iop/temperature.c:1979
@@ -3104,7 +3106,7 @@ msgstr "roxo"
 #: ../src/common/collection.c:1481 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:381 ../src/develop/blend_gui.c:3393
 #: ../src/develop/blend_gui.c:3441 ../src/develop/lightroom.c:1236
-#: ../src/gui/gtk.c:6333 ../src/gui/guides.c:855 ../src/iop/bilateral.cc:371
+#: ../src/gui/gtk.c:6333 ../src/gui/guides.c:855 ../src/iop/bilateral.cc:607
 #: ../src/iop/channelmixer.c:609 ../src/iop/channelmixer.c:619
 #: ../src/iop/channelmixerrgb.c:4634 ../src/iop/colorequal.c:3738
 #: ../src/iop/colorzones.c:2502 ../src/iop/temperature.c:1977
@@ -3921,7 +3923,7 @@ msgstr "guia"
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:283
 #: ../build/lib/darktable/plugins/introspection_lens.cc:340
 #: ../build/lib/darktable/plugins/introspection_lens.cc:501
-#: ../src/iop/atrous.c:1603 ../src/iop/bilateral.cc:367 ../src/iop/clahe.c:323
+#: ../src/iop/atrous.c:1603 ../src/iop/bilateral.cc:603 ../src/iop/clahe.c:323
 #: ../src/iop/lowpass.c:572 ../src/iop/shadhi.c:683 ../src/iop/sharpen.c:417
 msgid "radius"
 msgstr "raio"
@@ -3934,7 +3936,7 @@ msgstr "raio"
 #: ../build/lib/darktable/plugins/introspection_lens.cc:497
 #: ../src/iop/bloom.c:389 ../src/iop/denoiseprofile.c:3725
 #: ../src/iop/grain.c:724 ../src/iop/hazeremoval.c:272
-#: ../src/iop/hotpixels.c:455 ../src/iop/nlmeans.c:442 ../src/iop/velvia.c:279
+#: ../src/iop/hotpixels.c:559 ../src/iop/nlmeans.c:442 ../src/iop/velvia.c:279
 #: ../src/libs/neural_restore.c:4532 ../src/libs/neural_restore.c:4549
 msgid "strength"
 msgstr "força"
@@ -4632,7 +4634,7 @@ msgstr "luminosidade"
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:267
 #: ../src/develop/blend_gui.c:5880 ../src/iop/agx.c:2313 ../src/iop/agx.c:2882
 #: ../src/iop/atrous.c:1372 ../src/iop/atrous.c:1376
-#: ../src/iop/denoiseprofile.c:3453 ../src/iop/rawdenoise.c:732
+#: ../src/iop/denoiseprofile.c:3453 ../src/iop/rawdenoise.c:855
 #: ../src/iop/sigmoid.c:315
 msgid "smooth"
 msgstr "suave"
@@ -4682,7 +4684,7 @@ msgstr "raio para detecção de bordas"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:231
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:436
 #: ../src/iop/atrous.c:1664 ../src/iop/bloom.c:385
-#: ../src/iop/colorreconstruction.c:1221 ../src/iop/hotpixels.c:451
+#: ../src/iop/colorreconstruction.c:1221 ../src/iop/hotpixels.c:555
 #: ../src/iop/sharpen.c:426
 msgid "threshold"
 msgstr "limite"
@@ -5703,7 +5705,7 @@ msgstr "apenas vinheta manual"
 #: ../src/dtgtk/range.c:1796 ../src/gui/accelerators.c:2902
 #: ../src/gui/accelerators.c:2974 ../src/gui/gtk.c:2287 ../src/gui/gtk.c:6332
 #: ../src/imageio/format/pdf.c:662 ../src/iop/denoiseprofile.c:3636
-#: ../src/iop/rawdenoise.c:866 ../src/libs/collect.c:4097
+#: ../src/iop/rawdenoise.c:989 ../src/libs/collect.c:4097
 #: ../src/libs/filtering.c:1571 ../src/libs/filters/colors.c:210
 #: ../src/libs/filters/colors.c:319 ../src/libs/filters/date.c:112
 #: ../src/libs/filters/date.c:125 ../src/libs/filters/rating.c:210
@@ -7039,67 +7041,67 @@ msgstr ""
 "média dE: %.02f\n"
 "máximo dE: %.02f"
 
-#: ../src/cli/main.c:296
+#: ../src/cli/main.c:297
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
 msgstr ""
 "TODO: desculpa, devido a restrições na API não podemos definir BPP para"
 
-#: ../src/cli/main.c:308
+#: ../src/cli/main.c:309
 msgid "unknown option for --hq"
 msgstr "opção desconhecida para --hq"
 
-#: ../src/cli/main.c:324
+#: ../src/cli/main.c:325
 msgid "unknown option for --export_masks"
 msgstr "opção desconhecida para --export_masks"
 
-#: ../src/cli/main.c:340
+#: ../src/cli/main.c:341
 msgid "unknown option for --upscale"
 msgstr "opção desconhecida para --upscale"
 
-#: ../src/cli/main.c:365
+#: ../src/cli/main.c:366
 msgid "unknown option for --apply-custom-presets"
 msgstr "opção desconhecida para --apply-custom-presets"
 
-#: ../src/cli/main.c:376
+#: ../src/cli/main.c:377
 msgid "too long ext for --out-ext"
 msgstr "ext muito longo para --out-ext"
 
-#: ../src/cli/main.c:393
+#: ../src/cli/main.c:394
 #, c-format
 msgid "notice: input file or dir '%s' doesn't exist, skipping\n"
 msgstr "nota: arquivo de entrada ou diretório '%s' não existe, ignorando\n"
 
-#: ../src/cli/main.c:401
+#: ../src/cli/main.c:402
 #, c-format
 msgid "empty in-memory library is useless for darktable cli export\n"
 msgstr "biblioteca em-memória vazia é inútil para exportação cli darktable\n"
 
-#: ../src/cli/main.c:414
+#: ../src/cli/main.c:415
 #, c-format
 msgid "incorrect ICC type for --icc-type: '%s'\n"
 msgstr "tipo de ICC incorreto para --icc-type: '%s'\n"
 
-#: ../src/cli/main.c:430
+#: ../src/cli/main.c:431
 #, c-format
 msgid "notice: ICC file '%s' doesn't exist, skipping\n"
 msgstr "nota: arquivo ICC '%s' não existe, ignorando\n"
 
-#: ../src/cli/main.c:439
+#: ../src/cli/main.c:440
 #, c-format
 msgid "incorrect ICC intent for --icc-intent: '%s'\n"
 msgstr "intenção ICC incorreta para --icc-intent: '%s'\n"
 
-#: ../src/cli/main.c:451
+#: ../src/cli/main.c:452
 #, fuzzy, c-format
 msgid "incorrect PQ peak for --pq-peak: '%s'\n"
 msgstr "tipo de ICC incorreto para --icc-type: '%s'\n"
 
-#: ../src/cli/main.c:478
+#: ../src/cli/main.c:479
 #, c-format
 msgid "warning: unknown option '%s'\n"
 msgstr "aviso: opção desconhecida: '%s'\n"
 
-#: ../src/cli/main.c:520 ../src/cli/main.c:528
+#: ../src/cli/main.c:521 ../src/cli/main.c:529
 #, c-format
 msgid ""
 "error: output file or directory must be specified\n"
@@ -7108,7 +7110,7 @@ msgstr ""
 "erro: arquivo ou diretório de saída deve ser especificado\n"
 "\n"
 
-#: ../src/cli/main.c:526
+#: ../src/cli/main.c:527
 #, c-format
 msgid ""
 "error: input file and output file must be specified\n"
@@ -7117,7 +7119,7 @@ msgstr ""
 "erro: arquivo de entrada e arquivo de saída devem ser especificados\n"
 "\n"
 
-#: ../src/cli/main.c:533
+#: ../src/cli/main.c:534
 #, c-format
 msgid ""
 "error: too many positional arguments\n"
@@ -7126,14 +7128,14 @@ msgstr ""
 "erro: argumentos posicionais em excesso\n"
 "\n"
 
-#: ../src/cli/main.c:538
+#: ../src/cli/main.c:539
 #, c-format
 msgid "error: input file and import opts specified! that's not supported!\n"
 msgstr ""
 "erro: arquivo de entrada e opções de importação especificados! isto não é "
 "suportado!\n"
 
-#: ../src/cli/main.c:588
+#: ../src/cli/main.c:589
 msgid ""
 "notice: no XMP sidecar file nor library path provided, using default "
 "settings for export"
@@ -7141,7 +7143,7 @@ msgstr ""
 "nota: nenhum arquivo XMP associado e nenhuma biblioteca providos, usando "
 "configurações padrão para exportação"
 
-#: ../src/cli/main.c:597
+#: ../src/cli/main.c:598
 #, c-format
 msgid ""
 "notice: output location is a directory. assuming '%s/$(FILE_NAME).%s' output "
@@ -7151,57 +7153,57 @@ msgstr ""
 "(FILE_NAME).%s'\""
 
 #. output file exists or there's output ext specified and it's same as file...
-#: ../src/cli/main.c:612
+#: ../src/cli/main.c:613
 msgid "output file already exists, it will get renamed"
 msgstr "arquivo de saída já existente, ele será renomeado"
 
-#: ../src/cli/main.c:647
+#: ../src/cli/main.c:648
 #, c-format
 msgid "error: can't open folder %s"
 msgstr "erro: não foi possível abrir a pasta %s"
 
-#: ../src/cli/main.c:670
+#: ../src/cli/main.c:671
 #, c-format
 msgid "error: can't import file %s"
 msgstr "erro: não foi possível importar o arquivo %s"
 
-#: ../src/cli/main.c:680
+#: ../src/cli/main.c:681
 #, c-format
 msgid "error: can't read directory %s"
 msgstr "erro: não foi possível ler a pasta %s"
 
-#: ../src/cli/main.c:696
+#: ../src/cli/main.c:697
 #, c-format
 msgid "error: can't open file %s"
 msgstr "erro: não foi possível abrir o arquivo %s"
 
-#: ../src/cli/main.c:713
+#: ../src/cli/main.c:714
 #, c-format
 msgid "no images to export, aborting\n"
 msgstr "nenhuma imagem para exportar, cancelando\n"
 
-#: ../src/cli/main.c:730
+#: ../src/cli/main.c:731
 #, c-format
 msgid "error: can't open XMP file %s"
 msgstr "erro: não foi possível abrir o arquivo XMP %s"
 
-#: ../src/cli/main.c:751
+#: ../src/cli/main.c:752
 msgid "empty history stack"
 msgstr "esvazia histórico de ações"
 
 #. too long ext, no point in wasting time
-#: ../src/cli/main.c:763
+#: ../src/cli/main.c:764
 #, c-format
 msgid "too long output file extension: %s\n"
 msgstr "extensão de arquivo muito longa: %s\n"
 
 #. no ext or empty ext, no point in wasting time
-#: ../src/cli/main.c:771
+#: ../src/cli/main.c:772
 #, c-format
 msgid "no output file extension given\n"
 msgstr "nenhuma extensão de arquivo foi dada\n"
 
-#: ../src/cli/main.c:816
+#: ../src/cli/main.c:817
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -7209,17 +7211,17 @@ msgstr ""
 "não foi possível encontrar o módulo de armazenamento em disco. por favor, "
 "verifique sua instalação, algo parece defeituoso."
 
-#: ../src/cli/main.c:826
+#: ../src/cli/main.c:827
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
 "falha ao obter parâmetros do módulo de armazenamento, abortando exportação..."
 
-#: ../src/cli/main.c:842
+#: ../src/cli/main.c:843
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "extensão desconhecida '.%s'"
 
-#: ../src/cli/main.c:852
+#: ../src/cli/main.c:853
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "falha ao obter parâmetros do módulo de formato, abortando exportação..."
@@ -7256,7 +7258,7 @@ msgstr "reduz ruído"
 #. raw denoise sits first: it runs earliest in the denoise workflow
 #. (before demosaic-stage processing). bayer / linear variant selection
 #. is driven by the active "rawdenoise" model rather than a UI toggle
-#: ../src/common/ai_models.c:76 ../src/iop/rawdenoise.c:135
+#: ../src/common/ai_models.c:76 ../src/iop/rawdenoise.c:142
 #: ../src/libs/neural_restore.c:1557 ../src/libs/neural_restore.c:4518
 msgid "raw denoise"
 msgstr "redução de ruído raw"
@@ -9122,11 +9124,11 @@ msgstr "distribuição de Poisson genérica"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "perfil de controle de ruído `%s' não é válido"
 
-#: ../src/common/opencl.c:1276
+#: ../src/common/opencl.c:1278
 msgid "no working OpenCL library found"
 msgstr "nenhuma biblioteca OpenCL funcional encontrada"
 
-#: ../src/common/opencl.c:1296
+#: ../src/common/opencl.c:1298
 msgid ""
 "platform detection failed. some possible causes:\n"
 "  - OpenCL ICD (ocl-icd) missing,\n"
@@ -9144,7 +9146,7 @@ msgstr ""
 "  - nenhum driver OpenCL instalado,\n"
 "  - múltiplos drivers instalados por plataforma\n"
 
-#: ../src/common/opencl.c:1318
+#: ../src/common/opencl.c:1320
 msgid ""
 "couldn't get platform ID.\n"
 "check your OpenCL ICD loader (ocl-icd)"
@@ -9152,7 +9154,7 @@ msgstr ""
 "não foi possível obter o ID da plataforma.\n"
 "verifique seu carregador OpenCL ICD (ocl-icd)"
 
-#: ../src/common/opencl.c:1326
+#: ../src/common/opencl.c:1328
 msgid ""
 "no valid OpenCL platform found.\n"
 "check your OpenCL ICD loader (ocl-icd)"
@@ -9160,23 +9162,23 @@ msgstr ""
 "nenhuma plataforma OpenCL foi encontrada.\n"
 "verifique seu carregador OpenCL ICD (ocl-icd)"
 
-#: ../src/common/opencl.c:1417
+#: ../src/common/opencl.c:1419
 msgid "no devices found for unknown platform"
 msgstr "nenhum dispositivo encontrado para plataforma desconhecida"
 
-#: ../src/common/opencl.c:1464
+#: ../src/common/opencl.c:1466
 msgid "not enough memory for OpenCL devices"
 msgstr "não há memória suficiente para dispositivos OpenCL"
 
-#: ../src/common/opencl.c:1502
+#: ../src/common/opencl.c:1504
 msgid "no OpenCL devices found"
 msgstr "nenhum dispositivo OpenCL encontrado"
 
-#: ../src/common/opencl.c:1545
+#: ../src/common/opencl.c:1547
 msgid "no suitable OpenCL devices found"
 msgstr "nenhum dispositivo OpenCL adequado encontrado"
 
-#: ../src/common/opencl.c:1569
+#: ../src/common/opencl.c:1571
 #, c-format
 msgid ""
 "OpenCL initializing problem:\n"
@@ -9187,12 +9189,12 @@ msgstr ""
 "%s\n"
 "desabilitando OpenCL por enquanto"
 
-#: ../src/common/opencl.c:1604
+#: ../src/common/opencl.c:1608
 msgid "OpenCL scheduling profile set to default, setup has changed"
 msgstr ""
 "perfil de escalonamento OpenCL ajustado para padrão, a configuração mudou"
 
-#: ../src/common/opencl.c:2387
+#: ../src/common/opencl.c:2393
 #, c-format
 msgid "building OpenCL program %s for %s"
 msgstr "construindo programa OpenCL %s para %s"
@@ -10984,7 +10986,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2883 ../src/develop/blend_gui.c:18248
 msgid "preview channel under cursor"
-msgstr ""
+msgstr "pré-visualizar canal sob o cursor"
 
 #: ../src/develop/blend_gui.c:2884
 msgid ""
@@ -11097,7 +11099,7 @@ msgstr "adicionar um elemento paramétrico selecionado por cinza (g)"
 
 #: ../src/develop/blend_gui.c:3388 ../src/develop/blend_gui.c:3436
 #: ../src/develop/blend_gui.c:18255 ../src/iop/channelmixerrgb.c:4634
-#: ../src/iop/denoiseprofile.c:3637 ../src/iop/rawdenoise.c:867
+#: ../src/iop/denoiseprofile.c:3637 ../src/iop/rawdenoise.c:990
 #: ../src/iop/rgbcurve.c:1488 ../src/iop/rgblevels.c:1031
 #: ../src/libs/filters/colors.c:190
 msgid "R"
@@ -11109,7 +11111,7 @@ msgstr "adicionar um elemento paramétrico selecionado por vermelho (R)"
 
 #: ../src/develop/blend_gui.c:3394 ../src/develop/blend_gui.c:3442
 #: ../src/develop/blend_gui.c:18255 ../src/iop/channelmixerrgb.c:4635
-#: ../src/iop/denoiseprofile.c:3638 ../src/iop/rawdenoise.c:868
+#: ../src/iop/denoiseprofile.c:3638 ../src/iop/rawdenoise.c:991
 #: ../src/iop/rgbcurve.c:1489 ../src/iop/rgblevels.c:1032
 #: ../src/libs/filters/colors.c:196
 msgid "G"
@@ -11121,7 +11123,7 @@ msgstr "adicionar um elemento paramétrico selecionado por verde (G)"
 
 #: ../src/develop/blend_gui.c:3400 ../src/develop/blend_gui.c:3448
 #: ../src/develop/blend_gui.c:18255 ../src/iop/channelmixerrgb.c:4636
-#: ../src/iop/denoiseprofile.c:3639 ../src/iop/rawdenoise.c:869
+#: ../src/iop/denoiseprofile.c:3639 ../src/iop/rawdenoise.c:992
 #: ../src/iop/rgbcurve.c:1490 ../src/iop/rgblevels.c:1033
 #: ../src/libs/filters/colors.c:199
 msgid "B"
@@ -11675,9 +11677,8 @@ msgid "wrap in group..."
 msgstr ""
 
 #: ../src/develop/blend_gui.c:9678 ../src/develop/blend_gui.c:10255
-#, fuzzy
 msgid "group together..."
-msgstr "agrupar as formas"
+msgstr "agrupar..."
 
 #: ../src/develop/blend_gui.c:9679
 msgid "put the selected item in a new group, where it is"
@@ -11690,22 +11691,24 @@ msgid ""
 msgstr ""
 
 #: ../src/develop/blend_gui.c:9701
-#, fuzzy, c-format
+#, c-format
 msgid "%d item selected"
 msgid_plural "%d items selected"
-msgstr[0] "deletar selecionados"
-msgstr[1] "deletar selecionados"
+msgstr[0] "%d item selecionado"
+msgstr[1] "%d itens selecionados"
 
 #: ../src/develop/blend_gui.c:9717
 msgid ""
 "\n"
 "unavailable: the selected items are not all in the same group"
 msgstr ""
+"\n"
+"não disponível: os itens selecionados não estão todos no mesmo grupo"
 
 #: ../src/develop/blend_gui.c:10106
 #, fuzzy
 msgid "the selection has nowhere else to go"
-msgstr "define a seleção como imagens coloridas"
+msgstr "a seleção não pode ir para nenhum outro lugar"
 
 #: ../src/develop/blend_gui.c:10110
 #, fuzzy
@@ -11716,6 +11719,7 @@ msgstr "mover para baixo"
 #: ../src/develop/blend_gui.c:12315
 msgid "this group is nested as deep as groups go"
 msgstr ""
+"este grupo estào tão profundamente aninhado quanto possível para grupos"
 
 #: ../src/develop/blend_gui.c:10164 ../src/develop/blend_gui.c:17783
 msgid "wrap in a new group of"
@@ -11737,9 +11741,8 @@ msgid "delete the selected items, and the members of the groups among them"
 msgstr "remover os itens selecionados, e os membros dos grupos entre eles"
 
 #: ../src/develop/blend_gui.c:10252
-#, fuzzy
 msgid "move into..."
-msgstr "mover..."
+msgstr "mover para dentro de..."
 
 #: ../src/develop/blend_gui.c:10253
 #, fuzzy
@@ -11766,17 +11769,21 @@ msgid ""
 msgstr ""
 
 #: ../src/develop/blend_gui.c:11304
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "(added to the selected group, %s)"
-msgstr "colar os metadados nas imagens selecionadas"
+msgstr ""
+"\n"
+"(adicionado ao grupo selecionado, %s)"
 
 #: ../src/develop/blend_gui.c:11305
 msgid ""
 "\n"
 "(added to the whole mask)"
 msgstr ""
+"\n"
+"(adicionado para a máscara toda)"
 
 #: ../src/develop/blend_gui.c:11316
 msgid ""
@@ -11796,6 +11803,8 @@ msgid ""
 "\n"
 "(nested in %s)"
 msgstr ""
+"\n"
+"(aninhado em %s)"
 
 #: ../src/develop/blend_gui.c:11334
 msgid ""
@@ -12075,14 +12084,12 @@ msgstr ""
 "aumente para permitir casamento de valores acima de 100%"
 
 #: ../src/develop/blend_gui.c:15320
-#, fuzzy
 msgid "output slider"
-msgstr "intenção de saída"
+msgstr "deslizador de saída"
 
 #: ../src/develop/blend_gui.c:15320
-#, fuzzy
 msgid "input slider"
-msgstr "controles de cor"
+msgstr "deslizador de entrada"
 
 #: ../src/develop/blend_gui.c:15596
 #, fuzzy, c-format
@@ -12111,7 +12118,7 @@ msgstr "ctrl+clique para renomear\n"
 
 #: ../src/develop/blend_gui.c:15655
 msgid "ctrl+shift+click to delete it\n"
-msgstr ""
+msgstr "ctrl+shift+clique para remover\n"
 
 #: ../src/develop/blend_gui.c:15656
 #, fuzzy
@@ -12441,9 +12448,8 @@ msgid "move selection into group"
 msgstr "mover seleção para dentro do grupo"
 
 #: ../src/develop/blend_gui.c:18240
-#, fuzzy
 msgid "group selection"
-msgstr "para seleção"
+msgstr "seleção em grupo"
 
 #: ../src/develop/blend_gui.c:18242 ../src/develop/blend_gui.c:18306
 #, fuzzy
@@ -14049,7 +14055,7 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:1733
+#: ../src/develop/pixelpipe_hb.c:1771
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -14059,11 +14065,11 @@ msgstr ""
 "pixelpipe abortou de maneira fatal por causa de buffers nao alinhados\n"
 "no módulo '%s' por favor reporte no GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:2447
+#: ../src/develop/pixelpipe_hb.c:2485
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "erro fatal de alinhamento, por favor reporte no GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:3712
+#: ../src/develop/pixelpipe_hb.c:3750
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -14084,7 +14090,7 @@ msgstr ""
 "  - configuração de espaço muito pequeno com 'use toda a memória do "
 "dispositivo'."
 
-#: ../src/develop/pixelpipe_hb.c:4061
+#: ../src/develop/pixelpipe_hb.c:4099
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -19380,9 +19386,8 @@ msgstr ""
 #. the gesture is invisible, so the header has to say it is there. The buttons
 #. sitting in the header keep their own tooltips over their own area.
 #: ../src/gui/gtk.c:4159
-#, fuzzy
 msgid "click to hide the mask panel"
-msgstr "ctrl+clique para adicionar ao painel de acesso rápido\n"
+msgstr "clique para esconder o painel de máscaras"
 
 #. it does two jobs, and only one of them is guessable from the resize cursor
 #: ../src/gui/gtk.c:4231
@@ -21943,7 +21948,7 @@ msgstr ""
 "aplica uma curva de mapeamento de tons.\n"
 "inspirado no mapeamento de tons AgX do Blender"
 
-#: ../src/iop/agx.c:58 ../src/iop/atrous.c:133 ../src/iop/bilateral.cc:103
+#: ../src/iop/agx.c:58 ../src/iop/atrous.c:133 ../src/iop/bilateral.cc:112
 #: ../src/iop/colorequal.c:214 ../src/iop/diffuse.c:140
 #: ../src/iop/enlargecanvas.c:86 ../src/iop/exposure.c:131
 #: ../src/iop/filmicrgb.c:345 ../src/iop/graduatednd.c:143
@@ -21955,8 +21960,8 @@ msgid "corrective and creative"
 msgstr "corretivo e criativo"
 
 #: ../src/iop/agx.c:59 ../src/iop/ashift.c:126 ../src/iop/ashift.c:128
-#: ../src/iop/basicadj.c:169 ../src/iop/bilateral.cc:104
-#: ../src/iop/bilateral.cc:106 ../src/iop/blurs.c:94 ../src/iop/blurs.c:95
+#: ../src/iop/basicadj.c:169 ../src/iop/bilateral.cc:113
+#: ../src/iop/bilateral.cc:115 ../src/iop/blurs.c:94 ../src/iop/blurs.c:95
 #: ../src/iop/cacorrectrgb.c:180 ../src/iop/cacorrectrgb.c:182
 #: ../src/iop/channelmixerrgb.c:240 ../src/iop/channelmixerrgb.c:242
 #: ../src/iop/clipping.c:356 ../src/iop/clipping.c:358
@@ -22148,7 +22153,7 @@ msgstr "mostrar a curva"
 #: ../src/iop/colorbalancergb.c:2015 ../src/iop/colorequal.c:3806
 #: ../src/iop/colorzones.c:2734 ../src/iop/denoiseprofile.c:3666
 #: ../src/iop/filmicrgb.c:4362 ../src/iop/lowlight.c:803
-#: ../src/iop/rawdenoise.c:892 ../src/iop/toneequal.c:3837
+#: ../src/iop/rawdenoise.c:1015 ../src/iop/toneequal.c:3837
 msgid "graph"
 msgstr "gráfico"
 
@@ -22777,13 +22782,13 @@ msgid "deblur | fine blur | strength 1"
 msgstr "nitidez | desfoque pequeno | força 1"
 
 #: ../src/iop/atrous.c:1352 ../src/iop/atrous.c:1606
-#: ../src/iop/denoiseprofile.c:3436 ../src/iop/rawdenoise.c:715
+#: ../src/iop/denoiseprofile.c:3436 ../src/iop/rawdenoise.c:838
 msgctxt "graph"
 msgid "coarse"
 msgstr "grosso"
 
 #: ../src/iop/atrous.c:1359 ../src/iop/atrous.c:1607
-#: ../src/iop/denoiseprofile.c:3444 ../src/iop/rawdenoise.c:723
+#: ../src/iop/denoiseprofile.c:3444 ../src/iop/rawdenoise.c:846
 msgid "fine"
 msgstr "fino"
 
@@ -22792,7 +22797,7 @@ msgid "contrasty"
 msgstr "contrastado"
 
 #: ../src/iop/atrous.c:1377 ../src/iop/denoiseprofile.c:3458
-#: ../src/iop/rawdenoise.c:737
+#: ../src/iop/rawdenoise.c:860
 msgid "noisy"
 msgstr "ruidoso"
 
@@ -22842,7 +22847,7 @@ msgid "x"
 msgstr "x"
 
 #: ../src/iop/atrous.c:1778 ../src/iop/colorzones.c:2645
-#: ../src/iop/denoiseprofile.c:3634 ../src/iop/rawdenoise.c:864
+#: ../src/iop/denoiseprofile.c:3634 ../src/iop/rawdenoise.c:987
 #: ../src/iop/rgbcurve.c:1486 ../src/iop/rgblevels.c:1029
 #: ../src/iop/tonecurve.c:1280
 msgid "channel"
@@ -22959,13 +22964,13 @@ msgstr ""
 "ou gosto pessoal, com fins corretivos, de modo a preparar a imagem para "
 "exibição"
 
-#: ../src/iop/basecurve.c:372 ../src/iop/cacorrect.c:81
+#: ../src/iop/basecurve.c:372 ../src/iop/cacorrect.c:95
 #: ../src/iop/cacorrectrgb.c:179 ../src/iop/colorreconstruction.c:116
 #: ../src/iop/defringe.c:80 ../src/iop/denoiseprofile.c:824
 #: ../src/iop/flip.c:108 ../src/iop/hazeremoval.c:110
-#: ../src/iop/highlights.c:176 ../src/iop/hotpixels.c:73
+#: ../src/iop/highlights.c:176 ../src/iop/hotpixels.c:79
 #: ../src/iop/invert.c:131 ../src/iop/lens.cc:300 ../src/iop/nlmeans.c:88
-#: ../src/iop/profile_gamma.c:99 ../src/iop/rawdenoise.c:141
+#: ../src/iop/profile_gamma.c:99 ../src/iop/rawdenoise.c:148
 #: ../src/iop/retouch.c:208 ../src/iop/scalepixels.c:85 ../src/iop/sharpen.c:94
 #: ../src/iop/spots.c:68 ../src/iop/temperature.c:248
 msgid "corrective"
@@ -23198,21 +23203,21 @@ msgstr ""
 "alcance dinâmico (reduz sombra e aumenta contraste), mais alto para "
 "contraste local melhor"
 
-#: ../src/iop/bilateral.cc:72 ../src/iop/diffuse.c:443
+#: ../src/iop/bilateral.cc:81 ../src/iop/diffuse.c:443
 msgid "surface blur"
 msgstr "desfoque de superfície"
 
-#: ../src/iop/bilateral.cc:77
+#: ../src/iop/bilateral.cc:86
 msgid "denoise (bilateral filter)"
 msgstr "redução ruído (filtro bilateral)"
 
-#: ../src/iop/bilateral.cc:101
+#: ../src/iop/bilateral.cc:110
 msgid ""
 "apply edge-aware surface blur\n"
 "to denoise or smoothen textures"
 msgstr "aplica desfoque de superfície para remover ruído ou suavizar texturas"
 
-#: ../src/iop/bilateral.cc:105 ../src/iop/blurs.c:94
+#: ../src/iop/bilateral.cc:114 ../src/iop/blurs.c:94
 #: ../src/iop/cacorrectrgb.c:181 ../src/iop/channelmixer.c:137
 #: ../src/iop/contrastntexture.c:164 ../src/iop/denoiseprofile.c:826
 #: ../src/iop/diffuse.c:142 ../src/iop/enlargecanvas.c:88
@@ -23222,11 +23227,11 @@ msgstr "aplica desfoque de superfície para remover ruído ou suavizar texturas"
 msgid "linear, RGB"
 msgstr "linear, RGB"
 
-#: ../src/iop/bilateral.cc:141
+#: ../src/iop/bilateral.cc:150
 msgid "image too large"
 msgstr "imagem grande demais"
 
-#: ../src/iop/bilateral.cc:142
+#: ../src/iop/bilateral.cc:151
 msgid ""
 "this module is unable to process\n"
 "images with more than 2 gigapixels.\n"
@@ -23236,19 +23241,19 @@ msgstr ""
 "imagens com mais de 2 gigapixels.\n"
 "o processamento não foi feito."
 
-#: ../src/iop/bilateral.cc:368
+#: ../src/iop/bilateral.cc:604
 msgid "spatial extent of the gaussian"
 msgstr "extensão espacial do gaussiano"
 
-#: ../src/iop/bilateral.cc:372
+#: ../src/iop/bilateral.cc:608
 msgid "how much to blur red"
 msgstr "quanto desfoque vermelho"
 
-#: ../src/iop/bilateral.cc:377
+#: ../src/iop/bilateral.cc:613
 msgid "how much to blur green"
 msgstr "quanto desfoque verde"
 
-#: ../src/iop/bilateral.cc:382
+#: ../src/iop/bilateral.cc:618
 msgid "how much to blur blue"
 msgstr "quanto desfoque azul"
 
@@ -23552,40 +23557,40 @@ msgid "pick border color from image"
 msgstr "seleciona cor da borda a partir da imagem"
 
 #. make sure you put all your translatable strings into _() !
-#: ../src/iop/cacorrect.c:75
+#: ../src/iop/cacorrect.c:89
 msgid "raw chromatic aberrations"
 msgstr "aberrações cromáticas em raw"
 
-#: ../src/iop/cacorrect.c:80
+#: ../src/iop/cacorrect.c:94
 msgid "correct chromatic aberrations for Bayer sensors"
 msgstr "corrige aberrações cromáticas para sensores Bayer"
 
-#: ../src/iop/cacorrect.c:82 ../src/iop/cacorrect.c:84
+#: ../src/iop/cacorrect.c:96 ../src/iop/cacorrect.c:98
 #: ../src/iop/demosaic.c:327 ../src/iop/highlights.c:177
-#: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:74
-#: ../src/iop/hotpixels.c:76 ../src/iop/rasterfile.c:113
-#: ../src/iop/rasterfile.c:115 ../src/iop/rawdenoise.c:142
-#: ../src/iop/rawdenoise.c:144 ../src/iop/rawprepare.c:173
+#: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:80
+#: ../src/iop/hotpixels.c:82 ../src/iop/rasterfile.c:113
+#: ../src/iop/rasterfile.c:115 ../src/iop/rawdenoise.c:149
+#: ../src/iop/rawdenoise.c:151 ../src/iop/rawprepare.c:173
 #: ../src/iop/rawprepare.c:175 ../src/iop/temperature.c:249
 #: ../src/iop/temperature.c:251
 msgid "linear, raw, scene-referred"
 msgstr "linear, raw, relativo à cena"
 
-#: ../src/iop/cacorrect.c:83 ../src/iop/demosaic.c:328 ../src/iop/invert.c:133
-#: ../src/iop/rasterfile.c:114 ../src/iop/rawdenoise.c:143
+#: ../src/iop/cacorrect.c:97 ../src/iop/demosaic.c:328 ../src/iop/invert.c:133
+#: ../src/iop/rasterfile.c:114 ../src/iop/rawdenoise.c:150
 #: ../src/iop/rawprepare.c:174 ../src/iop/temperature.c:250
 msgid "linear, raw"
 msgstr "linear, raw"
 
-#: ../src/iop/cacorrect.c:1307
+#: ../src/iop/cacorrect.c:1787
 msgid "iteration runs, default is twice"
 msgstr "quantidade de iterações, o padrão são duas"
 
-#: ../src/iop/cacorrect.c:1310
+#: ../src/iop/cacorrect.c:1790
 msgid "activate colorshift correction for blue & red channels"
 msgstr "ativa correção de desvio de cor para canais azul e vermelho"
 
-#: ../src/iop/cacorrect.c:1318
+#: ../src/iop/cacorrect.c:1798
 msgid ""
 "automatic chromatic aberration correction\n"
 "only for Bayer raw files with 3 color channels"
@@ -24354,14 +24359,12 @@ msgid "Xrite/Calibrite ColorChecker 24 post-2014"
 msgstr "Xrite/Calibrite ColorChecker 24 post-2014"
 
 #: ../src/iop/channelmixerrgb.c:4673
-#, fuzzy
 msgid "Datacolor SpyderCheckr 24"
-msgstr "Datacolor SpyderCheckr Photo"
+msgstr "Datacolor SpyderCheckr 24"
 
 #: ../src/iop/channelmixerrgb.c:4674
-#, fuzzy
 msgid "Datacolor SpyderCheckr 48"
-msgstr "Datacolor SpyderCheckr Photo"
+msgstr "Datacolor SpyderCheckr 48"
 
 #: ../src/iop/channelmixerrgb.c:4675
 msgid "Datacolor SpyderCheckr Photo"
@@ -28472,7 +28475,7 @@ msgstr "reconstrução de realce"
 msgid "avoid magenta highlights and try to recover highlights colors"
 msgstr "evita realces magenta e tenta recuperar as cores dos realces"
 
-#: ../src/iop/highlights.c:178 ../src/iop/hotpixels.c:75
+#: ../src/iop/highlights.c:178 ../src/iop/hotpixels.c:81
 msgid "reconstruction, raw"
 msgstr "reconstrução, raw"
 
@@ -28635,11 +28638,11 @@ msgstr "a nitidez do filtro passa-altas"
 msgid "the contrast of highpass filter"
 msgstr "o contraste do filtro passa-altas"
 
-#: ../src/iop/hotpixels.c:66
+#: ../src/iop/hotpixels.c:72
 msgid "hot pixels"
 msgstr "pixels quentes"
 
-#: ../src/iop/hotpixels.c:71
+#: ../src/iop/hotpixels.c:77
 msgid ""
 "remove abnormally bright pixels\n"
 "by dampening them with neighbors"
@@ -28647,22 +28650,22 @@ msgstr ""
 "remove pixels exageradamente brilhantes\n"
 "harmonizando-os com os pixels vizinhos"
 
-#: ../src/iop/hotpixels.c:431
+#: ../src/iop/hotpixels.c:535
 #, c-format
 msgid "fixed %d pixel"
 msgid_plural "fixed %d pixels"
 msgstr[0] "corrigidos %d pixels"
 msgstr[1] "corrigidos %d pixels"
 
-#: ../src/iop/hotpixels.c:453
+#: ../src/iop/hotpixels.c:557
 msgid "lower threshold for hot pixel"
 msgstr "limite inferior para pixel quente"
 
-#: ../src/iop/hotpixels.c:457
+#: ../src/iop/hotpixels.c:561
 msgid "strength of hot pixel correction"
 msgstr "força da correção de pixel quente"
 
-#: ../src/iop/hotpixels.c:473
+#: ../src/iop/hotpixels.c:577
 msgid ""
 "hot pixel correction\n"
 "only works for raw images."
@@ -29986,9 +29989,8 @@ msgid "mask %.8s"
 msgstr "máscara %.8s"
 
 #: ../src/iop/rasterfile.c:407
-#, fuzzy
 msgid "missing from sidecar"
-msgstr "gravando arquivo XMP"
+msgstr "faltando no arquivo XMP"
 
 #: ../src/iop/rasterfile.c:413
 #, c-format
@@ -29996,9 +29998,8 @@ msgid "folder: %s"
 msgstr "pasta: %s"
 
 #: ../src/iop/rasterfile.c:415
-#, fuzzy
 msgid "no mask imported"
-msgstr "%zd etiquetas importadas"
+msgstr "nenhuma máscara importada"
 
 #: ../src/iop/rasterfile.c:426
 msgid "select raster mask file"
@@ -30057,11 +30058,11 @@ msgstr ""
 "vetoriza o mapa de bits atual e cria máscaras de caminho correspondentes no "
 "gerenciador de máscaras"
 
-#: ../src/iop/rawdenoise.c:140
+#: ../src/iop/rawdenoise.c:147
 msgid "denoise the raw image early in the pipeline"
 msgstr "remove ruídos de imagens raw cedo no pipeline"
 
-#: ../src/iop/rawdenoise.c:911
+#: ../src/iop/rawdenoise.c:1034
 msgid ""
 "raw denoising\n"
 "only works for raw images."
@@ -30108,15 +30109,16 @@ msgstr ""
 "configure para algo correto"
 
 #: ../src/iop/rawprepare.c:798
-#, fuzzy
 msgid "invalid white point"
-msgstr "ponto de branco"
+msgstr "ponto de branco inválido"
 
 #: ../src/iop/rawprepare.c:799
 msgid ""
 "the white point is not above the black level.\n"
 "the maximum value is used instead, set a correct white point."
 msgstr ""
+"o ponto de branco não está acima do nível de preto.\n"
+"o valor máximo é usado ao invés disso, escolha um ponto de branco correto."
 
 #: ../src/iop/rawprepare.c:946
 msgid "black level 0"
@@ -30521,12 +30523,12 @@ msgstr ""
 msgid "auto region"
 msgstr "automático por região"
 
-#: ../src/iop/rotatepixels.c:67
+#: ../src/iop/rotatepixels.c:73
 msgctxt "modulename"
 msgid "rotate pixels"
 msgstr "rotacionar pixels"
 
-#: ../src/iop/rotatepixels.c:96
+#: ../src/iop/rotatepixels.c:102
 msgid ""
 "internal module to setup technical specificities of raw sensor\n"
 "\n"
@@ -31061,17 +31063,13 @@ msgid "fetch the matching spectral data pack over the network"
 msgstr ""
 
 #: ../src/iop/spektrafilm.c:4469
-#, fuzzy
 msgid "the data repository could not be reached"
-msgstr ""
-"%s\n"
-"\n"
-"%d repositório não pode ser alcançado, então pode haver mais"
+msgstr "o repositório de dados não pode ser alcançado"
 
 #: ../src/iop/spektrafilm.c:4486
-#, fuzzy, c-format
+#, c-format
 msgid "download data pack %s"
-msgstr "baixar pacote de dados"
+msgstr "baixar pacote de dados %s"
 
 #: ../src/iop/spektrafilm.c:4487
 #, fuzzy, c-format
@@ -31085,21 +31083,19 @@ msgstr "um novo pacote de dados está disponível"
 #: ../src/iop/spektrafilm.c:4497
 #, c-format
 msgid "data pack %s installed"
-msgstr ""
+msgstr "pacote de dados %s instalado"
 
 #: ../src/iop/spektrafilm.c:4499
 msgid "data pack installed"
 msgstr "pacote de dados instalado"
 
 #: ../src/iop/spektrafilm.c:4506
-#, fuzzy
 msgid "the installed data packs are up to date"
-msgstr "todos os modelos instalados estão atualizados"
+msgstr "os pacotes de dados instalados estão atualizados"
 
 #: ../src/iop/spektrafilm.c:4510 ../src/iop/spektrafilm.c:6047
-#, fuzzy
 msgid "check for data pack updates"
-msgstr "procurar por atualizações"
+msgstr "procurar por atualizações de pacotes de dados"
 
 #: ../src/iop/spektrafilm.c:4514
 msgid ""
@@ -31214,9 +31210,8 @@ msgid "positive monochrome"
 msgstr "monocromático positivo"
 
 #: ../src/iop/spektrafilm.c:5247
-#, fuzzy
 msgid "(no profiles found)"
-msgstr "nenhuma impressora encontrada!"
+msgstr "(nenhum perfil encontrado)"
 
 #. Two entries ahead of the stocks, both expressing a state rather than a
 #. paper, so the combobox alone can reach every configuration and no separate
@@ -31907,10 +31902,9 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/spektrafilm.c:6493
-#, fuzzy
 msgctxt "section"
 msgid "black and white point"
-msgstr "filme preto e branco"
+msgstr "pontos de preto e de branco"
 
 #: ../src/iop/spektrafilm.c:6500
 msgid ""
@@ -31918,6 +31912,9 @@ msgid ""
 "off, the shadows stay where the film puts them, which is often\n"
 "short of black."
 msgstr ""
+"determinar o tom mais escuro da imagem como o nível de preto abaixo.\n"
+"se desligado, as sobras ficam como o filme as coloca, que usualmente\n"
+"é acima do preto."
 
 #: ../src/iop/spektrafilm.c:6508
 msgid ""
@@ -36440,9 +36437,8 @@ msgid "output TIFF bit depth"
 msgstr "profundidade de bits do TIFF de saída"
 
 #: ../src/libs/neural_restore.c:4644
-#, fuzzy
 msgid "output TIFF compression"
-msgstr "contraste | compressão"
+msgstr "compressão do TIFF de saída"
 
 #: ../src/libs/neural_restore.c:4687
 msgid "color profile embedded in the output TIFF"
@@ -36558,7 +36554,7 @@ msgstr "não foi possível obter a imagem %d para imprimir"
 #: ../src/libs/print_settings.c:1221
 #, c-format
 msgid "loading printer details for %s…"
-msgstr ""
+msgstr "carregando detalhes de impressora para %s…"
 
 #: ../src/libs/print_settings.c:1347
 #, c-format
@@ -36759,15 +36755,13 @@ msgid "temporary style to use while printing"
 msgstr "estilo temporário a ser usado ao imprimir"
 
 #: ../src/libs/print_settings.c:3509
-#, fuzzy
 msgid "open printer settings"
-msgstr "configurações de impressão"
+msgstr "abrir configurações de impressão"
 
 #. Print button
 #. We use context here because it is an action button, and translators might
 #. translate "print" as a verb, whereas elsewhere in the UI it is a noun.
 #: ../src/libs/print_settings.c:3519
-#, fuzzy
 msgctxt "actionbutton"
 msgid "print"
 msgstr "imprimir"
@@ -37728,9 +37722,8 @@ msgstr "sobreposições não disponíveis aqui..."
 
 #: ../src/libs/tools/global_toolbox.c:419
 #: ../src/libs/tools/global_toolbox.c:576
-#, fuzzy
 msgid "create new workspace"
-msgstr "criar área de trabalho"
+msgstr "criar nova área de trabalho"
 
 #: ../src/libs/tools/global_toolbox.c:422 ../src/views/darkroom.c:4070
 msgid "_create"
@@ -37739,7 +37732,7 @@ msgstr "_criar"
 #: ../src/libs/tools/global_toolbox.c:433
 #, fuzzy
 msgid "workspace name"
-msgstr "nome da predefinição"
+msgstr "nome da área de trabalho"
 
 #: ../src/libs/tools/global_toolbox.c:464
 #, fuzzy
