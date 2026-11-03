@@ -265,6 +265,9 @@ changes (where available).
   megabytes on each run. The correction is also more precise on x86,
   where it could be up to 0.3 px off, or 0.6 px when distorting.
 
+- Haze removal no longer copies the whole image back from the OpenCL
+  device to estimate the ambient light.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
