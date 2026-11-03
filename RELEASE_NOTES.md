@@ -282,6 +282,10 @@ changes (where available).
 - Module color pickers now compute their statistics on the OpenCL
   device instead of copying the picked area back to the CPU.
 
+- darktable-cli uses less memory when exporting many images: it no
+  longer keeps the decoded raw of every exported image in memory
+  until its cache is full.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
