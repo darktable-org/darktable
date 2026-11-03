@@ -255,6 +255,10 @@ changes (where available).
 
 - Grain now runs on OpenCL.
 
+- Surface blur now runs on OpenCL. It was by far the slowest module
+  left on the CPU in an OpenCL pipeline, and moved the image back to
+  the CPU for it.
+
 - Hovering over and dragging nodes of long drawn brush strokes and
   paths is much faster, as the mask overlay is no longer redrawn on
   every mouse move and long outlines are drawn with far fewer points.
