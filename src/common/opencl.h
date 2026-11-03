@@ -279,6 +279,9 @@ typedef struct dt_opencl_t
   // global kernels for guided filter.
   struct dt_guided_filter_cl_global_t *guided_filter;
 
+  // global kernels for module histograms.
+  struct dt_histogram_cl_global_t *histogram;
+
   // saved kernel info for deferred initialisation
   int program_saved[DT_OPENCL_MAX_KERNELS];
   const char *name_saved[DT_OPENCL_MAX_KERNELS];

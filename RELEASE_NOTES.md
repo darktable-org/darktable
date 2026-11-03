@@ -286,6 +286,10 @@ changes (where available).
   longer keeps the decoded raw of every exported image in memory
   until its cache is full.
 
+- Modules showing a histogram of their input (levels, rgb levels, rgb
+  curve, tone curve and color zones) now count it on the OpenCL device
+  instead of copying the image back to the CPU.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
