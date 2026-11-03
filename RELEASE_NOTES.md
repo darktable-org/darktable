@@ -268,6 +268,10 @@ changes (where available).
 - The raw denoise module can now run on the OpenCL device for Bayer
   sensors.
 
+- The retouch module's heal tool now runs its solver on the OpenCL
+  device instead of copying the image back to the CPU for each
+  healed shape.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
