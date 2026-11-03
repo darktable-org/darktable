@@ -331,6 +331,38 @@ static void test_blob_roundtrip(void **state)
   g_free(p);
 }
 
+static void test_module_owned_blob_roundtrip(void **state)
+{
+  _ensure_source();
+  gsize source_size = 0;
+  const void *source = g_bytes_get_data(_src_blob, &source_size);
+  dt_develop_blend_params_t bp;
+  GList *forms = NULL;
+  assert_true(dt_masks_blend_blob_decode(source, source_size, &bp, &forms));
+
+  // module-owned groups use mask_id without the flexi blending flag
+  bp.mask_mode &= ~DEVELOP_MASK_FLEXI;
+  dt_develop_blend_params_t encoded = bp;
+  encoded.mask_mode |= DEVELOP_MASK_FLEXI;
+  size_t size = 0;
+  void *blob = dt_masks_blend_blob_encode(&encoded, forms, &size);
+  assert_true(size > sizeof(bp));
+  memcpy(blob, &bp, sizeof(bp));
+
+  dt_develop_blend_params_t decoded;
+  GList *restored = NULL;
+  assert_true(dt_masks_blend_blob_decode(blob, size, &decoded, &restored));
+  assert_memory_equal(&decoded, &bp, sizeof(bp));
+  assert_int_equal(g_list_length(restored), g_list_length(forms));
+  for(GList *a = forms, *b = restored; a; a = a->next, b = b->next)
+    assert_int_equal(((dt_masks_form_t *)a->data)->formid,
+                     ((dt_masks_form_t *)b->data)->formid);
+
+  g_list_free_full(restored, (GDestroyNotify)dt_masks_free_form);
+  g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+  g_free(blob);
+}
+
 // an AI object stored as pixels renders only on its own image, so saving one
 // in a preset or a style asks; one traced into paths is ordinary shapes
 static void test_pixel_forms_found(void **state)
@@ -1105,6 +1137,7 @@ int main(int argc, char *argv[])
 {
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_blob_roundtrip),
+    cmocka_unit_test(test_module_owned_blob_roundtrip),
     cmocka_unit_test(test_blob_malformed),
     cmocka_unit_test(test_pixel_forms_found),
     cmocka_unit_test(test_style_from_pixel_object),

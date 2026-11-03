@@ -388,6 +388,81 @@ static void test_locked_mask_of_no_masks_module_leaves_own_shapes(void **state)
   assert_int_equal(incoming.blend_mask_id, 8);
 }
 
+// Module-owned retouch/spots shapes use the same mask-tree blob as flexi masks,
+// but their blend mask_mode intentionally has no FLEXI bit. The reader must
+// restore these shapes without changing ids referenced from module op_params,
+// and reject a second import rather than sharing ids across module instances.
+static void test_owned_style_shapes_roundtrip_and_collision(void **state)
+{
+  // Mask decoding reconstructs circles using UI configuration defaults.
+  flexi_conf_init();
+  dt_masks_form_t *group = dt_masks_create(DT_MASKS_GROUP);
+  assert_non_null(group);
+  // dt_masks_create(CIRCLE) sanitizes UI preferences and needs a GUI config.
+  // Build a complete circle directly for this headless serialization test.
+  dt_masks_form_t *circle = calloc(1, sizeof(*circle));
+  assert_non_null(circle);
+  circle->type = DT_MASKS_CIRCLE;
+  circle->version = dt_masks_version();
+  circle->formid = group->formid + 1;
+  circle->functions = &dt_masks_functions_circle;
+
+  dt_masks_point_circle_t *pt = calloc(1, sizeof(*pt));
+  pt->center[0] = 0.2f;
+  pt->center[1] = 0.3f;
+  pt->radius = 0.01f;
+  pt->border = 0.005f;
+  circle->points = g_list_append(NULL, pt);
+
+  dt_masks_point_group_t *member = calloc(1, sizeof(*member));
+  member->formid = circle->formid;
+  member->parentid = group->formid;
+  member->state = DT_MASKS_STATE_USE | DT_MASKS_STATE_SHOW;
+  member->opacity = 1.0f;
+  member->group_opacity = 1.0f;
+  group->points = g_list_append(NULL, member);
+
+  GList *forms = g_list_append(NULL, group);
+  forms = g_list_append(forms, circle);
+  dt_develop_blend_params_t bp = { 0 };
+  bp.mask_id = group->formid;
+  bp.mask_mode = DEVELOP_MASK_ENABLED;
+  dt_develop_blend_params_t encoded = bp;
+  encoded.mask_mode |= DEVELOP_MASK_FLEXI;
+  size_t length = 0;
+  void *blob = dt_masks_blend_blob_encode(&encoded, forms, &length);
+  assert_true(length > sizeof(bp));
+  memcpy(blob, &bp, sizeof(bp));
+
+  dt_develop_blend_params_t restored = { 0 };
+  GList *decoded = NULL;
+  assert_true(dt_masks_blend_blob_decode(blob, length, &restored, &decoded));
+  assert_memory_equal(&bp, &restored, sizeof(bp));
+  assert_int_equal(g_list_length(decoded), 2);
+  assert_int_equal(((dt_masks_form_t *)decoded->data)->formid, group->formid);
+  assert_int_equal(((dt_masks_form_t *)decoded->next->data)->formid, circle->formid);
+  g_list_free_full(decoded, (GDestroyNotify)dt_masks_free_form);
+
+  dt_develop_t dev = { 0 };
+  dt_iop_module_t module = { 0 };
+  module.flags = _flags_no_masks;
+  module.dev = &dev;
+  g_strlcpy(module.op, "retouch", sizeof(module.op));
+  assert_false(dt_develop_blend_params_read(&module, blob, length,
+                                          dt_develop_blend_version(), &restored,
+                                          -1, FALSE, NULL));
+  assert_int_equal(g_list_length(dev.forms), 2);
+  assert_true(dt_develop_blend_params_read(&module, blob, length,
+                                         dt_develop_blend_version(), &restored,
+                                         -1, FALSE, NULL));
+  assert_int_equal(g_list_length(dev.forms), 2);
+
+  g_list_free_full(dev.forms, (GDestroyNotify)dt_masks_free_form);
+  g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+  g_free(blob);
+  flexi_conf_cleanup();
+}
+
 int main(void)
 {
   const struct CMUnitTest tests[] = {
@@ -405,6 +480,7 @@ int main(void)
     cmocka_unit_test(test_locked_mask_survives_replacement),
     cmocka_unit_test(test_incoming_lock_is_dropped),
     cmocka_unit_test(test_locked_mask_of_no_masks_module_leaves_own_shapes),
+    cmocka_unit_test(test_owned_style_shapes_roundtrip_and_collision),
   };
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

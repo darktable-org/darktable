@@ -286,8 +286,10 @@ gboolean dt_masks_blend_blob_decode(const void *blob,
   {
     // the tree of the mask group: the group first, as encoded
     const dt_masks_form_t *grp = out->data;
-    if(!(bp->mask_mode & DEVELOP_MASK_FLEXI) || grp->formid != bp->mask_id
-       || !(grp->type & DT_MASKS_GROUP))
+    // ordinary flexi masks and module-owned masks (retouch/spots)
+    // both store a mask-group tree in this blob. The latter has no
+    // DEVELOP_MASK_FLEXI bit: its group is the module's own content
+    if(grp->formid != bp->mask_id || !(grp->type & DT_MASKS_GROUP))
       ok = _malformed("mask forms that are not the module's mask group");
   }
 

@@ -3057,14 +3057,36 @@ gboolean dt_develop_blend_params_read(dt_iop_module_t *module,
   {
     GList *forms = NULL;
     failed = !dt_masks_blend_blob_decode(blob, length, bp, &forms);
-    if(forms && (ignore_mask || (module && (module->flags() & IOP_FLAGS_NO_MASKS))))
+    if(forms && (!module || (!(module->flags() & IOP_FLAGS_NO_MASKS)
+                             && !(bp->mask_mode & DEVELOP_MASK_FLEXI))))
     {
-      // the shapes of a module that has no mask are its own content,
-      // referenced by id from its params, which fresh ids would break
-      if(!ignore_mask)
-        dt_print(DT_DEBUG_ALWAYS, "[blend] '%s': mask forms of a module without masks ignored",
-                 module->op);
+      // a tail without a flexi mask is valid only for module-owned shapes
       g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+      forms = NULL;
+      failed = TRUE;
+    }
+    if(forms && ignore_mask)
+      g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+    else if(forms && module && (module->flags() & IOP_FLAGS_NO_MASKS))
+    {
+      // the module's op_params refer to original form ids, so renumbering
+      // through dt_masks_import_stored_forms() would break retouch/spots
+      // refuse id collisions rather than replacing unrelated image masks
+      gboolean collision = !dev || history_num >= 0;
+      for(GList *l = forms; l && !collision; l = g_list_next(l))
+      {
+        dt_masks_form_t *f = l->data;
+        collision = dt_masks_get_from_id_ext(dev->forms, f->formid) != NULL;
+      }
+      if(collision)
+      {
+        dt_print(DT_DEBUG_ALWAYS, "[blend] '%s': own shapes in style collide with existing forms",
+                 module->op);
+        g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+        failed = TRUE;
+      }
+      else
+        dev->forms = g_list_concat(dev->forms, forms);
     }
     else if(forms)
       dt_masks_import_stored_forms(module, bp, forms, history_num);
