@@ -3951,6 +3951,157 @@ interpolation_resample (read_only image2d_t in,
   }
 }
 
+/* the statistics of dt_color_picker_helper() in src/common/color_picker.c,
+   reduced on the device. Each work item reduces one tile of the box and
+   writes 16 floats: the sums, minima, maxima and pixel counts of the four
+   channels. The host adds up the tiles, so only those come back. */
+#define DT_PICK_PLAIN 0
+#define DT_PICK_LCH 1
+#define DT_PICK_HSL 2
+#define DT_PICK_JZCZHZ 3
+
+typedef struct dt_picker_stats_t
+{
+  float4 sum, low, high, count;
+} dt_picker_stats_t;
+
+static inline void _picker_stats_store(const dt_picker_stats_t *s, global float *stats, const int item)
+{
+  vstore4(s->sum, 4 * item, stats);
+  vstore4(s->low, 4 * item + 1, stats);
+  vstore4(s->high, 4 * item + 2, stats);
+  vstore4(s->count, 4 * item + 3, stats);
+}
+
+// blur_2D_Bspline() at one scale and without clipping, as the picker's
+// denoise does over the whole image, with the edges clamped to the image
+static inline float4 _picker_denoised(read_only image2d_t in, const int x, const int y,
+                                      const int width, const int height)
+{
+  const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
+  float4 acc = (float4)0.0f;
+  for(int ii = 0; ii < 5; ii++)
+  {
+    const int xx = clamp(x + ii - 2, 0, width - 1);
+    float4 v = (float4)0.0f;
+    for(int jj = 0; jj < 5; jj++)
+      v += filter[jj] * read_imagef(in, sampleri, (int2)(xx, clamp(y + jj - 2, 0, height - 1)));
+    acc += filter[ii] * v;
+  }
+  return acc;
+}
+
+// rgb_to_JzCzhz() of color_picker.c: the profile's matrix to XYZ D50, then
+// the Bradford adaptation to D65
+static inline float4 _picker_jzczhz(const float4 rgb,
+                                    constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                    read_only image2d_t lut)
+{
+  const float4 D50 = rgb_matrix_to_xyz(rgb, profile_info, profile_info->matrix_in, lut);
+  const float4 D65 = (float4)(0.9555766f * D50.x - 0.0230393f * D50.y + 0.0631636f * D50.z,
+                              -0.0282895f * D50.x + 1.0099416f * D50.y + 0.0210077f * D50.z,
+                              0.0122982f * D50.x - 0.0204830f * D50.y + 1.3299098f * D50.z,
+                              0.0f);
+  const float4 JzAzBz = XYZ_to_JzAzBz(D65);
+  const float h = atan2(JzAzBz.z, JzAzBz.y) / DT_2PI_F;
+  return (float4)(JzAzBz.x, hypot(JzAzBz.y, JzAzBz.z), h >= 0.0f ? h : 1.0f + h, 0.0f);
+}
+
+kernel void
+color_picker_stats_4ch(read_only image2d_t in,
+                       global float *stats,
+                       const int width,
+                       const int height,
+                       const int bx0,
+                       const int by0,
+                       const int bx1,
+                       const int by1,
+                       const int tile_w,
+                       const int tile_h,
+                       const int tiles_x,
+                       const int tiles_y,
+                       const int mode,
+                       const int denoise,
+                       constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                       read_only image2d_t lut)
+{
+  const int tx = get_global_id(0);
+  const int ty = get_global_id(1);
+  if(tx >= tiles_x || ty >= tiles_y) return;
+
+  const int x0 = bx0 + tx * tile_w;
+  const int y0 = by0 + ty * tile_h;
+  const int x1 = min(x0 + tile_w, bx1);
+  const int y1 = min(y0 + tile_h, by1);
+
+  dt_picker_stats_t s = { (float4)0.0f, (float4)FLT_MAX, (float4)(-FLT_MAX), (float4)0.0f };
+  for(int y = y0; y < y1; y++)
+    for(int x = x0; x < x1; x++)
+    {
+      const float4 p = denoise ? _picker_denoised(in, x, y, width, height)
+                               : read_imagef(in, sampleri, (int2)(x, y));
+      float4 pick = p;
+      if(mode != DT_PICK_PLAIN)
+      {
+        pick = mode == DT_PICK_LCH ? Lab_2_LCH(p)
+             : mode == DT_PICK_HSL ? RGB_2_HSL(p)
+             : _picker_jzczhz(p, profile_info, lut);
+        // the hue shifted by half a turn, for sensible minima and maxima,
+        // as _update_stats_4ch() does
+        pick.w = pick.z < 0.5f ? pick.z + 0.5f : pick.z - 0.5f;
+      }
+      s.sum += pick;
+      s.low = fmin(s.low, pick);
+      s.high = fmax(s.high, pick);
+      s.count += 1.0f;
+    }
+  _picker_stats_store(&s, stats, ty * tiles_x + tx);
+}
+
+// a Bayer or X-Trans mosaic, per CFA color
+kernel void
+color_picker_stats_mosaic(read_only image2d_t in,
+                          global float *stats,
+                          const int bx0,
+                          const int by0,
+                          const int bx1,
+                          const int by1,
+                          const int tile_w,
+                          const int tile_h,
+                          const int tiles_x,
+                          const int tiles_y,
+                          const int rx,
+                          const int ry,
+                          const unsigned int filters,
+                          global const unsigned char (*const xtrans)[6])
+{
+  const int tx = get_global_id(0);
+  const int ty = get_global_id(1);
+  if(tx >= tiles_x || ty >= tiles_y) return;
+
+  const int x0 = bx0 + tx * tile_w;
+  const int y0 = by0 + ty * tile_h;
+  const int x1 = min(x0 + tile_w, bx1);
+  const int y1 = min(y0 + tile_h, by1);
+
+  float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+  float low[4] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
+  float high[4] = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
+  float count[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+  for(int y = y0; y < y1; y++)
+    for(int x = x0; x < x1; x++)
+    {
+      const int c = fcol(y + ry, x + rx, filters, xtrans);
+      const float v = read_imagef(in, sampleri, (int2)(x, y)).x;
+      sum[c] += v;
+      low[c] = fmin(low[c], v);
+      high[c] = fmax(high[c], v);
+      count[c] += 1.0f;
+    }
+  const dt_picker_stats_t s = { vload4(0, sum), vload4(0, low), vload4(0, high), vload4(0, count) };
+  _picker_stats_store(&s, stats, ty * tiles_x + tx);
+}
+
 /* kernel for the interpolation copy helper */
 kernel void
 interpolation_copy(read_only image2d_t dev_in,

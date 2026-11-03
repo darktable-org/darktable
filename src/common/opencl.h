@@ -267,6 +267,9 @@ typedef struct dt_opencl_t
   // global kernels for dwt filter.
   struct dt_dwt_cl_global_t *dwt;
 
+  // global kernels for the color picker statistics.
+  struct dt_color_picker_cl_global_t *color_picker;
+
   // global kernels for heal filter.
   struct dt_heal_cl_global_t *heal;
 

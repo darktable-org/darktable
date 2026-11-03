@@ -1263,6 +1263,37 @@ static void _pixelpipe_picker_cl(const int devid,
                          picker_source, box))
     return;
 
+  // reduce on the device, so that only the statistics are read back
+  lib_colorpicker_stats pick;
+  if(dt_color_picker_helper_cl(devid, dsc, img, roi, box,
+                               darktable.lib->proxy.colorpicker.primary_sample->denoise,
+                               pick, image_cst,
+                               dt_iop_color_picker_get_active_cst(module),
+                               dt_ioppr_get_pipe_current_profile_info(module, piece->pipe)))
+  {
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER,
+                  picker_source == PIXELPIPE_PICKER_INPUT
+                    ? "pixelpipe IN picker CL"
+                    : "pixelpipe OUT picker CL",
+                  piece->pipe, module, devid, roi, NULL,
+                  "%s -> %s (%s), %sbox %i/%i -- %i/%i on device",
+                  dt_iop_colorspace_to_name(dsc->cst),
+                  dt_iop_colorspace_to_name(image_cst),
+                  dt_iop_colorspace_to_name(dt_iop_color_picker_get_active_cst(module)),
+                  darktable.lib->proxy.colorpicker.primary_sample->denoise
+                    ? "denoised "
+                    : "",
+                  box[0], box[1], box[2], box[3]);
+
+    for_four_channels(k)
+    {
+      picked_color_min[k] = pick[DT_PICK_MIN][k];
+      picked_color_max[k] = pick[DT_PICK_MAX][k];
+      picked_color[k] = pick[DT_PICK_MEAN][k];
+    }
+    return;
+  }
+
   const size_t origin[2] = { box[0], box[1] };
   const size_t region[2] = { box[2] - box[0], box[3] - box[1] };
 
@@ -1318,8 +1349,6 @@ static void _pixelpipe_picker_cl(const int devid,
   box[1] = 0;
   box[2] = region[0];
   box[3] = region[1];
-
-  lib_colorpicker_stats pick;
 
   dt_color_picker_helper(dsc, pixel, &roi_copy, box,
                          darktable.lib->proxy.colorpicker.primary_sample->denoise,
