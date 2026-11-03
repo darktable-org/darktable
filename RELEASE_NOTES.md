@@ -843,6 +843,10 @@ changes (where available).
   exponential. Edits using them may now look slightly different when
   exported without OpenCL.
 
+- Fixed wrong colors on 4-color raws (CYGM, RGBE) with the "as shot to
+  reference" white balance, which is the default in the scene-referred
+  workflow. These images now match "camera reference" closely.
+
 ## Lua
 
 ### API Version
