@@ -3291,10 +3291,19 @@ static void *_opencl_copy_host_to_image_rowpitch(const int devid,
   desc.image_type = CL_MEM_OBJECT_IMAGE2D;
   desc.image_width = width;
   desc.image_height = height;
-  desc.image_row_pitch = rowpitch;
 
+  // allocate first and write separately: NVIDIA and Apple drivers upload
+  // with CL_MEM_COPY_HOST_PTR at a half to a quarter of the speed of an
+  // explicit blocking write
   cl_mem dev = (cl->dlocl->symbols->dt_clCreateImage)
-    (cl->dev[devid].context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, &fmt, &desc, host, &err);
+    (cl->dev[devid].context, CL_MEM_READ_WRITE, &fmt, &desc, NULL, &err);
+
+  if(err == CL_SUCCESS && dev != NULL)
+  {
+    const size_t region[2] = { width, height };
+    err = dt_opencl_write_host_to_image_raw(devid, host, dev, CLIMG_ORIGIN, region,
+                                             rowpitch ? rowpitch : width * bpp, TRUE);
+  }
 
   if(err == CL_SUCCESS && dev != NULL && cl->migrate)
     err = _migrate_cl_mem(devid, dev, cl);
