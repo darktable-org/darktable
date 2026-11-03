@@ -4355,11 +4355,11 @@ void gui_init(dt_lib_module_t *self)
   d->back = dt_action_button_new(self, N_("back"),
                                  G_CALLBACK(_navigation_back), self,
                                  _("go back to the previous collection"),
-                                 GDK_KEY_Left, GDK_MOD1_MASK);
+                                 0, 0);
   d->forward = dt_action_button_new(self, N_("forward"),
                                     G_CALLBACK(_navigation_forward), self,
                                     _("go forward to the next collection"),
-                                    GDK_KEY_Right, GDK_MOD1_MASK);
+                                    0, 0);
   dt_gui_box_add(self->widget, dt_gui_hbox(d->back, d->forward));
   dt_collection_navigation_record_current();
   _navigation_update(d);
