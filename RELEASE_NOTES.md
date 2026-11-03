@@ -282,6 +282,10 @@ changes (where available).
 - Module color pickers now compute their statistics on the OpenCL
   device instead of copying the picked area back to the CPU.
 
+- Modules showing a histogram of their input (levels, rgb levels, rgb
+  curve, tone curve and color zones) now count it on the OpenCL device
+  instead of copying the image back to the CPU.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
