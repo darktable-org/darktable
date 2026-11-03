@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-03 16:08-0300\n"
-"PO-Revision-Date: 2026-11-03 16:07-0300\n"
+"POT-Creation-Date: 2026-11-03 19:51-0300\n"
+"PO-Revision-Date: 2026-11-03 19:51-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -3935,7 +3935,7 @@ msgstr "raio"
 #: ../build/lib/darktable/plugins/introspection_lens.cc:334
 #: ../build/lib/darktable/plugins/introspection_lens.cc:497
 #: ../src/iop/bloom.c:389 ../src/iop/denoiseprofile.c:3725
-#: ../src/iop/grain.c:724 ../src/iop/hazeremoval.c:272
+#: ../src/iop/grain.c:724 ../src/iop/hazeremoval.c:284
 #: ../src/iop/hotpixels.c:559 ../src/iop/nlmeans.c:442 ../src/iop/velvia.c:279
 #: ../src/libs/neural_restore.c:4532 ../src/libs/neural_restore.c:4549
 msgid "strength"
@@ -21974,8 +21974,8 @@ msgstr "corretivo e criativo"
 #: ../src/iop/diffuse.c:141 ../src/iop/diffuse.c:143
 #: ../src/iop/enlargecanvas.c:87 ../src/iop/enlargecanvas.c:89
 #: ../src/iop/exposure.c:132 ../src/iop/exposure.c:134 ../src/iop/flip.c:109
-#: ../src/iop/flip.c:110 ../src/iop/hazeremoval.c:111
-#: ../src/iop/hazeremoval.c:113 ../src/iop/lens.cc:301 ../src/iop/lens.cc:303
+#: ../src/iop/flip.c:110 ../src/iop/hazeremoval.c:114
+#: ../src/iop/hazeremoval.c:116 ../src/iop/lens.cc:301 ../src/iop/lens.cc:303
 #: ../src/iop/liquify.c:297 ../src/iop/liquify.c:299 ../src/iop/overlay.c:178
 #: ../src/iop/overlay.c:180 ../src/iop/primaries.c:74 ../src/iop/primaries.c:76
 #: ../src/iop/retouch.c:209 ../src/iop/retouch.c:211
@@ -21990,7 +21990,7 @@ msgstr "linear, RGB, relativo à cena"
 
 #: ../src/iop/agx.c:60 ../src/iop/basecurve.c:374 ../src/iop/basicadj.c:170
 #: ../src/iop/colorbalance.c:162 ../src/iop/colorbalancergb.c:183
-#: ../src/iop/dither.c:118 ../src/iop/filmicrgb.c:347
+#: ../src/iop/dither.c:123 ../src/iop/filmicrgb.c:347
 #: ../src/iop/graduatednd.c:145 ../src/iop/negadoctor.c:144
 #: ../src/iop/profile_gamma.c:101 ../src/iop/rgbcurve.c:145
 #: ../src/iop/rgblevels.c:125 ../src/iop/sigmoid.c:227
@@ -22716,7 +22716,7 @@ msgid "linear, Lab, scene-referred"
 msgstr "linear, Lab, relativo à cena"
 
 #: ../src/iop/atrous.c:135 ../src/iop/censorize.c:85
-#: ../src/iop/hazeremoval.c:112
+#: ../src/iop/hazeremoval.c:115
 msgid "frequential, RGB"
 msgstr "frequencial, RGB"
 
@@ -22967,7 +22967,7 @@ msgstr ""
 #: ../src/iop/basecurve.c:372 ../src/iop/cacorrect.c:95
 #: ../src/iop/cacorrectrgb.c:179 ../src/iop/colorreconstruction.c:116
 #: ../src/iop/defringe.c:80 ../src/iop/denoiseprofile.c:824
-#: ../src/iop/flip.c:108 ../src/iop/hazeremoval.c:110
+#: ../src/iop/flip.c:108 ../src/iop/hazeremoval.c:113
 #: ../src/iop/highlights.c:176 ../src/iop/hotpixels.c:79
 #: ../src/iop/invert.c:131 ../src/iop/lens.cc:300 ../src/iop/nlmeans.c:88
 #: ../src/iop/profile_gamma.c:99 ../src/iop/rawdenoise.c:148
@@ -22976,7 +22976,7 @@ msgstr ""
 msgid "corrective"
 msgstr "corretivo"
 
-#: ../src/iop/basecurve.c:375 ../src/iop/dither.c:117 ../src/iop/dither.c:119
+#: ../src/iop/basecurve.c:375 ../src/iop/dither.c:122 ../src/iop/dither.c:124
 #: ../src/iop/filmicrgb.c:348 ../src/iop/graduatednd.c:146
 #: ../src/iop/negadoctor.c:145 ../src/iop/profile_gamma.c:102
 #: ../src/iop/rgblevels.c:126 ../src/iop/spektrafilm.c:777
@@ -26203,8 +26203,8 @@ msgstr "recupera realces recortados propagando cores vizinhas"
 
 #: ../src/iop/colorreconstruction.c:631 ../src/iop/colorreconstruction.c:1032
 #: ../src/iop/globaltonemap.c:217 ../src/iop/globaltonemap.c:383
-#: ../src/iop/hazeremoval.c:634 ../src/iop/hazeremoval.c:645
-#: ../src/iop/hazeremoval.c:905 ../src/iop/hazeremoval.c:918
+#: ../src/iop/hazeremoval.c:646 ../src/iop/hazeremoval.c:657
+#: ../src/iop/hazeremoval.c:1094 ../src/iop/hazeremoval.c:1107
 #: ../src/iop/levels.c:357
 msgid "inconsistent output"
 msgstr "saída inconsistente"
@@ -27354,15 +27354,15 @@ msgstr ""
 "limiar.\n"
 "isto pode ser usado para reconstruir realces."
 
-#: ../src/iop/dither.c:104
+#: ../src/iop/dither.c:109
 msgid "dither or posterize"
 msgstr "Matizar ou posterizar"
 
-#: ../src/iop/dither.c:109
+#: ../src/iop/dither.c:114
 msgid "dithering|posterization|reduce bit depth"
 msgstr "matização|posterização|redução de profundidade de bit"
 
-#: ../src/iop/dither.c:114
+#: ../src/iop/dither.c:119
 msgid ""
 "reduce banding and posterization effects in output\n"
 "JPEGs by adding random noise, or reduce bit depth"
@@ -27370,16 +27370,16 @@ msgstr ""
 "reduzir bandas de cor e efeitos de posterização em JPEGs de saída\n"
 "adicionando ruído aleatório, ou reduzir a profundidade de bits"
 
-#: ../src/iop/dither.c:116
+#: ../src/iop/dither.c:121
 msgid "corrective, artistic"
 msgstr "corretivo, artístico"
 
 #. add the preset.
-#: ../src/iop/dither.c:174
+#: ../src/iop/dither.c:179
 msgid "dither"
 msgstr "matizar"
 
-#: ../src/iop/dither.c:734
+#: ../src/iop/dither.c:777
 msgid "damping level of random dither"
 msgstr "nível de amortecimento do dither aleatório"
 
@@ -28437,31 +28437,31 @@ msgstr ""
 "quanto maior o viés, mais pronunciada a queda da granulação em sombras e "
 "realces"
 
-#: ../src/iop/hazeremoval.c:98
+#: ../src/iop/hazeremoval.c:101
 msgid "haze removal"
 msgstr "remoção de névoa"
 
-#: ../src/iop/hazeremoval.c:104
+#: ../src/iop/hazeremoval.c:107
 msgid "dehaze|defog|smoke|smog"
 msgstr "remoção de névoa|defog|fumaça|smog"
 
-#: ../src/iop/hazeremoval.c:109
+#: ../src/iop/hazeremoval.c:112
 msgid "remove fog and atmospheric hazing from images"
 msgstr "remove neblina e névoa atmosférica das imagens"
 
-#: ../src/iop/hazeremoval.c:273
+#: ../src/iop/hazeremoval.c:285
 msgid "amount of haze reduction"
 msgstr "quantidade de redução de névoa"
 
-#: ../src/iop/hazeremoval.c:275 ../src/iop/lens.cc:4923
+#: ../src/iop/hazeremoval.c:287 ../src/iop/lens.cc:4923
 msgid "distance"
 msgstr "distância"
 
-#: ../src/iop/hazeremoval.c:278
+#: ../src/iop/hazeremoval.c:290
 msgid "limit haze removal up to a specific spatial depth"
 msgstr "limita remoção de névoa a uma profundidade espacial específica"
 
-#: ../src/iop/hazeremoval.c:663 ../src/iop/hazeremoval.c:936
+#: ../src/iop/hazeremoval.c:675 ../src/iop/hazeremoval.c:1125
 msgid "haze removal could not calculate ambient light due to image content"
 msgstr ""
 "o módilo de remoção de névoa não conseguiu calcular a lluz ambiente devido a "
@@ -31072,9 +31072,9 @@ msgid "download data pack %s"
 msgstr "baixar pacote de dados %s"
 
 #: ../src/iop/spektrafilm.c:4487
-#, fuzzy, c-format
+#, c-format
 msgid "data pack %s is available"
-msgstr "imagem `%s' não disponível!"
+msgstr "pacote de dados `%s' está disponível"
 
 #: ../src/iop/spektrafilm.c:4492
 msgid "a newer data pack is available"
@@ -31784,7 +31784,6 @@ msgid "halation size: scales the glow radius (1.0 = film-accurate)"
 msgstr ""
 
 #: ../src/iop/spektrafilm.c:6388
-#, fuzzy
 msgctxt "section"
 msgid "highlight boost"
 msgstr "potencializar realces"
@@ -35804,14 +35803,16 @@ msgid "go to the full version of the %s module"
 msgstr "ir para versão completa do módulo %s"
 
 #: ../src/libs/modulegroups.c:1085
-#, fuzzy, c-format
+#, c-format
 msgid "close `%s` before switching to quick access panel"
-msgstr "adicionar ferramenta ao painel de acesso rápido"
+msgstr "feche `%s` antes de mudar para o painel de acesso rápido"
 
 #: ../src/libs/modulegroups.c:1104
 #, c-format
 msgid "finish mask work in `%s` before switching to quick access panel"
 msgstr ""
+"termine o trabalho de máscara em `%s` antes de mudar para o painel de acesso "
+"rápido"
 
 #: ../src/libs/modulegroups.c:1743 ../src/libs/modulegroups.c:1840
 #: ../src/libs/modulegroups.c:1877 ../src/libs/modulegroups.c:1931
@@ -36276,13 +36277,12 @@ msgid "failed to load AI %s model"
 msgstr "falha ao carregar modelo %s de IA"
 
 #: ../src/libs/neural_restore.c:1644
-#, fuzzy
 msgid "neural restore: the output pattern expands to nothing"
-msgstr "restauração neural: nào foi possível criar o diretório de saída"
+msgstr "restauração neural: o padrão de saída expande para nada"
 
 #: ../src/libs/neural_restore.c:1656
 msgid "neural restore: cannot create output directory"
-msgstr "restauração neural: nào foi possível criar o diretório de saída"
+msgstr "restauração neural: não foi possível criar o diretório de saída"
 
 #: ../src/libs/neural_restore.c:1690
 msgid "neural restore: too many output files"
@@ -37299,7 +37299,6 @@ msgid "change path..."
 msgstr "mudar caminho..."
 
 #: ../src/libs/tagging.c:2644
-#, fuzzy
 msgid "set as tag"
 msgstr "definir como etiqueta"
 
@@ -37730,39 +37729,29 @@ msgid "_create"
 msgstr "_criar"
 
 #: ../src/libs/tools/global_toolbox.c:433
-#, fuzzy
 msgid "workspace name"
 msgstr "nome da área de trabalho"
 
 #: ../src/libs/tools/global_toolbox.c:464
-#, fuzzy
 msgid "name:"
-msgstr "nome: "
+msgstr "nome:"
 
 #: ../src/libs/tools/global_toolbox.c:484
-#, fuzzy
 msgid "enter a workspace name"
-msgstr "excluir área de trabalho?"
+msgstr "entre o nome de uma área de trabalho"
 
 #: ../src/libs/tools/global_toolbox.c:489
-#, fuzzy
 msgid "the names \"default\" and \"memory\" are reserved"
-msgstr ""
-"CUIDADO\n"
-"\n"
-"os nomes \"default\" e \"memory\" são reservados.\n"
-"\n"
-"escolha um nome diferente."
+msgstr "os nomes \"default\" e \"memory\" são reservados"
 
 #: ../src/libs/tools/global_toolbox.c:491
-#, fuzzy, c-format
+#, c-format
 msgid "could not create workspace \"%s\""
-msgstr "não foi possível criar a pasta `%s'!"
+msgstr "não foi possível criar a área de trabalho \"%s\""
 
 #: ../src/libs/tools/global_toolbox.c:539
-#, fuzzy
 msgid "workspaces"
-msgstr "espaço de cor"
+msgstr "áreas de trabalho"
 
 #: ../src/libs/tools/global_toolbox.c:615
 msgid "grouping"
@@ -37874,14 +37863,12 @@ msgstr ""
 "clique direito para sair do modo de mapeamento"
 
 #: ../src/libs/tools/global_toolbox.c:752
-#, fuzzy
 msgid "select a workspace"
-msgstr "excluir área de trabalho?"
+msgstr "selecione uma área de trabalho?"
 
 #: ../src/libs/tools/global_toolbox.c:754
-#, fuzzy
 msgid "workspace"
-msgstr "espaço de cor"
+msgstr "área de trabalho"
 
 #: ../src/libs/tools/global_toolbox.c:764
 msgid "show global preferences"
@@ -38754,16 +38741,16 @@ msgid ""
 "replace the history of the current image, or create a duplicate and apply "
 "the history to it?"
 msgstr ""
+"substituir o histórico da imagem corrente, ou criar uma duplicata e aplicar "
+"o histórico a ela?"
 
 #: ../src/views/darkroom.c:4034
-#, fuzzy
 msgid "create _duplicate"
-msgstr "criar duplicata"
+msgstr "criar _duplicata"
 
 #: ../src/views/darkroom.c:4035
-#, fuzzy
 msgid "_replace history"
-msgstr "substituir histórico"
+msgstr "_substituir histórico"
 
 #: ../src/views/darkroom.c:4045 ../src/views/darkroom.c:4055
 #, c-format
@@ -38796,9 +38783,8 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: ../src/views/darkroom.c:4090
-#, fuzzy
 msgid "error loading the dropped sidecars"
-msgstr "erro carregando pasta `%s'"
+msgstr "erro carregando os arquivos auxiliares"
 
 #: ../src/views/darkroom.c:5201
 msgid "keyboard shortcut slider precision: fine"
@@ -39084,6 +39070,8 @@ msgid ""
 "camera with tethering support is not connected or not mounted in the import "
 "module"
 msgstr ""
+"uma câmera com suporte a acesso remoto não está conectada ou não está "
+"montada no módulo de importação"
 
 #: ../src/views/view.c:1561
 msgid "left-click"
