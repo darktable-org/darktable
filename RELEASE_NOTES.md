@@ -463,6 +463,10 @@ changes (where available).
 
 - Lightroom import now sets the working profile to linear ProPhoto
   RGB, the space Lightroom works in, instead of linear Rec709 RGB.
+  
+- In the darkroom in the left panel the navigation can now be toggled
+  through the panel's right click menu in addition to the strg+shift+n
+  shortcut.
 
 - Lightroom import adds its exposure and blacks adjustments to
   darktable's default exposure instead of replacing it. In the
