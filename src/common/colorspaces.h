@@ -207,10 +207,20 @@ static inline gboolean dt_display_output_equal(const dt_display_output_t *a,
     && !strcmp(a->filename, b->filename);
 }
 
-/* the 8-bit value a display-encoded float shows as on an 8-bit surface */
+/* the 8-bit value a display-encoded float shows as on an 8-bit surface.
+ * built from comparisons and conversions, not libm calls, so that loops
+ * over it vectorize */
 static inline uint8_t dt_display_to_8bit(const float v)
 {
-  return (uint8_t)fminf(roundf(255.0f * fmaxf(v, 0.0f)), 255.0f);
+  const float x = 255.0f * v;
+  // NaN fails both comparisons and goes to 0
+  const float c = x > 0.0f ? (x < 255.0f ? x : 255.0f) : 0.0f;
+  // c is in [0, 255], so the truncation is its floor and t + 0.5 is exact.
+  // halves round up; lrintf() would round them to even. c - t >= 0.5 would
+  // be the same test, but -ffp-contract may fuse that subtraction with the
+  // multiply above, and the unrounded product rounds differently
+  const int t = (int)c;
+  return (uint8_t)(t + (c >= (float)t + 0.5f));
 }
 
 /* the mask and channel views are authored as sRGB device values, which a
