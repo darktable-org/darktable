@@ -38,6 +38,7 @@
 #include "dtgtk/thumbnail_btn.h"
 #include "gui/drag_and_drop.h"
 #include "gui/accelerators.h"
+#include "gui/presenter.h"
 #include "views/view.h"
 
 static void _thumb_resize_overlays(dt_thumbnail_t *thumb);
@@ -745,7 +746,8 @@ static gboolean _event_image_draw(GtkWidget *widget,
       const int buf_height = dev->preview_pipe->backbuf_height;
 
       cairo_surface_t *tmp_surface
-          = dt_view_create_surface(dev->preview_pipe->backbuf, buf_width, buf_height);
+          = dt_presenter_gtk_surface(dev->preview_pipe->backbuf, buf_width, buf_height,
+                                     &dev->preview_pipe->backbuf_output);
       dt_pthread_mutex_unlock(mutex);
 
       // copy preview image into final surface

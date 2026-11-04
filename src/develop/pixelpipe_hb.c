@@ -3821,6 +3821,7 @@ restart:
       pipe->backbuf_scale = scale;
       for(int i = 0; i < 6; i++) pipe->backbuf_zoom_pos[i] = pts[i] * pipe->iscale;
       pipe->backbuf_output = pipe->output;
+      pipe->backbuf_id = dt_dev_new_frame_id();
       pipe->output_imgid = pipe->image.id;
     }
   }

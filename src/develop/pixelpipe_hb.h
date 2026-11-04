@@ -261,6 +261,7 @@ typedef struct dt_dev_pixelpipe_t
   // the last module's output for the others
   void *backbuf;
   dt_display_output_t backbuf_output;
+  uint32_t backbuf_id;
   size_t backbuf_size;
   int backbuf_width, backbuf_height;
   float backbuf_scale;
