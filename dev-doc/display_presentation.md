@@ -184,17 +184,16 @@ Code is split by what it works around:
   textures with color states, deletes it.
 - `gui/presenter_<platform>.c`: transport and timing. Setup and fallback,
   output description and headroom, encoding the composed image for the
-  compositor, buffers, and `present()`, `clear()`, `release()`, `free()` and
-  the optional `drawn()` (`dt_presenter_backend_t` in
-  `gui/presenter_layers.h`). The backend calls `dt_presenter_window_present()`
-  where the layers become visible together with GTK's surface for that frame,
-  or later, never earlier. `present()` may refuse while the compositor holds
+  compositor, buffers, and `present()`, `clear()`, `release()` and `free()`
+  (`dt_presenter_backend_t` in `gui/presenter_layers.h`). The backend calls
+  `dt_presenter_window_present()` where the layers become visible together
+  with GTK's surface for that frame, or later, never earlier. `present()` may refuse while the compositor holds
   its buffers; the layers are then composed and presented again next frame.
 
 ### Wayland
 
-`gui/presenter_wayland.c`, built with `USE_WAYLAND`. It needs
-`wp_color_manager_v1` with parametric descriptions, `ext_linear`, BT.2020
+`gui/presenter_wayland.c`, built with `USE_WAYLAND`. It needs `wl_compositor`
+4 and `wp_color_manager_v1` with parametric descriptions, `ext_linear`, BT.2020
 primaries and `ABGR16161616F` shm buffers; `set_luminances` is optional
 (without it the output is SDR). Without the rest, a compositor with
 `wp_color_manager_v1` gets the window on cairo in sRGB (see cairo). The output
@@ -207,6 +206,12 @@ of GDK's surface, placed directly above it and below GTK's own subsurfaces
 such as popovers. They are presented at the end of the frame clock's `paint`,
 so they apply with GDK's commit in `after-paint`.
 
+A presenting toplevel cannot be shown again after hiding. GDK destroys its
+`wl_surface` when a window is hidden, and the backend presents nothing once
+its toplevel unmaps. darktable has no such path: the main window is hidden
+only at quit, and the second window is destroyed after hiding. With GTK4,
+where the image is a texture on GTK's own surface, the limit goes away.
+
 ## Workarounds
 
 Each lives in one file and goes away with the limitation it works around.
@@ -218,7 +223,7 @@ Each lives in one file and goes away with the limitation it works around.
 | composing and presenting in the frame clock's `paint` signal, after GDK's handler | `presenter_wayland.c`, `_paint()` | GTK3 runs all draws in `paint` and GDK commits its surface in `after-paint`; the layers must be ready in between | same |
 | GTK's surface declared sRGB | `presenter_wayland.c`, `_set_output()` and `dt_presenter_wayland_new()` | GTK3 does not tag its surface; an untagged surface is sRGB to the compositor, with a transfer function of its choosing | GTK tags its surfaces |
 | no opaque region on the layers | `presenter_wayland.c`, `_layer_init()` | a compositor may stop frame callbacks for a surface it considers occluded, which stops GTK's frame clock | GTK4 |
-| layers and surface feedback recreated when GDK's surface changes | `presenter_wayland.c`, `_toplevel_unmap()` and `_present()` | GDK destroys its `wl_surface` when a window is hidden and makes a new one when it is shown again | GTK4 |
+| surface feedback destroyed when the toplevel unmaps | `presenter_wayland.c`, `_toplevel_unmap()` | GDK destroys its `wl_surface` when a window is hidden, and asking the feedback on it for the preferred description is then a protocol error | GTK4 |
 | a draw GTK clipped to a damaged area does not replace the images `dt_presenter_keep()` shows | `presenter.c`, `dt_presenter_begin()` | GTK3 redraws only the damaged part of a widget, so such a draw records clipped images; it stays in `presenter.c` because the cairo backend needs it too | GTK4: a widget's snapshot is always whole |
 
 ## Scope

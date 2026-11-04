@@ -48,8 +48,6 @@ typedef struct _buffer_t
   size_t size;
   int width, height;
   gboolean busy;
-  // replaced while the compositor still held it
-  gboolean orphan;
 } _buffer_t;
 
 typedef struct _layer_t
@@ -63,11 +61,8 @@ typedef struct _backend_t _backend_t;
 
 typedef struct _widget_t
 {
-  _backend_t *backend;
   _layer_t image, foreground;
   struct wp_color_management_surface_v1 *color;
-  int x, y;
-  gboolean placed;
 } _widget_t;
 
 struct _backend_t
@@ -80,7 +75,6 @@ struct _backend_t
   gulong paint_handler;
   struct wl_display *display;
   struct wl_compositor *compositor;
-  uint32_t compositor_version;
   struct wl_subcompositor *subcompositor;
   struct wl_shm *shm;
   struct wp_color_manager_v1 *manager;
@@ -143,7 +137,6 @@ static void _buffer_release(void *data,
 {
   _buffer_t *buffer = data;
   buffer->busy = FALSE;
-  if(buffer->orphan) _buffer_destroy(buffer);
 }
 
 static const struct wl_buffer_listener _buffer_listener = { .release = _buffer_release };
@@ -193,12 +186,12 @@ static _buffer_t *_buffer_get(_backend_t *b,
   for(int k = 0; k < 2; k++)
   {
     _buffer_t *buffer = layer->buffers[k];
+    // even while the compositor holds it: a wl_buffer may go before its
+    // release as long as its storage is not written again, and each one
+    // has a memfd of its own
     if(buffer && (buffer->width != width || buffer->height != height))
     {
-      if(buffer->busy)
-        buffer->orphan = TRUE;
-      else
-        _buffer_destroy(buffer);
+      _buffer_destroy(buffer);
       layer->buffers[k] = NULL;
     }
   }
@@ -236,18 +229,13 @@ static void _layer_free(_layer_t *layer)
   memset(layer, 0, sizeof(_layer_t));
 }
 
-static void _layer_commit(_backend_t *b,
-                          _layer_t *layer,
+static void _layer_commit(_layer_t *layer,
                           _buffer_t *buffer,
                           const int scale)
 {
   wl_surface_attach(layer->surface, buffer->buffer, 0, 0);
   wl_surface_set_buffer_scale(layer->surface, scale);
-  if(b->compositor_version >= 4)
-    wl_surface_damage_buffer(layer->surface, 0, 0, buffer->width, buffer->height);
-  else
-    wl_surface_damage(layer->surface, 0, 0,
-                      buffer->width / scale, buffer->height / scale);
+  wl_surface_damage_buffer(layer->surface, 0, 0, buffer->width, buffer->height);
   // the layers are synchronized subsurfaces: their state applies with the
   // commit GDK makes of its own surface after the frame's paint phase,
   // which is what keeps them in step with what GTK draws
@@ -269,7 +257,6 @@ static void _widget_layers_init(_backend_t *b,
   if(b->description)
     wp_color_management_surface_v1_set_image_description(w->color, b->description,
                                                          _intent(b));
-  w->placed = FALSE;
 }
 
 static void _widget_layers_free(_widget_t *w)
@@ -393,18 +380,9 @@ static void _ready(void *data,
   _description_ready(data, description);
 }
 
-static void _ready2(void *data,
-                    struct wp_image_description_v1 *description,
-                    uint32_t identity_hi,
-                    uint32_t identity_lo)
-{
-  _description_ready(data, description);
-}
-
 static const struct wp_image_description_v1_listener _description_listener = {
   .failed = _description_failed,
   .ready = _ready,
-  .ready2 = _ready2,
 };
 
 static void _create_description(_backend_t *b,
@@ -516,18 +494,9 @@ static void _preferred_changed(void *data,
   _request_preferred(data);
 }
 
-static void _preferred_changed2(void *data,
-                                struct wp_color_management_surface_feedback_v1 *feedback,
-                                uint32_t identity_hi,
-                                uint32_t identity_lo)
-{
-  _request_preferred(data);
-}
-
 static const struct wp_color_management_surface_feedback_v1_listener
   _feedback_listener = {
   .preferred_changed = _preferred_changed,
-  .preferred_changed2 = _preferred_changed2,
 };
 
 static void _feedback_init(_backend_t *b)
@@ -541,8 +510,10 @@ static void _feedback_init(_backend_t *b)
 // GtkWindow's unmap, which runs before this handler, makes GDK destroy its
 // surface, and the feedback on it becomes inert: asking it for the
 // preferred description after a preferred_changed is a protocol error.
-// drop what belongs to that surface before events are dispatched again;
-// the description and the output stay until _present() sees GDK's new one
+// drop what belongs to that surface before events are dispatched again.
+// darktable never shows such a toplevel again (the main window is hidden
+// at quit, the second window is destroyed after hiding), so nothing is
+// presented from here on
 static void _toplevel_unmap(GtkWidget *toplevel,
                             _backend_t *b)
 {
@@ -633,12 +604,9 @@ static void _global(void *data,
                     uint32_t version)
 {
   _backend_t *b = data;
-  if(!strcmp(interface, wl_compositor_interface.name) && !b->compositor)
-  {
-    b->compositor_version = MIN(version, 4);
-    b->compositor = wl_registry_bind(registry, name, &wl_compositor_interface,
-                                     b->compositor_version);
-  }
+  // 4 for wl_surface.damage_buffer
+  if(!strcmp(interface, wl_compositor_interface.name) && !b->compositor && version >= 4)
+    b->compositor = wl_registry_bind(registry, name, &wl_compositor_interface, 4);
   else if(!strcmp(interface, wl_subcompositor_interface.name) && !b->subcompositor)
     b->subcompositor = wl_registry_bind(registry, name, &wl_subcompositor_interface, 1);
   else if(!strcmp(interface, wl_shm_interface.name) && !b->shm)
@@ -648,8 +616,7 @@ static void _global(void *data,
   }
   else if(!strcmp(interface, wp_color_manager_v1_interface.name) && !b->manager)
   {
-    b->manager = wl_registry_bind(registry, name, &wp_color_manager_v1_interface,
-                                  MIN(version, 2));
+    b->manager = wl_registry_bind(registry, name, &wp_color_manager_v1_interface, 1);
     wp_color_manager_v1_add_listener(b->manager, &_manager_listener, b);
   }
 }
@@ -674,35 +641,16 @@ static gboolean _present(dt_presenter_backend_t *self,
 {
   _backend_t *b = (_backend_t *)self;
 
-  // GDK makes a new surface for a window shown again after hiding it
-  struct wl_surface *parent =
-    gdk_wayland_window_get_wl_surface(gtk_widget_get_window(b->toplevel));
-  if(!parent) return FALSE;
-  if(parent != b->parent)
-  {
-    b->parent = parent;
-    for(GList *l = b->widgets; l; l = g_list_next(l)) _widget_layers_free(l->data);
-    if(b->feedback) wp_color_management_surface_feedback_v1_destroy(b->feedback);
-    _feedback_init(b);
-  }
+  // unmapped, see _toplevel_unmap()
+  if(!b->parent) return FALSE;
 
   _widget_t *w = *widget_data;
   if(!w)
   {
     w = g_malloc0(sizeof(_widget_t));
-    w->backend = b;
+    _widget_layers_init(b, w);
     b->widgets = g_list_prepend(b->widgets, w);
     *widget_data = w;
-  }
-  if(!w->image.surface)
-  {
-    _widget_layers_init(b, w);
-    // new layers need the image too
-    if(!layers->image)
-    {
-      dt_presenter_window_redraw(b->window);
-      return FALSE;
-    }
   }
 
   // both layers or neither: the compositor still holding the buffers of
@@ -719,14 +667,9 @@ static gboolean _present(dt_presenter_backend_t *self,
     return FALSE;
   }
 
-  if(!w->placed || w->x != layers->x || w->y != layers->y)
-  {
-    wl_subsurface_set_position(w->image.subsurface, layers->x, layers->y);
-    wl_subsurface_set_position(w->foreground.subsurface, layers->x, layers->y);
-    w->x = layers->x;
-    w->y = layers->y;
-    w->placed = TRUE;
-  }
+  // applied with GDK's next commit, like the buffers
+  wl_subsurface_set_position(w->image.subsurface, layers->x, layers->y);
+  wl_subsurface_set_position(w->foreground.subsurface, layers->x, layers->y);
 
   if(image)
   {
@@ -752,11 +695,11 @@ static gboolean _present(dt_presenter_backend_t *self,
       }
       out[4 * k + 3] = _half(1.0f);
     }
-    _layer_commit(b, &w->image, image, layers->scale);
+    _layer_commit(&w->image, image, layers->scale);
   }
 
   memcpy(foreground->data, layers->foreground, foreground->size);
-  _layer_commit(b, &w->foreground, foreground, layers->scale);
+  _layer_commit(&w->foreground, foreground, layers->scale);
   wl_display_flush(b->display);
   return TRUE;
 }
@@ -769,14 +712,11 @@ static void _clear(dt_presenter_backend_t *self,
   if(!w) return;
 
   // unmapped with GDK's next commit, like any other change of the layers
-  if(w->image.surface)
-  {
-    wl_surface_attach(w->image.surface, NULL, 0, 0);
-    wl_surface_commit(w->image.surface);
-    wl_surface_attach(w->foreground.surface, NULL, 0, 0);
-    wl_surface_commit(w->foreground.surface);
-    wl_display_flush(b->display);
-  }
+  wl_surface_attach(w->image.surface, NULL, 0, 0);
+  wl_surface_commit(w->image.surface);
+  wl_surface_attach(w->foreground.surface, NULL, 0, 0);
+  wl_surface_commit(w->foreground.surface);
+  wl_display_flush(b->display);
 }
 
 static void _release(dt_presenter_backend_t *self,
