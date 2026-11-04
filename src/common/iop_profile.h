@@ -147,6 +147,11 @@ dt_ioppr_get_pipe_input_profile_info(const struct dt_dev_pixelpipe_t *pipe);
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_pipe_output_profile_info(const struct dt_dev_pixelpipe_t *pipe);
 
+/** the profile module GUIs draw colors on GTK in: the output profile of
+ * the darkroom pipe, unless a presenter backend shows the image itself
+ * and declared what GTK's surface is shown in */
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_gui_profile_info(struct dt_develop_t *dev);
+
 /** Get the relevant RGB -> XYZ profile at the position of current module */
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_pipe_current_profile_info(const struct dt_iop_module_t *module,

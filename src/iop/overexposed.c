@@ -125,8 +125,11 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const float upper = dev->overexposed.upper / 100.0f;              // in %
 
   const int colorscheme = dev->overexposed.colorscheme;
-  const float *const upper_color = dt_iop_overexposed_colors[colorscheme][0];
-  const float *const lower_color = dt_iop_overexposed_colors[colorscheme][1];
+  dt_aligned_pixel_t upper_color, lower_color;
+  copy_pixel(upper_color, dt_iop_overexposed_colors[colorscheme][0]);
+  copy_pixel(lower_color, dt_iop_overexposed_colors[colorscheme][1]);
+  dt_display_output_diagnostic(&piece->pipe->output, upper_color);
+  dt_display_output_diagnostic(&piece->pipe->output, lower_color);
 
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)ivoid);
   float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
@@ -349,8 +352,11 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const float upper = dev->overexposed.upper / 100.0f;              // in %
   const int colorscheme = dev->overexposed.colorscheme;
 
-  const float *upper_color = dt_iop_overexposed_colors[colorscheme][0];
-  const float *lower_color = dt_iop_overexposed_colors[colorscheme][1];
+  dt_aligned_pixel_t upper_color, lower_color;
+  copy_pixel(upper_color, dt_iop_overexposed_colors[colorscheme][0]);
+  copy_pixel(lower_color, dt_iop_overexposed_colors[colorscheme][1]);
+  dt_display_output_diagnostic(&piece->pipe->output, upper_color);
+  dt_display_output_diagnostic(&piece->pipe->output, lower_color);
   const int mode = dev->overexposed.mode;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_overexposed, width, height,

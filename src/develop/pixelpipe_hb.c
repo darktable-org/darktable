@@ -1393,6 +1393,13 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
   const dt_iop_order_iccprofile_info_t *const display_profile =
     dt_ioppr_add_profile_info_to_list(dev, pipe->output.type, pipe->output.filename,
                                       INTENT_RELATIVE_COLORIMETRIC);
+  // the swatches are drawn by GTK
+  dt_display_output_t gtk;
+  const dt_iop_order_iccprofile_info_t *const gtk_profile =
+    dt_colorspaces_get_gtk_output(DT_COLORSPACE_DISPLAY, &gtk)
+    ? dt_ioppr_add_profile_info_to_list(dev, gtk.type, gtk.filename,
+                                        INTENT_RELATIVE_COLORIMETRIC)
+    : display_profile;
 
   // if we have a primary picker, prepend to the list of any live
   // samples, so that we don't have to differentiate when looping
@@ -1437,6 +1444,14 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
         dt_ioppr_transform_image_colorspace_rgb(sample->display[0], sample->scope[0], 3, 1,
                                                 display_profile, histogram_profile,
                                                 "primary picker");
+      if(display_profile && gtk_profile && gtk_profile != display_profile)
+      {
+        lib_colorpicker_stats picked;
+        memcpy(picked, sample->display, sizeof(picked));
+        dt_ioppr_transform_image_colorspace_rgb(picked[0], sample->display[0], 3, 1,
+                                                display_profile, gtk_profile,
+                                                "picker swatch");
+      }
     }
     samples = g_slist_next(samples);
   }

@@ -42,6 +42,7 @@
 #include "gui/drag_and_drop.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
+#include "gui/presenter.h"
 #include "libs/lib.h"
 #include "views/view.h"
 #include "views/view_api.h"
@@ -1570,6 +1571,11 @@ void gui_init(dt_view_t *self)
   g_signal_connect(G_OBJECT(display2_profile), "value-changed",
                    G_CALLBACK(_profile_display2_profile_callback),
                    NULL);
+
+  dt_presenter_display_control(display_profile, DT_COLORSPACE_DISPLAY);
+  dt_presenter_display_control(display_intent, DT_COLORSPACE_DISPLAY);
+  dt_presenter_display_control(display2_profile, DT_COLORSPACE_DISPLAY2);
+  dt_presenter_display_control(display2_intent, DT_COLORSPACE_DISPLAY2);
 
   // update the gui when profiles change
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,

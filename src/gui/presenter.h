@@ -44,9 +44,8 @@ void dt_presenter_end(GtkWidget *widget,
 /** paint float RGBA pixels in encoding at (x, y), as cairo_paint() would
  * paint a surface set with cairo_set_source_surface(cr, surface, x, y).
  * id changes whenever the pixels do (dt_dev_new_frame_id()). the pixels
- * are not used after the call returns. returns FALSE if the window's
- * backend cannot show a frame in that encoding and it has to be rendered
- * again */
+ * are not used after the call returns. returns FALSE if the window
+ * cannot show a frame in that encoding and it has to be rendered again */
 gboolean dt_presenter_image(cairo_t *cr,
                             const double x,
                             const double y,
@@ -60,8 +59,21 @@ gboolean dt_presenter_image(cairo_t *cr,
 /** show the images of the last full draw again, where they were */
 void dt_presenter_keep(cairo_t *cr);
 
+/** keep a display profile control insensitive while the presenter owns
+ * the output of window (DT_COLORSPACE_DISPLAY or DISPLAY2), where the
+ * selection has no effect */
+void dt_presenter_display_control(GtkWidget *control,
+                                  const dt_colorspaces_color_profile_type_t window);
+
 /** drop the images of a widget */
 void dt_presenter_clear(GtkWidget *widget);
+
+/** the colors count float RGBA pixels in encoding show as on GTK's
+ * surface, as RGB triplets in [0, 1] */
+void dt_presenter_gtk_colors(const float *pixels,
+                             const size_t count,
+                             const dt_display_output_t *encoding,
+                             float *rgb);
 
 /** an 8-bit surface of float RGBA pixels in encoding, for drawing with GTK */
 cairo_surface_t *dt_presenter_gtk_surface(const float *pixels,

@@ -187,6 +187,7 @@ FILE(GLOB SOURCE_FILES
   "gui/metadata_tags.c"
   "gui/preferences.c"
   "gui/presenter.c"
+  "gui/presenter_layers.c"
   "gui/presets.c"
   "gui/splash.c"
   "gui/welcome.c"
@@ -370,10 +371,13 @@ if(USE_WAYLAND)
     add_custom_target(generate_wayland_color
       DEPENDS "${WAYLAND_COLOR_HEADER}" "${WAYLAND_COLOR_CODE}")
     list(APPEND LIB_DEPS generate_wayland_color)
-    list(APPEND SOURCES "${WAYLAND_COLOR_HEADER}" "${WAYLAND_COLOR_CODE}")
+    list(APPEND SOURCES "${WAYLAND_COLOR_HEADER}" "${WAYLAND_COLOR_CODE}" "gui/presenter_wayland.c")
     # GDK links libwayland-client too, but we call into it directly
     list(APPEND LIBS PkgConfig::WAYLAND_CLIENT)
-    set_property(SOURCE common/darktable.c APPEND PROPERTY COMPILE_DEFINITIONS HAVE_WAYLAND)
+    set_property(SOURCE common/darktable.c gui/presenter_layers.c gui/presenter_wayland.c
+                 APPEND PROPERTY COMPILE_DEFINITIONS HAVE_WAYLAND)
+    set_property(SOURCE gui/presenter_wayland.c
+                 APPEND PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}")
   else()
     message(STATUS "Wayland color management disabled: it needs gdk-wayland-3.0, wayland-client >= 1.18 and wayland-scanner")
     set(USE_WAYLAND OFF)
