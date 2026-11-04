@@ -1388,20 +1388,27 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   }
 
   // downconversion to low-precision formats:
+  uint8_t *buf8 = NULL;
   if(bpp == 8)
   {
-    // in place, which is unfortunately very serial
-    const float *const inbuf = (float *)outbuf;
-    const int r = display_byteorder ? 2 : 0;
-    for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)
+    // into a buffer of its own: in place, a pixel's bytes land on the floats
+    // of an earlier pixel, which another thread may not have read yet
+    buf8 = dt_alloc_align_uint8((size_t)4 * processed_width * processed_height);
+    if(!buf8)
     {
-      const uint8_t px[3] = { dt_display_to_8bit(inbuf[4 * k + 0]),
-                              dt_display_to_8bit(inbuf[4 * k + 1]),
-                              dt_display_to_8bit(inbuf[4 * k + 2]) };
-      outbuf[4 * k + r] = px[0];
-      outbuf[4 * k + 1] = px[1];
-      outbuf[4 * k + 2 - r] = px[2];
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_imageio_export_with_flags] error allocating the 8-bit buffer");
+      goto error;
     }
+    const float *const inbuf = (float *)outbuf;
+    DT_OMP_FOR()
+    for(int y = 0; y < processed_height; y++)
+    {
+      const size_t row = (size_t)4 * processed_width * y;
+      dt_display_to_8bit_pixels(inbuf + row, buf8 + row, processed_width,
+                                display_byteorder);
+    }
+    outbuf = buf8;
   }
   else if(bpp == 16)
   {
@@ -1473,6 +1480,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
                               icc_filename, NULL, 0, imgid, num, total,
                               &pipe, export_masks)) != 0;
   }
+  dt_free_align(buf8);
 
   if(res)
     goto error;

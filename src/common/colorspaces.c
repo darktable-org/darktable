@@ -1205,6 +1205,35 @@ static cmsHTRANSFORM _create_display_transform(cmsHPROFILE from,
   return xform;
 }
 
+// r is a constant once inlined: the channel offsets must be known for the
+// stores to vectorize
+static inline void _display_to_8bit_pixels(const float *const restrict in,
+                                           uint8_t *const restrict out,
+                                           const size_t n,
+                                           const int r)
+{
+  DT_OMP_SIMD()
+  for(size_t k = 0; k < n; k++)
+  {
+    out[4 * k + r] = dt_display_to_8bit(in[4 * k + 0]);
+    out[4 * k + 1] = dt_display_to_8bit(in[4 * k + 1]);
+    out[4 * k + 2 - r] = dt_display_to_8bit(in[4 * k + 2]);
+    out[4 * k + 3] = 0xff;
+  }
+}
+
+__DT_CLONE_TARGETS__
+void dt_display_to_8bit_pixels(const float *const restrict in,
+                               uint8_t *const restrict out,
+                               const size_t n,
+                               const gboolean bgr)
+{
+  if(bgr)
+    _display_to_8bit_pixels(in, out, n, 2);
+  else
+    _display_to_8bit_pixels(in, out, n, 0);
+}
+
 void dt_colorspaces_transform_to_display(cmsHTRANSFORM xform,
                                          const int hdr,
                                          const uint8_t *const in,

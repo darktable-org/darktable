@@ -223,6 +223,13 @@ static inline uint8_t dt_display_to_8bit(const float v)
   return (uint8_t)(t + (c >= (float)t + 0.5f));
 }
 
+/* n pixels of display-encoded float RGBA through dt_display_to_8bit(), as
+ * RGBX or, with bgr, as BGRX. the fourth byte is 0xff */
+void dt_display_to_8bit_pixels(const float *const __restrict__ in,
+                               uint8_t *const __restrict__ out,
+                               const size_t n,
+                               const gboolean bgr);
+
 /* the mask and channel views are authored as sRGB device values, which a
  * display profile output sends to the screen as they are. a managed
  * output, linear Rec.2020, gets them converted */

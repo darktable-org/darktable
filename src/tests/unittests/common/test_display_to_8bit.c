@@ -17,8 +17,8 @@
 */
 /*
  * cmocka unit tests for dt_display_to_8bit(), which avoids libm so that
- * loops over it vectorize. it must give what clamping to [0, 1] and roundf()
- * give, ties included.
+ * loops over it vectorize, and dt_display_to_8bit_pixels(), the loop. both
+ * must give what clamping to [0, 1] and roundf() give, ties included.
  */
 
 #include <setjmp.h>
@@ -106,10 +106,50 @@ static void test_scalar(void **state)
   free(v);
 }
 
+static void test_pixels(void **state)
+{
+  size_t n;
+  float *v = _inputs(&n);
+  // an odd count, so that the loop has a remainder after its vector part
+  const size_t npixels = (n / 3) | 1;
+  float *in = malloc(sizeof(float) * 4 * npixels);
+  uint8_t *rgb = malloc(4 * npixels);
+  uint8_t *bgr = malloc(4 * npixels);
+  assert_non_null(in);
+  assert_non_null(rgb);
+  assert_non_null(bgr);
+  for(size_t k = 0; k < npixels; k++)
+  {
+    for(int c = 0; c < 3; c++) in[4 * k + c] = v[(3 * k + c) % n];
+    in[4 * k + 3] = NAN;
+  }
+
+  dt_display_to_8bit_pixels(in, rgb, npixels, FALSE);
+  dt_display_to_8bit_pixels(in, bgr, npixels, TRUE);
+
+  for(size_t k = 0; k < npixels; k++)
+  {
+    for(int c = 0; c < 3; c++)
+    {
+      const uint8_t expected = dt_display_to_8bit(in[4 * k + c]);
+      if(rgb[4 * k + c] != expected || bgr[4 * k + 2 - c] != expected)
+        fail_msg("pixel %zu channel %d, %08x: rgb %d, bgr %d, expected %d", k, c,
+                 _to_bits(in[4 * k + c]), rgb[4 * k + c], bgr[4 * k + 2 - c], expected);
+    }
+    assert_int_equal(rgb[4 * k + 3], 0xff);
+    assert_int_equal(bgr[4 * k + 3], 0xff);
+  }
+  free(in);
+  free(rgb);
+  free(bgr);
+  free(v);
+}
+
 int main(int argc, char *argv[])
 {
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_scalar),
+    cmocka_unit_test(test_pixels),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);
