@@ -28,9 +28,9 @@
 #include "dtgtk/drawingarea.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/presenter.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
-#include "views/view.h"
 
 #include <ctype.h>
 
@@ -393,7 +393,9 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
     const int ht = dev->preview_pipe->backbuf_height;
     const float scale = fminf(width / (float)wd, height / (float)ht);
 
-    cairo_surface_t *surface = dt_view_create_surface(dev->preview_pipe->backbuf, wd, ht);
+    cairo_surface_t *surface =
+      dt_presenter_gtk_surface(dev->preview_pipe->backbuf, wd, ht,
+                               &dev->preview_pipe->backbuf_output);
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, scale, scale);
     cairo_translate(cr, -.5f * wd, -.5f * ht);

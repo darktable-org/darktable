@@ -55,6 +55,7 @@
 #include "gui/drag_and_drop.h"
 #include "gui/gtk.h"
 #include "gui/guides.h"
+#include "gui/presenter.h"
 #include "gui/presets.h"
 #include "gui/styles.h"
 #include "imageio/imageio_common.h"
@@ -589,13 +590,17 @@ static void _view_paint_surface(cairo_t *cr,
 
   dt_pthread_mutex_lock(&p->backbuf_mutex);
 
-  dt_view_paint_surface(cr, width, height,
-                        port, window,
-                        p->backbuf, p->backbuf_scale,
-                        p->backbuf_width, p->backbuf_height,
-                        p->backbuf_zoom_pos);
+  const gboolean shown = dt_view_paint_surface(cr, width, height,
+                                               port, window,
+                                               p->backbuf, &p->backbuf_output,
+                                               p->backbuf_id, p->backbuf_scale,
+                                               p->backbuf_width, p->backbuf_height,
+                                               p->backbuf_zoom_pos);
 
   dt_pthread_mutex_unlock(&p->backbuf_mutex);
+
+  if(!shown && p->status == DT_DEV_PIXELPIPE_VALID)
+    p->status = DT_DEV_PIXELPIPE_DIRTY;
 }
 
 /* drag&drop hint overlays
@@ -824,34 +829,6 @@ void expose(dt_view_t *self,
   {
     // draw image
     _view_paint_surface(cri, width, height, port, DT_WINDOW_MAIN);
-    // clean up cached rendering; do this unconditionally in case user toggles the preference
-    if(darktable.gui->surface)
-    {
-      cairo_surface_destroy(darktable.gui->surface);
-      darktable.gui->surface = NULL;
-    }
-    if(!dt_conf_get_bool("darkroom/ui/loading_screen"))
-    {
-      // Cache the rendered content for display while loading the next image.
-#ifdef _WIN32
-      // On the Win32 GDK backend, holding a cairo_surface_reference() to
-      // cairo_get_target(cri) prevents GTK from properly invalidating the
-      // widget surface, causing gtk_widget_queue_draw() to silently fail
-      // (issue #20831). Copy to a standalone image surface instead.
-      cairo_surface_t *target = cairo_get_target(cri);
-      if(width > 0 && height > 0)
-      {
-        darktable.gui->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-        cairo_t *cr2 = cairo_create(darktable.gui->surface);
-        cairo_set_source_surface(cr2, target, 0, 0);
-        cairo_paint(cr2);
-        cairo_destroy(cr2);
-      }
-#else
-      darktable.gui->surface = cairo_get_target(cri);
-      cairo_surface_reference(darktable.gui->surface);
-#endif
-    }
   }
   else if(dev->preview_pipe->output_imgid != dev->image_storage.id)
   {
@@ -971,22 +948,13 @@ void expose(dt_view_t *self,
     }
     else
     {
-      // repaint the image we are switching away from, to avoid a
+      // show the image we are switching away from again, to avoid a
       // flash of the background color
-      if(darktable.gui->surface)
-      {
-        cairo_save(cri);
-        cairo_identity_matrix(cri);
-        cairo_set_source_surface(cri, darktable.gui->surface, 0, 0);
-        cairo_paint(cri);
-        cairo_restore(cri);
-      }
-      else
-      {
-        // No cached surface (first entry from lighttable) — paint background
-        dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
-        cairo_paint(cri);
-      }
+      dt_gui_gtk_set_source_rgb(cri, port->color_assessment
+                                     ? DT_GUI_COLOR_COLOR_ASSESSMENT_BG
+                                     : DT_GUI_COLOR_DARKROOM_BG);
+      cairo_paint(cri);
+      dt_presenter_keep(cri);
       dt_toast_log("%s", load_txt);
     }
     g_free(load_txt);
@@ -4362,12 +4330,8 @@ void leave(dt_view_t *self)
   // starts from whatever zoom state the new session sets up.
   darktable.develop->full.restore_zoom = darktable.develop->preview2.restore_zoom = FALSE;
 
-  // Clear cached surface so the loading screen shows on next darkroom entry
-  if(darktable.gui->surface)
-  {
-    cairo_surface_destroy(darktable.gui->surface);
-    darktable.gui->surface = NULL;
-  }
+  // so that the next darkroom entry does not show this image while loading
+  dt_presenter_clear(dt_ui_center(darktable.gui->ui));
 
   DT_CONTROL_SIGNAL_DISCONNECT_ALL(self, "darkroom");
 
@@ -5288,9 +5252,9 @@ static void _second_window_configure_ppd_dpi(dt_develop_t *dev)
 #endif
 }
 
-static gboolean _second_window_draw_callback(GtkWidget *widget,
-                                             cairo_t *cri,
-                                             dt_develop_t *dev)
+static void _second_window_draw(GtkWidget *widget,
+                                 cairo_t *cri,
+                                 dt_develop_t *dev)
 {
   // Set background
   dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
@@ -5298,7 +5262,7 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
 
   // Early exit if we're in an inconsistent state
   if(!dev->preview2.widget || dev->gui_leaving)
-    return TRUE;
+    return;
 
   // Determine which develop and viewport to use
   // Take a local copy of the pointer to avoid race conditions
@@ -5366,6 +5330,15 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
     if(_preview2_request(dev)) dt_dev_process_preview2(dev);
   }
 
+}
+
+static gboolean _second_window_draw_callback(GtkWidget *widget,
+                                             cairo_t *cr,
+                                             dt_develop_t *dev)
+{
+  cairo_t *pcr = dt_presenter_begin(widget, cr);
+  _second_window_draw(widget, pcr, dev);
+  dt_presenter_end(widget, pcr);
   return TRUE;
 }
 

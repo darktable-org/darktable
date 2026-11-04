@@ -39,6 +39,7 @@
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
+#include "gui/presenter.h"
 #include "libs/lib.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -1868,12 +1869,14 @@ static void _match_rotation(cairo_t *cr,
   cairo_translate(cr, dx - 0.5 * cx, dy - 0.5 * cy);
 }
 
-void dt_view_paint_surface(cairo_t *cr,
+gboolean dt_view_paint_surface(cairo_t *cr,
                            const size_t width,
                            const size_t height,
                            dt_dev_viewport_t *port,
                            const dt_window_t window,
                            const float *buf,
+                           const dt_display_output_t *buf_output,
+                           const uint32_t buf_id,
                            float buf_scale,
                            int buf_width,
                            int buf_height,
@@ -1887,7 +1890,8 @@ void dt_view_paint_surface(cairo_t *cr,
   int processed_width, processed_height;
   dt_dev_get_processed_size(port, &processed_width, &processed_height);
   if(!processed_width || !processed_height)
-    return;
+    return TRUE;
+  gboolean shown = TRUE;
 
   float pts[14];
   memcpy(pts, buf_zoom_pos, sizeof(dt_dev_zoom_pos_t));
@@ -2092,11 +2096,9 @@ void dt_view_paint_surface(cairo_t *cr,
     cairo_save(cr);
     cairo_scale(cr, zoom_scale, zoom_scale);
     _match_rotation(cr, pts + 6, (preview_x - zoom_x) * wd, (preview_y - zoom_y) * ht, 0, 0);
-    cairo_surface_t *preview = dt_view_create_surface(pp->backbuf, pp->backbuf_width, pp->backbuf_height);
-    cairo_set_source_surface(cr, preview, -0.5 * pp->backbuf_width, -0.5 * pp->backbuf_height);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    cairo_paint(cr);
-    cairo_surface_destroy(preview);
+    dt_presenter_image(cr, -0.5 * pp->backbuf_width, -0.5 * pp->backbuf_height,
+                       pp->backbuf, pp->backbuf_width, pp->backbuf_height,
+                       &pp->backbuf_output, pp->backbuf_id, CAIRO_FILTER_FAST);
     cairo_restore(cr);
 
     dt_print_pipe(DT_DEBUG_EXPOSE,
@@ -2129,49 +2131,21 @@ void dt_view_paint_surface(cairo_t *cr,
 
     cairo_scale(cr, back_scale, back_scale);
     _match_rotation(cr, pts, trans_x, trans_y, buf_width, buf_height);
-    cairo_surface_t *surface = dt_view_create_surface(buf, buf_width, buf_height);
-    cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    cairo_paint(cr);
-
-    if(darktable.gui->show_focus_peaking
-      && window != DT_WINDOW_SLIDESHOW)
+    shown = dt_presenter_image(cr, 0, 0, buf, buf_width, buf_height, buf_output, buf_id,
+                               CAIRO_FILTER_FAST);
+    if(shown
+       && darktable.gui->show_focus_peaking
+       && window != DT_WINDOW_SLIDESHOW)
     {
-      dt_focuspeaking(cr, buf_width, buf_height,
-                      cairo_image_surface_get_data(surface));
+      cairo_surface_t *surface =
+        dt_presenter_gtk_surface(buf, buf_width, buf_height, buf_output);
+      dt_focuspeaking(cr, buf_width, buf_height, cairo_image_surface_get_data(surface));
+      cairo_surface_destroy(surface);
     }
-    cairo_surface_destroy(surface);
   }
 
   cairo_restore(cr);
-}
-
-cairo_surface_t *dt_view_create_surface(const float *buffer,
-                                        const size_t processed_width,
-                                        const size_t processed_height)
-{
-  cairo_surface_t *surface =
-    cairo_image_surface_create(CAIRO_FORMAT_RGB24, processed_width, processed_height);
-  if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) return surface;
-
-  uint8_t *const data = cairo_image_surface_get_data(surface);
-  const size_t stride = cairo_image_surface_get_stride(surface);
-  DT_OMP_FOR()
-  for(size_t y = 0; y < processed_height; y++)
-  {
-    const float *in = buffer + 4 * processed_width * y;
-    uint8_t *out = data + stride * y;
-    for(size_t x = 0; x < processed_width; x++, in += 4, out += 4)
-    {
-      // cairo's RGB24 is BGRX in memory
-      out[0] = dt_display_to_8bit(in[2]);
-      out[1] = dt_display_to_8bit(in[1]);
-      out[2] = dt_display_to_8bit(in[0]);
-      out[3] = 0xff;
-    }
-  }
-  cairo_surface_mark_dirty(surface);
-  return surface;
+  return shown;
 }
 
 dt_view_context_t dt_view_get_context_hash(void)

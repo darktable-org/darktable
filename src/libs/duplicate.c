@@ -45,6 +45,8 @@ typedef struct dt_lib_duplicate_t
   dt_imgid_t imgid;
 
   float *buf;
+  dt_display_output_t output;
+  uint32_t frame_id;
   float scale;
   size_t buf_width;
   size_t buf_height;
@@ -245,8 +247,8 @@ void gui_post_expose(dt_lib_module_t *self,
     if(d->buf)
       dt_free_align(d->buf);
 
-    dt_display_output_t output;
-    dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &output);
+    dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &d->output);
+    d->frame_id = dt_dev_new_frame_id();
     dt_dev_image(d->imgid,
                  width,
                  height,
@@ -260,14 +262,19 @@ void gui_post_expose(dt_lib_module_t *self,
                  NULL,
                  DT_DEVICE_NONE,
                  FALSE,
-                 &output);
+                 &d->output);
 
     d->preview_id = d->imgid;
   }
 
-  if(d->buf)
-    dt_view_paint_surface(cri, width, height, &darktable.develop->full, DT_WINDOW_MAIN,
-                          d->buf, d->scale, d->buf_width, d->buf_height, d->zoom_pos);
+  if(d->buf
+     && !dt_view_paint_surface(cri, width, height, &darktable.develop->full,
+                               DT_WINDOW_MAIN, d->buf, &d->output, d->frame_id,
+                               d->scale, d->buf_width, d->buf_height, d->zoom_pos))
+  {
+    d->preview_id = NO_IMGID;
+    dt_control_queue_redraw_center();
+  }
 }
 
 static void _thumb_remove(gpointer user_data)

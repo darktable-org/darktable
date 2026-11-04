@@ -25,6 +25,7 @@
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/presenter.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 #include "views/view.h"
@@ -54,6 +55,8 @@ typedef enum dt_slideshow_slot_t
 typedef struct _slideshow_buf_t
 {
   float *buf;
+  dt_display_output_t output;
+  uint32_t frame_id;
   size_t width;
   size_t height;
   int rank;
@@ -239,6 +242,8 @@ static int _process_image(dt_slideshow_t *d,
     d->buf[slt].width = width;
     d->buf[slt].height = height;
     d->buf[slt].buf = buf;
+    d->buf[slt].output = output;
+    d->buf[slt].frame_id = dt_dev_new_frame_id();
     d->buf[slt].invalidated = FALSE;
   }
   else
@@ -573,14 +578,21 @@ void expose(dt_view_t *self,
   {
     double scale = MIN((double)width / slot->width, (double)height / slot->height);
     cairo_scale(cr, scale, scale);
-    cairo_surface_t *surface = dt_view_create_surface(slot->buf, slot->width, slot->height);
-    cairo_set_source_surface(cr, surface, - 0.5 * slot->width, -0.5 * slot->height);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
-    cairo_paint(cr);
-    cairo_surface_destroy(surface);
-
-    d->id_displayed = imgid;
-    d->id_preview_displayed = imgid;
+    if(dt_presenter_image(cr, -0.5 * slot->width, -0.5 * slot->height,
+                          slot->buf, slot->width, slot->height,
+                          &slot->output, slot->frame_id, CAIRO_FILTER_BEST))
+    {
+      d->id_displayed = imgid;
+      d->id_preview_displayed = imgid;
+    }
+    else
+    {
+      // rendered for another output
+      dt_free_align(slot->buf);
+      slot->buf = NULL;
+      slot->invalidated = TRUE;
+      _requeue_job(d);
+    }
   }
   else if(dt_is_valid_imgid(imgid) && imgid != d->id_preview_displayed)
   {

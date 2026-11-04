@@ -57,6 +57,8 @@ typedef struct dt_lib_snapshot_t
   uint32_t history_end;
   uint32_t id;
   float *buf;
+  dt_display_output_t output;
+  uint32_t frame_id;
   float scale;
   size_t width, height;
   dt_dev_zoom_pos_t zoom_pos;
@@ -235,8 +237,8 @@ void gui_post_expose(dt_lib_module_t *self,
       snap->buf = NULL;
 
       // export image with proper size
-      dt_display_output_t output;
-      dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &output);
+      dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &snap->output);
+      snap->frame_id = dt_dev_new_frame_id();
       dt_dev_image(snap->imgid,
                    width,
                    height,
@@ -250,7 +252,7 @@ void gui_post_expose(dt_lib_module_t *self,
                    NULL,
                    DT_DEVICE_NONE,
                    FALSE,
-                   &output);
+                   &snap->output);
       d->snap_requested = FALSE;
       d->expose_again_timeout_id = 0;
     }
@@ -310,10 +312,13 @@ void gui_post_expose(dt_lib_module_t *self,
     cairo_clip(cri);
     cairo_fill(cri);
 
-    if(snap->buf)
+    if(snap->buf
+       && !dt_view_paint_surface(cri, width, height, &dev->full, DT_WINDOW_MAIN,
+                                 snap->buf, &snap->output, snap->frame_id,
+                                 snap->scale, snap->width, snap->height, snap->zoom_pos))
     {
-      dt_view_paint_surface(cri, width, height, &dev->full, DT_WINDOW_MAIN,
-                            snap->buf, snap->scale, snap->width, snap->height, snap->zoom_pos);
+      d->snap_requested = TRUE;
+      dt_control_queue_redraw_center();
     }
 
     cairo_restore(cri);

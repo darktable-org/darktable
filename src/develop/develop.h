@@ -700,6 +700,9 @@ dt_hash_t dt_dev_hash_distort_plus(dt_develop_t *dev,
 void dt_dev_undo_start_record(dt_develop_t *dev);
 void dt_dev_undo_end_record(dt_develop_t *dev);
 
+/** a new id for a rendered frame, see dt_presenter_image() */
+uint32_t dt_dev_new_frame_id(void);
+
 /*
  * develop an image and returns the buf and processed width / height.
  * this is done as in the context of the darkroom, meaning that the

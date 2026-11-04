@@ -664,17 +664,16 @@ void dt_view_paint_pixbuf(cairo_t *cr,
                           const size_t processed_height,
                           const dt_window_t window);
 
-/** an 8-bit surface of a display-encoded float RGBA buffer */
-cairo_surface_t *dt_view_create_surface(const float *buffer,
-                                        const size_t processed_width,
-                                        const size_t processed_height);
-
-void dt_view_paint_surface(cairo_t *cr,
+/** paint the background and the image of a viewport. returns FALSE if
+ * the image was rendered for another output and must be rendered again */
+gboolean dt_view_paint_surface(cairo_t *cr,
                            const size_t width,
                            const size_t height,
                            dt_dev_viewport_t *port,
                            const dt_window_t window,
                            const float *buf,
+                           const dt_display_output_t *buf_output,
+                           const uint32_t buf_id,
                            float buf_scale,
                            int buf_width,
                            int buf_height,

@@ -31,6 +31,7 @@
 #include "common/image.h"
 #include "common/gimp.h"
 #include "gui/guides.h"
+#include "gui/presenter.h"
 #include "gui/splash.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/blend.h"
@@ -898,7 +899,9 @@ static gboolean _draw(GtkWidget *da,
   darktable.gui->drawing_snapshot = da == ss;
   if(!darktable.gui->drawing_snapshot) gtk_widget_queue_draw(ss);
 
-  dt_control_expose(da, cr);
+  cairo_t *pcr = dt_presenter_begin(da, cr);
+  dt_control_expose(da, pcr);
+  dt_presenter_end(da, pcr);
 
   return TRUE;
 }
@@ -2046,7 +2049,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   GtkWidget *widget;
   if(!gui->ui)
     gui->ui = g_malloc0(sizeof(dt_ui_t));
-  gui->surface = NULL;
   gui->hide_tooltips = dt_conf_get_bool("ui/hide_tooltips") ? 1 : 0;
   gui->grouping = dt_conf_get_bool("ui_last/grouping");
   gui->expanded_group_id = NO_IMGID;
@@ -2382,11 +2384,6 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
     g_main_loop_unref(gui->main_loop);
     gui->main_loop = NULL;
     g_atomic_int_set(&darktable.gui_running, 0);
-  }
-  if(darktable.gui->surface)
-  {
-    cairo_surface_destroy(darktable.gui->surface);
-    darktable.gui->surface = NULL;
   }
 }
 

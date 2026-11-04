@@ -4365,6 +4365,12 @@ void dt_dev_undo_end_record(dt_develop_t *dev)
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
 }
 
+uint32_t dt_dev_new_frame_id(void)
+{
+  static dt_atomic_int id;
+  return (uint32_t)dt_atomic_add_int(&id, 1) + 1;
+}
+
 void dt_dev_image(const dt_imgid_t imgid,
                   const size_t width,
                   const size_t height,
