@@ -187,7 +187,7 @@ static inline void dt_draw_backbuf_contrast(const dt_develop_t *dev,
 
   if(dev && dev->preview_pipe)
   {
-    uint8_t *backbuf = dev->preview_pipe->backbuf;
+    const float *backbuf = (const float *)dev->preview_pipe->backbuf;
     const int buf_w = dev->preview_pipe->backbuf_width;
     const int buf_h = dev->preview_pipe->backbuf_height;
 
@@ -206,10 +206,10 @@ static inline void dt_draw_backbuf_contrast(const dt_develop_t *dev,
         for(int ix = x0; ix <= x1; ix++)
         {
           const size_t idx = ((size_t)iy * buf_w + ix) * 4;
-          // backbuf is CAIRO_FORMAT_ARGB32: B, G, R, A byte order on little-endian
-          const float pr = backbuf[idx + 2] / 255.0f;
-          const float pg = backbuf[idx + 1] / 255.0f;
-          const float pb = backbuf[idx + 0] / 255.0f;
+          // the color as the 8-bit screen shows it
+          const float pr = dt_display_to_8bit(backbuf[idx + 0]) / 255.0f;
+          const float pg = dt_display_to_8bit(backbuf[idx + 1]) / 255.0f;
+          const float pb = dt_display_to_8bit(backbuf[idx + 2]) / 255.0f;
           if(ix == px && iy == py)
           {
             r = pr;

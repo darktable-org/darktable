@@ -44,7 +44,7 @@ typedef struct dt_lib_duplicate_t
   GtkWidget *duplicate_box;
   dt_imgid_t imgid;
 
-  uint8_t *buf;
+  float *buf;
   float scale;
   size_t buf_width;
   size_t buf_height;
@@ -245,6 +245,8 @@ void gui_post_expose(dt_lib_module_t *self,
     if(d->buf)
       dt_free_align(d->buf);
 
+    dt_display_output_t output;
+    dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &output);
     dt_dev_image(d->imgid,
                  width,
                  height,
@@ -258,7 +260,7 @@ void gui_post_expose(dt_lib_module_t *self,
                  NULL,
                  DT_DEVICE_NONE,
                  FALSE,
-                 FALSE);
+                 &output);
 
     d->preview_id = d->imgid;
   }

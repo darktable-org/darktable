@@ -202,6 +202,12 @@ static inline gboolean dt_display_output_equal(const dt_display_output_t *a,
     && !strcmp(a->filename, b->filename);
 }
 
+/* the 8-bit value a display-encoded float shows as on an 8-bit surface */
+static inline uint8_t dt_display_to_8bit(const float v)
+{
+  return (uint8_t)fminf(roundf(255.0f * fmaxf(v, 0.0f)), 255.0f);
+}
+
 typedef struct dt_colorspaces_t
 {
   GList *profiles;

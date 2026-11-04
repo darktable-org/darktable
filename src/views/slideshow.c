@@ -53,7 +53,7 @@ typedef enum dt_slideshow_slot_t
 
 typedef struct _slideshow_buf_t
 {
-  uint8_t *buf;
+  float *buf;
   size_t width;
   size_t height;
   int rank;
@@ -142,7 +142,7 @@ static void _init_slot(dt_slideshow_buf_t *s)
 
 static void _shift_left(dt_slideshow_t *d)
 {
-  uint8_t *tmp_buf = d->buf[S_LEFT].buf;
+  float *tmp_buf = d->buf[S_LEFT].buf;
 
   for(dt_slideshow_slot_t slot=S_LEFT; slot<S_RIGHT; slot++)
   {
@@ -161,7 +161,7 @@ static void _shift_left(dt_slideshow_t *d)
 
 static void _shift_right(dt_slideshow_t *d)
 {
-  uint8_t *tmp_buf = d->buf[S_RIGHT].buf;
+  float *tmp_buf = d->buf[S_RIGHT].buf;
 
   for(dt_slideshow_slot_t slot=S_RIGHT; slot>S_LEFT; slot--)
   {
@@ -199,10 +199,12 @@ static int _process_image(dt_slideshow_t *d,
   const size_t s_height = d->height;
   const dt_imgid_t imgid = d->buf[slot].imgid;
   size_t width, height;
-  uint8_t *buf = NULL;
+  float *buf = NULL;
 
   dt_pthread_mutex_unlock(&d->lock);
 
+  dt_display_output_t output;
+  dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &output);
   dt_dev_image(imgid,
                d->width / darktable.gui->ppd,
                d->height / darktable.gui->ppd,
@@ -216,7 +218,7 @@ static int _process_image(dt_slideshow_t *d,
                NULL,
                DT_DEVICE_NONE,
                FALSE,
-               FALSE);
+               &output);
 
   dt_pthread_mutex_lock(&d->lock);
 

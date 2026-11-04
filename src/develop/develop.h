@@ -725,13 +725,16 @@ void dt_dev_undo_end_record(dt_develop_t *dev);
  * develop an image and returns the buf and processed width / height.
  * this is done as in the context of the darkroom, meaning that the
  * final processed sizes will align perfectly on the darkroom view.
+ * the buffer is float RGBA in output, or in the pipe's working RGB if
+ * output is NULL and colorout is filtered out, and is freed with
+ * dt_free_align().
  * if called with a valid CL devid that device is used without locking/unlocking as the caller is doing that
  */
 void dt_dev_image(const dt_imgid_t imgid,
                   const size_t width,
                   const size_t height,
                   const int history_end,
-                  uint8_t **buf,
+                  float **buf,
                   float *scale,
                   size_t *buf_width,
                   size_t *buf_height,
@@ -740,7 +743,7 @@ void dt_dev_image(const dt_imgid_t imgid,
                   GList *module_filter_out,
                   const int devid,
                   const gboolean finalscale,
-                  const gboolean want_float);
+                  const dt_display_output_t *output);
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d);
 void dt_dev_reset_chroma(dt_develop_t *dev);

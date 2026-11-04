@@ -1391,14 +1391,8 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
     if(finalscale) finalscale->enabled = FALSE;
 
-    // do the processing (8-bit with special treatment, to make sure
-    // we can use openmp further down):
-    if(bpp == 8)
-      dt_dev_pixelpipe_process(&pipe, &dev, 0, 0,
-                               processed_width, processed_height, scale, DT_DEVICE_NONE);
-    else
-      dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0,
-                                        processed_width, processed_height, scale);
+    dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0,
+                                      processed_width, processed_height, scale);
 
     if(finalscale) finalscale->enabled = TRUE;
   }
@@ -1418,53 +1412,17 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   // downconversion to low-precision formats:
   if(bpp == 8)
   {
-    if(display_byteorder)
+    // in place, which is unfortunately very serial
+    const float *const inbuf = (float *)outbuf;
+    const int r = display_byteorder ? 2 : 0;
+    for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)
     {
-      if(hq_process)
-      {
-        const float *const inbuf = (float *)outbuf;
-        for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)
-        {
-          // convert in place, this is unfortunately very serial..
-          const uint8_t r = roundf(CLAMP(inbuf[4 * k + 2] * 0xff, 0, 0xff));
-          const uint8_t g = roundf(CLAMP(inbuf[4 * k + 1] * 0xff, 0, 0xff));
-          const uint8_t b = roundf(CLAMP(inbuf[4 * k + 0] * 0xff, 0, 0xff));
-          outbuf[4 * k + 0] = r;
-          outbuf[4 * k + 1] = g;
-          outbuf[4 * k + 2] = b;
-        }
-      }
-      // else processing output was 8-bit already, and no need to swap order
-    }
-    else // need to flip
-    {
-      // ldr output: char
-      if(hq_process)
-      {
-        const float *const inbuf = (float *)outbuf;
-        for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)
-        {
-          // convert in place, this is unfortunately very serial..
-          const uint8_t r = roundf(CLAMP(inbuf[4 * k + 0] * 0xff, 0, 0xff));
-          const uint8_t g = roundf(CLAMP(inbuf[4 * k + 1] * 0xff, 0, 0xff));
-          const uint8_t b = roundf(CLAMP(inbuf[4 * k + 2] * 0xff, 0, 0xff));
-          outbuf[4 * k + 0] = r;
-          outbuf[4 * k + 1] = g;
-          outbuf[4 * k + 2] = b;
-        }
-      }
-      else
-      { // !display_byteorder, need to swap:
-        uint8_t *const buf8 = pipe.backbuf;
-        DT_OMP_FOR()
-        // just flip byte order
-        for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)
-        {
-          uint8_t tmp = buf8[4 * k + 0];
-          buf8[4 * k + 0] = buf8[4 * k + 2];
-          buf8[4 * k + 2] = tmp;
-        }
-      }
+      const uint8_t px[3] = { dt_display_to_8bit(inbuf[4 * k + 0]),
+                              dt_display_to_8bit(inbuf[4 * k + 1]),
+                              dt_display_to_8bit(inbuf[4 * k + 2]) };
+      outbuf[4 * k + r] = px[0];
+      outbuf[4 * k + 1] = px[1];
+      outbuf[4 * k + 2 - r] = px[2];
     }
   }
   else if(bpp == 16)

@@ -744,17 +744,9 @@ static gboolean _event_image_draw(GtkWidget *widget,
       const int buf_width = dev->preview_pipe->backbuf_width;
       const int buf_height = dev->preview_pipe->backbuf_height;
 
-      const size_t bbufsize = sizeof(uint8_t) * 4 * buf_width * buf_height;
-      uint8_t *rgbbuf = dt_alloc_align_uint8(bbufsize);
-
-      memcpy(rgbbuf, dev->preview_pipe->backbuf, bbufsize);
-      dt_pthread_mutex_unlock(mutex);
-
-      const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf_width);
       cairo_surface_t *tmp_surface
-          = cairo_image_surface_create_for_data(rgbbuf,
-                                                CAIRO_FORMAT_RGB24,
-                                                buf_width, buf_height, stride);
+          = dt_view_create_surface(dev->preview_pipe->backbuf, buf_width, buf_height);
+      dt_pthread_mutex_unlock(mutex);
 
       // copy preview image into final surface
       if(tmp_surface)
@@ -789,10 +781,9 @@ static gboolean _event_image_draw(GtkWidget *widget,
                           cairo_image_surface_get_data(thumb->img_surf));
           cairo_restore(cr2);
         }
-        cairo_surface_destroy(tmp_surface);
         cairo_destroy(cr2);
       }
-      dt_free_align(rgbbuf);
+      cairo_surface_destroy(tmp_surface);
       thumb->img_surf_preview = TRUE;
     }
     else
