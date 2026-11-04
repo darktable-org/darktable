@@ -1,0 +1,33 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="lens_camera_profile">相機設定檔</string>
+  <string name="lens_profile">鏡頭設定檔</string>
+  <string name="lens_profile_unselected">尚未選取設定檔</string>
+  <string name="lens_camera_profile_unmatched">沒有符合的相機設定檔</string>
+  <string name="lens_profile_requires_camera">請先選擇符合的相機設定檔</string>
+  <string name="lens_profile_names_hint">相機設定檔描述機身；鏡頭設定檔包含光學校正資料，名稱可能不同，例如固定式鏡頭。</string>
+  <string name="lens_unverified_stored_lens">已儲存的鏡頭設定：%1$s。尚未確認是否適用於這台相機。</string>
+  <string name="lens_profile_search">搜尋設定檔</string>
+  <string name="lens_profile_no_matches">沒有符合的設定檔。</string>
+  <string name="lens_profile_none">清單中沒有相容的設定檔。請檢查相機選擇，或使用手動暗角校正。</string>
+  <string name="lens_image_camera">照片中的相機：%1$s</string>
+  <string name="lens_image_lens">照片中的鏡頭：%1$s</string>
+  <string name="lens_status_manual">手動暗角模式。提高強度即可套用，不需要鏡頭設定檔。</string>
+  <string name="lens_status_ready">鏡頭校正設定已就緒。</string>
+  <string name="lens_status_missing_database">此版本缺少 Lensfun 設定檔資料庫；仍可使用手動暗角校正。</string>
+  <string name="lens_status_missing_lens">沒有符合的鏡頭設定檔。請選擇正確的相機與鏡頭設定檔，或使用手動暗角校正。</string>
+  <string name="lens_status_missing_camera">照片中的相機名稱未符合任何 Lensfun 相機設定檔。選取相容鏡頭前，需先選擇符合的相機設定檔。</string>
+  <string name="lens_status_unverified_camera">已儲存的鏡頭設定尚未確認是否適用於這台相機，但仍可能影響預覽。可使用影像的鏡頭預設值重設。</string>
+  <string name="lens_status_missing_settings">請補齊此鏡頭設定檔所需的拍攝設定。</string>
+  <string name="lens_status_no_calibration">影像資料或選取的設定檔，在目前設定下沒有可生效的校正資料。</string>
+  <string name="lens_distortion">變形</string>
+  <string name="lens_tca">色差</string>
+  <string name="lens_vignetting">暗角</string>
+  <string name="lens_available_corrections">可用校正：%1$s</string>
+  <string name="lens_ca_warp_hint">變形強度調整此影像內嵌的色差校正；其中繼資料未提供幾何變形校正。</string>
+  <string name="lens_shooting_settings">拍攝設定</string>
+  <string name="lens_shooting_hint">鏡頭校正使用原始焦距、光圈、對焦距離及裁切係數。請先補齊缺少的影像數值，設定檔校正才可能生效。</string>
+  <string name="lens_correction_settings">設定檔校正選項</string>
+  <string name="lens_manual_vignette">手動暗角校正</string>
+  <string name="lens_manual_vignette_hint">此功能不依賴鏡頭設定檔。提高強度後，即可使用半徑與陡峭度調整。</string>
+</resources>

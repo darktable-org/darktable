@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -46,9 +47,12 @@ internal fun LensCorrectionEditor(
             ParameterControl(parameter, editable) { onParameter(parameter.name, it) }
         }
         val unmatchedCamera = info.method == 1 && info.databaseAvailable && !info.cameraMatched
+        val language = LocalConfiguration.current.locales[0].language
+        val localizedStatus = if(language == "zh" || language == "es") lensStatusResource(info.status) else null
         Text(when {
             unmatchedCamera && info.lensMatched -> lensStatusMessage("unverified_camera")
             unmatchedCamera -> stringResource(R.string.lens_status_missing_camera)
+            localizedStatus != null -> stringResource(localizedStatus)
             else -> info.message ?: lensStatusMessage(info.status)
         },
             style = MaterialTheme.typography.bodySmall,
@@ -108,15 +112,18 @@ internal fun LensCorrectionEditor(
 }
 
 @Composable
-private fun lensStatusMessage(status: String): String = when(status) {
-    "manual" -> stringResource(R.string.lens_status_manual)
-    "ready" -> stringResource(R.string.lens_status_ready)
-    "missing_database" -> stringResource(R.string.lens_status_missing_database)
-    "missing_lens" -> stringResource(R.string.lens_status_missing_lens)
-    "unverified_camera" -> stringResource(R.string.lens_status_unverified_camera)
-    "missing_settings" -> stringResource(R.string.lens_status_missing_settings)
-    "no_calibration" -> stringResource(R.string.lens_status_no_calibration)
-    else -> status.replace('_', ' ').replaceFirstChar { it.uppercase() }
+private fun lensStatusMessage(status: String): String = lensStatusResource(status)?.let { stringResource(it) }
+    ?: status.replace('_', ' ').replaceFirstChar { it.uppercase() }
+
+private fun lensStatusResource(status: String): Int? = when(status) {
+    "manual" -> R.string.lens_status_manual
+    "ready" -> R.string.lens_status_ready
+    "missing_database" -> R.string.lens_status_missing_database
+    "missing_lens" -> R.string.lens_status_missing_lens
+    "unverified_camera" -> R.string.lens_status_unverified_camera
+    "missing_settings" -> R.string.lens_status_missing_settings
+    "no_calibration" -> R.string.lens_status_no_calibration
+    else -> null
 }
 
 @Composable

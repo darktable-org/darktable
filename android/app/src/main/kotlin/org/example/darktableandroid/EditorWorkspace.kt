@@ -557,6 +557,8 @@ private fun WorkspaceAppInfo(runtime: RuntimeAvailability) {
     val uriHandler = LocalUriHandler.current
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        AppLanguageMenu()
+        HorizontalDivider()
         Text(stringResource(R.string.about), style = MaterialTheme.typography.titleMedium)
         Text(stringResource(R.string.unofficial_notice), style = MaterialTheme.typography.bodyMedium)
         HorizontalDivider()
@@ -566,7 +568,7 @@ private fun WorkspaceAppInfo(runtime: RuntimeAvailability) {
             Text(stringResource(R.string.workspace_upstream))
         }
         SelectionContainer {
-            Text("Upstream commit: 249f20eda79fdbc650e89778694c4829dba64d4b",
+            Text(stringResource(R.string.workspace_upstream_commit, "249f20eda79fdbc650e89778694c4829dba64d4b"),
                 style = MaterialTheme.typography.bodySmall)
         }
         Text(stringResource(if(runtime.available) R.string.workspace_runtime_ready else R.string.workspace_runtime_missing),

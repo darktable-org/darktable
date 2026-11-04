@@ -1,0 +1,17 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="tone_touch_title">Ajustar un tono de la foto</string>
+  <string name="tone_touch_mode">Ajustar sobre la foto</string>
+  <string name="tone_touch_hint">Toca una parte de la foto y luego arrastra o usa ±0.1 EV para ajustarla al instante. Las zonas de brillo similar cambian juntas.</string>
+  <string name="tone_touch_centre">Seleccionar centro de la foto</string>
+  <string name="tone_touch_choose_point">Elige un punto de la foto para muestrear su tono.</string>
+  <string name="tone_touch_sample">Tono seleccionado: %1$.2f EV</string>
+  <string name="tone_touch_adjustment">Brillo del tono seleccionado</string>
+  <string name="tone_touch_darker">−0.1 EV</string>
+  <string name="tone_touch_brighter">+0.1 EV</string>
+  <string name="tone_touch_target">Seleccionar un tono de la foto</string>
+  <string name="tone_touch_sampling">Muestreando tono…</string>
+  <string name="tone_touch_updating">Actualizando tono seleccionado…</string>
+  <string name="tone_touch_stale_preview">La vista previa está desactualizada. Actualízala antes de seleccionar un tono.</string>
+  <string name="tone_touch_retry_preview">Reintentar vista previa</string>
+</resources>

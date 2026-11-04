@@ -3,7 +3,7 @@ package org.example.darktableandroid.nativecore
 
 /** Match the native storage precision before checking bounds or the applied value. */
 internal fun ModuleParameter.parseNumericInput(text: String): Double? {
-    val parsed = text.toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
+    val parsed = text.toEditorDoubleOrNull() ?: return null
     val value = if(type == "float") parsed.toFloat().toDouble() else parsed
     if(!value.isFinite() || (type == "int" && value % 1.0 != 0.0)) return null
     return value.takeIf {

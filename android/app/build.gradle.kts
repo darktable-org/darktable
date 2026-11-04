@@ -374,6 +374,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")
     testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation("androidx.test:runner:1.6.2")
     testImplementation(platform("androidx.compose:compose-bom:2025.04.01"))
     testImplementation("androidx.compose.ui:ui-test-junit4")
     robolectricSdk("org.robolectric:android-all-instrumented:15-robolectric-12650502-i7")

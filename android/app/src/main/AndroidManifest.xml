@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-  <application android:allowBackup="true" android:label="@string/app_name" android:theme="@style/Theme.MobileRawEditor">
+  <application android:allowBackup="true" android:label="@string/app_name" android:theme="@style/Theme.MobileRawEditor" android:localeConfig="@xml/locales_config">
     <activity android:name=".MainActivity" android:exported="true">
       <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
       <!-- Shared documents arrive in EXTRA_STREAM/ClipData, often under opaque

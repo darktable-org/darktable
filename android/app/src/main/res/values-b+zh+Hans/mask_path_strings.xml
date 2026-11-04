@@ -1,0 +1,7 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="mask_path_node">节点 %1$d</string>
+  <string name="mask_path_select_node">选择蒙版节点</string>
+  <string name="mask_path_diagram_description">已应用%1$s，共 %2$d 个节点。所选节点 %3$d：x %4$s，y %5$s。</string>
+  <string name="mask_path_diagram_hint">方形网格显示已应用的原生路径或画笔骨架。控制柄与画笔半径仅作示意。选择节点后可在下方编辑坐标和控制柄。</string>
+</resources>

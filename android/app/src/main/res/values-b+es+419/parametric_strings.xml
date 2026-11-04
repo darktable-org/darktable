@@ -1,0 +1,9 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="parametric_mask_title">Máscara paramétrica</string>
+  <string name="parametric_input">Imagen de entrada</string>
+  <string name="parametric_output">Imagen de salida</string>
+  <string name="parametric_channel_selector">Seleccionar canal de máscara</string>
+  <string name="parametric_graph_description">Distribución de umbrales aplicada para %1$s</string>
+  <string name="parametric_threshold_hint">Los umbrales usan la escala normalizada de 0 a 1 del canal. Los controles exteriores suavizan la selección. Los controles mantienen su orden; mueve uno vecino para liberar uno fijo. Cada ajuste se aplica al soltar o al pulsar Aplicar.</string>
+</resources>

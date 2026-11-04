@@ -1,0 +1,11 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="crop_bounds_title">Límites del recorte</string>
+  <string name="crop_aspect_title">Ajustar borrador a proporción</string>
+  <string name="crop_aspect_free">Libre</string>
+  <string name="crop_aspect_input">Imagen de entrada</string>
+  <string name="crop_aspect_orientation">Orientación vertical</string>
+  <string name="crop_aspect_hint">Ajusta dentro del borrador según las dimensiones de entrada del recorte. Aplicar confirma todo el rectángulo. Editar un borde vuelve a Libre.</string>
+  <string name="crop_aspect_dimensions">Entrada del recorte: %1$d × %2$d px</string>
+  <string name="crop_aspect_minimum">Esta proporción no permite respetar el tamaño mínimo del recorte.</string>
+</resources>

@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="app_language">Language</string>
+  <string name="app_language_system">System default</string>
+  <string name="app_language_description">Choose the app language. Your open photo and edit history are kept.</string>
+  <string name="app_language_choose">Choose app language</string>
+  <string name="app_language_english" translatable="false">English</string>
+  <string name="app_language_zh_hant" translatable="false">繁體中文</string>
+  <string name="app_language_zh_hans" translatable="false">简体中文</string>
+  <string name="app_language_es_419" translatable="false">Español (Latinoamérica)</string>
+  <string name="workspace_upstream_commit">Upstream commit: %1$s</string>
   <string name="workspace_tab_adjustments">Light / Color</string>
   <string name="workspace_tab_detail">Detail / Repair</string>
   <string name="workspace_tab_geometry">Geometry / Effects</string>

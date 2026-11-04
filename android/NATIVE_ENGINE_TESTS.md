@@ -15,7 +15,7 @@ are not counts of independently rendered Android controls.
 The current validation includes:
 
 - The coordinated Android check passed production and instrumentation Kotlin
-  compilation, Debug and Release each passed 159 JVM tests in 34 classes
+  compilation, Debug and Release each passed 183 JVM tests in 38 classes
   (zero failures, errors or skips), plus `lintDevDebug` and `lintDevRelease`.
   Additional instrumentation-source checks remain separate from
   actually running those component tests on Android.
@@ -117,6 +117,18 @@ ClipData/data fallbacks, unchanged grant flags, malformed extras and rejection
 of missing, multi-file or unsupported-URI payloads. These do not launch the native
 engine, transfer real provider grants, execute an OEM file manager/share sheet,
 or establish a new GPR decode result.
+
+The [language menu](LOCALIZATION.md) adds 24 host tests for translated resource
+resolution, regional/script fallback, platform language storage, legacy resource
+wrapping, System-default restoration, the Settings menu, gettext parsing/context
+and display-only binding preservation, and decimal-comma inputs with original
+native validation. All pass in Debug and Release. Each of the three translated
+resource sets covers all 346 translatable default strings, with matching format
+arguments. A separate probe compiled the actual Kotlin gettext reader and loaded
+the complete `zh_TW`, `zh_CN` and `es` desktop MO files, verifying exposure,
+orientation, white balance, its context-sensitive presets and unknown-label
+fallback. The tests do not establish physical-device Activity recreation during
+RAW editing; the legacy branch is exercised under a host SDK 35 runtime.
 
 Three `DarktableThemeTest` host cases passed in Debug and Release. They render the production workspace and module
 controls under the previous Material tokens and the desktop-grey theme. They

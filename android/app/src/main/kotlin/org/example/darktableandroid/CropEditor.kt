@@ -88,16 +88,16 @@ internal fun CropEditor(crop: ModuleCrop, editable: Boolean, onApply: (CropRect)
         // Keep both edges coherent in the same native Float representation. A
         // slider only edits the draft; the complete rectangle is applied below.
         val bounds = draft ?: crop.bounds
-        ParameterSlider(stringResource(R.string.crop_left), left.toDoubleOrNull(), 0.0,
+        ParameterSlider(stringResource(R.string.crop_left), left.toEditorDoubleOrNull(), 0.0,
             maximumLeadingEdge(bounds.right, crop.minSize).toDouble(), editable && draft != null,
             onValue = { manualEdit { left = it.toFloat().toString() } })
-        ParameterSlider(stringResource(R.string.crop_top), top.toDoubleOrNull(), 0.0,
+        ParameterSlider(stringResource(R.string.crop_top), top.toEditorDoubleOrNull(), 0.0,
             maximumLeadingEdge(bounds.bottom, crop.minSize).toDouble(), editable && draft != null,
             onValue = { manualEdit { top = it.toFloat().toString() } })
-        ParameterSlider(stringResource(R.string.crop_right), right.toDoubleOrNull(),
+        ParameterSlider(stringResource(R.string.crop_right), right.toEditorDoubleOrNull(),
             minimumTrailingEdge(bounds.left, crop.minSize).toDouble(), 1.0, editable && draft != null,
             onValue = { manualEdit { right = it.toFloat().toString() } })
-        ParameterSlider(stringResource(R.string.crop_bottom), bottom.toDoubleOrNull(),
+        ParameterSlider(stringResource(R.string.crop_bottom), bottom.toEditorDoubleOrNull(),
             minimumTrailingEdge(bounds.top, crop.minSize).toDouble(), 1.0, editable && draft != null,
             onValue = { manualEdit { bottom = it.toFloat().toString() } })
         Text(stringResource(R.string.crop_coordinate_range, crop.minSize.toString()),

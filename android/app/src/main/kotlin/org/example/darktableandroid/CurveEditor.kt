@@ -76,7 +76,7 @@ private fun CurveEditor(
     val point = nodes[selected]
     var xText by remember(selected, point) { mutableStateOf(point.x.toString()) }
     var yText by remember(selected, point) { mutableStateOf(point.y.toString()) }
-    val numericNodes = xText.toFloatOrNull()?.let { x -> yText.toFloatOrNull()?.let { y ->
+    val numericNodes = xText.toEditorFloatOrNull()?.let { x -> yText.toEditorFloatOrNull()?.let { y ->
         replaceCurvePoint(nodes, selected, x, y, curve.maxNodes, curve.minSpacing)
     } }
     val changed = nodes != curve.nodes || interpolation != curve.interpolation

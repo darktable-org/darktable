@@ -13,7 +13,7 @@ internal fun validCropRect(rect: CropRect, minSize: Float): Boolean =
 
 /** Normalize numeric input to the same float coordinates sent to the native editor. */
 internal fun parseCropInput(left: String, top: String, right: String, bottom: String, minSize: Float): CropRect? {
-    val rect = CropRect(left.toFloatOrNull() ?: return null, top.toFloatOrNull() ?: return null,
-        right.toFloatOrNull() ?: return null, bottom.toFloatOrNull() ?: return null)
+    val rect = CropRect(left.toEditorFloatOrNull() ?: return null, top.toEditorFloatOrNull() ?: return null,
+        right.toEditorFloatOrNull() ?: return null, bottom.toEditorFloatOrNull() ?: return null)
     return rect.takeIf { validCropRect(it, minSize) }
 }

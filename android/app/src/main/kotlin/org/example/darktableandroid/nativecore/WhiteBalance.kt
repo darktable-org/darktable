@@ -48,8 +48,8 @@ internal fun checkedWhiteBalanceTemperature(kelvin: Double, tint: Double, minKel
 
 /** Validate a complete pair; native code alone converts temperature/tint into gains. */
 internal fun whiteBalanceTemperature(balance: WhiteBalanceTemperature, kelvin: String, tint: String): Pair<Double, Double>? {
-    val temperature = kelvin.toDoubleOrNull() ?: return null
-    val green = tint.toDoubleOrNull() ?: return null
+    val temperature = kelvin.toEditorDoubleOrNull() ?: return null
+    val green = tint.toEditorDoubleOrNull() ?: return null
     return (temperature to green).takeIf { balance.accepts(temperature, green) }
 }
 
@@ -87,7 +87,7 @@ internal fun whiteBalanceGains(balance: WhiteBalance, input: List<String>): Floa
     if(input.size != balance.channels.size) return null
     val gains = FloatArray(input.size)
     for((position, channel) in balance.channels.withIndex()) {
-        val value = input[position].toFloatOrNull() ?: return null
+        val value = input[position].toEditorFloatOrNull() ?: return null
         if(channel.index !in gains.indices) return null
         gains[channel.index] = value
     }

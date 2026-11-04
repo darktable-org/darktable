@@ -19,6 +19,8 @@ import org.example.darktableandroid.nativecore.WhiteBalanceCameraPresets
 import org.example.darktableandroid.nativecore.WhiteBalanceTemperature
 import org.example.darktableandroid.nativecore.whiteBalanceGains
 import org.example.darktableandroid.nativecore.whiteBalanceTemperature
+import org.example.darktableandroid.nativecore.toEditorDoubleOrNull
+import org.example.darktableandroid.nativecore.toEditorFloatOrNull
 import kotlin.math.roundToInt
 
 private val WhiteBalanceInputSaver = listSaver<List<String>, String>(save = { it }, restore = { it.toList() })
@@ -75,7 +77,7 @@ internal fun WhiteBalanceEditor(balance: WhiteBalance, editable: Boolean,
         }
         Text(stringResource(R.string.white_balance_gains), style = MaterialTheme.typography.titleSmall)
         balance.channels.forEachIndexed { position, channel ->
-            val value = input[position].toFloatOrNull()
+            val value = input[position].toEditorFloatOrNull()
             OutlinedTextField(value = input[position], onValueChange = { text ->
                 input = input.mapIndexed { index, old -> if(index == position) text else old }
             }, label = { Text(channel.label) }, enabled = editable, singleLine = true,
@@ -158,17 +160,17 @@ private fun WhiteBalanceTemperatureEditor(temperature: WhiteBalanceTemperature, 
     Text(stringResource(R.string.white_balance_temperature), style = MaterialTheme.typography.titleSmall)
     OutlinedTextField(value = kelvin, onValueChange = { kelvin = it },
         label = { Text(stringResource(R.string.white_balance_kelvin)) }, enabled = editable, singleLine = true,
-        modifier = Modifier.fillMaxWidth(), isError = kelvin.toDoubleOrNull()?.let {
+        modifier = Modifier.fillMaxWidth(), isError = kelvin.toEditorDoubleOrNull()?.let {
             !it.isFinite() || it !in temperature.minKelvin..temperature.maxKelvin
         } != false, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii))
-    ParameterSlider(stringResource(R.string.white_balance_kelvin), kelvin.toDoubleOrNull(),
+    ParameterSlider(stringResource(R.string.white_balance_kelvin), kelvin.toEditorDoubleOrNull(),
         temperature.minKelvin, temperature.maxKelvin, editable, onValue = { kelvin = it.toString() })
     OutlinedTextField(value = tint, onValueChange = { tint = it },
         label = { Text(stringResource(R.string.white_balance_tint)) }, enabled = editable, singleLine = true,
-        modifier = Modifier.fillMaxWidth(), isError = tint.toDoubleOrNull()?.let {
+        modifier = Modifier.fillMaxWidth(), isError = tint.toEditorDoubleOrNull()?.let {
             !it.isFinite() || it !in temperature.minTint..temperature.maxTint
         } != false, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii))
-    ParameterSlider(stringResource(R.string.white_balance_tint), tint.toDoubleOrNull(),
+    ParameterSlider(stringResource(R.string.white_balance_tint), tint.toEditorDoubleOrNull(),
         temperature.minTint, temperature.maxTint, editable, onValue = { tint = it.toString() })
     Text(stringResource(R.string.white_balance_temperature_range, temperature.minKelvin.toString(),
         temperature.maxKelvin.toString(), temperature.minTint.toString(), temperature.maxTint.toString()),

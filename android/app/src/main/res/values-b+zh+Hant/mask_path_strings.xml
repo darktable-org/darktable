@@ -1,0 +1,7 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="mask_path_node">節點 %1$d</string>
+  <string name="mask_path_select_node">選擇遮罩節點</string>
+  <string name="mask_path_diagram_description">已套用 %1$s，共 %2$d 個節點。選取節點 %3$d：x %4$s，y %5$s。</string>
+  <string name="mask_path_diagram_hint">方格顯示已套用的原生路徑或筆刷骨幹；控制柄與筆刷半徑僅作示意。選取節點後，可在下方編輯座標及控制柄。</string>
+</resources>

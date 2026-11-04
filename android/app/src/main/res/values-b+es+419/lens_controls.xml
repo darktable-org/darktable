@@ -1,0 +1,33 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="lens_camera_profile">Perfil de cámara</string>
+  <string name="lens_profile">Perfil de lente</string>
+  <string name="lens_profile_unselected">Ningún perfil seleccionado</string>
+  <string name="lens_camera_profile_unmatched">No hay un perfil de cámara coincidente</string>
+  <string name="lens_profile_requires_camera">Primero elige un perfil de cámara coincidente</string>
+  <string name="lens_profile_names_hint">Los perfiles de cámara describen el cuerpo. Los perfiles de lente incluyen calibración óptica y pueden tener otro nombre, como lente fijo.</string>
+  <string name="lens_unverified_stored_lens">Ajuste de lente guardado: %1$s. No se ha verificado para esta cámara.</string>
+  <string name="lens_profile_search">Buscar perfiles</string>
+  <string name="lens_profile_no_matches">No hay perfiles coincidentes.</string>
+  <string name="lens_profile_none">No se muestran perfiles compatibles. Revisa la cámara seleccionada o usa el viñeteado manual.</string>
+  <string name="lens_image_camera">Cámara de la imagen: %1$s</string>
+  <string name="lens_image_lens">Lente de la imagen: %1$s</string>
+  <string name="lens_status_manual">Modo de viñeteado manual. Aumenta la intensidad para aplicarlo; no requiere un perfil de lente.</string>
+  <string name="lens_status_ready">Los ajustes de corrección de lente están listos.</string>
+  <string name="lens_status_missing_database">Esta versión no incluye la base de perfiles de Lensfun. El viñeteado manual sigue disponible.</string>
+  <string name="lens_status_missing_lens">No hay un perfil de lente coincidente. Selecciona la cámara y el perfil de lente correctos, o usa el viñeteado manual.</string>
+  <string name="lens_status_missing_camera">El nombre de la cámara en la foto no coincide con un perfil de Lensfun. Para elegir lentes compatibles se necesita un perfil de cámara coincidente.</string>
+  <string name="lens_status_unverified_camera">El ajuste de lente guardado no está verificado para esta cámara y puede afectar la vista previa. Restablécelo con los valores de lente de la imagen.</string>
+  <string name="lens_status_missing_settings">Completa los datos de captura que requiere este perfil de lente.</string>
+  <string name="lens_status_no_calibration">Los datos de la imagen o el perfil seleccionado no ofrecen una calibración efectiva con estos ajustes.</string>
+  <string name="lens_distortion">distorsión</string>
+  <string name="lens_tca">aberración cromática</string>
+  <string name="lens_vignetting">viñeteado</string>
+  <string name="lens_available_corrections">Correcciones disponibles: %1$s</string>
+  <string name="lens_ca_warp_hint">La intensidad de deformación ajusta la corrección de aberración cromática integrada en esta imagen. Sus metadatos no ofrecen corrección de distorsión geométrica.</string>
+  <string name="lens_shooting_settings">Datos de captura</string>
+  <string name="lens_shooting_hint">La calibración del lente usa la distancia focal, apertura, distancia de enfoque y factor de recorte originales. Completa los datos faltantes antes de aplicar las correcciones del perfil.</string>
+  <string name="lens_correction_settings">Ajustes de corrección del perfil</string>
+  <string name="lens_manual_vignette">Corrección manual del viñeteado</string>
+  <string name="lens_manual_vignette_hint">Funciona sin un perfil de lente. Aumenta la intensidad para usar el radio y la pendiente.</string>
+</resources>

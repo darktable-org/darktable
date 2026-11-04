@@ -3,6 +3,7 @@ package org.example.darktableandroid
 
 import android.app.Activity
 import android.content.Intent
+import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -40,6 +41,10 @@ import org.example.darktableandroid.storage.UriCache
 class MainActivity : ComponentActivity() {
     private var sourceIntent by mutableStateOf<SourceIntent?>(null)
     private var sourceIntentId = 0L
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLanguages.wrap(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -107,7 +112,9 @@ private fun MobileRawApp(sourceIntent: SourceIntent?, onSourceSelected: (Uri, In
     var pendingExtended by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val editor: EditorViewModel = viewModel()
-    val state by editor.state.collectAsStateWithLifecycle()
+    val nativeState by editor.state.collectAsStateWithLifecycle()
+    val catalog by rememberEditorCatalog()
+    val state = remember(nativeState, catalog) { nativeState.forDisplay(catalog) }
     val runtime by editor.runtime.collectAsStateWithLifecycle()
     val ready = when(val current = state) {
         is EditorState.Ready -> current

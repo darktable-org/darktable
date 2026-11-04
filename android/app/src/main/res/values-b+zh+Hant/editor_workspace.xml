@@ -1,0 +1,27 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="workspace_tab_adjustments">明暗／色彩</string>
+  <string name="workspace_tab_detail">細節／修補</string>
+  <string name="workspace_tab_geometry">幾何／效果</string>
+  <string name="workspace_tab_settings">設定</string>
+  <string name="workspace_choose_tool">選擇編輯工具</string>
+  <string name="workspace_no_tools">沒有符合的工具</string>
+  <string name="workspace_tool_toggle">開啟 %1$s</string>
+  <string name="workspace_enabled">開啟</string>
+  <string name="workspace_disabled">關閉</string>
+  <string name="workspace_disabled_hint">開啟後即可調整；關閉時會保留設定。</string>
+  <string name="workspace_close_search">關閉工具搜尋</string>
+  <string name="workspace_search_results">%1$d 個結果・所有頁籤</string>
+  <string name="workspace_search_result_detail">%1$s・%2$s</string>
+  <string name="workspace_choose_photo">選擇照片以開始編輯</string>
+  <string name="workspace_layout_hint">照片固定顯示在工具上方。使用底部頁籤切換明暗與色彩、細節及幾何工具；各頁籤會記住上次選取的工具。</string>
+  <string name="workspace_license_title">授權條款</string>
+  <string name="workspace_upstream">darktable 原始碼與授權條款</string>
+  <string name="workspace_runtime_ready">影像處理引擎已就緒。</string>
+  <string name="workspace_runtime_missing">需安裝包含影像處理引擎的版本，才能開啟與編輯照片。</string>
+  <string name="app_language">語言</string>
+  <string name="app_language_system">跟隨系統</string>
+  <string name="app_language_description">選擇 app 語言。目前開啟的照片與編輯歷程都會保留。</string>
+  <string name="app_language_choose">選擇 app 語言</string>
+  <string name="workspace_upstream_commit">上游版本：%1$s</string>
+</resources>

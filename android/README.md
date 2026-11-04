@@ -11,6 +11,11 @@ Selecting a tool does not enable it: its separate power switch controls whether
 its edits apply. Each category remembers its tool, and each tool keeps its scroll
 position. See [editor UX](EDITOR_UX.md) for the interaction rules.
 
+Settings includes a saved language button menu: System default, English,
+Traditional Chinese, Simplified Chinese and Latin American Spanish. Tool labels
+reuse desktop translations without changing native parameter identities or the
+processing locale. See [app languages](LOCALIZATION.md).
+
 An engine-enabled build also opens a single photo shared from Android's file
 manager. Share a GPR file and choose this editor; image MIME types and generic
 `application/octet-stream` shares are registered, including GoPro application

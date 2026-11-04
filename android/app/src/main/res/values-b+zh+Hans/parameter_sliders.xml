@@ -1,0 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="parameter_slider_description">%1$s滑块</string>
+  <string name="parameter_reset">重置</string>
+  <string name="parameter_reset_description">将%1$s恢复为原始默认值</string>
+</resources>

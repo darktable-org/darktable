@@ -1,0 +1,11 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="crop_bounds_title">裁剪边界</string>
+  <string name="crop_aspect_title">按比例调整草稿</string>
+  <string name="crop_aspect_free">自由</string>
+  <string name="crop_aspect_input">输入图像</string>
+  <string name="crop_aspect_orientation">纵向</string>
+  <string name="crop_aspect_hint">根据裁剪工具的输入尺寸，在草稿范围内适配比例。应用后提交完整矩形；修改任一边界将恢复为自由比例。</string>
+  <string name="crop_aspect_dimensions">裁剪输入：%1$d × %2$d 像素</string>
+  <string name="crop_aspect_minimum">此比例无法满足最小裁剪尺寸。</string>
+</resources>

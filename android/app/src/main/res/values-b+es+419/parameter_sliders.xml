@@ -1,0 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+  <string name="parameter_slider_description">Deslizador de %1$s</string>
+  <string name="parameter_reset">Restablecer</string>
+  <string name="parameter_reset_description">Restablecer %1$s a su valor predeterminado original</string>
+</resources>
