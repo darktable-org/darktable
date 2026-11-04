@@ -117,6 +117,24 @@ changes (where available).
   manager now drive the same controls in the panel. Existing masks are
   converted when an edit is opened and render as before.
 
+- Wide gamut and HDR display on Wayland. On a compositor with color
+  management (color-management-v1 with parametric linear Rec. 2020
+  descriptions and half float buffers, as in KWin 6), the darkroom
+  image, its snapshots, the second window and the slideshow are handed
+  to the compositor as linear Rec. 2020 in half floats, and the
+  compositor makes the one conversion to the screen. Colors beyond
+  sRGB are shown as far as the screen can, and when the compositor
+  reports HDR headroom, highlights can go above SDR white: sigmoid and
+  AgX tone map to it when "follow output peak" is on (it is off in
+  edits made before that option existed). This also fixes the image
+  being converted twice on such compositors, once by darktable and
+  once by the compositor. There the display profile setting has no
+  effect and is disabled, and the rest of the interface, thumbnails
+  included, is shown in sRGB. A compositor with color management that
+  lacks one of these gets the image in sRGB, which also avoids the
+  double conversion. Other compositors and platforms keep the display
+  path they had.
+
 ## UI/UX Improvements
 
 - The code has received a large set of changes in preparation of the
@@ -957,6 +975,9 @@ changes (where available).
 - OpenCV 4 or 5 for HDR exposure-bracket auto-alignment (only the
   core, imgproc and flann modules plus features2d/calib3d on OpenCV 4,
   or features/geometry on OpenCV 5)
+
+- libwayland-client 1.18 and wayland-scanner, with GTK's Wayland
+  backend, for wide gamut and HDR display on Wayland
 
 ## Camera support, compared to 5.6
 
