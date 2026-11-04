@@ -116,6 +116,10 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
                                       const char *filename,
                                       const int intent);
 
+/** the headroom above reference white an output in this profile type has:
+   1 unless its transfer function is HDR (PQ, HLG) */
+float dt_ioppr_profile_headroom(const dt_colorspaces_color_profile_type_t type);
+
 /** set the PQ peak, in nits, for the pipes processed by the calling thread,
    or 0 to read it from the export module's setting again */
 void dt_ioppr_set_thread_pq_peak_nits(const int nits);

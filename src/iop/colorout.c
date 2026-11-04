@@ -578,6 +578,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   cmsHPROFILE output = NULL;
   cmsHPROFILE softproof = NULL;
+  dt_colorspaces_color_profile_type_t softproof_type =
+    darktable.color_profiles->softproof_type;
   cmsHPROFILE hdr_linear = NULL;
   cmsUInt32Number output_format = TYPE_RGBA_FLT;
 
@@ -614,19 +616,12 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     out_filename = (out_type == DT_COLORSPACE_DISPLAY ? darktable.color_profiles->display_filename : "");
     out_intent = darktable.color_profiles->display_intent;
   }
-  else if(dt_pipe_is_preview2(pipe))
-  {
-    /* preview2 is only used in second darkroom window, using display2 profile as output */
-    out_type = darktable.color_profiles->display2_type;
-    out_filename = darktable.color_profiles->display2_filename;
-    out_intent = darktable.color_profiles->display2_intent;
-  }
   else
   {
-    /* we are not exporting, using display profile as output */
-    out_type = darktable.color_profiles->display_type;
-    out_filename = darktable.color_profiles->display_filename;
-    out_intent = darktable.color_profiles->display_intent;
+    /* we are not exporting, the pipe is presented */
+    out_type = pipe->output.type;
+    out_filename = pipe->output.filename;
+    out_intent = pipe->output.intent;
   }
 
   // when the output type is Lab then process is a nop, so we can avoid creating a transform
@@ -682,6 +677,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
       softproof = prof->profile;
     else
     {
+      softproof_type = DT_COLORSPACE_SRGB;
       softproof = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "",
                                              DT_PROFILE_DIRECTION_OUT
                                              | DT_PROFILE_DIRECTION_DISPLAY
@@ -782,11 +778,18 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
       d->unbounded_coeffs[k][0] = -1.0f;
   }
 
+  const gboolean proofing = softproof != NULL;
   // softproof is never the original but always a copy that went through dt_colorspaces_make_temporary_profile()
   dt_colorspaces_cleanup_profile(softproof);
   dt_colorspaces_cleanup_profile(hdr_linear);
 
   dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, p->intent);
+  // a soft proof shows an export to the proof profile, so tone mappers
+  // render to that profile's headroom, at most what the screen shows
+  if(proofing)
+    piece->pipe->output_headroom =
+      fminf(piece->pipe->output_headroom,
+            dt_ioppr_profile_headroom(softproof_type));
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

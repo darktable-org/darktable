@@ -815,7 +815,7 @@ void dt_ioppr_set_thread_pq_peak_nits(const int nits)
   _thread_pq_peak_nits = nits;
 }
 
-static float _output_headroom(const dt_colorspaces_color_profile_type_t type)
+float dt_ioppr_profile_headroom(const dt_colorspaces_color_profile_type_t type)
 {
   switch(dt_colorspaces_hdr_transfer(type))
   {
@@ -863,7 +863,10 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", intent);
   }
   pipe->output_profile_info = profile_info;
-  pipe->output_headroom = _output_headroom(profile_info->type);
+  // a presented output may report headroom beyond what its transfer
+  // function implies, e.g. linear light on an HDR screen
+  pipe->output_headroom = fmaxf(pipe->output.headroom,
+                                dt_ioppr_profile_headroom(profile_info->type));
 
   return profile_info;
 }

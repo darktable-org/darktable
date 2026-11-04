@@ -240,6 +240,9 @@ typedef struct dt_dev_pixelpipe_t
   /** peak luminance of the output relative to the 203 nit reference white,
       1.0 for SDR; set with the output profile, read by tone mappers **/
   float output_headroom;
+  /** what a presented pipe renders to, taken at the start of each run;
+      type DT_COLORSPACE_NONE for pipes nobody presents **/
+  dt_display_output_t output;
 
   // instances of pixelpipe, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;

@@ -787,6 +787,21 @@ restart:
   if(port == &dev->full)
     pipe->input_timestamp = dev->timestamp;
 
+  // dt_dev_image() fixes the output of its pipe itself
+  if(!dt_pipe_is_image(pipe))
+  {
+    dt_display_output_t output;
+    dt_colorspaces_get_display_output(dt_pipe_is_preview2(pipe)
+                                      ? DT_COLORSPACE_DISPLAY2
+                                      : DT_COLORSPACE_DISPLAY,
+                                      &output);
+    if(!dt_display_output_equal(&output, &pipe->output))
+    {
+      pipe->output = output;
+      pipe->changed |= DT_DEV_PIPE_SYNCH;
+    }
+  }
+
   const gboolean changing = (pipe->changed != DT_DEV_PIPE_UNCHANGED) || initial_change;
   const gboolean port_loading = port && pipe->loading;
   const gboolean require_zoom_test = (pipe->changed & ~DT_DEV_PIPE_ZOOMED) || initial_change;
@@ -4376,6 +4391,7 @@ void dt_dev_image(const dt_imgid_t imgid,
   // instead of packing it to 8-bit. See gamma.c process().
   if(want_float)
     pipe->type |= DT_DEV_PIXELPIPE_IMAGE_FLOAT;
+  dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &pipe->output);
   // load image and set history_end
 
   dev.snapshot_id = snapshot_id;
