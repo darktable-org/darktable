@@ -1869,7 +1869,7 @@ static void _match_rotation(cairo_t *cr,
   cairo_translate(cr, dx - 0.5 * cx, dy - 0.5 * cy);
 }
 
-gboolean dt_view_paint_surface(cairo_t *cr,
+void dt_view_paint_surface(cairo_t *cr,
                            const size_t width,
                            const size_t height,
                            dt_dev_viewport_t *port,
@@ -1890,8 +1890,7 @@ gboolean dt_view_paint_surface(cairo_t *cr,
   int processed_width, processed_height;
   dt_dev_get_processed_size(port, &processed_width, &processed_height);
   if(!processed_width || !processed_height)
-    return TRUE;
-  gboolean shown = TRUE;
+    return;
 
   float pts[14];
   memcpy(pts, buf_zoom_pos, sizeof(dt_dev_zoom_pos_t));
@@ -2131,8 +2130,8 @@ gboolean dt_view_paint_surface(cairo_t *cr,
 
     cairo_scale(cr, back_scale, back_scale);
     _match_rotation(cr, pts, trans_x, trans_y, buf_width, buf_height);
-    shown = dt_presenter_image(cr, 0, 0, buf, buf_width, buf_height, buf_output, buf_id,
-                               CAIRO_FILTER_FAST);
+    const gboolean shown = dt_presenter_image(cr, 0, 0, buf, buf_width, buf_height,
+                                              buf_output, buf_id, CAIRO_FILTER_FAST);
     if(shown
        && darktable.gui->show_focus_peaking
        && window != DT_WINDOW_SLIDESHOW)
@@ -2145,7 +2144,6 @@ gboolean dt_view_paint_surface(cairo_t *cr,
   }
 
   cairo_restore(cr);
-  return shown;
 }
 
 dt_view_context_t dt_view_get_context_hash(void)

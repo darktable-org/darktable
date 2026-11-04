@@ -312,13 +312,11 @@ void gui_post_expose(dt_lib_module_t *self,
     cairo_clip(cri);
     cairo_fill(cri);
 
-    if(snap->buf
-       && !dt_view_paint_surface(cri, width, height, &dev->full, DT_WINDOW_MAIN,
-                                 snap->buf, &snap->output, snap->frame_id,
-                                 snap->scale, snap->width, snap->height, snap->zoom_pos))
+    if(snap->buf)
     {
-      d->snap_requested = TRUE;
-      dt_control_queue_redraw_center();
+      dt_view_paint_surface(cri, width, height, &dev->full, DT_WINDOW_MAIN,
+                            snap->buf, &snap->output, snap->frame_id,
+                            snap->scale, snap->width, snap->height, snap->zoom_pos);
     }
 
     cairo_restore(cri);

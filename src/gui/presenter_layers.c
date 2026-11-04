@@ -44,7 +44,6 @@ struct dt_presenter_window_t
 // what an image layer was composed from, to know when to compose again
 typedef struct _shown_t
 {
-  const float *source;
   uint32_t id;
   cairo_matrix_t matrix;
   double clip[4];
@@ -370,7 +369,7 @@ static gboolean _image_changed(const dt_presenter_layered_t *l,
   {
     const dt_presenter_image_t *i = &g_array_index(l->images, dt_presenter_image_t, k);
     const _shown_t *s = &g_array_index(l->shown, _shown_t, k);
-    if(i->frame->source != s->source || i->frame->id != s->id || i->filter != s->filter
+    if(i->frame->id != s->id || i->filter != s->filter
        || memcmp(&i->matrix, &s->matrix, sizeof(cairo_matrix_t))
        || memcmp(i->clip, s->clip, sizeof(s->clip)))
       return TRUE;
@@ -433,8 +432,7 @@ static void _present(dt_presenter_layered_t *l)
     {
       const dt_presenter_image_t *i = &g_array_index(l->images, dt_presenter_image_t, k);
       _shown_t *s = &g_array_index(l->shown, _shown_t, k);
-      *s = (_shown_t){ .source = i->frame->source, .id = i->frame->id,
-                       .matrix = i->matrix, .filter = i->filter };
+      *s = (_shown_t){ .id = i->frame->id, .matrix = i->matrix, .filter = i->filter };
       memcpy(s->clip, i->clip, sizeof(s->clip));
     }
   }

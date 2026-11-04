@@ -590,17 +590,14 @@ static void _view_paint_surface(cairo_t *cr,
 
   dt_pthread_mutex_lock(&p->backbuf_mutex);
 
-  const gboolean shown = dt_view_paint_surface(cr, width, height,
-                                               port, window,
-                                               p->backbuf, &p->backbuf_output,
-                                               p->backbuf_id, p->backbuf_scale,
-                                               p->backbuf_width, p->backbuf_height,
-                                               p->backbuf_zoom_pos);
+  dt_view_paint_surface(cr, width, height,
+                        port, window,
+                        p->backbuf, &p->backbuf_output, p->backbuf_id,
+                        p->backbuf_scale,
+                        p->backbuf_width, p->backbuf_height,
+                        p->backbuf_zoom_pos);
 
   dt_pthread_mutex_unlock(&p->backbuf_mutex);
-
-  if(!shown && p->status == DT_DEV_PIXELPIPE_VALID)
-    p->status = DT_DEV_PIXELPIPE_DIRTY;
 }
 
 /* drag&drop hint overlays

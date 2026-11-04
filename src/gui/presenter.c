@@ -162,6 +162,15 @@ static gboolean _same_profile(const dt_display_output_t *a,
   return a->type == b->type && !strcmp(a->filename, b->filename);
 }
 
+// a window that declared its output shows frames in its profile only. the
+// headroom does not count: a frame rendered before the headroom changed
+// keeps its tone mapping until it is rendered again
+static gboolean _shown_in(const dt_display_output_t *output,
+                          const dt_display_output_t *encoding)
+{
+  return _same_profile(output, encoding) && output->managed == encoding->managed;
+}
+
 // float RGBA in encoding as cairo's RGB24, converted to the profile gtk
 // unless that is NULL
 static cairo_surface_t *_surface(const float *pixels,
@@ -297,7 +306,7 @@ cairo_surface_t *dt_presenter_gtk_surface(const float *pixels,
   return cairo_surface_reference(entry.surface);
 }
 
-// a frame already converted from the same source, or a new one
+// the frame id in encoding, converted already or new
 static dt_presenter_frame_t *_frame_get(_widget_t *w,
                                         const float *pixels,
                                         const int width,
@@ -309,15 +318,12 @@ static dt_presenter_frame_t *_frame_get(_widget_t *w,
   for(guint k = 0; k < w->frames->len && !f; k++)
   {
     dt_presenter_frame_t *c = g_ptr_array_index(w->frames, k);
-    if(c->source == pixels && c->id == id && c->width == width && c->height == height
-       && dt_display_output_equal(&c->encoding, encoding))
-      f = c;
+    if(c->id == id && dt_display_output_equal(&c->encoding, encoding)) f = c;
   }
 
   if(!f)
   {
     f = g_malloc0(sizeof(dt_presenter_frame_t));
-    f->source = pixels;
     f->id = id;
     f->width = width;
     f->height = height;
@@ -364,12 +370,13 @@ gboolean dt_presenter_image(cairo_t *cr,
   _widget_t *w = cairo_get_user_data(cr, &_cr_key);
   if(!w || !pixels || width <= 0 || height <= 0) return FALSE;
 
-  // a window that declared its output shows that one only, with a native
-  // backend or with cairo. otherwise cairo shows display RGB in whatever
-  // display profile it was rendered for, as it always did
+  // a declared output holds with a native backend and with cairo, and the
+  // declaration renders the window's pipes again (colorout's
+  // DT_SIGNAL_CONTROL_PROFILE_CHANGED handler). without one, cairo shows
+  // display RGB in whatever display profile it was rendered for, as it
+  // always did
   dt_display_output_t output;
-  if(dt_presenter_declared_output(w->widget, &output)
-     && !dt_display_output_equal(encoding, &output))
+  if(dt_presenter_declared_output(w->widget, &output) && !_shown_in(&output, encoding))
     return FALSE;
 
   dt_presenter_image_t image = { .frame = _frame_get(w, pixels, width, height,
@@ -420,17 +427,14 @@ void dt_presenter_keep(cairo_t *cr)
     const dt_presenter_image_t image = g_array_index(w->kept, dt_presenter_image_t, k);
 
     // in an output no longer shown
-    if(declared && !dt_display_output_equal(&image.frame->encoding, &output)) continue;
+    if(declared && !_shown_in(&output, &image.frame->encoding)) continue;
 
+    // a window never changes its backend: the draw that kept a frame made
+    // what this one needs
     if(w->layered)
-    {
-      // kept from a draw before the backend
-      if(!image.frame->pixels) continue;
       dt_presenter_layered_image(w->layered, &image);
-    }
     else
     {
-      if(!image.frame->surface) continue;
       cairo_save(cr);
       cairo_set_matrix(cr, &w->base);
       cairo_rectangle(cr, image.clip[0], image.clip[1],

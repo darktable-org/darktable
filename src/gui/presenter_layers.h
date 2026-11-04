@@ -34,8 +34,7 @@
 // a frame converted for presentation, owned by the presenter
 typedef struct dt_presenter_frame_t
 {
-  // identity of the source, never dereferenced
-  const float *source;
+  // with the encoding, what the frame is: ids are never reused
   uint32_t id;
   int width, height;
   dt_display_output_t encoding;
