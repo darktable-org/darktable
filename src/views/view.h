@@ -664,9 +664,7 @@ void dt_view_paint_pixbuf(cairo_t *cr,
                           const size_t processed_height,
                           const dt_window_t window);
 
-/** paint the background and the image of a viewport. returns FALSE if
- * the image was rendered for another output and must be rendered again */
-gboolean dt_view_paint_surface(cairo_t *cr,
+void dt_view_paint_surface(cairo_t *cr,
                            const size_t width,
                            const size_t height,
                            dt_dev_viewport_t *port,

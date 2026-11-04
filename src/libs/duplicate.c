@@ -267,14 +267,10 @@ void gui_post_expose(dt_lib_module_t *self,
     d->preview_id = d->imgid;
   }
 
-  if(d->buf
-     && !dt_view_paint_surface(cri, width, height, &darktable.develop->full,
-                               DT_WINDOW_MAIN, d->buf, &d->output, d->frame_id,
-                               d->scale, d->buf_width, d->buf_height, d->zoom_pos))
-  {
-    d->preview_id = NO_IMGID;
-    dt_control_queue_redraw_center();
-  }
+  if(d->buf)
+    dt_view_paint_surface(cri, width, height, &darktable.develop->full, DT_WINDOW_MAIN,
+                          d->buf, &d->output, d->frame_id,
+                          d->scale, d->buf_width, d->buf_height, d->zoom_pos);
 }
 
 static void _thumb_remove(gpointer user_data)

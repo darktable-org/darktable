@@ -578,21 +578,12 @@ void expose(dt_view_t *self,
   {
     double scale = MIN((double)width / slot->width, (double)height / slot->height);
     cairo_scale(cr, scale, scale);
-    if(dt_presenter_image(cr, -0.5 * slot->width, -0.5 * slot->height,
-                          slot->buf, slot->width, slot->height,
-                          &slot->output, slot->frame_id, CAIRO_FILTER_BEST))
-    {
-      d->id_displayed = imgid;
-      d->id_preview_displayed = imgid;
-    }
-    else
-    {
-      // rendered for another output
-      dt_free_align(slot->buf);
-      slot->buf = NULL;
-      slot->invalidated = TRUE;
-      _requeue_job(d);
-    }
+    dt_presenter_image(cr, -0.5 * slot->width, -0.5 * slot->height,
+                       slot->buf, slot->width, slot->height,
+                       &slot->output, slot->frame_id, CAIRO_FILTER_BEST);
+
+    d->id_displayed = imgid;
+    d->id_preview_displayed = imgid;
   }
   else if(dt_is_valid_imgid(imgid) && imgid != d->id_preview_displayed)
   {

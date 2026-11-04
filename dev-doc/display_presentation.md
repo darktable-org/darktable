@@ -90,21 +90,31 @@ filter)` takes the place of `cairo_set_source_surface()` + `cairo_paint()` for
 an opaque image: it uses the context's current transformation and the extents
 of its clip, and paint order is kept, so whatever is drawn afterwards is on
 top. The pixels are converted once per `id` into a frame the presenter owns,
-so the caller may release the buffer (and its lock) when the call returns. It
-returns `FALSE` when the window declared an output (a native backend, or cairo
-on a compositor that manages color) and the frame is in another encoding; the
-caller renders it again. Without a declared output the cairo backend shows any
-display-encoded frame.
+so the caller may release the buffer (and its lock) when the call returns. A
+frame is its `id` and encoding: ids are never reused. It returns `FALSE`, and
+shows nothing, when the window declared an output (a native backend, or cairo
+on a compositor that manages color) and the frame is in another profile. The
+caller does nothing about it: the declaration announces a change of display
+profile, colorout's handler reprocesses the darkroom pipes
+(`dt_dev_reprocess_all()`), and the center view's next draw requests the
+second window's pipe too; snapshots are redone on
+`DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED`. Without a declared output the cairo
+backend shows any display-encoded frame.
 
 - `dt_presenter_keep()` shows the images of the last full draw again where
   they were (the darkroom while it loads the next image without the loading
   screen). A draw GTK restricted to a damaged area does not replace them.
-  Kept images in an encoding other than the declared output are dropped.
+  Kept images in a profile other than the declared output's are dropped.
 - `dt_presenter_clear()` drops a widget's images (darkroom `leave()`);
   unmapping a widget drops them too.
 - `dt_view_paint_surface()` is the darkroom's user: background, then the
   preview fallback and the main image through the presenter. Pickers, masks,
   module overlays, guides and focus peaking follow on the same context.
+
+The headroom is not compared. After it changes, the duplicate manager's
+preview, the slideshow and a pinned image in the second window keep the tone
+mapping of the old headroom until they are rendered again for another
+reason.
 
 Presenting widgets: the center view and the side-by-side snapshot area
 (`gui/gtk.c`, `_draw()`), and the second darkroom window. Images submitted
