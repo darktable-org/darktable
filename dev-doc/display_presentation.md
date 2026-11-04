@@ -83,13 +83,13 @@ dt_presenter_end(widget, pcr);
 
 Inside, `dt_presenter_image(pcr, x, y, pixels, width, height, encoding, id,
 filter)` takes the place of `cairo_set_source_surface()` + `cairo_paint()` for
-an opaque image: it uses the context's current transformation and clip, and
-paint order is kept, so whatever is drawn afterwards is on top. The pixels are
-converted once per `id` into a frame the presenter owns, so the caller may
-release the buffer (and its lock) when the call returns. It returns `FALSE`
-when the window declared an output (a native backend, or cairo on a compositor
-that manages color) and the frame is in another encoding; the caller renders
-it again. Without a declared output the cairo backend shows any
+an opaque image: it uses the context's current transformation and the extents
+of its clip, and paint order is kept, so whatever is drawn afterwards is on
+top. The pixels are converted once per `id` into a frame the presenter owns,
+so the caller may release the buffer (and its lock) when the call returns. It
+returns `FALSE` when the window declared an output (a native backend, or cairo
+on a compositor that manages color) and the frame is in another encoding; the
+caller renders it again. Without a declared output the cairo backend shows any
 display-encoded frame.
 
 - `dt_presenter_keep()` shows the images of the last full draw again where
@@ -121,11 +121,12 @@ the second window), unmanaged. Every platform without a native backend uses
 it: X11, macOS, Windows, and Wayland without color management.
 
 A Wayland compositor that manages color but lacks what the native backend
-needs also gets cairo. It takes GTK's untagged surface as sRGB and converts it
-to the screen, so the Wayland setup declares the window's output and GTK's
-surface sRGB (`dt_presenter_window_set_output()`), and the display profile
-controls are insensitive as with a native backend. The declaration is given
-back when the window goes away.
+needs also gets cairo. It takes GTK's untagged surface as sRGB, with a
+transfer function of its choosing, and converts it to the screen, so the
+Wayland setup declares the window's output and GTK's surface sRGB
+(`dt_presenter_window_set_output()`), and the display profile controls are
+insensitive as with a native backend. The declaration is given back when the
+window goes away.
 
 ### Native backends and their layers
 
@@ -201,7 +202,7 @@ Each lives in one file and goes away with the limitation it works around.
 | image and foreground layers above GTK's surface | `presenter_layers.c` | GTK3 cannot give a widget a surface with a color state | GTK4: the image is a texture with a color state |
 | `gtk_widget_draw()` replay of GtkOverlay children stacked above a presenting widget into the foreground | `presenter_layers.c`, `_replay_overlays()` | the layers cover GTK's drawing of those widgets (toasts, masks panel, second window buttons); where GTK3 draws popovers into the toplevel (Quartz, Win32), popovers need the same | same |
 | composing and presenting in the frame clock's `paint` signal, after GDK's handler | `presenter_wayland.c`, `_paint()` | GTK3 runs all draws in `paint` and GDK commits its surface in `after-paint`; the layers must be ready in between | same |
-| GTK's surface declared sRGB | `presenter_wayland.c`, `_set_output()` and `dt_presenter_wayland_new()` | GTK3 does not tag its surface, and an untagged surface is sRGB to the compositor | GTK tags its surfaces |
+| GTK's surface declared sRGB | `presenter_wayland.c`, `_set_output()` and `dt_presenter_wayland_new()` | GTK3 does not tag its surface; an untagged surface is sRGB to the compositor, with a transfer function of its choosing | GTK tags its surfaces |
 | no opaque region on the layers | `presenter_wayland.c`, `_layer_init()` | a compositor may stop frame callbacks for a surface it considers occluded, which stops GTK's frame clock | GTK4 |
 | layers and surface feedback recreated when GDK's surface changes | `presenter_wayland.c`, `_toplevel_unmap()` and `_present()` | GDK destroys its `wl_surface` when a window is hidden and makes a new one when it is shown again | GTK4 |
 | a draw GTK clipped to a damaged area does not replace the images `dt_presenter_keep()` shows | `presenter.c`, `dt_presenter_begin()` | GTK3 redraws only the damaged part of a widget, so such a draw records clipped images; it stays in `presenter.c` because the cairo backend needs it too | GTK4: a widget's snapshot is always whole |
@@ -214,13 +215,17 @@ second window and its pinned image) and the slideshow.
 
 Everything else GTK draws stays on GTK's 8-bit surface: lighttable,
 filmstrip, culling and full preview, navigation, the duplicate manager's
-thumbnails, all thumbnails. With a native backend they are correct within
-sRGB, without wide gamut or HDR. They stay there because thumbnails carry
-GTK widgets on top (stars, labels, badges, buttons), which on the layers
-would mean replaying most of the lighttable on every scroll, and because the
-mipmap cache is 8-bit sRGB or AdobeRGB, so wide gamut and HDR need a float
-thumbnail cache anyway. In GTK4 each thumbnail can be a texture with a color
-state. See darktable-org/darktable#20477.
+thumbnails, all thumbnails. With a native backend they are shown as the
+compositor shows untagged content, without wide gamut or HDR. GTK3 cannot
+tag its surface, and the protocol leaves the transfer function of untagged
+surfaces to the compositor: where it decodes them with gamma 2.2, as KWin
+does, their shadows are darker than the image's. In GTK4 each thumbnail can
+be a texture with a color state, and GTK tags its surfaces. They stay on
+GTK's surface because thumbnails carry GTK widgets on top (stars, labels,
+badges, buttons), which on the layers would mean replaying most of the
+lighttable on every scroll, and because the mipmap cache is 8-bit sRGB or
+AdobeRGB, so wide gamut and HDR need a float thumbnail cache anyway. See
+darktable-org/darktable#20477.
 
 A macOS or Windows backend also has to replay popovers over the canvas into
 the foreground: there GTK3 draws them into the toplevel's surface, while on

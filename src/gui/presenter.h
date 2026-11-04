@@ -31,7 +31,8 @@ G_BEGIN_DECLS
  * a presenting widget wraps its draw handler in begin() and end() and
  * draws everything on the cairo context begin() returns, in paint order.
  * dt_presenter_image() takes the place of painting an opaque image
- * there, with the context's current transformation and clip.
+ * there, with the context's current transformation and the extents of
+ * its clip.
  */
 
 /** start drawing widget: returns the context to draw on */
@@ -42,7 +43,8 @@ void dt_presenter_end(GtkWidget *widget,
                       cairo_t *cr);
 
 /** paint float RGBA pixels in encoding at (x, y), as cairo_paint() would
- * paint a surface set with cairo_set_source_surface(cr, surface, x, y).
+ * paint a surface set with cairo_set_source_surface(cr, surface, x, y),
+ * with the context's current transformation and the extents of its clip.
  * id changes whenever the pixels do (dt_dev_new_frame_id()). the pixels
  * are not used after the call returns. returns FALSE if the window
  * cannot show a frame in that encoding and it has to be rendered again */
