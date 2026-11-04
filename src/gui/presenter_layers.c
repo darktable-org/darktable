@@ -467,7 +467,6 @@ void dt_presenter_layered_end(dt_presenter_layered_t *l,
   if(images->len)
   {
     l->pending = TRUE;
-    if(l->window->backend->drawn) l->window->backend->drawn(l->window->backend);
     return;
   }
 

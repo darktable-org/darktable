@@ -91,8 +91,6 @@ struct dt_presenter_backend_t
   // stop showing a widget's layers, with the frame whose draw cleared
   // them, or no earlier
   void (*clear)(dt_presenter_backend_t *self, void **widget_data);
-  // optional: a draw left layers to present
-  void (*drawn)(dt_presenter_backend_t *self);
   // the widget is gone: free *widget_data and set it to NULL
   void (*release)(dt_presenter_backend_t *self, void **widget_data);
   void (*free)(dt_presenter_backend_t *self);
