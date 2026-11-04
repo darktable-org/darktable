@@ -2138,7 +2138,9 @@ void dt_view_paint_surface(cairo_t *cr,
     {
       cairo_surface_t *surface =
         dt_presenter_gtk_surface(buf, buf_width, buf_height, buf_output, buf_id);
-      dt_focuspeaking(cr, buf_width, buf_height, cairo_image_surface_get_data(surface));
+      // an error surface has no data
+      if(cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS)
+        dt_focuspeaking(cr, buf_width, buf_height, cairo_image_surface_get_data(surface));
       cairo_surface_destroy(surface);
     }
   }
