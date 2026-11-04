@@ -2808,8 +2808,13 @@ static gboolean _popup_draw(GtkWidget *widget,
         float label_width = 0.0f;
         if(!entry->sensitive)
         {
-          set_color(cr, text_color_insensitive);
-          label = g_markup_printf_escaped("<b>%s</b>", entry->label);
+          // dt_bauhaus_combobox_add_section() marks its titles with this data.
+          // Other entries are disabled: they must not stand out like a title
+          const gboolean is_section = entry->data == GINT_TO_POINTER(-1);
+          set_color(cr, is_section ? text_color_insensitive : text_color);
+          label = is_section
+            ? g_markup_printf_escaped("<b>%s</b>", entry->label)
+            : g_markup_printf_escaped("<span alpha=\"50%%\">%s</span>", entry->label);
         }
         else
         {

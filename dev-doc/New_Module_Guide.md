@@ -83,7 +83,7 @@ Ensure your module is in the correct place in `iop_order.c`.
 -   **Scene-referred** modules should generally be earlier.
 -   **Display-referred** modules should be later.
 
-**Note:** Pipeline ordering affects `commit_params()` execution order. Modules that share state (e.g., via `dev->chroma`) depend on earlier modules having committed first. See [pixelpipe_architecture.md](pixelpipe_architecture.md#pipeline-ordering-asymmetry) for details.
+**Note:** `commit_params()` does not always run in pipe order. During history replay, modules commit in history order. A module that reads state written by an earlier module, as color calibration reads white balance's `pipe->wb`, cannot rely on that module having committed first. See [pixelpipe_architecture.md](pixelpipe_architecture.md#pipeline-ordering-asymmetry) for details.
 
 ### Shortcuts
 By using `dt_bauhaus` widgets, shortcuts are automatically supported.

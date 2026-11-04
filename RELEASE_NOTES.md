@@ -215,6 +215,22 @@ changes (where available).
   the preferences dialog to the masks panel's options popover, and the
   masking section of the preferences dialog is gone.
 
+- Color calibration has a new illuminant option, "from the white
+  balance module", which derives the illuminant from the settings of
+  the white balance module. With it, the color picker and the
+  temperature, tint, and channel coefficient sliders in the white
+  balance module set the white balance that color calibration uses.
+  The new option is the default for new scene-referred edits of color
+  raw files. It needs the white balance module's new "prepare data for
+  color calibration" checkbox to be checked, as it is by default in
+  these edits. The checkbox is available in all modes except "camera
+  reference", which does not need it. The old "as shot to reference"
+  mode becomes "as shot" with the checkbox checked. While color
+  calibration adapts with any other illuminant option, such as "as shot
+  in camera" or "custom", the white balance module disables these
+  controls and its camera presets, because the white balance is then
+  controlled in color calibration.
+
 ## Performance Improvements
 
 - The lighttable timeline no longer slows down quadratically with the
@@ -887,6 +903,21 @@ changes (where available).
 - Fixed random dither giving a slightly different noise pattern
   depending on the number of CPU threads. Its noise pattern changed,
   so exports using it differ in the noise but not in its strength.
+
+- Fixed stale color temperature and illuminant color in color calibration
+  after white balance changes when using "as shot in camera".
+
+- Fixed input color profile and highlight reconstruction (opposed and
+  segmentation modes) still applying part of the white balance
+  correction when the white balance module, set to "as shot to
+  reference", was switched off on a raw image. Edits made that way
+  render with different colors.
+
+- Fixed a color cast when white balance in "as shot to reference" mode
+  was pasted from another image, or applied through a style or preset:
+  white balance applied the pasted multipliers, but input color profile
+  completed the correction with the target image's own as-shot
+  multipliers.
 
 ## Lua
 
