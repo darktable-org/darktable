@@ -572,7 +572,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   dt_colorspaces_color_profile_type_t out_type = DT_COLORSPACE_SRGB;
   gchar *out_filename = NULL;
-  dt_display_output_t gtk;
   dt_iop_color_intent_t out_intent = DT_INTENT_PERCEPTUAL;
 
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
@@ -616,14 +615,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     out_type = dt_mipmap_cache_get_colorspace();
     out_filename = (out_type == DT_COLORSPACE_DISPLAY ? darktable.color_profiles->display_filename : "");
     out_intent = darktable.color_profiles->display_intent;
-    // display-encoded thumbnails are for GTK's surface
-    if(out_type == DT_COLORSPACE_DISPLAY
-       && dt_colorspaces_get_gtk_output(DT_COLORSPACE_DISPLAY, &gtk))
-    {
-      out_type = gtk.type;
-      out_filename = gtk.filename;
-      out_intent = gtk.intent;
-    }
   }
   else
   {

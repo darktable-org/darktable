@@ -166,8 +166,8 @@ and its layers are unmapped (lighttable, map, a loading darkroom).
 The backend declares the window's output and the profile GTK's own surface
 is shown in (`dt_colorspaces_set_backend_output()`). The pipes of that window
 then render to that output, and everything GTK draws there (thumbnail
-transforms, display-encoded thumbnails, picker swatches, the navigation
-thumbnail, `dt_presenter_gtk_surface()`, and module GUIs through
+transforms, picker swatches, the navigation thumbnail,
+`dt_presenter_gtk_surface()`, and module GUIs through
 `dt_ioppr_get_gui_profile_info()`) converts to that profile instead of the
 selected display profile. The change is announced like a user's change of
 display profile, so converted thumbnails are redone. The saved selection is
@@ -245,6 +245,11 @@ badges, buttons), which on the layers would mean replaying most of the
 lighttable on every scroll, and because the mipmap cache is 8-bit sRGB or
 AdobeRGB, so wide gamut and HDR need a float thumbnail cache anyway. See
 darktable-org/darktable#20477.
+
+With `cache_color_managed` off the mipmap cache holds display-encoded
+thumbnails, encoded for the selected display profile, and a compositor that
+manages color shows them as sRGB like the rest of GTK's surface. They
+follow the window's output once thumbnails go through the presenter.
 
 A macOS or Windows backend also has to replay popovers over the canvas into
 the foreground: there GTK3 draws them into the toplevel's surface, while on
