@@ -747,7 +747,8 @@ static gboolean _event_image_draw(GtkWidget *widget,
 
       cairo_surface_t *tmp_surface
           = dt_presenter_gtk_surface(dev->preview_pipe->backbuf, buf_width, buf_height,
-                                     &dev->preview_pipe->backbuf_output);
+                                     &dev->preview_pipe->backbuf_output,
+                                     dev->preview_pipe->backbuf_id);
       dt_pthread_mutex_unlock(mutex);
 
       // copy preview image into final surface

@@ -18,6 +18,7 @@
 
 #include "gui/presenter.h"
 #include "common/darktable.h"
+#include "common/iop_profile.h"
 #include "control/signal.h"
 #include "gui/presenter_layers.h"
 
@@ -145,95 +146,155 @@ void dt_presenter_end(GtkWidget *widget,
   w->widget_cr = NULL;
 }
 
-// float RGBA in encoding to 8-bit RGBX, BGRX with bgr. with to_gtk, in the
-// profile GTK's surface of the main window is shown in
-static void _to_8bit(const float *pixels,
-                     const size_t width,
-                     const size_t height,
-                     const dt_display_output_t *encoding,
-                     const gboolean to_gtk,
-                     uint8_t *out,
-                     const size_t out_stride,
-                     const gboolean bgr)
+// cairo's RGB24 is BGRX in memory
+static inline void _store(uint8_t *const out,
+                          const float *const rgb)
 {
-  cmsHTRANSFORM xform = NULL;
-  dt_display_output_t gtk;
-  if(to_gtk
-     && dt_colorspaces_get_gtk_output(DT_COLORSPACE_DISPLAY, &gtk)
-     && !dt_display_output_equal(&gtk, encoding))
-  {
-    const dt_colorspaces_color_profile_t *from =
-      dt_colorspaces_get_profile(encoding->type, encoding->filename,
-                                 DT_PROFILE_DIRECTION_ANY);
-    const dt_colorspaces_color_profile_t *to =
-      dt_colorspaces_get_profile(gtk.type, gtk.filename, DT_PROFILE_DIRECTION_ANY);
-    if(from && to)
-      xform = cmsCreateTransform(from->profile, TYPE_RGBA_FLT, to->profile, TYPE_RGBA_FLT,
-                                 gtk.intent, 0);
-  }
-
-  const int r = bgr ? 2 : 0;
-  size_t padded_size = 0;
-  float *lines = xform ? dt_alloc_perthread_float(4 * width, &padded_size) : NULL;
-  DT_OMP_FOR()
-  for(size_t y = 0; y < height; y++)
-  {
-    const float *in = pixels + 4 * width * y;
-    if(lines)
-    {
-      float *const line = dt_get_perthread(lines, padded_size);
-      cmsDoTransform(xform, in, line, width);
-      in = line;
-    }
-    uint8_t *o = out + out_stride * y;
-    for(size_t x = 0; x < width; x++, in += 4, o += 4)
-    {
-      o[r] = dt_display_to_8bit(in[0]);
-      o[1] = dt_display_to_8bit(in[1]);
-      o[2 - r] = dt_display_to_8bit(in[2]);
-      o[3] = 0xff;
-    }
-  }
-  dt_free_align(lines);
-  if(xform) cmsDeleteTransform(xform);
+  out[0] = dt_display_to_8bit(rgb[2]);
+  out[1] = dt_display_to_8bit(rgb[1]);
+  out[2] = dt_display_to_8bit(rgb[0]);
+  out[3] = 0xff;
 }
 
+static gboolean _same_profile(const dt_display_output_t *a,
+                              const dt_display_output_t *b)
+{
+  return a->type == b->type && !strcmp(a->filename, b->filename);
+}
+
+// float RGBA in encoding as cairo's RGB24, converted to the profile gtk
+// unless that is NULL
 static cairo_surface_t *_surface(const float *pixels,
                                  const int width,
                                  const int height,
                                  const dt_display_output_t *encoding,
-                                 const gboolean to_gtk)
+                                 const dt_display_output_t *gtk)
 {
   cairo_surface_t *surface =
     cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
   if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) return surface;
 
-  // cairo's RGB24 is BGRX in memory
-  _to_8bit(pixels, width, height, encoding, to_gtk, cairo_image_surface_get_data(surface),
-           cairo_image_surface_get_stride(surface), TRUE);
+  uint8_t *const data = cairo_image_surface_get_data(surface);
+  const size_t stride = cairo_image_surface_get_stride(surface);
+
+  const dt_iop_order_iccprofile_info_t *from = NULL, *to = NULL;
+  if(gtk && !_same_profile(gtk, encoding))
+  {
+    from = dt_ioppr_add_profile_info_to_list(darktable.develop, encoding->type,
+                                             encoding->filename, gtk->intent);
+    to = dt_ioppr_add_profile_info_to_list(darktable.develop, gtk->type, gtk->filename,
+                                           gtk->intent);
+  }
+
+  if(from && to
+     && dt_is_valid_colormatrix(from->matrix_in[0][0])
+     && dt_is_valid_colormatrix(to->matrix_out[0][0]))
+  {
+    dt_colormatrix_t product, matrix;
+    dt_colormatrix_mul(product, to->matrix_out, from->matrix_in);
+    transpose_3xSSE(product, matrix);
+    DT_OMP_FOR(shared(matrix))
+    for(int y = 0; y < height; y++)
+    {
+      const float *in = pixels + (size_t)4 * width * y;
+      uint8_t *out = data + stride * y;
+      for(int x = 0; x < width; x++, in += 4, out += 4)
+      {
+        dt_aligned_pixel_t linear, converted, rgb;
+        dt_ioppr_decode_rgb(in, linear, from);
+        dt_apply_transposed_color_matrix(linear, matrix, converted);
+        // 8 bits hold [0, 1]: what lies outside needs no transfer function
+        for_three_channels(c) converted[c] = CLAMPF(converted[c], 0.0f, 1.0f);
+        dt_ioppr_encode_rgb(converted, rgb, to);
+        _store(out, rgb);
+      }
+    }
+    cairo_surface_mark_dirty(surface);
+    return surface;
+  }
+
+  // no matrix profile: lcms converts a float copy
+  float *converted = NULL;
+  if(from && to)
+  {
+    converted = dt_alloc_align_float((size_t)4 * width * height);
+    // unconverted pixels would be kept as converted: fail as cairo does
+    if(!converted)
+    {
+      cairo_surface_destroy(surface);
+      return cairo_image_surface_create(CAIRO_FORMAT_INVALID, 0, 0);
+    }
+    dt_ioppr_transform_image_colorspace_rgb(pixels, converted, width, height, from, to,
+                                            "gtk surface");
+    pixels = converted;
+  }
+  DT_OMP_FOR()
+  for(int y = 0; y < height; y++)
+  {
+    const float *in = pixels + (size_t)4 * width * y;
+    uint8_t *out = data + stride * y;
+    for(int x = 0; x < width; x++, in += 4, out += 4) _store(out, in);
+  }
+  dt_free_align(converted);
   cairo_surface_mark_dirty(surface);
   return surface;
 }
 
+// GTK-side drawing draws the same frames again and again (navigation,
+// the filmstrip thumbnail and the correction cursor the preview, focus
+// peaking the main image on every draw), so each is converted once.
+// enough for what is drawn at once: the preview and, with focus peaking,
+// the main image, a snapshot and the second window's image
+#define GTK_SURFACES 4
+
+typedef struct _gtk_surface_t
+{
+  uint32_t id;
+  dt_display_output_t encoding;
+  // the declared profile of GTK's surface, type DT_COLORSPACE_NONE if none
+  dt_display_output_t gtk;
+  cairo_surface_t *surface;
+} _gtk_surface_t;
+
+// most recently used first
+static _gtk_surface_t _gtk_surfaces[GTK_SURFACES];
+
 cairo_surface_t *dt_presenter_gtk_surface(const float *pixels,
                                           const int width,
                                           const int height,
-                                          const dt_display_output_t *encoding)
+                                          const dt_display_output_t *encoding,
+                                          const uint32_t id)
 {
-  return _surface(pixels, width, height, encoding, TRUE);
-}
+  dt_display_output_t gtk;
+  memset(&gtk, 0, sizeof(gtk));
+  gtk.type = DT_COLORSPACE_NONE;
+  const gboolean declared = dt_colorspaces_get_gtk_output(DT_COLORSPACE_DISPLAY, &gtk);
 
-void dt_presenter_gtk_colors(const float *pixels,
-                             const size_t count,
-                             const dt_display_output_t *encoding,
-                             float *rgb)
-{
-  uint8_t *out = g_malloc(4 * count);
-  _to_8bit(pixels, count, 1, encoding, TRUE, out, 4 * count, FALSE);
-  for(size_t k = 0; k < count; k++)
-    for(int c = 0; c < 3; c++)
-      rgb[3 * k + c] = out[4 * k + c] / 255.0f;
-  g_free(out);
+  int k = 0;
+  while(k < GTK_SURFACES
+        && !(_gtk_surfaces[k].surface && _gtk_surfaces[k].id == id
+             && dt_display_output_equal(&_gtk_surfaces[k].encoding, encoding)
+             && dt_display_output_equal(&_gtk_surfaces[k].gtk, &gtk)))
+    k++;
+
+  _gtk_surface_t entry;
+  if(k < GTK_SURFACES)
+    entry = _gtk_surfaces[k];
+  else
+  {
+    cairo_surface_t *surface =
+      _surface(pixels, width, height, encoding, declared ? &gtk : NULL);
+    // a failed conversion is not kept: the next draw tries again
+    if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) return surface;
+
+    k = GTK_SURFACES - 1;
+    if(_gtk_surfaces[k].surface) cairo_surface_destroy(_gtk_surfaces[k].surface);
+    entry = (_gtk_surface_t){ .id = id, .encoding = *encoding, .gtk = gtk,
+                              .surface = surface };
+  }
+  memmove(_gtk_surfaces + 1, _gtk_surfaces, sizeof(_gtk_surface_t) * k);
+  _gtk_surfaces[0] = entry;
+  return cairo_surface_reference(entry.surface);
 }
 
 // a frame already converted from the same source, or a new one
@@ -275,7 +336,7 @@ static dt_presenter_frame_t *_frame_get(_widget_t *w,
     f->surface = NULL;
   }
   if(!w->layered && !f->surface)
-    f->surface = _surface(pixels, width, height, encoding, FALSE);
+    f->surface = _surface(pixels, width, height, encoding, NULL);
   return f;
 }
 

@@ -201,30 +201,37 @@ static inline void dt_draw_backbuf_contrast(const dt_develop_t *dev,
       const int rad = CLAMP((int)lroundf(area_half_norm * buf_w), 1, 48);
       const int x0 = MAX(px - rad, 0), x1 = MIN(px + rad, buf_w - 1);
       const int y0 = MAX(py - rad, 0), y1 = MIN(py + rad, buf_h - 1);
-      const int ww = x1 - x0 + 1;
-      const size_t n = (size_t)ww * (y1 - y0 + 1);
-      float *window = (float *)g_malloc(sizeof(float) * 4 * n);
-      float *shown = (float *)g_malloc(sizeof(float) * 3 * n);
-
-      dt_pthread_mutex_lock(&dev->preview_pipe->backbuf_mutex);
-      for(int iy = y0; iy <= y1; iy++)
-        memcpy(window + (size_t)4 * ww * (iy - y0),
-               backbuf + ((size_t)iy * buf_w + x0) * 4, sizeof(float) * 4 * ww);
-      const dt_display_output_t encoding = dev->preview_pipe->backbuf_output;
-      dt_pthread_mutex_unlock(&dev->preview_pipe->backbuf_mutex);
 
       // the colors as GTK's surface shows them
-      dt_presenter_gtk_colors(window, n, &encoding, shown);
-      for(size_t k = 0; k < n; k++)
-        luma_sum += 0.3f * shown[3 * k] + 0.59f * shown[3 * k + 1]
-                    + 0.11f * shown[3 * k + 2];
-      samples = n;
-      const size_t center = (size_t)ww * (py - y0) + (px - x0);
-      r = shown[3 * center];
-      g = shown[3 * center + 1];
-      b = shown[3 * center + 2];
-      g_free(window);
-      g_free(shown);
+      dt_pthread_mutex_lock(&dev->preview_pipe->backbuf_mutex);
+      cairo_surface_t *surface =
+        dt_presenter_gtk_surface(backbuf, buf_w, buf_h, &dev->preview_pipe->backbuf_output,
+                                 dev->preview_pipe->backbuf_id);
+      dt_pthread_mutex_unlock(&dev->preview_pipe->backbuf_mutex);
+
+      if(cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS)
+      {
+        const uint8_t *data = cairo_image_surface_get_data(surface);
+        const int stride = cairo_image_surface_get_stride(surface);
+        for(int iy = y0; iy <= y1; iy++)
+          for(int ix = x0; ix <= x1; ix++)
+          {
+            // cairo's RGB24 is B, G, R, X in memory
+            const uint8_t *p = data + (size_t)iy * stride + 4 * ix;
+            const float pr = p[2] / 255.0f;
+            const float pg = p[1] / 255.0f;
+            const float pb = p[0] / 255.0f;
+            if(ix == px && iy == py)
+            {
+              r = pr;
+              g = pg;
+              b = pb;
+            }
+            luma_sum += 0.3f * pr + 0.59f * pg + 0.11f * pb;
+            samples++;
+          }
+      }
+      cairo_surface_destroy(surface);
     }
   }
 

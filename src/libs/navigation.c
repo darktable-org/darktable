@@ -395,7 +395,8 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
 
     cairo_surface_t *surface =
       dt_presenter_gtk_surface(dev->preview_pipe->backbuf, wd, ht,
-                               &dev->preview_pipe->backbuf_output);
+                               &dev->preview_pipe->backbuf_output,
+                               dev->preview_pipe->backbuf_id);
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, scale, scale);
     cairo_translate(cr, -.5f * wd, -.5f * ht);

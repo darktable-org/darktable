@@ -68,8 +68,11 @@ that into `pipe->backbuf`, records the output it was rendered in as
 Nothing quantizes inside the pipe. 8-bit values are made where an 8-bit
 surface is made, with `dt_display_to_8bit()`: by the presenter, by
 `dt_presenter_gtk_surface()` for GTK-side drawing (navigation, the filmstrip
-thumbnail of the edited image), by the overlay module, and by the 8-bit
-export path.
+thumbnail of the edited image, the correction cursor, focus peaking), by the
+overlay module, and by the 8-bit export path. GTK-side drawing draws the
+same frame on every draw, so `dt_presenter_gtk_surface()` converts it once
+per frame id and keeps the last few; matrix profiles go through darktable's
+matrix and curves, others through lcms.
 
 ## Presenter API
 
@@ -238,4 +241,5 @@ Wayland they are subsurfaces above the layers.
 | painting a backbuf with cairo in a presenting widget | `dt_presenter_image()` with the buffer's `backbuf_output` and `backbuf_id` |
 | reading `darktable.color_profiles` for a presented pipe's display profile | read `pipe->output`, or the pipe's output profile info |
 | converting a module GUI's colors with the pipe's output profile | `dt_ioppr_get_gui_profile_info()` |
+| converting a backbuf for GTK-side drawing on every draw | `dt_presenter_gtk_surface()` with the buffer's `backbuf_id` |
 | checking for a platform in the pipeline, a module or a view | put it in `presenter_layers.c` or the platform's transport, with a row in [Workarounds](#workarounds) |
