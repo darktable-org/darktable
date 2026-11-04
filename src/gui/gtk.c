@@ -3323,8 +3323,11 @@ static void _add_remove_modules_at_widget(dt_action_t *action,
     dt_lib_module_t *module = iter->data;
     if(!module->name || dt_masks_gui_is_host_lib(module)) continue;
     const dt_view_type_flags_t mv = module->views(module);
+    // the navigation module is not expandable but can be hidden, see
+    // _lib_navigation_collapse_callback() in libs/navigation.c
     if((mv & cv || mv & (mv - 1) || mv & DT_VIEW_MULTI) // either current view or supports more than one view
-       && module->expandable(module))
+       && (module->expandable(module)
+           || module == darktable.lib->proxy.navigation.module))
     {
       gchar *action_name = g_strdup_printf("toggle_%s", module->plugin_name);
       GSimpleAction *item_action = g_simple_action_new_stateful(action_name,
