@@ -26,7 +26,8 @@ static gboolean background_running = FALSE;
 static gboolean lock_initialized = FALSE;
 static dt_pthread_mutex_t pending_mutex;
 
-static void _lock_pending_queue()
+static void _lock_pending_queue(void)
+  ACQUIRE(&pending_mutex)
 {
   if(!lock_initialized)
   {
@@ -36,12 +37,10 @@ static void _lock_pending_queue()
   dt_pthread_mutex_lock(&pending_mutex);
 }
 
-static void _unlock_pending_queue()
+static void _unlock_pending_queue(void)
+  RELEASE(&pending_mutex)
 {
-  if(lock_initialized)
-  {
-    dt_pthread_mutex_unlock(&pending_mutex);
-  }
+  dt_pthread_mutex_unlock(&pending_mutex);
 }
 #endif /* !_OPENMP */
 
