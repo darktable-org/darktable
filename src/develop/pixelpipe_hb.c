@@ -319,6 +319,8 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->output_profile_info = NULL;
   pipe->export_profile_info = NULL;
   pipe->output_headroom = 1.0f;
+  memset(&pipe->output, 0, sizeof(pipe->output));
+  pipe->output.type = DT_COLORSPACE_NONE;
   pipe->runs = 0;
   pipe->bcache_data = NULL;
   pipe->bcache_size = 0;
@@ -1380,6 +1382,7 @@ error:
 #endif
 
 static void _pixelpipe_pick_samples(dt_develop_t *dev,
+                                    dt_dev_pixelpipe_t *pipe,
                                     dt_iop_module_t *module,
                                     const dt_iop_buffer_dsc_t *dsc,
                                     const float *const input,
@@ -1388,8 +1391,7 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
   const dt_iop_order_iccprofile_info_t *const histogram_profile =
     dt_ioppr_get_histogram_profile_info(dev);
   const dt_iop_order_iccprofile_info_t *const display_profile =
-    dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
-                                      darktable.color_profiles->display_filename,
+    dt_ioppr_add_profile_info_to_list(dev, pipe->output.type, pipe->output.filename,
                                       INTENT_RELATIVE_COLORIMETRIC);
 
   // if we have a primary picker, prepend to the list of any live
@@ -3512,13 +3514,11 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     if(darktable.lib->proxy.colorpicker.picker_proxy
        || darktable.lib->proxy.colorpicker.live_samples)
     {
-      _pixelpipe_pick_samples(dev, module, *out_format, input, &roi_in);
+      _pixelpipe_pick_samples(dev, pipe, module, *out_format, input, &roi_in);
     }
 
-    // FIXME: read this from dt_ioppr_get_pipe_output_profile_info()?
     const dt_iop_order_iccprofile_info_t *const display_profile
-      = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
-                                          darktable.color_profiles->display_filename,
+      = dt_ioppr_add_profile_info_to_list(dev, pipe->output.type, pipe->output.filename,
                                           INTENT_RELATIVE_COLORIMETRIC);
 
     // Since histogram is being treated as the second-to-last link

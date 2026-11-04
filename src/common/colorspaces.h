@@ -183,6 +183,25 @@ typedef enum dt_colorspaces_cicp_matrix_coefficients_t
     DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED = 2
 } dt_colorspaces_cicp_matrix_coefficients_t;
 
+/* the encoding a presented pipe renders to: display-referred RGB in this
+ * profile, 1.0 at reference white and up to headroom above it */
+typedef struct dt_display_output_t
+{
+  dt_colorspaces_color_profile_type_t type;
+  char filename[DT_IOP_COLOR_ICC_LEN];
+  dt_iop_color_intent_t intent;
+  float headroom;
+} dt_display_output_t;
+
+static inline gboolean dt_display_output_equal(const dt_display_output_t *a,
+                                               const dt_display_output_t *b)
+{
+  return a->type == b->type
+    && a->intent == b->intent
+    && a->headroom == b->headroom
+    && !strcmp(a->filename, b->filename);
+}
+
 typedef struct dt_colorspaces_t
 {
   GList *profiles;
@@ -415,6 +434,12 @@ gboolean  dt_colorspaces_is_profile_equal(const char *fullname,
 dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
   (const dt_colorspaces_cicp_t *cicp,
    const char *filename);
+
+/** the output the darkroom pipes of a window render to: pass
+ * DT_COLORSPACE_DISPLAY for the main window, DT_COLORSPACE_DISPLAY2 for
+ * the second one */
+void dt_colorspaces_get_display_output(const dt_colorspaces_color_profile_type_t window,
+                                       dt_display_output_t *output);
 
 /** update the display transforms of srgb and adobergb to the display
  * profile.  make sure that darktable.color_profiles->xprofile_lock is

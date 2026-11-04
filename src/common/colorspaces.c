@@ -1331,6 +1331,22 @@ void dt_colorspaces_update_display2_transforms()
   _update_display2_transforms(darktable.color_profiles);
 }
 
+void dt_colorspaces_get_display_output(const dt_colorspaces_color_profile_type_t window,
+                                       dt_display_output_t *output)
+{
+  dt_colorspaces_t *self = darktable.color_profiles;
+  const gboolean second = window == DT_COLORSPACE_DISPLAY2;
+
+  pthread_rwlock_rdlock(&self->xprofile_lock);
+  output->type = second ? self->display2_type : self->display_type;
+  g_strlcpy(output->filename,
+            second ? self->display2_filename : self->display_filename,
+            sizeof(output->filename));
+  output->intent = second ? self->display2_intent : self->display_intent;
+  output->headroom = 1.0f;
+  pthread_rwlock_unlock(&self->xprofile_lock);
+}
+
 // make sure that darktable.color_profiles->xprofile_lock is held when calling this!
 static gboolean _update_display_profile(guchar *tmp_data,
                                         const gsize size,
