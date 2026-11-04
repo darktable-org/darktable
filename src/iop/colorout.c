@@ -55,7 +55,6 @@ typedef struct dt_iop_colorout_data_t
   dt_colormatrix_t cmatrix;
   cmsHTRANSFORM *xform;
   float unbounded_coeffs[3][3]; // for extrapolation of shaper curves
-  dt_aligned_pixel_t gamut_color;
 } dt_iop_colorout_data_t;
 
 typedef struct dt_iop_colorout_global_data_t
@@ -509,11 +508,12 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
 
     if(gamutcheck)
     {
+      static const dt_aligned_pixel_t cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
       for(int j = 0; j < count; j++)
       {
         if(outp[4*j+0] < 0.0f || outp[4*j+1] < 0.0f || outp[4*j+2] < 0.0f)
         {
-          copy_pixel_nontemporal(outp + 4*j, d->gamut_color);
+          copy_pixel_nontemporal(outp + 4*j, cyan);
         }
       }
     }
@@ -585,11 +585,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   cmsUInt32Number output_format = TYPE_RGBA_FLT;
 
   d->mode = dt_pipe_is_full(pipe) ? darktable.color_profiles->mode : DT_PROFILE_NORMAL;
-  // cyan
-  d->gamut_color[0] = 0.0f;
-  d->gamut_color[1] = d->gamut_color[2] = 1.0f;
-  d->gamut_color[3] = 0.0f;
-  dt_display_output_diagnostic(&pipe->output, d->gamut_color);
 
   if(d->xform)
   {

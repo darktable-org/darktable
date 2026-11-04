@@ -38,9 +38,10 @@ whether it is `managed`. Values are display-referred RGB in that profile,
 1.0 at reference white and up to `headroom` above it. A managed output is
 shown by a presenter backend that interprets the values in the profile; an
 unmanaged one, the selected display profile, sends them to the screen as
-device values. Diagnostic colors (mask and channel views, gamut check,
-clipping indicators) are authored as sRGB device values and converted only
-for a managed linear output (`dt_display_output_diagnostic()`).
+device values. The mask and channel views are authored as sRGB device
+values and converted for a managed output (`dt_display_output_diagnostic()`);
+the gamut check and clipping markers are written as they are, saturated
+colors that mark in any output.
 
 - The full, preview and second-window pipes take their output from their
   window at the start of every run, `dt_colorspaces_get_display_output()` in
