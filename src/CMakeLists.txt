@@ -348,6 +348,38 @@ add_definitions("-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_24")
 include_directories(SYSTEM ${GTK3_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK3_LIBRARIES})
 
+if(USE_WAYLAND)
+  find_package(PkgConfig)
+  pkg_check_modules(GDK_WAYLAND QUIET gdk-wayland-3.0)
+  # 1.18 has the half float shm formats
+  pkg_check_modules(WAYLAND_CLIENT QUIET IMPORTED_TARGET wayland-client>=1.18)
+  find_program(WAYLAND_SCANNER wayland-scanner)
+  if(GDK_WAYLAND_FOUND AND WAYLAND_CLIENT_FOUND AND WAYLAND_SCANNER)
+    # color-management-v1 is in wayland-protocols from 1.41 on, newer than
+    # most distributions ship, so the protocol comes with darktable
+    set(WAYLAND_COLOR_XML
+        "${CMAKE_CURRENT_SOURCE_DIR}/external/wayland-protocols/color-management-v1.xml")
+    set(WAYLAND_COLOR_HEADER "${CMAKE_CURRENT_BINARY_DIR}/color-management-v1-client-protocol.h")
+    set(WAYLAND_COLOR_CODE "${CMAKE_CURRENT_BINARY_DIR}/color-management-v1-protocol.c")
+    add_custom_command(OUTPUT "${WAYLAND_COLOR_HEADER}"
+      COMMAND "${WAYLAND_SCANNER}" client-header "${WAYLAND_COLOR_XML}" "${WAYLAND_COLOR_HEADER}"
+      DEPENDS "${WAYLAND_COLOR_XML}" VERBATIM)
+    add_custom_command(OUTPUT "${WAYLAND_COLOR_CODE}"
+      COMMAND "${WAYLAND_SCANNER}" private-code "${WAYLAND_COLOR_XML}" "${WAYLAND_COLOR_CODE}"
+      DEPENDS "${WAYLAND_COLOR_XML}" VERBATIM)
+    add_custom_target(generate_wayland_color
+      DEPENDS "${WAYLAND_COLOR_HEADER}" "${WAYLAND_COLOR_CODE}")
+    list(APPEND LIB_DEPS generate_wayland_color)
+    list(APPEND SOURCES "${WAYLAND_COLOR_HEADER}" "${WAYLAND_COLOR_CODE}")
+    # GDK links libwayland-client too, but we call into it directly
+    list(APPEND LIBS PkgConfig::WAYLAND_CLIENT)
+    set_property(SOURCE common/darktable.c APPEND PROPERTY COMPILE_DEFINITIONS HAVE_WAYLAND)
+  else()
+    message(STATUS "Wayland color management disabled: it needs gdk-wayland-3.0, wayland-client >= 1.18 and wayland-scanner")
+    set(USE_WAYLAND OFF)
+  endif()
+endif()
+
 # Check for libxml2 / broken cmake module can't be included in the foreach() below
 find_package(LibXml2 2.6 REQUIRED)
 include_directories(SYSTEM ${LIBXML2_INCLUDE_DIR})

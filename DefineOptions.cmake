@@ -1,5 +1,6 @@
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
 option(USE_COLORD "Enable colord support" ON)
+option(USE_WAYLAND "Show the darkroom image color managed on Wayland compositors" ON)
 option(USE_MAP "Build Map View parts" ON)
 option(USE_LUA "Build lua scripting support" ON)
 option(DONT_USE_INTERNAL_LUA "Never fall back to the intree copy of lua" ON)
