@@ -378,9 +378,8 @@ static void _setup_overlay(dt_iop_module_t *self,
       if(buf8)
       {
         DT_OMP_FOR()
-        for(size_t k = 0; k < bw * bh; k++)
-          for(int c = 0; c < 3; c++)
-            buf8[4 * k + 2 - c] = dt_display_to_8bit(buf[4 * k + c]);
+        for(size_t y = 0; y < bh; y++)
+          dt_display_to_8bit_pixels(buf + 4 * bw * y, buf8 + 4 * bw * y, bw, TRUE);
       }
       dt_free_align(buf);
       new_buf = buf8;
