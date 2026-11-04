@@ -487,6 +487,12 @@ static void _workspace_create_activated(void)
             || strcmp(label, _("default")) == 0
             || strcmp(label, _("memory")) == 0)
       dt_control_log(_("the names \"default\" and \"memory\" are reserved"));
+    else if(!dt_workspace_label_is_safe(label))
+      /* same message as in workspace.c (_workspace_new_db); "%s" so <> is markup-safe */
+      dt_control_log("%s",
+                     _("WARNING\n\nthe characters / \\ < > : \" | * ? [ ] are not allowed,"
+                       " nor are the names \".\" and \"..\".\n\n"
+                       "choose a different name."));
     else if(!dt_workspace_new(datadir, label, copy_from))
       dt_control_log(_("could not create workspace \"%s\""), label);
     else

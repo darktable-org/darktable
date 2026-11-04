@@ -23,13 +23,17 @@
  * discovered names sorted. Free with g_list_free_full(list, g_free). */
 GList *dt_workspace_list(const char *datadir);
 
+/* TRUE if label is usable as a path component (not ., .., or
+ * /<>:"\|*?[]). Reserved names are checked separately. */
+gboolean dt_workspace_label_is_safe(const char *label);
+
 /* Set database + workspace/label conf for label. */
 void dt_workspace_apply(const char *label);
 
-/* Create a named workspace (not default/memory). Returns FALSE if reserved
- * or already exists. copy_from NULL = blank rc; "" = seed from default;
- * otherwise seed from that workspace (sanitized). Then applies conf like
- * dt_workspace_apply(). */
+/* Create a named workspace (not default/memory). Returns FALSE if reserved,
+ * unsafe, or already exists. copy_from NULL = blank rc; "" = seed from
+ * default; otherwise seed from that workspace (sanitized). Then applies
+ * conf like dt_workspace_apply(). */
 gboolean dt_workspace_new(const char *datadir,
                           const char *label,
                           const char *copy_from);

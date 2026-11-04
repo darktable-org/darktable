@@ -63,6 +63,14 @@ static gboolean _workspace_label_is_reserved(const char *label)
     || _workspace_label_is_memory(label);
 }
 
+gboolean dt_workspace_label_is_safe(const char *label)
+{
+  if(!label || !*label) return FALSE;
+  if(strcmp(label, ".") == 0 || strcmp(label, "..") == 0) return FALSE;
+  if(strpbrk(label, "/<>:\"\\|*?[]")) return FALSE;
+  return TRUE;
+}
+
 static gboolean _workspace_db_file_exists(const char *datadir,
                                           const char *label)
 {
@@ -208,6 +216,7 @@ gboolean dt_workspace_new(const char *datadir,
 {
   if(!datadir || !label || !*label) return FALSE;
   if(_workspace_label_is_reserved(label)) return FALSE;
+  if(!dt_workspace_label_is_safe(label)) return FALSE;
   if(_workspace_db_file_exists(datadir, label)) return FALSE;
 
   if(copy_from)
@@ -261,8 +270,8 @@ GList *dt_workspace_list(const char *datadir)
   {
     char *name = (char *)l->data;
     char *f = name + strlen("library") + 1;
-    char *e = strchr(f, '.');
-    if(e) *e = '\0';
+    if(g_str_has_suffix(f, ".db"))
+      f[strlen(f) - 3] = '\0';
     named = g_list_append(named, g_strdup(f));
   }
   g_list_free_full(dbs, g_free);
@@ -499,6 +508,18 @@ static void _workspace_new_db(GtkWidget *button,
       (session, _("create workspace"),
        _("WARNING\n\nthe names \"default\" and \"memory\" are reserved."
          "\n\nchoose a different name."));
+    g_free(label);
+    return;
+  }
+
+  if(!dt_workspace_label_is_safe(label))
+  {
+    /* same message as in global_toolbox.c (_workspace_create_activated) */
+    _workspace_show_message
+      (session, _("create workspace"),
+       _("WARNING\n\nthe characters / \\ < > : \" | * ? [ ] are not allowed,"
+         " nor are the names \".\" and \"..\".\n\n"
+         "choose a different name."));
     g_free(label);
     return;
   }
