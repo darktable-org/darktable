@@ -1293,12 +1293,10 @@ static void _update_display2_transforms(dt_colorspaces_t *self)
   self->transform_adobe_rgb_to_display2 = NULL;
   self->display2_hdr_transfer = DT_HDR_NONE;
 
-  const dt_display_output_t *gtk = self->backend_output[1] ? &self->gtk_output[1] : NULL;
-  const dt_iop_color_intent_t intent = gtk ? gtk->intent : self->display2_intent;
   const dt_colorspaces_color_profile_t *display2_dt_profile
       = _get_profile(self,
-                     gtk ? gtk->type : self->display2_type,
-                     gtk ? gtk->filename : self->display2_filename,
+                     self->display2_type,
+                     self->display2_filename,
                      DT_PROFILE_DIRECTION_DISPLAY2);
 
   if(!display2_dt_profile)
@@ -1313,14 +1311,14 @@ static void _update_display2_transforms(dt_colorspaces_t *self)
                                                DT_PROFILE_DIRECTION_DISPLAY2)->profile,
                                   display2_profile,
                                   self->display2_hdr_transfer,
-                                  intent);
+                                  self->display2_intent);
 
   self->transform_adobe_rgb_to_display2
       = _create_display_transform(_get_profile(self, DT_COLORSPACE_ADOBERGB, "",
                                                DT_PROFILE_DIRECTION_DISPLAY2)->profile,
                                   display2_profile,
                                   self->display2_hdr_transfer,
-                                  intent);
+                                  self->display2_intent);
 }
 
 // update cached transforms for color management of thumbnails
@@ -1385,10 +1383,8 @@ void dt_colorspaces_set_backend_output(const dt_colorspaces_color_profile_type_t
     self->window_output[second] = *output;
     self->gtk_output[second] = *gtk;
   }
-  if(second)
-    _update_display2_transforms(self);
-  else
-    _update_display_transforms(self);
+  // only the main window's transforms have users: the thumbnails
+  if(!second) _update_display_transforms(self);
   pthread_rwlock_unlock(&self->xprofile_lock);
 
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
