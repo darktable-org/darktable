@@ -60,7 +60,6 @@ typedef struct dt_iop_colorout_data_t
   float *clut;       // xform baked into a CLUT_LEVEL^3 LUT for the GPU, built on first use
   float *clut_gamut; // gamut check only: 1 in all channels where xform marks a node out of gamut
   float unbounded_coeffs[3][3]; // for extrapolation of shaper curves
-  dt_aligned_pixel_t gamut_color;
 } dt_iop_colorout_data_t;
 
 typedef struct dt_iop_colorout_global_data_t
@@ -407,7 +406,7 @@ static int _process_cl_clut(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
   if(dev_clut && dev_marker)
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorout_clut, width, height,
       CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_clut), CLARG(level),
-      CLARG(gamutcheck), CLARG(dev_marker), CLARRAY(4, d->gamut_color), CLARG(d->hdr_transfer));
+      CLARG(gamutcheck), CLARG(dev_marker), CLARG(d->hdr_transfer));
 
   dt_opencl_release_mem_object(dev_clut);
   dt_opencl_release_mem_object(dev_gamut);
@@ -612,11 +611,12 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
 
     if(gamutcheck)
     {
+      static const dt_aligned_pixel_t cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
       for(int j = 0; j < count; j++)
       {
         if(outp[4*j+0] < 0.0f || outp[4*j+1] < 0.0f || outp[4*j+2] < 0.0f)
         {
-          copy_pixel_nontemporal(outp + 4*j, d->gamut_color);
+          copy_pixel_nontemporal(outp + 4*j, cyan);
         }
       }
     }
@@ -688,11 +688,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   cmsUInt32Number output_format = TYPE_RGBA_FLT;
 
   d->mode = dt_pipe_is_full(pipe) ? darktable.color_profiles->mode : DT_PROFILE_NORMAL;
-  // cyan
-  d->gamut_color[0] = 0.0f;
-  d->gamut_color[1] = d->gamut_color[2] = 1.0f;
-  d->gamut_color[3] = 0.0f;
-  dt_display_output_diagnostic(&pipe->output, d->gamut_color);
 
   if(d->xform)
   {

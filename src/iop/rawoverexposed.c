@@ -126,13 +126,7 @@ void process(dt_iop_module_t *self,
 
   const dt_dev_rawoverexposed_mode_t mode = dev->rawoverexposed.mode;
   const int colorscheme = dev->rawoverexposed.colorscheme;
-  dt_aligned_pixel_t colors[4];
-  for(int k = 0; k < 4; k++)
-  {
-    copy_pixel(colors[k], dt_iop_rawoverexposed_colors[k]);
-    dt_display_output_diagnostic(&piece->pipe->output, colors[k]);
-  }
-  const float *const color = colors[colorscheme];
+  const float *const color = dt_iop_rawoverexposed_colors[colorscheme];
 
   dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
 
@@ -156,7 +150,7 @@ void process(dt_iop_module_t *self,
   size_t coordbufsize;
   float *const restrict coordbuf = dt_alloc_perthread_float(2*roi_out->width, &coordbufsize);
 
-  DT_OMP_FOR()
+  DT_OMP_FOR(firstprivate(dt_iop_rawoverexposed_colors))
   for(int j = 0; j < roi_out->height; j++)
   {
     float *const restrict bufptr = dt_get_perthread(coordbuf, coordbufsize);
@@ -200,7 +194,7 @@ void process(dt_iop_module_t *self,
       switch(mode)
       {
         case DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA:
-          memcpy(out + pout, colors[c], sizeof(float) * 4);
+          memcpy(out + pout, dt_iop_rawoverexposed_colors[c], sizeof(float) * 4);
           break;
         case DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID:
           memcpy(out + pout, color, sizeof(float) * 4);
@@ -261,13 +255,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   if(err != CL_SUCCESS) goto error;
 
   const int colorscheme = dev->rawoverexposed.colorscheme;
-  dt_aligned_pixel_t colors[4];
-  for(int k = 0; k < 4; k++)
-  {
-    copy_pixel(colors[k], dt_iop_rawoverexposed_colors[k]);
-    dt_display_output_diagnostic(&piece->pipe->output, colors[k]);
-  }
-  const float *const color = colors[colorscheme];
+  const float *const color = dt_iop_rawoverexposed_colors[colorscheme];
 
   // NOT FROM THE PIPE !!!
   const uint32_t filters = image->buf_dsc.filters;
@@ -308,8 +296,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     case DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA:
       kernel = gd->kernel_rawoverexposed_mark_cfa;
 
-      dev_colors = dt_opencl_copy_host_to_device_constant(devid, sizeof(colors),
-                                                          (void *)colors);
+      dev_colors = dt_opencl_copy_host_to_device_constant(devid, sizeof(dt_iop_rawoverexposed_colors), (void *)dt_iop_rawoverexposed_colors);
       if(dev_colors == NULL) goto error;
 
       break;

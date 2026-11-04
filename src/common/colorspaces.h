@@ -192,7 +192,8 @@ typedef struct dt_display_output_t
   dt_iop_color_intent_t intent;
   float headroom;
   // a color-managed presenter shows the values in the profile; otherwise
-  // they reach the screen as the device values the display profile assumes
+  // they reach the screen as the device values the display profile assumes.
+  // a managed output is linear Rec.2020 today
   gboolean managed;
 } dt_display_output_t;
 
@@ -212,27 +213,18 @@ static inline uint8_t dt_display_to_8bit(const float v)
   return (uint8_t)fminf(roundf(255.0f * fmaxf(v, 0.0f)), 255.0f);
 }
 
-/* diagnostic colors (mask and channel views, clipping and gamut warnings)
- * are authored as sRGB device values, which a display profile output sends
- * to the screen as they are. a managed linear output gets them converted */
+/* the mask and channel views are authored as sRGB device values, which a
+ * display profile output sends to the screen as they are. a managed
+ * output, linear Rec.2020, gets them converted */
 static inline void dt_display_output_diagnostic(const dt_display_output_t *output,
                                                 float *const rgb)
 {
-  if(!output->managed
-     || (output->type != DT_COLORSPACE_LIN_REC709
-         && output->type != DT_COLORSPACE_LIN_REC2020))
-    return;
+  if(!output->managed || output->type != DT_COLORSPACE_LIN_REC2020) return;
 
   float lin[3];
   for(int c = 0; c < 3; c++)
     lin[c] = rgb[c] <= 0.04045f ? rgb[c] / 12.92f
                                 : powf((rgb[c] + 0.055f) / 1.055f, 2.4f);
-
-  if(output->type == DT_COLORSPACE_LIN_REC709)
-  {
-    for(int c = 0; c < 3; c++) rgb[c] = lin[c];
-    return;
-  }
 
   // BT.709 to BT.2020 primaries, ITU-R BT.2087
   rgb[0] = 0.6274040f * lin[0] + 0.3292820f * lin[1] + 0.0433136f * lin[2];
