@@ -967,6 +967,10 @@ changes (where available).
 - Fixed scale pixels output shifted by a fraction of a pixel in each
   tile when the image was processed in tiles.
 
+- Fixed clicking a thumbnail in the filmstrip of the tethering view,
+  which did nothing: the image is now selected and shown in the
+  center view.
+
 ## Lua
 
 ### API Version
