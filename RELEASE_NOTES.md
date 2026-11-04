@@ -215,6 +215,22 @@ changes (where available).
   the preferences dialog to the masks panel's options popover, and the
   masking section of the preferences dialog is gone.
 
+- Color calibration has a new illuminant option, "from the white
+  balance module", which derives the illuminant from the settings of
+  the white balance module. With it, the color picker and the
+  temperature, tint, and channel coefficient sliders in the white
+  balance module set the white balance that color calibration uses.
+  The new option is the default for new scene-referred edits of color
+  raw files. It needs the white balance module's new "prepare data for
+  color calibration" checkbox to be checked, as it is by default in
+  these edits. The checkbox is available in all modes except "camera
+  reference", which does not need it. The old "as shot to reference"
+  mode becomes "as shot" with the checkbox checked. While color
+  calibration adapts with any other illuminant option, such as "as shot
+  in camera" or "custom", the white balance module disables these
+  controls and its camera presets, because the white balance is then
+  controlled in color calibration.
+
 ## Performance Improvements
 
 - The lighttable timeline no longer slows down quadratically with the
@@ -242,6 +258,26 @@ changes (where available).
   faster processing times in comparison to CPU code path, depending on
   CPU & GPU.
 
+- Contrast & texture now runs on OpenCL, so it no longer moves the
+  image back to the CPU in the middle of an otherwise GPU pipeline.
+
+- Highlight reconstruction's inpaint opposed method now runs on OpenCL
+  for linear raws, such as sRAW and linear DNG files.
+
+- Enlarge canvas now runs on OpenCL, so it no longer moves the image
+  back to the CPU in the middle of an otherwise GPU pipeline.
+
+- Chromatic aberrations RGB now runs on OpenCL.
+
+- Grain now runs on OpenCL.
+
+- Surface blur now runs on OpenCL. It was by far the slowest module
+  left on the CPU in an OpenCL pipeline, and moved the image back to
+  the CPU for it.
+
+- Rotate pixels, which straightens the sensor layout of Fujifilm
+  SuperCCD raws, now runs on OpenCL.
+
 - Hovering over and dragging nodes of long drawn brush strokes and
   paths is much faster, as the mask overlay is no longer redrawn on
   every mouse move and long outlines are drawn with far fewer points.
@@ -251,6 +287,35 @@ changes (where available).
   every pixel, so the CPU no longer computes and uploads hundreds of
   megabytes on each run. The correction is also more precise on x86,
   where it could be up to 0.3 px off, or 0.6 px when distorting.
+
+- The raw denoise module can now run on the OpenCL device for Bayer
+  sensors.
+
+- The retouch module's heal tool now runs its solver on the OpenCL
+  device instead of copying the image back to the CPU for each
+  healed shape.
+
+- The hot pixels module can now run on the OpenCL device, so a raw
+  no longer goes back to the CPU and up again around it.
+
+- Module color pickers now compute their statistics on the OpenCL
+  device instead of copying the picked area back to the CPU.
+
+- darktable-cli uses less memory when exporting many images: it no
+  longer keeps the decoded raw of every exported image in memory
+  until its cache is full.
+
+- Modules showing a histogram of their input (levels, rgb levels, rgb
+  curve, tone curve and color zones) now count it on the OpenCL device
+  instead of copying the image back to the CPU.
+
+- The raw chromatic aberrations module can now run on the OpenCL
+  device.
+
+- Haze removal no longer copies the whole image back from the OpenCL
+  device to estimate the ambient light.
+
+- The dither module's random mode can now run on the OpenCL device.
 
 ## Other Changes
 
@@ -420,6 +485,10 @@ changes (where available).
   instead of having an empty label.
 
 ## Bug Fixes
+
+- Upscaled exports no longer show shifted bands where they were
+  processed in tiles, and the upscale now runs on OpenCL when it fits
+  the device.
 
 - Fixed Lightroom develop import which was not done. Only the tags,
   color labels, stars where imported.
@@ -815,6 +884,44 @@ changes (where available).
 - Fixed occasional magenta pixels on the CPU in red areas blended with
   the chromaticity, hue, color or HSV blend modes in display RGB, where
   OpenCL gave the right color.
+
+- Fixed inpaint opposed highlight reconstruction on linear raws, such
+  as sRAW and linear DNG, taking the clipped areas of every channel
+  from the red channel alone.
+
+- Fixed floating-point raw files with embedded DNG gain maps coming out
+  wrong with OpenCL. The gain maps of other raw files are now also
+  applied the same way with OpenCL as on the CPU.
+
+- Fixed the contrast equalizer with an edge sharpness set, and the
+  soft clip of negadoctor, giving a different result on the CPU than
+  with OpenCL: the CPU path used a coarse approximation of the
+  exponential. Edits using them may now look slightly different when
+  exported without OpenCL.
+
+- Fixed rotate pixels, which straightens the sensor layout of Fujifilm
+  SuperCCD raws, using the scaling interpolator instead of the warp
+  interpolator set in the preferences, as the other rotating and
+  distorting modules do.
+
+- Fixed random dither giving a slightly different noise pattern
+  depending on the number of CPU threads. Its noise pattern changed,
+  so exports using it differ in the noise but not in its strength.
+
+- Fixed stale color temperature and illuminant color in color calibration
+  after white balance changes when using "as shot in camera".
+
+- Fixed input color profile and highlight reconstruction (opposed and
+  segmentation modes) still applying part of the white balance
+  correction when the white balance module, set to "as shot to
+  reference", was switched off on a raw image. Edits made that way
+  render with different colors.
+
+- Fixed a color cast when white balance in "as shot to reference" mode
+  was pasted from another image, or applied through a style or preset:
+  white balance applied the pasted multipliers, but input color profile
+  completed the correction with the target image's own as-shot
+  multipliers.
 
 ## Lua
 

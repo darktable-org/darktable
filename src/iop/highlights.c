@@ -153,6 +153,8 @@ typedef struct dt_iop_highlights_global_data_t
   int kernel_highlights_opposed;
   int kernel_highlights_initmask;
   int kernel_highlights_dilatemask;
+  int kernel_highlights_initmask_linear;
+  int kernel_highlights_opposed_linear;
 
   int kernel_highlights_false_color;
 
@@ -585,6 +587,7 @@ int process_cl(dt_iop_module_t *self,
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem dev_xtrans = NULL;
+  cl_mem dev_tmp = NULL;
 
   if(self->dev->gui_attached && g && fullpipe)
   {
@@ -622,7 +625,16 @@ int process_cl(dt_iop_module_t *self,
     }
   }
 
-  if(!filters)
+  if(!filters && dmode == DT_IOP_HIGHLIGHTS_OPPOSED)
+  {
+    // linear raws, as process(): opposed on roi_in, then scaled to roi_out
+    dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
+    if(!dev_tmp) goto finish;
+    err = _process_linear_opposed_cl(self, piece, dev_in, dev_tmp, roi_in);
+    if(err == CL_SUCCESS)
+      err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_tmp, roi_out, roi_in);
+  }
+  else if(!filters)
   {
     // non-raw images use dedicated kernel which just clips
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_4f_clip, roi_in->width, roi_in->height,
@@ -679,13 +691,13 @@ int process_cl(dt_iop_module_t *self,
   }
   else // (dmode == DT_IOP_HIGHLIGHTS_CLIP)
   {
-    const dt_dev_chroma_t *chr = &self->dev->chroma;
     dt_aligned_pixel_t clips = { clipper, clipper, clipper, clipper};
-    if(chr->late_correction)
+    const dt_dev_wb_t *wb = &pipe->wb;
+    if(pipe->dsc.temperature.enabled && wb->late_correction)
     {
-      clips[0] *= chr->as_shot[0] / chr->D65coeffs[0];
-      clips[1] *= chr->as_shot[1] / chr->D65coeffs[1];
-      clips[2] *= chr->as_shot[2] / chr->D65coeffs[2];
+      clips[0] *= wb->coeffs[0] / wb->D65coeffs[0];
+      clips[1] *= wb->coeffs[1] / wb->D65coeffs[1];
+      clips[2] *= wb->coeffs[2] / wb->D65coeffs[2];
     }
 
     dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), piece->xtrans);
@@ -731,6 +743,7 @@ int process_cl(dt_iop_module_t *self,
   if(err != CL_SUCCESS) dt_iop_piece_clear_raster(piece, NULL);
 
   dt_opencl_release_mem_object(dev_xtrans);
+  dt_opencl_release_mem_object(dev_tmp);
   return err;
 }
 #endif
@@ -758,13 +771,14 @@ static void process_clip(dt_iop_module_t *self,
   else
   {
     const uint8_t(*const xtrans)[6] = piece->xtrans;
-    const dt_dev_chroma_t *chr = &self->dev->chroma;
     dt_aligned_pixel_t clips = { clip, clip, clip, clip};
-    if(chr->late_correction)
+    dt_dev_pixelpipe_t *pipe = piece->pipe;
+    const dt_dev_wb_t *wb = &pipe->wb;
+    if(pipe->dsc.temperature.enabled && wb->late_correction)
     {
-      clips[0] *= chr->as_shot[0] / chr->D65coeffs[0];
-      clips[1] *= chr->as_shot[1] / chr->D65coeffs[1];
-      clips[2] *= chr->as_shot[2] / chr->D65coeffs[2];
+      clips[0] *= wb->coeffs[0] / wb->D65coeffs[0];
+      clips[1] *= wb->coeffs[1] / wb->D65coeffs[1];
+      clips[2] *= wb->coeffs[2] / wb->D65coeffs[2];
     }
     for(int row = 0; row < roi_out->height; row++)
     {
@@ -1055,15 +1069,10 @@ void commit_params(dt_iop_module_t *self,
   if(!rawprep || is_4bayer || (unsigned)d->mode > DT_IOP_HIGHLIGHTS_OPPOSED)
     d->mode = DT_IOP_HIGHLIGHTS_CLIP;
 
-  /* no OpenCLfor
-     1. DT_IOP_HIGHLIGHTS_INPAINT and DT_IOP_HIGHLIGHTS_SEGMENTS
-     2. DT_IOP_HIGHLIGHTS_OPPOSED on linear raws
-     FIXME the opposed preprocessing might be added as OpenCL too
-  */
+  // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT and DT_IOP_HIGHLIGHTS_SEGMENTS
   const gboolean use_opposed = d->mode == DT_IOP_HIGHLIGHTS_OPPOSED;
-  const gboolean opplinear = use_opposed && linear;
 
-  piece->process_cl_ready = ((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || opplinear) ? FALSE : TRUE;
+  piece->process_cl_ready = ((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)) ? FALSE : TRUE;
 
   if((d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || use_opposed)
     piece->process_tiling_ready = FALSE;
@@ -1133,6 +1142,8 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_highlights_opposed = dt_opencl_create_kernel(program, "highlights_opposed");
   gd->kernel_highlights_initmask = dt_opencl_create_kernel(program, "highlights_initmask");
   gd->kernel_highlights_dilatemask = dt_opencl_create_kernel(program, "highlights_dilatemask");
+  gd->kernel_highlights_initmask_linear = dt_opencl_create_kernel(program, "highlights_initmask_linear");
+  gd->kernel_highlights_opposed_linear = dt_opencl_create_kernel(program, "highlights_opposed_linear");
   gd->kernel_highlights_false_color = dt_opencl_create_kernel(program, "highlights_false_color");
 
   const int wavelets = 35; // bspline.cl, from programs.conf
@@ -1156,6 +1167,8 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_highlights_opposed);
   dt_opencl_free_kernel(gd->kernel_highlights_initmask);
   dt_opencl_free_kernel(gd->kernel_highlights_dilatemask);
+  dt_opencl_free_kernel(gd->kernel_highlights_initmask_linear);
+  dt_opencl_free_kernel(gd->kernel_highlights_opposed_linear);
   dt_opencl_free_kernel(gd->kernel_highlights_false_color);
 
   dt_opencl_free_kernel(gd->kernel_filmic_bspline_vertical);

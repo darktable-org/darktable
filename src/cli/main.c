@@ -35,6 +35,7 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/iop_profile.h"
+#include "common/mipmap_cache.h"
 #include "common/points.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
@@ -920,6 +921,10 @@ int main(int argc, char *arg[])
                       upscale, FALSE, 1.0, export_masks,
                       icc_type, icc_filename, icc_intent, &metadata) != 0)
       res = 1;
+
+    // a batch never comes back to an image, so its decoded raw would only
+    // keep memory from the next ones until the full cache fills up
+    dt_mipmap_cache_evict_at_size(id, DT_MIPMAP_FULL);
   }
 
   // cleanup time

@@ -192,6 +192,17 @@ void dt_iop_clip_and_zoom_roi(float *out,
   dt_interpolation_resample_roi(itor, out, roi_out, in, roi_in);
 }
 
+// as dt_iop_clip_and_zoom_roi() for one tile of a larger image: the roi
+// offsets place the tile, see dt_interpolation_resample_tile()
+void dt_iop_clip_and_zoom_tile(float *out,
+                               const float *const in,
+                               const dt_iop_roi_t *const roi_out,
+                               const dt_iop_roi_t *const roi_in)
+{
+  const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  dt_interpolation_resample_tile(itor, out, roi_out, in, roi_in);
+}
+
 #ifdef HAVE_OPENCL
 // apply clip and zoom on parts of a supplied full image.
 // roi_in and roi_out define which part to work on.
@@ -205,17 +216,17 @@ int dt_iop_clip_and_zoom_cl(int devid,
   return dt_interpolation_resample_cl(itor, devid, dev_out, roi_out, dev_in, roi_in);
 }
 
-// apply clip and zoom on the image region supplied in the input buffer.
-// roi_in and roi_out describe which part of the full image this relates to but shifts are ignored.
-int dt_iop_clip_and_zoom_roi_cl(int devid,
-                                cl_mem dev_out,
-                                cl_mem dev_in,
-                                const dt_iop_roi_t *const roi_out,
-                                const dt_iop_roi_t *const roi_in)
+static int _clip_and_zoom_roi_cl(const int devid,
+                                 cl_mem dev_out,
+                                 cl_mem dev_in,
+                                 const dt_iop_roi_t *const roi_out,
+                                 const dt_iop_roi_t *const roi_in,
+                                 const gboolean tile)
 {
   const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  cl_int err = dt_interpolation_resample_roi_cl(itor, devid, dev_out,
-                                                roi_out, dev_in, roi_in);
+  cl_int err = tile
+    ? dt_interpolation_resample_tile_cl(itor, devid, dev_out, roi_out, dev_in, roi_in)
+    : dt_interpolation_resample_roi_cl(itor, devid, dev_out, roi_out, dev_in, roi_in);
   if(err == CL_INVALID_WORK_GROUP_SIZE)
   {
     // We ran into a "vertical number of taps exceeds the vertical workgroupsize" problem
@@ -227,7 +238,10 @@ int dt_iop_clip_and_zoom_roi_cl(int devid,
       err = dt_opencl_copy_image_to_host(devid, in, dev_in, roi_in->width, roi_in->height, 4 * sizeof(float));
       if(err == CL_SUCCESS)
       {
-        dt_iop_clip_and_zoom_roi(out, in, roi_out, roi_in);
+        if(tile)
+          dt_iop_clip_and_zoom_tile(out, in, roi_out, roi_in);
+        else
+          dt_iop_clip_and_zoom_roi(out, in, roi_out, roi_in);
         err = dt_opencl_write_host_to_image(devid, out, dev_out, roi_out->width, roi_out->height, 4 * sizeof(float));
       }
 
@@ -243,6 +257,27 @@ int dt_iop_clip_and_zoom_roi_cl(int devid,
     dt_free_align(out);
   }
   return err;
+}
+
+// apply clip and zoom on the image region supplied in the input buffer.
+// roi_in and roi_out describe which part of the full image this relates to but shifts are ignored.
+int dt_iop_clip_and_zoom_roi_cl(int devid,
+                                cl_mem dev_out,
+                                cl_mem dev_in,
+                                const dt_iop_roi_t *const roi_out,
+                                const dt_iop_roi_t *const roi_in)
+{
+  return _clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in, FALSE);
+}
+
+// as dt_iop_clip_and_zoom_tile()
+int dt_iop_clip_and_zoom_tile_cl(int devid,
+                                 cl_mem dev_out,
+                                 cl_mem dev_in,
+                                 const dt_iop_roi_t *const roi_out,
+                                 const dt_iop_roi_t *const roi_in)
+{
+  return _clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in, TRUE);
 }
 
 #endif

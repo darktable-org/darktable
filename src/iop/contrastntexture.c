@@ -50,6 +50,10 @@ Current status as implemented by Jandren:
 #include "common/fast_guided_filter.h"
 #include "common/eigf.h"
 #include "common/luminance_mask.h"
+#include "common/opencl.h"
+#include "common/bilinear.h"
+#include "common/gaussian.h"
+#include "develop/tiling.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -110,6 +114,19 @@ typedef struct dt_iop_contrastntexture_data_t
   float midtones_width;
   float midtones_polynomial[3];
 } dt_iop_contrastntexture_data_t;
+
+typedef struct dt_iop_contrastntexture_global_data_t
+{
+  int kernel_luminance;
+  int kernel_details;
+  int kernel_apply;
+  int kernel_display_details;
+  int kernel_display_lowpass;
+  // the guided filter kernels of toneequal.cl, see _fast_eigf_surface_blur_cl()
+  int kernel_eigf_pack_2c;
+  int kernel_eigf_finish_2c;
+  int kernel_eigf_blend_no_mask;
+} dt_iop_contrastntexture_global_data_t;
 
 typedef struct dt_iop_contrastntexture_gui_data_t
 {
@@ -580,6 +597,208 @@ void cleanup_pipe(dt_iop_module_t *self,
 {
   dt_free_align(piece->data);
   piece->data = NULL;
+}
+
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
+                     dt_develop_tiling_t *tiling)
+{
+  // in and out plus the three grey full size buffers of process(). On the CPU,
+  // fast_eigf_surface_blur() adds a full size mask and 4 channel averages; on
+  // the GPU, the averages stay downscaled
+  tiling->factor = 2.0f + 3.0f / 4.0f + 1.0f / 4.0f + 1.0f;
+  tiling->factor_cl = 2.0f + 3.0f / 4.0f + 1.0f / 4.0f;
+  tiling->maxbuf = 1.0f;
+  tiling->maxbuf_cl = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = 0;
+  tiling->align = 1;
+}
+
+#ifdef HAVE_OPENCL
+// fast_eigf_surface_blur() of common/eigf.h without quantization, which is how
+// compute_mask() calls it. In place on a grey device buffer.
+static cl_int _fast_eigf_surface_blur_cl(const int devid,
+                                         const dt_iop_contrastntexture_global_data_t *const gd,
+                                         cl_mem dev_image,
+                                         const int width,
+                                         const int height,
+                                         const float sigma,
+                                         const float feathering)
+{
+  const float scaling = fmaxf(fminf(sigma, 4.0f), 1.0f);
+  const float ds_sigma = fmaxf(sigma / scaling, 1.0f);
+  const int ds_width = MAX(1, (int)((float)width / scaling));
+  const int ds_height = MAX(1, (int)((float)height / scaling));
+  const size_t ds_bsize = (size_t)ds_width * ds_height * sizeof(float);
+  const int blending = DT_GF_BLENDING_LINEAR;
+
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_mem dev_ds_image = dt_opencl_alloc_device_buffer(devid, ds_bsize);
+  cl_mem dev_ds_av = dt_opencl_alloc_device_buffer(devid, 2 * ds_bsize);
+  if(!dev_ds_image || !dev_ds_av) goto error;
+
+  err = dt_interpolate_bilinear_cl(devid, dev_image, width, height,
+                                   dev_ds_image, ds_width, ds_height, 1);
+  if(err != CL_SUCCESS) goto error;
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_eigf_pack_2c, ds_width, ds_height,
+          CLARG(dev_ds_image), CLARG(dev_ds_av), CLARG(ds_width), CLARG(ds_height));
+  if(err != CL_SUCCESS) goto error;
+
+  err = dt_gaussian_mean_blur_cl(devid, dev_ds_av, ds_width, ds_height, 2, ds_sigma);
+  if(err != CL_SUCCESS) goto error;
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_eigf_finish_2c, ds_width, ds_height,
+          CLARG(dev_ds_av), CLARG(ds_width), CLARG(ds_height));
+  if(err != CL_SUCCESS) goto error;
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_eigf_blend_no_mask, width, height,
+          CLARG(dev_image), CLARG(width), CLARG(height),
+          CLARG(dev_ds_av), CLARG(ds_width), CLARG(ds_height),
+          CLARG(blending), CLARG(feathering));
+
+error:
+  dt_opencl_release_mem_object(dev_ds_av);
+  dt_opencl_release_mem_object(dev_ds_image);
+  return err;
+}
+
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_contrastntexture_data_t *const d = piece->data;
+  const dt_iop_contrastntexture_global_data_t *const gd = self->global_data;
+  dt_iop_contrastntexture_gui_data_t *const g = self->gui_data;
+
+  if(piece->colors != 4) return DT_OPENCL_PROCESS_CL;
+
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const size_t bsize = (size_t)width * height * sizeof(float);
+
+  // the gains per level and the mask display, as in process()
+  float gain_per_level[MAX_ITERATIONS] = { 0.0f };
+  dt_iop_contrastntexture_details_display_t details_display = DT_LC_MASK_OFF;
+  gboolean display_mask = FALSE;
+  if(self->dev->gui_attached && g && dt_pipe_is_full(piece->pipe))
+  {
+    dt_iop_gui_enter_critical_section(self);
+    details_display = g->details_display;
+    display_mask = g->details_display != DT_LC_MASK_OFF;
+    dt_iop_gui_leave_critical_section(self);
+  }
+
+  if(display_mask)
+  {
+    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+    if(details_display != DT_LC_MASK_LAST)
+      for(int level = 0; level <= d->max_used_level; level++)
+        gain_per_level[level] = band_weight(details_display, level, d->max_detail_level);
+  }
+  else
+  {
+    for(int level = 0; level <= d->max_used_level; level++)
+      for(int band = 0; band < DT_LC_MASK_LAST; band++)
+        gain_per_level[level] += d->gain_details[band] * band_weight(band, level, d->max_detail_level);
+  }
+
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_mem dev_highpass = dt_opencl_alloc_device_buffer(devid, bsize);
+  cl_mem dev_lowpass = dt_opencl_alloc_device_buffer(devid, bsize);
+  cl_mem dev_corrections = dt_opencl_alloc_device_buffer(devid, bsize);
+  if(!dev_highpass || !dev_lowpass || !dev_corrections) goto error;
+
+  const float max_noise_bias = d->noise_bias[d->max_used_level];
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_luminance, width, height,
+          CLARG(dev_in), CLARG(dev_lowpass), CLARG(dev_highpass), CLARG(width), CLARG(height),
+          CLARG(max_noise_bias));
+  if(err != CL_SUCCESS) goto error;
+
+  for(int level = d->max_used_level; level >= 0; level--)
+  {
+    err = _fast_eigf_surface_blur_cl(devid, gd, dev_lowpass, width, height,
+                                     d->radius_details[level], d->feathering);
+    if(err != CL_SUCCESS) goto error;
+
+    const float gain = gain_per_level[level];
+    const float noise_bias = d->noise_bias[level];
+    const float next_bias_step = level > 0 ? d->noise_bias[level] - d->noise_bias[level - 1] : 0.0f;
+    // the first level starts the sum, so the corrections need no clearing
+    const int accumulate = level < d->max_used_level;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_details, width, height,
+            CLARG(dev_highpass), CLARG(dev_lowpass), CLARG(dev_corrections),
+            CLARG(width), CLARG(height), CLARG(gain), CLARG(noise_bias), CLARG(next_bias_step),
+            CLARG(accumulate));
+    if(err != CL_SUCCESS) goto error;
+  }
+
+  if(display_mask && details_display == DT_LC_MASK_LAST)
+  {
+    const float pivot_offset = d->noise_bias[0] + 0.1845f;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_display_lowpass, width, height,
+            CLARG(dev_out), CLARG(dev_lowpass), CLARG(width), CLARG(height), CLARG(pivot_offset));
+  }
+  else if(display_mask)
+  {
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_display_details, width, height,
+            CLARG(dev_out), CLARG(dev_corrections), CLARG(width), CLARG(height));
+  }
+  else
+  {
+    const float polynomial[4] = { d->midtones_polynomial[0], d->midtones_polynomial[1],
+                                  d->midtones_polynomial[2], 0.0f };
+    const float pivot_offset = log2f(d->noise_bias[0] + 0.1845f);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_apply, width, height,
+            CLARG(dev_in), CLARG(dev_out), CLARG(dev_lowpass), CLARG(dev_corrections),
+            CLARG(width), CLARG(height), CLARG(d->slope_shadows), CLARG(d->slope_highlights),
+            CLARG(d->midtones_width), CLFLARRAY(4, polynomial), CLARG(pivot_offset));
+  }
+
+error:
+  dt_opencl_release_mem_object(dev_corrections);
+  dt_opencl_release_mem_object(dev_lowpass);
+  dt_opencl_release_mem_object(dev_highpass);
+  return err;
+}
+#endif
+
+void init_global(dt_iop_module_so_t *self)
+{
+  const int program = 46; // contrastntexture.cl, from programs.conf
+  const int program_toneequal = 45; // toneequal.cl
+  dt_iop_contrastntexture_global_data_t *gd = malloc(sizeof(dt_iop_contrastntexture_global_data_t));
+  self->data = gd;
+  gd->kernel_luminance = dt_opencl_create_kernel(program, "contrastntexture_luminance");
+  gd->kernel_details = dt_opencl_create_kernel(program, "contrastntexture_details");
+  gd->kernel_apply = dt_opencl_create_kernel(program, "contrastntexture_apply");
+  gd->kernel_display_details = dt_opencl_create_kernel(program, "contrastntexture_display_details");
+  gd->kernel_display_lowpass = dt_opencl_create_kernel(program, "contrastntexture_display_lowpass");
+  gd->kernel_eigf_pack_2c = dt_opencl_create_kernel(program_toneequal, "toneequal_eigf_pack_2c");
+  gd->kernel_eigf_finish_2c = dt_opencl_create_kernel(program_toneequal, "toneequal_eigf_finish_2c");
+  gd->kernel_eigf_blend_no_mask = dt_opencl_create_kernel(program_toneequal, "toneequal_eigf_blend_no_mask");
+}
+
+void cleanup_global(dt_iop_module_so_t *self)
+{
+  const dt_iop_contrastntexture_global_data_t *gd = self->data;
+  dt_opencl_free_kernel(gd->kernel_luminance);
+  dt_opencl_free_kernel(gd->kernel_details);
+  dt_opencl_free_kernel(gd->kernel_apply);
+  dt_opencl_free_kernel(gd->kernel_display_details);
+  dt_opencl_free_kernel(gd->kernel_display_lowpass);
+  dt_opencl_free_kernel(gd->kernel_eigf_pack_2c);
+  dt_opencl_free_kernel(gd->kernel_eigf_finish_2c);
+  dt_opencl_free_kernel(gd->kernel_eigf_blend_no_mask);
+  free(self->data);
+  self->data = NULL;
 }
 
 static void show_details_callback(GtkWidget *togglebutton, dt_iop_module_t *self)

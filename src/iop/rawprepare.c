@@ -60,6 +60,7 @@ typedef struct dt_iop_rawprepare_gui_data_t
   GtkWidget *white_point;
   GtkWidget *left, *top, *right, *bottom;
   GtkWidget *flat_field;
+  gboolean white_trouble;
 } dt_iop_rawprepare_gui_data_t;
 
 typedef struct dt_iop_rawprepare_data_t
@@ -719,9 +720,20 @@ void commit_params(dt_iop_module_t *self,
   d->right = p->right;
   d->bottom = p->bottom;
 
+  dt_iop_rawprepare_gui_data_t *g = self->gui_data;
+
+  uint16_t max_black = 0;
+  for(int i = 0; i < 4; i++)
+    max_black = MAX(max_black, p->raw_black_level_separate[i]);
+
+  // a white point at or below the black level would make div <= 0 and the
+  // image render black or inverted; fall back to the full range instead
+  const gboolean white_invalid = p->raw_white_point <= max_black;
+  const uint16_t raw_white_point = white_invalid ? UINT16_MAX : p->raw_white_point;
+
   if(piece->pipe->dsc.filters)
   {
-    const float white = (float)p->raw_white_point;
+    const float white = (float)raw_white_point;
     for(int i = 0; i < 4; i++)
     {
       d->sub[i] = (float)p->raw_black_level_separate[i];
@@ -736,7 +748,7 @@ void commit_params(dt_iop_module_t *self,
       ? 1.0f
       : 1.0f / (float)UINT16_MAX;
 
-    const float white = (float)p->raw_white_point * normalizer;
+    const float white = (float)raw_white_point * normalizer;
     for(int i = 0; i < 4; i++)
     {
       const float sepi = (float)p->raw_black_level_separate[i] * normalizer;
@@ -752,12 +764,22 @@ void commit_params(dt_iop_module_t *self,
     black += p->raw_black_level_separate[i];
   }
   d->rawprepare.raw_black_level = (uint16_t)(black / 4);
-  d->rawprepare.raw_white_point = p->raw_white_point;
+  d->rawprepare.raw_white_point = raw_white_point;
 
   if(p->flat_field == FLAT_FIELD_EMBEDDED)
     d->apply_gainmaps = _check_gain_maps(self, d->gainmaps);
   else
     d->apply_gainmaps = FALSE;
+
+  if(self->dev->gui_attached && g && !white_invalid)
+  {
+    dt_iop_gui_enter_critical_section(self);
+    const gboolean had_trouble = g->white_trouble;
+    g->white_trouble = FALSE;
+    dt_iop_gui_leave_critical_section(self);
+    if(had_trouble)
+      dt_iop_clear_module_trouble_message(self);
+  }
 
   if(_image_set_rawcrops(self, pipe->image.id, d->left, d->right, d->top, d->bottom))
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_UPDATE);
@@ -768,6 +790,22 @@ void commit_params(dt_iop_module_t *self,
 
   if(piece->pipe->want_detail_mask)
     piece->process_tiling_ready = FALSE;
+
+  if(white_invalid && piece->enabled)
+  {
+    dt_iop_set_module_trouble_message
+      (self,
+       _("invalid white point"),
+       _("the white point is not above the black level.\n"
+         "the maximum value is used instead, set a correct white point."),
+       "white point not above black level, using maximum");
+    if(self->dev->gui_attached && g)
+    {
+      dt_iop_gui_enter_critical_section(self);
+      g->white_trouble = TRUE;
+      dt_iop_gui_leave_critical_section(self);
+    }
+  }
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

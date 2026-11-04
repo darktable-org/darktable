@@ -1649,8 +1649,8 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
       const int in_dy = iroi_full.y - roi_in->y;
       const int out_dx = oroi_good.x - roi_out->x;
       const int out_dy = oroi_good.y - roi_out->y;
-      const size_t ioffs = (size_t)(in_dy  * ipitch) + (size_t)(in_dx * in_bpp);
-      const size_t ooffs = (size_t)(out_dy * opitch) + (size_t)(out_dx * out_bpp);
+      const size_t ioffs = (size_t)in_dy  * ipitch + (size_t)in_dx * in_bpp;
+      const size_t ooffs = (size_t)out_dy * opitch + (size_t)out_dx * out_bpp;
 
       /* region of full input tile */
       const size_t iregion[2] = { iroi_full.width, iroi_full.height };

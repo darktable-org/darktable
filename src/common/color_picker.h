@@ -56,6 +56,31 @@ void dt_color_picker_helper(struct dt_iop_module_t *module,
                             const enum dt_iop_colorspace_type_t picker_cst,
                             const dt_iop_order_iccprofile_info_t *const profile);
 
+#ifdef HAVE_OPENCL
+typedef struct dt_color_picker_cl_global_t
+{
+  int kernel_stats_4ch;
+  int kernel_stats_mosaic;
+} dt_color_picker_cl_global_t;
+
+dt_color_picker_cl_global_t *dt_color_picker_init_cl_global(void);
+void dt_color_picker_free_cl_global(dt_color_picker_cl_global_t *g);
+
+// dt_color_picker_helper() for an image on the OpenCL device: the statistics
+// are reduced there, and only they are read back. Returns FALSE, having set
+// nothing, where it has no kernel for the conversion or the device fails.
+gboolean dt_color_picker_helper_cl(const int devid,
+                                   const struct dt_iop_buffer_dsc_t *dsc,
+                                   cl_mem img,
+                                   const struct dt_iop_roi_t *roi,
+                                   const int *const box,
+                                   const gboolean denoise,
+                                   lib_colorpicker_stats pick,
+                                   const enum dt_iop_colorspace_type_t image_cst,
+                                   const enum dt_iop_colorspace_type_t picker_cst,
+                                   const dt_iop_order_iccprofile_info_t *const profile);
+#endif
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

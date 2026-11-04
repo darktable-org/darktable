@@ -651,6 +651,16 @@ int legacy_params(dt_iop_module_t *self,
 
 // normalized product of two 3x1 vectors
 // dst needs to be different from v1 and v2
+// same accumulation order and fma as the ashift OpenCL kernels, so both sides round identically
+static inline void _mat3mulv_fma(float *dst, const float *const mat, const float *const v)
+{
+  for(int i = 0; i < 3; i++)
+  {
+    dst[i] = 0.0f;
+    for(int j = 0; j < 3; j++) dst[i] = fmaf(mat[3 * i + j], v[j], dst[i]);
+  }
+}
+
 static inline void vec3prodn(float *dst, const float *const v1, const float *const v2)
 {
   const float l1 = v1[1] * v2[2] - v1[2] * v2[1];
@@ -3594,7 +3604,7 @@ void process(dt_iop_module_t *self,
       pout[2] = 1.0f;
 
       // apply homograph
-      mat3mulv(pin, (float *)ihomograph, pout);
+      _mat3mulv_fma(pin, (float *)ihomograph, pout);
 
       // convert to input pixel coordinates
       pin[0] /= pin[2];

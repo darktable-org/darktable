@@ -90,6 +90,9 @@ typedef struct dt_iop_hazeremoval_global_data_t
   int kernel_hazeremoval_box_max_x;
   int kernel_hazeremoval_box_max_y;
   int kernel_hazeremoval_dehaze;
+  int kernel_hazeremoval_dark_channel;
+  int kernel_hazeremoval_histogram;
+  int kernel_hazeremoval_ambient_sums;
 } dt_iop_hazeremoval_global_data_t;
 
 
@@ -216,6 +219,12 @@ void init_global(dt_iop_module_so_t *self)
     dt_opencl_create_kernel(program, "hazeremoval_box_max_y");
   gd->kernel_hazeremoval_dehaze =
     dt_opencl_create_kernel(program, "hazeremoval_dehaze");
+  gd->kernel_hazeremoval_dark_channel =
+    dt_opencl_create_kernel(program, "hazeremoval_dark_channel");
+  gd->kernel_hazeremoval_histogram =
+    dt_opencl_create_kernel(program, "hazeremoval_histogram");
+  gd->kernel_hazeremoval_ambient_sums =
+    dt_opencl_create_kernel(program, "hazeremoval_ambient_sums");
   self->data = gd;
 }
 
@@ -229,6 +238,9 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_hazeremoval_box_max_x);
   dt_opencl_free_kernel(gd->kernel_hazeremoval_box_max_y);
   dt_opencl_free_kernel(gd->kernel_hazeremoval_dehaze);
+  dt_opencl_free_kernel(gd->kernel_hazeremoval_dark_channel);
+  dt_opencl_free_kernel(gd->kernel_hazeremoval_histogram);
+  dt_opencl_free_kernel(gd->kernel_hazeremoval_ambient_sums);
   free(self->data);
   self->data = NULL;
 }
@@ -704,14 +716,13 @@ void process(dt_iop_module_t *self,
 // depth is estimated by the local amount of haze and given in units of the
 // characteristic haze depth, i.e., the distance over which object light is
 // reduced by the factor exp(-1)
-// some parts of the calculation are not suitable for a parallel implementation,
-// thus we copy data to host memory fall back to a cpu routine
-static float _ambient_light_cl(dt_iop_module_t *self,
-                               const int devid,
-                               cl_mem img,
-                               const int w1,
-                               rgb_pixel *pA0,
-                               const gboolean compatibility_mode)
+// the compatibility mode keeps the original quick select, which does not
+// always pick the true quantile, so it runs on the host
+static float _ambient_light_host_cl(const int devid,
+                                    cl_mem img,
+                                    const int w1,
+                                    rgb_pixel *pA0,
+                                    const gboolean compatibility_mode)
 {
   const int width = dt_opencl_get_image_width(img);
   const int height = dt_opencl_get_image_height(img);
@@ -784,6 +795,184 @@ error:
   return err;
 }
 
+
+static float _key_to_float(const uint32_t key)
+{
+  const uint32_t u = (key & 0x80000000u) ? (key & 0x7fffffffu) : ~key;
+  float v;
+  memcpy(&v, &u, sizeof(v));
+  return v;
+}
+
+// work groups of up to 16x16 covering the image, for the kernels that
+// reduce in local memory; the local size is a power of two
+static cl_int _reduce_layout_cl(const int devid,
+                                const int kernel,
+                                const int width,
+                                const int height,
+                                size_t sizes[2],
+                                size_t local[2])
+{
+  dt_opencl_local_buffer_t locopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = 4 * sizeof(float), .overhead = 0,
+                                  .sizex = 1 << 4, .sizey = 1 << 4 };
+  const cl_int err = dt_opencl_local_buffer_opt(devid, kernel, &locopt);
+  if(err != CL_SUCCESS) return err;
+
+  local[0] = locopt.sizex;
+  local[1] = locopt.sizey;
+  sizes[0] = ROUNDUP(width, locopt.sizex);
+  sizes[1] = ROUNDUP(height, locopt.sizey);
+  return CL_SUCCESS;
+}
+
+// the quantile of the dark channel, or with brightness set of the summed
+// colors of the pixels whose dark channel is at least crit: the value at
+// (size_t)(count * quantile) of them sorted, found by four 8-bit radix
+// passes of hazeremoval_histogram. count gets the number of values
+static cl_int _quantile_cl(const dt_iop_hazeremoval_global_data_t *gd,
+                           const int devid,
+                           cl_mem dark,
+                           cl_mem img,
+                           const int width,
+                           const int height,
+                           const int brightness,
+                           const float crit,
+                           const float quantile,
+                           cl_mem dev_hist,
+                           float *value,
+                           size_t *count)
+{
+  size_t sizes[2], local[2];
+  cl_int err = _reduce_layout_cl(devid, gd->kernel_hazeremoval_histogram, width, height, sizes, local);
+  if(err != CL_SUCCESS) return err;
+
+  const uint32_t zero[256] = { 0 };
+  uint32_t hist[256];
+  uint32_t prefix = 0, prefix_mask = 0;
+  size_t k = 0;
+
+  for(int shift = 24; shift >= 0; shift -= 8)
+  {
+    err = dt_opencl_write_buffer_to_device(devid, (void *)zero, dev_hist, 0, sizeof(zero), FALSE);
+    if(err != CL_SUCCESS) return err;
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_hazeremoval_histogram, sizes, local,
+            CLARG(width), CLARG(height), CLARG(dark), CLARG(img), CLARG(brightness), CLARG(crit),
+            CLARG(prefix), CLARG(prefix_mask), CLARG(shift), CLARG(dev_hist));
+    if(err != CL_SUCCESS) return err;
+    err = dt_opencl_read_buffer_from_device(devid, hist, dev_hist, 0, sizeof(hist), TRUE);
+    if(err != CL_SUCCESS) return err;
+
+    if(shift == 24)
+    {
+      size_t total = 0;
+      for(int b = 0; b < 256; b++) total += hist[b];
+      *count = total;
+      k = (size_t)(total * quantile);
+      if(k >= total) return DT_OPENCL_PROCESS_CL;
+    }
+
+    int bin = 0;
+    while(bin < 255 && k >= hist[bin])
+    {
+      k -= hist[bin];
+      bin++;
+    }
+    prefix |= (uint32_t)bin << shift;
+    prefix_mask |= 0xffu << shift;
+  }
+  *value = _key_to_float(prefix);
+  return CL_SUCCESS;
+}
+
+// calculate diffusive ambient light and the maximal depth in the image, as
+// _ambient_light() does, on the device: the quantiles come from histograms
+// and the averages from per work-group sums, so only those are read back
+static float _ambient_light_cl(dt_iop_module_t *self,
+                               const int devid,
+                               cl_mem img,
+                               const int w1,
+                               rgb_pixel *pA0,
+                               const gboolean compatibility_mode)
+{
+  if(compatibility_mode)
+    return _ambient_light_host_cl(devid, img, w1, pA0, compatibility_mode);
+
+  const dt_iop_hazeremoval_global_data_t *gd = self->global_data;
+  const int width = dt_opencl_get_image_width(img);
+  const int height = dt_opencl_get_image_height(img);
+  const float dark_channel_quantil = 0.95f;
+  const float bright_quantil = 0.95f;
+
+  size_t sizes[2], local[2];
+  float *accu = NULL;
+  cl_mem dark = NULL, dev_hist = NULL, dev_accu = NULL;
+  cl_int err = _reduce_layout_cl(devid, gd->kernel_hazeremoval_ambient_sums, width, height, sizes, local);
+  if(err != CL_SUCCESS) goto error;
+  const size_t groups = (sizes[0] / local[0]) * (sizes[1] / local[1]);
+
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  dark = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  dev_hist = dt_opencl_alloc_device_buffer(devid, 256 * sizeof(uint32_t));
+  dev_accu = dt_opencl_alloc_device_buffer(devid, 4 * sizeof(float) * groups);
+  if(!dark || !dev_hist || !dev_accu) goto error;
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_hazeremoval_dark_channel, width, height,
+          CLARG(width), CLARG(height), CLARG(img), CLARG(dark));
+  if(err != CL_SUCCESS) goto error;
+  err = _box_min_cl(self, devid, dark, dark, w1);
+  if(err != CL_SUCCESS) goto error;
+
+  // the most hazy pixels, then the brightest among them
+  float crit_haze_level = 0.0f, crit_brightness = 0.0f;
+  size_t n_all = 0, n_most_hazy = 0;
+  err = _quantile_cl(gd, devid, dark, img, width, height, 0, 0.0f, dark_channel_quantil,
+                     dev_hist, &crit_haze_level, &n_all);
+  if(err != CL_SUCCESS) goto error;
+  err = _quantile_cl(gd, devid, dark, img, width, height, 1, crit_haze_level, bright_quantil,
+                     dev_hist, &crit_brightness, &n_most_hazy);
+  if(err != CL_SUCCESS) goto error;
+
+  err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_hazeremoval_ambient_sums, sizes, local,
+          CLARG(width), CLARG(height), CLARG(dark), CLARG(img),
+          CLARG(crit_haze_level), CLARG(crit_brightness), CLARG(dev_accu),
+          CLLOCAL(4 * sizeof(float) * local[0] * local[1]));
+  if(err != CL_SUCCESS) goto error;
+
+  err = DT_OPENCL_SYSMEM_ALLOCATION;
+  accu = dt_alloc_align_float(4 * groups);
+  if(!accu) goto error;
+  err = dt_opencl_read_buffer_from_device(devid, accu, dev_accu, 0, 4 * sizeof(float) * groups, TRUE);
+  if(err != CL_SUCCESS) goto error;
+
+  double A0[4] = { 0.0, 0.0, 0.0, 0.0 };
+  for(size_t g = 0; g < groups; g++)
+    for(int c = 0; c < 4; c++) A0[c] += accu[4 * g + c];
+  if(A0[3] > 0.0)
+    for(int c = 0; c < 3; c++) A0[c] /= A0[3];
+  (*pA0)[0] = A0[0];
+  (*pA0)[1] = A0[1];
+  (*pA0)[2] = A0[2];
+
+  dt_free_align(accu);
+  dt_opencl_release_mem_object(dark);
+  dt_opencl_release_mem_object(dev_hist);
+  dt_opencl_release_mem_object(dev_accu);
+  return crit_haze_level > 0
+    ? -1.125f * logf(crit_haze_level)
+    : logf(FLT_MAX) / 2;
+
+error:
+  dt_free_align(accu);
+  dt_opencl_release_mem_object(dark);
+  dt_opencl_release_mem_object(dev_hist);
+  dt_opencl_release_mem_object(dev_accu);
+  if(err == DT_OPENCL_PROCESS_CL)
+    return _ambient_light_host_cl(devid, img, w1, pA0, compatibility_mode);
+  dt_print(DT_DEBUG_OPENCL, "[hazeremoval, ambient_light_cl] error: %s", cl_errstr(err));
+  return 0.f;
+}
 
 static int _transition_map_cl(dt_iop_module_t *self,
                               int devid,

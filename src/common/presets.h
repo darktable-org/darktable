@@ -43,6 +43,13 @@ gboolean dt_presets_blend_params_match(const struct dt_develop_blend_params_t *b
                                        const void *blob,
                                        const int size);
 
+/** the same for a module: a stored mask is also compared with the forms the
+    module's mask is made of, as editing a shape or a refinement leaves the
+    blend params as they were */
+gboolean dt_presets_module_blend_match(const struct dt_iop_module_t *module,
+                                       const void *blob,
+                                       const int size);
+
 /** get preset multi_name for given module params */
 char *dt_presets_get_module_label(const char *module_name,
                                   const void *params,

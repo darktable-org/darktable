@@ -235,10 +235,39 @@ static GtkWidget *_buttons_get_from_pos(dt_lib_module_t *self, const int pos)
   return NULL;
 }
 
+// scroll the right panel so the topmost visible module is at its top.
+// scheduled with g_idle_add() so it runs after GTK has laid out the filtered modules
+static gboolean _scroll_to_first_match(gpointer user_data)
+{
+  GtkWidget *box = GTK_WIDGET(dt_ui_get_container(darktable.gui->ui,
+                                                  DT_UI_CONTAINER_PANEL_RIGHT_CENTER));
+  GtkWidget *sw = gtk_widget_get_ancestor(box, GTK_TYPE_SCROLLED_WINDOW);
+  if(!sw) return G_SOURCE_REMOVE;
+
+  GList *children = gtk_container_get_children(GTK_CONTAINER(box));
+  for(const GList *c = children; c; c = g_list_next(c))
+  {
+    GtkWidget *w = c->data;
+    if(gtk_widget_get_visible(w) && !g_strcmp0(gtk_widget_get_name(w), "iop-expander"))
+    {
+      GtkAllocation a;
+      gtk_widget_get_allocation(w, &a);
+      gtk_adjustment_set_value(gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw)), a.y);
+      break;
+    }
+  }
+  g_list_free(children);
+  return G_SOURCE_REMOVE;
+}
+
 static void _text_entry_changed_callback(GtkEntry *entry, dt_lib_module_t *self)
 {
   DT_GUARD_GUI_UPDATE();
   _lib_modulegroups_update_iop_visibility(self);
+
+  const gchar *text = gtk_entry_get_text(entry);
+  if(text && text[0] != '\0')
+    g_idle_add(_scroll_to_first_match, NULL);
 }
 
 static DTGTKCairoPaintIconFunc _buttons_get_icon_fct(const gchar *icon)

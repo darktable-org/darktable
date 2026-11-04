@@ -544,6 +544,7 @@ static inline void dt_vector_log2(const dt_aligned_pixel_t x,
     res[c] = (logmant[c] * (mant.f[c] - 1.0f)) + exp[c];
 }
 
+#ifdef _DARKTABLE_RELEASE
 static inline void dt_vector_exp(const dt_aligned_pixel_t x,
                                  dt_aligned_pixel_t result)
 {
@@ -619,16 +620,6 @@ static inline void dt_vector_exp2(const dt_aligned_pixel_t input,
     res[c] = expipart.f[c] * expfpart[c];
 }
 
-static inline void dt_vector_exp10(const dt_aligned_pixel_t x,
-                                   dt_aligned_pixel_t res)
-{
-  // 10^x == 2^(3.3219280948873626 * x)
-  dt_aligned_pixel_t scaled;
-  for_four_channels(c,aligned(x,scaled))
-    scaled[c] = 3.3219280948873626f * x[c];
-  dt_vector_exp2(scaled, res);
-}
-
 static inline void dt_vector_powf(const dt_aligned_pixel_t input,
                                   const dt_aligned_pixel_t power,
                                   dt_aligned_pixel_t output)
@@ -639,6 +630,39 @@ static inline void dt_vector_powf(const dt_aligned_pixel_t input,
   for_four_channels(c)
     log[c] *= power[c];
   dt_vector_exp2(log, output);
+}
+
+#else
+static inline void dt_vector_exp(const dt_aligned_pixel_t x,
+                                 dt_aligned_pixel_t result)
+{
+  for_four_channels(c, aligned(x, result))
+    result[c] = expf(x[c]);
+}
+static inline void dt_vector_exp2(const dt_aligned_pixel_t input,
+                                  dt_aligned_pixel_t res)
+{
+  for_four_channels(c,aligned(input,res))
+    res[c] = exp2f(input[c]);
+}
+static inline void dt_vector_powf(const dt_aligned_pixel_t input,
+                                  const dt_aligned_pixel_t power,
+                                  dt_aligned_pixel_t output)
+{
+  for_four_channels(c,aligned(input,output,power))
+    output[c] = powf(input[c], power[c]);
+}
+
+#endif
+
+static inline void dt_vector_exp10(const dt_aligned_pixel_t x,
+                                   dt_aligned_pixel_t res)
+{
+  // 10^x == 2^(3.3219280948873626 * x)
+  dt_aligned_pixel_t scaled;
+  for_four_channels(c,aligned(x,scaled))
+    scaled[c] = 3.3219280948873626f * x[c];
+  dt_vector_exp2(scaled, res);
 }
 
 static inline void dt_vector_pow1(const dt_aligned_pixel_t input,

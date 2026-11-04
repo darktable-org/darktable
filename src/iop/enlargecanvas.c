@@ -18,6 +18,7 @@
 
 // our includes go first:
 #include "bauhaus/bauhaus.h"
+#include "common/opencl.h"
 #include "develop/imageop.h"
 #include "develop/borders_helper.h"
 #include "develop/imageop_gui.h"
@@ -57,6 +58,11 @@ typedef struct dt_iop_enlargecanvas_data_t
   float percent_bottom;
   dt_iop_canvas_color_t color;
 } dt_iop_enlargecanvas_data_t;
+
+typedef struct dt_iop_enlargecanvas_global_data_t
+{
+  int kernel_borders_fill;
+} dt_iop_enlargecanvas_global_data_t;
 
 typedef struct dt_iop_enlargecanvas_gui_data_t
 {
@@ -337,23 +343,9 @@ void init_pipe(dt_iop_module_t *self,
   piece->data = calloc(1, sizeof(dt_iop_enlargecanvas_data_t));
 }
 
-void process(dt_iop_module_t *self,
-             dt_dev_pixelpipe_iop_t *piece,
-             const void *const ivoid,
-             void *const ovoid,
-             const dt_iop_roi_t *const roi_in,
-             const dt_iop_roi_t *const roi_out)
+static void _border_color(const dt_iop_enlargecanvas_data_t *const d,
+                          dt_aligned_pixel_t bcolor)
 {
-  const dt_iop_enlargecanvas_data_t *const d = piece->data;
-
-  float pos_v = .5f;
-  float pos_h = .5f;
-
-  _compute_pos(d, &pos_v, &pos_h);
-
-  dt_aligned_pixel_t fcolor = { 1.0f, 1.0f, 1.0f, 1.0f };
-  dt_aligned_pixel_t bcolor;
-
   bcolor[3] = 1.0f;
 
   // default is green, check for alternatives
@@ -388,6 +380,25 @@ void process(dt_iop_module_t *self,
         // should never happen
         break;
   }
+}
+
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_enlargecanvas_data_t *const d = piece->data;
+
+  float pos_v = .5f;
+  float pos_h = .5f;
+
+  _compute_pos(d, &pos_v, &pos_h);
+
+  dt_aligned_pixel_t fcolor = { 1.0f, 1.0f, 1.0f, 1.0f };
+  dt_aligned_pixel_t bcolor;
+  _border_color(d, bcolor);
 
   dt_iop_border_positions_t binfo;
 
@@ -400,8 +411,67 @@ void process(dt_iop_module_t *self,
   dt_iop_copy_image_with_border((float*)ovoid, (const float*)ivoid, &binfo);
 }
 
+#ifdef HAVE_OPENCL
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_enlargecanvas_data_t *const d = piece->data;
+  const dt_iop_enlargecanvas_global_data_t *const gd = self->global_data;
+  const int devid = piece->pipe->devid;
+
+  float pos_v = .5f;
+  float pos_h = .5f;
+
+  _compute_pos(d, &pos_v, &pos_h);
+
+  dt_aligned_pixel_t fcolor = { 1.0f, 1.0f, 1.0f, 1.0f };
+  dt_aligned_pixel_t bcolor;
+  _border_color(d, bcolor);
+
+  dt_iop_border_positions_t binfo;
+
+  dt_iop_setup_binfo(piece, roi_in, roi_out, pos_v, pos_h,
+                     bcolor, fcolor, 0.f, 0.f, &binfo);
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_borders_fill, width, height,
+                                                CLARG(dev_out), CLARGINT(0), CLARGINT(0),
+                                                CLARG(width), CLARG(height), CLARG(bcolor));
+
+  // the image area of dt_iop_copy_image_with_border(), which can be
+  // narrower than roi_in where the border is cut off by roi_out
+  const int image_width = binfo.image_right - binfo.image_left;
+  const int image_height = binfo.image_bot - binfo.image_top;
+  if(err == CL_SUCCESS && image_width > 0 && image_height > 0)
+  {
+    const size_t oorigin[2] = { binfo.image_left, binfo.image_top };
+    const size_t region[2] = { image_width, image_height };
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, oorigin, region);
+  }
+
+  return err;
+}
+#endif
+
+void init_global(dt_iop_module_so_t *self)
+{
+  const int program = 2; // basic.cl, from programs.conf
+
+  dt_iop_enlargecanvas_global_data_t *gd = malloc(sizeof(dt_iop_enlargecanvas_global_data_t));
+  self->data = gd;
+  gd->kernel_borders_fill = dt_opencl_create_kernel(program, "borders_fill");
+}
+
 void cleanup_global(dt_iop_module_so_t *self)
 {
+  dt_iop_enlargecanvas_global_data_t *gd = self->data;
+  if(gd) dt_opencl_free_kernel(gd->kernel_borders_fill);
   free(self->data);
   self->data = NULL;
 }

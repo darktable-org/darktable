@@ -98,6 +98,11 @@ typedef struct dt_iop_dither_data_t
   } random;
 } dt_iop_dither_data_t;
 
+typedef struct dt_iop_dither_global_data_t
+{
+  int kernel_dither_random;
+} dt_iop_dither_global_data_t;
+
 
 const char *name()
 {
@@ -587,20 +592,19 @@ static void _process_random(
 
   const float dither = powf(2.0f, data->random.damping / 10.0f);
 
-  unsigned int *const tea_states = alloc_tea_states(dt_get_num_threads());
-
   DT_OMP_FOR()
   for(int j = 0; j < height; j++)
   {
-    unsigned int *const tea_state = get_tea_state(tea_states,dt_get_thread_num());
     const size_t k = (size_t)4 * width * j;
     const float *const in = (const float *)ivoid + k;
     float *const out = (float *)ovoid + k;
-    tea_state[0] = j * height; /* + dt_get_thread_num() -- do not include, makes results unreproducible */
     for(int i = 0; i < width; i++)
     {
+      // seeded per pixel: the state that each thread carried from row to row
+      // made the noise depend on the number of threads
+      unsigned int tea_state[2] = { (unsigned int)(j * width + i), 0 };
       encrypt_tea(tea_state);
-      float dith = dither * tpdf(tea_state[0]);
+      const float dith = dither * tpdf(tea_state[0]);
 
       for_each_channel(c,aligned(in,out:64))
       {
@@ -608,7 +612,6 @@ static void _process_random(
       }
     }
   }
-  free_tea_states(tea_states);
 }
 
 static void _process_posterize(
@@ -670,6 +673,46 @@ void process(
     const gboolean fastmode = dt_pipe_is_fast(piece->pipe);
     _process_floyd_steinberg(self, piece, ivoid, ovoid, roi_in, roi_out, fastmode);
   }
+}
+
+#ifdef HAVE_OPENCL
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_dither_data_t *const data = piece->data;
+  const dt_iop_dither_global_data_t *const gd = self->global_data;
+
+  // Floyd-Steinberg runs pixel after pixel, and posterize has no kernel yet
+  if(data->dither_type != DITHER_RANDOM) return DT_OPENCL_PROCESS_CL;
+
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const float dither = powf(2.0f, data->random.damping / 10.0f);
+
+  return dt_opencl_enqueue_kernel_2d_args(piece->pipe->devid, gd->kernel_dither_random, width, height,
+                                          CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+                                          CLARG(dither));
+}
+#endif
+
+void init_global(dt_iop_module_so_t *self)
+{
+  const int program = 8; // extended.cl, from programs.conf
+  dt_iop_dither_global_data_t *gd = malloc(sizeof(dt_iop_dither_global_data_t));
+  self->data = gd;
+  gd->kernel_dither_random = dt_opencl_create_kernel(program, "dither_random");
+}
+
+void cleanup_global(dt_iop_module_so_t *self)
+{
+  dt_iop_dither_global_data_t *gd = self->data;
+  if(gd) dt_opencl_free_kernel(gd->kernel_dither_random);
+  free(self->data);
+  self->data = NULL;
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
