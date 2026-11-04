@@ -70,18 +70,15 @@ void dt_presenter_display_control(GtkWidget *control,
 /** drop the images of a widget */
 void dt_presenter_clear(GtkWidget *widget);
 
-/** the colors count float RGBA pixels in encoding show as on GTK's
- * surface, as RGB triplets in [0, 1] */
-void dt_presenter_gtk_colors(const float *pixels,
-                             const size_t count,
-                             const dt_display_output_t *encoding,
-                             float *rgb);
-
-/** an 8-bit surface of float RGBA pixels in encoding, for drawing with GTK */
+/** an 8-bit surface of float RGBA pixels in encoding, for drawing with GTK:
+ * the colors GTK's surface shows them as. converted once per frame id
+ * and kept for the next calls; release it with cairo_surface_destroy().
+ * GUI thread only */
 cairo_surface_t *dt_presenter_gtk_surface(const float *pixels,
                                           const int width,
                                           const int height,
-                                          const dt_display_output_t *encoding);
+                                          const dt_display_output_t *encoding,
+                                          const uint32_t id);
 
 G_END_DECLS
 

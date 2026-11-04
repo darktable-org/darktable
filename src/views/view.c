@@ -2138,7 +2138,7 @@ gboolean dt_view_paint_surface(cairo_t *cr,
        && window != DT_WINDOW_SLIDESHOW)
     {
       cairo_surface_t *surface =
-        dt_presenter_gtk_surface(buf, buf_width, buf_height, buf_output);
+        dt_presenter_gtk_surface(buf, buf_width, buf_height, buf_output, buf_id);
       dt_focuspeaking(cr, buf_width, buf_height, cairo_image_surface_get_data(surface));
       cairo_surface_destroy(surface);
     }
