@@ -1116,6 +1116,11 @@ void dt_iop_gui_blend_module_renamed(dt_iop_module_t *module);
 // of canceling goes through, a click outside the canvas included
 void dt_iop_gui_blend_masks_creation_ended(dt_iop_module_t *module);
 
+// the next shape of a continuous creation is armed for this module: queues the
+// rebuild that shows the panel's pending row for it. Called from
+// dt_masks_change_form_gui, before its caller has set creation_module
+void dt_iop_gui_blend_masks_creation_continued(dt_iop_module_t *module);
+
 gboolean blend_color_picker_apply(dt_iop_module_t *module,
                                   GtkWidget *picker,
                                   dt_dev_pixelpipe_t *pipe);

@@ -11281,6 +11281,15 @@ static gboolean _rename_key_pressed(GtkEventControllerKey *controller,
   return TRUE;
 }
 
+void dt_iop_gui_blend_masks_creation_continued(dt_iop_module_t *module)
+{
+  if(!module || !module->blend_data) return;
+  // deferred, as for the end of a creation: by the time it runs, the caller
+  // has set creation_module, which the pending row is looked up by
+  // (_pending_form)
+  _queue_masks_list_rebuild(module);
+}
+
 void dt_iop_gui_blend_masks_creation_ended(dt_iop_module_t *module)
 {
   if(!module || !module->blend_data) return;

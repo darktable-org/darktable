@@ -3199,6 +3199,13 @@ void dt_masks_change_form_gui(dt_masks_form_t *newform)
      && (!darktable.develop->form_gui->creation
          || darktable.develop->form_gui->creation_module != was_creating))
     dt_iop_gui_blend_masks_creation_ended(was_creating);
+
+  // a continuous creation (ctrl+click on a shape button) arms the next shape
+  // as soon as one is committed. Its callers set creation_module only after
+  // this returns, so the panel is told here, for its pending row to come back
+  if(newform && darktable.develop->form_gui->creation
+     && darktable.develop->form_gui->creation_continuous)
+    dt_iop_gui_blend_masks_creation_continued(darktable.develop->form_gui->creation_continuous_module);
 }
 
 // the keyboard twin of the shapes' right-click cancel (see circle.c), so it
