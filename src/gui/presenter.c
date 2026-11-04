@@ -239,11 +239,8 @@ static cairo_surface_t *_surface(const float *pixels,
   }
   DT_OMP_FOR()
   for(int y = 0; y < height; y++)
-  {
-    const float *in = pixels + (size_t)4 * width * y;
-    uint8_t *out = data + stride * y;
-    for(int x = 0; x < width; x++, in += 4, out += 4) _store(out, in);
-  }
+    dt_display_to_8bit_pixels(pixels + (size_t)4 * width * y, data + stride * y, width,
+                              TRUE);
   dt_free_align(converted);
   cairo_surface_mark_dirty(surface);
   return surface;
