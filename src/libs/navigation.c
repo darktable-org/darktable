@@ -30,6 +30,7 @@
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#include "views/view.h"
 
 #include <ctype.h>
 
@@ -392,10 +393,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
     const int ht = dev->preview_pipe->backbuf_height;
     const float scale = fminf(width / (float)wd, height / (float)ht);
 
-    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
-    cairo_surface_t *surface =
-      cairo_image_surface_create_for_data(dev->preview_pipe->backbuf,
-                                          CAIRO_FORMAT_RGB24, wd, ht, stride);
+    cairo_surface_t *surface = dt_view_create_surface(dev->preview_pipe->backbuf, wd, ht);
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, scale, scale);
     cairo_translate(cr, -.5f * wd, -.5f * ht);
@@ -443,6 +441,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
       _draw_offview_arrow(cr, wd, ht, zoom_x, zoom_y, scale);
     }
     cairo_restore(cr);
+    cairo_surface_destroy(surface);
 
     dt_pthread_mutex_unlock(mutex);
   }

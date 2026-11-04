@@ -289,6 +289,8 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->backbuf_size = size;
   pipe->cache_obsolete_order = INT_MAX;
   pipe->backbuf = NULL;
+  memset(&pipe->backbuf_output, 0, sizeof(pipe->backbuf_output));
+  pipe->backbuf_output.type = DT_COLORSPACE_NONE;
   pipe->backbuf_scale = 0.0f;
   memset(pipe->backbuf_zoom_pos, 0, sizeof(dt_dev_zoom_pos_t));
   pipe->output_imgid = NO_IMGID;
@@ -3792,11 +3794,7 @@ restart:
   //FIXME lock/release cache line instead of copying
   if(dt_pipe_is_screen(pipe))
   {
-    // dt_dev_image(want_float) keeps gamma terminal but lets it pass the
-    // 4-channel linear float working RGB through unpacked. In that case the
-    // backbuf is 16 B/px (4 floats) rather than the usual 8-bit ARGB.
-    const size_t bbpp =
-      (pipe->type & DT_DEV_PIXELPIPE_IMAGE_FLOAT) ? 4 * sizeof(float) : 4 * sizeof(uint8_t);
+    const size_t bbpp = 4 * sizeof(float);
     if(pipe->backbuf == NULL || pipe->backbuf_width * pipe->backbuf_height != width * height ||
        pipe->backbuf_size != bbpp * width * height)
     {
@@ -3810,6 +3808,7 @@ restart:
       memcpy(pipe->backbuf, buf, bbpp * width * height);
       pipe->backbuf_scale = scale;
       for(int i = 0; i < 6; i++) pipe->backbuf_zoom_pos[i] = pts[i] * pipe->iscale;
+      pipe->backbuf_output = pipe->output;
       pipe->output_imgid = pipe->image.id;
     }
   }

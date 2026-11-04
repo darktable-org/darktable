@@ -215,9 +215,9 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
        - crop and &ashift make sense
      colorout is *not* an exception: keeping it filtered out (as it always was)
      means the overlay is rendered in the pipe's scene-referred linear working
-     RGB. Combined with the want_float passthrough render in dt_dev_image(), the
-     overlay reaches process() as linear float instead of a posterized 8-bit
-     linear buffer, matching the host pipe at this module's position.
+     RGB. dt_dev_image() returns it as float, so the overlay reaches process()
+     as linear float instead of a posterized 8-bit linear buffer, matching the
+     host pipe at this module's position.
      The list order does not matter
   */
 
@@ -335,20 +335,15 @@ static void _setup_overlay(dt_iop_module_t *self,
     if(g)
       gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), "");
 
-    uint8_t *buf;
+    float *buf;
     size_t bw;
     size_t bh;
 
     GList *disabled_modules = _get_disabled_modules(self, imgid);
 
-    // HQ (legacy == FALSE): render scene-referred linear float (want_float):
-    // colorout is filtered out by _get_disabled_modules() while gamma stays the
-    // terminal module and passes the 4-channel float straight through (see
-    // gamma.c process()), so the overlay arrives in the working RGB space rather
-    // than as an 8-bit ARGB display backbuf.
-    // LEGACY (legacy == TRUE): render the 8-bit ARGB display backbuf (want_float
-    // FALSE), the original behaviour that the Cairo compositing path expects.
-    const gboolean want_float = !legacy;
+    // colorout is filtered out by _get_disabled_modules(), so the overlay
+    // arrives as float in the pipe's working RGB. HQ uses it as is, LEGACY
+    // quantizes it to the 8-bit buffer the Cairo compositing path expects
 
     // Render at the parent image's storage resolution. The result is
     // scale-stable and cached across host-pipe zoom changes; the float
@@ -373,13 +368,29 @@ static void _setup_overlay(dt_iop_module_t *self,
                  disabled_modules,
                  piece->pipe->devid,
                  TRUE,
-                 want_float);
+                 NULL);
+
+    void *new_buf = buf;
+    if(legacy && buf)
+    {
+      // pack in the BGR order of cairo's RGB24 surfaces
+      uint8_t *buf8 = dt_alloc_align_uint8(4 * bw * bh);
+      if(buf8)
+      {
+        DT_OMP_FOR()
+        for(size_t k = 0; k < bw * bh; k++)
+          for(int c = 0; c < 3; c++)
+            buf8[4 * k + 2 - c] = dt_display_to_8bit(buf[4 * k + c]);
+      }
+      dt_free_align(buf);
+      new_buf = buf8;
+    }
 
     void *old_buf = *pbuf;
 
     *pwidth = bw;
     *pheight = bh;
-    *pbuf = buf;
+    *pbuf = new_buf;
     dt_free_align(old_buf);
   }
   else
@@ -832,7 +843,10 @@ static guint8 *_get_overlay_argb(dt_iop_module_t *self,
   const size_t bh = *pheight;
 
   // Wrap *pbuf directly — no memcpy of the (potentially large) buffer.
-  cairo_surface_t *surface_two = dt_view_create_surface(*pbuf, bw, bh);
+  cairo_surface_t *surface_two =
+    cairo_image_surface_create_for_data
+      (*pbuf, CAIRO_FORMAT_RGB24, bw, bh,
+       cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, bw));
 
   if(cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS)
   {

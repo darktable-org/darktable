@@ -664,7 +664,8 @@ void dt_view_paint_pixbuf(cairo_t *cr,
                           const size_t processed_height,
                           const dt_window_t window);
 
-cairo_surface_t *dt_view_create_surface(uint8_t *buffer,
+/** an 8-bit surface of a display-encoded float RGBA buffer */
+cairo_surface_t *dt_view_create_surface(const float *buffer,
                                         const size_t processed_width,
                                         const size_t processed_height);
 
@@ -673,7 +674,7 @@ void dt_view_paint_surface(cairo_t *cr,
                            const size_t height,
                            dt_dev_viewport_t *port,
                            const dt_window_t window,
-                           uint8_t *buf,
+                           const float *buf,
                            float buf_scale,
                            int buf_width,
                            int buf_height,

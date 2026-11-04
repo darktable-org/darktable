@@ -61,7 +61,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 
 DT_OMP_DECLARE_SIMD(aligned(in, out, mask_color: 16) uniform(mask_color, alpha))
 static inline void _write_pixel(const float *const restrict in,
-                                uint8_t *const restrict out,
+                                float *const restrict out,
                                 const float *const restrict mask_color,
                                 const float alpha)
 {
@@ -74,13 +74,9 @@ static inline void _write_pixel(const float *const restrict in,
       ? 12.92f * in[c]
       : (1.0f + 0.055f) * powf(in[c], 1.0f / 2.4f) - 0.055f;
 
-  // the output of this module is BGR(A) instead of RGBA; can't use
-  // for_each_channel here due to the index swap
   for(size_t c = 0; c < 3; c++)
-  {
-    const float value = roundf(255.0f * (pixel[c] * (1.0f - alpha) + mask_color[c] * alpha));
-    out[2 - c] = (uint8_t)(fminf(fmaxf(value, 0.0f), 255.0f));
-  }
+    out[c] = pixel[c] * (1.0f - alpha) + mask_color[c] * alpha;
+  out[3] = 1.0f;
 }
 
 
@@ -104,7 +100,7 @@ static inline void _XYZ_to_REC_709_normalized(const float *const restrict XYZ,
 
 DT_OMP_DECLARE_SIMD(aligned(in, out: 64) uniform(buffsize, alpha))
 static void _channel_display_monochrome(const float *const restrict in,
-                                        uint8_t *const restrict out,
+                                        float *const restrict out,
                                         const size_t buffsize,
                                         const float alpha)
 {
@@ -121,7 +117,7 @@ static void _channel_display_monochrome(const float *const restrict in,
 
 DT_OMP_DECLARE_SIMD(aligned(in, out: 64) uniform(buffsize, alpha, channel))
 static void _channel_display_false_color(const float *const restrict in,
-                                         uint8_t *const restrict out,
+                                         float *const restrict out,
                                          const size_t buffsize,
                                          const float alpha,
                                          dt_dev_pixelpipe_display_mask_t channel)
@@ -245,7 +241,7 @@ static void _channel_display_false_color(const float *const restrict in,
 
 DT_OMP_DECLARE_SIMD(aligned(in, out: 64) uniform(buffsize, alpha))
 static void _mask_display(const float *const restrict in,
-                          uint8_t *const restrict out,
+                          float *const restrict out,
                           const size_t buffsize,
                           const float alpha)
 {
@@ -263,17 +259,16 @@ static void _mask_display(const float *const restrict in,
 
 DT_OMP_DECLARE_SIMD(aligned(in, out: 64) uniform(buffsize))
 static void _copy_output(const float *const restrict in,
-                         uint8_t *const restrict out,
+                         float *const restrict out,
                          const size_t buffsize)
 {
+  // channel 3 carries mask data in the pipe, not opacity
   DT_OMP_FOR_SIMD(aligned(in, out: 64))
   for(size_t j = 0; j < buffsize; j += 4)
   {
-    // the output of this module is BGR(A) instead of RGBA, so we can't use for_each_channel
     for(size_t c = 0; c < 3; c++)
-    {
-      out[j + 2 - c] = (uint8_t)(fminf(roundf(255.0f * fmaxf(in[j + c], 0.0f)), 255.0f));
-    }
+      out[j + c] = in[j + c];
+    out[j + 3] = 1.0f;
   }
 }
 
@@ -293,17 +288,6 @@ void process(dt_iop_module_t *self,
   if(roi_in->width != roi_out->width || roi_in->height != roi_out->height)
     return;
 
-  // dt_dev_image(want_float): the caller wants the scene-referred linear float
-  // working RGB, not display-encoded 8-bit ARGB. Pass the 4-channel float buffer
-  // straight through (the output buffer is already allocated 16 B/px). gamma
-  // stays the terminal module so backbuf dimensions remain consistent.
-  if(piece->pipe->type & DT_DEV_PIXELPIPE_IMAGE_FLOAT)
-  {
-    dt_iop_image_copy_by_size(
-      (float *const restrict)o, (const float *const restrict)i, roi_out->width, roi_out->height, 4);
-    return;
-  }
-
   const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;
   const gboolean fcolor = dt_conf_is_equal("channel_display", "false color");
 
@@ -316,22 +300,23 @@ void process(dt_iop_module_t *self,
     if(fcolor)
     {
       _channel_display_false_color((const float *const restrict)i,
-                                   (uint8_t *const restrict)o, buffsize, alpha,
+                                   (float *const restrict)o, buffsize, alpha,
                                    mask_display);
     }
     else
     {
       _channel_display_monochrome((const float *const restrict)i,
-                                  (uint8_t *const restrict)o, buffsize, alpha);
+                                  (float *const restrict)o, buffsize, alpha);
     }
   }
   else if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
   {
-    _mask_display((const float *const restrict)i, (uint8_t *const restrict)o, buffsize, 1.0f);
+    _mask_display((const float *const restrict)i, (float *const restrict)o,
+                  buffsize, 1.0f);
   }
   else
   {
-    _copy_output((const float *const restrict)i, (uint8_t *const restrict)o, buffsize);
+    _copy_output((const float *const restrict)i, (float *const restrict)o, buffsize);
   }
 
   if(mask_display)

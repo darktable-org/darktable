@@ -252,8 +252,10 @@ typedef struct dt_dev_pixelpipe_t
   dt_dev_pixelpipe_status_t status;
   gboolean loading;
   gboolean input_changed;
-  // backbuffer (output)
-  uint8_t *backbuf;
+  // backbuffer (output): float RGBA in backbuf_output for screen pipes,
+  // the last module's output for the others
+  void *backbuf;
+  dt_display_output_t backbuf_output;
   size_t backbuf_size;
   int backbuf_width, backbuf_height;
   float backbuf_scale;

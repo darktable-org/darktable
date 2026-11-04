@@ -1873,7 +1873,7 @@ void dt_view_paint_surface(cairo_t *cr,
                            const size_t height,
                            dt_dev_viewport_t *port,
                            const dt_window_t window,
-                           uint8_t *buf,
+                           const float *buf,
                            float buf_scale,
                            int buf_width,
                            int buf_height,
@@ -2146,14 +2146,32 @@ void dt_view_paint_surface(cairo_t *cr,
   cairo_restore(cr);
 }
 
-cairo_surface_t *dt_view_create_surface(uint8_t *buffer,
+cairo_surface_t *dt_view_create_surface(const float *buffer,
                                         const size_t processed_width,
                                         const size_t processed_height)
 {
-  const int32_t stride =
-    cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, processed_width);
-  return cairo_image_surface_create_for_data
-    (buffer, CAIRO_FORMAT_RGB24, processed_width, processed_height, stride);
+  cairo_surface_t *surface =
+    cairo_image_surface_create(CAIRO_FORMAT_RGB24, processed_width, processed_height);
+  if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) return surface;
+
+  uint8_t *const data = cairo_image_surface_get_data(surface);
+  const size_t stride = cairo_image_surface_get_stride(surface);
+  DT_OMP_FOR()
+  for(size_t y = 0; y < processed_height; y++)
+  {
+    const float *in = buffer + 4 * processed_width * y;
+    uint8_t *out = data + stride * y;
+    for(size_t x = 0; x < processed_width; x++, in += 4, out += 4)
+    {
+      // cairo's RGB24 is BGRX in memory
+      out[0] = dt_display_to_8bit(in[2]);
+      out[1] = dt_display_to_8bit(in[1]);
+      out[2] = dt_display_to_8bit(in[0]);
+      out[3] = 0xff;
+    }
+  }
+  cairo_surface_mark_dirty(surface);
+  return surface;
 }
 
 dt_view_context_t dt_view_get_context_hash(void)

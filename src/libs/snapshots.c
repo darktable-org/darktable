@@ -56,7 +56,7 @@ typedef struct dt_lib_snapshot_t
   dt_imgid_t imgid;
   uint32_t history_end;
   uint32_t id;
-  uint8_t *buf;
+  float *buf;
   float scale;
   size_t width, height;
   dt_dev_zoom_pos_t zoom_pos;
@@ -235,6 +235,8 @@ void gui_post_expose(dt_lib_module_t *self,
       snap->buf = NULL;
 
       // export image with proper size
+      dt_display_output_t output;
+      dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &output);
       dt_dev_image(snap->imgid,
                    width,
                    height,
@@ -248,7 +250,7 @@ void gui_post_expose(dt_lib_module_t *self,
                    NULL,
                    DT_DEVICE_NONE,
                    FALSE,
-                   FALSE);
+                   &output);
       d->snap_requested = FALSE;
       d->expose_again_timeout_id = 0;
     }
