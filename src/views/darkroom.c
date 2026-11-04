@@ -3754,6 +3754,13 @@ void gui_init(dt_view_t *self)
 
     _update_softproof_gamut_checking(dev);
 
+    dt_presenter_display_control(display_profile, DT_COLORSPACE_DISPLAY);
+    dt_presenter_display_control(dev->profile.display_intent_widget,
+                                 DT_COLORSPACE_DISPLAY);
+    dt_presenter_display_control(display2_profile, DT_COLORSPACE_DISPLAY2);
+    dt_presenter_display_control(dev->profile.display2_intent_widget,
+                                 DT_COLORSPACE_DISPLAY2);
+
     // update the gui when profiles change (intent visibility is handled by _preference_changed)
     DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                               _display_profile_changed, display_profile);

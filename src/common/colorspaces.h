@@ -191,6 +191,9 @@ typedef struct dt_display_output_t
   char filename[DT_IOP_COLOR_ICC_LEN];
   dt_iop_color_intent_t intent;
   float headroom;
+  // a color-managed presenter shows the values in the profile; otherwise
+  // they reach the screen as the device values the display profile assumes
+  gboolean managed;
 } dt_display_output_t;
 
 static inline gboolean dt_display_output_equal(const dt_display_output_t *a,
@@ -199,6 +202,7 @@ static inline gboolean dt_display_output_equal(const dt_display_output_t *a,
   return a->type == b->type
     && a->intent == b->intent
     && a->headroom == b->headroom
+    && a->managed == b->managed
     && !strcmp(a->filename, b->filename);
 }
 
@@ -206,6 +210,34 @@ static inline gboolean dt_display_output_equal(const dt_display_output_t *a,
 static inline uint8_t dt_display_to_8bit(const float v)
 {
   return (uint8_t)fminf(roundf(255.0f * fmaxf(v, 0.0f)), 255.0f);
+}
+
+/* diagnostic colors (mask and channel views, clipping and gamut warnings)
+ * are authored as sRGB device values, which a display profile output sends
+ * to the screen as they are. a managed linear output gets them converted */
+static inline void dt_display_output_diagnostic(const dt_display_output_t *output,
+                                                float *const rgb)
+{
+  if(!output->managed
+     || (output->type != DT_COLORSPACE_LIN_REC709
+         && output->type != DT_COLORSPACE_LIN_REC2020))
+    return;
+
+  float lin[3];
+  for(int c = 0; c < 3; c++)
+    lin[c] = rgb[c] <= 0.04045f ? rgb[c] / 12.92f
+                                : powf((rgb[c] + 0.055f) / 1.055f, 2.4f);
+
+  if(output->type == DT_COLORSPACE_LIN_REC709)
+  {
+    for(int c = 0; c < 3; c++) rgb[c] = lin[c];
+    return;
+  }
+
+  // BT.709 to BT.2020 primaries, ITU-R BT.2087
+  rgb[0] = 0.6274040f * lin[0] + 0.3292820f * lin[1] + 0.0433136f * lin[2];
+  rgb[1] = 0.0690970f * lin[0] + 0.9195400f * lin[1] + 0.0113612f * lin[2];
+  rgb[2] = 0.0163916f * lin[0] + 0.0880132f * lin[1] + 0.8955950f * lin[2];
 }
 
 typedef struct dt_colorspaces_t
@@ -242,6 +274,13 @@ typedef struct dt_colorspaces_t
   cmsHTRANSFORM transform_srgb_to_display, transform_adobe_rgb_to_display;
   cmsHTRANSFORM transform_srgb_to_display2, transform_adobe_rgb_to_display2;
   int display_hdr_transfer, display2_hdr_transfer;
+
+  // set by the presenter for a window whose colors the platform manages:
+  // what the window's pipes render to, and the profile GTK's own surface
+  // in that window is shown in. index 0 is the main window
+  gboolean backend_output[2];
+  dt_display_output_t window_output[2];
+  dt_display_output_t gtk_output[2];
 
 } dt_colorspaces_t;
 
@@ -446,6 +485,18 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
  * the second one */
 void dt_colorspaces_get_display_output(const dt_colorspaces_color_profile_type_t window,
                                        dt_display_output_t *output);
+
+/** the profile GTK's own surface in a window is shown in, if the presenter
+ * declared one; otherwise FALSE, and that is the display profile */
+gboolean dt_colorspaces_get_gtk_output(const dt_colorspaces_color_profile_type_t window,
+                                       dt_display_output_t *gtk);
+
+/** the presenter takes over a window's output and declares what
+ * GTK's own surface there is shown in; NULL gives both back to the
+ * display profile selection */
+void dt_colorspaces_set_backend_output(const dt_colorspaces_color_profile_type_t window,
+                                       const dt_display_output_t *output,
+                                       const dt_display_output_t *gtk);
 
 /** update the display transforms of srgb and adobergb to the display
  * profile.  make sure that darktable.color_profiles->xprofile_lock is

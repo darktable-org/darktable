@@ -23,13 +23,24 @@ See also:
 - [A presenting widget submits its images with
   `dt_presenter_image()`](#presenter-api) and draws everything else with
   cairo as before.
+- [Module GUIs convert colors with the GUI
+  profile](#native-backends-and-their-layers),
+  `dt_ioppr_get_gui_profile_info()`. The pipe's output profile describes the
+  image layer, which on a native backend is not what GTK draws in.
+- [Platform and GTK3 code stays in the presenter files](#workarounds). The
+  pipeline, modules and views only see an output description.
 
 ## Output Description
 
 `dt_display_output_t` (`src/common/colorspaces.h`) is the encoding a
-presented pipe renders to: a profile (type, file, intent) and a headroom.
-Values are display-referred RGB in that profile, 1.0 at reference white and
-up to `headroom` above it.
+presented pipe renders to: a profile (type, file, intent), a headroom, and
+whether it is `managed`. Values are display-referred RGB in that profile,
+1.0 at reference white and up to `headroom` above it. A managed output is
+shown by a presenter backend that interprets the values in the profile; an
+unmanaged one, the selected display profile, sends them to the screen as
+device values. Diagnostic colors (mask and channel views, gamut check,
+clipping indicators) are authored as sRGB device values and converted only
+for a managed linear output (`dt_display_output_diagnostic()`).
 
 - The full, preview and second-window pipes take their output from their
   window at the start of every run, `dt_colorspaces_get_display_output()` in
@@ -71,18 +82,20 @@ dt_presenter_end(widget, pcr);
 ```
 
 Inside, `dt_presenter_image(pcr, x, y, pixels, width, height, encoding, id,
-filter)` takes the place of `cairo_set_source_surface()` + `cairo_paint()`
-for an opaque image: it uses the context's current transformation and clip,
-and paint order is kept, so whatever is drawn afterwards is on top. The
-pixels are converted once per `id` into a frame the presenter owns, so the
-caller may release the buffer (and its lock) when the call returns. It
-returns `FALSE` when the window's backend cannot show a frame in that
-encoding; the caller renders it again. The cairo backend shows any
+filter)` takes the place of `cairo_set_source_surface()` + `cairo_paint()` for
+an opaque image: it uses the context's current transformation and clip, and
+paint order is kept, so whatever is drawn afterwards is on top. The pixels are
+converted once per `id` into a frame the presenter owns, so the caller may
+release the buffer (and its lock) when the call returns. It returns `FALSE`
+when the window declared an output (a native backend, or cairo on a compositor
+that manages color) and the frame is in another encoding; the caller renders
+it again. Without a declared output the cairo backend shows any
 display-encoded frame.
 
 - `dt_presenter_keep()` shows the images of the last full draw again where
   they were (the darkroom while it loads the next image without the loading
   screen). A draw GTK restricted to a damaged area does not replace them.
+  Kept images in an encoding other than the declared output are dropped.
 - `dt_presenter_clear()` drops a widget's images (darkroom `leave()`);
   unmapping a widget drops them too.
 - `dt_view_paint_surface()` is the darkroom's user: background, then the
@@ -96,9 +109,102 @@ duplicate manager's preview, and the slideshow.
 
 ## Backends
 
-The cairo backend paints each frame, quantized to an RGB24 surface, into the
-widget's own context. The window's output is the selected display profile
-(display2 for the second window), and every platform uses it.
+A window has one backend, chosen when its first presenting widget draws
+(`gui/presenter_layers.c`, `_window_get()`): a native one if the platform has
+one and it can set up, otherwise cairo.
+
+### cairo
+
+Paints each frame, quantized to an RGB24 surface, into the widget's own
+context. The window's output is the selected display profile (display2 for
+the second window), unmanaged. Every platform without a native backend uses
+it: X11, macOS, Windows, and Wayland without color management.
+
+A Wayland compositor that manages color but lacks what the native backend
+needs also gets cairo. It takes GTK's untagged surface as sRGB and converts it
+to the screen, so the Wayland setup declares the window's output and GTK's
+surface sRGB (`dt_presenter_window_set_output()`), and the display profile
+controls are insensitive as with a native backend. The declaration is given
+back when the window goes away.
+
+### Native backends and their layers
+
+A native backend shows a window's images on surfaces of its own above GTK's
+surface, from bottom to top:
+
+1. GTK's surface: everything GTK draws, untagged.
+2. The image layer: float, in the window's output, alpha 0 off the images.
+3. The foreground layer: premultiplied 8-bit, untagged like GTK's surface,
+   with everything the presenting widget draws. Where an image is, its
+   pixels are cleared, so paint order holds across the two layers.
+
+```
+  foreground layer   8-bit, untagged    pickers, masks, guides, overlays
+  image layer        float, managed     darkroom image, snapshots
+  GTK's surface      8-bit, untagged    panels, thumbnails, everything else
+```
+
+Both layers take no input, so GTK below keeps getting all of it. A presenting
+widget that draws no image puts its drawing on GTK's surface as cairo would,
+and its layers are unmapped (lighttable, map, a loading darkroom).
+
+The backend declares the window's output and the profile GTK's own surface
+is shown in (`dt_colorspaces_set_backend_output()`). The pipes of that window
+then render to that output, and everything GTK draws there (thumbnail
+transforms, display-encoded thumbnails, picker swatches, the navigation
+thumbnail, `dt_presenter_gtk_surface()`, and module GUIs through
+`dt_ioppr_get_gui_profile_info()`) converts to that profile instead of the
+selected display profile. The change is announced like a user's change of
+display profile, so converted thumbnails are redone. The saved selection is
+never touched; the display profile controls are insensitive while the
+presenter owns the output (`dt_presenter_display_control()`).
+
+Code is split by what it works around:
+
+- `gui/presenter.c`: the API, owned frames, retained images, the cairo
+  backend.
+- `gui/presenter_layers.c`: the GTK3 part every native backend shares. It
+  composes the image layer and the foreground, and computes their size,
+  scale and position in the toplevel. A GTK4 port, where widgets draw
+  textures with color states, deletes it.
+- `gui/presenter_<platform>.c`: transport and timing. Setup and fallback,
+  output description and headroom, encoding the composed image for the
+  compositor, buffers, and `present()`, `clear()`, `release()`, `free()` and
+  the optional `drawn()` (`dt_presenter_backend_t` in
+  `gui/presenter_layers.h`). The backend calls `dt_presenter_window_present()`
+  where the layers become visible together with GTK's surface for that frame,
+  or later, never earlier. `present()` may refuse while the compositor holds
+  its buffers; the layers are then composed and presented again next frame.
+
+### Wayland
+
+`gui/presenter_wayland.c`, built with `USE_WAYLAND`. It needs
+`wp_color_manager_v1` with parametric descriptions, `ext_linear`, BT.2020
+primaries and `ABGR16161616F` shm buffers; `set_luminances` is optional
+(without it the output is SDR). Without the rest, a compositor with
+`wp_color_manager_v1` gets the window on cairo in sRGB (see cairo). The output
+is linear BT.2020 with headroom target max / reference luminance of the
+surface's preferred description (a compositor hint, not a measurement),
+re-read whenever the preference changes. The description is ext_linear,
+BT.2020, luminances (0, round(headroom x 203), 203), so a value v is sent as
+v x 203 / max, clipped to [0, headroom]. Layers are synchronized subsurfaces
+of GDK's surface, placed directly above it and below GTK's own subsurfaces
+such as popovers. They are presented at the end of the frame clock's `paint`,
+so they apply with GDK's commit in `after-paint`.
+
+## Workarounds
+
+Each lives in one file and goes away with the limitation it works around.
+
+| Workaround | Where | Works around | Removed when |
+|---|---|---|---|
+| image and foreground layers above GTK's surface | `presenter_layers.c` | GTK3 cannot give a widget a surface with a color state | GTK4: the image is a texture with a color state |
+| `gtk_widget_draw()` replay of GtkOverlay children stacked above a presenting widget into the foreground | `presenter_layers.c`, `_replay_overlays()` | the layers cover GTK's drawing of those widgets (toasts, masks panel, second window buttons); where GTK3 draws popovers into the toplevel (Quartz, Win32), popovers need the same | same |
+| composing and presenting in the frame clock's `paint` signal, after GDK's handler | `presenter_wayland.c`, `_paint()` | GTK3 runs all draws in `paint` and GDK commits its surface in `after-paint`; the layers must be ready in between | same |
+| GTK's surface declared sRGB | `presenter_wayland.c`, `_set_output()` and `dt_presenter_wayland_new()` | GTK3 does not tag its surface, and an untagged surface is sRGB to the compositor | GTK tags its surfaces |
+| no opaque region on the layers | `presenter_wayland.c`, `_layer_init()` | a compositor may stop frame callbacks for a surface it considers occluded, which stops GTK's frame clock | GTK4 |
+| layers and surface feedback recreated when GDK's surface changes | `presenter_wayland.c`, `_toplevel_unmap()` and `_present()` | GDK destroys its `wl_surface` when a window is hidden and makes a new one when it is shown again | GTK4 |
+| a draw GTK clipped to a damaged area does not replace the images `dt_presenter_keep()` shows | `presenter.c`, `dt_presenter_begin()` | GTK3 redraws only the damaged part of a widget, so such a draw records clipped images; it stays in `presenter.c` because the cairo backend needs it too | GTK4: a widget's snapshot is always whole |
 
 ## Scope
 
@@ -108,9 +214,17 @@ second window and its pinned image) and the slideshow.
 
 Everything else GTK draws stays on GTK's 8-bit surface: lighttable,
 filmstrip, culling and full preview, navigation, the duplicate manager's
-thumbnails, all thumbnails. They show what the mipmap cache holds (8-bit
-sRGB, AdobeRGB or display RGB). Taking them through the presenter needs a
-float thumbnail cache. See darktable-org/darktable#20477.
+thumbnails, all thumbnails. With a native backend they are correct within
+sRGB, without wide gamut or HDR. They stay there because thumbnails carry
+GTK widgets on top (stars, labels, badges, buttons), which on the layers
+would mean replaying most of the lighttable on every scroll, and because the
+mipmap cache is 8-bit sRGB or AdobeRGB, so wide gamut and HDR need a float
+thumbnail cache anyway. In GTK4 each thumbnail can be a texture with a color
+state. See darktable-org/darktable#20477.
+
+A macOS or Windows backend also has to replay popovers over the canvas into
+the foreground: there GTK3 draws them into the toplevel's surface, while on
+Wayland they are subsurfaces above the layers.
 
 ## Common Mistakes
 
@@ -118,3 +232,5 @@ float thumbnail cache. See darktable-org/darktable#20477.
 |---|---|
 | painting a backbuf with cairo in a presenting widget | `dt_presenter_image()` with the buffer's `backbuf_output` and `backbuf_id` |
 | reading `darktable.color_profiles` for a presented pipe's display profile | read `pipe->output`, or the pipe's output profile info |
+| converting a module GUI's colors with the pipe's output profile | `dt_ioppr_get_gui_profile_info()` |
+| checking for a platform in the pipeline, a module or a view | put it in `presenter_layers.c` or the platform's transport, with a row in [Workarounds](#workarounds) |

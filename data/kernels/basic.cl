@@ -3544,6 +3544,7 @@ colorout_clut(read_only image2d_t in,
               const int level,
               const int gamutcheck,
               global const float *gamut,
+              const float4 gamut_color,
               const int hdr_transfer)
 {
   const int x = get_global_id(0);
@@ -3556,11 +3557,11 @@ colorout_clut(read_only image2d_t in,
   float4 pixel = dt_lut3d_tetrahedral(coord, clut, level);
   pixel.w = Lab.w;
 
-  // as _transform_lcms(): out of gamut, or negative, shows as cyan
+  // as _transform_lcms(): out of gamut, or negative, shows as gamut_color
   if(gamutcheck
      && (dt_lut3d_tetrahedral(coord, gamut, level).x > 0.5f
          || pixel.x < 0.0f || pixel.y < 0.0f || pixel.z < 0.0f))
-    pixel = (float4)(0.0f, 1.0f, 1.0f, 0.0f);
+    pixel = gamut_color;
 
   float rgb[3] = { pixel.x, pixel.y, pixel.z };
   dt_hdr_encode(rgb, hdr_transfer);

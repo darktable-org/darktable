@@ -908,6 +908,14 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_output_profile_info(const stru
   return pipe->output_profile_info;
 }
 
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_gui_profile_info(struct dt_develop_t *dev)
+{
+  dt_display_output_t gtk;
+  if(dt_colorspaces_get_gtk_output(DT_COLORSPACE_DISPLAY, &gtk))
+    return dt_ioppr_add_profile_info_to_list(dev, gtk.type, gtk.filename, gtk.intent);
+  return dev->full.pipe ? dev->full.pipe->output_profile_info : NULL;
+}
+
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(const dt_iop_module_t *module,
                                                                        const struct dt_dev_pixelpipe_t *pipe)
 {

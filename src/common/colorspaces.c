@@ -1255,10 +1255,12 @@ static void _update_display_transforms(dt_colorspaces_t *self)
   self->transform_adobe_rgb_to_display = NULL;
   self->display_hdr_transfer = DT_HDR_NONE;
 
+  const dt_display_output_t *gtk = self->backend_output[0] ? &self->gtk_output[0] : NULL;
+  const dt_iop_color_intent_t intent = gtk ? gtk->intent : self->display_intent;
   const dt_colorspaces_color_profile_t *display_dt_profile =
     _get_profile(self,
-                 self->display_type,
-                 self->display_filename,
+                 gtk ? gtk->type : self->display_type,
+                 gtk ? gtk->filename : self->display_filename,
                  DT_PROFILE_DIRECTION_DISPLAY);
   if(!display_dt_profile) return;
   cmsHPROFILE display_profile = display_dt_profile->profile;
@@ -1270,14 +1272,14 @@ static void _update_display_transforms(dt_colorspaces_t *self)
                                            DT_PROFILE_DIRECTION_DISPLAY)->profile,
                               display_profile,
                               self->display_hdr_transfer,
-                              self->display_intent);
+                              intent);
 
   self->transform_adobe_rgb_to_display =
     _create_display_transform(_get_profile(self, DT_COLORSPACE_ADOBERGB, "",
                                            DT_PROFILE_DIRECTION_DISPLAY)->profile,
                               display_profile,
                               self->display_hdr_transfer,
-                              self->display_intent);
+                              intent);
 }
 
 static void _update_display2_transforms(dt_colorspaces_t *self)
@@ -1291,10 +1293,12 @@ static void _update_display2_transforms(dt_colorspaces_t *self)
   self->transform_adobe_rgb_to_display2 = NULL;
   self->display2_hdr_transfer = DT_HDR_NONE;
 
+  const dt_display_output_t *gtk = self->backend_output[1] ? &self->gtk_output[1] : NULL;
+  const dt_iop_color_intent_t intent = gtk ? gtk->intent : self->display2_intent;
   const dt_colorspaces_color_profile_t *display2_dt_profile
       = _get_profile(self,
-                     self->display2_type,
-                     self->display2_filename,
+                     gtk ? gtk->type : self->display2_type,
+                     gtk ? gtk->filename : self->display2_filename,
                      DT_PROFILE_DIRECTION_DISPLAY2);
 
   if(!display2_dt_profile)
@@ -1309,14 +1313,14 @@ static void _update_display2_transforms(dt_colorspaces_t *self)
                                                DT_PROFILE_DIRECTION_DISPLAY2)->profile,
                                   display2_profile,
                                   self->display2_hdr_transfer,
-                                  self->display2_intent);
+                                  intent);
 
   self->transform_adobe_rgb_to_display2
       = _create_display_transform(_get_profile(self, DT_COLORSPACE_ADOBERGB, "",
                                                DT_PROFILE_DIRECTION_DISPLAY2)->profile,
                                   display2_profile,
                                   self->display2_hdr_transfer,
-                                  self->display2_intent);
+                                  intent);
 }
 
 // update cached transforms for color management of thumbnails
@@ -1338,13 +1342,61 @@ void dt_colorspaces_get_display_output(const dt_colorspaces_color_profile_type_t
   const gboolean second = window == DT_COLORSPACE_DISPLAY2;
 
   pthread_rwlock_rdlock(&self->xprofile_lock);
+  if(self->backend_output[second])
+  {
+    *output = self->window_output[second];
+    pthread_rwlock_unlock(&self->xprofile_lock);
+    return;
+  }
   output->type = second ? self->display2_type : self->display_type;
   g_strlcpy(output->filename,
             second ? self->display2_filename : self->display_filename,
             sizeof(output->filename));
   output->intent = second ? self->display2_intent : self->display_intent;
   output->headroom = 1.0f;
+  output->managed = FALSE;
   pthread_rwlock_unlock(&self->xprofile_lock);
+}
+
+gboolean dt_colorspaces_get_gtk_output(const dt_colorspaces_color_profile_type_t window,
+                                       dt_display_output_t *gtk)
+{
+  dt_colorspaces_t *self = darktable.color_profiles;
+  const gboolean second = window == DT_COLORSPACE_DISPLAY2;
+
+  pthread_rwlock_rdlock(&self->xprofile_lock);
+  const gboolean declared = self->backend_output[second];
+  if(declared) *gtk = self->gtk_output[second];
+  pthread_rwlock_unlock(&self->xprofile_lock);
+  return declared;
+}
+
+void dt_colorspaces_set_backend_output(const dt_colorspaces_color_profile_type_t window,
+                                       const dt_display_output_t *output,
+                                       const dt_display_output_t *gtk)
+{
+  dt_colorspaces_t *self = darktable.color_profiles;
+  const gboolean second = window == DT_COLORSPACE_DISPLAY2;
+
+  pthread_rwlock_wrlock(&self->xprofile_lock);
+  self->backend_output[second] = output != NULL;
+  if(output)
+  {
+    self->window_output[second] = *output;
+    self->gtk_output[second] = *gtk;
+  }
+  if(second)
+    _update_display2_transforms(self);
+  else
+    _update_display_transforms(self);
+  pthread_rwlock_unlock(&self->xprofile_lock);
+
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  // to GTK-side drawing this is a change of display profile, as if the
+  // user had picked one: converted thumbnails are redone
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+                          second ? DT_COLORSPACES_PROFILE_TYPE_DISPLAY2
+                                 : DT_COLORSPACES_PROFILE_TYPE_DISPLAY);
 }
 
 // make sure that darktable.color_profiles->xprofile_lock is held when calling this!

@@ -60,6 +60,7 @@ typedef struct dt_iop_colorout_data_t
   float *clut;       // xform baked into a CLUT_LEVEL^3 LUT for the GPU, built on first use
   float *clut_gamut; // gamut check only: 1 in all channels where xform marks a node out of gamut
   float unbounded_coeffs[3][3]; // for extrapolation of shaper curves
+  dt_aligned_pixel_t gamut_color;
 } dt_iop_colorout_data_t;
 
 typedef struct dt_iop_colorout_global_data_t
@@ -406,7 +407,7 @@ static int _process_cl_clut(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
   if(dev_clut && dev_marker)
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorout_clut, width, height,
       CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_clut), CLARG(level),
-      CLARG(gamutcheck), CLARG(dev_marker), CLARG(d->hdr_transfer));
+      CLARG(gamutcheck), CLARG(dev_marker), CLARRAY(4, d->gamut_color), CLARG(d->hdr_transfer));
 
   dt_opencl_release_mem_object(dev_clut);
   dt_opencl_release_mem_object(dev_gamut);
@@ -611,12 +612,11 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
 
     if(gamutcheck)
     {
-      static const dt_aligned_pixel_t cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
       for(int j = 0; j < count; j++)
       {
         if(outp[4*j+0] < 0.0f || outp[4*j+1] < 0.0f || outp[4*j+2] < 0.0f)
         {
-          copy_pixel_nontemporal(outp + 4*j, cyan);
+          copy_pixel_nontemporal(outp + 4*j, d->gamut_color);
         }
       }
     }
@@ -675,6 +675,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   dt_colorspaces_color_profile_type_t out_type = DT_COLORSPACE_SRGB;
   gchar *out_filename = NULL;
+  dt_display_output_t gtk;
   dt_iop_color_intent_t out_intent = DT_INTENT_PERCEPTUAL;
 
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
@@ -687,6 +688,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   cmsUInt32Number output_format = TYPE_RGBA_FLT;
 
   d->mode = dt_pipe_is_full(pipe) ? darktable.color_profiles->mode : DT_PROFILE_NORMAL;
+  // cyan
+  d->gamut_color[0] = 0.0f;
+  d->gamut_color[1] = d->gamut_color[2] = 1.0f;
+  d->gamut_color[3] = 0.0f;
+  dt_display_output_diagnostic(&pipe->output, d->gamut_color);
 
   if(d->xform)
   {
@@ -724,6 +730,14 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     out_type = dt_mipmap_cache_get_colorspace();
     out_filename = (out_type == DT_COLORSPACE_DISPLAY ? darktable.color_profiles->display_filename : "");
     out_intent = darktable.color_profiles->display_intent;
+    // display-encoded thumbnails are for GTK's surface
+    if(out_type == DT_COLORSPACE_DISPLAY
+       && dt_colorspaces_get_gtk_output(DT_COLORSPACE_DISPLAY, &gtk))
+    {
+      out_type = gtk.type;
+      out_filename = gtk.filename;
+      out_intent = gtk.intent;
+    }
   }
   else
   {

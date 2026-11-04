@@ -294,8 +294,9 @@ void process(dt_iop_module_t *self,
   const size_t buffsize = (size_t)roi_out->width * roi_out->height * 4;
   const float alpha = (mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) ? 1.0f : 0.0f;
 
-  if((mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
-     && (mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY))
+  const gboolean channel = (mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
+                           && (mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY);
+  if(channel)
   {
     if(fcolor)
     {
@@ -317,6 +318,15 @@ void process(dt_iop_module_t *self,
   else
   {
     _copy_output((const float *const restrict)i, (float *const restrict)o, buffsize);
+  }
+
+  if(channel || (mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK))
+  {
+    float *const restrict out = (float *const restrict)o;
+    const dt_display_output_t *const output = &piece->pipe->output;
+    DT_OMP_FOR()
+    for(size_t j = 0; j < buffsize; j += 4)
+      dt_display_output_diagnostic(output, out + j);
   }
 
   if(mask_display)
