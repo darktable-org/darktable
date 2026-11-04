@@ -544,15 +544,6 @@ static void _format_changed(GtkWidget *combo,
   gtk_widget_set_visible(g->film_format_mm_slider, pi < 0 || pi >= FORMAT_PRESETS_N);
 }
 
-static void _format_slider_changed(GtkWidget *slider,
-                                   gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
-  const float mm = dt_bauhaus_slider_get(g->film_format_mm_slider);
-  dt_bauhaus_combobox_set_from_value(g->film_format_combo, _format_mm_to_preset(mm));
-}
-
 static void _populate_format_combo(dt_iop_module_t *self)
 {
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
@@ -5789,8 +5780,6 @@ void gui_init(dt_iop_module_t *self)
                                 "a smaller format shows every one of them proportionally "
                                 "larger for\n"
                                 "the same print size."));
-  g_signal_connect(G_OBJECT(g->film_format_mm_slider), "value-changed",
-                   G_CALLBACK(_format_slider_changed), self);
 
   /* restore main widget for the notebook */
   self->widget = sf_main_box;
