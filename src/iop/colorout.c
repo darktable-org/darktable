@@ -733,6 +733,20 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     out_intent = pipe->output.intent;
   }
 
+  // a pipe without an output description is not presented: dt_dev_image()
+  // with a NULL output filters colorout out and keeps the pixels in the
+  // working RGB, which is then the pipe's output profile
+  if(out_type == DT_COLORSPACE_NONE)
+  {
+    piece->enabled = FALSE;
+    const dt_iop_order_iccprofile_info_t *const work =
+      dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+    if(work)
+      dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, work->type,
+                                            work->filename, work->intent);
+    return;
+  }
+
   // when the output type is Lab then process is a nop, so we can avoid creating a transform
   // and the subsequent error messages but still have to publish the profile_info
   d->type = out_type;
