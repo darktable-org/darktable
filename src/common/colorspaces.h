@@ -201,6 +201,10 @@ typedef struct dt_color_encoding_t
 {
   dt_colorspaces_color_profile_type_t type;
   char filename[DT_IOP_COLOR_ICC_LEN];
+  // the registry's profile the values were made with. registry profiles
+  // live for the session, so this names the content even after a new
+  // screen profile replaced a system display profile of the same type
+  cmsHPROFILE profile;
   dt_iop_color_intent_t intent;
   float headroom;
 } dt_color_encoding_t;
@@ -211,6 +215,9 @@ typedef struct dt_display_output_t
 {
   dt_colorspaces_color_profile_type_t type;
   char filename[DT_IOP_COLOR_ICC_LEN];
+  // the registry's profile of type and filename when the output was
+  // taken, NULL if there is none; as a label, what the values were made with
+  cmsHPROFILE profile;
   dt_iop_color_intent_t intent;
   float headroom;
   // a color-managed presenter shows the values in the profile; otherwise
@@ -223,6 +230,7 @@ static inline gboolean dt_display_output_equal(const dt_display_output_t *a,
                                                const dt_display_output_t *b)
 {
   return a->type == b->type
+    && (!dt_colorspaces_replaced_in_session(a->type) || a->profile == b->profile)
     && a->intent == b->intent
     && a->headroom == b->headroom
     && a->managed == b->managed

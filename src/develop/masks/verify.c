@@ -903,8 +903,9 @@ const char *dt_masks_verify_replay_init(replay_t *r,
 
   dt_ioppr_set_pipe_work_profile_info(&r->dev, &r->pipe,
                                       DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
-  dt_ioppr_set_pipe_output_profile_info(&r->dev, &r->pipe,
-                                        DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
+  dt_ioppr_set_pipe_output_profile_info(&r->dev, &r->pipe, DT_COLORSPACE_LIN_REC2020, "",
+                                        r->pipe.work_profile_info->profile,
+                                        DT_INTENT_PERCEPTUAL);
 
   // the input profile too: on this replay's order list colorin and colorout
   // have no order ("cannot get iop-order for colorin instance 0"), so every

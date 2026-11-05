@@ -1362,6 +1362,18 @@ void dt_colorspaces_update_display2_transforms()
   _update_display2_transforms(darktable.color_profiles);
 }
 
+// the profile colorout builds a presented pipe's transform with
+static cmsHPROFILE _output_profile(dt_colorspaces_t *self,
+                                   const dt_colorspaces_color_profile_type_t type,
+                                   const char *filename)
+{
+  const dt_colorspaces_color_profile_t *p =
+    _get_profile(self, type, filename,
+                 DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY
+                 | DT_PROFILE_DIRECTION_DISPLAY2);
+  return p ? p->profile : NULL;
+}
+
 void dt_colorspaces_get_display_output(const dt_colorspaces_color_profile_type_t window,
                                        dt_display_output_t *output)
 {
@@ -1379,6 +1391,7 @@ void dt_colorspaces_get_display_output(const dt_colorspaces_color_profile_type_t
   g_strlcpy(output->filename,
             second ? self->display2_filename : self->display_filename,
             sizeof(output->filename));
+  output->profile = _output_profile(self, output->type, output->filename);
   output->intent = second ? self->display2_intent : self->display_intent;
   output->headroom = 1.0f;
   output->managed = FALSE;
@@ -1410,7 +1423,9 @@ void dt_colorspaces_set_backend_output(const dt_colorspaces_color_profile_type_t
   if(output)
   {
     self->window_output[second] = *output;
+    self->window_output[second].profile = _output_profile(self, output->type, output->filename);
     self->gtk_output[second] = *gtk;
+    self->gtk_output[second].profile = _output_profile(self, gtk->type, gtk->filename);
   }
   // only the main window's transforms have users: the thumbnails
   if(!second) _update_display_transforms(self);

@@ -46,11 +46,13 @@ colors that mark in any output.
 - The full, preview and second-window pipes take their output from their
   window at the start of every run, `dt_colorspaces_get_display_output()` in
   `dt_dev_process_image_job()`, so workers never read GUI state while
-  processing. A changed output resynchronizes the pipe.
+  processing. A changed output resynchronizes the pipe, a new screen
+  profile for the system display profile included.
 - `dt_dev_image()` sets the output of its own pipe and returns the
   encoding of its buffer. `NULL` means no display encoding: with colorout
   filtered out, as overlay does, the buffer stays in the pipe's working RGB.
-- colorout renders to `pipe->output`. The pipe's `output_headroom`, which
+- colorout renders to `pipe->output`, with the profile the run took
+  (`profile`), not one it looks up again by type. The pipe's `output_headroom`, which
   sigmoid and agx tone map to, honors `output.headroom`. A soft proof sets
   it to the proof profile's headroom, as an export to that profile does,
   above or below the screen's, and the output encoding says so. The
@@ -68,6 +70,15 @@ colors that mark in any output.
   labels the backbuf and `dt_dev_image()`'s buffer. `output_profile_info`
   stays the matrix stand-in for code that needs matrices: sRGB for a LUT
   profile.
+- An encoding and an output name the registry's profile (`profile`) as
+  well as its type. A new screen profile replaces the system display
+  profile under the same type and file name, and the replaced one stays
+  valid for the session (`system_display_profiles` in
+  `dt_colorspaces_t`), so pixels made for the old screen keep converting
+  with the profile they were made with: conversions take their profile
+  info with `dt_ioppr_add_profile_info_for_content()`. For every other
+  type, type and file name are the identity
+  (`dt_colorspaces_replaced_in_session()`).
 - A soft proof shows what an export to the proof profile holds, in the
   output: clipped where that export clips, and by the presenter to what the
   screen shows. PQ and HLG proofs take the export's own encoding round trip
