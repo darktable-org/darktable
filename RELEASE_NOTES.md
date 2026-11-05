@@ -128,8 +128,7 @@ changes (where available).
   AgX tone map to it when "follow output peak" is on (it is off in
   edits made before that option existed). This also fixes the image
   being converted twice on such compositors, once by darktable and
-  once by the compositor. There the display profile setting has no
-  effect and is disabled, and the rest of the interface, thumbnails
+  once by the compositor. There the rest of the interface, thumbnails
   included, is shown in sRGB. A compositor with color management that
   lacks one of these gets the image in sRGB, which also avoids the
   double conversion. Other compositors and platforms keep the display
@@ -321,6 +320,22 @@ changes (where available).
 
 ## Other Changes
 
+- The display profile now always comes from the system's color
+  settings: the X atom or colord on X11, the compositor or colord on
+  Wayland, Windows color management, and sRGB on macOS, where the
+  system converts darktable's output to the screen. To use a
+  calibrated monitor profile, install it there; darktable-cmstest shows
+  what X11 reports. The display profile controls of the darkroom and
+  the lighttable's "set display profile" button are gone. Use soft
+  proof to preview another display, print or sRGB. A profile chosen
+  there before is named in a message once and no longer used.
+
+- Soft proof has its own rendering intent, set next to the softproof
+  profile. It used the display rendering intent before, which the
+  darkroom showed only with "always use LittleCMS 2" on, and it starts
+  from that intent. The display rendering intent is now one setting
+  for both windows, in the interface preferences.
+
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
   SDR, HLG and PQ alike. HLG output peaks at 1000 nits, and PQ output
   at the new "PQ peak" setting of the export module, 1000 nits by
@@ -483,6 +498,16 @@ changes (where available).
   instead of having an empty label.
 
 ## Bug Fixes
+
+- Fixed the display profile of the previous screen staying in use
+  when a window moved to a screen without a profile, when the system
+  removed the profile, or when Windows reported none, which Microsoft
+  documents as the answer with Advanced Color on. darktable now uses
+  sRGB there.
+
+- Fixed lighttable thumbnails that were sometimes shown for sRGB
+  instead of the display profile after startup, when colord answered
+  late, until the window was resized.
 
 - Upscaled exports no longer show shifted bands where they were
   processed in tiles, and the upscale now runs on OpenCL when it fits
