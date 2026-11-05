@@ -3760,6 +3760,13 @@
     <longdescription>the group layout preset a module's mask starts with when it is switched on for the first time: the id of a built-in preset in masks_group_presets.json, or user: followed by the name of a saved one</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/masks/docked_split_position</name>
+    <type min="0">int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/masks/opacity</name>
     <type>float</type>
     <default>1.0</default>
