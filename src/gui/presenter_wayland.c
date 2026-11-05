@@ -89,8 +89,9 @@ struct _backend_t
   // the compositor's preferred description and its information, while read
   struct wp_image_description_v1 *preferred;
   struct wp_image_description_info_v1 *info;
-  uint32_t reference_lum, max_lum, target_max_lum;
-  gboolean preferred_done, preferred_failed;
+  int32_t primaries[8];
+  uint32_t tf, reference_lum, max_lum, target_max_lum;
+  gboolean icc, preferred_done, preferred_failed;
 
   // ours: in use, and created, waiting for ready
   struct wp_image_description_v1 *description, *pending;
@@ -290,6 +291,8 @@ static void _info_icc_file(void *data,
                            int32_t icc,
                            uint32_t icc_size)
 {
+  _backend_t *b = data;
+  b->icc = TRUE;
   close(icc);
 }
 
@@ -303,6 +306,22 @@ static void _info_primaries(void *data,
                             int32_t b_y,
                             int32_t w_x,
                             int32_t w_y)
+{
+  _backend_t *b = data;
+  const int32_t p[8] = { r_x, r_y, g_x, g_y, b_x, b_y, w_x, w_y };
+  memcpy(b->primaries, p, sizeof(p));
+}
+
+static void _info_target_primaries(void *data,
+                                   struct wp_image_description_info_v1 *info,
+                                   int32_t r_x,
+                                   int32_t r_y,
+                                   int32_t g_x,
+                                   int32_t g_y,
+                                   int32_t b_x,
+                                   int32_t b_y,
+                                   int32_t w_x,
+                                   int32_t w_y)
 {
 }
 
@@ -322,6 +341,8 @@ static void _info_tf_named(void *data,
                            struct wp_image_description_info_v1 *info,
                            uint32_t tf)
 {
+  _backend_t *b = data;
+  b->tf = tf;
 }
 
 static void _info_luminances(void *data,
@@ -364,7 +385,7 @@ static const struct wp_image_description_info_v1_listener _info_listener = {
   .tf_power = _info_tf_power,
   .tf_named = _info_tf_named,
   .luminances = _info_luminances,
-  .target_primaries = _info_primaries,
+  .target_primaries = _info_target_primaries,
   .target_luminance = _info_target_luminance,
   .target_max_cll = _info_target_max_cll,
   .target_max_fall = _info_target_max_fall,
@@ -446,12 +467,32 @@ static void _info_done(void *data,
     _create_description(b, max_lum);
 }
 
+// mutter's default color mode reports plain SDR sRGB and passes untagged pixels
+// through, ignoring the screen's assigned profile (mutter#4597): only darktable
+// can apply it. this stops matching once mutter describes its real output (!5177)
+static gboolean _passes_untagged_through(const _backend_t *b)
+{
+  // sRGB primaries and D65 white, in the protocol's units of 1e-6
+  static const int32_t srgb[8] = { 640000, 330000, 300000, 600000,
+                                   150000, 60000, 312700, 329000 };
+  for(int k = 0; k < 8; k++)
+    if(ABS(b->primaries[k] - srgb[k]) > 1000) return FALSE;
+
+  const gboolean sdr_tf = b->tf == WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_SRGB
+                          || b->tf == WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22
+                          || b->tf == WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_COMPOUND_POWER_2_4;
+  const uint32_t peak = b->target_max_lum ? b->target_max_lum : b->max_lum;
+  return sdr_tf && !b->icc && (!b->reference_lum || peak <= b->reference_lum);
+}
+
 static void _description_ready(_backend_t *b,
                                struct wp_image_description_v1 *description)
 {
   if(description == b->preferred)
   {
-    b->reference_lum = b->max_lum = b->target_max_lum = 0;
+    memset(b->primaries, 0, sizeof(b->primaries));
+    b->tf = b->reference_lum = b->max_lum = b->target_max_lum = 0;
+    b->icc = FALSE;
     b->info = wp_image_description_v1_get_information(description);
     wp_image_description_info_v1_add_listener(b->info, &_info_listener, b);
     wp_image_description_v1_destroy(description);
@@ -762,10 +803,8 @@ static void _move_to_default_queue(_backend_t *b)
 }
 
 dt_presenter_backend_t *dt_presenter_wayland_new(GtkWidget *toplevel,
-                                                 dt_presenter_window_t *window,
-                                                 gboolean *manages_color)
+                                                 dt_presenter_window_t *window)
 {
-  *manages_color = FALSE;
   GdkDisplay *gdk_display = gtk_widget_get_display(toplevel);
   GdkWindow *gdk_window = gtk_widget_get_window(toplevel);
   // wl_shm's formats are little endian, cairo's are native
@@ -795,28 +834,35 @@ dt_presenter_backend_t *dt_presenter_wayland_new(GtkWidget *toplevel,
     && wl_display_roundtrip_queue(b->display, queue) >= 0
     && b->done && b->parametric && b->ext_linear && b->bt2020 && b->half_float;
 
+  gboolean passes_through = FALSE;
   if(ok)
   {
     _feedback_init(b);
     for(int k = 0; k < 4 && !b->preferred_done && !b->preferred_failed && ok; k++)
       ok = wl_display_roundtrip_queue(b->display, queue) >= 0;
-    if(!b->pending) _create_description(b, REFERENCE_NITS);
-    for(int k = 0; k < 4 && !b->description && !b->pending_failed && ok; k++)
-      ok = wl_display_roundtrip_queue(b->display, queue) >= 0;
-    ok = ok && b->description;
+    // a preferred description without parametric information, as Weston's
+    // for an ICC output, is not plain sRGB
+    passes_through = ok && b->preferred_done && _passes_untagged_through(b);
+    if(!passes_through)
+    {
+      if(!b->pending) _create_description(b, REFERENCE_NITS);
+      for(int k = 0; k < 4 && !b->description && !b->pending_failed && ok; k++)
+        ok = wl_display_roundtrip_queue(b->display, queue) >= 0;
+    }
+    ok = ok && !passes_through && b->description;
   }
 
   wl_registry_destroy(registry);
   _move_to_default_queue(b);
   wl_event_queue_destroy(queue);
 
-  *manages_color = b->manager != NULL;
   dt_print
     (DT_DEBUG_CONTROL,
      "[presenter wayland] %s: parametric %d, ext_linear %d, bt2020 %d, half float shm %d,"
      " luminances %d, headroom %.2f",
-     ok ? "color managed" : *manages_color ? "not available, using cairo in sRGB"
-                                           : "not available, using cairo",
+     ok ? "color managed"
+        : passes_through ? "plain SDR sRGB output, using cairo with the system display profile"
+                         : "not available, using cairo",
      b->parametric, b->ext_linear, b->bt2020, b->half_float, b->luminances,
      _headroom(b->description_max));
   if(!ok)

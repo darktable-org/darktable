@@ -53,7 +53,7 @@ markers are written as they are, saturated colors that mark in any output.
   window and written under `xprofile_lock`, and its `serial` changes
   whenever anything else in it does.
 - The display profile always comes from the platform: the X atom or colord
-  on X11 and on Wayland without color management, the compositor through
+  on X11 and on Wayland without the native backend, the compositor through
   a backend, `GetICMProfileW()` on Windows, and sRGB on macOS, where GTK
   tags its backing store sRGB. There is no user selection; previewing
   another display, print or sRGB is a soft proof. Unless the platform owns
@@ -265,16 +265,9 @@ is neither converted nor copied on the GUI thread; one made for an earlier
 output is converted there once. The window's output is its system display profile (display2 for
 the second window) as image and device encoding, the same output a window
 has before it is realized and after it is gone.
-Every platform without a native backend uses it: X11, macOS, Windows, and
-Wayland without color management.
-
-A Wayland compositor that manages color but lacks what the native backend
-needs also gets cairo. It takes GTK's untagged surface as sRGB, with a
-transfer function of its choosing, and converts it to the screen. The
-Wayland setup reports that the compositor manages color, and the backend
-choice then gives the platform the window's output with sRGB as image and
-device encoding (`dt_presenter_window_set_output()`), as a native backend
-does with its own.
+Every window without a native backend uses it: X11, macOS, Windows, and
+Wayland where the compositor cannot take the native backend or its output
+is plain SDR sRGB ([Wayland](#wayland)).
 
 ### Native backends and their layers
 
@@ -330,9 +323,28 @@ Code is split by what it works around:
 `gui/presenter_wayland.c`, built with `USE_WAYLAND`. It needs `wl_compositor`
 4 and `wp_color_manager_v1` with parametric descriptions, `ext_linear`, BT.2020
 primaries and `ABGR16161616F` shm buffers; `set_luminances` is optional
-(without it the output is SDR). Without the rest, a compositor with
-`wp_color_manager_v1` gets the window on cairo in sRGB (see cairo). The output
-is linear BT.2020 with headroom target max / reference luminance of the
+(without it the output is SDR). Without the rest the window is on cairo.
+
+The native backend also gives up when the surface's preferred description
+is plain SDR sRGB: sRGB primaries and D65 white within 1e-3, transfer
+function srgb, gamma22 or compound_power_2_4, no ICC file, and a target
+max luminance at most the reference, or no luminances
+(`_passes_untagged_through()`). A compositor that describes its output
+that way passes untagged pixels through, so the window is a plain cairo
+window on its system display profile, as on X11. On GNOME's default color
+mode that profile, from colord, is the only description of the panel
+([Workarounds](#workarounds)); elsewhere there is none, and sRGB gives what
+the native backend would. Limits:
+
+- The choice is made once per window, with its backend, for the monitor it
+  is on then. A new color mode, or moving the window to a monitor described
+  otherwise, takes effect when the window is opened again, for the main
+  window after a restart.
+- sway with a `color_profile` set only in sway describes its output as sRGB
+  while converting everything to that profile. A tool that also publishes
+  the profile to colord then makes darktable convert to it a second time.
+
+The output is linear BT.2020 with headroom target max / reference luminance of the
 surface's preferred description (a compositor hint, not a measurement),
 re-read whenever the preference changes. The description is ext_linear,
 BT.2020, luminances (0, round(headroom x 203), 203), so a value v is sent as
@@ -356,7 +368,8 @@ Each lives in one file and goes away with the limitation it works around.
 | image and foreground layers above GTK's surface | `presenter_layers.c` | GTK3 cannot give a widget a surface with a color state | GTK4: the image is a texture with a color state |
 | `gtk_widget_draw()` replay of GtkOverlay children stacked above a presenting widget into the foreground | `presenter_layers.c`, `_replay_overlays()` | the layers cover GTK's drawing of those widgets (toasts, masks panel, second window buttons); where GTK3 draws popovers into the toplevel (Quartz, Win32), popovers need the same | same |
 | composing and presenting in the frame clock's `paint` signal, after GDK's handler | `presenter_wayland.c`, `_paint()` | GTK3 runs all draws in `paint` and GDK commits its surface in `after-paint`; the layers must be ready in between | same |
-| GTK's surface taken as sRGB, the window's device encoding | `presenter_wayland.c`, `_set_output()`, and `presenter_layers.c`, `_window_get()` | GTK3 does not tag its surface; an untagged surface is sRGB to the compositor, with a transfer function of its choosing | GTK tags its surfaces |
+| GTK's surface taken as sRGB, the window's device encoding | `presenter_wayland.c`, `_set_output()` | GTK3 does not tag its surface; an untagged surface is sRGB to the compositor, with a transfer function of its choosing | GTK tags its surfaces |
+| a plain SDR sRGB output left to cairo with the system display profile | `presenter_wayland.c`, `_passes_untagged_through()` | mutter's default color mode composites as sRGB and does not apply the profile assigned to the screen (mutter#4597) | the compositor describes its real output (mutter MR !5177); nothing to do, the predicate stops matching |
 | no opaque region on the layers | `presenter_wayland.c`, `_layer_init()` | a compositor may stop frame callbacks for a surface it considers occluded, which stops GTK's frame clock | GTK4 |
 | surface feedback destroyed when the toplevel unmaps | `presenter_wayland.c`, `_toplevel_unmap()` | GDK destroys its `wl_surface` when a window is hidden, and asking the feedback on it for the preferred description is then a protocol error | GTK4 |
 | a draw GTK clipped to a damaged area does not replace the images `dt_presenter_keep()` shows | `presenter.c`, `dt_presenter_begin()` | GTK3 redraws only the damaged part of a widget, so such a draw records clipped images; it stays in `presenter.c` because the cairo backend needs it too | GTK4: a widget's snapshot is always whole |

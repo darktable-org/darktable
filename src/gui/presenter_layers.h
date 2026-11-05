@@ -105,11 +105,10 @@ void dt_presenter_window_present(dt_presenter_window_t *window);
 
 #ifdef HAVE_WAYLAND
 /** the Wayland backend for toplevel, or NULL if the compositor cannot do
- * it. *manages_color says whether the compositor manages color, and so
- * shows GTK's untagged surface as sRGB */
+ * it or its output is plain SDR sRGB: the window then paints with cairo on
+ * its system display profile */
 dt_presenter_backend_t *dt_presenter_wayland_new(GtkWidget *toplevel,
-                                                 dt_presenter_window_t *window,
-                                                 gboolean *manages_color);
+                                                 dt_presenter_window_t *window);
 #endif
 
 /* for presenter.c */
