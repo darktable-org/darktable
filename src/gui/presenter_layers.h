@@ -36,8 +36,10 @@ typedef struct dt_presenter_image_t
 {
   // the presenter holds a reference while the image is shown or kept
   dt_frame_t *frame;
-  // native backends: the frame as float RGBA, for the image layer
+  // the frame in the window's output: float RGBA for the image layer of a
+  // native backend, an RGB24 surface for cairo
   const float *pixels;
+  cairo_surface_t *surface;
   // frame pixels to the user space the widget's draw started in
   cairo_matrix_t matrix;
   // the clip's extents in that space

@@ -142,15 +142,23 @@ void dt_presenter_end(GtkWidget *widget,
   w->widget_cr = NULL;
 }
 
-// a window whose output the platform owns shows frames in its profile
-// only, in which the mask and channel views are authored for its device
-// encoding. the headroom does not count: a frame rendered before the
-// headroom changed keeps its tone mapping until it is rendered again
-static gboolean _shown_in(const dt_display_output_t *output,
-                          const dt_frame_t *frame)
+// the frame as the window shows it: in the window's image encoding, as
+// float for a native backend to compose or as RGB24 for cairo to paint. a
+// frame made for another output is converted rather than refused, as
+// GTK4's renderers and Chromium convert content to the target at draw;
+// it stays until its producer renders it again for the new serial. the
+// headroom is no conversion: a frame keeps the tone mapping it was
+// rendered with
+static gboolean _rendition(_widget_t *w,
+                           dt_presenter_image_t *image)
 {
-  return !output->platform_owned
-    || dt_color_encoding_same_content(&output->image, dt_frame_encoding(frame));
+  dt_display_output_t output;
+  dt_presenter_window_output(w->widget, &output);
+  if(w->layered)
+    image->pixels = dt_frame_float(image->frame, &output.image);
+  else
+    image->surface = dt_frame_surface(image->frame, &output.image);
+  return image->pixels || image->surface;
 }
 
 static void _paint(cairo_t *cr,
@@ -158,37 +166,23 @@ static void _paint(cairo_t *cr,
 {
   cairo_save(cr);
   cairo_transform(cr, &image->matrix);
-  // a cairo window's frames are RGB24: their own pixels, as master painted
-  // its backbuf
-  cairo_set_source_surface(cr, dt_frame_surface(image->frame, NULL), 0, 0);
+  cairo_set_source_surface(cr, image->surface, 0, 0);
   cairo_pattern_set_filter(cairo_get_source(cr), image->filter);
   cairo_paint(cr);
   cairo_restore(cr);
 }
 
-gboolean dt_presenter_image(cairo_t *cr,
-                            const double x,
-                            const double y,
-                            dt_frame_t *frame,
-                            const cairo_filter_t filter)
+void dt_presenter_image(cairo_t *cr,
+                        const double x,
+                        const double y,
+                        dt_frame_t *frame,
+                        const cairo_filter_t filter)
 {
   _widget_t *w = cairo_get_user_data(cr, &_cr_key);
-  if(!w || !frame) return FALSE;
-
-  // an output the platform owns holds with a native backend and with cairo,
-  // and taking it renders the window's images again: their producers find
-  // a new serial on the redraw it queues. otherwise, cairo shows display
-  // RGB in whatever display profile it was rendered for, as it always did
-  dt_display_output_t output;
-  dt_presenter_window_output(w->widget, &output);
-  if(!_shown_in(&output, frame)) return FALSE;
+  if(!w || !frame) return;
 
   dt_presenter_image_t image = { .frame = frame, .filter = filter };
-  // a native backend composes from float pixels, cairo paints 8 bits
-  cairo_surface_t *surface = NULL;
-  if(w->layered ? !(image.pixels = dt_frame_float(frame, NULL))
-                : !(surface = dt_frame_surface(frame, NULL)))
-    return FALSE;
+  if(!_rendition(w, &image)) return;
 
   // frame pixels -> user space now -> device -> user space of the base
   cairo_matrix_t ctm, inverse_base = w->base;
@@ -208,7 +202,7 @@ gboolean dt_presenter_image(cairo_t *cr,
   else
   {
     cairo_save(cr);
-    cairo_set_source_surface(cr, surface, x, y);
+    cairo_set_source_surface(cr, image.surface, x, y);
     cairo_pattern_set_filter(cairo_get_source(cr), filter);
     cairo_paint(cr);
     cairo_restore(cr);
@@ -217,7 +211,6 @@ gboolean dt_presenter_image(cairo_t *cr,
   if(!g_ptr_array_find(w->frames, frame, NULL))
     g_ptr_array_add(w->frames, dt_frame_ref(frame));
   g_array_append_val(w->images, image);
-  return TRUE;
 }
 
 void dt_presenter_keep(cairo_t *cr)
@@ -225,18 +218,14 @@ void dt_presenter_keep(cairo_t *cr)
   _widget_t *w = cairo_get_user_data(cr, &_cr_key);
   if(!w) return;
 
-  dt_display_output_t output;
-  dt_presenter_window_output(w->widget, &output);
-
   for(guint k = 0; k < w->kept->len; k++)
   {
-    const dt_presenter_image_t image = g_array_index(w->kept, dt_presenter_image_t, k);
+    dt_presenter_image_t image = g_array_index(w->kept, dt_presenter_image_t, k);
 
-    // in an output no longer shown
-    if(!_shown_in(&output, image.frame)) continue;
+    // in the output the window has now, which may not be the one the draw
+    // that kept the image had. a window never changes its backend
+    if(!_rendition(w, &image)) continue;
 
-    // a window never changes its backend: the draw that kept a frame made
-    // what this one needs
     if(w->layered)
       dt_presenter_layered_image(w->layered, &image);
     else

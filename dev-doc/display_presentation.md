@@ -218,21 +218,21 @@ Inside, `dt_presenter_image(pcr, x, y, frame, filter)` takes the place of
 the context's current transformation and the extents of its clip, and paint
 order is kept, so whatever is drawn afterwards is on top. The presenter
 holds a reference on the frame for as long as it shows or keeps it, so the
-caller may drop its own when the call returns. cairo paints the frame's
-RGB24 pixels, a native backend composes its float pixels; a frame in the
-other format is shown through its rendition. It returns `FALSE`, and
-shows nothing, when the platform owns the window's output (a native backend,
-or cairo on a compositor that manages color) and the frame is in another
-profile. The caller does nothing about it: taking the output moves the
-window's serial and redraws it, and the producers render again where they
-compare it ([output description](#output-description)). Otherwise the cairo
-backend shows any display-encoded frame.
+caller may drop its own when the call returns. The window shows the frame
+in its output's image encoding: cairo paints the frame's RGB24 rendition, a
+native backend composes its float one. A frame made for that output is its
+own pixels; one in another profile or format, made before the output
+changed, is shown converted, never refused, as GTK4's renderers and Chromium
+convert at draw. It stays until its producer renders it again: an output
+change moves the window's serial and redraws it, and the producers compare
+the serial there ([output description](#output-description)). A frame
+rendered for another headroom keeps its tone mapping until then.
 
 - `dt_presenter_keep()` shows the images of the last full draw again where
   they were (the darkroom while it loads the next image without the loading
   screen). A draw GTK restricted to a damaged area does not replace them.
-  Kept images in a profile other than the output's are dropped while the
-  platform owns it.
+  Kept images are shown in the window's output as it is now, converted as
+  any other.
 - `dt_presenter_clear()` drops a widget's images (darkroom `leave()`);
   unmapping a widget drops them too.
 - `dt_view_paint_surface()` is the darkroom's user: background, then the

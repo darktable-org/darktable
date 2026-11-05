@@ -45,14 +45,14 @@ void dt_presenter_end(GtkWidget *widget,
 
 /** paint frame at (x, y), as cairo_paint() would paint a surface set
  * with cairo_set_source_surface(cr, surface, x, y), with the context's
- * current transformation and the extents of its clip. the presenter takes
- * its own reference. returns FALSE if it is not shown: a window whose
- * output the platform owns shows frames in its profile only */
-gboolean dt_presenter_image(cairo_t *cr,
-                            const double x,
-                            const double y,
-                            dt_frame_t *frame,
-                            const cairo_filter_t filter);
+ * current transformation and the extents of its clip. a frame in another
+ * encoding than the window's output is shown converted to it. the
+ * presenter takes its own reference */
+void dt_presenter_image(cairo_t *cr,
+                        const double x,
+                        const double y,
+                        dt_frame_t *frame,
+                        const cairo_filter_t filter);
 
 /** show the images of the last full draw again, where they were */
 void dt_presenter_keep(cairo_t *cr);
