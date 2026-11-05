@@ -58,7 +58,7 @@ static uint8_t *_bytes(cmsHPROFILE profile,
 
 static int _setup(void **state)
 {
-  // dt_colorspaces_cleanup() saves the selection to the configuration
+  // dt_colorspaces_cleanup() saves the soft proof settings to the configuration
   darktable.conf = calloc(1, sizeof(dt_conf_t));
   dt_pthread_mutex_init(&darktable.conf->mutex);
   darktable.conf->table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
@@ -88,8 +88,6 @@ static int _setup(void **state)
                                  _create_profile(DT_COLORSPACE_ADOBERGB,
                                                  dt_colorspaces_create_adobergb_profile(),
                                                  "Adobe RGB", 0, 1, 2, 3, 1, 2));
-  self->display_type = DT_COLORSPACE_DISPLAY;
-  self->display2_type = DT_COLORSPACE_DISPLAY2;
   darktable.color_profiles = self;
 
   // two system profiles a screen may report
@@ -207,7 +205,6 @@ static void test_windows_share_profiles(void **state)
   assert_true(_replace(DT_COLORSPACE_DISPLAY2, f->a, f->a_size));
   assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY2), _content(DT_COLORSPACE_DISPLAY));
   assert_int_equal(g_list_length(self->system_display_profiles), 3);
-  assert_non_null(self->transform_srgb_to_display2);
 
   // the second window moves on, the main window keeps the shared profile
   assert_true(_replace(DT_COLORSPACE_DISPLAY2, f->b, f->b_size));

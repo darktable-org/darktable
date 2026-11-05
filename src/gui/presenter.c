@@ -451,25 +451,6 @@ void dt_presenter_keep(cairo_t *cr)
   }
 }
 
-static void _display_control_update(gpointer instance,
-                                    GtkWidget *control)
-{
-  const dt_colorspaces_color_profile_type_t window =
-    GPOINTER_TO_INT(g_object_get_data(G_OBJECT(control), "dt-presenter-window"));
-  dt_display_output_t output;
-  dt_colorspaces_get_display_output(window, &output);
-  gtk_widget_set_sensitive(control, !output.platform_owned);
-}
-
-void dt_presenter_display_control(GtkWidget *control,
-                                  const dt_colorspaces_color_profile_type_t window)
-{
-  g_object_set_data(G_OBJECT(control), "dt-presenter-window", GINT_TO_POINTER(window));
-  _display_control_update(NULL, control);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_CHANGED,
-                            _display_control_update, control);
-}
-
 void dt_presenter_clear(GtkWidget *widget)
 {
   _widget_t *w = g_object_get_data(G_OBJECT(widget), WIDGET_KEY);

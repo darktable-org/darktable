@@ -712,7 +712,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   else if(dt_pipe_is_thumb(pipe))
   {
     out_type = dt_mipmap_cache_get_colorspace();
-    out_filename = (out_type == DT_COLORSPACE_DISPLAY ? darktable.color_profiles->display_filename : "");
+    out_filename = "";
     out_intent = darktable.color_profiles->display_intent;
   }
   else
@@ -826,10 +826,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     }
 
     // the shapers of the PQ and HLG profiles end at 1.0, where the pipe has
-    // reference white (see _create_display_transform() in colorspaces.c), and
-    // would clip the proof there. like an export, their proof goes to linear
-    // light and through dt_hdr_encode() in process(), so it clips where the
-    // export does
+    // reference white (dt_hdr_encode()), and would clip the proof there.
+    // like an export, their proof goes to linear light and through
+    // dt_hdr_encode() in process(), so it clips where the export does
     d->proof_hdr_transfer = dt_colorspaces_hdr_transfer(softproof_type);
 
     // some of our internal profiles are what lcms considers ideal profiles as they have a parametric TRC so
@@ -869,6 +868,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
    * to use our matrix codepath when softproof is enabled, this seemed redundant.
    */
 
+  // a proof converts to the proof profile with its own intent, and from
+  // there to the output relative colorimetric (_create_transforms())
+  const dt_iop_color_intent_t intent =
+    softproof ? darktable.color_profiles->softproof_intent : out_intent;
+
   /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
   if(d->mode != DT_PROFILE_NORMAL || force_lcms2
      || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix,
@@ -876,7 +880,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   {
     dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
     piece->process_cl_ready = FALSE;
-    _create_transforms(d, Lab, output, output_format, softproof, out_intent, transformFlags);
+    _create_transforms(d, Lab, output, output_format, softproof, intent, transformFlags);
   }
 
   // user selected a non-supported output profile, check that:
@@ -898,7 +902,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       piece->process_cl_ready = FALSE;
 
-      _create_transforms(d, Lab, output, output_format, softproof, out_intent, transformFlags);
+      _create_transforms(d, Lab, output, output_format, softproof, intent, transformFlags);
     }
   }
 

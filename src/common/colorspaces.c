@@ -44,12 +44,6 @@
 #include <gdk/gdkwin32.h>
 #endif
 
-#if 0
-#include <ApplicationServices/ApplicationServices.h>
-#include <Carbon/Carbon.h>
-#include <CoreServices/CoreServices.h>
-#endif
-
 static const cmsCIEXYZ d65 = {0.95045471, 1.00000000, 1.08905029};
 
 //D60
@@ -1184,28 +1178,6 @@ static dt_colorspaces_color_profile_t *_create_profile
   return prof;
 }
 
-// the pipe encodes PQ and HLG with 1.0 at reference white (dt_hdr_encode()),
-// which no ICC shaper can express: the built-in PQ profile puts 1.0 at
-// 10000 nits and has no OOTF for HLG. so for those screens the thumbnail
-// transforms stop at linear light, and dt_colorspaces_transform_to_display()
-// does the encoding
-static cmsHTRANSFORM _create_display_transform(cmsHPROFILE from,
-                                               cmsHPROFILE display_profile,
-                                               const int hdr,
-                                               const dt_iop_color_intent_t intent)
-{
-  if(!hdr)
-    return cmsCreateTransform(from, TYPE_RGBA_8, display_profile, TYPE_BGRA_8,
-                              intent, 0);
-
-  cmsHPROFILE linear = dt_colorspaces_linearize_profile(display_profile);
-  if(!linear) return NULL;
-  cmsHTRANSFORM xform = cmsCreateTransform(from, TYPE_RGBA_8, linear, TYPE_RGBA_FLT,
-                                           intent, 0);
-  dt_colorspaces_cleanup_profile(linear);
-  return xform;
-}
-
 // r is a constant once inlined: the channel offsets must be known for the
 // stores to vectorize
 static inline void _display_to_8bit_pixels(const float *const restrict in,
@@ -1236,7 +1208,6 @@ void dt_display_to_8bit_pixels(const float *const restrict in,
 }
 
 void dt_colorspaces_transform_to_display(cmsHTRANSFORM xform,
-                                         const int hdr,
                                          const uint8_t *const in,
                                          uint8_t *const out,
                                          const int width,
@@ -1244,33 +1215,9 @@ void dt_colorspaces_transform_to_display(cmsHTRANSFORM xform,
                                          const size_t in_stride,
                                          const size_t out_stride)
 {
-  if(!hdr)
-  {
-    DT_OMP_FOR()
-    for(int y = 0; y < height; y++)
-      cmsDoTransform(xform, in + y * in_stride, out + y * out_stride, width);
-    return;
-  }
-
-  size_t padded_size = 0;
-  float *scratchlines = dt_alloc_perthread_float(4 * width, &padded_size);
-  if(!scratchlines) return;
   DT_OMP_FOR()
   for(int y = 0; y < height; y++)
-  {
-    float *const line = dt_get_perthread(scratchlines, padded_size);
-    cmsDoTransform(xform, in + y * in_stride, line, width);
-    uint8_t *const o = out + y * out_stride;
-    for(int x = 0; x < width; x++)
-    {
-      float *const px = line + 4 * x;
-      dt_hdr_encode(px, hdr);
-      // cairo wants BGRA
-      for(int c = 0; c < 3; c++)
-        o[4 * x + 2 - c] = (uint8_t)(CLAMPF(px[c], 0.0f, 1.0f) * 255.0f + 0.5f);
-    }
-  }
-  dt_free_align(scratchlines);
+    cmsDoTransform(xform, in + y * in_stride, out + y * out_stride, width);
 }
 
 // this function is basically thread safe, at least when not called on
@@ -1283,7 +1230,6 @@ static void _update_display_transforms(dt_colorspaces_t *self)
   if(self->transform_adobe_rgb_to_display)
     cmsDeleteTransform(self->transform_adobe_rgb_to_display);
   self->transform_adobe_rgb_to_display = NULL;
-  self->display_hdr_transfer = DT_HDR_NONE;
 
   // thumbnails are drawn by GTK, in what untagged values mean in the main
   // window
@@ -1291,60 +1237,16 @@ static void _update_display_transforms(dt_colorspaces_t *self)
   const dt_iop_color_intent_t intent = device->intent;
   cmsHPROFILE display_profile = device->profile;
   if(!display_profile) return;
-  self->display_hdr_transfer = dt_colorspaces_hdr_transfer(device->type);
 
   self->transform_srgb_to_display =
-    _create_display_transform(_get_profile(self, DT_COLORSPACE_SRGB, "",
-                                           DT_PROFILE_DIRECTION_DISPLAY)->profile,
-                              display_profile,
-                              self->display_hdr_transfer,
-                              intent);
+    cmsCreateTransform(_get_profile(self, DT_COLORSPACE_SRGB, "",
+                                    DT_PROFILE_DIRECTION_DISPLAY)->profile,
+                       TYPE_RGBA_8, display_profile, TYPE_BGRA_8, intent, 0);
 
   self->transform_adobe_rgb_to_display =
-    _create_display_transform(_get_profile(self, DT_COLORSPACE_ADOBERGB, "",
-                                           DT_PROFILE_DIRECTION_DISPLAY)->profile,
-                              display_profile,
-                              self->display_hdr_transfer,
-                              intent);
-}
-
-static void _update_display2_transforms(dt_colorspaces_t *self)
-{
-  if(self->transform_srgb_to_display2)
-    cmsDeleteTransform(self->transform_srgb_to_display2);
-  self->transform_srgb_to_display2 = NULL;
-
-  if(self->transform_adobe_rgb_to_display2)
-    cmsDeleteTransform(self->transform_adobe_rgb_to_display2);
-  self->transform_adobe_rgb_to_display2 = NULL;
-  self->display2_hdr_transfer = DT_HDR_NONE;
-
-  const dt_colorspaces_color_profile_t *display2_dt_profile
-      = _get_profile(self,
-                     self->display2_type,
-                     self->display2_filename,
-                     DT_PROFILE_DIRECTION_DISPLAY2);
-
-  if(!display2_dt_profile)
-    return;
-  cmsHPROFILE display2_profile = display2_dt_profile->profile;
-  if(!display2_profile)
-    return;
-  self->display2_hdr_transfer = dt_colorspaces_hdr_transfer(display2_dt_profile->type);
-
-  self->transform_srgb_to_display2
-      = _create_display_transform(_get_profile(self, DT_COLORSPACE_SRGB, "",
-                                               DT_PROFILE_DIRECTION_DISPLAY2)->profile,
-                                  display2_profile,
-                                  self->display2_hdr_transfer,
-                                  self->display2_intent);
-
-  self->transform_adobe_rgb_to_display2
-      = _create_display_transform(_get_profile(self, DT_COLORSPACE_ADOBERGB, "",
-                                               DT_PROFILE_DIRECTION_DISPLAY2)->profile,
-                                  display2_profile,
-                                  self->display2_hdr_transfer,
-                                  self->display2_intent);
+    cmsCreateTransform(_get_profile(self, DT_COLORSPACE_ADOBERGB, "",
+                                    DT_PROFILE_DIRECTION_DISPLAY)->profile,
+                       TYPE_RGBA_8, display_profile, TYPE_BGRA_8, intent, 0);
 }
 
 // the profile colorout builds a presented pipe's transform with
@@ -1364,27 +1266,27 @@ static inline int _window_index(const dt_colorspaces_color_profile_type_t window
   return window == DT_COLORSPACE_DISPLAY2;
 }
 
+// thumbnails are drawn in the main window only
 static void _update_window_transforms(dt_colorspaces_t *self,
                                       const int w)
 {
-  if(w) _update_display2_transforms(self);
-  else _update_display_transforms(self);
+  if(!w) _update_display_transforms(self);
 }
 
-void dt_colorspaces_describe_selection(dt_colorspaces_t *self,
-                                       const dt_colorspaces_color_profile_type_t window,
-                                       dt_display_output_t *output)
+// what a window wants unless the platform owns it: its system display
+// profile, as both encodings. headroom 1: an 8-bit untagged surface has no
+// way to say it reaches above reference white.
+// make sure that xprofile_lock is held when calling this!
+static void _describe_system_display(dt_colorspaces_t *self,
+                                     const int w,
+                                     dt_display_output_t *output)
 {
-  const gboolean second = _window_index(window);
   memset(output, 0, sizeof(*output));
   dt_color_encoding_t *const image = &output->image;
-  image->type = second ? self->display2_type : self->display_type;
-  g_strlcpy(image->filename,
-            second ? self->display2_filename : self->display_filename,
-            sizeof(image->filename));
-  image->profile = _output_profile(self, image->type, image->filename);
-  image->intent = second ? self->display2_intent : self->display_intent;
-  image->headroom = dt_ioppr_profile_headroom(image->type);
+  image->type = w ? DT_COLORSPACE_DISPLAY2 : DT_COLORSPACE_DISPLAY;
+  image->profile = _output_profile(self, image->type, "");
+  image->intent = self->display_intent;
+  image->headroom = 1.0f;
   // without color management in the platform, values reach the screen as
   // the device values the display profile describes
   output->device = *image;
@@ -1404,26 +1306,18 @@ static gboolean _publish(dt_colorspaces_t *self,
   return TRUE;
 }
 
+// the window's system display profile or the intent changed.
 // make sure that xprofile_lock is held when calling this!
-static void _selection_changed(dt_colorspaces_t *self,
-                               const int w)
+static void _system_display_changed(dt_colorspaces_t *self,
+                                    const int w)
 {
   if(!self->outputs[w].platform_owned)
   {
     dt_display_output_t output;
-    dt_colorspaces_describe_selection(self, w ? DT_COLORSPACE_DISPLAY2 : DT_COLORSPACE_DISPLAY,
-                                      &output);
+    _describe_system_display(self, w, &output);
     _publish(self, w, &output);
   }
   _update_window_transforms(self, w);
-}
-
-void dt_colorspaces_display_selection_changed(const dt_colorspaces_color_profile_type_t window)
-{
-  dt_colorspaces_t *self = darktable.color_profiles;
-  pthread_rwlock_wrlock(&self->xprofile_lock);
-  _selection_changed(self, _window_index(window));
-  pthread_rwlock_unlock(&self->xprofile_lock);
 }
 
 void dt_colorspaces_get_display_output(const dt_colorspaces_color_profile_type_t window,
@@ -1463,7 +1357,7 @@ gboolean dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_typ
                                               output->device.filename);
   }
   else
-    dt_colorspaces_describe_selection(self, window, &resolved);
+    _describe_system_display(self, w, &resolved);
   const gboolean changed = _publish(self, w, &resolved);
   if(changed) _update_window_transforms(self, w);
   pthread_rwlock_unlock(&self->xprofile_lock);
@@ -1541,6 +1435,20 @@ static gboolean _system_display_set(dt_colorspaces_t *self,
                                     const int w,
                                     cmsHPROFILE profile)
 {
+  // the platform is the only source, so this is where a monitor profile
+  // the system does not know about would show. sRGB is right for most
+  // monitors without one: say it once. not on Wayland, where the
+  // compositor converts or the window is sRGB, and a window that gets a
+  // native backend reports nothing here before the backend takes it
+  if(!profile && !self->system_display_hinted[w] && !self->outputs[w].platform_owned
+     && dt_gui_get_session_type() != DT_GUI_SESSION_WAYLAND)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[colorspaces] no display profile reported for the %s window, using sRGB."
+             " if the monitor is calibrated, install its profile in the system's color"
+             " settings (see darktable-cmstest)", w ? "second" : "main");
+    self->system_display_hinted[w] = TRUE;
+  }
   if(!profile) profile = self->system_display_srgb[w];
   const dt_colorspaces_color_profile_type_t type =
     w ? DT_COLORSPACE_DISPLAY2 : DT_COLORSPACE_DISPLAY;
@@ -1550,7 +1458,7 @@ static gboolean _system_display_set(dt_colorspaces_t *self,
     if(p->type != type) continue;
     if(p->profile == profile) return FALSE;
     p->profile = profile;
-    _selection_changed(self, w);
+    _system_display_changed(self, w);
     return TRUE;
   }
   return FALSE;
@@ -1647,6 +1555,119 @@ icc_loading_done:
   }
   g_free(dirname);
   return temp_profiles;
+}
+
+// the options of the display intent preference, in the order of the intents
+static const char *const _display_intents[DT_INTENT_LAST] =
+  { "perceptual", "relative colorimetric", "saturation", "absolute colorimetric" };
+
+static dt_iop_color_intent_t _display_intent_preference(void)
+{
+  const char *value = dt_conf_get_string_const("ui_last/display_intent");
+  for(int k = 0; k < DT_INTENT_LAST; k++)
+    if(!g_strcmp0(value, _display_intents[k])) return k;
+  return DT_INTENT_PERCEPTUAL;
+}
+
+// what an earlier version stored as a window's display profile selection
+static const char *const _retired_keys[2][3] =
+  { { "ui_last/color/display_type", "ui_last/color/display_filename",
+      "ui_last/color/display_intent" },
+    { "ui_last/color/display2_type", "ui_last/color/display2_filename",
+      "ui_last/color/display2_intent" } };
+
+// the profile a window's stored selection chose instead of its system
+// display profile, validated as that version did, or NULL. a missing type
+// reads as 0, a file, as it did there
+static gchar *_retired_choice(const int w)
+{
+  const dt_colorspaces_color_profile_type_t type = dt_conf_get_int(_retired_keys[w][0]);
+  gchar *filename = dt_conf_get_string(_retired_keys[w][1]);
+  gchar *name = NULL;
+  if((unsigned int)type < DT_COLORSPACE_LAST
+     && type != (w ? DT_COLORSPACE_DISPLAY2 : DT_COLORSPACE_DISPLAY)
+     && (type != DT_COLORSPACE_FILE
+         || (filename[0] && g_file_test(filename, G_FILE_TEST_IS_REGULAR))))
+    name = g_strdup_printf("'%s'", dt_colorspaces_get_name(type, filename));
+  g_free(filename);
+  return name;
+}
+
+// the display profile always comes from the platform now. a selection an
+// earlier version stored is migrated once: its intent becomes the display
+// intent preference and the soft proof's, which colorout took from it
+// (softproof_intent was stored but never set), and a profile it chose is
+// named in a notice
+static void _migrate_display_selection(dt_colorspaces_t *self)
+{
+  gboolean stored = FALSE;
+  for(int w = 0; w < 2; w++)
+    for(int k = 0; k < 3; k++)
+      stored |= dt_conf_key_exists(_retired_keys[w][k]);
+  if(!stored) return;
+
+  if(dt_conf_key_exists(_retired_keys[0][2]))
+  {
+    const int intent = dt_conf_get_int(_retired_keys[0][2]);
+    if(intent >= 0 && intent < DT_INTENT_LAST)
+    {
+      dt_conf_set_string("ui_last/display_intent", _display_intents[intent]);
+      dt_conf_set_int("ui_last/color/softproof_intent", intent);
+    }
+  }
+
+  gchar *first = _retired_choice(0);
+  gchar *second = _retired_choice(1);
+  if(first || second)
+  {
+    self->retired_display_selection =
+      first && second ? g_strdup_printf("%s, %s", first, second)
+                      : g_strdup(first ? first : second);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[colorspaces] the display profile now comes from the system's color"
+             " settings: the stored selection %s is no longer used",
+             self->retired_display_selection);
+  }
+  g_free(first);
+  g_free(second);
+
+  for(int w = 0; w < 2; w++)
+    for(int k = 0; k < 3; k++)
+      dt_conf_remove_key(_retired_keys[w][k]);
+}
+
+void dt_colorspaces_notify_retired_selection(void)
+{
+  dt_colorspaces_t *self = darktable.color_profiles;
+  if(!self->retired_display_selection) return;
+  dt_control_log(_("the display profile now comes from the system's color settings:"
+                   " %s is no longer used"),
+                 self->retired_display_selection);
+  g_free(self->retired_display_selection);
+  self->retired_display_selection = NULL;
+}
+
+void dt_colorspaces_update_display_intent(void)
+{
+  dt_colorspaces_t *self = darktable.color_profiles;
+  const dt_iop_color_intent_t intent = _display_intent_preference();
+  gboolean changed[2] = { FALSE, FALSE };
+
+  pthread_rwlock_wrlock(&self->xprofile_lock);
+  if(intent != self->display_intent)
+  {
+    self->display_intent = intent;
+    for(int w = 0; w < 2; w++)
+    {
+      const uint32_t serial = self->outputs[w].serial;
+      _system_display_changed(self, w);
+      changed[w] = self->outputs[w].serial != serial;
+    }
+  }
+  pthread_rwlock_unlock(&self->xprofile_lock);
+
+  for(int w = 0; w < 2; w++)
+    if(changed[w]) _output_changed(w);
 }
 
 dt_colorspaces_t *dt_colorspaces_init()
@@ -1816,37 +1837,23 @@ dt_colorspaces_t *dt_colorspaces_init()
                      _("BRG (for testing)"), ++in_pos, ++out_pos, ++display_pos,
                      -1, -1, ++display2_pos));
 
-  // init display profile and softproof/gama checking from conf
-  res->display_type = dt_conf_get_int("ui_last/color/display_type");
-  res->display2_type = dt_conf_get_int("ui_last/color/display2_type");
+  _migrate_display_selection(res);
+
+  // init softproof/gama checking from conf
   res->softproof_type = dt_conf_get_int("ui_last/color/softproof_type");
   res->histogram_type = dt_conf_get_int("ui_last/color/histogram_type");
-  const char *tmp = dt_conf_get_string_const("ui_last/color/display_filename");
-  g_strlcpy(res->display_filename, tmp, sizeof(res->display_filename));
-  tmp = dt_conf_get_string_const("ui_last/color/display2_filename");
-  g_strlcpy(res->display2_filename, tmp, sizeof(res->display2_filename));
-  tmp = dt_conf_get_string_const("ui_last/color/softproof_filename");
+  const char *tmp = dt_conf_get_string_const("ui_last/color/softproof_filename");
   g_strlcpy(res->softproof_filename, tmp, sizeof(res->softproof_filename));
   tmp = dt_conf_get_string_const("ui_last/color/histogram_filename");
   g_strlcpy(res->histogram_filename, tmp, sizeof(res->histogram_filename));
-  res->display_intent = dt_conf_get_int("ui_last/color/display_intent");
-  res->display2_intent = dt_conf_get_int("ui_last/color/display2_intent");
+  res->display_intent = _display_intent_preference();
   res->softproof_intent = dt_conf_get_int("ui_last/color/softproof_intent");
   res->mode = dt_conf_get_int("ui_last/color/mode");
 
   // sanity checks to ensure the profile filenames are present
 
-  if((unsigned int)res->display_type >= DT_COLORSPACE_LAST
-     || (res->display_type == DT_COLORSPACE_FILE
-         && (!res->display_filename[0]
-             || !g_file_test(res->display_filename, G_FILE_TEST_IS_REGULAR))))
-    res->display_type = DT_COLORSPACE_DISPLAY;
-
-  if((unsigned int)res->display2_type >= DT_COLORSPACE_LAST
-     || (res->display2_type == DT_COLORSPACE_FILE
-         && (!res->display2_filename[0]
-             || !g_file_test(res->display2_filename, G_FILE_TEST_IS_REGULAR))))
-    res->display2_type = DT_COLORSPACE_DISPLAY2;
+  if((unsigned int)res->softproof_intent >= DT_INTENT_LAST)
+    res->softproof_intent = DT_INTENT_PERCEPTUAL;
 
   if((unsigned int)res->softproof_type >= DT_COLORSPACE_LAST
      || (res->softproof_type == DT_COLORSPACE_FILE
@@ -1939,30 +1946,22 @@ dt_colorspaces_t *dt_colorspaces_init()
   // realize a window: every window has an output from here on
   for(int w = 0; w < 2; w++)
   {
-    dt_colorspaces_describe_selection(res, w ? DT_COLORSPACE_DISPLAY2 : DT_COLORSPACE_DISPLAY,
-                                      &res->outputs[w]);
+    _describe_system_display(res, w, &res->outputs[w]);
     res->outputs[w].serial = 1;
   }
 
   _update_display_transforms(res);
-  _update_display2_transforms(res);
 
   return res;
 }
 
 void dt_colorspaces_cleanup(dt_colorspaces_t *self)
 {
-  // remember display profile and softproof/gama checking from conf
-  dt_conf_set_int("ui_last/color/display_type", self->display_type);
-  dt_conf_set_int("ui_last/color/display2_type", self->display2_type);
+  // remember softproof/gama checking from conf
   dt_conf_set_int("ui_last/color/softproof_type", self->softproof_type);
   dt_conf_set_int("ui_last/color/histogram_type", self->histogram_type);
-  dt_conf_set_string("ui_last/color/display_filename", self->display_filename);
-  dt_conf_set_string("ui_last/color/display2_filename", self->display2_filename);
   dt_conf_set_string("ui_last/color/softproof_filename", self->softproof_filename);
   dt_conf_set_string("ui_last/color/histogram_filename", self->histogram_filename);
-  dt_conf_set_int("ui_last/color/display_intent", self->display_intent);
-  dt_conf_set_int("ui_last/color/display2_intent", self->display2_intent);
   dt_conf_set_int("ui_last/color/softproof_intent", self->softproof_intent);
   dt_conf_set_int("ui_last/color/mode", self->mode);
 
@@ -1974,14 +1973,6 @@ void dt_colorspaces_cleanup(dt_colorspaces_t *self)
     cmsDeleteTransform(self->transform_adobe_rgb_to_display);
   self->transform_adobe_rgb_to_display = NULL;
 
-  if(self->transform_srgb_to_display2)
-    cmsDeleteTransform(self->transform_srgb_to_display2);
-  self->transform_srgb_to_display2 = NULL;
-
-  if(self->transform_adobe_rgb_to_display2)
-    cmsDeleteTransform(self->transform_adobe_rgb_to_display2);
-  self->transform_adobe_rgb_to_display2 = NULL;
-
   for(GList *iter = self->profiles; iter; iter = g_list_next(iter))
   {
     dt_colorspaces_color_profile_t *p = iter->data;
@@ -1992,6 +1983,7 @@ void dt_colorspaces_cleanup(dt_colorspaces_t *self)
   g_list_free_full(self->system_display_profiles, _system_profile_free);
 
   pthread_rwlock_destroy(&self->xprofile_lock);
+  g_free(self->retired_display_selection);
 
   free(self);
 }
@@ -2230,38 +2222,10 @@ void dt_colorspaces_set_display_profile
 #endif
 
 #elif defined GDK_WINDOWING_QUARTZ
-#if 0
-  GtkWidget *widget = (profile_type == DT_COLORSPACE_DISPLAY2)
-    ? darktable.develop->second_wnd
-    : dt_ui_center(darktable.gui->ui);
-  GdkScreen *screen = gtk_widget_get_screen(widget);
-  if(screen == NULL) screen = gdk_screen_get_default();
-  const int monitor =
-    gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(widget));
-
-  CGDirectDisplayID ids[monitor + 1];
-  uint32_t total_ids;
-  CMProfileRef prof = NULL;
-  if(CGGetOnlineDisplayList(monitor + 1, &ids[0], &total_ids)
-     == kCGErrorSuccess && total_ids == monitor + 1)
-    CMGetProfileByAVID(ids[monitor], &prof);
-
-  if(prof != NULL)
-  {
-    CFDataRef data;
-    data = CMProfileCopyICCData(NULL, prof);
-    CMCloseProfile(prof);
-
-    UInt8 *tmp_buffer = (UInt8 *)g_malloc(CFDataGetLength(data));
-    CFDataGetBytes(data, CFRangeMake(0, CFDataGetLength(data)), tmp_buffer);
-
-    buffer = (guint8 *)tmp_buffer;
-    buffer_size = CFDataGetLength(data);
-
-    CFRelease(data);
-  }
-  profile_source = g_strdup("osx color profile api");
-#endif
+  // every window's backing store is tagged sRGB by GTK (3.24.37 on) and
+  // converted to the screen by macOS, so there is nothing to ask: the
+  // system entries keep the sRGB they start with
+  return;
 #elif defined G_OS_WIN32
   GtkWidget *widget = (profile_type == DT_COLORSPACE_DISPLAY2)
       ? darktable.develop->second_wnd

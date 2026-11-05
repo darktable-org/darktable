@@ -875,7 +875,6 @@ dt_view_surface_value_t dt_view_image_get_surface_cached(const dt_imgid_t imgid,
   {
     gboolean have_lock = FALSE;
     cmsHTRANSFORM transform = NULL;
-    int hdr = DT_HDR_NONE;
 
     if(dt_conf_get_bool("cache_color_managed"))
     {
@@ -888,13 +887,11 @@ dt_view_surface_value_t dt_view_image_get_surface_cached(const dt_imgid_t imgid,
          && darktable.color_profiles->transform_srgb_to_display)
       {
         transform = darktable.color_profiles->transform_srgb_to_display;
-        hdr = darktable.color_profiles->display_hdr_transfer;
       }
       else if(buf.color_space == DT_COLORSPACE_ADOBERGB
               && darktable.color_profiles->transform_adobe_rgb_to_display)
       {
         transform = darktable.color_profiles->transform_adobe_rgb_to_display;
-        hdr = darktable.color_profiles->display_hdr_transfer;
       }
       else
       {
@@ -919,7 +916,7 @@ dt_view_surface_value_t dt_view_image_get_surface_cached(const dt_imgid_t imgid,
 
     if(transform)
     {
-      dt_colorspaces_transform_to_display(transform, hdr, buf.buf, rgbbuf,
+      dt_colorspaces_transform_to_display(transform, buf.buf, rgbbuf,
                                           buf.width, buf.height,
                                           (size_t)buf.width * 4, (size_t)buf.width * 4);
     }

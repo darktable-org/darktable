@@ -2652,6 +2652,7 @@ int dt_init(int argc,
     dt_gui_process_events();
     dt_splash_screen_destroy();
     dt_welcome_screen_run_if_needed();
+    dt_colorspaces_notify_retired_selection();
 
     // finally set the cursor to be the default.
     // for some reason this is needed on some systems to pick up the correctly themed cursor

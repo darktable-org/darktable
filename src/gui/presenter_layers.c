@@ -96,7 +96,7 @@ static void _window_free(gpointer data)
     w->widgets = g_list_delete_link(w->widgets, w->widgets);
   }
   if(w->backend) w->backend->free(w->backend);
-  // whatever the platform owned goes back to the display profile selection
+  // whatever the platform owned goes back to the system display profile
   dt_colorspaces_set_window_output(w->kind, NULL);
   g_free(w);
 }

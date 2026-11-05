@@ -910,6 +910,12 @@ static GdkDevice *_touchpad = NULL;
 static gint64 _touchpad_last_gesture = 0;
 #define DT_TOUCHPAD_ASSOCIATION_USEC (500 * G_TIME_SPAN_MILLISECOND)
 
+static void _display_intent_pref_changed(gpointer instance,
+                                         gpointer user_data)
+{
+  dt_colorspaces_update_display_intent();
+}
+
 static void _touchpad_gestures_pref_changed(gpointer instance,
                                             gpointer user_data)
 {
@@ -2074,6 +2080,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   gui->touchpad_gestures_enabled = dt_conf_get_bool("darkroom/ui/touchpad_gestures");
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
                             _touchpad_gestures_pref_changed, gui);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
+                            _display_intent_pref_changed, NULL);
 
   /* Have the delete event (window close) end the program */
   snprintf(path, sizeof(path), "%s/icons", datadir);

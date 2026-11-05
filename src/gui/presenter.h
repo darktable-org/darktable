@@ -62,12 +62,6 @@ gboolean dt_presenter_image(cairo_t *cr,
 /** show the images of the last full draw again, where they were */
 void dt_presenter_keep(cairo_t *cr);
 
-/** keep a display profile control insensitive while the platform owns
- * the output of window (DT_COLORSPACE_DISPLAY or DISPLAY2), where the
- * selection has no effect */
-void dt_presenter_display_control(GtkWidget *control,
-                                  const dt_colorspaces_color_profile_type_t window);
-
 /** drop the images of a widget */
 void dt_presenter_clear(GtkWidget *widget);
 
