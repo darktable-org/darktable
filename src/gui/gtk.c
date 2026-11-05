@@ -3349,9 +3349,22 @@ static void _add_remove_modules_at_widget(dt_action_t *action,
   g_menu_append(section, _("restore defaults"), "modules.restore");
 
   // popup the menu
+  //
+  // anchor the popover on an ancestor whose allocation does not move
+  // when modules are shown or hidden: the widget the click arrived on
+  // is the filler box at the end of the panel's module list, so its
+  // origin shifts by the height of every module toggled from the menu,
+  // dragging the still-open popover with it
+  gint ax = x, ay = y;
+  GtkWidget *anchor = gtk_widget_get_ancestor(parent, GTK_TYPE_SCROLLED_WINDOW);
+  if(anchor && gtk_widget_translate_coordinates(parent, anchor, x, y, &ax, &ay))
+    parent = anchor;
+  else
+    ax = x, ay = y;
+
   GtkWidget *popover_menu = dt_gui_popover_menu_from_model(parent, menu);
   g_object_unref(menu);
-  GdkRectangle rect = { x, y, 1, 1 };
+  GdkRectangle rect = { ax, ay, 1, 1 };
   gtk_popover_set_pointing_to(GTK_POPOVER(popover_menu), &rect);
   gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
