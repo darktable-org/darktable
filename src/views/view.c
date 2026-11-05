@@ -2126,9 +2126,8 @@ void dt_view_paint_surface(cairo_t *cr,
 
     cairo_scale(cr, back_scale, back_scale);
     _match_rotation(cr, pts, trans_x, trans_y, buf_width, buf_height);
-    const gboolean shown = dt_presenter_image(cr, 0, 0, frame, CAIRO_FILTER_FAST);
-    if(shown
-       && darktable.gui->show_focus_peaking
+    dt_presenter_image(cr, 0, 0, frame, CAIRO_FILTER_FAST);
+    if(darktable.gui->show_focus_peaking
        && window != DT_WINDOW_SLIDESHOW)
     {
       // the colors GTK's surface shows in the window the pipe renders for
