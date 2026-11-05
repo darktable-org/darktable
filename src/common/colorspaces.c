@@ -1435,6 +1435,17 @@ void dt_colorspaces_get_display_output(const dt_colorspaces_color_profile_type_t
   pthread_rwlock_unlock(&self->xprofile_lock);
 }
 
+// a window's output changed: its pipes reprocess, and to GTK-side drawing
+// this is a change of display profile, as if the user had picked one:
+// converted thumbnails are redone
+static void _output_changed(const int w)
+{
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+                          w ? DT_COLORSPACES_PROFILE_TYPE_DISPLAY2
+                            : DT_COLORSPACES_PROFILE_TYPE_DISPLAY);
+}
+
 gboolean dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_type_t window,
                                           const dt_display_output_t *output)
 {
@@ -1457,15 +1468,7 @@ gboolean dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_typ
   if(changed) _update_window_transforms(self, w);
   pthread_rwlock_unlock(&self->xprofile_lock);
 
-  if(changed)
-  {
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
-    // to GTK-side drawing this is a change of display profile, as if the
-    // user had picked one: converted thumbnails are redone
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                            w ? DT_COLORSPACES_PROFILE_TYPE_DISPLAY2
-                              : DT_COLORSPACES_PROFILE_TYPE_DISPLAY);
-  }
+  if(changed) _output_changed(w);
   return changed;
 }
 
@@ -2096,6 +2099,7 @@ static void _colorspaces_get_display_profile_colord_callback(GObject *source,
   if(filename) g_file_get_contents(filename, (gchar **)&data, &size, NULL);
 
   pthread_rwlock_wrlock(&self->xprofile_lock);
+  const uint32_t serial = self->outputs[w].serial;
   gboolean changed = FALSE;
   // a later query of the window has read the atom again and asked colord
   // again: this answer is stale, and must not undo what that one found
@@ -2116,13 +2120,18 @@ static void _colorspaces_get_display_profile_colord_callback(GObject *source,
                : p ? "colord has no usable screen profile, using the X atom's"
                    : "neither colord nor the X atom has a usable screen profile, using sRGB");
   }
+  // colord answers after the GUI has drawn with the profile before, the
+  // sRGB placeholder at startup (#19776)
+  const gboolean output_changed = self->outputs[w].serial != serial;
   pthread_rwlock_unlock(&self->xprofile_lock);
 
   if(profile)
     g_object_unref(profile);
   g_object_unref(window);
 
-  if(changed)
+  if(output_changed)
+    _output_changed(w);
+  else if(changed)
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
 }
 #endif
@@ -2164,6 +2173,8 @@ void dt_colorspaces_set_display_profile
 #ifdef USE_COLORDGTK
   uint32_t query_serial = 0;
 #endif
+  uint32_t serial = 0;
+  gboolean output_changed = FALSE;
 
 #if defined GDK_WINDOWING_X11
 
@@ -2306,6 +2317,7 @@ void dt_colorspaces_set_display_profile
 #ifdef USE_COLORDGTK
   query_serial = ++self->system_display_query[w];
 #endif
+  serial = self->outputs[w].serial;
   // nothing usable from the platform means sRGB. with colord, its answer
   // decides, later and with the atom's profile
   profile = _system_profile(self, buffer, buffer_size);
@@ -2322,8 +2334,12 @@ void dt_colorspaces_set_display_profile
                profile_source ? profile_source : "platform", buffer_size);
     }
   }
+  output_changed = self->outputs[w].serial != serial;
   pthread_rwlock_unlock(&self->xprofile_lock);
-  if(changed) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  if(output_changed)
+    _output_changed(w);
+  else if(changed)
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
 #if defined G_OS_WIN32
 cleanup_and_return:
 #endif

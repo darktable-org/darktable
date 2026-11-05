@@ -106,7 +106,11 @@ markers are written as they are, saturated colors that mark in any output.
   (`dt_colorspaces_replaced_in_session()`). A query that yields no usable
   profile (no X atom and none from colord, an empty Windows query, bytes
   lcms rejects) makes the window's system display profile sRGB again, the
-  profile it starts with, rather than leaving the previous screen's.
+  profile it starts with, rather than leaving the previous screen's. A
+  new system display profile that changes a window's output is announced
+  as the presenter's taking an output is, with
+  `DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED` as well, so thumbnails drawn
+  before it arrived, as colord's asynchronous answer at startup, are redone.
 - A soft proof shows what an export to the proof profile holds, in the
   output: clipped where that export clips, and by the presenter to what the
   screen shows. PQ and HLG proofs take the export's own encoding round trip
