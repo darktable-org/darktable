@@ -561,12 +561,6 @@ void dt_colorspaces_describe_selection(dt_colorspaces_t *self,
  * selection for when it gives the output back */
 void dt_colorspaces_display_selection_changed(const dt_colorspaces_color_profile_type_t window);
 
-/** the profile GTK's own surface in a window is shown in, if the platform
- * owns the window's output; otherwise FALSE, and that is the display
- * profile */
-gboolean dt_colorspaces_get_gtk_output(const dt_colorspaces_color_profile_type_t window,
-                                       dt_color_encoding_t *gtk);
-
 /** for the presenter: the platform takes over a window's output, which
  * colorspaces resolves; NULL gives it back to the display profile
  * selection. TRUE if the output changed */

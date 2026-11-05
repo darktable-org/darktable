@@ -903,11 +903,19 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_output_profile_info(const stru
 
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_gui_profile_info(struct dt_develop_t *dev)
 {
-  dt_color_encoding_t gtk;
-  if(dt_colorspaces_get_gtk_output(DT_COLORSPACE_DISPLAY, &gtk))
-    return dt_ioppr_add_profile_info_for_content(dev, gtk.type, gtk.filename, gtk.profile,
-                                                 gtk.intent);
-  return dev->full.pipe ? dev->full.pipe->output_profile_info : NULL;
+  dt_display_output_t output;
+  dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &output);
+  const dt_color_encoding_t *device = &output.device;
+  dt_iop_order_iccprofile_info_t *info =
+    dt_ioppr_add_profile_info_for_content(dev, device->type, device->filename, device->profile,
+                                          device->intent);
+  // module GUIs compute with matrices: a profile without them is shown as
+  // sRGB, as master's output profile info stood in for it
+  if(!info
+     || !dt_is_valid_colormatrix(info->matrix_in[0][0])
+     || !dt_is_valid_colormatrix(info->matrix_out[0][0]))
+    info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", device->intent);
+  return info;
 }
 
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(const dt_iop_module_t *module,

@@ -23,8 +23,8 @@ See also:
 - [A presenting widget submits its images with
   `dt_presenter_image()`](#presenter-api) and draws everything else with
   cairo as before.
-- [Module GUIs convert colors with the GUI
-  profile](#native-backends-and-their-layers),
+- [GTK-side colors are in the window's device
+  encoding](#output-description): module GUIs convert with
   `dt_ioppr_get_gui_profile_info()`. The pipe's output profile describes the
   image layer, which on a native backend is not what GTK draws in.
 - [Platform and GTK3 code stays in the presenter files](#workarounds). The
@@ -58,6 +58,12 @@ are written as they are, saturated colors that mark in any output.
   profile and intent controls, a new system display profile and the PQ
   peak. While the platform owns the output, the selection is kept for when
   it gives the output back.
+- What GTK draws converts to the device encoding: the thumbnail transforms
+  follow the main window's, picker swatches convert from what the preview
+  pipe produced to its window's, and module GUIs take
+  `dt_ioppr_get_gui_profile_info()`, the main window's device profile, or
+  sRGB for a profile without matrices. On a cairo window device and image
+  are the same encoding, so these conversions are the identity there.
 - The presenter takes a window's output over for the platform, and gives
   it back when the window goes away (`dt_colorspaces_set_window_output()`).
 - A pipe records the window it renders for where it is created
@@ -221,8 +227,8 @@ device, the profile GTK's own surface is shown in, through
 pipes of that window then render to that output, and everything GTK draws
 there (thumbnail transforms, picker swatches, the navigation thumbnail,
 `dt_presenter_gtk_surface()`, and module GUIs through
-`dt_ioppr_get_gui_profile_info()`) converts to the device profile instead
-of the selected display profile. The change is announced like a user's
+`dt_ioppr_get_gui_profile_info()`) converts to the device profile, sRGB,
+where a cairo window's device profile is the selected display profile. The change is announced like a user's
 change of display profile, so converted thumbnails are redone. The saved
 selection is never touched; the display profile controls are insensitive
 while the platform owns the output (`dt_presenter_display_control()`).

@@ -1285,18 +1285,13 @@ static void _update_display_transforms(dt_colorspaces_t *self)
   self->transform_adobe_rgb_to_display = NULL;
   self->display_hdr_transfer = DT_HDR_NONE;
 
-  const dt_color_encoding_t *gtk =
-    self->outputs[0].platform_owned ? &self->outputs[0].device : NULL;
-  const dt_iop_color_intent_t intent = gtk ? gtk->intent : self->display_intent;
-  const dt_colorspaces_color_profile_t *display_dt_profile =
-    _get_profile(self,
-                 gtk ? gtk->type : self->display_type,
-                 gtk ? gtk->filename : self->display_filename,
-                 DT_PROFILE_DIRECTION_DISPLAY);
-  if(!display_dt_profile) return;
-  cmsHPROFILE display_profile = display_dt_profile->profile;
+  // thumbnails are drawn by GTK, in what untagged values mean in the main
+  // window
+  const dt_color_encoding_t *device = &self->outputs[0].device;
+  const dt_iop_color_intent_t intent = device->intent;
+  cmsHPROFILE display_profile = device->profile;
   if(!display_profile) return;
-  self->display_hdr_transfer = dt_colorspaces_hdr_transfer(display_dt_profile->type);
+  self->display_hdr_transfer = dt_colorspaces_hdr_transfer(device->type);
 
   self->transform_srgb_to_display =
     _create_display_transform(_get_profile(self, DT_COLORSPACE_SRGB, "",
@@ -1438,18 +1433,6 @@ void dt_colorspaces_get_display_output(const dt_colorspaces_color_profile_type_t
   pthread_rwlock_rdlock(&self->xprofile_lock);
   *output = self->outputs[_window_index(window)];
   pthread_rwlock_unlock(&self->xprofile_lock);
-}
-
-gboolean dt_colorspaces_get_gtk_output(const dt_colorspaces_color_profile_type_t window,
-                                       dt_color_encoding_t *gtk)
-{
-  dt_colorspaces_t *self = darktable.color_profiles;
-  pthread_rwlock_rdlock(&self->xprofile_lock);
-  const dt_display_output_t *output = &self->outputs[_window_index(window)];
-  const gboolean owned = output->platform_owned;
-  if(owned) *gtk = output->device;
-  pthread_rwlock_unlock(&self->xprofile_lock);
-  return owned;
 }
 
 gboolean dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_type_t window,
