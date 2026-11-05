@@ -475,7 +475,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]};
 
   const dt_dev_wb_t *wb = &pipe->wb;
-  const gboolean late = wb->late_correction;
+  const gboolean late = dt_dev_wb_late_correction(wb, &pipe->dsc);
   dt_aligned_pixel_t correction;
   dt_dev_wb_get_rgb_correction(wb, late, correction);
   const dt_aligned_pixel_t cube_coeffs = { cbrtf(clips[0] * correction[0]),
