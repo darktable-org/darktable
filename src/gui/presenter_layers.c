@@ -29,12 +29,18 @@
 #include "common/darktable.h"
 #include "gui/gtk.h"
 
+#define POPOVER_KEY "dt-presenter-popover"
+
 typedef struct _window_t
 {
   dt_presenter_backend_t backend;
   dt_presenter_window_t *window;
   dt_presenter_transport_t *transport;
   GList *widgets;
+  // the layers cover GTK's popovers: replay them, and draw again when one
+  // changes. the popovers watched for that, as weak pointers
+  gboolean replay_popovers;
+  GPtrArray *popovers;
 } _window_t;
 
 // what an image layer was composed from, to know when to compose again
@@ -440,49 +446,173 @@ static void _restore(_widget_t *l,
   g_slist_free_full(saved, (GDestroyNotify)cairo_surface_destroy);
 }
 
-// GTK3 draws the widgets that GtkOverlay stacks above a presenting
-// widget into its own surface, which the layers cover: draw them into the
-// foreground too. the real ones stay below and keep getting the input,
-// since the layers take none. subtrees that present are left out, they
-// are the layers' own content. with saved, what each covers is saved first
-static void _replay_overlays(_widget_t *l,
-                             GSList **saved)
+typedef struct _gather_t
 {
-  GtkWidget *child = l->widget;
+  // the container's child on the way to the presenting widget
+  GtkWidget *child;
+  gboolean popovers, above;
+  GPtrArray *widgets;
+} _gather_t;
+
+static void _gather(GtkWidget *widget,
+                    gpointer data)
+{
+  _gather_t *g = data;
+  if(widget == g->child)
+    g->above = TRUE;
+  else if(g->popovers ? GTK_IS_POPOVER(widget) : g->above)
+    g_ptr_array_add(g->widgets, widget);
+}
+
+// what GTK3 draws above widget, bottom to top: the children that each
+// GtkOverlay on the way up stacks above it, and with popovers, the
+// toplevel's popovers, which GtkWindow draws above its content and lists
+// bottom to top. gtk_container_forall() gives a container's children in
+// the order it draws them, internal ones such as popovers included
+static void _above(GtkWidget *widget,
+                   const gboolean popovers,
+                   GPtrArray *widgets)
+{
+  GtkWidget *child = widget;
   for(GtkWidget *parent = gtk_widget_get_parent(child);
       parent;
       child = parent, parent = gtk_widget_get_parent(parent))
   {
-    if(!GTK_IS_OVERLAY(parent)) continue;
+    const gboolean toplevel = popovers && GTK_IS_WINDOW(parent);
+    if(!toplevel && !GTK_IS_OVERLAY(parent)) continue;
 
-    GList *children = gtk_container_get_children(GTK_CONTAINER(parent));
-    gboolean above = FALSE;
-    for(GList *c = children; c; c = g_list_next(c))
-    {
-      GtkWidget *overlay = c->data;
-      if(overlay == child)
-      {
-        above = TRUE;
-        continue;
-      }
-      int x, y;
-      if(!above || !gtk_widget_is_drawable(overlay)
-         || !gtk_widget_translate_coordinates(overlay, l->widget, 0, 0, &x, &y))
-        continue;
-
-      if(saved)
-      {
-        cairo_surface_t *patch = _save(l, x, y, gtk_widget_get_allocated_width(overlay),
-                                       gtk_widget_get_allocated_height(overlay));
-        if(patch) *saved = g_slist_prepend(*saved, patch);
-      }
-      cairo_save(l->cr);
-      cairo_translate(l->cr, x, y);
-      gtk_widget_draw(overlay, l->cr);
-      cairo_restore(l->cr);
-    }
-    g_list_free(children);
+    _gather_t g = { .child = child, .popovers = toplevel, .widgets = widgets };
+    gtk_container_forall(GTK_CONTAINER(parent), _gather, &g);
   }
+}
+
+static void _redraw_widgets(_window_t *w)
+{
+  for(GList *l = w->widgets; l; l = g_list_next(l))
+    gtk_widget_queue_draw(((_widget_t *)l->data)->widget);
+}
+
+static void _popover_mapped(GtkWidget *popover,
+                            _window_t *w)
+{
+  _redraw_widgets(w);
+}
+
+static void _popover_allocated(GtkWidget *popover,
+                               GdkRectangle *allocation,
+                               _window_t *w)
+{
+  _redraw_widgets(w);
+}
+
+static void _popover_invalidated(GdkWindow *window,
+                                 cairo_region_t *region)
+{
+  _window_t *w = g_object_get_data(G_OBJECT(window), POPOVER_KEY);
+  if(w) _redraw_widgets(w);
+}
+
+// a popover drawn into the toplevel is not part of any presenting widget,
+// whose draws are what present the layers: draw them again when it is
+// shown, hidden, moved or animated, or its content changes
+static void _watch_popover(_window_t *w,
+                           GtkWidget *popover)
+{
+  if(g_object_get_data(G_OBJECT(popover), POPOVER_KEY) != w)
+  {
+    g_object_set_data(G_OBJECT(popover), POPOVER_KEY, w);
+    g_signal_connect(popover, "map", G_CALLBACK(_popover_mapped), w);
+    g_signal_connect(popover, "unmap", G_CALLBACK(_popover_mapped), w);
+    g_signal_connect(popover, "size-allocate", G_CALLBACK(_popover_allocated), w);
+    GtkWidget **slot = g_new(GtkWidget *, 1);
+    *slot = popover;
+    g_object_add_weak_pointer(G_OBJECT(popover), (gpointer *)slot);
+    g_ptr_array_add(w->popovers, slot);
+  }
+  // its window exists while it is realized, and may be another one later
+  GdkWindow *window = gtk_widget_get_window(popover);
+  if(window && g_object_get_data(G_OBJECT(window), POPOVER_KEY) != w)
+  {
+    g_object_set_data(G_OBJECT(window), POPOVER_KEY, w);
+    gdk_window_set_invalidate_handler(window, _popover_invalidated);
+  }
+}
+
+static void _unwatch_popovers(_window_t *w)
+{
+  for(guint k = 0; k < w->popovers->len; k++)
+  {
+    GtkWidget **slot = g_ptr_array_index(w->popovers, k);
+    if(*slot)
+    {
+      g_signal_handlers_disconnect_by_data(*slot, w);
+      g_object_set_data(G_OBJECT(*slot), POPOVER_KEY, NULL);
+      GdkWindow *window = gtk_widget_get_window(*slot);
+      if(window && g_object_get_data(G_OBJECT(window), POPOVER_KEY) == w)
+      {
+        gdk_window_set_invalidate_handler(window, NULL);
+        g_object_set_data(G_OBJECT(window), POPOVER_KEY, NULL);
+      }
+      g_object_remove_weak_pointer(G_OBJECT(*slot), (gpointer *)slot);
+    }
+    g_free(slot);
+  }
+  g_ptr_array_set_size(w->popovers, 0);
+}
+
+// where GTK draws widget, in the presenting widget's coordinates. a
+// popover is allocated in a window of its own, a child of the toplevel's
+// (a subsurface on Wayland), at the position GtkWindow gives it
+static gboolean _origin(const _widget_t *l,
+                        GtkWidget *widget,
+                        int *x,
+                        int *y)
+{
+  if(!GTK_IS_POPOVER(widget))
+    return gtk_widget_translate_coordinates(widget, l->widget, 0, 0, x, y);
+
+  GdkWindow *window = gtk_widget_get_parent_window(widget);
+  if(!window) return FALSE;
+  int wx, wy;
+  gdk_window_get_position(window, &wx, &wy);
+  GtkAllocation a;
+  gtk_widget_get_allocation(widget, &a);
+  return gtk_widget_translate_coordinates(l->window->window->toplevel, l->widget,
+                                          wx + a.x, wy + a.y, x, y);
+}
+
+// GTK3 draws what it stacks above a presenting widget into its own
+// surface, which the layers cover: draw it into the foreground too. the
+// real widgets stay below and keep getting the input, since the layers
+// take none. with saved, what each replay covers is saved first
+static void _replay_above(_widget_t *l,
+                          GSList **saved)
+{
+  GPtrArray *above = g_ptr_array_new();
+  _above(l->widget, l->window->replay_popovers, above);
+  for(guint k = 0; k < above->len; k++)
+  {
+    GtkWidget *widget = g_ptr_array_index(above, k);
+    if(GTK_IS_POPOVER(widget)) _watch_popover(l->window, widget);
+
+    int x, y;
+    const int width = gtk_widget_get_allocated_width(widget);
+    const int height = gtk_widget_get_allocated_height(widget);
+    if(!gtk_widget_is_drawable(widget) || !_origin(l, widget, &x, &y)
+       || x >= l->width || y >= l->height || x + width <= 0 || y + height <= 0)
+      continue;
+
+    if(saved)
+    {
+      cairo_surface_t *patch = _save(l, x, y, width, height);
+      if(patch) *saved = g_slist_prepend(*saved, patch);
+    }
+    cairo_save(l->cr);
+    cairo_translate(l->cr, x, y);
+    gtk_widget_draw(widget, l->cr);
+    cairo_restore(l->cr);
+  }
+  g_ptr_array_free(above, TRUE);
 }
 
 static void _present(_widget_t *l)
@@ -512,7 +642,7 @@ static void _present(_widget_t *l)
   // above it is not part of the presentation a later draw shows again
   GSList *saved = NULL;
   const gboolean kept = l->foreground == l->kept;
-  _replay_overlays(l, kept ? &saved : NULL);
+  _replay_above(l, kept ? &saved : NULL);
   cairo_surface_flush(l->foreground);
 
   dt_presenter_layers_t layers = { .image = changed ? l->image : NULL,
@@ -615,6 +745,8 @@ static void _release(dt_presenter_backend_t *self,
 static void _free(dt_presenter_backend_t *self)
 {
   _window_t *w = (_window_t *)self;
+  _unwatch_popovers(w);
+  g_ptr_array_free(w->popovers, TRUE);
   w->transport->free(w->transport);
   g_list_free(w->widgets);
   g_free(w);
@@ -634,6 +766,8 @@ dt_presenter_backend_t *dt_presenter_layered_new(dt_presenter_window_t *window)
   _window_t *w = g_malloc0(sizeof(_window_t));
   w->window = window;
   w->transport = transport;
+  w->replay_popovers = !transport->popovers_above;
+  w->popovers = g_ptr_array_new();
   w->backend = (dt_presenter_backend_t){ .begin = _begin,
                                          .image = _image,
                                          .keep = _keep,
