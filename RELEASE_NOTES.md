@@ -859,6 +859,11 @@ changes (where available).
   Edits using anisotropy may now look slightly different when exported
   without OpenCL.
 
+- Fixed workspace discovery truncating names at the first '.' in the
+  database filename (for example library-client.v2.db was shown as
+  "client"), which could open or delete the wrong database. Workspace
+  names that contain path-unsafe characters are now rejected on create.
+
 - Fixed the non-local means modes of denoise (profiled) and astrophoto
   denoise giving a different result with OpenCL than on the CPU: the
   OpenCL path gave the horizontal neighbors twice their weight. Edits
