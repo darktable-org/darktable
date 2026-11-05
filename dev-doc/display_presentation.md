@@ -201,7 +201,14 @@ GTK-side drawing (navigation, the filmstrip thumbnail of the edited image,
 the correction cursor, focus peaking) takes a reference on the frame and
 draws `dt_frame_device_surface()`, its RGB24 rendition in the window's device
 encoding. On a cairo window that is the frame's own pixels: the GUI thread
-does what master did with its 8-bit backbuf.
+does what master did with its 8-bit backbuf. Elsewhere the worker makes,
+when it publishes a frame, the device renditions GTK usually asks for: the
+preview's, for navigation and the filmstrip, whether they are shown or not,
+and, while focus peaking is on, those of the full and second window pipes.
+A draw still converts where the worker did not: snapshot and duplicate
+frames under focus peaking, frames published before focus peaking was
+turned on, and frames whose window's device encoding changed while their
+pipe ran.
 
 ## Presenter API
 

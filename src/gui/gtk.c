@@ -364,7 +364,8 @@ static void _focuspeaking_switch_button_callback(GtkWidget *button,
 
   if(state_memory == state_new) return; // nothing to change, bypass
 
-  darktable.gui->show_focus_peaking = state_new;
+  // the pipe workers read it when they publish a frame
+  g_atomic_int_set(&darktable.gui->show_focus_peaking, state_new);
 
   gtk_widget_queue_draw(button);
 
