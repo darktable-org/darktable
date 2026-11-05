@@ -1553,6 +1553,114 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
   write_imagef(out, (int2)(x, y), pixel);
 }
 
+/* kernel for input profile conversion directly to working RGB */
+kernel void
+colorin_rgb (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                 global float *cmat, global float *lmat,
+                 read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
+                 const int blue_mapping, global const float (*const a)[3], global const float *corr,
+                 const float scale, const int hue_div, const int sat_div, const int val_div, global const float *dev_hsm, const int encoding, const int use_hsm, const int hdr_transfer,
+                 const int clipping, constant dt_colorspaces_iccprofile_info_cl_t *work,
+                 read_only image2d_t work_lut, const int lab_input)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
+  const float4 input = readpixel(in, x, y);
+  float4 pixel = corval * input;
+  const float alpha = input.w;
+
+  if(lab_input)
+  {
+    pixel = matrix_product(Lab_to_XYZ(input), work->matrix_out);
+    if(work->nonlinearlut || work->hdr_transfer)
+      pixel = apply_trc_out(pixel, work, work_lut);
+    pixel.w = alpha;
+    write_imagef(out, (int2)(x, y), pixel);
+    return;
+  }
+
+  float cam[3];
+  if(hdr_transfer)
+  {
+    cam[0] = pixel.x;
+    cam[1] = pixel.y;
+    cam[2] = pixel.z;
+    dt_hdr_decode(cam, hdr_transfer);
+  }
+  else
+  {
+    cam[0] = lerp_lookup_unbounded0(lutr, pixel.x, a[0]);
+    cam[1] = lerp_lookup_unbounded0(lutg, pixel.y, a[1]);
+    cam[2] = lerp_lookup_unbounded0(lutb, pixel.z, a[2]);
+  }
+
+  if(blue_mapping)
+  {
+    const float YY = cam[0] + cam[1] + cam[2];
+    if(YY > 0.0f)
+    {
+      // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
+      const float zz = cam[2] / YY;
+      // lower amount and higher bound_z make the effect smaller.
+      // the effect is weakened the darker input values are, saturating at bound_Y
+      const float bound_z = 0.5f, bound_Y = 0.5f;
+      const float amount = 0.11f;
+      if(zz > bound_z)
+      {
+        const float t = (zz - bound_z) / (1.0f - bound_z) * fmin(1.0f, YY / bound_Y);
+        cam[1] += t * amount;
+        cam[2] -= t * amount;
+      }
+    }
+  }
+
+  // the first matrix maps directly to working RGB, or to the clipping gamut
+  float4 linear = (float4)(0.0f);
+  for(int j = 0; j < 3; j++)
+    for(int i = 0; i < 3; i++) linear[j] += cmat[3*j+i] * cam[i];
+  if(clipping)
+  {
+    float4 clipped = clamp(linear, 0.0f, 1.0f);
+    linear = (float4)(0.0f);
+    for(int j = 0; j < 3; j++)
+      for(int i = 0; i < 3; i++) linear[j] += lmat[3*j+i] * clipped[i];
+  }
+  pixel = linear;
+  if(use_hsm)
+  {
+    float4 prophoto_rgb = XYZ_to_prophotorgb(matrix_product(pixel, work->matrix_in)) / (float4)scale;
+    float4 hsv = RGB_2_HSV(prophoto_rgb);
+    // encode value for table lookup if needed
+    float v_encoded = hsv.z;
+    if(encoding == 1) // sRGB
+      v_encoded = _linear_to_srgb(clipf(v_encoded));
+
+    // use the encoded value for table lookup
+    float4 hsv_for_lookup = hsv;
+    hsv_for_lookup.z = v_encoded;
+    float4 correction = _lookup_hsm(hsv_for_lookup, hue_div, sat_div, val_div, dev_hsm);
+
+    hsv.x += correction.x / 360.0f;
+    hsv.x -= floor(hsv.x); // stay within the 360° hue circle
+    hsv.y = clipf(hsv.y * correction.y);
+
+    float v_corrected = v_encoded * correction.z;
+    if(encoding == 1)  // sRGB
+      v_corrected = _srgb_to_linear(v_corrected);
+    hsv.z = clipf(v_corrected);
+    prophoto_rgb = HSV_2_RGB(hsv) * (float4)scale;
+    pixel = matrix_product(prophotorgb_to_XYZ(prophoto_rgb), work->matrix_out);
+  }
+  if(work->nonlinearlut || work->hdr_transfer)
+    pixel = apply_trc_out(pixel, work, work_lut);
+  pixel.w = alpha;
+  write_imagef(out, (int2)(x, y), pixel);
+}
+
 /* kernel for the tonecurve plugin. */
 kernel void
 tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
@@ -4362,3 +4470,8 @@ histogram_collect(read_only image2d_t in,
     if(count) atomic_add(&bins[4 * (i % bins_count) + i / bins_count], count);
   }
 }
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
