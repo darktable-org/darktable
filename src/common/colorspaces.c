@@ -19,6 +19,7 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/colorspaces.h"
 #include "common/hdr-transfer.h"
+#include "common/iop_profile.h"
 #include "common/colormatrices.c"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -1284,7 +1285,8 @@ static void _update_display_transforms(dt_colorspaces_t *self)
   self->transform_adobe_rgb_to_display = NULL;
   self->display_hdr_transfer = DT_HDR_NONE;
 
-  const dt_display_output_t *gtk = self->backend_output[0] ? &self->gtk_output[0] : NULL;
+  const dt_color_encoding_t *gtk =
+    self->outputs[0].platform_owned ? &self->outputs[0].device : NULL;
   const dt_iop_color_intent_t intent = gtk ? gtk->intent : self->display_intent;
   const dt_colorspaces_color_profile_t *display_dt_profile =
     _get_profile(self,
@@ -1350,18 +1352,6 @@ static void _update_display2_transforms(dt_colorspaces_t *self)
                                   self->display2_intent);
 }
 
-// update cached transforms for color management of thumbnails
-// make sure that darktable.color_profiles->xprofile_lock is held when calling this!
-void dt_colorspaces_update_display_transforms()
-{
-  _update_display_transforms(darktable.color_profiles);
-}
-
-void dt_colorspaces_update_display2_transforms()
-{
-  _update_display2_transforms(darktable.color_profiles);
-}
-
 // the profile colorout builds a presented pipe's transform with
 static cmsHPROFILE _output_profile(dt_colorspaces_t *self,
                                    const dt_colorspaces_color_profile_type_t type,
@@ -1374,69 +1364,126 @@ static cmsHPROFILE _output_profile(dt_colorspaces_t *self,
   return p ? p->profile : NULL;
 }
 
+static inline int _window_index(const dt_colorspaces_color_profile_type_t window)
+{
+  return window == DT_COLORSPACE_DISPLAY2;
+}
+
+static void _update_window_transforms(dt_colorspaces_t *self,
+                                      const int w)
+{
+  if(w) _update_display2_transforms(self);
+  else _update_display_transforms(self);
+}
+
+void dt_colorspaces_describe_selection(dt_colorspaces_t *self,
+                                       const dt_colorspaces_color_profile_type_t window,
+                                       dt_display_output_t *output)
+{
+  const gboolean second = _window_index(window);
+  memset(output, 0, sizeof(*output));
+  dt_color_encoding_t *const image = &output->image;
+  image->type = second ? self->display2_type : self->display_type;
+  g_strlcpy(image->filename,
+            second ? self->display2_filename : self->display_filename,
+            sizeof(image->filename));
+  image->profile = _output_profile(self, image->type, image->filename);
+  image->intent = second ? self->display2_intent : self->display_intent;
+  image->headroom = dt_ioppr_profile_headroom(image->type);
+  // without color management in the platform, values reach the screen as
+  // the device values the display profile describes
+  output->device = *image;
+}
+
+// replace a window's output, keeping its serial running. TRUE if it changed.
+// make sure that xprofile_lock is held when calling this!
+static gboolean _publish(dt_colorspaces_t *self,
+                         const int w,
+                         const dt_display_output_t *output)
+{
+  dt_display_output_t *const current = &self->outputs[w];
+  if(dt_display_output_equal(current, output)) return FALSE;
+  const uint32_t serial = current->serial + 1;
+  *current = *output;
+  current->serial = serial;
+  return TRUE;
+}
+
+// make sure that xprofile_lock is held when calling this!
+static void _selection_changed(dt_colorspaces_t *self,
+                               const int w)
+{
+  if(!self->outputs[w].platform_owned)
+  {
+    dt_display_output_t output;
+    dt_colorspaces_describe_selection(self, w ? DT_COLORSPACE_DISPLAY2 : DT_COLORSPACE_DISPLAY,
+                                      &output);
+    _publish(self, w, &output);
+  }
+  _update_window_transforms(self, w);
+}
+
+void dt_colorspaces_display_selection_changed(const dt_colorspaces_color_profile_type_t window)
+{
+  dt_colorspaces_t *self = darktable.color_profiles;
+  pthread_rwlock_wrlock(&self->xprofile_lock);
+  _selection_changed(self, _window_index(window));
+  pthread_rwlock_unlock(&self->xprofile_lock);
+}
+
 void dt_colorspaces_get_display_output(const dt_colorspaces_color_profile_type_t window,
                                        dt_display_output_t *output)
 {
   dt_colorspaces_t *self = darktable.color_profiles;
-  const gboolean second = window == DT_COLORSPACE_DISPLAY2;
-
   pthread_rwlock_rdlock(&self->xprofile_lock);
-  if(self->backend_output[second])
-  {
-    *output = self->window_output[second];
-    pthread_rwlock_unlock(&self->xprofile_lock);
-    return;
-  }
-  output->type = second ? self->display2_type : self->display_type;
-  g_strlcpy(output->filename,
-            second ? self->display2_filename : self->display_filename,
-            sizeof(output->filename));
-  output->profile = _output_profile(self, output->type, output->filename);
-  output->intent = second ? self->display2_intent : self->display_intent;
-  output->headroom = 1.0f;
-  output->managed = FALSE;
+  *output = self->outputs[_window_index(window)];
   pthread_rwlock_unlock(&self->xprofile_lock);
 }
 
 gboolean dt_colorspaces_get_gtk_output(const dt_colorspaces_color_profile_type_t window,
-                                       dt_display_output_t *gtk)
+                                       dt_color_encoding_t *gtk)
 {
   dt_colorspaces_t *self = darktable.color_profiles;
-  const gboolean second = window == DT_COLORSPACE_DISPLAY2;
-
   pthread_rwlock_rdlock(&self->xprofile_lock);
-  const gboolean declared = self->backend_output[second];
-  if(declared) *gtk = self->gtk_output[second];
+  const dt_display_output_t *output = &self->outputs[_window_index(window)];
+  const gboolean owned = output->platform_owned;
+  if(owned) *gtk = output->device;
   pthread_rwlock_unlock(&self->xprofile_lock);
-  return declared;
+  return owned;
 }
 
-void dt_colorspaces_set_backend_output(const dt_colorspaces_color_profile_type_t window,
-                                       const dt_display_output_t *output,
-                                       const dt_display_output_t *gtk)
+gboolean dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_type_t window,
+                                          const dt_display_output_t *output)
 {
   dt_colorspaces_t *self = darktable.color_profiles;
-  const gboolean second = window == DT_COLORSPACE_DISPLAY2;
+  const int w = _window_index(window);
 
   pthread_rwlock_wrlock(&self->xprofile_lock);
-  self->backend_output[second] = output != NULL;
+  dt_display_output_t resolved;
   if(output)
   {
-    self->window_output[second] = *output;
-    self->window_output[second].profile = _output_profile(self, output->type, output->filename);
-    self->gtk_output[second] = *gtk;
-    self->gtk_output[second].profile = _output_profile(self, gtk->type, gtk->filename);
+    resolved = *output;
+    resolved.platform_owned = TRUE;
+    resolved.image.profile = _output_profile(self, output->image.type, output->image.filename);
+    resolved.device.profile = _output_profile(self, output->device.type,
+                                              output->device.filename);
   }
-  // only the main window's transforms have users: the thumbnails
-  if(!second) _update_display_transforms(self);
+  else
+    dt_colorspaces_describe_selection(self, window, &resolved);
+  const gboolean changed = _publish(self, w, &resolved);
+  if(changed) _update_window_transforms(self, w);
   pthread_rwlock_unlock(&self->xprofile_lock);
 
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
-  // to GTK-side drawing this is a change of display profile, as if the
-  // user had picked one: converted thumbnails are redone
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                          second ? DT_COLORSPACES_PROFILE_TYPE_DISPLAY2
-                                 : DT_COLORSPACES_PROFILE_TYPE_DISPLAY);
+  if(changed)
+  {
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+    // to GTK-side drawing this is a change of display profile, as if the
+    // user had picked one: converted thumbnails are redone
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+                            w ? DT_COLORSPACES_PROFILE_TYPE_DISPLAY2
+                              : DT_COLORSPACES_PROFILE_TYPE_DISPLAY);
+  }
+  return changed;
 }
 
 typedef struct _system_profile_t
@@ -1519,8 +1566,7 @@ static gboolean _update_display_profile(guchar *tmp_data,
         if(name)
           dt_colorspaces_get_profile_name(profile, "en", "US", name, name_size);
 
-        // update cached transforms for color management of thumbnails
-        dt_colorspaces_update_display_transforms();
+        _selection_changed(darktable.color_profiles, 0);
         match = TRUE;
         break;
       }
@@ -1550,8 +1596,7 @@ static gboolean _update_display2_profile(guchar *tmp_data,
         darktable.color_profiles->xprofile_size2 = size;
         if(name) dt_colorspaces_get_profile_name(profile, "en", "US", name, name_size);
 
-        // update cached transforms for color management of thumbnails
-        dt_colorspaces_update_display2_transforms();
+        _selection_changed(darktable.color_profiles, 1);
         match = TRUE;
         break;
       }
@@ -1937,6 +1982,15 @@ dt_colorspaces_t *dt_colorspaces_init()
 
 
   if((unsigned int)res->mode > DT_PROFILE_GAMUTCHECK) res->mode = DT_PROFILE_NORMAL;
+
+  // develop and its pipes exist before the GUI, and headless runs never
+  // realize a window: every window has an output from here on
+  for(int w = 0; w < 2; w++)
+  {
+    dt_colorspaces_describe_selection(res, w ? DT_COLORSPACE_DISPLAY2 : DT_COLORSPACE_DISPLAY,
+                                      &res->outputs[w]);
+    res->outputs[w].serial = 1;
+  }
 
   _update_display_transforms(res);
   _update_display2_transforms(res);

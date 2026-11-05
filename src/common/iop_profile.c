@@ -858,7 +858,7 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
   pipe->output_profile_info = profile_info;
   // a presented output may report headroom beyond what its transfer
   // function implies, e.g. linear light on an HDR screen
-  pipe->output_headroom = fmaxf(pipe->output.headroom,
+  pipe->output_headroom = fmaxf(pipe->output.image.headroom,
                                 dt_ioppr_profile_headroom(profile_info->type));
 
   return profile_info;
@@ -903,7 +903,7 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_output_profile_info(const stru
 
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_gui_profile_info(struct dt_develop_t *dev)
 {
-  dt_display_output_t gtk;
+  dt_color_encoding_t gtk;
   if(dt_colorspaces_get_gtk_output(DT_COLORSPACE_DISPLAY, &gtk))
     return dt_ioppr_add_profile_info_for_content(dev, gtk.type, gtk.filename, gtk.profile,
                                                  gtk.intent);

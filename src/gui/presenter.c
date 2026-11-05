@@ -156,20 +156,15 @@ static inline void _store(uint8_t *const out,
   out[3] = 0xff;
 }
 
-static gboolean _same_profile(const dt_display_output_t *a,
-                              const dt_display_output_t *b)
-{
-  return a->type == b->type && !strcmp(a->filename, b->filename)
-    && (!dt_colorspaces_replaced_in_session(a->type) || a->profile == b->profile);
-}
-
-// a window that declared its output shows frames in its profile only. the
-// headroom does not count: a frame rendered before the headroom changed
-// keeps its tone mapping until it is rendered again
+// a window whose output the platform owns shows frames in its profile
+// only. the headroom does not count: a frame rendered before the headroom
+// changed keeps its tone mapping until it is rendered again
 static gboolean _shown_in(const dt_display_output_t *output,
-                          const dt_display_output_t *encoding)
+                          const dt_display_output_t *label)
 {
-  return _same_profile(output, encoding) && output->managed == encoding->managed;
+  return !output->platform_owned
+    || (dt_color_encoding_same_content(&output->image, &label->image)
+        && output->managed == label->managed);
 }
 
 // float RGBA in encoding as cairo's RGB24, converted to the profile gtk
@@ -177,8 +172,8 @@ static gboolean _shown_in(const dt_display_output_t *output,
 static cairo_surface_t *_surface(const float *pixels,
                                  const int width,
                                  const int height,
-                                 const dt_display_output_t *encoding,
-                                 const dt_display_output_t *gtk)
+                                 const dt_color_encoding_t *encoding,
+                                 const dt_color_encoding_t *gtk)
 {
   cairo_surface_t *surface =
     cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
@@ -188,7 +183,7 @@ static cairo_surface_t *_surface(const float *pixels,
   const size_t stride = cairo_image_surface_get_stride(surface);
 
   const dt_iop_order_iccprofile_info_t *from = NULL, *to = NULL;
-  if(gtk && !_same_profile(gtk, encoding))
+  if(gtk && !dt_color_encoding_same_content(gtk, encoding))
   {
     from = dt_ioppr_add_profile_info_for_content(darktable.develop, encoding->type,
                                                  encoding->filename, encoding->profile,
@@ -259,8 +254,9 @@ typedef struct _gtk_surface_t
 {
   uint32_t id;
   dt_display_output_t encoding;
-  // the declared profile of GTK's surface, type DT_COLORSPACE_NONE if none
-  dt_display_output_t gtk;
+  // the profile of GTK's surface if the platform owns the output, type
+  // DT_COLORSPACE_NONE if not
+  dt_color_encoding_t gtk;
   cairo_surface_t *surface;
 } _gtk_surface_t;
 
@@ -273,16 +269,16 @@ cairo_surface_t *dt_presenter_gtk_surface(const float *pixels,
                                           const dt_display_output_t *encoding,
                                           const uint32_t id)
 {
-  dt_display_output_t gtk;
+  dt_color_encoding_t gtk;
   memset(&gtk, 0, sizeof(gtk));
   gtk.type = DT_COLORSPACE_NONE;
-  const gboolean declared = dt_colorspaces_get_gtk_output(DT_COLORSPACE_DISPLAY, &gtk);
+  const gboolean owned = dt_colorspaces_get_gtk_output(DT_COLORSPACE_DISPLAY, &gtk);
 
   int k = 0;
   while(k < GTK_SURFACES
         && !(_gtk_surfaces[k].surface && _gtk_surfaces[k].id == id
              && dt_display_output_equal(&_gtk_surfaces[k].encoding, encoding)
-             && dt_display_output_equal(&_gtk_surfaces[k].gtk, &gtk)))
+             && dt_color_encoding_equal(&_gtk_surfaces[k].gtk, &gtk)))
     k++;
 
   _gtk_surface_t entry;
@@ -291,7 +287,7 @@ cairo_surface_t *dt_presenter_gtk_surface(const float *pixels,
   else
   {
     cairo_surface_t *surface =
-      _surface(pixels, width, height, encoding, declared ? &gtk : NULL);
+      _surface(pixels, width, height, &encoding->image, owned ? &gtk : NULL);
     // a failed conversion is not kept: the next draw tries again
     if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) return surface;
 
@@ -341,7 +337,7 @@ static dt_presenter_frame_t *_frame_get(_widget_t *w,
     f->surface = NULL;
   }
   if(!w->layered && !f->surface)
-    f->surface = _surface(pixels, width, height, encoding, NULL);
+    f->surface = _surface(pixels, width, height, &encoding->image, NULL);
   return f;
 }
 
@@ -369,14 +365,14 @@ gboolean dt_presenter_image(cairo_t *cr,
   _widget_t *w = cairo_get_user_data(cr, &_cr_key);
   if(!w || !pixels || width <= 0 || height <= 0) return FALSE;
 
-  // a declared output holds with a native backend and with cairo, and the
-  // declaration renders the window's pipes again (colorout's
-  // DT_SIGNAL_CONTROL_PROFILE_CHANGED handler). without one, cairo shows
+  // an output the platform owns holds with a native backend and with cairo,
+  // and taking it renders the window's pipes again (colorout's
+  // DT_SIGNAL_CONTROL_PROFILE_CHANGED handler). otherwise, cairo shows
   // display RGB in whatever display profile it was rendered for, as it
   // always did
   dt_display_output_t output;
-  if(dt_presenter_declared_output(w->widget, &output) && !_shown_in(&output, encoding))
-    return FALSE;
+  dt_presenter_window_output(w->widget, &output);
+  if(!_shown_in(&output, encoding)) return FALSE;
 
   dt_presenter_image_t image = { .frame = _frame_get(w, pixels, width, height,
                                                      encoding, id),
@@ -419,14 +415,14 @@ void dt_presenter_keep(cairo_t *cr)
   if(!w) return;
 
   dt_display_output_t output;
-  const gboolean declared = dt_presenter_declared_output(w->widget, &output);
+  dt_presenter_window_output(w->widget, &output);
 
   for(guint k = 0; k < w->kept->len; k++)
   {
     const dt_presenter_image_t image = g_array_index(w->kept, dt_presenter_image_t, k);
 
     // in an output no longer shown
-    if(declared && !_shown_in(&output, &image.frame->encoding)) continue;
+    if(!_shown_in(&output, &image.frame->encoding)) continue;
 
     // a window never changes its backend: the draw that kept a frame made
     // what this one needs
@@ -450,10 +446,11 @@ void dt_presenter_keep(cairo_t *cr)
 static void _display_control_update(gpointer instance,
                                     GtkWidget *control)
 {
-  dt_display_output_t gtk;
   const dt_colorspaces_color_profile_type_t window =
     GPOINTER_TO_INT(g_object_get_data(G_OBJECT(control), "dt-presenter-window"));
-  gtk_widget_set_sensitive(control, !dt_colorspaces_get_gtk_output(window, &gtk));
+  dt_display_output_t output;
+  dt_colorspaces_get_display_output(window, &output);
+  gtk_widget_set_sensitive(control, !output.platform_owned);
 }
 
 void dt_presenter_display_control(GtkWidget *control,

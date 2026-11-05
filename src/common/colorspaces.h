@@ -209,32 +209,52 @@ typedef struct dt_color_encoding_t
   float headroom;
 } dt_color_encoding_t;
 
-/* the encoding a presented pipe renders to: display-referred RGB in this
- * profile, 1.0 at reference white and up to headroom above it */
+/* the two encodings name the same profile content */
+static inline gboolean dt_color_encoding_same_content(const dt_color_encoding_t *a,
+                                                      const dt_color_encoding_t *b)
+{
+  return a->type == b->type
+    && (!dt_colorspaces_replaced_in_session(a->type) || a->profile == b->profile)
+    && !strcmp(a->filename, b->filename);
+}
+
+static inline gboolean dt_color_encoding_equal(const dt_color_encoding_t *a,
+                                               const dt_color_encoding_t *b)
+{
+  return dt_color_encoding_same_content(a, b)
+    && a->intent == b->intent
+    && a->headroom == b->headroom;
+}
+
+/* what a window wants. image is what its pipes render to: display-referred
+ * RGB, 1.0 at reference white and up to image.headroom above it. device is
+ * what untagged 8-bit values mean in the window, everything GTK draws
+ * there. both are resolved: profile names the registry's profile, NULL if
+ * there is none. as the label of a frame, image is what the pipe produced
+ * and the rest is the output the frame was made for */
 typedef struct dt_display_output_t
 {
-  dt_colorspaces_color_profile_type_t type;
-  char filename[DT_IOP_COLOR_ICC_LEN];
-  // the registry's profile of type and filename when the output was
-  // taken, NULL if there is none; as a label, what the values were made with
-  cmsHPROFILE profile;
-  dt_iop_color_intent_t intent;
-  float headroom;
+  dt_color_encoding_t image;
+  dt_color_encoding_t device;
+  // the platform owns the window's output: the display profile selection
+  // has no effect on it
+  gboolean platform_owned;
   // a color-managed presenter shows the values in the profile; otherwise
   // they reach the screen as the device values the display profile assumes.
   // a managed output is linear Rec.2020 today
   gboolean managed;
+  // changes whenever anything above changes; continues across owners
+  uint32_t serial;
 } dt_display_output_t;
 
+/* the same output, whatever the serial */
 static inline gboolean dt_display_output_equal(const dt_display_output_t *a,
                                                const dt_display_output_t *b)
 {
-  return a->type == b->type
-    && (!dt_colorspaces_replaced_in_session(a->type) || a->profile == b->profile)
-    && a->intent == b->intent
-    && a->headroom == b->headroom
-    && a->managed == b->managed
-    && !strcmp(a->filename, b->filename);
+  return dt_color_encoding_equal(&a->image, &b->image)
+    && dt_color_encoding_equal(&a->device, &b->device)
+    && a->platform_owned == b->platform_owned
+    && a->managed == b->managed;
 }
 
 /* the 8-bit value a display-encoded float shows as on an 8-bit surface.
@@ -266,7 +286,7 @@ void dt_display_to_8bit_pixels(const float *const __restrict__ in,
 static inline void dt_display_output_diagnostic(const dt_display_output_t *output,
                                                 float *const rgb)
 {
-  if(!output->managed || output->type != DT_COLORSPACE_LIN_REC2020) return;
+  if(!output->managed || output->image.type != DT_COLORSPACE_LIN_REC2020) return;
 
   float lin[3];
   for(int c = 0; c < 3; c++)
@@ -319,12 +339,9 @@ typedef struct dt_colorspaces_t
   cmsHTRANSFORM transform_srgb_to_display2, transform_adobe_rgb_to_display2;
   int display_hdr_transfer, display2_hdr_transfer;
 
-  // set by the presenter for a window whose colors the platform manages:
-  // what the window's pipes render to, and the profile GTK's own surface
-  // in that window is shown in. index 0 is the main window
-  gboolean backend_output[2];
-  dt_display_output_t window_output[2];
-  dt_display_output_t gtk_output[2];
+  // what each window wants, index 0 the main window: described from the
+  // selection unless the platform owns it. written under xprofile_lock
+  dt_display_output_t outputs[2];
 
 } dt_colorspaces_t;
 
@@ -524,31 +541,40 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
   (const dt_colorspaces_cicp_t *cicp,
    const char *filename);
 
-/** the output the darkroom pipes of a window render to: pass
- * DT_COLORSPACE_DISPLAY for the main window, DT_COLORSPACE_DISPLAY2 for
- * the second one */
+/** what a window wants, defined from dt_colorspaces_init() on, whether the
+ * window exists or not: pass DT_COLORSPACE_DISPLAY for the main window,
+ * DT_COLORSPACE_DISPLAY2 for the second one */
 void dt_colorspaces_get_display_output(const dt_colorspaces_color_profile_type_t window,
                                        dt_display_output_t *output);
 
-/** the profile GTK's own surface in a window is shown in, if the presenter
- * declared one; otherwise FALSE, and that is the display profile */
+/** what the display profile selection of a window describes: its profile
+ * and intent as image and device encoding, with the headroom of the
+ * profile's transfer function, serial 0. no side effects; hold
+ * xprofile_lock */
+void dt_colorspaces_describe_selection(dt_colorspaces_t *self,
+                                       const dt_colorspaces_color_profile_type_t window,
+                                       dt_display_output_t *output);
+
+/** every setter of a window's display selection (profile, intent, a new
+ * system display profile, the PQ peak) calls this. the window's output
+ * follows the selection unless the platform owns it, which keeps the
+ * selection for when it gives the output back */
+void dt_colorspaces_display_selection_changed(const dt_colorspaces_color_profile_type_t window);
+
+/** the profile GTK's own surface in a window is shown in, if the platform
+ * owns the window's output; otherwise FALSE, and that is the display
+ * profile */
 gboolean dt_colorspaces_get_gtk_output(const dt_colorspaces_color_profile_type_t window,
-                                       dt_display_output_t *gtk);
+                                       dt_color_encoding_t *gtk);
 
-/** the presenter takes over a window's output and declares what
- * GTK's own surface there is shown in; NULL gives both back to the
- * display profile selection */
-void dt_colorspaces_set_backend_output(const dt_colorspaces_color_profile_type_t window,
-                                       const dt_display_output_t *output,
-                                       const dt_display_output_t *gtk);
+/** for the presenter: the platform takes over a window's output, which
+ * colorspaces resolves; NULL gives it back to the display profile
+ * selection. TRUE if the output changed */
+gboolean dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_type_t window,
+                                          const dt_display_output_t *output);
 
-/** update the display transforms of srgb and adobergb to the display
- * profile.  make sure that darktable.color_profiles->xprofile_lock is
- * held when calling this! */
-void dt_colorspaces_update_display_transforms();
-/** same for display2 */
-void dt_colorspaces_update_display2_transforms();
-/** 8-bit RGBA to the screen's BGRA through one of the transforms above */
+/** 8-bit RGBA to the screen's BGRA through one of the display transforms
+ * in dt_colorspaces_t */
 void dt_colorspaces_transform_to_display(cmsHTRANSFORM xform,
                                          const int hdr,
                                          const uint8_t *const in,

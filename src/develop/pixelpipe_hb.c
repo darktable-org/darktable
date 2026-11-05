@@ -290,7 +290,8 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->cache_obsolete_order = INT_MAX;
   pipe->backbuf = NULL;
   memset(&pipe->backbuf_output, 0, sizeof(pipe->backbuf_output));
-  pipe->backbuf_output.type = DT_COLORSPACE_NONE;
+  pipe->backbuf_output.image.type = DT_COLORSPACE_NONE;
+  pipe->backbuf_output.device.type = DT_COLORSPACE_NONE;
   pipe->backbuf_scale = 0.0f;
   memset(pipe->backbuf_zoom_pos, 0, sizeof(dt_dev_zoom_pos_t));
   pipe->output_imgid = NO_IMGID;
@@ -322,7 +323,9 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->export_profile_info = NULL;
   pipe->output_headroom = 1.0f;
   memset(&pipe->output, 0, sizeof(pipe->output));
-  pipe->output.type = DT_COLORSPACE_NONE;
+  pipe->output.image.type = DT_COLORSPACE_NONE;
+  pipe->output.device.type = DT_COLORSPACE_NONE;
+  pipe->window = DT_COLORSPACE_NONE;
   memset(&pipe->colorout_encoding, 0, sizeof(pipe->colorout_encoding));
   pipe->colorout_encoding.type = DT_COLORSPACE_NONE;
   memset(&pipe->output_encoding, 0, sizeof(pipe->output_encoding));
@@ -1402,7 +1405,7 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
                                           pipe->output_encoding.profile,
                                           INTENT_RELATIVE_COLORIMETRIC);
   // the swatches are drawn by GTK
-  dt_display_output_t gtk;
+  dt_color_encoding_t gtk;
   const dt_iop_order_iccprofile_info_t *const gtk_profile =
     dt_colorspaces_get_gtk_output(DT_COLORSPACE_DISPLAY, &gtk)
     ? dt_ioppr_add_profile_info_for_content(dev, gtk.type, gtk.filename, gtk.profile,
@@ -3888,13 +3891,8 @@ restart:
       for(int i = 0; i < 6; i++) pipe->backbuf_zoom_pos[i] = pts[i] * pipe->iscale;
       // the values as the pipe made them, shown as the window it rendered
       // for shows them
-      dt_display_output_t *const label = &pipe->backbuf_output;
-      *label = pipe->output;
-      label->type = pipe->output_encoding.type;
-      g_strlcpy(label->filename, pipe->output_encoding.filename, sizeof(label->filename));
-      label->profile = pipe->output_encoding.profile;
-      label->intent = pipe->output_encoding.intent;
-      label->headroom = pipe->output_encoding.headroom;
+      pipe->backbuf_output = pipe->output;
+      pipe->backbuf_output.image = pipe->output_encoding;
       pipe->backbuf_id = dt_dev_new_frame_id();
       pipe->output_imgid = pipe->image.id;
     }

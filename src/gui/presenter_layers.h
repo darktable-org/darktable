@@ -98,12 +98,12 @@ struct dt_presenter_backend_t
 
 typedef struct dt_presenter_window_t dt_presenter_window_t;
 
-/** for backends, and for a setup that leaves the window on cairo: declare
- * the window's output and what GTK's own surface there is shown in, or
- * give both back with NULL; redraws the window */
+/** for backends, at setup or later, and for a window left on cairo in a
+ * platform that manages color: the platform owns the window's output, or
+ * gives it back to the display profile selection with NULL; redraws the
+ * window if it changed */
 void dt_presenter_window_set_output(dt_presenter_window_t *window,
-                                    const dt_display_output_t *output,
-                                    const dt_display_output_t *gtk);
+                                    const dt_display_output_t *output);
 /** for backends: draw the window's presenting widgets again */
 void dt_presenter_window_redraw(dt_presenter_window_t *window);
 /** for backends: present the layers of every widget drawn since the last
@@ -112,10 +112,11 @@ void dt_presenter_window_present(dt_presenter_window_t *window);
 
 #ifdef HAVE_WAYLAND
 /** the Wayland backend for toplevel, or NULL if the compositor cannot do
- * it; if the compositor manages color anyway, the window's output is then
- * declared sRGB */
+ * it. *manages_color says whether the compositor manages color, and so
+ * shows GTK's untagged surface as sRGB */
 dt_presenter_backend_t *dt_presenter_wayland_new(GtkWidget *toplevel,
-                                                 dt_presenter_window_t *window);
+                                                 dt_presenter_window_t *window,
+                                                 gboolean *manages_color);
 #endif
 
 /* for presenter.c */
@@ -126,9 +127,9 @@ typedef struct dt_presenter_layered_t dt_presenter_layered_t;
  * create, only layers that exist */
 dt_presenter_layered_t *dt_presenter_layered_get(GtkWidget *widget,
                                                  const gboolean create);
-/** the output the window of widget declared, or FALSE if it declared none */
-gboolean dt_presenter_declared_output(GtkWidget *widget,
-                                      dt_display_output_t *output);
+/** the output of the window of widget */
+void dt_presenter_window_output(GtkWidget *widget,
+                                dt_display_output_t *output);
 /** start a draw: returns the context of the foreground */
 cairo_t *dt_presenter_layered_begin(dt_presenter_layered_t *layered);
 /** an image takes the pixels it covers: clear them in the foreground */

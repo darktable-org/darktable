@@ -1037,6 +1037,9 @@ static void _profile_changed(GtkWidget *widget, dt_lib_export_t *d)
 static void _pq_peak_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   dt_conf_set_int(CONFIG_PREFIX "pq_peak_nits", (int)roundf(dt_bauhaus_slider_get(widget)));
+  // the peak is the headroom of a PQ display profile
+  dt_colorspaces_display_selection_changed(DT_COLORSPACE_DISPLAY);
+  dt_colorspaces_display_selection_changed(DT_COLORSPACE_DISPLAY2);
   // colorout reads the peak when it commits, and a darkroom on a PQ
   // display renders with it too
   if(dt_view_get_current() == DT_VIEW_DARKROOM)
