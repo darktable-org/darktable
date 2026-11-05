@@ -3356,7 +3356,18 @@ static void _add_remove_modules_at_widget(dt_action_t *action,
   // origin shifts by the height of every module toggled from the menu,
   // dragging the still-open popover with it
   gint ax = x, ay = y;
-  GtkWidget *anchor = gtk_widget_get_ancestor(parent, GTK_TYPE_SCROLLED_WINDOW);
+  GtkWidget *anchor = NULL;
+
+  if(dt_ui_panel_ancestor(darktable.gui->ui, DT_UI_PANEL_LEFT, parent))
+    anchor = darktable.gui->ui->panels[DT_UI_PANEL_LEFT];
+  else if(dt_ui_panel_ancestor(darktable.gui->ui, DT_UI_PANEL_RIGHT, parent))
+    anchor = darktable.gui->ui->panels[DT_UI_PANEL_RIGHT];
+  else if(dt_ui_panel_ancestor(darktable.gui->ui, DT_UI_PANEL_FLEXI, parent))
+    anchor = darktable.gui->ui->panels[DT_UI_PANEL_FLEXI];
+
+  if(!anchor)
+    anchor = gtk_widget_get_ancestor(parent, GTK_TYPE_SCROLLED_WINDOW);
+
   if(anchor && gtk_widget_translate_coordinates(parent, anchor, x, y, &ax, &ay))
     parent = anchor;
   else
