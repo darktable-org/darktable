@@ -100,8 +100,8 @@ typedef struct dt_presenter_window_t dt_presenter_window_t;
 
 /** for backends, at setup or later, and for a window left on cairo in a
  * platform that manages color: the platform owns the window's output, or
- * gives it back to the system display profile with NULL; redraws the
- * window if it changed */
+ * gives it back to the system display profile with NULL. the window
+ * redraws if it changed (dt_colorspaces_set_window_output()) */
 void dt_presenter_window_set_output(dt_presenter_window_t *window,
                                     const dt_display_output_t *output);
 /** for backends: draw the window's presenting widgets again */

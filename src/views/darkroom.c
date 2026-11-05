@@ -538,12 +538,27 @@ static void _darkroom_pickers_draw(dt_view_t *self,
   cairo_restore(cri);
 }
 
+// the pipe's last finished run took an earlier output of its window. what
+// a run took counts, published or not, so a failed run is not tried again
+// on every redraw. a job holds the pipe's mutex from taking the output to
+// the end of the run, which raises a redraw: a busy pipe is compared then
+static gboolean _pipe_outdated(dt_dev_pixelpipe_t *pipe)
+{
+  const uint32_t serial = dt_colorspaces_get_display_serial(pipe->window);
+  if(dt_pthread_mutex_trylock(&pipe->mutex)) return FALSE;
+  const gboolean outdated = pipe->status == DT_DEV_PIXELPIPE_VALID
+                            && pipe->output.serial != serial;
+  dt_pthread_mutex_unlock(&pipe->mutex);
+  return outdated;
+}
+
 static inline gboolean _full_request(dt_develop_t *dev)
 {
   return
         dev->full.pipe->status == DT_DEV_PIXELPIPE_DIRTY
      || dev->full.pipe->status == DT_DEV_PIXELPIPE_INVALID
-     || dev->full.pipe->input_timestamp < dev->preview_pipe->input_timestamp;
+     || dev->full.pipe->input_timestamp < dev->preview_pipe->input_timestamp
+     || _pipe_outdated(dev->full.pipe);
 }
 
 static inline gboolean _preview_request(dt_develop_t *dev)
@@ -551,7 +566,8 @@ static inline gboolean _preview_request(dt_develop_t *dev)
   return
         dev->preview_pipe->status == DT_DEV_PIXELPIPE_DIRTY
      || dev->preview_pipe->status == DT_DEV_PIXELPIPE_INVALID
-     || dev->full.pipe->input_timestamp > dev->preview_pipe->input_timestamp;
+     || dev->full.pipe->input_timestamp > dev->preview_pipe->input_timestamp
+     || _pipe_outdated(dev->preview_pipe);
 }
 
 static inline gboolean _preview2_request(dt_develop_t *dev)
@@ -559,7 +575,8 @@ static inline gboolean _preview2_request(dt_develop_t *dev)
   return
      (dev->preview2.pipe->status == DT_DEV_PIXELPIPE_DIRTY
        || dev->preview2.pipe->status == DT_DEV_PIXELPIPE_INVALID
-       || dev->full.pipe->input_timestamp > dev->preview2.pipe->input_timestamp)
+       || dev->full.pipe->input_timestamp > dev->preview2.pipe->input_timestamp
+       || _pipe_outdated(dev->preview2.pipe))
      && dev->gui_attached
      && dev->preview2.widget
      && GTK_IS_WIDGET(dev->preview2.widget);
@@ -5038,11 +5055,13 @@ static void _second_window_draw(GtkWidget *widget,
   // Request processing if needed
   if(pinned_dev && !pinned_dev->gui_leaving)
   {
-    // Process pinned image pipeline - process if no backbuf, pipe dirty, or zoom/pan changed
+    // Process pinned image pipeline - process if no backbuf, pipe dirty, zoom/pan
+    // or the window's output changed
     if(!port->pipe->backbuf
        || port->pipe->status == DT_DEV_PIXELPIPE_DIRTY
        || port->pipe->status == DT_DEV_PIXELPIPE_INVALID
-       || port->pipe->changed != DT_DEV_PIPE_UNCHANGED)
+       || port->pipe->changed != DT_DEV_PIPE_UNCHANGED
+       || _pipe_outdated(port->pipe))
     {
       dt_dev_process_preview2(pinned_dev);
     }

@@ -676,22 +676,6 @@ void gui_reset(dt_lib_module_t *self)
   _clear_snapshots(self);
 }
 
-static void _signal_profile_changed(gpointer instance,
-                                    const uint8_t profile_type,
-                                    dt_lib_module_t *self)
-{
-  // when the display profile is changed, make sure we recreate the snapshot
-  if(profile_type == DT_COLORSPACES_PROFILE_TYPE_DISPLAY)
-  {
-    dt_lib_snapshots_t *d = self->data;
-
-    if(d->selected >= 0)
-      d->snap_requested = TRUE;
-
-    dt_control_queue_redraw_center();
-  }
-}
-
 static void _remove_snapshot_entry(dt_lib_module_t *self, const uint32_t index)
 {
   dt_lib_snapshots_t *d = self->data;
@@ -914,7 +898,6 @@ void gui_init(dt_lib_module_t *self)
   dt_action_register(DT_ACTION(self), N_("toggle last snapshot"),
                      _lib_snapshots_toggle_last, 0, 0);
 
-  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, _signal_profile_changed);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _signal_image_changed);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_IMAGE_REMOVED, _signal_image_removed);
 }
