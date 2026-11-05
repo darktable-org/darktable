@@ -51,8 +51,11 @@ colors that mark in any output.
   encoding of its buffer. `NULL` means no display encoding: with colorout
   filtered out, as overlay does, the buffer stays in the pipe's working RGB.
 - colorout renders to `pipe->output`. The pipe's `output_headroom`, which
-  sigmoid and agx tone map to, honors `output.headroom`. A soft proof caps
-  it at the proof profile's headroom.
+  sigmoid and agx tone map to, honors `output.headroom`. A soft proof sets
+  it to the proof profile's headroom, as an export to that profile does,
+  above or below the screen's, and the output encoding says so. The
+  presenter clips what the screen cannot show: the Wayland transport to the
+  range of its image description, cairo the encoded values to 8 bits.
 - `pipe->output_encoding` (`dt_color_encoding_t`) is what the pipe's output
   values are: the profile, intent and headroom of the transform colorout
   built, after it replaced a missing or unsupported profile by sRGB, or the
