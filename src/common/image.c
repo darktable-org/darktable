@@ -1923,7 +1923,8 @@ static dt_imgid_t _image_duplicate_with_version(const dt_imgid_t imgid,
 
   if(dt_is_valid_imgid(newid))
   {
-    if(undo)
+    // headless operation has no undo manager to own the record
+    if(undo && darktable.undo)
     {
       dt_undo_duplicate_t *dupundo = malloc(sizeof(dt_undo_duplicate_t));
       dupundo->orig_imgid = imgid;

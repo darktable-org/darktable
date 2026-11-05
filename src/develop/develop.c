@@ -2437,6 +2437,8 @@ static void _dev_merge_history(dt_develop_t *dev,
         v++;
       }
 
+      // the renumbering statement is local, including when stepping fails
+      sqlite3_finalize(stmt);
       dt_database_release_transaction(darktable.db);
 
       g_list_free(rowids);

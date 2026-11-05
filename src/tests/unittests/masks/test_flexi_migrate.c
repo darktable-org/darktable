@@ -585,8 +585,10 @@ static void test_every_history_snapshot_is_normalized(void **state)
   flexi_dev.history = g_list_append(flexi_dev.history, &newer);
   flexi_dev.history_end = 2;
 
-  flexi_dev.pending_flexi_group_splits =
-    g_list_append(NULL, GINT_TO_POINTER(flexi_bp.mask_id));
+  // Migration itself queues this group; reusing the queue tests the real
+  // handoff instead of replacing (and leaking) its list head.
+  assert_non_null(g_list_find(flexi_dev.pending_flexi_group_splits,
+                              GINT_TO_POINTER(flexi_bp.mask_id)));
   dt_masks_normalize_flexi_groups(&flexi_dev);
 
   for(GList *h = flexi_dev.history; h; h = g_list_next(h))

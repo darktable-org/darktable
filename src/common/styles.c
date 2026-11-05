@@ -305,8 +305,12 @@ static gboolean dt_styles_create_style_header(const char *name,
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
-  dt_action_register(stl, name, _apply_style_shortcut_callback, 0, 0);
+  // headless control has no shortcut tree lifecycle
+  if(darktable.gui)
+  {
+    dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
+    dt_action_register(stl, name, _apply_style_shortcut_callback, 0, 0);
+  }
 
   dt_gui_style_content_dialog("", -1);
 
@@ -1137,7 +1141,7 @@ static void _styles_apply_to_image_ext(const char *name,
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 2");
 
     dt_undo_lt_history_t *hist = NULL;
-    if(undo)
+    if(undo && darktable.undo)
     {
       hist = dt_history_snapshot_item_init();
       hist->imgid = newimgid;
@@ -1148,7 +1152,7 @@ static void _styles_apply_to_image_ext(const char *name,
     // write history and forms to db
     dt_dev_write_history_ext(dev_dest, newimgid);
 
-    if(undo)
+    if(undo && darktable.undo)
     {
       dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
       dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
@@ -1531,8 +1535,9 @@ void dt_styles_save_to_file(const char *style_name,
 
   xmlTextWriterStartElement(writer, BAD_CAST "info");
   xmlTextWriterWriteFormatElement(writer, BAD_CAST "name", "%s", style_name);
-  xmlTextWriterWriteFormatElement(writer, BAD_CAST "description", "%s",
-                                  dt_styles_get_description(style_name));
+  gchar *description = dt_styles_get_description(style_name);
+  xmlTextWriterWriteFormatElement(writer, BAD_CAST "description", "%s", description);
+  g_free(description);
   GList *iop_list = dt_styles_module_order_list(style_name);
   if(iop_list)
   {
@@ -1563,12 +1568,15 @@ void dt_styles_save_to_file(const char *style_name,
                                     sqlite3_column_int(stmt, 1));
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "operation", "%s",
                                     sqlite3_column_text(stmt, 2));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s",
-                                    dt_style_encode(stmt, 3));
+    // the writer copies encoded parameters; it does not take ownership
+    char *op_params = dt_style_encode(stmt, 3);
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s", op_params);
+    free(op_params);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "enabled", "%d",
                                     sqlite3_column_int(stmt, 4));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_params", "%s",
-                                    dt_style_encode(stmt, 5));
+    char *blendop_params = dt_style_encode(stmt, 5);
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_params", "%s", blendop_params);
+    free(blendop_params);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_version", "%d",
                                     sqlite3_column_int(stmt, 6));
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_priority", "%d",

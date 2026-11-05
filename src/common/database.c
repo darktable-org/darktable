@@ -4793,6 +4793,8 @@ start:
   }
   else
   {
+    // a healthy database without db_info still owns its quick_check result
+    g_free(libdb_status);
     // does it contain the legacy 'settings' table?
     sqlite3_finalize(stmt);
     rc = sqlite3_prepare_v2(db->handle, "SELECT settings FROM main.settings", -1, &stmt, NULL);
