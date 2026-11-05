@@ -1404,13 +1404,12 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
                                           pipe->output_encoding.filename,
                                           pipe->output_encoding.profile,
                                           INTENT_RELATIVE_COLORIMETRIC);
-  // the swatches are drawn by GTK
-  dt_color_encoding_t gtk;
+  // the swatches are drawn by GTK, in what untagged values mean in the
+  // window: the same profile on cairo, where the conversion is skipped
+  const dt_color_encoding_t *device = &pipe->output.device;
   const dt_iop_order_iccprofile_info_t *const gtk_profile =
-    dt_colorspaces_get_gtk_output(DT_COLORSPACE_DISPLAY, &gtk)
-    ? dt_ioppr_add_profile_info_for_content(dev, gtk.type, gtk.filename, gtk.profile,
-                                            INTENT_RELATIVE_COLORIMETRIC)
-    : display_profile;
+    dt_ioppr_add_profile_info_for_content(dev, device->type, device->filename,
+                                          device->profile, INTENT_RELATIVE_COLORIMETRIC);
 
   // if we have a primary picker, prepend to the list of any live
   // samples, so that we don't have to differentiate when looping

@@ -269,10 +269,17 @@ cairo_surface_t *dt_presenter_gtk_surface(const float *pixels,
                                           const dt_display_output_t *encoding,
                                           const uint32_t id)
 {
-  dt_color_encoding_t gtk;
-  memset(&gtk, 0, sizeof(gtk));
-  gtk.type = DT_COLORSPACE_NONE;
-  const gboolean owned = dt_colorspaces_get_gtk_output(DT_COLORSPACE_DISPLAY, &gtk);
+  // on a cairo window, GTK-side drawing shows a frame as the center does:
+  // display RGB as it was rendered
+  dt_display_output_t output;
+  dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &output);
+  const gboolean owned = output.platform_owned;
+  dt_color_encoding_t gtk = output.device;
+  if(!owned)
+  {
+    memset(&gtk, 0, sizeof(gtk));
+    gtk.type = DT_COLORSPACE_NONE;
+  }
 
   int k = 0;
   while(k < GTK_SURFACES
