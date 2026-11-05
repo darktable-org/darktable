@@ -269,12 +269,17 @@ typedef struct dt_colorspaces_t
   // xatom color profile:
   pthread_rwlock_t xprofile_lock;
   gchar *colord_profile_file;
-  uint8_t *xprofile_data;
+  const uint8_t *xprofile_data;
   int xprofile_size;
 
   gchar *colord_profile_file2;
-  uint8_t *xprofile_data2;
+  const uint8_t *xprofile_data2;
   int xprofile_size2;
+
+  // every profile the system display entries have had, owning the bytes
+  // xprofile_data points to. none is freed before cleanup: a profile read
+  // from the registry stays valid after a replacement, without the lock
+  GList *system_display_profiles;
 
   // the current set of selected profiles
   dt_colorspaces_color_profile_type_t display_type;
