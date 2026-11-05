@@ -900,6 +900,9 @@ changes (where available).
   interpolator set in the preferences, as the other rotating and
   distorting modules do.
 
+- Fixed workspace deletion ignoring filesystem errors, which could hide
+  an entry that still existed on disk.
+
 - Fixed random dither giving a slightly different noise pattern
   depending on the number of CPU threads. Its noise pattern changed,
   so exports using it differ in the noise but not in its strength.
