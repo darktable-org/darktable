@@ -143,22 +143,10 @@ static dt_presenter_window_t *_window_get(GtkWidget *widget)
   g_signal_connect(toplevel, "unrealize", G_CALLBACK(_toplevel_unrealize), NULL);
 
 #ifdef HAVE_WAYLAND
-  gboolean manages_color = FALSE;
-  w->backend = dt_presenter_wayland_new(toplevel, w, &manages_color);
-  if(!w->backend)
-  {
-    // a compositor that manages color takes GTK's untagged surface as sRGB
-    // and converts it to the screen itself: rendering for the display
-    // profile would convert twice. NULL also takes back what a failed
-    // setup reported
-    const dt_display_output_t srgb =
-      { .image = { .type = DT_COLORSPACE_SRGB, .intent = DT_INTENT_PERCEPTUAL,
-                   .headroom = 1.0f },
-        .device = { .type = DT_COLORSPACE_SRGB, .intent = DT_INTENT_PERCEPTUAL,
-                    .headroom = 1.0f },
-        .format = DT_FRAME_RGB24 };
-    dt_presenter_window_set_output(w, manages_color ? &srgb : NULL);
-  }
+  w->backend = dt_presenter_wayland_new(toplevel, w);
+  // the window paints with cairo on its system display profile. NULL takes
+  // back what a failed setup reported
+  if(!w->backend) dt_presenter_window_set_output(w, NULL);
 #endif
   return w;
 }
