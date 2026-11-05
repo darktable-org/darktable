@@ -40,6 +40,7 @@ typedef struct dt_iop_order_iccprofile_info_t
 {
   dt_colorspaces_color_profile_type_t type;
   char filename[DT_IOP_COLOR_ICC_LEN];
+  cmsHPROFILE profile; // the registry's profile the info was made from
   dt_iop_color_intent_t intent;
   dt_colormatrix_t matrix_in; // don't align on more than 16 bits or OpenCL will fail
   dt_colormatrix_t matrix_out;
@@ -63,16 +64,18 @@ void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
 void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info);
 
 /** returns the profile info from dev profiles info list that matches
- * (profile_type, profile_filename) NULL if not found
+ * (profile_type, profile_filename), and profile for the system display
+ * types, NULL if not found
  */
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,
                                     dt_colorspaces_color_profile_type_t profile_type,
-                                    const char *profile_filename);
+                                    const char *profile_filename,
+                                    cmsHPROFILE profile);
 
-/** adds the profile info from (profile_type, profile_filename) to the
- * dev profiles info list if not already exists returns the generated
- * profile or the existing one
+/** adds the profile info from (profile_type, profile_filename), with the
+ * profile the registry holds for it now, to the dev profiles info list if
+ * not already exists returns the generated profile or the existing one
  */
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
