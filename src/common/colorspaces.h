@@ -183,6 +183,15 @@ typedef enum dt_colorspaces_cicp_matrix_coefficients_t
     DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED = 2
 } dt_colorspaces_cicp_matrix_coefficients_t;
 
+/* a new screen profile replaces a system display profile under the same
+ * type and file name. FILE profiles are read once at startup and built-ins
+ * never change, so for every other type, type and file name identify the
+ * profile's content */
+static inline gboolean dt_colorspaces_replaced_in_session(const dt_colorspaces_color_profile_type_t type)
+{
+  return type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2;
+}
+
 /* what a pipe's output values mean: this profile's encoding (RGB, Lab or
  * XYZ, PQ and HLG with their transfer functions), made with this intent and
  * rendered for a peak of headroom times reference white. resolved: what
