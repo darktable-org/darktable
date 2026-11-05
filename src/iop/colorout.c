@@ -1034,12 +1034,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_colorspaces_cleanup_profile(hdr_linear);
 
   dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, p->intent);
-  // a soft proof shows an export to the proof profile, so tone mappers
-  // render to that profile's headroom, at most what the screen shows
+  // render the proof for its export's headroom and let the screen clip, as
+  // Resolve's viewer shows the deliverable's transform (18.5 manual, ch. 9-10)
   if(proofing)
-    piece->pipe->output_headroom =
-      fminf(piece->pipe->output_headroom,
-            dt_ioppr_profile_headroom(softproof_type));
+    piece->pipe->output_headroom = dt_ioppr_profile_headroom(softproof_type);
 
   // process() encodes for out_type's HDR transfer function, which no
   // profile describes once sRGB has replaced out_type's profile
