@@ -55,6 +55,12 @@ add_cmocka_test(test_frame
                 SOURCES test_frame.c
                 LINK_LIBRARIES lib_darktable cmocka)
 
+# needs a display, GTK3 creates no widget without one: skipped (77) otherwise
+add_cmocka_test(test_presenter_above
+                SOURCES test_presenter_above.c
+                LINK_LIBRARIES lib_darktable cmocka)
+set_tests_properties(test_presenter_above PROPERTIES SKIP_RETURN_CODE 77)
+
 # Windows: libs have to be copied next to the executable
 if(WIN32)
     _copy_required_library(test_spektra_sim lib_darktable)
@@ -67,4 +73,5 @@ if(WIN32)
     _copy_required_library(test_system_display_profiles lib_darktable)
     _copy_required_library(test_display_output_diff lib_darktable)
     _copy_required_library(test_frame lib_darktable)
+    _copy_required_library(test_presenter_above lib_darktable)
 endif(WIN32)

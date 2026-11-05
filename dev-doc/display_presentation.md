@@ -330,6 +330,17 @@ present (GtkOverlay children such as toasts) is not part of its
 presentation: on a kept foreground the replay saves what it covers and
 puts it back after the transport has taken the layers.
 
+What GTK3 draws above a presenting widget is in GTK's surface, under the
+layers, so the backend replays it into the foreground when it presents:
+the children that each GtkOverlay on the way to the toplevel stacks above
+the widget, bottom to top, and the toplevel's popovers unless the
+transport shows them above its layers (`popovers_above`), as on Wayland.
+GtkWindow draws its popovers above its content, in the order
+`gtk_container_forall()` lists them. A popover is no part of any
+presenting widget, so the backend watches each one it replays: when one
+is shown, hidden, moved or animated, or its content changes, the
+window's presenting widgets are drawn again.
+
 The transport reports the window's output, its image encoding and, as
 device, the profile GTK's own surface is shown in, through
 `dt_presenter_window_set_output()`, at setup and whenever it changes. The
@@ -390,8 +401,12 @@ re-read whenever the preference changes. The description is ext_linear,
 BT.2020, luminances (0, round(headroom x 203), 203), so a value v is sent as
 v x 203 / max, clipped to [0, headroom]. Layers are synchronized subsurfaces
 of GDK's surface, placed directly above it and below GTK's own subsurfaces
-such as popovers. They are presented at the end of the frame clock's `paint`,
-so they apply with GDK's commit in `after-paint`.
+such as popovers, which therefore need no replay. They are presented at the
+end of the frame clock's `paint`, so they apply with GDK's commit in
+`after-paint`. With `DT_PRESENTER_REPLAY_POPOVERS` set in the environment,
+the transport places the layers above the popovers shown, as Quartz and
+Win32 draw popovers into the toplevel, and declares so: the layered
+backend's popover replay can then be tested on Wayland.
 
 A presenting toplevel cannot be shown again after hiding. GDK destroys its
 `wl_surface` when a window is hidden, and the backend presents nothing once
@@ -406,7 +421,7 @@ Each lives in one file and goes away with the limitation it works around.
 | Workaround | Where | Works around | Removed when |
 |---|---|---|---|
 | image and foreground layers above GTK's surface | `presenter_layers.c` | GTK3 cannot give a widget a surface with a color state | GTK4: the image is a texture with a color state |
-| `gtk_widget_draw()` replay of GtkOverlay children stacked above a presenting widget into the foreground, saved and put back on a kept foreground | `presenter_layers.c`, `_replay_overlays()` | the layers cover GTK's drawing of those widgets (toasts, masks panel, second window buttons); where GTK3 draws popovers into the toplevel (Quartz, Win32), popovers need the same | same |
+| `gtk_widget_draw()` replay into the foreground of what GTK stacks above a presenting widget: GtkOverlay children, and the toplevel's popovers where the transport's layers cover them; saved and put back on a kept foreground; a popover's changes draw the presenting widgets again | `presenter_layers.c`, `_replay_above()` | the layers cover GTK's drawing of those widgets (toasts, masks panel, second window buttons), and on Quartz and Win32 of popovers, which GTK3 draws into the toplevel there | same |
 | composing and presenting in the frame clock's `paint` signal, after GDK's handler | `presenter_wayland.c`, `_paint()` | GTK3 runs all draws in `paint` and GDK commits its surface in `after-paint`; the layers must be ready in between | same |
 | GTK's surface taken as sRGB, the window's device encoding | `presenter_wayland.c`, `_set_output()` | GTK3 does not tag its surface; an untagged surface is sRGB to the compositor, with a transfer function of its choosing | GTK tags its surfaces |
 | a plain SDR sRGB output left to cairo with the system display profile | `presenter_wayland.c`, `_passes_untagged_through()` | mutter's default color mode composites as sRGB and does not apply the profile assigned to the screen (mutter#4597) | the compositor describes its real output (mutter MR !5177); nothing to do, the predicate stops matching |
@@ -439,10 +454,6 @@ With `cache_color_managed` off the mipmap cache holds display-encoded
 thumbnails, encoded for the main window's system display profile, and a compositor that
 manages color shows them as sRGB like the rest of GTK's surface. They
 follow the window's output once thumbnails go through the presenter.
-
-A macOS or Windows backend also has to replay popovers over the canvas into
-the foreground: there GTK3 draws them into the toplevel's surface, while on
-Wayland they are subsurfaces above the layers.
 
 ## Common Mistakes
 

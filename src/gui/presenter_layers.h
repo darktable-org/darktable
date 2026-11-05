@@ -71,6 +71,10 @@ struct dt_presenter_transport_t
   // the widget is gone: free *widget_data and set it to NULL
   void (*release)(dt_presenter_transport_t *self, void **widget_data);
   void (*free)(dt_presenter_transport_t *self);
+  // GTK's popovers are surfaces of their own above the layers, as on
+  // Wayland, so they need no replay. where GTK3 draws them into the
+  // toplevel's surface (Quartz, Win32), the layers cover them
+  gboolean popovers_above;
 };
 
 /** for transports: present the layers of every widget of window drawn

@@ -673,6 +673,34 @@ static const struct wl_registry_listener _registry_listener = {
 
 /* transport interface */
 
+static void _add_shown_popover(GtkWidget *widget,
+                               gpointer data)
+{
+  if(GTK_IS_POPOVER(widget) && gtk_widget_get_mapped(widget))
+    *(GList **)data = g_list_append(*(GList **)data, widget);
+}
+
+// with DT_PRESENTER_REPLAY_POPOVERS set, the layers go above the popovers
+// shown, so that they cover them as on Quartz and Win32, and the layered
+// backend's replay of popovers can be tested. a popover's subsurface is
+// made anew whenever it is shown, on top of its siblings, so this is done
+// on every present. the toplevel lists its popovers bottom to top
+static void _cover_popovers(_backend_t *b,
+                            _widget_t *w)
+{
+  GList *popovers = NULL;
+  gtk_container_forall(GTK_CONTAINER(b->toplevel), _add_shown_popover, &popovers);
+  for(GList *p = popovers; p; p = g_list_next(p))
+  {
+    GdkWindow *window = gtk_widget_get_parent_window(p->data);
+    struct wl_surface *surface =
+      window && GDK_IS_WAYLAND_WINDOW(window) ? gdk_wayland_window_get_wl_surface(window) : NULL;
+    if(surface) wl_subsurface_place_above(w->image.subsurface, surface);
+  }
+  if(popovers) wl_subsurface_place_above(w->foreground.subsurface, w->image.surface);
+  g_list_free(popovers);
+}
+
 static gboolean _present(dt_presenter_transport_t *self,
                          GtkWidget *widget,
                          void **widget_data,
@@ -709,6 +737,7 @@ static gboolean _present(dt_presenter_transport_t *self,
   // applied with GDK's next commit, like the buffers
   wl_subsurface_set_position(w->image.subsurface, layers->x, layers->y);
   wl_subsurface_set_position(w->foreground.subsurface, layers->x, layers->y);
+  if(!b->transport.popovers_above) _cover_popovers(b, w);
 
   if(image)
   {
@@ -875,6 +904,9 @@ dt_presenter_transport_t *dt_presenter_wayland_new(GtkWidget *toplevel,
   b->transport.clear = _clear;
   b->transport.release = _release;
   b->transport.free = _free;
+  // GTK3 popovers are subsurfaces of GDK's surface too, above the layers,
+  // which are placed right above GDK's surface (_widget_layers_init())
+  b->transport.popovers_above = !g_getenv("DT_PRESENTER_REPLAY_POPOVERS");
   b->unmap_handler = g_signal_connect(toplevel, "unmap", G_CALLBACK(_toplevel_unmap), b);
   b->clock = gdk_window_get_frame_clock(gdk_window);
   b->paint_handler = g_signal_connect_after(b->clock, "paint", G_CALLBACK(_paint), b);
