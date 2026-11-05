@@ -17,9 +17,10 @@
 */
 /*
  * cmocka unit tests for the system display profiles of common/colorspaces.c:
- * a replaced profile stays valid until dt_colorspaces_cleanup(), and the
- * same bytes always give the same profile, so switching back and forth
- * between two profiles does not grow the list. colorspaces.c is included
+ * a replaced profile stays valid until dt_colorspaces_cleanup(), the same
+ * bytes always give the same profile, so switching back and forth between
+ * two profiles does not grow the list, and a report with no usable profile
+ * gives the window sRGB again. colorspaces.c is included
  * for its static helpers, on a registry built here as dt_colorspaces_init()
  * builds the entries they touch.
  */
@@ -71,6 +72,8 @@ static int _setup(void **state)
   f->placeholder2 = dt_colorspaces_create_srgb_profile();
   _system_profile_add(self, NULL, 0, f->placeholder);
   _system_profile_add(self, NULL, 0, f->placeholder2);
+  self->system_display_srgb[0] = f->placeholder;
+  self->system_display_srgb[1] = f->placeholder2;
   self->profiles = g_list_append(self->profiles,
                                  _create_profile(DT_COLORSPACE_DISPLAY, f->placeholder,
                                                  "display", -1, -1, 0, 0, -1, -1));
@@ -119,21 +122,25 @@ static int _teardown(void **state)
   return 0;
 }
 
-// what the platform and colord paths do on a changed profile: the callee
-// takes the buffer
+// what the platform and colord paths do with a report: the callee takes
+// the buffer. NULL is a report without a profile
 static gboolean _replace(const dt_colorspaces_color_profile_type_t window,
                          const uint8_t *data,
                          const size_t size)
 {
   dt_colorspaces_t *self = darktable.color_profiles;
   pthread_rwlock_wrlock(&self->xprofile_lock);
-  guchar *copy = g_malloc(size);
-  memcpy(copy, data, size);
-  const gboolean match = window == DT_COLORSPACE_DISPLAY2
-    ? _update_display2_profile(copy, size, NULL, 0)
-    : _update_display_profile(copy, size, NULL, 0);
+  guchar *copy = NULL;
+  if(data)
+  {
+    copy = g_malloc(size);
+    memcpy(copy, data, size);
+  }
+  const gboolean changed =
+    _system_display_set(self, window == DT_COLORSPACE_DISPLAY2,
+                        _system_profile(self, copy, size));
   pthread_rwlock_unlock(&self->xprofile_lock);
-  return match;
+  return changed;
 }
 
 static cmsHPROFILE _content(const dt_colorspaces_color_profile_type_t window)
@@ -166,9 +173,10 @@ static void test_switching_reuses_profiles(void **state)
   cmsHPROFILE a = _content(DT_COLORSPACE_DISPLAY);
   assert_ptr_not_equal(a, f->placeholder);
   assert_int_equal(g_list_length(self->system_display_profiles), 3);
-  assert_int_equal(self->xprofile_size, f->a_size);
-  assert_memory_equal(self->xprofile_data, f->a, f->a_size);
   assert_non_null(self->transform_srgb_to_display);
+  // the same bytes again change nothing
+  assert_false(_replace(DT_COLORSPACE_DISPLAY, f->a, f->a_size));
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), a);
 
   assert_true(_replace(DT_COLORSPACE_DISPLAY, f->b, f->b_size));
   cmsHPROFILE b = _content(DT_COLORSPACE_DISPLAY);
@@ -179,10 +187,8 @@ static void test_switching_reuses_profiles(void **state)
   {
     assert_true(_replace(DT_COLORSPACE_DISPLAY, f->a, f->a_size));
     assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), a);
-    assert_memory_equal(self->xprofile_data, f->a, f->a_size);
     assert_true(_replace(DT_COLORSPACE_DISPLAY, f->b, f->b_size));
     assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), b);
-    assert_int_equal(self->xprofile_size, f->b_size);
   }
   assert_int_equal(g_list_length(self->system_display_profiles), 4);
 
@@ -211,20 +217,30 @@ static void test_windows_share_profiles(void **state)
   _assert_valid(f->placeholder2);
 }
 
-static void test_rejected_bytes_change_nothing(void **state)
+static void test_no_profile_means_srgb(void **state)
 {
   _fixture_t *f = *state;
   dt_colorspaces_t *self = darktable.color_profiles;
 
+  // a stale profile goes: the window moved to a screen without one, or
+  // the system dropped it
   assert_true(_replace(DT_COLORSPACE_DISPLAY, f->a, f->a_size));
-  cmsHPROFILE a = _content(DT_COLORSPACE_DISPLAY);
+  assert_true(_replace(DT_COLORSPACE_DISPLAY2, f->b, f->b_size));
+  assert_true(_replace(DT_COLORSPACE_DISPLAY, NULL, 0));
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), f->placeholder);
+  assert_false(_replace(DT_COLORSPACE_DISPLAY, NULL, 0));
+  // the other window keeps its own
+  assert_ptr_not_equal(_content(DT_COLORSPACE_DISPLAY2), f->placeholder2);
+  assert_true(_replace(DT_COLORSPACE_DISPLAY2, NULL, 0));
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY2), f->placeholder2);
 
+  // bytes lcms cannot read are no usable profile either
+  assert_true(_replace(DT_COLORSPACE_DISPLAY, f->a, f->a_size));
   const uint8_t junk[128] = { 1, 2, 3 };
-  assert_false(_replace(DT_COLORSPACE_DISPLAY, junk, sizeof(junk)));
-  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), a);
-  assert_int_equal(self->xprofile_size, f->a_size);
-  assert_memory_equal(self->xprofile_data, f->a, f->a_size);
-  assert_int_equal(g_list_length(self->system_display_profiles), 3);
+  assert_true(_replace(DT_COLORSPACE_DISPLAY, junk, sizeof(junk)));
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), f->placeholder);
+  assert_int_equal(g_list_length(self->system_display_profiles), 4);
+  _assert_valid(_content(DT_COLORSPACE_DISPLAY));
 }
 
 int main(int argc, char *argv[])
@@ -232,7 +248,7 @@ int main(int argc, char *argv[])
   const struct CMUnitTest tests[] = {
     cmocka_unit_test_setup_teardown(test_switching_reuses_profiles, _setup, _teardown),
     cmocka_unit_test_setup_teardown(test_windows_share_profiles, _setup, _teardown),
-    cmocka_unit_test_setup_teardown(test_rejected_bytes_change_nothing, _setup, _teardown),
+    cmocka_unit_test_setup_teardown(test_no_profile_means_srgb, _setup, _teardown),
   };
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

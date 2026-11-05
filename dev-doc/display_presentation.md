@@ -103,7 +103,10 @@ markers are written as they are, saturated colors that mark in any output.
   with the profile they were made with: conversions take their profile
   info with `dt_ioppr_add_profile_info_for_content()`. For every other
   type, type and file name are the identity
-  (`dt_colorspaces_replaced_in_session()`).
+  (`dt_colorspaces_replaced_in_session()`). A query that yields no usable
+  profile (no X atom and none from colord, an empty Windows query, bytes
+  lcms rejects) makes the window's system display profile sRGB again, the
+  profile it starts with, rather than leaving the previous screen's.
 - A soft proof shows what an export to the proof profile holds, in the
   output: clipped where that export clips, and by the presenter to what the
   screen shows. PQ and HLG proofs take the export's own encoding round trip
