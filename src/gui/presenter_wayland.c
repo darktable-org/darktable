@@ -17,12 +17,12 @@
 */
 
 /*
- * the Wayland presenter backend: the image layer is a subsurface tagged
- * with color-management-v1 as linear BT.2020, carrying the image in half
- * floats with its HDR headroom, and the compositor does the one conversion
- * to the screen. the foreground layer above it is an untagged 8-bit
- * subsurface, which the compositor treats like GTK's own untagged surface.
- * see dev-doc/display_presentation.md.
+ * the Wayland transport of the layered presenter backend: the image layer
+ * is a subsurface tagged with color-management-v1 as linear BT.2020,
+ * carrying the image in half floats with its HDR headroom, and the
+ * compositor does the one conversion to the screen. the foreground layer
+ * above it is an untagged 8-bit subsurface, which the compositor treats
+ * like GTK's own untagged surface. see dev-doc/display_presentation.md.
  */
 
 // for memfd_create()
@@ -67,7 +67,7 @@ typedef struct _widget_t
 
 struct _backend_t
 {
-  dt_presenter_backend_t backend;
+  dt_presenter_transport_t transport;
   dt_presenter_window_t *window;
   GtkWidget *toplevel;
   gulong unmap_handler;
@@ -671,9 +671,9 @@ static const struct wl_registry_listener _registry_listener = {
   .global_remove = _global_remove,
 };
 
-/* backend interface */
+/* transport interface */
 
-static gboolean _present(dt_presenter_backend_t *self,
+static gboolean _present(dt_presenter_transport_t *self,
                          GtkWidget *widget,
                          void **widget_data,
                          const dt_presenter_layers_t *layers)
@@ -743,7 +743,7 @@ static gboolean _present(dt_presenter_backend_t *self,
   return TRUE;
 }
 
-static void _clear(dt_presenter_backend_t *self,
+static void _clear(dt_presenter_transport_t *self,
                    void **widget_data)
 {
   _backend_t *b = (_backend_t *)self;
@@ -758,7 +758,7 @@ static void _clear(dt_presenter_backend_t *self,
   wl_display_flush(b->display);
 }
 
-static void _release(dt_presenter_backend_t *self,
+static void _release(dt_presenter_transport_t *self,
                      void **widget_data)
 {
   _backend_t *b = (_backend_t *)self;
@@ -770,7 +770,7 @@ static void _release(dt_presenter_backend_t *self,
   *widget_data = NULL;
 }
 
-static void _free(dt_presenter_backend_t *self)
+static void _free(dt_presenter_transport_t *self)
 {
   _backend_t *b = (_backend_t *)self;
   if(b->unmap_handler) g_signal_handler_disconnect(b->toplevel, b->unmap_handler);
@@ -802,8 +802,8 @@ static void _move_to_default_queue(_backend_t *b)
     if(proxies[k]) wl_proxy_set_queue(proxies[k], NULL);
 }
 
-dt_presenter_backend_t *dt_presenter_wayland_new(GtkWidget *toplevel,
-                                                 dt_presenter_window_t *window)
+dt_presenter_transport_t *dt_presenter_wayland_new(GtkWidget *toplevel,
+                                                   dt_presenter_window_t *window)
 {
   GdkDisplay *gdk_display = gtk_widget_get_display(toplevel);
   GdkWindow *gdk_window = gtk_widget_get_window(toplevel);
@@ -867,18 +867,18 @@ dt_presenter_backend_t *dt_presenter_wayland_new(GtkWidget *toplevel,
      _headroom(b->description_max));
   if(!ok)
   {
-    _free(&b->backend);
+    _free(&b->transport);
     return NULL;
   }
 
-  b->backend.present = _present;
-  b->backend.clear = _clear;
-  b->backend.release = _release;
-  b->backend.free = _free;
+  b->transport.present = _present;
+  b->transport.clear = _clear;
+  b->transport.release = _release;
+  b->transport.free = _free;
   b->unmap_handler = g_signal_connect(toplevel, "unmap", G_CALLBACK(_toplevel_unmap), b);
   b->clock = gdk_window_get_frame_clock(gdk_window);
   b->paint_handler = g_signal_connect_after(b->clock, "paint", G_CALLBACK(_paint), b);
-  return &b->backend;
+  return &b->transport;
 }
 
 // clang-format off

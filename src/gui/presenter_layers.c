@@ -17,27 +17,25 @@
 */
 
 /*
- * the GTK3 side of native presentation: GTK3 cannot draw into a surface
- * with a color state of its own, so a native backend puts the image on a
- * layer above GTK's surface, and everything that has to appear above the
- * image moves to a second layer above that. a GTK4 port, where widgets
- * draw textures with color states, deletes this file.
+ * the layered backend, the GTK3 side of native presentation: GTK3 cannot
+ * draw into a surface with a color state of its own, so the image goes on
+ * a layer above GTK's surface, and everything that has to appear above the
+ * image moves to a second layer above that. a transport of the platform
+ * shows them. a GTK4 port, where widgets draw textures with color states,
+ * deletes this file.
  */
 
 #include "gui/presenter_layers.h"
 #include "common/darktable.h"
 #include "gui/gtk.h"
 
-#define WINDOW_KEY "dt-presenter-window"
-
-struct dt_presenter_window_t
+typedef struct _window_t
 {
-  GtkWidget *toplevel;
-  // DT_COLORSPACE_DISPLAY for the main window, DISPLAY2 for the second
-  dt_colorspaces_color_profile_type_t kind;
-  dt_presenter_backend_t *backend;
+  dt_presenter_backend_t backend;
+  dt_presenter_window_t *window;
+  dt_presenter_transport_t *transport;
   GList *widgets;
-};
+} _window_t;
 
 // what an image layer was composed from, to know when to compose again
 typedef struct _shown_t
@@ -51,15 +49,19 @@ typedef struct _shown_t
   cairo_filter_t filter;
 } _shown_t;
 
-struct dt_presenter_layered_t
+typedef struct _widget_t
 {
   GtkWidget *widget;
-  dt_presenter_window_t *window;
-  gulong destroy_handler;
-  // what darktable draws, in device pixels
+  _window_t *window;
+  // what the widget draws, in device pixels
   cairo_surface_t *foreground;
   cairo_t *cr;
   int width, height, scale;
+  // the kept presentation: its foreground, which may be the one above,
+  // and its images, with a reference on each frame. while the last draw
+  // is kept, spare is the surface the next one draws on
+  cairo_surface_t *kept, *spare;
+  GArray *kept_images;
   // the images of the last draw
   GArray *images;
   // what the image layer holds
@@ -68,151 +70,99 @@ struct dt_presenter_layered_t
   float *image;
   // drawn and not presented yet
   gboolean pending;
-  void *backend_data;
-};
+  void *transport_data;
+} _widget_t;
 
-static void _layered_free(dt_presenter_layered_t *l)
+static void _surface_destroy(cairo_surface_t **surface)
 {
-  if(l->backend_data) l->window->backend->release(l->window->backend, &l->backend_data);
-  g_signal_handler_disconnect(l->widget, l->destroy_handler);
-  if(l->cr) cairo_destroy(l->cr);
-  if(l->foreground) cairo_surface_destroy(l->foreground);
-  g_array_free(l->images, TRUE);
-  g_array_free(l->shown, TRUE);
-  dt_free_align(l->image);
-  g_free(l);
+  if(*surface) cairo_surface_destroy(*surface);
+  *surface = NULL;
 }
 
-static void _widget_destroy(GtkWidget *widget,
-                            dt_presenter_layered_t *l)
+static void _images_unref(GArray *images)
 {
-  l->window->widgets = g_list_remove(l->window->widgets, l);
-  _layered_free(l);
+  for(guint k = 0; k < images->len; k++)
+    dt_frame_unref(g_array_index(images, dt_presenter_image_t, k).frame);
+  g_array_set_size(images, 0);
 }
 
-static void _window_free(gpointer data)
+static void _drop_kept(_widget_t *l)
 {
-  dt_presenter_window_t *w = data;
-  while(w->widgets)
-  {
-    _layered_free(w->widgets->data);
-    w->widgets = g_list_delete_link(w->widgets, w->widgets);
-  }
-  if(w->backend) w->backend->free(w->backend);
-  // whatever the platform owned goes back to the system display profile
-  dt_colorspaces_set_window_output(w->kind, NULL);
-  g_free(w);
+  _surface_destroy(&l->kept);
+  _surface_destroy(&l->spare);
+  _images_unref(l->kept_images);
 }
 
-static void _toplevel_unrealize(GtkWidget *toplevel,
-                                gpointer data)
-{
-  g_object_set_data(G_OBJECT(toplevel), WINDOW_KEY, NULL);
-}
+static void _present(_widget_t *l);
 
-static void _present(dt_presenter_layered_t *l);
-
-void dt_presenter_window_present(dt_presenter_window_t *w)
+void dt_presenter_window_present(dt_presenter_window_t *window)
 {
+  _window_t *w = (_window_t *)window->backend;
+  if(!w) return;
   for(GList *l = w->widgets; l; l = g_list_next(l))
   {
-    dt_presenter_layered_t *layered = l->data;
-    if(layered->pending) _present(layered);
+    _widget_t *widget = l->data;
+    if(widget->pending) _present(widget);
   }
 }
 
-static dt_colorspaces_color_profile_type_t _kind(GtkWidget *toplevel)
+static gboolean _fits(cairo_surface_t *surface,
+                      const int width,
+                      const int height,
+                      const int scale)
 {
-  return toplevel == dt_ui_main_window(darktable.gui->ui)
-    ? DT_COLORSPACE_DISPLAY
-    : DT_COLORSPACE_DISPLAY2;
+  double sx = 0.0, sy = 0.0;
+  if(surface) cairo_surface_get_device_scale(surface, &sx, &sy);
+  return surface && cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS
+    && cairo_image_surface_get_width(surface) == width * scale
+    && cairo_image_surface_get_height(surface) == height * scale
+    && sx == scale;
 }
 
-static dt_presenter_window_t *_window_get(GtkWidget *widget)
+static cairo_t *_begin(dt_presenter_backend_t *self,
+                       GtkWidget *widget,
+                       void **data,
+                       cairo_t *widget_cr)
 {
-  GtkWidget *toplevel = gtk_widget_get_toplevel(widget);
-  if(!gtk_widget_is_toplevel(toplevel) || !gtk_widget_get_realized(toplevel)) return NULL;
+  _window_t *w = (_window_t *)self;
+  _widget_t *l = *data;
+  if(!l)
+  {
+    l = g_malloc0(sizeof(_widget_t));
+    l->widget = widget;
+    l->window = w;
+    l->kept_images = g_array_new(FALSE, FALSE, sizeof(dt_presenter_image_t));
+    l->images = g_array_new(FALSE, FALSE, sizeof(dt_presenter_image_t));
+    l->shown = g_array_new(FALSE, FALSE, sizeof(_shown_t));
+    w->widgets = g_list_prepend(w->widgets, l);
+    *data = l;
+  }
 
-  dt_presenter_window_t *w = g_object_get_data(G_OBJECT(toplevel), WINDOW_KEY);
-  if(w) return w;
-
-  w = g_malloc0(sizeof(dt_presenter_window_t));
-  w->toplevel = toplevel;
-  w->kind = _kind(toplevel);
-  g_object_set_data_full(G_OBJECT(toplevel), WINDOW_KEY, w, _window_free);
-  g_signal_connect(toplevel, "unrealize", G_CALLBACK(_toplevel_unrealize), NULL);
-
-#ifdef HAVE_WAYLAND
-  w->backend = dt_presenter_wayland_new(toplevel, w);
-  // the window paints with cairo on its system display profile. NULL takes
-  // back what a failed setup reported
-  if(!w->backend) dt_presenter_window_set_output(w, NULL);
-#endif
-  return w;
-}
-
-void dt_presenter_window_set_output(dt_presenter_window_t *window,
-                                    const dt_display_output_t *output)
-{
-  dt_colorspaces_set_window_output(window->kind, output);
-}
-
-void dt_presenter_window_redraw(dt_presenter_window_t *window)
-{
-  gtk_widget_queue_draw(window->toplevel);
-}
-
-dt_presenter_layered_t *dt_presenter_layered_get(GtkWidget *widget,
-                                                 const gboolean create)
-{
-  GtkWidget *toplevel = gtk_widget_get_toplevel(widget);
-  dt_presenter_window_t *w = create
-    ? _window_get(widget)
-    : g_object_get_data(G_OBJECT(toplevel), WINDOW_KEY);
-  if(!w || !w->backend) return NULL;
-
-  for(GList *l = w->widgets; l; l = g_list_next(l))
-    if(((dt_presenter_layered_t *)l->data)->widget == widget) return l->data;
-  if(!create) return NULL;
-
-  dt_presenter_layered_t *l = g_malloc0(sizeof(dt_presenter_layered_t));
-  l->widget = widget;
-  l->window = w;
-  l->images = g_array_new(FALSE, FALSE, sizeof(dt_presenter_image_t));
-  l->shown = g_array_new(FALSE, FALSE, sizeof(_shown_t));
-  l->destroy_handler =
-    g_signal_connect_data(widget, "destroy", G_CALLBACK(_widget_destroy), l, NULL, 0);
-  w->widgets = g_list_prepend(w->widgets, l);
-  return l;
-}
-
-void dt_presenter_window_output(GtkWidget *widget,
-                                dt_display_output_t *output)
-{
-  dt_colorspaces_get_display_output(_kind(gtk_widget_get_toplevel(widget)), output);
-}
-
-cairo_t *dt_presenter_layered_begin(dt_presenter_layered_t *l)
-{
   const int width = gtk_widget_get_allocated_width(l->widget);
   const int height = gtk_widget_get_allocated_height(l->widget);
   const int scale = gtk_widget_get_scale_factor(l->widget);
 
   if(l->cr) cairo_destroy(l->cr);
+  // the last draw is kept: draw on the other surface
+  if(l->foreground && l->foreground == l->kept)
+  {
+    cairo_surface_destroy(l->foreground);
+    l->foreground = l->spare;
+    l->spare = NULL;
+  }
   // a failed allocation leaves cairo's error surface: try again. a context
   // on it is in error too, so presenter.c's user data does not stick and
   // the draw presents nothing
-  if(!l->foreground || cairo_surface_status(l->foreground) != CAIRO_STATUS_SUCCESS
-     || width != l->width || height != l->height || scale != l->scale)
+  if(!_fits(l->foreground, width, height, scale))
   {
-    if(l->foreground) cairo_surface_destroy(l->foreground);
+    _surface_destroy(&l->foreground);
     l->foreground = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
                                                width * scale, height * scale);
     cairo_surface_set_device_scale(l->foreground, scale, scale);
-    l->width = width;
-    l->height = height;
-    l->scale = scale;
   }
+  l->width = width;
+  l->height = height;
+  l->scale = scale;
   l->cr = cairo_create(l->foreground);
   cairo_save(l->cr);
   cairo_set_operator(l->cr, CAIRO_OPERATOR_CLEAR);
@@ -223,7 +173,7 @@ cairo_t *dt_presenter_layered_begin(dt_presenter_layered_t *l)
 
 // the device pixels an image covers lie in box (x0, y0, x1, y1), and are
 // those whose center inverse maps into the frame
-static gboolean _coverage(const dt_presenter_layered_t *l,
+static gboolean _coverage(const _widget_t *l,
                           const dt_presenter_image_t *image,
                           int box[4],
                           cairo_matrix_t *inverse)
@@ -272,8 +222,8 @@ static inline gboolean _inside(const cairo_matrix_t *inverse,
   return *u >= 0.0 && *v >= 0.0 && *u < frame->width && *v < frame->height;
 }
 
-void dt_presenter_layered_image(dt_presenter_layered_t *l,
-                                const dt_presenter_image_t *image)
+static void _cut_out(_widget_t *l,
+                     const dt_presenter_image_t *image)
 {
   int box[4];
   cairo_matrix_t inverse;
@@ -296,7 +246,66 @@ void dt_presenter_layered_image(dt_presenter_layered_t *l,
   cairo_surface_mark_dirty(l->foreground);
 }
 
-static void _compose(dt_presenter_layered_t *l,
+// the frame as the window shows it, float for the compose
+static gboolean _rendition(const _widget_t *l,
+                           dt_presenter_image_t *image)
+{
+  dt_display_output_t output;
+  dt_presenter_window_output(l->window->window, &output);
+  image->pixels = dt_frame_float(image->frame, &output.image);
+  return image->pixels != NULL;
+}
+
+// an image takes the pixels it covers: clear them in the foreground
+static gboolean _image(dt_presenter_backend_t *self,
+                       void *data,
+                       cairo_t *cr,
+                       const double x,
+                       const double y,
+                       dt_presenter_image_t *image)
+{
+  _widget_t *l = data;
+  if(!_rendition(l, image)) return FALSE;
+  _cut_out(l, image);
+  return TRUE;
+}
+
+// the kept foreground, with its images cut out and everything drawn above
+// them, replaces what this draw has drawn so far; its images go below
+// whatever this draw places later
+static gboolean _keep(dt_presenter_backend_t *self,
+                      void *data,
+                      cairo_t *cr,
+                      const cairo_matrix_t *base,
+                      GArray *images)
+{
+  _widget_t *l = data;
+  if(!l || !l->kept) return FALSE;
+
+  cairo_save(cr);
+  cairo_set_matrix(cr, base);
+  cairo_set_source_surface(cr, l->kept, 0, 0);
+  cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+  double sx, sy;
+  cairo_surface_get_device_scale(l->kept, &sx, &sy);
+  cairo_rectangle(cr, 0, 0, cairo_image_surface_get_width(l->kept) / sx,
+                  cairo_image_surface_get_height(l->kept) / sy);
+  cairo_clip(cr);
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+  cairo_paint(cr);
+  cairo_restore(cr);
+
+  for(guint k = 0; k < l->kept_images->len; k++)
+  {
+    // in the output the window has now, which may not be the one the kept
+    // draw had
+    dt_presenter_image_t image = g_array_index(l->kept_images, dt_presenter_image_t, k);
+    if(_rendition(l, &image)) g_array_append_val(images, image);
+  }
+  return TRUE;
+}
+
+static void _compose(_widget_t *l,
                      const int width,
                      const int height)
 {
@@ -363,7 +372,7 @@ static void _compose(dt_presenter_layered_t *l,
   }
 }
 
-static gboolean _image_changed(const dt_presenter_layered_t *l,
+static gboolean _image_changed(const _widget_t *l,
                                const int width,
                                const int height)
 {
@@ -382,12 +391,62 @@ static gboolean _image_changed(const dt_presenter_layered_t *l,
   return FALSE;
 }
 
+// what a replay covers in a kept foreground, put back after the present
+static cairo_surface_t *_save(const _widget_t *l,
+                              const int x,
+                              const int y,
+                              const int width,
+                              const int height)
+{
+  const int x0 = MAX(0, x), y0 = MAX(0, y);
+  const int x1 = MIN(l->width, x + width), y1 = MIN(l->height, y + height);
+  if(x0 >= x1 || y0 >= y1) return NULL;
+
+  const int s = l->scale;
+  cairo_surface_t *patch = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+                                                      (x1 - x0) * s, (y1 - y0) * s);
+  cairo_surface_set_device_scale(patch, s, s);
+  // in the widget's user space, as the foreground
+  cairo_surface_set_device_offset(patch, -x0 * s, -y0 * s);
+  cairo_t *cr = cairo_create(patch);
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+  cairo_set_source_surface(cr, l->foreground, 0, 0);
+  cairo_paint(cr);
+  cairo_destroy(cr);
+  return patch;
+}
+
+static void _restore(_widget_t *l,
+                     GSList *saved)
+{
+  cairo_t *cr = cairo_create(l->foreground);
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+  // the last saved first: it saved what the replays before it drew
+  for(GSList *p = saved; p; p = g_slist_next(p))
+  {
+    cairo_surface_t *patch = p->data;
+    double ox, oy, sx, sy;
+    cairo_surface_get_device_offset(patch, &ox, &oy);
+    cairo_surface_get_device_scale(patch, &sx, &sy);
+    cairo_save(cr);
+    cairo_rectangle(cr, -ox / sx, -oy / sy, cairo_image_surface_get_width(patch) / sx,
+                    cairo_image_surface_get_height(patch) / sy);
+    cairo_clip(cr);
+    cairo_set_source_surface(cr, patch, 0, 0);
+    cairo_paint(cr);
+    cairo_restore(cr);
+  }
+  cairo_destroy(cr);
+  g_slist_free_full(saved, (GDestroyNotify)cairo_surface_destroy);
+}
+
 // GTK3 draws the widgets that GtkOverlay stacks above a presenting
 // widget into its own surface, which the layers cover: draw them into the
 // foreground too. the real ones stay below and keep getting the input,
 // since the layers take none. subtrees that present are left out, they
-// are the layers' own content
-static void _replay_overlays(dt_presenter_layered_t *l)
+// are the layers' own content. with saved, what each covers is saved first
+static void _replay_overlays(_widget_t *l,
+                             GSList **saved)
 {
   GtkWidget *child = l->widget;
   for(GtkWidget *parent = gtk_widget_get_parent(child);
@@ -411,6 +470,12 @@ static void _replay_overlays(dt_presenter_layered_t *l)
          || !gtk_widget_translate_coordinates(overlay, l->widget, 0, 0, &x, &y))
         continue;
 
+      if(saved)
+      {
+        cairo_surface_t *patch = _save(l, x, y, gtk_widget_get_allocated_width(overlay),
+                                       gtk_widget_get_allocated_height(overlay));
+        if(patch) *saved = g_slist_prepend(*saved, patch);
+      }
       cairo_save(l->cr);
       cairo_translate(l->cr, x, y);
       gtk_widget_draw(overlay, l->cr);
@@ -420,7 +485,7 @@ static void _replay_overlays(dt_presenter_layered_t *l)
   }
 }
 
-static void _present(dt_presenter_layered_t *l)
+static void _present(_widget_t *l)
 {
   l->pending = FALSE;
   const int width = l->width * l->scale;
@@ -443,7 +508,11 @@ static void _present(dt_presenter_layered_t *l)
     }
   }
 
-  _replay_overlays(l);
+  // a kept foreground is the widget's drawing alone: what is replayed
+  // above it is not part of the presentation a later draw shows again
+  GSList *saved = NULL;
+  const gboolean kept = l->foreground == l->kept;
+  _replay_overlays(l, kept ? &saved : NULL);
   cairo_surface_flush(l->foreground);
 
   dt_presenter_layers_t layers = { .image = changed ? l->image : NULL,
@@ -452,23 +521,53 @@ static void _present(dt_presenter_layered_t *l)
                                    .width = width,
                                    .height = height,
                                    .scale = l->scale };
-  gtk_widget_translate_coordinates(l->widget, l->window->toplevel, 0, 0,
+  gtk_widget_translate_coordinates(l->widget, l->window->window->toplevel, 0, 0,
                                    &layers.x, &layers.y);
-  if(!l->window->backend->present(l->window->backend, l->widget,
-                                  &l->backend_data, &layers))
+  dt_presenter_transport_t *transport = l->window->transport;
+  if(!transport->present(transport, l->widget, &l->transport_data, &layers))
   {
     // not shown: the image has to go out with the next present
     g_array_set_size(l->shown, 0);
     l->shown_width = l->shown_height = 0;
   }
+  if(saved) _restore(l, saved);
 }
 
-void dt_presenter_layered_end(dt_presenter_layered_t *l,
-                              cairo_t *widget_cr,
-                              const GArray *images)
+static void _hide(_widget_t *l)
 {
+  l->pending = FALSE;
+  g_array_set_size(l->images, 0);
+  g_array_set_size(l->shown, 0);
+  l->shown_width = l->shown_height = 0;
+  dt_presenter_transport_t *transport = l->window->transport;
+  if(l->transport_data) transport->clear(transport, &l->transport_data);
+}
+
+static void _end(dt_presenter_backend_t *self,
+                 void *data,
+                 cairo_t *widget_cr,
+                 const cairo_matrix_t *base,
+                 const GArray *images,
+                 const dt_presenter_kept_t kept)
+{
+  _widget_t *l = data;
   g_array_set_size(l->images, 0);
   g_array_append_vals(l->images, images->data, images->len);
+
+  if(kept == DT_PRESENTER_KEPT_NONE)
+    _drop_kept(l);
+  else if(kept == DT_PRESENTER_KEPT_THIS)
+  {
+    // begin() drew on another surface than the kept one, which becomes the
+    // spare: two surfaces alternate while every draw is kept
+    _surface_destroy(&l->spare);
+    l->spare = l->kept;
+    l->kept = cairo_surface_reference(l->foreground);
+    for(guint k = 0; k < images->len; k++)
+      dt_frame_ref(g_array_index(images, dt_presenter_image_t, k).frame);
+    _images_unref(l->kept_images);
+    g_array_append_vals(l->kept_images, images->data, images->len);
+  }
 
   if(images->len)
   {
@@ -477,7 +576,7 @@ void dt_presenter_layered_end(dt_presenter_layered_t *l,
   }
 
   // nothing to show on the layers: what was drawn goes to GTK's surface
-  dt_presenter_layered_clear(l);
+  _hide(l);
   cairo_surface_flush(l->foreground);
   cairo_save(widget_cr);
   cairo_set_source_surface(widget_cr, l->foreground, 0, 0);
@@ -485,13 +584,64 @@ void dt_presenter_layered_end(dt_presenter_layered_t *l,
   cairo_restore(widget_cr);
 }
 
-void dt_presenter_layered_clear(dt_presenter_layered_t *l)
+static void _clear(dt_presenter_backend_t *self,
+                   void *data)
 {
-  l->pending = FALSE;
-  g_array_set_size(l->images, 0);
-  g_array_set_size(l->shown, 0);
-  l->shown_width = l->shown_height = 0;
-  if(l->backend_data) l->window->backend->clear(l->window->backend, &l->backend_data);
+  _widget_t *l = data;
+  if(!l) return;
+  _hide(l);
+  _drop_kept(l);
+}
+
+static void _release(dt_presenter_backend_t *self,
+                     void **data)
+{
+  _window_t *w = (_window_t *)self;
+  _widget_t *l = *data;
+  if(!l) return;
+  if(l->transport_data) w->transport->release(w->transport, &l->transport_data);
+  if(l->cr) cairo_destroy(l->cr);
+  _surface_destroy(&l->foreground);
+  _drop_kept(l);
+  g_array_free(l->kept_images, TRUE);
+  g_array_free(l->images, TRUE);
+  g_array_free(l->shown, TRUE);
+  dt_free_align(l->image);
+  w->widgets = g_list_remove(w->widgets, l);
+  g_free(l);
+  *data = NULL;
+}
+
+static void _free(dt_presenter_backend_t *self)
+{
+  _window_t *w = (_window_t *)self;
+  w->transport->free(w->transport);
+  g_list_free(w->widgets);
+  g_free(w);
+}
+
+dt_presenter_backend_t *dt_presenter_layered_new(dt_presenter_window_t *window)
+{
+  dt_presenter_transport_t *transport = NULL;
+#ifdef HAVE_WAYLAND
+  transport = dt_presenter_wayland_new(window->toplevel, window);
+  // the window paints with cairo on its system display profile. NULL takes
+  // back what a failed setup reported
+  if(!transport) dt_presenter_window_set_output(window, NULL);
+#endif
+  if(!transport) return NULL;
+
+  _window_t *w = g_malloc0(sizeof(_window_t));
+  w->window = window;
+  w->transport = transport;
+  w->backend = (dt_presenter_backend_t){ .begin = _begin,
+                                         .image = _image,
+                                         .keep = _keep,
+                                         .end = _end,
+                                         .clear = _clear,
+                                         .release = _release,
+                                         .free = _free };
+  return &w->backend;
 }
 
 // clang-format off

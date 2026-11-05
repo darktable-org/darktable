@@ -235,13 +235,22 @@ change moves the window's serial and redraws it, and the producers compare
 the serial there ([output description](#output-description)). A frame
 rendered for another headroom keeps its tone mapping until then.
 
-- `dt_presenter_keep()` shows the images of the last full draw again where
-  they were (the darkroom while it loads the next image without the loading
-  screen). A draw GTK restricted to a damaged area does not replace them.
-  Kept images are shown in the window's output as it is now, converted as
-  any other.
-- `dt_presenter_clear()` drops a widget's images (darkroom `leave()`);
-  unmapping a widget drops them too.
+- `dt_presenter_retain()` keeps the draw in progress: everything it shows,
+  its images and all that is drawn around and above them, is the widget's
+  kept presentation from then on. `dt_presenter_keep()` paints the kept
+  presentation where it was, replacing what the draw has drawn so far, and
+  the rest of the draw goes on top; it returns FALSE when there is none.
+  The darkroom retains its full image draws while the loading screen
+  preference (`darkroom/ui/loading_screen`) is off, as master cached its
+  drawing then, and shows them while the next image loads: the color
+  assessment surround, focus peaking and guides of the image it switches
+  away from stay, under the loading toast. A draw GTK restricted to a
+  damaged area neither replaces nor drops the kept presentation; a full
+  draw that neither retains itself nor shows the kept one drops it. Kept
+  images are shown in the window's output as it is now, converted as any
+  other.
+- `dt_presenter_clear()` drops a widget's images and kept presentation
+  (darkroom `leave()`); unmapping a widget does too.
 - `dt_view_paint_surface()` is the darkroom's user: background, then the
   preview fallback and the main image through the presenter. Pickers, masks,
   module overlays, guides and focus peaking follow on the same context.
@@ -253,26 +262,45 @@ duplicate manager's preview, and the slideshow.
 
 ## Backends
 
-A window has one backend, chosen when its first presenting widget draws
-(`gui/presenter_layers.c`, `_window_get()`): a native one if the platform has
-one and it can set up, otherwise cairo.
+A window has one backend for as long as it exists, chosen when its first
+presenting widget draws (`gui/presenter.c`, `_window_get()`): layered if the
+platform has a transport and it can set up, otherwise cairo. The core,
+`gui/presenter.c`, keeps the widget records, the references on the frames
+of each widget's last draw, the test for a draw GTK clipped to a damaged
+area, and the matrix of each image; it has no branch on the backend. A
+backend (`dt_presenter_backend_t` in `gui/presenter_backend.h`) begins a
+widget's draw and returns the context to draw on, shows an image, paints
+the kept presentation, ends the draw and clears the widget. Each keeps
+the presentation its own way, with the same meaning: what the widget's
+retained draw showed.
 
 ### cairo
 
-Paints each frame's RGB24 pixels into the widget's own context: frames
-for a cairo window are made in RGB24, so a frame in the window's encoding
-is neither converted nor copied on the GUI thread; one made for an earlier
-output is converted there once. The window's output is its system display profile (display2 for
+`gui/presenter_cairo.c`. The widget draws on GTK's own context, and each
+frame's RGB24 pixels are painted there: frames for a cairo window are made
+in RGB24, so a frame in the window's encoding is neither converted nor
+copied on the GUI thread; one made for an earlier output is converted
+there once. The window's output is its system display profile (display2 for
 the second window) as image and device encoding, the same output a window
 has before it is realized and after it is gone.
 Every window without a native backend uses it: X11, macOS, Windows, and
 Wayland where the compositor cannot take the native backend or its output
 is plain SDR sRGB ([Wayland](#wayland)).
 
-### Native backends and their layers
+The kept presentation is what GTK's target holds at the end of the
+retained draw. On X11, GDK draws each frame into a surface of its own, and
+a reference on it keeps it, as master kept the darkroom's: it holds what
+GTK drew above the widget in that frame as well, a toast among it. On
+Wayland and Quartz the target is the window's buffer, which the next frame
+overwrites, and on Windows holding it stops GTK from invalidating the
+widget (#20831), so there the widget's part is copied into a surface of
+the widget's size, 4 bytes per device pixel, at the end of every retained
+draw.
 
-A native backend shows a window's images on surfaces of its own above GTK's
-surface, from bottom to top:
+### Layered
+
+The layered backend, the native one, shows a window's images on surfaces of
+its own above GTK's surface, from bottom to top:
 
 1. GTK's surface: everything GTK draws, untagged.
 2. The image layer: float, in the window's output, alpha 0 off the images.
@@ -288,9 +316,21 @@ surface, from bottom to top:
 
 Both layers take no input, so GTK below keeps getting all of it. A presenting
 widget that draws no image puts its drawing on GTK's surface as cairo would,
-and its layers are unmapped (lighttable, map, a loading darkroom).
+and its layers are unmapped (lighttable, map, a darkroom loading its first
+image).
 
-The backend reports the window's output, its image encoding and, as
+The kept presentation is the retained draw's foreground, with its images
+cut out and all it drew above them, and that draw's images. Keeping it
+paints that foreground over what the draw has drawn so far and places its
+images again, below anything the draw places later. While a widget's
+draws are retained, they alternate between two foreground surfaces, so
+keeping costs one more foreground-size surface per retaining widget, 4
+bytes per device pixel, and no copy. What is replayed above the widget at
+present (GtkOverlay children such as toasts) is not part of its
+presentation: on a kept foreground the replay saves what it covers and
+puts it back after the transport has taken the layers.
+
+The transport reports the window's output, its image encoding and, as
 device, the profile GTK's own surface is shown in, through
 `dt_presenter_window_set_output()`, at setup and whenever it changes. The
 pipes of that window then render to that output, and everything GTK draws
@@ -304,19 +344,19 @@ returns to its system display profile.
 
 Code is split by what it works around:
 
-- `gui/presenter.c`: the API, retained images and the references on their
-  frames, the cairo backend.
-- `gui/presenter_layers.c`: the GTK3 part every native backend shares. It
-  composes the image layer and the foreground, and computes their size,
-  scale and position in the toplevel. A GTK4 port, where widgets draw
-  textures with color states, deletes it.
+- `gui/presenter_layers.c`: the layered backend, the GTK3 part every
+  native platform shares. It composes the image layer and the foreground,
+  keeps the presentation, and computes the layers' size, scale and
+  position in the toplevel. A GTK4 port, where widgets draw textures with
+  color states, deletes it.
 - `gui/presenter_<platform>.c`: transport and timing. Setup and fallback,
   output description and headroom, encoding the composed image for the
   compositor, buffers, and `present()`, `clear()`, `release()` and `free()`
-  (`dt_presenter_backend_t` in `gui/presenter_layers.h`). The backend calls
-  `dt_presenter_window_present()` where the layers become visible together
-  with GTK's surface for that frame, or later, never earlier. `present()` may refuse while the compositor holds
-  its buffers; the layers are then composed and presented again next frame.
+  (`dt_presenter_transport_t` in `gui/presenter_layers.h`). The transport
+  calls `dt_presenter_window_present()` where the layers become visible
+  together with GTK's surface for that frame, or later, never earlier.
+  `present()` may refuse while the compositor holds its buffers; the
+  layers are then composed and presented again next frame.
 
 ### Wayland
 
@@ -366,13 +406,14 @@ Each lives in one file and goes away with the limitation it works around.
 | Workaround | Where | Works around | Removed when |
 |---|---|---|---|
 | image and foreground layers above GTK's surface | `presenter_layers.c` | GTK3 cannot give a widget a surface with a color state | GTK4: the image is a texture with a color state |
-| `gtk_widget_draw()` replay of GtkOverlay children stacked above a presenting widget into the foreground | `presenter_layers.c`, `_replay_overlays()` | the layers cover GTK's drawing of those widgets (toasts, masks panel, second window buttons); where GTK3 draws popovers into the toplevel (Quartz, Win32), popovers need the same | same |
+| `gtk_widget_draw()` replay of GtkOverlay children stacked above a presenting widget into the foreground, saved and put back on a kept foreground | `presenter_layers.c`, `_replay_overlays()` | the layers cover GTK's drawing of those widgets (toasts, masks panel, second window buttons); where GTK3 draws popovers into the toplevel (Quartz, Win32), popovers need the same | same |
 | composing and presenting in the frame clock's `paint` signal, after GDK's handler | `presenter_wayland.c`, `_paint()` | GTK3 runs all draws in `paint` and GDK commits its surface in `after-paint`; the layers must be ready in between | same |
 | GTK's surface taken as sRGB, the window's device encoding | `presenter_wayland.c`, `_set_output()` | GTK3 does not tag its surface; an untagged surface is sRGB to the compositor, with a transfer function of its choosing | GTK tags its surfaces |
 | a plain SDR sRGB output left to cairo with the system display profile | `presenter_wayland.c`, `_passes_untagged_through()` | mutter's default color mode composites as sRGB and does not apply the profile assigned to the screen (mutter#4597) | the compositor describes its real output (mutter MR !5177); nothing to do, the predicate stops matching |
 | no opaque region on the layers | `presenter_wayland.c`, `_layer_init()` | a compositor may stop frame callbacks for a surface it considers occluded, which stops GTK's frame clock | GTK4 |
 | surface feedback destroyed when the toplevel unmaps | `presenter_wayland.c`, `_toplevel_unmap()` | GDK destroys its `wl_surface` when a window is hidden, and asking the feedback on it for the preferred description is then a protocol error | GTK4 |
-| a draw GTK clipped to a damaged area does not replace the images `dt_presenter_keep()` shows | `presenter.c`, `dt_presenter_begin()` | GTK3 redraws only the damaged part of a widget, so such a draw records clipped images; it stays in `presenter.c` because the cairo backend needs it too | GTK4: a widget's snapshot is always whole |
+| a draw GTK clipped to a damaged area does not replace or drop the presentation `dt_presenter_keep()` shows | `presenter.c`, `dt_presenter_begin()` | GTK3 redraws only the damaged part of a widget, so such a draw records clipped images; it stays in `presenter.c` because both backends need it | GTK4: a widget's snapshot is always whole |
+| a cairo window's kept presentation is a reference on GTK's target on X11 and a copy of the widget's part elsewhere | `presenter_cairo.c`, `dt_presenter_cairo_new()` | GTK3 keeps no rendering of a widget: what it drew is only in GDK's target, the window's buffer on Wayland and Quartz, which the next frame overwrites, and a surface that cannot be held on Win32 (#20831) | GTK4: a widget's render nodes are kept between frames |
 
 ## Scope
 
