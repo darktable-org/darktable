@@ -1424,19 +1424,72 @@ void dt_colorspaces_set_backend_output(const dt_colorspaces_color_profile_type_t
                                  : DT_COLORSPACES_PROFILE_TYPE_DISPLAY);
 }
 
+typedef struct _system_profile_t
+{
+  uint8_t *data; // NULL for the sRGB placeholders of dt_colorspaces_init()
+  size_t size;
+  cmsHPROFILE profile;
+} _system_profile_t;
+
+static void _system_profile_add(dt_colorspaces_t *self,
+                                uint8_t *data,
+                                const size_t size,
+                                cmsHPROFILE profile)
+{
+  _system_profile_t *s = g_malloc(sizeof(_system_profile_t));
+  s->data = data;
+  s->size = size;
+  s->profile = profile;
+  self->system_display_profiles = g_list_prepend(self->system_display_profiles, s);
+}
+
+static void _system_profile_free(gpointer data)
+{
+  _system_profile_t *s = data;
+  dt_colorspaces_cleanup_profile(s->profile);
+  g_free(s->data);
+  g_free(s);
+}
+
+// the profile of these bytes, taking them: the one opened for the same
+// bytes before, if any, so switching back and forth reuses it and the list
+// holds each profile once. NULL if lcms rejects the bytes.
+// make sure that xprofile_lock is held when calling this!
+static cmsHPROFILE _system_profile(dt_colorspaces_t *self,
+                                   uint8_t *data,
+                                   const size_t size,
+                                   const uint8_t **bytes)
+{
+  for(GList *iter = self->system_display_profiles; iter; iter = g_list_next(iter))
+  {
+    const _system_profile_t *s = iter->data;
+    if(s->data && s->size == size && !memcmp(s->data, data, size))
+    {
+      g_free(data);
+      *bytes = s->data;
+      return s->profile;
+    }
+  }
+
+  cmsHPROFILE profile = cmsOpenProfileFromMem(data, size);
+  if(!profile)
+  {
+    g_free(data);
+    return NULL;
+  }
+  _system_profile_add(self, data, size, profile);
+  *bytes = data;
+  return profile;
+}
+
 // make sure that darktable.color_profiles->xprofile_lock is held when calling this!
 static gboolean _update_display_profile(guchar *tmp_data,
                                         const gsize size,
                                         char *name,
                                         const size_t name_size)
 {
-  uint8_t *old_data = darktable.color_profiles->xprofile_data;
-  const int old_size = darktable.color_profiles->xprofile_size;
-
-  darktable.color_profiles->xprofile_data = tmp_data;
-  darktable.color_profiles->xprofile_size = size;
-
-  cmsHPROFILE profile = cmsOpenProfileFromMem(tmp_data, size);
+  const uint8_t *data = NULL;
+  cmsHPROFILE profile = _system_profile(darktable.color_profiles, tmp_data, size, &data);
   gboolean match = FALSE;
   if(profile)
   {
@@ -1445,8 +1498,9 @@ static gboolean _update_display_profile(guchar *tmp_data,
       dt_colorspaces_color_profile_t *p = iter->data;
       if(p->type == DT_COLORSPACE_DISPLAY)
       {
-        if(p->profile) dt_colorspaces_cleanup_profile(p->profile);
         p->profile = profile;
+        darktable.color_profiles->xprofile_data = data;
+        darktable.color_profiles->xprofile_size = size;
         if(name)
           dt_colorspaces_get_profile_name(profile, "en", "US", name, name_size);
 
@@ -1457,13 +1511,6 @@ static gboolean _update_display_profile(guchar *tmp_data,
       }
     }
   }
-  if(match)
-    g_free(old_data);
-  else
-  {
-    darktable.color_profiles->xprofile_data = old_data;
-    darktable.color_profiles->xprofile_size = old_size;
-  }
 
   return match;
 }
@@ -1473,16 +1520,8 @@ static gboolean _update_display2_profile(guchar *tmp_data,
                                          char *name,
                                          const size_t name_size)
 {
-  /*  We try if LCMS2 accepts tmp_data, if there was a match, everything is fine
-      and we can free the old stuff, otherwise continue using old data.
-  */
-  uint8_t *old_data = darktable.color_profiles->xprofile_data2;
-  const int old_size = darktable.color_profiles->xprofile_size2;
-
-  darktable.color_profiles->xprofile_data2 = tmp_data;
-  darktable.color_profiles->xprofile_size2 = size;
-
-  cmsHPROFILE profile = cmsOpenProfileFromMem(tmp_data, size);
+  const uint8_t *data = NULL;
+  cmsHPROFILE profile = _system_profile(darktable.color_profiles, tmp_data, size, &data);
   gboolean match = FALSE;
   if(profile)
   {
@@ -1491,8 +1530,9 @@ static gboolean _update_display2_profile(guchar *tmp_data,
       dt_colorspaces_color_profile_t *p = iter->data;
       if(p->type == DT_COLORSPACE_DISPLAY2)
       {
-        if(p->profile) dt_colorspaces_cleanup_profile(p->profile);
         p->profile = profile;
+        darktable.color_profiles->xprofile_data2 = data;
+        darktable.color_profiles->xprofile_size2 = size;
         if(name) dt_colorspaces_get_profile_name(profile, "en", "US", name, name_size);
 
         // update cached transforms for color management of thumbnails
@@ -1503,13 +1543,6 @@ static gboolean _update_display2_profile(guchar *tmp_data,
     }
   }
 
-  if(match)
-    g_free(old_data);
-  else
-  {
-    darktable.color_profiles->xprofile_data2 = old_data;
-    darktable.color_profiles->xprofile_size2 = old_size;
-  }
   return match;
 }
 
@@ -1644,15 +1677,19 @@ dt_colorspaces_t *dt_colorspaces_init()
   // init the display profile with srgb so some stupid code that runs
   // before the real profile could be fetched has something to work
   // with
+  cmsHPROFILE display = dt_colorspaces_create_srgb_profile();
+  cmsHPROFILE display2 = dt_colorspaces_create_srgb_profile();
+  _system_profile_add(res, NULL, 0, display);
+  _system_profile_add(res, NULL, 0, display2);
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_DISPLAY,
-                     dt_colorspaces_create_srgb_profile(),
+                     display,
                      _("system display profile"), -1, -1,
                      ++display_pos, ++category_pos, -1, -1));
   res->profiles = g_list_append
     (res->profiles,
-     _create_profile(DT_COLORSPACE_DISPLAY2, dt_colorspaces_create_srgb_profile(),
+     _create_profile(DT_COLORSPACE_DISPLAY2, display2,
                      _("system display profile (second window)"), -1, -1, -1,
                      ++category_pos, -1, ++display2_pos));
   // we want a v4 with parametric curve for input and a v2 with point trc for output
@@ -1927,16 +1964,15 @@ void dt_colorspaces_cleanup(dt_colorspaces_t *self)
   for(GList *iter = self->profiles; iter; iter = g_list_next(iter))
   {
     dt_colorspaces_color_profile_t *p = iter->data;
-    dt_colorspaces_cleanup_profile(p->profile);
+    if(p->type != DT_COLORSPACE_DISPLAY && p->type != DT_COLORSPACE_DISPLAY2)
+      dt_colorspaces_cleanup_profile(p->profile);
   }
   g_list_free_full(self->profiles, free);
+  g_list_free_full(self->system_display_profiles, _system_profile_free);
 
   pthread_rwlock_destroy(&self->xprofile_lock);
   g_free(self->colord_profile_file);
-  g_free(self->xprofile_data);
-
   g_free(self->colord_profile_file2);
-  g_free(self->xprofile_data2);
 
   free(self);
 }
