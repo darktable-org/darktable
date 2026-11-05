@@ -728,9 +728,12 @@ uint32_t dt_dev_new_frame_id(void);
  * develop an image and returns the buf and processed width / height.
  * this is done as in the context of the darkroom, meaning that the
  * final processed sizes will align perfectly on the darkroom view.
- * the buffer is float RGBA in output, or in the pipe's working RGB if
- * output is NULL and colorout is filtered out, and is freed with
- * dt_free_align().
+ * the buffer is float RGBA rendered for output, or in the pipe's working
+ * RGB if output is NULL and colorout is filtered out, and is freed with
+ * dt_free_align(). encoding, if not NULL, receives what its values are,
+ * for dt_presenter_image(): output's profile, the sRGB colorout replaced
+ * it with, or the working RGB; type DT_COLORSPACE_NONE if nothing was
+ * rendered or no profile describes the values.
  * if called with a valid CL devid that device is used without locking/unlocking as the caller is doing that
  */
 void dt_dev_image(const dt_imgid_t imgid,
@@ -746,7 +749,8 @@ void dt_dev_image(const dt_imgid_t imgid,
                   GList *module_filter_out,
                   const int devid,
                   const gboolean finalscale,
-                  const dt_display_output_t *output);
+                  const dt_display_output_t *output,
+                  dt_display_output_t *encoding);
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d);
 void dt_dev_reset_chroma(dt_develop_t *dev);

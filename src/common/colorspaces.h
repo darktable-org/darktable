@@ -183,6 +183,19 @@ typedef enum dt_colorspaces_cicp_matrix_coefficients_t
     DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED = 2
 } dt_colorspaces_cicp_matrix_coefficients_t;
 
+/* what a pipe's output values mean: this profile's encoding (RGB, Lab or
+ * XYZ, PQ and HLG with their transfer functions), made with this intent and
+ * rendered for a peak of headroom times reference white. resolved: what
+ * the pipe produced after every fallback, not a request. type
+ * DT_COLORSPACE_NONE: no profile describes the values */
+typedef struct dt_color_encoding_t
+{
+  dt_colorspaces_color_profile_type_t type;
+  char filename[DT_IOP_COLOR_ICC_LEN];
+  dt_iop_color_intent_t intent;
+  float headroom;
+} dt_color_encoding_t;
+
 /* the encoding a presented pipe renders to: display-referred RGB in this
  * profile, 1.0 at reference white and up to headroom above it */
 typedef struct dt_display_output_t

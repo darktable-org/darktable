@@ -4453,7 +4453,8 @@ void dt_dev_image(const dt_imgid_t imgid,
                   GList *module_filter_out,
                   const int devid,
                   const gboolean finalscale,
-                  const dt_display_output_t *output)
+                  const dt_display_output_t *output,
+                  dt_display_output_t *encoding)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, TRUE);
@@ -4500,6 +4501,7 @@ void dt_dev_image(const dt_imgid_t imgid,
   if(buf_width) *buf_width = pipe->backbuf_width;
   if(buf_height) *buf_height = pipe->backbuf_height;
   if(scale) *scale = pipe->backbuf_scale;
+  if(encoding) *encoding = pipe->backbuf_output;
 
   if(zoom_pos) memcpy(zoom_pos, pipe->backbuf_zoom_pos, sizeof(dt_dev_zoom_pos_t));
 

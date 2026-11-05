@@ -368,6 +368,7 @@ static void _setup_overlay(dt_iop_module_t *self,
                  disabled_modules,
                  piece->pipe->devid,
                  TRUE,
+                 NULL,
                  NULL);
 
     void *new_buf = buf;

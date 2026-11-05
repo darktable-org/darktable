@@ -247,7 +247,8 @@ void gui_post_expose(dt_lib_module_t *self,
     if(d->buf)
       dt_free_align(d->buf);
 
-    dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &d->output);
+    dt_display_output_t output;
+    dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &output);
     d->frame_id = dt_dev_new_frame_id();
     dt_dev_image(d->imgid,
                  width,
@@ -262,6 +263,7 @@ void gui_post_expose(dt_lib_module_t *self,
                  NULL,
                  DT_DEVICE_NONE,
                  FALSE,
+                 &output,
                  &d->output);
 
     d->preview_id = d->imgid;
