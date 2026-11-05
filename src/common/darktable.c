@@ -73,6 +73,7 @@
 #include "control/jobs/sidecar_jobs.h"
 #include "control/signal.h"
 #include "develop/blend.h"
+#include "develop/frame.h"
 #include "develop/imageop.h"
 #include "gui/accelerators.h"
 #include "gui/workspace.h"
@@ -2821,6 +2822,7 @@ void dt_cleanup()
   dt_image_cache_cleanup();
   dt_mipmap_cache_cleanup();
 
+  dt_frame_cleanup();
   dt_colorspaces_cleanup(darktable.color_profiles);
 #ifdef HAVE_AI
   dt_ai_models_cleanup();

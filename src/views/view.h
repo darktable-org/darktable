@@ -669,13 +669,7 @@ void dt_view_paint_surface(cairo_t *cr,
                            const size_t height,
                            dt_dev_viewport_t *port,
                            const dt_window_t window,
-                           const float *buf,
-                           const dt_display_output_t *buf_output,
-                           const uint32_t buf_id,
-                           float buf_scale,
-                           int buf_width,
-                           int buf_height,
-                           dt_dev_zoom_pos_t buf_zoom_pos);
+                           struct dt_frame_t *frame);
 
 typedef dt_hash_t dt_view_context_t;
 

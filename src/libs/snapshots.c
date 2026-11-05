@@ -25,6 +25,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "develop/frame.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
@@ -56,12 +57,7 @@ typedef struct dt_lib_snapshot_t
   dt_imgid_t imgid;
   uint32_t history_end;
   uint32_t id;
-  float *buf;
-  dt_display_output_t output;
-  uint32_t frame_id;
-  float scale;
-  size_t width, height;
-  dt_dev_zoom_pos_t zoom_pos;
+  dt_frame_t *frame;
 } dt_lib_snapshot_t;
 
 typedef struct dt_lib_snapshots_t
@@ -233,28 +229,21 @@ void gui_post_expose(dt_lib_module_t *self,
     // if a new snapshot is needed, do this now
     if(d->snap_requested && snap->ctx == ctx)
     {
-      dt_free_align(snap->buf);
-      snap->buf = NULL;
+      dt_frame_unref(snap->frame);
 
       // export image with proper size
       dt_display_output_t output;
       dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &output);
-      snap->frame_id = dt_dev_new_frame_id();
-      dt_dev_image(snap->imgid,
-                   width,
-                   height,
-                   snap->history_end,
-                   &snap->buf,
-                   &snap->scale,
-                   &snap->width,
-                   &snap->height,
-                   snap->zoom_pos,
-                   snap->id,
-                   NULL,
-                   DT_DEVICE_NONE,
-                   FALSE,
-                   &output,
-                   &snap->output);
+      snap->frame = dt_dev_image(snap->imgid,
+                                 width,
+                                 height,
+                                 FALSE,
+                                 snap->history_end,
+                                 snap->id,
+                                 NULL,
+                                 DT_DEVICE_NONE,
+                                 FALSE,
+                                 &output);
       d->snap_requested = FALSE;
       d->expose_again_timeout_id = 0;
     }
@@ -264,7 +253,7 @@ void gui_post_expose(dt_lib_module_t *self,
     // create many snapshot while zooming (this is slow), so we wait
     // to the zoom level to be stabilized to create the new snapshot.
     if(snap->ctx != ctx
-       || !snap->buf)
+       || !snap->frame)
     {
       // request a new snapshot in the following conditions:
       //    1. we are not panning
@@ -314,12 +303,8 @@ void gui_post_expose(dt_lib_module_t *self,
     cairo_clip(cri);
     cairo_fill(cri);
 
-    if(snap->buf)
-    {
-      dt_view_paint_surface(cri, width, height, &dev->full, DT_WINDOW_MAIN,
-                            snap->buf, &snap->output, snap->frame_id,
-                            snap->scale, snap->width, snap->height, snap->zoom_pos);
-    }
+    if(snap->frame)
+      dt_view_paint_surface(cri, width, height, &dev->full, DT_WINDOW_MAIN, snap->frame);
 
     cairo_restore(cri);
 
@@ -645,10 +630,10 @@ static void _clear_snapshot_entry(dt_lib_snapshot_t *s)
 
   g_free(s->module);
   g_free(s->label);
-  dt_free_align(s->buf);
+  dt_frame_unref(s->frame);
   s->module = NULL;
   s->label = NULL;
-  s->buf = NULL;
+  s->frame = NULL;
 }
 
 static void _clear_snapshots(dt_lib_module_t *self)

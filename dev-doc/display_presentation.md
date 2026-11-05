@@ -17,12 +17,15 @@ See also:
 - [A presented pipe renders to its output description](#output-description),
   taken from its window when the run starts. Workers read `pipe->output`;
   the display profile preferences can change under a running pipe.
-- [The pipe does not quantize](#float-backbuf). The screen backbuf is float,
-  and 8-bit values are made where an 8-bit surface is made, with
-  `dt_display_to_8bit()`.
-- [A presenting widget submits its images with
+- [A screen pipe publishes frames](#frames): immutable, refcounted copies
+  of its output, in the format its window asks for. The pipe does not
+  quantize; the publish step packs RGB24 for cairo windows, with
+  `dt_display_to_8bit()`. Any other format or encoding of a frame is a
+  rendition of it.
+- [A presenting widget submits its frames with
   `dt_presenter_image()`](#presenter-api) and draws everything else with
-  cairo as before.
+  cairo as before. GTK-side drawing takes the frame's rendition in the
+  window's device encoding.
 - [GTK-side colors are in the window's device
   encoding](#output-description): module GUIs convert with
   `dt_ioppr_get_gui_profile_info()`. The pipe's output profile describes the
@@ -62,7 +65,8 @@ markers are written as they are, saturated colors that mark in any output.
   (`dt_colorspaces_update_display_intent()`) republish it.
 - What GTK draws converts to the device encoding: the thumbnail transforms
   follow the main window's, picker swatches convert from what the preview
-  pipe produced to its window's, and module GUIs take
+  pipe produced to its window's, frames drawn by GTK take their device
+  rendition ([frames](#frames)), and module GUIs take
   `dt_ioppr_get_gui_profile_info()`, the main window's device profile, or
   sRGB for a profile without matrices. On a cairo window device and image
   are the same encoding, so these conversions are the identity there.
@@ -102,9 +106,11 @@ markers are written as they are, saturated colors that mark in any output.
   `dt_dev_process_image_job()`, so workers never read GUI state while
   processing. A new serial resynchronizes the pipe, a new screen profile
   for the system display profile included.
-- `dt_dev_image()` sets the output of its own pipe and returns the
-  encoding of its buffer. `NULL` means no display encoding: with colorout
-  filtered out, as overlay does, the buffer stays in the pipe's working RGB.
+- `dt_dev_image()` takes its sink's output description, which its pipe
+  renders to, and returns the frame the pipe published. An image encoding
+  of type `DT_COLORSPACE_NONE` is no display encoding: with colorout
+  filtered out, as overlay does, the frame stays in the pipe's working RGB,
+  float for the high quality overlay and RGB24 for the legacy one.
 - colorout renders to `pipe->output`, with the profile the run took
   (`profile`), not one it looks up again by type. The pipe's `output_headroom`, which
   sigmoid and agx tone map to, honors `output.headroom`. A soft proof sets
@@ -121,7 +127,7 @@ markers are written as they are, saturated colors that mark in any output.
   resolves the encoding when a run starts, after synchronization, since
   history replay can commit colorin after colorout. The scopes and the
   global color picker interpret the preview pipe's pixels with it, and it
-  labels the backbuf and `dt_dev_image()`'s buffer. `output_profile_info`
+  is each frame's encoding. `output_profile_info`
   stays the matrix stand-in for code that needs matrices: sRGB for a LUT
   profile.
 - An encoding and an output name the registry's profile (`profile`) as
@@ -149,23 +155,53 @@ markers are written as they are, saturated colors that mark in any output.
 - Export, thumbnail and AI pipes have no output description (`type` is
   `DT_COLORSPACE_NONE`).
 
-## Float Backbuf
+## Frames
 
-gamma is the terminal module of every pipe and writes float RGBA: the pixel
-as colorout encoded it, with alpha 1 (channel 3 carries mask data inside the
-pipe), or its mask and channel views as display values. A screen pipe copies
-that into `pipe->backbuf`, labels it with `backbuf_output`, its
-`output` with `output_encoding` as its image, and gives the frame a
-new `backbuf_id` (`dt_dev_new_frame_id()`).
+`src/develop/frame.h`. gamma is the terminal module of every pipe and
+writes float RGBA: the pixel as colorout encoded it, with alpha 1 (channel 3
+carries mask data inside the pipe), or its mask and channel views as display
+values. A screen pipe publishes that as a frame, `pipe->frame`, written
+under `backbuf_mutex`; `dt_dev_pixelpipe_frame()` takes a reference. A frame
+is a copy, as master's backbuf was, since the cache line it comes from is not
+pinned, and it never changes once it is made. It holds:
 
-Nothing quantizes inside the pipe. 8-bit values are made where an 8-bit
-surface is made, with `dt_display_to_8bit()`: by the presenter, by
-`dt_presenter_gtk_surface()` for GTK-side drawing (navigation, the filmstrip
-thumbnail of the edited image, the correction cursor, focus peaking), by the
-overlay module, and by the 8-bit export path. GTK-side drawing draws the
-same frame on every draw, so `dt_presenter_gtk_surface()` converts it once
-per frame id and keeps the last few; matrix profiles go through darktable's
-matrix and curves, others through lcms.
+- the pixels, in the format of the pipe's output (`format` in
+  `dt_display_output_t`): RGB24, packed on the worker with
+  `dt_display_to_8bit()` into cairo's BGRX with X 255, or float RGBA;
+- its encoding, the pipe's `output_encoding`: what colorout produced, not
+  what the pipe was asked for (`dt_frame_encoding()`);
+- the serial of the output it was made for (`dt_frame_made_for()`), and an
+  id, a 32-bit count of the frames made, so unique for the session in
+  practice;
+- its geometry (`dt_frame_geometry()`): size, scale and zoom position, as
+  master's `backbuf_scale` and `backbuf_zoom_pos` were. The pipe keeps
+  `backbuf_width` and `backbuf_height`, which many read.
+
+Exports, thumbnails, AI restore and pixel masks do not run screen pipes:
+their pipes keep `pipe->backbuf`, the last module's output.
+
+A window's output names the format its frames are made in: RGB24 where cairo
+paints them, float where a native backend composes them. A new format is a
+new image (`dt_display_output_diff()`), so the window's producers render
+again. The format belongs to the frame, not to the pipe cache: gamma and
+every cache line stay float, no hash includes it, and only the publish step
+packs.
+
+Any other format or encoding of a frame is a rendition: `dt_frame_surface()`
+(RGB24) and `dt_frame_float()`. A rendition is made from the frame's own
+pixels when it is first asked for, never from another rendition, and is kept
+with the frame; any thread may ask. In the frame's own format and profile it
+is the frame's pixels, whatever the headroom. Conversions are built from the
+profiles the encodings name, which live for the session, so a frame outlives
+the develop that made it, such as `dt_dev_image()`'s temporary one; matrix
+profiles go through darktable's matrix and curves, the matrix on unclipped
+values and an RGB24 rendition clipped after it, others through lcms.
+
+GTK-side drawing (navigation, the filmstrip thumbnail of the edited image,
+the correction cursor, focus peaking) takes a reference on the frame and
+draws `dt_frame_device_surface()`, its RGB24 rendition in the window's device
+encoding. On a cairo window that is the frame's own pixels: the GUI thread
+does what master did with its 8-bit backbuf.
 
 ## Presenter API
 
@@ -177,13 +213,14 @@ cairo_t *pcr = dt_presenter_begin(widget, cr);
 dt_presenter_end(widget, pcr);
 ```
 
-Inside, `dt_presenter_image(pcr, x, y, pixels, width, height, encoding, id,
-filter)` takes the place of `cairo_set_source_surface()` + `cairo_paint()` for
-an opaque image: it uses the context's current transformation and the extents
-of its clip, and paint order is kept, so whatever is drawn afterwards is on
-top. The pixels are converted once per `id` into a frame the presenter owns,
-so the caller may release the buffer (and its lock) when the call returns. A
-frame is its `id` and encoding: ids are never reused. It returns `FALSE`, and
+Inside, `dt_presenter_image(pcr, x, y, frame, filter)` takes the place of
+`cairo_set_source_surface()` + `cairo_paint()` for an opaque image: it uses
+the context's current transformation and the extents of its clip, and paint
+order is kept, so whatever is drawn afterwards is on top. The presenter
+holds a reference on the frame for as long as it shows or keeps it, so the
+caller may drop its own when the call returns. cairo paints the frame's
+RGB24 pixels, a native backend composes its float pixels; a frame in the
+other format is shown through its rendition. It returns `FALSE`, and
 shows nothing, when the platform owns the window's output (a native backend,
 or cairo on a compositor that manages color) and the frame is in another
 profile. The caller does nothing about it: taking the output moves the
@@ -215,8 +252,10 @@ one and it can set up, otherwise cairo.
 
 ### cairo
 
-Paints each frame, quantized to an RGB24 surface, into the widget's own
-context. The window's output is its system display profile (display2 for
+Paints each frame's RGB24 pixels into the widget's own context: frames
+for a cairo window are made in RGB24, so a frame in the window's encoding
+is neither converted nor copied on the GUI thread; one made for an earlier
+output is converted there once. The window's output is its system display profile (display2 for
 the second window) as image and device encoding, the same output a window
 has before it is realized and after it is gone.
 Every platform without a native backend uses it: X11, macOS, Windows, and
@@ -255,8 +294,8 @@ The backend reports the window's output, its image encoding and, as
 device, the profile GTK's own surface is shown in, through
 `dt_presenter_window_set_output()`, at setup and whenever it changes. The
 pipes of that window then render to that output, and everything GTK draws
-there (thumbnail transforms, picker swatches, the navigation thumbnail,
-`dt_presenter_gtk_surface()`, and module GUIs through
+there (thumbnail transforms, picker swatches, frames GTK draws through
+`dt_frame_device_surface()`, and module GUIs through
 `dt_ioppr_get_gui_profile_info()`) converts to the device profile, sRGB,
 where a cairo window's device profile is its system display profile. A
 new headroom changes the image encoding only: that window's images are
@@ -265,8 +304,8 @@ returns to its system display profile.
 
 Code is split by what it works around:
 
-- `gui/presenter.c`: the API, owned frames, retained images, the cairo
-  backend.
+- `gui/presenter.c`: the API, retained images and the references on their
+  frames, the cairo backend.
 - `gui/presenter_layers.c`: the GTK3 part every native backend shares. It
   composes the image layer and the foreground, and computes their size,
   scale and position in the toplevel. A GTK4 port, where widgets draw
@@ -348,8 +387,11 @@ Wayland they are subsurfaces above the layers.
 
 | Mistake | Instead |
 |---|---|
-| painting a backbuf with cairo in a presenting widget | `dt_presenter_image()` with the buffer's `backbuf_output` and `backbuf_id` |
-| reading `darktable.color_profiles` for a presented pipe's display profile, or `pipe->output` for what its pixels are | `pipe->output_encoding` or the buffer's label; `pipe->output` is the request |
+| painting a frame with cairo in a presenting widget | `dt_presenter_image()` with the frame |
+| reading `pipe->backbuf` of a screen pipe | `dt_dev_pixelpipe_frame()`; only non-screen pipes keep a backbuf |
+| keeping a frame's pixels or renditions after dropping its reference | hold a reference (`dt_frame_ref()`) for as long as you may draw it |
+| reading `darktable.color_profiles` for a presented pipe's display profile, or `pipe->output` for what its pixels are | `pipe->output_encoding` or the frame's encoding; `pipe->output` is the request |
 | converting a module GUI's colors with the pipe's output profile | `dt_ioppr_get_gui_profile_info()` |
-| converting a backbuf for GTK-side drawing on every draw | `dt_presenter_gtk_surface()` with the buffer's `backbuf_id` |
+| converting a frame for GTK-side drawing yourself | `dt_frame_device_surface()`, made once and kept with the frame |
+| converting with a develop's profile infos outside that develop | build them from the encoding's profile, as `frame.c` does: a temporary develop frees its list |
 | checking for a platform in the pipeline, a module or a view | put it in `presenter_layers.c` or the platform's transport, with a row in [Workarounds](#workarounds) |

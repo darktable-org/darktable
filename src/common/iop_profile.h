@@ -94,6 +94,18 @@ dt_ioppr_add_profile_info_for_content(struct dt_develop_t *dev,
                                       cmsHPROFILE profile,
                                       const int intent);
 
+/** a profile info for values made with profile, owned by the caller, who
+ * releases it with dt_ioppr_free_profile_info(): for conversions outside a
+ * develop, whose list goes away with it. with a profile, a FILE profile's
+ * file need not exist any more. NULL if the profile is not usable
+ */
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_new_profile_info(const dt_colorspaces_color_profile_type_t profile_type,
+                          const char *profile_filename,
+                          cmsHPROFILE profile,
+                          const int intent);
+void dt_ioppr_free_profile_info(dt_iop_order_iccprofile_info_t *profile_info);
+
 /** returns a reference to the work profile info as set on colorin iop
  * only if module is between colorin and colorout, otherwise returns NULL
  * work profile must not be cleanup()

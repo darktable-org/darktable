@@ -38,6 +38,7 @@
 #include "control/jobs.h"
 #include "develop/blend.h"
 #include "develop/develop.h"
+#include "develop/frame.h"
 #include "develop/imageop.h"
 #include "develop/lightroom.h"
 #include "develop/masks.h"
@@ -4369,27 +4370,16 @@ void dt_dev_undo_end_record(dt_develop_t *dev)
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
 }
 
-uint32_t dt_dev_new_frame_id(void)
-{
-  static dt_atomic_int id;
-  return (uint32_t)dt_atomic_add_int(&id, 1) + 1;
-}
-
-void dt_dev_image(const dt_imgid_t imgid,
-                  const size_t width,
-                  const size_t height,
-                  const int history_end,
-                  float **buf,
-                  float *scale,
-                  size_t *buf_width,
-                  size_t *buf_height,
-                  dt_dev_zoom_pos_t zoom_pos,
-                  const int snapshot_id,
-                  GList *module_filter_out,
-                  const int devid,
-                  const gboolean finalscale,
-                  const dt_display_output_t *output,
-                  dt_display_output_t *encoding)
+dt_frame_t *dt_dev_image(const dt_imgid_t imgid,
+                         const size_t width,
+                         const size_t height,
+                         const gboolean fit,
+                         const int history_end,
+                         const int snapshot_id,
+                         GList *module_filter_out,
+                         const int devid,
+                         const gboolean finalscale,
+                         const dt_display_output_t *output)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, TRUE);
@@ -4397,7 +4387,7 @@ void dt_dev_image(const dt_imgid_t imgid,
   dt_dev_pixelpipe_t *pipe = dev.full.pipe;
 
   pipe->type |= DT_DEV_PIXELPIPE_IMAGE | (finalscale ? DT_DEV_PIXELPIPE_IMAGE_FINAL : DT_DEV_PIXELPIPE_NONE);
-  if(output) pipe->output = *output;
+  pipe->output = *output;
   // load image and set history_end
 
   dev.snapshot_id = snapshot_id;
@@ -4411,7 +4401,7 @@ void dt_dev_image(const dt_imgid_t imgid,
   dev.full.dev = &dev;
   dev.full.pipe = pipe;
 
-  if(!zoom_pos)
+  if(fit)
   {
     dev.full.zoom      = DT_ZOOM_FIT;
     dev.full.width     = width;
@@ -4426,21 +4416,12 @@ void dt_dev_image(const dt_imgid_t imgid,
 
   dt_dev_process_image_job(&dev, &dev.full, pipe, -1, devid);
 
-  // record resulting image and dimensions
-
-  const size_t npixels = (size_t)pipe->backbuf_width * pipe->backbuf_height;
-  *buf = dt_calloc_align_float(4 * npixels);
-  if(*buf && pipe->backbuf)
-    memcpy(*buf, pipe->backbuf, MIN(4 * sizeof(float) * npixels, pipe->backbuf_size));
-
-  if(buf_width) *buf_width = pipe->backbuf_width;
-  if(buf_height) *buf_height = pipe->backbuf_height;
-  if(scale) *scale = pipe->backbuf_scale;
-  if(encoding) *encoding = pipe->backbuf_output;
-
-  if(zoom_pos) memcpy(zoom_pos, pipe->backbuf_zoom_pos, sizeof(dt_dev_zoom_pos_t));
-
+  // the frame names its profile as the registry holds it, so it outlives
+  // this develop and the profile infos it frees
+  dt_frame_t *frame = pipe->frame;
+  pipe->frame = NULL;
   dt_dev_cleanup(&dev);
+  return frame;
 }
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d)

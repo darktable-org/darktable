@@ -26,7 +26,7 @@
 #include "common/math.h"
 #include "control/conf.h"
 #include "develop/develop.h"
-#include "gui/presenter.h"
+#include "develop/frame.h"
 #include <cairo.h>
 #include <glib.h>
 #include <math.h>
@@ -186,54 +186,45 @@ static inline void dt_draw_backbuf_contrast(const dt_develop_t *dev,
   float luma_sum = 0.0f;
   int samples = 0;
 
-  if(dev && dev->preview_pipe)
+  // a reference taken under the pipe's lock: the frame and its geometry
+  // stay together while the worker publishes the next one
+  dt_frame_t *frame = dev && dev->preview_pipe ? dt_dev_pixelpipe_frame(dev->preview_pipe)
+                                               : NULL;
+  // the colors GTK's surface shows
+  cairo_surface_t *surface = dt_frame_device_surface(frame, DT_COLORSPACE_DISPLAY);
+  if(surface)
   {
-    const float *backbuf = (const float *)dev->preview_pipe->backbuf;
-    const int buf_w = dev->preview_pipe->backbuf_width;
-    const int buf_h = dev->preview_pipe->backbuf_height;
+    const int buf_w = dt_frame_geometry(frame)->width;
+    const int buf_h = dt_frame_geometry(frame)->height;
+    const int px = CLAMP((int)(x_norm * buf_w), 0, buf_w - 1);
+    const int py = CLAMP((int)(y_norm * buf_h), 0, buf_h - 1);
+    // the window tracks the cursor footprint and stays an odd size so
+    // px/py remain its exact center and rgb[] the true sampled pixel
+    const int rad = CLAMP((int)lroundf(area_half_norm * buf_w), 1, 48);
+    const int x0 = MAX(px - rad, 0), x1 = MIN(px + rad, buf_w - 1);
+    const int y0 = MAX(py - rad, 0), y1 = MIN(py + rad, buf_h - 1);
 
-    if(backbuf && buf_w > 0 && buf_h > 0)
-    {
-      const int px = CLAMP((int)(x_norm * buf_w), 0, buf_w - 1);
-      const int py = CLAMP((int)(y_norm * buf_h), 0, buf_h - 1);
-      // the window tracks the cursor footprint and stays an odd size so
-      // px/py remain its exact center and rgb[] the true sampled pixel
-      const int rad = CLAMP((int)lroundf(area_half_norm * buf_w), 1, 48);
-      const int x0 = MAX(px - rad, 0), x1 = MIN(px + rad, buf_w - 1);
-      const int y0 = MAX(py - rad, 0), y1 = MIN(py + rad, buf_h - 1);
-
-      // the colors as GTK's surface shows them
-      dt_pthread_mutex_lock(&dev->preview_pipe->backbuf_mutex);
-      cairo_surface_t *surface =
-        dt_presenter_gtk_surface(backbuf, buf_w, buf_h, &dev->preview_pipe->backbuf_output,
-                                 dev->preview_pipe->backbuf_id);
-      dt_pthread_mutex_unlock(&dev->preview_pipe->backbuf_mutex);
-
-      if(cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS)
+    const uint8_t *data = cairo_image_surface_get_data(surface);
+    const int stride = cairo_image_surface_get_stride(surface);
+    for(int iy = y0; iy <= y1; iy++)
+      for(int ix = x0; ix <= x1; ix++)
       {
-        const uint8_t *data = cairo_image_surface_get_data(surface);
-        const int stride = cairo_image_surface_get_stride(surface);
-        for(int iy = y0; iy <= y1; iy++)
-          for(int ix = x0; ix <= x1; ix++)
-          {
-            // cairo's RGB24 is B, G, R, X in memory
-            const uint8_t *p = data + (size_t)iy * stride + 4 * ix;
-            const float pr = p[2] / 255.0f;
-            const float pg = p[1] / 255.0f;
-            const float pb = p[0] / 255.0f;
-            if(ix == px && iy == py)
-            {
-              r = pr;
-              g = pg;
-              b = pb;
-            }
-            luma_sum += 0.3f * pr + 0.59f * pg + 0.11f * pb;
-            samples++;
-          }
+        // cairo's RGB24 is B, G, R, X in memory
+        const uint8_t *p = data + (size_t)iy * stride + 4 * ix;
+        const float pr = p[2] / 255.0f;
+        const float pg = p[1] / 255.0f;
+        const float pb = p[0] / 255.0f;
+        if(ix == px && iy == py)
+        {
+          r = pr;
+          g = pg;
+          b = pb;
+        }
+        luma_sum += 0.3f * pr + 0.59f * pg + 0.11f * pb;
+        samples++;
       }
-      cairo_surface_destroy(surface);
-    }
   }
+  dt_frame_unref(frame);
 
   rgb[0] = r;
   rgb[1] = g;
