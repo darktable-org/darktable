@@ -2163,7 +2163,9 @@ dt_view_context_t dt_view_get_context_hash(void)
                             (uint32_t)(zoom_scale * flt_prec),
                             (uint32_t)(zoom_x * flt_prec),
                             (uint32_t)(zoom_y * flt_prec),
-                            (uint32_t)(dev->late_scaling.enabled) };
+                            (uint32_t)(dev->late_scaling.enabled),
+                            // the output snapshots and the duplicate preview render for
+                            dt_colorspaces_get_display_serial(DT_COLORSPACE_DISPLAY) };
 
   return (dt_view_context_t)dt_hash(DT_INITHASH, &test, sizeof(test));
 }

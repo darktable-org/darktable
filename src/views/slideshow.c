@@ -56,6 +56,9 @@ typedef struct _slideshow_buf_t
 {
   float *buf;
   dt_display_output_t output;
+  // the serial of the window's output the image was rendered for. not the
+  // label's: a render that failed is labeled with none, and was made for it
+  uint32_t made_for;
   uint32_t frame_id;
   size_t width;
   size_t height;
@@ -80,6 +83,8 @@ typedef struct dt_slideshow_t
   gboolean auto_advance;
   int exporting;
   int delay;
+  // the serial of the window's output that expose last checked the slots for
+  uint32_t serial;
 
   // some magic to hide the mouse pointer
   guint mouse_timeout;
@@ -234,16 +239,21 @@ static int _process_image(dt_slideshow_t *d,
   if(d->buf[slt].imgid != imgid)
     slt = _get_slot_for_image(d, imgid);
 
-  // also ensure that the screen has not been resized, otherwise we discard
-  // the image. it will get regenerated in another later job.
+  // also ensure that the screen has not been resized and the window's
+  // output has not changed, otherwise we discard the image. it will get
+  // regenerated in another later job.
   if(slt != -1
      && d->width == s_width
-     && d->height == s_height)
+     && d->height == s_height
+     && output.serial == dt_colorspaces_get_display_serial(DT_COLORSPACE_DISPLAY))
   {
+    // the image it replaces, if made for an earlier output
+    dt_free_align(d->buf[slt].buf);
     d->buf[slt].width = width;
     d->buf[slt].height = height;
     d->buf[slt].buf = buf;
     d->buf[slt].output = encoding;
+    d->buf[slt].made_for = output.serial;
     d->buf[slt].frame_id = dt_dev_new_frame_id();
     d->buf[slt].invalidated = FALSE;
   }
@@ -262,10 +272,14 @@ static int _process_image(dt_slideshow_t *d,
 static gboolean _is_slot_waiting(const dt_slideshow_t *d,
                                  const dt_slideshow_slot_t slot)
 {
-  return d->buf[slot].invalidated
-         && d->buf[slot].buf == NULL
-         && dt_is_valid_imgid(d->buf[slot].imgid)
-         && d->buf[slot].rank >= 0;
+  const dt_slideshow_buf_t *s = &d->buf[slot];
+  // an image made for an earlier output of the window is replaced, and
+  // shown until then
+  const gboolean outdated =
+    s->buf && s->made_for != dt_colorspaces_get_display_serial(DT_COLORSPACE_DISPLAY);
+  return ((s->invalidated && s->buf == NULL) || outdated)
+         && dt_is_valid_imgid(s->imgid)
+         && s->rank >= 0;
 }
 
 static gboolean _is_idle(const dt_slideshow_t *d)
@@ -510,6 +524,7 @@ void enter(dt_view_t *self)
 
   d->auto_advance = FALSE;
   d->delay = dt_conf_get_int("slideshow_delay");
+  d->serial = dt_colorspaces_get_display_serial(DT_COLORSPACE_DISPLAY);
   // restart from beginning, will first increment counter by step and then prefetch
   dt_pthread_mutex_unlock(&d->lock);
 
@@ -566,6 +581,15 @@ void expose(dt_view_t *self,
   {
     slot->invalidated = TRUE;
     _requeue_job(d);
+  }
+
+  // a new output of the window replaces the image of every slot. the jobs
+  // go on while a slot waits, so one is enough
+  const uint32_t serial = dt_colorspaces_get_display_serial(DT_COLORSPACE_DISPLAY);
+  if(serial != d->serial)
+  {
+    d->serial = serial;
+    if(!_is_idle(d)) _requeue_job(d);
   }
 
   cairo_paint(cr);

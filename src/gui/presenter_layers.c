@@ -162,13 +162,11 @@ static dt_presenter_window_t *_window_get(GtkWidget *widget)
 void dt_presenter_window_set_output(dt_presenter_window_t *window,
                                     const dt_display_output_t *output)
 {
-  if(dt_colorspaces_set_window_output(window->kind, output))
-    dt_presenter_window_redraw(window);
+  dt_colorspaces_set_window_output(window->kind, output);
 }
 
 void dt_presenter_window_redraw(dt_presenter_window_t *window)
 {
-  // GTK's own surface needs redrawing too after an output change
   gtk_widget_queue_draw(window->toplevel);
 }
 

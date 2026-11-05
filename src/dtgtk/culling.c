@@ -1207,7 +1207,8 @@ static void _dt_profile_change_callback(gpointer instance,
                                         const int type,
                                         gpointer user_data)
 {
-  if(!user_data) return;
+  // the culling and full preview are drawn in the main window
+  if(!user_data || type == DT_COLORSPACES_PROFILE_TYPE_DISPLAY2) return;
   dt_culling_t *table = (dt_culling_t *)user_data;
   if(!gtk_widget_get_visible(table->widget)) return;
 

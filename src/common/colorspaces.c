@@ -1292,18 +1292,21 @@ static void _describe_system_display(dt_colorspaces_t *self,
   output->device = *image;
 }
 
-// replace a window's output, keeping its serial running. TRUE if it changed.
+// replace a window's output, keeping its serial running, and rebuild what
+// converts to its device encoding if that changed. returns what changed.
 // make sure that xprofile_lock is held when calling this!
-static gboolean _publish(dt_colorspaces_t *self,
-                         const int w,
-                         const dt_display_output_t *output)
+static dt_display_output_change_t _publish(dt_colorspaces_t *self,
+                                           const int w,
+                                           const dt_display_output_t *output)
 {
   dt_display_output_t *const current = &self->outputs[w];
-  if(dt_display_output_equal(current, output)) return FALSE;
+  const dt_display_output_change_t change = dt_display_output_diff(current, output);
+  if(change == DT_DISPLAY_OUTPUT_UNCHANGED) return change;
   const uint32_t serial = current->serial + 1;
   *current = *output;
   current->serial = serial;
-  return TRUE;
+  if(change & DT_DISPLAY_OUTPUT_DEVICE) _update_window_transforms(self, w);
+  return change;
 }
 
 // the window's system display profile or the intent changed.
@@ -1311,13 +1314,10 @@ static gboolean _publish(dt_colorspaces_t *self,
 static void _system_display_changed(dt_colorspaces_t *self,
                                     const int w)
 {
-  if(!self->outputs[w].platform_owned)
-  {
-    dt_display_output_t output;
-    _describe_system_display(self, w, &output);
-    _publish(self, w, &output);
-  }
-  _update_window_transforms(self, w);
+  if(self->outputs[w].platform_owned) return;
+  dt_display_output_t output;
+  _describe_system_display(self, w, &output);
+  _publish(self, w, &output);
 }
 
 void dt_colorspaces_get_display_output(const dt_colorspaces_color_profile_type_t window,
@@ -1329,19 +1329,52 @@ void dt_colorspaces_get_display_output(const dt_colorspaces_color_profile_type_t
   pthread_rwlock_unlock(&self->xprofile_lock);
 }
 
-// a window's output changed: its pipes reprocess, and to GTK-side drawing
-// this is a change of display profile, as if the user had picked one:
-// converted thumbnails are redone
-static void _output_changed(const int w)
+uint32_t dt_colorspaces_get_display_serial(const dt_colorspaces_color_profile_type_t window)
 {
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                          w ? DT_COLORSPACES_PROFILE_TYPE_DISPLAY2
-                            : DT_COLORSPACES_PROFILE_TYPE_DISPLAY);
+  dt_colorspaces_t *self = darktable.color_profiles;
+  pthread_rwlock_rdlock(&self->xprofile_lock);
+  const uint32_t serial = self->outputs[_window_index(window)].serial;
+  pthread_rwlock_unlock(&self->xprofile_lock);
+  return serial;
 }
 
-gboolean dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_type_t window,
-                                          const dt_display_output_t *output)
+// a window's output changed: announce it by what changed. as in Krita
+// (KisMultiSurfaceStateManager), the output is a value and consumers take
+// the difference: producers compare its serial where they decide to
+// render, on the redraw queued here, and only a new device encoding or
+// owner reaches what GTK draws, such as converted thumbnails
+static void _output_changed(const int w,
+                            const dt_display_output_change_t change)
+{
+  if(change == DT_DISPLAY_OUTPUT_UNCHANGED) return;
+  if(change & DT_DISPLAY_OUTPUT_DEVICE)
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+                            w ? DT_COLORSPACES_PROFILE_TYPE_DISPLAY2
+                              : DT_COLORSPACES_PROFILE_TYPE_DISPLAY);
+  if(!darktable.gui) return;
+  GtkWidget *toplevel = w ? darktable.develop->second_wnd
+                          : dt_ui_main_window(darktable.gui->ui);
+  // nothing to redraw before the window is realized
+  if(toplevel && gtk_widget_get_realized(toplevel))
+    dt_control_queue_redraw_widget(toplevel);
+}
+
+// a window's system display profile was read. two things may have
+// changed: the window's output, announced as any output change is, and the
+// registry's DISPLAY or DISPLAY2 profile, for what names it by type (a soft
+// proof, the histogram or export profile, either window's) whoever follows
+// it, as master always announced a new display profile
+static void _system_display_announce(const int w,
+                                     const gboolean changed,
+                                     const dt_display_output_change_t output_change)
+{
+  _output_changed(w, output_change);
+  if(changed)
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+}
+
+void dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_type_t window,
+                                      const dt_display_output_t *output)
 {
   dt_colorspaces_t *self = darktable.color_profiles;
   const int w = _window_index(window);
@@ -1358,12 +1391,10 @@ gboolean dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_typ
   }
   else
     _describe_system_display(self, w, &resolved);
-  const gboolean changed = _publish(self, w, &resolved);
-  if(changed) _update_window_transforms(self, w);
+  const dt_display_output_change_t change = _publish(self, w, &resolved);
   pthread_rwlock_unlock(&self->xprofile_lock);
 
-  if(changed) _output_changed(w);
-  return changed;
+  _output_changed(w, change);
 }
 
 typedef struct _system_profile_t
@@ -1651,7 +1682,8 @@ void dt_colorspaces_update_display_intent(void)
 {
   dt_colorspaces_t *self = darktable.color_profiles;
   const dt_iop_color_intent_t intent = _display_intent_preference();
-  gboolean changed[2] = { FALSE, FALSE };
+  dt_display_output_change_t change[2] = { DT_DISPLAY_OUTPUT_UNCHANGED,
+                                           DT_DISPLAY_OUTPUT_UNCHANGED };
 
   pthread_rwlock_wrlock(&self->xprofile_lock);
   if(intent != self->display_intent)
@@ -1659,15 +1691,15 @@ void dt_colorspaces_update_display_intent(void)
     self->display_intent = intent;
     for(int w = 0; w < 2; w++)
     {
-      const uint32_t serial = self->outputs[w].serial;
+      const dt_display_output_t before = self->outputs[w];
       _system_display_changed(self, w);
-      changed[w] = self->outputs[w].serial != serial;
+      change[w] = dt_display_output_diff(&before, &self->outputs[w]);
     }
   }
   pthread_rwlock_unlock(&self->xprofile_lock);
 
   for(int w = 0; w < 2; w++)
-    if(changed[w]) _output_changed(w);
+    _output_changed(w, change[w]);
 }
 
 dt_colorspaces_t *dt_colorspaces_init()
@@ -2091,7 +2123,7 @@ static void _colorspaces_get_display_profile_colord_callback(GObject *source,
   if(filename) g_file_get_contents(filename, (gchar **)&data, &size, NULL);
 
   pthread_rwlock_wrlock(&self->xprofile_lock);
-  const uint32_t serial = self->outputs[w].serial;
+  const dt_display_output_t before = self->outputs[w];
   gboolean changed = FALSE;
   // a later query of the window has read the atom again and asked colord
   // again: this answer is stale, and must not undo what that one found
@@ -2114,17 +2146,15 @@ static void _colorspaces_get_display_profile_colord_callback(GObject *source,
   }
   // colord answers after the GUI has drawn with the profile before, the
   // sRGB placeholder at startup (#19776)
-  const gboolean output_changed = self->outputs[w].serial != serial;
+  const dt_display_output_change_t output_change =
+    dt_display_output_diff(&before, &self->outputs[w]);
   pthread_rwlock_unlock(&self->xprofile_lock);
 
   if(profile)
     g_object_unref(profile);
   g_object_unref(window);
 
-  if(output_changed)
-    _output_changed(w);
-  else if(changed)
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  _system_display_announce(w, changed, output_change);
 }
 #endif
 
@@ -2165,8 +2195,7 @@ void dt_colorspaces_set_display_profile
 #ifdef USE_COLORDGTK
   uint32_t query_serial = 0;
 #endif
-  uint32_t serial = 0;
-  gboolean output_changed = FALSE;
+  dt_display_output_change_t output_change = DT_DISPLAY_OUTPUT_UNCHANGED;
 
 #if defined GDK_WINDOWING_X11
 
@@ -2281,7 +2310,7 @@ void dt_colorspaces_set_display_profile
 #ifdef USE_COLORDGTK
   query_serial = ++self->system_display_query[w];
 #endif
-  serial = self->outputs[w].serial;
+  const dt_display_output_t before = self->outputs[w];
   // nothing usable from the platform means sRGB. with colord, its answer
   // decides, later and with the atom's profile
   profile = _system_profile(self, buffer, buffer_size);
@@ -2298,12 +2327,9 @@ void dt_colorspaces_set_display_profile
                profile_source ? profile_source : "platform", buffer_size);
     }
   }
-  output_changed = self->outputs[w].serial != serial;
+  output_change = dt_display_output_diff(&before, &self->outputs[w]);
   pthread_rwlock_unlock(&self->xprofile_lock);
-  if(output_changed)
-    _output_changed(w);
-  else if(changed)
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  _system_display_announce(w, changed, output_change);
 #if defined G_OS_WIN32
 cleanup_and_return:
 #endif

@@ -374,10 +374,9 @@ gboolean dt_presenter_image(cairo_t *cr,
   if(!w || !pixels || width <= 0 || height <= 0) return FALSE;
 
   // an output the platform owns holds with a native backend and with cairo,
-  // and taking it renders the window's pipes again (colorout's
-  // DT_SIGNAL_CONTROL_PROFILE_CHANGED handler). otherwise, cairo shows
-  // display RGB in whatever display profile it was rendered for, as it
-  // always did
+  // and taking it renders the window's images again: their producers find
+  // a new serial on the redraw it queues. otherwise, cairo shows display
+  // RGB in whatever display profile it was rendered for, as it always did
   dt_display_output_t output;
   dt_presenter_window_output(w->widget, &output);
   if(!_shown_in(&output, encoding)) return FALSE;

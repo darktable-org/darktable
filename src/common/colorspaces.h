@@ -243,13 +243,32 @@ typedef struct dt_display_output_t
   uint32_t serial;
 } dt_display_output_t;
 
+/* what differs between two outputs of a window, whatever the serial. any
+ * difference moves the serial, which every producer compares with what it
+ * rendered for. a new device encoding or owner also changes what GTK draws
+ * there: thumbnails and module colors converted for it */
+typedef enum dt_display_output_change_t
+{
+  DT_DISPLAY_OUTPUT_UNCHANGED = 0,
+  DT_DISPLAY_OUTPUT_IMAGE = 1 << 0,
+  DT_DISPLAY_OUTPUT_DEVICE = 1 << 1,
+} dt_display_output_change_t;
+
+static inline dt_display_output_change_t dt_display_output_diff(const dt_display_output_t *a,
+                                                                const dt_display_output_t *b)
+{
+  const gboolean image = !dt_color_encoding_equal(&a->image, &b->image);
+  const gboolean device = !dt_color_encoding_equal(&a->device, &b->device)
+                          || a->platform_owned != b->platform_owned;
+  return (dt_display_output_change_t)((image ? DT_DISPLAY_OUTPUT_IMAGE : 0)
+                                      | (device ? DT_DISPLAY_OUTPUT_DEVICE : 0));
+}
+
 /* the same output, whatever the serial */
 static inline gboolean dt_display_output_equal(const dt_display_output_t *a,
                                                const dt_display_output_t *b)
 {
-  return dt_color_encoding_equal(&a->image, &b->image)
-    && dt_color_encoding_equal(&a->device, &b->device)
-    && a->platform_owned == b->platform_owned;
+  return dt_display_output_diff(a, b) == DT_DISPLAY_OUTPUT_UNCHANGED;
 }
 
 /* the 8-bit value a display-encoded float shows as on an 8-bit surface.
@@ -524,6 +543,10 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
 void dt_colorspaces_get_display_output(const dt_colorspaces_color_profile_type_t window,
                                        dt_display_output_t *output);
 
+/** the serial of a window's output, from any thread. a producer that made
+ * its image for another serial renders it again */
+uint32_t dt_colorspaces_get_display_serial(const dt_colorspaces_color_profile_type_t window);
+
 /** the display intent preference changed: the output of every window the
  * platform does not own follows it */
 void dt_colorspaces_update_display_intent(void);
@@ -534,9 +557,11 @@ void dt_colorspaces_notify_retired_selection(void);
 
 /** for the presenter: the platform takes over a window's output, which
  * colorspaces resolves; NULL gives it back to the window's system display
- * profile. TRUE if the output changed */
-gboolean dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_type_t window,
-                                          const dt_display_output_t *output);
+ * profile. a change redraws the window, where its producers find the new
+ * serial, and a new device encoding raises
+ * DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED with the window's type */
+void dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_type_t window,
+                                      const dt_display_output_t *output);
 
 /** 8-bit RGBA to the screen's BGRA through one of the display transforms
  * in dt_colorspaces_t */

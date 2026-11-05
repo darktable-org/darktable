@@ -68,6 +68,33 @@ markers are written as they are, saturated colors that mark in any output.
   are the same encoding, so these conversions are the identity there.
 - The presenter takes a window's output over for the platform, and gives
   it back when the window goes away (`dt_colorspaces_set_window_output()`).
+- A change is announced by what changed (`dt_display_output_diff()`), the
+  same way for the presenter, a new system display profile and the intent
+  preference (`_output_changed()` in `colorspaces.c`). Any change moves
+  the serial and queues a redraw of the window, where its producers find
+  it. A new device encoding or owner also rebuilds the thumbnail
+  transforms and raises `DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED` with
+  `DISPLAY` or `DISPLAY2`, for what GTK draws there: thumbnails (main
+  window only) and module GUI colors. A new image encoding alone, such as
+  a new headroom, reruns that window's producers and nothing else.
+  `DT_SIGNAL_CONTROL_PROFILE_CHANGED` is not raised for a window's output.
+  It announces a new system display profile, the registry's `DISPLAY` or
+  `DISPLAY2` entry, whether a window follows it or not, for what names the
+  profile by type: a soft proof, the histogram or export profile, the main
+  window naming `DISPLAY2`. colorout reprocesses the darkroom on it, so a
+  new screen profile on X11 reruns both windows' pipes, as it always did; a
+  new headroom never touches the registry.
+- Producers pull. Each compares the serial its image was made for with
+  its window's where it already decides to render: the darkroom's full,
+  preview and second window pipes, a pinned image's too, compare the serial
+  their last finished run took (`pipe->output.serial`, published or not, so
+  a failed run is not retried on every redraw) in their request
+  (`_pipe_outdated()` in `darkroom.c`); snapshots and the duplicate manager's preview through
+  `dt_view_get_context_hash()`, which holds the main window's serial; the
+  slideshow on every expose, over all its slots. An image made for an
+  earlier serial is not taken as current: the slideshow drops it on
+  arrival and keeps showing the slot's previous image until the new one
+  arrives, and a pipe whose run took an earlier serial is requested again.
 - A pipe records the window it renders for where it is created
   (`pipe->window`): full and preview the main window, the second window's
   pipe and every pipe of the pinned image the second one. They take their
@@ -109,10 +136,9 @@ markers are written as they are, saturated colors that mark in any output.
   profile (no X atom and none from colord, an empty Windows query, bytes
   lcms rejects) makes the window's system display profile sRGB again, the
   profile it starts with, rather than leaving the previous screen's. A
-  new system display profile that changes a window's output is announced
-  as the presenter's taking an output is, with
-  `DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED` as well, so thumbnails drawn
-  before it arrived, as colord's asynchronous answer at startup, are redone.
+  new system display profile that changes a window's output changes its
+  device encoding, so thumbnails drawn before it arrived, as colord's
+  asynchronous answer at startup, are redone.
 - A soft proof shows what an export to the proof profile holds, in the
   output: converted to the proof profile with its own intent
   (`softproof_intent`, set next to the proof profile in the darkroom), and
@@ -160,12 +186,10 @@ so the caller may release the buffer (and its lock) when the call returns. A
 frame is its `id` and encoding: ids are never reused. It returns `FALSE`, and
 shows nothing, when the platform owns the window's output (a native backend,
 or cairo on a compositor that manages color) and the frame is in another
-profile. The caller does nothing about it: taking the output announces a
-change of display profile, colorout's handler reprocesses the darkroom pipes
-(`dt_dev_reprocess_all()`), and the center view's next draw requests the
-second window's pipe too; snapshots are redone on
-`DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED`. Otherwise the cairo backend shows
-any display-encoded frame.
+profile. The caller does nothing about it: taking the output moves the
+window's serial and redraws it, and the producers render again where they
+compare it ([output description](#output-description)). Otherwise the cairo
+backend shows any display-encoded frame.
 
 - `dt_presenter_keep()` shows the images of the last full draw again where
   they were (the darkroom while it loads the next image without the loading
@@ -177,11 +201,6 @@ any display-encoded frame.
 - `dt_view_paint_surface()` is the darkroom's user: background, then the
   preview fallback and the main image through the presenter. Pickers, masks,
   module overlays, guides and focus peaking follow on the same context.
-
-The headroom is not compared. After it changes, the duplicate manager's
-preview, the slideshow and a pinned image in the second window keep the tone
-mapping of the old headroom until they are rendered again for another
-reason.
 
 Presenting widgets: the center view and the side-by-side snapshot area
 (`gui/gtk.c`, `_draw()`), and the second darkroom window. Images submitted
@@ -239,10 +258,10 @@ pipes of that window then render to that output, and everything GTK draws
 there (thumbnail transforms, picker swatches, the navigation thumbnail,
 `dt_presenter_gtk_surface()`, and module GUIs through
 `dt_ioppr_get_gui_profile_info()`) converts to the device profile, sRGB,
-where a cairo window's device profile is its system display profile. The
-change is announced as a change of display profile, so converted
-thumbnails are redone. When the window goes away, its output returns to
-its system display profile.
+where a cairo window's device profile is its system display profile. A
+new headroom changes the image encoding only: that window's images are
+rendered again, thumbnails are not. When the window goes away, its output
+returns to its system display profile.
 
 Code is split by what it works around:
 
