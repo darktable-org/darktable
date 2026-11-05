@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-04 07:24-0300\n"
-"PO-Revision-Date: 2026-11-04 08:00-0300\n"
+"PO-Revision-Date: 2026-11-05 08:56-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -936,7 +936,7 @@ msgstr "alternativamente, <b>inverter</b> a saída do grupo <b>desenhada</b>"
 msgid ""
 "change the operator to some type of <b>union</b> to mask the pixels selected "
 "by <b>any</b> channel"
-msgstr ""
+msgstr "mude o operador para algum tipo de <b>união</b> para mascarar pixels selecionados por <b>qualquer</b> canal"
 
 #: ../build/bin/masks_group_presets_strings.h:12
 msgid "draw shapes or add AI objects here to mask an area"
@@ -984,6 +984,9 @@ msgid ""
 "overlapping feathered edges merge without a seam; a classic drawn mask\n"
 "used maximum (union)"
 msgstr ""
+"um grup combinando suas formas por tela (união suave), de forma que\n"
+"bordas enevoadas sobrepostas são mescladas suavemente; uma máscara desenhada\n"
+"clásica usava máximo (união)"
 
 #: ../build/bin/masks_group_presets_strings.h:21
 msgid "parametric (classic)"
@@ -998,7 +1001,7 @@ msgstr "paramétrica"
 msgid ""
 "start by creating a mask in the <b>drawn + parametric</b> group, then add "
 "elements <b>here</b> to remove the spill"
-msgstr ""
+msgstr "comece criando uma máscara no grupo <b>desenhada + paramétrica</b>, depois adicione elementos <b>aqui</b> para remover o vazamento"
 
 #: ../build/bin/masks_group_presets_strings.h:24
 msgid ""
@@ -1010,13 +1013,13 @@ msgstr ""
 
 #: ../build/bin/masks_group_presets_strings.h:25
 msgid "subtract unwanted spill from a drawn + parametric mask"
-msgstr ""
+msgstr "subtrair o vazamento indesejado de uma máscara desenhada + paramétrica"
 
 #: ../build/bin/masks_group_presets_strings.h:26
 msgid ""
 "use <b>minimum</b> or <b>product</b> to mask only the pixels covered by "
 "<b>all</b> shapes"
-msgstr ""
+msgstr "use <b>mínimo</b> ou <b>produto</b> para mascarar somente os pixels cobertos por <b>todas</b> as formas"
 
 #: ../build/bin/masks_group_presets_strings.h:27
 msgid ""
@@ -6547,14 +6550,13 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:766
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1145
-#, fuzzy
 msgid "fast layer gamma"
-msgstr "gama alvo"
+msgstr "gama de camada rápida"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:772
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1149
 msgid "slow layer gamma"
-msgstr ""
+msgstr "gama de camada lenta"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:778
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1153
@@ -6600,15 +6602,13 @@ msgstr "data/hora da impressão"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:826
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1185
-#, fuzzy
 msgid "bandwidth adaptation"
-msgstr "adaptação"
+msgstr "adaptação de banda"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:832
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1189
-#, fuzzy
 msgid "surface adaptation"
-msgstr "adaptação"
+msgstr "adaptação de superfície"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:844
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1197
@@ -6635,9 +6635,8 @@ msgstr "correção de ponto preto"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:886
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1225
-#, fuzzy
 msgid "white point correction"
-msgstr "correção da lente"
+msgstr "correção de ponto branco"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1247
 #, fuzzy
@@ -6659,9 +6658,8 @@ msgstr "luz suave"
 
 #: ../build/lib/darktable/plugins/introspection_temperature.c:87
 #: ../build/lib/darktable/plugins/introspection_temperature.c:150
-#, fuzzy
 msgid "prepare data for color calibration"
-msgstr "calibração de cor"
+msgstr "praparar dados para calibração de cor"
 
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:135
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:232
@@ -7102,9 +7100,9 @@ msgid "incorrect ICC intent for --icc-intent: '%s'\n"
 msgstr "intenção ICC incorreta para --icc-intent: '%s'\n"
 
 #: ../src/cli/main.c:452
-#, fuzzy, c-format
+#, c-format
 msgid "incorrect PQ peak for --pq-peak: '%s'\n"
-msgstr "tipo de ICC incorreto para --icc-type: '%s'\n"
+msgstr "pico PQ incorreto para --pq-peak: '%s'\n"
 
 #: ../src/cli/main.c:479
 #, c-format
@@ -19873,9 +19871,8 @@ msgid "focused module border"
 msgstr "borda do módulo em foco"
 
 #: ../src/gui/preferences.c:514 ../src/gui/preferences.c:539
-#, fuzzy
 msgid "light"
-msgstr "clarear"
+msgstr "claro"
 
 #: ../src/gui/preferences.c:515 ../src/gui/preferences.c:540
 #: ../src/iop/lowlight.c:631
@@ -21646,7 +21643,7 @@ msgstr ""
 #: ../src/imageio/storage/clipboard.c:103 ../src/libs/tagging.c:1493
 #: ../src/libs/tagging.c:2654
 msgid "copy to clipboard"
-msgstr "copiar para a área d etransferência"
+msgstr "copiar para a área de transferência"
 
 #: ../src/imageio/storage/clipboard.c:195 ../src/imageio/storage/disk.c:456
 #: ../src/imageio/storage/gallery.c:335 ../src/imageio/storage/latex.c:284
@@ -21655,23 +21652,22 @@ msgid "could not create directory `%s'!"
 msgstr "não foi possível criar a pasta `%s'!"
 
 #: ../src/imageio/storage/clipboard.c:256
-#, fuzzy, c-format
+#, c-format
 msgid "%d/%d exported to clipboard"
 msgid_plural "%d/%d exported to clipboard"
-msgstr[0] "%d/%d exportada para `%s'"
-msgstr[1] "%d/%d exportadas para `%s'"
+msgstr[0] "%d/%d exportada para a área de transferência"
+msgstr[1] "%d/%d exportadas para a área de transferência"
 
 #: ../src/imageio/storage/clipboard.c:405
-#, fuzzy, c-format
+#, c-format
 msgid "%d image copied to clipboard"
 msgid_plural "%d images copied to clipboard"
-msgstr[0] "copiar para a área d etransferência"
-msgstr[1] "copiar para a área d etransferência"
+msgstr[0] "%d imagem copiada para a área de transferência"
+msgstr[1] "%d imagens copiadas para a área de transferência"
 
 #: ../src/imageio/storage/clipboard.c:410
-#, fuzzy
 msgid "could not copy to clipboard"
-msgstr "copiar para a área d etransferência"
+msgstr "não foi possível copiar para a área de transferência"
 
 #: ../src/imageio/storage/disk.c:79 ../src/libs/export.c:1323
 msgid "file on disk"
@@ -24194,9 +24190,8 @@ msgid "white balance successfully extracted from raw image"
 msgstr "balanço de branco extraído com sucesso da imagem RAW"
 
 #: ../src/iop/channelmixerrgb.c:4222
-#, fuzzy
 msgid "white balance successfully extracted from white balance module"
-msgstr "balanço de branco extraído com sucesso da imagem RAW"
+msgstr "balanço de branco extraído com sucesso do módulo de balanço de branco"
 
 #. We need to recompute only the full preview
 #: ../src/iop/channelmixerrgb.c:4229
@@ -26515,7 +26510,7 @@ msgstr ""
 
 #: ../src/iop/contrastntexture.c:921
 msgid "preview the size of the medium details to adjust."
-msgstr ""
+msgstr "pré-visualizar o tamanho dos detalhes médios a ajustar"
 
 #: ../src/iop/contrastntexture.c:924
 msgid ""
@@ -26525,7 +26520,7 @@ msgstr ""
 
 #: ../src/iop/contrastntexture.c:927
 msgid "preview the size of the fine details to adjust."
-msgstr ""
+msgstr "pré-visualizar o tamanho dos detalhes finos a ajustar"
 
 #. Filter settings section
 #: ../src/iop/contrastntexture.c:930
@@ -30682,7 +30677,7 @@ msgstr "darktable UCS"
 
 #: ../src/iop/satcurvergb.c:2173
 msgid "choose the perceptual saturation definition used by both curves"
-msgstr ""
+msgstr "escolher a definição de saturação perceptual usada por ambas as curvas"
 
 #: ../src/iop/satcurvergb.c:2194
 msgid ""
@@ -30704,7 +30699,7 @@ msgstr "inclinação da seção linear ao redor do pivô"
 msgid ""
 "precision of the feathering: higher values produce softer, less edge-"
 "sensitive transitions"
-msgstr ""
+msgstr "precisão do enevoamento: valores mais altos produzem transições mais suaves, menos sensíveis a bordas"
 
 #: ../src/iop/satcurvergb.c:2210
 msgid "protect near-neutrals"
@@ -31188,7 +31183,7 @@ msgstr ""
 
 #: ../src/iop/spektrafilm.c:4516
 msgid "ask the data repository whether a newer pack is published"
-msgstr ""
+msgstr "perguntar ao repositório de dados se um novo pacote foi publicado"
 
 #: ../src/iop/spektrafilm.c:4620
 msgid "cannot render"
