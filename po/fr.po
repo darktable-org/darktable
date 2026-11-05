@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-02 22:30+0100\n"
-"PO-Revision-Date: 2026-11-04 08:52+0100\n"
+"PO-Revision-Date: 2026-11-05 17:16+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1566,8 +1566,8 @@ msgid ""
 msgstr ""
 "Si sélectionné, un clic-milieu de la souris fera passer le zoom de 100% à "
 "200% puis de retour sur le zoom ajusté à l’écran.\n"
-"Si désactivé, le zoom passera du zoom ajusté à 100% et l’utilisation de Ctrl "
-"est nécessaire pour avoir le plein contrôle du niveau de zoom."
+"Si désactivé, le zoom passera du zoom ajusté à 100% et l’utilisation de "
+"'Ctrl' est nécessaire pour avoir le plein contrôle du niveau de zoom."
 
 #: ../build/bin/preferences_gen.h:3209
 msgid "pattern for the image information line"
@@ -34734,7 +34734,7 @@ msgstr "Style"
 #: ../src/libs/export.c:1740
 msgctxt "actionbutton"
 msgid "start export"
-msgstr "Lancer l’export’"
+msgstr "Lancer l’export"
 
 #: ../src/libs/export.c:1746
 msgctxt "section"
@@ -34762,7 +34762,7 @@ msgstr "Exporter les images sélectionnées avec de multiples préréglages"
 #: ../src/libs/export.c:1789
 msgctxt "actionbutton"
 msgid "start batch export"
-msgstr "Lancer l’export par lot"
+msgstr "Lancer lexport par lot"
 
 #: ../src/libs/export_metadata.c:165
 msgid "edit metadata exportation"
