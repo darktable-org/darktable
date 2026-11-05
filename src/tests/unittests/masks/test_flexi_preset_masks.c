@@ -571,9 +571,14 @@ static void test_blob_malformed(void **state)
   MUTATE(REC0 + 20, uint32_t, 200);                     // name longer than a form's
   // the blend params name another group than the first form
   MUTATE(offsetof(dt_develop_blend_params_t, mask_id), int32_t, 77);
-  // a classic mask with forms after it: nothing makes that
-  MUTATE(offsetof(dt_develop_blend_params_t, mask_mode), uint32_t,
-         DEVELOP_MASK_ENABLED | DEVELOP_MASK_CONDITIONAL);
+  // Module-owned shapes (Retouch/Spots) may have no FLEXI mask-mode bit.
+  // The decoder has no module context, so the same valid tree must decode
+  // regardless of whether the module also uses a classic blending mask.
+  memcpy(b, good, size);
+  const uint32_t classic_mode = DEVELOP_MASK_ENABLED | DEVELOP_MASK_CONDITIONAL;
+  memcpy(b + offsetof(dt_develop_blend_params_t, mask_mode),
+         &classic_mode, sizeof(classic_mode));
+  assert_true(_decodes(b, size));
 
   // the same form id twice
   memcpy(b, good, size);
