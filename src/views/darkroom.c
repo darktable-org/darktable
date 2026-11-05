@@ -834,6 +834,8 @@ void expose(dt_view_t *self,
   {
     // draw image
     _view_paint_surface(cri, width, height, port, DT_WINDOW_MAIN);
+    // what is shown while the next image loads
+    if(!dt_conf_get_bool("darkroom/ui/loading_screen")) dt_presenter_retain(cri);
   }
   else if(dev->preview_pipe->output_imgid != dev->image_storage.id)
   {
@@ -955,11 +957,13 @@ void expose(dt_view_t *self,
     {
       // show the image we are switching away from again, to avoid a
       // flash of the background color
-      dt_gui_gtk_set_source_rgb(cri, port->color_assessment
-                                     ? DT_GUI_COLOR_COLOR_ASSESSMENT_BG
-                                     : DT_GUI_COLOR_DARKROOM_BG);
-      cairo_paint(cri);
-      dt_presenter_keep(cri);
+      if(!dt_presenter_keep(cri))
+      {
+        dt_gui_gtk_set_source_rgb(cri, port->color_assessment
+                                       ? DT_GUI_COLOR_COLOR_ASSESSMENT_BG
+                                       : DT_GUI_COLOR_DARKROOM_BG);
+        cairo_paint(cri);
+      }
       dt_toast_log("%s", load_txt);
     }
     g_free(load_txt);

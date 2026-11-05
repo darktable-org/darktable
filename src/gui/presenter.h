@@ -54,10 +54,16 @@ void dt_presenter_image(cairo_t *cr,
                         dt_frame_t *frame,
                         const cairo_filter_t filter);
 
-/** show the images of the last full draw again, where they were */
-void dt_presenter_keep(cairo_t *cr);
+/** keep this draw: the presentation dt_presenter_keep() shows from now on,
+ * unless GTK restricted the draw to a damaged area. a full draw that
+ * neither retains itself nor shows the kept presentation drops it */
+void dt_presenter_retain(cairo_t *cr);
 
-/** drop the images of a widget */
+/** paint the kept presentation, everything its draw showed, where it was;
+ * what is drawn afterwards goes on top. FALSE if there is none */
+gboolean dt_presenter_keep(cairo_t *cr);
+
+/** drop the images and the kept presentation of a widget */
 void dt_presenter_clear(GtkWidget *widget);
 
 G_END_DECLS

@@ -188,6 +188,7 @@ FILE(GLOB SOURCE_FILES
   "gui/metadata_tags.c"
   "gui/preferences.c"
   "gui/presenter.c"
+  "gui/presenter_cairo.c"
   "gui/presenter_layers.c"
   "gui/presets.c"
   "gui/splash.c"

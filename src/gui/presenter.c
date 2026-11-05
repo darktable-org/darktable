@@ -18,26 +18,27 @@
 
 #include "gui/presenter.h"
 #include "common/darktable.h"
-#include "control/signal.h"
-#include "gui/presenter_layers.h"
+#include "gui/gtk.h"
+#include "gui/presenter_backend.h"
 
 #define WIDGET_KEY "dt-presenter"
+#define WINDOW_KEY "dt-presenter-window"
 
 typedef struct _widget_t
 {
   GtkWidget *widget;
-  // during a draw: the layers if the window has a native backend, and
-  // GTK's context
-  dt_presenter_layered_t *layered;
+  // its window once it drew in it, and the backend's data. NULL again
+  // when the widget or the window goes away
+  dt_presenter_window_t *window;
+  void *data;
+  // during a draw: GTK's context, the user space the draw started in, and
+  // what becomes of the kept presentation
   cairo_t *widget_cr;
   cairo_matrix_t base;
-  gboolean full;
+  gboolean full, retain, kept_shown;
   // the images of the draw in progress, or of the last one
   GArray *images;
-  // those of the last draw GTK did not restrict to a damaged area,
-  // for dt_presenter_keep()
-  GArray *kept;
-  // a reference on each frame either uses
+  // a reference on each frame they show
   GPtrArray *frames;
 } _widget_t;
 
@@ -48,28 +49,44 @@ static void _frame_unref(gpointer data)
   dt_frame_unref(data);
 }
 
-static void _widget_reset(_widget_t *w)
+static void _widget_detach(_widget_t *w)
 {
-  dt_presenter_layered_t *layered = dt_presenter_layered_get(w->widget, FALSE);
-  if(layered) dt_presenter_layered_clear(layered);
+  if(w->window)
+  {
+    w->window->backend->release(w->window->backend, &w->data);
+    w->window->widgets = g_list_remove(w->window->widgets, w);
+    w->window = NULL;
+  }
   g_array_set_size(w->images, 0);
-  g_array_set_size(w->kept, 0);
   g_ptr_array_set_size(w->frames, 0);
 }
 
 static void _widget_free(gpointer data)
 {
   _widget_t *w = data;
+  _widget_detach(w);
   g_array_free(w->images, TRUE);
-  g_array_free(w->kept, TRUE);
   g_ptr_array_free(w->frames, TRUE);
   g_free(w);
+}
+
+static void _widget_clear(_widget_t *w)
+{
+  if(w->window) w->window->backend->clear(w->window->backend, w->data);
+  g_array_set_size(w->images, 0);
+  g_ptr_array_set_size(w->frames, 0);
 }
 
 static void _widget_unmap(GtkWidget *widget,
                           _widget_t *w)
 {
-  _widget_reset(w);
+  _widget_clear(w);
+}
+
+static void _widget_destroy(GtkWidget *widget,
+                            _widget_t *w)
+{
+  _widget_detach(w);
 }
 
 static _widget_t *_widget_get(GtkWidget *widget)
@@ -80,11 +97,64 @@ static _widget_t *_widget_get(GtkWidget *widget)
   w = g_malloc0(sizeof(_widget_t));
   w->widget = widget;
   w->images = g_array_new(FALSE, FALSE, sizeof(dt_presenter_image_t));
-  w->kept = g_array_new(FALSE, FALSE, sizeof(dt_presenter_image_t));
   w->frames = g_ptr_array_new_with_free_func(_frame_unref);
   g_signal_connect(widget, "unmap", G_CALLBACK(_widget_unmap), w);
+  g_signal_connect(widget, "destroy", G_CALLBACK(_widget_destroy), w);
   g_object_set_data_full(G_OBJECT(widget), WIDGET_KEY, w, _widget_free);
   return w;
+}
+
+static void _window_free(gpointer data)
+{
+  dt_presenter_window_t *window = data;
+  while(window->widgets) _widget_detach(window->widgets->data);
+  window->backend->free(window->backend);
+  // whatever the platform owned goes back to the system display profile
+  dt_colorspaces_set_window_output(window->kind, NULL);
+  g_free(window);
+}
+
+static void _toplevel_unrealize(GtkWidget *toplevel,
+                                gpointer data)
+{
+  g_object_set_data(G_OBJECT(toplevel), WINDOW_KEY, NULL);
+}
+
+static dt_presenter_window_t *_window_get(GtkWidget *widget)
+{
+  GtkWidget *toplevel = gtk_widget_get_toplevel(widget);
+  if(!gtk_widget_is_toplevel(toplevel) || !gtk_widget_get_realized(toplevel)) return NULL;
+
+  dt_presenter_window_t *window = g_object_get_data(G_OBJECT(toplevel), WINDOW_KEY);
+  if(window) return window;
+
+  window = g_malloc0(sizeof(dt_presenter_window_t));
+  window->toplevel = toplevel;
+  window->kind = toplevel == dt_ui_main_window(darktable.gui->ui)
+    ? DT_COLORSPACE_DISPLAY
+    : DT_COLORSPACE_DISPLAY2;
+  window->backend = dt_presenter_layered_new(window);
+  if(!window->backend) window->backend = dt_presenter_cairo_new(window);
+  g_object_set_data_full(G_OBJECT(toplevel), WINDOW_KEY, window, _window_free);
+  g_signal_connect(toplevel, "unrealize", G_CALLBACK(_toplevel_unrealize), NULL);
+  return window;
+}
+
+void dt_presenter_window_output(const dt_presenter_window_t *window,
+                                dt_display_output_t *output)
+{
+  dt_colorspaces_get_display_output(window->kind, output);
+}
+
+void dt_presenter_window_set_output(dt_presenter_window_t *window,
+                                    const dt_display_output_t *output)
+{
+  dt_colorspaces_set_window_output(window->kind, output);
+}
+
+void dt_presenter_window_redraw(dt_presenter_window_t *window)
+{
+  gtk_widget_queue_draw(window->toplevel);
 }
 
 static gboolean _uses(const GArray *images,
@@ -95,17 +165,33 @@ static gboolean _uses(const GArray *images,
   return FALSE;
 }
 
+static void _hold(_widget_t *w,
+                  dt_frame_t *frame)
+{
+  if(!g_ptr_array_find(w->frames, frame, NULL))
+    g_ptr_array_add(w->frames, dt_frame_ref(frame));
+}
+
 cairo_t *dt_presenter_begin(GtkWidget *widget,
                             cairo_t *cr)
 {
   _widget_t *w = _widget_get(widget);
+  if(!w->window)
+  {
+    w->window = _window_get(widget);
+    // not in a realized window: a plain draw, with no images
+    if(!w->window) return cr;
+    w->window->widgets = g_list_prepend(w->window->widgets, w);
+  }
+
+  dt_presenter_backend_t *backend = w->window->backend;
   g_array_set_size(w->images, 0);
   w->widget_cr = cr;
-  w->layered = dt_presenter_layered_get(widget, TRUE);
-  cairo_t *draw_cr = w->layered ? dt_presenter_layered_begin(w->layered) : cr;
+  w->retain = w->kept_shown = FALSE;
+  cairo_t *draw_cr = backend->begin(backend, widget, &w->data, cr);
 
-  // a draw clipped to a damaged area records clipped images: they must
-  // not replace what dt_presenter_keep() shows
+  // a draw clipped to a damaged area records clipped images: it must not
+  // replace or drop what dt_presenter_keep() shows
   double x0, y0, x1, y1;
   cairo_clip_extents(draw_cr, &x0, &y0, &x1, &y1);
   w->full = x0 <= 0.0 && y0 <= 0.0
@@ -124,52 +210,18 @@ void dt_presenter_end(GtkWidget *widget,
   if(!w) return;
   cairo_set_user_data(cr, &_cr_key, NULL, NULL);
 
-  if(w->full)
-  {
-    g_array_set_size(w->kept, 0);
-    g_array_append_vals(w->kept, w->images->data, w->images->len);
-  }
+  const dt_presenter_kept_t kept = !w->full ? DT_PRESENTER_KEPT_UNCHANGED
+                                 : w->retain ? DT_PRESENTER_KEPT_THIS
+                                 : w->kept_shown ? DT_PRESENTER_KEPT_UNCHANGED
+                                 : DT_PRESENTER_KEPT_NONE;
 
   for(guint k = w->frames->len; k > 0; k--)
-  {
-    const dt_frame_t *f = g_ptr_array_index(w->frames, k - 1);
-    if(!_uses(w->images, f) && !_uses(w->kept, f))
+    if(!_uses(w->images, g_ptr_array_index(w->frames, k - 1)))
       g_ptr_array_remove_index_fast(w->frames, k - 1);
-  }
 
-  if(w->layered) dt_presenter_layered_end(w->layered, w->widget_cr, w->images);
-  w->layered = NULL;
+  dt_presenter_backend_t *backend = w->window->backend;
+  backend->end(backend, w->data, w->widget_cr, &w->base, w->images, kept);
   w->widget_cr = NULL;
-}
-
-// the frame as the window shows it: in the window's image encoding, as
-// float for a native backend to compose or as RGB24 for cairo to paint. a
-// frame made for another output is converted rather than refused, as
-// GTK4's renderers and Chromium convert content to the target at draw;
-// it stays until its producer renders it again for the new serial. the
-// headroom is no conversion: a frame keeps the tone mapping it was
-// rendered with
-static gboolean _rendition(_widget_t *w,
-                           dt_presenter_image_t *image)
-{
-  dt_display_output_t output;
-  dt_presenter_window_output(w->widget, &output);
-  if(w->layered)
-    image->pixels = dt_frame_float(image->frame, &output.image);
-  else
-    image->surface = dt_frame_surface(image->frame, &output.image);
-  return image->pixels || image->surface;
-}
-
-static void _paint(cairo_t *cr,
-                   const dt_presenter_image_t *image)
-{
-  cairo_save(cr);
-  cairo_transform(cr, &image->matrix);
-  cairo_set_source_surface(cr, image->surface, 0, 0);
-  cairo_pattern_set_filter(cairo_get_source(cr), image->filter);
-  cairo_paint(cr);
-  cairo_restore(cr);
 }
 
 void dt_presenter_image(cairo_t *cr,
@@ -182,7 +234,6 @@ void dt_presenter_image(cairo_t *cr,
   if(!w || !frame) return;
 
   dt_presenter_image_t image = { .frame = frame, .filter = filter };
-  if(!_rendition(w, &image)) return;
 
   // frame pixels -> user space now -> device -> user space of the base
   cairo_matrix_t ctm, inverse_base = w->base;
@@ -197,56 +248,38 @@ void dt_presenter_image(cairo_t *cr,
   cairo_clip_extents(cr, &image.clip[0], &image.clip[1], &image.clip[2], &image.clip[3]);
   cairo_restore(cr);
 
-  if(w->layered)
-    dt_presenter_layered_image(w->layered, &image);
-  else
-  {
-    cairo_save(cr);
-    cairo_set_source_surface(cr, image.surface, x, y);
-    cairo_pattern_set_filter(cairo_get_source(cr), filter);
-    cairo_paint(cr);
-    cairo_restore(cr);
-  }
+  dt_presenter_backend_t *backend = w->window->backend;
+  if(!backend->image(backend, w->data, cr, x, y, &image)) return;
 
-  if(!g_ptr_array_find(w->frames, frame, NULL))
-    g_ptr_array_add(w->frames, dt_frame_ref(frame));
+  _hold(w, frame);
   g_array_append_val(w->images, image);
 }
 
-void dt_presenter_keep(cairo_t *cr)
+void dt_presenter_retain(cairo_t *cr)
 {
   _widget_t *w = cairo_get_user_data(cr, &_cr_key);
-  if(!w) return;
+  if(w) w->retain = TRUE;
+}
 
-  for(guint k = 0; k < w->kept->len; k++)
-  {
-    dt_presenter_image_t image = g_array_index(w->kept, dt_presenter_image_t, k);
+gboolean dt_presenter_keep(cairo_t *cr)
+{
+  _widget_t *w = cairo_get_user_data(cr, &_cr_key);
+  if(!w) return FALSE;
 
-    // in the output the window has now, which may not be the one the draw
-    // that kept the image had. a window never changes its backend
-    if(!_rendition(w, &image)) continue;
+  const guint first = w->images->len;
+  dt_presenter_backend_t *backend = w->window->backend;
+  if(!backend->keep(backend, w->data, cr, &w->base, w->images)) return FALSE;
 
-    if(w->layered)
-      dt_presenter_layered_image(w->layered, &image);
-    else
-    {
-      cairo_save(cr);
-      cairo_set_matrix(cr, &w->base);
-      cairo_rectangle(cr, image.clip[0], image.clip[1],
-                      image.clip[2] - image.clip[0], image.clip[3] - image.clip[1]);
-      cairo_clip(cr);
-      _paint(cr, &image);
-      cairo_restore(cr);
-    }
-
-    g_array_append_val(w->images, image);
-  }
+  for(guint k = first; k < w->images->len; k++)
+    _hold(w, g_array_index(w->images, dt_presenter_image_t, k).frame);
+  w->kept_shown = TRUE;
+  return TRUE;
 }
 
 void dt_presenter_clear(GtkWidget *widget)
 {
   _widget_t *w = g_object_get_data(G_OBJECT(widget), WIDGET_KEY);
-  if(w) _widget_reset(w);
+  if(w) _widget_clear(w);
 }
 
 // clang-format off
