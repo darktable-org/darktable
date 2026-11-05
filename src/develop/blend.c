@@ -3039,6 +3039,15 @@ gboolean dt_develop_blend_params_read(dt_iop_module_t *module,
 {
   if(converted) *converted = FALSE;
   if(!blob || length <= 0) return TRUE;
+  // plain image history resolves ids through masks_history; a portable preset
+  // or style has no such store and must carry every referenced owned form
+  if(module && module->so && history_num < 0 && length <= sizeof(*bp)
+     && (dt_iop_module_is(module, "retouch") || dt_iop_module_is(module, "spots")))
+  {
+    dt_develop_blend_params_t stored = { 0 };
+    if(length == sizeof(stored)) memcpy(&stored, blob, sizeof(stored));
+    if(dt_is_valid_maskid(stored.mask_id) || !dt_masks_owned_params_are_empty(module)) return TRUE;
+  }
 
   // a mask that is not kept must leave no form behind, and migration creates
   // forms only for a module with an image (dt_masks_migrate_classic_to_flexi())
@@ -3057,14 +3066,50 @@ gboolean dt_develop_blend_params_read(dt_iop_module_t *module,
   {
     GList *forms = NULL;
     failed = !dt_masks_blend_blob_decode(blob, length, bp, &forms);
-    if(forms && (ignore_mask || (module && (module->flags() & IOP_FLAGS_NO_MASKS))))
+    const gboolean owned = module && module->so && (dt_iop_module_is(module, "retouch")
+                                      || dt_iop_module_is(module, "spots"));
+    if(forms && module && (module->flags() & IOP_FLAGS_NO_MASKS) && !owned)
     {
-      // the shapes of a module that has no mask are its own content,
-      // referenced by id from its params, which fresh ids would break
-      if(!ignore_mask)
-        dt_print(DT_DEBUG_ALWAYS, "[blend] '%s': mask forms of a module without masks ignored",
-                 module->op);
+      // other NO_MASKS modules retain the existing ignore-tail behavior
       g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+      forms = NULL;
+    }
+    if(forms && (!module || (!(module->flags() & IOP_FLAGS_NO_MASKS)
+                             && !(bp->mask_mode & DEVELOP_MASK_FLEXI))))
+    {
+      // a tail without a flexi mask is valid only for module-owned shapes
+      g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+      forms = NULL;
+      failed = TRUE;
+    }
+    // a locked blend mask keeps its own tree, but retouch/spots shapes still
+    // belong to the incoming module parameters and must be imported
+    if(forms && ignore_mask && !owned)
+      g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+    else if(forms && owned)
+    {
+      // owned forms and op_params must be remapped as one unit, including
+      // deferred imports from auto-applied history rows
+      // a locked blending mask keeps its tree, while the module-owned tree
+      // still follows the incoming op_params
+      if(ignore_mask)
+      {
+        GList *owned_forms = dt_masks_tree_forms(forms, bp->mask_id);
+        for(GList *l = forms; l;)
+        {
+          GList *next = l->next;
+          if(!g_list_find(owned_forms, l->data))
+          {
+            dt_masks_free_form(l->data);
+            forms = g_list_delete_link(forms, l);
+          }
+          l = next;
+        }
+        g_list_free(owned_forms);
+        bp->blend_mask_id = NO_MASKID;
+      }
+      module->dev = dev;
+      failed = !dt_masks_import_owned_forms(module, bp, forms, history_num);
     }
     else if(forms)
       dt_masks_import_stored_forms(module, bp, forms, history_num);

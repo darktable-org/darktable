@@ -1032,6 +1032,20 @@ void dt_masks_import_stored_forms(struct dt_iop_module_t *module,
                                   GList *forms,
                                   const int history_num);
 
+/** TRUE when a valid retouch/spots params buffer has no positive form ids;
+    does not change parameters; used to reject presets missing their forms */
+gboolean dt_masks_owned_params_are_empty(struct dt_iop_module_t *module);
+
+/** internal retouch/spots import: consumes forms on success and failure
+    validates rooted drawn trees and all module references before publication;
+    FALSE leaves module->params and dev->forms unchanged
+    history_num < 0 imports immediately; otherwise the history item's params
+    and bp buffers are borrowed until dt_masks_finish_flexi_migrations()
+    callers must keep those buffers alive and writable until then */
+gboolean dt_masks_import_owned_forms(struct dt_iop_module_t *module,
+                                      struct dt_develop_blend_params_t *bp,
+                                      GList *forms, const int history_num);
+
 /** create the forms of every migration dt_masks_migrate_classic_to_flexi()
     deferred, writing them under the masks_history position
     dt_masks_read_masks_history() reads as current. Call it once

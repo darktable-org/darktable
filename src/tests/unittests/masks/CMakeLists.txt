@@ -148,3 +148,15 @@ if(EXISTS "${DT_TEST_IMAGES}/mire1.cr2")
     _copy_required_library(test_flexi_reset lib_darktable)
   endif(WIN32)
 endif()
+
+# Module-owned drawn forms in user presets, including the non-GUI import path.
+add_cmocka_test(test_owned_presets
+  SOURCES test_owned_presets.c
+  LINK_LIBRARIES lib_darktable cmocka)
+target_compile_definitions(test_owned_presets PRIVATE
+  DT_TEST_DATADIR="${CMAKE_BINARY_DIR}/share/darktable"
+  DT_TEST_MODULEDIR="${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/darktable")
+target_include_directories(test_owned_presets PRIVATE ${CMAKE_SOURCE_DIR}/src)
+if(WIN32)
+  _copy_required_library(test_owned_presets lib_darktable)
+endif()

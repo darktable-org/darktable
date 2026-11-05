@@ -93,12 +93,17 @@ void dt_gui_presets_init()
 
 void *dt_gui_presets_module_blend_blob(dt_iop_module_t *module, size_t *size)
 {
-  // a module without masks references its shapes from its params: they are
-  // its content, not a mask to carry
-  GList *forms = module->dev && !(module->flags() & IOP_FLAGS_NO_MASKS)
-    ? module->dev->forms
-    : NULL;
-  return dt_masks_blend_blob_encode(module->blend_params, forms, size);
+  const gboolean owned = (module->flags() & IOP_FLAGS_NO_MASKS)
+    && (dt_iop_module_is(module, "retouch") || dt_iop_module_is(module, "spots"));
+  GList *forms = module->dev && (owned || !(module->flags() & IOP_FLAGS_NO_MASKS))
+    ? module->dev->forms : NULL;
+  // owned shapes use mask_id too; select tree encoding without changing the
+  // stored blend mode or the module's live parameters
+  dt_develop_blend_params_t bp = *module->blend_params;
+  if(owned) bp.mask_mode |= DEVELOP_MASK_FLEXI;
+  void *blob = dt_masks_blend_blob_encode(&bp, forms, size);
+  if(owned) memcpy(blob, module->blend_params, sizeof(bp));
+  return blob;
 }
 
 gboolean dt_gui_presets_confirm_pixel_masks(const char *style_modules)
@@ -1121,7 +1126,7 @@ static void _menuitem_new_preset(GSimpleAction *action,
   _edit_preset(_("new preset"), module);
 }
 
-void dt_gui_presets_apply_blend_params(dt_iop_module_t *module,
+static gboolean _apply_blend_params(dt_iop_module_t *module,
                                        const void *blendop_params,
                                        const int blendop_version,
                                        const int bl_length)
@@ -1134,7 +1139,13 @@ void dt_gui_presets_apply_blend_params(dt_iop_module_t *module,
   dt_develop_blend_params_t bp;
   if(dt_develop_blend_params_read(module, blendop_params, bl_length, blendop_version,
                                   &bp, -1, dt_develop_blend_mask_locked(&replaced), NULL))
+  {
+    // owned parameters and their tree are one unit: callers must roll back
+    // the incoming op_params rather than publish dangling references
+    if(dt_iop_module_is(module, "retouch") || dt_iop_module_is(module, "spots"))
+      return FALSE;
     dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
+  }
   else
     dt_iop_commit_blend_params(module, &bp, NULL);
 
@@ -1144,6 +1155,15 @@ void dt_gui_presets_apply_blend_params(dt_iop_module_t *module,
   dt_develop_blend_keep_locked_mask(module, &kept, &replaced);
   if(memcmp(&kept, module->blend_params, sizeof(kept)))
     dt_iop_commit_blend_params(module, &kept, NULL);
+  return TRUE;
+}
+
+void dt_gui_presets_apply_blend_params(dt_iop_module_t *module,
+                                       const void *blendop_params,
+                                       const int blendop_version,
+                                       const int bl_length)
+{
+  _apply_blend_params(module, blendop_params, blendop_version, bl_length);
 }
 
 void dt_gui_presets_apply_preset(const gchar* name,
@@ -1175,11 +1195,30 @@ void dt_gui_presets_apply_preset(const gchar* name,
     const char *multi_name = (const char *)sqlite3_column_text(stmt, 5);
     const int multi_name_hand_edited = sqlite3_column_int(stmt, 6);
 
+    // keep the live instance unchanged until the owned tree is validated;
+    // no history item, label or signal is published on rejection
+    const gboolean owned = dt_iop_module_is(module, "retouch") || dt_iop_module_is(module, "spots");
+    if(owned && bl_length > sizeof(dt_develop_blend_params_t)
+       && (!op_params || op_length != module->params_size))
+    {
+      sqlite3_finalize(stmt);
+      return;
+    }
+    void *previous = owned ? g_malloc(module->params_size) : NULL;
+    if(owned) memcpy(previous, module->params, module->params_size);
     if(op_params && (op_length == module->params_size))
       memcpy(module->params, op_params, op_length);
     else
       memcpy(module->params, module->default_params, module->params_size);
 
+    if(owned && !_apply_blend_params(module, blendop_params, blendop_version, bl_length))
+    {
+      memcpy(module->params, previous, module->params_size);
+      g_free(previous);
+      sqlite3_finalize(stmt);
+      return;
+    }
+    g_free(previous);
     module->enabled = enabled;
 
     // if module name has not been hand edited, use preset multi_name
@@ -1189,7 +1228,8 @@ void dt_gui_presets_apply_preset(const gchar* name,
                              strlen(multi_name) > 0 ? multi_name : name,
                              multi_name_hand_edited, FALSE, FALSE);
 
-    dt_gui_presets_apply_blend_params(module, blendop_params, blendop_version, bl_length);
+    if(!owned)
+      dt_gui_presets_apply_blend_params(module, blendop_params, blendop_version, bl_length);
 
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_PRESET_APPLIED, module);
 
