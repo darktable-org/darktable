@@ -36,8 +36,8 @@ See also:
 `image` is the encoding its pipes render to: display-referred RGB in a
 profile (type, file, intent), 1.0 at reference white and up to `headroom`
 above it. `device` is what untagged 8-bit values mean in the window,
-everything GTK draws there. `platform_owned` says the display profile
-selection has no effect on it. Where image and device are the same
+everything GTK draws there. `platform_owned` says a backend reported it,
+so a new system display profile does not replace it. Where image and device are the same
 encoding, as on every cairo window, the values reach the screen as device
 values. The mask and channel views are UI tones, authored as device values
 and converted from the device to the image encoding by gamma, which
@@ -49,15 +49,17 @@ markers are written as they are, saturated colors that mark in any output.
   realize a window. It is stored in `darktable.color_profiles`, indexed by
   window and written under `xprofile_lock`, and its `serial` changes
   whenever anything else in it does.
-- Unless the platform owns it, a window's output is what its display
-  profile selection describes, `dt_colorspaces_describe_selection()`: the
-  profile and intent as image and device encoding, with the headroom of the
-  profile's transfer function (PQ at the export's peak, HLG at 1000 nits).
-  Every setter of the selection calls
-  `dt_colorspaces_display_selection_changed()`: the darkroom and lighttable
-  profile and intent controls, a new system display profile and the PQ
-  peak. While the platform owns the output, the selection is kept for when
-  it gives the output back.
+- The display profile always comes from the platform: the X atom or colord
+  on X11 and on Wayland without color management, the compositor through
+  a backend, `GetICMProfileW()` on Windows, and sRGB on macOS, where GTK
+  tags its backing store sRGB. There is no user selection; previewing
+  another display, print or sRGB is a soft proof. Unless the platform owns
+  it, a window's output is its system display profile (`DISPLAY` or
+  `DISPLAY2`) as image and device encoding, with the display intent
+  preference (`ui_last/display_intent`, one for both windows) and headroom
+  1 (`_describe_system_display()` in `colorspaces.c`). A new system display
+  profile and a change of the intent preference
+  (`dt_colorspaces_update_display_intent()`) republish it.
 - What GTK draws converts to the device encoding: the thumbnail transforms
   follow the main window's, picker swatches convert from what the preview
   pipe produced to its window's, and module GUIs take
@@ -112,7 +114,9 @@ markers are written as they are, saturated colors that mark in any output.
   `DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED` as well, so thumbnails drawn
   before it arrived, as colord's asynchronous answer at startup, are redone.
 - A soft proof shows what an export to the proof profile holds, in the
-  output: clipped where that export clips, and by the presenter to what the
+  output: converted to the proof profile with its own intent
+  (`softproof_intent`, set next to the proof profile in the darkroom), and
+  from there to the output relative colorimetric; clipped where that export clips, and by the presenter to what the
   screen shows. PQ and HLG proofs take the export's own encoding round trip
   in linear light (`dt_hdr_encode()`, `dt_hdr_decode()`), since their ICC
   shapers end at 1.0, where the pipe has reference white.
@@ -193,9 +197,9 @@ one and it can set up, otherwise cairo.
 ### cairo
 
 Paints each frame, quantized to an RGB24 surface, into the widget's own
-context. The window's output is what the display profile selection
-describes (display2 for the second window) as image and device encoding,
-the same output a window has before it is realized and after it is gone.
+context. The window's output is its system display profile (display2 for
+the second window) as image and device encoding, the same output a window
+has before it is realized and after it is gone.
 Every platform without a native backend uses it: X11, macOS, Windows, and
 Wayland without color management.
 
@@ -204,8 +208,8 @@ needs also gets cairo. It takes GTK's untagged surface as sRGB, with a
 transfer function of its choosing, and converts it to the screen. The
 Wayland setup reports that the compositor manages color, and the backend
 choice then gives the platform the window's output with sRGB as image and
-device encoding (`dt_presenter_window_set_output()`); the display profile
-controls are insensitive as with a native backend.
+device encoding (`dt_presenter_window_set_output()`), as a native backend
+does with its own.
 
 ### Native backends and their layers
 
@@ -235,10 +239,10 @@ pipes of that window then render to that output, and everything GTK draws
 there (thumbnail transforms, picker swatches, the navigation thumbnail,
 `dt_presenter_gtk_surface()`, and module GUIs through
 `dt_ioppr_get_gui_profile_info()`) converts to the device profile, sRGB,
-where a cairo window's device profile is the selected display profile. The change is announced like a user's
-change of display profile, so converted thumbnails are redone. The saved
-selection is never touched; the display profile controls are insensitive
-while the platform owns the output (`dt_presenter_display_control()`).
+where a cairo window's device profile is its system display profile. The
+change is announced as a change of display profile, so converted
+thumbnails are redone. When the window goes away, its output returns to
+its system display profile.
 
 Code is split by what it works around:
 
@@ -313,7 +317,7 @@ AdobeRGB, so wide gamut and HDR need a float thumbnail cache anyway. See
 darktable-org/darktable#20477.
 
 With `cache_color_managed` off the mipmap cache holds display-encoded
-thumbnails, encoded for the selected display profile, and a compositor that
+thumbnails, encoded for the main window's system display profile, and a compositor that
 manages color shows them as sRGB like the rest of GTK's surface. They
 follow the window's output once thumbnails go through the presenter.
 

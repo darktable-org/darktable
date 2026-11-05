@@ -2322,69 +2322,20 @@ static void _update_softproof_gamut_checking(dt_develop_t *d)
                                     _gamut_quickbutton_clicked, d);
 }
 
-static void _display_intent_callback(GtkWidget *combo,
-                                     gpointer user_data)
+static void _softproof_intent_callback(GtkWidget *combo,
+                                       gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
-  const int pos = dt_bauhaus_combobox_get(combo);
-
-  dt_iop_color_intent_t new_intent = darktable.color_profiles->display_intent;
-
-  // we are not using the int value directly so it's robust against changes on lcms' side
-  switch(pos)
+  // the combo lists the intents in the order of their values
+  const dt_iop_color_intent_t intent = dt_bauhaus_combobox_get(combo);
+  if(intent == darktable.color_profiles->softproof_intent) return;
+  darktable.color_profiles->softproof_intent = intent;
+  // as for the soft proof toggle: nothing in the cache key says what the
+  // proof was made with
+  if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
   {
-    case 0:
-      new_intent = DT_INTENT_PERCEPTUAL;
-      break;
-    case 1:
-      new_intent = DT_INTENT_RELATIVE_COLORIMETRIC;
-      break;
-    case 2:
-      new_intent = DT_INTENT_SATURATION;
-      break;
-    case 3:
-      new_intent = DT_INTENT_ABSOLUTE_COLORIMETRIC;
-      break;
-  }
-
-  if(new_intent != darktable.color_profiles->display_intent)
-  {
-    darktable.color_profiles->display_intent = new_intent;
-    dt_colorspaces_display_selection_changed(DT_COLORSPACE_DISPLAY);
-    dt_dev_reprocess_all(d);
-  }
-}
-
-static void _display2_intent_callback(GtkWidget *combo,
-                                      gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  const int pos = dt_bauhaus_combobox_get(combo);
-
-  dt_iop_color_intent_t new_intent = darktable.color_profiles->display2_intent;
-
-  // we are not using the int value directly so it's robust against changes on lcms' side
-  switch(pos)
-  {
-    case 0:
-      new_intent = DT_INTENT_PERCEPTUAL;
-      break;
-    case 1:
-      new_intent = DT_INTENT_RELATIVE_COLORIMETRIC;
-      break;
-    case 2:
-      new_intent = DT_INTENT_SATURATION;
-      break;
-    case 3:
-      new_intent = DT_INTENT_ABSOLUTE_COLORIMETRIC;
-      break;
-  }
-
-  if(new_intent != darktable.color_profiles->display2_intent)
-  {
-    darktable.color_profiles->display2_intent = new_intent;
-    dt_colorspaces_display_selection_changed(DT_COLORSPACE_DISPLAY2);
-    dt_dev_reprocess_all(d);
+    const dt_iop_module_t *cout = dt_iop_get_module("colorout");
+    dt_dev_reprocess_center(d, cout->iop_order);
   }
 }
 
@@ -2428,96 +2379,6 @@ end:
   {
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             DT_COLORSPACES_PROFILE_TYPE_SOFTPROOF);
-    dt_dev_reprocess_all(d);
-  }
-}
-
-static void _display_profile_callback(GtkWidget *combo,
-                                      gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  gboolean profile_changed = FALSE;
-  const int pos = dt_bauhaus_combobox_get(combo);
-
-  for(GList *profiles = darktable.color_profiles->profiles;
-      profiles;
-      profiles = g_list_next(profiles))
-  {
-    dt_colorspaces_color_profile_t *pp = profiles->data;
-    if(pp->display_pos == pos)
-    {
-      if(darktable.color_profiles->display_type != pp->type
-        || (darktable.color_profiles->display_type == DT_COLORSPACE_FILE
-            && strcmp(darktable.color_profiles->display_filename, pp->filename)))
-      {
-        darktable.color_profiles->display_type = pp->type;
-        g_strlcpy(darktable.color_profiles->display_filename, pp->filename,
-                  sizeof(darktable.color_profiles->display_filename));
-        profile_changed = TRUE;
-      }
-      goto end;
-    }
-  }
-
-  // profile not found, fall back to system display profile. shouldn't happen
-  dt_print(DT_DEBUG_ALWAYS,
-           "can't find display profile `%s', using system display profile instead",
-           dt_bauhaus_combobox_get_text(combo));
-  profile_changed = darktable.color_profiles->display_type != DT_COLORSPACE_DISPLAY;
-  darktable.color_profiles->display_type = DT_COLORSPACE_DISPLAY;
-  darktable.color_profiles->display_filename[0] = '\0';
-
-end:
-  if(profile_changed)
-  {
-    dt_colorspaces_display_selection_changed(DT_COLORSPACE_DISPLAY);
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                            DT_COLORSPACES_PROFILE_TYPE_DISPLAY);
-    dt_dev_reprocess_all(d);
-  }
-}
-
-static void _display2_profile_callback(GtkWidget *combo,
-                                       gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  gboolean profile_changed = FALSE;
-  const int pos = dt_bauhaus_combobox_get(combo);
-
-  for(GList *profiles = darktable.color_profiles->profiles;
-      profiles;
-      profiles = g_list_next(profiles))
-  {
-    dt_colorspaces_color_profile_t *pp = profiles->data;
-    if(pp->display2_pos == pos)
-    {
-      if(darktable.color_profiles->display2_type != pp->type
-         || (darktable.color_profiles->display2_type == DT_COLORSPACE_FILE
-             && strcmp(darktable.color_profiles->display2_filename, pp->filename)))
-      {
-        darktable.color_profiles->display2_type = pp->type;
-        g_strlcpy(darktable.color_profiles->display2_filename, pp->filename,
-                  sizeof(darktable.color_profiles->display2_filename));
-        profile_changed = TRUE;
-      }
-      goto end;
-    }
-  }
-
-  // profile not found, fall back to system display2 profile. shouldn't happen
-  dt_print(DT_DEBUG_ALWAYS,
-           "can't find preview display profile `%s', using system display profile instead",
-           dt_bauhaus_combobox_get_text(combo));
-  profile_changed = darktable.color_profiles->display2_type != DT_COLORSPACE_DISPLAY2;
-  darktable.color_profiles->display2_type = DT_COLORSPACE_DISPLAY2;
-  darktable.color_profiles->display2_filename[0] = '\0';
-
-end:
-  if(profile_changed)
-  {
-    dt_colorspaces_display_selection_changed(DT_COLORSPACE_DISPLAY2);
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                            DT_COLORSPACES_PROFILE_TYPE_DISPLAY2);
     dt_dev_reprocess_all(d);
   }
 }
@@ -2581,12 +2442,6 @@ static void _preference_changed(gpointer instance,
 
   dev->constrain_zoom = dt_conf_get_bool("darkroom/ui/constrain_zoom");
 
-  const gboolean force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
-  gtk_widget_set_no_show_all(dev->profile.display_intent_widget, !force_lcms2);
-  gtk_widget_set_visible(dev->profile.display_intent_widget, force_lcms2);
-  gtk_widget_set_no_show_all(dev->profile.display2_intent_widget, !force_lcms2);
-  gtk_widget_set_visible(dev->profile.display2_intent_widget, force_lcms2);
-
   dt_get_sysresource_level();
   dt_opencl_update_settings();
   dt_configure_ppd_dpi(darktable.gui);
@@ -2601,68 +2456,6 @@ static void _preference_changed(gpointer instance,
          (module->blend_params->mask_mode != DEVELOP_MASK_DISABLED) &&
          (module->blend_params->mask_mode != DEVELOP_MASK_ENABLED));
   }
-}
-
-static void _update_display_profile_cmb(GtkWidget *cmb_display_profile)
-{
-  for(const GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
-  {
-    dt_colorspaces_color_profile_t *prof = l->data;
-    if(prof->display_pos > -1)
-    {
-      if(prof->type == darktable.color_profiles->display_type
-         && (prof->type != DT_COLORSPACE_FILE
-             || !strcmp(prof->filename, darktable.color_profiles->display_filename)))
-      {
-        if(dt_bauhaus_combobox_get(cmb_display_profile) != prof->display_pos)
-        {
-          dt_bauhaus_combobox_set(cmb_display_profile, prof->display_pos);
-          break;
-        }
-      }
-    }
-  }
-}
-
-static void _update_display2_profile_cmb(GtkWidget *cmb_display_profile)
-{
-  for(const GList *l = darktable.color_profiles->profiles;
-      l;
-      l = g_list_next(l))
-  {
-    dt_colorspaces_color_profile_t *prof = l->data;
-    if(prof->display2_pos > -1)
-    {
-      if(prof->type == darktable.color_profiles->display2_type
-         && (prof->type != DT_COLORSPACE_FILE
-             || !strcmp(prof->filename, darktable.color_profiles->display2_filename)))
-      {
-        if(dt_bauhaus_combobox_get(cmb_display_profile) != prof->display2_pos)
-        {
-          dt_bauhaus_combobox_set(cmb_display_profile, prof->display2_pos);
-          break;
-        }
-      }
-    }
-  }
-}
-
-static void _display_profile_changed(gpointer instance,
-                                     const uint8_t profile_type,
-                                     gpointer user_data)
-{
-  GtkWidget *cmb_display_profile = GTK_WIDGET(user_data);
-
-  _update_display_profile_cmb(cmb_display_profile);
-}
-
-static void _display2_profile_changed(gpointer instance,
-                                      const uint8_t profile_type,
-                                      gpointer user_data)
-{
-  GtkWidget *cmb_display_profile = GTK_WIDGET(user_data);
-
-  _update_display2_profile_cmb(cmb_display_profile);
 }
 
 /** end of toolbox */
@@ -3619,8 +3412,6 @@ void gui_init(dt_view_t *self)
                                 dev->second_wnd_button);
 
     /** let's fill the encapsulating widgets */
-    const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
-
     static const gchar *intents_list[]
       = { N_("perceptual"),
           N_("relative colorimetric"),
@@ -3628,43 +3419,20 @@ void gui_init(dt_view_t *self)
           N_("absolute colorimetric"),
           NULL };
 
-    dev->profile.display_intent_widget  = dt_bauhaus_combobox_new_full(DT_ACTION(self),
-                                                             N_("profiles"),
-                                                             N_("intent"),
-                                                             "",
-                                                             0,
-                                                             _display_intent_callback,
-                                                             dev, intents_list);
-    dev->profile.display2_intent_widget = dt_bauhaus_combobox_new_full(DT_ACTION(self),
-                                                              N_("profiles"),
-                                                              N_("preview intent"),
-                                                              "",
-                                                              0,
-                                                              _display2_intent_callback,
-                                                              dev, intents_list);
+    GtkWidget *softproof_intent =
+      dt_bauhaus_combobox_new_full(DT_ACTION(self), N_("profiles"), N_("softproof intent"),
+                                   _("rendering intent from the image to the softproof profile"),
+                                   darktable.color_profiles->softproof_intent,
+                                   _softproof_intent_callback, dev, intents_list);
 
-    if(!force_lcms2)
-    {
-      gtk_widget_set_no_show_all(dev->profile.display_intent_widget, TRUE);
-      gtk_widget_set_no_show_all(dev->profile.display2_intent_widget, TRUE);
-    }
-
-    GtkWidget *display_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-    GtkWidget *display2_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
     GtkWidget *softproof_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
     GtkWidget *histogram_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
 
-    dt_bauhaus_widget_set_label(display_profile,
-                                N_("profiles"), N_("display profile"));
-    dt_bauhaus_widget_set_label(display2_profile,
-                                N_("profiles"), N_("preview display profile"));
     dt_bauhaus_widget_set_label(softproof_profile,
                                 N_("profiles"), N_("softproof profile"));
     dt_bauhaus_widget_set_label(histogram_profile,
                                 N_("profiles"), N_("histogram profile"));
 
-    dt_bauhaus_combobox_set_entries_ellipsis(display_profile, PANGO_ELLIPSIZE_MIDDLE);
-    dt_bauhaus_combobox_set_entries_ellipsis(display2_profile, PANGO_ELLIPSIZE_MIDDLE);
     dt_bauhaus_combobox_set_entries_ellipsis(softproof_profile, PANGO_ELLIPSIZE_MIDDLE);
     dt_bauhaus_combobox_set_entries_ellipsis(histogram_profile, PANGO_ELLIPSIZE_MIDDLE);
 
@@ -3678,26 +3446,6 @@ void gui_init(dt_view_t *self)
     for(const GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
     {
       dt_colorspaces_color_profile_t *prof = l->data;
-      if(prof->display_pos > -1)
-      {
-        dt_bauhaus_combobox_add(display_profile, prof->name);
-        if(prof->type == darktable.color_profiles->display_type
-          && (prof->type != DT_COLORSPACE_FILE
-              || !strcmp(prof->filename, darktable.color_profiles->display_filename)))
-        {
-          dt_bauhaus_combobox_set(display_profile, prof->display_pos);
-        }
-      }
-      if(prof->display2_pos > -1)
-      {
-        dt_bauhaus_combobox_add(display2_profile, prof->name);
-        if(prof->type == darktable.color_profiles->display2_type
-           && (prof->type != DT_COLORSPACE_FILE
-               || !strcmp(prof->filename, darktable.color_profiles->display2_filename)))
-        {
-          dt_bauhaus_combobox_set(display2_profile, prof->display2_pos);
-        }
-      }
       // the system display profile is only suitable for display purposes
       if(prof->out_pos > -1)
       {
@@ -3719,15 +3467,7 @@ void gui_init(dt_view_t *self)
       }
     }
 
-    char *tooltip = dt_ioppr_get_location_tooltip("out", _("display ICC profiles"));
-    gtk_widget_set_tooltip_markup(display_profile, tooltip);
-    g_free(tooltip);
-
-    tooltip = dt_ioppr_get_location_tooltip("out", _("preview display ICC profiles"));
-    gtk_widget_set_tooltip_markup(display2_profile, tooltip);
-    g_free(tooltip);
-
-    tooltip = dt_ioppr_get_location_tooltip("out", _("softproof ICC profiles"));
+    char *tooltip = dt_ioppr_get_location_tooltip("out", _("softproof ICC profiles"));
     gtk_widget_set_tooltip_markup(softproof_profile, tooltip);
     g_free(tooltip);
 
@@ -3736,10 +3476,6 @@ void gui_init(dt_view_t *self)
     gtk_widget_set_tooltip_markup(histogram_profile, tooltip);
     g_free(tooltip);
 
-    g_signal_connect(G_OBJECT(display_profile), "value-changed",
-                     G_CALLBACK(_display_profile_callback), dev);
-    g_signal_connect(G_OBJECT(display2_profile), "value-changed",
-                     G_CALLBACK(_display2_profile_callback), dev);
     g_signal_connect(G_OBJECT(display2_color_assessment), "toggled",
                      G_CALLBACK(_display2_color_assessment_callback), dev);
     g_signal_connect(G_OBJECT(softproof_profile), "value-changed",
@@ -3749,25 +3485,10 @@ void gui_init(dt_view_t *self)
 
     _update_softproof_gamut_checking(dev);
 
-    dt_presenter_display_control(display_profile, DT_COLORSPACE_DISPLAY);
-    dt_presenter_display_control(dev->profile.display_intent_widget,
-                                 DT_COLORSPACE_DISPLAY);
-    dt_presenter_display_control(display2_profile, DT_COLORSPACE_DISPLAY2);
-    dt_presenter_display_control(dev->profile.display2_intent_widget,
-                                 DT_COLORSPACE_DISPLAY2);
-
-    // update the gui when profiles change (intent visibility is handled by _preference_changed)
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                              _display_profile_changed, display_profile);
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                              _display2_profile_changed, display2_profile);
-
     GtkWidget *vbox = dt_gui_vbox
-      (display_profile, dev->profile.display_intent_widget,
+      (display2_color_assessment,
        gtk_separator_new(GTK_ORIENTATION_HORIZONTAL),
-       display2_profile, dev->profile.display2_intent_widget, display2_color_assessment,
-       gtk_separator_new(GTK_ORIENTATION_HORIZONTAL),
-       softproof_profile, histogram_profile);
+       softproof_profile, softproof_intent, histogram_profile);
 
     gtk_widget_show_all(vbox);
     gtk_container_add(GTK_CONTAINER(dev->profile.floating_window), vbox);
