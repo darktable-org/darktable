@@ -269,15 +269,12 @@ typedef struct dt_dev_pixelpipe_t
   dt_dev_pixelpipe_status_t status;
   gboolean loading;
   gboolean input_changed;
-  // backbuffer (output): float RGBA in backbuf_output for screen pipes,
-  // the last module's output for the others
+  // output: the last frame a screen pipe published, under backbuf_mutex
+  // (dt_dev_pixelpipe_frame()), which holds its geometry; the last
+  // module's output for the others. the size describes either
+  struct dt_frame_t *frame;
   void *backbuf;
-  dt_display_output_t backbuf_output;
-  uint32_t backbuf_id;
-  size_t backbuf_size;
   int backbuf_width, backbuf_height;
-  float backbuf_scale;
-  dt_dev_zoom_pos_t backbuf_zoom_pos;
   dt_hash_t backbuf_hash;
   dt_pthread_mutex_t mutex, backbuf_mutex, busy_mutex;
   int final_width, final_height;
@@ -455,6 +452,10 @@ void dt_dev_pixelpipe_set_icc(dt_dev_pixelpipe_t *pipe,
                               const dt_colorspaces_color_profile_type_t icc_type,
                               const gchar *icc_filename,
                               const dt_iop_color_intent_t icc_intent);
+
+/** a reference to the last frame a screen pipe published, or NULL: release
+ * it with dt_frame_unref() */
+struct dt_frame_t *dt_dev_pixelpipe_frame(dt_dev_pixelpipe_t *pipe);
 
 // returns the dimensions of the full image after processing.
 void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,

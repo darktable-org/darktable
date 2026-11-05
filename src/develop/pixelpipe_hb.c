@@ -26,6 +26,7 @@
 #include "control/signal.h"
 #include "develop/blend.h"
 #include "develop/format.h"
+#include "develop/frame.h"
 #include "develop/imageop_math.h"
 #include "develop/develop.h"
 #include "develop/tiling.h"
@@ -286,14 +287,9 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->processed_width = pipe->backbuf_width = pipe->iwidth = pipe->final_width = 0;
   pipe->processed_height = pipe->backbuf_height = pipe->iheight = pipe->final_height = 0;
   pipe->nodes = NULL;
-  pipe->backbuf_size = size;
   pipe->cache_obsolete_order = INT_MAX;
   pipe->backbuf = NULL;
-  memset(&pipe->backbuf_output, 0, sizeof(pipe->backbuf_output));
-  pipe->backbuf_output.image.type = DT_COLORSPACE_NONE;
-  pipe->backbuf_output.device.type = DT_COLORSPACE_NONE;
-  pipe->backbuf_scale = 0.0f;
-  memset(pipe->backbuf_zoom_pos, 0, sizeof(dt_dev_zoom_pos_t));
+  pipe->frame = NULL;
   pipe->output_imgid = NO_IMGID;
 
   memset(&pipe->scharr, 0, sizeof(dt_dev_detail_mask_t));
@@ -452,7 +448,8 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   g_free(pipe->icc_filename);
   pipe->icc_filename = NULL;
 
-  if(dt_pipe_is_screen(pipe)) g_free(pipe->backbuf);
+  dt_frame_unref(pipe->frame);
+  pipe->frame = NULL;
   pipe->backbuf = NULL;
   pipe->backbuf_width = 0;
   pipe->backbuf_height = 0;
@@ -3867,40 +3864,33 @@ restart:
   if(err)
     return TRUE;
 
-  // terminate
-  dt_pthread_mutex_lock(&pipe->backbuf_mutex);
-  pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(&roi, pipe, pos);
-
-  //FIXME lock/release cache line instead of copying
+  // terminate. a screen pipe publishes a frame, a copy: the cache line it
+  // comes from is not pinned and changes with the next run
+  dt_frame_t *frame = NULL;
   if(dt_pipe_is_screen(pipe))
   {
-    const size_t bbpp = 4 * sizeof(float);
-    if(pipe->backbuf == NULL || pipe->backbuf_width * pipe->backbuf_height != width * height ||
-       pipe->backbuf_size != bbpp * width * height)
-    {
-      g_free(pipe->backbuf);
-      pipe->backbuf = g_malloc0(bbpp * width * height);
-      pipe->backbuf_size = bbpp * width * height;
-    }
-
-    if(pipe->backbuf)
-    {
-      memcpy(pipe->backbuf, buf, bbpp * width * height);
-      pipe->backbuf_scale = scale;
-      for(int i = 0; i < 6; i++) pipe->backbuf_zoom_pos[i] = pts[i] * pipe->iscale;
-      // the values as the pipe made them, shown as the window it rendered
-      // for shows them
-      pipe->backbuf_output = pipe->output;
-      pipe->backbuf_output.image = pipe->output_encoding;
-      pipe->backbuf_id = dt_dev_new_frame_id();
-      pipe->output_imgid = pipe->image.id;
-    }
+    dt_frame_geometry_t geometry = { .width = width, .height = height, .scale = scale };
+    for(int i = 0; i < 6; i++) geometry.zoom_pos[i] = pts[i] * pipe->iscale;
+    frame = dt_frame_new(buf, &geometry, pipe->output.format, &pipe->output_encoding,
+                         pipe->output.serial);
   }
-  else
+
+  dt_pthread_mutex_lock(&pipe->backbuf_mutex);
+  pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(&roi, pipe, pos);
+  if(frame)
+  {
+    dt_frame_t *old = pipe->frame;
+    pipe->frame = frame;
+    frame = old;
+    pipe->output_imgid = pipe->image.id;
+  }
+  else if(!dt_pipe_is_screen(pipe))
     pipe->backbuf = buf;
   pipe->backbuf_width = width;
   pipe->backbuf_height = height;
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
+  // the frame it replaced, still shown by whoever holds it
+  dt_frame_unref(frame);
 
   if(!claimed)
     dt_dev_pixelpipe_cache_report(pipe);
@@ -3911,6 +3901,14 @@ restart:
   dt_print_mem_usage("after pixelpipe process");
 
   return FALSE;
+}
+
+dt_frame_t *dt_dev_pixelpipe_frame(dt_dev_pixelpipe_t *pipe)
+{
+  dt_pthread_mutex_lock(&pipe->backbuf_mutex);
+  dt_frame_t *frame = dt_frame_ref(pipe->frame);
+  dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
+  return frame;
 }
 
 void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,

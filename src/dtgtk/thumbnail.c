@@ -38,7 +38,7 @@
 #include "dtgtk/thumbnail_btn.h"
 #include "gui/drag_and_drop.h"
 #include "gui/accelerators.h"
-#include "gui/presenter.h"
+#include "develop/frame.h"
 #include "views/view.h"
 
 static void _thumb_resize_overlays(dt_thumbnail_t *thumb);
@@ -707,7 +707,7 @@ static gboolean _event_image_draw(GtkWidget *widget,
   dt_develop_t *dev = darktable.develop;
   if(thumb->img_surf_preview
      && (dt_view_get_current() != DT_VIEW_DARKROOM
-         || !dev->preview_pipe->backbuf
+         || !dev->preview_pipe->frame
          || dev->preview_pipe->output_imgid != thumb->imgid))
   {
     dt_thumbnail_surface_destroy(thumb);
@@ -730,26 +730,20 @@ static gboolean _event_image_draw(GtkWidget *widget,
 
     if(dt_view_get_current() == DT_VIEW_DARKROOM
        && dev->preview_pipe->output_imgid == thumb->imgid
-       && dev->preview_pipe->backbuf)
+       && dev->preview_pipe->frame)
     {
       // the current thumb is the one currently developed in darkroom
       // better use the preview buffer for surface, in order to stay in sync
       dt_thumbnail_surface_destroy(thumb);
 
-      // make sure we use all backbuf data here with local copies in a protected state
-      // to protect against darkroom image switching to next/previous for example.
-      dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
-      dt_pthread_mutex_lock(mutex);
+      // a reference keeps the frame as it is, whatever darkroom does next,
+      // switching to the next or previous image for example
+      dt_frame_t *frame = dt_dev_pixelpipe_frame(dev->preview_pipe);
+      const int buf_width = frame ? dt_frame_geometry(frame)->width : 0;
+      const int buf_height = frame ? dt_frame_geometry(frame)->height : 0;
 
-      // get new surface with preview image
-      const int buf_width = dev->preview_pipe->backbuf_width;
-      const int buf_height = dev->preview_pipe->backbuf_height;
-
-      cairo_surface_t *tmp_surface
-          = dt_presenter_gtk_surface(dev->preview_pipe->backbuf, buf_width, buf_height,
-                                     &dev->preview_pipe->backbuf_output,
-                                     dev->preview_pipe->backbuf_id);
-      dt_pthread_mutex_unlock(mutex);
+      // the colors GTK's surface shows
+      cairo_surface_t *tmp_surface = dt_frame_device_surface(frame, DT_COLORSPACE_DISPLAY);
 
       // copy preview image into final surface
       if(tmp_surface)
@@ -786,7 +780,7 @@ static gboolean _event_image_draw(GtkWidget *widget,
         }
         cairo_destroy(cr2);
       }
-      cairo_surface_destroy(tmp_surface);
+      dt_frame_unref(frame);
       thumb->img_surf_preview = TRUE;
     }
     else
@@ -1248,7 +1242,7 @@ static void _dt_preview_updated_callback(gpointer instance,
   if(dt_view_get_current() == DT_VIEW_DARKROOM
      && (thumb->img_surf_preview
          || darktable.develop->preview_pipe->output_imgid == thumb->imgid)
-     && darktable.develop->preview_pipe->backbuf)
+     && darktable.develop->preview_pipe->frame)
   {
     // reset surface and invalidate native mipmap cache (content changed)
     thumb->img_surf_dirty = TRUE;

@@ -28,7 +28,7 @@
 #include "dtgtk/drawingarea.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "gui/presenter.h"
+#include "develop/frame.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 
@@ -382,21 +382,18 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
   gtk_render_background(context, cr, 0, 0, allocation.width, allocation.height);
 
   /* draw navigation image if available */
-  if(dev->preview_pipe->backbuf
-     && dev->image_storage.id == dev->preview_pipe->output_imgid)
+  dt_frame_t *frame = dev->image_storage.id == dev->preview_pipe->output_imgid
+    ? dt_dev_pixelpipe_frame(dev->preview_pipe)
+    : NULL;
+  // the colors GTK's surface shows
+  cairo_surface_t *surface = dt_frame_device_surface(frame, DT_COLORSPACE_DISPLAY);
+  if(surface)
   {
-    dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
-    dt_pthread_mutex_lock(mutex);
-
     cairo_save(cr);
-    const int wd = dev->preview_pipe->backbuf_width;
-    const int ht = dev->preview_pipe->backbuf_height;
+    const int wd = dt_frame_geometry(frame)->width;
+    const int ht = dt_frame_geometry(frame)->height;
     const float scale = fminf(width / (float)wd, height / (float)ht);
 
-    cairo_surface_t *surface =
-      dt_presenter_gtk_surface(dev->preview_pipe->backbuf, wd, ht,
-                               &dev->preview_pipe->backbuf_output,
-                               dev->preview_pipe->backbuf_id);
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, scale, scale);
     cairo_translate(cr, -.5f * wd, -.5f * ht);
@@ -444,10 +441,8 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
       _draw_offview_arrow(cr, wd, ht, zoom_x, zoom_y, scale);
     }
     cairo_restore(cr);
-    cairo_surface_destroy(surface);
-
-    dt_pthread_mutex_unlock(mutex);
   }
+  dt_frame_unref(frame);
 
   /* blit memsurface into widget */
   cairo_destroy(cr);
@@ -547,7 +542,7 @@ static gboolean _lib_navigation_widget_to_center(GtkEventController *controller,
                                                  gdouble *out_y)
 {
   dt_develop_t *dev = darktable.develop;
-  if(!dev->preview_pipe->backbuf
+  if(!dev->preview_pipe->frame
      || dev->image_storage.id != dev->preview_pipe->output_imgid)
     return FALSE;
   dt_dev_viewport_t *port = &dev->full;

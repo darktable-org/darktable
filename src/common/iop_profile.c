@@ -488,7 +488,8 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
                                              const int type,
                                              const char *filename,
                                              cmsHPROFILE profile,
-                                             const int intent)
+                                             const int intent,
+                                             const gboolean check_file)
 {
   _mark_as_nonmatrix_profile(profile_info);
   _clear_lut_curves(profile_info);
@@ -496,7 +497,7 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
   profile_info->nonlinearlut = 0;
   profile_info->grey = 0.1842f;
 
-  if(type == DT_COLORSPACE_FILE
+  if(type == DT_COLORSPACE_FILE && check_file
     && (!filename || !filename[0] || !g_file_test(filename, G_FILE_TEST_IS_REGULAR)))
   {
     dt_print(DT_DEBUG_PARAMS, "[generate_profile_info] icc profile '%s' not available",
@@ -613,6 +614,43 @@ dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,
 }
 
 static dt_iop_order_iccprofile_info_t *
+_new_profile_info(const dt_colorspaces_color_profile_type_t profile_type,
+                  const char *profile_filename,
+                  cmsHPROFILE profile,
+                  const int intent,
+                  const gboolean check_file)
+{
+  dt_iop_order_iccprofile_info_t *profile_info =
+    dt_alloc1_align_type(dt_iop_order_iccprofile_info_t);
+  if(!profile_info) return NULL;
+  dt_ioppr_init_profile_info(profile_info, 0);
+  if(_ioppr_generate_profile_info(profile_info, profile_type, profile_filename, profile,
+                                  intent, check_file))
+  {
+    dt_ioppr_free_profile_info(profile_info);
+    return NULL;
+  }
+  return profile_info;
+}
+
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_new_profile_info(const dt_colorspaces_color_profile_type_t profile_type,
+                          const char *profile_filename,
+                          cmsHPROFILE profile,
+                          const int intent)
+{
+  // the profile, read when the session started, outlives its file
+  return _new_profile_info(profile_type, profile_filename, profile, intent, !profile);
+}
+
+void dt_ioppr_free_profile_info(dt_iop_order_iccprofile_info_t *profile_info)
+{
+  if(!profile_info) return;
+  dt_ioppr_cleanup_profile_info(profile_info);
+  dt_free_align(profile_info);
+}
+
+static dt_iop_order_iccprofile_info_t *
 _add_profile_info(struct dt_develop_t *dev,
                   const dt_colorspaces_color_profile_type_t profile_type,
                   const char *profile_filename,
@@ -623,19 +661,9 @@ _add_profile_info(struct dt_develop_t *dev,
     dt_ioppr_get_profile_info_from_list(dev, profile_type, profile_filename, profile);
   if(profile_info == NULL)
   {
-    profile_info = dt_alloc1_align_type(dt_iop_order_iccprofile_info_t);
-    dt_ioppr_init_profile_info(profile_info, 0);
-    if(!_ioppr_generate_profile_info(profile_info, profile_type, profile_filename, profile,
-                                     intent))
-    {
+    profile_info = _new_profile_info(profile_type, profile_filename, profile, intent, TRUE);
+    if(profile_info)
       dev->allprofile_info = g_list_append(dev->allprofile_info, profile_info);
-    }
-    else
-    {
-      dt_ioppr_cleanup_profile_info(profile_info);
-      dt_free_align(profile_info);
-      profile_info = NULL;
-    }
   }
   return profile_info;
 }

@@ -1290,6 +1290,8 @@ static void _describe_system_display(dt_colorspaces_t *self,
   // without color management in the platform, values reach the screen as
   // the device values the display profile describes
   output->device = *image;
+  // cairo paints 8 bits
+  output->format = DT_FRAME_RGB24;
 }
 
 // replace a window's output, keeping its serial running, and rebuild what

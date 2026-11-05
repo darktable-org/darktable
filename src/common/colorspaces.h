@@ -226,16 +226,25 @@ static inline gboolean dt_color_encoding_equal(const dt_color_encoding_t *a,
     && a->headroom == b->headroom;
 }
 
+/* how a frame stores its pixels (develop/frame.h): float RGBA, or packed
+ * into 8 bits as cairo's RGB24 (BGRX in memory) */
+typedef enum dt_frame_format_t
+{
+  DT_FRAME_FLOAT = 0,
+  DT_FRAME_RGB24,
+} dt_frame_format_t;
+
 /* what a window wants. image is what its pipes render to: display-referred
  * RGB, 1.0 at reference white and up to image.headroom above it. device is
  * what untagged 8-bit values mean in the window, everything GTK draws
  * there. both are resolved: profile names the registry's profile, NULL if
- * there is none. as the label of a frame, image is what the pipe produced
- * and the rest is the output the frame was made for */
+ * there is none. format is what its frames are made in: RGB24 where cairo
+ * paints them, float where a native backend composes them */
 typedef struct dt_display_output_t
 {
   dt_color_encoding_t image;
   dt_color_encoding_t device;
+  dt_frame_format_t format;
   // the platform owns the window's output: a backend reported it, and a
   // new system display profile does not replace it
   gboolean platform_owned;
@@ -257,18 +266,14 @@ typedef enum dt_display_output_change_t
 static inline dt_display_output_change_t dt_display_output_diff(const dt_display_output_t *a,
                                                                 const dt_display_output_t *b)
 {
-  const gboolean image = !dt_color_encoding_equal(&a->image, &b->image);
+  // a new frame format renders the window's images again, as a new image
+  // encoding does
+  const gboolean image = !dt_color_encoding_equal(&a->image, &b->image)
+                         || a->format != b->format;
   const gboolean device = !dt_color_encoding_equal(&a->device, &b->device)
                           || a->platform_owned != b->platform_owned;
   return (dt_display_output_change_t)((image ? DT_DISPLAY_OUTPUT_IMAGE : 0)
                                       | (device ? DT_DISPLAY_OUTPUT_DEVICE : 0));
-}
-
-/* the same output, whatever the serial */
-static inline gboolean dt_display_output_equal(const dt_display_output_t *a,
-                                               const dt_display_output_t *b)
-{
-  return dt_display_output_diff(a, b) == DT_DISPLAY_OUTPUT_UNCHANGED;
 }
 
 /* the 8-bit value a display-encoded float shows as on an 8-bit surface.

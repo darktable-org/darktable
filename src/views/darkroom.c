@@ -603,18 +603,9 @@ static void _view_paint_surface(cairo_t *cr,
                                 dt_dev_viewport_t *port,
                                 const dt_window_t window)
 {
-  dt_dev_pixelpipe_t *p = port->pipe;
-
-  dt_pthread_mutex_lock(&p->backbuf_mutex);
-
-  dt_view_paint_surface(cr, width, height,
-                        port, window,
-                        p->backbuf, &p->backbuf_output, p->backbuf_id,
-                        p->backbuf_scale,
-                        p->backbuf_width, p->backbuf_height,
-                        p->backbuf_zoom_pos);
-
-  dt_pthread_mutex_unlock(&p->backbuf_mutex);
+  dt_frame_t *frame = dt_dev_pixelpipe_frame(port->pipe);
+  if(frame) dt_view_paint_surface(cr, width, height, port, window, frame);
+  dt_frame_unref(frame);
 }
 
 /* drag&drop hint overlays
@@ -836,7 +827,7 @@ void expose(dt_view_t *self,
                         sb_boxh / 2);
 
   const gboolean expose_full =
-        port->pipe->backbuf                                // do we have an image?
+        port->pipe->frame                                  // do we have an image?
      && port->pipe->output_imgid == dev->image_storage.id;  // same image?
 
   if(expose_full)
@@ -1371,7 +1362,7 @@ static void _dev_change_image(dt_develop_t *dev,
     dt_iop_color_picker_reset(darktable.lib->proxy.colorpicker.picker_proxy->module, FALSE);
 
   // update aspect ratio
-  if(dev->preview_pipe->backbuf
+  if(dev->preview_pipe->frame
      && dev->preview_pipe->status == DT_DEV_PIXELPIPE_VALID)
   {
     const float aspect_ratio =
@@ -4144,7 +4135,7 @@ void leave(dt_view_t *self)
   dt_overlay_add_from_history(imgid);
 
   // update aspect ratio
-  if(dev->preview_pipe->backbuf && dev->preview_pipe->status == DT_DEV_PIXELPIPE_VALID)
+  if(dev->preview_pipe->frame && dev->preview_pipe->status == DT_DEV_PIXELPIPE_VALID)
   {
     const float aspect_ratio =
       (float)dev->preview_pipe->backbuf_width / (float)dev->preview_pipe->backbuf_height;
@@ -5030,7 +5021,7 @@ static void _second_window_draw(GtkWidget *widget,
     port->dpi_factor = dev->preview2.dpi_factor;
   }
 
-  if(port->pipe && port->pipe->backbuf)  // do we have a preview image?
+  if(port->pipe && port->pipe->frame)  // do we have a preview image?
   {
     // draw the preview image using the appropriate viewport
     _view_paint_surface(cri, dev->preview2.orig_width, dev->preview2.orig_height,
@@ -5045,7 +5036,7 @@ static void _second_window_draw(GtkWidget *widget,
     // For a different image, keep the black background rather than flashing
     // the wrong image while the new pixelpipe processes.
     if(pinned_dev->image_storage.id == dev->image_storage.id
-       && dev->preview2.pipe && dev->preview2.pipe->backbuf)
+       && dev->preview2.pipe && dev->preview2.pipe->frame)
     {
       _view_paint_surface(cri, dev->preview2.orig_width, dev->preview2.orig_height,
                          &dev->preview2, DT_WINDOW_SECOND);
@@ -5057,7 +5048,7 @@ static void _second_window_draw(GtkWidget *widget,
   {
     // Process pinned image pipeline - process if no backbuf, pipe dirty, zoom/pan
     // or the window's output changed
-    if(!port->pipe->backbuf
+    if(!port->pipe->frame
        || port->pipe->status == DT_DEV_PIXELPIPE_DIRTY
        || port->pipe->status == DT_DEV_PIXELPIPE_INVALID
        || port->pipe->changed != DT_DEV_PIPE_UNCHANGED

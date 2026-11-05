@@ -127,6 +127,7 @@ FILE(GLOB SOURCE_FILES
   "develop/borders_helper.c"
   "develop/develop.c"
   "develop/format.c"
+  "develop/frame.c"
   "develop/imageop.c"
   "develop/imageop_gui.c"
   "develop/imageop_math.c"

@@ -720,36 +720,28 @@ dt_hash_t dt_dev_hash_distort_plus(dt_develop_t *dev,
 void dt_dev_undo_start_record(dt_develop_t *dev);
 void dt_dev_undo_end_record(dt_develop_t *dev);
 
-/** a new id for a rendered frame, see dt_presenter_image() */
-uint32_t dt_dev_new_frame_id(void);
-
 /*
- * develop an image and returns the buf and processed width / height.
- * this is done as in the context of the darkroom, meaning that the
- * final processed sizes will align perfectly on the darkroom view.
- * the buffer is float RGBA rendered for output, or in the pipe's working
- * RGB if output is NULL and colorout is filtered out, and is freed with
- * dt_free_align(). encoding, if not NULL, receives what its values are,
- * for dt_presenter_image(): output's profile, the sRGB colorout replaced
- * it with, or the working RGB; type DT_COLORSPACE_NONE if nothing was
- * rendered or no profile describes the values.
+ * develop an image and returns the frame it published, NULL if nothing was
+ * rendered: fit into width x height, or else as in the context of the
+ * darkroom, meaning that the final processed sizes will align perfectly
+ * on the darkroom view.
+ * output is the sink: the frame is rendered for its image encoding, or
+ * stays in the pipe's working RGB if that is DT_COLORSPACE_NONE and
+ * colorout is filtered out, and is made in its format. the frame's
+ * encoding says what its values are: output's profile, the sRGB colorout
+ * replaced it with, or the working RGB.
  * if called with a valid CL devid that device is used without locking/unlocking as the caller is doing that
  */
-void dt_dev_image(const dt_imgid_t imgid,
-                  const size_t width,
-                  const size_t height,
-                  const int history_end,
-                  float **buf,
-                  float *scale,
-                  size_t *buf_width,
-                  size_t *buf_height,
-                  dt_dev_zoom_pos_t zoom_pos,
-                  const int32_t snapshot_id,
-                  GList *module_filter_out,
-                  const int devid,
-                  const gboolean finalscale,
-                  const dt_display_output_t *output,
-                  dt_display_output_t *encoding);
+struct dt_frame_t *dt_dev_image(const dt_imgid_t imgid,
+                                const size_t width,
+                                const size_t height,
+                                const gboolean fit,
+                                const int history_end,
+                                const int32_t snapshot_id,
+                                GList *module_filter_out,
+                                const int devid,
+                                const gboolean finalscale,
+                                const dt_display_output_t *output);
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d);
 void dt_dev_reset_chroma(dt_develop_t *dev);

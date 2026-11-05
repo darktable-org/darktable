@@ -152,7 +152,8 @@ static dt_presenter_window_t *_window_get(GtkWidget *widget)
       { .image = { .type = DT_COLORSPACE_SRGB, .intent = DT_INTENT_PERCEPTUAL,
                    .headroom = 1.0f },
         .device = { .type = DT_COLORSPACE_SRGB, .intent = DT_INTENT_PERCEPTUAL,
-                    .headroom = 1.0f } };
+                    .headroom = 1.0f },
+        .format = DT_FRAME_RGB24 };
     dt_presenter_window_set_output(w, manages_color ? &srgb : NULL);
   }
 #endif
@@ -242,7 +243,8 @@ static gboolean _coverage(const dt_presenter_layered_t *l,
   cairo_matrix_multiply(&forward, &image->matrix, &device);
 
   // the frame's bounding box
-  const double fw = image->frame->width, fh = image->frame->height;
+  const dt_frame_geometry_t *g = dt_frame_geometry(image->frame);
+  const double fw = g->width, fh = g->height;
   const double corners[4][2] = { { 0, 0 }, { fw, 0 }, { 0, fh }, { fw, fh } };
   double x0 = DBL_MAX, y0 = DBL_MAX, x1 = -DBL_MAX, y1 = -DBL_MAX;
   for(int k = 0; k < 4; k++)
@@ -267,7 +269,7 @@ static gboolean _coverage(const dt_presenter_layered_t *l,
 }
 
 static inline gboolean _inside(const cairo_matrix_t *inverse,
-                               const dt_presenter_frame_t *frame,
+                               const dt_frame_geometry_t *frame,
                                const int x,
                                const int y,
                                double *u,
@@ -289,6 +291,7 @@ void dt_presenter_layered_image(dt_presenter_layered_t *l,
   cairo_surface_flush(l->foreground);
   uint8_t *const data = cairo_image_surface_get_data(l->foreground);
   const int stride = cairo_image_surface_get_stride(l->foreground);
+  const dt_frame_geometry_t *frame = dt_frame_geometry(image->frame);
   DT_OMP_FOR()
   for(int y = box[1]; y < box[3]; y++)
   {
@@ -296,7 +299,7 @@ void dt_presenter_layered_image(dt_presenter_layered_t *l,
     for(int x = box[0]; x < box[2]; x++)
     {
       double u, v;
-      if(_inside(&inverse, image->frame, x, y, &u, &v)) row[x] = 0;
+      if(_inside(&inverse, frame, x, y, &u, &v)) row[x] = 0;
     }
   }
   cairo_surface_mark_dirty(l->foreground);
@@ -326,10 +329,11 @@ static void _compose(dt_presenter_layered_t *l,
   {
     const dt_presenter_image_t *image =
       &g_array_index(l->images, dt_presenter_image_t, k);
-    const dt_presenter_frame_t *frame = image->frame;
+    const dt_frame_geometry_t *frame = dt_frame_geometry(image->frame);
+    const float *const pixels = image->pixels;
     int box[4];
     cairo_matrix_t inverse;
-    if(!frame->pixels || !_coverage(l, image, box, &inverse)) continue;
+    if(!pixels || !_coverage(l, image, box, &inverse)) continue;
 
     const gboolean nearest = image->filter == CAIRO_FILTER_FAST
                           || image->filter == CAIRO_FILTER_NEAREST;
@@ -344,7 +348,7 @@ static void _compose(dt_presenter_layered_t *l,
         float *const px = out + (size_t)4 * (y * width + x);
         if(nearest)
         {
-          const float *in = frame->pixels + (size_t)4 * ((int)v * frame->width + (int)u);
+          const float *in = pixels + (size_t)4 * ((int)v * frame->width + (int)u);
           for(int c = 0; c < 3; c++) px[c] = in[c];
         }
         else
@@ -355,10 +359,10 @@ static void _compose(dt_presenter_layered_t *l,
           const int u1 = MIN(u0 + 1, frame->width - 1),
                     v1 = MIN(v0 + 1, frame->height - 1);
           const float a = fu - u0, b = fv - v0;
-          const float *p00 = frame->pixels + (size_t)4 * (v0 * frame->width + u0);
-          const float *p01 = frame->pixels + (size_t)4 * (v0 * frame->width + u1);
-          const float *p10 = frame->pixels + (size_t)4 * (v1 * frame->width + u0);
-          const float *p11 = frame->pixels + (size_t)4 * (v1 * frame->width + u1);
+          const float *p00 = pixels + (size_t)4 * (v0 * frame->width + u0);
+          const float *p01 = pixels + (size_t)4 * (v0 * frame->width + u1);
+          const float *p10 = pixels + (size_t)4 * (v1 * frame->width + u0);
+          const float *p11 = pixels + (size_t)4 * (v1 * frame->width + u1);
           for(int c = 0; c < 3; c++)
             px[c] = (1.0f - b) * ((1.0f - a) * p00[c] + a * p01[c])
                     + b * ((1.0f - a) * p10[c] + a * p11[c]);
@@ -379,7 +383,7 @@ static gboolean _image_changed(const dt_presenter_layered_t *l,
   {
     const dt_presenter_image_t *i = &g_array_index(l->images, dt_presenter_image_t, k);
     const _shown_t *s = &g_array_index(l->shown, _shown_t, k);
-    if(i->frame->id != s->id || i->filter != s->filter
+    if(dt_frame_id(i->frame) != s->id || i->filter != s->filter
        || memcmp(&i->matrix, &s->matrix, sizeof(cairo_matrix_t))
        || memcmp(i->clip, s->clip, sizeof(s->clip)))
       return TRUE;
@@ -442,7 +446,8 @@ static void _present(dt_presenter_layered_t *l)
     {
       const dt_presenter_image_t *i = &g_array_index(l->images, dt_presenter_image_t, k);
       _shown_t *s = &g_array_index(l->shown, _shown_t, k);
-      *s = (_shown_t){ .id = i->frame->id, .matrix = i->matrix, .filter = i->filter };
+      *s = (_shown_t){ .id = dt_frame_id(i->frame), .matrix = i->matrix,
+                       .filter = i->filter };
       memcpy(s->clip, i->clip, sizeof(s->clip));
     }
   }

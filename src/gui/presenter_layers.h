@@ -28,25 +28,16 @@
  */
 
 #include "common/colorspaces.h"
+#include "develop/frame.h"
 
 #include <gtk/gtk.h>
 
-// a frame converted for presentation, owned by the presenter
-typedef struct dt_presenter_frame_t
-{
-  // with the encoding, what the frame is: ids are never reused
-  uint32_t id;
-  int width, height;
-  dt_display_output_t encoding;
-  // cairo backend: the frame quantized for GTK
-  cairo_surface_t *surface;
-  // native backends: a copy of the float pixels
-  float *pixels;
-} dt_presenter_frame_t;
-
 typedef struct dt_presenter_image_t
 {
-  dt_presenter_frame_t *frame;
+  // the presenter holds a reference while the image is shown or kept
+  dt_frame_t *frame;
+  // native backends: the frame as float RGBA, for the image layer
+  const float *pixels;
   // frame pixels to the user space the widget's draw started in
   cairo_matrix_t matrix;
   // the clip's extents in that space

@@ -22,7 +22,7 @@ Key members include:
 - `input_timestamp`: Timestamp of the input data, used for invalidation.
 - `bypass_blendif`: (boolean) If true, blending is bypassed (e.g., for mask display).
 - `mask_display`: Controls how/if masks are displayed in the UI.
-- `output`, `output_encoding`, `backbuf`, `backbuf_output`: What a screen pipe is asked to render to, what its output values actually are, and its last frame as float RGBA labelled with that encoding. See [display_presentation.md](display_presentation.md).
+- `output`, `output_encoding`, `frame`, `backbuf`: What a screen pipe is asked to render to, what its output values actually are, the last frame it published in that encoding, and, for the other pipes, the last module's output. See [display_presentation.md](display_presentation.md).
 
 ### `dt_dev_pixelpipe_iop_t`
 Defined in `src/develop/pixelpipe_hb.h`. Represents a specific instance of a module *within a pipe*. While `dt_iop_module_t` represents the module's global state and settings, `dt_dev_pixelpipe_iop_t` ("piece") holds the state specific to one execution context.

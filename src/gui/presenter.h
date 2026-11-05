@@ -19,13 +19,14 @@
 #pragma once
 
 #include "common/colorspaces.h"
+#include "develop/frame.h"
 
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
 /*
- * the presenter shows rendered float frames in a widget. see
+ * the presenter shows frames (develop/frame.h) in a widget. see
  * dev-doc/display_presentation.md.
  *
  * a presenting widget wraps its draw handler in begin() and end() and
@@ -42,21 +43,15 @@ cairo_t *dt_presenter_begin(GtkWidget *widget,
 void dt_presenter_end(GtkWidget *widget,
                       cairo_t *cr);
 
-/** paint float RGBA pixels in encoding at (x, y), as cairo_paint() would
- * paint a surface set with cairo_set_source_surface(cr, surface, x, y),
- * with the context's current transformation and the extents of its clip.
- * id changes whenever the pixels do (dt_dev_new_frame_id()). the pixels
- * are not used after the call returns. returns FALSE if it is not shown:
- * a window whose output the platform owns shows frames in its profile
- * only */
+/** paint frame at (x, y), as cairo_paint() would paint a surface set
+ * with cairo_set_source_surface(cr, surface, x, y), with the context's
+ * current transformation and the extents of its clip. the presenter takes
+ * its own reference. returns FALSE if it is not shown: a window whose
+ * output the platform owns shows frames in its profile only */
 gboolean dt_presenter_image(cairo_t *cr,
                             const double x,
                             const double y,
-                            const float *pixels,
-                            const int width,
-                            const int height,
-                            const dt_display_output_t *encoding,
-                            const uint32_t id,
+                            dt_frame_t *frame,
                             const cairo_filter_t filter);
 
 /** show the images of the last full draw again, where they were */
@@ -64,16 +59,6 @@ void dt_presenter_keep(cairo_t *cr);
 
 /** drop the images of a widget */
 void dt_presenter_clear(GtkWidget *widget);
-
-/** an 8-bit surface of float RGBA pixels in encoding, for drawing with GTK:
- * the colors GTK's surface shows them as. converted once per frame id
- * and kept for the next calls; release it with cairo_surface_destroy().
- * GUI thread only */
-cairo_surface_t *dt_presenter_gtk_surface(const float *pixels,
-                                          const int width,
-                                          const int height,
-                                          const dt_display_output_t *encoding,
-                                          const uint32_t id);
 
 G_END_DECLS
 

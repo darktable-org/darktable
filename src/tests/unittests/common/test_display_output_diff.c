@@ -17,9 +17,10 @@
 */
 /*
  * cmocka unit tests for dt_display_output_diff(): a change of a window's
- * output is announced by what changed. the image encoding alone (a new
- * headroom) reruns the window's producers only; the device encoding or
- * the owner also reaches what GTK draws; the serial is not compared.
+ * output is announced by what changed. the image encoding or the frame
+ * format alone (a new headroom, a new backend's frames) reruns the
+ * window's producers only; the device encoding or the owner also reaches
+ * what GTK draws; the serial is not compared.
  */
 
 #include <setjmp.h>
@@ -46,6 +47,7 @@ static dt_display_output_t _cairo(void)
   o.image.intent = DT_INTENT_PERCEPTUAL;
   o.image.headroom = 1.0f;
   o.device = o.image;
+  o.format = DT_FRAME_RGB24;
   o.serial = 7;
   return o;
 }
@@ -61,6 +63,7 @@ static dt_display_output_t _native(const float headroom)
   o.device.type = DT_COLORSPACE_SRGB;
   o.device.intent = DT_INTENT_PERCEPTUAL;
   o.device.headroom = 1.0f;
+  o.format = DT_FRAME_FLOAT;
   o.platform_owned = TRUE;
   o.serial = 3;
   return o;
@@ -72,7 +75,6 @@ static void test_nothing(void **state)
   dt_display_output_t b = _cairo();
   b.serial = 8;
   assert_int_equal(dt_display_output_diff(&a, &b), DT_DISPLAY_OUTPUT_UNCHANGED);
-  assert_true(dt_display_output_equal(&a, &b));
 }
 
 static void test_headroom_is_image_only(void **state)
@@ -80,7 +82,17 @@ static void test_headroom_is_image_only(void **state)
   const dt_display_output_t a = _native(2.0f);
   const dt_display_output_t b = _native(4.0f);
   assert_int_equal(dt_display_output_diff(&a, &b), DT_DISPLAY_OUTPUT_IMAGE);
-  assert_false(dt_display_output_equal(&a, &b));
+}
+
+static void test_format_is_image_only(void **state)
+{
+  // frames for the same encodings in another format are new images, and
+  // GTK draws the same
+  const dt_display_output_t a = _cairo();
+  dt_display_output_t b = _cairo();
+  b.format = DT_FRAME_FLOAT;
+  assert_int_equal(dt_display_output_diff(&a, &b), DT_DISPLAY_OUTPUT_IMAGE);
+  assert_int_equal(dt_display_output_diff(&b, &a), DT_DISPLAY_OUTPUT_IMAGE);
 }
 
 static void test_system_profile_is_both(void **state)
@@ -133,6 +145,7 @@ int main(int argc, char *argv[])
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_nothing),
     cmocka_unit_test(test_headroom_is_image_only),
+    cmocka_unit_test(test_format_is_image_only),
     cmocka_unit_test(test_system_profile_is_both),
     cmocka_unit_test(test_intent_is_both),
     cmocka_unit_test(test_device_only),

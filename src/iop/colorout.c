@@ -825,10 +825,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     presented = TRUE;
   }
 
-  // a pipe without an output description is not presented: dt_dev_image()
-  // with a NULL output filters colorout out and keeps the pixels in the
-  // working RGB. the run resolves its output from the final working profile;
-  // modules after colorout that read it in commit_params() get this one
+  // a pipe without a display encoding is not presented: a dt_dev_image()
+  // sink of type DT_COLORSPACE_NONE filters colorout out and keeps the
+  // pixels in the working RGB. the run resolves its output from the final
+  // working profile; modules after colorout that read it in commit_params()
+  // get this one
   if(out_type == DT_COLORSPACE_NONE)
   {
     piece->enabled = FALSE;

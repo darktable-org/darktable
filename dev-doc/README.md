@@ -34,7 +34,7 @@ This guide covers building Image Operation (IOP) modules for darktable's darkroo
 ### Display
 | File | Description |
 |------|-------------|
-| **[display_presentation.md](display_presentation.md)** | How rendered frames reach the screen: output description, float backbuf, presenter and its backends |
+| **[display_presentation.md](display_presentation.md)** | How rendered frames reach the screen: output description, frames and their renditions, presenter and its backends |
 
 ### AI Subsystem
 | File | Description |
