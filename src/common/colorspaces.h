@@ -239,10 +239,6 @@ typedef struct dt_display_output_t
   // the platform owns the window's output: the display profile selection
   // has no effect on it
   gboolean platform_owned;
-  // a color-managed presenter shows the values in the profile; otherwise
-  // they reach the screen as the device values the display profile assumes.
-  // a managed output is linear Rec.2020 today
-  gboolean managed;
   // changes whenever anything above changes; continues across owners
   uint32_t serial;
 } dt_display_output_t;
@@ -253,8 +249,7 @@ static inline gboolean dt_display_output_equal(const dt_display_output_t *a,
 {
   return dt_color_encoding_equal(&a->image, &b->image)
     && dt_color_encoding_equal(&a->device, &b->device)
-    && a->platform_owned == b->platform_owned
-    && a->managed == b->managed;
+    && a->platform_owned == b->platform_owned;
 }
 
 /* the 8-bit value a display-encoded float shows as on an 8-bit surface.
@@ -279,25 +274,6 @@ void dt_display_to_8bit_pixels(const float *const __restrict__ in,
                                uint8_t *const __restrict__ out,
                                const size_t n,
                                const gboolean bgr);
-
-/* the mask and channel views are authored as sRGB device values, which a
- * display profile output sends to the screen as they are. a managed
- * output, linear Rec.2020, gets them converted */
-static inline void dt_display_output_diagnostic(const dt_display_output_t *output,
-                                                float *const rgb)
-{
-  if(!output->managed || output->image.type != DT_COLORSPACE_LIN_REC2020) return;
-
-  float lin[3];
-  for(int c = 0; c < 3; c++)
-    lin[c] = rgb[c] <= 0.04045f ? rgb[c] / 12.92f
-                                : powf((rgb[c] + 0.055f) / 1.055f, 2.4f);
-
-  // BT.709 to BT.2020 primaries, ITU-R BT.2087
-  rgb[0] = 0.6274040f * lin[0] + 0.3292820f * lin[1] + 0.0433136f * lin[2];
-  rgb[1] = 0.0690970f * lin[0] + 0.9195400f * lin[1] + 0.0113612f * lin[2];
-  rgb[2] = 0.0163916f * lin[0] + 0.0880132f * lin[1] + 0.8955950f * lin[2];
-}
 
 typedef struct dt_colorspaces_t
 {
