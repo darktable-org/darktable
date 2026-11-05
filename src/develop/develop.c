@@ -111,6 +111,9 @@ void dt_dev_init(dt_develop_t *dev,
     dt_dev_pixelpipe_init(dev->full.pipe);
     dt_dev_pixelpipe_init_preview(dev->preview_pipe);
     dt_dev_pixelpipe_init_preview2(dev->preview2.pipe);
+    dev->full.pipe->window = DT_COLORSPACE_DISPLAY;
+    dev->preview_pipe->window = DT_COLORSPACE_DISPLAY;
+    dev->preview2.pipe->window = DT_COLORSPACE_DISPLAY2;
     dev->histogram_pre_tonecurve = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
     dev->histogram_pre_levels = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
 
@@ -452,6 +455,10 @@ static dt_develop_t *_alloc_pinned_dev(dt_develop_t *main_dev)
   dt_dev_pixelpipe_init(pinned_dev->full.pipe);
   dt_dev_pixelpipe_init_preview(pinned_dev->preview_pipe);
   dt_dev_pixelpipe_init_preview2(pinned_dev->preview2.pipe);
+  // the pinned image is shown in the second window
+  pinned_dev->full.pipe->window = DT_COLORSPACE_DISPLAY2;
+  pinned_dev->preview_pipe->window = DT_COLORSPACE_DISPLAY2;
+  pinned_dev->preview2.pipe->window = DT_COLORSPACE_DISPLAY2;
 
   return pinned_dev;
 }
@@ -791,11 +798,8 @@ restart:
   if(!dt_pipe_is_image(pipe))
   {
     dt_display_output_t output;
-    dt_colorspaces_get_display_output(dt_pipe_is_preview2(pipe)
-                                      ? DT_COLORSPACE_DISPLAY2
-                                      : DT_COLORSPACE_DISPLAY,
-                                      &output);
-    if(!dt_display_output_equal(&output, &pipe->output))
+    dt_colorspaces_get_display_output(pipe->window, &output);
+    if(output.serial != pipe->output.serial)
     {
       pipe->output = output;
       pipe->changed |= DT_DEV_PIPE_SYNCH;

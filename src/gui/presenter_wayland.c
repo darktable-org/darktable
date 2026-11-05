@@ -409,17 +409,16 @@ static void _create_description(_backend_t *b,
 
 static void _set_output(_backend_t *b)
 {
-  dt_display_output_t output = { .type = DT_COLORSPACE_LIN_REC2020,
-                                 .intent = b->relative ? DT_INTENT_RELATIVE_COLORIMETRIC
-                                                       : DT_INTENT_PERCEPTUAL,
-                                 .headroom = _headroom(b->description_max),
-                                 .managed = TRUE };
+  const dt_iop_color_intent_t intent = b->relative ? DT_INTENT_RELATIVE_COLORIMETRIC
+                                                   : DT_INTENT_PERCEPTUAL;
   // GTK3 cannot tag its surface, and an untagged surface is sRGB to the
   // compositor
-  dt_display_output_t gtk = { .type = DT_COLORSPACE_SRGB,
-                              .intent = output.intent,
-                              .headroom = 1.0f };
-  dt_presenter_window_set_output(b->window, &output, &gtk);
+  const dt_display_output_t output =
+    { .image = { .type = DT_COLORSPACE_LIN_REC2020, .intent = intent,
+                 .headroom = _headroom(b->description_max) },
+      .device = { .type = DT_COLORSPACE_SRGB, .intent = intent, .headroom = 1.0f },
+      .managed = TRUE };
+  dt_presenter_window_set_output(b->window, &output);
 }
 
 static void _info_done(void *data,
@@ -472,8 +471,7 @@ static void _description_ready(_backend_t *b,
       wp_color_management_surface_v1_set_image_description(w->color, b->description,
                                                            _intent(b));
   }
-  // during setup, dt_presenter_wayland_new() declares the output
-  if(b->backend.present) _set_output(b);
+  _set_output(b);
 }
 
 static void _request_preferred(_backend_t *b)
@@ -764,8 +762,10 @@ static void _move_to_default_queue(_backend_t *b)
 }
 
 dt_presenter_backend_t *dt_presenter_wayland_new(GtkWidget *toplevel,
-                                                 dt_presenter_window_t *window)
+                                                 dt_presenter_window_t *window,
+                                                 gboolean *manages_color)
 {
+  *manages_color = FALSE;
   GdkDisplay *gdk_display = gtk_widget_get_display(toplevel);
   GdkWindow *gdk_window = gtk_widget_get_window(toplevel);
   // wl_shm's formats are little endian, cairo's are native
@@ -810,28 +810,18 @@ dt_presenter_backend_t *dt_presenter_wayland_new(GtkWidget *toplevel,
   _move_to_default_queue(b);
   wl_event_queue_destroy(queue);
 
-  const gboolean managed = b->manager != NULL;
+  *manages_color = b->manager != NULL;
   dt_print
     (DT_DEBUG_CONTROL,
      "[presenter wayland] %s: parametric %d, ext_linear %d, bt2020 %d, half float shm %d,"
      " luminances %d, headroom %.2f",
-     ok ? "color managed" : managed ? "not available, using cairo in sRGB"
-                                    : "not available, using cairo",
+     ok ? "color managed" : *manages_color ? "not available, using cairo in sRGB"
+                                           : "not available, using cairo",
      b->parametric, b->ext_linear, b->bt2020, b->half_float, b->luminances,
      _headroom(b->description_max));
   if(!ok)
   {
     _free(&b->backend);
-    // a compositor that manages color takes GTK's untagged surface as sRGB
-    // and converts it to the screen itself: rendering for the display
-    // profile would convert twice
-    if(managed)
-    {
-      const dt_display_output_t srgb = { .type = DT_COLORSPACE_SRGB,
-                                         .intent = DT_INTENT_PERCEPTUAL,
-                                         .headroom = 1.0f };
-      dt_presenter_window_set_output(window, &srgb, &srgb);
-    }
     return NULL;
   }
 
@@ -842,7 +832,6 @@ dt_presenter_backend_t *dt_presenter_wayland_new(GtkWidget *toplevel,
   b->unmap_handler = g_signal_connect(toplevel, "unmap", G_CALLBACK(_toplevel_unmap), b);
   b->clock = gdk_window_get_frame_clock(gdk_window);
   b->paint_handler = g_signal_connect_after(b->clock, "paint", G_CALLBACK(_paint), b);
-  _set_output(b);
   return &b->backend;
 }
 

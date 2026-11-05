@@ -47,7 +47,8 @@ void dt_presenter_end(GtkWidget *widget,
  * with the context's current transformation and the extents of its clip.
  * id changes whenever the pixels do (dt_dev_new_frame_id()). the pixels
  * are not used after the call returns. returns FALSE if it is not shown:
- * a window that declared its output shows frames in its profile only */
+ * a window whose output the platform owns shows frames in its profile
+ * only */
 gboolean dt_presenter_image(cairo_t *cr,
                             const double x,
                             const double y,
@@ -61,7 +62,7 @@ gboolean dt_presenter_image(cairo_t *cr,
 /** show the images of the last full draw again, where they were */
 void dt_presenter_keep(cairo_t *cr);
 
-/** keep a display profile control insensitive while the presenter owns
+/** keep a display profile control insensitive while the platform owns
  * the output of window (DT_COLORSPACE_DISPLAY or DISPLAY2), where the
  * selection has no effect */
 void dt_presenter_display_control(GtkWidget *control,

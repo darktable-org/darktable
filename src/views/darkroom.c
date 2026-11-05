@@ -2350,6 +2350,7 @@ static void _display_intent_callback(GtkWidget *combo,
   if(new_intent != darktable.color_profiles->display_intent)
   {
     darktable.color_profiles->display_intent = new_intent;
+    dt_colorspaces_display_selection_changed(DT_COLORSPACE_DISPLAY);
     dt_dev_reprocess_all(d);
   }
 }
@@ -2382,6 +2383,7 @@ static void _display2_intent_callback(GtkWidget *combo,
   if(new_intent != darktable.color_profiles->display2_intent)
   {
     darktable.color_profiles->display2_intent = new_intent;
+    dt_colorspaces_display_selection_changed(DT_COLORSPACE_DISPLAY2);
     dt_dev_reprocess_all(d);
   }
 }
@@ -2468,9 +2470,7 @@ static void _display_profile_callback(GtkWidget *combo,
 end:
   if(profile_changed)
   {
-    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
-    dt_colorspaces_update_display_transforms();
-    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+    dt_colorspaces_display_selection_changed(DT_COLORSPACE_DISPLAY);
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             DT_COLORSPACES_PROFILE_TYPE_DISPLAY);
     dt_dev_reprocess_all(d);
@@ -2515,9 +2515,7 @@ static void _display2_profile_callback(GtkWidget *combo,
 end:
   if(profile_changed)
   {
-    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
-    dt_colorspaces_update_display2_transforms();
-    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+    dt_colorspaces_display_selection_changed(DT_COLORSPACE_DISPLAY2);
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             DT_COLORSPACES_PROFILE_TYPE_DISPLAY2);
     dt_dev_reprocess_all(d);

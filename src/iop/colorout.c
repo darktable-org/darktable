@@ -718,9 +718,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   else
   {
     /* we are not exporting, the pipe is presented */
-    out_type = pipe->output.type;
-    out_filename = pipe->output.filename;
-    out_intent = pipe->output.intent;
+    out_type = pipe->output.image.type;
+    out_filename = pipe->output.image.filename;
+    out_intent = pipe->output.image.intent;
     presented = TRUE;
   }
 
@@ -779,7 +779,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
                                                DT_PROFILE_DIRECTION_OUT
                                                | DT_PROFILE_DIRECTION_DISPLAY
                                                | DT_PROFILE_DIRECTION_DISPLAY2);
-  output = presented ? pipe->output.profile : out_profile ? out_profile->profile : NULL;
+  output = presented ? pipe->output.image.profile : out_profile ? out_profile->profile : NULL;
   const cmsHPROFILE out_content = output;
   if(output)
   {

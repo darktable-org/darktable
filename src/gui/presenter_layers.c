@@ -36,8 +36,6 @@ struct dt_presenter_window_t
   // DT_COLORSPACE_DISPLAY for the main window, DISPLAY2 for the second
   dt_colorspaces_color_profile_type_t kind;
   dt_presenter_backend_t *backend;
-  // the window's output is declared, and is given back when it goes away
-  gboolean declared;
   GList *widgets;
 };
 
@@ -98,7 +96,8 @@ static void _window_free(gpointer data)
     w->widgets = g_list_delete_link(w->widgets, w->widgets);
   }
   if(w->backend) w->backend->free(w->backend);
-  if(w->declared) dt_colorspaces_set_backend_output(w->kind, NULL, NULL);
+  // whatever the platform owned goes back to the display profile selection
+  dt_colorspaces_set_window_output(w->kind, NULL);
   g_free(w);
 }
 
@@ -119,6 +118,13 @@ void dt_presenter_window_present(dt_presenter_window_t *w)
   }
 }
 
+static dt_colorspaces_color_profile_type_t _kind(GtkWidget *toplevel)
+{
+  return toplevel == dt_ui_main_window(darktable.gui->ui)
+    ? DT_COLORSPACE_DISPLAY
+    : DT_COLORSPACE_DISPLAY2;
+}
+
 static dt_presenter_window_t *_window_get(GtkWidget *widget)
 {
   GtkWidget *toplevel = gtk_widget_get_toplevel(widget);
@@ -129,25 +135,35 @@ static dt_presenter_window_t *_window_get(GtkWidget *widget)
 
   w = g_malloc0(sizeof(dt_presenter_window_t));
   w->toplevel = toplevel;
-  w->kind = toplevel == dt_ui_main_window(darktable.gui->ui)
-    ? DT_COLORSPACE_DISPLAY
-    : DT_COLORSPACE_DISPLAY2;
+  w->kind = _kind(toplevel);
   g_object_set_data_full(G_OBJECT(toplevel), WINDOW_KEY, w, _window_free);
   g_signal_connect(toplevel, "unrealize", G_CALLBACK(_toplevel_unrealize), NULL);
 
 #ifdef HAVE_WAYLAND
-  w->backend = dt_presenter_wayland_new(toplevel, w);
+  gboolean manages_color = FALSE;
+  w->backend = dt_presenter_wayland_new(toplevel, w, &manages_color);
+  if(!w->backend)
+  {
+    // a compositor that manages color takes GTK's untagged surface as sRGB
+    // and converts it to the screen itself: rendering for the display
+    // profile would convert twice. NULL also takes back what a failed
+    // setup reported
+    const dt_display_output_t srgb =
+      { .image = { .type = DT_COLORSPACE_SRGB, .intent = DT_INTENT_PERCEPTUAL,
+                   .headroom = 1.0f },
+        .device = { .type = DT_COLORSPACE_SRGB, .intent = DT_INTENT_PERCEPTUAL,
+                    .headroom = 1.0f } };
+    dt_presenter_window_set_output(w, manages_color ? &srgb : NULL);
+  }
 #endif
   return w;
 }
 
 void dt_presenter_window_set_output(dt_presenter_window_t *window,
-                                    const dt_display_output_t *output,
-                                    const dt_display_output_t *gtk)
+                                    const dt_display_output_t *output)
 {
-  window->declared = output != NULL;
-  dt_colorspaces_set_backend_output(window->kind, output, gtk);
-  dt_presenter_window_redraw(window);
+  if(dt_colorspaces_set_window_output(window->kind, output))
+    dt_presenter_window_redraw(window);
 }
 
 void dt_presenter_window_redraw(dt_presenter_window_t *window)
@@ -180,14 +196,10 @@ dt_presenter_layered_t *dt_presenter_layered_get(GtkWidget *widget,
   return l;
 }
 
-gboolean dt_presenter_declared_output(GtkWidget *widget,
-                                      dt_display_output_t *output)
+void dt_presenter_window_output(GtkWidget *widget,
+                                dt_display_output_t *output)
 {
-  const dt_presenter_window_t *w =
-    g_object_get_data(G_OBJECT(gtk_widget_get_toplevel(widget)), WINDOW_KEY);
-  if(!w || !w->declared) return FALSE;
-  dt_colorspaces_get_display_output(w->kind, output);
-  return TRUE;
+  dt_colorspaces_get_display_output(_kind(gtk_widget_get_toplevel(widget)), output);
 }
 
 cairo_t *dt_presenter_layered_begin(dt_presenter_layered_t *l)
