@@ -524,6 +524,15 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 		channels = desc->channels;
 	}
 
+	chunks_len = size - (int)sizeof(qoi_padding);
+	if (
+		memcmp(bytes + chunks_len, qoi_padding, sizeof(qoi_padding)) != 0 ||
+		(desc->width * desc->height + 61) / 62 >
+			(unsigned int)(chunks_len - QOI_HEADER_SIZE)
+	) {
+		return NULL;
+	}
+
 	px_len = desc->width * desc->height * channels;
 	pixels = (unsigned char *) QOI_MALLOC(px_len);
 	if (!pixels) {
@@ -536,7 +545,6 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 	px.rgba.b = 0;
 	px.rgba.a = 255;
 
-	chunks_len = size - (int)sizeof(qoi_padding);
 	for (px_pos = 0; px_pos < px_len; px_pos += channels) {
 		if (run > 0) {
 			run--;
@@ -545,11 +553,17 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 			int b1 = bytes[p++];
 
 			if (b1 == QOI_OP_RGB) {
+				if (chunks_len - p < 3) {
+					goto qoi_decode_error;
+				}
 				px.rgba.r = bytes[p++];
 				px.rgba.g = bytes[p++];
 				px.rgba.b = bytes[p++];
 			}
 			else if (b1 == QOI_OP_RGBA) {
+				if (chunks_len - p < 4) {
+					goto qoi_decode_error;
+				}
 				px.rgba.r = bytes[p++];
 				px.rgba.g = bytes[p++];
 				px.rgba.b = bytes[p++];
@@ -564,6 +578,9 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 				px.rgba.b += ( b1       & 0x03) - 2;
 			}
 			else if ((b1 & QOI_MASK_2) == QOI_OP_LUMA) {
+				if (chunks_len - p < 1) {
+					goto qoi_decode_error;
+				}
 				int b2 = bytes[p++];
 				int vg = (b1 & 0x3f) - 32;
 				px.rgba.r += vg - 8 + ((b2 >> 4) & 0x0f);
@@ -572,9 +589,15 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 			}
 			else if ((b1 & QOI_MASK_2) == QOI_OP_RUN) {
 				run = (b1 & 0x3f);
+				if (run > (px_len - px_pos) / channels - 1) {
+					goto qoi_decode_error;
+				}
 			}
 
 			index[QOI_COLOR_HASH(px) & (64 - 1)] = px;
+		}
+		else {
+			goto qoi_decode_error;
 		}
 
 		pixels[px_pos + 0] = px.rgba.r;
@@ -586,7 +609,15 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 		}
 	}
 
+	if (p != chunks_len || run != 0) {
+		goto qoi_decode_error;
+	}
+
 	return pixels;
+
+qoi_decode_error:
+	QOI_FREE(pixels);
+	return NULL;
 }
 
 #ifndef QOI_NO_STDIO
