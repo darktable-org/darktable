@@ -129,10 +129,10 @@ changes (where available).
   edits made before that option existed). This also fixes the image
   being converted twice on such compositors, once by darktable and
   once by the compositor. There the rest of the interface, thumbnails
-  included, is shown in sRGB. A compositor with color management that
-  lacks one of these gets the image in sRGB, which also avoids the
-  double conversion. Other compositors and platforms keep the display
-  path they had.
+  included, is shown in sRGB. Where the compositor lacks one of these,
+  or describes its screen as plain SDR sRGB, as GNOME does by default,
+  the image is converted to the system display profile as before.
+  Other compositors and platforms keep the display path they had.
 
 ## UI/UX Improvements
 
