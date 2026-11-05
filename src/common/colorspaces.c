@@ -1498,20 +1498,24 @@ static void _system_profile_free(gpointer data)
 
 // the profile of these bytes, taking them: the one opened for the same
 // bytes before, if any, so switching back and forth reuses it and the list
-// holds each profile once. NULL if lcms rejects the bytes.
+// holds each profile once. NULL if there are none or lcms rejects them.
 // make sure that xprofile_lock is held when calling this!
 static cmsHPROFILE _system_profile(dt_colorspaces_t *self,
                                    uint8_t *data,
-                                   const size_t size,
-                                   const uint8_t **bytes)
+                                   const size_t size)
 {
+  if(!data || !size)
+  {
+    g_free(data);
+    return NULL;
+  }
+
   for(GList *iter = self->system_display_profiles; iter; iter = g_list_next(iter))
   {
     const _system_profile_t *s = iter->data;
     if(s->data && s->size == size && !memcmp(s->data, data, size))
     {
       g_free(data);
-      *bytes = s->data;
       return s->profile;
     }
   }
@@ -1523,70 +1527,30 @@ static cmsHPROFILE _system_profile(dt_colorspaces_t *self,
     return NULL;
   }
   _system_profile_add(self, data, size, profile);
-  *bytes = data;
   return profile;
 }
 
-// make sure that darktable.color_profiles->xprofile_lock is held when calling this!
-static gboolean _update_display_profile(guchar *tmp_data,
-                                        const gsize size,
-                                        char *name,
-                                        const size_t name_size)
+// make window w's system display profile what the platform reported, a
+// profile from _system_profile(), or sRGB for NULL: no usable report. TRUE
+// if it changed.
+// make sure that xprofile_lock is held when calling this!
+static gboolean _system_display_set(dt_colorspaces_t *self,
+                                    const int w,
+                                    cmsHPROFILE profile)
 {
-  const uint8_t *data = NULL;
-  cmsHPROFILE profile = _system_profile(darktable.color_profiles, tmp_data, size, &data);
-  gboolean match = FALSE;
-  if(profile)
+  if(!profile) profile = self->system_display_srgb[w];
+  const dt_colorspaces_color_profile_type_t type =
+    w ? DT_COLORSPACE_DISPLAY2 : DT_COLORSPACE_DISPLAY;
+  for(GList *iter = self->profiles; iter; iter = g_list_next(iter))
   {
-    for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
-    {
-      dt_colorspaces_color_profile_t *p = iter->data;
-      if(p->type == DT_COLORSPACE_DISPLAY)
-      {
-        p->profile = profile;
-        darktable.color_profiles->xprofile_data = data;
-        darktable.color_profiles->xprofile_size = size;
-        if(name)
-          dt_colorspaces_get_profile_name(profile, "en", "US", name, name_size);
-
-        _selection_changed(darktable.color_profiles, 0);
-        match = TRUE;
-        break;
-      }
-    }
+    dt_colorspaces_color_profile_t *p = iter->data;
+    if(p->type != type) continue;
+    if(p->profile == profile) return FALSE;
+    p->profile = profile;
+    _selection_changed(self, w);
+    return TRUE;
   }
-
-  return match;
-}
-
-static gboolean _update_display2_profile(guchar *tmp_data,
-                                         const gsize size,
-                                         char *name,
-                                         const size_t name_size)
-{
-  const uint8_t *data = NULL;
-  cmsHPROFILE profile = _system_profile(darktable.color_profiles, tmp_data, size, &data);
-  gboolean match = FALSE;
-  if(profile)
-  {
-    for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
-    {
-      dt_colorspaces_color_profile_t *p = iter->data;
-      if(p->type == DT_COLORSPACE_DISPLAY2)
-      {
-        p->profile = profile;
-        darktable.color_profiles->xprofile_data2 = data;
-        darktable.color_profiles->xprofile_size2 = size;
-        if(name) dt_colorspaces_get_profile_name(profile, "en", "US", name, name_size);
-
-        _selection_changed(darktable.color_profiles, 1);
-        match = TRUE;
-        break;
-      }
-    }
-  }
-
-  return match;
+  return FALSE;
 }
 
 static void cms_error_handler(const cmsContext ContextID,
@@ -1724,6 +1688,8 @@ dt_colorspaces_t *dt_colorspaces_init()
   cmsHPROFILE display2 = dt_colorspaces_create_srgb_profile();
   _system_profile_add(res, NULL, 0, display);
   _system_profile_add(res, NULL, 0, display2);
+  res->system_display_srgb[0] = display;
+  res->system_display_srgb[1] = display2;
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_DISPLAY,
@@ -2023,8 +1989,6 @@ void dt_colorspaces_cleanup(dt_colorspaces_t *self)
   g_list_free_full(self->system_display_profiles, _system_profile_free);
 
   pthread_rwlock_destroy(&self->xprofile_lock);
-  g_free(self->colord_profile_file);
-  g_free(self->colord_profile_file2);
 
   free(self);
 }
@@ -2102,85 +2066,63 @@ const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
 }
 
 #ifdef USE_COLORDGTK
+// what a colord query is for: the window, which query of it, and the X
+// atom's profile from the same query, if any. colord decides the query:
+// its profile, else the atom's, else sRGB
+typedef struct _colord_query_t
+{
+  int window;
+  uint32_t query;
+  cmsHPROFILE atom;
+} _colord_query_t;
+
 static void _colorspaces_get_display_profile_colord_callback(GObject *source,
                                                              GAsyncResult *res,
                                                              gpointer user_data)
 {
-  const dt_colorspaces_color_profile_type_t profile_type
-      = (dt_colorspaces_color_profile_type_t)GPOINTER_TO_INT(user_data);
+  const _colord_query_t query = *(_colord_query_t *)user_data;
+  g_free(user_data);
+  dt_colorspaces_t *self = darktable.color_profiles;
+  const int w = query.window;
 
-  pthread_rwlock_wrlock(&darktable.color_profiles->xprofile_lock);
-
-  gboolean profile_changed = FALSE;
-  gboolean match = FALSE;
   CdWindow *window = CD_WINDOW(source);
   GError *error = NULL;
   CdProfile *profile = cd_window_get_profile_finish(window, res, &error);
-  if(error == NULL && profile != NULL)
-  {
-    const gchar *filename = cd_profile_get_filename(profile);
-    if(filename)
-    {
-      if((profile_type == DT_COLORSPACE_DISPLAY2
-          && g_strcmp0(filename, darktable.color_profiles->colord_profile_file2))
-         || (profile_type != DT_COLORSPACE_DISPLAY2
-             && g_strcmp0(filename, darktable.color_profiles->colord_profile_file)))
-      {
-        /* the profile has changed (either because the user changed
-         * the colord settings or because we are on a different screen
-         * now) */
-        // update darktable.color_profiles->colord_profile_file
-        if(profile_type == DT_COLORSPACE_DISPLAY2)
-        {
-          g_free(darktable.color_profiles->colord_profile_file2);
-          darktable.color_profiles->colord_profile_file2 = g_strdup(filename);
-        }
-        else
-        {
-          g_free(darktable.color_profiles->colord_profile_file);
-          darktable.color_profiles->colord_profile_file = g_strdup(filename);
-        }
-        // read the file
-        guchar *tmp_data = NULL;
-        gsize size;
-        g_file_get_contents(filename, (gchar **)&tmp_data, &size, NULL);
-        if(profile_type == DT_COLORSPACE_DISPLAY2)
-        {
-          profile_changed = size > 0
-            && (darktable.color_profiles->xprofile_size2 != size
-                || memcmp(darktable.color_profiles->xprofile_data2, tmp_data, size) != 0);
-        }
-        else
-        {
-          profile_changed = size > 0
-            && (darktable.color_profiles->xprofile_size != size
-                || memcmp(darktable.color_profiles->xprofile_data, tmp_data, size) != 0);
-        }
+  const gchar *filename = error == NULL && profile ? cd_profile_get_filename(profile) : NULL;
+  // read every time: the same file may hold another profile now, and the
+  // same bytes give the same profile, which changes nothing
+  guchar *data = NULL;
+  gsize size = 0;
+  if(filename) g_file_get_contents(filename, (gchar **)&data, &size, NULL);
 
-        if(profile_changed)
-        {
-          if(profile_type == DT_COLORSPACE_DISPLAY2)
-            match = _update_display2_profile(tmp_data, size, NULL, 0);
-          else
-            match = _update_display_profile(tmp_data, size, NULL, 0);
-          dt_print(DT_DEBUG_CONTROL,
-                   "[color profile] colord gave us %s new screen profile:"
-                   " '%s' (size: %zu)", match ? "a" : "**NO**", filename, size);
-        }
-        else
-        {
-          g_free(tmp_data);
-        }
-      }
-    }
+  pthread_rwlock_wrlock(&self->xprofile_lock);
+  gboolean changed = FALSE;
+  // a later query of the window has read the atom again and asked colord
+  // again: this answer is stale, and must not undo what that one found
+  if(query.query != self->system_display_query[w])
+  {
+    g_free(data);
+    dt_print(DT_DEBUG_CONTROL, "[color profile] dropped colord's answer to a superseded query");
   }
+  else
+  {
+    cmsHPROFILE p = _system_profile(self, data, size);
+    const gboolean from_colord = p != NULL;
+    if(!p) p = query.atom;
+    changed = _system_display_set(self, w, p);
+    if(changed)
+      dt_print(DT_DEBUG_CONTROL, "[color profile] %s",
+               from_colord ? "colord gave us a new screen profile"
+               : p ? "colord has no usable screen profile, using the X atom's"
+                   : "neither colord nor the X atom has a usable screen profile, using sRGB");
+  }
+  pthread_rwlock_unlock(&self->xprofile_lock);
+
   if(profile)
     g_object_unref(profile);
   g_object_unref(window);
 
-  pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-
-  if(profile_changed && match)
+  if(changed)
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
 }
 #endif
@@ -2218,11 +2160,17 @@ void dt_colorspaces_set_display_profile
             // reading right now. Too bad we can't distinguish
             // that. Whatever ...
 
+  dt_colorspaces_t *self = darktable.color_profiles;
+  const int w = profile_type == DT_COLORSPACE_DISPLAY2;
   guint8 *buffer = NULL;
   gint buffer_size = 0;
   gchar *profile_source = NULL;
-  gboolean profile_changed = FALSE;
-  gboolean match = FALSE;
+  cmsHPROFILE profile = NULL;
+  gboolean changed = FALSE;
+  gboolean ask_colord = FALSE;
+#ifdef USE_COLORDGTK
+  uint32_t query_serial = 0;
+#endif
 
 #if defined GDK_WINDOWING_X11
 
@@ -2274,17 +2222,7 @@ void dt_colorspaces_set_display_profile
   }
 
 #ifdef USE_COLORDGTK
-  /* also try to get the profile from colord. this will set the value asynchronously! */
-  if(use_colord)
-  {
-    CdWindow *window = cd_window_new();
-    GtkWidget *center_widget = (profile_type == DT_COLORSPACE_DISPLAY2)
-                                   ? darktable.develop->second_wnd
-                                   : dt_ui_center(darktable.gui->ui);
-    cd_window_get_profile(window, center_widget, NULL,
-                          _colorspaces_get_display_profile_colord_callback,
-                          GINT_TO_POINTER(profile_type));
-  }
+  ask_colord = use_colord;
 #endif
 
 #elif defined GDK_WINDOWING_QUARTZ
@@ -2369,41 +2307,47 @@ void dt_colorspaces_set_display_profile
   profile_source = g_strdup("windows color profile api");
 #endif
 
-  if(profile_type == DT_COLORSPACE_DISPLAY2)
+#ifdef USE_COLORDGTK
+  query_serial = ++self->system_display_query[w];
+#endif
+  // nothing usable from the platform means sRGB. with colord, its answer
+  // decides, later and with the atom's profile
+  profile = _system_profile(self, buffer, buffer_size);
+  if(!ask_colord)
   {
-    profile_changed
-        = buffer_size > 0
-      && (darktable.color_profiles->xprofile_size2 != buffer_size
-          || memcmp(darktable.color_profiles->xprofile_data2, buffer, buffer_size) != 0);
-  }
-  else
-  {
-    profile_changed
-        = buffer_size > 0
-      && (darktable.color_profiles->xprofile_size != buffer_size
-          || memcmp(darktable.color_profiles->xprofile_data, buffer, buffer_size) != 0);
-  }
-  if(profile_changed)
-  {
-    char name[512] = { 0 };
-    if(profile_type == DT_COLORSPACE_DISPLAY2)
-      match = _update_display2_profile(buffer, buffer_size, name, sizeof(name));
-    else
-      match = _update_display_profile(buffer, buffer_size, name, sizeof(name));
-    dt_print(DT_DEBUG_CONTROL, "[color profile] we got %s new screen profile `%s'"
-             " from the %s (size: %d)",
-             match ? "a" : "**NO**", *name ? name : "(unknown)", profile_source, buffer_size);
-  }
-  else
-  {
-    g_free(buffer);
+    changed = _system_display_set(self, w, profile);
+    if(changed)
+    {
+      char name[512] = { 0 };
+      if(profile) dt_colorspaces_get_profile_name(profile, "en", "US", name, sizeof(name));
+      dt_print(DT_DEBUG_CONTROL, "[color profile] we got %s screen profile `%s'"
+               " from the %s (size: %d)",
+               profile ? "a new" : "no usable", profile ? name : "sRGB",
+               profile_source ? profile_source : "platform", buffer_size);
+    }
   }
 #if defined G_OS_WIN32
 cleanup_and_return:
 #endif
-  pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-  if(profile_changed && match) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  pthread_rwlock_unlock(&self->xprofile_lock);
+  if(changed) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
   g_free(profile_source);
+
+#ifdef USE_COLORDGTK
+  // colord answers asynchronously, and its callback decides the query
+  if(ask_colord)
+  {
+    CdWindow *window = cd_window_new();
+    GtkWidget *center_widget = w ? darktable.develop->second_wnd
+                                 : dt_ui_center(darktable.gui->ui);
+    _colord_query_t *query = g_new(_colord_query_t, 1);
+    query->window = w;
+    query->query = query_serial;
+    query->atom = profile;
+    cd_window_get_profile(window, center_widget, NULL,
+                          _colorspaces_get_display_profile_colord_callback, query);
+  }
+#endif
 }
 
 static gboolean _colorspaces_is_base_name(const char *profile)
