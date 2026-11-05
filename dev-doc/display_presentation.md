@@ -37,12 +37,12 @@ See also:
 profile (type, file, intent), 1.0 at reference white and up to `headroom`
 above it. `device` is what untagged 8-bit values mean in the window,
 everything GTK draws there. `platform_owned` says the display profile
-selection has no effect on it, `managed` that a presenter backend
-interprets the values in the profile; an unmanaged output sends them to the
-screen as device values. The mask and channel views are authored as sRGB
-device values and converted for a managed output
-(`dt_display_output_diagnostic()`); the gamut check and clipping markers
-are written as they are, saturated colors that mark in any output.
+selection has no effect on it. Where image and device are the same
+encoding, as on every cairo window, the values reach the screen as device
+values. The mask and channel views are UI tones, authored as device values
+and converted from the device to the image encoding by gamma, which
+prepares the conversion when it commits; the gamut check and clipping
+markers are written as they are, saturated colors that mark in any output.
 
 - Both windows have an output at all times, from `dt_colorspaces_init()` on:
   develop and its pipes exist before the GUI, and headless runs never
@@ -187,10 +187,10 @@ one and it can set up, otherwise cairo.
 
 Paints each frame, quantized to an RGB24 surface, into the widget's own
 context. The window's output is what the display profile selection
-describes (display2 for the second window), unmanaged, the same output a
-window has before it is realized and after it is gone. Every platform
-without a native backend uses it: X11, macOS, Windows, and Wayland without
-color management.
+describes (display2 for the second window) as image and device encoding,
+the same output a window has before it is realized and after it is gone.
+Every platform without a native backend uses it: X11, macOS, Windows, and
+Wayland without color management.
 
 A Wayland compositor that manages color but lacks what the native backend
 needs also gets cairo. It takes GTK's untagged surface as sRGB, with a

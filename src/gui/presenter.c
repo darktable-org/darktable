@@ -157,14 +157,15 @@ static inline void _store(uint8_t *const out,
 }
 
 // a window whose output the platform owns shows frames in its profile
-// only. the headroom does not count: a frame rendered before the headroom
-// changed keeps its tone mapping until it is rendered again
+// only, made for its device encoding, in which the mask and channel views
+// are authored. the headroom does not count: a frame rendered before the
+// headroom changed keeps its tone mapping until it is rendered again
 static gboolean _shown_in(const dt_display_output_t *output,
                           const dt_display_output_t *label)
 {
   return !output->platform_owned
     || (dt_color_encoding_same_content(&output->image, &label->image)
-        && output->managed == label->managed);
+        && dt_color_encoding_same_content(&output->device, &label->device));
 }
 
 // float RGBA in encoding as cairo's RGB24, converted to the profile gtk

@@ -22,6 +22,7 @@
 
 #include "common/colorspaces_inline_conversions.h"
 #include "common/imagebuf.h"
+#include "common/iop_profile.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "gui/accelerators.h"
@@ -35,6 +36,15 @@ typedef struct dt_iop_gamma_params_t
 {
   float gamma, linear;
 } dt_iop_gamma_params_t;
+
+typedef struct dt_iop_gamma_data_t
+{
+  // the mask and channel views are UI tones, authored as device values of
+  // the window: converted to the encoding its pipes render to, NULL where
+  // the two are the same
+  const dt_iop_order_iccprofile_info_t *device;
+  const dt_iop_order_iccprofile_info_t *image;
+} dt_iop_gamma_data_t;
 
 const char *name()
 {
@@ -320,17 +330,49 @@ void process(dt_iop_module_t *self,
     _copy_output((const float *const restrict)i, (float *const restrict)o, buffsize);
   }
 
-  if(channel || (mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK))
-  {
-    float *const restrict out = (float *const restrict)o;
-    const dt_display_output_t *const output = &piece->pipe->output;
-    DT_OMP_FOR()
-    for(size_t j = 0; j < buffsize; j += 4)
-      dt_display_output_diagnostic(output, out + j);
-  }
+  const dt_iop_gamma_data_t *const d = piece->data;
+  if((channel || (mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)) && d->device && d->image)
+    dt_ioppr_transform_image_colorspace_rgb(o, o, roi_out->width, roi_out->height,
+                                            d->device, d->image, "gamma views");
 
   if(mask_display)
     dt_dev_pixelpipe_invalidate_cacheline(piece->pipe, i, "gamma mask display");
+}
+
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *p1,
+                   dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_gamma_data_t *d = piece->data;
+  const dt_color_encoding_t *device = &pipe->output.device;
+  const dt_color_encoding_t *image = &pipe->output.image;
+  const gboolean convert = image->type != DT_COLORSPACE_NONE
+    && device->type != DT_COLORSPACE_NONE
+    && !dt_color_encoding_same_content(device, image);
+  d->device = convert ? dt_ioppr_add_profile_info_for_content(self->dev, device->type,
+                                                              device->filename,
+                                                              device->profile, image->intent)
+                      : NULL;
+  d->image = convert ? dt_ioppr_add_profile_info_for_content(self->dev, image->type,
+                                                             image->filename,
+                                                             image->profile, image->intent)
+                     : NULL;
+}
+
+void init_pipe(dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
+{
+  piece->data = calloc(1, sizeof(dt_iop_gamma_data_t));
+}
+
+void cleanup_pipe(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
+{
+  free(piece->data);
+  piece->data = NULL;
 }
 
 void init(dt_iop_module_t *self)

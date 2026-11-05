@@ -416,8 +416,7 @@ static void _set_output(_backend_t *b)
   const dt_display_output_t output =
     { .image = { .type = DT_COLORSPACE_LIN_REC2020, .intent = intent,
                  .headroom = _headroom(b->description_max) },
-      .device = { .type = DT_COLORSPACE_SRGB, .intent = intent, .headroom = 1.0f },
-      .managed = TRUE };
+      .device = { .type = DT_COLORSPACE_SRGB, .intent = intent, .headroom = 1.0f } };
   dt_presenter_window_set_output(b->window, &output);
 }
 
