@@ -243,6 +243,14 @@ typedef struct dt_dev_pixelpipe_t
   /** what a presented pipe renders to, taken at the start of each run;
       type DT_COLORSPACE_NONE for pipes nobody presents **/
   dt_display_output_t output;
+  /** what the transform colorout built produces, recorded by its
+      commit_params(); type DT_COLORSPACE_NONE when no profile describes
+      what it writes **/
+  dt_color_encoding_t colorout_encoding;
+  /** what the pipe's output values mean, resolved when a run starts:
+      colorout_encoding, or the final working profile when colorout does
+      not run. output_profile_info is its stand-in for matrix-only code **/
+  dt_color_encoding_t output_encoding;
 
   // instances of pixelpipe, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;

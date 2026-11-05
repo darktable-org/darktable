@@ -323,6 +323,10 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->output_headroom = 1.0f;
   memset(&pipe->output, 0, sizeof(pipe->output));
   pipe->output.type = DT_COLORSPACE_NONE;
+  memset(&pipe->colorout_encoding, 0, sizeof(pipe->colorout_encoding));
+  pipe->colorout_encoding.type = DT_COLORSPACE_NONE;
+  memset(&pipe->output_encoding, 0, sizeof(pipe->output_encoding));
+  pipe->output_encoding.type = DT_COLORSPACE_NONE;
   pipe->runs = 0;
   pipe->bcache_data = NULL;
   pipe->bcache_size = 0;
@@ -1391,7 +1395,8 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
   const dt_iop_order_iccprofile_info_t *const histogram_profile =
     dt_ioppr_get_histogram_profile_info(dev);
   const dt_iop_order_iccprofile_info_t *const display_profile =
-    dt_ioppr_add_profile_info_to_list(dev, pipe->output.type, pipe->output.filename,
+    dt_ioppr_add_profile_info_to_list(dev, pipe->output_encoding.type,
+                                      pipe->output_encoding.filename,
                                       INTENT_RELATIVE_COLORIMETRIC);
   // the swatches are drawn by GTK
   dt_display_output_t gtk;
@@ -3523,7 +3528,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     }
 
     const dt_iop_order_iccprofile_info_t *const display_profile
-      = dt_ioppr_add_profile_info_to_list(dev, pipe->output.type, pipe->output.filename,
+      = dt_ioppr_add_profile_info_to_list(dev, pipe->output_encoding.type,
+                                          pipe->output_encoding.filename,
                                           INTENT_RELATIVE_COLORIMETRIC);
 
     // Since histogram is being treated as the second-to-last link
@@ -3643,6 +3649,43 @@ static gboolean _dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe
   return ret;
 }
 
+// what the pipe's output values mean, from the nodes this run processes.
+// without colorout the values stay in the working RGB, as for
+// dt_dev_image() with no output. colorout cannot record that profile
+// itself: history replay can commit colorin after it
+static void _resolve_output_encoding(dt_dev_pixelpipe_t *pipe,
+                                     dt_develop_t *dev)
+{
+  // synchronization writes these under it, and GUI readers take it
+  dt_pthread_mutex_lock(&pipe->busy_mutex);
+  gboolean colorout = FALSE;
+  for(GList *n = pipe->nodes; n && !colorout; n = g_list_next(n))
+  {
+    const dt_dev_pixelpipe_iop_t *piece = n->data;
+    colorout = piece->enabled && dt_iop_module_is(piece->module, "colorout");
+  }
+  const dt_iop_order_iccprofile_info_t *const work = dt_ioppr_get_pipe_work_profile_info(pipe);
+  dt_color_encoding_t *const encoding = &pipe->output_encoding;
+  if(colorout)
+    *encoding = pipe->colorout_encoding;
+  else if(work)
+  {
+    // for the modules after colorout
+    dt_ioppr_set_pipe_output_profile_info(dev, pipe, work->type, work->filename, work->intent);
+    memset(encoding, 0, sizeof(*encoding));
+    encoding->type = work->type;
+    g_strlcpy(encoding->filename, work->filename, sizeof(encoding->filename));
+    encoding->intent = work->intent;
+    encoding->headroom = pipe->output_headroom;
+  }
+  else
+  {
+    memset(encoding, 0, sizeof(*encoding));
+    encoding->type = DT_COLORSPACE_NONE;
+  }
+  dt_pthread_mutex_unlock(&pipe->busy_mutex);
+}
+
 gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
                                   dt_develop_t *dev,
                                   const int x,
@@ -3698,6 +3741,10 @@ gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
 // re-entry point: in case of late opencl errors we start all over
 // again with opencl-support disabled
 restart:
+
+  // after every resync, the OpenCL restart's too, and the export filters'
+  // disabling, before the cache keys hash output_profile_info
+  _resolve_output_encoding(pipe, dev);
 
   // check if we should obsolete caches
   if(pipe->cache_obsolete_order != INT_MAX)
@@ -3823,7 +3870,14 @@ restart:
       memcpy(pipe->backbuf, buf, bbpp * width * height);
       pipe->backbuf_scale = scale;
       for(int i = 0; i < 6; i++) pipe->backbuf_zoom_pos[i] = pts[i] * pipe->iscale;
-      pipe->backbuf_output = pipe->output;
+      // the values as the pipe made them, shown as the window it rendered
+      // for shows them
+      dt_display_output_t *const label = &pipe->backbuf_output;
+      *label = pipe->output;
+      label->type = pipe->output_encoding.type;
+      g_strlcpy(label->filename, pipe->output_encoding.filename, sizeof(label->filename));
+      label->intent = pipe->output_encoding.intent;
+      label->headroom = pipe->output_encoding.headroom;
       pipe->backbuf_id = dt_dev_new_frame_id();
       pipe->output_imgid = pipe->image.id;
     }

@@ -689,6 +689,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->lut[2][0] = -1.0f;
   piece->process_cl_ready = TRUE;
 
+  // a failure records nothing: no profile describes what process() then writes
+  dt_color_encoding_t *const encoding = &pipe->colorout_encoding;
+  memset(encoding, 0, sizeof(*encoding));
+  encoding->type = DT_COLORSPACE_NONE;
+
   /* if we are exporting then check and set usage of override profile */
   if(dt_pipe_is_export(pipe))
   {
@@ -719,7 +724,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   // a pipe without an output description is not presented: dt_dev_image()
   // with a NULL output filters colorout out and keeps the pixels in the
-  // working RGB, which is then the pipe's output profile
+  // working RGB. the run resolves its output from the final working profile;
+  // modules after colorout that read it in commit_params() get this one
   if(out_type == DT_COLORSPACE_NONE)
   {
     piece->enabled = FALSE;
@@ -731,6 +737,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     return;
   }
 
+  // the profile the transform converts to, once the fallbacks below have
+  // replaced a missing or unsupported one
+  dt_colorspaces_color_profile_type_t built_type = out_type;
+  const char *built_filename = out_filename;
+
   // when the output type is Lab then process is a nop, so we can avoid creating a transform
   // and the subsequent error messages but still have to publish the profile_info
   d->type = out_type;
@@ -738,6 +749,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   if(out_type == DT_COLORSPACE_LAB)
   {
     dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, p->intent);
+    encoding->type = DT_COLORSPACE_LAB;
+    g_strlcpy(encoding->filename, out_filename, sizeof(encoding->filename));
+    encoding->intent = out_intent;
+    encoding->headroom = pipe->output_headroom;
     return;
   }
 
@@ -767,6 +782,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
                                         | DT_PROFILE_DIRECTION_DISPLAY
                                         | DT_PROFILE_DIRECTION_DISPLAY2)
                  ->profile;
+    built_type = DT_COLORSPACE_SRGB;
+    built_filename = "";
     dt_control_log(_("missing output profile has been replaced by sRGB!"));
     dt_print(DT_DEBUG_ALWAYS, "missing output profile `%s' has been replaced by sRGB!",
              dt_colorspaces_get_name(out_type, out_filename));
@@ -858,6 +875,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
              "unsupported output profile `%s' has been replaced by sRGB!",
              out_profile->name);
     output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT)->profile;
+    built_type = DT_COLORSPACE_SRGB;
+    built_filename = "";
 
     if(d->mode != DT_PROFILE_NORMAL
        || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix,
@@ -905,6 +924,17 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     piece->pipe->output_headroom =
       fminf(piece->pipe->output_headroom,
             dt_ioppr_profile_headroom(softproof_type));
+
+  // process() encodes for out_type's HDR transfer function, which no
+  // profile describes once sRGB has replaced out_type's profile
+  const gboolean built = d->xform || dt_is_valid_colormatrix(d->cmatrix[0][0]);
+  if(built && !(d->hdr_transfer && built_type != out_type))
+  {
+    encoding->type = built_type;
+    g_strlcpy(encoding->filename, built_filename, sizeof(encoding->filename));
+    encoding->intent = out_intent;
+    encoding->headroom = pipe->output_headroom;
+  }
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

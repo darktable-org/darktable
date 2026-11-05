@@ -47,13 +47,24 @@ colors that mark in any output.
   window at the start of every run, `dt_colorspaces_get_display_output()` in
   `dt_dev_process_image_job()`, so workers never read GUI state while
   processing. A changed output resynchronizes the pipe.
-- `dt_dev_image()` sets the output of its own pipe. `NULL` means no display
-  encoding: with colorout filtered out, as overlay does, the buffer stays in
-  the pipe's working RGB.
-- colorout renders to `pipe->output`; the scopes and the global color picker
-  read it to interpret the preview pipe's pixels. The pipe's
-  `output_headroom`, which sigmoid and agx tone map to, honors
-  `output.headroom`. A soft proof caps it at the proof profile's headroom.
+- `dt_dev_image()` sets the output of its own pipe and returns the
+  encoding of its buffer. `NULL` means no display encoding: with colorout
+  filtered out, as overlay does, the buffer stays in the pipe's working RGB.
+- colorout renders to `pipe->output`. The pipe's `output_headroom`, which
+  sigmoid and agx tone map to, honors `output.headroom`. A soft proof caps
+  it at the proof profile's headroom.
+- `pipe->output_encoding` (`dt_color_encoding_t`) is what the pipe's output
+  values are: the profile, intent and headroom of the transform colorout
+  built, after it replaced a missing or unsupported profile by sRGB, or the
+  final working profile when colorout does not run. colorout records its
+  transform in `commit_params()`, and nothing (type `DT_COLORSPACE_NONE`)
+  when building it fails or no profile describes what it writes; the pipe
+  resolves the encoding when a run starts, after synchronization, since
+  history replay can commit colorin after colorout. The scopes and the
+  global color picker interpret the preview pipe's pixels with it, and it
+  labels the backbuf and `dt_dev_image()`'s buffer. `output_profile_info`
+  stays the matrix stand-in for code that needs matrices: sRGB for a LUT
+  profile.
 - A soft proof shows what an export to the proof profile holds, in the
   output: clipped where that export clips, and by the presenter to what the
   screen shows. PQ and HLG proofs take the export's own encoding round trip
@@ -67,9 +78,9 @@ colors that mark in any output.
 gamma is the terminal module of every pipe and writes float RGBA: the pixel
 as colorout encoded it, with alpha 1 (channel 3 carries mask data inside the
 pipe), or its mask and channel views as display values. A screen pipe copies
-that into `pipe->backbuf`, records the output it was rendered in as
-`backbuf_output`, and gives the frame a new `backbuf_id`
-(`dt_dev_new_frame_id()`).
+that into `pipe->backbuf`, labels it with `backbuf_output`, its
+`output_encoding` in the `managed` mode of `output`, and gives the frame a
+new `backbuf_id` (`dt_dev_new_frame_id()`).
 
 Nothing quantizes inside the pipe. 8-bit values are made where an 8-bit
 surface is made, with `dt_display_to_8bit()`: by the presenter, by
@@ -265,7 +276,7 @@ Wayland they are subsurfaces above the layers.
 | Mistake | Instead |
 |---|---|
 | painting a backbuf with cairo in a presenting widget | `dt_presenter_image()` with the buffer's `backbuf_output` and `backbuf_id` |
-| reading `darktable.color_profiles` for a presented pipe's display profile | read `pipe->output`, or the pipe's output profile info |
+| reading `darktable.color_profiles` for a presented pipe's display profile, or `pipe->output` for what its pixels are | `pipe->output_encoding` or the buffer's label; `pipe->output` is the request |
 | converting a module GUI's colors with the pipe's output profile | `dt_ioppr_get_gui_profile_info()` |
 | converting a backbuf for GTK-side drawing on every draw | `dt_presenter_gtk_surface()` with the buffer's `backbuf_id` |
 | checking for a platform in the pipeline, a module or a view | put it in `presenter_layers.c` or the platform's transport, with a row in [Workarounds](#workarounds) |

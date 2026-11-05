@@ -237,7 +237,8 @@ void gui_post_expose(dt_lib_module_t *self,
       snap->buf = NULL;
 
       // export image with proper size
-      dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &snap->output);
+      dt_display_output_t output;
+      dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &output);
       snap->frame_id = dt_dev_new_frame_id();
       dt_dev_image(snap->imgid,
                    width,
@@ -252,6 +253,7 @@ void gui_post_expose(dt_lib_module_t *self,
                    NULL,
                    DT_DEVICE_NONE,
                    FALSE,
+                   &output,
                    &snap->output);
       d->snap_requested = FALSE;
       d->expose_again_timeout_id = 0;

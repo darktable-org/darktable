@@ -206,7 +206,7 @@ static int _process_image(dt_slideshow_t *d,
 
   dt_pthread_mutex_unlock(&d->lock);
 
-  dt_display_output_t output;
+  dt_display_output_t output, encoding;
   dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &output);
   dt_dev_image(imgid,
                d->width / darktable.gui->ppd,
@@ -221,7 +221,8 @@ static int _process_image(dt_slideshow_t *d,
                NULL,
                DT_DEVICE_NONE,
                FALSE,
-               &output);
+               &output,
+               &encoding);
 
   dt_pthread_mutex_lock(&d->lock);
 
@@ -242,7 +243,7 @@ static int _process_image(dt_slideshow_t *d,
     d->buf[slt].width = width;
     d->buf[slt].height = height;
     d->buf[slt].buf = buf;
-    d->buf[slt].output = output;
+    d->buf[slt].output = encoding;
     d->buf[slt].frame_id = dt_dev_new_frame_id();
     d->buf[slt].invalidated = FALSE;
   }
