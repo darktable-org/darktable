@@ -98,8 +98,7 @@ changes (where available).
   AgX tone map to it when "follow output peak" is on (it is off in
   edits made before that option existed). This also fixes the image
   being converted twice on such compositors, once by darktable and
-  once by the compositor. There the display profile setting has no
-  effect and is disabled, and the rest of the interface, thumbnails
+  once by the compositor. There the rest of the interface, thumbnails
   included, is shown in sRGB. A compositor with color management that
   lacks one of these gets the image in sRGB, which also avoids the
   double conversion. Other compositors and platforms keep the display
@@ -442,6 +441,22 @@ changes (where available).
   If one of these new input profiles is selected, the pipe gets its
   data corrected according to DNG specs matching the intended look.
 
+- The display profile now always comes from the system's color
+  settings: the X atom or colord on X11, the compositor or colord on
+  Wayland, Windows color management, and sRGB on macOS, where the
+  system converts darktable's output to the screen. To use a
+  calibrated monitor profile, install it there; darktable-cmstest shows
+  what X11 reports. The display profile controls of the darkroom and
+  the lighttable's "set display profile" button are gone. Use soft
+  proof to preview another display, print or sRGB. A profile chosen
+  there before is named in a message once and no longer used.
+
+- Soft proof has its own rendering intent, set next to the softproof
+  profile. It used the display rendering intent before, which the
+  darkroom showed only with "always use LittleCMS 2" on, and it starts
+  from that intent. The display rendering intent is now one setting
+  for both windows, in the interface preferences.
+
 - The highlights module will be disabled automatically when a raw
   image with a clean history is opended in darkroom the first time
   and the opposed algorithm did not find clipped photosites.
@@ -728,6 +743,16 @@ changes (where available).
 
 - Fixed auto calculation of capture radius and jumping of capture
   radius sliders in UI.
+
+- Fixed the display profile of the previous screen staying in use
+  when a window moved to a screen without a profile, when the system
+  removed the profile, or when Windows reported none, which Microsoft
+  documents as the answer with Advanced Color on. darktable now uses
+  sRGB there.
+
+- Fixed lighttable thumbnails that were sometimes shown for sRGB
+  instead of the display profile after startup, when colord answered
+  late, until the window was resized.
 
 - Fixed small memory leaks when expanding variables, which grew with
   the number of images exported or imported in one run.
