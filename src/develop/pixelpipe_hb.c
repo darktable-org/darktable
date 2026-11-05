@@ -3861,6 +3861,13 @@ restart:
     for(int i = 0; i < 6; i++) geometry.zoom_pos[i] = pts[i] * pipe->iscale;
     frame = dt_frame_new(buf, &geometry, pipe->output.format, &pipe->output_encoding,
                          pipe->output.serial);
+    // what GTK will draw it as, made here rather than in a GUI thread draw:
+    // the preview in navigation and the filmstrip, the canvas under focus
+    // peaking. on a cairo window it is the frame itself and costs nothing
+    if(frame && !dt_pipe_is_image(pipe)
+       && (dt_pipe_is_preview(pipe)
+           || (darktable.gui && g_atomic_int_get(&darktable.gui->show_focus_peaking))))
+      dt_frame_surface(frame, &pipe->output.device);
   }
 
   dt_pthread_mutex_lock(&pipe->backbuf_mutex);
