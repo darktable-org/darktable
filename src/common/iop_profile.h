@@ -83,6 +83,17 @@ dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
                                   const char *profile_filename,
                                   const int intent);
 
+/** the same for values made with profile, as an encoding names it: the
+ * profile counts for the system display types, which a new screen profile
+ * replaces under the same name (dt_colorspaces_replaced_in_session())
+ */
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_add_profile_info_for_content(struct dt_develop_t *dev,
+                                      const dt_colorspaces_color_profile_type_t profile_type,
+                                      const char *profile_filename,
+                                      cmsHPROFILE profile,
+                                      const int intent);
+
 /** returns a reference to the work profile info as set on colorin iop
  * only if module is between colorin and colorout, otherwise returns NULL
  * work profile must not be cleanup()
@@ -117,6 +128,7 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
                                       struct dt_dev_pixelpipe_t *pipe,
                                       const dt_colorspaces_color_profile_type_t type,
                                       const char *filename,
+                                      cmsHPROFILE profile,
                                       const int intent);
 
 /** the headroom above reference white an output in this profile type has:

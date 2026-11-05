@@ -159,7 +159,8 @@ static inline void _store(uint8_t *const out,
 static gboolean _same_profile(const dt_display_output_t *a,
                               const dt_display_output_t *b)
 {
-  return a->type == b->type && !strcmp(a->filename, b->filename);
+  return a->type == b->type && !strcmp(a->filename, b->filename)
+    && (!dt_colorspaces_replaced_in_session(a->type) || a->profile == b->profile);
 }
 
 // a window that declared its output shows frames in its profile only. the
@@ -189,10 +190,11 @@ static cairo_surface_t *_surface(const float *pixels,
   const dt_iop_order_iccprofile_info_t *from = NULL, *to = NULL;
   if(gtk && !_same_profile(gtk, encoding))
   {
-    from = dt_ioppr_add_profile_info_to_list(darktable.develop, encoding->type,
-                                             encoding->filename, gtk->intent);
-    to = dt_ioppr_add_profile_info_to_list(darktable.develop, gtk->type, gtk->filename,
-                                           gtk->intent);
+    from = dt_ioppr_add_profile_info_for_content(darktable.develop, encoding->type,
+                                                 encoding->filename, encoding->profile,
+                                                 gtk->intent);
+    to = dt_ioppr_add_profile_info_for_content(darktable.develop, gtk->type, gtk->filename,
+                                               gtk->profile, gtk->intent);
   }
 
   if(from && to

@@ -656,6 +656,18 @@ dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
   return _add_profile_info(dev, profile_type, profile_filename, profile, intent);
 }
 
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_add_profile_info_for_content(struct dt_develop_t *dev,
+                                      const dt_colorspaces_color_profile_type_t profile_type,
+                                      const char *profile_filename,
+                                      cmsHPROFILE profile,
+                                      const int intent)
+{
+  if(!dt_colorspaces_replaced_in_session(profile_type))
+    return dt_ioppr_add_profile_info_to_list(dev, profile_type, profile_filename, intent);
+  return _add_profile_info(dev, profile_type, profile_filename, profile, intent);
+}
+
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(const struct dt_iop_module_t *module,
                                                                    GList *iop_list)
 {
@@ -820,10 +832,11 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
                                       struct dt_dev_pixelpipe_t *pipe,
                                       const dt_colorspaces_color_profile_type_t type,
                                       const char *filename,
+                                      cmsHPROFILE profile,
                                       const int intent)
 {
   dt_iop_order_iccprofile_info_t *profile_info =
-    dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
+    dt_ioppr_add_profile_info_for_content(dev, type, filename, profile, intent);
 
   if(!profile_info && dt_pipe_is_preview(pipe) && (type == DT_COLORSPACE_FILE))
     dt_control_log(_("output icc profile '%s' missing"), filename);
@@ -892,7 +905,8 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_gui_profile_info(struct dt_develop_
 {
   dt_display_output_t gtk;
   if(dt_colorspaces_get_gtk_output(DT_COLORSPACE_DISPLAY, &gtk))
-    return dt_ioppr_add_profile_info_to_list(dev, gtk.type, gtk.filename, gtk.intent);
+    return dt_ioppr_add_profile_info_for_content(dev, gtk.type, gtk.filename, gtk.profile,
+                                                 gtk.intent);
   return dev->full.pipe ? dev->full.pipe->output_profile_info : NULL;
 }
 

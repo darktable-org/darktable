@@ -669,6 +669,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_colorspaces_color_profile_type_t out_type = DT_COLORSPACE_SRGB;
   gchar *out_filename = NULL;
   dt_iop_color_intent_t out_intent = DT_INTENT_PERCEPTUAL;
+  gboolean presented = FALSE;
 
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
@@ -720,6 +721,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     out_type = pipe->output.type;
     out_filename = pipe->output.filename;
     out_intent = pipe->output.intent;
+    presented = TRUE;
   }
 
   // a pipe without an output description is not presented: dt_dev_image()
@@ -733,7 +735,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
       dt_ioppr_get_pipe_work_profile_info(piece->pipe);
     if(work)
       dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, work->type,
-                                            work->filename, work->intent);
+                                            work->filename, work->profile, work->intent);
     return;
   }
 
@@ -748,9 +750,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->hdr_transfer = dt_colorspaces_hdr_transfer(out_type);
   if(out_type == DT_COLORSPACE_LAB)
   {
-    dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, p->intent);
+    dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, Lab,
+                                          p->intent);
     encoding->type = DT_COLORSPACE_LAB;
     g_strlcpy(encoding->filename, out_filename, sizeof(encoding->filename));
+    encoding->profile = Lab;
     encoding->intent = out_intent;
     encoding->headroom = pipe->output_headroom;
     return;
@@ -762,17 +766,23 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   uint32_t transformFlags = 0;
 
   /* creating output profile */
-  if(out_type == DT_COLORSPACE_DISPLAY || out_type == DT_COLORSPACE_DISPLAY2)
+  // a presented pipe renders to the profile its run took with its output,
+  // which a new screen profile may have replaced in the registry since
+  const gboolean lookup_display = !presented
+    && (out_type == DT_COLORSPACE_DISPLAY || out_type == DT_COLORSPACE_DISPLAY2);
+  if(lookup_display)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
   const dt_colorspaces_color_profile_t *out_profile
-      = dt_colorspaces_get_profile(out_type, out_filename,
-                                   DT_PROFILE_DIRECTION_OUT
-                                   | DT_PROFILE_DIRECTION_DISPLAY
-                                   | DT_PROFILE_DIRECTION_DISPLAY2);
-  if(out_profile)
+      = presented ? NULL
+                  : dt_colorspaces_get_profile(out_type, out_filename,
+                                               DT_PROFILE_DIRECTION_OUT
+                                               | DT_PROFILE_DIRECTION_DISPLAY
+                                               | DT_PROFILE_DIRECTION_DISPLAY2);
+  output = presented ? pipe->output.profile : out_profile ? out_profile->profile : NULL;
+  const cmsHPROFILE out_content = output;
+  if(output)
   {
-    output = out_profile->profile;
     if(out_type == DT_COLORSPACE_XYZ) output_format = TYPE_XYZA_FLT;
   }
   else
@@ -788,6 +798,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     dt_print(DT_DEBUG_ALWAYS, "missing output profile `%s' has been replaced by sRGB!",
              dt_colorspaces_get_name(out_type, out_filename));
   }
+
+  cmsHPROFILE built_profile = output;
 
   /* creating softproof profile if softproof is enabled */
   if((d->mode != DT_PROFILE_NORMAL) && dt_pipe_is_full(pipe))
@@ -873,10 +885,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
     dt_print(DT_DEBUG_ALWAYS,
              "unsupported output profile `%s' has been replaced by sRGB!",
-             out_profile->name);
+             out_profile ? out_profile->name : dt_colorspaces_get_name(out_type, out_filename));
     output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT)->profile;
     built_type = DT_COLORSPACE_SRGB;
     built_filename = "";
+    built_profile = output;
 
     if(d->mode != DT_PROFILE_NORMAL
        || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix,
@@ -889,7 +902,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     }
   }
 
-  if(out_type == DT_COLORSPACE_DISPLAY || out_type == DT_COLORSPACE_DISPLAY2)
+  if(lookup_display)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
   // now try to initialize unbounded mode:
@@ -917,7 +930,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_colorspaces_cleanup_profile(softproof);
   dt_colorspaces_cleanup_profile(hdr_linear);
 
-  dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, p->intent);
+  dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename,
+                                        out_content, p->intent);
   // render the proof for its export's headroom and let the screen clip, as
   // Resolve's viewer shows the deliverable's transform (18.5 manual, ch. 9-10)
   if(proofing)
@@ -930,6 +944,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   {
     encoding->type = built_type;
     g_strlcpy(encoding->filename, built_filename, sizeof(encoding->filename));
+    encoding->profile = built_profile;
     encoding->intent = out_intent;
     encoding->headroom = pipe->output_headroom;
   }

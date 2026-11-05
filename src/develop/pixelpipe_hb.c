@@ -1395,15 +1395,16 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
   const dt_iop_order_iccprofile_info_t *const histogram_profile =
     dt_ioppr_get_histogram_profile_info(dev);
   const dt_iop_order_iccprofile_info_t *const display_profile =
-    dt_ioppr_add_profile_info_to_list(dev, pipe->output_encoding.type,
-                                      pipe->output_encoding.filename,
-                                      INTENT_RELATIVE_COLORIMETRIC);
+    dt_ioppr_add_profile_info_for_content(dev, pipe->output_encoding.type,
+                                          pipe->output_encoding.filename,
+                                          pipe->output_encoding.profile,
+                                          INTENT_RELATIVE_COLORIMETRIC);
   // the swatches are drawn by GTK
   dt_display_output_t gtk;
   const dt_iop_order_iccprofile_info_t *const gtk_profile =
     dt_colorspaces_get_gtk_output(DT_COLORSPACE_DISPLAY, &gtk)
-    ? dt_ioppr_add_profile_info_to_list(dev, gtk.type, gtk.filename,
-                                        INTENT_RELATIVE_COLORIMETRIC)
+    ? dt_ioppr_add_profile_info_for_content(dev, gtk.type, gtk.filename, gtk.profile,
+                                            INTENT_RELATIVE_COLORIMETRIC)
     : display_profile;
 
   // if we have a primary picker, prepend to the list of any live
@@ -3528,9 +3529,10 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     }
 
     const dt_iop_order_iccprofile_info_t *const display_profile
-      = dt_ioppr_add_profile_info_to_list(dev, pipe->output_encoding.type,
-                                          pipe->output_encoding.filename,
-                                          INTENT_RELATIVE_COLORIMETRIC);
+      = dt_ioppr_add_profile_info_for_content(dev, pipe->output_encoding.type,
+                                              pipe->output_encoding.filename,
+                                              pipe->output_encoding.profile,
+                                              INTENT_RELATIVE_COLORIMETRIC);
 
     // Since histogram is being treated as the second-to-last link
     // in the pixelpipe and has a "process" call, why not treat it
@@ -3671,10 +3673,12 @@ static void _resolve_output_encoding(dt_dev_pixelpipe_t *pipe,
   else if(work)
   {
     // for the modules after colorout
-    dt_ioppr_set_pipe_output_profile_info(dev, pipe, work->type, work->filename, work->intent);
+    dt_ioppr_set_pipe_output_profile_info(dev, pipe, work->type, work->filename, work->profile,
+                                          work->intent);
     memset(encoding, 0, sizeof(*encoding));
     encoding->type = work->type;
     g_strlcpy(encoding->filename, work->filename, sizeof(encoding->filename));
+    encoding->profile = work->profile;
     encoding->intent = work->intent;
     encoding->headroom = pipe->output_headroom;
   }
@@ -3876,6 +3880,7 @@ restart:
       *label = pipe->output;
       label->type = pipe->output_encoding.type;
       g_strlcpy(label->filename, pipe->output_encoding.filename, sizeof(label->filename));
+      label->profile = pipe->output_encoding.profile;
       label->intent = pipe->output_encoding.intent;
       label->headroom = pipe->output_encoding.headroom;
       pipe->backbuf_id = dt_dev_new_frame_id();
