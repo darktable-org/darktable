@@ -2152,13 +2152,6 @@ void dt_colorspaces_set_display_profile
   (const dt_colorspaces_color_profile_type_t profile_type)
 {
   if(!dt_control_running()) return;
-  // make sure that no one gets a broken profile FIXME: benchmark if
-  // the try is really needed when moving/resizing the window. Maybe
-  // we can just lock it and block
-  if(pthread_rwlock_trywrlock(&darktable.color_profiles->xprofile_lock))
-    return; // we are already updating the profile. Or someone is
-            // reading right now. Too bad we can't distinguish
-            // that. Whatever ...
 
   dt_colorspaces_t *self = darktable.color_profiles;
   const int w = profile_type == DT_COLORSPACE_DISPLAY2;
@@ -2307,6 +2300,9 @@ void dt_colorspaces_set_display_profile
   profile_source = g_strdup("windows color profile api");
 #endif
 
+  // the query needs no lock, and waiting for readers here rather than
+  // giving up keeps a configure from leaving the previous screen's profile
+  pthread_rwlock_wrlock(&self->xprofile_lock);
 #ifdef USE_COLORDGTK
   query_serial = ++self->system_display_query[w];
 #endif
@@ -2326,11 +2322,11 @@ void dt_colorspaces_set_display_profile
                profile_source ? profile_source : "platform", buffer_size);
     }
   }
+  pthread_rwlock_unlock(&self->xprofile_lock);
+  if(changed) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
 #if defined G_OS_WIN32
 cleanup_and_return:
 #endif
-  pthread_rwlock_unlock(&self->xprofile_lock);
-  if(changed) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
   g_free(profile_source);
 
 #ifdef USE_COLORDGTK
