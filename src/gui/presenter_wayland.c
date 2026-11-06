@@ -83,6 +83,8 @@ struct _backend_t
 
   // what the compositor supports
   gboolean done, parametric, luminances, ext_linear, bt2020, relative, half_float;
+  // announces GTK's private protocol, as mutter does
+  gboolean gtk_shell;
 
   // GDK's surface of the toplevel, which the layers are children of
   struct wl_surface *parent;
@@ -458,11 +460,15 @@ static void _info_done(void *data,
     _create_description(b, max_lum);
 }
 
-// mutter's default color mode reports plain SDR sRGB and passes untagged pixels
-// through, ignoring the screen's assigned profile (mutter#4597): only darktable
-// can apply it. this stops matching once mutter describes its real output (!5177)
-static gboolean _passes_untagged_through(const _backend_t *b)
+// the mutter workaround: mutter's default color mode describes plain SDR sRGB
+// and passes untagged pixels through, ignoring the profile assigned to the
+// screen (mutter#4597), so only darktable can apply it, on cairo. mutter is
+// known by GTK's private gtk_shell1, which KWin, wlroots, Weston and Hyprland
+// do not announce. stops matching once mutter describes its real output (!5177)
+static gboolean _mutter_default_color_mode(const _backend_t *b)
 {
+  if(!b->gtk_shell) return FALSE;
+
   // sRGB primaries and D65 white, in the protocol's units of 1e-6
   static const int32_t srgb[8] = { 640000, 330000, 300000, 600000,
                                    150000, 60000, 312700, 329000 };
@@ -656,6 +662,8 @@ static void _global(void *data,
     b->manager = wl_registry_bind(registry, name, &wp_color_manager_v1_interface, 1);
     wp_color_manager_v1_add_listener(b->manager, &_manager_listener, b);
   }
+  else if(!strcmp(interface, "gtk_shell1"))
+    b->gtk_shell = TRUE;
 }
 
 static void _global_remove(void *data,
@@ -853,7 +861,7 @@ dt_presenter_transport_t *dt_presenter_wayland_new(GtkWidget *toplevel,
     && wl_display_roundtrip_queue(b->display, queue) >= 0
     && b->done && b->parametric && b->ext_linear && b->bt2020 && b->half_float;
 
-  gboolean passes_through = FALSE;
+  gboolean mutter_default = FALSE;
   if(ok)
   {
     _feedback_init(b);
@@ -861,14 +869,14 @@ dt_presenter_transport_t *dt_presenter_wayland_new(GtkWidget *toplevel,
       ok = wl_display_roundtrip_queue(b->display, queue) >= 0;
     // a preferred description without parametric information, as Weston's
     // for an ICC output, is not plain sRGB
-    passes_through = ok && b->preferred_done && _passes_untagged_through(b);
-    if(!passes_through)
+    mutter_default = ok && b->preferred_done && _mutter_default_color_mode(b);
+    if(!mutter_default)
     {
       if(!b->pending) _create_description(b, REFERENCE_NITS);
       for(int k = 0; k < 4 && !b->description && !b->pending_failed && ok; k++)
         ok = wl_display_roundtrip_queue(b->display, queue) >= 0;
     }
-    ok = ok && !passes_through && b->description;
+    ok = ok && !mutter_default && b->description;
   }
 
   wl_registry_destroy(registry);
@@ -878,12 +886,13 @@ dt_presenter_transport_t *dt_presenter_wayland_new(GtkWidget *toplevel,
   dt_print
     (DT_DEBUG_CONTROL,
      "[presenter wayland] %s: parametric %d, ext_linear %d, bt2020 %d, half float shm %d,"
-     " luminances %d, headroom %.2f",
+     " luminances %d, gtk_shell1 %d, headroom %.2f",
      ok ? "color managed"
-        : passes_through ? "plain SDR sRGB output, using cairo with the system display profile"
+        : mutter_default ? "mutter's default color mode (mutter#4597 workaround),"
+                           " using cairo with the system display profile"
                          : "not available, using cairo",
      b->parametric, b->ext_linear, b->bt2020, b->half_float, b->luminances,
-     _headroom(b->description_max));
+     b->gtk_shell, _headroom(b->description_max));
   if(!ok)
   {
     _free(&b->transport);
