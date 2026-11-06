@@ -84,8 +84,9 @@ typedef struct _platform_t
 
   // what the compositor supports
   gboolean done, parametric, luminances, ext_linear, bt2020, relative, half_float;
-  // announces GTK's private protocol, as mutter does
-  gboolean gtk_shell;
+  // announces GTK's private protocol, as mutter does, and the session is
+  // GNOME's
+  gboolean gtk_shell, gnome;
 
   // GDK's surface of the toplevel, which the layers are children of
   struct wl_surface *parent;
@@ -546,11 +547,12 @@ static void _info_done(void *data,
 // the mutter workaround: mutter's default color mode describes plain SDR sRGB
 // and passes untagged pixels through, ignoring the profile assigned to the
 // screen (mutter#4597), so only darktable can apply it, on cairo. mutter is
-// known by GTK's private gtk_shell1, which KWin, wlroots, Weston and Hyprland
-// do not announce. stops matching once mutter describes its real output (!5177)
+// known by GTK's private gtk_shell1 in a GNOME session: Wayfire's gtk-shell
+// plugin announces gtk_shell1 too. stops matching once mutter describes its
+// real output (!5177)
 static gboolean _mutter_default_color_mode(const _platform_t *p)
 {
-  if(!p->gtk_shell) return FALSE;
+  if(!p->gtk_shell || !p->gnome) return FALSE;
 
   // sRGB primaries and D65 white, in the protocol's units of 1e-6
   static const int32_t srgb[8] = { 640000, 330000, 300000, 600000,
@@ -1023,6 +1025,11 @@ dt_presenter_platform_t *dt_presenter_wayland_new(GtkWidget *toplevel,
   // until a preferred description says otherwise: one without parametric
   // information, as Weston's for an ICC output, is not plain sRGB
   p->native = TRUE;
+  // a colon-separated list, such as ubuntu:GNOME
+  const gchar *desktop = g_getenv("XDG_CURRENT_DESKTOP");
+  gchar **desktops = g_strsplit(desktop ? desktop : "", ":", -1);
+  p->gnome = g_strv_contains((const gchar *const *)desktops, "GNOME");
+  g_strfreev(desktops);
 
   // set up on a queue of our own, so that waiting for the compositor
   // dispatches nothing of GDK's
@@ -1060,10 +1067,11 @@ dt_presenter_platform_t *dt_presenter_wayland_new(GtkWidget *toplevel,
   dt_print
     (DT_DEBUG_CONTROL,
      "[presenter wayland] %s window: %s: parametric %d, ext_linear %d, bt2020 %d,"
-     " half float shm %d, luminances %d, gtk_shell1 %d",
+     " half float shm %d, luminances %d, gtk_shell1 %d, GNOME %d",
      window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
      ok ? "color management available" : "color management not available, using cairo",
-     p->parametric, p->ext_linear, p->bt2020, p->half_float, p->luminances, p->gtk_shell);
+     p->parametric, p->ext_linear, p->bt2020, p->half_float, p->luminances, p->gtk_shell,
+     p->gnome);
   if(!ok)
   {
     _platform_free(&p->platform);
