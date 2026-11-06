@@ -52,8 +52,8 @@
 // and at the latest this long after the first report of a new level, so
 // that a value that keeps moving (KWin's automatic brightness drifts for
 // seconds) still reaches the image. longer than macOS's EDR ramp from 1.0
-// to its potential, about 2 s, so that a ramp toward a target taken from
-// the ceiling costs no intermediate one
+// to its potential, about 2 s, so that the ramp costs one change, at its
+// end
 #define MAX_LATENCY_US (3 * 1000 * 1000)
 
 // 2^16: no screen comes near, and a bogus value stays in int range
@@ -102,38 +102,35 @@ gboolean dt_presenter_target_report(dt_presenter_target_t *target,
                                     const dt_presenter_headroom_t *report,
                                     const int64_t now)
 {
-  gboolean changed = FALSE;
-  const float ceiling = isfinite(report->ceiling) && report->ceiling > 0.0f
-                        ? report->ceiling : 0.0f;
-
   // what an earlier generation settled on says nothing about this one,
-  // the hysteresis around it included. a ceiling is the provisional
-  // target, what a platform that ramps up (macOS EDR) ends at or below;
-  // without one the first value is taken as it comes
+  // the hysteresis around it included: its first value is taken at once,
+  // and until one comes the target is SDR. a ceiling only bounds values:
+  // it is what the screen could show, not what it shows now (macOS's
+  // potential EDR headroom)
   if(!target->started || report->generation != target->generation)
   {
     target->started = TRUE;
     target->generation = report->generation;
-    target->candidate = FALSE;
-    target->fresh = ceiling == 0.0f;
-    if(ceiling > 0.0f) changed = _set(target, dt_presenter_target_steps(ceiling));
+    target->fresh = TRUE;
   }
 
-  // no value now: what was settled stays, and a level waiting to settle
-  // is no longer what the platform says
+  // no value now: what the generation settled stays, and a level waiting
+  // to settle is no longer what the platform says
   if(!isfinite(report->value))
   {
     target->candidate = FALSE;
-    return changed;
+    return target->fresh && _set(target, 0);
   }
 
+  const float ceiling = isfinite(report->ceiling) && report->ceiling > 0.0f
+                        ? report->ceiling : 0.0f;
   const float value = ceiling > 0.0f ? MIN(report->value, ceiling) : report->value;
   const int steps = dt_presenter_target_steps(value);
 
   if(target->fresh)
   {
     target->fresh = FALSE;
-    return _set(target, steps) || changed;
+    return _set(target, steps);
   }
 
   const gboolean rises = value > 1.0f
@@ -142,7 +139,7 @@ gboolean dt_presenter_target_report(dt_presenter_target_t *target,
   {
     // back within the target's band
     target->candidate = FALSE;
-    return changed;
+    return FALSE;
   }
 
   if(!target->candidate)
@@ -155,7 +152,7 @@ gboolean dt_presenter_target_report(dt_presenter_target_t *target,
   target->candidate_steps = steps;
   target->last_value = value;
 
-  return dt_presenter_target_tick(target, now) || changed;
+  return dt_presenter_target_tick(target, now);
 }
 
 float dt_presenter_target_headroom(const dt_presenter_target_t *target)

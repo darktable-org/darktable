@@ -237,11 +237,12 @@ backend's job. The policy is one pure function on a clock passed in
 - A report without a value keeps the target and drops a level waiting to
   settle.
 - A new generation (and a window's first report) forgets the target's
-  band: with a ceiling, the ceiling is the target at once, and values
-  settle under it, so a macOS EDR ramp of up to 2 s renders nothing on
-  the way: once in all where it ends at its potential (low brightness),
-  twice where it ends below (the ceiling, then the settled value);
-  without one, the first value is taken at once.
+  band: its first value is taken at once, clipped to the ceiling, and
+  until one comes the target is 1.0. The ceiling never stands in for a
+  value: it is what the screen could show, not what it shows now. On a
+  macOS cold start the first value is EDR's idle one, a change only above
+  1.0; the ramp of up to 2 s after it changes the target once, where it
+  ends.
 
 A settled change publishes the window's output with the new image headroom
 through `dt_presenter_window_set_output()`, which keeps the rest of what
