@@ -2254,9 +2254,9 @@ void dt_colorspaces_set_display_profile
 #endif
 
 #elif defined GDK_WINDOWING_QUARTZ
-  // every window's backing store is tagged sRGB by GTK (3.24.37 on) and
-  // converted to the screen by macOS, so there is nothing to ask: the
-  // system entries keep the sRGB they start with
+  // every window's backing store is tagged sRGB by GTK (3.24.37 on, which
+  // the build requires) and converted to the screen by macOS, so there is
+  // nothing to ask: the system entries keep the sRGB they start with
   return;
 #elif defined G_OS_WIN32
   GtkWidget *widget = (profile_type == DT_COLORSPACE_DISPLAY2)
