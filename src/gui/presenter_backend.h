@@ -19,12 +19,12 @@
 #pragma once
 
 /*
- * internal to the presenter: what presenter.c asks of a window's backend.
- * a window has one backend for as long as it exists, chosen at its first
- * presenting draw: layered (presenter_layers.c) where the platform
- * color-manages tagged content and has a transport for it, otherwise, or
- * with ui_last/display_force_cairo set, cairo (presenter_cairo.c). keeping
- * it for the window's life is a documented limit; see
+ * internal to the presenter: what presenter.c asks of a window's backend
+ * and of its platform. the backend is chosen at the window's first
+ * presenting draw, and again whenever the choice changes: layered
+ * (presenter_layers.c) while the platform color-manages the window's tagged
+ * content and has a transport for it, otherwise, or with
+ * ui_last/display_force_cairo set, cairo (presenter_cairo.c). see
  * dev-doc/display_presentation.md.
  */
 
@@ -61,6 +61,8 @@ typedef enum dt_presenter_kept_t
 } dt_presenter_kept_t;
 
 typedef struct dt_presenter_backend_t dt_presenter_backend_t;
+typedef struct dt_presenter_platform_t dt_presenter_platform_t;
+typedef struct dt_presenter_transport_t dt_presenter_transport_t;
 
 /*
  * every call takes the widget's data, which begin() creates; base is the
@@ -112,12 +114,34 @@ struct dt_presenter_backend_t
   void (*target)(dt_presenter_backend_t *self, const float headroom);
 };
 
+/*
+ * a native platform's side of a window, for as long as the window exists,
+ * whatever its backend: whether the platform color-manages the window's
+ * tagged content now, which a move to another monitor or a new color mode
+ * can change, and the transport of the layered backend
+ * (presenter_layers.h), which exists only while the window is native
+ */
+struct dt_presenter_platform_t
+{
+  // TRUE while the platform color-manages the window's tagged content. the
+  // platform calls dt_presenter_window_choose() when that changes
+  gboolean (*native)(dt_presenter_platform_t *self);
+  // the transport of the window's layers, or NULL if it cannot set up
+  dt_presenter_transport_t *(*transport)(dt_presenter_platform_t *self);
+  // the window is gone, after its backend
+  void (*free)(dt_presenter_platform_t *self);
+};
+
 typedef struct dt_presenter_window_t
 {
   GtkWidget *toplevel;
   // DT_COLORSPACE_DISPLAY for the main window, DISPLAY2 for the second
   dt_colorspaces_color_profile_type_t kind;
+  // NULL where the platform has no transport. the backend is layered if
+  // native is TRUE, and NULL while it is chosen
+  dt_presenter_platform_t *platform;
   dt_presenter_backend_t *backend;
+  gboolean native;
   // presenter.c's records of the window's presenting widgets
   GList *widgets;
   // the output the platform owns, as its backend set it, and the headroom
@@ -133,13 +157,13 @@ typedef struct dt_presenter_window_t
 /** the window's output as it is now */
 void dt_presenter_window_output(const dt_presenter_window_t *window,
                                 dt_display_output_t *output);
-/** for backends, at setup or later: the platform owns the window's output,
- * or gives it back to the system display profile with NULL. the image
- * headroom is the core's target, whatever output says. the window redraws
- * if its output changed (dt_colorspaces_set_window_output()) */
+/** for backends, at setup or later: the platform owns the window's output
+ * until the window is no longer native. the image headroom is the core's
+ * target, whatever output says. the window redraws if its output changed
+ * (dt_colorspaces_set_window_output()) */
 void dt_presenter_window_set_output(dt_presenter_window_t *window,
                                     const dt_display_output_t *output);
-/** for backends, whenever the platform says something about the screen's
+/** for platforms, whenever they say something about the screen's
  * headroom: the core settles its target from the reports, publishes it in
  * the window's output and gives it to the backend's target() */
 void dt_presenter_window_report_headroom(dt_presenter_window_t *window,
@@ -148,9 +172,15 @@ void dt_presenter_window_report_headroom(dt_presenter_window_t *window,
 float dt_presenter_window_target(const dt_presenter_window_t *window);
 /** for backends: draw the window's presenting widgets again */
 void dt_presenter_window_redraw(dt_presenter_window_t *window);
+/** for platforms: what decides the window's backend may have changed.
+ * choose it again, and switch to it if it is another one */
+void dt_presenter_window_choose(dt_presenter_window_t *window);
 
-/** the layered backend of window, or NULL if the platform has no
- * transport for it */
+/** the native platform of window, or NULL where the platform has no
+ * transport */
+dt_presenter_platform_t *dt_presenter_platform_new(dt_presenter_window_t *window);
+/** the layered backend of window on its platform's transport, or NULL if
+ * the transport cannot set up */
 dt_presenter_backend_t *dt_presenter_layered_new(dt_presenter_window_t *window);
 /** the cairo backend of window */
 dt_presenter_backend_t *dt_presenter_cairo_new(dt_presenter_window_t *window);

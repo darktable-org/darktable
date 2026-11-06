@@ -1372,15 +1372,18 @@ static void _target(dt_presenter_backend_t *self,
   if(w->transport->target) w->transport->target(w->transport, headroom);
 }
 
+dt_presenter_platform_t *dt_presenter_platform_new(dt_presenter_window_t *window)
+{
+#ifdef HAVE_WAYLAND
+  return dt_presenter_wayland_new(window->toplevel, window);
+#else
+  return NULL;
+#endif
+}
+
 dt_presenter_backend_t *dt_presenter_layered_new(dt_presenter_window_t *window)
 {
-  dt_presenter_transport_t *transport = NULL;
-#ifdef HAVE_WAYLAND
-  transport = dt_presenter_wayland_new(window->toplevel, window);
-  // the window paints with cairo on its system display profile. NULL takes
-  // back what a failed setup reported
-  if(!transport) dt_presenter_window_set_output(window, NULL);
-#endif
+  dt_presenter_transport_t *transport = window->platform->transport(window->platform);
   if(!transport) return NULL;
 
   _window_t *w = g_malloc0(sizeof(_window_t));

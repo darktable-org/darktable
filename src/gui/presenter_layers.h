@@ -71,8 +71,6 @@ typedef struct dt_presenter_reservation_t
   dt_presenter_encoding_t encoding;
 } dt_presenter_reservation_t;
 
-typedef struct dt_presenter_transport_t dt_presenter_transport_t;
-
 /*
  * what commit() shows, and what clear() takes away, must become visible
  * together with GTK's surface for the frame that drew it, or later, never
@@ -117,11 +115,11 @@ struct dt_presenter_transport_t
 void dt_presenter_window_present(dt_presenter_window_t *window);
 
 #ifdef HAVE_WAYLAND
-/** the Wayland transport for toplevel, or NULL if the compositor cannot do
- * it or its output is plain SDR sRGB: the window then paints with cairo on
- * its system display profile */
-dt_presenter_transport_t *dt_presenter_wayland_new(GtkWidget *toplevel,
-                                                   dt_presenter_window_t *window);
+/** the Wayland platform of toplevel, or NULL if the compositor cannot take
+ * the transport: the window then paints with cairo on its system display
+ * profile for as long as it exists */
+dt_presenter_platform_t *dt_presenter_wayland_new(GtkWidget *toplevel,
+                                                  dt_presenter_window_t *window);
 #endif
 
 // clang-format off

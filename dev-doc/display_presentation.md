@@ -189,7 +189,7 @@ markers are written as they are, saturated colors that mark in any output.
 ### Headroom target
 
 A native window's image headroom is a target the presenter core settles,
-not what the platform reports. A backend reports whenever the platform
+not what the platform reports. The window's platform reports whenever it
 says something about the screen (`dt_presenter_window_report_headroom()`,
 `dt_presenter_headroom_t` in `gui/presenter_target.h`): the peak over
 reference white now, or NAN when the platform has no value (the display
@@ -197,7 +197,7 @@ sleeps, macOS before EDR is engaged), the most the screen can show in the
 window if the platform says (macOS's potential EDR headroom), and a generation, which changes
 when earlier reports say nothing about this one: another screen or mode,
 a display woken up. A report never reaches pipes, and settling is never a
-backend's job. The policy is one pure function on a clock passed in
+platform's or a backend's job. The policy is one pure function on a clock passed in
 (`gui/presenter_target.c`, tested by `test_presenter_target`):
 
 - The level is log2 of the value, clipped to the ceiling, rounded down to
@@ -231,7 +231,9 @@ deliver, its frames keep the tone mapping they were rendered with: the
 transport clips them to the range of the image description in use, and the
 compositor clips or fits that range to the screen (KWin clamps under
 relative intent).
-A cairo window has headroom 1 and no target.
+A cairo window has headroom 1 and publishes no target; the target goes
+on settling from the platform's reports, so a window that becomes native
+again ([Backends](#backends)) starts at the screen's.
 
 Why settle: every target change reruns the window's pipes from the start,
 since `output_headroom` is in every cache line's hash
@@ -357,25 +359,32 @@ duplicate manager's preview, and the slideshow.
 
 ## Backends
 
-A window has one backend for as long as it exists, chosen when its first
-presenting widget draws (`gui/presenter.c`, `_window_get()`): layered if the
-platform has a transport and it can set up, otherwise cairo. With the
-preference `ui_last/display_force_cairo` set (preferences > miscellaneous),
-every window is a cairo window: an escape hatch for compositor or driver
-bugs in a native backend. A forced cairo window follows the cairo rule, the profile
-the platform publishes or else sRGB: colord on GNOME, the X atom on X11,
-sRGB on KWin. The key is read when the backend is chosen, so it takes
-effect for the main window at the next start.
+A window's backend is layered while its platform color-manages the
+window's tagged content and the transport sets up, otherwise cairo. With
+the preference `ui_last/display_force_cairo` set (preferences >
+miscellaneous), every window is a cairo window: an escape hatch for
+compositor or driver bugs in a native backend. A forced cairo window
+follows the cairo rule, the profile the platform publishes or else sRGB:
+colord on GNOME, the X atom on X11, sRGB on KWin. The key is read whenever
+the backend is chosen, so a change takes effect at the window's next
+choice, for the main window at the next start at the latest.
 
-That a window keeps its backend for as long as it exists is a limit. When
-the platform changes under the window (a Wayland output switches color
-mode, the window moves to a monitor described otherwise), the change
-takes effect when the window is opened again, for the main window after a
-restart. A native backend on Windows would meet it more often: Advanced
-Color is set per monitor and toggled by the user. Choosing the backend
-again (release the widgets, free the backend, give the output back,
-choose, redraw) would remove the limit, as Chromium follows the output
-space of the nearest monitor.
+The platform (`dt_presenter_platform_t` in `gui/presenter_backend.h`)
+watches the window for as long as it exists, whatever its backend, and its
+verdict can change while the window exists: a Wayland output switches
+color mode, or the window moves to a monitor described otherwise; on
+Windows, Advanced Color is set per monitor and toggled by the user. The
+backend is chosen when the window's first presenting widget draws and
+again on every new verdict (`dt_presenter_window_choose()` in
+`gui/presenter.c`), as Chromium picks the output color space again for the
+display a window is on. When the choice changes, every presenting widget's
+backend data goes, kept presentations included, the old backend is freed,
+the new one reports the window's output if it is native, or the core gives
+the output back to the system display profile, and the window draws again.
+Its producers then render for the new serial, and its frames are shown
+converted until they do. Where no transport exists, as on X11, macOS and
+Windows today, a window has no platform and is a cairo window for as long
+as it exists.
 
 The core, `gui/presenter.c`, keeps the widget records, the references on the frames
 of each widget's last draw, the test for a draw GTK clipped to a damaged
@@ -523,7 +532,8 @@ window's presenting widgets are drawn again.
 The transport reports the window's output, its image encoding and, as
 device, the profile GTK's own surface is shown in, through
 `dt_presenter_window_set_output()`, at setup and whenever it changes, and
-the screen's headroom through `dt_presenter_window_report_headroom()`; the
+the platform the screen's headroom through
+`dt_presenter_window_report_headroom()`; the
 image headroom of the window's output is the core's
 [headroom target](#headroom-target). The
 pipes of that window then render to that output, and everything GTK draws
@@ -532,8 +542,8 @@ there (thumbnail transforms, picker swatches, frames GTK draws through
 `dt_ioppr_get_gui_profile_info()`) converts to the device profile, sRGB,
 where a cairo window's device profile is its system display profile. A
 new headroom changes the image encoding only: that window's images are
-rendered again, thumbnails are not. When the window goes away, its output
-returns to its system display profile.
+rendered again, thumbnails are not. When the window goes away or stops
+being native, its output returns to its system display profile.
 
 Code is split by what it works around:
 
@@ -542,8 +552,9 @@ Code is split by what it works around:
   keeps the presentation, and computes the layers' size, scale and
   position in the toplevel. A GTK4 port, where widgets draw textures with
   color states, deletes it.
-- `gui/presenter_<platform>.c`: transport and timing. Setup and fallback,
-  output description and headroom reports, buffers, and `reserve()`,
+- `gui/presenter_<platform>.c`: the platform, which tells whether the
+  window is native and reports the screen's headroom, and the transport and
+  its timing: output description, buffers, and `reserve()`,
   `commit()`, `clear()`, `release()`, `free()` and `target()`, which
   describes the image for a new headroom target (`dt_presenter_transport_t` in
   `gui/presenter_layers.h`). A present is one transaction: `reserve()`
@@ -576,8 +587,12 @@ box.
 4 and `wp_color_manager_v1` with parametric descriptions, `ext_linear`, BT.2020
 primaries and `ABGR16161616F` shm buffers; `set_luminances` is optional
 (without it the output is SDR). Without the rest the window is on cairo.
+The platform keeps the globals, GDK's surface, its feedback and the
+preferred description; the transport the layers, their buffers and its
+image descriptions, made when the window becomes native and destroyed when
+it stops.
 
-The native backend also gives up on mutter's default color mode
+The platform also leaves mutter's default color mode to cairo
 (`_mutter_default_color_mode()`, [Workarounds](#workarounds)): the registry
 announces `gtk_shell1`, GTK's private protocol, which mutter implements and
 KWin, wlroots, Weston and Hyprland do not, and the surface's preferred
@@ -589,15 +604,14 @@ ramp with the profile assigned in Settings > Color (mutter#4597), so the
 window is a cairo window on its system display profile, which on GNOME is
 that profile, from colord, as on X11. Any other compositor describing plain
 SDR sRGB stays native. phoc, Phosh's compositor, announces `gtk_shell1`
-too and is treated the same way. Limits:
-
-- The choice is made once per window, with its backend, for the monitor it
-  is on then ([Backends](#backends)).
-- sway with a `color_profile` set only in sway describes its output as sRGB
-  while converting everything to that profile. A native window leaves that
-  conversion to sway; a cairo window on that output, forced or darktable
-  on XWayland, converts to the profile a second time when a tool such as
-  xiccd also publishes it to colord or the X atom.
+too and is treated the same way. The test is made on every preferred
+description, so a window follows a switch of the color mode or a move to a
+monitor in another one ([Backends](#backends)). Limit: sway with a
+`color_profile` set only in sway describes its output as sRGB while
+converting everything to that profile. A native window leaves that
+conversion to sway; a cairo window on that output, forced or darktable on
+XWayland, converts to the profile a second time when a tool such as xiccd
+also publishes it to colord or the X atom.
 
 The backend reports target max (else max) over reference luminance of the
 surface's preferred description as a hint, not a measurement, re-read
