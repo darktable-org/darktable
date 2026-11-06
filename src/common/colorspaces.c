@@ -2392,22 +2392,26 @@ void dt_colorspaces_set_display_profile
       if(WcsGetDefaultColorProfile(scope, device.DeviceKey, CPT_ICC, CPST_NONE, 0,
                                    name_size, name))
       {
-        // a file name in the color directory, which OpenColorProfileW() resolves
-        PROFILE location = { .dwType = PROFILE_FILENAME,
-                             .pProfileData = name,
-                             .cbDataSize = (wcslen(name) + 1) * sizeof(wchar_t) };
-        HPROFILE handle = OpenColorProfileW(&location, PROFILE_READ, FILE_SHARE_READ, OPEN_EXISTING);
-        if(handle)
+        // a path, or a file name in the color directory. read the file
+        // itself: a handle from OpenColorProfileW() is the WCS profile an
+        // ICC file may embed, whose bytes are XML
+        gchar *path = g_utf16_to_utf8(name, -1, NULL, NULL, NULL);
+        wchar_t directory[MAX_PATH] = { 0 };
+        DWORD directory_size = sizeof(directory);
+        if(path && !g_path_is_absolute(path)
+           && GetColorDirectoryW(NULL, directory, &directory_size))
         {
-          DWORD size = 0;
-          GetColorProfileFromHandle(handle, NULL, &size);
-          if(size > 0)
-          {
-            buffer = g_malloc(size);
-            if(GetColorProfileFromHandle(handle, buffer, &size)) buffer_size = size;
-          }
-          CloseColorProfile(handle);
+          gchar *dir = g_utf16_to_utf8(directory, -1, NULL, NULL, NULL);
+          gchar *joined = dir ? g_build_filename(dir, path, NULL) : NULL;
+          g_free(dir);
+          g_free(path);
+          path = joined;
         }
+        gsize size = 0;
+        if(path && g_path_is_absolute(path)
+           && g_file_get_contents(path, (gchar **)&buffer, &size, NULL))
+          buffer_size = size;
+        g_free(path);
       }
       g_free(name);
     }
