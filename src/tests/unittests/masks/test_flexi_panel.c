@@ -177,6 +177,27 @@ static void test_boost_shows_only_with_the_sliders(void **state)
   assert_false(dt_masks_model_param_row_visibility(AUTO, TRUE, FALSE, TRUE).boost);
 }
 
+// the always-shown option pins controls on top of the row's own choice: the
+// boost factor from the second level on, and the output slider at the third
+static void test_always_shown_pins_controls(void **state)
+{
+  const dt_masks_param_vis_t none = { TRUE, FALSE, FALSE };
+  dt_masks_param_vis_t v =
+    dt_masks_model_param_pin_visibility(none, DT_MASKS_PARAM_ALWAYS_INPUT, TRUE);
+  assert_false(v.output);
+  assert_false(v.boost);
+  v = dt_masks_model_param_pin_visibility(none, DT_MASKS_PARAM_ALWAYS_INPUT_BOOST, TRUE);
+  assert_false(v.output);
+  assert_true(v.boost);
+  v = dt_masks_model_param_pin_visibility(none, DT_MASKS_PARAM_ALWAYS_ALL, TRUE);
+  assert_true(v.output);
+  assert_true(v.boost);
+  // a channel with no boost factor has nothing to pin
+  v = dt_masks_model_param_pin_visibility(none, DT_MASKS_PARAM_ALWAYS_ALL, FALSE);
+  assert_true(v.output);
+  assert_false(v.boost);
+}
+
 // with nothing chosen, a row adapts: it shows the output slider only once its
 // range is in use, rather than a second slider that says nothing
 static void test_automatic_row_follows_the_output_range(void **state)
@@ -778,6 +799,7 @@ int main(void)
     cmocka_unit_test_teardown(test_a_shape_is_never_a_noop, _teardown),
     cmocka_unit_test_teardown(test_chosen_view_decides_the_sliders, _teardown),
     cmocka_unit_test_teardown(test_boost_shows_only_with_the_sliders, _teardown),
+    cmocka_unit_test_teardown(test_always_shown_pins_controls, _teardown),
     cmocka_unit_test_teardown(test_automatic_row_follows_the_output_range, _teardown),
     cmocka_unit_test_teardown(test_view_resolve, _teardown),
     cmocka_unit_test_teardown(test_swatch_span, _teardown),

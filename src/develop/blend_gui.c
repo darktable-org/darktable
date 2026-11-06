@@ -1637,6 +1637,25 @@ static dt_masks_param_view_t _param_row_view(const dt_masks_point_parametric_t *
                                            dt_masks_gui_param_channel_is_used(p, channel, 1));
 }
 
+static dt_masks_param_always_t _param_always_shown(void)
+{
+  return CLAMP(dt_conf_get_int("plugins/darkroom/masks/parametric_always_shown"),
+               DT_MASKS_PARAM_ALWAYS_INPUT, DT_MASKS_PARAM_ALWAYS_ALL);
+}
+
+// the controls a parametric element shows: its view and boost choice, with the
+// ones the "always shown controls" option pins on top
+static dt_masks_param_vis_t _param_row_vis(const dt_masks_point_parametric_t *p,
+                                           const dt_iop_gui_blendif_channel_t *channel)
+{
+  const gboolean boost = channel && channel->boost_factor_enabled;
+  return dt_masks_model_param_pin_visibility(
+    dt_masks_model_param_row_visibility(dt_masks_param_get_view(p),
+                                        dt_masks_gui_param_channel_is_used(p, channel, 1), boost,
+                                        dt_masks_param_boost_with_sliders(p)),
+    _param_always_shown(), boost);
+}
+
 static gboolean _param_row_picker_apply(dt_iop_module_t *module,
                                         GtkWidget *picker,
                                         dt_dev_pixelpipe_t *pipe);
@@ -2903,6 +2922,21 @@ static void _masks_rebuild_for_option(dt_iop_module_t *module)
   _queue_masks_list_rebuild(module);
 }
 
+// "always shown controls" (same menu): which of a parametric element's controls
+// the controls header's toggle leaves alone. Rows are rebuilt for it, and the
+// selected element's controls follow at once
+static void _controls_options_sync(dt_iop_gui_blend_data_t *bd);
+
+static void _masks_always_shown_changed(GtkWidget *combo, dt_iop_module_t *module)
+{
+  if(DT_IN_GUI_UPDATE()) return;
+  dt_conf_set_int("plugins/darkroom/masks/parametric_always_shown",
+                  dt_bauhaus_combobox_get(combo));
+  _masks_rebuild_for_option(module);
+  dt_iop_gui_blend_data_t *bd = module ? module->blend_data : NULL;
+  if(bd) _controls_options_sync(bd);
+}
+
 static void _masks_preset_notes_toggled(GtkToggleButton *mi, dt_iop_module_t *module)
 {
   dt_conf_set_bool("plugins/darkroom/masks/show_preset_notes",
@@ -3013,15 +3047,28 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
 
   _MASKS_OPT_CHECK(
     hover, _("preview channel under cursor"),
-    _("when enabled, resting the pointer on one of the\n"
+    _("when enabled (default), resting the pointer on one of the\n"
       "add-parametric-element buttons displays that channel in the\n"
       "center view, so you can see what a channel looks like before\n"
       "adding an element for it.\n"
       "the preview only starts after a short pause, so passing over\n"
-      "the buttons on the way elsewhere costs nothing.\n"
-      "disabled by default."),
+      "the buttons on the way elsewhere costs nothing."),
     _preview_on_hover_is_on(),
     _masks_preview_on_hover_toggled)
+
+  GtkWidget *always = dt_masks_gui_pref_combo(
+    box, _("always shown controls"),
+    _("the controls of a parametric element that stay in view.\n"
+      "the toggle in the controls header shows or hides the rest.\n"
+      "with all of them always shown, the toggle is not displayed."));
+  DT_ENTER_GUI_UPDATE();
+  dt_bauhaus_combobox_add(always, _("input channel"));
+  dt_bauhaus_combobox_add(always, _("input channel and boost factor"));
+  dt_bauhaus_combobox_add(always, _("both channels and boost factor"));
+  dt_bauhaus_combobox_set(always, dt_conf_get_int("plugins/darkroom/masks/parametric_always_shown"));
+  DT_LEAVE_GUI_UPDATE();
+  g_signal_connect(G_OBJECT(always), "value-changed", G_CALLBACK(_masks_always_shown_changed),
+                   module);
 
   dt_masks_gui_pref_section(box, _("editing options"), NULL);
 
@@ -13899,6 +13946,15 @@ dt_masks_param_vis_t dt_masks_model_param_row_visibility(const dt_masks_param_vi
                                  .boost = boost_enabled && boost_with_sliders };
 }
 
+dt_masks_param_vis_t dt_masks_model_param_pin_visibility(dt_masks_param_vis_t vis,
+                                                         const dt_masks_param_always_t always,
+                                                         const gboolean boost_enabled)
+{
+  if(always >= DT_MASKS_PARAM_ALWAYS_INPUT_BOOST) vis.boost = boost_enabled;
+  if(always >= DT_MASKS_PARAM_ALWAYS_ALL) vis.output = TRUE;
+  return vis;
+}
+
 static void _param_slider_fit_picker(dt_masks_param_row_editor_t *ed);
 
 // ---- the swatch ------------------------------------------------------------
@@ -14085,8 +14141,7 @@ static void _param_swatch_refresh(const dt_masks_param_row_editor_t *ed)
   if(!ed->swatch) return;
   const dt_masks_point_parametric_t *p = _param_point(ed->formid);
   const dt_iop_gui_blendif_channel_t *channels = _param_channels(p);
-  const gboolean both =
-    channels && _param_row_view(p, &channels[p->channel]) == DT_MASKS_PARAM_VIEW_BOTH;
+  const gboolean both = channels && _param_row_vis(p, &channels[p->channel]).output;
   const gboolean inverted = _param_row_inverted(ed->module, ed->formid);
   GList *strips = gtk_container_get_children(GTK_CONTAINER(ed->swatch));
   int i = 0;
@@ -14110,17 +14165,22 @@ static void _controls_options_sync(dt_iop_gui_blend_data_t *bd)
     dt_is_valid_maskid(bd->controls_param_formid) ? _param_point(bd->controls_param_formid) : NULL;
   const dt_iop_gui_blendif_channel_t *channels = _param_channels(p);
   const dt_iop_gui_blendif_channel_t *channel = channels ? &channels[p->channel] : NULL;
-  gtk_widget_set_visible(bd->controls_output_btn, p != NULL);
+  const dt_masks_param_always_t always = _param_always_shown();
+  // with everything always shown there is nothing for the toggle to hide
+  gtk_widget_set_visible(bd->controls_output_btn, p != NULL && always < DT_MASKS_PARAM_ALWAYS_ALL);
   if(!p) return;
   DT_ENTER_GUI_UPDATE();
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->controls_output_btn),
                                _param_row_view(p, channel) == DT_MASKS_PARAM_VIEW_BOTH);
   DT_LEAVE_GUI_UPDATE();
+  const gboolean boost = channel && channel->boost_factor_enabled;
   gtk_widget_set_tooltip_text(
     bd->controls_output_btn,
-    channel && channel->boost_factor_enabled
-      ? _("show the output slider and the boost factor\nthe input slider is always shown")
-      : _("show the output slider\nthe input slider is always shown"));
+    always == DT_MASKS_PARAM_ALWAYS_INPUT_BOOST || !boost
+      ? (always == DT_MASKS_PARAM_ALWAYS_INPUT_BOOST && boost
+           ? _("show the output slider\nthe input slider and the boost factor are always shown")
+           : _("show the output slider\nthe input slider is always shown"))
+      : _("show the output slider and the boost factor\nthe input slider is always shown"));
 }
 
 static void _update_param_row_visibility(dt_masks_param_row_editor_t *ed)
@@ -14130,11 +14190,7 @@ static void _update_param_row_visibility(dt_masks_param_row_editor_t *ed)
   const dt_iop_gui_blendif_channel_t *channels = _param_channels(p);
   const dt_iop_gui_blendif_channel_t *channel = channels ? &channels[p->channel] : NULL;
 
-  const gboolean out_used = dt_masks_gui_param_channel_is_used(p, channel, 1);
-  const dt_masks_param_vis_t vis =
-    dt_masks_model_param_row_visibility(dt_masks_param_get_view(p), out_used,
-                                        channel && channel->boost_factor_enabled,
-                                        dt_masks_param_boost_with_sliders(p));
+  const dt_masks_param_vis_t vis = _param_row_vis(p, channel);
 
   // the picker box keeps its width whatever the slider shows, which is what
   // the slider's margin is fitted to (see _param_slider_fit_picker). A drag
@@ -14306,7 +14362,9 @@ static void _controls_options_toggled(GtkToggleButton *btn, dt_iop_module_t *mod
   const dt_iop_gui_blendif_channel_t *channels = _param_channels(p);
   const gboolean boost = channels && channels[p->channel].boost_factor_enabled;
   dt_masks_param_set_view(p, on ? DT_MASKS_PARAM_VIEW_BOTH : DT_MASKS_PARAM_VIEW_INPUT);
-  if(boost) dt_masks_param_set_boost_with_sliders(p, on);
+  // the boost factor is the toggle's to show only when it is not pinned
+  if(boost && _param_always_shown() == DT_MASKS_PARAM_ALWAYS_INPUT)
+    dt_masks_param_set_boost_with_sliders(p, on);
   dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
   // the history item may have rebuilt the list, and the row with it

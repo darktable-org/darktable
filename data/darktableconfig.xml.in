@@ -3671,7 +3671,7 @@
   <dtconfig>
     <name>plugins/darkroom/blend/preview_channel_on_hover</name>
     <type>bool</type>
-    <default>false</default>
+    <default>true</default>
     <shortdescription>preview the channel under the cursor</shortdescription>
     <longdescription>while enabled, resting the pointer on one of the add-parametric-element buttons displays that channel in the center view; the preview only starts after a short pause, so passing over the buttons costs nothing</longdescription>
   </dtconfig>
@@ -3681,6 +3681,13 @@
     <default>true</default>
     <shortdescription>reuse the last picked area</shortdescription>
     <longdescription>while enabled, a parametric mask element's color picker starts from the area the module's last pick used and sets the range from it at once, so one area can set the range of several channels in turn; the first pick still waits for an area dragged on the image</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/parametric_always_shown</name>
+    <type min="0" max="2">int</type>
+    <default>0</default>
+    <shortdescription>always shown controls of parametric elements</shortdescription>
+    <longdescription>which controls of a parametric mask element the controls header's toggle leaves in view: 0 the input channel, 1 the input channel and the boost factor, 2 both channels and the boost factor, which hides the toggle</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/solo_edit_mode</name>
@@ -3765,6 +3772,20 @@
     <default>0</default>
     <shortdescription/>
     <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/opacity_not_sticky</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>start new shapes at full opacity</shortdescription>
+    <longdescription>while enabled, a new mask shape always starts at 100% opacity; while disabled, it starts at the opacity last used by any shape</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/blend/masks_panel_position</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>mask panel position</shortdescription>
+    <longdescription>where the blend mask panel is shown: 0 embedded within each module, 1 as a utility module in the left panel, 2 as a separate panel beside the canvas</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/opacity</name>
