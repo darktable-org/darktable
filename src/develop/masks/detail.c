@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2025 darktable developers.
+    Copyright (C) 2013-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -169,7 +169,7 @@ void dt_masks_calc_detail_blend(float *const restrict src,
 {
   if(!src || !out) return;
 
-  const float ithreshold = 16.0f / MAX(1e-7, threshold);
+  const float ithreshold = 16.0f / MAX(1e-7f, threshold);
   DT_OMP_FOR_SIMD(aligned(src, out : 64))
   for(size_t idx = 0; idx < msize; idx++)
   {

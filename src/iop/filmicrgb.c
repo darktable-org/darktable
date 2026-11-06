@@ -2241,20 +2241,20 @@ static inline cl_int reconstruct_highlights_cl(const cl_mem in, const cl_mem mas
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
+  const size_t sizes[2] = { width, height };
 
   // wavelets scales
   const int scales = get_scales(roi_in, piece);
 
   // wavelets scales buffers
-  const cl_mem LF_even = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4); // low-frequencies RGB
-  const cl_mem LF_odd = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);  // low-frequencies RGB
-  const cl_mem HF_RGB = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);  // high-frequencies RGB
-  const cl_mem HF_grey = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4); // high-frequencies RGB backup
+  const cl_mem LF_even = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4); // low-frequencies RGB
+  const cl_mem LF_odd = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);  // low-frequencies RGB
+  const cl_mem HF_RGB = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);  // high-frequencies RGB
+  const cl_mem HF_grey = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4); // high-frequencies RGB backup
 
   // alloc a permanent reusable buffer for intermediate computations - avoid multiple alloc/free
-  const cl_mem temp = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);;
-  const cl_mem reconstructed_temp = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
+  const cl_mem temp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);;
+  const cl_mem reconstructed_temp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(!LF_even || !LF_odd || !HF_RGB || !HF_grey || !temp || !reconstructed_temp)
   {
     dt_control_log(_("filmic highlights reconstruction failed to allocate memory on GPU"));
@@ -2394,8 +2394,6 @@ int process_cl(dt_iop_module_t *self,
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  const size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-
   cl_mem in = dev_in;
   cl_mem inpainted = NULL;
   cl_mem reconstructed = NULL;
@@ -2459,7 +2457,7 @@ int process_cl(dt_iop_module_t *self,
   if(err != CL_SUCCESS) goto error;
 
   // build a mask of clipped pixels
-  mask = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float));
+  mask = dt_opencl_alloc_device(devid, width, height, sizeof(float));
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_filmic_mask, width, height,
     CLARG(in), CLARG(mask), CLARG(width),
     CLARG(height), CLARG(d->normalize), CLARG(d->reconstruct_feather), CLARG(clipped));
@@ -2493,14 +2491,14 @@ int process_cl(dt_iop_module_t *self,
   {
     // Inpaint noise
     const float noise_level = d->noise_level / scale;
-    inpainted = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
+    inpainted = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_filmic_inpaint_noise, width, height,
       CLARG(in), CLARG(mask), CLARG(inpainted),
       CLARG(width), CLARG(height), CLARG(noise_level), CLARG(d->reconstruct_threshold), CLARG(d->noise_distribution));
     if(err != CL_SUCCESS) goto error;
 
     // first step of highlight reconstruction in RGB
-    reconstructed = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
+    reconstructed = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
     err = reconstruct_highlights_cl(inpainted, mask, reconstructed, DT_FILMIC_RECONSTRUCT_RGB, gd, d, piece, roi_in);
     if(err != CL_SUCCESS) goto error;
     dt_opencl_release_mem_object(inpainted);
@@ -2508,8 +2506,8 @@ int process_cl(dt_iop_module_t *self,
 
     if(d->high_quality_reconstruction > 0)
     {
-      ratios = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
-      norms = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float));
+      ratios = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+      norms = dt_opencl_alloc_device(devid, width, height, sizeof(float));
 
       if(norms && ratios)
       {
