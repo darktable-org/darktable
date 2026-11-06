@@ -2903,6 +2903,13 @@ static void _masks_rebuild_for_option(dt_iop_module_t *module)
   _queue_masks_list_rebuild(module);
 }
 
+static void _masks_auto_fold_changed(GtkWidget *combo, dt_iop_module_t *module)
+{
+  dt_conf_set_int("plugins/darkroom/masks/fold_run_length",
+                  GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(combo)));
+  _masks_rebuild_for_option(module);
+}
+
 static void _masks_preset_notes_toggled(GtkToggleButton *mi, dt_iop_module_t *module)
 {
   dt_conf_set_bool("plugins/darkroom/masks/show_preset_notes",
@@ -2983,6 +2990,28 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
       "any processing module that has a mask applied."),
     dt_conf_get_bool("darkroom/ui/show_mask_indicator"),
     _masks_show_indicator_toggled)
+
+  GtkWidget *fold = dt_masks_gui_pref_combo(
+    box, _("auto-fold runs"),
+    _("a run of this many elements or more, one after the other,\n"
+      "shows only its top element, with a row standing in for the\n"
+      "rest, which opens them. groups are never folded, and end a\n"
+      "run, so the structure of the mask stays in view.\n"
+      "a run that holds the selection, or the shape being drawn,\n"
+      "is never folded away from it.\n"
+      "default 3."));
+  // state first, handler after, as the panel position combo box does
+  DT_ENTER_GUI_UPDATE();
+  dt_bauhaus_combobox_add_full(fold, _("disabled"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT,
+                               GINT_TO_POINTER(0), NULL, TRUE);
+  dt_bauhaus_combobox_add_full(fold, _("runs of 3"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT,
+                               GINT_TO_POINTER(3), NULL, TRUE);
+  dt_bauhaus_combobox_add_full(fold, _("runs of 5"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT,
+                               GINT_TO_POINTER(5), NULL, TRUE);
+  dt_bauhaus_combobox_set_from_value(
+    fold, dt_conf_get_int("plugins/darkroom/masks/fold_run_length"));
+  DT_LEAVE_GUI_UPDATE();
+  g_signal_connect(G_OBJECT(fold), "value-changed", G_CALLBACK(_masks_auto_fold_changed), module);
 
   dt_masks_gui_pref_section(box, _("shape element options"),
                             _("how new shapes start"));
@@ -3695,6 +3724,11 @@ static gboolean _rebuild_masks_list_idle(gpointer user_data)
   {
     bd->masks_rebuild_pending = FALSE;
     bd->masks_rebuild_idle_id = 0;
+    if(bd->masks_rebuild_held)
+    {
+      bd->masks_rebuild_held = FALSE;
+      bd->masks_rebuild_suppressed = FALSE;
+    }
   }
   dt_masks_gui_build_list(module);
   // a rename asked for while another was open (_rename_after_pending)
@@ -3714,6 +3748,19 @@ static void _queue_masks_list_rebuild(dt_iop_module_t *module)
   if(!bd || bd->masks_rebuild_pending) return;
   bd->masks_rebuild_pending = TRUE;
   bd->masks_rebuild_idle_id = g_idle_add(_rebuild_masks_list_idle, (gpointer)module);
+}
+
+void dt_iop_gui_blend_masks_hold_rebuild(dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = module ? module->blend_data : NULL;
+  if(!bd || !bd->masks_list_box || bd->masks_rebuild_suppressed) return;
+  bd->masks_rebuild_suppressed = TRUE;
+  bd->masks_rebuild_held = TRUE;
+  // before the repaint, so that the list goes from what it was to what it is
+  if(bd->masks_rebuild_idle_id) g_source_remove(bd->masks_rebuild_idle_id);
+  bd->masks_rebuild_pending = TRUE;
+  bd->masks_rebuild_idle_id = g_idle_add_full(G_PRIORITY_HIGH_IDLE, _rebuild_masks_list_idle,
+                                              module, NULL);
 }
 
 // the modules sharing a form all show it as linked, so a change of who uses
@@ -6472,6 +6519,93 @@ static void _show_expanded_box(GtkWidget *btn, const char *box_key, const gboole
   gtk_widget_queue_resize(box);
 }
 
+// a long group shows its top elements and, in place of the rest, a "more" row
+// that opens them, and the first element of the run, once open, carries a
+// marker on the rail that folds them again (see _masks_rail_draw). The rest
+// are tagged "tail-row" and the "more" row "tail-more" on the members box; one hidden while the list was built is also
+// tagged "tail-fresh": it never went through the show_all of
+// _masks_panel_pack, which no_show_all keeps it out of, so showing it takes a
+// show_all of its own
+static void _tail_show(GtkWidget *w, const gboolean show, const gboolean building)
+{
+  if(show)
+  {
+    const gboolean fresh = g_object_get_data(G_OBJECT(w), "tail-fresh") != NULL;
+    g_object_set_data(G_OBJECT(w), "tail-fresh", NULL);
+    gtk_widget_set_no_show_all(w, FALSE);
+    if(fresh) gtk_widget_show_all(w);
+    else gtk_widget_show(w);
+  }
+  else
+  {
+    gtk_widget_set_no_show_all(w, TRUE);
+    gtk_widget_hide(w);
+    if(building) g_object_set_data(G_OBJECT(w), "tail-fresh", GINT_TO_POINTER(1));
+  }
+}
+
+// repaint the run nodes, which an overlay draws and so does not follow the list
+// on its own: `w` is the list or anything in it
+static void _marks_redraw(GtkWidget *w)
+{
+  for(; w; w = gtk_widget_get_parent(w))
+  {
+    GtkWidget *marks = g_object_get_data(G_OBJECT(w), "marks");
+    if(marks)
+    {
+      gtk_widget_queue_draw(marks);
+      return;
+    }
+  }
+}
+
+// open or close the run `key` folded in the members box `box`, or every run
+// there when `key` is INVALID_MASKID
+static void _tail_set_open(GtkWidget *box,
+                           const gboolean open,
+                           const gboolean building,
+                           const dt_mask_id_t key)
+{
+  GList *kids = gtk_container_get_children(GTK_CONTAINER(box));
+  for(GList *k = kids; k; k = g_list_next(k))
+  {
+    GtkWidget *w = k->data;
+    if(key != INVALID_MASKID && _widget_id(w, "tail-key") != key) continue;
+    if(g_object_get_data(G_OBJECT(w), "tail-head"))
+      g_object_set_data(G_OBJECT(w), "tail-head-open", GINT_TO_POINTER(open));
+    if(g_object_get_data(G_OBJECT(w), "tail-row")) _tail_show(w, open, building);
+    else if(g_object_get_data(G_OBJECT(w), "tail-more")) _tail_show(w, !open, building);
+  }
+  g_list_free(kids);
+  gtk_widget_queue_resize(box);
+  _marks_redraw(box);
+}
+
+// remember group `cid`'s tail as open or not, across list rebuilds (see
+// bd->masks_groups_tail)
+static void _tail_remember(dt_iop_gui_blend_data_t *bd, const dt_mask_id_t cid, const gboolean open)
+{
+  if(!bd->masks_groups_tail)
+    bd->masks_groups_tail = g_hash_table_new(g_direct_hash, g_direct_equal);
+  g_hash_table_insert(bd->masks_groups_tail, GINT_TO_POINTER(cid), GINT_TO_POINTER(open));
+}
+
+static void _tail_more_pressed(GtkGestureSingle *gesture,
+                               const int n_press,
+                               const double x,
+                               const double y,
+                               GtkWidget *more)
+{
+  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
+  dt_gui_claim(gesture);
+  dt_iop_module_t *module = g_object_get_data(G_OBJECT(more), "module");
+  dt_iop_gui_blend_data_t *bd = module ? module->blend_data : NULL;
+  if(!bd) return;
+  const dt_mask_id_t key = _widget_id(more, "tail-key");
+  _tail_remember(bd, key, TRUE);
+  _tail_set_open(gtk_widget_get_parent(more), TRUE, FALSE, key);
+}
+
 // TRUE while code flips group chevrons itself (_reveal_nesting,
 // _reveal_containers_for_row). That re-enters _group_expand_toggled, which
 // must still update the state and visibility but not take the flip for a
@@ -8667,6 +8801,7 @@ void dt_masks_gui_reset_mask_core(dt_iop_module_t *module)
   if(bd->masks_refine_bypassed) g_hash_table_remove_all(bd->masks_refine_bypassed);
   dt_pthread_mutex_unlock(&bd->lock);
   if(bd->masks_groups_expanded) g_hash_table_remove_all(bd->masks_groups_expanded);
+  if(bd->masks_groups_tail) g_hash_table_remove_all(bd->masks_groups_tail);
   bd->masks_refine_scope_kind = REFINE_SCOPE_GLOBAL;
   bd->masks_refine_scope_formid = INVALID_MASKID;
   _queue_link_peers_rebuild(module);
@@ -9195,6 +9330,8 @@ static void
 _reveal_containers_for_row(dt_iop_module_t *module, GtkWidget *row, const dt_mask_id_t id)
 {
   dt_iop_gui_blend_data_t *bd = module->blend_data;
+  // a row already showing has nothing to reveal
+  if(row && gtk_widget_is_visible(row)) return;
   dt_masks_form_t *grp = dt_masks_gui_module_mask_group(module);
   const dt_mask_id_t gcid = dt_masks_gui_group_cid_of_form(grp, id);
   if(dt_is_valid_maskid(gcid))
@@ -9202,6 +9339,17 @@ _reveal_containers_for_row(dt_iop_module_t *module, GtkWidget *row, const dt_mas
     _remember_expanded(bd, gcid, TRUE);
     if(bd->masks_list_box)
       _set_chevron(_find_group_expand_toggle(GTK_WIDGET(bd->masks_list_box), gcid), TRUE, FALSE);
+  }
+  // a row folded away, or inside a group that is, shows with its runs
+  for(GtkWidget *w = row; w; w = gtk_widget_get_parent(w))
+  {
+    GtkWidget *box = gtk_widget_get_parent(w);
+    if(box && g_object_get_data(G_OBJECT(w), "tail-row"))
+    {
+      const dt_mask_id_t key = _widget_id(w, "tail-key");
+      _tail_remember(bd, key, TRUE);
+      _tail_set_open(box, TRUE, FALSE, key);
+    }
   }
   _reveal_nesting(module, id);
 }
@@ -13701,6 +13849,7 @@ static DTGTKCairoPaintIconFunc _kind_icon_paint(const guint kind)
 static void _pack_group_members(dt_iop_module_t *module,
                                 dt_masks_form_t *grp,
                                 GtkWidget *container,
+                                const dt_mask_id_t cid,
                                 GList *fids);
 static void _pack_subgroup(dt_iop_module_t *module, dt_masks_form_t *sub, GtkWidget *box);
 static gboolean _nested_as_group(const dt_masks_point_group_t *pt, const dt_masks_form_t *form);
@@ -16150,6 +16299,12 @@ dt_hash_t dt_masks_gui_list_signature(dt_iop_module_t *module)
   const guint64 fold = _fold_flag_table(bd->masks_groups_expanded);
   sig = dt_hash(sig, &fold, sizeof(fold));
 
+  // which runs are open, and how long a run is before it folds
+  const guint64 tail = _fold_flag_table(bd->masks_groups_tail);
+  sig = dt_hash(sig, &tail, sizeof(tail));
+  const int run_length = dt_conf_get_int("plugins/darkroom/masks/fold_run_length");
+  sig = dt_hash(sig, &run_length, sizeof(run_length));
+
   // the shape being drawn for this module, which is not in grp->points: its
   // row comes and goes with it. Its type is enough, as the pending row's
   // sliders update in place (dt_iop_gui_blend_sync_pending_ai_sliders). What
@@ -16686,13 +16841,24 @@ static void _pack_group(dt_iop_module_t *module,
   const gboolean has_selected = _members_hold(formids, bd->panel_selected_formid)
                                 || _members_hold(formids, bd->panel_selected_group_cid);
 
-  // open unless collapsed by hand, and always while it holds the selection
-  const gboolean group_expanded =
-    has_selected || !bd->masks_groups_expanded
+  // where a shape being drawn lands (see _recompute_insert_hint)
+  const gboolean pending_here =
+    pending_form
+    && (!grp
+        || (bd->insert_active
+            && dt_masks_gui_group_cid_of_form(grp, bd->insert_after_fid) == (dt_mask_id_t)cid));
+  // open unless collapsed by hand, and always while it holds the selection or
+  // where a shape is being drawn, which a nested group does too. A forced
+  // opening is not the user's, so it is not remembered
+  const gboolean open_pref =
+    !bd->masks_groups_expanded
     || !g_hash_table_contains(bd->masks_groups_expanded, GUINT_TO_POINTER(cid))
     || GPOINTER_TO_INT(g_hash_table_lookup(bd->masks_groups_expanded, GUINT_TO_POINTER(cid)));
+  const gboolean pending_below = pending_form && !pending_here && bd->insert_active
+                                 && _members_hold(formids, bd->insert_after_fid);
+  const gboolean group_expanded = open_pref || has_selected || pending_here || pending_below;
 
-  if(group_expanded) _remember_expanded(bd, cid, TRUE);
+  if(open_pref) _remember_expanded(bd, cid, TRUE);
 
   // an empty group has nothing to show or hide
   GtkWidget *group_expand_toggle = NULL;
@@ -16826,7 +16992,7 @@ static void _pack_group(dt_iop_module_t *module,
   if(group_expand_toggle)
     g_object_set_data(G_OBJECT(group_expand_toggle), "members-box", members_box);
 
-  _pack_group_members(module, grp, members_box, g_list_reverse(g_list_copy(formids)));
+  _pack_group_members(module, grp, members_box, cid, g_list_reverse(g_list_copy(formids)));
   // the gaps between its members are placed against them (see _drop_at)
   g_object_set_data(G_OBJECT(members_box), "drop-list-owner", group_block);
   g_object_set_data(G_OBJECT(group_block), "drop-list", members_box);
@@ -16836,11 +17002,10 @@ static void _pack_group(dt_iop_module_t *module,
   // (see _recompute_insert_hint), show its disposable placeholder row at the
   // top of this group's members -- exactly where the real row lands once it
   // commits (a new element is inserted above the group's current top member).
-  if(pending_form
-     && (!grp
-         || (bd->insert_active
-             && dt_masks_gui_group_cid_of_form(grp, bd->insert_after_fid) == (dt_mask_id_t)cid)))
+  if(pending_here)
+  {
     dt_gui_box_add(members_box, _make_pending_shape_row(module, pending_form));
+  }
 
   // a childless box would still open a gap under the header with its
   // padding: hidden, by its children rather than `empty`, which counts only
@@ -16897,7 +17062,9 @@ static void _pack_subgroup(dt_iop_module_t *module, dt_masks_form_t *sub, GtkWid
 // header line (the group opacity slider)
 static GtkWidget *_mask_row_header(GtkWidget *w)
 {
-  if(_has_class(w, "dt_masks_header")) return w;
+  // the "more" row of a folded run is a header line to its rail: it gets a
+  // tick, and the run's node (see _run_markers_each)
+  if(_has_class(w, "dt_masks_header") || _has_class(w, "dt_masks_more")) return w;
   if(!GTK_IS_CONTAINER(w)) return NULL;
   GtkWidget *found = NULL;
   GList *kids = gtk_container_get_children(GTK_CONTAINER(w));
@@ -16957,6 +17124,127 @@ static _walk_t _frames_step(GtkWidget *w, gpointer data)
   else if(_has_class(w, "dt_masks_header") && w != f->framed_header && _is_marked(w))
     _frame_widget(f, w);
   return WALK_INTO;
+}
+
+#define DT_MASKS_RUN_MARKER_RADIUS DT_PIXEL_APPLY_DPI(5)
+
+// a run's node is on the rail at the tick of the first of its folded elements,
+// or of the "more" row that stands in for them while it is folded: a minus
+// while the run is open, which folds it, a plus while it is folded, which opens it. Drawn on an overlay over the
+// list (see _marks_position), as the rail is the list's own left edge and the
+// list clips what it draws. `fn` is called with the centre of each, in `to`
+// coordinates, until it returns TRUE; that returns the row
+static GtkWidget *_run_markers_each(GtkWidget *w, GtkWidget *to,
+                                    gboolean (*fn)(GtkWidget *, int, int, gpointer),
+                                    gpointer data)
+{
+  if(_has_class(w, "dt_masks_group_members"))
+  {
+    GtkStyleContext *ctx = gtk_widget_get_style_context(w);
+    GtkBorder border;
+    gtk_style_context_get_border(ctx, gtk_style_context_get_state(ctx), &border);
+    GList *kids = gtk_container_get_children(GTK_CONTAINER(w));
+    for(GList *k = kids; k; k = g_list_next(k))
+    {
+      GtkWidget *child = k->data;
+      GtkWidget *hdr = gtk_widget_get_visible(child) && g_object_get_data(G_OBJECT(child), "tail-head")
+                         ? _mask_row_header(child) : NULL;
+      if(!hdr || !gtk_widget_get_visible(hdr)) continue;
+      GtkStyleContext *mctx = gtk_widget_get_style_context(hdr);
+      GtkBorder margin;
+      gtk_style_context_get_margin(mctx, gtk_style_context_get_state(mctx), &margin);
+      const int line = gtk_widget_get_allocated_height(hdr) - margin.top - margin.bottom;
+      int hy = 0, rx = 0, unused = 0;
+      if(!gtk_widget_translate_coordinates(hdr, to, 0, margin.top + line / 2, &unused, &hy)
+         || !gtk_widget_translate_coordinates(w, to, border.left / 2, 0, &rx, &unused))
+        continue;
+      if(fn(child, rx, hy, data))
+      {
+        g_list_free(kids);
+        return child;
+      }
+    }
+    g_list_free(kids);
+  }
+  if(!GTK_IS_CONTAINER(w)) return NULL;
+  GtkWidget *found = NULL;
+  GList *kids = gtk_container_get_children(GTK_CONTAINER(w));
+  for(GList *k = kids; k && !found; k = g_list_next(k))
+    found = _run_markers_each(k->data, to, fn, data);
+  g_list_free(kids);
+  return found;
+}
+
+typedef struct _run_marker_draw_t
+{
+  cairo_t *cr;
+  GdkRGBA fg;
+  gpointer hovered;
+} _run_marker_draw_t;
+
+static gboolean _run_marker_draw_one(GtkWidget *row, const int x, const int y, gpointer data)
+{
+  _run_marker_draw_t *d = data;
+  cairo_t *cr = d->cr;
+  const gboolean hot = d->hovered == g_object_get_data(G_OBJECT(row), "tail-head");
+  const gboolean open = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(row), "tail-head-open"));
+  const double r = DT_MASKS_RUN_MARKER_RADIUS + (hot ? DT_PIXEL_APPLY_DPI(0.5) : 0.0);
+  cairo_arc(cr, x, y, r, 0.0, 2.0 * G_PI);
+  cairo_set_source_rgba(cr, d->fg.red, d->fg.green, d->fg.blue, hot ? 1.0 : 0.7);
+  cairo_fill(cr);
+  // the sign in the opposite shade, so that it reads on any theme
+  cairo_set_source_rgba(cr, 1.0 - d->fg.red, 1.0 - d->fg.green, 1.0 - d->fg.blue, 1.0);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.2));
+  const double a = r * 0.5;
+  cairo_move_to(cr, x - a, y);
+  cairo_line_to(cr, x + a, y);
+  if(!open)
+  {
+    cairo_move_to(cr, x, y - a);
+    cairo_line_to(cr, x, y + a);
+  }
+  cairo_stroke(cr);
+  return FALSE;
+}
+
+typedef struct _run_marker_hit_t
+{
+  double x, y;
+} _run_marker_hit_t;
+
+static gboolean _run_marker_hit_one(GtkWidget *row, const int x, const int y, gpointer data)
+{
+  const _run_marker_hit_t *h = data;
+  return hypot(h->x - x, h->y - y) <= DT_MASKS_RUN_MARKER_RADIUS + DT_PIXEL_APPLY_DPI(2);
+}
+
+static void _list_allocated(GtkWidget *list, GdkRectangle *alloc, gpointer user_data)
+{
+  _marks_redraw(list);
+}
+
+// the overlay the markers are drawn on: as wide as the list, and the room of a
+// node more to its left, which its rail would otherwise have half of
+static gboolean _marks_position(GtkOverlay *overlay, GtkWidget *marks, GdkRectangle *alloc,
+                                gpointer user_data)
+{
+  const int pad = (int)ceil(DT_MASKS_RUN_MARKER_RADIUS + DT_PIXEL_APPLY_DPI(2));
+  alloc->x = -pad;
+  alloc->y = 0;
+  alloc->width = gtk_widget_get_allocated_width(GTK_WIDGET(overlay)) + pad;
+  alloc->height = gtk_widget_get_allocated_height(GTK_WIDGET(overlay));
+  return TRUE;
+}
+
+static gboolean _marks_draw(GtkWidget *marks, cairo_t *cr, dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd || !bd->masks_list_box) return FALSE;
+  GtkWidget *list = GTK_WIDGET(bd->masks_list_box);
+  _run_marker_draw_t m = { cr, { 0 }, g_object_get_data(G_OBJECT(list), "marker-hover") };
+  gtk_style_context_get_color(gtk_widget_get_style_context(list), GTK_STATE_FLAG_NORMAL, &m.fg);
+  _run_markers_each(list, marks, _run_marker_draw_one, &m);
+  return FALSE;
 }
 
 static gboolean _masks_frames_draw(GtkWidget *list, cairo_t *cr, gpointer user_data)
@@ -17080,7 +17368,96 @@ static gboolean _masks_rail_draw(GtkWidget *box, cairo_t *cr, gpointer user_data
   gdk_cairo_set_source_rgba(cr, color);
   cairo_fill(cr);
   gdk_rgba_free(color);
+
   return FALSE;
+}
+
+// the cursor of a widget that clicks, once it has a window
+static void _pointer_cursor_realized(GtkWidget *w, gpointer user_data)
+{
+  GdkWindow *win = gtk_widget_get_window(w);
+  if(!win) return;
+  GdkCursor *cursor = gdk_cursor_new_from_name(gdk_window_get_display(win), "pointer");
+  gdk_window_set_cursor(win, cursor);
+  if(cursor) g_object_unref(cursor);
+}
+
+// what a node does, as its tooltip. `evbox` is the list's windowed box
+static gboolean _run_marker_tooltip(GtkWidget *evbox, const gint x, const gint y,
+                                    const gboolean keyboard, GtkTooltip *tooltip,
+                                    dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(keyboard || !bd || !bd->masks_list_box) return FALSE;
+  GtkWidget *list = GTK_WIDGET(bd->masks_list_box);
+  int lx = 0, ly = 0;
+  gtk_widget_translate_coordinates(evbox, list, x, y, &lx, &ly);
+  _run_marker_hit_t h = { lx, ly };
+  GtkWidget *row = _run_markers_each(list, list, _run_marker_hit_one, &h);
+  if(!row) return FALSE;
+  const int n = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(row), "tail-n"));
+  const gboolean open = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(row), "tail-head-open"));
+  gchar *text = open ? g_strdup_printf(ngettext("fold %d element below", "fold %d elements below", n), n)
+                     : g_strdup_printf(ngettext("unfold %d element below", "unfold %d elements below", n), n);
+  gtk_tooltip_set_text(tooltip, text);
+  g_free(text);
+  return TRUE;
+}
+
+// the pointer over a marker: it lights up, and the cursor says it clicks
+static void _run_marker_motion(GtkEventControllerMotion *controller,
+                               const double x,
+                               const double y,
+                               dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd || !bd->masks_list_box) return;
+  GtkWidget *list = GTK_WIDGET(bd->masks_list_box);
+  _run_marker_hit_t h = { x, y };
+  GtkWidget *evbox = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  // the controller's point is in its own widget's coordinates
+  int lx = 0, ly = 0;
+  gtk_widget_translate_coordinates(evbox, list, (int)x, (int)y, &lx, &ly);
+  h.x = lx;
+  h.y = ly;
+  GtkWidget *row = _run_markers_each(list, list, _run_marker_hit_one, &h);
+  gpointer key = row ? g_object_get_data(G_OBJECT(row), "tail-head") : NULL;
+  if(key == g_object_get_data(G_OBJECT(list), "marker-hover")) return;
+  g_object_set_data(G_OBJECT(list), "marker-hover", key);
+  GdkWindow *win = gtk_widget_get_window(list);
+  if(win)
+  {
+    GdkCursor *cursor = key ? gdk_cursor_new_from_name(gdk_window_get_display(win), "pointer") : NULL;
+    gdk_window_set_cursor(win, cursor);
+    if(cursor) g_object_unref(cursor);
+  }
+  gtk_widget_queue_draw(GTK_WIDGET(g_object_get_data(G_OBJECT(list), "marks")));
+}
+
+// a click on a run's marker folds the run, or opens it. `evbox` is the windowed
+// box around the list, which sees the press: a marker sits on the rail, where
+// no row is. Anywhere else the press is left alone
+static void _run_marker_pressed(GtkGestureSingle *gesture,
+                                const int n_press,
+                                const double x,
+                                const double y,
+                                dt_iop_module_t *module)
+{
+  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd || !bd->masks_list_box) return;
+  GtkWidget *list = GTK_WIDGET(bd->masks_list_box);
+  int lx = 0, ly = 0;
+  gtk_widget_translate_coordinates(dt_gui_get_widget(gesture), list, (int)x, (int)y, &lx, &ly);
+  _run_marker_hit_t h = { lx, ly };
+  GtkWidget *row = _run_markers_each(list, list, _run_marker_hit_one, &h);
+  if(!row) return;
+  dt_gui_claim(gesture);
+  const dt_mask_id_t key = _widget_id(row, "tail-head");
+  const gboolean open = !GPOINTER_TO_INT(g_object_get_data(G_OBJECT(row), "tail-head-open"));
+  _tail_remember(bd, key, open);
+  _tail_set_open(gtk_widget_get_parent(row), open, FALSE, key);
+  gtk_widget_queue_draw(GTK_WIDGET(g_object_get_data(G_OBJECT(list), "marks")));
 }
 
 // hook every group's members box up to its drawn rail (_masks_rail_draw),
@@ -17179,6 +17556,7 @@ static void _masks_panel_pack(dt_iop_module_t *module, dt_masks_form_t *grp)
                           bd->masks_picked ? INVALID_MASKID : bd->panel_selected_formid);
   // the data the rows were rebuilt from changed, and so may the shape's editor
   _controls_panel_sync(module, TRUE);
+  _marks_redraw(list);
 }
 
 // one line per widget under the masks list: type, CSS node name, style
@@ -17352,14 +17730,20 @@ static gboolean _nested_as_group(const dt_masks_point_group_t *pt, const dt_mask
   return TRUE;
 }
 
-// pack one group's element rows into `container`, nested under that group's
-// header. `grp` is the group form whose list holds the group: the mask's own,
-// or a nested group's. `fids` is the group's member ids bottom-up
-// (consumed/freed here). One row each, packed with pack_end so that the bottom
-// member sits at the bottom
+// pack one group's rows into `container`, nested under that group's header.
+// `grp` is the group form whose list holds the group: the mask's own, or a
+// nested group's, and `cid` its marker's id. `fids` is the group's member ids
+// bottom-up (consumed/freed here). One row each, packed with pack_end so that
+// the bottom member sits at the bottom.
+//
+// A run of plugins/darkroom/masks/fold_run_length or more elements in a row
+// folds: the top one stays, and a "more" row stands under it in place of the
+// others. Groups never fold, and end a run, so the structure of the mask
+// stays in view. A run shows while its tail is open, or holds the selection
 static void _pack_group_members(dt_iop_module_t *module,
                                 dt_masks_form_t *grp,
                                 GtkWidget *container,
+                                const dt_mask_id_t cid,
                                 GList *fids)
 {
   if(!grp || !fids)
@@ -17368,7 +17752,68 @@ static void _pack_group_members(dt_iop_module_t *module,
     return;
   }
 
-  for(GList *l = fids; l; l = g_list_next(l))
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  const guint len = g_list_length(fids);
+  // per member, bottom-up: does it fold, which run (the id of its bottom element) it belongs to, whether that run is open, and, on the
+  // topmost folded member of a run, how many members fold
+  gboolean *folds = g_new0(gboolean, len);
+  gboolean *opened = g_new0(gboolean, len);
+  dt_mask_id_t *run_key = g_new0(dt_mask_id_t, len);
+  int *more_n = g_new0(int, len);
+  dt_mask_id_t *ids = g_new(dt_mask_id_t, len);
+  int *run = g_new(int, len);
+  int n = 0;
+  for(GList *l = fids; l; l = g_list_next(l)) ids[n++] = GPOINTER_TO_INT(l->data);
+
+  const int limit = dt_conf_get_int("plugins/darkroom/masks/fold_run_length");
+  // the selection, or a shape being drawn, is never left in a folded part.
+  // That is not remembered, so the run closes again once it leaves
+  const gboolean drawing = _pending_form(module) && bd->insert_active;
+  int nrun = 0;
+  // walked from the top, the way a run is read; i == -1 ends the last run
+  for(int i = limit > 0 ? (int)len - 1 : -1; i >= -1; i--)
+  {
+    if(i >= 0)
+    {
+      dt_masks_point_group_t *fpt = dt_masks_gui_group_point(grp, ids[i]);
+      dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, ids[i]);
+      if(!fpt || !form) continue;
+      if(!(form->type & DT_MASKS_GROUP))
+      {
+        run[nrun++] = i;
+        continue;
+      }
+    }
+    if(nrun >= limit && limit > 0)
+    {
+      // a run is known by its bottom element, which stays when elements are
+      // added above it, so that its state survives them
+      const dt_mask_id_t head = ids[run[nrun - 1]];
+      gboolean open = bd->masks_groups_tail
+                      && GPOINTER_TO_INT(g_hash_table_lookup(bd->masks_groups_tail,
+                                                             GINT_TO_POINTER(head)));
+      for(int k = 1; k < nrun && !open; k++)
+      {
+        GList one = { GINT_TO_POINTER(ids[run[k]]), NULL, NULL };
+        open = _members_hold(&one, bd->panel_selected_formid)
+               || _members_hold(&one, bd->panel_selected_group_cid)
+               || (drawing && _members_hold(&one, bd->insert_after_fid));
+      }
+      for(int k = 1; k < nrun; k++)
+      {
+        folds[run[k]] = TRUE;
+        opened[run[k]] = open;
+        run_key[run[k]] = head;
+      }
+      more_n[run[1]] = nrun - 1;
+    }
+    nrun = 0;
+  }
+  g_free(ids);
+  g_free(run);
+
+  int i = 0;
+  for(GList *l = fids; l; l = g_list_next(l), i++)
   {
     const dt_mask_id_t fid = GPOINTER_TO_INT(l->data);
     dt_masks_point_group_t *fpt = dt_masks_gui_group_point(grp, fid);
@@ -17391,7 +17836,69 @@ static void _pack_group_members(dt_iop_module_t *module,
     else
       row = _make_shape_row(module, fpt, form);
     gtk_box_pack_end(GTK_BOX(container), row, FALSE, FALSE, 0);
+    if(!folds[i]) continue;
+
+    g_object_set_data(G_OBJECT(row), "tail-row", GINT_TO_POINTER(1));
+    g_object_set_data(G_OBJECT(row), "tail-key", GINT_TO_POINTER(run_key[i]));
+    if(!opened[i]) _tail_show(row, FALSE, TRUE);
+    // the "more" row stands above the topmost of them
+    if(!more_n[i]) continue;
+    // the run's node goes on the topmost of them while it is open
+    g_object_set_data(G_OBJECT(row), "tail-head", GINT_TO_POINTER(run_key[i]));
+    g_object_set_data(G_OBJECT(row), "tail-head-open", GINT_TO_POINTER(opened[i]));
+    g_object_set_data(G_OBJECT(row), "tail-n", GINT_TO_POINTER(more_n[i]));
+    gchar *text = g_strdup_printf(ngettext("%d folded element", "%d folded elements", more_n[i]),
+                                  more_n[i]);
+    GtkWidget *label = gtk_label_new(text);
+    g_free(text);
+    gtk_label_set_xalign(GTK_LABEL(label), 0.0f);
+    dt_gui_add_class(label, "dt_masks_more_label");
+    // an event box takes no padding from the CSS, its box does. The line holds
+    // what gives a member row its height, a handle and a drawer's cells, empty
+    // and unseen, so that it is as tall as one whatever the theme sizes them to
+    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+    GtkWidget *line = dt_gui_hbox(dt_gui_expand(label));
+    dt_gui_add_class(line, "dt_masks_more_line");
+    GtkWidget *ruler = _make_drag_handle(dtgtk_cairo_paint_masks_multi, FALSE, NULL);
+    gtk_widget_set_opacity(ruler, 0.0);
+    // only its height counts: it takes no width from a narrow panel
+    int ruler_h = 0;
+    gtk_widget_get_size_request(ruler, NULL, &ruler_h);
+    gtk_widget_set_size_request(ruler, 0, ruler_h);
+    dt_gui_box_add(line, ruler);
+    GtkWidget *drawer = dt_gui_hbox(_header_blank_cell(), _header_blank_cell());
+    dt_gui_add_class(drawer, "dt_masks_drawer");
+    dt_gui_add_class(drawer, "dt_masks_more_ruler");
+    gtk_widget_set_valign(drawer, GTK_ALIGN_CENTER);
+    gtk_widget_set_opacity(drawer, 0.0);
+    dt_gui_box_add(line, drawer);
+    GtkWidget *more = gtk_event_box_new();
+    gtk_container_add(GTK_CONTAINER(more), line);
+    dt_gui_add_class(more, "dt_masks_more");
+    g_object_set_data(G_OBJECT(more), "module", module);
+    g_object_set_data(G_OBJECT(more), "tail-key", GINT_TO_POINTER(run_key[i]));
+    g_object_set_data(G_OBJECT(more), "tail-more", GINT_TO_POINTER(1));
+    // and on the "more" row while it is folded
+    g_object_set_data(G_OBJECT(more), "tail-head", GINT_TO_POINTER(run_key[i]));
+    g_object_set_data(G_OBJECT(more), "tail-head-open", GINT_TO_POINTER(opened[i]));
+    g_object_set_data(G_OBJECT(more), "tail-n", GINT_TO_POINTER(more_n[i]));
+    g_signal_connect(G_OBJECT(more), "realize", G_CALLBACK(_pointer_cursor_realized), NULL);
+    gchar *tip = g_strdup_printf(ngettext("unfold %d element below", "unfold %d elements below",
+                                          more_n[i]), more_n[i]);
+    gtk_widget_set_tooltip_text(more, tip);
+    g_free(tip);
+    // in the capture phase, to claim the press before the unseen cells of the
+    // line, which are buttons
+    gtk_event_controller_set_propagation_phase(
+      GTK_EVENT_CONTROLLER(dt_gui_connect_click(more, _tail_more_pressed, NULL, more)),
+      GTK_PHASE_CAPTURE);
+    if(opened[i]) _tail_show(more, FALSE, TRUE);
+    gtk_box_pack_end(GTK_BOX(container), more, FALSE, FALSE, 0);
   }
+  g_free(folds);
+  g_free(opened);
+  g_free(run_key);
+  g_free(more_n);
   g_list_free(fids);
 }
 
@@ -18570,11 +19077,35 @@ void dt_iop_gui_init_masks(GtkWidget *blendw, dt_iop_module_t *module)
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(list_hover), TRUE);
     gtk_container_add(GTK_CONTAINER(list_hover), GTK_WIDGET(bd->masks_list_box));
     dt_gui_connect_motion(list_hover, NULL, NULL, _list_leave, module);
+    gtk_widget_set_has_tooltip(list_hover, TRUE);
+    g_signal_connect(G_OBJECT(list_hover), "query-tooltip", G_CALLBACK(_run_marker_tooltip), module);
     gtk_widget_show(list_hover);
     bd->masks_list_area = dt_gui_vbox(list_hover);
     gtk_widget_set_name(bd->masks_list_area, "masks-list-area");
     gtk_widget_set_no_show_all(bd->masks_list_area, TRUE);
-    bd->masks_box = GTK_BOX(dt_gui_vbox(bd->masks_list_area));
+    // the run markers over it (see _marks_position)
+    GtkWidget *overlay = gtk_overlay_new();
+    gtk_container_add(GTK_CONTAINER(overlay), bd->masks_list_area);
+    // a windowless widget: a drawing area has a window of its own, which takes
+    // the pointer however its overlay is set to pass events through
+    GtkWidget *marks = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    g_object_set_data(G_OBJECT(bd->masks_list_box), "marks", marks);
+    g_signal_connect(G_OBJECT(bd->masks_list_box), "size-allocate", G_CALLBACK(_list_allocated), NULL);
+    g_signal_connect(G_OBJECT(marks), "draw", G_CALLBACK(_marks_draw), module);
+    g_signal_connect(G_OBJECT(overlay), "get-child-position", G_CALLBACK(_marks_position), NULL);
+    gtk_overlay_add_overlay(GTK_OVERLAY(overlay), marks);
+    gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), marks, TRUE);
+    gtk_widget_show(marks);
+    gtk_widget_show(overlay);
+    // the markers' clicks and hover are seen from the overlay, in the capture
+    // phase, whichever of the list and the markers' own window the pointer is
+    // over: a press that is not on a marker is left to the rows
+    gtk_event_controller_set_propagation_phase(
+      GTK_EVENT_CONTROLLER(dt_gui_connect_click(overlay, _run_marker_pressed, NULL, module)),
+      GTK_PHASE_CAPTURE);
+    gtk_event_controller_set_propagation_phase(
+      dt_gui_connect_motion(overlay, _run_marker_motion, NULL, NULL, module), GTK_PHASE_CAPTURE);
+    bd->masks_box = GTK_BOX(dt_gui_vbox(overlay));
     _add_wrapped_box(blendw, bd->masks_box, "masks_drawn");
 
     bd->masks_inited = TRUE;
@@ -18619,6 +19150,7 @@ void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
   if(bd->masks_rebuild_idle_id) g_source_remove(bd->masks_rebuild_idle_id);
 
   if(bd->masks_groups_expanded) g_hash_table_destroy(bd->masks_groups_expanded);
+  if(bd->masks_groups_tail) g_hash_table_destroy(bd->masks_groups_tail);
   if(bd->masks_note_page) g_hash_table_destroy(bd->masks_note_page);
   if(bd->masks_refine_bypassed) g_hash_table_destroy(bd->masks_refine_bypassed);
   if(bd->masks_row_map) g_hash_table_destroy(bd->masks_row_map);

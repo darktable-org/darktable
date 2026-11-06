@@ -594,6 +594,9 @@ typedef struct dt_iop_gui_blend_data_t
   // rebuilds the list for every shape it removes, so a caller removing several
   // sets this around its loop and rebuilds once afterwards
   gboolean masks_rebuild_suppressed;
+  // the suppression is held by dt_iop_gui_blend_masks_hold_rebuild, which the
+  // deferred rebuild lifts
+  gboolean masks_rebuild_held;
   // a range slider of a parametric row is committing its edit: the list is not
   // rebuilt under it, which would replace the slider being dragged
   gboolean masks_param_committing;
@@ -706,6 +709,10 @@ typedef struct dt_iop_gui_blend_data_t
   // id, nested group rows by their form id. A group missing from it is
   // expanded. Created on first use
   GHashTable *masks_groups_expanded;
+  // folded run (the id of its bottom element) -> whether its other
+  // elements are shown (see _tail_set_open). A run missing from it is folded.
+  // Created on first use
+  GHashTable *masks_groups_tail;
   // group cid -> the page its preset note shows (see _make_group_note), so a
   // rebuild of the note keeps it. Created on first use
   GHashTable *masks_note_page;
@@ -1110,6 +1117,12 @@ void dt_iop_gui_blend_delete_element(dt_iop_module_t *module, const dt_mask_id_t
 /** the module's name changed: refresh the mask panels whose raster elements
     are named after it */
 void dt_iop_gui_blend_module_renamed(dt_iop_module_t *module);
+
+// hold back the rebuilds of this module's list until the handler that calls
+// this has returned, then rebuild once, before the next repaint. Committing a
+// shape rebuilds the list at each step it takes, and the panel would show each
+// of them (dt_masks_gui_form_save_creation)
+void dt_iop_gui_blend_masks_hold_rebuild(dt_iop_module_t *module);
 
 // shape creation ended for this module: queues the rebuild that drops the
 // panel's pending row. Called from dt_masks_change_form_gui, which every way

@@ -593,6 +593,8 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev,
                                      dt_masks_form_t *form,
                                      dt_masks_form_gui_t *gui)
 {
+  // the panel's list is rebuilt once, for what this leaves, not at each step
+  if(module) dt_iop_gui_blend_masks_hold_rebuild(module);
   // we check if the id is already registered
   _check_id(form);
 
