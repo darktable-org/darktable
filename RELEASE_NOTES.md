@@ -95,6 +95,13 @@ changes (where available).
   does not manage the colors of the window, darktable converts to the
   display profile as before.
 
+- Wide gamut and HDR display on macOS, in the darkroom, with its
+  snapshots and second window, and in the slideshow. With "follow
+  output peak" on, AgX and sigmoid render for the EDR headroom of the
+  screen, as on the XDR displays of MacBook Pros. Screens without EDR
+  still get wide gamut. Thumbnails, culling and full preview are not
+  shown in wide gamut or HDR.
+
 - New module saturation curve: remaps saturation and brilliance via
   two independent curves plotted against each pixel's own perceptually
   normalized saturation (darktable UCS or JzAzBz): a scene-referred
@@ -471,7 +478,8 @@ changes (where available).
 
 - On Windows, darktable uses the profile that Windows assigns to the
   monitor, or sRGB when Windows reports none. On macOS, darktable
-  renders to sRGB and macOS converts to the screen.
+  renders to sRGB and macOS converts to the screen, except for the
+  wide gamut and HDR display described above.
 
 - A new "convert to the display profile in darktable" preference is a
   workaround for compositor or driver bugs. With it, darktable does not
