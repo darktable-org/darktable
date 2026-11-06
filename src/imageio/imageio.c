@@ -1369,14 +1369,8 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
     if(finalscale) finalscale->enabled = FALSE;
 
-    // do the processing (8-bit with special treatment, to make sure
-    // we can use openmp further down):
-    if(bpp == 8)
-      dt_dev_pixelpipe_process(&pipe, &dev, 0, 0,
-                               processed_width, processed_height, scale, DT_DEVICE_NONE);
-    else
-      dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0,
-                                        processed_width, processed_height, scale);
+    dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0,
+                                      processed_width, processed_height, scale);
 
     if(finalscale) finalscale->enabled = TRUE;
   }
@@ -1394,56 +1388,27 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   }
 
   // downconversion to low-precision formats:
+  uint8_t *buf8 = NULL;
   if(bpp == 8)
   {
-    if(display_byteorder)
+    // into a buffer of its own: in place, a pixel's bytes land on the floats
+    // of an earlier pixel, which another thread may not have read yet
+    buf8 = dt_alloc_align_uint8((size_t)4 * processed_width * processed_height);
+    if(!buf8)
     {
-      if(hq_process)
-      {
-        const float *const inbuf = (float *)outbuf;
-        for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)
-        {
-          // convert in place, this is unfortunately very serial..
-          const uint8_t r = roundf(CLAMP(inbuf[4 * k + 2] * 0xff, 0, 0xff));
-          const uint8_t g = roundf(CLAMP(inbuf[4 * k + 1] * 0xff, 0, 0xff));
-          const uint8_t b = roundf(CLAMP(inbuf[4 * k + 0] * 0xff, 0, 0xff));
-          outbuf[4 * k + 0] = r;
-          outbuf[4 * k + 1] = g;
-          outbuf[4 * k + 2] = b;
-        }
-      }
-      // else processing output was 8-bit already, and no need to swap order
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_imageio_export_with_flags] error allocating the 8-bit buffer");
+      goto error;
     }
-    else // need to flip
+    const float *const inbuf = (float *)outbuf;
+    DT_OMP_FOR()
+    for(int y = 0; y < processed_height; y++)
     {
-      // ldr output: char
-      if(hq_process)
-      {
-        const float *const inbuf = (float *)outbuf;
-        for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)
-        {
-          // convert in place, this is unfortunately very serial..
-          const uint8_t r = roundf(CLAMP(inbuf[4 * k + 0] * 0xff, 0, 0xff));
-          const uint8_t g = roundf(CLAMP(inbuf[4 * k + 1] * 0xff, 0, 0xff));
-          const uint8_t b = roundf(CLAMP(inbuf[4 * k + 2] * 0xff, 0, 0xff));
-          outbuf[4 * k + 0] = r;
-          outbuf[4 * k + 1] = g;
-          outbuf[4 * k + 2] = b;
-        }
-      }
-      else
-      { // !display_byteorder, need to swap:
-        uint8_t *const buf8 = pipe.backbuf;
-        DT_OMP_FOR()
-        // just flip byte order
-        for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)
-        {
-          uint8_t tmp = buf8[4 * k + 0];
-          buf8[4 * k + 0] = buf8[4 * k + 2];
-          buf8[4 * k + 2] = tmp;
-        }
-      }
+      const size_t row = (size_t)4 * processed_width * y;
+      dt_display_to_8bit_pixels(inbuf + row, buf8 + row, processed_width,
+                                display_byteorder);
     }
+    outbuf = buf8;
   }
   else if(bpp == 16)
   {
@@ -1515,6 +1480,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
                               icc_filename, NULL, 0, imgid, num, total,
                               &pipe, export_masks)) != 0;
   }
+  dt_free_align(buf8);
 
   if(res)
     goto error;

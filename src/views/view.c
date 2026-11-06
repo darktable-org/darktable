@@ -39,6 +39,7 @@
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
+#include "gui/presenter.h"
 #include "libs/lib.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -874,7 +875,6 @@ dt_view_surface_value_t dt_view_image_get_surface_cached(const dt_imgid_t imgid,
   {
     gboolean have_lock = FALSE;
     cmsHTRANSFORM transform = NULL;
-    int hdr = DT_HDR_NONE;
 
     if(dt_conf_get_bool("cache_color_managed"))
     {
@@ -887,13 +887,11 @@ dt_view_surface_value_t dt_view_image_get_surface_cached(const dt_imgid_t imgid,
          && darktable.color_profiles->transform_srgb_to_display)
       {
         transform = darktable.color_profiles->transform_srgb_to_display;
-        hdr = darktable.color_profiles->display_hdr_transfer;
       }
       else if(buf.color_space == DT_COLORSPACE_ADOBERGB
               && darktable.color_profiles->transform_adobe_rgb_to_display)
       {
         transform = darktable.color_profiles->transform_adobe_rgb_to_display;
-        hdr = darktable.color_profiles->display_hdr_transfer;
       }
       else
       {
@@ -918,7 +916,7 @@ dt_view_surface_value_t dt_view_image_get_surface_cached(const dt_imgid_t imgid,
 
     if(transform)
     {
-      dt_colorspaces_transform_to_display(transform, hdr, buf.buf, rgbbuf,
+      dt_colorspaces_transform_to_display(transform, buf.buf, rgbbuf,
                                           buf.width, buf.height,
                                           (size_t)buf.width * 4, (size_t)buf.width * 4);
     }
@@ -1873,11 +1871,7 @@ void dt_view_paint_surface(cairo_t *cr,
                            const size_t height,
                            dt_dev_viewport_t *port,
                            const dt_window_t window,
-                           uint8_t *buf,
-                           float buf_scale,
-                           int buf_width,
-                           int buf_height,
-                           dt_dev_zoom_pos_t buf_zoom_pos)
+                           dt_frame_t *frame)
 {
   // Use the viewport's develop if available, otherwise fall back to global
   dt_develop_t *dev = port->dev ? port->dev : darktable.develop;
@@ -1889,9 +1883,18 @@ void dt_view_paint_surface(cairo_t *cr,
   if(!processed_width || !processed_height)
     return;
 
+  const dt_frame_geometry_t *g = dt_frame_geometry(frame);
+  const float buf_scale = g->scale;
+  const int buf_width = g->width;
+  const int buf_height = g->height;
+  // the preview's frame, if there is one, and the geometry it was made with
+  dt_frame_t *preview = dt_dev_pixelpipe_frame(pp);
+  const dt_frame_geometry_t no_preview = { 0 };
+  const dt_frame_geometry_t *pg = preview ? dt_frame_geometry(preview) : &no_preview;
+
   float pts[14];
-  memcpy(pts, buf_zoom_pos, sizeof(dt_dev_zoom_pos_t));
-  memcpy(pts + 6, pp->backbuf_zoom_pos, sizeof(dt_dev_zoom_pos_t));
+  memcpy(pts, g->zoom_pos, sizeof(dt_dev_zoom_pos_t));
+  memcpy(pts + 6, pg->zoom_pos, sizeof(dt_dev_zoom_pos_t));
   pts[12] = port->zoom_x; pts[13] = port->zoom_y;
   dt_dev_distort_transform_plus(dev, port->pipe, 0, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, pts, 7);
 
@@ -1935,7 +1938,6 @@ void dt_view_paint_surface(cairo_t *cr,
   cairo_paint(cr);
 
   cairo_translate(cr, 0.5 * width, 0.5 * height);
-  dt_pthread_mutex_lock(&pp->backbuf_mutex);
 
   const int maxw = MIN(port->width, backbuf_scale * processed_width * (1<<closeup) / ppd);
   const int maxh = MIN(port->height, backbuf_scale * processed_height * (1<<closeup) / ppd);
@@ -2069,7 +2071,7 @@ void dt_view_paint_surface(cairo_t *cr,
   // Check if we should use the preview pipe for fallback rendering
   // This is only valid for the main develop (not for pinned images which have dev != darktable.develop)
   const gboolean use_preview_fallback =
-    (dev == darktable.develop) && pp->output_imgid == dev->image_storage.id &&
+    (dev == darktable.develop) && preview && pp->output_imgid == dev->image_storage.id &&
     (port->pipe->output_imgid != dev->image_storage.id ||
      fabsf(backbuf_scale / buf_scale - 1.0f) > .09f ||
      floor(maxw / 2 / back_scale) - 1 > MIN(-cov_trans_x, cov_trans_x + buf_width) ||
@@ -2092,11 +2094,7 @@ void dt_view_paint_surface(cairo_t *cr,
     cairo_save(cr);
     cairo_scale(cr, zoom_scale, zoom_scale);
     _match_rotation(cr, pts + 6, (preview_x - zoom_x) * wd, (preview_y - zoom_y) * ht, 0, 0);
-    cairo_surface_t *preview = dt_view_create_surface(pp->backbuf, pp->backbuf_width, pp->backbuf_height);
-    cairo_set_source_surface(cr, preview, -0.5 * pp->backbuf_width, -0.5 * pp->backbuf_height);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    cairo_paint(cr);
-    cairo_surface_destroy(preview);
+    dt_presenter_image(cr, -0.5 * pg->width, -0.5 * pg->height, preview, CAIRO_FILTER_FAST);
     cairo_restore(cr);
 
     dt_print_pipe(DT_DEBUG_EXPOSE,
@@ -2106,12 +2104,11 @@ void dt_view_paint_surface(cairo_t *cr,
          "buf %4dx%-4d scale=%.3f "
          "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)",
          width, height, wd, ht,
-         pp->backbuf_width, pp->backbuf_height, zoom_scale,
-         pp->backbuf_zoom_pos[0], pp->backbuf_zoom_pos[1],
+         pg->width, pg->height, zoom_scale,
+         pg->zoom_pos[0], pg->zoom_pos[1],
          preview_x, preview_y);
   }
-
-  dt_pthread_mutex_unlock(&pp->backbuf_mutex);
+  dt_frame_unref(preview);
 
   if(port->pipe->output_imgid == dev->image_storage.id
      || pp->output_imgid != dev->image_storage.id)
@@ -2124,36 +2121,23 @@ void dt_view_paint_surface(cairo_t *cr,
          "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)",
          width, height, processed_width, processed_height,
          buf_width, buf_height, buf_scale,
-         buf_zoom_pos[0], buf_zoom_pos[1],
+         g->zoom_pos[0], g->zoom_pos[1],
          offset_x, offset_y);
 
     cairo_scale(cr, back_scale, back_scale);
     _match_rotation(cr, pts, trans_x, trans_y, buf_width, buf_height);
-    cairo_surface_t *surface = dt_view_create_surface(buf, buf_width, buf_height);
-    cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    cairo_paint(cr);
-
+    dt_presenter_image(cr, 0, 0, frame, CAIRO_FILTER_FAST);
     if(darktable.gui->show_focus_peaking
-      && window != DT_WINDOW_SLIDESHOW)
+       && window != DT_WINDOW_SLIDESHOW)
     {
-      dt_focuspeaking(cr, buf_width, buf_height,
-                      cairo_image_surface_get_data(surface));
+      // the colors GTK's surface shows in the window the pipe renders for
+      cairo_surface_t *surface = dt_frame_device_surface(frame, port->pipe->window);
+      if(surface)
+        dt_focuspeaking(cr, buf_width, buf_height, cairo_image_surface_get_data(surface));
     }
-    cairo_surface_destroy(surface);
   }
 
   cairo_restore(cr);
-}
-
-cairo_surface_t *dt_view_create_surface(uint8_t *buffer,
-                                        const size_t processed_width,
-                                        const size_t processed_height)
-{
-  const int32_t stride =
-    cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, processed_width);
-  return cairo_image_surface_create_for_data
-    (buffer, CAIRO_FORMAT_RGB24, processed_width, processed_height, stride);
 }
 
 dt_view_context_t dt_view_get_context_hash(void)
@@ -2174,7 +2158,9 @@ dt_view_context_t dt_view_get_context_hash(void)
                             (uint32_t)(zoom_scale * flt_prec),
                             (uint32_t)(zoom_x * flt_prec),
                             (uint32_t)(zoom_y * flt_prec),
-                            (uint32_t)(dev->late_scaling.enabled) };
+                            (uint32_t)(dev->late_scaling.enabled),
+                            // the output snapshots and the duplicate preview render for
+                            dt_colorspaces_get_display_serial(DT_COLORSPACE_DISPLAY) };
 
   return (dt_view_context_t)dt_hash(DT_INITHASH, &test, sizeof(test));
 }

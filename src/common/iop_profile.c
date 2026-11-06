@@ -103,24 +103,18 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in,
                                              float *const image_out,
                                              const int width,
                                              const int height,
-                                             const dt_colorspaces_color_profile_type_t type,
-                                             const char *filename,
-                                             const int intent,
+                                             const dt_iop_order_iccprofile_info_t *const profile_info,
                                              const int direction)
 {
   cmsHTRANSFORM xform = NULL;
   cmsHPROFILE rgb_profile = NULL;
   cmsHPROFILE lab_profile = NULL;
-
-  if(type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2)
-    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+  const dt_colorspaces_color_profile_type_t type = profile_info->type;
+  const char *filename = profile_info->filename;
+  const int intent = profile_info->intent;
 
   if(type != DT_COLORSPACE_NONE)
-  {
-    const dt_colorspaces_color_profile_t *profile =
-      dt_colorspaces_get_profile(type, filename, DT_PROFILE_DIRECTION_ANY);
-    if(profile) rgb_profile = profile->profile;
-  }
+    rgb_profile = profile_info->profile;
   else
     rgb_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "",
                                              DT_PROFILE_DIRECTION_WORK)->profile;
@@ -176,9 +170,6 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in,
 
   xform = cmsCreateTransform(input_profile, input_format, output_profile, output_format, intent, cmsFLAGS_COPY_ALPHA);
 
-  if(type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2)
-    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-
   if(xform)
     _transform_hdr_lcms(xform, image_in, image_out, width, height,
                         direction == 1 ? hdr : DT_HDR_NONE,
@@ -196,28 +187,18 @@ static void _transform_rgb_to_rgb_lcms2
    float *const image_out,
    const int width,
    const int height,
-   const dt_colorspaces_color_profile_type_t type_from,
-   const char *filename_from,
-   const dt_colorspaces_color_profile_type_t type_to,
-   const char *filename_to,
+   const dt_iop_order_iccprofile_info_t *const profile_info_from,
+   const dt_iop_order_iccprofile_info_t *const profile_info_to,
    const int intent)
 {
   cmsHTRANSFORM xform = NULL;
   cmsHPROFILE from_rgb_profile = NULL;
   cmsHPROFILE to_rgb_profile = NULL;
-
-  if(type_from == DT_COLORSPACE_DISPLAY
-     || type_to == DT_COLORSPACE_DISPLAY
-     || type_from == DT_COLORSPACE_DISPLAY2
-     || type_to == DT_COLORSPACE_DISPLAY2)
-    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+  const dt_colorspaces_color_profile_type_t type_from = profile_info_from->type;
+  const dt_colorspaces_color_profile_type_t type_to = profile_info_to->type;
 
   if(type_from != DT_COLORSPACE_NONE)
-  {
-    const dt_colorspaces_color_profile_t *profile_from
-        = dt_colorspaces_get_profile(type_from, filename_from, DT_PROFILE_DIRECTION_ANY);
-    if(profile_from) from_rgb_profile = profile_from->profile;
-  }
+    from_rgb_profile = profile_info_from->profile;
   else
   {
     dt_print(DT_DEBUG_ALWAYS, "[_transform_rgb_to_rgb_lcms2] invalid *from profile* `%s`",
@@ -225,11 +206,7 @@ static void _transform_rgb_to_rgb_lcms2
   }
 
   if(type_to != DT_COLORSPACE_NONE)
-  {
-    const dt_colorspaces_color_profile_t *profile_to
-        = dt_colorspaces_get_profile(type_to, filename_to, DT_PROFILE_DIRECTION_ANY);
-    if(profile_to) to_rgb_profile = profile_to->profile;
-  }
+    to_rgb_profile = profile_info_to->profile;
   else
   {
     dt_print(DT_DEBUG_ALWAYS,
@@ -288,12 +265,6 @@ static void _transform_rgb_to_rgb_lcms2
     xform = cmsCreateTransform(from_rgb_profile, TYPE_RGBA_FLT, to_rgb_profile, TYPE_RGBA_FLT, intent, cmsFLAGS_COPY_ALPHA);
   }
 
-  if(type_from == DT_COLORSPACE_DISPLAY
-     || type_to == DT_COLORSPACE_DISPLAY
-     || type_from == DT_COLORSPACE_DISPLAY2
-     || type_to == DT_COLORSPACE_DISPLAY2)
-    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-
   if(xform)
     _transform_hdr_lcms(xform, image_in, image_out, width, height, hdr_from, hdr_to);
   else
@@ -321,16 +292,14 @@ static void _transform_lcms2(struct dt_iop_module_t *self,
     dt_print(DT_DEBUG_DEV,
              "[_transform_lcms2] transfoming from RGB to Lab (%s %s)",
              self->op, self->multi_name);
-    _transform_from_to_rgb_lab_lcms2(image_in, image_out, width, height, profile_info->type,
-                                     profile_info->filename, profile_info->intent, 1);
+    _transform_from_to_rgb_lab_lcms2(image_in, image_out, width, height, profile_info, 1);
   }
   else if(cst_from == IOP_CS_LAB && cst_to == IOP_CS_RGB)
   {
     dt_print(DT_DEBUG_DEV,
              "[_transform_lcms2] transfoming from Lab to RGB (%s %s)",
              self->op, self->multi_name);
-    _transform_from_to_rgb_lab_lcms2(image_in, image_out, width, height, profile_info->type,
-                                     profile_info->filename, profile_info->intent, -1);
+    _transform_from_to_rgb_lab_lcms2(image_in, image_out, width, height, profile_info, -1);
   }
   else
   {
@@ -350,11 +319,7 @@ static inline void _transform_lcms2_rgb(const float *const image_in,
                                         const dt_iop_order_iccprofile_info_t *const profile_info_to)
 {
   _transform_rgb_to_rgb_lcms2(image_in, image_out, width, height,
-                              profile_info_from->type,
-                              profile_info_from->filename,
-                              profile_info_to->type,
-                              profile_info_to->filename,
-                              profile_info_to->intent);
+                              profile_info_from, profile_info_to, profile_info_to->intent);
 }
 
 
@@ -485,6 +450,7 @@ void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
 {
   profile_info->type = DT_COLORSPACE_NONE;
   profile_info->filename[0] = '\0';
+  profile_info->profile = NULL;
   profile_info->intent = DT_INTENT_PERCEPTUAL;
   _mark_as_nonmatrix_profile(profile_info);
   profile_info->unbounded_coeffs_in[0][0] = profile_info->unbounded_coeffs_in[1][0]
@@ -513,14 +479,17 @@ void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info)
   }
 }
 
-/** generate the info for the profile (type, filename) if matrix can be retrieved from lcms2
+/** generate the info for the profile (type, filename) of this content if matrix can be
+ * retrieved from lcms2
  * it can be called multiple time between init and cleanup
  * return TRUE in case of an error
  */
 static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
                                              const int type,
                                              const char *filename,
-                                             const int intent)
+                                             cmsHPROFILE profile,
+                                             const int intent,
+                                             const gboolean check_file)
 {
   _mark_as_nonmatrix_profile(profile_info);
   _clear_lut_curves(profile_info);
@@ -528,7 +497,7 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
   profile_info->nonlinearlut = 0;
   profile_info->grey = 0.1842f;
 
-  if(type == DT_COLORSPACE_FILE
+  if(type == DT_COLORSPACE_FILE && check_file
     && (!filename || !filename[0] || !g_file_test(filename, G_FILE_TEST_IS_REGULAR)))
   {
     dt_print(DT_DEBUG_PARAMS, "[generate_profile_info] icc profile '%s' not available",
@@ -538,16 +507,10 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
 
   profile_info->type = type;
   g_strlcpy(profile_info->filename, filename, sizeof(profile_info->filename));
+  profile_info->profile = profile;
   profile_info->intent = intent;
 
-  const gboolean locking = type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2;
-  if(locking)
-    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
-
-  const dt_colorspaces_color_profile_t *profile =
-    dt_colorspaces_get_profile(type, filename, DT_PROFILE_DIRECTION_ANY);
-
-  cmsHPROFILE *rgb_profile = profile ? profile->profile : NULL;;
+  cmsHPROFILE *rgb_profile = profile;
 
   cmsColorSpaceSignature rgb_profile_color_space = rgb_profile ? cmsGetColorSpace(rgb_profile) : 0;
 
@@ -624,23 +587,23 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
       dt_is_valid_colormatrix(profile_info->matrix_in[0][0]) ? "" : " NO matrix provided",
       profile_info->nonlinearlut ? " nonlinearlut" : "");
 
-  if(locking) // all safe now
-    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-
   return FALSE;
 }
 
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,
                                     const dt_colorspaces_color_profile_type_t profile_type,
-                                    const char *profile_filename)
+                                    const char *profile_filename,
+                                    cmsHPROFILE profile)
 {
   dt_iop_order_iccprofile_info_t *profile_info = NULL;
 
   for(GList *profiles = dev->allprofile_info; profiles; profiles = g_list_next(profiles))
   {
     dt_iop_order_iccprofile_info_t *prof = profiles->data;
-    if(prof->type == profile_type && strcmp(prof->filename, profile_filename) == 0)
+    if(prof->type == profile_type
+       && (!dt_colorspaces_replaced_in_session(profile_type) || prof->profile == profile)
+       && strcmp(prof->filename, profile_filename) == 0)
     {
       profile_info = prof;
       break;
@@ -650,30 +613,87 @@ dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,
   return profile_info;
 }
 
+static dt_iop_order_iccprofile_info_t *
+_new_profile_info(const dt_colorspaces_color_profile_type_t profile_type,
+                  const char *profile_filename,
+                  cmsHPROFILE profile,
+                  const int intent,
+                  const gboolean check_file)
+{
+  dt_iop_order_iccprofile_info_t *profile_info =
+    dt_alloc1_align_type(dt_iop_order_iccprofile_info_t);
+  if(!profile_info) return NULL;
+  dt_ioppr_init_profile_info(profile_info, 0);
+  if(_ioppr_generate_profile_info(profile_info, profile_type, profile_filename, profile,
+                                  intent, check_file))
+  {
+    dt_ioppr_free_profile_info(profile_info);
+    return NULL;
+  }
+  return profile_info;
+}
+
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_new_profile_info(const dt_colorspaces_color_profile_type_t profile_type,
+                          const char *profile_filename,
+                          cmsHPROFILE profile,
+                          const int intent)
+{
+  // the profile, read when the session started, outlives its file
+  return _new_profile_info(profile_type, profile_filename, profile, intent, !profile);
+}
+
+void dt_ioppr_free_profile_info(dt_iop_order_iccprofile_info_t *profile_info)
+{
+  if(!profile_info) return;
+  dt_ioppr_cleanup_profile_info(profile_info);
+  dt_free_align(profile_info);
+}
+
+static dt_iop_order_iccprofile_info_t *
+_add_profile_info(struct dt_develop_t *dev,
+                  const dt_colorspaces_color_profile_type_t profile_type,
+                  const char *profile_filename,
+                  cmsHPROFILE profile,
+                  const int intent)
+{
+  dt_iop_order_iccprofile_info_t *profile_info =
+    dt_ioppr_get_profile_info_from_list(dev, profile_type, profile_filename, profile);
+  if(profile_info == NULL)
+  {
+    profile_info = _new_profile_info(profile_type, profile_filename, profile, intent, TRUE);
+    if(profile_info)
+      dev->allprofile_info = g_list_append(dev->allprofile_info, profile_info);
+  }
+  return profile_info;
+}
+
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
                                   const dt_colorspaces_color_profile_type_t profile_type,
                                   const char *profile_filename,
                                   const int intent)
 {
-  dt_iop_order_iccprofile_info_t *profile_info =
-    dt_ioppr_get_profile_info_from_list(dev, profile_type, profile_filename);
-  if(profile_info == NULL)
-  {
-    profile_info = dt_alloc1_align_type(dt_iop_order_iccprofile_info_t);
-    dt_ioppr_init_profile_info(profile_info, 0);
-    if(!_ioppr_generate_profile_info(profile_info, profile_type, profile_filename, intent))
-    {
-      dev->allprofile_info = g_list_append(dev->allprofile_info, profile_info);
-    }
-    else
-    {
-      dt_ioppr_cleanup_profile_info(profile_info);
-      dt_free_align(profile_info);
-      profile_info = NULL;
-    }
-  }
-  return profile_info;
+  const gboolean display = dt_colorspaces_replaced_in_session(profile_type);
+  if(display) pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+  const dt_colorspaces_color_profile_t *entry =
+    dt_colorspaces_get_profile(profile_type, profile_filename, DT_PROFILE_DIRECTION_ANY);
+  cmsHPROFILE profile = entry ? entry->profile : NULL;
+  if(display) pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+
+  return _add_profile_info(dev, profile_type, profile_filename, profile, intent);
+}
+
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_add_profile_info_for_content(struct dt_develop_t *dev,
+                                      const dt_colorspaces_color_profile_type_t profile_type,
+                                      const char *profile_filename,
+                                      cmsHPROFILE profile,
+                                      const int intent)
+{
+  if(!dt_colorspaces_replaced_in_session(profile_type))
+    return dt_ioppr_add_profile_info_to_list(dev, profile_type, profile_filename, intent);
+  return _add_profile_info(dev, profile_type, profile_filename, profile, intent);
 }
 
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(const struct dt_iop_module_t *module,
@@ -815,7 +835,7 @@ void dt_ioppr_set_thread_pq_peak_nits(const int nits)
   _thread_pq_peak_nits = nits;
 }
 
-static float _output_headroom(const dt_colorspaces_color_profile_type_t type)
+float dt_ioppr_profile_headroom(const dt_colorspaces_color_profile_type_t type)
 {
   switch(dt_colorspaces_hdr_transfer(type))
   {
@@ -840,10 +860,11 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
                                       struct dt_dev_pixelpipe_t *pipe,
                                       const dt_colorspaces_color_profile_type_t type,
                                       const char *filename,
+                                      cmsHPROFILE profile,
                                       const int intent)
 {
   dt_iop_order_iccprofile_info_t *profile_info =
-    dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
+    dt_ioppr_add_profile_info_for_content(dev, type, filename, profile, intent);
 
   if(!profile_info && dt_pipe_is_preview(pipe) && (type == DT_COLORSPACE_FILE))
     dt_control_log(_("output icc profile '%s' missing"), filename);
@@ -863,7 +884,10 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", intent);
   }
   pipe->output_profile_info = profile_info;
-  pipe->output_headroom = _output_headroom(profile_info->type);
+  // a presented output may report headroom beyond what its transfer
+  // function implies, e.g. linear light on an HDR screen
+  pipe->output_headroom = fmaxf(pipe->output.image.headroom,
+                                dt_ioppr_profile_headroom(profile_info->type));
 
   return profile_info;
 }
@@ -903,6 +927,23 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_input_profile_info(const struc
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_output_profile_info(const struct dt_dev_pixelpipe_t *pipe)
 {
   return pipe->output_profile_info;
+}
+
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_gui_profile_info(struct dt_develop_t *dev)
+{
+  dt_display_output_t output;
+  dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &output);
+  const dt_color_encoding_t *device = &output.device;
+  dt_iop_order_iccprofile_info_t *info =
+    dt_ioppr_add_profile_info_for_content(dev, device->type, device->filename, device->profile,
+                                          device->intent);
+  // module GUIs compute with matrices: a profile without them is shown as
+  // sRGB, as master's output profile info stood in for it
+  if(!info
+     || !dt_is_valid_colormatrix(info->matrix_in[0][0])
+     || !dt_is_valid_colormatrix(info->matrix_out[0][0]))
+    info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", device->intent);
+  return info;
 }
 
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(const dt_iop_module_t *module,
@@ -1171,6 +1212,14 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self,
 }
 
 
+static inline gboolean _same_content(const dt_iop_order_iccprofile_info_t *const a,
+                                     const dt_iop_order_iccprofile_info_t *const b)
+{
+  return a->type == b->type
+    && (!dt_colorspaces_replaced_in_session(a->type) || a->profile == b->profile)
+    && !strcmp(a->filename, b->filename);
+}
+
 __DT_CLONE_TARGETS__
 void dt_ioppr_transform_image_colorspace_rgb
   (const float *const restrict image_in,
@@ -1191,8 +1240,7 @@ void dt_ioppr_transform_image_colorspace_rgb
     return;
   }
 
-  if(profile_info_from->type == profile_info_to->type
-     && strcmp(profile_info_from->filename, profile_info_to->filename) == 0)
+  if(_same_content(profile_info_from, profile_info_to))
   {
     if(image_in != image_out)
       dt_iop_image_copy_by_size(image_out, image_in, width, height, 4);
@@ -1599,8 +1647,7 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
 
   const size_t region[2] = { width, height };
 
-  if(profile_info_from->type == profile_info_to->type
-     && strcmp(profile_info_from->filename, profile_info_to->filename) == 0)
+  if(_same_content(profile_info_from, profile_info_to))
   {
     if(dev_img_in != dev_img_out)
     {

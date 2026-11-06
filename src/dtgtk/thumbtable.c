@@ -2003,7 +2003,8 @@ static void _dt_profile_change_callback(gpointer instance,
                                         const int type,
                                         dt_thumbtable_t *table)
 {
-  if(!table)
+  // thumbnails are drawn in the main window
+  if(!table || type == DT_COLORSPACES_PROFILE_TYPE_DISPLAY2)
     return;
 
   for(const GList *l = table->list; l; l = g_list_next(l))
