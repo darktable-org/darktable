@@ -243,6 +243,21 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_rcd_step_4_1;
   int kernel_rcd_step_4_2;
   int kernel_rcd_step_4_3;
+  int kernel_amaze_init;
+  int kernel_amaze_grad;
+  int kernel_amaze_cd;
+  int kernel_amaze_cd_bound;
+  int kernel_amaze_vote;
+  int kernel_amaze_hvwt;
+  int kernel_amaze_nyquist2;
+  int kernel_amaze_area;
+  int kernel_amaze_green;
+  int kernel_amaze_nyquist_refine;
+  int kernel_amaze_diag;
+  int kernel_amaze_rbint;
+  int kernel_amaze_green_diag;
+  int kernel_amaze_chroma;
+  int kernel_amaze_output;
   int kernel_demosaic_box3;
   int kernel_write_blended_dual;
   int gaussian_9x9_mul;
@@ -314,6 +329,7 @@ void amaze_demosaic(const float *const in,
 #include "iop/demosaicing/lmmse.c"
 #include "iop/demosaicing/capture.c"
 #include "iop/demosaicing/dual.c"
+#include "iop/demosaicing/amaze_cl.c"
 
 const char *name()
 {
@@ -623,8 +639,9 @@ static gboolean _tiling_requirements(dt_iop_module_t *self,
       border = 8;
       break;
     case DT_IOP_DEMOSAIC_AMAZE:
-      perpix = 2;
-      border = 6;
+      // the OpenCL code keeps 12 planes with the 16 pixel border of the CPU tiles
+      perpix = gpu ? 14 : 2;
+      border = gpu ? 16 : 6;
       break;
     case DT_IOP_DEMOSAIC_VNG4:
       perpix = 4;
@@ -1242,6 +1259,8 @@ int process_cl(dt_iop_module_t *self,
         err = process_default_cl(self, piece, t_in, t_high, dev_xtrans, iwidth, t_rows, method, filters);
       else if(method == DT_IOP_DEMOSAIC_RCD)
         err = process_rcd_cl(self, piece, t_in, t_high, iwidth, t_rows, filters);
+      else if(method == DT_IOP_DEMOSAIC_AMAZE)
+        err = process_amaze_cl(self, piece, t_in, t_high, iwidth, t_rows, filters);
       else if(method == DT_IOP_DEMOSAIC_VNG4 || method == DT_IOP_DEMOSAIC_VNG)
         err = process_vng_cl(self, piece, t_in, t_high, dev_xtrans, xtrans, iwidth, t_rows, filters, 0, FALSE);
       else if(method == DT_IOP_DEMOSAIC_MARKESTEIJN || method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
@@ -1390,6 +1409,23 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_rcd_step_4_1 = dt_opencl_create_kernel(rcd, "rcd_step_4_1");
   gd->kernel_rcd_step_4_2 = dt_opencl_create_kernel(rcd, "rcd_step_4_2");
   gd->kernel_rcd_step_4_3 = dt_opencl_create_kernel(rcd, "rcd_step_4_3");
+
+  const int amaze = 51; // from programs.conf
+  gd->kernel_amaze_init = dt_opencl_create_kernel(amaze, "amaze_init");
+  gd->kernel_amaze_grad = dt_opencl_create_kernel(amaze, "amaze_grad");
+  gd->kernel_amaze_cd = dt_opencl_create_kernel(amaze, "amaze_cd");
+  gd->kernel_amaze_cd_bound = dt_opencl_create_kernel(amaze, "amaze_cd_bound");
+  gd->kernel_amaze_vote = dt_opencl_create_kernel(amaze, "amaze_vote");
+  gd->kernel_amaze_hvwt = dt_opencl_create_kernel(amaze, "amaze_hvwt");
+  gd->kernel_amaze_nyquist2 = dt_opencl_create_kernel(amaze, "amaze_nyquist2");
+  gd->kernel_amaze_area = dt_opencl_create_kernel(amaze, "amaze_area");
+  gd->kernel_amaze_green = dt_opencl_create_kernel(amaze, "amaze_green");
+  gd->kernel_amaze_nyquist_refine = dt_opencl_create_kernel(amaze, "amaze_nyquist_refine");
+  gd->kernel_amaze_diag = dt_opencl_create_kernel(amaze, "amaze_diag");
+  gd->kernel_amaze_rbint = dt_opencl_create_kernel(amaze, "amaze_rbint");
+  gd->kernel_amaze_green_diag = dt_opencl_create_kernel(amaze, "amaze_green_diag");
+  gd->kernel_amaze_chroma = dt_opencl_create_kernel(amaze, "amaze_chroma");
+  gd->kernel_amaze_output = dt_opencl_create_kernel(amaze, "amaze_output");
   gd->kernel_demosaic_box3 = dt_opencl_create_kernel(rcd, "demosaic_box3");
   gd->kernel_write_blended_dual  = dt_opencl_create_kernel(rcd, "write_blended_dual");
 
@@ -1452,6 +1488,21 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_rcd_step_4_1);
   dt_opencl_free_kernel(gd->kernel_rcd_step_4_2);
   dt_opencl_free_kernel(gd->kernel_rcd_step_4_3);
+  dt_opencl_free_kernel(gd->kernel_amaze_init);
+  dt_opencl_free_kernel(gd->kernel_amaze_grad);
+  dt_opencl_free_kernel(gd->kernel_amaze_cd);
+  dt_opencl_free_kernel(gd->kernel_amaze_cd_bound);
+  dt_opencl_free_kernel(gd->kernel_amaze_vote);
+  dt_opencl_free_kernel(gd->kernel_amaze_hvwt);
+  dt_opencl_free_kernel(gd->kernel_amaze_nyquist2);
+  dt_opencl_free_kernel(gd->kernel_amaze_area);
+  dt_opencl_free_kernel(gd->kernel_amaze_green);
+  dt_opencl_free_kernel(gd->kernel_amaze_nyquist_refine);
+  dt_opencl_free_kernel(gd->kernel_amaze_diag);
+  dt_opencl_free_kernel(gd->kernel_amaze_rbint);
+  dt_opencl_free_kernel(gd->kernel_amaze_green_diag);
+  dt_opencl_free_kernel(gd->kernel_amaze_chroma);
+  dt_opencl_free_kernel(gd->kernel_amaze_output);
   dt_opencl_free_kernel(gd->kernel_demosaic_box3);
   dt_opencl_free_kernel(gd->kernel_write_blended_dual);
   dt_opencl_free_kernel(gd->gaussian_9x9_mul);
@@ -1537,13 +1588,7 @@ void commit_params(dt_iop_module_t *self,
   // as some demosaicers don't have OpenCL implementations
   switch(d->demosaicing_method)
   {
-    case DT_IOP_DEMOSAIC_AMAZE:
-      piece->process_cl_ready = FALSE;
-      break;
     case DT_IOP_DEMOSAIC_LMMSE:
-      piece->process_cl_ready = FALSE;
-      break;
-    case DT_IOP_DEMOSAIC_AMAZE_DUAL:
       piece->process_cl_ready = FALSE;
       break;
     case DT_IOP_DEMOSAIC_FDC:

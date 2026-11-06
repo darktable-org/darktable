@@ -321,6 +321,10 @@ changes (where available).
 
 - The dither module's random mode can now run on the OpenCL device.
 
+- The AMaZE demosaicer, plain and dual, can now run on the OpenCL
+  device instead of sending the image back to the CPU for the
+  demosaic.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
