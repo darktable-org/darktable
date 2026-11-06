@@ -23,7 +23,8 @@
  * one that is not RGB included, gives the window sRGB again. the registry
  * entry of a window is its device encoding: the system display profile on
  * a cairo window, the backend's device on a platform-owned one, and the
- * signals say when it changes. colorspaces.c is included for its static
+ * signals say when it changes; it is no histogram or soft proof choice, so a
+ * stored one becomes sRGB. colorspaces.c is included for its static
  * helpers, on a registry built here as dt_colorspaces_init() builds the
  * entries they touch.
  */
@@ -86,10 +87,10 @@ static int _setup(void **state)
   self->system_display[1] = self->system_display_srgb[1] = f->placeholder2;
   self->profiles = g_list_append(self->profiles,
                                  _create_profile(DT_COLORSPACE_DISPLAY, f->placeholder,
-                                                 "display", -1, -1, 0, 0, -1, -1));
+                                                 "display", -1, -1, 0, -1, -1, -1));
   self->profiles = g_list_append(self->profiles,
                                  _create_profile(DT_COLORSPACE_DISPLAY2, f->placeholder2,
-                                                 "display2", -1, -1, -1, 1, -1, 0));
+                                                 "display2", -1, -1, -1, -1, -1, 0));
   self->profiles = g_list_append(self->profiles,
                                  _create_profile(DT_COLORSPACE_SRGB,
                                                  dt_colorspaces_create_srgb_profile(),
@@ -388,6 +389,29 @@ static void test_platform_owned_entry_is_device(void **state)
   _assert_raised(4, 4);
 }
 
+static void test_display_is_no_histogram_choice(void **state)
+{
+  dt_colorspaces_t *self = darktable.color_profiles;
+
+  // stored by a version that listed the system display profiles
+  self->histogram_type = DT_COLORSPACE_DISPLAY;
+  self->softproof_type = DT_COLORSPACE_DISPLAY2;
+  _drop_unoffered_choices(self);
+  assert_int_equal(self->histogram_type, DT_COLORSPACE_SRGB);
+  assert_int_equal(self->softproof_type, DT_COLORSPACE_SRGB);
+
+  self->histogram_type = DT_COLORSPACE_DISPLAY2;
+  _drop_unoffered_choices(self);
+  assert_int_equal(self->histogram_type, DT_COLORSPACE_SRGB);
+
+  // what the menus offer stays
+  self->histogram_type = DT_COLORSPACE_ADOBERGB;
+  self->softproof_type = DT_COLORSPACE_ADOBERGB;
+  _drop_unoffered_choices(self);
+  assert_int_equal(self->histogram_type, DT_COLORSPACE_ADOBERGB);
+  assert_int_equal(self->softproof_type, DT_COLORSPACE_ADOBERGB);
+}
+
 int main(int argc, char *argv[])
 {
   const struct CMUnitTest tests[] = {
@@ -398,6 +422,7 @@ int main(int argc, char *argv[])
     cmocka_unit_test_setup_teardown(test_cairo_window_entry_is_system_profile, _setup,
                                     _teardown),
     cmocka_unit_test_setup_teardown(test_platform_owned_entry_is_device, _setup, _teardown),
+    cmocka_unit_test_setup_teardown(test_display_is_no_histogram_choice, _setup, _teardown),
   };
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

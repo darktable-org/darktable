@@ -93,8 +93,14 @@ markers are written as they are, saturated colors that mark in any output.
   8-bit values as, its device encoding: the system display profile on a
   cairo window, the device the backend declared on a platform-owned one,
   sRGB on Wayland, whatever the platform or the file reports. What names
-  the entry by type therefore renders for what the window shows: a
-  histogram profile set to it, thumbnails with `cache_color_managed` off.
+  the entry by type therefore renders for what the window shows:
+  thumbnails with `cache_color_managed` off, the style preview. No menu
+  offers the entries, not the histogram's, the soft proof's or export's:
+  darktable cannot say what reaches the screen where the platform
+  converts, so nothing it computes can claim to be the display's, as
+  Krita names no monitor profile where the OS manages color. A stored
+  histogram or soft proof profile no menu offers becomes sRGB
+  (`_drop_unoffered_choices()`).
   The window's system display profile, the platform's report or the file,
   is kept per window (`system_display` in `dt_colorspaces_t`) and describes
   the window only when cairo shows it; in an output, `DISPLAY` and
@@ -123,9 +129,8 @@ markers are written as they are, saturated colors that mark in any output.
   a new [headroom target](#headroom-target), reruns that window's
   producers and nothing else.
   A new device profile is also a new registry entry, announced with
-  `DT_SIGNAL_CONTROL_PROFILE_CHANGED` for what names the entry by type: a
-  soft proof, the histogram or export profile, the main window naming
-  `DISPLAY2`. It is raised exactly when the entry changes: for a new
+  `DT_SIGNAL_CONTROL_PROFILE_CHANGED` for what names the entry by type.
+  It is raised exactly when the entry changes: for a new
   system display profile on a cairo window, and when the platform takes a
   window or gives it back; a new system display profile on a native window
   changes neither the output nor the entry and announces nothing. colorout

@@ -1377,8 +1377,8 @@ uint32_t dt_colorspaces_get_display_serial(const dt_colorspaces_color_profile_ty
 // where they decide to render, on the redraw queued here, and only a new
 // device encoding or owner reaches what GTK draws, such as converted
 // thumbnails. a new device profile is also a new registry entry, for what
-// names it by type (a soft proof, the histogram or export profile, either
-// window's), announced as master announced a new display profile
+// names it by type (thumbnails with cache_color_managed off, the style
+// preview), announced as master announced a new display profile
 static void _output_changed(const int w,
                             const dt_display_output_t *before,
                             const dt_display_output_t *after)
@@ -1524,6 +1524,48 @@ static gboolean _system_display_set(dt_colorspaces_t *self,
   self->system_display[w] = profile;
   _system_display_changed(self, w);
   return TRUE;
+}
+
+// whether the histogram menu (category_pos) or the soft proof menu
+// (out_pos) offers this profile
+static gboolean _offered(const dt_colorspaces_t *self,
+                         const dt_colorspaces_color_profile_type_t type,
+                         const char *filename,
+                         const gboolean histogram)
+{
+  for(const GList *iter = self->profiles; iter; iter = g_list_next(iter))
+  {
+    const dt_colorspaces_color_profile_t *p = iter->data;
+    if((histogram ? p->category_pos : p->out_pos) > -1
+       && p->type == type
+       && (type != DT_COLORSPACE_FILE || dt_colorspaces_is_profile_equal(p->filename, filename)))
+      return TRUE;
+  }
+  return FALSE;
+}
+
+// a stored histogram or soft proof profile its menu does not offer, such
+// as the system display profile an earlier version listed for the
+// histogram, becomes sRGB, the default, so that the menu and what is used
+// agree
+static void _drop_unoffered_choices(dt_colorspaces_t *self)
+{
+  if(!_offered(self, self->histogram_type, self->histogram_filename, TRUE))
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[colorspaces] histogram profile `%s' is no histogram choice,"
+             " using sRGB", dt_colorspaces_get_name(self->histogram_type,
+                                                    self->histogram_filename));
+    self->histogram_type = DT_COLORSPACE_SRGB;
+    self->histogram_filename[0] = '\0';
+  }
+  if(!_offered(self, self->softproof_type, self->softproof_filename, FALSE))
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[colorspaces] soft proof profile `%s' is no soft proof"
+             " choice, using sRGB", dt_colorspaces_get_name(self->softproof_type,
+                                                            self->softproof_filename));
+    self->softproof_type = DT_COLORSPACE_SRGB;
+    self->softproof_filename[0] = '\0';
+  }
 }
 
 static void cms_error_handler(const cmsContext ContextID,
@@ -1775,17 +1817,20 @@ dt_colorspaces_t *dt_colorspaces_init()
   _system_profile_add(res, NULL, 0, display2);
   res->system_display[0] = res->system_display_srgb[0] = display;
   res->system_display[1] = res->system_display_srgb[1] = display2;
+  // no histogram choice: darktable cannot say what reaches the screen
+  // where the platform converts, so a histogram cannot claim to be the
+  // display's. Krita names no monitor profile where the OS manages color
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_DISPLAY,
                      display,
                      _("system display profile"), -1, -1,
-                     ++display_pos, ++category_pos, -1, -1));
+                     ++display_pos, -1, -1, -1));
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_DISPLAY2, display2,
                      _("system display profile (second window)"), -1, -1, -1,
-                     ++category_pos, -1, ++display2_pos));
+                     -1, -1, ++display2_pos));
   // we want a v4 with parametric curve for input and a v2 with point trc for output
   // see http://ninedegreesbelow.com/photography/lcms-make-icc-profiles.html#profile-variants-and-versions
   // TODO: what about display?
@@ -2000,6 +2045,7 @@ dt_colorspaces_t *dt_colorspaces_init()
   }
   res->profiles = g_list_concat(res->profiles, temp_profiles);
 
+  _drop_unoffered_choices(res);
 
   if((unsigned int)res->mode > DT_PROFILE_GAMUTCHECK) res->mode = DT_PROFILE_NORMAL;
 
