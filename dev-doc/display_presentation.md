@@ -200,10 +200,14 @@ markers are written as they are, saturated colors that mark in any output.
 - A soft proof shows what an export to the proof profile holds, in the
   output: converted to the proof profile with its own intent
   (`softproof_intent`, set next to the proof profile in the darkroom), and
-  from there to the output relative colorimetric; clipped where that export clips, and by the presenter to what the
-  screen shows. PQ and HLG proofs take the export's own encoding round trip
+  from there to the output relative colorimetric; clipped where an
+  integer export clips (a float export does not), and by the presenter to
+  what the screen shows. PQ and HLG proofs take the export's own encoding round trip
   in linear light (`dt_hdr_encode()`, `dt_hdr_decode()`), since their ICC
-  shapers end at 1.0, where the pipe has reference white.
+  shapers end at 1.0, where the pipe has reference white. An ink proof
+  shows a CMYK deliverable, which darktable does not export (an export to a
+  CMYK profile falls back to sRGB); the hidden Lab and XYZ outputs store
+  other units than the proof and are left out.
 - Export, thumbnail and AI pipes have no output description (`type` is
   `DT_COLORSPACE_NONE`).
 
