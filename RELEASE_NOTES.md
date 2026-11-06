@@ -492,6 +492,13 @@ changes (where available).
 - History items created by the Lightroom import are labeled "lr import"
   instead of having an empty label.
 
+- Nikon high efficiency (HE/HE*) NEFs from the Z6 III, Z8, Z9 and Z f
+  can now be opened. RawSpeed can't decode them, so darktable loads
+  these files with LibRaw. This needs LibRaw 0.23 (snapshot 202611)
+  or newer; with an older LibRaw these files still can't be opened.
+  All other NEFs, including non-HE NEFs from these cameras, are still
+  loaded with RawSpeed.
+
 ## Bug Fixes
 
 - Upscaled exports no longer show shifted bands where they were
@@ -1026,7 +1033,7 @@ changes (where available).
 - CinemaDNG lossless (Blackmagic, some DJI, etc.) and lossy (Blackmagic)
 - DNG 1.7 using JPEG XL (Adobe enhanced, Samsung Expert RAW)
 - Fujifilm lossy RAFs
-- Nikon high efficiency NEFs
+- Nikon high efficiency NEFs, except from the Z6 III, Z8, Z9 and Z f
 - Phase One other than IIQ L
 - Sony ARW 4.0/5.0 downsized lossless ("M" for full-frame, "S" for full-frame & APS-C)
 - Sony ARW 6.0 compressed and compressed (HQ)

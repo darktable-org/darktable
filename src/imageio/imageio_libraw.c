@@ -378,21 +378,65 @@ gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
 }
 
 
-dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
-                                           const char *filename,
-                                           dt_mipmap_buffer_t *mbuf)
+// Nikon HE/HE* NEFs (JPEG XS based) are not supported by
+// RawSpeed. LibRaw selects its dedicated decoder for them while parsing the
+// file (open stage), so the decoder name tells us reliably whether this NEF is
+// HE/HE* and whether the LibRaw in use is able to decode it at all.
+// With a LibRaw lacking HE support the name never matches and such files keep
+// going to RawSpeed exactly as before.
+static gboolean _is_nikon_he(libraw_data_t *raw)
+{
+  const char *decoder = libraw_unpack_function_name(raw);
+  return decoder && !strcmp(decoder, "nikon_he_load_raw()");
+}
+
+// LibRaw decodes Nikon HE/HE* NEFs since 0.23 (snapshot 202611).
+#define DT_LIBRAW_NIKON_HE_MAJOR 0
+#define DT_LIBRAW_NIKON_HE_MINOR 23
+
+// Cameras whose HE/HE* NEFs are loaded via LibRaw (LibRaw snapshot 202611:
+// "Nikon Z6 III, Z8, Z9, Z f: HE/HE* format support").
+// Values are the unmodified Exif.Image.Model strings.
+static const char *const _nikon_he_models[] =
+{
+  "NIKON Z 8",
+  "NIKON Z 9",
+  "NIKON Z f",
+  "NIKON Z6_3",
+  NULL
+};
+
+static gboolean _is_nikon_he_model(const dt_image_t *img)
+{
+  for(int i = 0; _nikon_he_models[i]; i++)
+    if(!g_strcmp0(img->exif_model, _nikon_he_models[i]))
+      return TRUE;
+  return FALSE;
+}
+
+static dt_imageio_retval_t _open_libraw(dt_image_t *img,
+                                        const char *filename,
+                                        dt_mipmap_buffer_t *mbuf,
+                                        const gboolean nikon_he_only)
 {
   int err = DT_IMAGEIO_LOAD_FAILED;
   int libraw_err = LIBRAW_SUCCESS;
 
-  if(!_supported_image(filename))
+  if(!nikon_he_only && !_supported_image(filename))
     return DT_IMAGEIO_LOAD_FAILED;
-  if(!img->exif_inited)
-    (void)dt_exif_read(img, filename);
+
+  if(nikon_he_only)
+  {
+    // cheap pre-filter on the Exif model: all other NEFs never touch LibRaw
+    if(!img->exif_inited)
+      (void)dt_exif_read(img, filename);
+    if(!_is_nikon_he_model(img))
+      return DT_IMAGEIO_UNSUPPORTED_FORMAT;
+  }
 
   libraw_data_t *raw = libraw_init(0);
   if(!raw)
-    return DT_IMAGEIO_LOAD_FAILED;
+    return nikon_he_only ? DT_IMAGEIO_UNSUPPORTED_FORMAT : DT_IMAGEIO_LOAD_FAILED;
 
 #if defined(_WIN32) && (defined(UNICODE) || defined(_UNICODE))
   wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
@@ -401,8 +445,24 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
 #else
   libraw_err = libraw_open_file(raw, filename);
 #endif
+
+  if(nikon_he_only && (libraw_err != LIBRAW_SUCCESS || !_is_nikon_he(raw)))
+  {
+    // Not an HE/HE* file (or LibRaw can't parse it): not ours, let the
+    // caller hand it to the regular NEF loaders without any error output.
+    libraw_close(raw);
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
+  }
+
   if(libraw_err != LIBRAW_SUCCESS)
     goto error;
+
+  if(nikon_he_only)
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[libraw_open] `%s': Nikon HE/HE* NEF, loading via LibRaw", img->filename);
+
+  if(!img->exif_inited)
+    (void)dt_exif_read(img, filename);
 
   libraw_err = libraw_unpack(raw);
   if(libraw_err != LIBRAW_SUCCESS)
@@ -575,6 +635,37 @@ error:
   }
   libraw_close(raw);
   return err;
+}
+
+dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
+                                           const char *filename,
+                                           dt_mipmap_buffer_t *mbuf)
+{
+  return _open_libraw(img, filename, mbuf, FALSE);
+}
+
+dt_imageio_retval_t dt_imageio_open_libraw_nikon_he(dt_image_t *img,
+                                                    const char *filename,
+                                                    dt_mipmap_buffer_t *mbuf)
+{
+#if LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(DT_LIBRAW_NIKON_HE_MAJOR, DT_LIBRAW_NIKON_HE_MINOR)
+  // Also check at runtime: a system LibRaw may be older than the
+  // headers darktable was built against.
+  if(libraw_versionNumber() < LIBRAW_MAKE_VERSION(DT_LIBRAW_NIKON_HE_MAJOR,
+                                                  DT_LIBRAW_NIKON_HE_MINOR, 0))
+  {
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[libraw_open] LibRaw %s has no Nikon HE/HE* support, skipping `%s'",
+             libraw_version(), filename);
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
+  }
+  return _open_libraw(img, filename, mbuf, TRUE);
+#else
+  // Built against a LibRaw without Nikon HE/HE* support:
+  // NEFs keep going to RawSpeed.
+  (void)img; (void)filename; (void)mbuf;
+  return DT_IMAGEIO_UNSUPPORTED_FORMAT;
+#endif
 }
 #endif
 

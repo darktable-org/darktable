@@ -31,6 +31,14 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
                                            const char *filename,
                                            dt_mipmap_buffer_t *buf);
 
+// Loads the file via LibRaw only if it is a Nikon HE/HE* NEF from
+// a Nikon Z6 III, Z8, Z9 or Z f.
+// Returns DT_IMAGEIO_UNSUPPORTED_FORMAT for any other file, so the
+// caller can continue with the regular loaders.
+dt_imageio_retval_t dt_imageio_open_libraw_nikon_he(dt_image_t *img,
+                                                    const char *filename,
+                                                    dt_mipmap_buffer_t *buf);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

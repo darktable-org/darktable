@@ -201,6 +201,9 @@ static dt_imageio_retval_t _try_open_as_tiff_on_failure_fallback_to_rawspeed
    (dt_image_t *img,
     const char *filename,
     dt_mipmap_buffer_t *mbuf);
+static dt_imageio_retval_t _open_nef(dt_image_t *img,
+                                     const char *filename,
+                                     dt_mipmap_buffer_t *mbuf);
 
 // the signatures for the file types we know about.  More specific ones need to come before
 // less specific ones, e.g. TIFF needs to come after DNG and nearly all camera formats, since
@@ -316,9 +319,9 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   { DT_FILETYPE_X3F, TRUE, 0, 4, dt_imageio_open_libraw,
     { 'F', 'O', 'V', 'b' } },
   // Nikon NEF files are TIFFs with (usually) the string "NIKON CORP" early in the file
-  { DT_FILETYPE_NEF, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
+  { DT_FILETYPE_NEF, FALSE, 0, 4, _open_nef,
     { 'I', 'I', '*', 0x00 }, "NIKON CORP" },
-  { DT_FILETYPE_NEF, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
+  { DT_FILETYPE_NEF, FALSE, 0, 4, _open_nef,
     { 'M', 'M', 0x00, '*' }, "NIKON CORP" },
   // Epson ERF files are TIFFs with the string "EPSON" early in the file
   { DT_FILETYPE_ERF, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
@@ -596,6 +599,29 @@ static dt_imageio_retval_t _try_open_as_tiff_on_failure_fallback_to_rawspeed
 {
   dt_imageio_retval_t ret = DT_IMAGEIO_LOAD_FAILED;
   ret = dt_imageio_open_tiff(img, filename, mbuf);
+  if(!_image_handled(ret))
+    ret = dt_imageio_open_rawspeed(img, filename, mbuf);
+
+  return ret;
+}
+
+// Nikon NEF: same as above, but Nikon HE/HE* files, which RawSpeed can't
+// decode, are handed to LibRaw. All other NEFs go to RawSpeed as before.
+static dt_imageio_retval_t _open_nef(dt_image_t *img,
+                                     const char *filename,
+                                     dt_mipmap_buffer_t *mbuf)
+{
+  dt_imageio_retval_t ret = dt_imageio_open_tiff(img, filename, mbuf);
+#ifdef HAVE_LIBRAW
+  if(!_image_handled(ret))
+  {
+    ret = dt_imageio_open_libraw_nikon_he(img, filename, mbuf);
+    // anything but UNSUPPORTED_FORMAT means it is an HE/HE* file and
+    // LibRaw's result is final (RawSpeed can't load it anyway)
+    if(ret != DT_IMAGEIO_UNSUPPORTED_FORMAT)
+      return ret;
+  }
+#endif
   if(!_image_handled(ret))
     ret = dt_imageio_open_rawspeed(img, filename, mbuf);
 
