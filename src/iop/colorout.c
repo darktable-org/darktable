@@ -627,9 +627,17 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   {
     _transform_proof(d, out, (float*)ivoid, npixels);
   }
-  else
+  else if(d->xform)
   {
     _transform_lcms(d, out, (float*)ivoid, npixels);
+  }
+  else
+  {
+    // an export without a transform (commit_params() leaves colorout out
+    // of a presented pipe instead): stopping the pipe leaves it no output,
+    // and the export fails
+    dt_dev_pixelpipe_set_shutdown(piece->pipe, DT_DEV_PIXELPIPE_STOP_PIECE);
+    return;
   }
   if(d->hdr_transfer)
   {
@@ -711,6 +719,18 @@ static void _create_transforms(dt_iop_colorout_data_t *d,
   if(!d->proof_xform || !d->xform || (lab_gamutcheck && !d->proof_lab_xform)
      || (lcms_gamutcheck && !d->gamut_xform))
     _delete_transforms(d);
+}
+
+// colorout filtered out: the pixels stay in the working RGB, which the run
+// resolves as its output
+static void _leave_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+{
+  piece->enabled = FALSE;
+  const dt_iop_order_iccprofile_info_t *const work =
+    dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  if(work)
+    dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, work->type,
+                                          work->filename, work->profile, work->intent);
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -795,12 +815,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // get this one
   if(out_type == DT_COLORSPACE_NONE)
   {
-    piece->enabled = FALSE;
-    const dt_iop_order_iccprofile_info_t *const work =
-      dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-    if(work)
-      dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, work->type,
-                                            work->filename, work->profile, work->intent);
+    _leave_out(self, piece);
     return;
   }
 
@@ -901,11 +916,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   if(d->hdr_transfer)
   {
     hdr_linear = dt_colorspaces_linearize_profile(output);
-    if(!hdr_linear)
-    {
-      piece->process_cl_ready = FALSE;
-      return;
-    }
+    // nothing to build a transform on
+    if(!hdr_linear) goto done;
     output = hdr_linear;
   }
 
@@ -956,6 +968,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     }
   }
 
+done:
   if(lookup_display)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
@@ -983,6 +996,23 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_colorspaces_cleanup_profile(proof_linear);
   dt_colorspaces_cleanup_profile(hdr_linear);
 
+  // with no transform process() has nothing to convert with. a presented
+  // pipe's frame says what its pixels are; an export's file would claim
+  // the requested profile, so process() fails it
+  const gboolean built = d->xform || dt_is_valid_colormatrix(d->cmatrix[0][0]);
+  if(!built)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[colorout] no transform to `%s', %s",
+             dt_colorspaces_get_name(out_type, out_filename),
+             presented ? "output left in the working RGB" : "the export fails");
+    if(presented)
+    {
+      _leave_out(self, piece);
+      return;
+    }
+    piece->process_cl_ready = FALSE;
+  }
+
   dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename,
                                         out_content, p->intent);
   // render the proof for its export's headroom and let the screen clip, as
@@ -992,7 +1022,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   // process() encodes for out_type's HDR transfer function, which no
   // profile describes once sRGB has replaced out_type's profile
-  const gboolean built = d->xform || dt_is_valid_colormatrix(d->cmatrix[0][0]);
   if(built && !(d->hdr_transfer && built_type != out_type))
   {
     encoding->type = built_type;
