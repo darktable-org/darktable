@@ -54,17 +54,12 @@ markers are written as they are, saturated colors that mark in any output.
   realize a window. It is stored in `darktable.color_profiles`, indexed by
   window and written under `xprofile_lock`, and its `serial` changes
   whenever anything else in it does.
-- The criterion: a window uses a native backend when the platform
-  color-manages tagged content to the panel, which mutter's default color
-  mode does not ([Wayland](#wayland)), and the backend reports the window's
-  output ([Backends](#backends)). Otherwise it is a cairo window, the
-  fallback where no native backend exists or sets up, or where the user
-  forces it, rendering to the screen profile the platform publishes to
-  applications: the X atom on X11, colord on X11 and Wayland, the
-  monitor's default profile from WCS on Windows (none, as under Advanced
-  Color, means sRGB), and sRGB where nothing is published, as on macOS,
-  where GTK tags its backing store sRGB. Cairo never decides whether the
-  platform converts. The one exception is the preference
+- A cairo window ([Backends](#backends)) renders to the screen profile the
+  platform publishes to applications: the X atom on X11, colord on X11 and
+  Wayland, the monitor's default profile from WCS on Windows (none, as
+  under Advanced Color, means sRGB), and sRGB where nothing is published,
+  as on macOS, where GTK tags its backing store sRGB. Cairo never decides
+  whether the platform converts. The one exception is the preference
   `ui_last/display_profile_file`: an ICC file that replaces what the
   platform publishes, for both windows, read in its place by
   `dt_colorspaces_set_display_profile()`. A native window ignores it, as
@@ -78,13 +73,16 @@ markers are written as they are, saturated colors that mark in any output.
   profile and a change of the intent preference
   (`dt_colorspaces_update_display_intent()`) republish it. Limits:
   - darktable on XWayland is an X11 client and cannot see the compositor's
-    description. It renders to the X atom or colord as on X11, so where
-    the compositor also converts untagged pixels to that profile, as
-    mutter outside its default color mode does, the image is converted
-    twice.
+    description. It renders to the X atom or colord as on X11: where the
+    compositor converts untagged pixels to the profile also published
+    there, as with xiccd, the image is converted twice, and mutter outside
+    its default color mode (before mutter !5177) reads them as sRGB.
   - A profile reassigned in the system settings while the window stays on
-    its monitor is picked up at the window's next configure event (a move
-    or a resize); listening to colord's changed signal would remove that.
+    its monitor is picked up, as in master, at the next configure event
+    that queries again: a move of the main window, any configure on
+    Wayland or of the second window. A persistent `CdWindow` per window,
+    listening to its changed signal, and a listener on the X atom would
+    remove that.
   - The display profile file is applied as is. On macOS, and on Windows
     with automatic color management or HDR, the system converts the image
     again, from sRGB, so its colors are converted twice.
@@ -215,11 +213,13 @@ not what the platform reports. The window's platform reports whenever it
 says something about the screen (`dt_presenter_window_report_headroom()`,
 `dt_presenter_headroom_t` in `gui/presenter_target.h`): the peak over
 reference white now, or NAN when the platform has no value (the display
-sleeps, macOS before EDR is engaged), the most the screen can show in the
-window if the platform says (macOS's potential EDR headroom), and a generation, which changes
-when earlier reports say nothing about this one: another screen or mode,
-a display woken up. A report never reaches pipes, and settling is never a
-platform's or a backend's job. The policy is one pure function on a clock passed in
+sleeps), the most the screen can show in the window if the platform says,
+and a generation, which changes when earlier reports say nothing about
+this one: another screen or mode, a display woken up. The policy was
+designed with a future macOS backend in mind, which would report no value
+before EDR is engaged and its potential EDR headroom as the ceiling. A
+report never reaches pipes, and settling is never a platform's or a
+backend's job. The policy is one pure function on a clock passed in
 (`gui/presenter_target.c`, tested by `test_presenter_target`):
 
 - The level is log2 of the value, clipped to the ceiling, rounded down to
@@ -239,16 +239,16 @@ platform's or a backend's job. The policy is one pure function on a clock passed
 - A new generation (and a window's first report) forgets the target's
   band: with a ceiling, the ceiling is the target at once, and values
   settle under it, so a macOS EDR ramp from 1.0 to its potential over
-  about 2 s costs nothing; without one, the first value is taken at once.
+  about 2 s would cost nothing; without one, the first value is taken at
+  once.
 
 A settled change publishes the window's output with the new image headroom
 through `dt_presenter_window_set_output()`, which keeps the rest of what
-the backend set: the window's serial moves and only its producers render
-again; the device encoding stays, so thumbnails and module colors are not
-converted again and `DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED` is not
-raised. The core then calls the backend's `target()`, which prepares
-showing frames rendered for it: the Wayland transport describes its image
-layer for the target ([Wayland](#wayland)). Until a window's producers
+the backend set, so the change is a new image encoding alone
+([output description](#output-description)). The core then calls the
+backend's `target()`, which prepares showing frames rendered for it: the
+Wayland transport describes its image layer for the target
+([Wayland](#wayland)). Until a window's producers
 deliver, its frames keep the tone mapping they were rendered with: the
 transport clips them to the range of the image description in use, and the
 compositor clips or fits that range to the screen (KWin clamps under
@@ -347,8 +347,7 @@ own pixels; one in another profile or format, made before the output
 changed, is shown converted, never refused, as GTK4's renderers and Chromium
 convert at draw. It stays until its producer renders it again: an output
 change moves the window's serial and redraws it, and the producers compare
-the serial there ([output description](#output-description)). A frame
-rendered for another headroom keeps its tone mapping until then.
+the serial there ([output description](#output-description)).
 
 - `dt_presenter_retain()` keeps the draw in progress: everything it shows,
   its images and all that is drawn around and above them, is the widget's
@@ -382,12 +381,11 @@ duplicate manager's preview, and the slideshow.
 ## Backends
 
 A window's backend is layered while its platform color-manages the
-window's tagged content and the transport sets up, otherwise cairo. With
-the preference `ui_last/display_force_cairo` set (preferences >
-miscellaneous), every window is a cairo window: an escape hatch for
-compositor or driver bugs in a native backend. A forced cairo window
-follows the cairo rule, the profile the platform publishes or else sRGB:
-colord on GNOME, the X atom on X11, sRGB on KWin. The key is read whenever
+window's tagged content to the panel and the transport sets up, otherwise
+cairo. With the preference `ui_last/display_force_cairo` set
+(preferences > miscellaneous), every window is a cairo window
+([output description](#output-description)): an escape hatch for
+compositor or driver bugs in a native backend. The key is read whenever
 the backend is chosen, and closing the preferences dialog
 (`DT_SIGNAL_PREFERENCES_CHANGE`) chooses every window's backend again.
 
@@ -403,10 +401,8 @@ display a window is on. When the choice changes, every presenting widget's
 backend data goes, kept presentations included, the old backend is freed,
 the new one reports the window's output if it is native, or the core gives
 the output back to the system display profile, and the window draws again.
-Its producers then render for the new serial, and its frames are shown
-converted until they do. Where no transport exists, as on X11, macOS and
-Windows today, a window has no platform and is a cairo window for as long
-as it exists.
+Where no transport exists, as on X11, macOS and Windows today, a window
+has no platform and is a cairo window for as long as it exists.
 
 The core, `gui/presenter.c`, keeps the widget records, the references on the frames
 of each widget's last draw, the test for a draw GTK clipped to a damaged
@@ -424,12 +420,7 @@ retained draw showed.
 frame's RGB24 pixels are painted there: frames for a cairo window are made
 in RGB24, so a frame in the window's encoding is neither converted nor
 copied on the GUI thread; one made for an earlier output is converted
-there once. The window's output is its system display profile (display2 for
-the second window) as image and device encoding, the same output a window
-has before it is realized and after it is gone.
-Every window without a native backend uses it: X11, macOS, Windows, and
-Wayland where the compositor cannot take the native backend or is mutter in
-its default color mode ([Wayland](#wayland)).
+there once.
 
 The kept presentation is what GTK's target holds at the end of the
 retained draw. On X11, GDK draws each frame into a surface of its own, and
@@ -555,17 +546,11 @@ The transport reports the window's output, its image encoding and, as
 device, the profile GTK's own surface is shown in, through
 `dt_presenter_window_set_output()`, at setup and whenever it changes, and
 the platform the screen's headroom through
-`dt_presenter_window_report_headroom()`; the
-image headroom of the window's output is the core's
-[headroom target](#headroom-target). The
+`dt_presenter_window_report_headroom()`; the image headroom of the
+window's output is the core's [headroom target](#headroom-target). The
 pipes of that window then render to that output, and everything GTK draws
-there (thumbnail transforms, picker swatches, frames GTK draws through
-`dt_frame_device_surface()`, and module GUIs through
-`dt_ioppr_get_gui_profile_info()`) converts to the device profile, sRGB,
-where a cairo window's device profile is its system display profile. A
-new headroom changes the image encoding only: that window's images are
-rendered again, thumbnails are not. When the window goes away or stops
-being native, its output returns to its system display profile.
+there converts to the device profile
+([output description](#output-description)).
 
 Code is split by what it works around:
 
@@ -625,15 +610,15 @@ passes untagged pixels to the panel unchanged and only programs the gamma
 ramp with the profile assigned in Settings > Color (mutter#4597), so the
 window is a cairo window on its system display profile, which on GNOME is
 that profile, from colord, as on X11. Any other compositor describing plain
-SDR sRGB stays native. phoc, Phosh's compositor, announces `gtk_shell1`
-too and is treated the same way. The test is made on every preferred
-description, so a window follows a switch of the color mode or a move to a
-monitor in another one ([Backends](#backends)). Limit: sway with a
-`color_profile` set only in sway describes its output as sRGB while
-converting everything to that profile. A native window leaves that
-conversion to sway; a cairo window on that output, forced or darktable on
-XWayland, converts to the profile a second time when a tool such as xiccd
-also publishes it to colord or the X atom.
+SDR sRGB stays native. The test is made on every preferred description,
+so a window follows a switch of the color mode or a move to a monitor in
+another one ([Backends](#backends)). Limit: sway with a `color_profile`
+set only in sway describes its output as sRGB while converting
+everything to that profile. A native window leaves that conversion to
+sway, which converts from sRGB, so its image is limited to sRGB there; a
+cairo window on that output, forced or darktable on XWayland, converts
+to the profile a second time when a tool such as xiccd also publishes it
+to colord or the X atom.
 
 The backend reports target max (else max) over reference luminance of the
 surface's preferred description as a hint, not a measurement, re-read
