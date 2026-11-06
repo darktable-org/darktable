@@ -280,6 +280,15 @@ const model_map_t modelMap[] = {
     .clean_alias = "EOS R1"
   },
 #endif
+#if LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(0, 23)
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS R50 V",
+    .clean_make = "Canon",
+    .clean_model = "EOS R50 V",
+    .clean_alias = "EOS R50 V"
+  },
+#endif
 };
 
 
