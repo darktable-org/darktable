@@ -18,6 +18,7 @@
 
 #include "gui/presenter.h"
 #include "common/darktable.h"
+#include "control/conf.h"
 #include "gui/gtk.h"
 #include "gui/presenter_backend.h"
 
@@ -133,7 +134,12 @@ static dt_presenter_window_t *_window_get(GtkWidget *widget)
   window->kind = toplevel == dt_ui_main_window(darktable.gui->ui)
     ? DT_COLORSPACE_DISPLAY
     : DT_COLORSPACE_DISPLAY2;
-  window->backend = dt_presenter_layered_new(window);
+  // an escape hatch for compositor or driver bugs in the native backends
+  if(dt_conf_get_bool("ui_last/display_force_cairo"))
+    dt_print(DT_DEBUG_CONTROL, "[presenter] %s window: cairo, forced by ui_last/display_force_cairo",
+             window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second");
+  else
+    window->backend = dt_presenter_layered_new(window);
   if(!window->backend) window->backend = dt_presenter_cairo_new(window);
   g_object_set_data_full(G_OBJECT(toplevel), WINDOW_KEY, window, _window_free);
   g_signal_connect(toplevel, "unrealize", G_CALLBACK(_toplevel_unrealize), NULL);

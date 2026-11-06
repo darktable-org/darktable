@@ -268,7 +268,13 @@ duplicate manager's preview, and the slideshow.
 
 A window has one backend for as long as it exists, chosen when its first
 presenting widget draws (`gui/presenter.c`, `_window_get()`): layered if the
-platform has a transport and it can set up, otherwise cairo. The core,
+platform has a transport and it can set up, otherwise cairo. With the
+preference `ui_last/display_force_cairo` set (preferences > miscellaneous),
+every window is a cairo window: an escape hatch for compositor or driver
+bugs in a native backend. A forced cairo window follows the cairo rule, the profile
+the platform publishes or else sRGB: colord on GNOME, the X atom on X11,
+sRGB on KWin. The key is read when the backend is chosen, so it takes
+effect for the main window at the next start. The core,
 `gui/presenter.c`, keeps the widget records, the references on the frames
 of each widget's last draw, the test for a draw GTK clipped to a damaged
 area, and the matrix of each image; it has no branch on the backend. A
@@ -484,8 +490,8 @@ too and is treated the same way. Limits:
   window after a restart.
 - sway with a `color_profile` set only in sway describes its output as sRGB
   while converting everything to that profile. A native window leaves that
-  conversion to sway; a cairo window on that output, such as darktable on
-  XWayland, converts to the profile a second time when a tool such as
+  conversion to sway; a cairo window on that output, forced or darktable
+  on XWayland, converts to the profile a second time when a tool such as
   xiccd also publishes it to colord or the X atom.
 
 The output is linear BT.2020 with headroom target max / reference luminance of the
