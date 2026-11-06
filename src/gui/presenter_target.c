@@ -108,8 +108,8 @@ gboolean dt_presenter_target_report(dt_presenter_target_t *target,
 
   // what an earlier generation settled on says nothing about this one,
   // the hysteresis around it included. a ceiling is the provisional
-  // target, what a platform that ramps up (macOS EDR) ends at; without
-  // one the first value is taken as it comes
+  // target, what a platform that ramps up (macOS EDR) ends at or below;
+  // without one the first value is taken as it comes
   if(!target->started || report->generation != target->generation)
   {
     target->started = TRUE;

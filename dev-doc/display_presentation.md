@@ -238,9 +238,10 @@ backend's job. The policy is one pure function on a clock passed in
   settle.
 - A new generation (and a window's first report) forgets the target's
   band: with a ceiling, the ceiling is the target at once, and values
-  settle under it, so a macOS EDR ramp from 1.0 to its potential over
-  about 2 s would cost nothing; without one, the first value is taken at
-  once.
+  settle under it, so a macOS EDR ramp of up to 2 s renders nothing on
+  the way: once in all where it ends at its potential (low brightness),
+  twice where it ends below (the ceiling, then the settled value);
+  without one, the first value is taken at once.
 
 A settled change publishes the window's output with the new image headroom
 through `dt_presenter_window_set_output()`, which keeps the rest of what
