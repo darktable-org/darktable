@@ -64,7 +64,14 @@ markers are written as they are, saturated colors that mark in any output.
   monitor's default profile from WCS on Windows (none, as under Advanced
   Color, means sRGB), and sRGB where nothing is published, as on macOS,
   where GTK tags its backing store sRGB. Cairo never decides whether the
-  platform converts. There is no user selection; previewing
+  platform converts. The one exception is the preference
+  `ui_last/display_profile_file`: an ICC file that replaces what the
+  platform publishes, for both windows, read in its place by
+  `dt_colorspaces_set_display_profile()`. A native window's output ignores
+  it, being the platform's, but what names the system display profile by
+  type takes the file there too, as it takes colord's profile: a soft proof
+  or histogram profile set to it, thumbnails with `cache_color_managed`
+  off. There is no other user selection; previewing
   another display, print or sRGB is a soft proof. Unless the platform owns
   it, a window's output is its system display profile (`DISPLAY` or
   `DISPLAY2`) as image and device encoding, with the display intent
@@ -80,6 +87,9 @@ markers are written as they are, saturated colors that mark in any output.
   - A profile reassigned in the system settings while the window stays on
     its monitor is picked up at the window's next configure event (a move
     or a resize); listening to colord's changed signal would remove that.
+  - The display profile file is applied as is. On macOS, and on Windows
+    with automatic color management or HDR, the system converts the image
+    again, from sRGB, so its colors are converted twice.
 - What GTK draws converts to the device encoding: the thumbnail transforms
   follow the main window's, picker swatches convert from what the preview
   pipe produced to its window's, frames drawn by GTK take their device

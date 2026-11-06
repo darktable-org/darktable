@@ -911,10 +911,15 @@ static GdkDevice *_touchpad = NULL;
 static gint64 _touchpad_last_gesture = 0;
 #define DT_TOUCHPAD_ASSOCIATION_USEC (500 * G_TIME_SPAN_MILLISECOND)
 
-static void _display_intent_pref_changed(gpointer instance,
-                                         gpointer user_data)
+static void _display_pref_changed(gpointer instance,
+                                  gpointer user_data)
 {
   dt_colorspaces_update_display_intent();
+  // the display profile file preference applies without a restart; asking
+  // again with neither changed changes nothing
+  dt_colorspaces_set_display_profile(DT_COLORSPACE_DISPLAY);
+  if(darktable.develop && darktable.develop->second_wnd)
+    dt_colorspaces_set_display_profile(DT_COLORSPACE_DISPLAY2);
 }
 
 static void _touchpad_gestures_pref_changed(gpointer instance,
@@ -2082,7 +2087,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
                             _touchpad_gestures_pref_changed, gui);
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
-                            _display_intent_pref_changed, NULL);
+                            _display_pref_changed, NULL);
 
   /* Have the delete event (window close) end the program */
   snprintf(path, sizeof(path), "%s/icons", datadir);

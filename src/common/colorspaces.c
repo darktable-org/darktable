@@ -1669,7 +1669,8 @@ static void _migrate_display_selection(dt_colorspaces_t *self)
                       : g_strdup(first ? first : second);
     dt_print(DT_DEBUG_ALWAYS,
              "[colorspaces] the display profile now comes from the system's color"
-             " settings: the stored selection %s is no longer used",
+             " settings: the stored selection %s is no longer used. the preference"
+             " ui_last/display_profile_file can name a profile file instead",
              self->retired_display_selection);
   }
   g_free(first);
@@ -1685,7 +1686,8 @@ void dt_colorspaces_notify_retired_selection(void)
   dt_colorspaces_t *self = darktable.color_profiles;
   if(!self->retired_display_selection) return;
   dt_control_log(_("the display profile now comes from the system's color settings:"
-                   " %s is no longer used"),
+                   " %s is no longer used. a profile file can replace it in"
+                   " preferences > miscellaneous"),
                  self->retired_display_selection);
   g_free(self->retired_display_selection);
   self->retired_display_selection = NULL;
@@ -2029,6 +2031,7 @@ void dt_colorspaces_cleanup(dt_colorspaces_t *self)
 
   pthread_rwlock_destroy(&self->xprofile_lock);
   g_free(self->retired_display_selection);
+  g_free(self->display_file_rejected);
 
   free(self);
 }
@@ -2210,6 +2213,18 @@ void dt_colorspaces_set_display_profile
 #endif
   dt_display_output_change_t output_change = DT_DISPLAY_OUTPUT_UNCHANGED;
 
+  // a file the user chose replaces what the platform would report, for
+  // both windows. only a window darktable color-manages itself uses it: a
+  // platform-owned output ignores the system display profile
+  gchar *file = dt_util_fix_path(dt_conf_get_string_const("ui_last/display_profile_file"));
+  if(file)
+  {
+    gsize size = 0;
+    if(g_file_get_contents(file, (gchar **)&buffer, &size, NULL)) buffer_size = size;
+    profile_source = g_strdup_printf("preference ui_last/display_profile_file `%s'", file);
+    goto reported;
+  }
+
 #if defined GDK_WINDOWING_X11
 
   // we will use the xatom no matter what configured when compiled
@@ -2339,6 +2354,7 @@ void dt_colorspaces_set_display_profile
   profile_source = g_strdup("windows color system");
 #endif
 
+reported:
   // the query needs no lock, and waiting for readers here rather than
   // giving up keeps a configure from leaving the previous screen's profile
   pthread_rwlock_wrlock(&self->xprofile_lock);
@@ -2349,6 +2365,17 @@ void dt_colorspaces_set_display_profile
   // nothing usable from the platform means sRGB. with colord, its answer
   // decides, later and with the atom's profile
   profile = _system_profile(self, buffer, buffer_size);
+  if(file)
+  {
+    // the hint to install a profile in the system's settings does not apply
+    self->system_display_hinted[w] = TRUE;
+    // said once per file, not on every configure event
+    if(!profile && g_strcmp0(file, self->display_file_rejected))
+      dt_print(DT_DEBUG_ALWAYS, "[color profile] the display profile file `%s' is"
+               " unreadable or not an RGB profile, using sRGB", file);
+    g_free(self->display_file_rejected);
+    self->display_file_rejected = profile ? NULL : g_strdup(file);
+  }
   if(!ask_colord)
   {
     changed = _system_display_set(self, w, profile);
@@ -2369,6 +2396,7 @@ void dt_colorspaces_set_display_profile
 cleanup_and_return:
 #endif
   g_free(profile_source);
+  g_free(file);
 
 #ifdef USE_COLORDGTK
   // colord answers asynchronously, and its callback decides the query
