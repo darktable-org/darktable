@@ -40,9 +40,10 @@ typedef struct dt_presenter_image_t
   const float *pixels;
   // frame pixels to the user space the widget's draw started in
   cairo_matrix_t matrix;
-  // the clip's extents in that space
-  double clip[4];
   cairo_filter_t filter;
+  // the backend's record of the image, or NULL; the backend keeps it for
+  // as long as it shows or keeps the image
+  void *data;
 } dt_presenter_image_t;
 
 // what the end of a draw does to the widget's kept presentation
@@ -60,8 +61,7 @@ typedef struct dt_presenter_backend_t dt_presenter_backend_t;
 
 /*
  * every call takes the widget's data, which begin() creates; base is the
- * user space the widget's draw started in, the one image matrices and clips
- * are in
+ * user space the widget's draw started in, the one image matrices are in
  */
 struct dt_presenter_backend_t
 {

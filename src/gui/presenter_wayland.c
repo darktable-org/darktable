@@ -30,7 +30,6 @@
 
 #include "gui/presenter_layers.h"
 #include "common/darktable.h"
-#include "common/math.h"
 
 #include "color-management-v1-client-protocol.h"
 
@@ -63,6 +62,9 @@ typedef struct _widget_t
 {
   _layer_t image, foreground;
   struct wp_color_management_surface_v1 *color;
+  // the last reservation
+  dt_presenter_layers_t layers;
+  _buffer_t *reserved_image, *reserved_foreground;
 } _widget_t;
 
 struct _backend_t
@@ -111,17 +113,6 @@ static uint32_t _intent(const _backend_t *b)
 static float _headroom(const uint32_t max_lum)
 {
   return max_lum ? (float)max_lum / REFERENCE_NITS : 1.0f;
-}
-
-// v in [0, 1] as an IEEE half float, rounded to nearest even
-static inline uint16_t _half(const float v)
-{
-  // below the smallest normal half: a multiple of 2^-24
-  if(v < 6.103515625e-05f) return (uint16_t)lrintf(v * 16777216.0f);
-
-  union { float f; uint32_t u; } x = { .f = v };
-  const uint32_t u = x.u + 0x0fff + ((x.u >> 13) & 1);
-  return (uint16_t)((u >> 13) - ((127 - 15) << 10));
 }
 
 /* buffers */
@@ -508,8 +499,8 @@ static void _description_ready(_backend_t *b,
   // set now, and still shown with the image encoded for the old one: an
   // image description is double-buffered state, applied by the image
   // surface's next commit (color-management-v1, set_image_description).
-  // that surface is committed only with a buffer encoded for the headroom
-  // headroom() returns, and a new headroom composes a new buffer
+  // that surface is committed only with a buffer composed for the encoding
+  // a reservation gives from now on, and a new encoding composes a new buffer
   // (presenter_layers.c, _image_changed()), so the description and the
   // first buffer encoded for it apply together
   for(GList *l = b->widgets; l; l = g_list_next(l))
@@ -680,11 +671,6 @@ static const struct wl_registry_listener _registry_listener = {
 
 /* transport interface */
 
-static float _transport_headroom(dt_presenter_transport_t *self)
-{
-  return _headroom(((_backend_t *)self)->description_max);
-}
-
 static void _add_shown_popover(GtkWidget *widget,
                                gpointer data)
 {
@@ -713,10 +699,11 @@ static void _cover_popovers(_backend_t *b,
   g_list_free(popovers);
 }
 
-static gboolean _present(dt_presenter_transport_t *self,
+static gboolean _reserve(dt_presenter_transport_t *self,
                          GtkWidget *widget,
                          void **widget_data,
-                         const dt_presenter_layers_t *layers)
+                         const dt_presenter_layers_t *layers,
+                         dt_presenter_reservation_t *reservation)
 {
   _backend_t *b = (_backend_t *)self;
 
@@ -732,56 +719,47 @@ static gboolean _present(dt_presenter_transport_t *self,
     *widget_data = w;
   }
 
-  // both layers or neither: the compositor still holding the buffers of
-  // one means trying again next frame
-  _buffer_t *image = layers->image
-    ? _buffer_get(b, &w->image, layers->width, layers->height, 8 * layers->width,
-                  WL_SHM_FORMAT_ABGR16161616F)
-    : NULL;
-  _buffer_t *foreground = _buffer_get(b, &w->foreground, layers->width, layers->height,
-                                      4 * layers->width, WL_SHM_FORMAT_ARGB8888);
-  if(!foreground || (layers->image && !image))
-  {
-    dt_presenter_window_redraw(b->window);
-    return FALSE;
-  }
+  // the foreground goes with every present. the compositor still holding
+  // both of its buffers means trying again next frame
+  w->reserved_foreground = _buffer_get(b, &w->foreground, layers->width, layers->height,
+                                       4 * layers->width, WL_SHM_FORMAT_ARGB8888);
+  if(!w->reserved_foreground) return FALSE;
+  w->reserved_image = _buffer_get(b, &w->image, layers->width, layers->height,
+                                  8 * layers->width, WL_SHM_FORMAT_ABGR16161616F);
+  w->layers = *layers;
+
+  // the description is ext_linear with luminances (0, max, reference): a
+  // value E shows at E x max nits, so reference white is E = 1 / headroom,
+  // and outside [0, 1] colorimetry is undefined
+  const float headroom = _headroom(b->description_max);
+  const float white = 1.0f / headroom;
+  *reservation = (dt_presenter_reservation_t){
+    .foreground = w->reserved_foreground->data,
+    .foreground_stride = (size_t)4 * layers->width,
+    .image = w->reserved_image ? w->reserved_image->data : NULL,
+    .image_stride = (size_t)8 * layers->width,
+    .encoding = { .clip = { 0.0f, headroom },
+                  .matrix = { { white, 0.0f, 0.0f },
+                              { 0.0f, white, 0.0f },
+                              { 0.0f, 0.0f, white } } } };
+  return TRUE;
+}
+
+static void _commit(dt_presenter_transport_t *self,
+                    void **widget_data,
+                    const gboolean image)
+{
+  _backend_t *b = (_backend_t *)self;
+  _widget_t *w = *widget_data;
 
   // applied with GDK's next commit, like the buffers
-  wl_subsurface_set_position(w->image.subsurface, layers->x, layers->y);
-  wl_subsurface_set_position(w->foreground.subsurface, layers->x, layers->y);
+  wl_subsurface_set_position(w->image.subsurface, w->layers.x, w->layers.y);
+  wl_subsurface_set_position(w->foreground.subsurface, w->layers.x, w->layers.y);
   if(!b->transport.popovers_above) _cover_popovers(b, w);
 
-  if(image)
-  {
-    // outside the volume the description declares, colorimetry is
-    // undefined: clip to it. alpha is 1 on the images, 0 off them
-    const float headroom = layers->headroom;
-    const float scale = 1.0f / headroom;
-    const size_t npixels = (size_t)layers->width * layers->height;
-    uint16_t *const out = image->data;
-    const float *const in = layers->image;
-    DT_OMP_FOR()
-    for(size_t k = 0; k < npixels; k++)
-    {
-      if(in[4 * k + 3] == 0.0f)
-      {
-        memset(out + 4 * k, 0, 4 * sizeof(uint16_t));
-        continue;
-      }
-      for(int c = 0; c < 3; c++)
-      {
-        const float v = in[4 * k + c];
-        out[4 * k + c] = _half(dt_isnan(v) ? 0.0f : CLAMPF(v, 0.0f, headroom) * scale);
-      }
-      out[4 * k + 3] = _half(1.0f);
-    }
-    _layer_commit(&w->image, image, layers->scale);
-  }
-
-  memcpy(foreground->data, layers->foreground, foreground->size);
-  _layer_commit(&w->foreground, foreground, layers->scale);
+  if(image) _layer_commit(&w->image, w->reserved_image, w->layers.scale);
+  _layer_commit(&w->foreground, w->reserved_foreground, w->layers.scale);
   wl_display_flush(b->display);
-  return TRUE;
 }
 
 static void _clear(dt_presenter_transport_t *self,
@@ -912,8 +890,8 @@ dt_presenter_transport_t *dt_presenter_wayland_new(GtkWidget *toplevel,
     return NULL;
   }
 
-  b->transport.headroom = _transport_headroom;
-  b->transport.present = _present;
+  b->transport.reserve = _reserve;
+  b->transport.commit = _commit;
   b->transport.clear = _clear;
   b->transport.release = _release;
   b->transport.free = _free;

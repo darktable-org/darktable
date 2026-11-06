@@ -254,11 +254,6 @@ void dt_presenter_image(cairo_t *cr,
   cairo_matrix_multiply(&image.matrix, &image.matrix, &ctm);
   cairo_matrix_multiply(&image.matrix, &image.matrix, &inverse_base);
 
-  cairo_save(cr);
-  cairo_set_matrix(cr, &w->base);
-  cairo_clip_extents(cr, &image.clip[0], &image.clip[1], &image.clip[2], &image.clip[3]);
-  cairo_restore(cr);
-
   dt_presenter_backend_t *backend = w->window->backend;
   if(!backend->image(backend, w->data, cr, x, y, &image)) return;
 
