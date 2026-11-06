@@ -4514,6 +4514,8 @@ void dt_masks_model_picks_prune(dt_masks_form_t *grp, GList **picked)
       {
         *picked = g_list_delete_link(*picked, l);
         again = TRUE;
+        // restart from the head without advancing through the deleted link
+        break;
       }
     }
   }

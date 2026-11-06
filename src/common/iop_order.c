@@ -1062,7 +1062,9 @@ GList *dt_ioppr_get_multiple_instances_iop_order_list(const dt_imgid_t imgid,
     }
   }
 
-  g_list_free(iop_order);
+  // dt_ioppr_get_iop_order_list() returns owned, heap-allocated entries.
+  // Freeing the list nodes alone leaks one entry for every module.
+  g_list_free_full(iop_order, free);
   sqlite3_finalize(stmt);
 
   return res;
@@ -1436,7 +1438,9 @@ GList *dt_ioppr_merge_module_multi_instance_iop_order_list(GList *iop_order_list
       GList *next = g_list_next(link);
       if(strcmp(operation, entry->operation) == 0)
       {
-        iop_order_list = g_list_remove_link(iop_order_list, link);
+        // the removed module entry is no longer owned by the destination
+        free(link->data);
+        iop_order_list = g_list_delete_link(iop_order_list, link);
       }
 
       link = next;
@@ -1461,7 +1465,7 @@ GList *dt_ioppr_merge_multi_instance_iop_order_list(GList *iop_order_list,
 
     op = g_list_append(op, entry);
 
-    copy = g_list_remove_link(copy, l);
+    copy = g_list_delete_link(copy, l);
 
     GList *mi = l_next;
     while(mi)
@@ -1471,7 +1475,7 @@ GList *dt_ioppr_merge_multi_instance_iop_order_list(GList *iop_order_list,
       if(strcmp(entry->operation, mi_entry->operation) == 0)
       {
         op = g_list_append(op, mi_entry);
-        copy = g_list_remove_link(copy, mi);
+        copy = g_list_delete_link(copy, mi);
       }
 
       mi = next;
@@ -1692,7 +1696,8 @@ void dt_ioppr_update_for_style_items(dt_develop_t *dev,
     if(si->params_size > 0)
     {
       dt_iop_order_entry_t *n = malloc(sizeof(dt_iop_order_entry_t));
-      memcpy(n->operation, si->operation, sizeof(n->operation));
+      // style items own a string, not a fixed-width operation buffer
+      g_strlcpy(n->operation, si->operation, sizeof(n->operation));
       n->instance = si->multi_priority;
       g_strlcpy(n->name, si->multi_name, sizeof(n->name));
       n->o.iop_order = 0;
@@ -1727,7 +1732,9 @@ void dt_ioppr_update_for_style_items(dt_develop_t *dev,
     }
   }
 
-  g_list_free(e_list);
+  // _ioppr_update_for_entries() copies new entries into the destination;
+  // the temporary style entries remain owned by this function.
+  g_list_free_full(e_list, free);
 }
 
 void dt_ioppr_update_for_modules(dt_develop_t *dev,

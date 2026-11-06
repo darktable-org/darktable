@@ -305,8 +305,12 @@ static gboolean dt_styles_create_style_header(const char *name,
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
-  dt_action_register(stl, name, _apply_style_shortcut_callback, 0, 0);
+  // headless control has no shortcut tree lifecycle
+  if(darktable.gui)
+  {
+    dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
+    dt_action_register(stl, name, _apply_style_shortcut_callback, 0, 0);
+  }
 
   dt_gui_style_content_dialog("", -1);
 
@@ -414,6 +418,7 @@ static gboolean _style_item_attach_mask(const int styleid,
 
   dt_develop_blend_params_t bp;
   gboolean flexi = FALSE;
+  gboolean owns_shapes = FALSE;
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const char *operation = (const char *)sqlite3_column_text(stmt, 0);
@@ -422,13 +427,31 @@ static gboolean _style_item_attach_mask(const int styleid,
     const int blendop_version = sqlite3_column_int(stmt, 2);
     flexi = _flexi_mask_of(operation, blendop_params, blendop_params_size,
                            blendop_version, &bp);
+    if(!flexi && blendop_params && blendop_params_size == sizeof(bp)
+       && blendop_version == dt_develop_blend_version())
+    {
+      const dt_iop_module_so_t *so = dt_iop_get_module_so(operation);
+      if(so && (so->flags() & IOP_FLAGS_NO_MASKS)
+         && (!strcmp(operation, "retouch") || !strcmp(operation, "spots")))
+      {
+        memcpy(&bp, blendop_params, sizeof(bp));
+        owns_shapes = dt_is_valid_maskid(bp.mask_id);
+      }
+    }
   }
   sqlite3_finalize(stmt);
-  if(!flexi) return FALSE;
+  if(!flexi && !owns_shapes) return FALSE;
 
   GList *forms = dt_masks_read_forms_at(imgid, hist_num);
   size_t size = 0;
-  void *blob = dt_masks_blend_blob_encode(&bp, forms, &size);
+  // module-owned shapes (retouch/spots) are not a flexi blending mask,
+  // but use the same mask-tree serialization. The temporary flag only
+  // selects the encoder's tree mode; restore the original blend params
+  // in the blob because retouch's op_params refer to the original ids
+  dt_develop_blend_params_t to_encode = bp;
+  if(owns_shapes) to_encode.mask_mode |= DEVELOP_MASK_FLEXI;
+  void *blob = dt_masks_blend_blob_encode(&to_encode, forms, &size);
+  if(owns_shapes) memcpy(blob, &bp, sizeof(bp));
   const gboolean pixels =
     size > sizeof(bp) && dt_masks_tree_has_pixel_forms(forms, bp.mask_id);
   g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
@@ -909,21 +932,22 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
       g_strlcpy(module->multi_name, style_item->multi_name, sizeof(module->multi_name));
       module->multi_name_hand_edited = style_item->multi_name_hand_edited;
 
-      // as dt_dev_read_history_ext() reads a history row: the forms of the
-      // mask go into dev->forms, which dt_history_merge_module_into_history()
-      // then records with the item. Not onto a locked mask, which the merge
-      // keeps: the style's must leave no form behind
-      const dt_iop_module_t *target =
-        dt_history_merge_target(dev, module, *modules_used, append);
-      if(dt_develop_blend_params_read(module, style_item->blendop_params,
-                                      style_item->blendop_params_size,
-                                      style_item->blendop_version,
-                                      module->blend_params, -1,
-                                      target && dt_develop_blend_mask_locked(target->blend_params),
-                                      NULL))
-        memcpy(module->blend_params, module->default_blendop_params,
-               sizeof(dt_develop_blend_params_t));
-
+      // spots v1 creates forms as a side effect of parameter conversion;
+      // preserve its original blend-read order and generated group
+      const gboolean legacy_spots = dt_iop_module_is(module, "spots")
+        && style_item->module_version == 1;
+      if(legacy_spots)
+      {
+        const dt_iop_module_t *target =
+          dt_history_merge_target(dev, module, *modules_used, append);
+        if(dt_develop_blend_params_read(module, style_item->blendop_params,
+                                        style_item->blendop_params_size,
+                                        style_item->blendop_version,
+                                        module->blend_params, -1,
+                                        target && dt_develop_blend_mask_locked(target->blend_params), NULL))
+          memcpy(module->blend_params, module->default_blendop_params,
+                 sizeof(dt_develop_blend_params_t));
+      }
       gboolean autoinit = FALSE;
 
       if(style_item->params_size != 0
@@ -991,6 +1015,30 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
         }
         else
           memcpy(module->params, style_item->params, style_item->params_size);
+      }
+
+      if(do_merge && !legacy_spots)
+      {
+        // as dt_dev_read_history_ext() reads a history row: the forms of the
+        // mask go into dev->forms, which dt_history_merge_module_into_history()
+        // then records with the item. Not onto a locked mask, which the merge
+        // keeps: the style's must leave no form behind
+        const dt_iop_module_t *target =
+          dt_history_merge_target(dev, module, *modules_used, append);
+        const gboolean blend_failed = dt_develop_blend_params_read(module, style_item->blendop_params,
+                                        style_item->blendop_params_size,
+                                        style_item->blendop_version,
+                                        module->blend_params, -1,
+                                        target && dt_develop_blend_mask_locked(target->blend_params),
+                                        NULL);
+        if(blend_failed)
+        {
+          // an own-shape style cannot be applied without the forms its params reference
+          if(dt_iop_module_is(module, "retouch") || dt_iop_module_is(module, "spots"))
+            do_merge = FALSE;
+          memcpy(module->blend_params, module->default_blendop_params,
+                 sizeof(dt_develop_blend_params_t));
+        }
       }
 
       if(do_merge)
@@ -1137,7 +1185,7 @@ static void _styles_apply_to_image_ext(const char *name,
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 2");
 
     dt_undo_lt_history_t *hist = NULL;
-    if(undo)
+    if(undo && darktable.undo)
     {
       hist = dt_history_snapshot_item_init();
       hist->imgid = newimgid;
@@ -1148,7 +1196,7 @@ static void _styles_apply_to_image_ext(const char *name,
     // write history and forms to db
     dt_dev_write_history_ext(dev_dest, newimgid);
 
-    if(undo)
+    if(undo && darktable.undo)
     {
       dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
       dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
@@ -1531,8 +1579,9 @@ void dt_styles_save_to_file(const char *style_name,
 
   xmlTextWriterStartElement(writer, BAD_CAST "info");
   xmlTextWriterWriteFormatElement(writer, BAD_CAST "name", "%s", style_name);
-  xmlTextWriterWriteFormatElement(writer, BAD_CAST "description", "%s",
-                                  dt_styles_get_description(style_name));
+  gchar *description = dt_styles_get_description(style_name);
+  xmlTextWriterWriteFormatElement(writer, BAD_CAST "description", "%s", description);
+  g_free(description);
   GList *iop_list = dt_styles_module_order_list(style_name);
   if(iop_list)
   {
@@ -1563,12 +1612,15 @@ void dt_styles_save_to_file(const char *style_name,
                                     sqlite3_column_int(stmt, 1));
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "operation", "%s",
                                     sqlite3_column_text(stmt, 2));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s",
-                                    dt_style_encode(stmt, 3));
+    // the writer copies encoded parameters; it does not take ownership
+    char *op_params = dt_style_encode(stmt, 3);
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s", op_params);
+    free(op_params);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "enabled", "%d",
                                     sqlite3_column_int(stmt, 4));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_params", "%s",
-                                    dt_style_encode(stmt, 5));
+    char *blendop_params = dt_style_encode(stmt, 5);
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_params", "%s", blendop_params);
+    free(blendop_params);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_version", "%d",
                                     sqlite3_column_int(stmt, 6));
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_priority", "%d",

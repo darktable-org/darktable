@@ -2134,6 +2134,13 @@ int dt_init(int argc,
 
   dt_conf_init(darktable.conf, darktablerc, FALSE, config_override);
 
+  // dt_conf_init() copies overrides; the parser retains ownership of both strings
+  for(GSList *l = config_override; l; l = g_slist_next(l))
+  {
+    dt_conf_string_entry_t *entry = l->data;
+    g_free(entry->key);
+    g_free(entry->value);
+  }
   g_slist_free_full(config_override, g_free);
 
   if(has_workspace)
@@ -2217,10 +2224,16 @@ int dt_init(int argc,
     }
     dt_splash_screen_destroy(); // dismiss splash screen before potentially showing error dialog
     if(!image_loaded_elsewhere && init_gui) dt_database_show_error(darktable.db, dblabel);
+    g_free((gpointer)dbname);
+    g_free((gpointer)dblabel);
 
     dt_print(DT_DEBUG_ALWAYS, "ERROR: can't acquire database lock, aborting.");
     return 1;
   }
+
+  // these copies must survive configuration reload and the database lock dialog
+  g_free((gpointer)dbname);
+  g_free((gpointer)dblabel);
 
   dt_splash_screen_set_progress(_("preparing database"));
   dt_upgrade_maker_model(darktable.db);

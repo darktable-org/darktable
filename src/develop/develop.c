@@ -2437,6 +2437,8 @@ static void _dev_merge_history(dt_develop_t *dev,
         v++;
       }
 
+      // the renumbering statement is local, including when stepping fails
+      sqlite3_finalize(stmt);
       dt_database_release_transaction(darktable.db);
 
       g_list_free(rowids);
@@ -2508,6 +2510,28 @@ char *_print_validity(const gboolean state)
     return "WRONG";
 }
 
+// a rejected owned preset must not leave a renamed or empty extra instance;
+// no deferred import has been queued when this cleanup is called
+static void _reject_owned_history_item(dt_develop_t *dev, dt_dev_history_item_t *hist,
+                                       const gboolean created, const char *name,
+                                       const gboolean hand_edited, const int order)
+{
+  dt_iop_module_t *module = hist->module;
+  if(created)
+  {
+    dev->iop = g_list_remove(dev->iop, module);
+    dt_iop_cleanup_module(module);
+    free(module);
+  }
+  else
+  {
+    g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
+    module->multi_name_hand_edited = hand_edited;
+    module->iop_order = order;
+  }
+  dt_dev_free_history_item(hist);
+}
+
 void dt_dev_read_history_ext(dt_develop_t *dev,
                              const dt_imgid_t imgid,
                              const gboolean no_image)
@@ -2520,6 +2544,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
   dt_dev_undo_start_record(dev);
 
   int auto_apply_modules_count = 0;
+  int preset_history_end = 0;
   gboolean first_run = FALSE;
   gboolean legacy_params = FALSE;
 
@@ -2556,6 +2581,10 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     dt_print(DT_DEBUG_PARAMS,
              "[dt_dev_read_history_ext] temporary history initialised with"
              " default params and presets");
+
+    // newly prepended rows have no image-owned form store; distinguish
+    // them from ordinary persisted history that legitimately uses plain bp
+    preset_history_end = _dev_get_module_nb_records();
 
     // Now merge memory.history into main.history
 
@@ -2697,6 +2726,10 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
     dt_dev_history_item_t *hist = calloc(1, sizeof(dt_dev_history_item_t));
     hist->module = NULL;
+    gboolean created_module = FALSE;
+    char previous_name[sizeof(hist->multi_name)] = { 0 };
+    gboolean previous_hand_edited = FALSE;
+    int previous_order = 0;
 
     // Find a .so file that matches our history entry, aka a module to
     // run the params stored in DB
@@ -2713,6 +2746,9 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
            || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
         {
           hist->module = module;
+          g_strlcpy(previous_name, module->multi_name, sizeof(previous_name));
+          previous_hand_edited = module->multi_name_hand_edited;
+          previous_order = module->iop_order;
           if(multi_name)
             g_strlcpy(module->multi_name, multi_name, sizeof(module->multi_name));
           else
@@ -2744,6 +2780,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
         new_module->instance = find_op->instance;
         hist->module = new_module;
+        created_module = TRUE;
       }
     }
 
@@ -2816,16 +2853,33 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     if(history_end_current > dev->history_end)
       hist->module->iop_order = hist->iop_order;
 
-    // the blend params, converted or migrated if need be, with any mask forms
-    // they carry (an auto-applied preset's) added under this row's num.
-    // Defaults if they cannot be read
-    gboolean blend_converted = FALSE;
-    if(dt_develop_blend_params_read(hist->module, blendop_params, bl_length, blendop_version,
-                                    hist->blend_params, num, FALSE, &blend_converted))
-      memcpy(hist->blend_params, hist->module->default_blendop_params,
-             sizeof(dt_develop_blend_params_t));
-    else if(blend_converted)
-      legacy_params = TRUE;
+    const gboolean owned_tail = (dt_iop_module_is(hist->module, "retouch")
+                                  || dt_iop_module_is(hist->module, "spots"))
+      && bl_length > sizeof(dt_develop_blend_params_t);
+    const gboolean owned_preset = num < preset_history_end
+      && (dt_iop_module_is(hist->module, "retouch") || dt_iop_module_is(hist->module, "spots"))
+      // spots v1 embeds coordinates in op_params; its existing conversion
+      // creates and records the forms instead of importing a portable tail
+      && !(dt_iop_module_is(hist->module, "spots") && modversion == 1);
+    if(owned_tail && dt_iop_module_is(hist->module, "spots") && modversion == 1)
+    {
+      _reject_owned_history_item(dev, hist, created_module, previous_name,
+                                  previous_hand_edited, previous_order);
+      continue;
+    }
+    if(!owned_tail && !owned_preset)
+    {
+      // the blend params, converted or migrated if need be, with any mask forms
+      // they carry (an auto-applied preset's) added under this row's num.
+      // Defaults if they cannot be read
+      gboolean blend_converted = FALSE;
+      if(dt_develop_blend_params_read(hist->module, blendop_params, bl_length, blendop_version,
+                                      hist->blend_params, num, FALSE, &blend_converted))
+        memcpy(hist->blend_params, hist->module->default_blendop_params,
+               sizeof(dt_develop_blend_params_t));
+      else if(blend_converted)
+        legacy_params = TRUE;
+    }
 
     // Copy module params if valid, else try to convert legacy params
     if(param_length == 0)
@@ -2874,7 +2928,11 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
         dt_control_log(_("%s: module `%s' version mismatch: %d != %d"),
                        fname, hist->module->op,
                        hist->module->version(), modversion);
-        dt_dev_free_history_item(hist);
+        if(owned_tail || owned_preset)
+          _reject_owned_history_item(dev, hist, created_module, previous_name,
+                                      previous_hand_edited, previous_order);
+        else
+          dt_dev_free_history_item(hist);
         continue;
       }
       else
@@ -2902,6 +2960,51 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
         memcpy(hist->params, hist->module->default_params, hist->module->params_size);
         hist->enabled = TRUE;
       }
+    }
+
+    if(owned_preset && !owned_tail)
+    {
+      // validate before legacy blending can queue an import borrowing bp;
+      // rejection after that point would free a queued history buffer
+      dt_develop_blend_params_t stored = { 0 };
+      if(bl_length == sizeof(stored)) memcpy(&stored, blendop_params, sizeof(stored));
+      void *saved_params = hist->module->params;
+      hist->module->params = hist->params;
+      const gboolean missing_forms = dt_is_valid_maskid(stored.mask_id)
+        || !dt_masks_owned_params_are_empty(hist->module);
+      hist->module->params = saved_params;
+      if(missing_forms)
+      {
+        dt_print(DT_DEBUG_ALWAYS, "[history] preset is missing owned forms for '%s'", hist->module->op);
+        _reject_owned_history_item(dev, hist, created_module, previous_name,
+                                    previous_hand_edited, previous_order);
+        legacy_params = TRUE;
+        continue;
+      }
+    }
+
+    if(owned_tail || owned_preset)
+    {
+      gboolean blend_converted = FALSE;
+      // owned-form imports must update this row's op_params, after conversion,
+      // rather than the live module buffer shared by multiple history items
+      void *saved_params = hist->module->params;
+      hist->module->params = hist->params;
+      const gboolean rejected = (owned_tail && (param_length == 0 || modversion > hist->module->version()))
+        || dt_develop_blend_params_read(hist->module, blendop_params, bl_length, blendop_version,
+                                        hist->blend_params, num, FALSE, &blend_converted);
+      hist->module->params = saved_params;
+      if(rejected)
+      {
+        // reject the whole preset row: defaults for blending alone would
+        // leave its op_params pointing at absent or unrelated image forms
+        dt_print(DT_DEBUG_ALWAYS, "[history] invalid owned forms for '%s'", hist->module->op);
+        _reject_owned_history_item(dev, hist, created_module, previous_name,
+                                    previous_hand_edited, previous_order);
+        legacy_params = TRUE;
+        continue;
+      }
+      if(blend_converted) legacy_params = TRUE;
     }
 
     // make sure that always-on modules are always on. duh.

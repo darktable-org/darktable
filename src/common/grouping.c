@@ -22,6 +22,7 @@
 #include "common/debug.h"
 #include "common/image_cache.h"
 #include "common/selection.h"
+#include "control/control.h"
 #include "control/signal.h"
 #include "gui/gtk.h"
 
@@ -44,7 +45,11 @@ void dt_grouping_add_to_group(const dt_imgid_t group_id,
   dt_image_cache_write_release_info(img, DT_IMAGE_CACHE_SAFE, "dt_grouping_add_to_group");
   GList *imgs = NULL;
   imgs = g_list_prepend(imgs, GINT_TO_POINTER(image_id));
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+  // disabled headless control does not emit signals or run their list destructor
+  if(dt_control_running())
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+  else
+    g_list_free(imgs);
 
 #ifdef USE_LUA
   dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
@@ -144,7 +149,11 @@ dt_imgid_t dt_grouping_remove_from_group(const dt_imgid_t image_id)
 #endif
     }
   }
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+  // disabled headless control does not emit signals or run their list destructor
+  if(dt_control_running())
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+  else
+    g_list_free(imgs);
 
   return new_group_id;
 }
@@ -179,7 +188,11 @@ dt_imgid_t dt_grouping_change_representative(const dt_imgid_t image_id)
     }
   }
   sqlite3_finalize(stmt);
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+  // disabled headless control does not emit signals or run their list destructor
+  if(dt_control_running())
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+  else
+    g_list_free(imgs);
 
 #ifdef USE_LUA
   dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,

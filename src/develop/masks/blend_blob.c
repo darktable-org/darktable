@@ -137,6 +137,16 @@ void *dt_masks_blend_blob_encode(const dt_develop_blend_params_t *bp,
   g_byte_array_append(out, (const guint8 *)bp, sizeof(*bp));
 
   GList *tree = _carries_tree(bp, forms) ? dt_masks_tree_forms(forms, bp->mask_id) : NULL;
+  // retouch/spots keep their optional blending tree separate from their own
+  // shapes; both roots must travel together, without duplicating shared forms
+  if(tree && dt_is_valid_maskid(bp->blend_mask_id))
+  {
+    GHashTable *seen = g_hash_table_new(NULL, NULL);
+    for(GList *l = tree; l; l = l->next)
+      g_hash_table_add(seen, GINT_TO_POINTER(((dt_masks_form_t *)l->data)->formid));
+    _collect_tree(forms, bp->blend_mask_id, seen, &tree, 0);
+    g_hash_table_destroy(seen);
+  }
 
   // a form stored as pixels refers to its own image's sidecar, so on any
   // other image it would only show as missing: it is left out, and so are
@@ -286,8 +296,10 @@ gboolean dt_masks_blend_blob_decode(const void *blob,
   {
     // the tree of the mask group: the group first, as encoded
     const dt_masks_form_t *grp = out->data;
-    if(!(bp->mask_mode & DEVELOP_MASK_FLEXI) || grp->formid != bp->mask_id
-       || !(grp->type & DT_MASKS_GROUP))
+    // ordinary flexi masks and module-owned masks (retouch/spots)
+    // both store a mask-group tree in this blob. The latter has no
+    // DEVELOP_MASK_FLEXI bit: its group is the module's own content
+    if(grp->formid != bp->mask_id || !(grp->type & DT_MASKS_GROUP))
       ok = _malformed("mask forms that are not the module's mask group");
   }
 
@@ -322,7 +334,12 @@ static dt_mask_id_t _map_id(GHashTable *map, GList *taken, GHashTable *taken_ids
     return GPOINTER_TO_INT(found);
   // dt_masks_new_marker_id() also avoids the marker ids in `taken`
   dt_mask_id_t id = dt_masks_new_marker_id(taken);
-  while(_id_in_use(taken, taken_ids, map, id)) id = dt_masks_new_marker_id(taken);
+  while(_id_in_use(taken, taken_ids, map, id))
+  {
+    // new_marker_id only sees `taken`, so asking it again can return an id
+    // already assigned by this import or present only in taken_ids
+    id = id == G_MAXINT ? 1 : id + 1;
+  }
   g_hash_table_insert(map, GINT_TO_POINTER(old), GINT_TO_POINTER(id));
   if(taken_ids) g_hash_table_add(taken_ids, GINT_TO_POINTER(id));
   return id;
@@ -347,7 +364,12 @@ void dt_masks_blend_blob_remap(GList *forms,
       pt->parentid = _map_id(map, taken, taken_ids, pt->parentid);
     }
   }
-  if(bp) bp->mask_id = _map_id(map, taken, taken_ids, bp->mask_id);
+  if(bp)
+  {
+    bp->mask_id = _map_id(map, taken, taken_ids, bp->mask_id);
+    if(dt_is_valid_maskid(bp->blend_mask_id))
+      bp->blend_mask_id = _map_id(map, taken, taken_ids, bp->blend_mask_id);
+  }
   g_hash_table_destroy(map);
 }
 

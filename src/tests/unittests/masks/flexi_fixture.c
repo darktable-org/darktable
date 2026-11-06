@@ -385,12 +385,20 @@ void flexi_teardown(void)
   for(GList *l = _grp ? flexi_dev.forms : NULL; l; l = g_list_next(l))
   {
     dt_masks_form_t *f = l->data;
-    if(f->type & DT_MASKS_GROUP) g_list_free_full(f->points, free);
+    // migrations also create leaf points owned by this fixture
+    g_list_free_full(f->points, free);
     free(f);
   }
   if(_grp) g_list_free(flexi_dev.forms);
   flexi_dev.forms = NULL;
   _grp = NULL;
+
+  // The test fixture bypasses dt_dev_cleanup(), which normally owns the
+  // deferred group-split queue created by classic-mask migration.
+  g_list_free(flexi_dev.pending_flexi_group_splits);
+  flexi_dev.pending_flexi_group_splits = NULL;
+  g_list_free_full(flexi_dev.pending_flexi_migrations, free);
+  flexi_dev.pending_flexi_migrations = NULL;
 
   if(flexi_bd.group_ordinals)
   {

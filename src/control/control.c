@@ -110,7 +110,8 @@ const dt_action_def_t dt_action_def_modifiers
 
 void dt_control_init(const gboolean withgui)
 {
-  dt_control_t *s = darktable.control = calloc(1, sizeof(dt_control_t));
+  // dt_init() allocates control before startup helpers can access it
+  dt_control_t *s = darktable.control;
   dt_atomic_set_int(&s->running, DT_CONTROL_STATE_DISABLED);
 
   if(!withgui) return;

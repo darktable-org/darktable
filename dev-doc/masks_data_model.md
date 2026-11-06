@@ -50,6 +50,48 @@ reads or writes it. A blob without these forms is the plain struct, as it
 was before. Applying the blob gives the forms fresh ids
 (`dt_masks_blend_blob_remap`), so two applies never share a form.
 
+Retouch and spots presets also carry their module-owned drawn tree at
+`mask_id`, plus any separate blending tree at `blend_mask_id`. Applying one
+remaps both roots and the module's `rt_forms[].formid` or `clone_id[]`
+references. Only reachable forms are saved. Owned trees with unresolved
+references, cycles or image-specific elements are rejected before import.
+
+Owned imports allocate positive ids in serialized order, reserving source ids,
+existing forms and group markers, and older history snapshots. The allocation
+is deterministic for the same target state. Applying a preset again replaces
+the selected instance's parameters with a fresh independent tree; previous
+trees remain available to history/undo and the usual mask cleanup. It does
+not append a second correction to the instance's active group. Other module
+instances and locked blending masks keep their own trees.
+
+Malformed owned imports are rejected as a unit. The manual preset entry point
+restores the prior parameters without publishing a history item, label or
+signal; a malformed auto-applied row is omitted from the loaded history.
+
+On import autoapply, the preset first becomes a history row. Its module
+parameters must be copied or converted before importing the forms. The
+existing deferred mask-import queue keeps a borrowed pointer to that history
+item's parameters until `dt_masks_finish_flexi_migrations()`: it assigns IDs
+unused in every stored mask snapshot, updates the references, and writes the
+forms into the current snapshot before history reload. The ordinary history
+write then stores plain blending parameters and the remapped module
+parameters, so reopening does not import the preset again.
+
+This extends the use of the existing native `dtmf` format 1, blend version 15;
+there is no schema or module-parameter version change. Plain older presets
+without owned references continue through the existing read path. A portable preset with positive owned ids and no forms is refused,
+even if destination ids happen to match. Normal image history still resolves
+plain parameters through its own masks store. A preset that never saved its
+shapes must be saved again from the source image. Older builds that discard
+NO_MASKS tails cannot apply these new presets; this extension does not provide
+downgrade compatibility.
+
+Shape coordinates retain their existing image-space semantics. Presets do
+not identify a physical sensor defect or compensate for changes in sensor
+crop, image dimensions, orientation, upstream geometry or module order.
+Camera matching helps select images, but does not establish geometric
+compatibility between them.
+
 An AI object stored as pixels is left out of the blob, along with the group
 members that refer to it. Its pixels are in the sidecar of the image version
 it was made on, so on any other image it could only show as missing. The

@@ -494,6 +494,9 @@ changes (where available).
 
 ## Bug Fixes
 
+- Retouch and spot removal presets now retain their correction shapes,
+  including when automatically applied to matching images or used in styles.
+
 - Upscaled exports no longer show shifted bands where they were
   processed in tiles, and the upscale now runs on OpenCL when it fits
   the device.
