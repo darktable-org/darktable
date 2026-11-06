@@ -41,10 +41,12 @@ typedef struct _backend_t
 typedef struct _widget_t
 {
   GtkWidget *widget;
-  // the kept presentation, and the matrix from the widget's user space to
-  // its pattern space
+  // the kept presentation, the matrix from the widget's user space to its
+  // pattern space, and the widget's size then: a reference holds all of
+  // GTK's target, other widgets around this one too
   cairo_surface_t *kept;
   cairo_matrix_t kept_matrix;
+  int kept_width, kept_height;
 } _widget_t;
 
 static cairo_t *_begin(dt_presenter_backend_t *self,
@@ -93,9 +95,12 @@ static gboolean _keep(dt_presenter_backend_t *self,
 
   cairo_save(cr);
   cairo_set_matrix(cr, base);
+  cairo_rectangle(cr, 0, 0, w->kept_width, w->kept_height);
+  cairo_clip(cr);
   cairo_set_source_surface(cr, w->kept, 0, 0);
   cairo_pattern_set_matrix(cairo_get_source(cr), &w->kept_matrix);
   cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
   cairo_paint(cr);
   cairo_restore(cr);
   return TRUE;
@@ -165,6 +170,8 @@ static void _end(dt_presenter_backend_t *self,
     }
     else
       _copy(w, target, base);
+    w->kept_width = gtk_widget_get_allocated_width(w->widget);
+    w->kept_height = gtk_widget_get_allocated_height(w->widget);
   }
 }
 

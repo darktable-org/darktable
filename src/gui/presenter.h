@@ -59,8 +59,9 @@ void dt_presenter_image(cairo_t *cr,
  * neither retains itself nor shows the kept presentation drops it */
 void dt_presenter_retain(cairo_t *cr);
 
-/** paint the kept presentation, everything its draw showed, where it was;
- * what is drawn afterwards goes on top. FALSE if there is none */
+/** paint the kept presentation, everything its draw showed, where it was,
+ * over the widget's area as it was then; what is drawn afterwards goes on
+ * top. FALSE if there is none */
 gboolean dt_presenter_keep(cairo_t *cr);
 
 /** drop the images and the kept presentation of a widget */
