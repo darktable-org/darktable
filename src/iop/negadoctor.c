@@ -700,19 +700,29 @@ static void apply_auto_offset(dt_iop_module_t *self)
 }
 
 // from Dmax and offset, compute the white balance correction as multipliers of the offset
-// such that offset × wb[c] make black monochrome
+// such that offset * wb[c] make black monochrome
 static void apply_auto_WB_low(dt_iop_module_t *self)
 {
   DT_GUARD_GUI_UPDATE();
   dt_iop_negadoctor_gui_data_t *g = self->gui_data;
   dt_iop_negadoctor_params_t *p = self->params;
 
+  // offset scales wb_low in the render, so with no offset there is nothing to correct
+  if(fabsf(p->offset) < 1e-6f) return;
+
   dt_aligned_pixel_t RGB_min;
   for(int c = 0; c < 3; c++)
-    RGB_min[c] = log10f(p->Dmin[c] / fmaxf(self->picked_color[c], THRESHOLD)) / p->D_max;
+    RGB_min[c] = log10f(p->Dmin[c] / fmaxf(self->picked_color[c], THRESHOLD)) / p->D_max / p->offset;
 
-  const float RGB_v_min = v_minf(RGB_min); // warning: can be negative
-  for(int c = 0; c < 3; c++) p->wb_low[c] =  RGB_v_min / RGB_min[c];
+  // with a neutral highlights white balance, which is set after this one, the shadows
+  // render neutral when offset * wb_low[c] - density[c] is the same for all channels,
+  // for either sign of offset. Any common shift of wb_low keeps that true: use it to keep
+  // the smallest multiplier at 1, or the largest at the slider max if that does not fit.
+  // casts too strong for the slider range at this offset are only partly corrected
+  const float RGB_v_min = v_minf(RGB_min);
+  const float RGB_v_max = v_maxf(RGB_min);
+  const float shift = fminf(1.0f - RGB_v_min, 2.0f - RGB_v_max);
+  for(int c = 0; c < 3; c++) p->wb_low[c] = CLAMP(RGB_min[c] + shift, 0.25f, 2.0f);
   p->wb_low[3] = 1.0f;
 
   DT_ENTER_GUI_UPDATE();
@@ -792,7 +802,7 @@ static void apply_auto_exposure(dt_iop_module_t *self)
   {
     RGB[c] = -log10f(p->Dmin[c] / fmaxf(self->picked_color_min[c], THRESHOLD));
     RGB[c] *= p->wb_high[c] / p->D_max;
-    RGB[c] += p->wb_low[c] * p->offset;
+    RGB[c] += p->wb_low[c] * p->offset * p->wb_high[c];
     RGB[c] = 0.96f / (1.0f - fast_exp10f(RGB[c]) + p->black); // actually, remap in [0; 0.96] for safety
   }
   p->exposure = v_minf(RGB);

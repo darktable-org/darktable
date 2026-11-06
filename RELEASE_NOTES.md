@@ -955,6 +955,11 @@ changes (where available).
   completed the correction with the target image's own as-shot
   multipliers.
 
+- Fixed the negadoctor shadows color cast picker, which could make the
+  cast in the picked shadows stronger instead of removing it, and the
+  print exposure picker, which left the highlights white balance out of
+  the scan exposure bias when computing the brightest print value.
+
 ## Lua
 
 ### API Version
