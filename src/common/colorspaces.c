@@ -1482,10 +1482,12 @@ static gboolean _system_display_set(dt_colorspaces_t *self,
   // the platform is the only source, so this is where a monitor profile
   // the system does not know about would show. sRGB is right for most
   // monitors without one: say it once. not on Wayland, where the
-  // compositor converts or the window is sRGB, and a window that gets a
-  // native backend reports nothing here before the backend takes it
+  // compositor converts or the window is sRGB, nor on macOS, where the
+  // window is sRGB, and a window that gets a native backend reports
+  // nothing here before the backend takes it
   if(!profile && !self->system_display_hinted[w] && !self->outputs[w].platform_owned
-     && dt_gui_get_session_type() != DT_GUI_SESSION_WAYLAND)
+     && dt_gui_get_session_type() != DT_GUI_SESSION_WAYLAND
+     && dt_gui_get_session_type() != DT_GUI_SESSION_QUARTZ)
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[colorspaces] no display profile reported for the %s window, using sRGB."
@@ -2281,8 +2283,8 @@ void dt_colorspaces_set_display_profile
 #elif defined GDK_WINDOWING_QUARTZ
   // every window's backing store is tagged sRGB by GTK (3.24.37 on, which
   // the build requires) and converted to the screen by macOS, so there is
-  // nothing to ask: the system entries keep the sRGB they start with
-  return;
+  // nothing to ask: no report is sRGB, which also puts sRGB back once the
+  // display profile file is cleared
 #elif defined G_OS_WIN32
   GtkWidget *widget = (profile_type == DT_COLORSPACE_DISPLAY2)
       ? darktable.develop->second_wnd
