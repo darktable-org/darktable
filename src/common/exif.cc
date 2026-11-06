@@ -1069,6 +1069,86 @@ static void _check_linear_response_limit(Exiv2::ExifData &exifData,
       img->filename, img->linear_response_limit);
 }
 
+static void _check_baseline_exposure(Exiv2::ExifData &exifData,
+                                     dt_image_t *img)
+{
+  img->dng_baseline_exposure = 0.0f;
+
+  float ev = 0.0f;
+  bool found = false;
+
+  Exiv2::ExifData::const_iterator pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.BaselineExposure"));
+  if(pos != exifData.end() && pos->count() == 1)
+  {
+    ev += pos->toFloat();
+    found = true;
+  }
+
+  pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.BaselineExposureOffset"));
+  if(pos != exifData.end() && pos->count() == 1)
+  {
+    ev += pos->toFloat();
+    found = true;
+  }
+
+  if(!found || !std::isfinite(ev))
+    return;
+
+  img->dng_baseline_exposure = CLAMPS(ev, -10.0f, 10.0f);
+  dt_print(DT_DEBUG_IMAGEIO, "[exif] `%s` has DNG baseline exposure %+.2f EV",
+           img->filename, img->dng_baseline_exposure);
+}
+
+static void _check_noise_profile(Exiv2::ExifData &exifData,
+                                 dt_image_t *img)
+{
+  img->has_dng_noise_profile = FALSE;
+
+  Exiv2::ExifData::const_iterator pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.NoiseProfile"));
+  if(pos == exifData.end())
+    pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.NoiseProfile"));
+  if(pos == exifData.end())
+    return;
+
+  // one (scale, offset) pair for all planes or one per CFA plane, in the
+  // order of CFAPlaneColor which is red, green, blue for the supported files
+  const long n = pos->count();
+  if(n != 2 && n != 6)
+    return;
+
+  for(int c = 0; c < 3; c++)
+  {
+    const int k = n == 2 ? 0 : 2 * c;
+    const float a = pos->toFloat(k);
+    const float b = pos->toFloat(k + 1);
+    if(!std::isfinite(a) || !std::isfinite(b) || a <= 0.0f)
+      return;
+    img->dng_noise_a[c] = a;
+    img->dng_noise_b[c] = b;
+  }
+
+  // some cameras write the values of the generic poissonian profile
+  // (a = 1e-4, b ~ 0) for all planes, which add nothing to it
+  gboolean generic = TRUE;
+  for(int c = 0; c < 3; c++)
+    if(fabsf(img->dng_noise_a[c] - 1e-4f) > 1e-6f || fabsf(img->dng_noise_b[c]) > 1e-7f)
+      generic = FALSE;
+  if(generic)
+  {
+    dt_print(DT_DEBUG_IMAGEIO, "[exif] `%s` DNG noise profile equals the generic one, ignored",
+             img->filename);
+    return;
+  }
+
+  img->has_dng_noise_profile = TRUE;
+  dt_print(DT_DEBUG_IMAGEIO, "[exif] `%s` has DNG noise profile a=%g %g %g b=%g %g %g",
+           img->filename,
+           img->dng_noise_a[0], img->dng_noise_a[1], img->dng_noise_a[2],
+           img->dng_noise_b[0], img->dng_noise_b[1], img->dng_noise_b[2]);
+}
+
 static bool _valid_dng_matrix(const float *M)
 {
   const float det = M[0] * (M[4] * M[8] - M[5] * M[7])
@@ -1077,9 +1157,186 @@ static bool _valid_dng_matrix(const float *M)
   return fabsf(det) > 1e-6f;
 }
 
-static int _check_forward_matrix(Exiv2::ExifData &exifData,
-                                         dt_image_t *img)
+// McCamy's approximation of the correlated colour temperature, used only to
+// weight the calibration illuminants of a DNG profile
+static float _dng_xy_to_cct(const float x, const float y)
 {
+  const float n = (x - 0.3320f) / (0.1858f - y);
+  const float t = 449.0f * n * n * n + 3525.0f * n * n + 6823.3f * n + 5520.33f;
+  return CLAMPS(t, 1000.0f, 50000.0f);
+}
+
+// Weights of the calibration illuminants for a scene of colour temperature t:
+// linear in inverse temperature between the two neighbouring illuminants and
+// clamped to the outermost ones, as in the DNG SDK.
+static void _dng_weights_for_cct(const int temp[3],
+                                 const gboolean valid[3],
+                                 const float t,
+                                 float w[3])
+{
+  int lo = -1, hi = -1, tmin = -1, tmax = -1;
+  for(int k = 0; k < 3; k++)
+  {
+    w[k] = 0.0f;
+    if(!valid[k]) continue;
+    if(tmin < 0 || temp[k] < temp[tmin]) tmin = k;
+    if(tmax < 0 || temp[k] > temp[tmax]) tmax = k;
+    if(temp[k] <= t && (lo < 0 || temp[k] > temp[lo])) lo = k;
+    if(temp[k] >= t && (hi < 0 || temp[k] < temp[hi])) hi = k;
+  }
+
+  if(tmin < 0)
+    return;
+  if(lo < 0)
+    w[tmin] = 1.0f;
+  else if(hi < 0)
+    w[tmax] = 1.0f;
+  else if(temp[lo] == temp[hi])
+    w[lo] = 1.0f;
+  else
+  {
+    const float g = (1.0f / t - 1.0f / temp[hi]) / (1.0f / temp[lo] - 1.0f / temp[hi]);
+    w[lo] = g;
+    w[hi] = 1.0f - g;
+  }
+}
+
+// Scales a ColorMatrix so that XYZ D50 maps to a camera value whose largest
+// component is 1, as the DNG SDK does before interpolating.
+static void _dng_normalize_color_matrix(float *M)
+{
+  const float pcs_white[3] = { 0.96422f, 1.0f, 0.82521f };
+  float cam[3];
+  mat3mulv(cam, M, pcs_white);
+  const float mx = MAX(cam[0], MAX(cam[1], cam[2]));
+  if(mx > 0.0f)
+    for(int i = 0; i < 9; i++) M[i] /= mx;
+}
+
+// Scales the rows of a ForwardMatrix so that camera (1,1,1) maps to XYZ D50.
+static void _dng_normalize_forward_matrix(float *M)
+{
+  const float pcs_white[3] = { 0.96422f, 1.0f, 0.82521f };
+  for(int r = 0; r < 3; r++)
+  {
+    const float sum = M[3 * r] + M[3 * r + 1] + M[3 * r + 2];
+    if(fabsf(sum) > 1e-6f)
+      for(int c = 0; c < 3; c++) M[3 * r + c] *= pcs_white[r] / sum;
+  }
+}
+
+// Weights of the calibration illuminants for the as-shot white. The white
+// chromaticity is AsShotWhiteXY or, as in the DNG SDK, the fixed point of
+// AsShotNeutral mapped through the inverse of the illuminant-interpolated
+// AnalogBalance * CameraCalibration * ColorMatrix. Returns FALSE when fewer
+// than two usable illuminants exist or the white cannot be determined.
+static gboolean _dng_illuminant_weights(Exiv2::ExifData &exifData,
+                                        const dt_dng_illuminant_t illu[3],
+                                        const float AB[9],
+                                        const float CC[3][9],
+                                        float w[3])
+{
+  const char *cm_keys[3] = { "Exif.Image.ColorMatrix1",
+                             "Exif.Image.ColorMatrix2",
+                             "Exif.Image.ColorMatrix3" };
+  float CM[3][9];
+  int temp[3] = { 0, 0, 0 };
+  gboolean valid[3] = { FALSE, FALSE, FALSE };
+  int n_valid = 0;
+
+  for(int k = 0; k < 3; k++)
+  {
+    if(illu[k] == DT_LS_Unknown || _illu_to_temp(illu[k]) <= 0)
+      continue;
+#if !EXIV2_TEST_VERSION(0,27,4)
+    if(k == 2) continue;
+#endif
+    Exiv2::ExifData::const_iterator cm = exifData.findKey(Exiv2::ExifKey(cm_keys[k]));
+    if(cm == exifData.end() || cm->count() != 9)
+      continue;
+    for(int i = 0; i < 9; i++) CM[k][i] = cm->toFloat(i);
+    if(!_valid_dng_matrix(CM[k]))
+      continue;
+    _dng_normalize_color_matrix(CM[k]);
+    float CCxCM[9];
+    mat3mul(CCxCM, CC[k], CM[k]);
+    memcpy(CM[k], CCxCM, sizeof(CCxCM));
+    temp[k] = _illu_to_temp(illu[k]);
+    valid[k] = TRUE;
+    n_valid++;
+  }
+
+  if(n_valid < 2)
+    return FALSE;
+
+  float x = 0.0f, y = 0.0f;
+
+  Exiv2::ExifData::const_iterator pos =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.AsShotWhiteXY"));
+  if(pos != exifData.end() && pos->count() == 2)
+  {
+    x = pos->toFloat(0);
+    y = pos->toFloat(1);
+  }
+  else
+  {
+    pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.AsShotNeutral"));
+    if(pos == exifData.end() || pos->count() != 3)
+      return FALSE;
+
+    const float neutral[3] = { pos->toFloat(0), pos->toFloat(1), pos->toFloat(2) };
+    if(!(neutral[0] > 0.0f && neutral[1] > 0.0f && neutral[2] > 0.0f))
+      return FALSE;
+
+    x = 0.3457f;
+    y = 0.3585f;
+    for(int it = 0; it < 30; it++)
+    {
+      _dng_weights_for_cct(temp, valid, _dng_xy_to_cct(x, y), w);
+
+      float M[9] = { 0.0f };
+      for(int k = 0; k < 3; k++)
+        if(valid[k])
+          for(int i = 0; i < 9; i++) M[i] += w[k] * CM[k][i];
+
+      float ABxM[9], ABxM_inv[9];
+      mat3mul(ABxM, AB, M);
+      if(mat3inv(ABxM_inv, ABxM) != 0)
+        return FALSE;
+
+      float XYZ[3];
+      mat3mulv(XYZ, ABxM_inv, neutral);
+      const float sum = XYZ[0] + XYZ[1] + XYZ[2];
+      if(!(sum > 0.0f))
+        return FALSE;
+
+      const float nx = XYZ[0] / sum;
+      const float ny = XYZ[1] / sum;
+      const gboolean converged = fabsf(nx - x) + fabsf(ny - y) < 1e-7f;
+      x = nx;
+      y = ny;
+      if(converged) break;
+    }
+  }
+
+  if(!(x > 0.0f && y > 0.0f && x + y < 1.0f))
+    return FALSE;
+
+  const float cct = _dng_xy_to_cct(x, y);
+  _dng_weights_for_cct(temp, valid, cct, w);
+  dt_print(DT_DEBUG_IMAGEIO,
+           "[exif] DNG as-shot white xy %.4f %.4f, %.0fK, illuminant weights %.3f %.3f %.3f",
+           x, y, cct, w[0], w[1], w[2]);
+  return TRUE;
+}
+
+static int _check_forward_matrix(Exiv2::ExifData &exifData,
+                                 dt_image_t *img,
+                                 float weights[3],
+                                 gboolean *blended)
+{
+  *blended = FALSE;
+
   Exiv2::ExifData::const_iterator pos;
   dt_mark_colormatrix_invalid(&img->dng_forward_matrix[0]);
 
@@ -1199,8 +1456,52 @@ static int _check_forward_matrix(Exiv2::ExifData &exifData,
     }
   }
 
+  // With several calibration illuminants the forward matrix and camera
+  // calibration are interpolated for the as-shot white, provided every
+  // illuminant that contributes has a forward matrix.
+  float FM_sel[9], CC_sel[9];
+  memcpy(FM_sel, FM[MAX(sel_illu, 0)], sizeof(FM_sel));
+  memcpy(CC_sel, CC[MAX(sel_illu, 0)], sizeof(CC_sel));
+
+  float w[3];
+  if(_dng_illuminant_weights(exifData, illu, AB, CC, w))
+  {
+    int n_used = 0;
+    gboolean usable = TRUE;
+    for(int k = 0; k < 3; k++)
+      if(w[k] > 0.0f)
+      {
+        n_used++;
+        if(!has_FM[k]) usable = FALSE;
+      }
+
+    if(usable && n_used > 1)
+    {
+      for(int i = 0; i < 9; i++)
+      {
+        FM_sel[i] = CC_sel[i] = 0.0f;
+        for(int k = 0; k < 3; k++)
+        {
+          FM_sel[i] += w[k] * FM[k][i];
+          CC_sel[i] += w[k] * CC[k][i];
+        }
+      }
+      _dng_normalize_forward_matrix(FM_sel);
+      for(int k = 0; k < 3; k++) weights[k] = w[k];
+      *blended = TRUE;
+    }
+    else if(usable && n_used == 1)
+    {
+      for(int k = 0; k < 3; k++)
+        if(w[k] > 0.0f) sel_illu = k;
+      memcpy(FM_sel, FM[sel_illu], sizeof(FM_sel));
+      memcpy(CC_sel, CC[sel_illu], sizeof(CC_sel));
+    }
+  }
+
   // We only want a valid forward matrix if we got an illu and matrix are good
-  const gboolean has_forward_illuminant = sel_illu >= 0 && sel_illu < 3 && has_FM[sel_illu];
+  const gboolean has_forward_illuminant =
+    *blended || (sel_illu >= 0 && sel_illu < 3 && has_FM[sel_illu]);
   if(!has_forward_illuminant)
     return -1;
 
@@ -1208,7 +1509,7 @@ static int _check_forward_matrix(Exiv2::ExifData &exifData,
   // (white balance D is applied later, upstream, via temperature.iop's wb_coeffs)
   float DT_ALIGNED_ARRAY ABxCC[9];
   float DT_ALIGNED_ARRAY ABxCC_inv[9];
-  mat3mul(ABxCC, AB, CC[sel_illu]);
+  mat3mul(ABxCC, AB, CC_sel);
   if(mat3inv(ABxCC_inv, ABxCC) == 0)
   {
     // Per the DNG spec, ForwardMatrix maps white-balanced camera values
@@ -1217,22 +1518,35 @@ static int _check_forward_matrix(Exiv2::ExifData &exifData,
     // same as d65_color_matrix, so adapt D50 -> D65 here using the same
     // Bradford matrix already tabulated for the D50 illuminant entry.
     float DT_ALIGNED_ARRAY cam_to_xyz_d50[9];
-    mat3mul(cam_to_xyz_d50, FM[sel_illu], ABxCC_inv);
+    mat3mul(cam_to_xyz_d50, FM_sel, ABxCC_inv);
     mat3mul(img->dng_forward_matrix, illuminant_data[DT_LS_D50].CA, cam_to_xyz_d50);
-    dt_print(DT_DEBUG_IMAGEIO,
-        "forward illuminant is %s: from [1] %s, [2] %s%s%s",
-                _illu_to_str(illu[sel_illu]),
-                _illu_to_str(illu[0]), _illu_to_str(illu[1]),
-                illu[2] ? ", [3] " : "", illu[2] ? _illu_to_str(illu[2]) : "" );
+    if(*blended)
+      dt_print(DT_DEBUG_IMAGEIO,
+          "forward matrix interpolated from [1] %s, [2] %s%s%s",
+                  _illu_to_str(illu[0]), _illu_to_str(illu[1]),
+                  illu[2] ? ", [3] " : "", illu[2] ? _illu_to_str(illu[2]) : "" );
+    else
+      dt_print(DT_DEBUG_IMAGEIO,
+          "forward illuminant is %s: from [1] %s, [2] %s%s%s",
+                  _illu_to_str(illu[sel_illu]),
+                  _illu_to_str(illu[0]), _illu_to_str(illu[1]),
+                  illu[2] ? ", [3] " : "", illu[2] ? _illu_to_str(illu[2]) : "" );
     _print_matrix_data("img forward matrix", 0, img->dng_forward_matrix);
-    _print_matrix_data(has_CC[sel_illu] ? "calibration matrix" : "ident calibration matrix", 0, CC[sel_illu]);
+    _print_matrix_data(*blended || has_CC[sel_illu] ? "calibration matrix"
+                                                    : "ident calibration matrix", 0, CC_sel);
   }
-  return dt_is_valid_colormatrix(img->dng_forward_matrix[0]) ? sel_illu : -1;
+  if(!dt_is_valid_colormatrix(img->dng_forward_matrix[0]))
+  {
+    *blended = FALSE;
+    return -1;
+  }
+  return sel_illu;
 }
 
 static void _check_profile_look_table(Exiv2::ExifData &exifData,
                                       dt_image_t *img,
-                                      int sel_illu)
+                                      int sel_illu,
+                                      const float *weights)
 {
   g_free(img->profile_hsm_data);
   img->profile_hsm_data = NULL;
@@ -1303,6 +1617,38 @@ static void _check_profile_look_table(Exiv2::ExifData &exifData,
         "Exif.Image.ProfileHueSatMapData3"
 #endif
       };
+      // tables of all contributing illuminants are blended with the same
+      // weights as the forward matrix
+      if(weights)
+      {
+        float *blend = (float *)g_malloc0_n(n_entries, sizeof(float));
+        gboolean complete = TRUE;
+        for(int k = 0; k < (int)G_N_ELEMENTS(keys) && complete; k++)
+        {
+          if(weights[k] <= 0.0f) continue;
+          Exiv2::ExifData::const_iterator tab = exifData.findKey(Exiv2::ExifKey(keys[k]));
+          if(tab == exifData.end() || (int)tab->count() != n_entries)
+            complete = FALSE;
+          else
+            for(int i = 0; i < n_entries; i++)
+              blend[i] += weights[k] * tab->toFloat(i);
+        }
+        if(complete)
+        {
+          img->profile_hsm_data = blend;
+          img->profile_hsm_hue_div = hue_div;
+          img->profile_hsm_sat_div = sat_div;
+          img->profile_hsm_val_div = val_div;
+          img->profile_hsm_data_size = sizeof(float) * n_entries;
+          dt_print(DT_DEBUG_IMAGEIO,
+                   "[exif] interpolated ProfileHueSatMapData (%dx%dx%d), %s encoding",
+                   img->profile_hsm_hue_div, img->profile_hsm_sat_div, img->profile_hsm_val_div,
+                   img->profile_hsm_encoding ? "sRGB" : "linear");
+          return;
+        }
+        g_free(blend);
+      }
+
       int index = sel_illu >= 0 && sel_illu < (int)G_N_ELEMENTS(keys) ? sel_illu : 0;
       Exiv2::ExifData::const_iterator pos = exifData.findKey(Exiv2::ExifKey(keys[index]));
       // DNG specs allows to provide just one hsm profile.
@@ -1766,6 +2112,8 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
   // a reload starts from the cached image, so clear the flag before
   // anything that can return early
   img->exif_shading_compensation = FALSE;
+  img->dng_baseline_exposure = 0.0f;
+  img->has_dng_noise_profile = FALSE;
 
   try
   {
@@ -1780,8 +2128,12 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
       _check_dng_opcodes(exifData, img);
       _check_lens_correction_data(exifData, img);
       _check_linear_response_limit(exifData, img);
-      const int sel_illu = _check_forward_matrix(exifData, img);
-      _check_profile_look_table(exifData, img, sel_illu);
+      _check_baseline_exposure(exifData, img);
+      _check_noise_profile(exifData, img);
+      float weights[3] = { 0.0f, 0.0f, 0.0f };
+      gboolean blended = FALSE;
+      const int sel_illu = _check_forward_matrix(exifData, img, weights, &blended);
+      _check_profile_look_table(exifData, img, sel_illu, blended ? weights : NULL);
       _check_highlight_preservation(exifData, img);
       _check_shading_compensation(exifData, img);
     }
