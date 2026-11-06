@@ -161,7 +161,6 @@ static void lmmse_demosaic(float *const restrict out,
     {
       qix[i] = qix[i - 1] + DT_LMMSE_TILESIZE * DT_LMMSE_TILESIZE;
     }
-    memset(buffer, 0, sizeof(float) * DT_LMMSE_TILESIZE * DT_LMMSE_TILESIZE * 6);
 
     DT_OMP_PRAGMA(for schedule(simd:static) collapse(2))
     for(int tile_vertical = 0; tile_vertical < num_vertical; tile_vertical++)
@@ -182,17 +181,17 @@ static void lmmse_demosaic(float *const restrict out,
         const int last_rr = tileRows + 2 * BORDER_AROUND;
         const int last_cc = tileCols + 2 * BORDER_AROUND;
 
-        for(int rrr = BORDER_AROUND, row = rowStart;
-            rrr < tileRows + BORDER_AROUND; rrr++,
-              row++)
+        // the passes read buffer margins they never write and the CFA data of
+        // the tile border: start each tile from zeros and load the border, zero
+        // outside the image, or those reads see the thread's previous tile
+        memset(buffer, 0, sizeof(float) * DT_LMMSE_TILESIZE * DT_LMMSE_TILESIZE * 6);
+        for(int rrr = 0, row = rowStart - BORDER_AROUND; rrr < last_rr; rrr++, row++)
         {
-          float *cfa = qix[5] + rrr * DT_LMMSE_TILESIZE + BORDER_AROUND;
-          int idx = row * width + colStart;
-          for(int ccc = BORDER_AROUND;
-              ccc < tileCols + BORDER_AROUND;
-              ccc++, cfa++, idx++)
+          float *cfa = qix[5] + rrr * DT_LMMSE_TILESIZE;
+          for(int ccc = 0, col = colStart - BORDER_AROUND; ccc < last_cc; ccc++, col++)
           {
-            cfa[0] = _calc_gamma(revscaler * in[idx], lmmse_gamma_in);
+            const gboolean inside = row >= 0 && row < height && col >= 0 && col < width;
+            cfa[ccc] = inside ? _calc_gamma(revscaler * in[(size_t)row * width + col], lmmse_gamma_in) : 0.0f;
           }
         }
 
