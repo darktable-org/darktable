@@ -190,6 +190,7 @@ FILE(GLOB SOURCE_FILES
   "gui/presenter.c"
   "gui/presenter_cairo.c"
   "gui/presenter_layers.c"
+  "gui/presenter_target.c"
   "gui/presets.c"
   "gui/splash.c"
   "gui/welcome.c"

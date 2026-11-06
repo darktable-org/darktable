@@ -96,6 +96,12 @@ struct _backend_t
   int32_t primaries[8];
   uint32_t tf, reference_lum, max_lum, target_max_lum;
   gboolean icc, preferred_done, preferred_failed;
+  // what the reports' generation counts: preferred descriptions that
+  // differ in more than their luminances, another screen or mode
+  int32_t reported_primaries[8];
+  uint32_t reported_tf;
+  gboolean reported_icc;
+  uint32_t generation;
 
   // ours: in use, and created, waiting for ready
   struct wp_image_description_v1 *description, *pending;
@@ -426,13 +432,30 @@ static void _set_output(_backend_t *b)
   const dt_iop_color_intent_t intent = b->relative ? DT_INTENT_RELATIVE_COLORIMETRIC
                                                    : DT_INTENT_PERCEPTUAL;
   // GTK3 cannot tag its surface, and an untagged surface is sRGB to the
-  // compositor
+  // compositor. the image headroom is the core's target
   const dt_display_output_t output =
-    { .image = { .type = DT_COLORSPACE_LIN_REC2020, .intent = intent,
-                 .headroom = _headroom(b->description_max) },
+    { .image = { .type = DT_COLORSPACE_LIN_REC2020, .intent = intent },
       .device = { .type = DT_COLORSPACE_SRGB, .intent = intent, .headroom = 1.0f },
       .format = DT_FRAME_FLOAT };
   dt_presenter_window_set_output(b->window, &output);
+}
+
+// describe the image for the core's headroom target: the reservation's
+// encoding follows the description in use, so the transport range is the
+// target, never the compositor's raw preference
+static void _describe(_backend_t *b,
+                      const float headroom)
+{
+  if(!b->luminances) return;
+  const uint32_t max_lum = lroundf(headroom * REFERENCE_NITS);
+  if(max_lum == b->description_max)
+  {
+    // back to the one in use: one still on its way is obsolete
+    if(b->pending) wp_image_description_v1_destroy(b->pending);
+    b->pending = NULL;
+  }
+  else if(!b->pending || max_lum != b->pending_max)
+    _create_description(b, max_lum);
 }
 
 static void _info_done(void *data,
@@ -443,21 +466,25 @@ static void _info_done(void *data,
   b->info = NULL;
   b->preferred_done = TRUE;
 
-  // a hint of the compositor, not a measurement of the screen
-  const uint32_t peak = b->target_max_lum ? b->target_max_lum : b->max_lum;
-  const float headroom = b->reference_lum ? fmaxf(1.0f, (float)peak / b->reference_lum)
-                                          : 1.0f;
-  const uint32_t max_lum = lroundf(headroom * REFERENCE_NITS);
-
-  if(!b->luminances) return;
-  if(max_lum == b->description_max)
+  if(memcmp(b->primaries, b->reported_primaries, sizeof(b->primaries))
+     || b->tf != b->reported_tf || b->icc != b->reported_icc)
   {
-    // back to the one in use: one still on its way is obsolete
-    if(b->pending) wp_image_description_v1_destroy(b->pending);
-    b->pending = NULL;
+    memcpy(b->reported_primaries, b->primaries, sizeof(b->primaries));
+    b->reported_tf = b->tf;
+    b->reported_icc = b->icc;
+    b->generation++;
   }
-  else if(!b->pending || max_lum != b->pending_max)
-    _create_description(b, max_lum);
+
+  // a hint of the compositor, not a measurement of the screen: KWin moves
+  // the reference luminance with the HDR brightness, one description per
+  // frame of its animation. without set_luminances the image is SDR
+  const uint32_t peak = b->target_max_lum ? b->target_max_lum : b->max_lum;
+  const dt_presenter_headroom_t report =
+    { .value = b->reference_lum ? (float)peak / b->reference_lum : NAN,
+      .ceiling = b->luminances ? 0.0f : 1.0f,
+      .generation = b->generation };
+  dt_presenter_window_report_headroom(b->window, &report);
+  _describe(b, dt_presenter_window_target(b->window));
 }
 
 // the mutter workaround: mutter's default color mode describes plain SDR sRGB
@@ -498,7 +525,13 @@ static void _description_ready(_backend_t *b,
   }
   if(description != b->pending) return;
 
-  if(b->description) wp_image_description_v1_destroy(b->description);
+  // the image shown was composed for the description replaced: compose it
+  // again for this one
+  if(b->description)
+  {
+    wp_image_description_v1_destroy(b->description);
+    dt_presenter_window_redraw(b->window);
+  }
   b->description = b->pending;
   b->description_max = b->pending_max;
   b->pending = NULL;
@@ -821,6 +854,12 @@ static void _free(dt_presenter_transport_t *self)
   g_free(b);
 }
 
+static void _target(dt_presenter_transport_t *self,
+                    const float headroom)
+{
+  _describe((_backend_t *)self, headroom);
+}
+
 static void _move_to_default_queue(_backend_t *b)
 {
   void *proxies[] = { b->compositor, b->subcompositor, b->shm, b->manager, b->feedback,
@@ -904,6 +943,7 @@ dt_presenter_transport_t *dt_presenter_wayland_new(GtkWidget *toplevel,
   b->transport.clear = _clear;
   b->transport.release = _release;
   b->transport.free = _free;
+  b->transport.target = _target;
   // GTK3 popovers are subsurfaces of GDK's surface too, above the layers,
   // which are placed right above GDK's surface (_widget_layers_init())
   b->transport.popovers_above = !g_getenv("DT_PRESENTER_REPLAY_POPOVERS");

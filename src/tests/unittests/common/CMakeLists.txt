@@ -66,6 +66,11 @@ add_cmocka_test(test_presenter_compose
                 SOURCES test_presenter_compose.c
                 LINK_LIBRARIES lib_darktable cmocka)
 
+# the HDR headroom target on a simulated clock: pure arithmetic
+add_cmocka_test(test_presenter_target
+                SOURCES test_presenter_target.c
+                LINK_LIBRARIES lib_darktable cmocka)
+
 # Windows: libs have to be copied next to the executable
 if(WIN32)
     _copy_required_library(test_spektra_sim lib_darktable)
@@ -80,4 +85,5 @@ if(WIN32)
     _copy_required_library(test_frame lib_darktable)
     _copy_required_library(test_presenter_above lib_darktable)
     _copy_required_library(test_presenter_compose lib_darktable)
+    _copy_required_library(test_presenter_target lib_darktable)
 endif(WIN32)

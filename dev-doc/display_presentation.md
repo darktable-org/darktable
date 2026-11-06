@@ -107,7 +107,8 @@ markers are written as they are, saturated colors that mark in any output.
   transforms and raises `DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED` with
   `DISPLAY` or `DISPLAY2`, for what GTK draws there: thumbnails (main
   window only) and module GUI colors. A new image encoding alone, such as
-  a new headroom, reruns that window's producers and nothing else.
+  a new [headroom target](#headroom-target), reruns that window's
+  producers and nothing else.
   `DT_SIGNAL_CONTROL_PROFILE_CHANGED` is not raised for a window's output.
   It announces a new system display profile, the registry's `DISPLAY` or
   `DISPLAY2` entry, whether a window follows it or not, for what names the
@@ -140,7 +141,10 @@ markers are written as they are, saturated colors that mark in any output.
   float for the high quality overlay and RGB24 for the legacy one.
 - colorout renders to `pipe->output`, with the profile the run took
   (`profile`), not one it looks up again by type. The pipe's `output_headroom`, which
-  sigmoid and agx tone map to, honors `output.headroom`. A soft proof sets
+  sigmoid and agx tone map to, honors `output.headroom`: on a native
+  window the [headroom target](#headroom-target), so with follow output on
+  what the darkroom shows depends on the screen's current headroom, once
+  it settled, and not on the export's PQ peak. A soft proof sets
   it to the proof profile's headroom, as an export to that profile does,
   above or below the screen's, and the output encoding says so. The
   presenter clips what the screen cannot show: the Wayland transport to the
@@ -181,6 +185,66 @@ markers are written as they are, saturated colors that mark in any output.
   shapers end at 1.0, where the pipe has reference white.
 - Export, thumbnail and AI pipes have no output description (`type` is
   `DT_COLORSPACE_NONE`).
+
+### Headroom target
+
+A native window's image headroom is a target the presenter core settles,
+not what the platform reports. A backend reports whenever the platform
+says something about the screen (`dt_presenter_window_report_headroom()`,
+`dt_presenter_headroom_t` in `gui/presenter_target.h`): the peak over
+reference white now, or NAN when the platform has no value (the display
+sleeps, macOS before EDR is engaged), the most the screen can show in the
+window if the platform says (macOS's potential EDR headroom), and a generation, which changes
+when earlier reports say nothing about this one: another screen or mode,
+a display woken up. A report never reaches pipes, and settling is never a
+backend's job. The policy is one pure function on a clock passed in
+(`gui/presenter_target.c`, tested by `test_presenter_target`):
+
+- The level is log2 of the value, clipped to the ceiling, rounded down to
+  1/8 EV and at least 0 EV, so the target never declares more than the
+  platform offers; an epsilon of 1e-4 step keeps an exact step from
+  losing it to float error. A 1-nit sweep from 203 to 1600 nits gives 24
+  targets.
+- Hysteresis: a level above the target counts once the value clears it
+  by half a step; any level below it counts, since the screen then shows
+  less than the pipes render for. A value on a step boundary flips once.
+- Settling: a new level is taken 1 s after the reported value stopped
+  changing, longer than the gaps between brightness steps a person makes,
+  and at the latest 3 s after its first report. A value back in the
+  target's band before then costs nothing.
+- A report without a value keeps the target and drops a level waiting to
+  settle.
+- A new generation (and a window's first report) forgets the target's
+  band: with a ceiling, the ceiling is the target at once, and values
+  settle under it, so a macOS EDR ramp from 1.0 to its potential over
+  about 2 s costs nothing; without one, the first value is taken at once.
+
+A settled change publishes the window's output with the new image headroom
+through `dt_presenter_window_set_output()`, which keeps the rest of what
+the backend set: the window's serial moves and only its producers render
+again; the device encoding stays, so thumbnails and module colors are not
+converted again and `DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED` is not
+raised. The core then calls the backend's `target()`, which prepares
+showing frames rendered for it: the Wayland transport describes its image
+layer for the target ([Wayland](#wayland)). Until a window's producers
+deliver, its frames keep the tone mapping they were rendered with: the
+transport clips them to the range of the image description in use, and the
+compositor clips or fits that range to the screen (KWin clamps under
+relative intent).
+A cairo window has its profile's headroom and no target.
+
+Why settle: every target change reruns the window's pipes from the start,
+since `output_headroom` is in every cache line's hash
+(`pixelpipe_cache.c:126`), while KWin sends a preferred description per
+frame of its brightness animation and macOS about 230 notifications per EDR
+ramp. No surveyed editor follows the screen at all (Lightroom, Resolve and
+Krita fix their target); viewers re-fit every frame on the GPU, and even
+Chromium throttles headroom-only changes on macOS to 12 Hz.
+
+The constants are hypotheses. `-d control -d verbose` logs every report
+with its time and every settled target: the gaps between the reports of
+one gesture bound the quiet time, the longest platform ramp the maximum
+latency, and the noise of a screen left alone the hysteresis.
 
 ## Frames
 
@@ -318,7 +382,8 @@ of each widget's last draw, the test for a draw GTK clipped to a damaged
 area, and the matrix of each image; it has no branch on the backend. A
 backend (`dt_presenter_backend_t` in `gui/presenter_backend.h`) begins a
 widget's draw and returns the context to draw on, shows an image, paints
-the kept presentation, ends the draw and clears the widget. Each keeps
+the kept presentation, ends the draw and clears the widget, and with
+`target()` prepares showing frames rendered for a new headroom target. Each keeps
 the presentation its own way, with the same meaning: what the widget's
 retained draw showed.
 
@@ -457,7 +522,10 @@ window's presenting widgets are drawn again.
 
 The transport reports the window's output, its image encoding and, as
 device, the profile GTK's own surface is shown in, through
-`dt_presenter_window_set_output()`, at setup and whenever it changes. The
+`dt_presenter_window_set_output()`, at setup and whenever it changes, and
+the screen's headroom through `dt_presenter_window_report_headroom()`; the
+image headroom of the window's output is the core's
+[headroom target](#headroom-target). The
 pipes of that window then render to that output, and everything GTK draws
 there (thumbnail transforms, picker swatches, frames GTK draws through
 `dt_frame_device_surface()`, and module GUIs through
@@ -475,8 +543,9 @@ Code is split by what it works around:
   position in the toplevel. A GTK4 port, where widgets draw textures with
   color states, deletes it.
 - `gui/presenter_<platform>.c`: transport and timing. Setup and fallback,
-  output description and headroom, buffers, and `reserve()`, `commit()`,
-  `clear()`, `release()` and `free()` (`dt_presenter_transport_t` in
+  output description and headroom reports, buffers, and `reserve()`,
+  `commit()`, `clear()`, `release()`, `free()` and `target()`, which
+  describes the image for a new headroom target (`dt_presenter_transport_t` in
   `gui/presenter_layers.h`). A present is one transaction: `reserve()`
   gives the storage of both layers (`dt_presenter_reservation_t`), each
   with its row stride, and the image's encoding
@@ -530,15 +599,22 @@ too and is treated the same way. Limits:
   on XWayland, converts to the profile a second time when a tool such as
   xiccd also publishes it to colord or the X atom.
 
-The output is linear BT.2020 with headroom target max / reference luminance of the
-surface's preferred description (a compositor hint, not a measurement),
-re-read whenever the preference changes. The description is ext_linear,
-BT.2020, luminances (0, round(headroom x 203), 203), so a value v is sent as
-v x 203 / max, clipped to [0, headroom]: the reservation's clip range
-[0, headroom] and matrix diag(1 / headroom). A new description is set on the
-image layer when it is ready, and applies with that layer's next commit,
-which is the first buffer encoded for it: a new headroom composes the image
-again, whether or not its frames change. Layers are synchronized subsurfaces
+The backend reports target max (else max) over reference luminance of the
+surface's preferred description as a hint, not a measurement, re-read
+whenever the preference changes: no value (NAN) without a reference luminance,
+with a ceiling of 1 without `set_luminances`. A preferred description that
+differs in more than its luminances (primaries, white, transfer function,
+an ICC file) starts a new generation; KWin's HDR brightness moves only the
+reference luminance. The output is linear BT.2020 with the core's
+[headroom target](#headroom-target), and the image description is made for
+that target, never for the raw preference: ext_linear, BT.2020, luminances
+(0, round(headroom x 203), 203), so a value v is sent as v x 203 / max,
+clipped to [0, headroom]: the reservation's clip range [0, headroom] and
+matrix diag(1 / headroom), within the rounding of max to whole nits. A new
+description is set on the image layer when it is ready, and applies with
+that layer's next commit, which is the first buffer encoded for it: the
+window draws again and the image is composed again for the new headroom,
+whether or not its frames change. Layers are synchronized subsurfaces
 of GDK's surface, placed directly above it and below GTK's own subsurfaces
 such as popovers, which therefore need no replay. They are presented at the
 end of the frame clock's `paint`, so they apply with GDK's commit in

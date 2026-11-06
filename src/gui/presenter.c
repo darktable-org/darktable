@@ -105,9 +105,16 @@ static _widget_t *_widget_get(GtkWidget *widget)
   return w;
 }
 
+static void _settle_stop(dt_presenter_window_t *window)
+{
+  if(window->settle) g_source_remove(window->settle);
+  window->settle = 0;
+}
+
 static void _window_free(gpointer data)
 {
   dt_presenter_window_t *window = data;
+  _settle_stop(window);
   while(window->widgets) _widget_detach(window->widgets->data);
   window->backend->free(window->backend);
   // whatever the platform owned goes back to the system display profile
@@ -134,6 +141,7 @@ static dt_presenter_window_t *_window_get(GtkWidget *widget)
   window->kind = toplevel == dt_ui_main_window(darktable.gui->ui)
     ? DT_COLORSPACE_DISPLAY
     : DT_COLORSPACE_DISPLAY2;
+  dt_presenter_target_init(&window->target);
   // an escape hatch for compositor or driver bugs in the native backends
   if(dt_conf_get_bool("ui_last/display_force_cairo"))
     dt_print(DT_DEBUG_CONTROL, "[presenter] %s window: cairo, forced by ui_last/display_force_cairo",
@@ -152,10 +160,84 @@ void dt_presenter_window_output(const dt_presenter_window_t *window,
   dt_colorspaces_get_display_output(window->kind, output);
 }
 
+static void _publish(dt_presenter_window_t *window)
+{
+  dt_display_output_t output = window->output;
+  output.image.headroom = dt_presenter_target_headroom(&window->target);
+  dt_colorspaces_set_window_output(window->kind, &output);
+}
+
 void dt_presenter_window_set_output(dt_presenter_window_t *window,
                                     const dt_display_output_t *output)
 {
-  dt_colorspaces_set_window_output(window->kind, output);
+  window->owned = output != NULL;
+  if(output)
+  {
+    window->output = *output;
+    _publish(window);
+    return;
+  }
+  // a window on its system display profile has the profile's headroom
+  // and no target
+  _settle_stop(window);
+  dt_presenter_target_init(&window->target);
+  dt_colorspaces_set_window_output(window->kind, NULL);
+}
+
+float dt_presenter_window_target(const dt_presenter_window_t *window)
+{
+  return dt_presenter_target_headroom(&window->target);
+}
+
+// only the window's own producers render again, for the new serial; the
+// device encoding stays, so nothing GTK draws is converted again
+static void _target_changed(dt_presenter_window_t *window)
+{
+  const float headroom = dt_presenter_target_headroom(&window->target);
+  dt_print(DT_DEBUG_CONTROL, "[presenter] %s window headroom target %.4f",
+           window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second", headroom);
+  if(window->owned) _publish(window);
+  // NULL while the backend is being set up: it asks for the target then
+  dt_presenter_backend_t *backend = window->backend;
+  if(backend && backend->target) backend->target(backend, headroom);
+}
+
+static void _settle_arm(dt_presenter_window_t *window);
+
+static gboolean _settle_timeout(gpointer data)
+{
+  dt_presenter_window_t *window = data;
+  window->settle = 0;
+  if(dt_presenter_target_tick(&window->target, g_get_monotonic_time()))
+    _target_changed(window);
+  _settle_arm(window);
+  return G_SOURCE_REMOVE;
+}
+
+static void _settle_arm(dt_presenter_window_t *window)
+{
+  const int64_t deadline = dt_presenter_target_deadline(&window->target);
+  if(window->settle && deadline == window->settle_deadline) return;
+  _settle_stop(window);
+  window->settle_deadline = deadline;
+  if(!deadline) return;
+  // rounded up: the timer must not fire before the deadline
+  const int64_t wait = deadline - g_get_monotonic_time();
+  window->settle = g_timeout_add(wait > 0 ? (guint)((wait + 999) / 1000) : 0,
+                                 _settle_timeout, window);
+}
+
+void dt_presenter_window_report_headroom(dt_presenter_window_t *window,
+                                         const dt_presenter_headroom_t *report)
+{
+  dt_print(DT_DEBUG_CONTROL | DT_DEBUG_VERBOSE,
+           "[presenter] %s window reports headroom %.4f (ceiling %.4f,"
+           " generation %u)",
+           window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
+           report->value, report->ceiling, report->generation);
+  if(dt_presenter_target_report(&window->target, report, g_get_monotonic_time()))
+    _target_changed(window);
+  _settle_arm(window);
 }
 
 void dt_presenter_window_redraw(dt_presenter_window_t *window)
