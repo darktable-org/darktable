@@ -52,10 +52,12 @@
 // what was done, in order, one letter each: n and c a layered or cairo
 // backend made, f a layered one that could not set up, r and R a widget's
 // layered or cairo data released, x and X a layered or cairo backend
-// freed, o an output published, g the output given back, d a redraw
+// freed, t a target given to the layered backend, o an output published,
+// g the output given back, d a redraw
 static GString *_log;
 static gboolean _force_cairo, _platform_native, _transport_fails;
 static dt_display_output_t _published;
+static float _target;
 
 typedef struct _fake_backend_t
 {
@@ -94,6 +96,15 @@ static void _fake_free(dt_presenter_backend_t *self)
   g_free(self);
 }
 
+// a transport describes its image for the target, and publishes the
+// output when that description is ready, which the tests do themselves
+static void _fake_target(dt_presenter_backend_t *self,
+                         const float headroom)
+{
+  g_string_append_c(_log, 't');
+  _target = headroom;
+}
+
 static dt_presenter_backend_t *_fake_new(const gboolean native)
 {
   _fake_backend_t *b = g_malloc0(sizeof(_fake_backend_t));
@@ -101,10 +112,22 @@ static dt_presenter_backend_t *_fake_new(const gboolean native)
   b->backend.begin = _fake_begin;
   b->backend.release = _fake_release;
   b->backend.free = _fake_free;
+  if(native) b->backend.target = _fake_target;
   return &b->backend;
 }
 
-// as a transport does when it sets up: the platform owns the output
+static void _fake_publish(dt_presenter_window_t *window,
+                          const float headroom)
+{
+  const dt_display_output_t output = { .image = { .type = DT_COLORSPACE_LIN_REC2020,
+                                                  .headroom = headroom },
+                                       .device = { .type = DT_COLORSPACE_SRGB },
+                                       .format = DT_FRAME_FLOAT };
+  dt_presenter_window_set_output(window, &output);
+}
+
+// as a transport does when it sets up: it describes its image for the
+// target, and the platform owns the output from then on
 dt_presenter_backend_t *__wrap_dt_presenter_layered_new(dt_presenter_window_t *window)
 {
   // never made while the window has another backend
@@ -115,10 +138,7 @@ dt_presenter_backend_t *__wrap_dt_presenter_layered_new(dt_presenter_window_t *w
     return NULL;
   }
   g_string_append_c(_log, 'n');
-  const dt_display_output_t output = { .image = { .type = DT_COLORSPACE_LIN_REC2020 },
-                                       .device = { .type = DT_COLORSPACE_SRGB },
-                                       .format = DT_FRAME_FLOAT };
-  dt_presenter_window_set_output(window, &output);
+  _fake_publish(window, dt_presenter_window_target(window));
   return _fake_new(TRUE);
 }
 
@@ -187,6 +207,7 @@ static int _setup(void **state)
   _force_cairo = _transport_fails = FALSE;
   _platform_native = TRUE;
   memset(&_published, 0, sizeof(_published));
+  _target = 0.0f;
 
   _state_t *s = g_new0(_state_t, 1);
   s->window = g_malloc0(sizeof(dt_presenter_window_t));
@@ -242,7 +263,8 @@ static void test_native_at_first(void **state)
 {
   _state_t *s = *state;
   assert_true(s->window->native);
-  assert_true(s->window->owned);
+  assert_int_equal(_published.image.type, DT_COLORSPACE_LIN_REC2020);
+  assert_true(_published.image.headroom == 1.0f);
 }
 
 static void test_unchanged_verdict_does_nothing(void **state)
@@ -264,7 +286,6 @@ static void test_platform_flips_both_ways(void **state)
   dt_presenter_window_choose(s->window);
   assert_string_equal(_log->str, "rrxcgd");
   assert_false(s->window->native);
-  assert_false(s->window->owned);
   _assert_released(s);
 
   _draw(s);
@@ -272,7 +293,6 @@ static void test_platform_flips_both_ways(void **state)
   dt_presenter_window_choose(s->window);
   assert_string_equal(_log->str, "RRXnod");
   assert_true(s->window->native);
-  assert_true(s->window->owned);
   _assert_released(s);
 }
 
@@ -340,7 +360,8 @@ static void test_choice_while_setting_up_waits(void **state)
 }
 
 // the target keeps settling from the platform's reports while the window
-// is on cairo, and a native backend chosen again publishes it at once
+// is on cairo, and a native backend chosen again describes its image for it
+// at setup
 static void test_target_kept_across_cairo(void **state)
 {
   _state_t *s = *state;
@@ -360,6 +381,34 @@ static void test_target_kept_across_cairo(void **state)
   assert_true(fabsf(_published.image.headroom - 4.0f) < 1e-6f);
 }
 
+// a settled target goes to the native backend only: the output keeps the
+// headroom the backend published until it publishes another, which the
+// core takes as it is
+static void test_backend_publishes_target(void **state)
+{
+  _state_t *s = *state;
+  const dt_presenter_headroom_t report = { .value = 4.0f, .generation = 1 };
+  dt_presenter_window_report_headroom(s->window, &report);
+  assert_string_equal(_log->str, "t");
+  assert_true(fabsf(_target - 4.0f) < 1e-6f);
+  assert_true(_published.image.headroom == 1.0f);
+
+  // the description made for the target is ready, its range a little more
+  g_string_truncate(_log, 0);
+  _fake_publish(s->window, 813.0f / 203.0f);
+  assert_string_equal(_log->str, "o");
+  assert_true(_published.image.headroom == 813.0f / 203.0f);
+
+  // a cairo window takes no target, and publishes none
+  _platform_native = FALSE;
+  dt_presenter_window_choose(s->window);
+  g_string_truncate(_log, 0);
+  const dt_presenter_headroom_t next = { .value = 2.0f, .generation = 2 };
+  dt_presenter_window_report_headroom(s->window, &next);
+  assert_string_equal(_log->str, "");
+  assert_true(fabsf(dt_presenter_window_target(s->window) - 2.0f) < 1e-6f);
+}
+
 int main(int argc, char *argv[])
 {
   const struct CMUnitTest tests[] = {
@@ -371,6 +420,7 @@ int main(int argc, char *argv[])
     cmocka_unit_test_setup_teardown(test_no_platform_is_cairo, _setup, _teardown),
     cmocka_unit_test_setup_teardown(test_choice_while_setting_up_waits, _setup, _teardown),
     cmocka_unit_test_setup_teardown(test_target_kept_across_cairo, _setup, _teardown),
+    cmocka_unit_test_setup_teardown(test_backend_publishes_target, _setup, _teardown),
   };
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

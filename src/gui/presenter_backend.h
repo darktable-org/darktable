@@ -110,7 +110,9 @@ struct dt_presenter_backend_t
   // the window is gone, after every widget was released
   void (*free)(dt_presenter_backend_t *self);
   // the window's headroom target changed: prepare showing frames rendered
-  // for it. NULL for a backend that reports no headroom
+  // for it, and publish the output with the headroom that can then be shown
+  // (dt_presenter_window_set_output()). NULL for a backend that owns no
+  // output
   void (*target)(dt_presenter_backend_t *self, const float headroom);
 };
 
@@ -144,11 +146,8 @@ typedef struct dt_presenter_window_t
   gboolean native;
   // presenter.c's records of the window's presenting widgets
   GList *widgets;
-  // the output the platform owns, as its backend set it, and the headroom
-  // target the core settled from the backend's reports, with the timer
-  // that settles it and the deadline the timer is set for
-  gboolean owned;
-  dt_display_output_t output;
+  // the headroom target the core settled from the platform's reports, with
+  // the timer that settles it and the deadline the timer is set for
   dt_presenter_target_t target;
   guint settle;
   int64_t settle_deadline;
@@ -158,14 +157,15 @@ typedef struct dt_presenter_window_t
 void dt_presenter_window_output(const dt_presenter_window_t *window,
                                 dt_display_output_t *output);
 /** for backends, at setup or later: the platform owns the window's output
- * until the window is no longer native. the image headroom is the core's
- * target, whatever output says. the window redraws if its output changed
+ * until the window is no longer native. its image headroom is the one the
+ * transport encodes for, which follows the core's target once the
+ * transport can encode that. the window redraws if its output changed
  * (dt_colorspaces_set_window_output()) */
 void dt_presenter_window_set_output(dt_presenter_window_t *window,
                                     const dt_display_output_t *output);
 /** for platforms, whenever they say something about the screen's
- * headroom: the core settles its target from the reports, publishes it in
- * the window's output and gives it to the backend's target() */
+ * headroom: the core settles its target from the reports and gives it to
+ * the backend's target() */
 void dt_presenter_window_report_headroom(dt_presenter_window_t *window,
                                          const dt_presenter_headroom_t *report);
 /** the window's headroom target now */
