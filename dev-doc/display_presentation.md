@@ -131,10 +131,8 @@ markers are written as they are, saturated colors that mark in any output.
   It is raised exactly when the entry changes: for a new
   system display profile on a cairo window, and when the platform takes a
   window or gives it back; a new system display profile on a native window
-  changes neither the output nor the entry and announces nothing. colorout
-  reprocesses the darkroom on it, so a new screen profile on X11 reruns
-  both windows' pipes, as it always did; a new intent or headroom never
-  touches the registry.
+  changes neither the output nor the entry and announces nothing. A new
+  intent or headroom never touches the registry.
 - Producers pull. Each compares the serial its image was made for with
   its window's where it already decides to render: the darkroom's full,
   preview and second window pipes, a pinned image's too, compare the serial
