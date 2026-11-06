@@ -34,9 +34,13 @@
 typedef struct dt_presenter_layers_t
 {
   // float RGBA in the window's output, alpha 0 off the images; NULL if
-  // unchanged since the last present, which includes size and scale, so a
-  // transport sets the image's buffer scale only with a new buffer
+  // unchanged since the last present, which includes size, scale and
+  // headroom, so a transport sets the image's buffer scale only with a new
+  // buffer
   const float *image;
+  // the headroom the image is shown with: what headroom() returned when it
+  // was composed, which is what the transport encodes it for
+  float headroom;
   // premultiplied ARGB32, stride 4 * width
   const uint8_t *foreground;
   // in device pixels
@@ -58,6 +62,10 @@ typedef struct dt_presenter_transport_t dt_presenter_transport_t;
  */
 struct dt_presenter_transport_t
 {
+  // the largest value of the window's output an image layer shown now
+  // carries, 1 being reference white: a change makes the layered backend
+  // compose and present the image again
+  float (*headroom)(dt_presenter_transport_t *self);
   // show a widget's layers, or return FALSE if they cannot be shown now;
   // *widget_data is the transport's, NULL at first. the layers are only
   // read during the call

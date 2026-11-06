@@ -73,6 +73,7 @@ typedef struct _widget_t
   // what the image layer holds
   GArray *shown;
   int shown_width, shown_height, shown_scale;
+  float shown_headroom;
   float *image;
   // drawn and not presented yet
   gboolean pending;
@@ -380,10 +381,11 @@ static void _compose(_widget_t *l,
 
 static gboolean _image_changed(const _widget_t *l,
                                const int width,
-                               const int height)
+                               const int height,
+                               const float headroom)
 {
   if(width != l->shown_width || height != l->shown_height || l->scale != l->shown_scale
-     || l->images->len != l->shown->len)
+     || headroom != l->shown_headroom || l->images->len != l->shown->len)
     return TRUE;
   for(guint k = 0; k < l->images->len; k++)
   {
@@ -625,12 +627,16 @@ static void _present(_widget_t *l)
   const int width = l->width * l->scale;
   const int height = l->height * l->scale;
 
-  const gboolean changed = _image_changed(l, width, height);
+  dt_presenter_transport_t *transport = l->window->transport;
+  // a new headroom encodes the image again, also when the frames stay
+  const float headroom = transport->headroom(transport);
+  const gboolean changed = _image_changed(l, width, height, headroom);
   if(changed)
   {
     _compose(l, width, height);
     if(!l->image) return;
     l->shown_scale = l->scale;
+    l->shown_headroom = headroom;
     g_array_set_size(l->shown, l->images->len);
     for(guint k = 0; k < l->images->len; k++)
     {
@@ -654,10 +660,10 @@ static void _present(_widget_t *l)
                                      cairo_image_surface_get_data(l->foreground),
                                    .width = width,
                                    .height = height,
-                                   .scale = l->scale };
+                                   .scale = l->scale,
+                                   .headroom = headroom };
   gtk_widget_translate_coordinates(l->widget, l->window->window->toplevel, 0, 0,
                                    &layers.x, &layers.y);
-  dt_presenter_transport_t *transport = l->window->transport;
   if(!transport->present(transport, l->widget, &l->transport_data, &layers))
   {
     // not shown: the image has to go out with the next present

@@ -404,7 +404,10 @@ The output is linear BT.2020 with headroom target max / reference luminance of t
 surface's preferred description (a compositor hint, not a measurement),
 re-read whenever the preference changes. The description is ext_linear,
 BT.2020, luminances (0, round(headroom x 203), 203), so a value v is sent as
-v x 203 / max, clipped to [0, headroom]. Layers are synchronized subsurfaces
+v x 203 / max, clipped to [0, headroom]. A new description is set on the
+image layer when it is ready, and applies with that layer's next commit,
+which is the first buffer encoded for it: a new headroom composes the image
+again, whether or not its frames change. Layers are synchronized subsurfaces
 of GDK's surface, placed directly above it and below GTK's own subsurfaces
 such as popovers, which therefore need no replay. They are presented at the
 end of the frame clock's `paint`, so they apply with GDK's commit in
