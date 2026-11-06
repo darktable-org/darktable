@@ -183,8 +183,8 @@ typedef enum dt_colorspaces_cicp_matrix_coefficients_t
     DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED = 2
 } dt_colorspaces_cicp_matrix_coefficients_t;
 
-/* a new screen profile replaces a system display profile under the same
- * type and file name. FILE profiles are read once at startup and built-ins
+/* the system display entries change their profile under the same type and
+ * file name, with their window's device encoding. FILE profiles are read once at startup and built-ins
  * never change, so for every other type, type and file name identify the
  * profile's content */
 static inline gboolean dt_colorspaces_replaced_in_session(const dt_colorspaces_color_profile_type_t type)
@@ -202,8 +202,8 @@ typedef struct dt_color_encoding_t
   dt_colorspaces_color_profile_type_t type;
   char filename[DT_IOP_COLOR_ICC_LEN];
   // the registry's profile the values were made with. registry profiles
-  // live for the session, so this names the content even after a new
-  // screen profile replaced a system display profile of the same type
+  // live for the session, so this names the content even after a system
+  // display entry of the same type changed its profile
   cmsHPROFILE profile;
   dt_iop_color_intent_t intent;
   float headroom;
@@ -306,12 +306,17 @@ typedef struct dt_colorspaces_t
   // xatom color profile:
   pthread_rwlock_t xprofile_lock;
 
-  // every profile the system display entries have had, with the bytes it
-  // was read from. none is freed before cleanup: a profile read from the
+  // every system display profile a window has had, with the bytes it was
+  // read from. none is freed before cleanup: a profile read from the
   // registry stays valid after a replacement, without the lock
   GList *system_display_profiles;
-  // the sRGB each system display entry starts with, and goes back to when
-  // the platform reports no usable profile for its window
+  // each window's system display profile: what the platform reported for
+  // it, or the display profile file. it describes the window when cairo
+  // shows it; the registry's DISPLAY and DISPLAY2 entries hold the
+  // window's device encoding, which is this profile only then
+  cmsHPROFILE system_display[2];
+  // the sRGB each window's system display profile starts with, and goes
+  // back to when the platform reports no usable profile for it
   cmsHPROFILE system_display_srgb[2];
   // counts each window's queries, so that colord's answer to an older one,
   // which arrives later, is dropped
@@ -568,7 +573,9 @@ void dt_colorspaces_notify_retired_selection(void);
  * colorspaces resolves; NULL gives it back to the window's system display
  * profile. a change redraws the window, where its producers find the new
  * serial, and a new device encoding raises
- * DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED with the window's type */
+ * DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED with the window's type. the
+ * window's registry entry follows the device profile, and
+ * DT_SIGNAL_CONTROL_PROFILE_CHANGED says when it changed */
 void dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_type_t window,
                                       const dt_display_output_t *output);
 

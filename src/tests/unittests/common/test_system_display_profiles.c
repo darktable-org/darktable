@@ -20,9 +20,12 @@
  * a replaced profile stays valid until dt_colorspaces_cleanup(), the same
  * bytes always give the same profile, so switching back and forth between
  * two profiles does not grow the list, and a report with no usable profile,
- * one that is not RGB included, gives the window sRGB again. colorspaces.c is included
- * for its static helpers, on a registry built here as dt_colorspaces_init()
- * builds the entries they touch.
+ * one that is not RGB included, gives the window sRGB again. the registry
+ * entry of a window is its device encoding: the system display profile on
+ * a cairo window, the backend's device on a platform-owned one, and the
+ * signals say when it changes. colorspaces.c is included for its static
+ * helpers, on a registry built here as dt_colorspaces_init() builds the
+ * entries they touch.
  */
 
 #include <setjmp.h>
@@ -30,6 +33,13 @@
 #include <stddef.h>
 
 #include <cmocka.h>
+
+// count the signals colorspaces.c raises: signal.h is included once, so
+// colorspaces.c expands this definition
+#include "control/signal.h"
+static int _raised[DT_SIGNAL_COUNT];
+#undef DT_CONTROL_SIGNAL_RAISE
+#define DT_CONTROL_SIGNAL_RAISE(signal, ...) (_raised[signal]++)
 
 #include "common/colorspaces.c"
 #include "control/conf.h"
@@ -72,8 +82,8 @@ static int _setup(void **state)
   f->placeholder2 = dt_colorspaces_create_srgb_profile();
   _system_profile_add(self, NULL, 0, f->placeholder);
   _system_profile_add(self, NULL, 0, f->placeholder2);
-  self->system_display_srgb[0] = f->placeholder;
-  self->system_display_srgb[1] = f->placeholder2;
+  self->system_display[0] = self->system_display_srgb[0] = f->placeholder;
+  self->system_display[1] = self->system_display_srgb[1] = f->placeholder2;
   self->profiles = g_list_append(self->profiles,
                                  _create_profile(DT_COLORSPACE_DISPLAY, f->placeholder,
                                                  "display", -1, -1, 0, 0, -1, -1));
@@ -88,7 +98,15 @@ static int _setup(void **state)
                                  _create_profile(DT_COLORSPACE_ADOBERGB,
                                                  dt_colorspaces_create_adobergb_profile(),
                                                  "Adobe RGB", 0, 1, 2, 3, 1, 2));
+  // every window has an output from the start, as dt_colorspaces_init()
+  // gives it
+  for(int w = 0; w < 2; w++)
+  {
+    _describe_system_display(self, w, &self->outputs[w]);
+    self->outputs[w].serial = 1;
+  }
   darktable.color_profiles = self;
+  memset(_raised, 0, sizeof(_raised));
 
   // two system profiles a screen may report
   cmsHPROFILE p3 = _colorspaces_create_display_p3_rgb_profile();
@@ -121,24 +139,52 @@ static int _teardown(void **state)
 }
 
 // what the platform and colord paths do with a report: the callee takes
-// the buffer. NULL is a report without a profile
+// the buffer, and the change is announced. NULL is a report without a
+// profile. TRUE if the window's system display profile changed
 static gboolean _replace(const dt_colorspaces_color_profile_type_t window,
                          const uint8_t *data,
                          const size_t size)
 {
   dt_colorspaces_t *self = darktable.color_profiles;
+  const int w = window == DT_COLORSPACE_DISPLAY2;
   pthread_rwlock_wrlock(&self->xprofile_lock);
+  const dt_display_output_t before = self->outputs[w];
   guchar *copy = NULL;
   if(data)
   {
     copy = g_malloc(size);
     memcpy(copy, data, size);
   }
-  const gboolean changed =
-    _system_display_set(self, window == DT_COLORSPACE_DISPLAY2,
-                        _system_profile(self, copy, size));
+  const gboolean changed = _system_display_set(self, w, _system_profile(self, copy, size));
+  const dt_display_output_t after = self->outputs[w];
   pthread_rwlock_unlock(&self->xprofile_lock);
+  _output_changed(w, &before, &after);
   return changed;
+}
+
+// what the Wayland backend sets: linear BT.2020 images, GTK's untagged
+// surface as sRGB
+static void _own(const dt_colorspaces_color_profile_type_t window)
+{
+  const dt_display_output_t output =
+    { .image = { .type = DT_COLORSPACE_LIN_REC2020, .intent = DT_INTENT_PERCEPTUAL,
+                 .headroom = 1.0f },
+      .device = { .type = DT_COLORSPACE_SRGB, .intent = DT_INTENT_PERCEPTUAL,
+                  .headroom = 1.0f },
+      .format = DT_FRAME_FLOAT };
+  dt_colorspaces_set_window_output(window, &output);
+}
+
+static cmsHPROFILE _srgb(void)
+{
+  return dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "",
+                                    DT_PROFILE_DIRECTION_DISPLAY)->profile;
+}
+
+static void _assert_raised(const int device, const int entry)
+{
+  assert_int_equal(_raised[DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED], device);
+  assert_int_equal(_raised[DT_SIGNAL_CONTROL_PROFILE_CHANGED], entry);
 }
 
 static cmsHPROFILE _content(const dt_colorspaces_color_profile_type_t window)
@@ -268,6 +314,80 @@ static void test_non_rgb_profile_means_srgb(void **state)
   g_free(gray_bytes);
 }
 
+static void test_cairo_window_entry_is_system_profile(void **state)
+{
+  _fixture_t *f = *state;
+  dt_colorspaces_t *self = darktable.color_profiles;
+
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), f->placeholder);
+  assert_true(_replace(DT_COLORSPACE_DISPLAY, f->a, f->a_size));
+  cmsHPROFILE a = self->system_display[0];
+  assert_ptr_not_equal(a, f->placeholder);
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), a);
+  assert_ptr_equal(self->outputs[0].device.profile, a);
+  assert_ptr_equal(self->outputs[0].image.profile, a);
+  // a new device encoding, and with it a new entry, each said once
+  _assert_raised(1, 1);
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY2), f->placeholder2);
+
+  // the intent is part of the device encoding, not of the entry
+  dt_conf_set_string("ui_last/display_intent", "relative colorimetric");
+  dt_colorspaces_update_display_intent();
+  assert_int_equal(self->outputs[0].device.intent, DT_INTENT_RELATIVE_COLORIMETRIC);
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), a);
+  // both windows' device encodings changed
+  _assert_raised(3, 1);
+}
+
+static void test_platform_owned_entry_is_device(void **state)
+{
+  _fixture_t *f = *state;
+  dt_colorspaces_t *self = darktable.color_profiles;
+
+  assert_true(_replace(DT_COLORSPACE_DISPLAY, f->a, f->a_size));
+  cmsHPROFILE a = self->system_display[0];
+  _assert_raised(1, 1);
+
+  // the platform takes the window: the entry is the device it declared,
+  // and the system display profile is kept for when cairo shows it again
+  _own(DT_COLORSPACE_DISPLAY);
+  assert_true(self->outputs[0].platform_owned);
+  assert_ptr_equal(self->outputs[0].device.profile, _srgb());
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), _srgb());
+  assert_ptr_equal(self->system_display[0], a);
+  _assert_raised(2, 2);
+  // the same output again changes nothing
+  _own(DT_COLORSPACE_DISPLAY);
+  _assert_raised(2, 2);
+
+  // a new report describes the window for cairo only: neither its output
+  // nor the entry changes, so nothing is announced
+  const uint32_t serial = self->outputs[0].serial;
+  assert_true(_replace(DT_COLORSPACE_DISPLAY, f->b, f->b_size));
+  cmsHPROFILE b = self->system_display[0];
+  assert_ptr_not_equal(b, a);
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), _srgb());
+  assert_int_equal(self->outputs[0].serial, serial);
+  _assert_raised(2, 2);
+  // the other window keeps its own
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY2), f->placeholder2);
+
+  // given back: the entry is the system display profile again, the one
+  // reported last
+  dt_colorspaces_set_window_output(DT_COLORSPACE_DISPLAY, NULL);
+  assert_false(self->outputs[0].platform_owned);
+  assert_ptr_equal(self->outputs[0].device.profile, b);
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), b);
+  _assert_raised(3, 3);
+  _assert_valid(_content(DT_COLORSPACE_DISPLAY));
+
+  // and taken again, as a window whose backend is chosen anew: cleanup
+  // must then not free the entry's profile, which the sRGB entry owns
+  _own(DT_COLORSPACE_DISPLAY);
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), _srgb());
+  _assert_raised(4, 4);
+}
+
 int main(int argc, char *argv[])
 {
   const struct CMUnitTest tests[] = {
@@ -275,6 +395,9 @@ int main(int argc, char *argv[])
     cmocka_unit_test_setup_teardown(test_windows_share_profiles, _setup, _teardown),
     cmocka_unit_test_setup_teardown(test_no_profile_means_srgb, _setup, _teardown),
     cmocka_unit_test_setup_teardown(test_non_rgb_profile_means_srgb, _setup, _teardown),
+    cmocka_unit_test_setup_teardown(test_cairo_window_entry_is_system_profile, _setup,
+                                    _teardown),
+    cmocka_unit_test_setup_teardown(test_platform_owned_entry_is_device, _setup, _teardown),
   };
   return cmocka_run_group_tests(tests, NULL, NULL);
 }
