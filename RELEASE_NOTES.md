@@ -494,6 +494,9 @@ changes (where available).
 
 ## Bug Fixes
 
+- Fixed faint seams on a 112 pixel grid in images demosaiced with
+  LMMSE, where each tile read leftover data from the previous tile.
+
 - Upscaled exports no longer show shifted bands where they were
   processed in tiles, and the upscale now runs on OpenCL when it fits
   the device.
