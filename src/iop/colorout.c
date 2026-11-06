@@ -742,7 +742,8 @@ static void _create_transforms(dt_iop_colorout_data_t *d,
                                const cmsHPROFILE output,
                                const cmsUInt32Number output_format,
                                const cmsHPROFILE softproof,
-                               const dt_iop_color_intent_t intent)
+                               const dt_iop_color_intent_t intent,
+                               const gboolean bpc)
 {
   if(!softproof)
   {
@@ -751,9 +752,9 @@ static void _create_transforms(dt_iop_colorout_data_t *d,
   }
 
   // the links of littlecms' proofing transform (cmsCreateProofingTransformTHR()):
-  // Lab to the proof with the intent and black point compensation, the proof to
-  // the output relative colorimetric without. the proof's values in between
-  // are in littlecms' own encoding (PT_ANY), where [0, 1] is what an
+  // Lab to the proof with the proof's intent and black point compensation, the
+  // proof to the output relative colorimetric without. the proof's values in
+  // between are in littlecms' own encoding (PT_ANY), where [0, 1] is what an
   // integer encoding holds: an RGB proof shows the integer export, an ink
   // one a CMYK deliverable. darktable's hidden Lab and XYZ outputs store
   // other units
@@ -761,7 +762,7 @@ static void _create_transforms(dt_iop_colorout_data_t *d,
   const cmsUInt32Number proof_format =
     FLOAT_SH(1) | CHANNELS_SH(cmsChannelsOfColorSpace(cmsGetColorSpace(softproof))) | BYTES_SH(4);
   d->proof_channels = T_CHANNELS(proof_format);
-  const uint32_t to_proof = cmsFLAGS_NOCACHE | cmsFLAGS_BLACKPOINTCOMPENSATION;
+  const uint32_t to_proof = cmsFLAGS_NOCACHE | (bpc ? cmsFLAGS_BLACKPOINTCOMPENSATION : 0);
   d->proof_xform = cmsCreateTransform(Lab, TYPE_LabA_FLT, softproof, proof_format,
                                       intent, to_proof);
   d->xform = cmsCreateTransform(softproof, proof_format, output, output_format,
@@ -1004,6 +1005,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // there to the output relative colorimetric (_create_transforms())
   const dt_iop_color_intent_t intent =
     softproof ? darktable.color_profiles->softproof_intent : out_intent;
+  const gboolean bpc = darktable.color_profiles->softproof_bpc;
 
   /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
   if(d->mode != DT_PROFILE_NORMAL || force_lcms2
@@ -1012,7 +1014,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   {
     dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
     piece->process_cl_ready = FALSE;
-    _create_transforms(d, Lab, output, output_format, softproof, intent);
+    _create_transforms(d, Lab, output, output_format, softproof, intent, bpc);
   }
 
   // user selected a non-supported output profile, check that:
@@ -1034,7 +1036,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       piece->process_cl_ready = FALSE;
 
-      _create_transforms(d, Lab, output, output_format, softproof, intent);
+      _create_transforms(d, Lab, output, output_format, softproof, intent, bpc);
     }
   }
 

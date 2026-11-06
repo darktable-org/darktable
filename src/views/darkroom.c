@@ -2350,6 +2350,21 @@ static void _softproof_intent_callback(GtkWidget *combo,
   }
 }
 
+static void _softproof_bpc_callback(GtkWidget *toggle,
+                                    gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  const gboolean bpc = dt_bauhaus_toggle_get(toggle);
+  if(bpc == darktable.color_profiles->softproof_bpc) return;
+  darktable.color_profiles->softproof_bpc = bpc;
+  // as for the intent
+  if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
+  {
+    const dt_iop_module_t *cout = dt_iop_get_module("colorout");
+    dt_dev_reprocess_center(d, cout->iop_order);
+  }
+}
+
 static void _softproof_profile_callback(GtkWidget *combo,
                                         gpointer user_data)
 {
@@ -3436,6 +3451,12 @@ void gui_init(dt_view_t *self)
                                    darktable.color_profiles->softproof_intent,
                                    _softproof_intent_callback, dev, intents_list);
 
+    GtkWidget *softproof_bpc = dt_bauhaus_toggle_new((dt_iop_module_t *)DT_ACTION(self));
+    dt_bauhaus_widget_set_label(softproof_bpc, N_("profiles"), N_("black point compensation"));
+    dt_bauhaus_toggle_set_default
+      (softproof_bpc, dt_confgen_get_bool("ui_last/color/softproof_bpc", DT_DEFAULT));
+    dt_bauhaus_toggle_set(softproof_bpc, darktable.color_profiles->softproof_bpc);
+
     GtkWidget *softproof_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
     GtkWidget *histogram_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
 
@@ -3491,6 +3512,8 @@ void gui_init(dt_view_t *self)
                      G_CALLBACK(_display2_color_assessment_callback), dev);
     g_signal_connect(G_OBJECT(softproof_profile), "value-changed",
                      G_CALLBACK(_softproof_profile_callback), dev);
+    g_signal_connect(G_OBJECT(softproof_bpc), "value-changed",
+                     G_CALLBACK(_softproof_bpc_callback), dev);
     g_signal_connect(G_OBJECT(histogram_profile), "value-changed",
                      G_CALLBACK(_histogram_profile_callback), dev);
 
@@ -3499,7 +3522,7 @@ void gui_init(dt_view_t *self)
     GtkWidget *vbox = dt_gui_vbox
       (display2_color_assessment,
        gtk_separator_new(GTK_ORIENTATION_HORIZONTAL),
-       softproof_profile, softproof_intent, histogram_profile);
+       softproof_profile, softproof_intent, softproof_bpc, histogram_profile);
 
     gtk_widget_show_all(vbox);
     gtk_container_add(GTK_CONTAINER(dev->profile.floating_window), vbox);
