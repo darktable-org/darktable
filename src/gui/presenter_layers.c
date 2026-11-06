@@ -30,6 +30,10 @@
 #include "common/math.h"
 #include "gui/gtk.h"
 
+#if defined(__F16C__) && defined(__AVX__)
+#include <immintrin.h>
+#endif
+
 #define POPOVER_KEY "dt-presenter-popover"
 
 typedef struct _window_t
@@ -755,6 +759,10 @@ typedef struct _source_t
   // device pixels to frame pixels
   cairo_matrix_t inverse;
   gboolean nearest;
+  // a translation by whole texels: the sample at device pixel (x, y) is
+  // the texel (x + du, y + dv), clamped to the frame (_shift())
+  gboolean shifted;
+  int du, dv;
   const _coverage_t *coverage;
   const uint8_t *backdrop;
 } _source_t;
@@ -770,6 +778,30 @@ static inline uint16_t _half(const float v)
   return (uint16_t)((u >> 13) - ((127 - 15) << 10));
 }
 
+// _half() of each channel k of a row of width pixels times scale[k]: eight
+// at once where the build targets F16C, which rounds alike
+static void _halves(const float *const p,
+                    const float scale[4],
+                    uint16_t *const out,
+                    const int width)
+{
+  int x = 0;
+#if defined(__F16C__) && defined(__AVX__)
+  const __m256 s = _mm256_setr_ps(scale[0], scale[1], scale[2], scale[3],
+                                  scale[0], scale[1], scale[2], scale[3]);
+  // the instruction keeps the sign of -0, which _half() drops
+  const __m128i magnitude = _mm_set1_epi16(0x7fff);
+  for(; x + 2 <= width; x += 2)
+  {
+    const __m256 v = _mm256_mul_ps(s, _mm256_loadu_ps(p + 4 * x));
+    const __m128i h = _mm256_cvtps_ph(v, _MM_FROUND_TO_NEAREST_INT);
+    _mm_storeu_si128((__m128i *)(out + 4 * x), _mm_and_si128(h, magnitude));
+  }
+#endif
+  for(; x < width; x++)
+    for(int k = 0; k < 4; k++) out[4 * x + k] = _half(scale[k] * p[4 * x + k]);
+}
+
 // a finite v as an IEEE half float, the largest finite one beyond it
 static inline uint16_t _signed_half(const float v)
 {
@@ -783,6 +815,45 @@ static inline float _weighed(const float v,
   return w > 0.0f ? w * v : 0.0f;
 }
 
+// the color of texel (iu, iv), clamped to the frame
+static inline void _texel(const _source_t *s,
+                          const int iu,
+                          const int iv,
+                          float c[3])
+{
+  const size_t k = (size_t)CLAMP(iv, 0, s->height - 1) * s->width + CLAMP(iu, 0, s->width - 1);
+  for(int j = 0; j < 3; j++) c[j] = s->pixels[4 * k + j];
+}
+
+// the bilinear interpolation of the frame at (u, v), padded at the edges:
+// the straight color of cairo's EXTEND_NONE there, whose premultiplied one
+// the coverage scales
+static inline void _bilinear(const _source_t *s,
+                             const double u,
+                             const double v,
+                             float c[3])
+{
+  const double fu = CLAMP(u - 0.5, 0.0, s->width - 1.0);
+  const double fv = CLAMP(v - 0.5, 0.0, s->height - 1.0);
+  const int u0 = (int)fu, v0 = (int)fv;
+  const int u1 = MIN(u0 + 1, s->width - 1), v1 = MIN(v0 + 1, s->height - 1);
+  const float a = fu - u0, b = fv - v0;
+  const float *p00 = s->pixels + (size_t)4 * ((size_t)v0 * s->width + u0);
+  const float *p01 = s->pixels + (size_t)4 * ((size_t)v0 * s->width + u1);
+  const float *p10 = s->pixels + (size_t)4 * ((size_t)v1 * s->width + u0);
+  const float *p11 = s->pixels + (size_t)4 * ((size_t)v1 * s->width + u1);
+  for(int k = 0; k < 3; k++)
+  {
+    c[k] = (1.0f - b) * ((1.0f - a) * p00[k] + a * p01[k])
+           + b * ((1.0f - a) * p10[k] + a * p11[k]);
+    // an infinite texel of weight 0 makes NaN: leave out the texels of
+    // weight 0, as for any finite value there
+    if(dt_isnan(c[k]))
+      c[k] = _weighed(p00[k], (1.0f - a) * (1.0f - b)) + _weighed(p01[k], a * (1.0f - b))
+             + _weighed(p10[k], (1.0f - a) * b) + _weighed(p11[k], a * b);
+  }
+}
+
 // the straight color at device pixel (x, y), clipped to [lo, hi] (NaN to
 // lo): outside the volume an encoding declares, colorimetry is undefined
 static inline void _sample(const _source_t *s,
@@ -792,39 +863,17 @@ static inline void _sample(const _source_t *s,
                            const float hi,
                            float color[3])
 {
-  double u = x + 0.5, v = y + 0.5;
-  cairo_matrix_transform_point(&s->inverse, &u, &v);
   float c[3];
-  if(s->nearest)
-  {
-    const int iu = CLAMP((int)floor(u), 0, s->width - 1);
-    const int iv = CLAMP((int)floor(v), 0, s->height - 1);
-    const float *in = s->pixels + (size_t)4 * ((size_t)iv * s->width + iu);
-    for(int k = 0; k < 3; k++) c[k] = in[k];
-  }
+  if(s->shifted)
+    _texel(s, x + s->du, y + s->dv, c);
   else
   {
-    // padded at the edges: the straight color of cairo's EXTEND_NONE
-    // there, whose premultiplied one the coverage scales
-    const double fu = CLAMP(u - 0.5, 0.0, s->width - 1.0);
-    const double fv = CLAMP(v - 0.5, 0.0, s->height - 1.0);
-    const int u0 = (int)fu, v0 = (int)fv;
-    const int u1 = MIN(u0 + 1, s->width - 1), v1 = MIN(v0 + 1, s->height - 1);
-    const float a = fu - u0, b = fv - v0;
-    const float *p00 = s->pixels + (size_t)4 * ((size_t)v0 * s->width + u0);
-    const float *p01 = s->pixels + (size_t)4 * ((size_t)v0 * s->width + u1);
-    const float *p10 = s->pixels + (size_t)4 * ((size_t)v1 * s->width + u0);
-    const float *p11 = s->pixels + (size_t)4 * ((size_t)v1 * s->width + u1);
-    for(int k = 0; k < 3; k++)
-    {
-      c[k] = (1.0f - b) * ((1.0f - a) * p00[k] + a * p01[k])
-             + b * ((1.0f - a) * p10[k] + a * p11[k]);
-      // an infinite texel of weight 0 makes NaN: leave out the texels of
-      // weight 0, as for any finite value there
-      if(dt_isnan(c[k]))
-        c[k] = _weighed(p00[k], (1.0f - a) * (1.0f - b)) + _weighed(p01[k], a * (1.0f - b))
-               + _weighed(p10[k], (1.0f - a) * b) + _weighed(p11[k], a * b);
-    }
+    double u = x + 0.5, v = y + 0.5;
+    cairo_matrix_transform_point(&s->inverse, &u, &v);
+    if(s->nearest)
+      _texel(s, (int)floor(u), (int)floor(v), c);
+    else
+      _bilinear(s, u, v, c);
   }
   // CLAMPF takes NaN to lo
   for(int k = 0; k < 3; k++) color[k] = CLAMPF(c[k], lo, hi);
@@ -862,6 +911,7 @@ static gboolean _compose(const _source_t *sources,
   for(int k = 0; k < 3; k++)
     for(int j = 0; j < 3; j++)
       diagonal &= j == k ? m[k][j] >= 0.0f && m[k][j] * hi < 65504.0f : m[k][j] == 0.0f;
+  const float scale[4] = { m[0][0], m[1][1], m[2][2], 1.0f };
   DT_OMP_FOR()
   for(int y = 0; y < height; y++)
   {
@@ -903,19 +953,60 @@ static gboolean _compose(const _source_t *sources,
       memset(out, 0, sizeof(uint16_t) * 4 * width);
       continue;
     }
+    if(diagonal)
+    {
+      _halves(n, scale, out, width);
+      continue;
+    }
     for(int x = 0; x < width; x++)
     {
       const float *p = n + (size_t)4 * x;
-      if(diagonal)
-        for(int k = 0; k < 3; k++) out[4 * x + k] = _half(m[k][k] * p[k]);
-      else
-        for(int k = 0; k < 3; k++)
-          out[4 * x + k] = _signed_half(m[k][0] * p[0] + m[k][1] * p[1] + m[k][2] * p[2]);
+      for(int k = 0; k < 3; k++)
+        out[4 * x + k] = _signed_half(m[k][0] * p[0] + m[k][1] * p[1] + m[k][2] * p[2]);
       out[4 * x + 3] = _half(p[3]);
     }
   }
   dt_free_align(rows);
   return TRUE;
+}
+
+// the d with floor(u) = x + d for every 0 <= x < extent, where u =
+// (x + 0.5) + t as cairo sums it in double: the texel a nearest sample
+// reads under a translation by t. a bilinear sample reads that texel alone
+// where t is whole. FALSE where it is not certain
+static gboolean _offset(const double t,
+                        const int extent,
+                        const gboolean nearest,
+                        int *d)
+{
+  // the sums then round by at most 2^-32 (and NaN fails)
+  if(!(fabs(t) < 0x1p20) || extent > 0x100000) return FALSE;
+  if(t == floor(t))
+  {
+    *d = (int)t;
+    return TRUE;
+  }
+  if(!nearest) return FALSE;
+  // on the half pixel grid u is exact; elsewhere its rounding must not
+  // reach a whole number, which a margin far wider keeps clear of
+  const double f = floor(t + 0.5), e = t + 0.5 - f;
+  if(2.0 * t != floor(2.0 * t) && (e < 0x1p-24 || e > 1.0 - 0x1p-24)) return FALSE;
+  *d = (int)f;
+  return TRUE;
+}
+
+// whether a source of a width x height widget is a translation the
+// compose reads without the transform, each sample one texel for either
+// filter: the texel _sample() reads through the transform
+static gboolean _shift(_source_t *s,
+                       const int width,
+                       const int height)
+{
+  const cairo_matrix_t *i = &s->inverse;
+  s->shifted = i->xx == 1.0 && i->yy == 1.0 && i->xy == 0.0 && i->yx == 0.0
+               && _offset(i->x0, width, s->nearest, &s->du)
+               && _offset(i->y0, height, s->nearest, &s->dv);
+  return s->shifted;
 }
 
 static gboolean _compose_widget(const _widget_t *l,
@@ -940,7 +1031,9 @@ static gboolean _compose_widget(const _widget_t *l,
                       .coverage = record->coverage, .backdrop = record->backdrop };
     cairo_matrix_multiply(&s->inverse, &image->matrix, &device);
     // a singular placement covers nothing
-    if(cairo_matrix_invert(&s->inverse) == CAIRO_STATUS_SUCCESS) count++;
+    if(cairo_matrix_invert(&s->inverse) != CAIRO_STATUS_SUCCESS) continue;
+    _shift(s, width, height);
+    count++;
   }
   const gboolean done = _compose(sources, count, width, height, r);
   g_free(sources);

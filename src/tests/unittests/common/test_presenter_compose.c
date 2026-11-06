@@ -737,6 +737,213 @@ static void test_sample_nonfinite(void **state)
   }
 }
 
+static void _check_halves(const float *row,
+                          const int n,
+                          const float scale[4],
+                          uint16_t *got)
+{
+  _halves(row, scale, got, n / 4);
+  for(int k = 0; k < n; k++)
+    if(got[k] != _half(scale[k % 4] * row[k]))
+      fail_msg("%.9g times %g: %04x, _half() %04x", row[k], scale[k % 4], got[k],
+               _half(scale[k % 4] * row[k]));
+}
+
+/*
+ * the half floats of a row, eight at a time where the build has F16C, are
+ * _half()'s: every 61st float of [0, 65504), the ties between two halves,
+ * subnormal and normal, and -0, as they are and scaled
+ */
+static void test_halves(void **state)
+{
+  enum { N = 4096 };
+  float *row = g_new(float, 4 * N);
+  uint16_t *got = g_new(uint16_t, 4 * N);
+  const float scales[][4] = { { 1.0f, 1.0f, 1.0f, 1.0f }, { 0.25f, 0.5f, 1.0f / 3.0f, 1.0f } };
+  long count = 0;
+  for(int s = 0; s < G_N_ELEMENTS(scales); s++)
+  {
+    // 65504 is 0x477fe000
+    for(uint32_t u = 0; u < 0x477fe000u;)
+    {
+      int n = 0;
+      for(; n < 4 * N && u < 0x477fe000u; n++, u += 61) memcpy(row + n, &u, sizeof(float));
+      while(n % 4) row[n++] = 0.0f;
+      _check_halves(row, n, scales[s], got);
+      count += n;
+    }
+    int n = 0;
+    for(int k = 0; k < 1024; k++) row[n++] = ldexpf(k + 0.5f, -24);
+    for(int e = -14; e < 16; e++)
+    {
+      row[n++] = ldexpf(1.0f + 1.0f / 2048.0f, e);
+      row[n++] = ldexpf(1.0f + 3.0f / 2048.0f, e);
+    }
+    // by its bits: -ffast-math need not keep the sign of a -0.0f constant
+    const uint32_t negative_zero = 0x80000000u;
+    do memcpy(row + n++, &negative_zero, sizeof(float));
+    while(n % 4);
+    _check_halves(row, n, scales[s], got);
+    count += n;
+  }
+  print_message("%ld values\n", count);
+  g_free(row);
+  g_free(got);
+}
+
+// a frame translated by (tx, ty) logical pixels, at 1:1 in device pixels
+static void _translated(_placement_t *p,
+                        const int scale,
+                        const double tx,
+                        const double ty)
+{
+  cairo_matrix_init_translate(&p->matrix, tx, ty);
+  cairo_matrix_scale(&p->matrix, 1.0 / scale, 1.0 / scale);
+}
+
+/*
+ * translations the compose reads without the transform (_shift()) compose
+ * the same bytes as through it: nearest by any offset, bilinear by whole
+ * device pixels, through clips at fractions (edge coverage), of frames
+ * smaller and larger than the widget, kept coverages of a larger widget,
+ * values beyond the clip, infinite and NaN, under each other and under a
+ * general placement. a scale, a rotation, bilinear at a fraction and
+ * nearest within rounding of a texel's edge keep the general path
+ */
+static void test_compose_translation(void **state)
+{
+  GRand *rand = g_rand_new_with_seed(17);
+  int shifted = 0;
+  for(int n = 0; n < 160; n++)
+  {
+    const int scale = 1 + n % 2, width = 150 / scale, height = 110 / scale;
+    // a kept coverage, made for a widget larger than the compose's
+    const int grown = n % 5 == 4 ? 12 : 0;
+    const int W = width * scale, H = height * scale;
+    const int count = 1 + n % 3;
+    _placement_t placements[3];
+    _source_t sources[3];
+    _record_t records[3];
+    float *frames[3];
+    for(int i = 0; i < count; i++)
+    {
+      _placement_t *p = &placements[i];
+      _random_placement(rand, width + grown, height + grown, 300 / scale, p);
+      // frames smaller than the widget and larger
+      p->frame_width = g_rand_int_range(rand, 3, n % 2 ? 60 : W + 80);
+      p->frame_height = g_rand_int_range(rand, 3, n % 2 ? 50 : H + 80);
+      const gboolean nearest = i == 2 || n % 4 < 2;
+      p->filter = nearest ? CAIRO_FILTER_FAST : CAIRO_FILTER_GOOD;
+      // a third image placed in general, under or above the others
+      if(i < 2)
+      {
+        // whole device pixels, and for nearest half ones and any fraction
+        const int grid = nearest ? (n % 3 == 0 ? 0 : 2) : 1;
+        double t[2];
+        for(int k = 0; k < 2; k++)
+        {
+          t[k] = g_rand_double_range(rand, -0.6, 0.4) * (k ? H : W);
+          t[k] = grid ? round(t[k] * grid) / grid : t[k];
+        }
+        _translated(p, scale, t[0] / scale, t[1] / scale);
+      }
+      frames[i] = _random_frame(rand, p);
+      _coverage_t *c = _coverage(p, width + grown, height + grown, scale);
+      records[i] = (_record_t){ .refs = 1, .coverage = c,
+                                .backdrop = g_malloc(c->fractional[c->box[3] - c->box[1]] + 1) };
+      for(int k = 0; k < c->fractional[c->box[3] - c->box[1]]; k++)
+        records[i].backdrop[k] = g_rand_int_range(rand, 0, 256);
+      _source_t *s = &sources[i];
+      *s = (_source_t){ .pixels = frames[i], .width = p->frame_width, .height = p->frame_height,
+                        .nearest = nearest, .coverage = c, .backdrop = records[i].backdrop };
+      cairo_matrix_t device;
+      cairo_matrix_init_scale(&device, scale, scale);
+      cairo_matrix_multiply(&s->inverse, &p->matrix, &device);
+      assert_int_equal(cairo_matrix_invert(&s->inverse), CAIRO_STATUS_SUCCESS);
+      const gboolean translation = i < 2 && s->inverse.xx == 1.0 && s->inverse.yy == 1.0
+                                   && s->inverse.xy == 0.0 && s->inverse.yx == 0.0;
+      if(_shift(s, W, H)) shifted++;
+      else if(translation && i < 2)
+        fail_msg("scene %d: a translation by (%.17g, %.17g), %s, takes the general path", n,
+                 s->inverse.x0, s->inverse.y0, nearest ? "nearest" : "bilinear");
+    }
+    // under each other in either order
+    if(n % 2)
+    {
+      const _source_t t = sources[0];
+      sources[0] = sources[count - 1];
+      sources[count - 1] = t;
+    }
+
+    const dt_presenter_encoding_t e = n % 7 == 3 ? _scrgb : _diagonal(4.0f, 0.25f);
+    uint16_t *fast = g_new(uint16_t, (size_t)4 * W * H), *general = g_new(uint16_t, (size_t)4 * W * H);
+    const dt_presenter_reservation_t rf = { .image = fast, .image_stride = (size_t)8 * W, .encoding = e };
+    const dt_presenter_reservation_t rg = { .image = general, .image_stride = (size_t)8 * W, .encoding = e };
+    assert_true(_compose(sources, count, W, H, &rf));
+    for(int i = 0; i < count; i++) sources[i].shifted = FALSE;
+    assert_true(_compose(sources, count, W, H, &rg));
+    for(size_t k = 0; k < (size_t)4 * W * H; k++)
+      if(fast[k] != general[k])
+        fail_msg("scene %d: pixel (%zu, %zu) channel %zu: %04x, through the transform %04x", n,
+                 k / 4 % W, k / 4 / W, k % 4, fast[k], general[k]);
+    g_free(fast);
+    g_free(general);
+    for(int i = 0; i < count; i++)
+    {
+      g_free(frames[i]);
+      g_free(records[i].backdrop);
+      _coverage_unref(records[i].coverage);
+    }
+  }
+  print_message("%d translated sources\n", shifted);
+  assert_true(shifted > 150);
+
+  // placements the compose transforms
+  const struct
+  {
+    cairo_matrix_t inverse;
+    gboolean nearest;
+  } general[] = {
+    { { 1.0 + 0x1p-40, 0.0, 0.0, 1.0, 3.0, 4.0 }, TRUE },
+    { { 2.0, 0.0, 0.0, 2.0, 0.0, 0.0 }, TRUE },
+    { { 0.5, 0.0, 0.0, 0.5, 0.0, 0.0 }, FALSE },
+    { { 1.0, 0.0, 0x1p-30, 1.0, 3.0, 4.0 }, TRUE },
+    { { 0.8, -0.6, 0.6, 0.8, 0.0, 0.0 }, TRUE },
+    { { 1.0, 0.0, 0.0, 1.0, 3.5, 4.0 }, FALSE },
+    { { 1.0, 0.0, 0.0, 1.0, 3.0, 4.25 }, FALSE },
+    // within rounding of a texel's edge
+    { { 1.0, 0.0, 0.0, 1.0, 2.5 - 0x1p-40, 4.0 }, TRUE },
+    { { 1.0, 0.0, 0.0, 1.0, 3.0, -1.5 + 0x1p-40 }, TRUE },
+    { { 1.0, 0.0, 0.0, 1.0, 0x1p21, 4.0 }, TRUE },
+    { { 1.0, 0.0, 0.0, 1.0, NAN, 4.0 }, TRUE },
+  };
+  for(int k = 0; k < G_N_ELEMENTS(general); k++)
+  {
+    _source_t s = { .inverse = general[k].inverse, .nearest = general[k].nearest,
+                    .width = 10, .height = 10 };
+    if(_shift(&s, 200, 100)) fail_msg("placement %d takes the translation's path", k);
+  }
+  // and the ones it reads directly, with their offsets
+  const struct
+  {
+    double x0, y0;
+    gboolean nearest;
+    int du, dv;
+  } direct[] = {
+    { 3.0, -4.0, FALSE, 3, -4 },  { 3.0, -4.0, TRUE, 3, -4 },  { 3.5, -4.5, TRUE, 4, -4 },
+    { 3.25, -4.75, TRUE, 3, -5 }, { -0.5, 0.49, TRUE, 0, 0 },  { 2.5 - 0x1p-20, 0.0, TRUE, 2, 0 },
+  };
+  for(int k = 0; k < G_N_ELEMENTS(direct); k++)
+  {
+    _source_t s = { .nearest = direct[k].nearest, .width = 10, .height = 10 };
+    cairo_matrix_init_translate(&s.inverse, direct[k].x0, direct[k].y0);
+    assert_true(_shift(&s, 200, 100));
+    assert_int_equal(s.du, direct[k].du);
+    assert_int_equal(s.dv, direct[k].dv);
+  }
+  g_rand_free(rand);
+}
+
 /*
  * a presentation kept at another device scale is dropped when it would be
  * shown: its foreground was cut by coverages of that scale, and cutting it
@@ -786,6 +993,8 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_sample_nonfinite),
     cmocka_unit_test(test_compose_random),
     cmocka_unit_test(test_compose_preview_fallback),
+    cmocka_unit_test(test_halves),
+    cmocka_unit_test(test_compose_translation),
     cmocka_unit_test(test_keep_scale),
   };
   return cmocka_run_group_tests(tests, NULL, NULL);
