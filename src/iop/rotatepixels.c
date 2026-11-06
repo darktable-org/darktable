@@ -329,7 +329,7 @@ int process_cl(dt_iop_module_t *self,
   const int devid = piece->pipe->devid;
 
   const float scale = roi_in->scale / piece->iscale;
-  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   // backtransform() as one matrix and offset
   const float m[4] = { d->m[0], -d->m[1], -d->m[2], d->m[3] };

@@ -56,6 +56,19 @@ Key members:
         -   If not cached, it calls `process()` (or `process_cl` for OpenCL).
         -   Stores the result in the cache if appropriate.
 
+### Input color profile output
+
+The input color profile module (`colorin`) version 8 outputs the selected
+working RGB profile for new settings. Matrix profiles combine the input-to-XYZ
+and XYZ-to-working-RGB matrices; ICC fallback transforms target the working
+profile directly. Gamut clipping still happens in the selected clipping gamut.
+DNG hue/saturation maps operate in ProPhoto RGB before returning working RGB.
+
+Settings migrated from versions 1–7 set the internal `output_rgb` flag to false
+and retain the original Lab output and processing paths. Query the committed
+piece's `output_colorspace()` rather than assuming colorin always outputs Lab.
+Lab modules downstream continue to use the pipeline's normal conversions.
+
 ## Pipeline Caching
 
 Darktable employs a sophisticated caching mechanism to avoid redundant processing. This is implemented in `src/develop/pixelpipe_cache.c`.
@@ -135,9 +148,9 @@ Two key pipeline operations iterate modules in **different** orders:
 - **`commit_params()`** (through `synch_all`) first commits every piece's defaults in forward pipe order, then replays the history items in **history order**, which is the order of the user's edits. So a downstream module can commit before an upstream one. Only processing itself is guaranteed to run in pipe order.
 - **`_dt_dev_load_pipeline_defaults()`** runs in **reverse** pipe order (e.g., channelmixerrgb before temperature). It is called when an image is loaded (`dt_dev_read_history_ext()`).
 
-This matters for modules that communicate via shared state. For example, `temperature.c` writes white balance coefficients into `dev->chroma.wb_coeffs`, and `channelmixerrgb.c` reads them in `reload_defaults()`, `commit_params()` and `process()`. During reverse-order default loading, channelmixerrgb runs first, before temperature has refreshed its values, so any shared state a `reload_defaults()` depends on must be reset to a neutral value beforehand. During history replay, channelmixerrgb may commit before temperature, so it recomputes its white-balance-dependent illuminant in `process()`.
+This matters for modules that communicate via shared state. For example, `temperature.c` writes white balance coefficients into `dev->chroma.wb.coeffs` and into each pipe's `pipe->wb`. `channelmixerrgb.c` reads `dev->chroma` in `reload_defaults()`, and `pipe->wb` in `commit_params()` and `process()`. During reverse-order default loading, channelmixerrgb runs first, before temperature has refreshed its values, so any shared state a `reload_defaults()` depends on must be reset to a neutral value beforehand. During history replay, channelmixerrgb may commit before temperature, so it recomputes its white-balance-dependent illuminant in `process()`.
 
-**Consequence:** Shared state (like `dev->chroma`) must be reset before reverse-order iteration. The framework does this via `dt_dev_reset_chroma()` immediately before `_dt_dev_load_pipeline_defaults()`; the neutral `wb_coeffs` it writes is what keeps the dependent defaults image-local. See [Module_Lifecycle.md](Module_Lifecycle.md#5-pipeline-ordering-asymmetry).
+**Consequence:** Shared state (like `dev->chroma`) must be reset before reverse-order iteration. The framework does this via `dt_dev_reset_chroma()` immediately before `_dt_dev_load_pipeline_defaults()`; the neutral `wb.coeffs` it writes is what keeps the dependent defaults image-local. See [Module_Lifecycle.md](Module_Lifecycle.md#5-pipeline-ordering-asymmetry). For the white balance and color calibration case in full, see [How white balance and color calibration share state](iop/wb_and_colorcalibration/README.md).
 
 ## Introspection Connection
 

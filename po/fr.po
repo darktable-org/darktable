@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-02 22:30+0100\n"
-"PO-Revision-Date: 2026-11-02 22:34+0100\n"
+"PO-Revision-Date: 2026-11-05 17:16+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -965,7 +965,7 @@ msgstr "Masque dessiné et paramétrique"
 
 #: ../build/bin/masks_group_presets_strings.h:16
 msgid "drawn + parametric, minus an area"
-msgstr "Masque dessiné et paramétrique, avec soustraction d'une zone"
+msgstr "Masque dessiné et paramétrique, avec soustraction d’une zone"
 
 #: ../build/bin/masks_group_presets_strings.h:17
 msgid "drawn"
@@ -1566,8 +1566,8 @@ msgid ""
 msgstr ""
 "Si sélectionné, un clic-milieu de la souris fera passer le zoom de 100% à "
 "200% puis de retour sur le zoom ajusté à l’écran.\n"
-"Si désactivé, le zoom passera du zoom ajusté à 100% et l’utilisation de Ctrl "
-"est nécessaire pour avoir le plein contrôle du niveau de zoom."
+"Si désactivé, le zoom passera du zoom ajusté à 100% et l’utilisation de "
+"'Ctrl' est nécessaire pour avoir le plein contrôle du niveau de zoom."
 
 #: ../build/bin/preferences_gen.h:3209
 msgid "pattern for the image information line"
@@ -1845,7 +1845,7 @@ msgstr ""
 "<b>Relatif à la scène (spektrafilm)</b> flux de travail moderne, le mappage "
 "de tonalité est effectué par un film et un tirage simulés\n"
 "\n"
-"<b>Relatif à l'affichage (ancien)</b> flux de travail hérité (non "
+"<b>Relatif à l’affichage (ancien)</b> flux de travail hérité (non "
 "recommandé)\n"
 "\n"
 "<b>Aucun</b> ne pas utiliser de flux de travail prédéfini"
@@ -1906,7 +1906,7 @@ msgstr "Alignement HDR"
 
 #: ../build/bin/preferences_gen.h:3683
 msgid "auto-align frames when merging HDR brackets"
-msgstr "Alignement automatique des images lors de la fusion HDR d'exposition"
+msgstr "Alignement automatique des images lors de la fusion HDR d’exposition"
 
 #: ../build/bin/preferences_gen.h:3691
 msgid ""
@@ -1934,7 +1934,7 @@ msgstr ""
 "Avant la fusion, examiner chaque bracketing et aligner sur la trame la plus "
 "riche en détails plutôt que sur la première.\n"
 "Améliore l’alignement lorsque la première exposition est un mauvais modèle, "
-"au prix d'un décodage supplémentaire des trames.\n"
+"au prix d’un décodage supplémentaire des trames.\n"
 "Nécessite l’auto-alignement et une version de Darktable compilée avec OpenCV."
 
 #: ../build/bin/preferences_gen.h:3725
@@ -2601,7 +2601,7 @@ msgstr ""
 "panneau, ou pour changer les valeurs des contrôles sous le pointeur; cette "
 "dernière option permet un développement plus rapide, mais peut être "
 "dangereuse car vous pouvez changer les valeurs du module sans vous en "
-"apercevoir if vous n'y êtes pas habitué\n"
+"apercevoir if vous n’y êtes pas habitué\n"
 "\n"
 " • Activé - la molette de la souris fait défiler le panneau des modules et "
 "<i>Ctrl+Alt</i> ajuste la valeur du contrôle\n"
@@ -2649,7 +2649,7 @@ msgstr ""
 "« ajusté » et 100%.\n"
 "<b>activé :</b> le zoom est contraint ; tenir <i>Ctrl</i> pendant le zoom "
 "pour temporairement supprimer les limites et zoomer au delà de 100%.\n"
-"<b>désactivé :</b> le zoom est jamais contraint et tenir <i>Ctrl</i> n'est "
+"<b>désactivé :</b> le zoom est jamais contraint et tenir <i>Ctrl</i> n’est "
 "donc pas nécessaire pour zoomer au delà de 100%."
 
 #: ../build/bin/preferences_gen.h:4756
@@ -2686,7 +2686,7 @@ msgid ""
 "scrolls to center on the selected image"
 msgstr ""
 "Lorsque activée, la pellicule en mode de tri et dans la chambre noire fait "
-"défiler automatiquement pour centrer l'image sélectionnée."
+"défiler automatiquement pour centrer l’image sélectionnée."
 
 #: ../build/bin/preferences_gen.h:4818
 msgid "position of the scopes module"
@@ -6362,17 +6362,17 @@ msgstr "Exposition du film"
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:484
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:957
 msgid "print exposure compensation"
-msgstr "Compensation d'exposition d'impression"
+msgstr "Compensation d’exposition d’impression"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:490
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:961
 msgid "auto print exposure"
-msgstr "Exposition d'impression automatique"
+msgstr "Exposition d’impression automatique"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:496
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:965
 msgid "print gamma"
-msgstr "Gamma d'impression"
+msgstr "Gamma d’impression"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:502
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:969
@@ -6392,12 +6392,12 @@ msgstr "Coupleurs DIR"
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:520
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:981
 msgid "inhibitor spread"
-msgstr "Étalement de l'inhibiteur"
+msgstr "Étalement de l’inhibiteur"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:526
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:985
 msgid "spread tail"
-msgstr "Traîne de l'étalement"
+msgstr "Traîne de l’étalement"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:532
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:989
@@ -6467,12 +6467,12 @@ msgstr "Amplification des hautes lumières"
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:610
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1041
 msgid "boost range"
-msgstr "Étendue de l'amplification"
+msgstr "Étendue de l’amplification"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:616
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1045
 msgid "boost protect"
-msgstr "Protection de l'amplification"
+msgstr "Protection de l’amplification"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:622
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1049
@@ -6502,27 +6502,27 @@ msgstr "Chaleur du halo de diffusion"
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:652
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1069
 msgid "enable print diffusion"
-msgstr "Activer la diffusion à l'impression"
+msgstr "Activer la diffusion à l’impression"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:658
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1073
 msgid "print diffusion filter type"
-msgstr "Type de filtre de diffusion à l'impression"
+msgstr "Type de filtre de diffusion à l’impression"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:664
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1077
 msgid "print diffusion strength"
-msgstr "Force de la diffusion à l'impression"
+msgstr "Force de la diffusion à l’impression"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:670
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1081
 msgid "print diffusion size"
-msgstr "Taille de la diffusion à l'impression"
+msgstr "Taille de la diffusion à l’impression"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:676
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1085
 msgid "print diffusion halo warmth"
-msgstr "Chaleur du halo de diffusion à l'impression"
+msgstr "Chaleur du halo de diffusion à l’impression"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:682
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1089
@@ -6654,17 +6654,17 @@ msgstr "Adaptation de surface"
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:844
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1197
 msgid "print gamma red"
-msgstr "Gamma d'impression rouge"
+msgstr "Gamma d’impression rouge"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:850
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1201
 msgid "print gamma green"
-msgstr "Gamma d'impression vert"
+msgstr "Gamma d’impression vert"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:856
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1205
 msgid "print gamma blue"
-msgstr "Gamma d'impression bleu"
+msgstr "Gamma d’impression bleu"
 
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:880
 #: ../build/lib/darktable/plugins/introspection_spektrafilm.c:1221
@@ -7181,7 +7181,7 @@ msgid ""
 "for export"
 msgstr ""
 "Note : pas de ficher XMP ni de chemin de bibliothèque spécifié, utilisation "
-"des paramètres par défaut pour l'export"
+"des paramètres par défaut pour l’export"
 
 #: ../src/cli/main.c:597
 #, c-format
@@ -7343,7 +7343,7 @@ msgstr "Fichier non trouvé : « %s »"
 #, c-format
 msgid "archive top-level directory is not a valid model id: \"%s\""
 msgstr ""
-"Le répertoire de l'archive n'est pas un identifiant de modèle valide « %s »"
+"Le répertoire de l’archive n’est pas un identifiant de modèle valide « %s »"
 
 #: ../src/common/ai_models.c:1821
 msgid "failed to extract model archive"
@@ -8174,14 +8174,14 @@ msgid ""
 msgstr ""
 "Cette fenêtre de console est requise par darktable sur cette version de "
 "Windows.\n"
-"Sous Windows 11 24H2 et versions ultérieures, darktable s'exécute normalement "
+"Sous Windows 11 24H2 et versions ultérieures, darktable s’exécute normalement "
 "sans cette fenêtre.\n"
-"Ne la fermez pas et n'appuyez pas sur Ctrl+C pendant que darktable est en "
-"cours d'exécution.\n"
+"Ne la fermez pas et n’appuyez pas sur Ctrl+C pendant que darktable est en "
+"cours d’exécution.\n"
 "Elle se fermera automatiquement lorsque darktable se terminera.\n"
 "\n"
 "Pour masquer cette fenêtre malgré tout, suivez les instructions disponibles à "
-"l'adresse suivante :\n"
+"l’adresse suivante :\n"
 "https://www.darktable.org/about/faq/#faq-windows-terminal\n"
 
 #: ../src/common/darktable.c:657
@@ -8891,7 +8891,7 @@ msgstr ""
 
 #: ../src/common/history.c:1198
 msgid "raster masks could not be copied to the pasted history"
-msgstr "Les masques de pixellisation n'ont pas pu être copiés dans l'historique"
+msgstr "Les masques de pixellisation n’ont pas pu être copiés dans l’historique"
 
 #: ../src/common/image.c:354
 msgid "orphaned image"
@@ -8978,7 +8978,7 @@ msgstr ""
 #: ../src/common/image.c:3400
 msgid "cannot remove local copy: its raster masks could not be merged back"
 msgstr ""
-"Impossible de supprimer la copie locale : ses masques de pixellisation n'ont "
+"Impossible de supprimer la copie locale : ses masques de pixellisation n’ont "
 "pas pu être fusionnés."
 
 #: ../src/common/image.c:3569
@@ -9223,7 +9223,7 @@ msgid ""
 "couldn't get platform ID.\n"
 "check your OpenCL ICD loader (ocl-icd)"
 msgstr ""
-"Impossible d'obtenir l'ID de la plateforme.\n"
+"Impossible d’obtenir l’ID de la plateforme.\n"
 "Vérifiez votre chargeur ICD OpenCL (ocl-icd)."
 
 #: ../src/common/opencl.c:1326
@@ -10979,7 +10979,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2475 ../src/develop/masks/object.c:2358
 msgid "AI model is not available. Check preferences > AI"
-msgstr "Le modèle IA n'est pas disponible. Vérifier Préférences > IA"
+msgstr "Le modèle IA n’est pas disponible. Vérifier Préférences > IA"
 
 #: ../src/develop/blend_gui.c:2656
 msgid "remove parametric element?"
@@ -11002,16 +11002,16 @@ msgid_plural ""
 "\n"
 "change the blend colorspace and remove them?"
 msgstr[0] ""
-"Ce masque possède %d élément paramétrique. Il stocke les canaux de l'espace "
-"colorimétrique dans lequel il a été créé, et ces canaux n'existent pas dans "
+"Ce masque possède %d élément paramétrique. Il stocke les canaux de l’espace "
+"colorimétrique dans lequel il a été créé, et ces canaux n’existent pas dans "
 "un autre espace colorimétrique, il ne peut donc pas être transféré.\n"
 "\n"
-"Changer l'espace colorimétrique de la fusion et le supprimer ?"
+"Changer l’espace colorimétrique de la fusion et le supprimer ?"
 msgstr[1] ""
-"Ce masque possède %d éléments paramétriques. Il stocke les canaux de l'espace "
-"colorimétrique dans lequel il a été créé, et ces canaux n'existent pas dans "
+"Ce masque possède %d éléments paramétriques. Il stocke les canaux de l’espace "
+"colorimétrique dans lequel il a été créé, et ces canaux n’existent pas dans "
 "un autre espace colorimétrique, il ne peut donc pas être transféré.\n"
-"Changer l'espace colorimétrique de la fusion et le supprimer ?"
+"Changer l’espace colorimétrique de la fusion et le supprimer ?"
 
 #: ../src/develop/blend_gui.c:2832
 msgid "interface options"
@@ -11061,7 +11061,7 @@ msgstr "Comment les nouvelles formes sont créées"
 
 #: ../src/develop/blend_gui.c:2859
 msgid "remember last shape's opacity"
-msgstr "Se souvenir de l'opacité de la dernière forme"
+msgstr "Se souvenir de l’opacité de la dernière forme"
 
 #: ../src/develop/blend_gui.c:2860
 msgid ""
@@ -12287,7 +12287,7 @@ msgid ""
 "the input slider is always shown"
 msgstr ""
 "Afficher le curseur de sortie et le facteur de renforcement\n"
-"Le curseur d'entrée est toujours affiché"
+"Le curseur d’entrée est toujours affiché"
 
 #: ../src/develop/blend_gui.c:13991
 msgid ""
@@ -12295,7 +12295,7 @@ msgid ""
 "the input slider is always shown"
 msgstr ""
 "Afficher le curseur de sortie\n"
-"Le curseur d'entrée est toujours affiché"
+"Le curseur d’entrée est toujours affiché"
 
 #: ../src/develop/blend_gui.c:14060
 msgid ""
@@ -13119,7 +13119,7 @@ msgstr "Afficher/masquer la section des améliorations"
 
 #: ../src/develop/blend_gui.c:19310
 msgid "reset the refinement of the current target"
-msgstr "Réinitialiser l'amélioration de la cible actuelle"
+msgstr "Réinitialiser l’amélioration de la cible actuelle"
 
 #: ../src/develop/blend_gui.c:19323
 msgid ""
@@ -13238,7 +13238,7 @@ msgstr ""
 #, c-format
 msgid "%s: module `%s' has unknown version %d, using default parameters"
 msgstr ""
-"%s: module `%s' a une version %d inconnue, les paramètres par défaut sont "
+"%s: module `%s’ a une version %d inconnue, les paramètres par défaut sont "
 "utilisés"
 
 #: ../src/develop/develop.c:2874
@@ -14173,8 +14173,8 @@ msgid ""
 "no module is focused:\n"
 "click a module's header to focus it"
 msgstr ""
-"Aucun module n'est activé :\n"
-"cliquez sur l'en-tête d'un module pour le cibler"
+"Aucun module n’est activé :\n"
+"cliquez sur l’en-tête d’un module pour le cibler"
 
 #: ../src/develop/masks_gui_panel_host.c:1520
 msgid "embedded within each module"
@@ -14283,9 +14283,9 @@ msgstr "Ce groupe est trop profondément imbriqué pour y ajouter un autre group
 msgid "%d group of the preset would nest too deep and was left out"
 msgid_plural "%d groups of the preset would nest too deep and were left out"
 msgstr[0] ""
-"%d groupe du préréglage s'emboîterait trop profondément et a été omis"
+"%d groupe du préréglage s’emboîterait trop profondément et a été omis"
 msgstr[1] ""
-"%d groupes du préréglage s'emboîteraient trop profondément et ont été omis"
+"%d groupes du préréglage s’emboîteraient trop profondément et ont été omis"
 
 #: ../src/develop/masks_gui_presets.c:431
 msgid ""
@@ -16502,7 +16502,7 @@ msgstr "Sélectionner les images de la pellicule en rafale"
 
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:489
 msgid "select burst roll image containers"
-msgstr "Sélectionner les conteneurs de pellicules d'images en rafale"
+msgstr "Sélectionner les conteneurs de pellicules d’images en rafale"
 
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:498
 msgid "extract and group burst roll images with container"
@@ -19898,8 +19898,8 @@ msgid ""
 "$(CONFLICT[n]) - import filename conflict number, null string if there is no "
 "conflict, n: number of digits"
 msgstr ""
-"$(CONFLICT[n]) - numéro de conflit de nom de fichier d'importation, chaîne "
-"nulle s'il n'y a pas de conflit, n : nombre de chiffres"
+"$(CONFLICT[n]) - numéro de conflit de nom de fichier d’importation, chaîne "
+"nulle s’il n’y a pas de conflit, n : nombre de chiffres"
 
 #: ../src/gui/gtkentry.c:47
 msgid "$(WIDTH.MAX) - maximum image export width"
@@ -20291,7 +20291,7 @@ msgstr "En-têtes de module arrondis"
 
 #: ../src/gui/preferences.c:495
 msgid "use rounded module headers variant"
-msgstr "Utiliser la variante d'en-têtes de module arrondis"
+msgstr "Utiliser la variante d’en-têtes de module arrondis"
 
 #. focused module border
 #: ../src/gui/preferences.c:502
@@ -20323,11 +20323,11 @@ msgstr "Définir la couleur de bordure du module déplié"
 #. accent color
 #: ../src/gui/preferences.c:552
 msgid "accent color"
-msgstr "Couleur d'accentuation"
+msgstr "Couleur d’accentuation"
 
 #: ../src/gui/preferences.c:573
 msgid "set the theme accent color for the interface"
-msgstr "Définir la couleur d'accentuation du thème pour l'interface"
+msgstr "Définir la couleur d’accentuation du thème pour l’interface"
 
 #: ../src/gui/preferences.c:588 ../src/gui/preferences.c:595
 msgid "use system font size"
@@ -20501,7 +20501,7 @@ msgstr "Local"
 
 #: ../src/gui/preferences_ai.c:434
 msgid "select hardware acceleration for AI inference:"
-msgstr "Sélectionner le mode d'accélération pour les inférences IA :"
+msgstr "Sélectionner le mode d’accélération pour les inférences IA :"
 
 #: ../src/gui/preferences_ai.c:624
 msgid "<i>restart to apply</i>"
@@ -20515,8 +20515,8 @@ msgstr "<i>Non disponible, repli vers le CPU</i>"
 #, c-format
 msgid "could not reach %d model repository"
 msgid_plural "could not reach %d model repositories"
-msgstr[0] "Impossible d'accéder au dépôt de modèles %d"
-msgstr[1] "Impossible d'accéder aux dépôts de modèles %d"
+msgstr[0] "Impossible d’accéder au dépôt de modèles %d"
+msgstr[1] "Impossible d’accéder aux dépôts de modèles %d"
 
 #: ../src/gui/preferences_ai.c:732
 msgid "all installed models are up to date"
@@ -20554,12 +20554,12 @@ msgid_plural ""
 msgstr[0] ""
 "%s\n"
 "\n"
-"%d Le dépôt n'a pas pu être atteint ; il est donc possible qu'il y en ait "
+"%d Le dépôt n’a pas pu être atteint ; il est donc possible qu'il y en ait "
 "davantage"
 msgstr[1] ""
 "%s\n"
 "\n"
-"%d Les dépôts n'ont pas pu être atteints ; il est donc possible qu'il y en "
+"%d Les dépôts n’ont pas pu être atteints ; il est donc possible qu'il y en "
 "ait davantage"
 
 #: ../src/gui/preferences_ai.c:784
@@ -20837,7 +20837,7 @@ msgid ""
 msgstr ""
 "Contacter les dépôts de modèles pour rechercher des versions plus récentes "
 "des modèles installés.\n"
-"Si désactivé, la recherche de mises à jour n'est effectuée qu'en appuyant sur "
+"Si désactivé, la recherche de mises à jour n’est effectuée qu'en appuyant sur "
 "le bouton ci-dessous"
 
 #. provider dropdown
@@ -21636,7 +21636,7 @@ msgid ""
 "the selected output profile isn't linear, expect incorrect display by image "
 "viewers"
 msgstr ""
-"Le profil de sortie sélectionné n'est pas linéaire. L'affichage peut être "
+"Le profil de sortie sélectionné n’est pas linéaire. L'affichage peut être "
 "incorrect dans les logiciels de visualisation."
 
 #: ../src/imageio/format/exr.cc:596
@@ -22069,7 +22069,7 @@ msgstr "Export réduit à « %dx%d » à cause d’une contrainte mémoire"
 msgid ""
 "<span foreground='red'><b>WARNING</b></span>: camera is not fully supported!"
 msgstr ""
-"<span foreground='red'><b>ATTENTION</b></span> : boîtier non complètement "
+"<span foreground='red’><b>ATTENTION</b></span> : boîtier non complètement "
 "supporté"
 
 #: ../src/imageio/imageio_libraw.c:349
@@ -22525,7 +22525,7 @@ msgid ""
 msgstr ""
 "Contraste dans les hautes-lumières\n"
 "Les plus hautes valeurs conserve plus longtemps une pente presque constante,\n"
-"au risque d'une chute plus abrupte proche du blanc"
+"au risque d’une chute plus abrupte proche du blanc"
 
 #: ../src/iop/agx.c:2020
 msgid ""
@@ -22562,7 +22562,7 @@ msgid ""
 msgstr ""
 "Contraste dans les ombres\n"
 "Les plus hautes valeurs conserve plus longtemps une pente presque constante,\n"
-"au risque d'une chute plus abrupte proche du noir"
+"au risque d’une chute plus abrupte proche du noir"
 
 #: ../src/iop/agx.c:2038
 msgid ""
@@ -22660,7 +22660,7 @@ msgstr ""
 "Activez cette option pour étendre les hautes lumières jusqu’au pic d’une "
 "sortie HDR \n"
 "(1 000 nits pour HLG, pic PQ défini à l’exportation), \n"
-"comme avec HDR dans Blender d'AgX. \n"
+"comme avec HDR dans Blender d’AgX. \n"
 "La sortie SDR reste inchangée."
 
 #: ../src/iop/agx.c:2175
@@ -25694,7 +25694,7 @@ msgid ""
 "that will be affected by the shadows sliders in the other tabs"
 msgstr ""
 "Affiche un masque des ombres, superposé sous forme de damier\n"
-"la partie de l'image toujours visible (non masquée) correspond à la zone qui "
+"la partie de l’image toujours visible (non masquée) correspond à la zone qui "
 "sera affectée\n"
 "par les curseurs des ombres dans les autres onglets."
 
@@ -25709,7 +25709,7 @@ msgid ""
 "that will be affected by the mid-tones sliders in the other tabs"
 msgstr ""
 "Affiche un masque de tons moyens, superposé sous forme de damier\n"
-"la partie de l'image toujours visible (non masquée) correspond à la zone qui "
+"la partie de l’image toujours visible (non masquée) correspond à la zone qui "
 "sera affectée\n"
 "par les curseurs des tons moyens dans les autres onglets."
 
@@ -25724,7 +25724,7 @@ msgid ""
 "that will be affected by the highlights sliders in the other tabs"
 msgstr ""
 "Affiche un masque de hauts lumières, superposé sous forme de damier\n"
-"la partie de l'image toujours visible (non masquée) correspond à la zone qui "
+"la partie de l’image toujours visible (non masquée) correspond à la zone qui "
 "sera affectée\n"
 "par les curseurs de hauts lumières dans les autres onglets."
 
@@ -26196,7 +26196,7 @@ msgstr ""
 
 #: ../src/iop/colorharmonizer.c:1386
 msgid "analyzing the image's hue distribution..."
-msgstr "Analyse de la répartition des teintes de l'image..."
+msgstr "Analyse de la répartition des teintes de l’image..."
 
 #: ../src/iop/colorharmonizer.c:1494
 msgid ""
@@ -26949,7 +26949,7 @@ msgid ""
 "press the mask button to preview the effect."
 msgstr ""
 "Ajuste les détails grossiers.\n"
-"Appuyez sur le bouton de masque pour prévisualiser l'effet."
+"Appuyez sur le bouton de masque pour prévisualiser l’effet."
 
 #: ../src/iop/contrastntexture.c:915
 msgid "preview the size of the coarse details to adjust."
@@ -26963,7 +26963,7 @@ msgid ""
 msgstr ""
 "Ajuste les détails moyens pour régler la répartition entre les détails "
 "grossiers et fins.\n"
-"Appuyez sur le bouton « Mask » pour prévisualiser l'effet."
+"Appuyez sur le bouton « Mask » pour prévisualiser l’effet."
 
 #: ../src/iop/contrastntexture.c:921
 msgid "preview the size of the medium details to adjust."
@@ -26976,7 +26976,7 @@ msgid ""
 "press the mask button to preview the effect."
 msgstr ""
 "Ajuste les détails fins, pour les hautes fréquences.\n"
-"Appuyez sur le bouton de masque pour prévisualiser l'effet."
+"Appuyez sur le bouton de masque pour prévisualiser l’effet."
 
 #: ../src/iop/contrastntexture.c:927
 msgid "preview the size of the fine details to adjust."
@@ -27039,7 +27039,7 @@ msgstr "65:24, XPan"
 
 #: ../src/iop/crop.c:1470
 msgid "flip crop orientation between horizontal and vertical"
-msgstr "Inverser l'orientation de recadrage entre horizontal et vertical"
+msgstr "Inverser l’orientation de recadrage entre horizontal et vertical"
 
 #: ../src/iop/crop.c:1901
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
@@ -27229,12 +27229,12 @@ msgid ""
 msgstr ""
 "Le rayon de netteté initiale (capture sharpening) doit refléter le flou "
 "gaussien global\n"
-"induit par le capteur de l'appareil, et éventuellement par le filtre anti-"
-"antialiasing et l'objectif.\n"
+"induit par le capteur de l’appareil, et éventuellement par le filtre anti-"
+"antialiasing et l’objectif.\n"
 "Une valeur excessive entraînera rapidement des artefacts tels que des halos "
 "et\n"
 "des phénomènes de « ringing » (oscillations), surtout si elle est associée à "
-"un nombre d'itérations élevé.\n"
+"un nombre d’itérations élevé.\n"
 "Réglez cette valeur sur zéro pour les préréglages devant privilégier le "
 "calcul automatique."
 
@@ -27281,13 +27281,13 @@ msgstr "« Dématriçage » est uniquement utilisé pour les images RAW"
 #: ../src/iop/demosaicing/capture.c:457
 msgid "can't allocate buffer to calculate capture radius so use the default"
 msgstr ""
-"Impossible d'allouer un tampon pour calculer le rayon de capture ; "
+"Impossible d’allouer un tampon pour calculer le rayon de capture ; "
 "utilisation de la valeur par défaut."
 
 #: ../src/iop/demosaicing/capture.c:896
 msgid "capture sharpen failed: can't allocate buffer"
 msgstr ""
-"Échec de la netteté de la capture : impossible d'allouer la mémoire tampon"
+"Échec de la netteté de la capture : impossible d’allouer la mémoire tampon"
 
 #: ../src/iop/demosaicing/capture.c:1063
 msgid "OpenCL capture sharpen failed"
@@ -28042,7 +28042,7 @@ msgid ""
 "remove the camera's hidden exposure bias in\n"
 "HDR / highlight preservation / dynamic range / HLG tone mode.\n"
 msgstr ""
-"Supprimer le biais d'exposition caché de l'appareil en mode\n"
+"Supprimer le biais d’exposition caché de l’appareil en mode\n"
 "HDR / préservation des hautes lumières / plage dynamique / ton HLG.\n"
 
 #: ../src/iop/exposure.c:1264
@@ -28122,7 +28122,7 @@ msgstr "L : \tN/A"
 
 #: ../src/iop/exposure.c:1357
 msgid "the desired target exposure after mapping"
-msgstr "La cible d'exposition recherchée après mappage"
+msgstr "La cible d’exposition recherchée après mappage"
 
 #: ../src/iop/filmic.c:173
 msgid "this module is deprecated. better use filmic rgb module instead."
@@ -28824,8 +28824,8 @@ msgstr "Ce module est déprécié, utiliser « Filmique RVB » à la place."
 #: ../src/iop/globaltonemap.c:304 ../src/iop/monochrome.c:231
 msgid "error: bilateral filter failed to allocate memory, check your RAM usage!"
 msgstr ""
-"Erreur : le filtre bilatéral n'a pas pu allouer de mémoire, vérifiez "
-"l'utilisation de votre RAM !"
+"Erreur : le filtre bilatéral n’a pas pu allouer de mémoire, vérifiez "
+"l’utilisation de votre RAM !"
 
 #: ../src/iop/globaltonemap.c:640 ../src/libs/filters/colors.c:313
 msgid "operator"
@@ -29358,11 +29358,11 @@ msgid ""
 "leave vignetting out of the corrections, or turn shading\n"
 "compensation off in the camera for future shots"
 msgstr ""
-"La compensation de l'ombrage de l'appareil a déjà corrigé le vignetage\n"
+"La compensation de l’ombrage de l’appareil a déjà corrigé le vignetage\n"
 "dans les données brutes, et Lensfun le corrige à nouveau par-dessus,\n"
-"ce qui risque d'éclaircir excessivement les coins ;\n"
+"ce qui risque d’éclaircir excessivement les coins ;\n"
 "excluez le vignetage des corrections ou désactivez la compensation\n"
-"de l'ombrage sur l'appareil pour les prochaines prises de vue."
+"de l’ombrage sur l’appareil pour les prochaines prises de vue."
 
 #: ../src/iop/lens.cc:4730
 msgid "camera/lens not found"
@@ -30308,7 +30308,7 @@ msgstr "Composite"
 
 #: ../src/iop/overlay.c:176
 msgid "combine the image with elements from another processed image"
-msgstr "Combiner l'mage avec des éléments d’une autre image développée"
+msgstr "Combiner l’mage avec des éléments d’une autre image développée"
 
 #: ../src/iop/overlay.c:185
 msgid "layer|stack|overlay"
@@ -30589,7 +30589,7 @@ msgstr ""
 #: ../src/iop/rasterfile.c:510
 msgid "cannot write the raster mask sidecar for this image"
 msgstr ""
-"Impossible d'écrire le fichier auxiliaire de masque raster pour cette image."
+"Impossible d’écrire le fichier auxiliaire de masque raster pour cette image."
 
 #: ../src/iop/rasterfile.c:534
 msgid ""
@@ -30597,7 +30597,7 @@ msgid ""
 "it is stored in the image's .dtdata sidecar and travels with the image"
 msgstr ""
 "Importer un fichier PNG ou PFM sous forme de masque raster\n"
-"il est stocké dans le fichier side-car de l'image .dtdata et voyage avec"
+"il est stocké dans le fichier side-car de l’image .dtdata et voyage avec"
 
 #: ../src/iop/rasterfile.c:536
 msgid ""
@@ -30612,7 +30612,7 @@ msgstr ""
 #: ../src/iop/rasterfile.c:898
 msgid "select the RGB channels taken into account when a color file is imported"
 msgstr ""
-"Sélectionne les canaux RVB pris en compte lors de l'importation d'un fichier "
+"Sélectionne les canaux RVB pris en compte lors de l’importation d’un fichier "
 "couleur"
 
 #: ../src/iop/rasterfile.c:911
@@ -30622,9 +30622,9 @@ msgid ""
 "history item are removed from the sidecar when leaving the darkroom"
 msgstr ""
 "Le masque raster utilisé par cette instance\n"
-"l'importation d'un autre fichier le remplace ; les masques qui ne sont plus "
+"l’importation d’un autre fichier le remplace ; les masques qui ne sont plus "
 "utilisés par aucune\n"
-"entrée de l'historique sont supprimés du fichier auxiliaire (sidecar) lors de "
+"entrée de l’historique sont supprimés du fichier auxiliaire (sidecar) lors de "
 "la sortie de la chambre noire"
 
 #. Vectorize button
@@ -31141,7 +31141,7 @@ msgid ""
 "saturation curve: guided filter failed to allocate memory, disabling it for "
 "this run"
 msgstr ""
-"Courbe de saturation : le filtre guidé n'a pas réussi à allouer de la "
+"Courbe de saturation : le filtre guidé n’a pas réussi à allouer de la "
 "mémoire, pour cette exécution"
 
 #: ../src/iop/satcurvergb.c:1472
@@ -31163,12 +31163,12 @@ msgstr "Tons moyens brillants, protection des extrêmes"
 #: ../src/iop/satcurvergb.c:1956
 msgid "cannot display saturation masks while the blending mask is displayed"
 msgstr ""
-"Impossible d'afficher les masques de saturation avec le masque de mélange "
+"Impossible d’afficher les masques de saturation avec le masque de mélange "
 "affiché"
 
 #: ../src/iop/satcurvergb.c:2155
 msgid "pick saturation from image"
-msgstr "Choisir la saturation de l'image"
+msgstr "Choisir la saturation de l’image"
 
 #: ../src/iop/satcurvergb.c:2159
 msgid "display saturation mask"
@@ -31523,9 +31523,9 @@ msgid ""
 "simulates the physical process of developing and printing analog film,\n"
 "using spectral emulsion and paper data from the spektrafilm project"
 msgstr ""
-"Simule le processus physique de développement et de tirage d'un film "
+"Simule le processus physique de développement et de tirage d’un film "
 "argentique,\n"
-"en utilisant les données spectrales d'émulsion et de papier du projet "
+"en utilisant les données spectrales d’émulsion et de papier du projet "
 "spektrafilm"
 
 #: ../src/iop/spektrafilm.c:1665
@@ -31534,7 +31534,7 @@ msgid ""
 "update darktable to use it"
 msgstr ""
 "Ce pack de données a été conçu pour une version plus récente de darktable.\n"
-"Mettez à jour darktable pour l'utiliser"
+"Mettez à jour darktable pour l’utiliser"
 
 #: ../src/iop/spektrafilm.c:1668
 msgid ""
@@ -31550,7 +31550,7 @@ msgid ""
 "it may have downloaded incompletely -- use the download button to fetch it "
 "again"
 msgstr ""
-"Le pack de données n'a pas pu être lu.\n"
+"Le pack de données n’a pas pu être lu.\n"
 "Il a peut-être été téléchargé de façon incomplète -- utilisez le bouton de "
 "téléchargement pour le récupérer à nouveau"
 
@@ -31576,13 +31576,13 @@ msgid ""
 "the installed data pack contains no print papers\n"
 "it may have downloaded incompletely -- try fetching it again"
 msgstr ""
-"Le pack de données installé ne contient aucun papier d'impression.\n"
+"Le pack de données installé ne contient aucun papier d’impression.\n"
 "Il a peut-être été téléchargé de façon incomplète -- essayez de le récupérer "
 "à nouveau"
 
 #: ../src/iop/spektrafilm.c:1784
 msgid "this film or paper could not be loaded"
-msgstr "Ce film ou ce papier n'a pas pu être chargé"
+msgstr "Ce film ou ce papier n’a pas pu être chargé"
 
 #: ../src/iop/spektrafilm.c:1867
 #, c-format
@@ -31602,7 +31602,7 @@ msgid ""
 "the matching pack can be fetched with the button below"
 msgstr ""
 "Développé avant que les packs de données ne possèdent une identité, \n"
-"et le pack utilisé pour sa création n'est pas installé : rendu avec une "
+"et le pack utilisé pour sa création n’est pas installé : rendu avec une "
 "version ultérieure ; \n"
 "le pack correspondant peut être récupéré via le bouton ci-dessous"
 
@@ -31613,7 +31613,7 @@ msgid ""
 "rendering with %s\n"
 "the matching pack can be fetched with the button below"
 msgstr ""
-"Développé avec le pack de données %08x, qui n'est pas installé\n"
+"Développé avec le pack de données %08x, qui n’est pas installé\n"
 "rendu avec %s\n"
 "le pack correspondant peut être récupéré via le bouton ci-dessous"
 
@@ -31630,7 +31630,7 @@ msgstr ""
 
 #: ../src/iop/spektrafilm.c:3914
 msgid "print paper. not used: the film is being scanned directly."
-msgstr "Papier d'impression. Non utilisé : le film est scanné directement."
+msgstr "Papier d’impression. Non utilisé : le film est scanné directement."
 
 #: ../src/iop/spektrafilm.c:3919
 #, c-format
@@ -31643,14 +31643,14 @@ msgid ""
 "print paper. \"auto\" follows the film stock's own target print,\n"
 "currently %s. picking a paper pins it until you select auto again."
 msgstr ""
-"Papier d'impression. « Auto » suit le tirage cible propre à la pellicule,\n"
+"Papier d’impression. « Auto » suit le tirage cible propre à la pellicule,\n"
 "actuellement %s. Choisir un papier le fixe jusqu'à ce que vous sélectionniez "
 "de nouveau auto."
 
 #: ../src/iop/spektrafilm.c:3929
 msgid "print paper. \"auto\" follows the film stock's own target print."
 msgstr ""
-"Papier d'impression. « Auto » suit le tirage cible propre à la pellicule."
+"Papier d’impression. « Auto » suit le tirage cible propre à la pellicule."
 
 #: ../src/iop/spektrafilm.c:4035
 #, c-format
@@ -31672,7 +31672,7 @@ msgid ""
 "Double-X at 4/5/6.5/9/12 min, print film 2302 at 2/3.5/5/7/9 min."
 msgstr ""
 "Temps de développement. Cette pellicule n’est caractérisée qu’à un seul\n"
-"développement, il n'y a donc rien à choisir.\n"
+"développement, il n’y a donc rien à choisir.\n"
 "\n"
 "Les pellicules N&B à émulsion unique sont celles qui portent une famille de "
 "temps :\n"
@@ -31681,7 +31681,7 @@ msgstr ""
 #: ../src/iop/spektrafilm.c:4413
 msgid "the data pack this edit was developed with is not installed"
 msgstr ""
-"Le pack de données avec lequel cette modification a été créée n'est pas "
+"Le pack de données avec lequel cette modification a été créée n’est pas "
 "installé."
 
 #: ../src/iop/spektrafilm.c:4414
@@ -31701,7 +31701,7 @@ msgstr "Récupérer le pack de données spectrales correspondant via le réseau"
 
 #: ../src/iop/spektrafilm.c:4469
 msgid "the data repository could not be reached"
-msgstr "Le dépôt de données n'a pas pu être atteint."
+msgstr "Le dépôt de données n’a pas pu être atteint."
 
 #: ../src/iop/spektrafilm.c:4486
 #, c-format
@@ -31739,9 +31739,9 @@ msgid ""
 "fetch the newer pack. it installs beside the one you have;\n"
 "existing edits keep rendering on the pack they were made with."
 msgstr ""
-"Récupère le pack le plus récent ; il s'installe à côté de celui que vous "
+"Récupère le pack le plus récent ; il s’installe à côté de celui que vous "
 "possédez déjà.\n"
-"Les modifications existantes continuent d'être rendues avec le pack utilisé "
+"Les modifications existantes continuent d’être rendues avec le pack utilisé "
 "lors de leur création."
 
 #: ../src/iop/spektrafilm.c:4516
@@ -31882,15 +31882,15 @@ msgid ""
 "print stage, which is the natural mode for positive and reversal\n"
 "stocks; \"auto\" uses the paper named in the film stock's profile."
 msgstr ""
-"Papier d'impression. « Aucun » affiche le film développé directement, sans\n"
-"étape d'impression, ce qui est le mode naturel pour les pellicules positives "
+"Papier d’impression. « Aucun » affiche le film développé directement, sans\n"
+"étape d’impression, ce qui est le mode naturel pour les pellicules positives "
 "et\n"
 "inversibles ; « auto » utilise le papier indiqué dans le profil de la "
 "pellicule."
 
 #: ../src/iop/spektrafilm.c:5757
 msgid "print paper"
-msgstr "Papier d'impression"
+msgstr "Papier d’impression"
 
 #: ../src/iop/spektrafilm.c:5767
 msgid ""
@@ -31918,12 +31918,12 @@ msgid ""
 "a smaller format shows every one of them proportionally larger for\n"
 "the same print size."
 msgstr ""
-"Taille physique du cadre, grand côté. Définit l'échelle à laquelle le grain, "
+"Taille physique du cadre, grand côté. Définit l’échelle à laquelle le grain, "
 "la\n"
-"dispersion, le halo / la diffusion et l'étalement du coupleur sont "
+"dispersion, le halo / la diffusion et l’étalement du coupleur sont "
 "calculés, \n"
-"de sorte qu'un format plus petit montre chacun d'eux proportionnellement \n"
-"plus grand pour la même taille d'impression."
+"de sorte qu'un format plus petit montre chacun d’eux proportionnellement \n"
+"plus grand pour la même taille d’impression."
 
 #. ---- tab 1: film (exposure + development) ----
 #: ../src/iop/spektrafilm.c:5805
@@ -31941,13 +31941,13 @@ msgid ""
 "exposure follows automatically so this has no net brightness effect\n"
 "(except when the film is scanned directly, with no print stage)."
 msgstr ""
-"Compensation d'exposition du film ; avec l'exposition d'impression "
+"Compensation d’exposition du film ; avec l’exposition d’impression "
 "automatique\n"
-"activée, l'exposition d'impression suit automatiquement, ce qui n'a donc "
+"activée, l’exposition d’impression suit automatiquement, ce qui n’a donc "
 "aucun\n"
-"effet net sur la luminosité (sauf pour le film positif/inversible, qui n'a "
+"effet net sur la luminosité (sauf pour le film positif/inversible, qui n’a "
 "pas\n"
-"d'étape d'impression)."
+"d’étape d’impression)."
 
 #: ../src/iop/spektrafilm.c:5824
 msgid " stops"
@@ -31966,11 +31966,11 @@ msgstr ""
 "Traitement poussé (positif) ou retenu (négatif) : \n"
 "prise de vue à un ISO effectif différent de la sensibilité nominale,\n"
 "puis sous- ou sur-développement pour compenser. \n"
-"Combine un décalage d'exposition avec une augmentation/diminution  de "
+"Combine un décalage d’exposition avec une augmentation/diminution  de "
 "contraste dérivée \n"
 "(approximatif : la relation exacte dépend de la combinaison film/révélateur "
 "spécifique,\n"
-"qui n'est pas modélisée ici). \n"
+"qui n’est pas modélisée ici). \n"
 "Se cumule avec les contrôles de gamma détaillés ci-dessous\n"
 "pour un ajustement plus fin."
 
@@ -32007,14 +32007,14 @@ msgid ""
 "only, independent of the slow layer, since push/pull processing\n"
 "doesn't always affect every sub-layer equally."
 msgstr ""
-"Contraste de la seule sous-couche d'émulsion la plus rapide (la plus\n"
+"Contraste de la seule sous-couche d’émulsion la plus rapide (la plus\n"
 "sensible à la lumière), indépendamment de la couche lente, car le\n"
-"traitement poussé/retenu n'affecte pas toujours chaque sous-couche de la\n"
+"traitement poussé/retenu n’affecte pas toujours chaque sous-couche de la\n"
 "même façon."
 
 #: ../src/iop/spektrafilm.c:5865
 msgid "contrast of the mid and slow emulsion sub-layers"
-msgstr "Contraste des sous-couches d'émulsion médiane et lente"
+msgstr "Contraste des sous-couches d’émulsion médiane et lente"
 
 #: ../src/iop/spektrafilm.c:5870
 msgid ""
@@ -32040,7 +32040,7 @@ msgid ""
 "overall coupler strength: inter-layer inhibition drives saturation\n"
 "and edge effects (1.0 = film-accurate, 0 = off)."
 msgstr ""
-"Force globale des coupleurs : l'inhibition inter-couches pilote la "
+"Force globale des coupleurs : l’inhibition inter-couches pilote la "
 "saturation\n"
 "et les effets de contour (1,0 = fidèle au film, 0 = désactivé)."
 
@@ -32077,7 +32077,7 @@ msgid ""
 "\n"
 "resetting returns it to the loaded film stock's own value."
 msgstr ""
-"Distance sur laquelle l'inhibiteur libéré se diffuse dans l'émulsion.\n"
+"Distance sur laquelle l’inhibiteur libéré se diffuse dans l’émulsion.\n"
 "\n"
 "C'est ce qui transforme les coupleurs en effet de contour : un étalement\n"
 "large permet à une zone claire de retenir le développement bien au-delà de\n"
@@ -32096,8 +32096,8 @@ msgid ""
 "it is what gives large bright areas a broad, gentle falloff. set the\n"
 "weight to 0 to drop it entirely."
 msgstr ""
-"Longueur de la longue traîne ténue de l'étalement ci-dessus, qui transporte\n"
-"l'inhibiteur bien plus loin à faible poids.\n"
+"Longueur de la longue traîne ténue de l’étalement ci-dessus, qui transporte\n"
+"l’inhibiteur bien plus loin à faible poids.\n"
 "\n"
 "C'est ce qui donne aux grandes zones claires un dégradé large et doux.\n"
 "Réglez le poids à 0 pour la supprimer entièrement."
@@ -32106,7 +32106,7 @@ msgstr ""
 msgid ""
 "the share of the inhibitor that travels in the long tail. 0 removes the tail."
 msgstr ""
-"La part de l'inhibiteur qui se propage dans la longue traîne. 0 supprime la "
+"La part de l’inhibiteur qui se propage dans la longue traîne. 0 supprime la "
 "traîne."
 
 #. The diffusion filter sits in front of the taking lens, so it belongs with
@@ -32143,10 +32143,10 @@ msgstr ""
 "Quantité de lumière détournée vers le halo de diffusion (0 = désactivé).\n"
 "\n"
 "Ces filtres sont vendus par diaphs : 1/8 = 0,125, 1/4 = 0,25, 1/2 = 0,5,\n"
-"puis 1 et 2. Le défilement et les touches fléchées déplacent d'un huitième\n"
+"puis 1 et 2. Le défilement et les touches fléchées déplacent d’un huitième\n"
 "à la fois.\n"
 "\n"
-"Le halo s'ajoute par-dessus l'image non filtrée, donc l'augmenter éclaircit\n"
+"Le halo s’ajoute par-dessus l’image non filtrée, donc l’augmenter éclaircit\n"
 "les ombres et réduit le contraste en plus de faire rayonner les hautes "
 "lumières."
 
@@ -32165,7 +32165,7 @@ msgid ""
 "diffusion halo warmth: >0 warm outer halo, <0 cool (added on top of\n"
 "the selected filter's own warmth bias)."
 msgstr ""
-"Chaleur du halo de diffusion : >0 halo extérieur chaud, <0 froid (s'ajoute\n"
+"Chaleur du halo de diffusion : >0 halo extérieur chaud, <0 froid (s’ajoute\n"
 "à la tendance de chaleur propre au filtre sélectionné)."
 
 #. The knobs to reach for last: the adaptation switches change how faithful
@@ -32187,13 +32187,13 @@ msgid ""
 "only methods from your installed data packs are listed. if there\n"
 "is just one, it is used and there is nothing to choose."
 msgstr ""
-"Processus par lequel la couleur d'un pixel est convertie en un spectre "
+"Processus par lequel la couleur d’un pixel est convertie en un spectre "
 "lumineux\n"
 "correspondant à celui auquel la pellicule est exposée.\n"
 "\n"
 "Seules les méthodes issues de vos packs de données installés sont "
 "répertoriées.\n"
-"S'il n'y en a qu'une seule, elle est utilisée et il n'y a aucun choix à faire."
+"S'il n’y en a qu'une seule, elle est utilisée et il n’y a aucun choix à faire."
 
 #: ../src/iop/spektrafilm.c:6004
 msgid ""
@@ -32218,12 +32218,12 @@ msgid ""
 "saturated colors substantially. no effect on stocks whose profile\n"
 "carries no surface (the monochrome films and every print paper)."
 msgstr ""
-"Seconde moitié de l'adaptation de sensibilité du film : une correction\n"
-"d'exposition par couleur allant jusqu'à deux diaphs, nulle au point blanc\n"
+"Seconde moitié de l’adaptation de sensibilité du film : une correction\n"
+"d’exposition par couleur allant jusqu'à deux diaphs, nulle au point blanc\n"
 "propre du film et croissant avec la distance à celui-ci. Désactivée par\n"
 "défaut : elle décale nettement les couleurs saturées. Sans effet sur les\n"
 "pellicules dont le profil ne comporte pas de surface (les films\n"
-"monochromes et tous les papiers d'impression)."
+"monochromes et tous les papiers d’impression)."
 
 #: ../src/iop/spektrafilm.c:6023
 msgid ""
@@ -32245,12 +32245,12 @@ msgid ""
 "are clipped by whatever comes next in the pipeline, which loses the\n"
 "separation between them and can shift their hue."
 msgstr ""
-"Ramène à l'intérieur les couleurs que le profil de sortie ne peut pas\n"
-"contenir, suivant une courbe qui laisse intact tout ce qui s'y trouve déjà.\n"
+"Ramène à l’intérieur les couleurs que le profil de sortie ne peut pas\n"
+"contenir, suivant une courbe qui laisse intact tout ce qui s’y trouve déjà.\n"
 "\n"
 "Le désactiver montre où le film produit des couleurs pour lesquelles le\n"
-"profil n'a pas de place : elles sortent de la plage, l'indicateur\n"
-"d'écrêtage de darktable les signale donc et l'ampleur brute du dépassement\n"
+"profil n’a pas de place : elles sortent de la plage, l’indicateur\n"
+"d’écrêtage de darktable les signale donc et l’ampleur brute du dépassement\n"
 "est visible.\n"
 "\n"
 "Laissez-le activé pour une image que vous comptez conserver. Désactivé, les\n"
@@ -32268,10 +32268,10 @@ msgid ""
 "darken the print. with auto print exposure on, this offsets the\n"
 "automatic exposure rather than replacing it."
 msgstr ""
-"Exposition de l'agrandisseur. Une exposition plus grande produit une "
+"Exposition de l’agrandisseur. Une exposition plus grande produit une "
 "impression plus dense, les valeurs positives\n"
-"donc assombrissent l'impression. Avec l'exposition d'impression automatique "
-"activée, ceci décale l'exposition\n"
+"donc assombrissent l’impression. Avec l’exposition d’impression automatique "
+"activée, ceci décale l’exposition\n"
 "automatique plutôt que de la remplacer."
 
 #: ../src/iop/spektrafilm.c:6090
@@ -32281,14 +32281,14 @@ msgid ""
 "exposure to affect brightness directly, same as a fixed enlarger\n"
 "exposure time."
 msgstr ""
-"Compense automatiquement l'exposition d'impression pour les changements\n"
-"d'exposition du film, comme un tireur réel imprimant à densité fixe ;\n"
-"désactivez pour que l'exposition du film affecte directement la\n"
-"luminosité, comme un temps d'exposition d'agrandisseur fixe."
+"Compense automatiquement l’exposition d’impression pour les changements\n"
+"d’exposition du film, comme un tireur réel imprimant à densité fixe ;\n"
+"désactivez pour que l’exposition du film affecte directement la\n"
+"luminosité, comme un temps d’exposition d’agrandisseur fixe."
 
 #: ../src/iop/spektrafilm.c:6097
 msgid "print contrast (morphs the paper's density curves)"
-msgstr "Contraste d'impression (déforme les courbes de densité du papier)"
+msgstr "Contraste d’impression (déforme les courbes de densité du papier)"
 
 #: ../src/iop/spektrafilm.c:6106
 msgid ""
@@ -32310,13 +32310,13 @@ msgid ""
 "shifts shadows one way and highlights the other."
 msgstr ""
 "Gamma de la couche rouge du papier seulement,\n"
-"en plus du gamma d'impression global.\n"
+"en plus du gamma d’impression global.\n"
 "\n"
 "La répartition du gamma par canal élimine le crossover – un problème\n"
 "lié aux couches développées avec des gammas différents – que la filtration\n"
 "ne peut pas corriger car elle modifie chaque tonalité de manière égale tandis "
 "que le crossover\n"
-"décale les ombres dans un sens et les hautes lumières dans l'autre."
+"décale les ombres dans un sens et les hautes lumières dans l’autre."
 
 #: ../src/iop/spektrafilm.c:6124
 msgid ""
@@ -32324,7 +32324,7 @@ msgid ""
 "alone, on top of the overall print gamma."
 msgstr ""
 "Gamma de la couche verte du papier seulement,\n"
-"en plus du gamma d'impression global."
+"en plus du gamma d’impression global."
 
 #: ../src/iop/spektrafilm.c:6130
 msgid ""
@@ -32332,7 +32332,7 @@ msgid ""
 "on top of the overall print gamma."
 msgstr ""
 "Gamma de la couche bleue du papier seulement,\n"
-"en plus du gamma d'impression global."
+"en plus du gamma d’impression global."
 
 #: ../src/iop/spektrafilm.c:6133
 msgctxt "section"
@@ -32347,11 +32347,11 @@ msgstr " CC"
 #: ../src/iop/spektrafilm.c:6138
 msgid "magenta enlarger filtration, Kodak CC units from neutral"
 msgstr ""
-"Filtration magenta de l'agrandisseur, en unités Kodak CC depuis le neutre"
+"Filtration magenta de l’agrandisseur, en unités Kodak CC depuis le neutre"
 
 #: ../src/iop/spektrafilm.c:6143
 msgid "yellow enlarger filtration, Kodak CC units from neutral"
-msgstr "Filtration jaune de l'agrandisseur, en unités Kodak CC depuis le neutre"
+msgstr "Filtration jaune de l’agrandisseur, en unités Kodak CC depuis le neutre"
 
 #: ../src/iop/spektrafilm.c:6147
 msgctxt "section"
@@ -32366,8 +32366,8 @@ msgid ""
 "print's highlights and reduces contrast (0 = off)."
 msgstr ""
 "Exposition de la pré-exposition : un brève pré-exposition uniforme de "
-"l'impression \n"
-"à travers la densité de base du film, avant l'exposition d'impression "
+"l’impression \n"
+"à travers la densité de base du film, avant l’exposition d’impression "
 "principale. \n"
 "Éclaircit les ombres et réduit le contraste\n"
 "(0 = désactivé)."
@@ -32377,26 +32377,26 @@ msgid ""
 "magenta filtration for the preflash exposure only, Kodak CC units\n"
 "from neutral, independent of the main enlarger filtration above."
 msgstr ""
-"Filtration magenta pour l'exposition de la pré-exposition uniquement, en "
+"Filtration magenta pour l’exposition de la pré-exposition uniquement, en "
 "unités\n"
 "Kodak CC depuis le neutre, indépendante de la filtration principale de\n"
-"l'agrandisseur situé au-dessus."
+"l’agrandisseur situé au-dessus."
 
 #: ../src/iop/spektrafilm.c:6174
 msgid ""
 "yellow filtration for the preflash exposure only, Kodak CC units\n"
 "from neutral, independent of the main enlarger filtration above."
 msgstr ""
-"Filtre jaune uniquement pour l'exposition à la pré-exposition unités Kodak "
+"Filtre jaune uniquement pour l’exposition à la pré-exposition unités Kodak "
 "CC\n"
-"à partir d'un filtre neutre, indépendamment du filtre principal de "
-"l'agrandisseur situé au-dessus."
+"à partir d’un filtre neutre, indépendamment du filtre principal de "
+"l’agrandisseur situé au-dessus."
 
 #: ../src/iop/spektrafilm.c:6191
 msgid "print diffusion filter type (same presets as the film-stage filter)"
 msgstr ""
-"Type de filtre de diffusion à l'impression (mêmes préréglages que le filtre "
-"de l'étape film)"
+"Type de filtre de diffusion à l’impression (mêmes préréglages que le filtre "
+"de l’étape film)"
 
 #: ../src/iop/spektrafilm.c:6198
 msgid ""
@@ -32408,14 +32408,14 @@ msgid ""
 "acts at the enlarger, on the light passing through the negative, so\n"
 "it spreads the print's dark areas into its lighter ones."
 msgstr ""
-"Quantité de lumière détournée vers le halo de diffusion à l'impression\n"
+"Quantité de lumière détournée vers le halo de diffusion à l’impression\n"
 "(0 = désactivé).\n"
 "\n"
 "Ces filtres sont vendus par diaphs : 1/8 = 0,125, 1/4 = 0,25, 1/2 = 0,5,\n"
-"puis 1 et 2. Le défilement et les touches fléchées déplacent d'un huitième à "
+"puis 1 et 2. Le défilement et les touches fléchées déplacent d’un huitième à "
 "la fois.\n"
 "\n"
-"Agit au niveau de l'agrandisseur, il fait donc rayonner l'image imprimée."
+"Agit au niveau de l’agrandisseur, il fait donc rayonner l’image imprimée."
 
 #: ../src/iop/spektrafilm.c:6209
 msgid ""
@@ -32424,10 +32424,10 @@ msgid ""
 "enlarger light, which are the print's dark areas. use print\n"
 "diffusion strength to change the amount."
 msgstr ""
-"Redimensionne le rayon du halo de diffusion à l'impression.\n"
+"Redimensionne le rayon du halo de diffusion à l’impression.\n"
 "La quantité de lumière est inchangée ; elle est simplement étalée plus loin\n"
 "de chaque haute lumière. \n"
-"Utilisez la force de diffusion à l'impression pour changer la quantité."
+"Utilisez la force de diffusion à l’impression pour changer la quantité."
 
 #: ../src/iop/spektrafilm.c:6216
 msgid ""
@@ -32435,10 +32435,10 @@ msgid ""
 "the outer halo, which prints as cyan, <0 adds blue, which prints as\n"
 "yellow (added on top of the selected filter's own warmth bias)."
 msgstr ""
-"Chaleur du halo de diffusion à l'impression : \n"
+"Chaleur du halo de diffusion à l’impression : \n"
 ">0 halo extérieur chaud,\n"
 "<0 froid \n"
-"(s'ajoute à la tendance de chaleur propre au filtre sélectionné)."
+"(s’ajoute à la tendance de chaleur propre au filtre sélectionné)."
 
 #. Split as the reference groups these, "pixel statistics" and "texture": the
 #. first describes the emulsion and rebuilds the crystals, the second only
@@ -32463,8 +32463,8 @@ msgstr ""
 "\n"
 "C'est le contrôle de taille physique : les particules grossissent,\n"
 "elles sont moins nombreuses, et le grain devient à la fois plus fort et plus\n"
-"gros, de la même façon qu'un film plus rapide diffère d'un plus lent.\n"
-"Il reconstruit l'émulsion, et se comporte donc, contrairement à la force\n"
+"gros, de la même façon qu'un film plus rapide diffère d’un plus lent.\n"
+"Il reconstruit l’émulsion, et se comporte donc, contrairement à la force\n"
 "du grain, de la même manière sur film négatif et sur diapositive."
 
 #: ../src/iop/spektrafilm.c:6250
@@ -32478,12 +32478,12 @@ msgid ""
 "control for coarser grain."
 msgstr ""
 "Distance sur laquelle le grain est autorisé à déplacer chaque pixel. Cela\n"
-"redimensionne le résultat dessiné ; l'émulsion est inchangée. 1,0 est\n"
+"redimensionne le résultat dessiné ; l’émulsion est inchangée. 1,0 est\n"
 "fidèle au film, 0 est désactivé.\n"
 "\n"
-"Notez que le grain d'un négatif est de nouveau amplifié par l'étape\n"
-"d'impression, tandis qu'une diapositive est scannée directement sans rien\n"
-"pour l'amplifier, la même valeur se lisant donc bien plus faible sur film\n"
+"Notez que le grain d’un négatif est de nouveau amplifié par l’étape\n"
+"d’impression, tandis qu'une diapositive est scannée directement sans rien\n"
+"pour l’amplifier, la même valeur se lisant donc bien plus faible sur film\n"
 "diapositive. La granularité ci-dessus est le contrôle pour un grain plus\n"
 "gros."
 
@@ -32496,7 +32496,7 @@ msgid ""
 msgstr ""
 "Régularité de la répartition des cristaux, par rapport à la valeur propre\n"
 "de la pellicule. La diminuer courbe le bruit vers une cloche : un grain\n"
-"qui culmine dans les tons moyens et s'atténue de nouveau dans les zones\n"
+"qui culmine dans les tons moyens et s’atténue de nouveau dans les zones\n"
 "les plus denses."
 
 #: ../src/iop/spektrafilm.c:6270
@@ -32523,7 +32523,7 @@ msgid ""
 "areas. 1.0 is the loaded stock's own measured floor, 2.0 twice it.\n"
 "the floor is per channel, so the balance between channels is kept."
 msgstr ""
-"Règle la densité à laquelle se trouve chaque cristal même là où le film n'a "
+"Règle la densité à laquelle se trouve chaque cristal même là où le film n’a "
 "reçu aucune lumière,\n"
 "ce qui explique pourquoi le grain ne disparaît jamais entièrement dans les "
 "zones claires.\n"
@@ -32547,7 +32547,7 @@ msgid ""
 msgstr ""
 "Règle le flou appliqué à la densité de grain,\n"
 "1.0 est le rayon de référence à 0.89 pixels.\n"
-"Ceci adoucit le grain et les détails de l'image.\n"
+"Ceci adoucit le grain et les détails de l’image.\n"
 "Les cristaux eux-mêmes sont inchangés.\n"
 "\n"
 "Augmentez-le à fort grossissement, quand un cristal couvre plusieurs\n"
@@ -32562,9 +32562,9 @@ msgid ""
 "than a pixel."
 msgstr ""
 "Chaque cristal développé laisse un petit nuage de colorant. Ceci\n"
-"redimensionne l'étendue de ce nuage, mesurée sur le film lui-même, il ne\n"
+"redimensionne l’étendue de ce nuage, mesurée sur le film lui-même, il ne\n"
 "devient donc visible qu'aux grossissements où un seul cristal couvre plus\n"
-"d'un pixel."
+"d’un pixel."
 
 #: ../src/iop/spektrafilm.c:6313
 msgid ""
@@ -32574,7 +32574,7 @@ msgid ""
 msgstr ""
 "Rayon du renforcement de netteté de récupération, en pixels. 0 le\n"
 "désactive. Un rayon large restitue le piqué dans la plage de détail moyen,\n"
-"ce qui empêche la grille d'échantillonnage de transparaître."
+"ce qui empêche la grille d’échantillonnage de transparaître."
 
 #: ../src/iop/spektrafilm.c:6321
 msgid ""
@@ -32584,7 +32584,7 @@ msgid ""
 "grain starts to look crunchy."
 msgstr ""
 "Force du renforcement de netteté de récupération, restituant ce que le\n"
-"flou du grain a adouci. Elle déplace la densité sans en ajouter, ce n'est\n"
+"flou du grain a adouci. Elle déplace la densité sans en ajouter, ce n’est\n"
 "donc pas un débruiteur et elle ne peut pas inventer de détail. 0 le\n"
 "désactive ; en abuser donne au grain un aspect croquant."
 
@@ -32598,8 +32598,8 @@ msgid ""
 "switches the in-emulsion scatter on and off together with halation.\n"
 "the highlight boost is not affected."
 msgstr ""
-"Active ou désactive la diffusion dans l'émulsion en même temps que le halo.\n"
-"le renforcement des hautes lumières n'est pas affecté."
+"Active ou désactive la diffusion dans l’émulsion en même temps que le halo.\n"
+"le renforcement des hautes lumières n’est pas affecté."
 
 #. Two distinct effects share this tab: scatter is the spread inside the
 #. emulsion, halation the bounce off the film base behind it. A heading each,
@@ -32619,12 +32619,12 @@ msgid ""
 "few um on film) but it applies everywhere. lower this if you want a\n"
 "sharper result than the film itself would give."
 msgstr ""
-"Fraction de lumière qui se disperse à l'intérieur de l'émulsion, avant le\n"
+"Fraction de lumière qui se disperse à l’intérieur de l’émulsion, avant le\n"
 "rebond du halo. 1,0 est fidèle au film et constitue aussi le maximum. Cela\n"
-"signifie la totalité, il ne reste donc rien de l'image non dispersée.\n"
+"signifie la totalité, il ne reste donc rien de l’image non dispersée.\n"
 "\n"
-"C'est pourquoi tout le cadre s'adoucit : le rayon de dispersion est petit\n"
-"(quelques µm sur le film) mais s'applique partout. Diminuez ceci si vous\n"
+"C'est pourquoi tout le cadre s’adoucit : le rayon de dispersion est petit\n"
+"(quelques µm sur le film) mais s’applique partout. Diminuez ceci si vous\n"
 "voulez un résultat plus net que ce que le film lui-même donnerait."
 
 #: ../src/iop/spektrafilm.c:6364
@@ -32637,12 +32637,12 @@ msgid ""
 "frame softens quickly: the radius scales with the value, so 4.0 is a\n"
 "four times wider blur everywhere."
 msgstr ""
-"Redimensionne le rayon de dispersion dans l'émulsion. 1,0 est fidèle au\n"
-"film : le rayon auquel le modèle de film lui-même fonctionne, et ce n'est\n"
+"Redimensionne le rayon de dispersion dans l’émulsion. 1,0 est fidèle au\n"
+"film : le rayon auquel le modèle de film lui-même fonctionne, et ce n’est\n"
 "normalement pas quelque chose à modifier.\n"
 "\n"
 "Au-delà de 1,0, vous dépassez ce que revendique le modèle de film, et tout\n"
-"le cadre s'adoucit rapidement : le rayon est proportionnel à la valeur,\n"
+"le cadre s’adoucit rapidement : le rayon est proportionnel à la valeur,\n"
 "donc 4,0 donne un flou quatre fois plus large partout."
 
 #: ../src/iop/spektrafilm.c:6376
@@ -32675,8 +32675,8 @@ msgstr ""
 "avant que la lumière ne se propage, les faisant ainsi rayonner \n"
 "à travers le filtre de diffusion du film, la dispersion et le halo.\n"
 "\n"
-"Cette fonction n'est pas liée au halo : l'option halo ne la désactive pas. \n"
-"Réglez l'amplification des hautes lumières sur 0 pour la désactiver."
+"Cette fonction n’est pas liée au halo : l’option halo ne la désactive pas. \n"
+"Réglez l’amplification des hautes lumières sur 0 pour la désactiver."
 
 #: ../src/iop/spektrafilm.c:6401
 msgid ""
@@ -32689,7 +32689,7 @@ msgstr ""
 "Augmente la luminosité des hautes lumières au-dessus du seuil de protection,\n"
 "les faisant ainsi apparaître un effet de halo/diffusion (0 = désactivé).\n"
 "\n"
-"Fonctionne indépendamment de l'activation/désactivation de l'effet de halo."
+"Fonctionne indépendamment de l’activation/désactivation de l’effet de halo."
 
 #: ../src/iop/spektrafilm.c:6410
 msgid ""
@@ -32706,7 +32706,7 @@ msgstr ""
 #: ../src/iop/spektrafilm.c:6417
 msgid "protect tones below this many stops over mid-grey from the boost"
 msgstr ""
-"Protège de l'amplification les tons situés en dessous de ce nombre de diaphs "
+"Protège de l’amplification les tons situés en dessous de ce nombre de diaphs "
 "au-dessus du gris moyen"
 
 #. ---- tab 5: scanner ----
@@ -32735,19 +32735,19 @@ msgid ""
 "this acts at the END of the module, so the picker measures the\n"
 "processed image."
 msgstr ""
-"Éclaircit l'image, l'essentiel de l'effet se situant dans les tons moyens,\n"
-"tandis que les hautes lumières s'adoucissent progressivement au-delà. "
+"Éclaircit l’image, l’essentiel de l’effet se situant dans les tons moyens,\n"
+"tandis que les hautes lumières s’adoucissent progressivement au-delà. "
 "L'opération\n"
-"s'effectue en amont du compresseur de gamut ; elle ne peut donc pas définir\n"
+"s’effectue en amont du compresseur de gamut ; elle ne peut donc pas définir\n"
 "le point de blanc par elle-même.\n"
 "\n"
 "Utilisez cette fonction pour remonter les tons moyens vers la zone de "
 "transition\n"
-"(le « roll-off »), puis ajustez l'échelle après compression pour déterminer\n"
+"(le « roll-off »), puis ajustez l’échelle après compression pour déterminer\n"
 "le positionnement des hautes lumières et du blanc.\n"
 "\n"
-"Cette action a lieu à la FIN du module ; l'outil de prélèvement mesure donc\n"
-"l'image déjà traitée."
+"Cette action a lieu à la FIN du module ; l’outil de prélèvement mesure donc\n"
+"l’image déjà traitée."
 
 #: ../src/iop/spektrafilm.c:6443
 msgid ""
@@ -32771,14 +32771,14 @@ msgid ""
 "nothing rolls off behind the compressor, so this can push values\n"
 "past white for the rest of the pipeline to handle."
 msgstr ""
-"Redimensionne l'image finale, après le compresseur de gamut.\n"
+"Redimensionne l’image finale, après le compresseur de gamut.\n"
 "\n"
 "L'amplification ci-dessus pousse davantage de lumière dans le compresseur,\n"
-"ce qui éclaircit l'image et désature les couleurs déjà proches du bord du\n"
+"ce qui éclaircit l’image et désature les couleurs déjà proches du bord du\n"
 "gamut. Ceci ne change que le niveau, laissant intacte la relation entre les\n"
 "canaux, comme le ferait une courbe de tons en déplaçant son point blanc.\n"
 "\n"
-"Rien ne s'affaisse après le compresseur, ceci peut donc pousser des\n"
+"Rien ne s’affaisse après le compresseur, ceci peut donc pousser des\n"
 "valeurs au-delà du blanc, à charge pour le reste du pipeline de les gérer."
 
 #: ../src/iop/spektrafilm.c:6463
@@ -32795,7 +32795,7 @@ msgstr "Netteté"
 
 #: ../src/iop/spektrafilm.c:6470
 msgid "scanner lens softness, in pixels (0 = off)"
-msgstr "Adoucissement lié à l'objectif du scanner, en pixels (0 = désactivé)"
+msgstr "Adoucissement lié à l’objectif du scanner, en pixels (0 = désactivé)"
 
 #: ../src/iop/spektrafilm.c:6474
 msgid "scanner sharpening radius, in pixels"
@@ -32823,7 +32823,7 @@ msgid ""
 "applied when scanning the film directly."
 msgstr ""
 "Reflets visibles : un faible voile de la lumière ambiante\n"
-"réfléchi par la surface de l'impression, en pourcentage. Éclaircit\n"
+"réfléchi par la surface de l’impression, en pourcentage. Éclaircit\n"
 "légèrement les noirs les plus profonds. Non appliqué lors du scan direct\n"
 "du film."
 
@@ -32838,10 +32838,10 @@ msgid ""
 "off, the shadows stay where the film puts them, which is often\n"
 "short of black."
 msgstr ""
-"Définissez la tonalité la plus sombre de l'image avec le curseur \"Niveau de "
+"Définissez la tonalité la plus sombre de l’image avec le curseur \"Niveau de "
 "noir\" ci-dessous.\n"
 "\n"
-"Si désactivé, les ombres restent telles que le film les place, c'est-à-dire "
+"Si désactivé, les ombres restent telles que le film les place, c’est-à-dire "
 "souvent moins noires."
 
 #: ../src/iop/spektrafilm.c:6508
@@ -32854,7 +32854,7 @@ msgstr ""
 "Éclaircir ou écraser les ombres.\n"
 "\n"
 "0 correspond au noir absolu. Des valeurs supérieures éclaircissent les noirs "
-"et adoucissent l'image ; en dessous de 0, les ombres les plus profondes sont "
+"et adoucissent l’image ; en dessous de 0, les ombres les plus profondes sont "
 "écrasées."
 
 #: ../src/iop/spektrafilm.c:6517
@@ -32862,9 +32862,9 @@ msgid ""
 "set the lightest tone of the image with white level below.\n"
 "off, the highlights stay where the film puts them."
 msgstr ""
-"Définit le ton le plus clair de l'image à l'aide du réglage du niveau de "
+"Définit le ton le plus clair de l’image à l’aide du réglage du niveau de "
 "blanc ci-dessous.\n"
-"Si l'option est désactivée, les hautes lumières restent là où le film les "
+"Si l’option est désactivée, les hautes lumières restent là où le film les "
 "place."
 
 #: ../src/iop/spektrafilm.c:6524
@@ -34734,7 +34734,7 @@ msgstr "Style"
 #: ../src/libs/export.c:1740
 msgctxt "actionbutton"
 msgid "start export"
-msgstr "Lancer l’export’"
+msgstr "Lancer l’export"
 
 #: ../src/libs/export.c:1746
 msgctxt "section"
@@ -34762,7 +34762,7 @@ msgstr "Exporter les images sélectionnées avec de multiples préréglages"
 #: ../src/libs/export.c:1789
 msgctxt "actionbutton"
 msgid "start batch export"
-msgstr "Lancer l’export par lot"
+msgstr "Lancer lexport par lot"
 
 #: ../src/libs/export_metadata.c:165
 msgid "edit metadata exportation"
@@ -36820,14 +36820,14 @@ msgstr "Aller au module complet « %s »"
 #: ../src/libs/modulegroups.c:1085
 #, c-format
 msgid "close `%s` before switching to quick access panel"
-msgstr "Fermez « %s » avant de passer au panneau d'accès rapide."
+msgstr "Fermez « %s » avant de passer au panneau d’accès rapide."
 
 #: ../src/libs/modulegroups.c:1104
 #, c-format
 msgid "finish mask work in `%s` before switching to quick access panel"
 msgstr ""
 "Terminez le travail sur le masque dans « %s » avant de passer au panneau "
-"d'accès rapide."
+"d’accès rapide."
 
 #: ../src/libs/modulegroups.c:1743 ../src/libs/modulegroups.c:1840
 #: ../src/libs/modulegroups.c:1877 ../src/libs/modulegroups.c:1931
@@ -37290,7 +37290,7 @@ msgstr "Impossible de charger le modèle IA « %s »"
 
 #: ../src/libs/neural_restore.c:1644
 msgid "neural restore: the output pattern expands to nothing"
-msgstr "Restauration neuronale : le motif de sortie s'étend jusqu'à disparaître"
+msgstr "Restauration neuronale : le motif de sortie s’étend jusqu'à disparaître"
 
 #: ../src/libs/neural_restore.c:1656
 msgid "neural restore: cannot create output directory"
@@ -37489,10 +37489,10 @@ msgid ""
 "$(FILE_FOLDER) = source image folder\n"
 "$(FILE.NAME) = source name without extension"
 msgstr ""
-"Emplacement où cette tâche écrit le fichier, sans l'extension ; tout ce qui "
+"Emplacement où cette tâche écrit le fichier, sans l’extension ; tout ce qui "
 "suit le nom source constitue le suffixe\n"
-"$(FILE_FOLDER) = dossier de l'image source\n"
-"$(FILE.NAME) = nom source sans l'extension"
+"$(FILE_FOLDER) = dossier de l’image source\n"
+"$(FILE.NAME) = nom source sans l’extension"
 
 #: ../src/libs/print_settings.c:61 ../src/libs/print_settings.c:3507
 msgid "print settings"
@@ -37537,12 +37537,12 @@ msgstr "Aucun contexte de paramètres"
 
 #: ../src/libs/print_settings.c:897
 msgid "could not open print ticket provider"
-msgstr "Impossible d'ouvrir le fournisseur de tickets d'impression."
+msgstr "Impossible d’ouvrir le fournisseur de tickets d’impression."
 
 #: ../src/libs/print_settings.c:946
 msgid "could not convert printer settings to print ticket"
 msgstr ""
-"Impossible de convertir les paramètres de l'imprimante en ticket d'impression."
+"Impossible de convertir les paramètres de l’imprimante en ticket d’impression."
 
 #: ../src/libs/print_settings.c:975
 msgid "cannot print until a picture is selected"
@@ -37572,7 +37572,7 @@ msgstr "Impossible de récupérer l’image %d pour l’impression"
 #: ../src/libs/print_settings.c:1221
 #, c-format
 msgid "loading printer details for %s…"
-msgstr "Chargement des détails de l'imprimante pour %s…"
+msgstr "Chargement des détails de l’imprimante pour %s…"
 
 #: ../src/libs/print_settings.c:1347
 #, c-format
@@ -38017,7 +38017,7 @@ msgstr "Basculer le dernier instantané"
 #: ../src/libs/snapshots.c:935
 #, c-format
 msgid "all %d snapshot slots are in use"
-msgstr "Tous les emplacements d'instantanés %d sont utilisés."
+msgstr "Tous les emplacements d’instantanés %d sont utilisés."
 
 #: ../src/libs/styles.c:60
 msgid ""
@@ -38083,7 +38083,7 @@ msgstr "Filtrer les styles"
 
 #: ../src/libs/styles.c:891 ../src/libs/styles.c:892
 msgid "hide preview"
-msgstr "Cacher aperçu"
+msgstr "Cacher l’aperçu"
 
 #: ../src/libs/styles.c:899
 msgid "hide preview of style on tooltip"
@@ -38759,7 +38759,7 @@ msgstr "Les noms « Défaut » et « Mémoire » sont réservés"
 #: ../src/libs/tools/global_toolbox.c:491
 #, c-format
 msgid "could not create workspace \"%s\""
-msgstr "Impossible de créer l'espace de travail « %s »"
+msgstr "Impossible de créer l’espace de travail « %s »"
 
 #: ../src/libs/tools/global_toolbox.c:539
 msgid "workspaces"
@@ -39775,9 +39775,9 @@ msgid ""
 msgid_plural ""
 "%d duplicates of the current image will be created, one per dropped sidecar."
 msgstr[0] ""
-"%d clone de l'image actuelle sera créé, un pour chaque fichier XMP déposé."
+"%d clone de l’image actuelle sera créé, un pour chaque fichier XMP déposé."
 msgstr[1] ""
-"%d clones de l'image actuelle seront créés, un pour chaque fichier XMP déposé."
+"%d clones de l’image actuelle seront créés, un pour chaque fichier XMP déposé."
 
 #: ../src/views/darkroom.c:4067
 msgid "create duplicates"

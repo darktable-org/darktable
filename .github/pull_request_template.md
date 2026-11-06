@@ -14,6 +14,9 @@ merge, or `Related: #1234` when the pull request does not resolve it.
 
 Skip this section for small bug fixes that do not come from an issue.
 Fixes and Closes line must be at the very end of the description.
+
+**REQUIRED**: An issue must have been opened for discussion before
+creating a PR for **new features** and **behavioral changes**.
 -->
 
 ## Checklist

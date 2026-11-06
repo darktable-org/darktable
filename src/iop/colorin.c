@@ -63,7 +63,7 @@
 
 #define LUT_SAMPLES 0x10000
 
-DT_MODULE_INTROSPECTION(7, dt_iop_colorin_params_t)
+DT_MODULE_INTROSPECTION(8, dt_iop_colorin_params_t)
 
 static void update_profile_list(dt_iop_module_t *self);
 
@@ -86,6 +86,7 @@ typedef struct dt_iop_colorin_params_t
   // working color profile
   dt_colorspaces_color_profile_type_t type_work; // $DEFAULT: DT_COLORSPACE_LIN_REC2020
   char filename_work[DT_IOP_COLOR_ICC_LEN];
+  gboolean output_rgb; // $DEFAULT: TRUE
 } dt_iop_colorin_params_t;
 
 typedef struct dt_iop_colorin_gui_data_t
@@ -99,16 +100,21 @@ typedef struct dt_iop_colorin_global_data_t
 {
   int kernel_colorin_unbound;
   int kernel_colorin_clipping;
+  int kernel_colorin_rgb;
 } dt_iop_colorin_global_data_t;
 
 typedef struct dt_iop_colorin_data_t
 {
   gboolean clear_input;
+  gboolean output_rgb;
+  const dt_iop_order_iccprofile_info_t *work_profile;
+  dt_colormatrix_t rgb_matrix;
+  dt_colormatrix_t rgb_lmatrix;
   cmsHPROFILE input;
   cmsHPROFILE nrgb;
-  cmsHTRANSFORM *xform_cam_Lab;
+  cmsHTRANSFORM *xform_cam_out;
   cmsHTRANSFORM *xform_cam_nrgb;
-  cmsHTRANSFORM *xform_nrgb_Lab;
+  cmsHTRANSFORM *xform_nrgb_out;
   float lut[3][LUT_SAMPLES];
   dt_colormatrix_t cmatrix;
   dt_colormatrix_t nmatrix;
@@ -178,7 +184,8 @@ dt_iop_colorspace_type_t output_colorspace(dt_iop_module_t *self,
                                            dt_dev_pixelpipe_t *pipe,
                                            dt_dev_pixelpipe_iop_t *piece)
 {
-  return IOP_CS_LAB;
+  const dt_iop_colorin_data_t *d = piece ? piece->data : NULL;
+  return (!d || d->output_rgb) ? IOP_CS_RGB : IOP_CS_LAB;
 }
 
 static void _resolve_work_profile(dt_colorspaces_color_profile_type_t *work_type,
@@ -247,6 +254,8 @@ static inline float _linear_to_srgb(const float x)
   return x <= 0.0031308f ? 12.92f * x : 1.055f * powf(x, 1.0f / 2.4f) - 0.055f;
 }
 
+// legacy buffers contain Lab; RGB buffers are still linear here so the
+// working profile is encoded only after applying the look
 static void _process_dng_look(float *data,
                               const size_t width,
                               const size_t height,
@@ -265,7 +274,14 @@ static void _process_dng_look(float *data,
       dt_aligned_pixel_t correction;
       dt_aligned_pixel_t out;
 
-      dt_Lab_to_prophotorgb(&data[k], prophoto_rgb);
+      if(d->output_rgb)
+      {
+        dt_aligned_pixel_t xyz;
+        dt_apply_transposed_color_matrix(&data[k], d->work_profile->matrix_in_transposed, xyz);
+        dt_XYZ_to_prophotorgb(xyz, prophoto_rgb);
+      }
+      else
+        dt_Lab_to_prophotorgb(&data[k], prophoto_rgb);
       dt_vector_div1(prophoto_rgb, prophoto_rgb, exposure);
       dt_RGB_2_HSV(prophoto_rgb, hsv);
 
@@ -285,7 +301,16 @@ static void _process_dng_look(float *data,
       hsv[2] = CLIP(v_corrected);
       dt_HSV_2_RGB(hsv, prophoto_rgb);
       dt_vector_mul1(prophoto_rgb, prophoto_rgb, exposure);
-      dt_prophotorgb_to_Lab(prophoto_rgb, out);
+      if(d->output_rgb)
+      {
+        dt_aligned_pixel_t xyz, linear;
+        dt_prophotorgb_to_XYZ(prophoto_rgb, xyz);
+        dt_apply_transposed_color_matrix(xyz, d->work_profile->matrix_out_transposed, linear);
+        linear[3] = data[k+3];
+        dt_ioppr_encode_rgb(linear, out, d->work_profile);
+      }
+      else
+        dt_prophotorgb_to_Lab(prophoto_rgb, out);
       out[3] = data[k+3]; // copy alpha
       copy_pixel(&data[k], out);
     }
@@ -623,6 +648,17 @@ int legacy_params(dt_iop_module_t *self,
     *new_version = 7;
     return 0;
   }
+  if(old_version == 7)
+  {
+    dt_iop_colorin_params_t *new = calloc(1, sizeof(*new));
+    memcpy(new, old_params, sizeof(dt_iop_colorin_params_v7_t));
+    // existing edits retain the Lab output and its original processing paths
+    new->output_rgb = FALSE;
+    *new_params = new;
+    *new_params_size = sizeof(*new);
+    *new_version = 8;
+    return 0;
+  }
   return 1;
 #undef DT_IOP_COLOR_ICC_LEN_V5
 }
@@ -634,6 +670,7 @@ void init_global(dt_iop_module_so_t *self)
   self->data = gd;
   gd->kernel_colorin_unbound = dt_opencl_create_kernel(program, "colorin_unbound");
   gd->kernel_colorin_clipping = dt_opencl_create_kernel(program, "colorin_clipping");
+  gd->kernel_colorin_rgb = dt_opencl_create_kernel(program, "colorin_rgb");
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
@@ -641,6 +678,7 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_iop_colorin_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_colorin_unbound);
   dt_opencl_free_kernel(gd->kernel_colorin_clipping);
+  dt_opencl_free_kernel(gd->kernel_colorin_rgb);
   free(self->data);
   self->data = NULL;
 }
@@ -811,23 +849,22 @@ int process_cl(dt_iop_module_t *self,
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  if(d->type == DT_COLORSPACE_LAB)
+  if(d->type == DT_COLORSPACE_LAB && !d->output_rgb)
   {
     const size_t region[2] = { width, height };
     return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
   }
 
-  const dt_dev_chroma_t *chr = &self->dev->chroma;
-  const gboolean corrected = chr->late_correction;
-  dt_aligned_pixel_t coeffs = { corrected ? chr->D65coeffs[0] / chr->as_shot[0] : 1.0f,
-                                corrected ? chr->D65coeffs[1] / chr->as_shot[1] : 1.0f,
-                                corrected ? chr->D65coeffs[2] / chr->as_shot[2] : 1.0f,
-                                corrected ? chr->D65coeffs[3] / chr->as_shot[3] : 1.0f };
+  const dt_dev_wb_t *wb = &pipe->wb;
+  const gboolean corrected = wb->late_correction && d->type != DT_COLORSPACE_LAB;
+  dt_aligned_pixel_t coeffs;
+  dt_dev_wb_get_rgb_correction(wb, corrected, coeffs);
+
   if(corrected)
   {
     for_four_channels(k)
     {
-      pipe->dsc.temperature.coeffs[k] = chr->D65coeffs[k];
+      pipe->dsc.temperature.coeffs[k] = wb->D65coeffs[k];
       // note: tiling takes care about processed_maximum
       pipe->dsc.processed_maximum[k] *= coeffs[k];
     }
@@ -842,12 +879,28 @@ int process_cl(dt_iop_module_t *self,
   cl_mem dev_m = NULL, dev_l = NULL, dev_r = NULL;
   cl_mem dev_g = NULL, dev_b = NULL, dev_coeffs = NULL;
   cl_mem dev_corr = NULL;
-  cl_mem dev_hsm = NULL;
+  cl_mem dev_hsm = NULL, dev_work = NULL, dev_work_lut = NULL;
+  dt_colorspaces_iccprofile_info_cl_t *work_cl = NULL;
+  cl_float *work_lut = NULL;
 
   int kernel;
   float cmat[9], lmat[9];
 
-  if(d->nrgb)
+  if(d->output_rgb)
+  {
+    kernel = gd->kernel_colorin_rgb;
+    if(d->type == DT_COLORSPACE_LAB)
+    {
+      memset(cmat, 0, sizeof(cmat));
+      memset(lmat, 0, sizeof(lmat));
+    }
+    else
+    {
+      pack_3xSSE_to_3x3(d->nrgb ? d->nmatrix : d->rgb_matrix, cmat);
+      pack_3xSSE_to_3x3(d->rgb_lmatrix, lmat);
+    }
+  }
+  else if(d->nrgb)
   {
     kernel = gd->kernel_colorin_clipping;
     pack_3xSSE_to_3x3(d->nmatrix, cmat);
@@ -861,6 +914,13 @@ int process_cl(dt_iop_module_t *self,
   }
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  if(d->output_rgb)
+  {
+    err = dt_ioppr_build_iccprofile_params_cl(d->work_profile, devid, &work_cl, &work_lut,
+                                              &dev_work, &dev_work_lut);
+    if(err != CL_SUCCESS) goto error;
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  }
   const gboolean blue_mapping = d->blue_mapping
                            && dt_image_is_matrix_correction_supported(&pipe->image);
 
@@ -889,7 +949,23 @@ int process_cl(dt_iop_module_t *self,
                                                   use_hsm ? d->hsm : &dummy_hsm);
   if(dev_hsm == NULL) goto error;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+  if(d->output_rgb)
+  {
+    const int clipping = d->nrgb != NULL;
+    const int lab_input = d->type == DT_COLORSPACE_LAB;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+                                         CLARG(dev_in), CLARG(dev_out),
+                                         CLARG(width), CLARG(height),
+                                         CLARG(dev_m), CLARG(dev_l), CLARG(dev_r),
+                                         CLARG(dev_g), CLARG(dev_b),
+                                         CLARG(blue_mapping), CLARG(dev_coeffs), CLARG(dev_corr),
+                                         CLARG(scale), CLARG(d->hue_div), CLARG(d->sat_div), CLARG(d->val_div),
+                                         CLARG(dev_hsm), CLARG(d->hsm_encode), CLARG(use_hsm), CLARG(d->hdr_transfer),
+                                         CLARG(clipping), CLARG(dev_work), CLARG(dev_work_lut), CLARG(lab_input));
+  }
+  else
+  {
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
                                          CLARG(dev_in), CLARG(dev_out),
                                          CLARG(width), CLARG(height),
                                          CLARG(dev_m), CLARG(dev_l), CLARG(dev_r),
@@ -897,7 +973,9 @@ int process_cl(dt_iop_module_t *self,
                                          CLARG(blue_mapping), CLARG(dev_coeffs), CLARG(dev_corr),
                                          CLARG(scale), CLARG(d->hue_div), CLARG(d->sat_div), CLARG(d->val_div),
                                          CLARG(dev_hsm), CLARG(d->hsm_encode), CLARG(use_hsm), CLARG(d->hdr_transfer));
+  }
 error:
+  dt_ioppr_free_iccprofile_params_cl(&work_cl, &work_lut, &dev_work, &dev_work_lut);
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_l);
   dt_opencl_release_mem_object(dev_r);
@@ -1293,7 +1371,7 @@ static void process_lcms2_bm(dt_iop_module_t *self,
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
     if(!d->nrgb)
     {
-      cmsDoTransform(d->xform_cam_Lab, out, out, width);
+      cmsDoTransform(d->xform_cam_out, out, out, width);
     }
     else
     {
@@ -1302,7 +1380,7 @@ static void process_lcms2_bm(dt_iop_module_t *self,
       for(int j = 0; j < width; j++)
         dt_vector_clip(&out[4*j]);
 
-      cmsDoTransform(d->xform_nrgb_Lab, out, out, width);
+      cmsDoTransform(d->xform_nrgb_out, out, out, width);
     }
   }
 }
@@ -1328,19 +1406,27 @@ static void process_lcms2_proper(dt_iop_module_t *self,
     float *in = (float *)ivoid + (size_t)4 * k * width;
     float *const restrict scratch = dt_get_perthread(scratchlines, padded_size);
 
-    if(correcting)
+    if(correcting || d->output_rgb)
     {
       for(size_t x = 0; x < 4 * width; x += 4)
+      {
         dt_vector_mul(&scratch[x], &in[x], corr);
+        if(d->output_rgb)
+        {
+          if(d->hdr_transfer) dt_hdr_decode(&scratch[x], d->hdr_transfer);
+          if(d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image))
+            _apply_blue_mapping(&scratch[x], &scratch[x]);
+        }
+      }
       in = scratch;
     }
 
     float *out = (float *)ovoid + (size_t)4 * k * width;
 
-    // convert to (L,a/L,b/L) to be able to change L without changing saturation.
+    // convert to the output profile, clipping in the selected gamut if requested
     if(!d->nrgb)
     {
-      cmsDoTransform(d->xform_cam_Lab, in, out, width);
+      cmsDoTransform(d->xform_cam_out, in, out, width);
     }
     else
     {
@@ -1349,10 +1435,44 @@ static void process_lcms2_proper(dt_iop_module_t *self,
       for(int j = 0; j < width; j++)
         dt_vector_clip(&out[4*j]);
 
-      cmsDoTransform(d->xform_nrgb_Lab, out, out, width);
+      cmsDoTransform(d->xform_nrgb_out, out, out, width);
     }
   }
   dt_free_align(scratchlines);
+}
+
+static void _process_rgb_matrix(const dt_iop_colorin_data_t *const d,
+                                const float *const in,
+                                float *const out,
+                                const size_t npixels,
+                                const dt_aligned_pixel_t corr,
+                                const gboolean blue_mapping)
+{
+  dt_colormatrix_t matrix, clipping_matrix;
+  transpose_3xSSE(d->nrgb ? d->nmatrix : d->rgb_matrix, matrix);
+  transpose_3xSSE(d->rgb_lmatrix, clipping_matrix);
+  DT_OMP_FOR(shared(matrix, clipping_matrix))
+  for(size_t k = 0; k < npixels; k++)
+  {
+    dt_aligned_pixel_t cam, linear;
+    for_each_channel(c)
+      cam[c] = in[4*k+c] * corr[c];
+    cam[3] = in[4*k+3];
+    _apply_tone_curves(cam, d);
+    if(blue_mapping) _apply_blue_mapping(cam, cam);
+    dt_apply_transposed_color_matrix(cam, matrix, linear);
+    if(d->nrgb)
+    {
+      dt_vector_clip(linear);
+      dt_apply_transposed_color_matrix(linear, clipping_matrix, cam);
+      copy_pixel(linear, cam);
+    }
+    linear[3] = in[4*k+3];
+    if(d->hsm)
+      copy_pixel(out + 4*k, linear);
+    else
+      dt_ioppr_encode_rgb(linear, out + 4*k, d->work_profile);
+  }
 }
 
 void process(dt_iop_module_t *self,
@@ -1367,19 +1487,18 @@ void process(dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  const dt_dev_chroma_t *chr = &self->dev->chroma;
-  const dt_iop_colorin_data_t *const d = piece->data;
-  const gboolean corrected = chr->late_correction && d->type != DT_COLORSPACE_LAB;
-  const dt_aligned_pixel_t coeffs = { corrected ? chr->D65coeffs[0] / chr->as_shot[0] : 1.0f,
-                                      corrected ? chr->D65coeffs[1] / chr->as_shot[1] : 1.0f,
-                                      corrected ? chr->D65coeffs[2] / chr->as_shot[2] : 1.0f,
-                                      corrected ? chr->D65coeffs[3] / chr->as_shot[3] : 1.0f };
   dt_dev_pixelpipe_t *pipe = piece->pipe;
+  const dt_dev_wb_t *wb = &pipe->wb;
+  const dt_iop_colorin_data_t *const d = piece->data;
+  const gboolean corrected = wb->late_correction && d->type != DT_COLORSPACE_LAB;
+  dt_aligned_pixel_t coeffs;
+  dt_dev_wb_get_rgb_correction(wb, corrected, coeffs);
+
   if(corrected)
   {
     for_four_channels(k)
     {
-      pipe->dsc.temperature.coeffs[k] = chr->D65coeffs[k];
+      pipe->dsc.temperature.coeffs[k] = wb->D65coeffs[k];
       // note: tiling takes care about processed_maximum
       pipe->dsc.processed_maximum[k] *= coeffs[k];
     }
@@ -1396,22 +1515,52 @@ void process(dt_iop_module_t *self,
 
   if(d->type == DT_COLORSPACE_LAB)
   {
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
+    if(d->output_rgb)
+    {
+      const float *in = ivoid;
+      float *out = ovoid;
+      DT_OMP_FOR()
+      for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+      {
+        dt_aligned_pixel_t xyz, linear;
+        dt_Lab_to_XYZ(in + 4*k, xyz);
+        dt_apply_transposed_color_matrix(xyz, d->work_profile->matrix_out_transposed, linear);
+        linear[3] = in[4*k+3];
+        dt_ioppr_encode_rgb(linear, out + 4*k, d->work_profile);
+      }
+    }
+    else
+      dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
   }
   else if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
-    process_cmatrix(self, piece, ivoid, ovoid, roi_in, roi_out, coeffs);
+    if(d->output_rgb)
+      _process_rgb_matrix(d, ivoid, ovoid, (size_t)roi_out->width * roi_out->height, coeffs, blue_mapping);
+    else
+      process_cmatrix(self, piece, ivoid, ovoid, roi_in, roi_out, coeffs);
   }
   else
   {
     // use general lcms2 fallback
-    if(blue_mapping)
+    if(blue_mapping && !d->output_rgb)
     {
       process_lcms2_bm(self, piece, ivoid, ovoid, roi_in, roi_out);
     }
     else
     {
       process_lcms2_proper(self, piece, ivoid, ovoid, roi_in, roi_out, coeffs);
+    }
+  }
+
+  if(d->output_rgb && !dt_is_valid_colormatrix(d->cmatrix[0][0]) && d->type != DT_COLORSPACE_LAB)
+  {
+    const float *in = ivoid;
+    float *out = ovoid;
+    DT_OMP_FOR()
+    for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+    {
+      if(d->hsm) dt_ioppr_decode_rgb(out + 4*k, out + 4*k, d->work_profile);
+      out[4*k+3] = in[4*k+3];
     }
   }
 
@@ -1429,6 +1578,8 @@ void commit_params(dt_iop_module_t *self,
   const dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)p1;
   dt_iop_colorin_data_t *d = piece->data;
 
+  d->output_rgb = p->output_rgb;
+  d->work_profile = NULL;
   d->type = p->type;
   d->type_work = p->type_work;
   // stored params need not terminate the file names
@@ -1437,8 +1588,16 @@ void commit_params(dt_iop_module_t *self,
   dt_strlcpy_fixed_to_fixed(d->filename_work, sizeof(d->filename_work),
                             p->filename_work, sizeof(p->filename_work));
 
-  const cmsHPROFILE Lab =
+  cmsHPROFILE output =
     dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
+  const unsigned int output_format = d->output_rgb ? TYPE_RGBA_FLT : TYPE_LabA_FLT;
+  if(d->output_rgb)
+  {
+    d->work_profile = dt_ioppr_set_pipe_work_profile_info(self->dev, pipe, d->type_work,
+                                                         d->filename_work, DT_INTENT_PERCEPTUAL);
+    output = dt_colorspaces_get_profile(d->work_profile->type, d->work_profile->filename,
+                                         DT_PROFILE_DIRECTION_WORK)->profile;
+  }
 
   // only clean up when it's a type that we created here
   if(d->input && d->clear_input)
@@ -1476,20 +1635,20 @@ void commit_params(dt_iop_module_t *self,
       d->nrgb = NULL;
   }
 
-  if(d->xform_cam_Lab)
+  if(d->xform_cam_out)
   {
-    cmsDeleteTransform(d->xform_cam_Lab);
-    d->xform_cam_Lab = NULL;
+    cmsDeleteTransform(d->xform_cam_out);
+    d->xform_cam_out = NULL;
   }
   if(d->xform_cam_nrgb)
   {
     cmsDeleteTransform(d->xform_cam_nrgb);
     d->xform_cam_nrgb = NULL;
   }
-  if(d->xform_nrgb_Lab)
+  if(d->xform_nrgb_out)
   {
-    cmsDeleteTransform(d->xform_nrgb_Lab);
-    d->xform_nrgb_Lab = NULL;
+    cmsDeleteTransform(d->xform_nrgb_out);
+    d->xform_nrgb_out = NULL;
   }
 
   dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
@@ -1499,12 +1658,13 @@ void commit_params(dt_iop_module_t *self,
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
   d->nonlinearlut = FALSE;
+  d->hdr_transfer = DT_HDR_NONE;
   piece->process_cl_ready = TRUE;
 
   dt_colorspaces_color_profile_type_t type = p->type;
   if(type == DT_COLORSPACE_LAB) // we keep the runtime in process for safety
   {
-    piece->enabled = FALSE;
+    piece->enabled = d->output_rgb;
     return;
   }
   if(!dt_pipe_is_image_final(piece->pipe))
@@ -1683,12 +1843,12 @@ void commit_params(dt_iop_module_t *self,
     {
       piece->process_cl_ready = FALSE;
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
-      d->xform_cam_Lab = cmsCreateTransform(d->input, input_format, Lab,
-                                            TYPE_LabA_FLT, p->intent, 0);
+      d->xform_cam_out = cmsCreateTransform(d->input, input_format, output,
+                                            output_format, p->intent, 0);
       d->xform_cam_nrgb = cmsCreateTransform(d->input, input_format, d->nrgb,
                                              TYPE_RGBA_FLT, p->intent, 0);
-      d->xform_nrgb_Lab = cmsCreateTransform(d->nrgb, TYPE_RGBA_FLT, Lab,
-                                             TYPE_LabA_FLT, p->intent, 0);
+      d->xform_nrgb_out = cmsCreateTransform(d->nrgb, TYPE_RGBA_FLT, output,
+                                             output_format, p->intent, 0);
     }
     else
     {
@@ -1709,30 +1869,30 @@ void commit_params(dt_iop_module_t *self,
     {
       piece->process_cl_ready = FALSE;
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
-      d->xform_cam_Lab = cmsCreateTransform(d->input, input_format, Lab,
-                                            TYPE_LabA_FLT, p->intent, 0);
+      d->xform_cam_out = cmsCreateTransform(d->input, input_format, output,
+                                            output_format, p->intent, 0);
     }
   }
 
   // we might have failed generating the clipping transformations, check that:
   if(d->nrgb && ((!d->xform_cam_nrgb && !dt_is_valid_colormatrix(d->nmatrix[0][0]))
-                 || (!d->xform_nrgb_Lab && !dt_is_valid_colormatrix(d->lmatrix[0][0]))))
+                 || (!d->xform_nrgb_out && !dt_is_valid_colormatrix(d->lmatrix[0][0]))))
   {
     if(d->xform_cam_nrgb)
     {
       cmsDeleteTransform(d->xform_cam_nrgb);
       d->xform_cam_nrgb = NULL;
     }
-    if(d->xform_nrgb_Lab)
+    if(d->xform_nrgb_out)
     {
-      cmsDeleteTransform(d->xform_nrgb_Lab);
-      d->xform_nrgb_Lab = NULL;
+      cmsDeleteTransform(d->xform_nrgb_out);
+      d->xform_nrgb_out = NULL;
     }
     d->nrgb = NULL;
   }
 
   // user selected a non-supported input profile, check that:
-  if(!d->xform_cam_Lab && !dt_is_valid_colormatrix(d->cmatrix[0][0]))
+  if(!d->xform_cam_out && !dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
     if(p->type == DT_COLORSPACE_FILE)
       dt_print(DT_DEBUG_ALWAYS, "[colorin] unsupported input profile `%s' has"
@@ -1752,8 +1912,8 @@ void commit_params(dt_iop_module_t *self,
     {
       piece->process_cl_ready = FALSE;
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
-      d->xform_cam_Lab = cmsCreateTransform(d->input, TYPE_RGBA_FLT, Lab,
-                                            TYPE_LabA_FLT, p->intent, 0);
+      d->xform_cam_out = cmsCreateTransform(d->input, TYPE_RGBA_FLT, output,
+                                            output_format, p->intent, 0);
     }
   }
 
@@ -1783,8 +1943,18 @@ void commit_params(dt_iop_module_t *self,
 
   d->nonlinearlut |= d->hdr_transfer != DT_HDR_NONE;
 
+  if(d->output_rgb && dt_is_valid_colormatrix(d->cmatrix[0][0]))
+  {
+    dt_colormatrix_mul(d->rgb_matrix, d->work_profile->matrix_out, d->cmatrix);
+    if(d->nrgb)
+      dt_colormatrix_mul(d->rgb_lmatrix, d->work_profile->matrix_out, d->lmatrix);
+    else
+      memset(d->rgb_lmatrix, 0, sizeof(d->rgb_lmatrix));
+  }
+
   // commit color profiles to pipeline
-  dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work,
+  if(!d->output_rgb)
+    dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work,
                                       d->filename_work, DT_INTENT_PERCEPTUAL);
   dt_ioppr_set_pipe_input_profile_info(self->dev, piece->pipe, d->type,
                                        d->filename, p->intent, d->cmatrix);
@@ -1794,13 +1964,15 @@ void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_colorin_data_t));
+  piece->data = dt_alloc1_align_type(dt_iop_colorin_data_t);
   dt_iop_colorin_data_t *d = piece->data;
+  d->output_rgb = FALSE;
+  d->work_profile = NULL;
   d->input = NULL;
   d->nrgb = NULL;
-  d->xform_cam_Lab = NULL;
+  d->xform_cam_out = NULL;
   d->xform_cam_nrgb = NULL;
-  d->xform_nrgb_Lab = NULL;
+  d->xform_nrgb_out = NULL;
   d->hsm = NULL;
 }
 
@@ -1810,24 +1982,24 @@ void cleanup_pipe(dt_iop_module_t *self,
 {
   dt_iop_colorin_data_t *d = piece->data;
   if(d->input && d->clear_input) dt_colorspaces_cleanup_profile(d->input);
-  if(d->xform_cam_Lab)
+  if(d->xform_cam_out)
   {
-    cmsDeleteTransform(d->xform_cam_Lab);
-    d->xform_cam_Lab = NULL;
+    cmsDeleteTransform(d->xform_cam_out);
+    d->xform_cam_out = NULL;
   }
   if(d->xform_cam_nrgb)
   {
     cmsDeleteTransform(d->xform_cam_nrgb);
     d->xform_cam_nrgb = NULL;
   }
-  if(d->xform_nrgb_Lab)
+  if(d->xform_nrgb_out)
   {
-    cmsDeleteTransform(d->xform_nrgb_Lab);
-    d->xform_nrgb_Lab = NULL;
+    cmsDeleteTransform(d->xform_nrgb_out);
+    d->xform_nrgb_out = NULL;
   }
 
   g_free(d->hsm);
-  free(piece->data);
+  dt_free_align(piece->data);
   piece->data = NULL;
 }
 

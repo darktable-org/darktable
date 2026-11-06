@@ -983,6 +983,8 @@ static void _masks_flexi_release_full(dt_iop_module_t *module, const gboolean ha
     darktable.develop->proxy.masks_flexi_host.hosted_module == module;
   if(was_hosted) darktable.develop->proxy.masks_flexi_host.hosted_module = NULL;
 
+  dt_masks_gui_split_dock(bd, FALSE);
+
   // the header's controls come home with _masks_header_apply_side below
   _masks_header_body_home(bd);
   if(bd->masks_blend_header && GTK_IS_WIDGET(bd->masks_blend_header))
@@ -1160,6 +1162,9 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
     dt_ui_flexi_panel_set_side(darktable.gui->ui, dt_masks_gui_panel_side_right());
   }
 
+  // only the docked panel has a scroller of its own to split in two
+  if(pos != MASKS_PANEL_POS_CANVAS || !target) dt_masks_gui_split_dock(bd, FALSE);
+
   if(!target)
   {
     if(pos == MASKS_PANEL_POS_EMBEDDED && is_focused && has_masking)
@@ -1224,6 +1229,7 @@ void dt_iop_gui_blend_masks_panel_relocate(dt_iop_module_t *module)
     {
       dt_masks_gui_reparent_into(GTK_WIDGET(bd->masks_panel_body), cnt_target, FALSE, FALSE);
       gtk_widget_show(GTK_WIDGET(bd->masks_panel_body));
+      dt_masks_gui_split_dock(bd, TRUE);
     }
   }
   else

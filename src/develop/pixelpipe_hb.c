@@ -326,6 +326,7 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   memset(pipe->mask_distort_buf, 0, sizeof(pipe->mask_distort_buf));
   memset(pipe->mask_distort_buf_size, 0, sizeof(pipe->mask_distort_buf_size));
   pipe->mask_cache_size = 0;
+  dt_dev_wb_set_neutral(&pipe->wb);
   return dt_dev_pixelpipe_cache_init(pipe, entries, size, fraction);
 }
 
@@ -840,6 +841,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   double start = dt_get_debug_wtime();
 
   dev->cropping.exposer = NULL;
+
   dt_print_pipe(DT_DEBUG_PARAMS, "synch all module defaults",
     pipe, NULL, DT_DEVICE_NONE, NULL, NULL);
 
@@ -2696,6 +2698,16 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         && piece->process_cl_ready
         && !(dt_pipe_is_preview(pipe) && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL))
         && !_avoid_cl_module(piece);
+
+    /* At 100% zoom and above demosaicscale only cuts the visible window out of the
+       full demosaiced image. If that image comes from the host cache, the device
+       path would upload all of it for a crop, which costs far more than cropping
+       on the host and uploading the small result for the next module. */
+    if(possible_cl
+       && cl_mem_input == NULL
+       && roi_out->scale >= 1.0f
+       && dt_iop_module_is(module, "demosaicscale"))
+      possible_cl = FALSE;
 
     /* A colorspace conversion of the input is done before the module runs, into a second
        image that replaces the original, so one extra full-size buffer is live while it

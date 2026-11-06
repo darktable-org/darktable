@@ -576,6 +576,138 @@ void dt_masks_gui_reparent_into(GtkWidget *w,
   _refresh_request_modes(cur);
 }
 
+// where the docked panel's divider is, in pixels from the top of the split
+// content; 0 until the user has moved it, which is half of it
+#define DT_MASKS_SPLIT_CONF "plugins/darkroom/masks/docked_split_position"
+
+static gboolean _split_applying = FALSE;
+
+// the divider takes its saved place with the first allocation, when the
+// panel's height is known
+static void _split_allocated(GtkWidget *paned, GdkRectangle *a, gpointer data)
+{
+  if(a->height <= 1) return;
+  g_object_set_data(G_OBJECT(paned), "split-height", GINT_TO_POINTER(a->height));
+  if(g_object_get_data(G_OBJECT(paned), "split-placed")) return;
+  g_object_set_data(G_OBJECT(paned), "split-placed", GINT_TO_POINTER(1));
+  const int saved = dt_conf_get_int(DT_MASKS_SPLIT_CONF);
+  _split_applying = TRUE;
+  gtk_paned_set_position(GTK_PANED(paned), saved > 0 ? saved : a->height / 2);
+  _split_applying = FALSE;
+}
+
+// remember where the user leaves the divider. A paned clamps its position when
+// its height shrinks, which is not the user's move and must not overwrite it:
+// that one has the old height in "split-height" still (see _split_allocated)
+static void _split_moved(GObject *paned, GParamSpec *pspec, gpointer data)
+{
+  if(_split_applying || !g_object_get_data(paned, "split-placed")) return;
+  if(GPOINTER_TO_INT(g_object_get_data(paned, "split-height"))
+     != gtk_widget_get_allocated_height(GTK_WIDGET(paned)))
+    return;
+  dt_conf_set_int(DT_MASKS_SPLIT_CONF, gtk_paned_get_position(GTK_PANED(paned)));
+}
+
+static void _split_move(GtkWidget *part, GtkWidget *to)
+{
+  GtkWidget *cur = gtk_widget_get_parent(part);
+  g_object_ref(part);
+  if(cur) gtk_container_remove(GTK_CONTAINER(cur), part);
+  gtk_container_add(GTK_CONTAINER(to), part);
+  g_object_unref(part);
+  _refresh_request_modes(to);
+  _refresh_request_modes(cur);
+}
+
+// the docked panel, as tall as its window, scrolls its mask layout and the rest
+// apart, with a divider between. Everywhere else the panel sits in a scroller it
+// does not own (the module's, the utility panel's), and a scroller of its own
+// would nest in it: the two halves then stay stacked in the panel, as built
+void dt_masks_gui_split_dock(dt_iop_gui_blend_data_t *bd, const gboolean docked)
+{
+  if(!bd || bd->masks_split_on == docked) return;
+  GtkWidget *top = bd->masks_split_top;
+  GtkWidget *bottom = bd->masks_split_bottom;
+  if(!top || !bottom || !GTK_IS_WIDGET(top) || !GTK_IS_WIDGET(bottom)) return;
+  struct dt_ui_t *ui = darktable.gui ? darktable.gui->ui : NULL;
+
+  if(docked)
+  {
+    GtkWidget *panel = gtk_widget_get_parent(top);
+    if(!GTK_IS_BOX(panel) || !ui) return;
+    if(!bd->masks_split_paned)
+    {
+      GtkWidget *sw[2] = { dt_ui_flexi_panel_scroller_new(ui), dt_ui_flexi_panel_scroller_new(ui) };
+      for(int i = 0; i < 2; i++)
+      {
+        // neither half may take the whole panel, or the divider would have
+        // nowhere to go
+        gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw[i]),
+                                                   DT_PIXEL_APPLY_DPI(80));
+        GtkWidget *view = gtk_viewport_new(NULL, NULL);
+        gtk_container_add(GTK_CONTAINER(sw[i]), view);
+        gtk_widget_show(view);
+        gtk_widget_show(sw[i]);
+      }
+      GtkWidget *paned = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
+      gtk_widget_set_name(paned, "masks-split");
+      gtk_paned_set_wide_handle(GTK_PANED(paned), TRUE);
+      // the mask layout keeps the room it was given, the rest takes what is left
+      gtk_paned_pack1(GTK_PANED(paned), sw[0], FALSE, TRUE);
+      gtk_paned_pack2(GTK_PANED(paned), sw[1], TRUE, TRUE);
+      gtk_widget_set_vexpand(paned, TRUE);
+      // shown by the docking only: the module's show_all must not show it
+      // while the halves are stacked
+      gtk_widget_set_no_show_all(paned, TRUE);
+      g_signal_connect(G_OBJECT(paned), "size-allocate", G_CALLBACK(_split_allocated), NULL);
+      g_signal_connect(G_OBJECT(paned), "notify::position", G_CALLBACK(_split_moved), NULL);
+      gtk_box_pack_start(GTK_BOX(panel), paned, TRUE, TRUE, 0);
+      bd->masks_split_paned = paned;
+    }
+    GtkWidget *paned = bd->masks_split_paned;
+    GtkWidget *top_sw = gtk_paned_get_child1(GTK_PANED(paned));
+    GtkWidget *bottom_sw = gtk_paned_get_child2(GTK_PANED(paned));
+    _split_move(top, gtk_bin_get_child(GTK_BIN(top_sw)));
+    _split_move(bottom, gtk_bin_get_child(GTK_BIN(bottom_sw)));
+    // place the divider before the first allocation, or the panel is drawn once
+    // with the top half at its natural height and then jumps. The height is
+    // known once the panel has been laid out before; if not, the first
+    // allocation places it (_split_allocated)
+    if(!g_object_get_data(G_OBJECT(paned), "split-placed"))
+    {
+      GtkWidget *win = gtk_widget_get_toplevel(paned);
+      const int saved = dt_conf_get_int(DT_MASKS_SPLIT_CONF);
+      int height = gtk_widget_get_allocated_height(paned);
+      // not laid out yet: the window less the header and the panel's chrome
+      if(height <= 1 && GTK_IS_WINDOW(win)) height = gtk_widget_get_allocated_height(win) - DT_PIXEL_APPLY_DPI(150);
+      if(saved > 0 || height > 1)
+      {
+        g_object_set_data(G_OBJECT(paned), "split-placed", GINT_TO_POINTER(1));
+        _split_applying = TRUE;
+        gtk_paned_set_position(GTK_PANED(paned), saved > 0 ? saved : height / 2);
+        _split_applying = FALSE;
+      }
+    }
+    gtk_widget_show(paned);
+    dt_ui_flexi_panel_set_split(ui, top_sw, bottom_sw);
+  }
+  else
+  {
+    GtkWidget *paned = bd->masks_split_paned;
+    GtkWidget *panel = paned ? gtk_widget_get_parent(paned) : NULL;
+    if(GTK_IS_BOX(panel))
+    {
+      _split_move(top, panel);
+      gtk_box_reorder_child(GTK_BOX(panel), top, 0);
+      _split_move(bottom, panel);
+      gtk_box_reorder_child(GTK_BOX(panel), bottom, 1);
+      gtk_widget_hide(paned);
+    }
+    if(ui) dt_ui_flexi_panel_set_split(ui, NULL, NULL);
+  }
+  bd->masks_split_on = docked;
+}
+
 // dt_history_item_get_name gives markup, which a plain-text label, menu or
 // tooltip would show escaped ("&amp;")
 static gchar *_module_plain_name(const dt_iop_module_t *m)
@@ -1503,6 +1635,25 @@ static dt_masks_param_view_t _param_row_view(const dt_masks_point_parametric_t *
 {
   return dt_masks_model_param_view_resolve(dt_masks_param_get_view(p),
                                            dt_masks_gui_param_channel_is_used(p, channel, 1));
+}
+
+static dt_masks_param_always_t _param_always_shown(void)
+{
+  return CLAMP(dt_conf_get_int("plugins/darkroom/masks/parametric_always_shown"),
+               DT_MASKS_PARAM_ALWAYS_INPUT, DT_MASKS_PARAM_ALWAYS_ALL);
+}
+
+// the controls a parametric element shows: its view and boost choice, with the
+// ones the "always shown controls" option pins on top
+static dt_masks_param_vis_t _param_row_vis(const dt_masks_point_parametric_t *p,
+                                           const dt_iop_gui_blendif_channel_t *channel)
+{
+  const gboolean boost = channel && channel->boost_factor_enabled;
+  return dt_masks_model_param_pin_visibility(
+    dt_masks_model_param_row_visibility(dt_masks_param_get_view(p),
+                                        dt_masks_gui_param_channel_is_used(p, channel, 1), boost,
+                                        dt_masks_param_boost_with_sliders(p)),
+    _param_always_shown(), boost);
 }
 
 static gboolean _param_row_picker_apply(dt_iop_module_t *module,
@@ -2771,6 +2922,21 @@ static void _masks_rebuild_for_option(dt_iop_module_t *module)
   _queue_masks_list_rebuild(module);
 }
 
+// "always shown controls" (same menu): which of a parametric element's controls
+// the controls header's toggle leaves alone. Rows are rebuilt for it, and the
+// selected element's controls follow at once
+static void _controls_options_sync(dt_iop_gui_blend_data_t *bd);
+
+static void _masks_always_shown_changed(GtkWidget *combo, dt_iop_module_t *module)
+{
+  if(DT_IN_GUI_UPDATE()) return;
+  dt_conf_set_int("plugins/darkroom/masks/parametric_always_shown",
+                  dt_bauhaus_combobox_get(combo));
+  _masks_rebuild_for_option(module);
+  dt_iop_gui_blend_data_t *bd = module ? module->blend_data : NULL;
+  if(bd) _controls_options_sync(bd);
+}
+
 static void _masks_preset_notes_toggled(GtkToggleButton *mi, dt_iop_module_t *module)
 {
   dt_conf_set_bool("plugins/darkroom/masks/show_preset_notes",
@@ -2881,15 +3047,28 @@ static void _add_masks_panel_options_box(GtkWidget *box, dt_iop_module_t *module
 
   _MASKS_OPT_CHECK(
     hover, _("preview channel under cursor"),
-    _("when enabled, resting the pointer on one of the\n"
+    _("when enabled (default), resting the pointer on one of the\n"
       "add-parametric-element buttons displays that channel in the\n"
       "center view, so you can see what a channel looks like before\n"
       "adding an element for it.\n"
       "the preview only starts after a short pause, so passing over\n"
-      "the buttons on the way elsewhere costs nothing.\n"
-      "disabled by default."),
+      "the buttons on the way elsewhere costs nothing."),
     _preview_on_hover_is_on(),
     _masks_preview_on_hover_toggled)
+
+  GtkWidget *always = dt_masks_gui_pref_combo(
+    box, _("always shown controls"),
+    _("the controls of a parametric element that stay in view.\n"
+      "the toggle in the controls header shows or hides the rest.\n"
+      "with all of them always shown, the toggle is not displayed."));
+  DT_ENTER_GUI_UPDATE();
+  dt_bauhaus_combobox_add(always, _("input channel"));
+  dt_bauhaus_combobox_add(always, _("input channel and boost factor"));
+  dt_bauhaus_combobox_add(always, _("both channels and boost factor"));
+  dt_bauhaus_combobox_set(always, dt_conf_get_int("plugins/darkroom/masks/parametric_always_shown"));
+  DT_LEAVE_GUI_UPDATE();
+  g_signal_connect(G_OBJECT(always), "value-changed", G_CALLBACK(_masks_always_shown_changed),
+                   module);
 
   dt_masks_gui_pref_section(box, _("editing options"), NULL);
 
@@ -13767,6 +13946,15 @@ dt_masks_param_vis_t dt_masks_model_param_row_visibility(const dt_masks_param_vi
                                  .boost = boost_enabled && boost_with_sliders };
 }
 
+dt_masks_param_vis_t dt_masks_model_param_pin_visibility(dt_masks_param_vis_t vis,
+                                                         const dt_masks_param_always_t always,
+                                                         const gboolean boost_enabled)
+{
+  if(always >= DT_MASKS_PARAM_ALWAYS_INPUT_BOOST) vis.boost = boost_enabled;
+  if(always >= DT_MASKS_PARAM_ALWAYS_ALL) vis.output = TRUE;
+  return vis;
+}
+
 static void _param_slider_fit_picker(dt_masks_param_row_editor_t *ed);
 
 // ---- the swatch ------------------------------------------------------------
@@ -13953,8 +14141,7 @@ static void _param_swatch_refresh(const dt_masks_param_row_editor_t *ed)
   if(!ed->swatch) return;
   const dt_masks_point_parametric_t *p = _param_point(ed->formid);
   const dt_iop_gui_blendif_channel_t *channels = _param_channels(p);
-  const gboolean both =
-    channels && _param_row_view(p, &channels[p->channel]) == DT_MASKS_PARAM_VIEW_BOTH;
+  const gboolean both = channels && _param_row_vis(p, &channels[p->channel]).output;
   const gboolean inverted = _param_row_inverted(ed->module, ed->formid);
   GList *strips = gtk_container_get_children(GTK_CONTAINER(ed->swatch));
   int i = 0;
@@ -13978,17 +14165,22 @@ static void _controls_options_sync(dt_iop_gui_blend_data_t *bd)
     dt_is_valid_maskid(bd->controls_param_formid) ? _param_point(bd->controls_param_formid) : NULL;
   const dt_iop_gui_blendif_channel_t *channels = _param_channels(p);
   const dt_iop_gui_blendif_channel_t *channel = channels ? &channels[p->channel] : NULL;
-  gtk_widget_set_visible(bd->controls_output_btn, p != NULL);
+  const dt_masks_param_always_t always = _param_always_shown();
+  // with everything always shown there is nothing for the toggle to hide
+  gtk_widget_set_visible(bd->controls_output_btn, p != NULL && always < DT_MASKS_PARAM_ALWAYS_ALL);
   if(!p) return;
   DT_ENTER_GUI_UPDATE();
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->controls_output_btn),
                                _param_row_view(p, channel) == DT_MASKS_PARAM_VIEW_BOTH);
   DT_LEAVE_GUI_UPDATE();
+  const gboolean boost = channel && channel->boost_factor_enabled;
   gtk_widget_set_tooltip_text(
     bd->controls_output_btn,
-    channel && channel->boost_factor_enabled
-      ? _("show the output slider and the boost factor\nthe input slider is always shown")
-      : _("show the output slider\nthe input slider is always shown"));
+    always == DT_MASKS_PARAM_ALWAYS_INPUT_BOOST || !boost
+      ? (always == DT_MASKS_PARAM_ALWAYS_INPUT_BOOST && boost
+           ? _("show the output slider\nthe input slider and the boost factor are always shown")
+           : _("show the output slider\nthe input slider is always shown"))
+      : _("show the output slider and the boost factor\nthe input slider is always shown"));
 }
 
 static void _update_param_row_visibility(dt_masks_param_row_editor_t *ed)
@@ -13998,11 +14190,7 @@ static void _update_param_row_visibility(dt_masks_param_row_editor_t *ed)
   const dt_iop_gui_blendif_channel_t *channels = _param_channels(p);
   const dt_iop_gui_blendif_channel_t *channel = channels ? &channels[p->channel] : NULL;
 
-  const gboolean out_used = dt_masks_gui_param_channel_is_used(p, channel, 1);
-  const dt_masks_param_vis_t vis =
-    dt_masks_model_param_row_visibility(dt_masks_param_get_view(p), out_used,
-                                        channel && channel->boost_factor_enabled,
-                                        dt_masks_param_boost_with_sliders(p));
+  const dt_masks_param_vis_t vis = _param_row_vis(p, channel);
 
   // the picker box keeps its width whatever the slider shows, which is what
   // the slider's margin is fitted to (see _param_slider_fit_picker). A drag
@@ -14174,7 +14362,9 @@ static void _controls_options_toggled(GtkToggleButton *btn, dt_iop_module_t *mod
   const dt_iop_gui_blendif_channel_t *channels = _param_channels(p);
   const gboolean boost = channels && channels[p->channel].boost_factor_enabled;
   dt_masks_param_set_view(p, on ? DT_MASKS_PARAM_VIEW_BOTH : DT_MASKS_PARAM_VIEW_INPUT);
-  if(boost) dt_masks_param_set_boost_with_sliders(p, on);
+  // the boost factor is the toggle's to show only when it is not pinned
+  if(boost && _param_always_shown() == DT_MASKS_PARAM_ALWAYS_INPUT)
+    dt_masks_param_set_boost_with_sliders(p, on);
   dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
   // the history item may have rebuilt the list, and the row with it
@@ -19395,6 +19585,11 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     dt_gui_box_add(bd->masks_panel_body, bd->masks_panel_reveal);
     GtkWidget *mask_panel = dt_gui_vbox();
     gtk_container_add(GTK_CONTAINER(bd->masks_panel_reveal), mask_panel);
+    // the two halves of dt_masks_gui_split_dock: plain boxes, which lay the
+    // panel out as if its parts were packed in mask_panel itself
+    bd->masks_split_top = dt_gui_vbox();
+    bd->masks_split_bottom = dt_gui_vbox();
+    dt_gui_box_add(mask_panel, bd->masks_split_top, bd->masks_split_bottom);
 
     GtkWidget *box = dt_gui_vbox();
     bd->blend_box = GTK_BOX(dt_gui_vbox(
@@ -19403,8 +19598,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     dt_gui_add_class(GTK_WIDGET(bd->blend_box), "dt_masks_blend_box");
     _add_wrapped_box(box, bd->blend_box, NULL);
 
-    dt_gui_box_add(mask_panel, box);
-    dt_iop_gui_init_masks(mask_panel, module);
+    dt_gui_box_add(bd->masks_split_top, box);
+    dt_iop_gui_init_masks(bd->masks_split_top, module);
 
     // the controls of the selected member, in a collapsible like the
     // refinements', its content following the selection (see
@@ -19524,7 +19719,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     // that locking the mask disables it too
     bd->masks_multi_area = _multi_area_new(bd, module);
     bd->refine_box = GTK_BOX(dt_gui_vbox(bd->masks_selection_area, bd->masks_multi_area));
-    _add_wrapped_box(mask_panel, bd->refine_box, "masks_refinement");
+    _add_wrapped_box(bd->masks_split_bottom, bd->refine_box, "masks_refinement");
 
     // "mask consumers": the modules reading this one's raster mask, shown only
     // while there are any (see _consumers_sync)
@@ -19541,7 +19736,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
                    &bd->consumers_toggle_btn);
     bd->consumers_sig = DT_INVALID_HASH;
     bd->consumers_box = GTK_BOX(dt_gui_vbox(bd->consumers_expander));
-    _add_wrapped_box(mask_panel, bd->consumers_box, "masks_raster");
+    _add_wrapped_box(bd->masks_split_bottom, bd->consumers_box, "masks_raster");
     // a consumer's own changes (a raster element added, its mask switched
     // off, a rename) reach this panel only through the history. Connected
     // with the module as user data, so dt_iop_gui_cleanup_module drops it

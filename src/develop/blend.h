@@ -434,6 +434,15 @@ typedef struct dt_iop_gui_blend_data_t
   // children keep their own visibility
   GtkBox *masks_panel_body;
   GtkWidget *masks_panel_reveal;
+  // the panel's two halves, which the docked position puts in scrollers of
+  // their own, with a divider between (dt_masks_gui_split_dock): above it the
+  // blend settings and the mask layout, below it the selection's controls
+  // and the refinements. Everywhere else they stack in the panel as one.
+  // The paned is made with the first docking
+  GtkWidget *masks_split_top;
+  GtkWidget *masks_split_bottom;
+  GtkWidget *masks_split_paned;
+  gboolean masks_split_on;
   GtkBox *masks_box;
 
   GtkWidget *showmask;

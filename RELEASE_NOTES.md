@@ -215,7 +215,27 @@ changes (where available).
   the preferences dialog to the masks panel's options popover, and the
   masking section of the preferences dialog is gone.
 
+- Color calibration has a new illuminant option, "from the white
+  balance module", which derives the illuminant from the settings of
+  the white balance module. With it, the color picker and the
+  temperature, tint, and channel coefficient sliders in the white
+  balance module set the white balance that color calibration uses.
+  The new option is the default for new scene-referred edits of color
+  raw files. It needs the white balance module's new "prepare data for
+  color calibration" checkbox to be checked, as it is by default in
+  these edits. The checkbox is available in all modes except "camera
+  reference", which does not need it. The old "as shot to reference"
+  mode becomes "as shot" with the checkbox checked. While color
+  calibration adapts with any other illuminant option, such as "as shot
+  in camera" or "custom", the white balance module disables these
+  controls and its camera presets, because the white balance is then
+  controlled in color calibration.
+
 ## Performance Improvements
+
+- New edits convert the input color profile directly to the working RGB
+  profile, avoiding an unnecessary round trip through Lab. Existing edits
+  keep their previous color processing.
 
 - The lighttable timeline no longer slows down quadratically with the
   number of collected images: with a 100,000-image collection it took
@@ -300,6 +320,10 @@ changes (where available).
   device to estimate the ambient light.
 
 - The dither module's random mode can now run on the OpenCL device.
+
+- The AMaZE demosaicer, plain and dual, can now run on the OpenCL
+  device instead of sending the image back to the CPU for the
+  demosaic.
 
 ## Other Changes
 
@@ -443,6 +467,10 @@ changes (where available).
 
 - Lightroom import now sets the working profile to linear ProPhoto
   RGB, the space Lightroom works in, instead of linear Rec709 RGB.
+  
+- In the darkroom in the left panel the navigation can now be toggled
+  through the panel's right click menu in addition to the strg+shift+n
+  shortcut.
 
 - Lightroom import adds its exposure and blacks adjustments to
   darktable's default exposure instead of replacing it. In the
@@ -843,6 +871,11 @@ changes (where available).
   Edits using anisotropy may now look slightly different when exported
   without OpenCL.
 
+- Fixed workspace discovery truncating names at the first '.' in the
+  database filename (for example library-client.v2.db was shown as
+  "client"), which could open or delete the wrong database. Workspace
+  names that contain path-unsafe characters are now rejected on create.
+
 - Fixed the non-local means modes of denoise (profiled) and astrophoto
   denoise giving a different result with OpenCL than on the CPU: the
   OpenCL path gave the horizontal neighbors twice their weight. Edits
@@ -887,6 +920,21 @@ changes (where available).
 - Fixed random dither giving a slightly different noise pattern
   depending on the number of CPU threads. Its noise pattern changed,
   so exports using it differ in the noise but not in its strength.
+
+- Fixed stale color temperature and illuminant color in color calibration
+  after white balance changes when using "as shot in camera".
+
+- Fixed input color profile and highlight reconstruction (opposed and
+  segmentation modes) still applying part of the white balance
+  correction when the white balance module, set to "as shot to
+  reference", was switched off on a raw image. Edits made that way
+  render with different colors.
+
+- Fixed a color cast when white balance in "as shot to reference" mode
+  was pasted from another image, or applied through a style or preset:
+  white balance applied the pasted multipliers, but input color profile
+  completed the correction with the target image's own as-shot
+  multipliers.
 
 ## Lua
 

@@ -390,6 +390,21 @@ dt_masks_param_vis_t dt_masks_model_param_row_visibility(const dt_masks_param_vi
                                                          const gboolean boost_enabled,
                                                          const gboolean boost_with_sliders);
 
+/** which parametric controls are always shown, the header's toggle being
+    left to show or hide the rest. Stored as an int in the conf */
+typedef enum dt_masks_param_always_t
+{
+  DT_MASKS_PARAM_ALWAYS_INPUT = 0,       // the input slider
+  DT_MASKS_PARAM_ALWAYS_INPUT_BOOST,     // the input slider and the boost factor
+  DT_MASKS_PARAM_ALWAYS_ALL,             // both sliders and the boost factor
+} dt_masks_param_always_t;
+
+/** `vis`, as row_visibility gave it, with the controls `always` pins shown.
+    The boost factor is only pinned for a channel that has one */
+dt_masks_param_vis_t dt_masks_model_param_pin_visibility(dt_masks_param_vis_t vis,
+                                                         dt_masks_param_always_t always,
+                                                         gboolean boost_enabled);
+
 /** state transition decisions for the mask panel and corner icon */
 typedef struct dt_masks_panel_state_t
 {
@@ -612,6 +627,10 @@ GtkWidget *dt_masks_gui_pref_combo(GtkWidget *box, const gchar *label, const gch
     shown state */
 void dt_masks_gui_reparent_into(GtkWidget *w, GtkWidget *parent,
                                 const gboolean at_end, const gboolean expand);
+
+// the docked panel's two halves in scrollers of their own, or stacked in the
+// panel again (see blend.h, masks_split_top)
+void dt_masks_gui_split_dock(dt_iop_gui_blend_data_t *bd, const gboolean docked);
 /** the visibility and sensitivity of the mask header's buttons, from the
     mask's and the module's state */
 void dt_iop_gui_blend_mask_header_sync(dt_iop_gui_blend_data_t *data);
