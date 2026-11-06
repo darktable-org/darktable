@@ -127,9 +127,13 @@ static void _give_back(dt_presenter_window_t *window)
   dt_colorspaces_set_window_output(window->kind, NULL);
 }
 
+static void _preferences_changed(gpointer instance,
+                                 dt_presenter_window_t *window);
+
 static void _window_free(gpointer data)
 {
   dt_presenter_window_t *window = data;
+  DT_CONTROL_SIGNAL_DISCONNECT(_preferences_changed, window);
   _settle_stop(window);
   while(window->widgets) _widget_detach(window->widgets->data);
   window->backend->free(window->backend);
@@ -189,6 +193,13 @@ void dt_presenter_window_choose(dt_presenter_window_t *window)
   dt_presenter_window_redraw(window);
 }
 
+// the preferences dialog raises it when it closes, whatever changed
+static void _preferences_changed(gpointer instance,
+                                 dt_presenter_window_t *window)
+{
+  dt_presenter_window_choose(window);
+}
+
 static dt_presenter_window_t *_window_get(GtkWidget *widget)
 {
   GtkWidget *toplevel = gtk_widget_get_toplevel(widget);
@@ -205,6 +216,7 @@ static dt_presenter_window_t *_window_get(GtkWidget *widget)
   dt_presenter_target_init(&window->target);
   window->platform = dt_presenter_platform_new(window);
   _set_backend(window);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _preferences_changed, window);
   g_object_set_data_full(G_OBJECT(toplevel), WINDOW_KEY, window, _window_free);
   g_signal_connect(toplevel, "unrealize", G_CALLBACK(_toplevel_unrealize), NULL);
   return window;
