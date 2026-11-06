@@ -87,18 +87,18 @@ static int _setup(void **state)
   self->system_display[1] = self->system_display_srgb[1] = f->placeholder2;
   self->profiles = g_list_append(self->profiles,
                                  _create_profile(DT_COLORSPACE_DISPLAY, f->placeholder,
-                                                 "display", -1, -1, 0, -1, -1, -1));
+                                                 "display", -1, -1, TRUE, -1, -1, FALSE));
   self->profiles = g_list_append(self->profiles,
                                  _create_profile(DT_COLORSPACE_DISPLAY2, f->placeholder2,
-                                                 "display2", -1, -1, -1, -1, -1, 0));
+                                                 "display2", -1, -1, FALSE, -1, -1, TRUE));
   self->profiles = g_list_append(self->profiles,
                                  _create_profile(DT_COLORSPACE_SRGB,
                                                  dt_colorspaces_create_srgb_profile(),
-                                                 "sRGB", -1, 0, 1, 2, 0, 1));
+                                                 "sRGB", -1, 0, TRUE, 2, 0, TRUE));
   self->profiles = g_list_append(self->profiles,
                                  _create_profile(DT_COLORSPACE_ADOBERGB,
                                                  dt_colorspaces_create_adobergb_profile(),
-                                                 "Adobe RGB", 0, 1, 2, 3, 1, 2));
+                                                 "Adobe RGB", 0, 1, TRUE, 3, 1, TRUE));
   // every window has an output from the start, as dt_colorspaces_init()
   // gives it
   for(int w = 0; w < 2; w++)
@@ -412,6 +412,16 @@ static void test_display_is_no_histogram_choice(void **state)
   assert_int_equal(self->softproof_type, DT_COLORSPACE_ADOBERGB);
 }
 
+// each system display entry is found by its own window's lookups only
+static void test_display_lookup_eligibility(void **state)
+{
+  dt_colorspaces_t *self = darktable.color_profiles;
+  assert_non_null(_get_profile(self, DT_COLORSPACE_DISPLAY, "", DT_PROFILE_DIRECTION_DISPLAY));
+  assert_null(_get_profile(self, DT_COLORSPACE_DISPLAY, "", DT_PROFILE_DIRECTION_DISPLAY2));
+  assert_non_null(_get_profile(self, DT_COLORSPACE_DISPLAY2, "", DT_PROFILE_DIRECTION_DISPLAY2));
+  assert_null(_get_profile(self, DT_COLORSPACE_DISPLAY2, "", DT_PROFILE_DIRECTION_DISPLAY));
+}
+
 int main(int argc, char *argv[])
 {
   const struct CMUnitTest tests[] = {
@@ -423,6 +433,7 @@ int main(int argc, char *argv[])
                                     _teardown),
     cmocka_unit_test_setup_teardown(test_platform_owned_entry_is_device, _setup, _teardown),
     cmocka_unit_test_setup_teardown(test_display_is_no_histogram_choice, _setup, _teardown),
+    cmocka_unit_test_setup_teardown(test_display_lookup_eligibility, _setup, _teardown),
   };
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

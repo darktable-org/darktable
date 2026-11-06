@@ -364,8 +364,8 @@ typedef struct dt_colorspaces_color_profile_t
   cmsHPROFILE profile;                      // the actual profile
   int in_pos;                               // position in input combo box, -1 if not applicable
   int out_pos;                              // position in output combo box, -1 if not applicable
-  int display_pos;                          // found by DT_PROFILE_DIRECTION_DISPLAY lookups unless -1
-  int display2_pos;                         // found by DT_PROFILE_DIRECTION_DISPLAY2 lookups unless -1
+  gboolean display;                         // found by DT_PROFILE_DIRECTION_DISPLAY lookups
+  gboolean display2;                        // found by DT_PROFILE_DIRECTION_DISPLAY2 lookups
   int category_pos;                         // position in category combo box, -1 if not applicable
   int work_pos;                             // position in working combo box, -1 if not applicable
 } dt_colorspaces_color_profile_t;
