@@ -605,9 +605,10 @@ it stops.
 
 The platform also leaves mutter's default color mode to cairo
 (`_mutter_default_color_mode()`, [Workarounds](#workarounds)): the registry
-announces `gtk_shell1`, GTK's private protocol, which mutter implements and
-KWin, wlroots, Weston and Hyprland do not, and the surface's preferred
-description is plain SDR sRGB: sRGB primaries and D65 white within 1e-3,
+announces `gtk_shell1`, GTK's private protocol, which mutter implements,
+`XDG_CURRENT_DESKTOP` lists `GNOME` (Wayfire's gtk-shell plugin announces
+`gtk_shell1` too), and the surface's preferred description is plain SDR
+sRGB: sRGB primaries and D65 white within 1e-3,
 transfer function srgb, gamma22 or compound_power_2_4, no ICC file, and a
 target max luminance at most the reference, or no luminances. mutter then
 passes untagged pixels to the panel unchanged and only programs the gamma
@@ -676,7 +677,7 @@ keep its layers under GTK4 as well.
 | `gtk_widget_draw()` replay into the foreground of what GTK stacks above a presenting widget: GtkOverlay children, and the toplevel's popovers where the transport's layers cover them; saved and put back on a kept foreground; a popover's changes draw the presenting widgets again | `presenter_layers.c`, `_replay_above()` | the layers cover GTK's drawing of those widgets (toasts, masks panel, second window buttons), and on Quartz and Win32 of popovers, which GTK3 draws into the toplevel there | same |
 | composing and presenting in the frame clock's `paint` signal, after GDK's handler | `presenter_wayland.c`, `_paint()` | GTK3 runs all draws in `paint` and GDK commits its surface in `after-paint`; the layers must be ready in between | same |
 | GTK's surface taken as sRGB, the window's device encoding | `presenter_wayland.c`, `_set_output()` | GTK3 does not tag its surface; an untagged surface is sRGB to the compositor, with a transfer function of its choosing | GTK tags its surfaces |
-| mutter's default color mode (`gtk_shell1` and a plain SDR sRGB preferred description) left to cairo with the system display profile | `presenter_wayland.c`, `_mutter_default_color_mode()` | mutter's default color mode composites as sRGB and does not apply the profile assigned to the screen (mutter#4597) | mutter describes its real output (mutter MR !5177); nothing to do, the predicate stops matching |
+| mutter's default color mode (`gtk_shell1`, a GNOME session and a plain SDR sRGB preferred description) left to cairo with the system display profile | `presenter_wayland.c`, `_mutter_default_color_mode()` | mutter's default color mode composites as sRGB and does not apply the profile assigned to the screen (mutter#4597) | mutter describes its real output (mutter MR !5177); nothing to do, the predicate stops matching |
 | no opaque region on the layers | `presenter_wayland.c`, `_layer_init()` | a compositor may stop frame callbacks for a surface it considers occluded, which stops GTK's frame clock | GTK4 |
 | surface feedback destroyed when the toplevel unmaps | `presenter_wayland.c`, `_toplevel_unmap()` | GDK destroys its `wl_surface` when a window is hidden, and asking the feedback on it for the preferred description is then a protocol error | GTK4 |
 | a draw GTK clipped to a damaged area does not replace or drop the presentation `dt_presenter_keep()` shows | `presenter.c`, `dt_presenter_begin()` | GTK3 redraws only the damaged part of a widget, so such a draw records clipped images; it stays in `presenter.c` because both backends need it | GTK4: a widget's snapshot is always whole |
