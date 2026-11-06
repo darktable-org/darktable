@@ -57,12 +57,15 @@ typedef struct dt_iop_colorout_data_t
   float unbounded_coeffs[3][3]; // for extrapolation of shaper curves
   // a soft proof: Lab to the proof profile's values (proof_xform), linear
   // light for PQ and HLG, which xform then takes to the output.
-  // proof_lab_xform goes back to Lab for the gamut check of PQ and HLG,
-  // gamut_xform is littlecms' gamut check of the others
+  // the gamut check of a pure matrix-shaper proof tests the proof's linear
+  // values, proof_xform's for PQ and HLG and linear_xform's for the
+  // others, within gamut_tolerance. gamut_xform is littlecms' gamut check
+  // of any other proof
   int proof_hdr_transfer;
   int proof_channels;
   cmsHTRANSFORM proof_xform;
-  cmsHTRANSFORM proof_lab_xform;
+  cmsHTRANSFORM linear_xform;
+  float gamut_tolerance;
   cmsContext gamut_context;
   cmsHTRANSFORM gamut_xform;
 } dt_iop_colorout_data_t;
@@ -496,7 +499,6 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
                             const float *restrict in,
                             const size_t npixels)
 {
-  const int gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
   // figure out the number of pixels each thread needs to process,
   // rounded up to a multiple of the CPU's cache line size
   const size_t nthreads = dt_get_num_threads();
@@ -505,27 +507,77 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
   for(size_t chunkstart = 0; chunkstart < npixels; chunkstart += chunksize)
   {
     size_t count = MIN(chunkstart + chunksize, npixels) - chunkstart;
-    float *const outp = out + 4 * chunkstart;
-
-    cmsDoTransform(d->xform, in + 4*chunkstart, outp, count);
-
-    if(gamutcheck)
-    {
-      static const dt_aligned_pixel_t cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
-      for(int j = 0; j < count; j++)
-      {
-        if(outp[4*j+0] < 0.0f || outp[4*j+1] < 0.0f || outp[4*j+2] < 0.0f)
-        {
-          copy_pixel_nontemporal(outp + 4*j, cyan);
-        }
-      }
-    }
+    cmsDoTransform(d->xform, in + 4*chunkstart, out + 4*chunkstart, count);
   }
-  dt_omploop_sfence();
 }
 
 // pixels per block of _transform_proof(), whose buffers are on the stack
 #define PROOF_BLOCK 256
+
+// out of a pure matrix-shaper proof's gamut: a linear value v outside the range
+// its export stores, by more than tolerance
+static inline gboolean _out_of_gamut(const float *const v,
+                                     const int transfer,
+                                     const float tolerance)
+{
+  // the range: [0, 1] for an SDR proof, light up to the peak for PQ and
+  // scene light up to 1 for HLG, what dt_hdr_encode() clamps
+  float scale = 1.0f;
+  if(transfer == DT_HDR_PQ)
+    scale = DT_HDR_REFERENCE_WHITE_NITS / DT_HDR_PQ_PEAK_NITS;
+  else if(transfer != DT_HDR_NONE)
+  {
+    const float positive[3] = { MAX(v[0], 0.0f), MAX(v[1], 0.0f), MAX(v[2], 0.0f) };
+    scale = dt_hdr_hlg_scene_scale(dt_hdr_hlg_luminance(positive, transfer));
+  }
+  const float magnitude = MAX(MAX(v[0], v[1]), v[2]);
+  for(int c = 0; c < 3; c++)
+    if(v[c] < -tolerance * magnitude || v[c] * scale > 1.0f + tolerance) return TRUE;
+  return FALSE;
+}
+
+// marks the pixels of a block that are out of the proof's gamut. proof
+// holds proof_xform's values, before the export's bound
+static void _gamut_check(const dt_iop_colorout_data_t *const d,
+                         const float *const in,
+                         const float *const proof,
+                         uint8_t *const marked,
+                         const size_t count)
+{
+  if(d->gamut_xform)
+  {
+    // gamut_xform gives its alarm codes, zero, for a color out of the
+    // proof's gamut: Lab 0, -128, -128, the corner of the encoding, which
+    // an in-gamut color only comes back as through an identity Lab proof,
+    // as the hidden Lab output is, for an input that encodes there
+    cmsUInt16Number lab[3 * PROOF_BLOCK], gamut[3 * PROOF_BLOCK];
+    for(size_t j = 0; j < count; j++)
+    {
+      const float *const l = in + 4 * j;
+      const cmsCIELab ref = { l[0], l[1], l[2] };
+      cmsFloat2LabEncoded(lab + 3 * j, &ref);
+    }
+    cmsDoTransform(d->gamut_xform, lab, gamut, count);
+    for(size_t j = 0; j < count; j++)
+    {
+      const cmsUInt16Number *const g = gamut + 3 * j;
+      marked[j] = !(g[0] | g[1] | g[2]);
+    }
+    return;
+  }
+
+  float DT_ALIGNED_ARRAY linear[3 * PROOF_BLOCK];
+  const float *values = proof;
+  int stride = d->proof_channels;
+  if(d->linear_xform)
+  {
+    cmsDoTransform(d->linear_xform, in, linear, count);
+    values = linear;
+    stride = 3;
+  }
+  for(size_t j = 0; j < count; j++)
+    marked[j] = _out_of_gamut(values + stride * j, d->proof_hdr_transfer, d->gamut_tolerance);
+}
 
 static void _transform_proof(const dt_iop_colorout_data_t *const d,
                              float *restrict out,
@@ -539,9 +591,11 @@ static void _transform_proof(const dt_iop_colorout_data_t *const d,
   {
     const size_t count = MIN(start + PROOF_BLOCK, npixels) - start;
     float DT_ALIGNED_ARRAY proof[cmsMAXCHANNELS * PROOF_BLOCK];
+    uint8_t marked[PROOF_BLOCK];
     float *const outp = out + 4 * start;
 
     cmsDoTransform(d->proof_xform, in + 4 * start, proof, count);
+    if(gamutcheck) _gamut_check(d, in + 4 * start, proof, marked, count);
     // what an export to the proof profile stores, as a viewer decodes it
     for(size_t j = 0; j < count; j++)
     {
@@ -562,43 +616,8 @@ static void _transform_proof(const dt_iop_colorout_data_t *const d,
     if(!gamutcheck) continue;
 
     static const dt_aligned_pixel_t cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
-    if(d->proof_hdr_transfer)
-    {
-      // out of gamut where the proof moves the color by more than 1 dE,
-      // littlecms' threshold for a matrix-shaper proof profile
-      float DT_ALIGNED_ARRAY lab[4 * PROOF_BLOCK];
-      cmsDoTransform(d->proof_lab_xform, proof, lab, count);
-      for(size_t j = 0; j < count; j++)
-      {
-        const float *const ref = in + 4 * (start + j);
-        float de2 = 0.0f;
-        for(int c = 0; c < 3; c++)
-          de2 += (lab[4 * j + c] - ref[c]) * (lab[4 * j + c] - ref[c]);
-        if(de2 > 1.0f) copy_pixel(outp + 4 * j, cyan);
-      }
-    }
-    else
-    {
-      // gamut_xform gives its alarm codes, zero, for a color out of the
-      // proof's gamut: Lab 0, -128, -128, the corner of the encoding, which
-      // an in-gamut color only comes back as through an identity Lab proof,
-      // as the hidden Lab output is, for an input that encodes there
-      cmsUInt16Number lab[3 * PROOF_BLOCK], gamut[3 * PROOF_BLOCK];
-      for(size_t j = 0; j < count; j++)
-      {
-        const float *const l = in + 4 * (start + j);
-        const cmsCIELab ref = { l[0], l[1], l[2] };
-        cmsFloat2LabEncoded(lab + 3 * j, &ref);
-      }
-      cmsDoTransform(d->gamut_xform, lab, gamut, count);
-      for(size_t j = 0; j < count; j++)
-      {
-        const cmsUInt16Number *const g = gamut + 3 * j;
-        const float *const o = outp + 4 * j;
-        if(!(g[0] | g[1] | g[2]) || o[0] < 0.0f || o[1] < 0.0f || o[2] < 0.0f)
-          copy_pixel(outp + 4 * j, cyan);
-      }
-    }
+    for(size_t j = 0; j < count; j++)
+      if(marked[j]) copy_pixel(outp + 4 * j, cyan);
   }
 }
 
@@ -647,16 +666,48 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
 }
 
+// a pure matrix-shaper RGB profile, whose gamut is the unit cube of its
+// linear values: no table of any intent or direction, which littlecms
+// would use instead of the matrix (the float D2B and B2D ones first), and
+// curves that take 0 to 0 and 1 to 1, so that the cube is what they reach
+// and the black point compensation finds the black of the linear copy.
+// to_rgb gets its XYZ to RGB matrix
+static gboolean _pure_matrix_shaper(const cmsHPROFILE profile, dt_colormatrix_t to_rgb)
+{
+  static const cmsTagSignature tables[] =
+    { cmsSigAToB0Tag, cmsSigAToB1Tag, cmsSigAToB2Tag,
+      cmsSigBToA0Tag, cmsSigBToA1Tag, cmsSigBToA2Tag,
+      cmsSigDToB0Tag, cmsSigDToB1Tag, cmsSigDToB2Tag, cmsSigDToB3Tag,
+      cmsSigBToD0Tag, cmsSigBToD1Tag, cmsSigBToD2Tag, cmsSigBToD3Tag };
+  for(size_t k = 0; k < sizeof(tables) / sizeof(tables[0]); k++)
+    if(cmsIsTag(profile, tables[k])) return FALSE;
+  if(dt_colorspaces_get_matrix_from_output_profile(profile, to_rgb, NULL, NULL, NULL, 0))
+    return FALSE;
+
+  // within a step of the 16-bit table a curv tag stores, the coarsest curve
+  static const cmsTagSignature curves[3] =
+    { cmsSigRedTRCTag, cmsSigGreenTRCTag, cmsSigBlueTRCTag };
+  for(int k = 0; k < 3; k++)
+  {
+    const cmsToneCurve *const curve = cmsReadTag(profile, curves[k]);
+    if(!curve
+       || fabsf(cmsEvalToneCurveFloat(curve, 0.0f)) > 1.0f / 65535.0f
+       || fabsf(cmsEvalToneCurveFloat(curve, 1.0f) - 1.0f) > 1.0f / 65535.0f)
+      return FALSE;
+  }
+  return TRUE;
+}
+
 static void _delete_transforms(dt_iop_colorout_data_t *d)
 {
   if(d->xform) cmsDeleteTransform(d->xform);
   if(d->proof_xform) cmsDeleteTransform(d->proof_xform);
-  if(d->proof_lab_xform) cmsDeleteTransform(d->proof_lab_xform);
+  if(d->linear_xform) cmsDeleteTransform(d->linear_xform);
   if(d->gamut_xform) cmsDeleteTransform(d->gamut_xform);
   if(d->gamut_context) cmsDeleteContext(d->gamut_context);
   d->xform = NULL;
   d->proof_xform = NULL;
-  d->proof_lab_xform = NULL;
+  d->linear_xform = NULL;
   d->gamut_xform = NULL;
   d->gamut_context = NULL;
 }
@@ -691,18 +742,41 @@ static void _create_transforms(dt_iop_colorout_data_t *d,
                                       intent, to_proof);
   d->xform = cmsCreateTransform(softproof, proof_format, output, output_format,
                                 INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE);
-  const gboolean lab_gamutcheck = gamutcheck && d->proof_hdr_transfer;
-  if(lab_gamutcheck)
-    d->proof_lab_xform = cmsCreateTransform(softproof, proof_format, Lab, TYPE_LabA_FLT,
-                                            intent, to_proof);
 
-  // littlecms' own gamut check for SDR proofs, from its proofing transform:
-  // it rates a LUT profile, a printer's, by a relative colorimetric round
-  // trip, which a round trip with the proof's intent does not reproduce
-  // under a perceptual table. on 16 bits every littlecms version writes the
-  // context's alarm codes in place of such a color, where a float transform
-  // writes -1 in 2.16 and the codes in 2.19
-  const gboolean lcms_gamutcheck = gamutcheck && !d->proof_hdr_transfer;
+  // a pure matrix-shaper proof has an exact gamut, the unit cube of its
+  // linear values: the colors the export's bound leaves alone
+  dt_colormatrix_t to_rgb;
+  const gboolean matrix_shaper = gamutcheck && _pure_matrix_shaper(softproof, to_rgb);
+  if(matrix_shaper)
+  {
+    // profiles store their primaries as s15Fixed16 numbers, rounded by up
+    // to half a 2^-16 step: a primary the input and the proof share comes
+    // out up to 2^-16 times a row of |M^-1| off the cube, relative to the
+    // color's magnitude
+    float rows = 0.0f;
+    for(int k = 0; k < 3; k++)
+      rows = MAX(rows, fabsf(to_rgb[k][0]) + fabsf(to_rgb[k][1]) + fabsf(to_rgb[k][2]));
+    d->gamut_tolerance = rows / 65536.0f;
+  }
+  // the proof's linear values: proof_xform's own for PQ and HLG
+  const gboolean linear_gamutcheck = matrix_shaper && !d->proof_hdr_transfer;
+  if(linear_gamutcheck)
+  {
+    cmsHPROFILE linear = dt_colorspaces_linearize_profile(softproof);
+    if(linear)
+      d->linear_xform = cmsCreateTransform(Lab, TYPE_LabA_FLT, linear, TYPE_RGB_FLT,
+                                           intent, to_proof);
+    dt_colorspaces_cleanup_profile(linear);
+  }
+
+  // littlecms' own gamut check for any other proof, from its proofing
+  // transform: it rates a LUT profile, a printer's, by a relative
+  // colorimetric round trip, which a round trip with the proof's intent
+  // does not reproduce under a perceptual table. it samples that rating on
+  // a grid, the only measure there. on 16 bits every littlecms version
+  // writes the context's alarm codes in place of such a color, where a
+  // float transform writes -1 in 2.16 and the codes in 2.19
+  const gboolean lcms_gamutcheck = gamutcheck && !matrix_shaper;
   if(lcms_gamutcheck)
   {
     static const cmsUInt16Number alarm[cmsMAXCHANNELS] = { 0 };
@@ -716,7 +790,7 @@ static void _create_transforms(dt_iop_colorout_data_t *d,
     }
   }
 
-  if(!d->proof_xform || !d->xform || (lab_gamutcheck && !d->proof_lab_xform)
+  if(!d->proof_xform || !d->xform || (linear_gamutcheck && !d->linear_xform)
      || (lcms_gamutcheck && !d->gamut_xform))
     _delete_transforms(d);
 }
