@@ -492,6 +492,18 @@ changes (where available).
 - History items created by the Lightroom import are labeled "lr import"
   instead of having an empty label.
 
+- Raw files that RawSpeed can't decode are now loaded with LibRaw if
+  LibRaw supports their compression mode: Fujifilm lossy compressed
+  RAFs, and with LibRaw 0.23 (snapshot 202611) or newer also Nikon high
+  efficiency (HE/HE*) NEFs from the Z6 III, Z8, Z9 and Z f and Sony
+  ARW 6.0 compressed and compressed (HQ) files. Bayer DNGs RawSpeed can't
+  decode are loaded with LibRaw as well, e.g. lossless JPEG with
+  unsupported predictors or uncompressed files with inconsistent strip
+  sizes as written by some DJI drones. All other files are still loaded with RawSpeed.
+
+- The LibRaw loader now supports X-Trans sensors. Previously, RAFs
+  routed to LibRaw via the libraw_extensions setting came out red.
+
 ## Bug Fixes
 
 - Upscaled exports no longer show shifted bands where they were
@@ -1025,11 +1037,11 @@ changes (where available).
 - Apple ProRAW DNGs
 - CinemaDNG lossless (Blackmagic, some DJI, etc.) and lossy (Blackmagic)
 - DNG 1.7 using JPEG XL (Adobe enhanced, Samsung Expert RAW)
-- Fujifilm lossy RAFs
-- Nikon high efficiency NEFs
+- Nikon high efficiency NEFs, except from the Z6 III, Z8, Z9 and Z f
+  with LibRaw 0.23 or newer
 - Phase One other than IIQ L
 - Sony ARW 4.0/5.0 downsized lossless ("M" for full-frame, "S" for full-frame & APS-C)
-- Sony ARW 6.0 compressed and compressed (HQ)
+- Sony ARW 6.0 compressed and compressed (HQ) with LibRaw older than 0.23
 
 ### Suspended Support
 

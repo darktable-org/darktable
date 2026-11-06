@@ -331,6 +331,106 @@ static gboolean _supported_image(const gchar *filename)
   return FALSE;
 }
 
+// Raw formats (compression modes) RawSpeed can't decode but LibRaw can.
+// When RawSpeed fails on a file, LibRaw opens it and the file is loaded
+// via LibRaw if LibRaw picked one of these decoders for it. LibRaw picks
+// its decoder while parsing the file, so the decoder name reliably tells
+// what the file is and whether the LibRaw in use can decode it.
+
+#if LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(0, 23)
+// Nikon HE/HE*: only the cameras listed by LibRaw (snapshot 202611).
+// Values are the unmodified Exif.Image.Model strings.
+static const char *const _nikon_he_models[] =
+{
+  "NIKON Z 8",
+  "NIKON Z 9",
+  "NIKON Z f",
+  "NIKON Z6_3",
+  NULL
+};
+#endif
+
+typedef struct dt_libraw_fallback_t
+{
+  const char *decoder;        // as returned by libraw_unpack_function_name()
+  int min_version;            // first LibRaw version decoding this format
+  gboolean decoder_shared;    // LibRaw uses this decoder for formats RawSpeed
+                              // supports too: only fall back for cameras
+                              // RawSpeed knows (failing on the mode, not the
+                              // camera), don't take over new cameras
+  const char *const *models;  // NULL-terminated Exif models, NULL = all
+  const char *description;
+} dt_libraw_fallback_t;
+
+static const dt_libraw_fallback_t _fallbacks[] =
+{
+#if LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(0, 23)
+  { "nikon_he_load_raw()",
+    LIBRAW_MAKE_VERSION(0, 23, 0), FALSE, _nikon_he_models,
+    "Nikon HE/HE*" },
+  { "sony_arw6_load_raw()",
+    LIBRAW_MAKE_VERSION(0, 23, 0), FALSE, NULL,
+    "Sony ARW 6 compressed / compressed HQ" },
+#endif
+#if LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(0, 21)
+  { "fuji_compressed_load_raw()",
+    LIBRAW_MAKE_VERSION(0, 21, 0), TRUE, NULL,
+    "Fujifilm compressed (lossy)" },
+  // DNGs RawSpeed fails on; regular DNGs stay with RawSpeed:
+  // lossless JPEG with predictors RawSpeed doesn't support (e.g. 7)
+  { "lossless_dng_load_raw()",
+    LIBRAW_MAKE_VERSION(0, 21, 0), TRUE, NULL,
+    "DNG lossless JPEG" },
+  // uncompressed with inconsistent strip sizes (e.g. DJI Mavic 3)
+  { "packed_dng_load_raw()",
+    LIBRAW_MAKE_VERSION(0, 21, 0), TRUE, NULL,
+    "DNG uncompressed" },
+#endif
+  { NULL, 0, FALSE, NULL, NULL }
+};
+
+static gboolean _in_list(const char *const *list, const char *value)
+{
+  for(int i = 0; list[i]; i++)
+    if(!g_strcmp0(value, list[i]))
+      return TRUE;
+  return FALSE;
+}
+
+static const dt_libraw_fallback_t *_find_fallback(libraw_data_t *raw,
+                                                  const dt_image_t *img,
+                                                  const dt_imageio_retval_t rawspeed_ret)
+{
+  const char *decoder = libraw_unpack_function_name(raw);
+  if(!decoder)
+    return NULL;
+
+  // the loader handles CFA data (Bayer, X-Trans) only, not e.g. LinearRaw
+  // DNGs: leave those to the regular loader chain
+  if(!raw->idata.filters)
+    return NULL;
+
+  for(const dt_libraw_fallback_t *f = _fallbacks; f->decoder; f++)
+  {
+    if(strcmp(decoder, f->decoder))
+      continue;
+    // the LibRaw found at runtime may be older than its headers
+    if(libraw_versionNumber() < f->min_version)
+    {
+      dt_print(DT_DEBUG_IMAGEIO,
+               "[libraw_open] LibRaw %s can't decode %s, skipping `%s'",
+               libraw_version(), f->description, img->filename);
+      return NULL;
+    }
+    if(f->decoder_shared && rawspeed_ret == DT_IMAGEIO_UNSUPPORTED_CAMERA)
+      return NULL;
+    if(f->models && !_in_list(f->models, img->exif_model))
+      return NULL;
+    return f;
+  }
+  return NULL;
+}
+
 // Issue a warning, but only if we haven't done so
 // for that particular model in this darktable session
 static void _check_libraw_missing_support(const struct dt_image_t *img)
@@ -467,21 +567,23 @@ static void _apply_vendor_crop(dt_image_t *img, const libraw_data_t *raw)
   img->p_height = crop->cheight;
 }
 
-dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
-                                           const char *filename,
-                                           dt_mipmap_buffer_t *mbuf)
+static dt_imageio_retval_t _open_libraw(dt_image_t *img,
+                                        const char *filename,
+                                        dt_mipmap_buffer_t *mbuf,
+                                        const gboolean fallback,
+                                        const dt_imageio_retval_t rawspeed_ret)
 {
   int err = DT_IMAGEIO_LOAD_FAILED;
   int libraw_err = LIBRAW_SUCCESS;
 
-  if(!_supported_image(filename))
+  if(!fallback && !_supported_image(filename))
     return DT_IMAGEIO_LOAD_FAILED;
   if(!img->exif_inited)
     (void)dt_exif_read(img, filename);
 
   libraw_data_t *raw = libraw_init(0);
   if(!raw)
-    return DT_IMAGEIO_LOAD_FAILED;
+    return fallback ? DT_IMAGEIO_UNSUPPORTED_FORMAT : DT_IMAGEIO_LOAD_FAILED;
 
 #if defined(_WIN32) && (defined(UNICODE) || defined(_UNICODE))
   wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
@@ -490,6 +592,23 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
 #else
   libraw_err = libraw_open_file(raw, filename);
 #endif
+
+  if(fallback)
+  {
+    const dt_libraw_fallback_t *f = libraw_err == LIBRAW_SUCCESS
+      ? _find_fallback(raw, img, rawspeed_ret)
+      : NULL;
+    if(!f)
+    {
+      // not a format we take over from RawSpeed: leave it to the
+      // regular loader chain without any error output
+      libraw_close(raw);
+      return DT_IMAGEIO_UNSUPPORTED_FORMAT;
+    }
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[libraw_open] `%s': %s, loading via LibRaw", img->filename, f->description);
+  }
+
   if(libraw_err != LIBRAW_SUCCESS)
     goto error;
 
@@ -644,6 +763,38 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   img->buf_dsc.datatype = TYPE_UINT16;
   img->buf_dsc.cst = IOP_CS_RAW;
 
+  // Taken from the old dt libraw integration
+  if(FILTERS_ARE_4BAYER(img->buf_dsc.filters))
+  {
+    img->flags |= DT_IMAGE_4BAYER;
+  }
+  else
+  {
+    img->flags &= ~DT_IMAGE_4BAYER;
+  }
+
+  if(img->buf_dsc.filters)
+  {
+    img->flags &= ~DT_IMAGE_LDR;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_RAW;
+  }
+  else
+  {
+    // LDR DNG. It exists :(
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+  }
+
+  // Metadata only, like the RawSpeed loader
+  if(!mbuf)
+  {
+    img->loader = LOADER_LIBRAW;
+    err = DT_IMAGEIO_OK;
+    goto error;
+  }
+
   // Allocate and copy image from libraw buffer to dt
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
@@ -668,30 +819,6 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
                             raw->rawdata.sizes.raw_width, raw->rawdata.sizes.raw_height,
                             raw->rawdata.sizes.raw_width, raw->rawdata.sizes.raw_height,
                             raw->rawdata.sizes.raw_pitch, ORIENTATION_NONE);
-  }
-
-  // Checks not really required for CR3 support, but it's taken from the old dt libraw integration
-  if(FILTERS_ARE_4BAYER(img->buf_dsc.filters))
-  {
-    img->flags |= DT_IMAGE_4BAYER;
-  }
-  else
-  {
-    img->flags &= ~DT_IMAGE_4BAYER;
-  }
-
-  if(img->buf_dsc.filters)
-  {
-    img->flags &= ~DT_IMAGE_LDR;
-    img->flags &= ~DT_IMAGE_HDR;
-    img->flags |= DT_IMAGE_RAW;
-  }
-  else
-  {
-    // LDR DNG. It exists :(
-    img->flags &= ~DT_IMAGE_RAW;
-    img->flags &= ~DT_IMAGE_HDR;
-    img->flags |= DT_IMAGE_LDR;
   }
 
   img->loader = LOADER_LIBRAW;
@@ -725,6 +852,24 @@ error:
   }
   libraw_close(raw);
   return err;
+}
+
+dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
+                                           const char *filename,
+                                           dt_mipmap_buffer_t *mbuf)
+{
+  return _open_libraw(img, filename, mbuf, FALSE, DT_IMAGEIO_OK);
+}
+
+dt_imageio_retval_t dt_imageio_open_libraw_fallback(dt_image_t *img,
+                                                    const char *filename,
+                                                    dt_mipmap_buffer_t *mbuf,
+                                                    const dt_imageio_retval_t rawspeed_ret)
+{
+  // files routed to LibRaw by extension are loaded by the regular path
+  if(!img || _supported_image(filename))
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
+  return _open_libraw(img, filename, mbuf, TRUE, rawspeed_ret);
 }
 #endif
 

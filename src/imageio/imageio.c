@@ -197,6 +197,28 @@ typedef struct {
   const char   *searchstring;	   // sub-signature which might be anywhere in first 512 bytes of file
 } dt_magic_bytes_t;
 
+// RawSpeed first. If it can't decode the file, LibRaw gets a chance for
+// the formats it supports and RawSpeed doesn't (see the fallback table
+// in imageio_libraw.c), e.g. Nikon HE/HE*, Sony ARW 6, Fujifilm lossy.
+static dt_imageio_retval_t _open_rawspeed(dt_image_t *img,
+                                          const char *filename,
+                                          dt_mipmap_buffer_t *mbuf)
+{
+  const dt_imageio_retval_t ret = dt_imageio_open_rawspeed(img, filename, mbuf);
+#ifdef HAVE_LIBRAW
+  if(ret != DT_IMAGEIO_OK
+     && ret != DT_IMAGEIO_IOERROR
+     && ret != DT_IMAGEIO_CACHE_FULL)
+  {
+    const dt_imageio_retval_t lr_ret =
+      dt_imageio_open_libraw_fallback(img, filename, mbuf, ret);
+    if(lr_ret != DT_IMAGEIO_UNSUPPORTED_FORMAT)
+      return lr_ret;
+  }
+#endif
+  return ret;
+}
+
 static dt_imageio_retval_t _try_open_as_tiff_on_failure_fallback_to_rawspeed
    (dt_image_t *img,
     const char *filename,
@@ -270,47 +292,47 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   { DT_FILETYPE_RGBE, TRUE, 0, 7, dt_imageio_open_rgbe,
     { '#', '?', 'R', 'G', 'B', 'E', 0x0A } },
   // original v1 CRW
-  { DT_FILETYPE_CRW, TRUE, 0, 14, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_CRW, TRUE, 0, 14, _open_rawspeed,
     { 'I', 'I', 0x1A, 0x00, 0x00, 0x00, 'H', 'E', 'A', 'P', 'C', 'C', 'D', 'R' } },
   // most CR2
-  { DT_FILETYPE_CR2, TRUE, 0, 10, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_CR2, TRUE, 0, 10, _open_rawspeed,
     { 'I', 'I', '*', 0x00, 0x10, 0x00, 0x00, 0x00, 'C', 'R' } },
   // CR3 (ISOBMFF)
   { DT_FILETYPE_CR3, TRUE, 0, 24, dt_imageio_open_libraw,
     { 0x00, 0x00, 0x00, 0x18, 'f', 't', 'y', 'p', 'c', 'r', 'x', ' ',
       0x00, 0x00, 0x00, 0x01, 'c', 'r', 'x', ' ', 'i', 's', 'o', 'm' } },
   // older Canon RAW formats using TIF extension
-  { DT_FILETYPE_CRW, TRUE, 0, 10, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_CRW, TRUE, 0, 10, _open_rawspeed,
     { 'I', 'I', '*', 0x00, 0x00, 0x03, 0x00, 0x00, 0xFF, 0x01 } }, // i.e. DCS1
-  { DT_FILETYPE_CRW, TRUE, 0, 10, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_CRW, TRUE, 0, 10, _open_rawspeed,
     { 'M', 'M', 0x00, '*', 0x00, 0x00, 0x00, 0x10, 0xBA, 0xB0 } }, // i.e. 1D, 1Ds
-  { DT_FILETYPE_CRW, TRUE, 0, 10, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_CRW, TRUE, 0, 10, _open_rawspeed,
     { 'M', 'M', 0x00, '*', 0x00, 0x00, 0x11, 0x34, 0x00, 0x04 } }, // i.e. D2000
   // older Kodak RAW formats using TIF extension
-  { DT_FILETYPE_KODAK, TRUE, 0, 10, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_KODAK, TRUE, 0, 10, _open_rawspeed,
     { 'I', 'I', '*', 0x00, 0x00, 0x03, 0x00, 0x00, 0x7C, 0x01 } }, // i.e. DCS460D
-  { DT_FILETYPE_KODAK, TRUE, 0, 10, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_KODAK, TRUE, 0, 10, _open_rawspeed,
     { 'M', 'M', 0x00, '*', 0x00, 0x00, 0x11, 0xA8, 0x00, 0x04 } }, // i.e. DCS520C
-  { DT_FILETYPE_KODAK, TRUE, 0, 10, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_KODAK, TRUE, 0, 10, _open_rawspeed,
     { 'M', 'M', 0x00, '*', 0x00, 0x00, 0x11, 0x76, 0x00, 0x04 } }, // i.e. DCS560C
   // IIQ raw images, may use either .IIQ or .TIF extension
-  { DT_FILETYPE_IIQ, TRUE, 8, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_IIQ, TRUE, 8, 4, _open_rawspeed,
     { 'I', 'I', 'I', 'I' } },
   // Fujifilm RAF
-  { DT_FILETYPE_RAF, TRUE, 0, 15, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_RAF, TRUE, 0, 15, _open_rawspeed,
     { 'F', 'U', 'J', 'I', 'F', 'I', 'L', 'M', 'C', 'C', 'D', '-', 'R', 'A', 'W' }},
   // Minolta MRW file
-  { DT_FILETYPE_MRW, TRUE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_MRW, TRUE, 0, 4, _open_rawspeed,
     { 0x00, 'M', 'R', 'M' } },
   // Olympus ORF file
-  { DT_FILETYPE_ORF, TRUE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_ORF, TRUE, 0, 4, _open_rawspeed,
     { 'I', 'I', 'R', 'O' } },   // most Olympus models
-  { DT_FILETYPE_ORF, TRUE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_ORF, TRUE, 0, 4, _open_rawspeed,
     { 'I', 'I', 'R', 'S' } },	// C7070WZ
-  { DT_FILETYPE_ORF, TRUE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_ORF, TRUE, 0, 4, _open_rawspeed,
     { 'M', 'M', 'O', 'R' } },   // E-10
   // Panasonic RW2 file
-  { DT_FILETYPE_RW2, TRUE, 0, 8, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_RW2, TRUE, 0, 8, _open_rawspeed,
     { 'I', 'I', 'U', 0x00, 0x08, 0x00, 0x00, 0x00 } },
   // Sigma Foveon X3F file
   { DT_FILETYPE_X3F, TRUE, 0, 4, dt_imageio_open_libraw,
@@ -597,7 +619,7 @@ static dt_imageio_retval_t _try_open_as_tiff_on_failure_fallback_to_rawspeed
   dt_imageio_retval_t ret = DT_IMAGEIO_LOAD_FAILED;
   ret = dt_imageio_open_tiff(img, filename, mbuf);
   if(!_image_handled(ret))
-    ret = dt_imageio_open_rawspeed(img, filename, mbuf);
+    ret = _open_rawspeed(img, filename, mbuf);
 
   return ret;
 }
@@ -1652,7 +1674,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
 
     // try using rawspeed to load a raw
     if(!_image_handled(ret))
-      ret = dt_imageio_open_rawspeed(img, filename, buf);
+      ret = _open_rawspeed(img, filename, buf);
 
     // fallback that tries to open file via LibRaw to support Canon CR3
     if(!_image_handled(ret))
