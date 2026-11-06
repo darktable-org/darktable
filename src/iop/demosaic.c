@@ -258,6 +258,20 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_amaze_green_diag;
   int kernel_amaze_chroma;
   int kernel_amaze_output;
+  int kernel_lmmse_init;
+  int kernel_lmmse_diff;
+  int kernel_lmmse_lowpass;
+  int kernel_lmmse_interp;
+  int kernel_lmmse_planes;
+  int kernel_lmmse_rb_at_g;
+  int kernel_lmmse_rb_at_rb;
+  int kernel_lmmse_median;
+  int kernel_lmmse_median_apply;
+  int kernel_lmmse_fill;
+  int kernel_lmmse_refine_g;
+  int kernel_lmmse_refine_rb_at_g;
+  int kernel_lmmse_refine_rb_at_rb;
+  int kernel_lmmse_output;
   int kernel_demosaic_box3;
   int kernel_write_blended_dual;
   int gaussian_9x9_mul;
@@ -330,6 +344,7 @@ void amaze_demosaic(const float *const in,
 #include "iop/demosaicing/capture.c"
 #include "iop/demosaicing/dual.c"
 #include "iop/demosaicing/amaze_cl.c"
+#include "iop/demosaicing/lmmse_cl.c"
 
 const char *name()
 {
@@ -631,8 +646,10 @@ static gboolean _tiling_requirements(dt_iop_module_t *self,
       border = 10;
       break;
     case DT_IOP_DEMOSAIC_LMMSE:
-      perpix = 2;
-      border = 10;
+      // the OpenCL code keeps 6 planes with the 4 pixel border of the CPU
+      // tiles, and its passes reach 25 pixels from a tile edge in refine mode
+      perpix = gpu ? 8 : 2;
+      border = gpu ? 26 : 10;
       break;
     case DT_IOP_DEMOSAIC_PPG:
       perpix = 4;
@@ -1261,6 +1278,8 @@ int process_cl(dt_iop_module_t *self,
         err = process_rcd_cl(self, piece, t_in, t_high, iwidth, t_rows, filters);
       else if(method == DT_IOP_DEMOSAIC_AMAZE)
         err = process_amaze_cl(self, piece, t_in, t_high, iwidth, t_rows, filters);
+      else if(method == DT_IOP_DEMOSAIC_LMMSE)
+        err = process_lmmse_cl(self, piece, t_in, t_high, iwidth, t_rows, filters, d->lmmse_refine);
       else if(method == DT_IOP_DEMOSAIC_VNG4 || method == DT_IOP_DEMOSAIC_VNG)
         err = process_vng_cl(self, piece, t_in, t_high, dev_xtrans, xtrans, iwidth, t_rows, filters, 0, FALSE);
       else if(method == DT_IOP_DEMOSAIC_MARKESTEIJN || method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
@@ -1426,6 +1445,22 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_amaze_green_diag = dt_opencl_create_kernel(amaze, "amaze_green_diag");
   gd->kernel_amaze_chroma = dt_opencl_create_kernel(amaze, "amaze_chroma");
   gd->kernel_amaze_output = dt_opencl_create_kernel(amaze, "amaze_output");
+
+  const int lmmse = 52; // from programs.conf
+  gd->kernel_lmmse_init = dt_opencl_create_kernel(lmmse, "lmmse_init");
+  gd->kernel_lmmse_diff = dt_opencl_create_kernel(lmmse, "lmmse_diff");
+  gd->kernel_lmmse_lowpass = dt_opencl_create_kernel(lmmse, "lmmse_lowpass");
+  gd->kernel_lmmse_interp = dt_opencl_create_kernel(lmmse, "lmmse_interp");
+  gd->kernel_lmmse_planes = dt_opencl_create_kernel(lmmse, "lmmse_planes");
+  gd->kernel_lmmse_rb_at_g = dt_opencl_create_kernel(lmmse, "lmmse_rb_at_g");
+  gd->kernel_lmmse_rb_at_rb = dt_opencl_create_kernel(lmmse, "lmmse_rb_at_rb");
+  gd->kernel_lmmse_median = dt_opencl_create_kernel(lmmse, "lmmse_median");
+  gd->kernel_lmmse_median_apply = dt_opencl_create_kernel(lmmse, "lmmse_median_apply");
+  gd->kernel_lmmse_fill = dt_opencl_create_kernel(lmmse, "lmmse_fill");
+  gd->kernel_lmmse_refine_g = dt_opencl_create_kernel(lmmse, "lmmse_refine_g");
+  gd->kernel_lmmse_refine_rb_at_g = dt_opencl_create_kernel(lmmse, "lmmse_refine_rb_at_g");
+  gd->kernel_lmmse_refine_rb_at_rb = dt_opencl_create_kernel(lmmse, "lmmse_refine_rb_at_rb");
+  gd->kernel_lmmse_output = dt_opencl_create_kernel(lmmse, "lmmse_output");
   gd->kernel_demosaic_box3 = dt_opencl_create_kernel(rcd, "demosaic_box3");
   gd->kernel_write_blended_dual  = dt_opencl_create_kernel(rcd, "write_blended_dual");
 
@@ -1503,6 +1538,20 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_amaze_green_diag);
   dt_opencl_free_kernel(gd->kernel_amaze_chroma);
   dt_opencl_free_kernel(gd->kernel_amaze_output);
+  dt_opencl_free_kernel(gd->kernel_lmmse_init);
+  dt_opencl_free_kernel(gd->kernel_lmmse_diff);
+  dt_opencl_free_kernel(gd->kernel_lmmse_lowpass);
+  dt_opencl_free_kernel(gd->kernel_lmmse_interp);
+  dt_opencl_free_kernel(gd->kernel_lmmse_planes);
+  dt_opencl_free_kernel(gd->kernel_lmmse_rb_at_g);
+  dt_opencl_free_kernel(gd->kernel_lmmse_rb_at_rb);
+  dt_opencl_free_kernel(gd->kernel_lmmse_median);
+  dt_opencl_free_kernel(gd->kernel_lmmse_median_apply);
+  dt_opencl_free_kernel(gd->kernel_lmmse_fill);
+  dt_opencl_free_kernel(gd->kernel_lmmse_refine_g);
+  dt_opencl_free_kernel(gd->kernel_lmmse_refine_rb_at_g);
+  dt_opencl_free_kernel(gd->kernel_lmmse_refine_rb_at_rb);
+  dt_opencl_free_kernel(gd->kernel_lmmse_output);
   dt_opencl_free_kernel(gd->kernel_demosaic_box3);
   dt_opencl_free_kernel(gd->kernel_write_blended_dual);
   dt_opencl_free_kernel(gd->gaussian_9x9_mul);
@@ -1588,9 +1637,6 @@ void commit_params(dt_iop_module_t *self,
   // as some demosaicers don't have OpenCL implementations
   switch(d->demosaicing_method)
   {
-    case DT_IOP_DEMOSAIC_LMMSE:
-      piece->process_cl_ready = FALSE;
-      break;
     case DT_IOP_DEMOSAIC_FDC:
       piece->process_cl_ready = FALSE;
       break;
