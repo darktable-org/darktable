@@ -340,7 +340,7 @@ dt_presenter_end(widget, pcr);
 
 Inside, `dt_presenter_image(pcr, x, y, frame, filter)` takes the place of
 `cairo_set_source_surface()` + `cairo_paint()` for an opaque image: it uses
-the context's current transformation and the extents of its clip, and paint
+the context's current transformation and clip, of any shape, and paint
 order is kept, so whatever is drawn afterwards is on top. The presenter
 holds a reference on the frame for as long as it shows or keeps it, so the
 caller may drop its own when the call returns. The window shows the frame
