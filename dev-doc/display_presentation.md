@@ -54,7 +54,8 @@ markers are written as they are, saturated colors that mark in any output.
   whenever anything else in it does.
 - The display profile always comes from the platform: the X atom or colord
   on X11 and on Wayland without the native backend, the compositor through
-  a backend, `GetICMProfileW()` on Windows, and sRGB on macOS, where GTK
+  a backend, the monitor's default profile from WCS on Windows (none, as
+  under Advanced Color, means sRGB), and sRGB on macOS, where GTK
   tags its backing store sRGB. There is no user selection; previewing
   another display, print or sRGB is a soft proof. Unless the platform owns
   it, a window's output is its system display profile (`DISPLAY` or

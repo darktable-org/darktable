@@ -42,6 +42,7 @@
 #ifdef _WIN32
 #include <dwmapi.h>
 #include <gdk/gdkwin32.h>
+#include <icm.h>
 #endif
 
 static const cmsCIEXYZ d65 = {0.95045471, 1.00000000, 1.08905029};
@@ -2275,35 +2276,57 @@ void dt_colorspaces_set_display_profile
     dt_print(DT_DEBUG_ALWAYS, "[win32 dt_colorspaces_set_display_profile] error getting monitor handle");
     goto cleanup_and_return;
   }
-  MONITORINFOEX monitorInfo;
-  monitorInfo.cbSize = sizeof(MONITORINFOEX);
+  MONITORINFOEXW monitorInfo;
+  monitorInfo.cbSize = sizeof(MONITORINFOEXW);
   if(!GetMonitorInfoW(hMonitor, (LPMONITORINFO) &monitorInfo))  //get monitor info
   {
     dt_print(DT_DEBUG_ALWAYS, "[win32 dt_colorspaces_set_display_profile] error getting monitor info");
     goto cleanup_and_return;
   }
-  HDC hdc = CreateIC(L"MONITOR", monitorInfo.szDevice, NULL, NULL); // get device-info context of the monitor
-  if(hdc != NULL)
+  // the monitor's default profile from WCS, not GDI's GetICMProfileW(): with
+  // Advanced Color on, Windows treats darktable's 8-bit pixels as sRGB and
+  // WCS answers "no profile", which means sRGB (Microsoft's "ICC profile
+  // behavior with Advanced Color"); GIMP asks the same way (GIMP#7453)
+  DISPLAY_DEVICEW device = { .cb = sizeof(DISPLAY_DEVICEW) };
+  if(EnumDisplayDevicesW(monitorInfo.szDevice, 0, &device, 0))
   {
-    DWORD len = 0;
-    GetICMProfile(hdc, &len, NULL);
-    wchar_t *wpath = g_new(wchar_t, len);
-
-    if(GetICMProfileW(hdc, &len, wpath))
+    // CLASS_MONITOR, which is 'mntr', a multi-character constant gcc warns about
+    const DWORD monitor_class = 0x6D6E7472;
+    BOOL per_user = FALSE;
+    const WCS_PROFILE_MANAGEMENT_SCOPE scope =
+      WcsGetUsePerUserProfiles(device.DeviceKey, monitor_class, &per_user) && per_user
+      ? WCS_PROFILE_MANAGEMENT_SCOPE_CURRENT_USER
+      : WCS_PROFILE_MANAGEMENT_SCOPE_SYSTEM_WIDE;
+    DWORD name_size = 0;
+    if(WcsGetDefaultColorProfileSize(scope, device.DeviceKey, CPT_ICC, CPST_NONE, 0,
+                                     &name_size)
+       && name_size > 0)
     {
-      gchar *path = g_utf16_to_utf8(wpath, -1, NULL, NULL, NULL);
-      if(path)
+      wchar_t *name = g_malloc0(name_size);
+      if(WcsGetDefaultColorProfile(scope, device.DeviceKey, CPT_ICC, CPST_NONE, 0,
+                                   name_size, name))
       {
-        gsize size;
-        g_file_get_contents(path, (gchar **)&buffer, &size, NULL);
-        buffer_size = size;
-        g_free(path);
+        // a file name in the color directory, which OpenColorProfileW() resolves
+        PROFILE location = { .dwType = PROFILE_FILENAME,
+                             .pProfileData = name,
+                             .cbDataSize = (wcslen(name) + 1) * sizeof(wchar_t) };
+        HPROFILE handle = OpenColorProfileW(&location, PROFILE_READ, FILE_SHARE_READ, OPEN_EXISTING);
+        if(handle)
+        {
+          DWORD size = 0;
+          GetColorProfileFromHandle(handle, NULL, &size);
+          if(size > 0)
+          {
+            buffer = g_malloc(size);
+            if(GetColorProfileFromHandle(handle, buffer, &size)) buffer_size = size;
+          }
+          CloseColorProfile(handle);
+        }
       }
+      g_free(name);
     }
-    g_free(wpath);
-    DeleteDC(hdc);
   }
-  profile_source = g_strdup("windows color profile api");
+  profile_source = g_strdup("windows color system");
 #endif
 
   // the query needs no lock, and waiting for readers here rather than
