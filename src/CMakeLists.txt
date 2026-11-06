@@ -880,6 +880,7 @@ if(WIN32)
   SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
 
   list(APPEND LIBS psapi) # Needed for GetProcessMemoryInfo()
+  list(APPEND LIBS mscms) # Needed for the display profile from WCS
   list(APPEND LIBS exchndl) # Needed for exception handling and backtrace()
 endif(WIN32)
 
