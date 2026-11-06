@@ -82,7 +82,9 @@ struct dt_presenter_transport_t
 {
   // reserve the storage of a present of a widget's layers, or return
   // FALSE if they cannot be shown now; the layered backend then draws
-  // again to retry. *widget_data is the transport's, NULL at first
+  // again to retry. it acquires everything commit() needs, so that commit()
+  // cannot fail (a GPU transport gets its drawables here). *widget_data is
+  // the transport's, NULL at first
   gboolean (*reserve)(dt_presenter_transport_t *self,
                       GtkWidget *widget,
                       void **widget_data,
@@ -91,7 +93,8 @@ struct dt_presenter_transport_t
   // show the reservation with the foreground written into it, and the
   // image if image is TRUE; otherwise the image shown last stays, which
   // has the reservation's size, scale and encoding, since a change of
-  // those composes a new one. the present is accepted as a whole
+  // those composes a new one. it cannot fail: the present is accepted as a
+  // whole
   void (*commit)(dt_presenter_transport_t *self,
                  void **widget_data,
                  const gboolean image);
