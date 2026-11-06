@@ -1429,7 +1429,8 @@ static void _system_profile_free(gpointer data)
 
 // the profile of these bytes, taking them: the one opened for the same
 // bytes before, if any, so switching back and forth reuses it and the list
-// holds each profile once. NULL if there are none or lcms rejects them.
+// holds each profile once. NULL if there are none, lcms rejects them or
+// they are not an RGB profile.
 // make sure that xprofile_lock is held when calling this!
 static cmsHPROFILE _system_profile(dt_colorspaces_t *self,
                                    uint8_t *data,
@@ -1452,6 +1453,15 @@ static cmsHPROFILE _system_profile(dt_colorspaces_t *self,
   }
 
   cmsHPROFILE profile = cmsOpenProfileFromMem(data, size);
+  // what GTK draws and the frames for cairo windows are RGB: a printer or
+  // Lab profile cannot describe a screen, and transforms to it fail
+  if(profile && cmsGetColorSpace(profile) != cmsSigRgbData)
+  {
+    dt_print(DT_DEBUG_CONTROL, "[color profile] a display profile that is not RGB is no"
+             " usable profile");
+    cmsCloseProfile(profile);
+    profile = NULL;
+  }
   if(!profile)
   {
     g_free(data);
