@@ -238,17 +238,21 @@ rendered for another headroom keeps its tone mapping until then.
 - `dt_presenter_retain()` keeps the draw in progress: everything it shows,
   its images and all that is drawn around and above them, is the widget's
   kept presentation from then on. `dt_presenter_keep()` paints the kept
-  presentation where it was, replacing what the draw has drawn so far, and
-  the rest of the draw goes on top; it returns FALSE when there is none.
+  presentation where it was, over the widget's area as it was then,
+  replacing what the draw has drawn so far there, and the rest of the draw
+  goes on top; it returns FALSE when there is none.
   The darkroom retains its full image draws while the loading screen
   preference (`darkroom/ui/loading_screen`) is off, as master cached its
-  drawing then, and shows them while the next image loads: the color
+  drawing then, and shows them while the next image loads, over its
+  background, which shows where the view has grown since: the color
   assessment surround, focus peaking and guides of the image it switches
   away from stay, under the loading toast. A draw GTK restricted to a
-  damaged area neither replaces nor drops the kept presentation; a full
-  draw that neither retains itself nor shows the kept one drops it. Kept
-  images are shown in the window's output as it is now, converted as any
-  other.
+  damaged area neither replaces nor drops the kept presentation; a draw is
+  full when its clip is one rectangle over the whole widget, and a full
+  draw that neither retains itself nor shows the kept one drops it. On the
+  layered backend kept images are shown in the window's output as it is
+  now, converted as any other; the cairo backend keeps the pixels it
+  painted.
 - `dt_presenter_clear()` drops a widget's images and kept presentation
   (darkroom `leave()`); unmapping a widget does too.
 - `dt_view_paint_surface()` is the darkroom's user: background, then the
@@ -290,7 +294,8 @@ is plain SDR sRGB ([Wayland](#wayland)).
 The kept presentation is what GTK's target holds at the end of the
 retained draw. On X11, GDK draws each frame into a surface of its own, and
 a reference on it keeps it, as master kept the darkroom's: it holds what
-GTK drew above the widget in that frame as well, a toast among it. On
+GTK drew above the widget in that frame as well, a toast among it, and the
+widgets around it, so keeping paints only the widget's area of then. On
 Wayland and Quartz the target is the window's buffer, which the next frame
 overwrites, and on Windows holding it stops GTK from invalidating the
 widget (#20831), so there the widget's part is copied into a surface of

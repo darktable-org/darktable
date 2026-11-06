@@ -956,14 +956,13 @@ void expose(dt_view_t *self,
     else
     {
       // show the image we are switching away from again, to avoid a
-      // flash of the background color
-      if(!dt_presenter_keep(cri))
-      {
-        dt_gui_gtk_set_source_rgb(cri, port->color_assessment
-                                       ? DT_GUI_COLOR_COLOR_ASSESSMENT_BG
-                                       : DT_GUI_COLOR_DARKROOM_BG);
-        cairo_paint(cri);
-      }
+      // flash of the background color. it covers the view as it was then:
+      // the background shows where the view has grown since
+      dt_gui_gtk_set_source_rgb(cri, port->color_assessment
+                                     ? DT_GUI_COLOR_COLOR_ASSESSMENT_BG
+                                     : DT_GUI_COLOR_DARKROOM_BG);
+      cairo_paint(cri);
+      dt_presenter_keep(cri);
       dt_toast_log("%s", load_txt);
     }
     g_free(load_txt);

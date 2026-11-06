@@ -172,6 +172,24 @@ static void _hold(_widget_t *w,
     g_ptr_array_add(w->frames, dt_frame_ref(frame));
 }
 
+// a draw clipped to a damaged area records clipped images: it must not
+// replace or drop what dt_presenter_keep() shows. GTK clips to a region of
+// whole pixels, which cairo lists as its fewest rectangles: the draw is
+// whole if that is one rectangle over the widget. the clip's extents are
+// not enough, two damaged corners span the widget
+static gboolean _full(cairo_t *cr,
+                      GtkWidget *widget)
+{
+  cairo_rectangle_list_t *list = cairo_copy_clip_rectangle_list(cr);
+  const cairo_rectangle_t *r = list->rectangles;
+  const gboolean full = list->status == CAIRO_STATUS_SUCCESS && list->num_rectangles == 1
+    && r->x <= 0.0 && r->y <= 0.0
+    && r->x + r->width >= gtk_widget_get_allocated_width(widget)
+    && r->y + r->height >= gtk_widget_get_allocated_height(widget);
+  cairo_rectangle_list_destroy(list);
+  return full;
+}
+
 cairo_t *dt_presenter_begin(GtkWidget *widget,
                             cairo_t *cr)
 {
@@ -190,14 +208,7 @@ cairo_t *dt_presenter_begin(GtkWidget *widget,
   w->retain = w->kept_shown = FALSE;
   cairo_t *draw_cr = backend->begin(backend, widget, &w->data, cr);
 
-  // a draw clipped to a damaged area records clipped images: it must not
-  // replace or drop what dt_presenter_keep() shows
-  double x0, y0, x1, y1;
-  cairo_clip_extents(draw_cr, &x0, &y0, &x1, &y1);
-  w->full = x0 <= 0.0 && y0 <= 0.0
-    && x1 >= gtk_widget_get_allocated_width(widget)
-    && y1 >= gtk_widget_get_allocated_height(widget);
-
+  w->full = _full(draw_cr, widget);
   cairo_get_matrix(draw_cr, &w->base);
   cairo_set_user_data(draw_cr, &_cr_key, w, NULL);
   return draw_cr;
