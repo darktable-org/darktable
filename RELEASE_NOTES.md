@@ -258,6 +258,11 @@ changes (where available).
   again and follows the module through copy/paste of the history
   stack and styles.
 
+- The processing tab of the preferences lists the OpenCL devices darktable
+  found. Each one can be switched off or back on, and with several
+  devices their headroom for 'tuned GPU memory' can be set, without
+  editing darktablerc.
+
 ## Performance Improvements
 
 - New edits convert the input color profile directly to the working RGB
