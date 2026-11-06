@@ -346,6 +346,15 @@ list(APPEND LIBS ${Glib_LIBRARIES})
 
 # GTK3 pulls in ATK, GDK, GDK-PIXBUF, CAIRO, GLIB, PANGO
 find_package(GTK3 3.24.15 REQUIRED)
+# the Quartz backend tags its surface sRGB from 3.24.37 on (GTK 312e5781);
+# earlier ones leave what darktable's pixels mean on screen to the GTK and
+# cairo versions, and the display profile is sRGB on macOS (colorspaces.c)
+if(APPLE)
+  pkg_check_modules(GDK_QUARTZ QUIET gdk-quartz-3.0)
+  if(GDK_QUARTZ_FOUND AND GTK3_VERSION VERSION_LESS 3.24.37)
+    message(FATAL_ERROR "GTK ${GTK3_VERSION} found: the Quartz backend needs GTK 3.24.37 or later")
+  endif()
+endif()
 add_definitions("-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_24")
 #add_definitions("-DGDK_VERSION_MAX_ALLOWED=GDK_VERSION_MIN_REQUIRED")
 include_directories(SYSTEM ${GTK3_INCLUDE_DIRS})
