@@ -363,7 +363,9 @@ changes (where available).
   profile. It used the display rendering intent before, which the
   darkroom showed only with "always use LittleCMS 2" on, and it starts
   from that intent. The display rendering intent is now one setting
-  for both windows, in the interface preferences.
+  for both windows, in the interface preferences. A new "black point
+  compensation" switch next to it, on by default as before, can be
+  turned off to see what an export to the softproof profile stores.
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
   SDR, HLG and PQ alike. HLG output peaks at 1000 nits, and PQ output
@@ -540,6 +542,14 @@ changes (where available).
   in the second window are now rendered again when the display profile
   changes, as when the window moves to a screen with another profile,
   instead of keeping the colors of the previous one.
+
+- Soft proof to Adobe RGB or a linear profile now clips colors and
+  highlights where an export to that profile does. Such proofs showed
+  colors outside the softproof profile unchanged before.
+
+- Snapshots and the duplicate manager's preview now follow changes
+  of the soft proof, its profile, intent and black point compensation,
+  instead of keeping the proof they were rendered with.
 
 - Fixed lighttable thumbnails that were sometimes shown for sRGB
   instead of the display profile after startup, when colord answered
