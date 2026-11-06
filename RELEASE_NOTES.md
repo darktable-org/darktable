@@ -792,6 +792,12 @@ changes (where available).
   highlights where an export to that profile does. Such proofs showed
   colors outside the softproof profile unchanged before.
 
+- The gamut check now marks exactly the colors outside a softproof
+  profile such as sRGB, Adobe RGB or Rec. 2020, the same on every
+  display. It marked some colors inside the profile and missed some
+  outside it before, and it also marked colors the display could not
+  show.
+
 - Snapshots and the duplicate manager's preview now follow changes
   of the soft proof, its profile, intent and black point compensation,
   instead of keeping the proof they were rendered with.
