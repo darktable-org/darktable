@@ -253,10 +253,10 @@ typedef struct dt_masks_point_parametric_t
   uint32_t disabled;                           // bit 0: input range off, bit 1: output range off
 } dt_masks_point_parametric_t;
 
-/** which sliders a parametric row shows (bits 1-2 of in_out): the input one
-    always, and the output one with BOTH. AUTO, what every row held before the
-    choice existed, shows the output one when its range is in use; OUTPUT, once
-    a choice of its own, now shows both */
+/** which sliders a parametric row shows (the low two bits of in_out): the
+    input one always, and the output one with BOTH. AUTO, what every row held
+    before the choice existed, shows the output one when its range is in use;
+    OUTPUT, once a choice of its own, now shows both */
 typedef enum dt_masks_param_view_t
 {
   DT_MASKS_PARAM_VIEW_AUTO = 0,
@@ -265,35 +265,15 @@ typedef enum dt_masks_param_view_t
   DT_MASKS_PARAM_VIEW_BOTH,
 } dt_masks_param_view_t;
 
-/** bit 0 of in_out: a row used to expand to its extra controls. Only groups
-    expand now; stored files may still have it set, and it is left as found */
-#define DT_MASKS_PARAM_EXPANDED 1u
-/** bit 3 of in_out: the boost factor shows with the sliders, and not with the
-    opacity */
-#define DT_MASKS_PARAM_BOOST_WITH_SLIDERS 8u
-
 static inline dt_masks_param_view_t dt_masks_param_get_view(const dt_masks_point_parametric_t *p)
 {
-  return (dt_masks_param_view_t)((p->in_out >> 1) & 3u);
+  return (dt_masks_param_view_t)(p->in_out & 3u);
 }
 
 static inline void dt_masks_param_set_view(dt_masks_point_parametric_t *p,
                                            const dt_masks_param_view_t view)
 {
-  p->in_out = (p->in_out & (DT_MASKS_PARAM_EXPANDED | DT_MASKS_PARAM_BOOST_WITH_SLIDERS))
-              | ((uint32_t)view << 1);
-}
-
-static inline gboolean dt_masks_param_boost_with_sliders(const dt_masks_point_parametric_t *p)
-{
-  return (p->in_out & DT_MASKS_PARAM_BOOST_WITH_SLIDERS) != 0;
-}
-
-static inline void dt_masks_param_set_boost_with_sliders(dt_masks_point_parametric_t *p,
-                                                         const gboolean with_sliders)
-{
-  p->in_out = (p->in_out & ~DT_MASKS_PARAM_BOOST_WITH_SLIDERS)
-              | (with_sliders ? DT_MASKS_PARAM_BOOST_WITH_SLIDERS : 0u);
+  p->in_out = (uint32_t)view;
 }
 
 /** point struct for a DT_MASKS_RASTER form: a reference to another module's
