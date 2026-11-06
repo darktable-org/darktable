@@ -18,6 +18,7 @@
     <section name="cpugpu" title="CPU / memory"/>
     <section name="opencl" title="OpenCL GPU acceleration"/>
     <section name="platform" title="OpenCL drivers"/>
+    <section name="cldevices" title="OpenCL devices"/>
   </dttab>
   <dttab name="security" title="security">
     <section title="general"/>
