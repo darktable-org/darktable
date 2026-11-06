@@ -334,6 +334,7 @@ typedef struct dt_colorspaces_t
   // from the image to the soft proof profile, where the proof goes on to
   // the display relative colorimetric
   dt_iop_color_intent_t softproof_intent;
+  gboolean softproof_bpc;
 
   dt_colorspaces_color_mode_t mode;
 

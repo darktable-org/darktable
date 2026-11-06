@@ -1954,6 +1954,7 @@ dt_colorspaces_t *dt_colorspaces_init()
   g_strlcpy(res->histogram_filename, tmp, sizeof(res->histogram_filename));
   res->display_intent = _display_intent_preference();
   res->softproof_intent = dt_conf_get_int("ui_last/color/softproof_intent");
+  res->softproof_bpc = dt_conf_get_bool("ui_last/color/softproof_bpc");
   res->mode = dt_conf_get_int("ui_last/color/mode");
 
   // sanity checks to ensure the profile filenames are present
@@ -2070,6 +2071,7 @@ void dt_colorspaces_cleanup(dt_colorspaces_t *self)
   dt_conf_set_string("ui_last/color/softproof_filename", self->softproof_filename);
   dt_conf_set_string("ui_last/color/histogram_filename", self->histogram_filename);
   dt_conf_set_int("ui_last/color/softproof_intent", self->softproof_intent);
+  dt_conf_set_bool("ui_last/color/softproof_bpc", self->softproof_bpc);
   dt_conf_set_int("ui_last/color/mode", self->mode);
 
   if(self->transform_srgb_to_display)
