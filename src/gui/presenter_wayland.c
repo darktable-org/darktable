@@ -447,7 +447,9 @@ static void _describe(_backend_t *b,
                       const float headroom)
 {
   if(!b->luminances) return;
-  const uint32_t max_lum = lroundf(headroom * REFERENCE_NITS);
+  // rounded up: the transport clips to [0, max / REFERENCE_NITS] (_reserve()),
+  // which has to hold everything the pipes render, up to headroom
+  const uint32_t max_lum = (uint32_t)ceilf(headroom * REFERENCE_NITS);
   if(max_lum == b->description_max)
   {
     // back to the one in use: one still on its way is obsolete
