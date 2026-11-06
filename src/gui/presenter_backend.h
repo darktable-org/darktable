@@ -21,8 +21,10 @@
 /*
  * internal to the presenter: what presenter.c asks of a window's backend.
  * a window has one backend for as long as it exists, chosen at its first
- * presenting draw: layered (presenter_layers.c) where the platform has a
- * transport for it, otherwise cairo (presenter_cairo.c). see
+ * presenting draw: layered (presenter_layers.c) where the platform
+ * color-manages tagged content and has a transport for it, otherwise, or
+ * with ui_last/display_force_cairo set, cairo (presenter_cairo.c). keeping
+ * it for the window's life is a documented limit; see
  * dev-doc/display_presentation.md.
  */
 

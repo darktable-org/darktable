@@ -38,8 +38,10 @@ See also:
 `dt_display_output_t` (`src/common/colorspaces.h`) is what a window wants.
 `image` is the encoding its pipes render to: display-referred RGB in a
 profile (type, file, intent), 1.0 at reference white and up to `headroom`
-above it. `device` is what untagged 8-bit values mean in the window,
-everything GTK draws there. `platform_owned` says a backend reported it,
+above it. `device`, the device encoding, is what GTK's 8-bit values mean
+as the platform shows them, everything GTK draws in the window: untagged
+pixels on X11, Windows and Wayland, pixels GTK tags sRGB on macOS.
+`platform_owned` says a backend reported it,
 so a new system display profile does not replace it. Where image and device are the same
 encoding, as on every cairo window, the values reach the screen as device
 values. The mask and channel views are UI tones, authored as device values
@@ -52,18 +54,32 @@ markers are written as they are, saturated colors that mark in any output.
   realize a window. It is stored in `darktable.color_profiles`, indexed by
   window and written under `xprofile_lock`, and its `serial` changes
   whenever anything else in it does.
-- The display profile always comes from the platform: the X atom or colord
-  on X11 and on Wayland without the native backend, the compositor through
-  a backend, the monitor's default profile from WCS on Windows (none, as
-  under Advanced Color, means sRGB), and sRGB on macOS, where GTK
-  tags its backing store sRGB. There is no user selection; previewing
+- The criterion: a window uses a native backend when the platform
+  color-manages tagged content to the panel, which mutter's default color
+  mode does not ([Wayland](#wayland)), and the backend reports the window's
+  output ([Backends](#backends)). Otherwise it is a cairo window, the
+  fallback where no native backend exists or sets up, or where the user
+  forces it, rendering to the screen profile the platform publishes to
+  applications: the X atom on X11, colord on X11 and Wayland, the
+  monitor's default profile from WCS on Windows (none, as under Advanced
+  Color, means sRGB), and sRGB where nothing is published, as on macOS,
+  where GTK tags its backing store sRGB. Cairo never decides whether the
+  platform converts. There is no user selection; previewing
   another display, print or sRGB is a soft proof. Unless the platform owns
   it, a window's output is its system display profile (`DISPLAY` or
   `DISPLAY2`) as image and device encoding, with the display intent
   preference (`ui_last/display_intent`, one for both windows) and headroom
   1 (`_describe_system_display()` in `colorspaces.c`). A new system display
   profile and a change of the intent preference
-  (`dt_colorspaces_update_display_intent()`) republish it.
+  (`dt_colorspaces_update_display_intent()`) republish it. Limits:
+  - darktable on XWayland is an X11 client and cannot see the compositor's
+    description. It renders to the X atom or colord as on X11, so where
+    the compositor also converts untagged pixels to that profile, as
+    mutter outside its default color mode does, the image is converted
+    twice.
+  - A profile reassigned in the system settings while the window stays on
+    its monitor is picked up at the window's next configure event (a move
+    or a resize); listening to colord's changed signal would remove that.
 - What GTK draws converts to the device encoding: the thumbnail transforms
   follow the main window's, picker swatches convert from what the preview
   pipe produced to its window's, frames drawn by GTK take their device
@@ -275,8 +291,19 @@ every window is a cairo window: an escape hatch for compositor or driver
 bugs in a native backend. A forced cairo window follows the cairo rule, the profile
 the platform publishes or else sRGB: colord on GNOME, the X atom on X11,
 sRGB on KWin. The key is read when the backend is chosen, so it takes
-effect for the main window at the next start. The core,
-`gui/presenter.c`, keeps the widget records, the references on the frames
+effect for the main window at the next start.
+
+That a window keeps its backend for as long as it exists is a limit. When
+the platform changes under the window (a Wayland output switches color
+mode, the window moves to a monitor described otherwise), the change
+takes effect when the window is opened again, for the main window after a
+restart. A native backend on Windows would meet it more often: Advanced
+Color is set per monitor and toggled by the user. Choosing the backend
+again (release the widgets, free the backend, give the output back,
+choose, redraw) would remove the limit, as Chromium follows the output
+space of the nearest monitor.
+
+The core, `gui/presenter.c`, keeps the widget records, the references on the frames
 of each widget's last draw, the test for a draw GTK clipped to a damaged
 area, and the matrix of each image; it has no branch on the backend. A
 backend (`dt_presenter_backend_t` in `gui/presenter_backend.h`) begins a
@@ -486,9 +513,7 @@ SDR sRGB stays native. phoc, Phosh's compositor, announces `gtk_shell1`
 too and is treated the same way. Limits:
 
 - The choice is made once per window, with its backend, for the monitor it
-  is on then. A new color mode, or moving the window to a monitor described
-  otherwise, takes effect when the window is opened again, for the main
-  window after a restart.
+  is on then ([Backends](#backends)).
 - sway with a `color_profile` set only in sway describes its output as sRGB
   while converting everything to that profile. A native window leaves that
   conversion to sway; a cairo window on that output, forced or darktable
@@ -521,6 +546,9 @@ where the image is a texture on GTK's own surface, the limit goes away.
 ## Workarounds
 
 Each lives in one file and goes away with the limitation it works around.
+GTK4 removes the layers and their companions only on Wayland: it has no
+output color states on Windows and macOS, so a native backend there would
+keep its layers under GTK4 as well.
 
 | Workaround | Where | Works around | Removed when |
 |---|---|---|---|
