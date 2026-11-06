@@ -352,8 +352,12 @@ changes (where available).
   the interface preferences, makes darktable convert images to the
   display profile itself instead of handing them to the compositor's
   color management, as a way around compositor or driver bugs. It
-  turns off wide gamut and HDR display on Wayland and takes effect at
-  the next start.
+  turns off wide gamut and HDR display on Wayland.
+
+- The histogram profile no longer offers the system display profile.
+  Where the compositor or the system converts darktable's output to
+  the screen, darktable cannot say what the screen shows. A histogram
+  set to that profile before uses sRGB now.
 
 - Soft proof has its own rendering intent, set next to the softproof
   profile. It used the display rendering intent before, which the
