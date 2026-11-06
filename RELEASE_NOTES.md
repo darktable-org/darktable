@@ -108,6 +108,16 @@ changes (where available).
   image is converted to the system display profile as before. Other
   compositors and platforms keep the display path they had.
 
+- Wide gamut and HDR display on macOS. The darkroom image, its
+  snapshots, the second window and the slideshow are shown on an EDR
+  layer in extended linear Rec. 2020 half floats, and macOS makes the
+  one conversion to the screen. On screens with EDR headroom, such as
+  the XDR displays of MacBook Pros, highlights can go above SDR white:
+  sigmoid and AgX tone map to the screen's headroom when "follow output
+  peak" is on, and the image is tone mapped again once the headroom has
+  settled after a brightness change, in steps of 1/8 EV. Screens
+  without EDR still get wide gamut.
+
 - New module saturation curve: remaps saturation and brilliance via
   two independent curves plotted against each pixel's own perceptually
   normalized saturation (darktable UCS or JzAzBz): a scene-referred
