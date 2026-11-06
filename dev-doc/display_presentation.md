@@ -366,8 +366,8 @@ miscellaneous), every window is a cairo window: an escape hatch for
 compositor or driver bugs in a native backend. A forced cairo window
 follows the cairo rule, the profile the platform publishes or else sRGB:
 colord on GNOME, the X atom on X11, sRGB on KWin. The key is read whenever
-the backend is chosen, so a change takes effect at the window's next
-choice, for the main window at the next start at the latest.
+the backend is chosen, and closing the preferences dialog
+(`DT_SIGNAL_PREFERENCES_CHANGE`) chooses every window's backend again.
 
 The platform (`dt_presenter_platform_t` in `gui/presenter_backend.h`)
 watches the window for as long as it exists, whatever its backend, and its

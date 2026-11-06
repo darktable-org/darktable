@@ -4059,12 +4059,12 @@
     <shortdescription>rendering intent for the display profile</shortdescription>
     <longdescription>the rendering intent where darktable converts images and thumbnails to the display profile. where the system manages a window's colors, as a Wayland compositor with color management does, the system decides.\nit makes a difference only for display profiles with lookup tables: with matrix display profiles, perceptual, relative colorimetric and saturation give the same result</longdescription>
   </dtconfig>
-  <dtconfig prefs="misc" section="interface" restart="true">
+  <dtconfig prefs="misc" section="interface">
     <name>ui_last/display_force_cairo</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>convert to the display profile in darktable</shortdescription>
-    <longdescription>convert images to the display profile in darktable instead of handing them to the system's color management, which on Wayland shows them in wide gamut and HDR. a workaround for compositor or driver bugs.\ntakes effect at the next start</longdescription>
+    <longdescription>convert images to the display profile in darktable instead of handing them to the system's color management, which on Wayland shows them in wide gamut and HDR. a workaround for compositor or driver bugs</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="interface">
     <name>ui_last/display_profile_file</name>
