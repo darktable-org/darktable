@@ -308,10 +308,12 @@ The layered backend, the native one, shows a window's images on surfaces of
 its own above GTK's surface, from bottom to top:
 
 1. GTK's surface: everything GTK draws, untagged.
-2. The image layer: float, in the window's output, alpha 0 off the images.
+2. The image layer: premultiplied half float, in the window's output,
+   alpha 0 off the images.
 3. The foreground layer: premultiplied 8-bit, untagged like GTK's surface,
    with everything the presenting widget draws. Where an image is, its
-   pixels are cleared, so paint order holds across the two layers.
+   pixels are cut out by the image's coverage, so paint order holds across
+   the two layers.
 
 ```
   foreground layer   8-bit, untagged    pickers, masks, guides, overlays
@@ -327,13 +329,76 @@ image).
 The kept presentation is the retained draw's foreground, with its images
 cut out and all it drew above them, and that draw's images. Keeping it
 paints that foreground over what the draw has drawn so far and places its
-images again, below anything the draw places later. While a widget's
+images again, below anything the draw places later. A presentation kept
+at another device scale is dropped when it would be shown: its cuts and
+coverages are of that scale, and the clips they came from are gone. While a widget's
 draws are retained, they alternate between two foreground surfaces, so
 keeping costs one more foreground-size surface per retaining widget, 4
 bytes per device pixel, and no copy. What is replayed above the widget at
 present (GtkOverlay children such as toasts) is not part of its
 presentation: on a kept foreground the replay saves what it covers and
 puts it back after the transport has taken the layers.
+
+The two layers show what cairo would paint on GTK's surface, in paint
+order. With the foreground `F` above the image layer `N`, keeping
+`R = F + L` for the painted result `R` and the images' share `L`, the
+layer shows `N = L / (1 - alpha_F)`, and `F over (N over G)` is
+`R + (1 - alpha_R) G` over GTK's surface `G`:
+
+- a paint that is not an image changes `F` only;
+- an image paint of coverage `a`, over a foreground of alpha `b` before
+  it, cuts the foreground, `F <- (1 - a) F`, and moves the layer towards
+  the image, `N <- N + w (I - N)` with `w = a / (a + (1 - a)(1 - b))`, on
+  all four channels with the image's alpha 1. `w` comes from the `a` and
+  `b` the cut applied and is in [0, 1], so `N`'s alpha stays in [0, 1]
+  and its color in the clip range of the encoding. Over an opaque backdrop
+  `N` is opaque wherever an image covers anything; a translucent or
+  missing backdrop takes the same rule, nothing assumes it away.
+
+The coverage is cairo's: the alpha cairo paints with a source of the
+frame's size and alpha 1 and the image's matrix and filter through the
+image's clip, including the filter's reach past the frame's edge. It is
+made when an image is placed, one byte per device pixel over the image's
+box. First cairo paints alpha 1 through the image's own context into a
+group of alpha content (`cairo_push_group_with_content()`), which takes
+the caller's clip as it is, any shape, nested, with fractional edges
+(the preview fallback and the main image share one clip with edges on
+half pixels), and is read rather than painted back, which would apply
+the clip twice: the clip's coverage. That is the coverage wherever the
+frame covers whole; in the 64-pixel tiles near the frame's edge cairo
+paints the frame unclipped and the clip's coverage multiplies it, as a
+paint through a clip does. Images placed alike in this draw, the last one
+and the kept one share a coverage: same frame size, matrix, filter and
+scale, and the same clip coverage, compared as runs of equal bytes.
+`test_presenter_compose` compares the coverage with cairo's paint of the
+whole widget: equal where the frame covers whole; in the edge tiles pixman
+steps sample positions in fixed point from where each composite starts,
+so a tile differs from the whole paint by a few code values at fractional
+pixels (at most 5 in 40 seeds of the test, which allows 8) or, with a
+nearest filter, by a pixel whose sample lies on the frame's edge. Through
+a clip that is not a rectangle, cairo itself antialiases the clip's edge
+differently with the compositing route it takes, and the test allows 32
+code values there (at most 14 measured). No caller clips images to
+anything but rectangles. When the image is placed, the foreground's alpha
+is kept at each pixel of fractional coverage and the foreground is cut. Images are sampled from each frame's
+float pixels, nearest or bilinear, padded at the edges (cairo's
+`EXTEND_NONE` without its alpha, which the coverage carries), in double
+precision positions but not bit-identical to pixman's.
+
+The image layer is composed only when what it shows changes: frames,
+placements, the foreground's alpha under fractional coverage, size,
+scale, and the encoding the transport gives. It is composed straight into
+the transport's buffer, with the images accumulated in float per row; the
+encoding's matrix applies before the one quantization, so overlapping
+images round once. A texel that is not finite counts as its limit: an
+infinite one where it weighs clips to the range, and where its bilinear
+weight is 0 it does not count; NaN where it weighs gives the range's
+bottom. Limits of
+the two surfaces: at pixels of fractional coverage the compositor blends
+the layers in its own blending space, not in cairo's encoded values, as
+GTK4's offloaded subsurfaces and Chromium's underlays do; the 8-bit
+foreground's rounding perturbs `N`'s invariance under later paints by up
+to a code value.
 
 What GTK3 draws above a presenting widget is in GTK's surface, under the
 layers, so the backend replays it into the foreground when it presents:
@@ -366,13 +431,31 @@ Code is split by what it works around:
   position in the toplevel. A GTK4 port, where widgets draw textures with
   color states, deletes it.
 - `gui/presenter_<platform>.c`: transport and timing. Setup and fallback,
-  output description and headroom, encoding the composed image for the
-  compositor, buffers, and `present()`, `clear()`, `release()` and `free()`
-  (`dt_presenter_transport_t` in `gui/presenter_layers.h`). The transport
-  calls `dt_presenter_window_present()` where the layers become visible
+  output description and headroom, buffers, and `reserve()`, `commit()`,
+  `clear()`, `release()` and `free()` (`dt_presenter_transport_t` in
+  `gui/presenter_layers.h`). A present is one transaction: `reserve()`
+  gives the storage of both layers (`dt_presenter_reservation_t`), each
+  with its row stride, and the image's encoding
+  (`dt_presenter_encoding_t`): a clip range for straight color in the
+  window's output, then a 3x3 linear map, stored as signed half floats,
+  which covers a transport that encodes in other primaries or with
+  another white level, and the layered backend writes them and commits.
+  The transport may refuse a reservation while the compositor holds its
+  buffers; a reservation without an image buffer is refused too when the
+  image changed. Nothing of the present is then shown, and the widget
+  draws again next frame. The transport decides when to call
+  `dt_presenter_window_present()`: where the layers become visible
   together with GTK's surface for that frame, or later, never earlier.
-  `present()` may refuse while the compositor holds its buffers; the
-  layers are then composed and presented again next frame.
+
+The costs over a cairo window, per presenting widget: two foreground
+surfaces of 4 bytes per device pixel (one while nothing is retained), the
+transport's buffers (on Wayland two of each layer, 8 and 4 bytes per
+device pixel), a coverage of one byte per device pixel over each placed
+image's box, and an alpha-1 source of one byte per pixel of the largest
+frame shown. Per present the foreground is copied into the transport's
+buffer and the replay drawn into it; the image layer is composed only
+when it changes, at about one sample per device pixel of each image's
+box.
 
 ### Wayland
 
@@ -404,7 +487,8 @@ The output is linear BT.2020 with headroom target max / reference luminance of t
 surface's preferred description (a compositor hint, not a measurement),
 re-read whenever the preference changes. The description is ext_linear,
 BT.2020, luminances (0, round(headroom x 203), 203), so a value v is sent as
-v x 203 / max, clipped to [0, headroom]. A new description is set on the
+v x 203 / max, clipped to [0, headroom]: the reservation's clip range
+[0, headroom] and matrix diag(1 / headroom). A new description is set on the
 image layer when it is ready, and applies with that layer's next commit,
 which is the first buffer encoded for it: a new headroom composes the image
 again, whether or not its frames change. Layers are synchronized subsurfaces

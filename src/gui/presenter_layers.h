@@ -30,19 +30,9 @@
 
 #include "gui/presenter_backend.h"
 
-// what a transport shows for one presenting widget
+// where a widget's layers go
 typedef struct dt_presenter_layers_t
 {
-  // float RGBA in the window's output, alpha 0 off the images; NULL if
-  // unchanged since the last present, which includes size, scale and
-  // headroom, so a transport sets the image's buffer scale only with a new
-  // buffer
-  const float *image;
-  // the headroom the image is shown with: what headroom() returned when it
-  // was composed, which is what the transport encodes it for
-  float headroom;
-  // premultiplied ARGB32, stride 4 * width
-  const uint8_t *foreground;
   // in device pixels
   int width, height;
   // device pixels per logical pixel
@@ -51,28 +41,62 @@ typedef struct dt_presenter_layers_t
   int x, y;
 } dt_presenter_layers_t;
 
+/*
+ * how the image layer stores a straight color c of the window's output
+ * image encoding, which the transport reported (1 is reference white):
+ * each channel clipped to [clip[0], clip[1]], outside which colorimetry is
+ * undefined, then matrix x c, premultiplied, in signed half floats
+ */
+typedef struct dt_presenter_encoding_t
+{
+  float clip[2];
+  float matrix[3][3];
+} dt_presenter_encoding_t;
+
+/*
+ * the storage of one present of a widget's layers, which the transport
+ * holds for it from reserve() until commit(), or until the next reserve()
+ * when it is not committed
+ */
+typedef struct dt_presenter_reservation_t
+{
+  // the foreground: premultiplied ARGB32 as cairo's, 4 * width bytes of
+  // each row used
+  uint8_t *foreground;
+  size_t foreground_stride;
+  // the image: RGBA half floats, rows of image_stride bytes; NULL while
+  // the platform holds every image buffer
+  uint16_t *image;
+  size_t image_stride;
+  dt_presenter_encoding_t encoding;
+} dt_presenter_reservation_t;
+
 typedef struct dt_presenter_transport_t dt_presenter_transport_t;
 
 /*
- * what present() is given, and what clear() takes away, must become
- * visible together with GTK's surface for the frame that drew it, or
- * later, never earlier: early layers show a hole or a stale image where
- * GTK has not drawn yet. the transport decides when to call
+ * what commit() shows, and what clear() takes away, must become visible
+ * together with GTK's surface for the frame that drew it, or later, never
+ * earlier: early layers show a hole or a stale image where GTK has not
+ * drawn yet. the transport decides when to call
  * dt_presenter_window_present() to make that true.
  */
 struct dt_presenter_transport_t
 {
-  // the largest value of the window's output an image layer shown now
-  // carries, 1 being reference white: a change makes the layered backend
-  // compose and present the image again
-  float (*headroom)(dt_presenter_transport_t *self);
-  // show a widget's layers, or return FALSE if they cannot be shown now;
-  // *widget_data is the transport's, NULL at first. the layers are only
-  // read during the call
-  gboolean (*present)(dt_presenter_transport_t *self,
+  // reserve the storage of a present of a widget's layers, or return
+  // FALSE if they cannot be shown now; the layered backend then draws
+  // again to retry. *widget_data is the transport's, NULL at first
+  gboolean (*reserve)(dt_presenter_transport_t *self,
                       GtkWidget *widget,
                       void **widget_data,
-                      const dt_presenter_layers_t *layers);
+                      const dt_presenter_layers_t *layers,
+                      dt_presenter_reservation_t *reservation);
+  // show the reservation with the foreground written into it, and the
+  // image if image is TRUE; otherwise the image shown last stays, which
+  // has the reservation's size, scale and encoding, since a change of
+  // those composes a new one. the present is accepted as a whole
+  void (*commit)(dt_presenter_transport_t *self,
+                 void **widget_data,
+                 const gboolean image);
   // stop showing a widget's layers, with the frame whose draw cleared
   // them, or no earlier
   void (*clear)(dt_presenter_transport_t *self, void **widget_data);
