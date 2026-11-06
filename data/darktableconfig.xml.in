@@ -3683,13 +3683,6 @@
     <longdescription>while enabled, a parametric mask element's color picker starts from the area the module's last pick used and sets the range from it at once, so one area can set the range of several channels in turn; the first pick still waits for an area dragged on the image</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/masks/parametric_always_shown</name>
-    <type min="0" max="2">int</type>
-    <default>0</default>
-    <shortdescription>always shown controls of parametric elements</shortdescription>
-    <longdescription>which controls of a parametric mask element the controls header's toggle leaves in view: 0 the input channel, 1 the input channel and the boost factor, 2 both channels and the boost factor, which hides the toggle</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/darkroom/masks/solo_edit_mode</name>
     <type>bool</type>
     <default>false</default>

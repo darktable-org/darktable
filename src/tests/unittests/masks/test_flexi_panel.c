@@ -154,48 +154,26 @@ static void test_chosen_view_decides_the_sliders(void **state)
   for(int out_used = 0; out_used < 2; out_used++)
   {
     const dt_masks_param_vis_t i =
-      dt_masks_model_param_row_visibility(INPUT, out_used, FALSE, FALSE);
+      dt_masks_model_param_row_visibility(INPUT, out_used, FALSE);
     assert_true(i.input);
     assert_false(i.output);
     const dt_masks_param_vis_t o =
-      dt_masks_model_param_row_visibility(OUTPUT, out_used, FALSE, FALSE);
+      dt_masks_model_param_row_visibility(OUTPUT, out_used, FALSE);
     assert_true(o.input);
     assert_true(o.output);
     const dt_masks_param_vis_t b =
-      dt_masks_model_param_row_visibility(BOTH, out_used, FALSE, FALSE);
+      dt_masks_model_param_row_visibility(BOTH, out_used, FALSE);
     assert_true(b.input);
     assert_true(b.output);
   }
 }
 
-// the boost factor shows under the sliders when asked to, and nowhere else,
-// and only for a channel that has one
-static void test_boost_shows_only_with_the_sliders(void **state)
+// the boost factor shows whatever the view, and only for a channel that has one
+static void test_boost_shows_for_a_channel_that_has_one(void **state)
 {
-  assert_true(dt_masks_model_param_row_visibility(AUTO, TRUE, TRUE, TRUE).boost);
-  assert_false(dt_masks_model_param_row_visibility(AUTO, TRUE, TRUE, FALSE).boost);
-  assert_false(dt_masks_model_param_row_visibility(AUTO, TRUE, FALSE, TRUE).boost);
-}
-
-// the always-shown option pins controls on top of the row's own choice: the
-// boost factor from the second level on, and the output slider at the third
-static void test_always_shown_pins_controls(void **state)
-{
-  const dt_masks_param_vis_t none = { TRUE, FALSE, FALSE };
-  dt_masks_param_vis_t v =
-    dt_masks_model_param_pin_visibility(none, DT_MASKS_PARAM_ALWAYS_INPUT, TRUE);
-  assert_false(v.output);
-  assert_false(v.boost);
-  v = dt_masks_model_param_pin_visibility(none, DT_MASKS_PARAM_ALWAYS_INPUT_BOOST, TRUE);
-  assert_false(v.output);
-  assert_true(v.boost);
-  v = dt_masks_model_param_pin_visibility(none, DT_MASKS_PARAM_ALWAYS_ALL, TRUE);
-  assert_true(v.output);
-  assert_true(v.boost);
-  // a channel with no boost factor has nothing to pin
-  v = dt_masks_model_param_pin_visibility(none, DT_MASKS_PARAM_ALWAYS_ALL, FALSE);
-  assert_true(v.output);
-  assert_false(v.boost);
+  assert_true(dt_masks_model_param_row_visibility(INPUT, FALSE, TRUE).boost);
+  assert_true(dt_masks_model_param_row_visibility(BOTH, TRUE, TRUE).boost);
+  assert_false(dt_masks_model_param_row_visibility(BOTH, TRUE, FALSE).boost);
 }
 
 // with nothing chosen, a row adapts: it shows the output slider only once its
@@ -203,11 +181,11 @@ static void test_always_shown_pins_controls(void **state)
 static void test_automatic_row_follows_the_output_range(void **state)
 {
   const dt_masks_param_vis_t unused =
-    dt_masks_model_param_row_visibility(AUTO, FALSE, FALSE, FALSE);
+    dt_masks_model_param_row_visibility(AUTO, FALSE, FALSE);
   assert_true(unused.input);
   assert_false(unused.output);
   const dt_masks_param_vis_t used =
-    dt_masks_model_param_row_visibility(AUTO, TRUE, FALSE, FALSE);
+    dt_masks_model_param_row_visibility(AUTO, TRUE, FALSE);
   assert_true(used.input);
   assert_true(used.output);
 }
@@ -275,20 +253,15 @@ static void test_swatch_alpha(void **state)
   assert_float_equal(dt_masks_model_param_swatch_alpha(hard, FALSE, 0.71f), 0.0f, 1e-6);
 }
 
-// the view and the boost bit share the field, and neither moves the other. The
-// bit a row's expansion used to be is left as found
-static void test_view_and_boost_share_in_out(void **state)
+// the view round-trips through in_out
+static void test_view_round_trips_through_in_out(void **state)
 {
-  dt_masks_point_parametric_t p = { .in_out = DT_MASKS_PARAM_EXPANDED };
-  dt_masks_param_set_view(&p, OUTPUT);
-  dt_masks_param_set_boost_with_sliders(&p, TRUE);
-  assert_int_equal(dt_masks_param_get_view(&p), OUTPUT);
-  assert_true(dt_masks_param_boost_with_sliders(&p));
-  dt_masks_param_set_view(&p, BOTH);
-  assert_true(dt_masks_param_boost_with_sliders(&p));
-  dt_masks_param_set_boost_with_sliders(&p, FALSE);
-  assert_int_equal(dt_masks_param_get_view(&p), BOTH);
-  assert_true(p.in_out & DT_MASKS_PARAM_EXPANDED);
+  dt_masks_point_parametric_t p = { 0 };
+  for(int v = AUTO; v <= BOTH; v++)
+  {
+    dt_masks_param_set_view(&p, v);
+    assert_int_equal(dt_masks_param_get_view(&p), v);
+  }
 }
 
 #undef AUTO
@@ -798,13 +771,12 @@ int main(void)
     cmocka_unit_test_teardown(test_negative_polarity_is_never_a_noop, _teardown),
     cmocka_unit_test_teardown(test_a_shape_is_never_a_noop, _teardown),
     cmocka_unit_test_teardown(test_chosen_view_decides_the_sliders, _teardown),
-    cmocka_unit_test_teardown(test_boost_shows_only_with_the_sliders, _teardown),
-    cmocka_unit_test_teardown(test_always_shown_pins_controls, _teardown),
+    cmocka_unit_test_teardown(test_boost_shows_for_a_channel_that_has_one, _teardown),
     cmocka_unit_test_teardown(test_automatic_row_follows_the_output_range, _teardown),
     cmocka_unit_test_teardown(test_view_resolve, _teardown),
     cmocka_unit_test_teardown(test_swatch_span, _teardown),
     cmocka_unit_test_teardown(test_swatch_alpha, _teardown),
-    cmocka_unit_test_teardown(test_view_and_boost_share_in_out, _teardown),
+    cmocka_unit_test_teardown(test_view_round_trips_through_in_out, _teardown),
     cmocka_unit_test_teardown(test_channel_used_detects_a_touched_range, _teardown),
     cmocka_unit_test_teardown(test_channel_used_honors_the_active_bit, _teardown),
     cmocka_unit_test_setup_teardown(test_sticky_opacity_preference_roundtrips,
