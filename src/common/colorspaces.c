@@ -1250,21 +1250,26 @@ static void _update_display_transforms(dt_colorspaces_t *self)
                        TYPE_RGBA_8, display_profile, TYPE_BGRA_8, intent, 0);
 }
 
-// the profile colorout builds a presented pipe's transform with
+static inline int _window_index(const dt_colorspaces_color_profile_type_t window)
+{
+  return window == DT_COLORSPACE_DISPLAY2;
+}
+
+// the profile an output names, which colorout builds a presented pipe's
+// transform with. a system display type names the window's system display
+// profile: the registry entry of that type follows the window's device
+// encoding, so it is that profile only on a cairo window
 static cmsHPROFILE _output_profile(dt_colorspaces_t *self,
                                    const dt_colorspaces_color_profile_type_t type,
                                    const char *filename)
 {
+  if(dt_colorspaces_replaced_in_session(type))
+    return self->system_display[_window_index(type)];
   const dt_colorspaces_color_profile_t *p =
     _get_profile(self, type, filename,
                  DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY
                  | DT_PROFILE_DIRECTION_DISPLAY2);
   return p ? p->profile : NULL;
-}
-
-static inline int _window_index(const dt_colorspaces_color_profile_type_t window)
-{
-  return window == DT_COLORSPACE_DISPLAY2;
 }
 
 // thumbnails are drawn in the main window only
@@ -1295,6 +1300,27 @@ static void _describe_system_display(dt_colorspaces_t *self,
   output->format = DT_FRAME_RGB24;
 }
 
+// the registry's DISPLAY or DISPLAY2 entry is what the window shows 8-bit
+// values as, its device encoding: the system display profile on a cairo
+// window, the device the backend declared on a platform-owned one. as
+// Krita, which takes its UI profile from its own surface where the OS
+// manages color and the monitor profile only where it does not
+// (KisMultiSurfaceStateManager.cpp:51-56 and :62-70)
+// make sure that xprofile_lock is held when calling this!
+static void _entry_follow_device(dt_colorspaces_t *self,
+                                 const int w)
+{
+  const dt_colorspaces_color_profile_type_t type =
+    w ? DT_COLORSPACE_DISPLAY2 : DT_COLORSPACE_DISPLAY;
+  for(GList *iter = self->profiles; iter; iter = g_list_next(iter))
+  {
+    dt_colorspaces_color_profile_t *p = iter->data;
+    if(p->type != type) continue;
+    p->profile = self->outputs[w].device.profile;
+    return;
+  }
+}
+
 // replace a window's output, keeping its serial running, and rebuild what
 // converts to its device encoding if that changed. returns what changed.
 // make sure that xprofile_lock is held when calling this!
@@ -1308,7 +1334,11 @@ static dt_display_output_change_t _publish(dt_colorspaces_t *self,
   const uint32_t serial = current->serial + 1;
   *current = *output;
   current->serial = serial;
-  if(change & DT_DISPLAY_OUTPUT_DEVICE) _update_window_transforms(self, w);
+  if(change & DT_DISPLAY_OUTPUT_DEVICE)
+  {
+    _entry_follow_device(self, w);
+    _update_window_transforms(self, w);
+  }
   return change;
 }
 
@@ -1341,39 +1371,31 @@ uint32_t dt_colorspaces_get_display_serial(const dt_colorspaces_color_profile_ty
   return serial;
 }
 
-// a window's output changed: announce it by what changed. as in Krita
-// (KisMultiSurfaceStateManager), the output is a value and consumers take
-// the difference: producers compare its serial where they decide to
-// render, on the redraw queued here, and only a new device encoding or
-// owner reaches what GTK draws, such as converted thumbnails
+// a window's output may have changed from before to after: announce it by
+// what changed. as in Krita (KisMultiSurfaceStateManager), the output is a
+// value and consumers take the difference: producers compare its serial
+// where they decide to render, on the redraw queued here, and only a new
+// device encoding or owner reaches what GTK draws, such as converted
+// thumbnails. a new device profile is also a new registry entry, for what
+// names it by type (a soft proof, the histogram or export profile, either
+// window's), announced as master announced a new display profile
 static void _output_changed(const int w,
-                            const dt_display_output_change_t change)
+                            const dt_display_output_t *before,
+                            const dt_display_output_t *after)
 {
-  if(change == DT_DISPLAY_OUTPUT_UNCHANGED) return;
+  const dt_display_output_change_t change = dt_display_output_diff(before, after);
   if(change & DT_DISPLAY_OUTPUT_DEVICE)
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             w ? DT_COLORSPACES_PROFILE_TYPE_DISPLAY2
                               : DT_COLORSPACES_PROFILE_TYPE_DISPLAY);
-  if(!darktable.gui) return;
+  if(before->device.profile != after->device.profile)
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  if(change == DT_DISPLAY_OUTPUT_UNCHANGED || !darktable.gui) return;
   GtkWidget *toplevel = w ? darktable.develop->second_wnd
                           : dt_ui_main_window(darktable.gui->ui);
   // nothing to redraw before the window is realized
   if(toplevel && gtk_widget_get_realized(toplevel))
     dt_control_queue_redraw_widget(toplevel);
-}
-
-// a window's system display profile was read. two things may have
-// changed: the window's output, announced as any output change is, and the
-// registry's DISPLAY or DISPLAY2 profile, for what names it by type (a soft
-// proof, the histogram or export profile, either window's) whoever follows
-// it, as master always announced a new display profile
-static void _system_display_announce(const int w,
-                                     const gboolean changed,
-                                     const dt_display_output_change_t output_change)
-{
-  _output_changed(w, output_change);
-  if(changed)
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
 }
 
 void dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_type_t window,
@@ -1383,6 +1405,7 @@ void dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_type_t 
   const int w = _window_index(window);
 
   pthread_rwlock_wrlock(&self->xprofile_lock);
+  const dt_display_output_t before = self->outputs[w];
   dt_display_output_t resolved;
   if(output)
   {
@@ -1394,10 +1417,11 @@ void dt_colorspaces_set_window_output(const dt_colorspaces_color_profile_type_t 
   }
   else
     _describe_system_display(self, w, &resolved);
-  const dt_display_output_change_t change = _publish(self, w, &resolved);
+  _publish(self, w, &resolved);
+  const dt_display_output_t after = self->outputs[w];
   pthread_rwlock_unlock(&self->xprofile_lock);
 
-  _output_changed(w, change);
+  _output_changed(w, &before, &after);
 }
 
 typedef struct _system_profile_t
@@ -1496,18 +1520,10 @@ static gboolean _system_display_set(dt_colorspaces_t *self,
     self->system_display_hinted[w] = TRUE;
   }
   if(!profile) profile = self->system_display_srgb[w];
-  const dt_colorspaces_color_profile_type_t type =
-    w ? DT_COLORSPACE_DISPLAY2 : DT_COLORSPACE_DISPLAY;
-  for(GList *iter = self->profiles; iter; iter = g_list_next(iter))
-  {
-    dt_colorspaces_color_profile_t *p = iter->data;
-    if(p->type != type) continue;
-    if(p->profile == profile) return FALSE;
-    p->profile = profile;
-    _system_display_changed(self, w);
-    return TRUE;
-  }
-  return FALSE;
+  if(self->system_display[w] == profile) return FALSE;
+  self->system_display[w] = profile;
+  _system_display_changed(self, w);
+  return TRUE;
 }
 
 static void cms_error_handler(const cmsContext ContextID,
@@ -1699,24 +1715,20 @@ void dt_colorspaces_update_display_intent(void)
 {
   dt_colorspaces_t *self = darktable.color_profiles;
   const dt_iop_color_intent_t intent = _display_intent_preference();
-  dt_display_output_change_t change[2] = { DT_DISPLAY_OUTPUT_UNCHANGED,
-                                           DT_DISPLAY_OUTPUT_UNCHANGED };
+  dt_display_output_t before[2], after[2];
 
   pthread_rwlock_wrlock(&self->xprofile_lock);
+  for(int w = 0; w < 2; w++) before[w] = self->outputs[w];
   if(intent != self->display_intent)
   {
     self->display_intent = intent;
-    for(int w = 0; w < 2; w++)
-    {
-      const dt_display_output_t before = self->outputs[w];
-      _system_display_changed(self, w);
-      change[w] = dt_display_output_diff(&before, &self->outputs[w]);
-    }
+    for(int w = 0; w < 2; w++) _system_display_changed(self, w);
   }
+  for(int w = 0; w < 2; w++) after[w] = self->outputs[w];
   pthread_rwlock_unlock(&self->xprofile_lock);
 
   for(int w = 0; w < 2; w++)
-    _output_changed(w, change[w]);
+    _output_changed(w, &before[w], &after[w]);
 }
 
 dt_colorspaces_t *dt_colorspaces_init()
@@ -1761,8 +1773,8 @@ dt_colorspaces_t *dt_colorspaces_init()
   cmsHPROFILE display2 = dt_colorspaces_create_srgb_profile();
   _system_profile_add(res, NULL, 0, display);
   _system_profile_add(res, NULL, 0, display2);
-  res->system_display_srgb[0] = display;
-  res->system_display_srgb[1] = display2;
+  res->system_display[0] = res->system_display_srgb[0] = display;
+  res->system_display[1] = res->system_display_srgb[1] = display2;
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_DISPLAY,
@@ -2164,15 +2176,14 @@ static void _colorspaces_get_display_profile_colord_callback(GObject *source,
   }
   // colord answers after the GUI has drawn with the profile before, the
   // sRGB placeholder at startup (#19776)
-  const dt_display_output_change_t output_change =
-    dt_display_output_diff(&before, &self->outputs[w]);
+  const dt_display_output_t after = self->outputs[w];
   pthread_rwlock_unlock(&self->xprofile_lock);
 
   if(profile)
     g_object_unref(profile);
   g_object_unref(window);
 
-  _system_display_announce(w, changed, output_change);
+  _output_changed(w, &before, &after);
 }
 #endif
 
@@ -2213,11 +2224,11 @@ void dt_colorspaces_set_display_profile
 #ifdef USE_COLORDGTK
   uint32_t query_serial = 0;
 #endif
-  dt_display_output_change_t output_change = DT_DISPLAY_OUTPUT_UNCHANGED;
 
   // a file the user chose replaces what the platform would report, for
   // both windows. only a window darktable color-manages itself uses it: a
-  // platform-owned output ignores the system display profile
+  // platform-owned output, and with it the registry entry, ignores the
+  // system display profile
   gchar *file = dt_util_fix_path(dt_conf_get_string_const("ui_last/display_profile_file"));
   if(file)
   {
@@ -2391,9 +2402,9 @@ reported:
                profile_source ? profile_source : "platform", buffer_size);
     }
   }
-  output_change = dt_display_output_diff(&before, &self->outputs[w]);
+  const dt_display_output_t after = self->outputs[w];
   pthread_rwlock_unlock(&self->xprofile_lock);
-  _system_display_announce(w, changed, output_change);
+  _output_changed(w, &before, &after);
 #if defined G_OS_WIN32
 cleanup_and_return:
 #endif

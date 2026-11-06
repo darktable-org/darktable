@@ -67,11 +67,9 @@ markers are written as they are, saturated colors that mark in any output.
   platform converts. The one exception is the preference
   `ui_last/display_profile_file`: an ICC file that replaces what the
   platform publishes, for both windows, read in its place by
-  `dt_colorspaces_set_display_profile()`. A native window's output ignores
-  it, being the platform's, but what names the system display profile by
-  type takes the file there too, as it takes colord's profile: a soft proof
-  or histogram profile set to it, thumbnails with `cache_color_managed`
-  off. There is no other user selection; previewing
+  `dt_colorspaces_set_display_profile()`. A native window ignores it, as
+  it ignores colord's profile, and so does its registry entry (below).
+  There is no other user selection; previewing
   another display, print or sRGB is a soft proof. Unless the platform owns
   it, a window's output is its system display profile (`DISPLAY` or
   `DISPLAY2`) as image and device encoding, with the display intent
@@ -90,6 +88,21 @@ markers are written as they are, saturated colors that mark in any output.
   - The display profile file is applied as is. On macOS, and on Windows
     with automatic color management or HDR, the system converts the image
     again, from sRGB, so its colors are converted twice.
+- The registry's entries "system display profile" (`DISPLAY`) and "system
+  display profile (second window)" (`DISPLAY2`) are what their window shows
+  8-bit values as, its device encoding: the system display profile on a
+  cairo window, the device the backend declared on a platform-owned one,
+  sRGB on Wayland, whatever the platform or the file reports. What names
+  the entry by type therefore renders for what the window shows: a
+  histogram profile set to it, thumbnails with `cache_color_managed` off.
+  The window's system display profile, the platform's report or the file,
+  is kept per window (`system_display` in `dt_colorspaces_t`) and describes
+  the window only when cairo shows it; in an output, `DISPLAY` and
+  `DISPLAY2` name that profile. The entry follows every published change
+  of the device profile (`_entry_follow_device()`), the platform taking
+  the window over or giving it back included. Krita does the same: its UI
+  profile is its surface's where the OS manages color, and the monitor
+  profile only where it does not.
 - What GTK draws converts to the device encoding: the thumbnail transforms
   follow the main window's, picker swatches convert from what the preview
   pipe produced to its window's, frames drawn by GTK take their device
@@ -109,13 +122,16 @@ markers are written as they are, saturated colors that mark in any output.
   window only) and module GUI colors. A new image encoding alone, such as
   a new [headroom target](#headroom-target), reruns that window's
   producers and nothing else.
-  `DT_SIGNAL_CONTROL_PROFILE_CHANGED` is not raised for a window's output.
-  It announces a new system display profile, the registry's `DISPLAY` or
-  `DISPLAY2` entry, whether a window follows it or not, for what names the
-  profile by type: a soft proof, the histogram or export profile, the main
-  window naming `DISPLAY2`. colorout reprocesses the darkroom on it, so a
-  new screen profile on X11 reruns both windows' pipes, as it always did; a
-  new headroom never touches the registry.
+  A new device profile is also a new registry entry, announced with
+  `DT_SIGNAL_CONTROL_PROFILE_CHANGED` for what names the entry by type: a
+  soft proof, the histogram or export profile, the main window naming
+  `DISPLAY2`. It is raised exactly when the entry changes: for a new
+  system display profile on a cairo window, and when the platform takes a
+  window or gives it back; a new system display profile on a native window
+  changes neither the output nor the entry and announces nothing. colorout
+  reprocesses the darkroom on it, so a new screen profile on X11 reruns
+  both windows' pipes, as it always did; a new intent or headroom never
+  touches the registry.
 - Producers pull. Each compares the serial its image was made for with
   its window's where it already decides to render: the darkroom's full,
   preview and second window pipes, a pinned image's too, compare the serial
@@ -163,9 +179,10 @@ markers are written as they are, saturated colors that mark in any output.
   profile.
 - An encoding and an output name the registry's profile (`profile`) as
   well as its type. A new screen profile replaces the system display
-  profile under the same type and file name, and the replaced one stays
-  valid for the session (`system_display_profiles` in
-  `dt_colorspaces_t`), so pixels made for the old screen keep converting
+  profile under the same type and file name, and a new device profile the
+  registry entry's. A replaced profile stays valid for the session, in
+  `system_display_profiles` in `dt_colorspaces_t` or as another registry
+  entry's (sRGB), so pixels made for the old screen keep converting
   with the profile they were made with: conversions take their profile
   info with `dt_ioppr_add_profile_info_for_content()`. For every other
   type, type and file name are the identity
@@ -685,9 +702,11 @@ AdobeRGB, so wide gamut and HDR need a float thumbnail cache anyway. See
 darktable-org/darktable#20477.
 
 With `cache_color_managed` off the mipmap cache holds display-encoded
-thumbnails, encoded for the main window's system display profile, and a compositor that
-manages color shows them as sRGB like the rest of GTK's surface. They
-follow the window's output once thumbnails go through the presenter.
+thumbnails, encoded for the main window's registry entry, its device
+encoding, so they are shown as the rest of GTK's surface is. Thumbnails
+already in the cache keep the profile they were encoded for when that
+changes, as in master; the option's description warns of it.
+They follow the window's output once thumbnails go through the presenter.
 
 ## Common Mistakes
 
