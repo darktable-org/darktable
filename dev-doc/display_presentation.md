@@ -231,7 +231,7 @@ deliver, its frames keep the tone mapping they were rendered with: the
 transport clips them to the range of the image description in use, and the
 compositor clips or fits that range to the screen (KWin clamps under
 relative intent).
-A cairo window has its profile's headroom and no target.
+A cairo window has headroom 1 and no target.
 
 Why settle: every target change reruns the window's pipes from the start,
 since `output_headroom` is in every cache line's hash

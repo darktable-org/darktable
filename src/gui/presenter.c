@@ -177,8 +177,8 @@ void dt_presenter_window_set_output(dt_presenter_window_t *window,
     _publish(window);
     return;
   }
-  // a window on its system display profile has the profile's headroom
-  // and no target
+  // a window on its system display profile has headroom 1
+  // (_describe_system_display() in colorspaces.c) and no target
   _settle_stop(window);
   dt_presenter_target_init(&window->target);
   dt_colorspaces_set_window_output(window->kind, NULL);
