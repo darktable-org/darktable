@@ -608,9 +608,11 @@ an ICC file) starts a new generation; KWin's HDR brightness moves only the
 reference luminance. The output is linear BT.2020 with the core's
 [headroom target](#headroom-target), and the image description is made for
 that target, never for the raw preference: ext_linear, BT.2020, luminances
-(0, round(headroom x 203), 203), so a value v is sent as v x 203 / max,
-clipped to [0, headroom]: the reservation's clip range [0, headroom] and
-matrix diag(1 / headroom), within the rounding of max to whole nits. A new
+(0, ceil(headroom x 203), 203), so a value v is sent as v x 203 / max,
+clipped to [0, max / 203]: the reservation's clip range and matrix
+diag(203 / max). Max is rounded up to whole nits, so that range holds
+every value the pipes render, up to headroom; rounded to nearest, the top
+of up to half a nit would be clipped. A new
 description is set on the image layer when it is ready, and applies with
 that layer's next commit, which is the first buffer encoded for it: the
 window draws again and the image is composed again for the new headroom,
