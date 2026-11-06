@@ -56,10 +56,11 @@ mark in any output.
   window and written under `xprofile_lock`, and its `serial` changes
   whenever anything else in it does.
 - A cairo window ([Backends](#backends)) renders to the screen profile the
-  platform publishes to applications: the X atom on X11, colord on X11 and
-  Wayland, the monitor's default profile from WCS on Windows (none, as
-  under Advanced Color, means sRGB), and sRGB where nothing is published,
-  as on macOS, where GTK tags its backing store sRGB. Cairo never decides
+  platform publishes to applications: the X atom on X11, colord on X11
+  and, when built with GDK X11 support, on Wayland, the monitor's default
+  profile from WCS on Windows (none, as under Advanced Color, means sRGB),
+  and sRGB where nothing is published, as on macOS, where GTK tags its
+  backing store sRGB. Cairo never decides
   whether the platform converts. The one exception is the preference
   `ui_last/display_profile_file`: an ICC file that replaces what the
   platform publishes, for both windows, read in its place by
@@ -445,7 +446,9 @@ draw.
 ### Layered
 
 The layered backend, the native one, shows a window's images on surfaces of
-its own above GTK's surface, from bottom to top:
+its own above GTK's surface, from bottom to top (above, not below: on
+Windows DirectComposition always composes above a window's GDI content, so
+an underlay would not port):
 
 1. GTK's surface: everything GTK draws, untagged.
 2. The image layer: premultiplied half float, in the window's output,
@@ -587,6 +590,11 @@ Code is split by what it works around:
   draws again next frame. The transport decides when to call
   `dt_presenter_window_present()`: where the layers become visible
   together with GTK's surface for that frame, or later, never earlier.
+  That point is verified on Wayland only: before GDK's commit in
+  `after-paint` ([Wayland](#wayland)). On macOS it is expected at the end
+  of the presenting widget's draw, inside `GdkQuartzView`'s
+  `updateLayer`, and on Windows after GTK's paint; both are open, to be
+  verified by their backends.
 
 The costs over a cairo window, per presenting widget: two foreground
 surfaces of 4 bytes per device pixel (one while nothing is retained), the
