@@ -505,6 +505,13 @@ static void _description_ready(_backend_t *b,
   b->description = b->pending;
   b->description_max = b->pending_max;
   b->pending = NULL;
+  // set now, and still shown with the image encoded for the old one: an
+  // image description is double-buffered state, applied by the image
+  // surface's next commit (color-management-v1, set_image_description).
+  // that surface is committed only with a buffer encoded for the headroom
+  // headroom() returns, and a new headroom composes a new buffer
+  // (presenter_layers.c, _image_changed()), so the description and the
+  // first buffer encoded for it apply together
   for(GList *l = b->widgets; l; l = g_list_next(l))
   {
     _widget_t *w = l->data;
@@ -673,6 +680,11 @@ static const struct wl_registry_listener _registry_listener = {
 
 /* transport interface */
 
+static float _transport_headroom(dt_presenter_transport_t *self)
+{
+  return _headroom(((_backend_t *)self)->description_max);
+}
+
 static void _add_shown_popover(GtkWidget *widget,
                                gpointer data)
 {
@@ -743,7 +755,7 @@ static gboolean _present(dt_presenter_transport_t *self,
   {
     // outside the volume the description declares, colorimetry is
     // undefined: clip to it. alpha is 1 on the images, 0 off them
-    const float headroom = _headroom(b->description_max);
+    const float headroom = layers->headroom;
     const float scale = 1.0f / headroom;
     const size_t npixels = (size_t)layers->width * layers->height;
     uint16_t *const out = image->data;
@@ -900,6 +912,7 @@ dt_presenter_transport_t *dt_presenter_wayland_new(GtkWidget *toplevel,
     return NULL;
   }
 
+  b->transport.headroom = _transport_headroom;
   b->transport.present = _present;
   b->transport.clear = _clear;
   b->transport.release = _release;
