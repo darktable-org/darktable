@@ -19,8 +19,8 @@
  * cmocka unit tests for the system display profiles of common/colorspaces.c:
  * a replaced profile stays valid until dt_colorspaces_cleanup(), the same
  * bytes always give the same profile, so switching back and forth between
- * two profiles does not grow the list, and a report with no usable profile
- * gives the window sRGB again. colorspaces.c is included
+ * two profiles does not grow the list, and a report with no usable profile,
+ * one that is not RGB included, gives the window sRGB again. colorspaces.c is included
  * for its static helpers, on a registry built here as dt_colorspaces_init()
  * builds the entries they touch.
  */
@@ -240,12 +240,41 @@ static void test_no_profile_means_srgb(void **state)
   _assert_valid(_content(DT_COLORSPACE_DISPLAY));
 }
 
+static void test_non_rgb_profile_means_srgb(void **state)
+{
+  _fixture_t *f = *state;
+  dt_colorspaces_t *self = darktable.color_profiles;
+
+  // a profile lcms reads but no screen can have: Lab, and gray, which a
+  // transform from GTK's RGB cannot target
+  cmsHPROFILE lab = cmsCreateLab4Profile(NULL);
+  cmsToneCurve *gamma = cmsBuildGamma(NULL, 2.2);
+  cmsHPROFILE gray = cmsCreateGrayProfile(cmsD50_xyY(), gamma);
+  cmsFreeToneCurve(gamma);
+  size_t lab_size = 0, gray_size = 0;
+  uint8_t *lab_bytes = _bytes(lab, &lab_size);
+  uint8_t *gray_bytes = _bytes(gray, &gray_size);
+  cmsCloseProfile(lab);
+  cmsCloseProfile(gray);
+
+  assert_true(_replace(DT_COLORSPACE_DISPLAY, f->a, f->a_size));
+  assert_true(_replace(DT_COLORSPACE_DISPLAY, lab_bytes, lab_size));
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), f->placeholder);
+  assert_false(_replace(DT_COLORSPACE_DISPLAY, gray_bytes, gray_size));
+  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), f->placeholder);
+  // neither is kept
+  assert_int_equal(g_list_length(self->system_display_profiles), 3);
+  g_free(lab_bytes);
+  g_free(gray_bytes);
+}
+
 int main(int argc, char *argv[])
 {
   const struct CMUnitTest tests[] = {
     cmocka_unit_test_setup_teardown(test_switching_reuses_profiles, _setup, _teardown),
     cmocka_unit_test_setup_teardown(test_windows_share_profiles, _setup, _teardown),
     cmocka_unit_test_setup_teardown(test_no_profile_means_srgb, _setup, _teardown),
+    cmocka_unit_test_setup_teardown(test_non_rgb_profile_means_srgb, _setup, _teardown),
   };
   return cmocka_run_group_tests(tests, NULL, NULL);
 }
