@@ -468,6 +468,13 @@ GtkWidget *dt_ui_flexi_panel_header(struct dt_ui_t *ui);
 /** \brief flexi masks panel: box to reparent flexi masks content into
     (see develop/blend_gui.c, plugins/darkroom/blend/masks_panel_position) */
 GtkWidget *dt_ui_flexi_panel_content(struct dt_ui_t *ui);
+/** \brief flexi masks panel: a scrolled window like the one around its
+    content, for content that scrolls in parts (see dt_ui_flexi_panel_set_split) */
+GtkWidget *dt_ui_flexi_panel_scroller_new(struct dt_ui_t *ui);
+/** \brief flexi masks panel: its content scrolls in two parts, each in its own
+    scroller (top and bottom, from dt_ui_flexi_panel_scroller_new), so the
+    panel's own scroller stops scrolling. NULL for both restores it */
+void dt_ui_flexi_panel_set_split(struct dt_ui_t *ui, GtkWidget *top, GtkWidget *bottom);
 /** \brief flexi masks panel: mark its module-like frame active (the mask it
     shows is on) or not, as dt_module_active marks an enabled module, so themes
     style the panel's header the way they style an enabled module's */

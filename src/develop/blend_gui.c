@@ -576,6 +576,138 @@ void dt_masks_gui_reparent_into(GtkWidget *w,
   _refresh_request_modes(cur);
 }
 
+// where the docked panel's divider is, in pixels from the top of the split
+// content; 0 until the user has moved it, which is half of it
+#define DT_MASKS_SPLIT_CONF "plugins/darkroom/masks/docked_split_position"
+
+static gboolean _split_applying = FALSE;
+
+// the divider takes its saved place with the first allocation, when the
+// panel's height is known
+static void _split_allocated(GtkWidget *paned, GdkRectangle *a, gpointer data)
+{
+  if(a->height <= 1) return;
+  g_object_set_data(G_OBJECT(paned), "split-height", GINT_TO_POINTER(a->height));
+  if(g_object_get_data(G_OBJECT(paned), "split-placed")) return;
+  g_object_set_data(G_OBJECT(paned), "split-placed", GINT_TO_POINTER(1));
+  const int saved = dt_conf_get_int(DT_MASKS_SPLIT_CONF);
+  _split_applying = TRUE;
+  gtk_paned_set_position(GTK_PANED(paned), saved > 0 ? saved : a->height / 2);
+  _split_applying = FALSE;
+}
+
+// remember where the user leaves the divider. A paned clamps its position when
+// its height shrinks, which is not the user's move and must not overwrite it:
+// that one has the old height in "split-height" still (see _split_allocated)
+static void _split_moved(GObject *paned, GParamSpec *pspec, gpointer data)
+{
+  if(_split_applying || !g_object_get_data(paned, "split-placed")) return;
+  if(GPOINTER_TO_INT(g_object_get_data(paned, "split-height"))
+     != gtk_widget_get_allocated_height(GTK_WIDGET(paned)))
+    return;
+  dt_conf_set_int(DT_MASKS_SPLIT_CONF, gtk_paned_get_position(GTK_PANED(paned)));
+}
+
+static void _split_move(GtkWidget *part, GtkWidget *to)
+{
+  GtkWidget *cur = gtk_widget_get_parent(part);
+  g_object_ref(part);
+  if(cur) gtk_container_remove(GTK_CONTAINER(cur), part);
+  gtk_container_add(GTK_CONTAINER(to), part);
+  g_object_unref(part);
+  _refresh_request_modes(to);
+  _refresh_request_modes(cur);
+}
+
+// the docked panel, as tall as its window, scrolls its mask layout and the rest
+// apart, with a divider between. Everywhere else the panel sits in a scroller it
+// does not own (the module's, the utility panel's), and a scroller of its own
+// would nest in it: the two halves then stay stacked in the panel, as built
+void dt_masks_gui_split_dock(dt_iop_gui_blend_data_t *bd, const gboolean docked)
+{
+  if(!bd || bd->masks_split_on == docked) return;
+  GtkWidget *top = bd->masks_split_top;
+  GtkWidget *bottom = bd->masks_split_bottom;
+  if(!top || !bottom || !GTK_IS_WIDGET(top) || !GTK_IS_WIDGET(bottom)) return;
+  struct dt_ui_t *ui = darktable.gui ? darktable.gui->ui : NULL;
+
+  if(docked)
+  {
+    GtkWidget *panel = gtk_widget_get_parent(top);
+    if(!GTK_IS_BOX(panel) || !ui) return;
+    if(!bd->masks_split_paned)
+    {
+      GtkWidget *sw[2] = { dt_ui_flexi_panel_scroller_new(ui), dt_ui_flexi_panel_scroller_new(ui) };
+      for(int i = 0; i < 2; i++)
+      {
+        // neither half may take the whole panel, or the divider would have
+        // nowhere to go
+        gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw[i]),
+                                                   DT_PIXEL_APPLY_DPI(80));
+        GtkWidget *view = gtk_viewport_new(NULL, NULL);
+        gtk_container_add(GTK_CONTAINER(sw[i]), view);
+        gtk_widget_show(view);
+        gtk_widget_show(sw[i]);
+      }
+      GtkWidget *paned = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
+      gtk_widget_set_name(paned, "masks-split");
+      gtk_paned_set_wide_handle(GTK_PANED(paned), TRUE);
+      // the mask layout keeps the room it was given, the rest takes what is left
+      gtk_paned_pack1(GTK_PANED(paned), sw[0], FALSE, TRUE);
+      gtk_paned_pack2(GTK_PANED(paned), sw[1], TRUE, TRUE);
+      gtk_widget_set_vexpand(paned, TRUE);
+      // shown by the docking only: the module's show_all must not show it
+      // while the halves are stacked
+      gtk_widget_set_no_show_all(paned, TRUE);
+      g_signal_connect(G_OBJECT(paned), "size-allocate", G_CALLBACK(_split_allocated), NULL);
+      g_signal_connect(G_OBJECT(paned), "notify::position", G_CALLBACK(_split_moved), NULL);
+      gtk_box_pack_start(GTK_BOX(panel), paned, TRUE, TRUE, 0);
+      bd->masks_split_paned = paned;
+    }
+    GtkWidget *paned = bd->masks_split_paned;
+    GtkWidget *top_sw = gtk_paned_get_child1(GTK_PANED(paned));
+    GtkWidget *bottom_sw = gtk_paned_get_child2(GTK_PANED(paned));
+    _split_move(top, gtk_bin_get_child(GTK_BIN(top_sw)));
+    _split_move(bottom, gtk_bin_get_child(GTK_BIN(bottom_sw)));
+    // place the divider before the first allocation, or the panel is drawn once
+    // with the top half at its natural height and then jumps. The height is
+    // known once the panel has been laid out before; if not, the first
+    // allocation places it (_split_allocated)
+    if(!g_object_get_data(G_OBJECT(paned), "split-placed"))
+    {
+      GtkWidget *win = gtk_widget_get_toplevel(paned);
+      const int saved = dt_conf_get_int(DT_MASKS_SPLIT_CONF);
+      int height = gtk_widget_get_allocated_height(paned);
+      // not laid out yet: the window less the header and the panel's chrome
+      if(height <= 1 && GTK_IS_WINDOW(win)) height = gtk_widget_get_allocated_height(win) - DT_PIXEL_APPLY_DPI(150);
+      if(saved > 0 || height > 1)
+      {
+        g_object_set_data(G_OBJECT(paned), "split-placed", GINT_TO_POINTER(1));
+        _split_applying = TRUE;
+        gtk_paned_set_position(GTK_PANED(paned), saved > 0 ? saved : height / 2);
+        _split_applying = FALSE;
+      }
+    }
+    gtk_widget_show(paned);
+    dt_ui_flexi_panel_set_split(ui, top_sw, bottom_sw);
+  }
+  else
+  {
+    GtkWidget *paned = bd->masks_split_paned;
+    GtkWidget *panel = paned ? gtk_widget_get_parent(paned) : NULL;
+    if(GTK_IS_BOX(panel))
+    {
+      _split_move(top, panel);
+      gtk_box_reorder_child(GTK_BOX(panel), top, 0);
+      _split_move(bottom, panel);
+      gtk_box_reorder_child(GTK_BOX(panel), bottom, 1);
+      gtk_widget_hide(paned);
+    }
+    if(ui) dt_ui_flexi_panel_set_split(ui, NULL, NULL);
+  }
+  bd->masks_split_on = docked;
+}
+
 // dt_history_item_get_name gives markup, which a plain-text label, menu or
 // tooltip would show escaped ("&amp;")
 static gchar *_module_plain_name(const dt_iop_module_t *m)
@@ -19395,6 +19527,11 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     dt_gui_box_add(bd->masks_panel_body, bd->masks_panel_reveal);
     GtkWidget *mask_panel = dt_gui_vbox();
     gtk_container_add(GTK_CONTAINER(bd->masks_panel_reveal), mask_panel);
+    // the two halves of dt_masks_gui_split_dock: plain boxes, which lay the
+    // panel out as if its parts were packed in mask_panel itself
+    bd->masks_split_top = dt_gui_vbox();
+    bd->masks_split_bottom = dt_gui_vbox();
+    dt_gui_box_add(mask_panel, bd->masks_split_top, bd->masks_split_bottom);
 
     GtkWidget *box = dt_gui_vbox();
     bd->blend_box = GTK_BOX(dt_gui_vbox(
@@ -19403,8 +19540,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     dt_gui_add_class(GTK_WIDGET(bd->blend_box), "dt_masks_blend_box");
     _add_wrapped_box(box, bd->blend_box, NULL);
 
-    dt_gui_box_add(mask_panel, box);
-    dt_iop_gui_init_masks(mask_panel, module);
+    dt_gui_box_add(bd->masks_split_top, box);
+    dt_iop_gui_init_masks(bd->masks_split_top, module);
 
     // the controls of the selected member, in a collapsible like the
     // refinements', its content following the selection (see
@@ -19524,7 +19661,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     // that locking the mask disables it too
     bd->masks_multi_area = _multi_area_new(bd, module);
     bd->refine_box = GTK_BOX(dt_gui_vbox(bd->masks_selection_area, bd->masks_multi_area));
-    _add_wrapped_box(mask_panel, bd->refine_box, "masks_refinement");
+    _add_wrapped_box(bd->masks_split_bottom, bd->refine_box, "masks_refinement");
 
     // "mask consumers": the modules reading this one's raster mask, shown only
     // while there are any (see _consumers_sync)
@@ -19541,7 +19678,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
                    &bd->consumers_toggle_btn);
     bd->consumers_sig = DT_INVALID_HASH;
     bd->consumers_box = GTK_BOX(dt_gui_vbox(bd->consumers_expander));
-    _add_wrapped_box(mask_panel, bd->consumers_box, "masks_raster");
+    _add_wrapped_box(bd->masks_split_bottom, bd->consumers_box, "masks_raster");
     // a consumer's own changes (a raster element added, its mask switched
     // off, a rename) reach this panel only through the history. Connected
     // with the module as user data, so dt_iop_gui_cleanup_module drops it

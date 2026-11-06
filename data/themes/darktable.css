@@ -3590,6 +3590,19 @@ button.dt_masks_enable_toggle:checked:hover
   border: 2px dashed alpha(@fg_color, 0.32);
 }
 
+/* the divider of the docked panel, between the mask layout and the rest, which
+   scroll apart (see dt_masks_gui_split_dock) */
+#masks-split > separator
+{
+  min-height: 6px;
+  background-color: alpha(@fg_color, 0.12);
+}
+
+#masks-split > separator:hover
+{
+  background-color: alpha(@fg_color, 0.3);
+}
+
 /* a transparent border keeps the box model stable across states. A
    background image starts at the padding box by default and repeats into
    that border, where the far end of the selection gradient showed as a

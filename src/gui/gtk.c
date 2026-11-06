@@ -152,6 +152,9 @@ typedef struct dt_ui_t
   GtkWidget *flexi_content;        // where blend_gui.c reparents flexi masks content into
   GtkWidget *flexi_handle;         // resize-handle drawing area, side toggled with the panel
   GtkWidget *flexi_content_row;    // horizontal box holding the scroll and, beside it, the handle
+  // the scrollers of the split content (dt_ui_flexi_panel_set_split), weak
+  // references: the module owning them can go with its widgets
+  GtkWidget *flexi_split_scroll[2];
   /* the edge strips: narrow full-height columns in centerrow, one each side
      of the canvas. Columns, not overlays: a strip over the image edge would
      take the clicks that mask nodes at and beyond the image border need (see
@@ -4144,6 +4147,23 @@ static gboolean _flexi_handle_draw(GtkWidget *w, cairo_t *cr, gpointer user_data
   return FALSE;
 }
 
+// a scrolled window as the panel's content has it (see the comment where
+// _ui_init_panel_flexi makes the outer one), for the split content's too
+static GtkWidget *_flexi_scroll_new(void)
+{
+  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+  gtk_widget_set_can_focus(scroll, TRUE);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER,
+                                 dt_conf_get_bool("panel_scrollbars_always_visible")
+                                 ? GTK_POLICY_ALWAYS
+                                 : GTK_POLICY_AUTOMATIC);
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  g_signal_connect(G_OBJECT(scroll), "scroll-event",
+                   G_CALLBACK(_ui_init_panel_container_center_scroll_event), NULL);
+#endif
+  return scroll;
+}
+
 static void _ui_init_panel_flexi(dt_ui_t *ui,
                                  GtkWidget *container)
 {
@@ -4194,16 +4214,7 @@ static void _ui_init_panel_flexi(dt_ui_t *ui,
   // _ui_init_panel_container_center) -- without this, a bare wheel scroll
   // over the masks panel would always fall through to whatever slider is
   // under the pointer instead of scrolling the panel, unlike LEFT/RIGHT
-  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_can_focus(scroll, TRUE);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER,
-                                 dt_conf_get_bool("panel_scrollbars_always_visible")
-                                 ? GTK_POLICY_ALWAYS
-                                 : GTK_POLICY_AUTOMATIC);
-#if !GTK_CHECK_VERSION(4, 0, 0)
-  g_signal_connect(G_OBJECT(scroll), "scroll-event",
-                   G_CALLBACK(_ui_init_panel_container_center_scroll_event), NULL);
-#endif
+  GtkWidget *scroll = _flexi_scroll_new();
 
   // the handle's row: the scrollable content and the handle beside it, not
   // beside the whole panel, so that the header, which folds the panel on a
@@ -4528,9 +4539,11 @@ static void _flexi_sync_scrollbar_side(dt_ui_t *ui)
   if(!GTK_IS_SCROLLED_WINDOW(scroll)) return;
   // TOP_RIGHT places the child at the top right, which puts the vertical
   // scrollbar on the left; TOP_LEFT is the default, scrollbar on the right
-  gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(scroll),
-                                    ui->flexi_panel_right ? GTK_CORNER_TOP_LEFT
-                                                          : GTK_CORNER_TOP_RIGHT);
+  const GtkCornerType corner = ui->flexi_panel_right ? GTK_CORNER_TOP_LEFT : GTK_CORNER_TOP_RIGHT;
+  gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(scroll), corner);
+  for(int i = 0; i < 2; i++)
+    if(ui->flexi_split_scroll[i])
+      gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(ui->flexi_split_scroll[i]), corner);
   _flexi_sync_header_scrollbar_pad(ui);
 }
 
@@ -4543,7 +4556,11 @@ static void _flexi_sync_scrollbar_side(dt_ui_t *ui)
 static void _flexi_sync_header_scrollbar_pad(dt_ui_t *ui)
 {
   if(!ui || !ui->flexi_header || !ui->flexi_content) return;
-  GtkWidget *scroll = gtk_widget_get_ancestor(ui->flexi_content, GTK_TYPE_SCROLLED_WINDOW);
+  // split, the header sits above the top half, whose scrollbar is the one
+  // that takes width from the rows under it
+  GtkWidget *scroll = ui->flexi_split_scroll[0]
+                          ? ui->flexi_split_scroll[0]
+                          : gtk_widget_get_ancestor(ui->flexi_content, GTK_TYPE_SCROLLED_WINDOW);
   if(!GTK_IS_SCROLLED_WINDOW(scroll)) return;
 
   GtkWidget *vsb = gtk_scrolled_window_get_vscrollbar(GTK_SCROLLED_WINDOW(scroll));
@@ -4859,7 +4876,10 @@ static gboolean _flexi_header_pad_idle_cb(gpointer data)
 static void _flexi_content_row_size_allocate(GtkWidget *w, GdkRectangle *a, gpointer d)
 {
   if(!_flexi_header_pad_idle)
-    _flexi_header_pad_idle = g_idle_add(_flexi_header_pad_idle_cb, NULL);
+    // ahead of the frame clock's repaint (G_PRIORITY_HIGH_IDLE + 20), or the
+    // header would be drawn once without its inset and then jump
+    _flexi_header_pad_idle = g_idle_add_full(G_PRIORITY_HIGH_IDLE, _flexi_header_pad_idle_cb,
+                                             NULL, NULL);
 }
 
 // the edge strips: shown whenever there is a mask panel to show at all -- NOT only while it is
@@ -4912,6 +4932,51 @@ GtkWidget *dt_ui_flexi_panel_header(dt_ui_t *ui)
 GtkWidget *dt_ui_flexi_panel_content(dt_ui_t *ui)
 {
   return ui ? ui->flexi_content : NULL;
+}
+
+GtkWidget *dt_ui_flexi_panel_scroller_new(dt_ui_t *ui)
+{
+  GtkWidget *scroll = _flexi_scroll_new();
+  if(ui)
+    gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(scroll),
+                                      ui->flexi_panel_right ? GTK_CORNER_TOP_LEFT
+                                                            : GTK_CORNER_TOP_RIGHT);
+  return scroll;
+}
+
+void dt_ui_flexi_panel_set_split(dt_ui_t *ui, GtkWidget *top, GtkWidget *bottom)
+{
+  if(!ui || !ui->flexi_content) return;
+  GtkWidget *now[2] = { top, bottom };
+  for(int i = 0; i < 2; i++)
+  {
+    if(ui->flexi_split_scroll[i])
+      g_object_remove_weak_pointer(G_OBJECT(ui->flexi_split_scroll[i]),
+                                   (gpointer *)&ui->flexi_split_scroll[i]);
+    ui->flexi_split_scroll[i] = now[i];
+    if(now[i])
+      g_object_add_weak_pointer(G_OBJECT(now[i]), (gpointer *)&ui->flexi_split_scroll[i]);
+  }
+
+  // the half's scrollbar comes and goes with its own content, which does not
+  // reallocate the content row the header's inset normally follows
+  if(top)
+  {
+    GtkWidget *vsb = gtk_scrolled_window_get_vscrollbar(GTK_SCROLLED_WINDOW(top));
+    g_signal_handlers_disconnect_by_func(vsb, G_CALLBACK(_flexi_content_row_size_allocate), NULL);
+    g_signal_connect(vsb, "size-allocate", G_CALLBACK(_flexi_content_row_size_allocate), NULL);
+  }
+
+  // split, the panel is as tall as its window and the two halves scroll apart:
+  // the outer scroller must not, or the halves would scroll inside it
+  GtkWidget *outer = gtk_widget_get_ancestor(ui->flexi_content, GTK_TYPE_SCROLLED_WINDOW);
+  if(GTK_IS_SCROLLED_WINDOW(outer))
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(outer), GTK_POLICY_NEVER,
+                                   top && bottom ? GTK_POLICY_NEVER
+                                   : dt_conf_get_bool("panel_scrollbars_always_visible")
+                                     ? GTK_POLICY_ALWAYS
+                                     : GTK_POLICY_AUTOMATIC);
+  _flexi_sync_scrollbar_side(ui);
 }
 
 void dt_ui_flexi_panel_set_active(dt_ui_t *ui, const gboolean active)
