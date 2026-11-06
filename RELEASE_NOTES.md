@@ -325,6 +325,10 @@ changes (where available).
   device instead of sending the image back to the CPU for the
   demosaic.
 
+- Copying images to the OpenCL device is up to four times faster on
+  NVIDIA and macOS drivers, which speeds up every step where the
+  pipeline moves the image from the CPU to the GPU.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
