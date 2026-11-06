@@ -45,9 +45,10 @@ pixels on X11, Windows and Wayland, pixels GTK tags sRGB on macOS.
 so a new system display profile does not replace it. Where image and device are the same
 encoding, as on every cairo window, the values reach the screen as device
 values. The mask and channel views are UI tones, authored as device values
-and converted from the device to the image encoding by gamma, which
-prepares the conversion when it commits; the gamut check and clipping
-markers are written as they are, saturated colors that mark in any output.
+and converted by gamma from the device encoding to the pipe's
+`output_encoding`, which a run resolves after every commit; the gamut
+check and clipping markers are written as they are, saturated colors that
+mark in any output.
 
 - Both windows have an output at all times, from `dt_colorspaces_init()` on:
   develop and its pipes exist before the GUI, and headless runs never

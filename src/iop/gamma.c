@@ -37,15 +37,6 @@ typedef struct dt_iop_gamma_params_t
   float gamma, linear;
 } dt_iop_gamma_params_t;
 
-typedef struct dt_iop_gamma_data_t
-{
-  // the mask and channel views are UI tones, authored as device values of
-  // the window: converted to the encoding its pipes render to, NULL where
-  // the two are the same
-  const dt_iop_order_iccprofile_info_t *device;
-  const dt_iop_order_iccprofile_info_t *image;
-} dt_iop_gamma_data_t;
-
 const char *name()
 {
   return C_("modulename", "display encoding");
@@ -282,6 +273,31 @@ static void _copy_output(const float *const restrict in,
   }
 }
 
+// the mask and channel views are UI tones, authored as device values of the
+// window: convert them to what the pipe's values mean. that is resolved
+// when the run starts, after every commit_params(), and differs from the
+// request where colorout fell back
+static void _views_to_output(dt_iop_module_t *self,
+                             const dt_dev_pixelpipe_t *pipe,
+                             float *const out,
+                             const dt_iop_roi_t *const roi)
+{
+  const dt_color_encoding_t *device = &pipe->output.device;
+  const dt_color_encoding_t *image = &pipe->output_encoding;
+  if(device->type == DT_COLORSPACE_NONE || image->type == DT_COLORSPACE_NONE
+     || dt_color_encoding_same_content(device, image))
+    return;
+
+  const dt_iop_order_iccprofile_info_t *from =
+    dt_ioppr_add_profile_info_for_content(self->dev, device->type, device->filename,
+                                          device->profile, image->intent);
+  const dt_iop_order_iccprofile_info_t *to =
+    dt_ioppr_add_profile_info_for_content(self->dev, image->type, image->filename,
+                                          image->profile, image->intent);
+  if(from && to)
+    dt_ioppr_transform_image_colorspace_rgb(out, out, roi->width, roi->height,
+                                            from, to, "gamma views");
+}
 
 void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
@@ -330,54 +346,15 @@ void process(dt_iop_module_t *self,
     _copy_output((const float *const restrict)i, (float *const restrict)o, buffsize);
   }
 
-  const dt_iop_gamma_data_t *const d = piece->data;
-  if((channel || (mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)) && d->device && d->image)
-    dt_ioppr_transform_image_colorspace_rgb(o, o, roi_out->width, roi_out->height,
-                                            d->device, d->image, "gamma views");
+  if(channel || (mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK))
+    _views_to_output(self, piece->pipe, (float *const)o, roi_out);
 
   if(mask_display)
     dt_dev_pixelpipe_invalidate_cacheline(piece->pipe, i, "gamma mask display");
 }
 
-void commit_params(dt_iop_module_t *self,
-                   dt_iop_params_t *p1,
-                   dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
-{
-  dt_iop_gamma_data_t *d = piece->data;
-  const dt_color_encoding_t *device = &pipe->output.device;
-  const dt_color_encoding_t *image = &pipe->output.image;
-  const gboolean convert = image->type != DT_COLORSPACE_NONE
-    && device->type != DT_COLORSPACE_NONE
-    && !dt_color_encoding_same_content(device, image);
-  d->device = convert ? dt_ioppr_add_profile_info_for_content(self->dev, device->type,
-                                                              device->filename,
-                                                              device->profile, image->intent)
-                      : NULL;
-  d->image = convert ? dt_ioppr_add_profile_info_for_content(self->dev, image->type,
-                                                             image->filename,
-                                                             image->profile, image->intent)
-                     : NULL;
-}
-
-void init_pipe(dt_iop_module_t *self,
-               dt_dev_pixelpipe_t *pipe,
-               dt_dev_pixelpipe_iop_t *piece)
-{
-  piece->data = calloc(1, sizeof(dt_iop_gamma_data_t));
-}
-
-void cleanup_pipe(dt_iop_module_t *self,
-                  dt_dev_pixelpipe_t *pipe,
-                  dt_dev_pixelpipe_iop_t *piece)
-{
-  free(piece->data);
-  piece->data = NULL;
-}
-
 void init(dt_iop_module_t *self)
 {
-  // self->data = malloc(sizeof(dt_iop_gamma_data_t));
   self->params = calloc(1, sizeof(dt_iop_gamma_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_gamma_params_t));
   self->params_size = sizeof(dt_iop_gamma_params_t);
