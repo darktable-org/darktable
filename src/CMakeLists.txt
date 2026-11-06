@@ -396,6 +396,21 @@ if(USE_WAYLAND)
   endif()
 endif()
 
+# the macOS transport: EDR Core Animation layers above GTK's view
+if(APPLE AND GDK_QUARTZ_FOUND)
+  include(CheckLanguage)
+  check_language(OBJC)
+  if(CMAKE_OBJC_COMPILER)
+    enable_language(OBJC)
+    list(APPEND SOURCES "gui/presenter_quartz.m")
+    list(APPEND LIBS "-framework Metal" "-framework QuartzCore")
+    set_property(SOURCE gui/presenter_layers.c gui/presenter_quartz.m
+                 APPEND PROPERTY COMPILE_DEFINITIONS HAVE_QUARTZ_PRESENTER)
+  else()
+    message(STATUS "macOS EDR presentation disabled: it needs an Objective-C compiler")
+  endif()
+endif()
+
 # Check for libxml2 / broken cmake module can't be included in the foreach() below
 find_package(LibXml2 2.6 REQUIRED)
 include_directories(SYSTEM ${LIBXML2_INCLUDE_DIR})

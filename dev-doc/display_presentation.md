@@ -215,10 +215,9 @@ says something about the screen (`dt_presenter_window_report_headroom()`,
 reference white now, or NAN when the platform has no value (the display
 sleeps), the most the screen can show in the window if the platform says,
 and a generation, which changes when earlier reports say nothing about
-this one: another screen or mode, a display woken up. The policy was
-designed with a future macOS backend in mind, which would report no value
-before EDR is engaged and its potential EDR headroom as the ceiling. A
-report never reaches pipes, and settling is never a platform's or a
+this one: another screen or mode, a display woken up. The macOS backend
+reports no value before EDR is engaged and its potential EDR headroom as
+the ceiling ([macOS](#macos)). A report never reaches pipes, and settling is never a platform's or a
 backend's job. The policy is one pure function on a clock passed in
 (`gui/presenter_target.c`, tested by `test_presenter_target`):
 
@@ -402,7 +401,7 @@ display a window is on. When the choice changes, every presenting widget's
 backend data goes, kept presentations included, the old backend is freed,
 the new one reports the window's output if it is native, or the core gives
 the output back to the system display profile, and the window draws again.
-Where no transport exists, as on X11, macOS and Windows today, a window
+Where no transport exists, as on X11 and Windows today, a window
 has no platform and is a cairo window for as long as it exists.
 
 The core, `gui/presenter.c`, keeps the widget records, the references on the frames
@@ -653,6 +652,53 @@ its toplevel unmaps. darktable has no such path: the main window is hidden
 only at quit, and the second window is destroyed after hiding. With GTK4,
 where the image is a texture on GTK's own surface, the limit goes away.
 
+### macOS
+
+`gui/presenter_quartz.m`, built on macOS when GTK has the Quartz backend
+and CMake finds an Objective-C compiler; it links Metal and QuartzCore.
+macOS color-manages every tagged layer, so the platform's verdict is
+always native. The platform keeps the toplevel's `NSWindow` and GDK's
+`NSView` and watches the window's screen; the transport adds, for each
+presenting widget, two views above GDK's view that take no input
+(`hitTest:` returns nil). The image layer is a `CAMetalLayer` in RGBA half
+floats tagged extended linear BT.2020 with
+`wantsExtendedDynamicRangeContent`; the foreground above it is a
+`CAMetalLayer` in BGRA8 tagged sRGB, what GTK tags its own surface with.
+Each layer is written by a blit from one of two shared Metal buffers, the
+one the GPU has finished reading; while it reads both, `reserve()` fails
+and the present is tried again next frame. Without a Metal device the
+transport does not set up and the window is on cairo.
+
+The output is linear BT.2020 with the core's
+[headroom target](#headroom-target), and the device encoding sRGB. EDR puts
+1.0 at SDR white and lets values go up to the screen's current headroom,
+which macOS clips to, so the reservation's matrix is the identity and its
+clip range [0, target].
+
+The platform reports the screen's `maximumExtendedDynamicRangeColorComponentValue`,
+or NAN until the image layer has presented a frame (macOS reports about
+1.0 before EDR is engaged, 1.2 on an idle built-in XDR), with
+`maximumPotentialExtendedDynamicRangeColorComponentValue` as the ceiling;
+with a reference preset
+(`maximumReferenceExtendedDynamicRangeColorComponentValue` above 0) both
+are the reference headroom. It reports on every
+`NSApplicationDidChangeScreenParametersNotification`, which macOS posts
+about every 8 ms while an EDR ramp or a brightness change runs. A move to
+another screen (`NSWindowDidChangeScreenNotification`) and a display wake
+(`NSWorkspaceScreensDidWakeNotification`) start a new generation. A screen
+without EDR has a potential headroom of 1: the window stays native, with
+wide gamut and a target of 1.
+
+Layers are presented at the end of the frame clock's `paint`, as on
+Wayland, and from a run loop observer that runs just before Core
+Animation commits (`kCFRunLoopBeforeWaiting`, order 1999999), which
+catches a draw made outside `paint`. A present is one Core Animation
+transaction, and both layers have `presentsWithTransaction` on, so their
+drawables apply with a transaction commit and never on their own. GTK3
+draws popovers into the toplevel's view, below the layers, so the
+transport declares `popovers_above` false and the layered backend replays
+them.
+
 ## Workarounds
 
 Each lives in one file and goes away with the limitation it works around.
@@ -667,6 +713,7 @@ keep its layers under GTK4 as well.
 | composing and presenting in the frame clock's `paint` signal, after GDK's handler | `presenter_wayland.c`, `_paint()` | GTK3 runs all draws in `paint` and GDK commits its surface in `after-paint`; the layers must be ready in between | same |
 | GTK's surface taken as sRGB, the window's device encoding | `presenter_wayland.c`, `_set_output()` | GTK3 does not tag its surface; an untagged surface is sRGB to the compositor, with a transfer function of its choosing | GTK tags its surfaces |
 | mutter's default color mode (`gtk_shell1` and a plain SDR sRGB preferred description) left to cairo with the system display profile | `presenter_wayland.c`, `_mutter_default_color_mode()` | mutter's default color mode composites as sRGB and does not apply the profile assigned to the screen (mutter#4597) | mutter describes its real output (mutter MR !5177); nothing to do, the predicate stops matching |
+| presenting at the end of `paint` and from a run loop observer before Core Animation commits | `presenter_quartz.m`, `_paint()`, `_transport_new()` | the layers must not appear before GTK's drawing of the same frame, and GTK3 on Quartz documents no point between its draws and the commit of its view | same |
 | no opaque region on the layers | `presenter_wayland.c`, `_layer_init()` | a compositor may stop frame callbacks for a surface it considers occluded, which stops GTK's frame clock | GTK4 |
 | surface feedback destroyed when the toplevel unmaps | `presenter_wayland.c`, `_toplevel_unmap()` | GDK destroys its `wl_surface` when a window is hidden, and asking the feedback on it for the preferred description is then a protocol error | GTK4 |
 | a draw GTK clipped to a damaged area does not replace or drop the presentation `dt_presenter_keep()` shows | `presenter.c`, `dt_presenter_begin()` | GTK3 redraws only the damaged part of a widget, so such a draw records clipped images; it stays in `presenter.c` because both backends need it | GTK4: a widget's snapshot is always whole |
