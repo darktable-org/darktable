@@ -186,12 +186,13 @@ markers are written as they are, saturated colors that mark in any output.
   `system_display_profiles` in `dt_colorspaces_t` or as another registry
   entry's (sRGB), so pixels made for the old screen keep converting
   with the profile they were made with: conversions take their profile
-  info with `dt_ioppr_add_profile_info_for_content()`. For every other
-  type, type and file name are the identity
-  (`dt_colorspaces_replaced_in_session()`). A query that yields no usable
-  profile (no X atom and none from colord, an empty Windows query, bytes
-  lcms rejects) makes the window's system display profile sRGB again, the
-  profile it starts with, rather than leaving the previous screen's. A
+  info with `dt_ioppr_add_profile_info_for_content()`. Encodings and
+  profile infos are the same content when profile, type and file name
+  match; the type counts for PQ's and HLG's transfer functions. A query
+  that yields no usable profile (no X atom and none from colord, an empty
+  Windows query, bytes lcms rejects) makes the window's system display
+  profile sRGB again, the profile it starts with, rather than leaving the
+  previous screen's. A
   new system display profile that changes a window's output changes its
   device encoding, so thumbnails drawn before it arrived, as colord's
   asynchronous answer at startup, are redone.

@@ -64,8 +64,7 @@ void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
 void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info);
 
 /** returns the profile info from dev profiles info list that matches
- * (profile_type, profile_filename), and profile for the system display
- * types, NULL if not found
+ * (profile_type, profile_filename, profile), NULL if not found
  */
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,

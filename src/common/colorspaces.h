@@ -184,9 +184,7 @@ typedef enum dt_colorspaces_cicp_matrix_coefficients_t
 } dt_colorspaces_cicp_matrix_coefficients_t;
 
 /* the system display entries change their profile under the same type and
- * file name, with their window's device encoding. FILE profiles are read once at startup and built-ins
- * never change, so for every other type, type and file name identify the
- * profile's content */
+ * file name, with their window's device encoding, under xprofile_lock */
 static inline gboolean dt_colorspaces_replaced_in_session(const dt_colorspaces_color_profile_type_t type)
 {
   return type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2;
@@ -209,12 +207,14 @@ typedef struct dt_color_encoding_t
   float headroom;
 } dt_color_encoding_t;
 
-/* the two encodings name the same profile content */
+/* the two encodings name the same profile content. the type counts as
+ * well: PQ and HLG encode with a transfer function their profile does not
+ * describe */
 static inline gboolean dt_color_encoding_same_content(const dt_color_encoding_t *a,
                                                       const dt_color_encoding_t *b)
 {
   return a->type == b->type
-    && (!dt_colorspaces_replaced_in_session(a->type) || a->profile == b->profile)
+    && a->profile == b->profile
     && !strcmp(a->filename, b->filename);
 }
 

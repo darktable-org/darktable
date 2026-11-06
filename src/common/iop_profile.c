@@ -602,7 +602,7 @@ dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,
   {
     dt_iop_order_iccprofile_info_t *prof = profiles->data;
     if(prof->type == profile_type
-       && (!dt_colorspaces_replaced_in_session(profile_type) || prof->profile == profile)
+       && prof->profile == profile
        && strcmp(prof->filename, profile_filename) == 0)
     {
       profile_info = prof;
@@ -1216,7 +1216,7 @@ static inline gboolean _same_content(const dt_iop_order_iccprofile_info_t *const
                                      const dt_iop_order_iccprofile_info_t *const b)
 {
   return a->type == b->type
-    && (!dt_colorspaces_replaced_in_session(a->type) || a->profile == b->profile)
+    && a->profile == b->profile
     && !strcmp(a->filename, b->filename);
 }
 
