@@ -38,7 +38,8 @@ typedef struct dt_presenter_headroom_t
   // (macOS reads 1.0 before EDR is engaged)
   float value;
   // the most the screen can show in this window, 0 if the platform does
-  // not say (macOS's potential EDR headroom)
+  // not say (macOS's potential EDR headroom). it bounds values, never
+  // stands in for one
   float ceiling;
   // a new generation says that earlier reports tell nothing about this
   // one: another screen or mode, a display woken up
@@ -52,8 +53,8 @@ typedef struct dt_presenter_target_t
   // a report arrived, of this generation
   gboolean started;
   uint32_t generation;
-  // the next known value is taken at once: a generation began without a
-  // ceiling to stand in for it
+  // the generation has had no value yet: the target is 1.0 until its
+  // first one, which is taken at once
   gboolean fresh;
   // a level differing from the target, waiting to settle: the level, the
   // last value reported, when the first report of it and when the last

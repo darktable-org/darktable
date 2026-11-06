@@ -180,19 +180,32 @@ static void test_first_value_at_once(void **state)
   assert_int_equal(dt_presenter_target_deadline(&s.target), 0);
 }
 
-static void test_ceiling_before_first_value(void **state)
+static void test_ceiling_bounds(void **state)
 {
   _sim_t s;
   _sim_init(&s);
-  // macOS before EDR is engaged: no value, the potential as ceiling
+  // macOS before EDR is engaged: no value, the potential as ceiling. the
+  // ceiling is no target: 1.0 until a value comes
   _report(&s, 0, NAN, 16.0f, 1);
-  assert_int_equal(s.changes, 1);
-  assert_float_equal(_headroom(&s), 16.0f, 1e-5f);
+  assert_int_equal(s.changes, 0);
+  assert_float_equal(_headroom(&s), 1.0f, 0.0f);
   // values above the ceiling are the ceiling
   _report(&s, 10 * MS, 20.0f, 16.0f, 1);
-  _advance(&s, 10000 * MS);
   assert_int_equal(s.changes, 1);
   assert_float_equal(_headroom(&s), 16.0f, 1e-5f);
+  _report(&s, 20 * MS, 20.0f, 16.0f, 1);
+  _advance(&s, 10000 * MS);
+  assert_int_equal(s.changes, 1);
+
+  // a Pro Display XDR at 500 nits of reference: 3.2 now of a potential
+  // 400, the current value taken at once
+  _sim_init(&s);
+  _report(&s, 0, 3.2f, 400.0f, 1);
+  assert_int_equal(s.changes, 1);
+  assert_int_equal(dt_presenter_target_steps(_headroom(&s)), dt_presenter_target_steps(3.2f));
+  assert_int_equal(dt_presenter_target_deadline(&s.target), 0);
+  _advance(&s, 10000 * MS);
+  assert_int_equal(s.changes, 1);
 }
 
 static void test_generation_resets(void **state)
@@ -223,13 +236,70 @@ static void test_generation_resets(void **state)
   _report(&s, 5000 * MS, 4.0f * _ev(0.17f), 0.0f, 2);
   assert_float_equal(_headroom(&s), 4.0f * _ev(0.125f), 1e-5f);
 
-  // a new generation with a ceiling takes the ceiling at once; a woken
-  // macOS display then ramps up to it again
+  // a new generation that keeps the quantized target still drops the
+  // level waiting to settle in the old one
   _sim_init(&s);
-  _report(&s, 0, 2.0f, 16.0f, 1);
+  _report(&s, 0, 4.0f, 0.0f, 1);
+  _report(&s, 100 * MS, 2.0f, 0.0f, 1);
+  assert_int_equal(dt_presenter_target_deadline(&s.target), 1100 * MS);
+  _report(&s, 200 * MS, 4.0f, 16.0f, 2);
+  assert_int_equal(s.changes, 1);
+  assert_float_equal(_headroom(&s), 4.0f, 1e-6f);
+  assert_int_equal(dt_presenter_target_deadline(&s.target), 0);
+  _advance(&s, 5000 * MS);
+  assert_int_equal(s.changes, 1);
+  assert_float_equal(_headroom(&s), 4.0f, 1e-6f);
+
+  // and an SDR target kept by a ceiling of 1
+  _sim_init(&s);
+  _report(&s, 0, 1.0f, 0.0f, 1);
+  _report(&s, 100 * MS, 2.0f, 0.0f, 1);
+  assert_int_equal(dt_presenter_target_deadline(&s.target), 1100 * MS);
+  _report(&s, 200 * MS, 4.0f, 1.0f, 2);
+  assert_int_equal(s.changes, 0);
+  assert_float_equal(_headroom(&s), 1.0f, 0.0f);
+  assert_int_equal(dt_presenter_target_deadline(&s.target), 0);
+  _advance(&s, 5000 * MS);
+  assert_int_equal(s.changes, 0);
+
+  // a new generation without a value but with a ceiling: 1.0, the level
+  // waiting to settle dropped
+  _sim_init(&s);
+  _report(&s, 0, 4.0f, 0.0f, 1);
+  _report(&s, 100 * MS, 2.0f, 0.0f, 1);
+  _report(&s, 200 * MS, NAN, 16.0f, 2);
+  assert_int_equal(s.changes, 2);
+  assert_float_equal(_headroom(&s), 1.0f, 0.0f);
+  assert_int_equal(dt_presenter_target_deadline(&s.target), 0);
+  _advance(&s, 5000 * MS);
+  assert_int_equal(s.changes, 2);
+
+  // a window moved back to a screen whose EDR is still engaged: the
+  // first value of the new generation is taken at once, not the potential
+  _sim_init(&s);
+  _report(&s, 0, 2.0f, 0.0f, 1);
+  _report(&s, 1000 * MS, 3.998f, 16.0f, 2);
+  assert_int_equal(s.changes, 2);
+  assert_int_equal(s.target.steps, 15);
+  assert_int_equal(dt_presenter_target_deadline(&s.target), 0);
+  _report(&s, 1010 * MS, 3.998f, 16.0f, 2);
+  _advance(&s, 10000 * MS);
+  assert_int_equal(s.changes, 2);
+
+  // a new generation without a value: an HDR target does not follow the
+  // window onto a screen that may not show it. 1.0 until the first value
+  _sim_init(&s);
+  _report(&s, 0, 16.0f, 16.0f, 1);
   assert_float_equal(_headroom(&s), 16.0f, 1e-5f);
-  _report(&s, 10 * MS, NAN, 16.0f, 2);
-  assert_float_equal(_headroom(&s), 16.0f, 1e-5f);
+  _report(&s, 1000 * MS, NAN, 0.0f, 2);
+  assert_int_equal(s.changes, 2);
+  assert_float_equal(_headroom(&s), 1.0f, 0.0f);
+  _report(&s, 1100 * MS, NAN, 0.0f, 2);
+  assert_int_equal(s.changes, 2);
+  _report(&s, 1200 * MS, 2.0f, 0.0f, 2);
+  assert_int_equal(s.changes, 3);
+  assert_int_equal(s.changed_at, 1200 * MS);
+  assert_float_equal(_headroom(&s), 2.0f, 1e-6f);
 }
 
 static void test_no_value_keeps(void **state)
@@ -296,14 +366,15 @@ static void test_jump(void **state)
   assert_int_equal(s.changes, 1);
 }
 
-// macOS EDR as probed in review of #22953: 1.0 until EDR content is shown,
-// then 1.27, 2.45, 4.89, 9.78, 16.0 over about 2 s, one notification every
-// 8 ms, about 230 of them
+// macOS EDR as probed in review of #22953: 1.0 until EDR content is shown
+// (1.2 on a Pro Display XDR), then 1.27, 2.45, 4.89, 9.78, 16.0 over about
+// 2 s, one notification every 8 ms, about 230 of them
 static int _edr_ramp(_sim_t *s,
                      const int64_t start,
+                     const float from,
                      const float ceiling)
 {
-  const float points[] = { 1.0f, 1.27f, 2.45f, 4.89f, 9.78f, 16.0f };
+  const float points[] = { from, 1.27f, 2.45f, 4.89f, 9.78f, 16.0f };
   const int n = 230;
   for(int k = 0; k <= n; k++)
   {
@@ -319,22 +390,25 @@ static int _edr_ramp(_sim_t *s,
 
 static void test_edr_ramp(void **state)
 {
-  // with the potential as ceiling the target is there first, and the
-  // ramp toward it costs no pipe run
+  // cold start: no value before EDR is engaged, then the idle level once
+  // an image is shown, taken at once, and the ramp from there costs one
+  // change, when it has ended
   _sim_t s;
   _sim_init(&s);
   _report(&s, 0, NAN, 16.0f, 1);
+  assert_int_equal(s.changes, 0);
+  _edr_ramp(&s, 100 * MS, 1.2f, 16.0f);
   assert_int_equal(s.changes, 1);
-  _edr_ramp(&s, 100 * MS, 16.0f);
   _advance(&s, 10000 * MS);
-  assert_int_equal(s.changes, 1);
+  assert_int_equal(s.changes, 2);
   assert_float_equal(_headroom(&s), 16.0f, 1e-5f);
+  assert_int_equal(s.changed_at, 2100 * MS + QUIET);
 
-  // without one, from 1.0: one change, when the ramp has ended
+  // without a ceiling, from 1.0: the same
   _sim_init(&s);
   _report(&s, 0, 1.0f, 0.0f, 1);
   assert_int_equal(s.changes, 0);
-  _edr_ramp(&s, 100 * MS, 0.0f);
+  _edr_ramp(&s, 100 * MS, 1.0f, 0.0f);
   _advance(&s, 10000 * MS);
   assert_int_equal(s.changes, 1);
   assert_float_equal(_headroom(&s), 16.0f, 1e-5f);
@@ -489,7 +563,7 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_steps_exact),
     cmocka_unit_test(test_steps_round_down),
     cmocka_unit_test(test_first_value_at_once),
-    cmocka_unit_test(test_ceiling_before_first_value),
+    cmocka_unit_test(test_ceiling_bounds),
     cmocka_unit_test(test_generation_resets),
     cmocka_unit_test(test_no_value_keeps),
     cmocka_unit_test(test_jump),
