@@ -71,6 +71,11 @@ add_cmocka_test(test_presenter_target
                 SOURCES test_presenter_target.c
                 LINK_LIBRARIES lib_darktable cmocka)
 
+# how the core chooses a window's backend again: fakes, no display
+add_cmocka_test(test_presenter_choose
+                SOURCES test_presenter_choose.c
+                LINK_LIBRARIES lib_darktable cmocka)
+
 # Windows: libs have to be copied next to the executable
 if(WIN32)
     _copy_required_library(test_spektra_sim lib_darktable)
@@ -86,4 +91,5 @@ if(WIN32)
     _copy_required_library(test_presenter_above lib_darktable)
     _copy_required_library(test_presenter_compose lib_darktable)
     _copy_required_library(test_presenter_target lib_darktable)
+    _copy_required_library(test_presenter_choose lib_darktable)
 endif(WIN32)

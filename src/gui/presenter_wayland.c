@@ -17,12 +17,17 @@
 */
 
 /*
- * the Wayland transport of the layered presenter backend: the image layer
- * is a subsurface tagged with color-management-v1 as linear BT.2020,
- * carrying the image in half floats with its HDR headroom, and the
- * compositor does the one conversion to the screen. the foreground layer
- * above it is an untagged 8-bit subsurface, which the compositor treats
- * like GTK's own untagged surface. see dev-doc/display_presentation.md.
+ * the Wayland platform of the layered presenter backend. what watches the
+ * compositor lives as long as the window, whatever its backend: the
+ * globals, what the color manager supports and the preferred description
+ * of GDK's surface, which give the headroom reports and whether the
+ * compositor color-manages the window's tagged content now. the transport
+ * exists while the window is native: the image layer is a subsurface
+ * tagged with color-management-v1 as linear BT.2020, carrying the image in
+ * half floats with its HDR headroom, and the compositor does the one
+ * conversion to the screen. the foreground layer above it is an untagged
+ * 8-bit subsurface, which the compositor treats like GTK's own untagged
+ * surface. see dev-doc/display_presentation.md.
  */
 
 // for memfd_create()
@@ -56,8 +61,6 @@ typedef struct _layer_t
   _buffer_t *buffers[2];
 } _layer_t;
 
-typedef struct _backend_t _backend_t;
-
 typedef struct _widget_t
 {
   _layer_t image, foreground;
@@ -67,14 +70,12 @@ typedef struct _widget_t
   _buffer_t *reserved_image, *reserved_foreground;
 } _widget_t;
 
-struct _backend_t
+typedef struct _platform_t
 {
-  dt_presenter_transport_t transport;
+  dt_presenter_platform_t platform;
   dt_presenter_window_t *window;
   GtkWidget *toplevel;
   gulong unmap_handler;
-  GdkFrameClock *clock;
-  gulong paint_handler;
   struct wl_display *display;
   struct wl_compositor *compositor;
   struct wl_subcompositor *subcompositor;
@@ -103,18 +104,33 @@ struct _backend_t
   gboolean reported_icc;
   uint32_t generation;
 
+  // the compositor color-manages the window's tagged content, as the last
+  // preferred description read says
+  gboolean native;
+} _platform_t;
+
+typedef struct _transport_t
+{
+  dt_presenter_transport_t transport;
+  _platform_t *p;
+  // what makes the descriptions: the platform's color manager, or while
+  // the transport sets up, a wrapper of it on the setup's queue
+  struct wp_color_manager_v1 *manager;
+  GdkFrameClock *clock;
+  gulong paint_handler;
+
   // ours: in use, and created, waiting for ready
   struct wp_image_description_v1 *description, *pending;
   uint32_t description_max, pending_max;
   gboolean pending_failed;
 
   GList *widgets;
-};
+} _transport_t;
 
-static uint32_t _intent(const _backend_t *b)
+static uint32_t _intent(const _platform_t *p)
 {
   // perceptual is the one every compositor has to support
-  return b->relative ? WP_COLOR_MANAGER_V1_RENDER_INTENT_RELATIVE
+  return p->relative ? WP_COLOR_MANAGER_V1_RENDER_INTENT_RELATIVE
                      : WP_COLOR_MANAGER_V1_RENDER_INTENT_PERCEPTUAL;
 }
 
@@ -141,7 +157,7 @@ static void _buffer_release(void *data,
 
 static const struct wl_buffer_listener _buffer_listener = { .release = _buffer_release };
 
-static _buffer_t *_buffer_new(_backend_t *b,
+static _buffer_t *_buffer_new(_transport_t *t,
                               const int width,
                               const int height,
                               const int stride,
@@ -162,7 +178,7 @@ static _buffer_t *_buffer_new(_backend_t *b,
     return NULL;
   }
 
-  struct wl_shm_pool *pool = wl_shm_create_pool(b->shm, fd, size);
+  struct wl_shm_pool *pool = wl_shm_create_pool(t->p->shm, fd, size);
   _buffer_t *buffer = g_malloc0(sizeof(_buffer_t));
   buffer->buffer = wl_shm_pool_create_buffer(pool, 0, width, height, stride, format);
   buffer->data = data;
@@ -176,7 +192,7 @@ static _buffer_t *_buffer_new(_backend_t *b,
 }
 
 // a buffer the compositor does not hold, or NULL if it holds both
-static _buffer_t *_buffer_get(_backend_t *b,
+static _buffer_t *_buffer_get(_transport_t *t,
                               _layer_t *layer,
                               const int width,
                               const int height,
@@ -199,20 +215,20 @@ static _buffer_t *_buffer_get(_backend_t *b,
     if(layer->buffers[k] && !layer->buffers[k]->busy) return layer->buffers[k];
   for(int k = 0; k < 2; k++)
     if(!layer->buffers[k])
-      return layer->buffers[k] = _buffer_new(b, width, height, stride, format);
+      return layer->buffers[k] = _buffer_new(t, width, height, stride, format);
   return NULL;
 }
 
 /* layers */
 
-static void _layer_init(_backend_t *b,
+static void _layer_init(_platform_t *p,
                         _layer_t *layer)
 {
-  layer->surface = wl_compositor_create_surface(b->compositor);
-  layer->subsurface = wl_subcompositor_get_subsurface(b->subcompositor,
-                                                      layer->surface, b->parent);
+  layer->surface = wl_compositor_create_surface(p->compositor);
+  layer->subsurface = wl_subcompositor_get_subsurface(p->subcompositor,
+                                                      layer->surface, p->parent);
   // the layers only show; GTK's surface below keeps getting the input
-  struct wl_region *region = wl_compositor_create_region(b->compositor);
+  struct wl_region *region = wl_compositor_create_region(p->compositor);
   wl_surface_set_input_region(layer->surface, region);
   wl_region_destroy(region);
   // no opaque region on either layer: the compositor must never consider
@@ -243,20 +259,21 @@ static void _layer_commit(_layer_t *layer,
   buffer->busy = TRUE;
 }
 
-static void _widget_layers_init(_backend_t *b,
+static void _widget_layers_init(_transport_t *t,
                                 _widget_t *w)
 {
-  _layer_init(b, &w->image);
-  _layer_init(b, &w->foreground);
+  _platform_t *p = t->p;
+  _layer_init(p, &w->image);
+  _layer_init(p, &w->foreground);
   // a new subsurface goes on top of its siblings, which would cover GTK's
   // popovers, subsurfaces of GDK's surface too: keep the layers right above
   // GDK's surface. applied with GDK's next commit, like the position
-  wl_subsurface_place_above(w->image.subsurface, b->parent);
+  wl_subsurface_place_above(w->image.subsurface, p->parent);
   wl_subsurface_place_above(w->foreground.subsurface, w->image.surface);
-  w->color = wp_color_manager_v1_get_surface(b->manager, w->image.surface);
-  if(b->description)
-    wp_color_management_surface_v1_set_image_description(w->color, b->description,
-                                                         _intent(b));
+  w->color = wp_color_manager_v1_get_surface(p->manager, w->image.surface);
+  if(t->description)
+    wp_color_management_surface_v1_set_image_description(w->color, t->description,
+                                                         _intent(p));
 }
 
 static void _widget_layers_free(_widget_t *w)
@@ -269,17 +286,25 @@ static void _widget_layers_free(_widget_t *w)
 
 /* image descriptions */
 
+static void _preferred_failed(void *data,
+                              struct wp_image_description_v1 *description,
+                              uint32_t cause,
+                              const char *message)
+{
+  _platform_t *p = data;
+  dt_print(DT_DEBUG_ALWAYS, "[presenter wayland] preferred image description failed: %s",
+           message);
+  p->preferred_failed = TRUE;
+}
+
 static void _description_failed(void *data,
                                 struct wp_image_description_v1 *description,
                                 uint32_t cause,
                                 const char *message)
 {
-  _backend_t *b = data;
+  _transport_t *t = data;
   dt_print(DT_DEBUG_ALWAYS, "[presenter wayland] image description failed: %s", message);
-  if(description == b->preferred)
-    b->preferred_failed = TRUE;
-  else if(description == b->pending)
-    b->pending_failed = TRUE;
+  if(description == t->pending) t->pending_failed = TRUE;
 }
 
 static void _info_done(void *data,
@@ -290,8 +315,8 @@ static void _info_icc_file(void *data,
                            int32_t icc,
                            uint32_t icc_size)
 {
-  _backend_t *b = data;
-  b->icc = TRUE;
+  _platform_t *p = data;
+  p->icc = TRUE;
   close(icc);
 }
 
@@ -306,9 +331,9 @@ static void _info_primaries(void *data,
                             int32_t w_x,
                             int32_t w_y)
 {
-  _backend_t *b = data;
-  const int32_t p[8] = { r_x, r_y, g_x, g_y, b_x, b_y, w_x, w_y };
-  memcpy(b->primaries, p, sizeof(p));
+  _platform_t *p = data;
+  const int32_t xy[8] = { r_x, r_y, g_x, g_y, b_x, b_y, w_x, w_y };
+  memcpy(p->primaries, xy, sizeof(xy));
 }
 
 static void _info_target_primaries(void *data,
@@ -340,8 +365,8 @@ static void _info_tf_named(void *data,
                            struct wp_image_description_info_v1 *info,
                            uint32_t tf)
 {
-  _backend_t *b = data;
-  b->tf = tf;
+  _platform_t *p = data;
+  p->tf = tf;
 }
 
 static void _info_luminances(void *data,
@@ -350,9 +375,9 @@ static void _info_luminances(void *data,
                              uint32_t max_lum,
                              uint32_t reference_lum)
 {
-  _backend_t *b = data;
-  b->max_lum = max_lum;
-  b->reference_lum = reference_lum;
+  _platform_t *p = data;
+  p->max_lum = max_lum;
+  p->reference_lum = reference_lum;
 }
 
 static void _info_target_luminance(void *data,
@@ -360,8 +385,8 @@ static void _info_target_luminance(void *data,
                                    uint32_t min_lum,
                                    uint32_t max_lum)
 {
-  _backend_t *b = data;
-  b->target_max_lum = max_lum;
+  _platform_t *p = data;
+  p->target_max_lum = max_lum;
 }
 
 static void _info_target_max_cll(void *data,
@@ -390,103 +415,119 @@ static const struct wp_image_description_info_v1_listener _info_listener = {
   .target_max_fall = _info_target_max_fall,
 };
 
-static void _description_ready(_backend_t *b,
-                               struct wp_image_description_v1 *description);
+static void _preferred_ready(void *data,
+                             struct wp_image_description_v1 *description,
+                             uint32_t identity);
 
-static void _ready(void *data,
-                   struct wp_image_description_v1 *description,
-                   uint32_t identity)
-{
-  _description_ready(data, description);
-}
+static const struct wp_image_description_v1_listener _preferred_listener = {
+  .failed = _preferred_failed,
+  .ready = _preferred_ready,
+};
+
+static void _description_ready(void *data,
+                               struct wp_image_description_v1 *description,
+                               uint32_t identity);
 
 static const struct wp_image_description_v1_listener _description_listener = {
   .failed = _description_failed,
-  .ready = _ready,
+  .ready = _description_ready,
 };
 
-static void _create_description(_backend_t *b,
+static void _create_description(_transport_t *t,
                                 const uint32_t max_lum)
 {
-  if(b->pending) wp_image_description_v1_destroy(b->pending);
+  if(t->pending) wp_image_description_v1_destroy(t->pending);
 
   struct wp_image_description_creator_params_v1 *creator =
-    wp_color_manager_v1_create_parametric_creator(b->manager);
+    wp_color_manager_v1_create_parametric_creator(t->manager);
   wp_image_description_creator_params_v1_set_tf_named
     (creator, WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR);
   wp_image_description_creator_params_v1_set_primaries_named
     (creator, WP_COLOR_MANAGER_V1_PRIMARIES_BT2020);
   // with min 0, a signal E in [0, 1] means E * max nits: 1.0, reference
   // white, is E = REFERENCE_NITS / max
-  if(b->luminances)
+  if(t->p->luminances)
     wp_image_description_creator_params_v1_set_luminances(creator, 0, max_lum,
                                                           REFERENCE_NITS);
-  b->pending = wp_image_description_creator_params_v1_create(creator);
-  b->pending_max = b->luminances ? max_lum : 0;
-  b->pending_failed = FALSE;
-  wp_image_description_v1_add_listener(b->pending, &_description_listener, b);
+  t->pending = wp_image_description_creator_params_v1_create(creator);
+  t->pending_max = t->p->luminances ? max_lum : 0;
+  t->pending_failed = FALSE;
+  wp_image_description_v1_add_listener(t->pending, &_description_listener, t);
 }
 
-static void _set_output(_backend_t *b)
+static void _set_output(_transport_t *t)
 {
-  const dt_iop_color_intent_t intent = b->relative ? DT_INTENT_RELATIVE_COLORIMETRIC
-                                                   : DT_INTENT_PERCEPTUAL;
+  const dt_iop_color_intent_t intent = t->p->relative ? DT_INTENT_RELATIVE_COLORIMETRIC
+                                                      : DT_INTENT_PERCEPTUAL;
   // GTK3 cannot tag its surface, and an untagged surface is sRGB to the
   // compositor. the image headroom is the core's target
   const dt_display_output_t output =
     { .image = { .type = DT_COLORSPACE_LIN_REC2020, .intent = intent },
       .device = { .type = DT_COLORSPACE_SRGB, .intent = intent, .headroom = 1.0f },
       .format = DT_FRAME_FLOAT };
-  dt_presenter_window_set_output(b->window, &output);
+  dt_presenter_window_set_output(t->p->window, &output);
 }
 
 // describe the image for the core's headroom target: the reservation's
 // encoding follows the description in use, so the transport range is the
 // target, never the compositor's raw preference
-static void _describe(_backend_t *b,
+static void _describe(_transport_t *t,
                       const float headroom)
 {
-  if(!b->luminances) return;
+  if(!t->p->luminances) return;
   // rounded up: the transport clips to [0, max / REFERENCE_NITS] (_reserve()),
   // which has to hold everything the pipes render, up to headroom
   const uint32_t max_lum = (uint32_t)ceilf(headroom * REFERENCE_NITS);
-  if(max_lum == b->description_max)
+  if(max_lum == t->description_max)
   {
     // back to the one in use: one still on its way is obsolete
-    if(b->pending) wp_image_description_v1_destroy(b->pending);
-    b->pending = NULL;
+    if(t->pending) wp_image_description_v1_destroy(t->pending);
+    t->pending = NULL;
   }
-  else if(!b->pending || max_lum != b->pending_max)
-    _create_description(b, max_lum);
+  else if(!t->pending || max_lum != t->pending_max)
+    _create_description(t, max_lum);
 }
+
+static gboolean _mutter_default_color_mode(const _platform_t *p);
 
 static void _info_done(void *data,
                        struct wp_image_description_info_v1 *info)
 {
-  _backend_t *b = data;
+  _platform_t *p = data;
   wp_image_description_info_v1_destroy(info);
-  b->info = NULL;
-  b->preferred_done = TRUE;
+  p->info = NULL;
+  p->preferred_done = TRUE;
 
-  if(memcmp(b->primaries, b->reported_primaries, sizeof(b->primaries))
-     || b->tf != b->reported_tf || b->icc != b->reported_icc)
+  if(memcmp(p->primaries, p->reported_primaries, sizeof(p->primaries))
+     || p->tf != p->reported_tf || p->icc != p->reported_icc)
   {
-    memcpy(b->reported_primaries, b->primaries, sizeof(b->primaries));
-    b->reported_tf = b->tf;
-    b->reported_icc = b->icc;
-    b->generation++;
+    memcpy(p->reported_primaries, p->primaries, sizeof(p->primaries));
+    p->reported_tf = p->tf;
+    p->reported_icc = p->icc;
+    p->generation++;
   }
 
   // a hint of the compositor, not a measurement of the screen: KWin moves
   // the reference luminance with the HDR brightness, one description per
   // frame of its animation. without set_luminances the image is SDR
-  const uint32_t peak = b->target_max_lum ? b->target_max_lum : b->max_lum;
+  const uint32_t peak = p->target_max_lum ? p->target_max_lum : p->max_lum;
   const dt_presenter_headroom_t report =
-    { .value = b->reference_lum ? (float)peak / b->reference_lum : NAN,
-      .ceiling = b->luminances ? 0.0f : 1.0f,
-      .generation = b->generation };
-  dt_presenter_window_report_headroom(b->window, &report);
-  _describe(b, dt_presenter_window_target(b->window));
+    { .value = p->reference_lum ? (float)peak / p->reference_lum : NAN,
+      .ceiling = p->luminances ? 0.0f : 1.0f,
+      .generation = p->generation };
+  dt_presenter_window_report_headroom(p->window, &report);
+
+  // after the report: a native backend chosen now describes its image for
+  // the target the report settled
+  const gboolean native = !_mutter_default_color_mode(p);
+  if(native == p->native) return;
+  p->native = native;
+  dt_print(DT_DEBUG_CONTROL, "[presenter wayland] %s window: %s",
+           p->window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
+           native ? "the compositor color-manages it"
+                  : "mutter's default color mode (mutter#4597 workaround),"
+                    " using cairo with the system display profile");
+  dt_presenter_window_choose(p->window);
 }
 
 // the mutter workaround: mutter's default color mode describes plain SDR sRGB
@@ -494,49 +535,54 @@ static void _info_done(void *data,
 // screen (mutter#4597), so only darktable can apply it, on cairo. mutter is
 // known by GTK's private gtk_shell1, which KWin, wlroots, Weston and Hyprland
 // do not announce. stops matching once mutter describes its real output (!5177)
-static gboolean _mutter_default_color_mode(const _backend_t *b)
+static gboolean _mutter_default_color_mode(const _platform_t *p)
 {
-  if(!b->gtk_shell) return FALSE;
+  if(!p->gtk_shell) return FALSE;
 
   // sRGB primaries and D65 white, in the protocol's units of 1e-6
   static const int32_t srgb[8] = { 640000, 330000, 300000, 600000,
                                    150000, 60000, 312700, 329000 };
   for(int k = 0; k < 8; k++)
-    if(ABS(b->primaries[k] - srgb[k]) > 1000) return FALSE;
+    if(ABS(p->primaries[k] - srgb[k]) > 1000) return FALSE;
 
-  const gboolean sdr_tf = b->tf == WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_SRGB
-                          || b->tf == WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22
-                          || b->tf == WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_COMPOUND_POWER_2_4;
-  const uint32_t peak = b->target_max_lum ? b->target_max_lum : b->max_lum;
-  return sdr_tf && !b->icc && (!b->reference_lum || peak <= b->reference_lum);
+  const gboolean sdr_tf = p->tf == WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_SRGB
+                          || p->tf == WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22
+                          || p->tf == WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_COMPOUND_POWER_2_4;
+  const uint32_t peak = p->target_max_lum ? p->target_max_lum : p->max_lum;
+  return sdr_tf && !p->icc && (!p->reference_lum || peak <= p->reference_lum);
 }
 
-static void _description_ready(_backend_t *b,
-                               struct wp_image_description_v1 *description)
+static void _preferred_ready(void *data,
+                             struct wp_image_description_v1 *description,
+                             uint32_t identity)
 {
-  if(description == b->preferred)
-  {
-    memset(b->primaries, 0, sizeof(b->primaries));
-    b->tf = b->reference_lum = b->max_lum = b->target_max_lum = 0;
-    b->icc = FALSE;
-    b->info = wp_image_description_v1_get_information(description);
-    wp_image_description_info_v1_add_listener(b->info, &_info_listener, b);
-    wp_image_description_v1_destroy(description);
-    b->preferred = NULL;
-    return;
-  }
-  if(description != b->pending) return;
+  _platform_t *p = data;
+  memset(p->primaries, 0, sizeof(p->primaries));
+  p->tf = p->reference_lum = p->max_lum = p->target_max_lum = 0;
+  p->icc = FALSE;
+  p->info = wp_image_description_v1_get_information(description);
+  wp_image_description_info_v1_add_listener(p->info, &_info_listener, p);
+  wp_image_description_v1_destroy(description);
+  p->preferred = NULL;
+}
+
+static void _description_ready(void *data,
+                               struct wp_image_description_v1 *description,
+                               uint32_t identity)
+{
+  _transport_t *t = data;
+  if(description != t->pending) return;
 
   // the image shown was composed for the description replaced: compose it
   // again for this one
-  if(b->description)
+  if(t->description)
   {
-    wp_image_description_v1_destroy(b->description);
-    dt_presenter_window_redraw(b->window);
+    wp_image_description_v1_destroy(t->description);
+    dt_presenter_window_redraw(t->p->window);
   }
-  b->description = b->pending;
-  b->description_max = b->pending_max;
-  b->pending = NULL;
+  t->description = t->pending;
+  t->description_max = t->pending_max;
+  t->pending = NULL;
   // set now, and still shown with the image encoded for the old one: an
   // image description is double-buffered state, applied by the image
   // surface's next commit (color-management-v1, set_image_description).
@@ -544,25 +590,25 @@ static void _description_ready(_backend_t *b,
   // a reservation gives from now on, and a new encoding composes a new buffer
   // (presenter_layers.c, _image_changed()), so the description and the
   // first buffer encoded for it apply together
-  for(GList *l = b->widgets; l; l = g_list_next(l))
+  for(GList *l = t->widgets; l; l = g_list_next(l))
   {
     _widget_t *w = l->data;
     if(w->color)
-      wp_color_management_surface_v1_set_image_description(w->color, b->description,
-                                                           _intent(b));
+      wp_color_management_surface_v1_set_image_description(w->color, t->description,
+                                                           _intent(t->p));
   }
-  _set_output(b);
+  _set_output(t);
 }
 
-static void _request_preferred(_backend_t *b)
+static void _request_preferred(_platform_t *p)
 {
-  if(b->preferred) wp_image_description_v1_destroy(b->preferred);
-  if(b->info) wp_image_description_info_v1_destroy(b->info);
-  b->info = NULL;
-  b->preferred_done = b->preferred_failed = FALSE;
-  b->preferred =
-    wp_color_management_surface_feedback_v1_get_preferred_parametric(b->feedback);
-  wp_image_description_v1_add_listener(b->preferred, &_description_listener, b);
+  if(p->preferred) wp_image_description_v1_destroy(p->preferred);
+  if(p->info) wp_image_description_info_v1_destroy(p->info);
+  p->info = NULL;
+  p->preferred_done = p->preferred_failed = FALSE;
+  p->preferred =
+    wp_color_management_surface_feedback_v1_get_preferred_parametric(p->feedback);
+  wp_image_description_v1_add_listener(p->preferred, &_preferred_listener, p);
 }
 
 static void _preferred_changed(void *data,
@@ -577,12 +623,12 @@ static const struct wp_color_management_surface_feedback_v1_listener
   .preferred_changed = _preferred_changed,
 };
 
-static void _feedback_init(_backend_t *b)
+static void _feedback_init(_platform_t *p)
 {
-  b->feedback = wp_color_manager_v1_get_surface_feedback(b->manager, b->parent);
-  wp_color_management_surface_feedback_v1_add_listener(b->feedback,
-                                                       &_feedback_listener, b);
-  _request_preferred(b);
+  p->feedback = wp_color_manager_v1_get_surface_feedback(p->manager, p->parent);
+  wp_color_management_surface_feedback_v1_add_listener(p->feedback,
+                                                       &_feedback_listener, p);
+  _request_preferred(p);
 }
 
 // GtkWindow's unmap, which runs before this handler, makes GDK destroy its
@@ -591,17 +637,17 @@ static void _feedback_init(_backend_t *b)
 // drop what belongs to that surface before events are dispatched again.
 // darktable never shows such a toplevel again (the main window is hidden
 // at quit, the second window is destroyed after hiding), so nothing is
-// presented from here on
+// presented from here on, and the window keeps its backend
 static void _toplevel_unmap(GtkWidget *toplevel,
-                            _backend_t *b)
+                            _platform_t *p)
 {
-  if(b->info) wp_image_description_info_v1_destroy(b->info);
-  if(b->preferred) wp_image_description_v1_destroy(b->preferred);
-  if(b->feedback) wp_color_management_surface_feedback_v1_destroy(b->feedback);
-  b->info = NULL;
-  b->preferred = NULL;
-  b->feedback = NULL;
-  b->parent = NULL;
+  if(p->info) wp_image_description_info_v1_destroy(p->info);
+  if(p->preferred) wp_image_description_v1_destroy(p->preferred);
+  if(p->feedback) wp_color_management_surface_feedback_v1_destroy(p->feedback);
+  p->info = NULL;
+  p->preferred = NULL;
+  p->feedback = NULL;
+  p->parent = NULL;
 }
 
 // GTK3 runs all draw handlers of a frame in the frame clock's paint phase
@@ -610,9 +656,9 @@ static void _toplevel_unmap(GtkWidget *toplevel,
 // is the one point where every layer of the frame is drawn and nothing is
 // shown yet
 static void _paint(GdkFrameClock *clock,
-                   _backend_t *b)
+                   _transport_t *t)
 {
-  dt_presenter_window_present(b->window);
+  dt_presenter_window_present(t->p->window);
 }
 
 /* setup */
@@ -621,40 +667,40 @@ static void _supported_intent(void *data,
                               struct wp_color_manager_v1 *manager,
                               uint32_t intent)
 {
-  _backend_t *b = data;
-  if(intent == WP_COLOR_MANAGER_V1_RENDER_INTENT_RELATIVE) b->relative = TRUE;
+  _platform_t *p = data;
+  if(intent == WP_COLOR_MANAGER_V1_RENDER_INTENT_RELATIVE) p->relative = TRUE;
 }
 
 static void _supported_feature(void *data,
                                struct wp_color_manager_v1 *manager,
                                uint32_t feature)
 {
-  _backend_t *b = data;
-  if(feature == WP_COLOR_MANAGER_V1_FEATURE_PARAMETRIC) b->parametric = TRUE;
-  if(feature == WP_COLOR_MANAGER_V1_FEATURE_SET_LUMINANCES) b->luminances = TRUE;
+  _platform_t *p = data;
+  if(feature == WP_COLOR_MANAGER_V1_FEATURE_PARAMETRIC) p->parametric = TRUE;
+  if(feature == WP_COLOR_MANAGER_V1_FEATURE_SET_LUMINANCES) p->luminances = TRUE;
 }
 
 static void _supported_tf_named(void *data,
                                 struct wp_color_manager_v1 *manager,
                                 uint32_t tf)
 {
-  _backend_t *b = data;
-  if(tf == WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR) b->ext_linear = TRUE;
+  _platform_t *p = data;
+  if(tf == WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR) p->ext_linear = TRUE;
 }
 
 static void _supported_primaries_named(void *data,
                                        struct wp_color_manager_v1 *manager,
                                        uint32_t primaries)
 {
-  _backend_t *b = data;
-  if(primaries == WP_COLOR_MANAGER_V1_PRIMARIES_BT2020) b->bt2020 = TRUE;
+  _platform_t *p = data;
+  if(primaries == WP_COLOR_MANAGER_V1_PRIMARIES_BT2020) p->bt2020 = TRUE;
 }
 
 static void _manager_done(void *data,
                           struct wp_color_manager_v1 *manager)
 {
-  _backend_t *b = data;
-  b->done = TRUE;
+  _platform_t *p = data;
+  p->done = TRUE;
 }
 
 static const struct wp_color_manager_v1_listener _manager_listener = {
@@ -669,8 +715,8 @@ static void _shm_format(void *data,
                         struct wl_shm *shm,
                         uint32_t format)
 {
-  _backend_t *b = data;
-  if(format == WL_SHM_FORMAT_ABGR16161616F) b->half_float = TRUE;
+  _platform_t *p = data;
+  if(format == WL_SHM_FORMAT_ABGR16161616F) p->half_float = TRUE;
 }
 
 static const struct wl_shm_listener _shm_listener = { .format = _shm_format };
@@ -681,24 +727,24 @@ static void _global(void *data,
                     const char *interface,
                     uint32_t version)
 {
-  _backend_t *b = data;
+  _platform_t *p = data;
   // 4 for wl_surface.damage_buffer
-  if(!strcmp(interface, wl_compositor_interface.name) && !b->compositor && version >= 4)
-    b->compositor = wl_registry_bind(registry, name, &wl_compositor_interface, 4);
-  else if(!strcmp(interface, wl_subcompositor_interface.name) && !b->subcompositor)
-    b->subcompositor = wl_registry_bind(registry, name, &wl_subcompositor_interface, 1);
-  else if(!strcmp(interface, wl_shm_interface.name) && !b->shm)
+  if(!strcmp(interface, wl_compositor_interface.name) && !p->compositor && version >= 4)
+    p->compositor = wl_registry_bind(registry, name, &wl_compositor_interface, 4);
+  else if(!strcmp(interface, wl_subcompositor_interface.name) && !p->subcompositor)
+    p->subcompositor = wl_registry_bind(registry, name, &wl_subcompositor_interface, 1);
+  else if(!strcmp(interface, wl_shm_interface.name) && !p->shm)
   {
-    b->shm = wl_registry_bind(registry, name, &wl_shm_interface, 1);
-    wl_shm_add_listener(b->shm, &_shm_listener, b);
+    p->shm = wl_registry_bind(registry, name, &wl_shm_interface, 1);
+    wl_shm_add_listener(p->shm, &_shm_listener, p);
   }
-  else if(!strcmp(interface, wp_color_manager_v1_interface.name) && !b->manager)
+  else if(!strcmp(interface, wp_color_manager_v1_interface.name) && !p->manager)
   {
-    b->manager = wl_registry_bind(registry, name, &wp_color_manager_v1_interface, 1);
-    wp_color_manager_v1_add_listener(b->manager, &_manager_listener, b);
+    p->manager = wl_registry_bind(registry, name, &wp_color_manager_v1_interface, 1);
+    wp_color_manager_v1_add_listener(p->manager, &_manager_listener, p);
   }
   else if(!strcmp(interface, "gtk_shell1"))
-    b->gtk_shell = TRUE;
+    p->gtk_shell = TRUE;
 }
 
 static void _global_remove(void *data,
@@ -726,11 +772,11 @@ static void _add_shown_popover(GtkWidget *widget,
 // backend's replay of popovers can be tested. a popover's subsurface is
 // made anew whenever it is shown, on top of its siblings, so this is done
 // on every present. the toplevel lists its popovers bottom to top
-static void _cover_popovers(_backend_t *b,
+static void _cover_popovers(_transport_t *t,
                             _widget_t *w)
 {
   GList *popovers = NULL;
-  gtk_container_forall(GTK_CONTAINER(b->toplevel), _add_shown_popover, &popovers);
+  gtk_container_forall(GTK_CONTAINER(t->p->toplevel), _add_shown_popover, &popovers);
   for(GList *p = popovers; p; p = g_list_next(p))
   {
     GdkWindow *window = gtk_widget_get_parent_window(p->data);
@@ -748,33 +794,33 @@ static gboolean _reserve(dt_presenter_transport_t *self,
                          const dt_presenter_layers_t *layers,
                          dt_presenter_reservation_t *reservation)
 {
-  _backend_t *b = (_backend_t *)self;
+  _transport_t *t = (_transport_t *)self;
 
   // unmapped, see _toplevel_unmap()
-  if(!b->parent) return FALSE;
+  if(!t->p->parent) return FALSE;
 
   _widget_t *w = *widget_data;
   if(!w)
   {
     w = g_malloc0(sizeof(_widget_t));
-    _widget_layers_init(b, w);
-    b->widgets = g_list_prepend(b->widgets, w);
+    _widget_layers_init(t, w);
+    t->widgets = g_list_prepend(t->widgets, w);
     *widget_data = w;
   }
 
   // the foreground goes with every present. the compositor still holding
   // both of its buffers means trying again next frame
-  w->reserved_foreground = _buffer_get(b, &w->foreground, layers->width, layers->height,
+  w->reserved_foreground = _buffer_get(t, &w->foreground, layers->width, layers->height,
                                        4 * layers->width, WL_SHM_FORMAT_ARGB8888);
   if(!w->reserved_foreground) return FALSE;
-  w->reserved_image = _buffer_get(b, &w->image, layers->width, layers->height,
+  w->reserved_image = _buffer_get(t, &w->image, layers->width, layers->height,
                                   8 * layers->width, WL_SHM_FORMAT_ABGR16161616F);
   w->layers = *layers;
 
   // the description is ext_linear with luminances (0, max, reference): a
   // value E shows at E x max nits, so reference white is E = 1 / headroom,
   // and outside [0, 1] colorimetry is undefined
-  const float headroom = _headroom(b->description_max);
+  const float headroom = _headroom(t->description_max);
   const float white = 1.0f / headroom;
   *reservation = (dt_presenter_reservation_t){
     .foreground = w->reserved_foreground->data,
@@ -792,23 +838,23 @@ static void _commit(dt_presenter_transport_t *self,
                     void **widget_data,
                     const gboolean image)
 {
-  _backend_t *b = (_backend_t *)self;
+  _transport_t *t = (_transport_t *)self;
   _widget_t *w = *widget_data;
 
   // applied with GDK's next commit, like the buffers
   wl_subsurface_set_position(w->image.subsurface, w->layers.x, w->layers.y);
   wl_subsurface_set_position(w->foreground.subsurface, w->layers.x, w->layers.y);
-  if(!b->transport.popovers_above) _cover_popovers(b, w);
+  if(!t->transport.popovers_above) _cover_popovers(t, w);
 
   if(image) _layer_commit(&w->image, w->reserved_image, w->layers.scale);
   _layer_commit(&w->foreground, w->reserved_foreground, w->layers.scale);
-  wl_display_flush(b->display);
+  wl_display_flush(t->p->display);
 }
 
 static void _clear(dt_presenter_transport_t *self,
                    void **widget_data)
 {
-  _backend_t *b = (_backend_t *)self;
+  _transport_t *t = (_transport_t *)self;
   _widget_t *w = *widget_data;
   if(!w) return;
 
@@ -817,61 +863,123 @@ static void _clear(dt_presenter_transport_t *self,
   wl_surface_commit(w->image.surface);
   wl_surface_attach(w->foreground.surface, NULL, 0, 0);
   wl_surface_commit(w->foreground.surface);
-  wl_display_flush(b->display);
+  wl_display_flush(t->p->display);
 }
 
 static void _release(dt_presenter_transport_t *self,
                      void **widget_data)
 {
-  _backend_t *b = (_backend_t *)self;
+  _transport_t *t = (_transport_t *)self;
   _widget_t *w = *widget_data;
   if(!w) return;
   _widget_layers_free(w);
-  b->widgets = g_list_remove(b->widgets, w);
+  t->widgets = g_list_remove(t->widgets, w);
   g_free(w);
   *widget_data = NULL;
 }
 
 static void _free(dt_presenter_transport_t *self)
 {
-  _backend_t *b = (_backend_t *)self;
-  if(b->unmap_handler) g_signal_handler_disconnect(b->toplevel, b->unmap_handler);
-  if(b->paint_handler) g_signal_handler_disconnect(b->clock, b->paint_handler);
-  for(GList *l = b->widgets; l; l = g_list_next(l))
+  _transport_t *t = (_transport_t *)self;
+  if(t->paint_handler) g_signal_handler_disconnect(t->clock, t->paint_handler);
+  for(GList *l = t->widgets; l; l = g_list_next(l))
   {
     _widget_layers_free(l->data);
     g_free(l->data);
   }
-  g_list_free(b->widgets);
-  if(b->info) wp_image_description_info_v1_destroy(b->info);
-  if(b->preferred) wp_image_description_v1_destroy(b->preferred);
-  if(b->pending) wp_image_description_v1_destroy(b->pending);
-  if(b->description) wp_image_description_v1_destroy(b->description);
-  if(b->feedback) wp_color_management_surface_feedback_v1_destroy(b->feedback);
-  if(b->manager) wp_color_manager_v1_destroy(b->manager);
-  if(b->shm) wl_shm_destroy(b->shm);
-  if(b->subcompositor) wl_subcompositor_destroy(b->subcompositor);
-  if(b->compositor) wl_compositor_destroy(b->compositor);
-  if(b->display) wl_display_flush(b->display);
-  g_free(b);
+  g_list_free(t->widgets);
+  if(t->pending) wp_image_description_v1_destroy(t->pending);
+  if(t->description) wp_image_description_v1_destroy(t->description);
+  wl_display_flush(t->p->display);
+  g_free(t);
 }
 
 static void _target(dt_presenter_transport_t *self,
                     const float headroom)
 {
-  _describe((_backend_t *)self, headroom);
+  _describe((_transport_t *)self, headroom);
 }
 
-static void _move_to_default_queue(_backend_t *b)
+static dt_presenter_transport_t *_transport_new(dt_presenter_platform_t *self)
 {
-  void *proxies[] = { b->compositor, b->subcompositor, b->shm, b->manager, b->feedback,
-                      b->preferred, b->info, b->pending, b->description };
+  _platform_t *p = (_platform_t *)self;
+  // unmapped, see _toplevel_unmap()
+  if(!p->parent) return NULL;
+
+  _transport_t *t = g_malloc0(sizeof(_transport_t));
+  t->p = p;
+
+  // wait for the first description on a queue of our own, so that waiting
+  // dispatches nothing of GDK's or the platform's: the core may choose a
+  // native backend from one of their handlers
+  struct wl_event_queue *queue = wl_display_create_queue(p->display);
+  t->manager = wl_proxy_create_wrapper(p->manager);
+  wl_proxy_set_queue((struct wl_proxy *)t->manager, queue);
+  _describe(t, dt_presenter_window_target(p->window));
+  if(!t->pending) _create_description(t, REFERENCE_NITS);
+  gboolean ok = TRUE;
+  for(int k = 0; k < 4 && !t->description && !t->pending_failed && ok; k++)
+    ok = wl_display_roundtrip_queue(p->display, queue) >= 0;
+  wl_proxy_wrapper_destroy(t->manager);
+  t->manager = p->manager;
+  if(t->pending) wl_proxy_set_queue((struct wl_proxy *)t->pending, NULL);
+  if(t->description) wl_proxy_set_queue((struct wl_proxy *)t->description, NULL);
+  wl_event_queue_destroy(queue);
+
+  dt_print(DT_DEBUG_CONTROL, "[presenter wayland] %s window: %s, headroom %.2f",
+           p->window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
+           t->description ? "color managed" : "no image description, using cairo",
+           _headroom(t->description_max));
+  if(!t->description)
+  {
+    _free(&t->transport);
+    return NULL;
+  }
+
+  t->transport.reserve = _reserve;
+  t->transport.commit = _commit;
+  t->transport.clear = _clear;
+  t->transport.release = _release;
+  t->transport.free = _free;
+  t->transport.target = _target;
+  // GTK3 popovers are subsurfaces of GDK's surface too, above the layers,
+  // which are placed right above GDK's surface (_widget_layers_init())
+  t->transport.popovers_above = !g_getenv("DT_PRESENTER_REPLAY_POPOVERS");
+  t->clock = gdk_window_get_frame_clock(gtk_widget_get_window(p->toplevel));
+  t->paint_handler = g_signal_connect_after(t->clock, "paint", G_CALLBACK(_paint), t);
+  return &t->transport;
+}
+
+static gboolean _native(dt_presenter_platform_t *self)
+{
+  return ((_platform_t *)self)->native;
+}
+
+static void _platform_free(dt_presenter_platform_t *self)
+{
+  _platform_t *p = (_platform_t *)self;
+  if(p->unmap_handler) g_signal_handler_disconnect(p->toplevel, p->unmap_handler);
+  if(p->info) wp_image_description_info_v1_destroy(p->info);
+  if(p->preferred) wp_image_description_v1_destroy(p->preferred);
+  if(p->feedback) wp_color_management_surface_feedback_v1_destroy(p->feedback);
+  if(p->manager) wp_color_manager_v1_destroy(p->manager);
+  if(p->shm) wl_shm_destroy(p->shm);
+  if(p->subcompositor) wl_subcompositor_destroy(p->subcompositor);
+  if(p->compositor) wl_compositor_destroy(p->compositor);
+  if(p->display) wl_display_flush(p->display);
+  g_free(p);
+}
+
+static void _move_to_default_queue(_platform_t *p)
+{
+  void *proxies[] = { p->compositor, p->subcompositor, p->shm, p->manager, p->feedback,
+                      p->preferred, p->info };
   for(int k = 0; k < G_N_ELEMENTS(proxies); k++)
     if(proxies[k]) wl_proxy_set_queue(proxies[k], NULL);
 }
 
-dt_presenter_transport_t *dt_presenter_wayland_new(GtkWidget *toplevel,
-                                                   dt_presenter_window_t *window)
+dt_presenter_platform_t *dt_presenter_wayland_new(GtkWidget *toplevel,
+                                                  dt_presenter_window_t *window)
 {
   GdkDisplay *gdk_display = gtk_widget_get_display(toplevel);
   GdkWindow *gdk_window = gtk_widget_get_window(toplevel);
@@ -881,78 +989,60 @@ dt_presenter_transport_t *dt_presenter_wayland_new(GtkWidget *toplevel,
      || !GDK_IS_WAYLAND_WINDOW(gdk_window))
     return NULL;
 
-  _backend_t *b = g_malloc0(sizeof(_backend_t));
-  b->window = window;
-  b->toplevel = toplevel;
-  b->display = gdk_wayland_display_get_wl_display(gdk_display);
-  b->parent = gdk_wayland_window_get_wl_surface(gdk_window);
+  _platform_t *p = g_malloc0(sizeof(_platform_t));
+  p->window = window;
+  p->toplevel = toplevel;
+  p->display = gdk_wayland_display_get_wl_display(gdk_display);
+  p->parent = gdk_wayland_window_get_wl_surface(gdk_window);
+  // until a preferred description says otherwise: one without parametric
+  // information, as Weston's for an ICC output, is not plain sRGB
+  p->native = TRUE;
 
   // set up on a queue of our own, so that waiting for the compositor
   // dispatches nothing of GDK's
-  struct wl_event_queue *queue = wl_display_create_queue(b->display);
-  struct wl_display *wrapper = wl_proxy_create_wrapper(b->display);
+  struct wl_event_queue *queue = wl_display_create_queue(p->display);
+  struct wl_display *wrapper = wl_proxy_create_wrapper(p->display);
   wl_proxy_set_queue((struct wl_proxy *)wrapper, queue);
   struct wl_registry *registry = wl_display_get_registry(wrapper);
   wl_proxy_wrapper_destroy(wrapper);
-  wl_registry_add_listener(registry, &_registry_listener, b);
+  wl_registry_add_listener(registry, &_registry_listener, p);
 
-  gboolean ok = b->parent
-    && wl_display_roundtrip_queue(b->display, queue) >= 0
-    && b->compositor && b->subcompositor && b->shm && b->manager
-    && wl_display_roundtrip_queue(b->display, queue) >= 0
-    && b->done && b->parametric && b->ext_linear && b->bt2020 && b->half_float;
+  gboolean ok = p->parent
+    && wl_display_roundtrip_queue(p->display, queue) >= 0
+    && p->compositor && p->subcompositor && p->shm && p->manager
+    && wl_display_roundtrip_queue(p->display, queue) >= 0
+    && p->done && p->parametric && p->ext_linear && p->bt2020 && p->half_float;
 
-  gboolean mutter_default = FALSE;
+  // the first verdict, which the core reads once the platform is made
   if(ok)
   {
-    _feedback_init(b);
-    for(int k = 0; k < 4 && !b->preferred_done && !b->preferred_failed && ok; k++)
-      ok = wl_display_roundtrip_queue(b->display, queue) >= 0;
-    // a preferred description without parametric information, as Weston's
-    // for an ICC output, is not plain sRGB
-    mutter_default = ok && b->preferred_done && _mutter_default_color_mode(b);
-    if(!mutter_default)
-    {
-      if(!b->pending) _create_description(b, REFERENCE_NITS);
-      for(int k = 0; k < 4 && !b->description && !b->pending_failed && ok; k++)
-        ok = wl_display_roundtrip_queue(b->display, queue) >= 0;
-    }
-    ok = ok && !mutter_default && b->description;
+    _feedback_init(p);
+    for(int k = 0; k < 4 && !p->preferred_done && !p->preferred_failed && ok; k++)
+      ok = wl_display_roundtrip_queue(p->display, queue) >= 0;
   }
 
   wl_registry_destroy(registry);
-  _move_to_default_queue(b);
+  _move_to_default_queue(p);
   wl_event_queue_destroy(queue);
 
   dt_print
     (DT_DEBUG_CONTROL,
-     "[presenter wayland] %s: parametric %d, ext_linear %d, bt2020 %d, half float shm %d,"
-     " luminances %d, gtk_shell1 %d, headroom %.2f",
-     ok ? "color managed"
-        : mutter_default ? "mutter's default color mode (mutter#4597 workaround),"
-                           " using cairo with the system display profile"
-                         : "not available, using cairo",
-     b->parametric, b->ext_linear, b->bt2020, b->half_float, b->luminances,
-     b->gtk_shell, _headroom(b->description_max));
+     "[presenter wayland] %s window: %s: parametric %d, ext_linear %d, bt2020 %d,"
+     " half float shm %d, luminances %d, gtk_shell1 %d",
+     window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
+     ok ? "color management available" : "color management not available, using cairo",
+     p->parametric, p->ext_linear, p->bt2020, p->half_float, p->luminances, p->gtk_shell);
   if(!ok)
   {
-    _free(&b->transport);
+    _platform_free(&p->platform);
     return NULL;
   }
 
-  b->transport.reserve = _reserve;
-  b->transport.commit = _commit;
-  b->transport.clear = _clear;
-  b->transport.release = _release;
-  b->transport.free = _free;
-  b->transport.target = _target;
-  // GTK3 popovers are subsurfaces of GDK's surface too, above the layers,
-  // which are placed right above GDK's surface (_widget_layers_init())
-  b->transport.popovers_above = !g_getenv("DT_PRESENTER_REPLAY_POPOVERS");
-  b->unmap_handler = g_signal_connect(toplevel, "unmap", G_CALLBACK(_toplevel_unmap), b);
-  b->clock = gdk_window_get_frame_clock(gdk_window);
-  b->paint_handler = g_signal_connect_after(b->clock, "paint", G_CALLBACK(_paint), b);
-  return &b->transport;
+  p->platform.native = _native;
+  p->platform.transport = _transport_new;
+  p->platform.free = _platform_free;
+  p->unmap_handler = g_signal_connect(toplevel, "unmap", G_CALLBACK(_toplevel_unmap), p);
+  return &p->platform;
 }
 
 // clang-format off

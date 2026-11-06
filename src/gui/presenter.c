@@ -50,16 +50,22 @@ static void _frame_unref(gpointer data)
   dt_frame_unref(data);
 }
 
-static void _widget_detach(_widget_t *w)
+// the backend's data goes, and with it the records of the images, which
+// are the backend's
+static void _widget_release(_widget_t *w)
 {
-  if(w->window)
-  {
-    w->window->backend->release(w->window->backend, &w->data);
-    w->window->widgets = g_list_remove(w->window->widgets, w);
-    w->window = NULL;
-  }
+  w->window->backend->release(w->window->backend, &w->data);
   g_array_set_size(w->images, 0);
   g_ptr_array_set_size(w->frames, 0);
+}
+
+static void _widget_detach(_widget_t *w)
+{
+  // a widget draws images only in a window
+  if(!w->window) return;
+  _widget_release(w);
+  w->window->widgets = g_list_remove(w->window->widgets, w);
+  w->window = NULL;
 }
 
 static void _widget_free(gpointer data)
@@ -111,14 +117,24 @@ static void _settle_stop(dt_presenter_window_t *window)
   window->settle = 0;
 }
 
+// whatever the platform owned goes back to the system display profile,
+// which has headroom 1 (_describe_system_display() in colorspaces.c): the
+// window publishes no target. the target stays: the platform goes on
+// reporting, and a native backend chosen again takes it at once
+static void _give_back(dt_presenter_window_t *window)
+{
+  window->owned = FALSE;
+  dt_colorspaces_set_window_output(window->kind, NULL);
+}
+
 static void _window_free(gpointer data)
 {
   dt_presenter_window_t *window = data;
   _settle_stop(window);
   while(window->widgets) _widget_detach(window->widgets->data);
   window->backend->free(window->backend);
-  // whatever the platform owned goes back to the system display profile
-  dt_colorspaces_set_window_output(window->kind, NULL);
+  if(window->platform) window->platform->free(window->platform);
+  _give_back(window);
   g_free(window);
 }
 
@@ -126,6 +142,51 @@ static void _toplevel_unrealize(GtkWidget *toplevel,
                                 gpointer data)
 {
   g_object_set_data(G_OBJECT(toplevel), WINDOW_KEY, NULL);
+}
+
+static gboolean _wants_native(dt_presenter_window_t *window)
+{
+  // an escape hatch for compositor or driver bugs in the native backends
+  return window->platform && !dt_conf_get_bool("ui_last/display_force_cairo")
+    && window->platform->native(window->platform);
+}
+
+static void _set_backend(dt_presenter_window_t *window)
+{
+  const gboolean wanted = _wants_native(window);
+  window->backend = wanted ? dt_presenter_layered_new(window) : NULL;
+  window->native = window->backend != NULL;
+  if(!window->native)
+  {
+    window->backend = dt_presenter_cairo_new(window);
+    _give_back(window);
+  }
+  dt_print(DT_DEBUG_CONTROL, "[presenter] %s window: %s",
+           window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
+           window->native ? "native"
+           : wanted ? "cairo, the native backend did not set up"
+           : dt_conf_get_bool("ui_last/display_force_cairo")
+             ? "cairo, forced by ui_last/display_force_cairo"
+           : "cairo");
+}
+
+// the platform's verdict can change while the window exists: chosen
+// again, as Chromium picks the output color space again for the display a
+// window moves to
+void dt_presenter_window_choose(dt_presenter_window_t *window)
+{
+  // being made: _window_get() chooses once the platform is set up
+  if(!window->backend || _wants_native(window) == window->native) return;
+
+  // the kept presentations go too, being each backend's own
+  for(GList *l = window->widgets; l; l = g_list_next(l)) _widget_release(l->data);
+  dt_presenter_backend_t *old = window->backend;
+  window->backend = NULL;
+  old->free(old);
+  _set_backend(window);
+  // the window's producers render for its new serial; until then its
+  // frames are shown converted
+  dt_presenter_window_redraw(window);
 }
 
 static dt_presenter_window_t *_window_get(GtkWidget *widget)
@@ -142,13 +203,8 @@ static dt_presenter_window_t *_window_get(GtkWidget *widget)
     ? DT_COLORSPACE_DISPLAY
     : DT_COLORSPACE_DISPLAY2;
   dt_presenter_target_init(&window->target);
-  // an escape hatch for compositor or driver bugs in the native backends
-  if(dt_conf_get_bool("ui_last/display_force_cairo"))
-    dt_print(DT_DEBUG_CONTROL, "[presenter] %s window: cairo, forced by ui_last/display_force_cairo",
-             window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second");
-  else
-    window->backend = dt_presenter_layered_new(window);
-  if(!window->backend) window->backend = dt_presenter_cairo_new(window);
+  window->platform = dt_presenter_platform_new(window);
+  _set_backend(window);
   g_object_set_data_full(G_OBJECT(toplevel), WINDOW_KEY, window, _window_free);
   g_signal_connect(toplevel, "unrealize", G_CALLBACK(_toplevel_unrealize), NULL);
   return window;
@@ -170,18 +226,9 @@ static void _publish(dt_presenter_window_t *window)
 void dt_presenter_window_set_output(dt_presenter_window_t *window,
                                     const dt_display_output_t *output)
 {
-  window->owned = output != NULL;
-  if(output)
-  {
-    window->output = *output;
-    _publish(window);
-    return;
-  }
-  // a window on its system display profile has headroom 1
-  // (_describe_system_display() in colorspaces.c) and no target
-  _settle_stop(window);
-  dt_presenter_target_init(&window->target);
-  dt_colorspaces_set_window_output(window->kind, NULL);
+  window->owned = TRUE;
+  window->output = *output;
+  _publish(window);
 }
 
 float dt_presenter_window_target(const dt_presenter_window_t *window)
