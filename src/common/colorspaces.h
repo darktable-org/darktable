@@ -344,6 +344,10 @@ typedef struct dt_colorspaces_t
   // no longer does, for the notice at startup; NULL if there was none
   gchar *retired_display_selection;
 
+  // the display profile file of the preference last found unusable, so
+  // that it is reported once; NULL if the last one was usable
+  gchar *display_file_rejected;
+
 } dt_colorspaces_t;
 
 typedef struct dt_colorspaces_color_profile_t
