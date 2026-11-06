@@ -595,16 +595,20 @@ static void _replay_above(_widget_t *l,
     GtkWidget *widget = g_ptr_array_index(above, k);
     if(GTK_IS_POPOVER(widget)) _watch_popover(l->window, widget);
 
+    // GTK draws a widget within its clip, which a CSS shadow can take
+    // beyond its allocation (gtkwidget.c, gtk_widget_draw_internal())
     int x, y;
-    const int width = gtk_widget_get_allocated_width(widget);
-    const int height = gtk_widget_get_allocated_height(widget);
-    if(!gtk_widget_is_drawable(widget) || !_origin(l, widget, &x, &y)
-       || x >= l->width || y >= l->height || x + width <= 0 || y + height <= 0)
+    GtkAllocation a, clip;
+    gtk_widget_get_allocation(widget, &a);
+    gtk_widget_get_clip(widget, &clip);
+    if(!gtk_widget_is_drawable(widget) || !_origin(l, widget, &x, &y)) continue;
+    const int cx = x + clip.x - a.x, cy = y + clip.y - a.y;
+    if(cx >= l->width || cy >= l->height || cx + clip.width <= 0 || cy + clip.height <= 0)
       continue;
 
     if(saved)
     {
-      cairo_surface_t *patch = _save(l, x, y, width, height);
+      cairo_surface_t *patch = _save(l, cx, cy, clip.width, clip.height);
       if(patch) *saved = g_slist_prepend(*saved, patch);
     }
     cairo_save(l->cr);
