@@ -325,6 +325,9 @@ changes (where available).
   device instead of sending the image back to the CPU for the
   demosaic.
 
+- The LMMSE demosaicer can now run on the OpenCL device instead of
+  sending the image back to the CPU for the demosaic.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
