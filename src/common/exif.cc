@@ -3722,16 +3722,22 @@ unsigned char *dt_exif_xmp_decode(const char *input,
 {
   unsigned char *output = NULL;
 
+  if(!input || len < 0) return NULL;
+
   // Check if data is in compressed format
-  if(!strncmp(input, "gz", 2))
+  if(len >= 2 && !strncmp(input, "gz", 2))
   {
     // We have compressed data in base64 representation with leading "gz"
 
+    if(len < 5 || !g_ascii_isdigit(input[2]) || !g_ascii_isdigit(input[3]))
+      return NULL;
+
     // Get stored compression factor so we know the needed buffer size for uncompress
-    const float factor = 10 * (input[2] - '0') + (input[3] - '0');
+    const uLongf factor = 10 * (input[2] - '0') + (input[3] - '0');
+    if(factor == 0) return NULL;
 
     // Get a rw copy of input buffer omitting leading "gz" and compression factor
-    unsigned char *buffer = (unsigned char *)strdup(input + 4);
+    unsigned char *buffer = (unsigned char *)g_strndup(input + 4, len - 4);
     if(!buffer) return NULL;
 
     // Decode from base64 to compressed binary
@@ -3740,6 +3746,13 @@ unsigned char *dt_exif_xmp_decode(const char *input,
 
     // Do the actual uncompress step
     int result = Z_BUF_ERROR;
+    const uLongf max_output_size = (uLongf)256 << 20;
+    if(compressed_size == 0 || compressed_size > max_output_size / factor)
+    {
+      g_free(buffer);
+      return NULL;
+    }
+
     uLongf bufLen = factor * compressed_size;
     uLongf destLen;
 
@@ -3755,12 +3768,16 @@ unsigned char *dt_exif_xmp_decode(const char *input,
 
       result = uncompress(output, &destLen, buffer, compressed_size);
 
-      bufLen *= 2;
+      if(result == Z_BUF_ERROR)
+      {
+        if(bufLen > max_output_size / 2) break;
+        bufLen *= 2;
+      }
 
     } while(result == Z_BUF_ERROR);
 
 
-    free(buffer);
+    g_free(buffer);
 
     if(result != Z_OK)
     {
