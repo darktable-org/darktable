@@ -124,8 +124,8 @@ markers are written as they are, saturated colors that mark in any output.
   transforms and raises `DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED` with
   `DISPLAY` or `DISPLAY2`, for what GTK draws there: thumbnails (main
   window only) and module GUI colors. A new image encoding alone, such as
-  a new [headroom target](#headroom-target), reruns that window's
-  producers and nothing else.
+  a new [headroom target](#headroom-target) published when its description
+  is ready, reruns that window's producers and nothing else.
   A new device profile is also a new registry entry, announced with
   `DT_SIGNAL_CONTROL_PROFILE_CHANGED` for what names the entry by type.
   It is raised exactly when the entry changes: for a new
@@ -161,7 +161,8 @@ markers are written as they are, saturated colors that mark in any output.
 - colorout renders to `pipe->output`, with the profile the run took
   (`profile`), not one it looks up again by type. The pipe's `output_headroom`, which
   sigmoid and agx tone map to, honors `output.headroom`: on a native
-  window the [headroom target](#headroom-target), so with follow output on
+  window the [headroom target](#headroom-target) as its transport encodes
+  it, so with follow output on
   what the darkroom shows depends on the screen's current headroom, once
   it settled, and not on the export's PQ peak. A soft proof sets
   it to the proof profile's headroom, as an export to that profile does,
@@ -208,8 +209,8 @@ markers are written as they are, saturated colors that mark in any output.
 
 ### Headroom target
 
-A native window's image headroom is a target the presenter core settles,
-not what the platform reports. The window's platform reports whenever it
+A native window's image headroom follows a target the presenter core
+settles, not what the platform reports. The window's platform reports whenever it
 says something about the screen (`dt_presenter_window_report_headroom()`,
 `dt_presenter_headroom_t` in `gui/presenter_target.h`): the peak over
 reference white now, or NAN when the platform has no value (the display
@@ -244,23 +245,23 @@ backend's job. The policy is one pure function on a clock passed in
   1.0; the ramp of up to 2 s after it changes the target once, where it
   ends.
 
-A settled change publishes the window's output with the new image headroom
-through `dt_presenter_window_set_output()`, which keeps the rest of what
-the backend set, so the change is a new image encoding alone
-([output description](#output-description)). The core then calls the
-backend's `target()`, which prepares showing frames rendered for it: the
-Wayland transport describes its image layer for the target
-([Wayland](#wayland)). Until a window's producers
-deliver, its frames keep the tone mapping they were rendered with: the
-transport clips them to the range of the image description in use, and the
-compositor clips or fits that range to the screen (KWin clamps under
-relative intent).
+A settled change goes to the backend's `target()`, which prepares showing
+frames rendered for it and then publishes the window's output with the
+headroom it can show, through `dt_presenter_window_set_output()`: a new
+image encoding alone ([output description](#output-description)). The
+Wayland transport describes its image layer for the target and publishes
+when that description is ready ([Wayland](#wayland)); until then, and if
+it fails, pipes and transport stay on the description in use. Until a
+window's producers deliver, its frames keep the tone mapping they were
+rendered with: the transport clips them to the range of the image
+description in use, and the compositor clips or fits that range to the
+screen (KWin clamps under relative intent).
 A cairo window has headroom 1 and publishes no target; the target goes
 on settling from the platform's reports, so a window that becomes native
 again ([Backends](#backends)) starts at the screen's.
 
-Why settle: every target change reruns the window's pipes from the start,
-since `output_headroom` is in every cache line's hash
+Why settle: every published image-headroom change reruns the window's
+pipes from the start, since `output_headroom` is in every cache line's hash
 (`pixelpipe_cache.c:126`), while KWin sends a preferred description per
 frame of its brightness animation and macOS about 230 notifications per EDR
 ramp. No surveyed editor follows the screen at all (Lightroom, Resolve and
@@ -549,7 +550,8 @@ device, the profile GTK's own surface is shown in, through
 `dt_presenter_window_set_output()`, at setup and whenever it changes, and
 the platform the screen's headroom through
 `dt_presenter_window_report_headroom()`; the image headroom of the
-window's output is the core's [headroom target](#headroom-target). The
+window's output is what the transport encodes for, which follows the
+core's [headroom target](#headroom-target). The
 pipes of that window then render to that output, and everything GTK draws
 there converts to the device profile
 ([output description](#output-description)).
@@ -628,18 +630,25 @@ whenever the preference changes: no value (NAN) without a reference luminance,
 with a ceiling of 1 without `set_luminances`. A preferred description that
 differs in more than its luminances (primaries, white, transfer function,
 an ICC file) starts a new generation; KWin's HDR brightness moves only the
-reference luminance. The output is linear BT.2020 with the core's
-[headroom target](#headroom-target), and the image description is made for
-that target, never for the raw preference: ext_linear, BT.2020, luminances
-(0, ceil(headroom x 203), 203), so a value v is sent as v x 203 / max,
-clipped to [0, max / 203]: the reservation's clip range and matrix
-diag(203 / max). Max is rounded up to whole nits, so that range holds
-every value the pipes render, up to headroom; rounded to nearest, the top
-of up to half a nit would be clipped. A new
-description is set on the image layer when it is ready, and applies with
-that layer's next commit, which is the first buffer encoded for it: the
-window draws again and the image is composed again for the new headroom,
-whether or not its frames change. Layers are synchronized subsurfaces
+reference luminance. The image description is made for the core's
+[headroom target](#headroom-target), never for the raw preference:
+ext_linear, BT.2020, luminances (0, ceil(headroom x 203), 203), so a value
+v is sent as v x 203 / max, clipped to [0, max / 203]: the reservation's
+clip range and matrix diag(203 / max). Max is rounded up to whole nits, so
+that range holds the target. The output is
+linear BT.2020 with the headroom of the description in use, max / 203 (1
+without `set_luminances`), the range the transport clips to rather than
+the target it was made for. A new description is set on the image layer
+and published when it is ready, and applies with that layer's next
+commit, which is the first buffer encoded for it: the window draws again
+and the image is composed again for the new headroom, whether or not its
+frames change. A failed one is dropped, the one in use stays, and the next
+target is described again. Setup waits for the events that end it, the
+preferred description's information and the transport's first
+description, however many round trips they take; a failed first
+description leaves the window on cairo. Preference changes during setup
+do not drop the description it waits for: the latest preference is read
+once setup is over. Layers are synchronized subsurfaces
 of GDK's surface, placed directly above it and below GTK's own subsurfaces
 such as popovers, which therefore need no replay. They are presented at the
 end of the frame clock's `paint`, so they apply with GDK's commit in

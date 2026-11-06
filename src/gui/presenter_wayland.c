@@ -97,6 +97,8 @@ typedef struct _platform_t
   int32_t primaries[8];
   uint32_t tf, reference_lum, max_lum, target_max_lum;
   gboolean icc, preferred_done, preferred_failed;
+  // while the platform sets up, and whether the preference changed then
+  gboolean setup, changed_in_setup;
   // what the reports' generation counts: preferred descriptions that
   // differ in more than their luminances, another screen or mode
   int32_t reported_primaries[8];
@@ -119,10 +121,9 @@ typedef struct _transport_t
   GdkFrameClock *clock;
   gulong paint_handler;
 
-  // ours: in use, and created, waiting for ready
+  // ours: in use, and created, waiting for ready or failed
   struct wp_image_description_v1 *description, *pending;
   uint32_t description_max, pending_max;
-  gboolean pending_failed;
 
   GList *widgets;
 } _transport_t;
@@ -297,14 +298,20 @@ static void _preferred_failed(void *data,
   p->preferred_failed = TRUE;
 }
 
+// the one in use stays, and so does the output published for it. a
+// failed description never becomes ready: dropped, so that the next target
+// is described again
 static void _description_failed(void *data,
                                 struct wp_image_description_v1 *description,
                                 uint32_t cause,
                                 const char *message)
 {
   _transport_t *t = data;
-  dt_print(DT_DEBUG_ALWAYS, "[presenter wayland] image description failed: %s", message);
-  if(description == t->pending) t->pending_failed = TRUE;
+  if(description != t->pending) return;
+  dt_print(DT_DEBUG_ALWAYS, "[presenter wayland] image description for %u nits failed: %s",
+           t->pending_max, message);
+  wp_image_description_v1_destroy(t->pending);
+  t->pending = NULL;
 }
 
 static void _info_done(void *data,
@@ -451,8 +458,10 @@ static void _create_description(_transport_t *t,
                                                           REFERENCE_NITS);
   t->pending = wp_image_description_creator_params_v1_create(creator);
   t->pending_max = t->p->luminances ? max_lum : 0;
-  t->pending_failed = FALSE;
   wp_image_description_v1_add_listener(t->pending, &_description_listener, t);
+  dt_print(DT_DEBUG_CONTROL, "[presenter wayland] %s window: image description for %u nits"
+           " requested", t->p->window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
+           t->pending_max);
 }
 
 static void _set_output(_transport_t *t)
@@ -460,23 +469,27 @@ static void _set_output(_transport_t *t)
   const dt_iop_color_intent_t intent = t->p->relative ? DT_INTENT_RELATIVE_COLORIMETRIC
                                                       : DT_INTENT_PERCEPTUAL;
   // GTK3 cannot tag its surface, and an untagged surface is sRGB to the
-  // compositor. the image headroom is the core's target
+  // compositor. the image headroom is the range of the description in use,
+  // which _reserve() clips to, not the target it was made for: that also
+  // holds for a description made for no target (no set_luminances)
   const dt_display_output_t output =
-    { .image = { .type = DT_COLORSPACE_LIN_REC2020, .intent = intent },
+    { .image = { .type = DT_COLORSPACE_LIN_REC2020, .intent = intent,
+                 .headroom = _headroom(t->description_max) },
       .device = { .type = DT_COLORSPACE_SRGB, .intent = intent, .headroom = 1.0f },
       .format = DT_FRAME_FLOAT };
   dt_presenter_window_set_output(t->p->window, &output);
 }
 
 // describe the image for the core's headroom target: the reservation's
-// encoding follows the description in use, so the transport range is the
-// target, never the compositor's raw preference
+// encoding follows the description in use, so the transport range follows
+// the description made for the target, never the compositor's raw
+// preference
 static void _describe(_transport_t *t,
                       const float headroom)
 {
   if(!t->p->luminances) return;
-  // rounded up: the transport clips to [0, max / REFERENCE_NITS] (_reserve()),
-  // which has to hold everything the pipes render, up to headroom
+  // rounded up, so that the range the transport clips to, [0, max /
+  // REFERENCE_NITS] (_reserve()), holds the target
   const uint32_t max_lum = (uint32_t)ceilf(headroom * REFERENCE_NITS);
   if(max_lum == t->description_max)
   {
@@ -583,6 +596,10 @@ static void _description_ready(void *data,
   t->description = t->pending;
   t->description_max = t->pending_max;
   t->pending = NULL;
+  dt_print(DT_DEBUG_CONTROL, "[presenter wayland] %s window: image description for %u nits"
+           " in use, headroom %.4f",
+           t->p->window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second",
+           t->description_max, _headroom(t->description_max));
   // set now, and still shown with the image encoded for the old one: an
   // image description is double-buffered state, applied by the image
   // surface's next commit (color-management-v1, set_image_description).
@@ -615,7 +632,14 @@ static void _preferred_changed(void *data,
                                struct wp_color_management_surface_feedback_v1 *feedback,
                                uint32_t identity)
 {
-  _request_preferred(data);
+  _platform_t *p = data;
+  // setup waits for the description it asked for: asking again would drop
+  // it, and KWin changes the preference with every frame of a brightness
+  // animation. the latest one is asked for once setup is over
+  if(p->setup)
+    p->changed_in_setup = TRUE;
+  else
+    _request_preferred(p);
 }
 
 static const struct wp_color_management_surface_feedback_v1_listener
@@ -911,15 +935,17 @@ static dt_presenter_transport_t *_transport_new(dt_presenter_platform_t *self)
 
   // wait for the first description on a queue of our own, so that waiting
   // dispatches nothing of GDK's or the platform's: the core may choose a
-  // native backend from one of their handlers
+  // native backend from one of their handlers. a created description gets
+  // ready or failed, however long the compositor takes (color-management-v1,
+  // wp_image_description_v1)
   struct wl_event_queue *queue = wl_display_create_queue(p->display);
   t->manager = wl_proxy_create_wrapper(p->manager);
   wl_proxy_set_queue((struct wl_proxy *)t->manager, queue);
   _describe(t, dt_presenter_window_target(p->window));
   if(!t->pending) _create_description(t, REFERENCE_NITS);
   gboolean ok = TRUE;
-  for(int k = 0; k < 4 && !t->description && !t->pending_failed && ok; k++)
-    ok = wl_display_roundtrip_queue(p->display, queue) >= 0;
+  while(!t->description && t->pending && ok)
+    ok = wl_display_dispatch_queue(p->display, queue) >= 0;
   wl_proxy_wrapper_destroy(t->manager);
   t->manager = p->manager;
   if(t->pending) wl_proxy_set_queue((struct wl_proxy *)t->pending, NULL);
@@ -1013,17 +1039,23 @@ dt_presenter_platform_t *dt_presenter_wayland_new(GtkWidget *toplevel,
     && wl_display_roundtrip_queue(p->display, queue) >= 0
     && p->done && p->parametric && p->ext_linear && p->bt2020 && p->half_float;
 
-  // the first verdict, which the core reads once the platform is made
+  // the first verdict, which the core reads once the platform is made:
+  // the preferred description gets ready or failed, and its information
+  // ends with done
   if(ok)
   {
+    p->setup = TRUE;
     _feedback_init(p);
-    for(int k = 0; k < 4 && !p->preferred_done && !p->preferred_failed && ok; k++)
-      ok = wl_display_roundtrip_queue(p->display, queue) >= 0;
+    while(!p->preferred_done && !p->preferred_failed && ok)
+      ok = wl_display_dispatch_queue(p->display, queue) >= 0;
   }
 
   wl_registry_destroy(registry);
   _move_to_default_queue(p);
   wl_event_queue_destroy(queue);
+  p->setup = FALSE;
+  // on the default queue, answered while GDK dispatches
+  if(ok && p->changed_in_setup) _request_preferred(p);
 
   dt_print
     (DT_DEBUG_CONTROL,

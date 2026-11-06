@@ -118,12 +118,11 @@ static void _settle_stop(dt_presenter_window_t *window)
 }
 
 // whatever the platform owned goes back to the system display profile,
-// which has headroom 1 (_describe_system_display() in colorspaces.c): the
-// window publishes no target. the target stays: the platform goes on
-// reporting, and a native backend chosen again takes it at once
+// which has headroom 1 (_describe_system_display() in colorspaces.c). the
+// target stays: the platform goes on reporting, and a native backend
+// chosen again describes its image for it at setup
 static void _give_back(dt_presenter_window_t *window)
 {
-  window->owned = FALSE;
   dt_colorspaces_set_window_output(window->kind, NULL);
 }
 
@@ -228,19 +227,10 @@ void dt_presenter_window_output(const dt_presenter_window_t *window,
   dt_colorspaces_get_display_output(window->kind, output);
 }
 
-static void _publish(dt_presenter_window_t *window)
-{
-  dt_display_output_t output = window->output;
-  output.image.headroom = dt_presenter_target_headroom(&window->target);
-  dt_colorspaces_set_window_output(window->kind, &output);
-}
-
 void dt_presenter_window_set_output(dt_presenter_window_t *window,
                                     const dt_display_output_t *output)
 {
-  window->owned = TRUE;
-  window->output = *output;
-  _publish(window);
+  dt_colorspaces_set_window_output(window->kind, output);
 }
 
 float dt_presenter_window_target(const dt_presenter_window_t *window)
@@ -248,14 +238,14 @@ float dt_presenter_window_target(const dt_presenter_window_t *window)
   return dt_presenter_target_headroom(&window->target);
 }
 
-// only the window's own producers render again, for the new serial; the
-// device encoding stays, so nothing GTK draws is converted again
+// not published here: the backend publishes the headroom its transport
+// encodes for once it can (dt_presenter_window_set_output()), so the pipes
+// never render for a range other than the one the transport clips to
 static void _target_changed(dt_presenter_window_t *window)
 {
   const float headroom = dt_presenter_target_headroom(&window->target);
   dt_print(DT_DEBUG_CONTROL, "[presenter] %s window headroom target %.4f",
            window->kind == DT_COLORSPACE_DISPLAY ? "main" : "second", headroom);
-  if(window->owned) _publish(window);
   // NULL while the backend is being set up: it asks for the target then
   dt_presenter_backend_t *backend = window->backend;
   if(backend && backend->target) backend->target(backend, headroom);

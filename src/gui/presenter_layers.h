@@ -101,8 +101,10 @@ struct dt_presenter_transport_t
   // the widget is gone: free *widget_data and set it to NULL
   void (*release)(dt_presenter_transport_t *self, void **widget_data);
   void (*free)(dt_presenter_transport_t *self);
-  // the window's headroom target changed: describe the image for it from
-  // now on (dt_presenter_backend_t's target())
+  // the window's headroom target changed: describe the image for it, and
+  // once reservations encode for it, set the window's output with that
+  // headroom (dt_presenter_backend_t's target()). until then, and if the
+  // description fails, the one in use stays
   void (*target)(dt_presenter_transport_t *self, const float headroom);
   // GTK's popovers are surfaces of their own above the layers, as on
   // Wayland, so they need no replay. where GTK3 draws them into the
