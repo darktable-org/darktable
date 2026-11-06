@@ -30,6 +30,7 @@
 
 #include "common/colorspaces.h"
 #include "develop/frame.h"
+#include "gui/presenter_target.h"
 
 #include <gtk/gtk.h>
 
@@ -106,6 +107,9 @@ struct dt_presenter_backend_t
   void (*release)(dt_presenter_backend_t *self, void **data);
   // the window is gone, after every widget was released
   void (*free)(dt_presenter_backend_t *self);
+  // the window's headroom target changed: prepare showing frames rendered
+  // for it. NULL for a backend that reports no headroom
+  void (*target)(dt_presenter_backend_t *self, const float headroom);
 };
 
 typedef struct dt_presenter_window_t
@@ -116,17 +120,32 @@ typedef struct dt_presenter_window_t
   dt_presenter_backend_t *backend;
   // presenter.c's records of the window's presenting widgets
   GList *widgets;
+  // the output the platform owns, as its backend set it, and the headroom
+  // target the core settled from the backend's reports, with the timer
+  // that settles it and the deadline the timer is set for
+  gboolean owned;
+  dt_display_output_t output;
+  dt_presenter_target_t target;
+  guint settle;
+  int64_t settle_deadline;
 } dt_presenter_window_t;
 
 /** the window's output as it is now */
 void dt_presenter_window_output(const dt_presenter_window_t *window,
                                 dt_display_output_t *output);
-/** for backends, at setup or later, and for a window left on cairo in a
- * platform that manages color: the platform owns the window's output, or
- * gives it back to the system display profile with NULL. the window
- * redraws if it changed (dt_colorspaces_set_window_output()) */
+/** for backends, at setup or later: the platform owns the window's output,
+ * or gives it back to the system display profile with NULL. the image
+ * headroom is the core's target, whatever output says. the window redraws
+ * if its output changed (dt_colorspaces_set_window_output()) */
 void dt_presenter_window_set_output(dt_presenter_window_t *window,
                                     const dt_display_output_t *output);
+/** for backends, whenever the platform says something about the screen's
+ * headroom: the core settles its target from the reports, publishes it in
+ * the window's output and gives it to the backend's target() */
+void dt_presenter_window_report_headroom(dt_presenter_window_t *window,
+                                         const dt_presenter_headroom_t *report);
+/** the window's headroom target now */
+float dt_presenter_window_target(const dt_presenter_window_t *window);
 /** for backends: draw the window's presenting widgets again */
 void dt_presenter_window_redraw(dt_presenter_window_t *window);
 

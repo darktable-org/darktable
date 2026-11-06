@@ -1365,6 +1365,13 @@ static void _free(dt_presenter_backend_t *self)
   g_free(w);
 }
 
+static void _target(dt_presenter_backend_t *self,
+                    const float headroom)
+{
+  _window_t *w = (_window_t *)self;
+  if(w->transport->target) w->transport->target(w->transport, headroom);
+}
+
 dt_presenter_backend_t *dt_presenter_layered_new(dt_presenter_window_t *window)
 {
   dt_presenter_transport_t *transport = NULL;
@@ -1387,7 +1394,8 @@ dt_presenter_backend_t *dt_presenter_layered_new(dt_presenter_window_t *window)
                                          .end = _end,
                                          .clear = _clear,
                                          .release = _release,
-                                         .free = _free };
+                                         .free = _free,
+                                         .target = _target };
   return &w->backend;
 }
 
