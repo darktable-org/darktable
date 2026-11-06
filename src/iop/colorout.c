@@ -55,6 +55,12 @@ typedef struct dt_iop_colorout_data_t
   dt_colormatrix_t cmatrix;
   cmsHTRANSFORM *xform;
   float unbounded_coeffs[3][3]; // for extrapolation of shaper curves
+  // a soft proof to a PQ or HLG profile: Lab to the proof's linear light,
+  // and back to Lab for the gamut check. xform then takes the proof's
+  // linear light to the output
+  int proof_hdr_transfer;
+  cmsHTRANSFORM proof_xform;
+  cmsHTRANSFORM proof_lab_xform;
 } dt_iop_colorout_data_t;
 
 typedef struct dt_iop_colorout_global_data_t
@@ -521,6 +527,50 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
   dt_omploop_sfence();
 }
 
+// pixels per block of _transform_hdr_proof(), whose buffers are on the stack
+#define HDR_PROOF_BLOCK 256
+
+static void _transform_hdr_proof(const dt_iop_colorout_data_t *const d,
+                                 float *restrict out,
+                                 const float *restrict in,
+                                 const size_t npixels)
+{
+  const gboolean gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
+  DT_OMP_FOR()
+  for(size_t start = 0; start < npixels; start += HDR_PROOF_BLOCK)
+  {
+    const size_t count = MIN(start + HDR_PROOF_BLOCK, npixels) - start;
+    float DT_ALIGNED_ARRAY proof[4 * HDR_PROOF_BLOCK];
+    float *const outp = out + 4 * start;
+
+    cmsDoTransform(d->proof_xform, in + 4 * start, proof, count);
+    // what an export to the proof profile stores, as a viewer decodes it
+    for(size_t j = 0; j < count; j++)
+    {
+      dt_hdr_encode(proof + 4 * j, d->proof_hdr_transfer);
+      dt_hdr_decode(proof + 4 * j, d->proof_hdr_transfer);
+    }
+    cmsDoTransform(d->xform, proof, outp, count);
+
+    if(gamutcheck)
+    {
+      // out of gamut where the proof moves the color by more than 1 dE,
+      // littlecms' threshold for a matrix-shaper proof profile
+      static const dt_aligned_pixel_t cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
+      float DT_ALIGNED_ARRAY lab[4 * HDR_PROOF_BLOCK];
+      cmsDoTransform(d->proof_lab_xform, proof, lab, count);
+      for(size_t j = 0; j < count; j++)
+      {
+        const float *const ref = in + 4 * (start + j);
+        float de2 = 0.0f;
+        for(int c = 0; c < 3; c++)
+          de2 += (lab[4 * j + c] - ref[c]) * (lab[4 * j + c] - ref[c]);
+        if(de2 > 1.0f) copy_pixel(outp + 4 * j, cyan);
+      }
+    }
+  }
+}
+
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -542,6 +592,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     if(!_transform_cmatrix(d, out, (float*)ivoid, npixels))
       _process_fastpath_apply_tonecurves(self, piece, ovoid, roi_out);
   }
+  else if(d->proof_xform)
+  {
+    _transform_hdr_proof(d, out, (float*)ivoid, npixels);
+  }
   else
   {
     _transform_lcms(d, out, (float*)ivoid, npixels);
@@ -552,6 +606,48 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     for(size_t k = 0; k < npixels; k++)
       dt_hdr_encode(out + 4*k, d->hdr_transfer);
   }
+}
+
+static void _delete_transforms(dt_iop_colorout_data_t *d)
+{
+  if(d->xform) cmsDeleteTransform(d->xform);
+  if(d->proof_xform) cmsDeleteTransform(d->proof_xform);
+  if(d->proof_lab_xform) cmsDeleteTransform(d->proof_lab_xform);
+  d->xform = NULL;
+  d->proof_xform = NULL;
+  d->proof_lab_xform = NULL;
+}
+
+static void _create_transforms(dt_iop_colorout_data_t *d,
+                               const cmsHPROFILE Lab,
+                               const cmsHPROFILE output,
+                               const cmsUInt32Number output_format,
+                               const cmsHPROFILE softproof,
+                               const dt_iop_color_intent_t intent,
+                               const uint32_t flags)
+{
+  if(!d->proof_hdr_transfer)
+  {
+    d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
+                                          intent, INTENT_RELATIVE_COLORIMETRIC, flags);
+    return;
+  }
+
+  // the links of littlecms' proofing transform (cmsCreateProofingTransformTHR()):
+  // Lab to the proof with the intent and black point compensation, the proof to
+  // the output relative colorimetric without
+  const uint32_t to_proof = flags & (cmsFLAGS_NOCACHE | cmsFLAGS_BLACKPOINTCOMPENSATION);
+  d->proof_xform = cmsCreateTransform(Lab, TYPE_LabA_FLT, softproof, TYPE_RGBA_FLT,
+                                      intent, to_proof);
+  d->xform = cmsCreateTransform(softproof, TYPE_RGBA_FLT, output, output_format,
+                                INTENT_RELATIVE_COLORIMETRIC, flags & cmsFLAGS_NOCACHE);
+  if(flags & cmsFLAGS_GAMUTCHECK)
+    d->proof_lab_xform = cmsCreateTransform(softproof, TYPE_RGBA_FLT, Lab, TYPE_LabA_FLT,
+                                            intent, to_proof);
+
+  if(!d->proof_xform || !d->xform
+     || ((flags & cmsFLAGS_GAMUTCHECK) && !d->proof_lab_xform))
+    _delete_transforms(d);
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -573,26 +669,31 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_colorspaces_color_profile_type_t out_type = DT_COLORSPACE_SRGB;
   gchar *out_filename = NULL;
   dt_iop_color_intent_t out_intent = DT_INTENT_PERCEPTUAL;
+  gboolean presented = FALSE;
 
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
   cmsHPROFILE output = NULL;
   cmsHPROFILE softproof = NULL;
+  dt_colorspaces_color_profile_type_t softproof_type =
+    darktable.color_profiles->softproof_type;
   cmsHPROFILE hdr_linear = NULL;
   cmsUInt32Number output_format = TYPE_RGBA_FLT;
 
   d->mode = dt_pipe_is_full(pipe) ? darktable.color_profiles->mode : DT_PROFILE_NORMAL;
+  d->proof_hdr_transfer = DT_HDR_NONE;
 
-  if(d->xform)
-  {
-    cmsDeleteTransform(d->xform);
-    d->xform = NULL;
-  }
+  _delete_transforms(d);
   dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
   d->lut[0][0] = -1.0f;
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
   piece->process_cl_ready = TRUE;
+
+  // a failure records nothing: no profile describes what process() then writes
+  dt_color_encoding_t *const encoding = &pipe->colorout_encoding;
+  memset(encoding, 0, sizeof(*encoding));
+  encoding->type = DT_COLORSPACE_NONE;
 
   /* if we are exporting then check and set usage of override profile */
   if(dt_pipe_is_export(pipe))
@@ -611,23 +712,38 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   else if(dt_pipe_is_thumb(pipe))
   {
     out_type = dt_mipmap_cache_get_colorspace();
-    out_filename = (out_type == DT_COLORSPACE_DISPLAY ? darktable.color_profiles->display_filename : "");
+    out_filename = "";
     out_intent = darktable.color_profiles->display_intent;
-  }
-  else if(dt_pipe_is_preview2(pipe))
-  {
-    /* preview2 is only used in second darkroom window, using display2 profile as output */
-    out_type = darktable.color_profiles->display2_type;
-    out_filename = darktable.color_profiles->display2_filename;
-    out_intent = darktable.color_profiles->display2_intent;
   }
   else
   {
-    /* we are not exporting, using display profile as output */
-    out_type = darktable.color_profiles->display_type;
-    out_filename = darktable.color_profiles->display_filename;
-    out_intent = darktable.color_profiles->display_intent;
+    /* we are not exporting, the pipe is presented */
+    out_type = pipe->output.image.type;
+    out_filename = pipe->output.image.filename;
+    out_intent = pipe->output.image.intent;
+    presented = TRUE;
   }
+
+  // a pipe without a display encoding is not presented: a dt_dev_image()
+  // sink of type DT_COLORSPACE_NONE filters colorout out and keeps the
+  // pixels in the working RGB. the run resolves its output from the final
+  // working profile; modules after colorout that read it in commit_params()
+  // get this one
+  if(out_type == DT_COLORSPACE_NONE)
+  {
+    piece->enabled = FALSE;
+    const dt_iop_order_iccprofile_info_t *const work =
+      dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+    if(work)
+      dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, work->type,
+                                            work->filename, work->profile, work->intent);
+    return;
+  }
+
+  // the profile the transform converts to, once the fallbacks below have
+  // replaced a missing or unsupported one
+  dt_colorspaces_color_profile_type_t built_type = out_type;
+  const char *built_filename = out_filename;
 
   // when the output type is Lab then process is a nop, so we can avoid creating a transform
   // and the subsequent error messages but still have to publish the profile_info
@@ -635,7 +751,13 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->hdr_transfer = dt_colorspaces_hdr_transfer(out_type);
   if(out_type == DT_COLORSPACE_LAB)
   {
-    dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, p->intent);
+    dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, Lab,
+                                          p->intent);
+    encoding->type = DT_COLORSPACE_LAB;
+    g_strlcpy(encoding->filename, out_filename, sizeof(encoding->filename));
+    encoding->profile = Lab;
+    encoding->intent = out_intent;
+    encoding->headroom = pipe->output_headroom;
     return;
   }
 
@@ -645,17 +767,23 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   uint32_t transformFlags = 0;
 
   /* creating output profile */
-  if(out_type == DT_COLORSPACE_DISPLAY || out_type == DT_COLORSPACE_DISPLAY2)
+  // a presented pipe renders to the profile its run took with its output,
+  // which a new screen profile may have replaced in the registry since
+  const gboolean lookup_display = !presented
+    && (out_type == DT_COLORSPACE_DISPLAY || out_type == DT_COLORSPACE_DISPLAY2);
+  if(lookup_display)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
   const dt_colorspaces_color_profile_t *out_profile
-      = dt_colorspaces_get_profile(out_type, out_filename,
-                                   DT_PROFILE_DIRECTION_OUT
-                                   | DT_PROFILE_DIRECTION_DISPLAY
-                                   | DT_PROFILE_DIRECTION_DISPLAY2);
-  if(out_profile)
+      = presented ? NULL
+                  : dt_colorspaces_get_profile(out_type, out_filename,
+                                               DT_PROFILE_DIRECTION_OUT
+                                               | DT_PROFILE_DIRECTION_DISPLAY
+                                               | DT_PROFILE_DIRECTION_DISPLAY2);
+  output = presented ? pipe->output.image.profile : out_profile ? out_profile->profile : NULL;
+  const cmsHPROFILE out_content = output;
+  if(output)
   {
-    output = out_profile->profile;
     if(out_type == DT_COLORSPACE_XYZ) output_format = TYPE_XYZA_FLT;
   }
   else
@@ -665,10 +793,14 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
                                         | DT_PROFILE_DIRECTION_DISPLAY
                                         | DT_PROFILE_DIRECTION_DISPLAY2)
                  ->profile;
+    built_type = DT_COLORSPACE_SRGB;
+    built_filename = "";
     dt_control_log(_("missing output profile has been replaced by sRGB!"));
     dt_print(DT_DEBUG_ALWAYS, "missing output profile `%s' has been replaced by sRGB!",
              dt_colorspaces_get_name(out_type, out_filename));
   }
+
+  cmsHPROFILE built_profile = output;
 
   /* creating softproof profile if softproof is enabled */
   if((d->mode != DT_PROFILE_NORMAL) && dt_pipe_is_full(pipe))
@@ -682,6 +814,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
       softproof = prof->profile;
     else
     {
+      softproof_type = DT_COLORSPACE_SRGB;
       softproof = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "",
                                              DT_PROFILE_DIRECTION_OUT
                                              | DT_PROFILE_DIRECTION_DISPLAY
@@ -693,11 +826,18 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
                                        darktable.color_profiles->softproof_filename));
     }
 
+    // the shapers of the PQ and HLG profiles end at 1.0, where the pipe has
+    // reference white (dt_hdr_encode()), and would clip the proof there.
+    // like an export, their proof goes to linear light and through
+    // dt_hdr_encode() in process(), so it clips where the export does
+    d->proof_hdr_transfer = dt_colorspaces_hdr_transfer(softproof_type);
+
     // some of our internal profiles are what lcms considers ideal profiles as they have a parametric TRC so
     // taking a roundtrip through those profiles during softproofing has no effect. as a workaround we have to
     // make lcms quantisize those gamma tables to get the desired effect.
     // in case that fails we don't enable softproofing.
-    softproof = dt_colorspaces_make_temporary_profile(softproof);
+    softproof = d->proof_hdr_transfer ? dt_colorspaces_linearize_profile(softproof)
+                                      : dt_colorspaces_make_temporary_profile(softproof);
     if(softproof)
     {
       /* TODO: the use of bpc should be userconfigurable either from module or preference pane */
@@ -706,6 +846,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
       if(d->mode == DT_PROFILE_GAMUTCHECK) transformFlags |= cmsFLAGS_GAMUTCHECK;
     }
+    else
+      d->proof_hdr_transfer = DT_HDR_NONE;
   }
 
   if(d->hdr_transfer)
@@ -727,6 +869,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
    * to use our matrix codepath when softproof is enabled, this seemed redundant.
    */
 
+  // a proof converts to the proof profile with its own intent, and from
+  // there to the output relative colorimetric (_create_transforms())
+  const dt_iop_color_intent_t intent =
+    softproof ? darktable.color_profiles->softproof_intent : out_intent;
+
   /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
   if(d->mode != DT_PROFILE_NORMAL || force_lcms2
      || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix,
@@ -734,8 +881,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   {
     dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
     piece->process_cl_ready = FALSE;
-    d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
-                                          out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
+    _create_transforms(d, Lab, output, output_format, softproof, intent, transformFlags);
   }
 
   // user selected a non-supported output profile, check that:
@@ -744,8 +890,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
     dt_print(DT_DEBUG_ALWAYS,
              "unsupported output profile `%s' has been replaced by sRGB!",
-             out_profile->name);
+             out_profile ? out_profile->name : dt_colorspaces_get_name(out_type, out_filename));
     output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT)->profile;
+    built_type = DT_COLORSPACE_SRGB;
+    built_filename = "";
+    built_profile = output;
 
     if(d->mode != DT_PROFILE_NORMAL
        || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix,
@@ -754,12 +903,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       piece->process_cl_ready = FALSE;
 
-      d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
-                                            out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
+      _create_transforms(d, Lab, output, output_format, softproof, intent, transformFlags);
     }
   }
 
-  if(out_type == DT_COLORSPACE_DISPLAY || out_type == DT_COLORSPACE_DISPLAY2)
+  if(lookup_display)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
   // now try to initialize unbounded mode:
@@ -782,11 +930,29 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
       d->unbounded_coeffs[k][0] = -1.0f;
   }
 
+  const gboolean proofing = softproof != NULL;
   // softproof is never the original but always a copy that went through dt_colorspaces_make_temporary_profile()
   dt_colorspaces_cleanup_profile(softproof);
   dt_colorspaces_cleanup_profile(hdr_linear);
 
-  dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, p->intent);
+  dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename,
+                                        out_content, p->intent);
+  // render the proof for its export's headroom and let the screen clip, as
+  // Resolve's viewer shows the deliverable's transform (18.5 manual, ch. 9-10)
+  if(proofing)
+    piece->pipe->output_headroom = dt_ioppr_profile_headroom(softproof_type);
+
+  // process() encodes for out_type's HDR transfer function, which no
+  // profile describes once sRGB has replaced out_type's profile
+  const gboolean built = d->xform || dt_is_valid_colormatrix(d->cmatrix[0][0]);
+  if(built && !(d->hdr_transfer && built_type != out_type))
+  {
+    encoding->type = built_type;
+    g_strlcpy(encoding->filename, built_filename, sizeof(encoding->filename));
+    encoding->profile = built_profile;
+    encoding->intent = out_intent;
+    encoding->headroom = pipe->output_headroom;
+  }
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -798,12 +964,7 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorout_data_t *d = piece->data;
-  if(d->xform)
-  {
-    cmsDeleteTransform(d->xform);
-    d->xform = NULL;
-  }
+  _delete_transforms(piece->data);
 
   free(piece->data);
   piece->data = NULL;

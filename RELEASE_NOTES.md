@@ -117,6 +117,27 @@ changes (where available).
   manager now drive the same controls in the panel. Existing masks are
   converted when an edit is opened and render as before.
 
+- Wide gamut and HDR display on Wayland. On a compositor with color
+  management (color-management-v1 with parametric linear Rec. 2020
+  descriptions and half float buffers, as in KWin 6), the darkroom
+  image, its snapshots, the second window and the slideshow are handed
+  to the compositor as linear Rec. 2020 in half floats, and the
+  compositor makes the one conversion to the screen. Colors beyond
+  sRGB are shown as far as the screen can, and when the compositor
+  reports HDR headroom, highlights can go above SDR white: sigmoid and
+  AgX tone map to it when "follow output peak" is on (it is off in
+  edits made before that option existed). When the headroom changes,
+  as while the HDR brightness is dragged in KWin, the image is tone
+  mapped again once the headroom has settled, in steps of 1/8 EV,
+  instead of on every frame of the change. This also fixes the image
+  being converted twice on such compositors, once by darktable and
+  once by the compositor. There the rest of the interface, thumbnails
+  included, is shown in sRGB. Where the compositor lacks one of these,
+  or is GNOME in its default color mode, which describes every screen
+  as plain sRGB and leaves the monitor profile to applications, the
+  image is converted to the system display profile as before. Other
+  compositors and platforms keep the display path they had.
+
 ## UI/UX Improvements
 
 - The code has received a large set of changes in preparation of the
@@ -323,6 +344,47 @@ changes (where available).
 
 ## Other Changes
 
+- The display profile now comes from the system's color settings: the
+  X atom or colord on X11, the compositor or colord on Wayland, Windows
+  color management, and sRGB on macOS, where the system converts
+  darktable's output to the screen. To use a calibrated monitor
+  profile, install it there; darktable-cmstest shows what X11 reports.
+  Where that is not possible, the new "display profile file"
+  preference, in the interface preferences, names an ICC file to use
+  instead. It has no effect where the compositor manages color, and on
+  macOS, and on Windows with automatic color management or HDR, the
+  system converts the image a second time. The display profile
+  controls of the darkroom and the lighttable's "set display profile"
+  button are gone. Use soft proof to preview another display, print or
+  sRGB. A profile chosen there before is named in a message once and
+  no longer used.
+
+- On Windows, the display profile is the one the Windows Color System
+  assigns to the monitor. With Advanced Color on, for an SDR monitor
+  with automatic color management or for any HDR monitor, Windows
+  reports no profile, as Microsoft documents, and converts darktable's
+  output from sRGB itself, so darktable renders sRGB there and the
+  image is converted once. With the legacy ICC compatibility helper
+  enabled for darktable, it renders to the profile Windows reports
+  then.
+
+- A new "convert to the display profile in darktable" preference, in
+  the interface preferences, makes darktable convert images to the
+  display profile itself instead of handing them to the compositor's
+  color management, as a way around compositor or driver bugs. It
+  turns off wide gamut and HDR display on Wayland.
+
+- The histogram profile no longer offers the system display profile.
+  Where the compositor or the system converts darktable's output to
+  the screen, darktable cannot say what the screen shows. A histogram
+  set to that profile before uses sRGB now.
+
+- Soft proof has its own rendering intent, set next to the softproof
+  profile. It used the display rendering intent before, which the
+  darkroom showed only with "always use LittleCMS 2" on, and it starts
+  from that intent. The display rendering intent is now one setting
+  for both windows, in the interface preferences.
+
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
   SDR, HLG and PQ alike. HLG output peaks at 1000 nits, and PQ output
   at the new "PQ peak" setting of the export module, 1000 nits by
@@ -489,6 +551,23 @@ changes (where available).
   instead of having an empty label.
 
 ## Bug Fixes
+
+- Fixed the display profile of the previous screen staying in use
+  when a window moved to a screen without a profile or when the
+  system removed the profile. darktable now uses sRGB there.
+
+- A display profile that is not an RGB profile, such as a printer
+  profile assigned to the monitor, is no longer taken for the screen:
+  darktable uses sRGB there, as when the system reports no profile.
+
+- The duplicate manager's preview, the slideshow and an image pinned
+  in the second window are now rendered again when the display profile
+  changes, as when the window moves to a screen with another profile,
+  instead of keeping the colors of the previous one.
+
+- Fixed lighttable thumbnails that were sometimes shown for sRGB
+  instead of the display profile after startup, when colord answered
+  late, until the window was resized.
 
 - Upscaled exports no longer show shifted bands where they were
   processed in tiles, and the upscale now runs on OpenCL when it fits
@@ -996,11 +1075,18 @@ changes (where available).
 - libarchive, previously only needed for AI model downloads, is now
   required for the `.dtdata` sidecar
 
+- GTK 3.24.37 or later on macOS, the first release that tags the
+  window as sRGB, which darktable relies on for macOS to convert its
+  output to the screen. Other platforms still need GTK 3.24.15
+
 ### Optional
 
 - OpenCV 4 or 5 for HDR exposure-bracket auto-alignment (only the
   core, imgproc and flann modules plus features2d/calib3d on OpenCV 4,
   or features/geometry on OpenCV 5)
+
+- libwayland-client 1.18 and wayland-scanner, with GTK's Wayland
+  backend, for wide gamut and HDR display on Wayland
 
 ## Camera support, compared to 5.6
 

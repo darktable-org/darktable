@@ -55,6 +55,7 @@
 #include "gui/drag_and_drop.h"
 #include "gui/gtk.h"
 #include "gui/guides.h"
+#include "gui/presenter.h"
 #include "gui/presets.h"
 #include "gui/styles.h"
 #include "imageio/imageio_common.h"
@@ -537,12 +538,27 @@ static void _darkroom_pickers_draw(dt_view_t *self,
   cairo_restore(cri);
 }
 
+// the pipe's last finished run took an earlier output of its window. what
+// a run took counts, published or not, so a failed run is not tried again
+// on every redraw. a job holds the pipe's mutex from taking the output to
+// the end of the run, which raises a redraw: a busy pipe is compared then
+static gboolean _pipe_outdated(dt_dev_pixelpipe_t *pipe)
+{
+  const uint32_t serial = dt_colorspaces_get_display_serial(pipe->window);
+  if(dt_pthread_mutex_trylock(&pipe->mutex)) return FALSE;
+  const gboolean outdated = pipe->status == DT_DEV_PIXELPIPE_VALID
+                            && pipe->output.serial != serial;
+  dt_pthread_mutex_unlock(&pipe->mutex);
+  return outdated;
+}
+
 static inline gboolean _full_request(dt_develop_t *dev)
 {
   return
         dev->full.pipe->status == DT_DEV_PIXELPIPE_DIRTY
      || dev->full.pipe->status == DT_DEV_PIXELPIPE_INVALID
-     || dev->full.pipe->input_timestamp < dev->preview_pipe->input_timestamp;
+     || dev->full.pipe->input_timestamp < dev->preview_pipe->input_timestamp
+     || _pipe_outdated(dev->full.pipe);
 }
 
 static inline gboolean _preview_request(dt_develop_t *dev)
@@ -550,7 +566,8 @@ static inline gboolean _preview_request(dt_develop_t *dev)
   return
         dev->preview_pipe->status == DT_DEV_PIXELPIPE_DIRTY
      || dev->preview_pipe->status == DT_DEV_PIXELPIPE_INVALID
-     || dev->full.pipe->input_timestamp > dev->preview_pipe->input_timestamp;
+     || dev->full.pipe->input_timestamp > dev->preview_pipe->input_timestamp
+     || _pipe_outdated(dev->preview_pipe);
 }
 
 static inline gboolean _preview2_request(dt_develop_t *dev)
@@ -558,7 +575,8 @@ static inline gboolean _preview2_request(dt_develop_t *dev)
   return
      (dev->preview2.pipe->status == DT_DEV_PIXELPIPE_DIRTY
        || dev->preview2.pipe->status == DT_DEV_PIXELPIPE_INVALID
-       || dev->full.pipe->input_timestamp > dev->preview2.pipe->input_timestamp)
+       || dev->full.pipe->input_timestamp > dev->preview2.pipe->input_timestamp
+       || _pipe_outdated(dev->preview2.pipe))
      && dev->gui_attached
      && dev->preview2.widget
      && GTK_IS_WIDGET(dev->preview2.widget);
@@ -585,17 +603,9 @@ static void _view_paint_surface(cairo_t *cr,
                                 dt_dev_viewport_t *port,
                                 const dt_window_t window)
 {
-  dt_dev_pixelpipe_t *p = port->pipe;
-
-  dt_pthread_mutex_lock(&p->backbuf_mutex);
-
-  dt_view_paint_surface(cr, width, height,
-                        port, window,
-                        p->backbuf, p->backbuf_scale,
-                        p->backbuf_width, p->backbuf_height,
-                        p->backbuf_zoom_pos);
-
-  dt_pthread_mutex_unlock(&p->backbuf_mutex);
+  dt_frame_t *frame = dt_dev_pixelpipe_frame(port->pipe);
+  if(frame) dt_view_paint_surface(cr, width, height, port, window, frame);
+  dt_frame_unref(frame);
 }
 
 /* drag&drop hint overlays
@@ -817,41 +827,15 @@ void expose(dt_view_t *self,
                         sb_boxh / 2);
 
   const gboolean expose_full =
-        port->pipe->backbuf                                // do we have an image?
+        port->pipe->frame                                  // do we have an image?
      && port->pipe->output_imgid == dev->image_storage.id;  // same image?
 
   if(expose_full)
   {
     // draw image
     _view_paint_surface(cri, width, height, port, DT_WINDOW_MAIN);
-    // clean up cached rendering; do this unconditionally in case user toggles the preference
-    if(darktable.gui->surface)
-    {
-      cairo_surface_destroy(darktable.gui->surface);
-      darktable.gui->surface = NULL;
-    }
-    if(!dt_conf_get_bool("darkroom/ui/loading_screen"))
-    {
-      // Cache the rendered content for display while loading the next image.
-#ifdef _WIN32
-      // On the Win32 GDK backend, holding a cairo_surface_reference() to
-      // cairo_get_target(cri) prevents GTK from properly invalidating the
-      // widget surface, causing gtk_widget_queue_draw() to silently fail
-      // (issue #20831). Copy to a standalone image surface instead.
-      cairo_surface_t *target = cairo_get_target(cri);
-      if(width > 0 && height > 0)
-      {
-        darktable.gui->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-        cairo_t *cr2 = cairo_create(darktable.gui->surface);
-        cairo_set_source_surface(cr2, target, 0, 0);
-        cairo_paint(cr2);
-        cairo_destroy(cr2);
-      }
-#else
-      darktable.gui->surface = cairo_get_target(cri);
-      cairo_surface_reference(darktable.gui->surface);
-#endif
-    }
+    // what is shown while the next image loads
+    if(!dt_conf_get_bool("darkroom/ui/loading_screen")) dt_presenter_retain(cri);
   }
   else if(dev->preview_pipe->output_imgid != dev->image_storage.id)
   {
@@ -971,22 +955,14 @@ void expose(dt_view_t *self,
     }
     else
     {
-      // repaint the image we are switching away from, to avoid a
-      // flash of the background color
-      if(darktable.gui->surface)
-      {
-        cairo_save(cri);
-        cairo_identity_matrix(cri);
-        cairo_set_source_surface(cri, darktable.gui->surface, 0, 0);
-        cairo_paint(cri);
-        cairo_restore(cri);
-      }
-      else
-      {
-        // No cached surface (first entry from lighttable) — paint background
-        dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
-        cairo_paint(cri);
-      }
+      // show the image we are switching away from again, to avoid a
+      // flash of the background color. it covers the view as it was then:
+      // the background shows where the view has grown since
+      dt_gui_gtk_set_source_rgb(cri, port->color_assessment
+                                     ? DT_GUI_COLOR_COLOR_ASSESSMENT_BG
+                                     : DT_GUI_COLOR_DARKROOM_BG);
+      cairo_paint(cri);
+      dt_presenter_keep(cri);
       dt_toast_log("%s", load_txt);
     }
     g_free(load_txt);
@@ -1389,7 +1365,7 @@ static void _dev_change_image(dt_develop_t *dev,
     dt_iop_color_picker_reset(darktable.lib->proxy.colorpicker.picker_proxy->module, FALSE);
 
   // update aspect ratio
-  if(dev->preview_pipe->backbuf
+  if(dev->preview_pipe->frame
      && dev->preview_pipe->status == DT_DEV_PIXELPIPE_VALID)
   {
     const float aspect_ratio =
@@ -2357,67 +2333,20 @@ static void _update_softproof_gamut_checking(dt_develop_t *d)
                                     _gamut_quickbutton_clicked, d);
 }
 
-static void _display_intent_callback(GtkWidget *combo,
-                                     gpointer user_data)
+static void _softproof_intent_callback(GtkWidget *combo,
+                                       gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
-  const int pos = dt_bauhaus_combobox_get(combo);
-
-  dt_iop_color_intent_t new_intent = darktable.color_profiles->display_intent;
-
-  // we are not using the int value directly so it's robust against changes on lcms' side
-  switch(pos)
+  // the combo lists the intents in the order of their values
+  const dt_iop_color_intent_t intent = dt_bauhaus_combobox_get(combo);
+  if(intent == darktable.color_profiles->softproof_intent) return;
+  darktable.color_profiles->softproof_intent = intent;
+  // as for the soft proof toggle: nothing in the cache key says what the
+  // proof was made with
+  if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
   {
-    case 0:
-      new_intent = DT_INTENT_PERCEPTUAL;
-      break;
-    case 1:
-      new_intent = DT_INTENT_RELATIVE_COLORIMETRIC;
-      break;
-    case 2:
-      new_intent = DT_INTENT_SATURATION;
-      break;
-    case 3:
-      new_intent = DT_INTENT_ABSOLUTE_COLORIMETRIC;
-      break;
-  }
-
-  if(new_intent != darktable.color_profiles->display_intent)
-  {
-    darktable.color_profiles->display_intent = new_intent;
-    dt_dev_reprocess_all(d);
-  }
-}
-
-static void _display2_intent_callback(GtkWidget *combo,
-                                      gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  const int pos = dt_bauhaus_combobox_get(combo);
-
-  dt_iop_color_intent_t new_intent = darktable.color_profiles->display2_intent;
-
-  // we are not using the int value directly so it's robust against changes on lcms' side
-  switch(pos)
-  {
-    case 0:
-      new_intent = DT_INTENT_PERCEPTUAL;
-      break;
-    case 1:
-      new_intent = DT_INTENT_RELATIVE_COLORIMETRIC;
-      break;
-    case 2:
-      new_intent = DT_INTENT_SATURATION;
-      break;
-    case 3:
-      new_intent = DT_INTENT_ABSOLUTE_COLORIMETRIC;
-      break;
-  }
-
-  if(new_intent != darktable.color_profiles->display2_intent)
-  {
-    darktable.color_profiles->display2_intent = new_intent;
-    dt_dev_reprocess_all(d);
+    const dt_iop_module_t *cout = dt_iop_get_module("colorout");
+    dt_dev_reprocess_center(d, cout->iop_order);
   }
 }
 
@@ -2461,100 +2390,6 @@ end:
   {
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             DT_COLORSPACES_PROFILE_TYPE_SOFTPROOF);
-    dt_dev_reprocess_all(d);
-  }
-}
-
-static void _display_profile_callback(GtkWidget *combo,
-                                      gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  gboolean profile_changed = FALSE;
-  const int pos = dt_bauhaus_combobox_get(combo);
-
-  for(GList *profiles = darktable.color_profiles->profiles;
-      profiles;
-      profiles = g_list_next(profiles))
-  {
-    dt_colorspaces_color_profile_t *pp = profiles->data;
-    if(pp->display_pos == pos)
-    {
-      if(darktable.color_profiles->display_type != pp->type
-        || (darktable.color_profiles->display_type == DT_COLORSPACE_FILE
-            && strcmp(darktable.color_profiles->display_filename, pp->filename)))
-      {
-        darktable.color_profiles->display_type = pp->type;
-        g_strlcpy(darktable.color_profiles->display_filename, pp->filename,
-                  sizeof(darktable.color_profiles->display_filename));
-        profile_changed = TRUE;
-      }
-      goto end;
-    }
-  }
-
-  // profile not found, fall back to system display profile. shouldn't happen
-  dt_print(DT_DEBUG_ALWAYS,
-           "can't find display profile `%s', using system display profile instead",
-           dt_bauhaus_combobox_get_text(combo));
-  profile_changed = darktable.color_profiles->display_type != DT_COLORSPACE_DISPLAY;
-  darktable.color_profiles->display_type = DT_COLORSPACE_DISPLAY;
-  darktable.color_profiles->display_filename[0] = '\0';
-
-end:
-  if(profile_changed)
-  {
-    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
-    dt_colorspaces_update_display_transforms();
-    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                            DT_COLORSPACES_PROFILE_TYPE_DISPLAY);
-    dt_dev_reprocess_all(d);
-  }
-}
-
-static void _display2_profile_callback(GtkWidget *combo,
-                                       gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  gboolean profile_changed = FALSE;
-  const int pos = dt_bauhaus_combobox_get(combo);
-
-  for(GList *profiles = darktable.color_profiles->profiles;
-      profiles;
-      profiles = g_list_next(profiles))
-  {
-    dt_colorspaces_color_profile_t *pp = profiles->data;
-    if(pp->display2_pos == pos)
-    {
-      if(darktable.color_profiles->display2_type != pp->type
-         || (darktable.color_profiles->display2_type == DT_COLORSPACE_FILE
-             && strcmp(darktable.color_profiles->display2_filename, pp->filename)))
-      {
-        darktable.color_profiles->display2_type = pp->type;
-        g_strlcpy(darktable.color_profiles->display2_filename, pp->filename,
-                  sizeof(darktable.color_profiles->display2_filename));
-        profile_changed = TRUE;
-      }
-      goto end;
-    }
-  }
-
-  // profile not found, fall back to system display2 profile. shouldn't happen
-  dt_print(DT_DEBUG_ALWAYS,
-           "can't find preview display profile `%s', using system display profile instead",
-           dt_bauhaus_combobox_get_text(combo));
-  profile_changed = darktable.color_profiles->display2_type != DT_COLORSPACE_DISPLAY2;
-  darktable.color_profiles->display2_type = DT_COLORSPACE_DISPLAY2;
-  darktable.color_profiles->display2_filename[0] = '\0';
-
-end:
-  if(profile_changed)
-  {
-    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
-    dt_colorspaces_update_display2_transforms();
-    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                            DT_COLORSPACES_PROFILE_TYPE_DISPLAY2);
     dt_dev_reprocess_all(d);
   }
 }
@@ -2618,12 +2453,6 @@ static void _preference_changed(gpointer instance,
 
   dev->constrain_zoom = dt_conf_get_bool("darkroom/ui/constrain_zoom");
 
-  const gboolean force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
-  gtk_widget_set_no_show_all(dev->profile.display_intent_widget, !force_lcms2);
-  gtk_widget_set_visible(dev->profile.display_intent_widget, force_lcms2);
-  gtk_widget_set_no_show_all(dev->profile.display2_intent_widget, !force_lcms2);
-  gtk_widget_set_visible(dev->profile.display2_intent_widget, force_lcms2);
-
   dt_get_sysresource_level();
   dt_opencl_update_settings();
   dt_configure_ppd_dpi(darktable.gui);
@@ -2638,68 +2467,6 @@ static void _preference_changed(gpointer instance,
          (module->blend_params->mask_mode != DEVELOP_MASK_DISABLED) &&
          (module->blend_params->mask_mode != DEVELOP_MASK_ENABLED));
   }
-}
-
-static void _update_display_profile_cmb(GtkWidget *cmb_display_profile)
-{
-  for(const GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
-  {
-    dt_colorspaces_color_profile_t *prof = l->data;
-    if(prof->display_pos > -1)
-    {
-      if(prof->type == darktable.color_profiles->display_type
-         && (prof->type != DT_COLORSPACE_FILE
-             || !strcmp(prof->filename, darktable.color_profiles->display_filename)))
-      {
-        if(dt_bauhaus_combobox_get(cmb_display_profile) != prof->display_pos)
-        {
-          dt_bauhaus_combobox_set(cmb_display_profile, prof->display_pos);
-          break;
-        }
-      }
-    }
-  }
-}
-
-static void _update_display2_profile_cmb(GtkWidget *cmb_display_profile)
-{
-  for(const GList *l = darktable.color_profiles->profiles;
-      l;
-      l = g_list_next(l))
-  {
-    dt_colorspaces_color_profile_t *prof = l->data;
-    if(prof->display2_pos > -1)
-    {
-      if(prof->type == darktable.color_profiles->display2_type
-         && (prof->type != DT_COLORSPACE_FILE
-             || !strcmp(prof->filename, darktable.color_profiles->display2_filename)))
-      {
-        if(dt_bauhaus_combobox_get(cmb_display_profile) != prof->display2_pos)
-        {
-          dt_bauhaus_combobox_set(cmb_display_profile, prof->display2_pos);
-          break;
-        }
-      }
-    }
-  }
-}
-
-static void _display_profile_changed(gpointer instance,
-                                     const uint8_t profile_type,
-                                     gpointer user_data)
-{
-  GtkWidget *cmb_display_profile = GTK_WIDGET(user_data);
-
-  _update_display_profile_cmb(cmb_display_profile);
-}
-
-static void _display2_profile_changed(gpointer instance,
-                                      const uint8_t profile_type,
-                                      gpointer user_data)
-{
-  GtkWidget *cmb_display_profile = GTK_WIDGET(user_data);
-
-  _update_display2_profile_cmb(cmb_display_profile);
 }
 
 /** end of toolbox */
@@ -3656,8 +3423,6 @@ void gui_init(dt_view_t *self)
                                 dev->second_wnd_button);
 
     /** let's fill the encapsulating widgets */
-    const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
-
     static const gchar *intents_list[]
       = { N_("perceptual"),
           N_("relative colorimetric"),
@@ -3665,43 +3430,20 @@ void gui_init(dt_view_t *self)
           N_("absolute colorimetric"),
           NULL };
 
-    dev->profile.display_intent_widget  = dt_bauhaus_combobox_new_full(DT_ACTION(self),
-                                                             N_("profiles"),
-                                                             N_("intent"),
-                                                             "",
-                                                             0,
-                                                             _display_intent_callback,
-                                                             dev, intents_list);
-    dev->profile.display2_intent_widget = dt_bauhaus_combobox_new_full(DT_ACTION(self),
-                                                              N_("profiles"),
-                                                              N_("preview intent"),
-                                                              "",
-                                                              0,
-                                                              _display2_intent_callback,
-                                                              dev, intents_list);
+    GtkWidget *softproof_intent =
+      dt_bauhaus_combobox_new_full(DT_ACTION(self), N_("profiles"), N_("softproof intent"),
+                                   _("rendering intent from the image to the softproof profile"),
+                                   darktable.color_profiles->softproof_intent,
+                                   _softproof_intent_callback, dev, intents_list);
 
-    if(!force_lcms2)
-    {
-      gtk_widget_set_no_show_all(dev->profile.display_intent_widget, TRUE);
-      gtk_widget_set_no_show_all(dev->profile.display2_intent_widget, TRUE);
-    }
-
-    GtkWidget *display_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-    GtkWidget *display2_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
     GtkWidget *softproof_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
     GtkWidget *histogram_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
 
-    dt_bauhaus_widget_set_label(display_profile,
-                                N_("profiles"), N_("display profile"));
-    dt_bauhaus_widget_set_label(display2_profile,
-                                N_("profiles"), N_("preview display profile"));
     dt_bauhaus_widget_set_label(softproof_profile,
                                 N_("profiles"), N_("softproof profile"));
     dt_bauhaus_widget_set_label(histogram_profile,
                                 N_("profiles"), N_("histogram profile"));
 
-    dt_bauhaus_combobox_set_entries_ellipsis(display_profile, PANGO_ELLIPSIZE_MIDDLE);
-    dt_bauhaus_combobox_set_entries_ellipsis(display2_profile, PANGO_ELLIPSIZE_MIDDLE);
     dt_bauhaus_combobox_set_entries_ellipsis(softproof_profile, PANGO_ELLIPSIZE_MIDDLE);
     dt_bauhaus_combobox_set_entries_ellipsis(histogram_profile, PANGO_ELLIPSIZE_MIDDLE);
 
@@ -3715,26 +3457,6 @@ void gui_init(dt_view_t *self)
     for(const GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
     {
       dt_colorspaces_color_profile_t *prof = l->data;
-      if(prof->display_pos > -1)
-      {
-        dt_bauhaus_combobox_add(display_profile, prof->name);
-        if(prof->type == darktable.color_profiles->display_type
-          && (prof->type != DT_COLORSPACE_FILE
-              || !strcmp(prof->filename, darktable.color_profiles->display_filename)))
-        {
-          dt_bauhaus_combobox_set(display_profile, prof->display_pos);
-        }
-      }
-      if(prof->display2_pos > -1)
-      {
-        dt_bauhaus_combobox_add(display2_profile, prof->name);
-        if(prof->type == darktable.color_profiles->display2_type
-           && (prof->type != DT_COLORSPACE_FILE
-               || !strcmp(prof->filename, darktable.color_profiles->display2_filename)))
-        {
-          dt_bauhaus_combobox_set(display2_profile, prof->display2_pos);
-        }
-      }
       // the system display profile is only suitable for display purposes
       if(prof->out_pos > -1)
       {
@@ -3756,15 +3478,7 @@ void gui_init(dt_view_t *self)
       }
     }
 
-    char *tooltip = dt_ioppr_get_location_tooltip("out", _("display ICC profiles"));
-    gtk_widget_set_tooltip_markup(display_profile, tooltip);
-    g_free(tooltip);
-
-    tooltip = dt_ioppr_get_location_tooltip("out", _("preview display ICC profiles"));
-    gtk_widget_set_tooltip_markup(display2_profile, tooltip);
-    g_free(tooltip);
-
-    tooltip = dt_ioppr_get_location_tooltip("out", _("softproof ICC profiles"));
+    char *tooltip = dt_ioppr_get_location_tooltip("out", _("softproof ICC profiles"));
     gtk_widget_set_tooltip_markup(softproof_profile, tooltip);
     g_free(tooltip);
 
@@ -3773,10 +3487,6 @@ void gui_init(dt_view_t *self)
     gtk_widget_set_tooltip_markup(histogram_profile, tooltip);
     g_free(tooltip);
 
-    g_signal_connect(G_OBJECT(display_profile), "value-changed",
-                     G_CALLBACK(_display_profile_callback), dev);
-    g_signal_connect(G_OBJECT(display2_profile), "value-changed",
-                     G_CALLBACK(_display2_profile_callback), dev);
     g_signal_connect(G_OBJECT(display2_color_assessment), "toggled",
                      G_CALLBACK(_display2_color_assessment_callback), dev);
     g_signal_connect(G_OBJECT(softproof_profile), "value-changed",
@@ -3786,18 +3496,10 @@ void gui_init(dt_view_t *self)
 
     _update_softproof_gamut_checking(dev);
 
-    // update the gui when profiles change (intent visibility is handled by _preference_changed)
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                              _display_profile_changed, display_profile);
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                              _display2_profile_changed, display2_profile);
-
     GtkWidget *vbox = dt_gui_vbox
-      (display_profile, dev->profile.display_intent_widget,
+      (display2_color_assessment,
        gtk_separator_new(GTK_ORIENTATION_HORIZONTAL),
-       display2_profile, dev->profile.display2_intent_widget, display2_color_assessment,
-       gtk_separator_new(GTK_ORIENTATION_HORIZONTAL),
-       softproof_profile, histogram_profile);
+       softproof_profile, softproof_intent, histogram_profile);
 
     gtk_widget_show_all(vbox);
     gtk_container_add(GTK_CONTAINER(dev->profile.floating_window), vbox);
@@ -4362,12 +4064,8 @@ void leave(dt_view_t *self)
   // starts from whatever zoom state the new session sets up.
   darktable.develop->full.restore_zoom = darktable.develop->preview2.restore_zoom = FALSE;
 
-  // Clear cached surface so the loading screen shows on next darkroom entry
-  if(darktable.gui->surface)
-  {
-    cairo_surface_destroy(darktable.gui->surface);
-    darktable.gui->surface = NULL;
-  }
+  // so that the next darkroom entry does not show this image while loading
+  dt_presenter_clear(dt_ui_center(darktable.gui->ui));
 
   DT_CONTROL_SIGNAL_DISCONNECT_ALL(self, "darkroom");
 
@@ -4440,7 +4138,7 @@ void leave(dt_view_t *self)
   dt_overlay_add_from_history(imgid);
 
   // update aspect ratio
-  if(dev->preview_pipe->backbuf && dev->preview_pipe->status == DT_DEV_PIXELPIPE_VALID)
+  if(dev->preview_pipe->frame && dev->preview_pipe->status == DT_DEV_PIXELPIPE_VALID)
   {
     const float aspect_ratio =
       (float)dev->preview_pipe->backbuf_width / (float)dev->preview_pipe->backbuf_height;
@@ -5288,9 +4986,9 @@ static void _second_window_configure_ppd_dpi(dt_develop_t *dev)
 #endif
 }
 
-static gboolean _second_window_draw_callback(GtkWidget *widget,
-                                             cairo_t *cri,
-                                             dt_develop_t *dev)
+static void _second_window_draw(GtkWidget *widget,
+                                 cairo_t *cri,
+                                 dt_develop_t *dev)
 {
   // Set background
   dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
@@ -5298,7 +4996,7 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
 
   // Early exit if we're in an inconsistent state
   if(!dev->preview2.widget || dev->gui_leaving)
-    return TRUE;
+    return;
 
   // Determine which develop and viewport to use
   // Take a local copy of the pointer to avoid race conditions
@@ -5326,7 +5024,7 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
     port->dpi_factor = dev->preview2.dpi_factor;
   }
 
-  if(port->pipe && port->pipe->backbuf)  // do we have a preview image?
+  if(port->pipe && port->pipe->frame)  // do we have a preview image?
   {
     // draw the preview image using the appropriate viewport
     _view_paint_surface(cri, dev->preview2.orig_width, dev->preview2.orig_height,
@@ -5341,7 +5039,7 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
     // For a different image, keep the black background rather than flashing
     // the wrong image while the new pixelpipe processes.
     if(pinned_dev->image_storage.id == dev->image_storage.id
-       && dev->preview2.pipe && dev->preview2.pipe->backbuf)
+       && dev->preview2.pipe && dev->preview2.pipe->frame)
     {
       _view_paint_surface(cri, dev->preview2.orig_width, dev->preview2.orig_height,
                          &dev->preview2, DT_WINDOW_SECOND);
@@ -5351,11 +5049,13 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
   // Request processing if needed
   if(pinned_dev && !pinned_dev->gui_leaving)
   {
-    // Process pinned image pipeline - process if no backbuf, pipe dirty, or zoom/pan changed
-    if(!port->pipe->backbuf
+    // Process pinned image pipeline - process if no backbuf, pipe dirty, zoom/pan
+    // or the window's output changed
+    if(!port->pipe->frame
        || port->pipe->status == DT_DEV_PIXELPIPE_DIRTY
        || port->pipe->status == DT_DEV_PIXELPIPE_INVALID
-       || port->pipe->changed != DT_DEV_PIPE_UNCHANGED)
+       || port->pipe->changed != DT_DEV_PIPE_UNCHANGED
+       || _pipe_outdated(port->pipe))
     {
       dt_dev_process_preview2(pinned_dev);
     }
@@ -5366,6 +5066,15 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
     if(_preview2_request(dev)) dt_dev_process_preview2(dev);
   }
 
+}
+
+static gboolean _second_window_draw_callback(GtkWidget *widget,
+                                             cairo_t *cr,
+                                             dt_develop_t *dev)
+{
+  cairo_t *pcr = dt_presenter_begin(widget, cr);
+  _second_window_draw(widget, pcr, dev);
+  dt_presenter_end(widget, pcr);
   return TRUE;
 }
 

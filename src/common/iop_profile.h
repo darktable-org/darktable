@@ -40,6 +40,7 @@ typedef struct dt_iop_order_iccprofile_info_t
 {
   dt_colorspaces_color_profile_type_t type;
   char filename[DT_IOP_COLOR_ICC_LEN];
+  cmsHPROFILE profile; // the registry's profile the info was made from
   dt_iop_color_intent_t intent;
   dt_colormatrix_t matrix_in; // don't align on more than 16 bits or OpenCL will fail
   dt_colormatrix_t matrix_out;
@@ -63,22 +64,47 @@ void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
 void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info);
 
 /** returns the profile info from dev profiles info list that matches
- * (profile_type, profile_filename) NULL if not found
+ * (profile_type, profile_filename), and profile for the system display
+ * types, NULL if not found
  */
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,
                                     dt_colorspaces_color_profile_type_t profile_type,
-                                    const char *profile_filename);
+                                    const char *profile_filename,
+                                    cmsHPROFILE profile);
 
-/** adds the profile info from (profile_type, profile_filename) to the
- * dev profiles info list if not already exists returns the generated
- * profile or the existing one
+/** adds the profile info from (profile_type, profile_filename), with the
+ * profile the registry holds for it now, to the dev profiles info list if
+ * not already exists returns the generated profile or the existing one
  */
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
                                   const dt_colorspaces_color_profile_type_t profile_type,
                                   const char *profile_filename,
                                   const int intent);
+
+/** the same for values made with profile, as an encoding names it: the
+ * profile counts for the system display types, which a new screen profile
+ * replaces under the same name (dt_colorspaces_replaced_in_session())
+ */
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_add_profile_info_for_content(struct dt_develop_t *dev,
+                                      const dt_colorspaces_color_profile_type_t profile_type,
+                                      const char *profile_filename,
+                                      cmsHPROFILE profile,
+                                      const int intent);
+
+/** a profile info for values made with profile, owned by the caller, who
+ * releases it with dt_ioppr_free_profile_info(): for conversions outside a
+ * develop, whose list goes away with it. with a profile, a FILE profile's
+ * file need not exist any more. NULL if the profile is not usable
+ */
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_new_profile_info(const dt_colorspaces_color_profile_type_t profile_type,
+                          const char *profile_filename,
+                          cmsHPROFILE profile,
+                          const int intent);
+void dt_ioppr_free_profile_info(dt_iop_order_iccprofile_info_t *profile_info);
 
 /** returns a reference to the work profile info as set on colorin iop
  * only if module is between colorin and colorout, otherwise returns NULL
@@ -114,7 +140,12 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
                                       struct dt_dev_pixelpipe_t *pipe,
                                       const dt_colorspaces_color_profile_type_t type,
                                       const char *filename,
+                                      cmsHPROFILE profile,
                                       const int intent);
+
+/** the headroom above reference white an output in this profile type has:
+   1 unless its transfer function is HDR (PQ, HLG) */
+float dt_ioppr_profile_headroom(const dt_colorspaces_color_profile_type_t type);
 
 /** set the PQ peak, in nits, for the pipes processed by the calling thread,
    or 0 to read it from the export module's setting again */
@@ -142,6 +173,11 @@ dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_pipe_input_profile_info(const struct dt_dev_pixelpipe_t *pipe);
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_pipe_output_profile_info(const struct dt_dev_pixelpipe_t *pipe);
+
+/** the profile module GUIs draw colors on GTK in: the output profile of
+ * the darkroom pipe, unless a presenter backend shows the image itself
+ * and declared what GTK's surface is shown in */
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_gui_profile_info(struct dt_develop_t *dev);
 
 /** Get the relevant RGB -> XYZ profile at the position of current module */
 dt_iop_order_iccprofile_info_t *

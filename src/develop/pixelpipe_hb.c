@@ -26,6 +26,7 @@
 #include "control/signal.h"
 #include "develop/blend.h"
 #include "develop/format.h"
+#include "develop/frame.h"
 #include "develop/imageop_math.h"
 #include "develop/develop.h"
 #include "develop/tiling.h"
@@ -286,11 +287,9 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->processed_width = pipe->backbuf_width = pipe->iwidth = pipe->final_width = 0;
   pipe->processed_height = pipe->backbuf_height = pipe->iheight = pipe->final_height = 0;
   pipe->nodes = NULL;
-  pipe->backbuf_size = size;
   pipe->cache_obsolete_order = INT_MAX;
   pipe->backbuf = NULL;
-  pipe->backbuf_scale = 0.0f;
-  memset(pipe->backbuf_zoom_pos, 0, sizeof(dt_dev_zoom_pos_t));
+  pipe->frame = NULL;
   pipe->output_imgid = NO_IMGID;
 
   memset(&pipe->scharr, 0, sizeof(dt_dev_detail_mask_t));
@@ -319,6 +318,14 @@ static gboolean _dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->output_profile_info = NULL;
   pipe->export_profile_info = NULL;
   pipe->output_headroom = 1.0f;
+  memset(&pipe->output, 0, sizeof(pipe->output));
+  pipe->output.image.type = DT_COLORSPACE_NONE;
+  pipe->output.device.type = DT_COLORSPACE_NONE;
+  pipe->window = DT_COLORSPACE_NONE;
+  memset(&pipe->colorout_encoding, 0, sizeof(pipe->colorout_encoding));
+  pipe->colorout_encoding.type = DT_COLORSPACE_NONE;
+  memset(&pipe->output_encoding, 0, sizeof(pipe->output_encoding));
+  pipe->output_encoding.type = DT_COLORSPACE_NONE;
   pipe->runs = 0;
   pipe->bcache_data = NULL;
   pipe->bcache_size = 0;
@@ -441,7 +448,8 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   g_free(pipe->icc_filename);
   pipe->icc_filename = NULL;
 
-  if(dt_pipe_is_screen(pipe)) g_free(pipe->backbuf);
+  dt_frame_unref(pipe->frame);
+  pipe->frame = NULL;
   pipe->backbuf = NULL;
   pipe->backbuf_width = 0;
   pipe->backbuf_height = 0;
@@ -1380,6 +1388,7 @@ error:
 #endif
 
 static void _pixelpipe_pick_samples(dt_develop_t *dev,
+                                    dt_dev_pixelpipe_t *pipe,
                                     dt_iop_module_t *module,
                                     const dt_iop_buffer_dsc_t *dsc,
                                     const float *const input,
@@ -1388,9 +1397,16 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
   const dt_iop_order_iccprofile_info_t *const histogram_profile =
     dt_ioppr_get_histogram_profile_info(dev);
   const dt_iop_order_iccprofile_info_t *const display_profile =
-    dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
-                                      darktable.color_profiles->display_filename,
-                                      INTENT_RELATIVE_COLORIMETRIC);
+    dt_ioppr_add_profile_info_for_content(dev, pipe->output_encoding.type,
+                                          pipe->output_encoding.filename,
+                                          pipe->output_encoding.profile,
+                                          INTENT_RELATIVE_COLORIMETRIC);
+  // the swatches are drawn by GTK, in what untagged values mean in the
+  // window: the same profile on cairo, where the conversion is skipped
+  const dt_color_encoding_t *device = &pipe->output.device;
+  const dt_iop_order_iccprofile_info_t *const gtk_profile =
+    dt_ioppr_add_profile_info_for_content(dev, device->type, device->filename,
+                                          device->profile, INTENT_RELATIVE_COLORIMETRIC);
 
   // if we have a primary picker, prepend to the list of any live
   // samples, so that we don't have to differentiate when looping
@@ -1435,6 +1451,14 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
         dt_ioppr_transform_image_colorspace_rgb(sample->display[0], sample->scope[0], 3, 1,
                                                 display_profile, histogram_profile,
                                                 "primary picker");
+      if(display_profile && gtk_profile && gtk_profile != display_profile)
+      {
+        lib_colorpicker_stats picked;
+        memcpy(picked, sample->display, sizeof(picked));
+        dt_ioppr_transform_image_colorspace_rgb(picked[0], sample->display[0], 3, 1,
+                                                display_profile, gtk_profile,
+                                                "picker swatch");
+      }
     }
     samples = g_slist_next(samples);
   }
@@ -3512,14 +3536,14 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     if(darktable.lib->proxy.colorpicker.picker_proxy
        || darktable.lib->proxy.colorpicker.live_samples)
     {
-      _pixelpipe_pick_samples(dev, module, *out_format, input, &roi_in);
+      _pixelpipe_pick_samples(dev, pipe, module, *out_format, input, &roi_in);
     }
 
-    // FIXME: read this from dt_ioppr_get_pipe_output_profile_info()?
     const dt_iop_order_iccprofile_info_t *const display_profile
-      = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
-                                          darktable.color_profiles->display_filename,
-                                          INTENT_RELATIVE_COLORIMETRIC);
+      = dt_ioppr_add_profile_info_for_content(dev, pipe->output_encoding.type,
+                                              pipe->output_encoding.filename,
+                                              pipe->output_encoding.profile,
+                                              INTENT_RELATIVE_COLORIMETRIC);
 
     // Since histogram is being treated as the second-to-last link
     // in the pixelpipe and has a "process" call, why not treat it
@@ -3638,6 +3662,45 @@ static gboolean _dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe
   return ret;
 }
 
+// what the pipe's output values mean, from the nodes this run processes.
+// without colorout the values stay in the working RGB, as for
+// dt_dev_image() with no output. colorout cannot record that profile
+// itself: history replay can commit colorin after it
+static void _resolve_output_encoding(dt_dev_pixelpipe_t *pipe,
+                                     dt_develop_t *dev)
+{
+  // synchronization writes these under it, and GUI readers take it
+  dt_pthread_mutex_lock(&pipe->busy_mutex);
+  gboolean colorout = FALSE;
+  for(GList *n = pipe->nodes; n && !colorout; n = g_list_next(n))
+  {
+    const dt_dev_pixelpipe_iop_t *piece = n->data;
+    colorout = piece->enabled && dt_iop_module_is(piece->module, "colorout");
+  }
+  const dt_iop_order_iccprofile_info_t *const work = dt_ioppr_get_pipe_work_profile_info(pipe);
+  dt_color_encoding_t *const encoding = &pipe->output_encoding;
+  if(colorout)
+    *encoding = pipe->colorout_encoding;
+  else if(work)
+  {
+    // for the modules after colorout
+    dt_ioppr_set_pipe_output_profile_info(dev, pipe, work->type, work->filename, work->profile,
+                                          work->intent);
+    memset(encoding, 0, sizeof(*encoding));
+    encoding->type = work->type;
+    g_strlcpy(encoding->filename, work->filename, sizeof(encoding->filename));
+    encoding->profile = work->profile;
+    encoding->intent = work->intent;
+    encoding->headroom = pipe->output_headroom;
+  }
+  else
+  {
+    memset(encoding, 0, sizeof(*encoding));
+    encoding->type = DT_COLORSPACE_NONE;
+  }
+  dt_pthread_mutex_unlock(&pipe->busy_mutex);
+}
+
 gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
                                   dt_develop_t *dev,
                                   const int x,
@@ -3693,6 +3756,10 @@ gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
 // re-entry point: in case of late opencl errors we start all over
 // again with opencl-support disabled
 restart:
+
+  // after every resync, the OpenCL restart's too, and the export filters'
+  // disabling, before the cache keys hash output_profile_info
+  _resolve_output_encoding(pipe, dev);
 
   // check if we should obsolete caches
   if(pipe->cache_obsolete_order != INT_MAX)
@@ -3797,39 +3864,40 @@ restart:
   if(err)
     return TRUE;
 
-  // terminate
-  dt_pthread_mutex_lock(&pipe->backbuf_mutex);
-  pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(&roi, pipe, pos);
-
-  //FIXME lock/release cache line instead of copying
+  // terminate. a screen pipe publishes a frame, a copy: the cache line it
+  // comes from is not pinned and changes with the next run
+  dt_frame_t *frame = NULL;
   if(dt_pipe_is_screen(pipe))
   {
-    // dt_dev_image(want_float) keeps gamma terminal but lets it pass the
-    // 4-channel linear float working RGB through unpacked. In that case the
-    // backbuf is 16 B/px (4 floats) rather than the usual 8-bit ARGB.
-    const size_t bbpp =
-      (pipe->type & DT_DEV_PIXELPIPE_IMAGE_FLOAT) ? 4 * sizeof(float) : 4 * sizeof(uint8_t);
-    if(pipe->backbuf == NULL || pipe->backbuf_width * pipe->backbuf_height != width * height ||
-       pipe->backbuf_size != bbpp * width * height)
-    {
-      g_free(pipe->backbuf);
-      pipe->backbuf = g_malloc0(bbpp * width * height);
-      pipe->backbuf_size = bbpp * width * height;
-    }
-
-    if(pipe->backbuf)
-    {
-      memcpy(pipe->backbuf, buf, bbpp * width * height);
-      pipe->backbuf_scale = scale;
-      for(int i = 0; i < 6; i++) pipe->backbuf_zoom_pos[i] = pts[i] * pipe->iscale;
-      pipe->output_imgid = pipe->image.id;
-    }
+    dt_frame_geometry_t geometry = { .width = width, .height = height, .scale = scale };
+    for(int i = 0; i < 6; i++) geometry.zoom_pos[i] = pts[i] * pipe->iscale;
+    frame = dt_frame_new(buf, &geometry, pipe->output.format, &pipe->output_encoding,
+                         pipe->output.serial);
+    // what GTK will draw it as, made here rather than in a GUI thread draw:
+    // the preview in navigation and the filmstrip, the canvas under focus
+    // peaking. on a cairo window it is the frame itself and costs nothing
+    if(frame && !dt_pipe_is_image(pipe)
+       && (dt_pipe_is_preview(pipe)
+           || (darktable.gui && g_atomic_int_get(&darktable.gui->show_focus_peaking))))
+      dt_frame_surface(frame, &pipe->output.device);
   }
-  else
+
+  dt_pthread_mutex_lock(&pipe->backbuf_mutex);
+  pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(&roi, pipe, pos);
+  if(frame)
+  {
+    dt_frame_t *old = pipe->frame;
+    pipe->frame = frame;
+    frame = old;
+    pipe->output_imgid = pipe->image.id;
+  }
+  else if(!dt_pipe_is_screen(pipe))
     pipe->backbuf = buf;
   pipe->backbuf_width = width;
   pipe->backbuf_height = height;
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
+  // the frame it replaced, still shown by whoever holds it
+  dt_frame_unref(frame);
 
   if(!claimed)
     dt_dev_pixelpipe_cache_report(pipe);
@@ -3840,6 +3908,14 @@ restart:
   dt_print_mem_usage("after pixelpipe process");
 
   return FALSE;
+}
+
+dt_frame_t *dt_dev_pixelpipe_frame(dt_dev_pixelpipe_t *pipe)
+{
+  dt_pthread_mutex_lock(&pipe->backbuf_mutex);
+  dt_frame_t *frame = dt_frame_ref(pipe->frame);
+  dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
+  return frame;
 }
 
 void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,

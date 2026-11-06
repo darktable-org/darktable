@@ -127,6 +127,7 @@ FILE(GLOB SOURCE_FILES
   "develop/borders_helper.c"
   "develop/develop.c"
   "develop/format.c"
+  "develop/frame.c"
   "develop/imageop.c"
   "develop/imageop_gui.c"
   "develop/imageop_math.c"
@@ -186,6 +187,10 @@ FILE(GLOB SOURCE_FILES
   "gui/import_metadata.c"
   "gui/metadata_tags.c"
   "gui/preferences.c"
+  "gui/presenter.c"
+  "gui/presenter_cairo.c"
+  "gui/presenter_layers.c"
+  "gui/presenter_target.c"
   "gui/presets.c"
   "gui/splash.c"
   "gui/welcome.c"
@@ -342,10 +347,54 @@ list(APPEND LIBS ${Glib_LIBRARIES})
 
 # GTK3 pulls in ATK, GDK, GDK-PIXBUF, CAIRO, GLIB, PANGO
 find_package(GTK3 3.24.15 REQUIRED)
+# the Quartz backend tags its surface sRGB from 3.24.37 on (GTK 312e5781);
+# earlier ones leave what darktable's pixels mean on screen to the GTK and
+# cairo versions, and the display profile is sRGB on macOS (colorspaces.c)
+if(APPLE)
+  pkg_check_modules(GDK_QUARTZ QUIET gdk-quartz-3.0)
+  if(GDK_QUARTZ_FOUND AND GTK3_VERSION VERSION_LESS 3.24.37)
+    message(FATAL_ERROR "GTK ${GTK3_VERSION} found: the Quartz backend needs GTK 3.24.37 or later")
+  endif()
+endif()
 add_definitions("-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_24")
 #add_definitions("-DGDK_VERSION_MAX_ALLOWED=GDK_VERSION_MIN_REQUIRED")
 include_directories(SYSTEM ${GTK3_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK3_LIBRARIES})
+
+if(USE_WAYLAND)
+  find_package(PkgConfig)
+  pkg_check_modules(GDK_WAYLAND QUIET gdk-wayland-3.0)
+  # 1.18 has the half float shm formats
+  pkg_check_modules(WAYLAND_CLIENT QUIET IMPORTED_TARGET wayland-client>=1.18)
+  find_program(WAYLAND_SCANNER wayland-scanner)
+  if(GDK_WAYLAND_FOUND AND WAYLAND_CLIENT_FOUND AND WAYLAND_SCANNER)
+    # color-management-v1 is in wayland-protocols from 1.41 on, newer than
+    # most distributions ship, so the protocol comes with darktable
+    set(WAYLAND_COLOR_XML
+        "${CMAKE_CURRENT_SOURCE_DIR}/external/wayland-protocols/color-management-v1.xml")
+    set(WAYLAND_COLOR_HEADER "${CMAKE_CURRENT_BINARY_DIR}/color-management-v1-client-protocol.h")
+    set(WAYLAND_COLOR_CODE "${CMAKE_CURRENT_BINARY_DIR}/color-management-v1-protocol.c")
+    add_custom_command(OUTPUT "${WAYLAND_COLOR_HEADER}"
+      COMMAND "${WAYLAND_SCANNER}" client-header "${WAYLAND_COLOR_XML}" "${WAYLAND_COLOR_HEADER}"
+      DEPENDS "${WAYLAND_COLOR_XML}" VERBATIM)
+    add_custom_command(OUTPUT "${WAYLAND_COLOR_CODE}"
+      COMMAND "${WAYLAND_SCANNER}" private-code "${WAYLAND_COLOR_XML}" "${WAYLAND_COLOR_CODE}"
+      DEPENDS "${WAYLAND_COLOR_XML}" VERBATIM)
+    add_custom_target(generate_wayland_color
+      DEPENDS "${WAYLAND_COLOR_HEADER}" "${WAYLAND_COLOR_CODE}")
+    list(APPEND LIB_DEPS generate_wayland_color)
+    list(APPEND SOURCES "${WAYLAND_COLOR_HEADER}" "${WAYLAND_COLOR_CODE}" "gui/presenter_wayland.c")
+    # GDK links libwayland-client too, but we call into it directly
+    list(APPEND LIBS PkgConfig::WAYLAND_CLIENT)
+    set_property(SOURCE common/darktable.c gui/presenter_layers.c gui/presenter_wayland.c
+                 APPEND PROPERTY COMPILE_DEFINITIONS HAVE_WAYLAND)
+    set_property(SOURCE gui/presenter_wayland.c
+                 APPEND PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}")
+  else()
+    message(STATUS "Wayland color management disabled: it needs gdk-wayland-3.0, wayland-client >= 1.18 and wayland-scanner")
+    set(USE_WAYLAND OFF)
+  endif()
+endif()
 
 # Check for libxml2 / broken cmake module can't be included in the foreach() below
 find_package(LibXml2 2.6 REQUIRED)
@@ -841,6 +890,7 @@ if(WIN32)
   SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
 
   list(APPEND LIBS psapi) # Needed for GetProcessMemoryInfo()
+  list(APPEND LIBS mscms) # Needed for the display profile from WCS
   list(APPEND LIBS exchndl) # Needed for exception handling and backtrace()
 endif(WIN32)
 
