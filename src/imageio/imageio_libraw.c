@@ -288,6 +288,13 @@ const model_map_t modelMap[] = {
     .clean_model = "EOS R50 V",
     .clean_alias = "EOS R50 V"
   },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon PowerShot V1",
+    .clean_make = "Canon",
+    .clean_model = "PowerShot V1",
+    .clean_alias = "PowerShot V1"
+  },
 #endif
 };
 

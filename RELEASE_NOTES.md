@@ -1026,6 +1026,7 @@ changes (where available).
 ### Base Support
 
 - Canon EOS R50 V (requires LibRaw 0.23 or newer)
+- Canon PowerShot V1 (requires LibRaw 0.23 or newer)
 
 ### White Balance Presets
 
