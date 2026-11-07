@@ -84,18 +84,16 @@ int position(const dt_lib_module_t *self)
 
 static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *self);
 
-static gboolean _lib_duplicate_caption_out_callback(GtkWidget *widget,
-                                                    GdkEvent *event,
-                                                    dt_lib_module_t *self)
+static void _lib_duplicate_caption_out_callback(GtkEventController *controller,
+                                                dt_lib_module_t *self)
 {
+  GtkWidget *widget = dt_gui_get_widget(controller);
   const dt_imgid_t imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"imgid"));
 
   // we write the content of the textbox to the caption field
   dt_metadata_set(imgid, "Xmp.darktable.version_name",
                   gtk_entry_get_text(GTK_ENTRY(widget)), FALSE);
   dt_image_synch_xmp(imgid);
-
-  return FALSE;
 }
 
 // create a 'virgin' duplicate of imgid, discarding the source history stack
@@ -341,8 +339,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_widget_set_hexpand(tb, TRUE);
     g_object_set_data (G_OBJECT(tb), "imgid", GINT_TO_POINTER(imgid));
     gtk_widget_add_events(tb, GDK_FOCUS_CHANGE_MASK);
-    g_signal_connect(G_OBJECT(tb), "focus-out-event",
-                     G_CALLBACK(_lib_duplicate_caption_out_callback), self);
+    dt_gui_connect_focus(tb, NULL, _lib_duplicate_caption_out_callback, self);
     GtkWidget *lb = gtk_label_new(chl);
     gtk_widget_set_hexpand(lb, TRUE);
 

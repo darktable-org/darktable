@@ -3398,9 +3398,8 @@ int position(const dt_lib_module_t *self)
   return 400;
 }
 
-static gboolean entry_focus_in_callback(GtkWidget *w,
-                                        GdkEventFocus *event,
-                                        dt_lib_collect_rule_t *d)
+static void entry_focus_in_callback(GtkEventController *controller,
+                                    dt_lib_collect_rule_t *d)
 {
   dt_lib_collect_t *c = get_collect(d);
   if(c->active_rule != d->num)
@@ -3408,8 +3407,6 @@ static gboolean entry_focus_in_callback(GtkWidget *w,
     c->active_rule = d->num;
     update_view(c->rule + c->active_rule);
   }
-
-  return FALSE;
 }
 
 static gboolean _process_variant_params(GVariant *parameter,
@@ -4253,8 +4250,7 @@ void gui_init(dt_lib_module_t *self)
 
     d->rule[i].text = w = dt_ui_entry_new(10);
     gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK | GDK_KEY_PRESS_MASK);
-    g_signal_connect(G_OBJECT(w), "focus-in-event",
-                     G_CALLBACK(entry_focus_in_callback), d->rule + i);
+    dt_gui_connect_focus(w, entry_focus_in_callback, NULL, d->rule + i);
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(entry_changed), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
     gtk_entry_set_width_chars(GTK_ENTRY(w), 5);

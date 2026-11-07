@@ -3289,6 +3289,12 @@ static const dt_action_def_t _action_def_cycle_module_groups
       _action_elements_cycle_module_groups,
       NULL, TRUE };
 
+static void _text_entry_focus_in(GtkEventController *controller,
+                                 GtkWidget *search_box)
+{
+  gtk_widget_show(search_box);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -3363,9 +3369,7 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_text_entry_changed_callback), self);
   g_signal_connect(G_OBJECT(d->text_entry), "stop-search",
                    G_CALLBACK(dt_gui_search_stop), dt_ui_center(darktable.gui->ui));
-  g_signal_connect_data(G_OBJECT(d->text_entry), "focus-in-event",
-                        G_CALLBACK(gtk_widget_show),
-                        d->hbox_search_box, NULL, G_CONNECT_AFTER | G_CONNECT_SWAPPED);
+  dt_gui_connect_focus(d->text_entry, _text_entry_focus_in, NULL, d->hbox_search_box);
 
   GtkWidget *visibility_wrapper = gtk_event_box_new(); // extra layer prevents disabling shortcuts when hidden
   gtk_container_add(GTK_CONTAINER(visibility_wrapper), d->text_entry);

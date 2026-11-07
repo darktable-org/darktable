@@ -7952,6 +7952,73 @@ GtkEventController *(dt_gui_connect_key)(GtkWidget *widget,
   return controller;
 }
 
+/*
+ * GTK3 bridge for focus changes.
+ *
+ * GTK 3.24's GtkEventControllerKey does have "focus-in" and "focus-out",
+ * but gtk_widget_event_internal() only runs TARGET-phase controllers on the
+ * widget owning the event's GdkWindow. A GtkEntry has no window of its own,
+ * so they never fire there. Connect the classic focus signals instead and
+ * call the controller-style callbacks.
+ *
+ * GTK4 migration: DELETE this bridge; dt_gui_connect_focus() then connects
+ * GtkEventControllerFocus "enter" and "leave" directly.
+ */
+#if !GTK_CHECK_VERSION(4, 0, 0)
+typedef struct _FocusBridgeData
+{
+  GCallback cb;
+  gpointer data;
+  GtkEventController *controller;
+} FocusBridgeData;
+
+static gboolean _focus_bridge_handler(GtkWidget *widget,
+                                      GdkEventFocus *event,
+                                      gpointer user)
+{
+  FocusBridgeData *d = user;
+  ((void(*)(GtkEventController *, gpointer))d->cb)(d->controller, d->data);
+  return FALSE;
+}
+
+static void _focus_bridge_connect(GtkWidget *widget,
+                                  const char *signal,
+                                  GCallback cb,
+                                  gpointer data,
+                                  GtkEventController *controller)
+{
+  FocusBridgeData *d = g_new0(FocusBridgeData, 1);
+  d->cb = cb;
+  d->data = data;
+  d->controller = controller;
+  g_signal_connect_data(widget, signal,
+                        G_CALLBACK(_focus_bridge_handler), d, _key_bridge_free, 0);
+}
+#endif
+
+GtkEventController *(dt_gui_connect_focus)(GtkWidget *widget,
+                                            GCallback enter,
+                                            GCallback leave,
+                                            gpointer data)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  GtkEventController *controller = gtk_event_controller_focus_new();
+  dt_gui_add_controller(widget, controller);
+  if(enter) g_signal_connect(controller, "enter", G_CALLBACK(enter), data);
+  if(leave) g_signal_connect(controller, "leave", G_CALLBACK(leave), data);
+#else
+  // only there for dt_gui_get_widget() in the callbacks; GTK_PHASE_NONE
+  // keeps it from also handling the key and focus events it can see
+  GtkEventController *controller = gtk_event_controller_key_new(widget);
+  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_NONE);
+  dt_gui_add_controller(widget, controller);
+  if(enter) _focus_bridge_connect(widget, "focus-in-event", enter, data, controller);
+  if(leave) _focus_bridge_connect(widget, "focus-out-event", leave, data, controller);
+#endif
+
+  return controller;
+}
+
 static int busy_nest_count = 0;
 
 void dt_gui_cursor_set_busy()
@@ -8018,13 +8085,12 @@ GtkWidget *(dt_gui_box_add)(const char *file, const int line, const char *functi
   return GTK_WIDGET(box);
 }
 
-static gboolean _focus_out_commit(GtkCellEditable *editable,
-                                  GdkEvent *event,
-                                  gpointer user_data)
+static void _focus_out_commit(GtkEventController *controller,
+                              gpointer user_data)
 {
+  GtkCellEditable *editable = GTK_CELL_EDITABLE(dt_gui_get_widget(controller));
   gtk_cell_editable_editing_done(editable);
   gtk_cell_editable_remove_widget(editable);
-  return FALSE;
 }
 
 static void _commit_on_focus_loss_callback(GtkCellRenderer *renderer,
@@ -8036,7 +8102,7 @@ static void _commit_on_focus_loss_callback(GtkCellRenderer *renderer,
   if(active_editable)
     g_set_weak_pointer(active_editable, editable);
 
-  g_signal_connect(editable, "focus-out-event", G_CALLBACK(_focus_out_commit), NULL);
+  dt_gui_connect_focus(editable, NULL, _focus_out_commit, NULL);
 }
 
 void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **active_editable)
