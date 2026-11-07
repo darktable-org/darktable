@@ -54,6 +54,11 @@ colors that mark in any output.
   read it to interpret the preview pipe's pixels. The pipe's
   `output_headroom`, which sigmoid and agx tone map to, honors
   `output.headroom`. A soft proof caps it at the proof profile's headroom.
+- A soft proof shows what an export to the proof profile holds, in the
+  output: clipped where that export clips, and by the presenter to what the
+  screen shows. PQ and HLG proofs take the export's own encoding round trip
+  in linear light (`dt_hdr_encode()`, `dt_hdr_decode()`), since their ICC
+  shapers end at 1.0, where the pipe has reference white.
 - Export, thumbnail and AI pipes have no output description (`type` is
   `DT_COLORSPACE_NONE`).
 
