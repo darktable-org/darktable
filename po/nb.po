@@ -8080,7 +8080,7 @@ msgid ""
 "to hide this window anyway, follow the instructions at:\n"
 "https://www.darktable.org/about/faq/#faq-windows-terminal\n"
 msgstr ""
-"Dette konsollvinduet kreves av darktable på denne versjonen av Windows.\n"
+"dette konsollvinduet kreves av darktable på denne versjonen av Windows.\n"
 "På Windows 11 24H2 og senere kjører darktable vanligvis uten dette vinduet.\n"
 "Ikke lukk det eller trykk Ctrl+C mens darktable kjører.\n"
 "Det vil lukkes automatisk når darktable avsluttes.\n"
@@ -11870,7 +11870,7 @@ msgid ""
 "(added to the selected group, %s)"
 msgstr ""
 "\n"
-")lagt til i den valgte gruppen, %s)"
+"(lagt til i den valgte gruppen, %s)"
 
 #: ../src/develop/blend_gui.c:11484
 msgid ""
@@ -18830,7 +18830,7 @@ msgid ""
 "double-click to add new shortcut"
 msgstr ""
 "\n"
-"dobbelt-klikk for å legge til ny snarvei"
+"dobbeltklikk for å legge til ny snarvei"
 
 #: ../src/gui/accelerators.c:1297
 msgid "click to filter shortcuts list"
@@ -22378,7 +22378,7 @@ msgstr ""
 
 #: ../src/iop/agx.c:2159
 msgid "max linear output power, relative to the peak of the output"
-msgstr ""
+msgstr "maksimal lineær utgangsstyrke, relativ til maksimal utdata"
 
 #: ../src/iop/agx.c:2165
 msgid ""
@@ -33176,7 +33176,7 @@ msgstr ""
 
 #: ../src/iop/vignette.c:1082
 msgid "enable to have the ratio automatically follow the image size"
-msgstr "aktiver for å la størrelsesfoholdet automatisk følge bildestørrelsen"
+msgstr "aktiver for å la størrelsesforholdet automatisk følge bildestørrelsen"
 
 #: ../src/iop/vignette.c:1083
 msgid "width-to-height ratio"
