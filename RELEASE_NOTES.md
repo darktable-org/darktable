@@ -282,6 +282,9 @@ changes (where available).
 - Rotate pixels, which straightens the sensor layout of Fujifilm
   SuperCCD raws, now runs on OpenCL.
 
+- Scale pixels, which sets the pixel aspect ratio for non-square-pixel
+  sensors and anamorphic desqueeze, now runs on OpenCL.
+
 - Hovering over and dragging nodes of long drawn brush strokes and
   paths is much faster, as the mask overlay is no longer redrawn on
   every mouse move and long outlines are drawn with far fewer points.
@@ -954,6 +957,9 @@ changes (where available).
   white balance applied the pasted multipliers, but input color profile
   completed the correction with the target image's own as-shot
   multipliers.
+
+- Fixed scale pixels output shifted by a fraction of a pixel in each
+  tile when the image was processed in tiles.
 
 ## Lua
 
