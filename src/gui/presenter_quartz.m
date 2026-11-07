@@ -177,6 +177,11 @@ static void _layer_init(_transport_t *t,
   layer->view.layer = layer->layer;
   layer->view.wantsLayer = YES;
   layer->view.hidden = YES;
+  // GTK does not draw during a live resize: AppKit stretches the last frame
+  // of GDK's view with the window until the drag ends. the layers stretch
+  // with it, as the presenting widget grows between fixed panels, instead
+  // of leaving a gap; the frame after the drag places them exactly
+  layer->view.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
   // above GTK's drawing and everything added before
   [t->p->parent addSubview:layer->view positioned:NSWindowAbove relativeTo:nil];
 }

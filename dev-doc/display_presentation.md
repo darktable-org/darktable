@@ -772,10 +772,13 @@ layered backend's replay could draw a widget between a queued resize and
 its layout, which `gtk_widget_draw()` refuses. A present is one Core
 Animation transaction, and both layers have `presentsWithTransaction` on,
 so their drawables apply with a transaction commit and never on their
-own. GTK3
-draws popovers into the toplevel's view, below the layers, so the
-transport declares `popovers_above` false and the layered backend replays
-them.
+own. GTK3 does not draw during a live resize: AppKit stretches the last
+frame of GDK's view with the window until the drag ends. The layer views
+are width and height sizable with fixed margins, so they stretch with it,
+as the presenting widget grows between fixed panels; the frame drawn
+after the drag places them exactly. GTK3 draws popovers into the
+toplevel's view, below the layers, so the transport declares
+`popovers_above` false and the layered backend replays them.
 
 ## Workarounds
 
@@ -792,6 +795,7 @@ keep its layers under GTK4 as well.
 | GTK's surface taken as sRGB, the window's device encoding | `presenter_wayland.c`, `_set_output()` | GTK3 does not tag its surface; an untagged surface is sRGB to the compositor, with a transfer function of its choosing | GTK tags its surfaces |
 | mutter's default color mode (`gtk_shell1`, a GNOME session and a plain SDR sRGB preferred description) left to cairo with the system display profile | `presenter_wayland.c`, `_mutter_default_color_mode()` | mutter's default color mode composites as sRGB and does not apply the profile assigned to the screen (mutter#4597) | mutter describes its real output (mutter MR !5177); nothing to do, the predicate stops matching |
 | displaying GDK's view at the end of `paint`, then presenting | `presenter_quartz.m`, `_paint()` | GTK3 on Quartz draws only when AppKit displays its view, after `paint`; the layers must follow that draw | same |
+| layer views that stretch with GDK's view (`autoresizingMask`) | `presenter_quartz.m`, `_layer_init()` | GTK3 on Quartz does not draw during a live resize, while AppKit stretches its view's last frame; fixed layers would leave a gap at the window's edge | same |
 | no opaque region on the layers | `presenter_wayland.c`, `_layer_init()` | a compositor may stop frame callbacks for a surface it considers occluded, which stops GTK's frame clock | GTK4 |
 | surface feedback destroyed when the toplevel unmaps | `presenter_wayland.c`, `_toplevel_unmap()` | GDK destroys its `wl_surface` when a window is hidden, and asking the feedback on it for the preferred description is then a protocol error | GTK4 |
 | a draw GTK clipped to a damaged area does not replace or drop the presentation `dt_presenter_keep()` shows | `presenter.c`, `dt_presenter_begin()` | GTK3 redraws only the damaged part of a widget, so such a draw records clipped images; it stays in `presenter.c` because both backends need it | GTK4: a widget's snapshot is always whole |
