@@ -102,7 +102,6 @@ typedef struct _transport_t
   id<MTLCommandQueue> queue;
   GdkFrameClock *clock;
   gulong paint_handler;
-  CFRunLoopObserverRef observer;
   // the headroom target the image is encoded for
   float headroom;
   GList *widgets;
@@ -408,11 +407,6 @@ static void _free(dt_presenter_transport_t *self)
 {
   _transport_t *t = (_transport_t *)self;
   if(t->paint_handler) g_signal_handler_disconnect(t->clock, t->paint_handler);
-  if(t->observer)
-  {
-    CFRunLoopRemoveObserver(CFRunLoopGetMain(), t->observer, kCFRunLoopCommonModes);
-    CFRelease(t->observer);
-  }
   for(GList *l = t->widgets; l; l = g_list_next(l))
   {
     _widget_t *w = l->data;
@@ -453,9 +447,10 @@ static void _target(dt_presenter_transport_t *self,
 // here runs that draw now, as GTK's own
 // _gdk_quartz_display_after_process_all_updates() does, so the layers are
 // presented after the presenting widgets drew, in the Core Animation
-// transaction that carries GTK's new IOSurface. the run loop observer,
-// just before Core Animation commits, catches a display AppKit makes
-// outside paint, such as during a live resize
+// transaction that carries GTK's new IOSurface. presenting anywhere
+// outside paint would replay widgets above the presenting one
+// (presenter_layers.c, _replay_above()) between a queued resize and its
+// layout, which GTK refuses (gtk_widget_draw(): !alloc_needed)
 static void _paint(GdkFrameClock *clock,
                    _transport_t *t)
 {
@@ -508,12 +503,6 @@ static dt_presenter_transport_t *_transport_new(dt_presenter_platform_t *self)
   t->transport.popovers_above = FALSE;
   t->clock = gdk_window_get_frame_clock(gtk_widget_get_window(p->toplevel));
   t->paint_handler = g_signal_connect_after(t->clock, "paint", G_CALLBACK(_paint), t);
-  t->observer = CFRunLoopObserverCreateWithHandler
-    (NULL, kCFRunLoopBeforeWaiting, TRUE, 1999999,
-     ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
-       dt_presenter_window_present(t->p->window);
-     });
-  CFRunLoopAddObserver(CFRunLoopGetMain(), t->observer, kCFRunLoopCommonModes);
   _set_output(t);
   return &t->transport;
 }
