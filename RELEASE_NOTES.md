@@ -358,9 +358,11 @@ changes (where available).
   pipeline moves the image from the CPU to the GPU.
 
 - Softproofing, gamut check and LUT-based ICC profiles in input and
-  output color profile can now run on the OpenCL device, through a 3D
-  LUT sampled from LittleCMS, instead of sending the image back to the
-  CPU. The "always use LittleCMS 2" export preference still applies the
+  output color profile can now run on the OpenCL device, LUT profiles
+  through a 3D LUT sampled from LittleCMS, instead of sending the image
+  back to the CPU. The gamut check of a softproof profile with lookup
+  tables, and a soft proof to a CMYK profile, still run on the CPU, and
+  the "always use LittleCMS 2" export preference still applies the
   exact transform on the CPU.
 
 - The LMMSE demosaicer can now run on the OpenCL device instead of
@@ -483,10 +485,15 @@ changes (where available).
 - Soft proof has its own rendering intent, set next to the softproof
   profile. It used the display rendering intent before, which the
   darkroom showed only with "always use LittleCMS 2" on, and it starts
-  from that intent. The display rendering intent is now one setting
-  for both windows, in the interface preferences. A new "black point
-  compensation" switch next to it, on by default as before, can be
-  turned off to see what an export to the softproof profile stores.
+  from that intent. A new "black point compensation" switch next to
+  it, on by default as before, can be turned off to see what an export
+  to the softproof profile stores.
+
+- The display rendering intent setting is gone. darktable shows images
+  on the screen relative colorimetric, which leaves the colors an
+  export holds unchanged where the screen can show them, or perceptual
+  where the compositor manages color and offers only that. It makes a
+  difference only with display profiles that have lookup tables.
 
 - The highlights module will be disabled automatically when a raw
   image with a clean history is opended in darkroom the first time
@@ -788,15 +795,23 @@ changes (where available).
   changes, as when the window moves to a screen with another profile,
   instead of keeping the colors of the previous one.
 
-- Soft proof to Adobe RGB or a linear profile now clips colors and
-  highlights where an export to that profile does. Such proofs showed
-  colors outside the softproof profile unchanged before.
+- Soft proof now renders the image as an export to the softproof
+  profile does, its HDR headroom included, and clips colors and
+  highlights where an integer export, such as JPEG or 16-bit TIFF,
+  does. Soft proof to Adobe RGB or a
+  linear profile showed colors outside the softproof profile unchanged
+  before.
 
-- The gamut check now marks exactly the colors outside a softproof
-  profile such as sRGB, Adobe RGB or Rec. 2020, the same on every
-  display. It marked some colors inside the profile and missed some
-  outside it before, and it also marked colors the display could not
-  show.
+- With soft proof on, the histogram, waveform, vectorscope, the color
+  picker and the navigation thumbnail now show the proof, as an integer
+  export to the softproof profile holds it, instead of the image
+  without the proof.
+
+- The gamut check now marks exactly the colors an integer export to a
+  softproof profile such as sRGB, Adobe RGB or Rec. 2020 clips, the
+  same on every display. It marked some colors inside the profile and
+  missed some outside it before, and it also marked colors the display
+  could not show.
 
 - Snapshots and the duplicate manager's preview now follow changes
   of the soft proof, its profile, intent and black point compensation,
