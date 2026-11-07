@@ -213,6 +213,28 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   roi_in->y = roi_out->y * d->y_scale;
 }
 
+// output pixel (i, j) reads the input at ((i, j) + shift) * scale - offset, on
+// the grid of the whole roi: a tile's own rois have slightly different ratios,
+// which would shift each tile. Untiled, shift and offset are 0
+static void _sampling_grid(const dt_dev_pixelpipe_iop_t *const piece,
+                           const dt_iop_roi_t *const roi_in,
+                           const dt_iop_roi_t *const roi_out,
+                           float scale[2],
+                           int shift[2],
+                           float offset[2])
+{
+  const gboolean whole = piece->processed_roi_out.width > 0 && piece->processed_roi_in.width > 0;
+  const dt_iop_roi_t *const full_in = whole ? &piece->processed_roi_in : roi_in;
+  const dt_iop_roi_t *const full_out = whole ? &piece->processed_roi_out : roi_out;
+
+  scale[0] = (full_in->width * 1.0f) / (full_out->width * 1.0f);
+  scale[1] = (full_in->height * 1.0f) / (full_out->height * 1.0f);
+  shift[0] = roi_out->x - full_out->x;
+  shift[1] = roi_out->y - full_out->y;
+  offset[0] = roi_in->x - full_in->x;
+  offset[1] = roi_in->y - full_in->y;
+}
+
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -220,11 +242,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const int ch_width = ch * roi_in->width;
   const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
-  // Compute scale factors locally from the actual roi_in/roi_out to ensure
-  // consistency, rather than relying on d->x_scale/d->y_scale which may have
-  // been overwritten by modify_roi_in() with different ROI dimensions.
-  const float x_scale = (roi_in->width * 1.0f) / (roi_out->width * 1.0f);
-  const float y_scale = (roi_in->height * 1.0f) / (roi_out->height * 1.0f);
+  float scale[2], offset[2];
+  int shift[2];
+  _sampling_grid(piece, roi_in, roi_out, scale, shift, offset);
 
   DT_OMP_FOR()
   // (slow) point-by-point transformation.
@@ -234,8 +254,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     float *out = ((float *)ovoid) + (size_t)4 * j * roi_out->width;
     for(int i = 0; i < roi_out->width; i++, out += 4)
     {
-      const float x = i * x_scale;
-      const float y = j * y_scale;
+      const float x = (i + shift[0]) * scale[0] - offset[0];
+      const float y = (j + shift[1]) * scale[1] - offset[1];
       dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, x, y, roi_in->width,
                                        roi_in->height, ch_width);
     }
