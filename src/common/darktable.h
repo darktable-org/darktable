@@ -152,7 +152,18 @@ G_BEGIN_DECLS
 /* Create cloned functions for various CPU SSE generations */
 /* See for instructions https://hannes.hauswedell.net/post/2017/12/09/fmv/ */
 /* TL;DR : use only on SIMD functions containing low-level paralellized/vectorized loops */
-#if __has_attribute(target_clones) \
+/* Not under ThreadSanitizer: the ifunc resolvers run while the dynamic loader
+   is still relocating, before the TSan runtime has set up its thread state, and
+   crash there (GCC and clang alike, seen with glibc 2.43). GCC announces TSan
+   with __SANITIZE_THREAD__, clang only through __has_feature. */
+#if defined(__SANITIZE_THREAD__)
+#define _DT_THREAD_SANITIZER
+#elif defined(__has_feature)
+# if __has_feature(thread_sanitizer)
+#define _DT_THREAD_SANITIZER
+# endif
+#endif
+#if __has_attribute(target_clones) && !defined(_DT_THREAD_SANITIZER) \
     && (((defined(__linux__) || defined(__GNU__)) && defined(__GLIBC__)) \
         || (!defined(NATIVE_ARCH) \
             && !defined(_WIN32) \
