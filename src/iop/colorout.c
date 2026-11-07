@@ -946,9 +946,13 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   }
   else if(dt_pipe_is_thumb(pipe))
   {
+    // with the intent of the main window's device encoding, which the
+    // registry's DISPLAY entry holds
+    dt_display_output_t main_window;
+    dt_colorspaces_get_display_output(DT_COLORSPACE_DISPLAY, &main_window);
     out_type = dt_mipmap_cache_get_colorspace();
     out_filename = "";
-    out_intent = darktable.color_profiles->display_intent;
+    out_intent = main_window.device.intent;
   }
   else
   {

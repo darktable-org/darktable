@@ -124,7 +124,7 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
   hash = dt_hash(hash, &pipe->export_profile_info, sizeof(pipe->export_profile_info));
   // the PQ peak is a preference, so the output profile alone does not fix the headroom
   hash = dt_hash(hash, &pipe->output_headroom, sizeof(pipe->output_headroom));
-  // the display intent is a preference too, and colorout renders a window's output with it
+  // colorout renders a window's output with the output's intent, which the profile info leaves out
   hash = dt_hash(hash, &pipe->output.image.intent, sizeof(pipe->output.image.intent));
 
   // go through all modules up to position and compute a hash using the operation and params.

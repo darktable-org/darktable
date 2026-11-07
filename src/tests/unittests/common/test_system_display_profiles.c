@@ -327,17 +327,10 @@ static void test_cairo_window_entry_is_system_profile(void **state)
   assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), a);
   assert_ptr_equal(self->outputs[0].device.profile, a);
   assert_ptr_equal(self->outputs[0].image.profile, a);
+  assert_int_equal(self->outputs[0].image.intent, DT_INTENT_RELATIVE_COLORIMETRIC);
   // a new device encoding, and with it a new entry, each said once
   _assert_raised(1, 1);
   assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY2), f->placeholder2);
-
-  // the intent is part of the device encoding, not of the entry
-  dt_conf_set_string("ui_last/display_intent", "relative colorimetric");
-  dt_colorspaces_update_display_intent();
-  assert_int_equal(self->outputs[0].device.intent, DT_INTENT_RELATIVE_COLORIMETRIC);
-  assert_ptr_equal(_content(DT_COLORSPACE_DISPLAY), a);
-  // both windows' device encodings changed
-  _assert_raised(3, 1);
 }
 
 static void test_platform_owned_entry_is_device(void **state)

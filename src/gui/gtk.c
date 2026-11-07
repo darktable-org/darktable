@@ -917,9 +917,8 @@ static gint64 _touchpad_last_gesture = 0;
 static void _display_pref_changed(gpointer instance,
                                   gpointer user_data)
 {
-  dt_colorspaces_update_display_intent();
   // the display profile file preference applies without a restart; asking
-  // again with neither changed changes nothing
+  // again with the file unchanged changes nothing
   dt_colorspaces_set_display_profile(DT_COLORSPACE_DISPLAY);
   if(darktable.develop && darktable.develop->second_wnd)
     dt_colorspaces_set_display_profile(DT_COLORSPACE_DISPLAY2);

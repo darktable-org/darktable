@@ -45,8 +45,13 @@ void dt_presenter_end(GtkWidget *widget,
 /** paint frame at (x, y), as cairo_paint() would paint a surface set
  * with cairo_set_source_surface(cr, surface, x, y), with the context's
  * current transformation and clip, of any shape. a frame in another
- * encoding than the window's output is shown converted to it. the
- * presenter takes its own reference */
+ * encoding than the window's output is shown converted to it, with the
+ * output's intent: relative colorimetric where the platform offers it,
+ * perceptual otherwise. the frame's own intent is the one it was rendered
+ * into its profile with, as an export's. showing it is the step any
+ * color-managed viewer takes with the exported file, whose intent
+ * darktable neither knows nor chooses; what a screen's gamut cannot
+ * show is the screen's limit. the presenter takes its own reference */
 void dt_presenter_image(cairo_t *cr,
                         const double x,
                         const double y,

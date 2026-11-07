@@ -4081,20 +4081,6 @@
     <longdescription>this option allows to force a specific means of getting the current display profile.\nthis is useful when one alternative gives wrong results</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="interface">
-    <name>ui_last/display_intent</name>
-    <type>
-      <enum>
-        <option>perceptual</option>
-        <option>relative colorimetric</option>
-        <option>saturation</option>
-        <option>absolute colorimetric</option>
-      </enum>
-    </type>
-    <default>perceptual</default>
-    <shortdescription>rendering intent for the display profile</shortdescription>
-    <longdescription>the rendering intent where darktable converts images and thumbnails to the display profile. where the system manages a window's colors, as a Wayland compositor with color management does, the system decides.\nit makes a difference only for display profiles with lookup tables: with matrix display profiles, perceptual, relative colorimetric and saturation give the same result</longdescription>
-  </dtconfig>
-  <dtconfig prefs="misc" section="interface">
     <name>ui_last/display_force_cairo</name>
     <type>bool</type>
     <default>false</default>

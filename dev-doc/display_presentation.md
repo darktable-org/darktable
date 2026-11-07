@@ -71,11 +71,9 @@ mark in any output.
   There is no other user selection; previewing
   another display, print or sRGB is a soft proof. Unless the platform owns
   it, a window's output is its system display profile (`DISPLAY` or
-  `DISPLAY2`) as image and device encoding, with the display intent
-  preference (`ui_last/display_intent`, one for both windows) and headroom
-  1 (`_describe_system_display()` in `colorspaces.c`). A new system display
-  profile and a change of the intent preference
-  (`dt_colorspaces_update_display_intent()`) republish it. Limits:
+  `DISPLAY2`) as image and device encoding, relative colorimetric, with
+  headroom 1 (`_describe_system_display()` in `colorspaces.c`). A new
+  system display profile republishes it. Limits:
   - darktable on XWayland is an X11 client and cannot see the compositor's
     description. It renders to the X atom or colord as on X11: where the
     compositor converts untagged pixels to the profile also published
@@ -121,8 +119,8 @@ mark in any output.
 - The presenter takes a window's output over for the platform, and gives
   it back when the window goes away (`dt_colorspaces_set_window_output()`).
 - A change is announced by what changed (`dt_display_output_diff()`), the
-  same way for the presenter, a new system display profile and the intent
-  preference (`_output_changed()` in `colorspaces.c`). Any change moves
+  same way for the presenter and a new system display profile
+  (`_output_changed()` in `colorspaces.c`). Any change moves
   the serial and queues a redraw of the window, where its producers find
   it. A new device encoding or owner also rebuilds the thumbnail
   transforms and raises `DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED` with
@@ -320,7 +318,8 @@ pixels when it is first asked for, never from another rendition, and is kept
 with the frame; any thread may ask. In the frame's own format and profile it
 is the frame's pixels, whatever the headroom. Conversions are built from the
 profiles the encodings name, which live for the session, so a frame outlives
-the develop that made it, such as `dt_dev_image()`'s temporary one; matrix
+the develop that made it, such as `dt_dev_image()`'s temporary one, with
+the intent of the encoding converted to (`dt_presenter_image()`); matrix
 profiles go through darktable's matrix and curves, the matrix on unclipped
 values and an RGB24 rendition clipped after it, others through lcms.
 

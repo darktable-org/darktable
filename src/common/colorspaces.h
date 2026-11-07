@@ -329,8 +329,6 @@ typedef struct dt_colorspaces_t
   dt_colorspaces_color_profile_type_t histogram_type;
   char softproof_filename[512];
   char histogram_filename[512];
-  // the display intent preference, for both windows
-  dt_iop_color_intent_t display_intent;
   // from the image to the soft proof profile, where the proof goes on to
   // the display relative colorimetric
   dt_iop_color_intent_t softproof_intent;
@@ -561,10 +559,6 @@ void dt_colorspaces_get_display_output(const dt_colorspaces_color_profile_type_t
 /** the serial of a window's output, from any thread. a producer that made
  * its image for another serial renders it again */
 uint32_t dt_colorspaces_get_display_serial(const dt_colorspaces_color_profile_type_t window);
-
-/** the display intent preference changed: the output of every window the
- * platform does not own follows it */
-void dt_colorspaces_update_display_intent(void);
 
 /** once the main window shows: tell the user that the display profile
  * selection a previous version stored is no longer used */

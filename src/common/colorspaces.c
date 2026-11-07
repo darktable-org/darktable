@@ -1291,7 +1291,9 @@ static void _describe_system_display(dt_colorspaces_t *self,
   dt_color_encoding_t *const image = &output->image;
   image->type = w ? DT_COLORSPACE_DISPLAY2 : DT_COLORSPACE_DISPLAY;
   image->profile = _output_profile(self, image->type, "");
-  image->intent = self->display_intent;
+  // littlecms supports relative colorimetric for every profile, see
+  // dt_presenter_image() for the rule
+  image->intent = DT_INTENT_RELATIVE_COLORIMETRIC;
   image->headroom = 1.0f;
   // without color management in the platform, values reach the screen as
   // the device values the display profile describes
@@ -1659,18 +1661,6 @@ icc_loading_done:
   return temp_profiles;
 }
 
-// the options of the display intent preference, in the order of the intents
-static const char *const _display_intents[DT_INTENT_LAST] =
-  { "perceptual", "relative colorimetric", "saturation", "absolute colorimetric" };
-
-static dt_iop_color_intent_t _display_intent_preference(void)
-{
-  const char *value = dt_conf_get_string_const("ui_last/display_intent");
-  for(int k = 0; k < DT_INTENT_LAST; k++)
-    if(!g_strcmp0(value, _display_intents[k])) return k;
-  return DT_INTENT_PERCEPTUAL;
-}
-
 // what an earlier version stored as a window's display profile selection
 static const char *const _retired_keys[2][3] =
   { { "ui_last/color/display_type", "ui_last/color/display_filename",
@@ -1696,10 +1686,9 @@ static gchar *_retired_choice(const int w)
 }
 
 // the display profile always comes from the platform now. a selection an
-// earlier version stored is migrated once: its intent becomes the display
-// intent preference and the soft proof's, which colorout took from it
-// (softproof_intent was stored but never set), and a profile it chose is
-// named in a notice
+// earlier version stored is migrated once: its intent becomes the soft
+// proof's, which colorout took from it (softproof_intent was stored but
+// never set), and a profile it chose is named in a notice
 static void _migrate_display_selection(dt_colorspaces_t *self)
 {
   gboolean stored = FALSE;
@@ -1712,10 +1701,7 @@ static void _migrate_display_selection(dt_colorspaces_t *self)
   {
     const int intent = dt_conf_get_int(_retired_keys[0][2]);
     if(intent >= 0 && intent < DT_INTENT_LAST)
-    {
-      dt_conf_set_string("ui_last/display_intent", _display_intents[intent]);
       dt_conf_set_int("ui_last/color/softproof_intent", intent);
-    }
   }
 
   gchar *first = _retired_choice(0);
@@ -1749,26 +1735,6 @@ void dt_colorspaces_notify_retired_selection(void)
                  self->retired_display_selection);
   g_free(self->retired_display_selection);
   self->retired_display_selection = NULL;
-}
-
-void dt_colorspaces_update_display_intent(void)
-{
-  dt_colorspaces_t *self = darktable.color_profiles;
-  const dt_iop_color_intent_t intent = _display_intent_preference();
-  dt_display_output_t before[2], after[2];
-
-  pthread_rwlock_wrlock(&self->xprofile_lock);
-  for(int w = 0; w < 2; w++) before[w] = self->outputs[w];
-  if(intent != self->display_intent)
-  {
-    self->display_intent = intent;
-    for(int w = 0; w < 2; w++) _system_display_changed(self, w);
-  }
-  for(int w = 0; w < 2; w++) after[w] = self->outputs[w];
-  pthread_rwlock_unlock(&self->xprofile_lock);
-
-  for(int w = 0; w < 2; w++)
-    _output_changed(w, &before[w], &after[w]);
 }
 
 dt_colorspaces_t *dt_colorspaces_init()
@@ -1948,7 +1914,6 @@ dt_colorspaces_t *dt_colorspaces_init()
   g_strlcpy(res->softproof_filename, tmp, sizeof(res->softproof_filename));
   tmp = dt_conf_get_string_const("ui_last/color/histogram_filename");
   g_strlcpy(res->histogram_filename, tmp, sizeof(res->histogram_filename));
-  res->display_intent = _display_intent_preference();
   res->softproof_intent = dt_conf_get_int("ui_last/color/softproof_intent");
   res->softproof_bpc = dt_conf_get_bool("ui_last/color/softproof_bpc");
   res->mode = dt_conf_get_int("ui_last/color/mode");
