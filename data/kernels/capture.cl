@@ -454,7 +454,10 @@ __kernel void capture_radius(read_only image2d_t in,
   const int x = get_global_id(0);
   const int y = get_global_id(1);
   const int xlsz = get_local_size(0);
-  const int l = mad24(get_local_id(1), xlsz, get_local_id(0));
+  const int ylsz = get_local_size(1);
+  const int xlid = get_local_id(0);
+  const int ylid = get_local_id(1);
+  const int l = mad24(ylid, xlsz, xlid);
 
   float maxRatio = 1.0f;
   if(filters == 9u)
@@ -475,7 +478,7 @@ __kernel void capture_radius(read_only image2d_t in,
   buffer[l] = maxRatio;
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  for(int offset = mul24(xlsz, get_local_size(1)) / 2; offset > 0; offset = offset / 2)
+  for(int offset = mul24(xlsz, ylsz) / 2; offset > 0; offset = offset / 2)
   {
     if(l < offset)
       buffer[l] = fmax(buffer[l], buffer[l + offset]);
