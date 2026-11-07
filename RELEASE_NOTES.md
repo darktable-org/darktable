@@ -231,6 +231,9 @@ changes (where available).
   controls and its camera presets, because the white balance is then
   controlled in color calibration.
 
+- The recent collections module now handles single or double click
+  according to the preference setting for collections.
+
 ## Performance Improvements
 
 - New edits convert the input color profile directly to the working RGB
