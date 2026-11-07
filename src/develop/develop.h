@@ -142,6 +142,10 @@ typedef struct dt_dev_viewport_t
   double dpi, dpi_factor, ppd;
 
   gboolean color_assessment;
+  /* set when color assessment is switched on, cleared by the next zoom
+     change: until then a free zoom between the fit inside and outside the
+     border is shrunk to fit inside it (see dt_dev_get_zoom_scale) */
+  gboolean color_assessment_fit;
 
   dt_dev_zoom_t zoom;
   int closeup;
