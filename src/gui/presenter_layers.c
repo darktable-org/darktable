@@ -1468,8 +1468,10 @@ static void _target(dt_presenter_backend_t *self,
 // a new platform goes here behind its build option, NULL for windows not on it
 dt_presenter_platform_t *dt_presenter_platform_new(dt_presenter_window_t *window)
 {
-#ifdef HAVE_WAYLAND
+#if defined HAVE_WAYLAND
   return dt_presenter_wayland_new(window->toplevel, window);
+#elif defined HAVE_QUARTZ_PRESENTER
+  return dt_presenter_quartz_new(window->toplevel, window);
 #else
   return NULL;
 #endif
