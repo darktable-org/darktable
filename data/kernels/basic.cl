@@ -20,6 +20,7 @@
 #include "color_conversion.h"
 #include "common.h"
 #include "rgb_norms.h"
+#include "lut3d.h"
 
 #include "diffuse.cl"
 
@@ -1449,6 +1450,24 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
     pixel = prophotorgb_to_Lab(prophoto_rgb);
   }
   pixel.w = alpha;
+  write_imagef(out, (int2)(x, y), pixel);
+}
+
+/* kernel for the plugin colorin: the LittleCMS transform baked into a 3D LUT
+   over input values 0..1, see _bake_clut() */
+kernel void
+colorin_clut(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+             global const float *clut, const int level, global const float *corr)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
+  const float4 raw = readpixel(in, x, y);
+  float4 pixel = dt_lut3d_tetrahedral(clip4(corval * raw), clut, level);
+  pixel.w = raw.w;
   write_imagef(out, (int2)(x, y), pixel);
 }
 
@@ -3479,6 +3498,43 @@ colorout (read_only image2d_t in,
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+
+/* kernel for the plugin colorout: the LittleCMS transform baked into a 3D LUT
+   over the Lab range LittleCMS encodes floats in, see _bake_clut() */
+kernel void
+colorout_clut(read_only image2d_t in,
+              write_only image2d_t out,
+              const int width,
+              const int height,
+              global const float *clut,
+              const int level,
+              const int gamutcheck,
+              global const float *gamut,
+              const int hdr_transfer)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float4 Lab = readpixel(in, x, y);
+  const float4 coord = clip4((float4)(Lab.x / 100.0f, (Lab.y + 128.0f) / 255.0f, (Lab.z + 128.0f) / 255.0f, 0.0f));
+  float4 pixel = dt_lut3d_tetrahedral(coord, clut, level);
+  pixel.w = Lab.w;
+
+  // as _transform_lcms(): out of gamut, or negative, shows as cyan
+  if(gamutcheck
+     && (dt_lut3d_tetrahedral(coord, gamut, level).x > 0.5f
+         || pixel.x < 0.0f || pixel.y < 0.0f || pixel.z < 0.0f))
+    pixel = (float4)(0.0f, 1.0f, 1.0f, 0.0f);
+
+  float rgb[3] = { pixel.x, pixel.y, pixel.z };
+  dt_hdr_encode(rgb, hdr_transfer);
+  pixel.x = rgb[0];
+  pixel.y = rgb[1];
+  pixel.z = rgb[2];
+  write_imagef(out, (int2)(x, y), pixel);
+}
 
 /* kernel for the levels plugin */
 kernel void
