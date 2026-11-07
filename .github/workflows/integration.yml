@@ -89,9 +89,9 @@ jobs:
       CMAKE_BUILD_TYPE: RelWithDebInfo
       GENERATOR: Ninja
       TARGET: skiptest
-      # generic code rather than -march=native: a result must not depend on
-      # the CPU of the runner the job lands on
-      ECO: -DDONT_USE_INTERNAL_LIBRAW=ON -DBINARY_PACKAGE_BUILD=ON
+      # generic code rather than -march=native, and no target_clones: a
+      # result must not depend on the CPU of the runner the job lands on
+      ECO: -DDONT_USE_INTERNAL_LIBRAW=ON -DBINARY_PACKAGE_BUILD=ON -DCMAKE_C_FLAGS=-DDT_NO_CLONE_TARGETS -DCMAKE_CXX_FLAGS=-DDT_NO_CLONE_TARGETS
       DEBIAN_FRONTEND: noninteractive
     steps:
       - name: Update base packages
@@ -169,7 +169,8 @@ jobs:
             python3-jsonschema \
             xsltproc \
             zlib1g-dev \
-            python3-venv;
+            python3-venv \
+            imagemagick;
       - uses: actions/checkout@v7
         with:
           submodules: false
@@ -191,9 +192,36 @@ jobs:
         run: |
           ./run --disable-opencl ${{ matrix.tests }} 2>&1 | tee run.log
           sed -n '/^Total test/,/^[^ E]/p' run.log | grep -v '^$' >> "$GITHUB_STEP_SUMMARY"
-          # informational: a failing test is a warning on the pull request,
-          # not a failed check (./run's own status is check-performance's)
-          sed -n 's/^   - \([0-9].*\)/\1/p' run.log | while read -r test; do
-            echo "::warning title=integration test::$test differs from its reference"
-          done
           grep -q '^Errors *[0-9]' run.log || { echo "::error::the suite did not report its results"; exit 1; }
+      - name: Compare the outputs with the reference hashes
+        # an output among its reference hashes passes, whatever its Delta-E
+        # against expected.png, which was rendered on another machine; any
+        # other output passes when ./run's Delta-E check does. Informational:
+        # a failing test is a warning on the pull request, not a failed
+        # check (./run's own status is check-performance's)
+        working-directory: src/src/tests/integration
+        run: |
+          ../../../.ci/integration-hashes.sh ../../../.ci/integration-hashes "$GITHUB_WORKSPACE/hashes.txt" \
+            ${{ matrix.tests }} > hashes.log
+          cat hashes.log
+          { echo '```'; cat hashes.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          sed -n 's/^   - \([0-9].*\)/\1/p' run.log > delta-e-failed.txt
+          sed -n 's/^\([0-9][^:]*\): .*/\1/p' hashes.log | while read -r test; do
+            if grep -qxF "$test" delta-e-failed.txt; then
+              echo "::warning title=integration test::$test differs from its reference"
+              echo "$test" >> differ.txt
+            else
+              echo "::notice title=integration test::$test: output changed, within the Delta-E tolerance"
+            fi
+            # the outputs that changed, for a human to look at
+            mkdir -p "$GITHUB_WORKSPACE/differ/$test"
+            cp "$test/output.png" "$GITHUB_WORKSPACE/differ/$test/" 2> /dev/null || true
+          done
+          echo "$(cat differ.txt 2> /dev/null | wc -l) tests differ from their reference" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hashes-${{ strategy.job-index }}
+          path: |
+            hashes.txt
+            differ
