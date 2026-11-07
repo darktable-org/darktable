@@ -340,6 +340,10 @@ changes (where available).
 
 ## Other Changes
 
+- Added D50 XYZ as an internal module processing color space, with CPU
+  and OpenCL conversions, color picking, histograms, and RGB blending
+  support. Existing modules keep their current processing spaces.
+
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
   SDR, HLG and PQ alike. HLG output peaks at 1000 nits, and PQ output
   at the new "PQ peak" setting of the export module, 1000 nits by

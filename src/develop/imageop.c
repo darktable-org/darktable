@@ -4632,6 +4632,8 @@ const char *dt_iop_colorspace_to_name(const dt_iop_colorspace_type_t type)
       return "IOP_CS_HSL";
     case IOP_CS_JZCZHZ:
       return "IOP_CS_JZCZHZ";
+    case IOP_CS_XYZ:
+      return "IOP_CS_XYZ";
   }
   return "invalid IOP_CS";
 }

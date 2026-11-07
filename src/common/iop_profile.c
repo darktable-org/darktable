@@ -99,18 +99,19 @@ static void _transform_hdr_lcms(cmsHTRANSFORM xform,
   dt_free_align(scratchlines);
 }
 
-static void _transform_from_to_rgb_lab_lcms2(const float *const image_in,
+static void _transform_from_to_rgb_lcms2(const float *const image_in,
                                              float *const image_out,
                                              const int width,
                                              const int height,
                                              const dt_colorspaces_color_profile_type_t type,
                                              const char *filename,
                                              const int intent,
-                                             const int direction)
+                                             const int direction,
+                                             const dt_iop_colorspace_type_t cst)
 {
   cmsHTRANSFORM xform = NULL;
   cmsHPROFILE rgb_profile = NULL;
-  cmsHPROFILE lab_profile = NULL;
+  cmsHPROFILE reference_profile = NULL;
 
   if(type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
@@ -143,7 +144,7 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in,
     rgb_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "",
                                              DT_PROFILE_DIRECTION_WORK)->profile;
     dt_print(DT_DEBUG_ALWAYS,
-             "[transform_from_to_rgb_lab_lcms2] unsupported working profile %s"
+             "[_transform_from_to_rgb_lcms2] unsupported working profile %s"
              " has been replaced by Rec2020 RGB!",
              filename);
   }
@@ -152,24 +153,27 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in,
   cmsHPROFILE linear = hdr ? dt_colorspaces_linearize_profile(rgb_profile) : NULL;
   if(hdr) rgb_profile = linear;
 
-  lab_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
+  const gboolean xyz = cst == IOP_CS_XYZ;
+  reference_profile = dt_colorspaces_get_profile(xyz ? DT_COLORSPACE_XYZ : DT_COLORSPACE_LAB,
+                                                 "", DT_PROFILE_DIRECTION_ANY)->profile;
+  const cmsUInt32Number reference_format = xyz ? TYPE_XYZA_FLT : TYPE_LabA_FLT;
 
   cmsHPROFILE input_profile = NULL;
   cmsHPROFILE output_profile = NULL;
   cmsUInt32Number input_format = TYPE_RGBA_FLT;
   cmsUInt32Number output_format = TYPE_LabA_FLT;
 
-  if(direction == 1) // rgb --> lab
+  if(direction == 1) // rgb to the profile connection space
   {
     input_profile = rgb_profile;
     input_format = TYPE_RGBA_FLT;
-    output_profile = lab_profile;
-    output_format = TYPE_LabA_FLT;
+    output_profile = reference_profile;
+    output_format = reference_format;
   }
-  else // lab -->rgb
+  else // profile connection space to rgb
   {
-    input_profile = lab_profile;
-    input_format = TYPE_LabA_FLT;
+    input_profile = reference_profile;
+    input_format = reference_format;
     output_profile = rgb_profile;
     output_format = TYPE_RGBA_FLT;
   }
@@ -185,7 +189,7 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in,
                         direction == 1 ? DT_HDR_NONE : hdr);
   else
     dt_print(DT_DEBUG_ALWAYS,
-             "[_transform_from_to_rgb_lab_lcms2] cannot create transform");
+             "[_transform_from_to_rgb_lcms2] cannot create transform");
 
   if(xform) cmsDeleteTransform(xform);
   dt_colorspaces_cleanup_profile(linear);
@@ -316,21 +320,21 @@ static void _transform_lcms2(struct dt_iop_module_t *self,
 {
   *converted_cst = cst_to;
 
-  if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_LAB)
+  if(cst_from == IOP_CS_RGB && (cst_to == IOP_CS_LAB || cst_to == IOP_CS_XYZ))
   {
     dt_print(DT_DEBUG_DEV,
-             "[_transform_lcms2] transfoming from RGB to Lab (%s %s)",
-             self->op, self->multi_name);
-    _transform_from_to_rgb_lab_lcms2(image_in, image_out, width, height, profile_info->type,
-                                     profile_info->filename, profile_info->intent, 1);
+             "[_transform_lcms2] transforming from RGB to %s (%s %s)",
+             dt_iop_colorspace_to_name(cst_to), self->op, self->multi_name);
+    _transform_from_to_rgb_lcms2(image_in, image_out, width, height, profile_info->type,
+                                     profile_info->filename, profile_info->intent, 1, cst_to);
   }
-  else if(cst_from == IOP_CS_LAB && cst_to == IOP_CS_RGB)
+  else if((cst_from == IOP_CS_LAB || cst_from == IOP_CS_XYZ) && cst_to == IOP_CS_RGB)
   {
     dt_print(DT_DEBUG_DEV,
-             "[_transform_lcms2] transfoming from Lab to RGB (%s %s)",
-             self->op, self->multi_name);
-    _transform_from_to_rgb_lab_lcms2(image_in, image_out, width, height, profile_info->type,
-                                     profile_info->filename, profile_info->intent, -1);
+             "[_transform_lcms2] transforming from %s to RGB (%s %s)",
+             dt_iop_colorspace_to_name(cst_from), self->op, self->multi_name);
+    _transform_from_to_rgb_lcms2(image_in, image_out, width, height, profile_info->type,
+                                     profile_info->filename, profile_info->intent, -1, cst_from);
   }
   else
   {
@@ -428,6 +432,64 @@ static inline void _transform_lab_to_rgb_matrix
   }
 }
 
+static inline void _transform_rgb_to_xyz_matrix
+  (const float *const image_in, float *const image_out,
+   const int width, const int height,
+   const dt_iop_order_iccprofile_info_t *const profile_info)
+{
+  const size_t npixels = (size_t)width * height;
+  DT_OMP_FOR()
+  for(size_t k = 0; k < npixels; k++)
+  {
+    const float alpha = image_in[4*k+3];
+    dt_ioppr_rgb_to_xyz(image_in + 4*k, image_out + 4*k, profile_info);
+    image_out[4*k+3] = alpha;
+  }
+}
+
+static inline void _transform_xyz_to_rgb_matrix
+  (const float *const image_in, float *const image_out,
+   const int width, const int height,
+   const dt_iop_order_iccprofile_info_t *const profile_info)
+{
+  const size_t npixels = (size_t)width * height;
+  DT_OMP_FOR()
+  for(size_t k = 0; k < npixels; k++)
+  {
+    dt_aligned_pixel_t rgb;
+    const float alpha = image_in[4*k+3];
+    dt_apply_transposed_color_matrix(image_in + 4*k, profile_info->matrix_out_transposed, rgb);
+    rgb[3] = alpha;
+    dt_ioppr_encode_rgb(rgb, image_out + 4*k, profile_info);
+  }
+}
+
+static inline void _transform_xyz_to_lab
+  (const float *const image_in, float *const image_out, const int width, const int height)
+{
+  const size_t npixels = (size_t)width * height;
+  DT_OMP_FOR()
+  for(size_t k = 0; k < npixels; k++)
+  {
+    const float alpha = image_in[4*k+3];
+    dt_XYZ_to_Lab(image_in + 4*k, image_out + 4*k);
+    image_out[4*k+3] = alpha;
+  }
+}
+
+static inline void _transform_lab_to_xyz
+  (const float *const image_in, float *const image_out, const int width, const int height)
+{
+  const size_t npixels = (size_t)width * height;
+  DT_OMP_FOR()
+  for(size_t k = 0; k < npixels; k++)
+  {
+    const float alpha = image_in[4*k+3];
+    dt_Lab_to_XYZ(image_in + 4*k, image_out + 4*k);
+    image_out[4*k+3] = alpha;
+  }
+}
+
 static inline void _transform_matrix_rgb
   (const float *const image_in, float *const image_out,
    const int width, const int height,
@@ -451,8 +513,8 @@ static inline void _transform_matrix_rgb
 
 
 static inline void _transform_matrix(struct dt_iop_module_t *self,
-                                     const float *const restrict image_in,
-                                     float *const restrict image_out,
+                                     const float *const image_in,
+                                     float *const image_out,
                                      const int width,
                                      const int height,
                                      const dt_iop_colorspace_type_t cst_from,
@@ -469,6 +531,16 @@ static inline void _transform_matrix(struct dt_iop_module_t *self,
   else if(cst_from == IOP_CS_LAB && cst_to == IOP_CS_RGB)
   {
     _transform_lab_to_rgb_matrix(image_in, image_out, width, height, profile_info);
+    return;
+  }
+  else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_XYZ)
+  {
+    _transform_rgb_to_xyz_matrix(image_in, image_out, width, height, profile_info);
+    return;
+  }
+  else if(cst_from == IOP_CS_XYZ && cst_to == IOP_CS_RGB)
+  {
+    _transform_xyz_to_rgb_matrix(image_in, image_out, width, height, profile_info);
     return;
   }
 
@@ -1110,6 +1182,20 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self,
     return;
   }
 
+  // Lab and XYZ share the D50 reference white and need no RGB profile
+  if(cst_from == IOP_CS_XYZ && cst_to == IOP_CS_LAB)
+  {
+    _transform_xyz_to_lab(image_in, image_out, width, height);
+    *converted_cst = cst_to;
+    return;
+  }
+  if(cst_from == IOP_CS_LAB && cst_to == IOP_CS_XYZ)
+  {
+    _transform_lab_to_xyz(image_in, image_out, width, height);
+    *converted_cst = cst_to;
+    return;
+  }
+
   const gboolean anyraw = cst_to == IOP_CS_RAW || cst_from == IOP_CS_RAW;
   if(profile_info == NULL
     || profile_info->type == DT_COLORSPACE_NONE
@@ -1241,6 +1327,14 @@ dt_colorspaces_cl_global_t *dt_colorspaces_init_cl_global()
     dt_opencl_create_kernel(program, "colorspaces_transform_rgb_matrix_to_lab");
   g->kernel_colorspaces_transform_rgb_matrix_to_rgb =
     dt_opencl_create_kernel(program, "colorspaces_transform_rgb_matrix_to_rgb");
+  g->kernel_colorspaces_transform_rgb_matrix_to_xyz =
+    dt_opencl_create_kernel(program, "colorspaces_transform_rgb_matrix_to_xyz");
+  g->kernel_colorspaces_transform_xyz_to_rgb_matrix =
+    dt_opencl_create_kernel(program, "colorspaces_transform_xyz_to_rgb_matrix");
+  g->kernel_colorspaces_transform_xyz_to_lab =
+    dt_opencl_create_kernel(program, "colorspaces_transform_xyz_to_lab");
+  g->kernel_colorspaces_transform_lab_to_xyz =
+    dt_opencl_create_kernel(program, "colorspaces_transform_lab_to_xyz");
   g->kernel_colorspaces_gamma =
     dt_opencl_create_kernel(program, "colorspaces_transform_gamma");
   return g;
@@ -1254,6 +1348,10 @@ void dt_colorspaces_free_cl_global(dt_colorspaces_cl_global_t *g)
   dt_opencl_free_kernel(g->kernel_colorspaces_transform_lab_to_rgb_matrix);
   dt_opencl_free_kernel(g->kernel_colorspaces_transform_rgb_matrix_to_lab);
   dt_opencl_free_kernel(g->kernel_colorspaces_transform_rgb_matrix_to_rgb);
+  dt_opencl_free_kernel(g->kernel_colorspaces_transform_rgb_matrix_to_xyz);
+  dt_opencl_free_kernel(g->kernel_colorspaces_transform_xyz_to_rgb_matrix);
+  dt_opencl_free_kernel(g->kernel_colorspaces_transform_xyz_to_lab);
+  dt_opencl_free_kernel(g->kernel_colorspaces_transform_lab_to_xyz);
   dt_opencl_free_kernel(g->kernel_colorspaces_gamma);
 
   free(g);
@@ -1452,6 +1550,19 @@ gboolean dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self,
     return err == CL_SUCCESS;
   }
 
+  if((cst_from == IOP_CS_XYZ && cst_to == IOP_CS_LAB)
+     || (cst_from == IOP_CS_LAB && cst_to == IOP_CS_XYZ))
+  {
+    const int kernel = cst_from == IOP_CS_XYZ
+      ? darktable.opencl->colorspaces->kernel_colorspaces_transform_xyz_to_lab
+      : darktable.opencl->colorspaces->kernel_colorspaces_transform_lab_to_xyz;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+                                           CLARG(dev_img_in), CLARG(dev_img_out),
+                                           CLARG(width), CLARG(height));
+    if(err != CL_SUCCESS) *converted_cst = cst_from;
+    return err == CL_SUCCESS;
+  }
+
   if(profile_info == NULL
       || profile_info->type == DT_COLORSPACE_NONE
       || anyraw)
@@ -1499,6 +1610,16 @@ gboolean dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self,
     {
       kernel_transform =
         darktable.opencl->colorspaces->kernel_colorspaces_transform_lab_to_rgb_matrix;
+    }
+    else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_XYZ)
+    {
+      kernel_transform =
+        darktable.opencl->colorspaces->kernel_colorspaces_transform_rgb_matrix_to_xyz;
+    }
+    else if(cst_from == IOP_CS_XYZ && cst_to == IOP_CS_RGB)
+    {
+      kernel_transform =
+        darktable.opencl->colorspaces->kernel_colorspaces_transform_xyz_to_rgb_matrix;
     }
     else
     {

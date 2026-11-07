@@ -752,3 +752,27 @@ Module Unload:
 ```
 
 `[if implemented]` marks the optional callbacks: the framework skips them for a module that does not have them. The GUI steps are skipped entirely for a hidden module. See [GUI.md](GUI.md) for the full event flow.
+
+### XYZ processing space
+
+A module may return `IOP_CS_XYZ` from `default_colorspace()`,
+`input_colorspace()`, or `output_colorspace()`. Pipeline XYZ uses the CIE
+1931 2-degree observer, a D50 reference white, and relative luminance with
+white Y = 1. It is a four-float pixel: X, Y, Z, and an unchanged alpha/mask
+channel. Negative coordinates and values above reference white are retained.
+D65 XYZ and ICC integer PCS encodings must be converted to this convention
+inside the module.
+
+The pipeline converts XYZ to/from working-profile RGB and D50 Lab on both
+CPU and OpenCL. XYZ/Lab conversion does not need an RGB profile. RGB/XYZ
+conversion uses the existing profile matrices and transfer functions, with
+LittleCMS fallback for profiles that do not supply usable matrices.
+Modules relying on working-profile conversions belong after `colorin` and
+before `colorout`; camera or display RGB requires the corresponding profile
+conversion inside the module.
+
+XYZ modules use the existing RGB blending spaces; no new serialized blend
+space is introduced. Native XYZ histograms bin the three coordinates on the
+same scale as RGB, without RGB middle-gray compensation. Color pickers can
+request XYZ directly or convert the picked pixels to the existing RGB/Lab
+picker spaces before collecting statistics.

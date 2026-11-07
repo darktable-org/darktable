@@ -48,3 +48,23 @@ if(WIN32)
     _copy_required_library(test_history_strings lib_darktable)
     _copy_required_library(test_dtdata lib_darktable)
 endif(WIN32)
+
+add_cmocka_test(test_iop_xyz
+                SOURCES test_iop_xyz.c
+                LINK_LIBRARIES lib_darktable cmocka)
+if(WIN32)
+    _copy_required_library(test_iop_xyz lib_darktable)
+endif(WIN32)
+
+if(USE_OPENCL)
+    add_cmocka_test(test_iop_xyz_opencl
+                    SOURCES test_iop_xyz_opencl.c
+                    LINK_LIBRARIES lib_darktable cmocka)
+    target_compile_definitions(test_iop_xyz_opencl PRIVATE
+      XYZ_TEST_DATADIR="${DARKTABLE_DATADIR}"
+      XYZ_TEST_MODULEDIR="${DARKTABLE_LIBDIR}")
+    set_tests_properties(test_iop_xyz_opencl PROPERTIES SKIP_RETURN_CODE 77)
+    if(WIN32)
+        _copy_required_library(test_iop_xyz_opencl lib_darktable)
+    endif(WIN32)
+endif()

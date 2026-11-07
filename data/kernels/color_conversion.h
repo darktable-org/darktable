@@ -30,6 +30,7 @@ typedef enum dt_iop_colorspace_type_t
   IOP_CS_LCH = 3,
   IOP_CS_HSL = 4,
   IOP_CS_JZCZHZ = 5,
+  IOP_CS_XYZ = 6, // D50, relative luminance Y = 1 at reference white
 } dt_iop_colorspace_type_t;
 
 // must be in synch with dt_colorspaces_iccprofile_info_cl_t
