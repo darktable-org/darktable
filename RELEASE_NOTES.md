@@ -289,6 +289,10 @@ changes (where available).
   paths is much faster, as the mask overlay is no longer redrawn on
   every mouse move and long outlines are drawn with far fewer points.
 
+- Drawn masks render faster, most of all masks with nested groups or
+  shapes reused by several modules: each group no longer clears and
+  combines a full-size buffer just to copy in its first shape.
+
 - Lens correction with lensfun is faster on the OpenCL path: lensfun
   is now asked for its corrections on a coarse grid instead of for
   every pixel, so the CPU no longer computes and uploads hundreds of
