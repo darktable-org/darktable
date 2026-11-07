@@ -259,9 +259,10 @@ changes (where available).
   stack and styles.
 
 - The processing tab of the preferences lists the OpenCL devices darktable
-  found. Each one can be switched off or back on, and with several
-  devices their headroom for 'tuned GPU memory' can be set, without
-  editing darktablerc.
+  found. Each one can be switched off or back on, and their headroom can
+  be set, without editing darktablerc. The 'tuned GPU memory' option
+  moved into that section, and the headroom fields are grayed out while
+  it is off or only one device is in use.
 
 ## Performance Improvements
 
