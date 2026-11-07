@@ -329,6 +329,12 @@ changes (where available).
   NVIDIA and macOS drivers, which speeds up every step where the
   pipeline moves the image from the CPU to the GPU.
 
+- Softproofing, gamut check and LUT-based ICC profiles in input and
+  output color profile can now run on the OpenCL device, through a 3D
+  LUT sampled from LittleCMS, instead of sending the image back to the
+  CPU. The "always use LittleCMS 2" export preference still applies the
+  exact transform on the CPU.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
