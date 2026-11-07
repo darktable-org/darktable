@@ -73,12 +73,15 @@ SKIP = re.compile(
 #   #1 0x55f4 in dt_dev_pixelpipe_process src/develop/pixelpipe_hb.c:2094
 # GCC's TSan drops both and appends the module the frame resolved to:
 #   #1 g_socket_send_message <null> (libgio-2.0.so.0+0xa5c13) (BuildId: ...)
+# ASan and UBSan leave an unsymbolized frame as address and full module path,
+# with neither symbol nor "in":
+#   #0 0x7372aa98208f  (/path/to/plugins/libdemosaic.so+0x18208f) (BuildId: ...)
 FRAME = re.compile(
     r"^\s*#\d+ "
-    r"(?:0x[0-9a-f]+ in )?"
-    r"(?P<sym>\S+)"
-    r"(?: (?P<loc>\S+))?"
-    r"(?: \((?P<mod>[^()\s]+\+0x[0-9a-f]+)\))?"
+    r"(?:0x[0-9a-f]+(?: in)? +)?"
+    r"(?P<sym>[^\s(]\S*)?"
+    r"(?: (?P<loc>[^\s(]\S*))?"
+    r" *(?:\((?P<mod>[^()\s]+\+0x[0-9a-f]+)\))?"
 )
 
 # Frames inside the sanitizer runtime itself say nothing about our bug.
@@ -214,7 +217,12 @@ def frame_text(match):
         for part in (match.group("sym"), match.group("loc"))
         if part and part != "<null>"
     ]
-    return " ".join(parts) if parts else (match.group("mod") or "")
+    if parts:
+        return " ".join(parts)
+    # ASan names the module by full path, TSan by file name. Keep only the
+    # name, which is what Symbolizer indexes the build tree's plugins by.
+    module = match.group("mod") or ""
+    return module.rsplit("/", 1)[-1]
 
 
 def collect_frames(lines, start):

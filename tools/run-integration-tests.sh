@@ -157,15 +157,20 @@ startup_failed() {
 # which almost every test then dies.
 PREFLIGHT_PROBES=5
 
-# Succeeds only when every probe started cleanly. The last failing output is
-# left in PREFLIGHT for the diagnostic below.
+# Succeeds only when every probe started cleanly. The last failing output and
+# exit status are left in PREFLIGHT and PREFLIGHT_RC for the diagnostic below.
+# The exit status matters on its own: a crash inside the dynamic loader, before
+# the runtime has initialized, kills the process without a word of output.
 probe_startup() {
-    local prefix="$1" i out
+    local prefix="$1" i out rc
     PREFLIGHT=""
+    PREFLIGHT_RC=0
     for i in $(seq "$PREFLIGHT_PROBES"); do
         out=$(run_preflight "$prefix")
-        if startup_failed "$out"; then
+        rc=$?
+        if startup_failed "$out" || [ "$rc" -ge 128 ]; then
             PREFLIGHT="$out"
+            PREFLIGHT_RC=$rc
             return 1
         fi
     done
@@ -188,6 +193,15 @@ if ! probe_startup "$SETARCH_PREFIX"; then
        && probe_startup "setarch -R"; then
         SETARCH_PREFIX="setarch -R"
         ASLR_NOTE="off (auto: the runtime needs it)"
+    elif [ "$PREFLIGHT_RC" -ge 128 ] && ! startup_failed "$PREFLIGHT"; then
+        die "'$REAL_CLI --version' was killed by signal $((PREFLIGHT_RC - 128)) during start-up:
+
+  ${PREFLIGHT:-(no output)}
+
+This is not the ASLR problem the runtime reports itself; every test would
+have died the same way. Find out where it crashes with:
+
+  . $SAN_ENV; gdb -ex run -ex bt --args $REAL_CLI --version"
     else
         case "$ASLR_MODE" in
             keep) ADVICE="
