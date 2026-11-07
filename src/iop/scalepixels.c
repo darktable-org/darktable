@@ -217,6 +217,19 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   roi_in->scale = roi_out->scale * MAX(d->x_scale, d->y_scale);
   roi_in->x = roi_out->x * d->x_scale;
   roi_in->y = roi_out->y * d->y_scale;
+
+  // a tile at the far edge of the whole roi gets the input up to its far
+  // edge: the rounding above can leave it one input row or column short, and
+  // the last output row or column would then mirror the border too early
+  const dt_iop_roi_t *const full_in = &piece->processed_roi_in;
+  const dt_iop_roi_t *const full_out = &piece->processed_roi_out;
+  if(piece->pipe->tiling && full_out->width > 0 && full_in->width > 0)
+  {
+    if(roi_out->x + roi_out->width >= full_out->x + full_out->width)
+      roi_in->width = MAX(roi_in->width, full_in->x + full_in->width - roi_in->x);
+    if(roi_out->y + roi_out->height >= full_out->y + full_out->height)
+      roi_in->height = MAX(roi_in->height, full_in->y + full_in->height - roi_in->y);
+  }
 }
 
 // output pixel (i, j) reads the input at ((i, j) + shift) * scale - offset, on
