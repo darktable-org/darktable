@@ -55,10 +55,8 @@
   #pragma GCC optimize ("fp-contract=fast", "finite-math-only", "no-math-errno")
 #endif
 
-#define LMMSE_OVERLAP 8
 #define BORDER_AROUND 4
 #define LMMSE_TILE_INT (DT_LMMSE_TILESIZE - 2 * BORDER_AROUND)
-#define LMMSE_TILEVALID (LMMSE_TILE_INT - 2 * LMMSE_OVERLAP)
 #define w1 (DT_LMMSE_TILESIZE)
 #define w2 (DT_LMMSE_TILESIZE * 2)
 #define w3 (DT_LMMSE_TILESIZE * 3)
@@ -149,8 +147,14 @@ static void lmmse_demosaic(float *const restrict out,
   const int refine = (mode > DT_LMMSE_REFINE_2) ? mode - 2 : 0;
   const float revscaler = 1.0f / scaler;
 
-  const int num_vertical =   1 + (height - 2 * LMMSE_OVERLAP -1) / LMMSE_TILEVALID;
-  const int num_horizontal = 1 + (width  - 2 * LMMSE_OVERLAP -1) / LMMSE_TILEVALID;
+  // every median and refine pass reaches further into the tile overlap:
+  // these are the smallest overlaps that give the output of a single tile
+  const int overlaps[] = { 8, 8, 10, 13, 14 };
+  const int overlap = overlaps[CLAMP(mode, DT_LMMSE_REFINE_0, DT_LMMSE_REFINE_4)];
+  const int tilevalid = LMMSE_TILE_INT - 2 * overlap;
+
+  const int num_vertical =   1 + (height - 2 * overlap -1) / tilevalid;
+  const int num_horizontal = 1 + (width  - 2 * overlap -1) / tilevalid;
   DT_OMP_PRAGMA(parallel num_threads(darktable.num_openmp_threads) firstprivate(width, height, out, in, scaler, revscaler, filters))
   {
     float *qix[6];
@@ -167,10 +171,10 @@ static void lmmse_demosaic(float *const restrict out,
     {
       for(int tile_horizontal = 0; tile_horizontal < num_horizontal; tile_horizontal++)
       {
-        const int rowStart = tile_vertical * LMMSE_TILEVALID;
+        const int rowStart = tile_vertical * tilevalid;
         const int rowEnd = MIN(rowStart + LMMSE_TILE_INT, height);
 
-        const int colStart = tile_horizontal * LMMSE_TILEVALID;
+        const int colStart = tile_horizontal * tilevalid;
         const int colEnd = MIN(colStart + LMMSE_TILE_INT, width);
 
         const int tileRows = MIN(rowEnd - rowStart, LMMSE_TILE_INT);
@@ -543,10 +547,10 @@ static void lmmse_demosaic(float *const restrict out,
 
         // write result to out
         // For the outermost tiles in all directions we also write the otherwise overlapped area
-        const int first_vertical =   rowStart + ((tile_vertical == 0)                    ? BORDER_AROUND : LMMSE_OVERLAP);
-        const int last_vertical =    rowEnd   - ((tile_vertical == num_vertical - 1)     ? BORDER_AROUND : LMMSE_OVERLAP);
-        const int first_horizontal = colStart + ((tile_horizontal == 0)                  ? BORDER_AROUND : LMMSE_OVERLAP);
-        const int last_horizontal =  colEnd   - ((tile_horizontal == num_horizontal - 1) ? BORDER_AROUND : LMMSE_OVERLAP);
+        const int first_vertical =   rowStart + ((tile_vertical == 0)                    ? BORDER_AROUND : overlap);
+        const int last_vertical =    rowEnd   - ((tile_vertical == num_vertical - 1)     ? BORDER_AROUND : overlap);
+        const int first_horizontal = colStart + ((tile_horizontal == 0)                  ? BORDER_AROUND : overlap);
+        const int last_horizontal =  colEnd   - ((tile_horizontal == num_horizontal - 1) ? BORDER_AROUND : overlap);
         for(int row = first_vertical, rr = row - rowStart + BORDER_AROUND; row < last_vertical; row++, rr++)
         {
           float *dest = out + 4 * (row * width + first_horizontal);
@@ -574,9 +578,7 @@ static void lmmse_demosaic(float *const restrict out,
 #endif
 
 #undef LMMSE_TILE_INT
-#undef LMMSE_OVERLAP
 #undef BORDER_AROUND
-#undef LMMSE_TILEVALID
 #undef w1
 #undef w2
 #undef w3
