@@ -610,10 +610,11 @@ its content changes, the presenting widgets of the window draw again.
   the point where the layers become visible together with GTK's surface
   for that frame, or later, and never earlier.
 
-That point is verified on Wayland only. On macOS it is expected at the
-end of the draw of the presenting widget, in `updateLayer` of
-`GdkQuartzView`. On Windows a future backend must find it. Both are still
-to be verified on screen.
+That point is verified on Wayland only. On macOS it is after the draw of
+the presenting widget in `updateLayer` of `GdkQuartzView`, which the
+transport runs at the end of `paint` before it presents
+([macOS](#macos)). On Windows a future backend must find it. Both are
+still to be verified on screen.
 
 #### Costs and limits
 
@@ -765,10 +766,18 @@ The platform reports:
 - A screen without EDR has a potential headroom of 1. The window stays
   native, with wide gamut and a target of 1.
 
-The transport presents at the end of the frame clock's `paint`, as on
-Wayland, and from a run loop observer that runs just before Core
-Animation commits (`kCFRunLoopBeforeWaiting`, order 1999999). The observer
-catches a draw made outside `paint`.
+GTK3 on Quartz does not draw in `paint`. GDK only marks its view dirty
+there, and the widgets draw when AppKit displays the view, in
+`-[GdkQuartzView updateLayer]`, which then sets the IOSurface of the view.
+At the end of `paint` the transport therefore displays the view with
+`displayIfNeeded`, as GTK's own
+`_gdk_quartz_display_after_process_all_updates()` does, and then
+presents. The layers then follow the draws of the presenting widgets in
+the same frame.
+
+A run loop observer just before Core Animation commits
+(`kCFRunLoopBeforeWaiting`, order 1999999) presents what a display outside
+`paint` drew, such as during a live resize.
 
 A present is one Core Animation transaction. Both layers have
 `presentsWithTransaction` on, so their drawables apply with a commit of
@@ -821,7 +830,7 @@ under GTK4.
 | compose and present in the frame clock's `paint` signal, after GDK's handler | `presenter_wayland.c`, `_paint()` | GTK3 runs all draws in `paint`, and GDK commits its surface in `after-paint` | same |
 | GTK's surface taken as sRGB, the device encoding of the window | `presenter_wayland.c`, `_set_output()` | GTK3 does not tag its surface. The compositor reads an untagged surface as sRGB, with a transfer function of its choice | GTK tags its surfaces |
 | mutter's default color mode left to cairo with the system display profile | `presenter_wayland.c`, `_mutter_default_color_mode()` | that mode composites as sRGB and does not apply the profile of the screen (mutter#4597) | mutter describes its real output (mutter !5177). The test then no longer matches |
-| present at the end of `paint` and from a run loop observer before Core Animation commits | `presenter_quartz.m`, `_paint()`, `_transport_new()` | the layers must not appear before GTK's drawing of the same frame, and GTK3 on Quartz documents no point between its draws and the commit of its view | same |
+| display GDK's view at the end of `paint`, then present, with a run loop observer before Core Animation commits for displays outside `paint` | `presenter_quartz.m`, `_paint()`, `_transport_new()` | GTK3 on Quartz draws only when AppKit displays its view, after `paint`. The layers must follow that draw | same |
 | no opaque region on the layers | `presenter_wayland.c`, `_layer_init()` | a compositor can stop frame callbacks for a surface it considers occluded, which stops GTK's frame clock | GTK4 |
 | surface feedback destroyed when the toplevel unmaps | `presenter_wayland.c`, `_toplevel_unmap()` | GDK destroys its `wl_surface` when a window is hidden. A request on the feedback is then a protocol error | GTK4 |
 | a clipped draw does not replace or drop the kept presentation | `presenter.c`, `dt_presenter_begin()` | GTK3 redraws only the damaged part of a widget, so such a draw records clipped images | GTK4: the snapshot of a widget is always whole |
