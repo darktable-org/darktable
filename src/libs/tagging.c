@@ -4058,7 +4058,7 @@ static void _menuitem_preferences(GSimpleAction *action,
                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                                   _("_cancel"), GTK_RESPONSE_NONE,
                                                   _("_save"), GTK_RESPONSE_ACCEPT, NULL);
-  g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
+  dt_gui_connect_key(dialog, dt_handle_dialog_enter, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
   dt_prefs_init_dialog_tagging(dialog);
 
