@@ -31,3 +31,7 @@ AppDir/
 
 # personal, per-project agent instructions (see AGENTS.md)
 AGENTS.local.md
+
+# Python bytecode from the tools/ scripts
+__pycache__/
+*.pyc
