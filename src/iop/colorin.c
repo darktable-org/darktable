@@ -839,6 +839,7 @@ static inline void _apply_tone_curves(dt_aligned_pixel_t pixel,
   }
 }
 
+#ifdef HAVE_OPENCL
 // sample xform on a CLUT_LEVEL^3 grid over RGB input values 0..1, the first
 // channel varying fastest as in the lut3d module. The grid is linear: the
 // LittleCMS transforms that get here (LUT input profiles) take scene-linear
@@ -882,7 +883,6 @@ static float *_bake_clut(cmsHTRANSFORM xform)
   return clut;
 }
 
-#ifdef HAVE_OPENCL
 int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
