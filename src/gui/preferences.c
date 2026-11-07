@@ -37,6 +37,11 @@
 #endif
 #include "gui/presets.h"
 #include "libs/lib.h"
+#ifdef HAVE_OPENCL
+#include "common/opencl.h"
+// the generated processing tab in preferences_gen.h calls it
+static void _preferences_opencl_devices(GtkGrid *grid, int *line, const char *title);
+#endif
 #include "preferences_gen.h"
 #ifdef USE_LUA
 #include "lua/preferences.h"
@@ -1545,6 +1550,138 @@ void dt_gui_preferences_bool_update(GtkWidget *widget)
   const gboolean val = dt_conf_get_bool(key);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), val);
 }
+
+#ifdef HAVE_OPENCL
+static void _opencl_device_toggled(GtkToggleButton *button,
+                                   gpointer user_data)
+{
+  const gboolean enabled = gtk_toggle_button_get_active(button);
+  dt_opencl_device_conf_set_enabled((const char *)user_data, enabled);
+  // with every device disabled dt_opencl_init() switched OpenCL off, and
+  // with OpenCL off it does not look at devices, so this list would be gone
+  if(enabled) dt_conf_set_bool("opencl", TRUE);
+  restart_required = TRUE;
+}
+
+static void _opencl_headroom_changed(GtkSpinButton *spin,
+                                     gpointer user_data)
+{
+  dt_opencl_set_device_headroom(GPOINTER_TO_INT(user_data),
+                                gtk_spin_button_get_value_as_int(spin));
+}
+
+static void _opencl_tune_headroom_toggled(GtkToggleButton *button,
+                                          gpointer user_data)
+{
+  const gboolean tune = gtk_toggle_button_get_active(button);
+  dt_conf_set_bool("opencl_tune_headroom", tune);
+  dt_opencl_update_settings();
+  for(GList *l = user_data; l; l = g_list_next(l))
+    gtk_widget_set_sensitive(GTK_WIDGET(l->data), tune);
+}
+
+static void _preferences_opencl_devices(GtkGrid *grid,
+                                        int *line,
+                                        const char *title)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  // nothing to configure if dt_opencl_init() did not look at any device
+  if(!cl || !cl->found) return;
+
+  GtkWidget *seclabel = gtk_label_new(title);
+  GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+  gtk_widget_set_name(lbox, "pref_section");
+  gtk_grid_attach(grid, lbox, 0, (*line)++, 2, 1);
+
+  // labels and spin buttons of the headroom rows, grayed out without 'tuned GPU memory'
+  GList *headroom_widgets = NULL;
+  for(GList *l = cl->found; l; l = g_list_next(l))
+  {
+    const dt_opencl_found_t *found = l->data;
+    const gboolean enabled = dt_opencl_device_conf_enabled(found->cname);
+
+    // identical cards share one darktablerc entry, so they get one switch
+    gboolean same_as_before = FALSE;
+    for(GList *p = cl->found; p != l; p = g_list_next(p))
+      same_as_before |= !g_strcmp0(((dt_opencl_found_t *)p->data)->cname, found->cname);
+
+    gchar *text;
+    GtkWidget *label, *widget;
+    if(!same_as_before)
+    {
+      text = g_strdup_printf("%s (%s)", found->name,
+                             found->unified_memory ? _("shared memory")
+                                                   : _("dedicated memory"));
+      label = gtk_label_new(text);
+      g_free(text);
+      gtk_label_set_xalign(GTK_LABEL(label), .0);
+      gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
+      widget = gtk_check_button_new();
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), enabled);
+      gtk_widget_set_tooltip_text(widget,
+                                  found->devid < 0 && enabled
+                                  ? _("darktable could not use this device, start darktable"
+                                      " with '-d opencl' to see why")
+                                  : _("use this OpenCL device, takes effect after a restart.\n"
+                                      "switch off a second, slower device, such as an integrated GPU,"
+                                      " so darktable only uses the faster one"));
+      gtk_widget_set_tooltip_text(label, found->cname);
+      g_signal_connect_data(widget, "toggled", G_CALLBACK(_opencl_device_toggled),
+                            g_strdup(found->cname), (GClosureNotify)g_free, 0);
+      gtk_grid_attach(grid, label, 0, *line, 1, 1);
+      gtk_grid_attach(grid, widget, 2, (*line)++, 1, 1);
+    }
+
+    // shown, if grayed out, with a single device too, so the rows do not
+    // vanish after switching the second one off
+    if(found->devid < 0) continue;
+
+    text = g_strdup_printf(_("device %d headroom in MB"), found->devid);
+    label = gtk_label_new(text);
+    g_free(text);
+    gtk_label_set_xalign(GTK_LABEL(label), .0);
+    gtk_widget_set_margin_start(label, DT_PIXEL_APPLY_DPI(16));
+    const int maxmem = cl->dev[found->devid].max_global_mem / DT_MEGA;
+    widget = gtk_spin_button_new_with_range(0, maxmem, 50);
+    gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget),
+                              dt_opencl_get_device_headroom(found->devid));
+    gtk_widget_set_tooltip_text(widget,
+                                _("memory darktable leaves free on this device,"
+                                  " only used with 'tuned GPU memory'"));
+    g_signal_connect(widget, "value-changed", G_CALLBACK(_opencl_headroom_changed),
+                     GINT_TO_POINTER(found->devid));
+    gtk_grid_attach(grid, label, 0, *line, 1, 1);
+    gtk_grid_attach(grid, widget, 2, (*line)++, 1, 1);
+    headroom_widgets = g_list_prepend(headroom_widgets, label);
+    headroom_widgets = g_list_prepend(headroom_widgets, widget);
+  }
+
+  // 'tuned GPU memory' is what makes the headroom rows above count, and
+  // dt_opencl_update_settings() ignores it with fewer than two devices
+  const char *key = "opencl_tune_headroom";
+  const gboolean multi = cl->num_devs > 1;
+  const gboolean tune = multi && dt_conf_get_bool(key);
+  GtkWidget *label = gtk_label_new(_(dt_confgen_get_label(key)));
+  gtk_label_set_xalign(GTK_LABEL(label), .0);
+  GtkWidget *widget = gtk_check_button_new();
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool(key));
+  const char *tooltip = multi
+                        ? _(dt_confgen_get_tooltip(key))
+                        : _("only used with two or more OpenCL devices in use");
+  gtk_widget_set_tooltip_text(label, tooltip);
+  gtk_widget_set_tooltip_text(widget, tooltip);
+  gtk_widget_set_sensitive(label, multi);
+  gtk_widget_set_sensitive(widget, multi);
+  for(GList *l = headroom_widgets; l; l = g_list_next(l))
+    gtk_widget_set_sensitive(GTK_WIDGET(l->data), tune);
+  g_signal_connect_data(widget, "toggled", G_CALLBACK(_opencl_tune_headroom_toggled),
+                        headroom_widgets, (GClosureNotify)g_list_free, 0);
+  gtk_grid_attach(grid, label, 0, *line, 1, 1);
+  gtk_grid_attach(grid, widget, 2, (*line)++, 1, 1);
+}
+#endif
 
 GtkWidget *dt_gui_preferences_bool(GtkGrid *grid,
                                    const char *key,

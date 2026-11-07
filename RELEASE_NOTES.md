@@ -231,6 +231,12 @@ changes (where available).
   controls and its camera presets, because the white balance is then
   controlled in color calibration.
 
+- The processing tab of the preferences lists the OpenCL devices darktable
+  found. Each one can be switched off or back on, and their headroom can
+  be set, without editing darktablerc. The 'tuned GPU memory' option
+  moved into that section, and the headroom fields are grayed out while
+  it is off or only one device is in use.
+
 ## Performance Improvements
 
 - New edits convert the input color profile directly to the working RGB

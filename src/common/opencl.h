@@ -219,6 +219,14 @@ struct dt_guided_filter_cl_global_t;
  * main struct, stored in darktable.opencl.
  * holds pointers to all
  */
+typedef struct dt_opencl_found_t
+{
+  char *cname;          // canonical name, keys the device's darktablerc entries
+  char *name;           // platform and device name for display
+  gboolean unified_memory;
+  int devid;            // index in dt_opencl_t.dev, or -1 if the device is not in use
+} dt_opencl_found_t;
+
 typedef struct dt_opencl_t
 {
   dt_pthread_mutex_t lock;
@@ -244,6 +252,9 @@ typedef struct dt_opencl_t
   int *dev_priority_export;
   int *dev_priority_thumbnail;
   dt_opencl_device_t *dev;
+  // every device dt_opencl_init() looked at, including disabled ones,
+  // as dt_opencl_found_t, for the preferences dialog
+  GList *found;
   dt_dlopencl_t *dlocl;
 
   // global kernels for blending operations.
@@ -603,6 +614,16 @@ cl_int dt_opencl_local_buffer_opt(const int devid,
 /** utility functions handling device specific properties */
 gboolean dt_opencl_avoid_atomics(const int devid);
 gboolean dt_opencl_unified_memory(const int devid);
+
+/** is the device with this canonical name enabled in darktablerc? */
+gboolean dt_opencl_device_conf_enabled(const char *cname);
+/** enable or disable the device in darktablerc, used from the next start */
+void dt_opencl_device_conf_set_enabled(const char *cname, const gboolean enabled);
+/** headroom in MB of a device in use */
+int dt_opencl_get_device_headroom(const int devid);
+/** set, save and apply the headroom in MB of a device in use */
+void dt_opencl_set_device_headroom(const int devid, const int headroom);
+
 unsigned int dt_opencl_tiling_align(const int devid);
 
 G_END_DECLS
