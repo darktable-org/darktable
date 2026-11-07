@@ -1570,6 +1570,16 @@ static void _opencl_headroom_changed(GtkSpinButton *spin,
                                 gtk_spin_button_get_value_as_int(spin));
 }
 
+static void _opencl_tune_headroom_toggled(GtkToggleButton *button,
+                                          gpointer user_data)
+{
+  const gboolean tune = gtk_toggle_button_get_active(button);
+  dt_conf_set_bool("opencl_tune_headroom", tune);
+  dt_opencl_update_settings();
+  for(GList *l = user_data; l; l = g_list_next(l))
+    gtk_widget_set_sensitive(GTK_WIDGET(l->data), tune);
+}
+
 static void _preferences_opencl_devices(GtkGrid *grid,
                                         int *line,
                                         const char *title)
@@ -1584,6 +1594,8 @@ static void _preferences_opencl_devices(GtkGrid *grid,
   gtk_widget_set_name(lbox, "pref_section");
   gtk_grid_attach(grid, lbox, 0, (*line)++, 2, 1);
 
+  // labels and spin buttons of the headroom rows, grayed out without 'tuned GPU memory'
+  GList *headroom_widgets = NULL;
   for(GList *l = cl->found; l; l = g_list_next(l))
   {
     const dt_opencl_found_t *found = l->data;
@@ -1611,7 +1623,9 @@ static void _preferences_opencl_devices(GtkGrid *grid,
                                   found->devid < 0 && enabled
                                   ? _("darktable could not use this device, start darktable"
                                       " with '-d opencl' to see why")
-                                  : _("use this OpenCL device, takes effect after a restart"));
+                                  : _("use this OpenCL device, takes effect after a restart.\n"
+                                      "switch off a second, slower device, such as an integrated GPU,"
+                                      " so darktable only uses the faster one"));
       gtk_widget_set_tooltip_text(label, found->cname);
       g_signal_connect_data(widget, "toggled", G_CALLBACK(_opencl_device_toggled),
                             g_strdup(found->cname), (GClosureNotify)g_free, 0);
@@ -1619,8 +1633,9 @@ static void _preferences_opencl_devices(GtkGrid *grid,
       gtk_grid_attach(grid, widget, 2, (*line)++, 1, 1);
     }
 
-    // headroom is only used with 'tuned GPU memory', which needs two devices
-    if(found->devid < 0 || cl->num_devs < 2) continue;
+    // shown, if grayed out, with a single device too, so the rows do not
+    // vanish after switching the second one off
+    if(found->devid < 0) continue;
 
     text = g_strdup_printf(_("device %d headroom in MB"), found->devid);
     label = gtk_label_new(text);
@@ -1639,7 +1654,32 @@ static void _preferences_opencl_devices(GtkGrid *grid,
                      GINT_TO_POINTER(found->devid));
     gtk_grid_attach(grid, label, 0, *line, 1, 1);
     gtk_grid_attach(grid, widget, 2, (*line)++, 1, 1);
+    headroom_widgets = g_list_prepend(headroom_widgets, label);
+    headroom_widgets = g_list_prepend(headroom_widgets, widget);
   }
+
+  // 'tuned GPU memory' is what makes the headroom rows above count, and
+  // dt_opencl_update_settings() ignores it with fewer than two devices
+  const char *key = "opencl_tune_headroom";
+  const gboolean multi = cl->num_devs > 1;
+  const gboolean tune = multi && dt_conf_get_bool(key);
+  GtkWidget *label = gtk_label_new(_(dt_confgen_get_label(key)));
+  gtk_label_set_xalign(GTK_LABEL(label), .0);
+  GtkWidget *widget = gtk_check_button_new();
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool(key));
+  const char *tooltip = multi
+                        ? _(dt_confgen_get_tooltip(key))
+                        : _("only used with two or more OpenCL devices in use");
+  gtk_widget_set_tooltip_text(label, tooltip);
+  gtk_widget_set_tooltip_text(widget, tooltip);
+  gtk_widget_set_sensitive(label, multi);
+  gtk_widget_set_sensitive(widget, multi);
+  for(GList *l = headroom_widgets; l; l = g_list_next(l))
+    gtk_widget_set_sensitive(GTK_WIDGET(l->data), tune);
+  g_signal_connect_data(widget, "toggled", G_CALLBACK(_opencl_tune_headroom_toggled),
+                        headroom_widgets, (GClosureNotify)g_list_free, 0);
+  gtk_grid_attach(grid, label, 0, *line, 1, 1);
+  gtk_grid_attach(grid, widget, 2, (*line)++, 1, 1);
 }
 #endif
 
