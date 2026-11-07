@@ -326,6 +326,7 @@ static void test_white_balance_and_blue_mapping(void **state)
   dt_dev_pixelpipe_t pipe;
   dt_dev_pixelpipe_iop_t piece;
   init_piece(&pipe, &piece, &p);
+  pipe.dsc.temperature.enabled = TRUE;
   pipe.wb.late_correction = TRUE;
   pipe.wb.coeffs[0] = 2.0f;
   pipe.wb.coeffs[1] = 0.5f;
@@ -423,6 +424,7 @@ static void test_opencl(void **state)
           d->hsm_encode = look % 2;
         }
         print_message("input %d, working %d, clipping %d, look %d\n", p.type, p.type_work, clipping, look);
+        pipe.dsc.temperature.enabled = look >= 2;
         pipe.wb.late_correction = look >= 2;
         if(pipe.wb.late_correction)
         {
