@@ -319,6 +319,7 @@ static float _lerp_lut(const float *const lut, const float v)
   return l1 * (1.0f - f) + l2 * f;
 }
 
+#ifdef HAVE_OPENCL
 // sample xform on a CLUT_LEVEL^3 grid over the Lab range LittleCMS encodes
 // floats in (L 0..100, a and b -128..127), the first channel varying fastest
 // as in the lut3d module. With gamut_marker, store 1 in all channels of a
@@ -371,6 +372,7 @@ static float *_bake_clut(cmsHTRANSFORM xform, const gboolean gamut_marker)
   dt_free_align(rgb);
   return clut;
 }
+#endif
 
 static void _free_clut(dt_iop_colorout_data_t *d)
 {
