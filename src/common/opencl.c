@@ -374,8 +374,9 @@ static void _opencl_write_device_config(const int devid)
            "[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
 
-  // Take care of headroom, this is defined per device and devid to support systems with two similar cards.
-  g_snprintf(key, sizeof(key), "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
+  // Take care of headroom, this is defined per device and the driver's device position to support systems
+  // with two similar cards. Unlike devid, the position does not change when dt_opencl_init() renumbers the devices
+  g_snprintf(key, sizeof(key), "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, cl->dev[devid].driver_id);
   g_snprintf(dat, sizeof(dat), "headroom: %i", cl->dev[devid].headroom);
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
@@ -441,7 +442,7 @@ static gboolean _opencl_read_device_config(const int devid)
   cldid->avoid = dt_conf_key_not_empty(key) ? dt_conf_get_string(key) : NULL;
 
   // Take care of headroom
-  g_snprintf(key, sizeof(key), "%s%s_id%i", DT_CLDEVICE_HEAD, cldid->cname, devid);
+  g_snprintf(key, sizeof(key), "%s%s_id%i", DT_CLDEVICE_HEAD, cldid->cname, cldid->driver_id);
   if(dt_conf_key_not_empty(key))
   {
     const gchar *dat = dt_conf_get_string_const(key);
@@ -468,6 +469,20 @@ static gboolean _opencl_read_device_config(const int devid)
   _opencl_write_device_config(devid);
 
   return !existing_device || !safety_ok;
+}
+
+// sort key for the device numbering in dt_opencl_init()
+static int _opencl_device_rank(dt_opencl_t *cl,
+                               const cl_device_id devid)
+{
+  cl_device_type type = 0;
+  cl_bool unified_memory = CL_FALSE;
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_TYPE,
+                                           sizeof(cl_device_type), &type, NULL);
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_HOST_UNIFIED_MEMORY,
+                                           sizeof(cl_bool), &unified_memory, NULL);
+  if(type & CL_DEVICE_TYPE_CPU) return 2;
+  return unified_memory ? 1 : 0;
 }
 
 // returns 0 if all ok or an error if we failed to init this device
@@ -780,6 +795,16 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     dt_print_nts(DT_DEBUG_OPENCL,
                  "   *** discarding new custom device ***\n");
     cl->dev[dev].disabled |= TRUE;
+    res = TRUE;
+    goto end;
+  }
+
+  // PoCL is the only platform allowed to run OpenCL on the CPU: macOS'
+  // CPU device fails to allocate images and its exports came out wrong
+  if((type & CL_DEVICE_TYPE_CPU) && strcmp(pname, "portablecomputinglanguage"))
+  {
+    dt_print_nts(DT_DEBUG_OPENCL,
+                 "   *** discarding CPU device, only PoCL may run on the CPU ***\n");
     res = TRUE;
     goto end;
   }
@@ -1382,7 +1407,10 @@ void dt_opencl_init(dt_opencl_t *cl,
       platform_key[j] = 0;
 
       if(dt_conf_key_exists(platform_key))
-        valid_platform = dt_conf_get_bool(platform_key);
+        // PoCL used to be one of the other platforms, so that still enables it
+        valid_platform = dt_conf_get_bool(platform_key)
+          || (strcmp(platform_key, "clplatform_portablecomputinglanguage") == 0
+              && dt_conf_get_bool("clplatform_other"));
       /* In some cases it is safe to assume platform aliases instead of adding
           an additional conf key or falling back to clplatform_other
       */
@@ -1505,9 +1533,48 @@ void dt_opencl_init(dt_opencl_t *cl,
     goto finally;
   }
 
+  // number the devices dedicated-memory GPUs first, then unified-memory
+  // ones, then CPU devices, as the driver's order says nothing about
+  // speed: macOS lists its CPU device, then the integrated GPU, then the
+  // discrete one. The default priorities give device 0 to the darkroom
+  // and export pipes
+  int *rank = malloc(sizeof(int) * num_devices);
+  int *driver_id = malloc(sizeof(int) * num_devices);
+  if(rank && driver_id)
+  {
+    for(int k = 0; k < num_devices; k++)
+    {
+      rank[k] = _opencl_device_rank(cl, devices[k]);
+      driver_id[k] = k;
+    }
+    for(int k = 1; k < num_devices; k++)
+    {
+      const cl_device_id d = devices[k];
+      const int r = rank[k];
+      const int id = driver_id[k];
+      int j = k - 1;
+      for(; j >= 0 && rank[j] > r; j--)
+      {
+        devices[j + 1] = devices[j];
+        rank[j + 1] = rank[j];
+        driver_id[j + 1] = driver_id[j];
+      }
+      devices[j + 1] = d;
+      rank[j + 1] = r;
+      driver_id[j + 1] = id;
+    }
+  }
+  else
+  {
+    free(driver_id);
+    driver_id = NULL;
+  }
+  free(rank);
+
   int dev = 0;
   for(int k = 0; k < num_devices; k++)
   {
+    cl->dev[dev].driver_id = driver_id ? driver_id[k] : k;
     if(_opencl_device_init(cl, dev, devices, k))
       continue;
     // increase dev only if _opencl_device_init was successful
@@ -1515,6 +1582,7 @@ void dt_opencl_init(dt_opencl_t *cl,
   }
   free(devices);
   devices = NULL;
+  free(driver_id);
 
   if(dev > 0)
   {
