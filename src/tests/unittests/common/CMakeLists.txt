@@ -48,3 +48,10 @@ if(WIN32)
     _copy_required_library(test_history_strings lib_darktable)
     _copy_required_library(test_dtdata lib_darktable)
 endif(WIN32)
+
+add_cmocka_test(test_collection_navigation
+                SOURCES test_collection_navigation.c
+                LINK_LIBRARIES lib_darktable cmocka)
+if(WIN32)
+    _copy_required_library(test_collection_navigation lib_darktable)
+endif(WIN32)
