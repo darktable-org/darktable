@@ -147,10 +147,10 @@ static void lmmse_demosaic(float *const restrict out,
   const int refine = (mode > DT_LMMSE_REFINE_2) ? mode - 2 : 0;
   const float revscaler = 1.0f / scaler;
 
-  // every median and refine pass reaches further into the tile overlap:
-  // these are the smallest overlaps that give the output of a single tile
-  const int overlaps[] = { 8, 8, 10, 13, 14 };
-  const int overlap = overlaps[CLAMP(mode, DT_LMMSE_REFINE_0, DT_LMMSE_REFINE_4)];
+  // the overlap must cover how far a wrong value at the tile edge spreads:
+  // 11 pixels from the edge after the basic passes, 1 more per median pass
+  // and at most 3 more per refine step (1 for each of its three passes)
+  const int overlap = 11 - BORDER_AROUND + medians + 3 * refine;
   const int tilevalid = LMMSE_TILE_INT - 2 * overlap;
 
   const int num_vertical =   1 + (height - 2 * overlap -1) / tilevalid;
