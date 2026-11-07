@@ -342,6 +342,9 @@ changes (where available).
   CPU. The "always use LittleCMS 2" export preference still applies the
   exact transform on the CPU.
 
+- The LMMSE demosaicer can now run on the OpenCL device instead of
+  sending the image back to the CPU for the demosaic.
+
 ## Other Changes
 
 - AgX and sigmoid now adapt to HDR output, so one edit exports to
