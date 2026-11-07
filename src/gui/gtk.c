@@ -7044,37 +7044,6 @@ void dt_gui_container_destroy_children(GtkContainer *container)
   gtk_container_foreach(container, _delete_child, NULL);
 }
 
-void dt_gui_menu_popup(GtkMenu *menu,
-                       GtkWidget *button,
-                       const GdkGravity widget_anchor,
-                       const GdkGravity menu_anchor)
-{
-  gtk_widget_show_all(GTK_WIDGET(menu));
-  g_object_ref_sink(G_OBJECT(menu));
-  g_signal_connect(G_OBJECT(menu), "deactivate", G_CALLBACK(g_object_unref), NULL);
-
-  GdkEvent *event = gtk_get_current_event();
-  if(button && event)
-  {
-    gtk_menu_popup_at_widget(menu, button, widget_anchor, menu_anchor, event);
-  }
-  else
-  {
-    if(!event)
-    {
-      event = gdk_event_new(GDK_BUTTON_PRESS);
-      event->button.device =
-        gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
-      event->button.window =
-        gtk_widget_get_window(GTK_WIDGET(darktable.gui->ui->main_window));
-      g_object_ref(event->button.window);
-    }
-
-    gtk_menu_popup_at_pointer(menu, event);
-  }
-  gdk_event_free(event);
-}
-
 gboolean dt_gui_forward_scroll(GtkEventControllerScroll *controller,
                                GtkWidget *target)
 {
