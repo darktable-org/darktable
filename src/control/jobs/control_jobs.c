@@ -3009,6 +3009,7 @@ static int _control_import_image_copy(const char *filename,
   if(!g_file_get_contents(filename, &data, &size, NULL))
   {
     dt_print(DT_DEBUG_CONTROL, "[import_from] failed to read file `%s`", filename);
+    dt_control_log(_("error loading file `%s'"), filename);
     return -1;
   }
   char *output = NULL;
