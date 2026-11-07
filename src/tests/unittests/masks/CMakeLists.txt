@@ -42,6 +42,10 @@ add_cmocka_test(test_flexi_compose
                 SOURCES test_flexi_compose.c flexi_fixture.c
                 LINK_LIBRARIES lib_darktable cmocka)
 
+add_cmocka_test(test_mask_refinement
+                SOURCES test_mask_refinement.c
+                LINK_LIBRARIES lib_darktable cmocka)
+
 # The panel's own controls: precise-entry popup placement and the value
 # conversions its numbers go through.
 add_cmocka_test(test_flexi_controls

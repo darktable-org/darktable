@@ -19900,12 +19900,14 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
                      G_CALLBACK(_refine_control_changed), bd);
 
     bd->feathering_radius_slider =
-      dt_bauhaus_slider_new_with_range(module, 0.0, 250.0, 0, 0.0, 1);
+      dt_bauhaus_slider_new_with_range(module, -250.0, 250.0, 0, 0.0, 1);
     dt_bauhaus_widget_set_label(bd->feathering_radius_slider,
                                 N_("blend"), N_("feathering radius"));
     dt_bauhaus_slider_set_format(bd->feathering_radius_slider, _(" px"));
     gtk_widget_set_tooltip_text(bd->feathering_radius_slider,
-                                _("spatial radius of feathering"));
+                                _("spatial radius of feathering; negative values fade "
+                                  "inward without extending the current mask\n"
+                                  "mask blur can still extend coverage"));
     dt_bauhaus_widget_set_quad_visibility(bd->feathering_radius_slider, FALSE);
     g_signal_connect(G_OBJECT(bd->feathering_radius_slider), "value-changed",
                      G_CALLBACK(_refine_control_changed), bd);

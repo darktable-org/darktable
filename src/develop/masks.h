@@ -311,7 +311,7 @@ typedef struct dt_masks_refinement_t
 {
   int32_t enabled;           // dt_masks_refine_scope_t
   float details;             // detail-mask threshold, [-1..1]
-  float feathering_radius;   // guided-filter radius, [0..]
+  float feathering_radius;  // guided-filter radius; negative values fade inward
   uint32_t feathering_guide; // dt_develop_mask_feathering_guide_t
   float blur_radius;         // gaussian blur radius, [0..]
   float contrast;            // mask contrast, [-1..1]

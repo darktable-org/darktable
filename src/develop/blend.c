@@ -17,6 +17,7 @@
 */
 
 #include "blend.h"
+#include "common/distance_transform.h"
 #include "common/gaussian.h"
 #include "common/guided_filter.h"
 #include "common/imagebuf.h"
@@ -441,7 +442,7 @@ static gboolean _needs_guide(const dt_masks_point_group_t *pt,
                              void *data)
 {
   const dt_dev_pixelpipe_iop_t *const piece = data;
-  return pt->refinement.enabled && pt->refinement.feathering_radius > 0.1f
+  return pt->refinement.enabled && fabsf(pt->refinement.feathering_radius) > 0.1f
          && piece->colors >= 3;
 }
 
@@ -453,6 +454,14 @@ static gboolean _reads_pixels(const dt_masks_point_group_t *pt,
 {
   return _needs_guide(pt, form, owner, data)
          || (form && (form->type & DT_MASKS_PARAMETRIC));
+}
+
+static gboolean _needs_inward_feather(const dt_masks_point_group_t *pt,
+                                    const dt_masks_form_t *form,
+                                    const dt_masks_form_t *owner,
+                                    void *data)
+{
+  return pt->refinement.enabled && pt->refinement.feathering_radius < -0.1f;
 }
 
 static gboolean _is_parametric(const dt_masks_point_group_t *pt,
@@ -535,7 +544,8 @@ static size_t _get_post_operations(const dt_develop_blend_params_t *const bp,
                                    const dt_dev_pixelpipe_iop_t *const piece,
                                    _develop_mask_post_processing operations[3])
 {
-  const gboolean mask_feather = bp->feathering_radius > 0.1f && piece->colors >= 3;
+  const gboolean mask_feather = fabsf(bp->feathering_radius) > 0.1f
+                               && piece->colors >= 3;
   const gboolean mask_blur = bp->blur_radius > 0.1f;
   const gboolean mask_tone_curve = fabsf(bp->contrast) >= 0.01f || fabsf(bp->brightness) >= 0.01f;
 
@@ -633,6 +643,39 @@ static const dt_iop_module_t *_raster_source(const dt_dev_pixelpipe_iop_t *piece
   return NULL;
 }
 
+static void _develop_blend_process_feather_inward(const float *const guide,
+                                                float *const mask,
+                                                const size_t width,
+                                                const size_t height,
+                                                const float radius,
+                                                const float scale,
+                                                const int ch,
+                                                const float guide_weight,
+                                                const float sqrt_eps)
+{
+  float *const restrict distance = dt_alloc_align_float(width * height);
+  float *const restrict feathered = dt_alloc_align_float(width * height);
+  if(distance && feathered)
+  {
+    dt_image_distance_transform(mask, distance, width, height, 1e-6f,
+                                DT_DISTANCE_TRANSFORM_MASK);
+    const float inverse_radius = 1.0f / (-radius * scale);
+    DT_OMP_FOR_SIMD()
+    for(size_t k = 0; k < width * height; k++)
+      distance[k] = CLAMP((distance[k] - 1.0f) * inverse_radius, 0.0f, 1.0f);
+
+    const int w = _required_w(-radius, scale, (int)MAX(width, height));
+    guided_filter(guide, distance, feathered, width, height, ch, w,
+                  sqrt_eps, guide_weight, 0.0f, 1.0f);
+    // the guide may reshape the fade, but cannot restore the boundary or add coverage
+    DT_OMP_FOR_SIMD()
+    for(size_t k = 0; k < width * height; k++)
+      mask[k] *= (distance[k] > 0.0f) * feathered[k];
+  }
+  dt_free_align(feathered);
+  dt_free_align(distance);
+}
+
 static void _develop_blend_process_feather(const float *const guide,
                                            float *const mask,
                                            const size_t width,
@@ -643,6 +686,14 @@ static void _develop_blend_process_feather(const float *const guide,
                                            const float scale,
                                            const float sqrt_eps)
 {
+  if(feathering_radius < -0.1f)
+  {
+    _develop_blend_process_feather_inward(guide, mask, width, height,
+                                        feathering_radius, scale, ch,
+                                        guide_weight, sqrt_eps);
+    return;
+  }
+
   const int w = _required_w(feathering_radius, scale, (int)MAX(width, height));
 
   float *const restrict mask_bak = dt_alloc_align_float(width * height);
@@ -693,8 +744,35 @@ static void _develop_blend_process_mask_tone_curve(float *const restrict mask,
 }
 
 #ifdef HAVE_OPENCL
-// _feather_form_mask on the OpenCL blend's device images: only the mask makes
-// the round trip
+static cl_int _develop_blend_process_feather_inward_cl(
+    const dt_develop_blend_cl_context_t *const c,
+    float *const mask,
+    const dt_iop_roi_t *const roi,
+    const gboolean use_out,
+    const float radius,
+    const float scale,
+    const int ch,
+    const float guide_weight,
+    const float sqrt_eps)
+{
+  float *const guide = dt_alloc_align_float((size_t)roi->width * roi->height * ch);
+  if(!guide) return CL_MEM_OBJECT_ALLOCATION_FAILURE;
+
+  const size_t origin[3] = { use_out ? 0 : c->offs[0], use_out ? 0 : c->offs[1], 0 };
+  const size_t region[3] = { roi->width, roi->height, 1 };
+  const cl_int err =
+    dt_opencl_read_host_from_image_raw(c->devid, guide, use_out ? c->dev_out : c->dev_in,
+                                      origin, region,
+                                      roi->width * ch * sizeof(float), TRUE);
+  if(err == CL_SUCCESS)
+    _develop_blend_process_feather_inward(guide, mask, roi->width, roi->height,
+                                        radius, scale, ch, guide_weight, sqrt_eps);
+  dt_free_align(guide);
+  return err;
+}
+
+// positive feathering keeps the guide on the device
+// inward feathering reads it on the host
 static void _feather_form_mask_cl(dt_dev_pixelpipe_iop_t *piece,
                                   float *const mask,
                                   const dt_iop_roi_t *const roi,
@@ -708,6 +786,19 @@ static void _feather_form_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   const int width = roi->width;
   const int height = roi->height;
   const int ch = piece->colors;
+  if(radius < -0.1f)
+  {
+    const cl_int err = _develop_blend_process_feather_inward_cl(
+        c, mask, roi, use_out, radius, roi->scale / piece->iscale,
+        ch, guide_weight, sqrt_eps);
+    if(err != CL_SUCCESS)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] element inward feathering: %s",
+               cl_errstr(err));
+      c->failed = TRUE;
+    }
+    return;
+  }
   const int w = _required_w(radius, roi->scale / piece->iscale, MAX(width, height));
   const dt_iop_roi_t *rin = piece->blend_refine_roi_in;
 
@@ -829,7 +920,7 @@ void dt_develop_blend_refine_form_mask(dt_iop_module_t *self,
   // detail threshold (uses the pipe scharr data reachable from piece)
   _refine_with_detail_mask(self, piece, mask, roi, roi, r->details);
 
-  const gboolean mask_feather = r->feathering_radius > 0.1f && ch >= 3;
+  const gboolean mask_feather = fabsf(r->feathering_radius) > 0.1f && ch >= 3;
   const gboolean mask_blur = r->blur_radius > 0.1f;
   const gboolean mask_tone_curve =
        fabsf(r->contrast) >= 0.01f || fabsf(r->brightness) >= 0.01f;
@@ -1983,7 +2074,25 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     {
       _develop_mask_post_processing operation = post_operations[index];
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-      if(operation == DEVELOP_MASK_POST_FEATHER_IN)
+      if(d->feathering_radius < -0.1f
+         && (operation == DEVELOP_MASK_POST_FEATHER_IN
+             || operation == DEVELOP_MASK_POST_FEATHER_OUT))
+      {
+        err = dt_opencl_copy_image_to_host(devid, mask, dev_mask,
+                                          owidth, oheight, sizeof(float));
+        if(err != CL_SUCCESS) goto error;
+        const dt_develop_blend_cl_context_t c =
+          { .devid = devid, .dev_in = dev_in, .dev_out = dev_out, .offs = { dx, dy } };
+        err = _develop_blend_process_feather_inward_cl(
+            &c, mask, roi_out, operation == DEVELOP_MASK_POST_FEATHER_OUT,
+            d->feathering_radius, roi_out->scale / piece->iscale,
+            ch, guide_weight, sqrt_eps);
+        if(err != CL_SUCCESS) goto error;
+        err = dt_opencl_write_host_to_image(devid, mask, dev_mask_2,
+                                           owidth, oheight, sizeof(float));
+        if(err != CL_SUCCESS) goto error;
+      }
+      else if(operation == DEVELOP_MASK_POST_FEATHER_IN)
       {
         if(!rois_equal)
         {
@@ -2292,7 +2401,7 @@ void tiling_callback_blendop(dt_iop_module_t *self,
     }
   }
 
-  if(bldata->feathering_radius > 0.1f) // we don't feather below that
+  if(fabsf(bldata->feathering_radius) > 0.1f) // we don't feather below that
   {
     const int devid = piece->pipe->devid;
     if(devid > DT_DEVICE_CPU)
@@ -2316,11 +2425,14 @@ void tiling_callback_blendop(dt_iop_module_t *self,
   // parametric elements on the device, into two one-channel buffers of the
   // output size (dt_develop_blendif_make_mask_cl)
   const dt_masks_form_t *const form =
-    piece->pipe->devid > DT_DEVICE_CPU
-    && (bldata->mask_mode & (DEVELOP_MASK_MASK | DEVELOP_MASK_FLEXI))
+    bldata->mask_mode & (DEVELOP_MASK_MASK | DEVELOP_MASK_FLEXI)
       ? dt_masks_get_from_id_ext(piece->pipe->forms,
                                  dt_develop_blend_mask_group_id(piece->module, bldata))
       : NULL;
+  // inward feathering also holds the guide and guided-filter buffers on the host
+  if(form && dt_masks_group_walk(piece->pipe->forms, form, _needs_inward_feather, NULL))
+    tiling->factor = MAX(tiling->factor, 7.0f * outnorm);
+
   if(form && dt_masks_group_walk(piece->pipe->forms, form, _is_parametric, NULL))
     tiling->factor_cl += 0.5f * outnorm;
 
