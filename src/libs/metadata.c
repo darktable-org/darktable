@@ -536,35 +536,60 @@ void gui_reset(dt_lib_module_t *self)
   _write_metadata(self);
 }
 
-static void _menu_line_activated(GtkMenuItem *menuitem, GtkTextView *textview)
+static void _set_text_activated(GSimpleAction *action,
+                                GVariant *parameter,
+                                gpointer user_data)
 {
-  GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
-  gtk_text_buffer_set_text
-    (buffer,
-     gtk_label_get_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(menuitem)))), -1);
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(user_data));
+  gtk_text_buffer_set_text(buffer, g_variant_get_string(parameter, NULL), -1);
 }
 
-static void _populate_popup_multi(GtkTextView *textview,
-                                  GtkWidget *popup,
-                                  dt_lib_module_t *self)
+// while the selected images disagree on a field, a right-click offers their
+// values instead of the text view's own context menu
+static void _textview_secondary_pressed(GtkGestureSingle *gesture,
+                                        const int n_press,
+                                        const double x,
+                                        const double y,
+                                        dt_lib_module_t *self)
 {
+  GtkWidget *textview = dt_gui_get_widget(gesture);
+  if(!_is_leave_unchanged(GTK_TEXT_VIEW(textview))) return;
+
   const dt_lib_metadata_t *d = self->data;
-
-  if(!_is_leave_unchanged(textview)) return;
-
-  // get keyid from textview
   const uint32_t key = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(textview), "key"));
   GList *texts = g_hash_table_lookup(d->metadata_texts, GINT_TO_POINTER(key));
+  if(!texts) return;
 
-  gtk_menu_shell_append(GTK_MENU_SHELL(popup),gtk_separator_menu_item_new());
+  // keeps the text view's own gesture from opening its context menu as well
+  dt_gui_claim(gesture);
 
+  if(!gtk_widget_get_action_group(textview, "metadata"))
+  {
+    const GActionEntry entries[] = { { "set-text", _set_text_activated, "s" } };
+    GSimpleActionGroup *group = g_simple_action_group_new();
+    g_action_map_add_action_entries(G_ACTION_MAP(group), entries,
+                                    G_N_ELEMENTS(entries), textview);
+    gtk_widget_insert_action_group(textview, "metadata", G_ACTION_GROUP(group));
+    g_object_unref(group);
+  }
+
+  GMenu *menu = g_menu_new();
   for(GList *item = texts; item; item = item->next)
   {
-    GtkWidget *new_line = gtk_menu_item_new_with_label(item->data);
-    g_signal_connect(G_OBJECT(new_line), "activate", G_CALLBACK(_menu_line_activated), textview);
-    gtk_menu_shell_append(GTK_MENU_SHELL(popup), new_line);
+    gchar *label = dt_str_unmnemonic(item->data);
+    GMenuItem *mi = g_menu_item_new(label, NULL);
+    g_free(label);
+    g_menu_item_set_action_and_target_value(mi, "metadata.set-text",
+                                            g_variant_new_string(item->data));
+    g_menu_append_item(menu, mi);
+    g_object_unref(mi);
   }
-  gtk_widget_show_all(popup);
+
+  GtkWidget *popover = dt_gui_popover_menu_from_model(textview, menu);
+  g_object_unref(menu);
+  const GdkRectangle rect = { x, y, 1, 1 };
+  gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
+  gtk_popover_popup(GTK_POPOVER(popover));
 }
 
 static void _metadata_reset_cb(GtkGestureSingle *gesture, int n_press,
@@ -639,7 +664,11 @@ static void _add_grid_row(dt_metadata_t *metadata, int row, dt_lib_module_t *sel
   gtk_widget_add_events(textview, GDK_FOCUS_CHANGE_MASK | GDK_ENTER_NOTIFY_MASK);
   dt_gui_connect_key(textview, _key_pressed_cb, self);
   g_signal_connect(textview, "focus", G_CALLBACK(_textview_focus), self);
-  g_signal_connect(textview, "populate-popup", G_CALLBACK(_populate_popup_multi), self);
+  GtkGestureSingle *secondary = dt_gui_connect_click(textview, _textview_secondary_pressed,
+                                                     NULL, self);
+  gtk_gesture_single_set_button(secondary, GDK_BUTTON_SECONDARY);
+  gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(secondary),
+                                             GTK_PHASE_TARGET);
   dt_gui_connect_click_all(labelev, _metadata_reset_cb, NULL, textview);
   g_signal_connect(buffer, "changed", G_CALLBACK(_textbuffer_changed), self);
   gtk_widget_set_hexpand(textview, TRUE);
