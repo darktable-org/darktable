@@ -18,6 +18,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
+#include "common/opencl.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "develop/tiling.h"
@@ -47,6 +48,11 @@ typedef struct dt_iop_scalepixels_data_t {
   float x_scale;
   float y_scale;
 } dt_iop_scalepixels_data_t;
+
+typedef struct dt_iop_scalepixels_global_data_t
+{
+  int kernel_scalepixels;
+} dt_iop_scalepixels_global_data_t;
 
 const char *name()
 {
@@ -260,6 +266,49 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
                                        roi_in->height, ch_width);
     }
   }
+}
+
+#ifdef HAVE_OPENCL
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_scalepixels_global_data_t *gd = self->global_data;
+  const int devid = piece->pipe->devid;
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+
+  float scale[2], offset[2];
+  int shift[2];
+  _sampling_grid(piece, roi_in, roi_out, scale, shift, offset);
+  const int itype = interpolation->id;
+  const int iwidth = interpolation->width;
+
+  return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_scalepixels, roi_out->width, roi_out->height,
+                                          CLARG(dev_in), CLARG(dev_out),
+                                          CLARG(roi_out->width), CLARG(roi_out->height),
+                                          CLARG(roi_in->width), CLARG(roi_in->height),
+                                          CLARG(scale), CLARG(shift), CLARG(offset),
+                                          CLARG(itype), CLARG(iwidth));
+}
+#endif
+
+void init_global(dt_iop_module_so_t *self)
+{
+  const int program = 2; // basic.cl, from programs.conf
+  dt_iop_scalepixels_global_data_t *gd = malloc(sizeof(dt_iop_scalepixels_global_data_t));
+  self->data = gd;
+  gd->kernel_scalepixels = dt_opencl_create_kernel(program, "scalepixels");
+}
+
+void cleanup_global(dt_iop_module_so_t *self)
+{
+  dt_iop_scalepixels_global_data_t *gd = self->data;
+  dt_opencl_free_kernel(gd->kernel_scalepixels);
+  free(self->data);
+  self->data = NULL;
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
