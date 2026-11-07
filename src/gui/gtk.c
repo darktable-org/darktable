@@ -8327,13 +8327,16 @@ static void _popover_menu_apply_page_tooltips(GMenuModel *model,
     char *label = NULL;
     if(g_menu_model_get_item_attribute(model, i, G_MENU_ATTRIBUTE_LABEL, "s", &label))
     {
+      gchar *plain_label = dt_str_replace(label, "__", "_");
       for(GList *b = buttons; b; b = b->next)
       {
         gchar *text = NULL;
         g_object_get(b->data, "text", &text, NULL);
-        if(!g_strcmp0(text, label)) _popover_menu_apply_item_tooltip(GTK_WIDGET(b->data), model, i, ctx);
+        if(!g_strcmp0(text, label) || !g_strcmp0(text, plain_label))
+          _popover_menu_apply_item_tooltip(GTK_WIDGET(b->data), model, i, ctx);
         g_free(text);
       }
+      g_free(plain_label);
     }
     g_free(label);
   }
