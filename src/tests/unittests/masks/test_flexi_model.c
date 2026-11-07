@@ -2430,6 +2430,8 @@ static void test_nested_groups_are_numbered(void **state)
 
 static void test_nested_shapes_are_listed_and_signed(void **state)
 {
+  // the signature folds the auto-fold option, read from the conf
+  flexi_conf_init();
   dt_masks_form_t *grp = _two_levels();
 
   // what another mask can link from this one: its shapes, nested ones too
