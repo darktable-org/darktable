@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-06 08:32+0100\n"
-"PO-Revision-Date: 2026-11-06 16:02+0200\n"
+"PO-Revision-Date: 2026-11-07 20:03+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -10847,7 +10847,7 @@ msgstr "Зв’язати фігури"
 
 #: ../src/develop/blend_gui.c:1501
 msgid "shared: editing one changes it everywhere"
-msgstr ""
+msgstr "Спільне: редагування одного елемента змінює його всюди"
 
 #: ../src/develop/blend_gui.c:1509
 msgid "copy shapes"
@@ -10903,10 +10903,8 @@ msgid "%s slider: linear scale"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2173
-#, fuzzy
-#| msgid "long"
 msgid "log"
-msgstr "Довге"
+msgstr "log"
 
 #: ../src/develop/blend_gui.c:2213
 msgid ""
@@ -10980,9 +10978,9 @@ msgstr "Модель ШІ недоступна. Перевірте Налашт�
 #: ../src/develop/blend_gui.c:2807
 msgid "remove parametric element?"
 msgid_plural "remove parametric elements?"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Видалити параметричний елемент?"
+msgstr[1] "Видалити параметричні елементи?"
+msgstr[2] "Видалити параметричні елементи?"
 
 #: ../src/develop/blend_gui.c:2809
 #, c-format
@@ -11087,6 +11085,13 @@ msgid ""
 "the image.\n"
 "when disabled, every pick waits for an area dragged on the image."
 msgstr ""
+"Коли ввімкнено (це замовчування), піпетка кольору параметричного елемента\n"
+"починає роботу з області, яку використовувала остання піпетка, і встановлює\n"
+"діапазон з неї одразу: виберіть область для одного каналу, а потім клікніть\n"
+"на піпетку наступного, щоб встановити його діапазон з тієї ж області.\n"
+"Перетягніть область на зображенні, щоб вибрати іншу область.\n"
+"Перша піпетка в модулі все ще очікує на область, перетягнуту на зображенні.\n"
+"Коли вимкнено, кожна піпетка очікує на область, перетягнуту на зображенні."
 
 #: ../src/develop/blend_gui.c:3049 ../src/develop/blend_gui.c:18438
 msgid "preview channel under cursor"
@@ -11101,6 +11106,13 @@ msgid ""
 "the preview only starts after a short pause, so passing over\n"
 "the buttons on the way elsewhere costs nothing."
 msgstr ""
+"Якщо цю функцію ввімкнено (це замовчування), наведення курсора\n"
+"на одну з кнопок додавання параметричного елемента відображає\n"
+"відповідний канал у центральній панелі. Завдяки цьому ви можете\n"
+"побачити, як виглядає канал, перш ніж додавати для нього елемент.\n"
+"Попередній перегляд з’являється лише після короткої паузи, тому\n"
+"випадкове наведення вказівника на кнопки під час переміщення\n"
+"курсору в інше місце не спричиняє жодних небажаних дій."
 
 #: ../src/develop/blend_gui.c:3060
 msgid "always shown controls"
@@ -11112,6 +11124,9 @@ msgid ""
 "the toggle in the controls header shows or hides the rest.\n"
 "with all of them always shown, the toggle is not displayed."
 msgstr ""
+"Елементи керування параметричного об’єкта, які залишаються видимими.\n"
+"Перемикач у заголовку показує або приховує решту елементів.\n"
+"Якщо всі елементи відображаються постійно, перемикач не показується."
 
 #: ../src/develop/blend_gui.c:3065
 msgid "input channel"
@@ -11429,10 +11444,8 @@ msgstr ""
 "перш ніж він починає поступово слабшати"
 
 #: ../src/develop/blend_gui.c:5559
-#, fuzzy
-#| msgid "expanded module border"
 msgid "fade-out border"
-msgstr "Облямівка розгорнутого модуля"
+msgstr "Закрайок з градієнтом непрозорості"
 
 #: ../src/develop/blend_gui.c:5560
 msgid ""
@@ -11483,6 +11496,8 @@ msgid ""
 "how closely the traced outline follows the AI selection's\n"
 "raw edge: higher gives smoother, more rounded corners"
 msgstr ""
+"Наскільки точно трасований контур повторює край ШІ-виділення:\n"
+"вищі значення забезпечують більш плавні, заокруглені кути"
 
 #: ../src/develop/blend_gui.c:5575
 msgid "refine mask boundary"
@@ -11612,6 +11627,11 @@ msgid ""
 "the new 0\n"
 "double-click to reset to 0"
 msgstr ""
+"Розширити (додатне значення) або стиснути (від’ємне) обводку цього контуру\n"
+"Значення 0 відновлює обводку, від якої виконувалося розширення чи звуження\n"
+"Редагування розміру, розмиття, обертання або вузлів роблять поточну обводку\n"
+"новим нульовим станом\n"
+"Подвійний клік скидає значення до 0"
 
 #: ../src/develop/blend_gui.c:6577 ../src/develop/masks/masks.c:3000
 #: ../src/develop/masks/masks.c:3686
@@ -11784,6 +11804,8 @@ msgid ""
 "like minimum (intersection), but feathered edges fade together smoothly: "
 "strong only where every member is"
 msgstr ""
+"Як \"Мінімум (перетин)\", але розтушовані краї плавно зливаються: сильні лише "
+"там, де кожен елемент є таким"
 
 #: ../src/develop/blend_gui.c:8340
 msgid "difference"
@@ -11822,6 +11844,8 @@ msgstr "a: учасники нижче, b: наступний учасник в�
 #, c-format
 msgid "a group cannot go inside itself, and groups nest at most %d deep"
 msgstr ""
+"Група не може міститися всередині самої себе, а максимальна глибина їх "
+"вкладення — %d рівнів"
 
 #: ../src/develop/blend_gui.c:9446
 #, c-format
@@ -11832,6 +11856,11 @@ msgid ""
 "inversion and refinements\n"
 "click to select it"
 msgstr ""
+"Використано %d разів у цій масці\n"
+"Ця фігура є спільною: її редагування змінює кожен рядок,\n"
+"у якому вона присутня, при цьому кожен рядок зберігає\n"
+"власні налаштування непрозорості, інверсії та уточнень\n"
+"Натисніть, щоб вибрати"
 
 #: ../src/develop/blend_gui.c:9456
 #, c-format
@@ -11842,6 +11871,11 @@ msgid ""
 "refinements stay separate\n"
 "shift+click to give this module its own copy"
 msgstr ""
+"Пов’язано з %s\n"
+"Цей об’єкт ШІ є спільним: його редагування змінює його в кожному\n"
+"модулі, з яким він пов’язаний, тоді як налаштування непрозорості,\n"
+"інверсії та уточнення залишаються незалежними\n"
+"Shift+клік — створити для цього модуля власну копію"
 
 #: ../src/develop/blend_gui.c:9461
 #, c-format
@@ -11852,6 +11886,11 @@ msgid ""
 "refinements stay separate\n"
 "shift+click to give this module its own copy"
 msgstr ""
+"Пов’язано з %s\n"
+"Ця фігура є спільною: її редагування змінює її в кожному\n"
+"модулі, з яким вона пов’язана, тоді як її непрозорість, інверсія\n"
+"та уточнення залишаються незалежними\n"
+"Shift+клік, щоб створити для цього модуля власну копію"
 
 #: ../src/develop/blend_gui.c:9471
 #, fuzzy, c-format
@@ -11866,10 +11905,8 @@ msgstr ""
 "Ctrl+клік – %s"
 
 #: ../src/develop/blend_gui.c:9857
-#, fuzzy
-#| msgid "images in a group"
 msgid "wrap in group..."
-msgstr "зображення в групі"
+msgstr "Помістити в групу..."
 
 #: ../src/develop/blend_gui.c:9857 ../src/develop/blend_gui.c:10434
 msgid "group together..."
@@ -11917,14 +11954,12 @@ msgid "this group is nested as deep as groups go"
 msgstr "Ця група вкладена на максимально можливу глибину"
 
 #: ../src/develop/blend_gui.c:10343 ../src/develop/blend_gui.c:17973
-#, fuzzy
-#| msgid "images in a group"
 msgid "wrap in a new group of"
-msgstr "зображення в групі"
+msgstr "Помістити в нову групу"
 
 #: ../src/develop/blend_gui.c:10344
 msgid "group together in a new group of"
-msgstr ""
+msgstr "Згрупувати в новій групі"
 
 #. delete button label and tooltip will be updated based on trash pref
 #: ../src/develop/blend_gui.c:10428 ../src/develop/imageop.c:4819
@@ -11975,7 +12010,7 @@ msgid ""
 "(added to the selected group, %s)"
 msgstr ""
 "\n"
-"(додано до вибраної групи, %s)"
+"(додається до вибраної групи, %s)"
 
 #: ../src/develop/blend_gui.c:11484
 msgid ""
@@ -11983,7 +12018,7 @@ msgid ""
 "(added to the whole mask)"
 msgstr ""
 "\n"
-"(додано до всієї маски)"
+"(додається до всієї маски)"
 
 #: ../src/develop/blend_gui.c:11495
 msgid ""
@@ -12008,7 +12043,7 @@ msgid ""
 "(nested in %s)"
 msgstr ""
 "\n"
-"(вкладено в %s)"
+"(вкладається в %s)"
 
 #: ../src/develop/blend_gui.c:11513
 msgid ""
@@ -12016,7 +12051,7 @@ msgid ""
 "(nested in the whole mask)"
 msgstr ""
 "\n"
-"(вкладено у всю маску)"
+"(вкладається у всю маску)"
 
 #: ../src/develop/blend_gui.c:11521 ../src/develop/blend_gui.c:18469
 msgid ""
@@ -12250,10 +12285,9 @@ msgstr ""
 "Відредагуйте його, щоб увімкнути знову"
 
 #: ../src/develop/blend_gui.c:15015
-#, fuzzy, c-format
-#| msgid "output icc profile '%s' missing"
+#, c-format
 msgid "output picker of %s armed"
-msgstr "Відсутній вихідний ICC профіль '%s'"
+msgstr "Піпетка виходу %s активована"
 
 #: ../src/develop/blend_gui.c:15016
 #, c-format
@@ -12271,16 +12305,14 @@ msgid "input picker of %s unarmed"
 msgstr "Піпетка входу %s деактивована"
 
 #: ../src/develop/blend_gui.c:15026
-#, fuzzy, c-format
-#| msgid "color picker"
+#, c-format
 msgid "color picker of %s armed"
-msgstr "Піпетка кольору"
+msgstr "Піпетка кольору %s активована"
 
 #: ../src/develop/blend_gui.c:15028
-#, fuzzy, c-format
-#| msgid "color picker"
+#, c-format
 msgid "color picker of %s unarmed"
-msgstr "Піпетка кольору"
+msgstr "Піпетка кольору %s деактивована"
 
 #: ../src/develop/blend_gui.c:15399
 msgid ""
@@ -12339,10 +12371,9 @@ msgid "input slider"
 msgstr "Вхідний повзунок"
 
 #: ../src/develop/blend_gui.c:15786
-#, fuzzy, c-format
-#| msgid "show and edit shapes on the current scale"
+#, c-format
 msgid "focus %s and edit its mask on the canvas"
-msgstr "Показувати та редагувати фігури в поточному масштабі"
+msgstr "Сфокусувати %s і редагувати його маску на полотні"
 
 #: ../src/develop/blend_gui.c:15838
 msgid "a group inside this group, shown below this row\n"
@@ -12358,29 +12389,29 @@ msgstr "Клікніть значок на полотні, щоб уточнит
 
 #: ../src/develop/blend_gui.c:15844
 msgid "ctrl+click to rename\n"
-msgstr ""
-"%s\n"
-"Ctrl+клік – %s\n"
+msgstr "Ctrl+клік для перейменування\n"
 
 #: ../src/develop/blend_gui.c:15845
 msgid "ctrl+shift+click to delete it\n"
-msgstr "Ctrl+Shift+клік, щоб видалити це\n"
+msgstr "Ctrl+Shift+клік для видалення\n"
 
 #: ../src/develop/blend_gui.c:15846
 msgid "shift+click to select it with others\n"
-msgstr "shift+клік - встановити інструмент за замовчуванням\n"
+msgstr "Shift+клік для вибору разом з іншими\n"
 
 #: ../src/develop/blend_gui.c:15850
-#, fuzzy, c-format
-#| msgid "delete selected"
+#, c-format
 msgid "%s to delete it, once selected\n"
-msgstr "Видалити вибране"
+msgstr "%s для видалення після вибору\n"
 
 #: ../src/develop/blend_gui.c:15852 ../src/develop/blend_gui.c:16691
 msgid ""
 "drag to rearrange: drop it onto a group to put it inside, onto the group's "
 "top or bottom edge to put it beside"
 msgstr ""
+"Перетягніть, щоб змінити розташування: перетягніть елемент на групу, щоб "
+"помістити його всередину,\n"
+"або на верхній чи нижній край групи, щоб розмістити його поруч."
 
 #: ../src/develop/blend_gui.c:15946 ../src/develop/blend_gui.c:16765
 msgid "show/hide this group's members"
@@ -12391,16 +12422,12 @@ msgid "invert this element: it selects what it left out"
 msgstr "Інвертувати цей елемент: він вибирає те, що пропустив"
 
 #: ../src/develop/blend_gui.c:16386
-#, fuzzy
-#| msgid "previous"
 msgid "previous page"
-msgstr "Назад"
+msgstr "Попередня сторінка"
 
 #: ../src/develop/blend_gui.c:16386
-#, fuzzy
-#| msgid "go to next image"
 msgid "next page"
-msgstr "Перейти до наступного зображення"
+msgstr "Наступна сторінка"
 
 #: ../src/develop/blend_gui.c:16452
 #, c-format
@@ -12412,12 +12439,16 @@ msgid ""
 "invert the whole mask\n"
 "shift+click: flip the invert of each member on its own"
 msgstr ""
+"Інвертувати всю маску\n"
+"Shift+клік: інвертувати кожен елемент окремо"
 
 #: ../src/develop/blend_gui.c:16624
 msgid ""
 "invert what this group gives\n"
 "shift+click: flip the invert of each member on its own"
 msgstr ""
+"Інвертувати те, що видає ця група\n"
+"Shift+клік: інвертувати кожен елемент окремо"
 
 #: ../src/develop/blend_gui.c:16671
 msgid ""
@@ -12425,12 +12456,14 @@ msgid ""
 "click to select it: the refinements then act on the whole mask\n"
 "ctrl+shift+click to reset the mask"
 msgstr ""
+"Повна маска: до неї входять усі елементи.\n"
+"Клікніть, щоб вибрати її: подальші уточнення діятимуть на повну маску.\n"
+"Клікніть з утриманням Ctrl+Shift, щоб скинути маску"
 
 #: ../src/develop/blend_gui.c:16677
-#, fuzzy, c-format
-#| msgid "set the opacity on the selected shape"
+#, c-format
 msgid "%s to reset the mask, once selected"
-msgstr "Установити непрозорість вибраної фігури"
+msgstr "%s для скидання маски після її вибору"
 
 #: ../src/develop/blend_gui.c:16682
 msgid "empty group: select it, then draw a shape, or drop one here, to fill it"
@@ -12454,12 +12487,12 @@ msgstr "shift+клік - встановити інструмент за замо
 
 #: ../src/develop/blend_gui.c:16688
 msgid "ctrl+shift+click to delete it and every member in it"
-msgstr ""
+msgstr "Ctrl+Shift+клік, щоб видалити разом із усіма вкладеними елементами"
 
 #: ../src/develop/blend_gui.c:16695
 #, c-format
 msgid "%s to delete it and every member in it, once selected"
-msgstr ""
+msgstr "%s, щоб видалити разом із усіма вкладеними елементами після вибору"
 
 #: ../src/develop/blend_gui.c:16708
 #, c-format
@@ -12528,6 +12561,8 @@ msgid ""
 "this removes every member from this module's mask, starting over from the "
 "default group layout. continue?"
 msgstr ""
+"Це видаляє всі елементи з маски цього модуля, повертаючи її до початкового "
+"макету груп. Продовжити?"
 
 #: ../src/develop/blend_gui.c:17970
 #, fuzzy
@@ -12540,6 +12575,8 @@ msgid ""
 "put the selection in a new group of the chosen operator,\n"
 "where it is, to combine it with what you add to that group"
 msgstr ""
+"Помістіть виділений елемент у нову групу вибраного оператора — там, де він "
+"знаходиться, — щоб об’єднати його з тим, що ви додасте до цієї групи"
 
 #: ../src/develop/blend_gui.c:17974
 msgid "compose"
@@ -12552,6 +12589,11 @@ msgid ""
 "else: it goes into a new group of the chosen operator, with an\n"
 "empty group on top to draw into"
 msgstr ""
+"Використовуйте виділення як будівельний блок для створення\n"
+"складнішої маски — наприклад, щоб відняти його від неї або\n"
+"знайти його перетин з чимось іншим. Воно розміщується в новій\n"
+"групі, що відповідає вибраному оператору, а поверх неї\n"
+"створюється порожня група, в якій можна малювати"
 
 #: ../src/develop/blend_gui.c:17979
 #, fuzzy
@@ -12568,6 +12610,8 @@ msgid ""
 "remove the groups inside this one that change nothing;\n"
 "groups with a name of their own are kept"
 msgstr ""
+"Видалити групи всередині цієї, які нічого не змінюють;\n"
+"Групи з власними іменами зберігаються"
 
 #: ../src/develop/blend_gui.c:17984
 msgid "only a group can be simplified"
@@ -12587,6 +12631,8 @@ msgid ""
 "restructure the selection: wrap it in a new group, compose it\n"
 "into a larger mask or, for a group, simplify it"
 msgstr ""
+"Реструктурувати виділення: помістити його в нову групу,\n"
+"скомпонувати в більшу маску або, для групи, спростити"
 
 #: ../src/develop/blend_gui.c:18139
 msgid "nothing to restructure: this group cannot be restructured"
@@ -12601,17 +12647,24 @@ msgid ""
 "reset the mask: remove every member,\n"
 "starting over from the default group layout"
 msgstr ""
+"Скинути маску: видалити всіх учасників,\n"
+"повернувшись до початкового макету групи"
 
 #: ../src/develop/blend_gui.c:18144
 msgid ""
 "delete this group and every member in it\n"
 "shift+click: empty it, keeping the group with its settings and name"
 msgstr ""
+"Видалити цю групу та всіх її учасників\n"
+"Shift + клік: очистити її, зберігши саму групу,\n"
+"її налаштування та ім'я"
 
 #: ../src/develop/blend_gui.c:18148
 msgid ""
 "delete this element here; the other rows and modules it is linked with keep it"
 msgstr ""
+"Видалити цей елемент тут; інші рядки та модулі, з якими він пов'язаний, "
+"зберігають його"
 
 #: ../src/develop/blend_gui.c:18150
 msgid "delete this element from the mask"
@@ -12643,7 +12696,7 @@ msgstr "Канал '%s' не підтримується цим модулем"
 
 #: ../src/develop/blend_gui.c:18342
 msgid "nothing selected in the mask panel has this control"
-msgstr ""
+msgstr "Нічого з вибраного на панелі маски не має цього елемента керування"
 
 #. the controls of the selected member, in a collapsible like the
 #. refinements', its content following the selection (see
@@ -12876,6 +12929,12 @@ msgid ""
 "only the center view is affected, not exports, and the mask\n"
 "switches back on when you leave the module"
 msgstr ""
+"Тимчасово вимкнути маску для порівняння;\n"
+"після цього модуль застосовується до всього зображення\n"
+"з урахуванням непрозорості змішування.\n"
+"Це впливає лише на відображення в центральній панелі,\n"
+"а не на експортовані файли;\n"
+"маска знову вмикається, коли ви виходите з модуля"
 
 #: ../src/develop/blend_gui.c:19311
 msgid "lock mask"
@@ -13014,6 +13073,8 @@ msgid ""
 "refines the selected member, or the whole mask if nothing is selected\n"
 "click to expand or collapse"
 msgstr ""
+"Уточнює вибраний елемент або всю маску, якщо нічого не вибрано\n"
+"Клікніть, щоб розгорнути або згорнути"
 
 #: ../src/develop/blend_gui.c:19494
 msgid "toggle refinements section"
@@ -13028,6 +13089,8 @@ msgid ""
 "disable the refinement of this target, keeping its settings\n"
 "click again to enable it"
 msgstr ""
+"Вимикає уточнення цієї цілі, зберігши її налаштування\n"
+"Клікніть ще раз, щоб увімкнути"
 
 #: ../src/develop/blend_gui.c:19542
 msgid "click to show or hide the mask panel"
@@ -13044,12 +13107,13 @@ msgid ""
 "being drawn\n"
 "click to expand or collapse"
 msgstr ""
+"Елементи керування вибраним об'єктом або елементи\n"
+"керування створенням фігури, що малюється\n"
+"Клікніть, щоб розгорнути або згорнути"
 
 #: ../src/develop/blend_gui.c:19628
-#, fuzzy
-#| msgid "toggle mask visualization"
 msgid "toggle controls section"
-msgstr "Перемкнути візуалізацію маски"
+msgstr "Перемкнути розділ елементів керування"
 
 #. the help section: the note of the group new elements go to, a
 #. collapsible above the controls, filled by _help_panel_sync from a
@@ -13084,10 +13148,8 @@ msgid ""
 msgstr ""
 
 #: ../src/develop/blend_gui.c:19735
-#, fuzzy
-#| msgid "toggle mask visualization"
 msgid "toggle mask consumers section"
-msgstr "Перемкнути візуалізацію маски"
+msgstr "Перемкнути розділ споживачів масок"
 
 #: ../src/develop/develop.c:488
 msgid "unpin image"
@@ -13522,15 +13584,13 @@ msgid "circle #%d"
 msgstr "Коло #%d"
 
 #: ../src/develop/masks/circle.c:1402
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
-#| "<b>opacity</b>: ctrl+scroll (%d%%)"
+#, c-format
 msgid ""
 "<b>size</b>: scroll, <b>fade-out border</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Розмір</b>: прокрутка, <b>Розмір розтушовки</b>: Shift+прокрутка\n"
+"<b>Розмір</b>: прокрутка, <b>Закрайок з градієнтом непрозорості</b>: "
+"Shift+прокрутка\n"
 "<b>Непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:454 ../src/develop/masks/ellipse.c:512
@@ -13582,15 +13642,13 @@ msgid "ellipse #%d"
 msgstr "Еліпс #%d"
 
 #: ../src/develop/masks/ellipse.c:2061
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
-#| "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
+#, c-format
 msgid ""
 "<b>size</b>: scroll, <b>fade-out border</b>: shift+scroll\n"
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Розмір</b>: прокрутка, <b>Розмір розтушовки</b>: Shift+прокрутка\n"
+"<b>Розмір</b>: прокрутка, <b>Закрайок з градієнтом непрозорості</b>: "
+"Shift+прокрутка\n"
 "<b>Обертання</b>: Ctrl+Shift+прокрутка, <b>Непрозорість</b>: Ctrl+прокрутка "
 "(%d%%)"
 
@@ -13599,19 +13657,15 @@ msgid "<b>rotate</b>: ctrl+drag"
 msgstr "<b>Обертання</b>: Ctrl+перетягування"
 
 #: ../src/develop/masks/ellipse.c:2076
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>feather mode</b>: alt+click, <b>rotate</b>: ctrl+drag,<b>size</b>: "
-#| "scroll\n"
-#| "<b>feather size</b>: shift+scroll <b>opacity</b>: ctrl+scroll (%d%%)"
+#, c-format
 msgid ""
 "<b>feather mode</b>: alt+click, <b>rotate</b>: ctrl+drag,<b>size</b>: scroll\n"
 "<b>fade-out border</b>: shift+scroll <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>Режим розтушовки</b>: Alt+клік, <b>Обертання</b>: Ctrl+перетягування, "
 "<b>Розмір</b>: прокрутка\n"
-"<b>Розмір розтушовки</b>: Shift+прокрутка, <b>Непрозорість</b>: "
-"Ctrl+прокрутка (%d%%)"
+"<b>Закрайок з градієнтом непрозорості</b>: Shift+прокрутка, <b>Непрозорість</"
+"b>: Ctrl+прокрутка (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:2083
 msgid "<b>rotate both</b>: shift+ctrl+drag"
@@ -13753,7 +13807,7 @@ msgstr "Об’єкт було видалено, редагування скас
 
 #: ../src/develop/masks/object.c:1572
 msgid "could not store the object in the sidecar, it is not changed"
-msgstr ""
+msgstr "Не вдалося зберегти об'єкт у супровідному файлі; він залишився без змін"
 
 #: ../src/develop/masks/object.c:1614
 msgid "could not store the object in the sidecar, it is saved as paths"
@@ -13991,11 +14045,7 @@ msgstr ""
 "<b>Видалити контур</b>: правий клік"
 
 #: ../src/develop/masks/path.c:5790
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>grow/shrink</b>: scroll, <b>resize</b>: ctrl+shift+scroll\n"
-#| "<b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%), "
-#| "<b>rotate</b>: ctrl+drag"
+#, c-format
 msgid ""
 "<b>grow/shrink</b>: scroll, <b>resize</b>: ctrl+shift+scroll\n"
 "<b>fade-out border</b>: shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%), "
@@ -14003,8 +14053,8 @@ msgid ""
 msgstr ""
 "<b>Розширити/стиснути</b>: прокрутка, <b>Зміна розміру</b>: "
 "Ctrl+Shift+прокрутка\n"
-"<b>Розмір розтушовки</b>: Shift+прокрутка, <b>Непрозорість</b>: "
-"Ctrl+прокрутка (%d%%), <b>Обертання</b>: Ctrl+перетягування"
+"<b>Закрайок з градієнтом непрозорості</b>: Shift+прокрутка, <b>Непрозорість</"
+"b>: Ctrl+прокрутка (%d%%), <b>Обертання</b>: Ctrl+перетягування"
 
 #. worded for any export pipe: neural restore uses them too
 #: ../src/develop/masks/pixel_mask.c:462
@@ -14066,6 +14116,9 @@ msgid ""
 "mask: %s\n"
 "%s"
 msgstr ""
+"%s панель маски змішування сфокусованого модуля\n"
+"Маска: %s\n"
+"%s"
 
 #: ../src/develop/masks_gui_panel_host.c:282 ../src/libs/tagging.c:3628
 msgid "hide"
@@ -14136,6 +14189,12 @@ msgid ""
 "and takes its room from the canvas instead of floating over it.\n"
 "hiding the left or right panel it is docked next to hides it too"
 msgstr ""
+"Якщо цю функцію ввімкнено, панель маски залишається відкритою\n"
+"для кожного модуля — незалежно від того, чи є в ньому маска, —\n"
+"доки ви самі її не згорнете. Вона займає місце на полотні, а не\n"
+"перекриває його, перебуваючи поверх нього.\n"
+"Якщо приховати ліву або праву панель, поруч із якою закріплена\n"
+"панель маски, то вона також сховається."
 
 #: ../src/develop/masks_gui_panel_host.c:1562
 msgid "show the resize handle"
@@ -14204,7 +14263,7 @@ msgstr ""
 
 #: ../src/develop/masks_gui_presets.c:433
 msgid "the mask starts over as the preset, every member in it removed"
-msgstr ""
+msgstr "Маска скидається до пресету, всі її елементи видаляються"
 
 #: ../src/develop/masks_gui_presets.c:436
 msgid ""
@@ -14229,10 +14288,8 @@ msgid ""
 msgstr ""
 
 #: ../src/develop/masks_gui_presets.c:451
-#, fuzzy
-#| msgid "places"
 msgid "replace"
-msgstr "Місця"
+msgstr "Замінити"
 
 #: ../src/develop/masks_gui_presets.c:452 ../src/libs/image.c:639
 msgid "merge"
@@ -19707,11 +19764,8 @@ msgid "%s: blend mask - %s, click to show the panel here"
 msgstr "%s: маска змішування — %s, клікніть, щоб відобразити панель тут"
 
 #: ../src/gui/gtk.c:4471
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "active"
 msgid "active"
-msgstr "при наведенні"
+msgstr "активна"
 
 #: ../src/gui/gtk.c:4474
 #, c-format
@@ -24333,6 +24387,13 @@ msgid ""
 "replace the camera reference, select another illuminant\n"
 "in color calibration"
 msgstr ""
+"Освітлювач \"З модуля Балансу білого\" в модулі Калібрування кольору\n"
+"враховує налаштування цього модуля лише в тому випадку, якщо\n"
+"встановлено прапорець \"Підготувати дані для Калібрування кольору\".\n"
+"В іншому разі результат буде таким самим, як і при виборі освітлювача\n"
+"\"Як знято в камері\".\n"
+"Якщо ці коефіцієнти були виміряні на екрані D65 для заміни еталонних\n"
+"даних камери, виберіть інший освітлювач в модулі Калібрування кольору."
 
 #: ../src/iop/channelmixerrgb.c:2103
 msgid "white balance is not prepared for this illuminant (<u>details</u>)"
@@ -24347,6 +24408,12 @@ msgid ""
 "screen to replace the camera reference, select another\n"
 "illuminant here"
 msgstr ""
+"Цей освітлювач враховує баланс білого лише за умови, що там\n"
+"вибрано опцію \"Підготувати дані для Калібрування кольору\".\n"
+"В іншому разі результат буде таким самим, як при використанні\n"
+"освітлювача \"Як знято в камері\".\n"
+"Якщо коефіцієнти балансу білого були виміряні на екрані D65\n"
+"(для заміни еталонних даних камери), виберіть тут інший освітлювач"
 
 #: ../src/iop/channelmixerrgb.c:2166
 msgid "double CAT applied"
@@ -33117,6 +33184,11 @@ msgid ""
 "keep this checked for non-reference white balance in the modern scene-"
 "referred workflow."
 msgstr ""
+"Забезпечує використання коефіцієнтів балансу білого як еталона для модуля "
+"Калібрування кольору.\n"
+"Залиште цей параметр увімкненим, якщо баланс білого не має слугувати еталоном "
+"у сучасному\n"
+"робочому процесі на основі сцен."
 
 #: ../src/iop/temperature.c:2273
 msgid "the white balance is controlled in the color calibration module"
