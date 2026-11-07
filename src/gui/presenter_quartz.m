@@ -444,15 +444,22 @@ static void _target(dt_presenter_transport_t *self,
   _set_output(t);
 }
 
-// GTK3's Quartz backend runs the draw handlers of a frame from the frame
-// clock's paint phase, and the frame's drawing reaches the screen with the
-// Core Animation transaction committed at the end of that run loop pass.
-// presenting at the end of paint puts the layers in the same transaction;
-// the run loop observer, which runs just before Core Animation commits,
-// catches a draw made outside paint
+// GTK3's Quartz backend does not draw in the frame clock's paint: it only
+// marks GDK's view dirty there
+// (gdk_quartz_window_set_needs_display_in_region()), and the widgets draw
+// when AppKit displays the view, in -[GdkQuartzView updateLayer], which
+// then sets the view's IOSurface. presenting right
+// after paint showed the layers of the frame before. displaying the view
+// here runs that draw now, as GTK's own
+// _gdk_quartz_display_after_process_all_updates() does, so the layers are
+// presented after the presenting widgets drew, in the Core Animation
+// transaction that carries GTK's new IOSurface. the run loop observer,
+// just before Core Animation commits, catches a display AppKit makes
+// outside paint, such as during a live resize
 static void _paint(GdkFrameClock *clock,
                    _transport_t *t)
 {
+  [t->p->parent displayIfNeeded];
   dt_presenter_window_present(t->p->window);
 }
 
