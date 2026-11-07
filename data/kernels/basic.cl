@@ -3497,6 +3497,32 @@ monochrome(read_only image2d_t in,
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+/* a soft proof's export clips the linear value rgb, see _out_of_gamut() in
+   colorout.c */
+static inline int
+colorout_out_of_gamut(const float rgb[3],
+                      const int hdr_transfer,
+                      const float4 gamut_scale,
+                      const float tolerance,
+                      const float black)
+{
+  float scale[3] = { gamut_scale.x, gamut_scale.y, gamut_scale.z };
+  if(hdr_transfer == DT_HDR_PQ)
+  {
+    for(int c = 0; c < 3; c++) scale[c] = DT_HDR_REFERENCE_WHITE_NITS / DT_HDR_PQ_PEAK_NITS;
+  }
+  else if(hdr_transfer != DT_HDR_NONE)
+  {
+    const float positive[3] = { fmax(rgb[0], 0.0f), fmax(rgb[1], 0.0f), fmax(rgb[2], 0.0f) };
+    const float hlg = dt_hdr_hlg_scene_scale(dt_hdr_hlg_luminance(positive, hdr_transfer));
+    for(int c = 0; c < 3; c++) scale[c] = hlg;
+  }
+  const float below = -tolerance * fmax(fmax(fmax(rgb[0], rgb[1]), rgb[2]), 0.0f) - black;
+  for(int c = 0; c < 3; c++)
+    if(rgb[c] < below || rgb[c] * scale[c] > 1.0f + tolerance) return 1;
+  return 0;
+}
+
 /* kernel for the plugin colorout, fast matrix + shaper path only */
 kernel void
 colorout (read_only image2d_t in,
@@ -3507,7 +3533,12 @@ colorout (read_only image2d_t in,
           read_only image2d_t lutr,
           read_only image2d_t lutg,
           read_only image2d_t lutb,
-          global const float (*const a)[3], const int hdr_transfer)
+          global const float (*const a)[3], const int hdr_transfer,
+          const int clip,
+          const int gamutcheck,
+          const float4 gamut_scale,
+          const float gamut_tolerance,
+          const float gamut_black)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3525,10 +3556,25 @@ colorout (read_only image2d_t in,
     rgb[i] = 0.0f;
     for(int j=0;j<3;j++) rgb[i] += mat[3*i+j]*XYZ[j];
   }
+  const int marked = gamutcheck && colorout_out_of_gamut(rgb, hdr_transfer, gamut_scale, gamut_tolerance,
+                                                             gamut_black);
   dt_hdr_encode(rgb, hdr_transfer);
   pixel.x = lerp_lookup_unbounded0(lutr, rgb[0], a[0]);
   pixel.y = lerp_lookup_unbounded0(lutg, rgb[1], a[1]);
   pixel.z = lerp_lookup_unbounded0(lutb, rgb[2], a[2]);
+  // a soft proof clips as its integer export does
+  if(clip)
+  {
+    pixel.x = clipf(pixel.x);
+    pixel.y = clipf(pixel.y);
+    pixel.z = clipf(pixel.z);
+  }
+  if(marked)
+  {
+    pixel.x = 0.0f;
+    pixel.y = 1.0f;
+    pixel.z = 1.0f;
+  }
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -3542,7 +3588,8 @@ colorout_clut(read_only image2d_t in,
               const int height,
               global const float *clut,
               const int level,
-              const int hdr_transfer)
+              const int hdr_transfer,
+              const int clip)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3556,9 +3603,9 @@ colorout_clut(read_only image2d_t in,
 
   float rgb[3] = { pixel.x, pixel.y, pixel.z };
   dt_hdr_encode(rgb, hdr_transfer);
-  pixel.x = rgb[0];
-  pixel.y = rgb[1];
-  pixel.z = rgb[2];
+  pixel.x = clip ? clipf(rgb[0]) : rgb[0];
+  pixel.y = clip ? clipf(rgb[1]) : rgb[1];
+  pixel.z = clip ? clipf(rgb[2]) : rgb[2];
   write_imagef(out, (int2)(x, y), pixel);
 }
 

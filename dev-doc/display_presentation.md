@@ -15,7 +15,8 @@ See also:
 ## The Rules, in Short
 
 - [A presented pipe renders to its output description](#output-description),
-  taken from its window when the run starts. Workers read `pipe->output`;
+  taken from its window when the run starts, or in proof mode to an RGB
+  proof profile, whose frames are converted like any other. Workers read `pipe->output`;
   the display profile preferences can change under a running pipe.
 - [A screen pipe publishes frames](#frames): immutable, refcounted copies
   of its output, in the format its window asks for. The pipe does not
@@ -36,7 +37,8 @@ See also:
 ## Output Description
 
 `dt_display_output_t` (`src/common/colorspaces.h`) is what a window wants.
-`image` is the encoding its pipes render to: display-referred RGB in a
+`image` is the encoding its pipes render to, unless they soft proof to an
+RGB profile: display-referred RGB in a
 profile (type, file, intent), 1.0 at reference white and up to `headroom`
 above it. `device`, the device encoding, is what GTK's 8-bit values mean
 as the platform shows them, everything GTK draws in the window: untagged
@@ -115,7 +117,9 @@ mark in any output.
   rendition ([frames](#frames)), and module GUIs take
   `dt_ioppr_get_gui_profile_info()`, the main window's device profile, or
   sRGB for a profile without matrices. On a cairo window device and image
-  are the same encoding, so these conversions are the identity there.
+  are the same encoding, so these conversions are the identity there,
+  except for a frame tagged with an RGB proof profile, which converts like
+  any other frame.
 - The presenter takes a window's output over for the platform, and gives
   it back when the window goes away (`dt_colorspaces_set_window_output()`).
 - A change is announced by what changed (`dt_display_output_diff()`), the
@@ -158,7 +162,8 @@ mark in any output.
   of type `DT_COLORSPACE_NONE` is no display encoding: with colorout
   filtered out, as overlay does, the frame stays in the pipe's working RGB,
   float for the high quality overlay and RGB24 for the legacy one.
-- colorout renders to `pipe->output`, with the profile the run took
+- colorout renders to `pipe->output` (an RGB soft proof to its proof
+  profile instead), with the profile the run took
   (`profile`), not one it looks up again by type. The pipe's `output_headroom`, which
   sigmoid and agx tone map to, honors `output.headroom`: on a native
   window the [headroom target](#headroom-target) as its transport encodes
@@ -198,19 +203,31 @@ mark in any output.
   new system display profile that changes a window's output changes its
   device encoding, so thumbnails drawn before it arrived, as colord's
   asynchronous answer at startup, are redone.
-- A soft proof shows what an export to the proof profile holds, in the
-  output: converted to the proof profile with its own intent and black
-  point compensation (`softproof_intent`, `softproof_bpc`, set next to the
-  proof profile in the darkroom; an export never compensates, so only a
-  proof without it matches the export), and from there to the output
-  relative colorimetric; clipped where an integer export clips (a float
-  export does not), and by the presenter to what the screen shows. PQ
-  and HLG proofs take the export's own encoding round trip in linear
-  light (`dt_hdr_encode()`, `dt_hdr_decode()`), since their ICC shapers
-  end at 1.0, where the pipe has reference white. An ink proof shows a
-  CMYK deliverable, which darktable does not export (an export to a CMYK
-  profile falls back to sRGB); the hidden Lab and XYZ outputs store other
-  units than the proof and are left out.
+- A soft proof is an export to the proof profile. In proof mode colorout
+  renders the full pipe as an export to that profile, through the same
+  matrix and curves or littlecms, PQ and HLG through `dt_hdr_encode()`,
+  with the proof's own intent and black point compensation
+  (`softproof_intent`, `softproof_bpc`, set next to the proof profile in
+  the darkroom). The matrix path serves a proof only where it gives what
+  littlecms gives for that intent and compensation (`_matrix_like_lcms()`).
+  A proof equals a darktable export with the same settings wherever that
+  export honors them. An export asks for no compensation, which littlecms
+  still applies for perceptual and saturation into a v4 profile, and its
+  matrix path ignores the intent unless "always use LittleCMS 2" is on: a
+  proof the matrix path cannot serve (absolute colorimetric, compensation
+  with a nonzero black) matches the export made with that preference on.
+  The GPU's 3D LUT covers Lab L 0..100, so PQ and HLG outputs off the
+  matrix path run on the CPU. The proof clips where an integer export clips
+  (a float export does not), and the gamut check marks what that clip
+  changes: from the linear values on the matrix path and for PQ and HLG,
+  by littlecms' gamut check otherwise. The output encoding is the proof
+  profile, so the frame is tagged with it, and the presenter shows it as
+  any other frame and clips what the screen cannot show. An ink proof, as
+  for a CMYK printer, goes on from the proof's values to the output
+  relative colorimetric, since a frame holds RGB, and its output encoding
+  is the window's. darktable does not export ink: an export to a CMYK
+  profile writes sRGB pixels but embeds the CMYK profile. The hidden Lab
+  and XYZ outputs store other units than the proof and are left out.
 - Export, thumbnail and AI pipes have no output description (`type` is
   `DT_COLORSPACE_NONE`).
 
@@ -326,8 +343,9 @@ values and an RGB24 rendition clipped after it, others through lcms.
 GTK-side drawing (navigation, the filmstrip thumbnail of the edited image,
 the correction cursor, focus peaking) takes a reference on the frame and
 draws `dt_frame_device_surface()`, its RGB24 rendition in the window's device
-encoding. On a cairo window that is the frame's own pixels: the GUI thread
-does what master did with its 8-bit backbuf. Elsewhere the worker makes,
+encoding. On a cairo window that is the frame's own pixels, unless the frame
+is in another profile, as an RGB proof's is: the GUI thread does what master
+did with its 8-bit backbuf. Elsewhere the worker makes,
 when it publishes a frame, the device renditions GTK usually asks for: the
 preview's, for navigation and the filmstrip, whether they are shown or not,
 and, while focus peaking is on, those of the full and second window pipes.

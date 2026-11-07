@@ -58,19 +58,23 @@ typedef struct dt_iop_colorout_data_t
   cmsHTRANSFORM *xform;
   float *clut;       // xform baked into a CLUT_LEVEL^3 LUT for the GPU, built on first use
   float unbounded_coeffs[3][3]; // for extrapolation of shaper curves
-  // a soft proof: Lab to the proof profile's values (proof_xform), linear
-  // light for PQ and HLG, which xform then takes to the output.
-  // the gamut check of a pure matrix-shaper proof tests the proof's linear
-  // values, proof_xform's for PQ and HLG and linear_xform's for the
-  // others, within gamut_tolerance. gamut_xform is littlecms' gamut check
-  // of any other proof
-  int proof_hdr_transfer;
-  int proof_channels;
-  cmsHTRANSFORM proof_xform;
-  cmsHTRANSFORM linear_xform;
+  // a soft proof renders as an export to the proof profile and clips where
+  // an integer export clips (clip). the gamut check marks the colors that
+  // clip changes: from their linear values, within gamut_tolerance of
+  // their magnitude and gamut_black, on the matrix path and for PQ and HLG,
+  // where gamut_scale takes the linear value at which each channel's
+  // encoding reaches 1 to 1; elsewhere by littlecms' gamut check
+  // (gamut_xform)
+  gboolean clip;
+  float gamut_scale[4];
   float gamut_tolerance;
+  float gamut_black;
   cmsContext gamut_context;
   cmsHTRANSFORM gamut_xform;
+  // an ink proof, which no frame holds: Lab to the proof's values
+  // (proof_xform), which xform takes on to the window's output
+  int proof_channels;
+  cmsHTRANSFORM proof_xform;
 } dt_iop_colorout_data_t;
 
 typedef struct dt_iop_colorout_global_data_t
@@ -385,7 +389,7 @@ static int _process_cl_clut(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
   if(dev_clut)
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorout_clut, width, height,
       CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_clut), CLARG(level),
-      CLARG(d->hdr_transfer));
+      CLARG(d->hdr_transfer), CLARG(d->clip));
 
   dt_opencl_release_mem_object(dev_clut);
   return err;
@@ -414,6 +418,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   if(!dt_is_valid_colormatrix(d->cmatrix[0][0]))
     return _process_cl_clut(self, piece, dev_in, dev_out, width, height);
 
+  const int gamutcheck = d->mode == DT_PROFILE_GAMUTCHECK;
+
   float cmatrix[9];
   pack_3xSSE_to_3x3(d->cmatrix, cmatrix);
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, cmatrix);
@@ -429,7 +435,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   if(dev_coeffs == NULL) goto error;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorout, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_m), CLARG(dev_r), CLARG(dev_g),
-    CLARG(dev_b), CLARG(dev_coeffs), CLARG(d->hdr_transfer));
+    CLARG(dev_b), CLARG(dev_coeffs), CLARG(d->hdr_transfer), CLARG(d->clip), CLARG(gamutcheck),
+    CLARRAY(4, d->gamut_scale), CLARG(d->gamut_tolerance), CLARG(d->gamut_black));
 
 error:
   dt_opencl_release_mem_object(dev_m);
@@ -586,78 +593,107 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
   }
 }
 
-// pixels per block of _transform_proof(), whose buffers are on the stack
+// pixels per block of the littlecms gamut check, whose buffers are on the stack
 #define PROOF_BLOCK 256
 
-// out of a pure matrix-shaper proof's gamut: a linear value v outside the range
-// its export stores, by more than tolerance
+// a soft proof's export clips the linear value v: below 0, or above the
+// range its encoding stores, by more than the tolerance. the range: up
+// to 1 / gamut_scale for an SDR proof, light up to the peak for PQ and
+// scene light up to 1 for HLG, what dt_hdr_encode() clamps
 static inline gboolean _out_of_gamut(const float *const v,
-                                     const int transfer,
-                                     const float tolerance)
+                                     const dt_iop_colorout_data_t *const d)
 {
-  // the range: [0, 1] for an SDR proof, light up to the peak for PQ and
-  // scene light up to 1 for HLG, what dt_hdr_encode() clamps
-  float scale = 1.0f;
-  if(transfer == DT_HDR_PQ)
-    scale = DT_HDR_REFERENCE_WHITE_NITS / DT_HDR_PQ_PEAK_NITS;
-  else if(transfer != DT_HDR_NONE)
+  float scale[3] = { d->gamut_scale[0], d->gamut_scale[1], d->gamut_scale[2] };
+  if(d->hdr_transfer == DT_HDR_PQ)
+  {
+    for(int c = 0; c < 3; c++) scale[c] = DT_HDR_REFERENCE_WHITE_NITS / DT_HDR_PQ_PEAK_NITS;
+  }
+  else if(d->hdr_transfer != DT_HDR_NONE)
   {
     const float positive[3] = { MAX(v[0], 0.0f), MAX(v[1], 0.0f), MAX(v[2], 0.0f) };
-    scale = dt_hdr_hlg_scene_scale(dt_hdr_hlg_luminance(positive, transfer));
+    const float hlg = dt_hdr_hlg_scene_scale(dt_hdr_hlg_luminance(positive, d->hdr_transfer));
+    for(int c = 0; c < 3; c++) scale[c] = hlg;
   }
-  const float magnitude = MAX(MAX(v[0], v[1]), v[2]);
+  const float tolerance = d->gamut_tolerance;
+  const float below = -tolerance * MAX(MAX(MAX(v[0], v[1]), v[2]), 0.0f) - d->gamut_black;
   for(int c = 0; c < 3; c++)
-    if(v[c] < -tolerance * magnitude || v[c] * scale > 1.0f + tolerance) return TRUE;
+    if(v[c] < below || v[c] * scale[c] > 1.0f + tolerance) return TRUE;
   return FALSE;
 }
 
-// marks the pixels of a block that are out of the proof's gamut. proof
-// holds proof_xform's values, before the export's bound
-static void _gamut_check(const dt_iop_colorout_data_t *const d,
+// marks the colors of a block of Lab pixels that are out of the proof's
+// gamut, by littlecms' gamut check
+static void _gamut_alarm(const dt_iop_colorout_data_t *const d,
                          const float *const in,
-                         const float *const proof,
                          uint8_t *const marked,
                          const size_t count)
 {
-  if(d->gamut_xform)
-  {
-    // gamut_xform gives its alarm codes, zero, for a color out of the
-    // proof's gamut: Lab 0, -128, -128, the corner of the encoding, which
-    // an in-gamut color only comes back as through an identity Lab proof,
-    // as the hidden Lab output is, for an input that encodes there
-    cmsUInt16Number lab[3 * PROOF_BLOCK], gamut[3 * PROOF_BLOCK];
-    for(size_t j = 0; j < count; j++)
-    {
-      const float *const l = in + 4 * j;
-      const cmsCIELab ref = { l[0], l[1], l[2] };
-      cmsFloat2LabEncoded(lab + 3 * j, &ref);
-    }
-    cmsDoTransform(d->gamut_xform, lab, gamut, count);
-    for(size_t j = 0; j < count; j++)
-    {
-      const cmsUInt16Number *const g = gamut + 3 * j;
-      marked[j] = !(g[0] | g[1] | g[2]);
-    }
-    return;
-  }
-
-  float DT_ALIGNED_ARRAY linear[3 * PROOF_BLOCK];
-  const float *values = proof;
-  int stride = d->proof_channels;
-  if(d->linear_xform)
-  {
-    cmsDoTransform(d->linear_xform, in, linear, count);
-    values = linear;
-    stride = 3;
-  }
+  // gamut_xform gives its alarm codes, zero, for a color out of the
+  // proof's gamut: Lab 0, -128, -128, the corner of the encoding, which
+  // an in-gamut color only comes back as through an identity Lab proof,
+  // as the hidden Lab output is, for an input that encodes there
+  cmsUInt16Number lab[3 * PROOF_BLOCK] = { 0 }, gamut[3 * PROOF_BLOCK];
   for(size_t j = 0; j < count; j++)
-    marked[j] = _out_of_gamut(values + stride * j, d->proof_hdr_transfer, d->gamut_tolerance);
+  {
+    const float *const l = in + 4 * j;
+    const cmsCIELab ref = { l[0], l[1], l[2] };
+    cmsFloat2LabEncoded(lab + 3 * j, &ref);
+  }
+  cmsDoTransform(d->gamut_xform, lab, gamut, count);
+  for(size_t j = 0; j < count; j++)
+  {
+    const cmsUInt16Number *const g = gamut + 3 * j;
+    marked[j] = !(g[0] | g[1] | g[2]);
+  }
 }
 
-static void _transform_proof(const dt_iop_colorout_data_t *const d,
-                             float *restrict out,
-                             const float *restrict in,
+// the gamut check's marks of npixels pixels, from the Lab input through
+// gamut_xform or else from the linear values the transform wrote; NULL
+// without memory, which leaves the proof unmarked
+static uint8_t *_gamut_marks(const dt_iop_colorout_data_t *const d,
+                             const float *const lab,
+                             const float *const linear,
                              const size_t npixels)
+{
+  uint8_t *const marked = dt_alloc_aligned(npixels);
+  if(!marked) return NULL;
+  if(d->gamut_xform)
+  {
+    DT_OMP_FOR()
+    for(size_t start = 0; start < npixels; start += PROOF_BLOCK)
+      _gamut_alarm(d, lab + 4 * start, marked + start, MIN(start + PROOF_BLOCK, npixels) - start);
+  }
+  else
+  {
+    DT_OMP_FOR()
+    for(size_t k = 0; k < npixels; k++)
+      marked[k] = _out_of_gamut(linear + 4 * k, d);
+  }
+  return marked;
+}
+
+static void _paint_gamut_marks(float *const out,
+                               const uint8_t *const marked,
+                               const size_t npixels)
+{
+  DT_OMP_FOR()
+  for(size_t k = 0; k < npixels; k++)
+    if(marked[k])
+    {
+      out[4 * k + 0] = 0.0f;
+      out[4 * k + 1] = 1.0f;
+      out[4 * k + 2] = 1.0f;
+    }
+}
+
+// an ink proof shows a deliverable darktable does not export, and a frame
+// holds RGB: Lab to the proof's values, clipped to what its integer
+// encoding holds, and from there to the window's output. the proper place
+// for it is a soft proof in the print module
+static void _transform_ink_proof(const dt_iop_colorout_data_t *const d,
+                                 float *restrict out,
+                                 const float *restrict in,
+                                 const size_t npixels)
 {
   const gboolean gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
   const int nch = d->proof_channels;
@@ -670,29 +706,10 @@ static void _transform_proof(const dt_iop_colorout_data_t *const d,
     float *const outp = out + 4 * start;
 
     cmsDoTransform(d->proof_xform, in + 4 * start, proof, count);
-    if(gamutcheck) _gamut_check(d, in + 4 * start, proof, marked, count);
-    // what an export to the proof profile stores, as a viewer decodes it
-    for(size_t j = 0; j < count; j++)
-    {
-      float *const p = proof + nch * j;
-      if(d->proof_hdr_transfer)
-      {
-        dt_hdr_encode(p, d->proof_hdr_transfer);
-        dt_hdr_decode(p, d->proof_hdr_transfer);
-      }
-      else
-      {
-        // an integer export clips
-        for(int c = 0; c < nch; c++) p[c] = CLIP(p[c]);
-      }
-    }
+    if(gamutcheck) _gamut_alarm(d, in + 4 * start, marked, count);
+    for(size_t j = 0; j < count * nch; j++) proof[j] = CLIP(proof[j]);
     cmsDoTransform(d->xform, proof, outp, count);
-
-    if(!gamutcheck) continue;
-
-    static const dt_aligned_pixel_t cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
-    for(size_t j = 0; j < count; j++)
-      if(marked[j]) copy_pixel(outp + 4 * j, cyan);
+    if(gamutcheck) _paint_gamut_marks(outp, marked, count);
   }
 }
 
@@ -707,6 +724,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const size_t height = roi_out->height;
   const size_t npixels = width * height;
   float *const restrict out = (float *)ovoid;
+  const float *const restrict in = (const float *)ivoid;
+  const gboolean gamutcheck = d->mode == DT_PROFILE_GAMUTCHECK;
+  uint8_t *marked = NULL;
 
   if(d->type == DT_COLORSPACE_LAB)
   {
@@ -714,16 +734,18 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
   else if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
-    if(!_transform_cmatrix(d, out, (float*)ivoid, npixels))
-      _process_fastpath_apply_tonecurves(self, piece, ovoid, roi_out);
+    const gboolean linear = _transform_cmatrix(d, out, in, npixels);
+    if(gamutcheck) marked = _gamut_marks(d, in, out, npixels);
+    if(!linear) _process_fastpath_apply_tonecurves(self, piece, ovoid, roi_out);
   }
   else if(d->proof_xform)
   {
-    _transform_proof(d, out, (float*)ivoid, npixels);
+    _transform_ink_proof(d, out, in, npixels);
   }
   else if(d->xform)
   {
-    _transform_lcms(d, out, (float*)ivoid, npixels);
+    _transform_lcms(d, out, in, npixels);
+    if(gamutcheck) marked = _gamut_marks(d, in, out, npixels);
   }
   else
   {
@@ -739,136 +761,146 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     for(size_t k = 0; k < npixels; k++)
       dt_hdr_encode(out + 4*k, d->hdr_transfer);
   }
+  // an integer export clips. dt_hdr_encode() already clamps the signal
+  if(d->clip)
+  {
+    DT_OMP_FOR()
+    for(size_t k = 0; k < npixels; k++)
+      for(int c = 0; c < 3; c++) out[4 * k + c] = CLIP(out[4 * k + c]);
+  }
+  if(marked)
+  {
+    _paint_gamut_marks(out, marked, npixels);
+    dt_free_align(marked);
+  }
 }
 
-// a pure matrix-shaper RGB profile, whose gamut is the unit cube of its
-// linear values: no table of any intent or direction, which littlecms
-// would use instead of the matrix (the float D2B and B2D ones first), and
-// curves that take 0 to 0 and 1 to 1, so that the cube is what they reach
-// and the black point compensation finds the black of the linear copy.
-// to_rgb gets its XYZ to RGB matrix
-static gboolean _pure_matrix_shaper(const cmsHPROFILE profile, dt_colormatrix_t to_rgb)
+// littlecms takes Lab to an RGB matrix profile as the matrix path does,
+// for intent and black point compensation (cmscnvrt.c, 2.16). every
+// intent but absolute colorimetric reads the same curves and matrix
+// (_cmsReadOutputLUT(), with no table for the matrix path to ignore), and
+// the compensation, which littlecms forces for perceptual and saturation
+// into a v4 profile, changes nothing where the profile's black point as
+// littlecms detects it is the Lab profile's: 0, as an abstract profile's
+static gboolean _matrix_like_lcms(const cmsHPROFILE profile,
+                                  const dt_iop_color_intent_t intent,
+                                  const gboolean bpc)
 {
-  static const cmsTagSignature tables[] =
-    { cmsSigAToB0Tag, cmsSigAToB1Tag, cmsSigAToB2Tag,
-      cmsSigBToA0Tag, cmsSigBToA1Tag, cmsSigBToA2Tag,
-      cmsSigDToB0Tag, cmsSigDToB1Tag, cmsSigDToB2Tag, cmsSigDToB3Tag,
-      cmsSigBToD0Tag, cmsSigBToD1Tag, cmsSigBToD2Tag, cmsSigBToD3Tag };
-  for(size_t k = 0; k < sizeof(tables) / sizeof(tables[0]); k++)
-    if(cmsIsTag(profile, tables[k])) return FALSE;
-  if(dt_colorspaces_get_matrix_from_output_profile(profile, to_rgb, NULL, NULL, NULL, 0))
-    return FALSE;
+  if(intent == DT_INTENT_ABSOLUTE_COLORIMETRIC) return FALSE;
+  const gboolean forced = cmsGetEncodedICCversion(profile) >= 0x4000000
+    && (intent == DT_INTENT_PERCEPTUAL || intent == DT_INTENT_SATURATION);
+  if(!bpc && !forced) return TRUE;
+  cmsCIEXYZ black;
+  cmsDetectDestinationBlackPoint(&black, profile, intent, 0);
+  return black.X == 0.0 && black.Y == 0.0 && black.Z == 0.0;
+}
 
-  // within a step of the 16-bit table a curv tag stores, the coarsest curve
-  static const cmsTagSignature curves[3] =
-    { cmsSigRedTRCTag, cmsSigGreenTRCTag, cmsSigBlueTRCTag };
-  for(int k = 0; k < 3; k++)
+// the matrix path an export takes, unless "always use LittleCMS 2" asks
+// for littlecms; a soft proof takes it only where it reproduces littlecms
+// for the proof's intent and black point compensation
+static gboolean _matrix_path(dt_iop_colorout_data_t *d,
+                             const cmsHPROFILE output,
+                             const gboolean proof,
+                             const dt_iop_color_intent_t intent,
+                             const gboolean bpc,
+                             const gboolean force_lcms2)
+{
+  if(force_lcms2 || (proof && !_matrix_like_lcms(output, intent, bpc))) return FALSE;
+  return !dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix,
+                                                        d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES);
+}
+
+// 1 over the linear value at which channel c of the matrix path's encoding
+// exceeds 1: the curve's table up to 1, its extrapolation above
+static float _encoding_scale(const dt_iop_colorout_data_t *const d, const int c)
+{
+  const float *const lut = d->lut[c];
+  if(lut[0] < 0.0f) return 1.0f;
+  if(lut[0] > 1.0f) return INFINITY;
+  if(lut[LUT_SAMPLES - 1] > 1.0f)
   {
-    const cmsToneCurve *const curve = cmsReadTag(profile, curves[k]);
-    if(!curve
-       || fabsf(cmsEvalToneCurveFloat(curve, 0.0f)) > 1.0f / 65535.0f
-       || fabsf(cmsEvalToneCurveFloat(curve, 1.0f) - 1.0f) > 1.0f / 65535.0f)
-      return FALSE;
+    int lo = 0, hi = LUT_SAMPLES - 1;
+    while(hi - lo > 1)
+    {
+      const int mid = (lo + hi) / 2;
+      if(lut[mid] > 1.0f)
+        hi = mid;
+      else
+        lo = mid;
+    }
+    const float f = (1.0f - lut[lo]) / (lut[hi] - lut[lo]);
+    return (LUT_SAMPLES - 1) / (lo + f);
   }
-  return TRUE;
+  // dt_iop_eval_exp(): a[1] * (x * a[0])^a[2]
+  const float *const a = d->unbounded_coeffs[c];
+  if(!(a[0] > 0.0f && a[1] > 0.0f && a[2] > 0.0f)) return 0.0f;
+  return 1.0f / MAX(1.0f, powf(1.0f / a[1], 1.0f / a[2]) / a[0]);
 }
 
 static void _delete_transforms(dt_iop_colorout_data_t *d)
 {
   if(d->xform) cmsDeleteTransform(d->xform);
   if(d->proof_xform) cmsDeleteTransform(d->proof_xform);
-  if(d->linear_xform) cmsDeleteTransform(d->linear_xform);
   if(d->gamut_xform) cmsDeleteTransform(d->gamut_xform);
   if(d->gamut_context) cmsDeleteContext(d->gamut_context);
   dt_free_align(d->clut);
   d->xform = NULL;
   d->proof_xform = NULL;
-  d->linear_xform = NULL;
   d->gamut_xform = NULL;
   d->gamut_context = NULL;
   d->clut = NULL;
 }
 
+// Lab to output, with the intent and black point compensation of the
+// export or the soft proof. an ink proof goes to its values first (see
+// _transform_ink_proof()), and from there to output relative colorimetric.
+// alarm adds littlecms' gamut check against the proof
 static void _create_transforms(dt_iop_colorout_data_t *d,
                                const cmsHPROFILE Lab,
                                const cmsHPROFILE output,
                                const cmsUInt32Number output_format,
-                               const cmsHPROFILE softproof,
+                               const cmsHPROFILE ink,
                                const dt_iop_color_intent_t intent,
-                               const gboolean bpc)
+                               const gboolean bpc,
+                               const gboolean alarm)
 {
-  if(!softproof)
+  const uint32_t flags = bpc ? cmsFLAGS_BLACKPOINTCOMPENSATION : 0;
+  if(ink)
   {
-    d->xform = cmsCreateTransform(Lab, TYPE_LabA_FLT, output, output_format, intent, 0);
-    return;
+    // the ink's values in littlecms' own encoding (PT_ANY), where [0, 1]
+    // is what an integer encoding holds
+    const cmsUInt32Number proof_format =
+      FLOAT_SH(1) | CHANNELS_SH(cmsChannelsOfColorSpace(cmsGetColorSpace(ink))) | BYTES_SH(4);
+    d->proof_channels = T_CHANNELS(proof_format);
+    d->proof_xform = cmsCreateTransform(Lab, TYPE_LabA_FLT, ink, proof_format, intent,
+                                        cmsFLAGS_NOCACHE | flags);
+    d->xform = cmsCreateTransform(ink, proof_format, output, output_format,
+                                  INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE);
   }
+  else
+    d->xform = cmsCreateTransform(Lab, TYPE_LabA_FLT, output, output_format, intent, flags);
 
-  // the links of littlecms' proofing transform (cmsCreateProofingTransformTHR()):
-  // Lab to the proof with the proof's intent and black point compensation, the
-  // proof to the output relative colorimetric without. the proof's values in
-  // between are in littlecms' own encoding (PT_ANY), where [0, 1] is what an
-  // integer encoding holds: an RGB proof shows the integer export, an ink
-  // one a CMYK deliverable. darktable's hidden Lab and XYZ outputs store
-  // other units
-  const gboolean gamutcheck = d->mode == DT_PROFILE_GAMUTCHECK;
-  const cmsUInt32Number proof_format =
-    FLOAT_SH(1) | CHANNELS_SH(cmsChannelsOfColorSpace(cmsGetColorSpace(softproof))) | BYTES_SH(4);
-  d->proof_channels = T_CHANNELS(proof_format);
-  const uint32_t to_proof = cmsFLAGS_NOCACHE | (bpc ? cmsFLAGS_BLACKPOINTCOMPENSATION : 0);
-  d->proof_xform = cmsCreateTransform(Lab, TYPE_LabA_FLT, softproof, proof_format,
-                                      intent, to_proof);
-  d->xform = cmsCreateTransform(softproof, proof_format, output, output_format,
-                                INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE);
-
-  // a pure matrix-shaper proof has an exact gamut, the unit cube of its
-  // linear values: the colors the export's bound leaves alone
-  dt_colormatrix_t to_rgb;
-  const gboolean matrix_shaper = gamutcheck && _pure_matrix_shaper(softproof, to_rgb);
-  if(matrix_shaper)
+  // littlecms' own gamut check, from its proofing transform: it rates a
+  // LUT profile, a printer's, by a relative colorimetric round trip, which
+  // a round trip with the proof's intent does not reproduce under a
+  // perceptual table. it samples that rating on a grid, the only measure
+  // there. on 16 bits every littlecms version writes the context's alarm
+  // codes in place of such a color, where a float transform writes -1 in
+  // 2.16 and the codes in 2.19
+  if(alarm)
   {
-    // profiles store their primaries as s15Fixed16 numbers, rounded by up
-    // to half a 2^-16 step: a primary the input and the proof share comes
-    // out up to 2^-16 times a row of |M^-1| off the cube, relative to the
-    // color's magnitude
-    float rows = 0.0f;
-    for(int k = 0; k < 3; k++)
-      rows = MAX(rows, fabsf(to_rgb[k][0]) + fabsf(to_rgb[k][1]) + fabsf(to_rgb[k][2]));
-    d->gamut_tolerance = rows / 65536.0f;
-  }
-  // the proof's linear values: proof_xform's own for PQ and HLG
-  const gboolean linear_gamutcheck = matrix_shaper && !d->proof_hdr_transfer;
-  if(linear_gamutcheck)
-  {
-    cmsHPROFILE linear = dt_colorspaces_linearize_profile(softproof);
-    if(linear)
-      d->linear_xform = cmsCreateTransform(Lab, TYPE_LabA_FLT, linear, TYPE_RGB_FLT,
-                                           intent, to_proof);
-    dt_colorspaces_cleanup_profile(linear);
-  }
-
-  // littlecms' own gamut check for any other proof, from its proofing
-  // transform: it rates a LUT profile, a printer's, by a relative
-  // colorimetric round trip, which a round trip with the proof's intent
-  // does not reproduce under a perceptual table. it samples that rating on
-  // a grid, the only measure there. on 16 bits every littlecms version
-  // writes the context's alarm codes in place of such a color, where a
-  // float transform writes -1 in 2.16 and the codes in 2.19
-  const gboolean lcms_gamutcheck = gamutcheck && !matrix_shaper;
-  if(lcms_gamutcheck)
-  {
-    static const cmsUInt16Number alarm[cmsMAXCHANNELS] = { 0 };
+    static const cmsUInt16Number codes[cmsMAXCHANNELS] = { 0 };
     d->gamut_context = cmsCreateContext(NULL, NULL);
     if(d->gamut_context)
     {
-      cmsSetAlarmCodesTHR(d->gamut_context, alarm);
+      cmsSetAlarmCodesTHR(d->gamut_context, codes);
       d->gamut_xform = cmsCreateProofingTransformTHR
-        (d->gamut_context, Lab, TYPE_Lab_16, Lab, TYPE_Lab_16, softproof, intent,
-         INTENT_RELATIVE_COLORIMETRIC, to_proof | cmsFLAGS_GAMUTCHECK);
+        (d->gamut_context, Lab, TYPE_Lab_16, Lab, TYPE_Lab_16, ink ? ink : output, intent,
+         INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE | flags | cmsFLAGS_GAMUTCHECK);
     }
   }
 
-  if(!d->proof_xform || !d->xform || (linear_gamutcheck && !d->linear_xform)
-     || (lcms_gamutcheck && !d->gamut_xform))
+  if(!d->xform || (ink && !d->proof_xform) || (alarm && !d->gamut_xform))
     _delete_transforms(d);
 }
 
@@ -904,25 +936,38 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   gchar *out_filename = NULL;
   dt_iop_color_intent_t out_intent = DT_INTENT_PERCEPTUAL;
   gboolean presented = FALSE;
+  // the pipe renders to its window's output
+  gboolean window = FALSE;
 
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
   cmsHPROFILE output = NULL;
-  cmsHPROFILE softproof = NULL;
-  cmsHPROFILE proof_linear = NULL;
-  dt_colorspaces_color_profile_type_t softproof_type =
-    darktable.color_profiles->softproof_type;
+  cmsHPROFILE ink = NULL;
   cmsHPROFILE hdr_linear = NULL;
   cmsUInt32Number output_format = TYPE_RGBA_FLT;
 
-  d->mode = dt_pipe_is_full(pipe) ? darktable.color_profiles->mode : DT_PROFILE_NORMAL;
-  d->proof_hdr_transfer = DT_HDR_NONE;
+  // the proof settings, read once: the darkroom changes them from the GUI
+  // thread, and one commit builds from one set
+  const dt_colorspaces_t *const cp = darktable.color_profiles;
+  const dt_colorspaces_color_profile_type_t proof_type = cp->softproof_type;
+  char proof_filename[sizeof(cp->softproof_filename)];
+  g_strlcpy(proof_filename, cp->softproof_filename, sizeof(proof_filename));
+  const dt_iop_color_intent_t proof_intent = cp->softproof_intent;
+  const gboolean proof_bpc = cp->softproof_bpc;
+
+  d->mode = dt_pipe_is_full(pipe) ? cp->mode : DT_PROFILE_NORMAL;
+  const gboolean proof = d->mode != DT_PROFILE_NORMAL;
+  const gboolean gamutcheck = d->mode == DT_PROFILE_GAMUTCHECK;
 
   _delete_transforms(d);
   dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
   d->lut[0][0] = -1.0f;
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
+  d->clip = FALSE;
+  for(int c = 0; c < 4; c++) d->gamut_scale[c] = 1.0f;
+  d->gamut_tolerance = 0.0f;
+  d->gamut_black = 0.0f;
   piece->process_cl_ready = TRUE;
 
   // a failure records nothing: no profile describes what process() then writes
@@ -957,10 +1002,31 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   else
   {
     /* we are not exporting, the pipe is presented */
-    out_type = pipe->output.image.type;
-    out_filename = pipe->output.image.filename;
-    out_intent = pipe->output.image.intent;
     presented = TRUE;
+    // a soft proof renders as an export to the proof profile, so its frame
+    // is in that profile, and the presenter shows it as any other. a frame
+    // holds RGB, so an ink proof goes on to the window's output
+    if(proof)
+    {
+      const dt_colorspaces_color_profile_t *prof = dt_colorspaces_get_profile
+        (proof_type, proof_filename,
+         DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY | DT_PROFILE_DIRECTION_DISPLAY2);
+      if(prof && cmsGetColorSpace(prof->profile) != cmsSigRgbData) ink = prof->profile;
+    }
+    if(proof && !ink)
+    {
+      out_type = proof_type;
+      out_filename = proof_filename;
+      out_intent = proof_intent;
+      d->clip = TRUE;
+    }
+    else
+    {
+      out_type = pipe->output.image.type;
+      out_filename = pipe->output.image.filename;
+      out_intent = pipe->output.image.intent;
+      window = TRUE;
+    }
   }
 
   // a pipe without a display encoding is not presented: a dt_dev_image()
@@ -998,18 +1064,18 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   /* creating output profile */
   // a presented pipe renders to the profile its run took with its output,
   // which a new screen profile may have replaced in the registry since
-  const gboolean lookup_display = !presented
+  const gboolean lookup_display = !window
     && (out_type == DT_COLORSPACE_DISPLAY || out_type == DT_COLORSPACE_DISPLAY2);
   if(lookup_display)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
   const dt_colorspaces_color_profile_t *out_profile
-      = presented ? NULL
-                  : dt_colorspaces_get_profile(out_type, out_filename,
-                                               DT_PROFILE_DIRECTION_OUT
-                                               | DT_PROFILE_DIRECTION_DISPLAY
-                                               | DT_PROFILE_DIRECTION_DISPLAY2);
-  output = presented ? pipe->output.image.profile : out_profile ? out_profile->profile : NULL;
+      = window ? NULL
+               : dt_colorspaces_get_profile(out_type, out_filename,
+                                            DT_PROFILE_DIRECTION_OUT
+                                            | DT_PROFILE_DIRECTION_DISPLAY
+                                            | DT_PROFILE_DIRECTION_DISPLAY2);
+  output = window ? pipe->output.image.profile : out_profile ? out_profile->profile : NULL;
   const cmsHPROFILE out_content = output;
   if(output)
   {
@@ -1024,49 +1090,21 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
                  ->profile;
     built_type = DT_COLORSPACE_SRGB;
     built_filename = "";
-    dt_control_log(_("missing output profile has been replaced by sRGB!"));
-    dt_print(DT_DEBUG_ALWAYS, "missing output profile `%s' has been replaced by sRGB!",
-             dt_colorspaces_get_name(out_type, out_filename));
+    if(d->clip)
+    {
+      dt_control_log(_("missing softproof profile has been replaced by sRGB!"));
+      dt_print(DT_DEBUG_ALWAYS, "missing softproof profile `%s' has been replaced by sRGB!",
+               dt_colorspaces_get_name(out_type, out_filename));
+    }
+    else
+    {
+      dt_control_log(_("missing output profile has been replaced by sRGB!"));
+      dt_print(DT_DEBUG_ALWAYS, "missing output profile `%s' has been replaced by sRGB!",
+               dt_colorspaces_get_name(out_type, out_filename));
+    }
   }
 
   cmsHPROFILE built_profile = output;
-
-  /* creating softproof profile if softproof is enabled */
-  if((d->mode != DT_PROFILE_NORMAL) && dt_pipe_is_full(pipe))
-  {
-    const dt_colorspaces_color_profile_t *prof = dt_colorspaces_get_profile
-      (darktable.color_profiles->softproof_type,
-       darktable.color_profiles->softproof_filename,
-       DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY | DT_PROFILE_DIRECTION_DISPLAY2);
-
-    if(prof)
-      softproof = prof->profile;
-    else
-    {
-      softproof_type = DT_COLORSPACE_SRGB;
-      softproof = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "",
-                                             DT_PROFILE_DIRECTION_OUT
-                                             | DT_PROFILE_DIRECTION_DISPLAY
-                                             | DT_PROFILE_DIRECTION_DISPLAY2)
-                      ->profile;
-      dt_control_log(_("missing softproof profile has been replaced by sRGB!"));
-      dt_print(DT_DEBUG_ALWAYS, "missing softproof profile `%s' has been replaced by sRGB!",
-               dt_colorspaces_get_name(darktable.color_profiles->softproof_type,
-                                       darktable.color_profiles->softproof_filename));
-    }
-
-    // the shapers of the PQ and HLG profiles end at 1.0, where the pipe has
-    // reference white (dt_hdr_encode()), and would clip the proof there.
-    // like an export, their proof goes to linear light and through
-    // dt_hdr_encode() in process(), so it clips where the export does
-    d->proof_hdr_transfer = dt_colorspaces_hdr_transfer(softproof_type);
-    if(d->proof_hdr_transfer)
-    {
-      // without its linear copy there is no proof
-      proof_linear = softproof = dt_colorspaces_linearize_profile(softproof);
-      if(!softproof) d->proof_hdr_transfer = DT_HDR_NONE;
-    }
-  }
 
   if(d->hdr_transfer)
   {
@@ -1076,28 +1114,20 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     output = hdr_linear;
   }
 
-  /*
-   * NOTE: theoretically, we should be passing
-   * UsedDirection = LCMS_USED_AS_PROOF  into
-   * dt_colorspaces_get_matrix_from_output_profile() so that
-   * dt_colorspaces_get_matrix_from_profile() knows it, but since we do not try
-   * to use our matrix codepath when softproof is enabled, this seemed redundant.
-   */
+  // a soft proof has its own intent and black point compensation. an
+  // export asks for none, which littlecms still applies for perceptual and
+  // saturation into a v4 profile
+  const dt_iop_color_intent_t intent = proof ? proof_intent : out_intent;
+  const gboolean bpc = proof && proof_bpc;
+  // the export of a PQ or HLG proof clips in dt_hdr_encode(), past what
+  // littlecms' gamut check sees: its linear values tell
+  const gboolean alarm = gamutcheck && (ink || !d->hdr_transfer);
 
-  // a proof converts to the proof profile with its own intent, and from
-  // there to the output relative colorimetric (_create_transforms())
-  const dt_iop_color_intent_t intent =
-    softproof ? darktable.color_profiles->softproof_intent : out_intent;
-  const gboolean bpc = darktable.color_profiles->softproof_bpc;
-
-  /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
-  if(d->mode != DT_PROFILE_NORMAL || force_lcms2
-     || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix,
-                                                      d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
+  if(ink || !_matrix_path(d, output, proof, intent, bpc, force_lcms2))
   {
     dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
     piece->process_cl_ready = FALSE;
-    _create_transforms(d, Lab, output, output_format, softproof, intent, bpc);
+    _create_transforms(d, Lab, output, output_format, ink, intent, bpc, alarm);
   }
 
   // user selected a non-supported output profile, check that:
@@ -1112,22 +1142,46 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     built_filename = "";
     built_profile = output;
 
-    if(d->mode != DT_PROFILE_NORMAL
-       || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix,
-                                                        d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
+    if(ink || !_matrix_path(d, output, proof, intent, bpc, force_lcms2))
     {
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       piece->process_cl_ready = FALSE;
 
-      _create_transforms(d, Lab, output, output_format, softproof, intent, bpc);
+      _create_transforms(d, Lab, output, output_format, ink, intent, bpc, alarm);
     }
   }
 
-  // the GPU runs xform as a 3D LUT, see _process_cl_clut(). "always use
-  // LittleCMS 2" asks for the exact transform, which only the CPU has, and
-  // a soft proof clips between two transforms
-  if(d->xform && !d->proof_xform && !force_lcms2)
+  // the GPU runs xform as a 3D LUT over Lab L 0..100 (_bake_clut()), only
+  // where that domain covers the input: not for a PQ or HLG output, which
+  // keeps light above reference white. "always use LittleCMS 2" asks for
+  // the exact transform, which only the CPU has, an ink proof clips between
+  // two transforms, and the gamut check off the matrix path runs on the CPU
+  if(d->xform && !d->proof_xform && !force_lcms2 && !gamutcheck && !d->hdr_transfer)
     piece->process_cl_ready = TRUE;
+
+  // the gamut check on linear values: a matrix path's, or littlecms' for
+  // PQ and HLG. profiles store their primaries as s15Fixed16 numbers,
+  // rounded by up to half a 2^-16 step: a primary the input and the proof
+  // share comes out up to 2^-16 times a row of |M^-1| off the range,
+  // relative to the color's magnitude. black comes out of the float Lab
+  // conversions in and out (dt_XYZ_to_Lab(), dt_Lab_to_XYZ()) up to a
+  // float step of 16 each off zero in 116 f(Y) - 16, 2^-18 together,
+  // which is 2^-18 / kappa in XYZ, times a row of |M^-1|: no gamut limit
+  // either
+  if(gamutcheck && !d->gamut_xform)
+  {
+    dt_colormatrix_t to_rgb;
+    const gboolean matrix = dt_is_valid_colormatrix(d->cmatrix[0][0]);
+    if(matrix) memcpy(to_rgb, d->cmatrix, sizeof(to_rgb));
+    if(matrix || !dt_colorspaces_get_matrix_from_output_profile(output, to_rgb, NULL, NULL, NULL, 0))
+    {
+      float rows = 0.0f;
+      for(int k = 0; k < 3; k++)
+        rows = MAX(rows, fabsf(to_rgb[k][0]) + fabsf(to_rgb[k][1]) + fabsf(to_rgb[k][2]));
+      d->gamut_tolerance = rows / 65536.0f;
+      d->gamut_black = rows * (27.0f / 24389.0f) / 262144.0f;
+    }
+  }
 
 done:
   if(lookup_display)
@@ -1153,8 +1207,9 @@ done:
       d->unbounded_coeffs[k][0] = -1.0f;
   }
 
-  const gboolean proofing = softproof != NULL;
-  dt_colorspaces_cleanup_profile(proof_linear);
+  if(gamutcheck && dt_is_valid_colormatrix(d->cmatrix[0][0]) && !d->hdr_transfer)
+    for(int c = 0; c < 3; c++) d->gamut_scale[c] = _encoding_scale(d, c);
+
   dt_colorspaces_cleanup_profile(hdr_linear);
 
   // with no transform process() has nothing to convert with. a presented
@@ -1178,8 +1233,9 @@ done:
                                         out_content, p->intent);
   // render the proof for its export's headroom and let the screen clip, as
   // Resolve's viewer shows the deliverable's transform (18.5 manual, ch. 9-10)
-  if(proofing)
-    piece->pipe->output_headroom = dt_ioppr_profile_headroom(softproof_type);
+  if(proof)
+    piece->pipe->output_headroom =
+      dt_ioppr_profile_headroom(ink ? proof_type : built_type);
 
   // process() encodes for out_type's HDR transfer function, which no
   // profile describes once sRGB has replaced out_type's profile
