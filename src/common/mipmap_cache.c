@@ -1525,6 +1525,24 @@ static int _write_image(dt_imageio_module_data_t *data,
   return 0;
 }
 
+static void _store_image_size(const dt_imgid_t imgid,
+                              const char *filename,
+                              int *width,
+                              int *height)
+{
+  int wd = 0, ht = 0;
+  if(!dt_exif_get_dimensions(filename, &wd, &ht)) return;
+
+  dt_image_t *img = dt_image_cache_get(imgid, 'w');
+  if(!img) return;
+  img->width = img->p_width = wd;
+  img->height = img->p_height = ht;
+  // the write-back also recomputes the aspect ratio
+  dt_image_cache_write_release_info(img, DT_IMAGE_CACHE_RELAXED, "_store_image_size");
+  *width = wd;
+  *height = ht;
+}
+
 static void _init_8(uint8_t *buf,
                     uint32_t *width,
                     uint32_t *height,
@@ -1603,9 +1621,13 @@ static void _init_8(uint8_t *buf,
         // use embedded JPEG if it is large enough or conf requests
         // always use, otherwise compute one
         const dt_image_t *img2 = dt_image_cache_get(imgid, 'r');
-        const int imgwd = img2->width;
-        const int imght = img2->height;
+        int imgwd = img2->width;
+        int imght = img2->height;
         dt_image_cache_read_release(img2);
+        // no size: unreadable at import. it is readable now, and with
+        // embedded previews nothing else would fill in the size
+        if(imgwd <= 0 || imght <= 0)
+          _store_image_size(imgid, filename, &imgwd, &imght);
         const gboolean always_use_thumb = (min_s == DT_MIPMAP_NONE);
         const gboolean thumb_lt_mip = ((thumb_width < wd) && (thumb_height < ht));
         const gboolean thumb_lt_raw = ((thumb_width < imgwd - 4) && (thumb_height < imght - 4));
