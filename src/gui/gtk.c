@@ -337,13 +337,26 @@ static void _set_tooltip_css(const gboolean hidden)
 #endif
 }
 
+void dt_gui_init_tooltip()
+{
+  const gboolean tooltip_hidden = dt_conf_get_bool("ui/hide_tooltips");
+  darktable.gui->hide_tooltips = tooltip_hidden ? 1 : 0;
+  _set_tooltip_css(tooltip_hidden);
+  if(darktable. gui->hide_tooltips)
+  {
+    darktable. gui->show_thumbs_tips = (dt_conf_get_bool("ui/show_thumbs_tips") ? 1 : 0);
+  }
+  else
+  {
+    darktable. gui->show_thumbs_tips = 1;
+  }
+}
+
 static void _toggle_tooltip_visibility(dt_action_t *action)
 {
-  const gboolean tooltip_hidden = !dt_conf_get_bool("ui/hide_tooltips");
-  dt_conf_set_bool("ui/hide_tooltips", tooltip_hidden);
-  darktable.gui->hide_tooltips += tooltip_hidden ? 1 : -1;
-  _set_tooltip_css(tooltip_hidden);
-  dt_toast_log(tooltip_hidden ? _("tooltips off") : _("tooltips on"));
+  dt_conf_set_bool("ui/hide_tooltips", !dt_conf_get_bool("ui/hide_tooltips"));
+  dt_gui_init_tooltip();
+  dt_toast_log(darktable. gui->hide_tooltips ? _("tooltips off") : _("tooltips on"));
 }
 
 static inline void _update_focus_peaking_button()

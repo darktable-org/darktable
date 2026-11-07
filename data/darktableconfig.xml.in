@@ -2421,11 +2421,19 @@
     <shortdescription>pretty print the image location</shortdescription>
     <longdescription>show a more readable representation of the location in the image information module</longdescription>
   </dtconfig>
-  <dtconfig common="yes">
+  <dtconfig prefs="misc" section="interface" common="yes">
     <name>ui/hide_tooltips</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>hiding tooltip</shortdescription>
+    <shortdescription>hiding tooltips</shortdescription>
+    <longdescription>hide tooltips taking into account switch 'show thumbnail tooltips'.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="interface" common="yes">
+    <name>ui/show_thumbs_tips</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show thumbnail tooltips</shortdescription>
+    <longdescription>show tooltips for thumbnails and a short form for the tagging module. ignored if 'hiding tooltips' is off</longdescription>
   </dtconfig>
   <dtconfig common="yes">
     <name>use_system_font</name>
