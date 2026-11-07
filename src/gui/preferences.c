@@ -861,26 +861,26 @@ static void _create_lock_check_pixbuf(GdkPixbuf **lock_pixbuf,
 
 static void _update_preset_line(GtkTreeStore *tree_store,
                                 GtkTreeIter *iter,
-                                sqlite3_stmt *stmt,
+                                const dt_presets_line_t *line,
                                 GdkPixbuf *lock_pixbuf,
                                 GdkPixbuf *check_pixbuf)
 {
-  const gint rowid = sqlite3_column_int(stmt, 0);
-  const gchar *name = (gchar *)sqlite3_column_text(stmt, 1);
-  const gchar *operation = (gchar *)sqlite3_column_text(stmt, 2);
-  const gboolean autoapply = (sqlite3_column_int(stmt, 3) == 0 ? FALSE : TRUE);
-  const gchar *model = (gchar *)sqlite3_column_text(stmt, 4);
-  const gchar *maker = (gchar *)sqlite3_column_text(stmt, 5);
-  const gchar *lens = (gchar *)sqlite3_column_text(stmt, 6);
-  const float iso_min = sqlite3_column_double(stmt, 7);
-  const float iso_max = sqlite3_column_double(stmt, 8);
-  const float exposure_min = sqlite3_column_double(stmt, 9);
-  const float exposure_max = sqlite3_column_double(stmt, 10);
-  const float aperture_min = sqlite3_column_double(stmt, 11);
-  const float aperture_max = sqlite3_column_double(stmt, 12);
-  const int focal_length_min = sqlite3_column_double(stmt, 13);
-  const int focal_length_max = sqlite3_column_double(stmt, 14);
-  const gboolean writeprotect = (sqlite3_column_int(stmt, 15) == 0 ? FALSE : TRUE);
+  const gint rowid = line->rowid;
+  const gchar *name = line->name;
+  const gchar *operation = line->operation;
+  const gboolean autoapply = (line->autoapply == 0 ? FALSE : TRUE);
+  const gchar *model = line->model;
+  const gchar *maker = line->maker;
+  const gchar *lens = line->lens;
+  const float iso_min = line->iso_min;
+  const float iso_max = line->iso_max;
+  const float exposure_min = line->exposure_min;
+  const float exposure_max = line->exposure_max;
+  const float aperture_min = line->aperture_min;
+  const float aperture_max = line->aperture_max;
+  const int focal_length_min = line->focal_length_min;
+  const int focal_length_max = line->focal_length_max;
+  const gboolean writeprotect = (line->writeprotect == 0 ? FALSE : TRUE);
 
   gchar *iso = NULL, *exposure = NULL, *aperture = NULL,
     *focal_length = NULL, *smaker = NULL, *smodel = NULL, *slens = NULL;
@@ -973,25 +973,16 @@ static void _update_preset_line(GtkTreeStore *tree_store,
 static void tree_insert_presets(GtkTreeStore *tree_store)
 {
   GtkTreeIter iter, parent;
-  sqlite3_stmt *stmt;
   gchar *last_module = NULL;
 
   GdkPixbuf *lock_pixbuf, *check_pixbuf;
   _create_lock_check_pixbuf(&lock_pixbuf, &check_pixbuf);
 
-  // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2
-    (dt_database_get(darktable.db),
-     "SELECT rowid, name, operation, autoapply, model, maker, lens, iso_min, "
-     "iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
-     "focal_length_min, focal_length_max, writeprotect "
-     "FROM data.presets "
-     "ORDER BY operation, name",
-     -1, &stmt, NULL);
-  // clang-format on
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  GList *lines = dt_presets_list_lines();
+  for(const GList *l = lines; l; l = g_list_next(l))
   {
-    const gchar *operation = (gchar *)sqlite3_column_text(stmt, 2);
+    const dt_presets_line_t *line = l->data;
+    const gchar *operation = line->operation;
     if(g_strcmp0(operation, last_module))
     {
       gchar *module = g_strdup(dt_iop_get_localized_name(operation));
@@ -1008,10 +999,10 @@ static void tree_insert_presets(GtkTreeStore *tree_store)
 
     gtk_tree_store_insert(tree_store, &iter, &parent, -1);
 
-    _update_preset_line(tree_store, &iter, stmt, lock_pixbuf, check_pixbuf);
+    _update_preset_line(tree_store, &iter, line, lock_pixbuf, check_pixbuf);
   }
   g_free(last_module);
-  sqlite3_finalize(stmt);
+  g_list_free_full(lines, dt_presets_line_free);
 
   g_object_unref(lock_pixbuf);
   g_object_unref(check_pixbuf);
@@ -1260,24 +1251,10 @@ static void edit_preset_response(dt_gui_presets_edit_dialog_t *g)
     GdkPixbuf *lock_pixbuf, *check_pixbuf;
     _create_lock_check_pixbuf(&lock_pixbuf, &check_pixbuf);
 
-    sqlite3_stmt *stmt;
-
-    // clang-format off
-    DT_DEBUG_SQLITE3_PREPARE_V2
-      (dt_database_get(darktable.db),
-       "SELECT rowid, name, operation, autoapply, model, maker, lens, iso_min, "
-       "iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
-       "focal_length_min, focal_length_max, writeprotect "
-       "FROM data.presets "
-       "WHERE rowid = ?1",
-       -1, &stmt, NULL);
-    // clang-format on
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, g->old_id);
-
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-      _update_preset_line(g->data, &edited_iter, stmt, lock_pixbuf, check_pixbuf);
-
-    sqlite3_finalize(stmt);
+    dt_presets_line_t line = { 0 };
+    if(dt_presets_get_line(g->old_id, &line))
+      _update_preset_line(g->data, &edited_iter, &line, lock_pixbuf, check_pixbuf);
+    dt_presets_line_clear(&line);
   }
 }
 
@@ -1442,30 +1419,24 @@ static void export_preset(GtkButton *button,
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *filedir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    sqlite3_stmt *stmt;
 
     // we have n+1 selects for saving presets, using single
     // transaction for whole process saves us microlocks
     dt_database_start_transaction(darktable.db);
 
-    DT_DEBUG_SQLITE3_PREPARE_V2
-      (dt_database_get(darktable.db),
-       "SELECT rowid, name, operation FROM data.presets WHERE writeprotect = 0",
-       -1, &stmt, NULL);
-
-    while(sqlite3_step(stmt) == SQLITE_ROW)
+    // the user's presets: one file each
+    GList *lines = dt_presets_list_lines();
+    for(const GList *l = lines; l; l = g_list_next(l))
     {
-      const gint rowid = sqlite3_column_int(stmt, 0);
-      const gchar *name = (gchar *)sqlite3_column_text(stmt, 1);
-      const gchar *operation = (gchar *)sqlite3_column_text(stmt, 2);
-      gchar* preset_name = g_strdup_printf("%s_%s", operation, name);
+      const dt_presets_line_t *line = l->data;
+      if(line->writeprotect) continue;
+      gchar* preset_name = g_strdup_printf("%s_%s", line->operation, line->name);
 
-      dt_presets_save_to_file(rowid, preset_name, filedir);
+      dt_presets_save_to_file(line->rowid, preset_name, filedir);
 
       g_free(preset_name);
     }
-
-    sqlite3_finalize(stmt);
+    g_list_free_full(lines, dt_presets_line_free);
 
     dt_database_release_transaction(darktable.db);
 
