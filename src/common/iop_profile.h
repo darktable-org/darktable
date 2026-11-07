@@ -159,7 +159,16 @@ dt_ioppr_set_pipe_export_profile_info(struct dt_develop_t *dev,
                                       const char *filename,
                                       const int intent);
 
-/** returns a reference to the histogram profile info
+/** the profile the scopes, color pickers and readouts show values in: in
+ * proof mode what the preview pipe rendered, rendered (the encoding a pipe
+ * recorded for its run), otherwise, or without one, the histogram setting.
+ * must not be cleanup() */
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_get_scope_profile_info(struct dt_develop_t *dev,
+                                const dt_color_encoding_t *rendered);
+
+/** dt_ioppr_get_scope_profile_info() with the encoding of the preview pipe's
+ * last frame, for readers outside the preview's run
  * histogram profile must not be cleanup()
  */
 dt_iop_order_iccprofile_info_t *

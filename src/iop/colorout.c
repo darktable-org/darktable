@@ -949,13 +949,19 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // the proof settings, read once: the darkroom changes them from the GUI
   // thread, and one commit builds from one set
   const dt_colorspaces_t *const cp = darktable.color_profiles;
+  const dt_colorspaces_color_mode_t mode = cp->mode;
   const dt_colorspaces_color_profile_type_t proof_type = cp->softproof_type;
   char proof_filename[sizeof(cp->softproof_filename)];
   g_strlcpy(proof_filename, cp->softproof_filename, sizeof(proof_filename));
   const dt_iop_color_intent_t proof_intent = cp->softproof_intent;
   const gboolean proof_bpc = cp->softproof_bpc;
 
-  d->mode = dt_pipe_is_full(pipe) ? cp->mode : DT_PROFILE_NORMAL;
+  // the full pipe shows the proof. the preview pipe's proof feeds the
+  // scopes, the color pickers and navigation, which read the proof's
+  // values, so it leaves out the gamut check's marks
+  d->mode = dt_pipe_is_full(pipe) ? mode
+          : dt_pipe_is_preview(pipe) && mode != DT_PROFILE_NORMAL ? DT_PROFILE_SOFTPROOF
+          : DT_PROFILE_NORMAL;
   const gboolean proof = d->mode != DT_PROFILE_NORMAL;
   const gboolean gamutcheck = d->mode == DT_PROFILE_GAMUTCHECK;
 

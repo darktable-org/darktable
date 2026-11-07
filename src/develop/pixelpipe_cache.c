@@ -153,6 +153,11 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
         }
       }
     }
+    // what colorout's output is, for colorout and the stages after it: the
+    // output profile info is a matrix stand-in, the same sRGB for every LUT
+    // profile, so two LUT proofs share it
+    if(dt_iop_module_is(piece->module, "colorout"))
+      hash = dt_hash(hash, &pipe->colorout_encoding, sizeof(pipe->colorout_encoding));
     pieces = g_list_next(pieces);
   }
   return hash;

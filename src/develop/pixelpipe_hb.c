@@ -1394,8 +1394,9 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
                                     const float *const input,
                                     const dt_iop_roi_t *roi_in)
 {
+  // the preview's own run: its encoding, not the frame it published last
   const dt_iop_order_iccprofile_info_t *const histogram_profile =
-    dt_ioppr_get_histogram_profile_info(dev);
+    dt_ioppr_get_scope_profile_info(dev, &pipe->output_encoding);
   const dt_iop_order_iccprofile_info_t *const display_profile =
     dt_ioppr_add_profile_info_for_content(dev, pipe->output_encoding.type,
                                           pipe->output_encoding.filename,
@@ -3552,7 +3553,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, input,
                                            roi_in.width, roi_in.height,
                                            display_profile,
-                                           dt_ioppr_get_histogram_profile_info(dev));
+                                           dt_ioppr_get_scope_profile_info(dev, &pipe->output_encoding));
   }
   return FALSE;
 }

@@ -26,6 +26,8 @@
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/develop.h"
+#include "develop/frame.h"
 #include "develop/pixelpipe.h"
 
 #include <stdio.h>
@@ -905,13 +907,38 @@ dt_ioppr_set_pipe_export_profile_info(struct dt_develop_t *dev,
   return profile_info;
 }
 
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev)
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_scope_profile_info(struct dt_develop_t *dev,
+                                                                const dt_color_encoding_t *rendered)
 {
+  // in proof mode the scopes show what the preview pipe rendered: the
+  // proof profile, sRGB where colorout replaced a missing or unusable one,
+  // and the window's output for an ink proof, which is proofed already
+  if(darktable.color_profiles->mode != DT_PROFILE_NORMAL
+     && rendered && rendered->type != DT_COLORSPACE_NONE)
+    return dt_ioppr_add_profile_info_for_content(dev, rendered->type, rendered->filename,
+                                                 rendered->profile,
+                                                 DT_INTENT_RELATIVE_COLORIMETRIC);
+
   dt_colorspaces_color_profile_type_t histogram_profile_type;
   const char *histogram_profile_filename;
   dt_ioppr_get_histogram_profile_type(&histogram_profile_type, &histogram_profile_filename);
   return dt_ioppr_add_profile_info_to_list(dev, histogram_profile_type, histogram_profile_filename,
                                            DT_INTENT_RELATIVE_COLORIMETRIC);
+}
+
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev)
+{
+  // the encoding of the preview's last frame, which the pickers' samples
+  // and the scopes were made from; none before the preview has run
+  dt_color_encoding_t rendered = { .type = DT_COLORSPACE_NONE };
+  dt_dev_pixelpipe_t *const preview = dev ? dev->preview_pipe : NULL;
+  if(darktable.color_profiles->mode != DT_PROFILE_NORMAL && preview)
+  {
+    dt_frame_t *frame = dt_dev_pixelpipe_frame(preview);
+    if(frame) rendered = *dt_frame_encoding(frame);
+    dt_frame_unref(frame);
+  }
+  return dt_ioppr_get_scope_profile_info(dev, &rendered);
 }
 
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(const struct dt_dev_pixelpipe_t *pipe)
@@ -1087,11 +1114,7 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
 void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *profile_type,
                                          const char **profile_filename)
 {
-  const dt_colorspaces_color_mode_t mode = darktable.color_profiles->mode;
-
-  // if in gamut check use soft proof
-  if(mode != DT_PROFILE_NORMAL
-     || darktable.color_profiles->histogram_type == DT_COLORSPACE_SOFTPROOF)
+  if(darktable.color_profiles->histogram_type == DT_COLORSPACE_SOFTPROOF)
   {
     *profile_type = darktable.color_profiles->softproof_type;
     *profile_filename = darktable.color_profiles->softproof_filename;

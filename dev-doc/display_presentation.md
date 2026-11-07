@@ -204,7 +204,8 @@ mark in any output.
   device encoding, so thumbnails drawn before it arrived, as colord's
   asynchronous answer at startup, are redone.
 - A soft proof is an export to the proof profile. In proof mode colorout
-  renders the full pipe as an export to that profile, through the same
+  renders the full and the preview pipe (not the second window, the
+  thumbnail pipe or exports) as an export to that profile, through the same
   matrix and curves or littlecms, PQ and HLG through `dt_hdr_encode()`,
   with the proof's own intent and black point compensation
   (`softproof_intent`, `softproof_bpc`, set next to the proof profile in
@@ -222,11 +223,22 @@ mark in any output.
   changes: from the linear values on the matrix path and for PQ and HLG,
   by littlecms' gamut check otherwise. The output encoding is the proof
   profile, so the frame is tagged with it, and the presenter shows it as
-  any other frame and clips what the screen cannot show. An ink proof, as
+  any other frame and clips what the screen cannot show. The preview's
+  proof has no gamut marks: the scopes, the color pickers, navigation and
+  the filmstrip's thumbnail of the edited image read it. In proof mode
+  the scopes and pickers show values in what the preview recorded for its
+  output, whatever the histogram setting
+  (`dt_ioppr_get_scope_profile_info()`): the proof profile, or sRGB where
+  colorout replaced it. An ink proof, as
   for a CMYK printer, goes on from the proof's values to the output
   relative colorimetric, since a frame holds RGB, and its output encoding
-  is the window's. darktable does not export ink: an export to a CMYK
-  profile writes sRGB pixels but embeds the CMYK profile. The hidden Lab
+  is the window's, which the scopes then show, with no second proof.
+  darktable does not export ink: an export to a CMYK
+  profile writes sRGB pixels but embeds the CMYK profile. Limit: while
+  the second window pans or zooms, its pipe can show the main preview's
+  frame, proofed while the second window is not. Comparing the frames'
+  encodings would not tell: a second window on another screen has another
+  output for the same content, and the gamut marks change no encoding. The hidden Lab
   and XYZ outputs store other units than the proof and are left out.
 - Export, thumbnail and AI pipes have no output description (`type` is
   `DT_COLORSPACE_NONE`).

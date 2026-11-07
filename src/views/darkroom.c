@@ -2284,6 +2284,14 @@ static void _rawoverexposed_threshold_callback(GtkWidget *slider,
     dt_dev_reprocess_center(d, 0);
 }
 
+// the full and the preview pipe from colorout on: colorout proofs both
+static void _reprocess_proof(dt_develop_t *d)
+{
+  const dt_iop_module_t *cout = dt_iop_get_module("colorout");
+  dt_dev_reprocess_center(d, cout->iop_order);
+  dt_dev_reprocess_preview(d, cout->iop_order);
+}
+
 /* softproof */
 static void _softproof_quickbutton_clicked(GtkWidget *w,
                                            gpointer user_data)
@@ -2295,8 +2303,7 @@ static void _softproof_quickbutton_clicked(GtkWidget *w,
     darktable.color_profiles->mode = DT_PROFILE_SOFTPROOF;
 
   _update_softproof_gamut_checking(d);
-  const dt_iop_module_t *cout = dt_iop_get_module("colorout");
-  dt_dev_reprocess_center(d, cout->iop_order);
+  _reprocess_proof(d);
 }
 
 /* gamut */
@@ -2310,8 +2317,7 @@ static void _gamut_quickbutton_clicked(GtkWidget *w,
     darktable.color_profiles->mode = DT_PROFILE_GAMUTCHECK;
 
   _update_softproof_gamut_checking(d);
-  const dt_iop_module_t *cout = dt_iop_get_module("colorout");
-  dt_dev_reprocess_center(d, cout->iop_order);
+  _reprocess_proof(d);
 }
 
 /* set the gui state for both softproof and gamut checking */
@@ -2345,8 +2351,7 @@ static void _softproof_intent_callback(GtkWidget *combo,
   // proof was made with
   if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
   {
-    const dt_iop_module_t *cout = dt_iop_get_module("colorout");
-    dt_dev_reprocess_center(d, cout->iop_order);
+    _reprocess_proof(d);
   }
 }
 
@@ -2360,8 +2365,7 @@ static void _softproof_bpc_callback(GtkWidget *toggle,
   // as for the intent
   if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
   {
-    const dt_iop_module_t *cout = dt_iop_get_module("colorout");
-    dt_dev_reprocess_center(d, cout->iop_order);
+    _reprocess_proof(d);
   }
 }
 
@@ -2406,6 +2410,10 @@ end:
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             DT_COLORSPACES_PROFILE_TYPE_SOFTPROOF);
     dt_dev_reprocess_all(d);
+    // as for the intent: an ink proof's output encoding is the window's,
+    // whatever the proof profile
+    if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
+      _reprocess_proof(d);
   }
 }
 
