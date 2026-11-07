@@ -281,6 +281,7 @@ typedef struct dt_iop_demosaic_global_data_t
   int show_blend_mask;
   int capture_result;
   int final_blend;
+  int capture_radius;
   float *gauss_coeffs;
 } dt_iop_demosaic_global_data_t;
 
@@ -1150,7 +1151,7 @@ int process_cl(dt_iop_module_t *self,
     if(autotune)
     {
       const float cs_thrs = _capture_noise(self, piece);
-      const float cs_radius = _capture_radius_cl(self, piece, dev_in, roi_in, xtrans, filters, true_monochrome);
+      const float cs_radius = _capture_radius_cl(self, piece, dev_in, dev_xtrans, roi_in, xtrans, filters);
       d->cs_radius = cs_radius;
       d->cs_thrs = cs_thrs;
 
@@ -1472,6 +1473,7 @@ void init_global(dt_iop_module_so_t *self)
   gd->show_blend_mask = dt_opencl_create_kernel(capt, "show_blend_mask");
   gd->capture_result = dt_opencl_create_kernel(capt, "capture_result");
   gd->final_blend = dt_opencl_create_kernel(capt, "final_blend");
+  gd->capture_radius = dt_opencl_create_kernel(capt, "capture_radius");
 
   gd->gauss_coeffs = dt_alloc_align_float(CAPTURE_KERNEL_ALIGN * (UCHAR_MAX+1));
   for(int i = 0; i <= UCHAR_MAX; i++)
@@ -1561,6 +1563,7 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->show_blend_mask);
   dt_opencl_free_kernel(gd->capture_result);
   dt_opencl_free_kernel(gd->final_blend);
+  dt_opencl_free_kernel(gd->capture_radius);
   dt_free_align(gd->gauss_coeffs);
   free(self->data);
   self->data = NULL;

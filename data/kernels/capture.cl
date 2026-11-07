@@ -308,3 +308,192 @@ __kernel void capture_result( __read_only image2d_t in,
   }
   write_imagef(out, (int2)(col, row), pix);
 }
+
+// auto radius: sensor value at (row, col) of the tested area, white balance undone
+static inline float _radius_val(read_only image2d_t in,
+                                global const unsigned char (*const xtrans)[6],
+                                const unsigned int filters,
+                                const float4 coeff,
+                                const int dx,
+                                const int dy,
+                                const int row,
+                                const int col)
+{
+  const int c = filters == 9u ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
+  const float f = c == 0 ? coeff.x : (c == 1 ? coeff.y : (c == 2 ? coeff.z : coeff.w));
+  return f * read_imagef(in, sampleri, (int2)(col + dx, row + dy)).x;
+}
+
+#define RAWEPS 0.005f
+#define lowerLimit 0.01f
+#define upperLimit 0.9f
+#define V(r, c) _radius_val(in, xtrans, filters, coeff, dx, dy, row + (r), col + (c))
+
+// largest ratio of neighbouring greens at one site, same tests as _calcRadiusBayer()
+static inline float _radius_bayer(read_only image2d_t in,
+                                  global const unsigned char (*const xtrans)[6],
+                                  const unsigned int filters,
+                                  const float4 coeff,
+                                  const int dx,
+                                  const int dy,
+                                  const int row,
+                                  const int col)
+{
+  float maxRatio = 1.0f;
+  const float val00 = V(0, 0);
+  if(val00 <= RAWEPS) return maxRatio;
+
+  const float val1m1 = V(1, -1);
+  const float val1p1 = V(1, 1);
+  const float maxVal0 = fmax(val00, val1m1);
+  if(val1m1 > RAWEPS && maxVal0 > lowerLimit)
+  {
+    const float minVal = fmin(val00, val1m1);
+    if(maxVal0 > maxRatio * minVal)
+    {
+      const float clip = maxVal0 == val00
+                       ? fmax(fmax(V(-1, -1), V(-1, 1)), val1p1)
+                       : fmax(fmax(fmax(V(0, -2), val00), V(2, -2)), V(2, 0));
+      if(clip < upperLimit)
+        maxRatio = maxVal0 / minVal;
+    }
+  }
+
+  const float maxVal1 = fmax(val00, val1p1);
+  if(val1p1 > RAWEPS && maxVal1 > lowerLimit)
+  {
+    const float minVal = fmin(val00, val1p1);
+    if(maxVal1 > maxRatio * minVal)
+    {
+      const float clip = maxVal1 == val00
+                       ? fmax(fmax(V(-1, -1), V(-1, 1)), val1p1)
+                       : fmax(fmax(fmax(val00, V(0, 2)), V(2, 0)), V(2, 2));
+      if(clip < upperLimit)
+        maxRatio = maxVal1 / minVal;
+    }
+  }
+  return maxRatio;
+}
+
+static inline float _radius_pair(const float a,
+                                 const float b,
+                                 const float maxRatio)
+{
+  const float maxVal = fmax(a, b);
+  const float minVal = fmin(a, b);
+  return maxVal > lowerLimit && maxVal > maxRatio * minVal ? maxVal / minVal : maxRatio;
+}
+
+// same tests as _calcRadiusXtrans()
+static inline float _radius_xtrans(read_only image2d_t in,
+                                   global const unsigned char (*const xtrans)[6],
+                                   const unsigned int filters,
+                                   const float4 coeff,
+                                   const int dx,
+                                   const int dy,
+                                   const int row,
+                                   const int col)
+{
+  float maxRatio = 1.0f;
+  const float valp1p1 = V(1, 1);
+  const bool squareClipped = fmax(fmax(fmax(valp1p1, V(1, 2)), V(2, 1)), V(2, 2)) >= upperLimit;
+  const float greenSolitary = V(0, 0);
+  if(greenSolitary > RAWEPS && fmax(V(-1, -1), V(-1, 1)) < upperLimit)
+  {
+    if(greenSolitary < upperLimit)
+    {
+      const float valp1m1 = V(1, -1);
+      if(valp1m1 > RAWEPS && fmax(fmax(fmax(V(1, -2), valp1m1), V(2, -2)), V(1, -1)) < upperLimit)
+        maxRatio = _radius_pair(greenSolitary, valp1m1, maxRatio);
+      if(valp1p1 > RAWEPS && !squareClipped)
+        maxRatio = _radius_pair(greenSolitary, valp1p1, maxRatio);
+    }
+  }
+
+  if(!squareClipped)
+  {
+    const float valp2p2 = V(2, 2);
+    if(valp2p2 > RAWEPS)
+    {
+      if(valp1p1 > RAWEPS)
+        maxRatio = _radius_pair(valp1p1, valp2p2, maxRatio);
+      const float greenSolitaryRight = V(3, 3);
+      if(fmax(fmax(greenSolitaryRight, V(4, 2)), V(4, 4)) < upperLimit && greenSolitaryRight > RAWEPS)
+        maxRatio = _radius_pair(greenSolitaryRight, valp2p2, maxRatio);
+    }
+    const float valp1p2 = V(1, 2);
+    const float valp2p1 = V(2, 1);
+    if(valp2p1 > RAWEPS)
+    {
+      if(valp1p2 > RAWEPS)
+        maxRatio = _radius_pair(valp1p2, valp2p1, maxRatio);
+      const float greenSolitaryLeft = V(3, 0);
+      if(fmax(fmax(greenSolitaryLeft, V(4, -1)), V(4, 1)) < upperLimit && greenSolitaryLeft > RAWEPS)
+        maxRatio = _radius_pair(greenSolitaryLeft, valp2p1, maxRatio);
+    }
+  }
+  return maxRatio;
+}
+
+#undef V
+
+// one work item per tested site, each work group writes the largest ratio it found
+__kernel void capture_radius(read_only image2d_t in,
+                             global const unsigned char (*const xtrans)[6],
+                             const unsigned int filters,
+                             const float4 coeff,
+                             const int dx,
+                             const int dy,
+                             const int width,
+                             const int height,
+                             const int startx,
+                             const int starty,
+                             global float *partial,
+                             local float *buffer)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int xlsz = get_local_size(0);
+  const int ylsz = get_local_size(1);
+  const int xlid = get_local_id(0);
+  const int ylid = get_local_id(1);
+  const int l = mad24(ylid, xlsz, xlid);
+
+  float maxRatio = 1.0f;
+  if(filters == 9u)
+  {
+    const int row = starty + 2 + 3 * y;
+    const int col = startx + 2 + 3 * x;
+    if(row < height - 4 && col < width - 4)
+      maxRatio = _radius_xtrans(in, xtrans, filters, coeff, dx, dy, row, col);
+  }
+  else
+  {
+    const int row = 4 + y;
+    const int col = (filters ? 5 + (FC(row & 1, 0, filters) & 1) : 5) + 2 * x;
+    if(row < height - 4 && col < width - 4)
+      maxRatio = _radius_bayer(in, xtrans, filters, coeff, dx, dy, row, col);
+  }
+
+  buffer[l] = maxRatio;
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  for(int offset = mul24(xlsz, ylsz) / 2; offset > 0; offset = offset / 2)
+  {
+    if(l < offset)
+      buffer[l] = fmax(buffer[l], buffer[l + offset]);
+    barrier(CLK_LOCAL_MEM_FENCE);
+  }
+
+  if(l == 0)
+  {
+    const int xgid = get_group_id(0);
+    const int ygid = get_group_id(1);
+    const int xgsz = get_num_groups(0);
+    partial[mad24(ygid, xgsz, xgid)] = buffer[0];
+  }
+}
+
+#undef RAWEPS
+#undef lowerLimit
+#undef upperLimit
