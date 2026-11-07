@@ -3107,6 +3107,7 @@ static void _blendif_options_callback(GtkButton *button,
   if(module && !bd) return;
 
   GtkWidget *pop = gtk_popover_new(GTK_WIDGET(button));
+  gtk_widget_set_name(pop, "masks-options-popover");
   g_signal_connect(G_OBJECT(pop), "closed", G_CALLBACK(_masks_options_popover_closed), NULL);
   GtkWidget *box = dt_gui_vbox();
   gtk_container_add(GTK_CONTAINER(pop), box);
