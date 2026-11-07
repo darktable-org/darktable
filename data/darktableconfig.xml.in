@@ -4106,7 +4106,7 @@
     <type>string</type>
     <default></default>
     <shortdescription>display profile file</shortdescription>
-    <longdescription>the absolute path of an ICC profile used as the display profile instead of the one the system reports, for both windows. leave empty to use the system's.\nit applies only to windows darktable color-manages itself, as it is, and is ignored where the system manages a window's colors, as a Wayland compositor with color management does. on macOS, and on Windows with automatic color management or HDR, the system converts the image again, so the colors are converted twice</longdescription>
+    <longdescription>the absolute path of an ICC profile used as the display profile instead of the one the system reports, for both windows. leave empty to use the system's, which is also used while the file cannot be read or is not an RGB profile.\nit applies only to windows darktable color-manages itself, as it is, and is ignored where the system manages a window's colors, as a Wayland compositor with color management does. on macOS, and on Windows with automatic color management or HDR, the system converts the image again, so the colors are converted twice</longdescription>
   </dtconfig>
   <dtconfig>
     <name>metadata/resolution</name>

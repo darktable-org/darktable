@@ -64,8 +64,10 @@ mark in any output.
   whether the platform converts. The one exception is the preference
   `ui_last/display_profile_file`: an ICC file that replaces what the
   platform publishes, for both windows, read in its place by
-  `dt_colorspaces_set_display_profile()`. A native window ignores it, as
-  it ignores colord's profile, and so does its registry entry (below).
+  `dt_colorspaces_set_display_profile()`. A file that is unreadable or not
+  an RGB profile counts as none, with a message once per file. A native
+  window ignores it, as it ignores colord's profile, and so does its
+  registry entry (below).
   There is no other user selection; previewing
   another display, print or sRGB is a soft proof. Unless the platform owns
   it, a window's output is its system display profile (`DISPLAY` or
