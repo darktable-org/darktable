@@ -17,79 +17,19 @@
 */
 
 #include "common.h"
+#include "lut3d.h"
 
 kernel void
 lut3d_tetrahedral(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
            global float *clut, const int level)
 {
-  int4 rgbi = (int4)(0);
-  float4 rgbd = (float4)(0.0f);
-  const int level2 = level * level;
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 input = clip4(readpixel(in, x, y));
-  float4 output = (float4)(0.0f);
-
-  rgbd = input * (float)(level - 1);
-  rgbi = min( max( convert_int4(rgbd), (int4)0), (int4)(level - 2));
-
-// delta r, g, b
-  rgbd = rgbd - convert_float4(rgbi);
-
-// indexes of P000 to P111 in clut
-  const int color = rgbi.x + rgbi.y * level + rgbi.z * level2;
-  const int i000 = color * 3 ;  // P000
-  const int i100 = i000 + 3;  // P100
-  const int i010 = (int)(color + level) * 3;  // P010
-  const int i110 = i010 + 3;  //P110
-  const int i001 = (int)(color + level2) * 3;  // P001
-  const int i101 = i001 + 3;  // P101
-  const int i011 = (int)(color + level + level2) * 3;  // P011
-  const int i111 = i011 + 3;  // P111
-
-// float3 are 16 bytes aligned. So no way to set clut as an array of float3.
-  const float4 clut000 = (float4)(clut[i000], clut[i000+1], clut[i000+2], 0.0f);
-  const float4 clut100 = (float4)(clut[i100], clut[i100+1], clut[i100+2], 0.0f);
-  const float4 clut010 = (float4)(clut[i010], clut[i010+1], clut[i010+2], 0.0f);
-  const float4 clut110 = (float4)(clut[i110], clut[i110+1], clut[i110+2], 0.0f);
-  const float4 clut001 = (float4)(clut[i001], clut[i001+1], clut[i001+2], 0.0f);
-  const float4 clut101 = (float4)(clut[i101], clut[i101+1], clut[i101+2], 0.0f);
-  const float4 clut011 = (float4)(clut[i011], clut[i011+1], clut[i011+2], 0.0f);
-  const float4 clut111 = (float4)(clut[i111], clut[i111+1], clut[i111+2], 0.0f);
-
-  if (rgbd.x > rgbd.y)
-  {
-    if (rgbd.y > rgbd.z)
-    {
-      output = (1.0f-rgbd.x)*clut000 + (rgbd.x-rgbd.y)*clut100 + (rgbd.y-rgbd.z)*clut110 + rgbd.z*clut111;
-    }
-    else if (rgbd.x > rgbd.z)
-    {
-      output = (1.0f-rgbd.x)*clut000 + (rgbd.x-rgbd.z)*clut100 + (rgbd.z-rgbd.y)*clut101 + rgbd.y*clut111;
-    }
-    else
-    {
-      output = (1.0f-rgbd.z)*clut000 + (rgbd.z-rgbd.x)*clut001 + (rgbd.x-rgbd.y)*clut101 + rgbd.y*clut111;
-    }
-  }
-  else
-  {
-    if (rgbd.z > rgbd.y)
-    {
-      output = (1.0f-rgbd.z)*clut000 + (rgbd.z-rgbd.y)*clut001 + (rgbd.y-rgbd.x)*clut011 + rgbd.x*clut111;
-    }
-    else if (rgbd.z > rgbd.x)
-    {
-      output = (1.0f-rgbd.y)*clut000 + (rgbd.y-rgbd.z)*clut010 + (rgbd.z-rgbd.x)*clut011 + rgbd.x*clut111;
-    }
-    else
-    {
-      output = (1.0f-rgbd.y)*clut000 + (rgbd.y-rgbd.x)*clut010 + (rgbd.x-rgbd.z)*clut110 + rgbd.z*clut111;
-    }
-  }
+  const float4 input = clip4(readpixel(in, x, y));
+  float4 output = dt_lut3d_tetrahedral(input, clut, level);
   output.w = input.w;
   write_imagef(out, (int2)(x, y), output);
 }

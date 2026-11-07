@@ -3683,13 +3683,6 @@
     <longdescription>while enabled, a parametric mask element's color picker starts from the area the module's last pick used and sets the range from it at once, so one area can set the range of several channels in turn; the first pick still waits for an area dragged on the image</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/masks/parametric_always_shown</name>
-    <type min="0" max="2">int</type>
-    <default>0</default>
-    <shortdescription>always shown controls of parametric elements</shortdescription>
-    <longdescription>which controls of a parametric mask element the controls header's toggle leaves in view: 0 the input channel, 1 the input channel and the boost factor, 2 both channels and the boost factor, which hides the toggle</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/darkroom/masks/solo_edit_mode</name>
     <type>bool</type>
     <default>false</default>
@@ -3786,6 +3779,13 @@
     <default>0</default>
     <shortdescription>mask panel position</shortdescription>
     <longdescription>where the blend mask panel is shown: 0 embedded within each module, 1 as a utility module in the left panel, 2 as a separate panel beside the canvas</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/fold_run_length</name>
+    <type min="0">int</type>
+    <default>3</default>
+    <shortdescription>auto-fold runs of mask elements</shortdescription>
+    <longdescription>a run of this many elements or more, one after the other, in the mask panel shows only its top element, with a row standing in for the rest that opens them; groups are never folded and end a run. 0 never folds, and the panel options offer 0, 3 and 5</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/opacity</name>

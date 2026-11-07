@@ -20,6 +20,7 @@
 #include "color_conversion.h"
 #include "common.h"
 #include "rgb_norms.h"
+#include "lut3d.h"
 
 #include "diffuse.cl"
 
@@ -1452,6 +1453,24 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
   write_imagef(out, (int2)(x, y), pixel);
 }
 
+/* kernel for the plugin colorin: the LittleCMS transform baked into a 3D LUT
+   over input values 0..1, see _bake_clut() */
+kernel void
+colorin_clut(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+             global const float *clut, const int level, global const float *corr)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
+  const float4 raw = readpixel(in, x, y);
+  float4 pixel = dt_lut3d_tetrahedral(clip4(corval * raw), clut, level);
+  pixel.w = raw.w;
+  write_imagef(out, (int2)(x, y), pixel);
+}
+
 /* kernel for the plugin colorin: with clipping */
 kernel void
 colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
@@ -1872,39 +1891,21 @@ static inline float _interpolation_tap(const int type, const float width, const 
   return interpolation_func_lanczos(width, t);
 }
 
-// rotate pixels: one output pixel by dt_interpolation_compute_pixel4c() at the
-// back transformed position, with mirrored borders and zero outside the image
-kernel void
-rotatepixels(read_only image2d_t in,
-             write_only image2d_t out,
-             const int width,
-             const int height,
-             const int in_width,
-             const int in_height,
-             const int2 roi_out,
-             const int2 roi_in,
-             const float4 m,
-             const float2 center,
-             const int itype,
-             const int iwidth)
+// one pixel by dt_interpolation_compute_pixel4c() at (px, py): the interpolator's
+// taps and norm, mirrored borders and zero outside the image
+static inline float4 _interpolation_pixel4(read_only image2d_t in,
+                                           const float px,
+                                           const float py,
+                                           const int in_width,
+                                           const int in_height,
+                                           const int itype,
+                                           const int iwidth)
 {
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if(x >= width || y >= height) return;
-
-  const float pix = roi_out.x + x;
-  const float piy = roi_out.y + y;
-  const float px = pix * m.x + piy * m.y + center.x - roi_in.x;
-  const float py = pix * m.z + piy * m.w + center.y - roi_in.y;
-
   const int ix = (int)floor(px);
   const int iy = (int)floor(py);
 
   if(ix < -1 || iy < -1 || ix >= in_width || iy >= in_height)
-  {
-    write_imagef(out, (int2)(x, y), (float4)0.0f);
-    return;
-  }
+    return (float4)0.0f;
 
   const int fx = ix - iwidth + 1;
   const int fy = iy - iwidth + 1;
@@ -1933,7 +1934,59 @@ rotatepixels(read_only image2d_t in,
     pixel += kv[i] * h;
   }
 
-  write_imagef(out, (int2)(x, y), pixel * (1.0f / (normh * normv)));
+  return pixel * (1.0f / (normh * normv));
+}
+
+// rotate pixels: one output pixel at the back transformed position
+kernel void
+rotatepixels(read_only image2d_t in,
+             write_only image2d_t out,
+             const int width,
+             const int height,
+             const int in_width,
+             const int in_height,
+             const int2 roi_out,
+             const int2 roi_in,
+             const float4 m,
+             const float2 center,
+             const int itype,
+             const int iwidth)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float pix = roi_out.x + x;
+  const float piy = roi_out.y + y;
+  const float px = pix * m.x + piy * m.y + center.x - roi_in.x;
+  const float py = pix * m.z + piy * m.w + center.y - roi_in.y;
+
+  write_imagef(out, (int2)(x, y), _interpolation_pixel4(in, px, py, in_width, in_height, itype, iwidth));
+}
+
+// scale pixels: one output pixel at ((x, y) + shift) * scale - offset of the
+// input, see _sampling_grid() in src/iop/scalepixels.c
+kernel void
+scalepixels(read_only image2d_t in,
+            write_only image2d_t out,
+            const int width,
+            const int height,
+            const int in_width,
+            const int in_height,
+            const float2 scale,
+            const int2 shift,
+            const float2 offset,
+            const int itype,
+            const int iwidth)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float px = (x + shift.x) * scale.x - offset.x;
+  const float py = (y + shift.y) * scale.y - offset.y;
+
+  write_imagef(out, (int2)(x, y), _interpolation_pixel4(in, px, py, in_width, in_height, itype, iwidth));
 }
 
 /* kernel for clip&rotate: bilinear interpolation */
@@ -3479,6 +3532,43 @@ colorout (read_only image2d_t in,
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+
+/* kernel for the plugin colorout: the LittleCMS transform baked into a 3D LUT
+   over the Lab range LittleCMS encodes floats in, see _bake_clut() */
+kernel void
+colorout_clut(read_only image2d_t in,
+              write_only image2d_t out,
+              const int width,
+              const int height,
+              global const float *clut,
+              const int level,
+              const int gamutcheck,
+              global const float *gamut,
+              const int hdr_transfer)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float4 Lab = readpixel(in, x, y);
+  const float4 coord = clip4((float4)(Lab.x / 100.0f, (Lab.y + 128.0f) / 255.0f, (Lab.z + 128.0f) / 255.0f, 0.0f));
+  float4 pixel = dt_lut3d_tetrahedral(coord, clut, level);
+  pixel.w = Lab.w;
+
+  // as _transform_lcms(): out of gamut, or negative, shows as cyan
+  if(gamutcheck
+     && (dt_lut3d_tetrahedral(coord, gamut, level).x > 0.5f
+         || pixel.x < 0.0f || pixel.y < 0.0f || pixel.z < 0.0f))
+    pixel = (float4)(0.0f, 1.0f, 1.0f, 0.0f);
+
+  float rgb[3] = { pixel.x, pixel.y, pixel.z };
+  dt_hdr_encode(rgb, hdr_transfer);
+  pixel.x = rgb[0];
+  pixel.y = rgb[1];
+  pixel.z = rgb[2];
+  write_imagef(out, (int2)(x, y), pixel);
+}
 
 /* kernel for the levels plugin */
 kernel void

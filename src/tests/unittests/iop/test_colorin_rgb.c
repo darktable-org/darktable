@@ -286,7 +286,8 @@ static void test_lcms_fallback(void **state)
     init_piece(&pipe, &piece, &p);
     const dt_iop_colorin_data_t *d = piece.data;
     assert_ptr_equal(d->input, profile->profile);
-    assert_false(piece.process_cl_ready);
+    // without gamut clipping the transform runs on OpenCL as a 3D LUT
+    assert_int_equal(piece.process_cl_ready, clip == DT_NORMALIZE_OFF);
     assert_false(dt_is_valid_colormatrix(d->cmatrix[0][0]));
     assert_non_null(d->xform_cam_out);
     cleanup_pipe(&module, &pipe, &piece);

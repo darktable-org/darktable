@@ -282,6 +282,9 @@ changes (where available).
 - Rotate pixels, which straightens the sensor layout of Fujifilm
   SuperCCD raws, now runs on OpenCL.
 
+- Scale pixels, which sets the pixel aspect ratio for non-square-pixel
+  sensors and anamorphic desqueeze, now runs on OpenCL.
+
 - Hovering over and dragging nodes of long drawn brush strokes and
   paths is much faster, as the mask overlay is no longer redrawn on
   every mouse move and long outlines are drawn with far fewer points.
@@ -324,6 +327,16 @@ changes (where available).
 - The AMaZE demosaicer, plain and dual, can now run on the OpenCL
   device instead of sending the image back to the CPU for the
   demosaic.
+
+- Copying images to the OpenCL device is up to four times faster on
+  NVIDIA and macOS drivers, which speeds up every step where the
+  pipeline moves the image from the CPU to the GPU.
+
+- Softproofing, gamut check and LUT-based ICC profiles in input and
+  output color profile can now run on the OpenCL device, through a 3D
+  LUT sampled from LittleCMS, instead of sending the image back to the
+  CPU. The "always use LittleCMS 2" export preference still applies the
+  exact transform on the CPU.
 
 ## Other Changes
 
@@ -467,7 +480,7 @@ changes (where available).
 
 - Lightroom import now sets the working profile to linear ProPhoto
   RGB, the space Lightroom works in, instead of linear Rec709 RGB.
-  
+
 - In the darkroom in the left panel the navigation can now be toggled
   through the panel's right click menu in addition to the strg+shift+n
   shortcut.
@@ -492,7 +505,22 @@ changes (where available).
 - History items created by the Lightroom import are labeled "lr import"
   instead of having an empty label.
 
+- Raw files that RawSpeed can't decode are now loaded with LibRaw if
+  LibRaw supports their compression mode: Fujifilm lossy compressed
+  RAFs, and with LibRaw 0.23 (snapshot 202611) or newer also Nikon high
+  efficiency (HE/HE*) NEFs from the Z6 III, Z8, Z9 and Z f and Sony
+  ARW 6.0 compressed and compressed (HQ) files. Bayer DNGs RawSpeed can't
+  decode are loaded with LibRaw as well, e.g. lossless JPEG with
+  unsupported predictors or uncompressed files with inconsistent strip
+  sizes as written by some DJI drones. All other files are still loaded with RawSpeed.
+
+- The LibRaw loader now supports X-Trans sensors. Previously, RAFs
+  routed to LibRaw via the libraw_extensions setting came out red.
+
 ## Bug Fixes
+
+- Fixed faint seams on a 112 pixel grid in images demosaiced with
+  LMMSE, where each tile read leftover data from the previous tile.
 
 - Upscaled exports no longer show shifted bands where they were
   processed in tiles, and the upscale now runs on OpenCL when it fits
@@ -684,6 +712,14 @@ changes (where available).
 
 - Fixed camera mutex locks before the mutexes are initialized.
 
+- Fixed tether mode leaving its event and live-view threads running after
+  leaving the view or tearing down a camera, and used full gphoto teardown
+  when a mounted camera disappeared so the device is released cleanly.
+
+- Fixed tether mode treating transient PTP Device Busy errors as a lost
+  camera connection (common when enabling live view), and stopped
+  echoing camera-driven property updates back to the camera.
+
 - Fixed metadata tag Xmp.xmpMM.PreservedFileName not written on camera
   import.
 
@@ -765,6 +801,10 @@ changes (where available).
 - Fixed edits made just before quitting darktable, such as a rating,
   being missing from the image's XMP sidecar while the library kept
   them.
+
+- Fixed tethered additional properties: user-added entries can be removed
+  or replaced (same label), the O property picker works more than once,
+  and unloadable saved properties show as deletable unavailable stubs.
 
 - Fixed an unexpected image change in AgX when disabling 'keep the pivot
   on the diagonal' after using 'read exposure from metadata and exposure
@@ -936,6 +976,9 @@ changes (where available).
   completed the correction with the target image's own as-shot
   multipliers.
 
+- Fixed scale pixels output shifted by a fraction of a pixel in each
+  tile when the image was processed in tiles.
+
 ## Lua
 
 ### API Version
@@ -1010,7 +1053,9 @@ changes (where available).
 
 ### Base Support
 
-- N/A
+- Canon EOS R50 V (requires LibRaw 0.23 or newer)
+- Canon EOS R6 Mark III (requires LibRaw 0.23 or newer)
+- Canon PowerShot V1 (requires LibRaw 0.23 or newer)
 
 ### White Balance Presets
 
@@ -1025,11 +1070,11 @@ changes (where available).
 - Apple ProRAW DNGs
 - CinemaDNG lossless (Blackmagic, some DJI, etc.) and lossy (Blackmagic)
 - DNG 1.7 using JPEG XL (Adobe enhanced, Samsung Expert RAW)
-- Fujifilm lossy RAFs
-- Nikon high efficiency NEFs
+- Nikon high efficiency NEFs, except from the Z6 III, Z8, Z9 and Z f
+  with LibRaw 0.23 or newer
 - Phase One other than IIQ L
 - Sony ARW 4.0/5.0 downsized lossless ("M" for full-frame, "S" for full-frame & APS-C)
-- Sony ARW 6.0 compressed and compressed (HQ)
+- Sony ARW 6.0 compressed and compressed (HQ) with LibRaw older than 0.23
 
 ### Suspended Support
 
