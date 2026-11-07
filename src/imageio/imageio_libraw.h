@@ -31,6 +31,16 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
                                            const char *filename,
                                            dt_mipmap_buffer_t *buf);
 
+// Called when RawSpeed failed to load a file (rawspeed_ret): loads it
+// via LibRaw if it is one of the formats LibRaw supports and RawSpeed
+// doesn't (Nikon HE/HE*, Sony ARW 6 compressed, Fujifilm lossy, some
+// lossless DNGs, ...).
+// Returns DT_IMAGEIO_UNSUPPORTED_FORMAT for any other file.
+dt_imageio_retval_t dt_imageio_open_libraw_fallback(dt_image_t *img,
+                                                    const char *filename,
+                                                    dt_mipmap_buffer_t *buf,
+                                                    const dt_imageio_retval_t rawspeed_ret);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

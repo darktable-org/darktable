@@ -26,6 +26,7 @@
 #include "develop/develop.h"
 #include "imageio_common.h"
 #include "imageio_libraw.h"
+#include "imageio_rawspeed.h" // for dt_rawspeed_crop_dcraw_filters
 
 #include <libraw/libraw.h>
 
@@ -353,6 +354,106 @@ static gboolean _supported_image(const gchar *filename)
   return FALSE;
 }
 
+// Raw formats (compression modes) RawSpeed can't decode but LibRaw can.
+// When RawSpeed fails on a file, LibRaw opens it and the file is loaded
+// via LibRaw if LibRaw picked one of these decoders for it. LibRaw picks
+// its decoder while parsing the file, so the decoder name reliably tells
+// what the file is and whether the LibRaw in use can decode it.
+
+#if LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(0, 23)
+// Nikon HE/HE*: only the cameras listed by LibRaw (snapshot 202611).
+// Values are the unmodified Exif.Image.Model strings.
+static const char *const _nikon_he_models[] =
+{
+  "NIKON Z 8",
+  "NIKON Z 9",
+  "NIKON Z f",
+  "NIKON Z6_3",
+  NULL
+};
+#endif
+
+typedef struct dt_libraw_fallback_t
+{
+  const char *decoder;        // as returned by libraw_unpack_function_name()
+  int min_version;            // first LibRaw version decoding this format
+  gboolean decoder_shared;    // LibRaw uses this decoder for formats RawSpeed
+                              // supports too: only fall back for cameras
+                              // RawSpeed knows (failing on the mode, not the
+                              // camera), don't take over new cameras
+  const char *const *models;  // NULL-terminated Exif models, NULL = all
+  const char *description;
+} dt_libraw_fallback_t;
+
+static const dt_libraw_fallback_t _fallbacks[] =
+{
+#if LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(0, 23)
+  { "nikon_he_load_raw()",
+    LIBRAW_MAKE_VERSION(0, 23, 0), FALSE, _nikon_he_models,
+    "Nikon HE/HE*" },
+  { "sony_arw6_load_raw()",
+    LIBRAW_MAKE_VERSION(0, 23, 0), FALSE, NULL,
+    "Sony ARW 6 compressed / compressed HQ" },
+#endif
+#if LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(0, 21)
+  { "fuji_compressed_load_raw()",
+    LIBRAW_MAKE_VERSION(0, 21, 0), TRUE, NULL,
+    "Fujifilm compressed (lossy)" },
+  // DNGs RawSpeed fails on; regular DNGs stay with RawSpeed:
+  // lossless JPEG with predictors RawSpeed doesn't support (e.g. 7)
+  { "lossless_dng_load_raw()",
+    LIBRAW_MAKE_VERSION(0, 21, 0), TRUE, NULL,
+    "DNG lossless JPEG" },
+  // uncompressed with inconsistent strip sizes (e.g. DJI Mavic 3)
+  { "packed_dng_load_raw()",
+    LIBRAW_MAKE_VERSION(0, 21, 0), TRUE, NULL,
+    "DNG uncompressed" },
+#endif
+  { NULL, 0, FALSE, NULL, NULL }
+};
+
+static gboolean _in_list(const char *const *list, const char *value)
+{
+  for(int i = 0; list[i]; i++)
+    if(!g_strcmp0(value, list[i]))
+      return TRUE;
+  return FALSE;
+}
+
+static const dt_libraw_fallback_t *_find_fallback(libraw_data_t *raw,
+                                                  const dt_image_t *img,
+                                                  const dt_imageio_retval_t rawspeed_ret)
+{
+  const char *decoder = libraw_unpack_function_name(raw);
+  if(!decoder)
+    return NULL;
+
+  // the loader handles CFA data (Bayer, X-Trans) only, not e.g. LinearRaw
+  // DNGs: leave those to the regular loader chain
+  if(!raw->idata.filters)
+    return NULL;
+
+  for(const dt_libraw_fallback_t *f = _fallbacks; f->decoder; f++)
+  {
+    if(strcmp(decoder, f->decoder))
+      continue;
+    // the LibRaw found at runtime may be older than its headers
+    if(libraw_versionNumber() < f->min_version)
+    {
+      dt_print(DT_DEBUG_IMAGEIO,
+               "[libraw_open] LibRaw %s can't decode %s, skipping `%s'",
+               libraw_version(), f->description, img->filename);
+      return NULL;
+    }
+    if(f->decoder_shared && rawspeed_ret == DT_IMAGEIO_UNSUPPORTED_CAMERA)
+      return NULL;
+    if(f->models && !_in_list(f->models, img->exif_model))
+      return NULL;
+    return f;
+  }
+  return NULL;
+}
+
 // Issue a warning, but only if we haven't done so
 // for that particular model in this darktable session
 static void _check_libraw_missing_support(const struct dt_image_t *img)
@@ -400,22 +501,112 @@ gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
   return FALSE;
 }
 
+// Black levels for darktable: raw_black_level_separate[] is per 2x2
+// position, relative to the top left of the full raw buffer. LibRaw has
+// a common black, per-color cblack[0..3] and, for some formats, a
+// cblack[4] x cblack[5] pattern in cblack[6+] (e.g. Fujifilm stores its
+// black levels only there, with black and cblack[0..3] being 0). LibRaw
+// folds these together only in adjust_bl() during its own processing,
+// which we don't run, so do it here. LibRaw's filters and black pattern
+// are relative to the visible area (after the margins).
+static unsigned _mod(const int a, const unsigned m)
+{
+  const int r = a % (int)m;
+  return r < 0 ? (unsigned)(r + (int)m) : (unsigned)r;
+}
 
-dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
-                                           const char *filename,
-                                           dt_mipmap_buffer_t *mbuf)
+static void _set_black_levels(dt_image_t *img, const libraw_data_t *raw)
+{
+  const unsigned *cblack = raw->rawdata.color.cblack;
+  const unsigned black = raw->rawdata.color.black;
+  const unsigned filters = raw->rawdata.iparams.filters;
+  const unsigned prows = cblack[4];
+  const unsigned pcols = cblack[5];
+  const gboolean pattern = prows && pcols && prows * pcols <= LIBRAW_CBLACK_SIZE - 6;
+
+  if(filters == 9u || filters == 0)
+  {
+    // X-Trans (or no CFA): no meaningful 2x2 positions, use the mean
+    double level = black;
+    for(int c = 0; c < 3; c++)
+      level += cblack[c] / 3.0;
+    if(pattern)
+      for(unsigned k = 0; k < prows * pcols; k++)
+        level += (double)cblack[6 + k] / (prows * pcols);
+    for(int i = 0; i < 4; i++)
+      img->raw_black_level_separate[i] = (uint16_t)(level + 0.5);
+  }
+  else
+  {
+    const int top = raw->rawdata.sizes.top_margin;
+    const int left = raw->rawdata.sizes.left_margin;
+    for(int i = 0; i < 4; i++)
+    {
+      // 2x2 position i in visible area coordinates
+      const int row = (i >> 1) - top;
+      const int col = (i & 1) - left;
+      const unsigned color =
+        filters >> ((((_mod(row, 8) << 1) & 14) | _mod(col, 2)) << 1) & 3;
+      unsigned level = black + cblack[color];
+      if(pattern)
+        level += cblack[6 + _mod(row, prows) * pcols + _mod(col, pcols)];
+      img->raw_black_level_separate[i] = (uint16_t)level;
+    }
+  }
+
+  unsigned sum = 0;
+  for(int i = 0; i < 4; i++)
+    sum += img->raw_black_level_separate[i];
+  img->raw_black_level = (uint16_t)((sum + 2) / 4);
+}
+
+static gboolean _matrix_is_empty(const float m[4][3])
+{
+  for(int k = 0; k < 4; k++)
+    for(int i = 0; i < 3; i++)
+      if(m[k][i] != 0.0f)
+        return FALSE;
+  return TRUE;
+}
+
+static void _apply_vendor_crop(dt_image_t *img, const libraw_data_t *raw)
+{
+  const libraw_raw_inset_crop_t *crop = &raw->rawdata.sizes.raw_inset_crops[0];
+  const unsigned raw_width = raw->rawdata.sizes.raw_width;
+  const unsigned raw_height = raw->rawdata.sizes.raw_height;
+
+  // LibRaw marks a missing crop with 0xffff offsets / zero size
+  if(crop->cleft == 0xffff || crop->ctop == 0xffff
+     || crop->cwidth == 0 || crop->cheight == 0
+     || (unsigned)crop->cleft + crop->cwidth > raw_width
+     || (unsigned)crop->ctop + crop->cheight > raw_height)
+    return;
+
+  img->crop_x = crop->cleft;
+  img->crop_y = crop->ctop;
+  img->crop_right = raw_width - crop->cwidth - crop->cleft;
+  img->crop_bottom = raw_height - crop->cheight - crop->ctop;
+  img->p_width = crop->cwidth;
+  img->p_height = crop->cheight;
+}
+
+static dt_imageio_retval_t _open_libraw(dt_image_t *img,
+                                        const char *filename,
+                                        dt_mipmap_buffer_t *mbuf,
+                                        const gboolean fallback,
+                                        const dt_imageio_retval_t rawspeed_ret)
 {
   int err = DT_IMAGEIO_LOAD_FAILED;
   int libraw_err = LIBRAW_SUCCESS;
 
-  if(!_supported_image(filename))
+  if(!fallback && !_supported_image(filename))
     return DT_IMAGEIO_LOAD_FAILED;
   if(!img->exif_inited)
     (void)dt_exif_read(img, filename);
 
   libraw_data_t *raw = libraw_init(0);
   if(!raw)
-    return DT_IMAGEIO_LOAD_FAILED;
+    return fallback ? DT_IMAGEIO_UNSUPPORTED_FORMAT : DT_IMAGEIO_LOAD_FAILED;
 
 #if defined(_WIN32) && (defined(UNICODE) || defined(_UNICODE))
   wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
@@ -424,6 +615,23 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
 #else
   libraw_err = libraw_open_file(raw, filename);
 #endif
+
+  if(fallback)
+  {
+    const dt_libraw_fallback_t *f = libraw_err == LIBRAW_SUCCESS
+      ? _find_fallback(raw, img, rawspeed_ret)
+      : NULL;
+    if(!f)
+    {
+      // not a format we take over from RawSpeed: leave it to the
+      // regular loader chain without any error output
+      libraw_close(raw);
+      return DT_IMAGEIO_UNSUPPORTED_FORMAT;
+    }
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[libraw_open] `%s': %s, loading via LibRaw", img->filename, f->description);
+  }
+
   if(libraw_err != LIBRAW_SUCCESS)
     goto error;
 
@@ -464,11 +672,18 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
     ? raw->rawdata.color.linear_max[0]
     :raw->rawdata.color.maximum;
 
-  // Copy black level
-  img->raw_black_level = raw->rawdata.color.black;
-  for(size_t c = 0; c < 4; ++c)
-    img->raw_black_level_separate[c] =
-      raw->rawdata.color.black + raw->rawdata.color.cblack[c];
+  // Without a white level the data can't be scaled; LibRaw leaves it at 0
+  // for cameras it decodes but has no level data for (e.g. Nikon Z5 II HE
+  // in LibRaw 0.23). Refuse such files instead of showing a broken image.
+  if(img->raw_white_point == 0)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[libraw_open] no white level for `%s', unsupported", img->filename);
+    err = DT_IMAGEIO_UNSUPPORTED_FEATURE;
+    goto error;
+  }
+
+  _set_black_levels(img, raw);
 
   // AsShot WB coeffs
   for(size_t c = 0; c < 4; ++c)
@@ -478,6 +693,30 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   for(int k = 0; k < 4; k++)
     for(int i = 0; i < 3; i++)
       img->adobe_XYZ_to_CAM[k][i] = raw->rawdata.color.cam_xyz[k][i];
+
+  // LibRaw leaves cam_xyz empty for DNGs and keeps the DNG ColorMatrix
+  // tags in dng_color[] instead. Without a matrix darktable has no camera
+  // reference (D65) white balance. Use the D65 matrix like the RawSpeed
+  // loader does (CalibrationIlluminant 21, ColorMatrix1 or 2).
+  if(_matrix_is_empty(img->adobe_XYZ_to_CAM))
+  {
+    for(int n = 0; n < 2; n++)
+    {
+      const libraw_dng_color_t *dng = &raw->rawdata.color.dng_color[n];
+      if(dng->illuminant != 21) // D65
+        continue;
+      float candidate[4][3] = { { 0.0f } };
+      for(int k = 0; k < 4; k++)
+        for(int i = 0; i < 3; i++)
+          candidate[k][i] = dng->colormatrix[k][i];
+      if(_matrix_is_empty(candidate))
+        continue;
+      for(int k = 0; k < 4; k++)
+        for(int i = 0; i < 3; i++)
+          img->adobe_XYZ_to_CAM[k][i] = candidate[k][i];
+      break;
+    }
+  }
 
   // Raw dimensions. This is the full sensor range.
   img->width = raw->rawdata.sizes.raw_width;
@@ -491,6 +730,18 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
 
   img->p_width = img->width - img->crop_x - img->crop_right;
   img->p_height = img->height - img->crop_y - img->crop_bottom;
+
+  // Fujifilm and DNG: use the crop stored in the file, like the RawSpeed
+  // loader does, so files get the same crop whichever loader opens them.
+  // LibRaw provides it in raw_inset_crops[0]: for Fujifilm from
+  // RawImageCropTopLeft / RawImageCroppedSize, for DNG from
+  // DefaultCropOrigin / DefaultCropSize within the ActiveArea. LibRaw's
+  // own visible area for these files can be slightly larger. LibRaw moves
+  // an odd crop origin to the next even row/column (shrinking the size
+  // accordingly), so the crop can be one row/column smaller than RawSpeed's.
+  if(raw->rawdata.iparams.maker_index == LIBRAW_CAMERAMAKER_Fujifilm
+     || raw->rawdata.iparams.dng_version)
+    _apply_vendor_crop(img, raw);
   // We can reuse the libraw filters property, it's already well-handled in dt.
   // It contains (for CR3) the Bayer pattern, but we have to undo some LibRaw logic.
   if(raw->rawdata.iparams.colors == 3)
@@ -509,13 +760,63 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
     img->buf_dsc.filters = raw->idata.filters;
   }
 
+  // LibRaw's Bayer filters are relative to its visible area, darktable
+  // expects them relative to the top left of the full raw buffer (like
+  // the RawSpeed loader), independent of the crop. No-op for even margins.
+  img->buf_dsc.filters = dt_rawspeed_crop_dcraw_filters(img->buf_dsc.filters,
+                                                        raw->rawdata.sizes.left_margin,
+                                                        raw->rawdata.sizes.top_margin);
+
+  // X-Trans: darktable expects the 6x6 CFA aligned to the top left of
+  // the full (uncropped) raw buffer, like the RawSpeed loader provides
+  // it. That is LibRaw's xtrans_abs (xtrans is relative to the visible
+  // area). Without this the pattern stays all zero = all red pixels.
+  if(img->buf_dsc.filters == 9u)
+  {
+    for(int j = 0; j < 6; ++j)
+      for(int i = 0; i < 6; ++i)
+        img->buf_dsc.xtrans[j][i] = (uint8_t)raw->rawdata.iparams.xtrans_abs[j][i];
+  }
+
   dt_exif_img_check_additional_tags(img, filename);
 
-  // For CR3, we only have Bayer data and a single channel
+  // Single channel CFA data (Bayer or X-Trans)
   img->buf_dsc.channels = 1;
 
   img->buf_dsc.datatype = TYPE_UINT16;
   img->buf_dsc.cst = IOP_CS_RAW;
+
+  // Taken from the old dt libraw integration
+  if(FILTERS_ARE_4BAYER(img->buf_dsc.filters))
+  {
+    img->flags |= DT_IMAGE_4BAYER;
+  }
+  else
+  {
+    img->flags &= ~DT_IMAGE_4BAYER;
+  }
+
+  if(img->buf_dsc.filters)
+  {
+    img->flags &= ~DT_IMAGE_LDR;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_RAW;
+  }
+  else
+  {
+    // LDR DNG. It exists :(
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+  }
+
+  // Metadata only, like the RawSpeed loader
+  if(!mbuf)
+  {
+    img->loader = LOADER_LIBRAW;
+    err = DT_IMAGEIO_OK;
+    goto error;
+  }
 
   // Allocate and copy image from libraw buffer to dt
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
@@ -541,30 +842,6 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
                             raw->rawdata.sizes.raw_width, raw->rawdata.sizes.raw_height,
                             raw->rawdata.sizes.raw_width, raw->rawdata.sizes.raw_height,
                             raw->rawdata.sizes.raw_pitch, ORIENTATION_NONE);
-  }
-
-  // Checks not really required for CR3 support, but it's taken from the old dt libraw integration
-  if(FILTERS_ARE_4BAYER(img->buf_dsc.filters))
-  {
-    img->flags |= DT_IMAGE_4BAYER;
-  }
-  else
-  {
-    img->flags &= ~DT_IMAGE_4BAYER;
-  }
-
-  if(img->buf_dsc.filters)
-  {
-    img->flags &= ~DT_IMAGE_LDR;
-    img->flags &= ~DT_IMAGE_HDR;
-    img->flags |= DT_IMAGE_RAW;
-  }
-  else
-  {
-    // LDR DNG. It exists :(
-    img->flags &= ~DT_IMAGE_RAW;
-    img->flags &= ~DT_IMAGE_HDR;
-    img->flags |= DT_IMAGE_LDR;
   }
 
   img->loader = LOADER_LIBRAW;
@@ -598,6 +875,24 @@ error:
   }
   libraw_close(raw);
   return err;
+}
+
+dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
+                                           const char *filename,
+                                           dt_mipmap_buffer_t *mbuf)
+{
+  return _open_libraw(img, filename, mbuf, FALSE, DT_IMAGEIO_OK);
+}
+
+dt_imageio_retval_t dt_imageio_open_libraw_fallback(dt_image_t *img,
+                                                    const char *filename,
+                                                    dt_mipmap_buffer_t *mbuf,
+                                                    const dt_imageio_retval_t rawspeed_ret)
+{
+  // files routed to LibRaw by extension are loaded by the regular path
+  if(!img || _supported_image(filename))
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
+  return _open_libraw(img, filename, mbuf, TRUE, rawspeed_ret);
 }
 #endif
 
