@@ -480,7 +480,7 @@ changes (where available).
 
 - Lightroom import now sets the working profile to linear ProPhoto
   RGB, the space Lightroom works in, instead of linear Rec709 RGB.
-  
+
 - In the darkroom in the left panel the navigation can now be toggled
   through the panel's right click menu in addition to the strg+shift+n
   shortcut.
@@ -1043,6 +1043,7 @@ changes (where available).
 
 - Canon EOS R50 V (requires LibRaw 0.23 or newer)
 - Canon EOS R6 Mark III (requires LibRaw 0.23 or newer)
+- Canon PowerShot V1 (requires LibRaw 0.23 or newer)
 
 ### White Balance Presets
 
