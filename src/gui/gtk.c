@@ -2446,12 +2446,11 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
   gui->dpi_factor = gui->dpi / DT_UI_DEFAULT_DPI_RESOLUTION;
 }
 
-static gboolean _focus_in_out_event(GtkWidget *widget,
-                                    GdkEvent *event,
-                                    const gpointer user_data)
+static void _window_active_changed(GtkWindow *window,
+                                   GParamSpec *pspec,
+                                   gpointer user_data)
 {
-  gtk_window_set_urgency_hint(GTK_WINDOW(user_data), FALSE);
-  return FALSE;
+  gtk_window_set_urgency_hint(window, FALSE);
 }
 
 
@@ -2523,10 +2522,8 @@ static void _init_widgets(dt_gui_gtk_t *gui)
 
   g_signal_connect(G_OBJECT(widget), "delete_event",
                    G_CALLBACK(_gui_quit_callback), NULL);
-  g_signal_connect(G_OBJECT(widget), "focus-in-event",
-                   G_CALLBACK(_focus_in_out_event), widget);
-  g_signal_connect(G_OBJECT(widget), "focus-out-event",
-                   G_CALLBACK(_focus_in_out_event), widget);
+  g_signal_connect(G_OBJECT(widget), "notify::is-active",
+                   G_CALLBACK(_window_active_changed), NULL);
 
   container = widget;
 
