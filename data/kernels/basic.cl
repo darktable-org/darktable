@@ -1872,39 +1872,21 @@ static inline float _interpolation_tap(const int type, const float width, const 
   return interpolation_func_lanczos(width, t);
 }
 
-// rotate pixels: one output pixel by dt_interpolation_compute_pixel4c() at the
-// back transformed position, with mirrored borders and zero outside the image
-kernel void
-rotatepixels(read_only image2d_t in,
-             write_only image2d_t out,
-             const int width,
-             const int height,
-             const int in_width,
-             const int in_height,
-             const int2 roi_out,
-             const int2 roi_in,
-             const float4 m,
-             const float2 center,
-             const int itype,
-             const int iwidth)
+// one pixel by dt_interpolation_compute_pixel4c() at (px, py): the interpolator's
+// taps and norm, mirrored borders and zero outside the image
+static inline float4 _interpolation_pixel4(read_only image2d_t in,
+                                           const float px,
+                                           const float py,
+                                           const int in_width,
+                                           const int in_height,
+                                           const int itype,
+                                           const int iwidth)
 {
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if(x >= width || y >= height) return;
-
-  const float pix = roi_out.x + x;
-  const float piy = roi_out.y + y;
-  const float px = pix * m.x + piy * m.y + center.x - roi_in.x;
-  const float py = pix * m.z + piy * m.w + center.y - roi_in.y;
-
   const int ix = (int)floor(px);
   const int iy = (int)floor(py);
 
   if(ix < -1 || iy < -1 || ix >= in_width || iy >= in_height)
-  {
-    write_imagef(out, (int2)(x, y), (float4)0.0f);
-    return;
-  }
+    return (float4)0.0f;
 
   const int fx = ix - iwidth + 1;
   const int fy = iy - iwidth + 1;
@@ -1933,7 +1915,59 @@ rotatepixels(read_only image2d_t in,
     pixel += kv[i] * h;
   }
 
-  write_imagef(out, (int2)(x, y), pixel * (1.0f / (normh * normv)));
+  return pixel * (1.0f / (normh * normv));
+}
+
+// rotate pixels: one output pixel at the back transformed position
+kernel void
+rotatepixels(read_only image2d_t in,
+             write_only image2d_t out,
+             const int width,
+             const int height,
+             const int in_width,
+             const int in_height,
+             const int2 roi_out,
+             const int2 roi_in,
+             const float4 m,
+             const float2 center,
+             const int itype,
+             const int iwidth)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float pix = roi_out.x + x;
+  const float piy = roi_out.y + y;
+  const float px = pix * m.x + piy * m.y + center.x - roi_in.x;
+  const float py = pix * m.z + piy * m.w + center.y - roi_in.y;
+
+  write_imagef(out, (int2)(x, y), _interpolation_pixel4(in, px, py, in_width, in_height, itype, iwidth));
+}
+
+// scale pixels: one output pixel at ((x, y) + shift) * scale - offset of the
+// input, see _sampling_grid() in src/iop/scalepixels.c
+kernel void
+scalepixels(read_only image2d_t in,
+            write_only image2d_t out,
+            const int width,
+            const int height,
+            const int in_width,
+            const int in_height,
+            const float2 scale,
+            const int2 shift,
+            const float2 offset,
+            const int itype,
+            const int iwidth)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float px = (x + shift.x) * scale.x - offset.x;
+  const float py = (y + shift.y) * scale.y - offset.y;
+
+  write_imagef(out, (int2)(x, y), _interpolation_pixel4(in, px, py, in_width, in_height, itype, iwidth));
 }
 
 /* kernel for clip&rotate: bilinear interpolation */
