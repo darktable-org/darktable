@@ -186,6 +186,16 @@ dt_ioppr_get_pipe_output_profile_info(const struct dt_dev_pixelpipe_t *pipe);
  * encoding, or sRGB where that profile has no matrices */
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_gui_profile_info(struct dt_develop_t *dev);
 
+/** converts values authored as device values of the pipe's window, UI
+ * tones such as gamma's views and the clipping indicators, in place to what
+ * the pipe's output values are (output_encoding, resolved when a run
+ * starts). leaves them as they are where the pipe has no window */
+void dt_ioppr_device_to_output(struct dt_develop_t *dev,
+                               const struct dt_dev_pixelpipe_t *pipe,
+                               float *const rgb,
+                               const int width,
+                               const int height);
+
 /** Get the relevant RGB -> XYZ profile at the position of current module */
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_pipe_current_profile_info(const struct dt_iop_module_t *module,

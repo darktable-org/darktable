@@ -973,6 +973,29 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_gui_profile_info(struct dt_develop_
   return info;
 }
 
+void dt_ioppr_device_to_output(struct dt_develop_t *dev,
+                               const struct dt_dev_pixelpipe_t *pipe,
+                               float *const rgb,
+                               const int width,
+                               const int height)
+{
+  const dt_color_encoding_t *device = &pipe->output.device;
+  const dt_color_encoding_t *image = &pipe->output_encoding;
+  if(device->type == DT_COLORSPACE_NONE || image->type == DT_COLORSPACE_NONE
+     || dt_color_encoding_same_content(device, image))
+    return;
+
+  const dt_iop_order_iccprofile_info_t *from =
+    dt_ioppr_add_profile_info_for_content(dev, device->type, device->filename,
+                                          device->profile, image->intent);
+  const dt_iop_order_iccprofile_info_t *to =
+    dt_ioppr_add_profile_info_for_content(dev, image->type, image->filename,
+                                          image->profile, image->intent);
+  if(from && to)
+    dt_ioppr_transform_image_colorspace_rgb(rgb, rgb, width, height, from, to,
+                                            "device values");
+}
+
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(const dt_iop_module_t *module,
                                                                        const struct dt_dev_pixelpipe_t *pipe)
 {

@@ -46,13 +46,13 @@ pixels on X11, Windows and Wayland, pixels GTK tags sRGB on macOS.
 `platform_owned` says a backend reported it,
 so a new system display profile does not replace it. Where image and device are the same
 encoding, as on every cairo window, the values reach the screen as device
-values. The mask and channel views are UI tones, authored as device values
-and converted by gamma from the device encoding to the pipe's
-`output_encoding`, which a run resolves after every commit. The gamut
-check's mark, device (0, 1, 1), is one too: colorout renders it once per
-commit as it renders pixels, so a proof narrower than the device clips it,
-and an ink proof's goes straight to the window's output. The clipping
-markers are written as they are.
+values. The mask and channel views and the clipping indicators are UI
+tones, authored as device values and converted from the device encoding
+to the pipe's `output_encoding`, which a run resolves after every commit
+(`dt_ioppr_device_to_output()`). The gamut check's mark, device
+(0, 1, 1), is one too: colorout renders it once per commit as it renders
+pixels, so a proof narrower than the device clips it, and an ink proof's
+goes straight to the window's output.
 
 - Both windows have an output at all times, from `dt_colorspaces_init()` on:
   develop and its pipes exist before the GUI, and headless runs never

@@ -273,32 +273,6 @@ static void _copy_output(const float *const restrict in,
   }
 }
 
-// the mask and channel views are UI tones, authored as device values of the
-// window: convert them to what the pipe's values mean. that is resolved
-// when the run starts, after every commit_params(), and differs from the
-// request where colorout fell back
-static void _views_to_output(dt_iop_module_t *self,
-                             const dt_dev_pixelpipe_t *pipe,
-                             float *const out,
-                             const dt_iop_roi_t *const roi)
-{
-  const dt_color_encoding_t *device = &pipe->output.device;
-  const dt_color_encoding_t *image = &pipe->output_encoding;
-  if(device->type == DT_COLORSPACE_NONE || image->type == DT_COLORSPACE_NONE
-     || dt_color_encoding_same_content(device, image))
-    return;
-
-  const dt_iop_order_iccprofile_info_t *from =
-    dt_ioppr_add_profile_info_for_content(self->dev, device->type, device->filename,
-                                          device->profile, image->intent);
-  const dt_iop_order_iccprofile_info_t *to =
-    dt_ioppr_add_profile_info_for_content(self->dev, image->type, image->filename,
-                                          image->profile, image->intent);
-  if(from && to)
-    dt_ioppr_transform_image_colorspace_rgb(out, out, roi->width, roi->height,
-                                            from, to, "gamma views");
-}
-
 void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const i,
@@ -346,8 +320,11 @@ void process(dt_iop_module_t *self,
     _copy_output((const float *const restrict)i, (float *const restrict)o, buffsize);
   }
 
+  // the mask and channel views are UI tones, authored as device values of
+  // the window
   if(channel || (mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK))
-    _views_to_output(self, piece->pipe, (float *const)o, roi_out);
+    dt_ioppr_device_to_output(self->dev, piece->pipe, (float *const)o,
+                              roi_out->width, roi_out->height);
 
   if(mask_display)
     dt_dev_pixelpipe_invalidate_cacheline(piece->pipe, i, "gamma mask display");
