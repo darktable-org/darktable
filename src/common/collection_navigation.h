@@ -34,13 +34,24 @@ typedef struct dt_collection_navigation_t
   unsigned int current;
 } dt_collection_navigation_t;
 
+// the session's history, owned by darktable_t
+typedef struct dt_collection_navigation_state_t
+{
+  dt_collection_navigation_t history;
+  // set while a back/forward move replays a collection, so it is not recorded again
+  gboolean restoring;
+} dt_collection_navigation_state_t;
+
 void dt_collection_navigation_clear(dt_collection_navigation_t *history);
 void dt_collection_navigation_record(dt_collection_navigation_t *history,
-                                     const char *rules, const int position);
+                                     const char *rules,
+                                     const int position);
 gboolean dt_collection_navigation_can_move(const dt_collection_navigation_t *history,
-                                            const int direction);
-const dt_collection_navigation_entry_t *dt_collection_navigation_move(
-    dt_collection_navigation_t *history, const int direction, const int position);
+                                           const int direction);
+const dt_collection_navigation_entry_t *
+dt_collection_navigation_move(dt_collection_navigation_t *history,
+                              const int direction,
+                              const int position);
 
 void dt_collection_navigation_record_current(void);
 void dt_collection_navigation_cleanup(void);

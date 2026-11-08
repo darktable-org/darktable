@@ -104,7 +104,7 @@ typedef struct dt_lib_collect_t
 
   gboolean inited;
 
-  GtkWidget *history_box;
+  GtkWidget *history_box, *history_button;
   GtkWidget *back, *forward;
 
   GSimpleActionGroup *action_group;
@@ -2852,7 +2852,7 @@ void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
 {
   dt_lib_collect_t *d = self->data;
   const gboolean hide = dt_lib_is_visible(darktable.view_manager->proxy.module_recentcollect.module);
-  gtk_widget_set_visible(d->history_box, !hide);
+  gtk_widget_set_visible(d->history_button, !hide);
 }
 
 void gui_update(dt_lib_module_t *self)
@@ -3514,7 +3514,9 @@ static void _navigation_update(dt_lib_collect_t *d)
 static void _navigation_changed(gpointer instance,
                                  const dt_collection_change_t query_change,
                                  const dt_collection_properties_t changed_property,
-                                 gpointer imgs, const int next, gpointer self)
+                                 gpointer imgs,
+                                 const int next,
+                                 gpointer self)
 {
   _navigation_update(((dt_lib_module_t *)self)->data);
 }
@@ -4352,29 +4354,33 @@ void gui_init(dt_lib_module_t *self)
                                            DT_LIB_COLLECT_COL_VISIBLE);
   g_object_unref(treemodel);
 
-  d->back = dt_action_button_new(self, N_("back"),
+  // the bottom buttons for the rules. the actions keep their names for
+  // shortcuts; the buttons show the symbols, which need no translation
+  d->back = dt_action_button_new(self,
+                                 N_("back"),
                                  G_CALLBACK(_navigation_back), self,
                                  _("go back to the previous collection"),
                                  0, 0);
-  d->forward = dt_action_button_new(self, N_("forward"),
+  gtk_button_set_label(GTK_BUTTON(d->back), "<");
+  d->forward = dt_action_button_new(self,
+                                    N_("forward"),
                                     G_CALLBACK(_navigation_forward), self,
                                     _("go forward to the next collection"),
                                     0, 0);
-  dt_gui_box_add(self->widget, dt_gui_hbox(d->back, d->forward));
+  gtk_button_set_label(GTK_BUTTON(d->forward), ">");
   dt_collection_navigation_record_current();
   _navigation_update(d);
 
-  // the bottom buttons for the rules
-  GtkWidget *btn = dt_action_button_new(self,
-                                        N_("history"),
-                                        G_CALLBACK(_history_show), self,
-                                        _("revert to a previous set of rules"),
-                                        GDK_KEY_k, GDK_CONTROL_MASK);
-  // dummy widget just to ensure alignment of history button with those in filtering lib
-  d->history_box = dt_gui_hbox(dt_gui_expand(gtk_drawing_area_new()), btn);
+  d->history_button = dt_action_button_new(self,
+                                           N_("history"),
+                                           G_CALLBACK(_history_show), self,
+                                           _("revert to a previous set of rules"),
+                                           GDK_KEY_k, GDK_CONTROL_MASK);
+  // homogeneous halves align the history button with those in filtering lib
+  d->history_box = dt_gui_hbox(dt_gui_hbox(d->back, d->forward), d->history_button);
   gtk_box_set_homogeneous(GTK_BOX(d->history_box), TRUE);
   gtk_widget_show_all(d->history_box);
-  gtk_widget_set_no_show_all(d->history_box, TRUE);
+  gtk_widget_set_no_show_all(d->history_button, TRUE);
 
   dt_gui_box_add(self->widget, dt_ui_resize_wrap(GTK_WIDGET(view), 200,
                                                  "plugins/lighttable/collect/windowheight"),
