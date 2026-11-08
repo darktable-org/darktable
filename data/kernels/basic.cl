@@ -3538,7 +3538,8 @@ colorout (read_only image2d_t in,
           const int gamutcheck,
           const float4 gamut_scale,
           const float gamut_tolerance,
-          const float gamut_black)
+          const float gamut_black,
+          const float4 gamut_mark)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3571,9 +3572,9 @@ colorout (read_only image2d_t in,
   }
   if(marked)
   {
-    pixel.x = 0.0f;
-    pixel.y = 1.0f;
-    pixel.z = 1.0f;
+    pixel.x = gamut_mark.x;
+    pixel.y = gamut_mark.y;
+    pixel.z = gamut_mark.z;
   }
   write_imagef (out, (int2)(x, y), pixel);
 }

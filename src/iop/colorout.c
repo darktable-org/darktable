@@ -69,6 +69,9 @@ typedef struct dt_iop_colorout_data_t
   float gamut_scale[4];
   float gamut_tolerance;
   float gamut_black;
+  // what the gamut check paints: device cyan of the window, rendered as
+  // the pixels are (see _gamut_mark())
+  float gamut_mark[4];
   cmsContext gamut_context;
   cmsHTRANSFORM gamut_xform;
   // an ink proof, which no frame holds: Lab to the proof's values
@@ -436,7 +439,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorout, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_m), CLARG(dev_r), CLARG(dev_g),
     CLARG(dev_b), CLARG(dev_coeffs), CLARG(d->hdr_transfer), CLARG(d->clip), CLARG(gamutcheck),
-    CLARRAY(4, d->gamut_scale), CLARG(d->gamut_tolerance), CLARG(d->gamut_black));
+    CLARRAY(4, d->gamut_scale), CLARG(d->gamut_tolerance), CLARG(d->gamut_black),
+    CLARRAY(4, d->gamut_mark));
 
 error:
   dt_opencl_release_mem_object(dev_m);
@@ -448,17 +452,12 @@ error:
 }
 #endif
 
-static void _process_fastpath_apply_tonecurves(dt_iop_module_t *self,
-                                              dt_dev_pixelpipe_iop_t *piece,
-                                              void *const ovoid,
-                                              const dt_iop_roi_t *const roi_out)
+static void _process_fastpath_apply_tonecurves(const dt_iop_colorout_data_t *const d,
+                                              float *const restrict out,
+                                              const size_t npixels)
 {
-  const dt_iop_colorout_data_t *const d = piece->data;
-
   if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
-    const size_t npixels = (size_t)roi_out->width * roi_out->height;
-    float *const restrict out = (float *const)ovoid;
     // out is already converted to RGB from Lab.
 
     // do we have any lut to apply, or is this a linear profile?
@@ -672,45 +671,98 @@ static uint8_t *_gamut_marks(const dt_iop_colorout_data_t *const d,
   return marked;
 }
 
-static void _paint_gamut_marks(float *const out,
+static void _paint_gamut_marks(const dt_iop_colorout_data_t *const d,
+                               float *const out,
                                const uint8_t *const marked,
                                const size_t npixels)
 {
+  const float *const mark = d->gamut_mark;
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
     if(marked[k])
-    {
-      out[4 * k + 0] = 0.0f;
-      out[4 * k + 1] = 1.0f;
-      out[4 * k + 2] = 1.0f;
-    }
+      for(int c = 0; c < 3; c++) out[4 * k + c] = mark[c];
 }
 
 // an ink proof shows a deliverable darktable does not export, and a frame
 // holds RGB: Lab to the proof's values, clipped to what its integer
 // encoding holds, and from there to the window's output. the proper place
-// for it is a soft proof in the print module
+// for it is a soft proof in the print module. marked, if not NULL, takes
+// the gamut check's marks
 static void _transform_ink_proof(const dt_iop_colorout_data_t *const d,
                                  float *restrict out,
                                  const float *restrict in,
-                                 const size_t npixels)
+                                 const size_t npixels,
+                                 uint8_t *const marked)
 {
-  const gboolean gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
   const int nch = d->proof_channels;
   DT_OMP_FOR()
   for(size_t start = 0; start < npixels; start += PROOF_BLOCK)
   {
     const size_t count = MIN(start + PROOF_BLOCK, npixels) - start;
     float DT_ALIGNED_ARRAY proof[cmsMAXCHANNELS * PROOF_BLOCK];
-    uint8_t marked[PROOF_BLOCK];
-    float *const outp = out + 4 * start;
 
     cmsDoTransform(d->proof_xform, in + 4 * start, proof, count);
-    if(gamutcheck) _gamut_alarm(d, in + 4 * start, marked, count);
+    if(marked) _gamut_alarm(d, in + 4 * start, marked + start, count);
     for(size_t j = 0; j < count * nch; j++) proof[j] = CLIP(proof[j]);
-    cmsDoTransform(d->xform, proof, outp, count);
-    if(gamutcheck) _paint_gamut_marks(outp, marked, count);
+    cmsDoTransform(d->xform, proof, out + 4 * start, count);
   }
+}
+
+// what an export writes after its transform: the HDR transfer function,
+// and the clip of an integer file. dt_hdr_encode() already clamps the
+// signal
+static void _encode(const dt_iop_colorout_data_t *const d,
+                    float *const restrict out,
+                    const size_t npixels)
+{
+  if(d->hdr_transfer)
+  {
+    DT_OMP_FOR()
+    for(size_t k = 0; k < npixels; k++)
+      dt_hdr_encode(out + 4*k, d->hdr_transfer);
+  }
+  if(d->clip)
+  {
+    DT_OMP_FOR()
+    for(size_t k = 0; k < npixels; k++)
+      for(int c = 0; c < 3; c++) out[4 * k + c] = CLIP(out[4 * k + c]);
+  }
+}
+
+// Lab to the output's values, as an export writes them. marked, if not
+// NULL, takes the gamut check's marks, NULL without memory or for a Lab
+// output. FALSE without a transform
+static gboolean _to_output(const dt_iop_colorout_data_t *const d,
+                           float *const restrict out,
+                           const float *const restrict in,
+                           const size_t npixels,
+                           uint8_t **const marked)
+{
+  if(marked) *marked = NULL;
+  if(d->type == DT_COLORSPACE_LAB)
+  {
+    dt_iop_image_copy(out, in, 4 * npixels);
+  }
+  else if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
+  {
+    const gboolean linear = _transform_cmatrix(d, out, in, npixels);
+    if(marked) *marked = _gamut_marks(d, in, out, npixels);
+    if(!linear) _process_fastpath_apply_tonecurves(d, out, npixels);
+  }
+  else if(d->proof_xform)
+  {
+    if(marked) *marked = dt_alloc_aligned(npixels);
+    _transform_ink_proof(d, out, in, npixels, marked ? *marked : NULL);
+  }
+  else if(d->xform)
+  {
+    _transform_lcms(d, out, in, npixels);
+    if(marked) *marked = _gamut_marks(d, in, out, npixels);
+  }
+  else
+    return FALSE;
+  _encode(d, out, npixels);
+  return TRUE;
 }
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -728,26 +780,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const gboolean gamutcheck = d->mode == DT_PROFILE_GAMUTCHECK;
   uint8_t *marked = NULL;
 
-  if(d->type == DT_COLORSPACE_LAB)
-  {
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
-  }
-  else if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
-  {
-    const gboolean linear = _transform_cmatrix(d, out, in, npixels);
-    if(gamutcheck) marked = _gamut_marks(d, in, out, npixels);
-    if(!linear) _process_fastpath_apply_tonecurves(self, piece, ovoid, roi_out);
-  }
-  else if(d->proof_xform)
-  {
-    _transform_ink_proof(d, out, in, npixels);
-  }
-  else if(d->xform)
-  {
-    _transform_lcms(d, out, in, npixels);
-    if(gamutcheck) marked = _gamut_marks(d, in, out, npixels);
-  }
-  else
+  if(!_to_output(d, out, in, npixels, gamutcheck ? &marked : NULL))
   {
     // an export without a transform (commit_params() leaves colorout out
     // of a presented pipe instead): stopping the pipe leaves it no output,
@@ -755,22 +788,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     dt_dev_pixelpipe_set_shutdown(piece->pipe, DT_DEV_PIXELPIPE_STOP_PIECE);
     return;
   }
-  if(d->hdr_transfer)
-  {
-    DT_OMP_FOR()
-    for(size_t k = 0; k < npixels; k++)
-      dt_hdr_encode(out + 4*k, d->hdr_transfer);
-  }
-  // an integer export clips. dt_hdr_encode() already clamps the signal
-  if(d->clip)
-  {
-    DT_OMP_FOR()
-    for(size_t k = 0; k < npixels; k++)
-      for(int c = 0; c < 3; c++) out[4 * k + c] = CLIP(out[4 * k + c]);
-  }
   if(marked)
   {
-    _paint_gamut_marks(out, marked, npixels);
+    _paint_gamut_marks(d, out, marked, npixels);
     dt_free_align(marked);
   }
 }
@@ -904,6 +924,41 @@ static void _create_transforms(dt_iop_colorout_data_t *d,
     _delete_transforms(d);
 }
 
+// the gamut check's mark is a UI tone, as gamma's views are: device
+// (0, 1, 1) of the window, rendered to the output as the pixels are, so a
+// proof narrower than the device clips it. an ink proof's frame holds the
+// window's output, so the mark goes there, not through the ink. output is
+// the profile xform converts to
+static void _gamut_mark(dt_iop_colorout_data_t *d,
+                        const dt_dev_pixelpipe_t *pipe,
+                        const cmsHPROFILE Lab,
+                        const cmsHPROFILE output,
+                        const cmsUInt32Number output_format)
+{
+  const dt_color_encoding_t *const device = &pipe->output.device;
+  if(!device->profile) return;
+  cmsHTRANSFORM to_lab = cmsCreateTransform(device->profile, TYPE_RGBA_FLT, Lab, TYPE_LabA_FLT,
+                                            device->intent, cmsFLAGS_NOCACHE);
+  if(!to_lab) return;
+  const dt_aligned_pixel_t cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
+  dt_aligned_pixel_t lab = { 0.0f }, mark = { 0.0f };
+  cmsDoTransform(to_lab, cyan, lab, 1);
+  cmsDeleteTransform(to_lab);
+
+  if(d->proof_xform)
+  {
+    cmsHTRANSFORM to_output = cmsCreateTransform(Lab, TYPE_LabA_FLT, output, output_format,
+                                                 INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOCACHE);
+    if(!to_output) return;
+    cmsDoTransform(to_output, lab, mark, 1);
+    cmsDeleteTransform(to_output);
+    _encode(d, mark, 1);
+  }
+  else if(!_to_output(d, mark, lab, 1, NULL))
+    return;
+  for(int c = 0; c < 3; c++) d->gamut_mark[c] = mark[c];
+}
+
 // colorout filtered out: the pixels stay in the working RGB, which the run
 // resolves as its output
 static void _leave_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
@@ -974,6 +1029,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   for(int c = 0; c < 4; c++) d->gamut_scale[c] = 1.0f;
   d->gamut_tolerance = 0.0f;
   d->gamut_black = 0.0f;
+  // the output's own cyan where no conversion of the device's can be built
+  d->gamut_mark[0] = 0.0f;
+  d->gamut_mark[1] = d->gamut_mark[2] = 1.0f;
+  d->gamut_mark[3] = 0.0f;
   piece->process_cl_ready = TRUE;
 
   // a failure records nothing: no profile describes what process() then writes
@@ -1215,6 +1274,9 @@ done:
 
   if(gamutcheck && dt_is_valid_colormatrix(d->cmatrix[0][0]) && !d->hdr_transfer)
     for(int c = 0; c < 3; c++) d->gamut_scale[c] = _encoding_scale(d, c);
+
+  if(gamutcheck && (d->xform || dt_is_valid_colormatrix(d->cmatrix[0][0])))
+    _gamut_mark(d, pipe, Lab, output, output_format);
 
   dt_colorspaces_cleanup_profile(hdr_linear);
 

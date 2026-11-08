@@ -48,9 +48,11 @@ so a new system display profile does not replace it. Where image and device are 
 encoding, as on every cairo window, the values reach the screen as device
 values. The mask and channel views are UI tones, authored as device values
 and converted by gamma from the device encoding to the pipe's
-`output_encoding`, which a run resolves after every commit; the gamut
-check and clipping markers are written as they are, saturated colors that
-mark in any output.
+`output_encoding`, which a run resolves after every commit. The gamut
+check's mark, device (0, 1, 1), is one too: colorout renders it once per
+commit as it renders pixels, so a proof narrower than the device clips it,
+and an ink proof's goes straight to the window's output. The clipping
+markers are written as they are.
 
 - Both windows have an output at all times, from `dt_colorspaces_init()` on:
   develop and its pipes exist before the GUI, and headless runs never
