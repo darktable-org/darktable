@@ -430,20 +430,20 @@ static void xtrans_markesteijn_interpolate(float *out,
             yuv[1][row][col] = (rx[2] - y) * 0.56433f;
             yuv[2][row][col] = (rx[0] - y) * 0.67815f;
           }
-        // Note that f can offset by a column (-1 or +1) and by a row
-        // (-TS or TS). The row-wise offsets cause the undefined
-        // behavior sanitizer to warn of an out of bounds index, but
-        // as yfx is multi-dimensional and there is sufficient
-        // padding, that is not actually so.
+        // f steps by a column, a row (TS) or a diagonal, so index each
+        // plane through a flat pointer: a row step leaves the inner
+        // float[TS] array, which is out of bounds for array indexing
         const int f = dir[d & 3];
         const int pad_drv = (passes == 1) ? 9 : 14;
         for(int row = pad_drv; row < mrow - pad_drv; row++)
           for(int col = pad_drv; col < mcol - pad_drv; col++)
           {
-            const float(*yfx)[TS][TS] = (float(*)[TS][TS]) & yuv[0][row][col];
-            drv[d][row][col] = sqrf(2 * yfx[0][0][0] - yfx[0][0][f] - yfx[0][0][-f])
-                               + sqrf(2 * yfx[1][0][0] - yfx[1][0][f] - yfx[1][0][-f])
-                               + sqrf(2 * yfx[2][0][0] - yfx[2][0][f] - yfx[2][0][-f]);
+            const float *const y0 = &yuv[0][row][col];
+            const float *const y1 = &yuv[1][row][col];
+            const float *const y2 = &yuv[2][row][col];
+            drv[d][row][col] = sqrf(2 * y0[0] - y0[f] - y0[-f])
+                               + sqrf(2 * y1[0] - y1[f] - y1[-f])
+                               + sqrf(2 * y2[0] - y2[f] - y2[-f]);
           }
       }
 
@@ -1423,20 +1423,20 @@ static void xtrans_fdc_interpolate(float *out,
             yuv[1][row][col] = (rx[2] - y) * 0.56433f;
             yuv[2][row][col] = (rx[0] - y) * 0.67815f;
           }
-        // Note that f can offset by a column (-1 or +1) and by a row
-        // (-TS or TS). The row-wise offsets cause the undefined
-        // behavior sanitizer to warn of an out of bounds index, but
-        // as yfx is multi-dimensional and there is sufficient
-        // padding, that is not actually so.
+        // f steps by a column, a row (TS) or a diagonal, so index each
+        // plane through a flat pointer: a row step leaves the inner
+        // float[TS] array, which is out of bounds for array indexing
         const int f = dir[d & 3];
         const int pad_drv = 9;
         for(int row = pad_drv; row < mrow - pad_drv; row++)
           for(int col = pad_drv; col < mcol - pad_drv; col++)
           {
-            float(*yfx)[TS][TS] = (float(*)[TS][TS]) & yuv[0][row][col];
-            drv[d][row][col] = sqrf(2 * yfx[0][0][0] - yfx[0][0][f] - yfx[0][0][-f])
-                               + sqrf(2 * yfx[1][0][0] - yfx[1][0][f] - yfx[1][0][-f])
-                               + sqrf(2 * yfx[2][0][0] - yfx[2][0][f] - yfx[2][0][-f]);
+            const float *const y0 = &yuv[0][row][col];
+            const float *const y1 = &yuv[1][row][col];
+            const float *const y2 = &yuv[2][row][col];
+            drv[d][row][col] = sqrf(2 * y0[0] - y0[f] - y0[-f])
+                               + sqrf(2 * y1[0] - y1[f] - y1[-f])
+                               + sqrf(2 * y2[0] - y2[f] - y2[-f]);
           }
       }
 
