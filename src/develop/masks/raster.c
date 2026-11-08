@@ -331,7 +331,8 @@ static int _raster_get_mask_roi(const dt_iop_module_t *const module,
                                 const dt_dev_pixelpipe_iop_t *const piece,
                                 dt_masks_form_t *const form,
                                 const dt_iop_roi_t *const roi,
-                                float *const buffer)
+                                float *const buffer,
+                                dt_masks_extent_t *const extent)
 {
   if(!form->points) return 0;
   const dt_masks_point_raster_t *const p = form->points->data;

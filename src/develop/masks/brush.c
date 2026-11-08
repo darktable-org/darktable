@@ -3248,12 +3248,13 @@ static inline void _brush_falloff_roi(float *buffer,
 }
 
 // build a stamp which can be combined with other shapes in the same group
-// prerequisite: 'buffer' is all zeros
+// prerequisite: 'buffer' is all zeros, unless extent is given
 static int _brush_get_mask_roi(const dt_iop_module_t *const module,
                                const dt_dev_pixelpipe_iop_t *const piece,
                                dt_masks_form_t *const form,
                                const dt_iop_roi_t *roi,
-                               float *buffer)
+                               float *buffer,
+                               dt_masks_extent_t *const extent)
 {
   if(!module) return 0;
   double start = dt_get_debug_wtime();
@@ -3319,7 +3320,22 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
     dt_free_align(points);
     dt_free_align(border);
     dt_free_align(payload);
+    if(extent) *extent = (dt_masks_extent_t){ 0, 0, 0, 0 };
     return 1;
+  }
+
+  if(extent)
+  {
+    // what the falloff below writes, plus the pixel either side that it
+    // adds against rounding gaps
+    const int x0 = CLAMP(floorf(xmin) - 3.0f, 0.0f, (float)width);
+    const int y0 = CLAMP(floorf(ymin) - 3.0f, 0.0f, (float)height);
+    const int x1 = CLAMP(ceilf(xmax) + 4.0f, (float)x0, (float)width);
+    const int y1 = CLAMP(ceilf(ymax) + 4.0f, (float)y0, (float)height);
+    DT_OMP_FOR()
+    for(int y = y0; y < y1; y++)
+      memset(buffer + (size_t)y * width + x0, 0, sizeof(float) * (x1 - x0));
+    *extent = (dt_masks_extent_t){ x0, y0, x1, y1 };
   }
 
   // now we fill the falloff
