@@ -41,44 +41,100 @@ static gchar *_iop_section_for_params(dt_iop_module_t *self)
   return self->actions == DT_ACTION_TYPE_IOP_SECTION && self->data ? self->data : NULL;
 }
 
-#define DT_IOP_PAGE_PARAMS_KEY "dt-iop-page-params"
+#define DT_IOP_PAGE_BINDING_KEY "dt-iop-page-binding"
 
-typedef struct _page_params_t
+typedef struct _param_range_t
+{
+  size_t offset;
+  size_t size;
+} _param_range_t;
+
+typedef struct _page_binding_t
 {
   dt_iop_module_t *module;
-  int n_ranges;
-  dt_iop_param_range_t ranges[];
-} _page_params_t;
+  GArray *ranges;     // _param_range_t
+  GSList *containers; // GtkWidget
+} _page_binding_t;
 
-void dt_iop_page_bind_params(GtkWidget *page,
-                             dt_iop_module_t *self,
-                             const dt_iop_param_range_t *ranges,
-                             const int n_ranges)
+static void _page_binding_free(gpointer data)
 {
-  _page_params_t *bound = g_malloc(sizeof(_page_params_t)
-                                   + n_ranges * sizeof(dt_iop_param_range_t));
-  bound->module = self;
-  bound->n_ranges = n_ranges;
-  memcpy(bound->ranges, ranges, n_ranges * sizeof(dt_iop_param_range_t));
+  _page_binding_t *binding = data;
+  g_array_free(binding->ranges, TRUE);
+  g_slist_free(binding->containers);
+  g_free(binding);
+}
 
-  g_object_set_data_full(G_OBJECT(page), DT_IOP_PAGE_PARAMS_KEY, bound, g_free);
+static _page_binding_t *_page_binding(GtkWidget *page)
+{
+  _page_binding_t *binding = g_object_get_data(G_OBJECT(page), DT_IOP_PAGE_BINDING_KEY);
+  if(!binding)
+  {
+    binding = g_new0(_page_binding_t, 1);
+    binding->ranges = g_array_new(FALSE, FALSE, sizeof(_param_range_t));
+    g_object_set_data_full(G_OBJECT(page), DT_IOP_PAGE_BINDING_KEY,
+                           binding, _page_binding_free);
+  }
+  return binding;
+}
+
+void dt_iop_page_bind_field(GtkWidget *page,
+                            dt_iop_module_t *self,
+                            const char *field,
+                            const int row)
+{
+  const dt_introspection_field_t *f = self->get_f(field);
+  if(!f)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_iop_page_bind_field] %s has no field '%s'",
+             self->op, field);
+    return;
+  }
+
+  _param_range_t range = { f->header.offset, f->header.size };
+  if(row >= 0)
+  {
+    if(f->header.type != DT_INTROSPECTION_TYPE_ARRAY || (size_t)row >= f->Array.count)
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[dt_iop_page_bind_field] %s has no row %d in '%s'",
+               self->op, row, field);
+      return;
+    }
+    range.size = f->Array.field->header.size;
+    range.offset += row * range.size;
+  }
+
+  _page_binding_t *binding = _page_binding(page);
+  binding->module = self;
+  g_array_append_val(binding->ranges, range);
+}
+
+void dt_iop_page_bind_widgets(GtkWidget *page,
+                              GtkWidget *container)
+{
+  _page_binding_t *binding = _page_binding(page);
+  binding->containers = g_slist_append(binding->containers, container);
 }
 
 /* Collect the parts of a module's params a notebook page governs: the fields
-   of the parameter widgets on it, wherever they are nested, and the ranges it
-   was bound to. Sections and collapsible sections keep folded content in the
+   of the parameter widgets on it, wherever they are nested, and what it was
+   bound to. Sections and collapsible sections keep folded content in the
    widget tree, so it is included. With visible_only, widgets a module has
-   hidden are left out; bound ranges always count. */
+   hidden are left out; bound fields always count. */
 static void _page_ranges(GtkWidget *w,
                          const gboolean visible_only,
                          dt_iop_module_t **module,
                          GArray *ranges)
 {
-  const _page_params_t *bound = g_object_get_data(G_OBJECT(w), DT_IOP_PAGE_PARAMS_KEY);
-  if(bound)
+  const _page_binding_t *binding = g_object_get_data(G_OBJECT(w), DT_IOP_PAGE_BINDING_KEY);
+  if(binding)
   {
-    *module = bound->module;
-    g_array_append_vals(ranges, bound->ranges, bound->n_ranges);
+    if(binding->module)
+    {
+      *module = binding->module;
+      g_array_append_vals(ranges, binding->ranges->data, binding->ranges->len);
+    }
+    for(const GSList *c = binding->containers; c; c = g_slist_next(c))
+      _page_ranges(c->data, visible_only, module, ranges);
   }
 
   if(visible_only && !gtk_widget_get_visible(w)) return;
@@ -94,7 +150,7 @@ static void _page_ranges(GtkWidget *w,
     if(offset < 0 || (size_t)offset + size > (size_t)MAX(m->params_size, 0)) return;
 
     *module = m;
-    g_array_append_val(ranges, ((dt_iop_param_range_t){ offset, size }));
+    g_array_append_val(ranges, ((_param_range_t){ offset, size }));
   }
   else if(GTK_IS_CONTAINER(w))
   {
@@ -117,14 +173,14 @@ static void _reset_widgets(GtkWidget *w,
 void dt_iop_page_reset(GtkWidget *page)
 {
   dt_iop_module_t *module = NULL;
-  GArray *ranges = g_array_new(FALSE, FALSE, sizeof(dt_iop_param_range_t));
+  GArray *ranges = g_array_new(FALSE, FALSE, sizeof(_param_range_t));
   _page_ranges(page, FALSE, &module, ranges);
 
   if(module && module->default_params)
   {
     for(guint r = 0; r < ranges->len; r++)
     {
-      const dt_iop_param_range_t *range = &g_array_index(ranges, dt_iop_param_range_t, r);
+      const _param_range_t *range = &g_array_index(ranges, _param_range_t, r);
       memcpy((uint8_t *)module->params + range->offset,
              (uint8_t *)module->default_params + range->offset,
              range->size);
@@ -146,13 +202,13 @@ static void _highlight_changed_tab(GtkWidget *page,
                                    gpointer notebook)
 {
   dt_iop_module_t *module = NULL;
-  GArray *ranges = g_array_new(FALSE, FALSE, sizeof(dt_iop_param_range_t));
+  GArray *ranges = g_array_new(FALSE, FALSE, sizeof(_param_range_t));
   _page_ranges(page, TRUE, &module, ranges);
 
   gboolean is_changed = FALSE;
   for(guint r = 0; module && module->default_params && r < ranges->len && !is_changed; r++)
   {
-    const dt_iop_param_range_t *range = &g_array_index(ranges, dt_iop_param_range_t, r);
+    const _param_range_t *range = &g_array_index(ranges, _param_range_t, r);
     is_changed = memcmp((uint8_t *)module->params + range->offset,
                         (uint8_t *)module->default_params + range->offset,
                         range->size) != 0;

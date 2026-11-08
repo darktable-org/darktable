@@ -3846,23 +3846,14 @@ void gui_init(dt_iop_module_t *self)
   gtk_stack_set_homogeneous(g->stack, FALSE);
 
   dt_iop_module_t *sect = NULL;
-  /* The tabs stay empty and the sliders go into the stack beside them, so name
-     the parameters each tab governs. The eight nodes of a channel are declared
-     together in the parameter struct, so one range covers a tab. */
-  static const dt_iop_param_range_t node_bands[] =
-  {
-    { offsetof(dt_iop_colorequal_params_t, hue_red), sizeof(float) * NODES },
-    { offsetof(dt_iop_colorequal_params_t, sat_red), sizeof(float) * NODES },
-    { offsetof(dt_iop_colorequal_params_t, bright_red), sizeof(float) * NODES },
-  };
+  // the tabs stay empty and their sliders go into the stack beside them
+#define GROUP_SLIDERS(num, page, tooltip)                                     \
+  sect = DT_IOP_SECTION_FOR_PARAMS(self, page, dt_gui_vbox());               \
+  gtk_stack_add_named(g->stack, sect->widget, num);                          \
+  dt_iop_page_bind_widgets(dt_ui_notebook_page(g->notebook, page, tooltip), \
+                           sect->widget);
 
-#define GROUP_SLIDERS(num, page, tooltip)                             \
-  dt_iop_page_bind_params(dt_ui_notebook_page(g->notebook, page, tooltip), \
-                          self, &node_bands[num], 1);                 \
-  sect = DT_IOP_SECTION_FOR_PARAMS(self, page, dt_gui_vbox());        \
-  gtk_stack_add_named(g->stack, sect->widget, #num);
-
-  GROUP_SLIDERS(0, N_("hue"), _("change hue hue-wise"))
+  GROUP_SLIDERS("0", N_("hue"), _("change hue hue-wise"))
   g->hue_sliders[0] = g->hue_red =
     dt_bauhaus_slider_from_params(sect, "hue_red");
   g->hue_sliders[1] = g->hue_orange =
@@ -3880,7 +3871,7 @@ void gui_init(dt_iop_module_t *self)
   g->hue_sliders[7] = g->hue_magenta =
     dt_bauhaus_slider_from_params(sect, "hue_magenta");
 
-  GROUP_SLIDERS(1, N_("saturation"), _("change saturation hue-wise"))
+  GROUP_SLIDERS("1", N_("saturation"), _("change saturation hue-wise"))
   g->sat_sliders[0] = g->sat_red =
     dt_bauhaus_slider_from_params(sect, "sat_red");
   g->sat_sliders[1] = g->sat_orange =
@@ -3898,7 +3889,7 @@ void gui_init(dt_iop_module_t *self)
   g->sat_sliders[7] = g->sat_magenta =
     dt_bauhaus_slider_from_params(sect, "sat_magenta");
 
-  GROUP_SLIDERS(2, N_("brightness"), _("change brightness hue-wise"))
+  GROUP_SLIDERS("2", N_("brightness"), _("change brightness hue-wise"))
   g->bright_sliders[0] = g->bright_red =
     dt_bauhaus_slider_from_params(sect, "bright_red");
   g->bright_sliders[1] = g->bright_orange =
